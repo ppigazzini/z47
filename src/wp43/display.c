@@ -1489,14 +1489,8 @@ void angle34ToDisplayString2(const real34_t *angle34, uint8_t mode, char *displa
                                                                                     fs);
   }
   else if(mode == amMultPi) {
-    real34_t multPi34;
-    real_t multPi;
-
-    real34ToReal(angle34, &multPi);
-    realDivide(&multPi, const_pi, &multPi, &ctxtReal39);
-    realToReal34(&multPi, &multPi34);
     constantFractionsMode = CF_OFF;        //JM
-    real34ToDisplayString2(&multPi34, displayString, displayHasNDigits, limitExponent, mode == amSecond, frontSpace);
+    real34ToDisplayString2(angle34, displayString, displayHasNDigits, limitExponent, mode == amSecond, frontSpace);
     strcat(displayString, STD_SUP_pir);
   }
   else {

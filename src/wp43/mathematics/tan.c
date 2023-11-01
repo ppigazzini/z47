@@ -42,11 +42,19 @@ TO_QSPI void (* const Tan[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])(void) = {
 };
 
 
+angularMode_t determineAngleMode(angularMode_t mode) {
+    return mode == amNone ? currentAngularMode : mode;
+}
 
 void longIntegerAngleReduction(calcRegister_t regist, angularMode_t angularMode, real_t *reducedAngle) {
   uint32_t oneTurn;
+  longInteger_t angle;
 
   switch(angularMode) {
+    case amMultPi: {
+      oneTurn = 2;
+      break;
+    }
     case amGrad: {
       oneTurn = 400;
       break;
@@ -57,20 +65,14 @@ void longIntegerAngleReduction(calcRegister_t regist, angularMode_t angularMode,
       break;
     }
     default: {
-      oneTurn = 0;
+      convertLongIntegerRegisterToReal(regist, reducedAngle, &ctxtReal75);
+      return;
     }
   }
 
-  if(oneTurn == 0) {
-    convertLongIntegerRegisterToReal(regist, reducedAngle, &ctxtReal75);
-  }
-  else {
-    longInteger_t angle;
-
-    convertLongIntegerRegisterToLongInteger(regist, angle);
-    uInt32ToReal(longIntegerModuloUInt(angle, oneTurn), reducedAngle);
-    longIntegerFree(angle);
-  }
+  convertLongIntegerRegisterToLongInteger(regist, angle);
+  uInt32ToReal(longIntegerModuloUInt(angle, oneTurn), reducedAngle);
+  longIntegerFree(angle);
 }
 
 
@@ -113,12 +115,7 @@ void fnTan(uint16_t unusedButMandatoryParameter) {
 void tanLonI(void) {
   real_t sin, cos, tan;
 
-  if(currentAngularMode == amMultPi) {
-    realZero(&tan);
-  }
-  else {
-    longIntegerAngleReduction(REGISTER_X, currentAngularMode, &tan);
-  }
+  longIntegerAngleReduction(REGISTER_X, currentAngularMode, &tan);
   WP34S_Cvt2RadSinCosTan(&tan, currentAngularMode, &sin, &cos, &tan, &ctxtReal75);
   if(realIsZero(&sin)) {
      realSetPositiveSign(&tan);
@@ -161,15 +158,11 @@ void tanReal(void) {
   }
   else {
     real_t sin, cos, tan;
-    angularMode_t xAngularMode = getRegisterAngularMode(REGISTER_X);
+    angularMode_t xAngularMode = determineAngleMode(getRegisterAngularMode(REGISTER_X));
 
     real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &tan);
 
-    if(xAngularMode == amNone && currentAngularMode == amMultPi) {
-      realMultiply(&tan, const_pi, &tan, &ctxtReal75);
-    }
-
-    WP34S_Cvt2RadSinCosTan(&tan, (xAngularMode == amNone ? currentAngularMode : xAngularMode), &sin, &cos, &tan, &ctxtReal75);
+    WP34S_Cvt2RadSinCosTan(&tan, xAngularMode, &sin, &cos, &tan, &ctxtReal75);
     if(realIsZero(&sin)) {
        realSetPositiveSign(&tan);
     }

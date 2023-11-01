@@ -166,6 +166,7 @@ void configCommon(uint16_t idx) {
     fnDisplayFormatSigFig(3);                // SIG 3
     roundingMode = RM_HALF_UP;    
     fnKeysManagement(USER_MENG);
+    setSystemFlag(FLAG_FRCSRN);              // Display 
 
     itemToBeAssigned = -MNU_EE;
     _assignItem(&userMenuItems[6]); //fF1
@@ -453,6 +454,17 @@ void fnFreeMemory(uint16_t unusedButMandatoryParameter) {
   longIntegerFree(mem);
 }
 
+
+void fnGetDmx(uint16_t unusedButMandatoryParameter) {
+  longInteger_t dmx;
+
+  liftStack();
+
+  longIntegerInit(dmx);
+  uIntToLongInteger(denMax, dmx);
+  convertLongIntegerToLongIntegerRegister(dmx, REGISTER_X);
+  longIntegerFree(dmx);
+}
 
 
 void fnGetRoundingMode(uint16_t unusedButMandatoryParameter) {
@@ -1353,9 +1365,6 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     lastErrorCode = 0;
 
     gammaLanczosCoefficients = (real51_t *)const_gammaC01;
-    angle180 = (real_t *)const_pi_75;
-    angle90  = (real_t *)const_piOn2_75;
-    angle45  = (real_t *)const_piOn4_75;
 
     #if !defined(TESTSUITE_BUILD)
       resetAlphaSelectionBuffer();

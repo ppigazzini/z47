@@ -14,7 +14,7 @@
 
 #define VERSION1 "0.109.00.00a14"     // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
 
-//2023-10-21-0.108.14.00 alpha 14
+//2023-10-22-0.108.15.01 Stable non-master
 
   #undef SAVE_SPACE_DM42_0
   #undef SAVE_SPACE_DM42_1
@@ -288,6 +288,29 @@
   #if defined(LINUX)
   #define _XOPEN_SOURCE                700 // see: https://stackoverflow.com/questions/5378778/what-does-d-xopen-source-do-mean
 #endif // LINUX
+
+
+#define DEBUG_STAT                       0 // PLOT & STATS verbose level can be 0, 1 or 2 (more)
+#if(DEBUG_STAT == 0)
+  #undef STATDEBUG
+  #undef STATDEBUG_VERBOSE
+  #endif // DEBUG_STAT == 0
+#if(DEBUG_STAT == 1)
+  #define STATDEBUG
+  #undef STATDEBUG_VERBOSE
+  #endif // DEBUG_STAT == 1
+#if(DEBUG_STAT == 2)
+  #define STATDEBUG
+  #define STATDEBUG_VERBOSE
+  #endif // DEBUG_STAT == 2
+
+
+  #if defined(PC_BUILD)
+    //#define DEBUGUNDO
+    #undef DEBUGUNDO
+  #else // !PC_BUILD
+    #undef DEBUGUNDO
+  #endif // PC_BUILD
 
 
 #define REAL34_WIDTH_TEST 0 // For debugging real34 ALL 0 formating. Use UP/DOWN to shrink or enlarge the available space. The Z register holds the available width.
@@ -831,18 +854,7 @@ typedef enum {
 #define CF_CAUCHY_FITTING                        128
 #define CF_GAUSS_FITTING                         256
 #define CF_ORTHOGONAL_FITTING                    512
-
-// Curve fitting excluding all other curve fitting bits, 10 bits
-#define CF_LINEAR_FITTING_EX                     (~CF_LINEAR_FITTING) & 0x01FF
-#define CF_EXPONENTIAL_FITTING_EX                (~CF_EXPONENTIAL_FITTING) & 0x01FF
-#define CF_LOGARITHMIC_FITTING_EX                (~CF_LOGARITHMIC_FITTING) & 0x01FF
-#define CF_POWER_FITTING_EX                      (~CF_POWER_FITTING) & 0x03FF
-#define CF_ROOT_FITTING_EX                       (~CF_ROOT_FITTING) & 0x01FF
-#define CF_HYPERBOLIC_FITTING_EX                 (~CF_HYPERBOLIC_FITTING) & 0x01FF
-#define CF_PARABOLIC_FITTING_EX                  (~CF_PARABOLIC_FITTING) & 0x01FF
-#define CF_CAUCHY_FITTING_EX                     (~CF_CAUCHY_FITTING) & 0x01FF
-#define CF_GAUSS_FITTING_EX                      (~CF_GAUSS_FITTING) & 0x01FF
-#define CF_ORTHOGONAL_FITTING_EX                 (~CF_ORTHOGONAL_FITTING) & 0x01FF
+#define orOrtho(a)                                 (a==0 ? CF_ORTHOGONAL_FITTING : a)
 
   // Plot curve fitting 4 bits
 #define PLOT_ORTHOF                                0

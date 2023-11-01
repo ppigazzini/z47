@@ -874,11 +874,15 @@ int16_t lastItem = 0;
       }
 
       if(calcMode == CM_ASSIGN && itemToBeAssigned != 0 && !(tam.alpha && tam.mode != TM_NEWMENU)) {
-        if(_assignToMenu((uint8_t *)data)) {
-        if(previousCalcMode == CM_AIM) {         //vvJM btnFnReleased
-          showSoftmenu(-MNU_ALPHA);              //
-          refreshScreen(108);                       //
-        }                                        //^^JM
+        if(!(previousCalcMode == CM_AIM && ((uint8_t *)data)[0] == '6')) {       //prevent "ALPHA" on F6 to be overwritten
+          if(_assignToMenu((uint8_t *)data)) {
+            if(previousCalcMode == CM_AIM) {         //vvJM btnFnReleased
+              showSoftmenu(-MNU_ALPHA);              //
+              refreshScreen(108);                       //
+            }                                        //^^JM
+            return;
+          }
+        } else {
           return;
         }
       }

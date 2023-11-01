@@ -94,19 +94,7 @@ void cosComplex(const real_t *real, const real_t *imag, real_t *resReal, real_t 
 void cosLonI(void) {
   real_t x;
 
-  if(currentAngularMode == amMultPi) {
-    longInteger_t lgInt;
-    convertLongIntegerRegisterToLongInteger(REGISTER_X, lgInt);
-    if(longIntegerIsEven(lgInt)) {
-      realZero(&x);
-    }
-    else {
-      realPlus(const_pi, &x, &ctxtReal75);
-    }
-  }
-  else {
-    longIntegerAngleReduction(REGISTER_X, currentAngularMode, &x);
-  }
+  longIntegerAngleReduction(REGISTER_X, currentAngularMode, &x);
   WP34S_Cvt2RadSinCosTan(&x, currentAngularMode, NULL, &x, NULL, &ctxtReal75);
 
   reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amNone);
@@ -133,16 +121,11 @@ void cosReal(void) {
   }
   else {
     real_t x;
-    angularMode_t xAngularMode;
+    angularMode_t xAngularMode = determineAngleMode(getRegisterAngularMode(REGISTER_X));
 
     real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &x);
-    xAngularMode = getRegisterAngularMode(REGISTER_X);
 
-    if(xAngularMode == amNone && currentAngularMode == amMultPi) {
-      realMultiply(&x, const_pi, &x, &ctxtReal75);
-    }
-
-    WP34S_Cvt2RadSinCosTan(&x, (xAngularMode == amNone ? currentAngularMode : xAngularMode), NULL, &x, NULL, &ctxtReal75);
+    WP34S_Cvt2RadSinCosTan(&x, xAngularMode, NULL, &x, NULL, &ctxtReal75);
     convertRealToReal34ResultRegister(&x, REGISTER_X);
   }
   setRegisterAngularMode(REGISTER_X, amNone);

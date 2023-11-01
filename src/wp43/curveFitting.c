@@ -60,42 +60,9 @@ realContext_t *realContextForecast;
  ***********************************************/
 
 void fnCurveFitting(uint16_t curveFitting) {
-  curveFitting = curveFitting & 0x01FF;
-  temporaryInformation = TI_STATISTIC_LR;
-
-  if(curveFitting < 0x01FF) {                 // note curveFitting >= 0
-    curveFitting = (~curveFitting) & 0x01FF;  // see above
-  }
-  else if(curveFitting == 0x01FF) {
-    curveFitting = 0x0200;                    // see above
-  }
-  else {
-    curveFitting = 0;                         // illegal value, therefore defaulting to none
-  }
-  lrSelection = curveFitting;                 // lrSelection is used to store the BestF method, in inverse, i.e. 1 indicating allowed method
-  lrChosen = 0;                               // lrChosen    is used to indicate if there was a L.R. selection. Can be only one bit.
-
-  #if(EXTRA_INFO_ON_CALC_ERROR == 1)
-    uint16_t numberOfOnes;
-    numberOfOnes = lrCountOnes(curveFitting);
-
-    if(numberOfOnes == 1) {
-      printf("Use the ");
-    }
-    else {
-      printf("Use the best fitting model out of\n");
-    }
-
-    printf("%s",getCurveFitModeNames(curveFitting));
-    if(numberOfOnes == 1) {
-      printf(" fitting model.\n");
-    }
-    else {
-      printf("\nfitting models.\n");
-    }
-  #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+  lrSelection = 0;
+  fnCurveFitting_T(curveFitting);
 }
-
 
 
 void fnCurveFittingReset(uint16_t control) {     // JM vv
@@ -118,29 +85,23 @@ void fnCurveFittingReset(uint16_t control) {     // JM vv
 }
 
 
-
-void fnCurveFitting_T(uint16_t curveFitting) {
-  curveFitting = curveFitting & 0x01FF;
+void fnCurveFitting_T(uint16_t curveFitting) { // Toggle
   temporaryInformation = TI_STATISTIC_LR;
+  curveFitting &= 0x01FF;                      // clear ORTHO
 
-  if(curveFitting < 0x01FF) {                 // note curveFitting >= 0
-    curveFitting = (~curveFitting) & 0x01FF;  // see above
-  }
-  else if(curveFitting == 0x01FF) {
-    curveFitting = 0x0200;                    // see above
-  }
-  else {
-    curveFitting = 0;                         // illegal value, therefore defaulting to none
-  }
+  if(curveFitting == 0) curveFitting = CF_ORTHOGONAL_FITTING;
 
-  #if(EXTRA_INFO_ON_CALC_ERROR == 1)
-    printf(">>>%u  %u\n",curveFitting,lrCountOnes(curveFitting));
-  #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-  if(lrCountOnes(curveFitting) == 1) {         //Added experimental, toggle bits of the lrselection word
-    lrSelection = lrSelection ^ curveFitting;  //Added  "
-  } else                                       //Added  "
-
-  lrSelection = curveFitting;                  // lrSelection is used to store the BestF method, in inverse, i.e. 1 indicating allowed method
+  if((lrSelection & CF_ORTHOGONAL_FITTING) == CF_ORTHOGONAL_FITTING && curveFitting == CF_ORTHOGONAL_FITTING) {   // if no curves selected (0) and Ortho is not chosen, then default to LIN
+    lrSelection = CF_LINEAR_FITTING;
+  } else 
+  if((lrSelection & CF_ORTHOGONAL_FITTING) == 0 && curveFitting == CF_ORTHOGONAL_FITTING) {   // if no curves selected (0) and Ortho is not chosen, then default to LIN
+    lrSelection = CF_ORTHOGONAL_FITTING;
+  } else 
+  if(lrCountOnes(curveFitting) == 1) {         // toggle bits of the lrselection word
+    lrSelection = (0x01FF & lrSelection) ^ curveFitting;
+  } else {
+    lrSelection = CF_LINEAR_FITTING;
+  }
 
   lrChosen = 0;                                // lrChosen    is used to indicate if there was a L.R. selection. Can be only one bit.
 
@@ -177,7 +138,7 @@ void fnCurveFittingLR(uint16_t unusedButMandatoryParameter) {
   longInteger_t lr;
   liftStack();
   longIntegerInit(lr);
-  uIntToLongInteger((~lrSelection) & 0x01FF, lr);           // Input mask 01 1111 1111 EXCLUDES 10 0000 0000, which is ORTHOF, as it is not in the OM
+  uIntToLongInteger(lrSelection & 0x01FF, lr);           // Input mask 01 1111 1111 EXCLUDES 10 0000 0000, which is ORTHOF, as it is not in the OM
   convertLongIntegerToLongIntegerRegister(lr, REGISTER_X);
   longIntegerFree(lr);
 }
@@ -315,8 +276,6 @@ void fnProcessLRfind(uint16_t curveFitting){
 
 
 
-//0010 0011 1111    //0x23F     (internal is inverted: '1' means enabled)
-//0001 1100 0000    //0x1C0
 void fnProcessLR (uint16_t unusedButMandatoryParameter){
   if(checkMinimumDataPoints(const_2)) {
     fnProcessLRfind(lrSelection);
@@ -426,7 +385,7 @@ void processCurvefitSelectionAll(uint16_t selection, real_t *RR_, real_t *MX, re
     double v;
   #endif // STAT_DISPLAY_ABCDEFG && PC_BUILD
 
-  switch(selection) {
+  switch(orOrtho(selection)) {
     case CF_LINEAR_FITTING: {
       //      a0 = (sumx2 * sumy  - sumx * sumxy) / (nn * sumx2 - sumx * sumx);
       realMultiply(SIGMA_X2, SIGMA_Y,  &SS, realContext);
@@ -1038,7 +997,7 @@ void yIsFnx(uint8_t USEFLOAT, uint16_t selection, double x, double *y, double a0
       realContextForecast = &ctxtReal39;
     }
   }
-  switch(selection) {
+  switch(orOrtho(selection)) {
     case CF_LINEAR_FITTING:
     case CF_ORTHOGONAL_FITTING: {
       if(USEFLOAT == 0) {
@@ -1199,7 +1158,7 @@ void xIsFny(uint16_t selection, uint8_t rootNo, real_t *XX, real_t *YY, real_t *
 
   realCopy(const_0, XX);
   realContextForecast = &ctxtReal39;
-  switch(selection) {
+  switch(orOrtho(selection)) {
     case CF_LINEAR_FITTING:
     case CF_ORTHOGONAL_FITTING: {
       //x = (y - a0) / a1;

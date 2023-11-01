@@ -71,6 +71,7 @@ uint16_t convertItemToSubOrSup(uint16_t item, int16_t subOrSup) {
         case ITM_alpha    :return ITM_SUB_alpha;
         case ITM_delta    :return ITM_SUB_delta;
         case ITM_mu       :return ITM_SUB_mu;
+        case ITM_pi       :return ITM_SUB_pi;
         case ITM_SUN      :return ITM_SUB_SUN;
         case ITM_INFINITY :return ITM_SUB_INFINITY;
         case ITM_PLUS     :return ITM_SUB_PLUS;
@@ -87,6 +88,7 @@ uint16_t convertItemToSubOrSup(uint16_t item, int16_t subOrSup) {
         case ITM_INFINITY :return ITM_SUP_INFINITY;
         case ITM_PLUS     :return ITM_SUP_PLUS;
         case ITM_MINUS    :return ITM_SUP_MINUS;
+        case ITM_pi       :return ITM_SUP_pi;
         default           :return item;
       }
     }

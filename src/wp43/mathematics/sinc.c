@@ -172,10 +172,9 @@ void sincReal(void) {
     }
     else {
       real_t sine;
-      angularMode_t registerAngularMode = getRegisterAngularMode(REGISTER_X);
-      if(registerAngularMode != amNone) {
-        convertAngleFromTo(&x, registerAngularMode, amRadian, &ctxtReal75);
-      }
+      angularMode_t xAngularMode = determineAngleMode(getRegisterAngularMode(REGISTER_X));
+
+      convertAngleFromTo(&x, xAngularMode, amRadian, &ctxtReal75);
       WP34S_Cvt2RadSinCosTan(&x, amRadian, &sine, NULL, NULL, &ctxtReal75);
       realDivide(&sine, &x, &x, &ctxtReal75);
     }

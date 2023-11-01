@@ -133,9 +133,9 @@ typedef enum {
  * Angular units.
  */
 typedef enum {
-  amRadian    =  0, // radian must be 0  | This is because of the tables angle45,
-  amGrad      =  1, // grad   must be 1  | angle90, and angle180 for angle reduction
-  amDegree    =  2, // degree must be 2  | before Taylor trig computation.
+  amRadian    =  0, // radian
+  amGrad      =  1, // grad
+  amDegree    =  2, // degree
   amDMS       =  3,
   amMultPi    =  4,
   amNone      =  5,

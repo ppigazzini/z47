@@ -138,6 +138,13 @@ void     fnFreeMemory          (uint16_t unusedButMandatoryParameter);
  *
  * \param[in] unusedButMandatoryParameter uint16_t
  ***********************************************/
+void     fnGetDmx              (uint16_t unusedButMandatoryParameter);
+
+/********************************************//**
+ * \brief Sets X to the value of the rounding mode
+ *
+ * \param[in] unusedButMandatoryParameter uint16_t
+ ***********************************************/
 void     fnGetRoundingMode     (uint16_t unusedButMandatoryParameter);
 
 /********************************************//**

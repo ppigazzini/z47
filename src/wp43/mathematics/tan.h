@@ -27,6 +27,7 @@
 
   void fnTan                    (uint16_t unusedButMandatoryParameter);
   void longIntegerAngleReduction(calcRegister_t regist, angularMode_t angularMode, real_t *reducedAngle);
+  angularMode_t determineAngleMode(angularMode_t mode);
 
   #if(EXTRA_INFO_ON_CALC_ERROR == 1)
     void tanError                 (void);

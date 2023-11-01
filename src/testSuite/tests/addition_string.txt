@@ -92,7 +92,7 @@ In:  FL_ASLIFT=0 RY=Stri:"String test " RX=Real:"-12.345678":RAD
 Out: EC=0 FL_ASLIFT=1 RL=Real:"-12.345678":RAD RX=Stri:"String test -12.345\xa0\x08678\xa4\x93"
 
 In:  FL_ASLIFT=0 RY=Stri:"String test " RX=Real:"-12.345678":MULTPI
-Out: EC=0 FL_ASLIFT=1 RL=Real:"-12.345678":MULTPI RX=Stri:"String test -3.929\xa0\x08751\xa0\x08359\xa0\x08041\xa0\x08728\xad\xec"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"-12.345678":MULTPI RX=Stri:"String test -12.345\xa0\x08678\xad\xec"
 
 ;=======================================
 ; Real34 + String --> String                 ;JM

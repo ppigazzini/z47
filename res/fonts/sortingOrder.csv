@@ -359,7 +359,8 @@
 `U+209e`,561,562,`not defined by unicode`,`Superscript infinity`,`₞`,`∞`,`U+221e`
 `U+209f`,561,563,`not defined by unicode`,`Subscript infinity`,`₟`,`∞`,`U+221e`
 `U+20ac`,552,554,`EURO SIGN`,`Euro`,`€`,`%`,`U+0025`
-`U+2102`,95,107,`DOUBLE-STRUCK CAPITAL C`,`Complec C`,`ℂ`,`C`,`U+0043`
+`U+2100`,591,593,`ACCOUNT OF`,`1 on B`,`℀`,`1`,`U+2100`
+`U+2102`,95,107,`DOUBLE-STRUCK CAPITAL C`,`Complex C`,`ℂ`,`C`,`U+0043`
 `U+210e`,160,162,`PLANCK CONSTANT`,`Planck`,`ℎ`,`H`,`U+0048`
 `U+210f`,160,168,`PLANCK CONSTANT OVER TWO PI`,`Planck / 2pi`,`ℏ`,`H`,`U+0048`
 `U+2110`,169,191,`DOUBLE-STRUCK CAPITAL I`,`Irrational I`,`"ℐ"`,`I`,`U+0049`

@@ -50,6 +50,11 @@
 void WP34S_Cvt2RadSinCosTan(const real_t *an, angularMode_t angularMode, real_t *sinOut, real_t *cosOut, real_t *tanOut, realContext_t *realContext) {
   bool_t sinNeg = false, cosNeg = false, swap = false;
   real_t angle;
+  const real_t *angle45, *angle90, *angle180;
+  angle45  = const_0;
+  angle90  = const_0;
+  angle180 = const_0;
+
 
   if(realIsNaN(an)) {
     if(sinOut != NULL) {
@@ -81,20 +86,35 @@ void WP34S_Cvt2RadSinCosTan(const real_t *an, angularMode_t angularMode, real_t 
   }
 
   switch(angularMode) {
-    case amRadian:
-    case amMultPi: {
+    case amRadian: {
+      angle45 = const_piOn4_75;
+      angle90 = const_piOn2_75;
+      angle180 = const_pi_75;
       WP34S_Mod(&angle, const1071_2pi, &angle, realContext); // mod(angle, 2pi) --> angle
-      angularMode = amRadian;
+      break;
+    }
+
+    case amMultPi: {
+      angle45 = const_1on4;
+      angle90 = const_1on2;
+      angle180 = const_1;
+      WP34S_Mod(&angle, const_2, &angle, realContext); // mod(angle, 2) --> angle
       break;
     }
 
     case amGrad: {
+      angle45 = const_50;
+      angle90 = const_100;
+      angle180 = const_200;
       WP34S_Mod(&angle, const_400,     &angle, realContext); // mod(angle, 400g) --> angle
       break;
     }
 
     case amDegree:
     case amDMS: {
+      angle45 = const_45;
+      angle90 = const_90;
+      angle180 = const_180;
       WP34S_Mod(&angle, const_360,     &angle, realContext); // mod(angle, 360°) --> angle
       angularMode = amDegree;
       break;
@@ -105,21 +125,21 @@ void WP34S_Cvt2RadSinCosTan(const real_t *an, angularMode_t angularMode, real_t 
   }
 
   // sin(180+x) = -sin(x), cos(180+x) = -cos(x)
-  if(realCompareGreaterEqual(&angle, (real_t *)(angle180 + angularMode))) {        // angle >= 180°
-    realSubtract(&angle, (real_t *)(angle180 + angularMode), &angle, realContext); // angle - 180° --> angle
+  if(realCompareGreaterEqual(&angle, angle180)) {        // angle >= 180°
+    realSubtract(&angle, angle180, &angle, realContext); // angle - 180° --> angle
     sinNeg = !sinNeg;
     cosNeg = !cosNeg;
   }
 
   // sin(90+x) = cos(x), cos(90+x) = -sin(x)
-  if(realCompareGreaterEqual(&angle, (real_t *)(angle90 + angularMode))) {        // angle >= 90°
-    realSubtract(&angle, (real_t *)(angle90 + angularMode), &angle, realContext); // angle - 90° --> angle
+  if(realCompareGreaterEqual(&angle, angle90)) {        // angle >= 90°
+    realSubtract(&angle, angle90, &angle, realContext); // angle - 90° --> angle
     swap = true;
     cosNeg = !cosNeg;
   }
 
   // sin(90-x) = cos(x), cos(90-x) = sin(x)
-  if(realCompareEqual(&angle, (real_t *)(angle45 + angularMode))) { // angle == 45°
+  if(realCompareEqual(&angle, angle45)) { // angle == 45°
     if(sinOut != NULL) {
      realCopy(const_root2on2, sinOut);
     }
@@ -131,8 +151,8 @@ void WP34S_Cvt2RadSinCosTan(const real_t *an, angularMode_t angularMode, real_t 
     }
   }
   else { // angle < 90
-    if(realCompareGreaterThan(&angle, (real_t *)(angle45 + angularMode))) {         // angle > 45°
-      realSubtract((real_t *)(angle90 + angularMode), &angle, &angle, realContext); // 90° - angle  --> angle
+    if(realCompareGreaterThan(&angle, angle45)) {         // angle > 45°
+      realSubtract(angle90, &angle, &angle, realContext); // 90° - angle  --> angle
       swap = !swap;
     }
 
