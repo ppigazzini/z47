@@ -26,6 +26,7 @@
 #include "hal/io.h"
 #include "items.h"
 #include "c43Extensions/addons.h"
+#include "c43Extensions/graphText.h"
 #include "c43Extensions/xeqm.h"
 #include "c43Extensions/jm.h"
 #include "c43Extensions/radioButtonCatalog.h"
@@ -1723,6 +1724,7 @@ int32_t stringToInt32(const char *str) {
       char line[100];
     #endif //LOADDEBUG
 
+    cancelFilename = true;
     hourGlassIconEnabled = true;
     showHideHourGlass();
     readLine(tmpString);

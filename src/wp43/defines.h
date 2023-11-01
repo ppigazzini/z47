@@ -280,7 +280,7 @@
 
   #if defined(PC_BUILD)
     #define DEBUGUNDO
-    //#undef DEBUGUNDO
+    #undef DEBUGUNDO
   #else // !PC_BUILD
     #undef DEBUGUNDO
   #endif // PC_BUILD

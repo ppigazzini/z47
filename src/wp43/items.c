@@ -2490,7 +2490,7 @@ TO_QSPI const item_t indexOfItems[] = {
 
 
 // Curve fitting
-/* 1297 */  { fnCurveFitting,               TM_VALUE,                    "BestF",                                       "BestF",                                       (0 << TAM_MAX_BITS) |   510, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NUMBER_16    },
+/* 1297 */  { fnCurveFitting,               TM_VALUE,                    "BestF",                                       "BestF",                                       (0 << TAM_MAX_BITS) |   511, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NUMBER_16    },
 /* 1298 */  { fnCurveFitting_T,             CF_EXPONENTIAL_FITTING,      "ExpF",                                        "ExpF",                                        (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /* 1299 */  { fnCurveFitting_T,             CF_LINEAR_FITTING,           "LinF",                                        "LinF",                                        (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /* 1300 */  { fnCurveFitting_T,             CF_LOGARITHMIC_FITTING,      "LogF",                                        "LogF",                                        (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
