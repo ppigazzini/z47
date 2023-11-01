@@ -1368,7 +1368,7 @@ void graphDrawLRline(uint16_t selection) {
     if(selection != 0) {
       processCurvefitSelection(selection, &RR, &SMI, &aa0, &aa1, &aa2);
       realMultiply(&RR,&RR,&RR,&ctxtReal39);
-      if(selection == CF_ORTHOGONAL_FITTING) {
+      if(orOrtho(selection) == CF_ORTHOGONAL_FITTING) {
         processCurvefitSA(&sa0, &sa1);
       }
       drawline(selection, &RR, &SMI, &aa0, &aa1, &aa2, &sa0, &sa1);
@@ -1402,7 +1402,7 @@ void graphDrawLRline(uint16_t selection) {
       && !realIsNaN(aa0)
       && !realIsNaN(aa1)
       && (!realIsNaN(aa2) || minLRDataPoints(selection)==2)
-      && (!realIsNaN(SMI) || !(selection & CF_ORTHOGONAL_FITTING));
+      && (!realIsNaN(SMI) || !(orOrtho(selection) & CF_ORTHOGONAL_FITTING));
 
     #if defined(STATDEBUG) && defined(PC_BUILD)
       printf("#####>>> drawline: selection:%u:%s  lastplotmode:%u  lrSelection:%u lrChosen:%u\n", selection, getCurveFitModeName(selection), lastPlotMode, lrSelection, lrChosen);
@@ -1550,7 +1550,7 @@ void graphDrawLRline(uint16_t selection) {
         showString(padEquals(ss), &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++ -2 +autoshift, vmNormal, false, false);
       }
 
-      if(selection != CF_ORTHOGONAL_FITTING) {
+      if(orOrtho(selection) != CF_ORTHOGONAL_FITTING) {
         eformat_eng2(ss, "", a0, 3, "");
         showString(padEquals(ss), &standardFont, horOffsetR - stringWidth(ss, &standardFont, false, false), Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index  -4 +autoshift, vmNormal, false, false);
         strcpy(ss, "a" STD_SUB_0 "=");
@@ -1643,7 +1643,7 @@ void graphDrawLRline(uint16_t selection) {
           showString("invalid a0,a1", &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc * index++ -7+2 +autoshift, vmNormal, false, false);
       }
       }
-      else if((selection & CF_ORTHOGONAL_FITTING) && isnan(smi)) {
+      else if((orOrtho(selection) & CF_ORTHOGONAL_FITTING) && isnan(smi)) {
         showString("invalid smi", &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc * index++ -7+2 +autoshift, vmNormal, false, false);
       }
       else if(rr>1 || isnan(rr)) {
@@ -1720,7 +1720,7 @@ void fnPlotStat(uint16_t plotMode){
         lastPlotMode = PLOT_START;
         lrSelectionHistobackup = lrSelection;
         lrChosenHistobackup = lrChosen;
-        fnCurveFitting(CF_GAUSS_FITTING_EX);
+        fnCurveFitting(CF_GAUSS_FITTING);
         break;
       }
       default: {

@@ -177,7 +177,7 @@ void configCommon(uint16_t idx) {
     setSystemFlag  (FLAG_SBbatV);            // Set battery voltage indicator
     fnDisplayFormatSigFig(3);                // SIG 3
     roundingMode = RM_HALF_UP;    
-    fnKeysManagement(USER_MCPX);
+    fnKeysManagement(USER_MENG);
     setSystemFlag(FLAG_FRCSRN);              // Display 
 
     itemToBeAssigned = -MNU_EE;

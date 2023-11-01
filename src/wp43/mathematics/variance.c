@@ -301,7 +301,7 @@ void processCurvefitSA(real_t *SA0, real_t *SA1) {
     #endif // STATDEBUG && PC_BUILD
 
 
-    switch(lrChosen) {
+    switch(orOrtho(lrChosen)) {
       case CF_LINEAR_FITTING:
       case CF_ORTHOGONAL_FITTING:
       case CF_EXPONENTIAL_FITTING:

@@ -29,6 +29,7 @@
 #include "c43Extensions/xeqm.h"
 #include "c43Extensions/jm.h"
 #include "c43Extensions/radioButtonCatalog.h"
+#include "curveFitting.h"
 #include "mathematics/matrix.h"
 #include "memory.h"
 #include "plotstat.h"
@@ -59,7 +60,7 @@
 #endif
 
 #include "wp43.h"
-#define BACKUP_VERSION                     786  // add MYM3
+#define BACKUP_VERSION                     787  // Change bestf
 #define OLDEST_COMPATIBLE_BACKUP_VERSION   779  // save running app
 #define configFileVersion                  10000008 // New STOCFG and new STATE file; arbitrary starting point version 10 000 001. Allowable values are 10000000 to 20000000
 #define VersionAllowed                     10000005 // This code will not autoload versions earlier than this
@@ -1276,7 +1277,7 @@ flushBufferCnt = 0;
 /*20*/  sprintf(tmpString, "rngState\n%s %s\n", yy1, yy2);                                                 save(tmpString, strlen(tmpString));
 /*21*/  sprintf(tmpString, "exponentLimit\n%"              PRId16  "\n",    exponentLimit);                save(tmpString, strlen(tmpString));
 /*22*/  sprintf(tmpString, "exponentHideLimit\n%"          PRId16  "\n",    exponentHideLimit);            save(tmpString, strlen(tmpString));
-/*23*/  sprintf(tmpString, "notBestF\n%"                   PRIu16  "\n",    lrSelection);                  save(tmpString, strlen(tmpString));
+/*23*/  sprintf(tmpString, "bestF\n%"                      PRIu16  "\n",    lrSelection);                  save(tmpString, strlen(tmpString));
 
 //10     
 /*01*/  sprintf(tmpString, "fgLN\n%"                       PRIu8  "\n",     (uint8_t)fgLN);                save(tmpString, strlen(tmpString));      //keep save file format by keeping the old setting
@@ -2375,6 +2376,7 @@ int32_t stringToInt32(const char *str) {
           else if(strcmp(aimBuffer, "exponentLimit"               ) == 0) { exponentLimit         = stringToInt16(tmpString); }
           else if(strcmp(aimBuffer, "exponentHideLimit"           ) == 0) { exponentHideLimit     = stringToInt16(tmpString); }
           else if(strcmp(aimBuffer, "notBestF"                    ) == 0) { lrSelection           = stringToUint16(tmpString);}
+          else if(strcmp(aimBuffer, "bestF"                       ) == 0) { lrSelection           = stringToUint16(tmpString);}
           else if(strcmp(aimBuffer, "fgLN"                        ) == 0) { fgLN                  = stringToUint8(tmpString); }
           else if(strcmp(aimBuffer, "jm_FG_LINE"                  ) == 0) { fgLN                  = stringToUint8(tmpString); }             //Keep compatible with old setting
           else if(strcmp(aimBuffer, "eRPN"                        ) == 0) { eRPN                  = (bool_t)stringToUint8(tmpString) != 0; }
@@ -2403,7 +2405,7 @@ int32_t stringToInt32(const char *str) {
           else if(strcmp(aimBuffer, "LongPressM"                  ) == 0) { LongPressM           = stringToUint8(tmpString); }                  //10000003
           else if(strcmp(aimBuffer, "LongPressF"                  ) == 0) { LongPressF           = stringToUint8(tmpString); }                  //10000003
           else if(strcmp(aimBuffer, "lastIntegerBase"             ) == 0) { lastIntegerBase      = stringToUint8(tmpString); }                  //10000004
-          else if(strcmp(aimBuffer, "lrChosen"                    ) == 0) { lrChosen             = stringToUint16(tmpString); }
+          else if(strcmp(aimBuffer, "lrChosen"                    ) == 0) { lrChosen             = stringToUint16(tmpString);}
           else if(strcmp(aimBuffer, "graph_xmin"                  ) == 0) { graph_xmin           = strintToFloat(tmpString); }
           else if(strcmp(aimBuffer, "graph_xmax"                  ) == 0) { graph_xmax           = strintToFloat(tmpString); }
           else if(strcmp(aimBuffer, "graph_ymin"                  ) == 0) { graph_ymin           = strintToFloat(tmpString); }

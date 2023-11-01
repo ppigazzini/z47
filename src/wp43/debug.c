@@ -326,7 +326,7 @@ const char * getRegisterTagName(calcRegister_t regist, bool_t padWithBlanks) {
  * \return char*          Name of the curvefitting mode
  ***********************************************/
 const char * getCurveFitModeName(uint16_t selection) {          //Can be only one bit. ??? if invalid.
-    switch( selection & 0x03FF ){
+    switch( orOrtho(selection) & 0x03FF ){
       case CF_LINEAR_FITTING: {
         return "Linear     ";
       }
@@ -446,7 +446,7 @@ const char * getCurveFitModeNames(uint16_t selection) {
  * \return char*          Formula of the curvefitting mode
  ***********************************************/
 const char * getCurveFitModeFormula(uint16_t selection) {          //Can be only one bit. ??? if invalid.
-  switch( selection & 0x03FF ){
+  switch( orOrtho(selection) & 0x03FF ){
     case CF_LINEAR_FITTING: {
       return "a" STD_SUB_0 STD_SPACE_3_PER_EM "+" STD_SPACE_3_PER_EM "a" STD_SUB_1 "x";
     }
