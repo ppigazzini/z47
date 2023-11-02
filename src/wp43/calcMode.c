@@ -84,9 +84,7 @@
     hideCursor();
     cursorEnabled = false;
 
-    #if defined(PC_BUILD) && (SCREEN_800X480 == 0)
-      calcModeNormalGui();
-    #endif // PC_BUILD && (SCREEN_800X480 == 0)
+    calcModeNormalGui();
   }
 
 
@@ -97,7 +95,7 @@
     #endif // PC_BUILD
 
     if(!tam.mode) {
-            showSoftmenu(-MNU_ALPHA);        //JM ALPHA-HOME  Change to initialize the menu stack. it was true.
+      showSoftmenu(-MNU_ALPHA);        //JM ALPHA-HOME  Change to initialize the menu stack. it was true.
     }
 
     alphaCase = AC_UPPER;
@@ -122,9 +120,7 @@
 
     setSystemFlag(FLAG_ALPHA);
 
-    #if defined(PC_BUILD) && (SCREEN_800X480 == 0)
-      calcModeAimGui();
-    #endif // PC_BUILD && (SCREEN_800X480 == 0)
+    calcModeAimGui();
   }
 
 
@@ -232,11 +228,9 @@
         clearSystemFlag(FLAG_ALPHA);
         resetAlphaSelectionBuffer();
 
-        #if defined(PC_BUILD) && (SCREEN_800X480 == 0)
-          if(catalog != CATALOG_MVAR) {
-            calcModeAimGui();
-          }
-        #endif // PC_BUILD && (SCREEN_800X480 == 0)
+        if(catalog != CATALOG_MVAR) {
+          calcModeAimGui();
+        }
       }
     }
   }
@@ -246,17 +240,15 @@
   void leaveAsmMode(void) {
     catalog = CATALOG_NONE;
 
-    #if defined(PC_BUILD) && (SCREEN_800X480 == 0)
-      if(tam.mode && !tam.alpha) {
-        calcModeTamGui();
-      }
-      else if(calcMode == CM_AIM || (tam.mode && tam.alpha)) {
-        calcModeAimGui();
-      }
-      else if(calcMode == CM_NORMAL || calcMode == CM_PEM || calcMode == CM_MIM || calcMode == CM_ASSIGN) {
-        calcModeNormalGui();
-      }
-    #endif // PC_BUILD && (SCREEN_800X480 == 0)
+    if(tam.mode && !tam.alpha) {
+      calcModeTamGui();
+    }
+    else if(calcMode == CM_AIM || (tam.mode && tam.alpha)) {
+      calcModeAimGui();
+    }
+    else if(calcMode == CM_NORMAL || calcMode == CM_PEM || calcMode == CM_MIM || calcMode == CM_ASSIGN) {
+      calcModeNormalGui();
+    }
   }
 
 

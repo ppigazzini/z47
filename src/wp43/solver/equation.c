@@ -188,24 +188,24 @@ void fnEqNew(uint16_t unusedButMandatoryParameter) {
 
 void fnEqEdit(uint16_t unusedButMandatoryParameter) {
   #if !defined(TESTSUITE_BUILD)
-  if(currentFormula < numberOfFormulae) {
-    const char *equationString = TO_PCMEMPTR(allFormulae[currentFormula].pointerToFormulaData);
-      if(equationString) {
-        xcopy(aimBuffer, equationString, stringByteLength(equationString) + 1);
-      }
-      else {
-        aimBuffer[0] = 0;
-      }
-    calcMode = CM_EIM;
-    alphaCase = AC_LOWER;
-    nextChar = NC_NORMAL;//JM C43
-    numLock = false;     //JM C43
-    scrLock = NC_NORMAL;
-    setSystemFlag(FLAG_ALPHA);
-    yCursor = 0;
-    xCursor = equationString ? stringGlyphLength(equationString) : 0;
-    calcModeAimGui();
-  }
+    if(currentFormula < numberOfFormulae) {
+      const char *equationString = TO_PCMEMPTR(allFormulae[currentFormula].pointerToFormulaData);
+        if(equationString) {
+          xcopy(aimBuffer, equationString, stringByteLength(equationString) + 1);
+        }
+        else {
+          aimBuffer[0] = 0;
+        }
+      calcMode = CM_EIM;
+      alphaCase = AC_LOWER;
+      nextChar = NC_NORMAL;//JM C43
+      numLock = false;     //JM C43
+      scrLock = NC_NORMAL;
+      setSystemFlag(FLAG_ALPHA);
+      yCursor = 0;
+      xCursor = equationString ? stringGlyphLength(equationString) : 0;
+      calcModeAimGui();
+    }
   #endif // !TESTSUITE_BUILD
 }
 

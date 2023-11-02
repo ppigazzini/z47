@@ -22,11 +22,10 @@
 
   #include "defines.h"
 
-  #if defined(DMCP_BUILD)
-    // Inline these empty functions for DMCP to save memory
-    static inline void calcModeNormalGui (void) {}
-    static inline void calcModeAimGui    (void) {}
-    static inline void calcModeTamGui    (void) {}
+  #if defined(DMCP_BUILD) || (SCREEN_800X480 == 1)
+    #define calcModeNormalGui()
+    #define calcModeAimGui()
+    #define calcModeTamGui()
   #else
     void calcModeNormalGui (void);
     void calcModeAimGui    (void);
