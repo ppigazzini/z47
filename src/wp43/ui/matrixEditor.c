@@ -216,7 +216,7 @@ void fnGoToColumn(uint16_t col) {
       setIRegisterAsInt(false, tmpRow);
       setJRegisterAsInt(false, col);
     }
-      calcModeNormalGui();
+    calcModeNormalGui();
   }
   else {
     displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
