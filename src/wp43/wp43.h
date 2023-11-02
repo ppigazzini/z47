@@ -231,6 +231,7 @@
   extern uint8_t                numScreensNumericFont;
   extern uint8_t                timerCraAndDeciseconds;
   extern uint8_t                programRunStop;
+  extern uint8_t                currentKeyCode;
   extern uint8_t                lastKeyCode;
   extern uint8_t                entryStatus; // 0x01 for the entry flag, backed up to 0x02 for undo
   extern uint8_t                screenUpdatingMode;
@@ -247,6 +248,7 @@
   extern int16_t                catalog;
   extern int16_t                lastCatalogPosition[NUMBER_OF_CATALOGS];
   extern int16_t                showFunctionNameItem;
+  extern char *                 showFunctionNameArg;
   extern int16_t                exponentSignLocation;
   extern int16_t                denominatorLocation;
   extern int16_t                imaginaryExponentSignLocation;
@@ -341,6 +343,7 @@
   extern uint16_t               currentFormula;
   extern uint16_t               numberOfUserMenus;
   extern uint16_t               currentUserMenu;
+  extern uint16_t               nextUserMenu;
   extern uint16_t               userKeyLabelSize;
   extern uint16_t               currentInputVariable;
   extern uint16_t               currentMvarLabel;

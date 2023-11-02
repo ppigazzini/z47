@@ -1917,13 +1917,34 @@ void moveLabels(void) {
 
 void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF, GtkWidget *lblG, GtkWidget *lblL) {
   uint8_t lbl[22];
+  int16_t keyLogicalId;
 
+  if(key->keyId < 30) {
+    keyLogicalId = key->keyId -21;
+  } else if (key->keyId < 40) {
+    keyLogicalId = key->keyId -25;
+  } else if (key->keyId < 50) {
+    keyLogicalId = key->keyId -29;
+  } else if (key->keyId < 60) {
+    keyLogicalId = key->keyId -34;
+  } else if (key->keyId < 70) {
+    keyLogicalId = key->keyId -39;
+  } else if (key->keyId < 80) {
+    keyLogicalId = key->keyId -44;
+  } else {
+    keyLogicalId = key->keyId -49;
+  }
+  
   if(key->primary == 0) {
     lbl[0] = 0;
   }
   else {
     stringToUtf8(indexOfItems[max(key->primary, -key->primary)].itemSoftmenuName, lbl);
+    if(strcmp((char *)lbl, "DYNMNU") == 0) {
+      stringToUtf8((char *)getNthString((uint8_t *)userKeyLabel, keyLogicalId*6),lbl);
+    }
   }
+
 
   bool_t SigmaPlusNRM = ((calcMode == CM_NORMAL || calcMode == CM_NIM) && key->keyId == 21 && Norm_Key_00_VAR != ITM_SIGMAPLUS);
 
@@ -1974,7 +1995,10 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
   }
 
   stringToUtf8(indexOfItems[max(key->fShifted, -key->fShifted)].itemSoftmenuName, lbl);
-
+  if(strcmp((char *)lbl, "DYNMNU") == 0) {
+    stringToUtf8((char *)getNthString((uint8_t *)userKeyLabel, keyLogicalId*6+1),lbl);
+  }
+  
   if(key->fShifted == 0) {
     lbl[0] = 0;
   }
@@ -1995,7 +2019,10 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
   strcpy(sstmp, indexOfItems[max(key->gShifted, -key->gShifted)].itemSoftmenuName);
   if((key->gShifted == ITM_op_j || key->gShifted == ITM_op_j_pol) && getSystemFlag(FLAG_CPXj)) sstmp[1]++;
   if(key->gShifted == ITM_EE_EXP_TH && getSystemFlag(FLAG_CPXj)) sstmp[3]++;
-  stringToUtf8(sstmp, lbl);
+  stringToUtf8(sstmp, lbl); 
+  if(strcmp((char *)lbl, "DYNMNU") == 0) {
+    stringToUtf8((char *)getNthString((uint8_t *)userKeyLabel, keyLogicalId*6+2),lbl);
+  }
 
   if(key->gShifted == 0) {
     lbl[0] = 0;

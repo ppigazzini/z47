@@ -81,20 +81,19 @@ TO_QSPI static const char bugScreenItemNotDetermined[] = "In function determineI
     int16_t row, menuId = softmenuStack[0].softmenuId;
     int16_t firstItem = softmenuStack[0].firstItem;
 
-
     #if defined(VERBOSEKEYS)
       printf(">>>>Z 0090 determineFunctionKeyItem       data=|%s| data[0]=%d fn=%d item=%d itemShift=%d (Global) FN_key_pressed=%d\n", data, data[0], fn, item, itemShift, FN_key_pressed);
     #endif // VERBOSEKEYS
     #if defined(PC_BUILD)
       char tmp[200];
-      sprintf(tmp,"^^^^determineFunctionKeyItem_C47(%d): itemShift=%d menuId=%d menuItem=%d", fn, itemShift, menuId, -softmenu[menuId].menuItem);
+      sprintf(tmp,"^^^^determineFunctionKeyItem_C47(%d): itemShift=%d menuId=%d menuItem=%d\n", fn, itemShift, menuId, -softmenu[menuId].menuItem);
       jm_show_comment(tmp);
     #endif // PC_BUILD
 
     if(IS_BASEBLANK_(menuId)) {
       return item;
     }
-
+    
     #pragma GCC diagnostic push
     #pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
 #if defined(VERBOSEKEYS)
@@ -104,6 +103,13 @@ printf(">>>>Z 0090a determineFunctionKeyItem       -softmenu[menuId].menuItem=%i
       case MNU_MyMenu: {
         dynamicMenuItem = firstItem + itemShift + fn;
         item = userMenuItems[dynamicMenuItem].item;
+        if (item == -MNU_DYNAMIC) {
+          for(uint32_t i = 0; i < numberOfUserMenus; ++i) {
+            if(compareString(userMenuItems[dynamicMenuItem].argumentName, userMenus[i].menuName, CMP_NAME) == 0) {
+                currentUserMenu = i;
+            }
+          }
+        }
         break;
       }
 
@@ -124,6 +130,13 @@ printf(">>>>  0093     firstItem=%d itemShift=%d fn=%d",firstItem, itemShift, fn
       case MNU_DYNAMIC: {
         dynamicMenuItem = firstItem + itemShift + fn;
         item = userMenus[currentUserMenu].menuItem[dynamicMenuItem].item;
+        if (item == -MNU_DYNAMIC) {
+          for(uint32_t i = 0; i < numberOfUserMenus; ++i) {
+            if(compareString(userMenus[currentUserMenu].menuItem[dynamicMenuItem].argumentName, userMenus[i].menuName, CMP_NAME) == 0) {
+                //currentUserMenu = i;
+            }
+          }
+        }
         break;
       }
 
@@ -243,7 +256,9 @@ printf(">>>>Z 0093c determineFunctionKeyItem  item = %i:   name:=%s\n",item, ind
               }
               else {
                 item = -MNU_DYNAMIC;
-                currentUserMenu = i;
+                if (calcMode != CM_ASSIGN) {
+                  currentUserMenu = i;
+                }
               }
             }
           }
@@ -283,7 +298,7 @@ printf(">>>>Z 0093c determineFunctionKeyItem  item = %i:   name:=%s\n",item, ind
       #endif //VERBOSEKEYS
       }
     }
-
+  
   #if defined(VERBOSEKEYS)
   printf(">>>>Z 0094B    calcMode == %u  data=|%s| data[0]=%d item=%d itemShift=%d (Global) FN_key_pressed=%d\n",calcMode, data,data[0],item,itemShift, FN_key_pressed);
   printf(">>>>  0095     dynamicMenuItem=%d\n",dynamicMenuItem);
@@ -835,6 +850,7 @@ int16_t lastItem = 0;
   #if defined(DMCP_BUILD)
     void btnFnReleased(void *data) {
   #endif // DMCP_BUILD
+   
     if(programRunStop == PGM_KEY_PRESSED_WHILE_PAUSED) {
       programRunStop = PGM_RESUMING;
       screenUpdatingMode &= ~SCRUPD_ONE_TIME_FLAGS;
@@ -896,9 +912,9 @@ int16_t lastItem = 0;
 
       btnFnReleased_StateMachine(NULL, data);            //This function does the longpress differentiation, and calls ExecuteFunctio below, via fnbtnclicked
     }
-
+ 
     fnTimerStop(TO_3S_CTFF);      //dr
-    fnTimerStop(TO_CL_LONG);      //dr
+    fnTimerStop(TO_CL_LONG);      //dr 
   }
 
 
@@ -928,8 +944,16 @@ int16_t lastItem = 0;
         #if defined(VERBOSEKEYS)
         printf(">>>> R000A >>determineFunctionKeyItem_C47 %d |%s| shiftF=%d, shiftG=%d tam.mode=%i\n",item, data, shiftF, shiftG, tam.mode);
         #endif //VERBOSEKEYS
-
+    
         item = determineFunctionKeyItem_C47((char *)data, shiftF, shiftG); }
+        
+        if ((softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_DYNAMIC) && (item == -MNU_DYNAMIC)) {
+          for(uint32_t i = 0; i < numberOfUserMenus; ++i) {
+            if(compareString(userMenus[currentUserMenu].menuItem[dynamicMenuItem].argumentName, userMenus[i].menuName, CMP_NAME) == 0) {
+                currentUserMenu = i;
+            }
+          }
+        }
 
         #if defined(VERBOSEKEYS)
         printf(">>>> R000B                                %d |%s| shiftF=%d, shiftG=%d tam.mode=%i\n",item, data, shiftF, shiftG, tam.mode);
@@ -980,6 +1004,8 @@ int16_t lastItem = 0;
           else if(item < 0) { // softmenu
             if(calcMode == CM_ASSIGN && itemToBeAssigned == 0 && softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_MENUS) {
               itemToBeAssigned = item;
+              leaveAsmMode();
+              popSoftmenu();
             }
             else {
               #if defined(VERBOSEKEYS)
@@ -1556,7 +1582,6 @@ bool_t allowShiftsToClearError = false;
       GdkEvent mouseButton;
       mouseButton.button.button = 1;
       mouseButton.type = 0;
-
       btnPressed(notUsed, &mouseButton, data);
       btnReleased(notUsed, &mouseButton, data);
   }
@@ -1593,6 +1618,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
       nimWhenButtonPressed = (calcMode == CM_NIM);                  //PHM eRPN 2021-07
 
       int keyCode = (*((char *)data) - '0')*10 + *(((char *)data) + 1) - '0';
+      currentKeyCode = keyCode;
       if(checkNumber((uint8_t)keyCode)) {
         return;
       }
@@ -1751,6 +1777,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
       nimWhenButtonPressed = (calcMode == CM_NIM);                  //PHM eRPN 2021-07
       int16_t item;
       int keyCode = (*((char *)data) - '0')*10 + *(((char *)data) + 1) - '0';
+      currentKeyCode = keyCode;
       if(checkNumber((uint8_t)keyCode)) {
         return;
       }
@@ -1876,13 +1903,25 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
         fnTimerStop(TO_3S_CTFF);      //dr
 
         hideFunctionName();
+        
+        int keyCode = (*((char *)data) - '0')*10 + *(((char *)data) + 1) - '0';
+        int keyStateCode = (getSystemFlag(FLAG_ALPHA) ? 3 : 0) + (lastshiftG ? 2 : lastshiftF ? 1 : 0);
+        char *funcParam = (char *)getNthString((uint8_t *)userKeyLabel, keyCode * 6 + keyStateCode);
+        if (showFunctionNameArg != NULL) {
+          funcParam = showFunctionNameArg;       // Needed when executing a user menu from a long pressed key
+        }
+        
         if(item < 0) {
+          if (item == -MNU_DYNAMIC) {
+            for(uint32_t i = 0; i < numberOfUserMenus; ++i) {
+              if(compareString(funcParam, userMenus[i].menuName, CMP_NAME) == 0) {
+                  currentUserMenu = i;
+              }
+            }
+          }
           showSoftmenu(item);
         }
         else {
-          int keyCode = (*((char *)data) - '0')*10 + *(((char *)data) + 1) - '0';
-          int keyStateCode = (getSystemFlag(FLAG_ALPHA) ? 3 : 0) + (shiftG ? 2 : shiftF ? 1 : 0);
-          char *funcParam = (char *)getNthString((uint8_t *)userKeyLabel, keyCode * 6 + keyStateCode);
         #if defined(PC_BUILD)
           if(item == ITM_RS || item == ITM_XEQ) {
             key[0] = 0;
