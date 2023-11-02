@@ -585,7 +585,11 @@ void addStriShoI(void) {
  * \return void
  ***********************************************/
 void addStriReal(void) {
-  real34ToDisplayString(REGISTER_REAL34_DATA(REGISTER_X), getRegisterAngularMode(REGISTER_X), tmpString, &standardFont, SCREEN_WIDTH, NUMBER_OF_DISPLAY_DIGITS, false, true);
+  if(getSystemFlag(FLAG_FRACT)) {
+    fractionToDisplayString(REGISTER_X, tmpString);
+  } else {
+    real34ToDisplayString(REGISTER_REAL34_DATA(REGISTER_X), getRegisterAngularMode(REGISTER_X), tmpString, &standardFont, SCREEN_WIDTH, NUMBER_OF_DISPLAY_DIGITS, false, true);
+  }
   _addString(tmpString);
 }
 

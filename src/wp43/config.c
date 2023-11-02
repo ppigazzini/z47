@@ -177,7 +177,8 @@ void configCommon(uint16_t idx) {
     setSystemFlag  (FLAG_SBbatV);            // Set battery voltage indicator
     fnDisplayFormatSigFig(3);                // SIG 3
     roundingMode = RM_HALF_UP;    
-    fnKeysManagement(USER_MENG);
+    fnKeysManagement(USER_MCPX);
+    setSystemFlag(FLAG_FRCSRN);              // Display 
 
     itemToBeAssigned = -MNU_EE;
     _assignItem(&userMenuItems[6]); //fF1
@@ -459,6 +460,17 @@ void fnFreeMemory(uint16_t unusedButMandatoryParameter) {
   longIntegerFree(mem);
 }
 
+
+void fnGetDmx(uint16_t unusedButMandatoryParameter) {
+  longInteger_t dmx;
+
+  liftStack();
+
+  longIntegerInit(dmx);
+  uIntToLongInteger(denMax, dmx);
+  convertLongIntegerToLongIntegerRegister(dmx, REGISTER_X);
+  longIntegerFree(dmx);
+}
 
 
 void fnGetRoundingMode(uint16_t unusedButMandatoryParameter) {

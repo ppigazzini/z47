@@ -400,6 +400,8 @@
 #define STD_SUP_pi                    "\xad\xeb" //2DEB
 #define STD_SUP_pir                   "\xad\xec" //2DEC
 
+#define STD_SUP_1_SUB_B               "\xa1\x00" //2100
+
 
 #define STD_HP_PERIOD                    "\xa0\x24"     // 2024
 #define STD_HP_0                         "\xa4\xea"     // 24ea
@@ -549,7 +551,7 @@
 #define STD_SUB_mu                    "\xa2\x98"
 #define STD_SUN                       "\xa2\x99"
 #define STD_SUB_SUN                   "\xa2\x9a"
-#define STD_DOWN_TACK                 "\xa2\xa4"
+#define STD_TRANSPOSED                "\xa2\xa4"
 #define STD_PERPENDICULAR             "\xa2\xa5"
 #define STD_XOR                       "\xa2\xbb"
 #define STD_NAND                      "\xa2\xbc"

@@ -498,7 +498,13 @@ void showHideUserMode(void) {
 
 void drawBattery(uint16_t voltage) {
   uint16_t vv = (uint16_t)(min(max(voltage - 2000,0),3100) / (float)(((float)3100 - 2000.0f)/(float)(DY_BATTERY))); //draw a battery, full at 3.1V empty at 2V
-  for(uint16_t ii = 0; ii <= min(vv,DY_BATTERY-1); ii++) {
+  for(uint16_t ii = min(vv-1,DY_BATTERY-1); ii <= DY_BATTERY-1; ii++) {
+    if(ii%2 == 0) { //draw outline
+      setBlackPixel(ii < DY_BATTERY-3 ?  X_BATTERY + 0 : X_BATTERY + 2                           ,(DY_BATTERY-1)-ii);
+      setBlackPixel(ii < DY_BATTERY-3 ?  X_BATTERY + DX_BATTERY + 0 : X_BATTERY + DX_BATTERY - 2 ,(DY_BATTERY-1)-ii);
+    }
+  }
+  for(uint16_t ii = 0; ii <= min(vv,DY_BATTERY-1); ii++) { //draw voltage
     for(uint16_t jj = 0; jj <= DX_BATTERY; jj++) {
       if(min(vv,DY_BATTERY)-ii > (voltage > 2750 ? 2 : 1) || (jj>1 && jj<DX_BATTERY-1)) {
         setBlackPixel(X_BATTERY + jj, (DY_BATTERY-1)-ii);

@@ -946,6 +946,33 @@ void fnP_Alpha(void) {
 }
 
 
+
+void fnP_Regs (uint16_t registerNo) {
+  #if !defined(TESTSUITE_BUILD)
+    if(calcMode != CM_NORMAL) {
+      #if defined(DMCP_BUILD)
+        beep(440, 50);
+        beep(4400, 50);
+        beep(440, 50);
+      #endif // DMCP_BUILD
+      return;
+    }
+
+    create_filename(".REGS.TSV");
+
+    #if(VERBOSE_LEVEL >= 1)
+      clearScreen();
+      print_linestr("Output regs to drive:", true);
+      print_linestr(filename_csv, false);
+    #endif // VERBOSE_LEVEL >= 1
+
+    stackregister_csv_out((int16_t)registerNo, (int16_t)registerNo);
+
+  #endif // !TESTSUITE_BUILD
+}
+
+
+
 void fnP_All_Regs(uint16_t option) {
   #if !defined(TESTSUITE_BUILD)
     if(calcMode != CM_NORMAL) {
@@ -966,7 +993,7 @@ void fnP_All_Regs(uint16_t option) {
     #endif // VERBOSE_LEVEL >= 1
 
     switch(option) {
-      case 0:                    //All registers
+      case 0:                    //PRN_ALLr   :   All registers
         stackregister_csv_out(REGISTER_X, REGISTER_D);
         stackregister_csv_out(REGISTER_L, REGISTER_K);
         stackregister_csv_out(0, 99);
@@ -977,8 +1004,12 @@ void fnP_All_Regs(uint16_t option) {
         //stackregister_csv_out(FIRST_LOCAL_REGISTER,FIRST_LOCAL_REGISTER+100);
         break;
 
-      case 1:                    //Stack only
-        stackregister_csv_out(REGISTER_X, REGISTER_D);
+      case 1:                    //PRN_STK   :   Stack only
+        if(getSystemFlag(FLAG_SSIZE8)) {
+          stackregister_csv_out(REGISTER_X, REGISTER_D);
+        } else {
+          stackregister_csv_out(REGISTER_X, REGISTER_T);          
+        }
         break;
 
       case 2:                    //Global Registers
@@ -992,6 +1023,12 @@ void fnP_All_Regs(uint16_t option) {
       case 4:                    //NAMED Registers
         if(numberOfNamedVariables > 0) stackregister_csv_out(FIRST_NAMED_VARIABLE, FIRST_NAMED_VARIABLE + numberOfNamedVariables - 1);
         break;
+
+      case 5:                    //PRN_X   :   X only
+        stackregister_csv_out(REGISTER_X, REGISTER_X);
+        break;
+
+
 
       default: ;
     }
@@ -1892,10 +1929,12 @@ void fnRESET_MyM(uint8_t param) {
         itemToBeAssigned = ASSIGN_CLEAR;
       }
       assignToMyMenu_(fn - 1);
-//      itemToBeAssigned = ASSIGN_CLEAR;                      //removed auto clearing of the whole MyMenu, to fit the new Ribbon model 
-//      assignToMyMenu_(6 + fn - 1);                          //removed auto clearing of the whole MyMenu, to fit the new Ribbon model 
-//      itemToBeAssigned = ASSIGN_CLEAR;                      //removed auto clearing of the whole MyMenu, to fit the new Ribbon model 
-//      assignToMyMenu_(12 + fn - 1);                         //removed auto clearing of the whole MyMenu, to fit the new Ribbon model  
+      if(param == 0) {
+        itemToBeAssigned = ASSIGN_CLEAR; 
+        assignToMyMenu_(6 + fn - 1);
+        itemToBeAssigned = ASSIGN_CLEAR;
+        assignToMyMenu_(12 + fn - 1);
+      }
     }
     BASE_MYM = true;                                           //JM Menu system default (removed from reset_jm_defaults)
     refreshScreen();

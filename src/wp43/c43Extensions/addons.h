@@ -49,6 +49,7 @@ void fnChangeBaseJM (uint16_t unusedButMandatoryParameter);
 void fnChangeBaseMNU(uint16_t unusedButMandatoryParameter);
 void fnInDefault    (uint16_t inputDefault);
 void fnP_All_Regs   (uint16_t option);
+void fnP_Regs       (uint16_t registerNo);
 void fnP_Alpha      (void);
 void fnMinute       (uint16_t unusedButMandatoryParameter);
 void fnSecond       (uint16_t unusedButMandatoryParameter);

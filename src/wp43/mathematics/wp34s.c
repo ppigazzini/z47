@@ -51,6 +51,10 @@ void WP34S_Cvt2RadSinCosTan(const real_t *an, angularMode_t angularMode, real_t 
   bool_t sinNeg = false, cosNeg = false, swap = false;
   real_t angle;
   const real_t *angle45, *angle90, *angle180;
+  angle45  = const_0;
+  angle90  = const_0;
+  angle180 = const_0;
+
 
   if(realIsNaN(an)) {
     if(sinOut != NULL) {

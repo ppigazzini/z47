@@ -629,6 +629,8 @@ TO_QSPI const function_t2 indexOfStrings2[] = {
               {STD_lambda,                    "lambda"},
               {STD_mu,                        "mu"},
               {STD_pi,                        "pi"},
+              {STD_SUB_pi,                    "pi"},
+              {STD_SUP_pi,                    "pi"},
               {STD_sigma,                     "sigma"},
               {STD_phi,                       "phi"},
               {STD_chi,                       "chi"},

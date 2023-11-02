@@ -163,7 +163,8 @@ TO_QSPI const int16_t menu_FLAGS[]       = { ITM_SF,                        ITM_
 TO_QSPI const int16_t menu_INFO[]        = { ITM_SSIZE,                     ITM_MEM,                    ITM_RMODEQ,               ITM_ISM,               ITM_WSIZEQ,                  ITM_KTYP,
                                              ITM_LocRQ,                     ITM_DSK,                    ITM_ULP,                  ITM_NEIGHB,            ITM_GETSDIGS,                ITM_BATT,
                                              ITM_WHO,                       ITM_VERS,                   ITM_M_DIMQ,               ITM_PMINFINITY,        ITM_ALPHAPOS,                ITM_ALPHALENG,
-                                             ITM_GETRANGE,                  ITM_GETHIDE,                ITM_GET_JUL_GREG,         ITM_VOLQ,              ITM_SH_ERPN,                 ITM_BESTFQ                      };    //JM INFO
+                                             ITM_GETRANGE,                  ITM_GETHIDE,                ITM_GET_JUL_GREG,         ITM_VOLQ,              ITM_SH_ERPN,                 ITM_BESTFQ,
+                                             ITM_GETDMX,                    ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL                        };
 
 
 TO_QSPI const int16_t menu_INTS[]        = { ITM_A,                         ITM_B,                      ITM_C,                    ITM_D,                 ITM_E,                       ITM_F,
@@ -1655,8 +1656,20 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
                         break;
       case ITM_SCR    :switch(*showValue) {
                           case NC_NORMAL      : *showValue = NOVAL; break;
-                          case NC_SUBSCRIPT   : stringAppend(showText + stringByteLength(showText), alphaCase == AC_LOWER ? STD_SUB_s STD_SUB_u STD_SUB_b : alphaCase == AC_UPPER ? STD_SUB_S STD_SUB_U STD_SUB_B : ""); *showValue = NOVAL; break;
-                          case NC_SUPERSCRIPT : stringAppend(showText + stringByteLength(showText), alphaCase == AC_LOWER ? STD_SUP_s STD_SUP_u STD_SUP_p : alphaCase == AC_UPPER ? STD_SUP_S STD_SUP_U STD_SUP_P : ""); *showValue = NOVAL; break;
+                          case NC_SUBSCRIPT   : stringAppend(showText + stringByteLength(showText), alphaCase == AC_LOWER ? STD_SUB_s STD_SUB_u STD_SUB_b : alphaCase == AC_UPPER ? STD_SUB_S STD_SUB_U STD_SUB_B : ""); *showValue = NOVAL; 
+                                                stringAppend(itemName,indexOfItems[itemNr%10000].itemSoftmenuName);
+                                                itemName[0]=STD_alpha[0];
+                                                itemName[1]=STD_alpha[1];
+                                                itemName[2]=0;
+                                                return;
+                                                break;
+                          case NC_SUPERSCRIPT : stringAppend(showText + stringByteLength(showText), alphaCase == AC_LOWER ? STD_SUP_s STD_SUP_u STD_SUP_p : alphaCase == AC_UPPER ? STD_SUP_S STD_SUP_U STD_SUP_P : ""); *showValue = NOVAL;
+                                                stringAppend(itemName,indexOfItems[itemNr%10000].itemSoftmenuName);
+                                                itemName[0]=STD_alpha[0];
+                                                itemName[1]=STD_alpha[1];
+                                                itemName[2]=0;
+                                                return;
+                                                break;
                           default: ;
                         }
                         break;
