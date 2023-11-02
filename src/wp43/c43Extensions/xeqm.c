@@ -206,11 +206,11 @@ typedef struct {
 TO_QSPI const function_t indexOfFunctions[] = {
   #if !defined(SAVE_SPACE_DM42_2)
     //        function              functionName
-//XEQM CODE 2023-08-17
+//XEQM CODE 2023-10-31
               {ITM_PRIME,                     "@"},
               {ITM_ENTER,                     "ENTER"},
               {ITM_XexY,                      "X<>Y"},
-              {ITM_DROP,                      "@"},
+              {ITM_DROP,                      "DROP"},
               {ITM_CLX,                       "@"},
               {ITM_FILL,                      "@"},
               {ITM_STO,                       "@"},
@@ -246,7 +246,7 @@ TO_QSPI const function_t indexOfFunctions[] = {
               {ITM_GCD,                       "@"},
               {ITM_LCM,                       "@"},
               {ITM_DEC,                       "@"},
-              {ITM_INC,                       "@"},
+              {ITM_INC,                       "INC"},
               {ITM_IP,                        "@"},
               {ITM_FP,                        "@"},
               {ITM_ADD,                       "@"},
@@ -394,12 +394,13 @@ TO_QSPI const function_t indexOfFunctions[] = {
               {ITM_M124,                      "M124"},
               {ITM_CF,                        "@"},
               {ITM_SF,                        "@"},
-              {ITM_BASE_MYM,                  "MYM"},
               {ITM_G_DOUBLETAP,               "G2TP"},
               {ITM_HOMEx3,                    "HOMEX3"},
+              {ITM_MYMx3,                     "MYMX3"},
               {ITM_SHTIM,                     "SH4S"},
               {ITM_IRFRAC,                    "@"},
-              {ITM_BASE_HOME,                 "HOME"},
+              {ITM_BASE_HOME,                 "@"},
+              {ITM_BASE_MYM,                  "MYM"},
               {ITM_LARGELI,                   "LARGELI"},
               {ITM_CPXRES1,                   "@"},
               {ITM_SPCRES1,                   "@"},

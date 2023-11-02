@@ -3534,6 +3534,10 @@ TO_QSPI const font_t standardFont = {
     {.charCode=0xa434, .colsBeforeGlyph= 0, .colsGlyph=11, .colsAfterGlyph= 0, .rowsAboveGlyph= 1, .rowsGlyph=19, .rowsBelowGlyph= 0, .rank1=582, .rank2=589,
      .data="\x0c\x00\x0c\x00\x0c\x00\x0c\xc0\x0d\xe0\x0d\xe0\xcc\xc0\xec\xc0\xed\xc0\xcf\x80\xcf\x00\xee\x00\x7c\x00\x3c\x00\x1c\x00\x0c\x00\x1e\x00\x1e\x00\x0c\x00"},
 
+    // uni2435
+    {.charCode=0xa435, .colsBeforeGlyph= 0, .colsGlyph=10, .colsAfterGlyph= 1, .rowsAboveGlyph= 1, .rowsGlyph=19, .rowsBelowGlyph= 0, .rank1=591, .rank2=593,
+     .data="\x12\x00\x00\x00\x52\x80\x80\x40\x00\x00\x80\x40\x00\x00\x80\x40\x00\x00\x80\x40\x00\x00\x80\x40\x00\x00\xff\xc0\xff\xc0\xff\xc0\xff\xc0\xff\xc0\xff\xc0"},
+
     // uni2460
     {.charCode=0xa460, .colsBeforeGlyph= 1, .colsGlyph= 4, .colsAfterGlyph= 3, .rowsAboveGlyph=11, .rowsGlyph= 9, .rowsBelowGlyph= 0, .rank1= 15, .rank2= 21,
      .data="\x30\x70\xf0\x30\x30\x30\x30\x30\x30"},

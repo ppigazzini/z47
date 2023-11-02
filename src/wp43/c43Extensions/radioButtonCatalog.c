@@ -316,16 +316,16 @@ int8_t fnCbIsSet(int16_t item) {
 
         case CB_JC:  is_cb = true;
           switch(indexOfRadioCbEepromItems[i].param) {
-            case JC_LINEAR_FITTING:      cb_param = (lrSelection & CF_LINEAR_FITTING)      == CF_LINEAR_FITTING;      break;
-            case JC_EXPONENTIAL_FITTING: cb_param = (lrSelection & CF_EXPONENTIAL_FITTING) == CF_EXPONENTIAL_FITTING; break;
-            case JC_LOGARITHMIC_FITTING: cb_param = (lrSelection & CF_LOGARITHMIC_FITTING) == CF_LOGARITHMIC_FITTING; break;
-            case JC_POWER_FITTING:       cb_param = (lrSelection & CF_POWER_FITTING)       == CF_POWER_FITTING;       break;
-            case JC_ROOT_FITTING:        cb_param = (lrSelection & CF_ROOT_FITTING)        == CF_ROOT_FITTING;        break;
-            case JC_HYPERBOLIC_FITTING:  cb_param = (lrSelection & CF_HYPERBOLIC_FITTING)  == CF_HYPERBOLIC_FITTING;  break;
-            case JC_PARABOLIC_FITTING:   cb_param = (lrSelection & CF_PARABOLIC_FITTING)   == CF_PARABOLIC_FITTING;   break;
-            case JC_CAUCHY_FITTING:      cb_param = (lrSelection & CF_CAUCHY_FITTING)      == CF_CAUCHY_FITTING;      break;
-            case JC_GAUSS_FITTING:       cb_param = (lrSelection & CF_GAUSS_FITTING)       == CF_GAUSS_FITTING;       break;
-            case JC_ORTHOGONAL_FITTING:  cb_param = (lrSelection & CF_ORTHOGONAL_FITTING)  == CF_ORTHOGONAL_FITTING;  break;
+            case JC_LINEAR_FITTING:      cb_param = ((lrSelection & CF_LINEAR_FITTING)      == CF_LINEAR_FITTING     ); break;
+            case JC_EXPONENTIAL_FITTING: cb_param = ((lrSelection & CF_EXPONENTIAL_FITTING) == CF_EXPONENTIAL_FITTING); break;
+            case JC_LOGARITHMIC_FITTING: cb_param = ((lrSelection & CF_LOGARITHMIC_FITTING) == CF_LOGARITHMIC_FITTING); break;
+            case JC_POWER_FITTING:       cb_param = ((lrSelection & CF_POWER_FITTING)       == CF_POWER_FITTING      ); break;
+            case JC_ROOT_FITTING:        cb_param = ((lrSelection & CF_ROOT_FITTING)        == CF_ROOT_FITTING       ); break;
+            case JC_HYPERBOLIC_FITTING:  cb_param = ((lrSelection & CF_HYPERBOLIC_FITTING)  == CF_HYPERBOLIC_FITTING ); break;
+            case JC_PARABOLIC_FITTING:   cb_param = ((lrSelection & CF_PARABOLIC_FITTING)   == CF_PARABOLIC_FITTING  ); break;
+            case JC_CAUCHY_FITTING:      cb_param = ((lrSelection & CF_CAUCHY_FITTING)      == CF_CAUCHY_FITTING     ); break;
+            case JC_GAUSS_FITTING:       cb_param = ((lrSelection & CF_GAUSS_FITTING)       == CF_GAUSS_FITTING      ); break;
+            case JC_ORTHOGONAL_FITTING:  cb_param = (orOrtho(lrSelection)                   == CF_ORTHOGONAL_FITTING ); break;
             case JC_BCR:                 cb_param = getSystemFlag(FLAG_CPXRES);                                       break;
             case JC_FRC:                 cb_param = getSystemFlag(FLAG_FRCSRN);                                       break;
             case JC_BSR:                 cb_param = getSystemFlag(FLAG_SPCRES);                                       break;
@@ -408,7 +408,6 @@ void fnRefreshState(void) {
 int16_t fnItemShowValue(int16_t item) {
   int16_t result = NOVAL;
   uint16_t itemNr = max(item, -item);
-
   switch(itemNr) {
     case ITM_DSTACK:    result = displayStack;                                      break; //  132
     case ITM_TDISP:     result = timeDisplayFormatDigits;                           break;
@@ -429,7 +428,7 @@ int16_t fnItemShowValue(int16_t item) {
     case ITM_SCR:       result = (scrLock & 0x03) | (nextChar & 0x03);              break;
     case ITM_DSP:       result = displayFormatDigits;                               break;
     case ITM_HIDE:      result = exponentHideLimit;                                 break;
-    //case ITM_BESTF:     result = (~lrSelection) & 0x1FF;                            break;
+    case ITM_BESTF:     result = (lrSelection) & 0x1FF;                             break;
     case ITM_RMODE:     result = roundingMode;                                      break;
     case ITM_HASH_JM:   if(lastIntegerBase != 0) result = (int16_t)lastIntegerBase; break;
     case ITM_VOL:
