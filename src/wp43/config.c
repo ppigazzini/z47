@@ -23,6 +23,7 @@
 #include "items.h"
 #include "c43Extensions/jm.h"
 #include "c43Extensions/addons.h"
+#include "c43Extensions/graphText.h"
 #include "c43Extensions/keyboardTweak.h"
 #include "keyboard.h"
 #include "mathematics/matrix.h"
@@ -1045,6 +1046,7 @@ void defaultStatusBar(void) {
 }
 
 void resetOtherConfigurationStuff(void) {
+  cancelFilename = true;
 
   firstGregorianDay = 2361222 /* 14 Sept 1752 */;
   denMax = 64;                                               //JM changed default from MAX_DENMAX default
@@ -1581,11 +1583,12 @@ void backToSystem(uint16_t confirmation) {
     setConfirmationMode(backToSystem);
   }
   else {
+    cancelFilename = true;
     #if defined(PC_BUILD)
       fnOff(NOPARAM);
     #endif // PC_BUILD
 
-  #if defined(DMCP_BUILD)
+    #if defined(DMCP_BUILD)
       backToDMCP = true;
     #endif // DMCP_BUILD
   }
@@ -1596,6 +1599,7 @@ void runDMCPmenu(uint16_t confirmation) {
     setConfirmationMode(runDMCPmenu);
   }
   else {
+    cancelFilename = true;
     #if defined(PC_BUILD)  //for consistency with backToSystem
       fnOff(NOPARAM);
     #endif // PC_BUILD
@@ -1611,6 +1615,7 @@ void activateUSBdisk(uint16_t confirmation) {
     setConfirmationMode(activateUSBdisk);
   }
   else {
+    cancelFilename = true;
     #if defined(DMCP_BUILD)
       run_menu_item_sys(MI_MSC);
     #endif // DMCP_BUILD

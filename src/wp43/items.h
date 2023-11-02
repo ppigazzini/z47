@@ -1183,7 +1183,7 @@
 #define ITM_DOWN_DARROW             1147
 #define ITM_ALTERN_CURRENT          1148
 #define ITM_ANGLE                   1149
-#define ITM_SUP_1_SUB_B             1150
+#define ITM_BATTERYHALF             1150
 #define ITM_BST_char                1151
 #define ITM_CYCLIC                  1152
 #define ITM_DIRECT_CURRENT          1153

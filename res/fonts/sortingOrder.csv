@@ -359,7 +359,6 @@
 `U+209e`,561,562,`not defined by unicode`,`Superscript infinity`,`₞`,`∞`,`U+221e`
 `U+209f`,561,563,`not defined by unicode`,`Subscript infinity`,`₟`,`∞`,`U+221e`
 `U+20ac`,552,554,`EURO SIGN`,`Euro`,`€`,`%`,`U+0025`
-`U+2100`,591,593,`ACCOUNT OF`,`1 on B`,`℀`,`1`,`U+2100`
 `U+2102`,95,107,`DOUBLE-STRUCK CAPITAL C`,`Complex C`,`ℂ`,`C`,`U+0043`
 `U+210e`,160,162,`PLANCK CONSTANT`,`Planck`,`ℎ`,`H`,`U+0048`
 `U+210f`,160,168,`PLANCK CONSTANT OVER TWO PI`,`Planck / 2pi`,`ℏ`,`H`,`U+0048`
@@ -644,6 +643,7 @@
 `U+1E9D`,146,146,`longshighstroke`,`long f`,`ẝ`,`f`,`U+0046`
 `U+1E9F`,152,152,`delta`,`long g`,`ẟ`,`g`,`U+0047`
 `U+2024`,485,485,`Double Circled Digit 1`,`Full HP stop`,`․`,`.`,`U+002e`
+`U+2435`,591,593,`BATTERYHALF`,`BATTHALF`,`␵`,` `,`U+2435`
 `U+24EA`,10,10,`Circled Digit ZERO`,`Digit HP 0`,`⓪`,`0`,`U+0030`
 `U+24F5`,15,15,`Double Circled Digit ONE`,`Digit HP 1`,`⓵`,`1`,`U+0031`
 `U+24F6`,22,22,`Double Circled Digit TWO`,`Digit HP 2`,`⓶`,`2`,`U+0032`

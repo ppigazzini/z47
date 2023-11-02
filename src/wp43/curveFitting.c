@@ -59,13 +59,43 @@ realContext_t *realContextForecast;
  * \The internal representation reverses the logic, i.e. ones represent allowed methods
  ***********************************************/
 
+
 void fnCurveFitting(uint16_t curveFitting) {
-  lrSelection = 0;
-  fnCurveFitting_T(curveFitting);
+  curveFitting = curveFitting & 0x01FF;
+  temporaryInformation = TI_STATISTIC_LR;
+
+  if(curveFitting == 0) {
+    curveFitting = 0x0200;                    // see above
+  }
+
+  lrSelection = curveFitting;                 // lrSelection is used to store the BestF method, in inverse, i.e. 1 indicating allowed method
+  lrChosen = 0;                               // lrChosen    is used to indicate if there was a L.R. selection. Can be only one bit.
+
+  #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    uint16_t numberOfOnes;
+    numberOfOnes = lrCountOnes(curveFitting);
+
+    if(numberOfOnes == 1) {
+      printf("Use the ");
+    }
+    else {
+      printf("Use the best fitting model out of\n");
+    }
+
+    printf("%s",getCurveFitModeNames(curveFitting));
+    if(numberOfOnes == 1) {
+      printf(" fitting model.\n");
+    }
+    else {
+      printf("\nfitting models.\n");
+    }
+  #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
 }
 
 
+
 void fnCurveFittingReset(uint16_t control) {     // JM vv
+  temporaryInformation = TI_STATISTIC_LR;
   if(control == 0) {
     lrSelection = CF_LINEAR_FITTING;
     lrChosen = 0;                               // lrChosen    is used to indicate if there was a L.R. selection. Can be only one bit.

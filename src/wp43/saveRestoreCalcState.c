@@ -1729,6 +1729,7 @@ int32_t stringToInt32(const char *str) {
       char line[100];
     #endif //LOADDEBUG
 
+    cancelFilename = true;
     hourGlassIconEnabled = true;
     showHideHourGlass();
     readLine(tmpString);

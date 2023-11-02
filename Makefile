@@ -98,6 +98,8 @@ dist_dm42: dmcp testPgms build.rel/wiki
 	mv build.dmcp/src/wp43-dmcp/WP43_qspi.bin build.dmcp/src/wp43-dmcp/C47_qspi.bin
 	cp build.dmcp/src/wp43-dmcp/C47.pgm build.dmcp/src/wp43-dmcp/C47_qspi.bin $(DM_DIST_DIR2)
 	cp -r res/offimg/Egypt/ $(DM_DIST_DIR2)/offimg
+	cp -r res/offimg/Norway/ $(DM_DIST_DIR2)/offimg
+	cp -r res/offimg/Netherlands/ $(DM_DIST_DIR2)/offimg
 	cp -r res/offimg/From\ WP43/ $(DM_DIST_DIR2)/offimg
 	cp -r res/offimg/General/ $(DM_DIST_DIR2)/offimg
 	cp -r res/offimg/HP\ related/ $(DM_DIST_DIR2)/offimg
