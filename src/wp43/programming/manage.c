@@ -650,136 +650,136 @@ static void _closeAlphaMenus(void) {
 
 void pemAlpha(int16_t item) {
   #if !defined(TESTSUITE_BUILD)
-  if(!getSystemFlag(FLAG_ALPHA)) {
-    resetShiftState();  //JM
-    displayAIMbufferoffset = 0;
-    T_cursorPos = 0;
-    aimBuffer[0] = 0;
+    if(!getSystemFlag(FLAG_ALPHA)) {
+      resetShiftState();  //JM
+      displayAIMbufferoffset = 0;
+      T_cursorPos = 0;
+      aimBuffer[0] = 0;
 
-    //if(softmenuStack[0].softmenuId == 0) { // MyMenu
-    //  softmenuStack[0].softmenuId = 1; // MyAlpha
-    //}
-    showSoftmenu(-MNU_ALPHA); // JM addon
+      //if(softmenuStack[0].softmenuId == 0) { // MyMenu
+      //  softmenuStack[0].softmenuId = 1; // MyAlpha
+      //}
+      showSoftmenu(-MNU_ALPHA); // JM addon
 
-    setSystemFlag(FLAG_ALPHA);
+      setSystemFlag(FLAG_ALPHA);
 
       calcModeAimGui();
 
-    tmpString[0] = ITM_LITERAL;
-    tmpString[1] = (char)STRING_LABEL_VARIABLE;
-    tmpString[2] = 0;
-    _insertInProgram((uint8_t *)tmpString, 3);
-    --currentLocalStepNumber;
-    currentStep = findPreviousStep(currentStep);
-  }
-  if(indexOfItems[item].func == addItemToBuffer) {
-    int32_t len = stringByteLength(aimBuffer);
-    item = numlockReplacements(0, item, numLock, shiftF, shiftG);
-    if(alphaCase == AC_LOWER) {
-        if(ITM_A <= item && item <= ITM_Z) {
-          item += 26;
-        }
-        else if((ITM_ALPHA <= item && item <= ITM_OMEGA) || (ITM_QOPPA <= item && item <= ITM_SAMPI) ) {
-          item +=  (ITM_ALPHA <= item && item <= ITM_OMEGA) ? (ITM_alpha - ITM_ALPHA) : (ITM_qoppa - ITM_QOPPA);
-        }
+      tmpString[0] = ITM_LITERAL;
+      tmpString[1] = (char)STRING_LABEL_VARIABLE;
+      tmpString[2] = 0;
+      _insertInProgram((uint8_t *)tmpString, 3);
+      --currentLocalStepNumber;
+      currentStep = findPreviousStep(currentStep);
     }
-    if((nextChar == NC_NORMAL) || ((item != ITM_DOWN_ARROW) && (item != ITM_UP_ARROW))) {
-      item = convertItemToSubOrSup(item, nextChar);
-      int32_t inputCharLength = stringByteLength(indexOfItems[item].itemSoftmenuName);
-      if(len < (256 - inputCharLength) && stringGlyphLength(aimBuffer) < 196) {
-        xcopy(aimBuffer + T_cursorPos + inputCharLength, aimBuffer + T_cursorPos, stringByteLength(aimBuffer + T_cursorPos) + 1);
-        xcopy(aimBuffer + T_cursorPos, indexOfItems[item].itemSoftmenuName, inputCharLength);
-        T_cursorPos += inputCharLength;
+    if(indexOfItems[item].func == addItemToBuffer) {
+      int32_t len = stringByteLength(aimBuffer);
+      item = numlockReplacements(0, item, numLock, shiftF, shiftG);
+      if(alphaCase == AC_LOWER) {
+          if(ITM_A <= item && item <= ITM_Z) {
+            item += 26;
+          }
+          else if((ITM_ALPHA <= item && item <= ITM_OMEGA) || (ITM_QOPPA <= item && item <= ITM_SAMPI) ) {
+            item +=  (ITM_ALPHA <= item && item <= ITM_OMEGA) ? (ITM_alpha - ITM_ALPHA) : (ITM_qoppa - ITM_QOPPA);
+          }
+      }
+      if((nextChar == NC_NORMAL) || ((item != ITM_DOWN_ARROW) && (item != ITM_UP_ARROW))) {
+        item = convertItemToSubOrSup(item, nextChar);
+        int32_t inputCharLength = stringByteLength(indexOfItems[item].itemSoftmenuName);
+        if(len < (256 - inputCharLength) && stringGlyphLength(aimBuffer) < 196) {
+          xcopy(aimBuffer + T_cursorPos + inputCharLength, aimBuffer + T_cursorPos, stringByteLength(aimBuffer + T_cursorPos) + 1);
+          xcopy(aimBuffer + T_cursorPos, indexOfItems[item].itemSoftmenuName, inputCharLength);
+          T_cursorPos += inputCharLength;
+        }
       }
     }
-  }
-  else if(item == ITM_BACKSPACE) {
-    if(aimBuffer[0] == 0) {
-        deleteStepsFromTo(currentStep, findNextStep(currentStep));
-      clearSystemFlag(FLAG_ALPHA);
+    else if(item == ITM_BACKSPACE) {
+      if(aimBuffer[0] == 0) {
+          deleteStepsFromTo(currentStep, findNextStep(currentStep));
+        clearSystemFlag(FLAG_ALPHA);
         calcModeNormalGui();
-      _closeAlphaMenus();
+        _closeAlphaMenus();
+        return;
+      }
+      else if(T_cursorPos == 0) {
+        return;
+      }
+      else {
+        char cursorByte = aimBuffer[T_cursorPos];
+        int16_t lastGlyphPos;
+        aimBuffer[T_cursorPos] = 0;
+        lastGlyphPos = stringLastGlyph(aimBuffer);
+        aimBuffer[T_cursorPos] = cursorByte;
+        xcopy(aimBuffer + lastGlyphPos, aimBuffer + T_cursorPos, stringByteLength(aimBuffer + T_cursorPos) + 1);
+        T_cursorPos = lastGlyphPos;
+      }
+    }
+    else if(item == ITM_ENTER) {
+      pemCloseAlphaInput();
+      --firstDisplayedLocalStepNumber;
+      defineFirstDisplayedStep();
+        _closeAlphaMenus();
       return;
     }
-    else if(T_cursorPos == 0) {
+    else if(item == ITM_USERMODE) {
+      fnFlipFlag(FLAG_USER);
       return;
     }
-    else {
-      char cursorByte = aimBuffer[T_cursorPos];
-      int16_t lastGlyphPos;
-      aimBuffer[T_cursorPos] = 0;
-      lastGlyphPos = stringLastGlyph(aimBuffer);
-      aimBuffer[T_cursorPos] = cursorByte;
-      xcopy(aimBuffer + lastGlyphPos, aimBuffer + T_cursorPos, stringByteLength(aimBuffer + T_cursorPos) + 1);
-      T_cursorPos = lastGlyphPos;
+    else if(item == ITM_CLA) { // JM addon
+      aimBuffer[0] = 0;
+      T_cursorPos = 0;
+      nextChar = NC_NORMAL;
     }
-  }
-  else if(item == ITM_ENTER) {
-    pemCloseAlphaInput();
-    --firstDisplayedLocalStepNumber;
-    defineFirstDisplayedStep();
-      _closeAlphaMenus();
-    return;
-  }
-  else if(item == ITM_USERMODE) {
-    fnFlipFlag(FLAG_USER);
-    return;
-  }
-  else if(item == ITM_CLA) { // JM addon
-    aimBuffer[0] = 0;
-    T_cursorPos = 0;
-    nextChar = NC_NORMAL;
-  }
 
-  else if(item == CHR_numL && !numLock) { // JM addon
-    alphaCase = AC_UPPER;
-    SetSetting(indexOfItems[CHR_num].param);
-    return;
-  }
-  else if(item == CHR_numU && numLock) { // JM addon
-    alphaCase = AC_UPPER;
-    SetSetting(indexOfItems[CHR_num].param);
-    return;
-  }
-  else if(item == CHR_caseUP && alphaCase != AC_UPPER) { // JM addon
-    nextChar = NC_NORMAL;
-    SetSetting(indexOfItems[CHR_case].param);
-    return;
-  }
-  else if(item == CHR_caseDN && alphaCase != AC_LOWER) { // JM addon
-    nextChar = NC_NORMAL;
-    SetSetting(indexOfItems[CHR_case].param);
-    return;
-  }
-  else if(item == CHR_num) { // JM addon
-    alphaCase = AC_UPPER;
-    SetSetting(indexOfItems[item].param);
-    return;
-  }
-  else if(item == CHR_case) { // JM addon
-    nextChar = NC_NORMAL;
-    numLock = false;
-    SetSetting(indexOfItems[item].param);
-    return;
-  }
-  else if(item == ITM_SCR) { // JM addon
-    SetSetting(indexOfItems[item].param);
-    return;
-  }
+    else if(item == CHR_numL && !numLock) { // JM addon
+      alphaCase = AC_UPPER;
+      SetSetting(indexOfItems[CHR_num].param);
+      return;
+    }
+    else if(item == CHR_numU && numLock) { // JM addon
+      alphaCase = AC_UPPER;
+      SetSetting(indexOfItems[CHR_num].param);
+      return;
+    }
+    else if(item == CHR_caseUP && alphaCase != AC_UPPER) { // JM addon
+      nextChar = NC_NORMAL;
+      SetSetting(indexOfItems[CHR_case].param);
+      return;
+    }
+    else if(item == CHR_caseDN && alphaCase != AC_LOWER) { // JM addon
+      nextChar = NC_NORMAL;
+      SetSetting(indexOfItems[CHR_case].param);
+      return;
+    }
+    else if(item == CHR_num) { // JM addon
+      alphaCase = AC_UPPER;
+      SetSetting(indexOfItems[item].param);
+      return;
+    }
+    else if(item == CHR_case) { // JM addon
+      nextChar = NC_NORMAL;
+      numLock = false;
+      SetSetting(indexOfItems[item].param);
+      return;
+    }
+    else if(item == ITM_SCR) { // JM addon
+      SetSetting(indexOfItems[item].param);
+      return;
+    }
 
-  else if(indexOfItems[item].func == fnT_ARROW) { // JM addon
-    fnT_ARROW(indexOfItems[item].param);
-    return;
-  }
+    else if(indexOfItems[item].func == fnT_ARROW) { // JM addon
+      fnT_ARROW(indexOfItems[item].param);
+      return;
+    }
 
-  deleteStepsFromTo(currentStep, findNextStep(currentStep));
-  tmpString[0] = ITM_LITERAL;
-  tmpString[1] = (char)STRING_LABEL_VARIABLE;
-  tmpString[2] = stringByteLength(aimBuffer);
-  xcopy(tmpString + 3, aimBuffer, stringByteLength(aimBuffer));
-  _insertInProgram((uint8_t *)tmpString, stringByteLength(aimBuffer) + 3);
-  --currentLocalStepNumber;
-  currentStep = findPreviousStep(currentStep);
+    deleteStepsFromTo(currentStep, findNextStep(currentStep));
+    tmpString[0] = ITM_LITERAL;
+    tmpString[1] = (char)STRING_LABEL_VARIABLE;
+    tmpString[2] = stringByteLength(aimBuffer);
+    xcopy(tmpString + 3, aimBuffer, stringByteLength(aimBuffer));
+    _insertInProgram((uint8_t *)tmpString, stringByteLength(aimBuffer) + 3);
+    --currentLocalStepNumber;
+    currentStep = findPreviousStep(currentStep);
     if(!programListEnd) {
       scrollPemBackwards();
     }

@@ -111,14 +111,14 @@
     cairo_surface_t *imageSurface;
 
     imageSurface = cairo_image_surface_create_for_data((unsigned char *)screenData, CAIRO_FORMAT_RGB24, SCREEN_WIDTH, SCREEN_HEIGHT, screenStride * 4);
-    #if defined(RASPBERRY) && (SCREEN_800X480 == 1)
+    #if (SCREEN_800X480 == 1)
       cairo_scale(cr, 2.0, 2.0);
-    #endif // defined(RASPBERRY) && (SCREEN_800X480 == 1)
+    #endif // SCREEN_800X480 == 1
     cairo_set_source_surface(cr, imageSurface, 0, 0);
     cairo_surface_mark_dirty(imageSurface);
-    #if defined(RASPBERRY) && (SCREEN_800X480 == 1)
+    #if (SCREEN_800X480 == 1)
       cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);
-    #endif // defined(RASPBERRY) && (SCREEN_800X480 == 1)
+    #endif // SCREEN_800X480 == 1
     cairo_paint(cr);
     cairo_surface_destroy(imageSurface);
 
@@ -3539,7 +3539,7 @@ void execTimerApp(uint16_t timerType) {
           if(temporaryInformation == TI_COPY_FROM_SHOW && regist == REGISTER_X) {
             _fnShowRecallTI(prefix, &prefixWidth);
           }
-          
+
           else if(temporaryInformation == TI_VIEW && origRegist == REGISTER_T) {
             viewRegName(prefix, &prefixWidth);
           }
@@ -3655,7 +3655,7 @@ void execTimerApp(uint16_t timerType) {
              sprintf(prefix,"Ovrfl>%ubits:",shortIntegerWordSize);
              prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
              if(prefixWidth + stringWidth(tmpString, fontForShortInteger, true, true) + 1 > SCREEN_WIDTH) {
-               sprintf(prefix,"OF");              
+               sprintf(prefix,"OF");
                prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
              }
           }
@@ -3693,7 +3693,7 @@ void execTimerApp(uint16_t timerType) {
                 showString(tmpString, fontForShortInteger, SCREEN_WIDTH - stringWidth(tmpString, fontForShortInteger, false, true), Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(REGISTER_Y - REGISTER_X) + (fontForShortInteger == &standardFont ? 6 : 0), vmNormal, false, true);
                 copySourceRegisterToDestRegister(TEMP_REGISTER_1,REGISTER_Y);
               }
-              if(displayStack == 1 || displayStack == 2){ //handle reg pos Z 
+              if(displayStack == 1 || displayStack == 2){ //handle reg pos Z
                 copySourceRegisterToDestRegister(REGISTER_Z, TEMP_REGISTER_1);
                 copySourceRegisterToDestRegister(REGISTER_X, REGISTER_Z);
                 if(displayStack == 2) {

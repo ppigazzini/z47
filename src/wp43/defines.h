@@ -49,7 +49,7 @@
   #undef SAVE_SPACE_DM42_21
 
 
-#if defined(DMCP_BUILD) || (SCREEN_800X480 == 1)
+#if defined(DMCP_BUILD)
 
   #define TWO_FILE_PGM                 //JM Normally NOT have TWO_FILE. TWO_FILE means that QSPI is used.
 
@@ -81,7 +81,7 @@
   //  #define SAVE_SPACE_DM42_15       //           without all distributions, i.e. binomial, cauchy, chi
   //  #define SAVE_SPACE_DM42_16       //           without Norml
   #endif // TWO_FILE_PGM
-#endif // DMCP_BUILD || SCREEN_800X480 == 1
+#endif // DMCP_BUILD
 
 
 
@@ -252,13 +252,13 @@
 #define DECNUMDIGITS                    75 // Default number of digits used in the decNumber library
 
 #define SCREEN_800X480                   1 // Set to 0 if you want a keyboard in addition to the screen on Raspberry pi
-  #if !defined(RASPBERRY)
+#if !defined(RASPBERRY)
   #undef SCREEN_800X480
   #define SCREEN_800x480 0
-  #endif // !RASPBERRY
+#endif // !RASPBERRY
 
 
-  #if defined(LINUX)
+#if defined(LINUX)
   #define _XOPEN_SOURCE                700 // see: https://stackoverflow.com/questions/5378778/what-does-d-xopen-source-do-mean
 #endif // LINUX
 
@@ -267,23 +267,23 @@
 #if(DEBUG_STAT == 0)
   #undef STATDEBUG
   #undef STATDEBUG_VERBOSE
-  #endif // DEBUG_STAT == 0
+#endif // DEBUG_STAT == 0
 #if(DEBUG_STAT == 1)
   #define STATDEBUG
   #undef STATDEBUG_VERBOSE
-  #endif // DEBUG_STAT == 1
+#endif // DEBUG_STAT == 1
 #if(DEBUG_STAT == 2)
   #define STATDEBUG
   #define STATDEBUG_VERBOSE
-  #endif // DEBUG_STAT == 2
+#endif // DEBUG_STAT == 2
 
 
-  #if defined(PC_BUILD)
-    #define DEBUGUNDO
-    #undef DEBUGUNDO
-  #else // !PC_BUILD
-    #undef DEBUGUNDO
-  #endif // PC_BUILD
+#if defined(PC_BUILD)
+  #define DEBUGUNDO
+  #undef DEBUGUNDO
+#else // !PC_BUILD
+  #undef DEBUGUNDO
+#endif // PC_BUILD
 
 
 #define REAL34_WIDTH_TEST 0 // For debugging real34 ALL 0 formating. Use UP/DOWN to shrink or enlarge the available space. The Z register holds the available width.
@@ -744,8 +744,8 @@ typedef enum {
 
 
 
-  #if defined(PC_BUILD)
-    #if defined(LINUX)
+#if defined(PC_BUILD)
+  #if defined(LINUX)
     #define LINEBREAK                           "\n"
   #elif defined(WIN32)
     #define LINEBREAK                         "\n\r"
@@ -754,9 +754,9 @@ typedef enum {
   #else // Unsupported OS
     #error Only Linux, MacOS, and Windows MINGW64 are supported for now
   #endif // OS
-#else // PC_BUILD
+#else // !PC_BUILD
   #define LINEBREAK                           "\n\r"                       //JM
-#endif // !PC_BUILD
+#endif // PC_BUILD
 
 #define NUMBER_OF_DISPLAY_DIGITS                  16
 #define NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS     10
@@ -813,8 +813,8 @@ typedef enum {
 #define PLOT_START                                 4
 #define PLOT_NOTHING                               5
 #define PLOT_GRAPH                                 6
-  #define H_PLOT                                     7
-  #define H_NORM                                     8
+#define H_PLOT                                     7
+#define H_NORM                                     8
 
 // Rounding mode 3 bits
 #define RM_HALF_EVEN                               0
@@ -1022,10 +1022,10 @@ typedef enum {
 #define CMP_EXTENSIVE                              2
 #define CMP_NAME                                   3
 
-  // Indirect parameter mode
-  #define INDPM_PARAM                                0
-  #define INDPM_REGISTER                             1
-  #define INDPM_FLAG                                 2
+// Indirect parameter mode
+#define INDPM_PARAM                                0
+#define INDPM_REGISTER                             1
+#define INDPM_FLAG                                 2
 
 // Combination / permutation
 #define CP_PERMUTATION                             0
@@ -1134,11 +1134,11 @@ typedef enum {
 #define MAX_DENMAX                              9999 // Biggest denominator in fraction display mode
 
 #if defined(DMCP_BUILD)
-#define SCREEN_REFRESH_PERIOD                    160 // 500 // in milliseconds //JM timeout for lcd refresh in ms 125
-#define FAST_SCREEN_REFRESH_PERIOD               100 // in milliseconds
+  #define SCREEN_REFRESH_PERIOD                  160 // 500 // in milliseconds //JM timeout for lcd refresh in ms 125
+  #define FAST_SCREEN_REFRESH_PERIOD             100 // in milliseconds
 #else // !DMCP_BUILD
-#define SCREEN_REFRESH_PERIOD                    100 // 500 // in milliseconds //JM timeout for lcd refresh in ms 100
-#define FAST_SCREEN_REFRESH_PERIOD               100 // in milliseconds
+  #define SCREEN_REFRESH_PERIOD                  100 // 500 // in milliseconds //JM timeout for lcd refresh in ms 100
+  #define FAST_SCREEN_REFRESH_PERIOD             100 // in milliseconds
 #endif // DMCP_BUILD
 #define KEY_AUTOREPEAT_FIRST_PERIOD              400 // in milliseconds
 #define KEY_AUTOREPEAT_PERIOD                    200 // in milliseconds
@@ -1265,7 +1265,7 @@ typedef enum {
 
 #define TIMER_APP_STOPPED                          0xFFFFFFFFu
 
-  #if !defined(DMCP_BUILD)
+#if !defined(DMCP_BUILD)
   #define LCD_SET_VALUE                            0 // Black pixel
   #define LCD_EMPTY_VALUE                        255 // White (or empty) pixel
   #define TO_QSPI
@@ -1288,9 +1288,9 @@ typedef enum {
 //******************************
 #if(EXTRA_INFO_ON_CALC_ERROR == 0) || defined(TESTSUITE_BUILD) || defined(DMCP_BUILD)
   #define EXTRA_INFO_MESSAGE(function, msg)
-  #else // EXTRA_INFO_ON_CALC_ERROR != 0 && !TESTSUITE_BUILD && !DMCP_BUILD
+#else // EXTRA_INFO_ON_CALC_ERROR != 0 && !TESTSUITE_BUILD && !DMCP_BUILD
   #define EXTRA_INFO_MESSAGE(function, msg)  {sprintf(errorMessage, msg); moreInfoOnError("In function ", function, errorMessage, NULL);}
-  #endif // EXTRA_INFO_ON_CALC_ERROR == 0 || TESTSUITE_BUILD || DMCP_BUILD
+#endif // EXTRA_INFO_ON_CALC_ERROR == 0 || TESTSUITE_BUILD || DMCP_BUILD
 
 #define isSystemFlagWriteProtected(sf)       ((sf & 0x4000) != 0)
 #define getSystemFlag(sf)                    ((systemFlags &   ((uint64_t)1 << (sf & 0x3fff))) != 0)
@@ -1299,15 +1299,15 @@ typedef enum {
 #define flipSystemFlag(sf)                   { systemFlags ^=  ((uint64_t)1 << (sf & 0x3fff)); systemFlagAction(sf, 2); }
 #define shortIntegerIsZero(op)               (((*(uint64_t *)(op)) == 0) || (shortIntegerMode == SIM_SIGNMT && (((*(uint64_t *)(op)) == 1u<<((uint64_t)shortIntegerWordSize-1)))))
 #define getStackTop()                        (getSystemFlag(FLAG_SSIZE8) ? REGISTER_D : REGISTER_T)
-  #define freeRegisterData(regist)             freeWp43((void *)getRegisterDataPointer(regist), getRegisterFullSize(regist))
+#define freeRegisterData(regist)             freeWp43((void *)getRegisterDataPointer(regist), getRegisterFullSize(regist))
 #define storeToDtConfigDescriptor(config)    (configToStore->config = config)
 #define recallFromDtConfigDescriptor(config) (config = configToRecall->config)
 #define getRecalledSystemFlag(sf)            ((configToRecall->systemFlags &   ((uint64_t)1 << (sf & 0x3fff))) != 0)
 #define TO_BLOCKS(n)                         (((n) + 3) >> 2)
 #define TO_BYTES(n)                          ((n) << 2)
-  #define WP43_NULL                            65535 // NULL pointer
-  #define TO_PCMEMPTR(p)                       ((void *)((p) == WP43_NULL ? NULL : ram + (p)))
-  #define TO_WP43MEMPTR(p)                     ((p) == NULL ? WP43_NULL : (uint16_t)((dataBlock_t *)(p) - ram))
+#define WP43_NULL                            65535 // NULL pointer
+#define TO_PCMEMPTR(p)                       ((void *)((p) == WP43_NULL ? NULL : ram + (p)))
+#define TO_WP43MEMPTR(p)                     ((p) == NULL ? WP43_NULL : (uint16_t)((dataBlock_t *)(p) - ram))
 #define min(a,b)                             ((a)<(b)?(a):(b))
 #define max(a,b)                             ((a)>(b)?(a):(b))
 #define rmd(n, d)                            ((n)%(d))                                                       // rmd(n,d) = n - d*idiv(n,d)   where idiv is the division with decimal part truncature
@@ -1403,84 +1403,84 @@ typedef enum {
 
 #if !defined(PC_BUILD) && !defined(DMCP_BUILD)
   #error One of PC_BUILD and DMCP_BUILD must be defined
-  #endif // !PC_BUILD && !DMCP_BUILD
+#endif // !PC_BUILD && !DMCP_BUILD
 
 #if defined(PC_BUILD) && defined(DMCP_BUILD)
   #error Only one of PC_BUILD and DMCP_BUILD must be defined
-  #endif // PC_BUILD && DMCP_BUILD
+#endif // PC_BUILD && DMCP_BUILD
 
 #if !defined(OS32BIT) && !defined(OS64BIT)
   #error One of OS32BIT and OS64BIT must be defined
-  #endif // !OS32BIT && !OS64BIT
+#endif // !OS32BIT && !OS64BIT
 
 #if defined(OS32BIT) && defined(OS64BIT)
   #error Only one of OS32BIT and OS64BIT must be defined
-  #endif // OS32BIT && OS64BIT
+#endif // OS32BIT && OS64BIT
 
-  #if defined(PC_BUILD)
-    #if defined(WIN32) // No DEBUG_PANEL mode for Windows
+#if defined(PC_BUILD)
+  #if defined(WIN32) // No DEBUG_PANEL mode for Windows
     #undef  DEBUG_PANEL
     #define DEBUG_PANEL 0
   #endif // WIN32
-    #if defined(RASPBERRY) // No DEBUG_PANEL mode for Raspberry Pi
+  #if defined(RASPBERRY) // No DEBUG_PANEL mode for Raspberry Pi
     #undef  DEBUG_PANEL
     #define DEBUG_PANEL 0
   #endif // RASPBERRY
 #endif // PC_BUILD
 
-  #if defined(DMCP_BUILD) || (SCREEN_800X480 == 1)
-    #undef  DEBUG_PANEL
-    #define DEBUG_PANEL 0
-    #undef  DEBUG_REGISTER_L
-    #define DEBUG_REGISTER_L 0
-    #undef  SHOW_MEMORY_STATUS
-    #define SHOW_MEMORY_STATUS 0
-    #undef  EXTRA_INFO_ON_CALC_ERROR
-    #define EXTRA_INFO_ON_CALC_ERROR 0
-  #endif // DMCP_BUILD || SCREEN_800X480 == 1
+#if defined(DMCP_BUILD) || (SCREEN_800X480 == 1)
+  #undef  DEBUG_PANEL
+  #define DEBUG_PANEL 0
+  #undef  DEBUG_REGISTER_L
+  #define DEBUG_REGISTER_L 0
+  #undef  SHOW_MEMORY_STATUS
+  #define SHOW_MEMORY_STATUS 0
+  #undef  EXTRA_INFO_ON_CALC_ERROR
+  #define EXTRA_INFO_ON_CALC_ERROR 0
+#endif // DMCP_BUILD || SCREEN_800X480 == 1
 
 #if defined(TESTSUITE_BUILD) && !defined(GENERATE_CATALOGS)
-    #undef  PC_BUILD
-    #undef  DMCP_BUILD
-    #undef  DEBUG_PANEL
-    #define DEBUG_PANEL 0
-    #undef  DEBUG_REGISTER_L
-    #define DEBUG_REGISTER_L 0
-    #undef  SHOW_MEMORY_STATUS
-    #define SHOW_MEMORY_STATUS 0
-    #undef  EXTRA_INFO_ON_CALC_ERROR
-    #define EXTRA_INFO_ON_CALC_ERROR 0
-    #define addItemToBuffer fnNop
-    #define fnOff           fnNop
-    #define fnAim           fnNop
-    #define asnBrowser      fnNop
-    #define registerBrowser fnNop
-    #define flagBrowser     fnNop
-    #define fontBrowser     fnNop
-    #define flagBrowser_old fnNop       //JM
-    #define refreshRegisterLine(a)  {}
-    #define displayBugScreen(a)     { printf("\n-----------------------------------------------------------------------\n"); printf("%s\n", a); printf("\n-----------------------------------------------------------------------\n");}
-    #define showHideHourGlass()     {}
-    #define refreshScreen()         {}
-    #define refreshLcd(a)           {}
-    #define initFontBrowser()       {}
-  #endif // TESTSUITE_BUILD && !GENERATE_CATALOGS
+  #undef  PC_BUILD
+  #undef  DMCP_BUILD
+  #undef  DEBUG_PANEL
+  #define DEBUG_PANEL 0
+  #undef  DEBUG_REGISTER_L
+  #define DEBUG_REGISTER_L 0
+  #undef  SHOW_MEMORY_STATUS
+  #define SHOW_MEMORY_STATUS 0
+  #undef  EXTRA_INFO_ON_CALC_ERROR
+  #define EXTRA_INFO_ON_CALC_ERROR 0
+  #define addItemToBuffer fnNop
+  #define fnOff           fnNop
+  #define fnAim           fnNop
+  #define asnBrowser      fnNop
+  #define registerBrowser fnNop
+  #define flagBrowser     fnNop
+  #define fontBrowser     fnNop
+  #define flagBrowser_old fnNop       //JM
+  #define refreshRegisterLine(a)  {}
+  #define displayBugScreen(a)     { printf("\n-----------------------------------------------------------------------\n"); printf("%s\n", a); printf("\n-----------------------------------------------------------------------\n");}
+  #define showHideHourGlass()     {}
+  #define refreshScreen()         {}
+  #define refreshLcd(a)           {}
+  #define initFontBrowser()       {}
+#endif // TESTSUITE_BUILD && !GENERATE_CATALOGS
 
 /* Turn off -Wunused-result for a specific function call */
-  #if defined(OS32BIT)
+#if defined(OS32BIT)
   #define ignore_result(M) if(1==((uint32_t)M)){;}
-  #else // !OS32BIT
+#else // !OS32BIT
   #define ignore_result(M) if(1==((uint64_t)M)){;}
-  #endif // OS32BIT
+#endif // OS32BIT
 
 #if defined(DMCP_BUILD)
   #define TMP_STR_LENGTH     2560 //2560 //dr - remove #include <dmcp.h> again - AUX_BUF_SIZE
 #else // !DMCP_BUILD
   #define TMP_STR_LENGTH     2560 //2560 //JMMAX ORG:2560, changed back from 3000; 2023-09-26
 #endif // DMCP_BUILD
-  #define WRITE_BUFFER_LEN       4096
-  #define ERROR_MESSAGE_LENGTH    512 //JMMAX(325) 512          //JMMAX Temporarily reduced - ORG:512.
-  #define DISPLAY_VALUE_LEN        80
+#define WRITE_BUFFER_LEN       4096
+#define ERROR_MESSAGE_LENGTH    512 //JMMAX(325) 512          //JMMAX Temporarily reduced - ORG:512.
+#define DISPLAY_VALUE_LEN        80
 
 //************************
 //* Macros for debugging *

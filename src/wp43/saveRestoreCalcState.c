@@ -49,15 +49,15 @@
 #include "timer.h"
 #include <string.h>
 #if defined(PC_BUILD)
-#include <gtk/gtk.h>
-#include <stdbool.h>
-#include <stdio.h>
-#include <errno.h>
-#include <string.h>
-#include <sys/stat.h>
+  #include <gtk/gtk.h>
+  #include <stdbool.h>
+  #include <stdio.h>
+  #include <errno.h>
+  #include <string.h>
+  #include <sys/stat.h>
 #endif
 #if defined(DMCP_BUILD)
-#include <dmcp.h>
+  #include <dmcp.h>
 #endif
 
 #include "wp43.h"
@@ -82,7 +82,7 @@ Current version defaults all non-loaded settings from previous version files cor
   #define START_REGISTER_VALUE 1000  // was 1522, why?
   static uint32_t loadedVersion = 0;
 #endif //TESTSUITE_BUILD
-  uint16_t flushBufferCnt = 0;
+uint16_t flushBufferCnt = 0;
 
 
 #if !defined(TESTSUITE_BUILD)
@@ -102,7 +102,7 @@ static uint32_t restore(void *buffer, uint32_t size) {
 
 #if defined(PC_BUILD)
   void saveCalc(void) {
-//    uint8_t  compatibility_u8 = 0;           //defaults to use when settings are removed
+    //uint8_t  compatibility_u8 = 0;           //defaults to use when settings are removed
     bool_t   compatibility_bool = false;     //defaults to use when settings are removed
     uint32_t backupVersion = BACKUP_VERSION;
     uint32_t ramSize       = RAM_SIZE;
@@ -413,8 +413,8 @@ static uint32_t restore(void *buffer, uint32_t size) {
 
   void restoreCalc(void) {
     printf("RestoreCalc\n");
-//    uint8_t  compatibility_u8;        //defaults to use when settings are removed
-      bool_t   compatibility_bool;      //defaults to use when settings are removed
+    //uint8_t  compatibility_u8;        //defaults to use when settings are removed
+    bool_t   compatibility_bool;      //defaults to use when settings are removed
     uint32_t backupVersion, ramSize, ramPtr;
     int ret;
     uint8_t *loadedScreen = malloc(SCREEN_WIDTH * SCREEN_HEIGHT / 8);
@@ -526,7 +526,8 @@ static uint32_t restore(void *buffer, uint32_t size) {
       restore(&scrLock,                            sizeof(scrLock));
       if(backupVersion < 784) {                                                     //re-using existing old uint8 slot
         scrLock = 0;
-      } else {
+      }
+      else {
         scrLock &= 0x03;
       }
       restore(&roundingMode,                       sizeof(roundingMode));
@@ -745,7 +746,10 @@ static uint32_t restore(void *buffer, uint32_t size) {
 
       if(backupVersion >= 786) {
         restore(&MYM3,                                 sizeof(MYM3));
-      } else MYM3 = false;
+      }
+      else {
+        MYM3 = false;
+      }
 
       ioFileClose();
       printf("End of calc's restoration\n");
@@ -753,8 +757,9 @@ static uint32_t restore(void *buffer, uint32_t size) {
       MY_ALPHA_MENU = mm_MNU_ALPHA;
       setFGLSettings(fgLN);
 
-      if(temporaryInformation == TI_SHOW_REGISTER_BIG || temporaryInformation == TI_SHOW_REGISTER_SMALL)
+      if(temporaryInformation == TI_SHOW_REGISTER_BIG || temporaryInformation == TI_SHOW_REGISTER_SMALL) {
         temporaryInformation = TI_NO_INFO;
+      }
 
       scanLabelsAndPrograms();
       defineCurrentProgramFromGlobalStepNumber(currentLocalStepNumber + abs(programList[currentProgramNumber - 1].step) - 1);
@@ -788,8 +793,20 @@ static uint32_t restore(void *buffer, uint32_t size) {
         else if(tam.mode && tam.alpha) {
           calcModeAimGui();
         }
-        else if(calcMode == CM_NORMAL) {
+        else if(   calcMode == CM_NORMAL
+                || calcMode == CM_REGISTER_BROWSER
+                || calcMode == CM_FLAG_BROWSER
+                || calcMode == CM_ASN_BROWSER
+                || calcMode == CM_FONT_BROWSER
+                || calcMode == CM_PEM
+                || calcMode == CM_PLOT_STAT
+                || calcMode == CM_GRAPH
+                || calcMode == CM_LISTXY) {
           calcModeNormalGui();
+        }
+        else if(calcMode == CM_MIM) {
+          calcModeNormalGui();
+          mimRestore();
         }
         else if(calcMode == CM_AIM) {
           calcModeNormalGui();
@@ -799,34 +816,6 @@ static uint32_t restore(void *buffer, uint32_t size) {
         else if(calcMode == CM_NIM) {
           calcModeNormalGui();
           cursorEnabled = true;
-        }
-        else if(calcMode == CM_REGISTER_BROWSER) {
-          calcModeNormalGui();
-        }
-        else if(calcMode == CM_FLAG_BROWSER) {
-          calcModeNormalGui();
-        }
-        else if(calcMode == CM_ASN_BROWSER) {
-          calcModeNormalGui();
-        }
-        else if(calcMode == CM_FONT_BROWSER) {
-          calcModeNormalGui();
-        }
-        else if(calcMode == CM_PEM) {
-          calcModeNormalGui();
-        }
-        else if(calcMode == CM_PLOT_STAT) {
-          calcModeNormalGui();
-        }
-        else if(calcMode == CM_GRAPH) {
-          calcModeNormalGui();
-        }
-        else if(calcMode == CM_LISTXY) {
-          calcModeNormalGui();
-        }
-        else if(calcMode == CM_MIM) {
-          calcModeNormalGui();
-          mimRestore();
         }
         else if(calcMode == CM_EIM) {
         }
@@ -1250,9 +1239,9 @@ flushBufferCnt = 0;
   }
 
   // Other configuration stuff
-        sprintf(tmpString, "OTHER_CONFIGURATION_STUFF\n72\n");   
+        sprintf(tmpString, "OTHER_CONFIGURATION_STUFF\n72\n");
         save(tmpString, strlen(tmpString));    //JM 23+11+15+23
-/*01*/  save(tmpString, strlen(tmpString)); 
+/*01*/  save(tmpString, strlen(tmpString));
 
 //23 sprintf(tmpString, "firstGregorianDay\n%" PRIu32 "\n", firstGregorianDay);
 /*02*/  sprintf(tmpString, "denMax\n%"                     PRIu32 "\n",     denMax);                       save(tmpString, strlen(tmpString));
@@ -1280,7 +1269,7 @@ flushBufferCnt = 0;
 /*22*/  sprintf(tmpString, "exponentHideLimit\n%"          PRId16  "\n",    exponentHideLimit);            save(tmpString, strlen(tmpString));
 /*23*/  sprintf(tmpString, "bestF\n%"                      PRIu16  "\n",    lrSelection);                  save(tmpString, strlen(tmpString));
 
-//10     
+//10
 /*01*/  sprintf(tmpString, "fgLN\n%"                       PRIu8  "\n",     (uint8_t)fgLN);                save(tmpString, strlen(tmpString));      //keep save file format by keeping the old setting
 /*02*/  sprintf(tmpString, "eRPN\n%"                       PRIu8  "\n",     (uint8_t)eRPN);                save(tmpString, strlen(tmpString));
 /*03*/  sprintf(tmpString, "HOME3\n%"                      PRIu8  "\n",     (uint8_t)HOME3);               save(tmpString, strlen(tmpString));
@@ -1293,7 +1282,7 @@ flushBufferCnt = 0;
 /*10*/  sprintf(tmpString, "BASE_MYM\n%"                   PRIu8  "\n",     (uint8_t)BASE_MYM);            save(tmpString, strlen(tmpString));
 /*11*/  sprintf(tmpString, "jm_G_DOUBLETAP\n%"             PRIu8  "\n",     (uint8_t)jm_G_DOUBLETAP);      save(tmpString, strlen(tmpString));
 
-/*  *///15     
+/*  *///15
 /*01*/  sprintf(tmpString, "compatibility_bool\n%"         PRIu8  "\n",     (uint8_t)0);                   save(tmpString, strlen(tmpString));            //compatibility - use when needed
 /*02*/  sprintf(tmpString, "jm_LARGELI\n%"                 PRIu8  "\n",     (uint8_t)jm_LARGELI);          save(tmpString, strlen(tmpString));
 /*03*/  sprintf(tmpString, "constantFractions\n%"          PRIu8  "\n",     (uint8_t)constantFractions);   save(tmpString, strlen(tmpString));
@@ -1310,7 +1299,7 @@ flushBufferCnt = 0;
 /*14*/  sprintf(tmpString, "LongPressF\n%"                 PRIu8  "\n",     (uint8_t)LongPressF);          save(tmpString, strlen(tmpString));
 /*15*/  sprintf(tmpString, "lastIntegerBase\n%"            PRIu8  "\n",     (uint8_t)lastIntegerBase);     save(tmpString, strlen(tmpString));
 
-/*  *///23        
+/*  *///23
 /*01*/  sprintf(tmpString, "lrChosen\n%"                   PRIu16 "\n",     lrChosen);                     save(tmpString, strlen(tmpString));
 /*02*/  sprintf(tmpString, "graph_xmin\n"                  "%f"   "\n",     graph_xmin);                   save(tmpString, strlen(tmpString));
 /*03*/  sprintf(tmpString, "graph_xmax\n"                  "%f"   "\n",     graph_xmax);                   save(tmpString, strlen(tmpString));
