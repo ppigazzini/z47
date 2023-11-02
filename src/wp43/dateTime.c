@@ -25,6 +25,7 @@
 #include "debug.h"
 #include "error.h"
 #include "c43Extensions/addons.h"
+#include "c43Extensions/graphText.h"
 #include "flags.h"
 #include "items.h"
 #include "mathematics/comparisonReals.h"
@@ -905,6 +906,7 @@ void fnTime(uint16_t unusedButMandatoryParameter) {
 
 
 void fnSetDate(uint16_t unusedButMandatoryParameter) {
+  cancelFilename = true;
   #if defined(DMCP_BUILD)
     tm_t timeInfo;
     dt_t dateInfo;
@@ -928,6 +930,7 @@ void fnSetDate(uint16_t unusedButMandatoryParameter) {
 }
 
 void fnSetTime(uint16_t unusedButMandatoryParameter) {
+  cancelFilename = true;
   #if defined(DMCP_BUILD)
     tm_t timeInfo;
     dt_t dateInfo;

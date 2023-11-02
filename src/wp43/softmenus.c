@@ -45,6 +45,10 @@
   TO_QSPI static const char bugScreenIdMustNotBe0[] = "In function showSoftmenu: id must not be 0!";
 #endif //TESTSUITE_BUILD
 
+#define xS1(x)    (x==0?0:x==1?66:x==2?133:x==3?200:x==4?266:x==5?333:0)
+#define xS2(x)    (x==0?66:x==1?67:x==2?67:x==3?66:x==4?67:x==5?66:0)
+
+
 /* The numbers refer to the index of items in items.c
  *         item <     0  ==>  sub menu
  *     0 < item <  9999  ==>  item with top and bottom line
@@ -297,9 +301,9 @@ TO_QSPI const int16_t menu_REGR[]        = { ITM_LR,                        ITM_
                                              ITM_SA,                        ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
                                              ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 -MNU_MODEL,            ITM_PLOT_LR,                 ITM_PLOT                      };
 
-TO_QSPI const int16_t menu_MODEL[]       = { ITM_T_LINF,                    ITM_T_EXPF,                ITM_T_LOGF,                ITM_T_POWERF,          ITM_T_ROOTF,                 ITM_PLOT_LR,
-                                             ITM_T_HYPF,                    ITM_T_PARABF,              ITM_T_CAUCHF,              ITM_T_GAUSSF,          ITM_T_ORTHOF,                ITM_LR,
-                                             ITM_RSTF,                      ITM_SETALLF,               ITM_BESTF,                 ITM_BESTFQ,            ITM_NULL,                    ITM_NULL                      };
+TO_QSPI const int16_t menu_MODEL[]       = { ITM_T_LINF,                    ITM_T_EXPF,                ITM_T_LOGF,                ITM_T_POWERF,          ITM_LR,                      ITM_PLOT_LR,
+                                             ITM_T_ROOTF,                   ITM_T_HYPF,                ITM_T_PARABF,              ITM_T_CAUCHF,          ITM_T_GAUSSF,                ITM_NULL,
+                                             ITM_RSTF,                      ITM_SETALLF,               ITM_BESTF,                 ITM_BESTFQ,            ITM_NULL,                    ITM_T_ORTHOF                  };
 
 
 TO_QSPI const int16_t menu_PLOTTING[]    = { ITM_SIGMAPLUS,                 ITM_SIGMAx,                ITM_SIGMAx2,               ITM_SIGMAy,            ITM_SIGMAy2,                 ITM_SIGMAxy,               
@@ -1279,6 +1283,7 @@ bool_t maxfgLines(int16_t y) {
   }
 }
 
+
   /********************************************//**
    * \brief Displays one softkey
    *
@@ -1310,8 +1315,8 @@ bool_t maxfgLines(int16_t y) {
     }
 
     if(0 <= xSoftkey && xSoftkey <= 5) {
-      x1 = max(0,67 * xSoftkey - 1);
-      x2 = x1 + 67;
+      x1 = xS1(xSoftkey);
+      x2 = x1 + xS2(xSoftkey);
     }
     else {
       sprintf(errorMessage, "In function showSoftkey: xSoftkey=%" PRId16 " must be from 0 to 5" , xSoftkey);
@@ -1352,8 +1357,8 @@ bool_t maxfgLines(int16_t y) {
     }
 
     if(0 <= xSoftkey && xSoftkey <= 5) {
-      x1 = max(0,67 * xSoftkey - 1);
-      x2 = x1 + 67;
+      x1 = xS1(xSoftkey);
+      x2 = x1 + xS2(xSoftkey);
     }
     else {
       sprintf(errorMessage, "In function showSoftkey: xSoftkey=%" PRId16 " must be from 0 to 5" , xSoftkey);

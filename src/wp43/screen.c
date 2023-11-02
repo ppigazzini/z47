@@ -2209,11 +2209,11 @@ void execTimerApp(uint16_t timerType) {
 
       if(temporaryInformation == TI_STATISTIC_LR && (getRegisterDataType(REGISTER_X) != dtReal34)) {
         if(regist == REGISTER_X) {
-          if((uint16_t)((~lrSelection) & 0x01FF) == 511) {
-            sprintf(tmpString, "L.R. selected to OrthoF.");
+          if(orOrtho(lrSelection) == CF_ORTHOGONAL_FITTING) {
+            sprintf(tmpString, "L.R. selected to OrthoF");
           }
           else {
-            sprintf(tmpString, "L.R. selected to %03" PRIu16 ".", (uint16_t)((~lrSelection) & 0x01FF));
+            sprintf(tmpString, "L.R. selected to %03" PRIu16 ".", (uint16_t)((lrSelection) & 0x01FF));
           }
           #if(EXTRA_INFO_ON_CALC_ERROR == 1)
             sprintf(errorMessage, "BestF is set, but will not work until REAL data points are used.");
@@ -3222,11 +3222,11 @@ void execTimerApp(uint16_t timerType) {
 
           else if(temporaryInformation == TI_STATISTIC_LR) {
              if(regist == REGISTER_X) {
-               if( (uint16_t)((~lrSelection) & 0x01FF) == 511) {
+               if(orOrtho(lrSelection) == CF_ORTHOGONAL_FITTING) {
                  sprintf(prefix, "L.R. selected to OrthoF");
                }
                else {
-                 sprintf(prefix, "L.R. selected to %03" PRIu16, (uint16_t)((~lrSelection) & 0x01FF));
+                 sprintf(prefix, "L.R. selected to %03" PRIu16, (uint16_t)((lrSelection) & 0x01FF));
                }
                prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
                //lcd_fill_rect(0, Y_POSITION_OF_REGISTER_Y_LINE - 2, SCREEN_WIDTH, 1, LCD_EMPTY_VALUE);

@@ -400,7 +400,7 @@
 #define STD_SUP_pi                    "\xad\xeb" //2DEB
 #define STD_SUP_pir                   "\xad\xec" //2DEC
 
-#define STD_SUP_1_SUB_B               "\xa1\x00" //2100
+#define STD_BATTERYHALF               "\xa4\x35" //2435
 
 
 #define STD_HP_PERIOD                    "\xa0\x24"     // 2024

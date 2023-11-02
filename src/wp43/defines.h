@@ -279,7 +279,7 @@
 
 
   #if defined(PC_BUILD)
-    //#define DEBUGUNDO
+    #define DEBUGUNDO
     #undef DEBUGUNDO
   #else // !PC_BUILD
     #undef DEBUGUNDO
@@ -803,18 +803,7 @@ typedef enum {
 #define CF_CAUCHY_FITTING                        128
 #define CF_GAUSS_FITTING                         256
 #define CF_ORTHOGONAL_FITTING                    512
-
-// Curve fitting excluding all other curve fitting bits, 10 bits
-#define CF_LINEAR_FITTING_EX                     (~CF_LINEAR_FITTING) & 0x01FF
-#define CF_EXPONENTIAL_FITTING_EX                (~CF_EXPONENTIAL_FITTING) & 0x01FF
-#define CF_LOGARITHMIC_FITTING_EX                (~CF_LOGARITHMIC_FITTING) & 0x01FF
-#define CF_POWER_FITTING_EX                      (~CF_POWER_FITTING) & 0x03FF
-#define CF_ROOT_FITTING_EX                       (~CF_ROOT_FITTING) & 0x01FF
-#define CF_HYPERBOLIC_FITTING_EX                 (~CF_HYPERBOLIC_FITTING) & 0x01FF
-#define CF_PARABOLIC_FITTING_EX                  (~CF_PARABOLIC_FITTING) & 0x01FF
-#define CF_CAUCHY_FITTING_EX                     (~CF_CAUCHY_FITTING) & 0x01FF
-#define CF_GAUSS_FITTING_EX                      (~CF_GAUSS_FITTING) & 0x01FF
-#define CF_ORTHOGONAL_FITTING_EX                 (~CF_ORTHOGONAL_FITTING) & 0x01FF
+#define orOrtho(a)                                 (a==0 ? CF_ORTHOGONAL_FITTING : a)
 
   // Plot curve fitting 4 bits
 #define PLOT_ORTHOF                                0
