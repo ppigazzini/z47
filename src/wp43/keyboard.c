@@ -708,7 +708,7 @@ printf(">>>>Z 0010 btnFnPressed SET FN_key_pressed            ; data=|%s| data[0
             (determineFunctionKeyItem_C47((char *)data, true, false) != ITM_NOP && determineFunctionKeyItem_C47((char *)data, true, false) != ITM_NULL) ||
             (determineFunctionKeyItem_C47((char *)data, false, true) != ITM_NOP && determineFunctionKeyItem_C47((char *)data, false, true) != ITM_NULL)
            ) {
-        
+
         #if defined(VERBOSEKEYS)
         printf(">>>>Z 0013 btnFnPressed >>btnFnPressed_StateMachine; data=|%s| data[0]=%d shiftF=%d shiftG=%d\n",(char*)data, ((char*)data)[0],shiftF, shiftG);
         #endif //VERBOSEKEYS
@@ -1083,7 +1083,7 @@ int16_t lastItem = 0;
   //JM this is handled later
   //          }
 
-          else if(calcMode == CM_EIM && ((catalog && catalog != CATALOG_MVAR) || 
+          else if(calcMode == CM_EIM && ((catalog && catalog != CATALOG_MVAR) ||
                   ( softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_EQ_EDIT &&                       //Allow only EIM enabled functions through to be added as text
                     item != ITM_EQ_LEFT && item != ITM_EQ_RIGHT && item != CHR_num && item != CHR_case &&
                     (indexOfItems[item].status & EIM_STATUS) == EIM_ENABLED
@@ -1208,8 +1208,8 @@ int16_t lastItem = 0;
                       default:;
                     }
                   }
-                }  
-                
+                }
+
                 #if defined(VERBOSEKEYS)
                   printf("keyboard.c: executeFunction calcmode=%u %i (after runfunction): %i, %s tam.mode=%i\n", calcMode, item, softmenu[softmenuStack[0].softmenuId].menuItem, indexOfItems[-softmenu[softmenuStack[0].softmenuId].menuItem].itemSoftmenuName, tam.mode);
                 #endif //VERBOSEKEYS
@@ -2195,7 +2195,7 @@ RELEASE_END:
         else if(tam.mode) {
 
 // To TEST and investigate 2023-10-02
-// User menu name create: ASN + USER 'DDD' has a problem by exiting to MyAlpha 
+// User menu name create: ASN + USER 'DDD' has a problem by exiting to MyAlpha
 
           tamProcessInput(ITM_ENTER);
           keyActionProcessed = true;
@@ -2278,9 +2278,7 @@ RELEASE_END:
           }
           if(previousCalcMode == CM_AIM) {
             softmenuStack[0].softmenuId = 1;
-            #if defined(PC_BUILD) && (SCREEN_800X480 == 0)
-              calcModeAimGui();
-            #endif // PC_BUILD && (SCREEN_800X480 == 0)
+            calcModeAimGui();
           }
           else {
             leaveAsmMode();
@@ -2799,7 +2797,7 @@ void fnKeyEnter(uint16_t unusedButMandatoryParameter) {
   #if !defined(TESTSUITE_BUILD)
     if(changeFractionModeOnENTER) {
       setSystemFlag(FLAG_FRACT);
-      changeFractionModeOnENTER = false;  
+      changeFractionModeOnENTER = false;
     }
     switch(calcMode) {
       case CM_NORMAL: {

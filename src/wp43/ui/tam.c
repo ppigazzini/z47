@@ -1040,16 +1040,14 @@
 
     clearSystemFlag(FLAG_ALPHA);
 
-    #if defined(PC_BUILD) && (SCREEN_800X480 == 0)
-      if(tam.mode == TM_NEWMENU) {
-        setSystemFlag(FLAG_ALPHA);
-        aimBuffer[0] = 0;
-        calcModeAim(NOPARAM);
-      }
-      else {
-        calcModeTamGui();
-      }
-    #endif // PC_BUILD && (SCREEN_800X480 == 0)
+    if(tam.mode == TM_NEWMENU) {
+      setSystemFlag(FLAG_ALPHA);
+      aimBuffer[0] = 0;
+      calcModeAim(NOPARAM);
+    }
+    else {
+      calcModeTamGui();
+    }
   }
 
 
@@ -1068,7 +1066,7 @@
       popSoftmenu();
     }
 
-    #if defined(PC_BUILD) && (SCREEN_800X480 == 0)
+    #if defined(PC_BUILD)
       switch(calcMode) {
         case CM_NORMAL:
         case CM_PEM:
@@ -1083,7 +1081,7 @@
           break;
         }
       }
-    #endif // PC_BUILD && (SCREEN_800X480 == 0)
+    #endif // PC_BUILD
 
     if(calcMode == CM_PEM) {
       hourGlassIconEnabled = false;

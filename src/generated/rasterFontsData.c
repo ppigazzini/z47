@@ -422,7 +422,7 @@ TO_QSPI const font_t numericFont = {
      .data="\x00\x00\x0f\x80\x1f\xc0\x38\xe0\x30\x60\x30\x70\x38\x20\x3c\x00\x3e\x00\x77\x80\xe3\xc0\xc1\xe0\xc0\x70\xe0\x38\xf0\x38\x78\x18\x3c\x30\x0f\x70\x07\xe0\x03\xc0\x00\xe0\x60\xe0\x60\x60\x70\xe0\x39\xe0\x3f\xc0\x0f\x00"},
 
     // 
-    {.charCode=0x80b0, .colsBeforeGlyph= 2, .colsGlyph=10, .colsAfterGlyph= 4, .rowsAboveGlyph= 0, .rowsGlyph=10, .rowsBelowGlyph=22, .rank1=  0, .rank2=  0,
+    {.charCode=0x80b0, .colsBeforeGlyph= 4, .colsGlyph=10, .colsAfterGlyph= 2, .rowsAboveGlyph= 0, .rowsGlyph=10, .rowsBelowGlyph=22, .rank1=  0, .rank2=  0,
      .data="\x3f\x00\x7f\x80\xff\xc0\xe1\xc0\xe1\xc0\xe1\xc0\xe1\xc0\xff\xc0\x7f\x80\x3f\x00"},
 
     // 
@@ -1458,8 +1458,8 @@ TO_QSPI const font_t numericFont = {
      .data="\x7f\xc0\xff\x80\x33\x00\x33\x00\x33\x00\x33\x00\x33\x00\x33\x40\x33\xc0\x61\x80"},
 
     // 
-    {.charCode=0xadec, .colsBeforeGlyph= 4, .colsGlyph=22, .colsAfterGlyph= 6, .rowsAboveGlyph= 2, .rowsGlyph=10, .rowsBelowGlyph=20, .rank1=  0, .rank2=  0,
-     .data="\x3f\xec\xf8\x7f\xcf\xfc\x19\x8f\x9c\x19\x8f\x00\x19\x8e\x00\x19\x8e\x00\x19\x8e\x00\x19\xae\x00\x19\xee\x00\x30\xce\x00"}}
+    {.charCode=0xadec, .colsBeforeGlyph= 4, .colsGlyph=23, .colsAfterGlyph= 2, .rowsAboveGlyph= 2, .rowsGlyph=10, .rowsBelowGlyph=20, .rank1=  0, .rank2=  0,
+     .data="\x7f\xf6\x7c\xff\xe7\xfe\x9d\xc7\xce\x1d\xc7\x80\x1d\xc7\x00\x19\xc7\x00\x19\xc7\x00\x39\xd7\x00\x78\xf7\x00\x70\x67\x00"}}
 };
 TO_QSPI const font_t standardFont = {
   .id             = 1,

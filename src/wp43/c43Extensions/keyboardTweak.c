@@ -63,9 +63,7 @@ void showAlphaModeonGui(void) {
     #if !defined(TESTSUITE_BUILD)
       showHideAlphaMode();
     #endif // !TESTSUITE_BUILD
-    #if defined(PC_BUILD)                         //dr - new AIM
-      calcModeAimGui();
-    #endif // PC_BUILD
+    calcModeAimGui();
   }                                                         //^^
   doRefreshSoftMenu = true;             //jm
 }
@@ -260,8 +258,8 @@ void resetKeytimers(void) {
 
   bool_t Check_SigmaPlus_Assigned(int16_t * result, int16_t tempkey) {
     //JM NORMKEY CHANGE NORMAL MODE KEY SIGMA+ TO SOMETHING
-    if((calcMode == CM_NORMAL || calcMode == CM_NIM) && 
-       (!catalog || (catalog && (Norm_Key_00_VAR != ITM_SHIFTg))) && 
+    if((calcMode == CM_NORMAL || calcMode == CM_NIM) &&
+       (!catalog || (catalog && (Norm_Key_00_VAR != ITM_SHIFTg))) &&
        (!shiftF && !shiftG && (tempkey == 0) && ((kbd_std + 0)->primary == *result) )
        ) {
       *result = Norm_Key_00_VAR;
@@ -352,12 +350,12 @@ void resetKeytimers(void) {
               break;
           default:;
         }
-        if( (*result == ITM_ms || longpressDelayedkey1 == ITM_ms || longpressDelayedkey2 == ITM_ms || longpressDelayedkey3 == ITM_ms ) || //.ms needs NIM mode to be open if the user intends it to be open. 
+        if( (*result == ITM_ms || longpressDelayedkey1 == ITM_ms || longpressDelayedkey2 == ITM_ms || longpressDelayedkey3 == ITM_ms ) || //.ms needs NIM mode to be open if the user intends it to be open.
             (*result == ITM_CC || longpressDelayedkey1 == ITM_CC || longpressDelayedkey2 == ITM_CC || longpressDelayedkey3 == ITM_CC ) ||
             (*result == ITM_op_j || longpressDelayedkey1 == ITM_op_j || longpressDelayedkey2 == ITM_op_j || longpressDelayedkey3 == ITM_op_j ) ||
             (*result == ITM_op_j_pol || longpressDelayedkey1 == ITM_op_j_pol || longpressDelayedkey2 == ITM_op_j_pol || longpressDelayedkey3 == ITM_op_j_pol )) {
           delayCloseNim = true;
-        }  
+        }
         break;
       }
       case CM_AIM : {
@@ -1339,27 +1337,25 @@ void fnCln(uint16_t unusedButMandatoryParameter) {
 
 
 void refreshModeGui(void) {
-  #if defined(PC_BUILD)
-    if(!tam.mode) {
-      switch(calcMode) {
-        case CM_AIM:
-        case CM_EIM:
+  if(!tam.mode) {
+    switch(calcMode) {
+      case CM_AIM:
+      case CM_EIM:
+        calcModeAimGui();
+        break;
+
+      case CM_NORMAL:
+        calcModeNormalGui();
+        break;
+
+      case CM_PEM:
+        if(getSystemFlag(FLAG_ALPHA)) {
           calcModeAimGui();
-          break;
-
-        case CM_NORMAL:
+        }
+        else {
           calcModeNormalGui();
-          break;
-
-        case CM_PEM:
-          if(getSystemFlag(FLAG_ALPHA)) {
-            calcModeAimGui();
-          }
-          else {
-            calcModeNormalGui();
-          }
-          break;
-      }
+        }
+        break;
     }
-  #endif // PC_BUILD
+  }
 }

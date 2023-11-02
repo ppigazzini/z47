@@ -90,7 +90,7 @@ static uint32_t restore(void *buffer, uint32_t size) {
 
 #if defined(PC_BUILD)
   void saveCalc(void) {
-//    uint8_t  compatibility_u8 = 0;           //defaults to use when settings are removed
+    //uint8_t  compatibility_u8 = 0;           //defaults to use when settings are removed
     bool_t   compatibility_bool = false;     //defaults to use when settings are removed
     uint32_t backupVersion = BACKUP_VERSION;
     uint32_t ramSize       = RAM_SIZE;
@@ -405,8 +405,8 @@ static uint32_t restore(void *buffer, uint32_t size) {
 
   void restoreCalc(void) {
     printf("RestoreCalc\n");
-//    uint8_t  compatibility_u8;        //defaults to use when settings are removed
-      bool_t   compatibility_bool;      //defaults to use when settings are removed
+    //uint8_t  compatibility_u8;        //defaults to use when settings are removed
+    bool_t   compatibility_bool;      //defaults to use when settings are removed
     uint32_t backupVersion, ramSize, ramPtr;
     int ret;
     uint8_t *loadedScreen = malloc(SCREEN_WIDTH * SCREEN_HEIGHT / 8);
@@ -743,8 +743,10 @@ static uint32_t restore(void *buffer, uint32_t size) {
 
       if(backupVersion >= 786) {
         restore(&MYM3,                                 sizeof(MYM3));
-      } else MYM3 = false;
-
+      }
+      else {
+        MYM3 = false;
+      }
 
       ioFileClose();
       printf("End of calc's restoration\n");
@@ -752,10 +754,12 @@ static uint32_t restore(void *buffer, uint32_t size) {
       MY_ALPHA_MENU = mm_MNU_ALPHA;
       setFGLSettings(fgLN);
 
-      if(SHOWMODE)                             //clear SHOW to normal mode as it is not reasonable to switch calculator on on SHOW mode
+      if(SHOWMODE) {                            //clear SHOW to normal mode as it is not reasonable to switch calculator on on SHOW mode
         temporaryInformation = TI_NO_INFO;
-      if(showRegis != 9999)
+      }
+      if(showRegis != 9999) {
         showRegis = 9999;
+      }
       if(softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_SHOW) {
         popSoftmenu();
       }
@@ -792,8 +796,20 @@ static uint32_t restore(void *buffer, uint32_t size) {
         else if(tam.mode && tam.alpha) {
           calcModeAimGui();
         }
-        else if(calcMode == CM_NORMAL) {
+        else if(   calcMode == CM_NORMAL
+                || calcMode == CM_REGISTER_BROWSER
+                || calcMode == CM_FLAG_BROWSER
+                || calcMode == CM_ASN_BROWSER
+                || calcMode == CM_FONT_BROWSER
+                || calcMode == CM_PEM
+                || calcMode == CM_PLOT_STAT
+                || calcMode == CM_GRAPH
+                || calcMode == CM_LISTXY) {
           calcModeNormalGui();
+        }
+        else if(calcMode == CM_MIM) {
+          calcModeNormalGui();
+          mimRestore();
         }
         else if(calcMode == CM_AIM) {
           calcModeNormalGui();
@@ -803,34 +819,6 @@ static uint32_t restore(void *buffer, uint32_t size) {
         else if(calcMode == CM_NIM) {
           calcModeNormalGui();
           cursorEnabled = true;
-        }
-        else if(calcMode == CM_REGISTER_BROWSER) {
-          calcModeNormalGui();
-        }
-        else if(calcMode == CM_FLAG_BROWSER) {
-          calcModeNormalGui();
-        }
-        else if(calcMode == CM_ASN_BROWSER) {
-          calcModeNormalGui();
-        }
-        else if(calcMode == CM_FONT_BROWSER) {
-          calcModeNormalGui();
-        }
-        else if(calcMode == CM_PEM) {
-          calcModeNormalGui();
-        }
-        else if(calcMode == CM_PLOT_STAT) {
-          calcModeNormalGui();
-        }
-        else if(calcMode == CM_GRAPH) {
-          calcModeNormalGui();
-        }
-        else if(calcMode == CM_LISTXY) {
-          calcModeNormalGui();
-        }
-        else if(calcMode == CM_MIM) {
-          calcModeNormalGui();
-          mimRestore();
         }
         else if(calcMode == CM_EIM) {
         }

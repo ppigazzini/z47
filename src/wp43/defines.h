@@ -37,7 +37,7 @@
   #undef SAVE_SPACE_DM42_21
 
 
-#if defined(DMCP_BUILD) || (SCREEN_800X480 == 1)
+#if defined(DMCP_BUILD)
 
   #define TWO_FILE_PGM                 //JM Normally NOT have TWO_FILE. TWO_FILE means that QSPI is used.
 
@@ -305,12 +305,12 @@
   #endif // DEBUG_STAT == 2
 
 
-  #if defined(PC_BUILD)
-    //#define DEBUGUNDO
-    #undef DEBUGUNDO
-  #else // !PC_BUILD
-    #undef DEBUGUNDO
-  #endif // PC_BUILD
+#if defined(PC_BUILD)
+  #define DEBUGUNDO
+  #undef DEBUGUNDO
+#else // !PC_BUILD
+  #undef DEBUGUNDO
+#endif // PC_BUILD
 
 
 #define REAL34_WIDTH_TEST 0 // For debugging real34 ALL 0 formating. Use UP/DOWN to shrink or enlarge the available space. The Z register holds the available width.
