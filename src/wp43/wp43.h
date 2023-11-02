@@ -343,7 +343,6 @@
   extern uint16_t               currentFormula;
   extern uint16_t               numberOfUserMenus;
   extern uint16_t               currentUserMenu;
-  extern uint16_t               nextUserMenu;
   extern uint16_t               userKeyLabelSize;
   extern uint16_t               currentInputVariable;
   extern uint16_t               currentMvarLabel;
