@@ -12,9 +12,9 @@
 // JM VARIOUS OPTIONS
 //*********************************
 
-#define VERSION1 "0.109.00.00a14"     // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
+#define VERSION1 "0.109.00.00a16"     // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
 
-//2023-10-22-0.108.15.01 Stable non-master
+//2023-11-3-0.109.00.00 Alpha 16
 
   #undef SAVE_SPACE_DM42_0
   #undef SAVE_SPACE_DM42_1
