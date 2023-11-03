@@ -4284,6 +4284,7 @@
       gtk_window_set_resizable(GTK_WINDOW(frmCalc), FALSE);
       g_signal_connect(frmCalc, "destroy", G_CALLBACK(destroyCalc), NULL);
       g_signal_connect(frmCalc, "key_press_event", G_CALLBACK(keyPressed), NULL);
+      g_signal_connect(frmCalc, "key_release_event", G_CALLBACK(keyReleased), NULL);  //JM CTRL
 
       gtk_widget_add_events(GTK_WIDGET(frmCalc), GDK_CONFIGURE);
 
