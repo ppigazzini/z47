@@ -332,18 +332,9 @@
           tam.alpha = false;
           clearSystemFlag(FLAG_ALPHA);
           calcModeTamGui();
-          switch(softmenu[softmenuStack[0].softmenuId].menuItem) {
-            case -MNU_TAMCMPALPHA:
-            case -MNU_TAMALPHA   :
-            case -MNU_TAMLBLALPHA:
-            case -MNU_TAMSRALPHA : {
-              popSoftmenu();
-              break;
-            }
-            default: break;
+          if(softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_TAMALPHA) {
+            popSoftmenu();
           }
-
-
         }
       }
       else if(tam.digitsSoFar > 0) {
@@ -445,10 +436,12 @@
           alphaCase = AC_LOWER;
         }
         switch(softmenu[softmenuStack[0].softmenuId].menuItem) {
-          case -MNU_TAMCMP    : showSoftmenu(-MNU_TAMCMPALPHA); break;
-          case -MNU_TAMLABEL  : showSoftmenu(-MNU_TAMLBLALPHA); break;
-          case -MNU_TAM       : showSoftmenu(-MNU_TAMALPHA); break;
-          case -MNU_TAMSTORCL : showSoftmenu(-MNU_TAMSRALPHA); break;
+          case -MNU_TAMCMP    :
+          case -MNU_TAMLABEL  :
+          case -MNU_TAM       :
+          case -MNU_TAMSTORCL :
+            showSoftmenu(-MNU_TAMALPHA); 
+            break;
           default: break;
         }
       }
