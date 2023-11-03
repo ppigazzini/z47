@@ -1948,7 +1948,7 @@
 #define ITM_INP_DEF_LI              1891
 #define ITM_SI_P                    1892
 #define KEY_fg                      1893
-#define MNU_TAMCMPALPHA             1894
+#define MNU_1894                    1894        // [DL] Deprecated MNU_TAMCMPALPHA
 #define ITM_HPBASE                  1895
 #define ITM_ASNVIEWER               1896
 #define ITM_N_KEY_TGLFRT            1897
@@ -2120,8 +2120,8 @@
 #define ITM_F14                     2063
 #define ITM_M14                     2064
 #define ITM_F124                    2065
-#define MNU_TAMLBLALPHA             2066
-#define MNU_TAMSRALPHA              2067
+#define MNU_2066                    2066        // [DL] Deprecated MNU_TAMLBLALPHA
+#define MNU_2067                    2067        // [DL] Deprecated MNU_TAMSRALPHA
 #define MNU_TAMNONREG               2068
 #define ITM_LG_SIGN                 2069
 #define ITM_LN_SIGN                 2070

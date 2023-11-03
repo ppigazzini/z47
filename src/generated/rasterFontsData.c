@@ -1463,7 +1463,7 @@ TO_QSPI const font_t numericFont = {
 };
 TO_QSPI const font_t standardFont = {
   .id             = 1,
-  .numberOfGlyphs = 647,
+  .numberOfGlyphs = 648,
   .glyphs = {
 
     // uni001D
