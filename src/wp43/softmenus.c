@@ -548,7 +548,6 @@ TO_QSPI const int16_t menu_PRINT[]       = { ITM_PRINTERX,                  ITM_
                                              ITM_PRINTERSTK,                ITM_PRINTERREGS,            ITM_PRINTERUSER,          ITM_PRINTERTAB,        ITM_PRINTERHASH,             ITM_PRINTERCHAR,
                                              ITM_PRTACT,                    ITM_P_ALLREGS,              ITM_NULL,                 ITM_PRINTERWIDTH,      ITM_PRINTERDLAY,             ITM_PRINTERMODE               };
 TO_QSPI const int16_t menu_Tam[]         = { ITM_INDIRECTION,               -MNU_VAR,                   ITM_REG_X,                ITM_REG_Y,             ITM_REG_Z,                   ITM_REG_T                     };
-//TO_QSPI const int16_t menu_TamAlpha[] =    { ITM_INDIRECTION,               -MNU_VAR,                   ITM_REG_X,                ITM_REG_Y,             ITM_REG_Z,                   ITM_REG_T,
 TO_QSPI const int16_t menu_TamAlpha[] =    { ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
                                              ITM_NULL,                      ITM_NULL,                   CHR_num,                  CHR_case,              ITM_NULL,                    ITM_NULL,                          //JM
                                              ITM_NULL,                      ITM_NULL,                  -MNU_MyAlpha,             -MNU_ALPHA_OMEGA,      -MNU_ALPHAMISC,               -MNU_ALPHAMATH                 };   //JM
@@ -2119,17 +2118,23 @@ bool_t BASE_OVERRIDEONCE = false;
    */
   static void pushSoftmenu(int16_t softmenuId) {
     int i;
-//    if(running_program_jm) return;                             //JM
+    int16_t userMenuId;
+    if(running_program_jm) return;                             //JM
 
     #if defined(PC_BUILD)
       char tmp[300]; sprintf(tmp,">>> ...... pushing id:%d name:%s\n",softmenuId, indexOfItems[-softmenu[softmenuId].menuItem].itemSoftmenuName); jm_show_comment(tmp);
     #endif // PC_BUILD
-    if(softmenuStack[0].softmenuId == softmenuId) { // The menu to push on the stack is already displayed
-      return;
+    if(softmenu[softmenuId].menuItem == -MNU_DYNAMIC) {
+      userMenuId = currentUserMenu;
+    } else {
+      userMenuId = 0;
+    }
+   if((softmenuStack[0].softmenuId == softmenuId) && (softmenuStack[0].userMenuId == userMenuId)) { // The menu to push on the stack is already displayed
+     return;
     }
 
     for(i=0; i<SOFTMENU_STACK_SIZE; i++) { // Searching the stack for the menu to push on the stack
-      if(softmenuStack[i].softmenuId == softmenuId) { // if found, remove it
+      if((softmenuStack[i].softmenuId == softmenuId) && (softmenuStack[i].userMenuId == userMenuId)) { // if found, remove it
         xcopy(softmenuStack + 1, softmenuStack, i * sizeof(softmenuStack_t));
         break;
       }
@@ -2142,6 +2147,7 @@ bool_t BASE_OVERRIDEONCE = false;
 
     softmenuStack[0].softmenuId = softmenuId;
     softmenuStack[0].firstItem = lastCatalogPosition[catalog];
+    softmenuStack[0].userMenuId = userMenuId;
 
       doRefreshSoftMenu = true;     //dr
   }
@@ -2185,6 +2191,10 @@ bool_t BASE_OVERRIDEONCE = false;
     }
     else {
       clearSystemFlag(FLAG_VMDISP);
+    }
+
+    if(softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_DYNAMIC) {
+      currentUserMenu = softmenuStack[0].userMenuId;
     }
 
     #if defined(PC_BUILD)
