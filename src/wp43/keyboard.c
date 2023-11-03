@@ -1870,6 +1870,8 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
       }
     if(calcMode == CM_ASN_BROWSER && lastItem == ITM_PERIOD) {
       fnAsnDisplayUSER = true;
+      lastItem = 0;
+//      refreshScreen();
       goto RELEASE_END;
       return;
     }

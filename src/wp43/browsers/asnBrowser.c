@@ -22,6 +22,7 @@
 
 #include "items.h"
 #include "flags.h"
+#include "fonts.h"
 #include "c43Extensions/radioButtonCatalog.h"
 #include "charString.h"
 #include "screen.h"
@@ -55,6 +56,7 @@
           case 6:   showString("alpha g-shift mapping",      &standardFont, 30, YOFF, vmNormal, false, false); break;
           default:break;
         }
+    showString( "[" STD_UP_ARROW "][" STD_DOWN_ARROW "] Browse - [.] View STD keys", &standardFont, 30, 220, vmNormal, false, false);
 
     for(key=0; key<37; key++) {
       if(key == 6 || key ==12 || key == 17 || key == 22 || key == 27 || key == 32) {
