@@ -49,7 +49,7 @@
 #endif
 
 #include "wp43.h"
-#define BACKUP_VERSION                     787  // Change bestf
+#define BACKUP_VERSION                     788  // Updated softmenuStack_t structure for user menu id
 #define OLDEST_COMPATIBLE_BACKUP_VERSION   779  // save running app
 #define configFileVersion                  10000008 // New STOCFG and new STATE file; arbitrary starting point version 10 000 001. Allowable values are 10000000 to 20000000
 #define VersionAllowed                     10000005 // This code will not autoload versions earlier than this
@@ -456,7 +456,12 @@ static uint32_t restore(void *buffer, uint32_t size) {
       restore(asmBuffer,                           sizeof(asmBuffer));
       restore(oldTime,                             sizeof(oldTime));
       restore(dateTimeString,                      sizeof(dateTimeString));
-      restore(softmenuStack,                       sizeof(softmenuStack));
+      if(backupVersion >= 788 ) {                                               
+        restore(softmenuStack,                     sizeof(softmenuStack));
+      } else {
+        restore(softmenuStack,                     32);
+        memset(softmenuStack, 0,                   sizeof(softmenuStack));                        // [DL] Reset softmenuStack, don't use old softmenuStack content
+      }
       restore(globalRegister,                      sizeof(globalRegister));
       restore(savedStackRegister,                  sizeof(savedStackRegister));
       restore(kbd_usr,                             sizeof(kbd_usr));
@@ -2400,7 +2405,7 @@ int32_t stringToInt32(const char *str) {
           else if(strcmp(aimBuffer, "LongPressM"                  ) == 0) { LongPressM           = stringToUint8(tmpString); }                  //10000003
           else if(strcmp(aimBuffer, "LongPressF"                  ) == 0) { LongPressF           = stringToUint8(tmpString); }                  //10000003
           else if(strcmp(aimBuffer, "lastIntegerBase"             ) == 0) { lastIntegerBase      = stringToUint8(tmpString); }                  //10000004
-          else if(strcmp(aimBuffer, "lrChosen"                    ) == 0) { lrChosen             = stringToUint16(tmpString);}
+          else if(strcmp(aimBuffer, "lrChosen"                    ) == 0) { lrChosen             = stringToUint16(tmpString); }
           else if(strcmp(aimBuffer, "graph_xmin"                  ) == 0) { graph_xmin           = strintToFloat(tmpString); }
           else if(strcmp(aimBuffer, "graph_xmax"                  ) == 0) { graph_xmax           = strintToFloat(tmpString); }
           else if(strcmp(aimBuffer, "graph_ymin"                  ) == 0) { graph_ymin           = strintToFloat(tmpString); }

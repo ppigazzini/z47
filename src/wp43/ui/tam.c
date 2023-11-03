@@ -1017,6 +1017,7 @@
       }
 
       case TM_NEWMENU: {
+        showSoftmenu(-MNU_TAMALPHA);
         break;
       }
 
@@ -1032,9 +1033,8 @@
       }
     }
 
-    numberOfTamMenusToPop = func == ITM_ASSIGN ? 0 : 1;
-    numberOfTamMenusToPop = (func == ITM_ASSIGN) || (catalog && catalog == CATALOG_MVAR && (tam.mode == TM_STORCL || func == ITM_VIEW)) ? 0 : 1;
-
+    numberOfTamMenusToPop = 1;
+    //numberOfTamMenusToPop = (func == ITM_ASSIGN) || (catalog && catalog == CATALOG_MVAR && (tam.mode == TM_STORCL || func == ITM_VIEW)) ? 0 : 1;
 
     _tamUpdateBuffer();
 

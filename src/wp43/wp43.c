@@ -144,6 +144,7 @@ uint8_t                rbrMode;
 uint8_t                numScreensNumericFont;
 uint8_t                timerCraAndDeciseconds = 128u;
 uint8_t                programRunStop;
+uint8_t                currentKeyCode;
 uint8_t                lastKeyCode;
 uint8_t                entryStatus;
 uint8_t                screenUpdatingMode;
@@ -158,6 +159,7 @@ int16_t                rbrRegister;
 int16_t                catalog;
 int16_t                lastCatalogPosition[NUMBER_OF_CATALOGS];
 int16_t                showFunctionNameItem;
+char *                 showFunctionNameArg;
 
 uint8_t               displayStackSHOIDISP;          //JM SHOIDISP
 uint8_t               scrLock;

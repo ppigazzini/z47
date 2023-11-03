@@ -91,6 +91,13 @@ printf(">>>>Z 0090a determineFunctionKeyItem       -softmenu[menuId].menuItem=%i
       case MNU_MyMenu: {
         dynamicMenuItem = firstItem + itemShift + fn;
         item = userMenuItems[dynamicMenuItem].item;
+        if (item == -MNU_DYNAMIC) {
+          for(uint32_t i = 0; i < numberOfUserMenus; ++i) {
+            if(compareString(userMenuItems[dynamicMenuItem].argumentName, userMenus[i].menuName, CMP_NAME) == 0) {
+                currentUserMenu = i;
+            }
+          }
+        }
         break;
       }
 
@@ -111,6 +118,7 @@ printf(">>>>  0093     firstItem=%d itemShift=%d fn=%d",firstItem, itemShift, fn
       case MNU_DYNAMIC: {
         dynamicMenuItem = firstItem + itemShift + fn;
         item = userMenus[currentUserMenu].menuItem[dynamicMenuItem].item;
+        // currentUserMenu update is managed later on in executeFunction
         break;
       }
 
@@ -230,7 +238,9 @@ printf(">>>>Z 0093c determineFunctionKeyItem  item = %i:   name:=%s\n",item, ind
               }
               else {
                 item = -MNU_DYNAMIC;
-                currentUserMenu = i;
+                if (calcMode != CM_ASSIGN) {
+                  currentUserMenu = i;
+                }
               }
             }
           }
@@ -924,6 +934,15 @@ int16_t lastItem = 0;
         #endif //VERBOSEKEYS
 
         item = determineFunctionKeyItem_C47((char *)data, shiftF, shiftG); }
+        
+        // Update currentUserMenu for user defined menus selected in an existing function
+        if ((softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_DYNAMIC) && (item == -MNU_DYNAMIC)) {
+          for(uint32_t i = 0; i < numberOfUserMenus; ++i) {
+            if(compareString(userMenus[currentUserMenu].menuItem[dynamicMenuItem].argumentName, userMenus[i].menuName, CMP_NAME) == 0) {
+                currentUserMenu = i;
+            }
+          }
+        }
 
         #if defined(VERBOSEKEYS)
         printf(">>>> R000B                                %d |%s| shiftF=%d, shiftG=%d tam.mode=%i\n",item, data, shiftF, shiftG, tam.mode);
@@ -974,6 +993,8 @@ int16_t lastItem = 0;
           else if(item < 0) { // softmenu
             if(calcMode == CM_ASSIGN && itemToBeAssigned == 0 && softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_MENUS) {
               itemToBeAssigned = item;
+              leaveAsmMode();
+              popSoftmenu();
             }
             else {
               #if defined(VERBOSEKEYS)
@@ -1636,6 +1657,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
 
       int16_t item;
       int keyCode = (*((char *)data) - '0')*10 + *(((char *)data) + 1) - '0';
+      currentKeyCode = keyCode;
       if(checkNumber((uint8_t)keyCode)) {
         return;
       }
@@ -1900,15 +1922,26 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
         fnTimerStop(TO_3S_CTFF);      //dr
 
         hideFunctionName();
+        
+        int keyCode = (*((char *)data) - '0')*10 + *(((char *)data) + 1) - '0';
+        int keyStateCode = (getSystemFlag(FLAG_ALPHA) ? 3 : 0) + (lastshiftG ? 2 : lastshiftF ? 1 : 0);
+        char *funcParam = (char *)getNthString((uint8_t *)userKeyLabel, keyCode * 6 + keyStateCode);
+        if (showFunctionNameArg != NULL) {
+          funcParam = showFunctionNameArg;       // Needed when executing a user menu from a long pressed key
+        }
+        
         if(item < 0) {
-            //printf("AA1 allowShiftsToClearError=%u !checkShifts=%u screenUpdatingMode=%u temporaryInformation=%u\n",allowShiftsToClearError, !checkShifts((char *)data), screenUpdatingMode, temporaryInformation);
+          if (item == -MNU_DYNAMIC) {
+            for(uint32_t i = 0; i < numberOfUserMenus; ++i) {
+              if(compareString(funcParam, userMenus[i].menuName, CMP_NAME) == 0) {
+                  currentUserMenu = i;
+              }
+            }
+          }
           showSoftmenu(item);
             //printf("AA2 allowShiftsToClearError=%u !checkShifts=%u screenUpdatingMode=%u temporaryInformation=%u\n",allowShiftsToClearError, !checkShifts((char *)data), screenUpdatingMode, temporaryInformation);
         }
         else {
-          int keyCode = (*((char *)data) - '0')*10 + *(((char *)data) + 1) - '0';
-          int keyStateCode = (getSystemFlag(FLAG_ALPHA) ? 3 : 0) + (shiftG ? 2 : shiftF ? 1 : 0);
-          char *funcParam = (char *)getNthString((uint8_t *)userKeyLabel, keyCode * 6 + keyStateCode);
         #if defined(PC_BUILD)
           if(item == ITM_RS || item == ITM_XEQ) {
             key[0] = 0;
@@ -3028,7 +3061,7 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
         case CM_FONT_BROWSER:
         case CM_CONFIRMATION:
         case CM_ERROR_MESSAGE:
-      case CM_BUG_ON_SCREEN: {
+        case CM_BUG_ON_SCREEN: {
             // Browser or message should be closed first
             break;
       }
@@ -3052,7 +3085,7 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
                 }
                 return;
             }
-    }
+      }
     }
 
     if(tam.mode) {                               //if in TAM mode
@@ -3475,7 +3508,7 @@ void fnKeyCC(uint16_t complex_Type) {    //JM Using 'unusedButMandatoryParameter
       default: {
         sprintf(errorMessage, commonBugScreenMessages[bugMsgCalcModeWhileProcKey], "fnKeyCC", calcMode, "CC");
         displayBugScreen(errorMessage);
-    }
+      }
     }
   #endif // !TESTSUITE_BUILD
 }
