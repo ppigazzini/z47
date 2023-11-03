@@ -86,14 +86,14 @@ TO_QSPI static const char bugScreenItemNotDetermined[] = "In function determineI
     #endif // VERBOSEKEYS
     #if defined(PC_BUILD)
       char tmp[200];
-      sprintf(tmp,"^^^^determineFunctionKeyItem_C47(%d): itemShift=%d menuId=%d menuItem=%d\n", fn, itemShift, menuId, -softmenu[menuId].menuItem);
+      sprintf(tmp,"^^^^determineFunctionKeyItem_C47(%d): itemShift=%d menuId=%d menuItem=%d", fn, itemShift, menuId, -softmenu[menuId].menuItem);
       jm_show_comment(tmp);
     #endif // PC_BUILD
 
     if(IS_BASEBLANK_(menuId)) {
       return item;
     }
-    
+
     #pragma GCC diagnostic push
     #pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
 #if defined(VERBOSEKEYS)
@@ -130,13 +130,7 @@ printf(">>>>  0093     firstItem=%d itemShift=%d fn=%d",firstItem, itemShift, fn
       case MNU_DYNAMIC: {
         dynamicMenuItem = firstItem + itemShift + fn;
         item = userMenus[currentUserMenu].menuItem[dynamicMenuItem].item;
-        if (item == -MNU_DYNAMIC) {
-          for(uint32_t i = 0; i < numberOfUserMenus; ++i) {
-            if(compareString(userMenus[currentUserMenu].menuItem[dynamicMenuItem].argumentName, userMenus[i].menuName, CMP_NAME) == 0) {
-                //currentUserMenu = i;
-            }
-          }
-        }
+        // currentUserMenu update is managed later on in executeFunction
         break;
       }
 
@@ -298,7 +292,7 @@ printf(">>>>Z 0093c determineFunctionKeyItem  item = %i:   name:=%s\n",item, ind
       #endif //VERBOSEKEYS
       }
     }
-  
+
   #if defined(VERBOSEKEYS)
   printf(">>>>Z 0094B    calcMode == %u  data=|%s| data[0]=%d item=%d itemShift=%d (Global) FN_key_pressed=%d\n",calcMode, data,data[0],item,itemShift, FN_key_pressed);
   printf(">>>>  0095     dynamicMenuItem=%d\n",dynamicMenuItem);
@@ -847,10 +841,11 @@ int16_t lastItem = 0;
   #if defined(PC_BUILD)
     void btnFnReleased(GtkWidget *notUsed, GdkEvent *event, gpointer data) {
   #endif // PC_BUILD
+
   #if defined(DMCP_BUILD)
     void btnFnReleased(void *data) {
   #endif // DMCP_BUILD
-   
+
     if(programRunStop == PGM_KEY_PRESSED_WHILE_PAUSED) {
       programRunStop = PGM_RESUMING;
       screenUpdatingMode &= ~SCRUPD_ONE_TIME_FLAGS;
@@ -916,9 +911,9 @@ int16_t lastItem = 0;
 
       btnFnReleased_StateMachine(NULL, data);            //This function does the longpress differentiation, and calls ExecuteFunctio below, via fnbtnclicked
     }
- 
+
     fnTimerStop(TO_3S_CTFF);      //dr
-    fnTimerStop(TO_CL_LONG);      //dr 
+    fnTimerStop(TO_CL_LONG);      //dr
   }
 
 
@@ -948,9 +943,10 @@ int16_t lastItem = 0;
         #if defined(VERBOSEKEYS)
         printf(">>>> R000A >>determineFunctionKeyItem_C47 %d |%s| shiftF=%d, shiftG=%d tam.mode=%i\n",item, data, shiftF, shiftG, tam.mode);
         #endif //VERBOSEKEYS
-    
+
         item = determineFunctionKeyItem_C47((char *)data, shiftF, shiftG); }
         
+        // Update currentUserMenu for user defined menus selected in an existing function
         if ((softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_DYNAMIC) && (item == -MNU_DYNAMIC)) {
           for(uint32_t i = 0; i < numberOfUserMenus; ++i) {
             if(compareString(userMenus[currentUserMenu].menuItem[dynamicMenuItem].argumentName, userMenus[i].menuName, CMP_NAME) == 0) {
@@ -1586,6 +1582,7 @@ bool_t allowShiftsToClearError = false;
       GdkEvent mouseButton;
       mouseButton.button.button = 1;
       mouseButton.type = 0;
+
       btnPressed(notUsed, &mouseButton, data);
       btnReleased(notUsed, &mouseButton, data);
   }
