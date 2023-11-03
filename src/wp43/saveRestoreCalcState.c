@@ -59,7 +59,7 @@
 #endif
 
 #include "wp43.h"
-#define BACKUP_VERSION                     786  // add MYM3
+#define BACKUP_VERSION                     788  // Updated softmenuStack_t structure for user menu id
 #define OLDEST_COMPATIBLE_BACKUP_VERSION   779  // save running app
 #define configFileVersion                  10000008 // New STOCFG and new STATE file; arbitrary starting point version 10 000 001. Allowable values are 10000000 to 20000000
 #define VersionAllowed                     10000005 // This code will not autoload versions earlier than this
@@ -462,7 +462,12 @@ static uint32_t restore(void *buffer, uint32_t size) {
       restore(asmBuffer,                           sizeof(asmBuffer));
       restore(oldTime,                             sizeof(oldTime));
       restore(dateTimeString,                      sizeof(dateTimeString));
-      restore(softmenuStack,                       sizeof(softmenuStack));
+      if(backupVersion >= 788 ) {                                               
+        restore(softmenuStack,                     sizeof(softmenuStack));
+      } else {
+        restore(softmenuStack,                     32);
+        memset(softmenuStack, 0,                   sizeof(softmenuStack));                        // [DL] Reset softmenuStack, don't use old softmenuStack content
+      }
       restore(globalRegister,                      sizeof(globalRegister));
       restore(savedStackRegister,                  sizeof(savedStackRegister));
       restore(kbd_usr,                             sizeof(kbd_usr));
