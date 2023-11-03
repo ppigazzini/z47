@@ -1945,7 +1945,6 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
     }
   }
 
-
   bool_t SigmaPlusNRM = ((calcMode == CM_NORMAL || calcMode == CM_NIM) && key->keyId == 21 && Norm_Key_00_VAR != ITM_SIGMAPLUS);
 
   if(SigmaPlusNRM /*&& calcMode == CM_NORMAL*/ /*&& Norm_Key_00_VAR != ITM_SHIFTg*/) {               //Sigma+NRM: JChange the name inside the Sigma+ button; allow USER mode, but override the USER setting for Sigma+, except for shiftg which is not overriden
@@ -1997,7 +1996,7 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
   stringToUtf8(indexOfItems[max(key->fShifted, -key->fShifted)].itemSoftmenuName, lbl);
   if(strcmp((char *)lbl, "DYNMNU") == 0) {
     stringToUtf8((char *)getNthString((uint8_t *)userKeyLabel, keyLogicalId*6+1),lbl);
-  }
+  }    
   
   if(key->fShifted == 0) {
     lbl[0] = 0;
@@ -2019,7 +2018,7 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
   strcpy(sstmp, indexOfItems[max(key->gShifted, -key->gShifted)].itemSoftmenuName);
   if((key->gShifted == ITM_op_j || key->gShifted == ITM_op_j_pol) && getSystemFlag(FLAG_CPXj)) sstmp[1]++;
   if(key->gShifted == ITM_EE_EXP_TH && getSystemFlag(FLAG_CPXj)) sstmp[3]++;
-  stringToUtf8(sstmp, lbl); 
+  stringToUtf8(sstmp, lbl);
   if(strcmp((char *)lbl, "DYNMNU") == 0) {
     stringToUtf8((char *)getNthString((uint8_t *)userKeyLabel, keyLogicalId*6+2),lbl);
   }

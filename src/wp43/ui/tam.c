@@ -317,6 +317,9 @@
       forceTry = true;
     }
     else if(item == ITM_BACKSPACE) {
+      #if defined(PC_BUILD)
+        printf("**[DL]** _tamProcessInput item %d\n",item);
+      #endif // PC_BUILD
       if(tam.alpha) {
         if(stringByteLength(aimBuffer) != 0) {
           // Delete the last character
@@ -324,6 +327,9 @@
           aimBuffer[lg] = 0;
         }
         else if(tam.mode == TM_NEWMENU) {
+          #if defined(PC_BUILD)
+            printf("**[DL]** _tamProcessInput tamLeaveMode TM_NEWMENU\n");
+          #endif // PC_BUILD
           tamLeaveMode();
           runFunction(ITM_ASSIGN);
         }
@@ -1024,6 +1030,7 @@
       }
 
       case TM_NEWMENU: {
+        showSoftmenu(-MNU_TAMALPHA);
         break;
       }
 
@@ -1039,7 +1046,7 @@
       }
     }
 
-    numberOfTamMenusToPop = func == ITM_ASSIGN ? 0 : 1;
+    numberOfTamMenusToPop = 1;
 
     _tamUpdateBuffer();
 

@@ -886,6 +886,7 @@ void execTimerApp(uint16_t timerType) {
           showFunctionName(JM_auto_longpress_enabled, JM_TO_CL_LONG + 50, "SF:LL");     //Add a marginal amout of time to prevent racing of end conditions.
         }
         JM_auto_longpress_enabled = 0;                                       //showFunctionName must not time out longer than the timer that is started below
+
         //Setup up next long press activation possibility
         if(longpressDelayedkey2) {
           JM_auto_longpress_enabled = longpressDelayedkey2;
