@@ -453,13 +453,13 @@
         case 65471: // F2
           if(calcMode == CM_EIM || AlphaArrowsOffAndUpDn) {
             #if defined(VERBOSEKEYS)
-              printf("key FNPressed - PRESS: F1\n");
+              printf("key FNPressed - PRESS: F2\n");
             #endif
             btnFnClickedP(w, "2");
           }
           else {
             #if defined(VERBOSEKEYS)
-              printf("key FNpressed: F1\n");
+              printf("key FNpressed: F2\n");
             #endif
             btnFnClicked(w, "2");
           }
@@ -467,13 +467,13 @@
         case 65472: // F3
           if(calcMode == CM_EIM || AlphaArrowsOffAndUpDn) {
             #if defined(VERBOSEKEYS)
-              printf("key FNPressed - PRESS: F1\n");
+              printf("key FNPressed - PRESS: F3\n");
             #endif
             btnFnClickedP(w, "3");
           }
           else {
             #if defined(VERBOSEKEYS)
-              printf("key FNpressed: F1\n");
+              printf("key FNpressed: F3\n");
             #endif
             btnFnClicked(w, "3");
           }
@@ -481,13 +481,13 @@
         case 65473: // F4
           if(calcMode == CM_EIM || AlphaArrowsOffAndUpDn) {
             #if defined(VERBOSEKEYS)
-              printf("key FNPressed - PRESS: F1\n");
+              printf("key FNPressed - PRESS: F4\n");
             #endif
             btnFnClickedP(w, "4");
           }
           else {
             #if defined(VERBOSEKEYS)
-              printf("key FNpressed: F1\n");
+              printf("key FNpressed: F4\n");
             #endif
             btnFnClicked(w, "4");
           }
@@ -495,13 +495,13 @@
         case 65474: // F5
           if(calcMode == CM_EIM || AlphaArrowsOffAndUpDn) {
             #if defined(VERBOSEKEYS)
-              printf("key FNPressed - PRESS: F1\n");
+              printf("key FNPressed - PRESS: F5\n");
             #endif
             btnFnClickedP(w, "5");
           }
           else {
             #if defined(VERBOSEKEYS)
-              printf("key FNpressed: F1\n");
+              printf("key FNpressed: F5\n");
             #endif
             btnFnClicked(w, "5");
           }
@@ -509,13 +509,13 @@
         case 65475: // F6
           if(calcMode == CM_EIM || AlphaArrowsOffAndUpDn) {
             #if defined(VERBOSEKEYS)
-              printf("key FNPressed - PRESS: F1\n");
+              printf("key FNPressed - PRESS: F6\n");
             #endif
             btnFnClickedP(w, "6");
           }
           else {
             #if defined(VERBOSEKEYS)
-              printf("key FNpressed: F1\n");
+              printf("key FNpressed: F6\n");
             #endif
             btnFnClicked(w, "6");
           }
