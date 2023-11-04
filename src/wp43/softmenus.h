@@ -58,6 +58,7 @@ void     fnExitAllMenus         (uint16_t unusedButMandatoryParameter);
    * \param[in] id ID of softmenu
    */
   void   showSoftmenu           (int16_t id);
+  void   setCurrentUserMenu     (int16_t item, char* funcParam);
 
   /**
    * Pops a softmenu from the softmenu stack.
