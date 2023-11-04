@@ -33,8 +33,7 @@
 
 
 #if !defined(TESTSUITE_BUILD)
-
-TO_QSPI static const char bugScreenShowFonts[] = "In function showFonts: This should never happen!";
+  //TO_QSPI static const char bugScreenShowFonts[] = "In function showFonts: This should never happen!";
 
   /********************************************//**
    * \brief The font browser application initialisation
@@ -58,7 +57,8 @@ TO_QSPI static const char bugScreenShowFonts[] = "In function showFonts: This sh
     if(numLinesNumericFont % NUMBER_OF_NUMERIC_FONT_LINES_PER_SCREEN != 0) {
       numScreensNumericFont++;
     }
-printf(">>>> @@ %i\n",numScreensNumericFont);
+    //printf(">>>> @@ numeric font screens %i\n", numScreensNumericFont);
+
     numLinesStandardFont  = 0;
     for(g=0; g<standardFont.numberOfGlyphs;) {
       glyphRow[numLinesNumericFont + numLinesStandardFont] = standardFont.glyphs[g].charCode & 0xfff0;
@@ -72,12 +72,28 @@ printf(">>>> @@ %i\n",numScreensNumericFont);
     if(numLinesStandardFont % NUMBER_OF_STANDARD_FONT_LINES_PER_SCREEN != 0) {
       numScreensStandardFont++;
     }
+    //printf(">>>> @@ standard font screens %i\n", numScreensStandardFont);
+
+    numLinesTinyFont  = 0;
+    for(g=0; g<tinyFont.numberOfGlyphs;) {
+      glyphRow[numLinesNumericFont + numLinesStandardFont + numLinesTinyFont] = tinyFont.glyphs[g].charCode & 0xfff0;
+      while(g<tinyFont.numberOfGlyphs && ((tinyFont.glyphs[g].charCode&0xfff0) == glyphRow[numLinesNumericFont + numLinesStandardFont + numLinesTinyFont])) {
+        g++;
+      }
+      numLinesTinyFont++;
+    }
+
+    numScreensTinyFont = numLinesTinyFont / NUMBER_OF_STANDARD_FONT_LINES_PER_SCREEN;
+    if(numLinesTinyFont % NUMBER_OF_STANDARD_FONT_LINES_PER_SCREEN != 0) {
+      numScreensTinyFont++;
+    }
+    //printf(">>>> @@ tiny font screens %i\n", numScreensTinyFont);
 
     currentFntScr = 1;
 
     #if defined(PC_BUILD)
-      if(numLinesNumericFont + numLinesStandardFont > NUMBER_OF_GLYPH_ROWS) {
-        printf("In file defines.h NUMBER_OF_GLYPH_ROWS must be increased from %d to %d\n", NUMBER_OF_GLYPH_ROWS, numLinesNumericFont + numLinesStandardFont);
+      if(numLinesNumericFont + numLinesStandardFont + numLinesTinyFont > NUMBER_OF_GLYPH_ROWS) {
+        printf("In file defines.h NUMBER_OF_GLYPH_ROWS must be increased from %d to %d\n", NUMBER_OF_GLYPH_ROWS, numLinesNumericFont + numLinesStandardFont + numLinesTinyFont);
         exit(-1);
       }
     #endif // PC_BUILD
@@ -105,6 +121,7 @@ printf(">>>> @@ %i\n",numScreensNumericFont);
     }
 
     if(currentFntScr>=1 && currentFntScr<=numScreensNumericFont) { // Numeric font
+      //printf("Numeric  font currentFntScr=%2u\n", currentFntScr);
       for(x=0; x<=9; x++) {
         showGlyphCode('0'+x, &standardFont, 50+20*x,     20, vmNormal, false, false);
       }
@@ -128,11 +145,12 @@ printf(">>>> @@ %i\n",numScreensNumericFont);
         showString("Numeric font. Press " STD_UP_ARROW ", " STD_DOWN_ARROW " or EXIT", &standardFont, 5, 220, vmNormal, false, false);
       }
 
-      sprintf(tmpString, "%d/%d", currentFntScr, numScreensNumericFont+numScreensStandardFont);
+      sprintf(tmpString, "%d/%d", currentFntScr, numScreensNumericFont+numScreensStandardFont+numScreensTinyFont);
       showString(tmpString, &standardFont, SCREEN_WIDTH - stringWidth(tmpString, &standardFont, false, true), 220, vmNormal, false, true);
     }
 
     else if(currentFntScr>numScreensNumericFont && currentFntScr<=numScreensNumericFont+numScreensStandardFont) { // Standard font
+      //printf("Standard font currentFntScr=%2u\n", currentFntScr);
       for(x=0; x<=9; x++) {
         showGlyphCode('0'+x, &standardFont, 50+20*x,     20, vmNormal, false, false);
       }
@@ -149,18 +167,48 @@ printf(">>>> @@ %i\n",numScreensNumericFont);
         }
       }
 
-      if(currentFntScr == numScreensNumericFont+numScreensStandardFont) {
+      if(currentFntScr == numScreensNumericFont+numScreensStandardFont+numScreensTinyFont) {
         showString("Standard font. Press " STD_UP_ARROW " or EXIT", &standardFont, 5, 220, vmNormal, false, false);
       }
       else {
         showString("Standard font. Press " STD_UP_ARROW ", " STD_DOWN_ARROW " or EXIT", &standardFont, 5, 220, vmNormal, false, false);
       }
 
-      sprintf(tmpString, "%d/%d", currentFntScr, numScreensNumericFont+numScreensStandardFont);
+      sprintf(tmpString, "%d/%d", currentFntScr, numScreensNumericFont+numScreensStandardFont+numScreensTinyFont);
       showString(tmpString, &standardFont, SCREEN_WIDTH-stringWidth(tmpString, &standardFont, false, true), 220, vmNormal, false, true);
     }
+
+    else if(currentFntScr>numScreensNumericFont+numScreensStandardFont && currentFntScr<=numScreensNumericFont+numScreensStandardFont+numScreensTinyFont) { // Tiny font
+      //printf("Tiny     font currentFntScr=%2u\n", currentFntScr);
+      for(x=0; x<=9; x++) {
+        showGlyphCode('0'+x, &standardFont, 50+20*x,     20, vmNormal, false, false);
+      }
+      for(x=0; x<=5; x++) {
+        showGlyphCode('A'+x, &standardFont, 50+200+20*x, 20, vmNormal, false, false);
+      }
+
+      first = numLinesNumericFont + numLinesStandardFont + (currentFntScr-numScreensNumericFont-numScreensStandardFont-1) * NUMBER_OF_STANDARD_FONT_LINES_PER_SCREEN;
+      for(y=first; y<min(numLinesNumericFont + numLinesStandardFont + (currentFntScr-numScreensNumericFont-numScreensStandardFont) * NUMBER_OF_STANDARD_FONT_LINES_PER_SCREEN, numLinesNumericFont+numLinesStandardFont+numLinesTinyFont); y++) {
+        sprintf(tmpString, "%04X", glyphRow[y]<0x8000 ? glyphRow[y] : glyphRow[y]-0x8000);
+        showString(tmpString, &standardFont, 5, STANDARD_FONT_HEIGHT*(y-first)+40, vmNormal, false, false);
+        for(x=0; x<=15; x++) {
+          showGlyphCode(glyphRow[y]+x, &tinyFont, 52+20*x, STANDARD_FONT_HEIGHT*(y-first)+46, vmNormal, false, false);
+        }
+      }
+
+      if(currentFntScr == numScreensNumericFont+numScreensStandardFont+numScreensTinyFont) {
+        showString("Tiny font. Press " STD_UP_ARROW " or EXIT", &standardFont, 5, 220, vmNormal, false, false);
+      }
+      else {
+        showString("Tiny font. Press " STD_UP_ARROW ", " STD_DOWN_ARROW " or EXIT", &standardFont, 5, 220, vmNormal, false, false);
+      }
+
+      sprintf(tmpString, "%d/%d", currentFntScr, numScreensNumericFont+numScreensStandardFont+numScreensTinyFont);
+      showString(tmpString, &standardFont, SCREEN_WIDTH-stringWidth(tmpString, &standardFont, false, true), 220, vmNormal, false, true);
+    }
+
     else {
-      displayBugScreen(bugScreenShowFonts);
+      //displayBugScreen(bugScreenShowFonts);
     }
   #endif // !SAVE_SPACE_DM42_8
   }

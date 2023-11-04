@@ -61,7 +61,7 @@
 #endif
 
 #include "wp43.h"
-#define BACKUP_VERSION                     787  // Change bestf
+#define BACKUP_VERSION                     789  // Added tiny font
 #define OLDEST_COMPATIBLE_BACKUP_VERSION   779  // save running app
 #define configFileVersion                  10000008 // New STOCFG and new STATE file; arbitrary starting point version 10 000 001. Allowable values are 10000000 to 20000000
 #define VersionAllowed                     10000005 // This code will not autoload versions earlier than this
@@ -405,6 +405,9 @@ static uint32_t restore(void *buffer, uint32_t size) {
     save(&grpGroupingRight,                   sizeof(grpGroupingRight));          //JM
     save(&MYM3,                               sizeof(MYM3));
 
+    save(&numScreensTinyFont,                 sizeof(numScreensTinyFont));
+    save(&numLinesTinyFont,                   sizeof(numLinesTinyFont));
+
     ioFileClose();
     printf("End of calc's backup\n");
   }
@@ -745,11 +748,17 @@ static uint32_t restore(void *buffer, uint32_t size) {
       }
 
       if(backupVersion >= 786) {
-        restore(&MYM3,                                 sizeof(MYM3));
+        restore(&MYM3,                               sizeof(MYM3));
       }
       else {
         MYM3 = false;
       }
+
+      if(backupVersion >= 789) {
+        restore(&numScreensTinyFont,                 sizeof(numScreensTinyFont));
+        restore(&numLinesTinyFont,                   sizeof(numLinesTinyFont));
+      }
+
 
       ioFileClose();
       printf("End of calc's restoration\n");

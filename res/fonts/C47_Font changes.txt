@@ -157,8 +157,8 @@ Added the following:
     2023-05-25 Add STD_WPERIOD                       "\xff\x0e" //   ff0e  THESE TWO ARE ISSUES AND NEED NEW NUMBERS
     2023-05-25 Add STD_WCOMMA                        "\xff\x0c" //   ff0c  THESE TWO ARE ISSUES AND NEED NEW NUMBERS
     2023-05-25 Add STD_NQUOTE                        "\x82\xbc" //   02bc
-    2023-05-25 Add STD_INV_BRIDGE                    "\x83\x3a" //   033a   
-    
+    2023-05-25 Add STD_INV_BRIDGE                    "\x83\x3a" //   033a
+
     2023-05-29 #define STD_op_i                      "\xa6\x7c"
     2023-05-29 #define STD_op_j                      "\xa6\x7d"
     2023-05-29 #define STD_case                      "\xa6\x7b"
@@ -178,17 +178,17 @@ Added the following:
     03E1 sampi-grek                                 STD_sampi                     "\x83\xe1"
     21D2 rightwardsdoublearrow                      STD_RIGHT_DOUBLE_ARROW        "\xa1\xD2"
     267A recyclingsymbolforgenericmaterials         STD_RECYCLE                   "\xa6\x7A"
-    22C5 dotoperator                                STD_WDOT                      "\xa2\xc5"   
+    22C5 dotoperator                                STD_WDOT                      "\xa2\xc5"
   > 2789 fullwidthfullstop                          STD_WPERIOD                   "\xff\x0e"   THESE TWO ARE ISSUES AND NEED NEW NUMBERS: Changed from FF0E to 2789
   > 2788 fullwidthcomma                             STD_WCOMMA                    "\xff\x0c"   THESE TWO ARE ISSUES AND NEED NEW NUMBERS: Changed from FF0C to 2788
-    02BC apostrophemod                              STD_NQUOTE                    "\x82\xbc"   
+    02BC apostrophemod                              STD_NQUOTE                    "\x82\xbc"
     267C recycledpapersymbol (i)                    STD_op_i                      "\xa6\x7c"
     267D partiallyrecycledpapersymbol (j)           STD_op_j                      "\xa6\x7d"
     267B blackuniversalrecyclingsymbol              STD_case                      "\xa6\x7b"
     267E permanentpapersign                         STD_num                       "\xa6\x7e"
     22A2 righttack                                  STD_RIGHT_TACK                "\xa2\xa2"
     033A invertedbridgebelowcomb                    STD_INV_BRIDGE                "\x83\x3a"
-  
+
   Numeric Font, after z:
     03DC Digamma-grek                               STD_DIGAMMA                   "\x83\xdc"
     03DD digamma-grek                               STD_digamma                   "\x83\xdd"
@@ -198,23 +198,23 @@ Added the following:
     03E1 sampi-grek                                 STD_sampi                     "\x83\xe1"
     21D2 rightwardsdoublearrow                      STD_RIGHT_DOUBLE_ARROW        "\xa1\xD2"
     267A recyclingsymbolforgenericmaterials         STD_RECYCLE                   "\xa6\x7A"
-    22C5 dotoperator                                STD_WDOT                      "\xa2\xc5"   
+    22C5 dotoperator                                STD_WDOT                      "\xa2\xc5"
   > 2789 fullwidthfullstop                          STD_WPERIOD                   "\xff\x0e"   THESE TWO ARE ISSUES AND NEED NEW NUMBERS: Changed from FF0E to 2789
   > 2788 fullwidthcomma                             STD_WCOMMA                    "\xff\x0c"   THESE TWO ARE ISSUES AND NEED NEW NUMBERS: Changed from FF0C to 2788
-    02BC apostrophemod                              STD_NQUOTE                    "\x82\xbc"   
+    02BC apostrophemod                              STD_NQUOTE                    "\x82\xbc"
     2219 bulletoperator                             STD_BULLET                    "\xa2\x19"   //not new item, just added to the font
     267C recycledpapersymbol (i)                    STD_op_i                      "\xa6\x7c"
     267D partiallyrecycledpapersymbol (j)           STD_op_j                      "\xa6\x7d"
 
-2023-06-04 Add four arrows 
+2023-06-04 Add four arrows
 
-    21E0 leftwardsdashedarrow                       STD_LEFT_DASHARROW            "\xa1\xe0"   
-    21E1 upwardsdashedarrow                         STD_UP_DASHARROW              "\xa1\xe1"  
-    21E2 rightwardsdashedarrow                      STD_RIGHT_DASHARROW           "\xa1\xe2"  
-    21E3 downwardsdashedarrow                       STD_DOWN_DASHARROW            "\xa1\xe3"  
+    21E0 leftwardsdashedarrow                       STD_LEFT_DASHARROW            "\xa1\xe0"
+    21E1 upwardsdashedarrow                         STD_UP_DASHARROW              "\xa1\xe1"
+    21E2 rightwardsdashedarrow                      STD_RIGHT_DASHARROW           "\xa1\xe2"
+    21E3 downwardsdashedarrow                       STD_DOWN_DASHARROW            "\xa1\xe3"
 
 -------
-2023-06-12 Change both fonts i and j to 
+2023-06-12 Change both fonts i and j to
     $2148 i
     $2149 j
 
@@ -233,9 +233,9 @@ Added the following:
     $1E9F g                                         STD_MODE_G                    "\x9E\x9F"  //1E9F
 
 2023-08-21 Numeric font: Add HP35 seven segment font
-    $2024 PERIOD                    "\xa0\x24"     // 
-    $24ea 0                         "\xa4\xea"     // 
-    $24f5 1                         "\xa4\xf5"     // 
+    $2024 PERIOD                    "\xa0\x24"     //
+    $24ea 0                         "\xa4\xea"     //
+    $24f5 1                         "\xa4\xf5"     //
 2                         "\xa4\xf6"
 3                         "\xa4\xf7"
 4                         "\xa4\xf8"
@@ -250,3 +250,4 @@ PLUS                      "\xa4\xff"
 
 2023-09-24 Numeric font - fixed spacing of the subscript 0 glyph
 
+2023-11-04 Adding the tiny font
