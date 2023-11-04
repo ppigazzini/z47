@@ -99,7 +99,7 @@
     extern const calcKey_t                 kbd_std_E47[37];
     extern const calcKey_t                 kbd_std_N47[37];
   #endif // PC_BUILD
-  extern const font_t                    standardFont, numericFont;
+  extern const font_t                    standardFont, numericFont, tinyFont;
   extern const font_t                   *fontForShortInteger;
   extern const font_t                   *cursorFont;
   extern const char                      digits[17];
@@ -196,6 +196,8 @@
   extern uint16_t               gapItemRight;
   extern uint16_t               gapItemRadix;
   extern uint8_t                numScreensStandardFont;
+  extern uint8_t                numScreensNumericFont;
+  extern uint8_t                numScreensTinyFont;
   extern uint8_t                currentAsnScr;
   extern uint8_t                currentFntScr;
   extern uint8_t                currentFlgScr;
@@ -222,13 +224,13 @@
   extern uint8_t                alphaCase;
   extern uint8_t                numLinesNumericFont;
   extern uint8_t                numLinesStandardFont;
+  extern uint8_t                numLinesTinyFont;
   extern uint8_t                cursorEnabled;
   extern uint8_t                nimNumberPart;
   extern uint8_t                hexDigits;
   extern uint8_t                lastErrorCode;
   extern uint8_t                temporaryInformation;
   extern uint8_t                rbrMode;
-  extern uint8_t                numScreensNumericFont;
   extern uint8_t                timerCraAndDeciseconds;
   extern uint8_t                programRunStop;
   extern uint8_t                lastKeyCode;
