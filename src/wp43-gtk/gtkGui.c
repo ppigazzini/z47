@@ -223,6 +223,18 @@
   uint32_t CTRL_State;
   uint32_t event_keyval = 99999999;
 
+  #define AlphaArrowsOffAndUpDn       ((bool_t)( \
+                                    softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_SYSFL ||       \
+                                    softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_VAR ||         \
+                                    softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_PROG ||        \
+                                    softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_ALPHA_OMEGA || \
+                                    softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_alpha_omega || \
+                                    softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_ALPHAMISC ||   \
+                                    softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_ALPHAMATH ||   \
+                                    softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_ALPHAINTL ||   \
+                                    softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_ALPHAintl ))
+
+
 
   gboolean keyReleased(GtkWidget *w, GdkEventKey *event, gpointer data) {     //JM
     //printf("Released %d\n", event->keyval);
@@ -237,44 +249,57 @@
         break;
 
 
-      case 65470: // F1                      //JM Added this portion to be able to go to NOP on emulator
-        //printf("key pressed: F1\n");
-        if(!tam.mode) {
+      case 65470: // F1                                                    //**************-- FUNCTION KEYS --***************//
+                  //                                                       //JM Added this portion to be able to go to NOP on emulator
+        #if defined(VERBOSEKEYS)
+          printf("key FNPressed - RELEASE: F1\n");
+        #endif
+        if(!tam.mode || (tam.mode && AlphaArrowsOffAndUpDn)) {
           btnFnClickedR(w, "1");
         }
         break;
 
       case 65471: // F2
-        //printf("key pressed: F2\n");
-        if(!tam.mode) {
+        #if defined(VERBOSEKEYS)
+          printf("key FNPressed - RELEASE: F2\n");
+        #endif
+        if(!tam.mode || (tam.mode && AlphaArrowsOffAndUpDn)) {
           btnFnClickedR(w, "2");
         }
         break;
 
       case 65472: // F3
-        //printf("key pressed: F3\n");
-        if(!tam.mode) {
+        #if defined(VERBOSEKEYS)
+          printf("key FNPressed - RELEASE: F3\n");
+        #endif
+        if(!tam.mode || (tam.mode && AlphaArrowsOffAndUpDn)) {
           btnFnClickedR(w, "3");
         }
         break;
 
       case 65473: // F4
-        //printf("key pressed: F4\n");
-        if(!tam.mode) {
+        #if defined(VERBOSEKEYS)
+          printf("key FNPressed - RELEASE: F4\n");
+        #endif
+        if(!tam.mode || (tam.mode && AlphaArrowsOffAndUpDn)) {
           btnFnClickedR(w, "4");
         }
         break;
 
       case 65474: // F5
-        //printf("key pressed: F5\n");
-        if(!tam.mode) {
+        #if defined(VERBOSEKEYS)
+          printf("key FNPressed - RELEASE: F5\n");
+        #endif
+        if(!tam.mode || (tam.mode && AlphaArrowsOffAndUpDn)) {
           btnFnClickedR(w, "5");
         }
         break;
 
       case 65475: // F6
-        //printf("key pressed: F6\n");
-        if(!tam.mode) {
+        #if defined(VERBOSEKEYS)
+          printf("key FNPressed - RELEASE: F6\n");
+        #endif
+        if(!tam.mode || (tam.mode && AlphaArrowsOffAndUpDn)) {
           btnFnClickedR(w, "6");
         }
         break;
@@ -295,15 +320,6 @@
 
   gboolean keyPressed(GtkWidget *w, GdkEventKey *event, gpointer data) {
     //printf("Pressed %d\n", event->keyval);                                  //JM
-    bool_t AlphaArrowsOffAndUpDn = (softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_SYSFL ||
-                                    softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_VAR ||
-                                    softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_PROG ||
-                                    softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_ALPHA_OMEGA ||
-                                    softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_alpha_omega ||
-                                    softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_ALPHAMISC ||
-                                    softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_ALPHAMATH ||
-                                    softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_ALPHAINTL ||
-                                    softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_ALPHAintl );
     if(event_keyval ==  event->keyval + CTRL_State) {
       return FALSE;
     }
@@ -422,49 +438,85 @@
         //ROW 1
         case 65470: // F1                                                    //**************-- FUNCTION KEYS --***************//
           if(calcMode == CM_EIM || AlphaArrowsOffAndUpDn) {
+            #if defined(VERBOSEKEYS)
+              printf("key FNPressed - PRESS: F1\n");
+            #endif
             btnFnClickedP(w, "1");
           }
           else {
+            #if defined(VERBOSEKEYS)
+              printf("key FNpressed: F1\n");
+            #endif
             btnFnClicked(w, "1");
           }
           break;
         case 65471: // F2
           if(calcMode == CM_EIM || AlphaArrowsOffAndUpDn) {
+            #if defined(VERBOSEKEYS)
+              printf("key FNPressed - PRESS: F1\n");
+            #endif
             btnFnClickedP(w, "2");
           }
           else {
+            #if defined(VERBOSEKEYS)
+              printf("key FNpressed: F1\n");
+            #endif
             btnFnClicked(w, "2");
           }
           break;
         case 65472: // F3
           if(calcMode == CM_EIM || AlphaArrowsOffAndUpDn) {
+            #if defined(VERBOSEKEYS)
+              printf("key FNPressed - PRESS: F1\n");
+            #endif
             btnFnClickedP(w, "3");
           }
           else {
+            #if defined(VERBOSEKEYS)
+              printf("key FNpressed: F1\n");
+            #endif
             btnFnClicked(w, "3");
           }
           break;
         case 65473: // F4
           if(calcMode == CM_EIM || AlphaArrowsOffAndUpDn) {
+            #if defined(VERBOSEKEYS)
+              printf("key FNPressed - PRESS: F1\n");
+            #endif
             btnFnClickedP(w, "4");
           }
           else {
+            #if defined(VERBOSEKEYS)
+              printf("key FNpressed: F1\n");
+            #endif
             btnFnClicked(w, "4");
           }
           break;
         case 65474: // F5
           if(calcMode == CM_EIM || AlphaArrowsOffAndUpDn) {
+            #if defined(VERBOSEKEYS)
+              printf("key FNPressed - PRESS: F1\n");
+            #endif
             btnFnClickedP(w, "5");
           }
           else {
+            #if defined(VERBOSEKEYS)
+              printf("key FNpressed: F1\n");
+            #endif
             btnFnClicked(w, "5");
           }
           break;
         case 65475: // F6
           if(calcMode == CM_EIM || AlphaArrowsOffAndUpDn) {
+            #if defined(VERBOSEKEYS)
+              printf("key FNPressed - PRESS: F1\n");
+            #endif
             btnFnClickedP(w, "6");
           }
           else {
+            #if defined(VERBOSEKEYS)
+              printf("key FNpressed: F1\n");
+            #endif
             btnFnClicked(w, "6");
           }
           break;
