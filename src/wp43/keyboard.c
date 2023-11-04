@@ -103,13 +103,7 @@ printf(">>>>Z 0090a determineFunctionKeyItem       -softmenu[menuId].menuItem=%i
       case MNU_MyMenu: {
         dynamicMenuItem = firstItem + itemShift + fn;
         item = userMenuItems[dynamicMenuItem].item;
-        if (item == -MNU_DYNAMIC) {
-          for(uint32_t i = 0; i < numberOfUserMenus; ++i) {
-            if(compareString(userMenuItems[dynamicMenuItem].argumentName, userMenus[i].menuName, CMP_NAME) == 0) {
-                currentUserMenu = i;
-            }
-          }
-        }
+        setCurrentUserMenu(item, userMenuItems[dynamicMenuItem].argumentName);
         break;
       }
 
@@ -947,12 +941,8 @@ int16_t lastItem = 0;
         item = determineFunctionKeyItem_C47((char *)data, shiftF, shiftG); }
         
         // Update currentUserMenu for user defined menus selected in an existing function
-        if ((softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_DYNAMIC) && (item == -MNU_DYNAMIC)) {
-          for(uint32_t i = 0; i < numberOfUserMenus; ++i) {
-            if(compareString(userMenus[currentUserMenu].menuItem[dynamicMenuItem].argumentName, userMenus[i].menuName, CMP_NAME) == 0) {
-                currentUserMenu = i;
-            }
-          }
+        if(softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_DYNAMIC) {
+          setCurrentUserMenu(item, userMenus[currentUserMenu].menuItem[dynamicMenuItem].argumentName);
         }
 
         #if defined(VERBOSEKEYS)
@@ -1914,13 +1904,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
         }
         
         if(item < 0) {
-          if (item == -MNU_DYNAMIC) {
-            for(uint32_t i = 0; i < numberOfUserMenus; ++i) {
-              if(compareString(funcParam, userMenus[i].menuName, CMP_NAME) == 0) {
-                  currentUserMenu = i;
-              }
-            }
-          }
+          setCurrentUserMenu(item, funcParam);
           showSoftmenu(item);
         }
         else {

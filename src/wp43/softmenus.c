@@ -2192,6 +2192,16 @@ bool_t BASE_OVERRIDEONCE = false;
   }
 
 
+  void setCurrentUserMenu(int16_t item, char* funcParam) {
+    if (item == -MNU_DYNAMIC) {
+      for(uint32_t i = 0; i < numberOfUserMenus; ++i) {
+        if(compareString(funcParam, userMenus[i].menuName, CMP_NAME) == 0) {
+            currentUserMenu = i;
+        }
+      }
+    }
+  }
+
 
   void showSoftmenu(int16_t id) {
 //    if(running_program_jm) return;                             //JM
