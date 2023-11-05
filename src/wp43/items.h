@@ -2282,8 +2282,9 @@
 #define ITM_SI_Gi                   2226
 #define ITM_SI_Ti                   2227
 #define ITM_SI_Pi                   2228
+#define MNU_PREFIX                  2229
 
-#define LAST_ITEM                   2229
+#define LAST_ITEM                   2230
 
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL
