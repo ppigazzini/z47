@@ -1,7 +1,8 @@
 font_files = files(
   '../../res/fonts/sortingOrder.csv',
   '../../res/fonts/C47__NumericFont.ttf',
-  '../../res/fonts/C47__StandardFont.ttf')
+  '../../res/fonts/C47__StandardFont.ttf',
+  '../../res/fonts/C47__TinyFont.ttf')
 ttf2RasterFonts = executable(
   'ttf2RasterFonts',
   build_by_default : false,

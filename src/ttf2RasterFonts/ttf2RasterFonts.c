@@ -148,8 +148,8 @@ void exportCStructure(const char *fontsPath, const char *ttfName) {
   // Set font size //
   ///////////////////
   unitsPerEm       = face->units_per_EM;
-  onePixelSize     = unitsPerEm==1024 ? 32 : 50;      // ???
-  fontHeightPixels = unitsPerEm / onePixelSize; // What is the right formula?
+  onePixelSize     = unitsPerEm==1000 ? 50 : 32;      // ???
+  fontHeightPixels = unitsPerEm / onePixelSize; // What is the correct formula?
   if((error = FT_Set_Pixel_Sizes(face, 0, fontHeightPixels)) != FT_Err_Ok) {
     fprintf(stderr, "Error during FT_Set_Pixel_Sizes from file %s\n", ttfName);
     fprintf(stderr, "Error %d : %s\n", error, getErrorMessage(error));
@@ -208,7 +208,7 @@ void exportCStructure(const char *fontsPath, const char *ttfName) {
   // Go thru all glyphs to render them //
   ///////////////////////////////////////
   fprintf(cFile, "TO_QSPI const font_t %s = {\n", fontName);
-  fprintf(cFile, "  .id             = %d,\n", fontName[0] == 'n' ? 0 : 1);
+  fprintf(cFile, "  .id             = %d,\n", fontName[0] == 'n' ? 0 : (fontName[0] == 's' ? 1 : 2));
   //fprintf(cFile, "  .name           = \"%s\",\n", fontName);
   //fprintf(cFile, "  .ascender       = %d,\n", face->ascender/onePixelSize);
   //fprintf(cFile, "  .descender      = %d,\n", face->descender/onePixelSize);
@@ -418,6 +418,7 @@ void processFiles(const char *fontsPath, const char *outputFile) {
   ///////////////////////////
   exportCStructure(fontsPath, "C47__NumericFont.ttf");
   exportCStructure(fontsPath, "C47__StandardFont.ttf");    //JM ^^
+  exportCStructure(fontsPath, "C47__TinyFont.ttf");
 
   fclose(cFile);
 
