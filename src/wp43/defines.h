@@ -308,6 +308,7 @@
 #define USER_MENG        53
 #define USER_MFIN        54
 #define USER_MCPX        55
+#define USER_HRESET      56
 
 
 //*************************
