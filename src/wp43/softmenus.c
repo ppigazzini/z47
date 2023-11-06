@@ -1881,7 +1881,15 @@ bool_t BASE_OVERRIDEONCE = false;
                     break;
                   }
                   case MNU_DYNAMIC: {
-                    vm = (userMenus[currentUserMenu].menuItem[x + 6*y].item < 0) ? vmReverse : vmNormal;
+                    itemNr = userMenus[currentUserMenu].menuItem[x + 6*y].item;
+                    if(itemNr < 0) {
+                     vm = vmReverse;       //No item name changes available for menu names
+                    }
+                    else {
+                      if(userMenus[currentUserMenu].menuItem[x + 6*y].argumentName[0] == 0) {
+                        changeSoftKey(softmenu[m].menuItem, itemNr, itemName, &vm, &showCb, &showValue, showText);
+                      }
+                    }
                     break;
                   }
                   case MNU_1STDERIV:
