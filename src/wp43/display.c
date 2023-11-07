@@ -358,11 +358,11 @@ void real34ToDisplayString2(const real34_t *real34, char *displayString, int16_t
   bool_t flag2To10 = getSystemFlag(FLAG_2TO10);
   real_t tmp4, tmpIp, tmpFp; 
   real34_t real34bak;
+  real34Copy(real34, &real34bak);
   if(flag2To10 && displayFormat == DF_UN) {
     real_t x;
     real34ToReal(real34, &x);
     int32ToReal(1024,&tmp4);
-    real34Copy(real34, &real34bak);
     if(!realCompareAbsLessThan(&x, &tmp4)) {
       //e^[ lnx / ln1024 ]
       bool_t neg = false;
@@ -1194,7 +1194,7 @@ void real34ToDisplayString2(const real34_t *real34, char *displayString, int16_t
           exponentToDisplayString(exponent, displayString + charIndex, NULL,                       false);
         }
       }                                                                                 //JM UNIT
-      else {  //DF_UN                                                                            //JM UNIT
+      else {  //DF_UN                                                                   //JM UNIT
         exponentToUnitDisplayString(exponent, flag2To10, displayString + charIndex, displayValueX + valueIndex, false);          //JM UNIT
       }                                                                                 //JM UNIT
     }
