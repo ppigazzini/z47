@@ -1641,6 +1641,7 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
       case ITM_UNIT: if(getSystemFlag(FLAG_2TO10) && displayFormat == DF_UN) {
                            stringAppend(showText + stringByteLength(showText), STD_SUB_i);
                         }
+                      break;
 
       case ITM_DSPCYCLE:switch(*showValue) {
                           case 32700 : stringAppend(showText + stringByteLength(showText), "ALL" ); *showValue = NOVAL; break;
