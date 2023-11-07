@@ -86,12 +86,12 @@
 
   typedef decNumber  real_t;
 
-  static const size_t REAL_SIZE      = TO_BLOCKS(sizeof(real_t));
-  static const size_t REAL34_SIZE    = TO_BLOCKS(sizeof(real34_t));
-  static const size_t REAL39_SIZE    = TO_BLOCKS(sizeof(real39_t));
-  static const size_t REAL51_SIZE    = TO_BLOCKS(sizeof(real51_t));
-  static const size_t REAL1071_SIZE  = TO_BLOCKS(sizeof(real1071_t));
-  static const size_t COMPLEX34_SIZE = TO_BLOCKS(sizeof(complex34_t));
+  #define REAL_SIZE      TO_BLOCKS(sizeof(real_t))
+  #define REAL34_SIZE    TO_BLOCKS(sizeof(real34_t))
+  #define REAL39_SIZE    TO_BLOCKS(sizeof(real39_t))
+  #define REAL51_SIZE    TO_BLOCKS(sizeof(real51_t))
+  #define REAL1071_SIZE  TO_BLOCKS(sizeof(real1071_t))
+  #define COMPLEX34_SIZE TO_BLOCKS(sizeof(complex34_t))
 
   #define VARIABLE_REAL34_DATA(a)                                ((real34_t    *)(a))
   #define VARIABLE_IMAG34_DATA(a)                                ((real34_t    *)((dataBlock_t *)(a) + REAL34_SIZE))
