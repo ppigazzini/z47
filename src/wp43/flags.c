@@ -209,7 +209,9 @@ void systemFlagAction(uint16_t systemFlag, uint16_t action) {
     case FLAG_ALLENG: 
     case FLAG_ENDPMT: 
     case FLAG_HPRP:
-    case FLAG_HPBASE:   fnRefreshState(); break;
+    case FLAG_HPBASE:
+    case FLAG_2TO10:
+                     fnRefreshState(); break;
 
 
 
@@ -874,6 +876,11 @@ void SetSetting(uint16_t jmConfig) {
 
     case PR_HPBASE: {
       fnFlipFlag(FLAG_HPBASE);
+      break;
+    }
+
+    case PR_2TO10: {
+      fnFlipFlag(FLAG_2TO10);
       break;
     }
 

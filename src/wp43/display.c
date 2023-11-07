@@ -38,6 +38,7 @@
 #include "mathematics/toPolar.h"
 #include "programming/input.h"
 #include "mathematics/wp34s.h"
+#include "mathematics/10pow.h"
 #include "mathematics/rsd.h"
 #include "c43Extensions/radioButtonCatalog.h"
 #include "registers.h"
@@ -348,6 +349,50 @@ void real34ToDisplayString2(const real34_t *real34, char *displayString, int16_t
   int32_t sign;
   bool_t  ovrSCI=false, ovrENG=false, firstDigitAfterPeriod=true;
   real34_t value34;
+
+
+  //Convert the incoming number in decimal, to the equivalent number in base 1024, multipled by 1000.
+  //Example: 1025 -> 1024^1.000140819 -> 1024^.000140819 * 1024^1 -> 1.000976559 * Ki -> 1.001 Ki
+  //             ln(1025)/ln(1024) = 1.000140819; 
+  
+  bool_t flag2To10 = getSystemFlag(FLAG_2TO10);
+  real_t tmp4, tmpIp, tmpFp; 
+  real34_t real34bak;
+  real34Copy(real34, &real34bak);
+  if(flag2To10 && displayFormat == DF_UN) {
+    real_t x;
+    real34ToReal(real34, &x);
+    int32ToReal(1024,&tmp4);
+    if(!realCompareAbsLessThan(&x, &tmp4)) {
+      //e^[ lnx / ln1024 ]
+      bool_t neg = false;
+      if(realIsNegative(&x)) {
+        realSetPositiveSign(&x);
+        neg = true;
+      }
+      WP34S_Ln(&x, &x, &ctxtReal39);
+      realDivide(&x, const_ln2, &x, &ctxtReal39); //ln(1024)=ln( 2^10 )=10ln(2)
+      realDivide(&x, const_10, &x, &ctxtReal39);  //ln(1024)=ln( 2^10 )=10ln(2)
+      //get IP and FP
+      realToIntegralValue(&x, &tmpIp, DEC_ROUND_HALF_UP, &ctxtReal39);
+      realSubtract(&x, &tmpIp, &tmpFp, &ctxtReal39); // Fractional part
+      //IP*3 + FP*log(1024)
+      realMultiply(&tmpIp, const_3, &tmpIp, &ctxtReal39);
+      realMultiply(&tmpFp, const_ln2, &tmpFp, &ctxtReal39); //log(1024) = 10ln(2)/ln(10)
+      realMultiply(&tmpFp, const_10, &tmpFp, &ctxtReal39);  //log(1024) = 10ln(2)/ln(10)
+      realDivide(&tmpFp, const_ln10, &tmpFp, &ctxtReal39);  //log(1024) = 10ln(2)/ln(10)
+      realAdd(&tmpFp, &tmpIp, &x, &ctxtReal39);
+      //10^(IP*3 + FP*log(1024))
+      realPower10(&x, &x, &ctxtReal39);
+      if(neg) {
+        realSetNegativeSign(&x);
+      }
+      realToReal34(&x, real34);
+      //printRealToConsole(&x,"---B","\n");
+    } else {
+      flag2To10 = false;
+    }
+  }
 
 
 // JM^^ multiples and fractions of constants
@@ -735,7 +780,7 @@ void real34ToDisplayString2(const real34_t *real34, char *displayString, int16_t
   //////////////
   // FIX mode //
   //////////////
-  if(displayFormat == DF_FIX || displayFormat == DF_SF) {
+  if(displayFormat == DF_FIX || displayFormat == DF_SF || (!flag2To10 && displayFormat == DF_UN)) {                        //DF_UN starts here, to override displaying 2^10 values of between 1000 and 1024 as ENG notation
     if(noFix || exponent >= displayHasNDigits || 
          exponent < -(int32_t)displayFormatDigits ||
          ( displayFormat == DF_SF && exponent -(int32_t)displayFormatDigits < -(checkHP ? 10+1 : displayHasNDigits)) ||
@@ -1142,17 +1187,20 @@ void real34ToDisplayString2(const real34_t *real34, char *displayString, int16_t
 
     if(exponent != 0) {
       if(displayFormat != DF_UN) {                                                        //JM UNIT
-        if(updateDisplayValueX) {
+        if(updateDisplayValueX) {    //DF_ENG
           exponentToDisplayString(exponent, displayString + charIndex, displayValueX + valueIndex, false);
         }
         else {
           exponentToDisplayString(exponent, displayString + charIndex, NULL,                       false);
         }
       }                                                                                 //JM UNIT
-      else {                                                                            //JM UNIT
-        exponentToUnitDisplayString(exponent, displayString + charIndex, displayValueX + valueIndex, false);          //JM UNIT
+      else {  //DF_UN                                                                   //JM UNIT
+        exponentToUnitDisplayString(exponent, flag2To10, displayString + charIndex, displayValueX + valueIndex, false);          //JM UNIT
       }                                                                                 //JM UNIT
     }
+  }
+  if(flag2To10 && displayFormat == DF_UN) {
+    real34Copy(&real34bak, real34);
   }
 }
 
@@ -1984,6 +2032,21 @@ void longIntegerRegisterToDisplayString(calcRegister_t regist, char *displayStri
   }
 
   longIntegerToAllocatedString(lgInt, displayString, strLg);
+
+
+  #if defined(UNIT_2TO10_LONGINT_DISPLAY)
+    if(getSystemFlag(FLAG_2TO10) && displayFormat == DF_UN) {   //for the 2^10 UNIT diplay, display long integers in real string, with the Ti suffic
+      real_t tmpReal;
+      real34_t tmpReal34;
+      stringToReal(displayString, &tmpReal, &ctxtReal39);
+      realToReal34(&tmpReal, &tmpReal34);
+      //real34ToDisplayString(&tmpReal34, amNone, displayString, &numericFont, maxWidth, 34, false, false);
+      real34ToDisplayString2(&tmpReal34, displayString, 34, 100, false, false);
+      return;
+    }
+  #endif //UNIT_2TO10_LONGINT_DISPLAY
+
+
   if(updateDisplayValueX) {
     strcpy(displayValueX, displayString);
   }

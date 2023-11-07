@@ -1233,6 +1233,12 @@ void debugNIM(void) {
       }
 
       if(row < DEBUG_LINES) {
+        sprintf(string, "FLAG_2TO10                                = %s = %s",     getBooleanName(getSystemFlag(FLAG_2TO10)), getFractionDenom1ModeName(getSystemFlag(FLAG_2TO10)));
+        gtk_label_set_label(GTK_LABEL(lbl1[row]), string);
+        gtk_widget_show(lbl1[row++]);
+      }
+
+      if(row < DEBUG_LINES) {
         sprintf(string, "FLAG_DENANY                               = %s = %s",     getBooleanName(getSystemFlag(FLAG_DENANY)), getFractionDenom1ModeName(getSystemFlag(FLAG_DENANY)));
         gtk_label_set_label(GTK_LABEL(lbl1[row]), string);
         gtk_widget_show(lbl1[row++]);

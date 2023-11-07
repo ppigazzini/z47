@@ -554,7 +554,7 @@
 #define SFL_SBbatV                   521
 #define SFL_SBshfR                   522
 #define SFL_HPBASE                   523
-#define ITM_0524                     524
+#define SFL_2TO10                    524
 #define ITM_0525                     525
 #define ITM_0526                     526
 
@@ -2106,7 +2106,7 @@
 #define ITM_SPCRES0                 2050
 #define ITM_PRTACT1                 2051
 #define ITM_PRTACT0                 2052
-#define MNU_2053                    2053
+#define ITM_2TO10                   2053
 #define MNU_2054                    2054
 #define MNU_2055                    2055
 #define ITM_IRFRAC                  2056
@@ -2277,8 +2277,14 @@
 #define ITM_MIKtoK100M              2221
 #define MNU_CONVYMMV                2222
 #define ITM_XEQP1                   2223
+#define ITM_SI_Ki                   2224
+#define ITM_SI_Mi                   2225
+#define ITM_SI_Gi                   2226
+#define ITM_SI_Ti                   2227
+#define ITM_SI_Pi                   2228
+#define MNU_PREFIX                  2229
 
-#define LAST_ITEM                   2224
+#define LAST_ITEM                   2230
 
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL
