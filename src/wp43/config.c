@@ -1370,8 +1370,6 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     aimBuffer[0] = 0;
     lastErrorCode = 0;
 
-    gammaLanczosCoefficients = (real51_t *)const_gammaC01;
-
     #if !defined(TESTSUITE_BUILD)
       resetAlphaSelectionBuffer();
     #endif // !TESTSUITE_BUILD

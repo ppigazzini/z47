@@ -82,8 +82,6 @@ Current version defaults all non-loaded settings from previous version files cor
   #define START_REGISTER_VALUE 1000  // was 1522, why?
   static uint32_t loadedVersion = 0;
 #endif //TESTSUITE_BUILD
-uint16_t flushBufferCnt = 0;
-
 
 #if !defined(TESTSUITE_BUILD)
   static char *tmpRegisterString = NULL;
@@ -1015,7 +1013,6 @@ void fnSave(uint16_t saveMode) {
 }
 
 void doSave(uint16_t saveType) {
-flushBufferCnt = 0;
 #if !defined(TESTSUITE_BUILD)
   ioFilePath_t path;
   char tmpString[3000];           //The concurrent use of the global tmpString
@@ -2452,7 +2449,6 @@ int32_t stringToInt32(const char *str) {
 
 
 void doLoad(uint16_t loadMode, uint16_t s, uint16_t n, uint16_t d, uint16_t loadType) {
-  flushBufferCnt = 0;
   #if !defined(TESTSUITE_BUILD)
   ioFilePath_t path;
   int ret;
