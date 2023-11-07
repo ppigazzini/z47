@@ -45,7 +45,6 @@
 const font_t          *fontForShortInteger;
 const font_t          *cursorFont;
 TO_QSPI const char     digits[17] = "0123456789ABCDEF";
-real51_t               const *gammaLanczosCoefficients;
 void                   (*confirmedFunction)(uint16_t);
 
 // Variables stored in RAM
