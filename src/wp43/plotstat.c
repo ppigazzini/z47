@@ -45,7 +45,6 @@
 #include "wp43.h"
 
 
-static char tmp_names1[30];
 void fnPlotRegressionLine(uint16_t plotMode);
 
 
@@ -681,27 +680,24 @@ void graph_axis (void){
 }
 
 
-char * radixProcess(const char * ss) {  //  .  HIERDIE WERK GLAD NIE
+char * radixProcess(char *output, const char * ss) {  //  .  HIERDIE WERK GLAD NIE
   int8_t ix = 0, iy = 0;
-  tmp_names1[0]=0;
 
   while( ss[ix] != 0 ){
     if(ss[ix]==',' || ss[ix]=='.') {
-      tmp_names1[iy++] = RADIX34_MARK_CHAR;
-      tmp_names1[iy] = 0;
+      output[iy++] = RADIX34_MARK_CHAR;
     }
     else
     if(ss[ix]=='#') {
-      tmp_names1[iy++] = ';';
-      tmp_names1[iy] = 0;
+      output[iy++] = ';';
     }
     else {
-      tmp_names1[iy++] = ss[ix];
-      tmp_names1[iy] = 0;
+      output[iy++] = ss[ix];
     }
     ix++;
   }
-  return tmp_names1;
+  output[iy] = '\0';
+  return output;
 }
 
 
@@ -718,6 +714,7 @@ void nanCheck(char* s02) {
 
 void eformat (char* s02, const char* s01, double inreal, uint8_t prec, const char* s05) {
   char s03[100];
+  char tmpbuf[PLOT_TMP_BUF_SIZE];
 
   if(((fabs(inreal) > 1000000.0 || fabs(inreal) < 0.001)) && (inreal != 0.0)) {
     sprintf(s03,"%.*e",prec,inreal);
@@ -729,7 +726,7 @@ void eformat (char* s02, const char* s01, double inreal, uint8_t prec, const cha
   if(inreal > 0) {
     strcat(s02,"");  //in place of negative sign
   }
-  strcat(s02,eatSpacesMid(radixProcess(s03)));
+  strcat(s02,eatSpacesMid(radixProcess(tmpbuf, s03)));
   strcat(s02,s05);
   nanCheck(s02);
 }
@@ -738,6 +735,7 @@ void eformat (char* s02, const char* s01, double inreal, uint8_t prec, const cha
 void eformat_fix3 (char* s02, const char* s01, double inreal) {
   char *sign;
   char s03[100]; char s04[100];
+  char tmpbuf[PLOT_TMP_BUF_SIZE];
 
   s04[0]=0;
   if(inreal<0.0) {
@@ -760,50 +758,47 @@ void eformat_fix3 (char* s02, const char* s01, double inreal) {
     strcpy(s04, " ");  //in place of negative sign
   }
   strcat(s04,s03);
-  strcat(s02,eatSpacesMid(radixProcess(s04)));
+  strcat(s02,eatSpacesMid(radixProcess(tmpbuf, s04)));
   nanCheck(s02);
 }
 
 
-char * padEquals(const char * ss) {
+char * padEquals(char *output, const char * ss) {
   int8_t ix = 0, iy = 0;
 
-  tmp_names1[0]=0;
   while( ss[ix] != 0 ){
     if(!(ss[ix] & 0x80)) {
       if(ss[ix]=='=') {
-        tmp_names1[iy++] = STD_SPACE_PUNCTUATION[0];
-        tmp_names1[iy++] = STD_SPACE_PUNCTUATION[1];
-        tmp_names1[iy++] = '=';
-        tmp_names1[iy++] = STD_SPACE_PUNCTUATION[0];
-        tmp_names1[iy++] = STD_SPACE_PUNCTUATION[1];
-        tmp_names1[iy] = 0;
+        output[iy++] = STD_SPACE_PUNCTUATION[0];
+        output[iy++] = STD_SPACE_PUNCTUATION[1];
+        output[iy++] = '=';
+        output[iy++] = STD_SPACE_PUNCTUATION[0];
+        output[iy++] = STD_SPACE_PUNCTUATION[1];
       }
       else {
-        tmp_names1[iy++] = ss[ix];
-        tmp_names1[iy] = 0;
+        output[iy++] = ss[ix];
       }
     }
     else {
-      tmp_names1[iy++] = ss[ix];
+      output[iy++] = ss[ix];
       if(ss[ix+1] != 0) {
-        tmp_names1[iy++] = ss[++ix];
+        output[iy++] = ss[++ix];
       }
-      tmp_names1[iy] = 0;
     }
     ix++;
   }
-  return tmp_names1;
+  output[iy] = '\0';
+  return output;
 }
 
 
 //parts taken from:
 //  http://jkorpela.fi/c/eng.html
 //  David Hoerl
-static char *eng(double value, int digits) {
+static char *eng(char *result, double value, int digits) {
   double display, fract, old;
   int expof10;
-  static char result[30], *sign;
+  char *sign;
 
   // assert(isnormal(value)); // could also return NULL
 
@@ -883,12 +878,9 @@ static char *eng(double value, int digits) {
 
 
 void eformat_eng2 (char* s02, const char* s01, double inreal, int8_t digits, const char* s05) {
-  char s03[100];
+  char s03[PLOT_TMP_BUF_SIZE], tmpbuf[PLOT_TMP_BUF_SIZE];
 
-  strcpy(s03,eng(inreal, digits));
-  strcpy(s02,s01);
-  strcat(s02,eatSpacesMid(radixProcess(s03)));
-  strcat(s02,s05);
+  sprintf(s02, "%s%s%s", s01, eatSpacesMid(radixProcess(tmpbuf, eng(s03, inreal, digits))), s05);
   nanCheck(s02);
 }
 
@@ -1227,22 +1219,23 @@ void graphPlotstat(uint16_t selection){
       int16_t index = -1;
 
       char ss[100], tt[100];
+      char tmpbuf[PLOT_TMP_BUF_SIZE];
       int32_t n;
       eformat_eng2(ss,"(",x_max, 2,"");
-      eformat_eng2(tt,radixProcess("#"),y_max,2,")");
-      strcat(tt,padEquals(ss));
-      n = showString(padEquals(ss), &standardFont, 160-2-3-2 - stringWidth(tt, &standardFont, false, false), Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index + 2       +autoshift, vmNormal, false, false);
-      eformat_eng2(ss, radixProcess("#"), y_max, 2, ")");
-      showString(padEquals(ss), &standardFont, n+3,       Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++      +autoshift + 2, vmNormal, false, false);
+      eformat_eng2(tt,radixProcess(tmpbuf, "#"),y_max,2,")");
+      strcat(tt,padEquals(tmpbuf, ss));
+      n = showString(padEquals(tmpbuf, ss), &standardFont, 160-2-3-2 - stringWidth(tt, &standardFont, false, false), Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index + 2       +autoshift, vmNormal, false, false);
+      eformat_eng2(ss, radixProcess(tmpbuf, "#"), y_max, 2, ")");
+      showString(padEquals(tmpbuf, ss), &standardFont, n+3,       Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++      +autoshift + 2, vmNormal, false, false);
       eformat_eng2(ss, "(", x_min, 2, "");
-      n = showString(padEquals(ss), &standardFont,horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index    -2  +autoshift + 2, vmNormal, false, false);
-      eformat_eng2(ss, radixProcess("#"), y_min, 2, ")");
-      showString(padEquals(ss), &standardFont, n+3,       Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++  -2  +autoshift + 2, vmNormal, false, false);
+      n = showString(padEquals(tmpbuf, ss), &standardFont,horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index    -2  +autoshift + 2, vmNormal, false, false);
+      eformat_eng2(ss, radixProcess(tmpbuf, "#"), y_min, 2, ")");
+      showString(padEquals(tmpbuf, ss), &standardFont, n+3,       Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++  -2  +autoshift + 2, vmNormal, false, false);
 
       eformat_eng2(ss, "x: ", tick_int_x, 2, "/tick");
-      showString(padEquals(ss), &standardFont,horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++ + 2       + autoshift, vmNormal, false, false);
+      showString(padEquals(tmpbuf, ss), &standardFont,horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++ + 2       + autoshift, vmNormal, false, false);
       eformat_eng2(ss, "y: ", tick_int_y, 2, "/tick");
-      showString(padEquals(ss), &standardFont,horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++ + 2       + autoshift, vmNormal, false, false);
+      showString(padEquals(tmpbuf, ss), &standardFont,horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++ + 2       + autoshift, vmNormal, false, false);
       }
 
 
@@ -1251,6 +1244,7 @@ void graphPlotstat(uint16_t selection){
       float lB, hB, nB;
       real_t lBr, hBr, nBr;
       char ss[100], tt[100];
+      char tmpbuf[PLOT_TMP_BUF_SIZE];
       int16_t index = -1;
       real34ToReal(&loBinR ,&lBr);
       real34ToReal(&hiBinR ,&hBr);
@@ -1260,40 +1254,40 @@ void graphPlotstat(uint16_t selection){
       realToFloat(&nBr, &nB);
 
       strcpy(ss,histElementXorY == 1 ? "Histogram(y)" : "Histogram(x)");
-      showString(padEquals(ss), &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++   -4 +autoshift, vmNormal, false, false);
+      showString(padEquals(tmpbuf, ss), &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++   -4 +autoshift, vmNormal, false, false);
 
       eformat_eng2(ss, "(", x_max, 2, "");
-      eformat_eng2(tt,radixProcess("#"),y_max,2,")");
-      strcat(tt, padEquals(ss));
-      n = showString(padEquals(ss), &standardFont, 160-2-3-2 - stringWidth(tt, &standardFont, false, false), Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index + 2   -3  +autoshift, vmNormal, false, false);
-      eformat_eng2(ss, radixProcess("#"), y_max, 2, ")");
-      showString(padEquals(ss), &standardFont, n+3,           Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++  -3  + autoshift + 2, vmNormal, false, false);
+      eformat_eng2(tt,radixProcess(tmpbuf, "#"),y_max,2,")");
+      strcat(tt, padEquals(tmpbuf, ss));
+      n = showString(padEquals(tmpbuf, ss), &standardFont, 160-2-3-2 - stringWidth(tt, &standardFont, false, false), Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index + 2   -3  +autoshift, vmNormal, false, false);
+      eformat_eng2(ss, radixProcess(tmpbuf, "#"), y_max, 2, ")");
+      showString(padEquals(tmpbuf, ss), &standardFont, n+3,           Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++  -3  + autoshift + 2, vmNormal, false, false);
 
       eformat_eng2(ss, "(", x_min, 2, "");
-      n = showString(padEquals(ss), &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index    -6  + autoshift + 2, vmNormal, false, false);
-      eformat_eng2(ss, radixProcess("#"), y_min, 2, ")");
-      showString(padEquals(ss), &standardFont, n+3,           Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++  -6  + autoshift + 2, vmNormal, false, false);
+      n = showString(padEquals(tmpbuf, ss), &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index    -6  + autoshift + 2, vmNormal, false, false);
+      eformat_eng2(ss, radixProcess(tmpbuf, "#"), y_min, 2, ")");
+      showString(padEquals(tmpbuf, ss), &standardFont, n+3,           Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++  -6  + autoshift + 2, vmNormal, false, false);
 
       strcpy(ss,"Bin centres:");
-      showString(padEquals(ss), &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++   -4 +autoshift, vmNormal, false, false);
+      showString(padEquals(tmpbuf, ss), &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++   -4 +autoshift, vmNormal, false, false);
       eformat_eng2(ss,"",lB,3,"");
-      showString(padEquals(ss), &standardFont, horOffsetR - stringWidth(ss, &standardFont, false, false), Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index  -4 +autoshift, vmNormal, false, false);
+      showString(padEquals(tmpbuf, ss), &standardFont, horOffsetR - stringWidth(ss, &standardFont, false, false), Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index  -4 +autoshift, vmNormal, false, false);
       strcpy(ss,STD_DOWN_ARROW "BIN" "=");
-      showString(padEquals(ss), &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++   -4 +autoshift, vmNormal, false, false);
+      showString(padEquals(tmpbuf, ss), &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++   -4 +autoshift, vmNormal, false, false);
 
       eformat_eng2(ss,"",hB,3,"");
-      showString(padEquals(ss), &standardFont, horOffsetR - stringWidth(ss, &standardFont, false, false), Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index  -1 +autoshift, vmNormal, false, false);
+      showString(padEquals(tmpbuf, ss), &standardFont, horOffsetR - stringWidth(ss, &standardFont, false, false), Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index  -1 +autoshift, vmNormal, false, false);
       strcpy(ss,STD_UP_ARROW "BIN" "=");
-      showString(padEquals(ss), &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++   -1 +autoshift, vmNormal, false, false);
+      showString(padEquals(tmpbuf, ss), &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++   -1 +autoshift, vmNormal, false, false);
 
       eformat_eng2(ss,"",nB,3,"");
-      showString(padEquals(ss), &standardFont, horOffsetR - stringWidth(ss, &standardFont, false, false), Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index  -1 +autoshift, vmNormal, false, false);
+      showString(padEquals(tmpbuf, ss), &standardFont, horOffsetR - stringWidth(ss, &standardFont, false, false), Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index  -1 +autoshift, vmNormal, false, false);
       strcpy(ss,"nBINS" "=");
-      showString(padEquals(ss), &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++   -1 +autoshift, vmNormal, false, false);
+      showString(padEquals(tmpbuf, ss), &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++   -1 +autoshift, vmNormal, false, false);
       eformat_eng2(ss,"",(hB-lB)/nB,3,"");
-      showString(padEquals(ss), &standardFont, horOffsetR - stringWidth(ss, &standardFont, false, false), Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index  -1 +autoshift, vmNormal, false, false);
+      showString(padEquals(tmpbuf, ss), &standardFont, horOffsetR - stringWidth(ss, &standardFont, false, false), Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index  -1 +autoshift, vmNormal, false, false);
       strcpy(ss,"Width" "=");
-      showString(padEquals(ss), &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++   -1 +autoshift, vmNormal, false, false);
+      showString(padEquals(tmpbuf, ss), &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++   -1 +autoshift, vmNormal, false, false);
 
     }
 
@@ -1382,6 +1376,7 @@ void graphDrawLRline(uint16_t selection) {
 #if !defined(SAVE_SPACE_DM42_13GRF)
     int32_t n = 0;
     uint16_t NN;
+    char tmpbuf[PLOT_TMP_BUF_SIZE];
 
     switch(plotStatMx[0]) {
       case 'S': realToInt32(SIGMA_N, n); break;
@@ -1534,7 +1529,7 @@ void graphDrawLRline(uint16_t selection) {
       showString(ss, &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc * index++ -10 +autoshift, vmNormal, false, false);
       if(selection != CF_GAUSS_FITTING && selection != CF_CAUCHY_FITTING) {
         strcpy(ss,"y="); strcat(ss,getCurveFitModeFormula(selection));
-        showString(padEquals(ss), &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc * index++ -7 +autoshift, vmNormal, false, false);
+        showString(padEquals(tmpbuf, ss), &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc * index++ -7 +autoshift, vmNormal, false, false);
       }
       else {
         strcpy(ss,"y="); strcat(ss,getCurveFitModeFormula(selection));
@@ -1545,66 +1540,66 @@ void graphDrawLRline(uint16_t selection) {
     if(isValidDraw) {
       if(softmenu[softmenuStack[0].softmenuId].menuItem != -MNU_PLOT_STAT) {
         sprintf(ss, "%u",NN);
-        showString(padEquals(ss), &standardFont, horOffsetR - stringWidth(ss, &standardFont, false, false), Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index  -2 +autoshift, vmNormal, false, false);
+        showString(padEquals(tmpbuf, ss), &standardFont, horOffsetR - stringWidth(ss, &standardFont, false, false), Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index  -2 +autoshift, vmNormal, false, false);
         sprintf(ss, STD_SPACE_PUNCTUATION STD_SPACE_PUNCTUATION "n=");
-        showString(padEquals(ss), &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++ -2 +autoshift, vmNormal, false, false);
+        showString(padEquals(tmpbuf, ss), &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++ -2 +autoshift, vmNormal, false, false);
       }
 
       if(orOrtho(selection) != CF_ORTHOGONAL_FITTING) {
         eformat_eng2(ss, "", a0, 3, "");
-        showString(padEquals(ss), &standardFont, horOffsetR - stringWidth(ss, &standardFont, false, false), Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index  -4 +autoshift, vmNormal, false, false);
+        showString(padEquals(tmpbuf, ss), &standardFont, horOffsetR - stringWidth(ss, &standardFont, false, false), Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index  -4 +autoshift, vmNormal, false, false);
         strcpy(ss, "a" STD_SUB_0 "=");
-        showString(padEquals(ss), &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++   -4 +autoshift, vmNormal, false, false);
+        showString(padEquals(tmpbuf, ss), &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++   -4 +autoshift, vmNormal, false, false);
 
         eformat_eng2(ss, "", a1, 3, "");
-        showString(padEquals(ss), &standardFont, horOffsetR - stringWidth(ss, &standardFont, false, false), Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index  -1 +autoshift, vmNormal, false, false);
+        showString(padEquals(tmpbuf, ss), &standardFont, horOffsetR - stringWidth(ss, &standardFont, false, false), Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index  -1 +autoshift, vmNormal, false, false);
         strcpy(ss, "a" STD_SUB_1 "=");
-        showString(padEquals(ss), &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++   -1 +autoshift, vmNormal, false, false);
+        showString(padEquals(tmpbuf, ss), &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++   -1 +autoshift, vmNormal, false, false);
 
         if(selection == CF_PARABOLIC_FITTING || selection == CF_GAUSS_FITTING || selection == CF_CAUCHY_FITTING) {
           eformat_eng2(ss, "", a2, 3, "");
-          showString(padEquals(ss), &standardFont, horOffsetR - stringWidth(ss, &standardFont, false, false), Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index  -1 +autoshift, vmNormal, false, false);
+          showString(padEquals(tmpbuf, ss), &standardFont, horOffsetR - stringWidth(ss, &standardFont, false, false), Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index  -1 +autoshift, vmNormal, false, false);
           strcpy(ss, "a" STD_SUB_2 "=");
-          showString(padEquals(ss), &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++   -1 +autoshift, vmNormal, false, false);
+          showString(padEquals(tmpbuf, ss), &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++   -1 +autoshift, vmNormal, false, false);
         }
 
         eformat(ss, "", rr, 4, "");
-        showString(padEquals(ss), &standardFont, horOffsetR - stringWidth(ss, &standardFont, false, false), Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index  +2  +autoshift, vmNormal, false, false);
+        showString(padEquals(tmpbuf, ss), &standardFont, horOffsetR - stringWidth(ss, &standardFont, false, false), Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index  +2  +autoshift, vmNormal, false, false);
         strcpy(ss, "r" STD_SUP_2 "=");
-        showString(padEquals(ss), &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++   +2 +autoshift, vmNormal, false, false);
+        showString(padEquals(tmpbuf, ss), &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++   +2 +autoshift, vmNormal, false, false);
 
         eformat_eng2(ss,"(",x_max,2,"");
-        uint16_t ssw = showStringEnhanced(padEquals(ss),&standardFont,0,0,vmNormal, false, false, NO_compress, NO_raise, NO_Show, NO_LF);
-        eformat_eng2(tt,radixProcess("#"),y_max,2,")");
-        uint16_t ttw = showStringEnhanced(padEquals(tt),&standardFont,0,0,vmNormal, false, false, NO_compress, NO_raise, NO_Show, NO_LF);
-        n = showString(padEquals(ss), &standardFont,160-3-2-ssw-ttw, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index + 2       +autoshift, vmNormal, false, false);
-        showString(padEquals(tt), &standardFont,n+3, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++ +autoshift + 2, vmNormal, false, false);
+        uint16_t ssw = showStringEnhanced(padEquals(tmpbuf, ss),&standardFont,0,0,vmNormal, false, false, NO_compress, NO_raise, NO_Show, NO_LF);
+        eformat_eng2(tt,radixProcess(tmpbuf, "#"),y_max,2,")");
+        uint16_t ttw = showStringEnhanced(padEquals(tmpbuf, tt),&standardFont,0,0,vmNormal, false, false, NO_compress, NO_raise, NO_Show, NO_LF);
+        n = showString(padEquals(tmpbuf, ss), &standardFont,160-3-2-ssw-ttw, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index + 2       +autoshift, vmNormal, false, false);
+        showString(padEquals(tmpbuf, tt), &standardFont,n+3, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++ +autoshift + 2, vmNormal, false, false);
         eformat_eng2(ss, "(", x_min, 2, "");
-        n = showString(padEquals(ss), &standardFont,horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index    -2  +autoshift + 2, vmNormal, false, false);
-        eformat_eng2(ss,radixProcess("#"),y_min,2,")");
-        showString(padEquals(ss), &standardFont,n+3,       Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++  -2  +autoshift + 2, vmNormal, false, false);
+        n = showString(padEquals(tmpbuf, ss), &standardFont,horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index    -2  +autoshift + 2, vmNormal, false, false);
+        eformat_eng2(ss,radixProcess(tmpbuf, "#"),y_min,2,")");
+        showString(padEquals(tmpbuf, ss), &standardFont,n+3,       Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++  -2  +autoshift + 2, vmNormal, false, false);
 
       }
       else {                          //ORTHOF
         eformat_fix3(ss, "", a0);
-        showString(padEquals(ss), &standardFont, horOffsetR - stringWidth(ss, &standardFont, false, false), Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index  -4 +autoshift, vmNormal, false, false);
+        showString(padEquals(tmpbuf, ss), &standardFont, horOffsetR - stringWidth(ss, &standardFont, false, false), Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index  -4 +autoshift, vmNormal, false, false);
         strcpy(ss, "a" STD_SUB_0 "=");
-        showString(padEquals(ss), &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++   -4 +autoshift, vmNormal, false, false);
+        showString(padEquals(tmpbuf, ss), &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++   -4 +autoshift, vmNormal, false, false);
 
         eformat_fix3(ss, "",ssa0);
-        showString(padEquals(ss), &standardFont, horOffsetR - stringWidth(ss, &standardFont, false, false), Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index  -4 +autoshift, vmNormal, false, false);
+        showString(padEquals(tmpbuf, ss), &standardFont, horOffsetR - stringWidth(ss, &standardFont, false, false), Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index  -4 +autoshift, vmNormal, false, false);
         strcpy(ss, "    " STD_PLUS_MINUS);
-        showString(padEquals(ss), &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++   -4 +autoshift, vmNormal, false, false);
+        showString(padEquals(tmpbuf, ss), &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++   -4 +autoshift, vmNormal, false, false);
 
         eformat_fix3(ss, "", a1);
-        showString(padEquals(ss), &standardFont, horOffsetR - stringWidth(ss, &standardFont, false, false), Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index  -1 +autoshift, vmNormal, false, false);
+        showString(padEquals(tmpbuf, ss), &standardFont, horOffsetR - stringWidth(ss, &standardFont, false, false), Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index  -1 +autoshift, vmNormal, false, false);
         strcpy(ss, "a" STD_SUB_1 "=");
-        showString(padEquals(ss), &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++   -1 +autoshift, vmNormal, false, false);
+        showString(padEquals(tmpbuf, ss), &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++   -1 +autoshift, vmNormal, false, false);
 
         eformat_fix3(ss, "", ssa1);
-        showString(padEquals(ss), &standardFont, horOffsetR - stringWidth(ss, &standardFont, false, false), Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index  -1 +autoshift, vmNormal, false, false);
+        showString(padEquals(tmpbuf, ss), &standardFont, horOffsetR - stringWidth(ss, &standardFont, false, false), Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index  -1 +autoshift, vmNormal, false, false);
         strcpy(ss, "    " STD_PLUS_MINUS);
-        showString(padEquals(ss), &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++   -1 +autoshift, vmNormal, false, false);
+        showString(padEquals(tmpbuf, ss), &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++   -1 +autoshift, vmNormal, false, false);
 
         if(softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_PLOT_STAT) {
           if(n >= 30) {
@@ -1614,15 +1609,15 @@ void graphDrawLRline(uint16_t selection) {
             strcpy(ss,"  | n < 30");
           }
 
-          showString(padEquals(ss), &standardFont, horOffsetR - stringWidth(ss, &standardFont, false, false), Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index  +1 +autoshift, vmNormal, false, false);
+          showString(padEquals(tmpbuf, ss), &standardFont, horOffsetR - stringWidth(ss, &standardFont, false, false), Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index  +1 +autoshift, vmNormal, false, false);
           strcpy(ss,"s" STD_SUB_m STD_SUB_i "=");
-          showString(padEquals(ss), &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++   +1 +autoshift, vmNormal, false, false);
+          showString(padEquals(tmpbuf, ss), &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++   +1 +autoshift, vmNormal, false, false);
         }
         else {
           eformat(ss, "", rr, 4, "");
-          showString(padEquals(ss), &standardFont, horOffsetR - stringWidth(ss, &standardFont, false, false), Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index  +2  +autoshift, vmNormal, false, false);
+          showString(padEquals(tmpbuf, ss), &standardFont, horOffsetR - stringWidth(ss, &standardFont, false, false), Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index  +2  +autoshift, vmNormal, false, false);
           strcpy(ss, "r" STD_SUP_2 "=");
-          showString(padEquals(ss), &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++   +2 +autoshift, vmNormal, false, false);
+          showString(padEquals(tmpbuf, ss), &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++   +2 +autoshift, vmNormal, false, false);
         }
 
         //eformat(ss,"x,y" STD_SUB_m STD_SUB_i STD_SUB_n "=", x_min,5);
