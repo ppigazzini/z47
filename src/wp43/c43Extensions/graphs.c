@@ -436,19 +436,20 @@ void graph_text(void) {
     static uint16_t oo;
     static char outstr[300];
     char ss[100], tt[100];
+    char tmpbuf[PLOT_TMP_BUF_SIZE];
     int32_t n;
     eformat_eng2(ss, "(", x_max, 2, "");
-    uint16_t ssw = showStringEnhanced(padEquals(ss), &standardFont, 0, 0,vmNormal, false, false, NO_compress, NO_raise, NO_Show, NO_LF);
-    eformat_eng2(tt, radixProcess("#"), y_max, 2, ")");
-    uint16_t ttw = showStringEnhanced(padEquals(tt), &standardFont, 0, 0,vmNormal, false, false, NO_compress, NO_raise, NO_Show, NO_LF);
+    uint16_t ssw = showStringEnhanced(padEquals(tmpbuf, ss), &standardFont, 0, 0,vmNormal, false, false, NO_compress, NO_raise, NO_Show, NO_LF);
+    eformat_eng2(tt, radixProcess(tmpbuf, "#"), y_max, 2, ")");
+    uint16_t ttw = showStringEnhanced(padEquals(tmpbuf, tt), &standardFont, 0, 0,vmNormal, false, false, NO_compress, NO_raise, NO_Show, NO_LF);
     ypos += 38;
-    n = showString(padEquals(ss), &standardFont, 160-3-2-ssw-ttw, ypos, vmNormal, false, false);
-    showString(padEquals(tt), &standardFont, n+3, ypos, vmNormal, false, false);
+    n = showString(padEquals(tmpbuf, ss), &standardFont, 160-3-2-ssw-ttw, ypos, vmNormal, false, false);
+    showString(padEquals(tmpbuf, tt), &standardFont, n+3, ypos, vmNormal, false, false);
     eformat_eng2(ss, "(", x_min, 2, "");
     ypos += 19;
-    n = showString(padEquals(ss), &standardFont,1, ypos, vmNormal, false, false);
-    eformat_eng2(ss, radixProcess("#"), y_min, 2, ")");
-    showString(padEquals(ss), &standardFont, n+3,  ypos, vmNormal, false, false);
+    n = showString(padEquals(tmpbuf, ss), &standardFont,1, ypos, vmNormal, false, false);
+    eformat_eng2(ss, radixProcess(tmpbuf, "#"), y_min, 2, ")");
+    showString(padEquals(tmpbuf, ss), &standardFont, n+3,  ypos, vmNormal, false, false);
     ypos -= 38;
 
     snprintf(tmpString, TMP_STR_LENGTH, "  y %.3f/tick  ", tick_int_y);
