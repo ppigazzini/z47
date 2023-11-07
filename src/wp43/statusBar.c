@@ -155,7 +155,7 @@
 
 void showFracMode(void) {
     if(!(SBARUPD_FractionModeAndBaseMode)) return;
-    static char statusMessage[20];
+    char statusMessage[20];
     char str20[20];                                   //JM vv KEYS
     char str40[40];
 
@@ -256,7 +256,7 @@ void showFracMode(void) {
 
   void showIntegerMode(void) {
     if(!(SBARUPD_IntegerMode)) return;
-    static char statusMessage[10];
+    char statusMessage[10];
     if(shortIntegerWordSize <= 9) {
       sprintf(statusMessage, " %" PRIu8 ":%c", shortIntegerWordSize, shortIntegerMode==SIM_1COMPL?'1':(shortIntegerMode==SIM_2COMPL?'2':(shortIntegerMode==SIM_UNSIGN?'u':(shortIntegerMode==SIM_SIGNMT?'s':'?'))));
     }
@@ -271,7 +271,7 @@ void showFracMode(void) {
 
   void showMatrixMode(void) {
     if(!(SBARUPD_MatrixMode)) return;
-    static char statusMessage[5];
+    char statusMessage[5];
     if(getSystemFlag(FLAG_GROW)) {
       sprintf(statusMessage, "grow");
     }
@@ -286,7 +286,7 @@ void showFracMode(void) {
 
   void showTvmMode(void) {
     if(!(SBARUPD_TVMMode)) return;
-    static char statusMessage[5];
+    char statusMessage[5];
     if(getSystemFlag(FLAG_ENDPMT)) {
       sprintf(statusMessage, "END");
     }
@@ -572,7 +572,7 @@ void drawBattery(uint16_t voltage) {
       }
     }
     #if(DEBUG_INSTEAD_STATUS_BAR == 1)
-      static char statusMessage[100];
+      char statusMessage[100];
       sprintf(statusMessage, "%s%d %s/%s  mnu:%s fi:%d", catalog ? "asm:" : "", catalog, tam.mode ? "/tam" : "", getCalcModeName(calcMode),indexOfItems[-softmenu[softmenuStack[0].softmenuId].menuItem].itemCatalogName, softmenuStack[0].firstItem);
       showString(statusMessage, &standardFont, X_DATE, 0, vmNormal, true, true);
     #else // DEBUG_INSTEAD_STATUS_BAR != 1
