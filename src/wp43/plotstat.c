@@ -878,13 +878,9 @@ static char *eng(char *result, double value, int digits) {
 
 
 void eformat_eng2 (char* s02, const char* s01, double inreal, int8_t digits, const char* s05) {
-  char s03[100];
-  char tmpbuf[PLOT_TMP_BUF_SIZE];
+  char s03[PLOT_TMP_BUF_SIZE], tmpbuf[PLOT_TMP_BUF_SIZE];
 
-  strcpy(s03,eng(tmpbuf, inreal, digits));
-  strcpy(s02,s01);
-  strcat(s02,eatSpacesMid(radixProcess(tmpbuf, s03)));
-  strcat(s02,s05);
+  sprintf(s02, "%s%s%s", s01, eatSpacesMid(radixProcess(tmpbuf, eng(s03, inreal, digits))), s05);
   nanCheck(s02);
 }
 
