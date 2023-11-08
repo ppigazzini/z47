@@ -24,7 +24,7 @@
 // JM VARIOUS OPTIONS
 //*********************************
 
-#define VERSION1 "0.108.16.00"     // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
+#define VERSION1 "0.108.16.01-T2"     // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
 
 //2023-11-04-0.108.16.00 Stable non-master
 
@@ -308,6 +308,7 @@
 #define USER_MENG        53
 #define USER_MFIN        54
 #define USER_MCPX        55
+#define USER_HRESET      56
 
 
 //*************************

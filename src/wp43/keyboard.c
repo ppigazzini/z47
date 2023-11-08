@@ -2934,7 +2934,7 @@ ram_full:
 #if !defined(TESTSUITE_BUILD)
   static void stayInAIM(void) {
     if(calcMode == CM_AIM && (softmenu[softmenuStack[0].softmenuId].menuItem != -MNU_ALPHA && softmenu[softmenuStack[0].softmenuId].menuItem != -MNU_MyAlpha) ) {   //JM
-      softmenuStack[0].softmenuId = mm_MNU_ALPHA;    //JM
+      changeToALPHA();
       setSystemFlag(FLAG_ALPHA);                     //JM
     }                                                //JM ^^
 
@@ -3766,7 +3766,7 @@ void fnKeyUp(uint16_t unusedButMandatoryParameter) {
         if(!arrowCasechange && calcMode == CM_AIM && isJMAlphaSoftmenu(menuId)) {
           fnT_ARROW(ITM_UP1);
         }
-              //ignoring the base menu, MY_ALPHA_MENU below
+
               // make this keyActionProcessed = false; to have arrows up and down placed in bufferize
               // make arrowCasechnage true
                                                                        //JM^^
@@ -3978,7 +3978,7 @@ void fnKeyDown(uint16_t unusedButMandatoryParameter) {
         if(!arrowCasechange && calcMode == CM_AIM && isJMAlphaSoftmenu(menuId)) {
           fnT_ARROW(ITM_DOWN1);
         }
-              //ignoring the base menu, MY_ALPHA_MENU below
+
               // make this keyActionProcessed = false; to have arrows up and down placed in bufferize
               // make arrowCasechnage true
                                                                        //JM^^

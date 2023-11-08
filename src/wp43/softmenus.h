@@ -25,6 +25,9 @@
 #include "typeDefinitions.h"
 #include <stdint.h>
 
+int16_t currentMenu(void);
+
+
 uint8_t *getNthString           (uint8_t *ptr, int16_t n); // Starting with string 0 (the 1st string is returned for n=0)
 void     fnDynamicMenu          (uint16_t unusedButMandatoryParameter);
 
@@ -58,7 +61,11 @@ void     fnExitAllMenus         (uint16_t unusedButMandatoryParameter);
    * \param[in] id ID of softmenu
    */
   void   showSoftmenu           (int16_t id);
-  void   setCurrentUserMenu     (int16_t item, char* funcParam);
+  void   changeToALPHA(void);
+  void   changeToHOME(void);
+
+  bool_t setCurrentUserMenu     (int16_t item, char* funcParam);
+  bool_t createHOME(void);
 
   /**
    * Pops a softmenu from the softmenu stack.
