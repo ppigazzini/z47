@@ -733,6 +733,7 @@ TO_QSPI const int16_t menu_GAP_R[]       = { ITM_GAPPER_R,                  ITM_
 
 #include "softmenuCatalogs.h"
 
+
 TO_QSPI const softmenu_t softmenu[] = {
 /* 000 */  {.menuItem = -MNU_MyMenu,      .numItems = 0,                                        .softkeyItem = NULL             }, // MyMenu must be the 1st
 /* 001 */  {.menuItem = -MNU_MyAlpha,     .numItems = 0,                                        .softkeyItem = NULL             }, // Myalpha must be the 2nd
@@ -1638,6 +1639,7 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
 
     switch(itemNr%10000) {
 
+      case ITM_DSP:
       case ITM_UNIT: if(getSystemFlag(FLAG_2TO10) && displayFormat == DF_UN) {
                            stringAppend(showText + stringByteLength(showText), STD_SUB_i);
                         }
@@ -1651,8 +1653,8 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
                           case 32704 : stringAppend(showText + stringByteLength(showText), "SIG" ); *showValue = NOVAL; break;
                           case 32705 : stringAppend(showText + stringByteLength(showText), "UNIT"); *showValue = NOVAL; break;
                           default: ;
-                        }
-                        break;
+                          }
+                          break;
       case ITM_SCR    :switch(*showValue) {
                           case NC_NORMAL      : *showValue = NOVAL; break;
                           case NC_SUBSCRIPT   : stringAppend(showText + stringByteLength(showText), alphaCase == AC_LOWER ? STD_SUB_s STD_SUB_u STD_SUB_b : alphaCase == AC_UPPER ? STD_SUB_S STD_SUB_U STD_SUB_B : ""); *showValue = NOVAL; 
@@ -1739,6 +1741,9 @@ void fnStrikeOutIfNotCoded(int16_t itemNr, int16_t x, int16_t y) {
 bool_t BASE_OVERRIDEONCE = false;
 
   void showSoftmenuCurrentPart(void) {
+    if(currentMenu() == -MNU_HOME) {
+      changeToHOME();
+    }
 
 //JMTOCHECK: Removed exceptions for underline removal.
 
@@ -2172,17 +2177,17 @@ bool_t BASE_OVERRIDEONCE = false;
       softmenuStack[0].softmenuId = 0; // MyMenu
     }
     if(softmenuStack[0].softmenuId == 0 && BASE_HOME && calcMode != CM_AIM) {
-      softmenuStack[0].softmenuId = mm_MNU_HOME;
+      changeToHOME();
     }
     else if(softmenuStack[0].softmenuId == 0 && BASE_MYM && calcMode != CM_AIM) {
       //softmenuStack[0].softmenuId = 0;                                                       //already 0, not needed to change
     }
     else if(softmenuStack[0].softmenuId == 1 && calcMode == CM_AIM) {
-      softmenuStack[0].softmenuId = mm_MNU_ALPHA;
+      changeToALPHA();
     }
 
                                                               //JM ^^
-    if(softmenuStack[0].softmenuId != mm_MNU_HOME && softmenu[softmenuStack[0].softmenuId].menuItem != -MNU_MODE && softmenu[softmenuStack[0].softmenuId].menuItem != -MNU_DISP) {          //JM reset menu base point only if not HOME, MODE & DISP menus
+    if(currentMenu() != MNU_HOME && currentMenu() != -MNU_MODE && currentMenu() != -MNU_DISP) {          //JM reset menu base point only if not HOME, MODE & DISP menus
       softmenuStack[0].firstItem = 0;
     }
 
@@ -2235,6 +2240,24 @@ bool_t BASE_OVERRIDEONCE = false;
     return true;
   }
 
+
+
+
+  void changeToHOME(void) {
+    showSoftmenu(-MNU_HOME);
+  }
+
+  void changeToALPHA(void) {
+    showSoftmenu(-MNU_ALPHA);
+  }
+
+  int16_t currentMenu(void) {
+    if(softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_DYNAMIC && compareString("HOME", userMenus[currentUserMenu].menuName, CMP_NAME) == 0) {
+       return -MNU_HOME;
+    } else {
+       return softmenu[softmenuStack[0].softmenuId].menuItem;
+    }
+  }
 
 
   void showSoftmenu(int16_t id) {

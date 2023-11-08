@@ -84,7 +84,7 @@
     #if defined(PC_BUILD_TELLTALE)
       printf("\n%s--------------------------------------------------------------------------------\n",comment);
       printf(".  calcMode: %s   last_CM=%s  AlphaCase=%s  doRefreshSoftMenu=%d    lastErrorCode=%d fnAsnDisplayUSER=%d TI=%u\n",getCalcModeName(calcMode), getCalcModeName(last_CM), getAlphaCaseName(alphaCase), doRefreshSoftMenu,lastErrorCode, fnAsnDisplayUSER, temporaryInformation);
-      printf(".  softmenuStack[0].softmenuId=%d       MY_ALPHA_MENU=%d    softmenu[softmenuStack[0].softmenuId].menuItem=%d -MNU_ALPHA=%d\n",softmenuStack[0].softmenuId,MY_ALPHA_MENU,softmenu[softmenuStack[0].softmenuId].menuItem, -MNU_ALPHA);
+      printf(".  softmenuStack[0].softmenuId=%d      softmenu[softmenuStack[0].softmenuId].menuItem=%d -MNU_ALPHA=%d\n",softmenuStack[0].,softmenu[softmenuStack[0].softmenuId].menuItem, -MNU_ALPHA);
 
       printf(".  ");
       int8_t ix=0;
@@ -102,7 +102,7 @@
       }
       printf("\n");
 
-      printf(".  (tam.mode=%d, catalog=%d) (mm_MNU_HOME=%d, mm_MNU_ALPHA=%d)\n",tam.mode, catalog, mm_MNU_HOME, mm_MNU_ALPHA);
+      printf(".  (tam.mode=%d, catalog=%d)\n",tam.mode, catalog);
       jm_show_comment("calcstate END:");
     #endif //PC_BUILD_TELLTALE
   }

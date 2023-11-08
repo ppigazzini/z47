@@ -851,7 +851,7 @@ void execTimerApp(uint16_t timerType) {
             #if defined(PC_BUILD)
               jm_show_calc_state("screen.c: Shft_handler: HOME3");
             #endif //PC_BUILD
-            if(HOME3 && softmenuStack[0].softmenuId == mm_MNU_HOME) {              //JM shifts    //softmenuStackPointerJM
+            if(HOME3 && currentMenu() == -MNU_HOME) {              //JM shifts    //softmenuStackPointerJM
               popSoftmenu();                                                                                                  //JM shifts
             }
             else {

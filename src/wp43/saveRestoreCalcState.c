@@ -61,7 +61,7 @@
 #endif
 
 #include "wp43.h"
-#define BACKUP_VERSION                     789  // Added tiny font
+#define BACKUP_VERSION                     790  // removed mm variables
 #define OLDEST_COMPATIBLE_BACKUP_VERSION   779  // save running app
 #define configFileVersion                  10000008 // New STOCFG and new STATE file; arbitrary starting point version 10 000 001. Allowable values are 10000000 to 20000000
 #define VersionAllowed                     10000005 // This code will not autoload versions earlier than this
@@ -101,7 +101,8 @@ static uint32_t restore(void *buffer, uint32_t size) {
 #if defined(PC_BUILD)
   void saveCalc(void) {
     //uint8_t  compatibility_u8 = 0;           //defaults to use when settings are removed
-    bool_t   compatibility_bool = false;     //defaults to use when settings are removed
+    int16_t  compatibility_u16 = 0;         //defaults to use when settings are removed
+    bool_t   compatibility_bool = false;       //defaults to use when settings are removed
     uint32_t backupVersion = BACKUP_VERSION;
     uint32_t ramSize       = RAM_SIZE;
     uint32_t ramPtr;
@@ -377,8 +378,8 @@ static uint32_t restore(void *buffer, uint32_t size) {
     save(&indexOfItemsXEQM,                   sizeof(indexOfItemsXEQM));
     save(&T_cursorPos,                        sizeof(T_cursorPos));               //JM ^^
     save(&SHOWregis,                          sizeof(SHOWregis));                 //JM ^^
-    save(&mm_MNU_HOME,                        sizeof(mm_MNU_HOME));               //JM ^^
-    save(&mm_MNU_ALPHA,                       sizeof(mm_MNU_ALPHA));              //JM ^^
+    save(&compatibility_u16,                  sizeof(compatibility_u16));            //SPARE USE THESE
+    save(&compatibility_u16,                  sizeof(compatibility_u16));            //SPARE USE THESE
     save(&displayStackSHOIDISP,               sizeof(displayStackSHOIDISP));      //JM ^^
     save(&ListXYposition,                     sizeof(ListXYposition));            //JM ^^
     save(&numLock,                            sizeof(numLock));                   //JM ^^
@@ -416,6 +417,7 @@ static uint32_t restore(void *buffer, uint32_t size) {
     printf("RestoreCalc\n");
     //uint8_t  compatibility_u8;        //defaults to use when settings are removed
     bool_t   compatibility_bool;      //defaults to use when settings are removed
+    int16_t  compatibility_u16;        //defaults to use when settings are removed
     uint32_t backupVersion, ramSize, ramPtr;
     int ret;
     uint8_t *loadedScreen = malloc(SCREEN_WIDTH * SCREEN_HEIGHT / 8);
@@ -722,8 +724,8 @@ static uint32_t restore(void *buffer, uint32_t size) {
       restore(&indexOfItemsXEQM,                   sizeof(indexOfItemsXEQM));
       restore(&T_cursorPos,                        sizeof(T_cursorPos));              //JM ^^
       restore(&SHOWregis,                          sizeof(SHOWregis));                //JM ^^
-      restore(&mm_MNU_HOME,                        sizeof(mm_MNU_HOME));              //JM ^^
-      restore(&mm_MNU_ALPHA,                       sizeof(mm_MNU_ALPHA));             //JM ^^
+      restore(&compatibility_u16,                  sizeof(compatibility_u16));            //SPARE USE THESE
+      restore(&compatibility_u16,                  sizeof(compatibility_u16));            //SPARE USE THESE
       restore(&displayStackSHOIDISP,               sizeof(displayStackSHOIDISP));     //JM ^^
       restore(&ListXYposition,                     sizeof(ListXYposition));           //JM ^^
       restore(&numLock,                            sizeof(numLock));                  //JM ^^
@@ -765,7 +767,6 @@ static uint32_t restore(void *buffer, uint32_t size) {
       ioFileClose();
       printf("End of calc's restoration\n");
 
-      MY_ALPHA_MENU = mm_MNU_ALPHA;
       setFGLSettings(fgLN);
 
       if(temporaryInformation == TI_SHOW_REGISTER_BIG || temporaryInformation == TI_SHOW_REGISTER_SMALL) {
