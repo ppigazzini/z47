@@ -260,9 +260,6 @@
   extern int16_t                displayAIMbufferoffset;       //JMCURSOR
   extern uint16_t               showRegis;                    //JMSHOW
   extern int16_t                ListXYposition;               //JM
-  extern int16_t                mm_MNU_HOME;                  //JM
-  extern int16_t                mm_MNU_ALPHA;                 //JM
-  extern int16_t                MY_ALPHA_MENU;                //JM Replaced define
   extern uint8_t                DRG_Cycling;                  //JM
   extern uint8_t                DM_Cycling;                   //JM
   extern int16_t                JM_auto_doublepress_autodrop_enabled;  //JM TIMER CLRDROP //drop

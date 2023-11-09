@@ -590,6 +590,7 @@ void exponentToUnitDisplayString(int32_t exponent, bool_t flag2To10, char *displ
       case  9  : displayString[1] = 'G'; displayString[2] = 'i'; break;
       case 12  : displayString[1] = 'T'; displayString[2] = 'i'; break;
       case 15  : displayString[1] = 'P'; displayString[2] = 'i'; break;
+      default: break;
     }
   }
 
@@ -612,7 +613,7 @@ void exponentToUnitDisplayString(int32_t exponent, bool_t flag2To10, char *displ
 
 
 void fnDisplayFormatCycle (uint16_t unusedButMandatoryParameter) {
-  if(DM_Cycling == 0 && softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_HOME) {
+  if(DM_Cycling == 0 && softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_PREFIX) {
     fnDisplayFormatUnit(displayFormatDigits);
   }
   else if(displayFormat == DF_ALL) {

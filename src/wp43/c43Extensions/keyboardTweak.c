@@ -205,10 +205,9 @@ void resetKeytimers(void) {
             shiftG = true;
             if(HOME3 || MYM3) {
               #if defined(PC_BUILD)
-                //printf("HOME3 %d %d\n", softmenuStack[softmenuStackPointer].softmenu, mm_MNU_HOME);
                 jm_show_calc_state("keyboardtweak.c: fg_processing_jm: HOME3");
               #endif // PC_BUILD
-              if(HOME3 && softmenuStack[0].softmenuId == mm_MNU_HOME) {                    //JM shifts
+              if(HOME3 && currentMenu() == -MNU_HOME) {                    //JM shifts
               //printf("popping\n");
                 popSoftmenu();                                                    //JM shifts
               }

@@ -27,6 +27,7 @@
 #include "wp43.h"
 
 
+
 #if defined(PC_BUILD)
   #if defined(PC_BUILD_TELLTALE)
     static char * getCalcModeName(uint16_t cm) {
@@ -63,9 +64,9 @@
   void jm_show_calc_state(char comment[]) {
     #if defined(PC_BUILD_TELLTALE)
       printf("\n%s--------------------------------------------------------------------------------\n",comment);
-      printf(".  calcMode: %s   last_calcmode=%s  AlphaCase=%s  lastErrorCode=%d fnAsnDisplayUSER=%d screenUpdatingMode=%d temporaryInformation=%u\n",getCalcModeName(calcMode), getCalcModeName(previousCalcMode), getAlphaCaseName(alphaCase), lastErrorCode, fnAsnDisplayUSER, screenUpdatingMode, temporaryInformation);
-      printf(".  softmenuStack[0].softmenuId=%d       MY_ALPHA_MENU=%d    softmenu[softmenuStack[0].softmenuId].menuItem=%d -MNU_ALPHA=%d\n",softmenuStack[0].softmenuId,MY_ALPHA_MENU,softmenu[softmenuStack[0].softmenuId].menuItem, -MNU_ALPHA);
-//      printf(".  tmpString: 0:%s 300:%s 600:%s\n",tmpString + 0, tmpString +300, tmpString +600);
+      printf(".  calcMode: %s   last_CM=%s  AlphaCase=%s  doRefreshSoftMenu=%d    lastErrorCode=%d fnAsnDisplayUSER=%d TI=%u\n",getCalcModeName(calcMode), getCalcModeName(last_CM), getAlphaCaseName(alphaCase), doRefreshSoftMenu,lastErrorCode, fnAsnDisplayUSER, temporaryInformation);
+      printf(".  softmenuStack[0].softmenuId=%d      softmenu[softmenuStack[0].softmenuId].menuItem=%d -MNU_ALPHA=%d\n",softmenuStack[0].,softmenu[softmenuStack[0].softmenuId].menuItem, -MNU_ALPHA);
+
       printf(".  ");
       int8_t ix=0;
       while(ix < SOFTMENU_STACK_SIZE) {
@@ -82,7 +83,7 @@
       }
       printf("\n");
 
-      printf(".  (tam.mode=%d, catalog=%d) (mm_MNU_HOME=%d, mm_MNU_ALPHA=%d) SHOWMODE=%u showRegis=%u\n",tam.mode, catalog, mm_MNU_HOME, mm_MNU_ALPHA, SHOWMODE, showRegis);
+      printf(".  (tam.mode=%d, catalog=%d) (mm_MNU_HOME=%d, mm_MNU_ALPHA=%d)\n",tam.mode, catalog, mm_MNU_HOME, mm_MNU_ALPHA);
       jm_show_comment("calcstate END:");
     #endif //PC_BUILD_TELLTALE
   }

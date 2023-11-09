@@ -764,7 +764,7 @@ void real34ToDisplayString2(const real34_t *real34, char *displayString, int16_t
   //////////////
   // FIX mode //
   //////////////
-  if(displayFormat == DF_FIX || displayFormat == DF_SF || (!flag2To10 && displayFormat == DF_UN)) {                        //DF_UN starts here, to override displaying 2^10 values of between 1000 and 1024 as ENG notation
+  if((displayFormat == DF_FIX || displayFormat == DF_SF) || (!flag2To10 && displayFormat != DF_UN)) {                        //DF_UN starts here, to override displaying 2^10 values of between 1000 and 1024 as ENG notation
     if(noFix || exponent >= displayHasNDigits || 
          exponent < -(int32_t)displayFormatDigits ||
          ( displayFormat == DF_SF && exponent -(int32_t)displayFormatDigits < -(checkHP ? 10+1 : displayHasNDigits)) ||
@@ -1182,6 +1182,7 @@ void real34ToDisplayString2(const real34_t *real34, char *displayString, int16_t
         exponentToUnitDisplayString(exponent, flag2To10, displayString + charIndex, displayValueX + valueIndex, false);          //JM UNIT
       }                                                                                 //JM UNIT
     }
+
   }
   if(flag2To10 && displayFormat == DF_UN) {
     real34Copy(&real34bak, real34);
@@ -2021,14 +2022,17 @@ void longIntegerRegisterToDisplayString(calcRegister_t regist, char *displayStri
 
 
   #if defined(UNIT_2TO10_LONGINT_DISPLAY)
-    if(getSystemFlag(FLAG_2TO10) && displayFormat == DF_UN) {   //for the 2^10 UNIT diplay, display long integers in real string, with the Ti suffic
-      real_t tmpReal;
+    if(getSystemFlag(FLAG_2TO10) && displayFormat == DF_UN) {                            //for the 2^10 UNIT diplay, display long integers in real string, with the Ti suffic
+      real_t tmp4, tmpReal;
       real34_t tmpReal34;
       stringToReal(displayString, &tmpReal, &ctxtReal39);
       realToReal34(&tmpReal, &tmpReal34);
-      //real34ToDisplayString(&tmpReal34, amNone, displayString, &numericFont, maxWidth, 34, false, false);
-      real34ToDisplayString2(&tmpReal34, displayString, 34, 100, false, false);
-      return;
+      int32ToReal(1024,&tmp4);
+      if(!realCompareAbsLessThan(&tmpReal, &tmp4)) {
+        //real34ToDisplayString(&tmpReal34, amNone, displayString, &numericFont, maxWidth, 34, false, false);
+        real34ToDisplayString2(&tmpReal34, displayString, 34, 100, false, false);
+        return;
+      }
     }
   #endif //UNIT_2TO10_LONGINT_DISPLAY
 

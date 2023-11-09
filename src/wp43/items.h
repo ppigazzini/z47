@@ -2072,7 +2072,7 @@
 #define ITM_EXTY                    2015
 #define ITM_DENMAX2_OLD             2016
 #define ITM_SETSIG2_OLD             2017
-#define MNU_2018                    2018
+#define ITM_USER_HRESET             2018
 #define ITM_RMODEQ                  2019
 #define ITM_SI_All                  2020
 #define ITM_USER_ARESET             2021

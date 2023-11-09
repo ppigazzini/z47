@@ -91,13 +91,7 @@ printf(">>>>Z 0090a determineFunctionKeyItem       -softmenu[menuId].menuItem=%i
       case MNU_MyMenu: {
         dynamicMenuItem = firstItem + itemShift + fn;
         item = userMenuItems[dynamicMenuItem].item;
-        if (item == -MNU_DYNAMIC) {
-          for(uint32_t i = 0; i < numberOfUserMenus; ++i) {
-            if(compareString(userMenuItems[dynamicMenuItem].argumentName, userMenus[i].menuName, CMP_NAME) == 0) {
-                currentUserMenu = i;
-            }
-          }
-        }
+        setCurrentUserMenu(item, userMenuItems[dynamicMenuItem].argumentName);
         break;
       }
 
@@ -936,12 +930,8 @@ int16_t lastItem = 0;
         item = determineFunctionKeyItem_C47((char *)data, shiftF, shiftG); }
         
         // Update currentUserMenu for user defined menus selected in an existing function
-        if ((softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_DYNAMIC) && (item == -MNU_DYNAMIC)) {
-          for(uint32_t i = 0; i < numberOfUserMenus; ++i) {
-            if(compareString(userMenus[currentUserMenu].menuItem[dynamicMenuItem].argumentName, userMenus[i].menuName, CMP_NAME) == 0) {
-                currentUserMenu = i;
-            }
-          }
+        if(softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_DYNAMIC) {
+          setCurrentUserMenu(item, userMenus[currentUserMenu].menuItem[dynamicMenuItem].argumentName);
         }
 
         #if defined(VERBOSEKEYS)
@@ -1931,13 +1921,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
         }
         
         if(item < 0) {
-          if (item == -MNU_DYNAMIC) {
-            for(uint32_t i = 0; i < numberOfUserMenus; ++i) {
-              if(compareString(funcParam, userMenus[i].menuName, CMP_NAME) == 0) {
-                  currentUserMenu = i;
-              }
-            }
-          }
+          setCurrentUserMenu(item, funcParam);
           showSoftmenu(item);
             //printf("AA2 allowShiftsToClearError=%u !checkShifts=%u screenUpdatingMode=%u temporaryInformation=%u\n",allowShiftsToClearError, !checkShifts((char *)data), screenUpdatingMode, temporaryInformation);
         }
@@ -3017,7 +3001,7 @@ ram_full:
 #if !defined(TESTSUITE_BUILD)
   static void stayInAIM(void) {
     if(calcMode == CM_AIM && (softmenu[softmenuStack[0].softmenuId].menuItem != -MNU_ALPHA && softmenu[softmenuStack[0].softmenuId].menuItem != -MNU_MyAlpha) ) {   //JM
-      softmenuStack[0].softmenuId = mm_MNU_ALPHA;    //JM
+      changeToALPHA();
       setSystemFlag(FLAG_ALPHA);                     //JM
     }                                                //JM ^^
 
@@ -3849,7 +3833,7 @@ void fnKeyUp(uint16_t unusedButMandatoryParameter) {
         if(!arrowCasechange && calcMode == CM_AIM && isJMAlphaSoftmenu(menuId)) {
           fnT_ARROW(ITM_UP1);
         }
-              //ignoring the base menu, MY_ALPHA_MENU below
+
               // make this keyActionProcessed = false; to have arrows up and down placed in bufferize
               // make arrowCasechnage true
                                                                        //JM^^
@@ -4060,7 +4044,7 @@ void fnKeyDown(uint16_t unusedButMandatoryParameter) {
         if(!arrowCasechange && calcMode == CM_AIM && isJMAlphaSoftmenu(menuId)) {
           fnT_ARROW(ITM_DOWN1);
         }
-              //ignoring the base menu, MY_ALPHA_MENU below
+
               // make this keyActionProcessed = false; to have arrows up and down placed in bufferize
               // make arrowCasechnage true
                                                                        //JM^^
