@@ -51,7 +51,7 @@ void fnByte             (uint16_t command);                 //JM POC BASE2 ^^
 
 
 //for display.c
-void exponentToUnitDisplayString(int32_t exponent, char *displayString, char *displayValueString, bool_t nimMode);
+void exponentToUnitDisplayString(int32_t exponent, bool_t flag2To10, char *displayString, char *displayValueString, bool_t nimMode);
 
 
 

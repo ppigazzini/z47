@@ -254,6 +254,8 @@
 //*********************************
 //* General configuration defines *
 //*********************************
+#define UNIT_2TO10_LONGINT_DISPLAY
+
 #define DEBUG_INSTEAD_STATUS_BAR         0 // Debug data instead of the status bar
 #define EXTRA_INFO_ON_CALC_ERROR         1 // Print extra information on the console about an error
 #define DEBUG_PANEL                      0 //1 JM Showing registers, local registers, saved stack registers, flags, statistical sums, ... in a debug panel
@@ -523,6 +525,7 @@
 #define FLAG_SBbatV                           0x803A
 #define FLAG_SBshfR                           0x803B
 #define FLAG_HPBASE                           0x803C
+#define FLAG_2TO10                            0x803D
 
 #define NUMBER_OF_SYSTEM_FLAGS                    60
 

@@ -120,6 +120,11 @@ int main(void) {
   showOneChar(&standardFont, 0x0020);
   showOneChar(&standardFont, 0x0032);
   showOneChar(&standardFont, 0xa3e9);
+  showOneChar(&tinyFont,     0x0038);
+  showOneChar(&tinyFont,     0x0040);
+  showOneChar(&tinyFont,     0x0020);
+  showOneChar(&tinyFont,     0x0032);
+  showOneChar(&tinyFont,     0xa3e9);
 
   return 0;
 }

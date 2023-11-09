@@ -32,7 +32,6 @@
 const font_t          *fontForShortInteger;
 const font_t          *cursorFont;
 TO_QSPI const char     digits[17] = "0123456789ABCDEF";
-real51_t               const *gammaLanczosCoefficients;
 void                   (*confirmedFunction)(uint16_t);
 
 // Variables stored in RAM
@@ -112,6 +111,8 @@ uint16_t               gapItemRight;
 uint16_t               gapItemRadix;
 
 uint8_t                numScreensStandardFont;
+uint8_t                numScreensNumericFont;
+uint8_t                numScreensTinyFont;
 uint8_t                currentAsnScr;
 uint8_t                currentFntScr;
 uint8_t                currentFlgScr;
@@ -135,13 +136,13 @@ uint8_t                cachedDisplayStack;
 uint8_t                alphaCase;
 uint8_t                numLinesNumericFont;
 uint8_t                numLinesStandardFont;
+uint8_t                numLinesTinyFont;
 uint8_t                cursorEnabled;
 uint8_t                nimNumberPart;
 uint8_t                hexDigits;
 uint8_t                lastErrorCode;
 uint8_t                temporaryInformation;
 uint8_t                rbrMode;
-uint8_t                numScreensNumericFont;
 uint8_t                timerCraAndDeciseconds = 128u;
 uint8_t                programRunStop;
 uint8_t                currentKeyCode;

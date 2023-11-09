@@ -392,37 +392,34 @@ void addzeroes(char *st, uint8_t ix) {
 
 void fnMultiplySI(uint16_t multiplier) {
   copySourceRegisterToDestRegister(REGISTER_L, TEMP_REGISTER_1); // STO TMP
-  char mult[20];
-  char divi[20];
+  char mult[64];
+  char divi[64];
   mult[0] = 0;
   divi[0] = 0;
 
+  uint16_t base = 10;
+
   if(multiplier > 100 && multiplier <= 100 + 18) {
     addzeroes(mult, multiplier - 100);
+    base = 10;
   }
   else if(multiplier < 100 && multiplier >= 100 - 18) {
     addzeroes(divi, 100 - multiplier);
+    base = 10;
   }
   else if(multiplier == 100) {
     strcpy(mult, "1");
+    base = 10;
   }
-/* JM optimized
-  switch(multiplier) {
-    case 100 +  0: strcpy(mult, "1");   break; //unity
-    case 100 +  3: addzeroes(mult,  3); break; //kilo
-    case 100 +  6: addzeroes(mult,  6); break; //mega
-    case 100 +  9: addzeroes(mult,  9); break; //giga
-    case 100 + 12: addzeroes(mult, 12); break; //tera
-    case 100 + 15: addzeroes(mult, 15); break; //peta
-    case 100 + 18: addzeroes(mult, 18); break; //exa
-    case 100 -  3: addzeroes(divi,  3); break; //milli
-    case 100 -  6: addzeroes(divi,  6); break; //micro
-    case 100 -  9: addzeroes(divi,  9); break; //nano
-    case 100 - 12: addzeroes(divi, 12); break; //pico
-    case 100 - 15: addzeroes(divi, 15); break; //femto
-    case 100 - 18: addzeroes(divi, 18); break; //atto
-    default:                            break;
-  } */
+  else if(multiplier > 200 && multiplier <= 200 + 50) {
+    addzeroes(mult, multiplier - 200);
+    base = 2;
+  }
+  else if(multiplier == 200) {
+    strcpy(mult, "1");
+    base = 2;
+  }
+
 
   setSystemFlag(FLAG_ASLIFT);
   liftStack();
@@ -430,13 +427,13 @@ void fnMultiplySI(uint16_t multiplier) {
   longIntegerInit(lgInt);
 
   if(mult[0] != 0) {
-    stringToLongInteger(mult + (mult[0] == '+' ? 1 : 0), 10, lgInt);
+    stringToLongInteger(mult + (mult[0] == '+' ? 1 : 0), base, lgInt);
     convertLongIntegerToLongIntegerRegister(lgInt, REGISTER_X);
     longIntegerFree(lgInt);
     fnMultiply(0);
   }
   else if(divi[0] != 0) {
-    stringToLongInteger(divi + (divi[0] == '+' ? 1 : 0), 10, lgInt);
+    stringToLongInteger(divi + (divi[0] == '+' ? 1 : 0), base, lgInt);
     convertLongIntegerToLongIntegerRegister(lgInt, REGISTER_X);
     longIntegerFree(lgInt);
     fnDivide(0);
@@ -551,39 +548,49 @@ void fnJM_2SI(uint16_t unusedButMandatoryParameter) { //Convert Real to Longint;
  * \param[in]  exponent int32_t Power of 10 to format                                                     JM UNIT
  * \return void                                                                                           JM UNIT
  ***********************************************                                                          JM UNIT */
-void exponentToUnitDisplayString(int32_t exponent, char *displayString, char *displayValueString, bool_t nimMode) {               //JM UNIT
+void exponentToUnitDisplayString(int32_t exponent, bool_t flag2To10, char *displayString, char *displayValueString, bool_t nimMode) {               //JM UNIT
   displayString[0] = ' ';
   displayString[1] = 0;
   displayString[2] = 0;
+  displayString[3] = 0;
 
-  if(SI_All) {
+  if(!flag2To10 && !getSystemFlag(FLAG_2TO10)) {
+    if(SI_All) {
+      switch(exponent) {
+        case -30 : displayString[1] = 'q'; break;
+        case -27 : displayString[1] = 'r'; break;
+        case -24 : displayString[1] = 'y'; break;
+        case -21 : displayString[1] = 'z'; break;
+        case -18 : displayString[1] = 'a'; break;
+        case  18 : displayString[1] = 'E'; break;
+        case  21 : displayString[1] = 'Z'; break;
+        case  24 : displayString[1] = 'Y'; break;
+        case  27 : displayString[1] = 'R'; break;
+        case  30 : displayString[1] = 'Q'; break;
+        default:                           break;
+      }
+    }
     switch(exponent) {
-      case -30 : displayString[1] = 'q'; break;
-      case -27 : displayString[1] = 'r'; break;
-      case -24 : displayString[1] = 'y'; break;
-      case -21 : displayString[1] = 'z'; break;
-      case -18 : displayString[1] = 'a'; break;
-      case  18 : displayString[1] = 'E'; break;
-      case  21 : displayString[1] = 'Z'; break;
-      case  24 : displayString[1] = 'Y'; break;
-      case  27 : displayString[1] = 'R'; break;
-      case  30 : displayString[1] = 'Q'; break;
+      case -15 : displayString[1] = 'f'; break;
+      case -12 : displayString[1] = 'p'; break;
+      case -9  : displayString[1] = 'n'; break;
+      case -6  : displayString[1] = STD_mu[0]; displayString[2] = STD_mu[1]; break;   //JM UNIT
+      case -3  : displayString[1] = 'm'; break;
+      case  3  : displayString[1] = 'k'; break;
+      case  6  : displayString[1] = 'M'; break;
+      case  9  : displayString[1] = 'G'; break;
+      case 12  : displayString[1] = 'T'; break;
+      case 15  : displayString[1] = 'P'; break;
       default:                           break;
     }
-  }
-
-  switch(exponent) {
-    case -15 : displayString[1] = 'f'; break;
-    case -12 : displayString[1] = 'p'; break;
-    case -9  : displayString[1] = 'n'; break;
-    case -6  : displayString[1] = STD_mu[0]; displayString[2] = STD_mu[1]; displayString[3] = 0;  break;   //JM UNIT
-    case -3  : displayString[1] = 'm'; break;
-    case  3  : displayString[1] = 'k'; break;
-    case  6  : displayString[1] = 'M'; break;
-    case  9  : displayString[1] = 'G'; break;
-    case 12  : displayString[1] = 'T'; break;
-    case 15  : displayString[1] = 'P'; break;
-    default:                           break;
+  } else if(flag2To10) {
+    switch(exponent) {                             //exponent of 2^(10/3)
+      case  3  : displayString[1] = 'K'; displayString[2] = 'i'; break;
+      case  6  : displayString[1] = 'M'; displayString[2] = 'i'; break;
+      case  9  : displayString[1] = 'G'; displayString[2] = 'i'; break;
+      case 12  : displayString[1] = 'T'; displayString[2] = 'i'; break;
+      case 15  : displayString[1] = 'P'; displayString[2] = 'i'; break;
+    }
   }
 
   if(displayString[1] == 0) {

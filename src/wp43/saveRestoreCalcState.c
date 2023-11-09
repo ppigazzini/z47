@@ -37,19 +37,19 @@
 #include "timer.h"
 #include <string.h>
 #if defined(PC_BUILD)
-#include <gtk/gtk.h>
-#include <stdbool.h>
-#include <stdio.h>
-#include <errno.h>
-#include <string.h>
-#include <sys/stat.h>
+  #include <gtk/gtk.h>
+  #include <stdbool.h>
+  #include <stdio.h>
+  #include <errno.h>
+  #include <string.h>
+  #include <sys/stat.h>
 #endif
 #if defined(DMCP_BUILD)
-#include <dmcp.h>
+  #include <dmcp.h>
 #endif
 
 #include "wp43.h"
-#define BACKUP_VERSION                     788  // Updated softmenuStack_t structure for user menu id
+#define BACKUP_VERSION                     789  // Added tiny font
 #define OLDEST_COMPATIBLE_BACKUP_VERSION   779  // save running app
 #define configFileVersion                  10000008 // New STOCFG and new STATE file; arbitrary starting point version 10 000 001. Allowable values are 10000000 to 20000000
 #define VersionAllowed                     10000005 // This code will not autoload versions earlier than this
@@ -70,8 +70,6 @@ Current version defaults all non-loaded settings from previous version files cor
   #define START_REGISTER_VALUE 1000  // was 1522, why?
   static uint32_t loadedVersion = 0;
 #endif //TESTSUITE_BUILD
-  uint16_t flushBufferCnt = 0;
-
 
 #if !defined(TESTSUITE_BUILD)
   static char *tmpRegisterString = NULL;
@@ -391,9 +389,11 @@ static uint32_t restore(void *buffer, uint32_t size) {
     save(&grpGroupingGr1LeftOverflow,         sizeof(grpGroupingGr1LeftOverflow));//JM
     save(&grpGroupingGr1Left,                 sizeof(grpGroupingGr1Left));        //JM
     save(&grpGroupingRight,                   sizeof(grpGroupingRight));          //JM
+    save(&regStatsXY,                         sizeof(regStatsXY));                //JM
     save(&MYM3,                               sizeof(MYM3));
 
-    save(&regStatsXY,                         sizeof(regStatsXY));                //JM
+    save(&numScreensTinyFont,                 sizeof(numScreensTinyFont));
+    save(&numLinesTinyFont,                   sizeof(numLinesTinyFont));
 
 
 
@@ -523,7 +523,8 @@ static uint32_t restore(void *buffer, uint32_t size) {
       restore(&scrLock,                            sizeof(scrLock));
       if(backupVersion < 784) {                                                     //re-using existing old uint8 slot
         scrLock = 0;
-      } else {
+      }
+      else {
         scrLock &= 0x03;
       }
       restore(&roundingMode,                       sizeof(roundingMode));
@@ -752,6 +753,12 @@ static uint32_t restore(void *buffer, uint32_t size) {
       else {
         MYM3 = false;
       }
+
+      if(backupVersion >= 789) {
+        restore(&numScreensTinyFont,                 sizeof(numScreensTinyFont));
+        restore(&numLinesTinyFont,                   sizeof(numLinesTinyFont));
+      }
+
 
       ioFileClose();
       printf("End of calc's restoration\n");
@@ -1014,7 +1021,6 @@ void fnSave(uint16_t saveMode) {
 }
 
 void doSave(uint16_t saveType) {
-flushBufferCnt = 0;
 #if !defined(TESTSUITE_BUILD)
   printStatus(0, errorMessages[SAVING_STATE_FILE],force);
   ioFilePath_t path;
@@ -1248,9 +1254,9 @@ flushBufferCnt = 0;
   }
 
   // Other configuration stuff
-        sprintf(tmpString, "OTHER_CONFIGURATION_STUFF\n72\n");   
+        sprintf(tmpString, "OTHER_CONFIGURATION_STUFF\n72\n");
         save(tmpString, strlen(tmpString));    //JM 23+11+15+23
-/*01*/  save(tmpString, strlen(tmpString)); 
+/*01*/  save(tmpString, strlen(tmpString));
 
 //23 sprintf(tmpString, "firstGregorianDay\n%" PRIu32 "\n", firstGregorianDay);
 /*02*/  sprintf(tmpString, "denMax\n%"                     PRIu32 "\n",     denMax);                       save(tmpString, strlen(tmpString));
@@ -1278,7 +1284,7 @@ flushBufferCnt = 0;
 /*22*/  sprintf(tmpString, "exponentHideLimit\n%"          PRId16  "\n",    exponentHideLimit);            save(tmpString, strlen(tmpString));
 /*23*/  sprintf(tmpString, "bestF\n%"                      PRIu16  "\n",    lrSelection);                  save(tmpString, strlen(tmpString));
 
-//10     
+//10
 /*01*/  sprintf(tmpString, "fgLN\n%"                       PRIu8  "\n",     (uint8_t)fgLN);                save(tmpString, strlen(tmpString));      //keep save file format by keeping the old setting
 /*02*/  sprintf(tmpString, "eRPN\n%"                       PRIu8  "\n",     (uint8_t)eRPN);                save(tmpString, strlen(tmpString));
 /*03*/  sprintf(tmpString, "HOME3\n%"                      PRIu8  "\n",     (uint8_t)HOME3);               save(tmpString, strlen(tmpString));
@@ -1291,7 +1297,7 @@ flushBufferCnt = 0;
 /*10*/  sprintf(tmpString, "BASE_MYM\n%"                   PRIu8  "\n",     (uint8_t)BASE_MYM);            save(tmpString, strlen(tmpString));
 /*11*/  sprintf(tmpString, "jm_G_DOUBLETAP\n%"             PRIu8  "\n",     (uint8_t)jm_G_DOUBLETAP);      save(tmpString, strlen(tmpString));
 
-/*  *///15     
+/*  *///15
 /*01*/  sprintf(tmpString, "compatibility_bool\n%"         PRIu8  "\n",     (uint8_t)0);                   save(tmpString, strlen(tmpString));            //compatibility - use when needed
 /*02*/  sprintf(tmpString, "jm_LARGELI\n%"                 PRIu8  "\n",     (uint8_t)jm_LARGELI);          save(tmpString, strlen(tmpString));
 /*03*/  sprintf(tmpString, "constantFractions\n%"          PRIu8  "\n",     (uint8_t)constantFractions);   save(tmpString, strlen(tmpString));
@@ -1308,7 +1314,7 @@ flushBufferCnt = 0;
 /*14*/  sprintf(tmpString, "LongPressF\n%"                 PRIu8  "\n",     (uint8_t)LongPressF);          save(tmpString, strlen(tmpString));
 /*15*/  sprintf(tmpString, "lastIntegerBase\n%"            PRIu8  "\n",     (uint8_t)lastIntegerBase);     save(tmpString, strlen(tmpString));
 
-/*  *///23        
+/*  *///23
 /*01*/  sprintf(tmpString, "lrChosen\n%"                   PRIu16 "\n",     lrChosen);                     save(tmpString, strlen(tmpString));
 /*02*/  sprintf(tmpString, "graph_xmin\n"                  "%f"   "\n",     graph_xmin);                   save(tmpString, strlen(tmpString));
 /*03*/  sprintf(tmpString, "graph_xmax\n"                  "%f"   "\n",     graph_xmax);                   save(tmpString, strlen(tmpString));
@@ -2405,7 +2411,7 @@ int32_t stringToInt32(const char *str) {
           else if(strcmp(aimBuffer, "LongPressM"                  ) == 0) { LongPressM           = stringToUint8(tmpString); }                  //10000003
           else if(strcmp(aimBuffer, "LongPressF"                  ) == 0) { LongPressF           = stringToUint8(tmpString); }                  //10000003
           else if(strcmp(aimBuffer, "lastIntegerBase"             ) == 0) { lastIntegerBase      = stringToUint8(tmpString); }                  //10000004
-          else if(strcmp(aimBuffer, "lrChosen"                    ) == 0) { lrChosen             = stringToUint16(tmpString); }
+          else if(strcmp(aimBuffer, "lrChosen"                    ) == 0) { lrChosen             = stringToUint16(tmpString);}
           else if(strcmp(aimBuffer, "graph_xmin"                  ) == 0) { graph_xmin           = strintToFloat(tmpString); }
           else if(strcmp(aimBuffer, "graph_xmax"                  ) == 0) { graph_xmax           = strintToFloat(tmpString); }
           else if(strcmp(aimBuffer, "graph_ymin"                  ) == 0) { graph_ymin           = strintToFloat(tmpString); }
@@ -2452,7 +2458,6 @@ int32_t stringToInt32(const char *str) {
 
 
 void doLoad(uint16_t loadMode, uint16_t s, uint16_t n, uint16_t d, uint16_t loadType) {
-  flushBufferCnt = 0;
   #if !defined(TESTSUITE_BUILD)
   ioFilePath_t path;
   int ret;
