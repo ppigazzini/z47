@@ -22,7 +22,7 @@
 
   #include "defines.h"
 
-  #if defined(DMCP_BUILD) || (SCREEN_800X480 == 1)
+  #if defined(DMCP_BUILD) || (BIG_SCREEN == 1)
     #define calcModeNormalGui()
     #define calcModeAimGui()
     #define calcModeTamGui()
