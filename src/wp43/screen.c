@@ -851,7 +851,7 @@ void execTimerApp(uint16_t timerType) {
             #if defined(PC_BUILD)
               jm_show_calc_state("screen.c: Shft_handler: HOME3");
             #endif //PC_BUILD
-            if(HOME3 && softmenuStack[0].softmenuId == mm_MNU_HOME) {              //JM shifts    //softmenuStackPointerJM
+            if(HOME3 && currentMenu() == -MNU_HOME) {              //JM shifts    //softmenuStackPointerJM
               popSoftmenu();                                                                                                  //JM shifts
             }
             else {
@@ -877,7 +877,14 @@ void execTimerApp(uint16_t timerType) {
   void LongpressKey_handler() {
     if(fnTimerGetStatus(TO_CL_LONG) == TMR_COMPLETED) {
       if(JM_auto_longpress_enabled != 0) {
-        showFunctionName(JM_auto_longpress_enabled, JM_TO_CL_LONG + 50, "SF:LL");     //Add a marginal amout of time to prevent racing of end conditions.
+        if(JM_auto_longpress_enabled == -MNU_DYNAMIC) {
+          char *funcParam;
+          int keyStateCode = (getSystemFlag(FLAG_ALPHA) ? 3 : 0) + ((LongPressM == RB_M124) ? 1 : longpressDelayedkey3 ? 1 : 2);
+          funcParam = (char *)getNthString((uint8_t *)userKeyLabel, currentKeyCode * 6 + keyStateCode);
+          showFunctionName(JM_auto_longpress_enabled, JM_TO_CL_LONG + 50, funcParam);     //Add a marginal amout of time to prevent racing of end conditions.
+        } else {
+          showFunctionName(JM_auto_longpress_enabled, JM_TO_CL_LONG + 50, "SF:LL");     //Add a marginal amout of time to prevent racing of end conditions.
+        }
         JM_auto_longpress_enabled = 0;                                       //showFunctionName must not time out longer than the timer that is started below
 
         //Setup up next long press activation possibility
@@ -1741,7 +1748,8 @@ void execTimerApp(uint16_t timerType) {
     char functionName[64];
     char padding[20];                                          //JM
     functionName[0] = 0;
-
+    showFunctionNameArg = NULL;
+        
     //FIX //REMOVE DISPLAYING TEMP STRING as in C43 the tmpstring does NOT show the last keystroke or whatever this tempstr is needed for. It gets executed from timers
     //if(tmpString[0] != 0) {
     //  strcpy(functionName,tmpString);
@@ -1781,6 +1789,10 @@ void execTimerApp(uint16_t timerType) {
         if(functionName[0]==0) {
           stringAppend(functionName,indexOfItems[abs(item)].itemCatalogName);
         }
+      }
+      else if(item == -MNU_DYNAMIC) {
+        if(arg != NULL) stringAppend(functionName,arg);       
+        showFunctionNameArg = (char *)arg;                        // Needed when executing a user menu from a long pressed key
       }
       else if(item >= ITM_X_P1 && item <= ITM_X_g6) {
         stringAppend(functionName, indexOfItemsXEQM + 8*(item-fnXEQMENUpos));

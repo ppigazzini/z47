@@ -81,7 +81,6 @@ TO_QSPI static const char bugScreenItemNotDetermined[] = "In function determineI
     int16_t row, menuId = softmenuStack[0].softmenuId;
     int16_t firstItem = softmenuStack[0].firstItem;
 
-
     #if defined(VERBOSEKEYS)
       printf(">>>>Z 0090 determineFunctionKeyItem       data=|%s| data[0]=%d fn=%d item=%d itemShift=%d (Global) FN_key_pressed=%d\n", data, data[0], fn, item, itemShift, FN_key_pressed);
     #endif // VERBOSEKEYS
@@ -104,6 +103,7 @@ printf(">>>>Z 0090a determineFunctionKeyItem       -softmenu[menuId].menuItem=%i
       case MNU_MyMenu: {
         dynamicMenuItem = firstItem + itemShift + fn;
         item = userMenuItems[dynamicMenuItem].item;
+        setCurrentUserMenu(item, userMenuItems[dynamicMenuItem].argumentName);
         break;
       }
 
@@ -124,6 +124,7 @@ printf(">>>>  0093     firstItem=%d itemShift=%d fn=%d",firstItem, itemShift, fn
       case MNU_DYNAMIC: {
         dynamicMenuItem = firstItem + itemShift + fn;
         item = userMenus[currentUserMenu].menuItem[dynamicMenuItem].item;
+        // currentUserMenu update is managed later on in executeFunction
         break;
       }
 
@@ -243,7 +244,9 @@ printf(">>>>Z 0093c determineFunctionKeyItem  item = %i:   name:=%s\n",item, ind
               }
               else {
                 item = -MNU_DYNAMIC;
-                currentUserMenu = i;
+                if (calcMode != CM_ASSIGN) {
+                  currentUserMenu = i;
+                }
               }
             }
           }
@@ -832,9 +835,11 @@ int16_t lastItem = 0;
   #if defined(PC_BUILD)
     void btnFnReleased(GtkWidget *notUsed, GdkEvent *event, gpointer data) {
   #endif // PC_BUILD
+
   #if defined(DMCP_BUILD)
     void btnFnReleased(void *data) {
   #endif // DMCP_BUILD
+
     if(programRunStop == PGM_KEY_PRESSED_WHILE_PAUSED) {
       programRunStop = PGM_RESUMING;
       screenUpdatingMode &= ~SCRUPD_ONE_TIME_FLAGS;
@@ -934,6 +939,11 @@ int16_t lastItem = 0;
         #endif //VERBOSEKEYS
 
         item = determineFunctionKeyItem_C47((char *)data, shiftF, shiftG); }
+        
+        // Update currentUserMenu for user defined menus selected in an existing function
+        if(softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_DYNAMIC) {
+          setCurrentUserMenu(item, userMenus[currentUserMenu].menuItem[dynamicMenuItem].argumentName);
+        }
 
         #if defined(VERBOSEKEYS)
         printf(">>>> R000B                                %d |%s| shiftF=%d, shiftG=%d tam.mode=%i\n",item, data, shiftF, shiftG, tam.mode);
@@ -984,6 +994,8 @@ int16_t lastItem = 0;
           else if(item < 0) { // softmenu
             if(calcMode == CM_ASSIGN && itemToBeAssigned == 0 && softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_MENUS) {
               itemToBeAssigned = item;
+              leaveAsmMode();
+              popSoftmenu();
             }
             else {
               #if defined(VERBOSEKEYS)
@@ -1597,6 +1609,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
       nimWhenButtonPressed = (calcMode == CM_NIM);                  //PHM eRPN 2021-07
 
       int keyCode = (*((char *)data) - '0')*10 + *(((char *)data) + 1) - '0';
+      currentKeyCode = keyCode;
       if(checkNumber((uint8_t)keyCode)) {
         return;
       }
@@ -1755,6 +1768,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
       nimWhenButtonPressed = (calcMode == CM_NIM);                  //PHM eRPN 2021-07
       int16_t item;
       int keyCode = (*((char *)data) - '0')*10 + *(((char *)data) + 1) - '0';
+      currentKeyCode = keyCode;
       if(checkNumber((uint8_t)keyCode)) {
         return;
       }
@@ -1881,13 +1895,19 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
         fnTimerStop(TO_3S_CTFF);      //dr
 
         hideFunctionName();
+        
+        int keyCode = (*((char *)data) - '0')*10 + *(((char *)data) + 1) - '0';
+        int keyStateCode = (getSystemFlag(FLAG_ALPHA) ? 3 : 0) + (lastshiftG ? 2 : lastshiftF ? 1 : 0);
+        char *funcParam = (char *)getNthString((uint8_t *)userKeyLabel, keyCode * 6 + keyStateCode);
+        if (showFunctionNameArg != NULL) {
+          funcParam = showFunctionNameArg;       // Needed when executing a user menu from a long pressed key
+        }
+        
         if(item < 0) {
+          setCurrentUserMenu(item, funcParam);
           showSoftmenu(item);
         }
         else {
-          int keyCode = (*((char *)data) - '0')*10 + *(((char *)data) + 1) - '0';
-          int keyStateCode = (getSystemFlag(FLAG_ALPHA) ? 3 : 0) + (shiftG ? 2 : shiftF ? 1 : 0);
-          char *funcParam = (char *)getNthString((uint8_t *)userKeyLabel, keyCode * 6 + keyStateCode);
         #if defined(PC_BUILD)
           if(item == ITM_RS || item == ITM_XEQ) {
             key[0] = 0;
@@ -2914,7 +2934,7 @@ ram_full:
 #if !defined(TESTSUITE_BUILD)
   static void stayInAIM(void) {
     if(calcMode == CM_AIM && (softmenu[softmenuStack[0].softmenuId].menuItem != -MNU_ALPHA && softmenu[softmenuStack[0].softmenuId].menuItem != -MNU_MyAlpha) ) {   //JM
-      softmenuStack[0].softmenuId = mm_MNU_ALPHA;    //JM
+      changeToALPHA();
       setSystemFlag(FLAG_ALPHA);                     //JM
     }                                                //JM ^^
 
@@ -3746,7 +3766,7 @@ void fnKeyUp(uint16_t unusedButMandatoryParameter) {
         if(!arrowCasechange && calcMode == CM_AIM && isJMAlphaSoftmenu(menuId)) {
           fnT_ARROW(ITM_UP1);
         }
-              //ignoring the base menu, MY_ALPHA_MENU below
+
               // make this keyActionProcessed = false; to have arrows up and down placed in bufferize
               // make arrowCasechnage true
                                                                        //JM^^
@@ -3958,7 +3978,7 @@ void fnKeyDown(uint16_t unusedButMandatoryParameter) {
         if(!arrowCasechange && calcMode == CM_AIM && isJMAlphaSoftmenu(menuId)) {
           fnT_ARROW(ITM_DOWN1);
         }
-              //ignoring the base menu, MY_ALPHA_MENU below
+
               // make this keyActionProcessed = false; to have arrows up and down placed in bufferize
               // make arrowCasechnage true
                                                                        //JM^^

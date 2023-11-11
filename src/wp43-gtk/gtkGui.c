@@ -1832,14 +1832,14 @@
 
       yPos += DELTA_KEYS_Y + 1;
 
-      if(getSystemFlag(FLAG_USER) ? kbd_usr[27].primary : kbd_std[27].primary != KEY_fg) {
-        gtk_widget_get_preferred_size(  lbl71F, NULL, &lblF); //JM REMOVE SHIFT LABELS
-        gtk_widget_get_preferred_size(  lbl71G, NULL, &lblG);
-        gtk_fixed_move(GTK_FIXED(grid), lbl71F, (2*xPos+KEY_WIDTH_1-lblF.width-GAP*0-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);  //Gap removed to cover up fixed squares
-        gtk_fixed_move(GTK_FIXED(grid), lbl71G, (2*xPos+KEY_WIDTH_1+lblF.width+GAP*0-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);  //Gap removed to cover up fixed squares
-        //gtk_widget_get_preferred_size(  lbl71Gr, NULL, &lblG);
-        //gtk_fixed_move(GTK_FIXED(grid), lbl71Gr, xPos+KEY_WIDTH_1*2/3,                              yPos - Y_OFFSET_GREEK);
-      }
+  if(getSystemFlag(FLAG_USER) ? kbd_usr[27].primary : kbd_std[27].primary != KEY_fg) {
+      gtk_widget_get_preferred_size(  lbl71F, NULL, &lblF); //JM REMOVE SHIFT LABELS
+      gtk_widget_get_preferred_size(  lbl71G, NULL, &lblG);
+      gtk_fixed_move(GTK_FIXED(grid), lbl71F, (2*xPos+KEY_WIDTH_1-lblF.width-GAP*0-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);  //Gap removed to cover up fixed squares
+      gtk_fixed_move(GTK_FIXED(grid), lbl71G, (2*xPos+KEY_WIDTH_1+lblF.width+GAP*0-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);  //Gap removed to cover up fixed squares
+      //  gtk_widget_get_preferred_size(  lbl71Gr, NULL, &lblG);
+      //  gtk_fixed_move(GTK_FIXED(grid), lbl71Gr, xPos+KEY_WIDTH_1*2/3,                              yPos - Y_OFFSET_GREEK);
+    }
 
       xPos += DELTA_KEYS_X + 18;
       gtk_widget_get_preferred_size(  lbl72F, NULL, &lblF);
@@ -1961,15 +1961,35 @@
 
 
 
-    void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF, GtkWidget *lblG, GtkWidget *lblL) {
-      uint8_t lbl[22];
+void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF, GtkWidget *lblG, GtkWidget *lblL) {
+  uint8_t lbl[22];
+  int16_t keyLogicalId;
 
-      if(key->primary == 0) {
-        lbl[0] = 0;
-      }
-      else {
-        stringToUtf8(indexOfItems[max(key->primary, -key->primary)].itemSoftmenuName, lbl);
-      }
+  if(key->keyId < 30) {
+    keyLogicalId = key->keyId -21;
+  } else if (key->keyId < 40) {
+    keyLogicalId = key->keyId -25;
+  } else if (key->keyId < 50) {
+    keyLogicalId = key->keyId -29;
+  } else if (key->keyId < 60) {
+    keyLogicalId = key->keyId -34;
+  } else if (key->keyId < 70) {
+    keyLogicalId = key->keyId -39;
+  } else if (key->keyId < 80) {
+    keyLogicalId = key->keyId -44;
+  } else {
+    keyLogicalId = key->keyId -49;
+  }
+  
+  if(key->primary == 0) {
+    lbl[0] = 0;
+  }
+  else {
+    stringToUtf8(indexOfItems[max(key->primary, -key->primary)].itemSoftmenuName, lbl);
+    if(strcmp((char *)lbl, "DYNMNU") == 0) {
+      stringToUtf8((char *)getNthString((uint8_t *)userKeyLabel, keyLogicalId*6),lbl);
+    }
+  }
 
       bool_t SigmaPlusNRM = ((calcMode == CM_NORMAL || calcMode == CM_NIM) && key->keyId == 21 && Norm_Key_00_VAR != ITM_SIGMAPLUS);
 
@@ -2019,14 +2039,17 @@
         gtk_widget_set_name(button, "calcKey");
       }
 
-      stringToUtf8(indexOfItems[max(key->fShifted, -key->fShifted)].itemSoftmenuName, lbl);
-
-      if(key->fShifted == 0) {
-        lbl[0] = 0;
-      }
-      else if(strcmp((char *)lbl, "CAT") == 0 && key->keyId != 85) {   //JM was 85  //JM Changed CATALOG to CAT
-        lbl[3] = 0;
-      }
+  stringToUtf8(indexOfItems[max(key->fShifted, -key->fShifted)].itemSoftmenuName, lbl);
+  if(strcmp((char *)lbl, "DYNMNU") == 0) {
+    stringToUtf8((char *)getNthString((uint8_t *)userKeyLabel, keyLogicalId*6+1),lbl);
+  }    
+  
+  if(key->fShifted == 0) {
+    lbl[0] = 0;
+  }
+  else if(strcmp((char *)lbl, "CAT") == 0 && key->keyId != 85) {   //JM was 85  //JM Changed CATALOG to CAT
+    lbl[3] = 0;
+  }
 
       if(key->primary == ITM_SHIFTg && key->keyId == 71) {
         strcpy((char *)lbl,"      "); //blank the dots above the shift g key, if it is shit g specifically instead of shift f/g
@@ -2035,13 +2058,16 @@
       gtk_label_set_label(GTK_LABEL(lblF), (gchar *)lbl);
       if(key->fShifted < 0) gtk_widget_set_name(lblF, "fShiftedUnderline"); else  gtk_widget_set_name(lblF, "fShifted");
 
-      //if(key->gShifted == ITM_op_j) strcpy((char *)lbl, getSystemFlag(FLAG_CPXj)   ? "j"  : "i");
-      //else
-      char sstmp[16];
-      strcpy(sstmp, indexOfItems[max(key->gShifted, -key->gShifted)].itemSoftmenuName);
-      if((key->gShifted == ITM_op_j || key->gShifted == ITM_op_j_pol) && getSystemFlag(FLAG_CPXj)) sstmp[1]++;
-      if(key->gShifted == ITM_EE_EXP_TH && getSystemFlag(FLAG_CPXj)) sstmp[3]++;
-      stringToUtf8(sstmp, lbl);
+//  if(key->gShifted == ITM_op_j) strcpy((char *)lbl, getSystemFlag(FLAG_CPXj)   ? "j"  : "i");
+//  else 
+  char sstmp[16];
+  strcpy(sstmp, indexOfItems[max(key->gShifted, -key->gShifted)].itemSoftmenuName);
+  if((key->gShifted == ITM_op_j || key->gShifted == ITM_op_j_pol) && getSystemFlag(FLAG_CPXj)) sstmp[1]++;
+  if(key->gShifted == ITM_EE_EXP_TH && getSystemFlag(FLAG_CPXj)) sstmp[3]++;
+  stringToUtf8(sstmp, lbl);
+  if(strcmp((char *)lbl, "DYNMNU") == 0) {
+    stringToUtf8((char *)getNthString((uint8_t *)userKeyLabel, keyLogicalId*6+2),lbl);
+  }
 
       if(key->gShifted == 0) {
         lbl[0] = 0;

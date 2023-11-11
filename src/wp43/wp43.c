@@ -158,6 +158,7 @@ uint8_t                temporaryInformation;
 uint8_t                rbrMode;
 uint8_t                timerCraAndDeciseconds = 128u;
 uint8_t                programRunStop;
+uint8_t                currentKeyCode;
 uint8_t                lastKeyCode;
 uint8_t                entryStatus;
 uint8_t                screenUpdatingMode;
@@ -171,6 +172,7 @@ int16_t                rbrRegister;
 int16_t                catalog;
 int16_t                lastCatalogPosition[NUMBER_OF_CATALOGS];
 int16_t                showFunctionNameItem;
+char *                 showFunctionNameArg;
 
 uint8_t               displayStackSHOIDISP;          //JM SHOIDISP
 uint8_t               scrLock;
@@ -208,9 +210,6 @@ int16_t                T_cursorPos;                  //JMCURSOR
 int16_t                displayAIMbufferoffset;       //JMCURSOR
 int16_t                SHOWregis;                    //JMSHOW
 int16_t                ListXYposition;               //JMSHOW
-int16_t                mm_MNU_HOME;                  //JM
-int16_t                mm_MNU_ALPHA;                 //JM
-int16_t                MY_ALPHA_MENU = 1;            //JM
 int16_t                JM_auto_doublepress_autodrop_enabled;  //JM TIMER CLRDROP //drop
 int16_t                JM_auto_longpress_enabled;    //JM TIMER CLRDROP //clstk
 uint8_t                JM_SHIFT_HOME_TIMER1;         //Local to keyboard.c, but defined here

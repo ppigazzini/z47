@@ -49,19 +49,19 @@
 #include "timer.h"
 #include <string.h>
 #if defined(PC_BUILD)
-  #include <gtk/gtk.h>
-  #include <stdbool.h>
-  #include <stdio.h>
-  #include <errno.h>
-  #include <string.h>
-  #include <sys/stat.h>
+#include <gtk/gtk.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <errno.h>
+#include <string.h>
+#include <sys/stat.h>
 #endif
 #if defined(DMCP_BUILD)
-  #include <dmcp.h>
+#include <dmcp.h>
 #endif
 
 #include "wp43.h"
-#define BACKUP_VERSION                     789  // Added tiny font
+#define BACKUP_VERSION                     790  // removed mm variables
 #define OLDEST_COMPATIBLE_BACKUP_VERSION   779  // save running app
 #define configFileVersion                  10000008 // New STOCFG and new STATE file; arbitrary starting point version 10 000 001. Allowable values are 10000000 to 20000000
 #define VersionAllowed                     10000005 // This code will not autoload versions earlier than this
@@ -101,7 +101,8 @@ static uint32_t restore(void *buffer, uint32_t size) {
 #if defined(PC_BUILD)
   void saveCalc(void) {
     //uint8_t  compatibility_u8 = 0;           //defaults to use when settings are removed
-    bool_t   compatibility_bool = false;     //defaults to use when settings are removed
+    int16_t  compatibility_u16 = 0;         //defaults to use when settings are removed
+    bool_t   compatibility_bool = false;       //defaults to use when settings are removed
     uint32_t backupVersion = BACKUP_VERSION;
     uint32_t ramSize       = RAM_SIZE;
     uint32_t ramPtr;
@@ -377,8 +378,8 @@ static uint32_t restore(void *buffer, uint32_t size) {
     save(&indexOfItemsXEQM,                   sizeof(indexOfItemsXEQM));
     save(&T_cursorPos,                        sizeof(T_cursorPos));               //JM ^^
     save(&SHOWregis,                          sizeof(SHOWregis));                 //JM ^^
-    save(&mm_MNU_HOME,                        sizeof(mm_MNU_HOME));               //JM ^^
-    save(&mm_MNU_ALPHA,                       sizeof(mm_MNU_ALPHA));              //JM ^^
+    save(&compatibility_u16,                  sizeof(compatibility_u16));            //SPARE USE THESE
+    save(&compatibility_u16,                  sizeof(compatibility_u16));            //SPARE USE THESE
     save(&displayStackSHOIDISP,               sizeof(displayStackSHOIDISP));      //JM ^^
     save(&ListXYposition,                     sizeof(ListXYposition));            //JM ^^
     save(&numLock,                            sizeof(numLock));                   //JM ^^
@@ -416,6 +417,7 @@ static uint32_t restore(void *buffer, uint32_t size) {
     printf("RestoreCalc\n");
     //uint8_t  compatibility_u8;        //defaults to use when settings are removed
     bool_t   compatibility_bool;      //defaults to use when settings are removed
+    int16_t  compatibility_u16;        //defaults to use when settings are removed
     uint32_t backupVersion, ramSize, ramPtr;
     int ret;
     uint8_t *loadedScreen = malloc(SCREEN_WIDTH * SCREEN_HEIGHT / 8);
@@ -465,7 +467,12 @@ static uint32_t restore(void *buffer, uint32_t size) {
       restore(asmBuffer,                           sizeof(asmBuffer));
       restore(oldTime,                             sizeof(oldTime));
       restore(dateTimeString,                      sizeof(dateTimeString));
-      restore(softmenuStack,                       sizeof(softmenuStack));
+      if(backupVersion >= 788 ) {                                               
+        restore(softmenuStack,                     sizeof(softmenuStack));
+      } else {
+        restore(softmenuStack,                     32);
+        memset(softmenuStack, 0,                   sizeof(softmenuStack));                        // [DL] Reset softmenuStack, don't use old softmenuStack content
+      }
       restore(globalRegister,                      sizeof(globalRegister));
       restore(savedStackRegister,                  sizeof(savedStackRegister));
       restore(kbd_usr,                             sizeof(kbd_usr));
@@ -527,8 +534,7 @@ static uint32_t restore(void *buffer, uint32_t size) {
       restore(&scrLock,                            sizeof(scrLock));
       if(backupVersion < 784) {                                                     //re-using existing old uint8 slot
         scrLock = 0;
-      }
-      else {
+      } else {
         scrLock &= 0x03;
       }
       restore(&roundingMode,                       sizeof(roundingMode));
@@ -718,8 +724,8 @@ static uint32_t restore(void *buffer, uint32_t size) {
       restore(&indexOfItemsXEQM,                   sizeof(indexOfItemsXEQM));
       restore(&T_cursorPos,                        sizeof(T_cursorPos));              //JM ^^
       restore(&SHOWregis,                          sizeof(SHOWregis));                //JM ^^
-      restore(&mm_MNU_HOME,                        sizeof(mm_MNU_HOME));              //JM ^^
-      restore(&mm_MNU_ALPHA,                       sizeof(mm_MNU_ALPHA));             //JM ^^
+      restore(&compatibility_u16,                  sizeof(compatibility_u16));            //SPARE USE THESE
+      restore(&compatibility_u16,                  sizeof(compatibility_u16));            //SPARE USE THESE
       restore(&displayStackSHOIDISP,               sizeof(displayStackSHOIDISP));     //JM ^^
       restore(&ListXYposition,                     sizeof(ListXYposition));           //JM ^^
       restore(&numLock,                            sizeof(numLock));                  //JM ^^
@@ -761,7 +767,6 @@ static uint32_t restore(void *buffer, uint32_t size) {
       ioFileClose();
       printf("End of calc's restoration\n");
 
-      MY_ALPHA_MENU = mm_MNU_ALPHA;
       setFGLSettings(fgLN);
 
       if(temporaryInformation == TI_SHOW_REGISTER_BIG || temporaryInformation == TI_SHOW_REGISTER_SMALL) {
@@ -1245,9 +1250,9 @@ void doSave(uint16_t saveType) {
   }
 
   // Other configuration stuff
-        sprintf(tmpString, "OTHER_CONFIGURATION_STUFF\n72\n");
+        sprintf(tmpString, "OTHER_CONFIGURATION_STUFF\n72\n");   
         save(tmpString, strlen(tmpString));    //JM 23+11+15+23
-/*01*/  save(tmpString, strlen(tmpString));
+/*01*/  save(tmpString, strlen(tmpString)); 
 
 //23 sprintf(tmpString, "firstGregorianDay\n%" PRIu32 "\n", firstGregorianDay);
 /*02*/  sprintf(tmpString, "denMax\n%"                     PRIu32 "\n",     denMax);                       save(tmpString, strlen(tmpString));
@@ -1275,7 +1280,7 @@ void doSave(uint16_t saveType) {
 /*22*/  sprintf(tmpString, "exponentHideLimit\n%"          PRId16  "\n",    exponentHideLimit);            save(tmpString, strlen(tmpString));
 /*23*/  sprintf(tmpString, "bestF\n%"                      PRIu16  "\n",    lrSelection);                  save(tmpString, strlen(tmpString));
 
-//10
+//10     
 /*01*/  sprintf(tmpString, "fgLN\n%"                       PRIu8  "\n",     (uint8_t)fgLN);                save(tmpString, strlen(tmpString));      //keep save file format by keeping the old setting
 /*02*/  sprintf(tmpString, "eRPN\n%"                       PRIu8  "\n",     (uint8_t)eRPN);                save(tmpString, strlen(tmpString));
 /*03*/  sprintf(tmpString, "HOME3\n%"                      PRIu8  "\n",     (uint8_t)HOME3);               save(tmpString, strlen(tmpString));
@@ -1288,7 +1293,7 @@ void doSave(uint16_t saveType) {
 /*10*/  sprintf(tmpString, "BASE_MYM\n%"                   PRIu8  "\n",     (uint8_t)BASE_MYM);            save(tmpString, strlen(tmpString));
 /*11*/  sprintf(tmpString, "jm_G_DOUBLETAP\n%"             PRIu8  "\n",     (uint8_t)jm_G_DOUBLETAP);      save(tmpString, strlen(tmpString));
 
-/*  *///15
+/*  *///15     
 /*01*/  sprintf(tmpString, "compatibility_bool\n%"         PRIu8  "\n",     (uint8_t)0);                   save(tmpString, strlen(tmpString));            //compatibility - use when needed
 /*02*/  sprintf(tmpString, "jm_LARGELI\n%"                 PRIu8  "\n",     (uint8_t)jm_LARGELI);          save(tmpString, strlen(tmpString));
 /*03*/  sprintf(tmpString, "constantFractions\n%"          PRIu8  "\n",     (uint8_t)constantFractions);   save(tmpString, strlen(tmpString));
@@ -1305,7 +1310,7 @@ void doSave(uint16_t saveType) {
 /*14*/  sprintf(tmpString, "LongPressF\n%"                 PRIu8  "\n",     (uint8_t)LongPressF);          save(tmpString, strlen(tmpString));
 /*15*/  sprintf(tmpString, "lastIntegerBase\n%"            PRIu8  "\n",     (uint8_t)lastIntegerBase);     save(tmpString, strlen(tmpString));
 
-/*  *///23
+/*  *///23        
 /*01*/  sprintf(tmpString, "lrChosen\n%"                   PRIu16 "\n",     lrChosen);                     save(tmpString, strlen(tmpString));
 /*02*/  sprintf(tmpString, "graph_xmin\n"                  "%f"   "\n",     graph_xmin);                   save(tmpString, strlen(tmpString));
 /*03*/  sprintf(tmpString, "graph_xmax\n"                  "%f"   "\n",     graph_xmax);                   save(tmpString, strlen(tmpString));
@@ -2402,7 +2407,7 @@ int32_t stringToInt32(const char *str) {
           else if(strcmp(aimBuffer, "LongPressM"                  ) == 0) { LongPressM           = stringToUint8(tmpString); }                  //10000003
           else if(strcmp(aimBuffer, "LongPressF"                  ) == 0) { LongPressF           = stringToUint8(tmpString); }                  //10000003
           else if(strcmp(aimBuffer, "lastIntegerBase"             ) == 0) { lastIntegerBase      = stringToUint8(tmpString); }                  //10000004
-          else if(strcmp(aimBuffer, "lrChosen"                    ) == 0) { lrChosen             = stringToUint16(tmpString);}
+          else if(strcmp(aimBuffer, "lrChosen"                    ) == 0) { lrChosen             = stringToUint16(tmpString); }
           else if(strcmp(aimBuffer, "graph_xmin"                  ) == 0) { graph_xmin           = strintToFloat(tmpString); }
           else if(strcmp(aimBuffer, "graph_xmax"                  ) == 0) { graph_xmax           = strintToFloat(tmpString); }
           else if(strcmp(aimBuffer, "graph_ymin"                  ) == 0) { graph_ymin           = strintToFloat(tmpString); }
