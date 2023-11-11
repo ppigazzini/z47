@@ -464,7 +464,7 @@ void showMatrixEditor() {
       showRealMatrix(&openMatrixMIMPointer.realMatrix, 0);
     }
     else {
-      showComplexMatrix(&openMatrixMIMPointer.complexMatrix, 0);
+      showComplexMatrix(&openMatrixMIMPointer.complexMatrix, 0, currentAngularMode, getSystemFlag(FLAG_POLAR));
     }
   }
   else {
@@ -1133,7 +1133,7 @@ int16_t getRealMatrixColumnWidths(const real34Matrix_t *matrix, int16_t prefixWi
 }
 
 
-void showComplexMatrix(const complex34Matrix_t *matrix, int16_t prefixWidth) {
+void showComplexMatrix(const complex34Matrix_t *matrix, int16_t prefixWidth, angularMode_t angleMode, bool_t polarMode) {
   int rows = matrix->header.matrixRows;
   int cols = matrix->header.matrixColumns;
   int16_t Y_POS = Y_POSITION_OF_REGISTER_X_LINE;
@@ -1196,7 +1196,7 @@ smallFont:
     }
 
     int16_t baseWidth = (leftEllipsis ? stringWidth(STD_ELLIPSIS " ", font, true, true) : 0) + (rightEllipsis ? stringWidth(STD_ELLIPSIS, font, true, true) : 0);
-  totalWidth = baseWidth + getComplexMatrixColumnWidths(matrix, prefixWidth, font, colWidth, colWidth_r, colWidth_i, rPadWidth_r, rPadWidth_i, &digits, maxCols);
+  totalWidth = baseWidth + getComplexMatrixColumnWidths(matrix, prefixWidth, font, colWidth, colWidth_r, colWidth_i, rPadWidth_r, rPadWidth_i, &digits, maxCols, angleMode, polarMode);
   if(totalWidth > maxWidth || leftEllipsis) {
     if(font == &numericFont) {
       goto smallFont;
@@ -1209,7 +1209,7 @@ smallFont:
       displayFormat = DF_SCI;
       displayFormatDigits = 2;
       clearSystemFlag(FLAG_MULTx);
-      totalWidth = baseWidth + getComplexMatrixColumnWidths(matrix, prefixWidth, font, colWidth, colWidth_r, colWidth_i, rPadWidth_r, rPadWidth_i, &digits, maxCols);
+      totalWidth = baseWidth + getComplexMatrixColumnWidths(matrix, prefixWidth, font, colWidth, colWidth_r, colWidth_i, rPadWidth_r, rPadWidth_i, &digits, maxCols, angleMode, polarMode);
       if(totalWidth > maxWidth) {
         maxCols--;
         goto smallFont;
@@ -1272,12 +1272,12 @@ smallFont:
     }
     for(int j = 0; j < maxCols + (rightEllipsis ? 1 : 0); j++) {
       real34_t re, im;
-      if(getSystemFlag(FLAG_POLAR)) { // polar mode
+      if(polarMode){
         real_t x, y;
         real34ToReal(VARIABLE_REAL34_DATA(&matrix->matrixElements[(i+sRow)*cols+j+sCol]), &x);
         real34ToReal(VARIABLE_IMAG34_DATA(&matrix->matrixElements[(i+sRow)*cols+j+sCol]), &y);
         realRectangularToPolar(&x, &y, &x, &y, &ctxtReal39);
-        convertAngleFromTo(&y, amRadian, currentAngularMode, &ctxtReal39);
+        convertAngleFromTo(&y, amRadian, angleMode, &ctxtReal39);
         realToReal34(&x, &re);
         realToReal34(&y, &im);
       }
@@ -1308,7 +1308,7 @@ smallFont:
         bool_t neg = real34IsNegative(&im);
         int16_t cpxUnitWidth;
 
-        if(getSystemFlag(FLAG_POLAR)) { // polar mode
+        if(polarMode) {
           strcpy(tmpString, STD_SPACE_4_PER_EM STD_MEASURED_ANGLE STD_SPACE_4_PER_EM);
         }
         else { // rectangular mode
@@ -1317,7 +1317,7 @@ smallFont:
           strcat(tmpString, PRODUCT_SIGN);
         }
         cpxUnitWidth = width = stringWidth(tmpString, font, true, true);
-        if(!getSystemFlag(FLAG_POLAR)) {
+        if(!polarMode) {
           if(neg) {
             tmpString[0] = '-';
             real34SetPositiveSign(&im);
@@ -1326,7 +1326,7 @@ smallFont:
         showString(tmpString, font, X_POS + colX + colWidth_r[j] + (width - stringWidth(tmpString, font, true, true)), Y_POS - (maxRows -1 -i) * fontHeight, vm, true, false);
 
         constantFractionsMode = CF_COMPLEX_2nd_Im; //JM
-        real34ToDisplayString(&im, getSystemFlag(FLAG_POLAR) ? currentAngularMode : amNone, tmpString, font, colWidth_i[j], displayFormat == DF_ALL ? digits : 15, true, false);
+        real34ToDisplayString(&im, polarMode ? angleMode : amNone, tmpString, font, colWidth_i[j], displayFormat == DF_ALL ? digits : 15, true, false);
         width = stringWidth(tmpString, font, true, true) + 1;
         showString(tmpString, font, X_POS + colX + colWidth_r[j] + cpxUnitWidth + (((j == maxCols - 1) && rightEllipsis) ? 0 : (colWidth_i[j] - width) - rPadWidth_i[i * MATRIX_MAX_COLUMNS + j]), Y_POS - (maxRows -1 -i) * fontHeight, vm, true, false);
       }
@@ -1346,7 +1346,7 @@ smallFont:
     }
 }
 
-int16_t getComplexMatrixColumnWidths(const complex34Matrix_t *matrix, int16_t prefixWidth, const font_t *font, int16_t *colWidth, int16_t *colWidth_r, int16_t *colWidth_i, int16_t *rPadWidth_r, int16_t *rPadWidth_i, int16_t *digits, uint16_t maxCols) {
+int16_t getComplexMatrixColumnWidths(const complex34Matrix_t *matrix, int16_t prefixWidth, const font_t *font, int16_t *colWidth, int16_t *colWidth_r, int16_t *colWidth_i, int16_t *rPadWidth_r, int16_t *rPadWidth_i, int16_t *digits, uint16_t maxCols, angularMode_t angleMode, bool_t polarMode) {
   const bool_t colVector = matrix->header.matrixColumns == 1 && matrix->header.matrixRows > 1;
   const int rows = colVector ? 1 : matrix->header.matrixRows;
   const int cols = colVector ? matrix->header.matrixRows : matrix->header.matrixColumns;
@@ -1363,7 +1363,7 @@ int16_t getComplexMatrixColumnWidths(const complex34Matrix_t *matrix, int16_t pr
   const int16_t exponentOutOfRange = 0x4000;
 
   uint16_t cpxUnitWidth;
-  if(getSystemFlag(FLAG_POLAR)) { // polar mode
+  if(polarMode) {
     strcpy(tmpString, STD_SPACE_4_PER_EM STD_MEASURED_ANGLE STD_SPACE_4_PER_EM);
   }
   else { // rectangular mode
@@ -1381,12 +1381,12 @@ int16_t getComplexMatrixColumnWidths(const complex34Matrix_t *matrix, int16_t pr
       for(int j = 0; j < maxCols; j++) {
         complex34_t c34Val;
         complex34Copy(&matrix->matrixElements[(i+sRow)*cols+j+sCol], &c34Val);
-        if(getSystemFlag(FLAG_POLAR)) { // polar mode
+        if(polarMode) {
           real_t x, y;
           real34ToReal(VARIABLE_REAL34_DATA(&c34Val), &x);
           real34ToReal(VARIABLE_IMAG34_DATA(&c34Val), &y);
           realRectangularToPolar(&x, &y, &x, &y, &ctxtReal39);
-          convertAngleFromTo(&y, amRadian, currentAngularMode, &ctxtReal39);
+          convertAngleFromTo(&y, amRadian, angleMode, &ctxtReal39);
           realToReal34(&x, VARIABLE_REAL34_DATA(&c34Val));
           realToReal34(&y, VARIABLE_IMAG34_DATA(&c34Val));
         }
@@ -1416,11 +1416,11 @@ int16_t getComplexMatrixColumnWidths(const complex34Matrix_t *matrix, int16_t pr
         }
 
         rPadWidth_i[i * MATRIX_MAX_COLUMNS + j] = 0;
-        if(!getSystemFlag(FLAG_POLAR)) {
+        if(!polarMode) {
           real34SetPositiveSign(VARIABLE_IMAG34_DATA(&c34Val));
         }
         constantFractionsMode = CF_COMPLEX_2nd_Im; //JM
-        real34ToDisplayString(VARIABLE_IMAG34_DATA(&c34Val), getSystemFlag(FLAG_POLAR) ? currentAngularMode : amNone, tmpString, font, maxWidth, displayFormat == DF_ALL ? k : 15, true, false);
+        real34ToDisplayString(VARIABLE_IMAG34_DATA(&c34Val), polarMode ? angleMode : amNone, tmpString, font, maxWidth, displayFormat == DF_ALL ? k : 15, true, false);
         width = stringWidth(tmpString, font, true, true) + 1;
         if(strstr(tmpString, ".") || strstr(tmpString, ",")) {
           for(char *xStr = tmpString; *xStr != 0; xStr++) {

@@ -30,29 +30,43 @@
 
 #include "wp43.h"
 
+static void fnToRect(int8_t angleInY);
 
 
 void fnToRect2(uint16_t unusedButMandatoryParameter) {
-  uint32_t dataTypeX, dataTypeY, dataAtagX;
-  if(getRegisterDataType(REGISTER_X) == dtComplex34) {
+  uint8_t dataTypeX, dataTypeY, dataAtagX, dataAtagY;
+  if(getRegisterDataType(REGISTER_X) == dtComplex34 || getRegisterDataType(REGISTER_X) == dtComplex34Matrix) {
     setComplexRegisterPolarMode(REGISTER_X, ~amPolar);
     setComplexRegisterAngularMode(REGISTER_X, amNone);
     return;
   }
-  if(getSystemFlag(FLAG_HPRP)) {
-    dataTypeX = getRegisterDataType(REGISTER_X); //original
-    dataAtagX = getRegisterAngularMode(REGISTER_X);
-    dataTypeY = getRegisterDataType(REGISTER_Y);
+
+  dataTypeX = getRegisterDataType(REGISTER_X);
+  dataAtagX = getRegisterAngularMode(REGISTER_X);
+  dataTypeY = getRegisterDataType(REGISTER_Y);
+  dataAtagY = getRegisterAngularMode(REGISTER_Y);
+
+  #define isAngle(typ,tag) (typ == dtReal34 && tag != amNone)
+  #define isRadius(typ,tag) (typ == dtLongInteger || (typ == dtReal34 && tag != amNone))
+
+  int8_t angleInY = 1;             //+1 = normal HP mode, HPRP=1
+  if(!getSystemFlag(FLAG_HPRP)) {  //non-HP mode
+    angleInY = -angleInY;
+    if(isAngle(dataTypeX,dataAtagX) && isRadius(dataTypeY,dataAtagY)) {
+    } else
+    if(isAngle(dataTypeY,dataAtagY) && isRadius(dataTypeX,dataAtagX)) {
+      angleInY = -angleInY;        //-1 is swapped
+    }
+  } else { //HP MODE
+    if(isAngle(dataTypeX,dataAtagX) && isRadius(dataTypeY,dataAtagY)) {
+      angleInY = -angleInY;
+    } else
+    if(isAngle(dataTypeY,dataAtagY) && isRadius(dataTypeX,dataAtagX)) {
+    }
   }
-  else {
-    dataTypeY = getRegisterDataType(REGISTER_X); //swapped
-    dataTypeX = getRegisterDataType(REGISTER_Y);
-    dataAtagX  = getRegisterAngularMode(REGISTER_Y);
-  }
-  // >R needs polar coords, i.e. X=r and Y=angle                                                 //imag not allowed to be an angle if rect entry:
-  if((( dataTypeX == dtLongInteger || (dataTypeX == dtReal34 && dataAtagX == amNone   ))         //radius not allowed to be an angle if polar entry
-    &&( dataTypeY == dtLongInteger || (dataTypeY == dtReal34 /*can be angle or not */ )) )  ) {  //real not allowed to be an angle if rect entry
-  fnToRect(0);
+
+  if(!((dataTypeX != dtReal34 && dataTypeX != dtLongInteger) || (dataTypeY != dtReal34 && dataTypeY != dtLongInteger))) {
+    fnToRect(angleInY);
   }
   else {
     displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
@@ -65,12 +79,12 @@ void fnToRect2(uint16_t unusedButMandatoryParameter) {
 
 
 
-void fnToRect(uint16_t unusedButMandatoryParameter) {
+void fnToRect(int8_t angleInY) {
   uint32_t dataTypeX, dataTypeY;
   calcRegister_t REG_X, REG_Y;
   real_t x, y;
 
-  if(getSystemFlag(FLAG_HPRP)) {
+  if(angleInY == 1) {
     REG_X = REGISTER_X;
     REG_Y = REGISTER_Y;
   }
@@ -128,6 +142,15 @@ void fnToRect(uint16_t unusedButMandatoryParameter) {
     }
 
     realPolarToRectangular(&x, &y, &x, &y, &ctxtReal39);
+
+    if(getSystemFlag(FLAG_HPRP)) {
+      REG_X = REGISTER_X;
+      REG_Y = REGISTER_Y;
+    }
+    else {
+      REG_X = REGISTER_Y;
+      REG_Y = REGISTER_X;
+    }
 
     reallocateRegister(REG_X, dtReal34, REAL34_SIZE, amNone);
     reallocateRegister(REG_Y, dtReal34, REAL34_SIZE, amNone);

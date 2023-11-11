@@ -3047,7 +3047,7 @@ void fnShow_SCROLL(uint16_t fnShow_param) {                // Heavily modified b
 
             if(stringWidth(tmpString + d, &numericFont, true, true) >= SCREEN_WIDTH -60 && (uint8_t)tmpString[source-2] == 160 && tmpString[source-1]==5) break;
             if(d>0 &&
-              (    ( !getComplexRegisterPolarMode(SHOWregis) && (tmpString[source]=='+' || tmpString[source]=='-')) ||
+              (    ( !(getComplexRegisterPolarMode(SHOWregis) == amPolar) && (tmpString[source]=='+' || tmpString[source]=='-')) ||
                    ( (uint8_t)tmpString[source]==162)
               ) ) {
               break;

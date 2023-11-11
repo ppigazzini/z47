@@ -274,7 +274,7 @@
      * \param[in] matrix
      * \param[in] prefixWidth
      */
-    void     showComplexMatrix              (const complex34Matrix_t *matrix, int16_t prefixWidth);
+    void     showComplexMatrix              (const complex34Matrix_t *matrix, int16_t prefixWidth, angularMode_t angleMode, bool_t polarMode);
 
     /**
      * Calculates width of columns of a complex matrix.
@@ -292,7 +292,7 @@
      * \return Width of the matrix excluding brackets
      */
     int16_t  getComplexMatrixColumnWidths   (const complex34Matrix_t *matrix, int16_t prefixWidth, const font_t *font, int16_t *colWidth, int16_t *colWidth_r, int16_t *colWidth_i,
-                                             int16_t *rPadWidth_r, int16_t *rPadWidth_i, int16_t *digits, uint16_t maxCols);
+                                             int16_t *rPadWidth_r, int16_t *rPadWidth_i, int16_t *digits, uint16_t maxCols, angularMode_t angleMode, bool_t polarMode);
 
     void     getMatrixFromRegister          (calcRegister_t regist);
   #endif // !TESTSUITE_BUILD

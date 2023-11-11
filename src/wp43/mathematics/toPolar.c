@@ -33,7 +33,7 @@
 
 void fnToPolar2(uint16_t unusedButMandatoryParameter) {
   uint32_t dataTypeX, dataTypeY, dataAtagX, dataAtagY;
-  if(getRegisterDataType(REGISTER_X) == dtComplex34) {
+  if(getRegisterDataType(REGISTER_X) == dtComplex34  || getRegisterDataType(REGISTER_X) == dtComplex34Matrix) {
     setComplexRegisterPolarMode(REGISTER_X, amPolar);
     if(getComplexRegisterAngularMode(REGISTER_X) == amNone) {
       setComplexRegisterAngularMode(REGISTER_X, currentAngularMode);
