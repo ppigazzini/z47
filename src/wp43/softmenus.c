@@ -658,7 +658,7 @@ TO_QSPI const int16_t menu_ASN_N[]       = { ITM_N_KEY_SIGMA,           ITM_N_KE
 #endif // !DMCP_BUILD
 
 
-TO_QSPI const int16_t menu_ASN[]       =  { ITM_ASNVIEWER ,                 ITM_USER_C47  ,             ITM_USER_DM42   ,         ITM_USER_WP43S  ,      ITM_ASSIGN      ,            ITM_USERMODE   ,
+TO_QSPI const int16_t menu_ASN[]       =  { ITM_ASNVIEWER ,                 ITM_USER_C47  ,             ITM_USER_DM42   ,         ITM_NULL        ,      ITM_ASSIGN      ,            ITM_USERMODE   ,
                                             ITM_BASE_CPX  ,                 ITM_BASE_ENG  ,             ITM_BASE_FIN    ,         ITM_USER_MRESET ,      ITM_USER_ARESET ,            ITM_USER_KRESET ,
                                            -MNU_ASN_N,                      CC_D47,                     CC_E47,                   CC_N47,                CC_V47,                      ITM_USER_HRESET                       };
 
