@@ -841,7 +841,7 @@ void SetSetting(uint16_t jmConfig) {
 
     case CM_RECTANGULAR: {
       fnClearFlag(FLAG_POLAR);
-      if(getRegisterDataType(REGISTER_X) == dtComplex34) {
+      if(getRegisterDataType(REGISTER_X) == dtComplex34 || getRegisterDataType(REGISTER_X) == dtComplex34Matrix) {
         setComplexRegisterPolarMode(REGISTER_X, ~amPolar);
         setComplexRegisterAngularMode(REGISTER_X, amNone);
       }
@@ -850,7 +850,7 @@ void SetSetting(uint16_t jmConfig) {
 
     case CM_POLAR: {
       fnSetFlag(FLAG_POLAR);
-      if(getRegisterDataType(REGISTER_X) == dtComplex34) {
+      if(getRegisterDataType(REGISTER_X) == dtComplex34 || getRegisterDataType(REGISTER_X) == dtComplex34Matrix) {
         setComplexRegisterPolarMode(REGISTER_X, amPolar);
         if(getComplexRegisterAngularMode(REGISTER_X) == amNone) {
           setComplexRegisterAngularMode(REGISTER_X, currentAngularMode);
