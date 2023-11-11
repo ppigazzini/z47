@@ -183,9 +183,10 @@ void configCommon(uint16_t idx) {
     setSystemFlag(FLAG_FRCSRN);              // Display 
 
     itemToBeAssigned = -MNU_EE;
-    _assignItem(&userMenuItems[6]); //fF1
+    assignToMyMenu(6);
     itemToBeAssigned = ITM_op_j_pol;
-    _assignItem(&userMenuItems[11]); //fF6
+    assignToMyMenu(11);
+
 
     cachedDynamicMenu = 0;
 
@@ -1002,6 +1003,7 @@ void restoreStats(void){
       {0,USER_V47,     "V47: Exp Vintage 2 shifts TopR -+x/ L"           },
       {0,USER_DM42,    "DM42: Final Compatibility layout"                },
       {0,USER_43S,     "WP 43S Pilot: Final Compatibility layout"        },
+      {0,USER_HRESET,  "C47 HOME Menu reset to default"                  },
       {0,USER_KRESET,  "C47 All USER keys cleaned"                       },
       {0,USER_MRESET,  "MyMenu menu cleaned"                             },
       {0,USER_ARESET,  "My" STD_alpha " menu cleaned"                    },
@@ -1419,11 +1421,8 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     clearSystemFlag(FLAG_FRCSRN);  //JM??                      //JM Default
 
     #if !defined(TESTSUITE_BUILD)
-      mm_MNU_HOME       = mm(-MNU_HOME);     //printf("####BB> %i \n",mm_MNU_HOME);                      //JM
-      mm_MNU_ALPHA      = mm(-MNU_ALPHA);    //printf("####CC> %i \n",mm_MNU_ALPHA);                      //JM
-
       calcModeNormal();
-      if(BASE_HOME) showSoftmenu(mm_MNU_HOME); //JM Reset to BASE MENU HOME;
+      if(BASE_HOME) showSoftmenu(-MNU_HOME); //JM Reset to BASE MENU HOME;
     #endif // !TESTSUITE_BUILD
 
     SHOWregis = 9999;                                          //JMSHOW
@@ -1476,6 +1475,7 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     #endif
     //    calcMode = CM_BUG_ON_SCREEN; this also removes the false start on MyMenu error
 
+    fnKeysManagement(USER_HRESET);                                      //JM USER
     fnKeysManagement(USER_ARESET);                                      //JM USER
     fnKeysManagement(USER_MRESET);                                      //JM USER
     fnKeysManagement(USER_MENG);                                        //JM USER    
@@ -1715,6 +1715,13 @@ void fnKeysManagement(uint16_t choice) {
       kbd_usr[18].fShifted      = -MNU_ASN;
       kbd_usr[19].fShifted      = ITM_USERMODE;
       fnSetFlag(FLAG_USER);
+      break;
+
+    case USER_HRESET:
+      #if !defined(TESTSUITE_BUILD)
+        createHOME();
+        showSoftmenu(-MNU_HOME);
+      #endif // !TESTSUITE_BUILD
       break;
 
     case USER_MRESET:

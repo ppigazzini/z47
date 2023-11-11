@@ -67,7 +67,7 @@
       if(key <  12) pixelsPerSoftKey = (int)((float)SCREEN_WIDTH / 6.0f + 0.5f); else
                     pixelsPerSoftKey = (int)((float)SCREEN_WIDTH / 5.0f + 0.5f);
 
-        if(fnAsnDisplayUSER) {
+      if(fnAsnDisplayUSER) {
         switch(page) {
           case 1: kk = kbd_usr[key].primary;  break;
           case 2: kk = kbd_usr[key].fShifted; break;
@@ -98,6 +98,9 @@
       strcpy(Name, indexOfItems[max(kk,-kk)].itemSoftmenuName);
       if(strcmp(Name, "0000") == 0) {
         Name[0]=0;
+      }
+      if(strcmp(Name, "DYNMNU") == 0) {
+        strcpy(Name, (char *)getNthString((uint8_t *)userKeyLabel, key*6+(page-1)));
       }
 
       

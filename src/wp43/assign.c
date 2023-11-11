@@ -360,6 +360,9 @@ void fnAssign(uint16_t mode) {
   if(mode) {
     createMenu(aimBuffer);
     aimBuffer[0] = 0;
+    #if !defined(TESTSUITE_BUILD)
+      popSoftmenu();
+    #endif // !TESTSUITE_BUILD
   }
   else {
     previousCalcMode = calcMode;
