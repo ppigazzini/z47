@@ -253,10 +253,11 @@
 
 #define DECNUMDIGITS                    75 // Default number of digits used in the decNumber library
 
-#define SCREEN_800X480                   1 // Set to 0 if you want a keyboard in addition to the screen on Raspberry pi
+#define BIG_SCREEN                   1 // Set to 0 if you want a keyboard in addition to the screen on Raspberry pi
+#define BIG_SCREEN_COEF              2 // 2 = 2 times the standard screen, that is 800x480. Can be a decimal like 1.333
 #if !defined(RASPBERRY)
-  #undef SCREEN_800X480
-  #define SCREEN_800x480 0
+  #undef BIG_SCREEN
+  #define BIG_SCREEN 0
 #endif // !RASPBERRY
 
 
@@ -1432,7 +1433,7 @@ typedef enum {
   #endif // RASPBERRY
 #endif // PC_BUILD
 
-#if defined(DMCP_BUILD) || (SCREEN_800X480 == 1)
+#if defined(DMCP_BUILD) || (BIG_SCREEN == 1)
   #undef  DEBUG_PANEL
   #define DEBUG_PANEL 0
   #undef  DEBUG_REGISTER_L
@@ -1441,7 +1442,7 @@ typedef enum {
   #define SHOW_MEMORY_STATUS 0
   #undef  EXTRA_INFO_ON_CALC_ERROR
   #define EXTRA_INFO_ON_CALC_ERROR 0
-#endif // DMCP_BUILD || SCREEN_800X480 == 1
+#endif // DMCP_BUILD || BIG_SCREEN == 1
 
 #if defined(TESTSUITE_BUILD) && !defined(GENERATE_CATALOGS)
   #undef  PC_BUILD

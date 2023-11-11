@@ -111,14 +111,14 @@
     cairo_surface_t *imageSurface;
 
     imageSurface = cairo_image_surface_create_for_data((unsigned char *)screenData, CAIRO_FORMAT_RGB24, SCREEN_WIDTH, SCREEN_HEIGHT, screenStride * 4);
-    #if (SCREEN_800X480 == 1)
-      cairo_scale(cr, 2.0, 2.0);
-    #endif // SCREEN_800X480 == 1
+    #if (BIG_SCREEN == 1)
+      cairo_scale(cr, BIG_SCREEN_COEF, BIG_SCREEN_COEF);
+    #endif // BIG_SCREEN == 1
     cairo_set_source_surface(cr, imageSurface, 0, 0);
     cairo_surface_mark_dirty(imageSurface);
-    #if (SCREEN_800X480 == 1)
+    #if (BIG_SCREEN == 1)
       cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);
-    #endif // SCREEN_800X480 == 1
+    #endif // BIG_SCREEN == 1
     cairo_paint(cr);
     cairo_surface_destroy(imageSurface);
 
@@ -2653,8 +2653,7 @@ void execTimerApp(uint16_t timerType) {
           #endif // TEXT_MULTILINE_EDIT
         }
 
-        else if(temporaryInformation == TI_NO_INFO
-                && getSystemFlag(FLAG_FRACT)
+        else if(getSystemFlag(FLAG_FRACT)
                     && (    getRegisterDataType(regist) == dtReal34
                          && (
                                 (   real34CompareAbsGreaterThan(REGISTER_REAL34_DATA(regist), const34_1e_4)
