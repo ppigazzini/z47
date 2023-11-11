@@ -3321,6 +3321,17 @@ void fnKeyCC(uint16_t complex_Type) {    //JM Using 'unusedButMandatoryParameter
     }    //JM Allow COMPLEX to be used from NIM
 
     if(calcMode == CM_NORMAL || ((calcMode == CM_NIM) && (complex_Type == KEY_COMPLEX))) {      //JM
+
+      uint8_t sdataTypeX = getRegisterDataType(REGISTER_X);
+      uint8_t sdataAtagX = getRegisterAngularMode(REGISTER_X);
+      uint8_t sdataTypeY = getRegisterDataType(REGISTER_Y);
+      uint8_t sdataAtagY = getRegisterAngularMode(REGISTER_Y);
+      #define isAngle(typ,tag) (typ == dtReal34 && tag != amNone)
+      #define isRadius(typ,tag) (typ == dtLongInteger || (typ == dtReal34 && tag != amNone))
+      if(getSystemFlag(FLAG_POLAR) && isAngle(sdataTypeY,sdataAtagY) && isRadius(sdataTypeX,sdataAtagX)) {
+      fnSwapXY(0);
+      }
+
       dataTypeX = getRegisterDataType(REGISTER_X);
       dataTypeY = getRegisterDataType(REGISTER_Y);
 

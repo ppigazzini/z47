@@ -47,7 +47,7 @@ void fnToRect2(uint16_t unusedButMandatoryParameter) {
   dataAtagY = getRegisterAngularMode(REGISTER_Y);
 
   #define isAngle(typ,tag) (typ == dtReal34 && tag != amNone)
-  #define isRadius(typ,tag) (typ == dtLongInteger || (typ == dtReal34 && tag != amNone))
+  #define isRadius(typ,tag) (typ == dtLongInteger || (typ == dtReal34 && tag == amNone))
 
   int8_t angleInY = 1;             //+1 = normal HP mode, HPRP=1
   if(!getSystemFlag(FLAG_HPRP)) {  //non-HP mode
@@ -89,6 +89,7 @@ void fnToRect(int8_t angleInY) {
     REG_Y = REGISTER_Y;
   }
   else {
+printf("swapped\n");
     REG_X = REGISTER_Y;
     REG_Y = REGISTER_X;
   }
