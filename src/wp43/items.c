@@ -573,8 +573,6 @@ void fnNop(uint16_t unusedButMandatoryParameter) {
   void fnDblDivideRemainder        (uint16_t unusedButMandatoryParameter) {}
   void fnDblMultiply               (uint16_t unusedButMandatoryParameter) {}
   void fnChangeBase                (uint16_t unusedButMandatoryParameter) {}
-  void fnToPolar                   (uint16_t unusedButMandatoryParameter) {}
-  void fnToRect                    (uint16_t unusedButMandatoryParameter) {}
   void fnDivide                    (uint16_t unusedButMandatoryParameter) {}
   void fnAdd                       (uint16_t unusedButMandatoryParameter) {}
   void fnSigma                     (uint16_t unusedButMandatoryParameter) {}
@@ -2931,8 +2929,8 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 1728 */  { fnEllipticPi,                 NOPARAM,                     STD_PI "(n,m)",                                STD_PI "(n,m)",                                (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /* 1729 */  { fnFlipFlag,                   FLAG_USER,                   "USER",                                        "USER",                                        (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 1730 */  { fnKeyCC,                      NOPARAM,                     "CC",                                          "CC",                                          (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_NONE         },
-/* 1731 */  { fnSHIFTf /*JM*/,              NOPARAM,                     "",                                            "f",                                           (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
-/* 1732 */  { fnSHIFTg /*JM*/,              NOPARAM,                     "",                                            "g",                                           (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 1731 */  { fnSHIFTf /*JM*/,              NOPARAM,                     "",                                            "f",                                           (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 1732 */  { fnSHIFTg /*JM*/,              NOPARAM,                     "",                                            "g",                                           (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 1733 */  { fnKeyUp,                      NOPARAM,                     "UP",                                          STD_UP_ARROW,                                  (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 1734 */  { fnBst,                        NOPARAM,                     "BST",                                         STD_HAMBURGER STD_BST,                         (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 1735 */  { fnKeyDown,                    NOPARAM,                     "DOWN",                                        STD_DOWN_ARROW,                                (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
