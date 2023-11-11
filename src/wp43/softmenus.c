@@ -1176,37 +1176,42 @@ void fnDynamicMenu(uint16_t unusedButMandatoryParameter) {
 
       case MNU_MENUS: {
         numberOfBytes = 1;
-                        numberOfGlobalLabels = 0;
-                        memset(tmpString, 0, TMP_STR_LENGTH);
-                        for(i=0; i<LAST_ITEM; i++) {
-                          if((indexOfItems[i].status & CAT_STATUS) == CAT_MENU && indexOfItems[i].itemCatalogName[0] != 0 && i != MNU_CATALOG && i != MNU_MENUS) {
-                            int16_t len = stringByteLength(indexOfItems[i].itemCatalogName);
-                            xcopy(tmpString + 15 * numberOfGlobalLabels, indexOfItems[i].itemCatalogName, len);
-                            numberOfGlobalLabels++;
-                            numberOfBytes += 1 + len;
-                          }
-                        }
-                        for(i=0; i<numberOfUserMenus; i++) {
-                          int16_t len = stringByteLength(userMenus[i].menuName);
-                          xcopy(tmpString + 15 * numberOfGlobalLabels, userMenus[i].menuName, len);
-                          numberOfGlobalLabels++;
-                          numberOfBytes += 1 + len;
-                        }
+        numberOfGlobalLabels = 0;
+        memset(tmpString, 0, TMP_STR_LENGTH);
+        if (softmenu[softmenuStack[1].softmenuId].menuItem != -ITM_DELITM) {     // Don't include predefined menus for DELITM
+          for(i=0; i<LAST_ITEM; i++) {
+            if((indexOfItems[i].status & CAT_STATUS) == CAT_MENU && indexOfItems[i].itemCatalogName[0] != 0 && i != MNU_CATALOG && i != MNU_MENUS) {
+              int16_t len = stringByteLength(indexOfItems[i].itemCatalogName);
+              xcopy(tmpString + 15 * numberOfGlobalLabels, indexOfItems[i].itemCatalogName, len);
+              numberOfGlobalLabels++;
+              numberOfBytes += 1 + len;
+            }
+          }
+        }
+        
+        for(i=0; i<numberOfUserMenus; i++) {
+          int16_t len = stringByteLength(userMenus[i].menuName);
+          if(compareString("HOME", userMenus[i].menuName, CMP_NAME) != 0) {    // Don't show HOME is the menus to delete
+            xcopy(tmpString + 15 * numberOfGlobalLabels, userMenus[i].menuName, len);
+            numberOfGlobalLabels++;
+            numberOfBytes += 1 + len;
+          }
+        }
 
-                        if(numberOfGlobalLabels != 0) {
-                          qsort(tmpString, numberOfGlobalLabels, 15, sortMenu);
-                        }
+        if(numberOfGlobalLabels != 0) {
+          qsort(tmpString, numberOfGlobalLabels, 15, sortMenu);
+        }
 
-                        ptr = malloc(numberOfBytes);
-                        dynamicSoftmenu[menu].menuContent = ptr;
-                        for(i=0; i<numberOfGlobalLabels; i++) {
-                          int16_t len = stringByteLength(tmpString + 15*i) + 1;
-                          xcopy(ptr, tmpString + 15*i, len);
-                          ptr += len;
-                        }
+        ptr = malloc(numberOfBytes);
+        dynamicSoftmenu[menu].menuContent = ptr;
+        for(i=0; i<numberOfGlobalLabels; i++) {
+          int16_t len = stringByteLength(tmpString + 15*i) + 1;
+          xcopy(ptr, tmpString + 15*i, len);
+          ptr += len;
+        }
 
-                        dynamicSoftmenu[menu].numItems = numberOfGlobalLabels;
-                        break;
+        dynamicSoftmenu[menu].numItems = numberOfGlobalLabels;
+        break;
       }
 
       case MNU_DYNAMIC: {
