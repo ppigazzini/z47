@@ -36,9 +36,11 @@
 #include "c43Extensions/jm.h"
 #include "mathematics/comparisonReals.h"
 #include "mathematics/toPolar.h"
+#include "mathematics/exp.h"
 #include "programming/input.h"
 #include "mathematics/wp34s.h"
 #include "mathematics/10pow.h"
+#include "mathematics/2pow.h"
 #include "mathematics/rsd.h"
 #include "c43Extensions/radioButtonCatalog.h"
 #include "registers.h"
@@ -356,7 +358,7 @@ void real34ToDisplayString2(const real34_t *real34, char *displayString, int16_t
   //             ln(1025)/ln(1024) = 1.000140819; 
   
   bool_t flag2To10 = getSystemFlag(FLAG_2TO10);
-  real_t tmp4, tmpIp, tmpFp; 
+  real_t tmp4, tmpIp, tmpFp;
   real34_t real34bak;
   real34Copy(real34, &real34bak);
   if(flag2To10 && displayFormat == DF_UN) {
@@ -374,21 +376,36 @@ void real34ToDisplayString2(const real34_t *real34, char *displayString, int16_t
       realDivide(&x, const_ln2, &x, &ctxtReal39); //ln(1024)=ln( 2^10 )=10ln(2)
       realDivide(&x, const_10, &x, &ctxtReal39);  //ln(1024)=ln( 2^10 )=10ln(2)
       //get IP and FP
-      realToIntegralValue(&x, &tmpIp, DEC_ROUND_HALF_UP, &ctxtReal39);
+      realToIntegralValue(&x, &tmpIp, DEC_ROUND_DOWN, &ctxtReal39);
       realSubtract(&x, &tmpIp, &tmpFp, &ctxtReal39); // Fractional part
-      //IP*3 + FP*log(1024)
-      realMultiply(&tmpIp, const_3, &tmpIp, &ctxtReal39);
-      realMultiply(&tmpFp, const_ln2, &tmpFp, &ctxtReal39); //log(1024) = 10ln(2)/ln(10)
-      realMultiply(&tmpFp, const_10, &tmpFp, &ctxtReal39);  //log(1024) = 10ln(2)/ln(10)
-      realDivide(&tmpFp, const_ln10, &tmpFp, &ctxtReal39);  //log(1024) = 10ln(2)/ln(10)
-      realAdd(&tmpFp, &tmpIp, &x, &ctxtReal39);
-      //10^(IP*3 + FP*log(1024))
-      realPower10(&x, &x, &ctxtReal39);
-      if(neg) {
-        realSetNegativeSign(&x);
-      }
-      realToReal34(&x, real34);
-      //printRealToConsole(&x,"---B","\n");
+
+      
+      realMultiply(&tmpIp, const_10, &tmp4, &ctxtReal39);
+      realPower2(&tmp4, &tmp4, &ctxtReal39);
+      real34ToReal(real34, &x);
+      realDivide(&x, &tmp4, &x, &ctxtReal39);
+      realMultiply(&tmpIp, const_3, &tmp4, &ctxtReal39);
+      realPower10(&tmp4, &tmpIp, &ctxtReal39);
+
+      //1024^FP = e^ ( FP LN 1024  )
+      int32ToReal(1024,&tmp4);
+      WP34S_Ln(&tmp4, &tmp4, &ctxtReal39);
+      realMultiply(&tmp4, &tmpFp, &tmp4, &ctxtReal39);
+      realExp(&tmp4, &tmpFp, &ctxtReal39);
+
+      realMultiply(&tmpIp, &tmpFp, &x, &ctxtReal39);
+
+      
+
+      if(!realCompareAbsLessThan(&tmpFp, const_1e_32)) {
+        if(neg) {
+          realSetNegativeSign(&x);
+        }
+        realToReal34(&x, real34);
+        //printRealToConsole(&x,"---B","\n");
+      } else {
+         flag2To10 = false;
+      } 
     } else {
       flag2To10 = false;
     }
