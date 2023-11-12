@@ -45,7 +45,7 @@
 
 #if defined(PC_BUILD)
   GtkWidget *grid;
-  #if(SCREEN_800X480 == 0)
+  #if(BIG_SCREEN == 0)
     GtkWidget *backgroundImage;
     GtkWidget *lblFKey2;
     GtkWidget *lblGKey2;
@@ -128,7 +128,7 @@
     #endif // (DEBUG_PANEL == 1)
 
     char *cssData;
-  #endif // (SCREEN_800X480 == 0)
+  #endif // (BIG_SCREEN == 0)
 
 
 
@@ -1162,7 +1162,7 @@
   }
 
 
-  #if(SCREEN_800X480 == 0)
+  #if(BIG_SCREEN == 0)
     /* Reads the CSS file to configure the calc's GUI style. */
     static void prepareCssData(void) {
       FILE *cssFile;
@@ -3055,7 +3055,7 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
 
       moveLabels();
     }
-  #endif // SCREEN_800X480 == 0
+  #endif // BIG_SCREEN == 0
 
 
   /********************************************//**
@@ -3065,7 +3065,7 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
   * \return void
   ***********************************************/
   void setupUI(void) {
-    #if(SCREEN_800X480 == 0)
+    #if(BIG_SCREEN == 0)
       int            numBytes, xPos, yPos;
       GError         *error;
       GtkCssProvider *cssProvider;
@@ -4351,10 +4351,10 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
 
       gtk_widget_show_all(frmCalc);
 
-    #else // SCREEN_800X480 == 1
+    #else // BIG_SCREEN == 1
       // The main window
       frmCalc = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-      gtk_window_set_default_size(GTK_WINDOW(frmCalc), 800, 480);
+      gtk_window_set_default_size(GTK_WINDOW(frmCalc), SCREEN_WIDTH*BIG_SCREEN_COEF, SCREEN_HEIGHT*BIG_SCREEN_COEF);
       gtk_window_set_decorated(GTK_WINDOW(frmCalc), FALSE);
       gtk_window_set_position(GTK_WINDOW(frmCalc), GTK_WIN_POS_CENTER);
 
@@ -4370,9 +4370,9 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
       grid = gtk_fixed_new();
       gtk_container_add(GTK_CONTAINER(frmCalc), grid);
 
-      // LCD screen 800x480
+      // Big LCD screen
       screen = gtk_drawing_area_new();
-      gtk_widget_set_size_request(screen, SCREEN_WIDTH*2, SCREEN_HEIGHT*2);
+      gtk_widget_set_size_request(screen, SCREEN_WIDTH*BIG_SCREEN_COEF, SCREEN_HEIGHT*BIG_SCREEN_COEF);
       gtk_fixed_put(GTK_FIXED(grid), screen, 0, 0);
       screenStride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, SCREEN_WIDTH)/4;
       int numBytes = screenStride * SCREEN_HEIGHT * 4;
@@ -4386,6 +4386,6 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
       g_signal_connect(screen, "draw", G_CALLBACK(drawScreen), NULL);
 
       gtk_widget_show_all(frmCalc);
-    #endif //  (SCREEN_800X480 == 0)
+    #endif //  (BIG_SCREEN == 0)
   }
 #endif // PC_BUILD

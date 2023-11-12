@@ -3403,6 +3403,28 @@ void fnKeyCC(uint16_t complex_Type) {    //JM Using 'unusedButMandatoryParameter
     }    //JM Allow COMPLEX to be used from NIM
 
     if(calcMode == CM_NORMAL || ((calcMode == CM_NIM) && (complex_Type == KEY_COMPLEX))) {      //JM
+
+      uint8_t sdataTypeX = getRegisterDataType(REGISTER_X);
+      uint8_t sdataAtagX = getRegisterAngularMode(REGISTER_X);
+      uint8_t sdataTypeY = getRegisterDataType(REGISTER_Y);
+      uint8_t sdataAtagY = getRegisterAngularMode(REGISTER_Y);
+      bool_t toClearPolar = false;
+      #define isAngle(typ,tag) (typ == dtReal34 && tag != amNone)
+      #define isRadius(typ,tag) (typ == dtLongInteger || (typ == dtReal34 && tag != amNone))
+      if(getSystemFlag(FLAG_POLAR) && isAngle(sdataTypeY,sdataAtagY) && isRadius(sdataTypeX,sdataAtagX)) {
+        fnSwapXY(0);
+      } else
+      if(!getSystemFlag(FLAG_POLAR) && isAngle(sdataTypeY,sdataAtagY) && isRadius(sdataTypeX,sdataAtagX)) {
+        fnSwapXY(0);
+        setSystemFlag(FLAG_POLAR);
+        toClearPolar = true;
+      } else
+      if(!getSystemFlag(FLAG_POLAR) && isAngle(sdataTypeX,sdataAtagX) && isRadius(sdataTypeY,sdataAtagY)) {
+        setSystemFlag(FLAG_POLAR);
+        toClearPolar = true;
+      }
+
+
       dataTypeX = getRegisterDataType(REGISTER_X);
       dataTypeY = getRegisterDataType(REGISTER_Y);
 
@@ -3443,7 +3465,8 @@ void fnKeyCC(uint16_t complex_Type) {    //JM Using 'unusedButMandatoryParameter
         moreInfoOnError("In function fnKeyCC:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       }
-      return;                            //JM
+      if(toClearPolar) clearSystemFlag(FLAG_POLAR);
+      return;
     }
 
     if(complex_Type == ITM_op_j) {

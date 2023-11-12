@@ -126,14 +126,14 @@ typedef struct {
     cairo_surface_t *imageSurface;
 
     imageSurface = cairo_image_surface_create_for_data((unsigned char *)screenData, CAIRO_FORMAT_RGB24, SCREEN_WIDTH, SCREEN_HEIGHT, screenStride * 4);
-    #if (SCREEN_800X480 == 1)
-      cairo_scale(cr, 2.0, 2.0);
-    #endif // defined(RASPBERRY) && (SCREEN_800X480 == 1)
+    #if (BIG_SCREEN == 1)
+      cairo_scale(cr, BIG_SCREEN_COEF, BIG_SCREEN_COEF);
+    #endif // BIG_SCREEN == 1
     cairo_set_source_surface(cr, imageSurface, 0, 0);
     cairo_surface_mark_dirty(imageSurface);
-    #if (SCREEN_800X480 == 1)
+    #if (BIG_SCREEN == 1)
       cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);
-    #endif // defined(RASPBERRY) && (SCREEN_800X480 == 1)
+    #endif // SCREEN_800X480 == 1
     cairo_paint(cr);
     cairo_surface_destroy(imageSurface);
 
@@ -2031,7 +2031,7 @@ void execTimerApp(uint16_t timerType) {
       const uint16_t cols = matrix.header.matrixColumns;
       bool_t smallFont = (rows >= 5);
       int16_t dummyVal[MATRIX_MAX_COLUMNS * (MATRIX_MAX_ROWS * 2 + 3) + 1] = {};
-      const int16_t mtxWidth = getComplexMatrixColumnWidths(&matrix, prefixWidth, &numericFont, dummyVal, dummyVal + MATRIX_MAX_COLUMNS, dummyVal + MATRIX_MAX_COLUMNS * 2, dummyVal + MATRIX_MAX_COLUMNS * 3, dummyVal + MATRIX_MAX_COLUMNS * (MATRIX_MAX_ROWS + 3), dummyVal + MATRIX_MAX_COLUMNS * (MATRIX_MAX_ROWS * 2 + 3), cols > MATRIX_MAX_COLUMNS ? MATRIX_MAX_COLUMNS : cols);
+      const int16_t mtxWidth = getComplexMatrixColumnWidths(&matrix, prefixWidth, &numericFont, dummyVal, dummyVal + MATRIX_MAX_COLUMNS, dummyVal + MATRIX_MAX_COLUMNS * 2, dummyVal + MATRIX_MAX_COLUMNS * 3, dummyVal + MATRIX_MAX_COLUMNS * (MATRIX_MAX_ROWS + 3), dummyVal + MATRIX_MAX_COLUMNS * (MATRIX_MAX_ROWS * 2 + 3), cols > MATRIX_MAX_COLUMNS ? MATRIX_MAX_COLUMNS : cols,  getComplexRegisterAngularMode(REGISTER_X), getComplexRegisterPolarMode(REGISTER_X) == amPolar);
       if(mtxWidth > MATRIX_LINE_WIDTH) {
         smallFont = true;
       }
@@ -2088,7 +2088,7 @@ void execTimerApp(uint16_t timerType) {
     }
     else if(getRegisterDataType(REGISTER_X) == dtComplex34) {
       clearRegisterLine(REGISTER_X, true, true);
-      complex34ToDisplayString(REGISTER_COMPLEX34_DATA(REGISTER_X), tmpString, &numericFont, SCREEN_WIDTH - prefixWidth, NUMBER_OF_DISPLAY_DIGITS, true, true, getComplexRegisterAngularMode(REGISTER_X), getComplexRegisterPolarMode(REGISTER_X));
+      complex34ToDisplayString(REGISTER_COMPLEX34_DATA(REGISTER_X), tmpString, &numericFont, SCREEN_WIDTH - prefixWidth, NUMBER_OF_DISPLAY_DIGITS, true, true, getComplexRegisterAngularMode(REGISTER_X),  getComplexRegisterPolarMode(REGISTER_X) == amPolar);
       w = stringWidth(tmpString, &numericFont, false, true);
       showString(prefix, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
       showString(tmpString, &numericFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_X_LINE, vmNormal, false, true);
@@ -2754,8 +2754,7 @@ void execTimerApp(uint16_t timerType) {
           #endif // TEXT_MULTILINE_EDIT
         }
 
-        else if(temporaryInformation == TI_NO_INFO
-                && getSystemFlag(FLAG_FRACT)
+        else if(getSystemFlag(FLAG_FRACT)
                     && (    getRegisterDataType(regist) == dtReal34
                          && (
                                 (   real34CompareAbsGreaterThan(REGISTER_REAL34_DATA(regist), const34_1e_4)
@@ -3627,7 +3626,7 @@ void execTimerApp(uint16_t timerType) {
           }
                                                                        //JM EE ^
 
-          complex34ToDisplayString(REGISTER_COMPLEX34_DATA(regist), tmpString, &numericFont, SCREEN_WIDTH - prefixWidth, NUMBER_OF_DISPLAY_DIGITS,true, true, getComplexRegisterAngularMode(regist), getComplexRegisterPolarMode(regist));
+          complex34ToDisplayString(REGISTER_COMPLEX34_DATA(regist), tmpString, &numericFont, SCREEN_WIDTH - prefixWidth, NUMBER_OF_DISPLAY_DIGITS,true, true, getComplexRegisterAngularMode(regist),  getComplexRegisterPolarMode(regist) == amPolar);
 
           w = stringWidth(tmpString, &numericFont, false, true);
           lineWidth = w;
@@ -3743,7 +3742,7 @@ void execTimerApp(uint16_t timerType) {
              sprintf(prefix,"Ovrfl>%ubits:",shortIntegerWordSize);
              prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
              if(prefixWidth + stringWidth(tmpString, fontForShortInteger, true, true) + 1 > SCREEN_WIDTH) {
-               sprintf(prefix,"OF");              
+               sprintf(prefix,"OF");
                prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
              }
           }
@@ -3922,7 +3921,7 @@ void execTimerApp(uint16_t timerType) {
             if(temporaryInformation == TI_VIEW_REGISTER && origRegist == REGISTER_T) {
               viewRegName(prefix, &prefixWidth);
             }
-            showComplexMatrix(&matrix, prefixWidth);
+            showComplexMatrix(&matrix, prefixWidth, getComplexRegisterAngularMode(regist), getComplexRegisterPolarMode(regist) == amPolar);
             if(lastErrorCode != 0) {
               refreshRegisterLine(errorMessageRegisterLine);
             }

@@ -14,7 +14,7 @@
 
 #define VERSION1 "0.109.00.00a17"     // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
 
-//2023-10-22-0.108.15.01 Stable non-master
+//2023-11-04-0.108.16.00 Stable non-master
 
   #undef SAVE_SPACE_DM42_0
   #undef SAVE_SPACE_DM42_1
@@ -280,10 +280,11 @@
 
 #define DECNUMDIGITS                    75 // Default number of digits used in the decNumber library
 
-#define SCREEN_800X480                   1 // Set to 0 if you want a keyboard in addition to the screen on Raspberry pi
+#define BIG_SCREEN                   1 // Set to 0 if you want a keyboard in addition to the screen on Raspberry pi
+#define BIG_SCREEN_COEF              2 // 2 = 2 times the standard screen, that is 800x480. Can be a decimal like 1.333
 #if !defined(RASPBERRY)
-  #undef SCREEN_800X480
-  #define SCREEN_800x480 0
+  #undef BIG_SCREEN
+  #define BIG_SCREEN 0
 #endif // !RASPBERRY
 
 
@@ -1496,7 +1497,7 @@ typedef enum {
   #endif // RASPBERRY
 #endif // PC_BUILD
 
-#if defined(DMCP_BUILD) || (SCREEN_800X480 == 1)
+#if defined(DMCP_BUILD) || (BIG_SCREEN == 1)
   #undef  DEBUG_PANEL
   #define DEBUG_PANEL 0
   #undef  DEBUG_REGISTER_L

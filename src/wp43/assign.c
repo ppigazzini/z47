@@ -338,7 +338,6 @@ TO_QSPI const calcKey_t kbd_std_DM42[37] = {
 };
 
 
-
 void fnAssign(uint16_t mode) {
   if(mode) {
     createMenu(aimBuffer);
@@ -356,11 +355,79 @@ void fnAssign(uint16_t mode) {
 }
 
 
+
+static void _removeMenuAssignments(uint16_t id) {
+  itemToBeAssigned = ITM_NULL;
+  
+  // Predefined configurable menus
+  for(int i = 0; i < 18; ++i) {
+    // MyMenu
+    if((userMenuItems[i].item == -MNU_DYNAMIC) && (compareString(userMenuItems[i].argumentName, userMenus[id].menuName, CMP_NAME) == 0)) {
+      assignToMyMenu(i);
+    }
+    // MyAlpha
+    if((userAlphaItems[i].item == -MNU_DYNAMIC) && (compareString(userAlphaItems[i].argumentName, userMenus[id].menuName, CMP_NAME) == 0)) {
+      assignToMyAlpha(i);
+    }
+  }
+  // User-defined menus
+  for(int i = 0; i < numberOfUserMenus; ++i) {
+    for(int j = 0; j < 18; ++j) {
+      if((userMenus[i].menuItem[j].item == -MNU_DYNAMIC) && (compareString(userMenus[i].menuItem[j].argumentName, userMenus[id].menuName, CMP_NAME) == 0)) {
+        printf("**[DL]** i %d - j %d -userMenus[i].menuItem[j].item %d - userMenus[i].menuItem[j].argumentName %s\n",i,j,userMenus[i].menuItem[j].item,userMenus[i].menuItem[j].argumentName);
+        _assignItem(&userMenus[i].menuItem[j]);
+      }
+    }
+  }
+  // Keys
+  calcKey_t *key;
+  char lbl[22];
+  bool_t f = shiftF;
+  bool_t g = shiftG;
+  char kc[4] = {};
+  for(int i = 0; i < 37; ++i) {
+    key = kbd_usr + i;
+    kc[0] = (i / 10) + '0';
+    kc[1] = (i % 10) + '0';
+    kc[2] = 0;
+    if(key->primary == -MNU_DYNAMIC) {
+      stringToUtf8((char *)getNthString((uint8_t *)userKeyLabel, i*6),(uint8_t *)lbl);
+      if(compareString(lbl,userMenus[id].menuName, CMP_NAME) == 0) {
+        shiftF = false;
+        shiftG = false;
+        assignToKey(kc);
+      }
+    }
+    if(key->fShifted == -MNU_DYNAMIC) {
+      stringToUtf8((char *)getNthString((uint8_t *)userKeyLabel, i*6+1),(uint8_t *)lbl);
+      if(compareString(lbl,userMenus[id].menuName, CMP_NAME) == 0) {
+        shiftF = true;
+        shiftG = false;
+        assignToKey(kc);
+      }
+    }
+    if(key->gShifted == -MNU_DYNAMIC) {
+      stringToUtf8((char *)getNthString((uint8_t *)userKeyLabel, i*6+2),(uint8_t *)lbl);
+      if(compareString(lbl,userMenus[id].menuName, CMP_NAME) == 0) {
+        shiftF = false;
+        shiftG = true;
+        assignToKey(kc);
+      }
+    }
+  }
+  shiftF = f;
+  shiftG = g;
+}
+
+
+
 void fnDeleteMenu(uint16_t id) {
   if(id >= numberOfUserMenus) {
     displayCalcErrorMessage(ERROR_CANNOT_DELETE_PREDEF_ITEM, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    return;
   }
   else {
+    _removeMenuAssignments(id);   // Remove assignments before deleting the user menu
     if(numberOfUserMenus == 1) {
       freeWp43(userMenus, sizeof(userMenu_t));
       userMenus = NULL;

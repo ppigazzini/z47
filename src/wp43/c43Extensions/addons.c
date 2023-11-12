@@ -659,7 +659,7 @@ void fnAngularModeJM(uint16_t AMODE) { //Setting to HMS does not change AM
       //fnAngularMode(AMODE);                             Remove updating of ADM to the same mode
     }
 
-    if(getRegisterDataType(REGISTER_X) == dtComplex34) {
+    if(getRegisterDataType(REGISTER_X) == dtComplex34 || getRegisterDataType(REGISTER_X) == dtComplex34Matrix) {
       //printf("###AA fnAngularModeJM (%i)<= %i\n",REGISTER_X, AMODE);
       //printf("###BB fnAngularModeJM (%i)=> %i\n",REGISTER_X, getRegisterTag(REGISTER_X));
 
@@ -699,7 +699,6 @@ void fnDRG(uint16_t unusedButMandatoryParameter) {
     case dtDate:
     case dtString:
     case dtReal34Matrix:
-    case dtComplex34Matrix:
     case dtConfig:
       goto to_return_noLastX;
       break;
@@ -709,7 +708,7 @@ void fnDRG(uint16_t unusedButMandatoryParameter) {
   copySourceRegisterToDestRegister(REGISTER_X, TEMP_REGISTER_1);
   uint16_t dest = 9999;
 
-  if(getRegisterDataType(REGISTER_X) == dtComplex34) {
+  if(getRegisterDataType(REGISTER_X) == dtComplex34 || getRegisterDataType(REGISTER_X) == dtComplex34Matrix) {
     setComplexRegisterPolarMode(REGISTER_X, amPolar);      //re-set it to Polar iven if it was there already
     dest = getComplexRegisterAngularMode(REGISTER_X);
     DRG_Cycling = 1;

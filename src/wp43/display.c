@@ -2772,7 +2772,7 @@ static void dispM(uint16_t regist, char * prefix) {
   else if(getRegisterDataType(regist) == dtComplex34Matrix) {
     complex34Matrix_t matrix;
     linkToComplexMatrixRegister(regist, &matrix);
-    showComplexMatrix(&matrix, prefixWidth);
+    showComplexMatrix(&matrix, prefixWidth, getComplexRegisterAngularMode(regist), getComplexRegisterPolarMode(regist) == amPolar);
     //printf("#### tmpString=%s prefix=%s prefixWidth=%u lastErrorCode=%u temporaryInformation=%u\n",tmpString,prefix,prefixWidth,lastErrorCode, temporaryInformation);
     if(lastErrorCode != 0) {
       refreshRegisterLine(errorMessageRegisterLine);
@@ -3093,7 +3093,7 @@ void fnShow_SCROLL(uint16_t fnShow_param) {                // Heavily modified b
 
             if(stringWidth(tmpString + d, &numericFont, true, true) >= SCREEN_WIDTH -60 && (uint8_t)tmpString[source-2] == 160 && tmpString[source-1]==5) break;
             if(d>0 &&
-              (    ( !getComplexRegisterPolarMode(showRegis) && (tmpString[source]=='+' || tmpString[source]=='-')) ||
+              (    ( !(getComplexRegisterPolarMode(showRegis) == amPolar) && (tmpString[source]=='+' || tmpString[source]=='-')) ||
                    ( (uint8_t)tmpString[source]==162)
               ) ) {
               break;

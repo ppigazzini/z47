@@ -589,6 +589,8 @@ void convertReal34MatrixRegisterToComplex34MatrixRegister(calcRegister_t source,
   complex34Matrix_t matrix;
   convertReal34MatrixRegisterToComplex34Matrix(source, &matrix);
   convertComplex34MatrixToComplex34MatrixRegister(&matrix, destination);
+  setComplexRegisterAngularMode(destination, currentAngularMode);
+  setComplexRegisterPolarMode(destination, getSystemFlag(FLAG_POLAR) ? amPolar : 0);
   complexMatrixFree(&matrix);
 }
 
