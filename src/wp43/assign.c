@@ -375,7 +375,7 @@ void fnAssign(uint16_t mode) {
 
 static void _removeMenuAssignments(uint16_t id) {
   itemToBeAssigned = ITM_NULL;
-  
+
   // Predefined configurable menus
   for(int i = 0; i < 18; ++i) {
     // MyMenu
@@ -446,7 +446,7 @@ void fnDeleteMenu(uint16_t id) {
   else {
     _removeMenuAssignments(id);   // Remove assignments before deleting the user menu
     if(numberOfUserMenus == 1) {
-      freeWp43(userMenus, sizeof(userMenu_t));
+      freeWp43(userMenus, TO_BLOCKS(sizeof(userMenu_t)));
       userMenus = NULL;
       numberOfUserMenus = 0;
     }
@@ -454,7 +454,7 @@ void fnDeleteMenu(uint16_t id) {
       if(id < numberOfUserMenus - 1) {
         xcopy(userMenus + id, userMenus + id + 1, sizeof(userMenu_t) * (numberOfUserMenus - id - 1));
       }
-      freeWp43(userMenus + numberOfUserMenus - 1, sizeof(userMenu_t));
+      freeWp43(userMenus + numberOfUserMenus - 1, TO_BLOCKS(sizeof(userMenu_t)));
       --numberOfUserMenus;
     }
   }
