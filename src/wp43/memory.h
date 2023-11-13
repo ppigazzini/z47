@@ -25,9 +25,9 @@
   #include "typeDefinitions.h"
 
   // The 6 followoing functions are only there to know who allocates and frees memory
-  void    *allocWp43           (size_t sizeInBlocks);
-  void    *reallocWp43         (void *pcMemPtr, size_t oldSizeInBlocks, size_t newSizeInBlocks);
-  void    freeWp43             (void *pcMemPtr, size_t sizeInBlocks);
+  void    *allocWp43            (size_t sizeInBlocks);
+  void    *reallocWp43          (void *pcMemPtr, size_t oldSizeInBlocks, size_t newSizeInBlocks);
+  void    freeWp43              (void *pcMemPtr, size_t sizeInBlocks);
 
   void    *allocGmp             (size_t sizeInBytes);
   void    *reallocGmp           (void *pcMemPtr, size_t oldSizeInBytes, size_t newSizeInBytes);
