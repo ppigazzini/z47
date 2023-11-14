@@ -231,7 +231,7 @@ void idivrLonIReal(void) {
   convertRealToLongIntegerRegister(&q, REGISTER_X, DEC_ROUND_DOWN);
 
   WP34S_Mod(&y, &x, &y, &ctxtReal39);
-  reallocateRegister(REGISTER_Y, dtReal34, REAL34_SIZE, amNone);
+  reallocateRegister(REGISTER_Y, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
   convertRealToReal34ResultRegister(&y, REGISTER_Y);
 }
 
@@ -339,7 +339,7 @@ void idivrShoIReal(void) {
   convertRealToLongIntegerRegister(&q, REGISTER_X, DEC_ROUND_DOWN);
 
   WP34S_Mod(&y, &x, &y, &ctxtReal39);
-  reallocateRegister(REGISTER_Y, dtReal34, REAL34_SIZE, amNone);
+  reallocateRegister(REGISTER_Y, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
   convertRealToReal34ResultRegister(&y, REGISTER_Y);
 }
 

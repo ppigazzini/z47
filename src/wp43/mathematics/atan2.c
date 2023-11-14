@@ -101,7 +101,7 @@ void atan2LonILonI(void) {
   }
   WP34S_Atan2(&y, &x, &x, &ctxtReal39);
   convertAngleFromTo(&x, amRadian, currentAngularMode, &ctxtReal39);
-  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amNone);
+  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
   convertRealToReal34ResultRegister(&x, REGISTER_X);
 
   setRegisterAngularMode(REGISTER_X, currentAngularMode);
@@ -123,7 +123,7 @@ void atan2RealLonI(void) {
   }
   WP34S_Atan2(&y, &x, &x, &ctxtReal39);
   convertAngleFromTo(&x, amRadian, currentAngularMode, &ctxtReal39);
-  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amNone);
+  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
   convertRealToReal34ResultRegister(&x, REGISTER_X);
 
   setRegisterAngularMode(REGISTER_X, currentAngularMode);

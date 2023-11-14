@@ -92,7 +92,7 @@ static uint32_t restore(void *buffer, uint32_t size) {
     int16_t  compatibility_u16 = 0;         //defaults to use when settings are removed
     bool_t   compatibility_bool = false;       //defaults to use when settings are removed
     uint32_t backupVersion = BACKUP_VERSION;
-    uint32_t ramSize       = RAM_SIZE;
+    uint32_t ramSizeInBlocks       = RAM_SIZE_IN_BLOCKS;
     uint32_t ramPtr;
     int ret;
 
@@ -116,8 +116,8 @@ static uint32_t restore(void *buffer, uint32_t size) {
     printf("Begin of calc's backup\n");
 
     save(&backupVersion,                      sizeof(backupVersion));
-    save(&ramSize,                            sizeof(ramSize));
-    save(ram,                                 TO_BYTES(RAM_SIZE));
+    save(&ramSizeInBlocks,                    sizeof(ramSizeInBlocks));
+    save(ram,                                 TO_BYTES(RAM_SIZE_IN_BLOCKS));
     save(freeMemoryRegions,                   sizeof(freeMemoryRegions));
     save(&numberOfFreeMemoryRegions,          sizeof(numberOfFreeMemoryRegions));
     save(globalFlags,                         sizeof(globalFlags));
@@ -146,23 +146,23 @@ static uint32_t restore(void *buffer, uint32_t size) {
     save(&tam.max,                            sizeof(tam.max));
     save(&rbrRegister,                        sizeof(rbrRegister));
     save(&numberOfNamedVariables,             sizeof(numberOfNamedVariables));
-    ramPtr = TO_WP43MEMPTR(allNamedVariables);
+    ramPtr = TO_C47MEMPTR(allNamedVariables);
     save(&ramPtr,                             sizeof(ramPtr));
-    ramPtr = TO_WP43MEMPTR(allFormulae);
+    ramPtr = TO_C47MEMPTR(allFormulae);
     save(&ramPtr,                             sizeof(ramPtr));
-    ramPtr = TO_WP43MEMPTR(userMenus);
+    ramPtr = TO_C47MEMPTR(userMenus);
     save(&ramPtr,                             sizeof(ramPtr));
-    ramPtr = TO_WP43MEMPTR(userKeyLabel);
+    ramPtr = TO_C47MEMPTR(userKeyLabel);
     save(&ramPtr,                             sizeof(ramPtr));
-    ramPtr = TO_WP43MEMPTR(statisticalSumsPointer);
+    ramPtr = TO_C47MEMPTR(statisticalSumsPointer);
     save(&ramPtr,                             sizeof(ramPtr));
-    ramPtr = TO_WP43MEMPTR(savedStatisticalSumsPointer);
+    ramPtr = TO_C47MEMPTR(savedStatisticalSumsPointer);
     save(&ramPtr,                             sizeof(ramPtr));
-    ramPtr = TO_WP43MEMPTR(labelList);
+    ramPtr = TO_C47MEMPTR(labelList);
     save(&ramPtr,                             sizeof(ramPtr));
-    ramPtr = TO_WP43MEMPTR(programList);
+    ramPtr = TO_C47MEMPTR(programList);
     save(&ramPtr,                             sizeof(ramPtr));
-    ramPtr = TO_WP43MEMPTR(currentSubroutineLevelData);
+    ramPtr = TO_C47MEMPTR(currentSubroutineLevelData);
     save(&ramPtr,                             sizeof(ramPtr));
     save(&xCursor,                            sizeof(xCursor));
     save(&yCursor,                            sizeof(yCursor));
@@ -219,7 +219,7 @@ static uint32_t restore(void *buffer, uint32_t size) {
     save(&imaginaryMantissaSignLocation,      sizeof(imaginaryMantissaSignLocation));
     save(&lineTWidth,                         sizeof(lineTWidth));
     save(&lastIntegerBase,                    sizeof(lastIntegerBase));
-    save(&wp43MemInBlocks,                    sizeof(wp43MemInBlocks));
+    save(&c47MemInBlocks,                     sizeof(c47MemInBlocks));
     save(&gmpMemInBytes,                      sizeof(gmpMemInBytes));
     save(&catalog,                            sizeof(catalog));
     save(&lastCatalogPosition,                sizeof(lastCatalogPosition));
@@ -232,21 +232,21 @@ static uint32_t restore(void *buffer, uint32_t size) {
     save(&systemFlags,                        sizeof(systemFlags));
     save(&savedSystemFlags,                   sizeof(savedSystemFlags));
     save(&thereIsSomethingToUndo,             sizeof(thereIsSomethingToUndo));
-    ramPtr = TO_WP43MEMPTR(beginOfProgramMemory);
+    ramPtr = TO_C47MEMPTR(beginOfProgramMemory);
     save(&ramPtr,                             sizeof(ramPtr)); // beginOfProgramMemory pointer to block
-    ramPtr = (uint32_t)((void *)beginOfProgramMemory -        TO_PCMEMPTR(TO_WP43MEMPTR(beginOfProgramMemory)));
+    ramPtr = (uint32_t)((void *)beginOfProgramMemory - TO_PCMEMPTR(TO_C47MEMPTR(beginOfProgramMemory)));
     save(&ramPtr,                             sizeof(ramPtr)); // beginOfProgramMemory offset within block
-    ramPtr = TO_WP43MEMPTR(firstFreeProgramByte);
+    ramPtr = TO_C47MEMPTR(firstFreeProgramByte);
     save(&ramPtr,                             sizeof(ramPtr)); // firstFreeProgramByte pointer to block
-    ramPtr = (uint32_t)((void *)firstFreeProgramByte - TO_PCMEMPTR(TO_WP43MEMPTR(firstFreeProgramByte)));
+    ramPtr = (uint32_t)((void *)firstFreeProgramByte - TO_PCMEMPTR(TO_C47MEMPTR(firstFreeProgramByte)));
     save(&ramPtr,                             sizeof(ramPtr)); // firstFreeProgramByte offset within block
-    ramPtr = TO_WP43MEMPTR(firstDisplayedStep);
+    ramPtr = TO_C47MEMPTR(firstDisplayedStep);
     save(&ramPtr,                             sizeof(ramPtr)); // firstDisplayedStep pointer to block
-    ramPtr = (uint32_t)((void *)firstDisplayedStep - TO_PCMEMPTR(TO_WP43MEMPTR(firstDisplayedStep)));
+    ramPtr = (uint32_t)((void *)firstDisplayedStep - TO_PCMEMPTR(TO_C47MEMPTR(firstDisplayedStep)));
     save(&ramPtr,                             sizeof(ramPtr)); // firstDisplayedStep offset within block
-    ramPtr = TO_WP43MEMPTR(currentStep);
+    ramPtr = TO_C47MEMPTR(currentStep);
     save(&ramPtr,                             sizeof(ramPtr)); // currentStep pointer to block
-    ramPtr = (uint32_t)((void *)currentStep - TO_PCMEMPTR(TO_WP43MEMPTR(currentStep)));
+    ramPtr = (uint32_t)((void *)currentStep - TO_PCMEMPTR(TO_C47MEMPTR(currentStep)));
     save(&ramPtr,                             sizeof(ramPtr)); // currentStep offset within block
     save(&freeProgramBytes,                   sizeof(freeProgramBytes));
     save(&firstDisplayedLocalStepNumber,      sizeof(firstDisplayedLocalStepNumber));
@@ -407,7 +407,7 @@ static uint32_t restore(void *buffer, uint32_t size) {
     //uint8_t  compatibility_u8;        //defaults to use when settings are removed
     bool_t   compatibility_bool;      //defaults to use when settings are removed
     int16_t  compatibility_u16;        //defaults to use when settings are removed
-    uint32_t backupVersion, ramSize, ramPtr;
+    uint32_t backupVersion, ramSizeInBlocks, ramPtr;
     int ret;
     uint8_t *loadedScreen = malloc(SCREEN_WIDTH * SCREEN_HEIGHT / 8);
 
@@ -430,22 +430,22 @@ static uint32_t restore(void *buffer, uint32_t size) {
     if(backupVersion < 781) {
       configCommon(CFG_DFLT);
     }
-    restore(&ramSize,                            sizeof(ramSize));
-    if(backupVersion > BACKUP_VERSION || backupVersion < OLDEST_COMPATIBLE_BACKUP_VERSION || ramSize != RAM_SIZE) {
+    restore(&ramSizeInBlocks,                    sizeof(ramSizeInBlocks));
+    if(backupVersion > BACKUP_VERSION || backupVersion < OLDEST_COMPATIBLE_BACKUP_VERSION || ramSizeInBlocks != RAM_SIZE_IN_BLOCKS) {
       ioFileClose();
       refreshScreen(92);
 
       printf("Cannot restore calc's memory from file backup.bin! File backup.bin is from incompatible backup version.\n");
       printf("               Backup file      Program\n");
-      printf("backupVersion  %6u           %6d\n", backupVersion, BACKUP_VERSION);
-      printf("ramSize blocks %6u           %6d\n", ramSize, RAM_SIZE);
-      printf("ramSize bytes  %6u           %6d\n", TO_BYTES(ramSize), TO_BYTES(RAM_SIZE));
+      printf("backupVersion          %6u           %6d\n", backupVersion, BACKUP_VERSION);
+      printf("ramSizeInBlocks blocks %6u           %6d\n", ramSizeInBlocks, RAM_SIZE_IN_BLOCKS);
+      printf("ramSizeInBlocks bytes  %6u           %6d\n", TO_BYTES(ramSizeInBlocks), TO_BYTES(RAM_SIZE_IN_BLOCKS));
       return;
     }
     else {
       printf("Begin of calc's restoration\n");
 
-      restore(ram,                                 TO_BYTES(RAM_SIZE));
+      restore(ram,                                 TO_BYTES(RAM_SIZE_IN_BLOCKS));
       restore(freeMemoryRegions,                   sizeof(freeMemoryRegions));
       restore(&numberOfFreeMemoryRegions,          sizeof(numberOfFreeMemoryRegions));
       restore(globalFlags,                         sizeof(globalFlags));
@@ -456,7 +456,7 @@ static uint32_t restore(void *buffer, uint32_t size) {
       restore(asmBuffer,                           sizeof(asmBuffer));
       restore(oldTime,                             sizeof(oldTime));
       restore(dateTimeString,                      sizeof(dateTimeString));
-      if(backupVersion >= 788 ) {                                               
+      if(backupVersion >= 788 ) {
         restore(softmenuStack,                     sizeof(softmenuStack));
       } else {
         restore(softmenuStack,                     32);
@@ -569,7 +569,7 @@ static uint32_t restore(void *buffer, uint32_t size) {
       restore(&imaginaryMantissaSignLocation,      sizeof(imaginaryMantissaSignLocation));
       restore(&lineTWidth,                         sizeof(lineTWidth));
       restore(&lastIntegerBase,                    sizeof(lastIntegerBase));
-      restore(&wp43MemInBlocks,                    sizeof(wp43MemInBlocks));
+      restore(&c47MemInBlocks,                     sizeof(c47MemInBlocks));
       restore(&gmpMemInBytes,                      sizeof(gmpMemInBytes));
       restore(&catalog,                            sizeof(catalog));
       restore(&lastCatalogPosition,                sizeof(lastCatalogPosition));
@@ -1127,7 +1127,7 @@ void doSave(uint16_t saveType) {
   sprintf(tmpString, "STATISTICAL_SUMS\n%" PRIu16 "\n", (uint16_t)(statisticalSumsPointer ? NUMBER_OF_STATISTICAL_SUMS : 0));
   save(tmpString, strlen(tmpString));
   for(i=0; i<(statisticalSumsPointer ? NUMBER_OF_STATISTICAL_SUMS : 0); i++) {
-    realToString(statisticalSumsPointer + REAL_SIZE * i , tmpRegisterString);
+    realToString(statisticalSumsPointer + REAL_SIZE_IN_BLOCKS * i , tmpRegisterString);
     sprintf(tmpString, "%s\n", tmpRegisterString);
     save(tmpString, strlen(tmpString));
   }
@@ -1223,14 +1223,14 @@ void doSave(uint16_t saveType) {
   }
 
   // Programs
-  uint16_t currentSizeInBlocks = RAM_SIZE - freeMemoryRegions[numberOfFreeMemoryRegions - 1].address - freeMemoryRegions[numberOfFreeMemoryRegions - 1].sizeInBlocks;
+  uint16_t currentSizeInBlocks = RAM_SIZE_IN_BLOCKS - freeMemoryRegions[numberOfFreeMemoryRegions - 1].blockAddress - freeMemoryRegions[numberOfFreeMemoryRegions - 1].sizeInBlocks;
   sprintf(tmpString, "PROGRAMS\n%" PRIu16 "\n", currentSizeInBlocks);
   save(tmpString, strlen(tmpString));
 
-  sprintf(tmpString, "%" PRIu32 "\n%" PRIu32 "\n", (uint32_t)TO_WP43MEMPTR(currentStep), (uint32_t)((void *)currentStep - TO_PCMEMPTR(TO_WP43MEMPTR(currentStep)))); // currentStep block pointer + offset within block
+  sprintf(tmpString, "%" PRIu32 "\n%" PRIu32 "\n", (uint32_t)TO_C47MEMPTR(currentStep), (uint32_t)((void *)currentStep - TO_PCMEMPTR(TO_C47MEMPTR(currentStep)))); // currentStep block pointer + offset within block
   save(tmpString, strlen(tmpString));
 
-  sprintf(tmpString, "%" PRIu32 "\n%" PRIu32 "\n", (uint32_t)TO_WP43MEMPTR(firstFreeProgramByte), (uint32_t)((void *)firstFreeProgramByte - TO_PCMEMPTR(TO_WP43MEMPTR(firstFreeProgramByte)))); // firstFreeProgramByte block pointer + offset within block
+  sprintf(tmpString, "%" PRIu32 "\n%" PRIu32 "\n", (uint32_t)TO_C47MEMPTR(firstFreeProgramByte), (uint32_t)((void *)firstFreeProgramByte - TO_PCMEMPTR(TO_C47MEMPTR(firstFreeProgramByte)))); // firstFreeProgramByte block pointer + offset within block
   save(tmpString, strlen(tmpString));
 
   sprintf(tmpString, "%" PRIu16 "\n", freeProgramBytes);
@@ -1252,9 +1252,9 @@ void doSave(uint16_t saveType) {
   }
 
   // Other configuration stuff
-        sprintf(tmpString, "OTHER_CONFIGURATION_STUFF\n72\n");   
+        sprintf(tmpString, "OTHER_CONFIGURATION_STUFF\n72\n");
         save(tmpString, strlen(tmpString));    //JM 23+11+15+23
-/*01*/  save(tmpString, strlen(tmpString)); 
+/*01*/  save(tmpString, strlen(tmpString));
 
 //23 sprintf(tmpString, "firstGregorianDay\n%" PRIu32 "\n", firstGregorianDay);
 /*02*/  sprintf(tmpString, "denMax\n%"                     PRIu32 "\n",     denMax);                       save(tmpString, strlen(tmpString));
@@ -1282,7 +1282,7 @@ void doSave(uint16_t saveType) {
 /*22*/  sprintf(tmpString, "exponentHideLimit\n%"          PRId16  "\n",    exponentHideLimit);            save(tmpString, strlen(tmpString));
 /*23*/  sprintf(tmpString, "bestF\n%"                      PRIu16  "\n",    lrSelection);                  save(tmpString, strlen(tmpString));
 
-//10     
+//10
 /*01*/  sprintf(tmpString, "fgLN\n%"                       PRIu8  "\n",     (uint8_t)fgLN);                save(tmpString, strlen(tmpString));      //keep save file format by keeping the old setting
 /*02*/  sprintf(tmpString, "eRPN\n%"                       PRIu8  "\n",     (uint8_t)eRPN);                save(tmpString, strlen(tmpString));
 /*03*/  sprintf(tmpString, "HOME3\n%"                      PRIu8  "\n",     (uint8_t)HOME3);               save(tmpString, strlen(tmpString));
@@ -1295,7 +1295,7 @@ void doSave(uint16_t saveType) {
 /*10*/  sprintf(tmpString, "BASE_MYM\n%"                   PRIu8  "\n",     (uint8_t)BASE_MYM);            save(tmpString, strlen(tmpString));
 /*11*/  sprintf(tmpString, "jm_G_DOUBLETAP\n%"             PRIu8  "\n",     (uint8_t)jm_G_DOUBLETAP);      save(tmpString, strlen(tmpString));
 
-/*  *///15     
+/*  *///15
 /*01*/  sprintf(tmpString, "compatibility_bool\n%"         PRIu8  "\n",     (uint8_t)0);                   save(tmpString, strlen(tmpString));            //compatibility - use when needed
 /*02*/  sprintf(tmpString, "jm_LARGELI\n%"                 PRIu8  "\n",     (uint8_t)jm_LARGELI);          save(tmpString, strlen(tmpString));
 /*03*/  sprintf(tmpString, "constantFractions\n%"          PRIu8  "\n",     (uint8_t)constantFractions);   save(tmpString, strlen(tmpString));
@@ -1312,7 +1312,7 @@ void doSave(uint16_t saveType) {
 /*14*/  sprintf(tmpString, "LongPressF\n%"                 PRIu8  "\n",     (uint8_t)LongPressF);          save(tmpString, strlen(tmpString));
 /*15*/  sprintf(tmpString, "lastIntegerBase\n%"            PRIu8  "\n",     (uint8_t)lastIntegerBase);     save(tmpString, strlen(tmpString));
 
-/*  *///23        
+/*  *///23
 /*01*/  sprintf(tmpString, "lrChosen\n%"                   PRIu16 "\n",     lrChosen);                     save(tmpString, strlen(tmpString));
 /*02*/  sprintf(tmpString, "graph_xmin\n"                  "%f"   "\n",     graph_xmin);                   save(tmpString, strlen(tmpString));
 /*03*/  sprintf(tmpString, "graph_xmax\n"                  "%f"   "\n",     graph_xmax);                   save(tmpString, strlen(tmpString));
@@ -1499,22 +1499,22 @@ int32_t stringToInt32(const char *str) {
         tag = amNone;
       }
 
-      reallocateRegister(regist, dtReal34, REAL34_SIZE, tag);
+      reallocateRegister(regist, dtReal34, REAL34_SIZE_IN_BLOCKS, tag);
       stringToReal34(value, REGISTER_REAL34_DATA(regist));
     }
 
     else if(strcmp(type, "Real") == 0) {
-      reallocateRegister(regist, dtReal34, REAL34_SIZE, tag);
+      reallocateRegister(regist, dtReal34, REAL34_SIZE_IN_BLOCKS, tag);
       stringToReal34(value, REGISTER_REAL34_DATA(regist));
     }
 
     else if(strcmp(type, "Time") == 0) {
-      reallocateRegister(regist, dtTime, REAL34_SIZE, amNone);
+      reallocateRegister(regist, dtTime, REAL34_SIZE_IN_BLOCKS, amNone);
       stringToReal34(value, REGISTER_REAL34_DATA(regist));
     }
 
     else if(strcmp(type, "Date") == 0) {
-      reallocateRegister(regist, dtDate, REAL34_SIZE, amNone);
+      reallocateRegister(regist, dtDate, REAL34_SIZE_IN_BLOCKS, amNone);
       stringToReal34(value, REGISTER_REAL34_DATA(regist));
     }
 
@@ -1554,7 +1554,7 @@ int32_t stringToInt32(const char *str) {
     else if(strcmp(type, "Cplx") == 0) {
       char *imaginaryPart;
 
-      reallocateRegister(regist, dtComplex34, COMPLEX34_SIZE, amNone);
+      reallocateRegister(regist, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
       imaginaryPart = value;
       while(*imaginaryPart != ' ') {
         imaginaryPart++;
@@ -1576,7 +1576,7 @@ int32_t stringToInt32(const char *str) {
       *(numOfCols++) = 0;
       rows = stringToUint16(value);
       cols = stringToUint16(numOfCols);
-      reallocateRegister(regist, dtReal34Matrix, REAL34_SIZE * rows * cols, amNone);
+      reallocateRegister(regist, dtReal34Matrix, REAL34_SIZE_IN_BLOCKS * rows * cols, amNone);
       REGISTER_REAL34_MATRIX_DBLOCK(regist)->matrixRows = rows;
       REGISTER_REAL34_MATRIX_DBLOCK(regist)->matrixColumns = cols;
     }
@@ -1592,7 +1592,7 @@ int32_t stringToInt32(const char *str) {
       *(numOfCols++) = 0;
       rows = stringToUint16(value);
       cols = stringToUint16(numOfCols);
-      reallocateRegister(regist, dtComplex34Matrix, COMPLEX34_SIZE * rows * cols, amNone);
+      reallocateRegister(regist, dtComplex34Matrix, COMPLEX34_SIZE_IN_BLOCKS * rows * cols, amNone);
       REGISTER_COMPLEX34_MATRIX_DBLOCK(regist)->matrixRows = rows;
       REGISTER_COMPLEX34_MATRIX_DBLOCK(regist)->matrixColumns = cols;
     }
@@ -1926,7 +1926,7 @@ int32_t stringToInt32(const char *str) {
                 sprintf(line,", loadMode:%d, %s\n",loadMode,tmpString);
                 debugPrintf(6, "B", tmpString);
               #endif //LOADDEBUG
-              stringToReal(tmpString, (real_t *)(statisticalSumsPointer + REAL_SIZE * i), &ctxtReal75);
+              stringToReal(tmpString, (real_t *)(statisticalSumsPointer + REAL_SIZE_IN_BLOCKS * i), &ctxtReal75);
             }
           }
         }
@@ -2035,9 +2035,9 @@ int32_t stringToInt32(const char *str) {
           sprintf(line,", loadMode:%d, %s\n",loadMode,tmpString);
           debugPrintf(9, "A", tmpString);
         #endif //LOADDEBUG
-        freeWp43(userKeyLabel, TO_BLOCKS(userKeyLabelSize));
+        freeC47Blocks(userKeyLabel, TO_BLOCKS(userKeyLabelSize));
         userKeyLabelSize = 37/*keys*/ * 6/*states*/ * 1/*byte terminator*/ + 1/*byte sentinel*/;
-        userKeyLabel = allocWp43(TO_BLOCKS(userKeyLabelSize));
+        userKeyLabel = allocC47Blocks(TO_BLOCKS(userKeyLabelSize));
         memset(userKeyLabel,   0, TO_BYTES(TO_BLOCKS(userKeyLabelSize)));
       }
       for(i=0; i<numberOfRegs; i++) {
@@ -2185,7 +2185,7 @@ int32_t stringToInt32(const char *str) {
         }
       #endif //LOADDEBUG
       uint16_t numberOfBlocks;
-      uint16_t oldSizeInBlocks = RAM_SIZE - freeMemoryRegions[numberOfFreeMemoryRegions - 1].address - freeMemoryRegions[numberOfFreeMemoryRegions - 1].sizeInBlocks;
+      uint16_t oldSizeInBlocks = RAM_SIZE_IN_BLOCKS - freeMemoryRegions[numberOfFreeMemoryRegions - 1].blockAddress - freeMemoryRegions[numberOfFreeMemoryRegions - 1].sizeInBlocks;
       uint8_t *oldFirstFreeProgramByte = firstFreeProgramByte;
       uint16_t oldFreeProgramBytes = freeProgramBytes;
 
@@ -2288,11 +2288,11 @@ int32_t stringToInt32(const char *str) {
           sprintf(line,", loadMode:%d, %s\n",loadMode,tmpString);
           debugPrintf(15, "B", tmpString);
         #endif //LOADDEBUG
-        allFormulae = allocWp43(TO_BLOCKS(sizeof(formulaHeader_t)) * formulae);
+        allFormulae = allocC47Blocks(TO_BLOCKS(sizeof(formulaHeader_t)) * formulae);
         numberOfFormulae = formulae;
         currentFormula = 0;
         for(i = 0; i < formulae; i++) {
-          allFormulae[i].pointerToFormulaData = WP43_NULL;
+          allFormulae[i].pointerToFormulaData = C47_NULL;
           allFormulae[i].sizeInBlocks = 0;
         }
       }

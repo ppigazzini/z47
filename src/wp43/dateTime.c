@@ -88,7 +88,7 @@ bool_t checkDateArgument(calcRegister_t regist, real34_t *jd) {
 
     case dtReal34: {
       if(getRegisterAngularMode(regist) == amNone) {
-        reallocateRegister(TEMP_REGISTER_1, dtReal34, REAL34_SIZE, amNone); // make sure TEMP_REGISTER_1 is not of dtDate type here
+        reallocateRegister(TEMP_REGISTER_1, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone); // make sure TEMP_REGISTER_1 is not of dtDate type here
         convertReal34RegisterToDateRegister(regist, TEMP_REGISTER_1);
         if(getRegisterDataType(TEMP_REGISTER_1) != dtDate) {
           return false; // invalid date
@@ -393,7 +393,7 @@ void hmmssInRegisterToSeconds(calcRegister_t regist) {
   real34_t real34;
 
   real34Copy(REGISTER_REAL34_DATA(regist), &real34);
-  reallocateRegister(regist, dtTime, REAL34_SIZE, amNone);
+  reallocateRegister(regist, dtTime, REAL34_SIZE_IN_BLOCKS, amNone);
   hmmssToSeconds(&real34, REGISTER_REAL34_DATA(regist));
   checkTimeRange(REGISTER_REAL34_DATA(regist));
 }
@@ -425,9 +425,9 @@ void fnJulianToDateTime(uint16_t unusedButMandatoryParameter) {
       liftStack();
       convertLongIntegerRegisterToReal34Register(REGISTER_Y, REGISTER_Y);
       julianDayToInternalDate(REGISTER_REAL34_DATA(REGISTER_Y), &date);
-      reallocateRegister(REGISTER_Y, dtDate, REAL34_SIZE, amNone);
+      reallocateRegister(REGISTER_Y, dtDate, REAL34_SIZE_IN_BLOCKS, amNone);
       real34Copy(&date, REGISTER_REAL34_DATA(REGISTER_Y));
-      reallocateRegister(REGISTER_X, dtTime, REAL34_SIZE, amNone);
+      reallocateRegister(REGISTER_X, dtTime, REAL34_SIZE_IN_BLOCKS, amNone);
       real34Copy(const34_1on2, REGISTER_REAL34_DATA(REGISTER_X)); //Added offset so 0.00 -> 12:00:00
       real34Multiply(REGISTER_REAL34_DATA(REGISTER_X), const34_3600, REGISTER_REAL34_DATA(REGISTER_X));
       real34Multiply(REGISTER_REAL34_DATA(REGISTER_X), const34_24, REGISTER_REAL34_DATA(REGISTER_X));
@@ -439,7 +439,7 @@ void fnJulianToDateTime(uint16_t unusedButMandatoryParameter) {
       copySourceRegisterToDestRegister(REGISTER_Y, REGISTER_X);
 
       //Get IP in Y
-      reallocateRegister(REGISTER_Y, dtDate, REAL34_SIZE, amNone);
+      reallocateRegister(REGISTER_Y, dtDate, REAL34_SIZE_IN_BLOCKS, amNone);
       real34ToIntegralValue(REGISTER_REAL34_DATA(REGISTER_Y), REGISTER_REAL34_DATA(REGISTER_Y), DEC_ROUND_DOWN);
 
       //Get FP in x
@@ -454,14 +454,14 @@ void fnJulianToDateTime(uint16_t unusedButMandatoryParameter) {
 
       //Convert date to Y
       julianDayToInternalDate(REGISTER_REAL34_DATA(REGISTER_Y), &date);
-      reallocateRegister(REGISTER_Y, dtDate, REAL34_SIZE, amNone);
+      reallocateRegister(REGISTER_Y, dtDate, REAL34_SIZE_IN_BLOCKS, amNone);
       real34Copy(&date, REGISTER_REAL34_DATA(REGISTER_Y));
 
       //Convert x to time to X
       real_t tmp;
       int32ToReal(24*3600, &tmp);
       realMultiply(&tmp, &x, &tmp, &ctxtReal39);                      // tmp is now seconds
-      reallocateRegister(REGISTER_X, dtTime, REAL34_SIZE, amNone);    // this must be in front of the next line, otherwise accuracy is gone
+      reallocateRegister(REGISTER_X, dtTime, REAL34_SIZE_IN_BLOCKS, amNone);    // this must be in front of the next line, otherwise accuracy is gone
       convertRealToReal34ResultRegister(&tmp, REGISTER_X);
       break;
     }
@@ -583,7 +583,7 @@ void fnGetFirstGregorianDay(uint16_t unusedButMandatoryParameter) {
 
   uInt32ToReal34(firstGregorianDay, &j);
   liftStack();
-  reallocateRegister(REGISTER_X, dtDate, REAL34_SIZE, amNone);
+  reallocateRegister(REGISTER_X, dtDate, REAL34_SIZE_IN_BLOCKS, amNone);
   julianDayToInternalDate(&j, REGISTER_REAL34_DATA(REGISTER_X));
 }
 
@@ -768,7 +768,7 @@ void fnToDate(uint16_t unusedButMandatoryParameter) {
     fnDropY(NOPARAM);
     if(lastErrorCode == ERROR_NONE) {
       composeJulianDay(&y, &m, &d, &j);
-      reallocateRegister(REGISTER_X, dtDate, REAL34_SIZE, amNone);
+      reallocateRegister(REGISTER_X, dtDate, REAL34_SIZE_IN_BLOCKS, amNone);
       julianDayToInternalDate(&j, REGISTER_REAL34_DATA(REGISTER_X));
 
       // check range
@@ -878,7 +878,7 @@ void fnDate(uint16_t unusedButMandatoryParameter) {
 
   composeJulianDay(&y, &m, &d, &j);
   liftStack();
-  reallocateRegister(REGISTER_X, dtDate, REAL34_SIZE, amNone);
+  reallocateRegister(REGISTER_X, dtDate, REAL34_SIZE_IN_BLOCKS, amNone);
   julianDayToInternalDate(&j, REGISTER_REAL34_DATA(REGISTER_X));
   temporaryInformation = TI_DAY_OF_WEEK;
 }
@@ -900,7 +900,7 @@ void fnTime(uint16_t unusedButMandatoryParameter) {
   #endif // DMCP_BUILD
 
   liftStack();
-  reallocateRegister(REGISTER_X, dtTime, REAL34_SIZE, amNone);
+  reallocateRegister(REGISTER_X, dtTime, REAL34_SIZE_IN_BLOCKS, amNone);
   real34Copy(&time34, REGISTER_REAL34_DATA(REGISTER_X));
 }
 

@@ -76,7 +76,7 @@
       }
     #endif // __APPLE__
 
-    wp43MemInBlocks = 0;
+    c47MemInBlocks = 0;
     gmpMemInBytes = 0;
     mp_set_memory_functions(allocGmp, reallocGmp, freeGmp);
 

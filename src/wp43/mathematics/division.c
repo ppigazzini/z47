@@ -211,7 +211,7 @@ void divLonILonI(void) {
 
       convertLongIntegerRegisterToReal(REGISTER_Y, &yIc, &ctxtReal39);
       convertLongIntegerRegisterToReal(REGISTER_X, &xIc, &ctxtReal39);
-      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amNone);
+      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
 
       realDivide(&yIc, &xIc, &xIc, &ctxtReal39);
       convertRealToReal34ResultRegister(&xIc, REGISTER_X);
@@ -344,7 +344,7 @@ void divRealLonI(void) {
   angularMode_t yAngularMode;
 
   convertLongIntegerRegisterToReal(REGISTER_X, &x, &ctxtReal39);
-  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amNone);
+  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
 
   if(realIsZero(&x)) {
     if(real34IsZero(REGISTER_REAL34_DATA(REGISTER_Y))) {
@@ -427,7 +427,7 @@ void divCplxLonI(void) {
   realDivide(&a, &c, &a, &ctxtReal39);
   realDivide(&b, &c, &b, &ctxtReal39);
 
-  reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE, amNone);
+  reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
   convertRealToReal34ResultRegister(&a, REGISTER_X);
   convertRealToImag34ResultRegister(&b, REGISTER_X);
 }
@@ -448,7 +448,7 @@ void divTimeLonI(void) {
   real_t y, x;
 
   convertLongIntegerRegisterToReal(REGISTER_X, &x, &ctxtReal39);
-  reallocateRegister(REGISTER_X, dtTime, REAL34_SIZE, amNone);
+  reallocateRegister(REGISTER_X, dtTime, REAL34_SIZE_IN_BLOCKS, amNone);
 
   if(realIsZero(&x)) {
     if(real34IsZero(REGISTER_REAL34_DATA(REGISTER_Y))) {
@@ -508,7 +508,7 @@ void divTimeShoI(void) {
   real_t y, x;
 
   convertShortIntegerRegisterToReal(REGISTER_X, &x, &ctxtReal39);
-  reallocateRegister(REGISTER_X, dtTime, REAL34_SIZE, amNone);
+  reallocateRegister(REGISTER_X, dtTime, REAL34_SIZE_IN_BLOCKS, amNone);
 
   if(realIsZero(&x)) {
     if(real34IsZero(REGISTER_REAL34_DATA(REGISTER_Y))) {
@@ -567,7 +567,7 @@ void divShoITime(void) {
 void divTimeReal(void) {
   if(real34IsZero(REGISTER_REAL34_DATA(REGISTER_Y)) && real34IsZero(REGISTER_REAL34_DATA(REGISTER_X))) {
     if(getSystemFlag(FLAG_SPCRES)) {
-      reallocateRegister(REGISTER_X, dtTime, REAL34_SIZE, amNone);
+      reallocateRegister(REGISTER_X, dtTime, REAL34_SIZE_IN_BLOCKS, amNone);
       convertRealToReal34ResultRegister(const_NaN, REGISTER_X);
     }
     else {
@@ -580,7 +580,7 @@ void divTimeReal(void) {
 
   else if(real34IsZero(REGISTER_REAL34_DATA(REGISTER_X))) {
     if(getSystemFlag(FLAG_SPCRES)) {
-      reallocateRegister(REGISTER_X, dtTime, REAL34_SIZE, amNone);
+      reallocateRegister(REGISTER_X, dtTime, REAL34_SIZE_IN_BLOCKS, amNone);
       realToReal34((real34IsPositive(REGISTER_REAL34_DATA(REGISTER_Y)) ? const_plusInfinity : const_minusInfinity), REGISTER_REAL34_DATA(REGISTER_X));
     }
     else {
@@ -599,7 +599,7 @@ void divTimeReal(void) {
     xAngularMode = getRegisterAngularMode(REGISTER_X);
 
     if(xAngularMode == amNone) { // time / real
-      reallocateRegister(REGISTER_X, dtTime, REAL34_SIZE, amNone);
+      reallocateRegister(REGISTER_X, dtTime, REAL34_SIZE_IN_BLOCKS, amNone);
       real34Divide(REGISTER_REAL34_DATA(REGISTER_Y), &x, REGISTER_REAL34_DATA(REGISTER_X));
     }
     else { // time / angle
@@ -658,7 +658,7 @@ void divTimeTime(void) {
     real34_t b;
 
     real34Copy(REGISTER_REAL34_DATA(REGISTER_X), &b);
-    reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amNone);
+    reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
     real34Divide(REGISTER_REAL34_DATA(REGISTER_Y), &b, REGISTER_REAL34_DATA(REGISTER_X));
     setRegisterAngularMode(REGISTER_X, amNone);
   }
@@ -1237,7 +1237,7 @@ void divRealShoI(void) {
   angularMode_t yAngularMode;
 
   convertShortIntegerRegisterToReal(REGISTER_X, &x, &ctxtReal39);
-  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amNone);
+  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
 
   if(realIsZero(&x)) {
     if(real34IsZero(REGISTER_REAL34_DATA(REGISTER_Y))) {
@@ -1314,7 +1314,7 @@ void divCplxShoI(void) {
   convertShortIntegerRegisterToReal34Register(REGISTER_X, REGISTER_X);
   real34Divide(REGISTER_REAL34_DATA(REGISTER_Y), REGISTER_REAL34_DATA(REGISTER_X), REGISTER_REAL34_DATA(REGISTER_Y)); // real part
   real34Divide(REGISTER_IMAG34_DATA(REGISTER_Y), REGISTER_REAL34_DATA(REGISTER_X), REGISTER_IMAG34_DATA(REGISTER_Y)); // imaginary part
-  reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE, amNone);
+  reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
   complex34Copy(REGISTER_COMPLEX34_DATA(REGISTER_Y), REGISTER_COMPLEX34_DATA(REGISTER_X));
 }
 
@@ -1416,7 +1416,7 @@ void divRealCplx(void) {
 void divCplxReal(void) {
   real34Divide(REGISTER_REAL34_DATA(REGISTER_Y), REGISTER_REAL34_DATA(REGISTER_X), REGISTER_REAL34_DATA(REGISTER_Y)); // real part
   real34Divide(REGISTER_IMAG34_DATA(REGISTER_Y), REGISTER_REAL34_DATA(REGISTER_X), REGISTER_IMAG34_DATA(REGISTER_Y)); // imaginary part
-  reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE, amNone);
+  reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
   complex34Copy(REGISTER_COMPLEX34_DATA(REGISTER_Y), REGISTER_COMPLEX34_DATA(REGISTER_X));
 }
 

@@ -116,7 +116,7 @@ void configCommon(uint16_t idx) {
     fnKeyExit(0);                            //Clear pending key input
     fnClrMod(0);                             //Get out of NIM or BASE
     fnStoreConfig(35);                       //Store current config into R35
-    
+
     fnClearStack(0);                         //Clear stack
     fnPi(0);                                 //Put pi on X
 
@@ -160,15 +160,15 @@ void configCommon(uint16_t idx) {
     setSystemFlag  (FLAG_HPBASE);            // Set HP Base
     clearSystemFlag(FLAG_2TO10);
     clearSystemFlag(FLAG_POLAR);             // Set rectangular default
-    SetSetting     (SS_8);                   // SSTACK 8  
+    SetSetting     (SS_8);                   // SSTACK 8
     SetSetting     (ITM_CPXRES1);            // Set CPXRES
     SetSetting     (ITM_SPCRES1);            // Set SPCRES
-    setSystemFlag  (FLAG_CPXj);              // Set j     
+    setSystemFlag  (FLAG_CPXj);              // Set j
     setSystemFlag  (FLAG_SBbatV);            // Set battery voltage indicator
     fnDisplayFormatSigFig(3);                // SIG 3
-    roundingMode = RM_HALF_UP;    
+    roundingMode = RM_HALF_UP;
     fnKeysManagement(USER_MENG);
-    setSystemFlag(FLAG_FRCSRN);              // Display 
+    setSystemFlag(FLAG_FRCSRN);              // Display
 
     itemToBeAssigned = -MNU_EE;
     assignToMyMenu(6);
@@ -205,7 +205,7 @@ void configCommon(uint16_t idx) {
      fnSetGapChar(32768+ITM_NULL);                 // FPART NONE
      fnSetGapChar(49152+ITM_WCOMMA);               // RADIX WCOM
      grpGroupingGr1LeftOverflow = 1;               //IPGRP1x = 1
-     
+
      fnKeyExit(0);
      fnDrop(0);
      fnSquare(0);
@@ -291,7 +291,7 @@ void fnClrMod(uint16_t unusedButMandatoryParameter) {        //clear input buffe
     if(!checkHP) {
       fnDisplayStack(4);    //Restore to default DSTACK 4
     } else {                //Snap out of HP35 mode, and reset all setting needed for that
-      _fnSetC47(0);          
+      _fnSetC47(0);
       fnRecallConfig(35);
       lastErrorCode = 0;
     }
@@ -674,7 +674,7 @@ void fnFractionType(uint16_t unusedButMandatoryParameter) {
   #define STATE_bc       0b0001  //1
   #define STATE_abc      0b0011  //3
   #define STATE_exfr_bc  0b1100  //12
-  #define STATE_exfr_abc 0b1110  //14  
+  #define STATE_exfr_abc 0b1110  //14
   #define STATE          ((constantFractions         ? 8:0) +  \
                          (constantFractionsOn        ? 4:0) +  \
                          (getSystemFlag(FLAG_PROPFR) ? 2:0) +  \
@@ -830,7 +830,7 @@ void fnClAll(uint16_t confirmation) {
     fnClPAll(CONFIRMED);  // Clears all the programs
     fnClSigma(CONFIRMED); // Clears and releases the memory of all statistical sums
     if(savedStatisticalSumsPointer != NULL) {
-      freeWp43(savedStatisticalSumsPointer, NUMBER_OF_STATISTICAL_SUMS * REAL_SIZE);
+      freeC47Blocks(savedStatisticalSumsPointer, NUMBER_OF_STATISTICAL_SUMS * REAL_SIZE_IN_BLOCKS);
     }
 
     // Clear local registers
@@ -1120,12 +1120,12 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     void *memPtr;
 
     if(ram == NULL) {
-      ram = (dataBlock_t *)malloc(TO_BYTES(RAM_SIZE));
+      ram = (dataBlock_t *)malloc(TO_BYTES(RAM_SIZE_IN_BLOCKS));
     }
-    memset(ram, 0, TO_BYTES(RAM_SIZE));
+    memset(ram, 0, TO_BYTES(RAM_SIZE_IN_BLOCKS));
     numberOfFreeMemoryRegions = 1;
-    freeMemoryRegions[0].address = 40;                     // for reserved variables
-    freeMemoryRegions[0].sizeInBlocks = RAM_SIZE - 40 - 1; // - 1: one block for an empty program
+    freeMemoryRegions[0].blockAddress = 40;                     // for reserved variables
+    freeMemoryRegions[0].sizeInBlocks = RAM_SIZE_IN_BLOCKS - 40 - 1; // - 1: one block for an empty program
 
     if(tmpString == NULL) {
       #if defined(DMCP_BUILD)
@@ -1184,15 +1184,15 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
 
     // initialize 9 real34 reserved variables: ACC, ↑Lim, ↓Lim, FV, i%/a, NPER, PER/a, PMT, and PV
     for(int i=0; i<9; i++) {
-      real34Zero(allocWp43(REAL34_SIZE));
+      real34Zero(allocC47Blocks(REAL34_SIZE_IN_BLOCKS));
     }
 
     // initialize 1 long integer reserved variables: GRAMOD
     #if defined(OS64BIT)
-      memPtr = allocWp43(3);
+      memPtr = allocC47Blocks(3);
       ((dataBlock_t *)memPtr)->dataMaxLength = 2;
     #else // !OS64BIT
-      memPtr = allocWp43(2);
+      memPtr = allocC47Blocks(2);
       ((dataBlock_t *)memPtr)->dataMaxLength = 1;
     #endif // OS64BIT
 
@@ -1200,7 +1200,7 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     memset(globalRegister, 0, sizeof(globalRegister));
     for(calcRegister_t regist=0; regist<=LAST_GLOBAL_REGISTER; regist++) {
       setRegisterDataType(regist, dtReal34, amNone);
-      memPtr = allocWp43(REAL34_SIZE);
+      memPtr = allocC47Blocks(REAL34_SIZE_IN_BLOCKS);
       setRegisterDataPointer(regist, memPtr);
       real34Zero(memPtr);
     }
@@ -1209,7 +1209,7 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     memset(savedStackRegister, 0, sizeof(savedStackRegister));
     for(calcRegister_t regist=FIRST_SAVED_STACK_REGISTER; regist<=LAST_TEMP_REGISTER; regist++) {
       setRegisterDataType(regist, dtReal34, amNone);
-      memPtr = allocWp43(REAL34_SIZE);
+      memPtr = allocC47Blocks(REAL34_SIZE_IN_BLOCKS);
       setRegisterDataPointer(regist, memPtr);
       real34Zero(memPtr);
     }
@@ -1219,15 +1219,15 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
 
     // allocate space for the local register list
     allSubroutineLevels.numberOfSubroutineLevels = 1;
-    currentSubroutineLevelData = allocWp43(3);
-    allSubroutineLevels.ptrToSubroutineLevel0Data = TO_WP43MEMPTR(currentSubroutineLevelData);
+    currentSubroutineLevelData = allocC47Blocks(3);
+    allSubroutineLevels.ptrToSubroutineLevel0Data = TO_C47MEMPTR(currentSubroutineLevelData);
     currentReturnProgramNumber = 0;
     currentReturnLocalStep = 0;
     currentNumberOfLocalRegisters = 0; // No local register
     currentNumberOfLocalFlags = 0; // No local flags
     currentSubroutineLevel = 0;
-    currentPtrToNextLevel = WP43_NULL;
-    currentPtrToPreviousLevel = WP43_NULL;
+    currentPtrToNextLevel = C47_NULL;
+    currentPtrToPreviousLevel = C47_NULL;
     currentLocalFlags = NULL;
     currentLocalRegisters = NULL;
 
@@ -1236,19 +1236,19 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     allNamedVariables = NULL;
 
 
-    allocateNamedVariable("Mat_A", dtReal34Matrix, REAL34_SIZE + 1);
+    allocateNamedVariable("Mat_A", dtReal34Matrix, REAL34_SIZE_IN_BLOCKS + 1);
     memPtr = getRegisterDataPointer(FIRST_NAMED_VARIABLE);
     ((dataBlock_t *)memPtr)->matrixRows = 1;
     ((dataBlock_t *)memPtr)->matrixColumns = 1;
     real34Zero(memPtr + 4);
 
-    allocateNamedVariable("Mat_B", dtReal34Matrix, REAL34_SIZE + 1);
+    allocateNamedVariable("Mat_B", dtReal34Matrix, REAL34_SIZE_IN_BLOCKS + 1);
     memPtr = getRegisterDataPointer(FIRST_NAMED_VARIABLE + 1);
     ((dataBlock_t *)memPtr)->matrixRows = 1;
     ((dataBlock_t *)memPtr)->matrixColumns = 1;
     real34Zero(memPtr + 4);
 
-    allocateNamedVariable("Mat_X", dtReal34Matrix, REAL34_SIZE + 1);
+    allocateNamedVariable("Mat_X", dtReal34Matrix, REAL34_SIZE_IN_BLOCKS + 1);
     memPtr = getRegisterDataPointer(FIRST_NAMED_VARIABLE + 2);
     ((dataBlock_t *)memPtr)->matrixRows = 1;
     ((dataBlock_t *)memPtr)->matrixColumns = 1;
@@ -1331,7 +1331,7 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
 
     systemFlags = 0;
 
-    //Statusbar default setup   DATE noTIME noCR noANGLE [ADM] FRAC INT MATX TVM CARRY noSS WATCH SERIAL PRN BATVOLT noSHIFTR 
+    //Statusbar default setup   DATE noTIME noCR noANGLE [ADM] FRAC INT MATX TVM CARRY noSS WATCH SERIAL PRN BATVOLT noSHIFTR
     defaultStatusBar();
 
     configCommon(CFG_DFLT);
@@ -1406,7 +1406,7 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     numberOfUserMenus = 0;
     currentUserMenu = 0;
     userKeyLabelSize = 37/*keys*/ * 6/*states*/ * 1/*byte terminator*/ + 1/*byte sentinel*/;
-    userKeyLabel = allocWp43(TO_BLOCKS(userKeyLabelSize));
+    userKeyLabel = allocC47Blocks(TO_BLOCKS(userKeyLabelSize));
     memset(userKeyLabel,   0, TO_BYTES(TO_BLOCKS(userKeyLabelSize)));
 
     fnClearMenu(NOPARAM);
@@ -1474,7 +1474,7 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     fnKeysManagement(USER_HRESET);                                      //JM USER
     fnKeysManagement(USER_ARESET);                                      //JM USER
     fnKeysManagement(USER_MRESET);                                      //JM USER
-    fnKeysManagement(USER_MENG);                                        //JM USER    
+    fnKeysManagement(USER_MENG);                                        //JM USER
     #if !defined(TESTSUITE_BUILD)
       showSoftmenu(-MNU_MyMenu);                                   //this removes the false start on MyMenu error
     #endif // !TESTSUITE_BUILD
@@ -1505,7 +1505,7 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     //allocateLocalRegisters(3);
     //fnSetFlag(FIRST_LOCAL_REGISTER+0);
     //fnSetFlag(NUMBER_OF_GLOBAL_FLAGS+2);
-    //reallocateRegister(FIRST_LOCAL_REGISTER+0, dtReal34, REAL34_SIZE, RT_REAL);
+    //reallocateRegister(FIRST_LOCAL_REGISTER+0, dtReal34, REAL34_SIZE_IN_BLOCKS, RT_REAL);
     //stringToReal34("5.555", REGISTER_REAL34_DATA(FIRST_LOCAL_REGISTER));
 
     //strcpy(tmpString, "Pure ASCII string requiring 38 bytes!");

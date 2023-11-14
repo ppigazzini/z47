@@ -48,7 +48,7 @@ void fnCxToRe(uint16_t unusedButMandatoryParameter) {
     if(!saveLastX()) {
     return;
   }
-    reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amNone);
+    reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
 
     setSystemFlag(FLAG_ASLIFT);
     if(getComplexRegisterPolarMode(REGISTER_L)) { // polar mode
@@ -56,7 +56,7 @@ void fnCxToRe(uint16_t unusedButMandatoryParameter) {
         tempAngle = getComplexRegisterAngularMode(REGISTER_L);
       }
       liftStack();
-      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amNone);
+      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
       real34RectangularToPolar(REGISTER_REAL34_DATA(REGISTER_L), REGISTER_IMAG34_DATA(REGISTER_L), REGISTER_REAL34_DATA(REGISTER_Y), REGISTER_REAL34_DATA(REGISTER_X)); // X in radians
       convertAngle34FromTo(REGISTER_REAL34_DATA(REGISTER_X), amRadian, tempAngle);
       setRegisterAngularMode(REGISTER_X, tempAngle);
@@ -65,7 +65,7 @@ void fnCxToRe(uint16_t unusedButMandatoryParameter) {
     else { // rectangular mode
       real34Copy(REGISTER_REAL34_DATA(REGISTER_L), REGISTER_REAL34_DATA(REGISTER_X));
       liftStack();
-      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amNone);
+      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
       real34Copy(REGISTER_IMAG34_DATA(REGISTER_L), REGISTER_REAL34_DATA(REGISTER_X));
       temporaryInformation = TI_RE_IM;
     }

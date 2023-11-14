@@ -44,7 +44,7 @@
   // Helper macros to get register data in the appropriate format
   #define REGISTER_DATA(a)                                       ((dataBlock_t *)(getRegisterDataPointer(a)))
   #define REGISTER_REAL34_DATA(a)                                ((real34_t    *)(getRegisterDataPointer(a)))
-  #define REGISTER_IMAG34_DATA(a)                                ((real34_t    *)(getRegisterDataPointer(a) + REAL34_SIZE))
+  #define REGISTER_IMAG34_DATA(a)                                ((real34_t    *)(getRegisterDataPointer(a) + REAL34_SIZE_IN_BLOCKS))
   #define REGISTER_COMPLEX34_DATA(a)                             ((complex34_t *)(getRegisterDataPointer(a)))
 
   #define REGISTER_STRING_DATA(a)                                ((char        *)(getRegisterDataPointer(a) + 1)) // Memory pointer to the string of a register
@@ -77,7 +77,7 @@
    * \param[in] regist Register number
    * \return Number of blocks
    */
-  uint16_t       getRegisterMaxDataLength        (calcRegister_t regist);
+  uint16_t       getRegisterMaxDataLengthInBlocks(calcRegister_t regist);
 
   /**
    * Sets the data type of a register.
@@ -174,7 +174,7 @@
    *         plus 1 block holding the max size
    *         of the string.
    */
-  uint16_t       getRegisterFullSize             (calcRegister_t regist);
+  uint16_t       getRegisterFullSizeInBlocks             (calcRegister_t regist);
 
   /**
    * Clears a register.

@@ -505,7 +505,7 @@ typedef struct {
         ptr += strlen(ptr);
         strcpy(ptr, " = ");
         ptr += strlen(ptr);
-        realToString(statisticalSumsPointer + REAL_SIZE * sum, tmpString);
+        realToString(statisticalSumsPointer + REAL_SIZE_IN_BLOCKS * sum, tmpString);
         if(strchr(tmpString, '.') == NULL && strchr(tmpString, 'E') == NULL) {
           strcat(tmpString, ".");
         }
@@ -1771,7 +1771,7 @@ void execTimerApp(uint16_t timerType) {
     char padding[20];                                          //JM
     functionName[0] = 0;
     showFunctionNameArg = NULL;
-        
+
     //FIX //REMOVE DISPLAYING TEMP STRING as in C43 the tmpstring does NOT show the last keystroke or whatever this tempstr is needed for. It gets executed from timers
     //if(tmpString[0] != 0) {
     //  strcpy(functionName,tmpString);
@@ -1813,7 +1813,7 @@ void execTimerApp(uint16_t timerType) {
         }
       }
       else if(item == -MNU_DYNAMIC) {
-        if(arg != NULL) stringAppend(functionName,arg);       
+        if(arg != NULL) stringAppend(functionName,arg);
         showFunctionNameArg = (char *)arg;                        // Needed when executing a user menu from a long pressed key
       }
       else if(item >= ITM_X_P1 && item <= ITM_X_g6) {
@@ -1865,7 +1865,7 @@ void execTimerApp(uint16_t timerType) {
   void clearRect(uint32_t g_line_x, uint32_t g_line_y) {
     uint32_t fcol, frow;
     getGlyphBounds(" ", 0, &standardFont, &fcol, &frow);
-    lcd_fill_rect((uint32_t) g_line_x, (uint32_t) g_line_y, SCREEN_WIDTH-g_line_x-1, frow, LCD_SET_VALUE);   
+    lcd_fill_rect((uint32_t) g_line_x, (uint32_t) g_line_y, SCREEN_WIDTH-g_line_x-1, frow, LCD_SET_VALUE);
   }
 
 
@@ -2145,7 +2145,7 @@ void execTimerApp(uint16_t timerType) {
          showString(tmpString, fontForShortInteger, SCREEN_WIDTH - stringWidth(tmpString, fontForShortInteger, false, true), Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(REGISTER_Y - REGISTER_X) + (fontForShortInteger == &standardFont ? 6 : 0), vmNormal, false, true);
          copySourceRegisterToDestRegister(TEMP_REGISTER_1,REGISTER_Y);
        }
-       if((displayStack == 1 && calcMode != CM_NIM) || displayStack == 2){ //handle reg pos Z 
+       if((displayStack == 1 && calcMode != CM_NIM) || displayStack == 2){ //handle reg pos Z
          copySourceRegisterToDestRegister(REGISTER_Z, TEMP_REGISTER_1);
          copySourceRegisterToDestRegister(Register_X, REGISTER_Z);
          if(displayStack == 2) {
@@ -2197,11 +2197,11 @@ void execTimerApp(uint16_t timerType) {
 
     #ifdef DMCP_BUILD
       keyBuffer_pop();                                            // This causes key updates while the longer time processing register updates happen
-      if( !(regist == REGISTER_X || regist == REGISTER_Y) && 
+      if( !(regist == REGISTER_X || regist == REGISTER_Y) &&
           !getSystemFlag(FLAG_USB) && // (LongPressM == RB_M1234 || LongPressM == RB_M124) &&   // This section added to automatically, when in M1234 & when on battery and low processor, change to skip long processing register printing
           !emptyKeyBuffer() &&
           key_empty() == 1
-          ) {  
+          ) {
         return;
       }
       //if(!key_empty()) return;
@@ -2311,7 +2311,7 @@ void execTimerApp(uint16_t timerType) {
         #if(SHOW_MEMORY_STATUS == 1)
           char string[1000];
 
-          sprintf(string, "%" PRId32 " bytes free (%" PRId32 " region%s), C43 %" PRIu32 " bytes, GMP %" PRIu32 " bytes -> should always be 0", getFreeRamMemory(), numberOfFreeMemoryRegions, numberOfFreeMemoryRegions==1 ? "" : "s", (uint32_t)TO_BYTES((uint64_t)wp43MemInBlocks), (uint32_t)gmpMemInBytes);
+          sprintf(string, "%" PRId32 " bytes free (%" PRId32 " region%s), C43 %" PRIu32 " bytes, GMP %" PRIu32 " bytes -> should always be 0", getFreeRamMemory(), numberOfFreeMemoryRegions, numberOfFreeMemoryRegions==1 ? "" : "s", (uint32_t)TO_BYTES((uint64_t)c47MemInBlocks), (uint32_t)gmpMemInBytes);
           stringToUtf8(string, (uint8_t *)tmpStr);
           gtk_label_set_label(GTK_LABEL(lblMemoryStatus), tmpStr);
           gtk_widget_show(lblMemoryStatus);
@@ -2547,7 +2547,7 @@ void execTimerApp(uint16_t timerType) {
         const int16_t baseY = Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X + ((temporaryInformation == TI_VIEW_REGISTER && regist == REGISTER_T) ? 0 : (getRegisterDataType(REGISTER_X) == dtReal34Matrix || getRegisterDataType(REGISTER_X) == dtComplex34Matrix) ? 4 - displayStack : 0));
         calcRegister_t origRegist = regist;
         if(temporaryInformation == TI_VIEW_REGISTER && regist == REGISTER_T) {
-          if(currentViewRegister >= FIRST_RESERVED_VARIABLE && currentViewRegister < LAST_RESERVED_VARIABLE && allReservedVariables[currentViewRegister - FIRST_RESERVED_VARIABLE].header.pointerToRegisterData == WP43_NULL) {
+          if(currentViewRegister >= FIRST_RESERVED_VARIABLE && currentViewRegister < LAST_RESERVED_VARIABLE && allReservedVariables[currentViewRegister - FIRST_RESERVED_VARIABLE].header.pointerToRegisterData == C47_NULL) {
             copySourceRegisterToDestRegister(currentViewRegister, TEMP_REGISTER_1);
             regist = TEMP_REGISTER_1;
           }
@@ -3640,7 +3640,7 @@ void execTimerApp(uint16_t timerType) {
           if(temporaryInformation == TI_COPY_FROM_SHOW && regist == REGISTER_X) {
             _fnShowRecallTI(prefix, &prefixWidth);
           }
-          
+
           else if(temporaryInformation == TI_VIEW_REGISTER && origRegist == REGISTER_T) {
             viewRegName(prefix, &prefixWidth);
           }
@@ -4207,7 +4207,7 @@ void execTimerApp(uint16_t timerType) {
         #endif // PC_BUILD &&MONITOR_CLRSCR
 
         if(calcMode != CM_NIM) refreshNIMdone = false;
-        
+
         if(calcMode == CM_NORMAL && screenUpdatingMode != SCRUPD_AUTO && temporaryInformation == TI_SHOWNOTHING) {
           goto RETURN_NORMAL;
         }
@@ -4262,7 +4262,7 @@ void execTimerApp(uint16_t timerType) {
             if(yMultiLineEdOffset == 3) {
               refreshRegisterLine(REGISTER_T);
               refreshRegisterLine(REGISTER_Z);
-              refreshRegisterLine(REGISTER_Y);              
+              refreshRegisterLine(REGISTER_Y);
             }
             refreshRegisterLine(REGISTER_X);
           }
@@ -4364,7 +4364,7 @@ void execTimerApp(uint16_t timerType) {
 
         #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
           printf(">>> END of _refreshNormalScreen calcMode=%d previousCalcMode=%d screenUpdatingMode=%d\n", calcMode, previousCalcMode, screenUpdatingMode);    //JMYY
-        #endif // PC_BUILD &&MONITOR_CLRSCR  
+        #endif // PC_BUILD &&MONITOR_CLRSCR
   }
 
 

@@ -116,7 +116,7 @@ void invertLonI(void) {
 
       realDivide(const_1, &reX, &reX, &ctxtReal39);
 
-      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amNone);
+      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
       convertRealToReal34ResultRegister(&reX, REGISTER_X);
     }
 

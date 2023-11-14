@@ -75,7 +75,7 @@ void curtLonI(void) {
     real_t x;
 
     convertLongIntegerRegisterToReal(REGISTER_X, &x, &ctxtReal39);
-    reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amNone);
+    reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
     if(realIsPositive(&x)) {
       PowerReal(&x, const_1on3, &x, &ctxtReal39);
     }

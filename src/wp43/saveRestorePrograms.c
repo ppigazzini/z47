@@ -66,7 +66,7 @@
 static void _addSpaceAfterPrograms(uint16_t size) {
   if(freeProgramBytes < size) {
     uint8_t *oldBeginOfProgramMemory = beginOfProgramMemory;
-    uint32_t programSizeInBlocks = RAM_SIZE - freeMemoryRegions[numberOfFreeMemoryRegions - 1].address - freeMemoryRegions[numberOfFreeMemoryRegions - 1].sizeInBlocks;
+    uint32_t programSizeInBlocks = RAM_SIZE_IN_BLOCKS - freeMemoryRegions[numberOfFreeMemoryRegions - 1].blockAddress - freeMemoryRegions[numberOfFreeMemoryRegions - 1].sizeInBlocks;
     uint32_t newProgramSizeInBlocks = TO_BLOCKS(TO_BYTES(programSizeInBlocks) - freeProgramBytes + size);
     freeProgramBytes      += TO_BYTES(newProgramSizeInBlocks - programSizeInBlocks);
     resizeProgramMemory(newProgramSizeInBlocks);
@@ -174,12 +174,12 @@ void fnExportProgram(uint16_t label) {
     // Find program boundaries
     const uint16_t savedCurrentLocalStepNumber = currentLocalStepNumber;
     uint16_t savedCurrentProgramNumber = currentProgramNumber;
-    
+
     // no argument – need to save current program
     if(label == 0 && !tam.alpha && tam.digitsSoFar == 0) {
         // find the first global label in the current program
         uint16_t currentLabel = 0;
-        strcpy(tmpStringLabelOrVariableName, "untitled");       
+        strcpy(tmpStringLabelOrVariableName, "untitled");
         while (currentLabel < numberOfLabels) {
           if (labelList[currentLabel].program == currentProgramNumber) {
             break;
@@ -268,12 +268,12 @@ void fnSaveProgram(uint16_t label) {
     // Find program boundaries
     const uint16_t savedCurrentLocalStepNumber = currentLocalStepNumber;
     uint16_t savedCurrentProgramNumber = currentProgramNumber;
-    
+
     // no argument – need to save current program
     if(label == 0 && !tam.alpha && tam.digitsSoFar == 0) {
         // find the first global label in the current program
         uint16_t currentLabel = 0;
-        strcpy(tmpStringLabelOrVariableName, "untitled");       
+        strcpy(tmpStringLabelOrVariableName, "untitled");
         while (currentLabel < numberOfLabels) {
           if (labelList[currentLabel].program == currentProgramNumber) {
             break;

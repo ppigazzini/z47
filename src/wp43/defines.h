@@ -75,7 +75,7 @@
 
 #define TEXT_MULTILINE_EDIT         // 5 line buffer
 #define MAXLINES 5                  // numner of equavalent lines in small font maximum that is allowed in entry. Entry is hardlocked to multiline 3 lines bif font, but this is still the limit. WP has 2 lines fixed small font.
-#define allowShowDigits false       // true to allow typing of double digits to get to register number nn in SHOW.      
+#define allowShowDigits false       // true to allow typing of double digits to get to register number nn in SHOW.
 
 #define LOW_GRAPH_ACC                                     //Lowered graph accuracy for EQN graphs
 //#undef LOW_GRAPH_ACC
@@ -107,7 +107,7 @@
   #undef     MONITOR_CLRSCR
   #define    PC_BUILD_TELLTALE            //JM verbose on PC: jm_show_comment
   #undef     PC_BUILD_TELLTALE
-   
+
   #define    VERBOSE_REGISTERS
   #undef     VERBOSE_REGISTERS
 
@@ -414,7 +414,7 @@
 #define ERROR_CANNOT_WRITE_FILE                   55
 #define ERROR_OLD_ITEM_TO_REPLACE                 56
 
-//Status output messages for time consuming tasks, to keep user informed 
+//Status output messages for time consuming tasks, to keep user informed
 #define LOADING_STATE_FILE                        57
 #define SAVING_STATE_FILE                         58
 #define RESTORING_STATS                           59
@@ -1157,33 +1157,33 @@ typedef enum {
 
 #define NUMBER_OF_STATISTICAL_SUMS                28
 #define SIGMA_N      ((real_t *)(statisticalSumsPointer)) // could be a 32 bit unsigned integer
-#define SIGMA_X      ((real_t *)(statisticalSumsPointer + REAL_SIZE * SUM_X     )) // could be a real34
-#define SIGMA_Y      ((real_t *)(statisticalSumsPointer + REAL_SIZE * SUM_Y     )) // could be a real34
-#define SIGMA_X2     ((real_t *)(statisticalSumsPointer + REAL_SIZE * SUM_X2    ))
-#define SIGMA_X2Y    ((real_t *)(statisticalSumsPointer + REAL_SIZE * SUM_X2Y   ))
-#define SIGMA_Y2     ((real_t *)(statisticalSumsPointer + REAL_SIZE * SUM_Y2    ))
-#define SIGMA_XY     ((real_t *)(statisticalSumsPointer + REAL_SIZE * SUM_XY    ))
-#define SIGMA_lnXlnY ((real_t *)(statisticalSumsPointer + REAL_SIZE * SUM_lnXlnY))
-#define SIGMA_lnX    ((real_t *)(statisticalSumsPointer + REAL_SIZE * SUM_lnX   ))
-#define SIGMA_ln2X   ((real_t *)(statisticalSumsPointer + REAL_SIZE * SUM_ln2X  ))
-#define SIGMA_YlnX   ((real_t *)(statisticalSumsPointer + REAL_SIZE * SUM_YlnX  ))
-#define SIGMA_lnY    ((real_t *)(statisticalSumsPointer + REAL_SIZE * SUM_lnY   ))
-#define SIGMA_ln2Y   ((real_t *)(statisticalSumsPointer + REAL_SIZE * SUM_ln2Y  ))
-#define SIGMA_XlnY   ((real_t *)(statisticalSumsPointer + REAL_SIZE * SUM_XlnY  ))
-#define SIGMA_X2lnY  ((real_t *)(statisticalSumsPointer + REAL_SIZE * SUM_X2lnY ))
-#define SIGMA_lnYonX ((real_t *)(statisticalSumsPointer + REAL_SIZE * SUM_lnYonX))
-#define SIGMA_X2onY  ((real_t *)(statisticalSumsPointer + REAL_SIZE * SUM_X2onY ))
-#define SIGMA_1onX   ((real_t *)(statisticalSumsPointer + REAL_SIZE * SUM_1onX  ))
-#define SIGMA_1onX2  ((real_t *)(statisticalSumsPointer + REAL_SIZE * SUM_1onX2 ))
-#define SIGMA_XonY   ((real_t *)(statisticalSumsPointer + REAL_SIZE * SUM_XonY  ))
-#define SIGMA_1onY   ((real_t *)(statisticalSumsPointer + REAL_SIZE * SUM_1onY  ))
-#define SIGMA_1onY2  ((real_t *)(statisticalSumsPointer + REAL_SIZE * SUM_1onY2 ))
-#define SIGMA_X3     ((real_t *)(statisticalSumsPointer + REAL_SIZE * SUM_X3    ))
-#define SIGMA_X4     ((real_t *)(statisticalSumsPointer + REAL_SIZE * SUM_X4    ))
-#define SIGMA_XMIN   ((real_t *)(statisticalSumsPointer + REAL_SIZE * SUM_XMIN  )) // could be a real34
-#define SIGMA_XMAX   ((real_t *)(statisticalSumsPointer + REAL_SIZE * SUM_XMAX  )) // could be a real34
-#define SIGMA_YMIN   ((real_t *)(statisticalSumsPointer + REAL_SIZE * SUM_YMIN  )) // could be a real34
-#define SIGMA_YMAX   ((real_t *)(statisticalSumsPointer + REAL_SIZE * SUM_YMAX  )) // could be a real34
+#define SIGMA_X      ((real_t *)(statisticalSumsPointer + REAL_SIZE_IN_BLOCKS * SUM_X     )) // could be a real34
+#define SIGMA_Y      ((real_t *)(statisticalSumsPointer + REAL_SIZE_IN_BLOCKS * SUM_Y     )) // could be a real34
+#define SIGMA_X2     ((real_t *)(statisticalSumsPointer + REAL_SIZE_IN_BLOCKS * SUM_X2    ))
+#define SIGMA_X2Y    ((real_t *)(statisticalSumsPointer + REAL_SIZE_IN_BLOCKS * SUM_X2Y   ))
+#define SIGMA_Y2     ((real_t *)(statisticalSumsPointer + REAL_SIZE_IN_BLOCKS * SUM_Y2    ))
+#define SIGMA_XY     ((real_t *)(statisticalSumsPointer + REAL_SIZE_IN_BLOCKS * SUM_XY    ))
+#define SIGMA_lnXlnY ((real_t *)(statisticalSumsPointer + REAL_SIZE_IN_BLOCKS * SUM_lnXlnY))
+#define SIGMA_lnX    ((real_t *)(statisticalSumsPointer + REAL_SIZE_IN_BLOCKS * SUM_lnX   ))
+#define SIGMA_ln2X   ((real_t *)(statisticalSumsPointer + REAL_SIZE_IN_BLOCKS * SUM_ln2X  ))
+#define SIGMA_YlnX   ((real_t *)(statisticalSumsPointer + REAL_SIZE_IN_BLOCKS * SUM_YlnX  ))
+#define SIGMA_lnY    ((real_t *)(statisticalSumsPointer + REAL_SIZE_IN_BLOCKS * SUM_lnY   ))
+#define SIGMA_ln2Y   ((real_t *)(statisticalSumsPointer + REAL_SIZE_IN_BLOCKS * SUM_ln2Y  ))
+#define SIGMA_XlnY   ((real_t *)(statisticalSumsPointer + REAL_SIZE_IN_BLOCKS * SUM_XlnY  ))
+#define SIGMA_X2lnY  ((real_t *)(statisticalSumsPointer + REAL_SIZE_IN_BLOCKS * SUM_X2lnY ))
+#define SIGMA_lnYonX ((real_t *)(statisticalSumsPointer + REAL_SIZE_IN_BLOCKS * SUM_lnYonX))
+#define SIGMA_X2onY  ((real_t *)(statisticalSumsPointer + REAL_SIZE_IN_BLOCKS * SUM_X2onY ))
+#define SIGMA_1onX   ((real_t *)(statisticalSumsPointer + REAL_SIZE_IN_BLOCKS * SUM_1onX  ))
+#define SIGMA_1onX2  ((real_t *)(statisticalSumsPointer + REAL_SIZE_IN_BLOCKS * SUM_1onX2 ))
+#define SIGMA_XonY   ((real_t *)(statisticalSumsPointer + REAL_SIZE_IN_BLOCKS * SUM_XonY  ))
+#define SIGMA_1onY   ((real_t *)(statisticalSumsPointer + REAL_SIZE_IN_BLOCKS * SUM_1onY  ))
+#define SIGMA_1onY2  ((real_t *)(statisticalSumsPointer + REAL_SIZE_IN_BLOCKS * SUM_1onY2 ))
+#define SIGMA_X3     ((real_t *)(statisticalSumsPointer + REAL_SIZE_IN_BLOCKS * SUM_X3    ))
+#define SIGMA_X4     ((real_t *)(statisticalSumsPointer + REAL_SIZE_IN_BLOCKS * SUM_X4    ))
+#define SIGMA_XMIN   ((real_t *)(statisticalSumsPointer + REAL_SIZE_IN_BLOCKS * SUM_XMIN  )) // could be a real34
+#define SIGMA_XMAX   ((real_t *)(statisticalSumsPointer + REAL_SIZE_IN_BLOCKS * SUM_XMAX  )) // could be a real34
+#define SIGMA_YMIN   ((real_t *)(statisticalSumsPointer + REAL_SIZE_IN_BLOCKS * SUM_YMIN  )) // could be a real34
+#define SIGMA_YMAX   ((real_t *)(statisticalSumsPointer + REAL_SIZE_IN_BLOCKS * SUM_YMAX  )) // could be a real34
 
 #define MAX_NUMBER_OF_GLYPHS_IN_STRING           508 //WP=196: Change to 512 less 3, Also change error message 33, and AIM_BUFFER_LENGTH, and MAXLINES
 #define NUMBER_OF_GLYPH_ROWS                     250  //Used in the font browser application
@@ -1200,9 +1200,8 @@ typedef enum {
 #define KEY_AUTOREPEAT_FIRST_PERIOD              400 // in milliseconds
 #define KEY_AUTOREPEAT_PERIOD                    200 // in milliseconds
 #define TIMER_APP_PERIOD                         100 // in milliseconds
-#define RAM_SIZE                               16384 // 16384 blocks = 65536 bytes  MUST be a multiple of 4 and MUST be <= 262140 (not 262144)
 #define RAM_SIZE_IN_BLOCKS                     16384 // 16384 blocks = 65536 bytes  MUST be a multiple of 4 and MUST be <= 262140 (not 262144)
-//#define RAM_SIZE                                3072 // 16384 blocks = 65536 bytes  MUST be a multiple of 4 and MUST be <= 262140 (not 262144)
+//#define RAM_SIZE_IN_BLOCKS                      3072 // 3072 blocks = 12288 bytes  MUST be a multiple of 4 and MUST be <= 262140 (not 262144)
 
 #define CONFIG_SIZE            TO_BLOCKS(sizeof(dtConfigDescriptor_t))
 
@@ -1356,15 +1355,15 @@ typedef enum {
 #define flipSystemFlag(sf)                   { systemFlags ^=  ((uint64_t)1 << (sf & 0x3fff)); systemFlagAction(sf, 2); }
 #define shortIntegerIsZero(op)               (((*(uint64_t *)(op)) == 0) || (shortIntegerMode == SIM_SIGNMT && (((*(uint64_t *)(op)) == 1u<<((uint64_t)shortIntegerWordSize-1)))))
 #define getStackTop()                        (getSystemFlag(FLAG_SSIZE8) ? REGISTER_D : REGISTER_T)
-#define freeRegisterData(regist)             freeWp43((void *)getRegisterDataPointer(regist), getRegisterFullSize(regist))
+#define freeRegisterData(regist)             freeC47Blocks((void *)getRegisterDataPointer(regist), getRegisterFullSizeInBlocks(regist))
 #define storeToDtConfigDescriptor(config)    (configToStore->config = config)
 #define recallFromDtConfigDescriptor(config) (config = configToRecall->config)
 #define getRecalledSystemFlag(sf)            ((configToRecall->systemFlags &   ((uint64_t)1 << (sf & 0x3fff))) != 0)
 #define TO_BLOCKS(n)                         (((n) + 3) >> 2)
 #define TO_BYTES(n)                          ((n) << 2)
-#define WP43_NULL                            65535 // NULL pointer
-#define TO_PCMEMPTR(p)                       ((void *)((p) == WP43_NULL ? NULL : ram + (p)))
-#define TO_WP43MEMPTR(p)                     ((p) == NULL ? WP43_NULL : (uint16_t)((dataBlock_t *)(p) - ram))
+#define C47_NULL                             65535 // NULL pointer
+#define TO_PCMEMPTR(p)                       ((void *)((p) == C47_NULL ? NULL : ram + (p)))
+#define TO_C47MEMPTR(p)                      ((p) == NULL ? C47_NULL : (uint16_t)((dataBlock_t *)(p) - ram))
 #define min(a,b)                             ((a)<(b)?(a):(b))
 #define max(a,b)                             ((a)>(b)?(a):(b))
 #define rmd(n, d)                            ((n)%(d))                                                       // rmd(n,d) = n - d*idiv(n,d)   where idiv is the division with decimal part truncature
@@ -1581,7 +1580,7 @@ typedef enum {
                                   printf(" _mp_size=%dlimbs=", abs((lint)->_mp_size)); \
                                   printf("%lubytes", LIMB_SIZE * abs((lint)->_mp_size)); \
                                   printf(" PCaddress=%p", (lint)->_mp_d); \
-                                    printf(" 43address=%d", TO_WP43MEMPTR((lint)->_mp_d)); \
+                                    printf(" 47address=%d", TO_C47MEMPTR((lint)->_mp_d)); \
                                   printf("\n"); \
                                 }
 

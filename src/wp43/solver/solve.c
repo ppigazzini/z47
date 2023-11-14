@@ -273,7 +273,7 @@ void fnSolveVar(uint16_t unusedButMandatoryParameter) {
   }
 
 static void _executeSolver(calcRegister_t variable, const real34_t *val, real34_t *res) {
-  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amNone);
+  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
   real34Copy(val, REGISTER_REAL34_DATA(REGISTER_X));
   if(currentSolverStatus & SOLVER_STATUS_TVM_APPLICATION) {
     copySourceRegisterToDestRegister(REGISTER_X, variable);

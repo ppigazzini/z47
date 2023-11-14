@@ -153,8 +153,8 @@ printf("swapped\n");
       REG_Y = REGISTER_X;
     }
 
-    reallocateRegister(REG_X, dtReal34, REAL34_SIZE, amNone);
-    reallocateRegister(REG_Y, dtReal34, REAL34_SIZE, amNone);
+    reallocateRegister(REG_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+    reallocateRegister(REG_Y, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
 
     convertRealToReal34ResultRegister(&x, REG_X);
     convertRealToReal34ResultRegister(&y, REG_Y);
