@@ -585,7 +585,7 @@ void allocateLocalRegisters(uint16_t numberOfRegistersToAllocate) {
           } else isMemIssue = true;
         }
         else if((lastIntegerBase == 0) && (Input_Default == ID_CPXDP)) {                //JM defaults vv
-          void *newMem = allocC47Blocks(TO_BYTES(COMPLEX34_SIZE_IN_BLOCKS));
+          void *newMem = allocC47Blocks(COMPLEX34_SIZE_IN_BLOCKS);
           if(newMem) {
             setRegisterDataType(r, dtComplex34, amNone);
             if(getSystemFlag(FLAG_POLAR)) {
