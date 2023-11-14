@@ -101,7 +101,7 @@
 
     if(checkParamLogistic(&val, &mu, &s)) {
       WP34S_Pdf_Logit(&val, &mu, &s, &ans, &ctxtReal39);
-      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amNone);
+      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
       convertRealToReal34ResultRegister(&ans, REGISTER_X);
     }
 
@@ -117,7 +117,7 @@
 
     if(checkParamLogistic(&val, &mu, &s)) {
       WP34S_Cdf_Logit(&val, &mu, &s, &ans, &ctxtReal39);
-      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amNone);
+      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
       convertRealToReal34ResultRegister(&ans, REGISTER_X);
     }
 
@@ -133,7 +133,7 @@
 
     if(checkParamLogistic(&val, &mu, &s)) {
       WP34S_Cdfu_Logit(&val, &mu, &s, &ans, &ctxtReal39);
-      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amNone);
+      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
       convertRealToReal34ResultRegister(&ans, REGISTER_X);
     }
 
@@ -159,7 +159,7 @@
         return;
       }
       WP34S_Qf_Logit(&val, &mu, &s, &ans, &ctxtReal39);
-      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amNone);
+      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
       convertRealToReal34ResultRegister(&ans, REGISTER_X);
     }
 

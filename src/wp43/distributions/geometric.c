@@ -105,7 +105,7 @@
 
     if(checkParamGeometric(&val, &prob)) {
       WP34S_Pdf_Geom(&val, &prob, &ans, &ctxtReal39);
-      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amNone);
+      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
       convertRealToReal34ResultRegister(&ans, REGISTER_X);
     }
 
@@ -122,7 +122,7 @@
 
     if(checkParamGeometric(&val, &prob)) {
       WP34S_Cdf_Geom(&val, &prob, &ans, &ctxtReal39);
-      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amNone);
+      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
       convertRealToReal34ResultRegister(&ans, REGISTER_X);
     }
 
@@ -139,7 +139,7 @@
 
     if(checkParamGeometric(&val, &prob)) {
       WP34S_Cdfu_Geom(&val, &prob, &ans, &ctxtReal39);
-      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amNone);
+      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
       convertRealToReal34ResultRegister(&ans, REGISTER_X);
     }
 
@@ -166,7 +166,7 @@
         return;
       }
       WP34S_Qf_Geom(&val, &prob, &ans, &ctxtReal39);
-      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amNone);
+      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
       convertRealToReal34ResultRegister(&ans, REGISTER_X);
     }
 

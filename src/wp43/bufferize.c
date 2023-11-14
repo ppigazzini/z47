@@ -236,7 +236,7 @@ uint16_t convertItemToSubOrSup(uint16_t item, int16_t subOrSup) {
           addChar[0]=0;
           if(addChar0[0] == 0) {
             stringAppend(addChar,indexOfItems[item].itemSoftmenuName);
-            if ((indexOfItems[item].itemSoftmenuName[0]!=0) && (indexOfItems[item].status & EIM_STATUS) == EIM_ENABLED) {              
+            if ((indexOfItems[item].itemSoftmenuName[0]!=0) && (indexOfItems[item].status & EIM_STATUS) == EIM_ENABLED) {
               stringAppend(addChar + stringByteLength(addChar), "()");
               jj = 1;
             }
@@ -1488,7 +1488,7 @@ uint16_t convertItemToSubOrSup(uint16_t item, int16_t subOrSup) {
       case ITM_EXIT1: {
         if(changeFractionModeOnENTER) {
           setSystemFlag(FLAG_FRACT);
-          changeFractionModeOnENTER = false;  
+          changeFractionModeOnENTER = false;
         }
         addItemToNimBuffer_exit:
         done = true;
@@ -1885,8 +1885,8 @@ uint16_t convertItemToSubOrSup(uint16_t item, int16_t subOrSup) {
         if(lastErrorCode == 0) {
           showFunctionName(item, 1000, NULL); // 1000ms = 1s
           // Fix: removed "showFunctionName(item, 1000, "SF:Q"); // 1000ms = 1s" and replaced with "keyActionProcessed = false;"
-          //      removed the local action, just let it go back unprocessed, 
-          //      and the showFunctionName is called after this in keyboard.c, with the correct parameters.          
+          //      removed the local action, just let it go back unprocessed,
+          //      and the showFunctionName is called after this in keyboard.c, with the correct parameters.
           // ReFix: Removed previous fix "keyActionProcessed = false;" and restored "showFunctionName" but with NULL parameter.
         }
       }
@@ -2399,22 +2399,22 @@ uint16_t convertItemToSubOrSup(uint16_t item, int16_t subOrSup) {
           else if(nimNumberPart == NP_REAL_FLOAT_PART || nimNumberPart == NP_REAL_EXPONENT) {
 
               if(Input_Default == ID_CPXDP) {                                         //JM Input default type
-                reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE, amNone); //JM Input default type
+                reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone); //JM Input default type
                 stringToReal34(aimBuffer, REGISTER_REAL34_DATA(REGISTER_X));          //JM Input default type
                 stringToReal34("0", REGISTER_IMAG34_DATA(REGISTER_X));                //JM Input default type
               }                                                                       //JM Input default type
               else {                                                                  //JM Input default type
-              reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amNone);
+              reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
               stringToReal34(aimBuffer, REGISTER_REAL34_DATA(REGISTER_X));
               }                                                                       //JM Input default type
 
           }
           else if(nimNumberPart == NP_FRACTION_DENOMINATOR) {
-            reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amNone);
+            reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
             closeNimWithFraction(REGISTER_REAL34_DATA(REGISTER_X));
           }
           else if(nimNumberPart == NP_COMPLEX_INT_PART || nimNumberPart == NP_COMPLEX_FLOAT_PART || nimNumberPart == NP_COMPLEX_EXPONENT) {
-            reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE, amNone);
+            reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
             closeNimWithComplex(REGISTER_REAL34_DATA(REGISTER_X), REGISTER_IMAG34_DATA(REGISTER_X));
           }
           else {

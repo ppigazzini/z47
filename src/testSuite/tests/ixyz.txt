@@ -81,5 +81,5 @@ Out: EC=0  FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.25" RX=Real:"0.3977567783173558368
 ;=======================================
 ; Ixyz(String) --> Error 24
 ;=======================================
-In:  WS=64 FL_CPXRES=0 FL_ASLIFT=0 RX=Stri:"WP43"
-Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=Stri:"WP43"
+In:  WS=64 FL_CPXRES=0 FL_ASLIFT=0 RX=Stri:"C47"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=Stri:"C47"

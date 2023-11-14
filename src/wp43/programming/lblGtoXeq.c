@@ -201,16 +201,16 @@ void fnExecute(uint16_t label) {
   if(programRunStop == PGM_RUNNING) {
     dataBlock_t *_currentSubroutineLevelData = currentSubroutineLevelData;
     allSubroutineLevels.numberOfSubroutineLevels += 1;
-    currentSubroutineLevelData = allocWp43(3);
+    currentSubroutineLevelData = allocC47Blocks(3);
     if(currentSubroutineLevelData) {
-      _currentSubroutineLevelData[2].ptrToNextLevel = TO_WP43MEMPTR(currentSubroutineLevelData);
+      _currentSubroutineLevelData[2].ptrToNextLevel = TO_C47MEMPTR(currentSubroutineLevelData);
       currentReturnProgramNumber = currentProgramNumber;
       currentReturnLocalStep = currentLocalStepNumber;
       currentNumberOfLocalRegisters = 0; // No local register
       currentNumberOfLocalFlags = 0; // No local flags
       currentSubroutineLevel = allSubroutineLevels.numberOfSubroutineLevels - 1;
-      currentPtrToNextLevel = WP43_NULL;
-      currentPtrToPreviousLevel = TO_WP43MEMPTR(_currentSubroutineLevelData);
+      currentPtrToNextLevel = C47_NULL;
+      currentPtrToPreviousLevel = TO_C47MEMPTR(_currentSubroutineLevelData);
       currentLocalFlags = NULL;
       currentLocalRegisters = NULL;
 
@@ -288,8 +288,8 @@ void fnReturn(uint16_t skip) {
     }
     sizeToBeFreedInBlocks = 3 + (currentNumberOfLocalFlags > 0 ? 1 : 0);
     currentSubroutineLevelData = TO_PCMEMPTR(currentPtrToPreviousLevel);
-    freeWp43(_currentSubroutineLevelData, sizeToBeFreedInBlocks);
-    currentPtrToNextLevel = WP43_NULL;
+    freeC47Blocks(_currentSubroutineLevelData, sizeToBeFreedInBlocks);
+    currentPtrToNextLevel = C47_NULL;
     allSubroutineLevels.numberOfSubroutineLevels -= 1;
 
     currentLocalFlags = (currentNumberOfLocalFlags == 0 ? NULL : currentSubroutineLevelData + 3);
@@ -303,7 +303,7 @@ void fnReturn(uint16_t skip) {
       allocateLocalRegisters(0);
     }
     if(currentNumberOfLocalFlags > 0) {
-      freeWp43(currentSubroutineLevelData + 3, 1);
+      freeC47Blocks(currentSubroutineLevelData + 3, 1);
       currentNumberOfLocalFlags = 0;
     }
     currentLocalFlags = NULL;
@@ -519,12 +519,12 @@ static void _executeOp(uint8_t *paramAddress, uint16_t op, uint16_t paramMode) {
         }
       }
       else if(paramMode == PARAM_COMPARE && opParam == VALUE_0) {
-        reallocateRegister(TEMP_REGISTER_1, dtReal34, REAL34_SIZE, amNone);
+        reallocateRegister(TEMP_REGISTER_1, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
         real34Copy(const34_0, REGISTER_REAL34_DATA(TEMP_REGISTER_1));
         reallyRunFunction(op, TEMP_REGISTER_1);
       }
       else if(paramMode == PARAM_COMPARE && opParam == VALUE_1) {
-        reallocateRegister(TEMP_REGISTER_1, dtReal34, REAL34_SIZE, amNone);
+        reallocateRegister(TEMP_REGISTER_1, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
         real34Copy(const34_1, REGISTER_REAL34_DATA(TEMP_REGISTER_1));
         reallyRunFunction(op, TEMP_REGISTER_1);
       }
@@ -569,7 +569,7 @@ static void _putLiteral(uint8_t *literalAddress) {
       case BINARY_REAL34: {
       liftStack();
       setSystemFlag(FLAG_ASLIFT);
-      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amNone);
+      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
       real34Copy((real34_t *)literalAddress, REGISTER_REAL34_DATA(REGISTER_X));
       break;
       }
@@ -578,7 +578,7 @@ static void _putLiteral(uint8_t *literalAddress) {
         complex34_t complexLiteral;
         liftStack();
         setSystemFlag(FLAG_ASLIFT);
-        reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE, amNone);
+        reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
         xcopy(VARIABLE_REAL34_DATA(&complexLiteral), literalAddress     , 16);
         xcopy(VARIABLE_IMAG34_DATA(&complexLiteral), literalAddress + 16, 16);
         complex34Copy(&complexLiteral, REGISTER_COMPLEX34_DATA(REGISTER_X));
@@ -626,7 +626,7 @@ static void _putLiteral(uint8_t *literalAddress) {
       _getStringLabelOrVariableName(literalAddress);
       liftStack();
       setSystemFlag(FLAG_ASLIFT);
-      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amNone);
+      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
       stringToReal34(tmpStringLabelOrVariableName, REGISTER_REAL34_DATA(REGISTER_X));
       break;
       }
@@ -651,7 +651,7 @@ static void _putLiteral(uint8_t *literalAddress) {
         }
         liftStack();
         setSystemFlag(FLAG_ASLIFT);
-        reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE, amNone);
+        reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
         stringToReal34(tmpStringLabelOrVariableName, REGISTER_REAL34_DATA(REGISTER_X));
         stringToReal34(imag,                         REGISTER_IMAG34_DATA(REGISTER_X));
         break;
@@ -670,7 +670,7 @@ static void _putLiteral(uint8_t *literalAddress) {
       _getStringLabelOrVariableName(literalAddress);
       liftStack();
       setSystemFlag(FLAG_ASLIFT);
-      reallocateRegister(REGISTER_X, dtDate, REAL34_SIZE, amNone);
+      reallocateRegister(REGISTER_X, dtDate, REAL34_SIZE_IN_BLOCKS, amNone);
       stringToReal34(tmpStringLabelOrVariableName, REGISTER_REAL34_DATA(REGISTER_X));
       julianDayToInternalDate(REGISTER_REAL34_DATA(REGISTER_X), REGISTER_REAL34_DATA(REGISTER_X));
       break;
@@ -680,7 +680,7 @@ static void _putLiteral(uint8_t *literalAddress) {
       _getStringLabelOrVariableName(literalAddress);
       liftStack();
       setSystemFlag(FLAG_ASLIFT);
-      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amNone);
+      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
       stringToReal34(tmpStringLabelOrVariableName, REGISTER_REAL34_DATA(REGISTER_X));
       hmmssInRegisterToSeconds(REGISTER_X);
       break;
@@ -690,7 +690,7 @@ static void _putLiteral(uint8_t *literalAddress) {
       _getStringLabelOrVariableName(literalAddress);
       liftStack();
       setSystemFlag(FLAG_ASLIFT);
-      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amDMS);
+      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amDMS);
       stringToReal34(tmpStringLabelOrVariableName, REGISTER_REAL34_DATA(REGISTER_X));
       real34FromDmsToDeg(REGISTER_REAL34_DATA(REGISTER_X), REGISTER_REAL34_DATA(REGISTER_X));
       break;

@@ -141,7 +141,7 @@ static real_t *getXvalues(uint16_t *n) {
     displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE, REGISTER_X);
     return NULL;
   }
-  data = allocWp43(rows * REAL_SIZE);
+  data = allocC47Blocks(rows * REAL_SIZE_IN_BLOCKS);
   if(data == NULL) {
     displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
     return NULL;
@@ -187,7 +187,7 @@ static void doStatsOperation(void (*func)(real_t *data, uint16_t n, const real_t
       (*func)(data, n, arg, &x);
       convertRealToReal34ResultRegister(&x, REGISTER_Y);
 
-      freeWp43(data, n * REAL_SIZE);
+      freeC47Blocks(data, n * REAL_SIZE_IN_BLOCKS);
       temporaryInformation = message;
       adjustResult(REGISTER_X, false, false, -1, -1, -1);
       adjustResult(REGISTER_Y, false, false, -1, -1, -1);

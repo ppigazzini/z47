@@ -100,7 +100,7 @@
 
     if(checkParamExponential(&val, &dof)) {
       WP34S_Pdf_Expon(&val, &dof, &ans, &ctxtReal39);
-      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amNone);
+      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
       convertRealToReal34ResultRegister(&ans, REGISTER_X);
       adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
     }
@@ -116,7 +116,7 @@
 
     if(checkParamExponential(&val, &dof)) {
       WP34S_Cdf_Expon(&val, &dof, &ans, &ctxtReal39);
-      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amNone);
+      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
       convertRealToReal34ResultRegister(&ans, REGISTER_X);
       adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
     }
@@ -132,7 +132,7 @@
 
     if(checkParamExponential(&val, &dof)) {
       WP34S_Cdfu_Expon(&val, &dof, &ans, &ctxtReal39);
-      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amNone);
+      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
       convertRealToReal34ResultRegister(&ans, REGISTER_X);
       adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
     }
@@ -168,7 +168,7 @@
         }
         return;
       }
-      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amNone);
+      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
       convertRealToReal34ResultRegister(&ans, REGISTER_X);
       adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
     }

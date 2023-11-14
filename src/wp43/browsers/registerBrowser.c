@@ -43,7 +43,7 @@
           real34ToDisplayString(REGISTER_REAL34_DATA(regist), getRegisterAngularMode(regist), tmpString, &standardFont, SCREEN_WIDTH - 1 - registerNameWidth, 34, false, false);
         }
         else {
-          sprintf(tmpString, "%d bytes", (int16_t)TO_BYTES(REAL34_SIZE));
+          sprintf(tmpString, "%d bytes", (int16_t)TO_BYTES(REAL34_SIZE_IN_BLOCKS));
         }
         break;
       }
@@ -53,7 +53,7 @@
           complex34ToDisplayString(REGISTER_COMPLEX34_DATA(regist), tmpString, &standardFont, SCREEN_WIDTH - 1 - registerNameWidth, 34, false, false, getComplexRegisterAngularMode(regist), getComplexRegisterPolarMode(regist));
         }
         else {
-          sprintf(tmpString, "%d bytes", (int16_t)TO_BYTES(COMPLEX34_SIZE));
+          sprintf(tmpString, "%d bytes", (int16_t)TO_BYTES(COMPLEX34_SIZE_IN_BLOCKS));
         }
         break;
       }
@@ -76,7 +76,7 @@
             sprintf(tmpString, "4 bytes");
           }
           else {
-            sprintf(tmpString, "%" PRIu32 " bits " STD_CORRESPONDS_TO " 4+%" PRIu32 " bytes", (uint32_t)TO_BYTES(getRegisterMaxDataLength(regist)) * 8, (uint32_t)TO_BYTES(getRegisterMaxDataLength(regist)));
+            sprintf(tmpString, "%" PRIu32 " bits " STD_CORRESPONDS_TO " 4+%" PRIu32 " bytes", (uint32_t)TO_BYTES(getRegisterMaxDataLengthInBlocks(regist)) * 8, (uint32_t)TO_BYTES(getRegisterMaxDataLengthInBlocks(regist)));
           }
         }
         break;
@@ -103,7 +103,7 @@
           }
         }
         else {
-          sprintf(tmpString, "%" PRIu32 " character%s " STD_CORRESPONDS_TO " 4+%" PRIu32 " bytes", (uint32_t)stringGlyphLength(REGISTER_STRING_DATA(regist)), stringGlyphLength(REGISTER_STRING_DATA(regist))==1 ? "" : "s", (uint32_t)TO_BYTES(getRegisterMaxDataLength(regist)));
+          sprintf(tmpString, "%" PRIu32 " character%s " STD_CORRESPONDS_TO " 4+%" PRIu32 " bytes", (uint32_t)stringGlyphLength(REGISTER_STRING_DATA(regist)), stringGlyphLength(REGISTER_STRING_DATA(regist))==1 ? "" : "s", (uint32_t)TO_BYTES(getRegisterMaxDataLengthInBlocks(regist)));
         }
         break;
       }
@@ -113,7 +113,7 @@
           timeToDisplayString(regist, tmpString, true);
         }
         else {
-          sprintf(tmpString, "%d bytes", (int16_t)TO_BYTES(REAL34_SIZE));
+          sprintf(tmpString, "%d bytes", (int16_t)TO_BYTES(REAL34_SIZE_IN_BLOCKS));
         }
         break;
       }
@@ -123,7 +123,7 @@
           dateToDisplayString(regist, tmpString);
         }
         else {
-          sprintf(tmpString, "%d bytes", (int16_t)TO_BYTES(REAL34_SIZE));
+          sprintf(tmpString, "%d bytes", (int16_t)TO_BYTES(REAL34_SIZE_IN_BLOCKS));
         }
         break;
       }
@@ -134,7 +134,7 @@
         }
         else {
           dataBlock_t* dblock = REGISTER_REAL34_MATRIX_DBLOCK(regist);
-          sprintf(tmpString, "%" PRIu16 " element%s " STD_CORRESPONDS_TO " 4+%" PRIu32 " bytes", (uint16_t)(dblock->matrixRows * dblock->matrixColumns), (dblock->matrixRows * dblock->matrixColumns)==1 ? "" : "s", (uint32_t)TO_BYTES(dblock->matrixRows * dblock->matrixColumns * REAL34_SIZE));
+          sprintf(tmpString, "%" PRIu16 " element%s " STD_CORRESPONDS_TO " 4+%" PRIu32 " bytes", (uint16_t)(dblock->matrixRows * dblock->matrixColumns), (dblock->matrixRows * dblock->matrixColumns)==1 ? "" : "s", (uint32_t)TO_BYTES(dblock->matrixRows * dblock->matrixColumns * REAL34_SIZE_IN_BLOCKS));
         }
         break;
       }
@@ -145,7 +145,7 @@
         }
         else {
           dataBlock_t* dblock = REGISTER_COMPLEX34_MATRIX_DBLOCK(regist);
-          sprintf(tmpString, "%" PRIu16 " element%s " STD_CORRESPONDS_TO " 4+%" PRIu32 " bytes", (uint16_t)(dblock->matrixRows * dblock->matrixColumns), (dblock->matrixRows * dblock->matrixColumns)==1 ? "" : "s", (uint32_t)TO_BYTES(dblock->matrixRows * dblock->matrixColumns * COMPLEX34_SIZE));
+          sprintf(tmpString, "%" PRIu16 " element%s " STD_CORRESPONDS_TO " 4+%" PRIu32 " bytes", (uint16_t)(dblock->matrixRows * dblock->matrixColumns), (dblock->matrixRows * dblock->matrixColumns)==1 ? "" : "s", (uint32_t)TO_BYTES(dblock->matrixRows * dblock->matrixColumns * COMPLEX34_SIZE_IN_BLOCKS));
         }
         break;
       }

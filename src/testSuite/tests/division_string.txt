@@ -24,8 +24,8 @@ Func: fnDivide
 ;=======================================
 ; String / String --> Error24
 ;=======================================
-In:  FL_ASLIFT=0 FL_CPXRES=0 RY=Stri:"String test " RX=Stri:"WP43!"
-Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=Stri:"WP43!"
+In:  FL_ASLIFT=0 FL_CPXRES=0 RY=Stri:"String test " RX=Stri:"C47!"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=Stri:"C47!"
 
 
 

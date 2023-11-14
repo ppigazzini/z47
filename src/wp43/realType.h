@@ -86,19 +86,19 @@
 
   typedef decNumber  real_t;
 
-  #define REAL_SIZE      TO_BLOCKS(sizeof(real_t))
-  #define REAL34_SIZE    TO_BLOCKS(sizeof(real34_t))
-  #define REAL39_SIZE    TO_BLOCKS(sizeof(real39_t))
-  #define REAL51_SIZE    TO_BLOCKS(sizeof(real51_t))
-  #define REAL1071_SIZE  TO_BLOCKS(sizeof(real1071_t))
-  #define COMPLEX34_SIZE TO_BLOCKS(sizeof(complex34_t))
+  #define REAL_SIZE_IN_BLOCKS      TO_BLOCKS(sizeof(real_t))
+  #define REAL34_SIZE_IN_BLOCKS    TO_BLOCKS(sizeof(real34_t))
+  #define REAL39_SIZE_IN_BLOCKS    TO_BLOCKS(sizeof(real39_t))
+  #define REAL51_SIZE_IN_BLOCKS    TO_BLOCKS(sizeof(real51_t))
+  #define REAL1071_SIZE_IN_BLOCKS  TO_BLOCKS(sizeof(real1071_t))
+  #define COMPLEX34_SIZE_IN_BLOCKS TO_BLOCKS(sizeof(complex34_t))
 
   #define VARIABLE_REAL34_DATA(a)                                ((real34_t    *)(a))
-  #define VARIABLE_IMAG34_DATA(a)                                ((real34_t    *)((dataBlock_t *)(a) + REAL34_SIZE))
+  #define VARIABLE_IMAG34_DATA(a)                                ((real34_t    *)((dataBlock_t *)(a) + REAL34_SIZE_IN_BLOCKS))
 
 
   #define complex34ChangeSign(operand)                           {real34ChangeSign((real34_t *)(operand)); \
-                                                                  real34ChangeSign((real34_t *)((dataBlock_t *)(operand) + REAL34_SIZE)); \
+                                                                  real34ChangeSign((real34_t *)((dataBlock_t *)(operand) + REAL34_SIZE_IN_BLOCKS)); \
                                                                  }
   #define complex34Copy(source, destination)                     {  *(uint64_t *)(destination)     =   *(uint64_t *)(source); \
                                                                   *(((uint64_t *)(destination))+1) = *(((uint64_t *)(source))+1); \
@@ -110,7 +110,7 @@
   #define real34ChangeSign(operand)                              ((real34_t *)(operand))->bytes[15] ^= 0x80
   #define real34Compare(operand1, operand2, res)                 decQuadCompare           ((real34_t *)(res), (real34_t *)(operand1), (real34_t *)(operand2), &ctxtReal34)
   //#define real34Copy(source, destination)                        decQuadCopy            (destination, source)
-  //#define real34Copy(source, destination)                        xcopy(destination, source, TO_BYTES(REAL34_SIZE))
+  //#define real34Copy(source, destination)                        xcopy(destination, source, TO_BYTES(REAL34_SIZE_IN_BLOCKS))
   #define real34Copy(source, destination)                        {*(uint64_t *)(destination) = *(uint64_t *)(source); \
                                                                   *(((uint64_t *)(destination))+1) = *(((uint64_t *)(source))+1); \
                                                                  }
@@ -141,7 +141,7 @@
   #define real34ToUInt32(source)                                 decQuadToUInt32          ((real34_t *)(source), &ctxtReal34, DEC_ROUND_DOWN)
   #define real34Reduce(source, destination)                      decQuadReduce            (destination, source, &ctxtReal34)
   #define real34Zero(destination)                                decQuadZero              (destination)
-  //#define real34Zero(destination)                                xcopy                    (destination, const34_0, TO_BYTES(REAL34_SIZE))
+  //#define real34Zero(destination)                                xcopy                    (destination, const34_0, TO_BYTES(REAL34_SIZE_IN_BLOCKS))
   /*#define real34Zero(destination)                                {  *(uint64_t *)(destination)     =   *(uint64_t *)const34_0; \
                                                                     *(((uint64_t *)(destination))+1) = *(((uint64_t *)const34_0)+1); \
                                                                  }*/

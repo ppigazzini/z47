@@ -96,7 +96,7 @@ void sinLonI(void) {
   longIntegerAngleReduction(REGISTER_X, currentAngularMode, &x);
   WP34S_Cvt2RadSinCosTan(&x, currentAngularMode, &x, NULL, NULL, &ctxtReal75);
 
-  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amNone);
+  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
   convertRealToReal34ResultRegister(&x, REGISTER_X);
 }
 

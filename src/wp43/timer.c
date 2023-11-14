@@ -507,7 +507,7 @@ void fnEnterTimerApp(void) {
     real_t tmp;
     uInt32ToReal(_getTimerValue() / 100u, &tmp);
     tmp.exponent -= 1;
-    reallocateRegister(timerCraAndDeciseconds & 0x7fu, dtTime, REAL34_SIZE, amNone);
+    reallocateRegister(timerCraAndDeciseconds & 0x7fu, dtTime, REAL34_SIZE_IN_BLOCKS, amNone);
     realToReal34(&tmp, REGISTER_REAL34_DATA(timerCraAndDeciseconds & 0x7fu));
     fnUpTimerApp();
   }
@@ -528,7 +528,7 @@ void fnDotTimerApp(void) {
 
   uInt32ToReal(msec / 100u, &tmp);
   tmp.exponent -= 1;
-  reallocateRegister(timerCraAndDeciseconds & 0x7fu, dtTime, REAL34_SIZE, amNone);
+  reallocateRegister(timerCraAndDeciseconds & 0x7fu, dtTime, REAL34_SIZE_IN_BLOCKS, amNone);
   realToReal34(&tmp, REGISTER_REAL34_DATA(timerCraAndDeciseconds & 0x7fu));
 
   fnUpTimerApp();
@@ -554,7 +554,7 @@ void fnPlusTimerApp(void) {
 
   uInt32ToReal(msec / 100u, &tmp);
   tmp.exponent -= 1;
-  reallocateRegister(timerCraAndDeciseconds & 0x7fu, dtTime, REAL34_SIZE, amNone);
+  reallocateRegister(timerCraAndDeciseconds & 0x7fu, dtTime, REAL34_SIZE_IN_BLOCKS, amNone);
   realToReal34(&tmp, REGISTER_REAL34_DATA(timerCraAndDeciseconds & 0x7fu));
   realDivide(&tmp, const_3600, &tmp, &ctxtReal39);
 

@@ -263,7 +263,7 @@ uint8_t DXR = 0, DYR = 0, DXI = 0, DYI = 0;
     }
     calcRegister_t regStats = findNamedVariable(plotStatMx);
     if(regStats == INVALID_VARIABLE) {
-      allocateNamedVariable(plotStatMx, dtReal34, REAL34_SIZE);
+      allocateNamedVariable(plotStatMx, dtReal34, REAL34_SIZE_IN_BLOCKS);
       regStats = findNamedVariable(plotStatMx);
     }
     fnDeleteVariable(regStats);

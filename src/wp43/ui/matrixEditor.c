@@ -747,12 +747,12 @@ void mimRunFunction(int16_t func, uint16_t param) {
     real34Zero(&im);
   }
   if(isComplex) {
-    reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE, amNone);
+    reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
     real34Copy(&re, REGISTER_REAL34_DATA(REGISTER_X));
     real34Copy(&im, REGISTER_IMAG34_DATA(REGISTER_X));
   }
   else {
-    reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amNone);
+    reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
     real34Copy(&re, REGISTER_REAL34_DATA(REGISTER_X));
   }
 

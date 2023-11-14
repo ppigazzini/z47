@@ -343,7 +343,7 @@ void fnJM(uint16_t JM_OPCODE) {
       fnAdd(0);                                                 // +
       fnAdd(0);                                                 // + Va0 = (Va + Vb +Vc)/3
       liftStack();
-      reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE, amNone);
+      reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
       stringToReal34("3", REGISTER_REAL34_DATA(REGISTER_X));
       stringToReal34("0", REGISTER_IMAG34_DATA(REGISTER_X));
       copySourceRegisterToDestRegister(REGISTER_X, JMTEMP);     // STO

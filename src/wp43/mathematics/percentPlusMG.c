@@ -142,7 +142,7 @@ void percentPlusMGLonILonI(void) {
   convertLongIntegerRegisterToReal(REGISTER_Y, &yReal, &ctxtReal75);
 
   if(percentPlusMGReal(&xReal, &yReal, &rReal, &ctxtReal75)) {
-    reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amNone);
+    reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
     convertRealToReal34ResultRegister(&rReal, REGISTER_X);
     setRegisterAngularMode(REGISTER_X, amNone);
   }
@@ -180,7 +180,7 @@ void percentPlusMGRealLonI(void) {
   real34ToReal(REGISTER_REAL34_DATA(REGISTER_Y), &yReal);
 
   if(percentPlusMGReal(&xReal, &yReal, &rReal, &ctxtReal75)) {
-    reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amNone);
+    reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
     convertRealToReal34ResultRegister(&rReal, REGISTER_X);
     setRegisterAngularMode(REGISTER_X, amNone);
   }
