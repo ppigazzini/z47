@@ -1201,7 +1201,7 @@ typedef enum {
 #define KEY_AUTOREPEAT_PERIOD                    200 // in milliseconds
 #define TIMER_APP_PERIOD                         100 // in milliseconds
 #define RAM_SIZE_IN_BLOCKS                     16384 // 16384 blocks = 65536 bytes  MUST be a multiple of 4 and MUST be <= 262140 (not 262144)
-//#define RAM_SIZE_IN_BLOCKS                      3072 // 3072 blocks = 12288 bytes  MUST be a multiple of 4 and MUST be <= 262140 (not 262144)
+//#define RAM_SIZE                                3072 // 16384 blocks = 65536 bytes  MUST be a multiple of 4 and MUST be <= 262140 (not 262144)
 
 #define CONFIG_SIZE            TO_BLOCKS(sizeof(dtConfigDescriptor_t))
 
@@ -1505,7 +1505,7 @@ typedef enum {
   #define SHOW_MEMORY_STATUS 0
   #undef  EXTRA_INFO_ON_CALC_ERROR
   #define EXTRA_INFO_ON_CALC_ERROR 0
-#endif // DMCP_BUILD || SCREEN_800X480 == 1
+#endif // DMCP_BUILD || BIG_SCREEN == 1
 
 #if defined(TESTSUITE_BUILD) && !defined(GENERATE_CATALOGS)
     #undef  PC_BUILD

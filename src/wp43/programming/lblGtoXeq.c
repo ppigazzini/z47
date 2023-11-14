@@ -107,6 +107,11 @@ void goToGlobalStep(int32_t step) {
     if(*labelName == 0) {
       return;
     }
+#if !defined(TESTSUITE_BUILD)
+    if((softmenu[softmenuStack[0].softmenuId].menuItem != -MNU_PROG) && (softmenu[softmenuStack[0].softmenuId].menuItem != -MNU_PROGS)) {  // Don't apply the dupNum logic in configurable menus
+      dupNum = 0;
+    }
+#endif // !TESTSUITE_BUILD
 
     int16_t c, len = stringByteLength((char *)labelName);
     for(uint16_t lbl=0; lbl<numberOfLabels; lbl++) {

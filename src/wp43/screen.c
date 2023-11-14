@@ -133,7 +133,7 @@ typedef struct {
     cairo_surface_mark_dirty(imageSurface);
     #if (BIG_SCREEN == 1)
       cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);
-    #endif // SCREEN_800X480 == 1
+    #endif // BIG_SCREEN == 1
     cairo_paint(cr);
     cairo_surface_destroy(imageSurface);
 
@@ -1771,7 +1771,7 @@ void execTimerApp(uint16_t timerType) {
     char padding[20];                                          //JM
     functionName[0] = 0;
     showFunctionNameArg = NULL;
-
+        
     //FIX //REMOVE DISPLAYING TEMP STRING as in C43 the tmpstring does NOT show the last keystroke or whatever this tempstr is needed for. It gets executed from timers
     //if(tmpString[0] != 0) {
     //  strcpy(functionName,tmpString);
@@ -1813,7 +1813,7 @@ void execTimerApp(uint16_t timerType) {
         }
       }
       else if(item == -MNU_DYNAMIC) {
-        if(arg != NULL) stringAppend(functionName,arg);
+        if(arg != NULL) stringAppend(functionName,arg);       
         showFunctionNameArg = (char *)arg;                        // Needed when executing a user menu from a long pressed key
       }
       else if(item >= ITM_X_P1 && item <= ITM_X_g6) {
