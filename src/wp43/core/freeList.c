@@ -26,7 +26,7 @@
 #include "wp43.h"
 
 void *freeListAlloc(size_t sizeInBlocks) {
-  uint16_t minSizeInBlocks = 65535u, minBlock = WP43_NULL;
+  uint16_t minSizeInBlocks = 65535u, minBlock = C47_NULL;
   int i;
   void *pcMemPtr;
 
@@ -46,10 +46,10 @@ void *freeListAlloc(size_t sizeInBlocks) {
     if(freeMemoryRegions[i].sizeInBlocks == sizeInBlocks) {
       #if !defined(DMCP_BUILD)
         //if(debugMemAllocation) {
-        //  printf("The block found is the size of the one claimed at address %u\n", freeMemoryRegions[i].address);
+        //  printf("The block found is the size of the one claimed at address %u\n", freeMemoryRegions[i].blockAddress);
         //}
       #endif // !DMCP_BUILD
-      pcMemPtr = TO_PCMEMPTR(freeMemoryRegions[i].address);
+      pcMemPtr = TO_PCMEMPTR(freeMemoryRegions[i].blockAddress);
       xcopy(freeMemoryRegions + i, freeMemoryRegions + i + 1, (numberOfFreeMemoryRegions - i - 1) * sizeof(freeMemoryRegion_t));
       numberOfFreeMemoryRegions--;
       //debugMemory("freeListAlloc: found a memory region with the exact requested size!");
@@ -61,7 +61,7 @@ void *freeListAlloc(size_t sizeInBlocks) {
     }
   }
 
-  if(minBlock == WP43_NULL) {
+  if(minBlock == C47_NULL) {
     #if defined(DMCP_BUILD)
       //backToSystem(NOPARAM);
     #else // !DMCP_BUILD
@@ -80,8 +80,8 @@ void *freeListAlloc(size_t sizeInBlocks) {
     //  printf("The block found is larger than the one claimed\n");
     //}
   #endif // !DMCP_BUILD
-  pcMemPtr = TO_PCMEMPTR(freeMemoryRegions[minBlock].address);
-  freeMemoryRegions[minBlock].address += sizeInBlocks;
+  pcMemPtr = TO_PCMEMPTR(freeMemoryRegions[minBlock].blockAddress);
+  freeMemoryRegions[minBlock].blockAddress += sizeInBlocks;
   freeMemoryRegions[minBlock].sizeInBlocks -= sizeInBlocks;
 
   //debugMemory("freeListAlloc: allocated within the smalest memory region found that is large enough.");
@@ -128,7 +128,7 @@ void freeListFree(void *pcMemPtr, size_t sizeInBlocks) {
   if(sizeInBlocks == 0) {
     sizeInBlocks = 1;
   }
-  ramPtr = TO_WP43MEMPTR(pcMemPtr);
+  ramPtr = TO_C47MEMPTR(pcMemPtr);
   #if !defined(DMCP_BUILD)
     //printf("Freeing %zd bytes\n", TO_BYTES(sizeInBlocks));
   #endif // !DMCP_BUILD
@@ -137,9 +137,9 @@ void freeListFree(void *pcMemPtr, size_t sizeInBlocks) {
 
   // is the freed block just before an other free block?
   addr = ramPtr + sizeInBlocks;
-  for(i=0; i<numberOfFreeMemoryRegions && freeMemoryRegions[i].address<=addr; i++) {
-    if(freeMemoryRegions[i].address == addr) {
-      freeMemoryRegions[i].address = ramPtr;
+  for(i=0; i<numberOfFreeMemoryRegions && freeMemoryRegions[i].blockAddress<=addr; i++) {
+    if(freeMemoryRegions[i].blockAddress == addr) {
+      freeMemoryRegions[i].blockAddress = ramPtr;
       freeMemoryRegions[i].sizeInBlocks += sizeInBlocks;
       sizeInBlocks = freeMemoryRegions[i].sizeInBlocks;
       j = i;
@@ -149,8 +149,8 @@ void freeListFree(void *pcMemPtr, size_t sizeInBlocks) {
   }
 
   // is the freed block just after an other free block?
-  for(i=0; i<numberOfFreeMemoryRegions && freeMemoryRegions[i].address+freeMemoryRegions[i].sizeInBlocks<=ramPtr; i++) {
-    if(freeMemoryRegions[i].address + freeMemoryRegions[i].sizeInBlocks == ramPtr) {
+  for(i=0; i<numberOfFreeMemoryRegions && freeMemoryRegions[i].blockAddress+freeMemoryRegions[i].sizeInBlocks<=ramPtr; i++) {
+    if(freeMemoryRegions[i].blockAddress + freeMemoryRegions[i].sizeInBlocks == ramPtr) {
       freeMemoryRegions[i].sizeInBlocks += sizeInBlocks;
       if(done) {
         xcopy(freeMemoryRegions + j, freeMemoryRegions + j + 1, (numberOfFreeMemoryRegions - j - 1) * sizeof(freeMemoryRegion_t));
@@ -166,12 +166,12 @@ void freeListFree(void *pcMemPtr, size_t sizeInBlocks) {
   #if defined(PC_BUILD)
     // check for overlap
     for(i=1; i<numberOfFreeMemoryRegions; i++) {
-      if((freeMemoryRegions[i-1].address + freeMemoryRegions[i-1].sizeInBlocks) >= freeMemoryRegions[i].address) {
+      if((freeMemoryRegions[i-1].blockAddress + freeMemoryRegions[i-1].sizeInBlocks) >= freeMemoryRegions[i].blockAddress) {
         printf("\n*** Free memory regions overlap!\n");
         printf("*** This suggests there was double-free!\n");
         printf("Free blocks (%" PRId32 "):\n", numberOfFreeMemoryRegions);
         for(j=0; j<numberOfFreeMemoryRegions; j++) {
-          printf("  %2" PRId32 " starting at %5" PRIu16 ": %5" PRIu16 " blocks = %6" PRIu32 " bytes\n", j, freeMemoryRegions[j].address, freeMemoryRegions[j].sizeInBlocks, TO_BYTES((uint32_t)freeMemoryRegions[j].sizeInBlocks));
+          printf("  %2" PRId32 " starting at %5" PRIu16 ": %5" PRIu16 " blocks = %6" PRIu32 " bytes\n", j, freeMemoryRegions[j].blockAddress, freeMemoryRegions[j].sizeInBlocks, TO_BYTES((uint32_t)freeMemoryRegions[j].sizeInBlocks));
         }
         break;
       }
@@ -193,7 +193,7 @@ void freeListFree(void *pcMemPtr, size_t sizeInBlocks) {
     }
 
     i = 0;
-    while(i<numberOfFreeMemoryRegions && freeMemoryRegions[i].address < ramPtr) {
+    while(i<numberOfFreeMemoryRegions && freeMemoryRegions[i].blockAddress < ramPtr) {
       i++;
     }
 
@@ -201,7 +201,7 @@ void freeListFree(void *pcMemPtr, size_t sizeInBlocks) {
       xcopy(freeMemoryRegions + i + 1, freeMemoryRegions + i, (numberOfFreeMemoryRegions - i) * sizeof(freeMemoryRegion_t));
     }
 
-    freeMemoryRegions[i].address = ramPtr;
+    freeMemoryRegions[i].blockAddress = ramPtr;
     freeMemoryRegions[i].sizeInBlocks = sizeInBlocks;
     numberOfFreeMemoryRegions++;
   }

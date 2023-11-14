@@ -325,11 +325,11 @@ void fnStoreDiv(uint16_t regist) {
 void fnStoreMin(uint16_t regist) {
   if(_checkReadOnlyVariable(regist) && regInRange(regist)) {
     copySourceRegisterToDestRegister(REGISTER_X, SAVED_REGISTER_X);
-    if(regist >= FIRST_RESERVED_VARIABLE && regist < LAST_RESERVED_VARIABLE && allReservedVariables[regist - FIRST_RESERVED_VARIABLE].header.pointerToRegisterData == WP43_NULL) {
+    if(regist >= FIRST_RESERVED_VARIABLE && regist < LAST_RESERVED_VARIABLE && allReservedVariables[regist - FIRST_RESERVED_VARIABLE].header.pointerToRegisterData == C47_NULL) {
       copySourceRegisterToDestRegister(regist, TEMP_REGISTER_1);
       regist = TEMP_REGISTER_1;
     }
-    else if(regist >= FIRST_RESERVED_VARIABLE && regist < LAST_RESERVED_VARIABLE && allReservedVariables[regist - FIRST_RESERVED_VARIABLE].header.pointerToRegisterData == WP43_NULL) {
+    else if(regist >= FIRST_RESERVED_VARIABLE && regist < LAST_RESERVED_VARIABLE && allReservedVariables[regist - FIRST_RESERVED_VARIABLE].header.pointerToRegisterData == C47_NULL) {
       fnToReal(NOPARAM);
       if(lastErrorCode == ERROR_NONE) {
         copySourceRegisterToDestRegister(regist, TEMP_REGISTER_1);
@@ -346,11 +346,11 @@ void fnStoreMin(uint16_t regist) {
 void fnStoreMax(uint16_t regist) {
   if(_checkReadOnlyVariable(regist) && regInRange(regist)) {
     copySourceRegisterToDestRegister(REGISTER_X, SAVED_REGISTER_X);
-    if(regist >= FIRST_RESERVED_VARIABLE && regist < LAST_RESERVED_VARIABLE && allReservedVariables[regist - FIRST_RESERVED_VARIABLE].header.pointerToRegisterData == WP43_NULL) {
+    if(regist >= FIRST_RESERVED_VARIABLE && regist < LAST_RESERVED_VARIABLE && allReservedVariables[regist - FIRST_RESERVED_VARIABLE].header.pointerToRegisterData == C47_NULL) {
       copySourceRegisterToDestRegister(regist, TEMP_REGISTER_1);
       regist = TEMP_REGISTER_1;
     }
-    else if(regist >= FIRST_RESERVED_VARIABLE && regist < LAST_RESERVED_VARIABLE && allReservedVariables[regist - FIRST_RESERVED_VARIABLE].header.pointerToRegisterData == WP43_NULL) {
+    else if(regist >= FIRST_RESERVED_VARIABLE && regist < LAST_RESERVED_VARIABLE && allReservedVariables[regist - FIRST_RESERVED_VARIABLE].header.pointerToRegisterData == C47_NULL) {
       fnToReal(NOPARAM);
       if(lastErrorCode == ERROR_NONE) {
         copySourceRegisterToDestRegister(regist, TEMP_REGISTER_1);

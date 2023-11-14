@@ -512,7 +512,7 @@ void graph_eqn(uint16_t mode) {
       ctxtReal39.digits = 39;
       ctxtReal51.digits = 51;
       ctxtReal75.digits = 75;
-    #endif //LOW_GRAPH_ACC    
+    #endif //LOW_GRAPH_ACC
 
   #endif // !TESTSUITE_BUILD
 }

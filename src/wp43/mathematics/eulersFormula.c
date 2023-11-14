@@ -135,7 +135,7 @@ void eulersFormulaReal(void) {
     setRegisterAngularMode(REGISTER_X, amNone);
   }
   real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &c);
-  reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE, amNone);
+  reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
 
   eulersFormula(&c, const_0, &c, &i, &ctxtReal39);
 
@@ -150,7 +150,7 @@ void eulersFormulaLongint(void) {
   fnSetFlag(FLAG_CPXRES);
   fnRefreshState();
   convertLongIntegerRegisterToReal(REGISTER_X, &c, &ctxtReal39);
-  reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE, amNone);
+  reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
 
   eulersFormula(&c, const_0, &c, &i, &ctxtReal39);
 

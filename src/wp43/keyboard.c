@@ -928,7 +928,7 @@ int16_t lastItem = 0;
         #endif //VERBOSEKEYS
 
         item = determineFunctionKeyItem_C47((char *)data, shiftF, shiftG); }
-        
+
         // Update currentUserMenu for user defined menus selected in an existing function
         if(softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_DYNAMIC) {
           setCurrentUserMenu(item, userMenus[currentUserMenu].menuItem[dynamicMenuItem].argumentName);
@@ -1287,7 +1287,7 @@ bool_t allowShiftsToClearError = false;
     #endif //PC_BUILD
 
     if(SHOWMODE) {
-      if((allowShowDigits && key->primary >= ITM_0 && key->primary <= ITM_9) || key->primary == ITM_RCL || key->primary == ITM_UP1 || key->primary == ITM_DOWN1) {        
+      if((allowShowDigits && key->primary >= ITM_0 && key->primary <= ITM_9) || key->primary == ITM_RCL || key->primary == ITM_UP1 || key->primary == ITM_DOWN1) {
       }
       else {
         showRegis = 9999;
@@ -1295,7 +1295,7 @@ bool_t allowShiftsToClearError = false;
     }                                                   //JMSHOW ^^
     else {
       showRegis = 9999;
-    }   
+    }
                                         //JMSHOW ^^
     //printf("###\n"); //JMEXEC
 
@@ -1759,7 +1759,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
         lastshiftF = ff;
         lastshiftG = gg;
       }
-      
+
 //      if(calcMode != CM_LISTXY) {
 //        refreshScreen(140);
 //      }
@@ -1912,14 +1912,14 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
         fnTimerStop(TO_3S_CTFF);      //dr
 
         hideFunctionName();
-        
+
         int keyCode = (*((char *)data) - '0')*10 + *(((char *)data) + 1) - '0';
         int keyStateCode = (getSystemFlag(FLAG_ALPHA) ? 3 : 0) + (lastshiftG ? 2 : lastshiftF ? 1 : 0);
         char *funcParam = (char *)getNthString((uint8_t *)userKeyLabel, keyCode * 6 + keyStateCode);
         if (showFunctionNameArg != NULL) {
           funcParam = showFunctionNameArg;       // Needed when executing a user menu from a long pressed key
         }
-        
+
         if(item < 0) {
           setCurrentUserMenu(item, funcParam);
           showSoftmenu(item);
@@ -2013,7 +2013,7 @@ RELEASE_END:
 #endif //!TESTSUITE_BUILD
   void leavePem(void) {
     if(freeProgramBytes >= 4) { // Push the programs to the end of RAM
-      uint32_t newProgramSize = (uint32_t)((uint8_t *)(ram + RAM_SIZE) - beginOfProgramMemory) - (freeProgramBytes & 0xfffc);
+      uint32_t newProgramSize = (uint32_t)((uint8_t *)(ram + RAM_SIZE_IN_BLOCKS) - beginOfProgramMemory) - (freeProgramBytes & 0xfffc);
       uint16_t localStepNumber = currentLocalStepNumber;
       uint16_t programNumber = currentProgramNumber;
       uint16_t fdLocalStepNumber = firstDisplayedLocalStepNumber;
@@ -2059,7 +2059,7 @@ RELEASE_END:
         temporaryInformation = TI_VIEW_REGISTER;
       }
     }
-    else if(temporaryInformation != TI_NO_INFO && item != ITM_UP1 && item != ITM_DOWN1 && item != ITM_EXIT1 && item != ITM_BACKSPACE && 
+    else if(temporaryInformation != TI_NO_INFO && item != ITM_UP1 && item != ITM_DOWN1 && item != ITM_EXIT1 && item != ITM_BACKSPACE &&
            !(  ((item == ITM_RCL) || (item >= ITM_0 && item <= ITM_9 && allowShowDigits)) && SHOWMODE  ) ) {
       temporaryInformation = TI_NO_INFO;
       closeShowMenu();
@@ -2944,7 +2944,7 @@ void fnKeyEnter(uint16_t unusedButMandatoryParameter) {
         }
         if(softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_EQ_EDIT) {
           calcModeNormal();
-          if(allFormulae[currentFormula].pointerToFormulaData == WP43_NULL) {
+          if(allFormulae[currentFormula].pointerToFormulaData == C47_NULL) {
             deleteEquation(currentFormula);
           }
         }
@@ -3269,7 +3269,7 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
         else {
           if(softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_EQ_EDIT) {
             calcModeNormal();
-            if(allFormulae[currentFormula].pointerToFormulaData == WP43_NULL) {
+            if(allFormulae[currentFormula].pointerToFormulaData == C47_NULL) {
               deleteEquation(currentFormula);
             }
           }
@@ -3787,7 +3787,7 @@ void fnKeyBackspace(uint16_t unusedButMandatoryParameter) {
 #if !defined(TESTSUITE_BUILD)
 static bool_t activatescroll(void) { //jm
    //This is the portion that allows the arrows shortcut to SHOW in NORMAL MODE
-   return SHOWMODE && 
+   return SHOWMODE &&
           softmenu[softmenuStack[0].softmenuId].menuItem != -MNU_EQN
 //remove menu interlock completely, since the NEW SHOW takes over the screen and does not respect menu operation
 //    &&    (

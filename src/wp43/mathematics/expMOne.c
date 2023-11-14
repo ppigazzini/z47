@@ -139,7 +139,7 @@ void expM1LonI(void) {
   convertLongIntegerRegisterToReal(REGISTER_X, &a, &ctxtReal39);
   realExp(&a, &a, &ctxtReal39);
   realSubtract(&a, const_1, &a, &ctxtReal39);
-  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amNone);
+  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
   convertRealToReal34ResultRegister(&a, REGISTER_X);
 }
 
@@ -163,7 +163,7 @@ void expM1ShoI(void) {
   convertShortIntegerRegisterToReal(REGISTER_X, &x, &ctxtReal39);
   realExp(&x, &x, &ctxtReal39);
   realSubtract(&x, const_1, &x, &ctxtReal39);
-  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amNone);
+  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
   convertRealToReal34ResultRegister(&x, REGISTER_X);
 }
 

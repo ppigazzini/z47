@@ -193,21 +193,21 @@ void systemFlagAction(uint16_t systemFlag, uint16_t action) {
   }
 
   switch(systemFlag) {
-    case FLAG_YMD:    
-    case FLAG_DMY:    
-    case FLAG_MDY:    
-    case FLAG_TDM24:  
-    case FLAG_CPXRES: 
-    case FLAG_SPCRES: 
-    case FLAG_CPXj:   
-    case FLAG_POLAR:  
-    case FLAG_LEAD0:  
-    case FLAG_DENANY: 
-    case FLAG_DENFIX: 
-    case FLAG_SSIZE8: 
-    case FLAG_MULTx:  
-    case FLAG_ALLENG: 
-    case FLAG_ENDPMT: 
+    case FLAG_YMD:
+    case FLAG_DMY:
+    case FLAG_MDY:
+    case FLAG_TDM24:
+    case FLAG_CPXRES:
+    case FLAG_SPCRES:
+    case FLAG_CPXj:
+    case FLAG_POLAR:
+    case FLAG_LEAD0:
+    case FLAG_DENANY:
+    case FLAG_DENFIX:
+    case FLAG_SSIZE8:
+    case FLAG_MULTx:
+    case FLAG_ALLENG:
+    case FLAG_ENDPMT:
     case FLAG_HPRP:
     case FLAG_HPBASE:
     case FLAG_2TO10:
@@ -215,21 +215,21 @@ void systemFlagAction(uint16_t systemFlag, uint16_t action) {
 
 
 
-    case FLAG_SBdate: 
-    case FLAG_SBtime: 
-    case FLAG_SBcr  : 
-    case FLAG_SBcpx : 
-    case FLAG_SBang : 
-    case FLAG_SBfrac: 
-    case FLAG_SBint : 
+    case FLAG_SBdate:
+    case FLAG_SBtime:
+    case FLAG_SBcr  :
+    case FLAG_SBcpx :
+    case FLAG_SBang :
+    case FLAG_SBfrac:
+    case FLAG_SBint :
     case FLAG_SBmx  :
-    case FLAG_SBtvm : 
-    case FLAG_SBoc  : 
-    case FLAG_SBss  : 
-    case FLAG_SBclk : 
-    case FLAG_SBser : 
-    case FLAG_SBprn : 
-    case FLAG_SBbatV: 
+    case FLAG_SBtvm :
+    case FLAG_SBoc  :
+    case FLAG_SBss  :
+    case FLAG_SBclk :
+    case FLAG_SBser :
+    case FLAG_SBprn :
+    case FLAG_SBbatV:
     case FLAG_SBshfR: fnRefreshState(); screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR; break;
 
 
@@ -310,7 +310,7 @@ static void _clearAlpha(void) {
   if(calcMode == CM_EIM) {
     if(softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_EQ_EDIT) {
       calcModeNormal();
-      if(allFormulae[currentFormula].pointerToFormulaData == WP43_NULL) {
+      if(allFormulae[currentFormula].pointerToFormulaData == C47_NULL) {
         deleteEquation(currentFormula);
       }
     }
@@ -977,7 +977,7 @@ void SetSetting(uint16_t jmConfig) {
         scrLock = NC_SUBSCRIPT;
       } else
       if(scrLock == NC_SUBSCRIPT) {
-        scrLock = NC_NORMAL; 
+        scrLock = NC_NORMAL;
       } else {
         scrLock = NC_NORMAL;
       }

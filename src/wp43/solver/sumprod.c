@@ -108,7 +108,7 @@
         }
 
         if(getRegisterDataType(REGISTER_X) != dtReal34) {
-          reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amNone);
+          reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
         }
         real34Copy(&counter, REGISTER_REAL34_DATA(REGISTER_X));
         fnFillStack(NOPARAM);
@@ -184,13 +184,13 @@
       if(lastErrorCode == ERROR_NONE) {
         if(!changedOverToComplex) {
           if(getRegisterDataType(REGISTER_X) != dtReal34) {
-            reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amNone);
+            reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
           }
           convertRealToReal34ResultRegister(&resultR, REGISTER_X);
         }
         else {
           if(getRegisterDataType(REGISTER_X) != dtComplex34) {
-            reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE, amNone);
+            reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
           }
           convertRealToReal34ResultRegister(&resultR, REGISTER_X);
           convertRealToImag34ResultRegister(&resultRi, REGISTER_X);

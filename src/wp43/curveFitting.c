@@ -123,10 +123,10 @@ void fnCurveFitting_T(uint16_t curveFitting) { // Toggle
 
   if((lrSelection & CF_ORTHOGONAL_FITTING) == CF_ORTHOGONAL_FITTING && curveFitting == CF_ORTHOGONAL_FITTING) {   // if no curves selected (0) and Ortho is not chosen, then default to LIN
     lrSelection = CF_LINEAR_FITTING;
-  } else 
+  } else
   if((lrSelection & CF_ORTHOGONAL_FITTING) == 0 && curveFitting == CF_ORTHOGONAL_FITTING) {   // if no curves selected (0) and Ortho is not chosen, then default to LIN
     lrSelection = CF_ORTHOGONAL_FITTING;
-  } else 
+  } else
   if(lrCountOnes(curveFitting) == 1) {         // toggle bits of the lrselection word
     lrSelection = (0x01FF & lrSelection) ^ curveFitting;
   } else {
@@ -278,16 +278,16 @@ void fnProcessLRfind(uint16_t curveFitting){
     if(s == CF_CAUCHY_FITTING || s == CF_GAUSS_FITTING || s == CF_PARABOLIC_FITTING) {
       liftStack();
       setSystemFlag(FLAG_ASLIFT);
-      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amNone);
+      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
       convertRealToReal34ResultRegister(&aa2, REGISTER_X);
     }
     liftStack();
     setSystemFlag(FLAG_ASLIFT);
-    reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amNone);
+    reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
     convertRealToReal34ResultRegister(&aa1, REGISTER_X);
     liftStack();
     setSystemFlag(FLAG_ASLIFT);
-    reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amNone);
+    reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
     convertRealToReal34ResultRegister(&aa0, REGISTER_X);
   }
   else {
@@ -1318,7 +1318,7 @@ void fnXIsFny(uint16_t unusedButMandatoryParameter){
         xIsFny(lrChosen, 2, &XX, &YY, &RR, &SMI, &aa0, &aa1, &aa2);
         liftStack();
         setSystemFlag(FLAG_ASLIFT);
-        reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amNone);
+        reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
         realToReal34(&XX,REGISTER_REAL34_DATA(REGISTER_X));
       }
 

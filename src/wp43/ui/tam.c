@@ -427,7 +427,7 @@
           case -MNU_TAMLABEL  :
           case -MNU_TAM       :
           case -MNU_TAMSTORCL :
-            showSoftmenu(-MNU_TAMALPHA); 
+            showSoftmenu(-MNU_TAMALPHA);
             break;
           default: break;
         }
@@ -605,7 +605,7 @@
       }
     }
     else if(item == ITM_0P || item == ITM_1P) {
-      reallocateRegister(TEMP_REGISTER_1, dtReal34, REAL34_SIZE, amNone);
+      reallocateRegister(TEMP_REGISTER_1, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
       real34Copy(item == ITM_1P ? const34_1 : const34_0, REGISTER_REAL34_DATA(TEMP_REGISTER_1));
       if(!tam.digitsSoFar && tam.function != ITM_BESTF && tam.function != ITM_CNST && tam.mode != TM_VALUE && tam.mode != TM_VALUE_CHB) {
         tam.value = TEMP_REGISTER_1;

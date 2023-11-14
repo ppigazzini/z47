@@ -1,7 +1,7 @@
-WP43 Code Documentation
+C47 Code Documentation
 ========================
 
-WP43 is a modern pocket RPN calculator in the style of the HP-42S.
+C47 is a modern pocket RPN calculator in the style of the HP-42S.
 This documents the code for the firmware. Other documents and resources
 are available:
 

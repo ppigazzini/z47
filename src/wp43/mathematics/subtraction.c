@@ -157,7 +157,7 @@ void subDateLonI(void) {
   convertLongIntegerRegisterToReal34Register(REGISTER_X, REGISTER_X);
   int32ToReal34(86400, &val);
   real34Multiply(REGISTER_REAL34_DATA(REGISTER_X), &val, &val);
-  reallocateRegister(REGISTER_X, dtDate, REAL34_SIZE, amNone);
+  reallocateRegister(REGISTER_X, dtDate, REAL34_SIZE_IN_BLOCKS, amNone);
   real34Subtract(REGISTER_REAL34_DATA(REGISTER_Y), &val, REGISTER_REAL34_DATA(REGISTER_X));
 }
 
@@ -255,7 +255,7 @@ void subRealLonI(void) {
   real34ToReal(REGISTER_REAL34_DATA(REGISTER_Y), &y);
   yAngularMode = getRegisterAngularMode(REGISTER_Y);
   convertLongIntegerRegisterToReal(REGISTER_X, &x, &ctxtReal39);
-  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amNone);
+  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
 
   if(yAngularMode == amNone) {
     realSubtract(&y, &x, &x, &ctxtReal39);
@@ -313,7 +313,7 @@ void subCplxLonI(void) {
 
   realSubtract(&a, &c, &c, &ctxtReal39);
 
-  reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE, amNone);
+  reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
   convertRealToReal34ResultRegister(&c, REGISTER_X);
   real34Copy(&b, REGISTER_IMAG34_DATA(REGISTER_X));
 
@@ -414,7 +414,7 @@ void subDateReal(void) {
     int32ToReal34(86400, &val);
     real34ToIntegralValue(REGISTER_REAL34_DATA(REGISTER_X), REGISTER_REAL34_DATA(REGISTER_X), roundingMode);
     real34Multiply(REGISTER_REAL34_DATA(REGISTER_X), &val, &val);
-    reallocateRegister(REGISTER_X, dtDate, REAL34_SIZE, amNone);
+    reallocateRegister(REGISTER_X, dtDate, REAL34_SIZE_IN_BLOCKS, amNone);
     real34Subtract(REGISTER_REAL34_DATA(REGISTER_Y), &val, REGISTER_REAL34_DATA(REGISTER_X));
   }
   else {
@@ -997,7 +997,7 @@ void subRealShoI(void) {
 
   real34ToReal(REGISTER_REAL34_DATA(REGISTER_Y), &y);
   convertShortIntegerRegisterToReal(REGISTER_X, &x, &ctxtReal39);
-  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amNone);
+  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
 
   if(yAngularMode == amNone) {
     realSubtract(&y, &x, &x, &ctxtReal39);
@@ -1041,7 +1041,7 @@ void subShoICplx(void) {
 void subCplxShoI(void) {
   convertShortIntegerRegisterToReal34Register(REGISTER_X, REGISTER_X);
   real34Subtract(REGISTER_REAL34_DATA(REGISTER_Y), REGISTER_REAL34_DATA(REGISTER_X), REGISTER_REAL34_DATA(REGISTER_Y)); // real part
-  reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE, amNone);
+  reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
   complex34Copy(REGISTER_COMPLEX34_DATA(REGISTER_Y), REGISTER_COMPLEX34_DATA(REGISTER_X));
   if(running_program_jm) temporaryInformation = (real34IsZero(REGISTER_REAL34_DATA(REGISTER_X)) ? TI_TRUE : TI_FALSE) & (real34IsZero(REGISTER_IMAG34_DATA(REGISTER_X)) ? TI_TRUE : TI_FALSE);    //JM Temporary hack to do DSZ
 }
@@ -1113,7 +1113,7 @@ void subRealCplx(void) {
  ***********************************************/
 void subCplxReal(void) {
   real34Subtract(REGISTER_REAL34_DATA(REGISTER_Y), REGISTER_REAL34_DATA(REGISTER_X), REGISTER_REAL34_DATA(REGISTER_Y)); // real part
-  reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE, amNone);
+  reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
   complex34Copy(REGISTER_COMPLEX34_DATA(REGISTER_Y), REGISTER_COMPLEX34_DATA(REGISTER_X));
 }
 

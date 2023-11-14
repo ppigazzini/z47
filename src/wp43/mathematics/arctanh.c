@@ -87,13 +87,13 @@ void arctanhLonI(void) {
   convertLongIntegerRegisterToReal(REGISTER_X, &x, &ctxtReal39);
 
   if(realIsZero(&x)) {
-    reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amNone);
+    reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
     real34Zero(REGISTER_REAL34_DATA(REGISTER_X));
   }
   else {
     if(realCompareEqual(&x, const_1)) {
       if(getSystemFlag(FLAG_SPCRES)) {
-        reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amNone);
+        reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
         convertRealToReal34ResultRegister(const_plusInfinity, REGISTER_X);
       }
       else {
@@ -105,7 +105,7 @@ void arctanhLonI(void) {
     }
     else if(realCompareEqual(&x, const__1)) {
       if(getSystemFlag(FLAG_SPCRES)) {
-        reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amNone);
+        reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
         convertRealToReal34ResultRegister(const_minusInfinity, REGISTER_X);
       }
       else {
@@ -117,13 +117,13 @@ void arctanhLonI(void) {
     }
     else {
       if(getFlag(FLAG_CPXRES)) {
-        reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE, amNone);
+        reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
         convertRealToReal34ResultRegister(&x, REGISTER_X);
         real34Zero(REGISTER_IMAG34_DATA(REGISTER_X));
         arctanhCplx();
       }
       else if(getSystemFlag(FLAG_SPCRES)) {
-        reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amNone);
+        reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
         convertRealToReal34ResultRegister(const_NaN, REGISTER_X);
       }
       else {
@@ -184,7 +184,7 @@ void arctanhReal(void) {
     else {
       if(realCompareAbsGreaterThan(&x, const_1)) {
         if(getFlag(FLAG_CPXRES)) {
-          reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE, amNone);
+          reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
           convertRealToReal34ResultRegister(&x, REGISTER_X);
           real34Zero(REGISTER_IMAG34_DATA(REGISTER_X));
           arctanhCplx();

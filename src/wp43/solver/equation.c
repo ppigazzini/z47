@@ -145,11 +145,11 @@ TO_QSPI static const char bugScreenUnknownFormulaParserMode[] = "In function _pa
 
 void fnEqNew(uint16_t unusedButMandatoryParameter) {
   if(numberOfFormulae == 0) {
-    allFormulae = allocWp43(TO_BLOCKS(sizeof(formulaHeader_t)));
+    allFormulae = allocC47Blocks(TO_BLOCKS(sizeof(formulaHeader_t)));
     if(allFormulae) {
       numberOfFormulae = 1;
       currentFormula = 0;
-      allFormulae[0].pointerToFormulaData = WP43_NULL;
+      allFormulae[0].pointerToFormulaData = C47_NULL;
       allFormulae[0].sizeInBlocks = 0;
       graphVariable = 0;
     }
@@ -162,15 +162,15 @@ void fnEqNew(uint16_t unusedButMandatoryParameter) {
     }
   }
   else {
-    formulaHeader_t *newPtr = allocWp43(TO_BLOCKS(sizeof(formulaHeader_t)) * (numberOfFormulae + 1));
+    formulaHeader_t *newPtr = allocC47Blocks(TO_BLOCKS(sizeof(formulaHeader_t)) * (numberOfFormulae + 1));
     if(newPtr) {
       for(uint32_t i = 0; i < numberOfFormulae; ++i) {
         newPtr[i + (i > currentFormula ? 1 : 0)] = allFormulae[i];
       }
       ++currentFormula;
-      newPtr[currentFormula].pointerToFormulaData = WP43_NULL;
+      newPtr[currentFormula].pointerToFormulaData = C47_NULL;
       newPtr[currentFormula].sizeInBlocks = 0;
-      freeWp43(allFormulae, TO_BLOCKS(sizeof(formulaHeader_t)) * (numberOfFormulae));
+      freeC47Blocks(allFormulae, TO_BLOCKS(sizeof(formulaHeader_t)) * (numberOfFormulae));
       allFormulae = newPtr;
       ++numberOfFormulae;
       graphVariable = 0;
@@ -251,13 +251,13 @@ void setEquation(uint16_t equationId, const char *equationString) {
   uint32_t newSizeInBlocks = TO_BLOCKS(stringByteLength(equationString) + 1);
   uint8_t *newPtr;
   if(allFormulae[equationId].sizeInBlocks == 0) {
-    newPtr = allocWp43(newSizeInBlocks);
+    newPtr = allocC47Blocks(newSizeInBlocks);
   }
   else {
-    newPtr = reallocWp43(TO_PCMEMPTR(allFormulae[equationId].pointerToFormulaData), allFormulae[equationId].sizeInBlocks, newSizeInBlocks);
+    newPtr = reallocC47Blocks(TO_PCMEMPTR(allFormulae[equationId].pointerToFormulaData), allFormulae[equationId].sizeInBlocks, newSizeInBlocks);
   }
   if(newPtr) {
-    allFormulae[equationId].pointerToFormulaData = TO_WP43MEMPTR(newPtr);
+    allFormulae[equationId].pointerToFormulaData = TO_C47MEMPTR(newPtr);
   }
   else {
     displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
@@ -273,12 +273,12 @@ void setEquation(uint16_t equationId, const char *equationString) {
 void deleteEquation(uint16_t equationId) {
   if(equationId < numberOfFormulae) {
     if(allFormulae[equationId].sizeInBlocks > 0) {
-      freeWp43(TO_PCMEMPTR(allFormulae[equationId].pointerToFormulaData), allFormulae[equationId].sizeInBlocks);
+      freeC47Blocks(TO_PCMEMPTR(allFormulae[equationId].pointerToFormulaData), allFormulae[equationId].sizeInBlocks);
     }
     for(uint16_t i = equationId + 1; i < numberOfFormulae; ++i) {
       allFormulae[i - 1] = allFormulae[i];
     }
-    freeWp43(allFormulae + (--numberOfFormulae), TO_BLOCKS(sizeof(formulaHeader_t)));
+    freeC47Blocks(allFormulae + (--numberOfFormulae), TO_BLOCKS(sizeof(formulaHeader_t)));
     if(numberOfFormulae == 0) {
       allFormulae = NULL;
     }
@@ -807,7 +807,7 @@ static void _runDyadicFunction(char *mvarBuffer, uint16_t item) {
     real34Copy(&re, REGISTER_REAL34_DATA(REGISTER_X));
   }
   else {
-    reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE, amNone);
+    reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
     real34Copy(&re, REGISTER_REAL34_DATA(REGISTER_X));
     real34Copy(&im, REGISTER_IMAG34_DATA(REGISTER_X));
   }
@@ -817,7 +817,7 @@ static void _runDyadicFunction(char *mvarBuffer, uint16_t item) {
     real34Copy(&re, REGISTER_REAL34_DATA(REGISTER_Y));
   }
   else {
-    reallocateRegister(REGISTER_Y, dtComplex34, COMPLEX34_SIZE, amNone);
+    reallocateRegister(REGISTER_Y, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
     real34Copy(&re, REGISTER_REAL34_DATA(REGISTER_Y));
     real34Copy(&im, REGISTER_IMAG34_DATA(REGISTER_Y));
   }
@@ -844,7 +844,7 @@ static void _runMonadicFunction(char *mvarBuffer, uint16_t item) {
     real34Copy(&re, REGISTER_REAL34_DATA(REGISTER_X));
   }
   else {
-    reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE, amNone);
+    reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
     real34Copy(&re, REGISTER_REAL34_DATA(REGISTER_X));
     real34Copy(&im, REGISTER_IMAG34_DATA(REGISTER_X));
   }
@@ -986,11 +986,11 @@ static void _processOperator(uint16_t func, char *mvarBuffer) {
           setSystemFlag(FLAG_ASLIFT);
           liftStack();
           if((real34IsZero(PARSER_LEFT_VALUE_IMAG) || real34IsNaN(PARSER_LEFT_VALUE_IMAG)) && (real34IsZero(&PARSER_NUMERIC_STACK[(*PARSER_NUMERIC_STACK_POINTER) * 2 - 1]) || real34IsNaN(&PARSER_NUMERIC_STACK[(*PARSER_NUMERIC_STACK_POINTER) * 2 - 1]))) {
-            reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amNone);
+            reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
             real34Subtract(&PARSER_NUMERIC_STACK[(*PARSER_NUMERIC_STACK_POINTER) * 2 - 2], PARSER_LEFT_VALUE_REAL, REGISTER_REAL34_DATA(REGISTER_X));
           }
           else {
-            reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE, amNone);
+            reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
             real34Subtract(&PARSER_NUMERIC_STACK[(*PARSER_NUMERIC_STACK_POINTER) * 2 - 2], PARSER_LEFT_VALUE_REAL, REGISTER_REAL34_DATA(REGISTER_X));
             real34Subtract(&PARSER_NUMERIC_STACK[(*PARSER_NUMERIC_STACK_POINTER) * 2 - 1], PARSER_LEFT_VALUE_IMAG, REGISTER_IMAG34_DATA(REGISTER_X));
           }

@@ -44,7 +44,7 @@ void audioTone(uint32_t frequency) {
     ss.channels = 1;
     ss.rate     = 44100;
 
-    s = pa_simple_new(NULL, "WP43", PA_STREAM_PLAYBACK, NULL, "BEEP/TONE", &ss, NULL, NULL, NULL);
+    s = pa_simple_new(NULL, "C47", PA_STREAM_PLAYBACK, NULL, "BEEP/TONE", &ss, NULL, NULL, NULL);
 
     if(s) {
       size_t bufSize = ss.rate / 4;

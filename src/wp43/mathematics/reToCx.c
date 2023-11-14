@@ -83,7 +83,7 @@ void fnReToCx(uint16_t unusedButMandatoryParameter) {
 
     real34Copy(REGISTER_REAL34_DATA(REGISTER_Y), &temp);
     real34Copy(REGISTER_REAL34_DATA(REGISTER_X), VARIABLE_IMAG34_DATA(&temp));
-    reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE, amNone);
+    reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
 
     if(getSystemFlag(FLAG_POLAR)) { // polar mode
       if(real34CompareEqual(VARIABLE_REAL34_DATA(&temp), const34_0)) {

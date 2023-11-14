@@ -101,7 +101,7 @@
 
     if(checkParamCauchy(&val, &x0, &gamma)) {
       WP34S_Pdf_Cauchy(&val, &x0, &gamma, &ans, &ctxtReal39);
-      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amNone);
+      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
       convertRealToReal34ResultRegister(&ans, REGISTER_X);
       adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
     }
@@ -117,7 +117,7 @@
 
     if(checkParamCauchy(&val, &x0, &gamma)) {
       WP34S_Cdf_Cauchy(&val, &x0, &gamma, &ans, &ctxtReal39);
-      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amNone);
+      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
       convertRealToReal34ResultRegister(&ans, REGISTER_X);
       adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
     }
@@ -133,7 +133,7 @@
 
     if(checkParamCauchy(&val, &x0, &gamma)) {
       WP34S_Cdfu_Cauchy(&val, &x0, &gamma, &ans, &ctxtReal39);
-      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amNone);
+      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
       convertRealToReal34ResultRegister(&ans, REGISTER_X);
       adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
     }
@@ -169,7 +169,7 @@
         }
         return;
       }
-      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amNone);
+      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
       convertRealToReal34ResultRegister(&ans, REGISTER_X);
       adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
     }

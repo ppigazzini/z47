@@ -441,7 +441,7 @@ bool_t checkMinimumDataPoints(const real_t *n) {
 static void clearStatisticalSums(void) {
   if(statisticalSumsPointer) {
     for(int32_t sum=0; sum<NUMBER_OF_STATISTICAL_SUMS - 4; sum++) {
-      realZero((real_t *)(statisticalSumsPointer + REAL_SIZE * sum));
+      realZero((real_t *)(statisticalSumsPointer + REAL_SIZE_IN_BLOCKS * sum));
     }
     realCopy(const_plusInfinity,  SIGMA_XMIN);
     realCopy(const_plusInfinity,  SIGMA_YMIN);
@@ -454,7 +454,7 @@ static void clearStatisticalSums(void) {
 void initStatisticalSums(void) {
   if(statisticalSumsUpdate) {
     if(statisticalSumsPointer == NULL) {
-      statisticalSumsPointer = allocWp43(NUMBER_OF_STATISTICAL_SUMS * REAL_SIZE);
+      statisticalSumsPointer = allocC47Blocks(NUMBER_OF_STATISTICAL_SUMS * REAL_SIZE_IN_BLOCKS);
       clearStatisticalSums();
     }
   else {
@@ -637,7 +637,7 @@ static calcRegister_t fnClHisto(bool_t deleteVariable) {
   #if !defined(TESTSUITE_BUILD)
     calcRegister_t regHisto = findNamedVariable("HISTO");
     if(regHisto == INVALID_VARIABLE) {
-      allocateNamedVariable("HISTO", dtReal34, REAL34_SIZE);
+      allocateNamedVariable("HISTO", dtReal34, REAL34_SIZE_IN_BLOCKS);
       regHisto = findNamedVariable("HISTO");
     }
     if(regHisto == INVALID_VARIABLE) {
@@ -666,12 +666,12 @@ void setStatisticalSumsUpdate(bool_t para) {
   //if going off auto, or confirming it is still on auto off, clear sums
   if(!para) {
     if(statisticalSumsPointer != NULL) {
-      freeWp43(statisticalSumsPointer, NUMBER_OF_STATISTICAL_SUMS * REAL_SIZE);
+      freeC47Blocks(statisticalSumsPointer, NUMBER_OF_STATISTICAL_SUMS * REAL_SIZE_IN_BLOCKS);
       statisticalSumsPointer = NULL;
       if(lastErrorCode != ERROR_NONE) {
         return;
       }
-    }    
+    }
   }
   if (statisticalSumsUpdate && !para) {
     //It is on auto and it is being switched off auto. Stats sums already cleared, just set the flag.
@@ -695,7 +695,7 @@ void fnClSigma(uint16_t unusedButMandatoryParameter) {
   strcpy(statMx,"STATS");                     //any stats operation restores the stats matrix. The purpose of the changed names are just to be able to exchange the matrixes for reading and graphing
   calcRegister_t regStats = findNamedVariable(statMx);
   if(regStats == INVALID_VARIABLE) {
-    allocateNamedVariable(statMx, dtReal34, REAL34_SIZE);
+    allocateNamedVariable(statMx, dtReal34, REAL34_SIZE_IN_BLOCKS);
     regStats = findNamedVariable(statMx);
   }
   if(regStats == INVALID_VARIABLE) {
@@ -715,7 +715,7 @@ void fnClSigma(uint16_t unusedButMandatoryParameter) {
 
 
   if(statisticalSumsPointer != NULL) {
-    freeWp43(statisticalSumsPointer, NUMBER_OF_STATISTICAL_SUMS * REAL_SIZE);
+    freeC47Blocks(statisticalSumsPointer, NUMBER_OF_STATISTICAL_SUMS * REAL_SIZE_IN_BLOCKS);
     statisticalSumsPointer = NULL;
   }
 }
@@ -808,9 +808,9 @@ void fnSigma(uint16_t plusMinus) {
           }
 
           liftStack();
-          reallocateRegister(REGISTER_Y, dtReal34, REAL34_SIZE, amNone);
+          reallocateRegister(REGISTER_Y, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
           convertRealToReal34ResultRegister(&y, REGISTER_Y);
-          reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amNone);
+          reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
           convertRealToReal34ResultRegister(&x, REGISTER_X);
           if(statisticalSumsPointer != NULL) {
             temporaryInformation = TI_STATISTIC_SUMS;
@@ -871,7 +871,7 @@ void fnSigma(uint16_t plusMinus) {
 void fnStatSum(uint16_t sum) {
   if(checkMinimumDataPoints(const_1)) {
     liftStack();
-    realToReal34((real_t *)(statisticalSumsPointer + REAL_SIZE * sum), REGISTER_REAL34_DATA(REGISTER_X));
+    realToReal34((real_t *)(statisticalSumsPointer + REAL_SIZE_IN_BLOCKS * sum), REGISTER_REAL34_DATA(REGISTER_X));
   }
 }
 
@@ -1231,11 +1231,11 @@ static void convertStatsMatrixToHistoMatrix(uint16_t statsVariableToHistogram) {
         liftStack();
         liftStack();
         liftStack();
-        reallocateRegister(REGISTER_Z, dtReal34, REAL34_SIZE, amNone);
+        reallocateRegister(REGISTER_Z, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
         convertRealToReal34ResultRegister(&nb, REGISTER_Z);
-        reallocateRegister(REGISTER_Y, dtReal34, REAL34_SIZE, amNone);
+        reallocateRegister(REGISTER_Y, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
         convertRealToReal34ResultRegister(&lb, REGISTER_Y);
-        reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amNone);
+        reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
         convertRealToReal34ResultRegister(&hb, REGISTER_X);
         temporaryInformation = TI_STATISTIC_HISTO;
       }

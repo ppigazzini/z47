@@ -290,7 +290,7 @@ uint64_t               systemFlags;
 uint64_t               savedSystemFlags;
 
 size_t                 gmpMemInBytes;
-size_t                 wp43MemInBlocks;
+size_t                 c47MemInBlocks;
 
 real_t                 SAVED_SIGMA_LASTX;
 real_t                 SAVED_SIGMA_LASTY;
@@ -428,7 +428,7 @@ int vbatIntegrated = 3000;
       uint16_t currentVolumeSetting, savedVoluleSetting; // used for beep signaling screen shot
   //uint32_t now, previousRefresh, nextAutoRepeat = 0;      // removed autorepeat stuff
 
-    wp43MemInBlocks = 0;
+    c47MemInBlocks = 0;
     gmpMemInBytes = 0;
     mp_set_memory_functions(allocGmp, reallocGmp, freeGmp);
 

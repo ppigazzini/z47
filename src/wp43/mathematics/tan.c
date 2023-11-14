@@ -129,7 +129,7 @@ void tanLonI(void) {
     return;
   }
 
-  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amNone);
+  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
   if(realIsZero(&cos)) {
     convertRealToReal34ResultRegister(const_NaN, REGISTER_X);
   }
