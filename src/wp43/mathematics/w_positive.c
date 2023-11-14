@@ -80,7 +80,7 @@ void wPosLonI(void) {
   real_t x;
 
   convertLongIntegerRegisterToReal(REGISTER_X, &x, &ctxtReal39);
-  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amNone);
+  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
   convertRealToReal34ResultRegister(&x, REGISTER_X);
   wPosReal();
 }
@@ -99,7 +99,7 @@ void wPosReal(void) {
     }
     else if(getSystemFlag(FLAG_CPXRES)) {
       WP34S_ComplexLambertW(&x, const_0, &res, &resi, &ctxtReal39);
-      reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE, amNone);
+      reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
       convertRealToReal34ResultRegister(&res, REGISTER_X);
       convertRealToImag34ResultRegister(&resi, REGISTER_X);
     }

@@ -446,7 +446,7 @@ void fnDeleteMenu(uint16_t id) {
   else {
     _removeMenuAssignments(id);   // Remove assignments before deleting the user menu
     if(numberOfUserMenus == 1) {
-      freeWp43(userMenus, TO_BLOCKS(sizeof(userMenu_t)));
+      freeC47Blocks(userMenus, TO_BLOCKS(sizeof(userMenu_t)));
       userMenus = NULL;
       numberOfUserMenus = 0;
     }
@@ -454,7 +454,7 @@ void fnDeleteMenu(uint16_t id) {
       if(id < numberOfUserMenus - 1) {
         xcopy(userMenus + id, userMenus + id + 1, sizeof(userMenu_t) * (numberOfUserMenus - id - 1));
       }
-      freeWp43(userMenus + numberOfUserMenus - 1, TO_BLOCKS(sizeof(userMenu_t)));
+      freeC47Blocks(userMenus + numberOfUserMenus - 1, TO_BLOCKS(sizeof(userMenu_t)));
       --numberOfUserMenus;
     }
   }
@@ -788,7 +788,7 @@ void setUserKeyArgument(uint16_t position, const char *name) {
   char *userKeyLabelPtr2 = (char *)getNthString((uint8_t *)userKeyLabel, position + 1);
   char *userKeyLabelPtr3 = (char *)getNthString((uint8_t *)userKeyLabel, 37 * 6);
   uint16_t newUserKeyLabelSize = userKeyLabelSize - stringByteLength(userKeyLabelPtr1) + stringByteLength(name);
-  char *newUserKeyLabel = allocWp43(TO_BLOCKS(newUserKeyLabelSize));
+  char *newUserKeyLabel = allocC47Blocks(TO_BLOCKS(newUserKeyLabelSize));
   char *newUserKeyLabelPtr = newUserKeyLabel;
 
   xcopy(newUserKeyLabelPtr, userKeyLabel, (int)(userKeyLabelPtr1 - userKeyLabel));
@@ -800,7 +800,7 @@ void setUserKeyArgument(uint16_t position, const char *name) {
   newUserKeyLabelPtr += (int)(userKeyLabelPtr3 - userKeyLabelPtr2);
   *(newUserKeyLabelPtr++) = 0;
 
-  freeWp43(userKeyLabel, TO_BLOCKS(userKeyLabelSize));
+  freeC47Blocks(userKeyLabel, TO_BLOCKS(userKeyLabelSize));
   userKeyLabel = newUserKeyLabel;
   userKeyLabelSize = newUserKeyLabelSize;
 }
@@ -810,10 +810,10 @@ void createMenu(const char *name) {
   if(validateName(name)) {
     if(isUniqueName(name)) {
       if(numberOfUserMenus == 0) {
-        userMenus = allocWp43(TO_BLOCKS(sizeof(userMenu_t)));
+        userMenus = allocC47Blocks(TO_BLOCKS(sizeof(userMenu_t)));
       }
       else {
-        userMenus = reallocWp43(userMenus, TO_BLOCKS(sizeof(userMenu_t)) * numberOfUserMenus, TO_BLOCKS(sizeof(userMenu_t)) * (numberOfUserMenus + 1));
+        userMenus = reallocC47Blocks(userMenus, TO_BLOCKS(sizeof(userMenu_t)) * numberOfUserMenus, TO_BLOCKS(sizeof(userMenu_t)) * (numberOfUserMenus + 1));
       }
       memset(userMenus + numberOfUserMenus, 0, sizeof(userMenu_t));
       xcopy(userMenus[numberOfUserMenus].menuName, name, stringByteLength(name) + 1);

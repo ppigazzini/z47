@@ -144,7 +144,7 @@
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       }
       else {
-        reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amNone);
+        reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
         convertRealToReal34ResultRegister(&ans, REGISTER_X);
       }
       adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
@@ -168,7 +168,7 @@
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       }
       else {
-        reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amNone);
+        reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
         convertRealToReal34ResultRegister(&ans, REGISTER_X);
       }
       adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
@@ -192,7 +192,7 @@
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       }
       else {
-        reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amNone);
+        reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
         convertRealToReal34ResultRegister(&ans, REGISTER_X);
       }
       adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
@@ -229,7 +229,7 @@
         }
         return;
       }
-      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amNone);
+      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
       convertRealToReal34ResultRegister(&ans, REGISTER_X);
       adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
     }

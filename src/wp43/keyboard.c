@@ -939,7 +939,7 @@ int16_t lastItem = 0;
         #endif //VERBOSEKEYS
 
         item = determineFunctionKeyItem_C47((char *)data, shiftF, shiftG); }
-        
+
         // Update currentUserMenu for user defined menus selected in an existing function
         if(softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_DYNAMIC) {
           setCurrentUserMenu(item, userMenus[currentUserMenu].menuItem[dynamicMenuItem].argumentName);
@@ -1895,14 +1895,14 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
         fnTimerStop(TO_3S_CTFF);      //dr
 
         hideFunctionName();
-        
+
         int keyCode = (*((char *)data) - '0')*10 + *(((char *)data) + 1) - '0';
         int keyStateCode = (getSystemFlag(FLAG_ALPHA) ? 3 : 0) + (lastshiftG ? 2 : lastshiftF ? 1 : 0);
         char *funcParam = (char *)getNthString((uint8_t *)userKeyLabel, keyCode * 6 + keyStateCode);
         if (showFunctionNameArg != NULL) {
           funcParam = showFunctionNameArg;       // Needed when executing a user menu from a long pressed key
         }
-        
+
         if(item < 0) {
           setCurrentUserMenu(item, funcParam);
           showSoftmenu(item);
@@ -1976,7 +1976,7 @@ RELEASE_END:
 #endif //!TESTSUITE_BUILD
   void leavePem(void) {
     if(freeProgramBytes >= 4) { // Push the programs to the end of RAM
-      uint32_t newProgramSize = (uint32_t)((uint8_t *)(ram + RAM_SIZE) - beginOfProgramMemory) - (freeProgramBytes & 0xfffc);
+      uint32_t newProgramSize = (uint32_t)((uint8_t *)(ram + RAM_SIZE_IN_BLOCKS) - beginOfProgramMemory) - (freeProgramBytes & 0xfffc);
       uint16_t localStepNumber = currentLocalStepNumber;
       uint16_t programNumber = currentProgramNumber;
       uint16_t fdLocalStepNumber = firstDisplayedLocalStepNumber;
@@ -2877,7 +2877,7 @@ void fnKeyEnter(uint16_t unusedButMandatoryParameter) {
         }
         if(softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_EQ_EDIT) {
           calcModeNormal();
-          if(allFormulae[currentFormula].pointerToFormulaData == WP43_NULL) {
+          if(allFormulae[currentFormula].pointerToFormulaData == C47_NULL) {
             deleteEquation(currentFormula);
           }
         }
@@ -3196,7 +3196,7 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
         else {
           if(softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_EQ_EDIT) {
             calcModeNormal();
-            if(allFormulae[currentFormula].pointerToFormulaData == WP43_NULL) {
+            if(allFormulae[currentFormula].pointerToFormulaData == C47_NULL) {
               deleteEquation(currentFormula);
             }
           }

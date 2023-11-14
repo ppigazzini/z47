@@ -490,7 +490,7 @@
         ptr += strlen(ptr);
         strcpy(ptr, " = ");
         ptr += strlen(ptr);
-        realToString(statisticalSumsPointer + REAL_SIZE * sum, tmpString);
+        realToString(statisticalSumsPointer + REAL_SIZE_IN_BLOCKS * sum, tmpString);
         if(strchr(tmpString, '.') == NULL && strchr(tmpString, 'E') == NULL) {
           strcat(tmpString, ".");
         }
@@ -1749,7 +1749,7 @@ void execTimerApp(uint16_t timerType) {
     char padding[20];                                          //JM
     functionName[0] = 0;
     showFunctionNameArg = NULL;
-        
+
     //FIX //REMOVE DISPLAYING TEMP STRING as in C43 the tmpstring does NOT show the last keystroke or whatever this tempstr is needed for. It gets executed from timers
     //if(tmpString[0] != 0) {
     //  strcpy(functionName,tmpString);
@@ -1791,7 +1791,7 @@ void execTimerApp(uint16_t timerType) {
         }
       }
       else if(item == -MNU_DYNAMIC) {
-        if(arg != NULL) stringAppend(functionName,arg);       
+        if(arg != NULL) stringAppend(functionName,arg);
         showFunctionNameArg = (char *)arg;                        // Needed when executing a user menu from a long pressed key
       }
       else if(item >= ITM_X_P1 && item <= ITM_X_g6) {
@@ -2201,7 +2201,7 @@ void execTimerApp(uint16_t timerType) {
         #if(SHOW_MEMORY_STATUS == 1)
           char string[1000];
 
-          sprintf(string, "%" PRId32 " bytes free (%" PRId32 " region%s), C43 %" PRIu32 " bytes, GMP %" PRIu32 " bytes -> should always be 0", getFreeRamMemory(), numberOfFreeMemoryRegions, numberOfFreeMemoryRegions==1 ? "" : "s", (uint32_t)TO_BYTES((uint64_t)wp43MemInBlocks), (uint32_t)gmpMemInBytes);
+          sprintf(string, "%" PRId32 " bytes free (%" PRId32 " region%s), C43 %" PRIu32 " bytes, GMP %" PRIu32 " bytes -> should always be 0", getFreeRamMemory(), numberOfFreeMemoryRegions, numberOfFreeMemoryRegions==1 ? "" : "s", (uint32_t)TO_BYTES((uint64_t)c47MemInBlocks), (uint32_t)gmpMemInBytes);
           stringToUtf8(string, (uint8_t *)tmpStr);
           gtk_label_set_label(GTK_LABEL(lblMemoryStatus), tmpStr);
           gtk_widget_show(lblMemoryStatus);
@@ -2447,7 +2447,7 @@ void execTimerApp(uint16_t timerType) {
         const int16_t baseY = Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X + ((temporaryInformation == TI_VIEW && regist == REGISTER_T) ? 0 : (getRegisterDataType(REGISTER_X) == dtReal34Matrix || getRegisterDataType(REGISTER_X) == dtComplex34Matrix) ? 4 - displayStack : 0));
         calcRegister_t origRegist = regist;
         if(temporaryInformation == TI_VIEW && regist == REGISTER_T) {
-          if(currentViewRegister >= FIRST_RESERVED_VARIABLE && currentViewRegister < LAST_RESERVED_VARIABLE && allReservedVariables[currentViewRegister - FIRST_RESERVED_VARIABLE].header.pointerToRegisterData == WP43_NULL) {
+          if(currentViewRegister >= FIRST_RESERVED_VARIABLE && currentViewRegister < LAST_RESERVED_VARIABLE && allReservedVariables[currentViewRegister - FIRST_RESERVED_VARIABLE].header.pointerToRegisterData == C47_NULL) {
             copySourceRegisterToDestRegister(currentViewRegister, TEMP_REGISTER_1);
             regist = TEMP_REGISTER_1;
           }

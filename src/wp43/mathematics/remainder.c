@@ -246,7 +246,7 @@ void rmdRealLonI(void) {
 
   real34ToReal(REGISTER_REAL34_DATA(REGISTER_Y), &y);
   WP34S_Mod(&y, &x, &x, &ctxtReal39);
-  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amNone);
+  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
   convertRealToReal34ResultRegister(&x, REGISTER_X);
 }
 
@@ -345,7 +345,7 @@ void rmdRealShoI(void) {
   real34ToReal(REGISTER_REAL34_DATA(REGISTER_Y), &y);
 
   WP34S_Mod(&y, &x, &x, &ctxtReal39);
-  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amNone);
+  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
   convertRealToReal34ResultRegister(&x, REGISTER_X);
 }
 

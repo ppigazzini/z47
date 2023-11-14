@@ -373,7 +373,7 @@
   extern uint64_t               savedSystemFlags;
 
   extern size_t                 gmpMemInBytes;
-  extern size_t                 wp43MemInBlocks;
+  extern size_t                 c47MemInBlocks;
 
   extern real_t                 SAVED_SIGMA_LASTX;
   extern real_t                 SAVED_SIGMA_LASTY;

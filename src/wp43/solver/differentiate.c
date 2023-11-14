@@ -160,7 +160,7 @@ static void deriv_found_lbl(calcRegister_t deltaX, real_t *h) {
 static void deriv_default_h(real_t *h) {
   calcRegister_t deltaX;
 
-  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amNone);
+  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
   realToReal34(h, REGISTER_REAL34_DATA(REGISTER_X));
   fnFillStack(NOPARAM);
 
@@ -184,7 +184,7 @@ static void deriv_default_h(real_t *h) {
 
 
 static void _differentiatorIteration(calcRegister_t label, real_t *r0) {
-  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amNone);
+  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
   realToReal34(r0, REGISTER_REAL34_DATA(REGISTER_X));
   fnFillStack(NOPARAM);
 

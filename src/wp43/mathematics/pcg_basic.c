@@ -30,11 +30,11 @@
 
 #include "mathematics/pcg_basic.h"
 
-#include "wp43.h" // This line was added by the WP43 team
+#include "wp43.h" // This line was added by the C47 team
 
 // state for global RNGs
 
-//static pcg32_random_t pcg32_global = PCG32_INITIALIZER;    this line was moved to wp43.c by the WP43 team
+//static pcg32_random_t pcg32_global = PCG32_INITIALIZER;    this line was moved to wp43.c by the C47 team
 
 // pcg32_srandom(initstate, initseq)
 // pcg32_srandom_r(rng, initstate, initseq):

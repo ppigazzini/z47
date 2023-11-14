@@ -122,8 +122,8 @@ void scanLabelsAndPrograms(void) {
   uint32_t stepNumber = 0;
   uint8_t *nextStep, *step = beginOfProgramMemory;
 
-  freeWp43(labelList, TO_BLOCKS(sizeof(labelList_t)) * numberOfLabels);
-  freeWp43(programList, TO_BLOCKS(sizeof(programList_t)) * numberOfPrograms);
+  freeC47Blocks(labelList, TO_BLOCKS(sizeof(labelList_t)) * numberOfLabels);
+  freeC47Blocks(programList, TO_BLOCKS(sizeof(programList_t)) * numberOfPrograms);
 
   numberOfLabels = 0;
   numberOfPrograms = 1;
@@ -137,14 +137,14 @@ void scanLabelsAndPrograms(void) {
     step = findNextStep(step);
   }
 
-  labelList = allocWp43(TO_BLOCKS(sizeof(labelList_t)) * numberOfLabels);
+  labelList = allocC47Blocks(TO_BLOCKS(sizeof(labelList_t)) * numberOfLabels);
   if(labelList == NULL) {
     // unlikely
     lastErrorCode = ERROR_RAM_FULL;
     return;
   }
 
-  programList = allocWp43(TO_BLOCKS(sizeof(programList_t)) * numberOfPrograms);
+  programList = allocC47Blocks(TO_BLOCKS(sizeof(programList_t)) * numberOfPrograms);
   if(programList == NULL) {
     // unlikely
     lastErrorCode = ERROR_RAM_FULL;
@@ -583,7 +583,7 @@ static void _insertInProgram(const uint8_t *dat, uint16_t size) {
   uint16_t globalStepNumber;
   if(freeProgramBytes < size) {
     uint8_t *oldBeginOfProgramMemory = beginOfProgramMemory;
-    uint32_t programSizeInBlocks = RAM_SIZE - freeMemoryRegions[numberOfFreeMemoryRegions - 1].address - freeMemoryRegions[numberOfFreeMemoryRegions - 1].sizeInBlocks;
+    uint32_t programSizeInBlocks = RAM_SIZE_IN_BLOCKS - freeMemoryRegions[numberOfFreeMemoryRegions - 1].blockAddress - freeMemoryRegions[numberOfFreeMemoryRegions - 1].sizeInBlocks;
     uint32_t newProgramSizeInBlocks = TO_BLOCKS(TO_BYTES(programSizeInBlocks) - freeProgramBytes + size);
     freeProgramBytes      += TO_BYTES(newProgramSizeInBlocks - programSizeInBlocks);
     resizeProgramMemory(newProgramSizeInBlocks);
@@ -960,11 +960,11 @@ void pemCloseNumberInput(void) {
       case NP_REAL_FLOAT_PART:
       case NP_REAL_EXPONENT:
       case NP_FRACTION_DENOMINATOR: {
-        if(inputLength >= TO_BYTES(REAL34_SIZE)) {
+        if(inputLength >= TO_BYTES(REAL34_SIZE_IN_BLOCKS)) {
           real34_t val;
           *(tmpPtr++) = BINARY_REAL34;
           stringToReal34(numBuffer, &val);
-          for(unsigned int i = 0; i < TO_BYTES(REAL34_SIZE); ++i) {
+          for(unsigned int i = 0; i < TO_BYTES(REAL34_SIZE_IN_BLOCKS); ++i) {
             *(tmpPtr++) = ((uint8_t *)(&val))[i];
           }
           _insertInProgram((uint8_t *)tmpString, (int32_t)(tmpPtr - tmpString));
@@ -983,7 +983,7 @@ void pemCloseNumberInput(void) {
           inputLength++;
         }
 
-        if(inputLength >= TO_BYTES(COMPLEX34_SIZE)) {
+        if(inputLength >= TO_BYTES(COMPLEX34_SIZE_IN_BLOCKS)) {
           real34_t re, im;
           char *imag = numBuffer;
           while(*imag != 'i' && *imag != 0) {
@@ -1005,10 +1005,10 @@ void pemCloseNumberInput(void) {
           *(tmpPtr++) = BINARY_COMPLEX34;
           stringToReal34(numBuffer, &re);
           stringToReal34(imag, &im);
-          for(unsigned int i = 0; i < TO_BYTES(REAL34_SIZE); ++i) {
+          for(unsigned int i = 0; i < TO_BYTES(REAL34_SIZE_IN_BLOCKS); ++i) {
             *(tmpPtr++) = ((uint8_t *)(&re))[i];
           }
-          for(unsigned int i = 0; i < TO_BYTES(REAL34_SIZE); ++i) {
+          for(unsigned int i = 0; i < TO_BYTES(REAL34_SIZE_IN_BLOCKS); ++i) {
             *(tmpPtr++) = ((uint8_t *)(&im))[i];
           }
           _insertInProgram((uint8_t *)tmpString, (int32_t)(tmpPtr - tmpString));
@@ -1070,7 +1070,7 @@ static void _pemCloseDateInput(void) {
       *(tmpPtr++) = ITM_LITERAL;
       *(tmpPtr++) = STRING_DATE;
 
-      reallocateRegister(TEMP_REGISTER_1, dtReal34, REAL34_SIZE, amNone);
+      reallocateRegister(TEMP_REGISTER_1, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
       stringToReal34(numBuffer, REGISTER_REAL34_DATA(TEMP_REGISTER_1));
       convertReal34RegisterToDateRegister(TEMP_REGISTER_1, TEMP_REGISTER_1);
       internalDateToJulianDay(REGISTER_REAL34_DATA(TEMP_REGISTER_1), REGISTER_REAL34_DATA(TEMP_REGISTER_1));

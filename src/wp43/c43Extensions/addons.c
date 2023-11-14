@@ -153,13 +153,13 @@ void fnArg_all(uint16_t unusedButMandatoryParameter) {
   if(getRegisterDataType(REGISTER_X) == dtLongInteger) {    //JM vv add the obvious case that a number has 0/180 degrees. Why error for this.
     convertLongIntegerRegisterToLongInteger(REGISTER_X, li);
     if(longIntegerIsPositive(li) || longIntegerIsZero(li)) {
-      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amNone);
+      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
       realToReal34(const_0, REGISTER_REAL34_DATA(REGISTER_X));
       convertAngle34FromTo(REGISTER_REAL34_DATA(REGISTER_X), amDegree, currentAngularMode);
       setRegisterAngularMode(REGISTER_X, currentAngularMode);
     }
     else if(longIntegerIsNegative(li)) {
-      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amNone);
+      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
       realToReal34(const_180, REGISTER_REAL34_DATA(REGISTER_X));
       convertAngle34FromTo(REGISTER_REAL34_DATA(REGISTER_X), amDegree, currentAngularMode);
       setRegisterAngularMode(REGISTER_X, currentAngularMode);
@@ -282,7 +282,7 @@ void fnFrom_ms(uint16_t unusedButMandatoryParameter){
       }
 
       if(tmpString100_OUT[0] != 0) {
-        reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amNone);
+        reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
         stringToReal34(tmpString100_OUT, REGISTER_REAL34_DATA(REGISTER_X));
         #if(EXTRA_INFO_ON_CALC_ERROR == 1)
           printf("\n ------- 003 >>>%s<<<\n",tmpString100_OUT);
@@ -308,23 +308,23 @@ void fnFrom_ms(uint16_t unusedButMandatoryParameter){
 // Current operation:
 //   A.    From NIM press .ms: always real/integer (no angle), converting the digits to “h” ”m” ”s”:
 //   a.    Example 1.2345 .ms -> 1:23:45, No change.
-//   
-//   B.    With H:M:S (1:23:45) in X, press .ms (again): rewrite the hexadecimal digits and tag as angle 
+//
+//   B.    With H:M:S (1:23:45) in X, press .ms (again): rewrite the hexadecimal digits and tag as angle
 //   a.    Example 1:23:45 in X, .ms -> 1°23’45’’ tagged angle, No change
-//   
+//
 //   C.    With Real/Integer (hours) in X press .ms: -> convert X hours to HMS:
 //   a.    Example 1.2345 ENTER, .ms -> 1:14:04.2, No change.
-//   
+//
 //   D.    Tagged angle in X: RAD GRAD MULpi in X, .ms: no action. Proposed change.
-//   
+//
 //   E.    Tagged angle in X: DMS, press .ms: rewrite D:M:S to H:M:S. No change.
 //   a.    Press .ms again, see (B)
-//   
+//
 //   F.    Tagged angle in X: DEG, .ms: do >>DMS
-//   a.    Press again, see (E), the cyclic continue as now, no change 
-//   
-// I propose these CHANGES for Tagged angles only:  
-//   D.    Tagged angle in X: RAD GRAD MULpi in X, .ms: Change to do: >>DMS 
+//   a.    Press again, see (E), the cyclic continue as now, no change
+//
+// I propose these CHANGES for Tagged angles only:
+//   D.    Tagged angle in X: RAD GRAD MULpi in X, .ms: Change to do: >>DMS
 //   a.    Press again, see (E), the cyclic continue as now, no change
 
 
@@ -354,11 +354,11 @@ void fnTo_ms(uint16_t unusedButMandatoryParameter) {
         if(getRegisterDataType(REGISTER_X) == dtReal34) {
           if(getRegisterAngularMode(REGISTER_X) == amDMS) {
             fnKeyDotD(0);
-            fnToHms(0);            
+            fnToHms(0);
           } else
-          if(getRegisterAngularMode(REGISTER_X) == amDegree // || 
-//             getRegisterAngularMode(REGISTER_X) == amRadian || 
-//             getRegisterAngularMode(REGISTER_X) == amGrad   || 
+          if(getRegisterAngularMode(REGISTER_X) == amDegree // ||
+//             getRegisterAngularMode(REGISTER_X) == amRadian ||
+//             getRegisterAngularMode(REGISTER_X) == amGrad   ||
 //             getRegisterAngularMode(REGISTER_X) == amMultPi
             ) {
             fnAngularModeJM(amDMS);
@@ -467,7 +467,7 @@ void fnMultiplySI(uint16_t multiplier) {
 static void cpxToStk(const real_t *real1, const real_t *real2, const bool_t sl) {
   if(sl == forcedLiftTheStack) setSystemFlag(FLAG_ASLIFT);
   liftStack();
-  reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE, amNone);
+  reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
   realToReal34(real1, REGISTER_REAL34_DATA(REGISTER_X));
   realToReal34(real2, REGISTER_IMAG34_DATA(REGISTER_X));
   adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
@@ -826,7 +826,7 @@ void fnChangeBaseJM(uint16_t BASE) {
           }
           fnRefreshState();
         }
-      } 
+      }
     }
 
     nimBufferToDisplayBuffer(aimBuffer, nimBufferDisplay + 2);
@@ -1015,7 +1015,7 @@ void fnP_All_Regs(uint16_t option) {
         if(getSystemFlag(FLAG_SSIZE8)) {
           stackregister_csv_out(REGISTER_X, REGISTER_D);
         } else {
-          stackregister_csv_out(REGISTER_X, REGISTER_T);          
+          stackregister_csv_out(REGISTER_X, REGISTER_T);
         }
         break;
 
@@ -1090,7 +1090,7 @@ void print_stck(void) {
 void doubleToXRegisterReal34(double x) { //Convert from double to X register REAL34
   setSystemFlag(FLAG_ASLIFT);
   liftStack();
-  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amNone);
+  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
   snprintf(tmpString, TMP_STR_LENGTH, "%.16e", x);
   stringToReal34(tmpString, REGISTER_REAL34_DATA(REGISTER_X));
   //adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
@@ -1113,7 +1113,7 @@ void fnStrInputReal34(char inp1[]) { // CONVERT STRING to REAL IN X      //DONE
   strcat(tmpString, inp1);
   setSystemFlag(FLAG_ASLIFT); // 5
   liftStack();
-  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amNone);
+  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
   stringToReal34(tmpString, REGISTER_REAL34_DATA(REGISTER_X));
   setSystemFlag(FLAG_ASLIFT);
 }
@@ -1199,7 +1199,7 @@ void timeToReal34(uint16_t hms) { //always 24 hour time;
 
   if(hms == 3) {
     //total seconds
-    reallocateRegister(regist, dtReal34, REAL34_SIZE, amNone);
+    reallocateRegister(regist, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
     real34Copy(&real34, REGISTER_REAL34_DATA(regist));
     return;
   }
@@ -1222,21 +1222,21 @@ void timeToReal34(uint16_t hms) { //always 24 hour time;
     case 0: //h
       int32ToReal34(sign ? -1 : +1, &value34);
       real34Multiply(&h34, &value34, &h34);
-      reallocateRegister(regist, dtReal34, REAL34_SIZE, amNone);
+      reallocateRegister(regist, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
       real34Copy(&h34, REGISTER_REAL34_DATA(regist));
       break;
 
     case 1: //m
       int32ToReal34(sign ? -1 : +1, &value34);
       real34Multiply(&m34, &value34, &m34);
-      reallocateRegister(regist, dtReal34, REAL34_SIZE, amNone);
+      reallocateRegister(regist, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
       real34Copy(&m34, REGISTER_REAL34_DATA(regist));
       break;
 
     case 2: //s
       int32ToReal34(sign ? -1 : +1, &value34);
       real34Multiply(&s34, &value34, &s34);
-      reallocateRegister(regist, dtReal34, REAL34_SIZE, amNone);
+      reallocateRegister(regist, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
       real34Copy(&s34, REGISTER_REAL34_DATA(regist));
       break;
 
@@ -1304,7 +1304,7 @@ void dms34ToReal34(uint16_t dms) {
       int32ToReal34(sign, &value34);
       realToReal34(&degrees, &d34);
       real34Multiply(&d34, &value34, &d34);
-      reallocateRegister(regist, dtReal34, REAL34_SIZE, amNone);
+      reallocateRegister(regist, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
       real34Copy(&d34, REGISTER_REAL34_DATA(regist));
       break;
 
@@ -1312,7 +1312,7 @@ void dms34ToReal34(uint16_t dms) {
       int32ToReal34(m, &m34);
       int32ToReal34(sign, &value34);
       real34Multiply(&m34, &value34, &m34);
-      reallocateRegister(regist, dtReal34, REAL34_SIZE, amNone);
+      reallocateRegister(regist, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
       real34Copy(&m34, REGISTER_REAL34_DATA(regist));
       break;
 
@@ -1326,7 +1326,7 @@ void dms34ToReal34(uint16_t dms) {
 
       int32ToReal34(sign, &value34);
       real34Multiply(&s34, &value34, &s34);
-      reallocateRegister(regist, dtReal34, REAL34_SIZE, amNone);
+      reallocateRegister(regist, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
       real34Copy(&s34, REGISTER_REAL34_DATA(regist));
       break;
 
@@ -1533,7 +1533,7 @@ void fnToTime(uint16_t unusedButMandatoryParameter) {
   real34Add(&hr, &m, &hr);
   real34Add(&hr, &s, &hr);
 
-  reallocateRegister(REGISTER_X, dtTime, REAL34_SIZE, amNone);
+  reallocateRegister(REGISTER_X, dtTime, REAL34_SIZE_IN_BLOCKS, amNone);
   real34Copy(&hr, REGISTER_REAL34_DATA(REGISTER_X));
 }
 
@@ -1810,7 +1810,7 @@ bool_t checkForAndChange_(char *displayString, const real34_t *value34, const re
 
       if(sign[0]=='+') {
         if(frontSpace) {
-          strcat(displayString, STD_SPACE_4_PER_EM);  //changed, not allowing for a space equal length to "-" 
+          strcat(displayString, STD_SPACE_4_PER_EM);  //changed, not allowing for a space equal length to "-"
           if(resstr[0] !=0 ) {
             strcat(displayString, resstr);
           }
@@ -1849,16 +1849,16 @@ void fnConstantR(uint16_t constantAddr, uint16_t *constNr, real_t *rVal) {
   *constNr = constant;
   //printf(">>> %u\n",constant);
   if(constant < NUMBER_OF_CONSTANTS_39) { // 39 digit constants
-    realCopy((real_t *)(constants + constant * TO_BYTES(REAL39_SIZE)), rVal);
+    realCopy((real_t *)(constants + constant * TO_BYTES(REAL39_SIZE_IN_BLOCKS)), rVal);
   }
   else if(constant < NUMBER_OF_CONSTANTS_39 + NUMBER_OF_CONSTANTS_51) { // 51 digit constants (gamma coefficients)
-    realCopy((real_t *)(constants + NUMBER_OF_CONSTANTS_39 * TO_BYTES(REAL39_SIZE) + (constant - NUMBER_OF_CONSTANTS_39) * TO_BYTES(REAL51_SIZE)), rVal);
+    realCopy((real_t *)(constants + NUMBER_OF_CONSTANTS_39 * TO_BYTES(REAL39_SIZE_IN_BLOCKS) + (constant - NUMBER_OF_CONSTANTS_39) * TO_BYTES(REAL51_SIZE_IN_BLOCKS)), rVal);
   }
   else if(constant < NUMBER_OF_CONSTANTS_39 + NUMBER_OF_CONSTANTS_51 + NUMBER_OF_CONSTANTS_1071) { // 1071 digit constant
-    realCopy((real_t *)(constants + NUMBER_OF_CONSTANTS_39 * TO_BYTES(REAL39_SIZE) + NUMBER_OF_CONSTANTS_51 * TO_BYTES(REAL51_SIZE) + (constant - NUMBER_OF_CONSTANTS_39 - NUMBER_OF_CONSTANTS_51) * TO_BYTES(REAL1071_SIZE)), rVal);
+    realCopy((real_t *)(constants + NUMBER_OF_CONSTANTS_39 * TO_BYTES(REAL39_SIZE_IN_BLOCKS) + NUMBER_OF_CONSTANTS_51 * TO_BYTES(REAL51_SIZE_IN_BLOCKS) + (constant - NUMBER_OF_CONSTANTS_39 - NUMBER_OF_CONSTANTS_51) * TO_BYTES(REAL1071_SIZE_IN_BLOCKS)), rVal);
   }
   else { // 34 digit constants
-    real34ToReal((real_t *)(constants + NUMBER_OF_CONSTANTS_39 * TO_BYTES(REAL39_SIZE) + NUMBER_OF_CONSTANTS_51 * TO_BYTES(REAL51_SIZE) + NUMBER_OF_CONSTANTS_1071 * TO_BYTES(REAL1071_SIZE) + (constant - NUMBER_OF_CONSTANTS_39 - NUMBER_OF_CONSTANTS_51 - NUMBER_OF_CONSTANTS_1071) * TO_BYTES(REAL34_SIZE)), rVal);
+    real34ToReal((real_t *)(constants + NUMBER_OF_CONSTANTS_39 * TO_BYTES(REAL39_SIZE_IN_BLOCKS) + NUMBER_OF_CONSTANTS_51 * TO_BYTES(REAL51_SIZE_IN_BLOCKS) + NUMBER_OF_CONSTANTS_1071 * TO_BYTES(REAL1071_SIZE_IN_BLOCKS) + (constant - NUMBER_OF_CONSTANTS_39 - NUMBER_OF_CONSTANTS_51 - NUMBER_OF_CONSTANTS_1071) * TO_BYTES(REAL34_SIZE_IN_BLOCKS)), rVal);
   }
 }
 
@@ -1915,29 +1915,29 @@ void fnRESET_MyM(uint8_t param) {
         switch(fn) {
           case 1: itemToBeAssigned = ITM_PC;      break;
           case 2: itemToBeAssigned = ITM_DELTAPC; break;
-          case 3: itemToBeAssigned = ITM_YX;      break;    
+          case 3: itemToBeAssigned = ITM_YX;      break;
           case 4: itemToBeAssigned = ITM_SQUARE;  break;
           case 5: itemToBeAssigned = ITM_10x;     break;
           case 6: itemToBeAssigned = -MNU_FIN;    break;
-          default:break;          
+          default:break;
         }
       } else
       if(param == USER_MCPX) {
         switch(fn) {
           case 1: itemToBeAssigned = ITM_DRG;      break;
           case 2: itemToBeAssigned = ITM_CC;       break;
-          case 3: itemToBeAssigned = ITM_EE_EXP_TH;break;    
+          case 3: itemToBeAssigned = ITM_EE_EXP_TH;break;
           case 4: itemToBeAssigned = ITM_EXP;      break;
           case 5: itemToBeAssigned = ITM_op_j_pol; break;
           case 6: itemToBeAssigned = ITM_op_j;     break;
-          default:break;          
+          default:break;
         }
       } else {
         itemToBeAssigned = ASSIGN_CLEAR;
       }
       assignToMyMenu_(fn - 1);
       if(param == 0) {
-        itemToBeAssigned = ASSIGN_CLEAR; 
+        itemToBeAssigned = ASSIGN_CLEAR;
         assignToMyMenu_(6 + fn - 1);
         itemToBeAssigned = ASSIGN_CLEAR;
         assignToMyMenu_(12 + fn - 1);

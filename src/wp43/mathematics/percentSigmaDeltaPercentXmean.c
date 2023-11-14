@@ -111,14 +111,14 @@ void pcSigmaDeltaPcXmeanLonI(void) {
 
   if(percentSigma(&xReal, &rReal, &ctxtReal39)) {
     if(getRegisterDataType(REGISTER_Y) != dtReal34) {
-      reallocateRegister(REGISTER_Y, dtReal34, REAL34_SIZE, amNone);
+      reallocateRegister(REGISTER_Y, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
     }
     convertRealToReal34ResultRegister(&rReal, REGISTER_Y);
     setRegisterAngularMode(REGISTER_Y, amNone);
   }
 
   if(deltaPercentXmeanReal_(&xReal, &rReal, &ctxtReal75)) {
-    reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amNone);
+    reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
     convertRealToReal34ResultRegister(&rReal, REGISTER_X);
     setRegisterAngularMode(REGISTER_X, amNone);
   }
@@ -138,7 +138,7 @@ void pcSigmaDeltaPcXmeanReal(void) {
 
   if(percentSigma(&xReal, &rReal, &ctxtReal39)) {
     if(getRegisterDataType(REGISTER_Y) != dtReal34) {
-      reallocateRegister(REGISTER_Y, dtReal34, REAL34_SIZE, amNone);
+      reallocateRegister(REGISTER_Y, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
     }
     convertRealToReal34ResultRegister(&rReal, REGISTER_Y);
   }

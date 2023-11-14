@@ -25,9 +25,9 @@
   #include "typeDefinitions.h"
 
   // The 6 followoing functions are only there to know who allocates and frees memory
-  void    *allocWp43            (size_t sizeInBlocks);
-  void    *reallocWp43          (void *pcMemPtr, size_t oldSizeInBlocks, size_t newSizeInBlocks);
-  void    freeWp43              (void *pcMemPtr, size_t sizeInBlocks);
+  void    *allocC47Blocks       (size_t sizeInBlocks);
+  void    *reallocC47Blocks     (void *pcMemPtr, size_t oldSizeInBlocks, size_t newSizeInBlocks);
+  void    freeC47Blocks         (void *pcMemPtr, size_t sizeInBlocks);
 
   void    *allocGmp             (size_t sizeInBytes);
   void    *reallocGmp           (void *pcMemPtr, size_t oldSizeInBytes, size_t newSizeInBytes);
@@ -46,6 +46,6 @@
   #endif // PC_BUILD
 
   // The following macros are for avoid crash in case that the memory is full. The corresponding label `cleanup_***` is needed AFTER freeing the memory.
-  #define checkedAllocate2(var, size, label) var = allocWp43(size); if(!var) {displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE); goto label;}
+  #define checkedAllocate2(var, size, label) var = allocC47Blocks(size); if(!var) {displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE); goto label;}
   #define checkedAllocate(var, size) checkedAllocate2(var, size, cleanup_##var)
 #endif // !MEMORY_H

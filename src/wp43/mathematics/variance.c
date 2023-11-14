@@ -183,7 +183,7 @@ void fnPopulationCovariance(uint16_t unusedButMandatoryParameter){    //COVxy
 
     liftStack();
     setSystemFlag(FLAG_ASLIFT);
-    reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amNone);
+    reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
     convertRealToReal34ResultRegister(&TT, REGISTER_X);
     temporaryInformation = TI_COV;
   }
@@ -195,7 +195,7 @@ void fnSampleCovariance(uint16_t unusedButMandatoryParameter){    //sxy
     fnStatSXY(&SXY);
     liftStack();
     setSystemFlag(FLAG_ASLIFT);
-    reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amNone);
+    reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
     convertRealToReal34ResultRegister(&SXY, REGISTER_X);
     temporaryInformation = TI_SXY;
   }
@@ -220,7 +220,7 @@ void fnCoefficientDetermination(uint16_t unusedButMandatoryParameter){  //r
     processCurvefitSelection(lrChosen,&RR,&SMI,&aa0,&aa1,&aa2);
     liftStack();
     setSystemFlag(FLAG_ASLIFT);
-    reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amNone);
+    reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
     convertRealToReal34ResultRegister(&RR, REGISTER_X);
     temporaryInformation = TI_CORR;
   }
@@ -254,7 +254,7 @@ void fnMinExpStdDev(uint16_t unusedButMandatoryParameter){ //smi
     processCurvefitSelection(lrChosen,&RR,&SMI,&aa0,&aa1,&aa2);
     liftStack();
     setSystemFlag(FLAG_ASLIFT);
-    reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amNone);
+    reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
     convertRealToReal34ResultRegister(&SMI, REGISTER_X);
     temporaryInformation = TI_SMI;
   }

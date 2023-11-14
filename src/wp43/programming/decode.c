@@ -611,7 +611,7 @@ static void decodeLiteral(uint8_t *literalAddress) {
 
     case STRING_DATE: {
       getStringLabelOrVariableName(literalAddress);
-      reallocateRegister(TEMP_REGISTER_1, dtDate, REAL34_SIZE, amNone);
+      reallocateRegister(TEMP_REGISTER_1, dtDate, REAL34_SIZE_IN_BLOCKS, amNone);
       stringToReal34(tmpStringLabelOrVariableName, REGISTER_REAL34_DATA(TEMP_REGISTER_1));
       julianDayToInternalDate(REGISTER_REAL34_DATA(TEMP_REGISTER_1), REGISTER_REAL34_DATA(TEMP_REGISTER_1));
       dateToDisplayString(TEMP_REGISTER_1, tmpString);
@@ -739,7 +739,7 @@ static void _decodeOneStep(uint8_t *step, bool_t textVersion) {
       case PTP_NONE: {
         if(textVersion) {
           if(CST_01 <= op && op <= CST_79) {
-            sprintf(nameOp, "%2i",op - CST_01 + 1); 
+            sprintf(nameOp, "%2i",op - CST_01 + 1);
             strcat(nameOp," ");
             strcat(nameOp,indexOfItems[op].itemCatalogName);
             strcat(nameOp," ");
@@ -773,7 +773,7 @@ static void _decodeOneStep(uint8_t *step, bool_t textVersion) {
         else {
           if(textVersion) {
             getXeqmText(op, nameOp);
-          } 
+          }
           if(nameOp[0] == 0) strcpy(nameOp,indexOfItems[op].itemCatalogName);
         }
         decodeOp(step, nameOp, (indexOfItems[op].status & PTP_STATUS) >> 9, indexOfItems[op].tamMinMax & TAM_MAX_MASK);

@@ -134,7 +134,7 @@ void dotRealCplx(void) {
 
   dotCplx(&xReal, &xImag, &yReal, &yImag, &rReal, &ctxtReal39);
 
-  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amNone);
+  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
   convertRealToReal34ResultRegister(&rReal, REGISTER_X);
   setRegisterAngularMode(REGISTER_X, amNone);
 }
@@ -157,7 +157,7 @@ void dotLonICplx(void) {
 
   dotCplx(&xReal, &xImag, &yReal, &yImag, &rReal, &ctxtReal75);
 
-  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amNone);
+  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
   convertRealToReal34ResultRegister(&rReal, REGISTER_X);
   setRegisterAngularMode(REGISTER_X, amNone);
 }
@@ -180,7 +180,7 @@ void dotShoICplx(void) {
 
   dotCplx(&xReal, &xImag, &yReal, &yImag, &rReal, &ctxtReal39);
 
-  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amNone);
+  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
   convertRealToReal34ResultRegister(&rReal, REGISTER_X);
   setRegisterAngularMode(REGISTER_X, amNone);
 }
@@ -203,7 +203,7 @@ void dotCplxCplx(void) {
 
   dotCplx(&xReal, &xImag, &yReal, &yImag, &rReal, &ctxtReal39);
 
-  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amNone);
+  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
   convertRealToReal34ResultRegister(&rReal, REGISTER_X);
   setRegisterAngularMode(REGISTER_X, amNone);
 }
@@ -248,7 +248,7 @@ void dotCplxLonI(void) {
 
   dotCplx(&xReal, &xImag, &yReal, &yImag, &rReal, &ctxtReal75);
 
-  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amNone);
+  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
   convertRealToReal34ResultRegister(&rReal, REGISTER_X);
   setRegisterAngularMode(REGISTER_X, amNone);
 }
@@ -271,7 +271,7 @@ void dotCplxShoI(void) {
 
   dotCplx(&xReal, &xImag, &yReal, &yImag, &rReal, &ctxtReal39);
 
-  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amNone);
+  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
   convertRealToReal34ResultRegister(&rReal, REGISTER_X);
   setRegisterAngularMode(REGISTER_X, amNone);
 }
@@ -304,7 +304,7 @@ void dotRemaRema(void) {
   }
   else {
     dotRealVectors(&y, &x, &res);
-    reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amNone);
+    reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
     real34Copy(&res, REGISTER_REAL34_DATA(REGISTER_X));
   }
 }
@@ -355,7 +355,7 @@ void dotCpmaCpma(void) {
   }
   else {
     dotComplexVectors(&y, &x, &res_r, &res_i);
-    reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE, amNone);
+    reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
     real34Copy(&res_r, REGISTER_REAL34_DATA(REGISTER_X));
     real34Copy(&res_i, REGISTER_IMAG34_DATA(REGISTER_X));
   }

@@ -117,7 +117,7 @@ void expandConversionName(char *msg1) {   // 2x16+1 character limit, rounded up 
   xcopy(inStr, msg1, min(50,stringByteLength(msg1)+1));
   inStr[50]=0;
   msg1[0]=0;
-         while(inStr[i] != 0) { //replace /U with /kWh; U/ with kWh/; hkm with 100km  
+         while(inStr[i] != 0) { //replace /U with /kWh; U/ with kWh/; hkm with 100km
             if('h' == inStr[i] && 'k' == inStr[i+1] && 'm' == inStr[i+2]) {    //test beyond end of string is ok, it will not test positive
               msg1[jj++] = '1'; i++;
               msg1[jj++] = '0'; i++;
@@ -138,7 +138,7 @@ void expandConversionName(char *msg1) {   // 2x16+1 character limit, rounded up 
               msg1[jj++]=inStr[i++];
             }
           }
-        msg1[jj++]=0;        
+        msg1[jj++]=0;
 }
 
 
@@ -171,7 +171,7 @@ void compressConversionName(char *msg1) {   // 2x16+1 character limit, rounded u
               msg1[jj++]=inStr[i++];
             }
           }
-        msg1[jj++]=0;        
+        msg1[jj++]=0;
 }
 
 
@@ -427,7 +427,7 @@ int32_t stringGlyphLength(const char *str) {
 }
 
 
-void codePointToUtf8(uint32_t codePoint, uint8_t *utf8) { // WP43 supports only unicode code points from 0x0000 to 0x7FFF
+void codePointToUtf8(uint32_t codePoint, uint8_t *utf8) { // C47 supports only unicode code points from 0x0000 to 0x7FFF
   if(codePoint <= 0x00007F) {
     utf8[0] = codePoint;
     utf8[1] = 0;
@@ -481,7 +481,7 @@ void codePointToUtf8(uint32_t codePoint, uint8_t *utf8) { // WP43 supports only 
 }
 
 
-uint32_t utf8ToCodePoint(const uint8_t *utf8, uint32_t *codePoint) { // WP43 supports only unicode code points from 0x0000 to 0x7FFF
+uint32_t utf8ToCodePoint(const uint8_t *utf8, uint32_t *codePoint) { // C47 supports only unicode code points from 0x0000 to 0x7FFF
   if((*utf8 & 0x80) == 0) {
     *codePoint = *utf8;
     return 1;
@@ -702,15 +702,15 @@ void stringToASCII(const char *str, char *ascii) {
     return;
   }
 
-  for(int16_t i=0; i<len; i++) {  // WP43 supports only unicode code points from 0x0000 to 0x7FFF
-    if(*str & 0x80) { 
+  for(int16_t i=0; i<len; i++) {  // C47 supports only unicode code points from 0x0000 to 0x7FFF
+    if(*str & 0x80) {
       a1=(uint8_t)*str;
       str++;
       a2=(uint8_t)*str;
       str++;
 
       //replacement table
-      if(_getText(a1, a2, aa)) {        
+      if(_getText(a1, a2, aa)) {
         int16_t j = 0;
         while (aa[j] != 0) {
           *ascii = aa[j++];
@@ -721,7 +721,7 @@ void stringToASCII(const char *str, char *ascii) {
       //arrows
       if(a1==(uint8_t)(STD_RIGHT_DOUBLE_ARROW[0]) && a2==(uint8_t)(STD_RIGHT_DOUBLE_ARROW[1])) {
         *ascii = '>'; ascii++;
-        *ascii = '>'; //to change to >>        
+        *ascii = '>'; //to change to >>
       } else
       if((a1==(uint8_t)(STD_RIGHT_DASHARROW[0]) && a2==(uint8_t)(STD_RIGHT_DASHARROW[1])) ||
          (a1==(uint8_t)(STD_RIGHT_ARROW[0]) && a2==(uint8_t)(STD_RIGHT_ARROW[1])) ||
@@ -739,7 +739,7 @@ void stringToASCII(const char *str, char *ascii) {
       if((a1==(uint8_t)(STD_UP_DASHARROW[0]) && a2==(uint8_t)(STD_UP_DASHARROW[1])) ||
          (a1==(uint8_t)(STD_UP_ARROW[0]) && a2==(uint8_t)(STD_UP_ARROW[1])) ||
          (a1==(uint8_t)(STD_HOLLOW_UP_ARROW[0]) && a2==(uint8_t)(STD_HOLLOW_UP_ARROW[1])) ) {
-        *ascii = '^'; 
+        *ascii = '^';
       } else
       if((a1==(uint8_t)(STD_DOWN_DASHARROW[0]) && a2==(uint8_t)(STD_DOWN_DASHARROW[1])) ||
          (a1==(uint8_t)(STD_DOWN_ARROW[0]) && a2==(uint8_t)(STD_DOWN_ARROW[1])) ||
@@ -819,13 +819,13 @@ void stringToFileNameChars(const char *str, char *ascii) {
   }
 
   for(int16_t i=0; i<len; i++) {
-    if(((uint8_t)(*str) & 0x80) != 0) { 
+    if(((uint8_t)(*str) & 0x80) != 0) {
       *ascii = '_';
       str++;
       str++;
       ascii++;
     }
-    else if((uint8_t)(*str) < 0x20 || *str == '/' || *str == '\\') { 
+    else if((uint8_t)(*str) < 0x20 || *str == '/' || *str == '\\') {
       *ascii = '_';
       str++;
       ascii++;

@@ -162,7 +162,7 @@ void m1PowReal(void) {
     angularMode_t savedAngularMode = currentAngularMode;
     currentAngularMode = amRadian;
 
-    reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE, amNone);
+    reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
 
     realMultiply(&x, const_pi, &x, &ctxtReal75);
     eulersFormula(&x, const_0, &x, &y, &ctxtReal39);

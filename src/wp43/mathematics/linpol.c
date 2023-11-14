@@ -125,7 +125,7 @@ void fnLINPOL(uint16_t unusedButMandatoryParameter) {
   dataTypeZ = getRegisterDataType(REGISTER_Z);
   bool_t isYangle = (dataTypeY == dtReal34) && (getRegisterAngularMode(REGISTER_Y) != amNone);
   bool_t isZangle = (dataTypeZ == dtReal34) && (getRegisterAngularMode(REGISTER_Z) != amNone);
-  
+
   if((dataTypeY != dataTypeZ && (dataTypeY == dtTime || dataTypeZ == dtTime)) ||                         //if any one is time, both must be time
      (isYangle && !isZangle) || (isZangle && !isYangle)                                                  //if any one is an angle, both must be any angle
     ) {
@@ -231,7 +231,7 @@ void fnLINPOL(uint16_t unusedButMandatoryParameter) {
   linpol(&aReal, &bReal, &p, &rReal);
   if(realCoefs) {
     if(dataTypeY == dtTime) {
-        reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, amNone);      // use standard Real type for time, to change to Time below
+        reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);      // use standard Real type for time, to change to Time below
         convertRealToReal34ResultRegister(&rReal, REGISTER_X);
         convertReal34RegisterToTimeRegister(REGISTER_X, REGISTER_X);
       }
@@ -245,13 +245,13 @@ void fnLINPOL(uint16_t unusedButMandatoryParameter) {
         } else {                                                            // arrives here if both are not angles
           dataTagY = amNone;
         }
-        reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE, dataTagY);   // use the type and tag of b (Y)
+        reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, dataTagY);   // use the type and tag of b (Y)
         convertRealToReal34ResultRegister(&rReal, REGISTER_X);
       }
   }
   else {
     linpol(&aImag, &bImag, &p, &rImag);
-    reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE, amNone);
+    reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
     convertRealToReal34ResultRegister(&rReal, REGISTER_X);
     convertRealToImag34ResultRegister(&rImag, REGISTER_X);
   }
