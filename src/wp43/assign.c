@@ -454,7 +454,7 @@ void fnDeleteMenu(uint16_t id) {
       if(id < numberOfUserMenus - 1) {
         xcopy(userMenus + id, userMenus + id + 1, sizeof(userMenu_t) * (numberOfUserMenus - id - 1));
       }
-      freeC47Blocks(userMenus + numberOfUserMenus - 1, TO_BLOCKS(sizeof(userMenu_t)));
+      userMenus = reallocC47Blocks(userMenus, TO_BLOCKS(sizeof(userMenu_t)) * numberOfUserMenus, TO_BLOCKS(sizeof(userMenu_t)) * (numberOfUserMenus - 1));
       --numberOfUserMenus;
     }
   }
@@ -816,7 +816,7 @@ void createMenu(const char *name) {
         userMenus = reallocC47Blocks(userMenus, TO_BLOCKS(sizeof(userMenu_t)) * numberOfUserMenus, TO_BLOCKS(sizeof(userMenu_t)) * (numberOfUserMenus + 1));
       }
       memset(userMenus + numberOfUserMenus, 0, sizeof(userMenu_t));
-      xcopy(userMenus[numberOfUserMenus].menuName, name, stringByteLength(name) + 1);
+      xcopy(userMenus[numberOfUserMenus].menuName, name, sizeof(userMenus[0].menuName)); // Martin: changed size from stringByteLength(name) + 1 to sizeof(userMenus[0].menuName)
       ++numberOfUserMenus;
     }
     else {
