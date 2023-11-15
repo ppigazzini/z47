@@ -1004,6 +1004,7 @@ void restoreStats(void){
       {0,USER_DM42,    "DM42: Final Compatibility layout"                },
       {0,USER_43S,     "WP 43S Pilot: Final Compatibility layout"        },
       {0,USER_HRESET,  "C47 HOME Menu reset to default"                  },
+      {0,USER_PRESET,  "C47 P.FN Menu reset to default"                  },
       {0,USER_KRESET,  "C47 All USER keys cleaned"                       },
       {0,USER_MRESET,  "MyMenu menu cleaned"                             },
       {0,USER_ARESET,  "My" STD_alpha " menu cleaned"                    },
@@ -1475,6 +1476,7 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     #endif
     //    calcMode = CM_BUG_ON_SCREEN; this also removes the false start on MyMenu error
 
+    fnKeysManagement(USER_PRESET);                                      //JM USER
     fnKeysManagement(USER_HRESET);                                      //JM USER
     fnKeysManagement(USER_ARESET);                                      //JM USER
     fnKeysManagement(USER_MRESET);                                      //JM USER
@@ -1721,6 +1723,13 @@ void fnKeysManagement(uint16_t choice) {
       #if !defined(TESTSUITE_BUILD)
         createHOME();
         showSoftmenu(-MNU_HOME);
+      #endif // !TESTSUITE_BUILD
+      break;
+
+    case USER_PRESET:
+      #if !defined(TESTSUITE_BUILD)
+        createPFN();
+        showSoftmenu(-MNU_PFN);
       #endif // !TESTSUITE_BUILD
       break;
 

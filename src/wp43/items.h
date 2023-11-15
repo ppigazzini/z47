@@ -1401,7 +1401,7 @@
 #define MNU_PARTS                   1353
 #define MNU_PROB                    1354
 #define MNU_PROGS                   1355
-#define MNU_PFN                     1356
+#define MNU_PFN_1                        1356
 #define MNU_PFN_MORE                1357
 #define MNU_CONVP                   1358
 #define MNU_CONVHUM                 1359
@@ -1448,7 +1448,7 @@
 #define MNU_TIMERF                  1400
 #define MNU_HIST                    1401
 #define MNU_HPLOT                   1402
-#define ITM_1403                    1403
+#define MNU_PFN                     1403
 
 
 #define ITM_1COMPL                  1404
@@ -2071,7 +2071,7 @@
 #define ITM_EXTY                    2015
 #define ITM_DENMAX2_OLD             2016
 #define ITM_SETSIG2_OLD             2017
-#define ITM_USER_HRESET             2018
+#define ITM_2018             2018
 #define ITM_RMODEQ                  2019
 #define ITM_SI_All                  2020
 #define ITM_USER_ARESET             2021
@@ -2107,8 +2107,8 @@
 #define ITM_PRTACT1                 2051
 #define ITM_PRTACT0                 2052
 #define ITM_2TO10                   2053
-#define MNU_2054                    2054
-#define MNU_2055                    2055
+#define ITM_USER_HRESET                    2054
+#define ITM_USER_PRESET                    2055
 #define ITM_IRFRAC                  2056
 #define ITM_FGLNOFF                 2057
 #define ITM_FGLNLIM                 2058
