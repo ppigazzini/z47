@@ -163,6 +163,11 @@
   extern calcRegister_t         errorMessageRegisterLine;
   extern glyph_t                glyphNotFound;
   extern freeMemoryRegion_t     freeMemoryRegions[MAX_FREE_REGION];
+
+  #if !defined(DMCP_BUILD)
+    extern freeMemoryRegion_t     allocatedMemoryRegions[MAX_FREE_REGION * 50];
+  #endif // !DMCP_BUILD
+
   extern pcg32_random_t         pcg32_global;
   extern labelList_t           *labelList;
   extern labelList_t           *flashLabelList;
@@ -351,6 +356,11 @@
   #endif // (REAL34_WIDTH_TEST == 1)
 
   extern int32_t                numberOfFreeMemoryRegions;
+
+  #if !defined(DMCP_BUILD)
+    extern int32_t                numberOfAllocatedMemoryRegions;
+  #endif // !DMCP_BUILD
+
   extern int32_t                lgCatalogSelection;
   extern int32_t                graphVariable;
 

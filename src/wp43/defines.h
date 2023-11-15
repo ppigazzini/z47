@@ -1151,7 +1151,7 @@ typedef enum {
 #define RAM_SIZE_IN_BLOCKS                     16384 // 16384 blocks = 65536 bytes  MUST be a multiple of 4 and MUST be <= 262140 (not 262144)
 //#define RAM_SIZE_IN_BLOCKS                      3072 // 3072 blocks = 12288 bytes  MUST be a multiple of 4 and MUST be <= 262140 (not 262144)
 
-#define CONFIG_SIZE            TO_BLOCKS(sizeof(dtConfigDescriptor_t))
+#define CONFIG_SIZE_IN_BLOCKS                 TO_BLOCKS(sizeof(dtConfigDescriptor_t))
 
 #define FLASH_PGM_PAGE_SIZE                      512
 #define FLASH_PGM_NUMBER_OF_PAGES                 64
@@ -1307,8 +1307,10 @@ typedef enum {
 #define storeToDtConfigDescriptor(config)    (configToStore->config = config)
 #define recallFromDtConfigDescriptor(config) (config = configToRecall->config)
 #define getRecalledSystemFlag(sf)            ((configToRecall->systemFlags &   ((uint64_t)1 << (sf & 0x3fff))) != 0)
-#define TO_BLOCKS(n)                         (((n) + 3) >> 2)
-#define TO_BYTES(n)                          ((n) << 2)
+#define BPB                                  2 // 2^BPB = number of bytes per block
+#define BYTES_PER_BLOCK                      (1 << BPB)
+#define TO_BLOCKS(n)                         (((n) + (BYTES_PER_BLOCK - 1)) >> BPB)
+#define TO_BYTES(n)                          ((n) << BPB)
 #define C47_NULL                             65535 // NULL pointer
 #define TO_PCMEMPTR(p)                       ((void *)((p) == C47_NULL ? NULL : ram + (p)))
 #define TO_C47MEMPTR(p)                      ((p) == NULL ? C47_NULL : (uint16_t)((dataBlock_t *)(p) - ram))
@@ -1489,6 +1491,15 @@ typedef enum {
 //************************
 //* Macros for debugging *
 //************************
+#define COLOR_DEFAULT "\033[0m"
+#define COLOR_RED     "\033[1;31m"
+#define COLOR_GREEN   "\033[1;92m"
+#define COLOR_YELLOW  "\033[1;33m"
+#define COLOR_CYAN    "\033[1;36m"
+#define debugf(a){fprintf(stderr, "%sdebug:%s %s %s(%s %s:%d)%s\n", COLOR_GREEN,  a, COLOR_DEFAULT, COLOR_CYAN, __FUNCTION__, __FILE__, __LINE__, COLOR_DEFAULT);fflush(stderr);}
+#define errorf(a){fprintf(stderr, "%serror:%s %s %s(%s %s:%d)%s\n", COLOR_YELLOW, a, COLOR_DEFAULT, COLOR_CYAN, __FUNCTION__, __FILE__, __LINE__, COLOR_DEFAULT);fflush(stderr);}
+#define abortf(a){fprintf(stderr, "%sabort: %s(%s %s:%d)%s\n",      COLOR_RED,                      COLOR_CYAN, __FUNCTION__, __FILE__, __LINE__, COLOR_DEFAULT);perror(a);fflush(stderr);abort();}
+
 #define TEST_REG(r, comment) { \
                                if(globalRegister[r].dataPointer >= 500) { \
                                  uint32_t a, b; \

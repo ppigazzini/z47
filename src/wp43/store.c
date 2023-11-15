@@ -387,7 +387,7 @@ void fnStoreConfig(uint16_t regist) {
   float  compatibility_float4 = 0.4;             //defaults to use when settings are removed
   float  compatibility_float5 = 0.5;             //defaults to use when settings are removed
   float  compatibility_float6 = 0.6;             //defaults to use when settings are removed
-  reallocateRegister(regist, dtConfig, CONFIG_SIZE, amNone);
+  reallocateRegister(regist, dtConfig, CONFIG_SIZE_IN_BLOCKS, amNone);
   dtConfigDescriptor_t *configToStore = REGISTER_CONFIG_DATA(regist);
 
   storeToDtConfigDescriptor(shortIntegerMode);
