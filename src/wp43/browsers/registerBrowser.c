@@ -155,7 +155,7 @@
           strcpy(tmpString, "Configuration data");
         }
         else {
-          sprintf(tmpString, "%d bytes", (int16_t)TO_BYTES(CONFIG_SIZE));
+          sprintf(tmpString, "%d bytes", (int16_t)TO_BYTES(CONFIG_SIZE_IN_BLOCKS));
         }
         break;
       }
