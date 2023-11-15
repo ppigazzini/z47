@@ -2245,10 +2245,18 @@ bool_t BASE_OVERRIDEONCE = false;
     }
     for(uint16_t ii=0; ii<18; ii++) {
       itemToBeAssigned = ITM_ENTER;
+      screenUpdatingMode = ~SCRUPD_AUTO;
+      doRefreshSoftMenu = false;
+      last_CM = 240;
       assignToUserMenu(ii);
       itemToBeAssigned = menu_HOME[ii];      
+      screenUpdatingMode = ~SCRUPD_AUTO;
+      doRefreshSoftMenu = false;
+      last_CM = 240;
       assignToUserMenu(ii);
     }
+    screenUpdatingMode = SCRUPD_AUTO;
+    refreshScreen();
     return true;
   }
 
@@ -2261,10 +2269,18 @@ bool_t BASE_OVERRIDEONCE = false;
     }
     for(uint16_t ii=0; ii<18; ii++) {
       itemToBeAssigned = ITM_ENTER;
+      screenUpdatingMode = ~SCRUPD_AUTO;
+      doRefreshSoftMenu = false;
+      last_CM = 240;
       assignToUserMenu(ii);
       itemToBeAssigned = menu_MyPFN[ii];      
+      screenUpdatingMode = ~SCRUPD_AUTO;
+      doRefreshSoftMenu = false;
+      last_CM = 240;
       assignToUserMenu(ii);
     }
+    screenUpdatingMode = SCRUPD_AUTO;
+    refreshScreen();
     return true;
   }
 
