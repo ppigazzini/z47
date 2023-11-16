@@ -165,6 +165,7 @@ uint8_t                timerCraAndDeciseconds = 128u;
 uint8_t                programRunStop;
 uint8_t                currentKeyCode;
 uint8_t                lastKeyCode;
+uint8_t                keyStateCode;
 uint8_t                entryStatus;
 uint8_t                screenUpdatingMode;
 uint8_t               *beginOfProgramMemory;

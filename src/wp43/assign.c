@@ -684,7 +684,7 @@ void assignToKey(const char *data) {
   int keyCode = (*data - '0')*10 + *(data+1) - '0';
   calcKey_t *key = kbd_usr + keyCode;
   userMenuItem_t tmpMenuItem;
-  int keyStateCode = ((previousCalcMode) == CM_AIM ? 3 : 0) + (shiftG ? 2 : shiftF ? 1 : 0);
+  keyStateCode = ((previousCalcMode) == CM_AIM ? 3 : 0) + (shiftG ? 2 : shiftF ? 1 : 0);
   const calcKey_t *stdKey = kbd_std + keyCode;
 
   _assignItem(&tmpMenuItem);
@@ -933,7 +933,7 @@ void assignGetName1(void) {
 
 
 static bool_t _assignToKey(int16_t keyFunc) {
-  int keyStateCode = (previousCalcMode) == CM_AIM ? 3 : 0;
+  keyStateCode = (previousCalcMode) == CM_AIM ? 3 : 0;
 
   for(int i=0; i<3; ++i) {
     for(int j=0; j<37; ++j) {

@@ -1174,6 +1174,34 @@ int16_t lastItem = 0;
                   keyActionProcessed = true;
                 }
                 else {
+                  if(item == ITM_XEQ && dynamicMenuItem > -1) {
+                    char *varCatalogItem = dynmenuGetLabel(dynamicMenuItem);
+                    calcRegister_t regist = findNamedLabel(varCatalogItem);
+                    if(regist != INVALID_VARIABLE) {
+                      item = regist - FIRST_LABEL + ASSIGN_LABELS;
+                    }
+                    else {
+                      displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
+                      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+                        sprintf(errorMessage, "string '%s' is not a named label", varCatalogItem);
+                        moreInfoOnError("In function btnFnReleased:", errorMessage, NULL, NULL);
+                      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+                    }
+                  }
+                  else if(item == ITM_RCL && dynamicMenuItem > -1) {
+                    char *varCatalogItem = dynmenuGetLabel(dynamicMenuItem);
+                    calcRegister_t regist = findNamedVariable(varCatalogItem);
+                    if(regist != INVALID_VARIABLE) {
+                      item = regist - FIRST_NAMED_VARIABLE + ASSIGN_NAMED_VARIABLES;
+                    }
+                    else {
+                      displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
+                      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+                        sprintf(errorMessage, "string '%s' is not a named variable", varCatalogItem);
+                        moreInfoOnError("In function btnFnReleased:", errorMessage, NULL, NULL);
+                      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+                    }
+                  }
                   itemToBeAssigned = item;
 
                   if(previousCalcMode == CM_AIM) {                            //JMvv close menu to allow only one charac
@@ -1663,7 +1691,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
       char *funcParam = "";
 
       if(getSystemFlag(FLAG_USER)) {
-        int keyStateCode = (getSystemFlag(FLAG_ALPHA) ? 3 : 0) + (g ? 2 : f ? 1 : 0);
+        keyStateCode = (getSystemFlag(FLAG_ALPHA) ? 3 : 0) + (g ? 2 : f ? 1 : 0);
         funcParam = (char *)getNthString((uint8_t *)userKeyLabel, keyCode * 6 + keyStateCode);
         xcopy(tmpString, funcParam, stringByteLength(funcParam) + 1);
       }
@@ -1899,10 +1927,11 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
         hideFunctionName();
 
         int keyCode = (*((char *)data) - '0')*10 + *(((char *)data) + 1) - '0';
-        int keyStateCode = (getSystemFlag(FLAG_ALPHA) ? 3 : 0) + (lastshiftG ? 2 : lastshiftF ? 1 : 0);
         char *funcParam = (char *)getNthString((uint8_t *)userKeyLabel, keyCode * 6 + keyStateCode);
+        printf("**[DL]** btnReleased - item %d showFunctionNameArg %s funcParam %s\n",item,showFunctionNameArg,funcParam);
         if (showFunctionNameArg != NULL) {
           funcParam = showFunctionNameArg;       // Needed when executing a user menu from a long pressed key
+          printf("**[DL]** btnReleased - item %d showFunctionNameArg %s funcParam %s\n",item,showFunctionNameArg,funcParam);
         }
 
         if(item < 0) {
@@ -1914,7 +1943,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
           if(item == ITM_RS || item == ITM_XEQ) {
             key[0] = 0;
           }
-          #endif // PC_BUILD
+        #endif // PC_BUILD
 
           if(item != ITM_NOP && tam.alpha && indexOfItems[item].func != addItemToBuffer) {
             // We are in TAM mode so need to cancel first (equivalent to EXIT)
@@ -2577,6 +2606,36 @@ RELEASE_END:
                   }
                 }
                 else {
+                  if(item == ITM_XEQ && getSystemFlag(FLAG_USER) && tmpString[0] != 0) {
+                    char label[15];
+                    xcopy(label,tmpString, stringByteLength(tmpString) + 1);
+                    calcRegister_t regist = findNamedLabel(label);
+                    if(regist != INVALID_VARIABLE) {
+                      item = regist - FIRST_LABEL + ASSIGN_LABELS;
+                    }
+                    else {
+                      displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
+                      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+                        sprintf(errorMessage, "string '%s' is not a named label", label);
+                        moreInfoOnError("In function btnFnReleased:", errorMessage, NULL, NULL);
+                      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+                    }
+                  }
+                  else if(item == ITM_RCL && getSystemFlag(FLAG_USER) && tmpString[0] != 0) {
+                    char var[15];
+                    xcopy(var,tmpString, stringByteLength(tmpString) + 1);
+                    calcRegister_t regist = findNamedVariable(var);
+                    if(regist != INVALID_VARIABLE) {
+                      item = regist - FIRST_NAMED_VARIABLE + ASSIGN_NAMED_VARIABLES;
+                    }
+                    else {
+                      displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
+                      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+                        sprintf(errorMessage, "string '%s' is not a named variable", var);
+                        moreInfoOnError("In function btnFnReleased:", errorMessage, NULL, NULL);
+                      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+                    }
+                  }
                   itemToBeAssigned = item;
                   if(previousCalcMode == CM_AIM) softmenuStack[0].softmenuId = 1;     //JM change ALPHA to MyAlpha to be able to write ASN target
                 }

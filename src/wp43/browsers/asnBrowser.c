@@ -99,8 +99,9 @@
       if(strcmp(Name, "0000") == 0) {
         Name[0]=0;
       }
-      if(strcmp(Name, "DYNMNU") == 0) {
-        strcpy(Name, (char *)getNthString((uint8_t *)userKeyLabel, key*6+(page-1)));
+      char *funcParam = (char *)getNthString((uint8_t *)userKeyLabel, key*6+(page-1));
+      if((funcParam[0] != 0) && ((strcmp(Name, "DYNMNU") == 0) || (strcmp(Name, "XEQ") == 0) || (strcmp(Name, "RCL") == 0)))  {
+        strcpy(Name, (char *)getNthString((uint8_t *)userKeyLabel, key*6+(page-1)));       // name of a user menu, program or variable assigned to a key
       }
 
       
