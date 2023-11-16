@@ -461,7 +461,7 @@ TO_QSPI const int16_t menu_ConvV[]        = {
 TO_QSPI const int16_t menu_ConvS[]        = {
                                                     ITM_KNOTtoKMH,            ITM_KMHtoKNOT,            ITM_KMHtoMPS,             ITM_MPStoKMH,             ITM_RPMtoDEGPS,           ITM_DEGPStoRPM,
                                                     ITM_MPHtoKMH,             ITM_KMHtoMPH,             ITM_MPHtoMPS,             ITM_MPStoMPH,             ITM_RPMtoRADPS,           ITM_RADPStoRPM,
-                                                    ITM_FPStoKMH,             ITM_KMHtoFPS,             ITM_FTPtoMPS,             ITM_MPStoFPS,             ITM_NULL,                 ITM_NULL};
+                                                    ITM_FPStoKMH,             ITM_KMHtoFPS,             ITM_FPStoMPS,             ITM_MPStoFPS,             ITM_NULL,                 ITM_NULL};
 TO_QSPI const int16_t menu_ConvAng[]        = {
                                                     ITM_DEGtoRAD,             ITM_RADtoDEG,             ITM_DEGtoGRAD,            ITM_GRADtoDEG,            ITM_GRADtoRAD,            ITM_RADtoGRAD,
                                                     ITM_NULL,                 ITM_NULL,                 ITM_NULL,                 ITM_NULL,                 ITM_NULL,                 ITM_NULL,

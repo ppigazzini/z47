@@ -2242,7 +2242,7 @@
 #define ITM_MPHtoFPF                2186
 #define ITM_FPStoKMH                2187
 #define ITM_KMHtoFPS                2188
-#define ITM_FTPtoMPS                2189
+#define ITM_FPStoMPS                2189
 #define ITM_MPStoFPS                2190
 #define ITM_SCR                     2191
 #define ITM_SCRNRM                  2192
