@@ -877,10 +877,10 @@ void execTimerApp(uint16_t timerType) {
   void LongpressKey_handler() {
     if(fnTimerGetStatus(TO_CL_LONG) == TMR_COMPLETED) {
       if(JM_auto_longpress_enabled != 0) {
-        if(JM_auto_longpress_enabled == -MNU_DYNAMIC) {
-          char *funcParam;
-          int keyStateCode = (getSystemFlag(FLAG_ALPHA) ? 3 : 0) + ((LongPressM == RB_M124) ? 1 : longpressDelayedkey3 ? 1 : 2);
-          funcParam = (char *)getNthString((uint8_t *)userKeyLabel, currentKeyCode * 6 + keyStateCode);
+        char *funcParam;
+        int keyStateCode = (getSystemFlag(FLAG_ALPHA) ? 3 : 0) + ((LongPressM == RB_M124) ? 1 : longpressDelayedkey3 ? 1 : 2);
+        funcParam = (char *)getNthString((uint8_t *)userKeyLabel, currentKeyCode * 6 + keyStateCode);
+        if((funcParam[0] != 0) && ((JM_auto_longpress_enabled == -MNU_DYNAMIC) || (JM_auto_longpress_enabled == ITM_XEQ) || (JM_auto_longpress_enabled == ITM_RCL))) { // For user menu, prog or variable a-feirassignment
           showFunctionName(JM_auto_longpress_enabled, JM_TO_CL_LONG + 50, funcParam);     //Add a marginal amout of time to prevent racing of end conditions.
         } else {
           showFunctionName(JM_auto_longpress_enabled, JM_TO_CL_LONG + 50, "SF:LL");     //Add a marginal amout of time to prevent racing of end conditions.
@@ -1778,14 +1778,9 @@ void execTimerApp(uint16_t timerType) {
       }
 
     #else //DEBUG_SHOWNAME
-      if(item == ITM_XEQ) {
+      if((item == ITM_XEQ) || (item == ITM_RCL)) {
         if(arg != NULL) stringAppend(functionName,arg);
-        if(functionName[0]==0) {
-          stringAppend(functionName,indexOfItems[abs(item)].itemCatalogName);
-        }
-      }
-      else if(item == ITM_RCL) {
-        if(arg != NULL) stringAppend(functionName,arg);
+        showFunctionNameArg = (char *)arg;                          // Needed when executing a program or a variable from a long pressed key
         if(functionName[0]==0) {
           stringAppend(functionName,indexOfItems[abs(item)].itemCatalogName);
         }
