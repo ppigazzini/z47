@@ -63,9 +63,11 @@ void     fnExitAllMenus         (uint16_t unusedButMandatoryParameter);
   void   showSoftmenu           (int16_t id);
   void   changeToALPHA(void);
   void   changeToHOME(void);
+  void   changeToPFN(void);
 
   bool_t setCurrentUserMenu     (int16_t item, char* funcParam);
   bool_t createHOME(void);
+  bool_t createPFN(void);
 
   /**
    * Pops a softmenu from the softmenu stack.
