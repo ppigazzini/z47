@@ -1714,7 +1714,7 @@ void fnKeysManagement(uint16_t choice) {
       kbd_usr[11].fShiftedAim   = ITM_NULL;
       kbd_usr[11].fShifted      = ITM_NULL;
       kbd_usr[18].gShifted      = ITM_SNAP;
-      kbd_usr[18].fShifted      = -MNU_ASN;
+      kbd_usr[18].fShifted      = -MNU_KEYS;
       kbd_usr[19].fShifted      = ITM_USERMODE;
       fnSetFlag(FLAG_USER);
       break;

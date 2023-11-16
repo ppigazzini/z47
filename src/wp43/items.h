@@ -1402,7 +1402,7 @@
 #define MNU_PROB                    1354
 #define MNU_PROGS                   1355
 #define MNU_PFN_1                        1356
-#define MNU_PFN_MORE                1357
+#define MNU_PFN_2                        1357
 #define MNU_CONVP                   1358
 #define MNU_CONVHUM                 1359
 #define MNU_REALS                   1360
@@ -1949,7 +1949,7 @@
 #define KEY_fg                      1893
 #define MNU_1894                    1894        // [DL] Deprecated MNU_TAMCMPALPHA
 #define ITM_HPBASE                  1895
-#define ITM_ASNVIEWER               1896
+#define ITM_KEYMAP                  1896
 #define ITM_N_KEY_TGLFRT            1897
 #define ITM_N_KEY_ALPHA             1898
 #define ITM_N_KEY_CC                1899
@@ -1980,7 +1980,7 @@
 #define MNU_XEQ                     1924
 #define MNU_EE                      1925
 #define ITM_T_UP_ARROW              1926
-#define MNU_ASN                     1927
+#define MNU_KEYS                    1927
 #define ITM_T_DOWN_ARROW            1928
 #define ITM_T_HOME                  1929
 #define ITM_T_END                   1930
