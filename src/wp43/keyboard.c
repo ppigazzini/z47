@@ -34,6 +34,8 @@
 #include "c43Extensions/keyboardTweak.h"
 #include "c43Extensions/radioButtonCatalog.h"
 #include "mathematics/matrix.h"
+#include "mathematics/cxToRe.h"
+#include "mathematics/reToCx.h"
 #include "memory.h"
 #include "plotstat.h"
 #include "programming/manage.h"
@@ -3310,11 +3312,9 @@ undo_disabled:
 
 
 void fnKeyCC(uint16_t complex_Type) {    //JM Using 'unusedButMandatoryParameter' complex_Type=KEY_COMPLEX
-  doRefreshSoftMenu = true;     //dr
-  #if !defined(TESTSUITE_BUILD)
-    uint32_t dataTypeX, dataTypeY;
+    doRefreshSoftMenu = true;     //dr
+    #if !defined(TESTSUITE_BUILD)
     bool_t polarOk, rectOk;
-
     // The switch statement is broken up here, due to multiple conditions.                      //JM
     if((calcMode == CM_NIM) && (complex_Type == KEY_COMPLEX)) {
       addItemToNimBuffer(ITM_EXIT1);
@@ -3328,7 +3328,8 @@ void fnKeyCC(uint16_t complex_Type) {    //JM Using 'unusedButMandatoryParameter
       uint8_t sdataAtagY = getRegisterAngularMode(REGISTER_Y);
       bool_t toClearPolar = false;
       #define isAngle(typ,tag) (typ == dtReal34 && tag != amNone)
-      #define isRadius(typ,tag) (typ == dtLongInteger || (typ == dtReal34 && tag != amNone))
+      #define isValidAngle(typ,tag) (typ == dtLongInteger || typ == dtReal34)
+      #define isRadius(typ,tag) (typ == dtLongInteger || (typ == dtReal34 && tag == amNone))
       if(getSystemFlag(FLAG_POLAR) && isAngle(sdataTypeY,sdataAtagY) && isRadius(sdataTypeX,sdataAtagX)) {
         fnSwapXY(0);
       } else
@@ -3343,27 +3344,27 @@ void fnKeyCC(uint16_t complex_Type) {    //JM Using 'unusedButMandatoryParameter
       }
 
 
-      dataTypeX = getRegisterDataType(REGISTER_X);
-      dataTypeY = getRegisterDataType(REGISTER_Y);
+      sdataTypeX = getRegisterDataType(REGISTER_X);
+      sdataTypeY = getRegisterDataType(REGISTER_Y);
+      sdataAtagX = getRegisterAngularMode(REGISTER_X);
+      sdataAtagY = getRegisterAngularMode(REGISTER_Y);
 
-      polarOk = (( dataTypeY == dtLongInteger || (dataTypeY == dtReal34 && getRegisterAngularMode(REGISTER_Y) == amNone  ))                                      //radius not allowed to be an angle if polar entry
-         && ( dataTypeX == dtLongInteger || (dataTypeX == dtReal34    /*can be angle or not */                      )) && getSystemFlag(FLAG_POLAR) );           //real not allowed to be an angle if rect entry
-      rectOk  = (( dataTypeY == dtLongInteger || (dataTypeY == dtReal34 && getRegisterAngularMode(REGISTER_Y) == amNone  ))                                      //real not allowed to be an angle if rect entry
-         && ( dataTypeX == dtLongInteger || (dataTypeX == dtReal34 && getRegisterAngularMode(REGISTER_X) == amNone  )) && !getSystemFlag(FLAG_POLAR) );          //imag not allowed to be an angle if rect entry
+      polarOk = isRadius(sdataTypeY, sdataAtagY) && isValidAngle(sdataTypeX, sdataAtagX) &&  getSystemFlag(FLAG_POLAR);
+      rectOk  = isRadius(sdataTypeY, sdataAtagY) && isRadius    (sdataTypeX, sdataAtagX) && !getSystemFlag(FLAG_POLAR);
 
       //CC needs in POLAR mode Y=r, X=ϑ;
       //CC needs in RECT mode, Y=real, X=imag
       if(polarOk || rectOk) {  //imag not allowed to be an angle if rect entry
-        runFunction(ITM_REtoCX);
+        fnReToCx(0);
       }
-      else if(dataTypeX == dtComplex34) {
-        runFunction(ITM_CXtoRE);
+      else if(sdataTypeX == dtComplex34) {
+        fnCxToRe(0);
       }
-      else if(dataTypeX == dtReal34Matrix && dataTypeY == dtReal34Matrix) {
-        runFunction(ITM_REtoCX);
+      else if(sdataTypeX == dtReal34Matrix && sdataTypeY == dtReal34Matrix) {
+        fnReToCx(0);
       }
-      else if(dataTypeX == dtComplex34Matrix) {
-        runFunction(ITM_CXtoRE);
+      else if(sdataTypeX == dtComplex34Matrix) {
+        fnCxToRe(0);
       }
       else {
         if( (!polarOk && getSystemFlag(FLAG_POLAR)) || (!rectOk && !getSystemFlag(FLAG_POLAR))) {
