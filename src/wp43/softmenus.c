@@ -282,11 +282,15 @@ TO_QSPI const int16_t menu_Poiss[]       = { ITM_POISSP,                    ITM_
 /*                                 <---------------------------------------------------------------------- 6 f shifted functions ------------------------------------------------------------------------->  */
 /*                                 <---------------------------------------------------------------------- 6 g shifted functions ------------------------------------------------------------------------->  */
 
-TO_QSPI const int16_t menu_PFN[]         = { ITM_LBL,                       ITM_GTO,                    ITM_XEQ,                  ITM_RTN,               ITM_END,                    -MNU_PFN_MORE,
+TO_QSPI const int16_t menu_MyPFN[]       = { ITM_LBL,                       ITM_GTO,                    ITM_XEQ,                  ITM_RTN,              -MNU_PFN_1,                  -MNU_PFN_2,
+                                             ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,             -MNU_LOOP,                   -MNU_TEST,
+                                             ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL                     };
+
+TO_QSPI const int16_t menu_PFN_1[]       = { ITM_LBL,                       ITM_GTO,                    ITM_XEQ,                  ITM_RTN,               ITM_END,                    -MNU_PFN_2,
                                              ITM_SKIP,                      ITM_BACK,                   ITM_XEQP1,                ITM_RTNP1,             ITM_CASE,                    ITM_LocR,
                                              ITM_INPUT,                     ITM_MSG,                    ITM_ERR,                  ITM_TICKS,             ITM_PAUSE,                   ITM_POPLR                     };
 
-TO_QSPI const int16_t menu_PFN_MORE[]    = { ITM_AGRAPH,                    ITM_PIXEL,                  ITM_POINT,                ITM_VOL,              -MNU_IO,                     -MNU_PFN,
+TO_QSPI const int16_t menu_PFN_2[]       = { ITM_AGRAPH,                    ITM_PIXEL,                  ITM_POINT,                ITM_VOL,              -MNU_IO,                     -MNU_PFN_1,
                                              ITM_CLMENU,                    ITM_R_COPY,                 ITM_R_SORT,               ITM_R_SWAP,            ITM_R_CLR,                   ITM_EXITALL,
                                              ITM_MENU,                      ITM_KEYG,                   ITM_KEYX,                 ITM_VARMNU,            ITM_MVAR,                    ITM_PUTK                      };
 
@@ -659,8 +663,8 @@ TO_QSPI const int16_t menu_ASN_N[]       = { ITM_N_KEY_SIGMA,           ITM_N_KE
 #endif // !DMCP_BUILD
 
 
-TO_QSPI const int16_t menu_ASN[]       =  { ITM_ASNVIEWER ,                 ITM_USER_C47  ,             ITM_USER_DM42   ,         ITM_NULL        ,      ITM_ASSIGN      ,            ITM_USERMODE   ,
-                                            ITM_BASE_CPX  ,                 ITM_BASE_ENG  ,             ITM_BASE_FIN    ,         ITM_USER_MRESET ,      ITM_USER_ARESET ,            ITM_USER_KRESET ,
+TO_QSPI const int16_t menu_KEYS[]      =  { ITM_KEYMAP ,                    ITM_USER_C47  ,             ITM_USER_DM42   ,         ITM_ASSIGN      ,      ITM_USERMODE   ,             ITM_USER_PRESET,
+                                            ITM_BASE_CPX  ,                 ITM_BASE_ENG  ,             ITM_BASE_FIN    ,         ITM_USER_MRESET ,      ITM_USER_ARESET ,            ITM_USER_KRESET,
                                            -MNU_ASN_N,                      CC_D47,                     CC_E47,                   CC_N47,                CC_V47,                      ITM_USER_HRESET                       };
 
 
@@ -677,7 +681,7 @@ TO_QSPI const int16_t menu_BLUE_C47[]    = { ITM_MAGNITUDE,       -MNU_CPX,     
                                              ITM_SNAP,            ITM_TIMER,       -MNU_INFO,        -MNU_TEST,        -MNU_CONST,        ITM_NULL,
                                              ITM_NULL,            ITM_NULL,         ITM_NULL,         ITM_NULL,         ITM_NULL,         ITM_NULL,
 
-                                             ITM_NULL,            -MNU_ASN,         -MNU_ALPHAFN,     -MNU_LOOP,        -MNU_IO,          ITM_NULL,
+                                             ITM_NULL,            -MNU_KEYS,        -MNU_ALPHAFN,     -MNU_LOOP,        -MNU_IO,          ITM_NULL,
                                              ITM_FLGSV,           -MNU_BITS,        -MNU_CLK,         -MNU_PARTS,       -MNU_INTS,        ITM_NULL,
                                              ITM_RBR,             -MNU_HOME,        -MNU_FIN,         -MNU_XFN,         -MNU_PLOTTING,    ITM_NULL };
 
@@ -798,8 +802,8 @@ TO_QSPI const softmenu_t softmenu[] = {
 /* 059 */  {.menuItem = -MNU_HYPER,       .numItems = sizeof(menu_Hyper         )/sizeof(int16_t), .softkeyItem = menu_Hyper          },
 /* 060 */  {.menuItem = -MNU_NBIN,        .numItems = sizeof(menu_Nbin          )/sizeof(int16_t), .softkeyItem = menu_Nbin           },
 /* 061 */  {.menuItem = -MNU_POISS,       .numItems = sizeof(menu_Poiss         )/sizeof(int16_t), .softkeyItem = menu_Poiss          },
-/* 062 */  {.menuItem = -MNU_PFN,         .numItems = sizeof(menu_PFN           )/sizeof(int16_t), .softkeyItem = menu_PFN            },
-/* 063 */  {.menuItem = -MNU_PFN_MORE,    .numItems = sizeof(menu_PFN_MORE      )/sizeof(int16_t), .softkeyItem = menu_PFN_MORE       },
+/* 062 */  {.menuItem = -MNU_PFN_1,       .numItems = sizeof(menu_PFN_1         )/sizeof(int16_t), .softkeyItem = menu_PFN_1          },
+/* 063 */  {.menuItem = -MNU_PFN_2,       .numItems = sizeof(menu_PFN_2         )/sizeof(int16_t), .softkeyItem = menu_PFN_2          },
 /* 064 */  {.menuItem = -MNU_STAT,        .numItems = sizeof(menu_STAT          )/sizeof(int16_t), .softkeyItem = menu_STAT           },
 /* 065 */  {.menuItem = -MNU_PLOTTING,    .numItems = sizeof(menu_PLOTTING      )/sizeof(int16_t), .softkeyItem = menu_PLOTTING       },
 /* 066 */  {.menuItem = -MNU_GRAPH,       .numItems = sizeof(menu_GRAPH         )/sizeof(int16_t), .softkeyItem = menu_GRAPH          },
@@ -846,7 +850,7 @@ TO_QSPI const softmenu_t softmenu[] = {
 /* 107 */  {.menuItem = -MNU_TIMERF,      .numItems = sizeof(menu_Timer         )/sizeof(int16_t), .softkeyItem = menu_Timer          },
 /* 108 */  {.menuItem = -ITM_DELITM,      .numItems = sizeof(menu_DELITM        )/sizeof(int16_t), .softkeyItem = menu_DELITM         },
 /* 109 */  {.menuItem = -MNU_ASN_N,       .numItems = sizeof(menu_ASN_N         )/sizeof(int16_t), .softkeyItem = menu_ASN_N          },  //JM USER NORMAL
-/* 110 */  {.menuItem = -MNU_ASN,         .numItems = sizeof(menu_ASN           )/sizeof(int16_t), .softkeyItem = menu_ASN            },  //JM USER
+/* 110 */  {.menuItem = -MNU_KEYS,        .numItems = sizeof(menu_KEYS          )/sizeof(int16_t), .softkeyItem = menu_KEYS            },  //JM USER
 /* 111 */  {.menuItem = -MNU_XEQ,         .numItems = sizeof(menu_XEQ           )/sizeof(int16_t), .softkeyItem = menu_XEQ            },  //JM EXEC
 /* 112 */  {.menuItem = -MNU_PLOT,        .numItems = sizeof(menu_PLOT          )/sizeof(int16_t), .softkeyItem = menu_PLOT           },  //JM GRAPH
 /* 113 */  {.menuItem = -MNU_ALPHA,       .numItems = sizeof(menu_ALPHA         )/sizeof(int16_t), .softkeyItem = menu_ALPHA          },  //JM ALPHA
@@ -1749,6 +1753,9 @@ bool_t BASE_OVERRIDEONCE = false;
   void showSoftmenuCurrentPart(void) {
     if(currentMenu() == -MNU_HOME) {
       changeToHOME();
+    } else 
+    if(currentMenu() == -MNU_PFN) {
+      changeToPFN();
     }
 
 //JMTOCHECK: Removed exceptions for underline removal.
@@ -2193,7 +2200,7 @@ bool_t BASE_OVERRIDEONCE = false;
     }
 
                                                               //JM ^^
-    if(currentMenu() != MNU_HOME && currentMenu() != -MNU_MODE && currentMenu() != -MNU_DISP) {          //JM reset menu base point only if not HOME, MODE & DISP menus
+    if(currentMenu() != -MNU_MODE && currentMenu() != -MNU_DISP) {          //JM reset menu base point only if not MODE & DISP menus
       softmenuStack[0].firstItem = 0;
     }
 
@@ -2239,18 +2246,53 @@ bool_t BASE_OVERRIDEONCE = false;
     }
     for(uint16_t ii=0; ii<18; ii++) {
       itemToBeAssigned = ITM_ENTER;
+      screenUpdatingMode = ~SCRUPD_AUTO;
+      doRefreshSoftMenu = false;
+      last_CM = 240;
       assignToUserMenu(ii);
       itemToBeAssigned = menu_HOME[ii];      
+      screenUpdatingMode = ~SCRUPD_AUTO;
+      doRefreshSoftMenu = false;
+      last_CM = 240;
       assignToUserMenu(ii);
     }
+    screenUpdatingMode = SCRUPD_AUTO;
+    refreshScreen();
+    return true;
+  }
+
+  bool_t createPFN(void) {
+    if(!setCurrentUserMenu(-MNU_DYNAMIC,"P.FN")) {
+      createMenu("P.FN");
+      if(!setCurrentUserMenu(-MNU_DYNAMIC,"P.FN")) {
+        return false;
+      }
+    }
+    for(uint16_t ii=0; ii<18; ii++) {
+      itemToBeAssigned = ITM_ENTER;
+      screenUpdatingMode = ~SCRUPD_AUTO;
+      doRefreshSoftMenu = false;
+      last_CM = 240;
+      assignToUserMenu(ii);
+      itemToBeAssigned = menu_MyPFN[ii];      
+      screenUpdatingMode = ~SCRUPD_AUTO;
+      doRefreshSoftMenu = false;
+      last_CM = 240;
+      assignToUserMenu(ii);
+    }
+    screenUpdatingMode = SCRUPD_AUTO;
+    refreshScreen();
     return true;
   }
 
 
 
-
   void changeToHOME(void) {
     showSoftmenu(-MNU_HOME);
+  }
+
+  void changeToPFN(void) {
+    showSoftmenu(-MNU_PFN);
   }
 
   void changeToALPHA(void) {
@@ -2260,6 +2302,9 @@ bool_t BASE_OVERRIDEONCE = false;
   int16_t currentMenu(void) {
     if(softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_DYNAMIC && compareString("HOME", userMenus[currentUserMenu].menuName, CMP_NAME) == 0) {
        return -MNU_HOME;
+    } else 
+    if(softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_DYNAMIC && compareString("P.FN", userMenus[currentUserMenu].menuName, CMP_NAME) == 0) {
+       return -MNU_PFN;
     } else {
        return softmenu[softmenuStack[0].softmenuId].menuItem;
     }
@@ -2287,7 +2332,16 @@ bool_t BASE_OVERRIDEONCE = false;
         }
       }
       id = -MNU_DYNAMIC;
+    } else
+    if(id == -MNU_PFN) {
+      if(!setCurrentUserMenu(-MNU_DYNAMIC,"P.FN")) {
+        if(!createPFN()) {
+          return;
+        }
+      }
+      id = -MNU_DYNAMIC;
     }
+
 
 
     enterAsmModeIfMenuIsACatalog(id);

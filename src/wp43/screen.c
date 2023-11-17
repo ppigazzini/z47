@@ -4058,9 +4058,9 @@ void execTimerApp(uint16_t timerType) {
     #endif // PC_BUILD
     //screenUpdatingMode = 0; //0 is ALL REFRESHES; ~0 is NO REFRESHES
 
-    if(calcMode!=CM_AIM && calcMode!=CM_NIM && calcMode!=CM_PLOT_STAT && calcMode!=CM_GRAPH && calcMode!=CM_LISTXY) {
+    if(calcMode!=CM_AIM && calcMode!=CM_NIM && calcMode!=CM_PLOT_STAT && calcMode!=CM_GRAPH && calcMode!=CM_LISTXY && last_CM != 240) {  //240 specifically to prefent this
       last_CM = 254;  //JM Force NON-CM_AIM and NON-CM_NIM to refresh to be compatible to 43S
-    }
+    } else if (last_CM == 240) last_CM = calcMode;
 
     switch(calcMode) {
       case CM_FLAG_BROWSER:
