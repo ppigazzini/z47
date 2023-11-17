@@ -147,9 +147,157 @@ void fraction(calcRegister_t regist, int16_t *sign, uint64_t *intPart, uint64_t 
   //*******************
   //* Any denominator *
   //*******************
-  if(getSystemFlag(FLAG_DENANY)) { // denominator up to D.MAX
-    #define OPTIMAL_FRACTIONS 1
-    #if OPTIMAL_FRACTIONS == 1
+  if(getSystemFlag(FLAG_DENANY)) { // denominator up to denMax
+    #define OPTIMAL_FRACTION_METHOD 1 // 0=continuous fraction   1=Farey fractions   2=Nigel's method
+
+    #if (OPTIMAL_FRACTION_METHOD != 0) && (OPTIMAL_FRACTION_METHOD != 1) && (OPTIMAL_FRACTION_METHOD != 2)
+      #error OPTIMAL_FRACTION_METHOD must be 0, 1 or 2
+    #endif // (OPTIMAL_FRACTION_METHOD != 0) && (OPTIMAL_FRACTION_METHOD != 1) && (OPTIMAL_FRACTION_METHOD != 2)
+
+    #if (OPTIMAL_FRACTION_METHOD == 2) // NIGEL'S METHOD
+    // see: https://forum.swissmicros.com/viewtopic.php?p=30506#p30506
+    // and https://www.hpmuseum.org/forum/thread-20705-post-180180.html#pid180180
+    // and https://en.wikipedia.org/wiki/Continued_fraction#Semiconvergents
+
+    // This method should be faster than Farey's fractions method, but it isn't!
+    // here the timings:
+    //
+    // Farey processor time (R103) =    0,077550  π      110 loops
+    // Farey processor time (R102) =    0,081307  e³      29 loops
+    // Farey processor time (R101) =    0,087934  ln13    25 loops
+    // Farey processor time (R100) =    0,024816  1/3      2 loops
+    //
+    // Nigel processor time (R103) =    0,686072  π        3 loops
+    // Nigel processor time (R102) =    2,105902  e³       8 loops
+    // Nigel processor time (R101) =    1,933471  ln13     9 loops
+    // Nigel processor time (R100) =    0,156097  1/3      1 loop
+    //
+    // The culprit seems to be realToInt32() that uses decNumberToIntegralValue()…
+
+    int32_t m, h, h_1, h_2, k, k_1, k_2, a;
+    real_t y, this_error, last_error, twoDenMax, temp1, yma;
+
+    realCopy(&temp0, &y);
+    int32ToReal(denMax, &twoDenMax);
+    realMultiply(&twoDenMax, const_2, &twoDenMax, &ctxtReal39);
+
+    realDivide(const_1, &twoDenMax, &temp1, &ctxtReal39);
+    if(realCompareLessThan(&y, &temp1)) {
+      *numer = 0;
+      *denom = 1; // ...because the number is closer to 0 than to 1/denMax
+    }
+    else {
+      // Start the continued fraction:
+      realDivide(const_1, &y, &y, &ctxtReal39); // guaranteed safe; y >= 1/(2*denMax)
+      realToInt32(&y, a); // this is a1 in the continued fraction
+
+      if(a > (int32_t)denMax) { // return 1/denMax
+        *numer = 1;
+        *denom = denMax;
+      }
+      else {
+        // h, k are num and den of continued fraction up to this point
+        // h_1,k_1 and h_2,k_2 are h,k for the two previous steps.
+        // Initialise:
+        h_1 = 0;
+        k_1 = 1;
+        h = 1;
+        k = a;
+
+        do {
+          // update h, k variables
+          h_2 = h_1;
+          k_2 = k_1;
+          h_1 = h;
+          k_1 = k;
+
+          // work out next y, a
+          int32ToReal(k_1, &temp1);
+          realDivide(&temp1, &twoDenMax, &temp1, &ctxtReal39);
+          int32ToReal(a, &yma);
+          realSubtract(&y, &yma, &yma, &ctxtReal39);
+          if(realCompareLessThan(&yma, &temp1)) {
+            // We're about to do new_y = 1/(y-a); new_a = floor(new_y).
+            // new_a is used to calculate new values of h and k.
+            // If y-a is too small, the new value of k will be too much
+            // greater than denMax to be useful. In this algorithm we need
+            // to stop if the new value of k is greater than 2*denMax.
+            // new_k = new_a * k_1 + k_2;
+            // this is true if (y-a) < k_1/(2*denMax)
+            // (and it may be true for slightly larger values of (y-a), but
+            // this is caught later).
+            // In this case, the current convergent is the best rational approximation
+            // with denominator < denMax.
+            h = h_1;
+            k = k_1;
+            goto fracEnd;
+          }
+          realDivide(const_1, &yma, &y, &ctxtReal39);
+          a = 0;
+          if(!realIsZero(&y)) {
+            for(int i=0; i<(y.digits+y.exponent+(DECDPUN-1))/DECDPUN; i++) {
+              a *= 1000; // 1000 = 10^DECDPUN
+              a += y.lsu[i];
+            }
+            for(int i=0; i<DECDPUN-(y.digits+y.exponent)%DECDPUN; i++) {
+              a /= 10;
+            }
+          }
+          //realToInt32(&y, a); // first time in, this is a2 in the continued fraction.
+          // work out new h, k;
+          h = a*h_1 + h_2;
+          k = a*k_1 + k_2;
+        } while(k <= (int32_t)denMax); // when k > denMax, no point in going further.
+
+        // Now k>denMax. h/k is still a convergent, but we can't use it directly.
+        // Instead we look for semiconvergents between h_1/k_1 and h/k.
+        // A semiconvergent is (m*h_1+h_2)/(m*k_1+k_2), where m is an integer
+        // between 1 and a-1.
+        // If a/2<m<a, the semiconvergent is a better RA than the previous convergent.
+        // If m = a/2, the semiconvergent might be better - need to check.
+        // If m<a/2, the previous convergent is the best RA possible.
+        // We want a value of m that makes m*k_1+k_2 as big as possible but <= denMax.
+
+        m = (denMax - k_2) / k_1; // integer division ok
+
+        if(m < a / 2) { // use previous convergent
+          *numer = h_1;
+          *denom = k_1;
+        }
+        else {
+          // This is the semiconvergent
+          h = h_2 + m*h_1;
+          k = k_2 + m*k_1;
+
+          if(m == a / 2) { // only admissible if better than last time
+            int32ToReal(h_1, &last_error);
+            int32ToReal(k_1, &temp1);
+            realDivide(&last_error, &temp1, &last_error, &ctxtReal39);
+            realSubtract(&temp0, &last_error, &last_error, &ctxtReal39);
+            realSetPositiveSign(&last_error);
+
+            int32ToReal(h, &this_error);
+            int32ToReal(k, &temp1);
+            realDivide(&this_error, &temp1, &this_error, &ctxtReal39);
+            realSubtract(&temp0, &this_error, &this_error, &ctxtReal39);
+            realSetPositiveSign(&this_error);
+
+            if(realCompareLessEqual(&last_error, &this_error)) {
+              h = h_1;
+              k = k_1;
+            }
+          }
+
+          // Here, m>a/2, or m=a/2 and better than last time. Use the semiconvergent.
+          fracEnd:
+          *numer = h;
+          *denom = k;
+        }
+      }
+    }
+    #endif // OPTIMAL_FRACTION_METHOD == 2
+
+    #if (OPTIMAL_FRACTION_METHOD == 1) // FAREY FRACTIONS
     // see: https://math.stackexchange.com/questions/2438510/can-i-find-the-closest-rational-to-any-given-real-if-i-assume-that-the-denomina
     // and https://www.johndcook.com/blog/2010/10/20/best-rational-approximation/#comment-1077474
 
@@ -224,8 +372,9 @@ void fraction(calcRegister_t regist, int16_t *sign, uint64_t *intPart, uint64_t 
         *denom = oldB;
       }
     }
+    #endif // OPTIMAL_FRACTION_METHOD == 1
 
-    #else // OPTIMAL_FRACTIONS != 1  OLD CODE RESULTING IN SUB-OPTIMAL FRACTIONS
+    #if (OPTIMAL_FRACTION_METHOD == 0) // OLD CONTINUOUS FACTION CODE RESULTING IN SUB-OPTIMAL FRACTIONS
     uint64_t iPart[20], ex, bestNumer=0, bestDenom=1;
     uint32_t invalidOperation;
     int16_t i, j;
@@ -307,7 +456,7 @@ void fraction(calcRegister_t regist, int16_t *sign, uint64_t *intPart, uint64_t 
       *numer = 0;
       *intPart += 1;
     }
-    #endif // OPTIMAL_FRACTIONS == 1
+    #endif // OPTIMAL_FRACTION_METHOD == 0
   }
 
   //*******************
