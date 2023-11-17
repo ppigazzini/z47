@@ -1501,6 +1501,15 @@ typedef enum {
 #define errorf(a){fprintf(stderr, "%serror:%s %s %s(%s %s:%d)%s\n", COLOR_YELLOW, a, COLOR_DEFAULT, COLOR_CYAN, __FUNCTION__, __FILE__, __LINE__, COLOR_DEFAULT);fflush(stderr);}
 #define abortf(a){fprintf(stderr, "%sabort: %s(%s %s:%d)%s\n",      COLOR_RED,                      COLOR_CYAN, __FUNCTION__, __FILE__, __LINE__, COLOR_DEFAULT);perror(a);fflush(stderr);abort();}
 
+// To time a piece of code (not on DM42 hardware), you can use the following code snippet:
+// #include <time.h>
+// struct timespec stopwatch_start, stopwatch_stop;
+// clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &stopwatch_start);
+// : piece of code
+// : to time
+// clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &stopwatch_stop);
+// printf("Duration = %11.6fs\n", stopwatch_stop.tv_sec + stopwatch_stop.tv_nsec /1e9 - stopwatch_start.tv_sec - stopwatch_start.tv_nsec /1e9);
+
 #define TEST_REG(r, comment) { \
                                if(globalRegister[r].dataPointer >= 500) { \
                                  uint32_t a, b; \
