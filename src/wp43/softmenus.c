@@ -663,9 +663,21 @@ TO_QSPI const int16_t menu_ASN_N[]       = { ITM_N_KEY_SIGMA,           ITM_N_KE
 #endif // !DMCP_BUILD
 
 
-TO_QSPI const int16_t menu_KEYS[]      =  { ITM_KEYMAP ,                    ITM_USER_C47  ,             ITM_USER_DM42   ,         ITM_ASSIGN      ,      ITM_USERMODE   ,             ITM_USER_PRESET,
-                                            ITM_BASE_CPX  ,                 ITM_BASE_ENG  ,             ITM_BASE_FIN    ,         ITM_USER_MRESET ,      ITM_USER_ARESET ,            ITM_USER_KRESET,
-                                           -MNU_ASN_N,                      CC_D47,                     CC_E47,                   CC_N47,                CC_V47,                      ITM_USER_HRESET                       };
+TO_QSPI const int16_t menu_KEYS[]      =  {  -MNU_RIBBONS,             -MNU_RESETS,               -MNU_LAYOUTS,              ITM_USER_C47,              ITM_USER_DM42,             ITM_KEYMAP,                
+                                             ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_ASSIGN,                
+                                             -MNU_ASN_N,                ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_USERMODE };             
+
+TO_QSPI const int16_t menu_LAYOUTS[]   =  {  ITM_USER_C47,              ITM_USER_D47,              ITM_USER_E47,              ITM_USER_N47,              ITM_USER_R47,              ITM_USER_V47,              
+                                             ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_ASSIGN,                
+                                             ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_USERMODE };
+
+TO_QSPI const int16_t menu_RESETS[]    =  {  ITM_USER_ARESET,           ITM_USER_MRESET,           ITM_USER_HRESET,           ITM_USER_PRESET,           ITM_NULL,                  ITM_USER_KRESET,           
+                                             ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  
+                                             ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL };
+
+TO_QSPI const int16_t menu_RIBBONS[]   =  {  ITM_BASE_CPX,              ITM_BASE_ENG,              ITM_BASE_FIN,              ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  
+                                             ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  
+                                             ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL };
 
 
 TO_QSPI const int16_t menu_XEQ[]         = { ITM_X_P1,                      ITM_X_P2,                   ITM_X_P3,                 ITM_X_P4,              ITM_X_P5,                    ITM_X_P6,
@@ -876,8 +888,11 @@ TO_QSPI const softmenu_t softmenu[] = {
 /* 133 */  {.menuItem = -MNU_GAP_RX,      .numItems = sizeof(menu_GAP_RX        )/sizeof(int16_t), .softkeyItem = menu_GAP_RX         },
 /* 134 */  {.menuItem = -MNU_GAP_R,       .numItems = sizeof(menu_GAP_R         )/sizeof(int16_t), .softkeyItem = menu_GAP_R          },
 /* 135 */  {.menuItem = -MNU_PREFIX,      .numItems = sizeof(menu_PREFIX        )/sizeof(int16_t), .softkeyItem = menu_PREFIX         },
-/* 136 */  {.menuItem = -MNU_INL_TST,     .numItems = sizeof(menu_Inl_Tst       )/sizeof(int16_t), .softkeyItem = menu_Inl_Tst        },
-/* 137 */  {.menuItem =  0,               .numItems = 0,                                           .softkeyItem = NULL                }
+/* 136 */  {.menuItem = -MNU_LAYOUTS,     .numItems = sizeof(menu_LAYOUTS       )/sizeof(int16_t), .softkeyItem = menu_LAYOUTS        },
+/* 137 */  {.menuItem = -MNU_RESETS,      .numItems = sizeof(menu_RESETS        )/sizeof(int16_t), .softkeyItem = menu_RESETS         },
+/* 138 */  {.menuItem = -MNU_RIBBONS,     .numItems = sizeof(menu_RIBBONS       )/sizeof(int16_t), .softkeyItem = menu_RIBBONS        },
+/* 139 */  {.menuItem = -MNU_INL_TST,     .numItems = sizeof(menu_Inl_Tst       )/sizeof(int16_t), .softkeyItem = menu_Inl_Tst        },
+/* 140 */  {.menuItem =  0,               .numItems = 0,                                           .softkeyItem = NULL                }
 };
 
 
