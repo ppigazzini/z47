@@ -1928,10 +1928,8 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
 
         int keyCode = (*((char *)data) - '0')*10 + *(((char *)data) + 1) - '0';
         char *funcParam = (char *)getNthString((uint8_t *)userKeyLabel, keyCode * 6 + keyStateCode);
-        printf("**[DL]** btnReleased - item %d showFunctionNameArg %s funcParam %s\n",item,showFunctionNameArg,funcParam);
         if (showFunctionNameArg != NULL) {
           funcParam = showFunctionNameArg;       // Needed when executing a user menu from a long pressed key
-          printf("**[DL]** btnReleased - item %d showFunctionNameArg %s funcParam %s\n",item,showFunctionNameArg,funcParam);
         }
 
         if(item < 0) {
