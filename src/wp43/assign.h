@@ -23,23 +23,23 @@
   #include <stdint.h>
   #include "typeDefinitions.h"
 
-  void fnAssign             (uint16_t mode);
+  void fnAssign                   (uint16_t mode);
 
-  void fnDeleteMenu         (uint16_t id);
+  void fnDeleteMenu               (uint16_t id);
+  void removeUserItemAssignments  (int16_t item, char *userItemName);
+  void updateAssignTamBuffer      (void);
 
-  void updateAssignTamBuffer(void);
+  void _assignItem                (userMenuItem_t *menuItem);
+  void assignToMyMenu             (uint16_t position);
+  void assignToMyAlpha            (uint16_t position);
+  void assignToUserMenu           (uint16_t position);
+  void assignToKey                (const char *data);
 
-  void _assignItem          (userMenuItem_t *menuItem);
-  void assignToMyMenu       (uint16_t position);
-  void assignToMyAlpha      (uint16_t position);
-  void assignToUserMenu     (uint16_t position);
-  void assignToKey          (const char *data);
+  void setUserKeyArgument         (uint16_t position, const char *name);
+  void createMenu                 (const char *name);
 
-  void setUserKeyArgument   (uint16_t position, const char *name);
-  void createMenu           (const char *name);
-
-  void assignEnterAlpha     (void);
-  void assignLeaveAlpha     (void);
-  void assignGetName1       (void);
-  void assignGetName2       (void);
+  void assignEnterAlpha           (void);
+  void assignLeaveAlpha           (void);
+  void assignGetName1             (void);
+  void assignGetName2             (void);
 #endif // !ASSIGN_H

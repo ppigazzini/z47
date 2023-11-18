@@ -373,25 +373,29 @@ void fnAssign(uint16_t mode) {
 
 
 
-static void _removeMenuAssignments(uint16_t id) {
+void removeUserItemAssignments(int16_t userItem, char *userItemName) {
   itemToBeAssigned = ITM_NULL;
-
+  #if defined(PC_BUILD)
+    //printf("**[DL]** userItem %d userItemName %s length %d char1 %x char2 %x char 3 %x char4 %x\n",userItem,userItemName,stringByteLength(userItemName),userItemName[0],userItemName[1],userItemName[2],userItemName[3]);
+  #endif //PC_BUILD
   // Predefined configurable menus
   for(int i = 0; i < 18; ++i) {
     // MyMenu
-    if((userMenuItems[i].item == -MNU_DYNAMIC) && (compareString(userMenuItems[i].argumentName, userMenus[id].menuName, CMP_NAME) == 0)) {
+    if((userMenuItems[i].item == userItem) && (compareString(userMenuItems[i].argumentName, userItemName, CMP_NAME) == 0)) {
       assignToMyMenu(i);
+      #if defined(PC_BUILD)
+        //printf("**[DL]** remove MyMenu position %d assignment\n",i);
+      #endif //PC_BUILD
     }
     // MyAlpha
-    if((userAlphaItems[i].item == -MNU_DYNAMIC) && (compareString(userAlphaItems[i].argumentName, userMenus[id].menuName, CMP_NAME) == 0)) {
+    if((userAlphaItems[i].item == userItem) && (compareString(userAlphaItems[i].argumentName, userItemName, CMP_NAME) == 0)) {
       assignToMyAlpha(i);
     }
   }
   // User-defined menus
   for(int i = 0; i < numberOfUserMenus; ++i) {
     for(int j = 0; j < 18; ++j) {
-      if((userMenus[i].menuItem[j].item == -MNU_DYNAMIC) && (compareString(userMenus[i].menuItem[j].argumentName, userMenus[id].menuName, CMP_NAME) == 0)) {
-        printf("**[DL]** i %d - j %d -userMenus[i].menuItem[j].item %d - userMenus[i].menuItem[j].argumentName %s\n",i,j,userMenus[i].menuItem[j].item,userMenus[i].menuItem[j].argumentName);
+      if((userMenus[i].menuItem[j].item == userItem) && (compareString(userMenus[i].menuItem[j].argumentName, userItemName, CMP_NAME) == 0)) {
         _assignItem(&userMenus[i].menuItem[j]);
       }
     }
@@ -407,25 +411,28 @@ static void _removeMenuAssignments(uint16_t id) {
     kc[0] = (i / 10) + '0';
     kc[1] = (i % 10) + '0';
     kc[2] = 0;
-    if(key->primary == -MNU_DYNAMIC) {
+    if(key->primary == userItem) {
       stringToUtf8((char *)getNthString((uint8_t *)userKeyLabel, i*6),(uint8_t *)lbl);
-      if(compareString(lbl,userMenus[id].menuName, CMP_NAME) == 0) {
+      if(compareString(lbl,userItemName, CMP_NAME) == 0) {
         shiftF = false;
         shiftG = false;
         assignToKey(kc);
+        #if defined(PC_BUILD)
+          //printf("**[DL]** remove primary key %s assignment\n",kc);
+        #endif //PC_BUILD
       }
     }
-    if(key->fShifted == -MNU_DYNAMIC) {
+    if(key->fShifted == userItem) {
       stringToUtf8((char *)getNthString((uint8_t *)userKeyLabel, i*6+1),(uint8_t *)lbl);
-      if(compareString(lbl,userMenus[id].menuName, CMP_NAME) == 0) {
+      if(compareString(lbl,userItemName, CMP_NAME) == 0) {
         shiftF = true;
         shiftG = false;
         assignToKey(kc);
       }
     }
-    if(key->gShifted == -MNU_DYNAMIC) {
+    if(key->gShifted == userItem) {
       stringToUtf8((char *)getNthString((uint8_t *)userKeyLabel, i*6+2),(uint8_t *)lbl);
-      if(compareString(lbl,userMenus[id].menuName, CMP_NAME) == 0) {
+      if(compareString(lbl,userItemName, CMP_NAME) == 0) {
         shiftF = false;
         shiftG = true;
         assignToKey(kc);
@@ -444,7 +451,7 @@ void fnDeleteMenu(uint16_t id) {
     return;
   }
   else {
-    _removeMenuAssignments(id);   // Remove assignments before deleting the user menu
+    removeUserItemAssignments(-MNU_DYNAMIC,userMenus[id].menuName);   // Remove assignments before deleting the user menu
     if(numberOfUserMenus == 1) {
       freeC47Blocks(userMenus, TO_BLOCKS(sizeof(userMenu_t)));
       userMenus = NULL;
