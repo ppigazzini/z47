@@ -1401,8 +1401,8 @@
 #define MNU_PARTS                   1353
 #define MNU_PROB                    1354
 #define MNU_PROGS                   1355
-#define MNU_PFN                     1356
-#define MNU_PFN_MORE                1357
+#define MNU_PFN_1                        1356
+#define MNU_PFN_2                        1357
 #define MNU_CONVP                   1358
 #define MNU_CONVHUM                 1359
 #define MNU_REALS                   1360
@@ -1448,8 +1448,7 @@
 #define MNU_TIMERF                  1400
 #define MNU_HIST                    1401
 #define MNU_HPLOT                   1402
-#define MNU_SHOW                    1403
-
+#define MNU_PFN                     1403
 
 
 #define ITM_1COMPL                  1404
@@ -1950,7 +1949,7 @@
 #define KEY_fg                      1893
 #define MNU_1894                    1894        // [DL] Deprecated MNU_TAMCMPALPHA
 #define ITM_HPBASE                  1895
-#define ITM_ASNVIEWER               1896
+#define ITM_KEYMAP                  1896
 #define ITM_N_KEY_TGLFRT            1897
 #define ITM_N_KEY_ALPHA             1898
 #define ITM_N_KEY_CC                1899
@@ -1981,7 +1980,7 @@
 #define MNU_XEQ                     1924
 #define MNU_EE                      1925
 #define ITM_T_UP_ARROW              1926
-#define MNU_ASN                     1927
+#define MNU_KEYS                    1927
 #define ITM_T_DOWN_ARROW            1928
 #define ITM_T_HOME                  1929
 #define ITM_T_END                   1930
@@ -2072,7 +2071,7 @@
 #define ITM_EXTY                    2015
 #define ITM_DENMAX2_OLD             2016
 #define ITM_SETSIG2_OLD             2017
-#define ITM_USER_HRESET             2018
+#define ITM_2018             2018
 #define ITM_RMODEQ                  2019
 #define ITM_SI_All                  2020
 #define ITM_USER_ARESET             2021
@@ -2108,8 +2107,8 @@
 #define ITM_PRTACT1                 2051
 #define ITM_PRTACT0                 2052
 #define ITM_2TO10                   2053
-#define MNU_2054                    2054
-#define MNU_2055                    2055
+#define ITM_USER_HRESET                    2054
+#define ITM_USER_PRESET                    2055
 #define ITM_IRFRAC                  2056
 #define ITM_FGLNOFF                 2057
 #define ITM_FGLNLIM                 2058
@@ -2243,7 +2242,7 @@
 #define ITM_MPHtoFPF                2186
 #define ITM_FPStoKMH                2187
 #define ITM_KMHtoFPS                2188
-#define ITM_FTPtoMPS                2189
+#define ITM_FPStoMPS                2189
 #define ITM_MPStoFPS                2190
 #define ITM_SCR                     2191
 #define ITM_SCRNRM                  2192
@@ -2284,8 +2283,12 @@
 #define ITM_SI_Ti                   2227
 #define ITM_SI_Pi                   2228
 #define MNU_PREFIX                  2229
+#define MNU_NUMBRS                  2230
+#define MNU_CONFIGS                 2231
+#define MNU_ALLVARS                 2232
+#define MNU_SHOW                    2233
 
-#define LAST_ITEM                   2230
+#define LAST_ITEM                   2234
 
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL

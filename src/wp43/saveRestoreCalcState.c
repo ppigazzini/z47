@@ -49,7 +49,7 @@
 #endif
 
 #include "wp43.h"
-#define BACKUP_VERSION                     790  // removed mm variables
+#define BACKUP_VERSION                     791  // adding allocated memory blocks tracking
 #define OLDEST_COMPATIBLE_BACKUP_VERSION   779  // save running app
 #define configFileVersion                  10000008 // New STOCFG and new STATE file; arbitrary starting point version 10 000 001. Allowable values are 10000000 to 20000000
 #define VersionAllowed                     10000005 // This code will not autoload versions earlier than this
@@ -118,8 +118,10 @@ static uint32_t restore(void *buffer, uint32_t size) {
     save(&backupVersion,                      sizeof(backupVersion));
     save(&ramSizeInBlocks,                    sizeof(ramSizeInBlocks));
     save(ram,                                 TO_BYTES(RAM_SIZE_IN_BLOCKS));
-    save(freeMemoryRegions,                   sizeof(freeMemoryRegions));
     save(&numberOfFreeMemoryRegions,          sizeof(numberOfFreeMemoryRegions));
+    save(freeMemoryRegions,                   sizeof(freeMemoryRegion_t) * numberOfFreeMemoryRegions);
+    save(&numberOfAllocatedMemoryRegions,     sizeof(numberOfAllocatedMemoryRegions));
+    save(allocatedMemoryRegions,              sizeof(freeMemoryRegion_t) * numberOfAllocatedMemoryRegions);
     save(globalFlags,                         sizeof(globalFlags));
     save(errorMessage,                        ERROR_MESSAGE_LENGTH);
     save(aimBuffer,                           AIM_BUFFER_LENGTH);
@@ -446,8 +448,10 @@ static uint32_t restore(void *buffer, uint32_t size) {
       printf("Begin of calc's restoration\n");
 
       restore(ram,                                 TO_BYTES(RAM_SIZE_IN_BLOCKS));
-      restore(freeMemoryRegions,                   sizeof(freeMemoryRegions));
       restore(&numberOfFreeMemoryRegions,          sizeof(numberOfFreeMemoryRegions));
+      restore(freeMemoryRegions,                   sizeof(freeMemoryRegion_t) * numberOfFreeMemoryRegions);
+      restore(&numberOfAllocatedMemoryRegions,     sizeof(numberOfAllocatedMemoryRegions));
+      restore(allocatedMemoryRegions,              sizeof(freeMemoryRegion_t) * numberOfAllocatedMemoryRegions);
       restore(globalFlags,                         sizeof(globalFlags));
       restore(errorMessage,                        ERROR_MESSAGE_LENGTH);
       restore(aimBuffer,                           AIM_BUFFER_LENGTH);
@@ -1601,7 +1605,7 @@ int32_t stringToInt32(const char *str) {
     else if(strcmp(type, "Conf") == 0) {
       char *cfg;
 
-      reallocateRegister(regist, dtConfig, CONFIG_SIZE, amNone);
+      reallocateRegister(regist, dtConfig, CONFIG_SIZE_IN_BLOCKS, amNone);
       for(cfg=(char *)REGISTER_CONFIG_DATA(regist), tag=0;  tag < (loadedVersion < 10000008 ? 896 : sizeof(dtConfigDescriptor_t)); tag++, value+=2, cfg++) {
         *cfg = ((*value >= 'A' ? *value - 'A' + 10 : *value - '0') << 4) | (*(value + 1) >= 'A' ? *(value + 1) - 'A' + 10 : *(value + 1) - '0');
       }

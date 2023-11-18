@@ -21,6 +21,8 @@
 #include "c43Extensions/keyboardTweak.h"
 #include "c43Extensions/radioButtonCatalog.h"
 #include "mathematics/matrix.h"
+#include "mathematics/cxToRe.h"
+#include "mathematics/reToCx.h"
 #include "memory.h"
 #include "plotstat.h"
 #include "programming/manage.h"
@@ -1171,6 +1173,34 @@ int16_t lastItem = 0;
                   keyActionProcessed = true;
                 }
                 else {
+                  if(item == ITM_XEQ && dynamicMenuItem > -1) {
+                    char *varCatalogItem = dynmenuGetLabel(dynamicMenuItem);
+                    calcRegister_t regist = findNamedLabel(varCatalogItem);
+                    if(regist != INVALID_VARIABLE) {
+                      item = regist - FIRST_LABEL + ASSIGN_LABELS;
+                    }
+                    else {
+                      displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
+                      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+                        sprintf(errorMessage, "string '%s' is not a named label", varCatalogItem);
+                        moreInfoOnError("In function btnFnReleased:", errorMessage, NULL, NULL);
+                      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+                    }
+                  }
+                  else if(item == ITM_RCL && dynamicMenuItem > -1) {
+                    char *varCatalogItem = dynmenuGetLabel(dynamicMenuItem);
+                    calcRegister_t regist = findNamedVariable(varCatalogItem);
+                    if(regist != INVALID_VARIABLE) {
+                      item = regist - FIRST_NAMED_VARIABLE + ASSIGN_NAMED_VARIABLES;
+                    }
+                    else {
+                      displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
+                      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+                        sprintf(errorMessage, "string '%s' is not a named variable", varCatalogItem);
+                        moreInfoOnError("In function btnFnReleased:", errorMessage, NULL, NULL);
+                      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+                    }
+                  }
                   itemToBeAssigned = item;
 
                   if(previousCalcMode == CM_AIM) {                            //JMvv close menu to allow only one charac
@@ -1725,7 +1755,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
       char *funcParam = "";
 
       if(getSystemFlag(FLAG_USER)) {
-        int keyStateCode = (getSystemFlag(FLAG_ALPHA) ? 3 : 0) + (g ? 2 : f ? 1 : 0);
+        keyStateCode = (getSystemFlag(FLAG_ALPHA) ? 3 : 0) + (g ? 2 : f ? 1 : 0);
         funcParam = (char *)getNthString((uint8_t *)userKeyLabel, keyCode * 6 + keyStateCode);
         xcopy(tmpString, funcParam, stringByteLength(funcParam) + 1);
       }
@@ -1914,10 +1944,15 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
         hideFunctionName();
 
         int keyCode = (*((char *)data) - '0')*10 + *(((char *)data) + 1) - '0';
-        int keyStateCode = (getSystemFlag(FLAG_ALPHA) ? 3 : 0) + (lastshiftG ? 2 : lastshiftF ? 1 : 0);
         char *funcParam = (char *)getNthString((uint8_t *)userKeyLabel, keyCode * 6 + keyStateCode);
+        #if defined(PC_BUILD)
+          //printf("**[DL]** btnReleased - item %d showFunctionNameArg %s funcParam %s\n",item,showFunctionNameArg,funcParam);
+        #endif //PC_BUILD
         if (showFunctionNameArg != NULL) {
           funcParam = showFunctionNameArg;       // Needed when executing a user menu from a long pressed key
+          #if defined(PC_BUILD)
+            //printf("**[DL]** btnReleased - item %d showFunctionNameArg %s funcParam %s\n",item,showFunctionNameArg,funcParam);
+          #endif //PC_BUILD
         }
 
         if(item < 0) {
@@ -1930,7 +1965,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
           if(item == ITM_RS || item == ITM_XEQ) {
             key[0] = 0;
           }
-          #endif // PC_BUILD
+        #endif // PC_BUILD
 
           if(item != ITM_NOP && tam.alpha && indexOfItems[item].func != addItemToBuffer) {
             // We are in TAM mode so need to cancel first (equivalent to EXIT)
@@ -2636,6 +2671,36 @@ RELEASE_END:
                   }
                 }
                 else {
+                  if(item == ITM_XEQ && getSystemFlag(FLAG_USER) && tmpString[0] != 0) {
+                    char label[15];
+                    xcopy(label,tmpString, stringByteLength(tmpString) + 1);
+                    calcRegister_t regist = findNamedLabel(label);
+                    if(regist != INVALID_VARIABLE) {
+                      item = regist - FIRST_LABEL + ASSIGN_LABELS;
+                    }
+                    else {
+                      displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
+                      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+                        sprintf(errorMessage, "string '%s' is not a named label", label);
+                        moreInfoOnError("In function btnFnReleased:", errorMessage, NULL, NULL);
+                      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+                    }
+                  }
+                  else if(item == ITM_RCL && getSystemFlag(FLAG_USER) && tmpString[0] != 0) {
+                    char var[15];
+                    xcopy(var,tmpString, stringByteLength(tmpString) + 1);
+                    calcRegister_t regist = findNamedVariable(var);
+                    if(regist != INVALID_VARIABLE) {
+                      item = regist - FIRST_NAMED_VARIABLE + ASSIGN_NAMED_VARIABLES;
+                    }
+                    else {
+                      displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
+                      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+                        sprintf(errorMessage, "string '%s' is not a named variable", var);
+                        moreInfoOnError("In function btnFnReleased:", errorMessage, NULL, NULL);
+                      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+                    }
+                  }
                   itemToBeAssigned = item;
                   if(previousCalcMode == CM_AIM) softmenuStack[0].softmenuId = 1;     //JM change ALPHA to MyAlpha to be able to write ASN target
                 }
@@ -3392,11 +3457,9 @@ undo_disabled:
 
 
 void fnKeyCC(uint16_t complex_Type) {    //JM Using 'unusedButMandatoryParameter' complex_Type=KEY_COMPLEX
-  doRefreshSoftMenu = true;     //dr
-  #if !defined(TESTSUITE_BUILD)
-    uint32_t dataTypeX, dataTypeY;
+    doRefreshSoftMenu = true;     //dr
+    #if !defined(TESTSUITE_BUILD)
     bool_t polarOk, rectOk;
-
     // The switch statement is broken up here, due to multiple conditions.                      //JM
     if((calcMode == CM_NIM) && (complex_Type == KEY_COMPLEX)) {
       addItemToNimBuffer(ITM_EXIT1);
@@ -3410,7 +3473,8 @@ void fnKeyCC(uint16_t complex_Type) {    //JM Using 'unusedButMandatoryParameter
       uint8_t sdataAtagY = getRegisterAngularMode(REGISTER_Y);
       bool_t toClearPolar = false;
       #define isAngle(typ,tag) (typ == dtReal34 && tag != amNone)
-      #define isRadius(typ,tag) (typ == dtLongInteger || (typ == dtReal34 && tag != amNone))
+      #define isValidAngle(typ,tag) (typ == dtLongInteger || typ == dtReal34)
+      #define isRadius(typ,tag) (typ == dtLongInteger || (typ == dtReal34 && tag == amNone))
       if(getSystemFlag(FLAG_POLAR) && isAngle(sdataTypeY,sdataAtagY) && isRadius(sdataTypeX,sdataAtagX)) {
         fnSwapXY(0);
       } else
@@ -3425,27 +3489,27 @@ void fnKeyCC(uint16_t complex_Type) {    //JM Using 'unusedButMandatoryParameter
       }
 
 
-      dataTypeX = getRegisterDataType(REGISTER_X);
-      dataTypeY = getRegisterDataType(REGISTER_Y);
+      sdataTypeX = getRegisterDataType(REGISTER_X);
+      sdataTypeY = getRegisterDataType(REGISTER_Y);
+      sdataAtagX = getRegisterAngularMode(REGISTER_X);
+      sdataAtagY = getRegisterAngularMode(REGISTER_Y);
 
-      polarOk = (( dataTypeY == dtLongInteger || (dataTypeY == dtReal34 && getRegisterAngularMode(REGISTER_Y) == amNone  ))                                      //radius not allowed to be an angle if polar entry
-         && ( dataTypeX == dtLongInteger || (dataTypeX == dtReal34    /*can be angle or not */                      )) && getSystemFlag(FLAG_POLAR) );           //real not allowed to be an angle if rect entry
-      rectOk  = (( dataTypeY == dtLongInteger || (dataTypeY == dtReal34 && getRegisterAngularMode(REGISTER_Y) == amNone  ))                                      //real not allowed to be an angle if rect entry
-         && ( dataTypeX == dtLongInteger || (dataTypeX == dtReal34 && getRegisterAngularMode(REGISTER_X) == amNone  )) && !getSystemFlag(FLAG_POLAR) );          //imag not allowed to be an angle if rect entry
+      polarOk = isRadius(sdataTypeY, sdataAtagY) && isValidAngle(sdataTypeX, sdataAtagX) &&  getSystemFlag(FLAG_POLAR);
+      rectOk  = isRadius(sdataTypeY, sdataAtagY) && isRadius    (sdataTypeX, sdataAtagX) && !getSystemFlag(FLAG_POLAR);
 
       //CC needs in POLAR mode Y=r, X=ϑ;
       //CC needs in RECT mode, Y=real, X=imag
       if(polarOk || rectOk) {  //imag not allowed to be an angle if rect entry
-        runFunction(ITM_REtoCX);
+        fnReToCx(0);
       }
-      else if(dataTypeX == dtComplex34) {
-        runFunction(ITM_CXtoRE);
+      else if(sdataTypeX == dtComplex34) {
+        fnCxToRe(0);
       }
-      else if(dataTypeX == dtReal34Matrix && dataTypeY == dtReal34Matrix) {
-        runFunction(ITM_REtoCX);
+      else if(sdataTypeX == dtReal34Matrix && sdataTypeY == dtReal34Matrix) {
+        fnReToCx(0);
       }
-      else if(dataTypeX == dtComplex34Matrix) {
-        runFunction(ITM_CXtoRE);
+      else if(sdataTypeX == dtComplex34Matrix) {
+        fnCxToRe(0);
       }
       else {
         if( (!polarOk && getSystemFlag(FLAG_POLAR)) || (!rectOk && !getSystemFlag(FLAG_POLAR))) {

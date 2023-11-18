@@ -53,7 +53,7 @@ TO_QSPI const calcKey_t kbd_std[37] = { //C47 Layout, in the default position wi
   {64,                  ITM_6,                -MNU_FLAGS,           -MNU_PARTS,           ITM_6,                ITM_V,                ITM_v,                ITM_6,                ITM_6               },
   {65,                  ITM_MULT,             -MNU_PROB,            -MNU_INTS,            ITM_CROSS,            ITM_W,                ITM_w,                ITM_CROSS,            ITM_MULT            },
   {71,                  KEY_fg,               ITM_NULL,             ITM_NULL,             KEY_fg,               KEY_fg,               ITM_NULL,             ITM_NULL,             KEY_fg              },
-  {72,                  ITM_1,                ITM_ASSIGN,           -MNU_ASN,             ITM_1,                ITM_X,                ITM_x,                ITM_1,                ITM_1               },
+  {72,                  ITM_1,                ITM_ASSIGN,           -MNU_KEYS,            ITM_1,                ITM_X,                ITM_x,                ITM_1,                ITM_1               },
   {73,                  ITM_2,                ITM_USERMODE,         -MNU_ALPHAFN,         ITM_2,                ITM_Y,                ITM_y,                ITM_2,                ITM_2               },
   {74,                  ITM_3,                -MNU_PFN,             -MNU_LOOP,            ITM_3,                ITM_Z,                ITM_z,                ITM_3,                ITM_3               },
   {75,                  ITM_SUB,              -MNU_PRINT,           -MNU_IO,              ITM_MINUS,            ITM_UNDERSCORE,       ITM_MINUS,            ITM_MINUS,            ITM_SUB             },
@@ -144,7 +144,7 @@ TO_QSPI const calcKey_t kbd_std_E47[37] = {
   {64,                  ITM_6,                -MNU_FLAGS,           -MNU_PARTS,           ITM_6,                ITM_T,                ITM_t,                ITM_6,                ITM_6               },
   {65,                  ITM_MULT,             -MNU_PROB,            -MNU_INTS,            ITM_CROSS,            ITM_U,                ITM_u,                ITM_CROSS,            ITM_MULT            },
   {71,                  ITM_DOWN1,            ITM_SST,              ITM_FLGSV,            ITM_DOWN1,            ITM_DOWN1,            CHR_caseDN,           ITM_DOWN_ARROW,       ITM_DOWN1           },
-  {72,                  ITM_1,                ITM_ASSIGN,           -MNU_ASN,             ITM_1,                ITM_V,                ITM_v,                ITM_1,                ITM_1               },
+  {72,                  ITM_1,                ITM_ASSIGN,           -MNU_KEYS,            ITM_1,                ITM_V,                ITM_v,                ITM_1,                ITM_1               },
   {73,                  ITM_2,                -MNU_SETUP,           -MNU_ALPHAFN,         ITM_2,                ITM_W,                ITM_w,                ITM_2,                ITM_2               },
   {74,                  ITM_3,                -MNU_PFN,             -MNU_LOOP,            ITM_3,                ITM_X,                ITM_x,                ITM_3,                ITM_3               },
   {75,                  ITM_SUB,              -MNU_FIN,             -MNU_IO,              ITM_MINUS,            ITM_Y,                ITM_y,                ITM_MINUS,            ITM_SUB             },
@@ -189,7 +189,7 @@ TO_QSPI const calcKey_t kbd_std_V47[37] = {
   {64,                  ITM_6,                -MNU_FLAGS,           -MNU_PARTS,           ITM_6,                ITM_V,                ITM_v,                ITM_6,                ITM_6               },
   {65,                  ITM_UP1,              ITM_BST,              ITM_RBR,              ITM_UP1,              ITM_UP1,              CHR_caseUP,           ITM_UP_ARROW,         ITM_UP1             },
   {71,                  ITM_MULT,             -MNU_PRINT,           -MNU_IO,              ITM_CROSS,            ITM_W,                ITM_w,                ITM_CROSS,            ITM_MULT            },
-  {72,                  ITM_1,                ITM_ASSIGN,           -MNU_ASN,             ITM_1,                ITM_X,                ITM_x,                ITM_1,                ITM_1               },
+  {72,                  ITM_1,                ITM_ASSIGN,           -MNU_KEYS,            ITM_1,                ITM_X,                ITM_x,                ITM_1,                ITM_1               },
   {73,                  ITM_2,                ITM_USERMODE,         -MNU_ALPHAFN,         ITM_2,                ITM_Y,                ITM_y,                ITM_2,                ITM_2               },
   {74,                  ITM_3,                -MNU_PFN,             -MNU_LOOP,            ITM_3,                ITM_Z,                ITM_z,                ITM_3,                ITM_3               },
   {75,                  ITM_DOWN1,            ITM_SST,              ITM_FLGSV,            ITM_DOWN1,            ITM_DOWN1,            CHR_caseDN,           ITM_DOWN_ARROW,       ITM_DOWN1           },
@@ -234,7 +234,7 @@ TO_QSPI const calcKey_t kbd_std_N47[37] = {
   {64,                  ITM_6,                -MNU_FLAGS,           -MNU_PARTS,           ITM_6,                ITM_U,                ITM_u,                ITM_6,                ITM_6               },
   {65,                  ITM_MULT,             -MNU_PROB,            -MNU_INTS,            ITM_CROSS,            ITM_V,                ITM_v,                ITM_CROSS,            ITM_MULT            },
   {71,                  ITM_SHIFTg,           ITM_NULL,             ITM_NULL,             ITM_SHIFTg,           ITM_SHIFTg,           ITM_NULL,             ITM_NULL,             ITM_SHIFTf          },
-  {72,                  ITM_1,                ITM_ASSIGN,           -MNU_ASN,             ITM_1,                ITM_W,                ITM_w,                ITM_1,                ITM_1               },
+  {72,                  ITM_1,                ITM_ASSIGN,           -MNU_KEYS,            ITM_1,                ITM_W,                ITM_w,                ITM_1,                ITM_1               },
   {73,                  ITM_2,                -MNU_SETUP,           -MNU_ALPHAFN,         ITM_2,                ITM_X,                ITM_x,                ITM_2,                ITM_2               },
   {74,                  ITM_3,                -MNU_PFN,             -MNU_LOOP,            ITM_3,                ITM_Y,                ITM_y,                ITM_3,                ITM_3               },
   {75,                  ITM_SUB,              -MNU_FIN,             -MNU_IO,              ITM_MINUS,            ITM_NULL,             ITM_MINUS,            ITM_MINUS,            ITM_SUB             },
@@ -279,7 +279,7 @@ TO_QSPI const calcKey_t kbd_std_D47[37] = {
   {64,                  ITM_6,                -MNU_FLAGS,           -MNU_PARTS,           ITM_6,                ITM_T,                ITM_t,                ITM_6,                ITM_6               },
   {65,                  ITM_MULT,             -MNU_PROB,            -MNU_INTS,            ITM_CROSS,            ITM_U,                ITM_u,                ITM_CROSS,            ITM_MULT            },
   {71,                  ITM_DOWN1,            ITM_SST,              ITM_FLGSV,            ITM_DOWN1,            ITM_DOWN1,            CHR_caseDN,           ITM_DOWN_ARROW,       ITM_DOWN1           },
-  {72,                  ITM_1,                ITM_ASSIGN,           -MNU_ASN,             ITM_1,                ITM_V,                ITM_v,                ITM_1,                ITM_1               },
+  {72,                  ITM_1,                ITM_ASSIGN,           -MNU_KEYS,            ITM_1,                ITM_V,                ITM_v,                ITM_1,                ITM_1               },
   {73,                  ITM_2,                -MNU_SETUP,           -MNU_ALPHAFN,         ITM_2,                ITM_W,                ITM_w,                ITM_2,                ITM_2               },
   {74,                  ITM_3,                -MNU_PFN,             -MNU_LOOP,            ITM_3,                ITM_X,                ITM_x,                ITM_3,                ITM_3               },
   {75,                  ITM_SUB,              -MNU_FIN,             -MNU_IO,              ITM_MINUS,            ITM_Y,                ITM_y,                ITM_MINUS,            ITM_SUB             },
@@ -325,7 +325,7 @@ TO_QSPI const calcKey_t kbd_std_DM42[37] = {
   {64,                  ITM_6,                -MNU_FLAGS,           -MNU_PARTS,           ITM_6,                ITM_V,                ITM_v,                ITM_6,                ITM_6               },
   {65,                  ITM_MULT,             -MNU_PROB,            -MNU_INTS,            ITM_CROSS,            ITM_W,                ITM_w,                ITM_CROSS,            ITM_MULT            },
   {71,                  KEY_fg,               ITM_NULL,             ITM_NULL,             KEY_fg,               KEY_fg,               ITM_NULL,             ITM_NULL,             KEY_fg              },
-  {72,                  ITM_1,                ITM_ASSIGN,           -MNU_ASN,             ITM_1,                ITM_X,                ITM_x,                ITM_1,                ITM_1               },
+  {72,                  ITM_1,                ITM_ASSIGN,           -MNU_KEYS,            ITM_1,                ITM_X,                ITM_x,                ITM_1,                ITM_1               },
   {73,                  ITM_2,                ITM_USERMODE,         -MNU_ALPHAFN,         ITM_2,                ITM_Y,                ITM_y,                ITM_2,                ITM_2               },
   {74,                  ITM_3,                -MNU_PFN,             -MNU_LOOP,            ITM_3,                ITM_Z,                ITM_z,                ITM_3,                ITM_3               },
   {75,                  ITM_SUB,              -MNU_PRINT,           -MNU_IO,              ITM_MINUS,            ITM_UNDERSCORE,       ITM_MINUS,            ITM_MINUS,            ITM_SUB             },
@@ -356,25 +356,29 @@ void fnAssign(uint16_t mode) {
 
 
 
-static void _removeMenuAssignments(uint16_t id) {
+void removeUserItemAssignments(int16_t userItem, char *userItemName) {
   itemToBeAssigned = ITM_NULL;
-
+  #if defined(PC_BUILD)
+    //printf("**[DL]** userItem %d userItemName %s length %d char1 %x char2 %x char 3 %x char4 %x\n",userItem,userItemName,stringByteLength(userItemName),userItemName[0],userItemName[1],userItemName[2],userItemName[3]);
+  #endif //PC_BUILD
   // Predefined configurable menus
   for(int i = 0; i < 18; ++i) {
     // MyMenu
-    if((userMenuItems[i].item == -MNU_DYNAMIC) && (compareString(userMenuItems[i].argumentName, userMenus[id].menuName, CMP_NAME) == 0)) {
+    if((userMenuItems[i].item == userItem) && (compareString(userMenuItems[i].argumentName, userItemName, CMP_NAME) == 0)) {
       assignToMyMenu(i);
+      #if defined(PC_BUILD)
+        //printf("**[DL]** remove MyMenu position %d assignment\n",i);
+      #endif //PC_BUILD
     }
     // MyAlpha
-    if((userAlphaItems[i].item == -MNU_DYNAMIC) && (compareString(userAlphaItems[i].argumentName, userMenus[id].menuName, CMP_NAME) == 0)) {
+    if((userAlphaItems[i].item == userItem) && (compareString(userAlphaItems[i].argumentName, userItemName, CMP_NAME) == 0)) {
       assignToMyAlpha(i);
     }
   }
   // User-defined menus
   for(int i = 0; i < numberOfUserMenus; ++i) {
     for(int j = 0; j < 18; ++j) {
-      if((userMenus[i].menuItem[j].item == -MNU_DYNAMIC) && (compareString(userMenus[i].menuItem[j].argumentName, userMenus[id].menuName, CMP_NAME) == 0)) {
-        printf("**[DL]** i %d - j %d -userMenus[i].menuItem[j].item %d - userMenus[i].menuItem[j].argumentName %s\n",i,j,userMenus[i].menuItem[j].item,userMenus[i].menuItem[j].argumentName);
+      if((userMenus[i].menuItem[j].item == userItem) && (compareString(userMenus[i].menuItem[j].argumentName, userItemName, CMP_NAME) == 0)) {
         _assignItem(&userMenus[i].menuItem[j]);
       }
     }
@@ -390,25 +394,28 @@ static void _removeMenuAssignments(uint16_t id) {
     kc[0] = (i / 10) + '0';
     kc[1] = (i % 10) + '0';
     kc[2] = 0;
-    if(key->primary == -MNU_DYNAMIC) {
+    if(key->primary == userItem) {
       stringToUtf8((char *)getNthString((uint8_t *)userKeyLabel, i*6),(uint8_t *)lbl);
-      if(compareString(lbl,userMenus[id].menuName, CMP_NAME) == 0) {
+      if(compareString(lbl,userItemName, CMP_NAME) == 0) {
         shiftF = false;
         shiftG = false;
         assignToKey(kc);
+        #if defined(PC_BUILD)
+          //printf("**[DL]** remove primary key %s assignment\n",kc);
+        #endif //PC_BUILD
       }
     }
-    if(key->fShifted == -MNU_DYNAMIC) {
+    if(key->fShifted == userItem) {
       stringToUtf8((char *)getNthString((uint8_t *)userKeyLabel, i*6+1),(uint8_t *)lbl);
-      if(compareString(lbl,userMenus[id].menuName, CMP_NAME) == 0) {
+      if(compareString(lbl,userItemName, CMP_NAME) == 0) {
         shiftF = true;
         shiftG = false;
         assignToKey(kc);
       }
     }
-    if(key->gShifted == -MNU_DYNAMIC) {
+    if(key->gShifted == userItem) {
       stringToUtf8((char *)getNthString((uint8_t *)userKeyLabel, i*6+2),(uint8_t *)lbl);
-      if(compareString(lbl,userMenus[id].menuName, CMP_NAME) == 0) {
+      if(compareString(lbl,userItemName, CMP_NAME) == 0) {
         shiftF = false;
         shiftG = true;
         assignToKey(kc);
@@ -427,7 +434,7 @@ void fnDeleteMenu(uint16_t id) {
     return;
   }
   else {
-    _removeMenuAssignments(id);   // Remove assignments before deleting the user menu
+    removeUserItemAssignments(-MNU_DYNAMIC,userMenus[id].menuName);   // Remove assignments before deleting the user menu
     if(numberOfUserMenus == 1) {
       freeC47Blocks(userMenus, TO_BLOCKS(sizeof(userMenu_t)));
       userMenus = NULL;
@@ -437,7 +444,7 @@ void fnDeleteMenu(uint16_t id) {
       if(id < numberOfUserMenus - 1) {
         xcopy(userMenus + id, userMenus + id + 1, sizeof(userMenu_t) * (numberOfUserMenus - id - 1));
       }
-      freeC47Blocks(userMenus + numberOfUserMenus - 1, TO_BLOCKS(sizeof(userMenu_t)));
+      userMenus = reallocC47Blocks(userMenus, TO_BLOCKS(sizeof(userMenu_t)) * numberOfUserMenus, TO_BLOCKS(sizeof(userMenu_t)) * (numberOfUserMenus - 1));
       --numberOfUserMenus;
     }
   }
@@ -667,7 +674,7 @@ void assignToKey(const char *data) {
   int keyCode = (*data - '0')*10 + *(data+1) - '0';
   calcKey_t *key = kbd_usr + keyCode;
   userMenuItem_t tmpMenuItem;
-  int keyStateCode = ((previousCalcMode) == CM_AIM ? 3 : 0) + (shiftG ? 2 : shiftF ? 1 : 0);
+  keyStateCode = ((previousCalcMode) == CM_AIM ? 3 : 0) + (shiftG ? 2 : shiftF ? 1 : 0);
   const calcKey_t *stdKey = kbd_std + keyCode;
 
   _assignItem(&tmpMenuItem);
@@ -799,7 +806,7 @@ void createMenu(const char *name) {
         userMenus = reallocC47Blocks(userMenus, TO_BLOCKS(sizeof(userMenu_t)) * numberOfUserMenus, TO_BLOCKS(sizeof(userMenu_t)) * (numberOfUserMenus + 1));
       }
       memset(userMenus + numberOfUserMenus, 0, sizeof(userMenu_t));
-      xcopy(userMenus[numberOfUserMenus].menuName, name, stringByteLength(name) + 1);
+      xcopy(userMenus[numberOfUserMenus].menuName, name, sizeof(userMenus[0].menuName)); // Martin: changed size from stringByteLength(name) + 1 to sizeof(userMenus[0].menuName)
       ++numberOfUserMenus;
     }
     else {
@@ -916,7 +923,7 @@ void assignGetName1(void) {
 
 
 static bool_t _assignToKey(int16_t keyFunc) {
-  int keyStateCode = (previousCalcMode) == CM_AIM ? 3 : 0;
+  keyStateCode = (previousCalcMode) == CM_AIM ? 3 : 0;
 
   for(int i=0; i<3; ++i) {
     for(int j=0; j<37; ++j) {

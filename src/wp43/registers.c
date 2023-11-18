@@ -5,6 +5,7 @@
 
 #include "registers.h"
 
+#include "assign.h"
 #include "charString.h"
 #include "config.h"
 #include "constantPointers.h"
@@ -961,6 +962,7 @@ void fnDeleteVariable(uint16_t regist) {
     printStatus(0, "fnDeleteVariable",force);
   #endif //VERBOSE_REGISTERS
   if(regist >= FIRST_NAMED_VARIABLE && regist < (FIRST_NAMED_VARIABLE + numberOfNamedVariables)) {
+    removeUserItemAssignments(ITM_RCL,(char *)allNamedVariables[regist - FIRST_NAMED_VARIABLE].variableName+1);   // Remove assignments before deleting the variable
     freeRegisterData(regist);
     for(uint16_t i = (regist - FIRST_NAMED_VARIABLE); i < (numberOfNamedVariables - 1); ++i) {
       allNamedVariables[i] = allNamedVariables[i + 1];
@@ -1144,7 +1146,7 @@ uint16_t getRegisterFullSizeInBlocks(calcRegister_t regist) {
       return COMPLEX34_SIZE_IN_BLOCKS;
     }
     case dtConfig: {
-      return CONFIG_SIZE;
+      return CONFIG_SIZE_IN_BLOCKS;
     }
     default: {
       sprintf(errorMessage, commonBugScreenMessages[bugMsgDataTypeUnknown], "getRegisterFullSizeInBlocks", getDataTypeName(getRegisterDataType(regist), false, false));
@@ -1514,7 +1516,7 @@ void copySourceRegisterToDestRegister(calcRegister_t sourceRegister, calcRegiste
         break;
       }
       case dtConfig: {
-        sizeInBlocks = CONFIG_SIZE;
+        sizeInBlocks = CONFIG_SIZE_IN_BLOCKS;
         break;
       }
 
@@ -1965,8 +1967,8 @@ void reallocateRegister(calcRegister_t regist, uint32_t dataType, uint16_t dataS
     sprintf(errorMessage, commonBugScreenMessages[bugMsgNumByte], getDataTypeName(dataType, true, false), "SHORT_INTEGER_SIZE", dataSizeWithoutDataLenBlocks, (uint16_t)SHORT_INTEGER_SIZE);
     displayBugScreen(errorMessage);
   }
-  else if(dataType == dtConfig && dataSizeWithoutDataLenBlocks != CONFIG_SIZE) {
-    sprintf(errorMessage, commonBugScreenMessages[bugMsgNumByte], getDataTypeName(dataType, true, false), "CONFIG_SIZE", dataSizeWithoutDataLenBlocks, (uint16_t)CONFIG_SIZE);
+  else if(dataType == dtConfig && dataSizeWithoutDataLenBlocks != CONFIG_SIZE_IN_BLOCKS) {
+    sprintf(errorMessage, commonBugScreenMessages[bugMsgNumByte], getDataTypeName(dataType, true, false), "CONFIG_SIZE_IN_BLOCKS", dataSizeWithoutDataLenBlocks, (uint16_t)CONFIG_SIZE_IN_BLOCKS);
     displayBugScreen(errorMessage);
   }
   else if(dataType == dtString || dataType == dtReal34Matrix || dataType == dtComplex34Matrix) {

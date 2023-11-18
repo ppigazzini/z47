@@ -81,6 +81,11 @@ calcKey_t              kbd_usr[37];
 calcRegister_t         errorMessageRegisterLine;
 glyph_t                glyphNotFound = {.charCode = 0x0000, .colsBeforeGlyph = 0, .colsGlyph = 13, .colsAfterGlyph = 0, .rowsGlyph = 19, .data = NULL};
 freeMemoryRegion_t     freeMemoryRegions[MAX_FREE_REGION];
+
+#if !defined(DMCP_BUILD)
+  freeMemoryRegion_t     allocatedMemoryRegions[MAX_FREE_REGION * 50];
+#endif // !DMCP_BUILD
+
 pcg32_random_t         pcg32_global = PCG32_INITIALIZER;
 labelList_t           *labelList = NULL;
 programList_t         *programList = NULL;
@@ -147,6 +152,7 @@ uint8_t                timerCraAndDeciseconds = 128u;
 uint8_t                programRunStop;
 uint8_t                currentKeyCode;
 uint8_t                lastKeyCode;
+uint8_t                keyStateCode;
 uint8_t                entryStatus;
 uint8_t                screenUpdatingMode;
 uint8_t               *beginOfProgramMemory;
@@ -268,6 +274,11 @@ uint16_t               currentMvarLabel = INVALID_VARIABLE;
 #endif // (REAL34_WIDTH_TEST == 1)
 
 int32_t                numberOfFreeMemoryRegions;
+
+#if !defined(DMCP_BUILD)
+  int32_t                numberOfAllocatedMemoryRegions;
+#endif // !DMCP_BUILD
+
 int32_t                lgCatalogSelection;
 int32_t                graphVariable;
 

@@ -115,6 +115,7 @@ typedef enum {
   //dtFlags           = 12,  ///< Flags
   //dtPgmStep         = 13,  ///< Program step
   //dtDirectory       = 14,  ///< Program
+  dtNumbers         = 15,  ///< Numbers (LongInteger, Real34, Complex34)
 } dataType_t; // 4 bits (NOT 5 BITS)
 
 

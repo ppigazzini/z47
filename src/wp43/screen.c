@@ -892,10 +892,10 @@ void execTimerApp(uint16_t timerType) {
   void LongpressKey_handler() {
     if(fnTimerGetStatus(TO_CL_LONG) == TMR_COMPLETED) {
       if(JM_auto_longpress_enabled != 0) {
-        if(JM_auto_longpress_enabled == -MNU_DYNAMIC) {
-          char *funcParam;
-          int keyStateCode = (getSystemFlag(FLAG_ALPHA) ? 3 : 0) + ((LongPressM == RB_M124) ? 1 : longpressDelayedkey3 ? 1 : 2);
-          funcParam = (char *)getNthString((uint8_t *)userKeyLabel, currentKeyCode * 6 + keyStateCode);
+        char *funcParam;
+        int keyStateCode = (getSystemFlag(FLAG_ALPHA) ? 3 : 0) + ((LongPressM == RB_M124) ? 1 : longpressDelayedkey3 ? 1 : 2);
+        funcParam = (char *)getNthString((uint8_t *)userKeyLabel, currentKeyCode * 6 + keyStateCode);
+        if((funcParam[0] != 0) && ((JM_auto_longpress_enabled == -MNU_DYNAMIC) || (JM_auto_longpress_enabled == ITM_XEQ) || (JM_auto_longpress_enabled == ITM_RCL))) { // For user menu, prog or variable a-feirassignment
           showFunctionName(JM_auto_longpress_enabled, JM_TO_CL_LONG + 50, funcParam);     //Add a marginal amout of time to prevent racing of end conditions.
         } else {
           showFunctionName(JM_auto_longpress_enabled, JM_TO_CL_LONG + 50, "SF:LL");     //Add a marginal amout of time to prevent racing of end conditions.
@@ -1800,14 +1800,9 @@ void execTimerApp(uint16_t timerType) {
       }
 
     #else //DEBUG_SHOWNAME
-      if(item == ITM_XEQ) {
+      if((item == ITM_XEQ) || (item == ITM_RCL)) {
         if(arg != NULL) stringAppend(functionName,arg);
-        if(functionName[0]==0) {
-          stringAppend(functionName,indexOfItems[abs(item)].itemCatalogName);
-        }
-      }
-      else if(item == ITM_RCL) {
-        if(arg != NULL) stringAppend(functionName,arg);
+        showFunctionNameArg = (char *)arg;                          // Needed when executing a program or a variable from a long pressed key
         if(functionName[0]==0) {
           stringAppend(functionName,indexOfItems[abs(item)].itemCatalogName);
         }
@@ -4387,9 +4382,9 @@ void execTimerApp(uint16_t timerType) {
       printf(">>> refreshScreen(%u), refreshScreenCounter=%d calcMode=%d screenUpdatingMode=%d temporaryInformation=%u\n", source, refreshScreenCounter++, calcMode, screenUpdatingMode, temporaryInformation);    //JMYY
     #endif // PC_BUILD
 
-    if(calcMode!=CM_AIM && calcMode!=CM_NIM && calcMode!=CM_PLOT_STAT && calcMode!=CM_GRAPH && calcMode!=CM_LISTXY) {
+    if(calcMode!=CM_AIM && calcMode!=CM_NIM && calcMode!=CM_PLOT_STAT && calcMode!=CM_GRAPH && calcMode!=CM_LISTXY && last_CM != 240) {  //240 specifically to prefent this
       last_CM = 254;  //JM Force NON-CM_AIM and NON-CM_NIM to refresh to be compatible to 43S
-    }
+    } else if (last_CM == 240) last_CM = calcMode;
 
     switch(calcMode) {
       case CM_FLAG_BROWSER:

@@ -1986,8 +1986,10 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
   }
   else {
     stringToUtf8(indexOfItems[max(key->primary, -key->primary)].itemSoftmenuName, lbl);
-    if(strcmp((char *)lbl, "DYNMNU") == 0) {
-      stringToUtf8((char *)getNthString((uint8_t *)userKeyLabel, keyLogicalId*6),lbl);
+    if((userKeyLabelSize > 0) && ((strcmp((char *)lbl, "DYNMNU") == 0) || (strcmp((char *)lbl, "XEQ") == 0) || (strcmp((char *)lbl, "RCL") == 0))) {
+      if(*(getNthString((uint8_t *)userKeyLabel, keyLogicalId*6)) != 0) {
+        stringToUtf8((char *)getNthString((uint8_t *)userKeyLabel, keyLogicalId*6),lbl);
+      }
     }
   }
 
@@ -2040,9 +2042,11 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
       }
 
   stringToUtf8(indexOfItems[max(key->fShifted, -key->fShifted)].itemSoftmenuName, lbl);
-  if(strcmp((char *)lbl, "DYNMNU") == 0) {
-    stringToUtf8((char *)getNthString((uint8_t *)userKeyLabel, keyLogicalId*6+1),lbl);
-  }    
+  if((userKeyLabelSize > 0) && ((strcmp((char *)lbl, "DYNMNU") == 0) || (strcmp((char *)lbl, "XEQ") == 0) || (strcmp((char *)lbl, "RCL") == 0))) {
+    if(*(getNthString((uint8_t *)userKeyLabel, keyLogicalId*6+1)) != 0) {
+      stringToUtf8((char *)getNthString((uint8_t *)userKeyLabel, keyLogicalId*6+1),lbl);
+    }
+  }   
   
   if(key->fShifted == 0) {
     lbl[0] = 0;
@@ -2065,9 +2069,11 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
   if((key->gShifted == ITM_op_j || key->gShifted == ITM_op_j_pol) && getSystemFlag(FLAG_CPXj)) sstmp[1]++;
   if(key->gShifted == ITM_EE_EXP_TH && getSystemFlag(FLAG_CPXj)) sstmp[3]++;
   stringToUtf8(sstmp, lbl);
-  if(strcmp((char *)lbl, "DYNMNU") == 0) {
-    stringToUtf8((char *)getNthString((uint8_t *)userKeyLabel, keyLogicalId*6+2),lbl);
-  }
+  if((userKeyLabelSize > 0) && ((strcmp((char *)lbl, "DYNMNU") == 0) || (strcmp((char *)lbl, "XEQ") == 0) || (strcmp((char *)lbl, "RCL") == 0))) {
+    if(*(getNthString((uint8_t *)userKeyLabel, keyLogicalId*6+2)) != 0) {
+      stringToUtf8((char *)getNthString((uint8_t *)userKeyLabel, keyLogicalId*6+2),lbl);
+    }
+  }   
 
       if(key->gShifted == 0) {
         lbl[0] = 0;

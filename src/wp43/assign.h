@@ -12,9 +12,9 @@
 
   void fnAssign             (uint16_t mode);
 
-  void fnDeleteMenu         (uint16_t id);
-
-  void updateAssignTamBuffer(void);
+  void fnDeleteMenu               (uint16_t id);
+  void removeUserItemAssignments  (int16_t item, char *userItemName);
+  void updateAssignTamBuffer      (void);
 
   void _assignItem          (userMenuItem_t *menuItem);
   void assignToMyMenu       (uint16_t position);
