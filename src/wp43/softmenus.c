@@ -376,7 +376,7 @@ TO_QSPI const int16_t menu_CATALOG[]     = { -MNU_FCNS,                    -MNU_
 TO_QSPI const int16_t menu_CHARS[]       = { -MNU_ALPHAINTL,               -MNU_ALPHA_OMEGA,            ITM_NULL,                 -MNU_ALPHAMATH,        -MNU_MyAlpha,                -MNU_ALPHAMISC                };
 
 TO_QSPI const int16_t menu_VARS[]        = { -MNU_NUMBRS,                  -MNU_CPXS,                  -MNU_REALS,                -MNU_ANGLES,           -MNU_LINTS,                  -MNU_ALLVARS,
-                                             -MNU_SINTS,                   -MNU_CONFIGS,               -MNU_DATES,                -MNU_MATRS,            -MNU_STRINGS,                -MNU_TIMES                    };
+                                             -MNU_CONFIGS,                 -MNU_MATRS,                 -MNU_DATES,                -MNU_TIMES,            -MNU_SINTS,                  -MNU_STRINGS                  };
 
 TO_QSPI const int16_t menu_DELITM[]      = { ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 -MNU_PROGS,            -MNU_VARS,                   -MNU_MENUS                    };
 
@@ -651,23 +651,29 @@ TO_QSPI const int16_t menu_ASN_N[]       = { ITM_N_KEY_SIGMA,           ITM_N_KE
                                              ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL             };
 
 #if defined(DMCP_BUILD)
+  #define CC_C47  ITM_NULL
   #define CC_V47  ITM_NULL
   #define CC_E47  ITM_NULL
   #define CC_D47  ITM_NULL
   #define CC_N47  ITM_NULL
+  #define CC_R47  ITM_NULL
+  #define MM_LAYOUT ITM_NULL
 #else // !DMCP_BUILD
+  #define CC_C47  ITM_USER_C47
   #define CC_V47  ITM_USER_V47
   #define CC_E47  ITM_USER_E47
   #define CC_D47  ITM_USER_D47
   #define CC_N47  ITM_USER_N47
+  #define CC_R47  ITM_USER_R47
+  #define MM_LAYOUT -MNU_LAYOUTS
 #endif // !DMCP_BUILD
 
 
-TO_QSPI const int16_t menu_KEYS[]      =  {  -MNU_RIBBONS,             -MNU_RESETS,               -MNU_LAYOUTS,              ITM_USER_C47,              ITM_USER_DM42,             ITM_KEYMAP,                
+TO_QSPI const int16_t menu_KEYS[]      =  {  -MNU_RIBBONS,             -MNU_RESETS,                MM_LAYOUT,                 ITM_USER_C47,              ITM_USER_DM42,             ITM_KEYMAP,                
                                              ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_ASSIGN,                
                                              -MNU_ASN_N,                ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_USERMODE };             
 
-TO_QSPI const int16_t menu_LAYOUTS[]   =  {  ITM_USER_C47,              ITM_USER_D47,              ITM_USER_E47,              ITM_USER_N47,              ITM_USER_R47,              ITM_USER_V47,              
+TO_QSPI const int16_t menu_LAYOUTS[]   =  {  CC_C47,                    CC_D47,                    CC_E47,                    CC_N47,                    CC_R47,                    CC_V47,              
                                              ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_ASSIGN,                
                                              ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_USERMODE };
 
@@ -1635,6 +1641,17 @@ void showKey(const char *label, int16_t x1, int16_t x2, int16_t y1, int16_t y2, 
       }
     }
   }
+
+//Show a 'panelled' view of softkeys if a menu is assignable
+//printf("currentMenu()=%d\n",currentMenu());
+  #define _off 1 // distance from edge
+  if(calcMode == CM_ASSIGN && itemToBeAssigned != 0 && (currentMenu() == -MNU_HOME || currentMenu() == - MNU_MyMenu || currentMenu() == -MNU_MyAlpha || currentMenu() == -MNU_PFN)) {
+    lcd_fill_rect(max(0, x1)+2   + _off, y1 +1                   + _off, 3,2, (videoMode == vmNormal ? LCD_EMPTY_VALUE : LCD_SET_VALUE));
+    lcd_fill_rect(max(0, x1)+2   + _off, y1 + SOFTMENU_HEIGHT -2 - _off, 3,2, (videoMode == vmNormal ? LCD_EMPTY_VALUE : LCD_SET_VALUE));
+    lcd_fill_rect(        x2-1-3 - _off, y1 +1                   + _off, 3,2, (videoMode == vmNormal ? LCD_EMPTY_VALUE : LCD_SET_VALUE));
+    lcd_fill_rect(        x2-1-3 - _off, y1 + SOFTMENU_HEIGHT -2 - _off, 3,2, (videoMode == vmNormal ? LCD_EMPTY_VALUE : LCD_SET_VALUE));
+  }
+
   //^^
 }
 
