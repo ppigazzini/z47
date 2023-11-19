@@ -205,6 +205,9 @@ printf(">>>>  0093     firstItem=%d itemShift=%d fn=%d",firstItem, itemShift, fn
       case MNU_SINTS:
       case MNU_LINTS:
       case MNU_REALS:
+      case MNU_NUMBRS:
+      case MNU_CONFIGS:
+      case MNU_ALLVARS:
       case MNU_CPXS: {
         dynamicMenuItem = firstItem + itemShift + fn;
         item = (dynamicMenuItem >= dynamicSoftmenu[menuId].numItems ? ITM_NOP : (tam.mode == TM_DELITM) ? MNU_DYNAMIC : ITM_RCL);
