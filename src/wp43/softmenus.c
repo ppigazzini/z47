@@ -376,7 +376,7 @@ TO_QSPI const int16_t menu_CATALOG[]     = { -MNU_FCNS,                    -MNU_
 TO_QSPI const int16_t menu_CHARS[]       = { -MNU_ALPHAINTL,               -MNU_ALPHA_OMEGA,            ITM_NULL,                 -MNU_ALPHAMATH,        -MNU_MyAlpha,                -MNU_ALPHAMISC                };
 
 TO_QSPI const int16_t menu_VARS[]        = { -MNU_NUMBRS,                  -MNU_CPXS,                  -MNU_REALS,                -MNU_ANGLES,           -MNU_LINTS,                  -MNU_ALLVARS,
-                                             -MNU_SINTS,                   -MNU_CONFIGS,               -MNU_DATES,                -MNU_MATRS,            -MNU_STRINGS,                -MNU_TIMES                    };
+                                             -MNU_CONFIGS,                 -MNU_MATRS,                 -MNU_DATES,                -MNU_TIMES,            -MNU_SINTS,                  -MNU_STRINGS                  };
 
 TO_QSPI const int16_t menu_DELITM[]      = { ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 -MNU_PROGS,            -MNU_VARS,                   -MNU_MENUS                    };
 
@@ -650,22 +650,40 @@ TO_QSPI const int16_t menu_ASN_N[]       = { ITM_N_KEY_SIGMA,           ITM_N_KE
                                              ITM_N_KEY_DRG,             ITM_N_KEY_TGLFRT,          ITM_N_KEY_CC,              ITM_N_KEY_PRGM,            ITM_N_KEY_USER,            ITM_USER_COPY,             
                                              ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL             };
 
-#if defined(DMCP_BUILD)
+#if !defined(DMCP_BUILD) //NULL to be removed in the DMCP version
+  #define CC_C47  ITM_USER_C47 //not removed anymore
   #define CC_V47  ITM_NULL
   #define CC_E47  ITM_NULL
   #define CC_D47  ITM_NULL
   #define CC_N47  ITM_NULL
+  #define CC_R47  ITM_NULL
+  #define MM_LAYOUT -MNU_LAYOUTS //not removed anymore
 #else // !DMCP_BUILD
+  #define CC_C47  ITM_USER_C47
   #define CC_V47  ITM_USER_V47
   #define CC_E47  ITM_USER_E47
   #define CC_D47  ITM_USER_D47
   #define CC_N47  ITM_USER_N47
+  #define CC_R47  ITM_USER_R47
+  #define MM_LAYOUT -MNU_LAYOUTS
 #endif // !DMCP_BUILD
 
 
-TO_QSPI const int16_t menu_KEYS[]      =  { ITM_KEYMAP ,                    ITM_USER_C47  ,             ITM_USER_DM42   ,         ITM_ASSIGN      ,      ITM_USERMODE   ,             ITM_USER_PRESET,
-                                            ITM_BASE_CPX  ,                 ITM_BASE_ENG  ,             ITM_BASE_FIN    ,         ITM_USER_MRESET ,      ITM_USER_ARESET ,            ITM_USER_KRESET,
-                                           -MNU_ASN_N,                      CC_D47,                     CC_E47,                   CC_N47,                CC_V47,                      ITM_USER_HRESET                       };
+TO_QSPI const int16_t menu_KEYS[]      =  {  -MNU_RIBBONS,             -MNU_RESETS,                MM_LAYOUT,                 ITM_USER_C47,              ITM_USER_DM42,             ITM_KEYMAP,                
+                                             ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_ASSIGN,                
+                                             -MNU_ASN_N,                ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_USERMODE };             
+
+TO_QSPI const int16_t menu_LAYOUTS[]   =  {  CC_C47,                    CC_D47,                    CC_E47,                    CC_N47,                    CC_R47,                    CC_V47,              
+                                             ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_ASSIGN,                
+                                             ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_USERMODE };
+
+TO_QSPI const int16_t menu_RESETS[]    =  {  ITM_USER_ARESET,           ITM_USER_MRESET,           ITM_USER_HRESET,           ITM_USER_PRESET,           ITM_NULL,                  ITM_USER_KRESET,           
+                                             ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  
+                                             ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL };
+
+TO_QSPI const int16_t menu_RIBBONS[]   =  {  ITM_BASE_CPX,              ITM_BASE_ENG,              ITM_BASE_FIN,              ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  
+                                             ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  
+                                             ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL };
 
 
 TO_QSPI const int16_t menu_XEQ[]         = { ITM_X_P1,                      ITM_X_P2,                   ITM_X_P3,                 ITM_X_P4,              ITM_X_P5,                    ITM_X_P6,
@@ -876,8 +894,11 @@ TO_QSPI const softmenu_t softmenu[] = {
 /* 133 */  {.menuItem = -MNU_GAP_RX,      .numItems = sizeof(menu_GAP_RX        )/sizeof(int16_t), .softkeyItem = menu_GAP_RX         },
 /* 134 */  {.menuItem = -MNU_GAP_R,       .numItems = sizeof(menu_GAP_R         )/sizeof(int16_t), .softkeyItem = menu_GAP_R          },
 /* 135 */  {.menuItem = -MNU_PREFIX,      .numItems = sizeof(menu_PREFIX        )/sizeof(int16_t), .softkeyItem = menu_PREFIX         },
-/* 136 */  {.menuItem = -MNU_INL_TST,     .numItems = sizeof(menu_Inl_Tst       )/sizeof(int16_t), .softkeyItem = menu_Inl_Tst        },
-/* 137 */  {.menuItem =  0,               .numItems = 0,                                           .softkeyItem = NULL                }
+/* 136 */  {.menuItem = -MNU_LAYOUTS,     .numItems = sizeof(menu_LAYOUTS       )/sizeof(int16_t), .softkeyItem = menu_LAYOUTS        },
+/* 137 */  {.menuItem = -MNU_RESETS,      .numItems = sizeof(menu_RESETS        )/sizeof(int16_t), .softkeyItem = menu_RESETS         },
+/* 138 */  {.menuItem = -MNU_RIBBONS,     .numItems = sizeof(menu_RIBBONS       )/sizeof(int16_t), .softkeyItem = menu_RIBBONS        },
+/* 139 */  {.menuItem = -MNU_INL_TST,     .numItems = sizeof(menu_Inl_Tst       )/sizeof(int16_t), .softkeyItem = menu_Inl_Tst        },
+/* 140 */  {.menuItem =  0,               .numItems = 0,                                           .softkeyItem = NULL                }
 };
 
 
@@ -1620,6 +1641,31 @@ void showKey(const char *label, int16_t x1, int16_t x2, int16_t y1, int16_t y2, 
       }
     }
   }
+
+//Show a 'panelled' view of softkeys if a menu is assignable
+//printf("currentMenu()=%d\n",currentMenu());
+  #define _off 2 // function parameter: +1 is favoured
+  if(calcMode == CM_ASSIGN && itemToBeAssigned != 0 && 
+      (currentMenu() == -MNU_HOME || 
+       currentMenu() == - MNU_MyMenu || 
+       currentMenu() == -MNU_MyAlpha || 
+       currentMenu() == -MNU_PFN ||
+       currentMenu() == -MNU_DYNAMIC
+       )) {
+    if(_off == 2) { //inner doubling of softkey box
+      lcd_fill_rect(max(0, x1)+1, y1, 1,SOFTMENU_HEIGHT , (videoMode == vmNormal ? LCD_EMPTY_VALUE : LCD_SET_VALUE));
+      lcd_fill_rect(       x2 -1, y1, 1,SOFTMENU_HEIGHT , (videoMode == vmNormal ? LCD_EMPTY_VALUE : LCD_SET_VALUE));
+      lcd_fill_rect(max(0, x1)+1, y1+1, min(x2, SCREEN_WIDTH) - max(0, x1)-2,1 , (videoMode == vmNormal ? LCD_EMPTY_VALUE : LCD_SET_VALUE));
+      lcd_fill_rect(max(0, x1)+1, y1+SOFTMENU_HEIGHT-1, min(x2, SCREEN_WIDTH) - max(0, x1)-2,1 , (videoMode == vmNormal ? LCD_EMPTY_VALUE : LCD_SET_VALUE));
+
+    } else { //positioning of nails or rivits, _off from the norm: -1, 0, +1 tried. +1 is best.
+      lcd_fill_rect(max(0, x1)+2   + _off, y1 +1                   + _off, 3,2, (videoMode == vmNormal ? LCD_EMPTY_VALUE : LCD_SET_VALUE));
+      lcd_fill_rect(max(0, x1)+2   + _off, y1 + SOFTMENU_HEIGHT -2 - _off, 3,2, (videoMode == vmNormal ? LCD_EMPTY_VALUE : LCD_SET_VALUE));
+      lcd_fill_rect(        x2-1-3 - _off, y1 +1                   + _off, 3,2, (videoMode == vmNormal ? LCD_EMPTY_VALUE : LCD_SET_VALUE));
+      lcd_fill_rect(        x2-1-3 - _off, y1 + SOFTMENU_HEIGHT -2 - _off, 3,2, (videoMode == vmNormal ? LCD_EMPTY_VALUE : LCD_SET_VALUE));
+    }
+  }
+
   //^^
 }
 
