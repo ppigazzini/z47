@@ -2017,7 +2017,7 @@
 #define ITM_USER_D47                1961
 #define ITM_USER_N47                1962
 #define ITM_USER_E47                1963
-#define ITM_1964                    1964
+#define ITM_USER_R47                1964
 #define ITM_X_P1                    1965
 #define ITM_X_P2                    1966
 #define ITM_X_P3                    1967
@@ -2286,8 +2286,11 @@
 #define MNU_NUMBRS                  2230
 #define MNU_CONFIGS                 2231
 #define MNU_ALLVARS                 2232
+#define MNU_LAYOUTS                 2233
+#define MNU_RESETS                  2234
+#define MNU_RIBBONS                 2235
 
-#define LAST_ITEM                   2233
+#define LAST_ITEM                   2236
 
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL
