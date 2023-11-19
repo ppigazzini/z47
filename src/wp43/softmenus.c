@@ -650,14 +650,14 @@ TO_QSPI const int16_t menu_ASN_N[]       = { ITM_N_KEY_SIGMA,           ITM_N_KE
                                              ITM_N_KEY_DRG,             ITM_N_KEY_TGLFRT,          ITM_N_KEY_CC,              ITM_N_KEY_PRGM,            ITM_N_KEY_USER,            ITM_USER_COPY,             
                                              ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL             };
 
-#if defined(DMCP_BUILD)
-  #define CC_C47  ITM_NULL
+#if !defined(DMCP_BUILD) //NULL to be removed in the DMCP version
+  #define CC_C47  ITM_USER_C47 //not removed anymore
   #define CC_V47  ITM_NULL
   #define CC_E47  ITM_NULL
   #define CC_D47  ITM_NULL
   #define CC_N47  ITM_NULL
   #define CC_R47  ITM_NULL
-  #define MM_LAYOUT ITM_NULL
+  #define MM_LAYOUT -MNU_LAYOUTS //not removed anymore
 #else // !DMCP_BUILD
   #define CC_C47  ITM_USER_C47
   #define CC_V47  ITM_USER_V47
@@ -1644,12 +1644,26 @@ void showKey(const char *label, int16_t x1, int16_t x2, int16_t y1, int16_t y2, 
 
 //Show a 'panelled' view of softkeys if a menu is assignable
 //printf("currentMenu()=%d\n",currentMenu());
-  #define _off 1 // distance from edge
-  if(calcMode == CM_ASSIGN && itemToBeAssigned != 0 && (currentMenu() == -MNU_HOME || currentMenu() == - MNU_MyMenu || currentMenu() == -MNU_MyAlpha || currentMenu() == -MNU_PFN)) {
-    lcd_fill_rect(max(0, x1)+2   + _off, y1 +1                   + _off, 3,2, (videoMode == vmNormal ? LCD_EMPTY_VALUE : LCD_SET_VALUE));
-    lcd_fill_rect(max(0, x1)+2   + _off, y1 + SOFTMENU_HEIGHT -2 - _off, 3,2, (videoMode == vmNormal ? LCD_EMPTY_VALUE : LCD_SET_VALUE));
-    lcd_fill_rect(        x2-1-3 - _off, y1 +1                   + _off, 3,2, (videoMode == vmNormal ? LCD_EMPTY_VALUE : LCD_SET_VALUE));
-    lcd_fill_rect(        x2-1-3 - _off, y1 + SOFTMENU_HEIGHT -2 - _off, 3,2, (videoMode == vmNormal ? LCD_EMPTY_VALUE : LCD_SET_VALUE));
+  #define _off 2 // function parameter: +1 is favoured
+  if(calcMode == CM_ASSIGN && itemToBeAssigned != 0 && 
+      (currentMenu() == -MNU_HOME || 
+       currentMenu() == - MNU_MyMenu || 
+       currentMenu() == -MNU_MyAlpha || 
+       currentMenu() == -MNU_PFN ||
+       currentMenu() == -MNU_DYNAMIC
+       )) {
+    if(_off == 2) { //inner doubling of softkey box
+      lcd_fill_rect(max(0, x1)+1, y1, 1,SOFTMENU_HEIGHT , (videoMode == vmNormal ? LCD_EMPTY_VALUE : LCD_SET_VALUE));
+      lcd_fill_rect(       x2 -1, y1, 1,SOFTMENU_HEIGHT , (videoMode == vmNormal ? LCD_EMPTY_VALUE : LCD_SET_VALUE));
+      lcd_fill_rect(max(0, x1)+1, y1+1, min(x2, SCREEN_WIDTH) - max(0, x1)-2,1 , (videoMode == vmNormal ? LCD_EMPTY_VALUE : LCD_SET_VALUE));
+      lcd_fill_rect(max(0, x1)+1, y1+SOFTMENU_HEIGHT-1, min(x2, SCREEN_WIDTH) - max(0, x1)-2,1 , (videoMode == vmNormal ? LCD_EMPTY_VALUE : LCD_SET_VALUE));
+
+    } else { //positioning of nails or rivits, _off from the norm: -1, 0, +1 tried. +1 is best.
+      lcd_fill_rect(max(0, x1)+2   + _off, y1 +1                   + _off, 3,2, (videoMode == vmNormal ? LCD_EMPTY_VALUE : LCD_SET_VALUE));
+      lcd_fill_rect(max(0, x1)+2   + _off, y1 + SOFTMENU_HEIGHT -2 - _off, 3,2, (videoMode == vmNormal ? LCD_EMPTY_VALUE : LCD_SET_VALUE));
+      lcd_fill_rect(        x2-1-3 - _off, y1 +1                   + _off, 3,2, (videoMode == vmNormal ? LCD_EMPTY_VALUE : LCD_SET_VALUE));
+      lcd_fill_rect(        x2-1-3 - _off, y1 + SOFTMENU_HEIGHT -2 - _off, 3,2, (videoMode == vmNormal ? LCD_EMPTY_VALUE : LCD_SET_VALUE));
+    }
   }
 
   //^^
