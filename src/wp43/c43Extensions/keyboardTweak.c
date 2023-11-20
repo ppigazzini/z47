@@ -38,6 +38,14 @@ void fnSHIFTg(uint16_t unusedButMandatoryParameter) {
 }
 
 
+void fnSHIFTfg(uint16_t unusedButMandatoryParameter) {
+  #if !defined(TESTSUITE_BUILD)
+    btnClicked(NULL, "27");
+  #endif // !TESTSUITE_BUILD
+}
+
+
+
 void keyClick(uint8_t length) {  //Debugging on scope, a pulse after every key edge. !!!!! Destroys the prior volume setting
   #if defined(DMCP_BUILD)
     #if defined(DM42_KEYCLICK)

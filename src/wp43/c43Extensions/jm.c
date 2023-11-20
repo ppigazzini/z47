@@ -475,11 +475,6 @@ void fnJM(uint16_t JM_OPCODE) {
     }
 
 
-    else if(JM_OPCODE == 48) {                                  //f.g
-      #if !defined(TESTSUITE_BUILD)
-        btnClicked(NULL, "27");
-      #endif // !TESTSUITE_BUILD
-    }
   #endif // !SAVE_SPACE_DM42_6
   // Item 255 is NOP
 }
