@@ -637,7 +637,7 @@ TO_QSPI const int16_t menu_ASN_N[]       = { ITM_N_KEY_SIGMA,           ITM_N_KE
                                              ITM_N_KEY_DRG,             ITM_N_KEY_TGLFRT,          ITM_N_KEY_CC,              ITM_N_KEY_PRGM,            ITM_N_KEY_USER,            ITM_USER_COPY,             
                                              ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL             };
 
-#if !defined(DMCP_BUILD) //NULL to be removed in the DMCP version
+#if defined(DMCP_BUILD) //NULL to be removed in the DMCP version
   #define CC_C47  ITM_USER_C47 //not removed anymore
   #define CC_V47  ITM_NULL
   #define CC_E47  ITM_NULL
@@ -1633,7 +1633,7 @@ void showKey(const char *label, int16_t x1, int16_t x2, int16_t y1, int16_t y2, 
 
 //Show a 'panelled' view of softkeys if a menu is assignable
 //printf("currentMenu()=%d\n",currentMenu());
-  #define _off 2 // function parameter: +1 is favoured
+  #define _off 1 // function parameter: +1 is favoured
   if(calcMode == CM_ASSIGN && itemToBeAssigned != 0 && 
       (currentMenu() == -MNU_HOME || 
        currentMenu() == - MNU_MyMenu || 
@@ -2144,6 +2144,9 @@ bool_t BASE_OVERRIDEONCE = false;
         }
         showEquation(EQUATION_AIM_BUFFER, yCursor, xCursor, false, NULL, NULL);
       }
+      if(softmenu[m].menuItem == -MNU_Sfdx && (currentSolverStatus & SOLVER_STATUS_USES_FORMULA) && (currentSolverStatus & SOLVER_STATUS_INTERACTIVE)) {
+        showEquation(currentFormula, 0, EQUATION_NO_CURSOR, false, NULL, NULL);
+      }
     }
 
     if(0 <= yDotted && yDotted <= 2) {
@@ -2377,6 +2380,7 @@ bool_t BASE_OVERRIDEONCE = false;
   void showSoftmenu(int16_t id) {
 //    if(running_program_jm) return;                             //JM
     int16_t m;
+    bool_t integrateWithOnlyVariable = false;
     #if defined(PC_BUILD)
       char tmp[200]; sprintf(tmp,"^^^^showSoftmenu: Showing Softmenu id=%d\n",id); jm_show_comment(tmp);
     #endif // PC_BUILD
@@ -2414,16 +2418,21 @@ bool_t BASE_OVERRIDEONCE = false;
       return;
     }
 
+    screenUpdatingMode &= ~SCRUPD_MANUAL_MENU;
+
     if(id == -MNU_ALPHAINTL && alphaCase == AC_LOWER) { // alphaINTL
       id = -MNU_ALPHAintl;
     }
     else if(id == -MNU_ALPHA_OMEGA && alphaCase == AC_LOWER) { // alpha...omega
       id = -MNU_alpha_omega;
     }
-    else if(id == -MNU_Solver || id == -MNU_Sf || id == -MNU_1STDERIV || id == -MNU_2NDDERIV) {
+    else if(id == -MNU_Solver || id == -MNU_Sf || id == -MNU_1STDERIV || id == -MNU_2NDDERIV || (id == -MNU_MVAR && (currentSolverStatus & SOLVER_STATUS_INTERACTIVE) && !(currentSolverStatus & SOLVER_STATUS_USES_FORMULA) && (currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_INTEGRATE)) {
       int32_t numberOfVars = -1;
-      currentSolverStatus = SOLVER_STATUS_USES_FORMULA | SOLVER_STATUS_INTERACTIVE;
+      uint8_t *varList = NULL;
+      if(id != -MNU_MVAR) {
+        currentSolverStatus = SOLVER_STATUS_USES_FORMULA | SOLVER_STATUS_INTERACTIVE;
       currentMvarLabel = INVALID_VARIABLE;
+      }
       switch(-id) {
         case MNU_Solver: {
           currentSolverStatus |= SOLVER_STATUS_EQUATION_SOLVER;
@@ -2443,9 +2452,26 @@ bool_t BASE_OVERRIDEONCE = false;
         }
       }
       cachedDynamicMenu = 0;
+      if(id == -MNU_MVAR) {
+        for(int m = 0; m < NUMBER_OF_DYNAMIC_SOFTMENUS; ++m) {
+          if(softmenu[m].menuItem == -MNU_MVAR) {
+            initVariableSoftmenu(m);
+            varList = dynamicSoftmenu[m].menuContent;
+            (getNthString(varList, dynamicSoftmenu[m].numItems))[0] = 0;
+            break;
+          }
+        }
+        if(varList == NULL) {
+          displayBugScreen("In function showSoftmenu: MVAR not found!");
+          varList = (uint8_t *)"\0";
+        }
+      }
+      else {
       parseEquation(currentFormula, EQUATION_PARSER_MVAR, aimBuffer, tmpString);
+        varList = (uint8_t *)tmpString;
+      }
       id = -MNU_MVAR;
-      while((getNthString((uint8_t *)tmpString, ++numberOfVars))[0] != 0) {
+      while((getNthString(varList, ++numberOfVars))[0] != 0) {
       }
       if(numberOfVars > 12) {
         displayCalcErrorMessage(ERROR_EQUATION_TOO_COMPLEX, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
@@ -2453,9 +2479,13 @@ bool_t BASE_OVERRIDEONCE = false;
           moreInfoOnError("In function showSoftmenu:", "there are more than 11 variables in this equation!", NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       }
+      else if((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_INTEGRATE && numberOfVars == 1) {
+        currentSolverVariable = findOrAllocateNamedVariable((char *)getNthString(varList, 0));
+        integrateWithOnlyVariable = true;
+      }
       else if((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_1ST_DERIVATIVE || (currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_2ND_DERIVATIVE) {
-        if((getNthString((uint8_t *)tmpString, 1))[0] == 0) {
-          currentSolverVariable = findOrAllocateNamedVariable((char *)getNthString((uint8_t *)tmpString, 0));
+        if((getNthString(varList, 1))[0] == 0) {
+          currentSolverVariable = findOrAllocateNamedVariable((char *)getNthString(varList, 0));
           reallyRunFunction(ITM_STO, currentSolverVariable);
           if((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_1ST_DERIVATIVE) {
             fn1stDerivEq(NOPARAM);
@@ -2501,6 +2531,11 @@ bool_t BASE_OVERRIDEONCE = false;
       else {
         clearSystemFlag(FLAG_VMDISP);
       }
+    }
+
+    if(integrateWithOnlyVariable) {
+      showSoftmenu(-MNU_Sfdx);
+      currentSolverStatus |= SOLVER_STATUS_SINGLE_VARIABLE;
     }
   }
 

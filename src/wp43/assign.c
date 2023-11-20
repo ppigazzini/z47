@@ -116,22 +116,22 @@ TO_QSPI const calcKey_t kbd_std_WP43[37] = {
 //This variable is to store in flash memory
 TO_QSPI const calcKey_t kbd_std_R47[37] = {
   //keyID,              primary,              fShifted,             gShifted,             keyLblAim,            primaryAim,           fShiftedAim,          gShiftedAim,          primaryTam
-  {21,                  ITM_LN,               ITM_EXP,              ITM_TGLFRT,           ITM_NULL,             ITM_A,                ITM_a,                ITM_LN_SIGN,          ITM_REG_A           },
-  {22,                  ITM_LOG10,            ITM_10x,              ITM_HASH_JM,          ITM_NUMBER_SIGN,      ITM_B,                ITM_b,                ITM_LG_SIGN,          ITM_REG_B           },
-  {23,                  ITM_SQUAREROOTX,      ITM_SQUARE,           ITM_ms,               ITM_ROOT_SIGN,        ITM_C,                ITM_c,                ITM_ROOT_SIGN,        ITM_REG_C           },
-  {24,                  ITM_DSP,              ITM_RI,               ITM_dotD,             ITM_NULL,             ITM_D,                ITM_d,                ITM_SIN_SIGN,         ITM_REG_D           },
-  {25,                  ITM_DSPCYCLE,         ITM_op_j,             ITM_toREC2,           ITM_NULL,             ITM_E,                ITM_e,                ITM_COS_SIGN,         ITM_NULL            },
-  {26,                  ITM_DRG,              ITM_op_j_pol,         ITM_toPOL2,           ITM_NULL,             ITM_F,                ITM_f,                ITM_TAN_SIGN,         ITM_NULL            },
-  {31,                  ITM_STO,              ITM_DELTAPC,          ITM_PC,               ITM_NULL,             ITM_G,                ITM_g,                ITM_NULL,             ITM_NULL            },
-  {32,                  ITM_RCL,              ITM_MAGNITUDE,        ITM_ARG,              ITM_NULL,             ITM_H,                ITM_h,                ITM_VERTICAL_BAR,     ITM_HEX             },
-  {33,                  ITM_Rdown,            ITM_XTHROOT,          ITM_Rup,              ITM_NULL,             ITM_I,                ITM_i,                ITM_NULL,             ITM_REG_I           },
-  {34,                  ITM_1ONX,             ITM_YX,               ITM_CONSTpi,          ITM_NULL,             ITM_J,                ITM_j,                ITM_CIRCUMFLEX,       ITM_REG_J           },
+  {21,                  ITM_DRG,              ITM_op_j,             ITM_toREC2,           ITM_NULL,             ITM_A,                ITM_a,                ITM_NULL,             ITM_REG_A           },
+  {22,                  ITM_SQUARE,           ITM_op_j_pol,         ITM_toPOL2,           ITM_NULL,             ITM_B,                ITM_b,                ITM_NULL,             ITM_REG_B           },
+  {23,                  ITM_SQUAREROOTX,      ITM_CUBEROOT,         ITM_ms,               ITM_ROOT_SIGN,        ITM_C,                ITM_c,                ITM_ROOT_SIGN,        ITM_REG_C           },
+  {24,                  ITM_XTHROOT,          ITM_YX,               ITM_dotD,             ITM_NULL,             ITM_D,                ITM_d,                ITM_CIRCUMFLEX,       ITM_REG_D           },
+  {25,                  ITM_LOG10,            ITM_10x,              ITM_RI,               ITM_NULL,             ITM_E,                ITM_e,                ITM_LG_SIGN,          ITM_NULL            },
+  {26,                  ITM_LN,               ITM_EXP,              ITM_HASH_JM,          ITM_NUMBER_SIGN,      ITM_F,                ITM_f,                ITM_LN_SIGN,          ITM_NULL            },
+  {31,                  ITM_STO,              ITM_MAGNITUDE,        ITM_ARG,              ITM_NULL,             ITM_G,                ITM_g,                ITM_VERTICAL_BAR,     ITM_NULL            },
+  {32,                  ITM_RCL,              ITM_PC,               ITM_DELTAPC,          ITM_NULL,             ITM_H,                ITM_h,                ITM_DELTA,            ITM_HEX             },
+  {33,                  ITM_Rdown,            ITM_Rup,              ITM_CONSTpi,          ITM_NULL,             ITM_I,                ITM_i,                ITM_pi,               ITM_REG_I           },
+  {34,                  ITM_1ONX,             ITM_LBL,              ITM_GTO,              ITM_NULL,             ITM_J,                ITM_j,                ITM_NULL,             ITM_REG_J           },
   {35,                  ITM_SHIFTf,           ITM_NULL,             ITM_NULL,             ITM_SHIFTf,           ITM_SHIFTf,           ITM_NULL,             ITM_NULL,             ITM_SHIFTf          },
   {36,                  ITM_SHIFTg,           ITM_NULL,             ITM_NULL,             ITM_SHIFTg,           ITM_SHIFTg,           ITM_NULL,             ITM_NULL,             ITM_SHIFTg          },
   {41,                  ITM_ENTER,            KEY_COMPLEX,          -MNU_CPX,             ITM_ENTER,            ITM_ENTER,            ITM_XSWAP,            ITM_XPARSE,           ITM_ENTER           },
   {42,                  ITM_XexY,             ITM_LASTX,            -MNU_STK,             ITM_ex,               ITM_K,                ITM_k,                ITM_ex,               ITM_REG_K           },
-  {43,                  ITM_CHS,              ITM_DRG,              -MNU_TRG,             ITM_PLUS_MINUS,       ITM_L,                ITM_l,                ITM_PLUS_MINUS,       ITM_REG_L           },
-  {44,                  ITM_EXPONENT,         -MNU_EXP,             -MNU_DISP,            ITM_NULL,             ITM_M,                ITM_m,                ITM_EEXCHR,           ITM_NULL            },
+  {43,                  ITM_CHS,              -MNU_TRG,             -MNU_DISP,            ITM_PLUS_MINUS,       ITM_L,                ITM_l,                ITM_PLUS_MINUS,       ITM_REG_L           },
+  {44,                  ITM_EXPONENT,         -MNU_EXP,             -MNU_PREFIX,          ITM_NULL,             ITM_M,                ITM_m,                ITM_EEXCHR,           ITM_NULL            },
   {45,                  ITM_BACKSPACE,        ITM_UNDO,             -MNU_CLR,             ITM_BACKSPACE,        ITM_BACKSPACE,        ITM_CLA,              ITM_CLA,              ITM_BACKSPACE       },
   {51,                  ITM_XEQ,              ITM_AIM,              ITM_USERMODE,         ITM_NULL,             ITM_NULL,             ITM_NULL,             ITM_alpha,            ITM_alpha           },
   {52,                  ITM_7,                ITM_sin,              ITM_arcsin,           ITM_7,                ITM_N,                ITM_n,                ITM_7,                ITM_7               },
@@ -150,11 +150,11 @@ TO_QSPI const calcKey_t kbd_std_R47[37] = {
   {75,                  ITM_SUB,              -MNU_FIN,             -MNU_IO,              ITM_MINUS,            ITM_Y,                ITM_y,                ITM_MINUS,            ITM_SUB             },
   {81,                  ITM_EXIT1,            ITM_OFF,              ITM_SNAP,             ITM_EXIT1,            ITM_EXIT1,            ITM_OFF,              ITM_SNAP,             ITM_EXIT1           },
   {82,                  ITM_0,                ITM_VIEW,             ITM_TIMER,            ITM_0,                ITM_Z,                ITM_z,                ITM_0,                ITM_0               },
-  {83,                  ITM_PERIOD,           ITM_SHOW,             -MNU_INFO,            ITM_PERIOD,           ITM_COMMA,            ITM_PERIOD,           ITM_PERIOD,           ITM_PERIOD          },
+  {83,                  ITM_PERIOD,           ITM_SHOW,             ITM_TGLFRT,           ITM_PERIOD,           ITM_COMMA,            ITM_PERIOD,           ITM_PERIOD,           ITM_PERIOD          },
   {84,                  ITM_RS,               ITM_PR,               -MNU_TEST,            ITM_NULL,             ITM_QUESTION_MARK,    ITM_SLASH,            ITM_SLASH,            ITM_NULL            },
   {85,                  ITM_ADD,              -MNU_CATALOG,         -MNU_CONST,           ITM_PLUS,             ITM_SPACE,            ITM_PLUS,             ITM_PLUS,             ITM_ADD             }
+  //keyID,              primary,              fShifted,             gShifted,             keyLblAim,            primaryAim,           fShiftedAim,          gShiftedAim,          primaryTam         
 };
-
 
 // E47 Layout from Layout_template_automation template: Do not change manually
 //This variable is to store in flash memory
