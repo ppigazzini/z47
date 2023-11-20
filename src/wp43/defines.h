@@ -14,7 +14,7 @@
 
 #define VERSION1 "0.109.00.00a17"     // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
 
-//2023-11-04-0.108.16.00 Stable non-master
+//2023-11-12-0.108.16.01 Stable master
 
   #undef SAVE_SPACE_DM42_0
   #undef SAVE_SPACE_DM42_1
@@ -339,6 +339,7 @@
 #define USER_MCPX        55
 #define USER_HRESET      56
 #define USER_PRESET      57
+#define USER_R47         58
 
 
 //*************************
@@ -1203,7 +1204,7 @@ typedef enum {
 #define KEY_AUTOREPEAT_PERIOD                    200 // in milliseconds
 #define TIMER_APP_PERIOD                         100 // in milliseconds
 #define RAM_SIZE_IN_BLOCKS                     16384 // 16384 blocks = 65536 bytes  MUST be a multiple of 4 and MUST be <= 262140 (not 262144)
-//#define RAM_SIZE                                3072 // 16384 blocks = 65536 bytes  MUST be a multiple of 4 and MUST be <= 262140 (not 262144)
+//#define RAM_SIZE_IN_BLOCKS                      3072 // 3072 blocks = 12288 bytes  MUST be a multiple of 4 and MUST be <= 262140 (not 262144)
 
 #define CONFIG_SIZE_IN_BLOCKS                 TO_BLOCKS(sizeof(dtConfigDescriptor_t))
 

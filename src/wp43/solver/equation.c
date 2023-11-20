@@ -97,7 +97,7 @@ TO_QSPI static const char bugScreenUnknownFormulaParserMode[] = "In function _pa
 
     { "CEIL",                                ITM_CEIL,        0}, // Ceiling function
 //    { "ceil",                                ITM_CEIL,        0}, // C47 Ceiling function
-//    { "EXP",                                 ITM_EXP,         0}, // Natural exponential
+    { "EXP",                                 ITM_EXP,         0}, // Natural exponential
     { "exp",                                 ITM_EXP,         0}, // C47 Natural exponential
     { "FLOOR",                               ITM_FLOOR,       0}, // Floor function
 //    { "floor",                               ITM_FLOOR,       0}, // C47 Floor function
@@ -1366,6 +1366,23 @@ void parseEquation(uint16_t equationId, uint16_t parseMode, char *buffer, char *
           inExponent = false;
           exponentSignCanOccur = false;
         }
+
+        else if(strPtr[0] == '^' && strPtr[1] == '(' && bufPtr - buffer == 2 && buffer[0] == STD_EulerE[0] && buffer[1] == STD_EulerE[1]) {
+          // 'Euler e' (fancy e) as a function
+          strcpy(buffer, "EXP");
+          strPtr += 2;
+          _parseWord(buffer, parseMode, PARSER_HINT_FUNCTION, mvarBuffer);
+          bufPtr = buffer;
+          buffer[0] = 0;
+          numericCount = 0;
+          afterClosingParenthesis = false;
+          unaryMinusCanOccur = true;
+          afterSpace = false;
+          inExponent = false;
+          exponentSignCanOccur = false;
+          break;
+        }
+  
         else if(exponentSignCanOccur && (*strPtr == '+' || *strPtr == '-')) {
           /* exponent sign */
           *(bufPtr++) = *(strPtr++);
