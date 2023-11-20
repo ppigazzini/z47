@@ -32,6 +32,7 @@
 #include "realType.h"
 #include "registers.h"
 #include "registerValueConversions.h"
+#include "screen.h"
 #include "softmenus.h"
 #include "solver/equation.h"
 #include "stack.h"
@@ -307,6 +308,8 @@ static void _integrate(calcRegister_t regist, const real_t *a, const real_t *b, 
   bool_t TS    = false;   // tanhsinh mode
   bool_t lg0   = false;   // true if level > 0
 
+  int loop = 0;
+
   // check arguments  ************************************
   if(realIsNaN(a) || realIsNaN(b)) { // check for invalid limits
     realCopy(const_NaN, res); // a or b is NaN, exit
@@ -434,6 +437,15 @@ static void _integrate(calcRegister_t regist, const real_t *a, const real_t *b, 
     // j loop ++++++++++++++++++++++++++++++++++++++++++++++
     // compute abscissas and weights  ----------------------
     do { // DEI_j_loop::
+            printHalfSecUpdate_Integer(timed, "Iter: ",loop++); //timed
+
+            #if defined(DMCP_BUILD)
+              if(keyWaiting()) {
+                  printHalfSecUpdate_Integer(force+1, "Interrupted Iter:",loop);
+                break;
+              }
+            #endif //DMCP_BUILD
+
       WP34S_SinhCosh(&x, NULL, &x, realContext); // cosh(t) (cosh is much faster than sinh/tanh)
       realCopy(&x, &ch); // save for later
       realMultiply(&x, &x, &x, realContext);
