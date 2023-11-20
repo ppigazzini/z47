@@ -965,11 +965,16 @@ void fnDynamicMenu(uint16_t unusedButMandatoryParameter) {
       calcRegister_t regist = i+FIRST_NAMED_VARIABLE;
       if(!applyFilter || _filterDataType(regist, typeFilter, isAngular)) {
         xcopy(tmpString + 15 * numberOfVars, allNamedVariables[i].variableName + 1, allNamedVariables[i].variableName[0]);
-        numberOfVars++;
-        numberOfBytes += 1 + allNamedVariables[i].variableName[0];
+        if((softmenu[softmenuStack[2].softmenuId].menuItem == -ITM_DELITM) &&       // Don't include "STATS" and "HISTO" for DELITM
+           ((compareString(tmpString + 15 * numberOfVars, "STATS", CMP_NAME) == 0) || (compareString(tmpString + 15 * numberOfVars, "HISTO", CMP_NAME) == 0))) {
+              memset(tmpString + 15 * numberOfVars, 0, 15);
+        } else {
+          numberOfVars++;
+          numberOfBytes += 1 + allNamedVariables[i].variableName[0];
+        }
       }
     }
-    if (softmenu[softmenuStack[2].softmenuId].menuItem != -ITM_DELITM) {     // Don't include reserved variables for DELITM
+    if (softmenu[softmenuStack[2].softmenuId].menuItem != -ITM_DELITM) {            // Don't include reserved variables for DELITM
       for(int i=12; i<NUMBER_OF_RESERVED_VARIABLES; i++) {
         calcRegister_t regist = i+FIRST_RESERVED_VARIABLE;
         if((!applyFilter || _filterDataType(regist, typeFilter, isAngular))) {
@@ -1222,7 +1227,8 @@ void fnDynamicMenu(uint16_t unusedButMandatoryParameter) {
         
         for(i=0; i<numberOfUserMenus; i++) {
           int16_t len = stringByteLength(userMenus[i].menuName);
-          if(compareString("HOME", userMenus[i].menuName, CMP_NAME) != 0) {    // Don't show HOME is the menus to delete
+          if((softmenu[softmenuStack[1].softmenuId].menuItem != -ITM_DELITM) ||              // Don't show HOME & P.FN in the menus to delete
+             ((compareString("HOME", userMenus[i].menuName, CMP_NAME) != 0) && (compareString("P.FN", userMenus[i].menuName, CMP_NAME) != 0))) {    
             xcopy(tmpString + 15 * numberOfGlobalLabels, userMenus[i].menuName, len);
             numberOfGlobalLabels++;
             numberOfBytes += 1 + len;

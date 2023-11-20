@@ -26,7 +26,7 @@
   void fnAssign                   (uint16_t mode);
 
   void fnDeleteMenu               (uint16_t id);
-  void removeUserItemAssignments  (int16_t item, char *userItemName);
+
   void updateAssignTamBuffer      (void);
 
   void _assignItem                (userMenuItem_t *menuItem);
@@ -42,4 +42,19 @@
   void assignLeaveAlpha           (void);
   void assignGetName1             (void);
   void assignGetName2             (void);
+  
+  /**
+   * Remove assignments for user items
+   *
+   * \param[in] item         Category of user items to be removed:
+   *                          - ITM_XEQ for user programs, 
+   *                          - ITM_RCL for User variables, 
+   *                          - -MNU_DYNAMIC for user defined menus
+   *            userItemName Pointer to the item name to be removed
+   *                         If the name is an empty string, all assigned items within the category will be removed
+   *                         ex: ITM_XEQ, "Prog1" will remove all assignments of the program "Prog1"
+   *                             ITM_XEQ, ""      will remove all assignments of all programs
+   */
+  void removeUserItemAssignments  (int16_t item, char *userItemName);
+  
 #endif // !ASSIGN_H
