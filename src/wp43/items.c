@@ -1100,6 +1100,7 @@ void fnNop(uint16_t unusedButMandatoryParameter) {
   void fnCurveFitting_T           (uint16_t unusedButMandatoryParameter) {}
   void fnSHIFTf                   (uint16_t unusedButMandatoryParameter) {}
   void fnSHIFTg                   (uint16_t unusedButMandatoryParameter) {}
+  void fnSHIFTfg                  (uint16_t unusedButMandatoryParameter) {}
   void graph_stat                 (uint16_t unusedButMandatoryParameter) {}
   void fnSafeReset                (uint16_t unusedButMandatoryParameter) {}
   void fnSetBCD                   (uint16_t unusedButMandatoryParameter) {}
@@ -3095,7 +3096,7 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 1890 */  { fnInDefault,                  ID_SI,                       "i" STD_SPACE_3_PER_EM "SI",                   "i" STD_SPACE_3_PER_EM "SI",                   (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },//JM INPUT DEFAULT
 /* 1891 */  { fnInDefault,                  ID_LI,                       "i" STD_SPACE_3_PER_EM "LI",                   "i" STD_SPACE_3_PER_EM "LI",                   (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },//JM INPUT DEFAULT
 /* 1892 */  { fnMultiplySI,                 115,                         STD_DOT "P",                                   STD_DOT "P",                                   (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_DISABLED     },//JM PRE UNIT
-/* 1893 */  { fnJM,                         48,                          "f/g",                                         "f/g",                                         (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },//JM Shift replacement
+/* 1893 */  { fnSHIFTfg,                    NOPARAM,                     "f/g",                                         "f/g",                                         (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },//JM Shift replacement
 /* 1894 */  { itemToBeCoded,                NOPARAM,                     "",                                            "TamCmpAlpha",                                 (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 1895 */  { SetSetting,                   PR_HPBASE,                   "BASE" STD_SUB_H STD_SUB_P,                    "BASE" STD_SUB_H STD_SUB_P,                    (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 1896 */  { fnAsnViewer,                  NOPARAM,                     "KEYMAP",                                      "KEYMAP",                                      (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },//J=V43
