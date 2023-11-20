@@ -3135,6 +3135,11 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
           }
           else {                  //jm: this is where 43S cleared an error
             popSoftmenu();
+            if(softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_MVAR && ((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_INTEGRATE) && (currentSolverStatus & SOLVER_STATUS_SINGLE_VARIABLE)) {
+              popSoftmenu();
+              currentSolverStatus &= ~SOLVER_STATUS_EQUATION_MODE;
+              currentSolverStatus &= ~SOLVER_STATUS_INTERACTIVE;
+            }
             stayInAIM(); //JM
           }
           screenUpdatingMode &= ~SCRUPD_MANUAL_MENU;
