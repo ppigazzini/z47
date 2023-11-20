@@ -894,14 +894,15 @@ int16_t lastItem = 0;
       }
 
       if(calcMode == CM_ASSIGN && itemToBeAssigned != 0 && !(tam.alpha && tam.mode != TM_NEWMENU)) {
-        if( (  (itemToBeAssigned == ITM_SHIFTf || itemToBeAssigned == ITM_SHIFTg || itemToBeAssigned == KEY_fg) && 
-                (previousCalcMode == CM_NORMAL) && 
-                (shiftF || shiftG) && 
-                ((uint8_t *)data)[0] >= '1' && 
-                ((uint8_t *)data)[0] <= '6' 
-                )  ) {       //prevent "shifts on rows f and g on F6 to be overwritten //Allow any normal mode menu HOME PFN MyM, except shifts not in f or g line
-          return;
-        } else
+//Put section in if shifts are only allowed on the primary menu line
+//        if( (  (itemToBeAssigned == ITM_SHIFTf || itemToBeAssigned == ITM_SHIFTg || itemToBeAssigned == KEY_fg) && 
+//                (previousCalcMode == CM_NORMAL) && 
+//                (shiftF || shiftG) && 
+//                ((uint8_t *)data)[0] >= '1' && 
+//                ((uint8_t *)data)[0] <= '6' 
+//                )  ) {       //prevent "shifts on rows f and g on F6 to be overwritten //Allow any normal mode menu HOME PFN MyM, except shifts not in f or g line
+//          return;
+//        } else
         if(!(previousCalcMode == CM_AIM && (!shiftG && !shiftF) && ((uint8_t *)data)[0] == '6')) {       //prevent "ALPHA" on F6 to be overwritten
           if(_assignToMenu((uint8_t *)data)) {
             if(previousCalcMode == CM_AIM) {         //vvJM btnFnReleased
