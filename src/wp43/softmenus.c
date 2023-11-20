@@ -650,7 +650,7 @@ TO_QSPI const int16_t menu_ASN_N[]       = { ITM_N_KEY_SIGMA,           ITM_N_KE
                                              ITM_N_KEY_DRG,             ITM_N_KEY_TGLFRT,          ITM_N_KEY_CC,              ITM_N_KEY_PRGM,            ITM_N_KEY_USER,            ITM_USER_COPY,             
                                              ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL             };
 
-#if !defined(DMCP_BUILD) //NULL to be removed in the DMCP version
+#if defined(DMCP_BUILD) //NULL to be removed in the DMCP version
   #define CC_C47  ITM_USER_C47 //not removed anymore
   #define CC_V47  ITM_NULL
   #define CC_E47  ITM_NULL
@@ -1644,7 +1644,7 @@ void showKey(const char *label, int16_t x1, int16_t x2, int16_t y1, int16_t y2, 
 
 //Show a 'panelled' view of softkeys if a menu is assignable
 //printf("currentMenu()=%d\n",currentMenu());
-  #define _off 2 // function parameter: +1 is favoured
+  #define _off 1 // function parameter: +1 is favoured
   if(calcMode == CM_ASSIGN && itemToBeAssigned != 0 && 
       (currentMenu() == -MNU_HOME || 
        currentMenu() == - MNU_MyMenu || 
