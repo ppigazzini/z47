@@ -37,6 +37,8 @@
 #include "wp43.h"
 #include <string.h>
 
+#include <string.h>
+
 
 
 #if !defined(TESTSUITE_BUILD)

@@ -152,14 +152,7 @@ void fnIntVar(uint16_t unusedButMandatoryParameter) {
     const char *var = (char *)getNthString(dynamicSoftmenu[softmenuStack[0].softmenuId].menuContent, dynamicMenuItem);
     const uint16_t regist = findOrAllocateNamedVariable(var);
     currentSolverVariable = regist;
-    if(currentSolverStatus & SOLVER_STATUS_READY_TO_EXECUTE) {
-      showSoftmenu(-MNU_Sfdx);
-    }
-    else {
-      reallyRunFunction(ITM_STO, regist);
-      currentSolverStatus |= SOLVER_STATUS_READY_TO_EXECUTE;
-      temporaryInformation = TI_SOLVER_VARIABLE;
-    }
+    showSoftmenu(-MNU_Sfdx);
   #endif // !TESTSUITE_BUILD
 }
 
