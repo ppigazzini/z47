@@ -954,7 +954,7 @@
 #define ITM_RING                     918
 #define ITM_BULLET                   919
 #define ITM_SQUARE_ROOT              920
-#define ITM_CUBE_ROOT                921
+#define ITM_CUBEROOT_SIGN                921
 #define ITM_xTH_ROOT                 922
 #define ITM_PROPORTIONAL             923
 #define ITM_INFINITY                 924
@@ -1032,7 +1032,7 @@
 #define ITM_EQ_RIGHT                 996
 #define ITM_PAIR_OF_PARENTHESES      997
 #define ITM_VERTICAL_BAR             998
-#define ITM_ALOG_SYMBOL              999
+#define ITM_ALOG_SIGN              999
 #define ITM_ROOT_SIGN               1000
 #define ITM_TIMER_SYMBOL            1001
 #define ITM_Sfdx_VAR                1002
@@ -2289,8 +2289,9 @@
 #define MNU_LAYOUTS                 2233
 #define MNU_RESETS                  2234
 #define MNU_RIBBONS                 2235
+#define ITM_USER_R47bk                 2236
 
-#define LAST_ITEM                   2236
+#define LAST_ITEM                   2237
 
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL

@@ -499,7 +499,7 @@ TO_QSPI const int16_t menu_alphaMATH[]   = { ITM_LESS_THAN,             ITM_LESS
                                              ITM_LEFT_CURLY_BRACKET,    ITM_LEFT_SQUARE_BRACKET,   ITM_LEFT_PARENTHESIS,      ITM_RIGHT_PARENTHESIS,     ITM_RIGHT_SQUARE_BRACKET,  ITM_RIGHT_CURLY_BRACKET,   
                                              ITM_BACK_SLASH,            ITM_SLASH,                 ITM_OBELUS,                ITM_CROSS,                 ITM_MINUS,                 ITM_PLUS,                  
 
-                                             ITM_CIRCUMFLEX,            ITM_SQUARE_ROOT,           ITM_CUBE_ROOT,             ITM_xTH_ROOT,              ITM_x_UNDER_ROOT,          ITM_y_UNDER_ROOT,          
+                                             ITM_CIRCUMFLEX,            ITM_SQUARE_ROOT,           ITM_CUBEROOT_SIGN,         ITM_xTH_ROOT,              ITM_x_UNDER_ROOT,          ITM_y_UNDER_ROOT,          
                                              ITM_NOT,                   ITM_AND,                   ITM_OR,                    ITM_XOR,                   ITM_NAND,                  ITM_NOR,                   
                                              ITM_TILDE,                 ITM_ALMOST_EQUAL,          ITM_ASYMPOTICALLY_EQUAL,   ITM_IDENTICAL_TO,          ITM_COLON_EQUALS,          ITM_PLUS_MINUS,            
 
@@ -575,7 +575,7 @@ TO_QSPI const int16_t menu_TamLabel[]    = { ITM_INDIRECTION,               -MNU
 
 TO_QSPI const int16_t menu_Eim[]         = { 
                                              ITM_LEFT_PARENTHESIS,      ITM_RIGHT_PARENTHESIS,     ITM_CIRCUMFLEX,            ITM_ROOT_SIGN,             ITM_EQ_LEFT,               ITM_EQ_RIGHT,              
-                                             ITM_ALOG_SYMBOL,           ITM_EQUAL,                 CHR_case,                  CHR_num,                   ITM_SCR,                   ITM_COLON,                 
+                                             ITM_ALOG_SIGN,           ITM_EQUAL,                 CHR_case,                  CHR_num,                   ITM_SCR,                   ITM_COLON,                 
                                              ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  
 
                                              ITM_sin,                   ITM_cos,                   ITM_tan,                   ITM_pi,                    ITM_EQ_LEFT,               ITM_EQ_RIGHT,              
@@ -657,6 +657,7 @@ TO_QSPI const int16_t menu_ASN_N[]       = { ITM_N_KEY_SIGMA,           ITM_N_KE
   #define CC_D47  ITM_NULL
   #define CC_N47  ITM_NULL
   #define CC_R47  ITM_NULL
+  #define CC_R47bk  ITM_NULL
   #define MM_LAYOUT -MNU_LAYOUTS //not removed anymore
 #else // !DMCP_BUILD
   #define CC_C47  ITM_USER_C47
@@ -665,6 +666,7 @@ TO_QSPI const int16_t menu_ASN_N[]       = { ITM_N_KEY_SIGMA,           ITM_N_KE
   #define CC_D47  ITM_USER_D47
   #define CC_N47  ITM_USER_N47
   #define CC_R47  ITM_USER_R47
+  #define CC_R47bk  ITM_USER_R47bk
   #define MM_LAYOUT -MNU_LAYOUTS
 #endif // !DMCP_BUILD
 
@@ -674,7 +676,7 @@ TO_QSPI const int16_t menu_KEYS[]      =  {  -MNU_RIBBONS,             -MNU_RESE
                                              -MNU_ASN_N,                ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_USERMODE };             
 
 TO_QSPI const int16_t menu_LAYOUTS[]   =  {  CC_C47,                    CC_D47,                    CC_E47,                    CC_N47,                    CC_R47,                    CC_V47,              
-                                             ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_ASSIGN,                
+                                             ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  CC_R47bk,                  ITM_ASSIGN,                
                                              ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_USERMODE };
 
 TO_QSPI const int16_t menu_RESETS[]    =  {  ITM_USER_ARESET,           ITM_USER_MRESET,           ITM_USER_HRESET,           ITM_USER_PRESET,           ITM_NULL,                  ITM_USER_KRESET,           
