@@ -43,6 +43,7 @@ void     resetShiftState      (void);
 void     showShiftState       (void);
 void     fnSHIFTf(uint16_t unusedButMandatoryParameter);
 void     fnSHIFTg(uint16_t unusedButMandatoryParameter);
+void     fnSHIFTfg(uint16_t unusedButMandatoryParameter);
 
 #if !defined(TESTSUITE_BUILD)
 void     show_f_jm           (void);
