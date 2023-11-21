@@ -218,7 +218,7 @@ uint16_t convertItemToSubOrSup(uint16_t item, int16_t subOrSup) {
           const char *addChar0 = item == ITM_PAIR_OF_PARENTHESES  ? "()" :
                                  item == ITM_VERTICAL_BAR         ? "||" :
                                  item == ITM_ROOT_SIGN            ? STD_SQUARE_ROOT "()" :
-                                 item == ITM_ALOG_SYMBOL          ? STD_EulerE "^()" :
+                                 item == ITM_ALOG_SIGN            ? STD_EulerE "^()" :
                                  item == ITM_LG_SIGN              ? "LOG()" :
                                  item == ITM_LN_SIGN              ? "LN()"  :
                                  item == ITM_SIN_SIGN             ? "SIN()" :
@@ -269,7 +269,7 @@ uint16_t convertItemToSubOrSup(uint16_t item, int16_t subOrSup) {
                 xCursor += 4;
                 break;
               }
-              case ITM_ALOG_SYMBOL:
+              case ITM_ALOG_SIGN:
               case ITM_LN_SIGN: {
                 xCursor += 3;
                 break;

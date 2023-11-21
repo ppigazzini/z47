@@ -998,6 +998,7 @@ void restoreStats(void){
     TO_QSPI const numberstr indexOfMsgs[] = {
       {0,USER_C47,     "C47: Classic single shift, replaces C43 (DM42)"  },
       {0,USER_R47,     "R47: Exp 2 shifts R (43S mould) /x-+ R"          },
+      {0,USER_R47bk,   "R47bk: Exp 2 shifts R (43S spec mould) /x-+ R"   },
       {0,USER_D47,     "D47: Exp 2 shifts R (43S mould) /x-+ R"          },
       {0,USER_E47,     "E47: Exp 2 shifts L /x-+ R"                      },
       {0,USER_N47,     "N47: Exp 2 shft L (32 mould) /x-+ R " STD_UP_ARROW STD_DOWN_ARROW " top"  },
@@ -1688,6 +1689,15 @@ void fnKeysManagement(uint16_t choice) {
         xcopy(kbd_usr, kbd_std_R47, sizeof(kbd_std_R47));
         fnSetFlag(FLAG_USER);
       break;
+
+      case USER_R47bk:          //USER
+        fnKeysManagement(USER_KRESET);
+        fnShowVersion(USER_R47bk);
+        xcopy(kbd_usr, kbd_std_R47bk, sizeof(kbd_std_R47bk));
+        fnSetFlag(FLAG_USER);
+      break;
+
+
     #endif //PC_BUILD
 
 
