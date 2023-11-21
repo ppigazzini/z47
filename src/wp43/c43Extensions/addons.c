@@ -634,13 +634,13 @@ void fnDisplayFormatCycle (uint16_t unusedButMandatoryParameter) {
   if(DM_Cycling == 0 && softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_PREFIX) {
     fnDisplayFormatUnit(displayFormatDigits);
   }
-  else if(displayFormat == DF_ALL) {
+  else if(displayFormat == DF_UN) {
     fnDisplayFormatSigFig(displayFormatDigits);
   }
   else if(displayFormat == DF_SF ) {
-    fnDisplayFormatUnit(displayFormatDigits);
+    fnDisplayFormatAll(displayFormatDigits);
   }
-  else if(displayFormat == DF_UN) {
+  else if(displayFormat == DF_ALL) {
     fnDisplayFormatFix(displayFormatDigits);
   }
   else if(displayFormat == DF_FIX) {
@@ -650,7 +650,7 @@ void fnDisplayFormatCycle (uint16_t unusedButMandatoryParameter) {
     fnDisplayFormatEng(displayFormatDigits);
   }
   else if(displayFormat == DF_ENG) {
-    fnDisplayFormatAll(displayFormatDigits);
+    fnDisplayFormatUnit(displayFormatDigits);
   }
   DM_Cycling = 1;
 }
