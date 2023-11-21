@@ -358,6 +358,7 @@ void real34ToDisplayString2(const real34_t *real34, char *displayString, int16_t
   //             ln(1025)/ln(1024) = 1.000140819; 
   
   bool_t flag2To10 = getSystemFlag(FLAG_2TO10);
+  bool_t flag2To10_baseunit_integer = false;
   real_t tmp4, tmpIp, tmpFp;
   real34_t real34bak;
   real34Copy(real34, &real34bak);
@@ -365,49 +366,64 @@ void real34ToDisplayString2(const real34_t *real34, char *displayString, int16_t
     real_t x;
     real34ToReal(real34, &x);
     int32ToReal(1024,&tmp4);
+
     if(!realCompareAbsLessThan(&x, &tmp4)) {
-      //e^[ lnx / ln1024 ]
+
+      //x = e^[ ln real34 / ln1024 ]
       bool_t neg = false;
       if(realIsNegative(&x)) {
         realSetPositiveSign(&x);
         neg = true;
       }
-      WP34S_Ln(&x, &x, &ctxtReal39);
-      realDivide(&x, const_ln2, &x, &ctxtReal39); //ln(1024)=ln( 2^10 )=10ln(2)
-      realDivide(&x, const_10, &x, &ctxtReal39);  //ln(1024)=ln( 2^10 )=10ln(2)
-      //get IP and FP
-      realToIntegralValue(&x, &tmpIp, DEC_ROUND_DOWN, &ctxtReal39);
-      realSubtract(&x, &tmpIp, &tmpFp, &ctxtReal39); // Fractional part
 
-      
+      //get log base 1024 of real34
+      WP34S_Ln(&x, &x, &ctxtReal39);                             //x = ln|real34|
+      realDivide(&x, const_ln2, &x, &ctxtReal39);                   //ln(1024)=ln( 2^10 )=10ln(2)
+      realDivide(&x, const_10, &x, &ctxtReal34);                    //ln(1024)=ln( 2^10 )=10ln(2)    
+      //printRealToConsole(&x,"lnx / ln1024 ","\n");             // x = ln|real34| / ln(1024) = log base 1024 of real34 = 1.00140
+
+      //get IP and FP of this
+      realToIntegralValue(&x, &tmpIp, DEC_ROUND_DOWN, &ctxtReal34); // tmpIp = Integer Part log base1024 of Real34    = 1
+      realSubtract(&x, &tmpIp, &tmpFp, &ctxtReal34);                // tmpFp = Fractional part log base1024 of Real34    = 0.00140
+      //printRealToConsole(&tmpIp,"Ip ","\n");
+      //printRealToConsole(&tmpFp,"Fp ","\n");
+
+      //get whole multiple factor of 1024 smaller than Real34    // tmpIP =     [         real34 / 2^(10.IP) ] = 1000 ^ (real34 / whole multiple factors of 1024) = 1000^(1025/1024)
       realMultiply(&tmpIp, const_10, &tmp4, &ctxtReal39);
-      realPower2(&tmp4, &tmp4, &ctxtReal39);
+      realPower2(&tmp4, &tmp4, &ctxtReal39);                        //                     tmp4  = 2^(10.IP) 
       real34ToReal(real34, &x);
-      realDivide(&x, &tmp4, &x, &ctxtReal39);
-      realMultiply(&tmpIp, const_3, &tmp4, &ctxtReal39);
-      realPower10(&tmp4, &tmpIp, &ctxtReal39);
+      realDivide(&x, &tmp4, &x, &ctxtReal34);                       // x =                real34 / 2^(10.IP)   =         (1025/1024) = 1.000977
+      //printRealToConsole(&x,"x = real34 / (1024^IP) = ","\n");
 
-      //1024^FP = e^ ( FP LN 1024  )
+      //convert this 1024^n to 10^3m                             // tmpIP. = 10^ [ 3 x  real34 / 2^(10.IP) ] = 1000 ^ (real34 / whole multiple factors of 1024)
+      realMultiply(&tmpIp, const_3, &tmp4, &ctxtReal39);
+      realPower10(&tmp4, &tmpIp, &ctxtReal39);                      //  tmpIP§ =            10 ^ 3.tmpIP§   (§ meaning not IP, just using the variable) = 1000 ^ (real34 / 2^(10.IP) )
+                                                                    //         =           1000^(1025/1024) = 1000 ^ 1.000977 = 1006.772
+      //printRealToConsole(&tmp4,"tmpIP§ = 1000 ^ (real34 / (1024^IP)) = ","\n");
+
+      //                                                        // 1024^FP = e^ ( FP LN 1024  )
       int32ToReal(1024,&tmp4);
       WP34S_Ln(&tmp4, &tmp4, &ctxtReal39);
       realMultiply(&tmp4, &tmpFp, &tmp4, &ctxtReal39);
       realExp(&tmp4, &tmpFp, &ctxtReal39);
+      //printRealToConsole(&tmpFp,"e^(fp ln1024) ","\n");           //      tmpFp§ = 1024 ^ 0.00140 = 1.009751
 
-      realMultiply(&tmpIp, &tmpFp, &x, &ctxtReal39);
-
+      //Original real34 = 1024 ^ IP§ . 1024 ^ FP = 
+      realMultiply(&tmpIp, &tmpFp, &x, &ctxtReal34);           
+      //printRealToConsole(&x,"x ","\n");
       
-
       if(!realCompareAbsLessThan(&tmpFp, const_1e_32)) {
         if(neg) {
           realSetNegativeSign(&x);
         }
         realToReal34(&x, real34);
-        //printRealToConsole(&x,"---B","\n");
+        //printReal34ToConsole(real34,"---B","\n");
       } else {
          flag2To10 = false;
       } 
     } else {
       flag2To10 = false;
+      flag2To10_baseunit_integer = true;
     }
   }
 
@@ -797,7 +813,7 @@ void real34ToDisplayString2(const real34_t *real34, char *displayString, int16_t
   //////////////
   // FIX mode //
   //////////////
-  if((displayFormat == DF_FIX || displayFormat == DF_SF) || (!flag2To10 && displayFormat != DF_UN)) {                        //DF_UN starts here, to override displaying 2^10 values of between 1000 and 1024 as ENG notation
+  if((displayFormat == DF_FIX || displayFormat == DF_SF || flag2To10_baseunit_integer)) {                        //DF_UN starts here, to override displaying 2^10 values of between 1000 and 1024 as ENG notation
     if(noFix || exponent >= displayHasNDigits || 
          exponent < -(int32_t)displayFormatDigits ||
          ( displayFormat == DF_SF && exponent -(int32_t)displayFormatDigits < -(checkHP ? 10+1 : displayHasNDigits)) ||
@@ -2057,10 +2073,11 @@ void longIntegerRegisterToDisplayString(calcRegister_t regist, char *displayStri
       real_t tmp4, tmpReal;
       real34_t tmpReal34;
       stringToReal(displayString, &tmpReal, &ctxtReal39);
-      realToReal34(&tmpReal, &tmpReal34);
       int32ToReal(1024,&tmp4);
       if(!realCompareAbsLessThan(&tmpReal, &tmp4)) {
         //real34ToDisplayString(&tmpReal34, amNone, displayString, &numericFont, maxWidth, 34, false, false);
+        //printRealToConsole(&tmpReal,"","\n");
+        realToReal34(&tmpReal, &tmpReal34);
         real34ToDisplayString2(&tmpReal34, displayString, 34, 100, false, false);
         return;
       }
