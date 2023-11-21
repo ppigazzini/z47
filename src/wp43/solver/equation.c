@@ -35,6 +35,9 @@
 #include "stack.h"
 #include "sort.h"
 #include "wp43.h"
+#include <string.h>
+
+#include <string.h>
 
 
 

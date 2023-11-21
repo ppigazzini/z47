@@ -20,6 +20,7 @@
 
 #include "programming/manage.h"
 
+#include "assign.h"
 #include "bufferize.h"
 #include "c43Extensions/keyboardTweak.h"
 #include "charString.h"
@@ -201,11 +202,30 @@ void deleteStepsFromTo(uint8_t *from, uint8_t *to) {
 
 
 
+static void _removeLabelsAssignments() {
+  int16_t i;
+  char label[15];
+  uint8_t labelLength;
+  for (i=0; i<numberOfLabels; i++) {
+    if((labelList[i].program == currentProgramNumber) && (labelList[i].step > 0)) {
+      labelLength = labelList[i].labelPointer[0];
+      xcopy(label, labelList[i].labelPointer + 1, labelList[i].labelPointer[0]);
+      label[labelLength]=0;
+      removeUserItemAssignments(ITM_XEQ,label);   // Remove label assignments
+    }
+  }
+}
+
+
+
 void fnClPAll(uint16_t confirmation) {
   if(confirmation == NOT_CONFIRMED) {
     setConfirmationMode(fnClPAll);
   }
   else {
+    // Remove assignments of all global labels, before deleting all programs
+    removeUserItemAssignments(ITM_XEQ,"");   // Remove all labels assignments
+ 
     bool_t wasInRam = (programList[currentProgramNumber - 1].step > 0);
     resizeProgramMemory(1); // 1 block for an empty program
     *(beginOfProgramMemory + 0)   = (ITM_END >> 8) | 0x80;
@@ -236,6 +256,9 @@ static int _clearProgram(void) {
     return 1;
   }
   else {
+    // Remove assignments of global labels in the program being deleted, before deleting the program
+    _removeLabelsAssignments();
+
     uint16_t savedCurrentProgramNumber = currentProgramNumber;
 
     deleteStepsFromTo(beginOfCurrentProgram, endOfCurrentProgram - ((currentProgramNumber == numberOfPrograms) ? 2 : 0));
@@ -243,7 +266,7 @@ static int _clearProgram(void) {
     // unlikely fails
 
     if(savedCurrentProgramNumber >= numberOfPrograms) { // The last program
-      goToPgmStep(numberOfPrograms - 1, 1);
+      goToPgmStep(numberOfPrograms  - 1, 1);
     }
     else { // Not the last program
       goToPgmStep(savedCurrentProgramNumber, 1);

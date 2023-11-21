@@ -1135,6 +1135,10 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     freeMemoryRegions[0].blockAddress = 40;                     // for reserved variables
     freeMemoryRegions[0].sizeInBlocks = RAM_SIZE_IN_BLOCKS - 40 - 1; // - 1: one block for an empty program
 
+    #if !defined(DMCP_BUILD)
+      numberOfAllocatedMemoryRegions = 0;
+    #endif // !DMCP_BUILD
+
     if(tmpString == NULL) {
       #if defined(DMCP_BUILD)
          tmpString        = aux_buf_ptr();   // 2560 byte buffer provided by DMCP
