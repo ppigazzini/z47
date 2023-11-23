@@ -625,6 +625,47 @@ void fnDigitKeyTimerApp(uint16_t digit) {
   #endif // !TESTSUITE_BUILD
 }
 
+#if !defined(TESTSUITE_BUILD)
+static void _realToUInt32(const real_t *re, enum rounding mode, uint32_t *value32, bool_t *overflow) {
+  uint8_t bcd[76], sign;
+  real_t real;
+  longInteger_t lgInt;
+
+  realToIntegralValue(re, &real, mode, &ctxtReal75);
+  sign = real.bits & 0x80;
+  realGetCoefficient(&real, bcd);
+
+  longIntegerInit(lgInt);
+  uIntToLongInteger(bcd[0], lgInt);
+
+  for(int i=1; i<real.digits; i++) {
+    longIntegerMultiplyUInt(lgInt, 10, lgInt);
+    longIntegerAddUInt(lgInt, bcd[i], lgInt);
+  }
+
+  while(real.exponent > 0) {
+    longIntegerMultiplyUInt(lgInt, 10, lgInt);
+    real.exponent--;
+  }
+
+  *overflow = false;
+
+  #if defined(OS32BIT) // 32 bit
+    *value32 = (lgInt->_mp_size == 0 ? 0 : lgInt->_mp_d[0]);
+    if(sign || lgInt->_mp_size > 1) {
+      *overflow = true;
+    }
+  #else // 64 bit
+    *value32 = (lgInt->_mp_size == 0 ? 0 : lgInt->_mp_d[0] & 0x00000000ffffffffULL);
+    if(sign || lgInt->_mp_size > 1 || lgInt->_mp_d[0] & 0xffffffff00000000ULL) {
+      *overflow = true;
+    }
+  #endif // OS32BIT
+
+  longIntegerFree(lgInt);
+}
+#endif // !TESTSUITE_BUILD
+
 void fnRecallTimerApp(uint16_t regist) {
   #if !defined(TESTSUITE_BUILD)
   real_t tmp;
@@ -632,35 +673,35 @@ void fnRecallTimerApp(uint16_t regist) {
   uint32_t val;
 
   switch(getRegisterDataType(regist)) {
-      case dtTime: {
+    case dtTime: {
       real34ToReal(REGISTER_REAL34_DATA(regist), &tmp);
       tmp.exponent += 3;
-      realToUInt32(&tmp, DEC_ROUND_DOWN, &val, &overflow);
+      _realToUInt32(&tmp, DEC_ROUND_DOWN, &val, &overflow);
       break;
-      }
-      case dtReal34: {
+    }
+    case dtReal34: {
       real34ToReal(REGISTER_REAL34_DATA(regist), &tmp);
       realMultiply(&tmp, const_3600, &tmp, &ctxtReal39);
       tmp.exponent += 3;
-      realToUInt32(&tmp, DEC_ROUND_HALF_EVEN, &val, &overflow);
+      _realToUInt32(&tmp, DEC_ROUND_HALF_EVEN, &val, &overflow);
       break;
-      }
-      case dtLongInteger: {
+    }
+    case dtLongInteger: {
       convertLongIntegerRegisterToReal(regist, &tmp, &ctxtReal39);
       realMultiply(&tmp, const_3600, &tmp, &ctxtReal39);
       tmp.exponent += 3;
-      realToUInt32(&tmp, DEC_ROUND_HALF_EVEN, &val, &overflow);
+      _realToUInt32(&tmp, DEC_ROUND_HALF_EVEN, &val, &overflow);
       break;
-      }
-      default: {
+    }
+    default: {
       displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
       #if(EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "cannot recall %s to the stopwatch", getRegisterDataTypeName(regist, true, false));
         moreInfoOnError("In function fnRecallTimerApp:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return;
-  }
     }
+  }
 
   if(overflow) {
     displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);

@@ -590,7 +590,7 @@ void graph_plotmem(void) {
 
       if((plotStatMx[0]=='S' ? checkMinimumDataPoints(const_2):false) || (plotStatMx[0]=='D' ? drawMxN() >= 2:false)) {
         if(plotStatMx[0]=='S') {
-          realToInt32(SIGMA_N, statnum);
+          statnum = realToInt32C47(SIGMA_N);
         }
         else {
           statnum = drawMxN();
@@ -1164,7 +1164,7 @@ void fnStatList() {
 
     if((plotStatMx[0] == 'S' ? checkMinimumDataPoints(const_1) : false) || (plotStatMx[0]=='D' ? drawMxN() >= 1 : false)) {
       if(plotStatMx[0] == 'S') {
-        realToInt32(SIGMA_N, statnum);
+        statnum = realToInt32C47(SIGMA_N);
       }
       else {
         statnum = drawMxN();

@@ -1254,7 +1254,6 @@ void dms34ToReal34(uint16_t dms) {
   //    char degStr[27];
   uint32_t m, s, fs;
   int16_t sign;
-  bool_t overflow;
 
   real_t temp, degrees, minutes, seconds;
 
@@ -1280,9 +1279,9 @@ void dms34ToReal34(uint16_t dms) {
   realSubtract(&temp, &seconds, &temp, &ctxtReal39);
   realMultiply(&temp, const_100, &temp, &ctxtReal39);
 
-  realToUInt32(&temp, DEC_ROUND_DOWN, &fs, &overflow);
-  realToUInt32(&seconds, DEC_ROUND_DOWN, &s, &overflow);
-  realToUInt32(&minutes, DEC_ROUND_DOWN, &m, &overflow);
+  fs = realToUint32C47(&temp);
+  s  = realToUint32C47(&seconds);
+  m  = realToUint32C47(&minutes);
 
   if(fs >= 100) {
     fs -= 100;

@@ -946,9 +946,9 @@ void graphPlotstat(uint16_t selection){
       (plotStatMx[0]=='D' && drawMxN() >= 2) ||
       (plotStatMx[0]=='H' && statMxN() >= 3)) {
       switch(plotStatMx[0]) {
-        case 'S': realToInt32(SIGMA_N, statnum); break;
-        case 'D': statnum = drawMxN();           break;
-        case 'H': statnum = statMxN();           break;
+        case 'S': statnum = realToInt32C47(SIGMA_N); break;
+        case 'D': statnum = drawMxN();               break;
+        case 'H': statnum = statMxN();               break;
         default: ;
       }
       #if defined(STATDEBUG) && defined(PC_BUILD)
@@ -1379,9 +1379,9 @@ void graphDrawLRline(uint16_t selection) {
     char tmpbuf[PLOT_TMP_BUF_SIZE];
 
     switch(plotStatMx[0]) {
-      case 'S': realToInt32(SIGMA_N, n); break;
-      case 'D': n = drawMxN();           break;
-      case 'H': n = statMxN();           break;
+      case 'S': n = realToInt32C47(SIGMA_N); break;
+      case 'D': n = drawMxN();               break;
+      case 'H': n = statMxN();               break;
       default: ;
     }
     #if defined(STATDEBUG) && defined(PC_BUILD)
@@ -1731,9 +1731,9 @@ void fnPlotStat(uint16_t plotMode){
           (plotStatMx[0]=='H' && statMxN() >= 3) ) {
         int16_t cnt = 0;
         switch(plotStatMx[0]) {
-          case 'S': realToInt32(SIGMA_N, cnt); break;
-          case 'D': cnt = drawMxN();           break;
-          case 'H': cnt = statMxN();           break;
+          case 'S': cnt = realToInt32C47(SIGMA_N); break;
+          case 'D': cnt = drawMxN();               break;
+          case 'H': cnt = statMxN();               break;
           default: ;
         }
       printf("Stored values %i\n",cnt);

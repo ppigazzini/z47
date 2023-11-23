@@ -355,8 +355,8 @@ void real34ToDisplayString2(const real34_t *real34, char *displayString, int16_t
 
   //Convert the incoming number in decimal, to the equivalent number in base 1024, multipled by 1000.
   //Example: 1025 -> 1024^1.000140819 -> 1024^.000140819 * 1024^1 -> 1.000976559 * Ki -> 1.001 Ki
-  //             ln(1025)/ln(1024) = 1.000140819; 
-  
+  //             ln(1025)/ln(1024) = 1.000140819;
+
   int16_t exponentUNlimit = 0;
   bool_t flag2To10 = getSystemFlag(FLAG_2TO10);
   bool_t flag2To10_baseunit_integer = false;
@@ -375,19 +375,19 @@ void real34ToDisplayString2(const real34_t *real34, char *displayString, int16_t
       if(realIsNegative(&x)) {
         realSetPositiveSign(&x);
         neg = true;
-      } 
+      }
 
       realCopy(&x,&xx);
 
       //get log base 1024 of real34
       WP34S_Ln(&x, &x, &ctxtReal39);                             //x = ln|real34|
       realDivide(&x, const_ln2, &x, &ctxtReal39);                   //ln(1024)=ln( 2^10 )=10ln(2)
-      realDivide(&x, const_10, &x, &ctxtReal34);                    //ln(1024)=ln( 2^10 )=10ln(2)    
+      realDivide(&x, const_10, &x, &ctxtReal34);                    //ln(1024)=ln( 2^10 )=10ln(2)
       //printRealToConsole(&x,"log base 1024 of real34 = lnx / ln1024 ","\n");             // x = ln|real34| / ln(1024) = log base 1024 of real34 = 1.00140
 
       //get IP and FP of this
       realToIntegralValue(&x, &tmpIp, DEC_ROUND_DOWN, &ctxtReal34); // tmpIp = Integer Part log base1024 of Real34    = 1
-      realToInt32(&tmpIp, exponentUNlimit);
+      exponentUNlimit = realToInt32C47(&tmpIp);
       realSubtract(&x, &tmpIp, &tmpFp, &ctxtReal34);                // tmpFp = Fractional part log base1024 of Real34    = 0.00140
       //printRealToConsole(&tmpIp,"tmpIp Ip ","\n");
       //printRealToConsole(&tmpFp,"Fp ","\n");
@@ -809,7 +809,7 @@ void real34ToDisplayString2(const real34_t *real34, char *displayString, int16_t
   // FIX mode //
   //////////////
   if((displayFormat == DF_FIX || displayFormat == DF_SF || flag2To10_baseunit_integer)) {                        //DF_UN starts here, to override displaying 2^10 values of between 1000 and 1024 as ENG notation
-    if(noFix || exponent >= displayHasNDigits || 
+    if(noFix || exponent >= displayHasNDigits ||
          exponent < -(int32_t)displayFormatDigits ||
          ( displayFormat == DF_SF && exponent -(int32_t)displayFormatDigits < -(checkHP ? 10+1 : displayHasNDigits)) ||
          ( displayFormat == DF_SF && !checkHP && exponent -(int32_t)displayFormatDigits > GROUPWIDTH_LEFT1)
@@ -1533,7 +1533,6 @@ void angle34ToDisplayString2(const real34_t *angle34, uint8_t mode, char *displa
     char degStr[27];
     uint32_t m, s, fs;
     int16_t sign;
-    bool_t overflow;
     real34_t angle34Dms;
     real_t angleDms, degrees, minutes, seconds;
 
@@ -1560,9 +1559,9 @@ void angle34ToDisplayString2(const real34_t *angle34, uint8_t mode, char *displa
     realSubtract(&angleDms, &seconds, &angleDms, &ctxtReal39);
     realMultiply(&angleDms, const_100, &angleDms, &ctxtReal39);
 
-    realToUInt32(&angleDms, DEC_ROUND_DOWN, &fs, &overflow);
-    realToUInt32(&seconds,  DEC_ROUND_DOWN, &s,  &overflow);
-    realToUInt32(&minutes,  DEC_ROUND_DOWN, &m,  &overflow);
+    fs = realToUint32C47(&angleDms);
+    s  = realToUint32C47(&seconds);
+    m  = realToUint32C47(&minutes);
 
     if(fs >= 100) {
       fs -= 100;
@@ -2333,7 +2332,7 @@ void timeToDisplayString(calcRegister_t regist, char *displayString, bool_t igno
   uint32_t digits, tDigits = 0u, bDigits, m32, s32;
   char digitBuf[16], digitBuf2[48];
   char* bufPtr;
-  bool_t isValid12hTime = false, isAfternoon = false, overflow;
+  bool_t isValid12hTime = false, isAfternoon = false;
   uint8_t savedDisplayFormat = displayFormat, savedDisplayFormatDigits = displayFormatDigits;
 
   real34ToReal(REGISTER_REAL34_DATA(regist), &real);
@@ -2480,15 +2479,15 @@ void timeToDisplayString(calcRegister_t regist, char *displayString, bool_t igno
 
   if((!ignoreTDisp) && (timeDisplayFormatDigits == 1 || timeDisplayFormatDigits == 2 || (++tDigits) > (isValid12hTime ? 16 : 18))) {
     // Display Minutes
-    realToUInt32(&m, DEC_ROUND_DOWN, &m32, &overflow);
+    m32 = realToUint32C47(&m);
     sprintf(digitBuf, ":%02" PRIu32, m32);
     strcat(displayString, digitBuf);
   }
 
   else {
     // Display MM:SS
-    realToUInt32(&m, DEC_ROUND_DOWN, &m32, &overflow);
-    realToUInt32(&s, DEC_ROUND_DOWN, &s32, &overflow);
+    m32 = realToUint32C47(&m);
+    s32 = realToUint32C47(&s);
     sprintf(digitBuf, ":%02" PRIu32 ":%02" PRIu32, m32, s32);
     strcat(displayString, digitBuf);
 
@@ -2526,7 +2525,7 @@ void timeToDisplayString(calcRegister_t regist, char *displayString, bool_t igno
         strcat(displayString, tt);
       }
 
-      realToUInt32(&value, DEC_ROUND_DOWN, &s32, &overflow);
+      s32 = realToUint32C47(&value);
       sprintf(digitBuf, "%" PRIu32, s32);
       strcat(displayString, digitBuf);
       ++digits;
@@ -2916,7 +2915,7 @@ void fnShow_SCROLL(uint16_t fnShow_param) {                // Heavily modified b
 
             uint8_t cnt = GROUPWIDTH_LEFT+1;
             while(cnt-- != 0 && source < last && !GROUPLEFT_DISABLED ) { //Eat away characters at the end to line, up to and excluding the last seperator.
-              if(  !((SEPARATOR_LEFT[1] != 1 && tmpString[dest-2] == SEPARATOR_LEFT[0] && tmpString[dest-1] == SEPARATOR_LEFT[1]) || 
+              if(  !((SEPARATOR_LEFT[1] != 1 && tmpString[dest-2] == SEPARATOR_LEFT[0] && tmpString[dest-1] == SEPARATOR_LEFT[1]) ||
                      (SEPARATOR_LEFT[1] == 1 && tmpString[dest-1] == SEPARATOR_LEFT[0])) ) {
                 dest--;  //line does not end on separator, so reduce the characters until is does
                 source--;
@@ -2980,7 +2979,7 @@ void fnShow_SCROLL(uint16_t fnShow_param) {                // Heavily modified b
 
             uint8_t cnt = GROUPWIDTH_LEFT+1;
             while(cnt-- != 0 && source < last && !GROUPLEFT_DISABLED ) { //Eat away characters at the end to line, up to and excluding the last seperator.
-              if(  !((SEPARATOR_LEFT[1] != 1 && tmpString[dest-2] == SEPARATOR_LEFT[0] && tmpString[dest-1] == SEPARATOR_LEFT[1]) || 
+              if(  !((SEPARATOR_LEFT[1] != 1 && tmpString[dest-2] == SEPARATOR_LEFT[0] && tmpString[dest-1] == SEPARATOR_LEFT[1]) ||
                      (SEPARATOR_LEFT[1] == 1 && tmpString[dest-1] == SEPARATOR_LEFT[0])) ) {
                 dest--;  //line does not end on separator, so reduce the characters until is does
                 source--;

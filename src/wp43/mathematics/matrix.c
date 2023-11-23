@@ -140,8 +140,8 @@ static bool_t swapRowsReal(real34Matrix_t *matrix) {
       return false;
     }
 
-  realToInt32(&ry, a);
-  realToInt32(&rx, b);
+  a = realToInt32C47(&ry);
+  b = realToInt32C47(&rx);
   if(realIsPositive(&rx) && realIsPositive(&ry) && realCompareLessEqual(&rx, &rrows) && realCompareLessEqual(&ry, &rrows)) {
       if(!realCompareEqual(&ry, &rx)) {
       realMatrixSwapRows(matrix, matrix, a - 1, b - 1);
@@ -169,8 +169,8 @@ static bool_t swapRowsComplex(complex34Matrix_t *matrix) {
       return false;
     }
 
-  realToInt32(&ry, a);
-  realToInt32(&rx, b);
+  a = realToInt32C47(&ry);
+  b = realToInt32C47(&rx);
   if(realIsPositive(&rx) && realIsPositive(&ry) && realCompareLessEqual(&rx, &rrows) && realCompareLessEqual(&ry, &rrows)) {
       if(!realCompareEqual(&ry, &rx)) {
       complexMatrixSwapRows(matrix, matrix, a - 1, b - 1);
@@ -204,8 +204,8 @@ static bool_t getMatrixReal(real34Matrix_t *matrix) {
       return false;
     }
 
-  realToInt32(&ry, a);
-  realToInt32(&rx, b);
+  a = realToInt32C47(&ry);
+  b = realToInt32C47(&rx);
   if(realIsPositive(&rx) && realIsPositive(&ry) && realCompareLessEqual(&rx, &rcols) && realCompareLessEqual(&ry, &rrows)) {
     real34Matrix_t mat;
     fnDropY(NOPARAM);
@@ -250,8 +250,8 @@ static bool_t getMatrixComplex(complex34Matrix_t *matrix) {
       return false;
     }
 
-  realToInt32(&ry, a);
-  realToInt32(&rx, b);
+  a = realToInt32C47(&ry);
+  b = realToInt32C47(&rx);
   if(realIsPositive(&rx) && realIsPositive(&ry) && realCompareLessEqual(&rx, &rcols) && realCompareLessEqual(&ry, &rrows)) {
     complex34Matrix_t mat;
     fnDropY(NOPARAM);
