@@ -600,7 +600,7 @@ static void bessel2_int_series(const real_t *n, const real_t *x, real_t *res, re
   else {
     n_neg = 0;
   }
-  realToInt32(n, in);
+  in = realToInt32C47(n);
 
   realMultiply(x, const_1on2, &xon2, realContext);      // xon2 = x/2
   realPower(&xon2, n, &xon2n, realContext);        // xon2n = (x/2)^n

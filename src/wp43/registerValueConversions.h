@@ -54,7 +54,6 @@
   void convertRealToLongInteger                              (const real_t *real, longInteger_t lgInt, enum rounding mode);
   void convertRealToLongIntegerRegister                      (const real_t *real, calcRegister_t dest, enum rounding mode);
   void realToIntegralValue                                   (const real_t *source, real_t *destination, enum rounding mode, realContext_t *realContext);
-  void realToUInt32                                          (const real_t *re, enum rounding mode, uint32_t *value32, bool_t *overflow);
 
   /********************************************//**
    * \brief Sets function result in real type to a real34 register.
