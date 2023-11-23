@@ -693,6 +693,21 @@ void fnAngularModeJM(uint16_t AMODE) { //Setting to HMS does not change AM
 }
 
 
+
+void DRG_cyc(uint16_t * dest) {
+    DRG_Cycling = 1;
+    switch(*dest) {
+      case amNone:   *dest = currentAngularMode; break; //converts from to the same, i.e. get to current angle mode
+      case amRadian: *dest = amGrad;             break;
+      case amGrad:   *dest = amDegree;           break;
+      case amDegree: *dest = amRadian;           break;
+      case amDMS:    *dest = amDegree;           break;
+      case amMultPi: *dest = amRadian;           break; //do not support Mulpi but at least get out of it
+      default: ;
+    }
+  }
+
+
 void fnDRG(uint16_t unusedButMandatoryParameter) {
   switch(getRegisterDataType(REGISTER_X)) {
     case dtTime:
@@ -711,16 +726,7 @@ void fnDRG(uint16_t unusedButMandatoryParameter) {
   if(getRegisterDataType(REGISTER_X) == dtComplex34 || getRegisterDataType(REGISTER_X) == dtComplex34Matrix) {
     setComplexRegisterPolarMode(REGISTER_X, amPolar);      //re-set it to Polar iven if it was there already
     dest = getComplexRegisterAngularMode(REGISTER_X);
-    DRG_Cycling = 1;
-    switch(dest) {
-      case amNone:   dest = currentAngularMode; break; //converts from to the same, i.e. get to current angle mode
-      case amRadian: dest = amGrad;             break;
-      case amGrad:   dest = amDegree;           break;
-      case amDegree: dest = amRadian;           break;
-      case amDMS:    dest = amDegree;           break;
-      case amMultPi: dest = amRadian;           break; //do not support Mulpi but at least get out of it
-      default:;
-    }
+    DRG_cyc(&dest);
     setComplexRegisterAngularMode(REGISTER_X,dest);
 
   }
@@ -741,16 +747,7 @@ void fnDRG(uint16_t unusedButMandatoryParameter) {
       goto to_return;
     }
 
-    DRG_Cycling = 1;
-    switch(dest) {
-      case amNone:   dest = currentAngularMode; break; //converts from to the same, i.e. get to current angle mode
-      case amRadian: dest = amGrad;             break;
-      case amGrad:   dest = amDegree;           break;
-      case amDegree: dest = amRadian;           break;
-      case amDMS:    dest = amDegree;           break;
-      case amMultPi: dest = amRadian;           break; //do not support Mulpi but at least get out of it
-      default: ;
-    }
+    DRG_cyc(&dest);
     fnCvtFromCurrentAngularMode(dest);
     //currentAngularMode = dest;          //remove setting of ADM!
   }
