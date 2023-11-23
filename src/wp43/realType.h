@@ -101,23 +101,23 @@
   int64_t  realToInt64C47 (const real_t *r);
   uint64_t realToUint64C47(const real_t *r);
 
-  #define complex34ChangeSign(operand)                           {real34ChangeSign((real34_t *)(operand)); \
+  #define complex34ChangeSign(operand)                           do {real34ChangeSign((real34_t *)(operand));                                       \
                                                                   real34ChangeSign((real34_t *)((dataBlock_t *)(operand) + REAL34_SIZE_IN_BLOCKS)); \
-                                                                 }
-  #define complex34Copy(source, destination)                     {  *(uint64_t *)(destination)     =   *(uint64_t *)(source); \
-                                                                  *(((uint64_t *)(destination))+1) = *(((uint64_t *)(source))+1); \
-                                                                  *(((uint64_t *)(destination))+2) = *(((uint64_t *)(source))+2); \
-                                                                  *(((uint64_t *)(destination))+3) = *(((uint64_t *)(source))+3); \
-                                                                 }
+                                                                 } while(0)
+  #define complex34Copy(source, destination)                     do {  *(uint64_t *)(destination)   =   *(uint64_t *)(source);       \
+                                                                     *(((uint64_t *)(destination))+1) = *(((uint64_t *)(source))+1); \
+                                                                     *(((uint64_t *)(destination))+2) = *(((uint64_t *)(source))+2); \
+                                                                     *(((uint64_t *)(destination))+3) = *(((uint64_t *)(source))+3); \
+                                                                 } while(0)
   #define int32ToReal34(source, destination)                     decQuadFromInt32         ((real34_t *)(destination), source)
   #define real34Add(operand1, operand2, res)                     decQuadAdd               ((real34_t *)(res), (real34_t *)(operand1), (real34_t *)(operand2), &ctxtReal34)
   #define real34ChangeSign(operand)                              ((real34_t *)(operand))->bytes[15] ^= 0x80
   #define real34Compare(operand1, operand2, res)                 decQuadCompare           ((real34_t *)(res), (real34_t *)(operand1), (real34_t *)(operand2), &ctxtReal34)
   //#define real34Copy(source, destination)                        decQuadCopy            (destination, source)
   //#define real34Copy(source, destination)                        xcopy(destination, source, TO_BYTES(REAL34_SIZE_IN_BLOCKS))
-  #define real34Copy(source, destination)                        {*(uint64_t *)(destination) = *(uint64_t *)(source); \
-                                                                  *(((uint64_t *)(destination))+1) = *(((uint64_t *)(source))+1); \
-                                                                 }
+  #define real34Copy(source, destination)                        do { *(uint64_t *)(destination)     =   *(uint64_t *)(source);     \
+                                                                    *(((uint64_t *)(destination))+1) = *(((uint64_t *)(source))+1); \
+                                                                 } while(0)
   #define real34CopyAbs(source, destination)                     decQuadCopyAbs           (destination, source)
   #define real34Divide(operand1, operand2, res)                  decQuadDivide            ((real34_t *)(res), (real34_t *)(operand1), (real34_t *)(operand2), &ctxtReal34)
   #define real34DivideRemainder(operand1, operand2, res)         decQuadRemainder         ((real34_t *)(res), (real34_t *)(operand1), (real34_t *)(operand2), &ctxtReal34)
@@ -146,9 +146,9 @@
   #define real34Reduce(source, destination)                      decQuadReduce            (destination, source, &ctxtReal34)
   #define real34Zero(destination)                                decQuadZero              (destination)
   //#define real34Zero(destination)                                xcopy                    (destination, const34_0, TO_BYTES(REAL34_SIZE_IN_BLOCKS))
-  /*#define real34Zero(destination)                                {  *(uint64_t *)(destination)     =   *(uint64_t *)const34_0; \
+  /*#define real34Zero(destination)                                do { *(uint64_t *)(destination)     =   *(uint64_t *)const34_0;     \
                                                                     *(((uint64_t *)(destination))+1) = *(((uint64_t *)const34_0)+1); \
-                                                                 }*/
+                                                                 } while(0)*/
   #define stringToReal34(source, destination)                    decQuadFromString        ((real34_t *)(destination), source, &ctxtReal34)
   #define uInt32ToReal34(source, destination)                    decQuadFromUInt32        ((real34_t *)(destination), source)
 

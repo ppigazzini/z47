@@ -2455,7 +2455,7 @@ void checkExpectedOutParameter(char *p) {
       reallocateRegister(TEMP_REGISTER_1, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
       stringToReal34(r, REGISTER_REAL34_DATA(TEMP_REGISTER_1));
       convertReal34RegisterToDateRegister(TEMP_REGISTER_1, TEMP_REGISTER_1);
-      real34Copy(REGISTER_REAL34_DATA(TEMP_REGISTER_1), &expectedReal34)
+      real34Copy(REGISTER_REAL34_DATA(TEMP_REGISTER_1), &expectedReal34);
       if(!real34AreEqual(REGISTER_REAL34_DATA(regist), &expectedReal34)) {
         expectedAndShouldBeValue(regist, letter, r, registerExpectedAndValue);
         if(relativeErrorReal34(&expectedReal34, REGISTER_REAL34_DATA(regist), "date", regist, letter) == RE_INACCURATE) {
