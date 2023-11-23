@@ -21,6 +21,7 @@
   #define VARIANCE_H
 
   #include "realType.h"
+  #include "typeDefinitions.h"
   #include <stdint.h>
 
   void fnWeightedSampleStdDev     (uint16_t unusedButMandatoryParameter);
@@ -40,6 +41,6 @@
   void fnStatR                    (real_t *RR, real_t *SXY, real_t *SX, real_t *SY);
   void fnStatSXY                  (real_t *SXY);
   void fnStatSX_SY                (real_t *SX, real_t *SY);
-  void processCurvefitSA          (real_t *SA0, real_t *SA1);
+  bool_t processCurvefitSA        (real_t *SA0, real_t *SA1);
   void fnStatSa                   (uint16_t unusedButMandatoryParameter);
 #endif // !VARIANCE_H

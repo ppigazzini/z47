@@ -617,12 +617,12 @@ void graph_plotmem(void) {
           graph_text();
         }
 
-        if(PLOT_VECT || PLOT_NVECT) {
-          plotmode = _VECT;
-        }
-        else {
-          plotmode = _SCAT;
-        }
+      if(PLOT_VECT || PLOT_NVECT) {
+        plotmode = _VECT;
+      }
+      else {
+        plotmode = _SCAT;
+      }
 
         if(PLOT_INTG) {
           rmsy = fabs(grf_y(0));
@@ -1195,7 +1195,7 @@ void fnStatList() {
       ((plotStatMx[0] == 'S' ? statMxN() >= 1 : false) || (plotStatMx[0]=='D' ? drawMxN() >= 1 : false))) {
 
       if(plotStatMx[0] == 'S') {
-        statnum = statMxN();  //        realToInt32(SIGMA_N, statnum);
+        statnum = realToInt32C47(SIGMA_N);
       }
       else {
         statnum = drawMxN();

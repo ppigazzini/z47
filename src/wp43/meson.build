@@ -193,6 +193,7 @@ wp43_src = files(
   'programming/manage.c',
   'programming/nextStep.c',
   'programming/programmableMenu.c',
+  'realType.c',
   'recall.c',
   'registerValueConversions.c',
   'registers.c',

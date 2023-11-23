@@ -340,6 +340,7 @@
 #define USER_HRESET      56
 #define USER_PRESET      57
 #define USER_R47         58
+#define USER_R47bk       59
 
 
 //*************************

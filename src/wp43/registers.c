@@ -2090,7 +2090,6 @@ bool_t saveLastX(void) {
 
 static uint8_t getRegParam(bool_t *f, uint16_t *s, uint16_t *n, uint16_t *d) {
   real_t x, p;
-  int32_t t;
 
   if(getRegisterDataType(REGISTER_X) == dtReal34) {
     *s = *n = 0;
@@ -2111,18 +2110,18 @@ static uint8_t getRegParam(bool_t *f, uint16_t *s, uint16_t *n, uint16_t *d) {
     realSetPositiveSign(&x);
 
     realToIntegralValue(&x, &p, DEC_ROUND_DOWN, &ctxtReal39);
-    realToInt32(&p, t); *s = t;
+    *s = realToInt32C47(&p);
 
     realSubtract(&x, &p, &x, &ctxtReal39);
     x.exponent += 2;
     realToIntegralValue(&x, &p, DEC_ROUND_DOWN, &ctxtReal39);
-    realToInt32(&p, t); *n = t;
+    *n = realToInt32C47(&p);
 
     if(d) {
       realSubtract(&x, &p, &x, &ctxtReal39);
       x.exponent += 3;
       realToIntegralValue(&x, &p, DEC_ROUND_DOWN, &ctxtReal39);
-      realToInt32(&p, t); *d = t;
+      *d = realToInt32C47(&p);
     }
 
     if(*s < REGISTER_X) { // global numbered registers

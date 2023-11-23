@@ -96,6 +96,10 @@
   #define VARIABLE_REAL34_DATA(a)                                ((real34_t    *)(a))
   #define VARIABLE_IMAG34_DATA(a)                                ((real34_t    *)((dataBlock_t *)(a) + REAL34_SIZE_IN_BLOCKS))
 
+  int32_t  realToInt32C47 (const real_t *r);
+  uint32_t realToUint32C47(const real_t *r);
+  int64_t  realToInt64C47 (const real_t *r);
+  uint64_t realToUint64C47(const real_t *r);
 
   #define complex34ChangeSign(operand)                           {real34ChangeSign((real34_t *)(operand)); \
                                                                   real34ChangeSign((real34_t *)((dataBlock_t *)(operand) + REAL34_SIZE_IN_BLOCKS)); \
@@ -184,15 +188,6 @@
   #define realSetPositiveSign(operand)                           (operand)->bits &= 0x7F
   #define realSquareRoot(operand, res, ctxt)                     decNumberSquareRoot      (res, operand, ctxt)
   #define realSubtract(operand1, operand2, res, ctxt)            decNumberSubtract        (res, operand1, operand2, ctxt)
-  #define realToInt32(source, destination)                       {enum rounding savedRoundingMode; \
-                                                                  real_t tmp; \
-                                                                  savedRoundingMode = ctxtReal39.round; \
-                                                                  ctxtReal39.round = DEC_ROUND_DOWN; \
-                                                                  ctxtReal39.status = 0; \
-                                                                  decNumberToIntegralValue(&tmp, source, &ctxtReal39); \
-                                                                  destination = decGetInt(&tmp); \
-                                                                  ctxtReal39.round = savedRoundingMode; \
-                                                                 }
   #define realToReal34(source, destination)                      decQuadFromNumber        ((real34_t *)(destination), source, &ctxtReal34)
   #define realToString(source, destination)                      decNumberToString        ((real_t *)(source), destination)
   #define realZero(destination)                                  decNumberZero            (destination)

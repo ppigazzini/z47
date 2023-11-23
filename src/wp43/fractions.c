@@ -15,18 +15,18 @@
  */
 
 #include <math.h>
-#include "fractions.h"
 
 #include "constantPointers.h"
 #include "debug.h"
 #include "error.h"
+#include "fractions.h"
 #include "mathematics/comparisonReals.h"
 #include "registers.h"
 #include "registerValueConversions.h"
 
 #include "wp43.h"
 
-
+#include <time.h>
 
 void fnDenMax(uint16_t D) {
   denMax = D;
@@ -73,7 +73,7 @@ void fnDenMax(uint16_t D) {
   else {
     int32_t den;
 
-    realToInt32(&reX, den);
+    den = realToInt32C47(&reX);
 
     if(den == 1) {
       longInteger_t lgInt;
@@ -138,8 +138,7 @@ void fraction(calcRegister_t regist, int16_t *sign, uint64_t *intPart, uint64_t 
   realPlus(const_9999, &delta, &ctxtReal34);
 
   uint32_t ip;
-  bool_t of;
-  realToUInt32(&temp0, DEC_ROUND_DOWN, &ip, &of);
+  ip = realToUint32C47(&temp0);
   *intPart = ip;
   uInt32ToReal(*intPart, &temp3);
   realSubtract(&temp0, &temp3, &temp0, &ctxtReal34);
@@ -173,6 +172,7 @@ void fraction(calcRegister_t regist, int16_t *sign, uint64_t *intPart, uint64_t 
     // Nigel processor time (R100) =    0,156097  1/3      1 loop
     //
     // The culprit seems to be realToInt32() that uses decNumberToIntegralValue()…
+    // Even with the improved (faster) version of realToInt32C47(), it's still much slower...
 
     int32_t m, h, h_1, h_2, k, k_1, k_2, a;
     real_t y, this_error, last_error, twoDenMax, temp1, yma;
@@ -189,7 +189,7 @@ void fraction(calcRegister_t regist, int16_t *sign, uint64_t *intPart, uint64_t 
     else {
       // Start the continued fraction:
       realDivide(const_1, &y, &y, &ctxtReal39); // guaranteed safe; y >= 1/(2*denMax)
-      realToInt32(&y, a); // this is a1 in the continued fraction
+      a = realToInt32C47(&y); // this is a1 in the continued fraction
 
       if(a > (int32_t)denMax) { // return 1/denMax
         *numer = 1;
@@ -233,17 +233,7 @@ void fraction(calcRegister_t regist, int16_t *sign, uint64_t *intPart, uint64_t 
             goto fracEnd;
           }
           realDivide(const_1, &yma, &y, &ctxtReal39);
-          a = 0;
-          if(!realIsZero(&y)) {
-            for(int i=0; i<(y.digits+y.exponent+(DECDPUN-1))/DECDPUN; i++) {
-              a *= 1000; // 1000 = 10^DECDPUN
-              a += y.lsu[i];
-            }
-            for(int i=0; i<DECDPUN-(y.digits+y.exponent)%DECDPUN; i++) {
-              a /= 10;
-            }
-          }
-          //realToInt32(&y, a); // first time in, this is a2 in the continued fraction.
+          a = realToInt32C47(&y); // first time in, this is a2 in the continued fraction.
           // work out new h, k;
           h = a*h_1 + h_2;
           k = a*k_1 + k_2;
@@ -396,7 +386,7 @@ void fraction(calcRegister_t regist, int16_t *sign, uint64_t *intPart, uint64_t 
     invalidOperation = 0;
     while(*denom < denMax && !realIsZero(&temp1) && !invalidOperation) {
       realDivide(const_1, &temp1, &temp1, &ctxtReal34);
-      realToUInt32(&temp1, DEC_ROUND_DOWN, &ip, &of);
+      ip = realToUint32C47(&temp1);
       iPart[++i] = ip;
       uInt32ToReal(iPart[i], &temp3);
       invalidOperation = decContextGetStatus(&ctxtReal34) & DEC_Invalid_operation;
@@ -467,7 +457,7 @@ void fraction(calcRegister_t regist, int16_t *sign, uint64_t *intPart, uint64_t 
 
     uInt32ToReal(denMax, &delta);
     realFMA(&delta, &temp0, const_1on2, &temp3, &ctxtReal34);
-    realToUInt32(&temp3, DEC_ROUND_DOWN, &ip, &of);
+    ip = realToUint32C47(&temp3);
     *numer = ip;
   }
 
@@ -484,7 +474,7 @@ void fraction(calcRegister_t regist, int16_t *sign, uint64_t *intPart, uint64_t 
       if(denMax % i == 0) {
         uInt32ToReal(i, &temp4);
         realFMA(&temp4, &temp0, const_1on2, &temp3, &ctxtReal34);
-        realToUInt32(&temp3, DEC_ROUND_DOWN, &ip, &of);
+        ip = realToUint32C47(&temp3);
         *numer = ip;
 
         uInt32ToReal(*numer, &temp3);

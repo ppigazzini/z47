@@ -616,13 +616,13 @@ void fnDisplayFormatCycle (uint16_t unusedButMandatoryParameter) {
   if(DM_Cycling == 0 && softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_PREFIX) {
     fnDisplayFormatUnit(displayFormatDigits);
   }
-  else if(displayFormat == DF_ALL) {
+  else if(displayFormat == DF_UN) {
     fnDisplayFormatSigFig(displayFormatDigits);
   }
   else if(displayFormat == DF_SF ) {
-    fnDisplayFormatUnit(displayFormatDigits);
+    fnDisplayFormatAll(displayFormatDigits);
   }
-  else if(displayFormat == DF_UN) {
+  else if(displayFormat == DF_ALL) {
     fnDisplayFormatFix(displayFormatDigits);
   }
   else if(displayFormat == DF_FIX) {
@@ -632,7 +632,7 @@ void fnDisplayFormatCycle (uint16_t unusedButMandatoryParameter) {
     fnDisplayFormatEng(displayFormatDigits);
   }
   else if(displayFormat == DF_ENG) {
-    fnDisplayFormatAll(displayFormatDigits);
+    fnDisplayFormatUnit(displayFormatDigits);
   }
   DM_Cycling = 1;
 }
@@ -1236,7 +1236,6 @@ void dms34ToReal34(uint16_t dms) {
   //    char degStr[27];
   uint32_t m, s, fs;
   int16_t sign;
-  bool_t overflow;
 
   real_t temp, degrees, minutes, seconds;
 
@@ -1262,9 +1261,9 @@ void dms34ToReal34(uint16_t dms) {
   realSubtract(&temp, &seconds, &temp, &ctxtReal39);
   realMultiply(&temp, const_100, &temp, &ctxtReal39);
 
-  realToUInt32(&temp, DEC_ROUND_DOWN, &fs, &overflow);
-  realToUInt32(&seconds, DEC_ROUND_DOWN, &s, &overflow);
-  realToUInt32(&minutes, DEC_ROUND_DOWN, &m, &overflow);
+  fs = realToUint32C47(&temp);
+  s  = realToUint32C47(&seconds);
+  m  = realToUint32C47(&minutes);
 
   if(fs >= 100) {
     fs -= 100;

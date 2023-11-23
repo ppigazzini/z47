@@ -67,7 +67,6 @@ void fnChangeBase(uint16_t base) {
       real_t x, value;
       bool_t isNegative;
       uint32_t tmp32;
-      bool_t overflow;
 
       real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &x);
       isNegative = realIsNegative(&x);
@@ -77,7 +76,7 @@ void fnChangeBase(uint16_t base) {
       // Calculate 32 bit high word
       realDivide(&x, const_2p32, &value, &ctxtReal39);
 
-      realToUInt32(&value, DEC_ROUND_DOWN, &tmp32, &overflow);
+      tmp32 = realToUint32C47(&value);
       longIntegerInit(lgInt);
       uIntToLongInteger(tmp32, lgInt);
       longIntegerLeftShift(lgInt, 32, lgInt);
@@ -85,7 +84,7 @@ void fnChangeBase(uint16_t base) {
       // Calculate 32 bit low word
       WP34S_Mod(&x, const_2p32, &value, &ctxtReal39);
 
-      realToUInt32(&value, DEC_ROUND_DOWN, &tmp32, &overflow);
+      tmp32 = realToUint32C47(&value);
       longIntegerAddUInt(lgInt, tmp32, lgInt);
       if(isNegative) {
         longIntegerSetNegativeSign(lgInt);

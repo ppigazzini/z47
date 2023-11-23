@@ -3314,7 +3314,7 @@ void execTimerApp(uint16_t timerType) {
           }
 
           else if(temporaryInformation == TI_STATISTIC_SUMS) {
-            realToInt32(SIGMA_N, w);
+            w = realToInt32C47(SIGMA_N);
             if(regist == REGISTER_Y) {
               if(w == 1) {
                 sprintf(prefix, "%03" PRId32 " data point", w);
