@@ -332,7 +332,7 @@ void real34ToDisplayString(const real34_t *real34, uint32_t tag, char *displaySt
 }
 
 
-#define return_fr {constantFractionsMode = CF_NORMAL; return;}
+#define return_fr do { constantFractionsMode = CF_NORMAL; return; } while(0)
 /********************************************//**
  * \brief Formats a real
  *

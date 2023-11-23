@@ -1175,7 +1175,7 @@ void graph_stat(uint16_t unusedButMandatoryParameter) {
     //}
 
     if(FLAG_FRACTN) {
-      setSystemFlag(FLAG_FRACT)
+      setSystemFlag(FLAG_FRACT);
     }
     else {
       clearSystemFlag(FLAG_FRACT);
