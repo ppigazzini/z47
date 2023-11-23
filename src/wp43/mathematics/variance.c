@@ -268,7 +268,7 @@ void fnMinExpStdDev(uint16_t unusedButMandatoryParameter){ //smi
  * \param[in] unusedButMandatoryParameter uint16_t
  * \return void
  ***********************************************/
-void processCurvefitSA(real_t *SA0, real_t *SA1) {
+bool_t processCurvefitSA(real_t *SA0, real_t *SA1) {
   realContext_t *realContext = &ctxtReal75; // Summation data with 75 digits
   real_t RR,MX,SX,SY,RR2,MX2,SX2,SY2,UU,SS,TT,aa0,aa1,aa2,SMI;
 
@@ -278,11 +278,10 @@ void processCurvefitSA(real_t *SA0, real_t *SA1) {
   //LOGF:   new values for SX2, SX, MX
   //ORTOF:  new values same as LINF
 
-  realCopy(const_0,&aa0);
-  realCopy(const_0,&aa1);
-  realCopy(const_0,&aa2);
-
   if(checkMinimumDataPoints(const_2)) {
+    realCopy(const_0,&aa0);
+    realCopy(const_0,&aa1);
+    realCopy(const_0,&aa2);
 
     if(lrChosen == 0) {                    //if lrChosen contains something, the stat data exists, otherwise set it to linear. lrSelection still has 1 at this point, i.e. the * will not appear.
       lrChosen = CF_LINEAR_FITTING;
@@ -315,7 +314,7 @@ void processCurvefitSA(real_t *SA0, real_t *SA1) {
         #if(EXTRA_INFO_ON_CALC_ERROR == 1)
           moreInfoOnError("In function fnStatSa:", "No errors are calculable for the selected/chosen model!", NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-        return;
+        return false;
       }
     }
 
@@ -336,6 +335,9 @@ void processCurvefitSA(real_t *SA0, real_t *SA1) {
     realAdd       (&SS, &MX2, &SS, realContext);
     realSquareRoot(&SS, &SS, &ctxtReal39);
     realMultiply  (&SS, SA1, SA0, &ctxtReal39);
+    return true;
+  } else {
+    return false;
   }
 }
 
@@ -343,9 +345,7 @@ void processCurvefitSA(real_t *SA0, real_t *SA1) {
 void fnStatSa(uint16_t unusedButMandatoryParameter) {
   real_t SA0, SA1;
 
-  if(checkMinimumDataPoints(const_2)) {
-
-    processCurvefitSA(&SA0, &SA1);
+  if(processCurvefitSA(&SA0, &SA1)) {
 
     liftStack();
     setSystemFlag(FLAG_ASLIFT);
