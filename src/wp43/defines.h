@@ -1334,7 +1334,7 @@ typedef enum {
   #define setBlackPixel(x, y)                bitblt24(x, 1, y, 1, BLT_OR,   BLT_NONE)
   #define setWhitePixel(x, y)                bitblt24(x, 1, y, 1, BLT_ANDN, BLT_NONE)
   #define flipPixel(x, y)                    bitblt24(x, 1, y, 1, BLT_XOR,  BLT_NONE)
-  #define beep(frequence, length)            {while(get_beep_volume() < 11) beep_volume_up(); start_buzzer_freq(frequence * 1000); sys_delay(length); stop_buzzer();}
+  #define beep(frequence, length)            do { while(get_beep_volume() < 11) beep_volume_up(); start_buzzer_freq(frequence * 1000); sys_delay(length); stop_buzzer(); } while(0)
   #undef TO_QSPI
   #if defined(TWO_FILE_PGM)
     #define TO_QSPI                            __attribute__ ((section(".qspi")))
@@ -1350,14 +1350,14 @@ typedef enum {
 #if(EXTRA_INFO_ON_CALC_ERROR == 0) || defined(TESTSUITE_BUILD) || defined(DMCP_BUILD)
   #define EXTRA_INFO_MESSAGE(function, msg)
 #else // EXTRA_INFO_ON_CALC_ERROR != 0 && !TESTSUITE_BUILD && !DMCP_BUILD
-  #define EXTRA_INFO_MESSAGE(function, msg)  {sprintf(errorMessage, msg); moreInfoOnError("In function ", function, errorMessage, NULL);}
+  #define EXTRA_INFO_MESSAGE(function, msg)  do { sprintf(errorMessage, msg); moreInfoOnError("In function ", function, errorMessage, NULL); } while(0)
 #endif // EXTRA_INFO_ON_CALC_ERROR == 0 || TESTSUITE_BUILD || DMCP_BUILD
 
 #define isSystemFlagWriteProtected(sf)       ((sf & 0x4000) != 0)
 #define getSystemFlag(sf)                    ((systemFlags &   ((uint64_t)1 << (sf & 0x3fff))) != 0)
-#define setSystemFlag(sf)                    { systemFlags |=  ((uint64_t)1 << (sf & 0x3fff)); systemFlagAction(sf, 1); }
-#define clearSystemFlag(sf)                  { systemFlags &= ~((uint64_t)1 << (sf & 0x3fff)); systemFlagAction(sf, 0); }
-#define flipSystemFlag(sf)                   { systemFlags ^=  ((uint64_t)1 << (sf & 0x3fff)); systemFlagAction(sf, 2); }
+#define setSystemFlag(sf)                    do { systemFlags |=  ((uint64_t)1 << (sf & 0x3fff)); systemFlagAction(sf, 1); } while(0)
+#define clearSystemFlag(sf)                  do { systemFlags &= ~((uint64_t)1 << (sf & 0x3fff)); systemFlagAction(sf, 0); } while(0)
+#define flipSystemFlag(sf)                   do { systemFlags ^=  ((uint64_t)1 << (sf & 0x3fff)); systemFlagAction(sf, 2); } while(0)
 #define shortIntegerIsZero(op)               (((*(uint64_t *)(op)) == 0) || (shortIntegerMode == SIM_SIGNMT && (((*(uint64_t *)(op)) == 1u<<((uint64_t)shortIntegerWordSize-1)))))
 #define getStackTop()                        (getSystemFlag(FLAG_SSIZE8) ? REGISTER_D : REGISTER_T)
 #define freeRegisterData(regist)             freeC47Blocks((void *)getRegisterDataPointer(regist), getRegisterFullSizeInBlocks(regist))
@@ -1467,7 +1467,7 @@ typedef enum {
 
 #define IS_BASEBLANK_(menuId)                (menuId==0 && !BASE_MYM && !BASE_HOME)
 
-#define clearScreen()                        {lcd_fill_rect(0, 0, SCREEN_WIDTH, 240, LCD_SET_VALUE); clear_ul();}
+#define clearScreen()                        do { lcd_fill_rect(0, 0, SCREEN_WIDTH, 240, LCD_SET_VALUE); clear_ul(); } while(0)
 #define currentReturnProgramNumber           (currentSubroutineLevelData[0].returnProgramNumber)
 #define currentReturnLocalStep               (currentSubroutineLevelData[0].returnLocalStep)
 #define currentNumberOfLocalFlags            (currentSubroutineLevelData[1].numberOfLocalFlags)
@@ -1515,31 +1515,31 @@ typedef enum {
 #endif // DMCP_BUILD || BIG_SCREEN == 1
 
 #if defined(TESTSUITE_BUILD) && !defined(GENERATE_CATALOGS)
-    #undef  PC_BUILD
-    #undef  DMCP_BUILD
-    #undef  DEBUG_PANEL
-    #define DEBUG_PANEL 0
-    #undef  DEBUG_REGISTER_L
-    #define DEBUG_REGISTER_L 0
-    #undef  SHOW_MEMORY_STATUS
-    #define SHOW_MEMORY_STATUS 0
-    #undef  EXTRA_INFO_ON_CALC_ERROR
-    #define EXTRA_INFO_ON_CALC_ERROR 0
-    #define addItemToBuffer fnNop
-    #define fnOff           fnNop
-    #define fnAim           fnNop
-    #define asnBrowser      fnNop
-    #define registerBrowser fnNop
-    #define flagBrowser     fnNop
-    #define fontBrowser     fnNop
-    #define flagBrowser_old fnNop       //JM
-    #define refreshRegisterLine(a)  {}
-    #define displayBugScreen(a)     { printf("\n-----------------------------------------------------------------------\n"); printf("%s\n", a); printf("\n-----------------------------------------------------------------------\n");}
-    #define showHideHourGlass()     {}
-    #define refreshScreen(a)        {}
-    #define refreshLcd(a)           {}
-    #define initFontBrowser()       {}
-  #endif // TESTSUITE_BUILD && !GENERATE_CATALOGS
+  #undef  PC_BUILD
+  #undef  DMCP_BUILD
+  #undef  DEBUG_PANEL
+  #define DEBUG_PANEL 0
+  #undef  DEBUG_REGISTER_L
+  #define DEBUG_REGISTER_L 0
+  #undef  SHOW_MEMORY_STATUS
+  #define SHOW_MEMORY_STATUS 0
+  #undef  EXTRA_INFO_ON_CALC_ERROR
+  #define EXTRA_INFO_ON_CALC_ERROR 0
+  #define addItemToBuffer fnNop
+  #define fnOff           fnNop
+  #define fnAim           fnNop
+  #define asnBrowser      fnNop
+  #define registerBrowser fnNop
+  #define flagBrowser     fnNop
+  #define fontBrowser     fnNop
+  #define flagBrowser_old fnNop       //JM
+  #define refreshRegisterLine(a)  do {} while(0)
+  #define displayBugScreen(a)     do { printf("\n-----------------------------------------------------------------------\n"); printf("%s\n", a); printf("\n-----------------------------------------------------------------------\n"); } while(0)
+  #define showHideHourGlass()     do {} while(0)
+  #define refreshScreen(a)        do {} while(0)
+  #define refreshLcd(a)           do {} while(0)
+  #define initFontBrowser()       do {} while(0)
+#endif // TESTSUITE_BUILD && !GENERATE_CATALOGS
 
 /* Turn off -Wunused-result for a specific function call */
 #if defined(OS32BIT)
@@ -1565,9 +1565,9 @@ typedef enum {
 #define COLOR_GREEN   "\033[1;92m"
 #define COLOR_YELLOW  "\033[1;33m"
 #define COLOR_CYAN    "\033[1;36m"
-#define debugf(a){fprintf(stderr, "%sdebug:%s %s %s(%s %s:%d)%s\n", COLOR_GREEN,  a, COLOR_DEFAULT, COLOR_CYAN, __FUNCTION__, __FILE__, __LINE__, COLOR_DEFAULT);fflush(stderr);}
-#define errorf(a){fprintf(stderr, "%serror:%s %s %s(%s %s:%d)%s\n", COLOR_YELLOW, a, COLOR_DEFAULT, COLOR_CYAN, __FUNCTION__, __FILE__, __LINE__, COLOR_DEFAULT);fflush(stderr);}
-#define abortf(a){fprintf(stderr, "%sabort: %s(%s %s:%d)%s\n",      COLOR_RED,                      COLOR_CYAN, __FUNCTION__, __FILE__, __LINE__, COLOR_DEFAULT);perror(a);fflush(stderr);abort();}
+#define debugf(a) do { fprintf(stderr, "%sdebug:%s %s %s(%s %s:%d)%s\n", COLOR_GREEN,  a, COLOR_DEFAULT, COLOR_CYAN, __FUNCTION__, __FILE__, __LINE__, COLOR_DEFAULT);fflush(stderr); } while(0)
+#define errorf(a) do { fprintf(stderr, "%serror:%s %s %s(%s %s:%d)%s\n", COLOR_YELLOW, a, COLOR_DEFAULT, COLOR_CYAN, __FUNCTION__, __FILE__, __LINE__, COLOR_DEFAULT);fflush(stderr); } while(0)
+#define abortf(a) do { fprintf(stderr, "%sabort: %s(%s %s:%d)%s\n",      COLOR_RED,                      COLOR_CYAN, __FUNCTION__, __FILE__, __LINE__, COLOR_DEFAULT);perror(a);fflush(stderr);abort(); } while(0)
 
 // To time a piece of code (not on DM42 hardware), you can use the following code snippet:
 // #include <time.h>
@@ -1578,50 +1578,53 @@ typedef enum {
 // clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &stopwatch_stop);
 // printf("Duration = %11.6fs\n", stopwatch_stop.tv_sec + stopwatch_stop.tv_nsec /1e9 - stopwatch_start.tv_sec - stopwatch_start.tv_nsec /1e9);
 
-#define TEST_REG(r, comment) { \
-                               if(globalRegister[r].dataPointer >= 500) { \
-                                 uint32_t a, b; \
-                                 a = 1; \
-                                 b = 0; \
-                                 printf("\n=====> BAD  REGISTER %d DATA POINTER: %u <===== %s\n", r, globalRegister[r].dataPointer, comment); \
-                                 globalRegister[r].dataType = a/b; \
-                               } \
-                               else { \
-                                 printf("\n=====> good register %d data pointer: %u <===== %s\n", r, globalRegister[r].dataPointer, comment); \
-                               } \
-                             }
+#define TEST_REG(r, comment)                                                                                       \
+  do {                                                                                                             \
+    if(globalRegister[r].dataPointer >= 500) {                                                                     \
+      uint32_t a, b;                                                                                               \
+      a = 1;                                                                                                       \
+      b = 0;                                                                                                       \
+      printf("\n=====> BAD  REGISTER %d DATA POINTER: %u <===== %s\n", r, globalRegister[r].dataPointer, comment); \
+      globalRegister[r].dataType = a/b;                                                                            \
+    }                                                                                                              \
+    else {                                                                                                         \
+      printf("\n=====> good register %d data pointer: %u <===== %s\n", r, globalRegister[r].dataPointer, comment); \
+    }                                                                                                              \
+  } while(0)
 
-#define PRINT_LI(lint, comment) { \
-                                  int i; \
-                                  printf("\n%s", comment); \
-                                  if((lint)->_mp_size == 0) printf(" lint=0"); \
-                                  else if((lint)->_mp_size < 0) printf(" lint=-"); \
-                                  else printf(" lint=+"); \
-                                  for(i=0; i<abs((lint)->_mp_size); i++) { \
-                                    printf("%lu ", (unsigned long)((lint)->_mp_d[i])); \
-                                  } \
-                                  printf("  _mp_alloc=%dlimbs=", (lint)->_mp_alloc); \
-                                  printf("%lubytes", LIMB_SIZE * (lint)->_mp_alloc); \
-                                  printf(" _mp_size=%dlimbs=", abs((lint)->_mp_size)); \
-                                  printf("%lubytes", LIMB_SIZE * abs((lint)->_mp_size)); \
-                                  printf(" PCaddress=%p", (lint)->_mp_d); \
-                                    printf(" 47address=%d", TO_C47MEMPTR((lint)->_mp_d)); \
-                                  printf("\n"); \
-                                }
+#define PRINT_LI(lint, comment)                            \
+  do {                                                     \
+    int i;                                                 \
+    printf("\n%s", comment);                               \
+    if((lint)->_mp_size == 0) printf(" lint=0");           \
+    else if((lint)->_mp_size < 0) printf(" lint=-");       \
+    else printf(" lint=+");                                \
+    for(i=0; i<abs((lint)->_mp_size); i++) {               \
+      printf("%lu ", (unsigned long)((lint)->_mp_d[i]));   \
+    }                                                      \
+    printf("  _mp_alloc=%dlimbs=", (lint)->_mp_alloc);     \
+    printf("%lubytes", LIMB_SIZE * (lint)->_mp_alloc);     \
+    printf(" _mp_size=%dlimbs=", abs((lint)->_mp_size));   \
+    printf("%lubytes", LIMB_SIZE * abs((lint)->_mp_size)); \
+    printf(" PCaddress=%p", (lint)->_mp_d);                \
+    printf(" 47address=%d", TO_C47MEMPTR((lint)->_mp_d));  \
+    printf("\n");                                          \
+  } while(0)
 
 
-#define PRINT_LI_REG(reg, comment) { \
-                                     int i; \
-                                     mp_limb_t *p; \
-                                     printf("\n%s", comment); \
-                                     if(getRegisterLongIntegerSign(reg) == LI_ZERO) printf("lint=0"); \
-                                     else if(getRegisterLongIntegerSign(reg) == LI_NEGATIVE) printf("lint=-"); \
-                                     else printf("lint=+"); \
-                                     for(i=*REGISTER_DATA_MAX_LEN(reg)/LIMB_SIZE, p=REGISTER_LONG_INTEGER_DATA(reg); i>0; i--, p++) { \
-                                       printf("%lu ", *p); \
-                                     } \
-                                     printf(" maxLen=%dbytes=", *REGISTER_DATA_MAX_LEN(reg)); \
-                                     printf("%lulimbs", *REGISTER_DATA_MAX_LEN(reg) / LIMB_SIZE); \
-                                     printf("\n"); \
-                                    }
+#define PRINT_LI_REG(reg, comment)                                                                   \
+  do {                                                                                               \
+    int i;                                                                                           \
+    mp_limb_t *p;                                                                                    \
+    printf("\n%s", comment);                                                                         \
+    if(getRegisterLongIntegerSign(reg) == LI_ZERO) printf("lint=0");                                 \
+    else if(getRegisterLongIntegerSign(reg) == LI_NEGATIVE) printf("lint=-");                        \
+    else printf("lint=+");                                                                           \
+    for(i=*REGISTER_DATA_MAX_LEN(reg)/LIMB_SIZE, p=REGISTER_LONG_INTEGER_DATA(reg); i>0; i--, p++) { \
+      printf("%lu ", *p);                                                                            \
+    }                                                                                                \
+    printf(" maxLen=%dbytes=", *REGISTER_DATA_MAX_LEN(reg));                                         \
+    printf("%lulimbs", *REGISTER_DATA_MAX_LEN(reg) / LIMB_SIZE);                                     \
+    printf("\n");                                                                                    \
+  } while(0)
 #endif // !DEFINES_H

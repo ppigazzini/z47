@@ -29,8 +29,8 @@
   typedef mpz_t longInteger_t;
 
   #define REGISTER_LONG_INTEGER_DATA(a)       ((void *)(getRegisterDataPointer(a) + 1)) // Memory pointer to the long integer of a register
-  #define longIntegerToUInt(op, uint)         {uint = mpz_get_ui(op);}
-  #define longIntegerToInt(op, int)           {int  = mpz_get_si(op);}
+  #define longIntegerToUInt(op, uint)         do { uint = mpz_get_ui(op); } while(0)
+  #define longIntegerToInt(op, int)           do { int  = mpz_get_si(op); } while(0)
   #define longIntegerIsZeroRegister(regist)   (getRegisterLongIntegerSign(regist) == LI_ZERO)
   //#define longIntegerIsZeroRegister(regist)   (*REGISTER_DATA_MAX_LEN(regist) == 0)
 
