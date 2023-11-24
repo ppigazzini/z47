@@ -61,7 +61,7 @@
 #endif
 
 #include "wp43.h"
-#define BACKUP_VERSION                     791  // adding allocated memory blocks tracking
+#define BACKUP_VERSION                     792  // added halfSecTick
 #define OLDEST_COMPATIBLE_BACKUP_VERSION   779  // save running app
 #define configFileVersion                  10000008 // New STOCFG and new STATE file; arbitrary starting point version 10 000 001. Allowable values are 10000000 to 20000000
 #define VersionAllowed                     10000005 // This code will not autoload versions earlier than this
@@ -272,6 +272,7 @@ static uint32_t restore(void *buffer, uint32_t size) {
     save(&programListEnd,                     sizeof(programListEnd));
     save(&allSubroutineLevels,                sizeof(allSubroutineLevels));
     save(&pemCursorIsZerothStep,              sizeof(pemCursorIsZerothStep));
+    save(&halfSecTick,                        sizeof(halfSecTick));
     save(&numberOfTamMenusToPop,              sizeof(numberOfTamMenusToPop));
     save(&lrSelection,                        sizeof(lrSelection));
     save(&lrSelectionUndo,                    sizeof(lrSelectionUndo));
@@ -632,6 +633,7 @@ static uint32_t restore(void *buffer, uint32_t size) {
       restore(&programListEnd,                     sizeof(programListEnd));
       restore(&allSubroutineLevels,                sizeof(allSubroutineLevels));
       restore(&pemCursorIsZerothStep,              sizeof(pemCursorIsZerothStep));
+      restore(&halfSecTick,                        sizeof(halfSecTick)); 
       restore(&numberOfTamMenusToPop,              sizeof(numberOfTamMenusToPop));
       restore(&lrSelection,                        sizeof(lrSelection));
       restore(&lrSelectionUndo,                    sizeof(lrSelectionUndo));

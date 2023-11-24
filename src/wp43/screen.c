@@ -1644,7 +1644,6 @@ void execTimerApp(uint16_t timerType) {
   }
 
 
-  bool_t halfSecTick = false;
   void force_refresh(uint8_t mode) {
     if(mode == force || ((((uint16_t)(getUptimeMs()) >> 4) & 0x0020) == 0x0020) == halfSecTick) {  //Restrict refresh to once per half second. Use this minimally, due to extreme slow response.
       halfSecTick = !halfSecTick;
