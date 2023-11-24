@@ -497,6 +497,7 @@ void showHideUserMode(void) {
 
 
 void drawBattery(uint16_t voltage) {
+  lcd_fill_rect(X_BATTERY, 0, 11, 20, LCD_SET_VALUE);
   uint16_t vv = (uint16_t)(min(max(voltage - 2000,0),3100) / (float)(((float)3100 - 2000.0f)/(float)(DY_BATTERY))); //draw a battery, full at 3.1V empty at 2V
   for(uint16_t ii = min(vv-1,DY_BATTERY-1); ii <= DY_BATTERY-1; ii++) {
     if(ii%2 == 0) { //draw outline
@@ -616,11 +617,13 @@ void drawBattery(uint16_t voltage) {
 
 
 
-
   #if !defined(DMCP_BUILD)
     void showHideStackLift(void) {
-      //drawBattery(exponentLimit); //test battery indicator
-      //return;                     //test battery indicator
+
+      #if defined(BATTERYTEST)
+        drawBattery(exponentLimit); //test battery indicator
+        return;                     //test battery indicator
+      #endif
 
       if(getSystemFlag(FLAG_ASLIFT)) {
         // Draw S
