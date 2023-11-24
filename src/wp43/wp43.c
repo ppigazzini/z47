@@ -51,6 +51,8 @@ bool_t                 lastProgramListEnd;
 bool_t                 programListEnd;
 bool_t                 serialIOIconEnabled;
 bool_t                 pemCursorIsZerothStep;
+bool_t                 halfSecTick;
+
 
 realContext_t          ctxtReal4;    //   limited digits: used for higher speed internal real calcs
 realContext_t          ctxtReal34;   //   34 digits

@@ -121,6 +121,8 @@
   extern bool_t                 programListEnd;
   extern bool_t                 serialIOIconEnabled;
   extern bool_t                 pemCursorIsZerothStep;
+  extern bool_t                 halfSecTick;
+
 
   extern realContext_t          ctxtReal4;    //   Limited digits: used for high speed internal calcs
   extern realContext_t          ctxtReal34;   //   34 digits
