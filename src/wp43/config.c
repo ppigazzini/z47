@@ -1368,6 +1368,8 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     fnKeyInCatalog = false;
     shiftF = false;
     shiftG = false;
+    halfSecTick = false;
+
 
     ctxtReal34.round = DEC_ROUND_HALF_EVEN;
 
