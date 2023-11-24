@@ -716,6 +716,9 @@ void resetKeytimers(void) {
       hideFunctionName();
 
       if(!FN_timed_out_to_NOP && fnTimerGetStatus(TO_FN_EXEC) != TMR_RUNNING) {
+        #if defined(VERBOSEKEYS)
+          printf(">>>>Z RRR2 LONGPRESS EXECUTE              ------------------       TO_FN_EXEC\n          charKey=|%s| charkey[0]=%d \n", charKey, charKey[0]);
+        #endif // VERBOSEKEYS
         btnFnClicked(unused, charKey);                                             //Execute
       }
 

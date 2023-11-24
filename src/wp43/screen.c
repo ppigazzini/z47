@@ -4338,6 +4338,7 @@ void execTimerApp(uint16_t timerType) {
         }
         if(!(screenUpdatingMode & (SCRUPD_MANUAL_MENU | SCRUPD_SKIP_MENU_ONE_TIME))) {
           showSoftmenuCurrentPart();
+          lcd_refresh_dma();             //If this is not here, menu generation is not reliable, and presses are missed. Not sure why.
         }
         if(programRunStop == PGM_STOPPED || programRunStop == PGM_WAITING) {
           hourGlassIconEnabled = false;
