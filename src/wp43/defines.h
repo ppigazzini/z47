@@ -93,6 +93,11 @@
 //#define DM42_KEYCLICK              //Add a 1 ms click after key presses and releases, for scope syncing
 
 
+
+  #define    BATTERYTEST                //RNG nnnn is used to force the battery voltage in the simulator
+  #undef     BATTERYTEST
+
+
 //Debug showFunctionName
 #define DEBUG_SHOWNAME
 #undef DEBUG_SHOWNAME
@@ -228,7 +233,7 @@
 //* General configuration defines *
 //*********************************
 #define UNIT_2TO10_LONGINT_DISPLAY         // Allow 2^10 option to also process integers instead of only reals
-#undef RECT_POLAR_CHANGES_X                // RECT/POLAR radiobuttons to also change the complex number in X
+#undef RECT_POLAR_CHANGES_X                // RECT/POLAR radiobuttons to also change the complex number in X 
 
 #define DEBUG_INSTEAD_STATUS_BAR         0 // Debug data instead of the status bar
 #define EXTRA_INFO_ON_CALC_ERROR         1 // Print extra information on the console about an error
