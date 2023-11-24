@@ -89,6 +89,11 @@
   #undef     CLICK_REFRESHSCR
 
 
+
+  #define    BATTERYTEST                //RNG nnnn is used to force the battery voltage in the simulator
+  #undef     BATTERYTEST
+
+
 //Debug showFunctionName
 #define DEBUG_SHOWNAME
 #undef DEBUG_SHOWNAME
