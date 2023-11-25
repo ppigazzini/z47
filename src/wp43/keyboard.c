@@ -1127,7 +1127,7 @@ int16_t lastItem = 0;
           else if((calcMode == CM_NORMAL || calcMode == CM_NIM) && (ITM_0<=item && item<=ITM_F) && (!catalog || catalog == CATALOG_MVAR)) {
             addItemToNimBuffer(item);
           }
-          else if((calcMode == CM_NIM) && ((item==ITM_DRG || item == ITM_DMS2 || item == ITM_dotD) && !catalog)) {   //JM
+          else if((calcMode == CM_NIM) && ((/*item==ITM_DRG ||*/ item == ITM_DMS2 || item == ITM_dotD) && !catalog)) {   //JM Remove DRG from here, there seems to be no need to send DRG to the buffer
             addItemToNimBuffer(item);
           }                                                                                      //JM
           else if(calcMode == CM_MIM && softmenu[softmenuStack[0].softmenuId].menuItem != -MNU_M_EDIT && (item != ITM_CC && item != ITM_op_j && item != ITM_op_j_pol)) { //JM added ITM_CC to let it work in matrix edit
@@ -1934,6 +1934,9 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
         if(calcMode == CM_NIM && delayCloseNim && item != ITM_ms && item != ITM_CC && item != ITM_op_j && item != ITM_op_j_pol) {
           delayCloseNim = false;
           closeNim();                 //JM moved here, from bufferize see JMCLOSE, to retain NIM if needed for .ms. Only a problem due to longpress.
+          #if defined (PC_BUILD)
+            printf("btnReleased: Closed NIM (delayed) delayCloseNim=%u\n",delayCloseNim);
+          #endif
           screenUpdatingMode &= ~SCRUPD_MANUAL_MENU;
         }
 
@@ -1995,6 +1998,10 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
             }
           }
           else {
+          #if defined (PC_BUILD)
+            printf("btnReleased: Closed NIM (delayed) delayCloseNim=%u, ",delayCloseNim);
+            printf("runfunction (%d)\n",item);
+          #endif
             runFunction(item);
           }
         }

@@ -353,7 +353,11 @@ void fnTo_ms(uint16_t unusedButMandatoryParameter) {
 
         if(getRegisterDataType(REGISTER_X) == dtReal34) {
           if(getRegisterAngularMode(REGISTER_X) == amDMS) {
-            fnKeyDotD(0);
+            if(calcMode == CM_NORMAL) {
+              fnToReal(0);
+            } else if(calcMode == CM_NIM) {
+              addItemToNimBuffer(ITM_dotD);
+            }
             fnToHms(0);
           } else
           if(getRegisterAngularMode(REGISTER_X) == amDegree // ||
@@ -658,6 +662,8 @@ void fnDisplayFormatCycle (uint16_t unusedButMandatoryParameter) {
 
 //change the current state from the old state?
 void fnAngularModeJM(uint16_t AMODE) { //Setting to HMS does not change AM
+  #if !defined(TESTSUITE_BUILD)
+
   copySourceRegisterToDestRegister(REGISTER_X, TEMP_REGISTER_1);
   if(AMODE == TM_HMS) {
     if(getRegisterDataType(REGISTER_X) == dtTime) {
@@ -666,7 +672,13 @@ void fnAngularModeJM(uint16_t AMODE) { //Setting to HMS does not change AM
     if(getRegisterDataType(REGISTER_X) == dtReal34 && getRegisterAngularMode(REGISTER_X) != amNone) {
       fnCvtFromCurrentAngularMode(amDegree);
     }
-    fnKeyDotD(0);
+
+    if(calcMode == CM_NORMAL) {
+      fnToReal(0);
+    } else if(calcMode == CM_NIM) {
+      addItemToNimBuffer(ITM_dotD);
+    }
+
     fnToHms(0); //covers longint & real
   }
   else {
@@ -688,7 +700,13 @@ void fnAngularModeJM(uint16_t AMODE) { //Setting to HMS does not change AM
     }
     else {
       if((getRegisterDataType(REGISTER_X) != dtReal34) || ((getRegisterDataType(REGISTER_X) == dtReal34) && getRegisterAngularMode(REGISTER_X) == amNone)) {
-        fnKeyDotD(0); //convert longint, and strip all angles to real.
+
+        if(calcMode == CM_NORMAL) {         //convert longint, and strip all angles to real.
+          fnToReal(0);
+        } else if(calcMode == CM_NIM) {
+          addItemToNimBuffer(ITM_dotD);
+        }
+
         uint16_t currentAngularModeOld = currentAngularMode;
         fnAngularMode(AMODE);
         fnCvtFromCurrentAngularMode(currentAngularMode);
@@ -708,6 +726,7 @@ void fnAngularModeJM(uint16_t AMODE) { //Setting to HMS does not change AM
 
   to_return:
   copySourceRegisterToDestRegister(TEMP_REGISTER_1, REGISTER_L);
+  #endif //TESTSUITE_BUILD
 }
 
 
