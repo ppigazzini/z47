@@ -66,7 +66,6 @@
    ***********************************************/
   void flagBrowser(uint16_t init) {
   #if !defined(SAVE_SPACE_DM42_8)
-
     static int16_t line;
     int16_t f;
     bool_t firstFlag;
@@ -82,9 +81,9 @@
       previousCalcMode = calcMode;
       calcMode = CM_FLAG_BROWSER;
       clearSystemFlag(FLAG_ALPHA);
-      currentFlgScr = init;        //5 in new style; 0 is old style
+      currentFlgScr = init;                      //5 in new style; 0 is old style
       if(currentFlgScr == 0)  currentFlgScr = 3; // Init old style
-      return;
+      refreshScreen();                           //Restart once, clearing screen and all, restarting flag browser, now in the correct mode
     }
 
     if(currentFlgScr == 0) currentFlgScr = 4;
