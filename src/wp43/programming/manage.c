@@ -1372,7 +1372,9 @@ void addStepInProgram(int16_t func) {
   insertStepInProgram(func);
   if((aimBuffer[0] == 0 && !getSystemFlag(FLAG_ALPHA)) || tam.mode) {
     currentStep = findPreviousStep(currentStep);
-    if(currentLocalStepNumber > 1) --currentLocalStepNumber;
+    if(currentLocalStepNumber > 1) {
+      --currentLocalStepNumber;
+    }
     pemCursorIsZerothStep = false;
     if((indexOfItems[func].status & PTP_STATUS) == PTP_DISABLED) {
       switch(func) {
