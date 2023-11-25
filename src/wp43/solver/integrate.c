@@ -302,7 +302,9 @@ static void _integrate(calcRegister_t regist, const real_t *a, const real_t *b, 
   bool_t TS    = false;   // tanhsinh mode
   bool_t lg0   = false;   // true if level > 0
 
-  int loop = 0;
+  #if !defined(TESTSUITE_BUILD)
+    int loop = 0;
+  #endif //TESTSUITE_BUILD
 
   // check arguments  ************************************
   if(realIsNaN(a) || realIsNaN(b)) { // check for invalid limits
@@ -431,7 +433,9 @@ static void _integrate(calcRegister_t regist, const real_t *a, const real_t *b, 
     // j loop ++++++++++++++++++++++++++++++++++++++++++++++
     // compute abscissas and weights  ----------------------
     do { // DEI_j_loop::
-            printHalfSecUpdate_Integer(timed, "Iter: ",loop++); //timed
+            #if !defined(TESTSUITE_BUILD)
+              printHalfSecUpdate_Integer(timed, "Iter: ",loop++); //timed
+            #endif //TESTSUITE_BUILD
 
             #if defined(DMCP_BUILD)
               if(keyWaiting()) {

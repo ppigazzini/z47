@@ -2164,6 +2164,7 @@ uint16_t convertItemToSubOrSup(uint16_t item, int16_t subOrSup) {
   void closeNim(void) {
     setSystemFlag(FLAG_ASLIFT);
     //printf("closeNim\n");
+    screenUpdatingMode &= ~(SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME);
 
     if(nimNumberPart == NP_INT_10) {                //JM Input default type vv
       switch(Input_Default) {
