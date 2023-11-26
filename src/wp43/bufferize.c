@@ -2176,7 +2176,8 @@ uint16_t convertItemToSubOrSup(uint16_t item, int16_t subOrSup) {
         realToReal34(&magnitude, dest_r);
         realToReal34(&theta,     dest_i);
       }
-      if(temporaryFlagPolar) fnToPolar2(0);
+//      if(temporaryFlagPolar) fnToPolar2(0);
+      if(getSystemFlag(FLAG_POLAR)) fnToPolar2(0);
     }
     temporaryFlagRect = false;
     temporaryFlagPolar = false;
