@@ -63,36 +63,38 @@
 
 
 
-static void _addSpaceAfterPrograms(uint16_t size) {
-  if(freeProgramBytes < size) {
-    uint8_t *oldBeginOfProgramMemory = beginOfProgramMemory;
-    uint32_t programSizeInBlocks = RAM_SIZE_IN_BLOCKS - freeMemoryRegions[numberOfFreeMemoryRegions - 1].blockAddress - freeMemoryRegions[numberOfFreeMemoryRegions - 1].sizeInBlocks;
-    uint32_t newProgramSizeInBlocks = TO_BLOCKS(TO_BYTES(programSizeInBlocks) - freeProgramBytes + size);
-    freeProgramBytes      += TO_BYTES(newProgramSizeInBlocks - programSizeInBlocks);
-    resizeProgramMemory(newProgramSizeInBlocks);
-    currentStep           = currentStep           - oldBeginOfProgramMemory + beginOfProgramMemory;
-    firstDisplayedStep    = firstDisplayedStep    - oldBeginOfProgramMemory + beginOfProgramMemory;
-    beginOfCurrentProgram = beginOfCurrentProgram - oldBeginOfProgramMemory + beginOfProgramMemory;
-    endOfCurrentProgram   = endOfCurrentProgram   - oldBeginOfProgramMemory + beginOfProgramMemory;
+#if !defined(TESTSUITE_BUILD)
+  static void _addSpaceAfterPrograms(uint16_t size) {
+    if(freeProgramBytes < size) {
+      uint8_t *oldBeginOfProgramMemory = beginOfProgramMemory;
+      uint32_t programSizeInBlocks = RAM_SIZE_IN_BLOCKS - freeMemoryRegions[numberOfFreeMemoryRegions - 1].blockAddress - freeMemoryRegions[numberOfFreeMemoryRegions - 1].sizeInBlocks;
+      uint32_t newProgramSizeInBlocks = TO_BLOCKS(TO_BYTES(programSizeInBlocks) - freeProgramBytes + size);
+      freeProgramBytes      += TO_BYTES(newProgramSizeInBlocks - programSizeInBlocks);
+      resizeProgramMemory(newProgramSizeInBlocks);
+      currentStep           = currentStep           - oldBeginOfProgramMemory + beginOfProgramMemory;
+      firstDisplayedStep    = firstDisplayedStep    - oldBeginOfProgramMemory + beginOfProgramMemory;
+      beginOfCurrentProgram = beginOfCurrentProgram - oldBeginOfProgramMemory + beginOfProgramMemory;
+      endOfCurrentProgram   = endOfCurrentProgram   - oldBeginOfProgramMemory + beginOfProgramMemory;
+    }
+
+    firstFreeProgramByte   += size;
+    freeProgramBytes       -= size;
   }
 
-  firstFreeProgramByte   += size;
-  freeProgramBytes       -= size;
-}
 
-
-static bool_t _addEndNeeded(void) {
-  if(firstFreeProgramByte <= beginOfProgramMemory) {
-    return false;
-  }
-  if(firstFreeProgramByte == beginOfProgramMemory + 1) {
+  static bool_t _addEndNeeded(void) {
+    if(firstFreeProgramByte <= beginOfProgramMemory) {
+      return false;
+    }
+    if(firstFreeProgramByte == beginOfProgramMemory + 1) {
+      return true;
+    }
+    if(isAtEndOfProgram(firstFreeProgramByte - 2)) {
+      return false;
+    }
     return true;
   }
-  if(isAtEndOfProgram(firstFreeProgramByte - 2)) {
-    return false;
-  }
-  return true;
-}
+#endif // !TESTSUITE_BUILD
 
 
 
@@ -357,112 +359,114 @@ void fnSaveProgram(uint16_t label) {
 
 
 void fnLoadProgram(uint16_t unusedButMandatoryParameter) {
-  ioFilePath_t path;
-  uint32_t pgmSizeInByte;
-  uint32_t i;
-  uint8_t *startOfProgram;
-  int ret;
+  #if !defined(TESTSUITE_BUILD)
+    ioFilePath_t path;
+    uint32_t pgmSizeInByte;
+    uint32_t i;
+    uint8_t *startOfProgram;
+    int ret;
 
-  path = ioPathLoadProgram;
-  ret = ioFileOpen(path, ioModeRead);
+    path = ioPathLoadProgram;
+    ret = ioFileOpen(path, ioModeRead);
 
-  if(ret != FILE_OK ) {
-    if(ret == FILE_CANCEL ) {
-      return;
+    if(ret != FILE_OK ) {
+      if(ret == FILE_CANCEL ) {
+        return;
+      }
+      else {
+        displayCalcErrorMessage(ERROR_CANNOT_READ_FILE, ERR_REGISTER_LINE, REGISTER_X);
+        return;
+      }
+    }
+
+    //Check save file version
+    uint32_t loadedVersion = 0;
+    readLine(tmpString);
+    if(strcmp(tmpString, "PROGRAM_FILE_FORMAT") == 0) {
+      readLine(aimBuffer); // Format of program instructions (ignore now, there is only one format)
     }
     else {
-      displayCalcErrorMessage(ERROR_CANNOT_READ_FILE, ERR_REGISTER_LINE, REGISTER_X);
-      return;
-    }
-  }
-
-  //Check save file version
-  uint32_t loadedVersion = 0;
-  readLine(tmpString);
-  if(strcmp(tmpString, "PROGRAM_FILE_FORMAT") == 0) {
-    readLine(aimBuffer); // Format of program instructions (ignore now, there is only one format)
-  }
-  else {
-    #if !defined(TESTSUITE_BUILD)
-      sprintf(tmpString," \nThis is not a C47 program\n\nIt will not be loaded.");
-      show_warning(tmpString);
-    #endif // TESTSUITE_BUILD
-    ioFileClose();
-    return;
-  }
-  readLine(aimBuffer); // param
-  readLine(tmpString); // value
-  if(strcmp(aimBuffer, "C47_program_file_version") == 0) {
-    loadedVersion = stringToUint32(tmpString);
-    if(loadedVersion < OLDEST_COMPATIBLE_PROGRAM_VERSION) { // Program incompatibility
       #if !defined(TESTSUITE_BUILD)
-        sprintf(tmpString, " \n   !!! Program version is too old !!!\nNot compatible with current version\n \nIt will not be loaded.");
+        sprintf(tmpString," \nThis is not a C47 program\n\nIt will not be loaded.");
         show_warning(tmpString);
       #endif // TESTSUITE_BUILD
       ioFileClose();
       return;
     }
-  }
-  else {
-    if(strcmp(aimBuffer, "WP43_program_file_version") == 0) {
+    readLine(aimBuffer); // param
+    readLine(tmpString); // value
+    if(strcmp(aimBuffer, "C47_program_file_version") == 0) {
       loadedVersion = stringToUint32(tmpString);
-      #if !defined(TESTSUITE_BUILD)
-        sprintf(tmpString," \nThis is a WP43 program\nWP43 program support is experimental\nSome instructions may not be \ncompatible with the C47 and may\ncrash the calculator.");
-        show_warning(tmpString);
-      #endif // TESTSUITE_BUILD
+      if(loadedVersion < OLDEST_COMPATIBLE_PROGRAM_VERSION) { // Program incompatibility
+        #if !defined(TESTSUITE_BUILD)
+          sprintf(tmpString, " \n   !!! Program version is too old !!!\nNot compatible with current version\n \nIt will not be loaded.");
+          show_warning(tmpString);
+        #endif // TESTSUITE_BUILD
+        ioFileClose();
+        return;
+      }
     }
     else {
-      #if !defined(TESTSUITE_BUILD)
-        sprintf(tmpString, " \nThis is not a C47 program\n \nIt will not be loaded.");
-        show_warning(tmpString);
-      #endif // TESTSUITE_BUILD
+      if(strcmp(aimBuffer, "WP43_program_file_version") == 0) {
+        loadedVersion = stringToUint32(tmpString);
+        #if !defined(TESTSUITE_BUILD)
+          sprintf(tmpString," \nThis is a WP43 program\nWP43 program support is experimental\nSome instructions may not be \ncompatible with the C47 and may\ncrash the calculator.");
+          show_warning(tmpString);
+        #endif // TESTSUITE_BUILD
+      }
+      else {
+        #if !defined(TESTSUITE_BUILD)
+          sprintf(tmpString, " \nThis is not a C47 program\n \nIt will not be loaded.");
+          show_warning(tmpString);
+        #endif // TESTSUITE_BUILD
+        ioFileClose();
+        return;
+      }
+    }
+    readLine(aimBuffer); // param
+    readLine(tmpString); // value
+    if(strcmp(aimBuffer, "PROGRAM") == 0) {
+      pgmSizeInByte = stringToUint32(tmpString);
+    }
+    else {
       ioFileClose();
       return;
     }
-  }
-  readLine(aimBuffer); // param
-  readLine(tmpString); // value
-  if(strcmp(aimBuffer, "PROGRAM") == 0) {
-    pgmSizeInByte = stringToUint32(tmpString);
-  }
-  else {
-    ioFileClose();
-    return;
-  }
 
-  if(_addEndNeeded()) {
-    _addSpaceAfterPrograms(2);
-    *(firstFreeProgramByte - 2) = (ITM_END >> 8) | 0x80;
-    *(firstFreeProgramByte - 1) =  ITM_END       & 0xff;
+    if(_addEndNeeded()) {
+      _addSpaceAfterPrograms(2);
+      *(firstFreeProgramByte - 2) = (ITM_END >> 8) | 0x80;
+      *(firstFreeProgramByte - 1) =  ITM_END       & 0xff;
+      *(firstFreeProgramByte    ) = 0xffu;
+      *(firstFreeProgramByte + 1) = 0xffu;
+      scanLabelsAndPrograms();
+    }
+
+    _addSpaceAfterPrograms(pgmSizeInByte);
+    startOfProgram = firstFreeProgramByte - pgmSizeInByte;
+    for(i=0; i<pgmSizeInByte; i++) {
+      readLine(tmpString); // One byte
+      startOfProgram[i] = stringToUint8(tmpString);
+    }
+
     *(firstFreeProgramByte    ) = 0xffu;
     *(firstFreeProgramByte + 1) = 0xffu;
     scanLabelsAndPrograms();
-  }
 
-  _addSpaceAfterPrograms(pgmSizeInByte);
-  startOfProgram = firstFreeProgramByte - pgmSizeInByte;
-  for(i=0; i<pgmSizeInByte; i++) {
-    readLine(tmpString); // One byte
-    startOfProgram[i] = stringToUint8(tmpString);
-  }
+    ioFileClose();
 
-  *(firstFreeProgramByte    ) = 0xffu;
-  *(firstFreeProgramByte + 1) = 0xffu;
-  scanLabelsAndPrograms();
+    if(loadedVersion < OLDEST_COMPATIBLE_PROGRAM_VERSION) { // Program incompatibility
+      sprintf(tmpString," \n"
+                        "   !!! Program version is too old !!!\n"
+                        "Not compatible with current version\n"
+                        " \n"
+                        "It will not be loaded.");
+      #if !defined(TESTSUITE_BUILD)
+        show_warning(tmpString);
+      #endif // TESTSUITE_BUILD
+      return;
+    }
 
-  ioFileClose();
-
-  if(loadedVersion < OLDEST_COMPATIBLE_PROGRAM_VERSION) { // Program incompatibility
-    sprintf(tmpString," \n"
-                      "   !!! Program version is too old !!!\n"
-                      "Not compatible with current version\n"
-                      " \n"
-                      "It will not be loaded.");
-    #if !defined(TESTSUITE_BUILD)
-      show_warning(tmpString);
-    #endif // TESTSUITE_BUILD
-    return;
-  }
-
-  temporaryInformation = TI_PROGRAM_LOADED;
+    temporaryInformation = TI_PROGRAM_LOADED;
+  #endif // !TESTSUITE_BUILD
 }

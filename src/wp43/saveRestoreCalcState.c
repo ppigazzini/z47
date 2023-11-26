@@ -48,6 +48,7 @@
 #include "stats.h"
 #include "timer.h"
 #include <string.h>
+
 #if defined(PC_BUILD)
 #include <gtk/gtk.h>
 #include <stdbool.h>
@@ -56,13 +57,13 @@
 #include <string.h>
 #include <sys/stat.h>
 #endif
+
 #if defined(DMCP_BUILD)
 #include <dmcp.h>
 #endif
 
 #include "wp43.h"
-#define BACKUP_VERSION                     792  // added halfSecTick
-#define OLDEST_COMPATIBLE_BACKUP_VERSION   779  // save running app
+#define BACKUP_VERSION                     1001  // 1st text file backup.cfg version
 #define configFileVersion                  10000008 // New STOCFG and new STATE file; arbitrary starting point version 10 000 001. Allowable values are 10000000 to 20000000
 #define VersionAllowed                     10000005 // This code will not autoload versions earlier than this
 
@@ -78,40 +79,219 @@
 Current version defaults all non-loaded settings from previous version files correctly
 */
 
+uint16_t flushBufferCnt = 0;
 #if !defined(TESTSUITE_BUILD)
   #define START_REGISTER_VALUE 1000  // was 1522, why?
   static uint32_t loadedVersion = 0;
-#endif //TESTSUITE_BUILD
-
-#if !defined(TESTSUITE_BUILD)
   static char *tmpRegisterString = NULL;
 
   static void save(const void *buffer, uint32_t size) {
     ioFileWrite(buffer, size);
   }
-#endif //TESTSUITE_BUILD
 
-
-static uint32_t restore(void *buffer, uint32_t size) {
-  return ioFileRead(buffer, size);
-}
+  static uint32_t restore(void *buffer, uint32_t size) {
+    return ioFileRead(buffer, size);
+  }
+#endif // !TESTSUITE_BUILD
 
 
 
 #if defined(PC_BUILD)
+  cfgFileParam_t *paramHead=NULL, *paramCurrent;
+
+  static void changeCommaToPeriod(char *str) {
+    char *s;
+
+    s = strchr(str, ':') + 1;
+    s = strchr(s, ':') + 1;
+    while(*s) {
+      if(*s == ',') {
+        *s = '.';
+      }
+      s++;
+    }
+  }
+
+  static void saveStateValue(const void *buffer, uint32_t size, const char *valueName, const char *valueType) {
+    char value[200];
+
+    if(!strcmp(valueType, "int64")) {
+      sprintf(value, "%s:%s:%" PRIi64 LINEBREAK, valueName, valueType, *(int64_t *)buffer);
+      save(value, strlen(value));
+    }
+
+    else if(!strcmp(valueType, "uint64")) {
+      sprintf(value, "%s:%s:%" PRIu64 LINEBREAK, valueName, valueType, *(uint64_t *)buffer);
+      save(value, strlen(value));
+    }
+
+    else if(!strcmp(valueType, "int32")) {
+      sprintf(value, "%s:%s:%" PRIi32 LINEBREAK, valueName, valueType, *(int32_t *)buffer);
+      save(value, strlen(value));
+    }
+
+    else if(!strcmp(valueType, "uint32")) {
+      sprintf(value, "%s:%s:%" PRIu32 LINEBREAK, valueName, valueType, *(uint32_t *)buffer);
+      save(value, strlen(value));
+    }
+
+    else if(!strcmp(valueType, "int16")) {
+      sprintf(value, "%s:%s:%" PRIi16 LINEBREAK, valueName, valueType, *(int16_t *)buffer);
+      save(value, strlen(value));
+    }
+
+    else if(!strcmp(valueType, "uint16")) {
+      sprintf(value, "%s:%s:%" PRIu16 LINEBREAK, valueName, valueType, *(uint16_t *)buffer);
+      save(value, strlen(value));
+    }
+
+    else if(!strcmp(valueType, "int8")) {
+      sprintf(value, "%s:%s:%" PRIi8 LINEBREAK, valueName, valueType, *(int8_t *)buffer);
+      save(value, strlen(value));
+    }
+
+    else if(!strcmp(valueType, "uint8")) {
+      sprintf(value, "%s:%s:%" PRIu8 LINEBREAK, valueName, valueType, *(uint8_t *)buffer);
+      save(value, strlen(value));
+    }
+
+    else if(!strcmp(valueType, "float")) {
+      sprintf(value, "%s:%s:%.20e" LINEBREAK, valueName, valueType, *(float *)buffer);
+      changeCommaToPeriod(value);
+      save(value, strlen(value));
+    }
+
+    else if(!strcmp(valueType, "double")) {
+      sprintf(value, "%s:%s:%.20e" LINEBREAK, valueName, valueType, *(double *)buffer);
+      changeCommaToPeriod(value);
+      save(value, strlen(value));
+    }
+
+    else if(!strcmp(valueType, "real")) {
+      sprintf(value, "%s:%s:", valueName, valueType);
+      if(realIsInfinite((real_t *)buffer)) {
+        if(realIsNegative((real_t *)buffer)) {
+          strcpy(value + strlen(value), "-9.9e9999999");
+        }
+        else {
+          strcpy(value + strlen(value), "9.9e9999999");
+        }
+      }
+      else {
+        realToString(buffer, value + strlen(value));
+      }
+      strcat(value, LINEBREAK);
+      changeCommaToPeriod(value);
+      save(value, strlen(value));
+    }
+
+    else if(!strcmp(valueType, "real34")) {
+      sprintf(value, "%s:%s:", valueName, valueType);
+      if(real34IsInfinite((real34_t *)buffer)) {
+        if(real34IsNegative((real34_t *)buffer)) {
+          strcpy(value + strlen(value), "-9.9e9999");
+        }
+        else {
+          strcpy(value + strlen(value), "9.9e9999");
+        }
+      }
+      else {
+        real34ToString(buffer, value + strlen(value));
+      }
+      strcat(value, LINEBREAK);
+      changeCommaToPeriod(value);
+      save(value, strlen(value));
+    }
+
+    else if(!strcmp(valueType, "bool")) {
+      sprintf(value, "%s:%s:%" PRIu32 LINEBREAK, valueName, valueType, *(bool_t *)buffer);
+      save(value, strlen(value));
+    }
+
+    else if(!strcmp(valueType, "c47Ptr")) {
+      sprintf(value, "%s:%s:%" PRIu32 " (0x%05x)" LINEBREAK, valueName, valueType, *(uint32_t *)buffer, 4 * *(uint32_t *)buffer);
+      save(value, strlen(value));
+    }
+
+    else if(!strcmp(valueType, "hexDump")) {
+      uint32_t addr, b;
+
+      sprintf(value, "%s:%s:%" PRIu32 LINEBREAK, valueName, valueType, size);
+      save(value, strlen(value));
+
+      for(addr=0; addr<size; addr+=32) {
+        // Hexadecimal dump
+        sprintf(value, "%05x  ", addr);
+        for(b=0; b<32; b++) {
+          if(addr + b < size) {
+            sprintf(value + 7 + 3*b, "%02x ", *(uint8_t *)(buffer + addr + b));
+          }
+          else {
+            strcpy(value + 7 + 3*b, "   ");
+          }
+        }
+
+        // ASCII dump
+        strcpy(value + 103, " '");
+        for(b=0; b<32; b++) {
+          if(addr + b < size) {
+            sprintf(value + 105 + b, "%c", *(char *)(buffer + addr + b) >= ' ' && *(char *)(buffer + addr + b) != 0x7f ? *(char *)(buffer + addr + b) : ' ');
+          }
+          else {
+            strcpy(value + 105 + b, " ");
+          }
+        }
+        strcpy(value + 137, "'" LINEBREAK);
+
+        save(value, strlen(value));
+      }
+    }
+
+    //save and restore screenData is not mandatory
+    //else if(!strcmp(valueType, "screenData")) {
+    //  char screenRow[401];
+    //  screenRow[400] = 0;
+    //
+    //  sprintf(value, "%s:%s:%dx%d" LINEBREAK, valueName, valueType, SCREEN_WIDTH, SCREEN_HEIGHT);
+    //  save(value, strlen(value));
+    //
+    //  uint32_t addr=0;
+    //  for(int y = 0; y < SCREEN_HEIGHT; ++y) {
+    //    uint8_t bmpdata = 0;
+    //    for(int x = 0; x < SCREEN_WIDTH; ++x) {
+    //      bmpdata <<= 1;
+    //      if(*((uint32_t *)buffer + y*screenStride + x) == ON_PIXEL) {
+    //        bmpdata |= 1;
+    //        screenRow[x] = '#';
+    //      }
+    //      else {
+    //        screenRow[x] = ' ';
+    //      }
+    //      if((x % 8) == 7) {
+    //        if(++addr % 50 == 0) {
+    //          sprintf(value, "%s|" LINEBREAK, screenRow);
+    //          save(value, strlen(value));
+    //        }
+    //        bmpdata = 0;
+    //      }
+    //    }
+    //  }
+    //}
+
+    else {
+      printf("ERROR: valueType %s unknown in function saveStateValue!" LINEBREAK, valueType);
+    }
+  }
+
   void saveCalc(void) {
-    //uint8_t  compatibility_u8 = 0;           //defaults to use when settings are removed
-    int16_t  compatibility_u16 = 0;         //defaults to use when settings are removed
-    bool_t   compatibility_bool = false;       //defaults to use when settings are removed
-    uint32_t backupVersion   = BACKUP_VERSION;
     uint32_t ramSizeInBlocks = RAM_SIZE_IN_BLOCKS;
-    uint32_t ramPtr;
+    uint32_t ramPtr, backupVersion = BACKUP_VERSION;
     int ret;
 
     ret = ioFileOpen(ioPathBackup, ioModeWrite);
 
-    if(ret != FILE_OK ) {
-      if(ret == FILE_CANCEL ) {
+    if(ret != FILE_OK) {
+      if(ret == FILE_CANCEL) {
         return;
       }
       else {
@@ -127,303 +307,455 @@ static uint32_t restore(void *buffer, uint32_t size) {
 
     printf("Begin of calc's backup\n");
 
-    save(&backupVersion,                      sizeof(backupVersion));
-    save(&ramSizeInBlocks,                    sizeof(ramSizeInBlocks));
-    save(ram,                                 TO_BYTES(RAM_SIZE_IN_BLOCKS));
-    save(&numberOfFreeMemoryRegions,          sizeof(numberOfFreeMemoryRegions));
-    save(freeMemoryRegions,                   sizeof(freeMemoryRegion_t) * numberOfFreeMemoryRegions);
-    save(&numberOfAllocatedMemoryRegions,     sizeof(numberOfAllocatedMemoryRegions));
-    save(allocatedMemoryRegions,              sizeof(freeMemoryRegion_t) * numberOfAllocatedMemoryRegions);
-    save(globalFlags,                         sizeof(globalFlags));
-    save(errorMessage,                        ERROR_MESSAGE_LENGTH);
-    save(aimBuffer,                           AIM_BUFFER_LENGTH);
-    save(nimBufferDisplay,                    NIM_BUFFER_LENGTH);
-    save(tamBuffer,                           TAM_BUFFER_LENGTH);
-    save(asmBuffer,                           sizeof(asmBuffer));
-    save(oldTime,                             sizeof(oldTime));
-    save(dateTimeString,                      sizeof(dateTimeString));
-    save(softmenuStack,                       sizeof(softmenuStack));
-    save(globalRegister,                      sizeof(globalRegister));
-    save(savedStackRegister,                  sizeof(savedStackRegister));
-    save(kbd_usr,                             sizeof(kbd_usr));
-    save(userMenuItems,                       sizeof(userMenuItems));
-    save(userAlphaItems,                      sizeof(userAlphaItems));
-    save(&tam.mode,                           sizeof(tam.mode));
-    save(&tam.function,                       sizeof(tam.function));
-    save(&tam.alpha,                          sizeof(tam.alpha));
-    save(&tam.currentOperation,               sizeof(tam.currentOperation));
-    save(&tam.dot,                            sizeof(tam.dot));
-    save(&tam.indirect,                       sizeof(tam.indirect));
-    save(&tam.digitsSoFar,                    sizeof(tam.digitsSoFar));
-    save(&tam.value,                          sizeof(tam.value));
-    save(&tam.min,                            sizeof(tam.min));
-    save(&tam.max,                            sizeof(tam.max));
-    save(&rbrRegister,                        sizeof(rbrRegister));
-    save(&numberOfNamedVariables,             sizeof(numberOfNamedVariables));
+    // The order in which parameters are saved doesn't matter
+    // When a parameter is removed, simply remove the corresponding saveStateValue(...) and restoreStateValue(...) lines.
+    saveStateValue(&backupVersion,                  sizeof(backupVersion),                                       "backupVersion",                  "uint32");
+    saveStateValue(&ramSizeInBlocks,                sizeof(ramSizeInBlocks),                                     "ramSizeInBlocks",                "uint32");
+    saveStateValue(&numberOfFreeMemoryRegions,      sizeof(numberOfFreeMemoryRegions),                           "numberOfFreeMemoryRegions",      "int32");
+    saveStateValue(freeMemoryRegions,               sizeof(freeMemoryRegion_t) * numberOfFreeMemoryRegions,      "freeMemoryRegions",              "hexDump");
+    saveStateValue(&numberOfAllocatedMemoryRegions, sizeof(numberOfAllocatedMemoryRegions),                      "numberOfAllocatedMemoryRegions", "int32");
+    saveStateValue(allocatedMemoryRegions,          sizeof(freeMemoryRegion_t) * numberOfAllocatedMemoryRegions, "allocatedMemoryRegions",         "hexDump");
+    saveStateValue(globalFlags,                     sizeof(globalFlags),                                         "globalFlags",                    "hexDump");
+    saveStateValue(errorMessage,                    ERROR_MESSAGE_LENGTH,                                        "errorMessage",                   "hexDump");
+    saveStateValue(aimBuffer,                       AIM_BUFFER_LENGTH,                                           "aimBuffer",                      "hexDump");
+    saveStateValue(nimBufferDisplay,                NIM_BUFFER_LENGTH,                                           "nimBufferDisplay",               "hexDump");
+    saveStateValue(tamBuffer,                       TAM_BUFFER_LENGTH,                                           "tamBuffer",                      "hexDump");
+    saveStateValue(asmBuffer,                       sizeof(asmBuffer),                                           "asmBuffer",                      "hexDump");
+    saveStateValue(oldTime,                         sizeof(oldTime),                                             "oldTime",                        "hexDump");
+    saveStateValue(dateTimeString,                  sizeof(dateTimeString),                                      "dateTimeString",                 "hexDump");
+    saveStateValue(softmenuStack,                   sizeof(softmenuStack),                                       "softmenuStack",                  "hexDump");
+    saveStateValue(globalRegister,                  sizeof(globalRegister),                                      "globalRegister",                 "hexDump");
+    saveStateValue(savedStackRegister,              sizeof(savedStackRegister),                                  "savedStackRegister",             "hexDump");
+    saveStateValue(kbd_usr,                         sizeof(kbd_usr),                                             "kbd_usr",                        "hexDump");
+    saveStateValue(userMenuItems,                   sizeof(userMenuItems),                                       "userMenuItems",                  "hexDump");
+    saveStateValue(userAlphaItems,                  sizeof(userAlphaItems),                                      "userAlphaItems",                 "hexDump");
+    saveStateValue(&tam.mode,                       sizeof(tam.mode),                                            "tam.mode",                       "uint16");
+    saveStateValue(&tam.function,                   sizeof(tam.function),                                        "tam.function",                   "int16");
+    saveStateValue(&tam.alpha,                      sizeof(tam.alpha),                                           "tam.alpha",                      "bool");
+    saveStateValue(&tam.currentOperation,           sizeof(tam.currentOperation),                                "tam.currentOperation",           "int16");
+    saveStateValue(&tam.dot,                        sizeof(tam.dot),                                             "tam.dot",                        "bool");
+    saveStateValue(&tam.indirect,                   sizeof(tam.indirect),                                        "tam.indirect",                   "bool");
+    saveStateValue(&tam.digitsSoFar,                sizeof(tam.digitsSoFar),                                     "tam.digitsSoFar",                "int16");
+    saveStateValue(&tam.value,                      sizeof(tam.value),                                           "tam.value",                      "int16");
+    saveStateValue(&tam.min,                        sizeof(tam.min),                                             "tam.min",                        "int16");
+    saveStateValue(&tam.max,                        sizeof(tam.max),                                             "tam.max",                        "int16");
+    saveStateValue(&rbrRegister,                    sizeof(rbrRegister),                                         "rbrRegister",                    "int16");
+    saveStateValue(&numberOfNamedVariables,         sizeof(numberOfNamedVariables),                              "numberOfNamedVariables",         "int16");
+    saveStateValue(&xCursor,                        sizeof(xCursor),                                             "xCursor",                        "uint32");
+    saveStateValue(&yCursor,                        sizeof(yCursor),                                             "yCursor",                        "uint32");
+    saveStateValue(&firstGregorianDay,              sizeof(firstGregorianDay),                                   "firstGregorianDay",              "uint32");
+    saveStateValue(&denMax,                         sizeof(denMax),                                              "denMax",                         "uint32");
+    saveStateValue(&lastDenominator,                sizeof(lastDenominator),                                     "lastDenominator",                "uint32");
+    saveStateValue(&currentRegisterBrowserScreen,   sizeof(currentRegisterBrowserScreen),                        "currentRegisterBrowserScreen",   "int16");
+    saveStateValue(&currentFntScr,                  sizeof(currentFntScr),                                       "currentFntScr",                  "uint8");
+    saveStateValue(&currentFlgScr,                  sizeof(currentFlgScr),                                       "currentFlgScr",                  "uint8");
+    saveStateValue(&displayFormat,                  sizeof(displayFormat),                                       "displayFormat",                  "uint8");
+    saveStateValue(&displayFormatDigits,            sizeof(displayFormatDigits),                                 "displayFormatDigits",            "uint8");
+    saveStateValue(&timeDisplayFormatDigits,        sizeof(timeDisplayFormatDigits),                             "timeDisplayFormatDigits",        "uint8");
+    saveStateValue(&shortIntegerWordSize,           sizeof(shortIntegerWordSize),                                "shortIntegerWordSize",           "uint8");
+    saveStateValue(&significantDigits,              sizeof(significantDigits),                                   "significantDigits",              "uint8");
+    saveStateValue(&shortIntegerMode,               sizeof(shortIntegerMode),                                    "shortIntegerMode",               "uint8");
+    saveStateValue(&currentAngularMode,             sizeof(currentAngularMode),                                  "currentAngularMode",             "uint32");
+    saveStateValue(&scrLock,                        sizeof(scrLock),                                             "scrLock",                        "uint8");
+    saveStateValue(&roundingMode,                   sizeof(roundingMode),                                        "roundingMode",                   "uint8");
+    saveStateValue(&calcMode,                       sizeof(calcMode),                                            "calcMode",                       "uint8");
+    saveStateValue(&nextChar,                       sizeof(nextChar),                                            "nextChar",                       "uint8");
+    saveStateValue(&alphaCase,                      sizeof(alphaCase),                                           "alphaCase",                      "uint8");
+    saveStateValue(&hourGlassIconEnabled,           sizeof(hourGlassIconEnabled),                                "hourGlassIconEnabled",           "bool");
+    saveStateValue(&watchIconEnabled,               sizeof(watchIconEnabled),                                    "watchIconEnabled",               "bool");
+    saveStateValue(&serialIOIconEnabled,            sizeof(serialIOIconEnabled),                                 "serialIOIconEnabled",            "bool");
+    saveStateValue(&printerIconEnabled,             sizeof(printerIconEnabled),                                  "printerIconEnabled",             "bool");
+    saveStateValue(&programRunStop,                 sizeof(programRunStop),                                      "programRunStop",                 "uint8");
+    saveStateValue(&entryStatus,                    sizeof(entryStatus),                                         "entryStatus",                    "uint8");
+    saveStateValue(&cursorEnabled,                  sizeof(cursorEnabled),                                       "cursorEnabled",                  "uint8");
+
+    int8_t cf;
+         if(cursorFont == &tinyFont)     cf =  1;
+    else if(cursorFont == &standardFont) cf =  2;
+    else if(cursorFont == &numericFont)  cf =  3;
+    else                                 cf = -1;
+    saveStateValue(&cf,                             sizeof(cf),                                                  "cursorFont",                     "int8");
+
+    saveStateValue(&rbr1stDigit,                    sizeof(rbr1stDigit),                                         "rbr1stDigit",                    "bool");
+    saveStateValue(&shiftF,                         sizeof(shiftF),                                              "shiftF",                         "bool");
+    saveStateValue(&shiftG,                         sizeof(shiftG),                                              "shiftG",                         "bool");
+    saveStateValue(&rbrMode,                        sizeof(rbrMode),                                             "rbrMode",                        "uint8");
+    saveStateValue(&showContent,                    sizeof(showContent),                                         "showContent",                    "bool");
+    saveStateValue(&numScreensNumericFont,          sizeof(numScreensNumericFont),                               "numScreensNumericFont",          "uint8");
+    saveStateValue(&numLinesNumericFont,            sizeof(numLinesNumericFont),                                 "numLinesNumericFont",            "uint8");
+    saveStateValue(&numScreensStandardFont,         sizeof(numScreensStandardFont),                              "numScreensStandardFont",         "uint8");
+    saveStateValue(&numLinesStandardFont,           sizeof(numLinesStandardFont),                                "numLinesStandardFont",           "uint8");
+    saveStateValue(&numScreensTinyFont,             sizeof(numScreensTinyFont),                                  "numScreensTinyFont",             "uint8");
+    saveStateValue(&numLinesTinyFont,               sizeof(numLinesTinyFont),                                    "numLinesTinyFont",               "uint8");
+    saveStateValue(&previousCalcMode,               sizeof(previousCalcMode),                                    "previousCalcMode",               "uint8");
+    saveStateValue(&lastErrorCode,                  sizeof(lastErrorCode),                                       "lastErrorCode",                  "uint8");
+    saveStateValue(&nimNumberPart,                  sizeof(nimNumberPart),                                       "nimNumberPart",                  "uint8");
+    saveStateValue(&displayStack,                   sizeof(displayStack),                                        "displayStack",                   "uint8");
+    saveStateValue(&hexDigits,                      sizeof(hexDigits),                                           "hexDigits",                      "uint8");
+    saveStateValue(&errorMessageRegisterLine,       sizeof(errorMessageRegisterLine),                            "errorMessageRegisterLine",       "int16");
+    saveStateValue(&shortIntegerMask,               sizeof(shortIntegerMask),                                    "shortIntegerMask",               "uint64");
+    saveStateValue(&shortIntegerSignBit,            sizeof(shortIntegerSignBit),                                 "shortIntegerSignBit",            "uint64");
+    saveStateValue(&temporaryInformation,           sizeof(temporaryInformation),                                "temporaryInformation",           "uint8");
+    saveStateValue(&glyphNotFound,                  sizeof(glyphNotFound),                                       "glyphNotFound",                  "hexDump");
+    saveStateValue(&funcOK,                         sizeof(funcOK),                                              "funcOK",                         "bool");
+    saveStateValue(&screenChange,                   sizeof(screenChange),                                        "screenChange",                   "bool");
+    saveStateValue(&exponentSignLocation,           sizeof(exponentSignLocation),                                "exponentSignLocation",           "int16");
+    saveStateValue(&denominatorLocation,            sizeof(denominatorLocation),                                 "denominatorLocation",            "int16");
+    saveStateValue(&imaginaryExponentSignLocation,  sizeof(imaginaryExponentSignLocation),                       "imaginaryExponentSignLocation",  "int16");
+    saveStateValue(&imaginaryMantissaSignLocation,  sizeof(imaginaryMantissaSignLocation),                       "imaginaryMantissaSignLocation",  "int16");
+    saveStateValue(&lineTWidth,                     sizeof(lineTWidth),                                          "lineTWidth",                     "int16");
+    saveStateValue(&lastIntegerBase,                sizeof(lastIntegerBase),                                     "lastIntegerBase",                "uint32");
+    saveStateValue(&c47MemInBlocks,                 sizeof(c47MemInBlocks),                                      "c47MemInBlocks",                 "uint64");
+    saveStateValue(&gmpMemInBytes,                  sizeof(gmpMemInBytes),                                       "gmpMemInBytes",                  "uint64");
+    saveStateValue(&catalog,                        sizeof(catalog),                                             "catalog",                        "int16");
+    saveStateValue(&lastCatalogPosition,            sizeof(lastCatalogPosition),                                 "lastCatalogPosition",            "int16");
+    saveStateValue(&lgCatalogSelection,             sizeof(lgCatalogSelection),                                  "lgCatalogSelection",             "int32");
+    saveStateValue(displayValueX,                   sizeof(displayValueX),                                       "displayValueX",                  "hexDump");
+    saveStateValue(&pcg32_global,                   sizeof(pcg32_global),                                        "pcg32_global",                   "hexDump");
+    saveStateValue(&exponentLimit,                  sizeof(exponentLimit),                                       "exponentLimit",                  "int16");
+    saveStateValue(&exponentHideLimit,              sizeof(exponentHideLimit),                                   "exponentHideLimit",              "int16");
+    saveStateValue(&keyActionProcessed,             sizeof(keyActionProcessed),                                  "keyActionProcessed",             "bool");
+    saveStateValue(&systemFlags,                    sizeof(systemFlags),                                         "systemFlags",                    "uint64");
+    saveStateValue(&savedSystemFlags,               sizeof(savedSystemFlags),                                    "savedSystemFlags",               "uint64");
+    saveStateValue(&thereIsSomethingToUndo,         sizeof(thereIsSomethingToUndo),                              "thereIsSomethingToUndo",         "bool");
+    saveStateValue(&freeProgramBytes,               sizeof(freeProgramBytes),                                    "freeProgramBytes",               "uint16");
+    saveStateValue(&firstDisplayedLocalStepNumber,  sizeof(firstDisplayedLocalStepNumber),                       "firstDisplayedLocalStepNumber",  "uint16");
+    saveStateValue(&numberOfLabels,                 sizeof(numberOfLabels),                                      "numberOfLabels",                 "uint16");
+    saveStateValue(&numberOfPrograms,               sizeof(numberOfPrograms),                                    "numberOfPrograms",               "uint16");
+    saveStateValue(&currentLocalStepNumber,         sizeof(currentLocalStepNumber),                              "currentLocalStepNumber",         "uint16");
+    saveStateValue(&currentProgramNumber,           sizeof(currentProgramNumber),                                "currentProgramNumber",           "uint16");
+    saveStateValue(&lastProgramListEnd,             sizeof(lastProgramListEnd),                                  "lastProgramListEnd",             "bool");
+    saveStateValue(&programListEnd,                 sizeof(programListEnd),                                      "programListEnd",                 "bool");
+    saveStateValue(&allSubroutineLevels,            sizeof(allSubroutineLevels),                                 "allSubroutineLevels",            "uint32");
+    saveStateValue(&pemCursorIsZerothStep,          sizeof(pemCursorIsZerothStep),                               "pemCursorIsZerothStep",          "bool");
+    saveStateValue(&halfSecTick,                    sizeof(halfSecTick),                                         "halfSecTick",                    "bool");
+    saveStateValue(&numberOfTamMenusToPop,          sizeof(numberOfTamMenusToPop),                               "numberOfTamMenusToPop",          "int16");
+    saveStateValue(&lrSelection,                    sizeof(lrSelection),                                         "lrSelection",                    "uint16");
+    saveStateValue(&lrSelectionUndo,                sizeof(lrSelectionUndo),                                     "lrSelectionUndo",                "uint16");
+    saveStateValue(&lrChosen,                       sizeof(lrChosen),                                            "lrChosen",                       "uint16");
+    saveStateValue(&lrChosenUndo,                   sizeof(lrChosenUndo),                                        "lrChosenUndo",                   "uint16");
+    saveStateValue(&lastPlotMode,                   sizeof(lastPlotMode),                                        "lastPlotMode",                   "uint16");
+    saveStateValue(&plotSelection,                  sizeof(plotSelection),                                       "plotSelection",                  "uint16");
+    saveStateValue(&graph_dx,                       sizeof(graph_dx),                                            "graph_dx",                       "float");
+    saveStateValue(&graph_dy,                       sizeof(graph_dy),                                            "graph_dy",                       "float");
+    saveStateValue(&roundedTicks,                   sizeof(roundedTicks),                                        "roundedTicks",                   "bool");
+    saveStateValue(&extentx,                        sizeof(extentx),                                             "extentx",                        "bool");
+    saveStateValue(&extenty,                        sizeof(extenty),                                             "extenty",                        "bool");
+    saveStateValue(&PLOT_VECT,                      sizeof(PLOT_VECT),                                           "PLOT_VECT",                      "bool");
+    saveStateValue(&PLOT_NVECT,                     sizeof(PLOT_NVECT),                                          "PLOT_NVECT",                     "bool");
+    saveStateValue(&PLOT_SCALE,                     sizeof(PLOT_SCALE),                                          "PLOT_SCALE",                     "bool");
+    saveStateValue(&Aspect_Square,                  sizeof(Aspect_Square),                                       "Aspect_Square",                  "bool");
+    saveStateValue(&PLOT_LINE,                      sizeof(PLOT_LINE),                                           "PLOT_LINE",                      "bool");
+    saveStateValue(&PLOT_CROSS,                     sizeof(PLOT_CROSS),                                          "PLOT_CROSS",                     "bool");
+    saveStateValue(&PLOT_BOX,                       sizeof(PLOT_BOX),                                            "PLOT_BOX",                       "bool");
+    saveStateValue(&PLOT_INTG,                      sizeof(PLOT_INTG),                                           "PLOT_INTG",                      "bool");
+    saveStateValue(&PLOT_DIFF,                      sizeof(PLOT_DIFF),                                           "PLOT_DIFF",                      "bool");
+    saveStateValue(&PLOT_RMS,                       sizeof(PLOT_RMS),                                            "PLOT_RMS",                       "bool");
+    saveStateValue(&PLOT_SHADE,                     sizeof(PLOT_SHADE),                                          "PLOT_SHADE",                     "bool");
+    saveStateValue(&PLOT_AXIS,                      sizeof(PLOT_AXIS),                                           "PLOT_AXIS",                      "bool");
+    saveStateValue(&PLOT_ZMX,                       sizeof(PLOT_ZMX),                                            "PLOT_ZMX",                       "int8");
+    saveStateValue(&PLOT_ZMY,                       sizeof(PLOT_ZMY),                                            "PLOT_ZMY",                       "int8");
+    saveStateValue(&PLOT_ZOOM,                      sizeof(PLOT_ZOOM),                                           "PLOT_ZOOM",                      "uint8");
+    saveStateValue(&plotmode,                       sizeof(plotmode),                                            "plotmode",                       "int8");
+    saveStateValue(&tick_int_x,                     sizeof(tick_int_x),                                          "tick_int_x",                     "float");
+    saveStateValue(&tick_int_y,                     sizeof(tick_int_y),                                          "tick_int_y",                     "float");
+    saveStateValue(&x_min,                          sizeof(x_min),                                               "x_min",                          "float");
+    saveStateValue(&x_max,                          sizeof(x_max),                                               "x_max",                          "float");
+    saveStateValue(&y_min,                          sizeof(y_min),                                               "y_min",                          "float");
+    saveStateValue(&y_max,                          sizeof(y_max),                                               "y_max",                          "float");
+    saveStateValue(&xzero,                          sizeof(xzero),                                               "xzero",                          "uint32");
+    saveStateValue(&yzero,                          sizeof(yzero),                                               "yzero",                          "uint32");
+    saveStateValue(&matrixIndex,                    sizeof(matrixIndex),                                         "matrixIndex",                    "uint16");
+    saveStateValue(&currentViewRegister,            sizeof(currentViewRegister),                                 "currentViewRegister",            "uint16");
+    saveStateValue(&currentSolverStatus,            sizeof(currentSolverStatus),                                 "currentSolverStatus",            "uint16");
+    saveStateValue(&currentSolverProgram,           sizeof(currentSolverProgram),                                "currentSolverProgram",           "uint16");
+    saveStateValue(&currentSolverVariable,          sizeof(currentSolverVariable),                               "currentSolverVariable",          "uint16");
+    saveStateValue(&numberOfFormulae,               sizeof(numberOfFormulae),                                    "numberOfFormulae",               "uint16");
+    saveStateValue(&currentFormula,                 sizeof(currentFormula),                                      "currentFormula",                 "uint16");
+    saveStateValue(&numberOfUserMenus,              sizeof(numberOfUserMenus),                                   "numberOfUserMenus",              "uint16");
+    saveStateValue(&currentUserMenu,                sizeof(currentUserMenu),                                     "currentUserMenu",                "uint16");
+    saveStateValue(&userKeyLabelSize,               sizeof(userKeyLabelSize),                                    "userKeyLabelSize",               "uint16");
+    saveStateValue(&timerCraAndDeciseconds,         sizeof(timerCraAndDeciseconds),                              "timerCraAndDeciseconds",         "uint8");
+    saveStateValue(&timerValue,                     sizeof(timerValue),                                          "timerValue",                     "uint32");
+    saveStateValue(&timerTotalTime,                 sizeof(timerTotalTime),                                      "timerTotalTime",                 "uint32");
+    saveStateValue(&currentInputVariable,           sizeof(currentInputVariable),                                "currentInputVariable",           "uint16");
+    saveStateValue(&SAVED_SIGMA_LASTX,              sizeof(SAVED_SIGMA_LASTX),                                   "SAVED_SIGMA_LASTX",              "real");
+    saveStateValue(&SAVED_SIGMA_LASTY,              sizeof(SAVED_SIGMA_LASTY),                                   "SAVED_SIGMA_LASTY",              "real");
+    saveStateValue(&SAVED_SIGMA_LAct,               sizeof(SAVED_SIGMA_LAct),                                    "SAVED_SIGMA_LAct",               "real");
+    saveStateValue(&currentMvarLabel,               sizeof(currentMvarLabel),                                    "currentMvarLabel",               "uint16");
+    saveStateValue(&graphVariable,                  sizeof(graphVariable),                                       "graphVariable",                  "int32");
+    saveStateValue(&plotStatMx,                     sizeof(plotStatMx),                                          "plotStatMx",                     "hexDump");
+    saveStateValue(&drawHistogram,                  sizeof(drawHistogram),                                       "drawHistogram",                  "uint8");
+    saveStateValue(&statMx,                         sizeof(statMx),                                              "statMx",                         "hexDump");
+    saveStateValue(&lrSelectionHistobackup,         sizeof(lrSelectionHistobackup),                              "lrSelectionHistobackup",         "uint16");
+    saveStateValue(&lrChosenHistobackup,            sizeof(lrChosenHistobackup),                                 "lrChosenHistobackup",            "uint16");
+    saveStateValue(&loBinR,                         sizeof(loBinR),                                              "loBinR",                         "real34");
+    saveStateValue(&nBins,                          sizeof(nBins),                                               "nBins",                          "real34");
+    saveStateValue(&hiBinR,                         sizeof(hiBinR),                                              "hiBinR",                         "real34");
+    saveStateValue(&histElementXorY,                sizeof(histElementXorY),                                     "histElementXorY",                "int16");
+    saveStateValue(&screenUpdatingMode,             sizeof(screenUpdatingMode),                                  "screenUpdatingMode",             "uint8");
+    //save and restore screenData is not mandatory
+    //saveStateValue(screenData,                      0,                                                           "screenData",                     "screenData");
+    saveStateValue(&eRPN,                           sizeof(eRPN),                                                "eRPN",                           "bool");    //JM vv
+    saveStateValue(&HOME3,                          sizeof(HOME3),                                               "HOME3",                          "bool");
+    saveStateValue(&ShiftTimoutMode,                sizeof(ShiftTimoutMode),                                     "ShiftTimoutMode",                "bool");
+    saveStateValue(&CPXMULT,                        sizeof(CPXMULT),                                             "CPXMULT",                        "bool");    //JM
+    saveStateValue(&fgLN,                           sizeof(fgLN),                                                "fgLN",                           "uint8");
+    saveStateValue(&BASE_HOME,                      sizeof(BASE_HOME),                                           "BASE_HOME",                      "bool");
+    saveStateValue(&Norm_Key_00_VAR,                sizeof(Norm_Key_00_VAR),                                     "Norm_Key_00_VAR",                "int16");
+    saveStateValue(&Input_Default,                  sizeof(Input_Default),                                       "Input_Default",                  "uint8");
+    saveStateValue(&BASE_MYM,                       sizeof(BASE_MYM),                                            "BASE_MYM",                       "bool");
+    saveStateValue(&jm_G_DOUBLETAP,                 sizeof(jm_G_DOUBLETAP),                                      "jm_G_DOUBLETAP",                 "bool");
+    saveStateValue(&graph_xmin,                     sizeof(graph_xmin),                                          "graph_xmin",                     "float");
+    saveStateValue(&graph_xmax,                     sizeof(graph_xmax),                                          "graph_xmax",                     "float");
+    saveStateValue(&graph_ymin,                     sizeof(graph_ymin),                                          "graph_ymin",                     "float");
+    saveStateValue(&graph_ymax,                     sizeof(graph_ymax),                                          "graph_ymax",                     "float");
+    saveStateValue(&jm_LARGELI,                     sizeof(jm_LARGELI),                                          "jm_LARGELI",                     "bool");
+    saveStateValue(&constantFractions,              sizeof(constantFractions),                                   "constantFractions",              "bool");
+    saveStateValue(&constantFractionsMode,          sizeof(constantFractionsMode),                               "constantFractionsMode",          "uint8");
+    saveStateValue(&constantFractionsOn,            sizeof(constantFractionsOn),                                 "constantFractionsOn",            "bool");
+    saveStateValue(&running_program_jm,             sizeof(running_program_jm),                                  "running_program_jm",             "bool");
+    saveStateValue(&indic_x,                        sizeof(indic_x),                                             "indic_x",                        "uint32");
+    saveStateValue(&indic_y,                        sizeof(indic_y),                                             "indic_y",                        "uint32");
+    saveStateValue(&fnXEQMENUpos,                   sizeof(fnXEQMENUpos),                                        "fnXEQMENUpos",                   "int16");
+    saveStateValue(&indexOfItemsXEQM,               sizeof(indexOfItemsXEQM),                                    "indexOfItemsXEQM",               "hexDump");
+    saveStateValue(&T_cursorPos,                    sizeof(T_cursorPos),                                         "T_cursorPos",                    "int16");   //JM ^^
+    saveStateValue(&SHOWregis,                      sizeof(SHOWregis),                                           "SHOWregis",                      "int16");   //JM ^^
+    saveStateValue(&displayStackSHOIDISP,           sizeof(displayStackSHOIDISP),                                "displayStackSHOIDISP",           "uint8");   //JM ^^
+    saveStateValue(&ListXYposition,                 sizeof(ListXYposition),                                      "ListXYposition",                 "int16");   //JM ^^
+    saveStateValue(&numLock,                        sizeof(numLock),                                             "numLock",                        "bool");    //JM ^^
+    saveStateValue(&DRG_Cycling,                    sizeof(DRG_Cycling),                                         "DRG_Cycling",                    "uint8");   //JM
+    saveStateValue(&lastFlgScr,                     sizeof(lastFlgScr),                                          "lastFlgScr",                     "uint8");   //C43 JM
+    saveStateValue(&displayAIMbufferoffset,         sizeof(displayAIMbufferoffset),                              "displayAIMbufferoffset",         "int16");   //C43 JM
+    saveStateValue(&bcdDisplay,                     sizeof(bcdDisplay),                                          "bcdDisplay",                     "bool");    //C43 JM
+    saveStateValue(&topHex,                         sizeof(topHex),                                              "topHex",                         "bool");    //C43 JM
+    saveStateValue(&bcdDisplaySign,                 sizeof(bcdDisplaySign),                                      "bcdDisplaySign",                 "uint8");   //C43 JM
+    saveStateValue(&DM_Cycling,                     sizeof(DM_Cycling),                                          "DM_Cycling",                     "uint8");   //JM
+    saveStateValue(&SI_All,                         sizeof(SI_All),                                              "SI_All",                         "bool");    //JM
+    saveStateValue(&LongPressM,                     sizeof(LongPressM),                                          "LongPressM",                     "uint8");   //JM
+    saveStateValue(&LongPressF,                     sizeof(LongPressF),                                          "LongPressF",                     "uint8");   //JM
+    saveStateValue(&currentAsnScr,                  sizeof(currentAsnScr),                                       "currentAsnScr",                  "uint8");   //JM
+    saveStateValue(&gapItemLeft,                    sizeof(gapItemLeft),                                         "gapItemLeft",                    "uint16");  //JM
+    saveStateValue(&gapItemRight,                   sizeof(gapItemRight),                                        "gapItemRight",                   "uint16");  //JM
+    saveStateValue(&gapItemRadix,                   sizeof(gapItemRadix),                                        "gapItemRadix",                   "uint16");  //JM
+    saveStateValue(&grpGroupingLeft,                sizeof(grpGroupingLeft),                                     "grpGroupingLeft",                "uint8");   //JM
+    saveStateValue(&grpGroupingGr1LeftOverflow,     sizeof(grpGroupingGr1LeftOverflow),                          "grpGroupingGr1LeftOverflow",     "uint8");   //JM
+    saveStateValue(&grpGroupingGr1Left,             sizeof(grpGroupingGr1Left),                                  "grpGroupingGr1Left",             "uint8");   //JM
+    saveStateValue(&grpGroupingRight,               sizeof(grpGroupingRight),                                    "grpGroupingRight",               "uint8");   //JM
+    saveStateValue(&MYM3,                           sizeof(MYM3),                                                "MYM3",                           "bool");
+
     ramPtr = TO_C47MEMPTR(allNamedVariables);
-    save(&ramPtr,                             sizeof(ramPtr));
+    saveStateValue(&ramPtr,                         sizeof(ramPtr),                                              "allNamedVariables",              "c47Ptr");
+
     ramPtr = TO_C47MEMPTR(allFormulae);
-    save(&ramPtr,                             sizeof(ramPtr));
+    saveStateValue(&ramPtr,                         sizeof(ramPtr),                                              "allFormulae",                    "c47Ptr");
+
     ramPtr = TO_C47MEMPTR(userMenus);
-    save(&ramPtr,                             sizeof(ramPtr));
+    saveStateValue(&ramPtr,                         sizeof(ramPtr),                                              "userMenus",                      "c47Ptr");
+
     ramPtr = TO_C47MEMPTR(userKeyLabel);
-    save(&ramPtr,                             sizeof(ramPtr));
+    saveStateValue(&ramPtr,                         sizeof(ramPtr),                                              "userKeyLabel",                   "c47Ptr");
+
     ramPtr = TO_C47MEMPTR(statisticalSumsPointer);
-    save(&ramPtr,                             sizeof(ramPtr));
+    saveStateValue(&ramPtr,                         sizeof(ramPtr),                                              "statisticalSumsPointer",         "c47Ptr");
+
     ramPtr = TO_C47MEMPTR(savedStatisticalSumsPointer);
-    save(&ramPtr,                             sizeof(ramPtr));
+    saveStateValue(&ramPtr,                         sizeof(ramPtr),                                              "savedStatisticalSumsPointer",    "c47Ptr");
+
     ramPtr = TO_C47MEMPTR(labelList);
-    save(&ramPtr,                             sizeof(ramPtr));
+    saveStateValue(&ramPtr,                         sizeof(ramPtr),                                              "labelList",                      "c47Ptr");
+
     ramPtr = TO_C47MEMPTR(programList);
-    save(&ramPtr,                             sizeof(ramPtr));
+    saveStateValue(&ramPtr,                         sizeof(ramPtr),                                              "programList",                    "c47Ptr");
+
     ramPtr = TO_C47MEMPTR(currentSubroutineLevelData);
-    save(&ramPtr,                             sizeof(ramPtr));
-    save(&xCursor,                            sizeof(xCursor));
-    save(&yCursor,                            sizeof(yCursor));
-    save(&firstGregorianDay,                  sizeof(firstGregorianDay));
-    save(&denMax,                             sizeof(denMax));
-    save(&lastDenominator,                    sizeof(lastDenominator));
-    save(&currentRegisterBrowserScreen,       sizeof(currentRegisterBrowserScreen));
-    save(&currentFntScr,                      sizeof(currentFntScr));
-    save(&currentFlgScr,                      sizeof(currentFlgScr));
-    save(&displayFormat,                      sizeof(displayFormat));
-    save(&displayFormatDigits,                sizeof(displayFormatDigits));
-    save(&timeDisplayFormatDigits,            sizeof(timeDisplayFormatDigits));
-    save(&shortIntegerWordSize,               sizeof(shortIntegerWordSize));
-    save(&significantDigits,                  sizeof(significantDigits));
-    save(&shortIntegerMode,                   sizeof(shortIntegerMode));
-    save(&currentAngularMode,                 sizeof(currentAngularMode));
-    save(&scrLock,                            sizeof(scrLock));
-    save(&roundingMode,                       sizeof(roundingMode));
-    save(&calcMode,                           sizeof(calcMode));
-    save(&nextChar,                           sizeof(nextChar));
-    save(&alphaCase,                          sizeof(alphaCase));
-    save(&hourGlassIconEnabled,               sizeof(hourGlassIconEnabled));
-    save(&watchIconEnabled,                   sizeof(watchIconEnabled));
-    save(&serialIOIconEnabled,                sizeof(serialIOIconEnabled));
-    save(&printerIconEnabled,                 sizeof(printerIconEnabled));
-    save(&programRunStop,                     sizeof(programRunStop));
-    save(&entryStatus,                        sizeof(entryStatus));
-    save(&cursorEnabled,                      sizeof(cursorEnabled));
-    save(&cursorFont,                         sizeof(cursorFont));
-    save(&rbr1stDigit,                        sizeof(rbr1stDigit));
-    save(&shiftF,                             sizeof(shiftF));
-    save(&shiftG,                             sizeof(shiftG));
-    save(&rbrMode,                            sizeof(rbrMode));
-    save(&showContent,                        sizeof(showContent));
-    save(&numScreensNumericFont,              sizeof(numScreensNumericFont));
-    save(&numLinesNumericFont,                sizeof(numLinesNumericFont));
-    save(&numLinesStandardFont,               sizeof(numLinesStandardFont));
-    save(&numScreensStandardFont,             sizeof(numScreensStandardFont));
-    save(&previousCalcMode,                   sizeof(previousCalcMode));
-    save(&lastErrorCode,                      sizeof(lastErrorCode));
-    save(&nimNumberPart,                      sizeof(nimNumberPart));
-    save(&displayStack,                       sizeof(displayStack));
-    save(&hexDigits,                          sizeof(hexDigits));
-    save(&errorMessageRegisterLine,           sizeof(errorMessageRegisterLine));
-    save(&shortIntegerMask,                   sizeof(shortIntegerMask));
-    save(&shortIntegerSignBit,                sizeof(shortIntegerSignBit));
-    save(&temporaryInformation,               sizeof(temporaryInformation));
-    save(&glyphNotFound,                      sizeof(glyphNotFound));
-    save(&funcOK,                             sizeof(funcOK));
-    save(&screenChange,                       sizeof(screenChange));
-    save(&exponentSignLocation,               sizeof(exponentSignLocation));
-    save(&denominatorLocation,                sizeof(denominatorLocation));
-    save(&imaginaryExponentSignLocation,      sizeof(imaginaryExponentSignLocation));
-    save(&imaginaryMantissaSignLocation,      sizeof(imaginaryMantissaSignLocation));
-    save(&lineTWidth,                         sizeof(lineTWidth));
-    save(&lastIntegerBase,                    sizeof(lastIntegerBase));
-    save(&c47MemInBlocks,                     sizeof(c47MemInBlocks));
-    save(&gmpMemInBytes,                      sizeof(gmpMemInBytes));
-    save(&catalog,                            sizeof(catalog));
-    save(&lastCatalogPosition,                sizeof(lastCatalogPosition));
-    save(&lgCatalogSelection,                 sizeof(lgCatalogSelection));
-    save(displayValueX,                       sizeof(displayValueX));
-    save(&pcg32_global,                       sizeof(pcg32_global));
-    save(&exponentLimit,                      sizeof(exponentLimit));
-    save(&exponentHideLimit,                  sizeof(exponentHideLimit));
-    save(&keyActionProcessed,                 sizeof(keyActionProcessed));
-    save(&systemFlags,                        sizeof(systemFlags));
-    save(&savedSystemFlags,                   sizeof(savedSystemFlags));
-    save(&thereIsSomethingToUndo,             sizeof(thereIsSomethingToUndo));
+    saveStateValue(&ramPtr,                         sizeof(ramPtr),                                              "currentSubroutineLevelData",     "c47Ptr");
+
     ramPtr = TO_C47MEMPTR(beginOfProgramMemory);
-    save(&ramPtr,                             sizeof(ramPtr)); // beginOfProgramMemory pointer to block
+    saveStateValue(&ramPtr,                         sizeof(ramPtr),                                              "beginOfProgramMemory",           "c47Ptr"); // beginOfProgramMemory pointer to block
+
     ramPtr = (uint32_t)((void *)beginOfProgramMemory - TO_PCMEMPTR(TO_C47MEMPTR(beginOfProgramMemory)));
-    save(&ramPtr,                             sizeof(ramPtr)); // beginOfProgramMemory offset within block
+    saveStateValue(&ramPtr,                         sizeof(ramPtr),                                              "beginOfProgramMemoryOffset",     "uint32"); // beginOfProgramMemory offset within block
+
     ramPtr = TO_C47MEMPTR(firstFreeProgramByte);
-    save(&ramPtr,                             sizeof(ramPtr)); // firstFreeProgramByte pointer to block
+    saveStateValue(&ramPtr,                         sizeof(ramPtr),                                              "firstFreeProgramByte",           "c47Ptr"); // firstFreeProgramByte pointer to block
+
     ramPtr = (uint32_t)((void *)firstFreeProgramByte - TO_PCMEMPTR(TO_C47MEMPTR(firstFreeProgramByte)));
-    save(&ramPtr,                             sizeof(ramPtr)); // firstFreeProgramByte offset within block
+    saveStateValue(&ramPtr,                         sizeof(ramPtr),                                              "firstFreeProgramByteOffset",     "uint32"); // firstFreeProgramByte offset within block
+
     ramPtr = TO_C47MEMPTR(firstDisplayedStep);
-    save(&ramPtr,                             sizeof(ramPtr)); // firstDisplayedStep pointer to block
+    saveStateValue(&ramPtr,                         sizeof(ramPtr),                                              "firstDisplayedStep",             "c47Ptr"); // firstDisplayedStep pointer to block
+
     ramPtr = (uint32_t)((void *)firstDisplayedStep - TO_PCMEMPTR(TO_C47MEMPTR(firstDisplayedStep)));
-    save(&ramPtr,                             sizeof(ramPtr)); // firstDisplayedStep offset within block
+    saveStateValue(&ramPtr,                         sizeof(ramPtr),                                              "firstDisplayedStepOffset",       "uint32"); // firstDisplayedStep offset within block
+
     ramPtr = TO_C47MEMPTR(currentStep);
-    save(&ramPtr,                             sizeof(ramPtr)); // currentStep pointer to block
+    saveStateValue(&ramPtr,                         sizeof(ramPtr),                                              "currentStep",                    "c47Ptr"); // currentStep pointer to block
+
     ramPtr = (uint32_t)((void *)currentStep - TO_PCMEMPTR(TO_C47MEMPTR(currentStep)));
-    save(&ramPtr,                             sizeof(ramPtr)); // currentStep offset within block
-    save(&freeProgramBytes,                   sizeof(freeProgramBytes));
-    save(&firstDisplayedLocalStepNumber,      sizeof(firstDisplayedLocalStepNumber));
-    save(&numberOfLabels,                     sizeof(numberOfLabels));
-    save(&numberOfPrograms,                   sizeof(numberOfPrograms));
-    save(&currentLocalStepNumber,             sizeof(currentLocalStepNumber));
-    save(&currentProgramNumber,               sizeof(currentProgramNumber));
-    save(&lastProgramListEnd,                 sizeof(lastProgramListEnd));
-    save(&programListEnd,                     sizeof(programListEnd));
-    save(&allSubroutineLevels,                sizeof(allSubroutineLevels));
-    save(&pemCursorIsZerothStep,              sizeof(pemCursorIsZerothStep));
-    save(&halfSecTick,                        sizeof(halfSecTick));
-    save(&numberOfTamMenusToPop,              sizeof(numberOfTamMenusToPop));
-    save(&lrSelection,                        sizeof(lrSelection));
-    save(&lrSelectionUndo,                    sizeof(lrSelectionUndo));
-    save(&lrChosen,                           sizeof(lrChosen));
-    save(&lrChosenUndo,                       sizeof(lrChosenUndo));
-    save(&lastPlotMode,                       sizeof(lastPlotMode));
-    save(&plotSelection,                      sizeof(plotSelection));
+    saveStateValue(&ramPtr,                         sizeof(ramPtr),                                              "currentStepOffset",              "uint32"); // currentStep offset within block
 
-    save(&graph_dx,                           sizeof(graph_dx));
-    save(&graph_dy,                           sizeof(graph_dy));
-    save(&roundedTicks,                       sizeof(roundedTicks));
-    save(&extentx,                            sizeof(extentx));
-    save(&extenty,                            sizeof(extenty));
-    save(&PLOT_VECT,                          sizeof(PLOT_VECT));
-    save(&PLOT_NVECT,                         sizeof(PLOT_NVECT));
-    save(&PLOT_SCALE,                         sizeof(PLOT_SCALE));
-    save(&Aspect_Square,                      sizeof(Aspect_Square));
-    save(&PLOT_LINE,                          sizeof(PLOT_LINE));
-    save(&PLOT_CROSS,                         sizeof(PLOT_CROSS));
-    save(&PLOT_BOX,                           sizeof(PLOT_BOX));
-    save(&PLOT_INTG,                          sizeof(PLOT_INTG));
-    save(&PLOT_DIFF,                          sizeof(PLOT_DIFF));
-    save(&PLOT_RMS,                           sizeof(PLOT_RMS));
-    save(&PLOT_SHADE,                         sizeof(PLOT_SHADE));
-    save(&PLOT_AXIS,                          sizeof(PLOT_AXIS));
-    save(&PLOT_ZMX,                           sizeof(PLOT_ZMX));
-    save(&PLOT_ZMY,                           sizeof(PLOT_ZMY));
-    save(&PLOT_ZOOM,                          sizeof(PLOT_ZOOM));
-    save(&plotmode,                           sizeof(plotmode));
-    save(&tick_int_x,                         sizeof(tick_int_x));
-    save(&tick_int_y,                         sizeof(tick_int_y));
-    save(&x_min,                              sizeof(x_min));
-    save(&x_max,                              sizeof(x_max));
-    save(&y_min,                              sizeof(y_min));
-    save(&y_max,                              sizeof(y_max));
-    save(&xzero,                              sizeof(xzero));
-    save(&yzero,                              sizeof(yzero));
-    save(&matrixIndex,                        sizeof(matrixIndex));
-    save(&currentViewRegister,                sizeof(currentViewRegister));
-    save(&currentSolverStatus,                sizeof(currentSolverStatus));
-    save(&currentSolverProgram,               sizeof(currentSolverProgram));
-    save(&currentSolverVariable,              sizeof(currentSolverVariable));
-    save(&numberOfFormulae,                   sizeof(numberOfFormulae));
-    save(&currentFormula,                     sizeof(currentFormula));
-    save(&numberOfUserMenus,                  sizeof(numberOfUserMenus));
-    save(&currentUserMenu,                    sizeof(currentUserMenu));
-    save(&userKeyLabelSize,                   sizeof(userKeyLabelSize));
-    save(&timerCraAndDeciseconds,             sizeof(timerCraAndDeciseconds));
-    save(&timerValue,                         sizeof(timerValue));
-    save(&timerTotalTime,                     sizeof(timerTotalTime));
-    save(&currentInputVariable,               sizeof(currentInputVariable));
-    save(&SAVED_SIGMA_LASTX,                  sizeof(SAVED_SIGMA_LASTX));
-    save(&SAVED_SIGMA_LASTY,                  sizeof(SAVED_SIGMA_LASTY));
-    save(&SAVED_SIGMA_LAct,                   sizeof(SAVED_SIGMA_LAct));
-    save(&currentMvarLabel,                   sizeof(currentMvarLabel));
-    save(&graphVariable,                      sizeof(graphVariable));
-    save(&plotStatMx,                         sizeof(plotStatMx));
-    save(&drawHistogram,                      sizeof(drawHistogram));
-    save(&statMx,                             sizeof(statMx));
-    save(&lrSelectionHistobackup,             sizeof(lrSelectionHistobackup));
-    save(&lrChosenHistobackup,                sizeof(lrChosenHistobackup));
-    save(&loBinR,                             sizeof(loBinR));
-    save(&nBins ,                             sizeof(nBins ));
-    save(&hiBinR,                             sizeof(hiBinR));
-    save(&histElementXorY,                    sizeof(histElementXorY));
+    saveStateValue(ram,                             TO_BYTES(RAM_SIZE_IN_BLOCKS),                                "ram",                            "hexDump");
 
-    save(&screenUpdatingMode,                 sizeof(screenUpdatingMode));
-    for(int y = 0; y < SCREEN_HEIGHT; ++y) {
-      uint8_t bmpdata = 0;
-      for(int x = 0; x < SCREEN_WIDTH; ++x) {
-        bmpdata <<= 1;
-        if(*(screenData + y*screenStride + x) == ON_PIXEL) {
-          bmpdata |= 1;
-        }
-        if((x % 8) == 7) {
-          save(&bmpdata,                      sizeof(bmpdata));
-          bmpdata = 0;
-        }
-      }
-    }
-
-    save(&eRPN,                               sizeof(eRPN));                      //JM vv
-    save(&HOME3,                              sizeof(HOME3));
-    save(&ShiftTimoutMode,                    sizeof(ShiftTimoutMode));
-    save(&CPXMULT,                            sizeof(CPXMULT));                   //JM
-    save(&fgLN,                               sizeof(fgLN));
-    save(&BASE_HOME,                          sizeof(BASE_HOME));
-    save(&Norm_Key_00_VAR,                    sizeof(Norm_Key_00_VAR));
-    save(&Input_Default,                      sizeof(Input_Default));
-    save(&compatibility_bool,                 sizeof(compatibility_bool));        //EXTRA
-    save(&BASE_MYM,                           sizeof(BASE_MYM));
-    save(&jm_G_DOUBLETAP,                     sizeof(jm_G_DOUBLETAP));
-    save(&compatibility_bool,                 sizeof(compatibility_bool));              //EXTRA
-    save(&graph_xmin,                         sizeof(graph_xmin));
-    save(&graph_xmax,                         sizeof(graph_xmax));
-    save(&graph_ymin,                         sizeof(graph_ymin));
-    save(&graph_ymax,                         sizeof(graph_ymax));
-    save(&jm_LARGELI,                         sizeof(jm_LARGELI));
-    save(&constantFractions,                  sizeof(constantFractions));
-    save(&constantFractionsMode,              sizeof(constantFractionsMode));
-    save(&constantFractionsOn,                sizeof(constantFractionsOn));
-    save(&running_program_jm,                 sizeof(running_program_jm));
-    save(&indic_x,                            sizeof(indic_x));
-    save(&indic_y,                            sizeof(indic_y));
-    save(&fnXEQMENUpos,                       sizeof(fnXEQMENUpos));
-    save(&indexOfItemsXEQM,                   sizeof(indexOfItemsXEQM));
-    save(&T_cursorPos,                        sizeof(T_cursorPos));               //JM ^^
-    save(&SHOWregis,                          sizeof(SHOWregis));                 //JM ^^
-    save(&compatibility_u16,                  sizeof(compatibility_u16));            //SPARE USE THESE
-    save(&compatibility_u16,                  sizeof(compatibility_u16));            //SPARE USE THESE
-    save(&displayStackSHOIDISP,               sizeof(displayStackSHOIDISP));      //JM ^^
-    save(&ListXYposition,                     sizeof(ListXYposition));            //JM ^^
-    save(&numLock,                            sizeof(numLock));                   //JM ^^
-    save(&DRG_Cycling,                        sizeof(DRG_Cycling));               //JM
-    save(&lastFlgScr,                         sizeof(lastFlgScr));                //C43 JM
-    save(&displayAIMbufferoffset,             sizeof(displayAIMbufferoffset));    //C43 JM
-    save(&bcdDisplay,                         sizeof(bcdDisplay));                //C43 JM
-    save(&topHex,                             sizeof(topHex));                    //C43 JM
-    save(&bcdDisplaySign,                     sizeof(bcdDisplaySign));            //C43 JM
-    save(&DM_Cycling,                         sizeof(DM_Cycling));                //JM
-    save(&SI_All,                             sizeof(SI_All));                    //JM
-    save(&LongPressM,                         sizeof(LongPressM));                //JM
-    save(&LongPressF,                         sizeof(LongPressF));                //JM
-    save(&currentAsnScr,                      sizeof(currentAsnScr));             //JM
-
-    save(&gapItemLeft,                        sizeof(gapItemLeft));               //JM
-    save(&gapItemRight,                       sizeof(gapItemRight));              //JM
-    save(&gapItemRadix,                       sizeof(gapItemRadix));              //JM
-    save(&grpGroupingLeft,                    sizeof(grpGroupingLeft));           //JM
-    save(&grpGroupingGr1LeftOverflow,         sizeof(grpGroupingGr1LeftOverflow));//JM
-    save(&grpGroupingGr1Left,                 sizeof(grpGroupingGr1Left));        //JM
-    save(&grpGroupingRight,                   sizeof(grpGroupingRight));          //JM
-    save(&MYM3,                               sizeof(MYM3));
-
-    save(&numScreensTinyFont,                 sizeof(numScreensTinyFont));
-    save(&numLinesTinyFont,                   sizeof(numLinesTinyFont));
+    // If you create a new parameter, proceed as following:
+    //saveStateValue(&newParam,                       sizeof(newParam),                                            "newParam",                       "parameterType");
 
     ioFileClose();
     printf("End of calc's backup\n");
   }
 
 
+  static void restoreStateValue(const void *buffer, uint32_t size, const char *valueName, const char *valueType) {
+    char value[200], *typePtr, *valuePtr;
+
+    strcpy(value, valueName);
+    strcat(value, ":");
+    paramCurrent = paramHead;
+    while(paramCurrent) {
+      if(!strncmp(paramCurrent->param, value, strlen(value))) {
+        break;
+      }
+      paramCurrent = paramCurrent->next;
+    }
+
+    if(paramCurrent == NULL) {
+      printf("Parameter %s of type %s not found in file backup.cfg\n", valueName, valueType);
+      printf("Using default value for %s\n", valueName);
+      return;
+    }
+
+    if((typePtr = strchr(paramCurrent->param, ':')) == NULL) {
+      printf("Missing colon (:) after parameter name %s\n", paramCurrent->param);
+      printf("Using default value for %s\n", valueName);
+      return;
+    }
+    typePtr++;
+
+    if((valuePtr = strchr(typePtr, ':')) == NULL) {
+      printf("Missing colon (:) after parameter type %s\n", paramCurrent->param);
+      printf("Using default value for %s\n", valueName);
+      return;
+    }
+    valuePtr++;
+
+    char *p = typePtr;
+    int i = 0;
+    while(*p != ':') {
+      value[i++] = *p++;
+    }
+    value[i] = 0;
+
+    if(strcmp(valueType, value)) {
+      printf("Expected type for parameter %s is %s but %s found\n", valueName, valueType, value);
+      return;
+    }
+
+    if(!strcmp(valueType, "int64")) {
+      *(int64_t *)buffer = stringToInt64(valuePtr);
+    }
+
+    else if(!strcmp(valueType, "uint64")) {
+      *(uint64_t *)buffer = stringToUint64(valuePtr);
+    }
+
+    else if(!strcmp(valueType, "int32")) {
+      *(int32_t *)buffer = stringToInt32(valuePtr);
+    }
+
+    else if(!strcmp(valueType, "uint32")) {
+      *(uint32_t *)buffer = stringToUint32(valuePtr);
+    }
+
+    else if(!strcmp(valueType, "int16")) {
+      *(int16_t *)buffer = stringToInt16(valuePtr);
+    }
+
+    else if(!strcmp(valueType, "uint16")) {
+      *(uint16_t *)buffer = stringToUint16(valuePtr);
+    }
+
+    else if(!strcmp(valueType, "int8")) {
+      *(int8_t *)buffer = stringToInt8(valuePtr);
+    }
+
+    else if(!strcmp(valueType, "uint8")) {
+      *(uint8_t *)buffer = stringToUint8(valuePtr);
+    }
+
+    else if(!strcmp(valueType, "float")) {
+      *(float *)buffer = atof(valuePtr);
+    }
+
+    else if(!strcmp(valueType, "double")) {
+      *(double *)buffer = atof(valuePtr);
+    }
+
+    else if(!strcmp(valueType, "real")) {
+      stringToReal(valuePtr, (real_t *)buffer, &ctxtReal39);
+    }
+
+    else if(!strcmp(valueType, "real34")) {
+      stringToReal34(valuePtr, (real34_t *)buffer);
+    }
+
+    else if(!strcmp(valueType, "bool")) {
+      *(bool_t *)buffer = stringToInt8(valuePtr);
+      if(*(bool_t *)buffer != 0) {
+        *(bool_t *)buffer = true;
+      }
+    }
+
+    else if(!strcmp(valueType, "c47Ptr")) {
+      *(uint32_t *)buffer = stringToUint32(valuePtr);
+    }
+
+    else if(!strcmp(valueType, "hexDump")) {
+      uint32_t numberOfBytes = stringToUint32(valuePtr);
+      uint8_t hi, lo, *buf = (uint8_t *)buffer;
+      uint8_t *v;
+      for(uint32_t count=0; count < numberOfBytes; count++, buf++) {
+        if(count % 32 == 0) {
+          paramCurrent = paramCurrent->next;
+          v = (uint8_t *)paramCurrent->param + 7;
+        }
+
+        hi = *v - (*v <= '9' ? '0' : 'a' - 10);
+        v++;
+        lo = *v - (*v <= '9' ? '0' : 'a' - 10);
+        v += 2;
+        *buf = (hi << 4) | lo;
+      }
+    }
+
+    //save and restore screenData is not mandatory
+    //else if(!strcmp(valueType, "screenData")) {
+    //  uint8_t *ls = (uint8_t *)buffer;
+    //  for(int y = 0; y < SCREEN_HEIGHT; ++y) {
+    //    paramCurrent = paramCurrent->next;
+    //    for(int x = 0; x < SCREEN_WIDTH; ++x) {
+    //      *ls <<= 1;
+    //      if(paramCurrent->param[x] != ' ') {
+    //        *ls |= 1;
+    //      }
+    //      if((x % 8) == 7) {
+    //        ls++;
+    //      }
+    //    }
+    //  }
+    //}
+
+    else {
+      printf("ERROR: valueType %s unknown in function restoreStateValue!" LINEBREAK, valueType);
+    }
+  }
 
   void restoreCalc(void) {
     printf("RestoreCalc\n");
-    //uint8_t  compatibility_u8;        //defaults to use when settings are removed
-    bool_t   compatibility_bool;      //defaults to use when settings are removed
-    int16_t  compatibility_u16;        //defaults to use when settings are removed
-    uint32_t backupVersion, ramSizeInBlocks, ramPtr;
+    uint32_t ramSizeInBlocks = 0, ramPtr = 0, backupVersion;
     int ret;
-    uint8_t *loadedScreen = malloc(SCREEN_WIDTH * SCREEN_HEIGHT / 8);
+    //save and restore screenData is not mandatory
+    //uint8_t *loadedScreen = malloc(SCREEN_WIDTH * SCREEN_HEIGHT / 8);
+    char oneParam[200];
 
     doFnReset(CONFIRMED, loadAutoSav);
     ret = ioFileOpen(ioPathBackup, ioModeRead);
@@ -433,425 +765,435 @@ static uint32_t restore(void *buffer, uint32_t size) {
         return;
       }
       else {
-        printf("Cannot restore calc's memory from file backup.bin! Performing RESET\n");
+        printf("Cannot restore calc's memory from file backup.cfg! Performing RESET\n");
         refreshScreen();
         return;
       }
     }
 
-    restore(&backupVersion,                      sizeof(backupVersion));
-    cachedDynamicMenu = 0;
-    if(backupVersion < 781) {
-      configCommon(CFG_DFLT);
+    // Reading all the configuration parameters
+    readLine(oneParam);
+    paramHead = malloc(sizeof(cfgFileParam_t));
+    paramCurrent = paramHead;
+    paramCurrent->param = malloc(strlen(oneParam) + 1);
+    strcpy(paramCurrent->param, oneParam);
+    paramCurrent->next = NULL;
+    readLine(oneParam);
+    while(!ioEof()) {
+      paramCurrent->next = malloc(sizeof(cfgFileParam_t));
+      paramCurrent = paramCurrent->next;
+      paramCurrent->param = malloc(strlen(oneParam) + 1);
+      strcpy(paramCurrent->param, oneParam);
+      paramCurrent->next = NULL;
+      readLine(oneParam);
     }
-    restore(&ramSizeInBlocks,                    sizeof(ramSizeInBlocks));
-    if(backupVersion > BACKUP_VERSION || backupVersion < OLDEST_COMPATIBLE_BACKUP_VERSION || ramSizeInBlocks != RAM_SIZE_IN_BLOCKS) {
-      ioFileClose();
+    ioFileClose();
+
+    cachedDynamicMenu = 0;
+    //configCommon(CFG_DFLT);
+    restoreStateValue(&backupVersion,                  sizeof(backupVersion),                                       "backupVersion",                  "uint32");
+    restoreStateValue(&ramSizeInBlocks,                sizeof(ramSizeInBlocks),                                     "ramSizeInBlocks",                "uint32");
+    if(ramSizeInBlocks != RAM_SIZE_IN_BLOCKS) {
       refreshScreen();
 
-      printf("Cannot restore calc's memory from file backup.bin! File backup.bin is from incompatible backup version.\n");
-      printf("               Backup file      Program\n");
-      printf("backupVersion          %6u           %6d\n", backupVersion, BACKUP_VERSION);
-      printf("ramSizeInBlocks blocks %6u           %6d\n", ramSizeInBlocks, RAM_SIZE_IN_BLOCKS);
-      printf("ramSizeInBlocks bytes  %6u           %6d\n", TO_BYTES(ramSizeInBlocks), TO_BYTES(RAM_SIZE_IN_BLOCKS));
+      printf("Cannot restore calc's memory from file backup.cfg! File backup.cfg is from incompatible RAM size.\n");
+      printf("       Backup file      Program\n");
+      printf("ramSize blocks %6u           %6d\n", ramSizeInBlocks, RAM_SIZE_IN_BLOCKS);
+      printf("ramSize bytes  %6u           %6d\n", TO_BYTES(ramSizeInBlocks), TO_BYTES(RAM_SIZE_IN_BLOCKS));
       return;
     }
-    else {
-      printf("Begin of calc's restoration\n");
 
-      restore(ram,                                 TO_BYTES(RAM_SIZE_IN_BLOCKS));
-      restore(&numberOfFreeMemoryRegions,          sizeof(numberOfFreeMemoryRegions));
-      restore(freeMemoryRegions,                   sizeof(freeMemoryRegion_t) * numberOfFreeMemoryRegions);
-      restore(&numberOfAllocatedMemoryRegions,     sizeof(numberOfAllocatedMemoryRegions));
-      restore(allocatedMemoryRegions,              sizeof(freeMemoryRegion_t) * numberOfAllocatedMemoryRegions);
-      restore(globalFlags,                         sizeof(globalFlags));
-      restore(errorMessage,                        ERROR_MESSAGE_LENGTH);
-      restore(aimBuffer,                           AIM_BUFFER_LENGTH);
-      restore(nimBufferDisplay,                    NIM_BUFFER_LENGTH);
-      restore(tamBuffer,                           TAM_BUFFER_LENGTH);
-      restore(asmBuffer,                           sizeof(asmBuffer));
-      restore(oldTime,                             sizeof(oldTime));
-      restore(dateTimeString,                      sizeof(dateTimeString));
-      if(backupVersion >= 788 ) {
-        restore(softmenuStack,                     sizeof(softmenuStack));
-      } else {
-        restore(softmenuStack,                     32);
-        memset(softmenuStack, 0,                   sizeof(softmenuStack));                        // [DL] Reset softmenuStack, don't use old softmenuStack content
-      }
-      restore(globalRegister,                      sizeof(globalRegister));
-      restore(savedStackRegister,                  sizeof(savedStackRegister));
-      restore(kbd_usr,                             sizeof(kbd_usr));
-      restore(userMenuItems,                       sizeof(userMenuItems));
-      restore(userAlphaItems,                      sizeof(userAlphaItems));
-      restore(&tam.mode,                           sizeof(tam.mode));
-      restore(&tam.function,                       sizeof(tam.function));
-      restore(&tam.alpha,                          sizeof(tam.alpha));
-      restore(&tam.currentOperation,               sizeof(tam.currentOperation));
-      restore(&tam.dot,                            sizeof(tam.dot));
-      restore(&tam.indirect,                       sizeof(tam.indirect));
-      restore(&tam.digitsSoFar,                    sizeof(tam.digitsSoFar));
-      restore(&tam.value,                          sizeof(tam.value));
-      restore(&tam.min,                            sizeof(tam.min));
-      restore(&tam.max,                            sizeof(tam.max));
-      restore(&rbrRegister,                        sizeof(rbrRegister));
-      restore(&numberOfNamedVariables,             sizeof(numberOfNamedVariables));
-      restore(&ramPtr,                             sizeof(ramPtr));
-      allNamedVariables = TO_PCMEMPTR(ramPtr);
-      restore(&ramPtr,                             sizeof(ramPtr));
-      allFormulae = TO_PCMEMPTR(ramPtr);
-      restore(&ramPtr,                             sizeof(ramPtr));
-      userMenus = TO_PCMEMPTR(ramPtr);
-      restore(&ramPtr,                             sizeof(ramPtr));
-      userKeyLabel = TO_PCMEMPTR(ramPtr);
-      restore(&ramPtr,                             sizeof(ramPtr));
-      statisticalSumsPointer = TO_PCMEMPTR(ramPtr);
-      restore(&ramPtr,                             sizeof(ramPtr));
-      savedStatisticalSumsPointer = TO_PCMEMPTR(ramPtr);
-      restore(&ramPtr,                             sizeof(ramPtr));
-      labelList = TO_PCMEMPTR(ramPtr);
-      if(backupVersion < 782) { // flashLabelList
-        restore(&ramPtr,                           sizeof(ramPtr));
-      }
-      restore(&ramPtr,                             sizeof(ramPtr));
-      programList = TO_PCMEMPTR(ramPtr);
-      if(backupVersion < 782) { // flashProgramList
-        restore(&ramPtr,                           sizeof(ramPtr));
-      }
-      restore(&ramPtr,                             sizeof(ramPtr));
-      currentSubroutineLevelData = TO_PCMEMPTR(ramPtr);
-      restore(&xCursor,                            sizeof(xCursor));
-      restore(&yCursor,                            sizeof(yCursor));
-      restore(&firstGregorianDay,                  sizeof(firstGregorianDay));
-      restore(&denMax,                             sizeof(denMax));
-      if(backupVersion >= 780) {
-        restore(&lastDenominator,                  sizeof(lastDenominator));
-      }
-      restore(&currentRegisterBrowserScreen,       sizeof(currentRegisterBrowserScreen));
-      restore(&currentFntScr,                      sizeof(currentFntScr));
-      restore(&currentFlgScr,                      sizeof(currentFlgScr));
-      restore(&displayFormat,                      sizeof(displayFormat));
-      restore(&displayFormatDigits,                sizeof(displayFormatDigits));
-      restore(&timeDisplayFormatDigits,            sizeof(timeDisplayFormatDigits));
-      restore(&shortIntegerWordSize,               sizeof(shortIntegerWordSize));
-      restore(&significantDigits,                  sizeof(significantDigits));
-      restore(&shortIntegerMode,                   sizeof(shortIntegerMode));
-      restore(&currentAngularMode,                 sizeof(currentAngularMode));
-      restore(&scrLock,                            sizeof(scrLock));
-      if(backupVersion < 784) {                                                     //re-using existing old uint8 slot
-        scrLock = 0;
-      } else {
-        scrLock &= 0x03;
-      }
-      restore(&roundingMode,                       sizeof(roundingMode));
-      restore(&calcMode,                           sizeof(calcMode));
-      restore(&nextChar,                           sizeof(nextChar));
-      restore(&alphaCase,                          sizeof(alphaCase));
-      restore(&hourGlassIconEnabled,               sizeof(hourGlassIconEnabled));
-      restore(&watchIconEnabled,                   sizeof(watchIconEnabled));
-      restore(&serialIOIconEnabled,                sizeof(serialIOIconEnabled));
-      restore(&printerIconEnabled,                 sizeof(printerIconEnabled));
-      restore(&programRunStop,                     sizeof(programRunStop));
-      restore(&entryStatus,                        sizeof(entryStatus));
-      restore(&cursorEnabled,                      sizeof(cursorEnabled));
-      restore(&cursorFont,                         sizeof(cursorFont));
-      restore(&rbr1stDigit,                        sizeof(rbr1stDigit));
-      restore(&shiftF,                             sizeof(shiftF));
-      restore(&shiftG,                             sizeof(shiftG));
-      restore(&rbrMode,                            sizeof(rbrMode));
-      restore(&showContent,                        sizeof(showContent));
-      restore(&numScreensNumericFont,              sizeof(numScreensNumericFont));
-      restore(&numLinesNumericFont,                sizeof(numLinesNumericFont));
-      restore(&numLinesStandardFont,               sizeof(numLinesStandardFont));
-      restore(&numScreensStandardFont,             sizeof(numScreensStandardFont));
-      restore(&previousCalcMode,                   sizeof(previousCalcMode));
-      restore(&lastErrorCode,                      sizeof(lastErrorCode));
-      restore(&nimNumberPart,                      sizeof(nimNumberPart));
-      restore(&displayStack,                       sizeof(displayStack));
-      restore(&hexDigits,                          sizeof(hexDigits));
-      restore(&errorMessageRegisterLine,           sizeof(errorMessageRegisterLine));
-      restore(&shortIntegerMask,                   sizeof(shortIntegerMask));
-      restore(&shortIntegerSignBit,                sizeof(shortIntegerSignBit));
-      restore(&temporaryInformation,               sizeof(temporaryInformation));
+    printf("Begin of calc's restoration\n");
 
-      restore(&glyphNotFound,                      sizeof(glyphNotFound));
-      glyphNotFound.data   = malloc(38);
-      xcopy(glyphNotFound.data, "\xff\xf8\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\xff\xf8", 38);
+    // The order in which parameters are restored doesn't matter
+    // When a parameter is removed, simply remove the corresponding saveStateValue(...) and restoreStateValue(...) lines.
+    restoreStateValue(ram,                             TO_BYTES(RAM_SIZE_IN_BLOCKS),                                "ram",                            "hexDump");
+    restoreStateValue(&numberOfFreeMemoryRegions,      sizeof(numberOfFreeMemoryRegions),                           "numberOfFreeMemoryRegions",      "int32");
+    restoreStateValue(freeMemoryRegions,               sizeof(freeMemoryRegion_t) * numberOfFreeMemoryRegions,      "freeMemoryRegions",              "hexDump");
+    restoreStateValue(&numberOfAllocatedMemoryRegions, sizeof(numberOfAllocatedMemoryRegions),                      "numberOfAllocatedMemoryRegions", "int32");
+    restoreStateValue(allocatedMemoryRegions,          sizeof(freeMemoryRegion_t) * numberOfAllocatedMemoryRegions, "allocatedMemoryRegions",         "hexDump");
 
-      restore(&funcOK,                             sizeof(funcOK));
-      restore(&screenChange,                       sizeof(screenChange));
-      restore(&exponentSignLocation,               sizeof(exponentSignLocation));
-      restore(&denominatorLocation,                sizeof(denominatorLocation));
-      restore(&imaginaryExponentSignLocation,      sizeof(imaginaryExponentSignLocation));
-      restore(&imaginaryMantissaSignLocation,      sizeof(imaginaryMantissaSignLocation));
-      restore(&lineTWidth,                         sizeof(lineTWidth));
-      restore(&lastIntegerBase,                    sizeof(lastIntegerBase));
-      restore(&c47MemInBlocks,                     sizeof(c47MemInBlocks));
-      restore(&gmpMemInBytes,                      sizeof(gmpMemInBytes));
-      restore(&catalog,                            sizeof(catalog));
-      restore(&lastCatalogPosition,                sizeof(lastCatalogPosition));
-      restore(&lgCatalogSelection,                 sizeof(lgCatalogSelection));
-      restore(displayValueX,                       sizeof(displayValueX));
-      restore(&pcg32_global,                       sizeof(pcg32_global));
-      restore(&exponentLimit,                      sizeof(exponentLimit));
-      restore(&exponentHideLimit,                  sizeof(exponentHideLimit));
-      restore(&keyActionProcessed,                 sizeof(keyActionProcessed));
-      restore(&systemFlags,                        sizeof(systemFlags));
-      restore(&savedSystemFlags,                   sizeof(savedSystemFlags));
-      if(backupVersion < 785) {
-        defaultStatusBar();
-      }
-      restore(&thereIsSomethingToUndo,             sizeof(thereIsSomethingToUndo));
-      restore(&ramPtr,                             sizeof(ramPtr)); // beginOfProgramMemory pointer to block
-      beginOfProgramMemory = TO_PCMEMPTR(ramPtr);
-      restore(&ramPtr,                             sizeof(ramPtr)); // beginOfProgramMemory offset within block
-      beginOfProgramMemory += ramPtr;
-      restore(&ramPtr,                             sizeof(ramPtr)); // firstFreeProgramByte pointer to block
-      firstFreeProgramByte = TO_PCMEMPTR(ramPtr);
-      restore(&ramPtr,                             sizeof(ramPtr)); // firstFreeProgramByte offset within block
-      firstFreeProgramByte += ramPtr;
-      restore(&ramPtr,                             sizeof(ramPtr)); // firstDisplayedStep pointer to block
-      firstDisplayedStep = TO_PCMEMPTR(ramPtr);
-      restore(&ramPtr,                             sizeof(ramPtr)); // firstDisplayedStep offset within block
-      firstDisplayedStep += ramPtr;
-      restore(&ramPtr,                             sizeof(ramPtr)); // currentStep pointer to block
-      currentStep = TO_PCMEMPTR(ramPtr);
-      restore(&ramPtr,                             sizeof(ramPtr)); // currentStep offset within block
-      currentStep += ramPtr;
-      restore(&freeProgramBytes,                   sizeof(freeProgramBytes));
-      restore(&firstDisplayedLocalStepNumber,      sizeof(firstDisplayedLocalStepNumber));
-      restore(&numberOfLabels,                     sizeof(numberOfLabels));
-      if(backupVersion < 782) { // numberOfLabelsInFlash
-        restore(&numberOfPrograms,                 sizeof(numberOfPrograms));
-      }
-      restore(&numberOfPrograms,                   sizeof(numberOfPrograms));
-      if(backupVersion < 782) { // numberOfProgramsInFlash
-        restore(&currentLocalStepNumber,           sizeof(currentLocalStepNumber));
-      }
-      restore(&currentLocalStepNumber,             sizeof(currentLocalStepNumber));
-      restore(&currentProgramNumber,               sizeof(currentProgramNumber));
-      restore(&lastProgramListEnd,                 sizeof(lastProgramListEnd));
-      restore(&programListEnd,                     sizeof(programListEnd));
-      restore(&allSubroutineLevels,                sizeof(allSubroutineLevels));
-      restore(&pemCursorIsZerothStep,              sizeof(pemCursorIsZerothStep));
-      restore(&halfSecTick,                        sizeof(halfSecTick)); 
-      restore(&numberOfTamMenusToPop,              sizeof(numberOfTamMenusToPop));
-      restore(&lrSelection,                        sizeof(lrSelection));
-      restore(&lrSelectionUndo,                    sizeof(lrSelectionUndo));
-      restore(&lrChosen,                           sizeof(lrChosen));
-      restore(&lrChosenUndo,                       sizeof(lrChosenUndo));
-      restore(&lastPlotMode,                       sizeof(lastPlotMode));
-      restore(&plotSelection,                      sizeof(plotSelection));
+    restoreStateValue(&ramPtr,                         sizeof(ramPtr),                                              "allNamedVariables",              "c47Ptr");
+    allNamedVariables = TO_PCMEMPTR(ramPtr);
 
-      restore(&graph_dx,                           sizeof(graph_dx));
-      restore(&graph_dy,                           sizeof(graph_dy));
-      restore(&roundedTicks,                       sizeof(roundedTicks));
-      restore(&extentx,                            sizeof(extentx));
-      restore(&extenty,                            sizeof(extenty));
-      restore(&PLOT_VECT,                          sizeof(PLOT_VECT));
-      restore(&PLOT_NVECT,                         sizeof(PLOT_NVECT));
-      restore(&PLOT_SCALE,                         sizeof(PLOT_SCALE));
-      restore(&Aspect_Square,                      sizeof(Aspect_Square));
-      restore(&PLOT_LINE,                          sizeof(PLOT_LINE));
-      restore(&PLOT_CROSS,                         sizeof(PLOT_CROSS));
-      restore(&PLOT_BOX,                           sizeof(PLOT_BOX));
-      restore(&PLOT_INTG,                          sizeof(PLOT_INTG));
-      restore(&PLOT_DIFF,                          sizeof(PLOT_DIFF));
-      restore(&PLOT_RMS,                           sizeof(PLOT_RMS));
-      restore(&PLOT_SHADE,                         sizeof(PLOT_SHADE));
-      restore(&PLOT_AXIS,                          sizeof(PLOT_AXIS));
-      restore(&PLOT_ZMX,                           sizeof(PLOT_ZMX));
-      restore(&PLOT_ZMY,                           sizeof(PLOT_ZMY));
-      restore(&PLOT_ZOOM,                          sizeof(PLOT_ZOOM));
-      restore(&plotmode,                           sizeof(plotmode));
-      restore(&tick_int_x,                         sizeof(tick_int_x));
-      restore(&tick_int_y,                         sizeof(tick_int_y));
-      restore(&x_min,                              sizeof(x_min));
-      restore(&x_max,                              sizeof(x_max));
-      restore(&y_min,                              sizeof(y_min));
-      restore(&y_max,                              sizeof(y_max));
-      restore(&xzero,                              sizeof(xzero));
-      restore(&yzero,                              sizeof(yzero));
-      restore(&matrixIndex,                        sizeof(matrixIndex));
-      restore(&currentViewRegister,                sizeof(currentViewRegister));
-      restore(&currentSolverStatus,                sizeof(currentSolverStatus));
-      restore(&currentSolverProgram,               sizeof(currentSolverProgram));
-      restore(&currentSolverVariable,              sizeof(currentSolverVariable));
-      restore(&numberOfFormulae,                   sizeof(numberOfFormulae));
-      restore(&currentFormula,                     sizeof(currentFormula));
-      restore(&numberOfUserMenus,                  sizeof(numberOfUserMenus));
-      restore(&currentUserMenu,                    sizeof(currentUserMenu));
-      restore(&userKeyLabelSize,                   sizeof(userKeyLabelSize));
-      restore(&timerCraAndDeciseconds,             sizeof(timerCraAndDeciseconds));
-      restore(&timerValue,                         sizeof(timerValue));
-      restore(&timerTotalTime,                     sizeof(timerTotalTime));
-      restore(&currentInputVariable,               sizeof(currentInputVariable));
-      restore(&SAVED_SIGMA_LASTX,                  sizeof(SAVED_SIGMA_LASTX));
-      restore(&SAVED_SIGMA_LASTY,                  sizeof(SAVED_SIGMA_LASTY));
-      restore(&SAVED_SIGMA_LAct,                   sizeof(SAVED_SIGMA_LAct));
-      restore(&currentMvarLabel,                   sizeof(currentMvarLabel));
-      restore(&graphVariable,                      sizeof(graphVariable));
-      restore(&plotStatMx,                         sizeof(plotStatMx));
-      restore(&drawHistogram,                      sizeof(drawHistogram));
-      restore(&statMx,                             sizeof(statMx));
-      restore(&lrSelectionHistobackup,             sizeof(lrSelectionHistobackup));
-      restore(&lrChosenHistobackup,                sizeof(lrChosenHistobackup));
-      restore(&loBinR,                             sizeof(loBinR));
-      restore(&nBins ,                             sizeof(nBins ));
-      restore(&hiBinR,                             sizeof(hiBinR));
-      restore(&histElementXorY,                    sizeof(histElementXorY));
+    restoreStateValue(&ramPtr,                         sizeof(ramPtr),                                              "allFormulae",                    "c47Ptr");
+    allFormulae = TO_PCMEMPTR(ramPtr);
 
-      restore(&screenUpdatingMode,                 sizeof(screenUpdatingMode));
-      restore(loadedScreen,                        SCREEN_WIDTH * SCREEN_HEIGHT / 8);
+    restoreStateValue(&ramPtr,                         sizeof(ramPtr),                                              "userMenus",                      "c47Ptr");
+    userMenus = TO_PCMEMPTR(ramPtr);
 
-      restore(&eRPN,                               sizeof(eRPN));                     //JM vv
-      restore(&HOME3,                              sizeof(HOME3));
-      restore(&ShiftTimoutMode,                    sizeof(ShiftTimoutMode));
-      restore(&CPXMULT,                            sizeof(CPXMULT));                  //JM
-      restore(&fgLN,                               sizeof(fgLN));
-      restore(&BASE_HOME,                          sizeof(BASE_HOME));
-      restore(&Norm_Key_00_VAR,                    sizeof(Norm_Key_00_VAR));
-      restore(&Input_Default,                      sizeof(Input_Default));
-      restore(&compatibility_bool,                 sizeof(compatibility_bool));
-      restore(&BASE_MYM,                           sizeof(BASE_MYM));
-      restore(&jm_G_DOUBLETAP,                     sizeof(jm_G_DOUBLETAP));
-      restore(&compatibility_bool,                 sizeof(compatibility_bool));
-      restore(&graph_xmin,                         sizeof(graph_xmin));
-      restore(&graph_xmax,                         sizeof(graph_xmax));
-      restore(&graph_ymin,                         sizeof(graph_ymin));
-      restore(&graph_ymax,                         sizeof(graph_ymax));
-      restore(&jm_LARGELI,                         sizeof(jm_LARGELI));
-      restore(&constantFractions,                  sizeof(constantFractions));
-      restore(&constantFractionsMode,              sizeof(constantFractionsMode));
-      restore(&constantFractionsOn,                sizeof(constantFractionsOn));
-      restore(&running_program_jm,                 sizeof(running_program_jm));
-      restore(&indic_x,                            sizeof(indic_x));
-      restore(&indic_y,                            sizeof(indic_y));
-      restore(&fnXEQMENUpos,                       sizeof(fnXEQMENUpos));
-      restore(&indexOfItemsXEQM,                   sizeof(indexOfItemsXEQM));
-      restore(&T_cursorPos,                        sizeof(T_cursorPos));              //JM ^^
-      restore(&SHOWregis,                          sizeof(SHOWregis));                //JM ^^
-      restore(&compatibility_u16,                  sizeof(compatibility_u16));            //SPARE USE THESE
-      restore(&compatibility_u16,                  sizeof(compatibility_u16));            //SPARE USE THESE
-      restore(&displayStackSHOIDISP,               sizeof(displayStackSHOIDISP));     //JM ^^
-      restore(&ListXYposition,                     sizeof(ListXYposition));           //JM ^^
-      restore(&numLock,                            sizeof(numLock));                  //JM ^^
-      restore(&DRG_Cycling,                        sizeof(DRG_Cycling));              //JM
-      restore(&lastFlgScr,                         sizeof(lastFlgScr));
-      restore(&displayAIMbufferoffset,             sizeof(displayAIMbufferoffset));   //C43 JM
-      restore(&bcdDisplay,                         sizeof(bcdDisplay));               //C43 JM
-      restore(&topHex,                             sizeof(topHex));                   //C43 JM
-      restore(&bcdDisplaySign,                     sizeof(bcdDisplaySign));           //C43 JM
-      restore(&DM_Cycling,                         sizeof(DM_Cycling));               //JM
-      restore(&SI_All,                             sizeof(SI_All));                   //JM
-      restore(&LongPressM,                         sizeof(LongPressM));               //JM
-      restore(&LongPressF,                         sizeof(LongPressF));               //JM
-      restore(&currentAsnScr,                      sizeof(currentAsnScr));            //JM
+    restoreStateValue(&ramPtr,                         sizeof(ramPtr),                                              "userKeyLabel",                   "c47Ptr");
+    userKeyLabel = TO_PCMEMPTR(ramPtr);
 
-      if(backupVersion >= 781) {
-        restore(&gapItemLeft,                        sizeof(gapItemLeft));               //JM
-        restore(&gapItemRight,                       sizeof(gapItemRight));              //JM
-        restore(&gapItemRadix,                       sizeof(gapItemRadix));              //JM
-        restore(&grpGroupingLeft,                    sizeof(grpGroupingLeft));           //JM
-        restore(&grpGroupingGr1LeftOverflow,         sizeof(grpGroupingGr1LeftOverflow));//JM
-        restore(&grpGroupingGr1Left,                 sizeof(grpGroupingGr1Left));        //JM
-        restore(&grpGroupingRight,                   sizeof(grpGroupingRight));          //JM
-      }
+    restoreStateValue(&ramPtr,                         sizeof(ramPtr),                                              "statisticalSumsPointer",         "c47Ptr");
+    statisticalSumsPointer = TO_PCMEMPTR(ramPtr);
 
-      if(backupVersion >= 786) {
-        restore(&MYM3,                               sizeof(MYM3));
-      }
-      else {
-        MYM3 = false;
-      }
+    restoreStateValue(&ramPtr,                         sizeof(ramPtr),                                              "savedStatisticalSumsPointer",    "c47Ptr");
+    savedStatisticalSumsPointer = TO_PCMEMPTR(ramPtr);
 
-      if(backupVersion >= 789) {
-        restore(&numScreensTinyFont,                 sizeof(numScreensTinyFont));
-        restore(&numLinesTinyFont,                   sizeof(numLinesTinyFont));
-      }
+    restoreStateValue(&ramPtr,                         sizeof(ramPtr),                                              "labelList",                      "c47Ptr");
+    labelList = TO_PCMEMPTR(ramPtr);
 
+    restoreStateValue(&ramPtr,                         sizeof(ramPtr),                                              "programList",                    "c47Ptr");
+    programList = TO_PCMEMPTR(ramPtr);
 
-      ioFileClose();
-      printf("End of calc's restoration\n");
+    restoreStateValue(&ramPtr,                         sizeof(ramPtr),                                              "currentSubroutineLevelData",     "c47Ptr");
+    currentSubroutineLevelData = TO_PCMEMPTR(ramPtr);
 
-      setFGLSettings(fgLN);
+    restoreStateValue(&ramPtr,                         sizeof(ramPtr),                                              "beginOfProgramMemory",           "c47Ptr"); // beginOfProgramMemory pointer to block
+    beginOfProgramMemory = TO_PCMEMPTR(ramPtr);
 
-      if(temporaryInformation == TI_SHOW_REGISTER_BIG || temporaryInformation == TI_SHOW_REGISTER_SMALL) {
-        temporaryInformation = TI_NO_INFO;
-      }
+    restoreStateValue(&ramPtr,                         sizeof(ramPtr),                                              "beginOfProgramMemoryOffset",     "uint32"); // beginOfProgramMemory offset within block
+    beginOfProgramMemory += ramPtr;
 
-      scanLabelsAndPrograms();
-      defineCurrentProgramFromGlobalStepNumber(currentLocalStepNumber + abs(programList[currentProgramNumber - 1].step) - 1);
-      defineCurrentStep();
-      defineFirstDisplayedStep();
-      defineCurrentProgramFromCurrentStep();
+    restoreStateValue(&ramPtr,                         sizeof(ramPtr),                                              "firstFreeProgramByte",           "c47Ptr"); // firstFreeProgramByte pointer to block
+    firstFreeProgramByte = TO_PCMEMPTR(ramPtr);
 
-      //defineCurrentLocalRegisters();
+    restoreStateValue(&ramPtr,                         sizeof(ramPtr),                                              "firstFreeProgramByteOffset",     "uint32"); // firstFreeProgramByte offset within block
+    firstFreeProgramByte += ramPtr;
 
-      if(temporaryInformation==TI_SHOW_REGISTER) {
-        temporaryInformation = TI_NO_INFO;
-      }
+    restoreStateValue(&ramPtr,                         sizeof(ramPtr),                                              "firstDisplayedStep",             "c47Ptr"); // firstDisplayedStep pointer to block
+    firstDisplayedStep = TO_PCMEMPTR(ramPtr);
 
-      #if(DEBUG_REGISTER_L == 1)
-        refreshRegisterLine(REGISTER_X); // to show L register
-      #endif // (DEBUG_REGISTER_L == 1)
+    restoreStateValue(&ramPtr,                         sizeof(ramPtr),                                              "firstDisplayedStepOffset",       "uint32"); // firstDisplayedStep offset within block
+    firstDisplayedStep += ramPtr;
 
-      for(int y = 0; y < SCREEN_HEIGHT; ++y) {
-        for(int x = 0; x < SCREEN_WIDTH; x += 8) {
-          uint8_t bmpdata = *(loadedScreen + (y * SCREEN_WIDTH + x) / 8);
-          for(int bit = 7; bit >= 0; --bit) {
-            *(screenData + y * screenStride + x + (7 - bit)) = (bmpdata & (1 << bit)) ? ON_PIXEL : OFF_PIXEL;
-          }
-        }
-      }
-      free(loadedScreen);
+    restoreStateValue(&ramPtr,                         sizeof(ramPtr),                                              "currentStep",                    "c47Ptr"); // currentStep pointer to block
+    currentStep = TO_PCMEMPTR(ramPtr);
 
-        if(tam.mode && !tam.alpha) {
-          calcModeTamGui();
-        }
-        else if(tam.mode && tam.alpha) {
-          calcModeAimGui();
-        }
-        else if(   calcMode == CM_NORMAL
-                || calcMode == CM_REGISTER_BROWSER
-                || calcMode == CM_FLAG_BROWSER
-                || calcMode == CM_ASN_BROWSER
-                || calcMode == CM_FONT_BROWSER
-                || calcMode == CM_PEM
-                || calcMode == CM_PLOT_STAT
-                || calcMode == CM_GRAPH
-                || calcMode == CM_LISTXY) {
-          calcModeNormalGui();
-        }
-        else if(calcMode == CM_MIM) {
-          calcModeNormalGui();
-          mimRestore();
-        }
-        else if(calcMode == CM_AIM) {
-          calcModeNormalGui();
-          calcModeAimGui();
-          cursorEnabled = true;
-        }
-        else if(calcMode == CM_NIM) {
-          calcModeNormalGui();
-          cursorEnabled = true;
-        }
-        else if(calcMode == CM_EIM) {
-        }
-        else if(calcMode == CM_ASSIGN) {
-        }
-        else if(calcMode == CM_TIMER) {
-        }
-        else {
-          sprintf(errorMessage, commonBugScreenMessages[bugMsgValueFor], "restoreCalc", calcMode, "calcMode");
-          displayBugScreen(errorMessage);
-        }
-        if(catalog) {
-          clearSystemFlag(FLAG_ALPHA);
-        }
+    restoreStateValue(&ramPtr,                         sizeof(ramPtr),                                              "currentStepOffset",              "uint32"); // currentStep offset within block
+    currentStep += ramPtr;
 
-      updateMatrixHeightCache();
-      refreshScreen();
+    restoreStateValue(globalFlags,                     sizeof(globalFlags),                                         "globalFlags",                    "hexDump");
+    restoreStateValue(errorMessage,                    ERROR_MESSAGE_LENGTH,                                        "errorMessage",                   "hexDump");
+    restoreStateValue(aimBuffer,                       AIM_BUFFER_LENGTH,                                           "aimBuffer",                      "hexDump");
+    restoreStateValue(nimBufferDisplay,                NIM_BUFFER_LENGTH,                                           "nimBufferDisplay",               "hexDump");
+    restoreStateValue(tamBuffer,                       TAM_BUFFER_LENGTH,                                           "tamBuffer",                      "hexDump");
+    restoreStateValue(asmBuffer,                       sizeof(asmBuffer),                                           "asmBuffer",                      "hexDump");
+    restoreStateValue(oldTime,                         sizeof(oldTime),                                             "oldTime",                        "hexDump");
+    restoreStateValue(dateTimeString,                  sizeof(dateTimeString),                                      "dateTimeString",                 "hexDump");
+    restoreStateValue(softmenuStack,                   sizeof(softmenuStack),                                       "softmenuStack",                  "hexDump");
+    restoreStateValue(globalRegister,                  sizeof(globalRegister),                                      "globalRegister",                 "hexDump");
+    restoreStateValue(savedStackRegister,              sizeof(savedStackRegister),                                  "savedStackRegister",             "hexDump");
+    restoreStateValue(kbd_usr,                         sizeof(kbd_usr),                                             "kbd_usr",                        "hexDump");
+    restoreStateValue(userMenuItems,                   sizeof(userMenuItems),                                       "userMenuItems",                  "hexDump");
+    restoreStateValue(userAlphaItems,                  sizeof(userAlphaItems),                                      "userAlphaItems",                 "hexDump");
+    restoreStateValue(&tam.mode,                       sizeof(tam.mode),                                            "tam.mode",                       "uint16");
+    restoreStateValue(&tam.function,                   sizeof(tam.function),                                        "tam.function",                   "int16");
+    restoreStateValue(&tam.alpha,                      sizeof(tam.alpha),                                           "tam.alpha",                      "bool");
+    restoreStateValue(&tam.currentOperation,           sizeof(tam.currentOperation),                                "tam.currentOperation",           "int16");
+    restoreStateValue(&tam.dot,                        sizeof(tam.dot),                                             "tam.dot",                        "bool");
+    restoreStateValue(&tam.indirect,                   sizeof(tam.indirect),                                        "tam.indirect",                   "bool");
+    restoreStateValue(&tam.digitsSoFar,                sizeof(tam.digitsSoFar),                                     "tam.digitsSoFar",                "int16");
+    restoreStateValue(&tam.value,                      sizeof(tam.value),                                           "tam.value",                      "int16");
+    restoreStateValue(&tam.min,                        sizeof(tam.min),                                             "tam.min",                        "int16");
+    restoreStateValue(&tam.max,                        sizeof(tam.max),                                             "tam.max",                        "int16");
+    restoreStateValue(&rbrRegister,                    sizeof(rbrRegister),                                         "rbrRegister",                    "int16");
+    restoreStateValue(&numberOfNamedVariables,         sizeof(numberOfNamedVariables),                              "numberOfNamedVariables",         "int16");
+    restoreStateValue(&xCursor,                        sizeof(xCursor),                                             "xCursor",                        "uint32");
+    restoreStateValue(&yCursor,                        sizeof(yCursor),                                             "yCursor",                        "uint32");
+    restoreStateValue(&firstGregorianDay,              sizeof(firstGregorianDay),                                   "firstGregorianDay",              "uint32");
+    restoreStateValue(&denMax,                         sizeof(denMax),                                              "denMax",                         "uint32");
+    restoreStateValue(&lastDenominator,                sizeof(lastDenominator),                                     "lastDenominator",                "uint32");
+    restoreStateValue(&currentRegisterBrowserScreen,   sizeof(currentRegisterBrowserScreen),                        "currentRegisterBrowserScreen",   "int16");
+    restoreStateValue(&currentFntScr,                  sizeof(currentFntScr),                                       "currentFntScr",                  "uint8");
+    restoreStateValue(&currentFlgScr,                  sizeof(currentFlgScr),                                       "currentFlgScr",                  "uint8");
+    restoreStateValue(&displayFormat,                  sizeof(displayFormat),                                       "displayFormat",                  "uint8");
+    restoreStateValue(&displayFormatDigits,            sizeof(displayFormatDigits),                                 "displayFormatDigits",            "uint8");
+    restoreStateValue(&timeDisplayFormatDigits,        sizeof(timeDisplayFormatDigits),                             "timeDisplayFormatDigits",        "uint8");
+    restoreStateValue(&shortIntegerWordSize,           sizeof(shortIntegerWordSize),                                "shortIntegerWordSize",           "uint8");
+    restoreStateValue(&significantDigits,              sizeof(significantDigits),                                   "significantDigits",              "uint8");
+    restoreStateValue(&shortIntegerMode,               sizeof(shortIntegerMode),                                    "shortIntegerMode",               "uint8");
+    restoreStateValue(&currentAngularMode,             sizeof(currentAngularMode),                                  "currentAngularMode",             "uint32");
+
+    restoreStateValue(&scrLock,                        sizeof(scrLock),                                             "scrLock",                        "uint8");
+    scrLock &= 0x03;
+
+    restoreStateValue(&roundingMode,                   sizeof(roundingMode),                                        "roundingMode",                   "uint8");
+    restoreStateValue(&calcMode,                       sizeof(calcMode),                                            "calcMode",                       "uint8");
+    restoreStateValue(&nextChar,                       sizeof(nextChar),                                            "nextChar",                       "uint8");
+    restoreStateValue(&alphaCase,                      sizeof(alphaCase),                                           "alphaCase",                      "uint8");
+    restoreStateValue(&hourGlassIconEnabled,           sizeof(hourGlassIconEnabled),                                "hourGlassIconEnabled",           "bool");
+    restoreStateValue(&watchIconEnabled,               sizeof(watchIconEnabled),                                    "watchIconEnabled",               "bool");
+    restoreStateValue(&serialIOIconEnabled,            sizeof(serialIOIconEnabled),                                 "serialIOIconEnabled",            "bool");
+    restoreStateValue(&printerIconEnabled,             sizeof(printerIconEnabled),                                  "printerIconEnabled",             "bool");
+    restoreStateValue(&programRunStop,                 sizeof(programRunStop),                                      "programRunStop",                 "uint8");
+    restoreStateValue(&entryStatus,                    sizeof(entryStatus),                                         "entryStatus",                    "uint8");
+    restoreStateValue(&cursorEnabled,                  sizeof(cursorEnabled),                                       "cursorEnabled",                  "uint8");
+
+    int8_t cf = 0;
+    restoreStateValue(&cf,                             sizeof(cf),                                                  "cursorFont",                     "int8");
+         if(cf == 1) cursorFont = &tinyFont;
+    else if(cf == 2) cursorFont = &standardFont;
+    else if(cf == 3) cursorFont = &numericFont;
+    else             cursorFont = NULL;
+
+    restoreStateValue(&rbr1stDigit,                    sizeof(rbr1stDigit),                                         "rbr1stDigit",                    "bool");
+    restoreStateValue(&shiftF,                         sizeof(shiftF),                                              "shiftF",                         "bool");
+    restoreStateValue(&shiftG,                         sizeof(shiftG),                                              "shiftG",                         "bool");
+    restoreStateValue(&rbrMode,                        sizeof(rbrMode),                                             "rbrMode",                        "uint8");
+    restoreStateValue(&showContent,                    sizeof(showContent),                                         "showContent",                    "bool");
+    restoreStateValue(&numScreensNumericFont,          sizeof(numScreensNumericFont),                               "numScreensNumericFont",          "uint8");
+    restoreStateValue(&numLinesNumericFont,            sizeof(numLinesNumericFont),                                 "numLinesNumericFont",            "uint8");
+    restoreStateValue(&numScreensStandardFont,         sizeof(numScreensStandardFont),                              "numScreensStandardFont",         "uint8");
+    restoreStateValue(&numLinesStandardFont,           sizeof(numLinesStandardFont),                                "numLinesStandardFont",           "uint8");
+    restoreStateValue(&numScreensTinyFont,             sizeof(numScreensTinyFont),                                  "numScreensTinyFont",             "uint8");
+    restoreStateValue(&numLinesTinyFont,               sizeof(numLinesTinyFont),                                    "numLinesTinyFont",               "uint8");
+    restoreStateValue(&previousCalcMode,               sizeof(previousCalcMode),                                    "previousCalcMode",               "uint8");
+    restoreStateValue(&lastErrorCode,                  sizeof(lastErrorCode),                                       "lastErrorCode",                  "uint8");
+    restoreStateValue(&nimNumberPart,                  sizeof(nimNumberPart),                                       "nimNumberPart",                  "uint8");
+    restoreStateValue(&displayStack,                   sizeof(displayStack),                                        "displayStack",                   "uint8");
+    restoreStateValue(&hexDigits,                      sizeof(hexDigits),                                           "hexDigits",                      "uint8");
+    restoreStateValue(&errorMessageRegisterLine,       sizeof(errorMessageRegisterLine),                            "errorMessageRegisterLine",       "int16");
+    restoreStateValue(&shortIntegerMask,               sizeof(shortIntegerMask),                                    "shortIntegerMask",               "uint64");
+    restoreStateValue(&shortIntegerSignBit,            sizeof(shortIntegerSignBit),                                 "shortIntegerSignBit",            "uint64");
+    restoreStateValue(&temporaryInformation,           sizeof(temporaryInformation),                                "temporaryInformation",           "uint8");
+
+    restoreStateValue(&glyphNotFound,                  sizeof(glyphNotFound),                                       "glyphNotFound",                  "hexDump");
+    glyphNotFound.data   = malloc(38);
+    xcopy(glyphNotFound.data, "\xff\xf8\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\xff\xf8", 38);
+
+    restoreStateValue(&funcOK,                         sizeof(funcOK),                                              "funcOK",                         "bool");
+    restoreStateValue(&screenChange,                   sizeof(screenChange),                                        "screenChange",                   "bool");
+    restoreStateValue(&exponentSignLocation,           sizeof(exponentSignLocation),                                "exponentSignLocation",           "int16");
+    restoreStateValue(&denominatorLocation,            sizeof(denominatorLocation),                                 "denominatorLocation",            "int16");
+    restoreStateValue(&imaginaryExponentSignLocation,  sizeof(imaginaryExponentSignLocation),                       "imaginaryExponentSignLocation",  "int16");
+    restoreStateValue(&imaginaryMantissaSignLocation,  sizeof(imaginaryMantissaSignLocation),                       "imaginaryMantissaSignLocation",  "int16");
+    restoreStateValue(&lineTWidth,                     sizeof(lineTWidth),                                          "lineTWidth",                     "int16");
+    restoreStateValue(&lastIntegerBase,                sizeof(lastIntegerBase),                                     "lastIntegerBase",                "uint32");
+    restoreStateValue(&c47MemInBlocks,                 sizeof(c47MemInBlocks),                                      "c47MemInBlocks",                 "uint64");
+    restoreStateValue(&gmpMemInBytes,                  sizeof(gmpMemInBytes),                                       "gmpMemInBytes",                  "uint64");
+    restoreStateValue(&catalog,                        sizeof(catalog),                                             "catalog",                        "int16");
+    restoreStateValue(&lastCatalogPosition,            sizeof(lastCatalogPosition),                                 "lastCatalogPosition",            "int16");
+    restoreStateValue(&lgCatalogSelection,             sizeof(lgCatalogSelection),                                  "lgCatalogSelection",             "int32");
+    restoreStateValue(displayValueX,                   sizeof(displayValueX),                                       "displayValueX",                  "hexDump");
+    restoreStateValue(&pcg32_global,                   sizeof(pcg32_global),                                        "pcg32_global",                   "hexDump");
+    restoreStateValue(&exponentLimit,                  sizeof(exponentLimit),                                       "exponentLimit",                  "int16");
+    restoreStateValue(&exponentHideLimit,              sizeof(exponentHideLimit),                                   "exponentHideLimit",              "int16");
+    restoreStateValue(&keyActionProcessed,             sizeof(keyActionProcessed),                                  "keyActionProcessed",             "bool");
+    restoreStateValue(&systemFlags,                    sizeof(systemFlags),                                         "systemFlags",                    "uint64");
+    restoreStateValue(&savedSystemFlags,               sizeof(savedSystemFlags),                                    "savedSystemFlags",               "uint64");
+    restoreStateValue(&thereIsSomethingToUndo,         sizeof(thereIsSomethingToUndo),                              "thereIsSomethingToUndo",         "bool");
+    restoreStateValue(&freeProgramBytes,               sizeof(freeProgramBytes),                                    "freeProgramBytes",               "uint16");
+    restoreStateValue(&firstDisplayedLocalStepNumber,  sizeof(firstDisplayedLocalStepNumber),                       "firstDisplayedLocalStepNumber",  "uint16");
+    restoreStateValue(&numberOfLabels,                 sizeof(numberOfLabels),                                      "numberOfLabels",                 "uint16");
+    restoreStateValue(&numberOfPrograms,               sizeof(numberOfPrograms),                                    "numberOfPrograms",               "uint16");
+    restoreStateValue(&currentLocalStepNumber,         sizeof(currentLocalStepNumber),                              "currentLocalStepNumber",         "uint16");
+    restoreStateValue(&currentProgramNumber,           sizeof(currentProgramNumber),                                "currentProgramNumber",           "uint16");
+    restoreStateValue(&lastProgramListEnd,             sizeof(lastProgramListEnd),                                  "lastProgramListEnd",             "bool");
+    restoreStateValue(&programListEnd,                 sizeof(programListEnd),                                      "programListEnd",                 "bool");
+    restoreStateValue(&allSubroutineLevels,            sizeof(allSubroutineLevels),                                 "allSubroutineLevels",            "uint32");
+    restoreStateValue(&pemCursorIsZerothStep,          sizeof(pemCursorIsZerothStep),                               "pemCursorIsZerothStep",          "bool");
+    restoreStateValue(&halfSecTick,                    sizeof(halfSecTick),                                         "halfSecTick",                    "bool");
+    restoreStateValue(&numberOfTamMenusToPop,          sizeof(numberOfTamMenusToPop),                               "numberOfTamMenusToPop",          "int16");
+    restoreStateValue(&lrSelection,                    sizeof(lrSelection),                                         "lrSelection",                    "uint16");
+    restoreStateValue(&lrSelectionUndo,                sizeof(lrSelectionUndo),                                     "lrSelectionUndo",                "uint16");
+    restoreStateValue(&lrChosen,                       sizeof(lrChosen),                                            "lrChosen",                       "uint16");
+    restoreStateValue(&lrChosenUndo,                   sizeof(lrChosenUndo),                                        "lrChosenUndo",                   "uint16");
+    restoreStateValue(&lastPlotMode,                   sizeof(lastPlotMode),                                        "lastPlotMode",                   "uint16");
+    restoreStateValue(&plotSelection,                  sizeof(plotSelection),                                       "plotSelection",                  "uint16");
+    restoreStateValue(&graph_dx,                       sizeof(graph_dx),                                            "graph_dx",                       "float");
+    restoreStateValue(&graph_dy,                       sizeof(graph_dy),                                            "graph_dy",                       "float");
+    restoreStateValue(&roundedTicks,                   sizeof(roundedTicks),                                        "roundedTicks",                   "bool");
+    restoreStateValue(&extentx,                        sizeof(extentx),                                             "extentx",                        "bool");
+    restoreStateValue(&extenty,                        sizeof(extenty),                                             "extenty",                        "bool");
+    restoreStateValue(&PLOT_VECT,                      sizeof(PLOT_VECT),                                           "PLOT_VECT",                      "bool");
+    restoreStateValue(&PLOT_NVECT,                     sizeof(PLOT_NVECT),                                          "PLOT_NVECT",                     "bool");
+    restoreStateValue(&PLOT_SCALE,                     sizeof(PLOT_SCALE),                                          "PLOT_SCALE",                     "bool");
+    restoreStateValue(&Aspect_Square,                  sizeof(Aspect_Square),                                       "Aspect_Square",                  "bool");
+    restoreStateValue(&PLOT_LINE,                      sizeof(PLOT_LINE),                                           "PLOT_LINE",                      "bool");
+    restoreStateValue(&PLOT_CROSS,                     sizeof(PLOT_CROSS),                                          "PLOT_CROSS",                     "bool");
+    restoreStateValue(&PLOT_BOX,                       sizeof(PLOT_BOX),                                            "PLOT_BOX",                       "bool");
+    restoreStateValue(&PLOT_INTG,                      sizeof(PLOT_INTG),                                           "PLOT_INTG",                      "bool");
+    restoreStateValue(&PLOT_DIFF,                      sizeof(PLOT_DIFF),                                           "PLOT_DIFF",                      "bool");
+    restoreStateValue(&PLOT_RMS,                       sizeof(PLOT_RMS),                                            "PLOT_RMS",                       "bool");
+    restoreStateValue(&PLOT_SHADE,                     sizeof(PLOT_SHADE),                                          "PLOT_SHADE",                     "bool");
+    restoreStateValue(&PLOT_AXIS,                      sizeof(PLOT_AXIS),                                           "PLOT_AXIS",                      "bool");
+    restoreStateValue(&PLOT_ZMX,                       sizeof(PLOT_ZMX),                                            "PLOT_ZMX",                       "int8");
+    restoreStateValue(&PLOT_ZMY,                       sizeof(PLOT_ZMY),                                            "PLOT_ZMY",                       "int8");
+    restoreStateValue(&PLOT_ZOOM,                      sizeof(PLOT_ZOOM),                                           "PLOT_ZOOM",                      "uint8");
+    restoreStateValue(&plotmode,                       sizeof(plotmode),                                            "plotmode",                       "int8");
+    restoreStateValue(&tick_int_x,                     sizeof(tick_int_x),                                          "tick_int_x",                     "float");
+    restoreStateValue(&tick_int_y,                     sizeof(tick_int_y),                                          "tick_int_y",                     "float");
+    restoreStateValue(&x_min,                          sizeof(x_min),                                               "x_min",                          "float");
+    restoreStateValue(&x_max,                          sizeof(x_max),                                               "x_max",                          "float");
+    restoreStateValue(&y_min,                          sizeof(y_min),                                               "y_min",                          "float");
+    restoreStateValue(&y_max,                          sizeof(y_max),                                               "y_max",                          "float");
+    restoreStateValue(&xzero,                          sizeof(xzero),                                               "xzero",                          "uint32");
+    restoreStateValue(&yzero,                          sizeof(yzero),                                               "yzero",                          "uint32");
+    restoreStateValue(&matrixIndex,                    sizeof(matrixIndex),                                         "matrixIndex",                    "uint16");
+    restoreStateValue(&currentViewRegister,            sizeof(currentViewRegister),                                 "currentViewRegister",            "uint16");
+    restoreStateValue(&currentSolverStatus,            sizeof(currentSolverStatus),                                 "currentSolverStatus",            "uint16");
+    restoreStateValue(&currentSolverProgram,           sizeof(currentSolverProgram),                                "currentSolverProgram",           "uint16");
+    restoreStateValue(&currentSolverVariable,          sizeof(currentSolverVariable),                               "currentSolverVariable",          "uint16");
+    restoreStateValue(&numberOfFormulae,               sizeof(numberOfFormulae),                                    "numberOfFormulae",               "uint16");
+    restoreStateValue(&currentFormula,                 sizeof(currentFormula),                                      "currentFormula",                 "uint16");
+    restoreStateValue(&numberOfUserMenus,              sizeof(numberOfUserMenus),                                   "numberOfUserMenus",              "uint16");
+    restoreStateValue(&currentUserMenu,                sizeof(currentUserMenu),                                     "currentUserMenu",                "uint16");
+    restoreStateValue(&userKeyLabelSize,               sizeof(userKeyLabelSize),                                    "userKeyLabelSize",               "uint16");
+    restoreStateValue(&timerCraAndDeciseconds,         sizeof(timerCraAndDeciseconds),                              "timerCraAndDeciseconds",         "uint8");
+    restoreStateValue(&timerValue,                     sizeof(timerValue),                                          "timerValue",                     "uint32");
+    restoreStateValue(&timerTotalTime,                 sizeof(timerTotalTime),                                      "timerTotalTime",                 "uint32");
+    restoreStateValue(&currentInputVariable,           sizeof(currentInputVariable),                                "currentInputVariable",           "uint16");
+    restoreStateValue(&SAVED_SIGMA_LASTX,              sizeof(SAVED_SIGMA_LASTX),                                   "SAVED_SIGMA_LASTX",              "real");
+    restoreStateValue(&SAVED_SIGMA_LASTY,              sizeof(SAVED_SIGMA_LASTY),                                   "SAVED_SIGMA_LASTY",              "real");
+    restoreStateValue(&SAVED_SIGMA_LAct,               sizeof(SAVED_SIGMA_LAct),                                    "SAVED_SIGMA_LAct",               "real");
+    restoreStateValue(&currentMvarLabel,               sizeof(currentMvarLabel),                                    "currentMvarLabel",               "uint16");
+    restoreStateValue(&graphVariable,                  sizeof(graphVariable),                                       "graphVariable",                  "int32");
+    restoreStateValue(&plotStatMx,                     sizeof(plotStatMx),                                          "plotStatMx",                     "hexDump");
+    restoreStateValue(&drawHistogram,                  sizeof(drawHistogram),                                       "drawHistogram",                  "uint8");
+    restoreStateValue(&statMx,                         sizeof(statMx),                                              "statMx",                         "hexDump");
+    restoreStateValue(&lrSelectionHistobackup,         sizeof(lrSelectionHistobackup),                              "lrSelectionHistobackup",         "uint16");
+    restoreStateValue(&lrChosenHistobackup,            sizeof(lrChosenHistobackup),                                 "lrChosenHistobackup",            "uint16");
+    restoreStateValue(&loBinR,                         sizeof(loBinR),                                              "loBinR",                         "real34");
+    restoreStateValue(&nBins,                          sizeof(nBins),                                               "nBins",                          "real34");
+    restoreStateValue(&hiBinR,                         sizeof(hiBinR),                                              "hiBinR",                         "real34");
+    restoreStateValue(&histElementXorY,                sizeof(histElementXorY),                                     "histElementXorY",                "int16");
+    restoreStateValue(&screenUpdatingMode,             sizeof(screenUpdatingMode),                                  "screenUpdatingMode",             "uint8");
+    //save and restore screenData is not mandatory
+    //restoreStateValue(loadedScreen,                    0,                                                           "screenData",                     "screenData");
+    restoreStateValue(&eRPN,                           sizeof(eRPN),                                                "eRPN",                           "bool");    //JM vv
+    restoreStateValue(&HOME3,                          sizeof(HOME3),                                               "HOME3",                          "bool");
+    restoreStateValue(&ShiftTimoutMode,                sizeof(ShiftTimoutMode),                                     "ShiftTimoutMode",                "bool");
+    restoreStateValue(&CPXMULT,                        sizeof(CPXMULT),                                             "CPXMULT",                        "bool");    //JM
+    restoreStateValue(&fgLN,                           sizeof(fgLN),                                                "fgLN",                           "uint8");
+    restoreStateValue(&BASE_HOME,                      sizeof(BASE_HOME),                                           "BASE_HOME",                      "bool");
+    restoreStateValue(&Norm_Key_00_VAR,                sizeof(Norm_Key_00_VAR),                                     "Norm_Key_00_VAR",                "int16");
+    restoreStateValue(&Input_Default,                  sizeof(Input_Default),                                       "Input_Default",                  "uint8");
+    restoreStateValue(&BASE_MYM,                       sizeof(BASE_MYM),                                            "BASE_MYM",                       "bool");
+    restoreStateValue(&jm_G_DOUBLETAP,                 sizeof(jm_G_DOUBLETAP),                                      "jm_G_DOUBLETAP",                 "bool");
+    restoreStateValue(&graph_xmin,                     sizeof(graph_xmin),                                          "graph_xmin",                     "float");
+    restoreStateValue(&graph_xmax,                     sizeof(graph_xmax),                                          "graph_xmax",                     "float");
+    restoreStateValue(&graph_ymin,                     sizeof(graph_ymin),                                          "graph_ymin",                     "float");
+    restoreStateValue(&graph_ymax,                     sizeof(graph_ymax),                                          "graph_ymax",                     "float");
+    restoreStateValue(&jm_LARGELI,                     sizeof(jm_LARGELI),                                          "jm_LARGELI",                     "bool");
+    restoreStateValue(&constantFractions,              sizeof(constantFractions),                                   "constantFractions",              "bool");
+    restoreStateValue(&constantFractionsMode,          sizeof(constantFractionsMode),                               "constantFractionsMode",          "uint8");
+    restoreStateValue(&constantFractionsOn,            sizeof(constantFractionsOn),                                 "constantFractionsOn",            "bool");
+    restoreStateValue(&running_program_jm,             sizeof(running_program_jm),                                  "running_program_jm",             "bool");
+    restoreStateValue(&indic_x,                        sizeof(indic_x),                                             "indic_x",                        "uint32");
+    restoreStateValue(&indic_y,                        sizeof(indic_y),                                             "indic_y",                        "uint32");
+    restoreStateValue(&fnXEQMENUpos,                   sizeof(fnXEQMENUpos),                                        "fnXEQMENUpos",                   "int16");
+    restoreStateValue(&indexOfItemsXEQM,               sizeof(indexOfItemsXEQM),                                    "indexOfItemsXEQM",               "hexDump");
+    restoreStateValue(&T_cursorPos,                    sizeof(T_cursorPos),                                         "T_cursorPos",                    "int16");   //JM ^^
+    restoreStateValue(&SHOWregis,                      sizeof(SHOWregis),                                           "SHOWregis",                      "int16");   //JM ^^
+    restoreStateValue(&displayStackSHOIDISP,           sizeof(displayStackSHOIDISP),                                "displayStackSHOIDISP",           "uint8");   //JM ^^
+    restoreStateValue(&ListXYposition,                 sizeof(ListXYposition),                                      "ListXYposition",                 "int16");   //JM ^^
+    restoreStateValue(&numLock,                        sizeof(numLock),                                             "numLock",                        "bool");    //JM ^^
+    restoreStateValue(&DRG_Cycling,                    sizeof(DRG_Cycling),                                         "DRG_Cycling",                    "uint8");   //JM
+    restoreStateValue(&lastFlgScr,                     sizeof(lastFlgScr),                                          "lastFlgScr",                     "uint8");   //C43 JM
+    restoreStateValue(&displayAIMbufferoffset,         sizeof(displayAIMbufferoffset),                              "displayAIMbufferoffset",         "int16");   //C43 JM
+    restoreStateValue(&bcdDisplay,                     sizeof(bcdDisplay),                                          "bcdDisplay",                     "bool");    //C43 JM
+    restoreStateValue(&topHex,                         sizeof(topHex),                                              "topHex",                         "bool");    //C43 JM
+    restoreStateValue(&bcdDisplaySign,                 sizeof(bcdDisplaySign),                                      "bcdDisplaySign",                 "uint8");   //C43 JM
+    restoreStateValue(&DM_Cycling,                     sizeof(DM_Cycling),                                          "DM_Cycling",                     "uint8");   //JM
+    restoreStateValue(&SI_All,                         sizeof(SI_All),                                              "SI_All",                         "bool");    //JM
+    restoreStateValue(&LongPressM,                     sizeof(LongPressM),                                          "LongPressM",                     "uint8");   //JM
+    restoreStateValue(&LongPressF,                     sizeof(LongPressF),                                          "LongPressF",                     "uint8");   //JM
+    restoreStateValue(&currentAsnScr,                  sizeof(currentAsnScr),                                       "currentAsnScr",                  "uint8");   //JM
+    restoreStateValue(&gapItemLeft,                    sizeof(gapItemLeft),                                         "gapItemLeft",                    "uint16");  //JM
+    restoreStateValue(&gapItemRight,                   sizeof(gapItemRight),                                        "gapItemRight",                   "uint16");  //JM
+    restoreStateValue(&gapItemRadix,                   sizeof(gapItemRadix),                                        "gapItemRadix",                   "uint16");  //JM
+    restoreStateValue(&grpGroupingLeft,                sizeof(grpGroupingLeft),                                     "grpGroupingLeft",                "uint8");   //JM
+    restoreStateValue(&grpGroupingGr1LeftOverflow,     sizeof(grpGroupingGr1LeftOverflow),                          "grpGroupingGr1LeftOverflow",     "uint8");   //JM
+    restoreStateValue(&grpGroupingGr1Left,             sizeof(grpGroupingGr1Left),                                  "grpGroupingGr1Left",             "uint8");   //JM
+    restoreStateValue(&grpGroupingRight,               sizeof(grpGroupingRight),                                    "grpGroupingRight",               "uint8");   //JM
+    restoreStateValue(&MYM3,                           sizeof(MYM3),                                                "MYM3",                           "bool");
+
+    // If you create a new parameter, proceed as following:
+    //newParam = 42 // default value for newParam if not found in backup.cgf. This is for compatibility with older versions of backup.cfg.
+    //restoreStateValue(&newParam,                       sizeof(newParam),                                            "newParam",                       "parameterType");
+
+    // Freeing the space occupied by all the configuration parameters
+    paramCurrent = paramHead;
+    while(paramHead) {
+      paramHead = paramHead->next;
+      free(paramCurrent->param);
+      free(paramCurrent);
+      paramCurrent = paramHead;
     }
+
+    printf("End of calc's restoration\n");
+
+    setFGLSettings(fgLN);
+
+    if(temporaryInformation == TI_SHOW_REGISTER_BIG || temporaryInformation == TI_SHOW_REGISTER_SMALL) {
+      temporaryInformation = TI_NO_INFO;
+    }
+
+    scanLabelsAndPrograms();
+    defineCurrentProgramFromGlobalStepNumber(currentLocalStepNumber + abs(programList[currentProgramNumber - 1].step) - 1);
+    defineCurrentStep();
+    defineFirstDisplayedStep();
+    defineCurrentProgramFromCurrentStep();
+
+    //defineCurrentLocalRegisters();
+
+    if(temporaryInformation==TI_SHOW_REGISTER) {
+      temporaryInformation = TI_NO_INFO;
+    }
+
+    #if(DEBUG_REGISTER_L == 1)
+      refreshRegisterLine(REGISTER_X); // to show L register
+    #endif // (DEBUG_REGISTER_L == 1)
+
+    //save and restore screenData is not mandatory
+    //for(int y = 0; y < SCREEN_HEIGHT; ++y) {
+    //  for(int x = 0; x < SCREEN_WIDTH; x += 8) {
+    //    uint8_t bmpdata = *(loadedScreen + (y * SCREEN_WIDTH + x) / 8);
+    //    for(int bit = 7; bit >= 0; --bit) {
+    //      *(screenData + y * screenStride + x + (7 - bit)) = (bmpdata & (1 << bit)) ? ON_PIXEL : OFF_PIXEL;
+    //    }
+    //  }
+    //}
+    //free(loadedScreen);
+
+    if(tam.mode && !tam.alpha) {
+      calcModeTamGui();
+    }
+    else if(tam.mode && tam.alpha) {
+      calcModeAimGui();
+    }
+    else if(   calcMode == CM_NORMAL
+            || calcMode == CM_REGISTER_BROWSER
+            || calcMode == CM_FLAG_BROWSER
+            || calcMode == CM_ASN_BROWSER
+            || calcMode == CM_FONT_BROWSER
+            || calcMode == CM_PEM
+            || calcMode == CM_PLOT_STAT
+            || calcMode == CM_GRAPH
+            || calcMode == CM_LISTXY) {
+      calcModeNormalGui();
+    }
+    else if(calcMode == CM_MIM) {
+      calcModeNormalGui();
+      mimRestore();
+    }
+    else if(calcMode == CM_AIM) {
+      calcModeNormalGui();
+      calcModeAimGui();
+      cursorEnabled = true;
+    }
+    else if(calcMode == CM_NIM) {
+      calcModeNormalGui();
+      cursorEnabled = true;
+    }
+    else if(calcMode == CM_EIM) {
+    }
+    else if(calcMode == CM_ASSIGN) {
+    }
+    else if(calcMode == CM_TIMER) {
+    }
+    else {
+      sprintf(errorMessage, commonBugScreenMessages[bugMsgValueFor], "restoreCalc", calcMode, "calcMode");
+      displayBugScreen(errorMessage);
+    }
+    if(catalog) {
+      clearSystemFlag(FLAG_ALPHA);
+    }
+
+    updateMatrixHeightCache();
+    refreshScreen();
   }
 #endif // PC_BUILD
 
@@ -1350,6 +1692,7 @@ void doSave(uint16_t saveType) {
 
 
 
+#if !defined(TESTSUITE_BUILD)
 void readLine(char *line) {
   restore(line, 1);
   while(*line == '\n' || *line == '\r') {
@@ -1365,7 +1708,6 @@ void readLine(char *line) {
 
 
 
-#if !defined(TESTSUITE_BUILD)
 static void UI64toString(uint64_t value, char * tmpRegisterString) {
   uint32_t v0,v1;
 
@@ -1383,7 +1725,7 @@ static void UI64toString(uint64_t value, char * tmpRegisterString) {
 static unsigned int getBase(const char **str) {
   unsigned int base = 10;
   //fprintf(stderr,"\nget base\n");fflush(stderr);
-  if(**str == '0' && (*str)[1] != '\0') {
+  if(**str == '0' && (*str)[1] >= '0' && (*str)[1] <= '7') {
     base = 8;
     ++*str;
     if(**str == 'x') {
@@ -1416,7 +1758,7 @@ static unsigned int getDigit(const char *str) {
       digit = getDigit(str++);                    \
       if(digit > base)                            \
         break;                                    \
-      value = value * base + digit;               \
+      value = value*base + digit;                 \
     }                                             \
     return value;                                 \
   }
@@ -1426,56 +1768,45 @@ stringToUintFunc(stringToUint16, uint16_t)
 stringToUintFunc(stringToUint32, uint32_t)
 stringToUintFunc(stringToUint64, uint64_t)
 
+#define stringToIntFunc(name, type)               \
+  type name(const char *str) {                    \
+    type value = 0;                               \
+    bool_t sign = false;                          \
+    unsigned int digit, base = getBase(&str);     \
+                                                  \
+    if(*str == '-') {                             \
+      str++;                                      \
+      sign = true;                                \
+    }                                             \
+    else if(*str == '+') {                        \
+      str++;                                      \
+    }                                             \
+                                                  \
+    for(;;) {                                     \
+      digit = getDigit(str++);                    \
+      if(digit > base)                            \
+        break;                                    \
+      value = value*base + digit;                 \
+    }                                             \
+                                                  \
+    if(sign) {                                    \
+      value = -value;                             \
+    }                                             \
+    return value;                                 \
+  }
 
-float strintToFloat(const char *str) {
+stringToIntFunc(stringToInt8,  int8_t)
+stringToIntFunc(stringToInt16, int16_t)
+stringToIntFunc(stringToInt32, int32_t)
+stringToIntFunc(stringToInt64, int64_t)
+
+
+float stringToFloat(const char *str) {
   return strtof(str, NULL);
 }
 
-
-int16_t stringToInt16(const char *str) {
-  int16_t value = 0;
-  bool_t sign = false;
-
-  if(*str == '-') {
-    str++;
-    sign = true;
-  }
-  else if(*str == '+') {
-    str++;
-  }
-
-  while('0' <= *str && *str <= '9') {
-    value = value*10 + (*(str++) - '0');
-  }
-
-  if(sign) {
-    value = -value;
-  }
-  return value;
-}
-
-
-
-int32_t stringToInt32(const char *str) {
-  int32_t value = 0;
-  bool_t sign = false;
-
-  if(*str == '-') {
-    str++;
-    sign = true;
-  }
-  else if(*str == '+') {
-    str++;
-  }
-
-  while('0' <= *str && *str <= '9') {
-    value = value*10 + (*(str++) - '0');
-  }
-
-  if(sign) {
-    value = -value;
-  }
-  return value;
+double stringToDouble(const char *str) {
+  return strtod(str, NULL);
 }
 
 
@@ -2396,46 +2727,46 @@ int32_t stringToInt32(const char *str) {
           else if(strcmp(aimBuffer, "BASE_HOME"                   ) == 0) { BASE_HOME             = (bool_t)stringToUint8(tmpString) != 0; }
           else if(strcmp(aimBuffer, "Norm_Key_00_VAR"             ) == 0) { Norm_Key_00_VAR       = stringToUint16(tmpString); }
           else if(strcmp(aimBuffer, "Input_Default"               ) == 0) { Input_Default         = stringToUint8(tmpString); }
-          else if(strcmp(aimBuffer, "jm_BASE_SCREEN"              ) == 0) { BASE_MYM        = (bool_t)stringToUint8(tmpString) != 0; }        //Keep compatible by repeating
-          else if(strcmp(aimBuffer, "BASE_MYM"                    ) == 0) { BASE_MYM        = (bool_t)stringToUint8(tmpString) != 0; }
+          else if(strcmp(aimBuffer, "jm_BASE_SCREEN"              ) == 0) { BASE_MYM              = (bool_t)stringToUint8(tmpString) != 0; }        //Keep compatible by repeating
+          else if(strcmp(aimBuffer, "BASE_MYM"                    ) == 0) { BASE_MYM              = (bool_t)stringToUint8(tmpString) != 0; }
           else if(strcmp(aimBuffer, "jm_G_DOUBLETAP"              ) == 0) { jm_G_DOUBLETAP        = (bool_t)stringToUint8(tmpString) != 0; }
           else if(strcmp(aimBuffer, "jm_LARGELI"                  ) == 0) { jm_LARGELI            = (bool_t)stringToUint8(tmpString) != 0; }
           else if(strcmp(aimBuffer, "constantFractions"           ) == 0) { constantFractions     = (bool_t)stringToUint8(tmpString) != 0; }
           else if(strcmp(aimBuffer, "constantFractionsMode"       ) == 0) { constantFractionsMode = stringToUint8(tmpString); }
           else if(strcmp(aimBuffer, "constantFractionsOn"         ) == 0) { constantFractionsOn   = (bool_t)stringToUint8(tmpString) != 0; }
-          else if(strcmp(aimBuffer, "displayStackSHOIDISP"        ) == 0) { displayStackSHOIDISP = stringToUint8(tmpString); }
-          else if(strcmp(aimBuffer, "bcdDisplay"                  ) == 0) { bcdDisplay           = (bool_t)stringToUint8(tmpString) != 0; }
-          else if(strcmp(aimBuffer, "topHex"                      ) == 0) { topHex               = (bool_t)stringToUint8(tmpString) != 0; }
-          else if(strcmp(aimBuffer, "bcdDisplaySign"              ) == 0) { bcdDisplaySign       = stringToUint8(tmpString); }
-          else if(strcmp(aimBuffer, "DRG_Cycling"                 ) == 0) { DRG_Cycling          = stringToUint8(tmpString); }
-          else if(strcmp(aimBuffer, "DM_Cycling"                  ) == 0) { DM_Cycling           = stringToUint8(tmpString); }
-          else if(strcmp(aimBuffer, "SI_All"                      ) == 0) { SI_All               = (bool_t)stringToUint8(tmpString) != 0; }
-          else if(strcmp(aimBuffer, "LongPressM"                  ) == 0) { LongPressM           = stringToUint8(tmpString); }                  //10000003
-          else if(strcmp(aimBuffer, "LongPressF"                  ) == 0) { LongPressF           = stringToUint8(tmpString); }                  //10000003
-          else if(strcmp(aimBuffer, "lastIntegerBase"             ) == 0) { lastIntegerBase      = stringToUint8(tmpString); }                  //10000004
-          else if(strcmp(aimBuffer, "lrChosen"                    ) == 0) { lrChosen             = stringToUint16(tmpString); }
-          else if(strcmp(aimBuffer, "graph_xmin"                  ) == 0) { graph_xmin           = strintToFloat(tmpString); }
-          else if(strcmp(aimBuffer, "graph_xmax"                  ) == 0) { graph_xmax           = strintToFloat(tmpString); }
-          else if(strcmp(aimBuffer, "graph_ymin"                  ) == 0) { graph_ymin           = strintToFloat(tmpString); }
-          else if(strcmp(aimBuffer, "graph_ymax"                  ) == 0) { graph_ymax           = strintToFloat(tmpString); }
-          else if(strcmp(aimBuffer, "graph_dx"                    ) == 0) { graph_dx             = strintToFloat(tmpString); }
-          else if(strcmp(aimBuffer, "graph_dy"                    ) == 0) { graph_dy             = strintToFloat(tmpString); }
-          else if(strcmp(aimBuffer, "roundedTicks"                ) == 0) { roundedTicks         = (bool_t)stringToUint8(tmpString) != 0; }
-          else if(strcmp(aimBuffer, "extentx"                     ) == 0) { extentx              = (bool_t)stringToUint8(tmpString) != 0; }
-          else if(strcmp(aimBuffer, "extenty"                     ) == 0) { extenty              = (bool_t)stringToUint8(tmpString) != 0; }
-          else if(strcmp(aimBuffer, "PLOT_VECT"                   ) == 0) { PLOT_VECT            = (bool_t)stringToUint8(tmpString) != 0; }
-          else if(strcmp(aimBuffer, "PLOT_NVECT"                  ) == 0) { PLOT_NVECT           = (bool_t)stringToUint8(tmpString) != 0; }
-          else if(strcmp(aimBuffer, "PLOT_SCALE"                  ) == 0) { PLOT_SCALE           = (bool_t)stringToUint8(tmpString) != 0; }
-          else if(strcmp(aimBuffer, "PLOT_LINE"                   ) == 0) { PLOT_LINE            = (bool_t)stringToUint8(tmpString) != 0; }
-          else if(strcmp(aimBuffer, "PLOT_CROSS"                  ) == 0) { PLOT_CROSS           = (bool_t)stringToUint8(tmpString) != 0; }
-          else if(strcmp(aimBuffer, "PLOT_BOX"                    ) == 0) { PLOT_BOX             = (bool_t)stringToUint8(tmpString) != 0; }
-          else if(strcmp(aimBuffer, "PLOT_INTG"                   ) == 0) { PLOT_INTG            = (bool_t)stringToUint8(tmpString) != 0; }
-          else if(strcmp(aimBuffer, "PLOT_DIFF"                   ) == 0) { PLOT_DIFF            = (bool_t)stringToUint8(tmpString) != 0; }
-          else if(strcmp(aimBuffer, "PLOT_RMS"                    ) == 0) { PLOT_RMS             = (bool_t)stringToUint8(tmpString) != 0; }
-          else if(strcmp(aimBuffer, "PLOT_SHADE"                  ) == 0) { PLOT_SHADE           = (bool_t)stringToUint8(tmpString) != 0; }
-          else if(strcmp(aimBuffer, "PLOT_AXIS"                   ) == 0) { PLOT_AXIS            = (bool_t)stringToUint8(tmpString) != 0; }
-          else if(strcmp(aimBuffer, "PLOT_ZMX"                    ) == 0) { PLOT_ZMX             = stringToUint8(tmpString); }
-          else if(strcmp(aimBuffer, "PLOT_ZMY"                    ) == 0) { PLOT_ZMY             = stringToUint8(tmpString); }
+          else if(strcmp(aimBuffer, "displayStackSHOIDISP"        ) == 0) { displayStackSHOIDISP  = stringToUint8(tmpString); }
+          else if(strcmp(aimBuffer, "bcdDisplay"                  ) == 0) { bcdDisplay            = (bool_t)stringToUint8(tmpString) != 0; }
+          else if(strcmp(aimBuffer, "topHex"                      ) == 0) { topHex                = (bool_t)stringToUint8(tmpString) != 0; }
+          else if(strcmp(aimBuffer, "bcdDisplaySign"              ) == 0) { bcdDisplaySign        = stringToUint8(tmpString); }
+          else if(strcmp(aimBuffer, "DRG_Cycling"                 ) == 0) { DRG_Cycling           = stringToUint8(tmpString); }
+          else if(strcmp(aimBuffer, "DM_Cycling"                  ) == 0) { DM_Cycling            = stringToUint8(tmpString); }
+          else if(strcmp(aimBuffer, "SI_All"                      ) == 0) { SI_All                = (bool_t)stringToUint8(tmpString) != 0; }
+          else if(strcmp(aimBuffer, "LongPressM"                  ) == 0) { LongPressM            = stringToUint8(tmpString); }                  //10000003
+          else if(strcmp(aimBuffer, "LongPressF"                  ) == 0) { LongPressF            = stringToUint8(tmpString); }                  //10000003
+          else if(strcmp(aimBuffer, "lastIntegerBase"             ) == 0) { lastIntegerBase       = stringToUint8(tmpString); }                  //10000004
+          else if(strcmp(aimBuffer, "lrChosen"                    ) == 0) { lrChosen              = stringToUint16(tmpString);}
+          else if(strcmp(aimBuffer, "graph_xmin"                  ) == 0) { graph_xmin            = stringToFloat(tmpString); }
+          else if(strcmp(aimBuffer, "graph_xmax"                  ) == 0) { graph_xmax            = stringToFloat(tmpString); }
+          else if(strcmp(aimBuffer, "graph_ymin"                  ) == 0) { graph_ymin            = stringToFloat(tmpString); }
+          else if(strcmp(aimBuffer, "graph_ymax"                  ) == 0) { graph_ymax            = stringToFloat(tmpString); }
+          else if(strcmp(aimBuffer, "graph_dx"                    ) == 0) { graph_dx              = stringToFloat(tmpString); }
+          else if(strcmp(aimBuffer, "graph_dy"                    ) == 0) { graph_dy              = stringToFloat(tmpString); }
+          else if(strcmp(aimBuffer, "roundedTicks"                ) == 0) { roundedTicks          = (bool_t)stringToUint8(tmpString) != 0; }
+          else if(strcmp(aimBuffer, "extentx"                     ) == 0) { extentx               = (bool_t)stringToUint8(tmpString) != 0; }
+          else if(strcmp(aimBuffer, "extenty"                     ) == 0) { extenty               = (bool_t)stringToUint8(tmpString) != 0; }
+          else if(strcmp(aimBuffer, "PLOT_VECT"                   ) == 0) { PLOT_VECT             = (bool_t)stringToUint8(tmpString) != 0; }
+          else if(strcmp(aimBuffer, "PLOT_NVECT"                  ) == 0) { PLOT_NVECT            = (bool_t)stringToUint8(tmpString) != 0; }
+          else if(strcmp(aimBuffer, "PLOT_SCALE"                  ) == 0) { PLOT_SCALE            = (bool_t)stringToUint8(tmpString) != 0; }
+          else if(strcmp(aimBuffer, "PLOT_LINE"                   ) == 0) { PLOT_LINE             = (bool_t)stringToUint8(tmpString) != 0; }
+          else if(strcmp(aimBuffer, "PLOT_CROSS"                  ) == 0) { PLOT_CROSS            = (bool_t)stringToUint8(tmpString) != 0; }
+          else if(strcmp(aimBuffer, "PLOT_BOX"                    ) == 0) { PLOT_BOX              = (bool_t)stringToUint8(tmpString) != 0; }
+          else if(strcmp(aimBuffer, "PLOT_INTG"                   ) == 0) { PLOT_INTG             = (bool_t)stringToUint8(tmpString) != 0; }
+          else if(strcmp(aimBuffer, "PLOT_DIFF"                   ) == 0) { PLOT_DIFF             = (bool_t)stringToUint8(tmpString) != 0; }
+          else if(strcmp(aimBuffer, "PLOT_RMS"                    ) == 0) { PLOT_RMS              = (bool_t)stringToUint8(tmpString) != 0; }
+          else if(strcmp(aimBuffer, "PLOT_SHADE"                  ) == 0) { PLOT_SHADE            = (bool_t)stringToUint8(tmpString) != 0; }
+          else if(strcmp(aimBuffer, "PLOT_AXIS"                   ) == 0) { PLOT_AXIS             = (bool_t)stringToUint8(tmpString) != 0; }
+          else if(strcmp(aimBuffer, "PLOT_ZMX"                    ) == 0) { PLOT_ZMX              = stringToUint8(tmpString); }
+          else if(strcmp(aimBuffer, "PLOT_ZMY"                    ) == 0) { PLOT_ZMY              = stringToUint8(tmpString); }
 
 
           hourGlassIconEnabled = false;
