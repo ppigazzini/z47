@@ -1161,7 +1161,7 @@ uint16_t convertItemToSubOrSup(uint16_t item, int16_t subOrSup) {
       }
 
       case ITM_EXPONENT: {
-        if(nimNumberPart == NP_INT_BASE && aimBuffer[strlen(aimBuffer) - 1] == '#') { //JM "BASE OCT" See below
+        if(INTEGERSHORTCUTS && nimNumberPart == NP_INT_BASE && aimBuffer[strlen(aimBuffer) - 1] == '#') { //JM "BASE OCT" See below
           strcat(aimBuffer, "8");
           goto addItemToNimBuffer_exit;
         }
@@ -1529,40 +1529,48 @@ uint16_t convertItemToSubOrSup(uint16_t item, int16_t subOrSup) {
 
       //JM Only works in direct NIM, that is only when the input buffer already contains #
       case ITM_1ONX: { // B for binary base
-        if(nimNumberPart == NP_INT_BASE && aimBuffer[strlen(aimBuffer) - 1] == '#') {
+        if(INTEGERSHORTCUTS && nimNumberPart == NP_INT_BASE && aimBuffer[strlen(aimBuffer) - 1] == '#') {
           strcat(aimBuffer, "2");
           goto addItemToNimBuffer_exit;
+        } else {
+          keyActionProcessed = false;
         }
         break;
       }
 
       case ITM_ENTER:                                  //JM DEFAULT BASE SETTING 10
       case ITM_LOG10: { // D for decimal base          //JM
-        if(nimNumberPart == NP_INT_BASE && aimBuffer[strlen(aimBuffer) - 1] == '#') {
+        if(INTEGERSHORTCUTS && nimNumberPart == NP_INT_BASE && aimBuffer[strlen(aimBuffer) - 1] == '#') {
           strcat(aimBuffer, "10");
           goto addItemToNimBuffer_exit;
+        } else {
+          keyActionProcessed = false;
         }
         break;
       }
 
       case ITM_RCL: { // H for hexadecimal base
-        if(nimNumberPart == NP_INT_BASE && aimBuffer[strlen(aimBuffer) - 1] == '#') {
+        if(INTEGERSHORTCUTS && nimNumberPart == NP_INT_BASE && aimBuffer[strlen(aimBuffer) - 1] == '#') {
           strcat(aimBuffer, "16");
           goto addItemToNimBuffer_exit;
+        } else {
+          keyActionProcessed = false;
         }
         break;
       }
 
       case ITM_Rdown: { // I for longinteger
-        if(nimNumberPart == NP_INT_BASE && aimBuffer[strlen(aimBuffer) - 1] == '#') {
+        if(INTEGERSHORTCUTS && nimNumberPart == NP_INT_BASE && aimBuffer[strlen(aimBuffer) - 1] == '#') {
           aimBuffer[strlen(aimBuffer)-1]=0;
           nimNumberPart = NP_INT_10;
           goto addItemToNimBuffer_exit;
+        } else {
+          keyActionProcessed = false;
         }
         break;
       }
 
-      //JM See abovr "BASE OCT", O for octal base
+      //JM See abovr "BASE OCT", O for octal base: (INTEGERSHORTCUTS)
 
 
 
@@ -1861,7 +1869,7 @@ uint16_t convertItemToSubOrSup(uint16_t item, int16_t subOrSup) {
 
     else {
       #if defined (PC_BUILD)
-        printf("delayCloseNim=%u\n",delayCloseNim);
+        printf("addItemToNimBuffer: delayCloseNim=%u\n",delayCloseNim);
       #endif
       if(!delayCloseNim) {      //delayCloseNim can only be activaed by ITM.ms in bufferize
         switch(item) {          //JMCLOSE remove auto closenim directly after KEY PRESSED for these functions only.
