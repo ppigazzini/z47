@@ -115,7 +115,7 @@ int _ioFileNameFromFilePath(ioFilePath_t path, char * filename) {
       return FILE_OK;
 
     case ioPathBackup:
-      strcpy(filename, "backup.bin");
+      strcpy(filename, "backup.cfg");
       return FILE_OK;
 
     case ioPathRegDump:
@@ -217,6 +217,12 @@ void ioFileClose(void) {
   assert(_ioFileHandle != NULL);
   fclose(_ioFileHandle);
   _ioFileHandle = NULL;
+}
+
+
+int ioEof(void) {
+  assert(_ioFileHandle != NULL);
+  return feof(_ioFileHandle);
 }
 
 

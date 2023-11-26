@@ -124,8 +124,8 @@ typedef enum {
  * Boolean type.
  */
 typedef enum {
-  false = 0,     ///< Value for false
-  true  = !false ///< Value for true
+  false = 0, ///< Value for false
+  true  = 1  ///< Value for true
 } bool_t; // 1 bit
 
 
@@ -143,7 +143,7 @@ typedef enum {
   amSecond    =  6, // not an angular but a time unit: for the routine unified with the real type
   TM_HMS      =  7, // JM not an angular but a time unit: for the C43 usage
   amAngleMask = 15,
-  amPolar     = 16   // JM bit 4 of the 5 bits is used for Polar
+  amPolar     = 16  // JM bit 4 of the 5 bits is used for Polar
 } angularMode_t;
 
 
@@ -551,5 +551,11 @@ typedef struct {
     int width[4], height[4];
     GtkWidget *keyImage[4];
   } calcKeyboard_t;
+
+  struct cfgFileParam {
+    char *param;
+    struct cfgFileParam *next;
+  };
+  typedef struct cfgFileParam cfgFileParam_t;
   #endif // PC_BUILD
 #endif // .TYPEDEFINITIONS_H

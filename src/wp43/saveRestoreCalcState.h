@@ -42,8 +42,12 @@
   uint16_t stringToUint16(const char *str);
   uint32_t stringToUint32(const char *str);
   uint64_t stringToUint64(const char *str);
+  int8_t   stringToInt8  (const char *str);
   int16_t  stringToInt16 (const char *str);
   int32_t  stringToInt32 (const char *str);
+  int64_t  stringToInt64 (const char *str);
+  float    stringToFloat (const char *str);
+  double   stringToDouble(const char *str);
 
   void     readLine      (char *line);
 
