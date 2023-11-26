@@ -1481,6 +1481,10 @@ typedef enum {
 #define currentPtrToNextLevel                (currentSubroutineLevelData[2].ptrToNextLevel)
 #define currentPtrToPreviousLevel            (currentSubroutineLevelData[2].ptrToPreviousLevel)
 
+
+#define INTEGERSHORTCUTS                     ((getSystemFlag(FLAG_USER) ? kbd_usr[27].primary : kbd_std[27].primary) == KEY_fg)     //TRUE is C47; check based on f/g key on DM42 position
+
+
 #if !defined(PC_BUILD) && !defined(DMCP_BUILD)
   #error One of PC_BUILD and DMCP_BUILD must be defined
 #endif // !PC_BUILD && !DMCP_BUILD

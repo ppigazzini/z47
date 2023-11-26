@@ -70,7 +70,6 @@ TO_QSPI static const char bugScreenItemNotDetermined[] = "In function determineI
     int16_t row, menuId = softmenuStack[0].softmenuId;
     int16_t firstItem = softmenuStack[0].firstItem;
 
-
     #if defined(VERBOSEKEYS)
       printf(">>>>Z 0090 determineFunctionKeyItem       data=|%s| data[0]=%d fn=%d item=%d itemShift=%d (Global) FN_key_pressed=%d\n", data, data[0], fn, item, itemShift, FN_key_pressed);
     #endif // VERBOSEKEYS
@@ -831,9 +830,11 @@ int16_t lastItem = 0;
   #if defined(PC_BUILD)
     void btnFnReleased(GtkWidget *notUsed, GdkEvent *event, gpointer data) {
   #endif // PC_BUILD
+
   #if defined(DMCP_BUILD)
     void btnFnReleased(void *data) {
   #endif // DMCP_BUILD
+
     if(programRunStop == PGM_KEY_PRESSED_WHILE_PAUSED) {
       programRunStop = PGM_RESUMING;
       screenUpdatingMode &= ~SCRUPD_ONE_TIME_FLAGS;
@@ -1126,7 +1127,7 @@ int16_t lastItem = 0;
             if(lastIntegerBase == 0) lastIntegerBase = 16;
             addItemToNimBuffer(item);
           }
-          else if((calcMode == CM_NIM) && ((item==ITM_DRG || item == ITM_DMS2 || item == ITM_dotD) && !catalog)) {   //JM
+          else if((calcMode == CM_NIM) && ((/*item==ITM_DRG ||*/ item == ITM_DMS2 || item == ITM_dotD) && !catalog)) {   //JM Remove DRG from here, there seems to be no need to send DRG to the buffer
             addItemToNimBuffer(item);
           }                                                                                      //JM
           else if(calcMode == CM_MIM && softmenu[softmenuStack[0].softmenuId].menuItem != -MNU_M_EDIT && (item != ITM_CC && item != ITM_op_j && item != ITM_op_j_pol)) { //JM added ITM_CC to let it work in matrix edit
@@ -1951,6 +1952,9 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
         if(calcMode == CM_NIM && delayCloseNim && item != ITM_ms && item != ITM_CC && item != ITM_op_j && item != ITM_op_j_pol) {
           delayCloseNim = false;
           closeNim();                 //JM moved here, from bufferize see JMCLOSE, to retain NIM if needed for .ms. Only a problem due to longpress.
+          #if defined (PC_BUILD)
+            printf("btnReleased: Closed NIM (delayed) delayCloseNim=%u\n",delayCloseNim);
+          #endif
           screenUpdatingMode &= ~SCRUPD_MANUAL_MENU;
         }
 
@@ -2014,6 +2018,8 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
           }
           else {
             #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
+              printf("btnReleased: Closed NIM (delayed) delayCloseNim=%u, ",delayCloseNim);
+              printf("runfunction (%d)\n",item);
               printf(">>> btnReleased runfunction(%i) calcMode=%d previousCalcMode=%d screenUpdatingMode=%d\n", item, calcMode, previousCalcMode, screenUpdatingMode);    //JMYY
             #endif // PC_BUILD &&MONITOR_CLRSCR
 
