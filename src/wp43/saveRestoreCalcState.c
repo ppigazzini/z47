@@ -1694,13 +1694,15 @@ void doSave(uint16_t saveType) {
 
 #if !defined(TESTSUITE_BUILD)
 void readLine(char *line) {
-  restore(line, 1);
-  while(*line == '\n' || *line == '\r') {
+  if(!ioEof()) {
     restore(line, 1);
-  }
+    while((*line == '\n' || *line == '\r') && !ioEof()) {
+      restore(line, 1);
+    }
 
-  while(*line != '\n' && *line != '\r') {
-    restore(++line, 1);
+    while(*line != '\n' && *line != '\r' && !ioEof()) {
+      restore(++line, 1);
+    }
   }
 
   *line = 0;
