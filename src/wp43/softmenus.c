@@ -2225,7 +2225,7 @@ bool_t BASE_OVERRIDEONCE = false;
   static void pushSoftmenu(int16_t softmenuId) {
     int i;
     int16_t userMenuId;
-    if(running_program_jm) return;                             //JM
+    //if(running_program_jm) return;                             //JM
 
     #if defined(PC_BUILD)
       char tmp[300]; sprintf(tmp,">>> ...... pushing id:%d name:%s\n",softmenuId, indexOfItems[-softmenu[softmenuId].menuItem].itemSoftmenuName); jm_show_comment(tmp);
