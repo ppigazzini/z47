@@ -681,6 +681,17 @@ void fnFractionType(uint16_t unusedButMandatoryParameter) {
                          (getSystemFlag(FLAG_FRACT)  ? 1:0))
   uint8_t state = STATE;
   //printf("%u ",state);
+  
+  if(!getSystemFlag(FLAG_FRACT) && constantFractions && !constantFractionsOn) {
+    constantFractionsOn = true;
+    return;
+  } else {
+    if(!constantFractions && !getSystemFlag(FLAG_FRACT)) {
+      flipSystemFlag(FLAG_FRACT);
+      return;
+    }
+  }
+
   switch(state) {
     case STATE_bc       : state = STATE_exfr_abc; break;
     case STATE_exfr_abc : state = STATE_exfr_bc; break;
