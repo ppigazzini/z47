@@ -2029,6 +2029,19 @@ bool_t BASE_OVERRIDEONCE = false;
                     if(!compareString((char *)getNthString(dynamicSoftmenu[m].menuContent, x+6*y), indexOfItems[ITM_DRAW].itemSoftmenuName, CMP_NAME)) {
                        vm = vmReverse;
                     }
+                    if(!compareString((char *)getNthString(dynamicSoftmenu[m].menuContent, x+6*y), indexOfItems[ITM_SETSIG2].itemSoftmenuName, CMP_NAME)) {
+                       strcpy(itemName, figlabel((char *)getNthString(dynamicSoftmenu[m].menuContent, x+6*y), "", fnItemShowValue(ITM_SETSIG2)));
+                    }
+
+                    char tmpC[16];
+                    tmpC[0]=0;
+                    xcopy(tmpC, allNamedVariables[currentSolverVariable - FIRST_NAMED_VARIABLE].variableName + 1, allNamedVariables[currentSolverVariable - FIRST_NAMED_VARIABLE].variableName[0]);
+                    tmpC[ allNamedVariables[currentSolverVariable - FIRST_NAMED_VARIABLE].variableName[0]] = 0;
+                    if(!compareString((char *)getNthString(dynamicSoftmenu[m].menuContent, x+6*y), tmpC, CMP_NAME)) {
+                       strcpy(itemName, tmpC);
+                       strcat(itemName, "*");
+                    }
+
                     break;
                   }
                   default: {
