@@ -755,7 +755,7 @@ uint16_t flushBufferCnt = 0;
       }
       else {
         printf("Cannot restore calc's memory from file backup.cfg! Performing RESET\n");
-        refreshScreen();
+        refreshScreen(91);
         return;
       }
     }
@@ -783,7 +783,7 @@ uint16_t flushBufferCnt = 0;
     restoreStateValue(&backupVersion,                  sizeof(backupVersion),                                       "backupVersion",                  "uint32");
     restoreStateValue(&ramSizeInBlocks,                sizeof(ramSizeInBlocks),                                     "ramSizeInBlocks",                "uint32");
     if(ramSizeInBlocks != RAM_SIZE_IN_BLOCKS) {
-      refreshScreen();
+      refreshScreen(92);
 
       printf("Cannot restore calc's memory from file backup.cfg! File backup.cfg is from incompatible RAM size.\n");
       printf("       Backup file      Program\n");
@@ -1183,7 +1183,7 @@ uint16_t flushBufferCnt = 0;
     }
 
     updateMatrixHeightCache();
-    refreshScreen();
+    refreshScreen(93);
   }
 #endif // PC_BUILD
 
