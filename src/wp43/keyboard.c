@@ -1587,37 +1587,53 @@ bool_t allowShiftsToClearError = false;
 
 
     typedef struct {
-      uint8_t itm;
+      uint8_t itm0;
+      uint8_t itm1;
       uint8_t itm2;
+      uint8_t itm2a;
       uint8_t itm3;
       uint8_t itm4;
     } circ_t;
-    uint8_t circPtr =  0;
+    uint8_t circPtr0 =  0;
+    uint8_t circPtr1 = 0;
     uint8_t circPtr2 = 0;
+    uint8_t circPtr2a = 0;
     uint8_t circPtr3 = 0;
     uint8_t circPtr4 = 0;
     TO_QSPI const circ_t circ[] = {
-                  {7 , 2 , 2 , 2 },   //0
-                  {18, 23, 23, 23},   //1
-                  {30, 18, 18, 18},   //2
-                  {24, 12, 9 , 20},   //3
-                  {12, 29, 13, 9 },   //4
-                  {28, 33, 0,  0 },   //5
-                  {20, 29, 0 , 0 },   //6
-                  {18, 30, 0 , 0 },   //7
-                  {29, 0 , 0 , 0 },   //8
-                  {0 , 0 , 0 , 0 },   //9
+                  {7 , 7 , 2 , 23, 2 , 2 },   //0
+                  {18, 20, 23, 23, 23, 23},   //1
+                  {30, 30, 18, 18, 18, 18},   //2
+                  {24, 24, 12, 12, 9 , 20},   //3
+                  {12, 12, 29, 29, 13, 9 },   //4
+                  {28, 28, 33, 33, 0,  0 },   //5
+                  {20, 20, 29, 29, 0 , 0 },   //6
+                  {18, 18, 30, 30, 0 , 0 },   //7
+                  {29, 29, 0 , 0 , 0 , 0 },   //8
+                  {0 , 0 , 0 , 0 , 0 , 0 },   //9
                 };
     bool_t checkNumber(uint8_t keyCode) {
-      if((circPtr == 0 && keyCode==7) || circPtr > nbrOfElements(circ)) circPtr = 0;
-      if(circ[circPtr].itm==keyCode) circPtr++; else circPtr = 0;
-      if(circPtr == 9 && keyCode==29) {
+      if((circPtr0 == 0 && keyCode==7) || circPtr0 > nbrOfElements(circ)) circPtr0 = 0;
+      if(circ[circPtr0].itm0==keyCode) circPtr0++; else circPtr0 = 0;
+      if(circPtr0 == 9 && keyCode==29) {
+        fnSetHP35(0);
+        return true;
+      }
+      if((circPtr1 == 0 && keyCode==7) || circPtr1 > nbrOfElements(circ)) circPtr1 = 0;
+      if(circ[circPtr1].itm1==keyCode) circPtr1++; else circPtr1 = 0;
+      if(circPtr1 == 9 && keyCode==29) {
         fnSetHP35(0);
         return true;
       }
       if((circPtr2 == 0 && keyCode==2) || circPtr2 > nbrOfElements(circ)) circPtr2 = 0;
       if(circ[circPtr2].itm2==keyCode) circPtr2++; else circPtr2 = 0;
       if(circPtr2 == 8 && keyCode==30) {
+        fnSetC47(0);
+        return true;
+      }
+      if((circPtr2a == 0 && keyCode==2) || circPtr2a > nbrOfElements(circ)) circPtr2a = 0;
+      if(circ[circPtr2a].itm2a==keyCode) circPtr2a++; else circPtr2a = 0;
+      if(circPtr2a == 8 && keyCode==30) {
         fnSetC47(0);
         return true;
       }

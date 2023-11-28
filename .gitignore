@@ -11,6 +11,7 @@
 /generate*.exe
 /ttf2RasterFonts.exe
 backup.bin
+backup.cfg
 wp43.sav
 wp43.dat
 c47.sav

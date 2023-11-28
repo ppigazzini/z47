@@ -17,7 +17,7 @@ const char *_ioFileNameFromFilePath(ioFilePath_t path) {
     case ioPathManualSave: return "wp43.sav";
     case ioPathPgmFile:    return "wp43.dat";
     case ioPathTestPgms:   return "res/dmcp/testPgms.bin";
-    case ioPathBackup:     return "backup.bin";
+    case ioPathBackup:     return "backup.cfg";
     default:               return false;
   }
 }

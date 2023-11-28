@@ -144,6 +144,12 @@ void ioFileClose(void) {
 }
 
 
+int ioEof(void) {
+  assert(_ioReadEnabled);
+  return f_eof(ppgm_fp);
+}
+
+
 
 int ioFileRemove(ioFilePath_t path, uint32_t *errorNumber) {
   static char filename[40];
