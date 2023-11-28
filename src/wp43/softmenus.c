@@ -20,6 +20,7 @@
 #include "assign.h"
 #include "calcMode.h"
 #include "charString.h"
+#include "debug.h"
 #include "error.h"
 #include "fonts.h"
 #include "flags.h"
@@ -32,6 +33,7 @@
 #include "programming/nextStep.h"
 #include "c43Extensions/radioButtonCatalog.h"
 #include "registers.h"
+#include "registerValueConversions.h"
 #include "screen.h"
 #include "solver/differentiate.h"
 #include "solver/equation.h"
@@ -1720,6 +1722,9 @@ static char *changeItoJ(int16_t item) {
 
 
 void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t * vm, int8_t * showCb, int16_t * showValue, char * showText) {
+  float tmpF = 0;
+  char tmpS[20];
+  real_t tmpR;
   * vm = (itemNr < 0) || (isFunctionItemAMenu(itemNr%10000)) ? vmReverse : vmNormal;
   * showCb = NOVAL;
   * showValue = NOVAL;
@@ -1731,6 +1736,25 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
     * showValue = fnItemShowValue(itemNr%10000);
 
     switch(itemNr%10000) {
+
+      case VAR_ACC: {      
+                      real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_ACC), &tmpR);
+                      realToFloat(&tmpR, &tmpF);
+                      if(tmpF<0) {
+                        strcpy(tmpS,"NEG");
+                      } else
+                      if(tmpF<1.0e-34) {
+                        strcpy(tmpS,STD_GAUSS_WHITE_L "1E-34");
+                      } else
+                      if(tmpF>1) {
+                        strcpy(tmpS,STD_GAUSS_WHITE_R "1");
+                      } else {
+                        sprintf(tmpS,"%5.G",tmpF);
+                        strcpy(tmpS, eatSpacesMid(tmpS));
+                      }
+                      stringAppend(showText + stringByteLength(showText), tmpS);
+                      break;
+                    }
 
       case ITM_DSP:
       case ITM_UNIT: if(getSystemFlag(FLAG_2TO10) && displayFormat == DF_UN) {
@@ -2005,6 +2029,19 @@ bool_t BASE_OVERRIDEONCE = false;
                     if(!compareString((char *)getNthString(dynamicSoftmenu[m].menuContent, x+6*y), indexOfItems[ITM_DRAW].itemSoftmenuName, CMP_NAME)) {
                        vm = vmReverse;
                     }
+                    if(!compareString((char *)getNthString(dynamicSoftmenu[m].menuContent, x+6*y), indexOfItems[ITM_SETSIG2].itemSoftmenuName, CMP_NAME)) {
+                       strcpy(itemName, figlabel((char *)getNthString(dynamicSoftmenu[m].menuContent, x+6*y), "", fnItemShowValue(ITM_SETSIG2)));
+                    }
+
+                    char tmpC[16];
+                    tmpC[0]=0;
+                    xcopy(tmpC, allNamedVariables[currentSolverVariable - FIRST_NAMED_VARIABLE].variableName + 1, allNamedVariables[currentSolverVariable - FIRST_NAMED_VARIABLE].variableName[0]);
+                    tmpC[ allNamedVariables[currentSolverVariable - FIRST_NAMED_VARIABLE].variableName[0]] = 0;
+                    if(!compareString((char *)getNthString(dynamicSoftmenu[m].menuContent, x+6*y), tmpC, CMP_NAME)) {
+                       strcpy(itemName, tmpC);
+                       strcat(itemName, "*");
+                    }
+
                     break;
                   }
                   default: {
