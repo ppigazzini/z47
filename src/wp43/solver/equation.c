@@ -1106,7 +1106,9 @@ static void _parseWord(char *strPtr, uint16_t parseMode, uint16_t parserHint, ch
             #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
           }
           else {
-            if(tmpVal == 2 && ((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_SOLVER)) {   // If the 4th variable has just been added, add Draw and Calc.
+            if(tmpVal == 1 && ((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_SOLVER)) {   // If the 4th variable has just been added, add Draw and Calc.
+              _menuItem(ITM_SETSIG2, bufPtr);
+              bufPtr += stringByteLength(bufPtr) + 1;
               _menuItem(ITM_CPXSLV, bufPtr);
               bufPtr += stringByteLength(bufPtr) + 1;
               _menuItem(ITM_DRAW, bufPtr);
@@ -1547,10 +1549,12 @@ void parseEquation(uint16_t equationId, uint16_t parseMode, char *buffer, char *
       ++tmpVal;
     }
     if((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_SOLVER) {
-      for(; tmpVal < 3; ++tmpVal) {  //If there are less than 4 variables, skip to the 5th item and add Draw & Calc.
+      for(; tmpVal < 2; ++tmpVal) {  //If there are less than 4 variables, skip to the 5th item and add Draw & Calc.
         *(bufPtr++) = 0;
       }
-      if(tmpVal == 3) {
+      if(tmpVal == 2) {
+        _menuItem(ITM_SETSIG2, bufPtr);
+        bufPtr += stringByteLength(bufPtr) + 1;
         _menuItem(ITM_CPXSLV, bufPtr);
         bufPtr += stringByteLength(bufPtr) + 1;
         _menuItem(ITM_DRAW, bufPtr);
