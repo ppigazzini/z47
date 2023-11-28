@@ -1739,18 +1739,22 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
 
       case VAR_ACC: {      
                       real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_ACC), &tmpR);
-                      realToFloat(&tmpR, &tmpF);
-                      if(tmpF<0) {
-                        strcpy(tmpS,"NEG");
-                      } else
-                      if(tmpF<1.0e-34) {
-                        strcpy(tmpS,STD_GAUSS_WHITE_L "1E-34");
-                      } else
-                      if(tmpF>1) {
-                        strcpy(tmpS,STD_GAUSS_WHITE_R "1");
+                      if(realIsZero(&tmpR)) {
+                        strcpy(tmpS,"0");
                       } else {
-                        sprintf(tmpS,"%5.G",tmpF);
-                        strcpy(tmpS, eatSpacesMid(tmpS));
+                        realToFloat(&tmpR, &tmpF);
+                        if(tmpF<0) {
+                          strcpy(tmpS,"NEG");
+                        } else
+                        if(tmpF<1.0e-34) {
+                          strcpy(tmpS,STD_GAUSS_WHITE_L "1E-34");
+                        } else
+                        if(tmpF>1) {
+                          strcpy(tmpS,STD_GAUSS_WHITE_R "1");
+                        } else {
+                          sprintf(tmpS,"%5.G",tmpF);
+                          strcpy(tmpS, eatSpacesMid(tmpS));
+                        }
                       }
                       stringAppend(showText + stringByteLength(showText), tmpS);
                       break;
