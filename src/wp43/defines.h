@@ -304,7 +304,7 @@
 #define USER_V47         40
 #define USER_SHIFTS2     41
 #define USER_E47         43
-#define USER_43S         44
+//#define           44
 #define USER_DM42        45
 #define USER_C47         46
 #define USER_D47         47

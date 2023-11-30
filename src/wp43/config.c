@@ -1015,7 +1015,6 @@ void restoreStats(void){
       {0,USER_N47,     "N47: Exp 2 shft L (32 mould) /x-+ R " STD_UP_ARROW STD_DOWN_ARROW " top"  },
       {0,USER_V47,     "V47: Exp Vintage 2 shifts TopR -+x/ L"           },
       {0,USER_DM42,    "DM42: Final Compatibility layout"                },
-      {0,USER_43S,     "WP 43S Pilot: Final Compatibility layout"        },
       {0,USER_HRESET,  "C47 HOME Menu reset to default"                  },
       {0,USER_PRESET,  "C47 P.FN Menu reset to default"                  },
       {0,USER_KRESET,  "C47 All USER keys cleaned"                       },
@@ -1051,22 +1050,22 @@ void fnShowVersion(uint8_t option) {  //KEYS VERSION LOADED
 
 
 void defaultStatusBar(void) {
-    setSystemFlag(FLAG_SBdate );
-  clearSystemFlag(FLAG_SBtime );
-  clearSystemFlag(FLAG_SBcr   );
-    setSystemFlag(FLAG_SBcpx  );
-  clearSystemFlag(FLAG_SBang  );
-    setSystemFlag(FLAG_SBfrac );
-    setSystemFlag(FLAG_SBint  );
-  clearSystemFlag(FLAG_SBmx   );
-    setSystemFlag(FLAG_SBtvm  );
-    setSystemFlag(FLAG_SBoc   );
-  clearSystemFlag(FLAG_SBss   );
-    setSystemFlag(FLAG_SBclk  );
-    setSystemFlag(FLAG_SBser  );
-    setSystemFlag(FLAG_SBprn  );
-  clearSystemFlag(FLAG_SBbatV );
-  clearSystemFlag(FLAG_SBshfR );
+    setSystemFlag(FLAG_SBdate );  // FLAG_SBdate  0x802C
+  clearSystemFlag(FLAG_SBtime );  // FLAG_SBtime  0x802D
+  clearSystemFlag(FLAG_SBcr   );  // FLAG_SBcr    0x802E
+    setSystemFlag(FLAG_SBcpx  );  // FLAG_SBcpx   0x802F
+  clearSystemFlag(FLAG_SBang  );  // FLAG_SBang   0x8030
+    setSystemFlag(FLAG_SBfrac );  // FLAG_SBfrac  0x8031
+    setSystemFlag(FLAG_SBint  );  // FLAG_SBint   0x8032
+  clearSystemFlag(FLAG_SBmx   );  // FLAG_SBmx    0x8033
+    setSystemFlag(FLAG_SBtvm  );  // FLAG_SBtvm   0x8034
+    setSystemFlag(FLAG_SBoc   );  // FLAG_SBoc    0x8035
+  clearSystemFlag(FLAG_SBss   );  // FLAG_SBss    0x8036
+    setSystemFlag(FLAG_SBclk  );  // FLAG_SBclk   0x8037
+    setSystemFlag(FLAG_SBser  );  // FLAG_SBser   0x8038
+    setSystemFlag(FLAG_SBprn  );  // FLAG_SBprn   0x8039
+  clearSystemFlag(FLAG_SBbatV );  // FLAG_SBbatV  0x803A
+  clearSystemFlag(FLAG_SBshfR );  // FLAG_SBshfR  0x803B
 }
 
 void resetOtherConfigurationStuff(void) {
@@ -1731,26 +1730,6 @@ void fnKeysManagement(uint16_t choice) {
       fnKeysManagement(USER_KRESET);
       fnShowVersion(USER_DM42);
       xcopy(kbd_usr, kbd_std_DM42, sizeof(kbd_std_DM42));
-      fnSetFlag(FLAG_USER);
-      break;
-
-    //---KEYS PROFILE: WP43
-    //------------------------
-    case USER_43S:
-      fnKeysManagement(USER_KRESET);
-      fnShowVersion(USER_43S);
-      xcopy(kbd_usr, kbd_std_WP43, sizeof(kbd_std_WP43));
-      kbd_usr[10].primary       = KEY_fg;
-      kbd_usr[10].keyLblAim     = KEY_fg;
-      kbd_usr[10].primaryAim    = KEY_fg;
-      kbd_usr[10].gShiftedAim   = ITM_NULL;
-      kbd_usr[10].gShifted      = ITM_NULL;
-      kbd_usr[10].primaryTam    = KEY_fg;
-      kbd_usr[11].fShiftedAim   = ITM_NULL;
-      kbd_usr[11].fShifted      = ITM_NULL;
-      kbd_usr[18].gShifted      = ITM_SNAP;
-      kbd_usr[18].fShifted      = -MNU_KEYS;
-      kbd_usr[19].fShifted      = ITM_USERMODE;
       fnSetFlag(FLAG_USER);
       break;
 
