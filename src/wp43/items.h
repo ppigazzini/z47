@@ -1968,7 +1968,7 @@
 #define ITM_XXEQ                    1912
 #define MNU_TAMALPHA                1913
 #define ITM_USER_COPY               1914
-#define ITM_USER_WP43S              1915
+#define ITM_1915                       1915
 #define ITM_USER_DM42               1916
 #define ITM_HPRP                    1917
 #define ITM_GET_NORM_E              1918
