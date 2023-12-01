@@ -223,7 +223,9 @@ void Sett(int16_t grp) {
 
   while(Settings[++ptr*(_numberOfGrps+2) + 0] >= 101) {
     if(Settings[  ptr*(_numberOfGrps+2) + 1 + grp] != xxx) {
-      printf("Sett1:%d, line #%d\n",ptr, Settings[ptr*(_numberOfGrps+2) + 0]);
+      #if defined(PC_BUILD)
+        printf("Sett1:%d, line #%d\n",ptr, Settings[ptr*(_numberOfGrps+2) + 0]);
+      #endif //PC_BUILD
       switch (Settings[ptr*(_numberOfGrps+2) + 0]) {
         case 101: {fnInDefault                  (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}
         case 102: {fnDisplayFormatSigFig        (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}
@@ -254,21 +256,27 @@ void Sett(int16_t grp) {
   ptr--;
   while(Settings[++ptr*(_numberOfGrps+2) + 0] == 2) {
     if(Settings[  ptr*(_numberOfGrps+2) + 1 + grp] != xxx) {
-      printf("Sett2:%d:%d\n",ptr,Settings[ptr*(_numberOfGrps+2) + 1 + grp]);
-      SetSetting   (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);
+      #if defined(PC_BUILD)
+        printf("Sett2:%d:%d\n",ptr,Settings[ptr*(_numberOfGrps+2) + 1 + grp]);
+      #endif //PC_BUILD
+      SetSetting (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);
     } 
   }
   ptr--;
   while(Settings[++ptr*(_numberOfGrps+2) + 0] == 3) {
     if(Settings[  ptr*(_numberOfGrps+2) + 1 + grp] != xxx) {
-      printf("Sett3:%d:%d\n",ptr,Settings[ptr*(_numberOfGrps+2) + 1 + grp]);
-      setFlag      (Settings[ptr*(_numberOfGrps+2) + 1 + grp], Settings[  ptr*(_numberOfGrps+2) + 1 ]); 
+      #if defined(PC_BUILD)
+        printf("Sett3:%d:%d\n",ptr,Settings[ptr*(_numberOfGrps+2) + 1 + grp]);
+      #endif //PC_BUILD
+      setFlag (Settings[ptr*(_numberOfGrps+2) + 1 + grp], Settings[  ptr*(_numberOfGrps+2) + 1 ]); 
     }
   }
   ptr--;
   while(Settings[++ptr*(_numberOfGrps+2) + 0] == 4) {
     if(Settings[  ptr*(_numberOfGrps+2) + 1 + grp] != xxx) {
-      printf("Sett4:%d:%d\n",ptr,Settings[ptr*(_numberOfGrps+2) + 1 + grp]); 
+      #if defined(PC_BUILD)
+        printf("Sett4:%d:%d\n",ptr,Settings[ptr*(_numberOfGrps+2) + 1 + grp]); 
+      #endif //PC_BUILD
       fnSetGapChar (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);
     } 
   }
