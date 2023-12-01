@@ -1114,7 +1114,6 @@ void fnNop(uint16_t unusedButMandatoryParameter) {
   void fnDeltaPercentXmean        (uint16_t unusedButMandatoryParameter) {}
   void fnSetCPXmult               (uint16_t unusedButMandatoryParameter) {}
   void setFGLSettings             (uint16_t unusedButMandatoryParameter) {}
-  void fnSettingsToXEQ            (uint16_t unusedButMandatoryParameter) {}
   void fnSettingsDispFormatGrpL   (uint16_t unusedButMandatoryParameter) {}
   void fnSettingsDispFormatGrp1L  (uint16_t unusedButMandatoryParameter) {}
   void fnSettingsDispFormatGrp1Lo (uint16_t unusedButMandatoryParameter) {}
