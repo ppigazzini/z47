@@ -1141,7 +1141,6 @@ void fnNop(uint16_t unusedButMandatoryParameter) {
   void fnDeltaPercentXmean        (uint16_t unusedButMandatoryParameter) {}
   void fnSetCPXmult               (uint16_t unusedButMandatoryParameter) {}
   void setFGLSettings             (uint16_t unusedButMandatoryParameter) {}
-  void fnSettingsToXEQ            (uint16_t unusedButMandatoryParameter) {}
   void fnSettingsDispFormatGrpL   (uint16_t unusedButMandatoryParameter) {}
   void fnSettingsDispFormatGrp1L  (uint16_t unusedButMandatoryParameter) {}
   void fnSettingsDispFormatGrp1Lo (uint16_t unusedButMandatoryParameter) {}
@@ -3146,7 +3145,7 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 1912 */  { fnXEQMXXEQ,                   NOPARAM,                     "X.XEQ",                                       "X.XEQ",                                       (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_NONE         },
 /* 1913 */  { itemToBeCoded,                NOPARAM,                     "",                                            "TamAlpha",                                    (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 1914 */  { fnKeysManagement,             USER_COPY,                   "COPY" STD_RIGHT_ARROW "U",                    "COPY" STD_RIGHT_ARROW "U",                    (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
-/* 1915 */  { fnKeysManagement,             USER_43S,                    "WP43",                                        "WP43",                                        (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },//J=V43
+/* 1915 */  { itemToBeCoded,                NOPARAM,                     "1915",                                        "1915",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 1916 */  { fnKeysManagement,             USER_DM42,                   "DM42",                                        "DM42",                                        (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },//J=V43
 /* 1917 */  { SetSetting,                   PR_HPRP,                     "RP" STD_SUB_H STD_SUB_P,                      "RP" STD_SUB_H STD_SUB_P,                      (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 1918 */  { fnJM_GetXToNORMmode,          NOPARAM,                     "X to" STD_SIGMA "+",                          "X to" STD_SIGMA "+",                          (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },//JM USER NORMAL
