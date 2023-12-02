@@ -50,7 +50,7 @@ void     show_f_jm           (void);
 void     show_g_jm           (void);
 void     clear_fg_jm         (void);
 void     fg_processing_jm    (void);
-bool_t   Check_SigmaPlus_Assigned(int16_t  * result, int16_t tempkey);
+int16_t  Check_SigmaPlus_Assigned(int16_t  * result, int16_t tempkey);
 
 bool_t   func_lookup         (int16_t  fn, int16_t itemShift, int16_t *funk);
 void     execFnTimeout       (uint16_t key                    );                         //dr - delayed call of the primary function key

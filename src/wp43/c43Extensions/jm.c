@@ -143,46 +143,6 @@ void fnShowJM(uint16_t jmConfig) {                               //DONE
 }
 
 
-/********************************************//**
- * \brief Get item-value of assigned key to X
- *
- * \param[in] unusedButMandatoryParameter uint16_t
- * \return void
- ***********************************************/
-void fnGetSigmaAssignToX(uint16_t unusedButMandatoryParameter) {       //DONE
-  longInteger_t mem;
-  longIntegerInit(mem);
-  liftStack();
-
-  uIntToLongInteger(Norm_Key_00_VAR, mem);
-
-  convertLongIntegerToLongIntegerRegister(mem, REGISTER_X);
-  longIntegerFree(mem);
-}
-
-
-//JM CONFIGURE USER MODE - ASSIGN KEYS
-/********************************************//**
- * \brief
- *
- * \param[in] unusedButMandatoryParameter uint16_t
- * \return void
- ***********************************************/
-void fnJM_GetXToNORMmode(uint16_t unusedButMandatoryParameter) {      //DONE
-  int16_t X_REG;
-  longInteger_t lgInt;
-
-  if(getRegisterDataType(REGISTER_X) == dtLongInteger) {
-    convertLongIntegerRegisterToLongInteger(REGISTER_X, lgInt);
-    longIntegerToAllocatedString(lgInt, tmpString, TMP_STR_LENGTH);
-    longIntegerToInt(lgInt,X_REG);
-    longIntegerFree(lgInt);
-    //printf("Xreg %d\n", X_REG);
-    Norm_Key_00_VAR = X_REG;
-    fnClearFlag(FLAG_USER);
-  }
-}
-
 
 uint16_t nprimes = 0;
 /********************************************//**

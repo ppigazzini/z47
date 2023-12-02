@@ -1993,7 +1993,7 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
     }
   }
 
-      bool_t SigmaPlusNRM = ((calcMode == CM_NORMAL || calcMode == CM_NIM) && key->keyId == 21 && Norm_Key_00_VAR != ITM_SIGMAPLUS);
+      bool_t SigmaPlusNRM = ((calcMode == CM_NORMAL || calcMode == CM_NIM) && key->keyId == Norm_Key_00_keyID && Norm_Key_00_VAR != Norm_Key_00_item);
 
       if(SigmaPlusNRM /*&& calcMode == CM_NORMAL*/ /*&& Norm_Key_00_VAR != ITM_SHIFTg*/) {               //Sigma+NRM: JChange the name inside the Sigma+ button; allow USER mode, but override the USER setting for Sigma+, except for shiftg which is not overriden
         stringToUtf8(indexOfItems[max(Norm_Key_00_VAR, -Norm_Key_00_VAR)].itemSoftmenuName, lbl);
@@ -2009,17 +2009,17 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
       //  gtk_button_set_label(GTK_BUTTON(button), "÷");           //JM DIV
       //}                                                          //JM
 
-      if((key->primary == ITM_AIM && getSystemFlag(FLAG_USER) && calcMode == CM_NORMAL && key->keyId == 21) ||                       //Sigma+NRM: Colour the alpha key gold if assigned.
-        (key->primary == ITM_SIGMAPLUS && calcMode == CM_NORMAL && Norm_Key_00_VAR == ITM_AIM && key->keyId == 21)) {
+      if((key->primary == ITM_AIM && getSystemFlag(FLAG_USER) && calcMode == CM_NORMAL && key->keyId == Norm_Key_00_keyID) ||                       //Sigma+NRM: Colour the alpha key gold if assigned.
+        (key->primary == Norm_Key_00_item && calcMode == CM_NORMAL && Norm_Key_00_VAR == ITM_AIM && key->keyId == Norm_Key_00_keyID)) {
         gtk_widget_set_name(button, "AlphaKey");
       }
-      else if(key->primary == ITM_SHIFTf) {
+      else if(key->primary == ITM_SHIFTf  || (key->primary == Norm_Key_00_item && Norm_Key_00_VAR == ITM_SHIFTf && key->keyId == Norm_Key_00_keyID) ) { //Sigma+NRM: Colour the shiftf key yellow if assigned.
         gtk_widget_set_name(button, "calcKeyF");
       }
-      else if(key->primary == ITM_SHIFTg  || (key->primary == ITM_SIGMAPLUS && Norm_Key_00_VAR == ITM_SHIFTg && key->keyId == 21) ) { //Sigma+NRM: Colour the shiftg key blue if assigned.
+      else if(key->primary == ITM_SHIFTg  || (key->primary == Norm_Key_00_item && Norm_Key_00_VAR == ITM_SHIFTg && key->keyId == Norm_Key_00_keyID) ) { //Sigma+NRM: Colour the shiftg key blue if assigned.
         gtk_widget_set_name(button, "calcKeyG");
       }
-      else if(key->primary == KEY_fg) {
+      else if(key->primary == KEY_fg  || (key->primary == Norm_Key_00_item && Norm_Key_00_VAR == KEY_fg && key->keyId == Norm_Key_00_keyID) ) { //Sigma+NRM: Colour the shiftfg key yellow if assigned.
         gtk_widget_set_name(button, "calcKeyFG");
       }
       else if((key->primary >= ITM_0 && key->primary <= ITM_9) || key->primary == ITM_PERIOD) {

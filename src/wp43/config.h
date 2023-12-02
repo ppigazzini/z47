@@ -87,7 +87,6 @@ void     fnMenuGapL                 (uint16_t unusedButMandatoryParameter);
 void     fnMenuGapRX                (uint16_t unusedButMandatoryParameter);
 void     fnMenuGapR                 (uint16_t unusedButMandatoryParameter);
 void     fnSetGapChar               (uint16_t charParam);
-void     fnSettingsToXEQ            (uint16_t unusedButMandatoryParameter);
 void     fnSettingsDispFormatGrpL   (uint16_t param);
 void     fnSettingsDispFormatGrp1Lo (uint16_t param);
 void     fnSettingsDispFormatGrp1L  (uint16_t param);

@@ -22,6 +22,7 @@
   void assignToUserMenu           (uint16_t position);
   void assignToKey                (const char *data);
 
+  void initUserKeyArgument        (void);
   void setUserKeyArgument         (uint16_t position, const char *name);
   void createMenu                 (const char *name);
 
@@ -43,5 +44,10 @@
    *                             ITM_XEQ, ""      will remove all assignments of all programs
    */
   void removeUserItemAssignments  (int16_t item, char *userItemName);
-  
+
+  /**
+   * Delete all user menus and user menus assignments
+   *
+   */
+  void deleteUserMenus            (void);
 #endif // !ASSIGN_H

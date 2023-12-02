@@ -1961,17 +1961,17 @@
 #define ITM_N_KEY_HOME              1905
 #define ITM_N_KEY_SIGMA             1906
 #define ITM_N_KEY_SNAP              1907
-#define ITM_SH_NORM_E               1908
+#define ITM_N_KEY_FSH                  1908
 #define ITM_ms                      1909
 #define ITM_msTo                    1910
 #define ITM_INP_DEF_43S             1911
 #define ITM_XXEQ                    1912
 #define MNU_TAMALPHA                1913
 #define ITM_USER_COPY               1914
-#define ITM_USER_WP43S              1915
+#define ITM_N_KEY_NIL                  1915
 #define ITM_USER_DM42               1916
 #define ITM_HPRP                    1917
-#define ITM_GET_NORM_E              1918
+#define ITM_N_KEY_FGSH                 1918
 #define ITM_RESERVE                 1919
 #define MNU_ASN_N                   1920
 #define MNU_HOME                    1921
@@ -2290,9 +2290,10 @@
 #define MNU_LAYOUTS                 2234
 #define MNU_RESETS                  2235
 #define MNU_RIBBONS                 2236
-#define ITM_USER_R47bk                 2237
+#define ITM_USER_R47bkfg                 2237
+#define ITM_USER_R47fgbk                 2238
 
-#define LAST_ITEM                   2238
+#define LAST_ITEM                   2239
 
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL

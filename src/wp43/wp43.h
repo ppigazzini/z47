@@ -72,14 +72,23 @@
     extern int                  currentBezel; // 0=normal, 1=AIM, 2=TAM
   #endif //PC_BUILD
 
+
+  extern uint8_t calcModel;
+  //TODO calModel resets, it must still be saved in backup.cfg and in the state files
+
+
   // Variables stored in FLASH
   extern const item_t                    indexOfItems[];
   extern const reservedVariableHeader_t  allReservedVariables[];
   extern const char                      commonBugScreenMessages[NUMBER_OF_BUG_SCREEN_MESSAGES][SIZE_OF_EACH_BUG_SCREEN_MESSAGE];
   extern const char                      errorMessages[NUMBER_OF_ERROR_CODES][SIZE_OF_EACH_ERROR_MESSAGE];
-  extern const calcKey_t                 kbd_std[37];
-  extern const calcKey_t                 kbd_std_WP43[37];
-  extern const calcKey_t                 kbd_std_DM42[37];
+    extern const calcKey_t                 kbd_std_C47[37];
+    extern const calcKey_t                 kbd_std_WP43[37];
+    extern const calcKey_t                 kbd_std_DM42[37];
+    extern const calcKey_t                 kbd_std_R47[37];
+    extern const calcKey_t                 kbd_std_R47_bk_fg[37];
+    extern const calcKey_t                 kbd_std_R47_fg_bk[37];
+    #define kbd_std                        (calcModel == USER_C47 ? kbd_std_C47 : calcModel == USER_DM42 ? kbd_std_DM42 : calcModel == USER_R47 ? kbd_std_R47 : calcModel == USER_R47bkfg ? kbd_std_R47_bk_fg : calcModel == USER_R47fgbk ? kbd_std_R47_fg_bk : kbd_std_C47)
   #if defined(PC_BUILD)
     extern const calcKey_t                 kbd_std_D47[37];
     extern const calcKey_t                 kbd_std_V47[37];
