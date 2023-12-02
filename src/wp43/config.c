@@ -1049,8 +1049,8 @@ void restoreStats(void){
     TO_QSPI const numberstr indexOfMsgs[] = {
       {0,USER_C47,     "C47: Classic single shift (DM42)"  },
       {0,USER_R47,     "R47: Exp 2 shifts R (43S mould) /x-+ R"          },
-      {0,USER_R47bkfg, "R47bkfg: Exp 1 shift R (43S spec mould) /x-+ R"  },
-      {0,USER_R47fgbk, "R47fgbk: Exp 1 shift R (43S spec mould) /x-+ R"  },
+      {0,USER_R47bkfg, "R47bkfg: Exp 1 shift R (43Ssp mould) /x-+ R"     },
+      {0,USER_R47fgbk, "R47fgbk: Exp 1 shift R (43Ssp mould) /x-+ R"     },
       {0,USER_D47,     "D47: Exp 2 shifts R (43S mould) /x-+ R"          },
       {0,USER_E47,     "E47: Exp 2 shifts L /x-+ R"                      },
       {0,USER_N47,     "N47: Exp 2 shft L (32 mould) /x-+ R " STD_UP_ARROW STD_DOWN_ARROW " top"  },
@@ -1144,7 +1144,7 @@ void resetOtherConfigurationStuff(void) {
   MYM3 = false;
   ShiftTimoutMode = true;
   BASE_HOME   = false;
-  Norm_Key_00_VAR  = ITM_SIGMAPLUS;                            //JM NORM MODE SIGMA REPLACEMENT KEY
+  Norm_Key_00_VAR  = Norm_Key_00_item;                            //JM NORM MODE SIGMA REPLACEMENT KEY
   Input_Default =  ID_43S;
   jm_G_DOUBLETAP = true;
   BASE_MYM = true;                                             //"MyM" setting, set as part of USER_MRESET
@@ -1682,90 +1682,46 @@ void fnKeysManagement(uint16_t choice) {
     //---KEYS SIGMA+ ALLOCATIONS: COPY SIGMA+ USER MODE primary to -> ALLMODE
     //-----------------------------------------------------------------------
     case USER_COPY:
-      if(Norm_Key_00_VAR != ITM_SHIFTf && Norm_Key_00_VAR != ITM_SHIFTg) {
-        kbd_usr[0].primary        = Norm_Key_00_VAR;
+      if(Norm_Key_00_VAR != ITM_SHIFTf && Norm_Key_00_VAR != ITM_SHIFTg && Norm_Key_00_VAR != KEY_fg) {
+        kbd_usr[Norm_Key_00_key].primary = Norm_Key_00_VAR;
         fnRefreshState();
         fnSetFlag(FLAG_USER);
       }
       break;
 
-
-      case USER_R47:          //USER
-        calcModel = USER_R47;
+      case USER_R47:
+      case USER_R47bkfg:
+      case USER_R47fgbk:
+      case USER_C47:
+      case USER_DM42:
+        calcModel = choice;
         fnClearFlag(FLAG_USER);
-//        fnKeysManagement(USER_KRESET);
-        fnShowVersion(USER_R47);
-//        xcopy(kbd_usr, kbd_std_R47, sizeof(kbd_std_R47));
-//        fnSetFlag(FLAG_USER);
+        fnShowVersion(choice);
       break;
-
-      case USER_R47bkfg:          //USER
-        calcModel = USER_R47bkfg;
-        fnClearFlag(FLAG_USER);
-//        fnKeysManagement(USER_KRESET);
-        fnShowVersion(USER_R47bkfg);
-//        xcopy(kbd_usr, kbd_std_R47_bk_fg, sizeof(kbd_std_R47_bk_fg));
-//        fnSetFlag(FLAG_USER);
-      break;
-
-      case USER_R47fgbk:          //USER
-        calcModel = USER_R47fgbk;
-        fnClearFlag(FLAG_USER);
-//        fnKeysManagement(USER_KRESET);
-        fnShowVersion(USER_R47fgbk);
-//        xcopy(kbd_usr, kbd_std_R47_fg_bk, sizeof(kbd_std_R47_fg_bk));
-//        fnSetFlag(FLAG_USER);
-      break;
-
-
-    //---KEYS PROFILE: C47
-    //------------------------
-    case USER_C47:          //USER
-        calcModel = USER_C47;
-        fnClearFlag(FLAG_USER);
-//        fnKeysManagement(USER_KRESET);
-      fnShowVersion(USER_C47);
-      //xcopy(kbd_usr, kbd_std, sizeof(kbd_std));         //Removed from the default profile. Return on other defaults like D47
-      //fnSetFlag(FLAG_USER);                             //Removed from the default profile. Return on other defaults like D47
-      break;
-
-
-    //---KEYS PROFILE: DM42
-    //------------------------
-    case USER_DM42:
-        calcModel = USER_DM42;
-        fnClearFlag(FLAG_USER);
-//        fnKeysManagement(USER_KRESET);
-        fnShowVersion(USER_DM42);
-//        xcopy(kbd_usr, kbd_std_DM42, sizeof(kbd_std_DM42));
-//        fnSetFlag(FLAG_USER);
-      break;
-
-
 
     #if defined(PC_BUILD)
-      case USER_E47:          //USER
+      case USER_E47:
         fnKeysManagement(USER_KRESET);
         fnShowVersion(USER_E47);
         xcopy(kbd_usr, kbd_std_E47, sizeof(kbd_std_E47));
         fnSetFlag(FLAG_USER);
       break;
 
-      case USER_V47:          //USER
+      case USER_V47:
         fnKeysManagement(USER_KRESET);
         fnShowVersion(USER_V47);
         xcopy(kbd_usr, kbd_std_V47, sizeof(kbd_std_V47));
         fnSetFlag(FLAG_USER);
       break;
 
-      case USER_N47:          //USER
+      case USER_N47:
         fnKeysManagement(USER_KRESET);
         fnShowVersion(USER_N47);
         xcopy(kbd_usr, kbd_std_N47, sizeof(kbd_std_N47));
         fnSetFlag(FLAG_USER);
         break;
 
-      case USER_D47:          //USER
+      case USER_D47:
         fnKeysManagement(USER_KRESET);
         fnShowVersion(USER_D47);
         xcopy(kbd_usr, kbd_std_D47, sizeof(kbd_std_D47));
@@ -1773,22 +1729,19 @@ void fnKeysManagement(uint16_t choice) {
       break;
     #endif //PC_BUILD
 
-
-
     case USER_KRESET:
-      fnShowVersion(USER_KRESET);
+      fnShowVersion(choice);
       xcopy(kbd_usr, kbd_std, sizeof(kbd_std_C47));         //sizeof does not work when using the define for kbd_std
-      Norm_Key_00_VAR = ITM_SIGMAPLUS;
+      Norm_Key_00_VAR = Norm_Key_00_item;
       fnRefreshState();
       fnClearFlag(FLAG_USER);
       break;
-
-
 
     case USER_HRESET:
       #if !defined(TESTSUITE_BUILD)
         createHOME();
         showSoftmenu(-MNU_HOME);
+        fnShowVersion(choice);
       #endif // !TESTSUITE_BUILD
       break;
 
@@ -1796,42 +1749,30 @@ void fnKeysManagement(uint16_t choice) {
       #if !defined(TESTSUITE_BUILD)
         createPFN();
         showSoftmenu(-MNU_PFN);
+        fnShowVersion(choice);
       #endif // !TESTSUITE_BUILD
       break;
 
     case USER_MRESET:
       fnRESET_MyM(0);
-      fnShowVersion(USER_MRESET);
-      break;
-
-    case USER_MENG:
-      fnRESET_MyM(USER_MENG);
-      fnShowVersion(USER_MENG);
-      #if !defined(TESTSUITE_BUILD)
-        showSoftmenu(-MNU_MyMenu);
-      #endif // !TESTSUITE_BUILD
-      break;
-
-    case USER_MFIN:
-      fnRESET_MyM(USER_MFIN);
-      fnShowVersion(USER_MFIN);
-      #if !defined(TESTSUITE_BUILD)
-        showSoftmenu(-MNU_MyMenu);
-      #endif // !TESTSUITE_BUILD
-      break;
-
-    case USER_MCPX:
-      fnRESET_MyM(USER_MCPX);
-      fnShowVersion(USER_MCPX);
-      #if !defined(TESTSUITE_BUILD)
-        showSoftmenu(-MNU_MyMenu);
-      #endif // !TESTSUITE_BUILD
+      fnShowVersion(choice);
       break;
 
     case USER_ARESET:
       fnRESET_Mya();
-      fnShowVersion(USER_ARESET);
+      fnShowVersion(choice);
       break;
+
+    case USER_MENG:
+    case USER_MFIN:
+    case USER_MCPX:
+      fnRESET_MyM(choice);
+      fnShowVersion(choice);
+      #if !defined(TESTSUITE_BUILD)
+        showSoftmenu(-MNU_MyMenu);
+      #endif // !TESTSUITE_BUILD
+      break;
+
 
     default:
       break;

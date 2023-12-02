@@ -299,6 +299,14 @@
 #define REAL34_WIDTH_TEST 0 // For debugging real34 ALL 0 formating. Use UP/DOWN to shrink or enlarge the available space. The Z register holds the available width.
 
 
+
+//Norm_Key_00_VAR, using -1 output for not applicable, purposely out of range
+#define Norm_Key_00_key   (calcModel == USER_C47 ? 0 :             calcModel == USER_DM42 ? 0 :             calcModel == USER_R47 ? -1 : calcModel == USER_R47bkfg ? 10 :       calcModel == USER_R47fgbk ? 11 : -1)
+#define Norm_Key_00_keyID (calcModel == USER_C47 ? 21 :            calcModel == USER_DM42 ? 21 :            calcModel == USER_R47 ? -1 : calcModel == USER_R47bkfg ? 35 :       calcModel == USER_R47fgbk ? 36 : -1)
+#define Norm_Key_00_item  (calcModel == USER_C47 ? ITM_SIGMAPLUS : calcModel == USER_DM42 ? ITM_SIGMAPLUS : calcModel == USER_R47 ? -1 : calcModel == USER_R47bkfg ? ITM_NULL : calcModel == USER_R47fgbk ? ITM_NULL : -1)
+
+
+
 //fnKeysManagement
 #define JM_ASSIGN        28
 #define USER_COPY        29
