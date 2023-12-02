@@ -283,7 +283,6 @@ void fnClrMod(uint16_t unusedButMandatoryParameter) {        //clear input buffe
   #if defined(PC_BUILD)
     jm_show_comment("^^^^fnClrModa");
   #endif // PC_BUILD
-
   #if !defined(TESTSUITE_BUILD)
     resetKeytimers();  //JM
     clearSystemFlag(FLAG_FRACT);
@@ -1050,15 +1049,16 @@ void restoreStats(void){
     TO_QSPI const numberstr indexOfMsgs[] = {
       {0,USER_C47,     "C47: Classic single shift (DM42)"  },
       {0,USER_R47,     "R47: Exp 2 shifts R (43S mould) /x-+ R"          },
-      {0,USER_R47bk,   "R47bk: Exp 1 shift R (43S spec mould) /x-+ R"   },
+      {0,USER_R47bkfg, "R47bkfg: Exp 1 shift R (43S spec mould) /x-+ R"  },
+      {0,USER_R47fgbk, "R47fgbk: Exp 1 shift R (43S spec mould) /x-+ R"  },
       {0,USER_D47,     "D47: Exp 2 shifts R (43S mould) /x-+ R"          },
       {0,USER_E47,     "E47: Exp 2 shifts L /x-+ R"                      },
       {0,USER_N47,     "N47: Exp 2 shft L (32 mould) /x-+ R " STD_UP_ARROW STD_DOWN_ARROW " top"  },
       {0,USER_V47,     "V47: Exp Vintage 2 shifts TopR -+x/ L"           },
       {0,USER_DM42,    "DM42: Final Compatibility layout"                },
-      {0,USER_HRESET,  "C47 HOME Menu reset to default"                  },
-      {0,USER_PRESET,  "C47 P.FN Menu reset to default"                  },
-      {0,USER_KRESET,  "C47 All USER keys cleaned"                       },
+      {0,USER_HRESET,  "HOME Menu reset to default"                      },
+      {0,USER_PRESET,  "P.FN Menu reset to default"                      },
+      {0,USER_KRESET,  "USER keys cleaned"                               },
       {0,USER_MRESET,  "MyMenu menu cleaned"                             },
       {0,USER_ARESET,  "My" STD_alpha " menu cleaned"                    },
       {0,USER_MENG,    "MyMenu primary F-key engineering ribbon"         },
@@ -1456,7 +1456,6 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     initUserKeyArgument();
 
     fnClearMenu(NOPARAM);
-
     clearSystemFlag(FLAG_DENANY);                              //JM Default
     clearSystemFlag(FLAG_ASLIFT);  //JM??
     setSystemFlag(FLAG_SSIZE8);                                //JM Default
@@ -1690,6 +1689,60 @@ void fnKeysManagement(uint16_t choice) {
       }
       break;
 
+
+      case USER_R47:          //USER
+        calcModel = USER_R47;
+        fnClearFlag(FLAG_USER);
+//        fnKeysManagement(USER_KRESET);
+        fnShowVersion(USER_R47);
+//        xcopy(kbd_usr, kbd_std_R47, sizeof(kbd_std_R47));
+//        fnSetFlag(FLAG_USER);
+      break;
+
+      case USER_R47bkfg:          //USER
+        calcModel = USER_R47bkfg;
+        fnClearFlag(FLAG_USER);
+//        fnKeysManagement(USER_KRESET);
+        fnShowVersion(USER_R47bkfg);
+//        xcopy(kbd_usr, kbd_std_R47_bk_fg, sizeof(kbd_std_R47_bk_fg));
+//        fnSetFlag(FLAG_USER);
+      break;
+
+      case USER_R47fgbk:          //USER
+        calcModel = USER_R47fgbk;
+        fnClearFlag(FLAG_USER);
+//        fnKeysManagement(USER_KRESET);
+        fnShowVersion(USER_R47fgbk);
+//        xcopy(kbd_usr, kbd_std_R47_fg_bk, sizeof(kbd_std_R47_fg_bk));
+//        fnSetFlag(FLAG_USER);
+      break;
+
+
+    //---KEYS PROFILE: C47
+    //------------------------
+    case USER_C47:          //USER
+        calcModel = USER_C47;
+        fnClearFlag(FLAG_USER);
+//        fnKeysManagement(USER_KRESET);
+      fnShowVersion(USER_C47);
+      //xcopy(kbd_usr, kbd_std, sizeof(kbd_std));         //Removed from the default profile. Return on other defaults like D47
+      //fnSetFlag(FLAG_USER);                             //Removed from the default profile. Return on other defaults like D47
+      break;
+
+
+    //---KEYS PROFILE: DM42
+    //------------------------
+    case USER_DM42:
+        calcModel = USER_DM42;
+        fnClearFlag(FLAG_USER);
+//        fnKeysManagement(USER_KRESET);
+        fnShowVersion(USER_DM42);
+//        xcopy(kbd_usr, kbd_std_DM42, sizeof(kbd_std_DM42));
+//        fnSetFlag(FLAG_USER);
+      break;
+
+
+
     #if defined(PC_BUILD)
       case USER_E47:          //USER
         fnKeysManagement(USER_KRESET);
@@ -1718,44 +1771,19 @@ void fnKeysManagement(uint16_t choice) {
         xcopy(kbd_usr, kbd_std_D47, sizeof(kbd_std_D47));
         fnSetFlag(FLAG_USER);
       break;
-
-      case USER_R47:          //USER
-        fnKeysManagement(USER_KRESET);
-        fnShowVersion(USER_R47);
-        xcopy(kbd_usr, kbd_std_R47, sizeof(kbd_std_R47));
-        fnSetFlag(FLAG_USER);
-      break;
-
-      case USER_R47bk:          //USER
-        fnKeysManagement(USER_KRESET);
-        fnShowVersion(USER_R47bk);
-        xcopy(kbd_usr, kbd_std_R47bk, sizeof(kbd_std_R47bk));
-        fnSetFlag(FLAG_USER);
-      break;
-
-
     #endif //PC_BUILD
 
 
 
-    //---KEYS PROFILE: C47
-    //------------------------
-    case USER_C47:          //USER
-      fnKeysManagement(USER_KRESET);
-      fnShowVersion(USER_C47);
-      //xcopy(kbd_usr, kbd_std, sizeof(kbd_std));         //Removed from the default profile. Return on other defaults like D47
-      //fnSetFlag(FLAG_USER);                             //Removed from the default profile. Return on other defaults like D47
+    case USER_KRESET:
+      fnShowVersion(USER_KRESET);
+      xcopy(kbd_usr, kbd_std, sizeof(kbd_std_C47));         //sizeof does not work when using the define for kbd_std
+      Norm_Key_00_VAR = ITM_SIGMAPLUS;
+      fnRefreshState();
+      fnClearFlag(FLAG_USER);
       break;
 
 
-    //---KEYS PROFILE: DM42
-    //------------------------
-    case USER_DM42:
-      fnKeysManagement(USER_KRESET);
-      fnShowVersion(USER_DM42);
-      xcopy(kbd_usr, kbd_std_DM42, sizeof(kbd_std_DM42));
-      fnSetFlag(FLAG_USER);
-      break;
 
     case USER_HRESET:
       #if !defined(TESTSUITE_BUILD)
@@ -1803,14 +1831,6 @@ void fnKeysManagement(uint16_t choice) {
     case USER_ARESET:
       fnRESET_Mya();
       fnShowVersion(USER_ARESET);
-      break;
-
-    case USER_KRESET:
-      fnShowVersion(USER_KRESET);
-      xcopy(kbd_usr, kbd_std, sizeof(kbd_std));
-      Norm_Key_00_VAR = ITM_SIGMAPLUS;
-      fnRefreshState();
-      fnClearFlag(FLAG_USER);
       break;
 
     default:
