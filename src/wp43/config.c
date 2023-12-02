@@ -302,6 +302,7 @@ void Sett(int16_t grp) {
     fnKeyExit(0);                            //Clear pending key input
     fnClrMod(0);                             //Get out of NIM or BASE
     fnStoreConfig(35);                       //Store current config into R35
+
     fnClearStack(0);                         //Clear stack
     fnPi(0);                                 //Put pi on X
 
@@ -360,12 +361,14 @@ void Sett(int16_t grp) {
     assignToMyMenu(6);
     itemToBeAssigned = ITM_op_j_pol;
     assignToMyMenu(11);
+
+
     cachedDynamicMenu = 0;
 
     temporaryInformation = TI_NO_INFO;
     fnRefreshState();
     refreshScreen();
-  }
+    }
 
 
   void fnSetRJ(uint16_t unusedButMandatoryParameter){
@@ -392,12 +395,12 @@ void Sett(int16_t grp) {
     //---     fnSetGapChar(49152+ITM_WCOMMA);               // RADIX WCOM
     //---     grpGroupingGr1LeftOverflow = 1;               //IPGRP1x = 1
 
-    fnKeyExit(0);
-    fnDrop(0);
-    fnSquare(0);
-    fnRefreshState();
-    refreshScreen();
-  }
+     fnKeyExit(0);
+     fnDrop(0);
+     fnSquare(0);
+     fnRefreshState();
+     refreshScreen();
+    }
 
 
   void _fnSetC47(uint16_t unusedButMandatoryParameter) {         //Reversing the HP35 settings to C47 defaults
@@ -430,6 +433,7 @@ void Sett(int16_t grp) {
 
     temporaryInformation = TI_NO_INFO;
     fnRefreshState();
+
     fnDrop(0);
     fnDrop(0);
     runFunction(ITM_SQUARE);
@@ -438,7 +442,7 @@ void Sett(int16_t grp) {
   }
 
 
-  void fnSetC47(uint16_t unusedButMandatoryParameter) {
+void fnSetC47(uint16_t unusedButMandatoryParameter) {
     fnKeyExit(0);
     addItemToBuffer(ITM_EXIT1);
     fnClrMod(0);
@@ -448,7 +452,6 @@ void Sett(int16_t grp) {
     fnRefreshState();
     refreshScreen();
   }
-
 #endif // !TESTSUITE_BUILD
 
 
@@ -499,8 +502,8 @@ void fnSetGapChar (uint16_t charParam) {
   if((charParam & 49152) == 49152) {                        //+49152 for the radix separator
     gapItemRadix = charParam & 16383;
   }
-  //printf("LT=%s RT=%s RX=%s\n",Lt, Rt, Rx);
-  //printf("Post: gapCharL0=%u gapCharL1=%u gapCharR0=%u gapCharR1=%u gapCharRx0=%u gapCharRx1%u  \n", (uint8_t)gapChar1Left[0], (uint8_t)gapChar1Left[1], (uint8_t)gapChar1Right[0], (uint8_t)gapChar1Right[1],  (uint8_t)gapChar1Radix[0], (uint8_t)gapChar1Radix[1]);
+//printf("LT=%s RT=%s RX=%s\n",Lt, Rt, Rx);
+//printf("Post: gapCharL0=%u gapCharL1=%u gapCharR0=%u gapCharR1=%u gapCharRx0=%u gapCharRx1%u  \n", (uint8_t)gapChar1Left[0], (uint8_t)gapChar1Left[1], (uint8_t)gapChar1Right[0], (uint8_t)gapChar1Right[1],  (uint8_t)gapChar1Radix[0], (uint8_t)gapChar1Radix[1]);
 }
 
 
@@ -517,20 +520,17 @@ void fnSettingsDispFormatGrpR   (uint16_t param) {
   grpGroupingRight = param;
 }
 
-
 void fnMenuGapL (uint16_t unusedButMandatoryParameter) {
   #if !defined(TESTSUITE_BUILD)
     showSoftmenu(-MNU_GAP_L);
   #endif // ! TESTSUITE_BUILD
 }
 
-
 void fnMenuGapRX (uint16_t unusedButMandatoryParameter) {
   #if !defined(TESTSUITE_BUILD)
     showSoftmenu(-MNU_GAP_RX);
   #endif // ! TESTSUITE_BUILD
 }
-
 
 void fnMenuGapR (uint16_t unusedButMandatoryParameter) {
   #if !defined(TESTSUITE_BUILD)
@@ -539,10 +539,15 @@ void fnMenuGapR (uint16_t unusedButMandatoryParameter) {
 }
 
 
+
+
+
+
 void fnIntegerMode(uint16_t mode) {
   shortIntegerMode = mode;
   fnRefreshState();
 }
+
 
 
 void fnWho(uint16_t unusedButMandatoryParameter) {
@@ -550,9 +555,11 @@ void fnWho(uint16_t unusedButMandatoryParameter) {
  }
 
 
+
 void fnVersion(uint16_t unusedButMandatoryParameter) {
   temporaryInformation = TI_VERSION;
 }
+
 
 
 void fnFreeMemory(uint16_t unusedButMandatoryParameter) {
@@ -838,6 +845,28 @@ void fnGetHide(uint16_t unusedButMandatoryParameter) {
 }
 
 
+void initSimEqMatABX(void) {
+  void *memPtr;
+
+  allocateNamedVariable("Mat_A", dtReal34Matrix, REAL34_SIZE_IN_BLOCKS + 1);
+  memPtr = getRegisterDataPointer(FIRST_NAMED_VARIABLE);
+  ((dataBlock_t *)memPtr)->matrixRows = 1;
+  ((dataBlock_t *)memPtr)->matrixColumns = 1;
+  real34Zero(memPtr + 4);
+
+  allocateNamedVariable("Mat_B", dtReal34Matrix, REAL34_SIZE_IN_BLOCKS + 1);
+  memPtr = getRegisterDataPointer(FIRST_NAMED_VARIABLE + 1);
+  ((dataBlock_t *)memPtr)->matrixRows = 1;
+  ((dataBlock_t *)memPtr)->matrixColumns = 1;
+  real34Zero(memPtr + 4);
+
+  allocateNamedVariable("Mat_X", dtReal34Matrix, REAL34_SIZE_IN_BLOCKS + 1);
+  memPtr = getRegisterDataPointer(FIRST_NAMED_VARIABLE + 2);
+  ((dataBlock_t *)memPtr)->matrixRows = 1;
+  ((dataBlock_t *)memPtr)->matrixColumns = 1;
+  real34Zero(memPtr + 4);
+}
+
 
 void fnClAll(uint16_t confirmation) {
   if(confirmation == NOT_CONFIRMED) {
@@ -866,7 +895,26 @@ void fnClAll(uint16_t confirmation) {
     }
     thereIsSomethingToUndo = false;
 
-    // TODO: clear (or delete) named variables
+    // Clear user menus
+    fnExitAllMenus(NOPARAM);
+    deleteUserMenus();                        // Remove all user menus and user menus assignments
+    fnRESET_MyM(USER_MENG);                   // Reset Menu MyMenu
+    fnRESET_Mya();                            // Reset Menu MyAlpha
+    #if !defined(TESTSUITE_BUILD)
+      createHOME();                             // Reset Menu HOME
+      createPFN();                              // Reset Menu P.FN
+    #endif // !TESTSUITE_BUILD
+
+    // Clear All Key assignments
+    fnKeysManagement(USER_KRESET);
+    initUserKeyArgument();
+
+    // Delete named variables
+    for(uint16_t var = numberOfNamedVariables; var > 0; var--) {  // Remove all user variables and user variables assignments
+      fnDeleteVariable(FIRST_NAMED_VARIABLE + var -1);
+    }
+    initSimEqMatABX();                                            // Set-up Mat_A, Mat-B & Mat-X for SIM EQ
+
 
     // Clear global flags
     fnClFAll(CONFIRMED);
@@ -1006,6 +1054,8 @@ void restoreStats(void){
 
 
 
+
+
     TO_QSPI const numberstr indexOfMsgs[] = {
       {0,USER_C47,     "C47: Classic single shift (DM42)"  },
       {0,USER_R47,     "R47: Exp 2 shifts R (43S mould) /x-+ R"          },
@@ -1047,6 +1097,8 @@ void fnShowVersion(uint8_t option) {  //KEYS VERSION LOADED
 
 
 
+
+
 void defaultStatusBar(void) {
   Sett(_DefltSB);
   //---     setSystemFlag(FLAG_SBdate );  // FLAG_SBdate  0x802C
@@ -1066,7 +1118,6 @@ void defaultStatusBar(void) {
   //---   clearSystemFlag(FLAG_SBbatV );  // FLAG_SBbatV  0x803A
   //---   clearSystemFlag(FLAG_SBshfR );  // FLAG_SBshfR  0x803B
 }
-
 
 void resetOtherConfigurationStuff(void) {
   cancelFilename = true;
@@ -1268,24 +1319,7 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     numberOfNamedVariables = 0;
     allNamedVariables = NULL;
 
-
-    allocateNamedVariable("Mat_A", dtReal34Matrix, REAL34_SIZE_IN_BLOCKS + 1);
-    memPtr = getRegisterDataPointer(FIRST_NAMED_VARIABLE);
-    ((dataBlock_t *)memPtr)->matrixRows = 1;
-    ((dataBlock_t *)memPtr)->matrixColumns = 1;
-    real34Zero(memPtr + 4);
-
-    allocateNamedVariable("Mat_B", dtReal34Matrix, REAL34_SIZE_IN_BLOCKS + 1);
-    memPtr = getRegisterDataPointer(FIRST_NAMED_VARIABLE + 1);
-    ((dataBlock_t *)memPtr)->matrixRows = 1;
-    ((dataBlock_t *)memPtr)->matrixColumns = 1;
-    real34Zero(memPtr + 4);
-
-    allocateNamedVariable("Mat_X", dtReal34Matrix, REAL34_SIZE_IN_BLOCKS + 1);
-    memPtr = getRegisterDataPointer(FIRST_NAMED_VARIABLE + 2);
-    ((dataBlock_t *)memPtr)->matrixRows = 1;
-    ((dataBlock_t *)memPtr)->matrixColumns = 1;
-    real34Zero(memPtr + 4);
+    initSimEqMatABX();
 
     #if !defined(TESTSUITE_BUILD)
       matrixIndex = INVALID_VARIABLE; // Unset matrix index
@@ -1356,6 +1390,7 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     x_max = 10;
     y_min = 0;
     y_max = 1;
+
 
 
     systemFlags = 0;
@@ -1437,9 +1472,8 @@ Sett(_Reset);
     userMenus = NULL;
     numberOfUserMenus = 0;
     currentUserMenu = 0;
-    userKeyLabelSize = 37/*keys*/ * 6/*states*/ * 1/*byte terminator*/ + 1/*byte sentinel*/;
-    userKeyLabel = allocC47Blocks(TO_BLOCKS(userKeyLabelSize));
-    memset(userKeyLabel,   0, TO_BYTES(TO_BLOCKS(userKeyLabelSize)));
+
+    initUserKeyArgument();
 
     fnClearMenu(NOPARAM);
 //---    clearSystemFlag(FLAG_DENANY);                              //JM Default
