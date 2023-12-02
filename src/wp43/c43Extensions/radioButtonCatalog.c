@@ -56,7 +56,9 @@ TO_QSPI const radiocb_t indexOfRadioCbEepromItems[] = {
   {ITM_N_KEY_TGLFRT,     16384+ITM_TGLFRT,       RB_SA},  //fnSigmaAssign
   {ITM_N_KEY_ALPHA,      16384+ITM_AIM,          RB_SA},  //fnSigmaAssign
   {ITM_N_KEY_CC,         16384+ITM_CC,           RB_SA},  //fnSigmaAssign
+  {ITM_N_KEY_FSH,        16384+ITM_SHIFTf,       RB_SA},  //fnSigmaAssign
   {ITM_N_KEY_GSH,        16384+ITM_SHIFTg,       RB_SA},  //fnSigmaAssign
+  {ITM_N_KEY_FGSH,       16384+KEY_fg,           RB_SA},  //fnSigmaAssign
   {ITM_N_KEY_MM,         16384+-MNU_MyMenu,      RB_SA},  //fnSigmaAssign
   {ITM_N_KEY_DRG,        16384+ITM_DRG,          RB_SA},  //fnSigmaAssign
   {ITM_N_KEY_PRGM,       16384+ITM_PR,           RB_SA},  //fnSigmaAssign
@@ -64,6 +66,8 @@ TO_QSPI const radiocb_t indexOfRadioCbEepromItems[] = {
   {ITM_N_KEY_HOME,       16384+-MNU_HOME,        RB_SA},  //fnSigmaAssign
   {ITM_N_KEY_SIGMA,      16384+ITM_SIGMAPLUS,    RB_SA},  //fnSigmaAssign
   {ITM_N_KEY_SNAP,       16384+ITM_SNAP,         RB_SA},  //fnSigmaAssign
+  {ITM_N_KEY_NIL,        16384+ITM_NULL,         RB_SA},  //fnSigmaAssign
+
 
   {ITM_F1234,            RB_F1234,               RB_F},   //
   {ITM_M1234,            RB_M1234,               RB_M},   //

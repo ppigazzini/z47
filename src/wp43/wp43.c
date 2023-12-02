@@ -34,6 +34,9 @@ const font_t          *cursorFont;
 TO_QSPI const char     digits[17] = "0123456789ABCDEF";
 void                   (*confirmedFunction)(uint16_t);
 
+uint8_t calcModel = USER_C47;
+
+
 // Variables stored in RAM
 bool_t                 funcOK;
 bool_t                 keyActionProcessed;

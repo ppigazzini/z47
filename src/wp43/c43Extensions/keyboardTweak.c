@@ -263,16 +263,16 @@ void resetKeytimers(void) {
   }
 
 
-  bool_t Check_SigmaPlus_Assigned(int16_t * result, int16_t tempkey) {
+  int16_t Check_SigmaPlus_Assigned(int16_t * result, int16_t tempkey) {
     //JM NORMKEY CHANGE NORMAL MODE KEY SIGMA+ TO SOMETHING
     if((calcMode == CM_NORMAL || calcMode == CM_NIM) &&
-       (!catalog || (catalog && (Norm_Key_00_VAR != ITM_SHIFTg))) &&
-       (!shiftF && !shiftG && (tempkey == 0) && ((kbd_std + 0)->primary == *result) )
+       (!catalog || (catalog && (Norm_Key_00_VAR != ITM_SHIFTg && Norm_Key_00_VAR != ITM_SHIFTf && Norm_Key_00_VAR != KEY_fg))) &&
+       (  (!shiftF && !shiftG && (tempkey == Norm_Key_00_key) && ((kbd_std + Norm_Key_00_key)->primary == *result) )  ||  ((Norm_Key_00_VAR == KEY_fg) && (tempkey == Norm_Key_00_key) && ((kbd_std + Norm_Key_00_key)->primary == *result) )  )
        ) {
       *result = Norm_Key_00_VAR;
-      return Norm_Key_00_VAR == ITM_SHIFTg;
+      return (Norm_Key_00_VAR == ITM_SHIFTg || Norm_Key_00_VAR == ITM_SHIFTf || Norm_Key_00_VAR == KEY_fg) ? Norm_Key_00_VAR : 0;
     }
-    return false;
+    return 0;
   }
 
 

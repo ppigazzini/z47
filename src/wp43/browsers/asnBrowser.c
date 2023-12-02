@@ -80,7 +80,7 @@
       }
       else {
         switch(page) {
-          case 1: if(key != 0) {
+          case 1: if(key != Norm_Key_00_key) {
               kk = kbd_std[key].primary;
             } else {
               kk = Norm_Key_00_VAR;

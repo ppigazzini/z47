@@ -388,7 +388,7 @@ void fnResetTimerApp(uint16_t unusedButMandatoryParameter) {
 }
 
 void fnStartStopTimerApp(void) {
-  #if !defined(TESTSUITE_BUILD)
+  #if !defined(TESTSUITE_BUILD) && !defined(SAVE_SPACE_DM42_20_TIMER)
   if(timerStartTime == TIMER_APP_STOPPED) {
     setSystemFlag(FLAG_RUNTIM);
     timerStartTime = _currentTime();
@@ -405,7 +405,7 @@ void fnStartStopTimerApp(void) {
 }
 
 void fnStopTimerApp(void) {
-  #if !defined(TESTSUITE_BUILD)
+  #if !defined(TESTSUITE_BUILD) && !defined(SAVE_SPACE_DM42_20_TIMER)
   if(timerStartTime != TIMER_APP_STOPPED) {
     const uint32_t msec = _currentTime();
     timerValue += msec - timerStartTime;
@@ -421,7 +421,7 @@ void fnStopTimerApp(void) {
 }
 
 void fnShowTimerApp(void) {
-  #if !defined(TESTSUITE_BUILD)
+  #if !defined(TESTSUITE_BUILD) && !defined(SAVE_SPACE_DM42_20_TIMER)
   if(calcMode == CM_TIMER) {
     const uint32_t msec = _getTimerValue();
     clearRegisterLine(REGISTER_T, true, true);
@@ -474,7 +474,7 @@ void fnShowTimerApp(void) {
 }
 
 void fnUpdateTimerApp(void) {
-  #if !defined(TESTSUITE_BUILD)
+  #if !defined(TESTSUITE_BUILD) && !defined(SAVE_SPACE_DM42_20_TIMER)
   if(calcMode == CM_TIMER) {
     fnShowTimerApp();
     displayShiftAndTamBuffer();
@@ -489,7 +489,7 @@ void fnUpdateTimerApp(void) {
 }
 
 void fnEnterTimerApp(void) {
-  #if !defined(TESTSUITE_BUILD)
+  #if !defined(TESTSUITE_BUILD) && !defined(SAVE_SPACE_DM42_20_TIMER)
   if(rbr1stDigit) {
     real_t tmp;
     uInt32ToReal(_getTimerValue() / 100u, &tmp);
@@ -509,7 +509,7 @@ void fnEnterTimerApp(void) {
 }
 
 void fnDotTimerApp(void) {
-  #if !defined(TESTSUITE_BUILD)
+  #if !defined(TESTSUITE_BUILD) && !defined(SAVE_SPACE_DM42_20_TIMER)
   const uint32_t msec = _getTimerValue();
   real_t tmp;
 
@@ -535,7 +535,7 @@ void fnDotTimerApp(void) {
 }
 
 void fnPlusTimerApp(void) {
-  #if !defined(TESTSUITE_BUILD)
+  #if !defined(TESTSUITE_BUILD) && !defined(SAVE_SPACE_DM42_20_TIMER)
   const uint32_t msec = _getTimerValue();
   real_t tmp;
 
@@ -575,7 +575,7 @@ void fnPlusTimerApp(void) {
 }
 
 void fnUpTimerApp(void) {
-  #if !defined(TESTSUITE_BUILD)
+  #if !defined(TESTSUITE_BUILD) && !defined(SAVE_SPACE_DM42_20_TIMER)
   if((timerCraAndDeciseconds & 0x7fu) >= 99u) {
     timerCraAndDeciseconds &= 0x80u;
   }
@@ -599,7 +599,7 @@ void fnDownTimerApp(void) {
 }
 
 void fnDigitKeyTimerApp(uint16_t digit) {
-  #if !defined(TESTSUITE_BUILD)
+  #if !defined(TESTSUITE_BUILD) && !defined(SAVE_SPACE_DM42_20_TIMER)
   if(rbr1stDigit || aimBuffer[AIM_BUFFER_LENGTH / 2] == 0) {
     aimBuffer[AIM_BUFFER_LENGTH / 2    ] = digit + '0';
     aimBuffer[AIM_BUFFER_LENGTH / 2 + 1] = 0;
