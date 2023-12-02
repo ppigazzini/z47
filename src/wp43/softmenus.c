@@ -986,9 +986,11 @@ void fnDynamicMenu(uint16_t unusedButMandatoryParameter) {
       calcRegister_t regist = i+FIRST_NAMED_VARIABLE;
       if(!applyFilter || _filterDataType(regist, typeFilter, isAngular)) {
         xcopy(tmpString + 15 * numberOfVars, allNamedVariables[i].variableName + 1, allNamedVariables[i].variableName[0]);
-        if((softmenu[softmenuStack[2].softmenuId].menuItem == -ITM_DELITM) &&       // Don't include "STATS" and "HISTO" for DELITM
-           ((compareString(tmpString + 15 * numberOfVars, "STATS", CMP_NAME) == 0) || (compareString(tmpString + 15 * numberOfVars, "HISTO", CMP_NAME) == 0))) {
-              memset(tmpString + 15 * numberOfVars, 0, 15);
+        if((softmenu[softmenuStack[2].softmenuId].menuItem == -ITM_DELITM) &&       // Don't include "STATS", "HISTO", "Mat_A", "Mat_B" and "Mat_X" for DELITM
+           ((compareString(tmpString + 15 * numberOfVars, "STATS", CMP_NAME) == 0) || (compareString(tmpString + 15 * numberOfVars, "HISTO", CMP_NAME) == 0) ||
+            (compareString(tmpString + 15 * numberOfVars, "Mat_A", CMP_NAME) == 0) || (compareString(tmpString + 15 * numberOfVars, "Mat_B", CMP_NAME) == 0) ||
+            (compareString(tmpString + 15 * numberOfVars, "Mat_X", CMP_NAME) == 0))) {
+          memset(tmpString + 15 * numberOfVars, 0, 15);
         } else {
           numberOfVars++;
           numberOfBytes += 1 + allNamedVariables[i].variableName[0];
