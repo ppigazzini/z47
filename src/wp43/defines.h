@@ -24,9 +24,8 @@
 // JM VARIOUS OPTIONS
 //*********************************
 
-#define VERSION1 "0.108.16.02b4"     // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
+#define VERSION1 "0.108.17.00b1"     // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
 
-//2023-11-12-0.108.16.01 Stable master
 
   #undef SAVE_SPACE_DM42_0
   #undef SAVE_SPACE_DM42_1
@@ -75,7 +74,7 @@
   #endif // !TWO_FILE_PGM
 
   #if defined(TWO_FILE_PGM) //---------THESE ARE THE EXCLUSIONS TO MAKE IT FIT INTO AVAILABLE FLASH EVEN WHILE USING QSPI
-//#define SAVE_SPACE_DM42_20_TIMER
+#define SAVE_SPACE_DM42_20_TIMER
   //  #define SAVE_SPACE_DM42_2  //005672 bytes: XEQM
 //#define SAVE_SPACE_DM42_13GRF_JM //           JM graphics
   //  #define SAVE_SPACE_DM42_12 //047246 bytes: Standard extra 43S math: SLVQ, PRIME, BESSEL, ELLIPTIC, ZETA, BETA, ORTHO_POLY
