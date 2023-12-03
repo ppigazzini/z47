@@ -1339,11 +1339,11 @@ bool_t allowShiftsToClearError = false;
       default:  SHOWregis = 9999; break;
     }                                                   //JMSHOW ^^
 
-    bool_t gShiftOverride = false;
-    result = ITM_SIGMAPLUS;
-    gShiftOverride = Check_SigmaPlus_Assigned(&result, key_no);
+    int16_t ShiftOverride = 0;
+    result = Norm_Key_00_item;
+    ShiftOverride = Check_SigmaPlus_Assigned(&result, key_no);
 
-    if (!gShiftOverride) {                              //disable long and double press if Sigma+ is shift g
+    if (ShiftOverride == 0) {                              //disable long and double press if Sigma+ is shift g
       Setup_MultiPresses( key->primary );
     }
 
@@ -1352,7 +1352,7 @@ bool_t allowShiftsToClearError = false;
     #endif //PC_BUILD
 
     // Shift f pressed and JM REMOVED shift g not active
-    if(key->primary == ITM_SHIFTf && (calcMode == CM_NORMAL || calcMode == CM_AIM || calcMode == CM_NIM  || calcMode == CM_MIM || calcMode == CM_EIM || calcMode == CM_PEM || calcMode == CM_PLOT_STAT || calcMode == CM_GRAPH || calcMode == CM_ASSIGN || calcMode == CM_ASN_BROWSER)) {   //JM shifts
+    if((key->primary == ITM_SHIFTf || ShiftOverride == ITM_SHIFTf) && (calcMode == CM_NORMAL || calcMode == CM_AIM || calcMode == CM_NIM  || calcMode == CM_MIM || calcMode == CM_EIM || calcMode == CM_PEM || calcMode == CM_PLOT_STAT || calcMode == CM_GRAPH || calcMode == CM_ASSIGN || calcMode == CM_ASN_BROWSER)) {   //JM shifts
       if(temporaryInformation == TI_SHOW_REGISTER || temporaryInformation == TI_SHOW_REGISTER_BIG || temporaryInformation == TI_SHOW_REGISTER_SMALL) allowShiftsToClearError = true; //JM
       Shft_timeouts = true;
       if(ShiftTimoutMode) {
@@ -1384,7 +1384,7 @@ bool_t allowShiftsToClearError = false;
       return ITM_NOP;
     }
     // Shift g pressed and JM REMOVED shift f not active
-    else if((key->primary == ITM_SHIFTg || gShiftOverride) && (calcMode == CM_NORMAL || calcMode == CM_AIM || calcMode == CM_NIM  || calcMode == CM_MIM || calcMode == CM_EIM || calcMode == CM_PEM || calcMode == CM_PLOT_STAT || calcMode == CM_GRAPH || calcMode == CM_ASSIGN || calcMode == CM_ASN_BROWSER)) {   //JM shifts
+    else if((key->primary == ITM_SHIFTg || ShiftOverride == ITM_SHIFTg) && (calcMode == CM_NORMAL || calcMode == CM_AIM || calcMode == CM_NIM  || calcMode == CM_MIM || calcMode == CM_EIM || calcMode == CM_PEM || calcMode == CM_PLOT_STAT || calcMode == CM_GRAPH || calcMode == CM_ASSIGN || calcMode == CM_ASN_BROWSER)) {   //JM shifts
       if(temporaryInformation == TI_SHOW_REGISTER || temporaryInformation == TI_SHOW_REGISTER_BIG || temporaryInformation == TI_SHOW_REGISTER_SMALL) allowShiftsToClearError = true; //JM
       Shft_timeouts = true;
       if(ShiftTimoutMode) {
@@ -1418,7 +1418,7 @@ bool_t allowShiftsToClearError = false;
     }
 
     // JM Shift fg pressed  //JM shifts change f/g to a single function key toggle to match DM42 keyboard
-    else if(key->primary == KEY_fg && (calcMode == CM_NORMAL || calcMode == CM_AIM || calcMode == CM_NIM  || calcMode == CM_MIM || calcMode == CM_EIM || calcMode == CM_PEM || calcMode == CM_PLOT_STAT || calcMode == CM_GRAPH || calcMode == CM_ASSIGN || calcMode == CM_ASN_BROWSER)) {   //JM shifts
+    else if((key->primary == KEY_fg || ShiftOverride == KEY_fg) && (calcMode == CM_NORMAL || calcMode == CM_AIM || calcMode == CM_NIM  || calcMode == CM_MIM || calcMode == CM_EIM || calcMode == CM_PEM || calcMode == CM_PLOT_STAT || calcMode == CM_GRAPH || calcMode == CM_ASSIGN || calcMode == CM_ASN_BROWSER)) {   //JM shifts
       Shft_timeouts = true;
       fnTimerStart(TO_FG_LONG, TO_FG_LONG, JM_TO_FG_LONG);    //vv dr
       if(ShiftTimoutMode) {
@@ -1492,7 +1492,7 @@ bool_t allowShiftsToClearError = false;
       sprintf(tmp,"^^^^^^^keyboard.c: determineitem: result1: %d:",result); jm_show_comment(tmp);
     #endif //PC_BUILD
 
-    if(!Check_SigmaPlus_Assigned(&result, key_no)) {
+    if(Check_SigmaPlus_Assigned(&result, key_no) == 0) {
       Check_MultiPresses(&result, key_no);        //JM
     }
 

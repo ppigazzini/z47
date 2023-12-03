@@ -651,38 +651,36 @@ TO_QSPI const int16_t menu_Inl_Tst[]     = { ITM_TEST,                      ITM_
 #endif
 
 
-TO_QSPI const int16_t menu_ASN_N[]       = { ITM_N_KEY_SIGMA,           ITM_N_KEY_GSH,             ITM_N_KEY_ALPHA,           ITM_N_KEY_HOME,            ITM_N_KEY_MM,              ITM_N_KEY_SNAP,            
-                                             ITM_N_KEY_DRG,             ITM_N_KEY_TGLFRT,          ITM_N_KEY_CC,              ITM_N_KEY_PRGM,            ITM_N_KEY_USER,            ITM_USER_COPY,             
-                                             ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL             };
+TO_QSPI const int16_t menu_ASN_N[]       = { ITM_N_KEY_SIGMA,           ITM_N_KEY_FSH,             ITM_N_KEY_ALPHA,           ITM_N_KEY_HOME,            ITM_N_KEY_MM,              ITM_N_KEY_SNAP,            
+                                             ITM_N_KEY_DRG,             ITM_N_KEY_GSH,             ITM_N_KEY_CC,              ITM_N_KEY_PRGM,            ITM_N_KEY_USER,            ITM_N_KEY_TGLFRT,             
+                                             ITM_N_KEY_NIL,             ITM_N_KEY_FGSH,            ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_USER_COPY             };
 
 #if defined(DMCP_BUILD) //NULL to be removed in the DMCP version
-  #define CC_C47  ITM_USER_C47 //not removed anymore
   #define CC_V47  ITM_NULL
   #define CC_E47  ITM_NULL
   #define CC_D47  ITM_NULL
   #define CC_N47  ITM_NULL
-  #define CC_R47  ITM_NULL
-  #define CC_R47bk  ITM_NULL
-  #define MM_LAYOUT -MNU_LAYOUTS //not removed anymore
+  #define CC_R47  ITM_USER_R47
+  #define CC_R47bkfg  ITM_USER_R47bkfg
+  #define CC_R47fgbk  ITM_USER_R47fgbk                                             
 #else // !DMCP_BUILD
-  #define CC_C47  ITM_USER_C47
   #define CC_V47  ITM_USER_V47
   #define CC_E47  ITM_USER_E47
   #define CC_D47  ITM_USER_D47
   #define CC_N47  ITM_USER_N47
   #define CC_R47  ITM_USER_R47
-  #define CC_R47bk  ITM_USER_R47bk
-  #define MM_LAYOUT -MNU_LAYOUTS
+  #define CC_R47bkfg  ITM_USER_R47bkfg
+  #define CC_R47fgbk  ITM_USER_R47fgbk                                             
 #endif // !DMCP_BUILD
 
 
-TO_QSPI const int16_t menu_KEYS[]      =  {  -MNU_RIBBONS,             -MNU_RESETS,                MM_LAYOUT,                 ITM_USER_C47,              ITM_USER_DM42,             ITM_KEYMAP,                
-                                             ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_ASSIGN,                
-                                             -MNU_ASN_N,                ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_USERMODE };             
+TO_QSPI const int16_t menu_KEYS[]      =  {  -MNU_RIBBONS,             -MNU_RESETS,               -MNU_LAYOUTS,               ITM_USERMODE,              ITM_ASSIGN,                ITM_KEYMAP,                
+                                             ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                
+                                             -MNU_ASN_N,                ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL };             
 
-TO_QSPI const int16_t menu_LAYOUTS[]   =  {  CC_C47,                    CC_D47,                    CC_E47,                    CC_N47,                    CC_R47,                    CC_V47,              
-                                             ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  CC_R47bk,                  ITM_ASSIGN,                
-                                             ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_USERMODE };
+TO_QSPI const int16_t menu_LAYOUTS[]   =  {  ITM_USER_C47,              CC_D47,                    CC_E47,                    ITM_USERMODE,              ITM_ASSIGN,                CC_R47,
+                                             ITM_USER_DM42,             CC_N47,                    CC_V47,                    ITM_NULL,                  ITM_NULL,                  CC_R47bkfg,
+                                             ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  CC_R47fgbk                 };
 
 TO_QSPI const int16_t menu_RESETS[]    =  {  ITM_USER_ARESET,           ITM_USER_MRESET,           ITM_USER_HRESET,           ITM_USER_PRESET,           ITM_NULL,                  ITM_USER_KRESET,           
                                              ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  
