@@ -340,37 +340,39 @@ static void _executeSolver(calcRegister_t variable, const real34_t *val, real34_
 #endif // !TESTSUITE_BUILD
 
 
-static void _showProgress(const real34_t *a, const real34_t *b, const real34_t *fa, const real34_t *fb) {
-  #if ENABLE_SOLVER_PROGRESS == 1
-    const real34_t *c;
-    if((currentSolverStatus & (SOLVER_STATUS_TVM_APPLICATION)) == 0 && currentSolverNestingDepth == 1 && programRunStop != PGM_RUNNING) {
-      uint8_t savedDisplayFormatDigits = displayFormatDigits;
+#if !defined(TESTSUITE_BUILD)
+  static void _showProgress(const real34_t *a, const real34_t *b, const real34_t *fa, const real34_t *fb) {
+    #if ENABLE_SOLVER_PROGRESS == 1
+        const real34_t *c;
+        if((currentSolverStatus & (SOLVER_STATUS_TVM_APPLICATION)) == 0 && currentSolverNestingDepth == 1 && programRunStop != PGM_RUNNING) {
+          uint8_t savedDisplayFormatDigits = displayFormatDigits;
 
-      if(real34CompareGreaterThan(a, b)) {
-        c = a;  a  = b;  b  = c;
-        c = fa; fa = fb; fb = c;
+          if(real34CompareGreaterThan(a, b)) {
+            c = a;  a  = b;  b  = c;
+            c = fa; fa = fb; fb = c;
+          }
+
+  //      clearRegisterLine(REGISTER_T, true, true);
+  //      clearRegisterLine(REGISTER_Z, true, true);
+          clearRegisterLine(REGISTER_Y, true, true);
+          clearRegisterLine(REGISTER_X, true, true);
+
+          displayFormatDigits = displayFormat == DF_ALL ? 0 : 33;
+          real34ToDisplayString(a, amNone, tmpString, &standardFont, 9999, 34, false, true);
+          showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_Y_LINE + 6, vmNormal, true, true);
+          showString(real34IsSpecial(fa) ? "?" : real34IsZero(fa) ? "" : real34IsPositive(fa) ? "+" : "-", &standardFont, SCREEN_WIDTH - 10 /* width of '+' */, Y_POSITION_OF_REGISTER_Y_LINE + 6, vmNormal, true, true);
+          real34ToDisplayString(b, amNone, tmpString, &standardFont, 9999, 34, false, true);
+          showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
+          showString(real34IsSpecial(fb) ? "?" : real34IsZero(fb) ? "" : real34IsPositive(fb) ? "+" : "-", &standardFont, SCREEN_WIDTH - 10 /* width of '+' */, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
+          displayFormatDigits = savedDisplayFormatDigits;
+
+        #if defined DMCP_BUILD
+          lcd_refresh();
+        #endif //DMCP_BUILD
       }
-
-//      clearRegisterLine(REGISTER_T, true, true);
-//      clearRegisterLine(REGISTER_Z, true, true);
-      clearRegisterLine(REGISTER_Y, true, true);
-      clearRegisterLine(REGISTER_X, true, true);
-
-      displayFormatDigits = displayFormat == DF_ALL ? 0 : 33;
-      real34ToDisplayString(a, amNone, tmpString, &standardFont, 9999, 34, false, true);
-      showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_Y_LINE + 6, vmNormal, true, true);
-      showString(real34IsSpecial(fa) ? "?" : real34IsZero(fa) ? "" : real34IsPositive(fa) ? "+" : "-", &standardFont, SCREEN_WIDTH - 10 /* width of '+' */, Y_POSITION_OF_REGISTER_Y_LINE + 6, vmNormal, true, true);
-      real34ToDisplayString(b, amNone, tmpString, &standardFont, 9999, 34, false, true);
-      showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
-      showString(real34IsSpecial(fb) ? "?" : real34IsZero(fb) ? "" : real34IsPositive(fb) ? "+" : "-", &standardFont, SCREEN_WIDTH - 10 /* width of '+' */, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
-      displayFormatDigits = savedDisplayFormatDigits;
-
-      #if defined DMCP_BUILD
-        lcd_refresh();
-      #endif //DMCP_BUILD
-    }
-  #endif // ENABLE_SOLVER_PROGRESS == 1
-}
+    #endif // ENABLE_SOLVER_PROGRESS == 1
+  }
+#endif //TESTSUITE_BUILD
 
 
 
