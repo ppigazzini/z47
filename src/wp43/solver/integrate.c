@@ -24,6 +24,7 @@
 #include "defines.h"
 #include "error.h"
 #include "flags.h"
+#include "c43Extensions/addons.h"
 #include "items.h"
 #include "mathematics/comparisonReals.h"
 #include "mathematics/wp34s.h"

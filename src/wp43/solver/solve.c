@@ -27,6 +27,7 @@
 #include "display.h"
 #include "error.h"
 #include "flags.h"
+#include "c43Extensions/addons.h"
 #include "items.h"
 #include "longIntegerType.h"
 #include "mathematics/comparisonReals.h"
