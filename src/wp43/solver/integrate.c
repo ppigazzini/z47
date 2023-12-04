@@ -32,6 +32,7 @@
 #include "realType.h"
 #include "registers.h"
 #include "registerValueConversions.h"
+#include "screen.h"
 #include "softmenus.h"
 #include "solver/equation.h"
 #include "stack.h"
@@ -128,6 +129,7 @@ void fnIntegrate(uint16_t labelOrVariable) {
     bool_t smallerEpsilon = false;
     real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_ACC),  &acc);
     real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_ULIM), &ulim);
+    real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_LLIM), &llim);
     smallerEpsilon = realCompareAbsLessThan(&acc, const_1e_16) && ((realCompareAbsLessThan(&ulim, const_1e_32) || realCompareAbsLessThan(&llim, const_1e_32)));
     #if USE_MICHALSKI_MOSIG_TANH_SINH == 1
       smallerEpsilon = smallerEpsilon && (realIsSpecial(&ulim) || realIsSpecial(&llim)); // smallerEpsilon not needed
@@ -158,7 +160,14 @@ void fnIntVar(uint16_t unusedButMandatoryParameter) {
     const char *var = (char *)getNthString(dynamicSoftmenu[softmenuStack[0].softmenuId].menuContent, dynamicMenuItem);
     const uint16_t regist = findOrAllocateNamedVariable(var);
     currentSolverVariable = regist;
-    showSoftmenu(-MNU_Sfdx);
+    if(currentSolverStatus & SOLVER_STATUS_READY_TO_EXECUTE) {
+      showSoftmenu(-MNU_Sfdx);
+    }
+    else {
+      reallyRunFunction(ITM_STO, regist);
+      currentSolverStatus |= SOLVER_STATUS_READY_TO_EXECUTE;
+      temporaryInformation = TI_SOLVER_VARIABLE;
+    }
   #endif // !TESTSUITE_BUILD
 }
 
@@ -306,6 +315,10 @@ static void _integrate(calcRegister_t regist, const real_t *a, const real_t *b, 
   bool_t TS    = false;   // tanhsinh mode
   bool_t lg0   = false;   // true if level > 0
 
+  #if !defined(TESTSUITE_BUILD)
+    int loop = 0;
+  #endif //TESTSUITE_BUILD
+
   // check arguments  ************************************
   if(realIsNaN(a) || realIsNaN(b)) { // check for invalid limits
     realCopy(const_NaN, res); // a or b is NaN, exit
@@ -440,6 +453,16 @@ static void _integrate(calcRegister_t regist, const real_t *a, const real_t *b, 
     // j loop ++++++++++++++++++++++++++++++++++++++++++++++
     // compute abscissas and weights  ----------------------
     do { // DEI_j_loop::
+      #if !defined(TESTSUITE_BUILD)
+        printHalfSecUpdate_Integer(timed, "Iter: ",loop++); //timed
+      #endif //TESTSUITE_BUILD
+      #if defined(DMCP_BUILD)
+        if(keyWaiting()) {
+          printHalfSecUpdate_Integer(force+1, "Interrupted Iter:",loop);
+          break;
+        }
+      #endif //DMCP_BUILD
+
       WP34S_SinhCosh(&x, NULL, &x, realContext); // cosh(t) (cosh is much faster than sinh/tanh)
       realCopy(&x, &ch); // save for later
       //realMultiply(&x, &x, &x, realContext);
@@ -686,6 +709,10 @@ static void _integrate_mm(calcRegister_t regist, const real_t *llim, const real_
   real_t tmp;
   int k, maxlevel, j, evals;
 
+  #if !defined(TESTSUITE_BUILD)
+    int loop = 0;
+  #endif //TESTSUITE_BUILD
+
   // Get the two limits of integration and the integrating variable:
   if(realCompareGreaterThan(llim, ulim)) { // Ensure the upper limit is greater than the lower limit
     realCopy(llim, &b); // upper limit in LLIM
@@ -720,6 +747,16 @@ static void _integrate_mm(calcRegister_t regist, const real_t *llim, const real_
     realMultiply(&h, const_1on2, &h, realContext); //h = 2 ^ -k
 
     do {
+      #if !defined(TESTSUITE_BUILD)
+        printHalfSecUpdate_Integer(timed, "Iter: ",j+10000*loop++); //timed
+      #endif //TESTSUITE_BUILD
+      #if defined(DMCP_BUILD)
+        if(keyWaiting()) {
+          printHalfSecUpdate_Integer(force+1, "Interrupted Iter:",loop);
+          break;
+        }
+      #endif //DMCP_BUILD
+
       int32ToReal(j, &t);
       realMultiply(&t, &h, &t, realContext); // t = h * j
       //If t > 6.56 Then Exit Do
