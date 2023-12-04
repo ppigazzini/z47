@@ -835,12 +835,6 @@ typedef enum {
 #define NUMBER_OF_DISPLAY_DIGITS                  16
 #define NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS     10
 
-// Number of constants
-#define NUMBER_OF_CONSTANTS_39                   230
-#define NUMBER_OF_CONSTANTS_51                    39
-#define NUMBER_OF_CONSTANTS_1071                   1
-#define NUMBER_OF_CONSTANTS_34                    44
-
 #define MAX_FREE_REGION                           50 // Maximum number of free memory regions
 
 // On/Off 1 bit
