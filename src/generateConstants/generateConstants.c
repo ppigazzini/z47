@@ -30,6 +30,7 @@
 #include "realType.h"
 
 realContext_t ctxtReal34, ctxtReal39, ctxtReal51, ctxtReal75, ctxtReal1071;
+unsigned int cntReal34, cntReal39, cntReal51, cntReal75, cntReal1071;
 
 char whiteSpace[50], temp[10000];
 char defines[1000000], externalDeclarations[1000000]; // .h file
@@ -99,6 +100,7 @@ void generateConstantArray(char *name, char *value) {
   strcat(realArray, "  // const_");
   strcat(realArray, name);
   strcat(realArray, "\n");
+  cntReal39++;
 }
 
 
@@ -137,6 +139,7 @@ void generateConstantArray34(char *name, char *value) {
   strcat(realArray, "  // const_");
   strcat(realArray, name);
   strcat(realArray, "\n");
+  cntReal34++;
 }
 
 
@@ -175,6 +178,7 @@ void generateConstantArray51(char *name, char *value) {
   strcat(realArray, "  // const_");
   strcat(realArray, name);
   strcat(realArray, "\n");
+  cntReal51++;
 }
 
 
@@ -213,6 +217,7 @@ void generateConstantArray75(char *name, char *value) {
   strcat(realArray, "  // const_");
   strcat(realArray, name);
   strcat(realArray, "\n");
+  cntReal75++;
 }
 
 
@@ -251,6 +256,7 @@ void generateConstantArray1071(char *name, char *value) {
   strcat(realArray, "  // const_");
   strcat(realArray, name);
   strcat(realArray, "\n");
+  cntReal1071++;
 }
 
 
@@ -263,279 +269,279 @@ void generateAllConstants(void) {
   // Physical and mathematical constants
   // each constant has 55 significant digits
   c = 0;
-  generateConstantArray("a",             "+3.652425000000000000000000000000000000000000000000000000e+02"); c++;   // cnst000 per definition
-  generateConstantArray("a0",            "+5.291772109030000000000000000000000000000000000000000000e-11"); c++;   // cnst001
-  generateConstantArray("aMoon",         "+3.844000000000000000000000000000000000000000000000000000e+08"); c++;   // cnst002
-  generateConstantArray("aEarth",        "+1.495979000000000000000000000000000000000000000000000000e+11"); c++;   // cnst003
-  generateConstantArray("c",             "+2.997924580000000000000000000000000000000000000000000000e+08"); c++;   // cnst004 per definition
-  generateConstantArray("c1",            "+3.741771852192758011367155555929985138219953097124061418e-16"); c++;   // cnst005
+  generateConstantArray("a",             "+3.652425000000000000000000000000000000000000000000000000e+02"); c++; // per definition
+  generateConstantArray("a0",            "+5.291772109030000000000000000000000000000000000000000000e-11"); c++;
+  generateConstantArray("aMoon",         "+3.844000000000000000000000000000000000000000000000000000e+08"); c++;
+  generateConstantArray("aEarth",        "+1.495979000000000000000000000000000000000000000000000000e+11"); c++;
+  generateConstantArray("c",             "+2.997924580000000000000000000000000000000000000000000000e+08"); c++; // per definition
+  generateConstantArray("c1",            "+3.741771852192758011367155555929985138219953097124061418e-16"); c++;
 
-  generateConstantArray("c2",            "+1.438776877503933802146671601543911595199069423148099191e-02"); c++;   // cnst006
-  generateConstantArray("e",             "+1.602176634000000000000000000000000000000000000000000000e-19"); c++;   // cnst007 per definition
-  generateConstantArray("eE",            "+2.718281828459045235360287471352662497757247093699959575e+00"); c++;   // cnst008 math constant e
-  generateConstantArray("F",             "+9.648533212331001840000000000000000000000000000000000000e+04"); c++;   // cnst009
-  generateConstantArray("Falpha",        "+2.502907875095892822283902873218215786381271376727149977e+00"); c++;   // cnst010 math constant Falpha
-  generateConstantArray("Fdelta",        "+4.669201609102990671853203820466201617258185577475768633e+00"); c++;   // cnst011 math constant Fdelta
+  generateConstantArray("c2",            "+1.438776877503933802146671601543911595199069423148099191e-02"); c++;
+  generateConstantArray("e",             "+1.602176634000000000000000000000000000000000000000000000e-19"); c++; // per definition
+  generateConstantArray("eE",            "+2.718281828459045235360287471352662497757247093699959575e+00"); c++; // math constant e
+  generateConstantArray("F",             "+9.648533212331001840000000000000000000000000000000000000e+04"); c++;
+  generateConstantArray("Falpha",        "+2.502907875095892822283902873218215786381271376727149977e+00"); c++; // math constant Falpha
+  generateConstantArray("Fdelta",        "+4.669201609102990671853203820466201617258185577475768633e+00"); c++; // math constant Fdelta
 
-  generateConstantArray("G",             "+6.674300000000000000000000000000000000000000000000000000e-11"); c++;   // cnst012
-  generateConstantArray("G0",            "+7.748091729863650646680823323308763943587286047673370920e-05"); c++;   // cnst013
-  generateConstantArray("GC",            "+9.159655941772190150546035149323841107741493742816721343e-01"); c++;   // cnst014 math constant Catalan
-  generateConstantArray("ge",            "-2.002319304362560000000000000000000000000000000000000000e+00"); c++;   // cnst015
-  generateConstantArray("GM",            "+3.986004418000000000000000000000000000000000000000000000e+14"); c++;   // cnst016
-  generateConstantArray("gEarth",        "+9.806650000000000000000000000000000000000000000000000000e+00"); c++;   // cnst017 per definition
-
-
-  generateConstantArray("Planck",        "+6.626070150000000000000000000000000000000000000000000000e-34"); c++;   // cnst018
-  generateConstantArray("PlanckOn2pi",   "+1.054571817646156391262428003302280744722826330020413122e-34"); c++;   // cnst019
-  generateConstantArray("k",             "+1.380649000000000000000000000000000000000000000000000000e-23"); c++;   // cnst020 per definition
-  generateConstantArray("KJ",            "+4.835978484169836324476582850545281353533511866004014461e+14"); c++;   // cnst021
-  generateConstantArray("lPL",           "+1.616255000000000000000000000000000000000000000000000000e-35"); c++;   // cnst022
-  generateConstantArray("me",            "+9.109383701500000000000000000000000000000000000000000000e-31"); c++;   // cnst023
-
-  generateConstantArray("MMoon",         "+7.349000000000000000000000000000000000000000000000000000e+22"); c++;   // cnst024
-  generateConstantArray("mn",            "+1.674927498040000000000000000000000000000000000000000000e-27"); c++;   // cnst025
-  generateConstantArray("mnOnmp",        "+1.001378418980000000000000000000000000000000000000000000e+00"); c++;   // cnst026
-  generateConstantArray("mp",            "+1.672621923690000000000000000000000000000000000000000000e-27"); c++;   // cnst027
-  generateConstantArray("mPL",           "+2.176435000000000000000000000000000000000000000000000000e-08"); c++;   // cnst028
-  generateConstantArray("mpOnme",        "+1.836152673430000000000000000000000000000000000000000000e+03"); c++;   // cnst029
-
-  generateConstantArray("mu",            "+1.660539066600000000000000000000000000000000000000000000e-27"); c++;   // cnst030
-  generateConstantArray("muc2",          "+1.492418085600000000000000000000000000000000000000000000e-10"); c++;   // cnst031
-  generateConstantArray("mmu",           "+1.883531627000000000000000000000000000000000000000000000e-28"); c++;   // cnst032
-  generateConstantArray("mSun",          "+1.989100000000000000000000000000000000000000000000000000e+30"); c++;   // cnst033
-  generateConstantArray("mEarth",        "+5.973600000000000000000000000000000000000000000000000000e+24"); c++;   // cnst034
-  generateConstantArray("NA",            "+6.022140760000000000000000000000000000000000000000000000e+23"); c++;   // cnst035 per definition
+  generateConstantArray("G",             "+6.674300000000000000000000000000000000000000000000000000e-11"); c++;
+  generateConstantArray("G0",            "+7.748091729863650646680823323308763943587286047673370920e-05"); c++;
+  generateConstantArray("GC",            "+9.159655941772190150546035149323841107741493742816721343e-01"); c++; // math constant Catalan
+  generateConstantArray("ge",            "-2.002319304362560000000000000000000000000000000000000000e+00"); c++;
+  generateConstantArray("GM",            "+3.986004418000000000000000000000000000000000000000000000e+14"); c++;
+  generateConstantArray("gEarth",        "+9.806650000000000000000000000000000000000000000000000000e+00"); c++; // per definition
 
 
-  generateConstantArray("NaN",           "Not a number"                                                 ); c++;   // cnst036
-  generateConstantArray("p0",            "+1.013250000000000000000000000000000000000000000000000000e+05"); c++;   // cnst037 per definition
-  generateConstantArray("R",             "+8.314462618153240000000000000000000000000000000000000000e+00"); c++;   // cnst038
-  generateConstantArray("re",            "+2.817940326200000000000000000000000000000000000000000000e-15"); c++;   // cnst039
-  generateConstantArray("RK",            "+2.581280745930450666004551670608744304245727322140342177e+04"); c++;   // cnst040
-  generateConstantArray("RMoon",         "+1.737530000000000000000000000000000000000000000000000000e+06"); c++;   // cnst041
+  generateConstantArray("Planck",        "+6.626070150000000000000000000000000000000000000000000000e-34"); c++;
+  generateConstantArray("PlanckOn2pi",   "+1.054571817646156391262428003302280744722826330020413122e-34"); c++;
+  generateConstantArray("k",             "+1.380649000000000000000000000000000000000000000000000000e-23"); c++; // per definition
+  generateConstantArray("KJ",            "+4.835978484169836324476582850545281353533511866004014461e+14"); c++;
+  generateConstantArray("lPL",           "+1.616255000000000000000000000000000000000000000000000000e-35"); c++;
+  generateConstantArray("me",            "+9.109383701500000000000000000000000000000000000000000000e-31"); c++;
 
-  generateConstantArray("RInfinity",     "+1.097373156816000000000000000000000000000000000000000000e+07"); c++;   // cnst042
-  generateConstantArray("RSun",          "+6.960000000000000000000000000000000000000000000000000000e+08"); c++;   // cnst043
-  generateConstantArray("REarth",        "+6.371010000000000000000000000000000000000000000000000000e+06"); c++;   // cnst044
-  generateConstantArray("Sa",            "+6.378137000000000000000000000000000000000000000000000000e+06"); c++;   // cnst045 per definition
-  generateConstantArray("Sb",            "+6.356752314200000000000000000000000000000000000000000000e+06"); c++;   // cnst046
-  generateConstantArray("Se2",           "+6.694379990140000000000000000000000000000000000000000000e-03"); c++;   // cnst047
+  generateConstantArray("MMoon",         "+7.349000000000000000000000000000000000000000000000000000e+22"); c++;
+  generateConstantArray("mn",            "+1.674927498040000000000000000000000000000000000000000000e-27"); c++;
+  generateConstantArray("mnOnmp",        "+1.001378418980000000000000000000000000000000000000000000e+00"); c++;
+  generateConstantArray("mp",            "+1.672621923690000000000000000000000000000000000000000000e-27"); c++;
+  generateConstantArray("mPL",           "+2.176435000000000000000000000000000000000000000000000000e-08"); c++;
+  generateConstantArray("mpOnme",        "+1.836152673430000000000000000000000000000000000000000000e+03"); c++;
 
-
-  generateConstantArray("Sep2",          "+6.739496742280000000000000000000000000000000000000000000e-03"); c++;   // cnst048
-  generateConstantArray("Sfm1",          "+2.982572235630000000000000000000000000000000000000000000e+02"); c++;   // cnst049 per definition
-  generateConstantArray("T0",            "+2.731500000000000000000000000000000000000000000000000000e+02"); c++;   // cnst050 per definition
-  generateConstantArray("TP",            "+1.416785000000000000000000000000000000000000000000000000e+32"); c++;   // cnst051
-  generateConstantArray("tPL",           "+5.391245000000000000000000000000000000000000000000000000e-44"); c++;   // cnst052
-  generateConstantArray("Vm",            "+2.241396954501413773501110288675055514433752775721687639e-02"); c++;   // cnst053
-
-  generateConstantArray("Z0",            "+3.767303134617706554681984004203193082686235083524186552e+02"); c++;   // cnst054 mu0 * c
-  generateConstantArray("alpha",         "+7.297352569300000000000000000000000000000000000000000000e-03"); c++;   // cnst055
-  generateConstantArray("gamma",         "+6.674300000000000000000000000000000000000000000000000000e-11"); c++;   // cnst056 gamma = gEarth --> is this duplicate constant needed?
-  generateConstantArray("gammaEM",       "+5.772156649015328606065120900824024310421593359399235988e-01"); c++;   // cnst057 math constant Euler-Mascheroni
-  generateConstantArray("gammap",        "+2.675221874400000000000000000000000000000000000000000000e+08"); c++;   // cnst058
-  generateConstantArray("DELTAvcs",      "+9.192631770000000000000000000000000000000000000000000000e+09"); c++;   // cnst059 per definition
-
-  generateConstantArray("epsilon0",      "+8.854187812800000000000000000000000000000000000000000000e-12"); c++;   // cnst060
-  generateConstantArray("lambdaC",       "+2.426310238670000000000000000000000000000000000000000000e-12"); c++;   // cnst061
-  generateConstantArray("lambdaCn",      "+1.319590905810000000000000000000000000000000000000000000e-15"); c++;   // cnst062
-  generateConstantArray("lambdaCp",      "+1.321409855390000000000000000000000000000000000000000000e-15"); c++;   // cnst063
-  generateConstantArray("mu0",           "+1.256637062120000000000000000000000000000000000000000000e-06"); c++;   // cnst064
-  generateConstantArray("muB",           "+9.274010078000000000000000000000000000000000000000000000e-24"); c++;   // cnst065
-
-  generateConstantArray("mue",           "-9.284764704300000000000000000000000000000000000000000000e-24"); c++;   // cnst066
-  generateConstantArray("mueOnmuB",      "-1.001159652181280000000000000000000000000000000000000000e+00"); c++;   // cnst067
-  generateConstantArray("mun",           "-9.662365000000000000000000000000000000000000000000000000e-27"); c++;   // cnst068
-  generateConstantArray("mup",           "+1.410606797360000000000000000000000000000000000000000000e-26"); c++;   // cnst069
-  generateConstantArray("muu",           "+5.050783746100000000000000000000000000000000000000000000e-27"); c++;   // cnst070
-  generateConstantArray("mumu",          "-4.490448300000000000000000000000000000000000000000000000e-26"); c++;   // cnst071
+  generateConstantArray("mu",            "+1.660539066600000000000000000000000000000000000000000000e-27"); c++;
+  generateConstantArray("muc2",          "+1.492418085600000000000000000000000000000000000000000000e-10"); c++;
+  generateConstantArray("mmu",           "+1.883531627000000000000000000000000000000000000000000000e-28"); c++;
+  generateConstantArray("mSun",          "+1.989100000000000000000000000000000000000000000000000000e+30"); c++;
+  generateConstantArray("mEarth",        "+5.973600000000000000000000000000000000000000000000000000e+24"); c++;
+  generateConstantArray("NA",            "+6.022140760000000000000000000000000000000000000000000000e+23"); c++; // per definition
 
 
-  generateConstantArray("sigmaB",        "+5.670374419184429453970996731889230875840122970291303682e-08"); c++;   // cnst072
-  generateConstantArray("PHI",           "+1.618033988749894848204586834365638117720309179805762862e+00"); c++;   // cnst073 math constant phi = (1 + sqrt(5)) / 2
-  generateConstantArray("PHI0",          "+2.067833848461929323081115412147497340171545654934323552e-15"); c++;   // cnst074
-  generateConstantArray("omega",         "+7.292115000000000000000000000000000000000000000000000000e-05"); c++;   // cnst075
-  generateConstantArray("minusInfinity", "-9.999999999999999999999999999999999999999999999999999999e+9999"); c++; // cnst076 math "constant"
-  generateConstantArray("plusInfinity",  "+9.999999999999999999999999999999999999999999999999999999e+9999"); c++; // cnst077 math "constant"
+  generateConstantArray("NaN",           "Not a number"                                                 ); c++;
+  generateConstantArray("p0",            "+1.013250000000000000000000000000000000000000000000000000e+05"); c++; // per definition
+  generateConstantArray("R",             "+8.314462618153240000000000000000000000000000000000000000e+00"); c++;
+  generateConstantArray("re",            "+2.817940326200000000000000000000000000000000000000000000e-15"); c++;
+  generateConstantArray("RK",            "+2.581280745930450666004551670608744304245727322140342177e+04"); c++;
+  generateConstantArray("RMoon",         "+1.737530000000000000000000000000000000000000000000000000e+06"); c++;
 
-  generateConstantArray("0",             "0"); c++;                                                               // cnst078
+  generateConstantArray("RInfinity",     "+1.097373156816000000000000000000000000000000000000000000e+07"); c++;
+  generateConstantArray("RSun",          "+6.960000000000000000000000000000000000000000000000000000e+08"); c++;
+  generateConstantArray("REarth",        "+6.371010000000000000000000000000000000000000000000000000e+06"); c++;
+  generateConstantArray("Sa",            "+6.378137000000000000000000000000000000000000000000000000e+06"); c++; // per definition
+  generateConstantArray("Sb",            "+6.356752314200000000000000000000000000000000000000000000e+06"); c++;
+  generateConstantArray("Se2",           "+6.694379990140000000000000000000000000000000000000000000e-03"); c++;
+
+
+  generateConstantArray("Sep2",          "+6.739496742280000000000000000000000000000000000000000000e-03"); c++;
+  generateConstantArray("Sfm1",          "+2.982572235630000000000000000000000000000000000000000000e+02"); c++; // per definition
+  generateConstantArray("T0",            "+2.731500000000000000000000000000000000000000000000000000e+02"); c++; // per definition
+  generateConstantArray("TP",            "+1.416785000000000000000000000000000000000000000000000000e+32"); c++;
+  generateConstantArray("tPL",           "+5.391245000000000000000000000000000000000000000000000000e-44"); c++;
+  generateConstantArray("Vm",            "+2.241396954501413773501110288675055514433752775721687639e-02"); c++;
+
+  generateConstantArray("Z0",            "+3.767303134617706554681984004203193082686235083524186552e+02"); c++; // mu0 * c
+  generateConstantArray("alpha",         "+7.297352569300000000000000000000000000000000000000000000e-03"); c++;
+  generateConstantArray("gamma",         "+6.674300000000000000000000000000000000000000000000000000e-11"); c++; // gamma = gEarth --> is this duplicate constant needed?
+  generateConstantArray("gammaEM",       "+5.772156649015328606065120900824024310421593359399235988e-01"); c++; // math constant Euler-Mascheroni
+  generateConstantArray("gammap",        "+2.675221874400000000000000000000000000000000000000000000e+08"); c++;
+  generateConstantArray("DELTAvcs",      "+9.192631770000000000000000000000000000000000000000000000e+09"); c++; // per definition
+
+  generateConstantArray("epsilon0",      "+8.854187812800000000000000000000000000000000000000000000e-12"); c++;
+  generateConstantArray("lambdaC",       "+2.426310238670000000000000000000000000000000000000000000e-12"); c++;
+  generateConstantArray("lambdaCn",      "+1.319590905810000000000000000000000000000000000000000000e-15"); c++;
+  generateConstantArray("lambdaCp",      "+1.321409855390000000000000000000000000000000000000000000e-15"); c++;
+  generateConstantArray("mu0",           "+1.256637062120000000000000000000000000000000000000000000e-06"); c++;
+  generateConstantArray("muB",           "+9.274010078000000000000000000000000000000000000000000000e-24"); c++;
+
+  generateConstantArray("mue",           "-9.284764704300000000000000000000000000000000000000000000e-24"); c++;
+  generateConstantArray("mueOnmuB",      "-1.001159652181280000000000000000000000000000000000000000e+00"); c++;
+  generateConstantArray("mun",           "-9.662365000000000000000000000000000000000000000000000000e-27"); c++;
+  generateConstantArray("mup",           "+1.410606797360000000000000000000000000000000000000000000e-26"); c++;
+  generateConstantArray("muu",           "+5.050783746100000000000000000000000000000000000000000000e-27"); c++;
+  generateConstantArray("mumu",          "-4.490448300000000000000000000000000000000000000000000000e-26"); c++;
+
+
+  generateConstantArray("sigmaB",        "+5.670374419184429453970996731889230875840122970291303682e-08"); c++;
+  generateConstantArray("PHI",           "+1.618033988749894848204586834365638117720309179805762862e+00"); c++; // math constant phi = (1 + sqrt(5)) / 2
+  generateConstantArray("PHI0",          "+2.067833848461929323081115412147497340171545654934323552e-15"); c++;
+  generateConstantArray("omega",         "+7.292115000000000000000000000000000000000000000000000000e-05"); c++;
+  generateConstantArray("minusInfinity", "-9.999999999999999999999999999999999999999999999999999999e+9999"); c++; // math "constant"
+  generateConstantArray("plusInfinity",  "+9.999999999999999999999999999999999999999999999999999999e+9999"); c++; // math "constant"
+
+  generateConstantArray("0",             "0"); c++;
 
   // All the formulas are 100% exact conversion formulas
-  generateConstantArray("PointToMm",     "+3.527777777777777777777777777777777777777777777777777778e-01");        // cnst079       mm     = pt × 0.0254 / 72 × 1000
-  generateConstantArray("InchToMm",      "+2.540000000000000000000000000000000000000000000000000000e+01");        // cnst080       mm     = inch × 0.0254 × 1000
-  generateConstantArray("FtToM",         "+3.048000000000000000000000000000000000000000000000000000e-01");        // cnst081       m      = ft × 12 × 0.0254
-  generateConstantArray("SfeetToM",      "+3.048006096012192024384048768097536195072390144780289561e-01");        // cnst082       m      = sfeetus × (1200 / 3937)
-  generateConstantArray("YardToM",       "+9.144000000000000000000000000000000000000000000000000000e-01");        // cnst083       m      = yard × 3 × 12 × 0.0254
-  generateConstantArray("FathomToM",     "+1.828800000000000000000000000000000000000000000000000000e+00");        // cnst084       m      = fathom × 6 × 12 × 0.0254
-  generateConstantArray("MiToKm",        "+1.609344000000000000000000000000000000000000000000000000e+00");        // cnst085       km     = mile × 63360 × 0.0254 / 1000
-  generateConstantArray("MiSqToKmSq",    "+2.589988110336000000000000000000000000000000000000000000e+00");        // cnst086       km     = mile^2 × (63360 × 0.0254 / 1000)^2
-  generateConstantArray("NmiToKm",       "+1.852000000000000000000000000000000000000000000000000000e+00");        // cnst087       km     = nmi × 1852 / 1000
-  generateConstantArray("NmiToMi",       "+1.150779448023542511731488109440865346377157400779448024e+00");        // cnst088       km     = nmi × 1852 / 1609.344
-  generateConstantArray("NmiSqToKmSq",   "+3.429904000000000000000000000000000000000000000000000000e+00");        // cnst089       km     = nmi^2 × (1852 / 1000)^2
-  generateConstantArray("AuToM",         "+1.495978707000000000000000000000000000000000000000000000e+11");        // cnst090       m      = au × 149597870700
-  generateConstantArray("LyToM",         "+9.460730472580800000000000000000000000000000000000000000e+15");        // cnst091       m      = ly × 299792458 × 3600 × 24 × 365.25
-  generateConstantArray("PcToM",         "+3.085677581491367278913937957796471610731921160409179801e+16");        // cnst092       m      = pc × 149597870700 × 648000 / pi
-  generateConstantArray("LiToM",         "+5.000000000000000000000000000000000000000000000000000000e+02");        // cnst093       m      = lǐ × 500
-  generateConstantArray("YinToM",        "+3.000000000000000000000000000000000000000000000000000000e-02");        // cnst094       m      = yǐn / 0.03
-  generateConstantArray("CunToM",        "+3.000000000000000000000000000000000000000000000000000000e+01");        // cnst095       m      = cùn / 30
-  generateConstantArray("ZhangToM",      "+3.000000000000000000000000000000000000000000000000000000e-01");        // cnst096       m      = zhàng / 0.3
-  generateConstantArray("FenToM",        "+3.000000000000000000000000000000000000000000000000000000e+02");        // cnst097       m      = fēn / 300
-  generateConstantArray("MiToM",         "+1.609344000000000000000000000000000000000000000000000000e+03");        // cnst098       m      = mile × 63360 × 0.0254
-  generateConstantArray("NmiToM",        "+1.852000000000000000000000000000000000000000000000000000e+03");        // cnst099       m      = nmi × 1852
+  generateConstantArray("PointToMm",     "+3.527777777777777777777777777777777777777777777777777778e-01"); // mm     = pt × 0.0254 / 72 × 1000
+  generateConstantArray("InchToMm",      "+2.540000000000000000000000000000000000000000000000000000e+01"); // mm     = inch × 0.0254 × 1000
+  generateConstantArray("FtToM",         "+3.048000000000000000000000000000000000000000000000000000e-01"); // m      = ft × 12 × 0.0254
+  generateConstantArray("SfeetToM",      "+3.048006096012192024384048768097536195072390144780289561e-01"); // m      = sfeetus × (1200 / 3937)
+  generateConstantArray("YardToM",       "+9.144000000000000000000000000000000000000000000000000000e-01"); // m      = yard × 3 × 12 × 0.0254
+  generateConstantArray("FathomToM",     "+1.828800000000000000000000000000000000000000000000000000e+00"); // m      = fathom × 6 × 12 × 0.0254
+  generateConstantArray("MiToKm",        "+1.609344000000000000000000000000000000000000000000000000e+00"); // km     = mile × 63360 × 0.0254 / 1000
+  generateConstantArray("MiSqToKmSq",    "+2.589988110336000000000000000000000000000000000000000000e+00"); // km     = mile^2 × (63360 × 0.0254 / 1000)^2
+  generateConstantArray("NmiToKm",       "+1.852000000000000000000000000000000000000000000000000000e+00"); // km     = nmi × 1852 / 1000
+  generateConstantArray("NmiToMi",       "+1.150779448023542511731488109440865346377157400779448024e+00"); // km     = nmi × 1852 / 1609.344
+  generateConstantArray("NmiSqToKmSq",   "+3.429904000000000000000000000000000000000000000000000000e+00"); // km     = nmi^2 × (1852 / 1000)^2
+  generateConstantArray("AuToM",         "+1.495978707000000000000000000000000000000000000000000000e+11"); // m      = au × 149597870700
+  generateConstantArray("LyToM",         "+9.460730472580800000000000000000000000000000000000000000e+15"); // m      = ly × 299792458 × 3600 × 24 × 365.25
+  generateConstantArray("PcToM",         "+3.085677581491367278913937957796471610731921160409179801e+16"); // m      = pc × 149597870700 × 648000 / pi
+  generateConstantArray("LiToM",         "+5.000000000000000000000000000000000000000000000000000000e+02"); // m      = lǐ × 500
+  generateConstantArray("YinToM",        "+3.000000000000000000000000000000000000000000000000000000e-02"); // m      = yǐn / 0.03
+  generateConstantArray("CunToM",        "+3.000000000000000000000000000000000000000000000000000000e+01"); // m      = cùn / 30
+  generateConstantArray("ZhangToM",      "+3.000000000000000000000000000000000000000000000000000000e-01"); // m      = zhàng / 0.3
+  generateConstantArray("FenToM",        "+3.000000000000000000000000000000000000000000000000000000e+02"); // m      = fēn / 300
+  generateConstantArray("MiToM",         "+1.609344000000000000000000000000000000000000000000000000e+03"); // m      = mile × 63360 × 0.0254
+  generateConstantArray("NmiToM",        "+1.852000000000000000000000000000000000000000000000000000e+03"); // m      = nmi × 1852
 
-  generateConstantArray("Kmphmps",       "+2.777777777777777777777777777777777777777777777777777777e-01");        // cnst100      mps      =  Kmph  * 0.277...   // 2.5/9
-  generateConstantArray("RpmDegps",      "+6.000000000000000000000000000000000000000000000000000000e+00");        // cnst101     Degps    =  Rpm * 6
-  generateConstantArray("Mphmps",        "+4.470400000000000000000000000000000000000000000000000000e-01");        // cnst102     mps      =  Mph  * 0.44704     //11.176/25
-  generateConstantArray("RpmRadps",      "+1.047197551196597746154214461093167628065723133125035274e-01");        // cnst103     Radps    =  Rpm  * 0.1047   // pi/30
-  generateConstantArray("DegRad",        "+1.745329251994329576923690768488612713442871888541725456e-02");        // cnst104     Rad      =  Deg  * pi / 180
-  generateConstantArray("DegGrad",       "+1.111111111111111111111111111111111111111111111111111111e+00");        // cnst105     Grad     =  Deg  * 10 / 9
-  generateConstantArray("GradRad",       "+1.570796326794896619231321691639751442098584699687552910e-02");        // cnst106     Rad      =  Grad * pi / 200
+  generateConstantArray("Kmphmps",       "+2.777777777777777777777777777777777777777777777777777777e-01"); // mps      =  Kmph  * 0.277...   // 2.5/9
+  generateConstantArray("RpmDegps",      "+6.000000000000000000000000000000000000000000000000000000e+00"); // Degps    =  Rpm * 6
+  generateConstantArray("Mphmps",        "+4.470400000000000000000000000000000000000000000000000000e-01"); // mps      =  Mph  * 0.44704     //11.176/25
+  generateConstantArray("RpmRadps",      "+1.047197551196597746154214461093167628065723133125035274e-01"); // Radps    =  Rpm  * 0.1047   // pi/30
+  generateConstantArray("DegRad",        "+1.745329251994329576923690768488612713442871888541725456e-02"); // Rad      =  Deg  * pi / 180
+  generateConstantArray("DegGrad",       "+1.111111111111111111111111111111111111111111111111111111e+00"); // Grad     =  Deg  * 10 / 9
+  generateConstantArray("GradRad",       "+1.570796326794896619231321691639751442098584699687552910e-02"); // Rad      =  Grad * pi / 200
 
-  generateConstantArray("AccreToHa",     "+4.046856422400000000000000000000000000000000000000000000e-01");        // cnst107      ha     = acre × 0.0254² × 12² × 43560 / 10000
-  generateConstantArray("AccreusToHa",   "+4.046872609874252006568529266090790246096621225500515517e-01");        // cnst108      ha     = acreus × (1200 / 3937)² × 43560 / 10000
-  generateConstantArray("MuToM2",        "+1.500000000000000000000000000000000000000000000000000000e-03");        // cnst109      m²     = mǔ / 0.0015
-  generateConstantArray("FlozukToMl",    "+2.841306250000000000000000000000000000000000000000000000e+01");        // cnst110      ml     = flozuk × 4.54609e-3 / 160 × 1000000
-  generateConstantArray("FlozusToMl",    "+2.957352956250000000000000000000000000000000000000000000e+01");        // cnst111      ml     = flozus × 231 × 0.0254³ / 128 × 1000000
-  generateConstantArray("GalusToL",      "+3.785411784000000000000000000000000000000000000000000000e+00");        // cnst112      l      = galus × 231 × 0.0254³ × 1000
-  generateConstantArray("GalukToL",      "+4.546090000000000000000000000000000000000000000000000000e+00");        // cnst113      l      = galuk × 4.54609e-3 × 1000
-  generateConstantArray("QuartToL",      "+1.136522500000000000000000000000000000000000000000000000e+00");        // cnst114      l      = quart × 4.54609e-3 / 4 × 1000
-  generateConstantArray("BarrelToM3",    "+1.589872949280000000000000000000000000000000000000000000e-01");        // cnst115      m³     = barrel × 42 × 231 × 0.0254³
+  generateConstantArray("AccreToHa",     "+4.046856422400000000000000000000000000000000000000000000e-01"); // ha     = acre × 0.0254² × 12² × 43560 / 10000
+  generateConstantArray("AccreusToHa",   "+4.046872609874252006568529266090790246096621225500515517e-01"); // ha     = acreus × (1200 / 3937)² × 43560 / 10000
+  generateConstantArray("MuToM2",        "+1.500000000000000000000000000000000000000000000000000000e-03"); // m²     = mǔ / 0.0015
+  generateConstantArray("FlozukToMl",    "+2.841306250000000000000000000000000000000000000000000000e+01"); // ml     = flozuk × 4.54609e-3 / 160 × 1000000
+  generateConstantArray("FlozusToMl",    "+2.957352956250000000000000000000000000000000000000000000e+01"); // ml     = flozus × 231 × 0.0254³ / 128 × 1000000
+  generateConstantArray("GalusToL",      "+3.785411784000000000000000000000000000000000000000000000e+00"); // l      = galus × 231 × 0.0254³ × 1000
+  generateConstantArray("GalukToL",      "+4.546090000000000000000000000000000000000000000000000000e+00"); // l      = galuk × 4.54609e-3 × 1000
+  generateConstantArray("QuartToL",      "+1.136522500000000000000000000000000000000000000000000000e+00"); // l      = quart × 4.54609e-3 / 4 × 1000
+  generateConstantArray("BarrelToM3",    "+1.589872949280000000000000000000000000000000000000000000e-01"); // m³     = barrel × 42 × 231 × 0.0254³
 
-  generateConstantArray("CaratToG",      "+2.000000000000000000000000000000000000000000000000000000e-01");        // cnst116      g      = carat × 0.0002 × 1000
-  generateConstantArray("OzToG",         "+2.834952312500000000000000000000000000000000000000000000e+01");        // cnst117      g      = oz × (0.45359237 / 16) × 1000
-  generateConstantArray("TrozToG",       "+3.110347680000000000000000000000000000000000000000000000e+01");        // cnst118      g      = tr.oz × 0.45359237 × 175 / 12 × 1000
-  generateConstantArray("LbToKg",        "+4.535923700000000000000000000000000000000000000000000000e-01");        // cnst119      kg     = lb × 0.45359237     (1 lb (pound) = 16 oz)
-  generateConstantArray("StoneToKg",     "+6.350293180000000000000000000000000000000000000000000000e+00");        // cnst120      kg     = stone × 14 × 0.45359237
-  generateConstantArray("ShortcwtToKg",  "+4.535923700000000000000000000000000000000000000000000000e+01");        // cnst121      kg     = short cwt × 100 × 0.45359237 (short cwt = short hundredweight)
-  generateConstantArray("CwtToKg",       "+5.080234544000000000000000000000000000000000000000000000e+01");        // cnst122      kg     = cwt × 112 × 0.45359237       (cwt = long hundredweight)
-  generateConstantArray("ShorttonToKg",  "+9.071847400000000000000000000000000000000000000000000000e+02");        // cnst123      kg     = short ton × 2000 × 0.45359237
-  generateConstantArray("TonToKg",       "+1.016046908800000000000000000000000000000000000000000000e+03");        // cnst124      kg     = ton × 2240 × 0.45359237
+  generateConstantArray("CaratToG",      "+2.000000000000000000000000000000000000000000000000000000e-01"); // g      = carat × 0.0002 × 1000
+  generateConstantArray("OzToG",         "+2.834952312500000000000000000000000000000000000000000000e+01"); // g      = oz × (0.45359237 / 16) × 1000
+  generateConstantArray("TrozToG",       "+3.110347680000000000000000000000000000000000000000000000e+01"); // g      = tr.oz × 0.45359237 × 175 / 12 × 1000
+  generateConstantArray("LbToKg",        "+4.535923700000000000000000000000000000000000000000000000e-01"); // kg     = lb × 0.45359237     (1 lb (pound) = 16 oz)
+  generateConstantArray("StoneToKg",     "+6.350293180000000000000000000000000000000000000000000000e+00"); // kg     = stone × 14 × 0.45359237
+  generateConstantArray("ShortcwtToKg",  "+4.535923700000000000000000000000000000000000000000000000e+01"); // kg     = short cwt × 100 × 0.45359237 (short cwt = short hundredweight)
+  generateConstantArray("CwtToKg",       "+5.080234544000000000000000000000000000000000000000000000e+01"); // kg     = cwt × 112 × 0.45359237       (cwt = long hundredweight)
+  generateConstantArray("ShorttonToKg",  "+9.071847400000000000000000000000000000000000000000000000e+02"); // kg     = short ton × 2000 × 0.45359237
+  generateConstantArray("TonToKg",       "+1.016046908800000000000000000000000000000000000000000000e+03"); // kg     = ton × 2240 × 0.45359237
 
-  generateConstantArray("CalToJ",        "+4.186800000000000000000000000000000000000000000000000000e+00");        // cnst125      joule  = calorie × 4.1868
-  generateConstantArray("BtuToJ",        "+1.055055852620000000000000000000000000000000000000000000e+03");        // cnst126      joule  = Btu × 1055.05585262
-  generateConstantArray("WhToJ",         "+3.600000000000000000000000000000000000000000000000000000e+03");        // cnst127      joule  = Wh × 3600
+  generateConstantArray("CalToJ",        "+4.186800000000000000000000000000000000000000000000000000e+00"); // joule  = calorie × 4.1868
+  generateConstantArray("BtuToJ",        "+1.055055852620000000000000000000000000000000000000000000e+03"); // joule  = Btu × 1055.05585262
+  generateConstantArray("WhToJ",         "+3.600000000000000000000000000000000000000000000000000000e+03"); // joule  = Wh × 3600
 
-  generateConstantArray("LbfToN",        "+4.448221615260500000000000000000000000000000000000000000e+00");        // cnst128      newton = lbf × 9.80665 × 0.45359237
+  generateConstantArray("LbfToN",        "+4.448221615260500000000000000000000000000000000000000000e+00"); // newton = lbf × 9.80665 × 0.45359237
 
-  generateConstantArray("TorrToPa",      "+1.333223684210526315789473684210526315789473684210526316e+02");        // cnst129      pascal = torr × 101325 / 760
+  generateConstantArray("TorrToPa",      "+1.333223684210526315789473684210526315789473684210526316e+02"); // pascal = torr × 101325 / 760
   #if(MMHG_PA_133_3224 == 1)
-    generateConstantArray("MmhgToPa",    "+1.333224000000000000000000000000000000000000000000000000e+02");        // cnst130      pascal = mm.Hg × 133.3224
-    generateConstantArray("InhgToPa",    "+3.386388960000000000000000000000000000000000000000000000e+03");        // cnst131      pascal = in.Hg × 133.3224 × 25.4
+    generateConstantArray("MmhgToPa",    "+1.333224000000000000000000000000000000000000000000000000e+02"); // pascal = mm.Hg × 133.3224
+    generateConstantArray("InhgToPa",    "+3.386388960000000000000000000000000000000000000000000000e+03"); // pascal = in.Hg × 133.3224 × 25.4
   #else // (MMHG_PA_133_3224 == 0)
     generateConstantArray("MmhgToPa",    "+1.333223874150000000000000000000000000000000000000000000e+02");// cnst              pascal = mm.Hg × 13.5951 × 9.80665
     generateConstantArray("InhgToPa",    "+3.386388640341000000000000000000000000000000000000000000e+03");// cnst              pascal = in.Hg × 13.5951 × 9.80665 × 2.54
   #endif // (MMHG_PA_133_3224 == 1)
-  generateConstantArray("PsiToPa",       "+6.894757293168361336722673445346890693781387562775125550e+03");        // cnst132      pascal = psi × 0.45359237 × 9.80665 / 0.0254²
-  generateConstantArray("BarToPa",       "+1.000000000000000000000000000000000000000000000000000000e+05");        // cnst133      pascal = bar  × 100000
-  generateConstantArray("AtmToPa",       "+1.013250000000000000000000000000000000000000000000000000e+05");        // cnst134      pascal = atm × 101325
+  generateConstantArray("PsiToPa",       "+6.894757293168361336722673445346890693781387562775125550e+03"); // pascal = psi × 0.45359237 × 9.80665 / 0.0254²
+  generateConstantArray("BarToPa",       "+1.000000000000000000000000000000000000000000000000000000e+05"); // pascal = bar  × 100000
+  generateConstantArray("AtmToPa",       "+1.013250000000000000000000000000000000000000000000000000e+05"); // pascal = atm × 101325
 
-  generateConstantArray("HpmToW",        "+7.354987500000000000000000000000000000000000000000000000e+02");        // cnst135      watt   = HPM × 75 × 9.80665
-  generateConstantArray("HpukToW",       "+7.456998715822702200000000000000000000000000000000000000e+02");        // cnst136      watt   = HPUK × 550 × 0.3048 × 9.80665 × 0.45359237
-  generateConstantArray("HpeToW",        "+7.460000000000000000000000000000000000000000000000000000e+02");        // cnst137      watt   = HPE × 746
+  generateConstantArray("HpmToW",        "+7.354987500000000000000000000000000000000000000000000000e+02"); // watt   = HPM × 75 × 9.80665
+  generateConstantArray("HpukToW",       "+7.456998715822702200000000000000000000000000000000000000e+02"); // watt   = HPUK × 550 × 0.3048 × 9.80665 × 0.45359237
+  generateConstantArray("HpeToW",        "+7.460000000000000000000000000000000000000000000000000000e+02"); // watt   = HPE × 746
 
-  generateConstantArray("YearToS",       "+3.155695200000000000000000000000000000000000000000000000e+07");        // cnst138      second = year  × (365.2425 × 24 × 3600)
+  generateConstantArray("YearToS",       "+3.155695200000000000000000000000000000000000000000000000e+07"); // second = year  × (365.2425 × 24 × 3600)
 
-  generateConstantArray("LbfftToNm",     "+1.355817948331400400000000000000000000000000000000000000e+00");        // cnst139      Nm = lbf×ft × 9.80665 × 0.45359237 × 12 × 0.0254
+  generateConstantArray("LbfftToNm",     "+1.355817948331400400000000000000000000000000000000000000e+00"); // Nm = lbf×ft × 9.80665 × 0.45359237 × 12 × 0.0254
 
-  generateConstantArray("furToM",        "+2.011680000000000000000000000000000000000000000000000000e+02");        // cnst140      fff menu: Convert furlong to meter
-  generateConstantArray("ftnToS",        "+1.209600000000000000000000000000000000000000000000000000e+06");        // cnst141      fff menu: Convert fortnight to second
-  generateConstantArray("fpfToMps",      "+1.663095238095240000000000000000000000000000000000000000e-04");        // cnst142      fff menu: Convert furlong per fortnight to meter per second
-  generateConstantArray("brdsTom",       "+1.000000000000000000000000000000000000000000000000000000e-08");        // cnst143      fff menu: Convert beardsecond to meter
-  generateConstantArray("firToKg",       "+4.082331330000000000000000000000000000000000000000000000e+01");        // cnst144      fff menu: Convert firkin to kilogram
-  generateConstantArray("fpfToKph",      "+5.987142857142860000000000000000000000000000000000000000e-04");        // cnst145      fff menu: Convert furlong per fortnight to kilometer per hour
-  generateConstantArray("brdsToIn",      "+3.937007874015750000000000000000000000000000000000000000e-07");        // cnst146      fff menu: Convert beardsecond to inch
-  generateConstantArray("firToLb",       "+9.000000734139932000000000000000000000000000000000000000e+01");        // cnst147      fff menu: Convert firkin to pound
-  generateConstantArray("fpfToMph",      "+3.720247341856200000000000000000000000000000000000000000e-04");        // cnst148      fff menu: Convert furlong per fortnight to mile per hour
+  generateConstantArray("furToM",        "+2.011680000000000000000000000000000000000000000000000000e+02"); // fff menu: Convert furlong to meter
+  generateConstantArray("ftnToS",        "+1.209600000000000000000000000000000000000000000000000000e+06"); // fff menu: Convert fortnight to second
+  generateConstantArray("fpfToMps",      "+1.663095238095240000000000000000000000000000000000000000e-04"); // fff menu: Convert furlong per fortnight to meter per second
+  generateConstantArray("brdsTom",       "+1.000000000000000000000000000000000000000000000000000000e-08"); // fff menu: Convert beardsecond to meter
+  generateConstantArray("firToKg",       "+4.082331330000000000000000000000000000000000000000000000e+01"); // fff menu: Convert firkin to kilogram
+  generateConstantArray("fpfToKph",      "+5.987142857142860000000000000000000000000000000000000000e-04"); // fff menu: Convert furlong per fortnight to kilometer per hour
+  generateConstantArray("brdsToIn",      "+3.937007874015750000000000000000000000000000000000000000e-07"); // fff menu: Convert beardsecond to inch
+  generateConstantArray("firToLb",       "+9.000000734139932000000000000000000000000000000000000000e+01"); // fff menu: Convert firkin to pound
+  generateConstantArray("fpfToMph",      "+3.720247341856200000000000000000000000000000000000000000e-04"); // fff menu: Convert furlong per fortnight to mile per hour
 
-  generateConstantArray("fpsToKph",      "+1.097280000000000000000000000000000000000000000000000000e+00");        // cnst149      foot per second to kilometer per hour
-  generateConstantArray("fpsToMps",      "+3.048000000000000000000000000000000000000000000000000000e-01");        // cnst150      foot per second to meter per second
+  generateConstantArray("fpsToKph",      "+1.097280000000000000000000000000000000000000000000000000e+00"); // foot per second to kilometer per hour
+  generateConstantArray("fpsToMps",      "+3.048000000000000000000000000000000000000000000000000000e-01"); // foot per second to meter per second
 
 
-  generateConstantArray("_108",          "-1.080000000000000000000000000000000000000000000000000000e+02");        // cnst151
-  generateConstantArray("_4",            "-4.000000000000000000000000000000000000000000000000000000e+00");        // cnst152
-  generateConstantArray("_1",            "-1.000000000000000000000000000000000000000000000000000000e+00");        // cnst153
-  generateConstantArray("_1oneE",        "-3.678794411714423215955237701614608674458111310317678345e-01");        // cnst154
-  generateConstantArray("1e_49",         "+1.000000000000000000000000000000000000000000000000000000e-49");        // cnst155
-  generateConstantArray("1e_37",         "+1.000000000000000000000000000000000000000000000000000000e-37");        // cnst156
-  generateConstantArray("1e_24",         "+1.000000000000000000000000000000000000000000000000000000e-24");        // cnst157
-  generateConstantArray("1e_6",          "+1.000000000000000000000000000000000000000000000000000000e-06");        // cnst158
-  generateConstantArray("1e_4",          "+1.000000000000000000000000000000000000000000000000000000e-04");        // cnst159
-  generateConstantArray("1e_16",         "+1.000000000000000000000000000000000000000000000000000000e-16"); // cnst150
-  generateConstantArray("1on10",         "+1.000000000000000000000000000000000000000000000000000000e-01");        // cnst160
-  generateConstantArray("1on4",          "+2.500000000000000000000000000000000000000000000000000000e-01");        // cnst161
-  generateConstantArray("1on3",          "+3.333333333333333333333333333333333333333333333333333333e-01");        // cnst162
-  generateConstantArray("1on2",          "+5.000000000000000000000000000000000000000000000000000000e-01");        // cnst163
-  generateConstantArray("egamma",        "+5.772156649015328606065120900824024310421593359399235988e-01");        // cnst164
-  generateConstantArray("ln2",           "+6.931471805599453094172321214581765680755001343602552541e-01");        // cnst165
-  generateConstantArray("root2on2",      "+7.071067811865475244008443621048490392848359376884740366e-01");        // cnst166
-  generateConstantArray("piOn4",         "+7.853981633974483096156608458198757210492923498437764552e-01");        // cnst167
-  generateConstantArray("root3on2",      "+8.660254037844386467637231707529361834714026269051903140e-01");        // cnst168
-  generateConstantArray("9on10",         "+9.000000000000000000000000000000000000000000000000000000e-01");        // cnst169
-  generateConstantArray("ln2piOn2",      "+9.189385332046727417803297364056176398613974736377834128e-01");        // cnst170
-  generateConstantArray("1",             "+1.000000000000000000000000000000000000000000000000000000e+00");        // cnst171
-  generateConstantArray("3on2",          "+1.500000000000000000000000000000000000000000000000000000e+00");        // cnst172
-  generateConstantArray("piOn2",         "+1.570796326794896619231321691639751442098584699687552910e+00");        // cnst173
-  generateConstantArray("9on5",          "+1.800000000000000000000000000000000000000000000000000000e+00");        // cnst174
-  generateConstantArray("2",             "+2.000000000000000000000000000000000000000000000000000000e+00");        // cnst175
-  generateConstantArray("ln10",          "+2.302585092994045684017991454684364207601101488628772976e+00");        // cnst176
-  generateConstantArray("3piOn4",        "+2.356194490192344928846982537459627163147877049531329366e+00");        // cnst177
-  generateConstantArray("3",             "+3.000000000000000000000000000000000000000000000000000000e+00");        // cnst178
-  generateConstantArray("pi",            "+3.141592653589793238462643383279502884197169399375105821e+00");        // cnst179
+  generateConstantArray("_108",          "-1.080000000000000000000000000000000000000000000000000000e+02");
+  generateConstantArray("_4",            "-4.000000000000000000000000000000000000000000000000000000e+00");
+  generateConstantArray("_1",            "-1.000000000000000000000000000000000000000000000000000000e+00");
+  generateConstantArray("_1oneE",        "-3.678794411714423215955237701614608674458111310317678345e-01");
+  generateConstantArray("1e_49",         "+1.000000000000000000000000000000000000000000000000000000e-49");
+  generateConstantArray("1e_37",         "+1.000000000000000000000000000000000000000000000000000000e-37");
+  generateConstantArray("1e_24",         "+1.000000000000000000000000000000000000000000000000000000e-24");
+  generateConstantArray("1e_6",          "+1.000000000000000000000000000000000000000000000000000000e-06");
+  generateConstantArray("1e_4",          "+1.000000000000000000000000000000000000000000000000000000e-04");
+  generateConstantArray("1e_16",         "+1.000000000000000000000000000000000000000000000000000000e-16");
+  generateConstantArray("1on10",         "+1.000000000000000000000000000000000000000000000000000000e-01");
+  generateConstantArray("1on4",          "+2.500000000000000000000000000000000000000000000000000000e-01");
+  generateConstantArray("1on3",          "+3.333333333333333333333333333333333333333333333333333333e-01");
+  generateConstantArray("1on2",          "+5.000000000000000000000000000000000000000000000000000000e-01");
+  generateConstantArray("egamma",        "+5.772156649015328606065120900824024310421593359399235988e-01");
+  generateConstantArray("ln2",           "+6.931471805599453094172321214581765680755001343602552541e-01");
+  generateConstantArray("root2on2",      "+7.071067811865475244008443621048490392848359376884740366e-01");
+  generateConstantArray("piOn4",         "+7.853981633974483096156608458198757210492923498437764552e-01");
+  generateConstantArray("root3on2",      "+8.660254037844386467637231707529361834714026269051903140e-01");
+  generateConstantArray("9on10",         "+9.000000000000000000000000000000000000000000000000000000e-01");
+  generateConstantArray("ln2piOn2",      "+9.189385332046727417803297364056176398613974736377834128e-01");
+  generateConstantArray("1",             "+1.000000000000000000000000000000000000000000000000000000e+00");
+  generateConstantArray("3on2",          "+1.500000000000000000000000000000000000000000000000000000e+00");
+  generateConstantArray("piOn2",         "+1.570796326794896619231321691639751442098584699687552910e+00");
+  generateConstantArray("9on5",          "+1.800000000000000000000000000000000000000000000000000000e+00");
+  generateConstantArray("2",             "+2.000000000000000000000000000000000000000000000000000000e+00");
+  generateConstantArray("ln10",          "+2.302585092994045684017991454684364207601101488628772976e+00");
+  generateConstantArray("3piOn4",        "+2.356194490192344928846982537459627163147877049531329366e+00");
+  generateConstantArray("3",             "+3.000000000000000000000000000000000000000000000000000000e+00");
+  generateConstantArray("pi",            "+3.141592653589793238462643383279502884197169399375105821e+00");
 
-  generateConstantArray("4",             "+4.000000000000000000000000000000000000000000000000000000e+00");        // cnst180
-  generateConstantArray("3piOn2",        "+4.712388980384689857693965074919254326295754099062658731e+00");        // cnst181
-  generateConstantArray("5",             "+5.000000000000000000000000000000000000000000000000000000e+00");        // cnst182
-  generateConstantArray("6",             "+6.000000000000000000000000000000000000000000000000000000e+00");        // cnst183
-  generateConstantArray("2pi",           "+6.283185307179586476925286766559005768394338798750211642e+00");        // cnst184
-  generateConstantArray("7",             "+7.000000000000000000000000000000000000000000000000000000e+00");        // cnst185
-  generateConstantArray("8",             "+8.000000000000000000000000000000000000000000000000000000e+00");        // cnst185
-  generateConstantArray("9",             "+9.000000000000000000000000000000000000000000000000000000e+00");        // cnst186
-  generateConstantArray("10",            "+1.000000000000000000000000000000000000000000000000000000e+01");        // cnst187
-  generateConstantArray("12",            "+1.200000000000000000000000000000000000000000000000000000e+01");        // cnst188
-  generateConstantArray("16",            "+1.600000000000000000000000000000000000000000000000000000e+01");        // cnst189
-  generateConstantArray("20",            "+2.000000000000000000000000000000000000000000000000000000e+01");        // cnst190
-  //generateConstantArray("21",            "+2.100000000000000000000000000000000000000000000000000000e+01"); // cnst         used for Lanczos N=22
-  //generateConstantArray("gammaR",        "+2.311891000000000000000000000000000000000000000000000000e+01"); // cnst         used for Lanczos N=22
-  generateConstantArray("25",            "+2.500000000000000000000000000000000000000000000000000000e+01");        // cnst191
-  generateConstantArray("27",            "+2.700000000000000000000000000000000000000000000000000000e+01");        // cnst192
-  generateConstantArray("29",            "+2.900000000000000000000000000000000000000000000000000000e+01");        // cnst193     used for Lanczos N=30
-  generateConstantArray("30",            "+3.000000000000000000000000000000000000000000000000000000e+01");        // cnst194
-  generateConstantArray("gammaR",        "+3.143188335932791233062744140625000000000000000000000000e+01");        // cnst195     used for Lanczos N=30
-  generateConstantArray("32",            "+3.200000000000000000000000000000000000000000000000000000e+01");        // cnst196
-  generateConstantArray("36",            "+3.600000000000000000000000000000000000000000000000000000e+01");        // cnst197
-  generateConstantArray("47",            "+4.700000000000000000000000000000000000000000000000000000e+01");        // cnst198
-  generateConstantArray("180onPi",       "+5.729577951308232087679815481410517033240547246656432155e+01");        // cnst199
-  generateConstantArray("60",            "+6.000000000000000000000000000000000000000000000000000000e+01");        // cnst200
-  generateConstantArray("200onPi",       "+6.366197723675813430755350534900574481378385829618257950e+01");        // cnst201
-  generateConstantArray("125",           "+1.250000000000000000000000000000000000000000000000000000e+02");        // cnst202
-  generateConstantArray("150",           "+1.500000000000000000000000000000000000000000000000000000e+02");        // cnst203
-  generateConstantArray("205",           "+2.050000000000000000000000000000000000000000000000000000e+02");        // cnst204
-  generateConstantArray("360",           "+3.600000000000000000000000000000000000000000000000000000e+02");        // cnst205
-  generateConstantArray("400",           "+4.000000000000000000000000000000000000000000000000000000e+02");        // cnst206
-  generateConstantArray("600",           "+6.000000000000000000000000000000000000000000000000000000e+02");        // cnst207
-  generateConstantArray("1000",          "+1.000000000000000000000000000000000000000000000000000000e+03");        // cnst208
-  generateConstantArray("1260",          "+1.260000000000000000000000000000000000000000000000000000e+03");        // cnst209
-  generateConstantArray("1680",          "+1.680000000000000000000000000000000000000000000000000000e+03");        // cnst210
-  generateConstantArray("2100",          "+2.100000000000000000000000000000000000000000000000000000e+03");        // cnst211
-  generateConstantArray("2520",          "+2.520000000000000000000000000000000000000000000000000000e+03");        // cnst212
-  generateConstantArray("3600",          "+3.600000000000000000000000000000000000000000000000000000e+03");        // cnst213
-  generateConstantArray("6000",          "+6.000000000000000000000000000000000000000000000000000000e+03");        // cnst214
-  generateConstantArray("9999",          "+9.999000000000000000000000000000000000000000000000000000e+03");        // cnst215
-  generateConstantArray("10000",         "+1.000000000000000000000000000000000000000000000000000000e+04");        // cnst216
-  generateConstantArray("25200",         "+2.520000000000000000000000000000000000000000000000000000e+04");        // cnst217
-  generateConstantArray("42000",         "+4.200000000000000000000000000000000000000000000000000000e+04");        // cnst218
-  generateConstantArray("73766",         "+7.376600000000000000000000000000000000000000000000000000e+04");        // cnst219
-  generateConstantArray("1e6",           "+1.000000000000000000000000000000000000000000000000000000e+06");        // cnst220
-  generateConstantArray("1e8",           "+1.000000000000000000000000000000000000000000000000000000e+08");        // cnst221
-  generateConstantArray("1e9",           "+1.000000000000000000000000000000000000000000000000000000e+09");        // cnst222
-  generateConstantArray("2p32",          "+4.294967296000000000000000000000000000000000000000000000e+09");        // cnst223
-  generateConstantArray("1e32",          "+1.000000000000000000000000000000000000000000000000000000e+32");        // cnst224
-  generateConstantArray("1e_10000",      "+1.000000000000000000000000000000000000000000000000000000e-10000");     // cnst225
-  generateConstantArray("995on1000",     "+9.950000000000000000000000000000000000000000000000000000e-01");        // cnst226
-  generateConstantArray("1e_32",         "+1.000000000000000000000000000000000000000000000000000000e-32");        // cnst227
-  generateConstantArray("rt3",           "+1.732050807568877293527446341505872366942805253810380628e+00");        // cnst228
-  generateConstantArray("GaluseqE",      "+3.370000000000000000000000000000000000000000000000000000e+01");        // cnst229 if the number of constants changes: don't forget to update NUMBER_OF_CONSTANTS_* in defines.h 
-  generateConstantArray("1e_6143",       "+1.000000000000000000000000000000000000000000000000000000e-6143"); // cnst231
+  generateConstantArray("4",             "+4.000000000000000000000000000000000000000000000000000000e+00");
+  generateConstantArray("3piOn2",        "+4.712388980384689857693965074919254326295754099062658731e+00");
+  generateConstantArray("5",             "+5.000000000000000000000000000000000000000000000000000000e+00");
+  generateConstantArray("6",             "+6.000000000000000000000000000000000000000000000000000000e+00");
+  generateConstantArray("2pi",           "+6.283185307179586476925286766559005768394338798750211642e+00");
+  generateConstantArray("7",             "+7.000000000000000000000000000000000000000000000000000000e+00");
+  generateConstantArray("8",             "+8.000000000000000000000000000000000000000000000000000000e+00");
+  generateConstantArray("9",             "+9.000000000000000000000000000000000000000000000000000000e+00");
+  generateConstantArray("10",            "+1.000000000000000000000000000000000000000000000000000000e+01");
+  generateConstantArray("12",            "+1.200000000000000000000000000000000000000000000000000000e+01");
+  generateConstantArray("16",            "+1.600000000000000000000000000000000000000000000000000000e+01");
+  generateConstantArray("20",            "+2.000000000000000000000000000000000000000000000000000000e+01");
+  //generateConstantArray("21",            "+2.100000000000000000000000000000000000000000000000000000e+01"); // used for Lanczos N=22
+  //generateConstantArray("gammaR",        "+2.311891000000000000000000000000000000000000000000000000e+01"); // used for Lanczos N=22
+  generateConstantArray("25",            "+2.500000000000000000000000000000000000000000000000000000e+01");
+  generateConstantArray("27",            "+2.700000000000000000000000000000000000000000000000000000e+01");
+  generateConstantArray("29",            "+2.900000000000000000000000000000000000000000000000000000e+01"); // used for Lanczos N=30
+  generateConstantArray("30",            "+3.000000000000000000000000000000000000000000000000000000e+01");
+  generateConstantArray("gammaR",        "+3.143188335932791233062744140625000000000000000000000000e+01"); // used for Lanczos N=30
+  generateConstantArray("32",            "+3.200000000000000000000000000000000000000000000000000000e+01");
+  generateConstantArray("36",            "+3.600000000000000000000000000000000000000000000000000000e+01");
+  generateConstantArray("47",            "+4.700000000000000000000000000000000000000000000000000000e+01");
+  generateConstantArray("180onPi",       "+5.729577951308232087679815481410517033240547246656432155e+01");
+  generateConstantArray("60",            "+6.000000000000000000000000000000000000000000000000000000e+01");
+  generateConstantArray("200onPi",       "+6.366197723675813430755350534900574481378385829618257950e+01");
+  generateConstantArray("125",           "+1.250000000000000000000000000000000000000000000000000000e+02");
+  generateConstantArray("150",           "+1.500000000000000000000000000000000000000000000000000000e+02");
+  generateConstantArray("205",           "+2.050000000000000000000000000000000000000000000000000000e+02");
+  generateConstantArray("360",           "+3.600000000000000000000000000000000000000000000000000000e+02");
+  generateConstantArray("400",           "+4.000000000000000000000000000000000000000000000000000000e+02");
+  generateConstantArray("600",           "+6.000000000000000000000000000000000000000000000000000000e+02");
+  generateConstantArray("1000",          "+1.000000000000000000000000000000000000000000000000000000e+03");
+  generateConstantArray("1260",          "+1.260000000000000000000000000000000000000000000000000000e+03");
+  generateConstantArray("1680",          "+1.680000000000000000000000000000000000000000000000000000e+03");
+  generateConstantArray("2100",          "+2.100000000000000000000000000000000000000000000000000000e+03");
+  generateConstantArray("2520",          "+2.520000000000000000000000000000000000000000000000000000e+03");
+  generateConstantArray("3600",          "+3.600000000000000000000000000000000000000000000000000000e+03");
+  generateConstantArray("6000",          "+6.000000000000000000000000000000000000000000000000000000e+03");
+  generateConstantArray("9999",          "+9.999000000000000000000000000000000000000000000000000000e+03");
+  generateConstantArray("10000",         "+1.000000000000000000000000000000000000000000000000000000e+04");
+  generateConstantArray("25200",         "+2.520000000000000000000000000000000000000000000000000000e+04");
+  generateConstantArray("42000",         "+4.200000000000000000000000000000000000000000000000000000e+04");
+  generateConstantArray("73766",         "+7.376600000000000000000000000000000000000000000000000000e+04");
+  generateConstantArray("1e6",           "+1.000000000000000000000000000000000000000000000000000000e+06");
+  generateConstantArray("1e8",           "+1.000000000000000000000000000000000000000000000000000000e+08");
+  generateConstantArray("1e9",           "+1.000000000000000000000000000000000000000000000000000000e+09");
+  generateConstantArray("2p32",          "+4.294967296000000000000000000000000000000000000000000000e+09");
+  generateConstantArray("1e32",          "+1.000000000000000000000000000000000000000000000000000000e+32");
+  generateConstantArray("1e_10000",      "+1.000000000000000000000000000000000000000000000000000000e-10000");
+  generateConstantArray("995on1000",     "+9.950000000000000000000000000000000000000000000000000000e-01");
+  generateConstantArray("1e_32",         "+1.000000000000000000000000000000000000000000000000000000e-32");
+  generateConstantArray("rt3",           "+1.732050807568877293527446341505872366942805253810380628e+00");
+  generateConstantArray("GaluseqE",      "+3.370000000000000000000000000000000000000000000000000000e+01");
+  generateConstantArray("1e_6143",       "+1.000000000000000000000000000000000000000000000000000000e-6143");
 
 
   // Lanczos's coefficients calculated for N=22 and G=22.61891 using Toth's program: https://www.vttoth.com/CMS/projects/41
@@ -570,51 +576,51 @@ void generateAllConstants(void) {
   // https://www.boost.org/doc/libs/1_71_0/libs/math/doc/html/math_toolkit/lanczos.html
   // Lanczos's coefficients calculated for N=30 and G=30.9318857491016387939453125 using Toth's program: https://www.vttoth.com/CMS/projects/41
   // source: https://www.vttoth.com/FILES/lanczos.tgz
-  generateConstantArray51("gammaC00",      "+2.506628274631000502415765284811045253006986740036318756703152698088652909808141644264478158114643"); // cnst207
-  generateConstantArray51("gammaC01",      "+90795313438554.12585760728412902207185494121818510422990562390199419594778421509725059250660477478"); // cnst208
-  generateConstantArray51("gammaC02",      "-966788810976616.3165238613163922965882171247384377771690792930892852741666385482155753752741846215"); // cnst209
-  generateConstantArray51("gammaC03",      "+4800584619652903.130520636355077553806266769741879659498830407152738371167934130745600044623388068"); // cnst210
-  generateConstantArray51("gammaC04",      "-14765868961297540.27064904092821149556100711736690133148186310232345861145647352272488652687903457"); // cnst211
-  generateConstantArray51("gammaC05",      "+31520009430682538.17457937985920649010992386050798974102315423368438398460245896094052856122203775"); // cnst212
-  generateConstantArray51("gammaC06",      "-49582365010416661.09326008795178786489253227385559918969410907133030684376335533671631031226780693"); // cnst213
-  generateConstantArray51("gammaC07",      "+59568927402677002.04904143939675965126139196724493177865501398609411221897535112902272116361691451"); // cnst214
-  generateConstantArray51("gammaC08",      "-55906342816448463.66899438215049258933959227649607458054232171494476786360919120606779433224203661"); // cnst215
-  generateConstantArray51("gammaC09",      "+41579705761882718.81836872026846865595091094440150772658809279820390684724850793073271091274939857"); // cnst216
-  generateConstantArray51("gammaC10",      "-24720590950576683.15802797249415999638807846332716128189191944706094647468094435934791589404852933"); // cnst217
-  generateConstantArray51("gammaC11",      "+11801286985635343.58575847383935274746074763562173560062003882605616928057523864988435228756829000"); // cnst218
-  generateConstantArray51("gammaC12",      "-4528196760270806.995369621666200554735964133084677928395568191894066774034949226537269118163329489"); // cnst219
-  generateConstantArray51("gammaC13",      "+1393637064384668.917157722908202033726675908093527246704252104958408303381715387740313008845141904"); // cnst220
-  generateConstantArray51("gammaC14",      "-342325016766888.5479936955467723387327600568400337988293619211103486673308239810777313598627315000"); // cnst221
-  generateConstantArray51("gammaC15",      "+66578560073752.67246403368251720854813222816576859988564202476567602534436134110254400104404942690"); // cnst222
-  generateConstantArray51("gammaC16",      "-10138544793022.41604607361389789580035078467043905508354626409172360042771928364449573017241522124"); // cnst223
-  generateConstantArray51("gammaC17",      "+1190960562789.022438954352946350698116714288406439572882388541923119338089933765849690628214181895"); // cnst224
-  generateConstantArray51("gammaC18",      "-105857166683.4123935373722836022279857082446927458625016646619942749346232137590435016079220044575"); // cnst225
-  generateConstantArray51("gammaC19",      "+6945291327.796451124796820522079456356395826950647769057580507091796596412483352351183618549540841"); // cnst226
-  generateConstantArray51("gammaC20",      "-325841232.8464260929688459624630603325071713695605050282752915466327762939975965122976740632863654"); // cnst227
-  generateConstantArray51("gammaC21",      "+10491089.04183867431328778246866673594812558539972730107563825597306012268992151854201423652554125"); // cnst228
-  generateConstantArray51("gammaC22",      "-219652.9521075940388150629624539015343302845601375714110391179944415326942002537588845815284375311"); // cnst229
-  generateConstantArray51("gammaC23",      "+2782.640500292405732331071582785081107276742114500310058012342169019346915906467717358069437084413"); // cnst230
-  generateConstantArray51("gammaC24",      "-19.31769482393126228999283928711817461826517031491190754697778125203682359806685621504868658022287"); // cnst231
-  generateConstantArray51("gammaC25",      "+0.063813226038364736490677427053094184825560153837400637303741419820260651820063721448175876091640"); // cnst232
-  generateConstantArray51("gammaC26",      "-0.000081213345051388882076245151519040492731624505633194015094047296992491188162952243561414155660"); // cnst233
-  generateConstantArray51("gammaC27",      "+0.000000028425884712306176285600873249949436913248124688912080334562388569408577988201187292514310"); // cnst234
-  generateConstantArray51("gammaC28",      "-0.000000000001515686855682081535390179935440192138970398946754350022046202956603870401666503058594"); // cnst235
-  generateConstantArray51("gammaC29",      "+0.000000000000000003727184110478268994444830355775133199862144652804253659035860755294511160286895"); // cnst236
+  generateConstantArray51("gammaC00",      "+2.506628274631000502415765284811045253006986740036318756703152698088652909808141644264478158114643");
+  generateConstantArray51("gammaC01",      "+90795313438554.12585760728412902207185494121818510422990562390199419594778421509725059250660477478");
+  generateConstantArray51("gammaC02",      "-966788810976616.3165238613163922965882171247384377771690792930892852741666385482155753752741846215");
+  generateConstantArray51("gammaC03",      "+4800584619652903.130520636355077553806266769741879659498830407152738371167934130745600044623388068");
+  generateConstantArray51("gammaC04",      "-14765868961297540.27064904092821149556100711736690133148186310232345861145647352272488652687903457");
+  generateConstantArray51("gammaC05",      "+31520009430682538.17457937985920649010992386050798974102315423368438398460245896094052856122203775");
+  generateConstantArray51("gammaC06",      "-49582365010416661.09326008795178786489253227385559918969410907133030684376335533671631031226780693");
+  generateConstantArray51("gammaC07",      "+59568927402677002.04904143939675965126139196724493177865501398609411221897535112902272116361691451");
+  generateConstantArray51("gammaC08",      "-55906342816448463.66899438215049258933959227649607458054232171494476786360919120606779433224203661");
+  generateConstantArray51("gammaC09",      "+41579705761882718.81836872026846865595091094440150772658809279820390684724850793073271091274939857");
+  generateConstantArray51("gammaC10",      "-24720590950576683.15802797249415999638807846332716128189191944706094647468094435934791589404852933");
+  generateConstantArray51("gammaC11",      "+11801286985635343.58575847383935274746074763562173560062003882605616928057523864988435228756829000");
+  generateConstantArray51("gammaC12",      "-4528196760270806.995369621666200554735964133084677928395568191894066774034949226537269118163329489");
+  generateConstantArray51("gammaC13",      "+1393637064384668.917157722908202033726675908093527246704252104958408303381715387740313008845141904");
+  generateConstantArray51("gammaC14",      "-342325016766888.5479936955467723387327600568400337988293619211103486673308239810777313598627315000");
+  generateConstantArray51("gammaC15",      "+66578560073752.67246403368251720854813222816576859988564202476567602534436134110254400104404942690");
+  generateConstantArray51("gammaC16",      "-10138544793022.41604607361389789580035078467043905508354626409172360042771928364449573017241522124");
+  generateConstantArray51("gammaC17",      "+1190960562789.022438954352946350698116714288406439572882388541923119338089933765849690628214181895");
+  generateConstantArray51("gammaC18",      "-105857166683.4123935373722836022279857082446927458625016646619942749346232137590435016079220044575");
+  generateConstantArray51("gammaC19",      "+6945291327.796451124796820522079456356395826950647769057580507091796596412483352351183618549540841");
+  generateConstantArray51("gammaC20",      "-325841232.8464260929688459624630603325071713695605050282752915466327762939975965122976740632863654");
+  generateConstantArray51("gammaC21",      "+10491089.04183867431328778246866673594812558539972730107563825597306012268992151854201423652554125");
+  generateConstantArray51("gammaC22",      "-219652.9521075940388150629624539015343302845601375714110391179944415326942002537588845815284375311");
+  generateConstantArray51("gammaC23",      "+2782.640500292405732331071582785081107276742114500310058012342169019346915906467717358069437084413");
+  generateConstantArray51("gammaC24",      "-19.31769482393126228999283928711817461826517031491190754697778125203682359806685621504868658022287");
+  generateConstantArray51("gammaC25",      "+0.063813226038364736490677427053094184825560153837400637303741419820260651820063721448175876091640");
+  generateConstantArray51("gammaC26",      "-0.000081213345051388882076245151519040492731624505633194015094047296992491188162952243561414155660");
+  generateConstantArray51("gammaC27",      "+0.000000028425884712306176285600873249949436913248124688912080334562388569408577988201187292514310");
+  generateConstantArray51("gammaC28",      "-0.000000000001515686855682081535390179935440192138970398946754350022046202956603870401666503058594");
+  generateConstantArray51("gammaC29",      "+0.000000000000000003727184110478268994444830355775133199862144652804253659035860755294511160286895");
 
   // Array angle180
-  generateConstantArray75("pi_75",         "+3.141592653589793238462643383279502884197169399375105820974944592307816406286208998628034825e+00"); // cnst237
-  generateConstantArray75("200",           "+2.000000000000000000000000000000000000000000000000000000e+02"); // cnst238
-  generateConstantArray75("180",           "+1.800000000000000000000000000000000000000000000000000000e+02"); // cnst239
+  generateConstantArray75("pi_75",         "+3.141592653589793238462643383279502884197169399375105820974944592307816406286208998628034825e+00");
+  generateConstantArray75("200",           "+2.000000000000000000000000000000000000000000000000000000e+02");
+  generateConstantArray75("180",           "+1.800000000000000000000000000000000000000000000000000000e+02");
 
   // Array angle90
-  generateConstantArray75("piOn2_75",      "+1.570796326794896619231321691639751442098584699687552910487472296153908203143104499314017412e+00"); // cnst240
-  generateConstantArray75("100",           "+1.000000000000000000000000000000000000000000000000000000e+02"); // cnst241
-  generateConstantArray75("90",            "+9.000000000000000000000000000000000000000000000000000000e+01"); // cnst242
+  generateConstantArray75("piOn2_75",      "+1.570796326794896619231321691639751442098584699687552910487472296153908203143104499314017412e+00");
+  generateConstantArray75("100",           "+1.000000000000000000000000000000000000000000000000000000e+02");
+  generateConstantArray75("90",            "+9.000000000000000000000000000000000000000000000000000000e+01");
 
   // Array angle45
-  generateConstantArray75("piOn4_75",      "+7.85398163397448309615660845819875721049292349843776455243736148076954101571552249657008706e-01"); // cnst243
-  generateConstantArray75("50",            "+5.000000000000000000000000000000000000000000000000000000e+01"); // cnst244
-  generateConstantArray75("45",            "+4.500000000000000000000000000000000000000000000000000000e+01"); // cnst245
+  generateConstantArray75("piOn4_75",      "+7.85398163397448309615660845819875721049292349843776455243736148076954101571552249657008706e-01");
+  generateConstantArray75("50",            "+5.000000000000000000000000000000000000000000000000000000e+01");
+  generateConstantArray75("45",            "+4.500000000000000000000000000000000000000000000000000000e+01");
 
   generateConstantArray1071("2pi",       "+6.2831853071795864769252867665590057683943387987502116419498891846156328125724179972560696506842341359" //   101
                                             "6429617302656461329418768921910116446345071881625696223490056820540387704221111928924589790986076392" //   201
@@ -818,50 +824,50 @@ void generateAllConstants(void) {
                                             //"0555445220508829844315300901624135434714240543604859362124075531576743338182188361489756280981510356" // 20001
                                             //"4077130781982095518828264308656881250060360551433930164192854696829391452795768512016906242813187161");//20101
 
-  generateConstantArray34("_4712",       "-4.712000000000000000000000000000000000000000000000000000e+03"); // cnst247
-  generateConstantArray34("0",           "+0.000000000000000000000000000000000000000000000000000000e+00"); // cnst248
-  generateConstantArray34("1e_32",       "+1.000000000000000000000000000000000000000000000000000000e-32"); // cnst249
-  generateConstantArray34("1e_6",        "+1.000000000000000000000000000000000000000000000000000000e-06"); // cnst250
-  generateConstantArray34("1e_4",        "+1.000000000000000000000000000000000000000000000000000000e-04"); // cnst251
-  generateConstantArray34("1on2",        "+5.000000000000000000000000000000000000000000000000000000e-01"); // cnst252
-  generateConstantArray34("1",           "+1.000000000000000000000000000000000000000000000000000000e+00"); // cnst253
-  generateConstantArray34("2",           "+2.000000000000000000000000000000000000000000000000000000e+00"); // cnst254
-  generateConstantArray34("3",           "+3.000000000000000000000000000000000000000000000000000000e+00"); // cnst255
-  generateConstantArray34("4",           "+4.000000000000000000000000000000000000000000000000000000e+00"); // cnst256
-  generateConstantArray34("5",           "+5.000000000000000000000000000000000000000000000000000000e+00"); // cnst257
-  generateConstantArray34("2pi",         "+6.283185307179586476925286766559005768394338798750211642e+00"); // cnst258
-  generateConstantArray34("7",           "+7.000000000000000000000000000000000000000000000000000000e+00"); // cnst259
-  generateConstantArray34("9",           "+9.000000000000000000000000000000000000000000000000000000e+00"); // cnst260
-  generateConstantArray34("12",          "+1.200000000000000000000000000000000000000000000000000000e+01"); // cnst261
-  generateConstantArray34("14",          "+1.400000000000000000000000000000000000000000000000000000e+01"); // cnst262
-  generateConstantArray34("24",          "+2.400000000000000000000000000000000000000000000000000000e+01"); // cnst263
-  generateConstantArray34("28",          "+2.800000000000000000000000000000000000000000000000000000e+01"); // cnst264
-  generateConstantArray34("31",          "+3.100000000000000000000000000000000000000000000000000000e+01"); // cnst265
-  generateConstantArray34("38",          "+3.800000000000000000000000000000000000000000000000000000e+01"); // cnst266
-  generateConstantArray34("60",          "+6.000000000000000000000000000000000000000000000000000000e+01"); // cnst267
-  generateConstantArray34("100",         "+1.000000000000000000000000000000000000000000000000000000e+02"); // cnst268
-  generateConstantArray34("153",         "+1.530000000000000000000000000000000000000000000000000000e+02"); // cnst269
-  generateConstantArray34("275",         "+2.750000000000000000000000000000000000000000000000000000e+02"); // cnst270
-  generateConstantArray34("367",         "+3.670000000000000000000000000000000000000000000000000000e+02"); // cnst271
-  generateConstantArray34("400",         "+4.000000000000000000000000000000000000000000000000000000e+02"); // cnst272
-  generateConstantArray34("1401",        "+1.401000000000000000000000000000000000000000000000000000e+03"); // cnst273
-  generateConstantArray34("1461",        "+1.461000000000000000000000000000000000000000000000000000e+03"); // cnst274
-  generateConstantArray34("3600",        "+3.600000000000000000000000000000000000000000000000000000e+03"); // cnst275
-  generateConstantArray34("4716",        "+4.716000000000000000000000000000000000000000000000000000e+03"); // cnst276
-  generateConstantArray34("4800",        "+4.800000000000000000000000000000000000000000000000000000e+03"); // cnst277
-  generateConstantArray34("4900",        "+4.900000000000000000000000000000000000000000000000000000e+03"); // cnst278
-  generateConstantArray34("5001",        "+5.001000000000000000000000000000000000000000000000000000e+03"); // cnst279
-  generateConstantArray34("32075",       "+3.207500000000000000000000000000000000000000000000000000e+04"); // cnst280
-  generateConstantArray34("43200",       "+4.320000000000000000000000000000000000000000000000000000e+04"); // cnst281
-  generateConstantArray34("65535",       "+6.553500000000000000000000000000000000000000000000000000e+04"); // cnst282
-  generateConstantArray34("86400",       "+8.640000000000000000000000000000000000000000000000000000e+04"); // cnst283
-  generateConstantArray34("146097",      "+1.460970000000000000000000000000000000000000000000000000e+05"); // cnst284
-  generateConstantArray34("274277",      "+2.742770000000000000000000000000000000000000000000000000e+05"); // cnst285
-  generateConstantArray34("1e6",         "+1.000000000000000000000000000000000000000000000000000000e+06"); // cnst286
-  generateConstantArray34("1729777",     "+1.729777000000000000000000000000000000000000000000000000e+06"); // cnst287
-  generateConstantArray34("2p32",        "+4.294967296000000000000000000000000000000000000000000000e+09"); // cnst288
-  generateConstantArray34("maxDate",     "+3.155695348699627200000000000000000000000000000000000000e+18"); // cnst289
-  generateConstantArray34("maxTime",     "+3.600000000000000000000000000000000000000000000000000000e+19"); // cnst290  if the number of constants changes: don't forget to update NUMBER_OF_CONSTANTS_* in defines.h
+  generateConstantArray34("_4712",       "-4.712000000000000000000000000000000000000000000000000000e+03");
+  generateConstantArray34("0",           "+0.000000000000000000000000000000000000000000000000000000e+00");
+  generateConstantArray34("1e_32",       "+1.000000000000000000000000000000000000000000000000000000e-32");
+  generateConstantArray34("1e_6",        "+1.000000000000000000000000000000000000000000000000000000e-06");
+  generateConstantArray34("1e_4",        "+1.000000000000000000000000000000000000000000000000000000e-04");
+  generateConstantArray34("1on2",        "+5.000000000000000000000000000000000000000000000000000000e-01");
+  generateConstantArray34("1",           "+1.000000000000000000000000000000000000000000000000000000e+00");
+  generateConstantArray34("2",           "+2.000000000000000000000000000000000000000000000000000000e+00");
+  generateConstantArray34("3",           "+3.000000000000000000000000000000000000000000000000000000e+00");
+  generateConstantArray34("4",           "+4.000000000000000000000000000000000000000000000000000000e+00");
+  generateConstantArray34("5",           "+5.000000000000000000000000000000000000000000000000000000e+00");
+  generateConstantArray34("2pi",         "+6.283185307179586476925286766559005768394338798750211642e+00");
+  generateConstantArray34("7",           "+7.000000000000000000000000000000000000000000000000000000e+00");
+  generateConstantArray34("9",           "+9.000000000000000000000000000000000000000000000000000000e+00");
+  generateConstantArray34("12",          "+1.200000000000000000000000000000000000000000000000000000e+01");
+  generateConstantArray34("14",          "+1.400000000000000000000000000000000000000000000000000000e+01");
+  generateConstantArray34("24",          "+2.400000000000000000000000000000000000000000000000000000e+01");
+  generateConstantArray34("28",          "+2.800000000000000000000000000000000000000000000000000000e+01");
+  generateConstantArray34("31",          "+3.100000000000000000000000000000000000000000000000000000e+01");
+  generateConstantArray34("38",          "+3.800000000000000000000000000000000000000000000000000000e+01");
+  generateConstantArray34("60",          "+6.000000000000000000000000000000000000000000000000000000e+01");
+  generateConstantArray34("100",         "+1.000000000000000000000000000000000000000000000000000000e+02");
+  generateConstantArray34("153",         "+1.530000000000000000000000000000000000000000000000000000e+02");
+  generateConstantArray34("275",         "+2.750000000000000000000000000000000000000000000000000000e+02");
+  generateConstantArray34("367",         "+3.670000000000000000000000000000000000000000000000000000e+02");
+  generateConstantArray34("400",         "+4.000000000000000000000000000000000000000000000000000000e+02");
+  generateConstantArray34("1401",        "+1.401000000000000000000000000000000000000000000000000000e+03");
+  generateConstantArray34("1461",        "+1.461000000000000000000000000000000000000000000000000000e+03");
+  generateConstantArray34("3600",        "+3.600000000000000000000000000000000000000000000000000000e+03");
+  generateConstantArray34("4716",        "+4.716000000000000000000000000000000000000000000000000000e+03");
+  generateConstantArray34("4800",        "+4.800000000000000000000000000000000000000000000000000000e+03");
+  generateConstantArray34("4900",        "+4.900000000000000000000000000000000000000000000000000000e+03");
+  generateConstantArray34("5001",        "+5.001000000000000000000000000000000000000000000000000000e+03");
+  generateConstantArray34("32075",       "+3.207500000000000000000000000000000000000000000000000000e+04");
+  generateConstantArray34("43200",       "+4.320000000000000000000000000000000000000000000000000000e+04");
+  generateConstantArray34("65535",       "+6.553500000000000000000000000000000000000000000000000000e+04");
+  generateConstantArray34("86400",       "+8.640000000000000000000000000000000000000000000000000000e+04");
+  generateConstantArray34("146097",      "+1.460970000000000000000000000000000000000000000000000000e+05");
+  generateConstantArray34("274277",      "+2.742770000000000000000000000000000000000000000000000000e+05");
+  generateConstantArray34("1e6",         "+1.000000000000000000000000000000000000000000000000000000e+06");
+  generateConstantArray34("1729777",     "+1.729777000000000000000000000000000000000000000000000000e+06");
+  generateConstantArray34("2p32",        "+4.294967296000000000000000000000000000000000000000000000e+09");
+  generateConstantArray34("maxDate",     "+3.155695348699627200000000000000000000000000000000000000e+18");
+  generateConstantArray34("maxTime",     "+3.600000000000000000000000000000000000000000000000000000e+19");
 
   strcat(realArray, "};\n");
 }
@@ -894,6 +900,7 @@ int main(int argc, char* argv[]) {
   realPointerDeclarations[0]     = 0;
   real34PointerDeclarations[0]   = 0;
   real1071PointerDeclarations[0] = 0;
+  cntReal34 = cntReal39 = cntReal51 = cntReal75 = cntReal1071 = 0;
 
   generateAllConstants();
 
@@ -924,6 +931,11 @@ int main(int argc, char* argv[]) {
   fprintf(constantsH, "%s", defines);
   fprintf(constantsH, "\n");
   fprintf(constantsH, "%s", externalDeclarations);
+
+  fprintf(constantsH, "#define NUMBER_OF_CONSTANTS_39   %u\n", cntReal39);
+  fprintf(constantsH, "#define NUMBER_OF_CONSTANTS_51   %u\n", cntReal51);
+  fprintf(constantsH, "#define NUMBER_OF_CONSTANTS_1071 %u\n", cntReal1071);
+  fprintf(constantsH, "#define NUMBER_OF_CONSTANTS_34   %u\n", cntReal34);
 
   fprintf(constantsH, "#endif // !CONSTANTPOINTERS_H\n");
 

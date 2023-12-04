@@ -412,4 +412,8 @@
   extern const real34_t * const const34_2p32;
   extern const real34_t * const const34_maxDate;
   extern const real34_t * const const34_maxTime;
+#define NUMBER_OF_CONSTANTS_39   233
+#define NUMBER_OF_CONSTANTS_51   30
+#define NUMBER_OF_CONSTANTS_1071 1
+#define NUMBER_OF_CONSTANTS_34   44
 #endif // !CONSTANTPOINTERS_H
