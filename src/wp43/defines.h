@@ -256,7 +256,7 @@
                                //                       2122!          6140
 
 #define SHORT_INTEGER_SIZE               2 // 2 blocks = 8 bytes = 64 bits
-
+#define USE_MICHALSKI_MOSIG_TANH_SINH    0 // Set to 1 to use Michalski & Mosig tanh-sinh integration
 #define DECNUMDIGITS                    75 // Default number of digits used in the decNumber library
 
 #define BIG_SCREEN                   1 // Set to 0 if you want a keyboard in addition to the screen on Raspberry pi
@@ -785,7 +785,7 @@ typedef enum {
 #define NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS     10
 
 // Number of constants
-#define NUMBER_OF_CONSTANTS_39                   230
+#define NUMBER_OF_CONSTANTS_39                   233
 #define NUMBER_OF_CONSTANTS_51                    39
 #define NUMBER_OF_CONSTANTS_1071                   1
 #define NUMBER_OF_CONSTANTS_34                    44

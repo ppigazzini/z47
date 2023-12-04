@@ -460,6 +460,7 @@ void generateAllConstants(void) {
   generateConstantArray("1e_24",         "+1.000000000000000000000000000000000000000000000000000000e-24");        // cnst157
   generateConstantArray("1e_6",          "+1.000000000000000000000000000000000000000000000000000000e-06");        // cnst158
   generateConstantArray("1e_4",          "+1.000000000000000000000000000000000000000000000000000000e-04");        // cnst159
+  generateConstantArray("1e_16",         "+1.000000000000000000000000000000000000000000000000000000e-16"); // cnst150
   generateConstantArray("1on10",         "+1.000000000000000000000000000000000000000000000000000000e-01");        // cnst160
   generateConstantArray("1on4",          "+2.500000000000000000000000000000000000000000000000000000e-01");        // cnst161
   generateConstantArray("1on3",          "+3.333333333333333333333333333333333333333333333333333333e-01");        // cnst162
@@ -486,6 +487,7 @@ void generateAllConstants(void) {
   generateConstantArray("5",             "+5.000000000000000000000000000000000000000000000000000000e+00");        // cnst182
   generateConstantArray("6",             "+6.000000000000000000000000000000000000000000000000000000e+00");        // cnst183
   generateConstantArray("2pi",           "+6.283185307179586476925286766559005768394338798750211642e+00");        // cnst184
+  generateConstantArray("7",             "+7.000000000000000000000000000000000000000000000000000000e+00");        // cnst185
   generateConstantArray("8",             "+8.000000000000000000000000000000000000000000000000000000e+00");        // cnst185
   generateConstantArray("9",             "+9.000000000000000000000000000000000000000000000000000000e+00");        // cnst186
   generateConstantArray("10",            "+1.000000000000000000000000000000000000000000000000000000e+01");        // cnst187
@@ -533,6 +535,7 @@ void generateAllConstants(void) {
   generateConstantArray("1e_32",         "+1.000000000000000000000000000000000000000000000000000000e-32");        // cnst227
   generateConstantArray("rt3",           "+1.732050807568877293527446341505872366942805253810380628e+00");        // cnst228
   generateConstantArray("GaluseqE",      "+3.370000000000000000000000000000000000000000000000000000e+01");        // cnst229 if the number of constants changes: don't forget to update NUMBER_OF_CONSTANTS_* in defines.h 
+  generateConstantArray("1e_6143",       "+1.000000000000000000000000000000000000000000000000000000e-6143"); // cnst231
 
 
   // Lanczos's coefficients calculated for N=22 and G=22.61891 using Toth's program: https://www.vttoth.com/CMS/projects/41
