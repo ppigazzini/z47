@@ -1682,14 +1682,21 @@ void execTimerApp(uint16_t timerType) {
 
 
   uint16_t old_time = 0;
-  void printHalfSecUpdate_Integer(uint8_t mode, char *txt, int loop) {
+  bool_t printHalfSecUpdate_Integer(uint8_t mode, char *txt, int loop) {
     char tmps[30];
+    bool_t ret_value = false;
     uint16_t new_time = (uint16_t)(getUptimeMs());
 
     if((mode != timed) || (((new_time - old_time) & 0xFE00) != 0 )) { //0x0200 || 0.512 second refresh interval
       old_time = new_time;
+      ret_value = true;
 
-      refreshScreen(80);   //to update stack
+      //refreshScreen(80);   //to update stack
+      clearRegisterLine(REGISTER_T, true, true);
+      if(mode > 1) {
+        clearRegisterLine(REGISTER_Z, true, true);
+      }
+
       //lcd_refresh();
       fnTimerStart(TO_KB_ACTV, TO_KB_ACTV, JM_TO_KB_ACTV); //PROGRAM_KB_ACTV
       sprintf(tmps, "%s %6d      ",txt,loop);
@@ -1706,6 +1713,7 @@ void execTimerApp(uint16_t timerType) {
         lcd_forced_refresh();
       #endif // DMCP_BUILD
     }
+    return ret_value;
   }
 
 
@@ -1770,7 +1778,7 @@ void execTimerApp(uint16_t timerType) {
     char padding[20];                                          //JM
     functionName[0] = 0;
     showFunctionNameArg = NULL;
-        
+
     //FIX //REMOVE DISPLAYING TEMP STRING as in C43 the tmpstring does NOT show the last keystroke or whatever this tempstr is needed for. It gets executed from timers
     //if(tmpString[0] != 0) {
     //  strcpy(functionName,tmpString);
@@ -1807,7 +1815,7 @@ void execTimerApp(uint16_t timerType) {
         }
       }
       else if(item == -MNU_DYNAMIC) {
-        if(arg != NULL) stringAppend(functionName,arg);       
+        if(arg != NULL) stringAppend(functionName,arg);
         showFunctionNameArg = (char *)arg;                        // Needed when executing a user menu from a long pressed key
       }
       else if(item >= ITM_X_P1 && item <= ITM_X_g6) {

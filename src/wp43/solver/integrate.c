@@ -25,6 +25,7 @@
 #include "defines.h"
 #include "error.h"
 #include "flags.h"
+#include "c43Extensions/addons.h"
 #include "items.h"
 #include "mathematics/comparisonReals.h"
 #include "mathematics/wp34s.h"
@@ -127,12 +128,19 @@ void fnIntegrate(uint16_t labelOrVariable) {
   }
   else if(labelOrVariable >= FIRST_NAMED_VARIABLE && labelOrVariable <= LAST_NAMED_VARIABLE) {
     real_t acc, ulim, llim, res;
+    bool_t smallerEpsilon = false;
     real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_ACC),  &acc);
     real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_ULIM), &ulim);
     real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_LLIM), &llim);
-    integrate(labelOrVariable, &llim, &ulim, &acc, &res, &ctxtReal39);
-    liftStack();
-    liftStack();
+    smallerEpsilon = realCompareAbsLessThan(&acc, const_1e_16) && ((realCompareAbsLessThan(&ulim, const_1e_32) || realCompareAbsLessThan(&llim, const_1e_32)));
+    #if USE_MICHALSKI_MOSIG_TANH_SINH == 1
+      smallerEpsilon = smallerEpsilon && (realIsSpecial(&ulim) || realIsSpecial(&llim)); // smallerEpsilon not needed
+    #endif // USE_MICHALSKI_MOSIG_TANH_SINH == 1
+    if(realIsZero(&acc)) { // it may freeze if ACC=0
+      realCopy(const_1e_6143, &acc);
+    }
+    integrate(labelOrVariable, &llim, &ulim, &acc, &res, smallerEpsilon ? &ctxtReal75 : &ctxtReal39);
+    fnClearStack(NOPARAM);
     reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
     reallocateRegister(REGISTER_Y, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
     convertRealToReal34ResultRegister(&res, REGISTER_X);
@@ -154,7 +162,14 @@ void fnIntVar(uint16_t unusedButMandatoryParameter) {
     const char *var = (char *)getNthString(dynamicSoftmenu[softmenuStack[0].softmenuId].menuContent, dynamicMenuItem);
     const uint16_t regist = findOrAllocateNamedVariable(var);
     currentSolverVariable = regist;
-    showSoftmenu(-MNU_Sfdx);
+    if(currentSolverStatus & SOLVER_STATUS_READY_TO_EXECUTE) {
+      showSoftmenu(-MNU_Sfdx);
+    }
+    else {
+      reallyRunFunction(ITM_STO, regist);
+      currentSolverStatus |= SOLVER_STATUS_READY_TO_EXECUTE;
+      temporaryInformation = TI_SOLVER_VARIABLE;
+    }
   #endif // !TESTSUITE_BUILD
 }
 
@@ -256,8 +271,8 @@ static void _integratorIteration(void) {
 static void DEI_xeq_user(calcRegister_t regist, const real_t *x, real_t *res, realContext_t *realContext) {
   // call user's function  -------------------------------
   if(!realIsSpecial(x)) { // abscissa is good?
-    bool_t d = getSystemFlag(FLAG_SPCRES);
-    clearSystemFlag(FLAG_SPCRES);
+    //bool_t d = getSystemFlag(FLAG_SPCRES);
+    //clearSystemFlag(FLAG_SPCRES);
     reallocateRegister(regist, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
     realToReal34(x, REGISTER_REAL34_DATA(regist));
     fnFillStack(NOPARAM);
@@ -268,9 +283,9 @@ static void DEI_xeq_user(calcRegister_t regist, const real_t *x, real_t *res, re
     if(realIsSpecial(res)) { // do not stop in error (if flag D was set)
       realZero(res);
     }
-    if(d) {
-      setSystemFlag(FLAG_SPCRES); // set flag D for internal calculations
-    }
+    //if(d) {
+    //  setSystemFlag(FLAG_SPCRES); // set flag D for internal calculations
+    //}
   }
   else { // DEI_bad_absc::
     realZero(res);
@@ -375,11 +390,18 @@ static void _integrate(calcRegister_t regist, const real_t *a, const real_t *b, 
   // [1e-34 -34 bpa2 bma2]
   realMultiply(acc, const_1on10, &eps, realContext);
   realMultiply(&eps, &eps, &eps, realContext);
-  if(realCompareAbsLessThan(&eps, const_1e_32)) {
-    realCopy(const_1e_32, &eps); // save epsilon = 10^-37
-  }
+  //if(realCompareAbsLessThan(&eps, const_1e_32)) {
+  //  realCopy(const_1e_32, &eps); // save epsilon = 10^-37
+  //}
+  if(!realIsSpecial(a) && !realIsSpecial(b) && (realIsZero(a) || realIsZero(b))) { // WP43
+    if(realCompareAbsLessThan(&eps, const_1e_6143)) {                              // WP43
+      realCopy(const_1e_6143, &eps);                                               // WP43
+    }                                                                              // WP43
+  }                                                                                // WP43
+
   realCopy(acc, &thr); // save the convergence threshold [<- ACC]
-  real34ToReal(const34_7, &lvl); // maxlevel = round(log2(digits)) + 2 [pre-calculated]
+  //real34ToReal(const34_7, &lvl); // maxlevel = round(log2(digits)) + 2 [pre-calculated]
+  realCopy(realContext->digits >= 48 ? const_8 : const_7, &lvl);                   // WP43
   if(bpa2z) { // the sinhsinh case and the expsinh case
               // when the finite limit == 0 can use a
               // smaller epsilon
@@ -446,8 +468,9 @@ static void _integrate(calcRegister_t regist, const real_t *a, const real_t *b, 
 
       WP34S_SinhCosh(&x, NULL, &x, realContext); // cosh(t) (cosh is much faster than sinh/tanh)
       realCopy(&x, &ch); // save for later
-      realMultiply(&x, &x, &x, realContext);
-      realSubtract(&x, const_1, &x, realContext);
+      //realMultiply(&x, &x, &x, realContext);
+      //realSubtract(&x, const_1, &x, realContext);
+      realFMA(&x, &x, const__1, &x, realContext);
       realSquareRoot(&x, &x, realContext);
       realMultiply(&x, const_piOn2, &x, realContext); // pi/2*sqrt(cosh(t)^2 - 1) = pi/2*sinh(t)
       if(ES) { // ES mode?
@@ -465,8 +488,9 @@ static void _integrate(calcRegister_t regist, const real_t *a, const real_t *b, 
       // stack filled with exp/cosh of pi/2*sinh(t)
       realCopy(&y, &x);
       if(!ES) { // ES mode?
-        realMultiply(&x, &x, &x, realContext);      // no ES mode, get r (the abscissa in the
-        realSubtract(&x, const_1, &x, realContext); // normalized domain)
+        //realMultiply(&x, &x, &x, realContext);      // no ES mode, get r (the abscissa in the
+        //realSubtract(&x, const_1, &x, realContext); // normalized domain)
+        realFMA(&x, &x, const__1, &x, realContext);
         realSquareRoot(&x, &x, realContext);
       } // DEI_es_skip::
       if(TS) { // TS mode?
@@ -478,8 +502,9 @@ static void _integrate(calcRegister_t regist, const real_t *a, const real_t *b, 
       realCopy(&x, &rp); // save normalized abscissa
       // done with abscissas and weights  --------------------
       // evaluate integrand ----------------------------------
-      realMultiply(&x, &bma2, &x, realContext); // r*(b - a)/2
-      realAdd(&x, &bpa2, &x, realContext); // (b + a)/2 + r*(b - a)/2
+      //realMultiply(&x, &bma2, &x, realContext); // r*(b - a)/2
+      //realAdd(&x, &bpa2, &x, realContext); // (b + a)/2 + r*(b - a)/2
+      realFMA(&x, &bma2, &bpa2, &x, realContext);
       DEI_xeq_user(regist, &x, &x, realContext); // f(bpa2 + bma2*r)
       realMultiply(&x, &w, &x, realContext); // fplus*w
       realCopy(&x, &tmp); realCopy(&rp, &x); realCopy(&tmp, &rp); // p = fplus*w stored, r in X
@@ -587,6 +612,9 @@ static void _integrate(calcRegister_t regist, const real_t *a, const real_t *b, 
     // stack: 0-new_err-10*err-ss
     realZero(&z); // stack: 0-new_err-10*err-0
   } // DEI_res_okay::
+  else { // yes, assume result is OK
+    realCopy(&x, &tmp);
+  }
   realCopy(&z, &x); realCopy(&tmp, &y); // stack: 0-err-... or ss-err-...
   // done with bad results  ******************************
   //  exit  **********************************************
@@ -596,12 +624,226 @@ static void _integrate(calcRegister_t regist, const real_t *a, const real_t *b, 
   realCopy(&y, acc);
 }
 
+
+
+// The following routine is ported from Tanh-Sinh Quadrature
+// https://newtonexcelbach.com/2020/10/29/numerical-integration-with-tanh-sinh-quadrature-v-5-0/
+// Copyright © 2010, 2020  Graeme Dennes
+// Licensed under GPL v3 or any later versions
+// Originally written in Excel VBA; translated into C by MihailJP
+// The description below is as is. May not applicable for WP43.
+
+//    QUAD_TANH_SINH for finite intervals.
+//    This is the fastest and simplest high-performance T-S program I have found.
+//
+//    It is based on the HP RPN calculator source code listing provided at
+//    https://www.hpmuseum.org/forum/thread-8021.html.
+//    The code shrunk to two Do loops as shown below.
+//
+//    The full RPN source code for the WP 34S calculator integration
+//    program was written by M. César Rodríguez in 2017 for inclusion in
+//    the WP 34s calculator software for numerical integration. It
+//    covers the four intervals with four different programs:
+//         a. finite interval, (a,b)
+//         b. Right semi-infinite interval, (a,inf)
+//         c. Left semi-infinite interval, (-inf,b)
+//         d. Infinite interval, (-inf,inf)
+//
+//    The RPN source code selected is the first of the three versions
+//    presented on the web page, shown as v1.2r-393 (20170327), and stated
+//    as being suitable for keying in by hand. The RPN source code was
+//    distilled down to the specific finite interval code which acted
+//    as the basis of this present VBA program.
+//
+// The Tanh-Sinh Transform which transforms the function value is g(z) = f(x(z)) * dxdz(z)
+//
+// where   x(z) = (b + a) / 2 + (b - a) / 2 * TANH(SINH(z))
+// and     dxdz(z) = (b - a) / 2 * COSH(z) / COSH(SINH(z))^2
+//
+// The purpose of the T-S transform is to transform a function over (-1,1) to a new function
+// on the entire real line (-inf,inf), where the two integrals have the same value.
+//
+// It is the transformed function which is integrated by the T-S integrator
+// using Trapezoidal summation.
+// Because of the double exponential growth of the denominator in dxdz(z), the +-z sample
+// points used for the trapezoidal rule do not have to step very far before g(z) becomes zero
+// or sufficiently small for exit and termination. In other words, g(z) approaches zero
+// at a double exponential rate. That is the power of the technique used in the T-S method.
+//
+// However, we don't calculate x(z) and dxdz(z) directly as above, as the term
+// 1/COSH(SINH(z))^2 can overflow for large z.
+//
+// To prevent this, we calculate x(z) and dxdz(z) this way, courtesy of the Michalski & Mosig T-S integrator.
+// The VBA code translated by the author from the Rodriguez RPN source was modified to use this technique.
+// It improved the accuracy and reduced the execution time.
+//
+// 1. Enter value for z (z <= 709)
+//
+// 2. exz = exp(z)
+//
+// 3. q = exp(-2 * sinh(z))
+//      = exp(-2 * (exz - 1/exz) / 2)
+//      = exp(-(exz - 1/exz))
+//      = exp(1/exz - exz)
+//
+// 4. delta = 2 * q / (1 + q) = (1 - tanh(sinh z))
+//
+// 5. x(z) = (b + a) / 2 + (b - a) / 2 * delta
+//
+// 6. fxz = f(x(z))
+//
+// 7. dxdz = dxdz(z) = (b - a) / 2 * (exz + 1/exz) * delta / (1 + q)
+//
+// 8. The transformed function = y = fxz * dxdz
+//
+// Now, for large positive z (6.5 < z < 709), q simply underflows harmlessly to zero.
+// Negative z is handled by using the symmetry of the trapezoidal rule about
+// the midpoint of the interval.
+
+#if USE_MICHALSKI_MOSIG_TANH_SINH == 1
+static void _integrate_mm(calcRegister_t regist, const real_t *llim, const real_t *ulim, real_t *acc, real_t *res, realContext_t *realContext) { // Double-Exponential Integration
+  real_t a, b;
+  real_t errval, bpa2, bma2;
+  real_t eps, tol, h;
+  real_t t, w, r, fp;
+  real_t fm, p, expt, u;
+  real_t ssp, ss, sslast; real_t x;
+
+  real_t tmp;
+  int k, maxlevel, j, evals;
+
+  #if !defined(TESTSUITE_BUILD)
+    int loop = 0;
+  #endif //TESTSUITE_BUILD
+
+  // Get the two limits of integration and the integrating variable:
+  if(realCompareGreaterThan(llim, ulim)) { // Ensure the upper limit is greater than the lower limit
+    realCopy(llim, &b); // upper limit in LLIM
+    realCopy(ulim, &a); // lower limit in ULIM
+  }
+  else {
+    realCopy(llim, &a); // lower limit
+    realCopy(ulim, &b); // upper limit
+  }
+  // c = Parms(1, 1) ' intvar
+
+  // Set some program constants. These are the optimum values.
+  // epsilon
+  realMultiply(acc, acc, &eps, realContext);
+  // convergence tolerance
+  realCopy(acc, &tol);
+  // max level
+  maxlevel = 7;
+
+  realSubtract(&b, &a, &bma2, realContext); // interval half-length
+  realMultiply(&bma2, const_1on2, &bma2, realContext);
+  realSubtract(&b, &a, &bpa2, realContext); // centre of interval
+  realMultiply(&bpa2, const_1on2, &bpa2, realContext);
+  k = 0; // level counter
+  DEI_xeq_user(regist, &bpa2, &ss, realContext); // centre of interval
+  evals = 1;
+  realCopy(const_2, &h);
+  realZero(&sslast);
+  do {
+    realZero(&ssp);
+    j = 1;
+    realMultiply(&h, const_1on2, &h, realContext); //h = 2 ^ -k
+
+    do {
+      #if !defined(TESTSUITE_BUILD)
+        printHalfSecUpdate_Integer(timed, "Iter: ",j+10000*loop++); //timed
+      #endif //TESTSUITE_BUILD
+      #if defined(DMCP_BUILD)
+        if(keyWaiting()) {
+          printHalfSecUpdate_Integer(force+1, "Interrupted Iter:",loop);
+          break;
+        }
+      #endif //DMCP_BUILD
+
+      int32ToReal(j, &t);
+      realMultiply(&t, &h, &t, realContext); // t = h * j
+      //If t > 6.56 Then Exit Do
+      if(realCompareGreaterThan(&t, const_7)) {
+        break;
+      }
+
+      realExp(&t, &expt, realContext);
+
+      realFMA(&expt, &expt, const__1, &u, realContext);
+      realChangeSign(&u);
+      realDivide(&u, &expt, &u, realContext);
+      realExp(&u, &u, realContext); // = exp(-(expt - 1/expt)) = exp(-2 (expt -1/expt) /2) = exp(-2 sinh t)
+
+      realAdd(const_1, &u, &r, realContext);
+      realDivide(&u, &r, &r, realContext);
+      realAdd(&r, &r, &r, realContext); // r = 2 * u / (1 + u) ' r = 1 - tanh(sinh t)
+      // Added so as to check that r <> 0 and r <> 1 to ensure r hasn't rounded to 0 or 1 when tanh(sinh(t)) is very close to 0 or 1.
+      if(!realIsZero(&r) && !realCompareEqual(&r, const_1)) {
+        realMultiply(&bma2, &r, &x, realContext);
+      }
+      else {
+        break;
+      }
+      // Added to check that (a + x) > a to ensure (a + x) hasn't rounded to a when x is very small.
+      // This prevents calculation of the function at lower limit a.
+      realAdd(&a, &x, &tmp, realContext);
+      if(realCompareGreaterThan(&tmp, &a)) {
+        DEI_xeq_user(regist, &tmp, &fp, realContext);
+        ++evals;
+      }
+      // Added to check that (b - x) < b to ensure (b - x) hasn't rounded to b when x is very small.
+      // This prevents calculation of the function at upper limit b.
+      realSubtract(&b, &x, &tmp, realContext);
+      if(realCompareLessThan(&tmp, &b)) {
+        DEI_xeq_user(regist, &tmp, &fm, realContext);
+        ++evals;
+      }
+      realAdd(const_1, &u, &w, realContext);
+      realDivide(&r, &w, &w, realContext);
+      realFMA(&expt, &expt, const_1, &tmp, realContext);
+      realDivide(&tmp, &expt, &tmp, realContext);
+      realMultiply(&tmp, &w, &w, realContext); // w = cosh t / cosh^2 (sinh t) See separate proof.
+
+      realAdd(&fp, &fm, &p, realContext);
+      realMultiply(&p, &w, &p, realContext);
+      realAdd(&ssp, &p, &ssp, realContext);
+      if(k > 0) {j += 2;} else {j += 1;}
+
+      realMultiply(&ssp, &eps, &tmp, realContext);
+    } while(realCompareAbsLessThan(&tmp, &p));
+
+    realAdd(&ss, &ssp, &ss, realContext);
+    realDivide(&sslast, &ss, &errval, realContext);
+    realFMA(const_2, &errval, const__1, &errval, realContext);
+    realSetPositiveSign(&errval);
+    realCopy(&ss, &sslast);
+    ++k;
+
+  } while (realCompareGreaterEqual(&errval, &tol) && k <= maxlevel);
+  realMultiply(&ss, &bma2, res, realContext);
+  realMultiply(res, &h, res, realContext); // load the integral result,
+  realCopy(&errval, acc); // its error value,
+  //Result(3) = evals ' func evals
+  //Result(4) = MicroTimer - Result(4) ' and the calculation time
+}
+#endif // USE_MICHALSKI_MOSIG_TANH_SINH == 1
+
+// ---
+
 void integrate(calcRegister_t regist, const real_t *a, const real_t *b, real_t *acc, real_t *res, realContext_t *realContext) {
   bool_t was_solving = getSystemFlag(FLAG_SOLVING);
   ++currentSolverNestingDepth;
   setSystemFlag(FLAG_INTING);
   clearSystemFlag(FLAG_SOLVING);
-  _integrate(regist, a, b, acc, res, realContext);
+  #if USE_MICHALSKI_MOSIG_TANH_SINH == 1
+  if(!realIsSpecial(a) && !realIsSpecial(b)) {
+    _integrate_mm(regist, a, b, acc, res, realContext);
+  }
+  else
+  #endif // USE_MICHALSKI_MOSIG_TANH_SINH == 1
+  {
+    _integrate(regist, a, b, acc, res, realContext);
+  }
   if((--currentSolverNestingDepth) == 0) {
     clearSystemFlag(FLAG_INTING);
   }

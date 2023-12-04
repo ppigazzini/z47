@@ -255,6 +255,7 @@
   extern const real_t * const const_1e_24;
   extern const real_t * const const_1e_6;
   extern const real_t * const const_1e_4;
+  extern const real_t * const const_1e_16;
   extern const real_t * const const_1on10;
   extern const real_t * const const_1on4;
   extern const real_t * const const_1on3;
@@ -280,6 +281,7 @@
   extern const real_t * const const_5;
   extern const real_t * const const_6;
   extern const real_t * const const_2pi;
+  extern const real_t * const const_7;
   extern const real_t * const const_8;
   extern const real_t * const const_9;
   extern const real_t * const const_10;
@@ -325,6 +327,7 @@
   extern const real_t * const const_1e_32;
   extern const real_t * const const_rt3;
   extern const real_t * const const_GaluseqE;
+  extern const real_t * const const_1e_6143;
   extern const real_t * const const_gammaC00;
   extern const real_t * const const_gammaC01;
   extern const real_t * const const_gammaC02;
@@ -409,4 +412,8 @@
   extern const real34_t * const const34_2p32;
   extern const real34_t * const const34_maxDate;
   extern const real34_t * const const34_maxTime;
+#define NUMBER_OF_CONSTANTS_39   233
+#define NUMBER_OF_CONSTANTS_51   30
+#define NUMBER_OF_CONSTANTS_1071 1
+#define NUMBER_OF_CONSTANTS_34   44
 #endif // !CONSTANTPOINTERS_H

@@ -996,6 +996,20 @@ int16_t lastItem = 0;
             return;
           }
           else if(calcMode != CM_PEM && item == ITM_INTEGRAL) {
+            switch(calcMode) {
+              case CM_NIM: {
+                closeNim();
+                break;
+              }
+              case CM_AIM: {
+                closeAim();
+                break;
+              }
+              default: {
+                // do nothing
+              }
+            }
+
             reallyRunFunction(item, currentSolverVariable);
             refreshScreen(110);
             screenUpdatingMode &= ~SCRUPD_ONE_TIME_FLAGS;
