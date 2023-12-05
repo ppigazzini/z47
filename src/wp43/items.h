@@ -1754,7 +1754,7 @@
 #define ITM_M_TRANSP                1704
 #define ITM_M_INV                   1705
 #define ITM_ARG                     1706
-#define ITM_1707                    1707
+#define ITM_PRINTERXY               1707
 #define ITM_PRINTERADV              1708
 #define ITM_PRINTERCHAR             1709
 #define ITM_PRINTERDLAY             1710

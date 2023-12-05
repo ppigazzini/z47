@@ -23,6 +23,7 @@
 #include "c43Extensions/addons.h"
 #include "constantPointers.h"
 #include "defines.h"
+#include "display.h"
 #include "error.h"
 #include "flags.h"
 #include "c43Extensions/addons.h"
@@ -176,6 +177,9 @@ void fnIntVar(uint16_t unusedButMandatoryParameter) {
 
 
 static void _integratorIteration(void) {
+  #if ENABLE_INTEGRATOR_FILE_OUTPUT == 1
+    copySourceRegisterToDestRegister(REGISTER_X, TEMP_REGISTER_1);
+  #endif //ENABLE_INTEGRATOR_FILE_OUTPUT == 1
   if(currentSolverStatus & SOLVER_STATUS_USES_FORMULA) {
     parseEquation(currentFormula, EQUATION_PARSER_XEQ, tmpString, tmpString + AIM_BUFFER_LENGTH);
   }
@@ -183,6 +187,11 @@ static void _integratorIteration(void) {
     dynamicMenuItem = -1;
     execProgram(currentSolverProgram + FIRST_LABEL);
   }
+  #if ENABLE_INTEGRATOR_FILE_OUTPUT == 1
+    copySourceRegisterToDestRegister(TEMP_REGISTER_1,REGISTER_Y);
+    fnP_All_Regs(6);
+  #endif //ENABLE_INTEGRATOR_FILE_OUTPUT == 1
+
 }
 
 
@@ -291,6 +300,34 @@ static void DEI_xeq_user(calcRegister_t regist, const real_t *x, real_t *res, re
     realZero(res);
   }
 }
+
+
+void _showProgress(const real_t *ss, const real_t *bma2, const real_t *h, const real_t *a, const real_t *b, const real_t *fact, realContext_t *realContext) {
+  real_t res;
+  clearRegisterLine(REGISTER_Z, true, true);
+  clearRegisterLine(REGISTER_Y, true, true);
+  clearRegisterLine(REGISTER_X, true, true);
+  uint8_t savedDisplayFormatDigits = displayFormatDigits;
+  displayFormatDigits = displayFormat == DF_ALL ? 0 : 33;
+  real34_t rtmp34;
+  real_t tmpr;
+  realMultiply(ss, bma2, &res, realContext);
+  realMultiply(&res, h, &res, realContext); // load the integral result,
+  realMultiply(&res, fact, &res, realContext); // load the integral result,
+  realToReal34(&res,&rtmp34);
+  real34ToDisplayString(&rtmp34, amNone, tmpString, &standardFont, 9999, 34, false, true);
+  showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
+  realSubtract(a,b,&tmpr,realContext);
+  realToReal34(&tmpr,&rtmp34);
+  real34ToDisplayString(&rtmp34, amNone, tmpString, &standardFont, 9999, 34, false, true);
+  showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_Y_LINE + 6, vmNormal, true, true);
+  displayFormatDigits = savedDisplayFormatDigits;
+  #if defined DMCP_BUILD
+    lcd_refresh();
+  #endif //DMCP_BUILD
+}
+
+
 
 static void _integrate(calcRegister_t regist, const real_t *a, const real_t *b, real_t *acc, real_t *res, realContext_t *realContext) { // Double-Exponential Integration
   real_t bma2;            // (b - a)/2, a & b are the integration limits
@@ -455,16 +492,22 @@ static void _integrate(calcRegister_t regist, const real_t *a, const real_t *b, 
     // j loop ++++++++++++++++++++++++++++++++++++++++++++++
     // compute abscissas and weights  ----------------------
     do { // DEI_j_loop::
-            #if !defined(TESTSUITE_BUILD)
-              printHalfSecUpdate_Integer(timed, "Iter: ",loop++); //timed
-            #endif //TESTSUITE_BUILD
+      #if !defined(TESTSUITE_BUILD)
+        char tmps[64];
+        sprintf(tmps,"level:  %i Iter: ",realToInt32C47(&lvl));
+        if(printHalfSecUpdate_Integer(timed, tmps, loop++)) {; //timed
+          #if ENABLE_SOLVER_PROGRESS == 1
+            _showProgress(&ss, &bma2, &h, &tm, &x, const_pi, realContext);
+          #endif //ENABLE_SOLVER_PROGRESS
+        }
 
-            #if defined(DMCP_BUILD)
-              if(keyWaiting()) {
-                  printHalfSecUpdate_Integer(force+1, "Interrupted Iter:",loop);
-                break;
-              }
-            #endif //DMCP_BUILD
+      #endif //TESTSUITE_BUILD
+      #if defined(DMCP_BUILD)
+        if(keyWaiting()) {
+          printHalfSecUpdate_Integer(force+1, "Interrupted Iter:",loop);
+          break;
+        }
+      #endif //DMCP_BUILD
 
       WP34S_SinhCosh(&x, NULL, &x, realContext); // cosh(t) (cosh is much faster than sinh/tanh)
       realCopy(&x, &ch); // save for later
@@ -751,7 +794,14 @@ static void _integrate_mm(calcRegister_t regist, const real_t *llim, const real_
 
     do {
       #if !defined(TESTSUITE_BUILD)
-        printHalfSecUpdate_Integer(timed, "Iter: ",j+10000*loop++); //timed
+        char tmps[64];
+        sprintf(tmps,"level:  %i Iter: ",maxlevel-k);
+        if(printHalfSecUpdate_Integer(timed, tmps, loop++)) { ; //timed
+          #if ENABLE_SOLVER_PROGRESS == 1
+            _showProgress(&sslast, &bma2, &h, &errval, const_0, const_2, realContext);
+          #endif //ENABLE_SOLVER_PROGRESS
+        }
+
       #endif //TESTSUITE_BUILD
       #if defined(DMCP_BUILD)
         if(keyWaiting()) {

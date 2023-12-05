@@ -285,6 +285,7 @@
 #define SHORT_INTEGER_SIZE               2 // 2 blocks = 8 bytes = 64 bits
 #define ENABLE_SOLVER_PROGRESS           1 // Set to 1 to enable solver progress display (only if called in run mode)
 #define USE_MICHALSKI_MOSIG_TANH_SINH    1 // Set to 1 to use Michalski & Mosig tanh-sinh integration
+#define ENABLE_INTEGRATOR_FILE_OUTPUT    0 // Set for PRINTXY to be done after every evaluation of the formula
 #define DECNUMDIGITS                    75 // Default number of digits used in the decNumber library
 
 #define BIG_SCREEN                   1 // Set to 0 if you want a keyboard in addition to the screen on Raspberry pi

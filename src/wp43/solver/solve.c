@@ -342,8 +342,7 @@ static void _executeSolver(calcRegister_t variable, const real34_t *val, real34_
             c = fa; fa = fb; fb = c;
           }
 
-  //      clearRegisterLine(REGISTER_T, true, true);
-  //      clearRegisterLine(REGISTER_Z, true, true);
+          clearRegisterLine(REGISTER_Z, true, true);
           clearRegisterLine(REGISTER_Y, true, true);
           clearRegisterLine(REGISTER_X, true, true);
 

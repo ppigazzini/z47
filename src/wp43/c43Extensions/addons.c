@@ -971,7 +971,7 @@ void fnP_Regs (uint16_t registerNo) {
       print_linestr(filename_csv, false);
     #endif // VERBOSE_LEVEL >= 1
 
-    stackregister_csv_out((int16_t)registerNo, (int16_t)registerNo);
+    stackregister_csv_out((int16_t)registerNo, (int16_t)registerNo, !ONELINE);
 
   #endif // !TESTSUITE_BUILD
 }
@@ -999,38 +999,42 @@ void fnP_All_Regs(uint16_t option) {
 
     switch(option) {
       case 0:                    //PRN_ALLr   :   All registers
-        stackregister_csv_out(REGISTER_X, REGISTER_D);
-        stackregister_csv_out(REGISTER_L, REGISTER_K);
-        stackregister_csv_out(0, 99);
-        if(currentNumberOfLocalRegisters > 0) stackregister_csv_out(FIRST_LOCAL_REGISTER, FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters - 1);
-        if(numberOfNamedVariables > 0) stackregister_csv_out(FIRST_NAMED_VARIABLE, FIRST_NAMED_VARIABLE + numberOfNamedVariables - 1);
+        stackregister_csv_out(REGISTER_X, REGISTER_D, !ONELINE);
+        stackregister_csv_out(REGISTER_L, REGISTER_K, !ONELINE);
+        stackregister_csv_out(0, 99, !ONELINE);
+        if(currentNumberOfLocalRegisters > 0) stackregister_csv_out(FIRST_LOCAL_REGISTER, FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters - 1, !ONELINE);
+        if(numberOfNamedVariables > 0) stackregister_csv_out(FIRST_NAMED_VARIABLE, FIRST_NAMED_VARIABLE + numberOfNamedVariables - 1, !ONELINE);
 
 
-        //stackregister_csv_out(FIRST_LOCAL_REGISTER,FIRST_LOCAL_REGISTER+100);
+        //stackregister_csv_out(FIRST_LOCAL_REGISTER,FIRST_LOCAL_REGISTER+100, !ONELINE);
         break;
 
       case 1:                    //PRN_STK   :   Stack only
         if(getSystemFlag(FLAG_SSIZE8)) {
-          stackregister_csv_out(REGISTER_X, REGISTER_D);
+          stackregister_csv_out(REGISTER_X, REGISTER_D, !ONELINE);
         } else {
-          stackregister_csv_out(REGISTER_X, REGISTER_T);
+          stackregister_csv_out(REGISTER_X, REGISTER_T, !ONELINE);
         }
         break;
 
       case 2:                    //Global Registers
-        stackregister_csv_out(0, 99);
+        stackregister_csv_out(0, 99, !ONELINE);
         break;
 
       case 3:                    //LOCAL Registers
-        if(currentNumberOfLocalRegisters > 0) stackregister_csv_out(FIRST_LOCAL_REGISTER, FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters - 1);
+        if(currentNumberOfLocalRegisters > 0) stackregister_csv_out(FIRST_LOCAL_REGISTER, FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters - 1, !ONELINE);
         break;
 
       case 4:                    //NAMED Registers
-        if(numberOfNamedVariables > 0) stackregister_csv_out(FIRST_NAMED_VARIABLE, FIRST_NAMED_VARIABLE + numberOfNamedVariables - 1);
+        if(numberOfNamedVariables > 0) stackregister_csv_out(FIRST_NAMED_VARIABLE, FIRST_NAMED_VARIABLE + numberOfNamedVariables - 1, !ONELINE);
         break;
 
       case 5:                    //PRN_X   :   X only
-        stackregister_csv_out(REGISTER_X, REGISTER_X);
+        stackregister_csv_out(REGISTER_X, REGISTER_X, !ONELINE);
+        break;
+
+      case 6:                    //PRN_XY   :   XY
+        stackregister_csv_out(REGISTER_X, REGISTER_Y, ONELINE);
         break;
 
 
