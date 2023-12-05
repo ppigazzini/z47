@@ -1664,7 +1664,7 @@ void execTimerApp(uint16_t timerType) {
 
   uint16_t old_time = 0;
   bool_t printHalfSecUpdate_Integer(uint8_t mode, char *txt, int loop) {
-    char tmps[30];
+    char tmps[100];
     bool_t ret_value = false;
     uint16_t new_time = (uint16_t)(getUptimeMs());
 
