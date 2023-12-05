@@ -35,159 +35,61 @@
 
 #include "wp43.h"
 
-void systemFlagAction(uint16_t systemFlag, uint16_t action) {
+typedef enum { FLAG_CLEAR, FLAG_SET, FLAG_FLIP } FLAG_ACTION;
+
+static void systemFlagProcess(unsigned int idx, FLAG_ACTION action) {
+  const unsigned int n = idx / 16;
+  const unsigned int b = idx % 16;
+
+  switch(action) {
+    case FLAG_CLEAR: {
+      globalFlags[n] &= ~(1u << b);
+      break;
+    }
+    case FLAG_SET: {
+      globalFlags[n] |=   1u << b;
+      break;
+    }
+    case FLAG_FLIP: {
+      globalFlags[n] ^=   1u << b;
+      break;
+    }
+  }
+}
+
+static void systemFlagAction(uint16_t systemFlag, FLAG_ACTION action) {
   switch(systemFlag) {
-    case FLAG_ALLENG: {
-      switch(action) {
-        case 0: {
-          globalFlags[FLAG_A/16] &= ~(1u << (FLAG_A%16));
-          break;
-        }
-        case 1: {
-          globalFlags[FLAG_A/16] |=   1u << (FLAG_A%16);
-          break;
-        }
-        case 2: {
-          globalFlags[FLAG_A/16] ^=   1u << (FLAG_A%16);
-          break;
-        }
-        default: ;
-      }
+    case FLAG_ALLENG:
+      systemFlagProcess(FLAG_A, action);
       break;
-    }
 
-    case FLAG_OVERFLOW: {
-      switch(action) {
-        case 0: {
-          globalFlags[FLAG_B/16] &= ~(1u << (FLAG_B%16));
-          break;
-        }
-        case 1: {
-          globalFlags[FLAG_B/16] |=   1u << (FLAG_B%16);
-          break;
-        }
-        case 2: {
-          globalFlags[FLAG_B/16] ^=   1u << (FLAG_B%16);
-          break;
-        }
-        default: ;
-      }
+    case FLAG_OVERFLOW:
+      systemFlagProcess(FLAG_B, action);
       break;
-    }
 
-    case FLAG_CARRY: {
-      switch(action) {
-        case 0: {
-          globalFlags[FLAG_C/16] &= ~(1u << (FLAG_C%16));
-          break;
-        }
-        case 1: {
-          globalFlags[FLAG_C/16] |=   1u << (FLAG_C%16);
-          break;
-        }
-        case 2: {
-          globalFlags[FLAG_C/16] ^=   1u << (FLAG_C%16);
-          break;
-        }
-        default: ;
-      }
+    case FLAG_CARRY:
+      systemFlagProcess(FLAG_C, action);
       break;
-    }
 
-    case FLAG_SPCRES: {
-      switch(action) {
-        case 0: {
-          globalFlags[FLAG_D/16] &= ~(1u << (FLAG_D%16));
-          break;
-        }
-        case 1: {
-          globalFlags[FLAG_D/16] |=   1u << (FLAG_D%16);
-          break;
-        }
-        case 2: {
-          globalFlags[FLAG_D/16] ^=   1u << (FLAG_D%16);
-          break;
-        }
-        default: ;
-      }
+    case FLAG_SPCRES:
+      systemFlagProcess(FLAG_D, action);
       break;
-    }
 
-    case FLAG_CPXRES: {
-      switch(action) {
-        case 0: {
-          globalFlags[FLAG_I/16] &= ~(1u << (FLAG_I%16));
-          break;
-        }
-        case 1: {
-          globalFlags[FLAG_I/16] |=   1u << (FLAG_I%16);
-          break;
-        }
-        case 2: {
-          globalFlags[FLAG_I/16] ^=   1u << (FLAG_I%16);
-          break;
-        }
-        default: ;
-      }
+    case FLAG_CPXRES:
+      systemFlagProcess(FLAG_I, action);
       break;
-    }
 
-    case FLAG_LEAD0: {
-      switch(action) {
-        case 0: {
-          globalFlags[FLAG_L/16] &= ~(1u << (FLAG_L%16));
-          break;
-        }
-        case 1: {
-          globalFlags[FLAG_L/16] |=   1u << (FLAG_L%16);
-          break;
-        }
-        case 2: {
-          globalFlags[FLAG_L/16] ^=   1u << (FLAG_L%16);
-          break;
-        }
-        default: ;
-      }
+    case FLAG_LEAD0:
+      systemFlagProcess(FLAG_L, action);
       break;
-    }
 
-    case FLAG_TRACE: {
-      switch(action) {
-        case 0: {
-          globalFlags[FLAG_T/16] &= ~(1u << (FLAG_T%16));
-          break;
-        }
-        case 1: {
-          globalFlags[FLAG_T/16] |=   1u << (FLAG_T%16);
-          break;
-        }
-        case 2: {
-          globalFlags[FLAG_T/16] ^=   1u << (FLAG_T%16);
-          break;
-        }
-        default: ;
-      }
+    case FLAG_TRACE:
+      systemFlagProcess(FLAG_T, action);
       break;
-    }
 
-    case FLAG_POLAR: {
-      switch(action) {
-        case 0: {
-          globalFlags[FLAG_X/16] &= ~(1u << (FLAG_X%16));
-          break;
-        }
-        case 1: {
-          globalFlags[FLAG_X/16] |=   1u << (FLAG_X%16);
-          break;
-        }
-        case 2: {
-          globalFlags[FLAG_X/16] ^=   1u << (FLAG_X%16);
-          break;
-        }
-        default: ;
-      }
+    case FLAG_POLAR:
+      systemFlagProcess(FLAG_X, action);
       break;
-    }
 
     default: ;
   }
@@ -211,7 +113,8 @@ void systemFlagAction(uint16_t systemFlag, uint16_t action) {
     case FLAG_HPRP:
     case FLAG_HPBASE:
     case FLAG_2TO10:
-                     fnRefreshState(); break;
+      fnRefreshState();
+      break;
 
 
 
@@ -230,71 +133,51 @@ void systemFlagAction(uint16_t systemFlag, uint16_t action) {
     case FLAG_SBser :
     case FLAG_SBprn :
     case FLAG_SBbatV:
-    case FLAG_SBshfR: fnRefreshState(); screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR; break;
+    case FLAG_SBshfR:
+      fnRefreshState();
+      screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
+      break;
 
 
     default: ;
   }
 }
 
+void setSystemFlag(unsigned int sf) {
+  systemFlags |= ((uint64_t)1 << (sf & 0x3fff));
+  systemFlagAction(sf, 1);
+}
 
+void clearSystemFlag(unsigned int sf) {
+  systemFlags &= ~((uint64_t)1 << (sf & 0x3fff));
+  systemFlagAction(sf, 0);
+}
+
+void flipSystemFlag(unsigned int sf) {
+  systemFlags ^=  ((uint64_t)1 << (sf & 0x3fff));
+  systemFlagAction(sf, 2);
+}
+
+void forceSystemFlag(unsigned int sf, int v) {
+  if (v)
+    setSystemFlag(sf);
+  else
+    clearSystemFlag(sf);
+}
+
+static void synchronizeSystemFlag(unsigned int sf) {
+  forceSystemFlag(sf, getSystemFlag(sf));
+}
 
 void synchronizeLetteredFlags(void) {
-  if(getSystemFlag(FLAG_ALLENG)) {
-    setSystemFlag(FLAG_ALLENG);
-  }
-  else {
-    clearSystemFlag(FLAG_ALLENG);
-  }
-
-  if(getSystemFlag(FLAG_OVERFLOW)) {
-    setSystemFlag(FLAG_OVERFLOW);
-  }
-  else {
-    clearSystemFlag(FLAG_OVERFLOW);
-  }
-
-  if(getSystemFlag(FLAG_CARRY)) {
-    setSystemFlag(FLAG_CARRY);
-  }
-  else {
-    clearSystemFlag(FLAG_CARRY);
-  }
-
-  if(getSystemFlag(FLAG_SPCRES)) {
-    setSystemFlag(FLAG_SPCRES);
-  }
-  else {
-    clearSystemFlag(FLAG_SPCRES);
-  }
-
-  if(getSystemFlag(FLAG_CPXRES)) {
-    setSystemFlag(FLAG_CPXRES);
-  }
-  else {
-    clearSystemFlag(FLAG_CPXRES);
-  }
-
-  if(getSystemFlag(FLAG_LEAD0)) {
-    setSystemFlag(FLAG_LEAD0);
-  }
-  else {
-    clearSystemFlag(FLAG_LEAD0);
-  }
-
-  if(getSystemFlag(FLAG_TRACE)) {
-    setSystemFlag(FLAG_TRACE);
-  }
-  else {
-    clearSystemFlag(FLAG_TRACE);
-  }
-
-  if(getSystemFlag(FLAG_POLAR)) {
-    setSystemFlag(FLAG_POLAR);
-  }
-  else {
-    clearSystemFlag(FLAG_POLAR);
-  }
+  synchronizeSystemFlag(FLAG_ALLENG);
+  synchronizeSystemFlag(FLAG_OVERFLOW);
+  synchronizeSystemFlag(FLAG_CARRY);
+  synchronizeSystemFlag(FLAG_SPCRES);
+  synchronizeSystemFlag(FLAG_CPXRES);
+  synchronizeSystemFlag(FLAG_LEAD0);
+  synchronizeSystemFlag(FLAG_TRACE);
+  synchronizeSystemFlag(FLAG_POLAR);
 }
 
 
