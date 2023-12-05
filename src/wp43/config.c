@@ -88,15 +88,6 @@ TO_QSPI static const struct {
     [CFG_USA   ] = {  0, 0,1,0, 2361222,   ITM_COMMA            ,    3,    9,    0,    3,      ITM_NULL              ,   ITM_PERIOD},    /* 14 Sep 1752 */
 };
 
-static void setFlag(int f, int v) {
-  if(v) {
-    setSystemFlag(f);
-  }
-  else {
-    clearSystemFlag(f);
-  }
-}
-
 void configCommon(uint16_t idx) {
   #if !defined(TESTSUITE_BUILD)
     if(checkHP) {
@@ -104,10 +95,10 @@ void configCommon(uint16_t idx) {
     }
   #endif // !TESTSUITE_BUILD
 
-  setFlag(FLAG_TDM24, configSettings[idx].tdm24);
-  setFlag(FLAG_DMY, configSettings[idx].dmy);
-  setFlag(FLAG_MDY, configSettings[idx].mdy);
-  setFlag(FLAG_YMD, configSettings[idx].ymd);
+  forceSystemFlag(FLAG_TDM24, configSettings[idx].tdm24);
+  forceSystemFlag(FLAG_DMY, configSettings[idx].dmy);
+  forceSystemFlag(FLAG_MDY, configSettings[idx].mdy);
+  forceSystemFlag(FLAG_YMD, configSettings[idx].ymd);
   firstGregorianDay = configSettings[idx].gregorianDay;
   temporaryInformation = TI_DISP_JULIAN;
 

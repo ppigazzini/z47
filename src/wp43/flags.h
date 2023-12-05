@@ -23,7 +23,6 @@
   #include "typeDefinitions.h"
   #include <stdint.h>
 
-  void   systemFlagAction        (uint16_t systemFlag, uint16_t action);
   void   synchronizeLetteredFlags(void);
   bool_t getFlag                 (uint16_t flag);
   void   fnGetSystemFlag         (uint16_t systemFlag);
@@ -41,4 +40,10 @@
   void   fnIsFlagSetFlip         (uint16_t flag);
   void   fnIsFlagSetFlip         (uint16_t flag);
   void   SetSetting              (uint16_t jmConfig);
+
+  void setSystemFlag(unsigned int sf);
+  void clearSystemFlag(unsigned int sf);
+  void flipSystemFlag(unsigned int sf);
+  void forceSystemFlag(unsigned int sf, int v);
+
 #endif // !FLAGS_H
