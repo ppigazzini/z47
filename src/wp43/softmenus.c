@@ -650,6 +650,7 @@ TO_QSPI const int16_t menu_ASN_N[]       = { ITM_N_KEY_SIGMA,           ITM_N_KE
   #define CC_R47  ITM_USER_R47
   #define CC_R47bkfg  ITM_USER_R47bkfg
   #define CC_R47fgbk  ITM_USER_R47fgbk                                             
+  #define CC_R47fg_g  ITM_USER_R47fg_g                                             
 #else // !DMCP_BUILD
   #define CC_V47  ITM_USER_V47
   #define CC_E47  ITM_USER_E47
@@ -658,6 +659,7 @@ TO_QSPI const int16_t menu_ASN_N[]       = { ITM_N_KEY_SIGMA,           ITM_N_KE
   #define CC_R47  ITM_USER_R47
   #define CC_R47bkfg  ITM_USER_R47bkfg
   #define CC_R47fgbk  ITM_USER_R47fgbk                                             
+  #define CC_R47fg_g  ITM_USER_R47fg_g
 #endif // !DMCP_BUILD
 
 
@@ -667,7 +669,7 @@ TO_QSPI const int16_t menu_KEYS[]      =  {  -MNU_RIBBONS,             -MNU_RESE
 
 TO_QSPI const int16_t menu_LAYOUTS[]   =  {  ITM_USER_C47,              CC_D47,                    CC_E47,                    ITM_USERMODE,              ITM_ASSIGN,                CC_R47,
                                              ITM_USER_DM42,             CC_N47,                    CC_V47,                    ITM_NULL,                  ITM_NULL,                  CC_R47bkfg,
-                                             ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  CC_R47fgbk                 };
+                                             ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  CC_R47fg_g,                CC_R47fgbk                 };
 
 TO_QSPI const int16_t menu_RESETS[]    =  {  ITM_USER_ARESET,           ITM_USER_MRESET,           ITM_USER_HRESET,           ITM_USER_PRESET,           ITM_NULL,                  ITM_USER_KRESET,           
                                              ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  

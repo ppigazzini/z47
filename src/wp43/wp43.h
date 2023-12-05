@@ -86,9 +86,10 @@
     extern const calcKey_t                 kbd_std_WP43[37];
     extern const calcKey_t                 kbd_std_DM42[37];
     extern const calcKey_t                 kbd_std_R47[37];
-    extern const calcKey_t                 kbd_std_R47_bk_fg[37];
-    extern const calcKey_t                 kbd_std_R47_fg_bk[37];
-    #define kbd_std                        (calcModel == USER_C47 ? kbd_std_C47 : calcModel == USER_DM42 ? kbd_std_DM42 : calcModel == USER_R47 ? kbd_std_R47 : calcModel == USER_R47bkfg ? kbd_std_R47_bk_fg : calcModel == USER_R47fgbk ? kbd_std_R47_fg_bk : kbd_std_C47)
+    extern const calcKey_t                 kbd_std_R47bkfg[37];
+    extern const calcKey_t                 kbd_std_R47fgbk[37];
+    extern const calcKey_t                 kbd_std_R47fg_g[37];
+    #define kbd_std                        (calcModel == USER_C47 ? kbd_std_C47 : calcModel == USER_DM42 ? kbd_std_DM42 : calcModel == USER_R47 ? kbd_std_R47 : calcModel == USER_R47bkfg ? kbd_std_R47bkfg : calcModel == USER_R47fgbk ? kbd_std_R47fgbk : calcModel == USER_R47fg_g ? kbd_std_R47fg_g : kbd_std_C47)
   #if defined(PC_BUILD)
     extern const calcKey_t                 kbd_std_D47[37];
     extern const calcKey_t                 kbd_std_V47[37];

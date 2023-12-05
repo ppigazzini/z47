@@ -356,6 +356,7 @@
 #define USER_R47         58
 #define USER_R47bkfg     59
 #define USER_R47fgbk     60
+#define USER_R47fg_g     61
 
 
 //*************************
