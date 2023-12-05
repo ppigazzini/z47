@@ -329,6 +329,7 @@
 #define USER_R47         58
 #define USER_R47bkfg     59
 #define USER_R47fgbk     60
+#define USER_R47fg_g     61
 
 
 //*************************
@@ -1312,9 +1313,6 @@ typedef enum {
 
 #define isSystemFlagWriteProtected(sf)       ((sf & 0x4000) != 0)
 #define getSystemFlag(sf)                    ((systemFlags &   ((uint64_t)1 << (sf & 0x3fff))) != 0)
-#define setSystemFlag(sf)                    do { systemFlags |=  ((uint64_t)1 << (sf & 0x3fff)); systemFlagAction(sf, 1); } while(0)
-#define clearSystemFlag(sf)                  do { systemFlags &= ~((uint64_t)1 << (sf & 0x3fff)); systemFlagAction(sf, 0); } while(0)
-#define flipSystemFlag(sf)                   do { systemFlags ^=  ((uint64_t)1 << (sf & 0x3fff)); systemFlagAction(sf, 2); } while(0)
 #define shortIntegerIsZero(op)               (((*(uint64_t *)(op)) == 0) || (shortIntegerMode == SIM_SIGNMT && (((*(uint64_t *)(op)) == 1u<<((uint64_t)shortIntegerWordSize-1)))))
 #define getStackTop()                        (getSystemFlag(FLAG_SSIZE8) ? REGISTER_D : REGISTER_T)
 #define freeRegisterData(regist)             freeC47Blocks((void *)getRegisterDataPointer(regist), getRegisterFullSizeInBlocks(regist))

@@ -91,15 +91,6 @@ TO_QSPI static const struct {
     [CFG_USA   ] = {  0, 0,1,0, 2361222,   ITM_COMMA            ,    3,    9,    0,    3,     ITM_NULL              ,   ITM_PERIOD},                /* 14 Sep 1752 */
 };
 
-static void setFlag(int f, int v) {
-  if(v) {
-    setSystemFlag(f);
-  }
-  else {
-    clearSystemFlag(f);
-  }
-}
-
 void configCommon(uint16_t idx) {
   #if !defined(TESTSUITE_BUILD)
     if(checkHP) {
@@ -107,10 +98,10 @@ void configCommon(uint16_t idx) {
     }
   #endif // !TESTSUITE_BUILD
 
-  setFlag(FLAG_TDM24, configSettings[idx].tdm24);
-  setFlag(FLAG_DMY, configSettings[idx].dmy);
-  setFlag(FLAG_MDY, configSettings[idx].mdy);
-  setFlag(FLAG_YMD, configSettings[idx].ymd);
+  forceSystemFlag(FLAG_TDM24, configSettings[idx].tdm24);
+  forceSystemFlag(FLAG_DMY, configSettings[idx].dmy);
+  forceSystemFlag(FLAG_MDY, configSettings[idx].mdy);
+  forceSystemFlag(FLAG_YMD, configSettings[idx].ymd);
   firstGregorianDay = configSettings[idx].gregorianDay;
   temporaryInformation = TI_DISP_JULIAN;
 
@@ -1048,9 +1039,10 @@ void restoreStats(void){
 
     TO_QSPI const numberstr indexOfMsgs[] = {
       {0,USER_C47,     "C47: Classic single shift (DM42)"  },
-      {0,USER_R47,     "R47: Exp 2 shifts R (43S mould) /x-+ R"          },
-      {0,USER_R47bkfg, "R47bkfg: Exp 1 shift R (43Ssp mould) /x-+ R"     },
-      {0,USER_R47fgbk, "R47fgbk: Exp 1 shift R (43Ssp mould) /x-+ R"     },
+      {0,USER_R47,     "R47: 2 shifts R (43S mould) /x-+ R"          },
+      {0,USER_R47bkfg, "R47bkfg: 1 shift R (43Ssp mould) /x-+ R"     },
+      {0,USER_R47fgbk, "R47fgbk: 1 shift L (43Ssp mould) /x-+ R"     },
+      {0,USER_R47fg_g, "R47fg_g: 2 shifts f/g g (43Ssp mould) /x-+ R"    },
       {0,USER_D47,     "D47: Exp 2 shifts R (43S mould) /x-+ R"          },
       {0,USER_E47,     "E47: Exp 2 shifts L /x-+ R"                      },
       {0,USER_N47,     "N47: Exp 2 shft L (32 mould) /x-+ R " STD_UP_ARROW STD_DOWN_ARROW " top"  },
@@ -1692,6 +1684,7 @@ void fnKeysManagement(uint16_t choice) {
       case USER_R47:
       case USER_R47bkfg:
       case USER_R47fgbk:
+      case USER_R47fg_g:
       case USER_C47:
       case USER_DM42:
         calcModel = choice;
