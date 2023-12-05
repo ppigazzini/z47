@@ -2291,8 +2291,9 @@
 #define MNU_RIBBONS                 2235
 #define ITM_USER_R47bkfg                 2236
 #define ITM_USER_R47fgbk                 2237
+#define ITM_USER_R47fg_g                 2238
 
-#define LAST_ITEM                   2238
+#define LAST_ITEM                   2239
 
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL

@@ -1048,9 +1048,10 @@ void restoreStats(void){
 
     TO_QSPI const numberstr indexOfMsgs[] = {
       {0,USER_C47,     "C47: Classic single shift (DM42)"  },
-      {0,USER_R47,     "R47: Exp 2 shifts R (43S mould) /x-+ R"          },
-      {0,USER_R47bkfg, "R47bkfg: Exp 1 shift R (43Ssp mould) /x-+ R"     },
-      {0,USER_R47fgbk, "R47fgbk: Exp 1 shift R (43Ssp mould) /x-+ R"     },
+      {0,USER_R47,     "R47: 2 shifts R (43S mould) /x-+ R"          },
+      {0,USER_R47bkfg, "R47bkfg: 1 shift R (43Ssp mould) /x-+ R"     },
+      {0,USER_R47fgbk, "R47fgbk: 1 shift L (43Ssp mould) /x-+ R"     },
+      {0,USER_R47fg_g, "R47fg_g: 2 shifts f/g g (43Ssp mould) /x-+ R"    },
       {0,USER_D47,     "D47: Exp 2 shifts R (43S mould) /x-+ R"          },
       {0,USER_E47,     "E47: Exp 2 shifts L /x-+ R"                      },
       {0,USER_N47,     "N47: Exp 2 shft L (32 mould) /x-+ R " STD_UP_ARROW STD_DOWN_ARROW " top"  },
@@ -1692,6 +1693,7 @@ void fnKeysManagement(uint16_t choice) {
       case USER_R47:
       case USER_R47bkfg:
       case USER_R47fgbk:
+      case USER_R47fg_g:
       case USER_C47:
       case USER_DM42:
         calcModel = choice;
