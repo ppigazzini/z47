@@ -1716,7 +1716,7 @@ static void UI64toString(uint64_t value, char * tmpRegisterString) {
   v0 = value & 0xffffffff;
   v1 = value >> 32;
   if(v1 != 0) {
-    sprintf(tmpRegisterString, "0x%" PRIx32 "%0" PRIx32, v1, v0);
+    sprintf(tmpRegisterString, "0x%" PRIx32 "%08" PRIx32, v1, v0);
   }
   else {
     sprintf(tmpRegisterString, "0x%" PRIx32, v0);
@@ -1727,7 +1727,7 @@ static void UI64toString(uint64_t value, char * tmpRegisterString) {
 static unsigned int getBase(const char **str) {
   unsigned int base = 10;
   //fprintf(stderr,"\nget base\n");fflush(stderr);
-  if(**str == '0' && (*str)[1] >= '0' && (*str)[1] <= '7') {
+  if(**str == '0' && (((*str)[1] >= '0' && (*str)[1] <= '7') || (*str)[1] == 'x')) {
     base = 8;
     ++*str;
     if(**str == 'x') {
