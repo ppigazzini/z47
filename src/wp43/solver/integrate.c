@@ -302,28 +302,30 @@ static void DEI_xeq_user(calcRegister_t regist, const real_t *x, real_t *res, re
 
 
 void _showProgress(const real_t *ss, const real_t *bma2, const real_t *h, const real_t *a, const real_t *b, const real_t *fact, realContext_t *realContext) {
-  real_t res;
-  clearRegisterLine(REGISTER_Z, true, true);
-  clearRegisterLine(REGISTER_Y, true, true);
-  clearRegisterLine(REGISTER_X, true, true);
-  uint8_t savedDisplayFormatDigits = displayFormatDigits;
-  displayFormatDigits = displayFormat == DF_ALL ? 0 : 33;
-  real34_t rtmp34;
-  real_t tmpr;
-  realMultiply(ss, bma2, &res, realContext);
-  realMultiply(&res, h, &res, realContext); // load the integral result,
-  realMultiply(&res, fact, &res, realContext); // load the integral result,
-  realToReal34(&res,&rtmp34);
-  real34ToDisplayString(&rtmp34, amNone, tmpString, &standardFont, 9999, 34, false, true);
-  showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
-  realSubtract(a,b,&tmpr,realContext);
-  realToReal34(&tmpr,&rtmp34);
-  real34ToDisplayString(&rtmp34, amNone, tmpString, &standardFont, 9999, 34, false, true);
-  showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_Y_LINE + 6, vmNormal, true, true);
-  displayFormatDigits = savedDisplayFormatDigits;
-  #if defined DMCP_BUILD
-    lcd_refresh();
-  #endif //DMCP_BUILD
+  #if !defined (TESTSUITE_BUILD)
+    real_t res;
+    clearRegisterLine(REGISTER_Z, true, true);
+    clearRegisterLine(REGISTER_Y, true, true);
+    clearRegisterLine(REGISTER_X, true, true);
+    uint8_t savedDisplayFormatDigits = displayFormatDigits;
+    displayFormatDigits = displayFormat == DF_ALL ? 0 : 33;
+    real34_t rtmp34;
+    real_t tmpr;
+    realMultiply(ss, bma2, &res, realContext);
+    realMultiply(&res, h, &res, realContext); // load the integral result,
+    realMultiply(&res, fact, &res, realContext); // load the integral result,
+    realToReal34(&res,&rtmp34);
+    real34ToDisplayString(&rtmp34, amNone, tmpString, &standardFont, 9999, 34, false, true);
+    showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
+    realSubtract(a,b,&tmpr,realContext);
+    realToReal34(&tmpr,&rtmp34);
+    real34ToDisplayString(&rtmp34, amNone, tmpString, &standardFont, 9999, 34, false, true);
+    showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_Y_LINE + 6, vmNormal, true, true);
+    displayFormatDigits = savedDisplayFormatDigits;
+    #if defined DMCP_BUILD
+      lcd_refresh();
+    #endif //DMCP_BUILD
+  #endif //TESTSUITE_BUILD
 }
 
 
