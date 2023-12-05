@@ -259,7 +259,7 @@ void Sett(int16_t grp) {
       #if defined(PC_BUILD)
         printf("Sett3:%d:%d\n",ptr,Settings[ptr*(_numberOfGrps+2) + 1 + grp]);
       #endif //PC_BUILD
-      setFlag (Settings[ptr*(_numberOfGrps+2) + 1 + grp], Settings[  ptr*(_numberOfGrps+2) + 1 ]); 
+      forceSystemFlag (Settings[ptr*(_numberOfGrps+2) + 1 + grp], Settings[  ptr*(_numberOfGrps+2) + 1 ]); 
     }
   }
   ptr--;
