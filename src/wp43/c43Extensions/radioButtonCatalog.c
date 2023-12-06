@@ -99,12 +99,13 @@ TO_QSPI const radiocb_t indexOfRadioCbEepromItems[] = {
   {ITM_BCD9,             BCD9c,                  RB_BCD}, //
   {ITM_BCD10,            BCD10c,                 RB_BCD}, //
 
-  {ITM_HPRP,             PR_HPRP,                CB_JC},  //  --
-  {ITM_HPBASE,           PR_HPBASE,              CB_JC},  //  --
-  {ITM_2TO10,            PR_2TO10,               CB_JC},  //  --
-  {ITM_DENANY,           DM_ANY,                 CB_JC},  //  --fnDenMode
-  {ITM_DENFIX,           DM_FIX,                 CB_JC},  //  --fnDenMode
-  {ITM_PROPFR,           DM_PROPFR,              CB_JC},  //  --fnDenMode
+  {ITM_HPRP,             PR_HPRP,                CB_JC},
+  {ITM_HPBASE,           PR_HPBASE,              CB_JC},
+  {ITM_2TO10,            PR_2TO10,               CB_JC},
+  {ITM_DENANY,           DM_ANY,                 CB_JC},
+  {ITM_DENFIX,           DM_FIX,                 CB_JC},
+  {ITM_PROPFR,           DM_PROPFR,              CB_JC},
+  {ITM_FRACT,            DM_FRACT,               CB_JC},
 
   {ITM_M_GROW,           ITM_M_GROW,             RB_GW},  // SFL_PRTACT
   {ITM_M_WRAP,           ITM_M_WRAP,             RB_GW},  // SFL_PRTACT
@@ -341,6 +342,7 @@ int8_t fnCbIsSet(int16_t item) {
             case DM_ANY:                 cb_param = getSystemFlag(FLAG_DENANY);                                       break;
             case DM_FIX:                 cb_param = getSystemFlag(FLAG_DENFIX);                                       break;
             case DM_PROPFR:              cb_param = getSystemFlag(FLAG_PROPFR);                                       break;
+            case DM_FRACT:               cb_param = getSystemFlag(FLAG_FRACT);                                        break;
             case PRTACT:                 cb_param = getSystemFlag(FLAG_PRTACT);                                       break;
             case JC_ERPN:                cb_param = eRPN;                                                             break;
             case JC_G_DOUBLETAP:         cb_param = jm_G_DOUBLETAP;                                                   break;
