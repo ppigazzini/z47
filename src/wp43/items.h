@@ -1793,7 +1793,7 @@
 #define ITM_dotD                    1741
 #define ITM_SHOW                    1742
 #define ITM_SYSTEM                  1743
-#define ITM_1744                    1744
+#define ITM_FRACT                       1744
 #define ITM_VANGLE                  1745
 #define ITM_XH                      1746
 #define ITM_XRMS                    1747

@@ -781,6 +781,11 @@ void SetSetting(uint16_t jmConfig) {
       break;
     }
 
+    case DM_FRACT: {
+      fnFlipFlag(FLAG_FRACT);
+      break;
+    }
+
     case DM_FIX: {
       fnFlipFlag(FLAG_DENFIX);
       break;
