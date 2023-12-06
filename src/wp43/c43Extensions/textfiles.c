@@ -123,7 +123,7 @@ void copyRegisterToClipboardString2(calcRegister_t regist, char *clipboardString
 
 
 //USING tmpString !!
-void stackregister_csv_out(int16_t reg_b, int16_t reg_e) {
+void stackregister_csv_out(int16_t reg_b, int16_t reg_e, bool_t oneLine) {
   #if !defined(TESTSUITE_BUILD)
     char tmp_b[100], tmp_e[100];
 
@@ -163,7 +163,11 @@ void stackregister_csv_out(int16_t reg_b, int16_t reg_e) {
         print_linestr(tmpTmp, false);
       #endif // VERBOSE_LEVEL >= 1
 
-      strcat(tmp_e, CSV_NEWLINE);
+      if(!oneLine || ix == reg_e) {         //use tabs, except at the last register, use newline
+        strcat(tmp_e, CSV_NEWLINE);
+      } else {
+        strcat(tmp_e, CSV_TAB);
+      }
 
       //printf(">>>: §%s§%s§%s§\n", tmp_b, tmp, tmp_e);
       addStrBothSides(tmpString, tmp_b, tmp_e);
