@@ -789,6 +789,7 @@ static void _integrate_mm(calcRegister_t regist, const real_t *llim, const real_
   evals = 1;
   realCopy(const_2, &h);
   realZero(&sslast);
+  realZero(&errval);
   do {
     realZero(&ssp);
     j = 1;
@@ -797,7 +798,7 @@ static void _integrate_mm(calcRegister_t regist, const real_t *llim, const real_
     do {
       #if !defined(TESTSUITE_BUILD)
         char tmps[64];
-        sprintf(tmps,"level:  %i Iter: ",maxlevel-k);
+        sprintf(tmps,"level:  %i Iter: ",(int16_t)(maxlevel-k));
         if(printHalfSecUpdate_Integer(timed, tmps, loop++)) { ; //timed
           #if ENABLE_SOLVER_PROGRESS == 1
             _showProgress(&sslast, &bma2, &h, &errval, const_0, const_2, realContext);
