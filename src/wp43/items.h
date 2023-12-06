@@ -2159,7 +2159,7 @@
 #define MNU_TRG_C47_MORE            2103
 #define ITM_2104                    2104
 #define ITM_2105                    2105
-#define ITM_2106                    2106
+#define ITM_BASE_SAV                2106
 #define MNU_PLOTTING                2107
 #define MNU_TAMNONREGIND            2108
 #define ITM_SAVEST                  2109

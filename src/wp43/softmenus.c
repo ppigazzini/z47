@@ -688,7 +688,7 @@ TO_QSPI const int16_t menu_RESETS[]    =  {  ITM_USER_ARESET,           ITM_USER
                                              ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  
                                              ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL };
 
-TO_QSPI const int16_t menu_RIBBONS[]   =  {  ITM_BASE_CPX,              ITM_BASE_ENG,              ITM_BASE_FIN,              ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  
+TO_QSPI const int16_t menu_RIBBONS[]   =  {  ITM_BASE_CPX,              ITM_BASE_ENG,              ITM_BASE_FIN,              ITM_BASE_SAV,              ITM_NULL,                  ITM_NULL,                  
                                              ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  
                                              ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL };
 
