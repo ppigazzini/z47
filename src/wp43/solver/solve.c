@@ -24,8 +24,10 @@
 #include "charString.h"
 #include "constantPointers.h"
 #include "defines.h"
+#include "display.h"
 #include "error.h"
 #include "flags.h"
+#include "c43Extensions/addons.h"
 #include "items.h"
 #include "longIntegerType.h"
 #include "mathematics/comparisonReals.h"
@@ -337,6 +339,42 @@ static void _executeSolver(calcRegister_t variable, const real34_t *val, real34_
   }
 #endif // !TESTSUITE_BUILD
 
+
+#if !defined(TESTSUITE_BUILD)
+  static void _showProgress(const real34_t *a, const real34_t *b, const real34_t *fa, const real34_t *fb) {
+    #if ENABLE_SOLVER_PROGRESS == 1
+        const real34_t *c;
+        if((currentSolverStatus & (SOLVER_STATUS_TVM_APPLICATION)) == 0 && currentSolverNestingDepth == 1 && programRunStop != PGM_RUNNING) {
+          uint8_t savedDisplayFormatDigits = displayFormatDigits;
+
+          if(real34CompareGreaterThan(a, b)) {
+            c = a;  a  = b;  b  = c;
+            c = fa; fa = fb; fb = c;
+          }
+
+          clearRegisterLine(REGISTER_Z, true, true);
+          clearRegisterLine(REGISTER_Y, true, true);
+          clearRegisterLine(REGISTER_X, true, true);
+
+          displayFormatDigits = displayFormat == DF_ALL ? 0 : 33;
+          real34ToDisplayString(a, amNone, tmpString, &standardFont, 9999, 34, false, true);
+          showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_Y_LINE + 6, vmNormal, true, true);
+          showString(real34IsSpecial(fa) ? "?" : real34IsZero(fa) ? "" : real34IsPositive(fa) ? "+" : "-", &standardFont, SCREEN_WIDTH - 10 /* width of '+' */, Y_POSITION_OF_REGISTER_Y_LINE + 6, vmNormal, true, true);
+          real34ToDisplayString(b, amNone, tmpString, &standardFont, 9999, 34, false, true);
+          showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
+          showString(real34IsSpecial(fb) ? "?" : real34IsZero(fb) ? "" : real34IsPositive(fb) ? "+" : "-", &standardFont, SCREEN_WIDTH - 10 /* width of '+' */, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
+          displayFormatDigits = savedDisplayFormatDigits;
+
+        #if defined DMCP_BUILD
+          lcd_refresh();
+        #endif //DMCP_BUILD
+      }
+    #endif // ENABLE_SOLVER_PROGRESS == 1
+  }
+#endif //TESTSUITE_BUILD
+
+
+
 int solver(calcRegister_t variable, const real34_t *y, const real34_t *x, real34_t *resZ, real34_t *resY, real34_t *resX) {
   #if !defined(TESTSUITE_BUILD)
     real34_t a, b, b1, b2, fa, fb, fb1, m, s, *bp1, fbp1, tmp;
@@ -407,6 +445,21 @@ int solver(calcRegister_t variable, const real34_t *y, const real34_t *x, real34
       real34ToReal(&fa, &faa);
       real34ToReal(&fb, &fbb);
       real34ToReal(&fb1, &fbb1);
+
+
+
+      if (printHalfSecUpdate_Integer(timed, "Iter: ",loop++)) { //timed
+        _showProgress(&a, &b, &fa, &fb);
+      }
+
+      #if defined(DMCP_BUILD)
+        if(keyWaiting()) {
+            showString("key Waiting ...", &standardFont, 20, 40, vmNormal, false, false);
+            printHalfSecUpdate_Integer(force+1, "Interrupted Iter:",loop);
+            programRunStop = PGM_WAITING;
+          break;
+        }
+      #endif //DMCP_BUILD
 
       // pre-calculation
       if(realIsSpecial(&bb2)) {
@@ -561,18 +614,6 @@ int solver(calcRegister_t variable, const real34_t *y, const real34_t *x, real34
 
       real34ToReal(&b, &bb);
       real34ToReal(&b1, &bb1);
-
-
-            printHalfSecUpdate_Integer(timed, "Iter: ",loop++); //timed
-
-            #if defined(DMCP_BUILD)
-              if(keyWaiting()) {
-                  showString("key Waiting ...", &standardFont, 20, 40, vmNormal, false, false);
-                  printHalfSecUpdate_Integer(force+1, "Interrupted Iter:",loop);
-                break;
-              }
-            #endif //DMCP_BUILD
-
 
     } while(result == SOLVER_RESULT_NORMAL &&
             (real34IsSpecial(&b2) || !real34CompareEqual(&b1, &b2) || !(extendRange || extremum || WP34S_RelativeError(&bb, &bb1, &tol, &ctxtReal39))) &&
