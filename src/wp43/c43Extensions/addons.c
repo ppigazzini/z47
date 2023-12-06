@@ -1912,6 +1912,17 @@ void fnRESET_MyM(uint8_t param) {
       if(param == USER_MENG) {
         itemToBeAssigned = menu_HOME[fn -1];                            //Function key follows if the yellow key: Copy the default f-shofted to the primaries of MyMenu
       } else
+      if(param == USER_MSAV) {
+        switch(fn) {
+          case 1: itemToBeAssigned = ITM_SYSTEM2; break;
+          case 2: itemToBeAssigned = ITM_ACTUSB;  break;
+          case 3: itemToBeAssigned = ITM_SAVE;    break;
+          case 4: itemToBeAssigned = ITM_LOAD;    break;
+          case 5: itemToBeAssigned = ITM_SAVEST;  break;
+          case 6: itemToBeAssigned = ITM_LOADST;  break;
+          default:break;
+        }
+      } else
       if(param == USER_MFIN) {
         switch(fn) {
           case 1: itemToBeAssigned = ITM_PC;      break;

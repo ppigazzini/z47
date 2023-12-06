@@ -41,7 +41,7 @@
    * \param[in] unusedButMandatoryParameter uint16_t
    * \return void
    ***********************************************/
-  void initFontBrowser(void) {
+  TO_QSPI void initFontBrowser(void) {
     uint16_t g;
 
     numLinesNumericFont  = 0;
@@ -106,7 +106,7 @@
    * \param[in] unusedButMandatoryParameter uint16_t
    * \return void
    ***********************************************/
-  void fontBrowser(uint16_t unusedButMandatoryParameter) {
+  TO_QSPI void fontBrowser(uint16_t unusedButMandatoryParameter) {
   #if !defined(SAVE_SPACE_DM42_8)
 
     uint16_t x, y, first;

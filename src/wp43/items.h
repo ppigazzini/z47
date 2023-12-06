@@ -1793,7 +1793,7 @@
 #define ITM_dotD                    1741
 #define ITM_SHOW                    1742
 #define ITM_SYSTEM                  1743
-#define ITM_1744                    1744
+#define ITM_FRACT                       1744
 #define ITM_VANGLE                  1745
 #define ITM_XH                      1746
 #define ITM_XRMS                    1747
@@ -2159,7 +2159,7 @@
 #define MNU_TRG_C47_MORE            2103
 #define ITM_2104                    2104
 #define ITM_2105                    2105
-#define ITM_2106                    2106
+#define ITM_BASE_SAV                2106
 #define MNU_PLOTTING                2107
 #define MNU_TAMNONREGIND            2108
 #define ITM_SAVEST                  2109

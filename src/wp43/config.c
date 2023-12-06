@@ -1052,6 +1052,7 @@ void restoreStats(void){
       {0,USER_MENG,    "MyMenu primary F-key engineering ribbon"         },
       {0,USER_MFIN,    "MyMenu primary F-key financial ribbon"           },
       {0,USER_MCPX,    "MyMenu primary F-key complex ribbon"             },
+      {0,USER_MSAV,    "MyMenu primary F-key save/load ribbon"           },
       {0,100,"Error List"}
     };
 
@@ -1767,6 +1768,7 @@ void fnKeysManagement(uint16_t choice) {
     case USER_MENG:
     case USER_MFIN:
     case USER_MCPX:
+    case USER_MSAV:
       fnRESET_MyM(choice);
       fnShowVersion(choice);
       #if !defined(TESTSUITE_BUILD)

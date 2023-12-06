@@ -106,6 +106,7 @@ void fnRCL          (int16_t inp);
 #define JC_PROPER              11    // CB FractionType
 #define JC_IMPROPER            12    // CB FractionType
 #define JC_BSR                 13    // CB SpecialResult
+#define DM_FRACT               15    // FRACT ON OFF
 #define DM_ANY                 16    // DENANY
 #define DM_FIX                 17    // DENFIX
 #define JC_FRC                 18    // CB FRACTION MODE
