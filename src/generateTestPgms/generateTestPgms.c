@@ -735,7 +735,7 @@ int main(int argc, char* argv[]) {
     *(currentStep++) =  ITM_END       & 0xff;
   }
 
-  { // Bairstow polynomial root finder
+  { // Bairstow polynomial root finder; Edits and corrections by L Locklear, entered by JM
     // 1
     *(currentStep++) = ITM_LBL;
     *(currentStep++) = STRING_LABEL_VARIABLE;
@@ -844,8 +844,8 @@ int main(int argc, char* argv[]) {
     *(currentStep++) = ITM_STOADD;
     *(currentStep++) = 93;
 
-    *(currentStep++) = ITM_STOADD;
-    *(currentStep++) = 93;
+    *(currentStep++) = ITM_STOSUB;
+    *(currentStep++) = 91;
 
     *(currentStep++) = ITM_RCL;
     *(currentStep++) = 92;
@@ -971,7 +971,7 @@ int main(int argc, char* argv[]) {
 
     // 60
     *(currentStep++) = ITM_XEQ;
-    *(currentStep++) = 1;
+    *(currentStep++) = 12;
 
     *(currentStep++) = ITM_GTO;
     *(currentStep++) = 90;
@@ -1000,7 +1000,7 @@ int main(int argc, char* argv[]) {
 
     *(currentStep++) = ITM_RTN;
 
-    *(currentStep++) = ITM_XEQ;
+    *(currentStep++) = ITM_LBL;
     *(currentStep++) = 100 + 'B' - 'A'; // B
 
     *(currentStep++) = ITM_LITERAL;
@@ -1027,13 +1027,13 @@ int main(int argc, char* argv[]) {
     *(currentStep++) = ITM_STO;
     *(currentStep++) = 92;
 
-    *(currentStep++) = ITM_XEQ;
+    *(currentStep++) = ITM_LBL;
     *(currentStep++) = 100 + 'C' - 'A'; // C
 
     *(currentStep++) = ITM_RCL;
     *(currentStep++) = 0;
 
-    *(currentStep++) = ITM_STO;
+    *(currentStep++) = ITM_STODIV;
     *(currentStep++) = INDIRECT_REGISTER;
     *(currentStep++) = 93;
 
@@ -1215,19 +1215,15 @@ int main(int argc, char* argv[]) {
     *(currentStep++) = '1';
 
     *(currentStep++) = ITM_STOADD;
-    *(currentStep++) = INDIRECT_REGISTER;
     *(currentStep++) = 91;
 
     *(currentStep++) = ITM_STOADD;
-    *(currentStep++) = INDIRECT_REGISTER;
     *(currentStep++) = 92;
 
     *(currentStep++) = ITM_STOADD;
-    *(currentStep++) = INDIRECT_REGISTER;
     *(currentStep++) = 93;
 
     *(currentStep++) = ITM_STOADD;
-    *(currentStep++) = INDIRECT_REGISTER;
     *(currentStep++) = 94;
 
     *(currentStep++) = ITM_RCL;
@@ -1383,19 +1379,15 @@ int main(int argc, char* argv[]) {
 
     // 170
     *(currentStep++) = ITM_STOADD;
-    *(currentStep++) = INDIRECT_REGISTER;
     *(currentStep++) = 91;
 
     *(currentStep++) = ITM_STOADD;
-    *(currentStep++) = INDIRECT_REGISTER;
     *(currentStep++) = 92;
 
     *(currentStep++) = ITM_STOADD;
-    *(currentStep++) = INDIRECT_REGISTER;
     *(currentStep++) = 93;
 
     *(currentStep++) = ITM_STOADD;
-    *(currentStep++) = INDIRECT_REGISTER;
     *(currentStep++) = 94;
 
     *(currentStep++) = ITM_RCL;
