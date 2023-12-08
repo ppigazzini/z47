@@ -33,22 +33,6 @@
 
 
 
-typedef struct {              //JM VALUES DEMO
-  uint8_t  itemType;
-  uint8_t  count;
-  char     *itemName;
-} numberstr;
-
-TO_QSPI const numberstr userTxt[] = {
-   {0,1,"unshifted keyboard mapping"},
-   {0,2,"f-shift keyboard mapping"  },
-   {0,3,"g-shift keyboard mapping"  },
-   {0,4,"alpha keyboard mapping"    },
-   {0,5,"alpha f-shift mapping"     },
-   {0,6,"alpha g-shift mapping"     }
- };
-
-
 #if !defined(TESTSUITE_BUILD)
   #if !defined(SAVE_SPACE_DM42_8)
   TO_QSPI static void fnAsnDisplay(uint8_t page) {                // Heavily modified by JM from the original fnShow
@@ -62,8 +46,16 @@ TO_QSPI const numberstr userTxt[] = {
     yy = 1;
     clearScreen();
     showSoftmenuCurrentPart();
-    showString(fnAsnDisplayUSER ? "(USER KEYS)" : "(STD KEYS)", &standardFont, 280, YOFF, vmNormal, false, false);
-    showString(userTxt[page-1].itemName, &standardFont, 30, YOFF, vmNormal, false, false);
+        showString(fnAsnDisplayUSER ? "(USER KEYS)" : "(STD KEYS)", &standardFont, 280, YOFF, vmNormal, false, false);
+        switch(page) {
+          case 1:   showString("unshifted keyboard mapping", &standardFont, 30, YOFF, vmNormal, false, false); break;
+          case 2:   showString("f-shift keyboard mapping",   &standardFont, 30, YOFF, vmNormal, false, false); break;
+          case 3:   showString("g-shift keyboard mapping",   &standardFont, 30, YOFF, vmNormal, false, false); break;
+          case 4:   showString("alpha keyboard mapping",     &standardFont, 30, YOFF, vmNormal, false, false); break;
+          case 5:   showString("alpha f-shift mapping",      &standardFont, 30, YOFF, vmNormal, false, false); break;
+          case 6:   showString("alpha g-shift mapping",      &standardFont, 30, YOFF, vmNormal, false, false); break;
+          default:break;
+        }
     showString( "[" STD_UP_ARROW "][" STD_DOWN_ARROW "] Browse - [.] View STD keys", &standardFont, 30, 220, vmNormal, false, false);
 
     for(key=0; key<37; key++) {
