@@ -280,6 +280,7 @@ void Sett(int16_t grp) {
     fnKeyExit(0);                            //Clear pending key input
     fnClrMod(0);                             //Get out of NIM or BASE
     fnStoreConfig(35);                       //Store current config into R35
+
     fnClearStack(0);                         //Clear stack
     fnPi(0);                                 //Put pi on X
 
@@ -339,6 +340,8 @@ void Sett(int16_t grp) {
     assignToMyMenu(6);
     itemToBeAssigned = ITM_op_j_pol;
     assignToMyMenu(11);
+
+
     cachedDynamicMenu = 0;
 
     temporaryInformation = TI_NO_INFO;
@@ -411,6 +414,7 @@ void Sett(int16_t grp) {
 
     temporaryInformation = TI_NO_INFO;
     fnRefreshState();
+
     fnDrop(0);
     fnDrop(0);
     runFunction(ITM_SQUARE);
@@ -419,7 +423,7 @@ void Sett(int16_t grp) {
   }
 
 
-  void fnSetC47(uint16_t unusedButMandatoryParameter) {
+void fnSetC47(uint16_t unusedButMandatoryParameter) {
     fnKeyExit(0);
     addItemToBuffer(ITM_EXIT1);
     fnClrMod(0);
@@ -430,7 +434,6 @@ void Sett(int16_t grp) {
     screenUpdatingMode = SCRUPD_AUTO;
     refreshScreen(167);
   }
-
 #endif // !TESTSUITE_BUILD
 
 
@@ -439,7 +442,6 @@ void fnClrMod(uint16_t unusedButMandatoryParameter) {        //clear input buffe
   #if defined(PC_BUILD)
     jm_show_comment("^^^^fnClrModa");
   #endif // PC_BUILD
-
   #if !defined(TESTSUITE_BUILD)
     resetKeytimers();  //JM
     clearSystemFlag(FLAG_FRACT);
@@ -485,8 +487,8 @@ void fnSetGapChar (uint16_t charParam) {
   if((charParam & 49152) == 49152) {                        //+49152 for the radix separator
     gapItemRadix = charParam & 16383;
   }
-  //printf("LT=%s RT=%s RX=%s\n",Lt, Rt, Rx);
-  //printf("Post: gapCharL0=%u gapCharL1=%u gapCharR0=%u gapCharR1=%u gapCharRx0=%u gapCharRx1%u  \n", (uint8_t)gapChar1Left[0], (uint8_t)gapChar1Left[1], (uint8_t)gapChar1Right[0], (uint8_t)gapChar1Right[1],  (uint8_t)gapChar1Radix[0], (uint8_t)gapChar1Radix[1]);
+//printf("LT=%s RT=%s RX=%s\n",Lt, Rt, Rx);
+//printf("Post: gapCharL0=%u gapCharL1=%u gapCharR0=%u gapCharR1=%u gapCharRx0=%u gapCharRx1%u  \n", (uint8_t)gapChar1Left[0], (uint8_t)gapChar1Left[1], (uint8_t)gapChar1Right[0], (uint8_t)gapChar1Right[1],  (uint8_t)gapChar1Radix[0], (uint8_t)gapChar1Radix[1]);
 }
 
 
@@ -503,20 +505,17 @@ void fnSettingsDispFormatGrpR   (uint16_t param) {
   grpGroupingRight = param;
 }
 
-
 void fnMenuGapL (uint16_t unusedButMandatoryParameter) {
   #if !defined(TESTSUITE_BUILD)
     showSoftmenu(-MNU_GAP_L);
   #endif // ! TESTSUITE_BUILD
 }
 
-
 void fnMenuGapRX (uint16_t unusedButMandatoryParameter) {
   #if !defined(TESTSUITE_BUILD)
     showSoftmenu(-MNU_GAP_RX);
   #endif // ! TESTSUITE_BUILD
 }
-
 
 void fnMenuGapR (uint16_t unusedButMandatoryParameter) {
   #if !defined(TESTSUITE_BUILD)
@@ -525,10 +524,15 @@ void fnMenuGapR (uint16_t unusedButMandatoryParameter) {
 }
 
 
+
+
+
+
 void fnIntegerMode(uint16_t mode) {
   shortIntegerMode = mode;
   fnRefreshState();
 }
+
 
 
 void fnWho(uint16_t unusedButMandatoryParameter) {
@@ -536,9 +540,11 @@ void fnWho(uint16_t unusedButMandatoryParameter) {
  }
 
 
+
 void fnVersion(uint16_t unusedButMandatoryParameter) {
   temporaryInformation = TI_VERSION;
 }
+
 
 
 void fnFreeMemory(uint16_t unusedButMandatoryParameter) {
@@ -1033,6 +1039,8 @@ void restoreStats(void){
 
 
 
+
+
     TO_QSPI const numberstr indexOfMsgs[] = {
       {0,USER_C47,     "C47: Classic single shift (DM42)"  },
       {0,USER_R47,     "R47: 2 shifts R (43S mould) /x-+ R"          },
@@ -1077,6 +1085,8 @@ void fnShowVersion(uint8_t option) {  //KEYS VERSION LOADED
 
 
 
+
+
 void defaultStatusBar(void) {
   Sett(_DefltSB);
   //---     setSystemFlag(FLAG_SBdate );  // FLAG_SBdate  0x802C
@@ -1096,7 +1106,6 @@ void defaultStatusBar(void) {
   //---   clearSystemFlag(FLAG_SBbatV );  // FLAG_SBbatV  0x803A
   //---   clearSystemFlag(FLAG_SBshfR );  // FLAG_SBshfR  0x803B
 }
-
 
 void resetOtherConfigurationStuff(void) {
   cancelFilename = true;
@@ -1133,7 +1142,7 @@ void resetOtherConfigurationStuff(void) {
   MYM3 = false;
   ShiftTimoutMode = true;
 //---  BASE_HOME   = false;
-  Norm_Key_00_VAR  = Norm_Key_00_item;                            //JM NORM MODE SIGMA REPLACEMENT KEY
+  Norm_Key_00_VAR  = Norm_Key_00_item_in_layout;               //JM NORM MODE SIGMA REPLACEMENT KEY
   Input_Default =  ID_43S;
   jm_G_DOUBLETAP = true;
 //---  BASE_MYM = true;                                             //"MyM" setting, set as part of USER_MRESET
@@ -1371,6 +1380,7 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     x_max = 10;
     y_min = 0;
     y_max = 1;
+
 
 
     systemFlags = 0;
@@ -1698,6 +1708,8 @@ void fnKeysManagement(uint16_t choice) {
       case USER_DM42:
         calcModel = choice;
         fnClearFlag(FLAG_USER);
+        fnKeysManagement(USER_KRESET);                   // Reset all user keys when a permanent layout is changed
+        Norm_Key_00_VAR = Norm_Key_00_item_in_layout;    // Rest +NRM when a permanent layout is changed
         fnShowVersion(choice);
       break;
 
@@ -1734,7 +1746,7 @@ void fnKeysManagement(uint16_t choice) {
     case USER_KRESET:
       fnShowVersion(choice);
       xcopy(kbd_usr, kbd_std, sizeof(kbd_std_C47));         //sizeof does not work when using the define for kbd_std
-      Norm_Key_00_VAR = Norm_Key_00_item;
+      Norm_Key_00_VAR = Norm_Key_00_item_in_layout;
       fnRefreshState();
       fnClearFlag(FLAG_USER);
       break;

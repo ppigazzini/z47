@@ -33,22 +33,6 @@
 
 
 
-typedef struct {              //JM VALUES DEMO
-  uint8_t  itemType;
-  uint8_t  count;
-  char     *itemName;
-} numberstr;
-
-TO_QSPI const numberstr userTxt[] = {
-   {0,1,"unshifted keyboard mapping"},
-   {0,2,"f-shift keyboard mapping"  },
-   {0,3,"g-shift keyboard mapping"  },
-   {0,4,"alpha keyboard mapping"    },
-   {0,5,"alpha f-shift mapping"     },
-   {0,6,"alpha g-shift mapping"     }
- };
-
-
 #if !defined(TESTSUITE_BUILD)
   #if !defined(SAVE_SPACE_DM42_8)
   TO_QSPI static void fnAsnDisplay(uint8_t page) {                // Heavily modified by JM from the original fnShow
@@ -62,8 +46,16 @@ TO_QSPI const numberstr userTxt[] = {
     yy = 1;
     clearScreen();
     showSoftmenuCurrentPart();
-    showString(fnAsnDisplayUSER ? "(USER KEYS)" : "(STD KEYS)", &standardFont, 280, YOFF, vmNormal, false, false);
-    showString(userTxt[page-1].itemName, &standardFont, 30, YOFF, vmNormal, false, false);
+        showString(fnAsnDisplayUSER ? "(USER KEYS)" : "(STD KEYS)", &standardFont, 280, YOFF, vmNormal, false, false);
+        switch(page) {
+          case 1:   showString("unshifted keyboard mapping", &standardFont, 30, YOFF, vmNormal, false, false); break;
+          case 2:   showString("f-shift keyboard mapping",   &standardFont, 30, YOFF, vmNormal, false, false); break;
+          case 3:   showString("g-shift keyboard mapping",   &standardFont, 30, YOFF, vmNormal, false, false); break;
+          case 4:   showString("alpha keyboard mapping",     &standardFont, 30, YOFF, vmNormal, false, false); break;
+          case 5:   showString("alpha f-shift mapping",      &standardFont, 30, YOFF, vmNormal, false, false); break;
+          case 6:   showString("alpha g-shift mapping",      &standardFont, 30, YOFF, vmNormal, false, false); break;
+          default:break;
+        }
     showString( "[" STD_UP_ARROW "][" STD_DOWN_ARROW "] Browse - [.] View STD keys", &standardFont, 30, 220, vmNormal, false, false);
 
     for(key=0; key<37; key++) {
@@ -75,9 +67,21 @@ TO_QSPI const numberstr userTxt[] = {
       if(key <  12) pixelsPerSoftKey = (int)((float)SCREEN_WIDTH / 6.0f + 0.5f); else
                     pixelsPerSoftKey = (int)((float)SCREEN_WIDTH / 5.0f + 0.5f);
 
+      bool_t Norm_Key_00_used = false;
       if(fnAsnDisplayUSER) {
-        switch(page) {
-          case 1: kk = kbd_usr[key].primary;  break;
+        switch(page) {// in user mode, user keys override if set, and if not set, the allows +NRM to override
+          case 1: if(key == Norm_Key_00_key) {
+              //printf("xxxx kbd_usr:%d kbd_std:%d Norm_Key_00_VAR:%d\n", kbd_usr[Norm_Key_00_key].primary, kbd_std[Norm_Key_00_key].primary, Norm_Key_00_VAR);
+              if(kbd_usr[Norm_Key_00_key].primary != kbd_std[Norm_Key_00_key].primary) {
+                kk = kbd_usr[key].primary;  //user key set, use normally
+              } else {                      
+                kk = Norm_Key_00_VAR;       //user key not set, use +NRM override
+                Norm_Key_00_used = Norm_Key_00_VAR != kbd_std[key].primary;    //only display in reverse and [] if different from kbd_std
+              }
+            } else {
+              kk = kbd_usr[key].primary;  //not even the +NRM key location, therefore normal user operation
+            }
+            break;
           case 2: kk = kbd_usr[key].fShifted; break;
           case 3: kk = kbd_usr[key].gShifted; break;
           case 4: kk = kbd_usr[key].primaryAim;  break;
@@ -87,11 +91,12 @@ TO_QSPI const numberstr userTxt[] = {
         }
       }
       else {
-        switch(page) {
-          case 1: if(key != Norm_Key_00_key) {
-              kk = kbd_std[key].primary;
-            } else {
+        switch(page) { //in non-user mode, +NRM overrides kbd_std
+          case 1: if(key == Norm_Key_00_key) {
               kk = Norm_Key_00_VAR;
+              Norm_Key_00_used = Norm_Key_00_VAR != kbd_std[key].primary;    //only display in reverse and [] if different from kbd_std
+            } else {
+              kk = kbd_std[key].primary;
             }
             break;
           case 2: kk = kbd_std[key].fShifted; break;
@@ -115,7 +120,7 @@ TO_QSPI const numberstr userTxt[] = {
 
       char tmp3[20];
       tmp3[0]=0;
-      if(!fnAsnDisplayUSER && (page == 1) && (key == Norm_Key_00_key) && (kbd_std[key].primary != Norm_Key_00_VAR)) {
+      if(Norm_Key_00_used) {
         stringAppend(tmp3 + stringByteLength(tmp3), "[");
         stringAppend(tmp3 + stringByteLength(tmp3), Name);
         stringAppend(tmp3 + stringByteLength(tmp3), "]");
@@ -123,7 +128,7 @@ TO_QSPI const numberstr userTxt[] = {
         stringAppend(Name + stringByteLength(Name), tmp3);
       }
 
-      showKey(Name, xx*pixelsPerSoftKey, xx*pixelsPerSoftKey+pixelsPerSoftKey, YOFF+yy*SOFTMENU_HEIGHT, YOFF+(yy+1)*SOFTMENU_HEIGHT, xx == 5, ((kk > 0 || Name[0] == 0) && tmp3[0]==0) ? vmNormal : vmReverse, true, true, NOVAL, NOVAL, NOTEXT);
+      showKey(Name, xx*pixelsPerSoftKey, xx*pixelsPerSoftKey+pixelsPerSoftKey, YOFF+yy*SOFTMENU_HEIGHT, YOFF+(yy+1)*SOFTMENU_HEIGHT, xx == 5, !Norm_Key_00_used ? vmNormal : vmReverse, true, true, NOVAL, NOVAL, NOTEXT);
 
       if(fnAsnDisplayUSER &&
           ( ((page == 1) && (kbd_std[key].primary == kbd_usr[key].primary)  )       ||
