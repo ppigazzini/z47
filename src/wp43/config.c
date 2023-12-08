@@ -1137,7 +1137,7 @@ void resetOtherConfigurationStuff(void) {
   MYM3 = false;
   ShiftTimoutMode = true;
   BASE_HOME   = false;
-  Norm_Key_00_VAR  = Norm_Key_00_item;                            //JM NORM MODE SIGMA REPLACEMENT KEY
+  Norm_Key_00_VAR  = Norm_Key_00_item_in_layout;               //JM NORM MODE SIGMA REPLACEMENT KEY
   Input_Default =  ID_43S;
   jm_G_DOUBLETAP = true;
   BASE_MYM = true;                                             //"MyM" setting, set as part of USER_MRESET
@@ -1726,7 +1726,7 @@ void fnKeysManagement(uint16_t choice) {
     case USER_KRESET:
       fnShowVersion(choice);
       xcopy(kbd_usr, kbd_std, sizeof(kbd_std_C47));         //sizeof does not work when using the define for kbd_std
-      Norm_Key_00_VAR = Norm_Key_00_item;
+      Norm_Key_00_VAR = Norm_Key_00_item_in_layout;
       fnRefreshState();
       fnClearFlag(FLAG_USER);
       break;

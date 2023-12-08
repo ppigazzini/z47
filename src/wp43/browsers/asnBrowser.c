@@ -67,9 +67,21 @@
       if(key <  12) pixelsPerSoftKey = (int)((float)SCREEN_WIDTH / 6.0f + 0.5f); else
                     pixelsPerSoftKey = (int)((float)SCREEN_WIDTH / 5.0f + 0.5f);
 
+      bool_t Norm_Key_00_used = false;
       if(fnAsnDisplayUSER) {
-        switch(page) {
-          case 1: kk = kbd_usr[key].primary;  break;
+        switch(page) {// in user mode, user keys override if set, and if not set, the allows +NRM to override
+          case 1: if(key == Norm_Key_00_key) {
+              //printf("xxxx kbd_usr:%d kbd_std:%d Norm_Key_00_VAR:%d\n", kbd_usr[Norm_Key_00_key].primary, kbd_std[Norm_Key_00_key].primary, Norm_Key_00_VAR);
+              if(kbd_usr[Norm_Key_00_key].primary != kbd_std[Norm_Key_00_key].primary) {
+                kk = kbd_usr[key].primary;  //user key set, use normally
+              } else {                      
+                kk = Norm_Key_00_VAR;       //user key not set, use +NRM override
+                Norm_Key_00_used = Norm_Key_00_VAR != kbd_std[key].primary;    //only display in reverse and [] if different from kbd_std
+              }
+            } else {
+              kk = kbd_usr[key].primary;  //not even the +NRM key location, therefore normal user operation
+            }
+            break;
           case 2: kk = kbd_usr[key].fShifted; break;
           case 3: kk = kbd_usr[key].gShifted; break;
           case 4: kk = kbd_usr[key].primaryAim;  break;
@@ -79,11 +91,12 @@
         }
       }
       else {
-        switch(page) {
-          case 1: if(key != Norm_Key_00_key) {
-              kk = kbd_std[key].primary;
-            } else {
+        switch(page) { //in non-user mode, +NRM overrides kbd_std
+          case 1: if(key == Norm_Key_00_key) {
               kk = Norm_Key_00_VAR;
+              Norm_Key_00_used = Norm_Key_00_VAR != kbd_std[key].primary;    //only display in reverse and [] if different from kbd_std
+            } else {
+              kk = kbd_std[key].primary;
             }
             break;
           case 2: kk = kbd_std[key].fShifted; break;
@@ -107,7 +120,7 @@
 
       char tmp3[20];
       tmp3[0]=0;
-      if(!fnAsnDisplayUSER && (page == 1) && (key == Norm_Key_00_key) && (kbd_std[key].primary != Norm_Key_00_VAR)) {
+      if(Norm_Key_00_used) {
         stringAppend(tmp3 + stringByteLength(tmp3), "[");
         stringAppend(tmp3 + stringByteLength(tmp3), Name);
         stringAppend(tmp3 + stringByteLength(tmp3), "]");
@@ -115,7 +128,7 @@
         stringAppend(Name + stringByteLength(Name), tmp3);
       }
 
-      showKey(Name, xx*pixelsPerSoftKey, xx*pixelsPerSoftKey+pixelsPerSoftKey, YOFF+yy*SOFTMENU_HEIGHT, YOFF+(yy+1)*SOFTMENU_HEIGHT, xx == 5, ((kk > 0 || Name[0] == 0) && tmp3[0]==0) ? vmNormal : vmReverse, true, true, NOVAL, NOVAL, NOTEXT);
+      showKey(Name, xx*pixelsPerSoftKey, xx*pixelsPerSoftKey+pixelsPerSoftKey, YOFF+yy*SOFTMENU_HEIGHT, YOFF+(yy+1)*SOFTMENU_HEIGHT, xx == 5, !Norm_Key_00_used ? vmNormal : vmReverse, true, true, NOVAL, NOVAL, NOTEXT);
 
       if(fnAsnDisplayUSER &&
           ( ((page == 1) && (kbd_std[key].primary == kbd_usr[key].primary)  )       ||
