@@ -168,7 +168,7 @@ void       fnAGraph                           (uint16_t regist);
   #define  force 1
   #define  timed 0
   void     force_refresh(uint8_t mode);                                                          //JM SCREEN
-  void     printHalfSecUpdate_Integer(uint8_t mode, char * txt, int loop);
+  bool_t   printHalfSecUpdate_Integer(uint8_t mode, char * txt, int loop);
 
   void     refreshScreen                      (void);
   //void     invertPixel                        (uint32_t x, uint32_t y);
