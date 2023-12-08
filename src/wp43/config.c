@@ -1690,6 +1690,8 @@ void fnKeysManagement(uint16_t choice) {
       case USER_DM42:
         calcModel = choice;
         fnClearFlag(FLAG_USER);
+        fnKeysManagement(USER_KRESET);                   // Reset all user keys when a permanent layout is changed
+        Norm_Key_00_VAR = Norm_Key_00_item_in_layout;    // Rest +NRM when a permanent layout is changed
         fnShowVersion(choice);
       break;
 
