@@ -451,7 +451,6 @@ void fnClrMod(uint16_t unusedButMandatoryParameter) {        //clear input buffe
   #if defined(PC_BUILD)
     jm_show_comment("^^^^fnClrModa");
   #endif // PC_BUILD
-
   #if !defined(TESTSUITE_BUILD)
     resetKeytimers();  //JM
     clearSystemFlag(FLAG_FRACT);
@@ -1711,6 +1710,8 @@ void fnKeysManagement(uint16_t choice) {
       case USER_DM42:
         calcModel = choice;
         fnClearFlag(FLAG_USER);
+        fnKeysManagement(USER_KRESET);                   // Reset all user keys when a permanent layout is changed
+        Norm_Key_00_VAR = Norm_Key_00_item_in_layout;    // Rest +NRM when a permanent layout is changed
         fnShowVersion(choice);
       break;
 
@@ -1747,7 +1748,7 @@ void fnKeysManagement(uint16_t choice) {
     case USER_KRESET:
       fnShowVersion(choice);
       xcopy(kbd_usr, kbd_std, sizeof(kbd_std_C47));         //sizeof does not work when using the define for kbd_std
-      Norm_Key_00_VAR = Norm_Key_00_item;
+      Norm_Key_00_VAR = Norm_Key_00_item_in_layout;
       fnRefreshState();
       fnClearFlag(FLAG_USER);
       break;

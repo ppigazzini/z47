@@ -1354,7 +1354,7 @@ bool_t allowShiftsToClearError = false;
     }                                                   //JMSHOW ^^
 
     int16_t ShiftOverride = 0;
-    result = Norm_Key_00_item;
+    result = Norm_Key_00_item_in_layout;
     ShiftOverride = Check_SigmaPlus_Assigned(&result, key_no);
 
     if (ShiftOverride == 0) {                              //disable long and double press if Sigma+ is shift g
