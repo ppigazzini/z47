@@ -161,6 +161,7 @@ void fnRCL          (int16_t inp);
 #define JC_SS                  71
 #define PR_HPBASE              72    // BASE CLASSIC MODE
 #define PR_2TO10               73    // 2^10 flag for UNIT
+#define JC_LPfg                74
 
 #if defined(PC_BUILD)
 //keyboard.c

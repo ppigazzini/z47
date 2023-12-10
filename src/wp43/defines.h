@@ -550,6 +550,7 @@
 #define FLAG_SBshfR                           0x803B
 #define FLAG_HPBASE                           0x803C
 #define FLAG_2TO10                            0x803D
+#define FLAG_SH_LONGPRESS                     0x803E
 
 #define NUMBER_OF_SYSTEM_FLAGS                    60
 

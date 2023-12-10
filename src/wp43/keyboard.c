@@ -1377,9 +1377,9 @@ bool_t allowShiftsToClearError = false;
     // Shift f pressed and JM REMOVED shift g not active
     if((key->primary == ITM_SHIFTf || ShiftOverride == ITM_SHIFTf) && (calcMode == CM_NORMAL || calcMode == CM_AIM || calcMode == CM_NIM  || calcMode == CM_MIM || calcMode == CM_EIM || calcMode == CM_PEM || calcMode == CM_PLOT_STAT || calcMode == CM_GRAPH || calcMode == CM_ASSIGN || calcMode == CM_ASN_BROWSER)) {   //JM shifts
       if(temporaryInformation == TI_SHOW_REGISTER || SHOWMODE) allowShiftsToClearError = true; //JM
-      Shft_timeouts = true;
-      if(ShiftTimoutMode) {
-        fnTimerStart(TO_FG_TIMR, TO_FG_TIMR, JM_SHIFT_TIMER); //^^
+      Shft_LongPress_f_g = true;
+      if(Shft_LongPress_f_g && getSystemFlag(FLAG_SH_LONGPRESS)) {
+        fnTimerStart(TO_FG_LONG, TO_FG_LONG, JM_TO_FG_LONG * 2);    //vv dr
       }
       if(temporaryInformation == TI_VIEW_REGISTER) {
         temporaryInformation = TI_NO_INFO;
@@ -1394,8 +1394,6 @@ bool_t allowShiftsToClearError = false;
         programRunStop = PGM_STOPPED;
       }
       lastErrorCode = 0;
-
-      fnTimerStop(TO_FG_LONG);                                //dr
 
       shiftF = !shiftF;
       shiftG = false;                                         //JM no shifted menu on g-shift-key as in WP43S
@@ -1410,9 +1408,9 @@ bool_t allowShiftsToClearError = false;
     // Shift g pressed and JM REMOVED shift f not active
     else if((key->primary == ITM_SHIFTg || ShiftOverride == ITM_SHIFTg) && (calcMode == CM_NORMAL || calcMode == CM_AIM || calcMode == CM_NIM  || calcMode == CM_MIM || calcMode == CM_EIM || calcMode == CM_PEM || calcMode == CM_PLOT_STAT || calcMode == CM_GRAPH || calcMode == CM_ASSIGN || calcMode == CM_ASN_BROWSER)) {   //JM shifts
       if(temporaryInformation == TI_SHOW_REGISTER || SHOWMODE) allowShiftsToClearError = true; //JM
-      Shft_timeouts = true;
-      if(ShiftTimoutMode) {
-        fnTimerStart(TO_FG_TIMR, TO_FG_TIMR, JM_SHIFT_TIMER); //^^
+      Shft_LongPress_f_g = true;
+      if(Shft_LongPress_f_g && getSystemFlag(FLAG_SH_LONGPRESS)) {
+        fnTimerStart(TO_FG_LONG, TO_FG_LONG, JM_TO_FG_LONG * 2);    //vv dr
       }
       if(temporaryInformation == TI_VIEW_REGISTER) {
         temporaryInformation = TI_NO_INFO;
@@ -1427,8 +1425,6 @@ bool_t allowShiftsToClearError = false;
         programRunStop = PGM_STOPPED;
       }
       lastErrorCode = 0;
-
-      fnTimerStop(TO_FG_LONG);                                //dr
 
       shiftG = !shiftG;
       shiftF = false;                                         //JM no shifted menu on g-shift-key as in WP43S
@@ -1444,6 +1440,7 @@ bool_t allowShiftsToClearError = false;
 
     // JM Shift fg pressed  //JM shifts change f/g to a single function key toggle to match DM42 keyboard
     else if((key->primary == KEY_fg || ShiftOverride == KEY_fg) && (calcMode == CM_NORMAL || calcMode == CM_AIM || calcMode == CM_NIM  || calcMode == CM_MIM || calcMode == CM_EIM || calcMode == CM_PEM || calcMode == CM_PLOT_STAT || calcMode == CM_GRAPH || calcMode == CM_ASSIGN || calcMode == CM_ASN_BROWSER)) {   //JM shifts
+      Shft_LongPress_f_g = false;
       Shft_timeouts = true;
       fnTimerStart(TO_FG_LONG, TO_FG_LONG, JM_TO_FG_LONG);    //vv dr
       if(ShiftTimoutMode) {
@@ -1952,6 +1949,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
 
       int16_t item;
       Shft_timeouts = false;                         //JM SHIFT NEW
+      Shft_LongPress_f_g = false;
       JM_auto_longpress_enabled = 0;                 //JM TIMER CLRCLSTK ON LONGPRESS
 
       if(programRunStop == PGM_KEY_PRESSED_WHILE_PAUSED) {

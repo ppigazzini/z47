@@ -344,6 +344,7 @@ void Sett(int16_t grp) {
 
     cachedDynamicMenu = 0;
 
+    setSystemFlag(FLAG_SH_LONGPRESS);
     temporaryInformation = TI_NO_INFO;
     fnRefreshState();
     screenUpdatingMode = SCRUPD_AUTO;
@@ -375,6 +376,7 @@ void Sett(int16_t grp) {
     //---     fnSetGapChar(49152+ITM_WCOMMA);               // RADIX WCOM
     //---     grpGroupingGr1LeftOverflow = 1;               //IPGRP1x = 1
 
+     setSystemFlag(FLAG_SH_LONGPRESS);
      fnKeyExit(0);
      fnDrop(0);
      fnSquare(0);
@@ -1401,6 +1403,8 @@ Sett(_Reset);
 //---    setSystemFlag  (FLAG_HPRP  );
 //---    setSystemFlag  (FLAG_HPBASE);
 //---    clearSystemFlag(FLAG_2TO10  );
+
+    clearSystemFlag(FLAG_SH_LONGPRESS);
 
     hourGlassIconEnabled = false;
     watchIconEnabled = false;

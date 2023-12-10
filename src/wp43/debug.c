@@ -1416,6 +1416,12 @@ void debugNIM(void) {
       }
 
       if(row < DEBUG_LINES) {
+        sprintf(string, "FLAG_FLAG_SH_LONGPRESS                     = %s",          getBooleanName(getSystemFlag(FLAG_SH_LONGPRESS)));
+        gtk_label_set_label(GTK_LABEL(lbl1[row]), string);
+        gtk_widget_show(lbl1[row++]);
+      }
+
+      if(row < DEBUG_LINES) {
         sprintf(string, "serialIOIconEnabled                       = %6d = %s",    serialIOIconEnabled,  getBooleanName(serialIOIconEnabled));
         gtk_label_set_label(GTK_LABEL(lbl1[row]), string);
         gtk_widget_show(lbl1[row++]);
