@@ -833,8 +833,6 @@ void execTimerApp(uint16_t timerType) {
         Shft_LongPress_f_g = false;
         fnTimerStop(TO_3S_CTFF);
         fnTimerStop(TO_FG_LONG);
-
-printf("XXXXXXXX %u %u \n",shiftF, shiftG);
         if(shiftF) {
           showSoftmenu(-MNU_HOME);
           showSoftmenuCurrentPart();

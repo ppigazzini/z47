@@ -555,7 +555,7 @@
 #define SFL_SBshfR                   522
 #define SFL_HPBASE                   523
 #define SFL_2TO10                    524
-#define ITM_0525                     525
+#define SFL_SH_LONGPRESS              525
 #define ITM_0526                     526
 
 
@@ -2092,7 +2092,7 @@
 #define MNU_TRG                     2036
 #define MNU_SETUP                   2037
 #define ITM_SAFERESET               2038
-#define MNU_2039                    2039
+#define ITM_SH_LONGPRESS                   2039
 #define ITM_PLOT_STAT               2040
 #define ITM_3x1TOSTK                2041
 #define ITM_PLOTRST                 2042

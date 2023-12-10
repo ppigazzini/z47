@@ -1369,13 +1369,9 @@ bool_t allowShiftsToClearError = false;
     if((key->primary == ITM_SHIFTf || ShiftOverride == ITM_SHIFTf) && (calcMode == CM_NORMAL || calcMode == CM_AIM || calcMode == CM_NIM  || calcMode == CM_MIM || calcMode == CM_EIM || calcMode == CM_PEM || calcMode == CM_PLOT_STAT || calcMode == CM_GRAPH || calcMode == CM_ASSIGN || calcMode == CM_ASN_BROWSER)) {   //JM shifts
       if(temporaryInformation == TI_SHOW_REGISTER || temporaryInformation == TI_SHOW_REGISTER_BIG || temporaryInformation == TI_SHOW_REGISTER_SMALL) allowShiftsToClearError = true; //JM
       Shft_LongPress_f_g = true;
-      if(ShiftTimoutMode || Shft_LongPress_f_g) {
-        fnTimerStart(TO_FG_LONG, TO_FG_LONG, JM_TO_FG_LONG);    //vv dr
+      if(Shft_LongPress_f_g && getSystemFlag(FLAG_SH_LONGPRESS)) {
+        fnTimerStart(TO_FG_LONG, TO_FG_LONG, JM_TO_FG_LONG * 2);    //vv dr
       }
-      //Shft_timeouts = true;
-      //if(ShiftTimoutMode) {
-      //  fnTimerStart(TO_FG_TIMR, TO_FG_TIMR, JM_SHIFT_TIMER); //^^
-      //}
       if(temporaryInformation == TI_VIEW) {
         temporaryInformation = TI_NO_INFO;
         updateMatrixHeightCache();
@@ -1388,8 +1384,6 @@ bool_t allowShiftsToClearError = false;
         programRunStop = PGM_STOPPED;
       }
       lastErrorCode = 0;
-
-      //fnTimerStop(TO_FG_LONG);                                //dr
 
       shiftF = !shiftF;
       shiftG = false;                                         //JM no shifted menu on g-shift-key as in WP43S
@@ -1405,13 +1399,9 @@ bool_t allowShiftsToClearError = false;
     else if((key->primary == ITM_SHIFTg || ShiftOverride == ITM_SHIFTg) && (calcMode == CM_NORMAL || calcMode == CM_AIM || calcMode == CM_NIM  || calcMode == CM_MIM || calcMode == CM_EIM || calcMode == CM_PEM || calcMode == CM_PLOT_STAT || calcMode == CM_GRAPH || calcMode == CM_ASSIGN || calcMode == CM_ASN_BROWSER)) {   //JM shifts
       if(temporaryInformation == TI_SHOW_REGISTER || temporaryInformation == TI_SHOW_REGISTER_BIG || temporaryInformation == TI_SHOW_REGISTER_SMALL) allowShiftsToClearError = true; //JM
       Shft_LongPress_f_g = true;
-      if(ShiftTimoutMode || Shft_LongPress_f_g) {
-        fnTimerStart(TO_FG_LONG, TO_FG_LONG, JM_TO_FG_LONG);    //vv dr
+      if(Shft_LongPress_f_g && getSystemFlag(FLAG_SH_LONGPRESS)) {
+        fnTimerStart(TO_FG_LONG, TO_FG_LONG, JM_TO_FG_LONG * 2);    //vv dr
       }
-      //Shft_timeouts = true;
-      //if(ShiftTimoutMode) {
-      //  fnTimerStart(TO_FG_TIMR, TO_FG_TIMR, JM_SHIFT_TIMER); //^^
-      //}
       if(temporaryInformation == TI_VIEW) {
         temporaryInformation = TI_NO_INFO;
         updateMatrixHeightCache();
@@ -1424,8 +1414,6 @@ bool_t allowShiftsToClearError = false;
         programRunStop = PGM_STOPPED;
       }
       lastErrorCode = 0;
-
-      //fnTimerStop(TO_FG_LONG);                                //dr
 
       shiftG = !shiftG;
       shiftF = false;                                         //JM no shifted menu on g-shift-key as in WP43S
