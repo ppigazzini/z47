@@ -1140,7 +1140,7 @@ void resetOtherConfigurationStuff(void) {
 //---  eRPN = true;
   HOME3 = true;
   MYM3 = false;
-  ShiftTimoutMode = true;
+  ShiftTimoutMode = false;
 //---  BASE_HOME   = false;
   Norm_Key_00_VAR  = Norm_Key_00_item_in_layout;               //JM NORM MODE SIGMA REPLACEMENT KEY
   Input_Default =  ID_43S;
