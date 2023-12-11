@@ -878,7 +878,7 @@ void fnClAll(uint16_t confirmation) {
 
     // Clear user menus
     fnExitAllMenus(NOPARAM);
-    deleteUserMenus();                        // Remove all user menus and user menus assignments
+    fnDeleteUserMenus(CONFIRMED);             // Delete all user menus and user menus assignments
     fnRESET_MyM(USER_MENG);                   // Reset Menu MyMenu
     fnRESET_Mya();                            // Reset Menu MyAlpha
     #if !defined(TESTSUITE_BUILD)
@@ -891,11 +891,7 @@ void fnClAll(uint16_t confirmation) {
     initUserKeyArgument();
 
     // Delete named variables
-    for(uint16_t var = numberOfNamedVariables; var > 0; var--) {  // Remove all user variables and user variables assignments
-      fnDeleteVariable(FIRST_NAMED_VARIABLE + var -1);
-    }
-    initSimEqMatABX();                                            // Set-up Mat_A, Mat-B & Mat-X for SIM EQ
-
+    fnDeleteAllVariables(CONFIRMED);
 
     // Clear global flags
     fnClFAll(CONFIRMED);

@@ -251,6 +251,7 @@ void     fnGetRange            (uint16_t unusedButMandatoryParameter);
 void     fnHide                (uint16_t H);
 void     fnGetHide             (uint16_t unusedButMandatoryParameter);
 void     fnKeysManagement      (uint16_t choice);
+void     initSimEqMatABX       (void);
 
 
 #endif // !CONFIG_H
