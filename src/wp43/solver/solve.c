@@ -279,6 +279,10 @@ void fnSolveVar(uint16_t unusedButMandatoryParameter) {
     else if(getRegisterDataType(REGISTER_X) == dtLongInteger) {
       convertLongIntegerRegisterToReal34(REGISTER_X, res);
     }
+    else if(getRegisterDataType(REGISTER_X) == dtComplex34 && real34IsZero(REGISTER_REAL34_DATA(REGISTER_X))) {
+      real34Copy(REGISTER_IMAG34_DATA(REGISTER_X), res);
+      real34ChangeSign(res);
+    }
     else {
       realToReal34(const_NaN, res);
     }
@@ -434,6 +438,19 @@ int solver(calcRegister_t variable, const real34_t *y, const real34_t *x, real34
     if(real34CompareAbsLessThan(&fa, &fb)) {
       real34Copy(&b, &tmp); real34Copy(&a, &b); real34Copy(&tmp, &a); real34Copy(&tmp, &b1);
       real34Copy(&fb, &tmp); real34Copy(&fa, &fb); real34Copy(&tmp, &fa); real34Copy(&tmp, &fb1);
+    }
+
+    if(real34IsZero(&fa)) { // already is a root?
+      real34Zero(resZ);
+      real34Zero(resY);
+      real34Copy(&a, resX);
+      return SOLVER_RESULT_NORMAL;
+    }
+    if(real34IsZero(&fb)) {
+      real34Zero(resZ);
+      real34Zero(resY);
+      real34Copy(&b, resX);
+      return SOLVER_RESULT_NORMAL;
     }
 
     do {
