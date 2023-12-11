@@ -22,6 +22,7 @@
 #include "bufferize.h"
 #include "calcMode.h"
 #include "charString.h"
+#include "config.h"
 #include "defines.h"
 #include "error.h"
 #include "flags.h"
@@ -601,6 +602,9 @@ void fnDeleteMenu(uint16_t id) {
   }
   else {
     removeUserItemAssignments(-MNU_DYNAMIC,userMenus[id].menuName);   // Remove assignments before deleting the user menu
+    #if !defined(TESTSUITE_BUILD)
+      removeUserMenuFromStack(id);                                    // Remove user menu from the stack before deleting it
+    #endif // !TESTSUITE_BUILD
     if(numberOfUserMenus == 1) {
       freeC47Blocks(userMenus, TO_BLOCKS(sizeof(userMenu_t)));
       userMenus = NULL;
@@ -627,11 +631,43 @@ void fnDeleteMenu(uint16_t id) {
 
 
 
-void deleteUserMenus(void) {
-  removeUserItemAssignments(-MNU_DYNAMIC,"");           // Remove all user menus assignments
-  freeC47Blocks(userMenus, TO_BLOCKS(sizeof(userMenu_t)) * numberOfUserMenus);
-  userMenus = NULL;
-  numberOfUserMenus = 0;
+void fnDeleteUserMenus(uint16_t confirmation) {
+  if(confirmation == NOT_CONFIRMED) {
+    setConfirmationMode(fnDeleteUserMenus);
+  }
+  else {
+    removeUserItemAssignments(-MNU_DYNAMIC,"");           // Remove all user menus assignments
+    #if !defined(TESTSUITE_BUILD)
+      removeUserMenuFromStack(numberOfUserMenus);         // Remove all user menus from the stack before deleting them
+    #endif // !TESTSUITE_BUILD
+    freeC47Blocks(userMenus, TO_BLOCKS(sizeof(userMenu_t)) * numberOfUserMenus);
+    userMenus = NULL;
+    numberOfUserMenus = 0;
+    #if !defined(TESTSUITE_BUILD)
+      createHOME();
+      createPFN();
+    #endif // !TESTSUITE_BUILD
+    temporaryInformation = TI_DEL_ALL_MENUS;
+  }
+}
+
+
+
+void fnClearUserMenus(uint16_t confirmation) {
+  int i;
+  if(confirmation == NOT_CONFIRMED) {
+    setConfirmationMode(fnClearUserMenus);
+  }
+  else {
+    for(i=0; i<numberOfUserMenus; i++) {
+      memset(userMenus[i].menuItem, 0, 18 * sizeof(userMenuItem_t));        
+    }
+    #if !defined(TESTSUITE_BUILD)
+      createHOME();
+      createPFN();
+    #endif // !TESTSUITE_BUILD
+    temporaryInformation = TI_CLEAR_ALL_MENUS;
+  }
 }
 
 

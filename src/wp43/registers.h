@@ -202,6 +202,22 @@
   void           fnDeleteVariable                (uint16_t regist);
 
   /**
+   * Deletes all named variable.
+   * After deleting all named variables, Mat_A, Mat-B and Mat_X will be created for SIM EQ.
+   *
+   * \param[in] confirmation Current status of the confirmation of dleting user variables
+   */
+  void           fnDeleteAllVariables           (uint16_t confirmation);
+
+  /**
+   * Clear all named variable.
+   * Reserved variables STATS and HISTO are cleared by a call ClSigma, Mat_A, Mat-B and Mat_X are redimmed to single elements matrices for SIM EQ.
+   *
+   * \param[in] confirmation Current status of the confirmation of dleting user variables
+   */
+  void           fnClearAllVariables            (uint16_t confirmation);
+  
+  /**
    * Sets X to the number of local registers.
    *
    * \param[in] unusedButMandatoryParameter
