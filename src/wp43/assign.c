@@ -5,6 +5,7 @@
 #include "bufferize.h"
 #include "calcMode.h"
 #include "charString.h"
+#include "config.h"
 #include "defines.h"
 #include "error.h"
 #include "flags.h"
@@ -85,8 +86,8 @@ TO_QSPI const calcKey_t kbd_std_R47[37] = {
   {36,                  ITM_SHIFTg,           ITM_NULL,             ITM_NULL,             ITM_SHIFTg,           ITM_NULL,             ITM_NULL,             ITM_NULL,             ITM_SHIFTg          },
   {41,                  ITM_ENTER,            KEY_COMPLEX,          -MNU_CPX,             ITM_ENTER,            ITM_ENTER,            ITM_XSWAP,            ITM_XPARSE,           ITM_ENTER           },
   {42,                  ITM_XexY,             ITM_LASTX,            -MNU_STK,             ITM_ex,               ITM_K,                ITM_k,                ITM_ex,               ITM_REG_K           },
-  {43,                  ITM_CHS,              -MNU_PREFIX,          -MNU_TRG,             ITM_PLUS_MINUS,       ITM_L,                ITM_l,                ITM_PLUS_MINUS,       ITM_REG_L           },
-  {44,                  ITM_EXPONENT,         -MNU_DISP,            -MNU_EXP,             ITM_NULL,             ITM_M,                ITM_m,                ITM_EEXCHR,           ITM_NULL            },
+  {43,                  ITM_CHS,              -MNU_DISP,            -MNU_TRG,             ITM_PLUS_MINUS,       ITM_L,                ITM_l,                ITM_PLUS_MINUS,       ITM_REG_L           },
+  {44,                  ITM_EXPONENT,         -MNU_PREFIX,          -MNU_EXP,             ITM_NULL,             ITM_M,                ITM_m,                ITM_EEXCHR,           ITM_NULL            },
   {45,                  ITM_BACKSPACE,        ITM_UNDO,             -MNU_CLR,             ITM_BACKSPACE,        ITM_BACKSPACE,        ITM_CLA,              ITM_CLA,              ITM_BACKSPACE       },
   {51,                  ITM_XEQ,              ITM_AIM,              ITM_GTO,              ITM_NULL,             ITM_NULL,             ITM_NULL,             ITM_alpha,            ITM_alpha           },
   {52,                  ITM_7,                ITM_sin,              ITM_arcsin,           ITM_7,                ITM_N,                ITM_n,                ITM_7,                ITM_7               },
@@ -130,8 +131,8 @@ TO_QSPI const calcKey_t kbd_std_R47bkfg[37] = {
   {36,                  KEY_fg,               ITM_NULL,             ITM_NULL,             KEY_fg,               ITM_NULL,             ITM_NULL,             ITM_NULL,             KEY_fg              },
   {41,                  ITM_ENTER,            KEY_COMPLEX,          -MNU_CPX,             ITM_ENTER,            ITM_ENTER,            ITM_XSWAP,            ITM_XPARSE,           ITM_ENTER           },
   {42,                  ITM_XexY,             ITM_LASTX,            -MNU_STK,             ITM_ex,               ITM_K,                ITM_k,                ITM_ex,               ITM_REG_K           },
-  {43,                  ITM_CHS,              -MNU_PREFIX,          -MNU_TRG,             ITM_PLUS_MINUS,       ITM_L,                ITM_l,                ITM_PLUS_MINUS,       ITM_REG_L           },
-  {44,                  ITM_EXPONENT,         -MNU_DISP,            -MNU_EXP,             ITM_NULL,             ITM_M,                ITM_m,                ITM_EEXCHR,           ITM_NULL            },
+  {43,                  ITM_CHS,              -MNU_DISP,            -MNU_TRG,             ITM_PLUS_MINUS,       ITM_L,                ITM_l,                ITM_PLUS_MINUS,       ITM_REG_L           },
+  {44,                  ITM_EXPONENT,         -MNU_PREFIX,          -MNU_EXP,             ITM_NULL,             ITM_M,                ITM_m,                ITM_EEXCHR,           ITM_NULL            },
   {45,                  ITM_BACKSPACE,        ITM_UNDO,             -MNU_CLR,             ITM_BACKSPACE,        ITM_BACKSPACE,        ITM_CLA,              ITM_CLA,              ITM_BACKSPACE       },
   {51,                  ITM_XEQ,              ITM_AIM,              ITM_GTO,              ITM_NULL,             ITM_NULL,             ITM_NULL,             ITM_alpha,            ITM_alpha           },
   {52,                  ITM_7,                ITM_sin,              ITM_arcsin,           ITM_7,                ITM_N,                ITM_n,                ITM_7,                ITM_7               },
@@ -177,8 +178,8 @@ TO_QSPI const calcKey_t kbd_std_R47fgbk[37] = {
   {36,                  ITM_NULL,             ITM_NULL,             ITM_NULL,             ITM_NULL,             ITM_NULL,             ITM_NULL,             ITM_NULL,             KEY_fg              },
   {41,                  ITM_ENTER,            KEY_COMPLEX,          -MNU_CPX,             ITM_ENTER,            ITM_ENTER,            ITM_XSWAP,            ITM_XPARSE,           ITM_ENTER           },
   {42,                  ITM_XexY,             ITM_LASTX,            -MNU_STK,             ITM_ex,               ITM_K,                ITM_k,                ITM_ex,               ITM_REG_K           },
-  {43,                  ITM_CHS,              -MNU_PREFIX,          -MNU_TRG,             ITM_PLUS_MINUS,       ITM_L,                ITM_l,                ITM_PLUS_MINUS,       ITM_REG_L           },
-  {44,                  ITM_EXPONENT,         -MNU_DISP,            -MNU_EXP,             ITM_NULL,             ITM_M,                ITM_m,                ITM_EEXCHR,           ITM_NULL            },
+  {43,                  ITM_CHS,              -MNU_DISP,            -MNU_TRG,             ITM_PLUS_MINUS,       ITM_L,                ITM_l,                ITM_PLUS_MINUS,       ITM_REG_L           },
+  {44,                  ITM_EXPONENT,         -MNU_PREFIX,          -MNU_EXP,             ITM_NULL,             ITM_M,                ITM_m,                ITM_EEXCHR,           ITM_NULL            },
   {45,                  ITM_BACKSPACE,        ITM_UNDO,             -MNU_CLR,             ITM_BACKSPACE,        ITM_BACKSPACE,        ITM_CLA,              ITM_CLA,              ITM_BACKSPACE       },
   {51,                  ITM_XEQ,              ITM_AIM,              ITM_GTO,              ITM_NULL,             ITM_NULL,             ITM_NULL,             ITM_alpha,            ITM_alpha           },
   {52,                  ITM_7,                ITM_sin,              ITM_arcsin,           ITM_7,                ITM_N,                ITM_n,                ITM_7,                ITM_7               },
@@ -224,8 +225,8 @@ TO_QSPI const calcKey_t kbd_std_R47fg_g[37] = {
   {36,                  ITM_SHIFTg,           ITM_NULL,             ITM_NULL,             ITM_SHIFTg,           ITM_NULL,             ITM_NULL,             ITM_NULL,             KEY_fg              },
   {41,                  ITM_ENTER,            KEY_COMPLEX,          -MNU_CPX,             ITM_ENTER,            ITM_ENTER,            ITM_XSWAP,            ITM_XPARSE,           ITM_ENTER           },
   {42,                  ITM_XexY,             ITM_LASTX,            -MNU_STK,             ITM_ex,               ITM_K,                ITM_k,                ITM_ex,               ITM_REG_K           },
-  {43,                  ITM_CHS,              -MNU_PREFIX,          -MNU_TRG,             ITM_PLUS_MINUS,       ITM_L,                ITM_l,                ITM_PLUS_MINUS,       ITM_REG_L           },
-  {44,                  ITM_EXPONENT,         -MNU_DISP,            -MNU_EXP,             ITM_NULL,             ITM_M,                ITM_m,                ITM_EEXCHR,           ITM_NULL            },
+  {43,                  ITM_CHS,              -MNU_DISP,            -MNU_TRG,             ITM_PLUS_MINUS,       ITM_L,                ITM_l,                ITM_PLUS_MINUS,       ITM_REG_L           },
+  {44,                  ITM_EXPONENT,         -MNU_PREFIX,          -MNU_EXP,             ITM_NULL,             ITM_M,                ITM_m,                ITM_EEXCHR,           ITM_NULL            },
   {45,                  ITM_BACKSPACE,        ITM_UNDO,             -MNU_CLR,             ITM_BACKSPACE,        ITM_BACKSPACE,        ITM_CLA,              ITM_CLA,              ITM_BACKSPACE       },
   {51,                  ITM_XEQ,              ITM_AIM,              ITM_GTO,              ITM_NULL,             ITM_NULL,             ITM_NULL,             ITM_alpha,            ITM_alpha           },
   {52,                  ITM_7,                ITM_sin,              ITM_arcsin,           ITM_7,                ITM_N,                ITM_n,                ITM_7,                ITM_7               },
@@ -584,6 +585,9 @@ void fnDeleteMenu(uint16_t id) {
   }
   else {
     removeUserItemAssignments(-MNU_DYNAMIC,userMenus[id].menuName);   // Remove assignments before deleting the user menu
+    #if !defined(TESTSUITE_BUILD)
+      removeUserMenuFromStack(id);                                    // Remove user menu from the stack before deleting it
+    #endif // !TESTSUITE_BUILD
     if(numberOfUserMenus == 1) {
       freeC47Blocks(userMenus, TO_BLOCKS(sizeof(userMenu_t)));
       userMenus = NULL;
@@ -610,11 +614,43 @@ void fnDeleteMenu(uint16_t id) {
 
 
 
-void deleteUserMenus(void) {
-  removeUserItemAssignments(-MNU_DYNAMIC,"");           // Remove all user menus assignments
-  freeC47Blocks(userMenus, TO_BLOCKS(sizeof(userMenu_t)) * numberOfUserMenus);
-  userMenus = NULL;
-  numberOfUserMenus = 0;
+void fnDeleteUserMenus(uint16_t confirmation) {
+  if(confirmation == NOT_CONFIRMED) {
+    setConfirmationMode(fnDeleteUserMenus);
+  }
+  else {
+    removeUserItemAssignments(-MNU_DYNAMIC,"");           // Remove all user menus assignments
+    #if !defined(TESTSUITE_BUILD)
+      removeUserMenuFromStack(numberOfUserMenus);         // Remove all user menus from the stack before deleting them
+    #endif // !TESTSUITE_BUILD
+    freeC47Blocks(userMenus, TO_BLOCKS(sizeof(userMenu_t)) * numberOfUserMenus);
+    userMenus = NULL;
+    numberOfUserMenus = 0;
+    #if !defined(TESTSUITE_BUILD)
+      createHOME();
+      createPFN();
+    #endif // !TESTSUITE_BUILD
+    temporaryInformation = TI_DEL_ALL_MENUS;
+  }
+}
+
+
+
+void fnClearUserMenus(uint16_t confirmation) {
+  int i;
+  if(confirmation == NOT_CONFIRMED) {
+    setConfirmationMode(fnClearUserMenus);
+  }
+  else {
+    for(i=0; i<numberOfUserMenus; i++) {
+      memset(userMenus[i].menuItem, 0, 18 * sizeof(userMenuItem_t));        
+    }
+    #if !defined(TESTSUITE_BUILD)
+      createHOME();
+      createPFN();
+    #endif // !TESTSUITE_BUILD
+    temporaryInformation = TI_CLEAR_ALL_MENUS;
+  }
 }
 
 

@@ -29,6 +29,7 @@
 #include "sort.h"
 #include "stack.h"
 #include "screen.h"
+#include "stats.h"
 #include <string.h>
 
 #include "wp43.h"
@@ -983,6 +984,51 @@ void fnDeleteVariable(uint16_t regist) {
   #endif //VERBOSE_REGISTERS
 }
 
+
+void fnDeleteAllVariables(uint16_t confirmation) {
+  if((confirmation == NOT_CONFIRMED) && (programRunStop != PGM_RUNNING)) {
+    setConfirmationMode(fnDeleteAllVariables);
+  }
+  else {
+    for(uint16_t var = numberOfNamedVariables; var > 0; var--) {  // Remove all user variables and user variables assignments
+      fnDeleteVariable(FIRST_NAMED_VARIABLE + var -1);
+    }
+    initSimEqMatABX();
+    temporaryInformation = TI_DEL_ALL_VARIABLES;
+  }
+}
+
+
+void fnClearAllVariables(uint16_t confirmation) {
+  if((confirmation == NOT_CONFIRMED) && (programRunStop != PGM_RUNNING)) {
+    setConfirmationMode(fnClearAllVariables);
+  }
+  else {
+    for(uint16_t i = numberOfNamedVariables; i > 0; i--) {  // Clear all user variables
+      if((compareString((char *)(allNamedVariables[i].variableName + 1), "STATS", CMP_NAME) != 0) &&
+         (compareString((char *)(allNamedVariables[i].variableName + 1), "HISTO", CMP_NAME) != 0) &&
+         (compareString((char *)(allNamedVariables[i].variableName + 1), "Mat_A", CMP_NAME) != 0) &&
+         (compareString((char *)(allNamedVariables[i].variableName + 1), "Mat_B", CMP_NAME) != 0) &&
+         (compareString((char *)(allNamedVariables[i].variableName + 1), "Mat_X", CMP_NAME) != 0))
+      clearRegister(FIRST_NAMED_VARIABLE + i -1);
+    }
+    fnClSigma(CONFIRMED);                // Clear and release the memory of all statistical sums
+    calcRegister_t regist;               // Clear SIM EQ Mat_A, Mat_B & Mat_X 
+    regist = findOrAllocateNamedVariable("Mat_A");
+    if(regist != INVALID_VARIABLE) {
+      initMatrixRegister(regist, 1, 1, false);
+    }
+    regist = findOrAllocateNamedVariable("Mat_B");
+    if(regist != INVALID_VARIABLE) {
+      initMatrixRegister(regist, 1, 1, false);
+    }
+    regist = findOrAllocateNamedVariable("Mat_X");
+    if(regist != INVALID_VARIABLE) {
+      initMatrixRegister(regist, 1, 1, false);
+    }
+    temporaryInformation = TI_CLEAR_ALL_VARIABLES;
+  }
+}
 
 
 void setRegisterMaxDataLength(calcRegister_t regist, uint16_t maxDataLen) {

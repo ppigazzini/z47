@@ -2424,6 +2424,30 @@ void execTimerApp(uint16_t timerType) {
         displayTemporaryInformationOnX(prefix);
       }
 
+      else if(temporaryInformation == TI_CLEAR_ALL_MENUS && regist == REGISTER_X) {
+        sprintf(tmpString, "All user menus cleared");
+        w = stringWidth(tmpString, &standardFont, true, true);
+        showString(tmpString, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + 6, vmNormal, true, true);
+      }
+
+      else if(temporaryInformation == TI_CLEAR_ALL_VARIABLES && regist == REGISTER_X) {
+        sprintf(tmpString, "All user variables cleared");
+        w = stringWidth(tmpString, &standardFont, true, true);
+        showString(tmpString, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + 6, vmNormal, true, true);
+      }
+
+      else if(temporaryInformation == TI_DEL_ALL_MENUS && regist == REGISTER_X) {
+        sprintf(tmpString, "All user menus deleted");
+        w = stringWidth(tmpString, &standardFont, true, true);
+        showString(tmpString, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + 6, vmNormal, true, true);
+      }
+
+      else if(temporaryInformation == TI_DEL_ALL_VARIABLES && regist == REGISTER_X) {
+        sprintf(tmpString, "All user variables deleted");
+        w = stringWidth(tmpString, &standardFont, true, true);
+        showString(tmpString, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + 6, vmNormal, true, true);
+      }
+
       #if defined(PC_BUILD)
       else if(temporaryInformation == TI_DMCP_ONLY && regist == REGISTER_X) {
         sprintf(prefix, "Not available on the simulator");

@@ -1053,6 +1053,10 @@ typedef enum {
 #define TI_SHOWNOTHING                            92
 #define TI_COPY_FROM_SHOW                         92
 #define TI_DATA_LOSS                              93
+#define TI_CLEAR_ALL_MENUS                        94    //DL
+#define TI_CLEAR_ALL_VARIABLES                    95    //DL
+#define TI_DEL_ALL_MENUS                          96    //DL
+#define TI_DEL_ALL_VARIABLES                      97    //DL
 
 // Register browser mode
 #define RBR_GLOBAL                                 0 // Global registers are browsed

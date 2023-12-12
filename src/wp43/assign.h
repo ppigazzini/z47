@@ -48,6 +48,15 @@
   /**
    * Delete all user menus and user menus assignments
    *
+   * \param[in] confirmation Current status of the confirmation of deleting all user menus
    */
-  void deleteUserMenus            (void);
+  void fnDeleteUserMenus          (uint16_t confirmation);
+
+  /**
+   * Clear all user menus, removong all assignements to these menus
+   *
+   * \param[in] confirmation Current status of the confirmation of clearing all user menus
+   */
+  void fnClearUserMenus           (uint16_t confirmation);
+
 #endif // !ASSIGN_H
