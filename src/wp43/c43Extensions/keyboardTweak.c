@@ -372,14 +372,12 @@ void resetKeytimers(void) {
             }
           }
             break;
-
           case ITM_BACKSPACE:
             if(tam.mode == 0) {
               longpressDelayedkey2 = longpressDelayedkey1;
               longpressDelayedkey1 = ITM_CLSTK;    //backspace longpress to CLSTK
             }
             break;
-
           case ITM_EXIT1:
             longpressDelayedkey2 = ITM_CLRMOD;     //EXIT longpress DOES CLRMOD
             longpressDelayedkey1 = ITM_BASEMENU;
@@ -828,7 +826,7 @@ void resetKeytimers(void) {
       }
 
       if(!(calcMode == CM_REGISTER_BROWSER || calcMode == CM_FLAG_BROWSER || calcMode == CM_ASN_BROWSER || calcMode == CM_FONT_BROWSER || calcMode == CM_PLOT_STAT || calcMode == CM_GRAPH  || calcMode == CM_LISTXY)) {
-        if(FN_timed_out_to_NOP) { //Clear any possible underline residues
+        if((calcMode == CM_ASSIGN && itemToBeAssigned == 0) || FN_timed_out_to_NOP) { //Clear any possible underline residues
           showSoftmenuCurrentPart();
         }
       }
