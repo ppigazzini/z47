@@ -308,7 +308,10 @@ printf(">>>>Z 0093c determineFunctionKeyItem  item = %i:   name:=%s\n",item, ind
         case MNU_SINTS:
         case MNU_LINTS:
         case MNU_REALS:
-        case MNU_CPXS: {
+        case MNU_CPXS: 
+        case MNU_NUMBRS:
+        case MNU_ALLVARS:
+        case MNU_CONFIGS: {
           return findNamedVariable((char *)getNthString(dynamicSoftmenu[menuId].menuContent, dynamicMenuItem)) - FIRST_NAMED_VARIABLE + ASSIGN_NAMED_VARIABLES;
         }
         case MNU_MENUS: {
@@ -435,7 +438,10 @@ printf(">>>>Z 0070 btnFnClicked data=|%s| data[0]=%d\n",(char*)data, ((char*)dat
           case MNU_ALPHA_OMEGA :
           case MNU_ALPHAMISC :
           case MNU_ALPHA :
-          case MNU_CONST : {
+          case MNU_CONST :
+          case MNU_NUMBRS:
+          case MNU_ALLVARS:
+          case MNU_CONFIGS: {
             popSoftmenu();
             //         closeAllCatalogMenus(); //Option to recurse and close more than one menu level until all the CAT related menus are out
           }
