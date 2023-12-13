@@ -753,7 +753,7 @@ void fnFractionType(uint16_t unusedButMandatoryParameter) {
                          (getSystemFlag(FLAG_FRACT)  ? 1:0))
   uint8_t state = STATE;
   //printf("%u ",state);
-  
+
   if(!getSystemFlag(FLAG_FRACT) && constantFractions && !constantFractionsOn) {
     constantFractionsOn = true;
     return;
@@ -950,14 +950,14 @@ void addTestPrograms(void) {
       freeProgramBytes = numberOfBytesForTheTestPrograms - 2;
     }
     else {
-      ignore_result(fread(&numberOfBytesUsed, 1, sizeof(numberOfBytesUsed), testPgms));
+      ignoreReturnedValue(fread(&numberOfBytesUsed, 1, sizeof(numberOfBytesUsed), testPgms));
       printf("%u bytes\n", numberOfBytesUsed);
       if(numberOfBytesUsed > numberOfBytesForTheTestPrograms) {
         printf("Increase allocated memory for programs! File config.c 1st line of function addTestPrograms\n");
         fclose(testPgms);
         exit(0);
       }
-      ignore_result(fread(beginOfProgramMemory, 1, numberOfBytesUsed, testPgms));
+      ignoreReturnedValue(fread(beginOfProgramMemory, 1, numberOfBytesUsed, testPgms));
       fclose(testPgms);
 
       firstFreeProgramByte = beginOfProgramMemory + (numberOfBytesUsed - 2);

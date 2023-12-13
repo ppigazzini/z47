@@ -260,7 +260,7 @@
 //* General configuration defines *
 //*********************************
 #define UNIT_2TO10_LONGINT_DISPLAY         // Allow 2^10 option to also process integers instead of only reals
-#undef RECT_POLAR_CHANGES_X                // RECT/POLAR radiobuttons to also change the complex number in X 
+#undef RECT_POLAR_CHANGES_X                // RECT/POLAR radiobuttons to also change the complex number in X
 
 #define DEBUG_INSTEAD_STATUS_BAR         0 // Debug data instead of the status bar
 #define EXTRA_INFO_ON_CALC_ERROR         1 // Print extra information on the console about an error
@@ -1560,11 +1560,7 @@ typedef enum {
 #endif // TESTSUITE_BUILD && !GENERATE_CATALOGS
 
 /* Turn off -Wunused-result for a specific function call */
-#if defined(OS32BIT)
-  #define ignore_result(M) if(1==((uint32_t)M)){;}
-#else // !OS32BIT
-  #define ignore_result(M) if(1==((uint64_t)M)){;}
-#endif // OS32BIT
+#define ignoreReturnedValue(function) (__extension__ ({ __typeof__ (function) __x = (function); (void) __x; }))
 
 #if defined(DMCP_BUILD)
   #define TMP_STR_LENGTH     2560 //2560 //dr - remove #include <dmcp.h> again - AUX_BUF_SIZE
