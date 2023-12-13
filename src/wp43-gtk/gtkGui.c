@@ -1187,7 +1187,7 @@
         exit(1);
       }
 
-      ignore_result(fread(cssData, 1, fileLg, cssFile));
+      ignoreReturnedValue(fread(cssData, 1, fileLg, cssFile));
       fclose(cssFile);
       cssData[fileLg] = 0;
 
@@ -1980,7 +1980,7 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
   } else {
     keyLogicalId = key->keyId -49;
   }
-  
+
   if(key->primary == 0) {
     lbl[0] = 0;
   }
@@ -1994,7 +1994,7 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
   }
 
       bool_t Norm_Key_00_used = ((calcMode == CM_NORMAL || calcMode == CM_NIM)
-                                  && key->keyId == Norm_Key_00_keyID 
+                                  && key->keyId == Norm_Key_00_keyID
                                   && Norm_Key_00_VAR != Norm_Key_00_item_in_layout
                                   && !getSystemFlag(FLAG_USER)
                                   );
@@ -2050,8 +2050,8 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
     if(*(getNthString((uint8_t *)userKeyLabel, keyLogicalId*6+1)) != 0) {
       stringToUtf8((char *)getNthString((uint8_t *)userKeyLabel, keyLogicalId*6+1),lbl);
     }
-  }   
-  
+  }
+
   if(key->fShifted == 0) {
     lbl[0] = 0;
   }
@@ -2067,7 +2067,7 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
       if(key->fShifted < 0) gtk_widget_set_name(lblF, "fShiftedUnderline"); else  gtk_widget_set_name(lblF, "fShifted");
 
 //  if(key->gShifted == ITM_op_j) strcpy((char *)lbl, getSystemFlag(FLAG_CPXj)   ? "j"  : "i");
-//  else 
+//  else
   char sstmp[16];
   strcpy(sstmp, indexOfItems[max(key->gShifted, -key->gShifted)].itemSoftmenuName);
   if((key->gShifted == ITM_op_j || key->gShifted == ITM_op_j_pol) && getSystemFlag(FLAG_CPXj)) sstmp[1]++;
@@ -2077,7 +2077,7 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
     if(*(getNthString((uint8_t *)userKeyLabel, keyLogicalId*6+2)) != 0) {
       stringToUtf8((char *)getNthString((uint8_t *)userKeyLabel, keyLogicalId*6+2),lbl);
     }
-  }   
+  }
 
       if(key->gShifted == 0) {
         lbl[0] = 0;
