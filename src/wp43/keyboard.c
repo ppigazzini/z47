@@ -1370,7 +1370,7 @@ bool_t allowShiftsToClearError = false;
       if(temporaryInformation == TI_SHOW_REGISTER || temporaryInformation == TI_SHOW_REGISTER_BIG || temporaryInformation == TI_SHOW_REGISTER_SMALL) allowShiftsToClearError = true; //JM
       Shft_LongPress_f_g = true;
       if(Shft_LongPress_f_g && getSystemFlag(FLAG_SH_LONGPRESS)) {
-        fnTimerStart(TO_FG_LONG, TO_FG_LONG, JM_TO_FG_LONG * 2);    //vv dr
+        fnTimerStart(TO_FG_LONG, TO_FG_LONG, JM_TO_FG_LONG * 1.5);    //vv dr
       }
       if(temporaryInformation == TI_VIEW) {
         temporaryInformation = TI_NO_INFO;
@@ -1400,7 +1400,7 @@ bool_t allowShiftsToClearError = false;
       if(temporaryInformation == TI_SHOW_REGISTER || temporaryInformation == TI_SHOW_REGISTER_BIG || temporaryInformation == TI_SHOW_REGISTER_SMALL) allowShiftsToClearError = true; //JM
       Shft_LongPress_f_g = true;
       if(Shft_LongPress_f_g && getSystemFlag(FLAG_SH_LONGPRESS)) {
-        fnTimerStart(TO_FG_LONG, TO_FG_LONG, JM_TO_FG_LONG * 2);    //vv dr
+        fnTimerStart(TO_FG_LONG, TO_FG_LONG, JM_TO_FG_LONG * 1.5);    //vv dr
       }
       if(temporaryInformation == TI_VIEW) {
         temporaryInformation = TI_NO_INFO;
