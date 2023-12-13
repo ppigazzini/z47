@@ -301,6 +301,7 @@
   extern int16_t                FN_key_pressed, FN_key_pressed_last; //JM LONGPRESS FN
   extern bool_t                 FN_timeouts_in_progress;      //JM LONGPRESS FN
   extern bool_t                 Shft_timeouts;                //JM SHIFT NEW FN
+  extern bool_t                 Shft_LongPress_f_g;           //JM SHIFT longpress on f and on g
   extern bool_t                 FN_timed_out_to_NOP;          //JM LONGPRESS FN
   extern bool_t                 FN_timed_out_to_RELEASE_EXEC; //JM LONGPRESS FN
   extern bool_t                 FN_handle_timed_out_to_EXEC;
