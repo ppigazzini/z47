@@ -954,7 +954,7 @@ void fnDeleteAllVariables(uint16_t confirmation) {
     }
     initSimEqMatABX();
     if(programRunStop != PGM_RUNNING) {
-      temporaryInformation = TI_DEL_ALL_MENUS;
+      temporaryInformation = TI_DEL_ALL_VARIABLES;
     } else {
       temporaryInformation = TI_NO_INFO;
     }
@@ -990,7 +990,7 @@ void fnClearAllVariables(uint16_t confirmation) {
       initMatrixRegister(regist, 1, 1, false);
     }
     if(programRunStop != PGM_RUNNING) {
-      temporaryInformation = TI_DEL_ALL_MENUS;
+      temporaryInformation = TI_CLEAR_ALL_VARIABLES;
     } else {
       temporaryInformation = TI_NO_INFO;
     }
