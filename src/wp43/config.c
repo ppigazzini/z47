@@ -677,7 +677,7 @@ void fnFractionType(uint16_t unusedButMandatoryParameter) {
                          (getSystemFlag(FLAG_FRACT)  ? 1:0))
   uint8_t state = STATE;
   //printf("%u ",state);
-  
+
   if(!getSystemFlag(FLAG_FRACT) && constantFractions && !constantFractionsOn) {
     constantFractionsOn = true;
     return;
@@ -703,16 +703,73 @@ void fnFractionType(uint16_t unusedButMandatoryParameter) {
 }
 
 
+/* Confirmation messages */
+TO_QSPI const confirmationTI_t confirmationTI[] = {
+    {.item = ITM_DELALL,      .string = "Delete all?"                  },
+    {.item = ITM_CLFALL,      .string = "Clear all flags?"             },
+    {.item = ITM_DELPALL,     .string = "Delete all programs?"         },
+    {.item = ITM_CLREGS,      .string = "Clear registers?"             },
+    {.item = ITM_RESET,       .string = "Reset?"                       },
+    {.item = ITM_SYSTEM,      .string = "Exit to system?"              },
+    {.item = ITM_DELBKUP,     .string = "Delete backup file?"          },
+    {.item = ITM_CLMALL,      .string = "Clear all user menus?"        },
+    {.item = ITM_CLVALL,      .string = "Clear all user variables?"    },
+    {.item = ITM_DELMALL,     .string = "Delete all user menus?"       },
+    {.item = ITM_DELVALL,     .string = "Delete all user variables?"   },
+    {.item = 0,               .string = "Are you sure?"                }          // Default TI for items requiring confirmation but not listed in this table
+};
+
+uint16_t getConfirmationTiId(void) {
+  uint16_t id;
+  uint16_t item = 0;
+  for(id=0; id<LAST_ITEM; id++) {
+    if(indexOfItems[id].func == confirmedFunction) {
+      item = id;
+      break;
+    }
+  }
+  id = 0;
+  while(confirmationTI[id].item != 0) {
+    if(confirmationTI[id].item == item) {
+      break;
+    }
+    id++;
+  }
+  return id;
+}
 
 void setConfirmationMode(void (*func)(uint16_t)) {
+#if !defined(TESTSUITE_BUILD)
   previousCalcMode = calcMode;
   cursorEnabled = false;
   calcMode = CM_CONFIRMATION;
   clearSystemFlag(FLAG_ALPHA);
   confirmedFunction = func;
   temporaryInformation = TI_ARE_YOU_SURE;
+  showSoftmenu(-MNU_YESNO);
+#endif // !TESTSUITE_BUILD
 }
 
+
+void fnConfirmationYes(uint16_t unusedButMandatoryParameter) {
+#if !defined(TESTSUITE_BUILD)
+  if(calcMode == CM_CONFIRMATION) {
+      calcMode = previousCalcMode;
+      popSoftmenu();                // Pop MNU_YESNO
+      confirmedFunction(CONFIRMED);
+  }
+#endif // !TESTSUITE_BUILD
+}
+
+
+ void fnConfirmationNo(uint16_t unusedButMandatoryParameter) {
+#if !defined(TESTSUITE_BUILD)
+  if(calcMode == CM_CONFIRMATION) {
+      calcMode = previousCalcMode;
+      popSoftmenu();                // Pop MNU_YESNO
+  }
+#endif // !TESTSUITE_BUILD
+}
 
 
 void fnRange(uint16_t R) {

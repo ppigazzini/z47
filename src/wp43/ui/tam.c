@@ -874,7 +874,7 @@
           }
         }
       }
-      if(calcMode == CM_PEM && tam.function != ITM_CLP) {
+      if(calcMode == CM_PEM && tam.function != ITM_DELP) {
         addStepInProgram(tamOperation());
       }
       if(tam.mode != TM_NEWMENU) {
@@ -893,8 +893,8 @@
         else if(tam.function == ITM_GTOP) {
           goToGlobalStep(labelList[value - FIRST_LABEL].step);
         }
-        else if(tam.function == ITM_CLP) {
-          reallyRunFunction(ITM_CLP, value);
+        else if(tam.function == ITM_DELP) {
+          reallyRunFunction(ITM_DELP, value);
         }
         else if(calcMode == CM_PEM) {
           // already done
