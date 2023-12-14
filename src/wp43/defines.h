@@ -106,6 +106,8 @@
 #else
   #define DEBUGSFN false
 #endif
+#define   FN_TIME_DEBUG1
+#undef    FN_TIME_DEBUG1
 
 
 
