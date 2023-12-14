@@ -515,8 +515,8 @@ void fnFlipFlag(uint16_t flag) {
  * \return void
  ***********************************************/
 void fnClFAll(uint16_t confirmation) {
-  if(confirmation == NOT_CONFIRMED) {
-    setConfirmationMode(fnClAll);
+  if((confirmation == NOT_CONFIRMED) && (programRunStop != PGM_RUNNING)) {
+    setConfirmationMode(fnClFAll);
   }
   else {
     // Leave lettered flags as they are

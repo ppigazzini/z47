@@ -21,6 +21,7 @@
 #include "bufferize.h"
 #include "calcMode.h"
 #include "charString.h"
+#include "config.h"
 #include "constantPointers.h"
 #include "curveFitting.h"
 #include "dateTime.h"
@@ -2259,7 +2260,8 @@ void execTimerApp(uint16_t timerType) {
       }
 
       else if(temporaryInformation == TI_ARE_YOU_SURE && regist == REGISTER_X) {
-        showString("Are you sure?", &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + 6, vmNormal, true, true);
+        uint16_t id = getConfirmationTiId();
+        showString(confirmationTI[id].string, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + 6, vmNormal, true, true);
       }
 
       else if(temporaryInformation == TI_WHO) {

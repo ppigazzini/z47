@@ -126,7 +126,7 @@ TO_QSPI const calcKey_t kbd_std_R47[37] = {
   {83,                  ITM_PERIOD,           ITM_SHOW,             ITM_TGLFRT,           ITM_PERIOD,           ITM_COMMA,            ITM_PERIOD,           ITM_PERIOD,           ITM_PERIOD          },
   {84,                  ITM_RS,               ITM_PR,               -MNU_PFN,             ITM_NULL,             ITM_QUESTION_MARK,    ITM_SLASH,            ITM_SLASH,            ITM_NULL            },
   {85,                  ITM_ADD,              -MNU_CATALOG,         -MNU_CONST,           ITM_PLUS,             ITM_SPACE,            ITM_PLUS,             ITM_PLUS,             ITM_ADD             }
-  //keyID,              primary,              fShifted,             gShifted,             keyLblAim,            primaryAim,           fShiftedAim,          gShiftedAim,          primaryTam         
+  //keyID,              primary,              fShifted,             gShifted,             keyLblAim,            primaryAim,           fShiftedAim,          gShiftedAim,          primaryTam
 };
 
 
@@ -171,7 +171,7 @@ TO_QSPI const calcKey_t kbd_std_R47bkfg[37] = {
   {83,                  ITM_PERIOD,           ITM_SHOW,             ITM_TGLFRT,           ITM_PERIOD,           ITM_COMMA,            ITM_PERIOD,           ITM_PERIOD,           ITM_PERIOD          },
   {84,                  ITM_RS,               ITM_PR,               -MNU_PFN,             ITM_NULL,             ITM_QUESTION_MARK,    ITM_SLASH,            ITM_SLASH,            ITM_NULL            },
   {85,                  ITM_ADD,              -MNU_CATALOG,         -MNU_CONST,           ITM_PLUS,             ITM_SPACE,            ITM_PLUS,             ITM_PLUS,             ITM_ADD             }
-  //keyID,              primary,              fShifted,             gShifted,             keyLblAim,            primaryAim,           fShiftedAim,          gShiftedAim,          primaryTam         
+  //keyID,              primary,              fShifted,             gShifted,             keyLblAim,            primaryAim,           fShiftedAim,          gShiftedAim,          primaryTam
 };
 
 
@@ -218,7 +218,7 @@ TO_QSPI const calcKey_t kbd_std_R47fgbk[37] = {
   {83,                  ITM_PERIOD,           ITM_SHOW,             ITM_TGLFRT,           ITM_PERIOD,           ITM_COMMA,            ITM_PERIOD,           ITM_PERIOD,           ITM_PERIOD          },
   {84,                  ITM_RS,               ITM_PR,               -MNU_PFN,             ITM_NULL,             ITM_QUESTION_MARK,    ITM_SLASH,            ITM_SLASH,            ITM_NULL            },
   {85,                  ITM_ADD,              -MNU_CATALOG,         -MNU_CONST,           ITM_PLUS,             ITM_SPACE,            ITM_PLUS,             ITM_PLUS,             ITM_ADD             }
-  //keyID,              primary,              fShifted,             gShifted,             keyLblAim,            primaryAim,           fShiftedAim,          gShiftedAim,          primaryTam         
+  //keyID,              primary,              fShifted,             gShifted,             keyLblAim,            primaryAim,           fShiftedAim,          gShiftedAim,          primaryTam
 };
 
 
@@ -265,7 +265,7 @@ TO_QSPI const calcKey_t kbd_std_R47fg_g[37] = {
   {83,                  ITM_PERIOD,           ITM_SHOW,             ITM_TGLFRT,           ITM_PERIOD,           ITM_COMMA,            ITM_PERIOD,           ITM_PERIOD,           ITM_PERIOD          },
   {84,                  ITM_RS,               ITM_PR,               -MNU_PFN,             ITM_NULL,             ITM_QUESTION_MARK,    ITM_SLASH,            ITM_SLASH,            ITM_NULL            },
   {85,                  ITM_ADD,              -MNU_CATALOG,         -MNU_CONST,           ITM_PLUS,             ITM_SPACE,            ITM_PLUS,             ITM_PLUS,             ITM_ADD             }
-  //keyID,              primary,              fShifted,             gShifted,             keyLblAim,            primaryAim,           fShiftedAim,          gShiftedAim,          primaryTam         
+  //keyID,              primary,              fShifted,             gShifted,             keyLblAim,            primaryAim,           fShiftedAim,          gShiftedAim,          primaryTam
 };
 
 
@@ -316,7 +316,7 @@ TO_QSPI const calcKey_t kbd_std_E47[37] = {
   {83,                  ITM_PERIOD,           ITM_SHOW,             -MNU_INFO,            ITM_PERIOD,           ITM_COMMA,            ITM_PERIOD,           ITM_PERIOD,           ITM_PERIOD          },
   {84,                  ITM_RS,               ITM_PR,               -MNU_TEST,            ITM_NULL,             ITM_QUESTION_MARK,    ITM_SLASH,            ITM_SLASH,            ITM_NULL            },
   {85,                  ITM_ADD,              -MNU_CATALOG,         -MNU_CONST,           ITM_PLUS,             ITM_SPACE,            ITM_PLUS,             ITM_PLUS,             ITM_ADD             }
-  //keyID,              primary,              fShifted,             gShifted,             keyLblAim,            primaryAim,           fShiftedAim,          gShiftedAim,          primaryTam         
+  //keyID,              primary,              fShifted,             gShifted,             keyLblAim,            primaryAim,           fShiftedAim,          gShiftedAim,          primaryTam
 };
 
 
@@ -521,10 +521,10 @@ void fnAssign(uint16_t mode) {
 
 void removeUserItemAssignments(int16_t userItem, char *userItemName) {
   bool_t deleteAllItems = false;
-  
+
   itemToBeAssigned = ITM_NULL;
   if (userItemName[0] == 0) deleteAllItems = true;
-  
+
   #if defined(PC_BUILD)
     //printf("**[DL]** userItem %d userItemName %s length %d char1 %x char2 %x char 3 %x char4 %x\n",userItem,userItemName,stringByteLength(userItemName),userItemName[0],userItemName[1],userItemName[2],userItemName[3]);
   #endif //PC_BUILD
@@ -632,7 +632,7 @@ void fnDeleteMenu(uint16_t id) {
 
 
 void fnDeleteUserMenus(uint16_t confirmation) {
-  if(confirmation == NOT_CONFIRMED) {
+  if((confirmation == NOT_CONFIRMED) && (programRunStop != PGM_RUNNING)) {
     setConfirmationMode(fnDeleteUserMenus);
   }
   else {
@@ -647,7 +647,11 @@ void fnDeleteUserMenus(uint16_t confirmation) {
       createHOME();
       createPFN();
     #endif // !TESTSUITE_BUILD
-    temporaryInformation = TI_DEL_ALL_MENUS;
+    if(programRunStop != PGM_RUNNING) {
+      temporaryInformation = TI_DEL_ALL_MENUS;
+    } else {
+      temporaryInformation = TI_NO_INFO;
+    }
   }
 }
 
@@ -655,18 +659,22 @@ void fnDeleteUserMenus(uint16_t confirmation) {
 
 void fnClearUserMenus(uint16_t confirmation) {
   int i;
-  if(confirmation == NOT_CONFIRMED) {
+  if((confirmation == NOT_CONFIRMED) && (programRunStop != PGM_RUNNING)) {
     setConfirmationMode(fnClearUserMenus);
   }
   else {
     for(i=0; i<numberOfUserMenus; i++) {
-      memset(userMenus[i].menuItem, 0, 18 * sizeof(userMenuItem_t));        
+      memset(userMenus[i].menuItem, 0, 18 * sizeof(userMenuItem_t));
     }
     #if !defined(TESTSUITE_BUILD)
       createHOME();
       createPFN();
     #endif // !TESTSUITE_BUILD
-    temporaryInformation = TI_CLEAR_ALL_MENUS;
+    if(programRunStop != PGM_RUNNING) {
+      temporaryInformation = TI_DEL_ALL_MENUS;
+    } else {
+      temporaryInformation = TI_NO_INFO;
+    }
   }
 }
 
@@ -988,7 +996,7 @@ void assignToKey(const char *data) {
 void initUserKeyArgument(void) {
   userKeyLabelSize = 37/*keys*/ * 6/*states*/ * 1/*byte terminator*/ + 1/*byte sentinel*/;
   userKeyLabel = allocC47Blocks(TO_BLOCKS(userKeyLabelSize));
-  memset(userKeyLabel,   0, TO_BYTES(TO_BLOCKS(userKeyLabelSize))); 
+  memset(userKeyLabel,   0, TO_BYTES(TO_BLOCKS(userKeyLabelSize)));
 }
 
 

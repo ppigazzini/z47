@@ -904,11 +904,11 @@ int16_t lastItem = 0;
 
       if(calcMode == CM_ASSIGN && itemToBeAssigned != 0 && !(tam.alpha && tam.mode != TM_NEWMENU)) {
 //Put section in if shifts are only allowed on the primary menu line
-//        if( (  (itemToBeAssigned == ITM_SHIFTf || itemToBeAssigned == ITM_SHIFTg || itemToBeAssigned == KEY_fg) && 
-//                (previousCalcMode == CM_NORMAL) && 
-//                (shiftF || shiftG) && 
-//                ((uint8_t *)data)[0] >= '1' && 
-//                ((uint8_t *)data)[0] <= '6' 
+//        if( (  (itemToBeAssigned == ITM_SHIFTf || itemToBeAssigned == ITM_SHIFTg || itemToBeAssigned == KEY_fg) &&
+//                (previousCalcMode == CM_NORMAL) &&
+//                (shiftF || shiftG) &&
+//                ((uint8_t *)data)[0] >= '1' &&
+//                ((uint8_t *)data)[0] <= '6'
 //                )  ) {       //prevent "shifts on rows f and g on F6 to be overwritten //Allow any normal mode menu HOME PFN MyM, except shifts not in f or g line
 //          return;
 //        } else
@@ -920,7 +920,7 @@ int16_t lastItem = 0;
             }                                        //^^JM
             return;
           }
-        } else 
+        } else
 
         {
           return;
@@ -1067,7 +1067,7 @@ int16_t lastItem = 0;
             screenUpdatingMode &= ~SCRUPD_ONE_TIME_FLAGS;
             return;
           }
-          else if(calcMode == CM_PEM && catalog && catalog != CATALOG_MVAR && (!tam.mode || tam.function != ITM_CLP)) { // TODO: is that correct
+          else if(calcMode == CM_PEM && catalog && catalog != CATALOG_MVAR && (!tam.mode || tam.function != ITM_DELP)) { // TODO: is that correct
             fnKeyInCatalog = 1;
             if(indexOfItems[item].func == fnGetSystemFlag && (tam.mode == TM_FLAGR || tam.mode == TM_FLAGW) && !tam.indirect) {
               tam.value = (indexOfItems[item].param & 0xff);
@@ -1306,6 +1306,12 @@ int16_t lastItem = 0;
           _closeCatalog();
           fnKeyInCatalog = 0;
         }
+        else if((calcMode == CM_CONFIRMATION) && (item == ITM_YES || item == ITM_NO)) {
+          runFunction(item);
+        }
+      }
+      else if(calcMode == CM_CONFIRMATION) {
+        temporaryInformation = TI_ARE_YOU_SURE;      // Keep confirmation message on screen
       }
     }
     #if defined(PC_BUILD)
@@ -2147,7 +2153,9 @@ RELEASE_END:
           //JM No if needed, it does nothing if not in NIM. TO DISPLAY NUMBER KEYPRESS DIRECTLY AFTER PRESS, NOT ONLY UPON RELEASE          break;
           keyActionProcessed = true;   //JM move this to before fnKeyBackspace to allow fnKeyBackspace to cancel it if needed to allow this function via timing out to NOP, and this is incorporated with the CLRDROP
           fnKeyBackspace(NOPARAM);
-          temporaryInformation = TI_NO_INFO;
+          if(calcMode != CM_CONFIRMATION) {
+            temporaryInformation = TI_NO_INFO;
+          }
         }
         break;
       }
@@ -2205,7 +2213,7 @@ RELEASE_END:
           fnKeyExit(NOPARAM);
           keyActionProcessed = true;            //Removed to force EXIT on the RELEASE cycle to make it do fnKeyExit later to allow NOP
         }
-        if(temporaryInformation != TI_NO_INFO) {
+        if((temporaryInformation != TI_NO_INFO) && (calcMode != CM_CONFIRMATION)) {
           temporaryInformation = TI_NO_INFO;
           keyActionProcessed = true;
           refreshScreen();
@@ -2262,6 +2270,10 @@ RELEASE_END:
           keyActionProcessed = true;
         }
         else if(calcMode == CM_REGISTER_BROWSER || calcMode == CM_FLAG_BROWSER || calcMode == CM_ASN_BROWSER || calcMode == CM_FONT_BROWSER) {
+          keyActionProcessed = true;
+        }
+        else if(calcMode == CM_CONFIRMATION) {
+          temporaryInformation = TI_ARE_YOU_SURE;      // Keep confirmation message on screen
           keyActionProcessed = true;
         }
         else if(tam.mode) {
@@ -2602,20 +2614,8 @@ RELEASE_END:
               break;
             }
 
-            case CM_CONFIRMATION: { //ITM_ENTER & ITM_EXIT1 do not reach here, it goes to fnKeyEnter and fnKeyExit
-              if(item == ITEM_CONF_Y || item == ITM_XEQ || item == ITM_ENTER) { // Yes or XEQ or ENTER
-                calcMode = previousCalcMode;
-                confirmedFunction(CONFIRMED);
-              }
-
-              else if(item == ITEM_CONF_N || item == ITM_EXIT1) { // No
-                calcMode = previousCalcMode;
-              }
-
-              else {
-                temporaryInformation = TI_ARE_YOU_SURE;
-              }
-
+            case CM_CONFIRMATION: {
+              temporaryInformation = TI_ARE_YOU_SURE;      // Keep confirmation message on screen
               keyActionProcessed = true;
               break;
             }
@@ -3027,8 +3027,7 @@ void fnKeyEnter(uint16_t unusedButMandatoryParameter) {
       }
 
       case CM_CONFIRMATION: {
-        calcMode = previousCalcMode;
-        confirmedFunction(CONFIRMED);
+        temporaryInformation = TI_ARE_YOU_SURE;      // Keep confirmation message on screen
         break;
       }
 
@@ -3397,6 +3396,7 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
 
       case CM_CONFIRMATION: {
         calcMode = previousCalcMode;
+        popSoftmenu();                    // Pop MNU_YESNO
         temporaryInformation = TI_NO_INFO;
         if(programRunStop == PGM_WAITING) {
           programRunStop = PGM_STOPPED;
@@ -3720,8 +3720,7 @@ void fnKeyBackspace(uint16_t unusedButMandatoryParameter) {
       }                                    //JM ^^
 
       case CM_CONFIRMATION: {
-        calcMode = previousCalcMode;
-        temporaryInformation = TI_NO_INFO;
+        temporaryInformation = TI_ARE_YOU_SURE;      // Keep confirmation message on screen
         if(programRunStop == PGM_WAITING) {
           programRunStop = PGM_STOPPED;
         }

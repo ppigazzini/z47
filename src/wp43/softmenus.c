@@ -380,11 +380,13 @@ TO_QSPI const int16_t menu_CHARS[]       = { -MNU_ALPHAINTL,               -MNU_
 TO_QSPI const int16_t menu_VARS[]        = { -MNU_NUMBRS,                  -MNU_CPXS,                  -MNU_REALS,                -MNU_ANGLES,           -MNU_LINTS,                  -MNU_ALLVARS,
                                              -MNU_CONFIGS,                 -MNU_MATRS,                 -MNU_DATES,                -MNU_TIMES,            -MNU_SINTS,                  -MNU_STRINGS                  };
 
-TO_QSPI const int16_t menu_DELETE[]      = {  ITM_CLALL,                    ITM_DELMALL,                ITM_DELVALL,               ITM_CLPALL,            ITM_CLP,                     ITM_CLBKUP,                
-                                              ITM_NULL,                     ITM_NULL,                   ITM_NULL,                  ITM_NULL,              ITM_NULL,                    ITM_NULL,                  
+TO_QSPI const int16_t menu_DELETE[]      = {  ITM_DELALL,                   ITM_DELMALL,                ITM_DELVALL,               ITM_DELPALL,           ITM_DELP,                    ITM_DELBKUP,
+                                              ITM_NULL,                     ITM_NULL,                   ITM_NULL,                  ITM_NULL,              ITM_NULL,                    ITM_NULL,
                                               ITM_NULL,                     ITM_NULL,                   ITM_NULL,                  ITM_NULL,              ITM_NULL,                    ITM_DELITM,                  };
 
 TO_QSPI const int16_t menu_DELITM[]      = {  ITM_NULL,                     ITM_NULL,                   ITM_NULL,                 -MNU_PROGS,            -MNU_VARS,                   -MNU_MENUS                    };
+
+TO_QSPI const int16_t menu_YESNO[]       = {  ITM_NULL,                     ITM_YES,                    ITM_NULL,                  ITM_NULL,              ITM_NO,                      ITM_NULL                     };
 
 /*      Menu name                           <----------------------------------------------------------------------------- 6 functions ---------------------------------------------------------------------------->  */
 /*                                          <---------------------------------------------------------------------- 6 f shifted functions ------------------------------------------------------------------------->  */
@@ -910,6 +912,7 @@ TO_QSPI const softmenu_t softmenu[] = {
 /* 138 */  {.menuItem = -MNU_RIBBONS,     .numItems = sizeof(menu_RIBBONS       )/sizeof(int16_t), .softkeyItem = menu_RIBBONS        },
 /* 139 */  {.menuItem = -MNU_INL_TST,     .numItems = sizeof(menu_Inl_Tst       )/sizeof(int16_t), .softkeyItem = menu_Inl_Tst        },
 /* 140 */  {.menuItem = -MNU_DELETE,      .numItems = sizeof(menu_DELETE        )/sizeof(int16_t), .softkeyItem = menu_DELETE         },
+/* 140 */  {.menuItem = -MNU_YESNO,       .numItems = sizeof(menu_YESNO         )/sizeof(int16_t), .softkeyItem = menu_YESNO          },
 /* 141 */  {.menuItem =  0,               .numItems = 0,                                           .softkeyItem = NULL                }
 };
 
