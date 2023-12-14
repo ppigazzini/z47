@@ -829,6 +829,26 @@ void execTimerApp(uint16_t timerType) {
 
 
   void Shft_handler() {                        //JM SHIFT NEW vv
+    if(Shft_LongPress_f_g) {
+      if(fnTimerGetStatus(TO_FG_LONG) == TMR_COMPLETED) {
+        Shft_LongPress_f_g = false;
+        fnTimerStop(TO_3S_CTFF);
+        fnTimerStop(TO_FG_LONG);
+        if(shiftF) {
+          showSoftmenu(-MNU_HOME);
+          showSoftmenuCurrentPart();
+        }
+        else if(shiftG) {
+          showSoftmenu(-MNU_MyMenu);
+          showSoftmenuCurrentPart();
+        }
+        shiftF = 0;
+        shiftG = 0;
+        showShiftState();
+        }
+
+
+    } else
     if(Shft_timeouts) {
       if(fnTimerGetStatus(TO_FG_LONG) == TMR_COMPLETED) {
         fnTimerStop(TO_3S_CTFF);

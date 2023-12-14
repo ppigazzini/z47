@@ -106,6 +106,8 @@
 #else
   #define DEBUGSFN false
 #endif
+#define   FN_TIME_DEBUG1
+#undef    FN_TIME_DEBUG1
 
 
 
@@ -499,6 +501,7 @@
 #define FLAG_SBshfR                           0x803B
 #define FLAG_HPBASE                           0x803C
 #define FLAG_2TO10                            0x803D
+#define FLAG_SH_LONGPRESS                     0x803E
 
 #define NUMBER_OF_SYSTEM_FLAGS                    60
 
@@ -1495,11 +1498,7 @@ typedef enum {
 #endif // TESTSUITE_BUILD && !GENERATE_CATALOGS
 
 /* Turn off -Wunused-result for a specific function call */
-#if defined(OS32BIT)
-  #define ignore_result(M) if(1==((uint32_t)M)){;}
-#else // !OS32BIT
-  #define ignore_result(M) if(1==((uint64_t)M)){;}
-#endif // OS32BIT
+#define ignoreReturnedValue(function) (__extension__ ({ __typeof__ (function) __x = (function); (void) __x; }))
 
 #if defined(DMCP_BUILD)
   #define TMP_STR_LENGTH     2560 //2560 //dr - remove #include <dmcp.h> again - AUX_BUF_SIZE
