@@ -1466,14 +1466,14 @@
 #define ITM_BN                      1416
 #define ITM_BNS                     1417
 #define ITM_CASE                    1418
-#define ITM_CLALL                   1419
+#define ITM_DELALL                  1419
 #define ITM_CLCVAR                  1420
 #define ITM_CLFALL                  1421
 #define ITM_TGLFRT                  1422
 #define ITM_CLLCD                   1423
 #define ITM_CLMENU                  1424
-#define ITM_CLP                     1425
-#define ITM_CLPALL                  1426
+#define ITM_DELP                    1425
+#define ITM_DELPALL                 1426
 #define ITM_CLREGS                  1427
 #define ITM_CLSTK                   1428
 #define ITM_CLSIGMA                 1429
@@ -1829,7 +1829,7 @@
 #define ITM_TIMER_0_1S              1777
 #define ITM_TIMER_RESET             1778
 #define ITM_TIMER_RCL               1779
-#define ITM_CLBKUP                  1780
+#define ITM_DELBKUP                 1780
 #define ITM_CPXSLV                  1781
 #define ITM_DRAW                    1782
 #define MNU_GRAPH                   1783
@@ -2286,20 +2286,23 @@
 #define MNU_NUMBRS                  2230
 #define MNU_CONFIGS                 2231
 #define MNU_ALLVARS                 2232
-#define MNU_SHOW                    2233
-#define MNU_LAYOUTS                 2234
-#define MNU_RESETS                  2235
-#define MNU_RIBBONS                 2236
-#define ITM_USER_R47bkfg            2237
-#define ITM_USER_R47fgbk            2238
-#define ITM_USER_R47fg_g            2239
-#define ITM_CLMALL                  2240
-#define ITM_CLVALL                  2241
-#define ITM_DELMALL                 2242
-#define ITM_DELVALL                 2243
-#define MNU_DELETE                  2244
+#define MNU_LAYOUTS                 2233
+#define MNU_RESETS                  2234
+#define MNU_RIBBONS                 2235
+#define ITM_USER_R47bkfg            2236
+#define ITM_USER_R47fgbk            2237
+#define ITM_USER_R47fg_g            2238
+#define ITM_CLMALL                  2239
+#define ITM_CLVALL                  2240
+#define ITM_DELMALL                 2241
+#define ITM_DELVALL                 2242
+#define MNU_DELETE                  2243
+#define MNU_YESNO                   2244
+#define ITM_YES                     2245
+#define ITM_NO                      2246
 
-#define LAST_ITEM                   2245
+#define MNU_SHOW                    2247
+#define LAST_ITEM                   2248
 
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL

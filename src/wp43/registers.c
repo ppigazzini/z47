@@ -994,7 +994,11 @@ void fnDeleteAllVariables(uint16_t confirmation) {
       fnDeleteVariable(FIRST_NAMED_VARIABLE + var -1);
     }
     initSimEqMatABX();
-    temporaryInformation = TI_DEL_ALL_VARIABLES;
+    if(programRunStop != PGM_RUNNING) {
+      temporaryInformation = TI_DEL_ALL_VARIABLES;
+    } else {
+      temporaryInformation = TI_NO_INFO;
+    }
   }
 }
 
@@ -1013,7 +1017,7 @@ void fnClearAllVariables(uint16_t confirmation) {
       clearRegister(FIRST_NAMED_VARIABLE + i -1);
     }
     fnClSigma(CONFIRMED);                // Clear and release the memory of all statistical sums
-    calcRegister_t regist;               // Clear SIM EQ Mat_A, Mat_B & Mat_X 
+    calcRegister_t regist;               // Clear SIM EQ Mat_A, Mat_B & Mat_X
     regist = findOrAllocateNamedVariable("Mat_A");
     if(regist != INVALID_VARIABLE) {
       initMatrixRegister(regist, 1, 1, false);
@@ -1026,7 +1030,11 @@ void fnClearAllVariables(uint16_t confirmation) {
     if(regist != INVALID_VARIABLE) {
       initMatrixRegister(regist, 1, 1, false);
     }
-    temporaryInformation = TI_CLEAR_ALL_VARIABLES;
+    if(programRunStop != PGM_RUNNING) {
+      temporaryInformation = TI_CLEAR_ALL_VARIABLES;
+    } else {
+      temporaryInformation = TI_NO_INFO;
+    }
   }
 }
 
@@ -1260,7 +1268,7 @@ void clearRegister(calcRegister_t regist) {
 
 
 void fnClearRegisters(uint16_t confirmation) {
-  if(confirmation == NOT_CONFIRMED) {
+  if((confirmation == NOT_CONFIRMED) && (programRunStop != PGM_RUNNING)) {
     setConfirmationMode(fnClearRegisters);
   }
   else {

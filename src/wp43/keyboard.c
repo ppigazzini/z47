@@ -1066,7 +1066,7 @@ int16_t lastItem = 0;
             screenUpdatingMode &= ~SCRUPD_ONE_TIME_FLAGS;
             return;
           }
-          else if(calcMode == CM_PEM && catalog && catalog != CATALOG_MVAR && (!tam.mode || tam.function != ITM_CLP)) { // TODO: is that correct
+          else if(calcMode == CM_PEM && catalog && catalog != CATALOG_MVAR && (!tam.mode || tam.function != ITM_DELP)) { // TODO: is that correct
             fnKeyInCatalog = 1;
             if(indexOfItems[item].func == fnGetSystemFlag && (tam.mode == TM_FLAGR || tam.mode == TM_FLAGW) && !tam.indirect) {
               tam.value = (indexOfItems[item].param & 0xff);
@@ -1306,6 +1306,12 @@ int16_t lastItem = 0;
           _closeCatalog();
           fnKeyInCatalog = 0;
         }
+        else if((calcMode == CM_CONFIRMATION) && (item == ITM_YES || item == ITM_NO)) {
+          runFunction(item);
+        }
+      }
+      else if(calcMode == CM_CONFIRMATION) {
+        temporaryInformation = TI_ARE_YOU_SURE;      // Keep confirmation message on screen
       }
     }
   #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
@@ -2187,7 +2193,9 @@ RELEASE_END:
           //JM No if needed, it does nothing if not in NIM. TO DISPLAY NUMBER KEYPRESS DIRECTLY AFTER PRESS, NOT ONLY UPON RELEASE          break;
           keyActionProcessed = true;   //JM move this to before fnKeyBackspace to allow fnKeyBackspace to cancel it if needed to allow this function via timing out to NOP, and this is incorporated with the CLRDROP
           fnKeyBackspace(NOPARAM);
-          temporaryInformation = TI_NO_INFO;
+          if(calcMode != CM_CONFIRMATION) {
+            temporaryInformation = TI_NO_INFO;
+          }
         }
         break;
       }
@@ -2245,7 +2253,7 @@ RELEASE_END:
           fnKeyExit(NOPARAM);
           keyActionProcessed = true;            //Removed to force EXIT on the RELEASE cycle to make it do fnKeyExit later to allow NOP
         }
-        if(temporaryInformation != TI_NO_INFO) {
+        if((temporaryInformation != TI_NO_INFO) && (calcMode != CM_CONFIRMATION)) {
           temporaryInformation = TI_NO_INFO;
           keyActionProcessed = true;
           refreshScreen(120);
@@ -2302,6 +2310,10 @@ RELEASE_END:
           keyActionProcessed = true;
         }
         else if(calcMode == CM_REGISTER_BROWSER || calcMode == CM_FLAG_BROWSER || calcMode == CM_ASN_BROWSER || calcMode == CM_FONT_BROWSER) {
+          keyActionProcessed = true;
+        }
+        else if(calcMode == CM_CONFIRMATION) {
+          temporaryInformation = TI_ARE_YOU_SURE;      // Keep confirmation message on screen
           keyActionProcessed = true;
         }
         else if(tam.mode) {
@@ -2661,20 +2673,8 @@ RELEASE_END:
               break;
             }
 
-            case CM_CONFIRMATION: { //ITM_ENTER & ITM_EXIT1 do not reach here, it goes to fnKeyEnter and fnKeyExit
-              if(item == ITEM_CONF_Y || item == ITM_XEQ || item == ITM_ENTER) { // Yes or XEQ or ENTER
-                calcMode = previousCalcMode;
-                confirmedFunction(CONFIRMED);
-              }
-
-              else if(item == ITEM_CONF_N || item == ITM_EXIT1) { // No
-                calcMode = previousCalcMode;
-              }
-
-              else {
-                temporaryInformation = TI_ARE_YOU_SURE;
-              }
-
+            case CM_CONFIRMATION: {
+              temporaryInformation = TI_ARE_YOU_SURE;      // Keep confirmation message on screen
               keyActionProcessed = true;
               break;
             }
@@ -3093,8 +3093,7 @@ void fnKeyEnter(uint16_t unusedButMandatoryParameter) {
       }
 
       case CM_CONFIRMATION: {
-        calcMode = previousCalcMode;
-        confirmedFunction(CONFIRMED);
+        temporaryInformation = TI_ARE_YOU_SURE;      // Keep confirmation message on screen
         break;
       }
 
@@ -3476,6 +3475,7 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
 
       case CM_CONFIRMATION: {
         calcMode = previousCalcMode;
+        popSoftmenu();                    // Pop MNU_YESNO
         temporaryInformation = TI_NO_INFO;
         if(programRunStop == PGM_WAITING) {
           programRunStop = PGM_STOPPED;
@@ -3785,13 +3785,13 @@ void fnKeyBackspace(uint16_t unusedButMandatoryParameter) {
        case CM_LISTXY:
        case CM_GRAPH:
        case CM_PLOT_STAT:
-       case CM_CONFIRMATION: {
-         #if defined(PC_BUILD)
-           jm_show_calc_state("fnKeyBackspace, calling fnKeyExit");
-         #endif
-         fnKeyExit(0);
-         break;
-       }
+      case CM_CONFIRMATION: {
+        temporaryInformation = TI_ARE_YOU_SURE;      // Keep confirmation message on screen
+        if(programRunStop == PGM_WAITING) {
+          programRunStop = PGM_STOPPED;
+        }
+        break;
+      }
 
       case CM_PEM: {
         #if !defined(SAVE_SPACE_DM42_10)
