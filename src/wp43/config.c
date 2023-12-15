@@ -170,7 +170,7 @@ void configCommon(uint16_t idx) {
     setSystemFlag  (FLAG_SBbatV);            // Set battery voltage indicator
     fnDisplayFormatSigFig(3);                // SIG 3
     roundingMode = RM_HALF_UP;
-    fnKeysManagement(USER_MENG);
+    fnKeysManagement(USER_MC47);
     setSystemFlag(FLAG_FRCSRN);              // Display
 
     itemToBeAssigned = -MNU_EE;
@@ -938,7 +938,7 @@ void fnClAll(uint16_t confirmation) {
     // Clear user menus
     fnExitAllMenus(NOPARAM);
     fnDeleteUserMenus(CONFIRMED);             // Delete all user menus and user menus assignments
-    fnRESET_MyM(USER_MENG);                   // Reset Menu MyMenu
+    fnRESET_MyM(USER_MHOME);                  // Reset Menu MyMenu
     fnRESET_Mya();                            // Reset Menu MyAlpha
     #if !defined(TESTSUITE_BUILD)
       createHOME();                             // Reset Menu HOME
@@ -1108,10 +1108,12 @@ void restoreStats(void){
       {0,USER_KRESET,  "USER keys cleaned"                               },
       {0,USER_MRESET,  "MyMenu menu cleaned"                             },
       {0,USER_ARESET,  "My" STD_alpha " menu cleaned"                    },
-      {0,USER_MENG,    "MyMenu primary F-key engineering ribbon"         },
+      {0,USER_MHOME,   "MyMenu primary F-key: copied HOME ribbon"        },
       {0,USER_MFIN,    "MyMenu primary F-key financial ribbon"           },
       {0,USER_MCPX,    "MyMenu primary F-key complex ribbon"             },
       {0,USER_MSAV,    "MyMenu primary F-key save/load ribbon"           },
+      {0,USER_MC47,    "MyMenu primary C47 F-key ribbon"                 },
+      {0,USER_MR47,    "MyMenu primary R47 F-key ribbon"                 },
       {0,100,"Error List"}
     };
 
@@ -1440,7 +1442,7 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     setSystemFlag(FLAG_HPBASE);
     clearSystemFlag(FLAG_2TO10);
 
-    clearSystemFlag(FLAG_SH_LONGPRESS);
+    setSystemFlag(FLAG_SH_LONGPRESS);
 
     hourGlassIconEnabled = false;
     watchIconEnabled = false;
@@ -1571,7 +1573,7 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     fnKeysManagement(USER_HRESET);                                      //JM USER
     fnKeysManagement(USER_ARESET);                                      //JM USER
     fnKeysManagement(USER_MRESET);                                      //JM USER
-    fnKeysManagement(USER_MENG);                                        //JM USER
+    fnKeysManagement(USER_MHOME);                                       //JM USER
     #if !defined(TESTSUITE_BUILD)
       showSoftmenu(-MNU_MyMenu);                                   //this removes the false start on MyMenu error
     #endif // !TESTSUITE_BUILD
@@ -1816,10 +1818,12 @@ void fnKeysManagement(uint16_t choice) {
       fnShowVersion(choice);
       break;
 
-    case USER_MENG:
+    case USER_MHOME:
     case USER_MFIN:
     case USER_MCPX:
     case USER_MSAV:
+    case USER_MC47:
+    case USER_MR47:
       fnRESET_MyM(choice);
       fnShowVersion(choice);
       #if !defined(TESTSUITE_BUILD)

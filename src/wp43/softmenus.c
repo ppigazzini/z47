@@ -232,9 +232,9 @@ TO_QSPI const int16_t menu_MODE[]        = { ITM_DEG,                       ITM_
                                              ITM_F14,                       ITM_F124,                   ITM_F1234,                ITM_SAFERESET,         ITM_MYMx3,                   ITM_HOMEx3         };
 
 // D47 vv
-TO_QSPI const int16_t menu_SETUP[]       = { ITM_SYSTEM2,                   ITM_NULL,                   ITM_ERPN,                 ITM_HPRP,              ITM_RECT,                    ITM_POLAR,                 
-                                             ITM_ACTUSB,                    ITM_NULL,                   ITM_NULL,                 ITM_NULL,              -MNU_INFO,                   ITM_CFG,                   
-                                             ITM_SYSTEM,                    ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,                  
+TO_QSPI const int16_t menu_SETUP[]       = { ITM_SYS2,                      ITM_DMCP,                   ITM_ERPN,                 ITM_HPRP,              ITM_RECT,                    ITM_POLAR,                 
+                                             ITM_SYS,                       ITM_NULL,                   ITM_NULL,                 ITM_NULL,              -MNU_INFO,                   ITM_CFG,                   
+                                             ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,                  
 
                                              ITM_SSIZE4,                    ITM_SSIZE8,                 ITM_SETSIG2,              ITM_RMODE,             ITM_CB_CPXRES,               ITM_CB_SPCRES,  
                                              ITM_FRACT,                     ITM_PROPFR,                 ITM_IRFRAC,               ITM_DENMAX2,           ITM_DENANY,                  ITM_DENFIX,
@@ -694,7 +694,7 @@ TO_QSPI const int16_t menu_RESETS[]    =  {  ITM_USER_ARESET,           ITM_USER
                                              ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  
                                              ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL };
 
-TO_QSPI const int16_t menu_RIBBONS[]   =  {  ITM_BASE_CPX,              ITM_BASE_ENG,              ITM_BASE_FIN,              ITM_BASE_SAV,              ITM_NULL,                  ITM_NULL,                  
+TO_QSPI const int16_t menu_RIBBONS[]   =  {  ITM_RIBBON_CPX,            ITM_RIBBON_HOME,           ITM_RIBBON_FIN,            ITM_RIBBON_SAV,            ITM_RIBBON_C47,            ITM_RIBBON_R47,                  
                                              ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  
                                              ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL };
 
@@ -729,7 +729,7 @@ TO_QSPI const int16_t menu_HOME[]        = { ITM_DRG,                       ITM_
 /*INSTEAD THIS IS USED TO POPULATE THE HOME DYNAMIC MENU (USER MENU)*/
 
 TO_QSPI const int16_t menu_PREFIX[]      = { ITM_SI_k,                      ITM_SI_M,                   ITM_SI_G,                 ITM_SI_T,              ITM_SI_P,                    ITM_DSPCYCLE,
-                                             ITM_SI_f,                      ITM_SI_p,                   ITM_SI_n,                 ITM_SI_u,              ITM_SI_m,                    ITM_DSP,
+                                             ITM_SI_m,                      ITM_SI_u,                   ITM_SI_n,                 ITM_SI_p,              ITM_SI_f,                    ITM_DSP,
                                              ITM_SI_Ki,                     ITM_SI_Mi,                  ITM_SI_Gi,                ITM_SI_Ti,             ITM_SI_Pi,                   ITM_2TO10             };                //JM HOME
 
 
