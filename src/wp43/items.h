@@ -2215,7 +2215,7 @@
 #define ITM_GAP_L                   2159
 #define ITM_GAP_RX                  2160
 #define ITM_GAP_R                   2161
-#define ITM_RIBBON_HOME               2162
+#define ITM_2162                      2162
 #define ITM_RIBBON_FIN                2163
 #define ITM_RIBBON_CPX                2164
 #define ITM_op_j_SIGN               2165

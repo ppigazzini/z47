@@ -1909,9 +1909,6 @@ void fnRESET_MyM(uint8_t param) {
   #if !defined(TESTSUITE_BUILD)
     BASE_MYM = false;                                                   //JM prevent slow updating of 6 menu items
     for(int8_t fn = 1; fn <= 6; fn++) {
-      if(param == USER_MHOME) {
-        itemToBeAssigned = menu_HOME[fn -1];                            //Function key follows if the yellow key: Copy the default f-shofted to the primaries of MyMenu
-      } else
       if(param == USER_MSAV) {
         switch(fn) {
           case 1: itemToBeAssigned = ITM_SYSTEM2; break;
@@ -1962,8 +1959,8 @@ void fnRESET_MyM(uint8_t param) {
           case 2: itemToBeAssigned = ITM_op_j_pol; break;
           case 3: itemToBeAssigned = ITM_XFACT;    break;
           case 4: itemToBeAssigned = ITM_XTHROOT;  break;
-          case 5: itemToBeAssigned = ITM_10x;      break;
-          case 6: itemToBeAssigned = ITM_EXP;      break;
+          case 5: itemToBeAssigned = ITM_EXP;      break;
+          case 6: itemToBeAssigned = -MNU_HOME;    break;
           default:break;
         }
       } else {

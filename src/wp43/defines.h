@@ -14,6 +14,9 @@
 
 #define VERSION1 "0.109.00.00a22"     // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
 
+#define MODEL USER_R47               // USER_C47 or USER_R47
+
+
 
   #undef SAVE_SPACE_DM42_0
   #undef SAVE_SPACE_DM42_1
@@ -351,7 +354,6 @@
 #define USER_MRESET      49
 #define USER_KRESET      50
 #define USER_N47         51
-#define USER_MHOME       52
 #define USER_MSAV        53
 #define USER_MFIN        54
 #define USER_MCPX        55
