@@ -47,7 +47,7 @@ const font_t          *cursorFont;
 TO_QSPI const char     digits[17] = "0123456789ABCDEF";
 void                   (*confirmedFunction)(uint16_t);
 
-uint8_t calcModel = USER_C47;
+uint8_t calcModel = MODEL;
 
 
 // Variables stored in RAM

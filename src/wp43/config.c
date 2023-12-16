@@ -938,7 +938,13 @@ void fnClAll(uint16_t confirmation) {
     // Clear user menus
     fnExitAllMenus(NOPARAM);
     fnDeleteUserMenus(CONFIRMED);             // Delete all user menus and user menus assignments
-    fnRESET_MyM(USER_MHOME);                  // Reset Menu MyMenu
+
+    if(MODEL == USER_R47) {
+      fnRESET_MyM(USER_MR47);                  // Reset Menu MyMenu
+    } else {
+      fnRESET_MyM(USER_MC47);                  // Reset Menu MyMenu
+    }
+
     fnRESET_Mya();                            // Reset Menu MyAlpha
     #if !defined(TESTSUITE_BUILD)
       createHOME();                             // Reset Menu HOME
@@ -1108,7 +1114,6 @@ void restoreStats(void){
       {0,USER_KRESET,  "USER keys cleaned"                               },
       {0,USER_MRESET,  "MyMenu menu cleaned"                             },
       {0,USER_ARESET,  "My" STD_alpha " menu cleaned"                    },
-      {0,USER_MHOME,   "MyMenu primary F-key: copied HOME ribbon"        },
       {0,USER_MFIN,    "MyMenu primary F-key financial ribbon"           },
       {0,USER_MCPX,    "MyMenu primary F-key complex ribbon"             },
       {0,USER_MSAV,    "MyMenu primary F-key save/load ribbon"           },
@@ -1573,7 +1578,13 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     fnKeysManagement(USER_HRESET);                                      //JM USER
     fnKeysManagement(USER_ARESET);                                      //JM USER
     fnKeysManagement(USER_MRESET);                                      //JM USER
-    fnKeysManagement(USER_MHOME);                                       //JM USER
+
+    if(MODEL == USER_R47) {
+      fnKeysManagement(USER_MR47);                  // Reset Menu MyMenu Ribbon
+    } else {
+      fnKeysManagement(USER_MC47);                  // Reset Menu MyMenu Ribbon
+    }
+
     #if !defined(TESTSUITE_BUILD)
       showSoftmenu(-MNU_MyMenu);                                   //this removes the false start on MyMenu error
     #endif // !TESTSUITE_BUILD
@@ -1818,7 +1829,6 @@ void fnKeysManagement(uint16_t choice) {
       fnShowVersion(choice);
       break;
 
-    case USER_MHOME:
     case USER_MFIN:
     case USER_MCPX:
     case USER_MSAV:
