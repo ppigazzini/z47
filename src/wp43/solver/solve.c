@@ -458,16 +458,17 @@ int solver(calcRegister_t variable, const real34_t *y, const real34_t *x, real34
       real34Copy(&fb, &tmp); real34Copy(&fa, &fb); real34Copy(&tmp, &fa); real34Copy(&tmp, &fb1);
     }
 
-    if(real34IsZero(&fa)) { // already is a root?
+    if(real34IsZero(&fa) || real34IsZero(&fb)) { // already is a root?
+      if((--currentSolverNestingDepth) == 0) {
+        clearSystemFlag(FLAG_SOLVING);
+      }
+      else if(was_inting) {
+        clearSystemFlag(FLAG_SOLVING);
+        setSystemFlag(FLAG_INTING);
+      }
       real34Zero(resZ);
       real34Zero(resY);
-      real34Copy(&a, resX);
-      return SOLVER_RESULT_NORMAL;
-    }
-    if(real34IsZero(&fb)) {
-      real34Zero(resZ);
-      real34Zero(resY);
-      real34Copy(&b, resX);
+      real34Copy(real34IsZero(&fa) ? &a : &b, resX);
       return SOLVER_RESULT_NORMAL;
     }
 
