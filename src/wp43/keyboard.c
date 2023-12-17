@@ -1122,6 +1122,14 @@ int16_t lastItem = 0;
           else if(tam.mode && (!tam.alpha || isAlphabeticSoftmenu())) {
             bool_t isInConfig = tam.mode == TM_FLAGW && softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_SYSFL;   //JM Do not drop out of SYSFLG
 
+           if(softmenu[softmenuStack[1].softmenuId].menuItem == -MNU_TAMALPHA && 
+              (softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_MyAlpha || 
+               softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_ALPHA_OMEGA ||
+               softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_ALPHAMATH ||
+               softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_ALPHAMISC ||
+               softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_ALPHAINTL) ) {
+             popSoftmenu();
+           }
             addItemToBuffer(item);
 
             if(softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_MODE && isInConfig && item != ITM_EXIT1 && item != ITM_BACKSPACE) { //JM do not drop out of SYSFLG
@@ -1978,7 +1986,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
           delayCloseNim = false;
           closeNim();                 //JM moved here, from bufferize see JMCLOSE, to retain NIM if needed for .ms. Only a problem due to longpress.
           #if defined (PC_BUILD)
-            printf("btnReleased: Closed NIM (delayed) delayCloseNim=%u\n",delayCloseNim);
+            printf("btnReleased 1: Closed NIM (delayed) delayCloseNim=%u\n",delayCloseNim);
           #endif
           screenUpdatingMode &= ~SCRUPD_MANUAL_MENU;
         }
@@ -2042,7 +2050,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
           }
           else {
           #if defined (PC_BUILD)
-            printf("btnReleased: Closed NIM (delayed) delayCloseNim=%u, ",delayCloseNim);
+            printf("btnReleased 2: Closed NIM (delayed) delayCloseNim=%u, ",delayCloseNim);
             printf("runfunction (%d)\n",item);
           #endif
             runFunction(item);
