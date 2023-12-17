@@ -894,11 +894,11 @@ int16_t lastItem = 0;
 
       if(calcMode == CM_ASSIGN && itemToBeAssigned != 0 && !(tam.alpha && tam.mode != TM_NEWMENU)) {
 //Put section in if shifts are only allowed on the primary menu line
-//        if( (  (itemToBeAssigned == ITM_SHIFTf || itemToBeAssigned == ITM_SHIFTg || itemToBeAssigned == KEY_fg) && 
-//                (previousCalcMode == CM_NORMAL) && 
-//                (shiftF || shiftG) && 
-//                ((uint8_t *)data)[0] >= '1' && 
-//                ((uint8_t *)data)[0] <= '6' 
+//        if( (  (itemToBeAssigned == ITM_SHIFTf || itemToBeAssigned == ITM_SHIFTg || itemToBeAssigned == KEY_fg) &&
+//                (previousCalcMode == CM_NORMAL) &&
+//                (shiftF || shiftG) &&
+//                ((uint8_t *)data)[0] >= '1' &&
+//                ((uint8_t *)data)[0] <= '6'
 //                )  ) {       //prevent "shifts on rows f and g on F6 to be overwritten //Allow any normal mode menu HOME PFN MyM, except shifts not in f or g line
 //          return;
 //        } else
@@ -910,7 +910,7 @@ int16_t lastItem = 0;
             }                                        //^^JM
             return;
           }
-        } else 
+        } else
 
         {
           return;
@@ -1121,6 +1121,14 @@ int16_t lastItem = 0;
           else if(tam.mode && (!tam.alpha || isAlphabeticSoftmenu())) {
             bool_t isInConfig = tam.mode == TM_FLAGW && softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_SYSFL;   //JM Do not drop out of SYSFLG
 
+           if(softmenu[softmenuStack[1].softmenuId].menuItem == -MNU_TAMALPHA && 
+              (softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_MyAlpha || 
+               softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_ALPHA_OMEGA ||
+               softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_ALPHAMATH ||
+               softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_ALPHAMISC ||
+               softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_ALPHAINTL) ) {
+             popSoftmenu();
+           }
             addItemToBuffer(item);
 
             if(softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_MODE && isInConfig && item != ITM_EXIT1 && item != ITM_BACKSPACE) { //JM do not drop out of SYSFLG
@@ -1996,7 +2004,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
           delayCloseNim = false;
           closeNim();                 //JM moved here, from bufferize see JMCLOSE, to retain NIM if needed for .ms. Only a problem due to longpress.
           #if defined (PC_BUILD)
-            printf("btnReleased: Closed NIM (delayed) delayCloseNim=%u\n",delayCloseNim);
+            printf("btnReleased 1: Closed NIM (delayed) delayCloseNim=%u\n",delayCloseNim);
           #endif
           screenUpdatingMode &= ~SCRUPD_MANUAL_MENU;
         }
@@ -2061,7 +2069,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
           }
           else {
             #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
-              printf("btnReleased: Closed NIM (delayed) delayCloseNim=%u, ",delayCloseNim);
+              printf("btnReleased 2: Closed NIM (delayed) delayCloseNim=%u, ",delayCloseNim);
               printf("runfunction (%d)\n",item);
               printf(">>> btnReleased runfunction(%i) calcMode=%d previousCalcMode=%d screenUpdatingMode=%d\n", item, calcMode, previousCalcMode, screenUpdatingMode);    //JMYY
             #endif // PC_BUILD &&MONITOR_CLRSCR
