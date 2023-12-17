@@ -2157,9 +2157,9 @@
 #define ITM_RADtoGRAD               2101
 #define MNU_TRG_C47                 2102
 #define MNU_TRG_C47_MORE            2103
-#define ITM_2104                    2104
-#define ITM_2105                    2105
-#define ITM_BASE_SAV                2106
+#define ITM_RIBBON_C47                2104
+#define ITM_RIBBON_R47                2105
+#define ITM_RIBBON_SAV                2106
 #define MNU_PLOTTING                2107
 #define MNU_TAMNONREGIND            2108
 #define ITM_SAVEST                  2109
@@ -2215,9 +2215,9 @@
 #define ITM_GAP_L                   2159
 #define ITM_GAP_RX                  2160
 #define ITM_GAP_R                   2161
-#define ITM_BASE_ENG                2162
-#define ITM_BASE_FIN                2163
-#define ITM_BASE_CPX                2164
+#define ITM_2162                      2162
+#define ITM_RIBBON_FIN                2163
+#define ITM_RIBBON_CPX                2164
 #define ITM_op_j_SIGN               2165
 #define ITM_poly_SIGN               2166
 #define ITM_NMItoMI                 2167

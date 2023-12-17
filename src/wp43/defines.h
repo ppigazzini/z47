@@ -26,6 +26,9 @@
 
 #define VERSION1 "0.108.17.00b1"     // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
 
+#define MODEL USER_C47               // USER_C47 or USER_R47
+
+
 
   #undef SAVE_SPACE_DM42_0
   #undef SAVE_SPACE_DM42_1
@@ -324,16 +327,17 @@
 #define USER_MRESET      49
 #define USER_KRESET      50
 #define USER_N47         51
-#define USER_MENG        52
 #define USER_MSAV        53
 #define USER_MFIN        54
 #define USER_MCPX        55
-#define USER_HRESET      56
-#define USER_PRESET      57
-#define USER_R47         58
-#define USER_R47bkfg     59
-#define USER_R47fgbk     60
-#define USER_R47fg_g     61
+#define USER_MC47        56
+#define USER_MR47        57
+#define USER_HRESET      58
+#define USER_PRESET      59
+#define USER_R47         60
+#define USER_R47bkfg     61
+#define USER_R47fgbk     62
+#define USER_R47fg_g     63
 
 
 //*************************
