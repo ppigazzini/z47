@@ -306,29 +306,6 @@
 #endif // LINUX
 
 
-#define DEBUG_STAT                       0 // PLOT & STATS verbose level can be 0, 1 or 2 (more)
-#if(DEBUG_STAT == 0)
-  #undef STATDEBUG
-  #undef STATDEBUG_VERBOSE
-#endif // DEBUG_STAT == 0
-#if(DEBUG_STAT == 1)
-  #define STATDEBUG
-  #undef STATDEBUG_VERBOSE
-#endif // DEBUG_STAT == 1
-#if(DEBUG_STAT == 2)
-  #define STATDEBUG
-  #define STATDEBUG_VERBOSE
-#endif // DEBUG_STAT == 2
-
-
-#if defined(PC_BUILD)
-  #define DEBUGUNDO
-  #undef DEBUGUNDO
-#else // !PC_BUILD
-  #undef DEBUGUNDO
-#endif // PC_BUILD
-
-
 #define REAL34_WIDTH_TEST 0 // For debugging real34 ALL 0 formating. Use UP/DOWN to shrink or enlarge the available space. The Z register holds the available width.
 
 

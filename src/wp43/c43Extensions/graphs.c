@@ -582,8 +582,9 @@ void graph_plotmem(void) {
       #endif //LOW_GRAPH_ACC
       regStatsXY = findNamedVariable(plotStatMx);
       uint16_t cnt, ix, statnum;
-      uint16_t xo, xn, xN;
-      uint8_t yo, yn, yN;
+      int16_t xo, xn, xN;
+      int16_t yo, yn, yN;
+      int16_t yN0 = 0, yN1 = 0;
       float x;
       float y;
       float sx, sy;
@@ -1015,12 +1016,35 @@ void graph_plotmem(void) {
           xo = xN;
           yo = yN;
           xN = screen_window_x(x_min,x,x_max);
-          yN = screen_window_y(y_min,y,y_max);
+          yN0 = yN1;
+          yN1 = screen_window_y_nolimit(y_min,y,y_max);
+          yN = yN1;
+
 
           #if defined(STATDEBUG)
+            printf("xN = %d : (x_min=%f,x=%f,x_max=%f) \n",xN, x_min,x,x_max);
+            printf("yN = %d yN0 = %d yN1 = %d : (y_min=%f,y=%f,y_max=%f) \n",yN, yN0, yN1, y_min,y,y_max);
             printf("plotting graph table[%d] = x:%f y:%f dydx:%f inty:%f xN:%d yN:%d ", ix, x, y, dydx, inty, xN, yN);
             printf(" ... x-ddx/2=%d dydx=%d inty=%d\n", screen_window_x(x_min, x-ddx/2, x_max), screen_window_y(y_min, dydx, y_max), screen_window_y(y_min, inty, y_max));
           #endif // STATDEBUG
+
+
+          bool_t outOfScreen = ((yN1 > SCREEN_HEIGHT_GRAPH - 1) && (yN0 > SCREEN_HEIGHT_GRAPH - 1)) || ((yN1 < 0) && (yN0 < 0));
+          if(yN1 != yN0 && !outOfScreen && (
+            ((yN1 <= SCREEN_HEIGHT_GRAPH - 1 && yN1 >= 0) && (yN0 > SCREEN_HEIGHT_GRAPH - 1 || yN0 < 0)) //||
+         //   ((yN0 <= SCREEN_HEIGHT_GRAPH - 1 && yN0 >= 0) && (yN1 > SCREEN_HEIGHT_GRAPH - 1 || yN1 < 0))
+            )) {
+
+            int16_t dY1 = yN0 > SCREEN_HEIGHT_GRAPH - 1 ? SCREEN_HEIGHT_GRAPH - 1 - yN1 : yN1;
+            float dxN = ((float)dY1)/((float)(yN1-yN0))*(float)(xN-xo);
+            if(dxN<-25) dxN = -25; else if(dxN>25) dxN = 25;
+            xo += (xN-xo)-max((int16_t)dxN,-(int16_t)dxN);
+            yo = yN0 > SCREEN_HEIGHT_GRAPH - 1 ? SCREEN_HEIGHT_GRAPH - 1 : 0;
+          }
+
+          if(xN > SCREEN_WIDTH_GRAPH - 1) xN = SCREEN_WIDTH_GRAPH - 1;
+          if(yN > SCREEN_HEIGHT_GRAPH - 1) yN = SCREEN_HEIGHT_GRAPH - 1;
+          if(yN < 0) yN = 0;
 
           int16_t minN_y, minN_x;
           if(!Aspect_Square) {
@@ -1030,7 +1054,7 @@ void graph_plotmem(void) {
             minN_y = 0;
             minN_x = SCREEN_WIDTH-SCREEN_HEIGHT_GRAPH;
           }
-          if(xN < SCREEN_WIDTH_GRAPH && xN >= minN_x && yN < SCREEN_HEIGHT_GRAPH && yN >= minN_y) {
+          if((xN < SCREEN_WIDTH_GRAPH && xN >= minN_x && yN < SCREEN_HEIGHT_GRAPH && yN >= minN_y) && !outOfScreen)  {
             //yo = yn;                              //old , new, to be able to draw a line between samples
             yn = yN;
             //xo = xn;

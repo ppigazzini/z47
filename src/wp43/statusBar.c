@@ -300,6 +300,7 @@ void showFracMode(void) {
 
 
   void showHideAlphaMode(void) {
+    if(!(SBARUPD_AlphaMode) || calcMode == CM_GRAPH) return;
     int status=0;
     uint8_t nChar;
     if(scrLock == NC_NORMAL) { nChar = nextChar; } else { nChar = scrLock; }
@@ -409,7 +410,7 @@ void showFracMode(void) {
 
 
   void light_ASB_icon(void) {
-    if(!(SBARUPD_AlphaMode)) return;
+    if(!(SBARUPD_AlphaMode) || calcMode == CM_GRAPH) return;
     lcd_fill_rect(X_ALPHA_MODE,18,9,2,0xFF);
     showString(asmBuffer, &standardFont, X_ALPHA_MODE+30, 0, vmNormal, true, false);
     force_refresh(force);
@@ -417,7 +418,8 @@ void showFracMode(void) {
 
 
   void kill_ASB_icon(void) {
-    if(!(SBARUPD_AlphaMode)) return;
+printf("---->>>> %i\n", calcMode);
+    if(!(SBARUPD_AlphaMode) || calcMode == CM_GRAPH) return;
     lcd_fill_rect(X_ALPHA_MODE,18,9,2,0);
     showString("    ", &standardFont, X_ALPHA_MODE+30, 0, vmNormal, true, false);
     force_refresh(force);
@@ -459,7 +461,7 @@ void showFracMode(void) {
 
 
 void showHideASB(void) {                     //JMvv
-  if(!(SBARUPD_AlphaMode)) return;
+  if(!(SBARUPD_AlphaMode) || calcMode == CM_GRAPH) return;
   if(fnTimerGetStatus(TO_ASM_ACTIVE) == TMR_RUNNING) {
     light_ASB_icon();
   }

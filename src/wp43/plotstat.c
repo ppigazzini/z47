@@ -210,7 +210,8 @@ void statGraphReset(void){
   }
 
 
-  int16_t screen_window_y(float y_min, float y, float y_max) {
+
+  int16_t _screen_window_y(float y_min, float y, float y_max, bool_t nolimit) {
     int16_t temp, minn;
     float tempr;
 
@@ -233,11 +234,14 @@ void statGraphReset(void){
         temp = (int16_t) tempr;
       }
     }
-    if(temp > SCREEN_HEIGHT_GRAPH - 1 - minn) {
-      temp = SCREEN_HEIGHT_GRAPH - 1 - minn;
-    }
-    else if(temp < 0) {
-      temp=0;
+
+    if(!nolimit) {
+      if(temp > SCREEN_HEIGHT_GRAPH - 1 - minn) {
+        temp = SCREEN_HEIGHT_GRAPH - 1 - minn;
+      }
+      else if(temp < 0) {
+        temp=0;
+      }
     }
 
     #if defined(PC_BUILD)
@@ -247,6 +251,20 @@ void statGraphReset(void){
     #endif
     return (SCREEN_HEIGHT_GRAPH - 1 - temp);
   }
+
+  #define nolimit true
+  #define limit false
+
+  int16_t screen_window_y_nolimit(float y_min, float y, float y_max) {
+    return _screen_window_y(y_min, y, y_max, nolimit);
+  }
+
+  int16_t screen_window_y(float y_min, float y, float y_max) {
+    return _screen_window_y(y_min, y, y_max, limit);
+  }
+
+
+
 #endif // !TESTSUITE_BUILD
 
 
@@ -358,7 +376,7 @@ void plotline2(uint16_t xo, uint8_t yo, uint16_t xn, uint8_t yn) {              
 //Exhange the name of this routine with pixelline() above to try Bresenham
 void pixelline(uint16_t xo, uint8_t yo, uint16_t xn, uint8_t yn, bool_t vmNormal) { // Plots line from xo,yo to xn,yn; uses temporary x1,y1
   #if defined(STATDEBUG_VERBOSE) && defined(PC_BUILD)
-    printf("pixelline: xo,yo,xn,yn: %d %d   %d %d \n",xo,yo,xn,yn);
+    printf("pixelline 1: xo,yo,xn,yn: %d %d   %d %d \n",xo,yo,xn,yn);
   #endif // STATDEBUG_VERBOSE && PC_BUILD
 
   //Bresenham line drawing: Pauli's link. Also here: http://forum.6502.org/viewtopic.php?f=10&t=2247&start=555
