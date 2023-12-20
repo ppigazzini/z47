@@ -445,6 +445,7 @@ void fnClrMod(uint16_t unusedButMandatoryParameter) {        //clear input buffe
   #if defined(PC_BUILD)
     jm_show_comment("^^^^fnClrModa");
   #endif // PC_BUILD
+
   #if !defined(TESTSUITE_BUILD)
     resetKeytimers();  //JM
     clearSystemFlag(FLAG_FRACT);
