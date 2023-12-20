@@ -86,13 +86,6 @@ void jm_show_comment   (char comment[]);
 //keyboard.c  screen.c
 
 
-// Confirmation Y or N changed from original WP43 because the alpha keys order changed
-#define ITEM_CONF_Y ITM_2
-#define ITEM_CONF_N ITM_CHS
-
-
-
-
 // Additional routines needed in jm.c
 void fnSigmaAssign(uint16_t sigmaAssign);
 void fnGetSigmaAssignToX(uint16_t unusedButMandatoryParameter);
@@ -174,6 +167,7 @@ void fnRCL          (int16_t inp);
 #define JC_SS                  71
 #define PR_HPBASE              72    // BASE CLASSIC MODE
 #define PR_2TO10               73    // 2^10 flag for UNIT
+#define JC_LPfg                74
 
 #if defined(PC_BUILD)
 //keyboard.c

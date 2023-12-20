@@ -21,6 +21,7 @@
 #include "bufferize.h"
 #include "calcMode.h"
 #include "charString.h"
+#include "config.h"
 #include "constantPointers.h"
 #include "curveFitting.h"
 #include "dateTime.h"
@@ -828,6 +829,26 @@ void execTimerApp(uint16_t timerType) {
 
 
   void Shft_handler() {                        //JM SHIFT NEW vv
+    if(Shft_LongPress_f_g) {
+      if(fnTimerGetStatus(TO_FG_LONG) == TMR_COMPLETED) {
+        Shft_LongPress_f_g = false;
+        fnTimerStop(TO_3S_CTFF);
+        fnTimerStop(TO_FG_LONG);
+        if(shiftF) {
+          showSoftmenu(-MNU_HOME);
+          showSoftmenuCurrentPart();
+        }
+        else if(shiftG) {
+          showSoftmenu(-MNU_MyMenu);
+          showSoftmenuCurrentPart();
+        }
+        shiftF = 0;
+        shiftG = 0;
+        showShiftState();
+        }
+
+
+    } else
     if(Shft_timeouts) {
       if(fnTimerGetStatus(TO_FG_LONG) == TMR_COMPLETED) {
         fnTimerStop(TO_3S_CTFF);
@@ -1681,7 +1702,7 @@ void execTimerApp(uint16_t timerType) {
       //lcd_refresh();
       fnTimerStart(TO_KB_ACTV, TO_KB_ACTV, JM_TO_KB_ACTV); //PROGRAM_KB_ACTV
       sprintf(tmps, "%s %6d      ",txt,loop);
-      showString(tmps, &standardFont, 20, /*145-7*/ Y_POSITION_OF_REGISTER_T_LINE +mode*20, vmNormal, false, false);  //note: 1 line down for "force"
+      showString(tmps, &standardFont, 20, /*145-7*/ Y_POSITION_OF_REGISTER_T_LINE + mode * 20, vmNormal, false, false);  //note: 1 line down for "force"
 
       #if defined(PC_BUILD)
         gtk_widget_queue_draw(screen);
@@ -2239,7 +2260,8 @@ void execTimerApp(uint16_t timerType) {
       }
 
       else if(temporaryInformation == TI_ARE_YOU_SURE && regist == REGISTER_X) {
-        showString("Are you sure?", &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + 6, vmNormal, true, true);
+        uint16_t id = getConfirmationTiId();
+        showString(confirmationTI[id].string, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + 6, vmNormal, true, true);
       }
 
       else if(temporaryInformation == TI_WHO) {
@@ -2289,6 +2311,30 @@ void execTimerApp(uint16_t timerType) {
       else if(temporaryInformation == TI_SAVED && regist == REGISTER_X) {
         sprintf(prefix, "Saved");
         displayTemporaryInformationOnX(prefix);
+      }
+
+      else if(temporaryInformation == TI_CLEAR_ALL_MENUS && regist == REGISTER_X) {
+        sprintf(tmpString, "All user menus cleared");
+        w = stringWidth(tmpString, &standardFont, true, true);
+        showString(tmpString, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + 6, vmNormal, true, true);
+      }
+
+      else if(temporaryInformation == TI_CLEAR_ALL_VARIABLES && regist == REGISTER_X) {
+        sprintf(tmpString, "All user variables cleared");
+        w = stringWidth(tmpString, &standardFont, true, true);
+        showString(tmpString, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + 6, vmNormal, true, true);
+      }
+
+      else if(temporaryInformation == TI_DEL_ALL_MENUS && regist == REGISTER_X) {
+        sprintf(tmpString, "All user menus deleted");
+        w = stringWidth(tmpString, &standardFont, true, true);
+        showString(tmpString, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + 6, vmNormal, true, true);
+      }
+
+      else if(temporaryInformation == TI_DEL_ALL_VARIABLES && regist == REGISTER_X) {
+        sprintf(tmpString, "All user variables deleted");
+        w = stringWidth(tmpString, &standardFont, true, true);
+        showString(tmpString, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + 6, vmNormal, true, true);
       }
 
       #if defined(PC_BUILD)

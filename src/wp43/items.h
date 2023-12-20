@@ -555,7 +555,7 @@
 #define SFL_SBshfR                   522
 #define SFL_HPBASE                   523
 #define SFL_2TO10                    524
-#define ITM_0525                     525
+#define SFL_SH_LONGPRESS              525
 #define ITM_0526                     526
 
 
@@ -1466,14 +1466,14 @@
 #define ITM_BN                      1416
 #define ITM_BNS                     1417
 #define ITM_CASE                    1418
-#define ITM_CLALL                   1419
+#define ITM_DELALL                  1419
 #define ITM_CLCVAR                  1420
 #define ITM_CLFALL                  1421
 #define ITM_TGLFRT                  1422
 #define ITM_CLLCD                   1423
 #define ITM_CLMENU                  1424
-#define ITM_CLP                     1425
-#define ITM_CLPALL                  1426
+#define ITM_DELP                    1425
+#define ITM_DELPALL                 1426
 #define ITM_CLREGS                  1427
 #define ITM_CLSTK                   1428
 #define ITM_CLSIGMA                 1429
@@ -1793,7 +1793,7 @@
 #define ITM_dotD                    1741
 #define ITM_SHOW                    1742
 #define ITM_SYSTEM                  1743
-#define ITM_FRACT                       1744
+#define ITM_FRACT                   1744
 #define ITM_VANGLE                  1745
 #define ITM_XH                      1746
 #define ITM_XRMS                    1747
@@ -1829,7 +1829,7 @@
 #define ITM_TIMER_0_1S              1777
 #define ITM_TIMER_RESET             1778
 #define ITM_TIMER_RCL               1779
-#define ITM_CLBKUP                  1780
+#define ITM_DELBKUP                 1780
 #define ITM_CPXSLV                  1781
 #define ITM_DRAW                    1782
 #define MNU_GRAPH                   1783
@@ -2092,7 +2092,7 @@
 #define MNU_TRG                     2036
 #define MNU_SETUP                   2037
 #define ITM_SAFERESET               2038
-#define MNU_2039                    2039
+#define ITM_SH_LONGPRESS                   2039
 #define ITM_PLOT_STAT               2040
 #define ITM_3x1TOSTK                2041
 #define ITM_PLOTRST                 2042
@@ -2157,9 +2157,9 @@
 #define ITM_RADtoGRAD               2101
 #define MNU_TRG_C47                 2102
 #define MNU_TRG_C47_MORE            2103
-#define ITM_2104                    2104
-#define ITM_2105                    2105
-#define ITM_BASE_SAV                2106
+#define ITM_RIBBON_C47                2104
+#define ITM_RIBBON_R47                2105
+#define ITM_RIBBON_SAV                2106
 #define MNU_PLOTTING                2107
 #define MNU_TAMNONREGIND            2108
 #define ITM_SAVEST                  2109
@@ -2215,9 +2215,9 @@
 #define ITM_GAP_L                   2159
 #define ITM_GAP_RX                  2160
 #define ITM_GAP_R                   2161
-#define ITM_BASE_ENG                2162
-#define ITM_BASE_FIN                2163
-#define ITM_BASE_CPX                2164
+#define ITM_2162                      2162
+#define ITM_RIBBON_FIN                2163
+#define ITM_RIBBON_CPX                2164
 #define ITM_op_j_SIGN               2165
 #define ITM_poly_SIGN               2166
 #define ITM_NMItoMI                 2167
@@ -2289,11 +2289,19 @@
 #define MNU_LAYOUTS                 2233
 #define MNU_RESETS                  2234
 #define MNU_RIBBONS                 2235
-#define ITM_USER_R47bkfg                 2236
-#define ITM_USER_R47fgbk                 2237
-#define ITM_USER_R47fg_g                 2238
+#define ITM_USER_R47bkfg            2236
+#define ITM_USER_R47fgbk            2237
+#define ITM_USER_R47fg_g            2238
+#define ITM_CLMALL                  2239
+#define ITM_CLVALL                  2240
+#define ITM_DELMALL                 2241
+#define ITM_DELVALL                 2242
+#define MNU_DELETE                  2243
+#define MNU_YESNO                   2244
+#define ITM_YES                     2245
+#define ITM_NO                      2246
 
-#define LAST_ITEM                   2239
+#define LAST_ITEM                   2247
 
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL

@@ -1236,12 +1236,12 @@ void insertStepInProgram(int16_t func) {
           break;
         }
 
-        //case ITM_CLP: {          // 1425
+        //case ITM_DELP: {          // 1425
         //  fnClP(NOPARAM);
         //  break;
         //}
 
-        case ITM_CLPALL: {       // 1426
+        case ITM_DELPALL: {       // 1426
           fnClPAll(NOT_CONFIRMED);
           break;
         }
@@ -1381,8 +1381,8 @@ void addStepInProgram(int16_t func) {
         case VAR_ACC:            // 1192
         case VAR_ULIM:           // 1193
         case VAR_LLIM:           // 1194
-        case ITM_CLP:            // 1425
-        case ITM_CLPALL:         // 1426
+        case ITM_DELP:           // 1425
+        case ITM_DELPALL:        // 1426
         case ITM_GTOP:           // 1482
         case ITM_KEYG:           // 1498
         case ITM_KEYX:           // 1499

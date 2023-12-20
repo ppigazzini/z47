@@ -347,7 +347,7 @@ void Sett(int16_t grp) {
     //---    setSystemFlag(FLAG_FRCSRN);              // Display
 
     roundingMode = RM_HALF_UP;
-    fnKeysManagement(USER_MENG);
+    fnKeysManagement(USER_MC47);
     itemToBeAssigned = -MNU_EE;
     assignToMyMenu(6);
     itemToBeAssigned = ITM_op_j_pol;
@@ -356,6 +356,7 @@ void Sett(int16_t grp) {
 
     cachedDynamicMenu = 0;
 
+    setSystemFlag(FLAG_SH_LONGPRESS);
     temporaryInformation = TI_NO_INFO;
     fnRefreshState();
     refreshScreen();
@@ -386,6 +387,7 @@ void Sett(int16_t grp) {
     //---     fnSetGapChar(49152+ITM_WCOMMA);               // RADIX WCOM
     //---     grpGroupingGr1LeftOverflow = 1;               //IPGRP1x = 1
 
+     setSystemFlag(FLAG_SH_LONGPRESS);
      fnKeyExit(0);
      fnDrop(0);
      fnSquare(0);
@@ -782,16 +784,73 @@ void fnFractionType(uint16_t unusedButMandatoryParameter) {
 }
 
 
+/* Confirmation messages */
+TO_QSPI const confirmationTI_t confirmationTI[] = {
+    {.item = ITM_DELALL,      .string = "Delete all?"                  },
+    {.item = ITM_CLFALL,      .string = "Clear all flags?"             },
+    {.item = ITM_DELPALL,     .string = "Delete all programs?"         },
+    {.item = ITM_CLREGS,      .string = "Clear registers?"             },
+    {.item = ITM_RESET,       .string = "Reset?"                       },
+    {.item = ITM_SYSTEM,      .string = "Exit to system?"              },
+    {.item = ITM_DELBKUP,     .string = "Delete backup file?"          },
+    {.item = ITM_CLMALL,      .string = "Clear all user menus?"        },
+    {.item = ITM_CLVALL,      .string = "Clear all user variables?"    },
+    {.item = ITM_DELMALL,     .string = "Delete all user menus?"       },
+    {.item = ITM_DELVALL,     .string = "Delete all user variables?"   },
+    {.item = 0,               .string = "Are you sure?"                }          // Default TI for items requiring confirmation but not listed in this table
+};
+
+uint16_t getConfirmationTiId(void) {
+  uint16_t id;
+  uint16_t item = 0;
+  for(id=0; id<LAST_ITEM; id++) {
+    if(indexOfItems[id].func == confirmedFunction) {
+      item = id;
+      break;
+    }
+  }
+  id = 0;
+  while(confirmationTI[id].item != 0) {
+    if(confirmationTI[id].item == item) {
+      break;
+    }
+    id++;
+  }
+  return id;
+}
 
 void setConfirmationMode(void (*func)(uint16_t)) {
+#if !defined(TESTSUITE_BUILD)
   previousCalcMode = calcMode;
   cursorEnabled = false;
   calcMode = CM_CONFIRMATION;
   clearSystemFlag(FLAG_ALPHA);
   confirmedFunction = func;
   temporaryInformation = TI_ARE_YOU_SURE;
+  showSoftmenu(-MNU_YESNO);
+#endif // !TESTSUITE_BUILD
 }
 
+
+void fnConfirmationYes(uint16_t unusedButMandatoryParameter) {
+#if !defined(TESTSUITE_BUILD)
+  if(calcMode == CM_CONFIRMATION) {
+      calcMode = previousCalcMode;
+      popSoftmenu();                // Pop MNU_YESNO
+      confirmedFunction(CONFIRMED);
+  }
+#endif // !TESTSUITE_BUILD
+}
+
+
+ void fnConfirmationNo(uint16_t unusedButMandatoryParameter) {
+#if !defined(TESTSUITE_BUILD)
+  if(calcMode == CM_CONFIRMATION) {
+      calcMode = previousCalcMode;
+      popSoftmenu();                // Pop MNU_YESNO
+  }
+#endif // !TESTSUITE_BUILD
+}
 
 
 void fnRange(uint16_t R) {
@@ -887,8 +946,14 @@ void fnClAll(uint16_t confirmation) {
 
     // Clear user menus
     fnExitAllMenus(NOPARAM);
-    deleteUserMenus();                        // Remove all user menus and user menus assignments
-    fnRESET_MyM(USER_MENG);                   // Reset Menu MyMenu
+    fnDeleteUserMenus(CONFIRMED);             // Delete all user menus and user menus assignments
+
+    if(MODEL == USER_R47) {
+      fnRESET_MyM(USER_MR47);                  // Reset Menu MyMenu
+    } else {
+      fnRESET_MyM(USER_MC47);                  // Reset Menu MyMenu
+    }
+
     fnRESET_Mya();                            // Reset Menu MyAlpha
     #if !defined(TESTSUITE_BUILD)
       createHOME();                             // Reset Menu HOME
@@ -900,11 +965,7 @@ void fnClAll(uint16_t confirmation) {
     initUserKeyArgument();
 
     // Delete named variables
-    for(uint16_t var = numberOfNamedVariables; var > 0; var--) {  // Remove all user variables and user variables assignments
-      fnDeleteVariable(FIRST_NAMED_VARIABLE + var -1);
-    }
-    initSimEqMatABX();                                            // Set-up Mat_A, Mat-B & Mat-X for SIM EQ
-
+    fnDeleteAllVariables(CONFIRMED);
 
     // Clear global flags
     fnClFAll(CONFIRMED);
@@ -957,14 +1018,14 @@ void addTestPrograms(void) {
       freeProgramBytes = numberOfBytesForTheTestPrograms - 2;
     }
     else {
-      ignore_result(fread(&numberOfBytesUsed, 1, sizeof(numberOfBytesUsed), testPgms));
+      ignoreReturnedValue(fread(&numberOfBytesUsed, 1, sizeof(numberOfBytesUsed), testPgms));
       printf("%u bytes\n", numberOfBytesUsed);
       if(numberOfBytesUsed > numberOfBytesForTheTestPrograms) {
         printf("Increase allocated memory for programs! File config.c 1st line of function addTestPrograms\n");
         fclose(testPgms);
         exit(0);
       }
-      ignore_result(fread(beginOfProgramMemory, 1, numberOfBytesUsed, testPgms));
+      ignoreReturnedValue(fread(beginOfProgramMemory, 1, numberOfBytesUsed, testPgms));
       fclose(testPgms);
 
       firstFreeProgramByte = beginOfProgramMemory + (numberOfBytesUsed - 2);
@@ -1062,10 +1123,11 @@ void restoreStats(void){
       {0,USER_KRESET,  "USER keys cleaned"                               },
       {0,USER_MRESET,  "MyMenu menu cleaned"                             },
       {0,USER_ARESET,  "My" STD_alpha " menu cleaned"                    },
-      {0,USER_MENG,    "MyMenu primary F-key engineering ribbon"         },
       {0,USER_MFIN,    "MyMenu primary F-key financial ribbon"           },
       {0,USER_MCPX,    "MyMenu primary F-key complex ribbon"             },
       {0,USER_MSAV,    "MyMenu primary F-key save/load ribbon"           },
+      {0,USER_MC47,    "MyMenu primary C47 F-key ribbon"                 },
+      {0,USER_MR47,    "MyMenu primary R47 F-key ribbon"                 },
       {0,100,"Error List"}
     };
 
@@ -1145,9 +1207,9 @@ void resetOtherConfigurationStuff(void) {
 //---  eRPN = true;
   HOME3 = true;
   MYM3 = false;
-  ShiftTimoutMode = true;
+  ShiftTimoutMode = false;
 //---  BASE_HOME   = false;
-  Norm_Key_00_VAR  = Norm_Key_00_item;                            //JM NORM MODE SIGMA REPLACEMENT KEY
+  Norm_Key_00_VAR  = Norm_Key_00_item_in_layout;               //JM NORM MODE SIGMA REPLACEMENT KEY
   Input_Default =  ID_43S;
   jm_G_DOUBLETAP = true;
 //---  BASE_MYM = true;                                             //"MyM" setting, set as part of USER_MRESET
@@ -1405,6 +1467,8 @@ Sett(_Reset);
 //---    setSystemFlag  (FLAG_HPBASE);
 //---    clearSystemFlag(FLAG_2TO10  );
 
+    setSystemFlag(FLAG_SH_LONGPRESS);
+
     hourGlassIconEnabled = false;
     watchIconEnabled = false;
     serialIOIconEnabled = false;
@@ -1534,7 +1598,13 @@ Sett(_Reset);
     fnKeysManagement(USER_HRESET);                                      //JM USER
     fnKeysManagement(USER_ARESET);                                      //JM USER
     fnKeysManagement(USER_MRESET);                                      //JM USER
-    fnKeysManagement(USER_MENG);                                        //JM USER
+
+    if(MODEL == USER_R47) {
+      fnKeysManagement(USER_MR47);                  // Reset Menu MyMenu Ribbon
+    } else {
+      fnKeysManagement(USER_MC47);                  // Reset Menu MyMenu Ribbon
+    }
+
     #if !defined(TESTSUITE_BUILD)
       showSoftmenu(-MNU_MyMenu);                                   //this removes the false start on MyMenu error
     #endif // !TESTSUITE_BUILD
@@ -1779,10 +1849,11 @@ void fnKeysManagement(uint16_t choice) {
       fnShowVersion(choice);
       break;
 
-    case USER_MENG:
     case USER_MFIN:
     case USER_MCPX:
     case USER_MSAV:
+    case USER_MC47:
+    case USER_MR47:
       fnRESET_MyM(choice);
       fnShowVersion(choice);
       #if !defined(TESTSUITE_BUILD)

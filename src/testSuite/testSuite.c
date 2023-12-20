@@ -3113,20 +3113,20 @@ void processOneFile(void) {
   funcNoParam = fnNop;
   funcType = FUNC_NOPARAM;
 
-  ignore_result(fgets(line, 9999, testSuite));
+  ignoreReturnedValue(fgets(line, 9999, testSuite));
   lineNumber = 1;
   while(!feof(testSuite)) {
     standardizeLine();
     while(strlen(line) >= 4 && strncmp(line + strlen(line) - 4, " ...", 4) == 0) {
       line[strlen(line) - 3] = 0;
       if(!feof(testSuite)) {
-        ignore_result(fgets(line + strlen(line), 9999, testSuite));
+        ignoreReturnedValue(fgets(line + strlen(line), 9999, testSuite));
         lineNumber++;
         standardizeLine();
       }
     }
     processLine();
-    ignore_result(fgets(line, 9999, testSuite));
+    ignoreReturnedValue(fgets(line, 9999, testSuite));
     lineNumber++;
   }
 
@@ -3203,7 +3203,7 @@ int processTests(const char *listPath) {
     if(line[0] != 0) {
       processOneFile();
     }
-    ignore_result(fgets(line, 9999, fileList));
+    ignoreReturnedValue(fgets(line, 9999, fileList));
   }
 
   fclose(fileList);

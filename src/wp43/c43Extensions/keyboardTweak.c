@@ -319,12 +319,21 @@ void resetKeytimers(void) {
             longpressDelayedkey2 = 0;                                   //To Store the next timed stage
             longpressDelayedkey3 = 0;                                   //To Store the next timed stage
 
+
+    int16_t           tmpp_ = getSystemFlag(FLAG_USER) ? kbd_usr[key_no].primary  : kbd_std[key_no].primary;
+    int16_t tmpf = 0, tmpf_ = getSystemFlag(FLAG_USER) ? kbd_usr[key_no].fShifted : kbd_std[key_no].fShifted;
+    int16_t tmpg = 0, tmpg_ = getSystemFlag(FLAG_USER) ? kbd_usr[key_no].gShifted : kbd_std[key_no].gShifted;
     if((calcMode == CM_NORMAL || calcMode == CM_NIM) && tam.mode==0) {  //longpress yellow math functions on the first two rows, menus allowed provided it is within keys 00-14
-      if(key_no >= 0 && key_no < 15 && (LongPressM == RB_M1234 || LongPressM == RB_M124)) {
+      if(   ((key_no >= 0 && key_no < 15) && (LongPressM == RB_M1234 || LongPressM == RB_M124))  //any mathkeys
+         || (/*(key_no >= 0 && key_no < 15) && (LongPressM == RB_M14) && */(tmpp_ == ITM_DRG && tmpf_ == ITM_USERMODE ) ) //DRG anywhere mathkeys
+         || (tmpp_ == ITM_XEQ && tmpf_ == ITM_AIM)                                               //anywhere
+        ) {
         if(!shiftF && !shiftG) {
-          longpressDelayedkey1 = getSystemFlag(FLAG_USER) ? kbd_usr[key_no].fShifted : kbd_std[key_no].fShifted;
+          longpressDelayedkey1 = tmpf_;
+          tmpf = tmpf_;
           if(LongPressM == RB_M1234) {
-            longpressDelayedkey3 = getSystemFlag(FLAG_USER) ? kbd_usr[key_no].gShifted : kbd_std[key_no].gShifted;
+            longpressDelayedkey3 = tmpg_;
+            tmpg = tmpg_;
           }
         }
       }
@@ -339,10 +348,29 @@ void resetKeytimers(void) {
         switch(*result) {
 
           case ITM_XEQ:
-            if(tam.mode == 0 && (getSystemFlag(FLAG_USER) ? kbd_usr[key_no].primary == kbd_std[key_no].primary : true)) { //If XEQ (always primary) is not the standard position, then do not inject it into the long press cycle
-              longpressDelayedkey2 = longpressDelayedkey1;
-              longpressDelayedkey1 = -MNU_XXEQ;    //XEQ longpress to XEQMENU
+            if(tam.mode == 0 && ((char*)funcParam)[0] == 0 && (getSystemFlag(FLAG_USER) ? kbd_usr[key_no].primary == kbd_std[key_no].primary : true)) { //If XEQ (always primary) is not the standard position, or if XEQ has a parameter then do not inject it into the long press cycle
+              if(tmpp_ == ITM_XEQ && tmpf == ITM_AIM) {
+                if(getSystemFlag(FLAG_SH_LONGPRESS)) {
+                  if(LongPressM == RB_M14) {
+                    longpressDelayedkey1 = ITM_AIM;
+                    longpressDelayedkey2 = 0;
+                    longpressDelayedkey3 = -MNU_XXEQ;
+                  } else if(LongPressM == RB_M124) {
+                    longpressDelayedkey1 = ITM_AIM;
+                    longpressDelayedkey2 = 0;
+                    longpressDelayedkey3 = -MNU_XXEQ;
+                  } else if(LongPressM == RB_M1234) {
+                    longpressDelayedkey1 = ITM_AIM;
+                    longpressDelayedkey2 = -MNU_XXEQ;
+                    longpressDelayedkey3 = tmpg;
+                  }
+              } else {
+                longpressDelayedkey1 = -MNU_XXEQ;
+                longpressDelayedkey2 = tmpf_;
+                longpressDelayedkey3 = tmpg_;       
+              }
             }
+          }
             break;
           case ITM_BACKSPACE:
             if(tam.mode == 0) {
@@ -354,6 +382,27 @@ void resetKeytimers(void) {
             longpressDelayedkey2 = ITM_CLRMOD;     //EXIT longpress DOES CLRMOD
             longpressDelayedkey1 = ITM_BASEMENU;
             break;
+
+          case ITM_DRG:
+              longpressDelayedkey1 = 0;
+              longpressDelayedkey2 = 0;
+              longpressDelayedkey3 = 0;
+              if(tmpp_ == ITM_DRG) {
+                if(LongPressM == RB_M14) {
+                  longpressDelayedkey1 = tmpf == ITM_USERMODE && getSystemFlag(FLAG_SH_LONGPRESS) ? ITM_USERMODE : 0;
+                  longpressDelayedkey2 = 0;
+                  longpressDelayedkey3 = 0;
+                } else if(LongPressM == RB_M124) {
+                  longpressDelayedkey1 = ITM_USERMODE;
+                  longpressDelayedkey2 = 0;
+                  longpressDelayedkey3 = 0 ;
+                } else if(LongPressM == RB_M1234) {
+                  longpressDelayedkey1 = ITM_USERMODE;
+                  longpressDelayedkey2 = tmpg;
+                  longpressDelayedkey3 = 0;
+                }
+              }
+            break;
           default:;
         }
         break;
@@ -361,9 +410,26 @@ void resetKeytimers(void) {
       case CM_NIM : {
         switch(*result) {
           case ITM_XEQ:
-            if(tam.mode == 0 && ((char*)funcParam)[0] == 0) { //If XEQ has a parameter, then do not inject it into the long press cycle
-              longpressDelayedkey2 = longpressDelayedkey1;
-              longpressDelayedkey1 = -MNU_XXEQ;    //XEQ longpress to XEQMENU
+            if(tam.mode == 0 && ((char*)funcParam)[0] == 0 && (getSystemFlag(FLAG_USER) ? kbd_usr[key_no].primary == kbd_std[key_no].primary : true)) { //If XEQ (always primary) is not the standard position, or if XEQ has a parameter then do not inject it into the long press cycle
+              if(getSystemFlag(FLAG_SH_LONGPRESS) && tmpp_ == ITM_XEQ && tmpf == ITM_AIM) {
+                if(LongPressM == RB_M14) {
+                  longpressDelayedkey1 = ITM_AIM;
+                  longpressDelayedkey2 = 0;
+                  longpressDelayedkey3 = -MNU_XXEQ;
+                } else if(LongPressM == RB_M124) {
+                  longpressDelayedkey1 = ITM_AIM;
+                  longpressDelayedkey2 = 0;
+                  longpressDelayedkey3 = -MNU_XXEQ;
+                } else if(LongPressM == RB_M1234) {
+                  longpressDelayedkey1 = ITM_AIM;
+                  longpressDelayedkey2 = -MNU_XXEQ;
+                  longpressDelayedkey3 = tmpg;
+                }
+              } else {
+                longpressDelayedkey1 = -MNU_XXEQ;
+                longpressDelayedkey2 = tmpf_;
+                longpressDelayedkey3 = tmpg_;       
+              }
             }
             break;
           case ITM_BACKSPACE:
@@ -375,6 +441,26 @@ void resetKeytimers(void) {
               longpressDelayedkey2 = ITM_CLRMOD;   //EXIT longpress DOES CLRMOD
               longpressDelayedkey1 = ITM_BASEMENU;
               break;
+          case ITM_DRG:
+              longpressDelayedkey1 = 0;
+              longpressDelayedkey2 = 0;
+              longpressDelayedkey3 = 0;
+              if(tmpp_ == ITM_DRG) {
+                if(LongPressM == RB_M14) {
+                  longpressDelayedkey1 = tmpf == ITM_USERMODE && getSystemFlag(FLAG_SH_LONGPRESS) ? ITM_USERMODE : 0;
+                  longpressDelayedkey2 = 0;
+                  longpressDelayedkey3 = 0;
+                } else if(LongPressM == RB_M124) {
+                  longpressDelayedkey1 = ITM_USERMODE;
+                  longpressDelayedkey2 = 0;
+                  longpressDelayedkey3 = 0 ;
+                } else if(LongPressM == RB_M1234) {
+                  longpressDelayedkey1 = ITM_USERMODE;
+                  longpressDelayedkey2 = tmpg;
+                  longpressDelayedkey3 = 0;
+                }
+              }
+            break;
           default:;
         }
         if( (*result == ITM_ms || longpressDelayedkey1 == ITM_ms || longpressDelayedkey2 == ITM_ms || longpressDelayedkey3 == ITM_ms ) || //.ms needs NIM mode to be open if the user intends it to be open.
@@ -740,7 +826,7 @@ void resetKeytimers(void) {
       }
 
       if(!(calcMode == CM_REGISTER_BROWSER || calcMode == CM_FLAG_BROWSER || calcMode == CM_ASN_BROWSER || calcMode == CM_FONT_BROWSER || calcMode == CM_PLOT_STAT || calcMode == CM_GRAPH  || calcMode == CM_LISTXY)) {
-        if(FN_timed_out_to_NOP) { //Clear any possible underline residues
+        if((calcMode == CM_ASSIGN && itemToBeAssigned == 0) || FN_timed_out_to_NOP) { //Clear any possible underline residues
           showSoftmenuCurrentPart();
         }
       }

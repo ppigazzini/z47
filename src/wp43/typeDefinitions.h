@@ -432,6 +432,15 @@ typedef union {
 } any34Matrix_t;
 
 /**
+ * \struct confirmationTI_t
+ * Structure keeping the TI message for items requiring confirmation.
+ */
+typedef struct {
+  int16_t  item;                   ///< Item ID
+  char     string[30];    ///< Confirmation message
+} confirmationTI_t;
+
+/**
  * \struct item_t
  * Structure keeping the information for one item.
  */

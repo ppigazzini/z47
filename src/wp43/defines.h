@@ -24,7 +24,10 @@
 // JM VARIOUS OPTIONS
 //*********************************
 
-#define VERSION1 "0.108.17.00b1"     // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
+#define VERSION1 "0.108.17.00"     // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
+
+#define MODEL USER_C47               // USER_C47 or USER_R47
+
 
 
   #undef SAVE_SPACE_DM42_0
@@ -106,6 +109,8 @@
 #else
   #define DEBUGSFN false
 #endif
+#define   FN_TIME_DEBUG1
+#undef    FN_TIME_DEBUG1
 
 
 
@@ -233,7 +238,7 @@
 //* General configuration defines *
 //*********************************
 #define UNIT_2TO10_LONGINT_DISPLAY         // Allow 2^10 option to also process integers instead of only reals
-#undef RECT_POLAR_CHANGES_X                // RECT/POLAR radiobuttons to also change the complex number in X 
+#undef RECT_POLAR_CHANGES_X                // RECT/POLAR radiobuttons to also change the complex number in X
 
 #define DEBUG_INSTEAD_STATUS_BAR         0 // Debug data instead of the status bar
 #define EXTRA_INFO_ON_CALC_ERROR         1 // Print extra information on the console about an error
@@ -322,16 +327,17 @@
 #define USER_MRESET      49
 #define USER_KRESET      50
 #define USER_N47         51
-#define USER_MENG        52
 #define USER_MSAV        53
 #define USER_MFIN        54
 #define USER_MCPX        55
-#define USER_HRESET      56
-#define USER_PRESET      57
-#define USER_R47         58
-#define USER_R47bkfg     59
-#define USER_R47fgbk     60
-#define USER_R47fg_g     61
+#define USER_MC47        56
+#define USER_MR47        57
+#define USER_HRESET      58
+#define USER_PRESET      59
+#define USER_R47         60
+#define USER_R47bkfg     61
+#define USER_R47fgbk     62
+#define USER_R47fg_g     63
 
 
 //*************************
@@ -499,6 +505,7 @@
 #define FLAG_SBshfR                           0x803B
 #define FLAG_HPBASE                           0x803C
 #define FLAG_2TO10                            0x803D
+#define FLAG_SH_LONGPRESS                     0x803E
 
 #define NUMBER_OF_SYSTEM_FLAGS                    60
 
@@ -1000,6 +1007,10 @@ typedef enum {
 #define TI_DMCP_ONLY                              91    //DL
 #define TI_COPY_FROM_SHOW                         92
 #define TI_DATA_LOSS                              93
+#define TI_CLEAR_ALL_MENUS                        94    //DL
+#define TI_CLEAR_ALL_VARIABLES                    95    //DL
+#define TI_DEL_ALL_MENUS                          96    //DL
+#define TI_DEL_ALL_VARIABLES                      97    //DL
 
 // Register browser mode
 #define RBR_GLOBAL                                 0 // Global registers are browsed
@@ -1491,11 +1502,7 @@ typedef enum {
 #endif // TESTSUITE_BUILD && !GENERATE_CATALOGS
 
 /* Turn off -Wunused-result for a specific function call */
-#if defined(OS32BIT)
-  #define ignore_result(M) if(1==((uint32_t)M)){;}
-#else // !OS32BIT
-  #define ignore_result(M) if(1==((uint64_t)M)){;}
-#endif // OS32BIT
+#define ignoreReturnedValue(function) (__extension__ ({ __typeof__ (function) __x = (function); (void) __x; }))
 
 #if defined(DMCP_BUILD)
   #define TMP_STR_LENGTH     2560 //2560 //dr - remove #include <dmcp.h> again - AUX_BUF_SIZE

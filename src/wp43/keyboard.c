@@ -321,7 +321,10 @@ printf(">>>>Z 0093c determineFunctionKeyItem  item = %i:   name:=%s\n",item, ind
         case MNU_SINTS:
         case MNU_LINTS:
         case MNU_REALS:
-        case MNU_CPXS: {
+        case MNU_CPXS: 
+        case MNU_NUMBRS:
+        case MNU_ALLVARS:
+        case MNU_CONFIGS: {
           return findNamedVariable((char *)getNthString(dynamicSoftmenu[menuId].menuContent, dynamicMenuItem)) - FIRST_NAMED_VARIABLE + ASSIGN_NAMED_VARIABLES;
         }
         case MNU_MENUS: {
@@ -448,7 +451,10 @@ printf(">>>>Z 0070 btnFnClicked data=|%s| data[0]=%d\n",(char*)data, ((char*)dat
           case MNU_ALPHA_OMEGA :
           case MNU_ALPHAMISC :
           case MNU_ALPHA :
-          case MNU_CONST : {
+          case MNU_CONST :
+          case MNU_NUMBRS:
+          case MNU_ALLVARS:
+          case MNU_CONFIGS: {
             popSoftmenu();
             //         closeAllCatalogMenus(); //Option to recurse and close more than one menu level until all the CAT related menus are out
           }
@@ -898,11 +904,11 @@ int16_t lastItem = 0;
 
       if(calcMode == CM_ASSIGN && itemToBeAssigned != 0 && !(tam.alpha && tam.mode != TM_NEWMENU)) {
 //Put section in if shifts are only allowed on the primary menu line
-//        if( (  (itemToBeAssigned == ITM_SHIFTf || itemToBeAssigned == ITM_SHIFTg || itemToBeAssigned == KEY_fg) && 
-//                (previousCalcMode == CM_NORMAL) && 
-//                (shiftF || shiftG) && 
-//                ((uint8_t *)data)[0] >= '1' && 
-//                ((uint8_t *)data)[0] <= '6' 
+//        if( (  (itemToBeAssigned == ITM_SHIFTf || itemToBeAssigned == ITM_SHIFTg || itemToBeAssigned == KEY_fg) &&
+//                (previousCalcMode == CM_NORMAL) &&
+//                (shiftF || shiftG) &&
+//                ((uint8_t *)data)[0] >= '1' &&
+//                ((uint8_t *)data)[0] <= '6'
 //                )  ) {       //prevent "shifts on rows f and g on F6 to be overwritten //Allow any normal mode menu HOME PFN MyM, except shifts not in f or g line
 //          return;
 //        } else
@@ -914,7 +920,7 @@ int16_t lastItem = 0;
             }                                        //^^JM
             return;
           }
-        } else 
+        } else
 
         {
           return;
@@ -1061,7 +1067,7 @@ int16_t lastItem = 0;
             screenUpdatingMode &= ~SCRUPD_ONE_TIME_FLAGS;
             return;
           }
-          else if(calcMode == CM_PEM && catalog && catalog != CATALOG_MVAR && (!tam.mode || tam.function != ITM_CLP)) { // TODO: is that correct
+          else if(calcMode == CM_PEM && catalog && catalog != CATALOG_MVAR && (!tam.mode || tam.function != ITM_DELP)) { // TODO: is that correct
             fnKeyInCatalog = 1;
             if(indexOfItems[item].func == fnGetSystemFlag && (tam.mode == TM_FLAGR || tam.mode == TM_FLAGW) && !tam.indirect) {
               tam.value = (indexOfItems[item].param & 0xff);
@@ -1116,6 +1122,14 @@ int16_t lastItem = 0;
           else if(tam.mode && (!tam.alpha || isAlphabeticSoftmenu())) {
             bool_t isInConfig = tam.mode == TM_FLAGW && softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_SYSFL;   //JM Do not drop out of SYSFLG
 
+           if(softmenu[softmenuStack[1].softmenuId].menuItem == -MNU_TAMALPHA && 
+              (softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_MyAlpha || 
+               softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_ALPHA_OMEGA ||
+               softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_ALPHAMATH ||
+               softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_ALPHAMISC ||
+               softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_ALPHAINTL) ) {
+             popSoftmenu();
+           }
             addItemToBuffer(item);
 
             if(softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_MODE && isInConfig && item != ITM_EXIT1 && item != ITM_BACKSPACE) { //JM do not drop out of SYSFLG
@@ -1300,6 +1314,12 @@ int16_t lastItem = 0;
           _closeCatalog();
           fnKeyInCatalog = 0;
         }
+        else if((calcMode == CM_CONFIRMATION) && (item == ITM_YES || item == ITM_NO)) {
+          runFunction(item);
+        }
+      }
+      else if(calcMode == CM_CONFIRMATION) {
+        temporaryInformation = TI_ARE_YOU_SURE;      // Keep confirmation message on screen
       }
     }
     #if defined(PC_BUILD)
@@ -1368,9 +1388,9 @@ bool_t allowShiftsToClearError = false;
     // Shift f pressed and JM REMOVED shift g not active
     if((key->primary == ITM_SHIFTf || ShiftOverride == ITM_SHIFTf) && (calcMode == CM_NORMAL || calcMode == CM_AIM || calcMode == CM_NIM  || calcMode == CM_MIM || calcMode == CM_EIM || calcMode == CM_PEM || calcMode == CM_PLOT_STAT || calcMode == CM_GRAPH || calcMode == CM_ASSIGN || calcMode == CM_ASN_BROWSER)) {   //JM shifts
       if(temporaryInformation == TI_SHOW_REGISTER || temporaryInformation == TI_SHOW_REGISTER_BIG || temporaryInformation == TI_SHOW_REGISTER_SMALL) allowShiftsToClearError = true; //JM
-      Shft_timeouts = true;
-      if(ShiftTimoutMode) {
-        fnTimerStart(TO_FG_TIMR, TO_FG_TIMR, JM_SHIFT_TIMER); //^^
+      Shft_LongPress_f_g = true;
+      if(Shft_LongPress_f_g && getSystemFlag(FLAG_SH_LONGPRESS)) {
+        fnTimerStart(TO_FG_LONG, TO_FG_LONG, JM_TO_FG_LONG * 1.5);    //vv dr
       }
       if(temporaryInformation == TI_VIEW) {
         temporaryInformation = TI_NO_INFO;
@@ -1384,8 +1404,6 @@ bool_t allowShiftsToClearError = false;
         programRunStop = PGM_STOPPED;
       }
       lastErrorCode = 0;
-
-      fnTimerStop(TO_FG_LONG);                                //dr
 
       shiftF = !shiftF;
       shiftG = false;                                         //JM no shifted menu on g-shift-key as in WP43S
@@ -1400,9 +1418,9 @@ bool_t allowShiftsToClearError = false;
     // Shift g pressed and JM REMOVED shift f not active
     else if((key->primary == ITM_SHIFTg || ShiftOverride == ITM_SHIFTg) && (calcMode == CM_NORMAL || calcMode == CM_AIM || calcMode == CM_NIM  || calcMode == CM_MIM || calcMode == CM_EIM || calcMode == CM_PEM || calcMode == CM_PLOT_STAT || calcMode == CM_GRAPH || calcMode == CM_ASSIGN || calcMode == CM_ASN_BROWSER)) {   //JM shifts
       if(temporaryInformation == TI_SHOW_REGISTER || temporaryInformation == TI_SHOW_REGISTER_BIG || temporaryInformation == TI_SHOW_REGISTER_SMALL) allowShiftsToClearError = true; //JM
-      Shft_timeouts = true;
-      if(ShiftTimoutMode) {
-        fnTimerStart(TO_FG_TIMR, TO_FG_TIMR, JM_SHIFT_TIMER); //^^
+      Shft_LongPress_f_g = true;
+      if(Shft_LongPress_f_g && getSystemFlag(FLAG_SH_LONGPRESS)) {
+        fnTimerStart(TO_FG_LONG, TO_FG_LONG, JM_TO_FG_LONG * 1.5);    //vv dr
       }
       if(temporaryInformation == TI_VIEW) {
         temporaryInformation = TI_NO_INFO;
@@ -1416,8 +1434,6 @@ bool_t allowShiftsToClearError = false;
         programRunStop = PGM_STOPPED;
       }
       lastErrorCode = 0;
-
-      fnTimerStop(TO_FG_LONG);                                //dr
 
       shiftG = !shiftG;
       shiftF = false;                                         //JM no shifted menu on g-shift-key as in WP43S
@@ -1433,6 +1449,7 @@ bool_t allowShiftsToClearError = false;
 
     // JM Shift fg pressed  //JM shifts change f/g to a single function key toggle to match DM42 keyboard
     else if((key->primary == KEY_fg || ShiftOverride == KEY_fg) && (calcMode == CM_NORMAL || calcMode == CM_AIM || calcMode == CM_NIM  || calcMode == CM_MIM || calcMode == CM_EIM || calcMode == CM_PEM || calcMode == CM_PLOT_STAT || calcMode == CM_GRAPH || calcMode == CM_ASSIGN || calcMode == CM_ASN_BROWSER)) {   //JM shifts
+      Shft_LongPress_f_g = false;
       Shft_timeouts = true;
       fnTimerStart(TO_FG_LONG, TO_FG_LONG, JM_TO_FG_LONG);    //vv dr
       if(ShiftTimoutMode) {
@@ -1934,6 +1951,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
   #endif // DMCP_BUILD
       int16_t item;
       Shft_timeouts = false;                         //JM SHIFT NEW
+      Shft_LongPress_f_g = false;
       JM_auto_longpress_enabled = 0;                 //JM TIMER CLRCLSTK ON LONGPRESS
 
       if(programRunStop == PGM_KEY_PRESSED_WHILE_PAUSED) {
@@ -1968,7 +1986,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
           delayCloseNim = false;
           closeNim();                 //JM moved here, from bufferize see JMCLOSE, to retain NIM if needed for .ms. Only a problem due to longpress.
           #if defined (PC_BUILD)
-            printf("btnReleased: Closed NIM (delayed) delayCloseNim=%u\n",delayCloseNim);
+            printf("btnReleased 1: Closed NIM (delayed) delayCloseNim=%u\n",delayCloseNim);
           #endif
           screenUpdatingMode &= ~SCRUPD_MANUAL_MENU;
         }
@@ -2032,7 +2050,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
           }
           else {
           #if defined (PC_BUILD)
-            printf("btnReleased: Closed NIM (delayed) delayCloseNim=%u, ",delayCloseNim);
+            printf("btnReleased 2: Closed NIM (delayed) delayCloseNim=%u, ",delayCloseNim);
             printf("runfunction (%d)\n",item);
           #endif
             runFunction(item);
@@ -2143,7 +2161,9 @@ RELEASE_END:
           //JM No if needed, it does nothing if not in NIM. TO DISPLAY NUMBER KEYPRESS DIRECTLY AFTER PRESS, NOT ONLY UPON RELEASE          break;
           keyActionProcessed = true;   //JM move this to before fnKeyBackspace to allow fnKeyBackspace to cancel it if needed to allow this function via timing out to NOP, and this is incorporated with the CLRDROP
           fnKeyBackspace(NOPARAM);
-          temporaryInformation = TI_NO_INFO;
+          if(calcMode != CM_CONFIRMATION) {
+            temporaryInformation = TI_NO_INFO;
+          }
         }
         break;
       }
@@ -2201,7 +2221,7 @@ RELEASE_END:
           fnKeyExit(NOPARAM);
           keyActionProcessed = true;            //Removed to force EXIT on the RELEASE cycle to make it do fnKeyExit later to allow NOP
         }
-        if(temporaryInformation != TI_NO_INFO) {
+        if((temporaryInformation != TI_NO_INFO) && (calcMode != CM_CONFIRMATION)) {
           temporaryInformation = TI_NO_INFO;
           keyActionProcessed = true;
           refreshScreen();
@@ -2258,6 +2278,10 @@ RELEASE_END:
           keyActionProcessed = true;
         }
         else if(calcMode == CM_REGISTER_BROWSER || calcMode == CM_FLAG_BROWSER || calcMode == CM_ASN_BROWSER || calcMode == CM_FONT_BROWSER) {
+          keyActionProcessed = true;
+        }
+        else if(calcMode == CM_CONFIRMATION) {
+          temporaryInformation = TI_ARE_YOU_SURE;      // Keep confirmation message on screen
           keyActionProcessed = true;
         }
         else if(tam.mode) {
@@ -2598,20 +2622,8 @@ RELEASE_END:
               break;
             }
 
-            case CM_CONFIRMATION: { //ITM_ENTER & ITM_EXIT1 do not reach here, it goes to fnKeyEnter and fnKeyExit
-              if(item == ITEM_CONF_Y || item == ITM_XEQ || item == ITM_ENTER) { // Yes or XEQ or ENTER
-                calcMode = previousCalcMode;
-                confirmedFunction(CONFIRMED);
-              }
-
-              else if(item == ITEM_CONF_N || item == ITM_EXIT1) { // No
-                calcMode = previousCalcMode;
-              }
-
-              else {
-                temporaryInformation = TI_ARE_YOU_SURE;
-              }
-
+            case CM_CONFIRMATION: {
+              temporaryInformation = TI_ARE_YOU_SURE;      // Keep confirmation message on screen
               keyActionProcessed = true;
               break;
             }
@@ -3023,8 +3035,7 @@ void fnKeyEnter(uint16_t unusedButMandatoryParameter) {
       }
 
       case CM_CONFIRMATION: {
-        calcMode = previousCalcMode;
-        confirmedFunction(CONFIRMED);
+        temporaryInformation = TI_ARE_YOU_SURE;      // Keep confirmation message on screen
         break;
       }
 
@@ -3393,6 +3404,7 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
 
       case CM_CONFIRMATION: {
         calcMode = previousCalcMode;
+        popSoftmenu();                    // Pop MNU_YESNO
         temporaryInformation = TI_NO_INFO;
         if(programRunStop == PGM_WAITING) {
           programRunStop = PGM_STOPPED;
@@ -3716,8 +3728,7 @@ void fnKeyBackspace(uint16_t unusedButMandatoryParameter) {
       }                                    //JM ^^
 
       case CM_CONFIRMATION: {
-        calcMode = previousCalcMode;
-        temporaryInformation = TI_NO_INFO;
+        temporaryInformation = TI_ARE_YOU_SURE;      // Keep confirmation message on screen
         if(programRunStop == PGM_WAITING) {
           programRunStop = PGM_STOPPED;
         }
