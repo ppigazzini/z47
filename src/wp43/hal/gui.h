@@ -22,13 +22,13 @@
 
   #include "defines.h"
 
-  #if defined(DMCP_BUILD) || (BIG_SCREEN == 1)
+  #if defined(DMCP_BUILD) || (SIMULATOR_ON_SCREEN_KEYBOARD == 0)
     #define calcModeNormalGui()
     #define calcModeAimGui()
     #define calcModeTamGui()
-  #else
+  #else // !defined(DMCP_BUILD) && SIMULATOR_ON_SCREEN_KEYBOARD != 0
     void calcModeNormalGui (void);
     void calcModeAimGui    (void);
     void calcModeTamGui    (void);
-  #endif
+  #endif // defined(DMCP_BUILD) || SIMULATOR_ON_SCREEN_KEYBOARD == 0
 #endif // !GUI_H
