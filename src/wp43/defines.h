@@ -266,12 +266,24 @@
 #define ENABLE_INTEGRATOR_FILE_OUTPUT    0 // Set for PRINTXY to be done after every evaluation of the formula
 #define DECNUMDIGITS                    75 // Default number of digits used in the decNumber library
 
-#define BIG_SCREEN                   1 // Set to 0 if you want a keyboard in addition to the screen on Raspberry pi
-#define BIG_SCREEN_COEF              2 // 2 = 2 times the standard screen, that is 800x480. Can be a decimal like 1.333
-#if !defined(RASPBERRY)
-  #undef BIG_SCREEN
-  #define BIG_SCREEN 0
-#endif // !RASPBERRY
+#define BIG_SCREEN_COEF              1 // 2 = 2 times the standard screen, that is 800x480. Can be a decimal like 1.333
+#define SIMULATOR_ON_SCREEN_KEYBOARD 1 // Set to 0 if you don't want an onscreen keyboard in addition to the screen
+#define NARROW_SCREEN                1 // 400x1280 portrait screen
+
+#if(BIG_SCREEN_COEF > 1 && SIMULATOR_ON_SCREEN_KEYBOARD == 1)
+  #undef SIMULATOR_ON_SCREEN_KEYBOARD
+  #define SIMULATOR_ON_SCREEN_KEYBOARD 0
+#endif // BIG_SCREEN_COEF > 1 && SIMULATOR_ON_SCREEN_KEYBOARD == 1
+
+#if !defined(RASPBERRY) && (NARROW_SCREEN == 1)
+  #undef NARROW_SCREEN
+  #define NARROW_SCREEN 0
+#endif // !RASPBERRY && NARROW_SCREEN == 1
+
+#if defined(PC_BUILD) && !defined(RASPBERRY)
+  #undef SIMULATOR_ON_SCREEN_KEYBOARD
+  #define SIMULATOR_ON_SCREEN_KEYBOARD 1
+#endif // PC_BUILD && !RASPBERRY
 
 
 #if defined(LINUX)
@@ -519,23 +531,46 @@ typedef enum {
 
 
 // PC GUI
-#define CSSFILE "res/c47_pre.css"
+#if NARROW_SCREEN == 1
+  #define CSSFILE "res/c47_narrow_screen_pre.css"
+  #define GAP                                        6 //JM original GUI legacy
+  #define Y_OFFSET_LETTER                           18 //JM original GUI legacy
+  #define X_OFFSET_LETTER                            3 //JM original GUI legacy
+  #define Y_OFFSET_SHIFTED_LABEL                    25 //JM original GUI legacy
+  #define Y_OFFSET_GREEK                            27 //JM original GUI legacy
 
-#define GAP                                        6 //JM original GUI legacy
-#define Y_OFFSET_LETTER                           18 //JM original GUI legacy
-#define X_OFFSET_LETTER                            3 //JM original GUI legacy
-#define Y_OFFSET_SHIFTED_LABEL                    25 //JM original GUI legacy
-#define Y_OFFSET_GREEK                            27 //JM original GUI legacy
+  #define DELTA_KEYS_X                              67 // Horizontal key step in pixel (row of 6 keys)
+  #define DELTA_KEYS_Y                              74 // Vertical key step in pixel
+  #define KEY_WIDTH_1                               44 // Width of small keys (STO, RCL, ...)
+  #define KEY_WIDTH_2                               54 // Width of large keys (1, 2, 3, ...)
+  #define LARGE_KEY_SPACING_1                       12 // Spacing 1st large key --> 7, 4, 1 and 0
+  #define LARGE_KEY_SPACING_2                       15 // Spacing next large keys --> 8, 9, ÷, 5, 6, …
 
-#define DELTA_KEYS_X                              78 // Horizontal key step in pixel (row of 6 keys)
-#define DELTA_KEYS_Y                              74 // Vertical key step in pixel
-#define KEY_WIDTH_1                               47 // Width of small keys (STO, RCL, ...)
-#define KEY_WIDTH_2                               56 // Width of large keys (1, 2, 3, ...)
+  #define X_LEFT_PORTRAIT                           10 // Horizontal offset for a portrait calculator
+  #define X_LEFT_LANDSCAPE                         544 // Horizontal offset for a landscape calculator
+  #define Y_TOP_PORTRAIT                           267 // Vertical offset for a portrait calculator
+  #define Y_TOP_LANDSCAPE                           30 // vertical offset for a landscape calculator
+#else // NARROW_SCREEN != 1
+  #define CSSFILE "res/c47_pre.css"
+  #define GAP                                        6 //JM original GUI legacy
+  #define Y_OFFSET_LETTER                           18 //JM original GUI legacy
+  #define X_OFFSET_LETTER                            3 //JM original GUI legacy
+  #define Y_OFFSET_SHIFTED_LABEL                    25 //JM original GUI legacy
+  #define Y_OFFSET_GREEK                            27 //JM original GUI legacy
 
-#define X_LEFT_PORTRAIT                           45 // Horizontal offset for a portrait calculator
-#define X_LEFT_LANDSCAPE                         544 // Horizontal offset for a landscape calculator
-#define Y_TOP_PORTRAIT                           376 // Vertical offset for a portrait calculator
-#define Y_TOP_LANDSCAPE                           30 // vertical offset for a landscape calculator
+  #define DELTA_KEYS_X                              78 // Horizontal key step in pixel (row of 6 keys)
+  #define DELTA_KEYS_Y                              74 // Vertical key step in pixel
+  #define KEY_WIDTH_1                               47 // Width of small keys (STO, RCL, ...)
+  #define KEY_WIDTH_2                               56 // Width of large keys (1, 2, 3, ...)
+  #define LARGE_KEY_SPACING_1                       18 // Spacing 1st large key --> 7, 4, 1 and 0
+  #define LARGE_KEY_SPACING_2                       17 // Spacing next large keys --> 8, 9, ÷, 5, 6, …
+
+  #define X_LEFT_PORTRAIT                           45 // Horizontal offset for a portrait calculator
+  #define X_LEFT_LANDSCAPE                         544 // Horizontal offset for a landscape calculator
+  #define Y_TOP_PORTRAIT                           376 // Vertical offset for a portrait calculator
+  #define Y_TOP_LANDSCAPE                           30 // vertical offset for a landscape calculator
+#endif // NARROW_SCREEN == 1
+
 
 #define TAM_MAX_BITS                              14
 #define TAM_MAX_MASK                          0x3fff
@@ -1463,7 +1498,7 @@ typedef enum {
   #endif // RASPBERRY
 #endif // PC_BUILD
 
-#if defined(DMCP_BUILD) || (BIG_SCREEN == 1)
+#if defined(DMCP_BUILD) || (SIMULATOR_ON_SCREEN_KEYBOARD == 0)
   #undef  DEBUG_PANEL
   #define DEBUG_PANEL 0
   #undef  DEBUG_REGISTER_L
@@ -1472,7 +1507,7 @@ typedef enum {
   #define SHOW_MEMORY_STATUS 0
   #undef  EXTRA_INFO_ON_CALC_ERROR
   #define EXTRA_INFO_ON_CALC_ERROR 0
-#endif // DMCP_BUILD || BIG_SCREEN == 1
+#endif // DMCP_BUILD || SIMULATOR_ON_SCREEN_KEYBOARD == 0
 
 #if defined(TESTSUITE_BUILD) && !defined(GENERATE_CATALOGS)
   #undef  PC_BUILD

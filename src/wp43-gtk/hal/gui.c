@@ -20,7 +20,7 @@
 #include "items.h"
 #include "wp43.h"
 /*
-#if(BIG_SCREEN == 0)
+#if(SIMULATOR_ON_SCREEN_KEYBOARD == 1)
   void calcModeNormalGui(void) {
     int key;
 
@@ -79,9 +79,9 @@
       }
     }
   }
-#else
+#else // SIMULATOR_ON_SCREEN_KEYBOARD != 1
   void calcModeNormalGui (void) {}
   void calcModeAimGui    (void) {}
   void calcModeTamGui    (void) {}
-#endif
+#endif // SIMULATOR_ON_SCREEN_KEYBOARD == 1
 */
