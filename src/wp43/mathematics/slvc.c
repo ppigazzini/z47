@@ -31,10 +31,12 @@
 #include "mathematics/slvq.h"
 #include "registers.h"
 #include "registerValueConversions.h"
+#include "stack.h"
 #include "typeDefinitions.h"
 
 #include "wp43.h"
 
+#undef DISCRIMINANT
 
 /********************************************//**
  * \brief (d, c, b, a) ==> (x1, x2, r) c ==> regL
@@ -194,8 +196,6 @@ void fnSlvc(uint16_t unusedButMandatoryParameter) {
 
   if(realIsZero(&aReal) && realIsZero(&aImag)) {
     solveQuadraticEquation(&bReal, &bImag, &cReal, &cImag, &dReal, &dImag, &rReal, &rImag, &x1Real, &x1Imag, &x2Real, &x2Imag, &ctxtReal75);
-//    realZero(&x3Real);
-  //  realZero(&x3Imag);
     realCopy(const_NaN, &x3Real);
     realCopy(const_NaN, &x3Imag);
     realRoots &= realIsZero(&x1Imag) && realIsZero(&x2Imag);
@@ -212,11 +212,15 @@ void fnSlvc(uint16_t unusedButMandatoryParameter) {
     reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
     reallocateRegister(REGISTER_Y, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
     reallocateRegister(REGISTER_Z, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
-    reallocateRegister(REGISTER_T, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+    #ifdef DISCRIMINANT
+      reallocateRegister(REGISTER_T, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+    #endif //DISCRIMINANT
     convertRealToReal34ResultRegister(&x1Real, REGISTER_X);
     convertRealToReal34ResultRegister(&x2Real, REGISTER_Y);
     convertRealToReal34ResultRegister(&x3Real, REGISTER_Z);
-    realToReal34(&rReal,  REGISTER_REAL34_DATA(REGISTER_T));
+    #ifdef DISCRIMINANT
+      realToReal34(&rReal,  REGISTER_REAL34_DATA(REGISTER_T));
+    #endif //DISCRIMINANT
   }
   else { // !realRoots
     if(realIsZero(&x1Imag)) { // x1 is real
@@ -249,21 +253,29 @@ void fnSlvc(uint16_t unusedButMandatoryParameter) {
       convertRealToImag34ResultRegister(&x3Imag, REGISTER_Z);
     }
 
-    if(realIsZero(&rImag)) { // q3r2 is real
-      reallocateRegister(REGISTER_T, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
-      convertRealToReal34ResultRegister(&rReal, REGISTER_T);
-    }
-    else {
-      reallocateRegister(REGISTER_T, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
-      convertRealToReal34ResultRegister(&rReal, REGISTER_T);
-      convertRealToImag34ResultRegister(&rImag, REGISTER_T);
-    }
+
+    #ifdef DISCRIMINANT
+      if(realIsZero(&rImag)) { // q3r2 is real
+        reallocateRegister(REGISTER_T, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+        convertRealToReal34ResultRegister(&rReal, REGISTER_T);
+      }
+      else {
+        reallocateRegister(REGISTER_T, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
+        convertRealToReal34ResultRegister(&rReal, REGISTER_T);
+        convertRealToImag34ResultRegister(&rImag, REGISTER_T);
+      }
+    #endif //DISCRIMINANT
+
   }
 
   adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
   adjustResult(REGISTER_Y, false, true, REGISTER_Y, -1, -1);
   adjustResult(REGISTER_Z, false, true, REGISTER_Z, -1, -1);
-  adjustResult(REGISTER_T, false, true, REGISTER_T, -1, -1);
+  #ifdef DISCRIMINANT
+    adjustResult(REGISTER_T, false, true, REGISTER_T, -1, -1);
+  #else
+    fnDropT(0);
+  #endif //DISCRIMINANT
 #endif // !SAVE_SPACE_DM42_12
 }
 

@@ -29,9 +29,11 @@
 #include "mathematics/toRect.h"
 #include "registers.h"
 #include "registerValueConversions.h"
+#include "stack.h"
 
 #include "wp43.h"
 
+#undef DISCRIMINANT
 
 /********************************************//**
  * \brief (c, b, a) ==> (x1, x2, r) c ==> regL
@@ -160,7 +162,9 @@ void fnSlvq(uint16_t unusedButMandatoryParameter) {
   if(realRoots) {
     reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
     reallocateRegister(REGISTER_Y, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
-    reallocateRegister(REGISTER_Z, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+    #ifdef DISCRIMINANT
+      reallocateRegister(REGISTER_Z, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+    #endif //DISCRIMINANT
     convertRealToReal34ResultRegister(&x1Real, REGISTER_X);
     convertRealToReal34ResultRegister(&x2Real, REGISTER_Y);
     realToReal34(&rReal,  REGISTER_REAL34_DATA(REGISTER_Z));
@@ -186,20 +190,26 @@ void fnSlvq(uint16_t unusedButMandatoryParameter) {
       convertRealToImag34ResultRegister(&x2Imag, REGISTER_Y);
     }
 
-    if(realIsZero(&rImag)) { // r is real
-      reallocateRegister(REGISTER_Z, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
-      convertRealToReal34ResultRegister(&rReal, REGISTER_Z);
-    }
-    else {
-      reallocateRegister(REGISTER_Z, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
-      convertRealToReal34ResultRegister(&rReal, REGISTER_Z);
-      convertRealToImag34ResultRegister(&rImag, REGISTER_Z);
-    }
+    #ifdef DISCRIMINANT
+      if(realIsZero(&rImag)) { // r is real
+        reallocateRegister(REGISTER_Z, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+        convertRealToReal34ResultRegister(&rReal, REGISTER_Z);
+      }
+      else {
+        reallocateRegister(REGISTER_Z, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
+        convertRealToReal34ResultRegister(&rReal, REGISTER_Z);
+        convertRealToImag34ResultRegister(&rImag, REGISTER_Z);
+      }
+    #endif //DISCRIMINANT
   }
 
   adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
   adjustResult(REGISTER_Y, false, true, REGISTER_Y, -1, -1);
-  adjustResult(REGISTER_Z, false, true, REGISTER_Z, -1, -1);
+  #ifdef DISCRIMINANT
+    adjustResult(REGISTER_Z, false, true, REGISTER_Z, -1, -1);
+  #else
+    fnDropZ(0);
+  #endif //DISCRIMINANT
 #endif // !SAVE_SPACE_DM42_12
 }
 
