@@ -19,6 +19,7 @@
 #include "charString.h"
 #include "constantPointers.h"
 #include "dateTime.h"
+#include "debug.h"
 #include "display.h"
 #include "error.h"
 #include "integers.h"
@@ -729,4 +730,100 @@ void realToFloat(const real_t *vv, float *v) {
 
 void realToDouble(const real_t *vv, double *v) {      //Not using double internally, i.e. using float type. Change fnRealToFloat if double is needed in future
   *v = fnRealToFloat(vv);
+}
+
+bool_t getRegisterAsComplex(calcRegister_t reg, real_t *r, real_t *i) {
+  switch(getRegisterDataType(reg)) {
+    case dtLongInteger:
+      convertLongIntegerRegisterToReal(reg, r, &ctxtReal75);
+      break;
+
+    case dtShortInteger:
+      convertShortIntegerRegisterToReal(reg, r, &ctxtReal34);
+      break;
+
+    case dtReal34:
+      real34ToReal(REGISTER_REAL34_DATA(reg), r);
+      break;
+
+    case dtComplex34:
+      real34ToReal(REGISTER_REAL34_DATA(reg), r);
+      real34ToReal(REGISTER_IMAG34_DATA(reg), i);
+      return true;
+
+    default: {
+      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, reg);
+      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+        sprintf(errorMessage, "cannot convert %d from %s to complex", reg, getRegisterDataTypeName(reg, true, false));
+        moreInfoOnError("In function getRegisterAsComplex:", errorMessage, NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+      return false;
+    }
+  }
+  realZero(i);
+  return true;
+}
+
+bool_t getRegisterAsComplexOrReal(calcRegister_t reg, real_t *r, real_t *i, bool_t *cmplx) {
+  switch(getRegisterDataType(reg)) {
+    case dtLongInteger:
+      convertLongIntegerRegisterToReal(reg, r, &ctxtReal75);
+      break;
+
+    case dtShortInteger:
+      convertShortIntegerRegisterToReal(reg, r, &ctxtReal34);
+      break;
+
+    case dtReal34:
+      real34ToReal(REGISTER_REAL34_DATA(reg), r);
+      break;
+
+    case dtComplex34:
+      real34ToReal(REGISTER_REAL34_DATA(reg), r);
+      real34ToReal(REGISTER_IMAG34_DATA(reg), i);
+      *cmplx = true;
+      return true;
+
+    default:
+      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, reg);
+      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+        sprintf(errorMessage, "cannot convert %d from %s to complex", reg, getRegisterDataTypeName(reg, true, false));
+        moreInfoOnError("In function getRegisterAsComplexOrReal:", errorMessage, NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+      return false;
+  }
+  realZero(i);
+  return true;
+}
+
+bool_t getRegisterAsReal(calcRegister_t reg, real_t *val) {
+  switch(getRegisterDataType(reg)) {
+    case dtLongInteger:
+      convertLongIntegerRegisterToReal(reg, val, &ctxtReal75);
+      break;
+
+    case dtShortInteger:
+      convertShortIntegerRegisterToReal(reg, val, &ctxtReal34);
+      break;
+
+    case dtReal34:
+      real34ToReal(REGISTER_REAL34_DATA(reg), val);
+      break;
+
+    case dtComplex34:
+      if (real34IsZero(REGISTER_IMAG34_DATA(reg))) {
+        real34ToReal(REGISTER_REAL34_DATA(reg), val);
+        break;
+      }
+    /* fall through */
+
+    default:
+      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, reg);
+      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+        sprintf(errorMessage, "cannot convert %d from %s to real", reg, getRegisterDataTypeName(reg, true, false));
+        moreInfoOnError("In function getRegisterAsReal:", errorMessage, NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+      return false;
+  }
+  return true;
 }

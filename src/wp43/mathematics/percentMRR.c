@@ -30,64 +30,27 @@
 
 #include "wp43.h"
 
-static bool_t convertRegisterToReal(calcRegister_t regist, real_t *r) {
-  bool_t result = true;
-
-  switch(getRegisterDataType(regist)) {
-    case dtLongInteger: {
-      convertLongIntegerRegisterToReal(regist, r, &ctxtReal75);
-      break;
-    }
-
-    case dtReal34: {
-      real34ToReal(REGISTER_REAL34_DATA(regist), r);
-      break;
-    }
-
-    default: {
-      result = false;
-    }
-  }
-
-  return result;
-}
-
 static void percentMRR() {
   real_t xReal, yReal, zReal;
 
   /*
    * Convert register X.
    */
-  if(!convertRegisterToReal(REGISTER_X, &xReal)) {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
-      sprintf(errorMessage, "cannot %%MRR with %s in X", getRegisterDataTypeName(REGISTER_X, true, false));
-      moreInfoOnError("In function fnPercentMRR:", errorMessage, NULL, NULL);
-    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+  if(!getRegisterAsReal(REGISTER_X, &xReal))
     return;
-  }
+
   /*
    * Convert register Y.
    */
-  if(!convertRegisterToReal(REGISTER_Y, &yReal)) {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_Y);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
-      sprintf(errorMessage, "cannot %%MRR with %s in Y", getRegisterDataTypeName(REGISTER_Y, true, false));
-      moreInfoOnError("In function fnPercentMRR:", errorMessage, NULL, NULL);
-    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+  if(!getRegisterAsReal(REGISTER_Y, &yReal))
     return;
-  }
+
   /*
    * Convert register Z
    */
-  if(!convertRegisterToReal(REGISTER_Z, &zReal)) {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_Z);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
-      sprintf(errorMessage, "cannot %%MRR with %s in Z", getRegisterDataTypeName(REGISTER_Z, true, false));
-      moreInfoOnError("In function fnPercentMRR:", errorMessage, NULL, NULL);
-    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+  if(!getRegisterAsReal(REGISTER_Z, &zReal))
     return;
-  }
+
   /*
    * Calculate %MRR
    */
