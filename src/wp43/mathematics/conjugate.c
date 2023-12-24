@@ -25,53 +25,23 @@
 #include "items.h"
 #include "mathematics/matrix.h"
 #include "registers.h"
+#include "registerValueConversions.h"
 
 #include "wp43.h"
 
 
 
-TO_QSPI void (* const conjugate[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])(void) = {
-// regX ==> 1            2          3         4          5          6          7          8           9             10
-//          Long integer Real34     Complex34 Time       Date       String     Real34 mat Complex34 m Short integer Config data
-            conjError,   conjError, conjCplx, conjError, conjError, conjError, conjError, conjCxma,   conjError,    conjError
-};
+static void conjRema(void) {
+  complex34Matrix_t cMat;
 
-
-
-/********************************************//**
- * \brief Data type error in exp
- *
- * \param void
- * \return void
- ***********************************************/
-#if(EXTRA_INFO_ON_CALC_ERROR == 1)
-  void conjError(void) {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-    sprintf(errorMessage, "cannot calculate conj for %s", getRegisterDataTypeName(REGISTER_X, true, false));
-    moreInfoOnError("In function fnConjugate:", errorMessage, NULL, NULL);
-  }
-#endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-
-
-
-/********************************************//**
- * \brief regX ==> regL and conj(regX) ==> regX
- * enables stack lift and refreshes the stack
- *
- * \param[in] unusedButMandatoryParameter uint16_t
- * \return void
- ***********************************************/
-void fnConjugate(uint16_t unusedButMandatoryParameter) {
-  if(!saveLastX()) {
-    return;
-  }
-
-  conjugate[getRegisterDataType(REGISTER_X)]();
+  convertReal34MatrixRegisterToComplex34Matrix(REGISTER_X, &cMat);
+  if (getSystemFlag(FLAG_SPCRES))
+    for (uint16_t i = 0; i < cMat.header.matrixRows * cMat.header.matrixColumns; ++i)
+      real34ChangeSign(VARIABLE_IMAG34_DATA(&cMat.matrixElements[i]));
+  convertComplex34MatrixToComplex34MatrixRegister(&cMat, REGISTER_X);
 }
 
-
-
-void conjCxma(void) {
+static void conjCxma(void) {
   complex34Matrix_t cMat;
 
   linkToComplexMatrixRegister(REGISTER_X, &cMat);
@@ -84,11 +54,39 @@ void conjCxma(void) {
   }
 }
 
+static void conjCplx(void) {
+  real_t r, i;
 
+  if (!getRegisterAsComplex(REGISTER_X, &r, &i))
+      return;
 
-void conjCplx(void) {
-  real34ChangeSign(REGISTER_IMAG34_DATA(REGISTER_X));
-  if(real34IsZero(REGISTER_IMAG34_DATA(REGISTER_X)) && !getSystemFlag(FLAG_SPCRES)) {
-    real34SetPositiveSign(REGISTER_IMAG34_DATA(REGISTER_X));
+  realChangeSign(&i);
+  if(realIsZero(&i) && !getSystemFlag(FLAG_SPCRES)) {
+    realSetPositiveSign(&i);
   }
+  reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
+  convertRealToReal34ResultRegister(&r, REGISTER_X);
+  convertRealToImag34ResultRegister(&i, REGISTER_X);
 }
+
+/********************************************//**
+ * \brief regX ==> regL and conj(regX) ==> regX
+ * enables stack lift and refreshes the stack
+ *
+ * \param[in] unusedButMandatoryParameter uint16_t
+ * \return void
+ ***********************************************/
+void fnConjugate(uint16_t unusedButMandatoryParameter) {
+  uint32_t typex = getRegisterDataType(REGISTER_X);
+
+  if(!saveLastX())
+    return;
+
+  if (typex == dtComplex34Matrix)
+    conjCxma();
+  else if (typex == dtReal34Matrix)
+    conjRema();
+  else
+    conjCplx();
+}
+
