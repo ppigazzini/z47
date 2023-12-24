@@ -77,6 +77,9 @@ void liftStack(void) {
 
 
 void _Drop(register_t reg) {
+  if(reg == getStackTop()) {
+    return;
+  }
   freeRegisterData(reg);
   for(uint16_t i=reg; i<getStackTop(); i++) {
     globalRegister[i] = globalRegister[i+1];

@@ -36,7 +36,7 @@
 
 #include "wp43.h"
 
-#undef DISCRIMINANT
+#undef DISCRIMINANT //Note the testSuite tests were revised to remove the discriminant
 
 /********************************************//**
  * \brief (d, c, b, a) ==> (x1, x2, r) c ==> regL

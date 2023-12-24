@@ -33,7 +33,7 @@
 
 #include "wp43.h"
 
-#undef DISCRIMINANT
+#undef DISCRIMINANT //Note the testSuite tests were revised to remove the discriminant
 
 /********************************************//**
  * \brief (c, b, a) ==> (x1, x2, r) c ==> regL
@@ -167,7 +167,9 @@ void fnSlvq(uint16_t unusedButMandatoryParameter) {
     #endif //DISCRIMINANT
     convertRealToReal34ResultRegister(&x1Real, REGISTER_X);
     convertRealToReal34ResultRegister(&x2Real, REGISTER_Y);
-    realToReal34(&rReal,  REGISTER_REAL34_DATA(REGISTER_Z));
+    #ifdef DISCRIMINANT
+      realToReal34(&rReal,  REGISTER_REAL34_DATA(REGISTER_Z));
+    #endif //DISCRIMINANT
   }
   else { // !realRoots
     if(realIsZero(&x1Imag)) { // x1 is real
