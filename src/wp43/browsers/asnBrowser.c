@@ -35,7 +35,7 @@
 
 #if !defined(TESTSUITE_BUILD)
   #if !defined(SAVE_SPACE_DM42_8)
-  TO_QSPI static void fnAsnDisplay(uint8_t page) {                // Heavily modified by JM from the original fnShow
+  static void fnAsnDisplay(uint8_t page) {                // Heavily modified by JM from the original fnShow
   #define YOFF 32
     int xx,yy;
     int kk = 0;
@@ -117,7 +117,7 @@
         strcpy(Name, (char *)getNthString((uint8_t *)userKeyLabel, key*6+(page-1)));       // name of a user menu, program or variable assigned to a key
       }
 
-
+      
       char tmp3[20];
       tmp3[0]=0;
       if(Norm_Key_00_used) {
@@ -150,7 +150,7 @@
 #endif // !TESTSUITE_BUILD
 
 
-TO_QSPI void fnAsnViewer(uint16_t unusedButMandatoryParameter) {
+void fnAsnViewer(uint16_t unusedButMandatoryParameter) {
 #if !defined(TESTSUITE_BUILD)
   #if !defined(SAVE_SPACE_DM42_8)
     hourGlassIconEnabled = false;
