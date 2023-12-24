@@ -36,7 +36,7 @@
 
 #if !defined(TESTSUITE_BUILD)
 #if !defined(SAVE_SPACE_DM42_8)
-  TO_QSPI static void _showRegisterInRbr(calcRegister_t regist, int16_t registerNameWidth) {
+  static void _showRegisterInRbr(calcRegister_t regist, int16_t registerNameWidth) {
     switch(getRegisterDataType(regist)) {
       case dtReal34: {
         if(showContent) {
@@ -167,7 +167,7 @@
   }
   #endif // !SAVE_SPACE_DM42_8
 
-  TO_QSPI void registerBrowser(uint16_t unusedButMandatoryParameter) {
+  void registerBrowser(uint16_t unusedButMandatoryParameter) {
   #if !defined(SAVE_SPACE_DM42_8)
     int16_t registerNameWidth;
 

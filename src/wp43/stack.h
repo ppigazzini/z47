@@ -48,6 +48,8 @@ void liftStack     (void);
  * \param[in] unusedButMandatoryParameter
  */
 void fnDropY       (uint16_t unusedButMandatoryParameter);
+void fnDropZ       (uint16_t unusedButMandatoryParameter);
+void fnDropT       (uint16_t unusedButMandatoryParameter);
 
 /**
  * Rolls the stack up and refreshes the stack.

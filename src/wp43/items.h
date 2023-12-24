@@ -1602,7 +1602,7 @@
 #define ITM_LOADV                   1552
 #define ITM_POPLR                   1553
 #define ITM_1554                    1554
-#define ITM_1555                    1555
+#define ITM_SLVC                    1555
 #define ITM_PUTK                    1556
 #define ITM_RAD                     1557
 #define ITM_GETDMX                  1558
@@ -2207,7 +2207,7 @@
 #define MNU_GAP_L                   2151
 #define MNU_GAP_RX                  2152
 #define MNU_GAP_R                   2153
-#define ITM_SET_TO_TEXT             2154
+#define ITM_2154                      2154
 #define ITM_GRP_L                   2155
 #define ITM_GRP1_L_OF               2156
 #define ITM_GRP1_L                  2157

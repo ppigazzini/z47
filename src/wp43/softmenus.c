@@ -51,7 +51,7 @@
 /*                                          <---------------------------------------------------------------------- 6 f shifted functions ------------------------------------------------------------------------->  */
 /*                                          <---------------------------------------------------------------------- 6 g shifted functions ------------------------------------------------------------------------->  */
 TO_QSPI const int16_t menu_ADV[]         = { ITM_SOLVE,                     ITM_SLVQ,                   ITM_FQX,                  ITM_PIn,               ITM_SIGMAn,                  -MNU_Sfdx,
-                                             ITM_PGMSLV,                    ITM_NULL,                   ITM_FDQX,                 ITM_iPIn,              ITM_iSIGMAn,                 ITM_PGMINT                    };
+                                             ITM_PGMSLV,                    ITM_SLVC,                   ITM_FDQX,                 ITM_iPIn,              ITM_iSIGMAn,                 ITM_PGMINT                    };
 
 TO_QSPI const int16_t menu_Sfdx[]        = { ITM_NULL,                      ITM_DRAW,                   VAR_ACC,                  VAR_LLIM,              VAR_ULIM,                    ITM_INTEGRAL                  };
 
@@ -216,9 +216,9 @@ TO_QSPI const int16_t menu_MODE[]        = { ITM_DEG,                       ITM_
                                              ITM_INP_DEF_43S,               ITM_INP_DEF_DP,             ITM_INP_DEF_CPXDP,        ITM_INP_DEF_LI,        ITM_NULL,                    ITM_CFG,                   
                                              ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,                  
 
-                                             ITM_FGLNOFF,                   ITM_FGLNLIM,                ITM_FGLNFUL,              ITM_G_DOUBLETAP,       ITM_SHTIM,                   ITM_SH_LONGPRESS,             
+                                             ITM_FGLNOFF,                   ITM_FGLNLIM,                ITM_FGLNFUL,              ITM_G_DOUBLETAP,       ITM_SHTIM,                   ITM_SAFERESET,             
                                              ITM_M14,                       ITM_M124,                   ITM_M1234,                ITM_NULL,              ITM_BASE_MYM,                ITM_BASE_HOME,             
-                                             ITM_F14,                       ITM_F124,                   ITM_F1234,                ITM_SAFERESET,         ITM_MYMx3,                   ITM_HOMEx3         };
+                                             ITM_F14,                       ITM_F124,                   ITM_F1234,                ITM_SH_LONGPRESS,      ITM_MYMx3,                   ITM_HOMEx3         };
 
 // D47 vv
 TO_QSPI const int16_t menu_SETUP[]       = { ITM_SYS2,                      ITM_DMCP,                   ITM_ERPN,                 ITM_HPRP,              ITM_RECT,                    ITM_POLAR,                 
@@ -229,9 +229,9 @@ TO_QSPI const int16_t menu_SETUP[]       = { ITM_SYS2,                      ITM_
                                              ITM_INP_DEF_43S,               ITM_INP_DEF_DP,             ITM_INP_DEF_CPXDP,        ITM_INP_DEF_LI,        ITM_NULL,                    ITM_CFG,                   
                                              ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,                  
 
-                                             ITM_FGLNOFF,                   ITM_FGLNLIM,                ITM_FGLNFUL,              ITM_G_DOUBLETAP,       ITM_SHTIM,                   ITM_SH_LONGPRESS,             
+                                             ITM_FGLNOFF,                   ITM_FGLNLIM,                ITM_FGLNFUL,              ITM_G_DOUBLETAP,       ITM_SHTIM,                   ITM_SAFERESET,             
                                              ITM_M14,                       ITM_M124,                   ITM_M1234,                ITM_NULL,              ITM_BASE_MYM,                ITM_BASE_HOME,             
-                                             ITM_F14,                       ITM_F124,                   ITM_F1234,                ITM_SAFERESET,         ITM_MYMx3,                   ITM_HOMEx3         };
+                                             ITM_F14,                       ITM_F124,                   ITM_F1234,                ITM_SH_LONGPRESS,      ITM_MYMx3,                   ITM_HOMEx3         };
 // D47 ^^
 
 

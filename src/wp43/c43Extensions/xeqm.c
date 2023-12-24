@@ -484,7 +484,6 @@ TO_QSPI const function_t indexOfFunctions[] = {
               {ITM_JUL_GREG_1949,             "JG1949"},
 
 
-              {ITM_SET_TO_TEXT,               "@"},
               {ITM_GRP_L,                     "@"},
               {ITM_GRP1_L_OF,                 "IPGRP1X"},
               {ITM_GRP1_L,                    "@"},

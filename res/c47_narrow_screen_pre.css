@@ -60,6 +60,7 @@
   border-color:  $keyBorder;
   border-width:  2px;
 }
+
 #AlphaKey:hover {background-color: $AlphaHoverGold;}
 
 #fSoftkeyArea {
@@ -104,6 +105,7 @@
   border-color:  $keyBorder;
   border-width:  2px;
 }
+
 #calcKey:hover {background-color: $keyHover;}
 
 #calcNumericKey {
@@ -121,6 +123,7 @@
   border-color:  $numericKeyBorder;
   border-width:  2px;
 }
+
 #calcNumericKey:hover {background-color: $keyHover;}
 
 #calcKeyGoldenBorder {
@@ -154,6 +157,7 @@
   padding-bottom:2px;
   border-width:  2px;
 }
+
 #calcKeyF:hover {background-color: $fHoverGold;}
 
 #calcKeyG {
@@ -170,6 +174,7 @@
   padding-bottom:2px;
   border-width:  2px;
 }
+
 #calcKeyG:hover {background-color: $gHoverBlue;}
 
 #calcKeyFG {
@@ -186,6 +191,7 @@
   padding-bottom:2px;
   border-width:  2px;
 }
+
 #calcKeyFG:hover {background-color: $fgHoverGold;}
 
 #fShifted {
@@ -194,7 +200,7 @@
   font-family: C47__StandardFont;
   font-style:  normal;
   font-weight: normal;
-  font-size:   18px;
+  font-size:   16px;
   padding:     0px;
 }
 
@@ -204,7 +210,7 @@
   font-family: C47__StandardFont;
   font-style:  normal;
   font-weight: normal;
-  font-size:   18px;
+  font-size:   16px;
   padding:     0px;
   /* JM removed "text-decoration: underline;" and changed from "background:  $bezelBackground;" */
 }
@@ -216,7 +222,7 @@
   font-family: C47__StandardFont;
   font-style:  normal;
   font-weight: normal;
-  font-size:   18px;
+  font-size:   16px;
   padding:     0px;
   /* JM added label; changed from "background:  $bezelBackground;" */
 }
@@ -227,7 +233,7 @@
   font-family: C47__StandardFont;
   font-style:  normal;
   font-weight: normal;
-  font-size:   18px;
+  font-size:   16px;
   padding:     0px;
 }
 
@@ -237,7 +243,7 @@
   font-family: C47__StandardFont;
   font-style:  normal;
   font-weight: normal;
-  font-size:   18px;
+  font-size:   16px;
   padding:     0px;
   /* JM removed "text-decoration: underline;" and changed from "background:  $bezelBackground;" */
 }
@@ -248,7 +254,7 @@
   font-family: C47__StandardFont;
   font-style:  normal;
   font-weight: normal;
-  font-size:   18px;
+  font-size:   16px;
   padding:     0px;
 }
 
@@ -258,7 +264,7 @@
   font-family: C47__StandardFont;
   font-style:  normal;
   font-weight: normal;
-  font-size:   18px;
+  font-size:   16px;
   padding:     0px;
   /* JM changed "font size" from 20 to 18; removed "text-decoration: underline;" and changed from "background:  $bezelBackground;" */
 }
@@ -269,7 +275,7 @@
   font-family: C47__StandardFont;
   font-style:  normal;
   font-weight: normal;
-  font-size:   18px;
+  font-size:   16px;
   padding:     0px;
   text-shadow: 0px 0px $keyLabelColor;
   /* JM changed colour from lettergrey to keyLabelColor; Added emphasis (shadow) */
@@ -281,7 +287,7 @@
   font-family: C47__StandardFont;
   font-style:  normal;
   font-weight: normal;
-  font-size:   18px;
+  font-size:   16px;
   padding:     0px;
   text-shadow: 1px 0px $keyLabelColor;
   /* JM changed colour from lettergrey to keyLabelColor; Added emphasis (shadow) */
@@ -293,7 +299,7 @@
   font-family: C47__StandardFont;
   font-style:  normal;
   font-weight: normal;
-  font-size:   19px;
+  font-size:   18px;
   padding:     0px;
   /* JM To make the alpha letters red, change the letter font-size from 19 to 21 and change the lettergrey colour code (above, from grey a5a5a5 to red cb1201 */
 }

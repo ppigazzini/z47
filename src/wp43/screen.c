@@ -127,14 +127,14 @@ typedef struct {
     cairo_surface_t *imageSurface;
 
     imageSurface = cairo_image_surface_create_for_data((unsigned char *)screenData, CAIRO_FORMAT_RGB24, SCREEN_WIDTH, SCREEN_HEIGHT, screenStride * 4);
-    #if (BIG_SCREEN == 1)
+    #if (BIG_SCREEN_COEF != 1)
       cairo_scale(cr, BIG_SCREEN_COEF, BIG_SCREEN_COEF);
-    #endif // BIG_SCREEN == 1
+    #endif // BIG_SCREEN_COEF != 1
     cairo_set_source_surface(cr, imageSurface, 0, 0);
     cairo_surface_mark_dirty(imageSurface);
-    #if (BIG_SCREEN == 1)
+    #if (BIG_SCREEN_COEF != 1)
       cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);
-    #endif // BIG_SCREEN == 1
+    #endif // BIG_SCREEN_COEF != 1
     cairo_paint(cr);
     cairo_surface_destroy(imageSurface);
 
