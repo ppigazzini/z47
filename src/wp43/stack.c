@@ -76,7 +76,7 @@ void liftStack(void) {
 
 
 
-void _Drop(register_t reg) {
+void _Drop(calcRegister_t reg) {
   if(reg == getStackTop()) {
     return;
   }
