@@ -225,10 +225,10 @@ void solveQuadraticEquation(const real_t *aReal, const real_t *aImag, const real
       realMultiply(bReal, bReal, rReal, realContext);
       realZero(rImag);
 
-      // x1 = x2 = -c/b
+      // x1 = -c/b, x2 = NaN
       realDivide(cReal, bReal, x1Real, realContext);
       realChangeSign(x1Real);
-      realCopy(x1Real, x2Real);
+      realCopy(const_NaN, x2Real);
 
       realZero(x1Imag);
       realZero(x2Imag);
@@ -305,12 +305,12 @@ void solveQuadraticEquation(const real_t *aReal, const real_t *aImag, const real
       // r = b²
       mulComplexComplex(bReal, bImag, bReal, bImag, rReal, rImag, realContext);
 
-      // x1 = x2 = -c/b
+      // x1 = -c/b, x2 = NaN
       divComplexComplex(cReal, cImag, bReal, bImag, x1Real, x1Imag, realContext);
       realChangeSign(x1Real);
       realChangeSign(x1Imag);
-      realCopy(x1Real, x2Real);
-      realCopy(x1Imag, x2Imag);
+      realCopy(const_NaN, x2Real);
+      realCopy(const_NaN, x2Imag);
     }
     else if(realIsZero(cReal) && realIsZero(cImag)) {
       // ax² + bx = x(ax + b) = 0   (a is not 0 here)
