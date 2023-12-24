@@ -225,7 +225,7 @@ uint16_t convertItemToSubOrSup(uint16_t item, int16_t subOrSup) {
                                  item == ITM_COS_SIGN             ? "COS()" :
                                  item == ITM_TAN_SIGN             ? "TAN()" :
                                  item == ITM_OBELUS               ? STD_SLASH :
-                                 item == ITM_poly_SIGN            ? "b3" STD_DOT "x^3+b2" STD_DOT "x^2+b1" STD_DOT "x+b0" :
+                                 item == ITM_poly_SIGN            ? "b4" STD_DOT "x^4+b3" STD_DOT "x^3+b2" STD_DOT "x^2+b1" STD_DOT "x+b0" :
                                  item == ITM_op_j_SIGN            ? COMPLEX_UNIT :
                                  item == ITM_zetaX                ? STD_zeta "()" :
                                  item == ITM_GAMMAX               ? STD_GAMMA "()" :
@@ -259,7 +259,7 @@ uint16_t convertItemToSubOrSup(uint16_t item, int16_t subOrSup) {
           } else {
             switch(item) {
               case ITM_poly_SIGN: {
-                xCursor += 21;
+                xCursor += 0;
                 break;
               }
               case ITM_LG_SIGN:

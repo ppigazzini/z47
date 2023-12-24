@@ -76,9 +76,12 @@ void liftStack(void) {
 
 
 
-void fnDropY(uint16_t unusedButMandatoryParameter) {
-  freeRegisterData(REGISTER_Y);
-  for(uint16_t i=REGISTER_Y; i<getStackTop(); i++) {
+void _Drop(calcRegister_t reg) {
+  if(reg == getStackTop()) {
+    return;
+  }
+  freeRegisterData(reg);
+  for(uint16_t i=reg; i<getStackTop(); i++) {
     globalRegister[i] = globalRegister[i+1];
   }
 
@@ -91,6 +94,18 @@ void fnDropY(uint16_t unusedButMandatoryParameter) {
   else {
     lastErrorCode = ERROR_RAM_FULL;
   }
+}
+
+void fnDropY(uint16_t unusedButMandatoryParameter) {
+  _Drop(REGISTER_Y);
+}
+
+void fnDropZ(uint16_t unusedButMandatoryParameter) {
+  _Drop(REGISTER_Z);
+}
+
+void fnDropT(uint16_t unusedButMandatoryParameter) {
+  _Drop(REGISTER_T);
 }
 
 
