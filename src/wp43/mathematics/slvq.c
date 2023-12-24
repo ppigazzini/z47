@@ -44,99 +44,16 @@
  ***********************************************/
 void fnSlvq(uint16_t unusedButMandatoryParameter) {
 #if !defined(SAVE_SPACE_DM42_12)
-  bool_t realCoefs=true, realRoots=true;
+  bool_t realCoefs=false, realRoots=true, complexCoefs=false;
   real_t aReal, bReal, cReal, rReal, x1Real, x2Real;
   real_t aImag, bImag, cImag, rImag, x1Imag, x2Imag;
 
-  switch(getRegisterDataType(REGISTER_X)) {
-    case dtLongInteger: {
-      convertLongIntegerRegisterToReal(REGISTER_X, &cReal, &ctxtReal75);
-      realZero(&cImag);
-      break;
-    }
-
-    case dtReal34: {
-      real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &cReal);
-      realZero(&cImag);
-      break;
-    }
-
-    case dtComplex34: {
-      real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &cReal);
-      real34ToReal(REGISTER_IMAG34_DATA(REGISTER_X), &cImag);
-      realCoefs = false;
-      break;
-    }
-
-    default: {
-      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
-        sprintf(errorMessage, "cannot SLVQ with %s in X", getRegisterDataTypeName(REGISTER_X, true, false));
-        moreInfoOnError("In function fnSlqv:", errorMessage, NULL, NULL);
-      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-      return;
-    }
+  if(!(getRegisterAsComplexOrReal(REGISTER_X, &cReal, &cImag, &complexCoefs) &&
+       getRegisterAsComplexOrReal(REGISTER_Y, &bReal, &bImag, &complexCoefs) &&
+       getRegisterAsComplexOrReal(REGISTER_Z, &aReal, &aImag, &complexCoefs))) {
+    return;
   }
-
-  switch(getRegisterDataType(REGISTER_Y)) {
-    case dtLongInteger: {
-      convertLongIntegerRegisterToReal(REGISTER_Y, &bReal, &ctxtReal75);
-      realZero(&bImag);
-      break;
-    }
-
-    case dtReal34: {
-      real34ToReal(REGISTER_REAL34_DATA(REGISTER_Y), &bReal);
-      realZero(&bImag);
-      break;
-    }
-
-    case dtComplex34: {
-      real34ToReal(REGISTER_REAL34_DATA(REGISTER_Y), &bReal);
-      real34ToReal(REGISTER_IMAG34_DATA(REGISTER_Y), &bImag);
-      realCoefs = false;
-      break;
-    }
-
-    default: {
-      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_Y);
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
-        sprintf(errorMessage, "cannot SLVQ with %s in Y", getRegisterDataTypeName(REGISTER_Y, true, false));
-        moreInfoOnError("In function fnSlqv:", errorMessage, NULL, NULL);
-      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-      return;
-    }
-  }
-
-  switch(getRegisterDataType(REGISTER_Z)) {
-    case dtLongInteger: {
-      convertLongIntegerRegisterToReal(REGISTER_Z, &aReal, &ctxtReal75);
-      realZero(&aImag);
-      break;
-    }
-
-    case dtReal34: {
-      real34ToReal(REGISTER_REAL34_DATA(REGISTER_Z), &aReal);
-      realZero(&aImag);
-      break;
-    }
-
-    case dtComplex34: {
-      real34ToReal(REGISTER_REAL34_DATA(REGISTER_Z), &aReal);
-      real34ToReal(REGISTER_IMAG34_DATA(REGISTER_Z), &aImag);
-      realCoefs = false;
-      break;
-    }
-
-    default: {
-      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_Z);
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
-        sprintf(errorMessage, "cannot SLVQ with %s in Z", getRegisterDataTypeName(REGISTER_Z, true, false));
-        moreInfoOnError("In function fnSlqv:", errorMessage, NULL, NULL);
-      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-      return;
-    }
-  }
+  realCoefs = !complexCoefs;
 
   if(   realIsZero(&aReal) && realIsZero(&aImag)
      && realIsZero(&bReal) && realIsZero(&bImag)) {
