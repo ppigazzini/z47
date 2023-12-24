@@ -28,6 +28,7 @@
 #include "mathematics/division.h"
 #include "mathematics/multiplication.h"
 #include "mathematics/squareRoot.h"
+#include "mathematics/slvq.h"
 #include "registers.h"
 #include "registerValueConversions.h"
 #include "typeDefinitions.h"
@@ -181,14 +182,6 @@ void fnSlvc(uint16_t unusedButMandatoryParameter) {
     return;
   }
 
-  if(   realIsZero(&aReal) && realIsZero(&aImag) ) {
-    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
-      moreInfoOnError("In function fnSlvc:", "cannot use 0 for T as input of SLVC", NULL, NULL);
-    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-    return;
-  }
-
 
   if(!saveLastX()) {
     return;
@@ -198,15 +191,22 @@ void fnSlvc(uint16_t unusedButMandatoryParameter) {
     realRoots = false;
   }
 
-  
-  divComplexComplex(&bReal, &bImag, &aReal, &aImag, &bReal, &bImag, &ctxtReal39);
-  divComplexComplex(&cReal, &cImag, &aReal, &aImag, &cReal, &cImag, &ctxtReal39);
-  divComplexComplex(&dReal, &dImag, &aReal, &aImag, &dReal, &dImag, &ctxtReal39);
 
-  solveCubicEquation(&bReal, &bImag, &cReal, &cImag, &dReal, &dImag, &rReal, &rImag, &x1Real, &x1Imag, &x2Real, &x2Imag, &x3Real, &x3Imag, &ctxtReal75);
+  if(realIsZero(&aReal) && realIsZero(&aImag)) {
+    solveQuadraticEquation(&bReal, &bImag, &cReal, &cImag, &dReal, &dImag, &rReal, &rImag, &x1Real, &x1Imag, &x2Real, &x2Imag, &ctxtReal75);
+//    realZero(&x3Real);
+  //  realZero(&x3Imag);
+    realCopy(const_NaN, &x3Real);
+    realCopy(const_NaN, &x3Imag);
+    realRoots &= realIsZero(&x1Imag) && realIsZero(&x2Imag);
+  } else {
+    divComplexComplex(&bReal, &bImag, &aReal, &aImag, &bReal, &bImag, &ctxtReal39);
+    divComplexComplex(&cReal, &cImag, &aReal, &aImag, &cReal, &cImag, &ctxtReal39);
+    divComplexComplex(&dReal, &dImag, &aReal, &aImag, &dReal, &dImag, &ctxtReal39);
+    solveCubicEquation(&bReal, &bImag, &cReal, &cImag, &dReal, &dImag, &rReal, &rImag, &x1Real, &x1Imag, &x2Real, &x2Imag, &x3Real, &x3Imag, &ctxtReal75);
+    realRoots &= realIsZero(&x1Imag) && realIsZero(&x2Imag) && realIsZero(&x3Imag);
+  }
 
-
-  realRoots &= realIsZero(&x1Imag) && realIsZero(&x2Imag) && realIsZero(&x3Imag);
 
   if(realRoots) {
     reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
