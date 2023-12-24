@@ -64,7 +64,7 @@
 /*                                          <---------------------------------------------------------------------- 6 f shifted functions ------------------------------------------------------------------------->  */
 /*                                          <---------------------------------------------------------------------- 6 g shifted functions ------------------------------------------------------------------------->  */
 TO_QSPI const int16_t menu_ADV[]         = { ITM_SOLVE,                     ITM_SLVQ,                   ITM_FQX,                  ITM_PIn,               ITM_SIGMAn,                  -MNU_Sfdx,
-                                             ITM_PGMSLV,                    ITM_NULL,                   ITM_FDQX,                 ITM_iPIn,              ITM_iSIGMAn,                 ITM_PGMINT                    };
+                                             ITM_PGMSLV,                    ITM_SLVC,                   ITM_FDQX,                 ITM_iPIn,              ITM_iSIGMAn,                 ITM_PGMINT                    };
 
 TO_QSPI const int16_t menu_Sfdx[]        = { ITM_NULL,                      ITM_DRAW,                   VAR_ACC,                  VAR_LLIM,              VAR_ULIM,                    ITM_INTEGRAL                  };
 

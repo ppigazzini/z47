@@ -21,11 +21,254 @@
 #include "mathematics/slvc.h"
 
 #include "constantPointers.h"
+#include "debug.h"
+#include "error.h"
 #include "mathematics/comparisonReals.h"
 #include "mathematics/cubeRoot.h"
+#include "mathematics/division.h"
 #include "mathematics/multiplication.h"
 #include "mathematics/squareRoot.h"
+#include "registers.h"
+#include "registerValueConversions.h"
 #include "typeDefinitions.h"
+
+#include "wp43.h"
+
+
+/********************************************//**
+ * \brief (d, c, b, a) ==> (x1, x2, r) c ==> regL
+ * enables stack lift and refreshes the stack
+ *
+ * \param[in] unusedButMandatoryParameter uint16_t
+ * \return void
+ ***********************************************/
+void fnSlvc(uint16_t unusedButMandatoryParameter) {
+#if !defined(SAVE_SPACE_DM42_12)
+  bool_t realCoefs=true, realRoots=true;
+  real_t aReal, bReal, cReal, dReal, rReal, x1Real, x2Real, x3Real;
+  real_t aImag, bImag, cImag, dImag, rImag, x1Imag, x2Imag, x3Imag;
+
+  switch(getRegisterDataType(REGISTER_X)) {
+    case dtLongInteger: {
+      convertLongIntegerRegisterToReal(REGISTER_X, &dReal, &ctxtReal75);
+      realZero(&dImag);
+      break;
+    }
+
+    case dtReal34: {
+      real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &dReal);
+      realZero(&dImag);
+      break;
+    }
+
+    case dtComplex34: {
+      real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &dReal);
+      real34ToReal(REGISTER_IMAG34_DATA(REGISTER_X), &dImag);
+      realCoefs = false;
+      break;
+    }
+
+    default: {
+      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+        sprintf(errorMessage, "cannot SLVC with %s in X", getRegisterDataTypeName(REGISTER_X, true, false));
+        moreInfoOnError("In function fnSlvc:", errorMessage, NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+      return;
+    }
+  }
+
+  switch(getRegisterDataType(REGISTER_Y)) {
+    case dtLongInteger: {
+      convertLongIntegerRegisterToReal(REGISTER_Y, &cReal, &ctxtReal75);
+      realZero(&cImag);
+      break;
+    }
+
+    case dtReal34: {
+      real34ToReal(REGISTER_REAL34_DATA(REGISTER_Y), &cReal);
+      realZero(&cImag);
+      break;
+    }
+
+    case dtComplex34: {
+      real34ToReal(REGISTER_REAL34_DATA(REGISTER_Y), &cReal);
+      real34ToReal(REGISTER_IMAG34_DATA(REGISTER_Y), &cImag);
+      realCoefs = false;
+      break;
+    }
+
+    default: {
+      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_Y);
+      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+        sprintf(errorMessage, "cannot SLVC with %s in Y", getRegisterDataTypeName(REGISTER_Y, true, false));
+        moreInfoOnError("In function fnSlvc:", errorMessage, NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+      return;
+    }
+  }
+
+  switch(getRegisterDataType(REGISTER_Z)) {
+    case dtLongInteger: {
+      convertLongIntegerRegisterToReal(REGISTER_Z, &bReal, &ctxtReal75);
+      realZero(&bImag);
+      break;
+    }
+
+    case dtReal34: {
+      real34ToReal(REGISTER_REAL34_DATA(REGISTER_Z), &bReal);
+      realZero(&bImag);
+      break;
+    }
+
+    case dtComplex34: {
+      real34ToReal(REGISTER_REAL34_DATA(REGISTER_Z), &bReal);
+      real34ToReal(REGISTER_IMAG34_DATA(REGISTER_Z), &bImag);
+      realCoefs = false;
+      break;
+    }
+
+    default: {
+      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_Z);
+      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+        sprintf(errorMessage, "cannot SLVC with %s in Z", getRegisterDataTypeName(REGISTER_Z, true, false));
+        moreInfoOnError("In function fnSlvc:", errorMessage, NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+      return;
+    }
+  }
+
+
+  switch(getRegisterDataType(REGISTER_T)) {
+    case dtLongInteger: {
+      convertLongIntegerRegisterToReal(REGISTER_T, &aReal, &ctxtReal75);
+      realZero(&aImag);
+      break;
+    }
+
+    case dtReal34: {
+      real34ToReal(REGISTER_REAL34_DATA(REGISTER_T), &aReal);
+      realZero(&aImag);
+      break;
+    }
+
+    case dtComplex34: {
+      real34ToReal(REGISTER_REAL34_DATA(REGISTER_T), &aReal);
+      real34ToReal(REGISTER_IMAG34_DATA(REGISTER_T), &aImag);
+      realCoefs = false;
+      break;
+    }
+
+    default: {
+      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_T);
+      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+        sprintf(errorMessage, "cannot SLVC with %s in T", getRegisterDataTypeName(REGISTER_T, true, false));
+        moreInfoOnError("In function fnSlvc:", errorMessage, NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+      return;
+    }
+  }
+
+
+
+  if(   realIsZero(&aReal) && realIsZero(&aImag)
+     && realIsZero(&bReal) && realIsZero(&bImag)
+     && realIsZero(&cReal) && realIsZero(&cImag)) {
+    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+      moreInfoOnError("In function fnSlvc:", "cannot use 0 for Y, Z and T as input of SLVC", NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+    return;
+  }
+
+  if(   realIsZero(&aReal) && realIsZero(&aImag) ) {
+    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+      moreInfoOnError("In function fnSlvc:", "cannot use 0 for T as input of SLVC", NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+    return;
+  }
+
+
+  if(!saveLastX()) {
+    return;
+  }
+
+  if(realCoefs == false) {
+    realRoots = false;
+  }
+
+  
+  divComplexComplex(&bReal, &bImag, &aReal, &aImag, &bReal, &bImag, &ctxtReal39);
+  divComplexComplex(&cReal, &cImag, &aReal, &aImag, &cReal, &cImag, &ctxtReal39);
+  divComplexComplex(&dReal, &dImag, &aReal, &aImag, &dReal, &dImag, &ctxtReal39);
+
+  solveCubicEquation(&bReal, &bImag, &cReal, &cImag, &dReal, &dImag, &rReal, &rImag, &x1Real, &x1Imag, &x2Real, &x2Imag, &x3Real, &x3Imag, &ctxtReal75);
+
+
+  realRoots &= realIsZero(&x1Imag) && realIsZero(&x2Imag) && realIsZero(&x3Imag);
+
+  if(realRoots) {
+    reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+    reallocateRegister(REGISTER_Y, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+    reallocateRegister(REGISTER_Z, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+    reallocateRegister(REGISTER_T, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+    convertRealToReal34ResultRegister(&x1Real, REGISTER_X);
+    convertRealToReal34ResultRegister(&x2Real, REGISTER_Y);
+    convertRealToReal34ResultRegister(&x3Real, REGISTER_Z);
+    realToReal34(&rReal,  REGISTER_REAL34_DATA(REGISTER_T));
+  }
+  else { // !realRoots
+    if(realIsZero(&x1Imag)) { // x1 is real
+      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+      convertRealToReal34ResultRegister(&x1Real, REGISTER_X);
+    }
+    else {
+      reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
+      convertRealToReal34ResultRegister(&x1Real, REGISTER_X);
+      convertRealToImag34ResultRegister(&x1Imag, REGISTER_X);
+    }
+
+    if(realIsZero(&x2Imag)) { // x2 is real
+      reallocateRegister(REGISTER_Y, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+      convertRealToReal34ResultRegister(&x2Real, REGISTER_Y);
+    }
+    else {
+      reallocateRegister(REGISTER_Y, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
+      convertRealToReal34ResultRegister(&x2Real, REGISTER_Y);
+      convertRealToImag34ResultRegister(&x2Imag, REGISTER_Y);
+    }
+
+    if(realIsZero(&x3Imag)) { // x2 is real
+      reallocateRegister(REGISTER_Z, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+      convertRealToReal34ResultRegister(&x3Real, REGISTER_Y);
+    }
+    else {
+      reallocateRegister(REGISTER_Z, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
+      convertRealToReal34ResultRegister(&x3Real, REGISTER_Z);
+      convertRealToImag34ResultRegister(&x3Imag, REGISTER_Z);
+    }
+
+    if(realIsZero(&rImag)) { // q3r2 is real
+      reallocateRegister(REGISTER_T, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+      convertRealToReal34ResultRegister(&rReal, REGISTER_T);
+    }
+    else {
+      reallocateRegister(REGISTER_T, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
+      convertRealToReal34ResultRegister(&rReal, REGISTER_T);
+      convertRealToImag34ResultRegister(&rImag, REGISTER_T);
+    }
+  }
+
+  adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
+  adjustResult(REGISTER_Y, false, true, REGISTER_Y, -1, -1);
+  adjustResult(REGISTER_Z, false, true, REGISTER_Z, -1, -1);
+  adjustResult(REGISTER_T, false, true, REGISTER_T, -1, -1);
+#endif // !SAVE_SPACE_DM42_12
+}
+
+
+
 
 static bool_t _checkConditionNumberOfAddSub(const real_t *operand1, const real_t *operand2, const real_t *res, realContext_t *realContext) {
   real_t conditionNumber1, conditionNumber2;
@@ -113,12 +356,12 @@ void solveCubicEquation(const real_t *c2Real, const real_t *c2Imag, const real_t
   mulComplexComplex(&rr, &ri, const_0, const_root3on2, &rr, &ri, realContext);
 
   // roots
-  realMultiply(c2Real, const_1on3, x2Real, realContext), realMultiply(c2Imag, const_1on3, x2Imag, realContext);
-  realSubtract(&qr, x2Real, x1Real, realContext), realSubtract(&qi, x2Imag, x1Imag, realContext);
-  realMultiply(&qr, const_1on2, x3Real, realContext), realMultiply(&qi, const_1on2, x3Imag, realContext);
-  realAdd(x3Real, x2Real, x3Real, realContext), realAdd(x3Imag, x2Imag, x3Imag, realContext);
-  realChangeSign(x3Real); realChangeSign(x3Imag);
-  _realCheckedAdd(x3Real, &rr, x2Real, realContext), _realCheckedAdd(x3Imag, &ri, x2Imag, realContext);
+  realMultiply(c2Real, const_1on3, x2Real, realContext),   realMultiply(c2Imag, const_1on3, x2Imag, realContext);
+  _realCheckedSubtract(&qr, x2Real, x1Real, realContext), _realCheckedSubtract(&qi, x2Imag, x1Imag, realContext);
+  realMultiply(&qr, const_1on2, x3Real, realContext),      realMultiply(&qi, const_1on2, x3Imag, realContext);
+  _realCheckedAdd(x3Real, x2Real, x3Real, realContext),   _realCheckedAdd(x3Imag, x2Imag, x3Imag, realContext);
+  realChangeSign(x3Real);                                  realChangeSign(x3Imag);
+  _realCheckedAdd(x3Real, &rr, x2Real, realContext),      _realCheckedAdd(x3Imag, &ri, x2Imag, realContext);
   _realCheckedSubtract(x3Real, &rr, x3Real, realContext), _realCheckedSubtract(x3Imag, &ri, x3Imag, realContext);
 
   // discriminant
