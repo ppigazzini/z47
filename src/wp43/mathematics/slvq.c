@@ -29,9 +29,11 @@
 #include "mathematics/toRect.h"
 #include "registers.h"
 #include "registerValueConversions.h"
+#include "stack.h"
 
 #include "wp43.h"
 
+#undef DISCRIMINANT //Note the testSuite tests were revised to remove the discriminant
 
 /********************************************//**
  * \brief (c, b, a) ==> (x1, x2, r) c ==> regL
@@ -42,99 +44,16 @@
  ***********************************************/
 void fnSlvq(uint16_t unusedButMandatoryParameter) {
 #if !defined(SAVE_SPACE_DM42_12)
-  bool_t realCoefs=true, realRoots=true;
+  bool_t realCoefs=false, realRoots=true, complexCoefs=false;
   real_t aReal, bReal, cReal, rReal, x1Real, x2Real;
   real_t aImag, bImag, cImag, rImag, x1Imag, x2Imag;
 
-  switch(getRegisterDataType(REGISTER_X)) {
-    case dtLongInteger: {
-      convertLongIntegerRegisterToReal(REGISTER_X, &cReal, &ctxtReal75);
-      realZero(&cImag);
-      break;
-    }
-
-    case dtReal34: {
-      real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &cReal);
-      realZero(&cImag);
-      break;
-    }
-
-    case dtComplex34: {
-      real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &cReal);
-      real34ToReal(REGISTER_IMAG34_DATA(REGISTER_X), &cImag);
-      realCoefs = false;
-      break;
-    }
-
-    default: {
-      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
-        sprintf(errorMessage, "cannot SLVQ with %s in X", getRegisterDataTypeName(REGISTER_X, true, false));
-        moreInfoOnError("In function fnSlqv:", errorMessage, NULL, NULL);
-      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-      return;
-    }
+  if(!(getRegisterAsComplexOrReal(REGISTER_X, &cReal, &cImag, &complexCoefs) &&
+       getRegisterAsComplexOrReal(REGISTER_Y, &bReal, &bImag, &complexCoefs) &&
+       getRegisterAsComplexOrReal(REGISTER_Z, &aReal, &aImag, &complexCoefs))) {
+    return;
   }
-
-  switch(getRegisterDataType(REGISTER_Y)) {
-    case dtLongInteger: {
-      convertLongIntegerRegisterToReal(REGISTER_Y, &bReal, &ctxtReal75);
-      realZero(&bImag);
-      break;
-    }
-
-    case dtReal34: {
-      real34ToReal(REGISTER_REAL34_DATA(REGISTER_Y), &bReal);
-      realZero(&bImag);
-      break;
-    }
-
-    case dtComplex34: {
-      real34ToReal(REGISTER_REAL34_DATA(REGISTER_Y), &bReal);
-      real34ToReal(REGISTER_IMAG34_DATA(REGISTER_Y), &bImag);
-      realCoefs = false;
-      break;
-    }
-
-    default: {
-      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_Y);
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
-        sprintf(errorMessage, "cannot SLVQ with %s in Y", getRegisterDataTypeName(REGISTER_Y, true, false));
-        moreInfoOnError("In function fnSlqv:", errorMessage, NULL, NULL);
-      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-      return;
-    }
-  }
-
-  switch(getRegisterDataType(REGISTER_Z)) {
-    case dtLongInteger: {
-      convertLongIntegerRegisterToReal(REGISTER_Z, &aReal, &ctxtReal75);
-      realZero(&aImag);
-      break;
-    }
-
-    case dtReal34: {
-      real34ToReal(REGISTER_REAL34_DATA(REGISTER_Z), &aReal);
-      realZero(&aImag);
-      break;
-    }
-
-    case dtComplex34: {
-      real34ToReal(REGISTER_REAL34_DATA(REGISTER_Z), &aReal);
-      real34ToReal(REGISTER_IMAG34_DATA(REGISTER_Z), &aImag);
-      realCoefs = false;
-      break;
-    }
-
-    default: {
-      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_Z);
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
-        sprintf(errorMessage, "cannot SLVQ with %s in Z", getRegisterDataTypeName(REGISTER_Z, true, false));
-        moreInfoOnError("In function fnSlqv:", errorMessage, NULL, NULL);
-      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-      return;
-    }
-  }
+  realCoefs = !complexCoefs;
 
   if(   realIsZero(&aReal) && realIsZero(&aImag)
      && realIsZero(&bReal) && realIsZero(&bImag)) {
@@ -160,10 +79,14 @@ void fnSlvq(uint16_t unusedButMandatoryParameter) {
   if(realRoots) {
     reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
     reallocateRegister(REGISTER_Y, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
-    reallocateRegister(REGISTER_Z, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+    #ifdef DISCRIMINANT
+      reallocateRegister(REGISTER_Z, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+    #endif //DISCRIMINANT
     convertRealToReal34ResultRegister(&x1Real, REGISTER_X);
     convertRealToReal34ResultRegister(&x2Real, REGISTER_Y);
-    realToReal34(&rReal,  REGISTER_REAL34_DATA(REGISTER_Z));
+    #ifdef DISCRIMINANT
+      realToReal34(&rReal,  REGISTER_REAL34_DATA(REGISTER_Z));
+    #endif //DISCRIMINANT
   }
   else { // !realRoots
     if(realIsZero(&x1Imag)) { // x1 is real
@@ -186,20 +109,26 @@ void fnSlvq(uint16_t unusedButMandatoryParameter) {
       convertRealToImag34ResultRegister(&x2Imag, REGISTER_Y);
     }
 
-    if(realIsZero(&rImag)) { // r is real
-      reallocateRegister(REGISTER_Z, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
-      convertRealToReal34ResultRegister(&rReal, REGISTER_Z);
-    }
-    else {
-      reallocateRegister(REGISTER_Z, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
-      convertRealToReal34ResultRegister(&rReal, REGISTER_Z);
-      convertRealToImag34ResultRegister(&rImag, REGISTER_Z);
-    }
+    #ifdef DISCRIMINANT
+      if(realIsZero(&rImag)) { // r is real
+        reallocateRegister(REGISTER_Z, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+        convertRealToReal34ResultRegister(&rReal, REGISTER_Z);
+      }
+      else {
+        reallocateRegister(REGISTER_Z, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
+        convertRealToReal34ResultRegister(&rReal, REGISTER_Z);
+        convertRealToImag34ResultRegister(&rImag, REGISTER_Z);
+      }
+    #endif //DISCRIMINANT
   }
 
   adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
   adjustResult(REGISTER_Y, false, true, REGISTER_Y, -1, -1);
-  adjustResult(REGISTER_Z, false, true, REGISTER_Z, -1, -1);
+  #ifdef DISCRIMINANT
+    adjustResult(REGISTER_Z, false, true, REGISTER_Z, -1, -1);
+  #else
+    fnDropZ(0);
+  #endif //DISCRIMINANT
 #endif // !SAVE_SPACE_DM42_12
 }
 
@@ -215,10 +144,10 @@ void solveQuadraticEquation(const real_t *aReal, const real_t *aImag, const real
       realMultiply(bReal, bReal, rReal, realContext);
       realZero(rImag);
 
-      // x1 = x2 = -c/b
+      // x1 = -c/b, x2 = NaN
       realDivide(cReal, bReal, x1Real, realContext);
       realChangeSign(x1Real);
-      realCopy(x1Real, x2Real);
+      realCopy(const_NaN, x2Real);
 
       realZero(x1Imag);
       realZero(x2Imag);
@@ -295,12 +224,12 @@ void solveQuadraticEquation(const real_t *aReal, const real_t *aImag, const real
       // r = b²
       mulComplexComplex(bReal, bImag, bReal, bImag, rReal, rImag, realContext);
 
-      // x1 = x2 = -c/b
+      // x1 = -c/b, x2 = NaN
       divComplexComplex(cReal, cImag, bReal, bImag, x1Real, x1Imag, realContext);
       realChangeSign(x1Real);
       realChangeSign(x1Imag);
-      realCopy(x1Real, x2Real);
-      realCopy(x1Imag, x2Imag);
+      realCopy(const_NaN, x2Real);
+      realCopy(const_NaN, x2Imag);
     }
     else if(realIsZero(cReal) && realIsZero(cImag)) {
       // ax² + bx = x(ax + b) = 0   (a is not 0 here)
