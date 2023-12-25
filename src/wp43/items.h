@@ -2207,7 +2207,7 @@
 #define MNU_GAP_L                   2151
 #define MNU_GAP_RX                  2152
 #define MNU_GAP_R                   2153
-#define ITM_SET_TO_TEXT             2154
+#define ITM_2154                      2154
 #define ITM_GRP_L                   2155
 #define ITM_GRP1_L_OF               2156
 #define ITM_GRP1_L                  2157
