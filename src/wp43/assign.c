@@ -74,9 +74,9 @@ TO_QSPI const calcKey_t kbd_std_C47[37] = { //C47 Layout, in the default positio
   {72,                  ITM_1,                ITM_ASSIGN,           -MNU_KEYS,            ITM_1,                ITM_X,                ITM_x,                ITM_1,                ITM_1               },
   {73,                  ITM_2,                ITM_USERMODE,         -MNU_ALPHAFN,         ITM_2,                ITM_Y,                ITM_y,                ITM_2,                ITM_2               },
   {74,                  ITM_3,                -MNU_PFN,             -MNU_LOOP,            ITM_3,                ITM_Z,                ITM_z,                ITM_3,                ITM_3               },
-  {75,                  ITM_SUB,              -MNU_PRINT,           -MNU_IO,              ITM_MINUS,            ITM_UNDERSCORE,       ITM_MINUS,            ITM_MINUS,            ITM_SUB             },
+  {75,                  ITM_SUB,              -MNU_PRINT,           -MNU_IO,              ITM_MINUS,            ITM_UNDERSCORE,       ITM_EulerE,           ITM_MINUS,            ITM_SUB             },
   {81,                  ITM_EXIT1,            ITM_OFF,              ITM_SNAP,             ITM_EXIT1,            ITM_EXIT1,            ITM_OFF,              ITM_SNAP,             ITM_EXIT1           },
-  {82,                  ITM_0,                ITM_VIEW,             ITM_TIMER,            ITM_0,                ITM_COLON,            ITM_0,                ITM_0,                ITM_0               },
+  {82,                  ITM_0,                ITM_VIEW,             ITM_TIMER,            ITM_0,                ITM_COLON,            ITM_SEMICOLON,        ITM_0,                ITM_0               },
   {83,                  ITM_PERIOD,           ITM_SHOW,             -MNU_INFO,            ITM_PERIOD,           ITM_COMMA,            ITM_NUMBER_SIGN,      ITM_PERIOD,           ITM_PERIOD          },
   {84,                  ITM_RS,               ITM_PR,               -MNU_TEST,            ITM_NULL,             ITM_QUESTION_MARK,    ITM_EXCLAMATION_MARK, ITM_SLASH,            ITM_NULL            },
   {85,                  ITM_ADD,              -MNU_CATALOG,         -MNU_CONST,           ITM_PLUS,             ITM_SPACE,            ITM_EQUAL,            ITM_PLUS,             ITM_ADD             }
@@ -84,8 +84,51 @@ TO_QSPI const calcKey_t kbd_std_C47[37] = { //C47 Layout, in the default positio
 };
 
 
-#if defined(PC_BUILD)
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#if defined(PC_BUILD)
 // E47 Layout from Layout_template_automation template: Do not change manually
 //This variable is to store in flash memory
 TO_QSPI const calcKey_t kbd_std_E47[37] = {
@@ -168,7 +211,7 @@ TO_QSPI const calcKey_t kbd_std_V47[37] = {
   {74,                  ITM_3,                -MNU_PFN,             -MNU_LOOP,            ITM_3,                ITM_Z,                ITM_z,                ITM_3,                ITM_3               },
   {75,                  ITM_DOWN1,            ITM_SST,              ITM_FLGSV,            ITM_DOWN1,            ITM_DOWN1,            CHR_caseDN,           ITM_DOWN_ARROW,       ITM_DOWN1           },
   {81,                  ITM_DIV,              -MNU_CATALOG,         -MNU_CONST,           ITM_OBELUS,           ITM_SPACE,            ITM_OBELUS,           ITM_OBELUS,           ITM_DIV             },
-  {82,                  ITM_0,                ITM_VIEW,             ITM_TIMER,            ITM_0,                ITM_COLON,            ITM_0,                ITM_0,                ITM_0               },
+  {82,                  ITM_0,                ITM_VIEW,             ITM_TIMER,            ITM_0,                ITM_COLON,            ITM_SEMICOLON,        ITM_0,                ITM_0               },
   {83,                  ITM_PERIOD,           ITM_SHOW,             -MNU_INFO,            ITM_PERIOD,           ITM_COMMA,            ITM_PERIOD,           ITM_PERIOD,           ITM_PERIOD          },
   {84,                  ITM_RS,               ITM_PR,               -MNU_TEST,            ITM_NULL,             ITM_QUESTION_MARK,    ITM_SLASH,            ITM_SLASH,            ITM_NULL            },
   {85,                  ITM_EXIT1,            ITM_OFF,              ITM_SNAP,             ITM_EXIT1,            ITM_EXIT1,            ITM_OFF,              ITM_SNAP,             ITM_EXIT1           }
@@ -303,12 +346,55 @@ TO_QSPI const calcKey_t kbd_std_DM42[37] = {
   {74,                  ITM_3,                -MNU_PFN,             -MNU_LOOP,            ITM_3,                ITM_Z,                ITM_z,                ITM_3,                ITM_3               },
   {75,                  ITM_SUB,              -MNU_PRINT,           -MNU_IO,              ITM_MINUS,            ITM_UNDERSCORE,       ITM_MINUS,            ITM_MINUS,            ITM_SUB             },
   {81,                  ITM_EXIT1,            ITM_OFF,              ITM_SNAP,             ITM_EXIT1,            ITM_EXIT1,            ITM_OFF,              ITM_SNAP,             ITM_EXIT1           },
-  {82,                  ITM_0,                -MNU_BLUE_C47,        ITM_TIMER,            ITM_0,                ITM_COLON,            ITM_0,                ITM_0,                ITM_0               },
+  {82,                  ITM_0,                -MNU_BLUE_C47,        ITM_TIMER,            ITM_0,                ITM_COLON,            ITM_SEMICOLON,        ITM_0,                ITM_0               },
   {83,                  ITM_PERIOD,           ITM_SHOW,             -MNU_INFO,            ITM_PERIOD,           ITM_COMMA,            ITM_NUMBER_SIGN,      ITM_PERIOD,           ITM_PERIOD          },
   {84,                  ITM_RS,               ITM_PR,               -MNU_TEST,            ITM_NULL,             ITM_QUESTION_MARK,    ITM_EXCLAMATION_MARK, ITM_SLASH,            ITM_NULL            },
   {85,                  ITM_ADD,              -MNU_CATALOG,         -MNU_CONST,           ITM_PLUS,             ITM_SPACE,            ITM_EQUAL,            ITM_PLUS,             ITM_ADD             }
   //keyID,              primary,              fShifted,             gShifted,             keyLblAim,            primaryAim,           fShiftedAim,          gShiftedAim,          primaryTam         
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -351,7 +437,7 @@ TO_QSPI const calcKey_t kbd_std_R47[37] = {
   {75,                  ITM_SUB,              -MNU_PROB,            -MNU_FIN,             ITM_MINUS,            ITM_Y,                ITM_y,                ITM_MINUS,            ITM_SUB             },
   {81,                  ITM_EXIT1,            ITM_OFF,              ITM_SNAP,             ITM_EXIT1,            ITM_EXIT1,            ITM_OFF,              ITM_SNAP,             ITM_EXIT1           },
   {82,                  ITM_0,                ITM_VIEW,             -MNU_IO,              ITM_0,                ITM_Z,                ITM_z,                ITM_0,                ITM_0               },
-  {83,                  ITM_PERIOD,           ITM_SHOW,             ITM_TGLFRT,           ITM_PERIOD,           ITM_COMMA,            ITM_0,                ITM_PERIOD,           ITM_PERIOD          },
+  {83,                  ITM_PERIOD,           ITM_SHOW,             ITM_TGLFRT,           ITM_PERIOD,           ITM_COMMA,            ITM_SEMICOLON,        ITM_PERIOD,           ITM_PERIOD          },
   {84,                  ITM_RS,               ITM_PR,               -MNU_PFN,             ITM_NULL,             ITM_QUESTION_MARK,    ITM_COLON,            ITM_SLASH,            ITM_NULL            },
   {85,                  ITM_ADD,              -MNU_CATALOG,         -MNU_CONST,           ITM_PLUS,             ITM_SPACE,            ITM_EQUAL,            ITM_PLUS,             ITM_ADD             }
   //keyID,              primary,              fShifted,             gShifted,             keyLblAim,            primaryAim,           fShiftedAim,          gShiftedAim,          primaryTam         
@@ -396,7 +482,7 @@ TO_QSPI const calcKey_t kbd_std_R47bkfg[37] = {
   {75,                  ITM_SUB,              -MNU_PROB,            -MNU_FIN,             ITM_MINUS,            ITM_Y,                ITM_y,                ITM_MINUS,            ITM_SUB             },
   {81,                  ITM_EXIT1,            ITM_OFF,              ITM_SNAP,             ITM_EXIT1,            ITM_EXIT1,            ITM_OFF,              ITM_SNAP,             ITM_EXIT1           },
   {82,                  ITM_0,                ITM_VIEW,             -MNU_IO,              ITM_0,                ITM_Z,                ITM_z,                ITM_0,                ITM_0               },
-  {83,                  ITM_PERIOD,           ITM_SHOW,             ITM_TGLFRT,           ITM_PERIOD,           ITM_COMMA,            ITM_0,                ITM_PERIOD,           ITM_PERIOD          },
+  {83,                  ITM_PERIOD,           ITM_SHOW,             ITM_TGLFRT,           ITM_PERIOD,           ITM_COMMA,            ITM_SEMICOLON,        ITM_PERIOD,           ITM_PERIOD          },
   {84,                  ITM_RS,               ITM_PR,               -MNU_PFN,             ITM_NULL,             ITM_QUESTION_MARK,    ITM_COLON,            ITM_SLASH,            ITM_NULL            },
   {85,                  ITM_ADD,              -MNU_CATALOG,         -MNU_CONST,           ITM_PLUS,             ITM_SPACE,            ITM_EQUAL,            ITM_PLUS,             ITM_ADD             }
   //keyID,              primary,              fShifted,             gShifted,             keyLblAim,            primaryAim,           fShiftedAim,          gShiftedAim,          primaryTam         
@@ -443,7 +529,7 @@ TO_QSPI const calcKey_t kbd_std_R47fgbk[37] = {
   {75,                  ITM_SUB,              -MNU_PROB,            -MNU_FIN,             ITM_MINUS,            ITM_Y,                ITM_y,                ITM_MINUS,            ITM_SUB             },
   {81,                  ITM_EXIT1,            ITM_OFF,              ITM_SNAP,             ITM_EXIT1,            ITM_EXIT1,            ITM_OFF,              ITM_SNAP,             ITM_EXIT1           },
   {82,                  ITM_0,                ITM_VIEW,             -MNU_IO,              ITM_0,                ITM_Z,                ITM_z,                ITM_0,                ITM_0               },
-  {83,                  ITM_PERIOD,           ITM_SHOW,             ITM_TGLFRT,           ITM_PERIOD,           ITM_COMMA,            ITM_0,                ITM_PERIOD,           ITM_PERIOD          },
+  {83,                  ITM_PERIOD,           ITM_SHOW,             ITM_TGLFRT,           ITM_PERIOD,           ITM_COMMA,            ITM_SEMICOLON,        ITM_PERIOD,           ITM_PERIOD          },
   {84,                  ITM_RS,               ITM_PR,               -MNU_PFN,             ITM_NULL,             ITM_QUESTION_MARK,    ITM_COLON,            ITM_SLASH,            ITM_NULL            },
   {85,                  ITM_ADD,              -MNU_CATALOG,         -MNU_CONST,           ITM_PLUS,             ITM_SPACE,            ITM_EQUAL,            ITM_PLUS,             ITM_ADD             }
   //keyID,              primary,              fShifted,             gShifted,             keyLblAim,            primaryAim,           fShiftedAim,          gShiftedAim,          primaryTam         
@@ -490,12 +576,11 @@ TO_QSPI const calcKey_t kbd_std_R47fg_g[37] = {
   {75,                  ITM_SUB,              -MNU_PROB,            -MNU_FIN,             ITM_MINUS,            ITM_Y,                ITM_y,                ITM_MINUS,            ITM_SUB             },
   {81,                  ITM_EXIT1,            ITM_OFF,              ITM_SNAP,             ITM_EXIT1,            ITM_EXIT1,            ITM_OFF,              ITM_SNAP,             ITM_EXIT1           },
   {82,                  ITM_0,                ITM_VIEW,             -MNU_IO,              ITM_0,                ITM_Z,                ITM_z,                ITM_0,                ITM_0               },
-  {83,                  ITM_PERIOD,           ITM_SHOW,             ITM_TGLFRT,           ITM_PERIOD,           ITM_COMMA,            ITM_0,                ITM_PERIOD,           ITM_PERIOD          },
+  {83,                  ITM_PERIOD,           ITM_SHOW,             ITM_TGLFRT,           ITM_PERIOD,           ITM_COMMA,            ITM_SEMICOLON,        ITM_PERIOD,           ITM_PERIOD          },
   {84,                  ITM_RS,               ITM_PR,               -MNU_PFN,             ITM_NULL,             ITM_QUESTION_MARK,    ITM_COLON,            ITM_SLASH,            ITM_NULL            },
   {85,                  ITM_ADD,              -MNU_CATALOG,         -MNU_CONST,           ITM_PLUS,             ITM_SPACE,            ITM_EQUAL,            ITM_PLUS,             ITM_ADD             }
   //keyID,              primary,              fShifted,             gShifted,             keyLblAim,            primaryAim,           fShiftedAim,          gShiftedAim,          primaryTam         
 };
-
 
 
 void fnAssign(uint16_t mode) {

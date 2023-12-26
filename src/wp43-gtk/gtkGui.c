@@ -2145,7 +2145,7 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
         }
       }
 
-      if(numlockReplacements(2,max(key->primaryAim, -key->primaryAim),!numLock,false,false) == ITM_SPACE) {
+      if(false && numlockReplacements(2,max(key->primaryAim, -key->primaryAim),!numLock,false,false) == ITM_SPACE) {
         lbl[0]=0xC2;          //JM SPACE the space character is not in the font. \rather use . . for space.
         lbl[1]=0xB7;          //JM SPACE
         lbl[2]='_';           //JM SPACE
@@ -2154,37 +2154,12 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
         lbl[5]=0;             //JM SPACE
       }
       else {
-
-        //JM Exception, to change 0 to ";", when !NL & SHFT-0
-        if(numlockReplacements(3,max(key->fShiftedAim, -key->fShiftedAim),numLock,true,false) != max(key->fShiftedAim, -key->fShiftedAim)) {
-          stringToUtf8(indexOfItems[numlockReplacements(4,max(key->fShiftedAim, -key->fShiftedAim),numLock,true,false)].itemSoftmenuName, lbl);
-        }
+        stringToUtf8(indexOfItems[numlockReplacements(4,max(key->fShiftedAim, -key->fShiftedAim),numLock,true,false)].itemSoftmenuName, lbl);
       }
-
-      //if(key->primary == ITM_RS) {    //JM R/S change to /
-      //  lbl[0]=47;                      //JM DIV
-      //  lbl[1]=0;                       //JM
-      //}                               //JM
 
       gtk_label_set_label(GTK_LABEL(lblF), (gchar*)lbl);
       if(key->primary < 0) gtk_widget_set_name(lblF, "fShiftedUnderline"); else  gtk_widget_set_name(lblF, "fShifted");
     }
-
-
-    //dr
-    void labelCaptionAimFaChr(const calcKey_t* key, GtkWidget* lblF, int chrF) {
-      uint8_t lbl[22];
-
-      stringToUtf8(indexOfItems[chrF].itemSoftmenuName, lbl);
-
-      if(key->primary == 0) {
-        lbl[0] = 0;
-      }
-
-      gtk_label_set_label(GTK_LABEL(lblF), (gchar*)lbl);
-      if(key->fShiftedAim < 0) gtk_widget_set_name(lblF, "AimfShiftedUnderline"); else  gtk_widget_set_name(lblF, "fShifted");
-    }
-
 
 
     void labelCaptionAim(const calcKey_t *key, GtkWidget *button, GtkWidget *lblGreek, GtkWidget *lblL) {
@@ -2652,13 +2627,10 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
       hideAllWidgets();
 
       labelCaptionAimFa(keys, lbl21Fa);                     //vv dr - new AIM
-      //labelCaptionAimFaChr(   keys,   lbl21Fa, ITM_ALPHA);          //JM new
       labelCaptionAim(keys++, btn21A, lbl21Gr, lbl21L);     //vv dr - new AIM
       labelCaptionAimFa(keys, lbl22Fa);                     //vv dr - new AIM
-      //labelCaptionAimFaChr(   keys,   lbl22Fa, ITM_NUMBER_SIGN);          //JM new
       labelCaptionAim(keys++, btn22A, lbl22Gr, lbl22L);
       labelCaptionAimFa(keys, lbl23Fa);                     //vv dr - new AIM
-      //labelCaptionAimFaChr(   keys,   lbl23Fa, ITM_SQUARE_ROOT);          //JM
       labelCaptionAim(keys++, btn23A, lbl23Gr, lbl23L);
       labelCaptionAimFa(keys, lbl24Fa);                     //vv dr - new AIM //JM newest AIM
       labelCaptionAim(keys++, btn24A, lbl24Gr, lbl24L);
@@ -2673,26 +2645,23 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
       labelCaptionAim(keys++, btn32A, lbl32Gr, lbl32L);
       labelCaptionAimFa(keys, lbl33Fa);                     //vv dr - new AIM //JM newest AIM
       labelCaptionAim(keys++, btn33A, lbl33Gr, lbl33L);
-      //labelCaptionAimFaChr(   keys,   lbl34Fa, CHR_case);          //JMALPHA2 new
       labelCaptionAimFa(keys, lbl34Fa);                     //vv dr - new AIM //JM newest AIM
       labelCaptionAim(keys++, btn34A, lbl34Gr, lbl34L);
-      //labelCaptionAimFaChr(   keys,   lbl35Fa, CHR_num);          //JMALPHA2 new
       labelCaptionAimFa(keys, lbl35Fa);                     //vv dr - new AIM //JM newest AIM
       labelCaptionAim(keys++, btn35A, lbl35Gr, lbl35L);
       labelCaptionAimFa(keys, lbl36Fa);                     //vv dr - new AIM //JM newest AIM
       labelCaptionAim(keys++, btn36A, lbl36Gr, lbl36L);     //^^
 
-      labelCaptionAimFaChr(   keys,   lbl41Fa, ITM_XSWAP);  //JM
+      labelCaptionAimFa(keys, lbl41Fa);                     //vv dr - new AIM //JM newest AIM
       labelCaptionAim(keys++, btn41,  lbl41Gr, lbl41L);
-      //labelCaptionAimFaChr(   keys,   lbl42Fa, ITM_ex);     //vv dr - new AIM
       labelCaptionAimFa(keys, lbl42Fa);                     //vv dr - new AIM //JM newest AIM
       labelCaptionAim(keys++, btn42A, lbl42Gr, lbl42L);
-      //labelCaptionAimFaChr(   keys,   lbl43Fa, ITM_PLUS_MINUS);
       labelCaptionAimFa(keys, lbl43Fa);                     //vv dr - new AIM //JM newest AIM
       labelCaptionAim(keys++, btn43A, lbl43Gr, lbl43L);
       labelCaptionAimFa(keys, lbl44Fa);                     //vv dr - new AIM //JM newest AIM
       labelCaptionAim(keys++, btn44A, lbl44Gr, lbl44L);     //^^
-      labelCaptionAimFaChr(   keys,   lbl45Fa, ITM_CLA);  //JM
+
+      labelCaptionAimFa(keys, lbl45Fa);                     //vv dr - new AIM //JM newest AIM
       labelCaptionAim(keys++, btn45,  lbl45Gr, lbl45L);
 
       labelCaptionAim(keys++, btn51,  lbl51Gr, lbl51L);
@@ -2734,11 +2703,6 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
       labelCaptionAim(keys++, btn84A, lbl84Gr, lbl84L);
       labelCaptionAimFa(keys, lbl85Fa);
       labelCaptionAim(keys++, btn85A, lbl85Gr, lbl85L);     //^^
-
-      //gtk_widget_show(lblOn);
-      //JM7 gtk_widget_show(lblConfirmY);  //JM Y/N
-      //JM7 gtk_widget_show(lblConfirmN);  //JM Y/N
-
 
       gtk_widget_show(btn11);
       gtk_widget_show(btn12);
