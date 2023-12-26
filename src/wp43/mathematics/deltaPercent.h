@@ -21,11 +21,9 @@
   #define DELTAPERCENT_H
 
   #include <stdint.h>
+  #include "typeDefinitions.h"
+  #include "realType.h"
 
   void fnDeltaPercent(uint16_t unusedButMandatoryParameter);
-
-  void deltaPercentLonILonI(void);
-  void deltaPercentLonIReal(void);
-  void deltaPercentRealLonI(void);
-  void deltaPercentRealReal(void);
+  bool_t deltaPercentXmeanReal(real_t *xReal, real_t *rReal, realContext_t *realContext);
 #endif // !DELTAPERCENT_H
