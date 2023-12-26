@@ -29,68 +29,6 @@
 
 #include "wp43.h"
 
-static void dataTypeError(void);
-
-TO_QSPI void (* const deltaPercent[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS][NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])(void) = {
-// regX |    regY ==>    1                     2                     3              4              5              6              7              8              9              10
-//      V                Long integer          Real34                Complex34      Time           Date           String         Real34 mat     Complex34 mat  Short integer  Config data
-/*  1 Long integer  */ { deltaPercentLonILonI, deltaPercentRealLonI, dataTypeError, dataTypeError, dataTypeError, dataTypeError, dataTypeError, dataTypeError, dataTypeError, dataTypeError},
-/*  2 Real34        */ { deltaPercentLonIReal, deltaPercentRealReal, dataTypeError, dataTypeError, dataTypeError, dataTypeError, dataTypeError, dataTypeError, dataTypeError, dataTypeError},
-/*  3 Complex34     */ { dataTypeError,        dataTypeError,        dataTypeError, dataTypeError, dataTypeError, dataTypeError, dataTypeError, dataTypeError, dataTypeError, dataTypeError},
-/*  4 Time          */ { dataTypeError,        dataTypeError,        dataTypeError, dataTypeError, dataTypeError, dataTypeError, dataTypeError, dataTypeError, dataTypeError, dataTypeError},
-/*  5 Date          */ { dataTypeError,        dataTypeError,        dataTypeError, dataTypeError, dataTypeError, dataTypeError, dataTypeError, dataTypeError, dataTypeError, dataTypeError},
-/*  6 String        */ { dataTypeError,        dataTypeError,        dataTypeError, dataTypeError, dataTypeError, dataTypeError, dataTypeError, dataTypeError, dataTypeError, dataTypeError},
-/*  7 Real34 mat    */ { dataTypeError,        dataTypeError,        dataTypeError, dataTypeError, dataTypeError, dataTypeError, dataTypeError, dataTypeError, dataTypeError, dataTypeError},
-/*  8 Complex34 mat */ { dataTypeError,        dataTypeError,        dataTypeError, dataTypeError, dataTypeError, dataTypeError, dataTypeError, dataTypeError, dataTypeError, dataTypeError},
-/*  9 Short integer */ { dataTypeError,        dataTypeError,        dataTypeError, dataTypeError, dataTypeError, dataTypeError, dataTypeError, dataTypeError, dataTypeError, dataTypeError},
-/* 10 Config data   */ { dataTypeError,        dataTypeError,        dataTypeError, dataTypeError, dataTypeError, dataTypeError, dataTypeError, dataTypeError, dataTypeError, dataTypeError}
-};
-
-//=============================================================================
-// Error handling
-//-----------------------------------------------------------------------------
-
-/********************************************//**
- * \brief Data type error in %T
- *
- * \param void
- * \return void
- ***********************************************/
-static void dataTypeError(void) {
-  displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-
-  #if(EXTRA_INFO_ON_CALC_ERROR == 1)
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-    sprintf(errorMessage, "cannot calculate delta percentage for %s", getRegisterDataTypeName(REGISTER_X, true, false));
-    moreInfoOnError("In function fnDeltaPercent:", errorMessage, NULL, NULL);
-  #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-}
-
-//=============================================================================
-// Main function
-//-----------------------------------------------------------------------------
-
-/********************************************//**
- * \brief regX ==> regL and DeltaPercent(regX, RegY) ==> regX
- * enables stack lift and refreshes the stack.
- * Calculate x*y/100
- *
- * \param[in] unusedButMandatoryParameter uint16_t
- * \return void
- ***********************************************/
-void fnDeltaPercent(uint16_t unusedButMandatoryParameter) {
-  if(!saveLastX()) {
-    return;
-  }
-
-  deltaPercent[getRegisterDataType(REGISTER_X)][getRegisterDataType(REGISTER_Y)]();
-
-  adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
-
-  temporaryInformation = TI_PERCD;
-}
-
-
 //=============================================================================
 // Delta% calculation functions
 //-----------------------------------------------------------------------------
@@ -132,78 +70,34 @@ static bool_t deltaPercentReal(real_t *xReal, real_t *yReal, real_t *rReal, real
   return true;
 }
 
+//=============================================================================
+// Main function
+//-----------------------------------------------------------------------------
+
 /********************************************//**
- * \brief DeltaPercent(Y(long integer), X(long integer)) ==> X(real34)
+ * \brief regX ==> regL and DeltaPercent(regX, RegY) ==> regX
+ * enables stack lift and refreshes the stack.
+ * Calculate x*y/100
  *
- * \param void
+ * \param[in] unusedButMandatoryParameter uint16_t
  * \return void
  ***********************************************/
-void deltaPercentLonILonI(void) {
+void fnDeltaPercent(uint16_t unusedButMandatoryParameter) {
   real_t xReal, yReal;
   real_t rReal;
 
-  convertLongIntegerRegisterToReal(REGISTER_X, &xReal, &ctxtReal75);
-  convertLongIntegerRegisterToReal(REGISTER_Y, &yReal, &ctxtReal75);
+  if (!getRegisterAsReal(REGISTER_X, &xReal) || !getRegisterAsReal(REGISTER_Y, &yReal))
+    return;
 
-  if(deltaPercentReal(&xReal, &yReal, &rReal, &ctxtReal75)) {
-    reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
-    convertRealToReal34ResultRegister(&rReal, REGISTER_X);
-    setRegisterAngularMode(REGISTER_X, amNone);
-  }
-}
+  if(!saveLastX())
+    return;
 
-/********************************************//**
- * \brief DeltaPercent(Y(long integer), X(real34)) ==> X(real34)
- *
- * \param void
- * \return void
- ***********************************************/
-void deltaPercentLonIReal(void) {
-  real_t xReal, yReal;
-  real_t rReal;
+  deltaPercentReal(&xReal, &yReal, &rReal, &ctxtReal39);
 
-  real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &xReal);
-  convertLongIntegerRegisterToReal(REGISTER_Y, &yReal, &ctxtReal75);
+  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+  convertRealToReal34ResultRegister(&rReal, REGISTER_X);
+  setRegisterAngularMode(REGISTER_X, amNone);
+  adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
 
-  if(deltaPercentReal(&xReal, &yReal, &rReal, &ctxtReal75)) {
-    convertRealToReal34ResultRegister(&rReal, REGISTER_X);
-  }
-}
-
-/********************************************//**
- * \brief DeltaPercent(Y(real34), X(long integer)) ==> X(real34)
- *
- * \param void
- * \return void
- ***********************************************/
-void deltaPercentRealLonI(void) {
-  real_t xReal, yReal;
-  real_t rReal;
-
-  convertLongIntegerRegisterToReal(REGISTER_X, &xReal, &ctxtReal75);
-  real34ToReal(REGISTER_REAL34_DATA(REGISTER_Y), &yReal);
-
-  if(deltaPercentReal(&xReal, &yReal, &rReal, &ctxtReal75)) {
-    reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
-    convertRealToReal34ResultRegister(&rReal, REGISTER_X);
-    setRegisterAngularMode(REGISTER_X, amNone);
-  }
-}
-
-/********************************************//**
- * \brief DeltaPercent(Y(real34), X(real34)) ==> X(real34)
- *
- * \param void
- * \return void
- ***********************************************/
-void deltaPercentRealReal(void) {
-  real_t xReal, yReal;
-  real_t rReal;
-
-  real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &xReal);
-  real34ToReal(REGISTER_REAL34_DATA(REGISTER_Y), &yReal);
-
-  if(deltaPercentReal(&xReal, &yReal, &rReal, &ctxtReal34)) {
-    convertRealToReal34ResultRegister(&rReal, REGISTER_X);
-  }
+  temporaryInformation = TI_PERCD;
 }

@@ -33,28 +33,31 @@ In:  FL_ASLIFT=1 FL_CPXRES=1 RY=Real:"123.456" RX=LonI:"456"
 Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=LonI:"456" RY=Real:"123.456" RX=Real:"269.3623639191290824261275272161741835147744945567651632970451010886"
 
 ;=======================================
-; Error case: ERROR_INVALID_DATA_INPUT_FOR_OP
+; Short integer case
 ;=======================================
 In:  FL_ASLIFT=0  RY=ShoI:"10#10" RX=LonI:"450"
-Out: EC=24 FL_ASLIFT=0 RY=ShoI:"10#10" RX=LonI:"450"
+Out: EC=0 FL_ASLIFT=1 RY=ShoI:"10#10" RX=Real:"4400"
 
 In:  FL_ASLIFT=0  RY=LonI:"10" RX=ShoI:"20#10"
-Out: EC=24 FL_ASLIFT=0 RY=LonI:"10" RX=ShoI:"20#10"
+Out: EC=0 FL_ASLIFT=1 RY=LonI:"10" RX=Real:"100"
 
 In:  FL_ASLIFT=0  RY=ShoI:"10#10" RX=ShoI:"20#10"
-Out: EC=24 FL_ASLIFT=0 RY=ShoI:"10#10" RX=ShoI:"20#10"
+Out: EC=0 FL_ASLIFT=1 RY=ShoI:"10#10" RX=Real:"100"
 
+In:  FL_ASLIFT=0  RY=Real:"10.0" RX=ShoI:"450#10"
+Out: EC=0 FL_ASLIFT=1 RY=Real:"10.0" RX=Real:"4400"
+
+In:  FL_ASLIFT=0  RY=ShoI:"10#10" RX=Real:"20.0"
+Out: EC=0 FL_ASLIFT=1 RY=ShoI:"10#10" RX=Real:"100.0"
+
+;=======================================
+; Error case: ERROR_INVALID_DATA_INPUT_FOR_OP
+;=======================================
 In:  FL_ASLIFT=0  RY=ShoI:"10#10" RX=Stri:"ABC"
 Out: EC=24 FL_ASLIFT=0 RY=ShoI:"10#10" RX=Stri:"ABC"
 
 In:  FL_ASLIFT=0  RY=Real:"10.0" RX=Stri:"ABC"
 Out: EC=24 FL_ASLIFT=0 RY=Real:"10.0" RX=Stri:"ABC"
-
-In:  FL_ASLIFT=0  RY=Real:"10.0" RX=ShoI:"100#10"
-Out: EC=24 FL_ASLIFT=0 RY=Real:"10.0" RX=ShoI:"100#10"
-
-In:  FL_ASLIFT=0  RY=ShoI:"10#10" RX=Real:"100.0"
-Out: EC=24 FL_ASLIFT=0 RY=ShoI:"10#10" RX=Real:"100.0"
 
 ;=======================================
 ; Error case: ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN

@@ -19,6 +19,7 @@
  ***********************************************/
 
 #include "mathematics/deltaPercentXmean.h"
+#include "mathematics/deltaPercent.h"
 
 #include "constantPointers.h"
 #include "debug.h"
@@ -29,66 +30,12 @@
 
 #include "wp43.h"
 
-static void dataTypeError(void);
-
-TO_QSPI void (* const deltaPercentXmean[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])(void) = {
-// regX ==>    1                      2                      3              4              5              6              7              8              9              10
-//             Long integer           Real34                 Complex34      Time           Date           String         Real34 mat     Complex34 mat  Short integer  Config data
-               deltaPercentXmeanLonI, deltaPercentXmeanReal, dataTypeError, dataTypeError, dataTypeError, dataTypeError, dataTypeError, dataTypeError, dataTypeError, dataTypeError
-};
-
-
-//=============================================================================
-// Error handling
-//-----------------------------------------------------------------------------
-
-/********************************************//**
- * \brief Data type error in %T
- *
- * \param void
- * \return void
- ***********************************************/
-static void dataTypeError(void) {
-  displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-
-  #if(EXTRA_INFO_ON_CALC_ERROR == 1)
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-    sprintf(errorMessage, "cannot calculate delta percentage for %s", getRegisterDataTypeName(REGISTER_X, true, false));
-    moreInfoOnError("In function deltaPercentXmean:", errorMessage, NULL, NULL);
-  #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-}
-
-//=============================================================================
-// Main function
-//-----------------------------------------------------------------------------
-
-/********************************************//**
- * \brief regX ==> regL and deltaPercentXmean(regX) ==> regX
- * enables stack lift and refreshes the stack.
- *
- * \param[in] unusedButMandatoryParameter uint16_t
- * \return void
- ***********************************************/
-
-
-void fnDeltaPercentXmean(uint16_t unusedButMandatoryParameter) {
-  if(!saveLastX()) {
-    return;
-  }
-
-  deltaPercentXmean[getRegisterDataType(REGISTER_X)]();
-
-  adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
-
-  temporaryInformation = TI_PERCD;
-}
-
 
 //=============================================================================
 // Delta% calculation functions
 //-----------------------------------------------------------------------------
 
-bool_t deltaPercentXmeanReal_(real_t *xReal, real_t *rReal, realContext_t *realContext) {
+bool_t deltaPercentXmeanReal(real_t *xReal, real_t *rReal, realContext_t *realContext) {
 real_t yReal;
 
   realDivide(SIGMA_X, SIGMA_N, &yReal, &ctxtReal39);
@@ -127,38 +74,38 @@ real_t yReal;
   return true;
 }
 
+//=============================================================================
+// Main function
+//-----------------------------------------------------------------------------
+
 /********************************************//**
- * \brief deltaPercentXmean(Y(long integer), X(long integer)) ==> X(real34)
+ * \brief regX ==> regL and deltaPercentXmean(regX) ==> regX
+ * enables stack lift and refreshes the stack.
  *
- * \param void
+ * \param[in] unusedButMandatoryParameter uint16_t
  * \return void
  ***********************************************/
-void deltaPercentXmeanLonI(void) {
-  real_t xReal;
+
+
+void fnDeltaPercentXmean(uint16_t unusedButMandatoryParameter) {
+  real_t xReal, yReal;
   real_t rReal;
 
-  convertLongIntegerRegisterToReal(REGISTER_X, &xReal, &ctxtReal75);
+  if (!getRegisterAsReal(REGISTER_X, &xReal)
+          || !getRegisterAsReal(REGISTER_Y, &yReal))
+    return;
 
-  if(deltaPercentXmeanReal_(&xReal, &rReal, &ctxtReal75)) {
+  if(!saveLastX()) {
+    return;
+  }
+
+  if(deltaPercentXmeanReal(&xReal, &rReal, &ctxtReal75)) {
     reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
     convertRealToReal34ResultRegister(&rReal, REGISTER_X);
     setRegisterAngularMode(REGISTER_X, amNone);
   }
-}
 
-/********************************************//**
- * \brief deltaPercentXmean(Y(long integer), X(real34)) ==> X(real34)
- *
- * \param void
- * \return void
- ***********************************************/
-void deltaPercentXmeanReal(void) {
-  real_t xReal;
-  real_t rReal;
+  adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
 
-  real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &xReal);
-
-  if(deltaPercentXmeanReal_(&xReal, &rReal, &ctxtReal75)) {
-    convertRealToReal34ResultRegister(&rReal, REGISTER_X);
-  }
+  temporaryInformation = TI_PERCD;
 }
