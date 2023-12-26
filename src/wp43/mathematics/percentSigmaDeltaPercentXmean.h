@@ -23,7 +23,4 @@
   #include <stdint.h>
 
   void fnPcSigmaDeltaPcXmean(uint16_t unusedButMandatoryParameter);
-
-  void pcSigmaDeltaPcXmeanLonI(void);
-  void pcSigmaDeltaPcXmeanReal(void);
 #endif // !PCSIGMADPCMEAN_H

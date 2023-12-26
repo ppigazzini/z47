@@ -33,65 +33,6 @@
 
 #include "wp43.h"
 
-static void dataTypeError(void);
-
-TO_QSPI void (* const pcSigmaDeltaPcXmean[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])(void) = {
-// regX ==>    1                        2                        3              4              5              6              7              8              9              10
-//             Long integer             Real34                   Complex34      Time           Date           String         Real34 mat     Complex34 mat  Short integer  Config data
-               pcSigmaDeltaPcXmeanLonI, pcSigmaDeltaPcXmeanReal, dataTypeError, dataTypeError, dataTypeError, dataTypeError, dataTypeError, dataTypeError, dataTypeError, dataTypeError
-};
-
-
-//=============================================================================
-// Error handling
-//-----------------------------------------------------------------------------
-
-/********************************************//**
- * \brief Data type error in %T
- *
- * \param void
- * \return void
- ***********************************************/
-static void dataTypeError(void) {
-  displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_L);
-
-  #if(EXTRA_INFO_ON_CALC_ERROR == 1)
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_L);
-    sprintf(errorMessage, "cannot calculate delta percentage for %s", getRegisterDataTypeName(REGISTER_L, true, false));
-    moreInfoOnError("In function fnPcSigmaDeltaPcXmean:", errorMessage, NULL, NULL);
-  #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-}
-
-//=============================================================================
-// Main function
-//-----------------------------------------------------------------------------
-
-/********************************************//**
- * \brief regX ==> regL and deltaPercentXmean(regX) ==> regX
- * enables stack lift and refreshes the stack.
- *
- * \param[in] unusedButMandatoryParameter uint16_t
- * \return void
- ***********************************************/
-
-
-void fnPcSigmaDeltaPcXmean(uint16_t unusedButMandatoryParameter) {
-  if(!saveLastX()) {
-    return;
-  }
-
-//    setSystemFlag(FLAG_ASLIFT);
-    liftStack();
-
-  pcSigmaDeltaPcXmean[getRegisterDataType(REGISTER_L)]();
-
-  adjustResult(REGISTER_X, false, true, REGISTER_L, -1, -1);
-  adjustResult(REGISTER_Y, false, true, REGISTER_L, -1, -1);
-
-  temporaryInformation = TI_PERCD2;
-}
-
-
 //=============================================================================
 // Delta% calculation functions
 //-----------------------------------------------------------------------------
@@ -131,19 +72,44 @@ void pcSigmaDeltaPcXmeanLonI(void) {
  * \return void
  ***********************************************/
 void pcSigmaDeltaPcXmeanReal(void) {
+}
+
+//=============================================================================
+// Main function
+//-----------------------------------------------------------------------------
+
+/********************************************//**
+ * \brief regX ==> regL and deltaPercentXmean(regX) ==> regX
+ * enables stack lift and refreshes the stack.
+ *
+ * \param[in] unusedButMandatoryParameter uint16_t
+ * \return void
+ ***********************************************/
+
+
+void fnPcSigmaDeltaPcXmean(uint16_t unusedButMandatoryParameter) {
   real_t xReal;
   real_t rReal;
 
-  real34ToReal(REGISTER_REAL34_DATA(REGISTER_L), &xReal);
+  if (!getRegisterAsReal(REGISTER_X, &xReal))
+    return;
 
-  if(percentSigma(&xReal, &rReal, &ctxtReal39)) {
-    if(getRegisterDataType(REGISTER_Y) != dtReal34) {
+  if(!saveLastX()) {
+    return;
+  }
+  liftStack();
+
+  if(percentSigma(&xReal, &rReal, &ctxtReal75)) {
+    if(getRegisterDataType(REGISTER_Y) != dtReal34)
       reallocateRegister(REGISTER_Y, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
-    }
     convertRealToReal34ResultRegister(&rReal, REGISTER_Y);
   }
 
-  if(deltaPercentXmeanReal(&xReal, &rReal, &ctxtReal75)) {
+  if(deltaPercentXmeanReal(&xReal, &rReal, &ctxtReal75))
     convertRealToReal34ResultRegister(&rReal, REGISTER_X);
-  }
+
+  adjustResult(REGISTER_X, false, true, REGISTER_L, -1, -1);
+  adjustResult(REGISTER_Y, false, true, REGISTER_L, -1, -1);
+
+  temporaryInformation = TI_PERCD2;
 }
