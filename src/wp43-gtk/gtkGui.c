@@ -2098,11 +2098,7 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
         lbl[0] = 0;
       }
 
-      //if(lbl[0] == ' ') {    //JM Space replace with lines below
-      //  lbl[0] = '_';
-      //}
-
-      if(lbl[0] == ' ') {     //JM SPACE |  OPEN BOX 9251,  0xE2 0x90 0xA3  |  0xE2 0x90 0xA0 for SP.
+      if(lbl[0] == 32 && lbl[1] == 0) {     //JM SPACE |  OPEN BOX 9251,  0xE2 0x90 0xA3  |  0xE2 0x90 0xA0 for SP.
         lbl[0]=0xC2;          //JM SPACE the space character is not in the font. \rather use . . for space.
         lbl[1]=0xB7;          //JM SPACE
         lbl[2]='_';           //JM SPACE
@@ -2135,17 +2131,18 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
 
       if(key->primaryAim == ITM_NULL) {
         lbl[0] = 0;
-      }
-      else {
-        if( (ITM_A <= key->primaryAim && key->primaryAim <= ITM_Z)) {             //if in upper case, show lower case on yellow
+      } else if( (ITM_A <= key->primaryAim && key->primaryAim <= ITM_Z)) {             //if in upper case, show lower case on yellow
           stringToUtf8(indexOfItems[((max(key->primaryAim, -key->primaryAim)) + ((alphaCase == AC_UPPER) ? 26:0 ))].itemSoftmenuName, lbl);
-        }
-        else {                                                                                               //
-          stringToUtf8(indexOfItems[numlockReplacements(1,max(key->primaryAim, -key->primaryAim),!numLock,false,false)].itemSoftmenuName, lbl);
-        }
       }
+      //JM Exception, to change 0 to ";", when !NL & SHFT-0
+//      else if(numlockReplacements(3,max(key->fShiftedAim, -key->fShiftedAim),numLock,true,false) != max(key->fShiftedAim, -key->fShiftedAim)) {
+else          stringToUtf8(indexOfItems[numlockReplacements(4,max(key->fShiftedAim, -key->fShiftedAim),numLock,true,false)].itemSoftmenuName, lbl);
+//      } 
+//      else {                                                                                               //
+//          stringToUtf8(indexOfItems[numlockReplacements(1,max(key->primaryAim, -key->primaryAim),!numLock,false,false)].itemSoftmenuName, lbl);
+//      }
 
-      if(false && numlockReplacements(2,max(key->primaryAim, -key->primaryAim),!numLock,false,false) == ITM_SPACE) {
+      if(lbl[0] == 32 && lbl[1]==0) { 
         lbl[0]=0xC2;          //JM SPACE the space character is not in the font. \rather use . . for space.
         lbl[1]=0xB7;          //JM SPACE
         lbl[2]='_';           //JM SPACE
@@ -2153,13 +2150,12 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
         lbl[4]=0xb7;          //JM SPACE
         lbl[5]=0;             //JM SPACE
       }
-      else {
-        stringToUtf8(indexOfItems[numlockReplacements(4,max(key->fShiftedAim, -key->fShiftedAim),numLock,true,false)].itemSoftmenuName, lbl);
-      }
 
       gtk_label_set_label(GTK_LABEL(lblF), (gchar*)lbl);
       if(key->primary < 0) gtk_widget_set_name(lblF, "fShiftedUnderline"); else  gtk_widget_set_name(lblF, "fShifted");
     }
+
+
 
 
     void labelCaptionAim(const calcKey_t *key, GtkWidget *button, GtkWidget *lblGreek, GtkWidget *lblL) {
@@ -2169,22 +2165,22 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
         lbl[0] = 0;
       }
       else {
-
         if( shiftG && (ITM_A <= key->primaryAim && key->primaryAim <= ITM_Z)) {
           stringToUtf8(indexOfItems[numlockReplacements(5,max(key->gShiftedAim, -key->gShiftedAim), numLock, shiftF, shiftG)].itemSoftmenuName, lbl);
         }
         else {
-
           if( ((!shiftF && (alphaCase == AC_LOWER)) || ( shiftF && (alphaCase == AC_UPPER))) && (ITM_A <= key->primaryAim && key->primaryAim <= ITM_Z)) {
             stringToUtf8(indexOfItems[numlockReplacements(5,max(key->primaryAim, -key->primaryAim) + 26, numLock, shiftF, shiftG)].itemSoftmenuName, lbl);
           }
           else {
+            if(shiftF) stringToUtf8(indexOfItems[numlockReplacements(6,max(key->fShiftedAim, -key->fShiftedAim), numLock, shiftF, shiftG)].itemSoftmenuName, lbl); else
+            if(shiftG) stringToUtf8(indexOfItems[numlockReplacements(6,max(key->gShiftedAim, -key->gShiftedAim), numLock, shiftF, shiftG)].itemSoftmenuName, lbl); else
             stringToUtf8(indexOfItems[numlockReplacements(6,max(key->primaryAim, -key->primaryAim), numLock, shiftF, shiftG)].itemSoftmenuName, lbl);
           }
         }
       }
-      //printf("####B^^ %d %d %d %d\n", numLock, shiftF,shiftG,calcMode==CM_AIM);
-      if(numlockReplacements(7,max(key->primaryAim, -key->primaryAim), numLock, false, false) == ITM_SPACE) {
+      //printf("####B^^ %d %d %d %d %u %s\n", numLock, shiftF,shiftG,calcMode==CM_AIM, lbl[0], (gchar*)lbl);
+      if(lbl[0] == 32 && lbl[1]==0) { 
         lbl[0]=0xC2;          //JM SPACE the space character is not in the font. \rather use . . for space.
         lbl[1]=0xB7;          //JM SPACE
         lbl[2]='_';           //JM SPACE
@@ -2193,14 +2189,7 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
         lbl[5]=0;             //JM SPACE
       }
 
-      //JM remove this because CAT is not on keyboard anymore, but in menu
-      //JM was 85  //JM Changed CATALOG to CAT. Actually not needed, as the C43 already has a shortened CAT to start with
-      //JMif(strcmp((char *)lbl, "CAT") == 0 && key->keyId != 85) {
-      //JM  lbl[3] = 0;
-      //JM}
-
       gtk_button_set_label(GTK_BUTTON(button), (gchar *)lbl);
-
 
       //Specify the different categories of coloured zones
       if(key->keyLblAim == ITM_SHIFTf) {
@@ -2245,12 +2234,6 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
         lbl[0] = 0;
       }
 
-      //JM Removed as CAT is not Aim keyboard anymore
-      //JM was 85   //JM Changed CATALOG to CAT
-      //JM  else if(strcmp((char *)lbl, "CAT") == 0 && key->keyId != 85) {
-      //JM    lbl[3] = 0;
-      //JM  }
-
       /* JM TEST PROCEDURE TO TEST DISPLAY
       else if(key->gShiftedAim == ITM_DIGAMMA ) {
         lbl[0] = 0xCF;
@@ -2280,11 +2263,7 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
         stringToUtf8(indexOfItems[key->primaryAim].itemSoftmenuName, lbl);  //Convert to UTF !
       }
 
-      //if(lbl[0] == ' ') {     //JM Space replace with lines below
-      //  lbl[0] = '_';
-      //}
-
-      if(lbl[0] == ' ') {     //JM SPACE |  OPEN BOX 9251,  0xE2 0x90 0xA3  |  0xE2 0x90 0xA0 for SP.
+      if(lbl[0] == 32 && lbl[1] == 0) {     //JM SPACE |  OPEN BOX 9251,  0xE2 0x90 0xA3  |  0xE2 0x90 0xA0 for SP.
         lbl[0]=0xC2;          //JM SPACE the space character is not in the font. \rather use . . for space.
         lbl[1]=0xB7;          //JM SPACE
         lbl[1]=0xB7;          //JM SPACE
@@ -2294,20 +2273,8 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
         lbl[5]=0;             //JM SPACE
       }                       //JM SPACE
 
-      if(lbl[0] == 'Y') {                                       //JM Brighten up Y and N
-        //lbl[0] = '#';                                         //JM Brighten up Y and N
-        gtk_label_set_label(GTK_LABEL(lblL), (gchar *)lbl);     //JM Brighten up Y and N
-        gtk_widget_set_name(lblL, "YN");                        //JM Brighten up Y and N
-      }
-      else if(lbl[0] == 'N') {                                  //JM Brighten up Y and N
-        //lbl[0] = '#';                                         //JM Brighten up Y and N
-        gtk_label_set_label(GTK_LABEL(lblL), (gchar *)lbl);     //JM Brighten up Y and N
-        gtk_widget_set_name(lblL, "YN");                        //JM Brighten up Y and N
-      }
-      else {                                                    //JM Brighten up Y and N
-        gtk_label_set_label(GTK_LABEL(lblL), (gchar *)lbl);
-        gtk_widget_set_name(lblL, "letter");
-      }                                                         //JM Brighten up Y and N
+      gtk_label_set_label(GTK_LABEL(lblL), (gchar *)lbl);
+      gtk_widget_set_name(lblL, "letter");
     }
 
 

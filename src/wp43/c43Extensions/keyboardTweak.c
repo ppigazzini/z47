@@ -905,8 +905,8 @@ uint16_t numlockReplacements(uint16_t id, int16_t item, bool_t NL, bool_t FSHIFT
 
       uint16_t ix = 17;
       while(ix < 37) {
-        if(item == kbd_std[ix].primaryAim) {
-          getSystemFlag(FLAG_USER) ? kbd_usr[ix].gShiftedAim : kbd_std[ix].gShiftedAim; 
+        if(item == kbd_std[ix].primaryAim && kbd_std[ix].primaryAim != ITM_EXIT1 && kbd_std[ix].primaryAim != ITM_UP1 && kbd_std[ix].primaryAim != ITM_DOWN1) {
+          *item1 = getSystemFlag(FLAG_USER) ? kbd_usr[ix].gShiftedAim : kbd_std[ix].gShiftedAim; 
           break;
         } 
         ix++;
@@ -914,11 +914,12 @@ uint16_t numlockReplacements(uint16_t id, int16_t item, bool_t NL, bool_t FSHIFT
     }
 
     else if(NL && FSHIFT) {                           //JMvv Numlock translation: Assumes lower case  is NOT active
+                                                      //Originally for C47: ITM_MINUS, ITM_PLUS, ITM_SLASH, ITM_PERIOD, ITM_0
 
       uint16_t ix = 31;
       while(ix < 37) {
-        if(item == kbd_std[ix].gShiftedAim) {
-          getSystemFlag(FLAG_USER) ? kbd_usr[ix].primaryAim : kbd_std[ix].primaryAim; 
+        if(item == kbd_std[ix].gShiftedAim && kbd_std[ix].primaryAim != ITM_EXIT1 && kbd_std[ix].primaryAim != ITM_UP1 && kbd_std[ix].primaryAim != ITM_DOWN1) {
+          *item1 = getSystemFlag(FLAG_USER) ? kbd_usr[ix].primaryAim : kbd_std[ix].primaryAim; 
           break;
         } 
         ix++;
