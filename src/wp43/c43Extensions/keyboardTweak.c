@@ -872,10 +872,12 @@ uint16_t numlockReplacements(uint16_t id, int16_t item, bool_t NL, bool_t FSHIFT
 }
 
 
+
  //Note item1 MUST be set to 0 prior to calling.
  bool_t keyReplacements(int16_t item, int16_t *item1, bool_t NL, bool_t FSHIFT, bool_t GSHIFT) {
    //printf("####B>> %d %d\n", item, *item1);
    if(calcMode == CM_AIM || calcMode == CM_EIM || calcMode == CM_PEM || (tam.mode && tam.alpha) ) {
+
     if(GSHIFT) {        //ensure that sigma and delta stays uppercase
       switch(item) {
         case ITM_sigma:         *item1 = ITM_SIGMA;        break;
@@ -885,88 +887,38 @@ uint16_t numlockReplacements(uint16_t id, int16_t item, bool_t NL, bool_t FSHIFT
       }
     }
 
-/*  else if(GSHIFT) {           //If Gshift, it takes precedence
-      switch(item) {
-        case ITM_ADD:           *item1 = ITM_PLUS;          break;
-        case ITM_SUB:           *item1 = ITM_MINUS;         break;
-        case ITM_MULT:          *item1 = ITM_CROSS;         break;
-        case ITM_DIV:           *item1 = ITM_SLASH;         break;
-
-        case ITM_A:             *item1 = ITM_SIGMA;         break;
-        case ITM_B:             *item1 = ITM_CIRCUMFLEX;    break;
-        case ITM_C:             *item1 = ITM_ROOT_SIGN;     break;
-        case ITM_D:             *item1 = ITM_LG_SIGN;       break;
-        case ITM_E:             *item1 = ITM_LN_SIGN;       break;
-        case ITM_F:             *item1 = ITM_alpha;         break;
-        case ITM_G:             *item1 = ITM_VERTICAL_BAR;  break;
-        case ITM_H:             *item1 = ITM_DELTA;         break;
-        case ITM_I:             *item1 = ITM_pi;            break;
-        case ITM_J:             *item1 = ITM_SIN_SIGN;      break;
-        case ITM_K:             *item1 = ITM_COS_SIGN;      break;
-        case ITM_L:             *item1 = ITM_TAN_SIGN;      break;
-
-        case ITM_P:             *item1 = ITM_7;             break;
-        case ITM_Q:             *item1 = ITM_8;             break;
-        case ITM_R:             *item1 = ITM_9;             break;
-        case ITM_T:             *item1 = ITM_4;             break;
-        case ITM_U:             *item1 = ITM_5;             break;
-        case ITM_V:             *item1 = ITM_6;             break;
-        case ITM_X:             *item1 = ITM_1;             break;
-        case ITM_Y:             *item1 = ITM_2;             break;
-        case ITM_Z:             *item1 = ITM_3;             break;
-        case ITM_O:             *item1 = ITM_EEXCHR;        break; //STD_SUB_E_OUTLINE
-        case ITM_S:             *item1 = ITM_SLASH;         break;
-        case ITM_W:             *item1 = ITM_CROSS;         break;
-        case ITM_UNDERSCORE:    *item1 = ITM_MINUS;         break;
-        case ITM_SPACE:         *item1 = ITM_PLUS;          break;
-        case ITM_QUESTION_MARK: *item1 = ITM_SLASH;         break;
-        case ITM_COMMA:         *item1 = ITM_PERIOD;        break;
-        case ITM_COLON:         *item1 = ITM_0;             break;
-        default:                                            break;
-      }
-    } */
-
     else if(NL && !FSHIFT) {                           //JMvv Numlock translation: Assumes lower case  is NOT active
-      switch(item) {
-        case ITM_P:             *item1 = ITM_7;             break;
-        case ITM_Q:             *item1 = ITM_8;             break;
-        case ITM_R:             *item1 = ITM_9;             break;
-        case ITM_T:             *item1 = ITM_4;             break;
-        case ITM_U:             *item1 = ITM_5;             break;
-        case ITM_V:             *item1 = ITM_6;             break;
-        case ITM_X:             *item1 = ITM_1;             break;
-        case ITM_Y:             *item1 = ITM_2;             break;
-        case ITM_Z:             *item1 = ITM_3;             break;
-        case CHR_num:           *item1 = 0;                 break;
-        case CHR_case:          *item1 = 0;                 break;
-        case ITM_O:             *item1 = ITM_EEXCHR;        break; //STD_SUB_E_OUTLINE
-        case ITM_S:             *item1 = ITM_OBELUS;        break;
-        case ITM_W:             *item1 = ITM_MULT;          break;
-        case ITM_UNDERSCORE:    *item1 = ITM_MINUS;         break;
-        case ITM_SPACE:         *item1 = ITM_PLUS;          break;
-        case ITM_QUESTION_MARK: *item1 = ITM_SLASH;         break;
-        case ITM_COMMA:         *item1 = ITM_PERIOD;        break;
-        case ITM_COLON:         *item1 = ITM_0;             break;
-        default:                                            break;
+
+      uint16_t ix = 17;
+      while(ix < 37) {
+        if(item == kbd_std[ix].primaryAim && kbd_std[ix].primaryAim != ITM_EXIT1 && kbd_std[ix].primaryAim != ITM_UP1 && kbd_std[ix].primaryAim != ITM_DOWN1) {
+          *item1 = getSystemFlag(FLAG_USER) ? kbd_usr[ix].gShiftedAim : kbd_std[ix].gShiftedAim; 
+          break;
+        } 
+        ix++;
       }
     }
 
     else if(NL && FSHIFT) {                           //JMvv Numlock translation: Assumes lower case  is NOT active
-      switch(item) {
-        case ITM_MINUS:         *item1 = ITM_UNDERSCORE;    break;
-        case ITM_PLUS:          *item1 = ITM_SPACE;         break;
-        case ITM_SLASH:         *item1 = ITM_QUESTION_MARK; break;
-        case ITM_PERIOD:        *item1 = ITM_COMMA;         break;
-        case ITM_0:             *item1 = ITM_COLON;         break;
-        default:                                            break;
+                                                      //Originally for C47: ITM_MINUS, ITM_PLUS, ITM_SLASH, ITM_PERIOD, ITM_0
+
+      uint16_t ix = 31;
+      while(ix < 37) {
+        if(item == kbd_std[ix].gShiftedAim && kbd_std[ix].primaryAim != ITM_EXIT1 && kbd_std[ix].primaryAim != ITM_UP1 && kbd_std[ix].primaryAim != ITM_DOWN1) {
+          *item1 = getSystemFlag(FLAG_USER) ? kbd_usr[ix].primaryAim : kbd_std[ix].primaryAim; 
+          break;
+        } 
+        ix++;
       }
+
+
     } //JM Exception, to change 0 to ";", when !NL & FSHIFT-0
 
     else if(!NL && FSHIFT) {                           //JMvv Numlock translation: Assumes lower case  is NOT active
-      switch(item) {
-        case ITM_0:             *item1 = ITM_SEMICOLON;     break;
-        default: break;
-      }
+//      switch(item) {
+//        case ITM_0:             *item1 = ITM_SEMICOLON;     break;
+//        default: break;
+//      }
     }
   }
   return *item1 != 0;
