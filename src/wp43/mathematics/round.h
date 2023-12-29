@@ -31,7 +31,6 @@
     #define roundError typeError
   #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
 
-  void roundLonI (void);
   void roundTime (void);
   void roundDate (void);
   void roundRema (void);

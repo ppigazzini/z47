@@ -31,7 +31,6 @@
     #define floorError typeError
   #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
 
-  void floorLonI (void);
   void floorRema (void);
   void floorReal (void);
 #endif // !FLOOR_H

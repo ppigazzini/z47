@@ -32,12 +32,13 @@
 
 #include "wp43.h"
 
+static void roundNoOp (void);
 
 
 TO_QSPI void (* const Round[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])(void) = {
 // regX ==> 1            2          3          4          5          6           7          8           9             10
 //          Long integer Real34     Complex34  Time       Date       String      Real34 mat Complex34 m Short integer Config data
-            roundError,  roundReal, roundCplx, roundTime, roundDate, roundError, roundRema, roundCxma,  roundError,   roundError
+            roundNoOp,   roundReal, roundCplx, roundTime, roundDate, roundError, roundRema, roundCxma,  roundNoOp,    roundError
 };
 
 
@@ -76,6 +77,8 @@ void fnRound(uint16_t unusedButMandatoryParameter) {
 }
 
 
+static void roundNoOp(void) {
+}
 
 void roundTime(void) {
   real34_t real34, value34;

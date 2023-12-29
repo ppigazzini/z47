@@ -11,7 +11,7 @@ Func: fnRoundi
 
 
 ;=======================================
-; roundi(Long Integer) --> Error24
+; roundi(Long Integer) --> Long Integer
 ;=======================================
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"12345678901234567"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"12345678901234567" RX=LonI:"12345678901234567"
@@ -53,10 +53,10 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M2,3[0.1,0.2,0.4,0.6,0.8,0.9]" RX=ReM
 
 
 ;=======================================
-; roundi(Short Integer) --> Error24
+; roundi(Short Integer) --> Short Integer
 ;=======================================
 In:  FL_ASLIFT=0 FL_CPXRES=0 RX=ShoI:"5#7"
-Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=ShoI:"5#7"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ShoI:"5#7" RX=ShoI:"5#7"
 
 
 

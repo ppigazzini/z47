@@ -173,26 +173,6 @@ void fnArg_all(uint16_t unusedButMandatoryParameter) {
 }
 
 
-void fnRoundi2(uint16_t unusedButMandatoryParameter) {
-  if(getRegisterDataType(REGISTER_X) == dtLongInteger || getRegisterDataType(REGISTER_X) == dtShortInteger) {
-    //nothing
-  }
-  else {
-    fnRoundi(0);
-  }
-}
-
-
-void fnRound2(uint16_t unusedButMandatoryParameter) {
-  if(getRegisterDataType(REGISTER_X) == dtLongInteger || getRegisterDataType(REGISTER_X) == dtShortInteger) {
-    //nothing
-  }
-  else {
-    fnRound(0);
-  }
-}
-
-
 //=-=-=-=-=-=-==-=-
 //input is time or DMS
 //output is sexagesima coded decimal ddd.mmsssssss in the form of a normal decimal
