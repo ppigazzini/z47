@@ -88,7 +88,17 @@ void fpRema(void) {
 
 
 void fpShoI(void) {
-  *(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)) = 0;
+  uint64_t x, y = 0;
+
+  if (shortIntegerMode == SIM_1COMPL || shortIntegerMode == SIM_SIGNMT) {
+    /* These two modes support negative 0, so the fractional part of a negative
+     * number becomes -0 rather than +0.
+     */
+    x = *(REGISTER_SHORT_INTEGER_DATA(REGISTER_X));
+    if ((x & shortIntegerSignBit) != 0)
+      y = shortIntegerMode == SIM_1COMPL ? shortIntegerMask : shortIntegerSignBit;
+  }
+  *(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)) = y;
 }
 
 
