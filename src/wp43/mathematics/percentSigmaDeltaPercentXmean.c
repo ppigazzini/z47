@@ -30,49 +30,9 @@
 #include "registers.h"
 #include "registerValueConversions.h"
 #include "stack.h"
+#include "stats.h"
 
 #include "wp43.h"
-
-//=============================================================================
-// Delta% calculation functions
-//-----------------------------------------------------------------------------
-
-
-/********************************************//**
- * \brief pcSigmaDeltaPcXmeanReal(X(long integer)) ==> X(real34) ; Y(real34)
- *
- * \param void
- * \return void
- ***********************************************/
-void pcSigmaDeltaPcXmeanLonI(void) {
-  real_t xReal;
-  real_t rReal;
-
-  convertLongIntegerRegisterToReal(REGISTER_L, &xReal, &ctxtReal75);
-
-  if(percentSigma(&xReal, &rReal, &ctxtReal39)) {
-    if(getRegisterDataType(REGISTER_Y) != dtReal34) {
-      reallocateRegister(REGISTER_Y, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
-    }
-    convertRealToReal34ResultRegister(&rReal, REGISTER_Y);
-    setRegisterAngularMode(REGISTER_Y, amNone);
-  }
-
-  if(deltaPercentXmeanReal(&xReal, &rReal, &ctxtReal75)) {
-    reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
-    convertRealToReal34ResultRegister(&rReal, REGISTER_X);
-    setRegisterAngularMode(REGISTER_X, amNone);
-  }
-}
-
-/********************************************//**
- * \brief pcSigmaDeltaPcXmeanReal(X(real34)) ==> X(real34); Y(real34)
- *
- * \param void
- * \return void
- ***********************************************/
-void pcSigmaDeltaPcXmeanReal(void) {
-}
 
 //=============================================================================
 // Main function
@@ -91,6 +51,15 @@ void fnPcSigmaDeltaPcXmean(uint16_t unusedButMandatoryParameter) {
   real_t xReal;
   real_t rReal;
 
+  if(!checkMinimumDataPoints(const_1)) {
+    displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE, REGISTER_X);
+    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "There is no statistical data available!");
+      moreInfoOnError("In function fnPercentSigma:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+    return;
+  }
+
   if (!getRegisterAsReal(REGISTER_X, &xReal))
     return;
 
@@ -100,13 +69,14 @@ void fnPcSigmaDeltaPcXmean(uint16_t unusedButMandatoryParameter) {
   liftStack();
 
   if(percentSigma(&xReal, &rReal, &ctxtReal75)) {
-    if(getRegisterDataType(REGISTER_Y) != dtReal34)
-      reallocateRegister(REGISTER_Y, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+    reallocateRegister(REGISTER_Y, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
     convertRealToReal34ResultRegister(&rReal, REGISTER_Y);
   }
 
-  if(deltaPercentXmeanReal(&xReal, &rReal, &ctxtReal75))
+  if(deltaPercentXmeanReal(&xReal, &rReal, &ctxtReal75)) {
+    reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
     convertRealToReal34ResultRegister(&rReal, REGISTER_X);
+  }
 
   adjustResult(REGISTER_X, false, true, REGISTER_L, -1, -1);
   adjustResult(REGISTER_Y, false, true, REGISTER_L, -1, -1);

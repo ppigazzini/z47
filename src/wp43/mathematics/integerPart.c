@@ -29,12 +29,12 @@
 
 #include "wp43.h"
 
-
+static void ipNoOp(void);
 
 TO_QSPI void (* const ip[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])(void) = {
 // regX ==> 1            2       3         4        5        6        7          8           9             10
 //          Long integer Real34  complex34 Time     Date     String   Real34 mat Complex34 m Short integer Config data
-            ipLonI,      ipReal, ipError,  ipError, ipError, ipError, ipRema,    ipError,    ipShoI,       ipError
+            ipNoOp,      ipReal, ipError,  ipError, ipError, ipError, ipRema,    ipError,    ipNoOp,       ipError
 };
 
 
@@ -71,22 +71,13 @@ void fnIp(uint16_t unusedButMandatoryParameter) {
 
 
 
-void ipLonI(void) {
-  convertLongIntegerRegisterToReal34Register(REGISTER_X, REGISTER_X);
+static void ipNoOp(void) {
 }
 
 
 
 void ipRema(void) {
   elementwiseRema(ipReal);
-}
-
-
-
-void ipShoI(void) {
-//  convertShortIntegerRegisterToReal34Register(REGISTER_X, REGISTER_X);
-//  lastIntegerBase = 0;
-  convertShortIntegerRegisterToReal34Register(REGISTER_X, REGISTER_X);
 }
 
 

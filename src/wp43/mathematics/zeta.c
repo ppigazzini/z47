@@ -60,7 +60,6 @@ void fnZeta(uint16_t unusedButMandatoryParameter) {
     WP34S_Zeta(&xr, &rr, &ctxtReal39);
     reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
     convertRealToReal34ResultRegister(&rr, REGISTER_X);
-    setRegisterAngularMode(REGISTER_X, amNone);
   }
 
   adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);

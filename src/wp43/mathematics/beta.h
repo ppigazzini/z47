@@ -24,22 +24,4 @@
   #include <stdint.h>
 
   void fnBeta      (uint16_t unusedButMandatoryParameter);
-
-  #if(EXTRA_INFO_ON_CALC_ERROR == 1)
-    void betaError   (void);
-  #else // (EXTRA_INFO_ON_CALC_ERROR == 1)
-    #define betaError typeError
-  #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-
-  void betaLonILonI(void);
-  void betaRealLonI(void);
-  void betaCplxLonI(void);
-
-  void betaLonIReal(void);
-  void betaRealReal(void);
-  void betaCplxReal(void);
-
-  void betaLonICplx(void);
-  void betaRealCplx(void);
-  void betaCplxCplx(void);
 #endif // !BETA_H
