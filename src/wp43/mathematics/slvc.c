@@ -88,7 +88,7 @@ void fnSlvc(uint16_t unusedButMandatoryParameter) {
     divComplexComplex(&bReal, &bImag, &aReal, &aImag, &bReal, &bImag, &ctxtReal39);
     divComplexComplex(&cReal, &cImag, &aReal, &aImag, &cReal, &cImag, &ctxtReal39);
     divComplexComplex(&dReal, &dImag, &aReal, &aImag, &dReal, &dImag, &ctxtReal39);
-    solveCubicEquation(&bReal, &bImag, &cReal, &cImag, &dReal, &dImag, &rReal, &rImag, &x1Real, &x1Imag, &x2Real, &x2Imag, &x3Real, &x3Imag, &ctxtReal75);
+    solveCubicEquation(&bReal, &bImag, &cReal, &cImag, &dReal, &dImag, &rReal, &rImag, &x1Real, &x1Imag, &x2Real, &x2Imag, &x3Real, &x3Imag, &ctxtReal39);
     realRoots &= realIsZero(&x1Imag) && realIsZero(&x2Imag) && realIsZero(&x3Imag);
   }
 
@@ -161,6 +161,10 @@ void fnSlvc(uint16_t unusedButMandatoryParameter) {
   #else
     fnDropT(0);
   #endif //DISCRIMINANT
+
+  if(programRunStop == PGM_RUNNING) {
+    temporaryInformation = realRoots ? TI_TRUE : TI_FALSE;
+  }
 #endif // !SAVE_SPACE_DM42_12
 }
 
@@ -217,12 +221,11 @@ void solveCubicEquation(const real_t *c2Real, const real_t *c2Imag, const real_t
   // x^3 + b x^2 + c x + d = 0
   // Abramowitz & Stegun §3.8.2
   real_t qr, qi, rr, ri, s1r, s1i, s2r, s2i, ar, ai;
-
   // q = (c - b^2 / 3) / 3
   mulComplexComplex(c2Real, c2Imag, c2Real, c2Imag, &qr, &qi, realContext);
-  realMultiply(&qr, const_1on3, &qr, realContext), realMultiply(&qi, const_1on3, &qi, realContext);
+  realDivide(&qr, const_3, &qr, realContext), realDivide(&qi, const_3, &qi, realContext);
   realSubtract(c1Real, &qr, &qr, realContext), realSubtract(c1Imag, &qi, &qi, realContext);
-  realMultiply(&qr, const_1on3, &qr, realContext), realMultiply(&qi, const_1on3, &qi, realContext);
+  realDivide(&qr, const_3, &qr, realContext), realDivide(&qi, const_3, &qi, realContext);
 
   // r = (b c - 3 d) / 6 - b^3 / 27
   mulComplexComplex(c2Real, c2Imag, c1Real, c1Imag, &rr, &ri, realContext);
@@ -253,7 +256,7 @@ void solveCubicEquation(const real_t *c2Real, const real_t *c2Imag, const real_t
   mulComplexComplex(&rr, &ri, const_0, const_root3on2, &rr, &ri, realContext);
 
   // roots
-  realMultiply(c2Real, const_1on3, x2Real, realContext),   realMultiply(c2Imag, const_1on3, x2Imag, realContext);
+  realDivide(c2Real, const_3, x2Real, realContext),   realDivide(c2Imag, const_3, x2Imag, realContext);
   _realCheckedSubtract(&qr, x2Real, x1Real, realContext), _realCheckedSubtract(&qi, x2Imag, x1Imag, realContext);
   realMultiply(&qr, const_1on2, x3Real, realContext),      realMultiply(&qi, const_1on2, x3Imag, realContext);
   _realCheckedAdd(x3Real, x2Real, x3Real, realContext),   _realCheckedAdd(x3Imag, x2Imag, x3Imag, realContext);

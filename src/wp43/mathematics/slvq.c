@@ -129,6 +129,10 @@ void fnSlvq(uint16_t unusedButMandatoryParameter) {
   #else
     fnDropZ(0);
   #endif //DISCRIMINANT
+
+  if(programRunStop == PGM_RUNNING) {
+    temporaryInformation = realRoots ? TI_TRUE : TI_FALSE;
+  }
 #endif // !SAVE_SPACE_DM42_12
 }
 
