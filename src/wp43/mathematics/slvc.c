@@ -88,7 +88,7 @@ void fnSlvc(uint16_t unusedButMandatoryParameter) {
     divComplexComplex(&bReal, &bImag, &aReal, &aImag, &bReal, &bImag, &ctxtReal39);
     divComplexComplex(&cReal, &cImag, &aReal, &aImag, &cReal, &cImag, &ctxtReal39);
     divComplexComplex(&dReal, &dImag, &aReal, &aImag, &dReal, &dImag, &ctxtReal39);
-    solveCubicEquation(&bReal, &bImag, &cReal, &cImag, &dReal, &dImag, &rReal, &rImag, &x1Real, &x1Imag, &x2Real, &x2Imag, &x3Real, &x3Imag, &ctxtReal39);
+    solveCubicEquation(&bReal, &bImag, &cReal, &cImag, &dReal, &dImag, &rReal, &rImag, &x1Real, &x1Imag, &x2Real, &x2Imag, &x3Real, &x3Imag, &ctxtReal75);
     realRoots &= realIsZero(&x1Imag) && realIsZero(&x2Imag) && realIsZero(&x3Imag);
   }
 
@@ -100,9 +100,37 @@ void fnSlvc(uint16_t unusedButMandatoryParameter) {
     #ifdef DISCRIMINANT
       reallocateRegister(REGISTER_T, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
     #endif //DISCRIMINANT
-    convertRealToReal34ResultRegister(&x1Real, REGISTER_X);
-    convertRealToReal34ResultRegister(&x2Real, REGISTER_Y);
-    convertRealToReal34ResultRegister(&x3Real, REGISTER_Z);
+
+    if(realCompareAbsLessThan(&x1Real, &x2Real) && realCompareAbsLessThan(&x1Real, &x3Real)) {
+      convertRealToReal34ResultRegister(&x1Real, REGISTER_X);
+      if(realCompareAbsLessThan(&x2Real, &x3Real)) {
+        convertRealToReal34ResultRegister(&x2Real, REGISTER_Y);
+        convertRealToReal34ResultRegister(&x3Real, REGISTER_Z);
+      } else {
+        convertRealToReal34ResultRegister(&x3Real, REGISTER_Y);
+        convertRealToReal34ResultRegister(&x2Real, REGISTER_Z);
+      }
+    } else 
+    if(realCompareAbsLessThan(&x2Real, &x1Real) && realCompareAbsLessThan(&x2Real, &x3Real)) {
+      convertRealToReal34ResultRegister(&x2Real, REGISTER_X);
+      if(realCompareAbsLessThan(&x1Real, &x3Real)) {
+        convertRealToReal34ResultRegister(&x1Real, REGISTER_Y);
+        convertRealToReal34ResultRegister(&x3Real, REGISTER_Z);
+      } else {
+        convertRealToReal34ResultRegister(&x3Real, REGISTER_Y);
+        convertRealToReal34ResultRegister(&x1Real, REGISTER_Z);
+      }
+    } else {
+      convertRealToReal34ResultRegister(&x3Real, REGISTER_X);
+      if(realCompareAbsLessThan(&x2Real, &x1Real)) {
+        convertRealToReal34ResultRegister(&x2Real, REGISTER_Y);
+        convertRealToReal34ResultRegister(&x1Real, REGISTER_Z);
+      } else {
+        convertRealToReal34ResultRegister(&x1Real, REGISTER_Y);
+        convertRealToReal34ResultRegister(&x2Real, REGISTER_Z);
+      }
+    }
+
     #ifdef DISCRIMINANT
       realToReal34(&rReal,  REGISTER_REAL34_DATA(REGISTER_T));
     #endif //DISCRIMINANT
@@ -161,10 +189,6 @@ void fnSlvc(uint16_t unusedButMandatoryParameter) {
   #else
     fnDropT(0);
   #endif //DISCRIMINANT
-
-  if(programRunStop == PGM_RUNNING) {
-    temporaryInformation = realRoots ? TI_TRUE : TI_FALSE;
-  }
 #endif // !SAVE_SPACE_DM42_12
 }
 
