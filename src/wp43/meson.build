@@ -1,4 +1,4 @@
-wp43_src = files(
+c47_src = files(
   'assign.c',
   'browsers/asnBrowser.c',
   'browsers/flagBrowser.c',
@@ -225,7 +225,7 @@ generateCatalogs_src = files(
   'fonts.c',
   'items.c',
   'sort.c')
-wp43_inc = include_directories('.')
+c47_inc = include_directories('.')
 
 vcs_h = vcs_tag(
   command        : ['git', 'describe', '--match=NeVeRmAtCh', '--always', '--abbrev=8', '--dirty=-mod'],

@@ -3,10 +3,12 @@
 /build.sim
 /dep/gmp-6.2.0
 /wp43
+/c47
 /testSuite
 /generate*
 /ttf2RasterFonts
 /wp43.exe
+/c47.exe
 /testSuite.exe
 /generate*.exe
 /ttf2RasterFonts.exe
