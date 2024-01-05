@@ -1,4 +1,4 @@
-project('wp43', 'c',
+project('c47', 'c',
   meson_version   : '>=0.56.0',
   license         : 'GPL-3.0-only',
   default_options : ['warning_level=2']

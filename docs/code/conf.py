@@ -15,9 +15,9 @@ subprocess.call('doxygen', shell=True)
 
 # -- Project information -----------------------------------------------------
 
-project = 'WP43'
-copyright = '2022 The WP43 Authors'
-author = 'The WP43 Authors'
+project = 'C47'
+copyright = '2022-2024 The C47 Authors'
+author = 'The C47 Authors'
 
 # -- General configuration ---------------------------------------------------
 
@@ -25,8 +25,8 @@ extensions = [
   "breathe"
 ]
 
-breathe_projects = { "WP43": "../../build/docs/xml" }
-breathe_default_project = "WP43"
+breathe_projects = { "C47": "../../build/docs/xml" }
+breathe_default_project = "C47"
 breathe_domain_by_extension = {"h": "c" , "c": "c"}
 
 # Add any paths that contain templates here, relative to this directory.
@@ -40,6 +40,6 @@ exclude_patterns = []
 
 # -- Options for HTML output -------------------------------------------------
 
-html_title = 'WP43'
+html_title = 'C47'
 html_theme = 'furo'
 html_static_path = ['_static']
