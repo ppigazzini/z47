@@ -40,7 +40,7 @@
 #undef DISCRIMINANT //Note the testSuite tests were revised to remove the discriminant
 
 
-bool_t _sortReal(register_t r1, register_t r2, register_t r3, real_t *v1, real_t *v2, real_t *v3) {
+bool_t _sortReal(calcRegister_t r1, calcRegister_t r2, calcRegister_t r3, real_t *v1, real_t *v2, real_t *v3) {
   if(realIsNaN(v1) || (!realCompareAbsGreaterThan(v1, v2) && !realCompareAbsGreaterThan(v1, v3))) {
       reallocateRegister(r1, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
       reallocateRegister(r2, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
@@ -60,7 +60,7 @@ bool_t _sortReal(register_t r1, register_t r2, register_t r3, real_t *v1, real_t
   }
 
 
-bool_t _sortComplex(register_t r1, register_t r2, register_t r3, real_t *v1r, real_t *v1i, real_t *v2r, real_t *v2i, real_t *v3r, real_t *v3i) {
+bool_t _sortComplex(calcRegister_t r1, calcRegister_t r2, calcRegister_t r3, real_t *v1r, real_t *v1i, real_t *v2r, real_t *v2i, real_t *v3r, real_t *v3i) {
   real_t v1a, v2a, v3a;
   complexMagnitude(v1r, v1i, &v1a, &ctxtReal39);
   complexMagnitude(v2r, v2i, &v2a, &ctxtReal39);
