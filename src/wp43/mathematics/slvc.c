@@ -135,7 +135,7 @@ bool_t _sortComplex(register_t r1, register_t r2, register_t r3, real_t *v1r, re
  ***********************************************/
 void fnSlvc(uint16_t unusedButMandatoryParameter) {
 #if !defined(SAVE_SPACE_DM42_12)
-  bool_t realCoefs=false, realRoots=true, complexCoefs=false;
+  bool_t complexCoefs=false;
   real_t aReal, bReal, cReal, dReal, rReal, x1Real, x2Real, x3Real;
   real_t aImag, bImag, cImag, dImag, rImag, x1Imag, x2Imag, x3Imag;
 
@@ -145,7 +145,6 @@ void fnSlvc(uint16_t unusedButMandatoryParameter) {
        getRegisterAsComplexOrReal(REGISTER_T, &aReal, &aImag, &complexCoefs))) {
     return;
   }
-  realCoefs = !complexCoefs;
 
   if(   realIsZero(&aReal) && realIsZero(&aImag)
      && realIsZero(&bReal) && realIsZero(&bImag)
@@ -162,88 +161,44 @@ void fnSlvc(uint16_t unusedButMandatoryParameter) {
     return;
   }
 
-  if(realCoefs == false) {
-    realRoots = false;
-  }
-
 
   if(realIsZero(&aReal) && realIsZero(&aImag)) {
     solveQuadraticEquation(&bReal, &bImag, &cReal, &cImag, &dReal, &dImag, &rReal, &rImag, &x1Real, &x1Imag, &x2Real, &x2Imag, &ctxtReal75);
     realCopy(const_NaN, &x3Real);
     realCopy(const_NaN, &x3Imag);
-    realRoots &= realIsZero(&x1Imag) && realIsZero(&x2Imag);
   } else {
     divComplexComplex(&bReal, &bImag, &aReal, &aImag, &bReal, &bImag, &ctxtReal39);
     divComplexComplex(&cReal, &cImag, &aReal, &aImag, &cReal, &cImag, &ctxtReal39);
     divComplexComplex(&dReal, &dImag, &aReal, &aImag, &dReal, &dImag, &ctxtReal39);
     solveCubicEquation(&bReal, &bImag, &cReal, &cImag, &dReal, &dImag, &rReal, &rImag, &x1Real, &x1Imag, &x2Real, &x2Imag, &x3Real, &x3Imag, &ctxtReal75);
-    realRoots &= realIsZero(&x1Imag) && realIsZero(&x2Imag) && realIsZero(&x3Imag);
   }
 
+  if(!_sortComplex(REGISTER_X, REGISTER_Y, REGISTER_Z, &x1Real, &x1Imag, &x2Real, &x2Imag, &x3Real, &x3Imag)) {
+    if(!_sortComplex(REGISTER_X, REGISTER_Y, REGISTER_Z, &x2Real, &x2Imag, &x1Real, &x1Imag, &x3Real, &x3Imag)) { 
+      if(!_sortComplex(REGISTER_X, REGISTER_Y, REGISTER_Z, &x3Real, &x3Imag, &x2Real, &x2Imag, &x1Real, &x1Imag)) {
+        #if defined (PC_BUILD)
+          printf("In function fnSlvc complex root selection failed.\n");
+        #endif
+      }
+    }
+  }
 
-  if(false && realRoots) {
-    #ifdef DISCRIMINANT
+  #ifdef DISCRIMINANT
+    if(realIsZero(&rImag)) { // q3r2 is real
       reallocateRegister(REGISTER_T, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
-    #endif //DISCRIMINANT
-
-    //printf("REAL:\n");
-    //printRealToConsole(&x1Real,"x1:"," ");
-    //printRealToConsole(&x1Imag,"+i ","\n");
-    //printRealToConsole(&x2Real,"x2:"," ");
-    //printRealToConsole(&x2Imag,"+i ","\n");
-    //printRealToConsole(&x3Real,"x3:"," ");
-    //printRealToConsole(&x3Imag,"+i ","\n");
-
-
-    if(!_sortReal(REGISTER_X, REGISTER_Y, REGISTER_Z, &x1Real, &x2Real, &x3Real)) {
-      if(!_sortReal(REGISTER_X, REGISTER_Y, REGISTER_Z, &x2Real, &x1Real, &x3Real)) { 
-        if(!_sortReal(REGISTER_X, REGISTER_Y, REGISTER_Z, &x3Real, &x2Real, &x1Real)) {
-          #if defined (PC_BUILD)
-            printf("In function fnSlvc real root selection failed.\n");
-          #endif
-        }
-      }
+      convertRealToReal34ResultRegister(&rReal, REGISTER_T);
     }
-    #ifdef DISCRIMINANT
-      realToReal34(&rReal,  REGISTER_REAL34_DATA(REGISTER_T));
-    #endif //DISCRIMINANT
-  }
-  else { // !realRoots
-
-    //printf("NON REAL:\n");
-    //printRealToConsole(&x1Real,"x1:"," ");
-    //printRealToConsole(&x1Imag,"+i ","\n");
-    //printRealToConsole(&x2Real,"x2:"," ");
-    //printRealToConsole(&x2Imag,"+i ","\n");
-    //printRealToConsole(&x3Real,"x3:"," ");
-    //printRealToConsole(&x3Imag,"+i ","\n");
-
-    if(!_sortComplex(REGISTER_X, REGISTER_Y, REGISTER_Z, &x1Real, &x1Imag, &x2Real, &x2Imag, &x3Real, &x3Imag)) {
-      if(!_sortComplex(REGISTER_X, REGISTER_Y, REGISTER_Z, &x2Real, &x2Imag, &x1Real, &x1Imag, &x3Real, &x3Imag)) { 
-        if(!_sortComplex(REGISTER_X, REGISTER_Y, REGISTER_Z, &x3Real, &x3Imag, &x2Real, &x2Imag, &x1Real, &x1Imag)) {
-          #if defined (PC_BUILD)
-            printf("In function fnSlvc complex root selection failed.\n");
-          #endif
-        }
-      }
+    else {
+      reallocateRegister(REGISTER_T, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
+      convertRealToReal34ResultRegister(&rReal, REGISTER_T);
+      convertRealToImag34ResultRegister(&rImag, REGISTER_T);
     }
-    #ifdef DISCRIMINANT
-      if(realIsZero(&rImag)) { // q3r2 is real
-        reallocateRegister(REGISTER_T, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
-        convertRealToReal34ResultRegister(&rReal, REGISTER_T);
-      }
-      else {
-        reallocateRegister(REGISTER_T, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
-        convertRealToReal34ResultRegister(&rReal, REGISTER_T);
-        convertRealToImag34ResultRegister(&rImag, REGISTER_T);
-      }
-    #endif //DISCRIMINANT
-
-  }
+  #endif //DISCRIMINANT
 
   adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
   adjustResult(REGISTER_Y, false, true, REGISTER_Y, -1, -1);
   adjustResult(REGISTER_Z, false, true, REGISTER_Z, -1, -1);
+
   #ifdef DISCRIMINANT
     adjustResult(REGISTER_T, false, true, REGISTER_T, -1, -1);
   #else
