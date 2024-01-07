@@ -40,4 +40,5 @@
   void magnitudeCplx (void);
 
   void complexMagnitude(const real_t *a, const real_t *b, real_t *c, realContext_t *realContext);
+  void complexMagnitude2(const real_t *a, const real_t *b, real_t *c, realContext_t *realContext);
 #endif // !MAGNITUDE_H
