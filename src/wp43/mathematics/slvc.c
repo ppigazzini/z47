@@ -26,6 +26,7 @@
 #include "mathematics/comparisonReals.h"
 #include "mathematics/cubeRoot.h"
 #include "mathematics/division.h"
+#include "mathematics/magnitude.h"
 #include "mathematics/multiplication.h"
 #include "mathematics/squareRoot.h"
 #include "mathematics/slvq.h"
@@ -37,6 +38,93 @@
 #include "wp43.h"
 
 #undef DISCRIMINANT //Note the testSuite tests were revised to remove the discriminant
+
+
+bool_t _sortReal(register_t r1, register_t r2, register_t r3, real_t *v1, real_t *v2, real_t *v3) {
+  if(realIsNaN(v1) || (!realCompareAbsGreaterThan(v1, v2) && !realCompareAbsGreaterThan(v1, v3))) {
+      reallocateRegister(r1, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+      reallocateRegister(r2, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+      reallocateRegister(r3, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+      convertRealToReal34ResultRegister(v1, r1);
+      if(!realCompareAbsGreaterThan(v2, v3)) {
+        convertRealToReal34ResultRegister(v2, r2);
+        convertRealToReal34ResultRegister(v3, r3);
+      } else {
+        convertRealToReal34ResultRegister(v3, r2);
+        convertRealToReal34ResultRegister(v2, r3);
+      }
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+
+bool_t _sortComplex(register_t r1, register_t r2, register_t r3, real_t *v1r, real_t *v1i, real_t *v2r, real_t *v2i, real_t *v3r, real_t *v3i) {
+  real_t v1a, v2a, v3a;
+  complexMagnitude(v1r, v1i, &v1a, &ctxtReal39);
+  complexMagnitude(v2r, v2i, &v2a, &ctxtReal39);
+  complexMagnitude(v3r, v3i, &v3a, &ctxtReal39);
+  if(realIsNaN(&v1a)) {
+    realCopy(const_plusInfinity, &v1a);
+  }
+  if(realIsNaN(&v2a)) {
+    realCopy(const_plusInfinity, &v2a);
+  }
+  if(realIsNaN(&v3a)) {
+    realCopy(const_plusInfinity, &v3a);
+  }
+
+  if(!realCompareAbsGreaterThan(&v1a, &v2a) && !realCompareAbsGreaterThan(&v1a, &v3a)) {
+    if(realIsZero(v1i) || (realIsNaN(v1r) && (realIsNaN(v1i)))) {
+      reallocateRegister(r1, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+      convertRealToReal34ResultRegister(v1r, r1);
+    } else {
+      reallocateRegister(r1, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
+      convertRealToReal34ResultRegister(v1r, r1);
+      convertRealToImag34ResultRegister(v1i, r1);
+    }
+    if(!realCompareAbsGreaterThan(&v2a, &v3a)) {
+      if(realIsZero(v2i) || (realIsNaN(v2r) && (realIsNaN(v2i)))) {
+        reallocateRegister(r2, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+        convertRealToReal34ResultRegister(v2r, r2);
+      } else {
+        reallocateRegister(r2, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
+        convertRealToReal34ResultRegister(v2r, r2);
+        convertRealToImag34ResultRegister(v2i, r2);
+      }
+      if(realIsZero(v3i) || (realIsNaN(v3r) && (realIsNaN(v3i)))) {
+        reallocateRegister(r3, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+        convertRealToReal34ResultRegister(v3r, r3);
+      } else {
+        reallocateRegister(r3, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
+        convertRealToReal34ResultRegister(v3r, r3);
+        convertRealToImag34ResultRegister(v3i, r3);
+      }
+    } else {
+      if(realIsZero(v3i) || (realIsNaN(v3r) && (realIsNaN(v3i)))) {
+        reallocateRegister(r2, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+        convertRealToReal34ResultRegister(v3r, r2);
+      } else {
+        reallocateRegister(r2, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
+        convertRealToReal34ResultRegister(v3r, r2);
+        convertRealToImag34ResultRegister(v3i, r2);
+      }
+      if(realIsZero(v2i) || (realIsNaN(v2r) && (realIsNaN(v2i)))) {
+        reallocateRegister(r3, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+        convertRealToReal34ResultRegister(v2r, r3);
+      } else {
+        reallocateRegister(r3, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
+        convertRealToReal34ResultRegister(v2r, r3);
+        convertRealToImag34ResultRegister(v2i, r3);
+      }
+    }
+    return true;
+  } else {
+    return false;
+  }
+}
+
 
 /********************************************//**
  * \brief (d, c, b, a) ==> (x1, x2, r) c ==> regL
@@ -93,80 +181,52 @@ void fnSlvc(uint16_t unusedButMandatoryParameter) {
   }
 
 
-  if(realRoots) {
-    reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
-    reallocateRegister(REGISTER_Y, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
-    reallocateRegister(REGISTER_Z, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+  if(false && realRoots) {
     #ifdef DISCRIMINANT
       reallocateRegister(REGISTER_T, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
     #endif //DISCRIMINANT
 
-    if(realCompareAbsLessThan(&x1Real, &x2Real) && realCompareAbsLessThan(&x1Real, &x3Real)) {
-      convertRealToReal34ResultRegister(&x1Real, REGISTER_X);
-      if(realCompareAbsLessThan(&x2Real, &x3Real)) {
-        convertRealToReal34ResultRegister(&x2Real, REGISTER_Y);
-        convertRealToReal34ResultRegister(&x3Real, REGISTER_Z);
-      } else {
-        convertRealToReal34ResultRegister(&x3Real, REGISTER_Y);
-        convertRealToReal34ResultRegister(&x2Real, REGISTER_Z);
-      }
-    } else 
-    if(realCompareAbsLessThan(&x2Real, &x1Real) && realCompareAbsLessThan(&x2Real, &x3Real)) {
-      convertRealToReal34ResultRegister(&x2Real, REGISTER_X);
-      if(realCompareAbsLessThan(&x1Real, &x3Real)) {
-        convertRealToReal34ResultRegister(&x1Real, REGISTER_Y);
-        convertRealToReal34ResultRegister(&x3Real, REGISTER_Z);
-      } else {
-        convertRealToReal34ResultRegister(&x3Real, REGISTER_Y);
-        convertRealToReal34ResultRegister(&x1Real, REGISTER_Z);
-      }
-    } else {
-      convertRealToReal34ResultRegister(&x3Real, REGISTER_X);
-      if(realCompareAbsLessThan(&x2Real, &x1Real)) {
-        convertRealToReal34ResultRegister(&x2Real, REGISTER_Y);
-        convertRealToReal34ResultRegister(&x1Real, REGISTER_Z);
-      } else {
-        convertRealToReal34ResultRegister(&x1Real, REGISTER_Y);
-        convertRealToReal34ResultRegister(&x2Real, REGISTER_Z);
+    //printf("REAL:\n");
+    //printRealToConsole(&x1Real,"x1:"," ");
+    //printRealToConsole(&x1Imag,"+i ","\n");
+    //printRealToConsole(&x2Real,"x2:"," ");
+    //printRealToConsole(&x2Imag,"+i ","\n");
+    //printRealToConsole(&x3Real,"x3:"," ");
+    //printRealToConsole(&x3Imag,"+i ","\n");
+
+
+    if(!_sortReal(REGISTER_X, REGISTER_Y, REGISTER_Z, &x1Real, &x2Real, &x3Real)) {
+      if(!_sortReal(REGISTER_X, REGISTER_Y, REGISTER_Z, &x2Real, &x1Real, &x3Real)) { 
+        if(!_sortReal(REGISTER_X, REGISTER_Y, REGISTER_Z, &x3Real, &x2Real, &x1Real)) {
+          #if defined (PC_BUILD)
+            printf("In function fnSlvc real root selection failed.\n");
+          #endif
+        }
       }
     }
-
     #ifdef DISCRIMINANT
       realToReal34(&rReal,  REGISTER_REAL34_DATA(REGISTER_T));
     #endif //DISCRIMINANT
   }
   else { // !realRoots
-    if(realIsZero(&x1Imag)) { // x1 is real
-      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
-      convertRealToReal34ResultRegister(&x1Real, REGISTER_X);
-    }
-    else {
-      reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
-      convertRealToReal34ResultRegister(&x1Real, REGISTER_X);
-      convertRealToImag34ResultRegister(&x1Imag, REGISTER_X);
-    }
 
-    if(realIsZero(&x2Imag)) { // x2 is real
-      reallocateRegister(REGISTER_Y, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
-      convertRealToReal34ResultRegister(&x2Real, REGISTER_Y);
-    }
-    else {
-      reallocateRegister(REGISTER_Y, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
-      convertRealToReal34ResultRegister(&x2Real, REGISTER_Y);
-      convertRealToImag34ResultRegister(&x2Imag, REGISTER_Y);
-    }
+    //printf("NON REAL:\n");
+    //printRealToConsole(&x1Real,"x1:"," ");
+    //printRealToConsole(&x1Imag,"+i ","\n");
+    //printRealToConsole(&x2Real,"x2:"," ");
+    //printRealToConsole(&x2Imag,"+i ","\n");
+    //printRealToConsole(&x3Real,"x3:"," ");
+    //printRealToConsole(&x3Imag,"+i ","\n");
 
-    if(realIsZero(&x3Imag)) { // x2 is real
-      reallocateRegister(REGISTER_Z, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
-      convertRealToReal34ResultRegister(&x3Real, REGISTER_Y);
+    if(!_sortComplex(REGISTER_X, REGISTER_Y, REGISTER_Z, &x1Real, &x1Imag, &x2Real, &x2Imag, &x3Real, &x3Imag)) {
+      if(!_sortComplex(REGISTER_X, REGISTER_Y, REGISTER_Z, &x2Real, &x2Imag, &x1Real, &x1Imag, &x3Real, &x3Imag)) { 
+        if(!_sortComplex(REGISTER_X, REGISTER_Y, REGISTER_Z, &x3Real, &x3Imag, &x2Real, &x2Imag, &x1Real, &x1Imag)) {
+          #if defined (PC_BUILD)
+            printf("In function fnSlvc complex root selection failed.\n");
+          #endif
+        }
+      }
     }
-    else {
-      reallocateRegister(REGISTER_Z, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
-      convertRealToReal34ResultRegister(&x3Real, REGISTER_Z);
-      convertRealToImag34ResultRegister(&x3Imag, REGISTER_Z);
-    }
-
-
     #ifdef DISCRIMINANT
       if(realIsZero(&rImag)) { // q3r2 is real
         reallocateRegister(REGISTER_T, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);

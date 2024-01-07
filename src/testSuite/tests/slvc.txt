@@ -46,24 +46,31 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1    RL=LonI:"0"   RZ=Real:"0.0" RY=Real:"0.0" R
 ; 1*x^3 + 6*x^2 + 11*x + 6 = 0
 ;-----------
 In:  FL_ASLIFT=0 FL_CPXRES=0 RL=Real:"3.5"      RT=LonI:"1"      RZ=LonI:"6"       RY=LonI:"11"       RX=LonI:"6"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"6"                    RZ=Real:"-2.0"    RY=Real:"-3.0"     RX=Real:"-1.0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"6"                    RZ=Real:"-3.0"    RY=Real:"-2.0"     RX=Real:"-1.0"
 
 ; 1*x^3 + 6*x^2 + 11*x + 6 = 0, with different types
 ;-----------
 In:  FL_ASLIFT=0 FL_CPXRES=0 RL=Real:"3.5"      RT=LonI:"1"      RZ=LonI:"6"       RY=LonI:"11"       RX=Real:"6.0"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"6.0"                  RZ=Real:"-2.0"    RY=Real:"-3.0"     RX=Real:"-1.0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"6.0"                  RZ=Real:"-3.0"    RY=Real:"-2.0"     RX=Real:"-1.0"
 
 ; 1*x^3 + 6*x^2 + 11*x + 6 = 0, with different types
 ;-----------
 In:  FL_ASLIFT=0 FL_CPXRES=0 RL=Real:"3.5"      RT=LonI:"1"      RZ=LonI:"6"       RY=Real:"11.0"     RX=Real:"6.0"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"6.0"                  RZ=Real:"-2.0"    RY=Real:"-3.0"     RX=Real:"-1.0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"6.0"                  RZ=Real:"-3.0"    RY=Real:"-2.0"     RX=Real:"-1.0"
 
 ; 1*x^3 + 6*x^2 + 11*x + 6 = 0, with different types
 ;-----------
 In:  FL_ASLIFT=0 FL_CPXRES=0 RL=Real:"3.5"      RT=LonI:"1"      RZ=Real:"6.0"     RY=LonI:"11"       RX=Real:"6.0"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"6.0"                  RZ=Real:"-2.0"    RY=Real:"-3.0"     RX=Real:"-1.0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"6.0"                  RZ=Real:"-3.0"    RY=Real:"-2.0"     RX=Real:"-1.0"
 
 ; 1*x^3 + 6*x^2 + 11*x + 6 = 0, with different types
 ;-----------
 In:  FL_ASLIFT=0 FL_CPXRES=0 RL=Real:"3.5"      RT=Real:"1.0"    RZ=LonI:"6"       RY=LonI:"11"       RX=Real:"6.0"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"6.0"                  RZ=Real:"-2.0"    RY=Real:"-3.0"     RX=Real:"-1.0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"6.0"                  RZ=Real:"-3.0"    RY=Real:"-2.0"     RX=Real:"-1.0"
+
+
+; 0*x^3 + 1*x^2 + 2*x + 1 = 0
+;-----------
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=Real:"3.5"      RT=LonI:"0"      RZ=LonI:"1"       RY=LonI:"2"        RX=LonI:"1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"1"                    RZ=Real:"NaN"     RY=Real:"-1.0"     RX=Real:"-1.0"
+
