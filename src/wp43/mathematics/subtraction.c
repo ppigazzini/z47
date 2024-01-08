@@ -1122,7 +1122,7 @@ void subCplxReal(void) {
 /******************************************************************************************************************************************************************************************/
 /* complex34 - ...                                                                                                                                                                        */
 /******************************************************************************************************************************************************************************************/
-void complexSubtract(const real_t *aReal, const real_t *aImag, const real_t *bReal, const real_t *bImag, real_t *resReal, real_t *resImag, realContext_t *realContext) {
+void subComplex(const real_t *aReal, const real_t *aImag, const real_t *bReal, const real_t *bImag, real_t *resReal, real_t *resImag, realContext_t *realContext) {
   realSubtract(aReal, bReal, resReal, realContext);
   realSubtract(aImag, bImag, resImag, realContext);
 }

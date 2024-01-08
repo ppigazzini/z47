@@ -24,6 +24,7 @@
 #include "debug.h"
 #include "error.h"
 #include "mathematics/addition.h"
+#include "mathematics/changeSign.h"
 #include "mathematics/comparisonReals.h"
 #include "mathematics/cubeRoot.h"
 #include "mathematics/division.h"
@@ -210,26 +211,26 @@ void solveCubicEquation(const real_t *c2Real, const real_t *c2Imag, const real_t
   // 9q = (3c - b^2)
   mulComplexReal(c1Real, c1Imag, const_3, &rr, &ri, realContext);
   mulComplexComplex(c2Real, c2Imag, c2Real, c2Imag, &qr, &qi, realContext);
-  complexSubtract(&rr, &ri, &qr, &qi, &qr, &qi, realContext);
+  subComplex(&rr, &ri, &qr, &qi, &qr, &qi, realContext);
 
   // r = (b c - 3 d) / 6 - b^3 / 27
   // 54r = 9(b c - 3 d) - 2 b^3
   mulComplexComplex(c2Real, c2Imag, c1Real, c1Imag, &rr, &ri, realContext);
   mulComplexReal(c0Real, c0Imag, const_3, &ar, &ai, realContext);
-  complexSubtract(&rr, &ri, &ar, &ai, &rr, &ri, realContext);
+  subComplex(&rr, &ri, &ar, &ai, &rr, &ri, realContext);
   mulComplexReal(&rr, &ri, const_9, &rr, &ri, realContext);
 
   mulComplexComplex(c2Real, c2Imag, c2Real, c2Imag, &ar, &ai, realContext);
   mulComplexComplex(&ar, &ai, c2Real, c2Imag, &ar, &ai, realContext);
-  complexAdd(&ar, &ai, &ar, &ai, &ar, &ai, realContext);
-  complexSubtract(&rr, &ri, &ar, &ai, &rr, &ri, realContext);
+  addComplex(&ar, &ai, &ar, &ai, &ar, &ai, realContext);
+  subComplex(&rr, &ri, &ar, &ai, &rr, &ri, realContext);
 
   // q^3 + r^2 = (4 (9q)^3 + r^2) / 2916
   mulComplexComplex(&qr, &qi, &qr, &qi, rReal, rImag, realContext);
   mulComplexComplex(rReal, rImag, &qr, &qi, rReal, rImag, realContext);
   mulComplexReal(rReal, rImag, const_4, rReal, rImag, realContext);
   mulComplexComplex(&rr, &ri, &rr, &ri, &ar, &ai, realContext);
-  complexAdd(rReal, rImag, &ar, &ai, rReal, rImag, realContext);
+  addComplex(rReal, rImag, &ar, &ai, rReal, rImag, realContext);
   divComplexReal(rReal, rImag, const_2916, rReal, rImag, realContext);
 
   // Scale r back to it's proper range, q isn't needed anymore so it's good.
@@ -237,14 +238,14 @@ void solveCubicEquation(const real_t *c2Real, const real_t *c2Imag, const real_t
 
   // s1, s2 = cbrt(r ± sqrt(q^3 + r^2))
   sqrtComplex(rReal, rImag, &s1r, &s1i, realContext);
-  complexSubtract(&rr, &ri, &s1r, &s1i, &s2r, &s2i, realContext);
-  complexAdd(&rr, &ri, &s1r, &s1i, &s1r, &s1i, realContext);
+  subComplex(&rr, &ri, &s1r, &s1i, &s2r, &s2i, realContext);
+  addComplex(&rr, &ri, &s1r, &s1i, &s1r, &s1i, realContext);
   curtComplex(&s1r, &s1i, &s1r, &s1i, realContext);
   curtComplex(&s2r, &s2i, &s2r, &s2i, realContext);
 
   // reusing q, r for (s1 ± s2)
-  complexAdd(&s1r, &s1i, &s2r, &s2i, &qr, &qi, realContext);
-  complexSubtract(&s1r, &s1i, &s2r, &s2i, &rr, &ri, realContext);
+  addComplex(&s1r, &s1i, &s2r, &s2i, &qr, &qi, realContext);
+  subComplex(&s1r, &s1i, &s2r, &s2i, &rr, &ri, realContext);
   mulComplexComplex(&rr, &ri, const_0, const_root3on2, &rr, &ri, realContext);
 
   // roots
@@ -252,7 +253,7 @@ void solveCubicEquation(const real_t *c2Real, const real_t *c2Imag, const real_t
   _realCheckedSubtract(&qr, x2Real, x1Real, realContext); _realCheckedSubtract(&qi, x2Imag, x1Imag, realContext);
   mulComplexReal(&qr, &qi, const_1on2, x3Real, x3Imag, realContext);
   _realCheckedAdd(x3Real, x2Real, x3Real, realContext);   _realCheckedAdd(x3Imag, x2Imag, x3Imag, realContext);
-  realChangeSign(x3Real);                                  realChangeSign(x3Imag);
+  chsComplex(x3Real, x3Imag);
   _realCheckedAdd(x3Real, &rr, x2Real, realContext);      _realCheckedAdd(x3Imag, &ri, x2Imag, realContext);
   _realCheckedSubtract(x3Real, &rr, x3Real, realContext); _realCheckedSubtract(x3Imag, &ri, x3Imag, realContext);
 
