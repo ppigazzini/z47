@@ -160,6 +160,11 @@ void mulComplexComplex(const real_t *factor1Real, const real_t *factor1Imag, con
   }
 }
 
+void mulComplexReal(const real_t *factor1Real, const real_t *factor1Imag, const real_t *factor2, real_t *productReal, real_t *productImag, realContext_t *realContext) {
+  realMultiply(factor1Real, factor2, productReal, realContext);
+  realMultiply(factor1Imag, factor2, productImag, realContext);
+}
+
 /******************************************************************************************************************************************************************************************/
 /* long integer × ...                                                                                                                                                                     */
 /******************************************************************************************************************************************************************************************/

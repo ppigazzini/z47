@@ -1289,6 +1289,10 @@ void addCplxReal(void) {
 /******************************************************************************************************************************************************************************************/
 /* complex34 + ...                                                                                                                                                                        */
 /******************************************************************************************************************************************************************************************/
+void complexAdd(const real_t *aReal, const real_t *aImag, const real_t *bReal, const real_t *bImag, real_t *resReal, real_t *resImag, realContext_t *realContext) {
+  realAdd(aReal, bReal, resReal, realContext);
+  realAdd(aImag, bImag, resImag, realContext);
+}
 
 /********************************************//**
  * \brief Y(complex34) + X(complex34) ==> X(complex34)
