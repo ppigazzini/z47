@@ -54,8 +54,7 @@ void fnZeta(uint16_t unusedButMandatoryParameter) {
 
   if (isCmplx) {
     ComplexZeta(&xr, &xi, &rr, &ri, &ctxtReal39);
-    convertRealToReal34ResultRegister(&rr, REGISTER_X);
-    convertRealToImag34ResultRegister(&ri, REGISTER_X);
+    convertComplexToResultRegister(&rr, &ri, REGISTER_X);
   } else {
     WP34S_Zeta(&xr, &rr, &ctxtReal39);
     reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);

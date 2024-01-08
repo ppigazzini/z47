@@ -188,8 +188,7 @@ void parallelLonICplx(void) {
     divComplexComplex(&productReal, &productImag, &sumReal, &sumImag, &xReal, &xImag, &ctxtReal39);
   }
 
-  convertRealToReal34ResultRegister(&xReal, REGISTER_X);
-  convertRealToImag34ResultRegister(&xImag, REGISTER_X);
+  convertComplexToResultRegister(&xReal, &xImag, REGISTER_X);
 }
 
 
@@ -219,8 +218,7 @@ void parallelCplxLonI(void) {
     divComplexComplex(&productReal, &productImag, &sumReal, &sumImag, &yReal, &yImag, &ctxtReal39);
   }
 
-  convertRealToReal34ResultRegister(&yReal, REGISTER_X);
-  convertRealToImag34ResultRegister(&yImag, REGISTER_X);
+  convertComplexToResultRegister(&yReal, &yImag, REGISTER_X);
 }
 
 
@@ -278,8 +276,7 @@ void parallelRealCplx(void) {
     divComplexComplex(&productReal, &productImag, &sumReal, &sumImag, &xReal, &xImag, &ctxtReal39);
   }
 
-  convertRealToReal34ResultRegister(&xReal, REGISTER_X);
-  convertRealToImag34ResultRegister(&xImag, REGISTER_X);
+  convertComplexToResultRegister(&xReal, &xImag, REGISTER_X);
 }
 
 
@@ -309,8 +306,7 @@ void parallelCplxReal(void) {
     divComplexComplex(&productReal, &productImag, &sumReal, &sumImag, &yReal, &yImag, &ctxtReal39);
   }
 
-  convertRealToReal34ResultRegister(&yReal, REGISTER_X);
-  convertRealToImag34ResultRegister(&yImag, REGISTER_X);
+  convertComplexToResultRegister(&yReal, &yImag, REGISTER_X);
 }
 
 
@@ -342,6 +338,5 @@ void parallelCplxCplx(void) {
     divComplexComplex(&productReal, &productImag, &sumReal, &sumImag, &xReal, &xImag, &ctxtReal39);
   }
 
-  convertRealToReal34ResultRegister(&xReal, REGISTER_X);
-  convertRealToImag34ResultRegister(&xImag, REGISTER_X);
+  convertComplexToResultRegister(&xReal, &xImag, REGISTER_X);
 }

@@ -95,8 +95,7 @@ void fnSlvq(uint16_t unusedButMandatoryParameter) {
     }
     else {
       reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
-      convertRealToReal34ResultRegister(&x1Real, REGISTER_X);
-      convertRealToImag34ResultRegister(&x1Imag, REGISTER_X);
+      convertComplexToResultRegister(&x1Real, &x1Imag, REGISTER_X);
     }
 
     if(realIsZero(&x2Imag)) { // x2 is real
@@ -105,8 +104,7 @@ void fnSlvq(uint16_t unusedButMandatoryParameter) {
     }
     else {
       reallocateRegister(REGISTER_Y, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
-      convertRealToReal34ResultRegister(&x2Real, REGISTER_Y);
-      convertRealToImag34ResultRegister(&x2Imag, REGISTER_Y);
+      convertComplexToResultRegister(&x2Real, &x2Imag, REGISTER_Y);
     }
 
     #ifdef DISCRIMINANT
@@ -116,8 +114,7 @@ void fnSlvq(uint16_t unusedButMandatoryParameter) {
       }
       else {
         reallocateRegister(REGISTER_Z, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
-        convertRealToReal34ResultRegister(&rReal, REGISTER_Z);
-        convertRealToImag34ResultRegister(&rImag, REGISTER_Z);
+        convertComplexToResultRegister(&rReal, &rImag, REGISTER_Z);
       }
     #endif //DISCRIMINANT
   }

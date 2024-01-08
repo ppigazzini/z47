@@ -146,33 +146,6 @@ void fnCFGsettings(uint16_t unusedButMandatoryParameter) {
 
 
 
-//fnArg for real and longints in addition to the standard complex. Simply returns 0 angle
-void fnArg_all(uint16_t unusedButMandatoryParameter) {
-  longInteger_t li;
-
-  if(getRegisterDataType(REGISTER_X) == dtLongInteger) {    //JM vv add the obvious case that a number has 0/180 degrees. Why error for this.
-    convertLongIntegerRegisterToLongInteger(REGISTER_X, li);
-    if(longIntegerIsPositive(li) || longIntegerIsZero(li)) {
-      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
-      realToReal34(const_0, REGISTER_REAL34_DATA(REGISTER_X));
-      convertAngle34FromTo(REGISTER_REAL34_DATA(REGISTER_X), amDegree, currentAngularMode);
-      setRegisterAngularMode(REGISTER_X, currentAngularMode);
-    }
-    else if(longIntegerIsNegative(li)) {
-      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
-      realToReal34(const_180, REGISTER_REAL34_DATA(REGISTER_X));
-      convertAngle34FromTo(REGISTER_REAL34_DATA(REGISTER_X), amDegree, currentAngularMode);
-      setRegisterAngularMode(REGISTER_X, currentAngularMode);
-    }
-    longIntegerFree(li);
-    adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
-  }
-  else {
-    fnArg(0);
-  }
-}
-
-
 //=-=-=-=-=-=-==-=-
 //input is time or DMS
 //output is sexagesima coded decimal ddd.mmsssssss in the form of a normal decimal

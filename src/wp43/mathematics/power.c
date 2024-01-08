@@ -696,7 +696,6 @@ void powCplxCplx(void) {
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
   else {
-    convertRealToReal34ResultRegister(&rReal, REGISTER_X);
-    convertRealToImag34ResultRegister(&rImag, REGISTER_X);
+    convertComplexToResultRegister(&rReal, &rImag, REGISTER_X);
   }
 }

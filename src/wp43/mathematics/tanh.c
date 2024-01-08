@@ -130,8 +130,7 @@ void tanhCplx(void) {
 
   TanhComplex(&xReal, &xImag, &rReal, &rImag, &ctxtReal39);
 
-  convertRealToReal34ResultRegister(&rReal, REGISTER_X);
-  convertRealToImag34ResultRegister(&rImag, REGISTER_X);
+  convertComplexToResultRegister(&rReal, &rImag, REGISTER_X);
 }
 
 

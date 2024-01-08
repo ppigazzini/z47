@@ -178,8 +178,7 @@ void lnP1LonI(void) {
       realSetPositiveSign(&x);
       WP34S_Ln(&x, &x, &ctxtReal39);
       reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
-      convertRealToReal34ResultRegister(&x, REGISTER_X);
-      convertRealToImag34ResultRegister(const_pi, REGISTER_X);
+      convertComplexToResultRegister(&x, const_pi, REGISTER_X);
     }
     else if(getSystemFlag(FLAG_SPCRES)) {
       reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
@@ -237,8 +236,7 @@ void lnP1ShoI(void) {
       realSetPositiveSign(&x);
       WP34S_Ln(&x, &x, &ctxtReal39);
       reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
-      convertRealToReal34ResultRegister(&x, REGISTER_X);
-      convertRealToImag34ResultRegister(const_pi, REGISTER_X);
+      convertComplexToResultRegister(&x, const_pi, REGISTER_X);
     }
     else if(getSystemFlag(FLAG_SPCRES)) {
       convertRealToReal34ResultRegister(const_NaN, REGISTER_X);
@@ -286,8 +284,7 @@ void lnP1Real(void) {
       }
       else {
         reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
-        convertRealToReal34ResultRegister(const_plusInfinity, REGISTER_X);
-        convertRealToImag34ResultRegister(const_pi, REGISTER_X);
+        convertComplexToResultRegister(const_plusInfinity, const_pi, REGISTER_X);
       }
     }
     else {
@@ -304,8 +301,7 @@ void lnP1Real(void) {
     else if(getFlag(FLAG_CPXRES)) {
       lnP1Complex(&arg, const_0, &x, &r, &ctxtReal75);
       reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
-      convertRealToReal34ResultRegister(&x, REGISTER_X);
-      convertRealToImag34ResultRegister(const_pi, REGISTER_X);
+      convertComplexToResultRegister(&x, const_pi, REGISTER_X);
     }
     else if(getSystemFlag(FLAG_SPCRES)) {
       convertRealToReal34ResultRegister(const_NaN, REGISTER_X);
@@ -346,7 +342,6 @@ void lnP1Cplx(void) {
 
     lnP1Complex(&xReal, &xImag, &xReal, &xImag, &ctxtReal75);
 
-    convertRealToReal34ResultRegister(&xReal, REGISTER_X);
-    convertRealToImag34ResultRegister(&xImag, REGISTER_X);
+    convertComplexToResultRegister(&xReal, &xImag, REGISTER_X);
   }
 }

@@ -224,8 +224,7 @@ void rdpCplx(uint16_t digits) {
     roundToDecimalPlace(&magnitude, &magnitude, digits, &ctxtReal39);
     roundToDecimalPlace(&theta,     &theta,     digits, &ctxtReal39);
     realPolarToRectangular(&magnitude, &theta, &magnitude, &theta, &ctxtReal39);
-    convertRealToReal34ResultRegister(&magnitude, REGISTER_X);
-    convertRealToImag34ResultRegister(&theta,     REGISTER_X);
+    convertComplexToResultRegister(&magnitude, &theta, REGISTER_X);
   }
   else {
     real_t real, imaginary;
@@ -233,7 +232,6 @@ void rdpCplx(uint16_t digits) {
     real34ToReal(REGISTER_IMAG34_DATA(REGISTER_X), &imaginary);
     roundToDecimalPlace(&real,      &real,      digits, &ctxtReal39);
     roundToDecimalPlace(&imaginary, &imaginary, digits, &ctxtReal39);
-    convertRealToReal34ResultRegister(&real,      REGISTER_X);
-    convertRealToImag34ResultRegister(&imaginary, REGISTER_X);
+    convertComplexToResultRegister(&real, &imaginary, REGISTER_X);
   }
 }

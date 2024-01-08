@@ -410,8 +410,7 @@ void divLonICplx(void) {
 
   divRealComplex(&y, &xReal, &xImag, &xReal, &xImag, &ctxtReal39);
 
-  convertRealToReal34ResultRegister(&xReal, REGISTER_X);
-  convertRealToImag34ResultRegister(&xImag, REGISTER_X);
+  convertComplexToResultRegister(&xReal, &xImag, REGISTER_X);
 }
 
 
@@ -433,8 +432,7 @@ void divCplxLonI(void) {
   realDivide(&b, &c, &b, &ctxtReal39);
 
   reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
-  convertRealToReal34ResultRegister(&a, REGISTER_X);
-  convertRealToImag34ResultRegister(&b, REGISTER_X);
+  convertComplexToResultRegister(&a, &b, REGISTER_X);
 }
 
 
@@ -1303,8 +1301,7 @@ void divShoICplx(void) {
 
   divRealComplex(&y, &xReal, &xImag, &xReal, &xImag, &ctxtReal39);
 
-  convertRealToReal34ResultRegister(&xReal, REGISTER_X);
-  convertRealToImag34ResultRegister(&xImag, REGISTER_X);
+  convertComplexToResultRegister(&xReal, &xImag, REGISTER_X);
 }
 
 
@@ -1406,8 +1403,7 @@ void divRealCplx(void) {
 
   divRealComplex(&y, &xReal, &xImag, &xReal, &xImag, &ctxtReal39);
 
-  convertRealToReal34ResultRegister(&xReal, REGISTER_X);
-  convertRealToImag34ResultRegister(&xImag, REGISTER_X);
+  convertComplexToResultRegister(&xReal, &xImag, REGISTER_X);
 }
 
 
@@ -1447,6 +1443,5 @@ void divCplxCplx(void) {
 
   divComplexComplex(&yReal, &yImag, &xReal, &xImag, &xReal, &xImag, &ctxtReal39);
 
-  convertRealToReal34ResultRegister(&xReal, REGISTER_X);
-  convertRealToImag34ResultRegister(&xImag, REGISTER_X);
+  convertComplexToResultRegister(&xReal, &xImag, REGISTER_X);
 }

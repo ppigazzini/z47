@@ -282,10 +282,9 @@ void lnGammaReal(void) {
           WP34S_Gamma(&xReal, &xReal, &ctxtReal39);
           realSetPositiveSign(&xReal);
           WP34S_Ln(&xReal, &xReal, &ctxtReal39);
-          convertRealToReal34ResultRegister(&xReal, REGISTER_X);
           realToIntegralValue(&xImag, &xImag, DEC_ROUND_FLOOR, &ctxtReal39);
           realMultiply(&xImag, const_pi, &xImag, &ctxtReal39);
-          convertRealToImag34ResultRegister(&xImag, REGISTER_X);
+          convertComplexToResultRegister(&xReal, &xImag, REGISTER_X);
         }
         else { // Domain error
           displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
@@ -312,8 +311,7 @@ void gammaCplx(void) {
 
   WP34S_ComplexGamma(&zReal, &zImag, &zReal, &zImag, &ctxtReal39);
 
-  convertRealToReal34ResultRegister(&zReal, REGISTER_X);
-  convertRealToImag34ResultRegister(&zImag, REGISTER_X);
+  convertComplexToResultRegister(&zReal, &zImag, REGISTER_X);
 }
 
 
@@ -382,6 +380,5 @@ void lnGammaCplx(void) {
 
   complexLnGamma(&zReal, &zImag, &rReal, &rImag, &ctxtReal39);
 
-  convertRealToReal34ResultRegister(&rReal, REGISTER_X);
-  convertRealToImag34ResultRegister(&rImag, REGISTER_X);
+  convertComplexToResultRegister(&rReal, &rImag, REGISTER_X);
 }

@@ -32,48 +32,7 @@
 #include "wp43.h"
 
 
-
-TO_QSPI void (* const swapReIm[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])(void) = {
-// regX ==> 1                2             3             4              5              6              7              8             9              10
-//          Long integer     Real34        complex34     Time           Date           String         Real34 mat     Complex34 m   Short integer  Config data
-            swapLongintReal, swapRealReal, swapReImCplx, swapReImError, swapReImError, swapReImError, swapReImError, swapReImCxma, swapReImError, swapReImError          //JM
-};
-
-
-
-/********************************************//**
- * \brief Data type error in exp
- *
- * \param void
- * \return void
- ***********************************************/
-#if(EXTRA_INFO_ON_CALC_ERROR == 1)
-  void swapReImError(void) {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-    sprintf(errorMessage, "cannot calculate Re<>Im for %s", getRegisterDataTypeName(REGISTER_X, true, false));
-    moreInfoOnError("In function fnSwapRealImaginary:", errorMessage, NULL, NULL);
-  }
-#endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-
-
-
-/********************************************//**
- * \brief regX ==> regL and Re<>IM(regX) ==> regX
- * enables stack lift and refreshes the stack
- *
- * \param[in] unusedButMandatoryParameter uint16_t
- * \return void
- ***********************************************/
-void fnSwapRealImaginary(uint16_t unusedButMandatoryParameter) {
-  if(!saveLastX()) {
-    return;
-  }
-  swapReIm[getRegisterDataType(REGISTER_X)]();
-}
-
-
-
-void swapReImCxma(void) {
+static void swapReImCxma(void) {
   complex34Matrix_t cMat;
   real34_t tmp;
 
@@ -86,29 +45,45 @@ void swapReImCxma(void) {
   }
 }
 
+static void swapReImRema(void) {
+  complex34Matrix_t c;
+  real34Matrix_t r;
 
-void swapReImCplx(void) {
-  real34_t temp;
+  linkToRealMatrixRegister(REGISTER_X, &r);
+  convertReal34MatrixToComplex34Matrix(&r, &c);
 
-  real34Copy(REGISTER_IMAG34_DATA(REGISTER_X), &temp);
-  real34Copy(REGISTER_REAL34_DATA(REGISTER_X), REGISTER_IMAG34_DATA(REGISTER_X));
-  real34Copy(&temp,                            REGISTER_REAL34_DATA(REGISTER_X));
+  for(uint16_t i = 0; i < c.header.matrixRows * c.header.matrixColumns; ++i) {
+    real34Copy(VARIABLE_REAL34_DATA(&c.matrixElements[i]), VARIABLE_IMAG34_DATA(&c.matrixElements[i]));
+    real34Zero(VARIABLE_REAL34_DATA(&c.matrixElements[i]));
+  }
+  
+  convertComplex34MatrixToComplex34MatrixRegister(&c, REGISTER_X);
+  complexMatrixFree(&c);
 }
 
+/********************************************//**
+ * \brief regX ==> regL and Re<>IM(regX) ==> regX
+ * enables stack lift and refreshes the stack
+ *
+ * \param[in] unusedButMandatoryParameter uint16_t
+ * \return void
+ ***********************************************/
+void fnSwapRealImaginary(uint16_t unusedButMandatoryParameter) {
+  real_t a, b;
+  const uint32_t type = getRegisterDataType(REGISTER_X);
 
-void swapRealReal(void) {                                                     //JM vv
-  real_t c;
-  real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &c);
-  reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
-  convertRealToImag34ResultRegister(&c, REGISTER_X);
-  convertRealToReal34ResultRegister(const_0, REGISTER_X);
+  if(!saveLastX())
+    return;
+
+  if (type == dtReal34Matrix)
+    swapReImRema();
+  else if (type == dtComplex34Matrix)
+    swapReImCxma();
+  else {
+    if (!getRegisterAsComplex(REGISTER_X, &a, &b))
+      return;
+    reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
+    convertComplexToResultRegister(&b, &a, REGISTER_X);
+  }
 }
 
-
-void swapLongintReal(void) {
-  real_t c;
-  convertLongIntegerRegisterToReal(REGISTER_X, &c, &ctxtReal39);
-  reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
-  convertRealToImag34ResultRegister(&c, REGISTER_X);
-  convertRealToReal34ResultRegister(const_0, REGISTER_X);
-}                                                                             //JM ^^

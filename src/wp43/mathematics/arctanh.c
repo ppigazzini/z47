@@ -239,6 +239,5 @@ void arctanhCplx(void) {
   realMultiply(&numerReal, const_1on2, &numerReal, &ctxtReal39);
   realMultiply(&numerImag, const_1on2, &numerImag, &ctxtReal39);
 
-  convertRealToReal34ResultRegister(&numerReal, REGISTER_X);
-  convertRealToImag34ResultRegister(&numerImag, REGISTER_X);
+  convertComplexToResultRegister(&numerReal, &numerImag, REGISTER_X);
 }

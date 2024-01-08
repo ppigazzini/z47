@@ -167,8 +167,7 @@ void m1PowReal(void) {
     realMultiply(&x, const_pi, &x, &ctxtReal75);
     eulersFormula(&x, const_0, &x, &y, &ctxtReal39);
 
-    convertRealToReal34ResultRegister(&x, REGISTER_X);
-    convertRealToImag34ResultRegister(&y, REGISTER_X);
+    convertComplexToResultRegister(&x, &y, REGISTER_X);
     currentAngularMode = savedAngularMode;
   }
 }
@@ -188,13 +187,11 @@ void m1PowCplx(void) {
   real34ToReal(REGISTER_IMAG34_DATA(REGISTER_X), &zImag);
   if(realIsZero(&zImag)) {
     if(realIsZero(&zReal)) {
-      convertRealToReal34ResultRegister(const_1, REGISTER_X);
-      convertRealToImag34ResultRegister(const_0, REGISTER_X);
+      convertComplexToResultRegister(const_1, const_0, REGISTER_X);
       return;
     }
     else if(realCompareEqual(&zReal, const_1)) {
-      convertRealToReal34ResultRegister(const__1, REGISTER_X);
-      convertRealToImag34ResultRegister(const_0, REGISTER_X);
+      convertComplexToResultRegister(const__1, const_0, REGISTER_X);
       return;
     }
   }
@@ -205,7 +202,6 @@ void m1PowCplx(void) {
   realMultiply(&zImag, const_pi, &zImag, &ctxtReal75);
   eulersFormula(&zReal, &zImag, &zReal, &zImag, &ctxtReal75);
 
-  convertRealToReal34ResultRegister(&zReal, REGISTER_X);
-  convertRealToImag34ResultRegister(&zImag, REGISTER_X);
+  convertComplexToResultRegister(&zReal, &zImag, REGISTER_X);
   currentAngularMode = savedAngularMode;
 }

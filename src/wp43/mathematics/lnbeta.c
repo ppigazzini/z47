@@ -250,8 +250,7 @@ static void _lnBeta(real_t *x, real_t *y, realContext_t *realContext) {
     }
     else {
       reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
-      convertRealToReal34ResultRegister(&rReal, REGISTER_X);
-      convertRealToImag34ResultRegister(&rImag, REGISTER_X);
+      convertComplexToResultRegister(&rReal, &rImag, REGISTER_X);
     }
   }
 }
@@ -292,8 +291,7 @@ void lnbetaCplxLonI(void) {
   _lnBetaComplex(&xReal, &xImag, &yReal, &yImag, &rReal, &rImag, &ctxtReal39);
 
   reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
-  convertRealToReal34ResultRegister(&rReal, REGISTER_X);
-  convertRealToImag34ResultRegister(&rImag, REGISTER_X);
+  convertComplexToResultRegister(&rReal, &rImag, REGISTER_X);
 }
 
 
@@ -332,8 +330,7 @@ void lnbetaCplxReal(void) {
   _lnBetaComplex(&xReal, &xImag, &yReal, &yImag, &rReal, &rImag, &ctxtReal39);
 
   reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
-  convertRealToReal34ResultRegister(&rReal, REGISTER_X);
-  convertRealToImag34ResultRegister(&rImag, REGISTER_X);
+  convertComplexToResultRegister(&rReal, &rImag, REGISTER_X);
 }
 
 
@@ -349,8 +346,7 @@ void lnbetaLonICplx(void) {
 
   _lnBetaComplex(&xReal, &xImag, &yReal, &yImag, &rReal, &rImag, &ctxtReal39);
 
-  convertRealToReal34ResultRegister(&rReal, REGISTER_X);
-  convertRealToImag34ResultRegister(&rImag, REGISTER_X);
+  convertComplexToResultRegister(&rReal, &rImag, REGISTER_X);
 }
 
 
@@ -366,8 +362,7 @@ void lnbetaRealCplx(void)  {
 
   _lnBetaComplex(&xReal, &xImag, &yReal, &yImag, &rReal, &rImag, &ctxtReal39);
 
-  convertRealToReal34ResultRegister(&rReal, REGISTER_X);
-  convertRealToImag34ResultRegister(&rImag, REGISTER_X);
+  convertComplexToResultRegister(&rReal, &rImag, REGISTER_X);
 }
 
 
@@ -383,8 +378,7 @@ void lnbetaCplxCplx(void)  {
 
   _lnBetaComplex(&xReal, &xImag, &yReal, &yImag, &rReal, &rImag, &ctxtReal39);
 
-  convertRealToReal34ResultRegister(&rReal, REGISTER_X);
-  convertRealToImag34ResultRegister(&rImag, REGISTER_X);
+  convertComplexToResultRegister(&rReal, &rImag, REGISTER_X);
 }
 
 
