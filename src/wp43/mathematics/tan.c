@@ -39,7 +39,7 @@ angularMode_t determineAngleMode(angularMode_t mode) {
     return mode == amNone ? currentAngularMode : mode;
 }
 
-void longIntegerAngleReduction(calcRegister_t regist, angularMode_t angularMode, real_t *reducedAngle) {
+void longIntegerAngleReduction(calcRegister_t regist, angularMode_t angularMode, real_t *rawAngle, real_t *reducedAngle) {
   uint32_t oneTurn;
   longInteger_t angle;
 
@@ -58,12 +58,14 @@ void longIntegerAngleReduction(calcRegister_t regist, angularMode_t angularMode,
       break;
     }
     default: {
-      convertLongIntegerRegisterToReal(regist, reducedAngle, &ctxtReal75);
+      convertLongIntegerRegisterToReal(regist, rawAngle, &ctxtReal75);
+      realCopy(rawAngle, reducedAngle);
       return;
     }
   }
 
   convertLongIntegerRegisterToLongInteger(regist, angle);
+  convertLongIntegerToReal(angle, rawAngle, &ctxtReal75);
   uInt32ToReal(longIntegerModuloUInt(angle, oneTurn), reducedAngle);
   longIntegerFree(angle);
 }
@@ -74,7 +76,7 @@ static void tanReal(void) {
   const real_t *r = &tan;
   angularMode_t xAngularMode;
 
-  if (!getRegisterAsRealAngle(REGISTER_X, &tan, &xAngularMode))
+  if (!getRegisterAsRealAngle(REGISTER_X, NULL, &tan, &xAngularMode))
     return;
 
   if(realIsSpecial(&tan))

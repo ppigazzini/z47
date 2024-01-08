@@ -53,7 +53,7 @@ static void cosReal(void) {
   const real_t *r = &x;
   angularMode_t xAngularMode;
 
-  if (!getRegisterAsRealAngle(REGISTER_X, &x, &xAngularMode))
+  if (!getRegisterAsRealAngle(REGISTER_X, NULL, &x, &xAngularMode))
     return;
 
   if (realIsSpecial(&x))

@@ -833,12 +833,19 @@ bool_t getRegisterAsReal(calcRegister_t reg, real_t *val) {
   return true;
 }
 
-bool_t getRegisterAsRealAngle(calcRegister_t reg, real_t *val, angularMode_t *xAngularMode) {
+bool_t getRegisterAsRealAngle(calcRegister_t reg, real_t *val, real_t *raw, angularMode_t *xAngularMode) {
+  real_t _raw, _val;
+
+  if (raw == NULL)
+    raw = &_raw;
+  if (val == NULL)
+    val = &_val;
+
   switch(getRegisterDataType(reg)) {
     case dtLongInteger:
-      longIntegerAngleReduction(reg, currentAngularMode, val);
+      longIntegerAngleReduction(reg, currentAngularMode, raw, val);
       *xAngularMode = currentAngularMode;
-      break;
+      return true;
 
     case dtShortInteger:
       convertShortIntegerRegisterToReal(reg, val, &ctxtReal34);
@@ -848,6 +855,8 @@ bool_t getRegisterAsRealAngle(calcRegister_t reg, real_t *val, angularMode_t *xA
     case dtReal34:
       real34ToReal(REGISTER_REAL34_DATA(reg), val);
       *xAngularMode = getRegisterAngularMode(reg);
+      if (*xAngularMode == amNone)
+        *xAngularMode = currentAngularMode;
       break;
 
     case dtComplex34:
@@ -866,8 +875,7 @@ bool_t getRegisterAsRealAngle(calcRegister_t reg, real_t *val, angularMode_t *xA
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return false;
   }
-  if (*xAngularMode == amNone)
-    *xAngularMode = currentAngularMode;
+  realCopy(val, raw);
   return true;
 }
 
