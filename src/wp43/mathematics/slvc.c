@@ -54,13 +54,26 @@ static int cmplxSortCompare(const void *v1, const void *v2) {
   complexMagnitude2(&p1->r, &p1->i, &v1a, &ctxtReal39);
   complexMagnitude2(&p2->r, &p2->i, &v2a, &ctxtReal39);
 
-  if (realIsNaN(&v1a)) {
-    if (realIsNaN(&v2a))
-      return 0;
-    return 1;
-  }
+  // NaN's aren't interesting so sort largest
+  if (realIsNaN(&v1a))
+    return realIsNaN(&v2a) ? 0 : 1;
   if (realIsNaN(&v2a))
     return -1;
+
+  // Zeros are uninteresting so sort larger
+  if (realIsZero(&v1a))
+    return realIsZero(&v2a)? 0 : 1;
+  if (realIsZero(&v2a))
+    return -1;
+
+  // Complex values are less interesting than real ones
+  if (realIsZero(&p1->i)) {
+    if (!realIsZero(&p2->i))
+      return -1;
+  } else if (realIsZero(&p2->i))
+      return 1;
+
+  // Finally sort on magnitude
   realCompare(&v1a, &v2a, &c, &ctxtReal75);
   if (realIsZero(&c))
     return 0;
