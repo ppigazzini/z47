@@ -1122,6 +1122,10 @@ void subCplxReal(void) {
 /******************************************************************************************************************************************************************************************/
 /* complex34 - ...                                                                                                                                                                        */
 /******************************************************************************************************************************************************************************************/
+void subComplex(const real_t *aReal, const real_t *aImag, const real_t *bReal, const real_t *bImag, real_t *resReal, real_t *resImag, realContext_t *realContext) {
+  realSubtract(aReal, bReal, resReal, realContext);
+  realSubtract(aImag, bImag, resImag, realContext);
+}
 
 /********************************************//**
  * \brief Y(complex34) - X(complex34) ==> X(complex34)

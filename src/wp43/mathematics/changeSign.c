@@ -29,6 +29,17 @@
 
 #include "wp43.h"
 
+#if(EXTRA_INFO_ON_CALC_ERROR == 1)
+  static void chsError    (void);
+#else // (EXTRA_INFO_ON_CALC_ERROR == 1)
+  #define chsError typeError
+#endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+
+//      RegX
+static void chsLonI     (void);
+static void chsRema     (void);
+static void chsCxma     (void);
+static void chsShoI     (void);
 
 
 TO_QSPI void (* const chs[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])(void) = {
@@ -46,7 +57,7 @@ TO_QSPI void (* const chs[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])(void) = {
  * \return void
  ***********************************************/
 #if(EXTRA_INFO_ON_CALC_ERROR == 1)
-  void chsError(void) {
+  static void chsError(void) {
     displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
     sprintf(errorMessage, "cannot change the sign of %s", getRegisterDataTypeName(REGISTER_X, true, false));
     moreInfoOnError("In function fnChangeSign:", errorMessage, NULL, NULL);
@@ -72,7 +83,7 @@ void fnChangeSign(uint16_t unusedButMandatoryParameter) {
 
 
 
-void chsLonI(void) {
+static void chsLonI(void) {
   switch(getRegisterLongIntegerSign(REGISTER_X)) {
     case LI_POSITIVE: {
       setRegisterLongIntegerSign(REGISTER_X, LI_NEGATIVE);
@@ -89,19 +100,19 @@ void chsLonI(void) {
 
 
 
-void chsRema(void) {
+static void chsRema(void) {
   elementwiseRema(chsReal);
 }
 
 
 
-void chsCxma(void) {
+static void chsCxma(void) {
   elementwiseCxma(chsCplx);
 }
 
 
 
-void chsShoI(void) {
+static void chsShoI(void) {
   *(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)) = WP34S_intChs(*(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)));
 }
 

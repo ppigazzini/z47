@@ -172,6 +172,11 @@ void divRealComplex(const real_t *numerReal, const real_t *denomReal, const real
   realDivide(quotientImag, &denom, quotientImag, realContext); // imagPart  = -(a*d) / (c² + d²) = numer / denom
 }
 
+void divComplexReal(const real_t *numerReal, const real_t *numerImag, const real_t *denom, real_t *quotientReal, real_t *quotientImag, realContext_t *realContext) {
+  realDivide(numerReal, denom, quotientReal, realContext);
+  realDivide(numerImag, denom, quotientImag, realContext);
+}
+
 
 
 /******************************************************************************************************************************************************************************************/
