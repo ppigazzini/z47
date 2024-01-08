@@ -833,6 +833,38 @@ bool_t getRegisterAsReal(calcRegister_t reg, real_t *val) {
   return true;
 }
 
+static void longIntegerAngleReduction(calcRegister_t regist, angularMode_t angularMode, real_t *rawAngle, real_t *reducedAngle) {
+  uint32_t oneTurn;
+  longInteger_t angle;
+
+  switch(angularMode) {
+    case amMultPi: {
+      oneTurn = 2;
+      break;
+    }
+    case amGrad: {
+      oneTurn = 400;
+      break;
+    }
+    case amDegree:
+    case amDMS: {
+      oneTurn = 360;
+      break;
+    }
+    default: {
+      convertLongIntegerRegisterToReal(regist, rawAngle, &ctxtReal75);
+      realCopy(rawAngle, reducedAngle);
+      return;
+    }
+  }
+
+  convertLongIntegerRegisterToLongInteger(regist, angle);
+  convertLongIntegerToReal(angle, rawAngle, &ctxtReal75);
+  uInt32ToReal(longIntegerModuloUInt(angle, oneTurn), reducedAngle);
+  longIntegerFree(angle);
+}
+
+
 bool_t getRegisterAsRealAngle(calcRegister_t reg, real_t *val, real_t *raw, angularMode_t *xAngularMode) {
   real_t _raw, _val;
 

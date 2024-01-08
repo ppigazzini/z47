@@ -34,43 +34,6 @@
 #include "wp43.h"
 
 
-
-angularMode_t determineAngleMode(angularMode_t mode) {
-    return mode == amNone ? currentAngularMode : mode;
-}
-
-void longIntegerAngleReduction(calcRegister_t regist, angularMode_t angularMode, real_t *rawAngle, real_t *reducedAngle) {
-  uint32_t oneTurn;
-  longInteger_t angle;
-
-  switch(angularMode) {
-    case amMultPi: {
-      oneTurn = 2;
-      break;
-    }
-    case amGrad: {
-      oneTurn = 400;
-      break;
-    }
-    case amDegree:
-    case amDMS: {
-      oneTurn = 360;
-      break;
-    }
-    default: {
-      convertLongIntegerRegisterToReal(regist, rawAngle, &ctxtReal75);
-      realCopy(rawAngle, reducedAngle);
-      return;
-    }
-  }
-
-  convertLongIntegerRegisterToLongInteger(regist, angle);
-  convertLongIntegerToReal(angle, rawAngle, &ctxtReal75);
-  uInt32ToReal(longIntegerModuloUInt(angle, oneTurn), reducedAngle);
-  longIntegerFree(angle);
-}
-
-
 static void tanReal(void) {
   real_t sin, cos, tan;
   const real_t *r = &tan;
@@ -149,5 +112,4 @@ uint8_t TanComplex(const real_t *xReal, const real_t *xImag, real_t *rReal, real
  ***********************************************/
 void fnTan(uint16_t unusedButMandatoryParameter) {
   processRealComplexMonadicFunction(&tanReal, &tanCplx);
-
 }

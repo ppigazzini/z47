@@ -29,7 +29,6 @@
 #include "items.h"
 #include "mathematics/division.h"
 #include "mathematics/matrix.h"
-#include "mathematics/tan.h"
 #include "mathematics/wp34s.h"
 #include "registers.h"
 #include "registerValueConversions.h"
