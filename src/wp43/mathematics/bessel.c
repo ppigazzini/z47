@@ -57,8 +57,7 @@ void fnBesselJ(uint16_t unusedButMandatoryParameter) {
       realMultiply(&a, const_pi, &a, &ctxtReal75);
       realPolarToRectangular(&r, &a, &r, &a, &ctxtReal75);
       reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
-      convertRealToReal34ResultRegister(&r, REGISTER_X);
-      convertRealToImag34ResultRegister(&a, REGISTER_X);
+      convertComplexToResultRegister(&r, &a, REGISTER_X);
     }
     else {
       displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
@@ -101,8 +100,7 @@ void fnBesselY(uint16_t unusedButMandatoryParameter) {
       realAdd(&a, &b, &a, &ctxtReal75);
 
       reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
-      convertRealToReal34ResultRegister(&r, REGISTER_X);
-      convertRealToImag34ResultRegister(&a, REGISTER_X);
+      convertComplexToResultRegister(&r, &a, REGISTER_X);
     }
     else {
       displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);

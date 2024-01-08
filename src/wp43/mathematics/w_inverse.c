@@ -109,6 +109,5 @@ void wInvCplx(void) {
   real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &xr);
   real34ToReal(REGISTER_IMAG34_DATA(REGISTER_X), &xi);
   WP34S_InverseComplexW(&xr, &xi, &resr, &resi, &ctxtReal39);
-  convertRealToReal34ResultRegister(&resr, REGISTER_X);
-  convertRealToImag34ResultRegister(&resi, REGISTER_X);
+  convertComplexToResultRegister(&resr, &resi, REGISTER_X);
 }

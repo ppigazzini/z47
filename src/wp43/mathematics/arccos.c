@@ -192,6 +192,5 @@ void arccosCplx(void) {
   realMinus(&real, &a, &ctxtReal39);
   realCopy(&imag, &b);
 
-  convertRealToReal34ResultRegister(&b, REGISTER_X);
-  convertRealToImag34ResultRegister(&a, REGISTER_X);
+  convertComplexToResultRegister(&b, &a, REGISTER_X);
 }

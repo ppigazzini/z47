@@ -189,6 +189,5 @@ void fibCplx(void) {
     FibonacciComplex(&xReal, &xImag, &xReal, &xImag, &ctxtReal39);
   }
 
-  convertRealToReal34ResultRegister(&xReal, REGISTER_X);
-  convertRealToImag34ResultRegister(&xImag, REGISTER_X);
+  convertComplexToResultRegister(&xReal, &xImag, REGISTER_X);
 }

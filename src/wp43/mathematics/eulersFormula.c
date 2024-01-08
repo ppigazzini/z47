@@ -95,8 +95,7 @@ void eulersFormulaCplx(void) {
       return;
     }
     else {
-      convertRealToReal34ResultRegister(const_NaN, REGISTER_X);
-      convertRealToImag34ResultRegister(const_NaN, REGISTER_X);
+      convertComplexToResultRegister(const_NaN, const_NaN, REGISTER_X);
       fnSetFlag(FLAG_CPXRES);
       fnRefreshState();
     }
@@ -111,8 +110,7 @@ void eulersFormulaCplx(void) {
 
   eulersFormula(&zReal, &zImag, &zReal, &zImag, &ctxtReal39);
 
-  convertRealToReal34ResultRegister(&zReal, REGISTER_X);
-  convertRealToImag34ResultRegister(&zImag, REGISTER_X);
+  convertComplexToResultRegister(&zReal, &zImag, REGISTER_X);
 
 }
 
@@ -139,8 +137,7 @@ void eulersFormulaReal(void) {
 
   eulersFormula(&c, const_0, &c, &i, &ctxtReal39);
 
-  convertRealToReal34ResultRegister(&c, REGISTER_X);
-  convertRealToImag34ResultRegister(&i, REGISTER_X);
+  convertComplexToResultRegister(&c, &i, REGISTER_X);
 }
 
 
@@ -154,6 +151,5 @@ void eulersFormulaLongint(void) {
 
   eulersFormula(&c, const_0, &c, &i, &ctxtReal39);
 
-  convertRealToReal34ResultRegister(&c, REGISTER_X);
-  convertRealToImag34ResultRegister(&i, REGISTER_X);
+  convertComplexToResultRegister(&c, &i, REGISTER_X);
 }

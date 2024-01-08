@@ -105,8 +105,7 @@ static void sqrt1Px2Cplx(void) {
 
   sqrt1Px2Complex(&zReal, &zImag, &zReal, &zImag, &ctxtReal75);
 
-  convertRealToReal34ResultRegister(&zReal, REGISTER_X);
-  convertRealToImag34ResultRegister(&zImag, REGISTER_X);
+  convertComplexToResultRegister(&zReal, &zImag, REGISTER_X);
 }
 
 

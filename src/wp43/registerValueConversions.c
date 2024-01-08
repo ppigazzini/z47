@@ -359,6 +359,10 @@ void convertRealToImag34ResultRegister(const real_t *real, calcRegister_t dest) 
   realToReal34(&rounded, REGISTER_IMAG34_DATA(dest));
 }
 
+void convertComplexToResultRegister(const real_t *real, const real_t *imag, calcRegister_t dest) {
+  convertRealToReal34ResultRegister(real, dest);
+  convertRealToImag34ResultRegister(imag, dest);
+}
 
 
 void convertTimeRegisterToReal34Register(calcRegister_t source, calcRegister_t destination) {

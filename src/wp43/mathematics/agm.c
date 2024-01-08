@@ -84,8 +84,7 @@ void fnAgm(uint16_t unusedButMandatoryParameter) {
     complexAgm(&aReal, &aImag, &bReal, &bImag, &rReal, &rImag, &ctxtReal75);
 
     reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
-    convertRealToReal34ResultRegister(&rReal, REGISTER_X);
-    convertRealToImag34ResultRegister(&rImag, REGISTER_X);
+    convertComplexToResultRegister(&rReal, &rImag, REGISTER_X);
   }
 
   adjustResult(REGISTER_X, true, true, REGISTER_X, -1, -1);

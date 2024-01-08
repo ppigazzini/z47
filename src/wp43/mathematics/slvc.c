@@ -122,8 +122,7 @@ void fnSlvc(uint16_t unusedButMandatoryParameter) {
       convertRealToReal34ResultRegister(&x[i].r, REGISTER_X + i);
     } else {
       reallocateRegister(REGISTER_X + i, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
-      convertRealToReal34ResultRegister(&x[i].r, REGISTER_X + i);
-      convertRealToImag34ResultRegister(&x[i].i, REGISTER_X + i);
+      convertComplexToResultRegister(&x[i].r, &x[i].i, REGISTER_X + i);
     }
     adjustResult(REGISTER_X + i, false, true, REGISTER_X + i, -1, -1);
   }
@@ -135,8 +134,7 @@ void fnSlvc(uint16_t unusedButMandatoryParameter) {
     }
     else {
       reallocateRegister(REGISTER_T, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
-      convertRealToReal34ResultRegister(&rReal, REGISTER_T);
-      convertRealToImag34ResultRegister(&rImag, REGISTER_T);
+      convertComplexToResultRegister(&rReal, &rImag, REGISTER_T);
     }
     adjustResult(REGISTER_T, false, true, REGISTER_T, -1, -1);
   #else

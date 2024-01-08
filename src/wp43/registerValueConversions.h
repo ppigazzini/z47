@@ -78,6 +78,8 @@
    ***********************************************/
   void convertRealToImag34ResultRegister                     (const real_t *real, calcRegister_t dest);
 
+  void convertComplexToResultRegister                        (const real_t *real, const real_t *imag, calcRegister_t dest);
+  
   void convertTimeRegisterToReal34Register                   (calcRegister_t source, calcRegister_t destination);
   void convertReal34RegisterToTimeRegister                   (calcRegister_t source, calcRegister_t destination);
   void convertLongIntegerRegisterToTimeRegister              (calcRegister_t source, calcRegister_t destination);

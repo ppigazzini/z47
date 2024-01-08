@@ -252,7 +252,6 @@ void fnLINPOL(uint16_t unusedButMandatoryParameter) {
   else {
     linpol(&aImag, &bImag, &p, &rImag);
     reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
-    convertRealToReal34ResultRegister(&rReal, REGISTER_X);
-    convertRealToImag34ResultRegister(&rImag, REGISTER_X);
+    convertComplexToResultRegister(&rReal, &rImag, REGISTER_X);
   }
 }

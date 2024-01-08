@@ -173,8 +173,7 @@ void arcsinCplx(void) {
 
   ArcsinComplex(&xReal, &xImag, &rReal, &rImag, &ctxtReal39);
 
-  convertRealToReal34ResultRegister(&rReal, REGISTER_X);
-  convertRealToImag34ResultRegister(&rImag, REGISTER_X);
+  convertComplexToResultRegister(&rReal, &rImag, REGISTER_X);
 }
 
 uint8_t ArcsinComplex(const real_t *xReal, const real_t *xImag, real_t *rReal, real_t *rImag, realContext_t *realContext) {

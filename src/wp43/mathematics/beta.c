@@ -117,8 +117,7 @@ static void _betaComplex(real_t *xReal, real_t *xImag, real_t *yReal, real_t *yI
 
   if(_beta(xReal, xImag, yReal, yImag, &rReal, &rImag, realContext)) {
     reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
-    convertRealToReal34ResultRegister(&rReal, REGISTER_X);
-    convertRealToImag34ResultRegister(&rImag, REGISTER_X);
+    convertComplexToResultRegister(&rReal, &rImag, REGISTER_X);
   }
 }
 
@@ -137,8 +136,7 @@ static void _betaReal(real_t *xReal, real_t *yReal, realContext_t *realContext) 
     }
     else {
       reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
-      convertRealToReal34ResultRegister(&rReal, REGISTER_X);
-      convertRealToImag34ResultRegister(&rImag, REGISTER_X);
+      convertComplexToResultRegister(&rReal, &rImag, REGISTER_X);
     }
   }
 }

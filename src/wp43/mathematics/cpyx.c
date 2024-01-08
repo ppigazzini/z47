@@ -360,8 +360,7 @@ void cpyxLonICplx(uint16_t combOrPerm) {
   (combOrPerm == CP_COMBINATION) ? cyxCplx(&yReal, &yImag, &xReal, &xImag, &tReal, &tImag, &ctxtReal39)
                                  : pyxCplx(&yReal, &yImag, &xReal, &xImag, &tReal, &tImag, &ctxtReal39);
 
-  convertRealToReal34ResultRegister(&tReal, REGISTER_X);
-  convertRealToImag34ResultRegister(&tImag, REGISTER_X);
+  convertComplexToResultRegister(&tReal, &tImag, REGISTER_X);
 }
 
 /********************************************//**
@@ -473,8 +472,7 @@ void cpyxRealCplx(uint16_t combOrPerm) {
   (combOrPerm == CP_COMBINATION) ? cyxCplx(&yReal, &yImag, &xReal, &xImag, &tReal, &tImag, &ctxtReal39)
                                  : pyxCplx(&yReal, &yImag, &xReal, &xImag, &tReal, &tImag, &ctxtReal39);
 
-  convertRealToReal34ResultRegister(&tReal, REGISTER_X);
-  convertRealToImag34ResultRegister(&tImag, REGISTER_X);
+  convertComplexToResultRegister(&tReal, &tImag, REGISTER_X);
 }
 
 /********************************************//**
@@ -529,8 +527,7 @@ void cpyxCplxLonI(uint16_t combOrPerm) {
                                  : pyxCplx(&yReal, &yImag, &xReal, &xImag, &tReal, &tImag, &ctxtReal39);
 
   reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
-  convertRealToReal34ResultRegister(&tReal, REGISTER_X);
-  convertRealToImag34ResultRegister(&tImag, REGISTER_X);
+  convertComplexToResultRegister(&tReal, &tImag, REGISTER_X);
 }
 
 /********************************************//**
@@ -553,8 +550,7 @@ void cpyxCplxReal(uint16_t combOrPerm) {
                                  : pyxCplx(&yReal, &yImag, &xReal, &xImag, &tReal, &tImag, &ctxtReal39);
 
   reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
-  convertRealToReal34ResultRegister(&tReal, REGISTER_X);
-  convertRealToImag34ResultRegister(&tImag, REGISTER_X);
+  convertComplexToResultRegister(&tReal, &tImag, REGISTER_X);
 }
 
 /********************************************//**
@@ -576,8 +572,7 @@ void cpyxCplxCplx(uint16_t combOrPerm) {
   (combOrPerm == CP_COMBINATION) ? cyxCplx(&yReal, &yImag, &xReal, &xImag, &tReal, &tImag, &ctxtReal39)
                                  : pyxCplx(&yReal, &yImag, &xReal, &xImag, &tReal, &tImag, &ctxtReal39);
 
-  convertRealToReal34ResultRegister(&tReal, REGISTER_X);
-  convertRealToImag34ResultRegister(&tImag, REGISTER_X);
+  convertComplexToResultRegister(&tReal, &tImag, REGISTER_X);
 }
 
 /********************************************//**
@@ -600,8 +595,7 @@ void cpyxCplxShoI(uint16_t combOrPerm) {
                                  : pyxCplx(&yReal, &yImag, &xReal, &xImag, &tReal, &tImag, &ctxtReal39);
 
   reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
-  convertRealToReal34ResultRegister(&tReal, REGISTER_X);
-  convertRealToImag34ResultRegister(&tImag, REGISTER_X);
+  convertComplexToResultRegister(&tReal, &tImag, REGISTER_X);
 }
 
 //=============================================================================
@@ -686,8 +680,7 @@ void cpyxShoICplx(uint16_t combOrPerm) {
   (combOrPerm == CP_COMBINATION) ? cyxCplx(&yReal, &yImag, &xReal, &xImag, &tReal, &tImag, &ctxtReal39)
                                  : pyxCplx(&yReal, &yImag, &xReal, &xImag, &tReal, &tImag, &ctxtReal39);
 
-  convertRealToReal34ResultRegister(&tReal, REGISTER_X);
-  convertRealToImag34ResultRegister(&tImag, REGISTER_X);
+  convertComplexToResultRegister(&tReal, &tImag, REGISTER_X);
 }
 
 /********************************************//**

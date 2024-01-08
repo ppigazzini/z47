@@ -121,9 +121,7 @@ static void expM1Cplx(void) {
     return;
 
   expM1Complex(&zReal, &zImag, &zReal, &zImag, &ctxtReal75);
-
-  convertRealToReal34ResultRegister(&zReal, REGISTER_X);
-  convertRealToImag34ResultRegister(&zImag, REGISTER_X);
+  convertComplexToResultRegister(&zReal, &zImag, REGISTER_X);
 }
 
 
