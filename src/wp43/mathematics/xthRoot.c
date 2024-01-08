@@ -119,8 +119,7 @@ void xthRootComplex(const real_t *aa, const real_t *bb, const real_t *cc, const 
     else {
       if(realIsNaN(&a)||realIsNaN(&b)||realIsNaN(&c)||realIsNaN(&d)) {
         reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
-        convertRealToReal34ResultRegister(const_NaN, REGISTER_X);
-        convertRealToImag34ResultRegister(const_NaN, REGISTER_X);
+        convertComplexToResultRegister(const_NaN, const_NaN, REGISTER_X);
         return;
       }
     }
@@ -128,8 +127,7 @@ void xthRootComplex(const real_t *aa, const real_t *bb, const real_t *cc, const 
 
   if(realIsZero(&a) && realIsZero(&b) && !realIsZero(&c)) {
     reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
-    convertRealToReal34ResultRegister(const_0, REGISTER_X);
-    convertRealToImag34ResultRegister(const_0, REGISTER_X);
+    convertComplexToResultRegister(const_0, const_0, REGISTER_X);
     return;
   }
 
@@ -149,8 +147,7 @@ void xthRootComplex(const real_t *aa, const real_t *bb, const real_t *cc, const 
   realMultiply(&c, &a, &c, realContext);
 
   reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
-  convertRealToReal34ResultRegister(&c, REGISTER_X);
-  convertRealToImag34ResultRegister(&d, REGISTER_X);
+  convertComplexToResultRegister(&c, &d, REGISTER_X);
 }
 
 
@@ -774,13 +771,11 @@ void xthRootRealCplx(void) {
   if(real34IsInfinite(REGISTER_REAL34_DATA(REGISTER_Y))) {
     if(real34IsZero(REGISTER_REAL34_DATA(REGISTER_X)) && real34IsZero(REGISTER_IMAG34_DATA(REGISTER_X))) {
       reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
-      convertRealToReal34ResultRegister(const_NaN, REGISTER_X);
-      convertRealToImag34ResultRegister(const_NaN, REGISTER_X);
+      convertComplexToResultRegister(const_NaN, const_NaN, REGISTER_X);
     }
     else {
       reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
-      convertRealToReal34ResultRegister(const_plusInfinity, REGISTER_X);
-      convertRealToImag34ResultRegister(const_plusInfinity, REGISTER_X);
+       convertComplexToResultRegister(const_plusInfinity, const_plusInfinity, REGISTER_X);
     }
     return;
   }
@@ -807,13 +802,11 @@ void xthRootCplxReal(void) {
   if(real34IsInfinite(REGISTER_REAL34_DATA(REGISTER_Y)) || real34IsInfinite(REGISTER_REAL34_DATA(REGISTER_Y))) {
     if(real34IsZero(REGISTER_REAL34_DATA(REGISTER_X))) {
       reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
-      convertRealToReal34ResultRegister(const_NaN, REGISTER_X);
-      convertRealToImag34ResultRegister(const_NaN, REGISTER_X);
+      convertComplexToResultRegister(const_NaN, const_NaN, REGISTER_X);
     }
     else {
       reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
-      convertRealToReal34ResultRegister(const_plusInfinity, REGISTER_X);
-      convertRealToImag34ResultRegister(const_plusInfinity, REGISTER_X);
+      convertComplexToResultRegister(const_plusInfinity, const_plusInfinity, REGISTER_X);
     }
     return;
   }
@@ -844,13 +837,11 @@ void xthRootCplxCplx(void) {                       //checked
   if(real34IsInfinite(REGISTER_REAL34_DATA(REGISTER_Y)) || real34IsInfinite(REGISTER_IMAG34_DATA(REGISTER_Y))) {
     if(real34IsZero(REGISTER_REAL34_DATA(REGISTER_X)) && real34IsZero(REGISTER_IMAG34_DATA(REGISTER_X))) {
       reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
-      convertRealToReal34ResultRegister(const_NaN, REGISTER_X);
-      convertRealToImag34ResultRegister(const_NaN, REGISTER_X);
+      convertComplexToResultRegister(const_NaN, const_NaN, REGISTER_X);
     }
     else {
       reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
-      convertRealToReal34ResultRegister(const_plusInfinity, REGISTER_X);
-      convertRealToImag34ResultRegister(const_plusInfinity, REGISTER_X);
+      convertComplexToResultRegister(const_plusInfinity, const_plusInfinity, REGISTER_X);
     }
     return;
   }

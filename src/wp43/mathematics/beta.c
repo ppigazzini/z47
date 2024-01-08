@@ -32,35 +32,8 @@
 
 #include "wp43.h"
 
-TO_QSPI void (* const beta[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS][NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])() = {
-// regX |    regY ==>    1             2             3             4          5          6          7          8          9          10
-//      V                Long integer  Real34        Complex34     Time       Date       String     Real34 mat Complex34  mat Short  Config data
-/*  1 Long integer  */ { betaLonILonI, betaRealLonI, betaCplxLonI, betaError, betaError, betaError, betaError, betaError, betaError, betaError },
-/*  2 Real34        */ { betaLonIReal, betaRealReal, betaCplxReal, betaError, betaError, betaError, betaError, betaError, betaError, betaError },
-/*  3 Complex34     */ { betaLonICplx, betaRealCplx, betaCplxCplx, betaError, betaError, betaError, betaError, betaError, betaError, betaError },
-/*  4 Time          */ { betaError,    betaError,    betaError,    betaError, betaError, betaError, betaError, betaError, betaError, betaError },
-/*  5 Date          */ { betaError,    betaError,    betaError,    betaError, betaError, betaError, betaError, betaError, betaError, betaError },
-/*  6 String        */ { betaError,    betaError,    betaError,    betaError, betaError, betaError, betaError, betaError, betaError, betaError },
-/*  7 Real34 mat    */ { betaError,    betaError,    betaError,    betaError, betaError, betaError, betaError, betaError, betaError, betaError },
-/*  8 Complex34 mat */ { betaError,    betaError,    betaError,    betaError, betaError, betaError, betaError, betaError, betaError, betaError },
-/*  9 Short integer */ { betaError,    betaError,    betaError,    betaError, betaError, betaError, betaError, betaError, betaError, betaError },
-/* 10 Config data   */ { betaError,    betaError,    betaError,    betaError, betaError, betaError, betaError, betaError, betaError, betaError }
-};
-
-/********************************************//**
- * \brief Data type error in beta
- *
- * \param void
- * \return void
- ***********************************************/
-#if(EXTRA_INFO_ON_CALC_ERROR == 1)
-  void betaError(void) {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-    sprintf(errorMessage, "cannot calculate Beta of (%s, %s)", getRegisterDataTypeName(REGISTER_Y, true, false), getRegisterDataTypeName(REGISTER_X, true, false));
-    moreInfoOnError("In function fnBeta:", errorMessage, NULL, NULL);
-  }
-#endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-
+static void _betaComplex(real_t *xReal, real_t *xImag, real_t *yReal, real_t *yImag, realContext_t *realContext);
+static void _betaReal(real_t *xReal, real_t *yReal, realContext_t *realContext);
 
 /********************************************//**
  * \brief regX ==> regL and beta(regX, RegY) ==> regX
@@ -70,11 +43,24 @@ TO_QSPI void (* const beta[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS][NUMBER_OF_DATA
  * \return void
  ***********************************************/
 void fnBeta(uint16_t unusedButMandatoryParameter) {
+  bool_t cmplxRes = false;
+  real_t aReal, bReal;
+  real_t aImag, bImag;
+
+  if (!getRegisterAsComplexOrReal(REGISTER_X, &aReal, &aImag, &cmplxRes))
+    return;
+  if (!getRegisterAsComplexOrReal(REGISTER_Y, &bReal, &bImag, &cmplxRes))
+    return;
+
   if(!saveLastX()) {
     return;
   }
 
-  beta[getRegisterDataType(REGISTER_X)][getRegisterDataType(REGISTER_Y)]();
+  if (!cmplxRes) {
+    _betaReal(&aReal, &bReal, &ctxtReal39);
+  } else {
+    _betaComplex(&aReal, &aImag, &bReal, &bImag, &ctxtReal39);
+  }
 
   adjustResult(REGISTER_X, true, true, REGISTER_X, -1, -1);
 }
@@ -131,8 +117,7 @@ static void _betaComplex(real_t *xReal, real_t *xImag, real_t *yReal, real_t *yI
 
   if(_beta(xReal, xImag, yReal, yImag, &rReal, &rImag, realContext)) {
     reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
-    convertRealToReal34ResultRegister(&rReal, REGISTER_X);
-    convertRealToImag34ResultRegister(&rImag, REGISTER_X);
+    convertComplexToResultRegister(&rReal, &rImag, REGISTER_X);
   }
 }
 
@@ -151,132 +136,8 @@ static void _betaReal(real_t *xReal, real_t *yReal, realContext_t *realContext) 
     }
     else {
       reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
-      convertRealToReal34ResultRegister(&rReal, REGISTER_X);
-      convertRealToImag34ResultRegister(&rImag, REGISTER_X);
+      convertComplexToResultRegister(&rReal, &rImag, REGISTER_X);
     }
   }
 }
 #endif // !SAVE_SPACE_DM42_12
-
-
-void betaLonILonI(void) {
-#if !defined(SAVE_SPACE_DM42_12)
-  real_t x, y;
-
-  convertLongIntegerRegisterToReal(REGISTER_Y, &y, &ctxtReal39);
-  convertLongIntegerRegisterToReal(REGISTER_X, &x, &ctxtReal39);
-
-  _betaReal(&x, &y, &ctxtReal39);
-#endif // !SAVE_SPACE_DM42_12
-}
-
-
-void betaRealLonI(void) {
-#if !defined(SAVE_SPACE_DM42_12)
-  real_t x, y;
-
-  real34ToReal(REGISTER_REAL34_DATA(REGISTER_Y), &y);
-  convertLongIntegerRegisterToReal(REGISTER_X, &x, &ctxtReal39);
-
-  _betaReal(&x, &y, &ctxtReal39);
-#endif // !SAVE_SPACE_DM42_12
-}
-
-
-void betaCplxLonI(void) {
-#if !defined(SAVE_SPACE_DM42_12)
-  real_t xReal, xImag, yReal, yImag;
-
-  real34ToReal(REGISTER_REAL34_DATA(REGISTER_Y), &yReal);
-  real34ToReal(REGISTER_IMAG34_DATA(REGISTER_Y), &yImag);
-
-  convertLongIntegerRegisterToReal(REGISTER_X, &xReal, &ctxtReal39);
-  realZero(&xImag);
-
-  _betaComplex(&xReal, &xImag, &yReal, &yImag, &ctxtReal39);
-#endif // !SAVE_SPACE_DM42_12
-}
-
-
-void betaLonIReal(void) {
-#if !defined(SAVE_SPACE_DM42_12)
-  real_t x, y;
-
-  convertLongIntegerRegisterToReal(REGISTER_Y, &y, &ctxtReal39);
-  real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &x);
-
-  _betaReal(&x, &y, &ctxtReal39);
-#endif // !SAVE_SPACE_DM42_12
-}
-
-
-void betaRealReal(void) {
-#if !defined(SAVE_SPACE_DM42_12)
-  real_t x, y;
-
-  real34ToReal(REGISTER_REAL34_DATA(REGISTER_Y), &y);
-  real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &x);
-
-  _betaReal(&x, &y, &ctxtReal39);
-#endif // !SAVE_SPACE_DM42_12
-}
-
-
-void betaCplxReal(void) {
-#if !defined(SAVE_SPACE_DM42_12)
-  real_t xReal, xImag, yReal, yImag;
-
-  real34ToReal(REGISTER_REAL34_DATA(REGISTER_Y), &yReal);
-  real34ToReal(REGISTER_IMAG34_DATA(REGISTER_Y), &yImag);
-
-  real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &xReal);
-  realZero(&xImag);
-
-  _betaComplex(&xReal, &xImag, &yReal, &yImag, &ctxtReal39);
-#endif // !SAVE_SPACE_DM42_12
-}
-
-
-void betaLonICplx(void) {
-#if !defined(SAVE_SPACE_DM42_12)
-  real_t xReal, xImag, yReal, yImag;
-
-  convertLongIntegerRegisterToReal(REGISTER_Y, &yReal, &ctxtReal39);
-  realZero(&yImag);
-
-  real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &xReal);
-  real34ToReal(REGISTER_IMAG34_DATA(REGISTER_X), &xImag);
-
-  _betaComplex(&xReal, &xImag, &yReal, &yImag, &ctxtReal39);
-#endif // !SAVE_SPACE_DM42_12
-}
-
-
-void betaRealCplx(void)  {
-#if !defined(SAVE_SPACE_DM42_12)
-  real_t xReal, xImag, yReal, yImag;
-
-  real34ToReal(REGISTER_REAL34_DATA(REGISTER_Y), &yReal);
-  realZero(&yImag);
-
-  real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &xReal);
-  real34ToReal(REGISTER_IMAG34_DATA(REGISTER_X), &xImag);
-
-  _betaComplex(&xReal, &xImag, &yReal, &yImag, &ctxtReal39);
-#endif // !SAVE_SPACE_DM42_12
-}
-
-
-void betaCplxCplx(void)  {
-#if !defined(SAVE_SPACE_DM42_12)
-  real_t xReal, xImag, yReal, yImag;
-
-  real34ToReal(REGISTER_REAL34_DATA(REGISTER_Y), &yReal);
-  real34ToReal(REGISTER_IMAG34_DATA(REGISTER_Y), &yImag);
-
-  real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &xReal);
-  real34ToReal(REGISTER_IMAG34_DATA(REGISTER_X), &xImag);
-
-  _betaComplex(&xReal, &xImag, &yReal, &yImag, &ctxtReal39);
-#endif // !SAVE_SPACE_DM42_12
-}

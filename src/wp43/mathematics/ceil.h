@@ -31,7 +31,6 @@
     #define ceilError typeError
   #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
 
-  void ceilLonI (void);
   void ceilRema (void);
   void ceilReal (void);
 #endif // !CEIL_H

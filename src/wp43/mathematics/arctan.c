@@ -145,8 +145,7 @@ void arctanCplx(void) {
 
   ArctanComplex(&xReal, &xImag, &rReal, &rImag, &ctxtReal39);
 
-  convertRealToReal34ResultRegister(&rReal, REGISTER_X);
-  convertRealToImag34ResultRegister(&rImag, REGISTER_X);
+  convertComplexToResultRegister(&rReal, &rImag, REGISTER_X);
 
   //real_t a, b, numer, denom;
   //
@@ -181,8 +180,7 @@ void arctanCplx(void) {
   //realMultiply(&b, const_1on2, &b, &ctxtReal39);
   //realChangeSign(&b);
   //
-  //convertRealToReal34ResultRegister(&b, REGISTER_X);
-  //convertRealToImag34ResultRegister(&a, REGISTER_X);
+  //convertComplexToResultRegister(&b, &a, REGISTER_X);
 }
 
 

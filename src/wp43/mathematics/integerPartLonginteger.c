@@ -80,11 +80,6 @@ void lintLonI(void) {
 
 
 
-void lintRema(void) {
-}
-
-
-
 void lintShoI(void) {
   convertShortIntegerRegisterToLongIntegerRegister(REGISTER_X, REGISTER_X);
   setLastintegerBasetoZero();

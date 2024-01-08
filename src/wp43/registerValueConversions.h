@@ -78,6 +78,8 @@
    ***********************************************/
   void convertRealToImag34ResultRegister                     (const real_t *real, calcRegister_t dest);
 
+  void convertComplexToResultRegister                        (const real_t *real, const real_t *imag, calcRegister_t dest);
+  
   void convertTimeRegisterToReal34Register                   (calcRegister_t source, calcRegister_t destination);
   void convertReal34RegisterToTimeRegister                   (calcRegister_t source, calcRegister_t destination);
   void convertLongIntegerRegisterToTimeRegister              (calcRegister_t source, calcRegister_t destination);
@@ -111,4 +113,6 @@
   bool_t getRegisterAsComplex(calcRegister_t reg, real_t *r, real_t *c);
   bool_t getRegisterAsComplexOrReal(calcRegister_t reg, real_t *r, real_t *c, bool_t *cmplx);
   bool_t getRegisterAsReal(calcRegister_t reg, real_t *val);
+
+  void processRealComplexMonadicFunction(void (*realf)(void), void (*complexf)(void));
 #endif // !REGISTERVALUECONVERSIONS_H

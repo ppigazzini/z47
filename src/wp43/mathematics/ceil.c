@@ -30,12 +30,13 @@
 
 #include "wp43.h"
 
+static void ceilNoOp(void);
 
 
 TO_QSPI void (* const Ceil[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])(void) = {
 // regX ==> 1            2         3          4          5          6          7          8           9             10
 //          Long integer Real34    Complex34  Time       Date       String     Real34 mat Complex34 m Short integer Config data
-            ceilLonI,    ceilReal, ceilError, ceilError, ceilError, ceilError, ceilRema,  ceilError,  ceilError,    ceilError
+            ceilNoOp,    ceilReal, ceilError, ceilError, ceilError, ceilError, ceilRema,  ceilError,  ceilNoOp,     ceilError
 };
 
 
@@ -75,8 +76,7 @@ void fnCeil(uint16_t unusedButMandatoryParameter) {
 
 
 
-void ceilLonI(void) {
-  convertLongIntegerRegisterToReal34Register(REGISTER_X, REGISTER_X);
+static void ceilNoOp(void) {
 }
 
 

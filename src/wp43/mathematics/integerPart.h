@@ -31,8 +31,6 @@
     #define ipError typeError
   #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
 
-  void ipLonI (void);
   void ipRema (void);
-  void ipShoI (void);
   void ipReal (void);
 #endif // !INTEGERPART_H

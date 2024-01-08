@@ -133,6 +133,5 @@ void coshCplx(void) {
   realMultiply(&cosha, &cosb, &a, &ctxtReal39);
   realMultiply(&sinha, &sinb, &b, &ctxtReal39);
 
-  convertRealToReal34ResultRegister(&a, REGISTER_X);
-  convertRealToImag34ResultRegister(&b, REGISTER_X);
+  convertComplexToResultRegister(&a, &b, REGISTER_X);
 }

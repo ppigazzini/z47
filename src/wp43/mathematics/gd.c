@@ -159,8 +159,7 @@ void gdCplx(uint16_t gdOrInvGd) {
     gdError(gdOrInvGd, errorCode);
   }
   else {
-    convertRealToReal34ResultRegister(&xReal, REGISTER_X);
-    convertRealToImag34ResultRegister(&xImag, REGISTER_X);
+    convertComplexToResultRegister(&xReal, &xImag, REGISTER_X);
   }
 }
 

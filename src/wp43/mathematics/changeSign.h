@@ -21,21 +21,17 @@
   #define CHANGESIGN_H
 
   #include "defines.h"
+  #include "realType.h"
   #include <stdint.h>
 
   void fnChangeSign(uint16_t unusedButMandatoryParameter);
 
-  #if(EXTRA_INFO_ON_CALC_ERROR == 1)
-    void chsError    (void);
-  #else // (EXTRA_INFO_ON_CALC_ERROR == 1)
-    #define chsError typeError
-  #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+  static inline void chsComplex(real_t *aReal, real_t *aImag) {
+    realChangeSign(aReal);
+    realChangeSign(aImag);
+  }
 
   //      RegX
-  void chsLonI     (void);
-  void chsRema     (void);
-  void chsCxma     (void);
-  void chsShoI     (void);
   void chsReal     (void);
   void chsCplx     (void);
 #endif // !CHANGESIGN_H

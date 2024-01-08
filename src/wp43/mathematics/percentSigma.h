@@ -26,6 +26,4 @@
   void fnPercentSigma(uint16_t unusedButMandatoryParameter);
 
   bool_t percentSigma(real_t *xReal, real_t *rReal, realContext_t *realContext);
-  void   percentSigmaLonI(void);
-  void   percentSigmaReal(void);
 #endif // !PERCENTSIGMA_H

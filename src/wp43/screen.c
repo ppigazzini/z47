@@ -1034,6 +1034,26 @@ void execTimerApp(uint16_t timerType) {
   bool_t   noShow = false;                                                         //JM
   uint8_t  displaymode = stdNoEnlarge;
 
+
+uint16_t str2dec(char* ch) {
+  //uint16_t ll = ch[1], hh = ch[0], 
+  uint16_t res = (uint8_t)ch[1] + (((uint8_t)ch[0]) << 8);
+  //printf("= %u *256+ %u = %u\n", (uint8_t)hh, (uint8_t)ll, (uint16_t)res);
+return res;
+}
+
+bool_t ratherUseEnlargement(uint16_t charCode) {
+  return ((bool_t) (
+    ((charCode >= str2dec(STD_SUP_f)) && (charCode <= str2dec(STD_SUP_h))) || 
+    ( charCode == str2dec(STD_SUP_r)) || 
+    ( charCode == str2dec(STD_SUP_x)) || 
+
+    ((charCode >= str2dec(STD_SUB_f)) && (charCode <= str2dec(STD_SUB_h))) || 
+    ( charCode == str2dec(STD_SUB_r)) || 
+    ( charCode == str2dec(STD_SUB_t))
+    ));
+}
+
   uint32_t showGlyphCode(uint16_t charCode, const font_t *font, uint32_t x, uint32_t y, videoMode_t videoMode, bool_t showLeadingCols, bool_t showEndingCols) {
     uint32_t col, row, xGlyph, endingCols;
     int32_t  glyphId;
@@ -1048,7 +1068,8 @@ void execTimerApp(uint16_t timerType) {
     if(combinationFonts == stdnumEnlarge || combinationFonts == numHalf) {
       if(maxiC == 1 && font == &numericFont) {                //JM allow enlargements
         glyphId = findGlyph(font, charCode);
-        if(glyphId < 0) {           //JM if there is not a large glyph, enlarge the small letter
+        //printf("DDDDDD %d %d --- %u\n",glyphId, charCode, ratherUseEnlargement(charCode));
+        if(glyphId < 0 || ratherUseEnlargement(charCode)) {           //JM if there is not a large glyph, enlarge the small letter
           enlarge = true;
           font = &standardFont;
         }
@@ -1098,8 +1119,9 @@ void execTimerApp(uint16_t timerType) {
 
     // Clearing the space needed by the glyph
     bool_t rep_enlarge = numDouble || (enlarge && combinationFonts != 0);                //JM ENLARGE
+    uint32_t yNewMaxDx = (rep_enlarge ? 2 : 1) * (((glyph->rowsAboveGlyph + glyph->rowsGlyph + glyph->rowsBelowGlyph) >> miniC) - (rep_enlarge ? 4 : 0));
     if(!noShow) {
-      lcd_fill_rect(x, y, (uint32_t)(doubling * ((xGlyph + glyph->colsGlyph + endingCols) >> miniC)) >> 3, (rep_enlarge ? 2 : 1) * (((glyph->rowsAboveGlyph + glyph->rowsGlyph + glyph->rowsBelowGlyph) >> miniC) - (rep_enlarge ? 4 : 0)), (videoMode == vmNormal ? LCD_SET_VALUE : LCD_EMPTY_VALUE));  //JMmini
+      lcd_fill_rect(x, y, (uint32_t)(doubling * ((xGlyph + glyph->colsGlyph + endingCols) >> miniC)) >> 3, yNewMaxDx, (videoMode == vmNormal ? LCD_SET_VALUE : LCD_EMPTY_VALUE));  //JMmini
     }
     if(displaymode == numHalf) {
       y += (uint32_t)(glyph->rowsAboveGlyph*REDUCT_A/REDUCT_B*(rep_enlarge ? 2 : 1));
@@ -1129,13 +1151,10 @@ void execTimerApp(uint16_t timerType) {
         if(byte & 0x80 && !noShow) { // MSB set
           uint32_t x1 = x+((((doubling * (xGlyph+col)) >> miniC)) >> 3);
           uint32_t x2 = x1;
-          uint32_t y1 = y0+((y-y0) >> miniC);
-          uint32_t y2 = y1;
+          uint32_t y1 = min(SCREEN_HEIGHT-1, y0 + min(yNewMaxDx,((y-y0) >> miniC)));
+          uint32_t y2 = min(SCREEN_HEIGHT-1, y0 + min(yNewMaxDx,1+((y-y0) >> miniC)));
           if(x2 > 0) {
             x2--;
-          }
-          if(y2 < SCREEN_WIDTH-1) {
-            y2++;
           }
           if(videoMode == vmNormal) { // Black pixel for white background
             setBlackPixel(x1,y1);

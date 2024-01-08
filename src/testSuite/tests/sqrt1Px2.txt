@@ -14,7 +14,7 @@ Func: fnSqrt1Px2
 ; sqrt(Long Integer) --> Long Integer or Real
 ;=======================================
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"0"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"0" RX=LonI:"1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"0" RX=Real:"1"
 
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"2"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"2" RX=Real:"2.2360679774997896964091736687312762354406183596115257242708972"

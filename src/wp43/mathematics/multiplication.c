@@ -160,6 +160,11 @@ void mulComplexComplex(const real_t *factor1Real, const real_t *factor1Imag, con
   }
 }
 
+void mulComplexReal(const real_t *factor1Real, const real_t *factor1Imag, const real_t *factor2, real_t *productReal, real_t *productImag, realContext_t *realContext) {
+  realMultiply(factor1Real, factor2, productReal, realContext);
+  realMultiply(factor1Imag, factor2, productImag, realContext);
+}
+
 /******************************************************************************************************************************************************************************************/
 /* long integer × ...                                                                                                                                                                     */
 /******************************************************************************************************************************************************************************************/
@@ -418,8 +423,7 @@ void mulLonICplx(void) {
   realMultiply(&c, &a, &c, &ctxtReal39);
   realMultiply(&d, &a, &d, &ctxtReal39);
 
-  convertRealToReal34ResultRegister(&c, REGISTER_X);
-  convertRealToImag34ResultRegister(&d, REGISTER_X);
+  convertComplexToResultRegister(&c, &d, REGISTER_X);
 }
 
 
@@ -441,8 +445,7 @@ void mulCplxLonI(void) {
   realMultiply(&b, &c, &b, &ctxtReal39);
 
   reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
-  convertRealToReal34ResultRegister(&a, REGISTER_X);
-  convertRealToImag34ResultRegister(&b, REGISTER_X);
+  convertComplexToResultRegister(&a, &b, REGISTER_X);
 }
 
 
@@ -1028,6 +1031,5 @@ void mulCplxCplx(void) {
 
   mulComplexComplex(&yReal, &yImag, &xReal, &xImag, &xReal, &xImag, &ctxtReal39);
 
-  convertRealToReal34ResultRegister(&xReal, REGISTER_X);
-  convertRealToImag34ResultRegister(&xImag, REGISTER_X);
+  convertComplexToResultRegister(&xReal, &xImag, REGISTER_X);
 }

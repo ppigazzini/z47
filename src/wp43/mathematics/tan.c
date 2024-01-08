@@ -200,8 +200,7 @@ void tanCplx(void) {
 
   TanComplex(&xReal, &xImag, &xReal, &xImag, &ctxtReal51);
 
-  convertRealToReal34ResultRegister(&xReal, REGISTER_X);
-  convertRealToImag34ResultRegister(&xImag, REGISTER_X);
+  convertComplexToResultRegister(&xReal, &xImag, REGISTER_X);
 }
 
 uint8_t TanComplex(const real_t *xReal, const real_t *xImag, real_t *rReal, real_t *rImag, realContext_t *realContext) {

@@ -63,6 +63,7 @@ extern const int16_t menu_alpha_intl[];
 extern const int16_t menu_REGIST[];
 extern const softmenu_t softmenu[];
 char line[100000], lastInParameters[10000], fileName[1000], *filePath, filePathName[2000], registerExpectedAndValue[2400], realString[2400];
+char testCaseName[1000], testCasePrefix[1000], testCaseSuffix[1000];
 int32_t lineNumber, numTestsFile, numTestsTotal, failedTests;
 int32_t functionIndex, funcType, correctSignificantDigits;
 void (*funcNoParam)(uint16_t);
@@ -81,7 +82,6 @@ const funcTest_t funcTestNoParam[] = {
   {"fnArctan",               fnArctan              },
   {"fnArctanh",              fnArctanh             },
   {"fnArg",                  fnArg                 },
-  {"fnArg_all",              fnArg_all             },    //JM
   {"fnAsr",                  fnAsr                 },
   {"fnAtan2",                fnAtan2               },
   {"fnBatteryVoltage",       fnBatteryVoltage      },
@@ -284,8 +284,6 @@ const funcTest_t funcTestNoParam[] = {
   {"fnRollUp",               fnRollUp              },
   {"fnRound",                fnRound               },
   {"fnRoundi",               fnRoundi              },
-  {"fnRound2",               fnRound2              },
-  {"fnRoundi2",              fnRoundi2             },
   {"fnRowSum",               fnRowSum              },
   {"fnRowNorm",              fnRowNorm             },
 
@@ -3056,7 +3054,10 @@ void processLine(void) {
     if('a' <= line[i] && line[i] <= 'z') {
       line[i] -= 32;
     }
-    if(i >= 5 && strncmp(line, "FUNC: ", 6) == 0) {
+    if(i >= 5 && (strncmp(line, "FUNC: ", 6) == 0 || strncmp(line, "DESC: ", 6) == 0)) {
+      break;
+    }
+    if(i >= 12 && (strncmp(line, "DESC_PREFIX: ", 13) == 0 || strncmp(line, "DESC_SUFFIX: ", 13) == 0)) {
       break;
     }
   }
@@ -3065,6 +3066,21 @@ void processLine(void) {
     //printf("%s\n", line);
     strcpy(lastInParameters, line);
     inParameters(line + 4);
+  }
+
+  else if(strncmp(line, "DESC: ", 6) == 0) {
+    //printf("%s\n", line);
+    strcpy(testCaseName, line + 6);
+  }
+
+  else if(strncmp(line, "DESC_PREFIX: ", 13) == 0) {
+    //printf("%s\n", line);
+    strcpy(testCasePrefix, line + 13);
+  }
+
+  else if(strncmp(line, "DESC_SUFFIX: ", 13) == 0) {
+    //printf("%s\n", line);
+    strcpy(testCaseSuffix, line + 13);
   }
 
   else if(strncmp(line, "FUNC: ", 6) == 0) {

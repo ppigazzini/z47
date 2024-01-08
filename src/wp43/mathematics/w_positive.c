@@ -100,8 +100,7 @@ void wPosReal(void) {
     else if(getSystemFlag(FLAG_CPXRES)) {
       WP34S_ComplexLambertW(&x, const_0, &res, &resi, &ctxtReal39);
       reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
-      convertRealToReal34ResultRegister(&res, REGISTER_X);
-      convertRealToImag34ResultRegister(&resi, REGISTER_X);
+      convertComplexToResultRegister(&res, &resi, REGISTER_X);
     }
     else {
       displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
@@ -123,6 +122,5 @@ void wPosCplx(void) {
   real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &xr);
   real34ToReal(REGISTER_IMAG34_DATA(REGISTER_X), &xi);
   WP34S_ComplexLambertW(&xr, &xi, &resr, &resi, &ctxtReal39);
-  convertRealToReal34ResultRegister(&resr, REGISTER_X);
-  convertRealToImag34ResultRegister(&resi, REGISTER_X);
+  convertComplexToResultRegister(&resr, &resi, REGISTER_X);
 }

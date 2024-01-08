@@ -36,30 +36,6 @@
 #include "wp43.h"
 
 
-#if !defined(SAVE_SPACE_DM42_12)
-static bool_t besselGetParam(calcRegister_t regist, real_t *r, realContext_t *realContext) {
-  switch(getRegisterDataType(regist)) {
-    case dtReal34: {
-      if(getRegisterAngularMode(regist) == amNone) {
-        real34ToReal(REGISTER_REAL34_DATA(regist), r);
-        return true;
-      }
-      break;
-    }
-    case dtLongInteger: {
-      convertLongIntegerRegisterToReal(regist, r, realContext);
-      return true;
-    }
-  }
-  displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-  #if(EXTRA_INFO_ON_CALC_ERROR == 1)
-    sprintf(errorMessage, "cannot calculate Bessel function for %s and %s", getRegisterDataTypeName(REGISTER_X, true, false), getRegisterDataTypeName(REGISTER_Y, true, false));
-    moreInfoOnError("In function besselGetParam:", errorMessage, NULL, NULL);
-  #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-  return false;
-}
-#endif // !SAVE_SPACE_DM42_12
-
 void fnBesselJ(uint16_t unusedButMandatoryParameter) {
 #if !defined(SAVE_SPACE_DM42_12)
   real_t x, n, r, a;
@@ -68,7 +44,7 @@ void fnBesselJ(uint16_t unusedButMandatoryParameter) {
     return;
   }
 
- if(besselGetParam(REGISTER_X, &x, &ctxtReal75) && besselGetParam(REGISTER_Y, &n, &ctxtReal75)) {
+ if(getRegisterAsReal(REGISTER_X, &x) && getRegisterAsReal(REGISTER_Y, &n)) {
     if(realIsAnInteger(&n) || (!realIsNegative(&x))) {
       WP34S_BesselJ(&n, &x, &r, &ctxtReal75);
       reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
@@ -81,8 +57,7 @@ void fnBesselJ(uint16_t unusedButMandatoryParameter) {
       realMultiply(&a, const_pi, &a, &ctxtReal75);
       realPolarToRectangular(&r, &a, &r, &a, &ctxtReal75);
       reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
-      convertRealToReal34ResultRegister(&r, REGISTER_X);
-      convertRealToImag34ResultRegister(&a, REGISTER_X);
+      convertComplexToResultRegister(&r, &a, REGISTER_X);
     }
     else {
       displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
@@ -104,7 +79,7 @@ void fnBesselY(uint16_t unusedButMandatoryParameter) {
     return;
   }
 
-  if(besselGetParam(REGISTER_X, &x, &ctxtReal75) && besselGetParam(REGISTER_Y, &n, &ctxtReal75)) {
+  if(getRegisterAsReal(REGISTER_X, &x) && getRegisterAsReal(REGISTER_Y, &n)) {
     if(!realIsNegative(&x)) {
       WP34S_BesselY(&n, &x, &r, &ctxtReal75);
       reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
@@ -125,8 +100,7 @@ void fnBesselY(uint16_t unusedButMandatoryParameter) {
       realAdd(&a, &b, &a, &ctxtReal75);
 
       reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
-      convertRealToReal34ResultRegister(&r, REGISTER_X);
-      convertRealToImag34ResultRegister(&a, REGISTER_X);
+      convertComplexToResultRegister(&r, &a, REGISTER_X);
     }
     else {
       displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);

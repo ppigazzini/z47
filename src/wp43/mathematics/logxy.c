@@ -141,8 +141,7 @@ static void logxy(const real_t *xReal, const real_t *yReal, realContext_t *realC
       }
       else if(getFlag(FLAG_CPXRES)) {
         reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
-        convertRealToReal34ResultRegister(&rReal, REGISTER_X);
-        convertRealToImag34ResultRegister(&rImag, REGISTER_X);
+        convertComplexToResultRegister(&rReal, &rImag, REGISTER_X);
       }
       else if(getFlag(FLAG_SPCRES)) {
         reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
@@ -218,8 +217,7 @@ void logxyCplxLonI(void) {
     logXYComplex(&xReal, &xImag, &yReal, &yImag, &rReal, &rImag, &ctxtReal39);
 
     reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
-    convertRealToReal34ResultRegister(&rReal, REGISTER_X);
-    convertRealToImag34ResultRegister(&rImag, REGISTER_X);
+    convertComplexToResultRegister(&rReal, &rImag, REGISTER_X);
   }
 }
 
@@ -287,8 +285,7 @@ void logxyCplxReal(void) {
     logXYComplex(&xReal, &xImag, &yReal, &yImag, &rReal, &rImag, &ctxtReal39);
 
     reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
-    convertRealToReal34ResultRegister(&rReal, REGISTER_X);
-    convertRealToImag34ResultRegister(&rImag, REGISTER_X);
+    convertComplexToResultRegister(&rReal, &rImag, REGISTER_X);
   }
 }
 
@@ -333,8 +330,7 @@ void logxyLonICplx(void) {
   if(checkArgs(&xReal, &xImag, &yReal, &yImag)) {
     logXYComplex(&xReal, &xImag, &yReal, &yImag, &rReal, &rImag, &ctxtReal39);
 
-    convertRealToReal34ResultRegister(&rReal, REGISTER_X);
-    convertRealToImag34ResultRegister(&rImag, REGISTER_X);
+    convertComplexToResultRegister(&rReal, &rImag, REGISTER_X);
   }
 }
 
@@ -352,8 +348,7 @@ void logxyRealCplx(void) {
   if(checkArgs(&xReal, &xImag, &yReal, &yImag)) {
     logXYComplex(&xReal, &xImag, &yReal, &yImag, &rReal, &rImag, &ctxtReal39);
 
-    convertRealToReal34ResultRegister(&rReal, REGISTER_X);
-    convertRealToImag34ResultRegister(&rImag, REGISTER_X);
+    convertComplexToResultRegister(&rReal, &rImag, REGISTER_X);
   }
 }
 
@@ -371,8 +366,7 @@ void logxyCplxCplx(void) {
   if(checkArgs(&xReal, &xImag, &yReal, &yImag)) {
     logXYComplex(&xReal, &xImag, &yReal, &yImag, &rReal, &rImag, &ctxtReal39);
 
-    convertRealToReal34ResultRegister(&rReal, REGISTER_X);
-    convertRealToImag34ResultRegister(&rImag, REGISTER_X);
+    convertComplexToResultRegister(&rReal, &rImag, REGISTER_X);
   }
 }
 
@@ -390,8 +384,7 @@ void logxyShoICplx(void) {
   if(checkArgs(&xReal, &xImag, &yReal, &yImag)) {
     logXYComplex(&xReal, &xImag, &yReal, &yImag, &rReal, &rImag, &ctxtReal39);
 
-    convertRealToReal34ResultRegister(&rReal, REGISTER_X);
-    convertRealToImag34ResultRegister(&rImag, REGISTER_X);
+    convertComplexToResultRegister(&rReal, &rImag, REGISTER_X);
   }
 }
 
@@ -428,8 +421,7 @@ void logxyCplxShoI(void) {
     logXYComplex(&xReal, &xImag, &yReal, &yImag, &rReal, &rImag, &ctxtReal39);
 
     reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
-    convertRealToReal34ResultRegister(&rReal, REGISTER_X);
-    convertRealToImag34ResultRegister(&rImag, REGISTER_X);
+    convertComplexToResultRegister(&rReal, &rImag, REGISTER_X);
   }
 }
 

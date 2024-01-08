@@ -106,8 +106,7 @@ void sqrtLonI(void) {
     reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
     realSetPositiveSign(&a);
     realSquareRoot(&a, &a, &ctxtReal39);
-    real34Zero(REGISTER_REAL34_DATA(REGISTER_X));
-    convertRealToImag34ResultRegister(&a, REGISTER_X);
+    convertComplexToResultRegister(const_0, &a, REGISTER_X);
   }
   else {
     displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
@@ -143,8 +142,7 @@ void sqrtShoI(void) {
     reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
     realSetPositiveSign(&a);
     realSquareRoot(&a, &a, &ctxtReal39);
-    real34Zero(REGISTER_REAL34_DATA(REGISTER_X));
-    convertRealToImag34ResultRegister(&a, REGISTER_X);
+    convertComplexToResultRegister(const_0, &a, REGISTER_X);
   }
   else {
     *(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)) = WP34S_intSqrt(*(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)));
@@ -175,8 +173,7 @@ void sqrtReal(void) {
     reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
     realSetPositiveSign(&a);
     realSquareRoot(&a, &a, &ctxtReal39);
-    real34Zero(REGISTER_REAL34_DATA(REGISTER_X));
-    convertRealToImag34ResultRegister(&a, REGISTER_X);
+    convertComplexToResultRegister(const_0, &a, REGISTER_X);
   }
   else {
     displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
@@ -197,8 +194,7 @@ void sqrtCplx(void) {
 
   sqrtComplex(&a, &b, &a, &b, &ctxtReal39);
 
-  convertRealToReal34ResultRegister(&a, REGISTER_X);
-  convertRealToImag34ResultRegister(&b, REGISTER_X);
+  convertComplexToResultRegister(&a, &b, REGISTER_X);
 }
 
 

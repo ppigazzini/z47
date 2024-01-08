@@ -23,6 +23,7 @@
 #include "constantPointers.h"
 #include "debug.h"
 #include "error.h"
+#include "flags.h"
 #include "mathematics/arctan.h"
 #include "mathematics/comparisonReals.h"
 #include "mathematics/division.h"
@@ -37,78 +38,35 @@
 
 #include "wp43.h"
 
+typedef enum {
+    AGM_MODE_NORMAL,
+    AGM_MODE_E,
+    AGM_MODE_STEP,
+    AGM_MODE_F
+} AGM_MODE;
 
-#define AGM_MODE_NORMAL 0
-#define AGM_MODE_E      1
-#define AGM_MODE_STEP   2
-#define AGM_MODE_F      3
+static int _realAgm(AGM_MODE mode, const real_t *a, const real_t *b, real_t *c, real_t *res, real_t *_a, real_t *_b, size_t _sz, realContext_t *realContext);
+static int _complexAgm(AGM_MODE mode, const real_t *ar, const real_t *ai, const real_t *br, const real_t *bi, real_t *cr, real_t *ci, real_t *resr, real_t *resi, real_t *_ar, real_t *_ai, real_t *_br, real_t *_bi, size_t _sz, realContext_t *realContext);
 
 void fnAgm(uint16_t unusedButMandatoryParameter) {
-  bool_t realInput=true;
-  real_t aReal, bReal;
-  real_t aImag, bImag;
+  bool_t cmplxRes = false;
+  real_t aReal, bReal, rReal;
+  real_t aImag, bImag, rImag;
+  bool_t neg;
 
-  switch(getRegisterDataType(REGISTER_X)) {
-    case dtLongInteger: {
-      convertLongIntegerRegisterToReal(REGISTER_X, &aReal, &ctxtReal39);
-      realZero(&aImag);
-      break;
-    }
+  if (!getRegisterAsComplexOrReal(REGISTER_X, &aReal, &aImag, &cmplxRes))
+    return;
+  if (!getRegisterAsComplexOrReal(REGISTER_Y, &bReal, &bImag, &cmplxRes))
+    return;
 
-    case dtReal34: {
-      real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &aReal);
-      realZero(&aImag);
-      break;
-    }
+  if(!saveLastX())
+    return;
 
-    case dtComplex34: {
-      real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &aReal);
-      real34ToReal(REGISTER_IMAG34_DATA(REGISTER_X), &aImag);
-      realInput = false;
-      break;
-    }
+  neg = realIsNegative(&aReal) || realIsNegative(&bReal);
+  if (neg && getFlag(FLAG_CPXRES))
+    cmplxRes = true;
 
-    default: {
-      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
-        sprintf(errorMessage, "cannot calculate AGM with %s in X", getRegisterDataTypeName(REGISTER_X, true, false));
-        moreInfoOnError("In function fnAgm:", errorMessage, NULL, NULL);
-      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-      return;
-    }
-  }
-
-  switch(getRegisterDataType(REGISTER_Y)) {
-    case dtLongInteger: {
-      convertLongIntegerRegisterToReal(REGISTER_Y, &bReal, &ctxtReal39);
-      realZero(&bImag);
-      break;
-    }
-
-    case dtReal34: {
-      real34ToReal(REGISTER_REAL34_DATA(REGISTER_Y), &bReal);
-      realZero(&bImag);
-      break;
-    }
-
-    case dtComplex34: {
-      real34ToReal(REGISTER_REAL34_DATA(REGISTER_Y), &bReal);
-      real34ToReal(REGISTER_IMAG34_DATA(REGISTER_Y), &bImag);
-      realInput = false;
-      break;
-    }
-
-    default: {
-      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_Y);
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
-        sprintf(errorMessage, "cannot calculate AGM with %s in Y", getRegisterDataTypeName(REGISTER_Y, true, false));
-        moreInfoOnError("In function fnAgm:", errorMessage, NULL, NULL);
-      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-      return;
-    }
-  }
-
-  if(realInput && (realIsNegative(&aReal) || realIsNegative(&bReal))) {
+  if(!cmplxRes && neg) {
     displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
     #if(EXTRA_INFO_ON_CALC_ERROR == 1)
       moreInfoOnError("In function fnAgm:", "cannot use negative X and Y as input of AGM", NULL, NULL);
@@ -116,28 +74,23 @@ void fnAgm(uint16_t unusedButMandatoryParameter) {
     return;
   }
 
-  if(!saveLastX()) {
-    return;
-  }
-
-  if(realInput) {
-    realAgm(&aReal, &bReal, &aReal, &ctxtReal39);
+  if(!cmplxRes) {
+    realAgm(&aReal, &bReal, &rReal, &ctxtReal75);
 
     reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
-    convertRealToReal34ResultRegister(&aReal, REGISTER_X);
+    convertRealToReal34ResultRegister(&rReal, REGISTER_X);
   }
   else { // Complex input
-    complexAgm(&aReal, &aImag, &bReal, &bImag, &aReal, &aImag, &ctxtReal39);
+    complexAgm(&aReal, &aImag, &bReal, &bImag, &rReal, &rImag, &ctxtReal75);
 
     reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
-    convertRealToReal34ResultRegister(&aReal, REGISTER_X);
-    convertRealToImag34ResultRegister(&aImag, REGISTER_X);
+    convertComplexToResultRegister(&rReal, &rImag, REGISTER_X);
   }
 
   adjustResult(REGISTER_X, true, true, REGISTER_X, -1, -1);
 }
 
-static int _realAgm(int mode, const real_t *a, const real_t *b, real_t *c, real_t *res, real_t *_a, real_t *_b, size_t _sz, realContext_t *realContext) {
+static int _realAgm(AGM_MODE mode, const real_t *a, const real_t *b, real_t *c, real_t *res, real_t *_a, real_t *_b, size_t _sz, realContext_t *realContext) {
   real_t aReal, bReal, cReal;
   real_t cCoeff, prevDelta, z;
   int n = 0;
@@ -208,7 +161,7 @@ static int _realAgm(int mode, const real_t *a, const real_t *b, real_t *c, real_
   return n;
 }
 
-static int _complexAgm(int mode, const real_t *ar, const real_t *ai, const real_t *br, const real_t *bi, real_t *cr, real_t *ci, real_t *resr, real_t *resi, real_t *_ar, real_t *_ai, real_t *_br, real_t *_bi, size_t _sz, realContext_t *realContext) {
+static int _complexAgm(AGM_MODE mode, const real_t *ar, const real_t *ai, const real_t *br, const real_t *bi, real_t *cr, real_t *ci, real_t *resr, real_t *resi, real_t *_ar, real_t *_ai, real_t *_br, real_t *_bi, size_t _sz, realContext_t *realContext) {
   real_t aReal, bReal, cReal;
   real_t aImag, bImag, cImag;
   real_t aArg, bArg, cArg;

@@ -259,8 +259,7 @@ void rsdCplx(uint16_t digits) {
     roundToSignificantDigits(&magnitude, &magnitude, digits, &ctxtReal39);
     roundToSignificantDigits(&theta,     &theta,     digits, &ctxtReal39);
     realPolarToRectangular(&magnitude, &theta, &magnitude, &theta, &ctxtReal39);
-    convertRealToReal34ResultRegister(&magnitude, REGISTER_X);
-    convertRealToImag34ResultRegister(&theta,     REGISTER_X);
+    convertComplexToResultRegister(&magnitude, &theta, REGISTER_X);
   }
   else {
     real_t real, imaginary;
@@ -268,7 +267,6 @@ void rsdCplx(uint16_t digits) {
     real34ToReal(REGISTER_IMAG34_DATA(REGISTER_X), &imaginary);
     roundToSignificantDigits(&real,      &real,      digits, &ctxtReal39);
     roundToSignificantDigits(&imaginary, &imaginary, digits, &ctxtReal39);
-    convertRealToReal34ResultRegister(&real,      REGISTER_X);
-    convertRealToImag34ResultRegister(&imaginary, REGISTER_X);
+    convertComplexToResultRegister(&real, &imaginary, REGISTER_X);
   }
 }

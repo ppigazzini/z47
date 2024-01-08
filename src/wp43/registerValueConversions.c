@@ -359,6 +359,10 @@ void convertRealToImag34ResultRegister(const real_t *real, calcRegister_t dest) 
   realToReal34(&rounded, REGISTER_IMAG34_DATA(dest));
 }
 
+void convertComplexToResultRegister(const real_t *real, const real_t *imag, calcRegister_t dest) {
+  convertRealToReal34ResultRegister(real, dest);
+  convertRealToImag34ResultRegister(imag, dest);
+}
 
 
 void convertTimeRegisterToReal34Register(calcRegister_t source, calcRegister_t destination) {
@@ -826,4 +830,26 @@ bool_t getRegisterAsReal(calcRegister_t reg, real_t *val) {
       return false;
   }
   return true;
+}
+
+void processRealComplexMonadicFunction(void (*realf)(void), void (*complexf)(void)) {
+  real_t aReal, aImag;
+  bool_t cmplxRes = false;
+  const uint32_t type = getRegisterDataType(REGISTER_X);
+
+  if(!saveLastX())
+    return;
+
+  if (type == dtReal34Matrix)
+    elementwiseRema(realf);
+  else if (type == dtComplex34Matrix)
+    elementwiseCxma(complexf);
+  else if (getRegisterAsComplexOrReal(REGISTER_X, &aReal, &aImag, &cmplxRes)) {
+    if (cmplxRes)
+      complexf();
+    else
+      realf();
+  }
+
+  adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
 }

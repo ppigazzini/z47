@@ -1,6 +1,9 @@
 ; Everything after a ; is a comment and is simply ignored
 ; A line beginning with
 ;   Func: the function to test
+;   Desc: description of the test case corresponding the next 'out'
+;   Desc_prefix: text preceding the test case description (until the next 'Desc_prefix')
+;   Desc_suffix: text following the test case description (until the next 'Desc_suffix')
 ;   In:   specifies the input parameters
 ;   Out:  specifies the expected output values
 ;

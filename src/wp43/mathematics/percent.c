@@ -63,6 +63,5 @@ void fnPercent(uint16_t unusedButMandatoryParameter) {
 
   reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
   convertRealToReal34ResultRegister(&rReal, REGISTER_X);
-  setRegisterAngularMode(REGISTER_X, amNone);
   adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
 }

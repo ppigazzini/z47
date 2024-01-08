@@ -191,8 +191,7 @@ void arccoshCplx(void) {
   realRectangularToPolar(&real, &imag, &a, &b, &ctxtReal39);
   WP34S_Ln(&a, &a, &ctxtReal39);
 
-  convertRealToReal34ResultRegister(&a, REGISTER_X);
-  convertRealToImag34ResultRegister(&b, REGISTER_X);
+  convertComplexToResultRegister(&a, &b, REGISTER_X);
 }
 
 

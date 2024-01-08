@@ -31,70 +31,8 @@
 
 #include "wp43.h"
 
-static void dataTypeError(void);
-static void percentSigmaRema(void);
-
-TO_QSPI void (* const PercentSigma[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])(void) = {
-// regX ==> 1                 2                 3              4              5              6              7                 8              9              10
-//          Long integer      Real34            complex34      Time           Date           String         Real34 mat        Complex34 mat  Short integer  Config data
-            percentSigmaLonI, percentSigmaReal, dataTypeError, dataTypeError, dataTypeError, dataTypeError, percentSigmaRema, dataTypeError, dataTypeError, dataTypeError
-};
-
 //=============================================================================
-// Error handling
-//-----------------------------------------------------------------------------
-
-/********************************************//**
- * \brief Data type error in %Sigma
- *
- * \param void
- * \return void
- ***********************************************/
-static void dataTypeError(void) {
-  displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-
-  #if(EXTRA_INFO_ON_CALC_ERROR == 1)
-    sprintf(errorMessage, "cannot use %s", getRegisterDataTypeName(REGISTER_X, true, false));
-    moreInfoOnError("In function fnPercentSigma:", errorMessage, NULL, NULL);
-  #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-}
-
-//=============================================================================
-// Main function
-//-----------------------------------------------------------------------------
-
-/********************************************//**
- * \brief regX ==> regL and PercentSigma(regX) ==> regX
- * enables stack lift and refreshes the stack.
- * Calculate %Sigma
- *
- * \param[in] unusedButMandatoryParameter uint16_t
- * \return void
- ***********************************************/
-void fnPercentSigma(uint16_t unusedButMandatoryParameter) {
-
-  if(!checkMinimumDataPoints(const_1)) {
-    displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
-      sprintf(errorMessage, "There is no statistical data available!");
-      moreInfoOnError("In function fnPercentSigma:", errorMessage, NULL, NULL);
-    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-  }
-  else {
-    if(!saveLastX()) {
-    return;
-  }
-
-    PercentSigma[getRegisterDataType(REGISTER_X)]();
-
-    adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
-
-    temporaryInformation = TI_PERC;
-  }
-}
-
-//=============================================================================
-// PercentSigma calculation functions
+// PercentSigma calculation function
 //-----------------------------------------------------------------------------
 
 bool_t percentSigma(real_t *xReal, real_t *rReal, realContext_t *realContext) {
@@ -118,42 +56,52 @@ bool_t percentSigma(real_t *xReal, real_t *rReal, realContext_t *realContext) {
   return true;
 }
 
-/********************************************//**
- * \brief Percent(X(long integer)) ==> X(real34)
- *
- * \param void
- * \return void
- ***********************************************/
-void percentSigmaLonI(void) {
-  real_t xReal, rReal;
-
-  convertLongIntegerRegisterToReal(REGISTER_X, &xReal, &ctxtReal39);
-
-  if(percentSigma(&xReal, &rReal, &ctxtReal39)) {
-    reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
-    convertRealToReal34ResultRegister(&rReal, REGISTER_X);
-    setRegisterAngularMode(REGISTER_X, amNone);
-  }
-}
-
-/********************************************//**
+/***********************************************
  * \brief Percent(X(real34)) ==> X(real34)
  *
  * \param void
  * \return void
  ***********************************************/
-void percentSigmaReal(void) {
+static void percentSigmaReal(void) {
   real_t xReal, rReal;
 
-  real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &xReal);
+  if (!getRegisterAsReal(REGISTER_X, &xReal) || !percentSigma(&xReal, &rReal, &ctxtReal39))
+    return;
 
-  if(percentSigma(&xReal, &rReal, &ctxtReal39)) {
-    convertRealToReal34ResultRegister(&rReal, REGISTER_X);
-  }
+  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+  convertRealToReal34ResultRegister(&rReal, REGISTER_X);
 }
 
+//=============================================================================
+// Main function
+//-----------------------------------------------------------------------------
 
+/********************************************//**
+ * \brief regX ==> regL and PercentSigma(regX) ==> regX
+ * enables stack lift and refreshes the stack.
+ * Calculate %Sigma
+ *
+ * \param[in] unusedButMandatoryParameter uint16_t
+ * \return void
+ ***********************************************/
+void fnPercentSigma(uint16_t unusedButMandatoryParameter) {
+  if(!checkMinimumDataPoints(const_1)) {
+    displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE, REGISTER_X);
+    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "There is no statistical data available!");
+      moreInfoOnError("In function fnPercentSigma:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+    return;
+  }
 
-void percentSigmaRema(void) {
-  elementwiseRema(percentSigmaReal);
+  if(!saveLastX())
+    return;
+
+  if (getRegisterDataType(REGISTER_X) == dtReal34Matrix)
+    elementwiseRema(percentSigmaReal);
+  else
+    percentSigmaReal();
+
+  adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
+  temporaryInformation = TI_PERC;
 }

@@ -289,27 +289,8 @@ void fnIQRXY(uint16_t unusedButMandatoryParameter) {
 void fnPercentileXY(uint16_t unusedButMandatoryParameter) {
   real_t p;
 
-  switch(getRegisterDataType(REGISTER_X)) {
-    case dtLongInteger:
-      convertLongIntegerRegisterToReal(REGISTER_X, &p, &ctxtReal75);
-      break;
-
-    case dtShortInteger:
-      convertShortIntegerRegisterToReal(REGISTER_X, &p, &ctxtReal39);
-      break;
-
-    case dtReal34:
-      real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &p);
-      break;
-
-    default:
-      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
-        sprintf(errorMessage, "cannot x%%ile with %s in X", getRegisterDataTypeName(REGISTER_X, true, false));
-        moreInfoOnError("In function fnPercentileXY:", errorMessage, NULL, NULL);
-      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-      return;
-  }
+  if (!getRegisterAsReal(REGISTER_X, &p))
+    return;
 
   // Range saturate if out of scope and scale away percentage
   if(realIsNegative(&p)) {

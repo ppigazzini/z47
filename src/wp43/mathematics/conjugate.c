@@ -65,8 +65,7 @@ static void conjCplx(void) {
     realSetPositiveSign(&i);
   }
   reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
-  convertRealToReal34ResultRegister(&r, REGISTER_X);
-  convertRealToImag34ResultRegister(&i, REGISTER_X);
+  convertComplexToResultRegister(&r, &i, REGISTER_X);
 }
 
 /********************************************//**
