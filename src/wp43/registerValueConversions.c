@@ -25,6 +25,7 @@
 #include "integers.h"
 #include "mathematics/matrix.h"
 #include "mathematics/rsd.h"
+#include "mathematics/tan.h"
 #include "memory.h"
 #include "registers.h"
 #include <string.h>
@@ -832,6 +833,44 @@ bool_t getRegisterAsReal(calcRegister_t reg, real_t *val) {
   return true;
 }
 
+bool_t getRegisterAsRealAngle(calcRegister_t reg, real_t *val, angularMode_t *xAngularMode) {
+  switch(getRegisterDataType(reg)) {
+    case dtLongInteger:
+      longIntegerAngleReduction(reg, currentAngularMode, val);
+      *xAngularMode = currentAngularMode;
+      break;
+
+    case dtShortInteger:
+      convertShortIntegerRegisterToReal(reg, val, &ctxtReal34);
+      *xAngularMode = currentAngularMode;
+      break;
+
+    case dtReal34:
+      real34ToReal(REGISTER_REAL34_DATA(reg), val);
+      *xAngularMode = getRegisterAngularMode(reg);
+      break;
+
+    case dtComplex34:
+      if (real34IsZero(REGISTER_IMAG34_DATA(reg))) {
+        real34ToReal(REGISTER_REAL34_DATA(reg), val);
+        *xAngularMode = amRadian;
+        break;
+      }
+    /* fall through */
+
+    default:
+      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, reg);
+      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+        sprintf(errorMessage, "cannot convert %d from %s to real", reg, getRegisterDataTypeName(reg, true, false));
+        moreInfoOnError("In function getRegisterAsReal:", errorMessage, NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+      return false;
+  }
+  if (*xAngularMode == amNone)
+    *xAngularMode = currentAngularMode;
+  return true;
+}
+
 void processRealComplexMonadicFunction(void (*realf)(void), void (*complexf)(void)) {
   real_t aReal, aImag;
   bool_t cmplxRes = false;
@@ -847,8 +886,9 @@ void processRealComplexMonadicFunction(void (*realf)(void), void (*complexf)(voi
   else if (getRegisterAsComplexOrReal(REGISTER_X, &aReal, &aImag, &cmplxRes)) {
     if (cmplxRes)
       complexf();
-    else
+    else {
       realf();
+    }
   }
 
   adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
