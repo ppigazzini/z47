@@ -199,27 +199,41 @@ void solveCubicEquation(const real_t *c2Real, const real_t *c2Imag, const real_t
   real_t qr, qi, rr, ri, s1r, s1i, s2r, s2i, ar, ai;
   const bool_t realIn = realIsZero(c2Imag) && realIsZero(c1Imag) && realIsZero(c0Imag);
 
+  // Compute q, r and the discriminant
+  // This is done by scaling things up so that divisions are avoided until the final step.
+  // This reduces rounding problems and gives an exact discriminant for integer (and other)
+  // coefficients.
+  // q has a denominator of 9, r has a denomination of 54.  q^3 therefore has a denominator
+  // of 729 and r^2 of 2916.  729 times 4 is 2916, so we upscale by 2916.
+
   // q = (c - b^2 / 3) / 3
+  // 9q = (3c - b^2)
+  mulComplexReal(c1Real, c1Imag, const_3, &rr, &ri, realContext);
   mulComplexComplex(c2Real, c2Imag, c2Real, c2Imag, &qr, &qi, realContext);
-  divComplexReal(&qr, &qi, const_3, &qr, &qi, realContext);
-  complexSubtract(c1Real, c1Imag, &qr, &qi, &qr, &qi, realContext);
-  divComplexReal(&qr, &qi, const_3, &qr, &qi, realContext);
+  complexSubtract(&rr, &ri, &qr, &qi, &qr, &qi, realContext);
 
   // r = (b c - 3 d) / 6 - b^3 / 27
+  // 54r = 9(b c - 3 d) - 2 b^3
   mulComplexComplex(c2Real, c2Imag, c1Real, c1Imag, &rr, &ri, realContext);
   mulComplexReal(c0Real, c0Imag, const_3, &ar, &ai, realContext);
   complexSubtract(&rr, &ri, &ar, &ai, &rr, &ri, realContext);
-  divComplexReal(&rr, &ri, const_6, &rr, &ri, realContext);
+  mulComplexReal(&rr, &ri, const_9, &rr, &ri, realContext);
+
   mulComplexComplex(c2Real, c2Imag, c2Real, c2Imag, &ar, &ai, realContext);
   mulComplexComplex(&ar, &ai, c2Real, c2Imag, &ar, &ai, realContext);
-  divComplexReal(&ar, &ai, const_27, &ar, &ai, realContext);
+  complexAdd(&ar, &ai, &ar, &ai, &ar, &ai, realContext);
   complexSubtract(&rr, &ri, &ar, &ai, &rr, &ri, realContext);
 
-  // q^3 + r^2
+  // q^3 + r^2 = (4 (9q)^3 + r^2) / 2916
   mulComplexComplex(&qr, &qi, &qr, &qi, rReal, rImag, realContext);
   mulComplexComplex(rReal, rImag, &qr, &qi, rReal, rImag, realContext);
+  mulComplexReal(rReal, rImag, const_4, rReal, rImag, realContext);
   mulComplexComplex(&rr, &ri, &rr, &ri, &ar, &ai, realContext);
   complexAdd(rReal, rImag, &ar, &ai, rReal, rImag, realContext);
+  divComplexReal(rReal, rImag, const_2916, rReal, rImag, realContext);
+
+  // Scale r back to it's proper range, q isn't needed anymore so it's good.
+  divComplexReal(&rr, &ri, const_54, &rr, &ri, realContext);
 
   // s1, s2 = cbrt(r ± sqrt(q^3 + r^2))
   sqrtComplex(rReal, rImag, &s1r, &s1i, realContext);
