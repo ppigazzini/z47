@@ -827,3 +827,25 @@ bool_t getRegisterAsReal(calcRegister_t reg, real_t *val) {
   }
   return true;
 }
+
+void processRealComplexMonadicFunction(void (*realf)(void), void (*complexf)(void)) {
+  real_t aReal, aImag;
+  bool_t cmplxRes = false;
+  const uint32_t type = getRegisterDataType(REGISTER_X);
+
+  if(!saveLastX())
+    return;
+
+  if (type == dtReal34Matrix)
+    elementwiseRema(realf);
+  else if (type == dtComplex34Matrix)
+    elementwiseCxma(complexf);
+  else if (getRegisterAsComplexOrReal(REGISTER_X, &aReal, &aImag, &cmplxRes)) {
+    if (cmplxRes)
+      complexf();
+    else
+      realf();
+  }
+
+  adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
+}
