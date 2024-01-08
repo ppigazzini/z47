@@ -1039,7 +1039,6 @@ void fnNop(uint16_t unusedButMandatoryParameter) {
   void fnP_Regs                   (uint16_t unusedButMandatoryParameter) {}
   void fnToPolar2                 (uint16_t unusedButMandatoryParameter) {}
   void fnToRect2                  (uint16_t unusedButMandatoryParameter) {}
-  void fnArg_all                  (uint16_t unusedButMandatoryParameter) {}
   void fnMultiplySI               (uint16_t unusedButMandatoryParameter) {}
   void fn_cnst_op_j               (uint16_t unusedButMandatoryParameter) {}
   void fn_cnst_op_j_pol           (uint16_t unusedButMandatoryParameter) {}
@@ -2908,7 +2907,7 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 1703 */  { fnParallel,                   NOPARAM,                     STD_PARALLEL,                                  STD_PARALLEL,                                  (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },//JM
 /* 1704 */  { fnTranspose,                  NOPARAM,                     "[M]" STD_TRANSPOSED,                          "[M]" STD_TRANSPOSED,                          (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /* 1705 */  { fnInvertMatrix,               NOPARAM,                     "[M]" STD_SUP_MINUS_1,                         "[M]" STD_SUP_MINUS_1,                         (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
-/* 1706 */  { fnArg_all,                    NOPARAM/*#JM#*/,             STD_MEASURED_ANGLE,                            STD_MEASURED_ANGLE,                            (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_ENABLED  | PTP_NONE         },
+/* 1706 */  { fnArg,                        NOPARAM/*#JM#*/,             STD_MEASURED_ANGLE,                            STD_MEASURED_ANGLE,                            (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_ENABLED  | PTP_NONE         },
 /* 1707 */  { fnP_All_Regs,                 6              /*#JM#*/,     STD_PRINTER "xy",                               STD_PRINTER "xy",                             (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /* 1708 */  { itemToBeCoded,                NOPARAM,                     STD_PRINTER "ADV",                             STD_PRINTER "ADV",                             (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /* 1709 */  { itemToBeCoded,                NOPARAM,                     STD_PRINTER "CHAR",                            STD_PRINTER "CHAR",                            (0 << TAM_MAX_BITS) |   127, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NUMBER_8     },
