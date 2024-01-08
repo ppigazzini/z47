@@ -25,15 +25,4 @@
 
 void fnSwapRealImaginary(uint16_t unusedButMandatoryParameter);
 
-#if(EXTRA_INFO_ON_CALC_ERROR == 1)
-void swapReImError      (void);
-  #else // (EXTRA_INFO_ON_CALC_ERROR != 1)
-#define swapReImError typeError
-#endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-
-void swapReImCxma       (void);
-void swapReImCplx       (void);
-void swapRealReal       (void);
-void swapLongintReal    (void);
-
 #endif // !SWAPREALIMAGINARY_H
