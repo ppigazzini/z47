@@ -1042,9 +1042,11 @@ void graph_plotmem(void) {
             yo = yN0 > SCREEN_HEIGHT_GRAPH - 1 ? SCREEN_HEIGHT_GRAPH - 1 : 0;
           }
 
-          if(xN > SCREEN_WIDTH_GRAPH - 1) xN = SCREEN_WIDTH_GRAPH - 1;
-          if(yN > SCREEN_HEIGHT_GRAPH - 1) yN = SCREEN_HEIGHT_GRAPH - 1;
-          if(yN < 0) yN = 0;
+          /* Removed to clean up plotting on the edge of the screen
+            if(xN > SCREEN_WIDTH_GRAPH - 1) xN = SCREEN_WIDTH_GRAPH - 1;
+            if(yN > SCREEN_HEIGHT_GRAPH - 1) yN = SCREEN_HEIGHT_GRAPH - 1;
+            if(yN < 0) yN = 0;
+          */
 
           int16_t minN_y, minN_x;
           if(!Aspect_Square) {
