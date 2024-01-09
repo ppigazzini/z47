@@ -1028,35 +1028,34 @@ void graph_plotmem(void) {
             printf(" ... x-ddx/2=%d dydx=%d inty=%d\n", screen_window_x(x_min, x-ddx/2, x_max), screen_window_y(y_min, dydx, y_max), screen_window_y(y_min, inty, y_max));
           #endif // STATDEBUG
 
-
-          bool_t outOfScreen = ((yN1 > SCREEN_HEIGHT_GRAPH - 1) && (yN0 > SCREEN_HEIGHT_GRAPH - 1)) || ((yN1 < 0) && (yN0 < 0));
-          if(yN1 != yN0 && !outOfScreen && (
-            ((yN1 <= SCREEN_HEIGHT_GRAPH - 1 && yN1 >= 0) && (yN0 > SCREEN_HEIGHT_GRAPH - 1 || yN0 < 0)) //||
-         //   ((yN0 <= SCREEN_HEIGHT_GRAPH - 1 && yN0 >= 0) && (yN1 > SCREEN_HEIGHT_GRAPH - 1 || yN1 < 0))
-            )) {
-
-            int16_t dY1 = yN0 > SCREEN_HEIGHT_GRAPH - 1 ? SCREEN_HEIGHT_GRAPH - 1 - yN1 : yN1;
-            float dxN = ((float)dY1)/((float)(yN1-yN0))*(float)(xN-xo);
-            if(dxN<-25) dxN = -25; else if(dxN>25) dxN = 25;
-            xo += (xN-xo)-max((int16_t)dxN,-(int16_t)dxN);
-            yo = yN0 > SCREEN_HEIGHT_GRAPH - 1 ? SCREEN_HEIGHT_GRAPH - 1 : 0;
-          }
-
-          /* Removed to clean up plotting on the edge of the screen
-            if(xN > SCREEN_WIDTH_GRAPH - 1) xN = SCREEN_WIDTH_GRAPH - 1;
-            if(yN > SCREEN_HEIGHT_GRAPH - 1) yN = SCREEN_HEIGHT_GRAPH - 1;
-            if(yN < 0) yN = 0;
-          */
-
           int16_t minN_y, minN_x;
           if(!Aspect_Square) {
-            minN_y = SCREEN_NONSQ_HMIN; minN_x = 0;
+            minN_y = SCREEN_NONSQ_HMIN; 
+            minN_x = 0;
           }
           else {
             minN_y = 0;
             minN_x = SCREEN_WIDTH-SCREEN_HEIGHT_GRAPH;
           }
-          if((xN < SCREEN_WIDTH_GRAPH && xN >= minN_x && yN < SCREEN_HEIGHT_GRAPH && yN >= minN_y) && !outOfScreen)  {
+
+          bool_t bothOutOfScreen01 = ((yN1 > SCREEN_HEIGHT_GRAPH - 1) && (yN0 > SCREEN_HEIGHT_GRAPH - 1)) || ((yN1 < minN_y) && (yN0 < minN_y));
+          bool_t outOfScreen1  = (yN1 > SCREEN_HEIGHT_GRAPH - 1 || yN1 < minN_y);
+          bool_t outOfScreen0  = (yN0 > SCREEN_HEIGHT_GRAPH - 1 || yN0 < minN_y);
+
+          if(yN1 != yN0 && !bothOutOfScreen01 && !outOfScreen1 && outOfScreen0) {
+            int16_t dY1 = yN0 > SCREEN_HEIGHT_GRAPH - 1 ? abs(SCREEN_HEIGHT_GRAPH - 1 - yN1) : abs(yN1);
+            float dxN = ((float)dY1)/(fabs((float)(yN1-yN0))*(float)(xN-xo));
+            if(dxN > 25) dxN = 25;
+            xo += (xN-xo)-dxN;
+            yo = yN0 > SCREEN_HEIGHT_GRAPH - 1 ? SCREEN_HEIGHT_GRAPH - 1 : 0;
+          }
+
+          // Changed to clean up plotting on the edge of the screen
+          if(xN > SCREEN_WIDTH_GRAPH  - 1) xN = SCREEN_WIDTH_GRAPH - 1;
+          if(yN > SCREEN_HEIGHT_GRAPH - 1) yN = SCREEN_HEIGHT_GRAPH - 1;
+          if(yN < minN_y) yN = minN_y;
+
+          if((xN < SCREEN_WIDTH_GRAPH && xN >= minN_x && yN < SCREEN_HEIGHT_GRAPH && yN >= minN_y) && !bothOutOfScreen01)  {
             //yo = yn;                              //old , new, to be able to draw a line between samples
             yn = yN;
             //xo = xn;
