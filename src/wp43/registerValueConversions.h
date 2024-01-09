@@ -113,6 +113,7 @@
   bool_t getRegisterAsComplex(calcRegister_t reg, real_t *r, real_t *c);
   bool_t getRegisterAsComplexOrReal(calcRegister_t reg, real_t *r, real_t *c, bool_t *cmplx);
   bool_t getRegisterAsReal(calcRegister_t reg, real_t *val);
+  bool_t getRegisterAsRealAngle(calcRegister_t reg, real_t *val, angularMode_t *xAngularMode);
 
   void processRealComplexMonadicFunction(void (*realf)(void), void (*complexf)(void));
 #endif // !REGISTERVALUECONVERSIONS_H

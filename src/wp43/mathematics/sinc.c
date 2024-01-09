@@ -29,56 +29,11 @@
 #include "items.h"
 #include "mathematics/division.h"
 #include "mathematics/matrix.h"
-#include "mathematics/tan.h"
 #include "mathematics/wp34s.h"
 #include "registers.h"
 #include "registerValueConversions.h"
 
 #include "wp43.h"
-
-
-
-TO_QSPI void (* const Sinc[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])(void) = {
-// regX ==> 1            2         3         4          5          6          7          8           9             10
-//          Long integer Real34    Complex34 Time       Date       String     Real34 mat Complex34 m Short integer ConfigData
-            sincLonI,    sincReal, sincCplx, sincError, sincError, sincError, sincRema,  sincCxma,   sincError,    sincError
-};
-
-
-
-/********************************************//**
- * \brief Data type error in sinc
- *
- * \param void
- * \return void
- ***********************************************/
-#if(EXTRA_INFO_ON_CALC_ERROR == 1)
-  void sincError(void) {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-    sprintf(errorMessage, "cannot calculate Sinc for %s", getRegisterDataTypeName(REGISTER_X, true, false));
-    moreInfoOnError("In function fnSinc:", errorMessage, NULL, NULL);
-  }
-#endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-
-
-
-/********************************************//**
- * \brief regX ==> regL and sinc(regX) ==> regX
- * enables stack lift and refreshes the stack
- *
- * \param[in] unusedButMandatoryParameter uint16_t
- * \return void
- ***********************************************/
-void fnSinc(uint16_t unusedButMandatoryParameter) {
-  if(!saveLastX()) {
-    return;
-  }
-
-  Sinc[getRegisterDataType(REGISTER_X)]();
-
-  adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
-}
-
 
 
 void sincComplex(const real_t *real, const real_t *imag, real_t *resReal, real_t *resImag, realContext_t *realContext) {
@@ -112,46 +67,18 @@ void sincComplex(const real_t *real, const real_t *imag, real_t *resReal, real_t
 }
 
 
+static void sincReal(void) {
+  real_t x, sine;
+  const real_t *r = &x;
+  angularMode_t xAngularMode;
+  const uint32_t type = getRegisterDataType(REGISTER_X);
 
-void sincLonI(void) {
-  real_t x;
+  if (!getRegisterAsReal(REGISTER_X, &x))
+    return;
 
-  convertLongIntegerRegisterToReal(REGISTER_X, &x, &ctxtReal75);
-
-  if(realIsZero(&x)) {
-    realCopy(const_1, &x);
-  }
-  else {
-    real_t xx;
-
-    realCopy(&x, &xx);
-    longIntegerAngleReduction(REGISTER_X, amRadian, &x);
-    WP34S_Cvt2RadSinCosTan(&x, amRadian, &x, NULL, NULL, &ctxtReal75);
-    realDivide(&x, &xx, &x, &ctxtReal75);
-  }
-
-  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
-  convertRealToReal34ResultRegister(&x, REGISTER_X);
-}
-
-
-
-void sincRema(void) {
-  elementwiseRema(sincReal);
-}
-
-
-
-void sincCxma(void) {
-  elementwiseCxma(sincCplx);
-}
-
-
-
-void sincReal(void) {
-  if(real34IsInfinite(REGISTER_REAL34_DATA(REGISTER_X))) {
+  if (realIsInfinite(&x)) {
     if(getSystemFlag(FLAG_SPCRES)) {
-      convertRealToReal34ResultRegister(const_0, REGISTER_X);
+      r = const_0;
     }
     else {
       displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
@@ -161,38 +88,46 @@ void sincReal(void) {
       return;
     }
   }
-
   else {
-    real_t x;
-
-    real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &x);
-
     if(realIsZero(&x)) {
-      realCopy(const_1, &x);
+      r = const_1;
     }
     else {
-      real_t sine;
-      angularMode_t xAngularMode = determineAngleMode(getRegisterAngularMode(REGISTER_X));
-
-      convertAngleFromTo(&x, xAngularMode, amRadian, &ctxtReal75);
+      if (type == dtReal34) {
+        xAngularMode = getRegisterAngularMode(REGISTER_X);
+        if (xAngularMode != amNone)
+          convertAngleFromTo(&x, xAngularMode, amRadian, &ctxtReal75);
+      }
       WP34S_Cvt2RadSinCosTan(&x, amRadian, &sine, NULL, NULL, &ctxtReal75);
       realDivide(&sine, &x, &x, &ctxtReal75);
     }
-    convertRealToReal34ResultRegister(&x, REGISTER_X);
   }
-
-  setRegisterAngularMode(REGISTER_X, amNone);
+  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+  convertRealToReal34ResultRegister(r, REGISTER_X);
 }
 
 
 
-void sincCplx(void) {
+static void sincCplx(void) {
   real_t zReal, zImag;
 
-  real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &zReal);
-  real34ToReal(REGISTER_IMAG34_DATA(REGISTER_X), &zImag);
+  if (!getRegisterAsComplex(REGISTER_X, &zReal, &zImag))
+    return;
 
   sincComplex(&zReal, &zImag, &zReal, &zImag, &ctxtReal75);
 
   convertComplexToResultRegister(&zReal, &zImag, REGISTER_X);
+}
+
+
+
+/********************************************//**
+ * \brief regX ==> regL and sinc(regX) ==> regX
+ * enables stack lift and refreshes the stack
+ *
+ * \param[in] unusedButMandatoryParameter uint16_t
+ * \return void
+ ***********************************************/
+void fnSinc(uint16_t unusedButMandatoryParameter) {
+  processRealComplexMonadicFunction(&sincReal, &sincCplx);
 }
