@@ -92,5 +92,10 @@ if meson.is_cross_build()
   bash          = find_program('bash')
   subproject('gmp-6.2.1')
   arm_gmp_dep   = dependency('arm-gmp-6.2.1', native : false)
-  subdir('src/wp43-dmcp')
+  if get_option('DMCPVERSION') == 'dmcp'
+    subdir('src/wp43-dmcp')
+  endif
+  if get_option('DMCPVERSION') == 'dmcp5'
+    subdir('src/wp43-dmcp5')
+  endif
 endif

@@ -1,7 +1,7 @@
 dmcp_cargs = [
   '-D__weak="__attribute__((weak))"',
   '-D__packed="__attribute__((__packed__))"',
-  '-DOLD_HW',
+  '-DNEW_HW',
   '-Wno-unused-parameter']
 dmcp_linkargs = [
   '--specs=nosys.specs',
@@ -72,11 +72,11 @@ c47_flash = custom_target(
   input            : [c47_elf],
   output           : 'C47_flash.bin',
   command          : [arm_objcopy, '--remove-section', '.qspi', '-O', 'binary', '@INPUT@', '@OUTPUT@'])
-c47_pgm = custom_target(
-  'C47.pgm',
+c47_pg5 = custom_target(
+  'C47.pg5',
   build_by_default : false,
   input            : [c47_flash],
-  output           : 'C47.pgm',
+  output           : 'C47.pg5',
   command          : [bash, add_pgm_chsum, '@INPUT@', '@OUTPUT@'])
 c47_qspi_incorrect_crc = custom_target(
   'C47_qspi_incorrect_crc.bin',
@@ -91,4 +91,4 @@ c47_qspi = custom_target(
   output           : 'C47_qspi.bin',
   command          : [bash, modify_crc, forcecrc32, '@INPUT@', '@OUTPUT@'])
 
-alias_target('dmcp', c47_pgm, c47_qspi)
+alias_target('dmcp5', c47_pg5, c47_qspi)

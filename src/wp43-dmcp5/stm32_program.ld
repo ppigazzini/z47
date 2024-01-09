@@ -1,6 +1,6 @@
 /******************************************************************************************************
  *  File        : stm32_flash.ld
- *  Abstract    : Linker script for STM32L476ZG Device with 1024KByte FLASH, 96KByte RAM
+ *  Abstract    : Linker script for STM32U575 Device with 2048KByte FLASH, 768KByte RAM
  *                Set heap size, stack size and stack location according to application requirements.
  *                Set memory bank area and size if external memory is used.
  *  Target      : STMicroelectronics STM32
@@ -11,28 +11,36 @@
 /******************************************************************************************************
  * The memory map below has been compiled by Martin (aka Over_score) and therefore is NOT the absolute truth!
  *
- * FLASH   0x08000000 1024Kb       Code of functions is located here
+ * FLASH   0x08000000 2048Kb                                                            Code of functions is located here
  *         0x081FFFFF
  *
- * SRAM2   0x10000000   32Kb       Global variables
- *         0x10007FFF
+ * SRAM1   0x20000000  192Kb   3 blocks of 64Kb                                         Local variables in functions are located here
+ *         0x2002FFFF
  *
- * SRAM1   0x20000000   96Kb       Local variables and malloc allocations
- *         0x20017FFF
+ * SRAM2   0x20030000   64Kb   8Kb + 56Kb (56Kb can be defined with ECC.                ?
+ *         0x2003FFFF                      Then 7Kb of the 8Kb will be used for ECC)
+ *
+ * SRAM3   0x20040000  512Kb   8 blocks of 64Kb (256Kb can be defined with ECC.         malloc allocates here
+ *         0x200BFFFF                            Then 64Kb of the remaining 256Kb
+ *                                               are used for ECC and the 256-64=192Kb
+ *                                               remaining can be used as "normal" RAM)
+ *
+ * SRAM4   0x28000000   16Kb                                                            Global variables
+ *         0x28003FFF
  *
  * QSPI    0x90000000 2048Kb
  *         0x901FFFFF
+ *
+ * BKPSRAM 0x????????    2Kb
+ *         0x????????
  *
  *****************************************************************************************************/
 
 /* Specify the memory areas */
 MEMORY {
-  /* FLASH   (rx) : ORIGIN = 0x08000000, LENGTH = 1024K     */
-  /* RAM    (xrw) : ORIGIN = 0x20000000, LENGTH =   96K     */
-  /* RAM0   (xrw) : ORIGIN = 0x10000000, LENGTH =   32K-256 */
-  FLASH   (rx) : ORIGIN = 0x08050000, LENGTH =  704K
-  RAM    (xrw) : ORIGIN = 0x10000000, LENGTH =    8K     /* Why not 32K? */
-  QSPI    (rx) : ORIGIN = 0x90000000, LENGTH = 2048K-12K /* a 4K block from 0x901FD000 to 0x901FDFFF is reserved by DMCP */
+  FLASH   (rx) : ORIGIN = 0x080a0000, LENGTH = 1408K /* Why not 2048K-640K instead of 1024K? */
+  RAM    (xrw) : ORIGIN = 0x28000000, LENGTH =   16K /* Why not 16K instead of 8K?           */
+  QSPI    (rx) : ORIGIN = 0x90000000, LENGTH = 2048K
 }
 
 /* Entry Point */
@@ -49,7 +57,7 @@ SECTIONS {
 
     . = ALIGN(8);
     _qspi_end = .;     /* define a global symbols at end of qspi */
-  } >QSPI /* AT> FLASH */
+  } >QSPI
 
   /* Constant data goes into FLASH */
   .rodata : {
