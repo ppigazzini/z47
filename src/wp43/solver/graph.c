@@ -1308,6 +1308,8 @@ void fnEqSolvGraph (uint16_t func) {
     }
     case EQ_PLOT: {
       printStatus(1,errorMessages[GRAPHING],force);
+      PLOT_ZMX = 0;
+      PLOT_ZMY = 0;
       double ix1 = convertRegisterToDouble(REGISTER_X);
       double ix0 = convertRegisterToDouble(REGISTER_Y);
       #if(defined(VERBOSE_SOLVER00) || defined(VERBOSE_SOLVER0)) && defined(PC_BUILD)

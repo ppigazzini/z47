@@ -119,6 +119,7 @@ void fnSlvq(uint16_t unusedButMandatoryParameter) {
     #endif //DISCRIMINANT
   }
 
+  temporaryInformation = TI_ROOTS2;
   adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
   adjustResult(REGISTER_Y, false, true, REGISTER_Y, -1, -1);
   #ifdef DISCRIMINANT
