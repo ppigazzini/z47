@@ -361,6 +361,7 @@ void convertRealToImag34ResultRegister(const real_t *real, calcRegister_t dest) 
 }
 
 void convertComplexToResultRegister(const real_t *real, const real_t *imag, calcRegister_t dest) {
+  reallocateRegister(dest, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
   convertRealToReal34ResultRegister(real, dest);
   convertRealToImag34ResultRegister(imag, dest);
 }
