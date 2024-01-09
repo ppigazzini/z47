@@ -39,7 +39,7 @@ static void tanReal(void) {
   const real_t *r = &tan;
   angularMode_t xAngularMode;
 
-  if (!getRegisterAsRealAngle(REGISTER_X, NULL, &tan, &xAngularMode))
+  if (!getRegisterAsRealAngle(REGISTER_X, &tan, &xAngularMode))
     return;
 
   if(realIsSpecial(&tan))

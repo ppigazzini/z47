@@ -834,7 +834,7 @@ bool_t getRegisterAsReal(calcRegister_t reg, real_t *val) {
   return true;
 }
 
-static void longIntegerAngleReduction(calcRegister_t regist, angularMode_t angularMode, real_t *rawAngle, real_t *reducedAngle) {
+static void longIntegerAngleReduction(calcRegister_t regist, angularMode_t angularMode, real_t *reducedAngle) {
   uint32_t oneTurn;
   longInteger_t angle;
 
@@ -853,32 +853,23 @@ static void longIntegerAngleReduction(calcRegister_t regist, angularMode_t angul
       break;
     }
     default: {
-      convertLongIntegerRegisterToReal(regist, rawAngle, &ctxtReal75);
-      realCopy(rawAngle, reducedAngle);
+      convertLongIntegerRegisterToReal(regist, reducedAngle, &ctxtReal75);
       return;
     }
   }
 
   convertLongIntegerRegisterToLongInteger(regist, angle);
-  convertLongIntegerToReal(angle, rawAngle, &ctxtReal75);
   uInt32ToReal(longIntegerModuloUInt(angle, oneTurn), reducedAngle);
   longIntegerFree(angle);
 }
 
 
-bool_t getRegisterAsRealAngle(calcRegister_t reg, real_t *val, real_t *raw, angularMode_t *xAngularMode) {
-  real_t _raw, _val;
-
-  if (raw == NULL)
-    raw = &_raw;
-  if (val == NULL)
-    val = &_val;
-
+bool_t getRegisterAsRealAngle(calcRegister_t reg, real_t *val, angularMode_t *xAngularMode) {
   switch(getRegisterDataType(reg)) {
     case dtLongInteger:
-      longIntegerAngleReduction(reg, currentAngularMode, raw, val);
+      longIntegerAngleReduction(reg, currentAngularMode, val);
       *xAngularMode = currentAngularMode;
-      return true;
+      break;
 
     case dtShortInteger:
       convertShortIntegerRegisterToReal(reg, val, &ctxtReal34);
@@ -908,7 +899,6 @@ bool_t getRegisterAsRealAngle(calcRegister_t reg, real_t *val, real_t *raw, angu
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return false;
   }
-  realCopy(val, raw);
   return true;
 }
 

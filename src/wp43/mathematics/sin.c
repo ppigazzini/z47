@@ -50,7 +50,7 @@ static void sinReal(void) {
   const real_t *r = &x;
   angularMode_t xAngularMode;
 
-  if (!getRegisterAsRealAngle(REGISTER_X, NULL, &x, &xAngularMode))
+  if (!getRegisterAsRealAngle(REGISTER_X, &x, &xAngularMode))
     return;
   if (realIsSpecial(&x))
     r = const_NaN;
