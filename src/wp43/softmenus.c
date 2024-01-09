@@ -125,7 +125,7 @@ TO_QSPI const int16_t menu_DISP[]        = {
 TO_QSPI const int16_t menu_EQN[]         = { ITM_EQ_NEW,                    ITM_EQ_EDI,                 -MNU_2NDDERIV,            -MNU_1STDERIV,         -MNU_Sf,                     -MNU_Solver,
                                              ITM_EQ_DEL,                    ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL                      };
 
-TO_QSPI const int16_t menu_EXP[]         = { ITM_CUBE,                      ITM_YX,                     ITM_SQUARE,               ITM_LOG2,              ITM_LN1X,                    ITM_LOGXY,                          //JM re-arranged menu. logxy and square to follow DM42 keyboard. Re-aligned with 42S keys.
+TO_QSPI const int16_t menu_EXP[]         = { ITM_CUBE,                      ITM_YX,                     ITM_SQRT1PX2,             ITM_LOG2,              ITM_LN1X,                    ITM_LOGXY,                          //JM re-arranged menu. logxy and square to follow DM42 keyboard. Re-aligned with 42S keys.
                                              ITM_CUBEROOT,                  ITM_XTHROOT,                ITM_SQUAREROOTX,          ITM_2X,                ITM_EX1,                     ITM_EXP,                           //JM re-arranged menu. Added YˆX to follow DM42 keyboard. Swapped YˆX and Yˆ(1/X). Re-aligned with 42S keys.
                                              ITM_sinh,                      ITM_cosh,                   ITM_tanh,                 ITM_arsinh,            ITM_arcosh,                  ITM_artanh                    };
 
@@ -596,7 +596,7 @@ TO_QSPI const int16_t menu_Eim[]         = {
                                              ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  
 
                                              ITM_VERTICAL_BAR,          ITM_ARG,                   ITM_RE,                    ITM_IM,                    ITM_EQ_LEFT,               ITM_EQ_RIGHT,              
-                                             ITM_FLOOR,                 ITM_CEIL,                  ITM_MAX,                   ITM_MIN,                   -MNU_CONST,                ITM_XSWAP,                 
+                                             ITM_FLOOR,                 ITM_CEIL,                  ITM_MAX,                   ITM_MIN,                   -MNU_CONST,                ITM_CONJ,                 
                                              ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  
 
                                              ITM_LOGXY,                 ITM_LOG10,                 ITM_LN,                    ITM_LOG2,                  ITM_EQ_LEFT,               ITM_EQ_RIGHT,              
@@ -684,13 +684,13 @@ TO_QSPI const int16_t menu_ASN_N[]       = { ITM_N_KEY_SIGMA,           ITM_N_KE
 #endif // !DMCP_BUILD
 
 
-TO_QSPI const int16_t menu_KEYS[]      =  {  -MNU_RIBBONS,             -MNU_RESETS,               -MNU_LAYOUTS,               ITM_USERMODE,              ITM_ASSIGN,                ITM_KEYMAP,                
-                                             ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                
-                                             -MNU_ASN_N,                ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL };             
+TO_QSPI const int16_t menu_KEYS[]      =  {  -MNU_LAYOUTS,              -MNU_RIBBONS,              -MNU_RESETS,               ITM_KEYMAP,                ITM_USERMODE,              ITM_ASSIGN,                
+                                             ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  
+                                             -MNU_ASN_N,                ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  };
 
-TO_QSPI const int16_t menu_LAYOUTS[]   =  {  ITM_USER_C47,              CC_D47,                    CC_E47,                    ITM_USERMODE,              ITM_ASSIGN,                CC_R47,
-                                             ITM_USER_DM42,             CC_N47,                    CC_V47,                    ITM_NULL,                  ITM_NULL,                  CC_R47bkfg,
-                                             ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  CC_R47fg_g,                CC_R47fgbk                 };
+TO_QSPI const int16_t menu_LAYOUTS[]   =  {  ITM_USER_C47,              ITM_USER_R47,              ITM_USER_DM42,             ITM_KEYMAP,                ITM_USERMODE,              ITM_ASSIGN,                
+                                             ITM_USER_R47fgbk,          ITM_USER_R47fg_g,          ITM_USER_R47bkfg,          ITM_NULL,                  ITM_USER_D47,              ITM_USER_E47,              
+                                             ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_USER_N47,              ITM_USER_V47,              };
 
 TO_QSPI const int16_t menu_RESETS[]    =  {  ITM_USER_ARESET,           ITM_USER_MRESET,           ITM_USER_HRESET,           ITM_USER_PRESET,           ITM_NULL,                  ITM_USER_KRESET,           
                                              ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  
