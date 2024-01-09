@@ -35,75 +35,12 @@
 
 
 
-TO_QSPI void (* const Tanh[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])(void) = {
-// regX ==> 1            2         3         4          5          6          7          8           9             10
-//          Long integer Real34    complex34 Time       Date       String     Real34 mat Complex34 m Short integer Config data
-            tanhLonI,    tanhReal, tanhCplx, tanhError, tanhError, tanhError, tanhRema,  tanhCxma,   tanhError,    tanhError
-};
-
-
-
-/********************************************//**
- * \brief Data type error in tanh
- *
- * \param void
- * \return void
- ***********************************************/
-#if(EXTRA_INFO_ON_CALC_ERROR == 1)
-  void tanhError(void) {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-    sprintf(errorMessage, "cannot calculate Tan for %s", getRegisterDataTypeName(REGISTER_X, true, false));
-    moreInfoOnError("In function fnTanh:", errorMessage, NULL, NULL);
-  }
-#endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-
-
-
-/********************************************//**
- * \brief regX ==> regL and tanh(regX) ==> regX
- * enables stack lift and refreshes the stack
- *
- * \param[in] unusedButMandatoryParameter uint16_t
- * \return void
- ***********************************************/
-void fnTanh(uint16_t unusedButMandatoryParameter) {
-  if(!saveLastX()) {
-    return;
-  }
-
-  Tanh[getRegisterDataType(REGISTER_X)]();
-
-  adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
-}
-
-
-
-void tanhLonI(void) {
+static void tanhReal(void) {
   real_t x;
 
-  convertLongIntegerRegisterToReal(REGISTER_X, &x, &ctxtReal39);
-  WP34S_Tanh(&x, &x, &ctxtReal39);
-
-  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
-  convertRealToReal34ResultRegister(&x, REGISTER_X);
-}
-
-
-
-void tanhRema(void) {
-  elementwiseRema(tanhReal);
-}
-
-
-
-void tanhCxma(void) {
-  elementwiseCxma(tanhCplx);
-}
-
-
-
-void tanhReal(void) {
-  if(real34IsInfinite(REGISTER_REAL34_DATA(REGISTER_X)) && !getSystemFlag(FLAG_SPCRES)) {
+  if (!getRegisterAsReal(REGISTER_X, &x))
+    return;
+  if(realIsInfinite(&x) && !getSystemFlag(FLAG_SPCRES)) {
     displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
     #if(EXTRA_INFO_ON_CALC_ERROR == 1)
       moreInfoOnError("In function tanhReal:", "cannot use " STD_PLUS_MINUS STD_INFINITY " as X input of tanh when flag D is not set", NULL, NULL);
@@ -111,22 +48,19 @@ void tanhReal(void) {
     return;
   }
 
-  real_t x;
-
-  real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &x);
   WP34S_Tanh(&x, &x, &ctxtReal39);
+  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
   convertRealToReal34ResultRegister(&x, REGISTER_X);
-  setRegisterAngularMode(REGISTER_X, amNone);
 }
 
 
 
-void tanhCplx(void) {
+static void tanhCplx(void) {
   real_t xReal, xImag;
   real_t rReal, rImag;
 
-  real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &xReal);
-  real34ToReal(REGISTER_IMAG34_DATA(REGISTER_X), &xImag);
+  if (!getRegisterAsComplex(REGISTER_X, &xReal, &xImag))
+    return;
 
   TanhComplex(&xReal, &xImag, &rReal, &rImag, &ctxtReal39);
 
@@ -155,4 +89,17 @@ uint8_t TanhComplex(const real_t *xReal, const real_t *xImag, real_t *rReal, rea
   }
 
   return ERROR_NONE;
+}
+
+
+
+/********************************************//**
+ * \brief regX ==> regL and tanh(regX) ==> regX
+ * enables stack lift and refreshes the stack
+ *
+ * \param[in] unusedButMandatoryParameter uint16_t
+ * \return void
+ ***********************************************/
+void fnTanh(uint16_t unusedButMandatoryParameter) {
+  processRealComplexMonadicFunction(&tanhReal, &tanhCplx);
 }

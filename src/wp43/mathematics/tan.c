@@ -34,134 +34,17 @@
 #include "wp43.h"
 
 
-
-TO_QSPI void (* const Tan[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])(void) = {
-// regX ==> 1            2        3        4         5         6         7        8           9             10
-//          Long integer Real     complex  Time      Date      String    Real mat Complex mat short integer Config data
-            tanLonI,     tanReal, tanCplx, tanError, tanError, tanError, tanRema, tanCxma,    tanError,     tanError
-};
-
-
-angularMode_t determineAngleMode(angularMode_t mode) {
-    return mode == amNone ? currentAngularMode : mode;
-}
-
-void longIntegerAngleReduction(calcRegister_t regist, angularMode_t angularMode, real_t *reducedAngle) {
-  uint32_t oneTurn;
-  longInteger_t angle;
-
-  switch(angularMode) {
-    case amMultPi: {
-      oneTurn = 2;
-      break;
-    }
-    case amGrad: {
-      oneTurn = 400;
-      break;
-    }
-    case amDegree:
-    case amDMS: {
-      oneTurn = 360;
-      break;
-    }
-    default: {
-      convertLongIntegerRegisterToReal(regist, reducedAngle, &ctxtReal75);
-      return;
-    }
-  }
-
-  convertLongIntegerRegisterToLongInteger(regist, angle);
-  uInt32ToReal(longIntegerModuloUInt(angle, oneTurn), reducedAngle);
-  longIntegerFree(angle);
-}
-
-
-
-/********************************************//**
- * \brief Data type error in tan
- *
- * \param void
- * \return void
- ***********************************************/
-#if(EXTRA_INFO_ON_CALC_ERROR == 1)
-  void tanError(void) {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-    sprintf(errorMessage, "cannot calculate Tan for %s", getRegisterDataTypeName(REGISTER_X, true, false));
-    moreInfoOnError("In function fnTan:", errorMessage, NULL, NULL);
-  }
-#endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-
-
-
-/********************************************//**
- * \brief regX ==> regL and tan(regX) ==> regX
- * enables stack lift and refreshes the stack
- *
- * \param[in] unusedButMandatoryParameter uint16_t
- * \return void
- ***********************************************/
-void fnTan(uint16_t unusedButMandatoryParameter) {
-  if(!saveLastX()) {
-    return;
-  }
-
-  Tan[getRegisterDataType(REGISTER_X)]();
-
-  adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
-}
-
-
-
-void tanLonI(void) {
+static void tanReal(void) {
   real_t sin, cos, tan;
+  const real_t *r = &tan;
+  angularMode_t xAngularMode;
 
-  longIntegerAngleReduction(REGISTER_X, currentAngularMode, &tan);
-  WP34S_Cvt2RadSinCosTan(&tan, currentAngularMode, &sin, &cos, &tan, &ctxtReal75);
-  if(realIsZero(&sin)) {
-     realSetPositiveSign(&tan);
-  }
-
-  if(realIsZero(&cos) && !getSystemFlag(FLAG_SPCRES)) {
-    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
-      moreInfoOnError("In function tanLonI:", "X = " STD_PLUS_MINUS "90" STD_DEGREE, NULL, NULL);
-    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+  if (!getRegisterAsRealAngle(REGISTER_X, &tan, &xAngularMode))
     return;
-  }
 
-  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
-  if(realIsZero(&cos)) {
-    convertRealToReal34ResultRegister(const_NaN, REGISTER_X);
-  }
+  if(realIsSpecial(&tan))
+    r = const_NaN;
   else {
-    convertRealToReal34ResultRegister(&tan, REGISTER_X);
-  }
-}
-
-
-
-void tanRema(void) {
-  elementwiseRema(tanReal);
-}
-
-
-
-void tanCxma(void) {
-  elementwiseCxma(tanCplx);
-}
-
-
-
-void tanReal(void) {
-  if(real34IsInfinite(REGISTER_REAL34_DATA(REGISTER_X))) {
-    convertRealToReal34ResultRegister(const_NaN, REGISTER_X);
-  }
-  else {
-    real_t sin, cos, tan;
-    angularMode_t xAngularMode = determineAngleMode(getRegisterAngularMode(REGISTER_X));
-
-    real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &tan);
-
     WP34S_Cvt2RadSinCosTan(&tan, xAngularMode, &sin, &cos, &tan, &ctxtReal75);
     if(realIsZero(&sin)) {
        realSetPositiveSign(&tan);
@@ -175,28 +58,25 @@ void tanReal(void) {
       return;
     }
     else {
-      if(realIsZero(&cos)) {
-        convertRealToReal34ResultRegister(const_NaN, REGISTER_X);
-      }
-      else {
-        convertRealToReal34ResultRegister(&tan, REGISTER_X);
-      }
+      if(realIsZero(&cos))
+        r = const_NaN;
     }
   }
-  setRegisterAngularMode(REGISTER_X, amNone);
+  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+  convertRealToReal34ResultRegister(r, REGISTER_X);
 }
 
 
 
-void tanCplx(void) {
+static void tanCplx(void) {
   //                sin(a)*cosh(b) + i*cos(a)*sinh(b)
   // tan(a + ib) = -----------------------------------
   //                cos(a)*cosh(b) - i*sin(a)*sinh(b)
 
   real_t xReal, xImag;
 
-  real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &xReal);
-  real34ToReal(REGISTER_IMAG34_DATA(REGISTER_X), &xImag);
+  if (!getRegisterAsComplex(REGISTER_X, &xReal, &xImag))
+    return;
 
   TanComplex(&xReal, &xImag, &xReal, &xImag, &ctxtReal51);
 
@@ -221,4 +101,15 @@ uint8_t TanComplex(const real_t *xReal, const real_t *xImag, real_t *rReal, real
   divComplexComplex(&numerReal, &numerImag, &denomReal, &denomImag, rReal, rImag, realContext);
 
   return ERROR_NONE;
+}
+
+/********************************************//**
+ * \brief regX ==> regL and tan(regX) ==> regX
+ * enables stack lift and refreshes the stack
+ *
+ * \param[in] unusedButMandatoryParameter uint16_t
+ * \return void
+ ***********************************************/
+void fnTan(uint16_t unusedButMandatoryParameter) {
+  processRealComplexMonadicFunction(&tanReal, &tanCplx);
 }

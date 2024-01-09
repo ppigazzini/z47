@@ -79,10 +79,11 @@ Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=CxMa:"M2,3[0,0i-1,2i-1,-3i2,4i3,-5i-4]" RX=
 
 
 ;=======================================
-; tanh(Short Integer) --> Error24
+; tanh(Short Integer) --> Real
 ;=======================================
 In:  FL_ASLIFT=0 FL_CPXRES=0 RX=ShoI:"5#7"
-Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=ShoI:"5#7"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ShoI:"5#7" RX=Real:"0.99990920426259513121099044753447302108981261599054786273642887"
+
 
 
 

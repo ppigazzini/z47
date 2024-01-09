@@ -25,15 +25,4 @@
 
   void fnSinh   (uint16_t unusedButMandatoryParameter);
 
-  #if(EXTRA_INFO_ON_CALC_ERROR == 1)
-    void sinhError(void);
-  #else // (EXTRA_INFO_ON_CALC_ERROR != 1)
-    #define sinhError typeError
-  #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-
-  void sinhLonI (void);
-  void sinhRema (void);
-  void sinhCxma (void);
-  void sinhReal (void);
-  void sinhCplx (void);
 #endif // !SINH_H

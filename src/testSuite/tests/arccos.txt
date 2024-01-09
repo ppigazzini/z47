@@ -88,10 +88,10 @@ Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=CxMa:"M2,3[0,0i-1,2i-1,-3i2,4i3,-5i-4]" RX=
 
 
 ;=======================================
-; arccos(Short Integer) --> Error24
+; arccos(Short Integer) --> Real/Complex
 ;=======================================
-In:  FL_ASLIFT=0 FL_CPXRES=0 RX=ShoI:"5#7"
-Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=ShoI:"5#7"
+In:  FL_ASLIFT=0 FL_CPXRES=1 RX=ShoI:"2#7"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=ShoI:"2#7" RX=Cplx:"0 i 1.3169578969248167086250463473079684440269819714675164797684723"
 
 
 

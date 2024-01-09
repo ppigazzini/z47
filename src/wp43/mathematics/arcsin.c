@@ -38,118 +38,31 @@
 #include "wp43.h"
 
 
+static void arcsinCplx(void) {
+  real_t xReal, xImag, rReal, rImag;
 
-TO_QSPI void (* const arcsin[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])(void) = {
-// regX ==> 1            2           3           4            5            6            7           8           9             10
-//          Long integer Real34      Complex34   Time         Date         String       Real34 mat  Complex34 m Short integer Config data
-            arcsinLonI,  arcsinReal, arcsinCplx, arcsinError, arcsinError, arcsinError, arcsinRema, arcsinCxma, arcsinError,  arcsinError
-};
-
-
-
-/********************************************//**
- * \brief Data type error in arcsin
- *
- * \param void
- * \return void
- ***********************************************/
-#if(EXTRA_INFO_ON_CALC_ERROR == 1)
-  void arcsinError(void) {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-    sprintf(errorMessage, "cannot calculate arcsin for %s", getRegisterDataTypeName(REGISTER_X, true, false));
-    moreInfoOnError("In function fnArcsin:", errorMessage, NULL, NULL);
-  }
-#endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-
-
-
-/********************************************//**
- * \brief regX ==> regL and arcsin(regX) ==> regX
- * enables stack lift and refreshes the stack
- *
- * \param[in] unusedButMandatoryParameter uint16_t
- * \return void
- ***********************************************/
-void fnArcsin(uint16_t unusedButMandatoryParameter) {
-  if(!saveLastX()) {
+  if (!getRegisterAsComplex(REGISTER_X, &xReal, &xImag))
     return;
-  }
 
-  arcsin[getRegisterDataType(REGISTER_X)]();
+  ArcsinComplex(&xReal, &xImag, &rReal, &rImag, &ctxtReal39);
 
-  adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
+  convertComplexToResultRegister(&rReal, &rImag, REGISTER_X);
 }
 
-
-
-void arcsinLonI(void) {
+static void arcsinReal(void) {
   real_t x;
+  const real_t *r = &x;
 
-  convertLongIntegerRegisterToReal(REGISTER_X, &x, &ctxtReal39);
-  if(realCompareAbsGreaterThan(&x, const_1)) {
-    if(getFlag(FLAG_CPXRES)) {
-      reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
-      convertRealToReal34ResultRegister(&x, REGISTER_X);
-      real34Zero(REGISTER_IMAG34_DATA(REGISTER_X));
-      arcsinCplx();
-    }
-    else if(getSystemFlag(FLAG_SPCRES)) {
-      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, currentAngularMode);
-      convertRealToReal34ResultRegister(const_NaN, REGISTER_X);
-    }
-    else {
-      displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
-        moreInfoOnError("In function arcsinLonI:", "|X| > 1", "and CPXRES is not set!", NULL);
-      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-    }
+  if (!getRegisterAsReal(REGISTER_X, &x))
     return;
-  }
-
-  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, currentAngularMode);
-
-  if(realIsZero(&x)) {
-    real34Zero(REGISTER_REAL34_DATA(REGISTER_X));
-  }
-  else {
-    convertRealToReal34ResultRegister(const_90, REGISTER_X);
-    if(realIsNegative(&x)) {
-      real34ChangeSign(REGISTER_REAL34_DATA(REGISTER_X));
-    }
-    convertAngle34FromTo(REGISTER_REAL34_DATA(REGISTER_X), amDegree, currentAngularMode);
-  }
-}
-
-
-
-void arcsinRema(void) {
-  elementwiseRema(arcsinReal);
-}
-
-
-
-void arcsinCxma(void) {
-  elementwiseCxma(arcsinCplx);
-}
-
-
-
-void arcsinReal(void) {
-  real_t x;
-
-  real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &x);
-  setRegisterAngularMode(REGISTER_X, currentAngularMode);
 
   if(realCompareAbsGreaterThan(&x, const_1)) {
     if(getFlag(FLAG_CPXRES)) {
-      reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
-      convertRealToReal34ResultRegister(&x, REGISTER_X);
-      real34Zero(REGISTER_IMAG34_DATA(REGISTER_X));
       arcsinCplx();
       return;
     }
     else if(getSystemFlag(FLAG_SPCRES)) {
-      convertRealToReal34ResultRegister(const_NaN, REGISTER_X);
+      r = const_NaN;
     }
     else {
       displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
@@ -158,23 +71,14 @@ void arcsinReal(void) {
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return;
     }
+  } else {
+    WP34S_Asin(&x, &x, &ctxtReal39);
+    convertAngleFromTo(&x, amRadian, currentAngularMode, &ctxtReal39);
   }
-
-  WP34S_Asin(&x, &x, &ctxtReal39);
-  convertAngleFromTo(&x, amRadian, currentAngularMode, &ctxtReal39);
-  convertRealToReal34ResultRegister(&x, REGISTER_X);
+  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, currentAngularMode);
+  convertRealToReal34ResultRegister(r, REGISTER_X);
 }
 
-void arcsinCplx(void) {
-  real_t xReal, xImag, rReal, rImag;
-
-  real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &xReal);
-  real34ToReal(REGISTER_IMAG34_DATA(REGISTER_X), &xImag);
-
-  ArcsinComplex(&xReal, &xImag, &rReal, &rImag, &ctxtReal39);
-
-  convertComplexToResultRegister(&rReal, &rImag, REGISTER_X);
-}
 
 uint8_t ArcsinComplex(const real_t *xReal, const real_t *xImag, real_t *rReal, real_t *rImag, realContext_t *realContext) {
   real_t a, b;
@@ -201,4 +105,17 @@ uint8_t ArcsinComplex(const real_t *xReal, const real_t *xImag, real_t *rReal, r
   realCopy(&a, rImag);
 
   return ERROR_NONE;
+}
+
+
+/********************************************//**
+ * \brief regX ==> regL and arcsin(regX) ==> regX
+ * enables stack lift and refreshes the stack
+ *
+ * \param[in] unusedButMandatoryParameter uint16_t
+ * \return void
+ ***********************************************/
+void fnArcsin(uint16_t unusedButMandatoryParameter) {
+  processRealComplexMonadicFunction(&arcsinReal, &arcsinCplx);
+
 }

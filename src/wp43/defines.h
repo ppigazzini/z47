@@ -1380,6 +1380,10 @@ typedef enum {
   #endif // TWO_FILE_PGM
 #endif // !DMCP_BUILD
 
+#if defined(DMCP_BUILD) && defined(NEW_HW)
+  #undef TO_QSPI
+  #define TO_QSPI
+#endif
 
 //******************************
 //* Macros replacing functions *

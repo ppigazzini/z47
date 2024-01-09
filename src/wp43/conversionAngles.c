@@ -403,6 +403,11 @@ void convertAngle34FromTo(real34_t *angle34, angularMode_t fromAngularMode, angu
 
 
 void convertAngleFromTo(real_t *angle, angularMode_t fromAngularMode, angularMode_t toAngularMode, realContext_t *realContext) {
+  if (fromAngularMode == amNone)
+    fromAngularMode = currentAngularMode;
+  if (toAngularMode == amNone)
+    toAngularMode = currentAngularMode;
+
   switch(fromAngularMode) {
     case amRadian: {
       switch(toAngularMode) {
