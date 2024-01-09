@@ -22,6 +22,7 @@
 
 #include "constantPointers.h"
 #include "debug.h"
+#include "defines.h"
 #include "error.h"
 #include "mathematics/addition.h"
 #include "mathematics/changeSign.h"
@@ -127,6 +128,7 @@ void fnSlvc(uint16_t unusedButMandatoryParameter) {
     }
     adjustResult(REGISTER_X + i, false, true, REGISTER_X + i, -1, -1);
   }
+  temporaryInformation = TI_ROOTS3;
 
   #ifdef DISCRIMINANT
     if(realIsZero(&rImag)) { // q3r2 is real
