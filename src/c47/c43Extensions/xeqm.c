@@ -14,7 +14,6 @@
  * along with C47.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* ADDITIONAL C43 functions and routines */
 
 /********************************************//**
  * \file xeqm.c
@@ -563,7 +562,7 @@ TO_QSPI const function_t indexOfFunctions[] = {
     for(uint_fast16_t i=0; i<n; i++) {
       if(com == indexOfFunctions[i].itemNr) {
         if(indexOfFunctions[i].itemName[0] == '@') {       //if new indicator "@" is found, XEQM uses standard indexOfItems[].itemCatalogName
-          strcpy(str, indexOfItems[com].itemCatalogName);          
+          strcpy(str, indexOfItems[com].itemCatalogName);
         } else {
           strcpy(str, indexOfFunctions[i].itemName);
         }
@@ -1190,6 +1189,7 @@ void XEQMENU_Selection(uint16_t selection, char *line1, bool_t exec, bool_t scan
 }
 
 
+
 void fnXEQMENU(uint16_t XEQM_no) {
   #if !defined(TESTSUITE_BUILD)
 //    clearScreenOld(false, true, true);
@@ -1362,13 +1362,13 @@ void fnXSWAP (uint16_t unusedButMandatoryParameter) {
         reallocateRegister(REGISTER_Y, dtString, TO_BLOCKS(len), amNone);           //Make blank string in Y
         xcopy(REGISTER_STRING_DATA(REGISTER_Y), tmp, len);
         addition[type_x][getRegisterDataType(REGISTER_Y)]();                        //Convert X (number) to string in X
-        
+
         #if defined (DISALLOW_ZERO_STRING)
           if(!(getRegisterDataType(REGISTER_X) == dtString && REGISTER_STRING_DATA(REGISTER_X)[0]!=0)) { //never allow a zero string in a register
             clearRegister(REGISTER_X);                                                //create 0. instead of zero string
           }
         #endif //DISALLOW_ZERO_STRING
-        
+
         adjustResult(REGISTER_X, false, false, -1, -1, -1);
         copySourceRegisterToDestRegister(TEMP_REGISTER_1, REGISTER_Y);              //restore Y
         clearRegister(TEMP_REGISTER_1);                                             //Clear in case it was a really long longinteger
@@ -1400,14 +1400,14 @@ void fnXSWAP (uint16_t unusedButMandatoryParameter) {
             //copy aimbuffer to X
             copySourceRegisterToDestRegister(TEMP_REGISTER_1, REGISTER_X);
           }
-          
+
 
           //Set cursors
           if(calcMode==CM_AIM) {
             fnSwapXY(0);
             T_cursorPos = stringByteLength(aimBuffer);
           } else { //EIM
-            xCursor = stringGlyphLength(aimBuffer);          
+            xCursor = stringGlyphLength(aimBuffer);
           }
           refreshRegisterLine(REGISTER_X);        //make sure that the mulit line editor check is done
           last_CM = 253;

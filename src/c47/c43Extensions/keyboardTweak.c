@@ -361,17 +361,19 @@ void resetKeytimers(void) {
               } else {
                 longpressDelayedkey1 = -MNU_XXEQ;
                 longpressDelayedkey2 = tmpf_;
-                longpressDelayedkey3 = tmpg_;       
+                longpressDelayedkey3 = tmpg_;
               }
             }
           }
             break;
+
           case ITM_BACKSPACE:
             if(tam.mode == 0) {
               longpressDelayedkey2 = longpressDelayedkey1;
               longpressDelayedkey1 = ITM_CLSTK;    //backspace longpress to CLSTK
             }
             break;
+
           case ITM_EXIT1:
             longpressDelayedkey2 = ITM_CLRMOD;     //EXIT longpress DOES CLRMOD
             longpressDelayedkey1 = ITM_BASEMENU;
@@ -422,7 +424,7 @@ void resetKeytimers(void) {
               } else {
                 longpressDelayedkey1 = -MNU_XXEQ;
                 longpressDelayedkey2 = tmpf_;
-                longpressDelayedkey3 = tmpg_;       
+                longpressDelayedkey3 = tmpg_;
               }
             }
             break;
@@ -904,9 +906,9 @@ uint16_t numlockReplacements(uint16_t id, int16_t item, bool_t NL, bool_t FSHIFT
       uint16_t ix = 17;
       while(ix < 37) {
         if(item == kbd_std[ix].primaryAim && kbd_std[ix].primaryAim != ITM_EXIT1 && kbd_std[ix].primaryAim != ITM_UP1 && kbd_std[ix].primaryAim != ITM_DOWN1) {
-          *item1 = getSystemFlag(FLAG_USER) ? kbd_usr[ix].gShiftedAim : kbd_std[ix].gShiftedAim; 
+          *item1 = getSystemFlag(FLAG_USER) ? kbd_usr[ix].gShiftedAim : kbd_std[ix].gShiftedAim;
           break;
-        } 
+        }
         ix++;
       }
     }
@@ -917,9 +919,9 @@ uint16_t numlockReplacements(uint16_t id, int16_t item, bool_t NL, bool_t FSHIFT
       uint16_t ix = 31;
       while(ix < 37) {
         if(item == kbd_std[ix].gShiftedAim && kbd_std[ix].primaryAim != ITM_EXIT1 && kbd_std[ix].primaryAim != ITM_UP1 && kbd_std[ix].primaryAim != ITM_DOWN1) {
-          *item1 = getSystemFlag(FLAG_USER) ? kbd_usr[ix].primaryAim : kbd_std[ix].primaryAim; 
+          *item1 = getSystemFlag(FLAG_USER) ? kbd_usr[ix].primaryAim : kbd_std[ix].primaryAim;
           break;
-        } 
+        }
         ix++;
       }
 
