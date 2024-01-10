@@ -126,11 +126,10 @@ void magnitudeCplx(void) {
 
   real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &a);
   real34ToReal(REGISTER_IMAG34_DATA(REGISTER_X), &b);
-  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
 
   complexMagnitude(&a, &b, &c, &ctxtReal39);
 
-  convertRealToReal34ResultRegister(&c, REGISTER_X);
+  convertRealToResultRegister(&c, REGISTER_X, amNone);
 }
 
 void complexMagnitude2(const real_t *a, const real_t *b, real_t *c, realContext_t *realContext) {

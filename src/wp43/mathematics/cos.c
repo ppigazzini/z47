@@ -59,8 +59,7 @@ static void cosReal(void) {
     r = const_NaN;
   else
     WP34S_Cvt2RadSinCosTan(r = &x, xAngularMode, NULL, &x, NULL, &ctxtReal75);
-  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
-  convertRealToReal34ResultRegister(r, REGISTER_X);
+  convertRealToResultRegister(r, REGISTER_X, amNone);
 }
 
 

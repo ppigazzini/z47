@@ -126,8 +126,7 @@ static void arctanhReal(void) {
       }
     }
   }
-  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
-  convertRealToReal34ResultRegister(r, REGISTER_X);
+  convertRealToResultRegister(r, REGISTER_X, amNone);
 }
 
 

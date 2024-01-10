@@ -360,12 +360,16 @@ void convertRealToImag34ResultRegister(const real_t *real, calcRegister_t dest) 
   realToReal34(&rounded, REGISTER_IMAG34_DATA(dest));
 }
 
+void convertRealToResultRegister(const real_t *x, calcRegister_t dest, angularMode_t angle) {
+  reallocateRegister(dest, dtReal34, REAL34_SIZE_IN_BLOCKS, angle);
+  convertRealToReal34ResultRegister(x, dest);
+}
+
 void convertComplexToResultRegister(const real_t *real, const real_t *imag, calcRegister_t dest) {
   reallocateRegister(dest, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
   convertRealToReal34ResultRegister(real, dest);
   convertRealToImag34ResultRegister(imag, dest);
 }
-
 
 void convertTimeRegisterToReal34Register(calcRegister_t source, calcRegister_t destination) {
   real34_t real34, value34;
@@ -738,6 +742,23 @@ void realToDouble(const real_t *vv, double *v) {      //Not using double interna
   *v = fnRealToFloat(vv);
 }
 
+static bool_t typeIsNumber(uint32_t type, bool_t *cmplx) {
+  switch(getRegisterDataType(type)) {
+    case dtComplex34:
+      if (cmplx != NULL)
+          *cmplx = true;
+      return true;
+
+    case dtLongInteger:
+    case dtShortInteger:
+    case dtReal34:
+      if (cmplx != NULL)
+          *cmplx = false;
+      return true;
+  }
+  return false;
+}
+
 bool_t getRegisterAsComplex(calcRegister_t reg, real_t *r, real_t *i) {
   switch(getRegisterDataType(reg)) {
     case dtLongInteger:
@@ -787,7 +808,8 @@ bool_t getRegisterAsComplexOrReal(calcRegister_t reg, real_t *r, real_t *i, bool
     case dtComplex34:
       real34ToReal(REGISTER_REAL34_DATA(reg), r);
       real34ToReal(REGISTER_IMAG34_DATA(reg), i);
-      *cmplx = true;
+      if (cmplx != NULL)
+        *cmplx = true;
       return true;
 
     default:
@@ -923,4 +945,60 @@ void processRealComplexMonadicFunction(void (*realf)(void), void (*complexf)(voi
   }
 
   adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
+}
+
+static void dyadicRemaRema(void (*realf)(void)) {
+}
+
+void processRealComplexDyadicFunction(void (*realf)(void), void (*complexf)(void)) {
+  real_t xReal, xImag, yReal, yImag;
+  const uint32_t typeX = getRegisterDataType(REGISTER_X);
+  const uint32_t typeY = getRegisterDataType(REGISTER_Y);
+  bool_t xCmplx, yCmplx, cmplxRes = false;
+  const bool_t xNumber = typeIsNumber(typeX, &xCmplx);
+  const bool_t yNumber = typeIsNumber(typeY, &yCmplx);
+
+  if(!saveLastX())
+    return;
+
+  if (typeX == dtReal34Matrix) {
+    if (typeY == dtReal34Matrix) {
+      dyadicRemaRema(realf);
+      goto fin;
+    } else if (typeY == dtComplex34Matrix) {
+      goto fin;
+    } else if (yNumber) {
+      goto fin;
+    }
+  } else if (typeX == dtComplex34Matrix) {
+    if (typeY == dtReal34Matrix) {
+      goto fin;
+    } else if (typeY == dtComplex34Matrix) {
+      goto fin;
+    } else if (yNumber) {
+      goto fin;
+    }
+  } else if (typeY == dtReal34Matrix && xNumber) {
+    if (xCmplx)
+      ;
+    else
+      elementwiseRemaReal(realf);
+    goto fin;
+  } else if (typeY == dtComplex34Matrix && xNumber) {
+    elementwiseCxmaCplx(complexf);
+    goto fin;
+  }
+
+  /* Fall through to numeric/numeric or error if not */
+  if (!getRegisterAsComplexOrReal(REGISTER_X, &xReal, &xImag, &cmplxRes)
+      || !getRegisterAsComplexOrReal(REGISTER_Y, &yReal, &yImag, &cmplxRes))
+    return;
+
+  if (cmplxRes)
+    complexf();
+  else
+    realf();
+
+fin:
+  adjustResult(REGISTER_X, true, true, REGISTER_X, REGISTER_Y, -1);
 }

@@ -96,14 +96,13 @@ static void sincReal(void) {
       if (type == dtReal34) {
         xAngularMode = getRegisterAngularMode(REGISTER_X);
         if (xAngularMode != amNone)
-          convertAngleFromTo(&x, xAngularMode, amRadian, &ctxtReal75);
+          convertAngleFromTo(&x, xAngularMode, amRadian, &ctxtReal39);
       }
-      WP34S_Cvt2RadSinCosTan(&x, amRadian, &sine, NULL, NULL, &ctxtReal75);
+      WP34S_Cvt2RadSinCosTan(&x, amRadian, &sine, NULL, NULL, &ctxtReal39);
       realDivide(&sine, &x, &x, &ctxtReal75);
     }
   }
-  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
-  convertRealToReal34ResultRegister(r, REGISTER_X);
+  convertRealToResultRegister(r, REGISTER_X, amNone);
 }
 
 

@@ -107,9 +107,7 @@ static void expM1Real(void) {
   }
 
   realExpM1(&x, &x, &ctxtReal39);
-  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
-  convertRealToReal34ResultRegister(&x, REGISTER_X);
-  setRegisterAngularMode(REGISTER_X, amNone);
+  convertRealToResultRegister(&x, REGISTER_X, amNone);
 }
 
 
