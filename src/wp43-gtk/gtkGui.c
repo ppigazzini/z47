@@ -220,7 +220,8 @@
   }
 
 
-  uint32_t CTRL_State;
+  uint32_t CTRL_State = 0;
+  uint32_t SHIFT_State = 0;
   uint32_t event_keyval = 99999999;
 
   #define AlphaArrowsOffAndUpDn       ((bool_t)( \
@@ -241,17 +242,18 @@
     if(event_keyval == event->keyval + CTRL_State) event_keyval = 99999999;
 
     switch(event->keyval) {
-      case 65505: {
-            if(getSystemFlag(FLAG_USER) ? kbd_usr[27].primary : kbd_std[27].primary == KEY_fg) {     //Left Shift
-              btnClickedR(w, "27"); 
+      case 65505: if(SHIFT_State != 0) {
+            if(getSystemFlag(FLAG_USER) ? kbd_usr[10].primary : kbd_std[10].primary != ITM_SHIFTf) {     //Left Shift
+              btnClicked(w, "27"); 
             } else {
-              btnClickedR(w, "10");
+              btnClicked(w, "10");
             }
+            SHIFT_State = 0;
           }
           break;
 
       case 65507: if(CTRL_State != 0) {                                                              //Left Ctrl
-            if(getSystemFlag(FLAG_USER) ? kbd_usr[27].primary : kbd_std[27].primary == KEY_fg) {
+            if(getSystemFlag(FLAG_USER) ? kbd_usr[11].primary : kbd_std[11].primary != ITM_SHIFTg) {
               btnClicked(w, "27"); 
             } else {
               btnClicked(w, "11");
@@ -324,26 +326,36 @@
         break;
 
     }
+    if(event->keyval != 65505) {
+      SHIFT_State = 0;
+    }
     return FALSE;
-  }                                                                           //JM
+  }
 
 
   gboolean keyPressed(GtkWidget *w, GdkEventKey *event, gpointer data) {
     event_keyval = event->keyval + CTRL_State;
-    printf("Pressed event->keyval=%u event_keyval=%u\n", event->keyval, event_keyval);                                  //JM
+    printf("Keyboard Key Code: event->keyval=%u event_keyval=%u\n", event->keyval, event_keyval);
+
+    switch(event_keyval) {
+      case 65505: //left shift
+        SHIFT_State = 65536;
+        //printf("key pressed: Shift Activated\n");
+        break;
+
+      case 65507: // left Ctrl
+      case 65508: // right Ctrl
+        //printf("key pressed: CTRL Activated\n");
+        CTRL_State = 65536;
+        break;
+      default:;
+    }
+
 
     //JM ALPHA SECTION FOR ALPHAMODE - TAKE OVER ALPHA KEYBOARD
     if(calcMode == CM_AIM || calcMode == CM_EIM || calcMode == CM_MIM || tam.mode) {
-      printf(">>>>> Keyboard Key Code = %d\n", event_keyval);
+      //printf(">>>>> ALPHA SECTION Keyboard Key Code = %d\n", event_keyval);
       switch(event_keyval) {
-        case 65507: // left Ctrl
-        case 65508: // right Ctrl
-          //printf("key pressed: CTRL Activated\n");
-          CTRL_State = 65536;
-          break;
-
-        case 65505: if(getSystemFlag(FLAG_USER) ? kbd_usr[27].primary : kbd_std[27].primary == KEY_fg) btnClicked(w, "27"); else btnClicked(w, "10"); break; //Left Shift
-//        case 65536: if(MODEL == USER_C47) btnClicked(w, "27"); else btnClicked(w, "11"); break; //Left Ctrl
 
         case 72+65536: // Ctrl H
         case 104+65536: // Ctrl h
@@ -867,8 +879,6 @@
     //FOR NON AIM MODE. AIM HAS RETURNED AT THIS POINT SO NO IF NEEDED
 
     switch(event_keyval) {
-      case 65505: if(getSystemFlag(FLAG_USER) ? kbd_usr[27].primary : kbd_std[27].primary == KEY_fg) btnClickedP(w, "27"); else btnClickedP(w, "10"); break; //Left Shift
-//      case 65536: if(MODEL == USER_C47) btnClickedP(w, "27"); else btnClickedP(w, "11"); break; //Left Ctrl
 
       //ROW 1
       case 65470: // F1                       //JM Changed these to btnFnPressed from btnFnClicked
