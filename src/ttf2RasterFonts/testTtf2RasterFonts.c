@@ -18,7 +18,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-#include "wp43.h"
+#include "c47.h"
 
 void showOneChar(const font_t *font, uint16_t charCode) {
   uint16_t cc;
