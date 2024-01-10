@@ -237,14 +237,30 @@
 
 
   gboolean keyReleased(GtkWidget *w, GdkEventKey *event, gpointer data) {     //JM
-    //printf("Released %d\n", event->keyval);
+    printf("Released %d\n", event->keyval);
     if(event_keyval == event->keyval + CTRL_State) event_keyval = 99999999;
 
     switch(event->keyval) {
+      case 65505: {
+            if(getSystemFlag(FLAG_USER) ? kbd_usr[27].primary : kbd_std[27].primary == KEY_fg) {     //Left Shift
+              btnClickedR(w, "27"); 
+            } else {
+              btnClickedR(w, "10");
+            }
+          }
+          break;
 
-      case 65507: // left Ctrl
+      case 65507: if(CTRL_State != 0) {                                                              //Left Ctrl
+            if(getSystemFlag(FLAG_USER) ? kbd_usr[27].primary : kbd_std[27].primary == KEY_fg) {
+              btnClicked(w, "27"); 
+            } else {
+              btnClicked(w, "11");
+            }
+            CTRL_State = 0;
+          }
+          break;
+
       case 65508: // right Ctrl
-        //printf("key depressed: CTRL De-activate\n");
         CTRL_State = 0;
         break;
 
@@ -304,12 +320,6 @@
         }
         break;
 
-      case 65505: // left shift  //JM Added this portion to be able to repeat f key on emulator
-        //printf("key pressed: Shift\n"); //dr
-        btnClickedR(w, "27");
-        break;
-
-
       default:
         break;
 
@@ -319,14 +329,9 @@
 
 
   gboolean keyPressed(GtkWidget *w, GdkEventKey *event, gpointer data) {
-    //printf("Pressed %d\n", event->keyval);                                  //JM
-    if(event_keyval ==  event->keyval + CTRL_State) {
-      return FALSE;
-    }
-    else {
-      event_keyval = event->keyval + CTRL_State;
-    }
-    //printf("#######%d\n",event_keyval);
+    event_keyval = event->keyval + CTRL_State;
+    printf("Pressed event->keyval=%u event_keyval=%u\n", event->keyval, event_keyval);                                  //JM
+
     //JM ALPHA SECTION FOR ALPHAMODE - TAKE OVER ALPHA KEYBOARD
     if(calcMode == CM_AIM || calcMode == CM_EIM || calcMode == CM_MIM || tam.mode) {
       printf(">>>>> Keyboard Key Code = %d\n", event_keyval);
@@ -336,8 +341,13 @@
           //printf("key pressed: CTRL Activated\n");
           CTRL_State = 65536;
           break;
+
+        case 65505: if(getSystemFlag(FLAG_USER) ? kbd_usr[27].primary : kbd_std[27].primary == KEY_fg) btnClicked(w, "27"); else btnClicked(w, "10"); break; //Left Shift
+//        case 65536: if(MODEL == USER_C47) btnClicked(w, "27"); else btnClicked(w, "11"); break; //Left Ctrl
+
         case 72+65536: // Ctrl H
         case 104+65536: // Ctrl h
+          CTRL_State = 0;
           printf("key pressed: CTRL+h Hardcopy\n");
           copyScreenToClipboard();
           break;
@@ -637,10 +647,6 @@
           break;
 
         //ROW 7
-        case 65505:                                               //JM     // left shift  //JM
-        //case 65506: // right shift //JM
-          btnClicked(w, "27");
-          break;
         case 88:  //JM SHIFTED CAPITAL ALPHA AND SHIFTED NUMERAL  //JM
           btnClicked_UC(w, "28");
           break;
@@ -861,6 +867,9 @@
     //FOR NON AIM MODE. AIM HAS RETURNED AT THIS POINT SO NO IF NEEDED
 
     switch(event_keyval) {
+      case 65505: if(getSystemFlag(FLAG_USER) ? kbd_usr[27].primary : kbd_std[27].primary == KEY_fg) btnClickedP(w, "27"); else btnClickedP(w, "10"); break; //Left Shift
+//      case 65536: if(MODEL == USER_C47) btnClickedP(w, "27"); else btnClickedP(w, "11"); break; //Left Ctrl
+
       //ROW 1
       case 65470: // F1                       //JM Changed these to btnFnPressed from btnFnClicked
         //printf("key pressed: F1\n");
@@ -1054,12 +1063,6 @@
         break;
 
       //ROW 7
-      case 65505: // left shift  //JM
-      //case 65506: //JM right shift. 65453: // -  //JM Remove Right Shift, to allow * & +
-        //printf("key pressed: Shift\n"); //dr
-        btnClickedP(w, "27");                         //JM PRESSED FOR KEYBOARD F REPEAT
-        break;
-
       case 49:    // 1
       case 65457: // 1
         //printf("key pressed: 1\n");
@@ -1132,6 +1135,7 @@
 
       case 72+65536: // Ctrl H
       case 104+65536: // Ctrl h
+        CTRL_State = 0;
         printf("key pressed: CTRL+h Hardcopy\n");
         copyScreenToClipboard();
         break;
@@ -1140,18 +1144,21 @@
       case 88+65536: // CTRL X
       case 99+65536: // CTRL c
       case 67+65536: // CTRL C
+        CTRL_State = 0;
         printf("key pressed: CTRL+c/x Copy x register to clipboard\n");
         copyRegisterXToClipboard();
         break;
 
       case 100+65536: // CTRL d
       case 68+65536: // CTRL D
+        CTRL_State = 0;
         printf("key pressed: CTRL+d Copy Stack registers to clipboard\n");
         copyStackRegistersToClipboard();
         break;
 
       case 97+65536: // CTRL a
       case 65+65536: // CTRL A
+        CTRL_State = 0;
         printf("key pressed: CTRL+d Copy All registers to clipboard\n");
         copyAllRegistersToClipboard();
         break;
