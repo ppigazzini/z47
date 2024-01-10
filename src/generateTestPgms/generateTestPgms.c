@@ -8,7 +8,7 @@
 #include "items.h"
 #include <stdlib.h>
 
-#include "wp43.h"
+#include "c47.h"
 
 
 int main(int argc, char* argv[]) {
