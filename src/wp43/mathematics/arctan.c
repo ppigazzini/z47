@@ -58,8 +58,7 @@ static void arctanReal(void) {
     WP34S_Atan(&x, &x, &ctxtReal39);
     convertAngleFromTo(&x, amRadian, currentAngularMode, &ctxtReal39);
   }
-  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, currentAngularMode);
-  convertRealToReal34ResultRegister(&x, REGISTER_X);
+  convertRealToResultRegister(&x, REGISTER_X, currentAngularMode);
 }
 
 

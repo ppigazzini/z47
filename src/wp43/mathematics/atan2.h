@@ -31,10 +31,6 @@
     #define atan2Error typeError
   #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
 
-  void atan2LonILonI(void);
-  void atan2RealLonI(void);
-  void atan2RemaLonI(void);
-  void atan2LonIReal(void);
   void atan2RealReal(void);
   void atan2RemaReal(void);
   void atan2LonIRema(void);

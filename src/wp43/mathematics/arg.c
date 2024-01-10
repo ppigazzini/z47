@@ -68,8 +68,7 @@ static void argReal(void) {
 
   r = realArg(&x);
 
-  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
-  convertRealToReal34ResultRegister(r, REGISTER_X);
+  convertRealToResultRegister(r, REGISTER_X, amNone);
   if (!realIsNaN(r)) {
     convertAngle34FromTo(REGISTER_REAL34_DATA(REGISTER_X), amDegree, currentAngularMode);
     setRegisterAngularMode(REGISTER_X, currentAngularMode);
