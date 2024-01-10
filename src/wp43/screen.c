@@ -1720,7 +1720,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
 
       //lcd_refresh();
       fnTimerStart(TO_KB_ACTV, TO_KB_ACTV, JM_TO_KB_ACTV); //PROGRAM_KB_ACTV
-      sprintf(tmps, "%s %6d      ",txt,loop);
+      sprintf(tmps, "%s %8d    ",txt,loop);
       showString(tmps, &standardFont, 20, /*145-7*/ Y_POSITION_OF_REGISTER_T_LINE + mode * 20, vmNormal, false, false);  //note: 1 line down for "force"
 
       #if defined(PC_BUILD)
@@ -3107,6 +3107,33 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
             }
           }
 
+
+          else if(temporaryInformation == TI_ROOTS3) {
+            if(regist == REGISTER_X || regist == REGISTER_Y || regist == REGISTER_Z) {
+              strcpy(prefix,"Root" STD_SPACE_FIGURE ":");
+              prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
+            }
+            #ifdef DISCRIMINANT
+            if(regist == REGISTER_T) {
+              strcpy(prefix,STD_UP_ARROW "Discr." STD_SPACE_FIGURE ":");
+              prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
+            }
+            #endif //DISCRIMINANT
+          }
+          else if(temporaryInformation == TI_ROOTS2) {
+            if(regist == REGISTER_X || regist == REGISTER_Y) {
+              strcpy(prefix,"Root" STD_SPACE_FIGURE ":");
+              prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
+            }
+            #ifdef DISCRIMINANT
+            if(regist == REGISTER_Z) {
+              strcpy(prefix,STD_UP_ARROW "Discr." STD_SPACE_FIGURE ":");
+              prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
+            }
+            #endif //DISCRIMINANT
+          }
+
+
           //L.R. Display
           else if(temporaryInformation == TI_LR && lrChosen != 0) {
             #define LRWidth 140
@@ -3578,6 +3605,32 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
               prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
             }
           }
+
+          else if(temporaryInformation == TI_ROOTS3) {
+            if(regist == REGISTER_X || regist == REGISTER_Y || regist == REGISTER_Z) {
+              strcpy(prefix,"Root" STD_SPACE_FIGURE ":");
+              prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
+            }
+            #ifdef DISCRIMINANT
+            if(regist == REGISTER_T) {
+              strcpy(prefix,STD_UP_ARROW "Discr." STD_SPACE_FIGURE ":");
+              prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
+            }
+            #endif //DISCRIMINANT
+          }
+          else if(temporaryInformation == TI_ROOTS2) {
+            if(regist == REGISTER_X || regist == REGISTER_Y) {
+              strcpy(prefix,"Root" STD_SPACE_FIGURE ":");
+              prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
+            }
+            #ifdef DISCRIMINANT
+            if(regist == REGISTER_Z) {
+              strcpy(prefix,STD_UP_ARROW "Discr." STD_SPACE_FIGURE ":");
+              prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
+            }
+            #endif //DISCRIMINANT
+          }
+
 
           if(prefixWidth > 0) {
             if(regist == REGISTER_X) {
