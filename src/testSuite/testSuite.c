@@ -3118,6 +3118,7 @@ void processOneFile(void) {
   sprintf(filePathName, "%s/%s", filePath, fileName);
 
   printf("Performing tests from file %s ", filePathName);
+  fflush(stdout);
 
   testSuite = fopen(filePathName, "rb");
   if(testSuite == NULL) {

@@ -4549,11 +4549,15 @@ void elementwiseRemaLonI(void (*f)(void)) {
 void elementwiseRemaReal(void (*f)(void)) {
   real34Matrix_t y;
   complex34Matrix_t yc;
+  real_t xin;
   real34_t x;
   bool_t complex = false;
 
+  if (!getRegisterAsReal(REGISTER_X, &xin))
+    return;
+  realToReal34(&xin, &x);
   convertReal34MatrixRegisterToReal34Matrix(REGISTER_Y, &y);
-  real34Copy(REGISTER_REAL34_DATA(REGISTER_X), &x);
+
   const int numOfElements = y.header.matrixRows * y.header.matrixColumns;
 
   for(int i = 0; i < numOfElements; ++i) {
@@ -4621,11 +4625,15 @@ void elementwiseRemaShoI(void (*f)(void)) {
 void elementwiseRealRema(void (*f)(void)) {
   real34Matrix_t x;
   complex34Matrix_t xc;
+  real_t yin;
   real34_t y;
   bool_t complex = false;
 
+  if (!getRegisterAsReal(REGISTER_Y, &yin))
+      return;
+  realToReal34(&yin, &y);
   convertReal34MatrixRegisterToReal34Matrix(REGISTER_X, &x);
-  real34Copy(REGISTER_REAL34_DATA(REGISTER_Y), &y);
+
   const int numOfElements = x.header.matrixRows * x.header.matrixColumns;
 
   for(int i = 0; i < numOfElements; ++i) {
@@ -4730,9 +4738,12 @@ void elementwiseCxmaLonI(void (*f)(void)) {
 void elementwiseCxmaReal(void (*f)(void)) {
   complex34Matrix_t y;
   real34_t x;
+  real_t xin;
 
+  if (!getRegisterAsReal(REGISTER_X, &xin))
+    return;
+  realToReal34(&xin, &x);
   convertComplex34MatrixRegisterToComplex34Matrix(REGISTER_Y, &y);
-  real34Copy(REGISTER_REAL34_DATA(REGISTER_X), &x);
 
   for(int i = 0; i < y.header.matrixRows * y.header.matrixColumns; ++i) {
     reallocateRegister(REGISTER_Y, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
@@ -4774,9 +4785,13 @@ void elementwiseCxmaShoI(void (*f)(void)) {
 void elementwiseCxmaCplx(void (*f)(void)) {
   complex34Matrix_t y;
   complex34_t x;
+  real_t xReal, xImag;
 
+  if (!getRegisterAsComplex(REGISTER_X, &xReal, &xImag))
+      return;
+  realToReal34(&xReal, &x.real);
+  realToReal34(&xImag, &x.imag);
   convertComplex34MatrixRegisterToComplex34Matrix(REGISTER_Y, &y);
-  complex34Copy(REGISTER_COMPLEX34_DATA(REGISTER_X), &x);
 
   for(int i = 0; i < y.header.matrixRows * y.header.matrixColumns; ++i) {
     reallocateRegister(REGISTER_Y, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
@@ -4796,9 +4811,12 @@ void elementwiseCxmaCplx(void (*f)(void)) {
 void elementwiseRealCxma(void (*f)(void)) {
   complex34Matrix_t x;
   real34_t y;
+  real_t yin;
 
+  if (!getRegisterAsReal(REGISTER_Y, &yin))
+    return;
+  realToReal34(&yin, &y);
   convertComplex34MatrixRegisterToComplex34Matrix(REGISTER_X, &x);
-  real34Copy(REGISTER_REAL34_DATA(REGISTER_Y), &y);
 
   for(int i = 0; i < x.header.matrixRows * x.header.matrixColumns; ++i) {
     reallocateRegister(REGISTER_Y, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);

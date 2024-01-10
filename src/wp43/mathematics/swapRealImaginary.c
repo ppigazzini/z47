@@ -82,7 +82,6 @@ void fnSwapRealImaginary(uint16_t unusedButMandatoryParameter) {
   else {
     if (!getRegisterAsComplex(REGISTER_X, &a, &b))
       return;
-    reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
     convertComplexToResultRegister(&b, &a, REGISTER_X);
   }
 }

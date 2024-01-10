@@ -78,6 +78,7 @@
    ***********************************************/
   void convertRealToImag34ResultRegister                     (const real_t *real, calcRegister_t dest);
 
+  void convertRealToResultRegister                           (const real_t *x, calcRegister_t dest, angularMode_t angle);
   void convertComplexToResultRegister                        (const real_t *real, const real_t *imag, calcRegister_t dest);
   
   void convertTimeRegisterToReal34Register                   (calcRegister_t source, calcRegister_t destination);
@@ -116,4 +117,5 @@
   bool_t getRegisterAsRealAngle(calcRegister_t reg, real_t *val, angularMode_t *xAngularMode);
 
   void processRealComplexMonadicFunction(void (*realf)(void), void (*complexf)(void));
+  void processRealComplexDyadicFunction(void (*realf)(void), void (*complexf)(void));
 #endif // !REGISTERVALUECONVERSIONS_H

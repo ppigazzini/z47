@@ -132,10 +132,8 @@ void fnSlvc(uint16_t unusedButMandatoryParameter) {
   qsort(x, 3, sizeof(x[0]), &cmplxSortCompare);
   for (int i = 0; i < 3; i++) {
     if (realIsZero(&x[i].i) || (realIsNaN(&x[i].r) && realIsNaN(&x[i].i))) {
-      reallocateRegister(REGISTER_X + i, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
-      convertRealToReal34ResultRegister(&x[i].r, REGISTER_X + i);
+      convertRealToResultRegister(&x[i].r, REGISTER_X + i, amNone);
     } else {
-      reallocateRegister(REGISTER_X + i, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
       convertComplexToResultRegister(&x[i].r, &x[i].i, REGISTER_X + i);
     }
     adjustResult(REGISTER_X + i, false, true, REGISTER_X + i, -1, -1);
@@ -144,11 +142,9 @@ void fnSlvc(uint16_t unusedButMandatoryParameter) {
 
   #ifdef DISCRIMINANT
     if(realIsZero(&rImag)) { // q3r2 is real
-      reallocateRegister(REGISTER_T, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
-      convertRealToReal34ResultRegister(&rReal, REGISTER_T);
+      convertRealToResultRegister(&rReal, REGISTER_T, amNone);
     }
     else {
-      reallocateRegister(REGISTER_T, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
       convertComplexToResultRegister(&rReal, &rImag, REGISTER_T);
     }
     adjustResult(REGISTER_T, false, true, REGISTER_T, -1, -1);

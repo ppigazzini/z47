@@ -42,8 +42,7 @@ static void arcsinhReal(void) {
     return;
 
   ArcsinhReal(&x, &x, &ctxtReal51);
-  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
-  convertRealToReal34ResultRegister(&x, REGISTER_X);
+  convertRealToResultRegister(&x, REGISTER_X, amNone);
 }
 
 
