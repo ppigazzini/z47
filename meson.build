@@ -75,13 +75,13 @@ endif
 
 subdir('docs/code')
 subdir('dep')
-subdir('src/wp43')
+subdir('src/c47')
 subdir('src/ttf2RasterFonts')
 subdir('src/generateConstants')
 subdir('src/generateCatalogs')
 subdir('src/generateTestPgms')
 subdir('src/testSuite')
-subdir('src/wp43-gtk')
+subdir('src/c47-gtk')
 
 # Only attempt to include the DMCP target if we have set-up the cross compiler
 if meson.is_cross_build()
@@ -93,9 +93,9 @@ if meson.is_cross_build()
   subproject('gmp-6.2.1')
   arm_gmp_dep   = dependency('arm-gmp-6.2.1', native : false)
   if get_option('DMCPVERSION') == 'dmcp'
-    subdir('src/wp43-dmcp')
+    subdir('src/c47-dmcp')
   endif
   if get_option('DMCPVERSION') == 'dmcp5'
-    subdir('src/wp43-dmcp5')
+    subdir('src/c47-dmcp5')
   endif
 endif
