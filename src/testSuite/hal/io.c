@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
-// SPDX-FileCopyrightText: Copyright The WP43 Authors
+// SPDX-FileCopyrightText: Copyright The C47 Authors
 
 #include "hal/io.h"
 
@@ -14,8 +14,8 @@ static FILE *_ioFileHandle = NULL;
 
 const char *_ioFileNameFromFilePath(ioFilePath_t path) {
   switch(path) {
-    case ioPathManualSave: return "wp43.sav";
-    case ioPathPgmFile:    return "wp43.dat";
+    case ioPathManualSave: return "c47.sav";
+    case ioPathPgmFile:    return "c47.dat";
     case ioPathTestPgms:   return "res/dmcp/testPgms.bin";
     case ioPathBackup:     return "backup.cfg";
     default:               return false;
