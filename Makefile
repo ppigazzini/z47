@@ -21,14 +21,14 @@ build.rel:
 	meson setup build.rel --buildtype=release -DCI_COMMIT_TAG=$(CI_COMMIT_TAG)
 
 build.dmcp:
-	meson setup build.dmcp --cross-file=src/wp43-dmcp/cross_arm_gcc.build -DDMCPVERSION=dmcp -DCI_COMMIT_TAG=$(CI_COMMIT_TAG)
+	meson setup build.dmcp --cross-file=src/c47-dmcp/cross_arm_gcc.build -DDMCPVERSION=dmcp -DCI_COMMIT_TAG=$(CI_COMMIT_TAG)
 
 build.dmcp5:
-	meson setup build.dmcp5 --cross-file=src/wp43-dmcp5/cross_arm_gcc.build -DDMCPVERSION=dmcp5 -DCI_COMMIT_TAG=$(CI_COMMIT_TAG)
+	meson setup build.dmcp5 --cross-file=src/c47-dmcp5/cross_arm_gcc.build -DDMCPVERSION=dmcp5 -DCI_COMMIT_TAG=$(CI_COMMIT_TAG)
 
 sim: build.sim
 	cd build.sim && ninja sim
-	cp build.sim/src/wp43-gtk/c47$(EXE) ./
+	cp build.sim/src/c47-gtk/c47$(EXE) ./
 	cp build.sim/src/generateCatalogs/softmenuCatalogs.h src/generated/
 	cp build.sim/src/generateConstants/constantPointers.* src/generated/
 	cp build.sim/src/ttf2RasterFonts/rasterFontsData.c src/generated/
@@ -67,7 +67,7 @@ endif
 dist_windows: testPgms build.rel/wiki
 	cd build.rel && ninja sim
 	mkdir -p $(WIN_DIST_DIR)/res/dmcp $(WIN_DIST_DIR)/res/tone
-	cp build.rel/src/wp43-gtk/c47.exe $(WIN_DIST_DIR)/
+	cp build.rel/src/c47-gtk/c47.exe $(WIN_DIST_DIR)/
 	cp res/tone/*.wav $(WIN_DIST_DIR)/res/tone/
 	cp res/dmcp/testPgms.bin $(WIN_DIST_DIR)/res/dmcp/
 	cp res/c47_pre.css $(WIN_DIST_DIR)/res/
@@ -83,7 +83,7 @@ dist_windows: testPgms build.rel/wiki
 dist_macos: testPgms build.rel
 	cd build.rel && ninja sim
 	mkdir -p $(MAC_DIST_DIR)/res/dmcp
-	cp build.rel/src/wp43-gtk/c47 $(MAC_DIST_DIR)/
+	cp build.rel/src/c47-gtk/c47 $(MAC_DIST_DIR)/
 	cp res/dmcp/testPgms.bin $(MAC_DIST_DIR)/res/dmcp/
 	cp res/c47_pre.css $(MAC_DIST_DIR)/res/
 	cp res/dm42l_L1.png $(MAC_DIST_DIR)/res/
@@ -93,7 +93,7 @@ dist_macos: testPgms build.rel
 
 dist_dmcp: dmcp testPgms build.rel/wiki
 	mkdir -p $(DMCP_DIST_DIR)
-	cp build.dmcp/src/wp43-dmcp/C47.pgm build.dmcp/src/wp43-dmcp/C47_qspi.bin $(DMCP_DIST_DIR)
+	cp build.dmcp/src/c47-dmcp/C47.pgm build.dmcp/src/c47-dmcp/C47_qspi.bin $(DMCP_DIST_DIR)
 	cp -r res/offimg/Egypt/ $(DMCP_DIST_DIR)/offimg
 	cp -r res/offimg/Norway/ $(DMCP_DIST_DIR)/offimg
 	cp -r res/offimg/Netherlands/ $(DMCP_DIST_DIR)/offimg
@@ -109,7 +109,7 @@ dist_dmcp: dmcp testPgms build.rel/wiki
 
 dist_dmcp5: dmcp5 testPgms build.rel/wiki
 	mkdir -p $(DMCP5_DIST_DIR)
-	cp build.dmcp5/src/wp43-dmcp5/C47.pg5 build.dmcp5/src/wp43-dmcp5/C47_qspi.bin $(DMCP5_DIST_DIR)
+	cp build.dmcp5/src/c47-dmcp5/C47.pg5 build.dmcp5/src/c47-dmcp5/C47_qspi.bin $(DMCP5_DIST_DIR)
 	cp -r res/offimg/Egypt/ $(DMCP5_DIST_DIR)/offimg
 	cp -r res/offimg/Norway/ $(DMCP5_DIST_DIR)/offimg
 	cp -r res/offimg/Netherlands/ $(DMCP5_DIST_DIR)/offimg
