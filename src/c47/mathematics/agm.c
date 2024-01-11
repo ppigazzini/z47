@@ -45,51 +45,6 @@ typedef enum {
     AGM_MODE_F
 } AGM_MODE;
 
-static int _realAgm(AGM_MODE mode, const real_t *a, const real_t *b, real_t *c, real_t *res, real_t *_a, real_t *_b, size_t _sz, realContext_t *realContext);
-static int _complexAgm(AGM_MODE mode, const real_t *ar, const real_t *ai, const real_t *br, const real_t *bi, real_t *cr, real_t *ci, real_t *resr, real_t *resi, real_t *_ar, real_t *_ai, real_t *_br, real_t *_bi, size_t _sz, realContext_t *realContext);
-
-void fnAgm(uint16_t unusedButMandatoryParameter) {
-  bool_t cmplxRes = false;
-  real_t aReal, bReal, rReal;
-  real_t aImag, bImag, rImag;
-  bool_t neg;
-
-  if (!getRegisterAsComplexOrReal(REGISTER_X, &aReal, &aImag, &cmplxRes))
-    return;
-  if (!getRegisterAsComplexOrReal(REGISTER_Y, &bReal, &bImag, &cmplxRes))
-    return;
-
-  if(!saveLastX())
-    return;
-
-  neg = realIsNegative(&aReal) || realIsNegative(&bReal);
-  if (neg && getFlag(FLAG_CPXRES))
-    cmplxRes = true;
-
-  if(!cmplxRes && neg) {
-    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
-      moreInfoOnError("In function fnAgm:", "cannot use negative X and Y as input of AGM", NULL, NULL);
-    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-    return;
-  }
-
-  if(!cmplxRes) {
-    realAgm(&aReal, &bReal, &rReal, &ctxtReal75);
-
-    reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
-    convertRealToReal34ResultRegister(&rReal, REGISTER_X);
-  }
-  else { // Complex input
-    complexAgm(&aReal, &aImag, &bReal, &bImag, &rReal, &rImag, &ctxtReal75);
-
-    reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
-    convertComplexToResultRegister(&rReal, &rImag, REGISTER_X);
-  }
-
-  adjustResult(REGISTER_X, true, true, REGISTER_X, -1, -1);
-}
-
 static int _realAgm(AGM_MODE mode, const real_t *a, const real_t *b, real_t *c, real_t *res, real_t *_a, real_t *_b, size_t _sz, realContext_t *realContext) {
   real_t aReal, bReal, cReal;
   real_t cCoeff, prevDelta, z;
@@ -262,4 +217,54 @@ size_t realAgmStep(const real_t *a, const real_t *b, real_t *res, real_t *aStep,
 
 size_t complexAgmStep(const real_t *ar, const real_t *ai, const real_t *br, const real_t *bi, real_t *resr, real_t *resi, real_t *aStep, real_t *aiStep, real_t *bStep, real_t *biStep, size_t bufSize, realContext_t *realContext){
   return _complexAgm(AGM_MODE_STEP, ar, ai, br, bi, NULL, NULL, resr, resi, aStep, aiStep, bStep, biStep, bufSize, realContext);
+}
+
+// Complex AGM from the stack
+static void doComplexAGM(void) {
+  real_t aReal, bReal, rReal;
+  real_t aImag, bImag, rImag;
+
+  if (!getRegisterAsComplex(REGISTER_X, &aReal, &aImag)
+      || !getRegisterAsComplex(REGISTER_Y, &bReal, &bImag))
+    return;
+
+  if(!saveLastX())
+    return;
+
+  complexAgm(&aReal, &aImag, &bReal, &bImag, &rReal, &rImag, &ctxtReal75);
+  convertComplexToResultRegister(&rReal, &rImag, REGISTER_X);
+}
+
+// Real AGM from the stack
+static void doRealAGM(void) {
+  real_t a, b, r;
+
+  if (!getRegisterAsReal(REGISTER_X, &a) || !getRegisterAsReal(REGISTER_Y, &b))
+    return;
+
+  // Quick check for zero results
+  realAdd(&a, &b, &r, &ctxtReal39);
+  if (realIsZero(&a) || realIsZero(&b) || realIsZero(&r)) {
+    convertRealToResultRegister(const_0, REGISTER_X, amNone);
+    return;
+  }
+
+  if (realIsNegative(&a) || realIsNegative(&b)) {
+    if (getFlag(FLAG_CPXRES))
+      doComplexAGM();
+    else {
+      displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+        moreInfoOnError("In function fnAgm:", "cannot use negative X and Y as input of AGM", NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+    }
+  } else {
+    realAgm(&a, &b, &r, &ctxtReal75);
+    convertRealToResultRegister(&r, REGISTER_X, amNone);
+  }
+}
+
+// AGM command routine
+void fnAgm(uint16_t unusedButMandatoryParameter) {
+  processRealComplexDyadicFunction(&doRealAGM, &doComplexAGM);
 }

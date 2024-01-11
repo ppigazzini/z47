@@ -45,6 +45,16 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"1000" RX=Real:"189388.302409950875557
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"0.1" RY=Real:"0.00000001"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.1" RX=Real:"0.00897372788032617635832975712477846117577814780155175563194533968106"
 
+; Special case fast exist zeros
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"0" RY=Real:"1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0" RX=Real:"0"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1" RY=Real:"0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"-1" RY=Real:"1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-1" RX=Real:"0"
+
 
 ;=======================================================================================================================
 ; Complex Domain
