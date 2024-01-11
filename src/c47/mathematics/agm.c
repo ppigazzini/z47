@@ -218,7 +218,6 @@ size_t realAgmStep(const real_t *a, const real_t *b, real_t *res, real_t *aStep,
 size_t complexAgmStep(const real_t *ar, const real_t *ai, const real_t *br, const real_t *bi, real_t *resr, real_t *resi, real_t *aStep, real_t *aiStep, real_t *bStep, real_t *biStep, size_t bufSize, realContext_t *realContext){
   return _complexAgm(AGM_MODE_STEP, ar, ai, br, bi, NULL, NULL, resr, resi, aStep, aiStep, bStep, biStep, bufSize, realContext);
 }
-
 // Complex AGM from the stack
 static void doComplexAGM(void) {
   real_t aReal, bReal, rReal;
