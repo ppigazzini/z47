@@ -49,7 +49,7 @@
 #include <string.h>
 #include <libgen.h>
 
-#include "wp43.h"
+#include "c47.h"
 
 #define NUMBER_OF_CORRECT_SIGNIFICANT_DIGITS_EXPECTED 34
 
