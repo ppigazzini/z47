@@ -242,7 +242,9 @@
     if(event_keyval == event->keyval + CTRL_State) event_keyval = 99999999;
 
     switch(event->keyval) {
-      case 65505: if(SHIFT_State != 0) {
+      case 65505: //left shift
+      case 65506: //right shift 
+          if(SHIFT_State != 0) {
             if(getSystemFlag(FLAG_USER) ? kbd_usr[10].primary : kbd_std[10].primary != ITM_SHIFTf) {     //Left Shift
               btnClicked(w, "27"); 
             } else {
@@ -252,7 +254,9 @@
           }
           break;
 
-      case 65507: if(CTRL_State != 0) {                                                              //Left Ctrl
+      case 65507: // Left Ctrl
+      case 65508: // right Ctrl
+          if(CTRL_State != 0) {
             if(getSystemFlag(FLAG_USER) ? kbd_usr[11].primary : kbd_std[11].primary != ITM_SHIFTg) {
               btnClicked(w, "27"); 
             } else {
@@ -262,7 +266,6 @@
           }
           break;
 
-      case 65508: // right Ctrl
         CTRL_State = 0;
         break;
 
@@ -326,7 +329,7 @@
         break;
 
     }
-    if(event->keyval != 65505) {
+    if(event->keyval != 65505 && event->keyval != 65506) {
       SHIFT_State = 0;
     }
     return FALSE;
@@ -339,6 +342,7 @@
 
     switch(event_keyval) {
       case 65505: //left shift
+      case 65506: //right shift
         SHIFT_State = 65536;
         //printf("key pressed: Shift Activated\n");
         break;
@@ -859,14 +863,6 @@
         case 32:                //JM SPACE        //JM
           btnClicked(w, "36");
           break;
-
-        /*
-        case 65507: // left Ctrl
-        case 65508: // right Ctrl
-          //printf("key pressed: CTRL_State Hardcopy\n");
-          copyScreenToClipboard();
-          break;
-        */
 
         default: ;
 
