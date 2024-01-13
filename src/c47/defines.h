@@ -55,12 +55,16 @@
 
   #define TWO_FILE_PGM                 //JM Normally NOT have TWO_FILE. TWO_FILE means that QSPI is used.
 
+  #if defined(NEW_HW) // DMCP5
+    #undef TWO_FILE_PGM
+  #endif // NEW_HW
+
 //ONE FILE OPERATION needs the original CRC file - see src/c47-dmcp
 //  #undef  TWO_FILE_PGM  //See CRC ISSUE - Commented this line to force full QSPI generation
 //                        //Also change the file here: src/c47-dmcp/qspi_crc.h for the single file version
 
 //THESE ARE DMCP COMPILE OPTIONS
-  #if !defined(TWO_FILE_PGM) //---------THESE ARE THE EXCLUSIONS TO MAKE IT FIT WHILE NOT USING QSPI
+  #if !defined(TWO_FILE_PGM) && !defined(NEW_HW) //---------THESE ARE THE EXCLUSIONS TO MAKE IT FIT WHILE NOT USING QSPI ON OLD HARDWARE
     #define SAVE_SPACE_DM42_2  //005672 bytes: XEQM
     #define SAVE_SPACE_DM42_6  //001648 bytes: ELEC functions
     #define SAVE_SPACE_DM42_7  //002144 bytes: KEYS USER_DM42;
@@ -74,7 +78,7 @@
   //  #define SAVE_SPACE_DM42_14    //           programming sample programs
     #define SAVE_SPACE_DM42_15    //           without all distributions, i.e. binomial, cauchy, chi
     #define SAVE_SPACE_DM42_16    //           without all distributions, i.e. binomial, cauchy, chi
-  #endif // !TWO_FILE_PGM
+  #endif // !TWO_FILE_PGM && !NEW_HW
 
   #if defined(TWO_FILE_PGM) //---------THESE ARE THE EXCLUSIONS TO MAKE IT FIT INTO AVAILABLE FLASH EVEN WHILE USING QSPI
   //  #define SAVE_SPACE_DM42_20_TIMER
@@ -1351,10 +1355,10 @@ typedef enum {
   #endif // TWO_FILE_PGM
 #endif // !DMCP_BUILD
 
-#if defined(DMCP_BUILD) && defined(NEW_HW)
+#if defined(DMCP_BUILD) && defined(NEW_HW) // DMCP5
   #undef TO_QSPI
   #define TO_QSPI
-#endif
+#endif // DMCP_BUILD && NEW_HW
 
 //******************************
 //* Macros replacing functions *
