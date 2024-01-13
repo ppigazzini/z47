@@ -242,7 +242,7 @@
 
     switch(event->keyval) {
 
-      case 65507: // left Ctrl
+      case 65507: // Left Ctrl
       case 65508: // right Ctrl
         //printf("key depressed: CTRL De-activate\n");
         CTRL_State = 0;
@@ -874,6 +874,7 @@
     //FOR NON AIM MODE. AIM HAS RETURNED AT THIS POINT SO NO IF NEEDED
 
     switch(event_keyval) {
+
       //ROW 1
       case 65470: // F1                       //JM Changed these to btnFnPressed from btnFnClicked
         //printf("key pressed: F1\n");
