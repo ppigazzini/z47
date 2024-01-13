@@ -14,11 +14,6 @@
  * along with C47.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* ADDITIONAL C43 functions and routines */
-
-/********************************************//**
- * \file addons.c
- ***********************************************/
 
 
 /*
@@ -1071,7 +1066,7 @@ void doubleToXRegisterReal34(double x) { //Convert from double to X register REA
 }
 
 
-void fnStrtoX(char aimBuffer[]) {                             //DONE
+void fnStrtoX(const char aimBuffer[]) {                             //DONE
   setSystemFlag(FLAG_ASLIFT); // 5
   liftStack();
   int16_t mem = stringByteLength(aimBuffer) + 1;
@@ -1946,7 +1941,7 @@ void fnRESET_MyM(uint8_t param) {
       }
     }
     BASE_MYM = true;                                           //JM Menu system default (removed from reset_jm_defaults)
-    refreshScreen();
+    refreshScreen(42);
   #endif // !TESTSUITE_BUILD
 }
 
@@ -1964,7 +1959,7 @@ void fnRESET_Mya(void){
     }
     itemToBeAssigned = -MNU_ALPHA;
     assignToMyAlpha_(5);
-    refreshScreen();
+    refreshScreen(43);
   #endif // !TESTSUITE_BUILD
 }
 

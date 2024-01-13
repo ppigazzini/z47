@@ -1,22 +1,5 @@
-/* This file is part of 43S.
- *
- * 43S is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * 43S is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with 43S.  If not, see <http://www.gnu.org/licenses/>.
- */
-
-/********************************************//**
- * \file assign.c
- ***********************************************/
+// SPDX-License-Identifier: GPL-3.0-only
+// SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
 #include "assign.h"
 #include "bufferize.h"
@@ -879,7 +862,7 @@ void assignToMyMenu(uint16_t position) {
     _assignItem(&userMenuItems[position]);
   }
   cachedDynamicMenu = 0;
-  refreshScreen();
+  refreshScreen(20);
 }
 
 
@@ -888,7 +871,7 @@ void assignToMyAlpha(uint16_t position) {
     _assignItem(&userAlphaItems[position]);
   }
   cachedDynamicMenu = 0;
-  refreshScreen();
+  refreshScreen(21);
 }
 
 
@@ -897,7 +880,7 @@ void assignToUserMenu(uint16_t position) {
     _assignItem(&userMenus[currentUserMenu].menuItem[position]);
   }
   cachedDynamicMenu = 0;
-  refreshScreen();
+  refreshScreen(22);
 }
 
 
@@ -1287,7 +1270,7 @@ void assignGetName2(void) {
 
   calcMode = previousCalcMode;
   shiftF = shiftG = false;
-  refreshScreen();
+  refreshScreen(23);
 
   if(!result) {
     displayCalcErrorMessage(ERROR_CANNOT_ASSIGN_HERE, ERR_REGISTER_LINE, NIM_REGISTER_LINE);

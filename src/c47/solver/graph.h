@@ -27,8 +27,10 @@
 
 extern char plotStatMx[8];
 
-#define EQ_SOLVE 0   //fnEqSolvGraph
-#define EQ_PLOT  1   //graph_eqn
+#define EQ_SOLVE    0   //fnEqSolvGraph
+#define EQ_PLOT     1   //graph_eqn
+#define noInitDrwMx 0
+#define initDrwMx   1
 
 void    fnEqSolvGraph (uint16_t func);
 void    graph_eqn(uint16_t unusedButMandatoryParameter);

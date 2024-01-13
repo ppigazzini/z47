@@ -83,7 +83,7 @@
       clearSystemFlag(FLAG_ALPHA);
       currentFlgScr = init;                      //5 in new style; 0 is old style
       if(currentFlgScr == 0)  currentFlgScr = 3; // Init old style
-      refreshScreen();                           //Restart once, clearing screen and all, restarting flag browser, now in the correct mode
+      refreshScreen(190);                        //Restart once, clearing screen and all, restarting flag browser, now in the correct mode
     }
 
     if(currentFlgScr == 0) currentFlgScr = 4;

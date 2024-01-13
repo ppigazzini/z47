@@ -14,7 +14,6 @@
  * along with C47.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* ADDITIONAL C43 functions and routines */
 
 /********************************************//**
  * \file keyboardTweak.c
@@ -35,6 +34,7 @@
 #include "stack.h"
 #include "statusBar.h"
 #include "softmenus.h"
+#include "solver/equation.h"
 #include "timer.h"
 
 #include <string.h>
@@ -93,20 +93,18 @@ void showAlphaModeonGui(void) {
 
 void showShiftState(void) {
   #if !defined(TESTSUITE_BUILD)
-    //showAlphaModeonGui();
-
     #if defined(PC_BUILD_TELLTALE)
       printf("    >>> showShiftState: calcMode=%d\n", calcMode);
     #endif // PC_BUILD_TELLTALE
 
-    if(calcMode != CM_REGISTER_BROWSER && calcMode != CM_FLAG_BROWSER && calcMode != CM_FONT_BROWSER && temporaryInformation != TI_SHOW_REGISTER_BIG && temporaryInformation != TI_SHOW_REGISTER_SMALL && temporaryInformation != TI_SHOW_REGISTER) {
+    if(calcMode != CM_REGISTER_BROWSER && calcMode != CM_FLAG_BROWSER && calcMode != CM_FONT_BROWSER && !SHOWMODE && temporaryInformation != TI_SHOW_REGISTER) {
       if(shiftF) {                        //SEE screen.c:refreshScreen
-        showGlyph(STD_MODE_F, &standardFont, X_SHIFT, Y_SHIFT, vmNormal, true, true);   // f is pixel 4+8+3 wide
+        showShiftStateF();
         show_f_jm();
         showHideAlphaMode();
       }
       else if(shiftG) {                   //SEE screen.c:refreshScreen
-        showGlyph(STD_MODE_G, &standardFont, X_SHIFT, Y_SHIFT, vmNormal, true, true);   // g is pixel 4+10+1 wide
+        showShiftStateG();
         show_g_jm();
         showHideAlphaMode();
       }
@@ -140,7 +138,8 @@ void resetShiftState(void) {
     shiftG = false;
     screenUpdatingMode &= ~SCRUPD_MANUAL_SHIFT_STATUS;
     showShiftState();
-    refreshScreen();
+    screenUpdatingMode |= (SCRUPD_SKIP_STACK_ONE_TIME | SCRUPD_SKIP_MENU_ONE_TIME); //JMNEWSPEEDUP
+    refreshScreen(100);
   }                                                                             //^^
   refreshModeGui();                                                             //JM refreshModeGui
 }
@@ -167,8 +166,6 @@ void resetKeytimers(void) {
   * \return void
   ***********************************************/
   void show_f_jm(void) {
-    //showSoftmenuCurrentPart();                                                    //JM - Redraw boxes etc after shift is shown
-    //JMTOCHECK2        if(softmenuStackPointer >= 0) {                             //JM - Display dot in the f - line
     if(!FN_timeouts_in_progress && calcMode != CM_ASN_BROWSER) {
       if(!ULFL) {
         underline(1);
@@ -186,8 +183,6 @@ void resetKeytimers(void) {
 
 
   void show_g_jm(void) {
-    //showSoftmenuCurrentPart();                                                    //JM - Redraw boxes etc after shift is shown
-    //JMTOCHECK2        if(softmenuStackPointer >= 0) {                             //JM - Display dot in the g - line
     if(!FN_timeouts_in_progress && calcMode != CM_ASN_BROWSER) {
       if(ULFL) {
         underline(1);
@@ -205,7 +200,6 @@ void resetKeytimers(void) {
 
 
   void clear_fg_jm(void) {
-    //showSoftmenuCurrentPart();            //JM TO REMOVE STILL !!                 //JM - Redraw boxes etc after shift is shown
     if(!FN_timeouts_in_progress) {        //Cancel lines
       if(ULFL) {
         underline(1);
@@ -372,12 +366,14 @@ void resetKeytimers(void) {
             }
           }
             break;
+
           case ITM_BACKSPACE:
             if(tam.mode == 0) {
               longpressDelayedkey2 = longpressDelayedkey1;
               longpressDelayedkey1 = ITM_CLSTK;    //backspace longpress to CLSTK
             }
             break;
+
           case ITM_EXIT1:
             longpressDelayedkey2 = ITM_CLRMOD;     //EXIT longpress DOES CLRMOD
             longpressDelayedkey1 = ITM_BASEMENU;
@@ -822,16 +818,20 @@ void resetKeytimers(void) {
       hideFunctionName();
 
       if(!FN_timed_out_to_NOP && fnTimerGetStatus(TO_FN_EXEC) != TMR_RUNNING) {
+        #if defined(VERBOSEKEYS)
+          printf(">>>>Z RRR2 LONGPRESS EXECUTE              ------------------       TO_FN_EXEC\n          charKey=|%s| charkey[0]=%d \n", charKey, charKey[0]);
+        #endif // VERBOSEKEYS
         btnFnClicked(unused, charKey);                                             //Execute
       }
 
-      if(!(calcMode == CM_REGISTER_BROWSER || calcMode == CM_FLAG_BROWSER || calcMode == CM_ASN_BROWSER || calcMode == CM_FONT_BROWSER || calcMode == CM_PLOT_STAT || calcMode == CM_GRAPH  || calcMode == CM_LISTXY)) {
+      resetShiftState();
+
+      if(!(calcMode == CM_REGISTER_BROWSER || calcMode == CM_FLAG_BROWSER || calcMode == CM_ASN_BROWSER || calcMode == CM_FONT_BROWSER || GRAPHMODE || calcMode == CM_LISTXY)) {
         if((calcMode == CM_ASSIGN && itemToBeAssigned == 0) || FN_timed_out_to_NOP) { //Clear any possible underline residues
           showSoftmenuCurrentPart();
         }
       }
 
-      resetShiftState();
       FN_cancel();
     }
 
@@ -1318,7 +1318,7 @@ void fnT_ARROW(uint16_t command) {
           fnT_ARROW(ITM_T_RIGHT_ARROW);
           while(ixx < 75 && (current_cursor_x >= current_cursor_x_old+5 || current_cursor_y == current_cursor_y_old)) {
             fnT_ARROW(ITM_T_LEFT_ARROW);
-            showStringEdC43(lines ,displayAIMbufferoffset, T_cursorPos, aimBuffer, 1, -100, vmNormal, true, true, true);  //display up to the cursor
+            showStringEdC43(multiEdLines ,displayAIMbufferoffset, T_cursorPos, aimBuffer, 1, -100, vmNormal, true, true, true);  //display up to the cursor
             ixx++;
           }
           break;
@@ -1330,7 +1330,7 @@ void fnT_ARROW(uint16_t command) {
           fnT_ARROW(ITM_T_LEFT_ARROW);
           while(ixx < 75 && (current_cursor_x+5 <= current_cursor_x_old || current_cursor_y == current_cursor_y_old)) {
             fnT_ARROW(ITM_T_RIGHT_ARROW);
-            showStringEdC43(lines ,displayAIMbufferoffset, T_cursorPos, aimBuffer, 1, -100, vmNormal, true, true, true);  //display up to the cursor
+            showStringEdC43(multiEdLines ,displayAIMbufferoffset, T_cursorPos, aimBuffer, 1, -100, vmNormal, true, true, true);  //display up to the cursor
             ixx++;
 
             //printf("###^^^ %d %d %d %d %d\n",ixx,current_cursor_x, current_cursor_x_old, current_cursor_y, current_cursor_y_old);
@@ -1376,18 +1376,16 @@ void fnCla(uint16_t unusedButMandatoryParameter) {
     yCursor = Y_POSITION_OF_AIM_LINE + 6;
     cursorFont = &standardFont;
     cursorEnabled = true;
-    last_CM=252;
     #if !defined(TESTSUITE_BUILD)
       clearRegisterLine(AIM_REGISTER_LINE, true, true);
       refreshRegisterLine(AIM_REGISTER_LINE);        //JM Execute here, to make sure that the 5/2 line check is done
     #endif // !TESTSUITE_BUILD
-    last_CM=253;
+    screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
   }
   else if(calcMode == CM_EIM) {
-    while(xCursor > 0) {
-      fnKeyBackspace(0);
-    }
+    fnEqCla();
     refreshRegisterLine(NIM_REGISTER_LINE);
+    screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
   }
 }
 

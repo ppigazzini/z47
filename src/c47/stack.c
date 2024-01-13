@@ -378,7 +378,7 @@ void undo(void) {
   if(SAVED_SIGMA_LAct == +1 && statisticalSumsPointer != NULL) {
     fnSigma(-1);
   }
-  else if(SAVED_SIGMA_LAct == -1) {
+  else if(SAVED_SIGMA_LAct == -1 && statisticalSumsPointer != NULL) {
     clearRegister(REGISTER_X);
     clearRegister(REGISTER_Y);
     convertRealToReal34ResultRegister(&SAVED_SIGMA_LASTX, REGISTER_X);             // Can use stack, as the stack will be undone below

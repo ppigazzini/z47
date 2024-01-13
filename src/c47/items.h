@@ -1793,7 +1793,7 @@
 #define ITM_dotD                    1741
 #define ITM_SHOW                    1742
 #define ITM_SYSTEM                  1743
-#define ITM_FRACT                   1744
+#define ITM_FRACT                       1744
 #define ITM_VANGLE                  1745
 #define ITM_XH                      1746
 #define ITM_XRMS                    1747
@@ -2301,7 +2301,8 @@
 #define ITM_YES                     2245
 #define ITM_NO                      2246
 
-#define LAST_ITEM                   2247
+#define MNU_SHOW                    2247
+#define LAST_ITEM                   2248
 
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL

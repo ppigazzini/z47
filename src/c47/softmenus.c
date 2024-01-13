@@ -1,18 +1,5 @@
-/* This file is part of 43S.
- *
- * 43S is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * 43S is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with 43S.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: GPL-3.0-only
+// SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
 #include "softmenus.h"
 
@@ -766,6 +753,7 @@ TO_QSPI const int16_t menu_GAP_R[]       = { ITM_GAPPER_R,                  ITM_
                                              ITM_GAPWIDPER_R,               ITM_GAPWIDCOM_R,            ITM_GAPWIDDOT_R,          ITM_GAPAPO_R,          ITM_GAPDBLSPC_R,             ITM_GAPUND_R,
                                              ITM_GRP_R,                     ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_GAPNARSPC_R,             ITM_NULL                         };
 
+TO_QSPI const int16_t menu_SHOW[]        = {  };
 
 
 
@@ -914,8 +902,11 @@ TO_QSPI const softmenu_t softmenu[] = {
 /* 138 */  {.menuItem = -MNU_RIBBONS,     .numItems = sizeof(menu_RIBBONS       )/sizeof(int16_t), .softkeyItem = menu_RIBBONS        },
 /* 139 */  {.menuItem = -MNU_INL_TST,     .numItems = sizeof(menu_Inl_Tst       )/sizeof(int16_t), .softkeyItem = menu_Inl_Tst        },
 /* 140 */  {.menuItem = -MNU_DELETE,      .numItems = sizeof(menu_DELETE        )/sizeof(int16_t), .softkeyItem = menu_DELETE         },
-/* 140 */  {.menuItem = -MNU_YESNO,       .numItems = sizeof(menu_YESNO         )/sizeof(int16_t), .softkeyItem = menu_YESNO          },
-/* 141 */  {.menuItem =  0,               .numItems = 0,                                           .softkeyItem = NULL                }
+/* 141 */  {.menuItem = -MNU_YESNO,       .numItems = sizeof(menu_YESNO         )/sizeof(int16_t), .softkeyItem = menu_YESNO          },
+
+
+/* 142 */  {.menuItem = -MNU_SHOW,        .numItems = sizeof(menu_SHOW          )/sizeof(int16_t), .softkeyItem = menu_SHOW           },
+/* 143 */  {.menuItem =  0,               .numItems = 0,                                           .softkeyItem = NULL                }
 };
 
 
@@ -1368,7 +1359,7 @@ bool_t maxfgLines(int16_t y) {
    * \param[in] bottomLine bool_t     Draw a bottom line
    * \return void
    ***********************************************/
-  void showSoftkey(const char *label, int16_t xSoftkey, int16_t ySoftKey, videoMode_t videoMode, bool_t topLine, bool_t bottomLine, int8_t showCb, int16_t showValue, const char *showText) {     //dr
+  static void showSoftkey(const char *label, int16_t xSoftkey, int16_t ySoftKey, videoMode_t videoMode, bool_t topLine, bool_t bottomLine, int8_t showCb, int16_t showValue, const char *showText) {     //dr
     int16_t x1, y1;
     int16_t x2, y2;
 
@@ -1382,7 +1373,7 @@ bool_t maxfgLines(int16_t y) {
       }
     }
 
-    if((calcMode == CM_PLOT_STAT || calcMode == CM_GRAPH) && xSoftkey >= 2) {           //prevent softkeys columns 3-6 from displaying over the graph
+    if(GRAPHMODE && xSoftkey >= 2) {           //prevent softkeys columns 3-6 from displaying over the graph
       return;
     }
 
@@ -1410,7 +1401,7 @@ bool_t maxfgLines(int16_t y) {
   }
 
 
-  void showSoftkey2(const char *labelSM1, int16_t xSoftkey, int16_t ySoftKey, videoMode_t videoMode, bool_t topLine, bool_t bottomLine, int8_t showCb, int16_t showValue, const char *showText) {     //dr
+  static void showSoftkey2(const char *labelSM1, int16_t xSoftkey, int16_t ySoftKey, videoMode_t videoMode, bool_t topLine, bool_t bottomLine, int8_t showCb, int16_t showValue, const char *showText) {     //dr
     int16_t x1, y1;
     int16_t x2, y2;
 
@@ -1424,7 +1415,7 @@ bool_t maxfgLines(int16_t y) {
       }
     }
 
-    if((calcMode == CM_PLOT_STAT || calcMode == CM_GRAPH) && xSoftkey >= 2) {           //prevent softkeys columns 3-6 from displaying over the graph
+    if(GRAPHMODE && xSoftkey >= 2) {           //prevent softkeys columns 3-6 from displaying over the graph
       return;
     }
 
@@ -1893,8 +1884,10 @@ bool_t BASE_OVERRIDEONCE = false;
     printf("==>%s\n",tmp);
   #endif // PC_BUILD
 
+  screenUpdatingMode &= ~(SCRUPD_MANUAL_MENU | SCRUPD_SKIP_MENU_ONE_TIME);
+
   if((!IS_BASEBLANK_(m) || BASE_OVERRIDEONCE) && calcMode != CM_FLAG_BROWSER && calcMode != CM_ASN_BROWSER && calcMode != CM_FONT_BROWSER && calcMode != CM_REGISTER_BROWSER && calcMode != CM_BUG_ON_SCREEN) {           //JM: Added exclusions, as this procedure is not only called from refreshScreen, but from various places due to underline
-    clearScreen_old(false, false, true); //JM, added to ensure the f/g underlines are deleted
+    clearScreenOld(false, false, true); //JM, added to ensure the f/g underlines are deleted
     BASE_OVERRIDEONCE = false;
     if(tam.mode == TM_KEY && !tam.keyInputFinished) {
       for(y=0; y<=2; y++) {
@@ -2230,7 +2223,7 @@ bool_t BASE_OVERRIDEONCE = false;
       yDotted = 217 - SOFTMENU_HEIGHT * yDotted;
 
       if(dottedTopLine) {
-        for(x=0; x<SCREEN_WIDTH; x++) {
+        for(x=0; x < (GRAPHMODE ? SCREEN_WIDTH / 3 : SCREEN_WIDTH); x++) {
           if(x%8 < 4) {
             setBlackPixel(x, yDotted);
           }
@@ -2319,7 +2312,7 @@ bool_t BASE_OVERRIDEONCE = false;
 
   void popSoftmenu(void) {
 //    if(running_program_jm) return;                             //JM
-    screenUpdatingMode &= ~SCRUPD_MANUAL_MENU;
+    screenUpdatingMode &= ~(SCRUPD_MANUAL_MENU | SCRUPD_SKIP_MENU_ONE_TIME);
 
     xcopy(softmenuStack, softmenuStack + 1, (SOFTMENU_STACK_SIZE - 1) * sizeof(softmenuStack_t)); // shifting the entire stack
     memset(softmenuStack + SOFTMENU_STACK_SIZE - 1, 0, sizeof(softmenuStack_t)); // Put MyMenu in the last stack element
@@ -2400,7 +2393,7 @@ bool_t BASE_OVERRIDEONCE = false;
       assignToUserMenu(ii);
     }
     screenUpdatingMode = SCRUPD_AUTO;
-    refreshScreen();
+    refreshScreen(170);
     return true;
   }
 
@@ -2424,7 +2417,7 @@ bool_t BASE_OVERRIDEONCE = false;
       assignToUserMenu(ii);
     }
     screenUpdatingMode = SCRUPD_AUTO;
-    refreshScreen();
+    refreshScreen(171);
     return true;
   }
 
@@ -2497,6 +2490,7 @@ bool_t BASE_OVERRIDEONCE = false;
       }
     #endif // !INLINE_TEST
 
+    screenUpdatingMode &= ~(SCRUPD_MANUAL_MENU | SCRUPD_SKIP_MENU_ONE_TIME);
 
     if(id == -MNU_HOME) {
       if(!setCurrentUserMenu(-MNU_DYNAMIC,"HOME")) {
@@ -2536,6 +2530,7 @@ bool_t BASE_OVERRIDEONCE = false;
       uint8_t *varList = NULL;
       if(id != -MNU_MVAR) {
         currentSolverStatus = SOLVER_STATUS_USES_FORMULA | SOLVER_STATUS_INTERACTIVE;
+      currentMvarLabel = INVALID_VARIABLE;
       }
       switch(-id) {
         case MNU_Solver: {

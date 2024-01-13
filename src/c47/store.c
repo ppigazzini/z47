@@ -1,18 +1,5 @@
-/* This file is part of 43S.
- *
- * 43S is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * 43S is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with 43S.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: GPL-3.0-only
+// SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
 #include "store.h"
 
@@ -206,7 +193,8 @@ static void _storeValue(uint16_t regist) {
 void fnStore(uint16_t regist) {
   if(_checkReadOnlyVariable(regist) && regInRange(regist)) {
     _storeValue(regist);
-    if(regist >= FIRST_NAMED_VARIABLE && regist == findNamedVariable("STATS")) {
+    uint16_t rows = 1;
+    if(regist >= FIRST_NAMED_VARIABLE && isStatsMatrixN(&rows, regist) && regist == findNamedVariable("STATS")) {
       calcSigma(0);
     }
   }
@@ -235,7 +223,8 @@ void fnStoreAdd(uint16_t regist) {
     }
 
     adjustResult(REGISTER_X, false, true, REGISTER_X, regist, -1);
-    if(regist >= FIRST_NAMED_VARIABLE && regist == findNamedVariable("STATS")) {
+    uint16_t rows = 1;
+    if(regist >= FIRST_NAMED_VARIABLE && isStatsMatrixN(&rows, regist) && regist == findNamedVariable("STATS")) {
       calcSigma(0);
     }
   }
@@ -264,7 +253,8 @@ void fnStoreSub(uint16_t regist) {
     }
 
     adjustResult(REGISTER_X, false, true, REGISTER_X, regist, -1);
-    if(regist >= FIRST_NAMED_VARIABLE && regist == findNamedVariable("STATS")) {
+    uint16_t rows = 1;
+    if(regist >= FIRST_NAMED_VARIABLE && isStatsMatrixN(&rows, regist) && regist == findNamedVariable("STATS")) {
       calcSigma(0);
     }
   }
@@ -293,7 +283,8 @@ void fnStoreMult(uint16_t regist) {
     }
 
     adjustResult(REGISTER_X, false, true, REGISTER_X, regist, -1);
-    if(regist >= FIRST_NAMED_VARIABLE && regist == findNamedVariable("STATS")) {
+    uint16_t rows = 1;
+    if(regist >= FIRST_NAMED_VARIABLE && isStatsMatrixN(&rows, regist) && regist == findNamedVariable("STATS")) {
       calcSigma(0);
     }
   }
@@ -322,7 +313,8 @@ void fnStoreDiv(uint16_t regist) {
     }
 
     adjustResult(REGISTER_X, false, true, REGISTER_X, regist, -1);
-    if(regist >= FIRST_NAMED_VARIABLE && regist == findNamedVariable("STATS")) {
+    uint16_t rows = 1;
+    if(regist >= FIRST_NAMED_VARIABLE && isStatsMatrixN(&rows, regist) && regist == findNamedVariable("STATS")) {
       calcSigma(0);
     }
   }
@@ -511,7 +503,8 @@ void fnStoreElement(uint16_t unusedButMandatoryParameter) {
         convertReal34MatrixRegisterToComplex34MatrixRegister(matrixIndex, matrixIndex);
       }
       callByIndexedMatrix(storeElementReal, storeElementComplex);
-      if(matrixIndex >= FIRST_NAMED_VARIABLE && matrixIndex == findNamedVariable("STATS")) {
+      uint16_t rows = 1;
+      if(matrixIndex >= FIRST_NAMED_VARIABLE && isStatsMatrixN(&rows, matrixIndex) && matrixIndex == findNamedVariable("STATS")) {
         calcSigma(0);
       }
     }
@@ -531,7 +524,8 @@ void fnStoreIJ(uint16_t unusedButMandatoryParameter) {
     }
     else {
       callByIndexedMatrix(storeIjReal, storeIjComplex);
-      if(matrixIndex >= FIRST_NAMED_VARIABLE && matrixIndex == findNamedVariable("STATS")) {
+      uint16_t rows = 1;
+      if(matrixIndex >= FIRST_NAMED_VARIABLE && isStatsMatrixN(&rows, matrixIndex) && matrixIndex == findNamedVariable("STATS")) {
         calcSigma(0);
       }
     }

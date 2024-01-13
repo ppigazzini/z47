@@ -1,18 +1,6 @@
-/* This file is part of 43S.
- *
- * 43S is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * 43S is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with 43S.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: GPL-3.0-only
+// SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
+
 
 /********************************************//**
  * \file solve.c
@@ -21,6 +9,7 @@
 #include "solver/solve.h"
 
 #include "c43Extensions/addons.h"
+#include "c43Extensions/graphText.h"
 #include "charString.h"
 #include "constantPointers.h"
 #include "defines.h"
@@ -228,6 +217,7 @@ void fnSolve(uint16_t labelOrVariable) {
 
 void fnSolveVar(uint16_t unusedButMandatoryParameter) {
   #if !defined(TESTSUITE_BUILD)
+  printStatus(1, errorMessages[REAL_SOLVER],force);
   const char *var = (char *)getNthString(dynamicSoftmenu[softmenuStack[0].softmenuId].menuContent, dynamicMenuItem);
   const uint16_t regist = findOrAllocateNamedVariable(var);
   const uint16_t nameLength = stringByteLength(var) + 1;

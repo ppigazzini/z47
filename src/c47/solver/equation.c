@@ -213,6 +213,13 @@ void fnEqEdit(uint16_t unusedButMandatoryParameter) {
   #endif // !TESTSUITE_BUILD
 }
 
+
+void fnEqCla(void) {
+  xCursor = 0;
+  aimBuffer[0] = 0;
+}
+
+
 void fnEqDelete(uint16_t unusedButMandatoryParameter) {
   deleteEquation(currentFormula);
 }

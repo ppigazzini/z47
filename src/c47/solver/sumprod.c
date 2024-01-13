@@ -169,7 +169,7 @@
 
         #if defined(DMCP_BUILD)
           if(keyWaiting()) {
-              showString("key Waiting ...", &standardFont, 20, 40, vmNormal, false, false);
+              showString("key Waiting ...", &standardFont, 16, Y_POSITION_OF_REGISTER_T_LINE, vmNormal, false, false);
               printHalfSecUpdate_Integer(force+1, "Interrupted: ", loop);
             break;
           }

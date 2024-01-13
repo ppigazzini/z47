@@ -20,6 +20,7 @@
 
 #include "solver/integrate.h"
 
+#include "c43Extensions/addons.h"
 #include "constantPointers.h"
 #include "defines.h"
 #include "display.h"

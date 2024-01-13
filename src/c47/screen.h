@@ -1,18 +1,5 @@
-/* This file is part of 43S.
- *
- * 43S is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * 43S is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with 43S.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: GPL-3.0-only
+// SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
 /**
  * \file screen.h
@@ -28,11 +15,7 @@
   #include <gdk/gdk.h>
   #endif // PC_BUILD
 
-//#define displayStackSHOIDISP 2                  //JMSHOIDISP  displayStackSHOIDISP=1: 3 lines of X-repeats
-                                                  //JMSHOIDISP  displayStackSHOIDISP=2: 2 lines of X-repeats
-                                                  //JMSHOIDISP  displayStackSHOIDISP=3: 1 lines of X-repeats
-                                                  //JMSHOIDISP  displayStackSHOIDISP=4: 0 lines of X-repeats
-
+  void     setLastintegerBasetoZero           (void);
   extern bool_t   doRefreshSoftMenu;                                                                              //dr
   void     FN_handler();                                                                                          //JM LONGPRESS
   void     Shft_handler();                                                                                        //JM LONGPRESS f/g
@@ -40,7 +23,16 @@
   void     Shft_stop();                                                                                           //JM reset shift after  4s
   void     underline(int16_t y);                                                                                  //JM SHIFT LINE
   void     clear_ul(void);                                                                                        //JMUL
-  void     clearScreen_old(bool_t clearStatusBar, bool_t clearRegisterLines, bool_t clearSoftkeys);               //JMOLD
+  void     closeShowMenu(void);
+
+  void     clearScreenOld(bool_t clearStatusBar, bool_t clearRegisterLines, bool_t clearSoftkeys);               //JMOLD
+  void     clearScreenGraphs(uint8_t source, bool_t clearTextArea, bool_t clearGraphArea);
+  #define  clrStatusBar true
+  #define  clrRegisterLines true
+  #define  clrSoftkeys true
+  #define  clrTextArea true
+  #define  clrGraphArea true
+
   void     fnScreenDump                       (uint16_t unusedButMandatoryParameter);
   void     fnSNAP                             (uint16_t unusedButMandatoryParameter);
 
@@ -114,6 +106,10 @@ void       fnAGraph                           (uint16_t regist);
 #endif // DMCP_BUILD
 
   void     execTimerApp                         (uint16_t timerType);
+
+  #define  force 1
+  #define  timed 0
+
   #if !defined(TESTSUITE_BUILD)
 
   void     refreshFn                            (uint16_t timerType);                                           //dr - general timeout handler
@@ -121,9 +117,12 @@ void       fnAGraph                           (uint16_t regist);
 //  uint8_t  maxiC;               //TO REMOVE from .h                                                                                            //JM global flags for character control:  enlarged letters
   extern uint8_t  compressString;                                                                               //JM global flags for character control: compressString
   extern uint8_t  raiseString;                                                                               //JM global flags for character control: raiseString
-  extern uint8_t  lines;
+  extern uint8_t  multiEdLines;
   extern uint16_t current_cursor_x;
   extern uint16_t current_cursor_y;
+
+  extern bool_t   reDraw;
+
 
   //Stack string large font display
   #define STACK_X_STR_LRG_FONT
@@ -165,12 +164,10 @@ void       fnAGraph                           (uint16_t regist);
   void     underline_softkey                  (int16_t xSoftkey, int16_t ySoftKey, bool_t dontclear);          //JM LONGPRESS
   void     refresh_gui                        (void);                                                          //JM
 
-  #define  force 1
-  #define  timed 0
   void     force_refresh(uint8_t mode);                                                          //JM SCREEN
   bool_t   printHalfSecUpdate_Integer(uint8_t mode, char * txt, int loop);
 
-  void     refreshScreen                      (void);
+  void     refreshScreen                      (uint8_t source);
   //void     invertPixel                        (uint32_t x, uint32_t y);
   //int      getPixel                           (uint32_t x, uint32_t y);
   /**
@@ -244,6 +241,8 @@ void       fnAGraph                           (uint16_t regist);
    *
    * \param[in] yStart y coordinate from where starting to clear
    */
+  void     clearRect                          (uint32_t g_line_x, uint32_t g_line_y);
+
   void     clearRegisterLine                  (calcRegister_t regist, bool_t clearTop, bool_t clearBottom);
 
   /**
@@ -262,6 +261,8 @@ void       fnAGraph                           (uint16_t regist);
   void     displayNim                         (const char *nim, const char *lastBase, int16_t wLastBaseNumeric, int16_t wLastBaseStandard);
   void     clearTamBuffer                     (void);
   void     clearShiftState                    (void);
+  void     showShiftStateF                    (void);
+  void     showShiftStateG                    (void);
   void     displayShiftAndTamBuffer           (void);
   #endif // !TESTSUITE_BUILD
 #endif // !SCREEN_H

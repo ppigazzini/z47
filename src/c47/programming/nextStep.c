@@ -1,18 +1,6 @@
-/* This file is part of 43S.
- *
- * 43S is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * 43S is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with 43S.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: GPL-3.0-only
+// SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
+
 
 /********************************************//**
  * \file nextStep.c
@@ -330,6 +318,7 @@ static void _showStep(void) {
     int16_t xPos = (lblOrEnd ? 42 : 62);
     int16_t maxWidth = SCREEN_WIDTH - xPos;
 
+    lcd_fill_rect(1, Y_POSITION_OF_REGISTER_T_LINE, xPos+1,  REGISTER_LINE_HEIGHT, LCD_SET_VALUE);
     sprintf(tmpString, "%04" PRIu16 ":" STD_SPACE_4_PER_EM, currentLocalStepNumber);
     showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_T_LINE + 6, vmNormal, true, true);
 
@@ -355,6 +344,7 @@ static void _showStep(void) {
       xstrOrig[1] = STD_ELLIPSIS[1];
       xstrOrig[2] = 0;
     }
+    lcd_fill_rect(xPos, Y_POSITION_OF_REGISTER_T_LINE, stringWidth(tmpString, &standardFont, true, true)+20,  REGISTER_LINE_HEIGHT, LCD_SET_VALUE);
     showString(tmpString, &standardFont, xPos, Y_POSITION_OF_REGISTER_T_LINE + 6, vmNormal, true, true);
   #endif // !TESTSUITE_BUILD
 }

@@ -14,11 +14,7 @@
  * along with C47.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* ADDITIONAL C43 functions and routines */
 
-/********************************************//**
- * \file addons.h
- ***********************************************/
 
 #if !defined(ADDONS_H)
 #define ADDONS_H
@@ -75,7 +71,7 @@ void   doubleToXRegisterReal34  (double x);                 //Convert from doubl
 double convert_to_double        (calcRegister_t regist);    //Convert from X register to double
 
 
-void   fnStrtoX                 (char aimBuffer[]);         //DONE
+void   fnStrtoX                 (const char aimBuffer[]);         //DONE
 void   fnStrInputReal34         (char inp1[]);              // CONVERT STRING to REAL IN X      //DONE
 void   fnStrInputLongint        (char inp1[]);              // CONVERT STRING to Longint X      //DONE
 void   fnRCL                    (int16_t inp);              //DONE
