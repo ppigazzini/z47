@@ -1524,7 +1524,7 @@
 #define ITM_DISK                    1474
 #define ITM_FQX                     1475
 #define ITM_FDQX                    1476
-#define ITM_1477                    1477
+#define ITM_FACTORS                 1477
 #define ITM_GD                      1478
 #define ITM_GDM1                    1479
 #define ITM_GRAD                    1480
@@ -2300,8 +2300,10 @@
 #define MNU_YESNO                   2244
 #define ITM_YES                     2245
 #define ITM_NO                      2246
+#define ITM_RCLVEL                  2247
+#define ITM_STOVEL                  2248
 
-#define LAST_ITEM                   2247
+#define LAST_ITEM                   2249
 
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL
