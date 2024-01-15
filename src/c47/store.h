@@ -93,6 +93,7 @@
    * \param[in] regist
    */
   void         fnStoreElement(uint16_t unusedButMandatoryParameter);
+  void         fnStoreElementPlus(uint16_t unusedButMandatoryParameter);
 
   /**
    * Stores Y in the element X of a TAM selected vector.

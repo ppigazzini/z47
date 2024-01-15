@@ -393,24 +393,67 @@ void fnRecallStack(uint16_t regist) {
 }
 
 
+static void _fnRecallElement(bool_t stepForward);
 
-void fnRecallVElement(uint16_t unusedButMandatoryParameter) {
+
+void fnRecallVElement(uint16_t regist) {
   #if !defined(TESTSUITE_BUILD)
+  real_t rx;
+  uint32_t ix;
+
+  if (!getRegisterAsReal(REGISTER_X, &rx)) {
+    return;
+  } else {
+    ix = realToInt32C47(&rx);
+  }
+  
+  if((getRegisterDataType(regist) == dtReal34Matrix) || (getRegisterDataType(regist) == dtComplex34Matrix)) {
+    matrixIndex = regist;
     if(matrixIndex == INVALID_VARIABLE) {
       displayCalcErrorMessage(ERROR_NO_MATRIX_INDEXED, ERR_REGISTER_LINE, REGISTER_X);
       #if(EXTRA_INFO_ON_CALC_ERROR == 1)
-        sprintf(errorMessage, "Cannot execute RCLEL without a matrix indexed");
-        moreInfoOnError("In function fnRecallElement:", errorMessage, NULL, NULL);
+        sprintf(errorMessage, "Cannot execute RCLVEL without a vector");
+        moreInfoOnError("In function fnRecallVElement:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
     else {
-      callByIndexedMatrix(recallElementReal, recallElementComplex);
+      if(getRegisterDataType(matrixIndex) == dtReal34Matrix) {
+        real34Matrix_t x;
+        linkToRealMatrixRegister(matrixIndex, &x);
+        setIRegisterAsInt(false, (ix-1) / x.header.matrixRows+1);
+        setJRegisterAsInt(false, (ix-1) % x.header.matrixRows+1);
+      }
+      else {
+        complex34Matrix_t x;
+        linkToComplexMatrixRegister(matrixIndex, &x);
+        setIRegisterAsInt(false, (ix-1) / x.header.matrixRows+1);
+        setJRegisterAsInt(false, (ix-1) % x.header.matrixRows+1);
+      }
+      fnDrop(0);
+      _fnRecallElement(false);
     }
+  }
+  else {
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+      #if defined(PC_BUILD)
+    sprintf(errorMessage, "DataType %" PRIu32, getRegisterDataType(regist));
+    moreInfoOnError("In function fnRecallVElement:", errorMessage, "is not a matrix.", "");
+    #endif
+  }
   #endif // !TESTSUITE_BUILD
 }
 
 
+
+void fnRecallElementPlus(uint16_t unusedButMandatoryParameter) {
+  _fnRecallElement(true);
+}
+
 void fnRecallElement(uint16_t unusedButMandatoryParameter) {
+  _fnRecallElement(false);
+}
+
+void _fnRecallElement(bool_t stepForward) {
   #if !defined(TESTSUITE_BUILD)
     if(matrixIndex == INVALID_VARIABLE) {
       displayCalcErrorMessage(ERROR_NO_MATRIX_INDEXED, ERR_REGISTER_LINE, REGISTER_X);
@@ -420,6 +463,9 @@ void fnRecallElement(uint16_t unusedButMandatoryParameter) {
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
     else {
+      if(stepForward) {
+        fnIncDecJ(INC_FLAG);
+      }
       callByIndexedMatrix(recallElementReal, recallElementComplex);
     }
   #endif // !TESTSUITE_BUILD

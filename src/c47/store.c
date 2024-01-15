@@ -28,6 +28,7 @@
 #include "plotstat.h"
 #include "registerValueConversions.h"
 #include "registers.h"
+#include "stack.h"
 #include "stats.h"
 #include "typeDefinitions.h"
 #include "ui/matrixEditor.h"
@@ -495,20 +496,80 @@ void fnStoreStack(uint16_t regist) {
 }
 
 
+static void _fnStoreElement(bool_t stepForward);
+
+void fnStoreVElement(uint16_t regist) {
+  #if !defined(TESTSUITE_BUILD)
+  real_t rx, ry;
+  uint32_t ix;
+
+  if (!getRegisterAsReal(REGISTER_X, &rx) || !getRegisterAsReal(REGISTER_Y, &ry)) {
+    return;
+  } else {
+    ix = realToInt32C47(&rx);
+  }
+  
+  if((getRegisterDataType(regist) == dtReal34Matrix) || (getRegisterDataType(regist) == dtComplex34Matrix)) {
+    matrixIndex = regist;
+    if(matrixIndex == INVALID_VARIABLE) {
+      displayCalcErrorMessage(ERROR_NO_MATRIX_INDEXED, ERR_REGISTER_LINE, REGISTER_X);
+      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+        sprintf(errorMessage, "Cannot execute STOVEL without a vector");
+        moreInfoOnError("In function fnStoreVElement:", errorMessage, NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+    }
+    else {
+      if(getRegisterDataType(matrixIndex) == dtReal34Matrix) {
+        real34Matrix_t x;
+        linkToRealMatrixRegister(matrixIndex, &x);
+        setIRegisterAsInt(false, (ix-1) / x.header.matrixRows+1);
+        setJRegisterAsInt(false, (ix-1) % x.header.matrixRows+1);
+      }
+      else {
+        complex34Matrix_t x;
+        linkToComplexMatrixRegister(matrixIndex, &x);
+        setIRegisterAsInt(false, (ix-1) / x.header.matrixRows+1);
+        setJRegisterAsInt(false, (ix-1) % x.header.matrixRows+1);
+      }
+      fnDrop(0);
+      _fnStoreElement(false);
+      fnDrop(0);
+    }
+  }
+  else {
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+      #if defined(PC_BUILD)
+    sprintf(errorMessage, "DataType %" PRIu32, getRegisterDataType(regist));
+    moreInfoOnError("In function fnStoreVElement:", errorMessage, "is not a matrix.", "");
+    #endif
+  }
+  #endif // !TESTSUITE_BUILD
+}
+
+void fnStoreElementPlus(uint16_t unusedButMandatoryParameter) {
+  _fnStoreElement(true);  
+}
 
 void fnStoreElement(uint16_t unusedButMandatoryParameter) {
+  _fnStoreElement(false);
+}
+
+void _fnStoreElement(bool_t stepForward) {
   #if !defined(TESTSUITE_BUILD)
     if(matrixIndex == INVALID_VARIABLE) {
       displayCalcErrorMessage(ERROR_NO_MATRIX_INDEXED, ERR_REGISTER_LINE, REGISTER_X);
       #if(EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "Cannot execute STOEL without a matrix indexed");
-        moreInfoOnError("In function fnStoreElement:", errorMessage, NULL, NULL);
+        moreInfoOnError("In function _fnStoreElement:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
     else {
       if(regInRange(matrixIndex) && getRegisterDataType(matrixIndex) == dtReal34Matrix && getRegisterDataType(REGISTER_X) == dtComplex34) {
         // Real matrices turns to complex matrices by setting a complex element
         convertReal34MatrixRegisterToComplex34MatrixRegister(matrixIndex, matrixIndex);
+      }
+      if(stepForward) {
+        fnIncDecJ(INC_FLAG);
       }
       callByIndexedMatrix(storeElementReal, storeElementComplex);
       if(matrixIndex >= FIRST_NAMED_VARIABLE && matrixIndex == findNamedVariable("STATS")) {

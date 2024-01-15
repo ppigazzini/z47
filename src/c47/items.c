@@ -498,6 +498,7 @@ void fnNop(uint16_t unusedButMandatoryParameter) {
   void fnRecallConfig              (uint16_t unusedButMandatoryParameter) {}
   void fnRecallElement             (uint16_t unusedButMandatoryParameter) {}
   void fnRecallVElement            (uint16_t unusedButMandatoryParameter) {}
+  void fnRecallElementPlus         (uint16_t unusedButMandatoryParameter) {}
   void fnRecallIJ                  (uint16_t unusedButMandatoryParameter) {}
   void fnRecallStack               (uint16_t unusedButMandatoryParameter) {}
   void fnRecallAdd                 (uint16_t unusedButMandatoryParameter) {}
@@ -598,6 +599,7 @@ void fnNop(uint16_t unusedButMandatoryParameter) {
   void fnStoreConfig               (uint16_t unusedButMandatoryParameter) {}
   void fnStoreElement              (uint16_t unusedButMandatoryParameter) {}
   void fnStoreVElement             (uint16_t unusedButMandatoryParameter) {}
+  void fnStoreElementPlus          (uint16_t unusedButMandatoryParameter) {}
   void fnStoreIJ                   (uint16_t unusedButMandatoryParameter) {}
   void fnStoreStack                (uint16_t unusedButMandatoryParameter) {}
   void fnStoreAdd                  (uint16_t unusedButMandatoryParameter) {}
@@ -3456,8 +3458,10 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 2244 */  { itemToBeCoded,                NOPARAM,                     "YESNO",                                       "YESNO",                                       (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2245 */  { fnConfirmationYes,            NOPARAM,                     "YES",                                         "YES",                                         (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2246 */  { fnConfirmationNo,             NOPARAM,                     "NO",                                          "NO",                                          (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
-/* 2247 */  { fnRecallElement,             TM_M_DIM,                    "RCLVEL",                                      "RCLVEL",                                      (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_REGISTER     },
-/* 2248 */  { fnStoreElement,              TM_M_DIM,                    "STOVEL",                                      "STOVEL",                                      (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_REGISTER     },
+/* 2247 */  { fnRecallVElement,             TM_M_DIM,                    "RCLVEL",                                      "RCLVEL",                                      (0 << TAM_MAX_BITS) |    99, CAT_FNCT | SLS_UNCHANGED | US_ENABLED   | EIM_DISABLED | PTP_REGISTER     },
+/* 2248 */  { fnStoreVElement,              TM_M_DIM,                    "STOVEL",                                      "STOVEL",                                      (0 << TAM_MAX_BITS) |    99, CAT_FNCT | SLS_UNCHANGED | US_ENABLED   | EIM_DISABLED | PTP_REGISTER     },
+/* 2249 */  { fnRecallElementPlus,          NOPARAM,                     "RCL+EL",                                       "RCL+EL",                                     (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
+/* 2250 */  { fnStoreElementPlus,           NOPARAM,                     "STO+EL",                                       "STO+EL",                                     (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 
-/* 2249 */  { itemToBeCoded,                NOPARAM,                     "",                                            "Last item",                                   (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED},
+/* 2251 */  { itemToBeCoded,                NOPARAM,                     "",                                            "Last item",                                   (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED},
 };
