@@ -228,9 +228,6 @@ static void doComplexAGM(void) {
       || !getRegisterAsComplex(REGISTER_Y, &bReal, &bImag))
     return;
 
-  if(!saveLastX())
-    return;
-
   complexAgm(&aReal, &aImag, &bReal, &bImag, &rReal, &rImag, &ctxtReal75);
   convertComplexToResultRegister(&rReal, &rImag, REGISTER_X);
 }

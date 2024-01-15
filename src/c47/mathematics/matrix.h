@@ -450,8 +450,6 @@
   void       elementwiseRemaCxma            (void (*f)(void));
   void       elementwiseCxmaRema            (void (*f)(void));
   void       elementwiseCplxRema            (void (*f)(void));
-
-  // TODO
   void       elementwiseRemaCplx            (void (*f)(void));
 
 #endif // !MATRIX_H
