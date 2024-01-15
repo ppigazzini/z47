@@ -4790,6 +4790,7 @@ void elementwiseCxmaReal(void (*f)(void)) {
   }
 
   convertComplex34MatrixToComplex34MatrixRegister(&y, REGISTER_X);
+
   complexMatrixFree(&y);
 #endif
 }
@@ -4816,6 +4817,7 @@ void elementwiseCxmaShoI(void (*f)(void)) {
   }
 
   convertComplex34MatrixToComplex34MatrixRegister(&y, REGISTER_X);
+
   complexMatrixFree(&y);
 #endif
 }
@@ -4843,6 +4845,7 @@ void elementwiseCxmaCplx(void (*f)(void)) {
   }
 
   convertComplex34MatrixToComplex34MatrixRegister(&y, REGISTER_X);
+
   complexMatrixFree(&y);
 }
 
