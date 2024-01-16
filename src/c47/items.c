@@ -790,6 +790,7 @@ void fnNop(uint16_t unusedButMandatoryParameter) {
   void fnRj                        (uint16_t unusedButMandatoryParameter) {}
   void fnCountBits                 (uint16_t unusedButMandatoryParameter) {}
   void fnNextPrime                 (uint16_t unusedButMandatoryParameter) {}
+  void fnPrimeFactors              (uint16_t unusedButMandatoryParameter) {}
   void fnScreenDump                (uint16_t unusedButMandatoryParameter) {}
   void fnArg                       (uint16_t unusedButMandatoryParameter) {}
   void fnRange                     (uint16_t unusedButMandatoryParameter) {}
@@ -2682,7 +2683,7 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 1474 */  { fnDiskInfo,                   NOPARAM,                     "DISK?",                                       "DISK?",                                       (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /* 1475 */  { fn1stDeriv,                   TM_LABEL,                    "f'(x)",                                       "f'(x)",                                       (0 << TAM_MAX_BITS) |    99, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_LABEL        },
 /* 1476 */  { fn2ndDeriv,                   TM_LABEL,                    "f\"(x)",                                      "f\"(x)",                                      (0 << TAM_MAX_BITS) |    99, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_LABEL        },
-/* 1477 */  { itemToBeCoded,                NOPARAM,                     "FACTORS",                                     "FACTORS",                                     (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
+/* 1477 */  { fnPrimeFactors,               NOPARAM,                     "FACTORS",                                     "FACTORS",                                     (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /* 1478 */  { fnGd,                         NOPARAM,                     "g" STD_SUB_d,                                 "g" STD_SUB_d,                                 (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_ENABLED  | PTP_NONE         },
 /* 1479 */  { fnInvGd,                      NOPARAM,                     "g" STD_SUB_d STD_SUP_MINUS_1,                 "g" STD_SUB_d STD_SUP_MINUS_1,                 (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_ENABLED  | PTP_NONE         },
 /* 1480 */  { fnAngularMode,                amGrad,                      "GRAD",                                        "GRAD",                                        (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },

@@ -517,14 +517,14 @@ void fnStoreVElement(uint16_t ix) {
     if(getRegisterDataType(REGISTER_Y) == dtReal34Matrix) {
       real34Matrix_t x;
       linkToRealMatrixRegister(REGISTER_Y, &x);
-      setIRegisterAsInt(false, (ix-1) / x.header.matrixRows+1);
-      setJRegisterAsInt(false, (ix-1) % x.header.matrixRows+1);
+      setIRegisterAsInt(false, (ix-1) / x.header.matrixColumns+1);
+      setJRegisterAsInt(false, (ix-1) % x.header.matrixColumns+1);
     }
     else { //Complex Matrix
       complex34Matrix_t x;
       linkToComplexMatrixRegister(REGISTER_Y, &x);
-      setIRegisterAsInt(false, (ix-1) / x.header.matrixRows+1);
-      setJRegisterAsInt(false, (ix-1) % x.header.matrixRows+1);
+      setIRegisterAsInt(false, (ix-1) / x.header.matrixColumns+1);
+      setJRegisterAsInt(false, (ix-1) % x.header.matrixColumns+1);
     }
     uint16_t matrixIndexBak = matrixIndex;
     matrixIndex = REGISTER_Y;

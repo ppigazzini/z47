@@ -404,14 +404,15 @@ void fnRecallVElement(uint16_t ix) {
     if(getRegisterDataType(REGISTER_X) == dtReal34Matrix) {
       real34Matrix_t x;
       linkToRealMatrixRegister(REGISTER_X, &x);
-      setIRegisterAsInt(false, (ix-1) / x.header.matrixRows+1);
-      setJRegisterAsInt(false, (ix-1) % x.header.matrixRows+1);
+      //printf("ix:%u Rows:%u Cols:%u \n",ix,x.header.matrixRows, x.header.matrixColumns);
+      setIRegisterAsInt(false, (ix-1) / x.header.matrixColumns+1);
+      setJRegisterAsInt(false, (ix-1) % x.header.matrixColumns+1);
     }
     else { //Complex Matrix
       complex34Matrix_t x;
       linkToComplexMatrixRegister(REGISTER_X, &x);
-      setIRegisterAsInt(false, (ix-1) / x.header.matrixRows+1);
-      setJRegisterAsInt(false, (ix-1) % x.header.matrixRows+1);
+      setIRegisterAsInt(false, (ix-1) / x.header.matrixColumns+1);
+      setJRegisterAsInt(false, (ix-1) % x.header.matrixColumns+1);
     }
     uint16_t matrixIndexBak = matrixIndex;
     matrixIndex = REGISTER_X;
