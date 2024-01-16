@@ -498,48 +498,45 @@ void fnStoreStack(uint16_t regist) {
 
 static void _fnStoreElement(bool_t stepForward);
 
-void fnStoreVElement(uint16_t regist) {
-  #if !defined(TESTSUITE_BUILD)
-  real_t rx, ry;
-  uint32_t ix;
 
-  if (!getRegisterAsReal(REGISTER_X, &rx) || !getRegisterAsReal(REGISTER_Y, &ry)) {
-    return;
-  } else {
-    ix = realToInt32C47(&rx);
-  }
+void fnStoreVElement(uint16_t ix) {
+  #if !defined(TESTSUITE_BUILD)
+  const int16_t iBak = getIRegisterAsInt(true);
+  const int16_t jBak = getJRegisterAsInt(true);
+  real_t rx;
   
-  if((getRegisterDataType(regist) == dtReal34Matrix) || (getRegisterDataType(regist) == dtComplex34Matrix)) {
-    matrixIndex = regist;
-    if(matrixIndex == INVALID_VARIABLE) {
-      displayCalcErrorMessage(ERROR_NO_MATRIX_INDEXED, ERR_REGISTER_LINE, REGISTER_X);
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
-        sprintf(errorMessage, "Cannot execute STOVEL without a vector");
-        moreInfoOnError("In function fnStoreVElement:", errorMessage, NULL, NULL);
-      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+  if((getRegisterDataType(REGISTER_Y) == dtReal34Matrix) || (getRegisterDataType(REGISTER_Y) == dtComplex34Matrix)) {
+    if (!getRegisterAsComplex(REGISTER_X, &rx, &rx) && !getRegisterAsReal(REGISTER_X, &rx)) {
+      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+      #if defined(PC_BUILD)
+        sprintf(errorMessage, "DataType %" PRIu32, getRegisterDataType(REGISTER_X));
+        moreInfoOnError("In function fnStoreVElement:", errorMessage, "is not a Real/Integer/Complex.", "");
+      #endif
+      return;
     }
-    else {
-      if(getRegisterDataType(matrixIndex) == dtReal34Matrix) {
-        real34Matrix_t x;
-        linkToRealMatrixRegister(matrixIndex, &x);
-        setIRegisterAsInt(false, (ix-1) / x.header.matrixRows+1);
-        setJRegisterAsInt(false, (ix-1) % x.header.matrixRows+1);
-      }
-      else {
-        complex34Matrix_t x;
-        linkToComplexMatrixRegister(matrixIndex, &x);
-        setIRegisterAsInt(false, (ix-1) / x.header.matrixRows+1);
-        setJRegisterAsInt(false, (ix-1) % x.header.matrixRows+1);
-      }
-      fnDrop(0);
-      _fnStoreElement(false);
-      fnDrop(0);
+    if(getRegisterDataType(REGISTER_Y) == dtReal34Matrix) {
+      real34Matrix_t x;
+      linkToRealMatrixRegister(REGISTER_Y, &x);
+      setIRegisterAsInt(false, (ix-1) / x.header.matrixRows+1);
+      setJRegisterAsInt(false, (ix-1) % x.header.matrixRows+1);
     }
+    else { //Complex Matrix
+      complex34Matrix_t x;
+      linkToComplexMatrixRegister(REGISTER_Y, &x);
+      setIRegisterAsInt(false, (ix-1) / x.header.matrixRows+1);
+      setJRegisterAsInt(false, (ix-1) % x.header.matrixRows+1);
+    }
+    uint16_t matrixIndexBak = matrixIndex;
+    matrixIndex = REGISTER_Y;
+    _fnStoreElement(false);
+    setIRegisterAsInt(false, iBak);
+    setJRegisterAsInt(false, jBak);
+    matrixIndex = matrixIndexBak;
   }
   else {
     displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
       #if defined(PC_BUILD)
-    sprintf(errorMessage, "DataType %" PRIu32, getRegisterDataType(regist));
+    sprintf(errorMessage, "DataType %" PRIu32, getRegisterDataType(REGISTER_Y));
     moreInfoOnError("In function fnStoreVElement:", errorMessage, "is not a matrix.", "");
     #endif
   }
@@ -568,10 +565,10 @@ void _fnStoreElement(bool_t stepForward) {
         // Real matrices turns to complex matrices by setting a complex element
         convertReal34MatrixRegisterToComplex34MatrixRegister(matrixIndex, matrixIndex);
       }
+      callByIndexedMatrix(storeElementReal, storeElementComplex);
       if(stepForward) {
         fnIncDecJ(INC_FLAG);
       }
-      callByIndexedMatrix(storeElementReal, storeElementComplex);
       if(matrixIndex >= FIRST_NAMED_VARIABLE && matrixIndex == findNamedVariable("STATS")) {
         calcSigma(0);
       }
