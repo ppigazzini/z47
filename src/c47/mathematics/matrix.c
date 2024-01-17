@@ -1102,6 +1102,8 @@ void fnIndexMatrix(uint16_t regist) {
     matrixIndex = regist;
     setIRegisterAsInt(false, 1);
     setJRegisterAsInt(false, 1);
+    clearSystemFlag(FLAG_WRAPEDG);
+    clearSystemFlag(FLAG_WRAPEND);
   }
   else {
     displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);

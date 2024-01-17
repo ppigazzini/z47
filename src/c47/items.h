@@ -519,7 +519,7 @@
 #define SFL_SPCRES                   486
 #define SFL_SSIZE8                   487
 #define SFL_QUIET                    488
-#define ITM_0489                     489
+#define SFL_WRAPEND                  489
 #define SFL_MULTx                    490
 #define SFL_ALLENG                   491
 #define SFL_GROW                     492
@@ -555,8 +555,8 @@
 #define SFL_SBshfR                   522
 #define SFL_HPBASE                   523
 #define SFL_2TO10                    524
-#define SFL_SH_LONGPRESS              525
-#define ITM_0526                     526
+#define SFL_SH_LONGPRESS             525
+#define SFL_WRAPEDG                  526
 
 
 // Bufferized items
