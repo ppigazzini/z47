@@ -53,47 +53,15 @@
 #else
   enum normalType {stdNormal, paramNormal, logNormal};
 
-  #if(EXTRA_INFO_ON_CALC_ERROR == 1)
-    #define loadParamNormal(v, reg, regName) loadParamNormal_(v, reg, regName)
-    static bool_t loadParamNormal_(real_t *v, int reg, const char *regName) {
-  #else
-    #define loadParamNormal(v, reg, regName) loadParamNormal_(v, reg)
-    static bool_t loadParamNormal_(real_t *v, int reg) {
-  #endif
-    if(getRegisterDataType(reg) == dtReal34) {
-      real34ToReal(REGISTER_REAL34_DATA(reg), v);
-    }
-    else if(getRegisterDataType(reg) == dtLongInteger) { // long integer
-      convertLongIntegerRegisterToReal(reg, v, &ctxtReal39);
-    }
-    else {
-      displayDomainErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
-        sprintf(errorMessage, "Value in register %s must be of the real or long integer type", regName);
-        moreInfoOnError("In function checkParamNormal:", errorMessage, NULL, NULL);
-      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-      goto err;
-    }
-    return true;
-
-  err:
-    if(getSystemFlag(FLAG_SPCRES)) {
-      convertRealToReal34ResultRegister(const_NaN, REGISTER_X);
-    }
-    return false;
-  }
-
-
   static bool_t checkParamNormal(enum normalType type, real_t *x, real_t *i, real_t *j) {
-    if(!loadParamNormal(x, REGISTER_X, "X")) {
+    if (!getRegisterAsReal(REGISTER_X, x))
       goto err;
-    }
-    if(type == stdNormal) {
+    if(type == stdNormal)
       return true;
-    }
-    if(!loadParamNormal(i, REGISTER_I, "I") || !loadParamNormal(j, REGISTER_J, "J")) {
+
+    if (!getRegisterAsReal(REGISTER_STAT1, i)
+        || !getRegisterAsReal(REGISTER_STAT2, j))
       goto err;
-    }
 
     if(realIsZero(j) || realIsNegative(j)) {
       displayDomainErrorMessage(ERROR_INVALID_DISTRIBUTION_PARAM, ERR_REGISTER_LINE, REGISTER_X);

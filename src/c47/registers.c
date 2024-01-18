@@ -1251,6 +1251,10 @@ void fnClearRegisters(uint16_t confirmation) {
     for(regist=REGISTER_I; regist<=REGISTER_K; regist++) {
       clearRegister(regist);
     }
+
+    for(regist=REGISTER_STAT1; regist<=REGISTER_STAT3; regist++) {
+      clearRegister(regist);
+    }
   }
 }
 

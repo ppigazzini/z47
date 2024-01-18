@@ -1638,6 +1638,13 @@ void debugNIM(void) {
         debugRegisterValue(i, row++);
       }
 
+      for(int i=REGISTER_STAT3; i>=REGISTER_STAT1; i--) {
+        sprintf(string, "%3d %c %s %7d %7d", i, i-REGISTER_STAT1+'P', getRegisterDataTypeName(i, false, true), TO_C47MEMPTR(getRegisterDataPointer(i)), TO_BYTES(getRegisterFullSizeInBlocks(i)));
+        gtk_label_set_label(GTK_LABEL(lbl1[row]), string);
+        gtk_widget_show(lbl1[row]);
+        debugRegisterValue(i, row++);
+      }
+
       for(int i=REGISTER_D; i>=REGISTER_A; i--) {
         sprintf(string, "%3d %c %s %7d %7d", i, i-REGISTER_A+'A', getRegisterDataTypeName(i, false, true), TO_C47MEMPTR(getRegisterDataPointer(i)), TO_BYTES(getRegisterFullSizeInBlocks(i)));
         gtk_label_set_label(GTK_LABEL(lbl1[row]), string);

@@ -244,6 +244,15 @@
             strcpy(tmpString, "K:");
             break;
           }
+          case REGISTER_STAT1:
+            strcpy(tmpString, "S1:");
+            break;
+          case REGISTER_STAT2:
+            strcpy(tmpString, "S2:");
+            break;
+          case REGISTER_STAT3:
+            strcpy(tmpString, "S3:");
+            break;
           default: {
             sprintf(tmpString, "R%02d:", regist);
           }

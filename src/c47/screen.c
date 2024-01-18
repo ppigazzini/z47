@@ -370,6 +370,21 @@
     copyRegisterToClipboardString(REGISTER_L, ptr);
 
     ptr += strlen(ptr);
+    strcpy(ptr, LINEBREAK "S1 = P = ");
+    ptr += strlen(ptr);
+    copyRegisterToClipboardString(REGISTER_STAT1, ptr);
+
+    ptr += strlen(ptr);
+    strcpy(ptr, LINEBREAK "S2 = Q = ");
+    ptr += strlen(ptr);
+    copyRegisterToClipboardString(REGISTER_STAT2, ptr);
+
+    ptr += strlen(ptr);
+    strcpy(ptr, LINEBREAK "S3 = R =");
+    ptr += strlen(ptr);
+    copyRegisterToClipboardString(REGISTER_STAT3, ptr);
+
+    ptr += strlen(ptr);
     strcpy(ptr, LINEBREAK "D = ");
     ptr += strlen(ptr);
     copyRegisterToClipboardString(REGISTER_D, ptr);
@@ -1771,8 +1786,8 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
     }
     clearRegisterLine(rowReg, true, true);
 
-    strcpy(regS, "RegI");
-    regS[3] += reg - REGISTER_I;
+    strcpy(regS, "RegP");
+    regS[3] = "PQRS"[reg - REGISTER_STAT1];
     showString(regS, &standardFont, 19, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(rowReg - REGISTER_X) + TEMPORARY_INFO_OFFSET, vmNormal, true, true);
     sprintf(prefix, "= %s =", name);
     prefixWidth = showString(prefix, &standardFont, 19 + (17+28), Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(rowReg - REGISTER_X) + TEMPORARY_INFO_OFFSET, vmNormal, true, true);
@@ -2577,9 +2592,9 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
           }
 
           if(!(r_i == NULL && r_j == NULL && r_k == NULL) && stats_param_check(r_i, REGISTER_I) && stats_param_check(r_j, REGISTER_J) && stats_param_check(r_k, REGISTER_K)) {
-            stats_param_display(r_i, REGISTER_I, prefix, tmpString, REGISTER_T);
-            stats_param_display(r_j, REGISTER_J, prefix, tmpString, REGISTER_Z);
-            stats_param_display(r_k, REGISTER_K, prefix, tmpString, REGISTER_Y);
+            stats_param_display(r_i, REGISTER_STAT1, prefix, tmpString, REGISTER_T);
+            stats_param_display(r_j, REGISTER_STAT2, prefix, tmpString, REGISTER_Z);
+            stats_param_display(r_k, REGISTER_STAT3, prefix, tmpString, REGISTER_Y);
 
             prefix[0]=0;
             tmpString[0]=0;

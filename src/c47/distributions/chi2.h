@@ -24,7 +24,7 @@
   #include "typeDefinitions.h"
   #include <stdint.h>
 
-  bool_t checkRegisterNoFP(calcRegister_t reg);
+  bool_t checkRegisterNoFP(const real_t *reg);
 
   void fnChi2P        (uint16_t unusedButMandatoryParameter);
   void fnChi2L        (uint16_t unusedButMandatoryParameter);

@@ -51,44 +51,16 @@
   static bool_t checkParamHyper(real_t *x, real_t *k, real_t *j, real_t *i) {
     real_t xmin, xmax;
 
-    if(   ((getRegisterDataType(REGISTER_X) != dtReal34) && (getRegisterDataType(REGISTER_X) != dtLongInteger))
-       || ((getRegisterDataType(REGISTER_I) != dtReal34) && (getRegisterDataType(REGISTER_I) != dtLongInteger))
-       || ((getRegisterDataType(REGISTER_J) != dtReal34) && (getRegisterDataType(REGISTER_J) != dtLongInteger))
-       || ((getRegisterDataType(REGISTER_K) != dtReal34) && (getRegisterDataType(REGISTER_K) != dtLongInteger))) {
+    if (!getRegisterAsReal(REGISTER_X, x)
+        || !getRegisterAsReal(REGISTER_STAT1, i)
+        || !getRegisterAsReal(REGISTER_STAT2, j)
+        || !getRegisterAsReal(REGISTER_STAT3, k)) {
       displayDomainErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
       #if(EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "Values in register X, I, J and K must be of the real or long integer type");
         moreInfoOnError("In function checkParamNegBinom:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return false;
-    }
-
-    if(getRegisterDataType(REGISTER_X) == dtReal34) {
-      real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), x);
-    }
-    else { // long integer
-      convertLongIntegerRegisterToReal(REGISTER_X, x, &ctxtReal39);
-    }
-
-    if(getRegisterDataType(REGISTER_I) == dtReal34) {
-      real34ToReal(REGISTER_REAL34_DATA(REGISTER_I), i);
-    }
-    else { // long integer
-      convertLongIntegerRegisterToReal(REGISTER_I, i, &ctxtReal39);
-    }
-
-    if(getRegisterDataType(REGISTER_J) == dtReal34) {
-      real34ToReal(REGISTER_REAL34_DATA(REGISTER_J), j);
-    }
-    else { // long integer
-      convertLongIntegerRegisterToReal(REGISTER_J, j, &ctxtReal39);
-    }
-
-    if(getRegisterDataType(REGISTER_K) == dtReal34) {
-      real34ToReal(REGISTER_REAL34_DATA(REGISTER_K), k);
-    }
-    else { // long integer
-      convertLongIntegerRegisterToReal(REGISTER_K, k, &ctxtReal39);
     }
 
     //realMultiply(i, k, &ik, &ctxtReal39), realToIntegralValue(&ik, &ik, DEC_ROUND_HALF_EVEN, &ctxtReal39);
@@ -99,7 +71,7 @@
     }
     realCopy(realCompareLessThan(k, j) ? k : j, &xmax);
 
-    if((!checkRegisterNoFP(REGISTER_I)) || (!checkRegisterNoFP(REGISTER_J)) || (!checkRegisterNoFP(REGISTER_K))) {
+    if((!checkRegisterNoFP(i)) || (!checkRegisterNoFP(j)) || (!checkRegisterNoFP(k))) {
       displayDomainErrorMessage(ERROR_INVALID_DISTRIBUTION_PARAM, ERR_REGISTER_LINE, REGISTER_X);
       #if(EXTRA_INFO_ON_CALC_ERROR == 1)
         moreInfoOnError("In function checkParamHyper:", "N, n and/or K is not an integer", NULL, NULL);

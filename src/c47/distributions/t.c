@@ -44,29 +44,9 @@
 
 #else
   static bool_t checkParamT(real_t *x, real_t *i) {
-    if(   ((getRegisterDataType(REGISTER_X) != dtReal34) && (getRegisterDataType(REGISTER_X) != dtLongInteger))
-       || ((getRegisterDataType(REGISTER_I) != dtReal34) && (getRegisterDataType(REGISTER_I) != dtLongInteger))) {
-        displayDomainErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-        #if(EXTRA_INFO_ON_CALC_ERROR == 1)
-          sprintf(errorMessage, "Values in register X and I must be of the real or long integer type");
-          moreInfoOnError("In function checkParamT:", errorMessage, NULL, NULL);
-        #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+    if (!getRegisterAsReal(REGISTER_X, x)
+        || !getRegisterAsReal(REGISTER_STAT1, i))
         goto err;
-    }
-
-    if(getRegisterDataType(REGISTER_X) == dtReal34) {
-      real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), x);
-    }
-    else { // long integer
-      convertLongIntegerRegisterToReal(REGISTER_X, x, &ctxtReal39);
-    }
-
-    if(getRegisterDataType(REGISTER_I) == dtReal34) {
-      real34ToReal(REGISTER_REAL34_DATA(REGISTER_I), i);
-    }
-    else {// long integer
-      convertLongIntegerRegisterToReal(REGISTER_I, i, &ctxtReal39);
-    }
 
     if(realIsZero(i) || realIsNegative(i)) {
       displayDomainErrorMessage(ERROR_INVALID_DISTRIBUTION_PARAM, ERR_REGISTER_LINE, REGISTER_X);
