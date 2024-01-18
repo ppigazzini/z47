@@ -492,7 +492,7 @@
 #define ITM_0462                     462
 
 
-
+// System flags
 #define SFL_TDM24                    463
 #define SFL_YMD                      464
 #define SFL_DMY                      465
@@ -519,7 +519,7 @@
 #define SFL_SPCRES                   486
 #define SFL_SSIZE8                   487
 #define SFL_QUIET                    488
-#define ITM_0489                     489
+#define SFL_0489                     489
 #define SFL_MULTx                    490
 #define SFL_ALLENG                   491
 #define SFL_GROW                     492
@@ -555,8 +555,8 @@
 #define SFL_SBshfR                   522
 #define SFL_HPBASE                   523
 #define SFL_2TO10                    524
-#define SFL_SH_LONGPRESS              525
-#define ITM_0526                     526
+#define SFL_SH_LONGPRESS             525
+#define SFL_0526                     526
 
 
 // Bufferized items
@@ -2301,7 +2301,73 @@
 #define ITM_YES                     2245
 #define ITM_NO                      2246
 
-#define LAST_ITEM                   2247
+// 64 more system flags
+#define SFL_2247                    2247
+#define SFL_2248                    2248
+#define SFL_2249                    2249
+#define SFL_2250                    2250
+#define SFL_2251                    2251
+#define SFL_2252                    2252
+#define SFL_2253                    2253
+#define SFL_2254                    2254
+#define SFL_2255                    2255
+#define SFL_2256                    2256
+#define SFL_2257                    2257
+#define SFL_2258                    2258
+#define SFL_2259                    2259
+#define SFL_2260                    2260
+#define SFL_2261                    2261
+#define SFL_2262                    2262
+#define SFL_2263                    2263
+#define SFL_2264                    2264
+#define SFL_2265                    2265
+#define SFL_2266                    2266
+#define SFL_2267                    2267
+#define SFL_2268                    2268
+#define SFL_2269                    2269
+#define SFL_2270                    2270
+#define SFL_2271                    2271
+#define SFL_2272                    2272
+#define SFL_2273                    2273
+#define SFL_2274                    2274
+#define SFL_2275                    2275
+#define SFL_2276                    2276
+#define SFL_2277                    2277
+#define SFL_2278                    2278
+#define SFL_2279                    2279
+#define SFL_2280                    2280
+#define SFL_2281                    2281
+#define SFL_2282                    2282
+#define SFL_2283                    2283
+#define SFL_2284                    2284
+#define SFL_2285                    2285
+#define SFL_2286                    2286
+#define SFL_2287                    2287
+#define SFL_2288                    2288
+#define SFL_2289                    2289
+#define SFL_2290                    2290
+#define SFL_2291                    2291
+#define SFL_2292                    2292
+#define SFL_2293                    2293
+#define SFL_2294                    2294
+#define SFL_2295                    2295
+#define SFL_2296                    2296
+#define SFL_2297                    2297
+#define SFL_2298                    2298
+#define SFL_2299                    2299
+#define SFL_2300                    2300
+#define SFL_2301                    2301
+#define SFL_2302                    2302
+#define SFL_2303                    2303
+#define SFL_2304                    2304
+#define SFL_2305                    2305
+#define SFL_2306                    2306
+#define SFL_2307                    2307
+#define SFL_2308                    2308
+#define SFL_2309                    2309
+#define SFL_2310                    2310
+
+#define LAST_ITEM                   2311
 
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL

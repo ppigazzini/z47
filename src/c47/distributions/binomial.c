@@ -25,6 +25,7 @@
 #include "distributions/f.h"
 #include "distributions/poisson.h"
 #include "error.h"
+#include "flags.h"
 #include "fonts.h"
 #include "mathematics/comparisonReals.h"
 #include "mathematics/cpyx.h"

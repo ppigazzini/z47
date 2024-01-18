@@ -881,7 +881,14 @@ void debugNIM(void) {
    * \return char*          Name of the system flag
    ***********************************************/
   char * getSystemFlagName(uint16_t sf) {
-    return (char *) indexOfItems[SFL_TDM24 + (sf & 0x3fff)].itemCatalogName;
+    int32_t flag = sf & 0x3fff;
+
+    if(flag < 64) {
+      return (char *)indexOfItems[SFL_TDM24 + flag].itemCatalogName;
+    }
+    else {
+      return (char *)indexOfItems[SFL_2247 + flag - 64].itemCatalogName;
+    }
   }
 
 

@@ -1370,13 +1370,11 @@ typedef enum {
 #endif // EXTRA_INFO_ON_CALC_ERROR == 0 || TESTSUITE_BUILD || DMCP_BUILD
 
 #define isSystemFlagWriteProtected(sf)       ((sf & 0x4000) != 0)
-#define getSystemFlag(sf)                    ((systemFlags &   ((uint64_t)1 << (sf & 0x3fff))) != 0)
 #define shortIntegerIsZero(op)               (((*(uint64_t *)(op)) == 0) || (shortIntegerMode == SIM_SIGNMT && (((*(uint64_t *)(op)) == 1u<<((uint64_t)shortIntegerWordSize-1)))))
 #define getStackTop()                        (getSystemFlag(FLAG_SSIZE8) ? REGISTER_D : REGISTER_T)
 #define freeRegisterData(regist)             freeC47Blocks((void *)getRegisterDataPointer(regist), getRegisterFullSizeInBlocks(regist))
 #define storeToDtConfigDescriptor(config)    (configToStore->config = config)
 #define recallFromDtConfigDescriptor(config) (config = configToRecall->config)
-#define getRecalledSystemFlag(sf)            ((configToRecall->systemFlags &   ((uint64_t)1 << (sf & 0x3fff))) != 0)
 #define BPB                                  2 // 2^BPB = number of bytes per block
 #define BYTES_PER_BLOCK                      (1 << BPB)
 #define TO_BLOCKS(n)                         (((n) + (BYTES_PER_BLOCK - 1)) >> BPB)

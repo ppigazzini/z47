@@ -23,6 +23,7 @@
 #include "constantPointers.h"
 #include "debug.h"
 #include "error.h"
+#include "flags.h"
 #include "mathematics/comparisonReals.h"
 #include "mathematics/matrix.h"
 #include "mathematics/wp34s.h"

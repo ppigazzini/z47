@@ -22,6 +22,7 @@
 
 #include "constantPointers.h"
 #include "error.h"
+#include "flags.h"
 #include "fonts.h"
 #include "mathematics/comparisonReals.h"
 #include "mathematics/rsd.h"
