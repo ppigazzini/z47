@@ -1429,7 +1429,8 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
 
 
 
-    systemFlags = 0;
+    systemFlags0 = 0;
+    systemFlags1 = 0;
 
     //Statusbar default setup   DATE noTIME noCR noANGLE [ADM] FRAC INT MATX TVM CARRY noSS WATCH SERIAL PRN BATVOLT noSHIFTR
     defaultStatusBar();

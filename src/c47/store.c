@@ -20,6 +20,7 @@
 #include "debug.h"
 #include "defines.h"
 #include "error.h"
+#include "flags.h"
 #include "items.h"
 #include "c43Extensions/jm.h"
 #include "mathematics/compare.h"
@@ -409,7 +410,8 @@ void fnStoreConfig(uint16_t regist) {
   storeToDtConfigDescriptor(displayStack);
   storeToDtConfigDescriptor(firstGregorianDay);
   storeToDtConfigDescriptor(roundingMode);
-  storeToDtConfigDescriptor(systemFlags);
+  storeToDtConfigDescriptor(systemFlags0);
+  storeToDtConfigDescriptor(systemFlags1);
   xcopy(configToStore->kbd_usr, kbd_usr, sizeof(kbd_usr));
   storeToDtConfigDescriptor(fgLN);
   storeToDtConfigDescriptor(eRPN);

@@ -251,6 +251,17 @@ void fnRecallMax(uint16_t regist) {
 
 
 
+//static bool_t getRecalledSystemFlag(int32_t sf) {
+//  int32_t flag = sf & 0x3fff;
+//
+//  if(flag < 64) {
+//    return (configToRecall->systemFlags0 & ((uint64_t)1 << flag)) != 0;
+//  }
+//  else {
+//    return (configToRecall->systemFlags1 & ((uint64_t)1 << (flag - 64))) != 0;
+//  }
+//}
+
 void fnRecallConfig(uint16_t regist) {
     __attribute__((unused)) bool_t compatibility_bool00;    //for use in spare slots below
     __attribute__((unused)) bool_t compatibility_bool0 ;    //for use in spare slots below
@@ -286,7 +297,8 @@ void fnRecallConfig(uint16_t regist) {
     recallFromDtConfigDescriptor(displayStack);
     recallFromDtConfigDescriptor(firstGregorianDay);
     recallFromDtConfigDescriptor(roundingMode);
-    recallFromDtConfigDescriptor(systemFlags);
+    recallFromDtConfigDescriptor(systemFlags0);
+    recallFromDtConfigDescriptor(systemFlags1);
     synchronizeLetteredFlags();
     xcopy(kbd_usr, configToRecall->kbd_usr, sizeof(kbd_usr));
     recallFromDtConfigDescriptor(fgLN);

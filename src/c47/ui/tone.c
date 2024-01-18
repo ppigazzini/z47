@@ -17,6 +17,7 @@
 #include "ui/tone.h"
 
 #include <stdio.h>
+#include "flags.h"
 #include "hal/audio.h"
 #include "screen.h"
 

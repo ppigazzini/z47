@@ -24,6 +24,7 @@
 #include "constantPointers.h"
 #include "debug.h"
 #include "error.h"
+#include "flags.h"
 #include "mathematics/10pow.h"
 #include "mathematics/wp34s.h"
 #include "registers.h"
