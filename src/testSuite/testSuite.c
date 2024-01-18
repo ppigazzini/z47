@@ -2114,6 +2114,17 @@ void checkExpectedOutParameter(char *p) {
   else if(l[0] == 'R') {
     calcRegister_t regist = 0;
 
+    //Statistical register
+    if (l[1] == 'S' && isdigit(l[2]) && l[3] == 0) {
+      if (l[2] <= '3') {
+        letter = 'P' + l[2] - '0' - 1;
+        regist = REGISTER_STAT1 + l[2] - '0' - 1;
+      } else {
+        printf("\nMissformed statistical parameter register checking. The digit isn't in (0, 3].\n");
+        abortTest();
+      }
+    }
+
     //Lettered register
     if(l[1] >= 'A' && l[2] == 0) {
       const char *p = strchr(regNames, l[1]);
