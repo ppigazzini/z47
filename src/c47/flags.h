@@ -41,9 +41,10 @@
   void   fnIsFlagSetFlip         (uint16_t flag);
   void   SetSetting              (uint16_t jmConfig);
 
-  void setSystemFlag(unsigned int sf);
-  void clearSystemFlag(unsigned int sf);
-  void flipSystemFlag(unsigned int sf);
-  void forceSystemFlag(unsigned int sf, int v);
+  void   setSystemFlag           (unsigned int sf);
+  void   clearSystemFlag         (unsigned int sf);
+  bool_t getSystemFlag           (int32_t sf);
+  void   flipSystemFlag          (unsigned int sf);
+  void   forceSystemFlag         (unsigned int sf, int set);
 
 #endif // !FLAGS_H

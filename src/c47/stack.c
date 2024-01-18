@@ -277,7 +277,8 @@ void saveForUndo(void) {
   clearRegister(TEMP_REGISTER_2_SAVED_STATS); //clear it here for every saveForUndo call, and explicitly set it in fnEditMatrix() and fnEqSolvGraph() only
   SAVED_SIGMA_LAct = 0;
 
-  savedSystemFlags = systemFlags;
+  savedSystemFlags0 = systemFlags0;
+  savedSystemFlags1 = systemFlags1;
 
   if(currentInputVariable != INVALID_VARIABLE) {
     if(currentInputVariable & 0x8000) {
@@ -386,7 +387,8 @@ void undo(void) {
     fnSigma(+1);
   }
 
-  systemFlags = savedSystemFlags;
+  systemFlags0 = savedSystemFlags0;
+  systemFlags1 = savedSystemFlags1;
   synchronizeLetteredFlags();
 
   for(calcRegister_t regist=getStackTop(); regist>=REGISTER_X; regist--) {

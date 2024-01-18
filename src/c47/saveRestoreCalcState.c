@@ -415,8 +415,10 @@ uint16_t flushBufferCnt = 0;
     saveStateValue(&exponentLimit,                  sizeof(exponentLimit),                                       "exponentLimit",                  "int16");
     saveStateValue(&exponentHideLimit,              sizeof(exponentHideLimit),                                   "exponentHideLimit",              "int16");
     saveStateValue(&keyActionProcessed,             sizeof(keyActionProcessed),                                  "keyActionProcessed",             "bool");
-    saveStateValue(&systemFlags,                    sizeof(systemFlags),                                         "systemFlags",                    "uint64");
-    saveStateValue(&savedSystemFlags,               sizeof(savedSystemFlags),                                    "savedSystemFlags",               "uint64");
+    saveStateValue(&systemFlags0,                   sizeof(systemFlags0),                                        "systemFlags0",                   "uint64");
+    saveStateValue(&systemFlags1,                   sizeof(systemFlags1),                                        "systemFlags0",                   "uint64");
+    saveStateValue(&savedSystemFlags0,              sizeof(savedSystemFlags0),                                   "savedSystemFlags0",              "uint64");
+    saveStateValue(&savedSystemFlags1,              sizeof(savedSystemFlags1),                                   "savedSystemFlags0",              "uint64");
     saveStateValue(&thereIsSomethingToUndo,         sizeof(thereIsSomethingToUndo),                              "thereIsSomethingToUndo",         "bool");
     saveStateValue(&freeProgramBytes,               sizeof(freeProgramBytes),                                    "freeProgramBytes",               "uint16");
     saveStateValue(&firstDisplayedLocalStepNumber,  sizeof(firstDisplayedLocalStepNumber),                       "firstDisplayedLocalStepNumber",  "uint16");
@@ -971,8 +973,10 @@ uint16_t flushBufferCnt = 0;
     restoreStateValue(&exponentLimit,                  sizeof(exponentLimit),                                       "exponentLimit",                  "int16");
     restoreStateValue(&exponentHideLimit,              sizeof(exponentHideLimit),                                   "exponentHideLimit",              "int16");
     restoreStateValue(&keyActionProcessed,             sizeof(keyActionProcessed),                                  "keyActionProcessed",             "bool");
-    restoreStateValue(&systemFlags,                    sizeof(systemFlags),                                         "systemFlags",                    "uint64");
-    restoreStateValue(&savedSystemFlags,               sizeof(savedSystemFlags),                                    "savedSystemFlags",               "uint64");
+    restoreStateValue(&systemFlags0,                   sizeof(systemFlags0),                                        "systemFlags0",                   "uint64");
+    restoreStateValue(&systemFlags1,                   sizeof(systemFlags1),                                        "systemFlags1",                   "uint64");
+    restoreStateValue(&savedSystemFlags0,              sizeof(savedSystemFlags0),                                   "savedSystemFlags0",              "uint64");
+    restoreStateValue(&savedSystemFlags1,              sizeof(savedSystemFlags1),                                   "savedSystemFlags1",              "uint64");
     restoreStateValue(&thereIsSomethingToUndo,         sizeof(thereIsSomethingToUndo),                              "thereIsSomethingToUndo",         "bool");
     restoreStateValue(&freeProgramBytes,               sizeof(freeProgramBytes),                                    "freeProgramBytes",               "uint16");
     restoreStateValue(&firstDisplayedLocalStepNumber,  sizeof(firstDisplayedLocalStepNumber),                       "firstDisplayedLocalStepNumber",  "uint16");
@@ -1479,8 +1483,11 @@ void doSave(uint16_t saveType) {
   }
 
   // System flags
-  UI64toString(systemFlags, yy1);
-  sprintf(tmpString, "SYSTEM_FLAGS\n%s\n", yy1);
+  UI64toString(systemFlags0, yy1);
+  sprintf(tmpString, "SYSTEM_FLAGS0\n%s\n", yy1);
+  save(tmpString, strlen(tmpString));
+  UI64toString(systemFlags1, yy1);
+  sprintf(tmpString, "SYSTEM_FLAGS1\n%s\n", yy1);
   save(tmpString, strlen(tmpString));
 
   // Keyboard assignments
@@ -2270,14 +2277,28 @@ double stringToDouble(const char *str) {
       }
     }
 
-    else if(strcmp(tmpString, "SYSTEM_FLAGS") == 0) {
+    else if(strcmp(tmpString, "SYSTEM_FLAGS0") == 0) {
       readLine(tmpString); // Global flags
       if(loadMode == LM_ALL || loadMode == LM_SYSTEM_STATE) {
         #if defined(LOADDEBUG)
           sprintf(line,", loadMode:%d, %s\n",loadMode,tmpString);
           debugPrintf(7, "-", tmpString);
         #endif //LOADDEBUG
-        systemFlags = stringToUint64(tmpString);
+        systemFlags0 = stringToUint64(tmpString);
+        if (loadedVersion < 10000006) {
+          defaultStatusBar(); //clear systemflags for early version config files
+        }
+      }
+    }
+
+    else if(strcmp(tmpString, "SYSTEM_FLAGS1") == 0) {
+      readLine(tmpString); // Global flags
+      if(loadMode == LM_ALL || loadMode == LM_SYSTEM_STATE) {
+        #if defined(LOADDEBUG)
+          sprintf(line,", loadMode:%d, %s\n",loadMode,tmpString);
+          debugPrintf(7, "-", tmpString);
+        #endif //LOADDEBUG
+        systemFlags1 = stringToUint64(tmpString);
         if (loadedVersion < 10000006) {
           defaultStatusBar(); //clear systemflags for early version config files
         }

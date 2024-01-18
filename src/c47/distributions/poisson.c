@@ -24,6 +24,7 @@
 #include "distributions/f.h"
 #include "distributions/normal.h"
 #include "error.h"
+#include "flags.h"
 #include "fonts.h"
 #include "mathematics/comparisonReals.h"
 #include "mathematics/wp34s.h"

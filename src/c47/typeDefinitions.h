@@ -190,7 +190,8 @@ typedef struct {
   uint16_t      lrChosen;
   uint32_t      denMax;
   uint32_t      firstGregorianDay;
-  uint64_t      systemFlags;
+  uint64_t      systemFlags0;
+  uint64_t      systemFlags1;
   calcKey_t     kbd_usr[37];
   uint8_t fgLN;
   bool_t eRPN;

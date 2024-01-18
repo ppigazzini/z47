@@ -24,6 +24,7 @@
 #include "charString.h"
 #include "dateTime.h"
 #include "display.h"
+#include "flags.h"
 #include "fonts.h"
 #include "items.h"
 #include "programming/manage.h"
