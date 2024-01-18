@@ -13,33 +13,33 @@ Func: fnHypergeometricI
 ;=======================================
 ; hypergeometricR(Long Integer) --> Real
 ;=======================================
-In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RI=LonI:"500" RJ=LonI:"100" RK=Real:"50" RX=Real:"0.1"
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RS1=LonI:"500" RS2=LonI:"100" RS3=Real:"50" RX=Real:"0.1"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.1" RX=Real:"7"
 
-In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RI=LonI:"500" RJ=Real:"100" RK=Real:"50" RX=Real:"0.5"
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RS1=LonI:"500" RS2=Real:"100" RS3=Real:"50" RX=Real:"0.5"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.5" RX=Real:"10"
 
-In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RI=Real:"500" RJ=LonI:"100" RK=Real:"50" RX=Real:"0.9"
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RS1=Real:"500" RS2=LonI:"100" RS3=Real:"50" RX=Real:"0.9"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.9" RX=Real:"13"
 
 
-In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RI=LonI:"500" RJ=LonI:"200" RK=LonI:"60" RX=Real:"0.1"
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RS1=LonI:"500" RS2=LonI:"200" RS3=LonI:"60" RX=Real:"0.1"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.1" RX=Real:"19"
 
-In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RI=LonI:"500" RJ=LonI:"200" RK=Real:"60" RX=Real:"0.5"
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RS1=LonI:"500" RS2=LonI:"200" RS3=Real:"60" RX=Real:"0.5"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.5" RX=Real:"24"
 
-In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RI=LonI:"500" RJ=LonI:"200" RK=Real:"60" RX=Real:"0.9"
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RS1=LonI:"500" RS2=LonI:"200" RS3=Real:"60" RX=Real:"0.9"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.9" RX=Real:"29"
 
 
-In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RI=LonI:"500" RJ=LonI:"300" RK=Real:"70" RX=Real:"0.1"
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RS1=LonI:"500" RS2=LonI:"300" RS3=Real:"70" RX=Real:"0.1"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.1" RX=Real:"37"
 
-In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RI=LonI:"500" RJ=LonI:"300" RK=Real:"70" RX=Real:"0.5"
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RS1=LonI:"500" RS2=LonI:"300" RS3=Real:"70" RX=Real:"0.5"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.5" RX=Real:"42"
 
-In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RI=LonI:"500" RJ=LonI:"300" RK=Real:"70" RX=Real:"0.9"
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RS1=LonI:"500" RS2=LonI:"300" RS3=Real:"70" RX=Real:"0.9"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.9" RX=Real:"47"
 
 
