@@ -2252,7 +2252,6 @@ double stringToDouble(const char *str) {
       }
     }
 
-
     else if(strcmp(tmpString, "STATISTICAL_SUMS") == 0) {
       readLine(tmpString); // Number of statistical sums
       numberOfRegs = stringToInt16(tmpString);
@@ -2287,6 +2286,7 @@ double stringToDouble(const char *str) {
           debugPrintf(7, "-", tmpString);
         #endif //LOADDEBUG
         systemFlags0 = stringToUint64(tmpString);
+        systemFlags1 = 0;
         if (loadedVersion < 10000006) {
           defaultStatusBar(); //clear systemflags for early version config files
         }
@@ -2879,7 +2879,7 @@ void doLoad(uint16_t loadMode, uint16_t s, uint16_t n, uint16_t d, uint16_t load
 
   if((((loadType == manualLoad) || (loadType == stateLoad)) && loadMode == LM_ALL) ||
     ((loadType == autoLoad) && (loadedVersion >= VersionAllowed) && (loadedVersion <= configFileVersion) && (loadMode == LM_ALL) )) {
-      while(restoreOneSection(loadMode, s, n, d)) {
+    while(restoreOneSection(loadMode, s, n, d)) {
     }
   }
 
