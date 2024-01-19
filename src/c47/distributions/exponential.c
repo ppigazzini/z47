@@ -45,7 +45,7 @@
 #else
   static bool_t checkParamExponential(real_t *x, real_t *i) {
     if (!getRegisterAsReal(REGISTER_X, x)
-        || !getRegisterAsReal(REGISTER_STAT1, i))
+        || !getRegisterAsReal(REGISTER_R, i))
       goto err;
 
     if(realIsNegative(x)) {
