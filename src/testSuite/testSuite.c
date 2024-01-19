@@ -70,6 +70,8 @@ int32_t functionIndex, funcType, correctSignificantDigits;
 void (*funcNoParam)(uint16_t);
 void (*funcCvt)(uint16_t);
 
+static const char regNames[] = "XYZTABCDLIJKMNPQRS";
+
 const funcTest_t funcTestNoParam[] = {
   {"fn10Pow",                fn10Pow               },
   {"fn2Pow",                 fn2Pow                },
@@ -942,7 +944,6 @@ void setParameter(char *p) {
 
     //Lettered register
     if(l[1] >= 'A' && l[2] == 0) {
-      const char regNames[] = "XYZTABCDLIJKMNPQRS";
       const char *p = strchr(regNames, l[1]);
       if (p != NULL) {
         regist = REGISTER_X + (p - regNames);
@@ -2113,29 +2114,15 @@ void checkExpectedOutParameter(char *p) {
   else if(l[0] == 'R') {
     calcRegister_t regist = 0;
 
-    //Statistical register
-    if (l[1] == 'S' && isdigit(l[2]) && l[3] == 0) {
-      if (l[2] <= '3') {
-        letter = 'P' + l[2] - '0' - 1;
-        regist = REGISTER_STAT1 + l[2] - '0' - 1;
-      } else {
-        printf("\nMissformed statistical parameter register checking. The digit isn't in (0, 3].\n");
-        abortTest();
-      }
-    }
-
     //Lettered register
-    else if(l[1] >= 'A' && l[2] == 0) {
-      if(strstr("XYZTABCDLIJK", l + 1) != NULL) {
+    if(l[1] >= 'A' && l[2] == 0) {
+      const char *p = strchr(regNames, l[1]);
+      if (p != NULL) {
         letter = l[1];
-        regist = l[1] == 'T' ? 103 :
-                 l[1] == 'L' ? 108 :
-                 l[1] <= 'D' ? l[1] + 39 :
-                 l[1] <= 'O' ? l[1] + 36 :
-                               l[1] + 12;
+        regist = REGISTER_X + (p - regNames);
       }
       else {
-        printf("\nMissformed lettered register checking. The letter after R is not a lettered register.\n");
+        printf("\nMissformed lettered register setting. The letter after R is not a lettered register (%s).\n", regNames);
         abortTest();
       }
     }
