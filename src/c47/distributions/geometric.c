@@ -49,7 +49,7 @@
 
 #else
   static bool_t checkParamGeometric(real_t *x, real_t *i) {
-    if (!getRegisterAsReal(REGISTER_X, x) || !getRegisterAsReal(REGISTER_STAT1, i))
+    if (!getRegisterAsReal(REGISTER_X, x) || !getRegisterAsReal(REGISTER_P, i))
       goto err;
 
     if(realIsNegative(x)) {
