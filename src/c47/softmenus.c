@@ -265,10 +265,20 @@ TO_QSPI const int16_t menu_PROB[]        = {
                                              ITM_RAN,                       ITM_SEED,                   ITM_RANI,                 ITM_COMB,              ITM_PERM,                    -MNU_NORML
 #endif // !SAVE_SPACE_DM42_15
                                            };
+
+/* TODO: remove when properly defined */
+#define ITM_STO_M   ITM_RAN
+#define ITM_STO_N   ITM_RAN
+#define ITM_STO_P   ITM_RAN
+#define ITM_STO_Q   ITM_RAN
+#define ITM_STO_R   ITM_RAN
+#define ITM_STO_S   ITM_RAN
+
 #define DISTNMENU(name, pdf, lcdf, ucdf, qf, p1, p2, p3)                                            \
   TO_QSPI const int16_t name[] = { pdf,      ITM_NULL, lcdf,       ucdf,      ITM_NULL, qf,         \
                                    ITM_NULL, ITM_NULL, ITM_NULL,   ITM_NULL,  ITM_NULL, ITM_NULL,   \
                                    p1,       p2,       p3,         ITM_NULL,  ITM_NULL, ITM_NULL }
+
 //        global name       PDF             LCDF            UCDF            QF                  Param 1     Param 2     Param 3
 DISTNMENU(menu_t,           ITM_TPX,        ITM_TX,         ITM_TUX,        ITM_TM1P,           ITM_STO_M,  ITM_NULL,   ITM_NULL);
 DISTNMENU(menu_F,           ITM_FPX,        ITM_FX,         ITM_FUX,        ITM_FM1P,           ITM_STO_M,  ITM_STO_N,  ITM_NULL);
