@@ -49,7 +49,7 @@
 #else
   static bool_t checkParamPoisson(real_t *x, real_t *i) {
     if (!getRegisterAsReal(REGISTER_X, x)
-        || !getRegisterAsReal(REGISTER_STAT1, i))
+        || !getRegisterAsReal(REGISTER_R, i))
         goto err;
     if(realIsNegative(x)) {
       displayDomainErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
