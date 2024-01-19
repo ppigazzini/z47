@@ -45,7 +45,7 @@
 #else
   static bool_t checkParamT(real_t *x, real_t *i) {
     if (!getRegisterAsReal(REGISTER_X, x)
-        || !getRegisterAsReal(REGISTER_STAT1, i))
+        || !getRegisterAsReal(REGISTER_M, i))
         goto err;
 
     if(realIsZero(i) || realIsNegative(i)) {
