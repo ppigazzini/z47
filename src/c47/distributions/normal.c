@@ -59,8 +59,8 @@
     if(type == stdNormal)
       return true;
 
-    if (!getRegisterAsReal(REGISTER_STAT1, i)
-        || !getRegisterAsReal(REGISTER_STAT2, j))
+    if (!getRegisterAsReal(REGISTER_M, i)
+        || !getRegisterAsReal(REGISTER_S, j))
       goto err;
 
     if(realIsZero(j) || realIsNegative(j)) {
