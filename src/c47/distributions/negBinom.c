@@ -49,8 +49,8 @@
 #else
   static bool_t checkParamNegBinom(real_t *x, real_t *i, real_t *j) {
     if (!getRegisterAsReal(REGISTER_X, x)
-        || !getRegisterAsReal(REGISTER_STAT1, i)
-        || !getRegisterAsReal(REGISTER_STAT2, j))
+        || !getRegisterAsReal(REGISTER_P, i)
+        || !getRegisterAsReal(REGISTER_N, j))
       goto err;
 
     if(!checkRegisterNoFP(j)) {
