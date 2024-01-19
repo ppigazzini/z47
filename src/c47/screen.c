@@ -1720,7 +1720,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
     int prefixWidth;
     char regS[5];
 
-    if(name == NULL) {
+    if(name == NULL || !(rowReg == REGISTER_Y || rowReg == REGISTER_Z || rowReg == REGISTER_T)) {
       return;
     }
     clearRegisterLine(rowReg, true, true);
@@ -2484,7 +2484,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
         // STATISTICAL DISTR
         if(regist == REGISTER_X && lastErrorCode == 0) {
           const char *r_i = NULL, *r_j = NULL, *r_k = NULL;
-          calcRegister_t register_i, register_j, register_k;
+          calcRegister_t register_i = REGISTER_M, register_j = REGISTER_M, register_k = REGISTER_M;
           
 
           switch(softmenu[softmenuStack[0].softmenuId].menuItem) {
@@ -2535,7 +2535,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
             default: ;
           }
 
-          if(!(r_i == NULL && r_j == NULL && r_k == NULL) && stats_param_check(r_i, REGISTER_I) && stats_param_check(r_j, REGISTER_J) && stats_param_check(r_k, REGISTER_K)) {
+          if(!(r_i == NULL && r_j == NULL && r_k == NULL) && stats_param_check(r_i, register_i) && stats_param_check(r_j, register_j) && stats_param_check(r_k, register_k)) {
             stats_param_display(r_i, register_i, prefix, tmpString, REGISTER_T);
             stats_param_display(r_j, register_j, prefix, tmpString, REGISTER_Z);
             stats_param_display(r_k, register_k, prefix, tmpString, REGISTER_Y);
