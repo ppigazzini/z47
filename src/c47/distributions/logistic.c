@@ -45,8 +45,8 @@
 #else
   static bool_t checkParamLogistic(real_t *x, real_t *i, real_t *j) {
     if (!getRegisterAsReal(REGISTER_X, x)
-        || !getRegisterAsReal(REGISTER_STAT1, i)
-        || !getRegisterAsReal(REGISTER_STAT2, j))
+        || !getRegisterAsReal(REGISTER_M, i)
+        || !getRegisterAsReal(REGISTER_S, j))
       goto err;
 
     if(realIsZero(j) || realIsNegative(j)) {
