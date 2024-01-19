@@ -635,88 +635,100 @@ typedef enum {
 
 ///////////////////////////////////////////////////////
 // Register numbering:
-//    0 to  111 global resisters
-//  112 to  210 local registers (from .00 to .98) this are 99 local registers
-//  212 to  219 saved stack registers (UNDO feature)
-//  220 to  220 temporary registers
-//  221 to 1999 named variables
+//    0 to  117 global resisters
+//  118 to  216 local registers (from .00 to .98) this are 99 local registers
+//  216 to  219 saved stack registers (UNDO feature)
+//  226 to  228 temporary registers
+//  229 to 1999 named variables
 // 2000 to 2029 reserved variables
-#define REGISTER_X                               100
-#define REGISTER_Y                               101
-#define REGISTER_Z                               102
-#define REGISTER_T                               103
-#define REGISTER_A                               104
-#define REGISTER_B                               105
-#define REGISTER_C                               106
-#define REGISTER_D                               107
-#define REGISTER_L                               108
-#define REGISTER_I                               109
-#define REGISTER_J                               110
-#define REGISTER_K                               111
-#define FIRST_STAT_REGISTER                      112
-#define REGISTER_STAT1                           112
-#define REGISTER_STAT2                           113
-#define REGISTER_STAT3                           114
-#define LAST_STAT_REGISTER                       114
-#define LAST_GLOBAL_REGISTER                     114
-#define NUMBER_OF_GLOBAL_REGISTERS               115 // There are 115 global registers from 0 to 111
-#define FIRST_LOCAL_REGISTER                     115 // There are 115 global registers from 0 to 111
-#define LAST_LOCAL_REGISTER                      213 // There are maximum 99 local registers from 112 to 210 (.00 to .98)
-#define NUMBER_OF_SAVED_STACK_REGISTERS            9 // 214 to 223
-#define FIRST_SAVED_STACK_REGISTER               214
-#define SAVED_REGISTER_X                         214
-#define SAVED_REGISTER_Y                         215
-#define SAVED_REGISTER_Z                         216
-#define SAVED_REGISTER_T                         217
-#define SAVED_REGISTER_A                         218
-#define SAVED_REGISTER_B                         219
-#define SAVED_REGISTER_C                         202
-#define SAVED_REGISTER_D                         221
-#define SAVED_REGISTER_L                         222
-#define LAST_SAVED_STACK_REGISTER                222
-#define NUMBER_OF_TEMP_REGISTERS                   2 // 223, 224
-#define FIRST_TEMP_REGISTER                      223
-#define TEMP_REGISTER_1                          223
-#define TEMP_REGISTER_2_SAVED_STATS              224
-#define LAST_TEMP_REGISTER                       224
-#define FIRST_NAMED_VARIABLE                     225
-#define LAST_NAMED_VARIABLE                     1999
-#define FIRST_RESERVED_VARIABLE                 2000
-#define RESERVED_VARIABLE_X                     2000
-#define RESERVED_VARIABLE_Y                     2001
-#define RESERVED_VARIABLE_Z                     2002
-#define RESERVED_VARIABLE_T                     2003
-#define RESERVED_VARIABLE_A                     2004
-#define RESERVED_VARIABLE_B                     2005
-#define RESERVED_VARIABLE_C                     2006
-#define RESERVED_VARIABLE_D                     2007
-#define RESERVED_VARIABLE_L                     2008
-#define RESERVED_VARIABLE_I                     2009
-#define RESERVED_VARIABLE_J                     2010
-#define RESERVED_VARIABLE_K                     2011
-#define RESERVED_VARIABLE_STAT1                 2012
-#define RESERVED_VARIABLE_STAT2                 2013
-#define RESERVED_VARIABLE_STAT3                 2014
-#define RESERVED_VARIABLE_ADM                   2015
-#define RESERVED_VARIABLE_DENMAX                2016
-#define RESERVED_VARIABLE_ISM                   2017
-#define RESERVED_VARIABLE_REALDF                2018
-#define RESERVED_VARIABLE_NDEC                  2019
-#define RESERVED_VARIABLE_ACC                   2020
-#define RESERVED_VARIABLE_ULIM                  2021
-#define RESERVED_VARIABLE_LLIM                  2022
-#define RESERVED_VARIABLE_FV                    2023
-#define RESERVED_VARIABLE_IPONA                 2024
-#define RESERVED_VARIABLE_NPER                  2025
-#define RESERVED_VARIABLE_PERONA                2026
-#define RESERVED_VARIABLE_PMT                   2027
-#define RESERVED_VARIABLE_PV                    2028
-#define RESERVED_VARIABLE_GRAMOD                2029
-#define LAST_RESERVED_VARIABLE                  2029
-#define INVALID_VARIABLE                        2030
-#define FIRST_LABEL                             2031
-#define LAST_LABEL                              6999
 
+enum REG_NUMBERS {
+  FIRST_GLOBAL_REGISTER = 0,
+  // Stack registers
+  REGISTER_X = 100,
+  REGISTER_Y,
+  REGISTER_Z,
+  REGISTER_T,
+  REGISTER_A,
+  REGISTER_B,
+  REGISTER_C,
+  REGISTER_D,
+  REGISTER_L,
+  // Matrix registers
+  REGISTER_I,
+  REGISTER_J,
+  REGISTER_K,
+  // Statistical parameter registers
+  FIRST_STAT_REGISTER,
+    REGISTER_M = FIRST_STAT_REGISTER,
+  REGISTER_N,
+  REGISTER_P,
+  REGISTER_Q,
+  REGISTER_R,
+  REGISTER_S,
+    LAST_STAT_REGISTER = REGISTER_S,
+    LAST_GLOBAL_REGISTER = REGISTER_S,
+  // Local registers
+  FIRST_LOCAL_REGISTER,
+  LAST_LOCAL_REGISTER = FIRST_LOCAL_REGISTER + 99 - 1,
+  // Saved stack registers
+  FIRST_SAVED_STACK_REGISTER,
+    SAVED_REGISTER_X = FIRST_SAVED_STACK_REGISTER,
+  SAVED_REGISTER_Y,
+  SAVED_REGISTER_Z,
+  SAVED_REGISTER_T,
+  SAVED_REGISTER_A,
+  SAVED_REGISTER_B,
+  SAVED_REGISTER_C,
+  SAVED_REGISTER_D,
+  SAVED_REGISTER_L,
+    LAST_SAVED_STACK_REGISTER = SAVED_REGISTER_L,
+  // Temporary registeres
+  FIRST_TEMP_REGISTER,
+    TEMP_REGISTER_1 = FIRST_TEMP_REGISTER,
+  TEMP_REGISTER_2_SAVED_STATS,
+    LAST_TEMP_REGISTER = TEMP_REGISTER_2_SAVED_STATS,
+  // Named variables
+  FIRST_NAMED_VARIABLE,
+  LAST_NAMED_VARIABLE = 1999,
+  FIRST_RESERVED_VARIABLE = 2000,
+    RESERVED_VARIABLE_X = FIRST_RESERVED_VARIABLE,
+  RESERVED_VARIABLE_Y,
+  RESERVED_VARIABLE_Z,
+  RESERVED_VARIABLE_T,
+  RESERVED_VARIABLE_A,
+  RESERVED_VARIABLE_B,
+  RESERVED_VARIABLE_C,
+  RESERVED_VARIABLE_D,
+  RESERVED_VARIABLE_L,
+  RESERVED_VARIABLE_I,
+  RESERVED_VARIABLE_J,
+  RESERVED_VARIABLE_K,
+  RESERVED_VARIABLE_ADM,
+  RESERVED_VARIABLE_DENMAX,
+  RESERVED_VARIABLE_ISM,
+  RESERVED_VARIABLE_REALDF,
+  RESERVED_VARIABLE_NDEC,
+  RESERVED_VARIABLE_ACC,
+  RESERVED_VARIABLE_ULIM,
+  RESERVED_VARIABLE_LLIM,
+  RESERVED_VARIABLE_FV,
+  RESERVED_VARIABLE_IPONA,
+  RESERVED_VARIABLE_NPER,
+  RESERVED_VARIABLE_PERONA,
+  RESERVED_VARIABLE_PMT,
+  RESERVED_VARIABLE_PV,
+  RESERVED_VARIABLE_GRAMOD,
+    LAST_RESERVED_VARIABLE = RESERVED_VARIABLE_GRAMOD,
+  INVALID_VARIABLE,
+  FIRST_LABEL,
+  LAST_LABEL = 6999
+};
+
+#define NUMBER_OF_GLOBAL_REGISTERS          (LAST_GLOBAL_REGISTER - FIRST_GLOBAL_REGISTER + 1)
+#define NUMBER_OF_LOCAL_REGISTERS           (LAST_LOCAL_REGISTER - FIRST_LOCAL_REGISTER + 1)
+#define NUMBER_OF_SAVED_STACK_REGISTERS     (LAST_SAVED_STACK_REGISTER - FIRST_SAVED_STACK_REGISTER + 1)
+#define NUMBER_OF_TEMP_REGISTERS            (LAST_TEMP_REGISTER - FIRST_TEMP_REGISTER + 1)
 #define NUMBER_OF_RESERVED_VARIABLES        (LAST_RESERVED_VARIABLE - FIRST_RESERVED_VARIABLE + 1)
 
 
