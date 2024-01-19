@@ -267,12 +267,12 @@ TO_QSPI const int16_t menu_PROB[]        = {
                                            };
 
 /* TODO: remove when properly defined */
-#define ITM_STO_M   ITM_RAN
-#define ITM_STO_N   ITM_RAN
-#define ITM_STO_P   ITM_RAN
-#define ITM_STO_Q   ITM_RAN
-#define ITM_STO_R   ITM_RAN
-#define ITM_STO_S   ITM_RAN
+#define ITM_STO_M   ITM_M
+#define ITM_STO_N   ITM_N
+#define ITM_STO_P   ITM_P
+#define ITM_STO_Q   ITM_Q
+#define ITM_STO_R   ITM_R
+#define ITM_STO_S   ITM_S
 
 #define DISTNMENU(name, pdf, lcdf, ucdf, qf, p1, p2, p3)                                            \
   TO_QSPI const int16_t name[] = { pdf,      ITM_NULL, lcdf,       ucdf,      ITM_NULL, qf,         \
