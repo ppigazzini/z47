@@ -36,25 +36,6 @@
 
 #include "c47.h"
 
-uint8_t reg_Name(int16_t no) {
-  switch(no) {
-    case 100: return 'X'; break;
-    case 101: return 'Y'; break;
-    case 102: return 'Z'; break;
-    case 103: return 'T'; break;
-    case 104: return 'A'; break;
-    case 105: return 'B'; break;
-    case 106: return 'C'; break;
-    case 107: return 'D'; break;
-    case 108: return 'L'; break;
-    case 109: return 'I'; break;
-    case 110: return 'J'; break;
-    case 111: return 'K'; break;
-    default:  return 0;   break;
-  }
-}
-
-
 void addChrBothSides(uint8_t t, char * str) {
   char tt[4];
   tt[0] = t;
@@ -132,9 +113,9 @@ void stackregister_csv_out(int16_t reg_b, int16_t reg_e, bool_t oneLine) {
       tmpString[0] = 0;
       tmp_b[0] = 0;
       tmp_e[0] = 0;
-      if(ix >= 100 && ix <= 111) {
+      if(ix >= REGISTER_X && ix <= REGISTER_S) {
         tmp_b[1] = 0;
-        tmp_b[0] = reg_Name(ix);
+        tmp_b[0] = letteredRegisterName((calcRegister_t)ix);
         strcat(tmp_b, CSV_TAB);
         }
 

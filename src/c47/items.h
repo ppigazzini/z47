@@ -1433,7 +1433,7 @@
 #define MNU_TAM                     1385
 #define MNU_TAMCMP                  1386
 #define MNU_TAMSTORCL               1387
-#define ITM_1388                    1388
+#define MNU_REGS                    1388
 #define MNU_VAR                     1389
 #define MNU_TAMFLAG                 1390
 #define MNU_TAMSHUFFLE              1391
@@ -2393,8 +2393,14 @@
 #define ITM_2333                    2333
 #define ITM_2334                    2334
 #define ITM_2335                    2335
+#define ITM_REG_M                   2336
+#define ITM_REG_N                   2337
+#define ITM_REG_P                   2338
+#define ITM_REG_Q                   2339
+#define ITM_REG_R                   2340
+#define ITM_REG_S                   2341
 
-#define LAST_ITEM                   2336
+#define LAST_ITEM                   2342
 
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL

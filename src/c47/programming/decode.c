@@ -145,6 +145,9 @@ static void getIndirectRegister(uint8_t *paramAddress, const char *op) {
   else if(opParam <= REGISTER_K) { // Lettered register from X to K
     sprintf(tmpString, "%s " STD_RIGHT_ARROW "%s", op, indexOfItems[ITM_REG_X + opParam - REGISTER_X].itemSoftmenuName);
   }
+  else if(opParam <= REGISTER_S) { // Lettered register from M to S
+    sprintf(tmpString, "%s " STD_RIGHT_ARROW "%s", op, indexOfItems[ITM_REG_M + opParam - REGISTER_M].itemSoftmenuName);
+  }
   else if(opParam <= LAST_LOCAL_REGISTER) { // Local register from .00 to .98
     sprintf(tmpString, "%s " STD_RIGHT_ARROW ".%02d", op, opParam - FIRST_LOCAL_REGISTER);
   }
@@ -222,6 +225,9 @@ static void decodeOp(uint8_t *paramAddress, const char *op, uint16_t paramMode, 
       }
       else if(opParam <= REGISTER_K) { // Lettered register from X to K
         sprintf(tmpString, "%s %s", op, indexOfItems[ITM_REG_X + opParam - REGISTER_X].itemSoftmenuName);
+      }
+      else if(opParam <= REGISTER_S) { // Lettered register from M to S
+        sprintf(tmpString, "%s %s", op, indexOfItems[ITM_REG_M + opParam - REGISTER_M].itemSoftmenuName);
       }
       else if(opParam <= LAST_LOCAL_REGISTER) { // Local register from .00 to .98
         sprintf(tmpString, "%s .%02d", op, opParam - FIRST_LOCAL_REGISTER);
@@ -341,6 +347,9 @@ static void decodeOp(uint8_t *paramAddress, const char *op, uint16_t paramMode, 
       }
       else if(opParam <= REGISTER_K) { // Lettered register from X to K
         sprintf(tmpString, "%s %s", op, indexOfItems[ITM_REG_X + opParam - REGISTER_X].itemSoftmenuName);
+      }
+      else if(opParam <= REGISTER_S) { // Lettered register from M to S
+        sprintf(tmpString, "%s %s", op, indexOfItems[ITM_REG_M + opParam - REGISTER_M].itemSoftmenuName);
       }
       else if(opParam <= LAST_LOCAL_REGISTER) { // Local register from .00 to .98
         sprintf(tmpString, "%s .%02d", op, opParam - FIRST_LOCAL_REGISTER);

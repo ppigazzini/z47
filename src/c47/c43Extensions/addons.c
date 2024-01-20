@@ -971,7 +971,7 @@ void fnP_All_Regs(uint16_t option) {
     switch(option) {
       case 0:                    //PRN_ALLr   :   All registers
         stackregister_csv_out(REGISTER_X, REGISTER_D, !ONELINE);
-        stackregister_csv_out(REGISTER_L, REGISTER_K, !ONELINE);
+        stackregister_csv_out(REGISTER_L, REGISTER_S, !ONELINE);
         stackregister_csv_out(0, 99, !ONELINE);
         if(currentNumberOfLocalRegisters > 0) stackregister_csv_out(FIRST_LOCAL_REGISTER, FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters - 1, !ONELINE);
         if(numberOfNamedVariables > 0) stackregister_csv_out(FIRST_NAMED_VARIABLE, FIRST_NAMED_VARIABLE + numberOfNamedVariables - 1, !ONELINE);
