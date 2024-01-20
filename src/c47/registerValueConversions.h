@@ -118,4 +118,5 @@
 
   void processRealComplexMonadicFunction(void (*realf)(void), void (*complexf)(void));
   void processRealComplexDyadicFunction(void (*realf)(void), void (*complexf)(void));
+  void processIntRealComplexDyadicFunction(void (*shortintf)(void), void (*longintf)(void), void (*realf)(void), void (*complexf)(void));
 #endif // !REGISTERVALUECONVERSIONS_H

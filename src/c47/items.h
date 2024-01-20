@@ -1276,7 +1276,7 @@
 #define ITM_HYPER                   1234
 #define ITM_HYPERU                  1235
 #define ITM_HYPERM1                 1236
-#define MNU_LGNRM                   1237
+#define ITM_1237                    1237
 #define ITM_LGNRMP                  1238
 #define ITM_LGNRM                   1239
 #define ITM_LGNRMU                  1240
@@ -1286,7 +1286,7 @@
 #define ITM_LOGIS                   1244
 #define ITM_LOGISU                  1245
 #define ITM_LOGISM1                 1246
-#define MNU_NBIN                    1247
+#define MNU_GEV                     1247
 #define ITM_NBINP                   1248
 #define ITM_NBIN                    1249
 #define ITM_NBINU                   1250
@@ -1321,10 +1321,10 @@
 #define ITM_STDNORML                1279
 #define ITM_STDNORMLU               1280
 #define ITM_STDNORMLM1              1281
-#define ITM_1282                    1282
-#define ITM_1283                    1283
-#define ITM_1284                    1284
-#define ITM_1285                    1285
+#define ITM_GEVP                    1282
+#define ITM_GEV                     1283
+#define ITM_GEVU                    1284
+#define ITM_GEVM1                   1285
 #define ITM_1286                    1286
 #define ITM_1287                    1287
 #define ITM_1288                    1288
@@ -2372,8 +2372,29 @@
 #define SFL_2310                    2314
 
 #define MNU_SHOW                    2315
-#define LAST_ITEM                   2316
 
+#define ITM_STO_P_p                 2316
+#define ITM_STO_N1                  2317
+#define ITM_STO_M_x0                2318
+#define ITM_STO_S_g                 2319
+#define ITM_STO_M_nu                2320
+#define ITM_STO_R_l                 2321
+#define ITM_STO_M_d1                2322
+#define ITM_STO_N_d2                2323
+#define ITM_STO_M_N                 2324
+#define ITM_STO_Q_K                 2325
+#define ITM_STO_M_u                 2326
+#define ITM_STO_S_si                2327
+#define ITM_STO_S_s                 2328
+#define ITM_STO_Q_l                 2329
+#define ITM_STO_Q_xi                2330
+#define ITM_2331                    2331
+#define ITM_2332                    2332
+#define ITM_2333                    2333
+#define ITM_2334                    2334
+#define ITM_2335                    2335
+
+#define LAST_ITEM                   2336
 
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL

@@ -5,7 +5,7 @@
 ;**                                                         **
 ;*************************************************************
 ;*************************************************************
-In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RM=0 IM=2compl SS=4 WS=64
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
 Func: fnAgm
 
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"5" RY=CxMa:"M2,1[1i0,2i2]"

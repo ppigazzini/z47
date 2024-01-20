@@ -167,6 +167,15 @@
   }
   #endif // !SAVE_SPACE_DM42_8
 
+  static void registerName(char *s, calcRegister_t regist) {
+    if (regist >= REGISTER_X && regist <= LAST_STAT_REGISTER) {
+      tmpString[0] = "XYZTABCDLIJKMNPQRS"[regist - REGISTER_X];
+      strcpy(tmpString + 1, ":");
+    } else {
+      sprintf(tmpString, "R%02d:", regist);
+    }
+  }
+
   void registerBrowser(uint16_t unusedButMandatoryParameter) {
   #if !defined(SAVE_SPACE_DM42_8)
     int16_t registerNameWidth;
@@ -195,59 +204,7 @@
     if(rbrMode == RBR_GLOBAL) { // Global registers
       for(int16_t row=0; row<10; row++) {
         calcRegister_t regist = (currentRegisterBrowserScreen + row) % FIRST_LOCAL_REGISTER;
-        switch(regist) {
-          case REGISTER_X: {
-            strcpy(tmpString, "X:");
-            break;
-          }
-          case REGISTER_Y: {
-            strcpy(tmpString, "Y:");
-            break;
-          }
-          case REGISTER_Z: {
-            strcpy(tmpString, "Z:");
-            break;
-          }
-          case REGISTER_T: {
-            strcpy(tmpString, "T:");
-            break;
-          }
-          case REGISTER_A: {
-            strcpy(tmpString, "A:");
-            break;
-          }
-          case REGISTER_B: {
-            strcpy(tmpString, "B:");
-            break;
-          }
-          case REGISTER_C: {
-            strcpy(tmpString, "C:");
-            break;
-          }
-          case REGISTER_D: {
-            strcpy(tmpString, "D:");
-            break;
-          }
-          case REGISTER_L: {
-            strcpy(tmpString, "L:");
-            break;
-          }
-          case REGISTER_I: {
-            strcpy(tmpString, "I:");
-            break;
-          }
-          case REGISTER_J: {
-            strcpy(tmpString, "J:");
-            break;
-          }
-          case REGISTER_K: {
-            strcpy(tmpString, "K:");
-            break;
-          }
-          default: {
-            sprintf(tmpString, "R%02d:", regist);
-          }
-        }
+        registerName(tmpString, regist);
 
         // register name or number
         registerNameWidth = showString(tmpString, &standardFont, 1, 219 - 22 * row, vmNormal, false, true);

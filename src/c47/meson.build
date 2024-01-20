@@ -22,6 +22,7 @@ c47_src = files(
   'distributions/exponential.c',
   'distributions/f.c',
   'distributions/geometric.c',
+  'distributions/gev.c',
   'distributions/hyper.c',
   'distributions/logistic.c',
   'distributions/negBinom.c',
