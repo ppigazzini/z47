@@ -349,7 +349,7 @@ typedef struct {
 #define checkHPoffset (checkHP && temporaryInformation == TI_NO_INFO ? 50:0)
 
 #if !defined(TESTSUITE_BUILD)
-  static char letteredRegisterName(calcRegister_t regist) {
+  char letteredRegisterName(calcRegister_t regist) {
     return "XYZTABCDLIJKMNPQRS"[regist - REGISTER_X];
   }
 #endif //TESTSUITE_BUILD
@@ -1687,7 +1687,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
       old_time = new_time;
       ret_value = true;
 
-      //refreshScreen(80);   //to update stack
+      //refreshScreen();   //to update stack
       clearRegisterLine(REGISTER_T, true, true);
       if(mode > 1) {
         clearRegisterLine(REGISTER_Z, true, true);
@@ -1894,7 +1894,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
       sprintf(prefix, " R%02" PRIu16 STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM, currentViewRegister);
     }
     else if(currentViewRegister < FIRST_LOCAL_REGISTER) {
-      sprintf(prefix, " %c" STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM, "XYZTABCDLIJK"[currentViewRegister - REGISTER_X]);
+      sprintf(prefix, " %c" STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM, letteredRegisterName(currentViewRegister));
     }
     else if(currentViewRegister <= LAST_LOCAL_REGISTER) {
       sprintf(prefix, " R.%02" PRIu16 STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM, (uint16_t)(currentViewRegister - FIRST_LOCAL_REGISTER));
@@ -1935,7 +1935,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
       sprintf(prefix, " R%02" PRIu16 "?", (uint16_t)(currentInputVariable & 0x3fff));
     }
     else if((currentInputVariable & 0x3fff) < FIRST_LOCAL_REGISTER) {
-      sprintf(prefix, " %c?", "XYZTABCDLIJK"[(currentInputVariable & 0x3fff) - REGISTER_X]);
+      sprintf(prefix, " %c?", letteredRegisterName(currentInputVariable & 0x3fff));
     }
     else if((currentInputVariable & 0x3fff) <= LAST_LOCAL_REGISTER) {
       sprintf(prefix, " R.%02" PRIu16 "?", (uint16_t)((currentInputVariable & 0x3fff) - FIRST_LOCAL_REGISTER));

@@ -1289,7 +1289,7 @@ void fnClearRegisters(uint16_t confirmation) {
       }
     }
 
-    for(regist=REGISTER_I; regist<=REGISTER_K; regist++) {
+    for(regist=REGISTER_I; regist<=REGISTER_S; regist++) {
       clearRegister(regist);
     }
 
