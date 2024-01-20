@@ -15,23 +15,16 @@
  */
 
 /********************************************//**
- * \file distributions.h
+ * \file gev.h
  ***********************************************/
-#if !defined(DISTRIBUTIONS_H)
-  #define DISTRIBUTIONS_H
+#if !defined(GEV_H)
+  #define GEV_H
 
-  #include "binomial.h"
-  #include "cauchy.h"
-  #include "chi2.h"
-  #include "exponential.h"
-  #include "f.h"
-  #include "geometric.h"
-  #include "gev.h"
-  #include "hyper.h"
-  #include "logistic.h"
-  #include "negBinom.h"
-  #include "normal.h"
-  #include "poisson.h"
-  #include "t.h"
-  #include "weibull.h"
-#endif // !DISTRIBUTIONS_H
+  #include "realType.h"
+  #include <stdint.h>
+
+  void fnGEVP                      (uint16_t unusedButMandatoryParameter);
+  void fnGEVL                      (uint16_t unusedButMandatoryParameter);
+  void fnGEVR                      (uint16_t unusedButMandatoryParameter);
+  void fnGEVI                      (uint16_t unusedButMandatoryParameter);
+#endif // !GEV_H

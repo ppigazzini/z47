@@ -2488,7 +2488,11 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
           
 
           switch(softmenu[softmenuStack[0].softmenuId].menuItem) {
-            case -MNU_NBIN:
+            case -MNU_GEV:
+              r_i = STD_mu;                 register_i = REGISTER_M;
+              r_j = STD_sigma;              register_j = REGISTER_S;
+              r_k = STD_xi;                 register_k = REGISTER_Q;
+              break;
             case -MNU_BINOM:
               r_i = STD_p;                  register_i = REGISTER_P;
               r_j = STD_n;                  register_j = REGISTER_N;
@@ -2498,7 +2502,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
               r_j = STD_gamma;              register_j = REGISTER_S;
               break;
             case -MNU_WEIBL:
-              r_j = STD_lambda;             register_j = REGISTER_S;
+              r_j = STD_lambda;             register_j = REGISTER_Q;
               /* fall through */
             case -MNU_CHI2:
             case -MNU_T:
@@ -2525,7 +2529,6 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
               r_i = STD_mu;                 register_i = REGISTER_M;
               break;
             case -MNU_NORML:
-            case -MNU_LGNRM:
               r_j = STD_sigma;              register_j = REGISTER_S;
               r_i = STD_mu;                 register_i = REGISTER_M;
               break;

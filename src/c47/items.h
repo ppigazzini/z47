@@ -1276,7 +1276,7 @@
 #define ITM_HYPER                   1234
 #define ITM_HYPERU                  1235
 #define ITM_HYPERM1                 1236
-#define MNU_LGNRM                   1237
+#define ITM_1237                    1237
 #define ITM_LGNRMP                  1238
 #define ITM_LGNRM                   1239
 #define ITM_LGNRMU                  1240
@@ -1286,7 +1286,7 @@
 #define ITM_LOGIS                   1244
 #define ITM_LOGISU                  1245
 #define ITM_LOGISM1                 1246
-#define MNU_NBIN                    1247
+#define MNU_GEV                     1247
 #define ITM_NBINP                   1248
 #define ITM_NBIN                    1249
 #define ITM_NBINU                   1250
@@ -1321,10 +1321,10 @@
 #define ITM_STDNORML                1279
 #define ITM_STDNORMLU               1280
 #define ITM_STDNORMLM1              1281
-#define ITM_1282                    1282
-#define ITM_1283                    1283
-#define ITM_1284                    1284
-#define ITM_1285                    1285
+#define ITM_GEVP                    1282
+#define ITM_GEV                     1283
+#define ITM_GEVU                    1284
+#define ITM_GEVM1                   1285
 #define ITM_1286                    1286
 #define ITM_1287                    1287
 #define ITM_1288                    1288

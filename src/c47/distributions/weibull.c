@@ -46,8 +46,8 @@
   static bool_t checkParamWeibull(real_t *x, real_t *i, real_t *j) {
     if (!getRegisterAsReal(REGISTER_X, x)
         || !getRegisterAsReal(REGISTER_M, i)
-        || !getRegisterAsReal(REGISTER_S, j))
-        goto err;
+        || !getRegisterAsReal(REGISTER_Q, j))
+      goto err;
 
     if(realIsNegative(x)) {
       displayDomainErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
