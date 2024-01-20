@@ -20,6 +20,7 @@
 
 #include "mathematics/prime.h"
 
+#include "c43Extensions/addons.h"
 #include "debug.h"
 #include "display.h"
 #include "error.h"
