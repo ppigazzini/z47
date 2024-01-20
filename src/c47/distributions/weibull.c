@@ -45,8 +45,8 @@
 #else
   static bool_t checkParamWeibull(real_t *x, real_t *i, real_t *j) {
     if (!getRegisterAsReal(REGISTER_X, x)
-        || !getRegisterAsReal(REGISTER_M, i)
-        || !getRegisterAsReal(REGISTER_Q, j))
+        || !getRegisterAsReal(REGISTER_Q, i)
+        || !getRegisterAsReal(REGISTER_M, j))
       goto err;
 
     if(realIsNegative(x)) {
