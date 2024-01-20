@@ -1102,6 +1102,8 @@ void fnIndexMatrix(uint16_t regist) {
     matrixIndex = regist;
     setIRegisterAsInt(false, 1);
     setJRegisterAsInt(false, 1);
+    clearSystemFlag(FLAG_WRAPEDG);
+    clearSystemFlag(FLAG_WRAPEND);
   }
   else {
     displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
@@ -4790,6 +4792,7 @@ void elementwiseCxmaReal(void (*f)(void)) {
   }
 
   convertComplex34MatrixToComplex34MatrixRegister(&y, REGISTER_X);
+
   complexMatrixFree(&y);
 #endif
 }
@@ -4816,6 +4819,7 @@ void elementwiseCxmaShoI(void (*f)(void)) {
   }
 
   convertComplex34MatrixToComplex34MatrixRegister(&y, REGISTER_X);
+
   complexMatrixFree(&y);
 #endif
 }
@@ -4843,6 +4847,7 @@ void elementwiseCxmaCplx(void (*f)(void)) {
   }
 
   convertComplex34MatrixToComplex34MatrixRegister(&y, REGISTER_X);
+
   complexMatrixFree(&y);
 }
 
@@ -5031,6 +5036,60 @@ void elementwiseCxmaCxma(void (*f)(void)) {
 
 
 #if !defined(TESTSUITE_BUILD)
+void callByVectorElement(bool_t (*real_f)(real34Matrix_t *), bool_t (*complex_f)(complex34Matrix_t *)) {
+
+  const int16_t i = getIRegisterAsInt(true);
+  const int16_t j = getJRegisterAsInt(true);
+
+  if(matrixIndex == INVALID_VARIABLE || !regInRange(matrixIndex)) {
+    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);                                                                                        
+    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "Cannot execute, destination register is out of range: %d", matrixIndex);
+      moreInfoOnError("In function callByIndexedMatrix:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+  }
+  else if(getRegisterDataType(matrixIndex) == dtReal34Matrix) {
+    real34Matrix_t mat;
+    convertReal34MatrixRegisterToReal34Matrix(matrixIndex, &mat);
+    if(i < 0 || i >= mat.header.matrixRows || j < 0 || j >= mat.header.matrixColumns) {
+      displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+        sprintf(errorMessage, "Cannot execute: element (%" PRId16 ", %" PRId16 ") out of range", (int16_t)(i + 1), (int16_t)(j + 1));
+        moreInfoOnError("In function callByIndexedMatrix:", errorMessage, NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+    }
+    else {
+        if(real_f(&mat)) {
+          convertReal34MatrixToReal34MatrixRegister(&mat, matrixIndex);
+        }
+    }
+    realMatrixFree(&mat);
+  }
+  else if(getRegisterDataType(matrixIndex) == dtComplex34Matrix) {
+    complex34Matrix_t mat;
+    convertComplex34MatrixRegisterToComplex34Matrix(matrixIndex, &mat);
+    if(i < 0 || i >= mat.header.matrixRows || j < 0 || j >= mat.header.matrixColumns) {
+      displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+        sprintf(errorMessage, "Cannot execute: element (%" PRId16 ", %" PRId16 ") out of range", (int16_t)(i + 1), (int16_t)(j + 1));
+        moreInfoOnError("In function callByIndexedMatrix:", errorMessage, NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+    }
+    else {
+        if(complex_f(&mat)) {
+          convertComplex34MatrixToComplex34MatrixRegister(&mat, matrixIndex);
+        }
+    }
+    complexMatrixFree(&mat);
+  }
+  else {
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "Cannot execute: something other than a matrix is indexed %s", getRegisterDataTypeName(REGISTER_X, true, false));
+      moreInfoOnError("In function callByIndexedMatrix:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+  }
+}
 void callByIndexedMatrix(bool_t (*real_f)(real34Matrix_t *), bool_t (*complex_f)(complex34Matrix_t *)) {
   const int16_t i = getIRegisterAsInt(true);
   const int16_t j = getJRegisterAsInt(true);

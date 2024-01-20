@@ -254,7 +254,7 @@
           }
           break;
 
-      case 65507: // left Ctrl
+      case 65507: // Left Ctrl
       case 65508: // right Ctrl
           if(CTRL_State != 0) {
             if(getSystemFlag(FLAG_USER) ? kbd_usr[11].primary : kbd_std[11].primary != ITM_SHIFTg) {
@@ -888,6 +888,7 @@
     //FOR NON AIM MODE. AIM HAS RETURNED AT THIS POINT SO NO IF NEEDED
 
     switch(event_keyval) {
+
       //ROW 1
       case 65470: // F1                       //JM Changed these to btnFnPressed from btnFnClicked
         //printf("key pressed: F1\n");
