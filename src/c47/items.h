@@ -2373,24 +2373,28 @@
 
 #define MNU_SHOW                    2315
 
-#define ITM_STO_P_p                 2317
-#define ITM_STO_N1                  2318
-#define ITM_STO_M_x0                2319
-#define ITM_STO_S_g                 2320
-#define ITM_STO_M_nu                2321
-#define ITM_STO_R_l                 2322
-#define ITM_STO_M_d1                2323
-#define ITM_STO_N_d2                2324
-#define ITM_STO_M_N                 2325
-#define ITM_STO_Q_K                 2326
-#define ITM_STO_M_u                 2327
-#define ITM_STO_S_si                2328
-#define ITM_STO_S_s                 2329
-#define ITM_STO_Q_l                 2330
-#define ITM_STO_Q_xi                2331
+#define ITM_STO_P_p                 2316
+#define ITM_STO_N1                  2317
+#define ITM_STO_M_x0                2318
+#define ITM_STO_S_g                 2319
+#define ITM_STO_M_nu                2320
+#define ITM_STO_R_l                 2321
+#define ITM_STO_M_d1                2322
+#define ITM_STO_N_d2                2323
+#define ITM_STO_M_N                 2324
+#define ITM_STO_Q_K                 2325
+#define ITM_STO_M_u                 2326
+#define ITM_STO_S_si                2327
+#define ITM_STO_S_s                 2328
+#define ITM_STO_Q_l                 2329
+#define ITM_STO_Q_xi                2330
+#define ITM_2331                    2331
+#define ITM_2332                    2332
+#define ITM_2333                    2333
+#define ITM_2334                    2334
+#define ITM_2335                    2335
 
-
-#define LAST_ITEM                   2332
+#define LAST_ITEM                   2336
 
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL

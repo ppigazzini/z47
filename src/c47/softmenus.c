@@ -266,13 +266,6 @@ TO_QSPI const int16_t menu_PROB[]        = {
 #endif // !SAVE_SPACE_DM42_15
                                            };
 
-/* TODO: remove when properly defined */
-#define ITM_STO_M   ITM_M
-#define ITM_STO_N   ITM_N
-#define ITM_STO_P   ITM_P
-#define ITM_STO_Q   ITM_Q
-#define ITM_STO_R   ITM_R
-#define ITM_STO_S   ITM_S
 
 #define DISTNMENU2(name, pdf1, lcdf1, ucdf1, qf1, pdf2, lcdf2, ucdf2, qf2, p1, p2, p3)              \
   TO_QSPI const int16_t name[] = { pdf1,     ITM_NULL, lcdf1,      ucdf1,     ITM_NULL, qf1,        \
