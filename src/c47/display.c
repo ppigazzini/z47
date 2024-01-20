@@ -2832,7 +2832,7 @@ void fnShow_SCROLL(uint16_t fnShow_param) {                // Heavily modified b
                else
                {
                  SHOWregis++;                         //Activated by KEY_UP
-                 if(SHOWregis > REGISTER_K) {
+                 if(SHOWregis > REGISTER_S) {
                    SHOWregis = lowest_SHOW;
                  }
                }
@@ -2842,7 +2842,7 @@ void fnShow_SCROLL(uint16_t fnShow_param) {                // Heavily modified b
                {
                  SHOWregis--;                         //Activate by Key_DOWN
                  if(SHOWregis < lowest_SHOW) {
-                   SHOWregis = REGISTER_K;
+                   SHOWregis = REGISTER_S;
                  }
                }
                break;
