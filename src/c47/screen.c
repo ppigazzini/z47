@@ -2082,6 +2082,8 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
     }
   }
 
+  #define PROBMENU (-softmenu[softmenuStack[0].softmenuId].menuItem >= MNU_BINOM && -softmenu[softmenuStack[0].softmenuId].menuItem <= ITM_1296)
+
   void refreshRegisterLine(calcRegister_t regist) {
     int32_t w;
     int16_t wLastBaseNumeric, wLastBaseStandard, prefixWidth = 0, lineWidth = 0;
@@ -2093,7 +2095,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
 
     char prefix[200], lastBase[12];
 
-    baseModeActive = (SHOWregis == 9999) && displayStackSHOIDISP != 0 && (lastIntegerBase != 0 || softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_BASE);
+    baseModeActive = !PROBMENU && (SHOWregis == 9999) && displayStackSHOIDISP != 0 && (lastIntegerBase != 0 || softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_BASE);
     if(baseModeActive && getRegisterDataType(REGISTER_X) == dtShortInteger) { //JMSHOI
       if(displayStack != 4-displayStackSHOIDISP) {                            //JMSHOI
         fnDisplayStack(4-displayStackSHOIDISP);                               //JMSHOI
@@ -2484,7 +2486,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
         }
 
         // STATISTICAL DISTR
-        if(regist == REGISTER_X && lastErrorCode == 0) {
+        if(regist == REGISTER_X && lastErrorCode == 0 && calcMode != CM_PEM) {
           const char *r_i = NULL, *r_j = NULL, *r_k = NULL;
           calcRegister_t register_i = REGISTER_M, register_j = REGISTER_M, register_k = REGISTER_M;
           
