@@ -333,9 +333,11 @@
 
 #define checkHPoffset (checkHP && temporaryInformation == TI_NO_INFO ? 50:0)
 
-static char letteredRegisterName(calcRegister_t regist) {
-  return "XYZTABCDLIJKMNPQRS"[regist - REGISTER_X];
-}
+#if !defined(TESTSUITE_BUILD)
+  static char letteredRegisterName(calcRegister_t regist) {
+    return "XYZTABCDLIJKMNPQRS"[regist - REGISTER_X];
+  }
+#endif //TESTSUITE_BUILD
 
 
 #if defined(PC_BUILD)                                         //JMCSV
