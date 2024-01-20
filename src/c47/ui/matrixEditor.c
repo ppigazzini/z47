@@ -381,28 +381,50 @@ void setJRegisterAsInt(bool_t asArrayPointer, int16_t toStore) {
 }
 
 bool_t wrapIJ(uint16_t rows, uint16_t cols) {
+  clearSystemFlag(FLAG_WRAPEDG);
+  clearSystemFlag(FLAG_WRAPEND);
   if(getIRegisterAsInt(true) < 0) {
     setIRegisterAsInt(true, rows - 1);
+    setSystemFlag(FLAG_WRAPEDG);
     setJRegisterAsInt(true, (getJRegisterAsInt(true) == 0) ? cols - 1 : getJRegisterAsInt(true) - 1);
+    if(getJRegisterAsInt(true) == cols - 1 && getIRegisterAsInt(true) == rows - 1) {
+      setSystemFlag(FLAG_WRAPEND);
+    }
+    //printf("WRAP1 I=%u J=%u EDG:%u END:%u\n",getIRegisterAsInt(true), getJRegisterAsInt(true), getSystemFlag(FLAG_WRAPEDG),getSystemFlag(FLAG_WRAPEND));
   }
   else {
     if(getIRegisterAsInt(true) == rows) {
       setIRegisterAsInt(true, 0);
+      setSystemFlag(FLAG_WRAPEDG);
       setJRegisterAsInt(true, (getJRegisterAsInt(true) == cols - 1) ? 0 : getJRegisterAsInt(true) + 1);
+      if(getJRegisterAsInt(true) == 0 && getIRegisterAsInt(true) == 0) {
+        setSystemFlag(FLAG_WRAPEND);
+      }
+      //printf("WRAP2 I=%u J=%u EDG:%u END:%u\n",getIRegisterAsInt(true), getJRegisterAsInt(true), getSystemFlag(FLAG_WRAPEDG),getSystemFlag(FLAG_WRAPEND));
     }
   }
 
   if(getJRegisterAsInt(true) < 0) {
     setJRegisterAsInt(true, cols - 1);
+    setSystemFlag(FLAG_WRAPEDG);
     setIRegisterAsInt(true, (getIRegisterAsInt(true) == 0) ? rows - 1 : getIRegisterAsInt(true) - 1);
+    if(getJRegisterAsInt(true) == cols - 1 && getIRegisterAsInt(true) == rows - 1) {
+      setSystemFlag(FLAG_WRAPEND);
+    }
+    //printf("WRAP3 I=%u J=%u EDG:%u END:%u\n",getIRegisterAsInt(true), getJRegisterAsInt(true), getSystemFlag(FLAG_WRAPEDG),getSystemFlag(FLAG_WRAPEND));
   }
   else {
     if(getJRegisterAsInt(true) == cols) {
       setJRegisterAsInt(true, 0);
+      setSystemFlag(FLAG_WRAPEDG);
       setIRegisterAsInt(true, ((!getSystemFlag(FLAG_GROW)) && (getIRegisterAsInt(true) == rows - 1)) ? 0 : getIRegisterAsInt(true) + 1);
+      if(getIRegisterAsInt(true) == 0 && getJRegisterAsInt(true) == 0) {
+        setSystemFlag(FLAG_WRAPEND);
+      }
+      //printf("WRAP4 I=%u J=%u EDG:%u END:%u\n",getIRegisterAsInt(true), getJRegisterAsInt(true), getSystemFlag(FLAG_WRAPEDG),getSystemFlag(FLAG_WRAPEND));
     }
   }
-
+  //printf("-----WRAP I=%u J=%u EDG:%u END:%u\n",getIRegisterAsInt(true), getJRegisterAsInt(true), getSystemFlag(FLAG_WRAPEDG),getSystemFlag(FLAG_WRAPEND));
   return getIRegisterAsInt(true) == rows;
 }
 

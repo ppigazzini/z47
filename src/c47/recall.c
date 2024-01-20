@@ -405,8 +405,54 @@ void fnRecallStack(uint16_t regist) {
 }
 
 
+static void _fnRecallElement(bool_t stepForward);
+
+void fnRecallVElement(uint16_t ix) {
+  #if !defined(TESTSUITE_BUILD)  
+  const int16_t iBak = getIRegisterAsInt(true);
+  const int16_t jBak = getJRegisterAsInt(true);
+
+  if((getRegisterDataType(REGISTER_X) == dtReal34Matrix) || (getRegisterDataType(REGISTER_X) == dtComplex34Matrix)) {
+    if(getRegisterDataType(REGISTER_X) == dtReal34Matrix) {
+      real34Matrix_t x;
+      linkToRealMatrixRegister(REGISTER_X, &x);
+      //printf("ix:%u Rows:%u Cols:%u \n",ix,x.header.matrixRows, x.header.matrixColumns);
+      setIRegisterAsInt(false, (ix-1) / x.header.matrixColumns+1);
+      setJRegisterAsInt(false, (ix-1) % x.header.matrixColumns+1);
+    }
+    else { //Complex Matrix
+      complex34Matrix_t x;
+      linkToComplexMatrixRegister(REGISTER_X, &x);
+      setIRegisterAsInt(false, (ix-1) / x.header.matrixColumns+1);
+      setJRegisterAsInt(false, (ix-1) % x.header.matrixColumns+1);
+    }
+    uint16_t matrixIndexBak = matrixIndex;
+    matrixIndex = REGISTER_X;
+    _fnRecallElement(false);
+    setIRegisterAsInt(false, iBak);
+    setJRegisterAsInt(false, jBak);
+    matrixIndex = matrixIndexBak;
+  }
+  else {
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+      #if defined(PC_BUILD)
+    sprintf(errorMessage, "DataType %" PRIu32, getRegisterDataType(REGISTER_X));
+    moreInfoOnError("In function fnRecallVElement:", errorMessage, "is not a matrix.", "");
+    #endif
+  }
+  #endif // !TESTSUITE_BUILD
+}
+
+
+void fnRecallElementPlus(uint16_t unusedButMandatoryParameter) {
+  _fnRecallElement(true);
+}
 
 void fnRecallElement(uint16_t unusedButMandatoryParameter) {
+  _fnRecallElement(false);
+}
+
+void _fnRecallElement(bool_t stepForward) {
   #if !defined(TESTSUITE_BUILD)
     if(matrixIndex == INVALID_VARIABLE) {
       displayCalcErrorMessage(ERROR_NO_MATRIX_INDEXED, ERR_REGISTER_LINE, REGISTER_X);
@@ -417,10 +463,12 @@ void fnRecallElement(uint16_t unusedButMandatoryParameter) {
     }
     else {
       callByIndexedMatrix(recallElementReal, recallElementComplex);
+      if(stepForward) {
+        fnIncDecJ(INC_FLAG);
+      }
     }
   #endif // !TESTSUITE_BUILD
 }
-
 
 
 void fnRecallIJ(uint16_t unusedButMandatoryParameter) {

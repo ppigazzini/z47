@@ -485,7 +485,7 @@
 #define FLAG_SPCRES                           0x8017
 #define FLAG_SSIZE8                           0x8018
 #define FLAG_QUIET                            0x8019
-#define FLAG_SPARE                            0x801a       //SPARE
+#define FLAG_WRAPEND                          0xc01a
 #define FLAG_MULTx                            0x801b
 #define FLAG_ALLENG                           0x801c
 #define FLAG_GROW                             0x801d
@@ -522,6 +522,7 @@
 #define FLAG_HPBASE                           0x803C
 #define FLAG_2TO10                            0x803D
 #define FLAG_SH_LONGPRESS                     0x803E
+#define FLAG_WRAPEDG                          0xc03F
 
 #define NUMBER_OF_SYSTEM_FLAGS                    60
 
