@@ -2,7 +2,7 @@
 In: FL_SPCRES=0  ; Special results flag clear
 In: FL_CPXRES=0  ; Complex result flag clear
 In: SD=0         ; maximum significant digits
-In: RM=0         ; Half even rounding mode
+In: RMODE=0         ; Half even rounding mode
 In: IM=2COMPL    ; 2 complement's
 In: SS=4         ; 4 stack registers
 In: WS=64        ; Word size 64 bits

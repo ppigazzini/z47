@@ -1008,3 +1008,21 @@ void processRealComplexDyadicFunction(void (*realf)(void), void (*complexf)(void
 fin:
   adjustResult(REGISTER_X, true, true, REGISTER_X, REGISTER_Y, -1);
 }
+
+void processIntRealComplexDyadicFunction(void (*shortintf)(void), void (*longintf)(void), void (*realf)(void), void (*complexf)(void)) {
+  const uint32_t typeX = getRegisterDataType(REGISTER_X);
+  const uint32_t typeY = getRegisterDataType(REGISTER_Y);
+  const bool_t xInt = typeX == dtLongInteger || typeX == dtShortInteger;
+  const bool_t yInt = typeY == dtLongInteger || typeY == dtShortInteger;
+
+  if (typeX == dtShortInteger && typeY == dtShortInteger && shortintf != NULL)
+    shortintf();
+  else if (xInt && yInt && longintf != NULL) {
+    if (typeX == dtShortInteger)
+      convertShortIntegerRegisterToLongIntegerRegister(REGISTER_X, REGISTER_X);
+    if (typeY == dtShortInteger)
+      convertShortIntegerRegisterToLongIntegerRegister(REGISTER_Y, REGISTER_Y);
+    longintf();
+  } else
+    processRealComplexDyadicFunction(realf, complexf);
+}
