@@ -24,7 +24,7 @@
 // JM VARIOUS OPTIONS
 //*********************************
 
-#define VERSION1 "0.108.17.02"     // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
+#define VERSION1 "0.108.17.03b1"     // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
 
 #define MODEL USER_C47               // USER_C47 or USER_R47
 
