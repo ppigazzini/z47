@@ -19,6 +19,7 @@
 #include "constantPointers.h"
 #include "debug.h"
 #include "error.h"
+#include "flags.h"
 #include "fractions.h"
 #include "mathematics/comparisonReals.h"
 #include "registers.h"

@@ -22,6 +22,7 @@
 #include "debug.h"
 #include "display.h"
 #include "error.h"
+#include "flags.h"
 #include "integers.h"
 #include "mathematics/matrix.h"
 #include "mathematics/rsd.h"
@@ -743,7 +744,7 @@ void realToDouble(const real_t *vv, double *v) {      //Not using double interna
 }
 
 static bool_t typeIsNumber(uint32_t type, bool_t *cmplx) {
-  switch(getRegisterDataType(type)) {
+  switch(type) {
     case dtComplex34:
       if (cmplx != NULL)
           *cmplx = true;
@@ -947,9 +948,6 @@ void processRealComplexMonadicFunction(void (*realf)(void), void (*complexf)(voi
   adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
 }
 
-static void dyadicRemaRema(void (*realf)(void)) {
-}
-
 void processRealComplexDyadicFunction(void (*realf)(void), void (*complexf)(void)) {
   real_t xReal, xImag, yReal, yImag;
   const uint32_t typeX = getRegisterDataType(REGISTER_X);
@@ -963,24 +961,32 @@ void processRealComplexDyadicFunction(void (*realf)(void), void (*complexf)(void
 
   if (typeX == dtReal34Matrix) {
     if (typeY == dtReal34Matrix) {
-      dyadicRemaRema(realf);
+      elementwiseRemaRema(realf);
       goto fin;
     } else if (typeY == dtComplex34Matrix) {
+      elementwiseCxmaRema(complexf);
       goto fin;
     } else if (yNumber) {
+      if (yCmplx)
+        elementwiseCplxRema(complexf);
+      else
+        elementwiseRealRema(realf);
       goto fin;
     }
   } else if (typeX == dtComplex34Matrix) {
     if (typeY == dtReal34Matrix) {
+      elementwiseRemaCxma(complexf);
       goto fin;
     } else if (typeY == dtComplex34Matrix) {
+      elementwiseCxmaCxma(complexf);
       goto fin;
     } else if (yNumber) {
+      elementwiseCplxCxma(complexf);
       goto fin;
     }
   } else if (typeY == dtReal34Matrix && xNumber) {
     if (xCmplx)
-      ;
+      elementwiseRemaCplx(complexf);
     else
       elementwiseRemaReal(realf);
     goto fin;

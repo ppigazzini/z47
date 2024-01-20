@@ -254,7 +254,7 @@
           }
           break;
 
-      case 65507: // Left Ctrl
+      case 65507: // left Ctrl
       case 65508: // right Ctrl
           if(CTRL_State != 0) {
             if(getSystemFlag(FLAG_USER) ? kbd_usr[11].primary : kbd_std[11].primary != ITM_SHIFTg) {
@@ -868,6 +868,19 @@
 
       }
       return FALSE;
+    } else 
+
+
+    if(calcMode == CM_MIM) {
+      switch(event_keyval) {
+        case 65361:                                               //JM     // CursorLt BST //JM Left
+            btnFnClicked(w, "5");  //F5
+          break;
+        case 65363:                                               //JM     // CursorRt SST //JM Right
+            btnFnClicked(w, "6");  //F6
+          break;
+        default:;
+      }
     }
 
 
@@ -875,7 +888,6 @@
     //FOR NON AIM MODE. AIM HAS RETURNED AT THIS POINT SO NO IF NEEDED
 
     switch(event_keyval) {
-
       //ROW 1
       case 65470: // F1                       //JM Changed these to btnFnPressed from btnFnClicked
         //printf("key pressed: F1\n");

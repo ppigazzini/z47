@@ -27,11 +27,9 @@
 
 /* Specify the memory areas */
 MEMORY {
-  /* FLASH   (rx) : ORIGIN = 0x08000000, LENGTH = 1024K     */
-  /* RAM    (xrw) : ORIGIN = 0x20000000, LENGTH =   96K     */
-  /* RAM0   (xrw) : ORIGIN = 0x10000000, LENGTH =   32K-256 */
   FLASH   (rx) : ORIGIN = 0x08050000, LENGTH =  704K
-  RAM    (xrw) : ORIGIN = 0x10000000, LENGTH =    8K     /* Why not 32K? */
+  SRAM2  (xrw) : ORIGIN = 0x10000000, LENGTH =    8K     /* Why not 32K? */
+  SRAM1  (xrw) : ORIGIN = 0x20000000, LENGTH =   96K
   QSPI    (rx) : ORIGIN = 0x90000000, LENGTH = 2048K-12K /* a 4K block from 0x901FD000 to 0x901FDFFF is reserved by DMCP */
 }
 
@@ -122,7 +120,7 @@ SECTIONS {
   /* used by the startup to initialize data */
   _sidata = LOADADDR(.data);
 
-  /* Initialized data sections goes into RAM, load LMA copy after code */
+  /* Initialized data sections goes into SRAM2, load LMA copy after code */
   .data : {
     . = ALIGN(8);
     _sdata = .;        /* create a global symbol at data start */
@@ -132,7 +130,7 @@ SECTIONS {
 
     . = ALIGN(8);
     _edata = .;        /* define a global symbol at data end */
-  } >RAM AT> FLASH
+  } >SRAM2 AT> FLASH
 
   /* Uninitialized data section */
   . = ALIGN(4);
@@ -147,7 +145,7 @@ SECTIONS {
     . = ALIGN(4);
     _ebss = .;         /* define a global symbol at bss end */
     __bss_end__ = _ebss;
-  } >RAM AT> RAM
+  } >SRAM2 AT> SRAM2
 
   /* Remove information from the standard libraries */
   /DISCARD/ : {

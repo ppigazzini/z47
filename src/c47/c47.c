@@ -303,8 +303,10 @@ uint32_t               sizeOfFlashPgmLibrary;
 
 uint64_t               shortIntegerMask;
 uint64_t               shortIntegerSignBit;
-uint64_t               systemFlags;
-uint64_t               savedSystemFlags;
+uint64_t               systemFlags0;
+uint64_t               systemFlags1;
+uint64_t               savedSystemFlags0;
+uint64_t               savedSystemFlags1;
 
 size_t                 gmpMemInBytes;
 size_t                 c47MemInBlocks;
