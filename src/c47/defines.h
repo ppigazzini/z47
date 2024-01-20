@@ -43,12 +43,16 @@
 
   #define TWO_FILE_PGM                 //JM Normally NOT have TWO_FILE. TWO_FILE means that QSPI is used.
 
+  #if defined(NEW_HW) // DMCP5
+    #undef TWO_FILE_PGM
+  #endif // NEW_HW
+
 //ONE FILE OPERATION needs the original CRC file - see src/c47-dmcp
 //  #undef  TWO_FILE_PGM  //See CRC ISSUE - Commented this line to force full QSPI generation
 //                        //Also change the file here: src/c47-dmcp/qspi_crc.h for the single file version
 
 //THESE ARE DMCP COMPILE OPTIONS
-  #if !defined(TWO_FILE_PGM) //---------THESE ARE THE EXCLUSIONS TO MAKE IT FIT WHILE NOT USING QSPI
+  #if !defined(TWO_FILE_PGM) && !defined(NEW_HW) //---------THESE ARE THE EXCLUSIONS TO MAKE IT FIT WHILE NOT USING QSPI ON OLD HARDWARE
     #define SAVE_SPACE_DM42_2  //005672 bytes: XEQM
     #define SAVE_SPACE_DM42_6  //001648 bytes: ELEC functions
     #define SAVE_SPACE_DM42_7  //002144 bytes: KEYS USER_DM42;
@@ -62,7 +66,7 @@
   //  #define SAVE_SPACE_DM42_14    //           programming sample programs
     #define SAVE_SPACE_DM42_15    //           without all distributions, i.e. binomial, cauchy, chi
     #define SAVE_SPACE_DM42_16    //           without all distributions, i.e. binomial, cauchy, chi
-  #endif // !TWO_FILE_PGM
+  #endif // !TWO_FILE_PGM && !NEW_HW
 
   #if defined(TWO_FILE_PGM) //---------THESE ARE THE EXCLUSIONS TO MAKE IT FIT INTO AVAILABLE FLASH EVEN WHILE USING QSPI
   //  #define SAVE_SPACE_DM42_20_TIMER
@@ -509,7 +513,7 @@
 #define FLAG_SPCRES                           0x8017
 #define FLAG_SSIZE8                           0x8018
 #define FLAG_QUIET                            0x8019
-#define FLAG_SPARE                            0x801a       //SPARE
+#define FLAG_WRAPEND                          0xc01a
 #define FLAG_MULTx                            0x801b
 #define FLAG_ALLENG                           0x801c
 #define FLAG_GROW                             0x801d
@@ -546,6 +550,7 @@
 #define FLAG_HPBASE                           0x803C
 #define FLAG_2TO10                            0x803D
 #define FLAG_SH_LONGPRESS                     0x803E
+#define FLAG_WRAPEDG                          0xc03F
 
 #define NUMBER_OF_SYSTEM_FLAGS                    60
 
@@ -1380,10 +1385,10 @@ typedef enum {
   #endif // TWO_FILE_PGM
 #endif // !DMCP_BUILD
 
-#if defined(DMCP_BUILD) && defined(NEW_HW)
+#if defined(DMCP_BUILD) && defined(NEW_HW) // DMCP5
   #undef TO_QSPI
   #define TO_QSPI
-#endif
+#endif // DMCP_BUILD && NEW_HW
 
 //******************************
 //* Macros replacing functions *
@@ -1395,13 +1400,11 @@ typedef enum {
 #endif // EXTRA_INFO_ON_CALC_ERROR == 0 || TESTSUITE_BUILD || DMCP_BUILD
 
 #define isSystemFlagWriteProtected(sf)       ((sf & 0x4000) != 0)
-#define getSystemFlag(sf)                    ((systemFlags &   ((uint64_t)1 << (sf & 0x3fff))) != 0)
 #define shortIntegerIsZero(op)               (((*(uint64_t *)(op)) == 0) || (shortIntegerMode == SIM_SIGNMT && (((*(uint64_t *)(op)) == 1u<<((uint64_t)shortIntegerWordSize-1)))))
 #define getStackTop()                        (getSystemFlag(FLAG_SSIZE8) ? REGISTER_D : REGISTER_T)
 #define freeRegisterData(regist)             freeC47Blocks((void *)getRegisterDataPointer(regist), getRegisterFullSizeInBlocks(regist))
 #define storeToDtConfigDescriptor(config)    (configToStore->config = config)
 #define recallFromDtConfigDescriptor(config) (config = configToRecall->config)
-#define getRecalledSystemFlag(sf)            ((configToRecall->systemFlags &   ((uint64_t)1 << (sf & 0x3fff))) != 0)
 #define BPB                                  2 // 2^BPB = number of bytes per block
 #define BYTES_PER_BLOCK                      (1 << BPB)
 #define TO_BLOCKS(n)                         (((n) + (BYTES_PER_BLOCK - 1)) >> BPB)

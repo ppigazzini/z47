@@ -24,6 +24,7 @@
 #include "constantPointers.h"
 #include "debug.h"
 #include "error.h"
+#include "flags.h"
 #include "conversionAngles.h"
 #include "mathematics/matrix.h"
 #include "mathematics/toPolar.h"

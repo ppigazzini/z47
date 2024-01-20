@@ -24,6 +24,7 @@
 
 #include "charString.h"
 #include "curveFitting.h"
+#include "flags.h"
 #include "fonts.h"
 #include "hal/audio.h"
 #include "c43Extensions/inlineTest.h"

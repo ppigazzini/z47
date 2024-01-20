@@ -24,6 +24,7 @@
 #include "debug.h"
 #include "display.h"
 #include "error.h"
+#include "flags.h"
 #include "fonts.h"
 #include "items.h"
 #include "mathematics/division.h"

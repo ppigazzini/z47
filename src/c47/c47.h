@@ -384,8 +384,10 @@
 
   extern uint64_t               shortIntegerMask;
   extern uint64_t               shortIntegerSignBit;
-  extern uint64_t               systemFlags;
-  extern uint64_t               savedSystemFlags;
+  extern uint64_t               systemFlags0;
+  extern uint64_t               systemFlags1;
+  extern uint64_t               savedSystemFlags0;
+  extern uint64_t               savedSystemFlags1;
 
   extern size_t                 gmpMemInBytes;
   extern size_t                 c47MemInBlocks;

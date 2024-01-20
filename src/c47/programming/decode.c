@@ -24,6 +24,7 @@
 #include "charString.h"
 #include "dateTime.h"
 #include "display.h"
+#include "flags.h"
 #include "fonts.h"
 #include "items.h"
 #include "programming/manage.h"
@@ -259,7 +260,12 @@ static void decodeOp(uint8_t *paramAddress, const char *op, uint16_t paramMode, 
         sprintf(tmpString, "%s .%02d", op, opParam - FIRST_LOCAL_FLAG);
       }
       else if(opParam == SYSTEM_FLAG_NUMBER) {
-        sprintf(tmpString, "%s " STD_LEFT_SINGLE_QUOTE "%s" STD_RIGHT_SINGLE_QUOTE, op, indexOfItems[*paramAddress + SFL_TDM24].itemSoftmenuName);
+        if(*paramAddress < 64) {
+          sprintf(tmpString, "%s " STD_LEFT_SINGLE_QUOTE "%s" STD_RIGHT_SINGLE_QUOTE, op, indexOfItems[*paramAddress + SFL_TDM24].itemSoftmenuName);
+        }
+        else {
+          sprintf(tmpString, "%s " STD_LEFT_SINGLE_QUOTE "%s" STD_RIGHT_SINGLE_QUOTE, op, indexOfItems[*paramAddress + SFL_2247 - 64].itemSoftmenuName);
+        }
       }
       else if(opParam == INDIRECT_REGISTER) {
         getIndirectRegister(paramAddress, op);

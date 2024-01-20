@@ -29,6 +29,7 @@
 #include "distributions/normal.h"
 #include "distributions/poisson.h"
 #include "error.h"
+#include "flags.h"
 #include "fonts.h"
 #include "mathematics/comparisonReals.h"
 #include "mathematics/lnbeta.h"
