@@ -1445,7 +1445,9 @@ enum REG_NUMBERS {
 #define modulo(n, d)                         ((n)%(d)<0 ? (n)%(d)+(d) : (n)%(d))                             // This version works only if d > 0
 #define nbrOfElements(x)                     (sizeof(x) / sizeof((x)[0]))                                    //dr
 
-#define BASEMODEACTIVE                       (lastIntegerBase != 0 || softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_BASE)
+#define PROBMENU                             (-softmenu[softmenuStack[0].softmenuId].menuItem >= MNU_BINOM && -softmenu[softmenuStack[0].softmenuId].menuItem <= ITM_1296)
+
+#define BASEMODEACTIVE                       (!PROBMENU && (lastIntegerBase != 0 || softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_BASE))
 #define BASEMODEREGISTERX                    (BASEMODEACTIVE && \
                                               displayStackSHOIDISP != 0 && \
                                               ( \

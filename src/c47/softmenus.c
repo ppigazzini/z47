@@ -270,7 +270,7 @@ DISTNMENU(menu_StdNorml,    ITM_STDNORMLP,  ITM_STDNORML,   ITM_STDNORMLU,  ITM_
 DISTNMENU(menu_Cauch,       ITM_CAUCHP,     ITM_CAUCH,      ITM_CAUCHU,     ITM_CAUCHM1,        ITM_STO_M_x0,    ITM_STO_S_g,     ITM_NULL);
 DISTNMENU(menu_Expon,       ITM_EXPONP,     ITM_EXPON,      ITM_EXPONU,     ITM_EXPONM1,        ITM_STO_R_l,     ITM_NULL,        ITM_NULL);
 DISTNMENU(menu_Logis,       ITM_LOGISP,     ITM_LOGIS,      ITM_LOGISU,     ITM_LOGISM1,        ITM_STO_M_u,     ITM_STO_S_s,     ITM_NULL);
-DISTNMENU(menu_Weibl,       ITM_WEIBLP,     ITM_WEIBL,      ITM_WEIBLU,     ITM_WEIBLM1,        ITM_STO_M_nu,    ITM_STO_Q_l,     ITM_NULL);
+DISTNMENU(menu_Weibl,       ITM_WEIBLP,     ITM_WEIBL,      ITM_WEIBLU,     ITM_WEIBLM1,        ITM_STO_Q_nu,    ITM_STO_M_l,     ITM_NULL);
 DISTNMENU(menu_Geom,        ITM_GEOMP,      ITM_GEOM,       ITM_GEOMU,      ITM_GEOMM1,         ITM_STO_P_p,     ITM_NULL,        ITM_NULL);
 DISTNMENU(menu_Hyper,       ITM_HYPERP,     ITM_HYPER,      ITM_HYPERU,     ITM_HYPERM1,        ITM_STO_M_N,     ITM_STO_N1,      ITM_STO_Q_K);
 DISTNMENU(menu_Poiss,       ITM_POISSP,     ITM_POISS,      ITM_POISSU,     ITM_POISSM1,        ITM_STO_R_l,     ITM_NULL,        ITM_NULL);
@@ -397,8 +397,8 @@ TO_QSPI const int16_t menu_ALPHA_OMEGA[] = { ITM_ALPHA,                     ITM_
                                              ITM_ZETA,                      ITM_ETA,                    ITM_THETA,                ITM_IOTA,              ITM_KAPPA,                   ITM_LAMBDA,
                                              ITM_MU,                        ITM_NU,                     ITM_XI,                   ITM_OMICRON,           ITM_PI,                      ITM_QOPPA,
 
-                                             ITM_RHO,                       ITM_SIGMA,                  ITM_TAU,                  ITM_UPSILON,           ITM_PHI,                     ITM_CHI,
-                                             ITM_PSI,                       ITM_OMEGA,                  ITM_SAMPI,                ITM_NULL,              ITM_NULL,                    ITM_NULL,                           //JM modified greek sequence
+                                             ITM_RHO,                       ITM_SIGMA,                  ITM_SIGMA,                ITM_TAU,               ITM_UPSILON,                 ITM_PHI,
+                                             ITM_CHI,                       ITM_PSI,                    ITM_OMEGA,                ITM_SAMPI,             ITM_NULL,                    ITM_NULL,                           //JM modified greek sequence
                                              ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
 
                                              ITM_IOTA_DIALYTIKA,            ITM_NULL,                   ITM_NULL,                 ITM_UPSILON_DIALYTIKA, ITM_NULL,                    ITM_NULL                      };
@@ -407,8 +407,8 @@ TO_QSPI const int16_t menu_alpha_omega[] = { ITM_alpha,                     ITM_
                                              ITM_zeta,                      ITM_eta,                    ITM_theta,                ITM_iota,              ITM_kappa,                   ITM_lambda,
                                              ITM_mu,                        ITM_nu,                     ITM_xi,                   ITM_omicron,           ITM_pi,                      ITM_qoppa,
 
-                                             ITM_rho,                       ITM_sigma,                  ITM_tau,                  ITM_upsilon,           ITM_phi,                     ITM_chi,
-                                             ITM_psi,                       ITM_omega,                  ITM_sampi,                ITM_NULL,              ITM_NULL,                    ITM_NULL,
+                                             ITM_rho,                       ITM_sigma,                  ITM_sigma_end,            ITM_tau,               ITM_upsilon,                 ITM_phi,
+                                             ITM_chi,                       ITM_psi,                    ITM_omega,                ITM_sampi,             ITM_NULL,                    ITM_NULL,
                                              ITM_alpha_TONOS,               ITM_epsilon_TONOS,          ITM_eta_TONOS,            ITM_iotaTON,           ITM_iota_DIALYTIKA_TONOS,    ITM_NULL,                           //JM modified greek sequence
 
                                              ITM_iota_DIALYTIKA,            ITM_omicron_TONOS,          ITM_upsilon_TONOS,        ITM_upsilon_DIALYTIKA, ITM_upsilon_DIALYTIKA_TONOS, ITM_omega_TONOS               };
