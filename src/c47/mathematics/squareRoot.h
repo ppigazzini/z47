@@ -25,18 +25,5 @@
   #include <stdint.h>
 
   void fnSquareRoot(uint16_t unusedButMandatoryParameter);
-
-  #if(EXTRA_INFO_ON_CALC_ERROR == 1)
-    void sqrtError   (void);
-  #else // (EXTRA_INFO_ON_CALC_ERROR != 1)
-    #define sqrtError typeError
-  #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-
-  void sqrtLonI    (void);
-  void sqrtRema    (void);
-  void sqrtCxma    (void);
-  void sqrtShoI    (void);
-  void sqrtReal    (void);
-  void sqrtCplx    (void);
   void sqrtComplex (const real_t *real, const real_t *imag, real_t *resReal, real_t *resImag, realContext_t *realContext);
 #endif // !SQUAREROOT_H
