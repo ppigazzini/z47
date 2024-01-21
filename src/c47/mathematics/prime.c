@@ -586,14 +586,14 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
   while(longIntegerIsPositive(eval)) {
 
     #if !defined(TESTSUITE_BUILD)
-      if (printHalfSecUpdate_Integer(timed, "Tested: ",loop++)) { //timed
+      if (printHalfSecUpdate_Integer(timed, "Tested: ",loop++, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
       }
     #endif //!TESTSUITE_BUILD
 
     #if defined(DMCP_BUILD)
       if(keyWaiting()) {
           showString("key Waiting ...", &standardFont, 20, 40, vmNormal, false, false);
-          printHalfSecUpdate_Integer(force+1, "Interrupted Test:",loop);
+          printHalfSecUpdate_Integer(force+1, "Interrupted Test:",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
           programRunStop = PGM_WAITING;
         break;
       }

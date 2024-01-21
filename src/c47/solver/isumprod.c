@@ -130,12 +130,12 @@
         #endif //VERBOSE_COUNTER
 
         longIntegerAdd(iCounter, loopStep, iCounter);
-        printHalfSecUpdate_Integer(timed, "Loop: ",loop--); //timed
+        printHalfSecUpdate_Integer(timed, "Loop: ",loop--, halfSec_clearZ, halfSec_clearT, halfSec_disp); //timed
 
         #if defined(DMCP_BUILD)
           if(keyWaiting()) {
               showString("key Waiting ...", &standardFont, 20, 40, vmNormal, false, false);
-              printHalfSecUpdate_Integer(force+1, "Interrupted: ",loop);
+              printHalfSecUpdate_Integer(force+1, "Interrupted: ",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
             break;
           }
         #endif //DMCP_BUILD
@@ -177,7 +177,7 @@
     hourGlassIconEnabled = false;
     showHideHourGlass();
 
-    printHalfSecUpdate_Integer(force+0, "Loop complete: ",loop);
+    printHalfSecUpdate_Integer(force+0, "Loop complete: ",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
 
   }
 

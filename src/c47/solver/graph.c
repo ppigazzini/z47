@@ -469,10 +469,10 @@ void graph_eqn(uint16_t mode) {
         printf("dx0=%f dx=%f yAvg=%f count=%i discontinuityDetected:%u grad2IncreaseDetected:%u\n",dx0, dx, yAvg, count, discontinuityDetected, grad2IncreaseDetected);
       #endif // DEBUG_GR
 
-      printHalfSecUpdate_Integer(timed, "Iter: ",loop++); //timed
+      printHalfSecUpdate_Integer(timed, "Iter: ",loop++, halfSec_clearZ, halfSec_clearT, halfSec_disp); //timed
       #if defined(DMCP_BUILD)
         if(keyWaiting()) {
-          printHalfSecUpdate_Integer(force+1, "Interrupted Iter:",loop);
+          printHalfSecUpdate_Integer(force+1, "Interrupted Iter:",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
           fnClearStack(0);
           calcMode = CM_NORMAL;
           screenUpdatingMode = SCRUPD_AUTO;
@@ -1175,10 +1175,10 @@ void graph_stat(uint16_t unusedButMandatoryParameter) {
         refreshLcd(NULL);
       #endif // DMCP_BUILD
 
-      printHalfSecUpdate_Integer(timed, "Iter: ",loop++); //timed
+      printHalfSecUpdate_Integer(timed, "Iter: ",loop++, halfSec_clearZ, halfSec_clearT, halfSec_disp); //timed
       #if defined(DMCP_BUILD)
         if(keyWaiting()) {
-          printHalfSecUpdate_Integer(force+1, "Interrupted Iter:",loop);
+          printHalfSecUpdate_Integer(force+1, "Interrupted Iter:",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
           fnClearStack(0);
           calcMode = CM_NORMAL;
           screenUpdatingMode = SCRUPD_AUTO;

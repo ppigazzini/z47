@@ -117,6 +117,22 @@ bool_t keyWaiting(void) {
 }
 
 
+int popKey(void) {
+  int tmpf = -1;
+  #if defined(DMCP_BUILD)
+    if(!keyWaiting) return -1;
+    while(keyWaiting()) {
+      tmpf = key_pop();
+    }
+    return tmpf - 1;        //EXIT = 33-1
+  #else // !DMCP_BUILD
+    tmpf = currentKeyCode;
+    currentKeyCode = 255;
+    return tmpf;           //EXIT = 32
+  #endif // DMCP_BUILD
+}
+
+
 void fnShoiXRepeats(uint16_t numberOfRepeats) {           //JM SHOIDISP
   displayStackSHOIDISP = numberOfRepeats;                 //   0-3
   fnRefreshState();
