@@ -1033,14 +1033,17 @@ void processIntRealComplexDyadicFunction(void (*realf)(void), void (*complexf)(v
   const bool_t xInt = typeX == dtLongInteger || typeX == dtShortInteger;
   const bool_t yInt = typeY == dtLongInteger || typeY == dtShortInteger;
 
-  if (typeX == dtShortInteger && typeY == dtShortInteger && shortintf != NULL)
-    shortintf();
-  else if (xInt && yInt && longintf != NULL) {
-    if (typeX == dtShortInteger)
-      convertShortIntegerRegisterToLongIntegerRegister(REGISTER_X, REGISTER_X);
-    if (typeY == dtShortInteger)
-      convertShortIntegerRegisterToLongIntegerRegister(REGISTER_Y, REGISTER_Y);
-    longintf();
+  if (typeX == dtShortInteger && typeY == dtShortInteger && shortintf != NULL) {
+    if(saveLastX())
+      shortintf();
+  } else if (xInt && yInt && longintf != NULL) {
+    if(saveLastX()) {
+      if (typeX == dtShortInteger)
+        convertShortIntegerRegisterToLongIntegerRegister(REGISTER_X, REGISTER_X);
+      if (typeY == dtShortInteger)
+        convertShortIntegerRegisterToLongIntegerRegister(REGISTER_Y, REGISTER_Y);
+      longintf();
+    }
   } else
     processRealComplexDyadicFunction(realf, complexf);
 }
