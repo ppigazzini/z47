@@ -46,7 +46,7 @@ static void curtShoI(void) {
 
 
 
-static void curtReal(void) {
+void curtReal(void) {
   real_t x;
 
   if (!getRegisterAsReal(REGISTER_X, &x))
@@ -73,7 +73,7 @@ static void curtReal(void) {
 
 
 
-static void curtCplx(void) {
+void curtCplx(void) {
   real_t a, b;
 
   if (getRegisterAsComplex(REGISTER_X, &a, &b)) {
