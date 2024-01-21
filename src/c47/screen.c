@@ -1678,25 +1678,30 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
 
 
   uint16_t old_time = 0;
-  bool_t printHalfSecUpdate_Integer(uint8_t mode, char *txt, int loop) {
+  bool_t printHalfSecUpdate_Integer(uint8_t mode, char *txt, int loop, bool_t clearZ, bool_t clearT, bool_t disp) {
     char tmps[100];
     bool_t ret_value = false;
     uint16_t new_time = (uint16_t)(getUptimeMs());
 
-    if((mode != timed) || (((new_time - old_time) & 0xFE00) != 0 )) { //0x0200 || 0.512 second refresh interval
+    if( (mode != timed) || (((new_time - old_time) & 0xFE00) != 0 )) { //0x0200 || 0.512 second refresh interval
       old_time = new_time;
       ret_value = true;
 
       //refreshScreen();   //to update stack
-      clearRegisterLine(REGISTER_T, true, true);
-      if(mode > 1) {
+      if(clearT) {
+        clearRegisterLine(REGISTER_T, true, true);
+      }
+      if(clearZ && mode > force) {   //force = 1
         clearRegisterLine(REGISTER_Z, true, true);
       }
+
 
       //lcd_refresh();
       fnTimerStart(TO_KB_ACTV, TO_KB_ACTV, JM_TO_KB_ACTV); //PROGRAM_KB_ACTV
       sprintf(tmps, "%s %8d    ",txt,loop);
-      showString(tmps, &standardFont, 20, /*145-7*/ Y_POSITION_OF_REGISTER_T_LINE + mode * 20, vmNormal, false, false);  //note: 1 line down for "force"
+      if(disp) {
+        showString(tmps, &standardFont, 20, /*145-7*/ Y_POSITION_OF_REGISTER_T_LINE + mode * 20, vmNormal, false, false);  //note: 1 line down for "force"
+      }
 
       #if defined(PC_BUILD)
         gtk_widget_queue_draw(screen);

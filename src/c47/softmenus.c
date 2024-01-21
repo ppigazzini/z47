@@ -28,6 +28,7 @@
 #include "c43Extensions/xeqm.h"
 #include <string.h>
 #include <stdlib.h>
+#include <math.h>
 
 #include "c47.h"
 
@@ -1777,6 +1778,58 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
                         }
                       }
                       stringAppend(showText + stringByteLength(showText), tmpS);
+                      break;
+                    }
+      case VAR_ULIM:
+      case VAR_LLIM:
+                    { stringAppend(itemName, indexOfItems[itemNr%10000].itemSoftmenuName);
+                      switch(itemNr%10000) {
+                        case VAR_ULIM:  real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_ULIM), &tmpR); 
+                                        break;
+                        case VAR_LLIM:  real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_LLIM), &tmpR); 
+                                        break;
+                        default:;
+                      }
+                      if(realIsZero(&tmpR)) {
+                        strcpy(tmpS,"0");
+                      } else {
+                        itemName[3] = 0; //Blank the im of ^Lim to make space for the numbers
+                        realToFloat(&tmpR, &tmpF);
+                        float abstmpF = fabs(tmpF);
+                        if(abstmpF<1.0e-34) {
+                          strcpy(tmpS,STD_GAUSS_WHITE_L "1E-34");
+                        } else
+                        if(abstmpF>1.0e34) {
+                          strcpy(tmpS,STD_GAUSS_WHITE_R "1E+34");
+                        } else {
+                          if((tmpF>=1000 && tmpF<=9999) || (tmpF>=-999.9 && tmpF<=-100)) { // 999.9  -99.9
+                            sprintf(tmpS,"%6.1f",tmpF);
+                          } else
+                          if((tmpF>=100 && tmpF<=999.9) || (tmpF>=-99.9 && tmpF<=-10)) { // 999.9  -99.9
+                            sprintf(tmpS,"%6.1f",tmpF);
+                          } else
+                          if((tmpF>=10 && tmpF<=99.9) || (tmpF>=-9.9 && tmpF<=-1)) {     // 99.9   -9.9
+                            sprintf(tmpS,"%6.2f",tmpF);
+                          } else
+                          if(tmpF>=1 && tmpF<=9.999) {
+                            sprintf(tmpS,"%6.3f",tmpF);
+                          } else
+                          if(tmpF<0) {
+                            sprintf(tmpS,"%6.1G",tmpF);
+                          } else {
+                            sprintf(tmpS,"%6.2G",tmpF);
+                          }
+                          strcpy(tmpS, eatSpacesMid(tmpS));
+                          uint16_t ii = stringByteLength(tmpS);
+                          if(tmpS[ii-4] == 'E' && (tmpS[ii-3] == '+' || tmpS[ii-3] == '-') && tmpS[ii-2] == '0') {
+                            tmpS[ii-2] = tmpS[ii-1];
+                            tmpS[ii-1] = 0;
+                          }
+                        }
+                      }
+                      radixProcess(tmpS,tmpS);
+                      stringAppend(showText + stringByteLength(showText), tmpS);
+                      return;
                       break;
                     }
 

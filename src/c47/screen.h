@@ -111,6 +111,10 @@ char       letteredRegisterName(calcRegister_t regist);
 
   #define  force 1
   #define  timed 0
+  #define  halfSec_clearZ true
+  #define  halfSec_clearT true
+  #define  halfSec_disp true
+
 
   #if !defined(TESTSUITE_BUILD)
 
@@ -167,7 +171,7 @@ char       letteredRegisterName(calcRegister_t regist);
   void     refresh_gui                        (void);                                                          //JM
 
   void     force_refresh(uint8_t mode);                                                          //JM SCREEN
-  bool_t   printHalfSecUpdate_Integer(uint8_t mode, char * txt, int loop);
+  bool_t   printHalfSecUpdate_Integer(uint8_t mode, char *txt, int loop, bool_t clearZ, bool_t clearT, bool_t disp);
 
   void     refreshScreen                      (uint8_t source);
   //void     invertPixel                        (uint32_t x, uint32_t y);

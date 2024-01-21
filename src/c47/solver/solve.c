@@ -474,14 +474,14 @@ int solver(calcRegister_t variable, const real34_t *y, const real34_t *x, real34
 
 
 
-      if (printHalfSecUpdate_Integer(timed, "Iter: ",loop++)) { //timed
+      if (printHalfSecUpdate_Integer(timed, "Iter: ",loop++, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
         _showProgress(&a, &b, &fa, &fb);
       }
 
       #if defined(DMCP_BUILD)
         if(keyWaiting()) {
             showString("key Waiting ...", &standardFont, 20, 40, vmNormal, false, false);
-            printHalfSecUpdate_Integer(force+1, "Interrupted Iter:",loop);
+            printHalfSecUpdate_Integer(force+1, "Interrupted Iter:",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
             programRunStop = PGM_WAITING;
           break;
         }
