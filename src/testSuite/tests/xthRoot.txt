@@ -9,7 +9,6 @@ In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
 Func: fnXthRoot
 
 
-
 ;=======================================|
 ; Long Integer ^1/ Long Integer --> Long Int or Real
 ;=======================================
@@ -71,13 +70,13 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ShoI:"200#10" RX=Real:"1.003471748509502787
 ; Short Integer ^1/ Long Integer --> Short Int or Real
 ;=======================================
 In:  FL_ASLIFT=0 RY=ShoI:"8#10" RX=LonI:"3"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"3" RX=ShoI:"2#10"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"3" RX=LonI:"2"
 
 In:  FL_ASLIFT=0 RY=ShoI:"-8#10" RX=LonI:"3"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"3" RX=ShoI:"-2#10"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"3" RX=LonI:"-2"
 
 In:  FL_ASLIFT=0 RY=ShoI:"0#10" RX=LonI:"1"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"1" RX=ShoI:"0#10"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"1" RX=LonI:"0"
 
 In:  FL_ASLIFT=0 RY=ShoI:"8#10" RX=LonI:"2"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"2" RX=Real:"2.828427124746190097603377448419396"
@@ -149,13 +148,13 @@ In: FL_CPXRES=0 FL_SPCRES=0
 ; Long Integer ^1/ Real --> Real / Long Integer
 ;=======================================
 In:  FL_ASLIFT=0 FL_CPXRES=0 RY=LonI:"8" RX=Real:"3"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"3" RX=LonI:"2"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"3" RX=Real:"2"
 
 In:  FL_ASLIFT=0 RY=LonI:"-8" RX=Real:"3"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"3" RX=LonI:"-2"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"3" RX=Real:"-2"
 
 In:  FL_ASLIFT=0 RY=LonI:"0" RX=Real:"1"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"1" RX=LonI:"0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0"
 
 In:  FL_ASLIFT=0 RY=LonI:"8" RX=Real:"2"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"2" RX=Real:"2.828427124746190097603377448419396"
@@ -195,13 +194,13 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"200.0001" RX=Real:"1.0034717467706196
 ; Short Integer ^1/ Real --> Real / Long Integer
 ;=======================================
 In:  FL_ASLIFT=0 FL_CPXRES=0 RY=ShoI:"8#10" RX=Real:"3"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"3" RX=ShoI:"2#10"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"3" RX=Real:"2"
 
 In:  FL_ASLIFT=0 RY=ShoI:"-8#10" RX=Real:"3"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"3" RX=ShoI:"-2#10"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"3" RX=Real:"-2"
 
 In:  FL_ASLIFT=0 RY=ShoI:"0#10" RX=Real:"1"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"1" RX=ShoI:"0#10"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0"
 
 In:  FL_ASLIFT=0 RY=ShoI:"8#10" RX=Real:"2"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"2" RX=Real:"2.828427124746190097603377448419396"

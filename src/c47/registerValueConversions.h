@@ -117,6 +117,7 @@
   bool_t getRegisterAsRealAngle(calcRegister_t reg, real_t *val, angularMode_t *xAngularMode);
 
   void processRealComplexMonadicFunction(void (*realf)(void), void (*complexf)(void));
+  void processIntRealComplexMonadicFunction(void (*realf)(void), void (*complexf)(void), void (*shortintf)(void), void (*longintf)(void));
   void processRealComplexDyadicFunction(void (*realf)(void), void (*complexf)(void));
-  void processIntRealComplexDyadicFunction(void (*shortintf)(void), void (*longintf)(void), void (*realf)(void), void (*complexf)(void));
+  void processIntRealComplexDyadicFunction(void (*realf)(void), void (*complexf)(void), void (*shortintf)(void), void (*longintf)(void));
 #endif // !REGISTERVALUECONVERSIONS_H
