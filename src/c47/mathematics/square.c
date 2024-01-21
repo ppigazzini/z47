@@ -33,31 +33,45 @@
 
 #include "c47.h"
 
+static void squareLonI(void) {
+  longInteger_t lgInt;
 
+  convertLongIntegerRegisterToLongInteger(REGISTER_X, lgInt);
+  longIntegerMultiply(lgInt, lgInt, lgInt);
+  convertLongIntegerToLongIntegerRegister(lgInt, REGISTER_X);
+  longIntegerFree(lgInt);
+}
 
-TO_QSPI void (* const square[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])(void) = {
-// regX ==> 1            2           3           4            5            6            7           8           9             10
-//          Long integer Real34      complex34   Time         Date         String       Real34 mat  Complex34 m Short integer Config data
-            squareLonI,  squareReal, squareCplx, squareError, squareError, squareError, squareRema, squareCxma, squareShoI,   squareError
-};
+static void squareShoI(void) {
+  *(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)) = WP34S_intMultiply(*(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)), *(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)));
+}
 
+static void squareReal(void) {
+  real_t x;
 
+  if (!getRegisterAsReal(REGISTER_X, &x))
+    return;
 
-/********************************************//**
- * \brief Data type error in squaring
- *
- * \param[in] unusedButMandatoryParameter
- * \return void
- ***********************************************/
-#if(EXTRA_INFO_ON_CALC_ERROR == 1)
-  void squareError(void) {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-    sprintf(errorMessage, "cannot square %s", getRegisterDataTypeName(REGISTER_X, true, false));
-    moreInfoOnError("In function fnSquare:", errorMessage, errorMessage + ERROR_MESSAGE_LENGTH/2, NULL);
+  if(realIsInfinite(&x) && !getSystemFlag(FLAG_SPCRES)) {
+    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+      moreInfoOnError("In function cubeReal:", "cannot use " STD_PLUS_MINUS STD_INFINITY " as X input of curt when flag D is not set", NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+    return;
   }
-#endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
 
+  realMultiply(&x, &x, &x, &ctxtReal39);
+  convertRealToResultRegister(&x, REGISTER_X, amNone);
+}
 
+static void squareCplx(void) {
+  real_t a, b;
+
+  if (getRegisterAsComplex(REGISTER_X, &a, &b)) {
+    mulComplexComplex(&a, &b, &a, &b, &a, &b, &ctxtReal39);
+    convertComplexToResultRegister(&a, &b, REGISTER_X);
+  }
+}
 
 /********************************************//**
  * \brief regX ==> regL and regX × regX ==> regX
@@ -67,68 +81,5 @@ TO_QSPI void (* const square[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])(void) = {
  * \return void
  ***********************************************/
 void fnSquare(uint16_t unusedButMandatoryParameter) {
-  if(!saveLastX()) {
-    return;
-  }
-
-  square[getRegisterDataType(REGISTER_X)]();
-
-  adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
-}
-
-
-
-void squareLonI(void) {
-  longInteger_t lgInt;
-
-  convertLongIntegerRegisterToLongInteger(REGISTER_X, lgInt);
-  longIntegerMultiply(lgInt, lgInt, lgInt);
-  convertLongIntegerToLongIntegerRegister(lgInt, REGISTER_X);
-  longIntegerFree(lgInt);
-}
-
-
-
-void squareRema(void) {
-  elementwiseRema(squareReal);
-}
-
-
-
-void squareCxma(void) {
-  elementwiseCxma(squareCplx);
-}
-
-
-
-void squareShoI(void) {
-  *(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)) = WP34S_intMultiply(*(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)), *(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)));
-}
-
-
-
-void squareReal(void) {
-  if(real34IsInfinite(REGISTER_REAL34_DATA(REGISTER_X)) && !getSystemFlag(FLAG_SPCRES)) {
-    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
-      moreInfoOnError("In function squareReal:", "cannot use " STD_PLUS_MINUS STD_INFINITY " as X input of ^2 when flag D is not set", NULL, NULL);
-    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-    return;
-  }
-
-  real34Multiply(REGISTER_REAL34_DATA(REGISTER_X), REGISTER_REAL34_DATA(REGISTER_X), REGISTER_REAL34_DATA(REGISTER_X));
-  setRegisterAngularMode(REGISTER_X, amNone);
-}
-
-
-
-void squareCplx(void) {
-  real_t a, b;
-
-  real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &a);
-  real34ToReal(REGISTER_IMAG34_DATA(REGISTER_X), &b);
-
-  mulComplexComplex(&a, &b, &a, &b, &a, &b, &ctxtReal39);
-
-  convertComplexToResultRegister(&a, &b, REGISTER_X);
+  processIntRealComplexMonadicFunction(&squareReal, &squareCplx, &squareShoI, &squareLonI);
 }
