@@ -857,6 +857,27 @@ bool_t getRegisterAsReal(calcRegister_t reg, real_t *val) {
   return true;
 }
 
+bool_t getRegisterAsLongInt(calcRegister_t reg, longInteger_t val) {
+  switch(getRegisterDataType(reg)) {
+    case dtLongInteger:
+      convertLongIntegerRegisterToLongInteger(reg, val);
+      break;
+
+    case dtShortInteger:
+      convertShortIntegerRegisterToLongInteger(reg, val);
+      break;
+
+    default:
+      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, reg);
+      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+        sprintf(errorMessage, "cannot convert %d from %s to integer", reg, getRegisterDataTypeName(reg, true, false));
+        moreInfoOnError("In function getRegisterAsLongInt:", errorMessage, NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+      return false;
+  }
+  return true;
+}
+
 static void longIntegerAngleReduction(calcRegister_t regist, angularMode_t angularMode, real_t *reducedAngle) {
   uint32_t oneTurn;
   longInteger_t angle;
@@ -943,7 +964,6 @@ void processIntRealComplexMonadicFunction(void (*realf)(void), void (*complexf)(
       goto done;
     }
     if (longintf != NULL) {
-      convertShortIntegerRegisterToLongIntegerRegister(REGISTER_X, REGISTER_X);
       longintf();
       goto done;
     }
@@ -1037,13 +1057,8 @@ void processIntRealComplexDyadicFunction(void (*realf)(void), void (*complexf)(v
     if(saveLastX())
       shortintf();
   } else if (xInt && yInt && longintf != NULL) {
-    if(saveLastX()) {
-      if (typeX == dtShortInteger)
-        convertShortIntegerRegisterToLongIntegerRegister(REGISTER_X, REGISTER_X);
-      if (typeY == dtShortInteger)
-        convertShortIntegerRegisterToLongIntegerRegister(REGISTER_Y, REGISTER_Y);
+    if(saveLastX())
       longintf();
-    }
   } else
     processRealComplexDyadicFunction(realf, complexf);
 }

@@ -33,44 +33,6 @@
 
 #include "c47.h"
 
-static void cpyxDataTypeError(uint16_t);
-
-TO_QSPI void (* const cpyx[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS][NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])(uint16_t) = {
-// regX |    regY ==>    1                  2                  3                  4                  5                  6                  7                  8                  9                  10
-//      V                Long integer       Real34             Complex34          Time               Date               String             Real34 mat         Complex34 mat      Short integer      Config data
-/*  1 Long integer  */ { cpyxLonILonI,      cpyxRealLonI,      cpyxCplxLonI,      cpyxDataTypeError, cpyxDataTypeError, cpyxDataTypeError, cpyxDataTypeError, cpyxDataTypeError, cpyxShoILonI,      cpyxDataTypeError},
-/*  2 Real34        */ { cpyxLonIReal,      cpyxRealReal,      cpyxCplxReal,      cpyxDataTypeError, cpyxDataTypeError, cpyxDataTypeError, cpyxDataTypeError, cpyxDataTypeError, cpyxShoIReal,      cpyxDataTypeError},
-/*  3 Complex34     */ { cpyxLonICplx,      cpyxRealCplx,      cpyxCplxCplx,      cpyxDataTypeError, cpyxDataTypeError, cpyxDataTypeError, cpyxDataTypeError, cpyxDataTypeError, cpyxShoICplx,      cpyxDataTypeError},
-/*  4 Time          */ { cpyxDataTypeError, cpyxDataTypeError, cpyxDataTypeError, cpyxDataTypeError, cpyxDataTypeError, cpyxDataTypeError, cpyxDataTypeError, cpyxDataTypeError, cpyxDataTypeError, cpyxDataTypeError},
-/*  5 Date          */ { cpyxDataTypeError, cpyxDataTypeError, cpyxDataTypeError, cpyxDataTypeError, cpyxDataTypeError, cpyxDataTypeError, cpyxDataTypeError, cpyxDataTypeError, cpyxDataTypeError, cpyxDataTypeError},
-/*  6 String        */ { cpyxDataTypeError, cpyxDataTypeError, cpyxDataTypeError, cpyxDataTypeError, cpyxDataTypeError, cpyxDataTypeError, cpyxDataTypeError, cpyxDataTypeError, cpyxDataTypeError, cpyxDataTypeError},
-/*  7 Real34 mat    */ { cpyxDataTypeError, cpyxDataTypeError, cpyxDataTypeError, cpyxDataTypeError, cpyxDataTypeError, cpyxDataTypeError, cpyxDataTypeError, cpyxDataTypeError, cpyxDataTypeError, cpyxDataTypeError},
-/*  8 Complex34 mat */ { cpyxDataTypeError, cpyxDataTypeError, cpyxDataTypeError, cpyxDataTypeError, cpyxDataTypeError, cpyxDataTypeError, cpyxDataTypeError, cpyxDataTypeError, cpyxDataTypeError, cpyxDataTypeError},
-/*  9 Short integer */ { cpyxLonIShoI,      cpyxRealShoI,      cpyxCplxShoI,      cpyxDataTypeError, cpyxDataTypeError, cpyxDataTypeError, cpyxDataTypeError, cpyxDataTypeError, cpyxShoIShoI,      cpyxDataTypeError},
-/* 10 Config data   */ { cpyxDataTypeError, cpyxDataTypeError, cpyxDataTypeError, cpyxDataTypeError, cpyxDataTypeError, cpyxDataTypeError, cpyxDataTypeError, cpyxDataTypeError, cpyxDataTypeError, cpyxDataTypeError}
-};
-
-//=============================================================================
-// Error handling
-//-----------------------------------------------------------------------------
-
-
-/********************************************//**
- * \brief Data type error in Cyx
- *
- * \param[in] unusedButMandatoryParameter
- * \return void
- ***********************************************/
-static void cpyxDataTypeError(uint16_t unused) {
-  displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-
-  #if(EXTRA_INFO_ON_CALC_ERROR == 1)
-    sprintf(errorMessage, "cannot raise %s", getRegisterDataTypeName(REGISTER_Y, true, false));
-    sprintf(errorMessage + ERROR_MESSAGE_LENGTH/2, "to %s", getRegisterDataTypeName(REGISTER_X, true, false));
-    moreInfoOnError("In function fnCyx/fnPyx:", errorMessage, errorMessage + ERROR_MESSAGE_LENGTH/2, NULL);
-  #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-}
-
 //=============================================================================
 // Cyx/Pyx calculation function
 //-----------------------------------------------------------------------------
@@ -242,43 +204,6 @@ static void pyxCplx(real_t *yReal, real_t *yImag, real_t *xReal, real_t *xImag, 
 // Main function
 //-----------------------------------------------------------------------------
 
-/********************************************//**
- * \brief regX ==> regL and Cyx(regX, RegY) ==> regX
- * enables stack lift and refreshes the stack.
- * C(n,k) = n! / [k! * (n-k)!]
- *
- * \param[in] unusedButMandatoryParameter uint16_t
- * \return void
- ***********************************************/
-void fnCyx(uint16_t unusedButMandatoryParameter) {
-  if(!saveLastX()) {
-    return;
-  }
-
-  cpyx[getRegisterDataType(REGISTER_X)][getRegisterDataType(REGISTER_Y)](CP_COMBINATION);
-
-  adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
-  adjustResult(REGISTER_Y, true, true, REGISTER_Y, -1, -1);
-}
-
-/********************************************//**
- * \brief regX ==> regL and Pyx(regX, RegY) ==> regX
- * enables stack lift and refreshes the stack.
- * P(n,k) = n! / (n-k)!
- *
- * \param[in] unusedButMandatoryParameter uint16_t
- * \return void
- ***********************************************/
-void fnPyx(uint16_t unusedButMandatoryParameter) {
-  if(!saveLastX()) {
-    return;
-  }
-
-  cpyx[getRegisterDataType(REGISTER_X)][getRegisterDataType(REGISTER_Y)](CP_PERMUTATION);
-
-  adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
-  adjustResult(REGISTER_Y, true, true, REGISTER_Y, -1, -1);
-}
 
 //=============================================================================
 // Cyx/Pyx(Y(long integer), *)
@@ -290,94 +215,16 @@ void fnPyx(uint16_t unusedButMandatoryParameter) {
  * \param void
  * \return void
  ***********************************************/
-void cpyxLonILonI(uint16_t combOrPerm) {
+static void cpyxLonI(uint16_t combOrPerm) {
   longInteger_t x, y;
 
-  convertLongIntegerRegisterToLongInteger(REGISTER_X, x);
-  convertLongIntegerRegisterToLongInteger(REGISTER_Y, y);
+  if (!getRegisterAsLongInt(REGISTER_X, x)
+      || !getRegisterAsLongInt(REGISTER_Y, y))
+    return;
 
   if(longIntegerIsNegative(x) || longIntegerIsNegative(y) || longIntegerCompare(y, x) < 0) {
     displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
     EXTRA_INFO_MESSAGE("cpyxLonILonI:", "cannot calculate Cyx/Pyx, conditions: x>=0, y>=0, and x<=y.");
-  }
-  else {
-    longInteger_t t;
-    longIntegerInit(t);
-
-    (combOrPerm == CP_COMBINATION) ? cyxLong(y, x, t)
-                                   : pyxLong(y, x, t);
-
-    convertLongIntegerToLongIntegerRegister(t, REGISTER_X);
-    longIntegerFree(t);
-  }
-
-  longIntegerFree(x);
-  longIntegerFree(y);
-}
-
-/********************************************//**
- * \brief Cyx/Pyx(Y(long integer), X(real34)) ==> X(real34)
- *
- * \param void
- * \return void
- ***********************************************/
-void cpyxLonIReal(uint16_t combOrPerm) {
-  real_t x, y;
-
-  real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &x);
-  convertLongIntegerRegisterToReal(REGISTER_Y, &y, &ctxtReal75);
-
-  if(realIsNegative(&x) || realIsNegative(&y) || realCompareGreaterThan(&x, &y)) {
-    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-    EXTRA_INFO_MESSAGE("cpyxLonIReal:", "cannot calculate Cyx/Pyx, conditions: x>=0, y>=0, and x<=y.");
-  }
-  else {
-    real_t t;
-
-    (combOrPerm == CP_COMBINATION) ? cyxReal(&y, &x, &t, &ctxtReal39) : pyxReal(&y, &x, &t, &ctxtReal39);
-
-    convertRealToReal34ResultRegister(&t, REGISTER_X);
-    setRegisterAngularMode(REGISTER_X, amNone);
-  }
-}
-
-/********************************************//**
- * \brief Cyx/Pyx(Y(long integer), X(complex34)) ==> X(complex34)
- *
- * \param void
- * \return void
- ***********************************************/
-void cpyxLonICplx(uint16_t combOrPerm) {
-  real_t xReal, xImag, yReal, yImag;
-  real_t tReal, tImag;
-
-  real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &xReal);
-  real34ToReal(REGISTER_IMAG34_DATA(REGISTER_X), &xImag);
-
-  convertLongIntegerRegisterToReal(REGISTER_Y, &yReal, &ctxtReal39);
-  realZero(&yImag);
-
-  (combOrPerm == CP_COMBINATION) ? cyxCplx(&yReal, &yImag, &xReal, &xImag, &tReal, &tImag, &ctxtReal39)
-                                 : pyxCplx(&yReal, &yImag, &xReal, &xImag, &tReal, &tImag, &ctxtReal39);
-
-  convertComplexToResultRegister(&tReal, &tImag, REGISTER_X);
-}
-
-/********************************************//**
- * \brief Cyx/Pyx(Y(long integer), X(short integer)) ==> X(long integer)
- *
- * \param void
- * \return void
- ***********************************************/
-void cpyxLonIShoI(uint16_t combOrPerm) {
-  longInteger_t x, y;
-
-  convertShortIntegerRegisterToLongInteger(REGISTER_X, x);
-  convertLongIntegerRegisterToLongInteger(REGISTER_Y, y);
-
-  if(longIntegerIsNegative(x) || longIntegerIsNegative(y) || longIntegerCompare(y, x) < 0) {
-    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-    EXTRA_INFO_MESSAGE("cpyxLonIShoI:", "cannot calculate Cyx/Pyx, conditions: x>=0, y>=0, and x<=y.");
   }
   else {
     longInteger_t t;
@@ -399,44 +246,16 @@ void cpyxLonIShoI(uint16_t combOrPerm) {
 //-----------------------------------------------------------------------------
 
 /********************************************//**
- * \brief Cyx/Pyx(Y(real34), X(long integer)) ==> X(real34)
- *
- * \param void
- * \return void
- ***********************************************/
-void cpyxRealLonI(uint16_t combOrPerm) {
-  real_t x, y;
-
-  real34ToReal(REGISTER_REAL34_DATA(REGISTER_Y), &y);
-  convertLongIntegerRegisterToReal(REGISTER_X, &x, &ctxtReal39);
-
-  if(realIsNegative(&x) || realIsNegative(&y) || realCompareGreaterThan(&x, &y)) {
-    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-    EXTRA_INFO_MESSAGE("cpyxRealLonI:", "cannot calculate Cyx/Pyx, conditions: x>=0, y>=0, and x<=y.");
-  }
-  else {
-    real_t t;
-
-    (combOrPerm == CP_COMBINATION) ? cyxReal(&y, &x, &t, &ctxtReal39)
-                                   : pyxReal(&y, &x, &t, &ctxtReal39);
-
-    reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
-    convertRealToReal34ResultRegister(&t, REGISTER_X);
-    setRegisterAngularMode(REGISTER_X, amNone);
-  }
-}
-
-/********************************************//**
  * \brief Cyx/Pyx(Y(real34), X(real34)) ==> X(real34)
  *
  * \param void
  * \return void
  ***********************************************/
-void cpyxRealReal(uint16_t combOrPerm) {
+static void cpyxReal(uint16_t combOrPerm) {
   real_t x, y;
 
-  real34ToReal(REGISTER_REAL34_DATA(REGISTER_Y), &y);
-  real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &x);
+    if (!getRegisterAsReal(REGISTER_X, &x) || !getRegisterAsReal(REGISTER_Y, &y))
+    return;
 
   if(realIsNegative(&x) || realIsNegative(&y) || realCompareGreaterThan(&x, &y)) {
     displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
@@ -448,58 +267,7 @@ void cpyxRealReal(uint16_t combOrPerm) {
     (combOrPerm == CP_COMBINATION) ? cyxReal(&y, &x, &t, &ctxtReal39)
                                    : pyxReal(&y, &x, &t, &ctxtReal39);
 
-    convertRealToReal34ResultRegister(&t, REGISTER_X);
-    setRegisterAngularMode(REGISTER_X, amNone);
-  }
-}
-
-/********************************************//**
- * \brief Cyx/Pyx(Y(real34), X(complex34)) ==> X(complex34)
- *
- * \param void
- * \return void
- ***********************************************/
-void cpyxRealCplx(uint16_t combOrPerm) {
-  real_t xReal, xImag, yReal, yImag;
-  real_t tReal, tImag;
-
-  real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &xReal);
-  real34ToReal(REGISTER_IMAG34_DATA(REGISTER_X), &xImag);
-
-  real34ToReal(REGISTER_REAL34_DATA(REGISTER_Y), &yReal);
-  realZero(&yImag);
-
-  (combOrPerm == CP_COMBINATION) ? cyxCplx(&yReal, &yImag, &xReal, &xImag, &tReal, &tImag, &ctxtReal39)
-                                 : pyxCplx(&yReal, &yImag, &xReal, &xImag, &tReal, &tImag, &ctxtReal39);
-
-  convertComplexToResultRegister(&tReal, &tImag, REGISTER_X);
-}
-
-/********************************************//**
- * \brief Cyx/Pyx(Y(real34), X(short integer)) ==> X(real34)
- *
- * \param void
- * \return void
- ***********************************************/
-void cpyxRealShoI(uint16_t combOrPerm) {
-  real_t x, y;
-
-  real34ToReal(REGISTER_REAL34_DATA(REGISTER_Y), &y);
-  convertShortIntegerRegisterToReal(REGISTER_X, &x, &ctxtReal39);
-
-  if(realIsNegative(&x) || realIsNegative(&y) || realCompareGreaterThan(&x, &y)) {
-    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-    EXTRA_INFO_MESSAGE("cpyxRealShoI:", "cannot calculate Cyx/Pyx, conditions: x>=0, y>=0, and x<=y.");
-  }
-  else {
-    real_t t;
-
-    (combOrPerm == CP_COMBINATION) ? cyxReal(&y, &x, &t, &ctxtReal39)
-                                   : pyxReal(&y, &x, &t, &ctxtReal39);
-
-    reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
-    convertRealToReal34ResultRegister(&t, REGISTER_X);
-    setRegisterAngularMode(REGISTER_X, amNone);
+    convertRealToResultRegister(&t, REGISTER_X, amNone);
   }
 }
 
@@ -508,93 +276,22 @@ void cpyxRealShoI(uint16_t combOrPerm) {
 //-----------------------------------------------------------------------------
 
 /********************************************//**
- * \brief Cyx/Pyx(Y(complex34), X(long integer)) ==> X(complex34)
- *
- * \param void
- * \return void
- ***********************************************/
-void cpyxCplxLonI(uint16_t combOrPerm) {
-  real_t xReal, xImag, yReal, yImag;
-  real_t tReal, tImag;
-
-  real34ToReal(REGISTER_REAL34_DATA(REGISTER_Y), &yReal);
-  real34ToReal(REGISTER_IMAG34_DATA(REGISTER_Y), &yImag);
-
-  convertLongIntegerRegisterToReal(REGISTER_X, &xReal, &ctxtReal39);
-  realZero(&xImag);
-
-  (combOrPerm == CP_COMBINATION) ? cyxCplx(&yReal, &yImag, &xReal, &xImag, &tReal, &tImag, &ctxtReal39)
-                                 : pyxCplx(&yReal, &yImag, &xReal, &xImag, &tReal, &tImag, &ctxtReal39);
-
-  reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
-  convertComplexToResultRegister(&tReal, &tImag, REGISTER_X);
-}
-
-/********************************************//**
- * \brief Cyx/Pyx(Y(complex34), X(real34)) ==> X(complex34)
- *
- * \param void
- * \return void
- ***********************************************/
-void cpyxCplxReal(uint16_t combOrPerm) {
-  real_t xReal, xImag, yReal, yImag;
-  real_t tReal, tImag;
-
-  real34ToReal(REGISTER_REAL34_DATA(REGISTER_Y), &yReal);
-  real34ToReal(REGISTER_IMAG34_DATA(REGISTER_Y), &yImag);
-
-  real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &xReal);
-  realZero(&xImag);
-
-  (combOrPerm == CP_COMBINATION) ? cyxCplx(&yReal, &yImag, &xReal, &xImag, &tReal, &tImag, &ctxtReal39)
-                                 : pyxCplx(&yReal, &yImag, &xReal, &xImag, &tReal, &tImag, &ctxtReal39);
-
-  reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
-  convertComplexToResultRegister(&tReal, &tImag, REGISTER_X);
-}
-
-/********************************************//**
  * \brief Cyx/Pyx(Y(complex34), X(complex34)) ==> X(complex34)
  *
  * \param void
  * \return void
  ***********************************************/
-void cpyxCplxCplx(uint16_t combOrPerm) {
+static void cpyxCplx(uint16_t combOrPerm) {
   real_t xReal, xImag, yReal, yImag;
   real_t tReal, tImag;
 
-  real34ToReal(REGISTER_REAL34_DATA(REGISTER_Y), &yReal);
-  real34ToReal(REGISTER_IMAG34_DATA(REGISTER_Y), &yImag);
-
-  real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &xReal);
-  real34ToReal(REGISTER_IMAG34_DATA(REGISTER_X), &xImag);
+  if (!getRegisterAsComplex(REGISTER_X, &xReal, &xImag)
+      || !getRegisterAsComplex(REGISTER_Y, &yReal, &yImag))
+    return;
 
   (combOrPerm == CP_COMBINATION) ? cyxCplx(&yReal, &yImag, &xReal, &xImag, &tReal, &tImag, &ctxtReal39)
                                  : pyxCplx(&yReal, &yImag, &xReal, &xImag, &tReal, &tImag, &ctxtReal39);
 
-  convertComplexToResultRegister(&tReal, &tImag, REGISTER_X);
-}
-
-/********************************************//**
- * \brief Cyx/Pyx(Y(complex34), X(short integer)) ==> X(complex34)
- *
- * \param void
- * \return void
- ***********************************************/
-void cpyxCplxShoI(uint16_t combOrPerm) {
-  real_t xReal, xImag, yReal, yImag;
-  real_t tReal, tImag;
-
-  real34ToReal(REGISTER_REAL34_DATA(REGISTER_Y), &yReal);
-  real34ToReal(REGISTER_IMAG34_DATA(REGISTER_Y), &yImag);
-
-  convertShortIntegerRegisterToReal(REGISTER_X, &xReal, &ctxtReal39);
-  realZero(&xImag);
-
-  (combOrPerm == CP_COMBINATION) ? cyxCplx(&yReal, &yImag, &xReal, &xImag, &tReal, &tImag, &ctxtReal39)
-                                 : pyxCplx(&yReal, &yImag, &xReal, &xImag, &tReal, &tImag, &ctxtReal39);
-
-  reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
   convertComplexToResultRegister(&tReal, &tImag, REGISTER_X);
 }
 
@@ -603,101 +300,21 @@ void cpyxCplxShoI(uint16_t combOrPerm) {
 //-----------------------------------------------------------------------------
 
 /********************************************//**
- * \brief Cyx/Pyx(Y(short integer), X(long integer)) ==> X(long integer)
- *
- * \param void
- * \return void
- ***********************************************/
-void cpyxShoILonI(uint16_t combOrPerm) {
-  longInteger_t x, y;
-
-  convertLongIntegerRegisterToLongInteger(REGISTER_X, x);
-  convertShortIntegerRegisterToLongInteger(REGISTER_Y, y);
-
-  if(longIntegerIsNegative(x) || longIntegerIsNegative(y) || longIntegerCompare(y, x) < 0) {
-    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-    EXTRA_INFO_MESSAGE("cpyxShoILonI:", "cannot calculate Cyx/Pyx, y and x must be greater or equal than zero.");
-  }
-  else {
-    longInteger_t t;
-    longIntegerInit(t);
-
-    (combOrPerm == CP_COMBINATION) ? cyxLong(y, x, t)
-                                   : pyxLong(y, x, t);
-
-    convertLongIntegerToLongIntegerRegister(t, REGISTER_X);
-    longIntegerFree(t);
-  }
-
-  longIntegerFree(x);
-  longIntegerFree(y);
-}
-
-/********************************************//**
- * \brief Cyx/Pyx(Y(short integer), X(real34)) ==> X(real34)
- *
- * \param void
- * \return void
- ***********************************************/
-void cpyxShoIReal(uint16_t combOrPerm) {
-  real_t x, y;
-
-  real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &x);
-  convertShortIntegerRegisterToReal(REGISTER_Y, &y, &ctxtReal39);
-
-  if(realIsNegative(&x) || realIsNegative(&y) || realCompareGreaterThan(&x, &y)) {
-    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-    EXTRA_INFO_MESSAGE("cpyxShoIReal:", "cannot calculate Cyx/Pyx, conditions: x>=0, y>=0, and x<=y.");
-  }
-  else {
-    real_t t;
-
-    (combOrPerm == CP_COMBINATION) ? cyxReal(&y, &x, &t, &ctxtReal39)
-                                   : pyxReal(&y, &x, &t, &ctxtReal39);
-
-    reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
-    convertRealToReal34ResultRegister(&t, REGISTER_X);
-    setRegisterAngularMode(REGISTER_X, amNone);
-  }
-}
-
-/********************************************//**
- * \brief Cyx/Pyx(Y(short integer), X(complex34)) ==> X(complex34)
- *
- * \param void
- * \return void
- ***********************************************/
-void cpyxShoICplx(uint16_t combOrPerm) {
-  real_t xReal, xImag, yReal, yImag;
-  real_t tReal, tImag;
-
-  real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &xReal);
-  real34ToReal(REGISTER_IMAG34_DATA(REGISTER_X), &xImag);
-
-  convertShortIntegerRegisterToReal(REGISTER_Y, &yReal, &ctxtReal39);
-  realZero(&yImag);
-
-  (combOrPerm == CP_COMBINATION) ? cyxCplx(&yReal, &yImag, &xReal, &xImag, &tReal, &tImag, &ctxtReal39)
-                                 : pyxCplx(&yReal, &yImag, &xReal, &xImag, &tReal, &tImag, &ctxtReal39);
-
-  convertComplexToResultRegister(&tReal, &tImag, REGISTER_X);
-}
-
-/********************************************//**
  * \brief Cyx/Pyx(Y(short integer), X(short integer)) ==> X(short integer)
  *
  * \param void
  * \return void
  ***********************************************/
-void cpyxShoIShoI(uint16_t combOrPerm) {
+static void cpyxShoI(uint16_t combOrPerm) {
   longInteger_t x, y;
 
-  convertShortIntegerRegisterToLongInteger(REGISTER_X, x);
-  convertShortIntegerRegisterToLongInteger(REGISTER_Y, y);
+  if (!getRegisterAsLongInt(REGISTER_X, x)
+      || !getRegisterAsLongInt(REGISTER_Y, y))
+    return;
 
   if(longIntegerIsNegative(x) || longIntegerIsNegative(y) || longIntegerCompare(y, x) < 0) {
     displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-    EXTRA_INFO_MESSAGE("cpyxShoIShoI:", "cannot calculate Cyx/Pyx, y and x must be greater or equal than zero.");
+    EXTRA_INFO_MESSAGE("cpyxShoI:", "cannot calculate Cyx/Pyx, y and x must be greater or equal than zero.");
   }
   else {
     longInteger_t t;
@@ -721,3 +338,68 @@ void cpyxShoIShoI(uint16_t combOrPerm) {
   longIntegerFree(y);
 }
 
+
+static void doCyxReal(void) {
+  cpyxReal(CP_COMBINATION);
+}
+
+static void doPyxReal(void) {
+  cpyxReal(CP_PERMUTATION);
+}
+
+static void doCyxCplx(void) {
+  cpyxCplx(CP_COMBINATION);
+}
+
+static void doPyxCplx(void) {
+  cpyxCplx(CP_PERMUTATION);
+}
+
+static void doCyxShoI(void) {
+  cpyxShoI(CP_COMBINATION);
+}
+
+static void doPyxShoI(void) {
+  cpyxShoI(CP_PERMUTATION);
+}
+
+static void doCyxLonI(void) {
+  cpyxLonI(CP_COMBINATION);
+}
+
+static void doPyxLonI(void) {
+  cpyxLonI(CP_PERMUTATION);
+}
+
+/********************************************//**
+ * \brief regX ==> regL and Cyx(regX, RegY) ==> regX
+ * enables stack lift and refreshes the stack.
+ * C(n,k) = n! / [k! * (n-k)!]
+ *
+ * \param[in] unusedButMandatoryParameter uint16_t
+ * \return void
+ ***********************************************/
+void fnCyx(uint16_t unusedButMandatoryParameter) {
+  processIntRealComplexDyadicFunction(&doCyxReal, &doCyxCplx, &doCyxShoI, &doCyxLonI);
+/*
+  if(!saveLastX()) {
+    return;
+  }
+
+  cpyx[getRegisterDataType(REGISTER_X)][getRegisterDataType(REGISTER_Y)](CP_COMBINATION);
+
+  adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
+  adjustResult(REGISTER_Y, true, true, REGISTER_Y, -1, -1);*/
+}
+
+/********************************************//**
+ * \brief regX ==> regL and Pyx(regX, RegY) ==> regX
+ * enables stack lift and refreshes the stack.
+ * P(n,k) = n! / (n-k)!
+ *
+ * \param[in] unusedButMandatoryParameter uint16_t
+ * \return void
+ ***********************************************/
+void fnPyx(uint16_t unusedButMandatoryParameter) {
+  processIntRealComplexDyadicFunction(&doPyxReal, &doPyxCplx, &doPyxShoI, &doPyxLonI);
+}
