@@ -2386,9 +2386,9 @@
 #define ITM_STO_M_u                 2326
 #define ITM_STO_S_si                2327
 #define ITM_STO_S_s                 2328
-#define ITM_STO_Q_l                 2329
+#define ITM_STO_M_l                 2329
 #define ITM_STO_Q_xi                2330
-#define ITM_2331                    2331
+#define ITM_STO_Q_nu                2331
 #define ITM_2332                    2332
 #define ITM_2333                    2333
 #define ITM_2334                    2334

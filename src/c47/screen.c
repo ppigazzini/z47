@@ -2584,7 +2584,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
         }
 
         // STATISTICAL DISTR
-        if(regist == REGISTER_X && lastErrorCode == 0) {
+        if(regist == REGISTER_X && lastErrorCode == 0 && calcMode != CM_PEM) {
           const char *r_i = NULL, *r_j = NULL, *r_k = NULL;
           calcRegister_t register_i = REGISTER_M, register_j = REGISTER_M, register_k = REGISTER_M;
           
@@ -2604,8 +2604,9 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
               r_j = STD_gamma;              register_j = REGISTER_S;
               break;
             case -MNU_WEIBL:
-              r_j = STD_lambda;             register_j = REGISTER_Q;
-              /* fall through */
+              r_i = STD_nu;                 register_i = REGISTER_Q;
+              r_j = STD_lambda;             register_j = REGISTER_M;
+              break;
             case -MNU_CHI2:
             case -MNU_T:
               r_i = STD_nu;                 register_i = REGISTER_M;
