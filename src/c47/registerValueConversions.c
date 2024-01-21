@@ -926,6 +926,10 @@ bool_t getRegisterAsRealAngle(calcRegister_t reg, real_t *val, angularMode_t *xA
 }
 
 void processRealComplexMonadicFunction(void (*realf)(void), void (*complexf)(void)) {
+  processIntRealComplexMonadicFunction(realf, complexf, NULL, NULL);
+}
+
+void processIntRealComplexMonadicFunction(void (*realf)(void), void (*complexf)(void), void (*shortintf)(void), void (*longintf)(void)) {
   real_t aReal, aImag;
   bool_t cmplxRes = false;
   const uint32_t type = getRegisterDataType(REGISTER_X);
@@ -933,7 +937,21 @@ void processRealComplexMonadicFunction(void (*realf)(void), void (*complexf)(voi
   if(!saveLastX())
     return;
 
-  if (type == dtReal34Matrix)
+  if (type == dtShortInteger) {
+    if (shortintf != NULL) {
+      shortintf();
+      goto done;
+    }
+    if (longintf != NULL) {
+      convertShortIntegerRegisterToLongIntegerRegister(REGISTER_X, REGISTER_X);
+      longintf();
+      goto done;
+    }
+  }
+
+  if (type == dtLongInteger && longintf != NULL)
+    longintf();
+  else if (type == dtReal34Matrix)
     elementwiseRema(realf);
   else if (type == dtComplex34Matrix)
     elementwiseCxma(complexf);
@@ -945,6 +963,7 @@ void processRealComplexMonadicFunction(void (*realf)(void), void (*complexf)(voi
     }
   }
 
+done:
   adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
 }
 
@@ -1009,7 +1028,7 @@ fin:
   adjustResult(REGISTER_X, true, true, REGISTER_X, REGISTER_Y, -1);
 }
 
-void processIntRealComplexDyadicFunction(void (*shortintf)(void), void (*longintf)(void), void (*realf)(void), void (*complexf)(void)) {
+void processIntRealComplexDyadicFunction(void (*realf)(void), void (*complexf)(void), void (*shortintf)(void), void (*longintf)(void)) {
   const uint32_t typeX = getRegisterDataType(REGISTER_X);
   const uint32_t typeY = getRegisterDataType(REGISTER_Y);
   const bool_t xInt = typeX == dtLongInteger || typeX == dtShortInteger;
