@@ -446,7 +446,6 @@ int vbatIntegrated = 3000;
 #endif // BUFFER_CLICK_DETECTION
     /*bool_t wp43KbdLayout, inFastRefresh = 0, inDownUpPress = 0, repeatDownUpPress = 0*/;  // removed autorepeat stuff   //dr - no keymap is used
 
-      uint16_t currentVolumeSetting, savedVoluleSetting; // used for beep signaling screen shot
   //uint32_t now, previousRefresh, nextAutoRepeat = 0;      // removed autorepeat stuff
 
     c47MemInBlocks = 0;
@@ -857,30 +856,7 @@ int vbatIntegrated = 3000;
       #endif // AUTOREPEAT_C43
 
       if(key == 44) { //DISP for special SCREEN DUMP key code. To be 16 but shift decoding already done to 44 in DMCP
-        resetShiftState();                                  //JM to avoid f or g top left of the screen
-
-        currentVolumeSetting = get_beep_volume();
-        savedVoluleSetting = currentVolumeSetting;
-        while(currentVolumeSetting < 11) {
-          beep_volume_up();
-          currentVolumeSetting = get_beep_volume();
-        }
-
-        start_buzzer_freq(100000); //Click before screen dump
-        sys_delay(5);
-        stop_buzzer();
-
-        xcopy(tmpString, aimBuffer, ERROR_MESSAGE_LENGTH + AIM_BUFFER_LENGTH + NIM_BUFFER_LENGTH);       //backup portion of the "message buffer" area in DMCP used by ERROR..AIM..NIM buffers, to the tmpstring area in DMCP. DMCP uses this area during create_screenshot.
-        create_screenshot(0);      //Screen dump
-        xcopy(aimBuffer,tmpString, ERROR_MESSAGE_LENGTH + AIM_BUFFER_LENGTH + NIM_BUFFER_LENGTH);        //   This total area must be less than the tmpString storage area, which it is.
-
-        start_buzzer_freq(400000); //Click after screen dump
-        sys_delay(5);
-        stop_buzzer();
-        while(currentVolumeSetting != savedVoluleSetting) { //Restore volume
-          beep_volume_down();
-          currentVolumeSetting = get_beep_volume();
-        }
+        standardScreenDump();
       }
 
     #if defined(JMSHOWCODES)
