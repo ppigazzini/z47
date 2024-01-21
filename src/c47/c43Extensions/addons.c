@@ -120,7 +120,7 @@ bool_t keyWaiting(void) {
 int popKey(void) {
   int tmpf = -1;
   #if defined(DMCP_BUILD)
-    if(!keyWaiting) return -1;
+    if(!keyWaiting()) return -1;
     while(keyWaiting()) {
       tmpf = key_pop();
     }
