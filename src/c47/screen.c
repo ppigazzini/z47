@@ -348,6 +348,13 @@ typedef struct {
 
 #define checkHPoffset (checkHP && temporaryInformation == TI_NO_INFO ? 50:0)
 
+#if !defined(TESTSUITE_BUILD)
+  char letteredRegisterName(calcRegister_t regist) {
+    return "XYZTABCDLIJKMNPQRS"[regist - REGISTER_X];
+  }
+#endif //TESTSUITE_BUILD
+
+
 #if defined(PC_BUILD)                                         //JMCSV
   void copyRegisterXToClipboard(void) {
     GtkClipboard *clipboard;
@@ -364,65 +371,14 @@ typedef struct {
 
   void copyStackRegistersToClipboardString(char *clipboardString) {
     char *ptr = clipboardString;
+    const char *sep = "";
 
-    strcpy(ptr, "K = ");
-    ptr += 4;
-    copyRegisterToClipboardString(REGISTER_K, ptr);
-
-    ptr += strlen(ptr);
-    strcpy(ptr, LINEBREAK "J = ");
-    ptr += strlen(ptr);
-    copyRegisterToClipboardString(REGISTER_J, ptr);
-
-    ptr += strlen(ptr);
-    strcpy(ptr, LINEBREAK "I = ");
-    ptr += strlen(ptr);
-    copyRegisterToClipboardString(REGISTER_I, ptr);
-
-    ptr += strlen(ptr);
-    strcpy(ptr, LINEBREAK "L = ");
-    ptr += strlen(ptr);
-    copyRegisterToClipboardString(REGISTER_L, ptr);
-
-    ptr += strlen(ptr);
-    strcpy(ptr, LINEBREAK "D = ");
-    ptr += strlen(ptr);
-    copyRegisterToClipboardString(REGISTER_D, ptr);
-
-    ptr += strlen(ptr);
-    strcpy(ptr, LINEBREAK "C = ");
-    ptr += strlen(ptr);
-    copyRegisterToClipboardString(REGISTER_C, ptr);
-
-    ptr += strlen(ptr);
-    strcpy(ptr, LINEBREAK "B = ");
-    ptr += strlen(ptr);
-    copyRegisterToClipboardString(REGISTER_B, ptr);
-
-    ptr += strlen(ptr);
-    strcpy(ptr, LINEBREAK "A = ");
-    ptr += strlen(ptr);
-    copyRegisterToClipboardString(REGISTER_A, ptr);
-
-    ptr += strlen(ptr);
-    strcpy(ptr, LINEBREAK "T = ");
-    ptr += strlen(ptr);
-    copyRegisterToClipboardString(REGISTER_T, ptr);
-
-    ptr += strlen(ptr);
-    strcpy(ptr, LINEBREAK "Z = ");
-    ptr += strlen(ptr);
-    copyRegisterToClipboardString(REGISTER_Z, ptr);
-
-    ptr += strlen(ptr);
-    strcpy(ptr, LINEBREAK "Y = ");
-    ptr += strlen(ptr);
-    copyRegisterToClipboardString(REGISTER_Y, ptr);
-
-    ptr += strlen(ptr);
-    strcpy(ptr, LINEBREAK "X = ");
-    ptr += strlen(ptr);
-    copyRegisterToClipboardString(REGISTER_X, ptr);
+    for (calcRegister_t r = REGISTER_S; r >= REGISTER_X; r--) {
+      ptr += sprintf(ptr, "%s%c = ", sep, letteredRegisterName(r));
+      copyRegisterToClipboardString(r, ptr);
+      ptr = strchr(ptr, '\0');
+      sep = LINEBREAK;
+    }
   }
 
 
@@ -1731,7 +1687,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
       old_time = new_time;
       ret_value = true;
 
-      //refreshScreen(80);   //to update stack
+      //refreshScreen();   //to update stack
       clearRegisterLine(REGISTER_T, true, true);
       if(mode > 1) {
         clearRegisterLine(REGISTER_Z, true, true);
@@ -1788,13 +1744,13 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
     int prefixWidth;
     char regS[5];
 
-    if(name == NULL) {
+    if(name == NULL || !(rowReg == REGISTER_Y || rowReg == REGISTER_Z || rowReg == REGISTER_T)) {
       return;
     }
     clearRegisterLine(rowReg, true, true);
 
-    strcpy(regS, "RegI");
-    regS[3] += reg - REGISTER_I;
+    strcpy(regS, "Reg_");
+    regS[3] = letteredRegisterName(reg);
     showString(regS, &standardFont, 19, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(rowReg - REGISTER_X) + TEMPORARY_INFO_OFFSET, vmNormal, true, true);
     sprintf(prefix, "= %s =", name);
     prefixWidth = showString(prefix, &standardFont, 19 + (17+28), Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(rowReg - REGISTER_X) + TEMPORARY_INFO_OFFSET, vmNormal, true, true);
@@ -1938,7 +1894,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
       sprintf(prefix, " R%02" PRIu16 STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM, currentViewRegister);
     }
     else if(currentViewRegister < FIRST_LOCAL_REGISTER) {
-      sprintf(prefix, " %c" STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM, "XYZTABCDLIJK"[currentViewRegister - REGISTER_X]);
+      sprintf(prefix, " %c" STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM, letteredRegisterName(currentViewRegister));
     }
     else if(currentViewRegister <= LAST_LOCAL_REGISTER) {
       sprintf(prefix, " R.%02" PRIu16 STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM, (uint16_t)(currentViewRegister - FIRST_LOCAL_REGISTER));
@@ -1979,7 +1935,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
       sprintf(prefix, " R%02" PRIu16 "?", (uint16_t)(currentInputVariable & 0x3fff));
     }
     else if((currentInputVariable & 0x3fff) < FIRST_LOCAL_REGISTER) {
-      sprintf(prefix, " %c?", "XYZTABCDLIJK"[(currentInputVariable & 0x3fff) - REGISTER_X]);
+      sprintf(prefix, " %c?", letteredRegisterName(currentInputVariable & 0x3fff));
     }
     else if((currentInputVariable & 0x3fff) <= LAST_LOCAL_REGISTER) {
       sprintf(prefix, " R.%02" PRIu16 "?", (uint16_t)((currentInputVariable & 0x3fff) - FIRST_LOCAL_REGISTER));
@@ -2630,56 +2586,61 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
         // STATISTICAL DISTR
         if(regist == REGISTER_X && lastErrorCode == 0) {
           const char *r_i = NULL, *r_j = NULL, *r_k = NULL;
+          calcRegister_t register_i = REGISTER_M, register_j = REGISTER_M, register_k = REGISTER_M;
+          
 
           switch(softmenu[softmenuStack[0].softmenuId].menuItem) {
-            case -MNU_NBIN:
+            case -MNU_GEV:
+              r_i = STD_mu;                 register_i = REGISTER_M;
+              r_j = STD_sigma;              register_j = REGISTER_S;
+              r_k = STD_xi;                 register_k = REGISTER_Q;
+              break;
             case -MNU_BINOM:
-              r_i = STD_p;
-              r_j = STD_n;
+              r_i = STD_p;                  register_i = REGISTER_P;
+              r_j = STD_n;                  register_j = REGISTER_N;
               break;
             case -MNU_CAUCH:
-              r_i = STD_x STD_SUB_0;
-              r_j = STD_gamma;
+              r_i = STD_x STD_SUB_0;        register_i = REGISTER_M;
+              r_j = STD_gamma;              register_j = REGISTER_S;
               break;
             case -MNU_WEIBL:
-              r_j = STD_lambda;
+              r_j = STD_lambda;             register_j = REGISTER_Q;
               /* fall through */
             case -MNU_CHI2:
             case -MNU_T:
-              r_i = STD_nu;
+              r_i = STD_nu;                 register_i = REGISTER_M;
               break;
             case -MNU_EXPON:
             case -MNU_POISS:
-              r_i = STD_lambda;
+              r_i = STD_lambda;             register_i = REGISTER_R;
               break;
             case -MNU_F:
-              r_i = STD_d STD_SUB_1;
-              r_j = STD_d STD_SUB_2;
+              r_i = STD_d STD_SUB_1;        register_i = REGISTER_M;
+              r_j = STD_d STD_SUB_2;        register_j = REGISTER_N;
               break;
             case -MNU_GEOM:
-              r_i = STD_p;
+              r_i = STD_p;                  register_i = REGISTER_P;
               break;
             case -MNU_HYPER:
-              r_i = STD_N;
-              r_j = STD_n;
-              r_k = STD_K;
+              r_i = STD_N;                  register_i = REGISTER_M;
+              r_j = STD_n;                  register_j = REGISTER_N;
+              r_k = STD_K;                  register_k = REGISTER_Q;
               break;
             case -MNU_LOGIS:
-              r_j = STD_s;
-              r_i = STD_mu;
+              r_j = STD_s;                  register_j = REGISTER_S;
+              r_i = STD_mu;                 register_i = REGISTER_M;
               break;
             case -MNU_NORML:
-            case -MNU_LGNRM:
-              r_j = STD_sigma;
-              r_i = STD_mu;
+              r_j = STD_sigma;              register_j = REGISTER_S;
+              r_i = STD_mu;                 register_i = REGISTER_M;
               break;
             default: ;
           }
 
-          if(!(r_i == NULL && r_j == NULL && r_k == NULL) && stats_param_check(r_i, REGISTER_I) && stats_param_check(r_j, REGISTER_J) && stats_param_check(r_k, REGISTER_K)) {
-            stats_param_display(r_i, REGISTER_I, prefix, tmpString, REGISTER_T);
-            stats_param_display(r_j, REGISTER_J, prefix, tmpString, REGISTER_Z);
-            stats_param_display(r_k, REGISTER_K, prefix, tmpString, REGISTER_Y);
+          if(!(r_i == NULL && r_j == NULL && r_k == NULL) && stats_param_check(r_i, register_i) && stats_param_check(r_j, register_j) && stats_param_check(r_k, register_k)) {
+            stats_param_display(r_i, register_i, prefix, tmpString, REGISTER_T);
+            stats_param_display(r_j, register_j, prefix, tmpString, REGISTER_Z);
+            stats_param_display(r_k, register_k, prefix, tmpString, REGISTER_Y);
 
             prefix[0]=0;
             tmpString[0]=0;

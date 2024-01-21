@@ -98,6 +98,14 @@
    * \param[in] regist
    */
   void         fnRecallElement(uint16_t unusedButMandatoryParameter);
+  void         fnRecallElementPlus(uint16_t unusedButMandatoryParameter);
+
+  /**
+   * Recalls the vector element X in TAM selected vector.
+   *
+   * \param[in] regist
+   */
+  void         fnRecallVElement(uint16_t regist);
 
   /**
    * Recalls the indexes I and J in X and Y.

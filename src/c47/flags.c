@@ -35,9 +35,9 @@
 
 #include "c47.h"
 
-typedef enum { FLAG_CLEAR, FLAG_SET, FLAG_FLIP } FLAG_ACTION;
+typedef enum { FLAG_CLEAR=0, FLAG_SET=1, FLAG_FLIP=2 } flagAction_t;
 
-static void systemFlagProcess(unsigned int idx, FLAG_ACTION action) {
+static void systemFlagProcess(unsigned int idx, flagAction_t action) {
   const unsigned int n = idx / 16;
   const unsigned int b = idx % 16;
 
@@ -57,7 +57,7 @@ static void systemFlagProcess(unsigned int idx, FLAG_ACTION action) {
   }
 }
 
-static void systemFlagAction(uint16_t systemFlag, FLAG_ACTION action) {
+static void systemFlagAction(uint16_t systemFlag, flagAction_t action) {
   switch(systemFlag) {
     case FLAG_ALLENG:
       systemFlagProcess(FLAG_A, action);
@@ -144,22 +144,57 @@ static void systemFlagAction(uint16_t systemFlag, FLAG_ACTION action) {
 }
 
 void setSystemFlag(unsigned int sf) {
-  systemFlags |= ((uint64_t)1 << (sf & 0x3fff));
-  systemFlagAction(sf, 1);
+  int32_t flag = sf & 0x3fff;
+
+  if(flag < 64) {
+    systemFlags0 |= ((uint64_t)1 << flag);
+    systemFlagAction(sf, FLAG_SET);
+  }
+  else {
+    systemFlags1 |= ((uint64_t)1 << (flag - 64));
+    systemFlagAction(sf, FLAG_SET);
+  }
 }
 
 void clearSystemFlag(unsigned int sf) {
-  systemFlags &= ~((uint64_t)1 << (sf & 0x3fff));
-  systemFlagAction(sf, 0);
+  int32_t flag = sf & 0x3fff;
+
+  if(flag < 64) {
+    systemFlags0 &= ~((uint64_t)1 << flag);
+    systemFlagAction(sf, FLAG_CLEAR);
+  }
+  else {
+    systemFlags1 &= ~((uint64_t)1 << (flag - 64));
+    systemFlagAction(sf, FLAG_CLEAR);
+  }
 }
 
 void flipSystemFlag(unsigned int sf) {
-  systemFlags ^=  ((uint64_t)1 << (sf & 0x3fff));
-  systemFlagAction(sf, 2);
+  int32_t flag = sf & 0x3fff;
+
+  if(flag < 64) {
+    systemFlags0 ^=  ((uint64_t)1 << flag);
+    systemFlagAction(sf, FLAG_FLIP);
+  }
+  else {
+    systemFlags1 ^=  ((uint64_t)1 << (flag - 64));
+    systemFlagAction(sf, FLAG_FLIP);
+  }
 }
 
-void forceSystemFlag(unsigned int sf, int v) {
-  if (v)
+bool_t getSystemFlag(int32_t sf) {
+  int32_t flag = sf & 0x3fff;
+
+  if(flag < 64) {
+    return (systemFlags0 & ((uint64_t)1 << flag)) != 0;
+  }
+  else {
+    return (systemFlags1 & ((uint64_t)1 << (flag - 64))) != 0;
+  }
+}
+
+void forceSystemFlag(unsigned int sf, int set) {
+  if(set)
     setSystemFlag(sf);
   else
     clearSystemFlag(sf);

@@ -2858,7 +2858,7 @@ void fnShow_SCROLL(uint16_t fnShow_param) {                // Heavily modified b
                  if(showRegis >= FIRST_NAMED_VARIABLE + numberOfNamedVariables - 1) {
                    showRegis = 0;
                  } else 
-                 if(showRegis == REGISTER_K) {
+                 if(showRegis == REGISTER_S) {
                    showRegis = FIRST_NAMED_VARIABLE;
                  } else {
                    showRegis++;
@@ -2878,7 +2878,7 @@ void fnShow_SCROLL(uint16_t fnShow_param) {                // Heavily modified b
                    showRegis = FIRST_NAMED_VARIABLE + numberOfNamedVariables - 1;
                  } else
                  if(showRegis == FIRST_NAMED_VARIABLE) {
-                   showRegis = REGISTER_K;
+                   showRegis = REGISTER_S;
                  } else {
                    showRegis--;
                  }

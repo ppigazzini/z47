@@ -7,6 +7,7 @@
 #include "debug.h"
 #include "defines.h"
 #include "error.h"
+#include "flags.h"
 #include "items.h"
 #include "c43Extensions/jm.h"
 #include "mathematics/compare.h"
@@ -15,6 +16,7 @@
 #include "plotstat.h"
 #include "registerValueConversions.h"
 #include "registers.h"
+#include "stack.h"
 #include "stats.h"
 #include "typeDefinitions.h"
 #include "ui/matrixEditor.h"
@@ -400,7 +402,8 @@ void fnStoreConfig(uint16_t regist) {
   storeToDtConfigDescriptor(displayStack);
   storeToDtConfigDescriptor(firstGregorianDay);
   storeToDtConfigDescriptor(roundingMode);
-  storeToDtConfigDescriptor(systemFlags);
+  storeToDtConfigDescriptor(systemFlags0);
+  storeToDtConfigDescriptor(systemFlags1);
   xcopy(configToStore->kbd_usr, kbd_usr, sizeof(kbd_usr));
   storeToDtConfigDescriptor(fgLN);
   storeToDtConfigDescriptor(eRPN);
@@ -487,14 +490,68 @@ void fnStoreStack(uint16_t regist) {
 }
 
 
+static void _fnStoreElement(bool_t stepForward);
+
+
+void fnStoreVElement(uint16_t ix) {
+  #if !defined(TESTSUITE_BUILD)
+  const int16_t iBak = getIRegisterAsInt(true);
+  const int16_t jBak = getJRegisterAsInt(true);
+  real_t rx;
+  
+  if((getRegisterDataType(REGISTER_Y) == dtReal34Matrix) || (getRegisterDataType(REGISTER_Y) == dtComplex34Matrix)) {
+    if (!getRegisterAsComplex(REGISTER_X, &rx, &rx) && !getRegisterAsReal(REGISTER_X, &rx)) {
+      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+      #if defined(PC_BUILD)
+        sprintf(errorMessage, "DataType %" PRIu32, getRegisterDataType(REGISTER_X));
+        moreInfoOnError("In function fnStoreVElement:", errorMessage, "is not a Real/Integer/Complex.", "");
+      #endif
+      return;
+    }
+    if(getRegisterDataType(REGISTER_Y) == dtReal34Matrix) {
+      real34Matrix_t x;
+      linkToRealMatrixRegister(REGISTER_Y, &x);
+      setIRegisterAsInt(false, (ix-1) / x.header.matrixColumns+1);
+      setJRegisterAsInt(false, (ix-1) % x.header.matrixColumns+1);
+    }
+    else { //Complex Matrix
+      complex34Matrix_t x;
+      linkToComplexMatrixRegister(REGISTER_Y, &x);
+      setIRegisterAsInt(false, (ix-1) / x.header.matrixColumns+1);
+      setJRegisterAsInt(false, (ix-1) % x.header.matrixColumns+1);
+    }
+    uint16_t matrixIndexBak = matrixIndex;
+    matrixIndex = REGISTER_Y;
+    _fnStoreElement(false);
+    setIRegisterAsInt(false, iBak);
+    setJRegisterAsInt(false, jBak);
+    matrixIndex = matrixIndexBak;
+  }
+  else {
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+      #if defined(PC_BUILD)
+    sprintf(errorMessage, "DataType %" PRIu32, getRegisterDataType(REGISTER_Y));
+    moreInfoOnError("In function fnStoreVElement:", errorMessage, "is not a matrix.", "");
+    #endif
+  }
+  #endif // !TESTSUITE_BUILD
+}
+
+void fnStoreElementPlus(uint16_t unusedButMandatoryParameter) {
+  _fnStoreElement(true);  
+}
 
 void fnStoreElement(uint16_t unusedButMandatoryParameter) {
+  _fnStoreElement(false);
+}
+
+void _fnStoreElement(bool_t stepForward) {
   #if !defined(TESTSUITE_BUILD)
     if(matrixIndex == INVALID_VARIABLE) {
       displayCalcErrorMessage(ERROR_NO_MATRIX_INDEXED, ERR_REGISTER_LINE, REGISTER_X);
       #if(EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "Cannot execute STOEL without a matrix indexed");
-        moreInfoOnError("In function fnStoreElement:", errorMessage, NULL, NULL);
+        moreInfoOnError("In function _fnStoreElement:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
     else {
@@ -503,6 +560,9 @@ void fnStoreElement(uint16_t unusedButMandatoryParameter) {
         convertReal34MatrixRegisterToComplex34MatrixRegister(matrixIndex, matrixIndex);
       }
       callByIndexedMatrix(storeElementReal, storeElementComplex);
+      if(stepForward) {
+        fnIncDecJ(INC_FLAG);
+      }
       uint16_t rows = 1;
       if(matrixIndex >= FIRST_NAMED_VARIABLE && isStatsMatrixN(&rows, matrixIndex) && matrixIndex == findNamedVariable("STATS")) {
         calcSigma(0);

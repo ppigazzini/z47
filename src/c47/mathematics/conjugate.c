@@ -22,6 +22,7 @@
 
 #include "debug.h"
 #include "error.h"
+#include "flags.h"
 #include "items.h"
 #include "mathematics/matrix.h"
 #include "registers.h"

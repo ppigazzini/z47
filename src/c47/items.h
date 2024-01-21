@@ -492,7 +492,7 @@
 #define ITM_0462                     462
 
 
-
+// System flags
 #define SFL_TDM24                    463
 #define SFL_YMD                      464
 #define SFL_DMY                      465
@@ -519,7 +519,7 @@
 #define SFL_SPCRES                   486
 #define SFL_SSIZE8                   487
 #define SFL_QUIET                    488
-#define ITM_0489                     489
+#define SFL_WRAPEND                  489
 #define SFL_MULTx                    490
 #define SFL_ALLENG                   491
 #define SFL_GROW                     492
@@ -555,8 +555,8 @@
 #define SFL_SBshfR                   522
 #define SFL_HPBASE                   523
 #define SFL_2TO10                    524
-#define SFL_SH_LONGPRESS              525
-#define ITM_0526                     526
+#define SFL_SH_LONGPRESS             525
+#define SFL_WRAPEDG                  526
 
 
 // Bufferized items
@@ -1276,7 +1276,7 @@
 #define ITM_HYPER                   1234
 #define ITM_HYPERU                  1235
 #define ITM_HYPERM1                 1236
-#define MNU_LGNRM                   1237
+#define ITM_1237                    1237
 #define ITM_LGNRMP                  1238
 #define ITM_LGNRM                   1239
 #define ITM_LGNRMU                  1240
@@ -1286,7 +1286,7 @@
 #define ITM_LOGIS                   1244
 #define ITM_LOGISU                  1245
 #define ITM_LOGISM1                 1246
-#define MNU_NBIN                    1247
+#define MNU_GEV                     1247
 #define ITM_NBINP                   1248
 #define ITM_NBIN                    1249
 #define ITM_NBINU                   1250
@@ -1321,10 +1321,10 @@
 #define ITM_STDNORML                1279
 #define ITM_STDNORMLU               1280
 #define ITM_STDNORMLM1              1281
-#define ITM_1282                    1282
-#define ITM_1283                    1283
-#define ITM_1284                    1284
-#define ITM_1285                    1285
+#define ITM_GEVP                    1282
+#define ITM_GEV                     1283
+#define ITM_GEVU                    1284
+#define ITM_GEVM1                   1285
 #define ITM_1286                    1286
 #define ITM_1287                    1287
 #define ITM_1288                    1288
@@ -1433,7 +1433,7 @@
 #define MNU_TAM                     1385
 #define MNU_TAMCMP                  1386
 #define MNU_TAMSTORCL               1387
-#define ITM_1388                    1388
+#define MNU_REG                     1388
 #define MNU_VAR                     1389
 #define MNU_TAMFLAG                 1390
 #define MNU_TAMSHUFFLE              1391
@@ -1524,7 +1524,7 @@
 #define ITM_DISK                    1474
 #define ITM_FQX                     1475
 #define ITM_FDQX                    1476
-#define ITM_1477                    1477
+#define ITM_FACTORS                 1477
 #define ITM_GD                      1478
 #define ITM_GDM1                    1479
 #define ITM_GRAD                    1480
@@ -1793,7 +1793,7 @@
 #define ITM_dotD                    1741
 #define ITM_SHOW                    1742
 #define ITM_SYSTEM                  1743
-#define ITM_FRACT                       1744
+#define ITM_FRACT                   1744
 #define ITM_VANGLE                  1745
 #define ITM_XH                      1746
 #define ITM_XRMS                    1747
@@ -2300,9 +2300,107 @@
 #define MNU_YESNO                   2244
 #define ITM_YES                     2245
 #define ITM_NO                      2246
+#define ITM_RCLVEL                  2247
+#define ITM_STOVEL                  2248
+#define ITM_RCLELPLUS               2249
+#define ITM_STOELPLUS               2250
 
-#define MNU_SHOW                    2247
-#define LAST_ITEM                   2248
+// 64 more system flags
+#define SFL_2247                    2251
+#define SFL_2248                    2252
+#define SFL_2249                    2253
+#define SFL_2250                    2254
+#define SFL_2251                    2255
+#define SFL_2252                    2256
+#define SFL_2253                    2257
+#define SFL_2254                    2258
+#define SFL_2255                    2259
+#define SFL_2256                    2260
+#define SFL_2257                    2261
+#define SFL_2258                    2262
+#define SFL_2259                    2263
+#define SFL_2260                    2264
+#define SFL_2261                    2265
+#define SFL_2262                    2266
+#define SFL_2263                    2267
+#define SFL_2264                    2268
+#define SFL_2265                    2269
+#define SFL_2266                    2270
+#define SFL_2267                    2271
+#define SFL_2268                    2272
+#define SFL_2269                    2273
+#define SFL_2270                    2274
+#define SFL_2271                    2275
+#define SFL_2272                    2276
+#define SFL_2273                    2277
+#define SFL_2274                    2278
+#define SFL_2275                    2279
+#define SFL_2276                    2280
+#define SFL_2277                    2281
+#define SFL_2278                    2282
+#define SFL_2279                    2283
+#define SFL_2280                    2284
+#define SFL_2281                    2285
+#define SFL_2282                    2286
+#define SFL_2283                    2287
+#define SFL_2284                    2288
+#define SFL_2285                    2289
+#define SFL_2286                    2290
+#define SFL_2287                    2291
+#define SFL_2288                    2292
+#define SFL_2289                    2293
+#define SFL_2290                    2294
+#define SFL_2291                    2295
+#define SFL_2292                    2296
+#define SFL_2293                    2297
+#define SFL_2294                    2298
+#define SFL_2295                    2299
+#define SFL_2296                    2300
+#define SFL_2297                    2301
+#define SFL_2298                    2302
+#define SFL_2299                    2303
+#define SFL_2300                    2304
+#define SFL_2301                    2305
+#define SFL_2302                    2306
+#define SFL_2303                    2307
+#define SFL_2304                    2308
+#define SFL_2305                    2309
+#define SFL_2306                    2310
+#define SFL_2307                    2311
+#define SFL_2308                    2312
+#define SFL_2309                    2313
+#define SFL_2310                    2314
+
+#define MNU_SHOW                    2315
+
+#define ITM_STO_P_p                 2316
+#define ITM_STO_N1                  2317
+#define ITM_STO_M_x0                2318
+#define ITM_STO_S_g                 2319
+#define ITM_STO_M_nu                2320
+#define ITM_STO_R_l                 2321
+#define ITM_STO_M_d1                2322
+#define ITM_STO_N_d2                2323
+#define ITM_STO_M_N                 2324
+#define ITM_STO_Q_K                 2325
+#define ITM_STO_M_u                 2326
+#define ITM_STO_S_si                2327
+#define ITM_STO_S_s                 2328
+#define ITM_STO_Q_l                 2329
+#define ITM_STO_Q_xi                2330
+#define ITM_2331                    2331
+#define ITM_2332                    2332
+#define ITM_2333                    2333
+#define ITM_2334                    2334
+#define ITM_2335                    2335
+#define ITM_REG_M                   2336
+#define ITM_REG_N                   2337
+#define ITM_REG_P                   2338
+#define ITM_REG_Q                   2339
+#define ITM_REG_R                   2340
+#define ITM_REG_S                   2341
+
+#define LAST_ITEM                   2342
 
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL

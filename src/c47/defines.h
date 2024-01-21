@@ -43,12 +43,16 @@
 
   #define TWO_FILE_PGM                 //JM Normally NOT have TWO_FILE. TWO_FILE means that QSPI is used.
 
+  #if defined(NEW_HW) // DMCP5
+    #undef TWO_FILE_PGM
+  #endif // NEW_HW
+
 //ONE FILE OPERATION needs the original CRC file - see src/c47-dmcp
 //  #undef  TWO_FILE_PGM  //See CRC ISSUE - Commented this line to force full QSPI generation
 //                        //Also change the file here: src/c47-dmcp/qspi_crc.h for the single file version
 
 //THESE ARE DMCP COMPILE OPTIONS
-  #if !defined(TWO_FILE_PGM) //---------THESE ARE THE EXCLUSIONS TO MAKE IT FIT WHILE NOT USING QSPI
+  #if !defined(TWO_FILE_PGM) && !defined(NEW_HW) //---------THESE ARE THE EXCLUSIONS TO MAKE IT FIT WHILE NOT USING QSPI ON OLD HARDWARE
     #define SAVE_SPACE_DM42_2  //005672 bytes: XEQM
     #define SAVE_SPACE_DM42_6  //001648 bytes: ELEC functions
     #define SAVE_SPACE_DM42_7  //002144 bytes: KEYS USER_DM42;
@@ -62,7 +66,7 @@
   //  #define SAVE_SPACE_DM42_14    //           programming sample programs
     #define SAVE_SPACE_DM42_15    //           without all distributions, i.e. binomial, cauchy, chi
     #define SAVE_SPACE_DM42_16    //           without all distributions, i.e. binomial, cauchy, chi
-  #endif // !TWO_FILE_PGM
+  #endif // !TWO_FILE_PGM && !NEW_HW
 
   #if defined(TWO_FILE_PGM) //---------THESE ARE THE EXCLUSIONS TO MAKE IT FIT INTO AVAILABLE FLASH EVEN WHILE USING QSPI
   //  #define SAVE_SPACE_DM42_20_TIMER
@@ -509,7 +513,7 @@
 #define FLAG_SPCRES                           0x8017
 #define FLAG_SSIZE8                           0x8018
 #define FLAG_QUIET                            0x8019
-#define FLAG_SPARE                            0x801a       //SPARE
+#define FLAG_WRAPEND                          0xc01a
 #define FLAG_MULTx                            0x801b
 #define FLAG_ALLENG                           0x801c
 #define FLAG_GROW                             0x801d
@@ -546,6 +550,7 @@
 #define FLAG_HPBASE                           0x803C
 #define FLAG_2TO10                            0x803D
 #define FLAG_SH_LONGPRESS                     0x803E
+#define FLAG_WRAPEDG                          0xc03F
 
 #define NUMBER_OF_SYSTEM_FLAGS                    60
 
@@ -658,80 +663,105 @@ typedef enum {
 
 ///////////////////////////////////////////////////////
 // Register numbering:
-//    0 to  111 global resisters
-//  112 to  210 local registers (from .00 to .98) this are 99 local registers
-//  212 to  219 saved stack registers (UNDO feature)
-//  220 to  220 temporary registers
-//  221 to 1999 named variables
+//    0 to  117 global resisters
+//  118 to  216 local registers (from .00 to .98) this are 99 local registers
+//  216 to  219 saved stack registers (UNDO feature)
+//  226 to  228 temporary registers
+//  229 to 1999 named variables
 // 2000 to 2029 reserved variables
-#define REGISTER_X                               100
-#define REGISTER_Y                               101
-#define REGISTER_Z                               102
-#define REGISTER_T                               103
-#define REGISTER_A                               104
-#define REGISTER_B                               105
-#define REGISTER_C                               106
-#define REGISTER_D                               107
-#define REGISTER_L                               108
-#define REGISTER_I                               109
-#define REGISTER_J                               110
-#define REGISTER_K                               111
-#define LAST_GLOBAL_REGISTER                     111
-#define NUMBER_OF_GLOBAL_REGISTERS               112 // There are 112 global registers from 0 to 111
-#define FIRST_LOCAL_REGISTER                     112 // There are 112 global registers from 0 to 111
-#define LAST_LOCAL_REGISTER                      210 // There are maximum 99 local registers from 112 to 210 (.00 to .98)
-#define NUMBER_OF_SAVED_STACK_REGISTERS            9 // 211 to 219
-#define FIRST_SAVED_STACK_REGISTER               211
-#define SAVED_REGISTER_X                         211
-#define SAVED_REGISTER_Y                         212
-#define SAVED_REGISTER_Z                         213
-#define SAVED_REGISTER_T                         214
-#define SAVED_REGISTER_A                         215
-#define SAVED_REGISTER_B                         216
-#define SAVED_REGISTER_C                         217
-#define SAVED_REGISTER_D                         218
-#define SAVED_REGISTER_L                         219
-#define LAST_SAVED_STACK_REGISTER                219
-#define NUMBER_OF_TEMP_REGISTERS                   2 // 220, 221
-#define FIRST_TEMP_REGISTER                      220
-#define TEMP_REGISTER_1                          220
-#define TEMP_REGISTER_2_SAVED_STATS              221
-#define LAST_TEMP_REGISTER                       221
-#define FIRST_NAMED_VARIABLE                     222
-#define LAST_NAMED_VARIABLE                     1999
-#define FIRST_RESERVED_VARIABLE                 2000
-#define RESERVED_VARIABLE_X                     2000
-#define RESERVED_VARIABLE_Y                     2001
-#define RESERVED_VARIABLE_Z                     2002
-#define RESERVED_VARIABLE_T                     2003
-#define RESERVED_VARIABLE_A                     2004
-#define RESERVED_VARIABLE_B                     2005
-#define RESERVED_VARIABLE_C                     2006
-#define RESERVED_VARIABLE_D                     2007
-#define RESERVED_VARIABLE_L                     2008
-#define RESERVED_VARIABLE_I                     2009
-#define RESERVED_VARIABLE_J                     2010
-#define RESERVED_VARIABLE_K                     2011
-#define RESERVED_VARIABLE_ADM                   2012
-#define RESERVED_VARIABLE_DENMAX                2013
-#define RESERVED_VARIABLE_ISM                   2014
-#define RESERVED_VARIABLE_REALDF                2015
-#define RESERVED_VARIABLE_NDEC                  2016
-#define RESERVED_VARIABLE_ACC                   2017
-#define RESERVED_VARIABLE_ULIM                  2018
-#define RESERVED_VARIABLE_LLIM                  2019
-#define RESERVED_VARIABLE_FV                    2020
-#define RESERVED_VARIABLE_IPONA                 2021
-#define RESERVED_VARIABLE_NPER                  2022
-#define RESERVED_VARIABLE_PERONA                2023
-#define RESERVED_VARIABLE_PMT                   2024
-#define RESERVED_VARIABLE_PV                    2025
-#define RESERVED_VARIABLE_GRAMOD                2026
-#define LAST_RESERVED_VARIABLE                  2026
-#define INVALID_VARIABLE                        2027
-#define FIRST_LABEL                             2028
-#define LAST_LABEL                              6999
 
+enum REG_NUMBERS {
+  FIRST_GLOBAL_REGISTER = 0,
+  // Stack registers
+  REGISTER_X = 100,
+  REGISTER_Y,
+  REGISTER_Z,
+  REGISTER_T,
+  REGISTER_A,
+  REGISTER_B,
+  REGISTER_C,
+  REGISTER_D,
+  REGISTER_L,
+  // Matrix registers
+  REGISTER_I,
+  REGISTER_J,
+  REGISTER_K,
+  // Statistical parameter registers
+  FIRST_STAT_REGISTER,
+    REGISTER_M = FIRST_STAT_REGISTER,
+  REGISTER_N,
+  REGISTER_P,
+  REGISTER_Q,
+  REGISTER_R,
+  REGISTER_S,
+    LAST_STAT_REGISTER = REGISTER_S,
+    LAST_GLOBAL_REGISTER = REGISTER_S,
+  // Local registers
+  FIRST_LOCAL_REGISTER,
+  LAST_LOCAL_REGISTER = FIRST_LOCAL_REGISTER + 99 - 1,
+  // Saved stack registers
+  FIRST_SAVED_STACK_REGISTER,
+    SAVED_REGISTER_X = FIRST_SAVED_STACK_REGISTER,
+  SAVED_REGISTER_Y,
+  SAVED_REGISTER_Z,
+  SAVED_REGISTER_T,
+  SAVED_REGISTER_A,
+  SAVED_REGISTER_B,
+  SAVED_REGISTER_C,
+  SAVED_REGISTER_D,
+  SAVED_REGISTER_L,
+    LAST_SAVED_STACK_REGISTER = SAVED_REGISTER_L,
+  // Temporary registeres
+  FIRST_TEMP_REGISTER,
+    TEMP_REGISTER_1 = FIRST_TEMP_REGISTER,
+  TEMP_REGISTER_2_SAVED_STATS,
+    LAST_TEMP_REGISTER = TEMP_REGISTER_2_SAVED_STATS,
+  // Named variables
+  FIRST_NAMED_VARIABLE,
+  LAST_NAMED_VARIABLE = 1999,
+  FIRST_RESERVED_VARIABLE = 2000,
+    RESERVED_VARIABLE_X = FIRST_RESERVED_VARIABLE,
+  RESERVED_VARIABLE_Y,
+  RESERVED_VARIABLE_Z,
+  RESERVED_VARIABLE_T,
+  RESERVED_VARIABLE_A,
+  RESERVED_VARIABLE_B,
+  RESERVED_VARIABLE_C,
+  RESERVED_VARIABLE_D,
+  RESERVED_VARIABLE_L,
+  RESERVED_VARIABLE_I,
+  RESERVED_VARIABLE_J,
+  RESERVED_VARIABLE_K,
+  RESERVED_VARIABLE_M,
+  RESERVED_VARIABLE_N,
+  RESERVED_VARIABLE_P,
+  RESERVED_VARIABLE_Q,
+  RESERVED_VARIABLE_S,
+  RESERVED_VARIABLE_ADM,
+  RESERVED_VARIABLE_DENMAX,
+  RESERVED_VARIABLE_ISM,
+  RESERVED_VARIABLE_REALDF,
+  RESERVED_VARIABLE_NDEC,
+  RESERVED_VARIABLE_ACC,
+  RESERVED_VARIABLE_ULIM,
+  RESERVED_VARIABLE_LLIM,
+  RESERVED_VARIABLE_FV,
+  RESERVED_VARIABLE_IPONA,
+  RESERVED_VARIABLE_NPER,
+  RESERVED_VARIABLE_PERONA,
+  RESERVED_VARIABLE_PMT,
+  RESERVED_VARIABLE_PV,
+  RESERVED_VARIABLE_GRAMOD,
+    LAST_RESERVED_VARIABLE = RESERVED_VARIABLE_GRAMOD,
+  INVALID_VARIABLE,
+  FIRST_LABEL,
+  LAST_LABEL = 6999
+};
+
+#define NUMBER_OF_GLOBAL_REGISTERS          (LAST_GLOBAL_REGISTER - FIRST_GLOBAL_REGISTER + 1)
+#define NUMBER_OF_LOCAL_REGISTERS           (LAST_LOCAL_REGISTER - FIRST_LOCAL_REGISTER + 1)
+#define NUMBER_OF_SAVED_STACK_REGISTERS     (LAST_SAVED_STACK_REGISTER - FIRST_SAVED_STACK_REGISTER + 1)
+#define NUMBER_OF_TEMP_REGISTERS            (LAST_TEMP_REGISTER - FIRST_TEMP_REGISTER + 1)
 #define NUMBER_OF_RESERVED_VARIABLES        (LAST_RESERVED_VARIABLE - FIRST_RESERVED_VARIABLE + 1)
 
 
@@ -1380,10 +1410,10 @@ typedef enum {
   #endif // TWO_FILE_PGM
 #endif // !DMCP_BUILD
 
-#if defined(DMCP_BUILD) && defined(NEW_HW)
+#if defined(DMCP_BUILD) && defined(NEW_HW) // DMCP5
   #undef TO_QSPI
   #define TO_QSPI
-#endif
+#endif // DMCP_BUILD && NEW_HW
 
 //******************************
 //* Macros replacing functions *
@@ -1395,13 +1425,11 @@ typedef enum {
 #endif // EXTRA_INFO_ON_CALC_ERROR == 0 || TESTSUITE_BUILD || DMCP_BUILD
 
 #define isSystemFlagWriteProtected(sf)       ((sf & 0x4000) != 0)
-#define getSystemFlag(sf)                    ((systemFlags &   ((uint64_t)1 << (sf & 0x3fff))) != 0)
 #define shortIntegerIsZero(op)               (((*(uint64_t *)(op)) == 0) || (shortIntegerMode == SIM_SIGNMT && (((*(uint64_t *)(op)) == 1u<<((uint64_t)shortIntegerWordSize-1)))))
 #define getStackTop()                        (getSystemFlag(FLAG_SSIZE8) ? REGISTER_D : REGISTER_T)
 #define freeRegisterData(regist)             freeC47Blocks((void *)getRegisterDataPointer(regist), getRegisterFullSizeInBlocks(regist))
 #define storeToDtConfigDescriptor(config)    (configToStore->config = config)
 #define recallFromDtConfigDescriptor(config) (config = configToRecall->config)
-#define getRecalledSystemFlag(sf)            ((configToRecall->systemFlags &   ((uint64_t)1 << (sf & 0x3fff))) != 0)
 #define BPB                                  2 // 2^BPB = number of bytes per block
 #define BYTES_PER_BLOCK                      (1 << BPB)
 #define TO_BLOCKS(n)                         (((n) + (BYTES_PER_BLOCK - 1)) >> BPB)

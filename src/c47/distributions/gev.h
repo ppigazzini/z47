@@ -15,24 +15,16 @@
  */
 
 /********************************************//**
- * \file chi2.h
+ * \file gev.h
  ***********************************************/
-#if !defined(CHI2_H)
-  #define CHI2_H
+#if !defined(GEV_H)
+  #define GEV_H
 
   #include "realType.h"
-  #include "typeDefinitions.h"
   #include <stdint.h>
 
-  bool_t checkRegisterNoFP(const real_t *reg);
-
-  void fnChi2P        (uint16_t unusedButMandatoryParameter);
-  void fnChi2L        (uint16_t unusedButMandatoryParameter);
-  void fnChi2R        (uint16_t unusedButMandatoryParameter);
-  void fnChi2I        (uint16_t unusedButMandatoryParameter);
-
-  void WP34S_Pdf_Chi2 (const real_t *x, const real_t *k, real_t *res, realContext_t *realContext);
-  void WP34S_Cdfu_Chi2(const real_t *x, const real_t *k, real_t *res, realContext_t *realContext);
-  void WP34S_Cdf_Chi2 (const real_t *x, const real_t *k, real_t *res, realContext_t *realContext);
-  void WP34S_Qf_Chi2  (const real_t *x, const real_t *k, real_t *res, realContext_t *realContext);
-#endif // !CHI2_H
+  void fnGEVP                      (uint16_t unusedButMandatoryParameter);
+  void fnGEVL                      (uint16_t unusedButMandatoryParameter);
+  void fnGEVR                      (uint16_t unusedButMandatoryParameter);
+  void fnGEVI                      (uint16_t unusedButMandatoryParameter);
+#endif // !GEV_H

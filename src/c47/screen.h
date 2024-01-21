@@ -42,6 +42,8 @@ void       fnPixel                            (uint16_t unusedButMandatoryParame
 void       fnPoint                            (uint16_t unusedButMandatoryParameter);
 void       fnAGraph                           (uint16_t regist);
 
+char       letteredRegisterName(calcRegister_t regist);
+
   #if defined(PC_BUILD)
   /**
    * Draws the calc's screen on the PC window widget.

@@ -39,7 +39,10 @@
 /* Specify the memory areas */
 MEMORY {
   FLASH   (rx) : ORIGIN = 0x080a0000, LENGTH = 1408K /* Why not 2048K-640K instead of 1024K? */
-  RAM    (xrw) : ORIGIN = 0x28000000, LENGTH =   16K /* Why not 16K instead of 8K?           */
+  SRAM1  (xrw) : ORIGIN = 0x20000000, LENGTH =  192K
+  SRAM2  (xrw) : ORIGIN = 0x20030000, LENGTH =   64K
+  SRAM3  (xrw) : ORIGIN = 0x20040000, LENGTH =  512K
+  SRAM4  (xrw) : ORIGIN = 0x28000000, LENGTH =   16K /* Why not 16K instead of 8K?           */
   QSPI    (rx) : ORIGIN = 0x90000000, LENGTH = 2048K
 }
 
@@ -52,8 +55,8 @@ SECTIONS {
     . = ALIGN(8);
     _qspi_start = .;   /* create a global symbol at qspi start */
     *(.qspi)           /* .qspi  sections */
-    *(.rodata)         /* Added by Martin .rodata  sections (constants, strings, etc.) */
-    *(.rodata*str1.1)  /* Added by Martin .rodata  sections (constants, strings, etc.) */
+/*    *(.rodata)        */ /* Added by Martin .rodata  sections (constants, strings, etc.) */
+/*    *(.rodata*str1.1) */ /* Added by Martin .rodata  sections (constants, strings, etc.) */
 
     . = ALIGN(8);
     _qspi_end = .;     /* define a global symbols at end of qspi */
@@ -130,7 +133,7 @@ SECTIONS {
   /* used by the startup to initialize data */
   _sidata = LOADADDR(.data);
 
-  /* Initialized data sections goes into RAM, load LMA copy after code */
+  /* Initialized data sections goes into SRAM4, load LMA copy after code */
   .data : {
     . = ALIGN(8);
     _sdata = .;        /* create a global symbol at data start */
@@ -140,7 +143,7 @@ SECTIONS {
 
     . = ALIGN(8);
     _edata = .;        /* define a global symbol at data end */
-  } >RAM AT> FLASH
+  } >SRAM4 AT> FLASH
 
   /* Uninitialized data section */
   . = ALIGN(4);
@@ -155,7 +158,7 @@ SECTIONS {
     . = ALIGN(4);
     _ebss = .;         /* define a global symbol at bss end */
     __bss_end__ = _ebss;
-  } >RAM AT> RAM
+  } >SRAM4 AT> SRAM4
 
   /* Remove information from the standard libraries */
   /DISCARD/ : {

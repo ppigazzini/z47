@@ -23,6 +23,7 @@
 #include "constantPointers.h"
 #include "distributions/normal.h"
 #include "error.h"
+#include "flags.h"
 #include "fonts.h"
 #include "mathematics/comparisonReals.h"
 #include "mathematics/wp34s.h"
@@ -44,47 +45,19 @@
   void WP34S_Qf_Chi2  (const real_t *x, const real_t *k, real_t *res, realContext_t *realContext){}
 
 #else
-  bool_t checkRegisterNoFP(calcRegister_t reg) {
-    real34_t flooredI;
+  bool_t checkRegisterNoFP(const real_t *reg) {
+    real_t flooredI;
 
-    if(getRegisterDataType(reg) == dtLongInteger) {
-      return true;
-    }
-    else if(getRegisterDataType(reg) == dtReal34) {
-      real34ToIntegralValue(REGISTER_REAL34_DATA(reg), &flooredI, DEC_ROUND_FLOOR);
-      return real34CompareEqual(REGISTER_REAL34_DATA(reg), &flooredI);
-    }
-    else {
-      return false;
-    }
+    realToIntegralValue(reg, &flooredI, DEC_ROUND_FLOOR, &ctxtReal39);
+    return realCompareEqual(reg, &flooredI);
   }
 
   static bool_t checkParamChi2(real_t *x, real_t *i) {
-    if(   ((getRegisterDataType(REGISTER_X) != dtReal34) && (getRegisterDataType(REGISTER_X) != dtLongInteger))
-       || ((getRegisterDataType(REGISTER_I) != dtReal34) && (getRegisterDataType(REGISTER_I) != dtLongInteger))) {
-        displayDomainErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-        #if(EXTRA_INFO_ON_CALC_ERROR == 1)
-          sprintf(errorMessage, "Values in register X and I must be of the real or long integer type");
-          moreInfoOnError("In function checkParamChi2:", errorMessage, NULL, NULL);
-        #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-        goto err;
-    }
+    if( !getRegisterAsReal(REGISTER_X, x)
+        || !getRegisterAsReal(REGISTER_M, i))
+      goto err;
 
-    if(getRegisterDataType(REGISTER_X) == dtReal34) {
-      real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), x);
-    }
-    else { // long integer
-      convertLongIntegerRegisterToReal(REGISTER_X, x, &ctxtReal39);
-    }
-
-    if(getRegisterDataType(REGISTER_I) == dtReal34) {
-      real34ToReal(REGISTER_REAL34_DATA(REGISTER_I), i);
-    }
-    else { // long integer
-      convertLongIntegerRegisterToReal(REGISTER_I, i, &ctxtReal39);
-    }
-
-    if(!checkRegisterNoFP(REGISTER_I)) {
+    if(!checkRegisterNoFP(i)) {
       displayDomainErrorMessage(ERROR_INVALID_DISTRIBUTION_PARAM, ERR_REGISTER_LINE, REGISTER_X);
       #if(EXTRA_INFO_ON_CALC_ERROR == 1)
         moreInfoOnError("In function checkParamChi2:", "k is not an integer", NULL, NULL);

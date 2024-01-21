@@ -24,6 +24,7 @@
 #include "conversionAngles.h"
 #include "debug.h"
 #include "error.h"
+#include "flags.h"
 #include "mathematics/wp34s.h"
 #include "registers.h"
 #include "registerValueConversions.h"

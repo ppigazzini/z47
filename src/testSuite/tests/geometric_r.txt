@@ -5,7 +5,7 @@
 ;**                                                         **
 ;*************************************************************
 ;*************************************************************
-In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RM=0 IM=2compl SS=4 WS=64
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
 Func: fnGeometricR
 
 
@@ -13,47 +13,47 @@ Func: fnGeometricR
 ;=======================================
 ; geometricR(Long Integer) --> Real
 ;=======================================
-In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RI=Real:"0.5" RX=LonI:"0"
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RP=Real:"0.5" RX=LonI:"0"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"0" RX=Real:"1"
 
-In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RI=Real:"0.5" RX=LonI:"1"
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RP=Real:"0.5" RX=LonI:"1"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"1" RX=Real:"0.5"
 
-In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RI=Real:"0.5" RX=LonI:"2"
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RP=Real:"0.5" RX=LonI:"2"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"2" RX=Real:"0.25"
 
-In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RI=Real:"0.5" RX=LonI:"3"
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RP=Real:"0.5" RX=LonI:"3"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"3" RX=Real:"0.125"
 
-In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RI=Real:"0.5" RX=LonI:"5"
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RP=Real:"0.5" RX=LonI:"5"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"5" RX=Real:"0.03125"
 
-In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RI=Real:"0.5" RX=LonI:"10"
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RP=Real:"0.5" RX=LonI:"10"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"10" RX=Real:"9.765625e-4"
 
 
-In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RI=Real:"0.1" RX=LonI:"0"
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RP=Real:"0.1" RX=LonI:"0"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"0" RX=Real:"1"
 
-In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RI=Real:"0.1" RX=LonI:"1"
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RP=Real:"0.1" RX=LonI:"1"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"1" RX=Real:"0.9"
 
-In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RI=Real:"0.1" RX=LonI:"2"
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RP=Real:"0.1" RX=LonI:"2"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"2" RX=Real:"0.81"
 
-In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RI=Real:"0.1" RX=LonI:"3"
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RP=Real:"0.1" RX=LonI:"3"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"3" RX=Real:"0.729"
 
-In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RI=Real:"0.1" RX=LonI:"5"
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RP=Real:"0.1" RX=LonI:"5"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"5" RX=Real:"0.59049"
 
-In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RI=Real:"0.1" RX=LonI:"10"
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RP=Real:"0.1" RX=LonI:"10"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"10" RX=Real:"0.3486784401"
 
-In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RI=Real:"0.1" RX=LonI:"20"
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RP=Real:"0.1" RX=LonI:"20"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"20" RX=Real:"0.12157665459056928801"
 
-In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RI=Real:"0.1" RX=LonI:"50"
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RP=Real:"0.1" RX=LonI:"50"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"50" RX=Real:"0.005153775207320113310364611297656213"
 
 
@@ -99,47 +99,47 @@ Out: EC=24 FL_ASLIFT=0 RX=Stri:"String test"
 ;=======================================
 ; geometricR(Real) --> Real
 ;=======================================
-In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RI=Real:"0.5" RX=Real:"0"
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RP=Real:"0.5" RX=Real:"0"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0" RX=Real:"1"
 
-In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RI=Real:"0.5" RX=Real:"1"
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RP=Real:"0.5" RX=Real:"1"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.5"
 
-In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RI=Real:"0.5" RX=Real:"2"
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RP=Real:"0.5" RX=Real:"2"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"2" RX=Real:"0.25"
 
-In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RI=Real:"0.5" RX=Real:"3"
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RP=Real:"0.5" RX=Real:"3"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"3" RX=Real:"0.125"
 
-In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RI=Real:"0.5" RX=Real:"5"
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RP=Real:"0.5" RX=Real:"5"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"5" RX=Real:"0.03125"
 
-In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RI=Real:"0.5" RX=Real:"10"
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RP=Real:"0.5" RX=Real:"10"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"10" RX=Real:"9.765625e-4"
 
 
-In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RI=Real:"0.1" RX=Real:"0"
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RP=Real:"0.1" RX=Real:"0"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0" RX=Real:"1"
 
-In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RI=Real:"0.1" RX=Real:"1"
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RP=Real:"0.1" RX=Real:"1"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.9"
 
-In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RI=Real:"0.1" RX=Real:"2"
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RP=Real:"0.1" RX=Real:"2"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"2" RX=Real:"0.81"
 
-In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RI=Real:"0.1" RX=Real:"3"
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RP=Real:"0.1" RX=Real:"3"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"3" RX=Real:"0.729"
 
-In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RI=Real:"0.1" RX=Real:"5"
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RP=Real:"0.1" RX=Real:"5"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"5" RX=Real:"0.59049"
 
-In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RI=Real:"0.1" RX=Real:"10"
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RP=Real:"0.1" RX=Real:"10"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"10" RX=Real:"0.3486784401"
 
-In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RI=Real:"0.1" RX=Real:"20"
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RP=Real:"0.1" RX=Real:"20"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"20" RX=Real:"0.12157665459056928801"
 
-In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RI=Real:"0.1" RX=Real:"50"
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RP=Real:"0.1" RX=Real:"50"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"50" RX=Real:"0.005153775207320113310364611297656213"
 
 

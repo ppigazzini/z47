@@ -541,7 +541,7 @@
       forceTry = true;
       tryOoR = true;
     }
-    else if(REGISTER_X <= indexOfItems[item].param && indexOfItems[item].param <= REGISTER_K && !tam.dot) {
+    else if(REGISTER_X <= indexOfItems[item].param && indexOfItems[item].param <= REGISTER_S && !tam.dot) {
       if(!tam.digitsSoFar && tam.function != ITM_BESTF && (tam.indirect || (tam.mode != TM_VALUE && tam.mode != TM_VALUE_CHB))) {
         if((tam.mode == TM_LABEL || (tam.mode == TM_KEY && tam.keyInputFinished)) && !tam.indirect) {
           switch(indexOfItems[item].param) {
@@ -591,6 +591,30 @@
             }
             case REGISTER_K: {
               tam.alpha = true; aimBuffer[0] = 'K'; aimBuffer[1] = 0; forceTry = true;
+              break;
+            }
+            case REGISTER_M: {
+              tam.alpha = true; aimBuffer[0] = 'M'; aimBuffer[1] = 0; forceTry = true;
+              break;
+            }
+            case REGISTER_N: {
+              tam.alpha = true; aimBuffer[0] = 'N'; aimBuffer[1] = 0; forceTry = true;
+              break;
+            }
+            case REGISTER_P: {
+              tam.alpha = true; aimBuffer[0] = 'P'; aimBuffer[1] = 0; forceTry = true;
+              break;
+            }
+            case REGISTER_Q: {
+              tam.alpha = true; aimBuffer[0] = 'Q'; aimBuffer[1] = 0; forceTry = true;
+              break;
+            }
+            case REGISTER_R: {
+              tam.alpha = true; aimBuffer[0] = 'R'; aimBuffer[1] = 0; forceTry = true;
+              break;
+            }
+            case REGISTER_S: {
+              tam.alpha = true; aimBuffer[0] = 'S'; aimBuffer[1] = 0; forceTry = true;
               break;
             }
           }
