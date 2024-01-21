@@ -25,6 +25,5 @@
   #include <stdint.h>
 
   void fnZeta     (uint16_t unusedButMandatoryParameter);
-
   void ComplexZeta(const real_t *xReal, const real_t *xImag, real_t *resReal, real_t *resImag, realContext_t *realContext);
 #endif // !ZETA_H

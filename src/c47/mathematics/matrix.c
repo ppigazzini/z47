@@ -4944,8 +4944,8 @@ void elementwiseRemaCplx(void (*f)(void)) {
   for(unsigned int i = 0; i < numOfElements; ++i) {
     reallocateRegister(REGISTER_Y, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
     reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
-    complex34Copy(&x, REGISTER_COMPLEX34_DATA(REGISTER_Y));
-    complex34Copy(&y.matrixElements[i], REGISTER_COMPLEX34_DATA(REGISTER_X));
+    complex34Copy(&x, REGISTER_COMPLEX34_DATA(REGISTER_X));
+    complex34Copy(&y.matrixElements[i], REGISTER_COMPLEX34_DATA(REGISTER_Y));
     f();
     elementwiseCxmaGetResult(&y, i);
   }
