@@ -956,11 +956,10 @@ void processIntRealComplexMonadicFunction(void (*realf)(void), void (*complexf)(
   else if (type == dtComplex34Matrix)
     elementwiseCxma(complexf);
   else if (getRegisterAsComplexOrReal(REGISTER_X, &aReal, &aImag, &cmplxRes)) {
-    if (cmplxRes)
-      complexf();
-    else {
+    if (!cmplxRes && realf != NULL)
       realf();
-    }
+    else
+      complexf();
   }
 
 done:
@@ -1019,10 +1018,10 @@ void processRealComplexDyadicFunction(void (*realf)(void), void (*complexf)(void
       || !getRegisterAsComplexOrReal(REGISTER_Y, &yReal, &yImag, &cmplxRes))
     return;
 
-  if (cmplxRes)
-    complexf();
-  else
+  if (!cmplxRes && realf != NULL)
     realf();
+  else
+    complexf();
 
 fin:
   adjustResult(REGISTER_X, true, true, REGISTER_X, REGISTER_Y, -1);
