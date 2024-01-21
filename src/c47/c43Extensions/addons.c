@@ -71,6 +71,7 @@ All the below: because both Last x and savestack does not work due to multiple s
 #include "flags.h"
 #include "fonts.h"
 #include "c43Extensions/graphText.h"
+#include "hal/audio.h"
 #include "hal/gui.h"
 #include "integers.h"
 #include "items.h"
@@ -100,6 +101,10 @@ All the below: because both Last x and savestack does not work due to multiple s
 #include "c43Extensions/textfiles.h"
 #include <string.h>
 
+  #ifdef DMCP_BUILD
+    #include <dmcp.h>
+  #endif // DMCP_BUILD
+
 #include "c47.h"
 
 
@@ -113,11 +118,46 @@ void fneRPN(uint16_t state) {
 }
 
 
+
+#ifdef DMCP_BUILD
+  void standardScreenDump(void) {
+  uint16_t vol = 0;
+  fnGetVolume(vol);
+  fnSetVolume(11);
+  _Buzz(100,5);
+  xcopy(tmpString, aimBuffer, ERROR_MESSAGE_LENGTH + AIM_BUFFER_LENGTH + NIM_BUFFER_LENGTH);       //backup portion of the "message buffer" area in DMCP used by ERROR..AIM..NIM buffers, to the tmpstring area in DMCP. DMCP uses this area during create_screenshot.
+  create_screenshot(0);      //Screen dump
+  xcopy(aimBuffer,tmpString, ERROR_MESSAGE_LENGTH + AIM_BUFFER_LENGTH + NIM_BUFFER_LENGTH);        //   This total area must be less than the tmpString storage area, which it is.
+  _Buzz(100,5);
+  fnSetVolume(vol);
+}
+#endif //DMCP_BUILD
+
+
 bool_t keyWaiting(void) {
   #if defined(DMCP_BUILD)
     return key_empty() == 0;   //key_tail() != -1;
   #else // !DMCP_BUILD
     return false;
+  #endif // DMCP_BUILD
+}
+
+
+int popKey(void) {
+  int tmpf = -1;
+  #if defined(DMCP_BUILD)
+    if(!keyWaiting()) return -1;
+    while(keyWaiting()) {
+      tmpf = key_pop();
+    }
+    if (tmpf == 44) {
+      standardScreenDump();
+    }
+    return tmpf - 1;        //EXIT = 33-1
+  #else // !DMCP_BUILD
+    tmpf = currentKeyCode;
+    currentKeyCode = 255;
+    return tmpf;           //EXIT = 32
   #endif // DMCP_BUILD
 }
 
