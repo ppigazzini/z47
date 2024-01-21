@@ -69,6 +69,7 @@
    * Play a sound on the buzzer whose frequency is in Y and duration in X.
    * Only relevant for the DMCP version, not used for the simulator
    */
+  void _Buzz(uint32_t frequency, uint32_t ms_delay);
   void fnBuzz(uint16_t unusedButMandatoryParameter);
 
   /**
