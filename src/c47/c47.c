@@ -16,6 +16,7 @@
 
 #include "c47.h"
 
+#include "c43Extensions/addons.h"
 #include "charString.h"
 #include "config.h"
 #include "flags.h"
@@ -891,7 +892,7 @@ int vbatIntegrated = 3000;
       //lcd_refresh_dma();
       }
       else if(1 <= key && key <= 37) { // Not a function key
-        sprintf(charKey, "%02d", key - 1);
+        sprintf(charKey, "%02u", key - 1);
         btnPressed(charKey);
         keyClick(1);
       //lcd_refresh_dma();
