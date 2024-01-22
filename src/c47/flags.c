@@ -702,14 +702,13 @@ void SetSetting(uint16_t jmConfig) {
     case JC_IRFRAC: {
       constantFractions = !constantFractions;
       if(constantFractions) {
+        constantFractionsOn = true;
         if(getSystemFlag(FLAG_FRACT)) {
           clearSystemFlag(FLAG_FRACT);
-          constantFractionsOn = true;
         }
       }
       else {
-        if(constantFractionsOn) {              //when switching off IRFRAC, if it was currently displaying, revert back to fractions, not decimal
-          setSystemFlag(FLAG_FRACT);
+        if(constantFractionsOn) {
           constantFractionsOn = false;
         }
       }

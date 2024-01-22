@@ -27,6 +27,12 @@
 #include <stdint.h>
 
 bool_t keyWaiting(void);
+int    popKey(void);
+
+#ifdef DMCP_BUILD
+  void standardScreenDump(void);
+#endif //DMCP_BUILD
+
 void fneRPN         (uint16_t unusedButMandatoryParameter);
 void fnCFGsettings  (uint16_t unusedButMandatoryParameter);
 void fnShoiXRepeats (uint16_t numberOfRepeats);

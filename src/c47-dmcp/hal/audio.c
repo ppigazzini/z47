@@ -32,7 +32,6 @@
 #include "c47.h"
 
 static uint32_t _getValueFromRegister(calcRegister_t regist);
-static void _Buzz(uint32_t frequency, uint32_t ms_delay);
 
 void audioTone(uint32_t frequency) {
   start_buzzer_freq(frequency);
@@ -112,7 +111,7 @@ static uint32_t _getValueFromRegister(calcRegister_t regist) {
   return value;
 }
 
-static void _Buzz(uint32_t frequency, uint32_t ms_delay) {
+void _Buzz(uint32_t frequency, uint32_t ms_delay) {
   if (ms_delay > 0) {
     if (ms_delay > 2000) ms_delay = 2000;  // max duration value : 2s
     if (frequency != 0) {
