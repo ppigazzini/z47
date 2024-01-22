@@ -32,18 +32,14 @@
 #include "c47.h"
 
 static void chsLonI(void) {
-  switch(getRegisterLongIntegerSign(REGISTER_X)) {
-    case LI_POSITIVE: {
-      setRegisterLongIntegerSign(REGISTER_X, LI_NEGATIVE);
-      break;
-    }
-    case LI_NEGATIVE: {
-      setRegisterLongIntegerSign(REGISTER_X, LI_POSITIVE);
-      break;
-    }
-    default: {
-    }
-  }
+  longInteger_t x;
+
+  if (!getRegisterAsLongInt(REGISTER_X, x))
+    return;
+
+  longIntegerChangeSign(x);
+  convertLongIntegerToLongIntegerRegister(x, REGISTER_X);
+  longIntegerFree(x);
 }
 
 static void chsShoI(void) {

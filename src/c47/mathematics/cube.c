@@ -36,7 +36,9 @@
 static void cubeLonI(void) {
   longInteger_t x, c;
 
-  convertLongIntegerRegisterToLongInteger(REGISTER_X, x);
+  if (!getRegisterAsLongInt(REGISTER_X, x))
+    return;
+
   longIntegerInit(c);
   longIntegerMultiply(x, x, c);
   longIntegerMultiply(c, x, c);

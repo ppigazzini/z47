@@ -241,8 +241,9 @@ static void doXthRootLonI(void) {
   longInteger_t base, exponent, l;
   int32_t exp;
 
-  convertLongIntegerRegisterToLongInteger(REGISTER_Y, base);
-  convertLongIntegerRegisterToLongInteger(REGISTER_X, exponent);
+  if (!getRegisterAsLongInt(REGISTER_Y, base)
+      || !getRegisterAsLongInt(REGISTER_X, exponent))
+    return;
 
   if(longIntegerIsZero(exponent)) {    // 1/0 is not possible
     displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);

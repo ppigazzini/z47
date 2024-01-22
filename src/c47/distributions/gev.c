@@ -25,6 +25,7 @@
 #include "flags.h"
 #include "mathematics/comparisonReals.h"
 #include "mathematics/expMOne.h"
+#include "mathematics/power.h"
 #include "mathematics/wp34s.h"
 #include "registers.h"
 #include "registerValueConversions.h"
@@ -130,22 +131,45 @@ void fnGEVR(uint16_t unusedButMandatoryParameter) {
 }
 
 void fnGEVI(uint16_t unusedButMandatoryParameter) {
-  real_t p, mu, sigma, xi, t, x;
+  real_t p, mu, sigma, xi, x, lnp;
+  bool_t domainOkay;
 
   if (!checkParamGEV(&p, &mu, &sigma, &xi, true))
     return;
 
-  if(realCompareLessEqual(&p, const_0) || realCompareGreaterEqual(&p, const_1)) {
+  domainOkay = realCompareGreaterThan(&p, const_0) || realCompareLessThan(&p, const_1);
+  if(!domainOkay && !realIsZero(&xi)) {
+    if (realIsNegative(&xi)) {
+      domainOkay = realCompareEqual(&p, const_1);
+    } else {
+      domainOkay = realIsZero(&p);
+    }
+  }
+
+  if(!domainOkay) {
     displayDomainErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
     #if(EXTRA_INFO_ON_CALC_ERROR == 1)
-      moreInfoOnError("In function fnExponentialI:", "the argument must be 0 < x < 1", NULL, NULL);
+      moreInfoOnError("In function fnGEVI:", "the argument out of range", NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     if(getSystemFlag(FLAG_SPCRES)) {
       convertRealToReal34ResultRegister(const_NaN, REGISTER_X);
     }
     return;
   }
-  tGEV(&p, &mu, &sigma, &xi, &t);
+
+  WP34S_Ln(&p, &lnp, &ctxtReal39);
+  realChangeSign(&lnp);
+  if (realIsZero(&xi)) {
+    WP34S_Ln(&lnp, &p, &ctxtReal39);
+    realChangeSign(&p);
+    realFMA(&sigma, &p, &mu, &x, &ctxtReal39);
+  } else {
+    realMinus(&xi, &p, &ctxtReal39);
+    PowerReal(&lnp, &p, &lnp, &ctxtReal39);
+    realSubtract(&lnp, const_1, &p, &ctxtReal39);
+    realDivide(&p, &xi, &lnp, &ctxtReal39);
+    realFMA(&lnp, &sigma, &mu, &x, &ctxtReal39);
+  }
 
   convertRealToResultRegister(&x, REGISTER_X, amNone);
   adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
