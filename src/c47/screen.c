@@ -1841,7 +1841,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
     showFunctionNameCounter = delayInMs;
     stringAppend(padding,functionName);                              //JM
     stringAppend(padding + stringByteLength(padding),"     ");                                    //JM
-    if(stringWidth(padding, &standardFont, true, true) + 1 /*JM 20*/ + lineTWidth > SCREEN_WIDTH) {                //JM T-Register clearing
+    if(PROBMENU || stringWidth(padding, &standardFont, true, true) + 1 /*JM 20*/ + lineTWidth > SCREEN_WIDTH) {                //JM T-Register clearing
       clearRegisterLine(REGISTER_T, true, false);
     }
 
@@ -2589,7 +2589,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
         }
 
         // STATISTICAL DISTR
-        if(regist == REGISTER_X && lastErrorCode == 0 && calcMode != CM_PEM) {
+        if(regist == REGISTER_X && lastErrorCode == 0 && calcMode != CM_PEM && PROBMENU) {
           const char *r_i = NULL, *r_j = NULL, *r_k = NULL;
           calcRegister_t register_i = REGISTER_M, register_j = REGISTER_M, register_k = REGISTER_M;
           
