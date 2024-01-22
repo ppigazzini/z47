@@ -132,14 +132,6 @@ static void rmdReal(void) {
   convertRealToResultRegister(&x, REGISTER_X, amNone);
 }
 
-static void rmdComplex(void) {
-  displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-  #if(EXTRA_INFO_ON_CALC_ERROR == 1)
-    sprintf(errorMessage, "complex not supported");
-    moreInfoOnError("In function rmdComplex:", errorMessage, NULL, NULL);
-  #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-}
-
 /********************************************//**
  * \brief regX ==> regL and regY rmd regX ==> regX
  * Drops Y, enables stack lift and refreshes the stack
@@ -148,5 +140,5 @@ static void rmdComplex(void) {
  * \return void
  ***********************************************/
 void fnRmd(uint16_t unusedButMandatoryParameter) {
-  processIntRealComplexDyadicFunction(&rmdReal, &rmdComplex, &rmdShoI, &rmdLonI);
+  processIntRealComplexDyadicFunction(&rmdReal, NULL, &rmdShoI, &rmdLonI);
 }

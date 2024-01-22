@@ -25,12 +25,4 @@
 
   void fnErfc   (uint16_t unusedButMandatoryParameter);
 
-  #if(EXTRA_INFO_ON_CALC_ERROR == 1)
-    void erfcError(void);
-  #else // (EXTRA_INFO_ON_CALC_ERROR == 1)
-    #define erfcError typeError
-  #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-
-  void erfcLonI (void);
-  void erfcReal (void);
 #endif // !ERFC_H
