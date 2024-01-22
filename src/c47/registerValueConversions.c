@@ -980,7 +980,7 @@ void processRealComplexDyadicFunction(void (*realf)(void), void (*complexf)(void
   real_t xReal, xImag, yReal, yImag;
   const uint32_t typeX = getRegisterDataType(REGISTER_X);
   const uint32_t typeY = getRegisterDataType(REGISTER_Y);
-  bool_t xCmplx, yCmplx, cmplxRes = false;
+  bool_t xCmplx = false, yCmplx = false, cmplxRes = false;
   const bool_t xNumber = typeIsNumber(typeX, &xCmplx);
   const bool_t yNumber = typeIsNumber(typeY, &yCmplx);
 
