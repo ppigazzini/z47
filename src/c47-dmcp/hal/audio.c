@@ -32,7 +32,6 @@
 #include "c47.h"
 
 static uint32_t _getValueFromRegister(calcRegister_t regist);
-//static void _Buzz(uint32_t frequency, uint32_t ms_delay);
 
 void audioTone(uint32_t frequency) {
   start_buzzer_freq(frequency);
