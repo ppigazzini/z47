@@ -1276,7 +1276,7 @@
 #define ITM_HYPER                   1234
 #define ITM_HYPERU                  1235
 #define ITM_HYPERM1                 1236
-#define ITM_1237                    1237
+#define MNU_DISTR                   1237
 #define ITM_LGNRMP                  1238
 #define ITM_LGNRM                   1239
 #define ITM_LGNRMU                  1240

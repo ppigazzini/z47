@@ -761,7 +761,7 @@ static bool_t typeIsNumber(uint32_t type, bool_t *cmplx) {
 }
 
 static void badTypeError(calcRegister_t reg) {
-  displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, reg);
+  displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_T);
 #if(EXTRA_INFO_ON_CALC_ERROR == 1)
   sprintf(errorMessage, "cannot convert %d from %s", reg, getRegisterDataTypeName(reg, true, false));
   moreInfoOnError("In function badTypeError:", errorMessage, NULL, NULL);
@@ -825,7 +825,7 @@ bool_t getRegisterAsComplexOrReal(calcRegister_t reg, real_t *r, real_t *i, bool
   return true;
 }
 
-bool_t getRegisterAsReal(calcRegister_t reg, real_t *val) {
+bool_t getRegisterAsRealQuiet(calcRegister_t reg, real_t *val) {
   switch(getRegisterDataType(reg)) {
     case dtLongInteger:
       convertLongIntegerRegisterToReal(reg, val, &ctxtReal75);
@@ -847,10 +847,17 @@ bool_t getRegisterAsReal(calcRegister_t reg, real_t *val) {
     /* fall through */
 
     default:
-      badTypeError(reg);
       return false;
   }
   return true;
+}
+
+bool_t getRegisterAsReal(calcRegister_t reg, real_t *val) {
+  bool_t res = getRegisterAsRealQuiet(reg, val);
+
+  if (!res)
+    badTypeError(reg);
+  return res;
 }
 
 bool_t getRegisterAsLongInt(calcRegister_t reg, longInteger_t val) {
