@@ -2486,7 +2486,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
         // STATISTICAL DISTR
         if(regist == REGISTER_X && lastErrorCode == 0 && calcMode != CM_PEM) {
           const char *r_i = NULL, *r_j = NULL, *r_k = NULL;
-          calcRegister_t register_i, register_j, register_k;
+          calcRegister_t register_i = REGISTER_X, register_j = REGISTER_X, register_k = REGISTER_X;
           
 
           switch(softmenu[softmenuStack[0].softmenuId].menuItem) {
