@@ -373,12 +373,13 @@ TO_QSPI const int16_t menu_TEST[]        = { ITM_XLT,                       ITM_
                                              ITM_XEQUP0,                    ITM_XEQUM0,                 ITM_XAEQU,                ITM_MATR,              ITM_CPX,                     ITM_REAL,
                                              ITM_SPEC,                      ITM_NAN,                    ITM_NULL,                 ITM_M_SQR,             ITM_NULL,                    ITM_NULL                      };
 
-TO_QSPI const int16_t menu_XFN[]         = { ITM_AGM,                       ITM_BN,                     ITM_BNS,                  ITM_ERF,              -MNU_ELLIPT,                 -MNU_ORTHOG,
-                                             ITM_ERFC,                      ITM_FIB,                    ITM_GD,                   ITM_GDM1,              ITM_IXYZ,                    ITM_IGAMMAP,
-                                             ITM_IGAMMAQ,                   ITM_JYX,                    ITM_LNBETA,               ITM_LNGAMMA,           ITM_MAX,                     ITM_MIN,
-                                             ITM_NEXTP,                     ITM_WM,                     ITM_WP,                   ITM_WM1,               ITM_YYX,                     ITM_BETAXY,
-                                             ITM_FACTORS,                   ITM_gammaXY,                ITM_GAMMAXY,              ITM_zetaX,             ITM_M1X,               ITM_PARALLEL,
-                                             ITM_EE_EXP_TH,                 ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_LINPOL                      };
+TO_QSPI const int16_t menu_XFN[]         = { ITM_NEXTP,                 ITM_PRIME,                 ITM_FACTORS,               ITM_FIB,                   ITM_AGM,                   ITM_LINPOL,                
+                                             ITM_PARALLEL,              ITM_EE_EXP_TH,             ITM_M1X,                   ITM_XFACT,                 ITM_MIN,                   ITM_MAX,                   
+                                             -MNU_ELLIPT,               ITM_zetaX,                 ITM_GD,                    ITM_GDM1,                  ITM_BN,                    ITM_BNS,                   
+
+                                             ITM_gammaXY,               ITM_GAMMAXY,               ITM_IGAMMAP,               ITM_IGAMMAQ,               ITM_GAMMAX,                ITM_LNGAMMA,               
+                                             ITM_WM,                    ITM_WP,                    ITM_WM1,                   ITM_IXYZ,                  ITM_BETAXY,                ITM_LNBETA,                
+                                             -MNU_ORTHOG,               ITM_JYX,                   ITM_YYX,                   ITM_NULL,                  ITM_ERF,                   ITM_ERFC };
 
 TO_QSPI const int16_t menu_Orthog[]      = { ITM_HN,                        ITM_Lm,                     ITM_LmALPHA,              ITM_Pn,                ITM_Tn,                      ITM_Un,
                                              ITM_HNP,                       ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL                      };
