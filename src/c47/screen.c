@@ -1711,16 +1711,12 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
   }
 
 
-  static int stats_param_check(const char *name, calcRegister_t reg) {
-    int type;
-
-    return name == NULL || (type = getRegisterDataType(reg)) == dtReal34 || type == dtLongInteger;
-  }
-
-
   static void stats_param_display(const char *name, calcRegister_t reg, char *prefix, char *tmpString, calcRegister_t rowReg) {
     int prefixWidth;
-    char regS[5];
+    char regS[5], *p;
+    real_t t;
+    real34_t u;
+    uint32_t angleMode;
 
     if(name == NULL || !(rowReg == REGISTER_Y || rowReg == REGISTER_Z || rowReg == REGISTER_T)) {
       return;
@@ -1733,14 +1729,16 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
     sprintf(prefix, "= %s =", name);
     prefixWidth = showString(prefix, &standardFont, 19 + (17+28), Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(rowReg - REGISTER_X) + 6, vmNormal, true, true);
 
-    if(getRegisterDataType(reg) == dtLongInteger) {
-      longIntegerRegisterToDisplayString(reg, tmpString, TMP_STR_LENGTH, SCREEN_WIDTH - prefixWidth, 50, true);
-    }
-    else if(getRegisterDataType(reg) == dtReal34) {
-      real34ToDisplayString(REGISTER_REAL34_DATA(reg), getRegisterAngularMode(reg), tmpString, &numericFont, SCREEN_WIDTH - prefixWidth, NUMBER_OF_DISPLAY_DIGITS, true, true);
+    if (getRegisterAsRealQuiet(reg, &t)) {
+      angleMode = getRegisterDataType(reg) == dtReal34 ? getRegisterAngularMode(reg) : amNone;
+      realToReal34(&t, &u);
+      real34ToDisplayString(&u, angleMode, tmpString, &numericFont, SCREEN_WIDTH - prefixWidth, NUMBER_OF_DISPLAY_DIGITS, true, true);
+      p = tmpString;
+    } else {
+      p = "invalid";
     }
 
-    showString(tmpString, &numericFont, SCREEN_WIDTH - stringWidth(tmpString, &numericFont, false, true), Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(rowReg - REGISTER_X), vmNormal, false, true);
+    showString(p, &numericFont, SCREEN_WIDTH - stringWidth(p, &numericFont, false, true), Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(rowReg - REGISTER_X), vmNormal, false, true);
   }
 
 
@@ -2488,7 +2486,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
         // STATISTICAL DISTR
         if(regist == REGISTER_X && lastErrorCode == 0 && calcMode != CM_PEM) {
           const char *r_i = NULL, *r_j = NULL, *r_k = NULL;
-          calcRegister_t register_i = REGISTER_M, register_j = REGISTER_M, register_k = REGISTER_M;
+          calcRegister_t register_i, register_j, register_k;
           
 
           switch(softmenu[softmenuStack[0].softmenuId].menuItem) {
@@ -2540,7 +2538,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
             default: ;
           }
 
-          if(!(r_i == NULL && r_j == NULL && r_k == NULL) && stats_param_check(r_i, register_i) && stats_param_check(r_j, register_j) && stats_param_check(r_k, register_k)) {
+          if(r_i != NULL || r_j != NULL || r_k != NULL) {
             stats_param_display(r_i, register_i, prefix, tmpString, REGISTER_T);
             stats_param_display(r_j, register_j, prefix, tmpString, REGISTER_Z);
             stats_param_display(r_k, register_k, prefix, tmpString, REGISTER_Y);
