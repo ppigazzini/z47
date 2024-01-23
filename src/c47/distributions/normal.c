@@ -74,7 +74,7 @@
 
   err:
     if(getSystemFlag(FLAG_SPCRES)) {
-      convertRealToReal34ResultRegister(const_NaN, REGISTER_X);
+      convertRealToResultRegister(const_NaN, REGISTER_X, amNone);
     }
     return false;
   }
@@ -114,8 +114,7 @@
           realDivide(&ans, &alval, &ans, &ctxtReal39);
         }
       }
-      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
-      convertRealToReal34ResultRegister(&ans, REGISTER_X);
+      convertRealToResultRegister(&ans, REGISTER_X, amNone);
     }
 
     adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
@@ -151,8 +150,7 @@
         }
         WP34S_Cdf_Q(&val, &ans, &ctxtReal39);
       }
-      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
-      convertRealToReal34ResultRegister(&ans, REGISTER_X);
+      convertRealToResultRegister(&ans, REGISTER_X, amNone);
     }
 
     adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
@@ -188,8 +186,7 @@
         }
         WP34S_Cdfu_Q(&val, &ans, &ctxtReal39);
       }
-      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
-      convertRealToReal34ResultRegister(&ans, REGISTER_X);
+      convertRealToResultRegister(&ans, REGISTER_X, amNone);
     }
 
     adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
@@ -212,7 +209,7 @@
           moreInfoOnError("In function fnNormalI:", "the argument must be 0 < x < 1", NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
         if(getSystemFlag(FLAG_SPCRES)) {
-          convertRealToReal34ResultRegister(const_NaN, REGISTER_X);
+          convertRealToResultRegister(const_NaN, REGISTER_X, amNone);
         }
         return;
       }
@@ -224,8 +221,7 @@
           realExp(&ans, &ans, &ctxtReal39);
         }
       }
-      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
-      convertRealToReal34ResultRegister(&ans, REGISTER_X);
+      convertRealToResultRegister(&ans, REGISTER_X, amNone);
     }
 
     adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);

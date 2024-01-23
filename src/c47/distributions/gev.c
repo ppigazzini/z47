@@ -66,7 +66,7 @@ static bool_t checkParamGEV(real_t *x, real_t *mu, real_t *sigma, real_t *xi, bo
 
   err:
   if(getSystemFlag(FLAG_SPCRES)) {
-    convertRealToReal34ResultRegister(const_NaN, REGISTER_X);
+    convertRealToResultRegister(const_NaN, REGISTER_X, amNone);
   }
   return false;
 }
@@ -152,7 +152,7 @@ void fnGEVI(uint16_t unusedButMandatoryParameter) {
       moreInfoOnError("In function fnGEVI:", "the argument out of range", NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     if(getSystemFlag(FLAG_SPCRES)) {
-      convertRealToReal34ResultRegister(const_NaN, REGISTER_X);
+      convertRealToResultRegister(const_NaN, REGISTER_X, amNone);
     }
     return;
   }

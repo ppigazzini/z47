@@ -66,7 +66,7 @@
 
   err:
     if(getSystemFlag(FLAG_SPCRES)) {
-      convertRealToReal34ResultRegister(const_NaN, REGISTER_X);
+      convertRealToResultRegister(const_NaN, REGISTER_X, amNone);
     }
     return false;
   }
@@ -81,8 +81,7 @@
 
     if(checkParamExponential(&val, &dof)) {
       WP34S_Pdf_Expon(&val, &dof, &ans, &ctxtReal39);
-      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
-      convertRealToReal34ResultRegister(&ans, REGISTER_X);
+      convertRealToResultRegister(&ans, REGISTER_X, amNone);
       adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
     }
   }
@@ -97,8 +96,7 @@
 
     if(checkParamExponential(&val, &dof)) {
       WP34S_Cdf_Expon(&val, &dof, &ans, &ctxtReal39);
-      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
-      convertRealToReal34ResultRegister(&ans, REGISTER_X);
+      convertRealToResultRegister(&ans, REGISTER_X, amNone);
       adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
     }
   }
@@ -113,8 +111,7 @@
 
     if(checkParamExponential(&val, &dof)) {
       WP34S_Cdfu_Expon(&val, &dof, &ans, &ctxtReal39);
-      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
-      convertRealToReal34ResultRegister(&ans, REGISTER_X);
+      convertRealToResultRegister(&ans, REGISTER_X, amNone);
       adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
     }
   }
@@ -134,7 +131,7 @@
           moreInfoOnError("In function fnExponentialI:", "the argument must be 0 < x < 1", NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
         if(getSystemFlag(FLAG_SPCRES)) {
-          convertRealToReal34ResultRegister(const_NaN, REGISTER_X);
+          convertRealToResultRegister(const_NaN, REGISTER_X, amNone);
         }
         return;
       }
@@ -145,12 +142,11 @@
           moreInfoOnError("In function fnExponentialI:", "WP34S_Qf_Expon did not converge", NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
         if(getSystemFlag(FLAG_SPCRES)) {
-          convertRealToReal34ResultRegister(const_NaN, REGISTER_X);
+          convertRealToResultRegister(const_NaN, REGISTER_X, amNone);
         }
         return;
       }
-      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
-      convertRealToReal34ResultRegister(&ans, REGISTER_X);
+      convertRealToResultRegister(&ans, REGISTER_X, amNone);
       adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
     }
   }

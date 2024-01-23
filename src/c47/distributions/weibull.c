@@ -67,7 +67,7 @@
 
   err:
     if(getSystemFlag(FLAG_SPCRES)) {
-      convertRealToReal34ResultRegister(const_NaN, REGISTER_X);
+      convertRealToResultRegister(const_NaN, REGISTER_X, amNone);
     }
     return false;
   }
@@ -82,8 +82,7 @@
 
     if(checkParamWeibull(&val, &shape, &lifetime)) {
       WP34S_Pdf_Weib(&val, &shape, &lifetime, &ans, &ctxtReal39);
-      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
-      convertRealToReal34ResultRegister(&ans, REGISTER_X);
+      convertRealToResultRegister(&ans, REGISTER_X, amNone);
     }
 
     adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
@@ -98,8 +97,7 @@
 
     if(checkParamWeibull(&val, &shape, &lifetime)) {
       WP34S_Cdf_Weib(&val, &shape, &lifetime, &ans, &ctxtReal39);
-      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
-      convertRealToReal34ResultRegister(&ans, REGISTER_X);
+      convertRealToResultRegister(&ans, REGISTER_X, amNone);
     }
 
     adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
@@ -114,8 +112,7 @@
 
     if(checkParamWeibull(&val, &shape, &lifetime)) {
       WP34S_Cdfu_Weib(&val, &shape, &lifetime, &ans, &ctxtReal39);
-      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
-      convertRealToReal34ResultRegister(&ans, REGISTER_X);
+      convertRealToResultRegister(&ans, REGISTER_X, amNone);
     }
 
     adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
@@ -135,13 +132,12 @@
           moreInfoOnError("In function fnWeibullI:", "the argument must be 0 < x < 1", NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
         if(getSystemFlag(FLAG_SPCRES)) {
-          convertRealToReal34ResultRegister(const_NaN, REGISTER_X);
+          convertRealToResultRegister(const_NaN, REGISTER_X, amNone);
         }
         return;
       }
       WP34S_Qf_Weib(&val, &shape, &lifetime, &ans, &ctxtReal39);
-      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
-      convertRealToReal34ResultRegister(&ans, REGISTER_X);
+      convertRealToResultRegister(&ans, REGISTER_X, amNone);
     }
 
     adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
