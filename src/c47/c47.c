@@ -332,7 +332,7 @@ uint16_t               lrSelectionHistobackup;
 uint16_t               lrChosenHistobackup;
 int16_t                histElementXorY;
 real34_t               loBinR;
-real34_t               nBins ;
+real34_t               nBins;
 real34_t               hiBinR;
 char                   statMx[8];
 char                   plotStatMx[8];
