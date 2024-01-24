@@ -690,7 +690,7 @@ void fnBatteryVoltage(uint16_t unusedButMandatoryParameter) {
 
   temporaryInformation = TI_V;
   realDivide(&value, const_1000, &value, &ctxtReal39);
-  convertRealToReal34ResultRegister(&value, REGISTER_X);
+  convertRealToResultRegister(&value, REGISTER_X, amNone);
 }
 
 

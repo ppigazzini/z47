@@ -250,7 +250,7 @@ void displayDomainErrorMessage(uint8_t errorCode, calcRegister_t errMessageRegis
     displayCalcErrorMessage(errorCode, errMessageRegisterLine, errRegisterLine);
   }
   if(spcres) {
-    convertRealToReal34ResultRegister(const_NaN, REGISTER_X);
+    convertRealToResultRegister(const_NaN, REGISTER_X, amNone);
   }
 }
 

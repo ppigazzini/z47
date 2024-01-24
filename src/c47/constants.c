@@ -43,6 +43,8 @@ void fnConstant(const uint16_t constant) {
   liftStack();
   currentSolverStatus &= ~SOLVER_STATUS_READY_TO_EXECUTE;
 
+  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+
   if(constant < NUMBER_OF_CONSTANTS_39) { // 39 digit constants
     realToReal34((real_t *)(constants + constant * TO_BYTES(REAL39_SIZE_IN_BLOCKS)), REGISTER_REAL34_DATA(REGISTER_X));
 
@@ -82,7 +84,7 @@ void fnPi(uint16_t unusedButMandatoryParameter) {
   liftStack();
   currentSolverStatus &= ~SOLVER_STATUS_READY_TO_EXECUTE;
 
-  convertRealToReal34ResultRegister(const_pi, REGISTER_X);
+  convertRealToResultRegister(const_pi, REGISTER_X, amNone);
   adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
 
   setLastintegerBasetoZero();

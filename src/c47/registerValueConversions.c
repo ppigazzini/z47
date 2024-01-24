@@ -760,7 +760,7 @@ static bool_t typeIsNumber(uint32_t type, bool_t *cmplx) {
   return false;
 }
 
-static void badTypeError(calcRegister_t reg) {
+void badTypeError(calcRegister_t reg) {
   displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_T);
 #if(EXTRA_INFO_ON_CALC_ERROR == 1)
   sprintf(errorMessage, "cannot convert %d from %s", reg, getRegisterDataTypeName(reg, true, false));

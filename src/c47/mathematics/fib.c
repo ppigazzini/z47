@@ -36,52 +36,11 @@
 
 #include "c47.h"
 
-
-
-TO_QSPI void (* const fib[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])(void) = {
-// regX ==> 1            2          3          4           5           6           7           8           9             10
-//          Long integer Real34     Complex34  Time        Date        String      Real34 mat  Complex34 m Short integer Config data
-            fibLonI,     fibReal,   fibCplx,   fibError,   fibError,   fibError,   fibError,   fibError,   fibError,     fibError
-};
-
-
-/********************************************//**
- * \brief Data type error in fib
- *
- * \param void
- * \return void
- ***********************************************/
-#if(EXTRA_INFO_ON_CALC_ERROR == 1)
-  void fibError(void) {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-    sprintf(errorMessage, "cannot calculate fib(%s)", getRegisterDataTypeName(REGISTER_X, false, false));
-    moreInfoOnError("In function fnFib:", errorMessage, NULL, NULL);
-  }
-#endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-
-
-/********************************************//**
- * \brief regX ==> regL and fib(regX) ==> regX
- * enables stack lift and refreshes the stack
- *
- * \param[in] unusedButMandatoryParameter uint16_t
- * \return void
- ***********************************************/
-void fnFib(uint16_t unusedButMandatoryParameter) {
-  if(!saveLastX()) {
-    return;
-  }
-
-  fib[getRegisterDataType(REGISTER_X)]();
-
-  adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
-}
-
-
-void fibLonI(void) {
+static void fibLonI(void) {
   longInteger_t x, result;
 
-  convertLongIntegerRegisterToLongInteger(REGISTER_X, x);
+  if (!getRegisterAsLongInt(REGISTER_X, x))
+    return;
 
   if(longIntegerIsNegative(x)) {
     displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
@@ -94,7 +53,7 @@ void fibLonI(void) {
     return;
   }
 
-  if(shortIntegerMode == SIM_UNSIGN && longIntegerCompareUInt(x, 93) > 0) {
+  /*if(shortIntegerMode == SIM_UNSIGN && longIntegerCompareUInt(x, 93) > 0) {
     displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
     #if(EXTRA_INFO_ON_CALC_ERROR == 1)
       longIntegerRegisterToDisplayString(REGISTER_X, errorMessage, ERROR_MESSAGE_LENGTH, SCREEN_WIDTH, 50, false);   //JM added last parameter: Allow LARGELI
@@ -104,7 +63,7 @@ void fibLonI(void) {
     longIntegerFree(x);
     return;
   }
-  else if(longIntegerCompareUInt(x, 4791) > 0) {
+  else*/ if(longIntegerCompareUInt(x, 4791) > 0) {
     displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
     #if(EXTRA_INFO_ON_CALC_ERROR == 1)
       longIntegerRegisterToDisplayString(REGISTER_X, errorMessage, ERROR_MESSAGE_LENGTH, SCREEN_WIDTH, 50, false);   //JM added last parameter: Allow LARGELI
@@ -128,7 +87,7 @@ void fibLonI(void) {
 }
 
 
-uint8_t FibonacciReal(const real_t *n, real_t *res, realContext_t *realContext) {
+static uint8_t FibonacciReal(const real_t *n, real_t *res, realContext_t *realContext) {
   // FIB(x) = [ PHI^(x) - PHI^(-x)*COS(PI * x) ] / SQRT(5)
 
   real_t a, b;
@@ -146,7 +105,7 @@ uint8_t FibonacciReal(const real_t *n, real_t *res, realContext_t *realContext) 
 }
 
 
-uint8_t FibonacciComplex(const real_t *nReal, const real_t *nImag, real_t *resReal, real_t *resImag, realContext_t *realContext) {
+static uint8_t FibonacciComplex(const real_t *nReal, const real_t *nImag, real_t *resReal, real_t *resImag, realContext_t *realContext) {
   // FIB(x) = [ PHI^(x) - PHI^(-x)*COS(PI * x) ] / SQRT(5)
 
   real_t aReal, aImag;
@@ -166,21 +125,21 @@ uint8_t FibonacciComplex(const real_t *nReal, const real_t *nImag, real_t *resRe
   return ERROR_NONE;
 }
 
-void fibReal(void) {
+static void fibReal(void) {
   // FIB(x) = [ PHI^(x) - PHI^(-x)*COS(PI * x) ] / SQRT(5)
-
   real_t x;
 
-  real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &x);
-  FibonacciReal(&x, &x, &ctxtReal39);
-  convertRealToReal34ResultRegister(&x, REGISTER_X);
+  if (getRegisterAsReal(REGISTER_X, &x)) {;
+    FibonacciReal(&x, &x, &ctxtReal39);
+    convertRealToResultRegister(&x, REGISTER_X, amNone);
+  }
 }
 
-void fibCplx(void) {
+static void fibCplx(void) {
   real_t xReal, xImag;
 
-  real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &xReal);
-  real34ToReal(REGISTER_IMAG34_DATA(REGISTER_X), &xImag);
+  if (!getRegisterAsComplex(REGISTER_X,  &xReal, &xImag))
+    return;
 
   if(realIsZero(&xImag)) {
     FibonacciReal(&xReal, &xReal, &ctxtReal39);
@@ -190,4 +149,15 @@ void fibCplx(void) {
   }
 
   convertComplexToResultRegister(&xReal, &xImag, REGISTER_X);
+}
+
+/********************************************//**
+ * \brief regX ==> regL and fib(regX) ==> regX
+ * enables stack lift and refreshes the stack
+ *
+ * \param[in] unusedButMandatoryParameter uint16_t
+ * \return void
+ ***********************************************/
+void fnFib(uint16_t unusedButMandatoryParameter) {
+  processIntRealComplexMonadicFunction(&fibReal, &fibCplx, NULL, &fibLonI);
 }

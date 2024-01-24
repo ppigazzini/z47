@@ -278,17 +278,14 @@ void fnProcessLRfind(uint16_t curveFitting){
     if(s == CF_CAUCHY_FITTING || s == CF_GAUSS_FITTING || s == CF_PARABOLIC_FITTING) {
       liftStack();
       setSystemFlag(FLAG_ASLIFT);
-      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
-      convertRealToReal34ResultRegister(&aa2, REGISTER_X);
+      convertRealToResultRegister(&aa2, REGISTER_X, amNone);
     }
     liftStack();
     setSystemFlag(FLAG_ASLIFT);
-    reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
-    convertRealToReal34ResultRegister(&aa1, REGISTER_X);
+    convertRealToResultRegister(&aa1, REGISTER_X, amNone);
     liftStack();
     setSystemFlag(FLAG_ASLIFT);
-    reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
-    convertRealToReal34ResultRegister(&aa0, REGISTER_X);
+    convertRealToResultRegister(&aa0, REGISTER_X, amNone);
   }
   else {
     if(minLRDataPoints(s) == 65535) {
@@ -1151,6 +1148,9 @@ void fnYIsFnx(uint16_t unusedButMandatoryParameter){
   real_t XX, YY, RR, SMI, aa0, aa1, aa2;
   double x=-99, y = 0, a0=-99, a1=-99, a2=-99;
 
+  if (!getRegisterAsReal(REGISTER_X, &XX))
+    return;
+
   realCopy(const_0, &aa0);
   realCopy(const_0, &aa1);
   realCopy(const_0, &aa2);
@@ -1159,24 +1159,12 @@ void fnYIsFnx(uint16_t unusedButMandatoryParameter){
       lrChosen = CF_LINEAR_FITTING;
     }
     processCurvefitSelection(lrChosen, &RR, &SMI, &aa0, &aa1, &aa2);
-    if(getRegisterDataType(REGISTER_X) == dtLongInteger) {
-      convertLongIntegerRegisterToReal34Register (REGISTER_X, REGISTER_X);
-    }
-    if(getRegisterDataType(REGISTER_X) == dtReal34) {
-      real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &XX);
-      yIsFnx(useREAL39, lrChosen, x, &y, a0, a1, a2, &XX, &YY, &RR, &SMI, &aa0, &aa1, &aa2);
-      realToReal34(&YY,REGISTER_REAL34_DATA(REGISTER_X));
 
-      setSystemFlag(FLAG_ASLIFT);
-      temporaryInformation = TI_CALCY;
-    }
-    else {
-      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
-        sprintf(errorMessage, "data type %s cannot be used with L.R.!", getRegisterDataTypeName(REGISTER_X, false, false));
-        moreInfoOnError("In function fnYIsFnx:", errorMessage, NULL, NULL);
-      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-    }
+    yIsFnx(useREAL39, lrChosen, x, &y, a0, a1, a2, &XX, &YY, &RR, &SMI, &aa0, &aa1, &aa2);
+    convertRealToResultRegister(&YY, REGISTER_X, amNone);
+
+    setSystemFlag(FLAG_ASLIFT);
+    temporaryInformation = TI_CALCY;
   }
 }
 
@@ -1215,7 +1203,8 @@ void xIsFny(uint16_t selection, uint8_t rootNo, real_t *XX, real_t *YY, real_t *
     case CF_POWER_FITTING: {
       realDivide(YY,        aa0,     &UU, realContextForecast);
       xthRootReal(&UU,      aa1,          realContextForecast);             //Note X-register gets written here
-      real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), XX);
+      if (!getRegisterAsReal(REGISTER_X, XX))
+        return;
       temporaryInformation = TI_CALCX;
       break;
     }
@@ -1298,6 +1287,9 @@ void xIsFny(uint16_t selection, uint8_t rootNo, real_t *XX, real_t *YY, real_t *
 void fnXIsFny(uint16_t unusedButMandatoryParameter){
   real_t XX, YY, RR, SMI, aa0, aa1, aa2;
 
+  if (!getRegisterAsReal(REGISTER_X, &YY))
+    return;
+
   realCopy(const_0, &aa0);
   realCopy(const_0, &aa1);
   realCopy(const_0, &aa2);
@@ -1306,30 +1298,17 @@ void fnXIsFny(uint16_t unusedButMandatoryParameter){
       lrChosen = CF_LINEAR_FITTING;
     }
     processCurvefitSelection(lrChosen, &RR, &SMI, &aa0, &aa1, &aa2);
-    if(getRegisterDataType(REGISTER_X) == dtLongInteger) {
-      convertLongIntegerRegisterToReal34Register (REGISTER_X, REGISTER_X);
-    }
-    if(getRegisterDataType(REGISTER_X) == dtReal34) {
-      real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &YY);
-      xIsFny(lrChosen, 1, &XX, &YY, &RR, &SMI, &aa0, &aa1, &aa2);
-      realToReal34(&XX,REGISTER_REAL34_DATA(REGISTER_X));
 
-      if(lrChosen == CF_PARABOLIC_FITTING || lrChosen == CF_GAUSS_FITTING || lrChosen == CF_CAUCHY_FITTING) {
-        xIsFny(lrChosen, 2, &XX, &YY, &RR, &SMI, &aa0, &aa1, &aa2);
-        liftStack();
-        setSystemFlag(FLAG_ASLIFT);
-        reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
-        realToReal34(&XX,REGISTER_REAL34_DATA(REGISTER_X));
-      }
+    xIsFny(lrChosen, 1, &XX, &YY, &RR, &SMI, &aa0, &aa1, &aa2);
+    convertRealToResultRegister(&XX, REGISTER_X, amNone);
 
+    if(lrChosen == CF_PARABOLIC_FITTING || lrChosen == CF_GAUSS_FITTING || lrChosen == CF_CAUCHY_FITTING) {
+      xIsFny(lrChosen, 2, &XX, &YY, &RR, &SMI, &aa0, &aa1, &aa2);
+      liftStack();
       setSystemFlag(FLAG_ASLIFT);
+      convertRealToResultRegister(&XX,REGISTER_X, amNone);
     }
-    else {
-      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
-        sprintf(errorMessage, "data type %s cannot be used with L.R.!", getRegisterDataTypeName(REGISTER_X, false, false));
-        moreInfoOnError("In function fnXIsFny:", errorMessage, NULL, NULL);
-      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-    }
+
+    setSystemFlag(FLAG_ASLIFT);
   }
 }

@@ -41,27 +41,16 @@
 static void unitConversion(const real_t * const coefficient, uint16_t multiplyDivide, bool_t invert) {
   real_t reX;
 
+  if (!getRegisterAsReal(REGISTER_X, &reX))
+    return;
+
   if(!saveLastX()) {
     return;
   }
 
-  if(getRegisterDataType(REGISTER_X) == dtReal34 && getRegisterAngularMode(REGISTER_X) == amNone && !(invert && real34IsZero(REGISTER_REAL34_DATA(REGISTER_X)))) {
-    real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &reX);
-  }
-  else if(getRegisterDataType(REGISTER_X) == dtLongInteger && !(invert && longIntegerIsZeroRegister(REGISTER_X))) {
-    convertLongIntegerRegisterToReal(REGISTER_X, &reX, &ctxtReal39);
-    reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
-  }
-  else if(invert && longIntegerIsZeroRegister(REGISTER_X) ) {
-    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
-      moreInfoOnError("In function unitConversion:", getRegisterDataTypeName(REGISTER_X, true, false), "cannot divide by zero!", NULL);
-    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-    return;
-  }
-  else if(invert && real34IsZero(REGISTER_REAL34_DATA(REGISTER_X))) {
+  if (invert && realIsZero(&reX)) {
     if(getSystemFlag(FLAG_SPCRES)) {
-      convertRealToReal34ResultRegister(const_plusInfinity, REGISTER_X);
+      convertRealToResultRegister(realIsNegative(&reX) ? const_minusInfinity : const_plusInfinity, REGISTER_X, amNone);
     }
     else {
       displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
@@ -69,13 +58,6 @@ static void unitConversion(const real_t * const coefficient, uint16_t multiplyDi
         moreInfoOnError("In function unitConversion:", "cannot calculate divide by zero", NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
-  }
-  else {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
-      moreInfoOnError("In function unitConversion:", getRegisterDataTypeName(REGISTER_X, true, false), "cannot be converted!", NULL);
-    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-    return;
   }
 
   if(invert) {
@@ -89,8 +71,7 @@ static void unitConversion(const real_t * const coefficient, uint16_t multiplyDi
     realDivide(&reX, coefficient, &reX, &ctxtReal39);
   }
 
-  convertRealToReal34ResultRegister(&reX, REGISTER_X);
-
+  convertRealToResultRegister(&reX, REGISTER_X, amNone);
   adjustResult(REGISTER_X, false, false, -1, -1, -1);
 }
 
@@ -106,28 +87,16 @@ static void unitConversion(const real_t * const coefficient, uint16_t multiplyDi
 void fnCvtCToF(uint16_t unusedButMandatoryParameter) {
   real_t reX;
 
-  if(!saveLastX()) {
+  if (!getRegisterAsReal(REGISTER_X, &reX))
     return;
-  }
 
-  if(getRegisterDataType(REGISTER_X) == dtReal34) {
-    real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &reX);
-  }
-  else if(getRegisterDataType(REGISTER_X) == dtLongInteger) {
-    convertLongIntegerRegisterToReal(REGISTER_X, &reX, &ctxtReal39);
-    reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
-  }
-  else {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
-      moreInfoOnError("In function fnCvtCToF:", getRegisterDataTypeName(REGISTER_X, true, false), "cannot be converted!", NULL);
-    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+  if(!saveLastX()) {
     return;
   }
 
   realFMA(&reX, const_9on5, const_32, &reX, &ctxtReal39);
 
-  convertRealToReal34ResultRegister(&reX, REGISTER_X);
+  convertRealToResultRegister(&reX, REGISTER_X, amNone);
 
   adjustResult(REGISTER_X, false, false, -1, -1, -1);
 }
@@ -144,29 +113,17 @@ void fnCvtCToF(uint16_t unusedButMandatoryParameter) {
 void fnCvtFToC(uint16_t unusedButMandatoryParameter) {
   real_t reX;
 
-  if(!saveLastX()) {
+  if (!getRegisterAsReal(REGISTER_X, &reX))
     return;
-  }
 
-  if(getRegisterDataType(REGISTER_X) == dtReal34) {
-    real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &reX);
-  }
-  else if(getRegisterDataType(REGISTER_X) == dtLongInteger) {
-    convertLongIntegerRegisterToReal(REGISTER_X, &reX, &ctxtReal39);
-    reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
-  }
-  else {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
-      moreInfoOnError("In function fnCvtFToC:", getRegisterDataTypeName(REGISTER_X, true, false), "cannot be converted!", NULL);
-    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+  if(!saveLastX()) {
     return;
   }
 
   realSubtract(&reX, const_32, &reX, &ctxtReal39);
   realDivide(&reX, const_9on5, &reX, &ctxtReal39);
 
-  convertRealToReal34ResultRegister(&reX, REGISTER_X);
+  convertRealToResultRegister(&reX, REGISTER_X, amNone);
 
   adjustResult(REGISTER_X, false, false, -1, -1, -1);
 }
@@ -626,29 +583,17 @@ void fnK100Mtomik   (uint16_t multiplyDivide) {
 void fnCvtRatioDb(uint16_t tenOrTwenty) { // ten: power ratio   twenty: field ratio
   real_t reX;
 
-  if(!saveLastX()) {
+  if (!getRegisterAsReal(REGISTER_X, &reX))
     return;
-  }
 
-  if(getRegisterDataType(REGISTER_X) == dtReal34) {
-    real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &reX);
-  }
-  else if(getRegisterDataType(REGISTER_X) == dtLongInteger) {
-    convertLongIntegerRegisterToReal(REGISTER_X, &reX, &ctxtReal39);
-    reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
-  }
-  else {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
-      moreInfoOnError("In function fnCvtRatioDb:", getRegisterDataTypeName(REGISTER_X, true, false), "cannot be converted!", NULL);
-    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+  if(!saveLastX()) {
     return;
   }
 
   WP34S_Log10(&reX, &reX, &ctxtReal39);
   realMultiply(&reX, (tenOrTwenty == 10 ? const_10 : const_20), &reX, &ctxtReal39);
 
-  convertRealToReal34ResultRegister(&reX, REGISTER_X);
+  convertRealToResultRegister(&reX, REGISTER_X, amNone);
 
   adjustResult(REGISTER_X, false, false, -1, -1, -1);
 }
@@ -665,29 +610,17 @@ void fnCvtRatioDb(uint16_t tenOrTwenty) { // ten: power ratio   twenty: field ra
 void fnCvtDbRatio(uint16_t tenOrTwenty) { // ten: power ratio   twenty: field ratio
   real_t reX;
 
-  if(!saveLastX()) {
+  if (!getRegisterAsReal(REGISTER_X, &reX))
     return;
-  }
 
-  if(getRegisterDataType(REGISTER_X) == dtReal34) {
-    real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &reX);
-  }
-  else if(getRegisterDataType(REGISTER_X) == dtLongInteger) {
-    convertLongIntegerRegisterToReal(REGISTER_X, &reX, &ctxtReal39);
-    reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
-  }
-  else {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
-      moreInfoOnError("In function fnCvtRatioDb:", getRegisterDataTypeName(REGISTER_X, true, false), "cannot be converted!", NULL);
-    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+  if(!saveLastX()) {
     return;
   }
 
   realDivide(&reX, (tenOrTwenty == 10 ? const_10 : const_20), &reX, &ctxtReal39);
   realPower10(&reX, &reX, &ctxtReal39);
 
-  convertRealToReal34ResultRegister(&reX, REGISTER_X);
+  convertRealToResultRegister(&reX, REGISTER_X, amNone);
 
   adjustResult(REGISTER_X, false, false, -1, -1, -1);
 }
