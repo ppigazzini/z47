@@ -111,6 +111,8 @@
   double  convertRegisterToDouble                            (calcRegister_t regist);
   #define DOUBLE_NOT_INIT 3.402823466e+38f //maximum float value
 
+  void badTypeError(calcRegister_t reg);
+
   bool_t getRegisterAsComplex(calcRegister_t reg, real_t *r, real_t *c);
   bool_t getRegisterAsComplexOrReal(calcRegister_t reg, real_t *r, real_t *c, bool_t *cmplx);
   bool_t getRegisterAsReal(calcRegister_t reg, real_t *val);

@@ -669,37 +669,18 @@ void fnClSigma(uint16_t unusedButMandatoryParameter) {
 
 void fnSigma(uint16_t plusMinus) {
   #if !defined(TESTSUITE_BUILD)
-    real_t x, y;
-    realContext_t *realContext = &ctxtReal75; // Summation data with 75 digits
+  real_t x, y;
 
   lrChosen = 0;
 
   if(plusMinus == 1) { // SIGMA+
-    if(   (getRegisterDataType(REGISTER_X) == dtLongInteger || getRegisterDataType(REGISTER_X) == dtReal34)
-       && (getRegisterDataType(REGISTER_Y) == dtLongInteger || getRegisterDataType(REGISTER_Y) == dtReal34)) {
-
+    if(getRegisterAsRealQuiet(REGISTER_X, &x) && getRegisterAsRealQuiet(REGISTER_Y, &y)) {
         if(statisticalSumsPointer == NULL) {
           initStatisticalSums();
           if(lastErrorCode != ERROR_NONE) {
             return;
           }
         }
-
-      if(getRegisterDataType(REGISTER_X) == dtLongInteger) {
-        convertLongIntegerRegisterToReal(REGISTER_X, &x, realContext);
-        convertLongIntegerRegisterToReal34Register(REGISTER_X, REGISTER_X);
-      }
-      else {
-        real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &x);
-    }
-
-      if(getRegisterDataType(REGISTER_Y) == dtLongInteger) {
-        convertLongIntegerRegisterToReal(REGISTER_Y, &y, realContext);
-        convertLongIntegerRegisterToReal34Register(REGISTER_Y, REGISTER_Y);
-      }
-      else {
-        real34ToReal(REGISTER_REAL34_DATA(REGISTER_Y), &y);
-      }
 
         addSigma(&x, &y);
         AddtoStatsMatrix(&x, &y);
@@ -737,10 +718,8 @@ void fnSigma(uint16_t plusMinus) {
           }
 
           liftStack();
-          reallocateRegister(REGISTER_Y, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
-          convertRealToReal34ResultRegister(&y, REGISTER_Y);
-          reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
-          convertRealToReal34ResultRegister(&x, REGISTER_X);
+          convertRealToResultRegister(&y, REGISTER_Y, amNone);
+          convertRealToResultRegister(&x, REGISTER_X, amNone);
           temporaryInformation = TI_STATISTIC_SUMS;
         }
         else {
@@ -752,11 +731,7 @@ void fnSigma(uint16_t plusMinus) {
         }
       }
       else {
-        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
-        #if(EXTRA_INFO_ON_CALC_ERROR == 1)
-          sprintf(errorMessage, "cannot use (%s, %s) as statistical data!", getDataTypeName(getRegisterDataType(REGISTER_X), false, false), getDataTypeName(getRegisterDataType(REGISTER_Y), false, false));
-          moreInfoOnError("In function fnSigma:", errorMessage, NULL, NULL);
-        #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+        badTypeError(REGISTER_X);
       }
     }
     else { // SIGMA-
@@ -771,8 +746,8 @@ void fnSigma(uint16_t plusMinus) {
         liftStack();
         setSystemFlag(FLAG_ASLIFT);
         liftStack();
-        convertRealToReal34ResultRegister(&x, REGISTER_X);
-        convertRealToReal34ResultRegister(&y, REGISTER_Y);
+        convertRealToResultRegister(&x, REGISTER_X, amNone);
+        convertRealToResultRegister(&y, REGISTER_Y, amNone);
 
         realCopy(&x,       &SAVED_SIGMA_LASTX);
         realCopy(&y,       &SAVED_SIGMA_LASTY);
@@ -796,7 +771,7 @@ void fnSigma(uint16_t plusMinus) {
 void fnStatSum(uint16_t sum) {
   if(checkMinimumDataPoints(const_1)) {
     liftStack();
-    realToReal34((real_t *)(statisticalSumsPointer + REAL_SIZE_IN_BLOCKS * sum), REGISTER_REAL34_DATA(REGISTER_X));
+    convertRealToResultRegister((real_t *)(statisticalSumsPointer + REAL_SIZE_IN_BLOCKS * sum), REGISTER_X, amNone);
   }
 }
 
@@ -808,8 +783,8 @@ void fnSumXY(uint16_t unusedButMandatoryParameter) {
     setSystemFlag(FLAG_ASLIFT);
     liftStack();
 
-    convertRealToReal34ResultRegister(SIGMA_X, REGISTER_X);
-    convertRealToReal34ResultRegister(SIGMA_Y, REGISTER_Y);
+    convertRealToResultRegister(SIGMA_X, REGISTER_X, amNone);
+    convertRealToResultRegister(SIGMA_Y, REGISTER_Y, amNone);
 
     temporaryInformation = TI_SUMX_SUMY;
   }
@@ -823,8 +798,8 @@ void fnXmin(uint16_t unusedButMandatoryParameter) {
     setSystemFlag(FLAG_ASLIFT);
     liftStack();
 
-    convertRealToReal34ResultRegister(SIGMA_XMIN, REGISTER_X);
-    convertRealToReal34ResultRegister(SIGMA_YMIN, REGISTER_Y);
+    convertRealToResultRegister(SIGMA_XMIN, REGISTER_X, amNone);
+    convertRealToResultRegister(SIGMA_YMIN, REGISTER_Y, amNone);
 
     temporaryInformation = TI_XMIN_YMIN;
   }
@@ -837,8 +812,8 @@ void fnXmax(uint16_t unusedButMandatoryParameter) {
     setSystemFlag(FLAG_ASLIFT);
     liftStack();
 
-    convertRealToReal34ResultRegister(SIGMA_XMAX, REGISTER_X);
-    convertRealToReal34ResultRegister(SIGMA_YMAX, REGISTER_Y);
+    convertRealToResultRegister(SIGMA_XMAX, REGISTER_X, amNone);
+    convertRealToResultRegister(SIGMA_YMAX, REGISTER_Y, amNone);
 
     temporaryInformation = TI_XMAX_YMAX;
   }
@@ -854,10 +829,10 @@ void fnRangeXY(uint16_t unusedButMandatoryParameter) {
     liftStack();
 
     realSubtract(SIGMA_XMAX, SIGMA_XMIN, &t, &ctxtReal39);
-    convertRealToReal34ResultRegister(&t, REGISTER_X);
+    convertRealToResultRegister(&t, REGISTER_X, amNone);
 
     realSubtract(SIGMA_YMAX, SIGMA_YMIN, &t, &ctxtReal39);
-    convertRealToReal34ResultRegister(&t, REGISTER_Y);
+    convertRealToResultRegister(&t, REGISTER_Y, amNone);
 
     temporaryInformation = TI_RANGEX_RANGEY;
   }
@@ -934,79 +909,44 @@ static void convertStatsMatrixToHistoMatrix(uint16_t statsVariableToHistogram);
 
 void fnSetLoBin(uint16_t unusedButMandatoryParameter) {
   #if !defined(TESTSUITE_BUILD)
+    real_t x;
+
     if(histElementXorY == -1) {
       return;
     }
-    if(getRegisterDataType(REGISTER_X) == dtLongInteger) {
-      convertLongIntegerRegisterToReal34(REGISTER_X, &loBinR);
-      convertStatsMatrixToHistoMatrix(histElementXorY == 1 ? ITM_Y : histElementXorY == 0 ? ITM_X : -1);
-    }
-    else {
-      if(getRegisterDataType(REGISTER_X) == dtReal34) {
-        real34Copy(REGISTER_REAL34_DATA(REGISTER_X), &loBinR);
-        convertStatsMatrixToHistoMatrix(histElementXorY == 1 ? ITM_Y : histElementXorY == 0 ? ITM_X : -1);
-      }
-      else {
-        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-        #if defined(PC_BUILD)
-        sprintf(errorMessage, "DataType %" PRIu32, getRegisterDataType(REGISTER_X));
-        moreInfoOnError("In function fnSetLoBin:", errorMessage, "is not a long integer or real.", "");
-        #endif // PC_BUILD
-      }
-    }
+    if (!getRegisterAsReal(REGISTER_X, &x))
+      return;
+    realToReal34(&x, &loBinR);
+    convertStatsMatrixToHistoMatrix(histElementXorY == 1 ? ITM_Y : histElementXorY == 0 ? ITM_X : -1);
   #endif //!defined(TESTSUITE_BUILD)
 }
 
-static void convertStatsMatrixToHistoMatrix(uint16_t statsVariableToHistogram);
-
 void fnSetHiBin(uint16_t unusedButMandatoryParameter) {
   #if !defined(TESTSUITE_BUILD)
+    real_t x;
+
     if(histElementXorY == -1) {
       return;
     }
-    if(getRegisterDataType(REGISTER_X) == dtLongInteger) {
-      convertLongIntegerRegisterToReal34(REGISTER_X, &hiBinR);
-      convertStatsMatrixToHistoMatrix(histElementXorY == 1 ? ITM_Y : histElementXorY == 0 ? ITM_X : -1);
-    }
-    else {
-      if(getRegisterDataType(REGISTER_X) == dtReal34) {
-        real34Copy(REGISTER_REAL34_DATA(REGISTER_X), &hiBinR);
-        convertStatsMatrixToHistoMatrix(histElementXorY == 1 ? ITM_Y : histElementXorY == 0 ? ITM_X : -1);
-      }
-      else {
-        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-        #if defined(PC_BUILD)
-        sprintf(errorMessage, "DataType %" PRIu32, getRegisterDataType(REGISTER_X));
-        moreInfoOnError("In function fnSetHiBin:", errorMessage, "is not a long integer or real.", "");
-        #endif // PC_BUILD
-      }
-    }
+    if (!getRegisterAsReal(REGISTER_X, &x))
+      return;
+    realToReal34(&x, &hiBinR);
+    convertStatsMatrixToHistoMatrix(histElementXorY == 1 ? ITM_Y : histElementXorY == 0 ? ITM_X : -1);
   #endif //!defined(TESTSUITE_BUILD)
 }
 
 
 void fnSetNBins(uint16_t unusedButMandatoryParameter) {
   #if !defined(TESTSUITE_BUILD)
+    real_t x;
+
     if(histElementXorY == -1) {
       return;
     }
-    if(getRegisterDataType(REGISTER_X) == dtLongInteger) {
-      convertLongIntegerRegisterToReal34(REGISTER_X, &nBins);
-      convertStatsMatrixToHistoMatrix(histElementXorY == 1 ? ITM_Y : histElementXorY == 0 ? ITM_X : -1);
-    }
-    else {
-      if(getRegisterDataType(REGISTER_X) == dtReal34) {
-        real34Copy(REGISTER_REAL34_DATA(REGISTER_X), &nBins);
-        convertStatsMatrixToHistoMatrix(histElementXorY == 1 ? ITM_Y : histElementXorY == 0 ? ITM_X : -1);
-      }
-      else {
-        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-        #if defined(PC_BUILD)
-        sprintf(errorMessage, "DataType %" PRIu32, getRegisterDataType(REGISTER_X));
-        moreInfoOnError("In function fnSetNBins:", errorMessage, "is not a long integer or real.", "");
-        #endif // PC_BUILD
-      }
-    }
+    if (!getRegisterAsReal(REGISTER_X, &x))
+      return;
+    realToReal34(&x, &nBins);
+    convertStatsMatrixToHistoMatrix(histElementXorY == 1 ? ITM_Y : histElementXorY == 0 ? ITM_X : -1);
   #endif //!defined(TESTSUITE_BUILD)
 }
 
@@ -1154,12 +1094,9 @@ static void convertStatsMatrixToHistoMatrix(uint16_t statsVariableToHistogram) {
         liftStack();
         liftStack();
         liftStack();
-        reallocateRegister(REGISTER_Z, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
-        convertRealToReal34ResultRegister(&nb, REGISTER_Z);
-        reallocateRegister(REGISTER_Y, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
-        convertRealToReal34ResultRegister(&lb, REGISTER_Y);
-        reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
-        convertRealToReal34ResultRegister(&hb, REGISTER_X);
+        convertRealToResultRegister(&nb, REGISTER_Z, amNone);
+        convertRealToResultRegister(&lb, REGISTER_Y, amNone);
+        convertRealToResultRegister(&hb, REGISTER_X, amNone);
         temporaryInformation = TI_STATISTIC_HISTO;
       }
       else {
