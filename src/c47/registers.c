@@ -2042,8 +2042,7 @@ void fnToReal(uint16_t unusedButMandatoryParameter) {
     real_t b;
     if(real34IsZero(REGISTER_IMAG34_DATA(REGISTER_X))) {
       real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &b);
-      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
-      convertRealToReal34ResultRegister(&b, REGISTER_X);
+      convertRealToResultRegister(&b, REGISTER_X, amNone);
       return;
     }
   }
