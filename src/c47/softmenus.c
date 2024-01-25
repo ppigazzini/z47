@@ -1033,10 +1033,11 @@ void fnDynamicMenu(uint16_t unusedButMandatoryParameter) {
           numberOfVars++;
           numberOfBytes += 1 + allNamedVariables[i].variableName[0];
         }
+
       }
     }
     if (softmenu[softmenuStack[2].softmenuId].menuItem != -ITM_DELITM) {            // Don't include reserved variables for DELITM
-      for(int i=12; i<NUMBER_OF_RESERVED_VARIABLES; i++) {
+      for(int i=FIRST_NAMED_RESERVED_VARIABLE-FIRST_RESERVED_VARIABLE; i<NUMBER_OF_RESERVED_VARIABLES; i++) {
         calcRegister_t regist = i+FIRST_RESERVED_VARIABLE;
         if((!applyFilter || _filterDataType(regist, typeFilter, isAngular))) {
           xcopy(tmpString + 15 * numberOfVars, allReservedVariables[i].reservedVariableName + 1, allReservedVariables[i].reservedVariableName[0]);
