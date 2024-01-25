@@ -74,11 +74,38 @@ static int cmplxSortCompare(const void *v1, const void *v2) {
   } else if (realIsZero(&p2->i))
       return 1;
 
-  // Finally sort on magnitude
+  // Sort on magnitude
   realCompare(&v1a, &v2a, &c, &ctxtReal75);
-  if (realIsZero(&c))
-    return 0;
-  return realIsNegative(&c) ? -1 : 1;
+  if (!realIsZero(&c))
+    return realIsNegative(&c) ? -1 : 1;
+
+  // Equal magnitude, favour positive roots over negative
+  if (realIsNegative(&p1->r) && !realIsNegative(&p2->r))
+    return 1;
+  if (!realIsNegative(&p1->r) && realIsNegative(&p2->r))
+    return -1;
+  if (realIsNegative(&p1->i) && !realIsNegative(&p2->i))
+    return 1;
+  if (!realIsNegative(&p1->i) && realIsNegative(&p2->i))
+    return -1;
+
+  // Favour smaller real parts
+  realCompare(&p1->r, &p2->r, &c, &ctxtReal75);
+  if (!realIsZero(&c)) {
+    if (realIsNegative(&p1->r))
+      return realIsNegative(&c) ? 1 : -1;
+    return realIsNegative(&c) ? -1 : 1;
+  }
+
+  // Favour smaller imaginary parts
+  realCompare(&p1->i, &p2->i, &c, &ctxtReal75);
+  if (!realIsZero(&c)) {
+    if (realIsNegative(&p1->i))
+      return realIsNegative(&c) ? 1 : -1;
+    else
+      return realIsNegative(&c) ? -1 : 1;
+  }
+  return 0;
 }
 
 /********************************************//**

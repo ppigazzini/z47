@@ -871,23 +871,17 @@
     } else 
 
 
-    if(calcMode == CM_MIM) {
-      switch(event_keyval) {
-        case 65361:                                               //JM     // CursorLt BST //JM Left
-            btnFnClicked(w, "5");  //F5
-          break;
-        case 65363:                                               //JM     // CursorRt SST //JM Right
-            btnFnClicked(w, "6");  //F6
-          break;
-        default:;
-      }
-    }
-
-
     //ORIGINAL MODIFIED KEYBOARD DETECTION
     //FOR NON AIM MODE. AIM HAS RETURNED AT THIS POINT SO NO IF NEEDED
 
     switch(event_keyval) {
+
+      case 65361:                                               //JM     // CursorLt  //JM Left
+        btnFnClicked(w, "5");  //F5
+        break;
+      case 65363:                                               //JM     // CursorRt  //JM Right
+        btnFnClicked(w, "6");  //F6
+        break;
 
       //ROW 1
       case 65470: // F1                       //JM Changed these to btnFnPressed from btnFnClicked
