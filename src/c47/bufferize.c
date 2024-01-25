@@ -1511,8 +1511,20 @@ uint16_t convertItemToSubOrSup(uint16_t item, int16_t subOrSup) {
         break;
       }
 
+      //    C47                                //R47
+      //  1:  B = ITM_1ONX            = BIN      B = ITM_SQUAREROOTX       
+      //  3:  D = ITM_LOG = ITM_ENTER = DEC      D = ITM_YX
+      //  7:  H = ITM_RCL             = HEX      H = ITM_RCL
+      //      O = ITM_EXPONENT        = OCT      ---
+      //  8:  I = ITM_Rdown           = INT      I = ITM_Rdown
+
+      // F not active in NIM, per definition not possible if a period is in the input string. 
+
       //JM Only works in direct NIM, that is only when the input buffer already contains #
       case ITM_1ONX: { // B for binary base
+      case ITM_SQUAREROOTX: //R47
+        if(calcModel == USER_C47 && item == ITM_SQUAREROOTX) break;
+        if(calcModel != USER_C47 && item == ITM_1ONX) break;
         if(INTEGERSHORTCUTS && nimNumberPart == NP_INT_BASE && aimBuffer[strlen(aimBuffer) - 1] == '#') {
           strcat(aimBuffer, "2");
           goto addItemToNimBuffer_exit;
@@ -1523,7 +1535,10 @@ uint16_t convertItemToSubOrSup(uint16_t item, int16_t subOrSup) {
       }
 
       case ITM_ENTER:                                  //JM DEFAULT BASE SETTING 10
-      case ITM_LOG10: { // D for decimal base          //JM
+      case ITM_LOG10:         // D for decimal base          //JM
+      case ITM_YX: { //R47
+        if(calcModel == USER_C47 && item == ITM_YX) break;
+        if(calcModel != USER_C47 && item == ITM_LOG10) break;
         if(INTEGERSHORTCUTS && nimNumberPart == NP_INT_BASE && aimBuffer[strlen(aimBuffer) - 1] == '#') {
           strcat(aimBuffer, "10");
           goto addItemToNimBuffer_exit;
