@@ -3622,7 +3622,7 @@ else          stringToUtf8(indexOfItems[numlockReplacements(4,max(key->fShiftedA
       btn42A  = gtk_button_new();                           //vv dr - new AIM
       btn43A  = gtk_button_new();
       btn44A  = gtk_button_new();
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn42A), "M");
+//      gtk_widget_set_tooltip_text(GTK_WIDGET(btn42A), "M");
       gtk_widget_set_tooltip_text(GTK_WIDGET(btn43A), "N");
       gtk_widget_set_tooltip_text(GTK_WIDGET(btn44A), "O"); //^^
       lbl41F  = gtk_label_new("");
