@@ -1502,7 +1502,7 @@ enum REG_NUMBERS {
 #define currentPtrToPreviousLevel            (currentSubroutineLevelData[2].ptrToPreviousLevel)
 
 
-#define INTEGERSHORTCUTS                     ((getSystemFlag(FLAG_USER) ? kbd_usr[27].primary : kbd_std[27].primary) == KEY_fg)     //TRUE is C47; check based on f/g key on DM42 position
+#define INTEGERSHORTCUTS                     (calcModel == USER_C47 || calcModel == USER_R47 || calcModel == USER_R47bkfg || calcModel == USER_R47fgbk || calcModel == USER_R47fg_g)    //TRUE is C47; check based on f/g key on DM42 position
 
 
 #if !defined(PC_BUILD) && !defined(DMCP_BUILD)
