@@ -1699,13 +1699,6 @@ void fnPlotStat(uint16_t plotMode){
 #if !defined(SAVE_SPACE_DM42_13GRF)
     //restoreStats();
   switch(plotMode) {
-      case PLOT_GRAPH: {
-        drawHistogram = 0;
-        if(plotStatMx[0] != 'D') {
-          strcpy(plotStatMx, "DrwMX");
-        }
-                      break;
-      }
     case PLOT_ORTHOF:
     case PLOT_START:
     case PLOT_REV:
@@ -1780,34 +1773,22 @@ void fnPlotStat(uint16_t plotMode){
         plotMode = lastPlotMode;
       }
       calcMode = CM_PLOT_STAT;
-      if(plotMode != PLOT_GRAPH) {
-        statGraphReset();
-      }
+      statGraphReset();
 
       if(plotMode == PLOT_START) {
         plotSelection = 0;
         roundedTicks = false;
       }
       else {
-        if(plotMode == PLOT_GRAPH) {
-          calcMode = CM_GRAPH;
-          plotSelection = 0;
-          PLOT_AXIS     = true;
-          PLOT_LINE     = true;
-          PLOT_BOX      = false;
-          roundedTicks  = true;
+        if(plotMode == PLOT_LR && lrSelection != 0) {
+          plotSelection = lrSelection;
+          roundedTicks = false;
         }
-        else {
-          if(plotMode == PLOT_LR && lrSelection != 0) {
-            plotSelection = lrSelection;
-            roundedTicks = false;
-          }
-            else {
-              if(plotMode == H_PLOT || plotMode == H_NORM) {
-                 calcMode = CM_PLOT_STAT;
-              }
+          else {
+            if(plotMode == H_PLOT || plotMode == H_NORM) {
+               calcMode = CM_PLOT_STAT;
             }
-        }
+          }
       }
 
         #if defined(DMCP_BUILD)
@@ -1820,9 +1801,6 @@ void fnPlotStat(uint16_t plotMode){
           case H_PLOT:
           case H_NORM:
             showSoftmenu(-MNU_HPLOT);
-            break;
-          case PLOT_GRAPH:
-            showSoftmenu(-MNU_GRAPH);
             break;
           case PLOT_LR:
             if(drawHistogram == 0) {
@@ -1846,7 +1824,7 @@ void fnPlotStat(uint16_t plotMode){
           default: ;
       }
 
-      if((plotMode != PLOT_START) && (plotMode != PLOT_GRAPH) && (plotMode != H_PLOT) && (plotMode != H_NORM)) {
+      if((plotMode != PLOT_START) && (plotMode != H_PLOT) && (plotMode != H_NORM)) {
         fnPlotRegressionLine(plotMode);
       }
       else {

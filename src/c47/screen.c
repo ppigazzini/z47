@@ -1683,7 +1683,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
     bool_t ret_value = false;
     uint16_t new_time = (uint16_t)(getUptimeMs());
 
-    if( (mode != timed) || (((new_time - old_time) & 0xFE00) != 0 )) { //0x0200 || 0.512 second refresh interval
+    if((mode != timed) || (((new_time - old_time) & 0xFE00) != 0 )) { //0x0200 || 0.512 second refresh interval
       old_time = new_time;
       ret_value = true;
 
@@ -1694,7 +1694,6 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
       if(clearZ && mode > force) {   //force = 1
         clearRegisterLine(REGISTER_Z, true, true);
       }
-
 
       //lcd_refresh();
       fnTimerStart(TO_KB_ACTV, TO_KB_ACTV, JM_TO_KB_ACTV); //PROGRAM_KB_ACTV
@@ -4573,17 +4572,6 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
           showSoftmenuCurrentPart();
           hourGlassIconEnabled = true;
           refreshStatusBar();
-
-          if(lastErrorCode != ERROR_NONE) {
-            //printf("lastErrorCode1=%d\n", lastErrorCode);
-            //printf(">>>> %d\n", softmenu[softmenuStack[0].softmenuId].menuItem);
-            if(softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_GRAPH) {
-              popSoftmenu();
-              calcMode = CM_NORMAL;
-              refreshScreen(82);
-            }
-          }
-
           hourGlassIconEnabled = false;
           showHideHourGlass();
           refreshStatusBar();
@@ -4604,14 +4592,6 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
           showSoftmenuCurrentPart();
           hourGlassIconEnabled = true;
           refreshStatusBar();
-
-          if(lastErrorCode != ERROR_NONE) {
-            if(softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_GRAPH) {
-              popSoftmenu();
-              calcMode = CM_NORMAL;
-              refreshScreen(83);
-            }
-          }
           graphDrawLRline(plotSelection);
           if(lastErrorCode != ERROR_NONE) {
             if(softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_HPLOT || softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_PLOT_LR || softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_HPLOT || softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_PLOT_STAT) {

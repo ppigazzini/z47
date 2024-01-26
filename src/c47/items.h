@@ -1832,8 +1832,8 @@
 #define ITM_DELBKUP                 1780
 #define ITM_CPXSLV                  1781
 #define ITM_DRAW                    1782
-#define MNU_GRAPH                   1783
-#define ITM_REPLT                   1784
+#define ITM_1783                    1783   //xxxx
+#define ITM_1784                    1784   //xxxx
 #define ITM_FPHERE                  1785
 #define ITM_FPPHERE                 1786
 #define ITM_nBINS                   1787
