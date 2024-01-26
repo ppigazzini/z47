@@ -71,8 +71,6 @@
 #if !defined(TESTSUITE_BUILD)
 static void fnPlot(uint16_t unusedButMandatoryParameter) {
     lastPlotMode = PLOT_NOTHING;
-    //    fnPlotStat(PLOT_GRAPH);
-    //  C43 advanced plot vv
     strcpy(plotStatMx, "DrwMX");
     PLOT_LINE = true;
     PLOT_SHADE = true;
