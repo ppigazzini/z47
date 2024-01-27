@@ -313,7 +313,7 @@
     min2 = (tam.indirect ? 0 : min);
     max2 = (tam.indirect ? (tam.dot ? (calcMode == CM_PEM ? 98 : currentNumberOfLocalRegisters) : 99) : max);
     dupNum = 0;
-    if(item == ITM_ENTER || (tam.alpha && stringGlyphLength(aimBuffer) > 6)) {
+    if((item == ITM_ENTER && !(tam.function == ITM_toINT || tam.function == ITM_HASH_JM)) || (tam.alpha && stringGlyphLength(aimBuffer) > 6)) {
       forceTry = true;
     }
     else if(item == ITM_BACKSPACE) {
@@ -541,11 +541,11 @@
       tam.value = 2;
       forceTry = true;
     }
-    else if((tam.function == ITM_toINT  || tam.function == ITM_HASH_JM) && item == ITM_HEX) {
+    else if((tam.function == ITM_toINT  || tam.function == ITM_HASH_JM) && item == ITM_2HEX) {
       tam.value = 16;
       forceTry = true;
     }
-    else if((tam.function == ITM_toINT  || tam.function == ITM_HASH_JM) && item == ITM_OCT) {     //JM BASE added OCT
+    else if((tam.function == ITM_toINT  || tam.function == ITM_HASH_JM) && item == ITM_2OCT) {     //JM BASE added OCT
       tam.value = 8;
       forceTry = true;
     }

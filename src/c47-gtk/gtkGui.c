@@ -1840,7 +1840,7 @@
 
       yPos += DELTA_KEYS_Y + 1;
 
-  if(getSystemFlag(FLAG_USER) ? kbd_usr[27].primary : kbd_std[27].primary != KEY_fg) {
+  if(calcModel != USER_C47) {
       gtk_widget_get_preferred_size(  lbl71F, NULL, &lblF); //JM REMOVE SHIFT LABELS
       gtk_widget_get_preferred_size(  lbl71G, NULL, &lblG);
       gtk_fixed_move(GTK_FIXED(grid), lbl71F, (2*xPos+KEY_WIDTH_1-lblF.width-GAP*0-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);  //Gap removed to cover up fixed squares
@@ -2530,7 +2530,7 @@ else          stringToUtf8(indexOfItems[numlockReplacements(4,max(key->fShiftedA
       gtk_widget_show(btn74);
       gtk_widget_show(btn75);
 
-      if(getSystemFlag(FLAG_USER) ? kbd_usr[27].primary : kbd_std[27].primary != KEY_fg) {
+      if(calcModel != USER_C47) {
         gtk_widget_show(lbl71F); //JM REMOVE SHIFT LABEL
         gtk_widget_show(lbl71G); //JM REMOVE SHIFT LABEL
       }
@@ -3616,7 +3616,7 @@ else          stringToUtf8(indexOfItems[numlockReplacements(4,max(key->fShiftedA
       btn42A  = gtk_button_new();                           //vv dr - new AIM
       btn43A  = gtk_button_new();
       btn44A  = gtk_button_new();
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn42A), "M");
+//      gtk_widget_set_tooltip_text(GTK_WIDGET(btn42A), "M");
       gtk_widget_set_tooltip_text(GTK_WIDGET(btn43A), "N");
       gtk_widget_set_tooltip_text(GTK_WIDGET(btn44A), "O"); //^^
       lbl41F  = gtk_label_new("");
