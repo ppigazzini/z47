@@ -1470,12 +1470,12 @@ void adjustResult(calcRegister_t res, bool_t dropY, bool_t setCpxRes, calcRegist
 
 
 void copySourceRegisterToDestRegister(calcRegister_t sourceRegister, calcRegister_t destRegister) {
-  if(destRegister >= RESERVED_VARIABLE_X && destRegister <= RESERVED_VARIABLE_K) {
-    destRegister = destRegister - RESERVED_VARIABLE_X + REGISTER_X;
+  if(destRegister >= FIRST_RESERVED_VARIABLE && destRegister < FIRST_NAMED_RESERVED_VARIABLE) {
+    destRegister = destRegister - FIRST_RESERVED_VARIABLE + REGISTER_X;
   }
 
-  if(sourceRegister >= RESERVED_VARIABLE_X && sourceRegister <= RESERVED_VARIABLE_K) {
-    sourceRegister = sourceRegister - RESERVED_VARIABLE_X + REGISTER_X;
+  if(sourceRegister >= FIRST_RESERVED_VARIABLE && sourceRegister < FIRST_NAMED_RESERVED_VARIABLE) {
+    sourceRegister = sourceRegister - FIRST_RESERVED_VARIABLE + REGISTER_X;
   }
   else if(sourceRegister == RESERVED_VARIABLE_ADM) {
     longInteger_t longIntVar;
