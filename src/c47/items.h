@@ -1024,7 +1024,7 @@
 #define ITM_0P                       988
 #define ITM_1P                       989
 #define ITM_EXPONENT                 990
-#define ITM_HEX                      991
+#define ITM_0991                     991
 #define ITM_M_GOTO_ROW               992
 #define ITM_M_GOTO_COLUMN            993
 #define ITM_SOLVE_VAR                994
@@ -2012,7 +2012,7 @@
 #define ITM_T_RRIGHT_ARROW          1955
 #define ITM_XNEW                    1956
 #define ITM_XSWAP                   1957
-#define ITM_OCT                     1958
+#define ITM_1958                    1958
 #define ITM_USER_C47                1959
 #define ITM_USER_V47                1960
 #define ITM_USER_D47                1961

@@ -169,7 +169,7 @@
 
   static void registerName(char *s, calcRegister_t regist) {
     if (regist >= REGISTER_X && regist <= LAST_STAT_REGISTER) {
-      tmpString[0] = letteredRegisterName(REGISTER_X);
+      tmpString[0] = letteredRegisterName(regist);
       strcpy(tmpString + 1, ":");
     } else {
       sprintf(tmpString, "R%02d:", regist);
@@ -267,7 +267,7 @@
         else { // Reserved variables
           if(regist < FIRST_RESERVED_VARIABLE) {
             regist -= FIRST_NAMED_VARIABLE + numberOfNamedVariables;
-            regist += FIRST_RESERVED_VARIABLE + 12;
+            regist += FIRST_RESERVED_VARIABLE + NUMBER_OF_LETTERED_REGISTERS;
           }
 
           if(regist <= LAST_RESERVED_VARIABLE) { // Named variables

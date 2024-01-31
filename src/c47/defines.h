@@ -739,6 +739,7 @@ enum REG_NUMBERS {
 #define NUMBER_OF_SAVED_STACK_REGISTERS     (LAST_SAVED_STACK_REGISTER - FIRST_SAVED_STACK_REGISTER + 1)
 #define NUMBER_OF_TEMP_REGISTERS            (LAST_TEMP_REGISTER - FIRST_TEMP_REGISTER + 1)
 #define NUMBER_OF_RESERVED_VARIABLES        (LAST_RESERVED_VARIABLE - FIRST_RESERVED_VARIABLE + 1)
+#define NUMBER_OF_LETTERED_REGISTERS        (FIRST_NAMED_RESERVED_VARIABLE - FIRST_RESERVED_VARIABLE)
 
 
 // If one of the 4 next defines is changed: change also Y_POSITION_OF_???_LINE below
@@ -1506,7 +1507,7 @@ enum REG_NUMBERS {
 #define currentPtrToPreviousLevel            (currentSubroutineLevelData[2].ptrToPreviousLevel)
 
 
-#define INTEGERSHORTCUTS                     ((getSystemFlag(FLAG_USER) ? kbd_usr[27].primary : kbd_std[27].primary) == KEY_fg)     //TRUE is C47; check based on f/g key on DM42 position
+#define INTEGERSHORTCUTS                     (calcModel == USER_C47 || calcModel == USER_R47 || calcModel == USER_R47bkfg || calcModel == USER_R47fgbk || calcModel == USER_R47fg_g)    //TRUE is C47; check based on f/g key on DM42 position
 
 
 #if !defined(PC_BUILD) && !defined(DMCP_BUILD)
