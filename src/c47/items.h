@@ -1241,8 +1241,8 @@
 #define VAR_MATA                    1202
 #define VAR_MATB                    1203
 #define VAR_MATX                    1204
-#define VAR_1205                    1205
-#define VAR_1206                    1206
+#define VAR_UX                      1205
+#define VAR_LX                      1206
 
 
 // Probability distributions
@@ -1735,7 +1735,7 @@
 #define ITM_toHR                    1685
 #define ITM_toHMS                   1686
 #define ITM_toINT                   1687
-#define MNU_1688                    1688
+#define ITM_1688                    1688
 #define ITM_1689                    1689
 #define ITM_1690                    1690
 #define ITM_toREAL                  1691
@@ -1832,8 +1832,8 @@
 #define ITM_DELBKUP                 1780
 #define ITM_CPXSLV                  1781
 #define ITM_DRAW                    1782
-#define ITM_1783                    1783   //xxxx
-#define ITM_1784                    1784   //xxxx
+#define MNU_PLOT_RANGE              1783
+#define ITM_REDRAW                  1784
 #define ITM_FPHERE                  1785
 #define ITM_FPPHERE                 1786
 #define ITM_nBINS                   1787

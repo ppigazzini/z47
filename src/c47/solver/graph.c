@@ -36,6 +36,8 @@
 #include <string.h>
 
 
+//#define DEBUG_GR
+
 #if defined(PC_BUILD)
   //Verbose directives can be simulataneously selected
   //#define VERBOSE_SOLVER00   // minimal text
@@ -247,6 +249,9 @@ uint8_t DXR = 0, DYR = 0, DXI = 0, DYI = 0;
 
 
   void fnClDrawMx(void) {
+    #ifdef PC_BUILD
+      printf("Clearing Draw Matrix\n");
+    #endif
     PLOT_ZOOM = 0;
     calcRegister_t regStats = findNamedVariable("DrwMX");
     if(regStats != INVALID_VARIABLE) {
@@ -492,8 +497,10 @@ void graph_eqn(uint16_t mode) {
 
     #if defined (LOW_GRAPH_ACC)
       //Change to SDIGS digit operation for screen graphs;
-      ctxtReal34.digits = significantDigitsForScreen;
-      ctxtReal39.digits = significantDigitsForScreen+3;
+      if(significantDigitsForEqnGraphs <= 6) {
+        ctxtReal34.digits = significantDigitsForScreen;
+        ctxtReal39.digits = significantDigitsForScreen+3;
+      }
     #endif //LOW_GRAPH_ACC
 
     if(!GRAPHMODE) { //Change over hourglass to the left side
@@ -1306,23 +1313,32 @@ void fnEqSolvGraph (uint16_t func) {
       complexSolver();
       break;
     }
-    case EQ_PLOT: {
-      printStatus(1,errorMessages[GRAPHING],force);
+    case EQ_REPLOT:              //uses LX, UX
+      fnEqSolvGraph(EQ__PLOT);
+      break;
+
+    case EQ_PLOT:                //uses X, Y
+      fnStore(RESERVED_VARIABLE_UX);
+      fnDrop(0);
+      fnStore(RESERVED_VARIABLE_LX);
+      fnRecall(RESERVED_VARIABLE_UX);
+      fnEqSolvGraph(EQ__PLOT);
+      break;
+
+    case EQ__PLOT: {
       PLOT_ZMX = 0;
       PLOT_ZMY = 0;
-      double ix1 = convertRegisterToDouble(REGISTER_X);
-      double ix0 = convertRegisterToDouble(REGISTER_Y);
+      double ix1 = convertRegisterToDouble(RESERVED_VARIABLE_UX);
+      double ix0 = convertRegisterToDouble(RESERVED_VARIABLE_LX);
       #if(defined(VERBOSE_SOLVER00) || defined(VERBOSE_SOLVER0)) && defined(PC_BUILD)
-        printRegisterToConsole(REGISTER_Y,">>> ix0=","");
-        printRegisterToConsole(REGISTER_X," ix1=","\n");
+        printRegisterToConsole(RESERVED_VARIABLE_LX,">>> ix0=","");
+        printRegisterToConsole(RESERVED_VARIABLE_UX," ix1=","\n");
       #endif // (VERBOSE_SOLVER00 || VERBOSE_SOLVER0) && PC_BUILD
 
       fnClDrawMx();
       strcpy(plotStatMx,"DrwMX");
       //statGraphReset();    //C43 removed to allow changing of graph params
 
-      fnDrop(0);
-      fnDrop(0);
       if(ix1>ix0 + 0.01 && ix1!=DOUBLE_NOT_INIT && ix0!=DOUBLE_NOT_INIT) { //pre-condition the plotter
         x_min = ix0;
         x_max = ix1;

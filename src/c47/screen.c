@@ -2116,6 +2116,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
     }
   }
 
+  #define PROBMENU (-softmenu[softmenuStack[0].softmenuId].menuItem >= MNU_BINOM && -softmenu[softmenuStack[0].softmenuId].menuItem <= ITM_1296)
 
 
   void displayBaseMode(calcRegister_t regist) {

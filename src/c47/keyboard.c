@@ -1041,6 +1041,10 @@ int16_t lastItem = 0;
                 printf("BB2 screenUpdatingMode=%u temporaryInformation=%u\n", screenUpdatingMode, temporaryInformation);
               #endif // PC_BUILD &&MONITOR_CLRSCR
 
+              if(calcMode == CM_GRAPH && item == -MNU_PLOT_RANGE) {
+                calcMode = CM_NORMAL;
+              } 
+
               if(item == -MNU_ALPHA) {
                 fnAim(0);
               }
@@ -2590,7 +2594,7 @@ RELEASE_END:
                   calcMode = previousCalcMode;
                   if(currentRegisterBrowserScreen >= FIRST_NAMED_VARIABLE + numberOfNamedVariables) { // Reserved variables
                     currentRegisterBrowserScreen -= FIRST_NAMED_VARIABLE + numberOfNamedVariables;
-                    currentRegisterBrowserScreen += FIRST_RESERVED_VARIABLE + 12;
+                    currentRegisterBrowserScreen += FIRST_RESERVED_VARIABLE + NUMBER_OF_LETTERED_REGISTERS;
                   }
                   fnRecall(currentRegisterBrowserScreen);
                   setSystemFlag(FLAG_ASLIFT);
@@ -3258,6 +3262,12 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
           lastErrorCode = 0;
         }
         else {
+          if(softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_PLOT_RANGE && softmenu[softmenuStack[1].softmenuId].menuItem == -MNU_PLOT) {
+            calcMode = CM_GRAPH;
+            fnEqSolvGraph(EQ_REPLOT);
+            screenUpdatingMode = SCRUPD_AUTO;            
+          }
+          else
           if(softmenuStack[0].softmenuId <= 1) { // MyMenu or MyAlpha is displayed
             currentInputVariable = INVALID_VARIABLE;
             if(BASE_HOME) {
@@ -3461,6 +3471,9 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
           }
         }
         else {
+          if(softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_PLOT && softmenu[softmenuStack[1].softmenuId].menuItem == -MNU_PLOT_RANGE) {
+            popSoftmenu();
+          }
           popSoftmenu();
         }
 
@@ -4041,7 +4054,7 @@ void fnKeyUp(uint16_t unusedButMandatoryParameter) {
           currentRegisterBrowserScreen = modulo(currentRegisterBrowserScreen - FIRST_LOCAL_REGISTER + 1, currentNumberOfLocalRegisters) + FIRST_LOCAL_REGISTER;
         }
         else if(rbrMode == RBR_NAMED) {
-          currentRegisterBrowserScreen = modulo(currentRegisterBrowserScreen - FIRST_NAMED_VARIABLE + 1, numberOfNamedVariables + LAST_RESERVED_VARIABLE - FIRST_RESERVED_VARIABLE - 11) + FIRST_NAMED_VARIABLE;
+          currentRegisterBrowserScreen = modulo(currentRegisterBrowserScreen - FIRST_NAMED_VARIABLE + 1, numberOfNamedVariables + LAST_RESERVED_VARIABLE - FIRST_RESERVED_VARIABLE - (NUMBER_OF_LETTERED_REGISTERS-1)) + FIRST_NAMED_VARIABLE;
         }
         else {
           sprintf(errorMessage, commonBugScreenMessages[bugMsgRbrMode], "fnKeyUp", "UP", rbrMode);
@@ -4252,7 +4265,7 @@ void fnKeyDown(uint16_t unusedButMandatoryParameter) {
           currentRegisterBrowserScreen = modulo(currentRegisterBrowserScreen - FIRST_LOCAL_REGISTER - 1, currentNumberOfLocalRegisters) + FIRST_LOCAL_REGISTER;
         }
         else if(rbrMode == RBR_NAMED) {
-          currentRegisterBrowserScreen = modulo(currentRegisterBrowserScreen - FIRST_NAMED_VARIABLE - 1, numberOfNamedVariables + LAST_RESERVED_VARIABLE - FIRST_RESERVED_VARIABLE - 11) + FIRST_NAMED_VARIABLE;
+          currentRegisterBrowserScreen = modulo(currentRegisterBrowserScreen - FIRST_NAMED_VARIABLE - 1, numberOfNamedVariables + LAST_RESERVED_VARIABLE - FIRST_RESERVED_VARIABLE - (NUMBER_OF_LETTERED_REGISTERS-1)) + FIRST_NAMED_VARIABLE;
         }
         else {
           sprintf(errorMessage, commonBugScreenMessages[bugMsgRbrMode], "fnKeyDown", "DOWN", rbrMode);
