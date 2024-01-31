@@ -1256,7 +1256,19 @@ void fnEqSolvGraph (uint16_t func) {
       graph_solver();
       break;
     }
-    case EQ_PLOT: {
+    case EQ_REPLOT:              //uses LX, UX
+      fnEqSolvGraph(EQ__PLOT);
+      break;
+
+    case EQ_PLOT:                //uses X, Y
+      fnStore(RESERVED_VARIABLE_UX);
+      fnDrop(0);
+      fnStore(RESERVED_VARIABLE_LX);
+      fnRecall(RESERVED_VARIABLE_UX);
+      fnEqSolvGraph(EQ__PLOT);
+      break;
+
+    case EQ__PLOT: {
       PLOT_ZMX = 0;
       PLOT_ZMY = 0;
       double ix1 = convertRegisterToDouble(RESERVED_VARIABLE_UX);
