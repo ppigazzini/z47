@@ -2785,7 +2785,7 @@ void fnMenuDump(uint16_t menu, uint16_t item) {                              //J
   showSoftmenuCurrentPart();
 
   FILE *bmp;
-  char bmpFileName[100];
+  char bmpFileName[600];
   int32_t x, y;
   uint32_t uint32;
   uint16_t uint16;
