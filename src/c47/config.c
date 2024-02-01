@@ -924,7 +924,7 @@ void fnClAll(uint16_t confirmation) {
     // Clear local registers
     allocateLocalRegisters(0);
 
-    // Clear registers including stack, I, J, K and L
+    // Clear registers including stack, I, J, K, L, MNP QRS
     for(regist=0; regist<FIRST_LOCAL_REGISTER; regist++) {
       clearRegister(regist);
     }
