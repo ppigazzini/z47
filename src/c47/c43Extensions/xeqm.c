@@ -246,7 +246,7 @@ TO_QSPI const function_t indexOfFunctions[] = {
               {ITM_GCD,                       "@"},
               {ITM_LCM,                       "@"},
               {ITM_DEC,                       "@"},
-              {ITM_INC,                       "INC"},
+              {ITM_INC,                       "@"},
               {ITM_IP,                        "@"},
               {ITM_FP,                        "@"},
               {ITM_ADD,                       "@"},
