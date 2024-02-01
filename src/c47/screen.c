@@ -2080,7 +2080,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
     }
   }
 
-  #define PROBMENU (-softmenu[softmenuStack[0].softmenuId].menuItem >= MNU_BINOM && -softmenu[softmenuStack[0].softmenuId].menuItem <= ITM_1296)
+  #define PROBMENU (-softmenu[softmenuStack[0].softmenuId].menuItem >= MNU_BINOM && -softmenu[softmenuStack[0].softmenuId].menuItem <= ITM_1290)
 
   void refreshRegisterLine(calcRegister_t regist) {
     int32_t w;
@@ -4351,15 +4351,6 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
           refreshStatusBar();
           //graphPlotstat(plotSelection);
           graph_plotmem();
-          if(lastErrorCode != ERROR_NONE) {
-            //printf("lastErrorCode1=%d\n", lastErrorCode);
-            //printf(">>>> %d\n", softmenu[softmenuStack[0].softmenuId].menuItem);
-            if(softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_GRAPH) {
-              popSoftmenu();
-              calcMode = CM_NORMAL;
-              refreshScreen();
-            }
-          }
 
           hourGlassIconEnabled = false;
           showHideHourGlass();
@@ -4382,13 +4373,6 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
           hourGlassIconEnabled = true;
           refreshStatusBar();
           graphPlotstat(plotSelection);
-          if(lastErrorCode != ERROR_NONE) {
-            if(softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_GRAPH) {
-              popSoftmenu();
-              calcMode = CM_NORMAL;
-              refreshScreen();
-            }
-          }
           graphDrawLRline(plotSelection);
           if(lastErrorCode != ERROR_NONE) {
             if(softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_HPLOT || softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_PLOT_LR || softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_HPLOT || softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_PLOT_STAT) {

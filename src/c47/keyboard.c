@@ -1042,6 +1042,9 @@ int16_t lastItem = 0;
                 printf(">>>Function: executeFunction showSoftmenu(%d)\n",item);
               #endif //VERBOSEKEYS
               showSoftmenu(item);
+              if(calcMode == CM_GRAPH && item == -MNU_PLOT_RANGE) {
+                calcMode = CM_NORMAL;
+              } 
               if(item == -MNU_ALPHA) {
                 fnAim(0);
               }
@@ -3186,6 +3189,11 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
           lastErrorCode = 0;
         }
         else {
+          if(softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_PLOT_RANGE && softmenu[softmenuStack[1].softmenuId].menuItem == -MNU_PLOT) {
+            calcMode = CM_GRAPH;
+            fnEqSolvGraph(EQ_REPLOT);
+          }
+          else
           if(softmenuStack[0].softmenuId <= 1) { // MyMenu or MyAlpha is displayed
             currentInputVariable = INVALID_VARIABLE;
             if(BASE_HOME) {
@@ -3386,6 +3394,9 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
           }
         }
         else {
+          if(softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_PLOT && softmenu[softmenuStack[1].softmenuId].menuItem == -MNU_PLOT_RANGE) {
+            popSoftmenu();
+          }
           popSoftmenu();
         }
 
