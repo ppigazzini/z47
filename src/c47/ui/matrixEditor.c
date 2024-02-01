@@ -302,16 +302,15 @@ void fnDelRow(uint16_t unusedParamButMandatory) {
 
 
 #if !defined(TESTSUITE_BUILD)
-//Row of Matrix
-int16_t getIRegisterAsInt(bool_t asArrayPointer) {
+static int16_t getRegisterAsInt(bool_t asArrayPointer, calcRegister_t reg) {
   int16_t ret;
   longInteger_t tmp_lgInt;
 
-  if(getRegisterDataType(REGISTER_I) == dtLongInteger) {
-    convertLongIntegerRegisterToLongInteger(REGISTER_I, tmp_lgInt);
+  if(getRegisterDataType(reg) == dtLongInteger) {
+    convertLongIntegerRegisterToLongInteger(reg, tmp_lgInt);
   }
-  else if(getRegisterDataType(REGISTER_I) == dtReal34) {
-    convertReal34ToLongInteger(REGISTER_REAL34_DATA(REGISTER_I), tmp_lgInt, DEC_ROUND_DOWN);
+  else if(getRegisterDataType(reg) == dtReal34) {
+    convertReal34ToLongInteger(REGISTER_REAL34_DATA(reg), tmp_lgInt, DEC_ROUND_DOWN);
   }
   else {
     longIntegerInit(tmp_lgInt);
@@ -325,59 +324,40 @@ int16_t getIRegisterAsInt(bool_t asArrayPointer) {
   }
 
   return ret;
+}
+
+static void setRegisterAsInt(bool_t asArrayPointer, int16_t toStore, calcRegister_t reg) {
+  if(asArrayPointer) {
+    toStore++;
+  }
+  longInteger_t tmp_lgInt;
+  longIntegerInit(tmp_lgInt);
+
+  intToLongInteger(toStore, tmp_lgInt);
+  convertLongIntegerToLongIntegerRegister(tmp_lgInt, reg);
+
+  longIntegerFree(tmp_lgInt);
+}
+
+//Row of Matrix
+int16_t getIRegisterAsInt(bool_t asArrayPointer) {
+  return getRegisterAsInt(asArrayPointer, REGISTER_I);
 }
 
 //Col of Matrix
 int16_t getJRegisterAsInt(bool_t asArrayPointer) {
-  int16_t ret;
-  longInteger_t tmp_lgInt;
+  return getRegisterAsInt(asArrayPointer, REGISTER_J);
 
-  if(getRegisterDataType(REGISTER_J) == dtLongInteger) {
-    convertLongIntegerRegisterToLongInteger(REGISTER_J, tmp_lgInt);
-  }
-  else if(getRegisterDataType(REGISTER_J) == dtReal34) {
-    convertReal34ToLongInteger(REGISTER_REAL34_DATA(REGISTER_J), tmp_lgInt, DEC_ROUND_DOWN);
-  }
-  else {
-    longIntegerInit(tmp_lgInt);
-  }
-  longIntegerToInt(tmp_lgInt, ret);
-
-  longIntegerFree(tmp_lgInt);
-
-  if(asArrayPointer) {
-    ret--;
-  }
-
-  return ret;
 }
 
 //Row of Matrix
 void setIRegisterAsInt(bool_t asArrayPointer, int16_t toStore) {
-  if(asArrayPointer) {
-    toStore++;
-  }
-  longInteger_t tmp_lgInt;
-  longIntegerInit(tmp_lgInt);
-
-  intToLongInteger(toStore, tmp_lgInt);
-  convertLongIntegerToLongIntegerRegister(tmp_lgInt, REGISTER_I);
-
-  longIntegerFree(tmp_lgInt);
+  setRegisterAsInt(asArrayPointer, toStore, REGISTER_I);
 }
 
 //ColOfMatrix
 void setJRegisterAsInt(bool_t asArrayPointer, int16_t toStore) {
-  if(asArrayPointer) {
-    toStore++;
-  }
-  longInteger_t tmp_lgInt;
-  longIntegerInit(tmp_lgInt);
-
-  intToLongInteger(toStore, tmp_lgInt);
-  convertLongIntegerToLongIntegerRegister(tmp_lgInt, REGISTER_J);
-
-  longIntegerFree(tmp_lgInt);
+  setRegisterAsInt(asArrayPointer, toStore, REGISTER_J);
 }
 
 bool_t wrapIJ(uint16_t rows, uint16_t cols) {
