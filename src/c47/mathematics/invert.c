@@ -132,13 +132,13 @@ void invertLonI(void) {
 
 
 void invertRema(void) {
-  elementwiseRema(invertReal);
+  fnInvertMatrix(NOPARAM);
 }
 
 
 
 void invertCxma(void) {
-  elementwiseCxma(invertCplx);
+  fnInvertMatrix(NOPARAM);
 }
 
 
