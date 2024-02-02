@@ -671,6 +671,7 @@ TO_QSPI const function_t2 indexOfStrings2[] = {
               {STD_GAUSS_BLACK_R,             "GAUSS_BL_R "},
               {STD_SUB_10,                    "10^"},
               {STD_EulerE,                    "e"},
+              {STD_RIGHT_OVER_LEFT_ARROW,     "<>"}
 };
 
 
