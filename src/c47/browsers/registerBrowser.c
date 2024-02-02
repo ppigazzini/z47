@@ -267,7 +267,7 @@
         else { // Reserved variables
           if(regist < FIRST_RESERVED_VARIABLE) {
             regist -= FIRST_NAMED_VARIABLE + numberOfNamedVariables;
-            regist += FIRST_RESERVED_VARIABLE + NUMBER_OF_LETTERED_REGISTERS;
+            regist += FIRST_RESERVED_VARIABLE + NUMBER_OF_LETTERED_VARIABLES;
           }
 
           if(regist <= LAST_RESERVED_VARIABLE) { // Named variables

@@ -2534,7 +2534,7 @@ RELEASE_END:
                   calcMode = previousCalcMode;
                   if(currentRegisterBrowserScreen >= FIRST_NAMED_VARIABLE + numberOfNamedVariables) { // Reserved variables
                     currentRegisterBrowserScreen -= FIRST_NAMED_VARIABLE + numberOfNamedVariables;
-                    currentRegisterBrowserScreen += FIRST_RESERVED_VARIABLE + NUMBER_OF_LETTERED_REGISTERS;
+                    currentRegisterBrowserScreen += FIRST_RESERVED_VARIABLE + NUMBER_OF_LETTERED_VARIABLES;
                   }
                   fnRecall(currentRegisterBrowserScreen);
                   setSystemFlag(FLAG_ASLIFT);
@@ -3974,7 +3974,7 @@ void fnKeyUp(uint16_t unusedButMandatoryParameter) {
           currentRegisterBrowserScreen = modulo(currentRegisterBrowserScreen - FIRST_LOCAL_REGISTER + 1, currentNumberOfLocalRegisters) + FIRST_LOCAL_REGISTER;
         }
         else if(rbrMode == RBR_NAMED) {
-          currentRegisterBrowserScreen = modulo(currentRegisterBrowserScreen - FIRST_NAMED_VARIABLE + 1, numberOfNamedVariables + LAST_RESERVED_VARIABLE - FIRST_RESERVED_VARIABLE - (NUMBER_OF_LETTERED_REGISTERS-1)) + FIRST_NAMED_VARIABLE;
+          currentRegisterBrowserScreen = modulo(currentRegisterBrowserScreen - FIRST_NAMED_VARIABLE + 1, numberOfNamedVariables + LAST_RESERVED_VARIABLE - FIRST_RESERVED_VARIABLE - (NUMBER_OF_LETTERED_VARIABLES-1)) + FIRST_NAMED_VARIABLE;
         }
         else {
           sprintf(errorMessage, commonBugScreenMessages[bugMsgRbrMode], "fnKeyUp", "UP", rbrMode);
@@ -4186,7 +4186,7 @@ void fnKeyDown(uint16_t unusedButMandatoryParameter) {
           currentRegisterBrowserScreen = modulo(currentRegisterBrowserScreen - FIRST_LOCAL_REGISTER - 1, currentNumberOfLocalRegisters) + FIRST_LOCAL_REGISTER;
         }
         else if(rbrMode == RBR_NAMED) {
-          currentRegisterBrowserScreen = modulo(currentRegisterBrowserScreen - FIRST_NAMED_VARIABLE - 1, numberOfNamedVariables + LAST_RESERVED_VARIABLE - FIRST_RESERVED_VARIABLE - (NUMBER_OF_LETTERED_REGISTERS-1)) + FIRST_NAMED_VARIABLE;
+          currentRegisterBrowserScreen = modulo(currentRegisterBrowserScreen - FIRST_NAMED_VARIABLE - 1, numberOfNamedVariables + LAST_RESERVED_VARIABLE - FIRST_RESERVED_VARIABLE - (NUMBER_OF_LETTERED_VARIABLES-1)) + FIRST_NAMED_VARIABLE;
         }
         else {
           sprintf(errorMessage, commonBugScreenMessages[bugMsgRbrMode], "fnKeyDown", "DOWN", rbrMode);

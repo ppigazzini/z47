@@ -139,7 +139,7 @@ uint32_t getRegisterDataType(calcRegister_t regist) {
 
   else if(regist <= LAST_RESERVED_VARIABLE) { // System named variable
     regist -= FIRST_RESERVED_VARIABLE;
-    if(regist < NUMBER_OF_LETTERED_REGISTERS) { // Lettered register
+    if(regist < NUMBER_OF_LETTERED_VARIABLES) { // Lettered register
       return globalRegister[regist + REGISTER_X].dataType;
     }
     else {
