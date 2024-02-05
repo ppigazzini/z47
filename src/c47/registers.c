@@ -56,6 +56,12 @@ TO_QSPI const reservedVariableHeader_t allReservedVariables[] = { // MUST be in 
 /*  9 */  { .header = {.pointerToRegisterData = C47_NULL,   .dataType = 0,             .tag = 0,           .readOnly = 0, .notUsed = 0}, .reservedVariableName = {1, 'I',  0,   0,   0,   0,   0,   0} },
 /* 10 */  { .header = {.pointerToRegisterData = C47_NULL,   .dataType = 0,             .tag = 0,           .readOnly = 0, .notUsed = 0}, .reservedVariableName = {1, 'J',  0,   0,   0,   0,   0,   0} },
 /* 11 */  { .header = {.pointerToRegisterData = C47_NULL,   .dataType = 0,             .tag = 0,           .readOnly = 0, .notUsed = 0}, .reservedVariableName = {1, 'K',  0,   0,   0,   0,   0,   0} },
+/* 11 */  { .header = {.pointerToRegisterData = C47_NULL,   .dataType = 0,             .tag = 0,           .readOnly = 0, .notUsed = 0}, .reservedVariableName = {1, 'M',  0,   0,   0,   0,   0,   0} },
+/* 11 */  { .header = {.pointerToRegisterData = C47_NULL,   .dataType = 0,             .tag = 0,           .readOnly = 0, .notUsed = 0}, .reservedVariableName = {1, 'N',  0,   0,   0,   0,   0,   0} },
+/* 11 */  { .header = {.pointerToRegisterData = C47_NULL,   .dataType = 0,             .tag = 0,           .readOnly = 0, .notUsed = 0}, .reservedVariableName = {1, 'P',  0,   0,   0,   0,   0,   0} },
+/* 11 */  { .header = {.pointerToRegisterData = C47_NULL,   .dataType = 0,             .tag = 0,           .readOnly = 0, .notUsed = 0}, .reservedVariableName = {1, 'Q',  0,   0,   0,   0,   0,   0} },
+/* 11 */  { .header = {.pointerToRegisterData = C47_NULL,   .dataType = 0,             .tag = 0,           .readOnly = 0, .notUsed = 0}, .reservedVariableName = {1, 'R',  0,   0,   0,   0,   0,   0} },
+/* 11 */  { .header = {.pointerToRegisterData = C47_NULL,   .dataType = 0,             .tag = 0,           .readOnly = 0, .notUsed = 0}, .reservedVariableName = {1, 'S',  0,   0,   0,   0,   0,   0} },
 /* 12 */  { .header = {.pointerToRegisterData = C47_NULL,   .dataType = dtLongInteger, .tag = LI_POSITIVE, .readOnly = 1, .notUsed = 0}, .reservedVariableName = {3, 'A', 'D', 'M',  0,   0,   0,   0} },
 /* 13 */  { .header = {.pointerToRegisterData = C47_NULL,   .dataType = dtLongInteger, .tag = LI_POSITIVE, .readOnly = 1, .notUsed = 0}, .reservedVariableName = {5, 'D', '.', 'M', 'A', 'X',  0,   0} },
 /* 14 */  { .header = {.pointerToRegisterData = C47_NULL,   .dataType = dtLongInteger, .tag = LI_POSITIVE, .readOnly = 1, .notUsed = 0}, .reservedVariableName = {3, 'I', 'S', 'M',  0,   0,   0,   0} },
@@ -1423,12 +1429,12 @@ void adjustResult(calcRegister_t res, bool_t dropY, bool_t setCpxRes, calcRegist
 
 
 void copySourceRegisterToDestRegister(calcRegister_t sourceRegister, calcRegister_t destRegister) {
-  if(destRegister >= RESERVED_VARIABLE_X && destRegister <= RESERVED_VARIABLE_K) {
-    destRegister = destRegister - RESERVED_VARIABLE_X + REGISTER_X;
+  if(destRegister >= FIRST_RESERVED_VARIABLE && destRegister < FIRST_NAMED_RESERVED_VARIABLE) {
+    destRegister = destRegister - FIRST_RESERVED_VARIABLE + REGISTER_X;
   }
 
-  if(sourceRegister >= RESERVED_VARIABLE_X && sourceRegister <= RESERVED_VARIABLE_K) {
-    sourceRegister = sourceRegister - RESERVED_VARIABLE_X + REGISTER_X;
+  if(sourceRegister >= FIRST_RESERVED_VARIABLE && sourceRegister < FIRST_NAMED_RESERVED_VARIABLE) {
+    sourceRegister = sourceRegister - FIRST_RESERVED_VARIABLE + REGISTER_X;
   }
   else if(sourceRegister == RESERVED_VARIABLE_ADM) {
     longInteger_t longIntVar;

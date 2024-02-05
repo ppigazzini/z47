@@ -169,7 +169,7 @@
 
   static void registerName(char *s, calcRegister_t regist) {
     if (regist >= REGISTER_X && regist <= LAST_STAT_REGISTER) {
-      tmpString[0] = letteredRegisterName(REGISTER_X);
+      tmpString[0] = letteredRegisterName(regist);
       strcpy(tmpString + 1, ":");
     } else {
       sprintf(tmpString, "R%02d:", regist);

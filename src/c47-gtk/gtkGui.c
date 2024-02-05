@@ -857,23 +857,17 @@
     } else 
 
 
-    if(calcMode == CM_MIM) {
-      switch(event_keyval) {
-        case 65361:                                               //JM     // CursorLt BST //JM Left
-            btnFnClicked(w, "5");  //F5
-          break;
-        case 65363:                                               //JM     // CursorRt SST //JM Right
-            btnFnClicked(w, "6");  //F6
-          break;
-        default:;
-      }
-    }
-
-
     //ORIGINAL MODIFIED KEYBOARD DETECTION
     //FOR NON AIM MODE. AIM HAS RETURNED AT THIS POINT SO NO IF NEEDED
 
     switch(event_keyval) {
+
+      case 65361:                                               //JM     // CursorLt  //JM Left
+        btnFnClicked(w, "5");  //F5
+        break;
+      case 65363:                                               //JM     // CursorRt  //JM Right
+        btnFnClicked(w, "6");  //F6
+        break;
 
       //ROW 1
       case 65470: // F1                       //JM Changed these to btnFnPressed from btnFnClicked
@@ -3622,7 +3616,7 @@ else          stringToUtf8(indexOfItems[numlockReplacements(4,max(key->fShiftedA
       btn42A  = gtk_button_new();                           //vv dr - new AIM
       btn43A  = gtk_button_new();
       btn44A  = gtk_button_new();
-      gtk_widget_set_tooltip_text(GTK_WIDGET(btn42A), "M");
+//      gtk_widget_set_tooltip_text(GTK_WIDGET(btn42A), "M");
       gtk_widget_set_tooltip_text(GTK_WIDGET(btn43A), "N");
       gtk_widget_set_tooltip_text(GTK_WIDGET(btn44A), "O"); //^^
       lbl41F  = gtk_label_new("");
