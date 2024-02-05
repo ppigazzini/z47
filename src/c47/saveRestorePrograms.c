@@ -152,7 +152,9 @@
     {"",       0, 0,  0}
     };
 
-static bool_t subStrWildCardCompare(const char *in1, const char *in2) { //wild card is '*', active from the second character being compared
+
+#ifndef TESTSUITE_BUILD
+  static bool_t subStrWildCardCompare(const char *in1, const char *in2) { //wild card is '*', active from the second character being compared
     int16_t i = 0;
     bool_t areEqual = true;
     while(areEqual && in1[i] != 0 && in2[i] != 0) {
@@ -168,7 +170,8 @@ static bool_t subStrWildCardCompare(const char *in1, const char *in2) { //wild c
       areEqual = false;
     }
     return areEqual;
-}
+  }
+#endif //TESTSUITE_BUILD
 
 
 void fnPExport(uint16_t unusedButMandatoryParameter) {
