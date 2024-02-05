@@ -1539,8 +1539,14 @@ uint16_t convertItemToSubOrSup(uint16_t item, int16_t subOrSup) {
       //JM Only works in direct NIM, that is only when the input buffer already contains #
       case ITM_1ONX: { // B for binary base
       case ITM_SQUAREROOTX: //R47
-        if(calcModel == USER_C47 && item == ITM_SQUAREROOTX) break;
-        if(calcModel != USER_C47 && item == ITM_1ONX) break;
+        if(calcModel == USER_C47 && item == ITM_SQUAREROOTX) {
+          keyActionProcessed = false;
+          break;
+        }
+        if(calcModel != USER_C47 && item == ITM_1ONX) {
+          keyActionProcessed = false;
+          break;
+        }
         if(INTEGERSHORTCUTS && nimNumberPart == NP_INT_BASE && aimBuffer[strlen(aimBuffer) - 1] == '#') {
           strcat(aimBuffer, "2");
           goto addItemToNimBuffer_exit;
@@ -1667,15 +1673,16 @@ uint16_t convertItemToSubOrSup(uint16_t item, int16_t subOrSup) {
         break;
       }
 
-      case ITM_DMS2:                       //JM
+      case ITM_DMS2:{                       //JM
         if(nimNumberPart == NP_INT_10 || nimNumberPart == NP_REAL_FLOAT_PART || nimNumberPart == NP_REAL_EXPONENT) {
           done = true;
           closeNim();
           fnAngularModeJM(amDMS); //it cannot be an angle at this point. If closed input, it is only real or longint
         }
         break;
+      }
 
-      case ITM_DRG :                       //JM
+      case ITM_DRG:{                       //JM
         DRG_Cycling = 0;
         if(nimNumberPart == NP_INT_10 || nimNumberPart == NP_REAL_FLOAT_PART || nimNumberPart == NP_REAL_EXPONENT) {
           done = true;
@@ -1704,6 +1711,7 @@ uint16_t convertItemToSubOrSup(uint16_t item, int16_t subOrSup) {
           }
         }
         break;
+      }
 
       default: {
         keyActionProcessed = false;

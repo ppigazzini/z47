@@ -446,7 +446,14 @@ TO_QSPI const function_t indexOfFunctions[] = {
               {ITM_PRTACT0,                   "@"},
               {ITM_HR_DEG,                    "@"},
               {ITM_SECOND,                    "@"},
-              {ITM_EE_EXP_TH,                 "e^iX"}
+              {ITM_EE_EXP_TH,                 "e^iX"},
+
+              {ITM_SIGMAn,                    "SUMn"},
+              {ITM_iSIGMAn,                   "iSUMn"},
+              {ITM_PIn,                       "PRODn"},
+              {ITM_iPIn,                      "iPRODn"}
+
+
 
   #endif // !SAVE_SPACE_DM42_2
 };
