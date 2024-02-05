@@ -38,6 +38,7 @@
 #include "c47.h"
 
 #define PROGRAM_VERSION                     01  // Original version
+#define EXPORT_VERSION                      02  // Modified export version to indent LBL
 #define OLDEST_COMPATIBLE_PROGRAM_VERSION   01  // Original version
 #define BACKUP_FORMAT                       00  // Same program format as in backup file
 #define TEXT_FORMAT                         01  // Text program format - for future use
@@ -97,6 +98,78 @@
 #endif // !TESTSUITE_BUILD
 
 
+    typedef struct {
+      char     *itemName;
+      uint8_t  _previousnewLine;
+      uint8_t  _indent;
+      uint8_t  _addnextLineIndent;
+    } indentType;
+
+    TO_QSPI const indentType indents[] = {
+    //Note that the first condition satisfied, stops the find process
+    //"NNNNN" = Text, 
+    //      A = Newline on previous line 0/1, 
+    //      B = Indented number of spaces on the current line, 
+    //      C = Indented number of spaces on the next line.
+    //"NNNNN", A, B, C
+    //[TEST]
+    {"ENTRY?", 0, 0, +2},
+    {"KEY?",   0, 0, +2},
+    {"LBL?",   0, 0, +2},
+    {"STRI?",  0, 0, +2},
+    {"CONVG?", 0, 0, +2},
+    {"TOP?",   0, 0, +2},
+    {"INT?",   0, 0, +2},
+    {"EVEN?",  0, 0, +2},
+    {"ODD?",   0, 0, +2},
+    {"PRIME?", 0, 0, +2},
+    {"LEAP?",  0, 0, +2},
+    {"FP?",    0, 0, +2},
+    {"x* ?",   0, 0, +2},
+    {"x** ?",  0, 0, +2},
+    {"x=*0?",  0, 0, +2},
+    {"SPEC?",  0, 0, +2},
+    {"NaN?",   0, 0, +2},
+    {"M.SQR?", 0, 0, +2},
+    {"MATR?",  0, 0, +2},
+    {"CPX?",   0, 0, +2},
+    {"REAL?",  0, 0, +2},
+    //[LOOP]
+    {"DSE",    0, 0, +2},
+    {"DSZ",    0, 0, +2},
+    {"DSL",    0, 0, +2},
+    {"ISE",    0, 0, +2},
+    {"ISZ",    0, 0, +2},
+    {"ISG",    0, 0, +2},
+    //[P.FN1]
+    {"LBL",    1,-2,  0},
+    {"GTO",    0,-2,  0},
+    {"XEQ",    0,-2,  0},
+    {"RTN",    0,-2,  0},
+    {"END",    0,-2,  0},
+    {".END.",  0,-2,  0},
+
+    {"",       0, 0,  0}
+    };
+
+static bool_t subStrWildCardCompare(const char *in1, const char *in2) { //wild card is '*', active from the second character being compared
+    int16_t i = 0;
+    bool_t areEqual = true;
+    while(areEqual && in1[i] != 0 && in2[i] != 0) {
+      if(!(i >= 1 && (in1[i] == '*' || in2[i] == '*'))) {
+        if(in1[i] != in2[i]) {
+          areEqual = false;
+          return false;
+        }
+      }
+      i++;
+    }
+    if(in1[i] == 0 && in2[i] != 0) {    //If in1 runs to an end, before in2 is at its end, override the result to FALSE. This is to prevent RE in in1, to falsely agree with REAL?.
+      areEqual = false;
+    }
+    return areEqual;
+}
+
 
 void fnPExport(uint16_t unusedButMandatoryParameter) {
 #if !defined(SAVE_SPACE_DM42_10)
@@ -119,11 +192,8 @@ void fnPExport(uint16_t unusedButMandatoryParameter) {
 
     if(firstDisplayedLocalStepNumber == 0) {
       sprintf(tmpString, "0000: { Prgm #%d: %" PRIu32 " bytes / %" PRIu16 " step%s }", currentProgramNumber, _getProgramSize(),                                                                               numberOfSteps, numberOfSteps == 1 ? "" : "s");
-      //printf("%s\n",tmpString);
-
       stringAppend(tmpString + stringByteLength(tmpString), "\n");
       ioFileWrite(tmpString, strlen(tmpString));
-
       firstLine = 1;
     }
     else {
@@ -131,18 +201,54 @@ void fnPExport(uint16_t unusedButMandatoryParameter) {
     }
 
     int lineOffset = 0, lineOffsetTam = 0;
+    int8_t  indent;;
+    bool_t  newLine;
+    bool_t  addnextLineIndent = 0;
+
 
     for(line=firstLine; line<9999; line++) {
       nextStep = findNextStep(step);
-      sprintf(tmpString, "%04d:  " , firstDisplayedLocalStepNumber + line - lineOffset + lineOffsetTam);
-      //printf("%s",tmpString);
-      ioFileWrite(tmpString, strlen(tmpString));
+      sprintf(asciiString, "%04d:  " , firstDisplayedLocalStepNumber + line - lineOffset + lineOffsetTam);
 
       decodeOneStepXEQM(step);
-      stringAppend(tmpString + stringByteLength(tmpString), "\n");
-      stringToASCII(tmpString, asciiString);
-      //printf("%s\n",errorMessage);
-      ioFileWrite(asciiString, strlen(asciiString));
+      indent = 2;
+      newLine = false;
+
+      if(addnextLineIndent == 0) {
+        int16_t jj = 0;
+        while((indents[jj].itemName[0]) != 0) {
+          if(subStrWildCardCompare(tmpString, (char*)(indents[jj].itemName))) {
+            newLine = (bool_t)(indents[jj]._previousnewLine);
+            indent += indents[jj]._indent;
+            addnextLineIndent = indents[jj]._addnextLineIndent;
+            break;
+          }
+          jj++;
+        }
+      } else {
+        indent += addnextLineIndent;
+        addnextLineIndent = 0;
+      }
+
+      
+      if (indent > 0) {
+        uint16_t ii = 0;
+        stringAppend(tmpString + indent, tmpString);
+        while(ii < indent) {
+          tmpString[ii++]= ' ';
+        }
+      }
+
+      if(newLine){                        // Newline before LBL
+        char endline[3];
+        sprintf(endline,"\n");
+        ioFileWrite(endline, strlen(endline));
+      }
+
+      stringAppend(asciiString + stringByteLength(asciiString), tmpString);    //add number + instruction: 0000:  1/X
+      stringAppend(asciiString + stringByteLength(asciiString), "\n");         //add cr+lf
+      stringToASCII(asciiString, tmpString);
+      ioFileWrite(tmpString, strlen(tmpString));
 
       if(isAtEndOfProgram(step)) {
         programListEnd = true;
@@ -170,6 +276,7 @@ void fnPExport(uint16_t unusedButMandatoryParameter) {
 void fnExportProgram(uint16_t label) {
   #if !defined(TESTSUITE_BUILD)
     uint32_t programVersion = PROGRAM_VERSION;
+    uint32_t exportVersion = EXPORT_VERSION;
     ioFilePath_t path;
     int ret;
 
@@ -233,7 +340,7 @@ void fnExportProgram(uint16_t label) {
     }
 
     // PROGRAM file version
-    sprintf(tmpString, "C47 Program file export, version %" PRIu32 "\n", (uint32_t)programVersion);
+    sprintf(tmpString, "C47 Program file export: Export format version %" PRIu32 ", C47 program version %" PRIu32 ".\n", (uint32_t)exportVersion, (uint32_t)programVersion);
     ioFileWrite(tmpString, strlen(tmpString));
 
     fnPExport(0);
