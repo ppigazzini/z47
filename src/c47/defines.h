@@ -635,100 +635,128 @@ typedef enum {
 
 ///////////////////////////////////////////////////////
 // Register numbering:
-//    0 to  117 global resisters
-//  118 to  216 local registers (from .00 to .98) this are 99 local registers
-//  216 to  219 saved stack registers (UNDO feature)
-//  226 to  228 temporary registers
-//  229 to 1999 named variables
+// 0…99    Global registers from 0 to 99
+// 100…111 Lettered global registers from X to L
+// 112…210 Local registers from .00 to .98
+// 211…216 Lettered global registers from M to S: no possibility of indirect access
+// 217…223 Lettered global registers from E to W: no possibility of indirect access
+// 224…232 saved stack registers (UNDO feature)
+// 233…234 temporary registers
+// 235…249 Undefined free register space: no possibility of indirect access
+// Special values:
+// 250 SYSTEM_FLAG_NUMBER --> ?
+// 251 VALUE_0 --> Can't remember what this is!
+// 252 VALUE_1 --> Can't remember what this is!
+// 253 STRING_LABEL_VARIABLE
+// 254 INDIRECT_REGISTER
+// 255 INDIRECT_VARIABLE
+
+// 256  to 1999 named variables
 // 2000 to 2029 reserved variables
 
 enum REG_NUMBERS {
-  FIRST_GLOBAL_REGISTER = 0,
+  FIRST_GLOBAL_REGISTER = 0,                       // 000 - 099 Total 100 registers
   // Stack registers
-  REGISTER_X = 100,
-  REGISTER_Y,
-  REGISTER_Z,
-  REGISTER_T,
-  REGISTER_A,
-  REGISTER_B,
-  REGISTER_C,
-  REGISTER_D,
-  REGISTER_L,
+  REGISTER_X = 100,                                // 100
+  REGISTER_Y,                                      // 101
+  REGISTER_Z,                                      // 102
+  REGISTER_T,                                      // 103
+  REGISTER_A,                                      // 104
+  REGISTER_B,                                      // 105
+  REGISTER_C,                                      // 106
+  REGISTER_D,                                      // 107
+  REGISTER_L,                                      // 108
   // Matrix registers
-  REGISTER_I,
-  REGISTER_J,
-  REGISTER_K,
+  REGISTER_I,                                      // 109
+  REGISTER_J,                                      // 110
+  REGISTER_K,                                      // 111
+    LAST_GLOBAL_REGISTER = REGISTER_K,
+  // Local registers
+  FIRST_LOCAL_REGISTER,                            // 112
+  LAST_LOCAL_REGISTER = FIRST_LOCAL_REGISTER+99-1, // 210, total 99 registers,
   // Statistical parameter registers
   FIRST_STAT_REGISTER,
-    REGISTER_M = FIRST_STAT_REGISTER,
-  REGISTER_N,
-  REGISTER_P,
-  REGISTER_Q,
-  REGISTER_R,
-  REGISTER_S,
+    REGISTER_M = FIRST_STAT_REGISTER,              // 211
+  REGISTER_N,                                      // 212
+  REGISTER_P,                                      // 213
+  REGISTER_Q,                                      // 214
+  REGISTER_R,                                      // 215
+  REGISTER_S,                                      // 216
     LAST_STAT_REGISTER = REGISTER_S,
-    LAST_GLOBAL_REGISTER = REGISTER_S,
-  // Local registers
-  FIRST_LOCAL_REGISTER,
-  LAST_LOCAL_REGISTER = FIRST_LOCAL_REGISTER + 99 - 1,
+  // Spare registers
+  FIRST_SPARE_REGISTERS,
+    REGISTER_E = FIRST_SPARE_REGISTERS,            // 217
+  REGISTER_F,                                      // 218
+  REGISTER_G,                                      // 219
+  REGISTER_H,                                      // 220
+  REGISTER_O,                                      // 221
+  REGISTER_V,                                      // 222
+  REGISTER_W,                                      // 223
+    LAST_SPARE_REGISTERS = REGISTER_W,
   // Saved stack registers
   FIRST_SAVED_STACK_REGISTER,
-    SAVED_REGISTER_X = FIRST_SAVED_STACK_REGISTER,
-  SAVED_REGISTER_Y,
-  SAVED_REGISTER_Z,
-  SAVED_REGISTER_T,
-  SAVED_REGISTER_A,
-  SAVED_REGISTER_B,
-  SAVED_REGISTER_C,
-  SAVED_REGISTER_D,
-  SAVED_REGISTER_L,
+    SAVED_REGISTER_X = FIRST_SAVED_STACK_REGISTER, // 224
+  SAVED_REGISTER_Y,                                // 225
+  SAVED_REGISTER_Z,                                // 226
+  SAVED_REGISTER_T,                                // 227
+  SAVED_REGISTER_A,                                // 228
+  SAVED_REGISTER_B,                                // 229
+  SAVED_REGISTER_C,                                // 230
+  SAVED_REGISTER_D,                                // 231
+  SAVED_REGISTER_L,                                // 232
     LAST_SAVED_STACK_REGISTER = SAVED_REGISTER_L,
   // Temporary registeres
   FIRST_TEMP_REGISTER,
-    TEMP_REGISTER_1 = FIRST_TEMP_REGISTER,
-  TEMP_REGISTER_2_SAVED_STATS,
+    TEMP_REGISTER_1 = FIRST_TEMP_REGISTER,         // 233
+  TEMP_REGISTER_2_SAVED_STATS,                     // 234
     LAST_TEMP_REGISTER = TEMP_REGISTER_2_SAVED_STATS,
+
+
   // Named variables
-  FIRST_NAMED_VARIABLE,
-  LAST_NAMED_VARIABLE = 1999,
+  FIRST_NAMED_VARIABLE = 256,                      // 256
+  LAST_NAMED_VARIABLE = 1999,                      //1999
   FIRST_RESERVED_VARIABLE = 2000,
-    RESERVED_VARIABLE_X = FIRST_RESERVED_VARIABLE,
-  RESERVED_VARIABLE_Y,
-  RESERVED_VARIABLE_Z,
-  RESERVED_VARIABLE_T,
-  RESERVED_VARIABLE_A,
-  RESERVED_VARIABLE_B,
-  RESERVED_VARIABLE_C,
-  RESERVED_VARIABLE_D,
-  RESERVED_VARIABLE_L,
-  RESERVED_VARIABLE_I,
-  RESERVED_VARIABLE_J,
-  RESERVED_VARIABLE_K,
-  RESERVED_VARIABLE_M,
-  RESERVED_VARIABLE_N,
-  RESERVED_VARIABLE_P,
-  RESERVED_VARIABLE_Q,
-  RESERVED_VARIABLE_R,
-  RESERVED_VARIABLE_S,
-  RESERVED_VARIABLE_ADM,
+    RESERVED_VARIABLE_X = FIRST_RESERVED_VARIABLE, //2000
+  RESERVED_VARIABLE_Y,                             //2001
+  RESERVED_VARIABLE_Z,                             //2002
+  RESERVED_VARIABLE_T,                             //2003
+  RESERVED_VARIABLE_A,                             //2004
+  RESERVED_VARIABLE_B,                             //2005
+  RESERVED_VARIABLE_C,                             //2006
+  RESERVED_VARIABLE_D,                             //2007
+  RESERVED_VARIABLE_L,                             //2008
+  RESERVED_VARIABLE_I,                             //2009
+  RESERVED_VARIABLE_J,                             //2010
+  RESERVED_VARIABLE_K,                             //2011
+  RESERVED_VARIABLE_M,                             //2012
+  RESERVED_VARIABLE_N,                             //2013
+  RESERVED_VARIABLE_P,                             //2014
+  RESERVED_VARIABLE_Q,                             //2015
+  RESERVED_VARIABLE_R,                             //2016
+  RESERVED_VARIABLE_S,                             //2017
+  RESERVED_VARIABLE_ADM,                           //2018
     FIRST_NAMED_RESERVED_VARIABLE = RESERVED_VARIABLE_ADM,
-  RESERVED_VARIABLE_DENMAX,
-  RESERVED_VARIABLE_ISM,
-  RESERVED_VARIABLE_REALDF,
-  RESERVED_VARIABLE_NDEC,
-  RESERVED_VARIABLE_ACC,
-  RESERVED_VARIABLE_ULIM,
-  RESERVED_VARIABLE_LLIM,
-  RESERVED_VARIABLE_FV,
-  RESERVED_VARIABLE_IPONA,
-  RESERVED_VARIABLE_NPER,
-  RESERVED_VARIABLE_PERONA,
-  RESERVED_VARIABLE_PMT,
-  RESERVED_VARIABLE_PV,
-  RESERVED_VARIABLE_GRAMOD,
+  RESERVED_VARIABLE_DENMAX,                        //2019
+  RESERVED_VARIABLE_ISM,                           //2020
+  RESERVED_VARIABLE_REALDF,                        //2021
+  RESERVED_VARIABLE_NDEC,                          //2022
+  RESERVED_VARIABLE_ACC,                           //2023
+  RESERVED_VARIABLE_ULIM,                          //2024
+  RESERVED_VARIABLE_LLIM,                          //2025
+  RESERVED_VARIABLE_FV,                            //2026
+  RESERVED_VARIABLE_IPONA,                         //2027
+  RESERVED_VARIABLE_NPER,                          //2028
+  RESERVED_VARIABLE_PERONA,                        //2029
+  RESERVED_VARIABLE_PMT,                           //2030
+  RESERVED_VARIABLE_PV,                            //2031
+  RESERVED_VARIABLE_GRAMOD,                        //2032
     LAST_RESERVED_VARIABLE = RESERVED_VARIABLE_GRAMOD,
-  INVALID_VARIABLE,
-  FIRST_LABEL,
+//  RESERVED_VARIABLE_UX,                          //2033
+//  RESERVED_VARIABLE_LX,                          //2034
+//    LAST_RESERVED_VARIABLE = RESERVED_VARIABLE_LX,
+
+  INVALID_VARIABLE,                                //2033
+  FIRST_LABEL,                                     //2034
   LAST_LABEL = 6999
 };
 
@@ -736,6 +764,7 @@ enum REG_NUMBERS {
 #define NUMBER_OF_LOCAL_REGISTERS           (LAST_LOCAL_REGISTER - FIRST_LOCAL_REGISTER + 1)
 #define NUMBER_OF_SAVED_STACK_REGISTERS     (LAST_SAVED_STACK_REGISTER - FIRST_SAVED_STACK_REGISTER + 1)
 #define NUMBER_OF_TEMP_REGISTERS            (LAST_TEMP_REGISTER - FIRST_TEMP_REGISTER + 1)
+
 #define NUMBER_OF_RESERVED_VARIABLES        (LAST_RESERVED_VARIABLE - FIRST_RESERVED_VARIABLE + 1)
 #define NUMBER_OF_LETTERED_VARIABLES        (FIRST_NAMED_RESERVED_VARIABLE - FIRST_RESERVED_VARIABLE)     // which is the same as NUMBER_OF_GLOBAL_REGISTERS
 
