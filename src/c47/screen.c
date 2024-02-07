@@ -2080,6 +2080,49 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
     }
   }
 
+
+  int _displayIJ(char * prefix) {
+    int prefixWidth = 0;
+    real34_t ii,jj;
+    bool_t valid = false;
+    if(getRegisterDataType(REGISTER_I) == dtLongInteger && getRegisterDataType(REGISTER_J) == dtLongInteger) {
+      convertLongIntegerRegisterToReal34(REGISTER_I, &ii);
+      convertLongIntegerRegisterToReal34(REGISTER_J, &jj);
+      valid = true;
+    } else if(getRegisterDataType(REGISTER_I) == dtReal34 && getRegisterDataType(REGISTER_J) == dtReal34) {
+      real34Copy(REGISTER_REAL34_DATA(REGISTER_I), &ii);
+      real34Copy(REGISTER_REAL34_DATA(REGISTER_J), &jj);
+      valid = true;
+    }
+    if(valid) {
+      if(real34CompareAbsLessThan(&ii,const34_100) && real34CompareAbsLessThan(&jj,const34_100)) {
+        char iis[30], jjs[30];
+        longIntegerRegisterToDisplayString(REGISTER_I,  iis, 30, 100, 50, false);
+        longIntegerRegisterToDisplayString(REGISTER_J,  jjs, 30, 100, 50, false);
+        prefix[0]=0;
+        if(temporaryInformation == TI_MIJ) {
+          strcpy(prefix,"M");
+        }
+        strcat(prefix,"[I" STD_SUB_r STD_SPACE_FIGURE "J" STD_SUB_c "]=");
+        if(temporaryInformation == TI_MIJ) {
+          strcat(prefix,"M[");
+        } else {
+          strcat(prefix,"[");
+        }
+        strcat(prefix,iis);
+        strcat(prefix, STD_SPACE_FIGURE);
+        strcat(prefix,jjs);
+        strcat(prefix,"]");
+        if(temporaryInformation == TI_MIJ) {
+          strcat(prefix,"=");
+        }
+        prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
+      }
+    }
+    return prefixWidth;
+  }
+
+
   #define PROBMENU (-softmenu[softmenuStack[0].softmenuId].menuItem >= MNU_BINOM && -softmenu[softmenuStack[0].softmenuId].menuItem <= ITM_1296)
 
   void refreshRegisterLine(calcRegister_t regist) {
@@ -2504,8 +2547,8 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
               r_j = STD_gamma;              register_j = REGISTER_S;
               break;
             case -MNU_WEIBL:
-              r_i = STD_nu;                 register_i = REGISTER_Q;
-              r_j = STD_lambda;             register_j = REGISTER_M;
+              r_i = STD_lambda;             register_i = REGISTER_M;
+              r_j = STD_nu;                 register_j = REGISTER_Q;
               break;
             case -MNU_CHI2:
             case -MNU_T:
@@ -3475,6 +3518,10 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
               }
             }
           }
+          else if(regist == REGISTER_X && (temporaryInformation == TI_IJ || temporaryInformation == TI_MIJ)) {
+            prefixWidth = _displayIJ(prefix);
+          }
+
 
           if(prefixWidth > 0) {
             if(regist == REGISTER_X) {
@@ -3591,6 +3638,9 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
               prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
             }
             #endif //DISCRIMINANT
+          }
+          else if(regist == REGISTER_X && (temporaryInformation == TI_IJ || temporaryInformation == TI_MIJ)) {
+            prefixWidth = _displayIJ(prefix);
           }
 
 
@@ -3828,6 +3878,9 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
               prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
             }
           }
+          else if(regist == REGISTER_X && (temporaryInformation == TI_IJ || temporaryInformation == TI_MIJ)) {
+            prefixWidth = _displayIJ(prefix);
+          }
 
           if(prefixWidth > 0) {
             if(regist == REGISTER_X) {
@@ -3966,6 +4019,9 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
             if(lastErrorCode != 0) {
               refreshRegisterLine(errorMessageRegisterLine);
             }
+            else if(regist == REGISTER_X && (temporaryInformation == TI_IJ || temporaryInformation == TI_MIJ)) {
+              prefixWidth = _displayIJ(prefix);
+            }
             if(temporaryInformation == TI_TRUE || temporaryInformation == TI_FALSE) {
               refreshRegisterLine(TRUE_FALSE_REGISTER_LINE);
             }
@@ -3991,6 +4047,9 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
             linkToComplexMatrixRegister(regist, &matrix);
             if(temporaryInformation == TI_VIEW && origRegist == REGISTER_T) {
               viewRegName(prefix, &prefixWidth);
+            }
+            else if(regist == REGISTER_X && (temporaryInformation == TI_IJ || temporaryInformation == TI_MIJ)) {
+              prefixWidth = _displayIJ(prefix);
             }
             showComplexMatrix(&matrix, prefixWidth, getComplexRegisterAngularMode(regist), getComplexRegisterPolarMode(regist) == amPolar);
             if(lastErrorCode != 0) {

@@ -2,7 +2,7 @@ XEQLBL FF BINETF  //RE-BINDS THE PROGRAM NAME TO THE SOFTMENU
                  //BRIEF:  Y =( (phi)^n - (-phi)^-n ) /sqrt(5)
 
 
-STO 01 DROP
+STO 01 DROPX
 RAD
 
 
