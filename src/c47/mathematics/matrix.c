@@ -1142,6 +1142,7 @@ void fnSimultaneousLinearEquation(uint16_t numberOfUnknowns) {
   if(allocateNamedMatrix("Mat_A", numberOfUnknowns, numberOfUnknowns) != INVALID_VARIABLE) {
     if(allocateNamedMatrix("Mat_B", numberOfUnknowns, 1) != INVALID_VARIABLE) {
       if(allocateNamedMatrix("Mat_X", numberOfUnknowns, 1) != INVALID_VARIABLE) {
+        popSoftmenu();
         showSoftmenu(-MNU_SIMQ);
         showSoftmenu(-MNU_TAM);
         numberOfTamMenusToPop = 1;
@@ -1221,6 +1222,7 @@ void fnEditLinearEquationMatrixX(uint16_t unusedParamButMandatory) {
     liftStack();
     copySourceRegisterToDestRegister(findNamedVariable("Mat_X"), REGISTER_X);
     popSoftmenu();
+printf("Popped\n");
   }
   #endif // !TESTSUITE_BUILD
 }
