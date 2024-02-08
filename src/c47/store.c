@@ -596,6 +596,7 @@ void fnStoreIJ(uint16_t unusedButMandatoryParameter) {
     }
     else {
       callByIndexedMatrix(storeIjReal, storeIjComplex);
+      temporaryInformation = TI_IJ;
       if(matrixIndex >= FIRST_NAMED_VARIABLE && matrixIndex == findNamedVariable("STATS")) {
         calcSigma(0);
       }

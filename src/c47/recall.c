@@ -523,6 +523,8 @@ void fnRecallIJ(uint16_t unusedButMandatoryParameter) {
 
       adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
       adjustResult(REGISTER_Y, false, true, REGISTER_Y, -1, -1);
+      temporaryInformation = TI_IJ;
+
 
       longIntegerFree(zero);
     }
