@@ -2547,8 +2547,8 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
               r_j = STD_gamma;              register_j = REGISTER_S;
               break;
             case -MNU_WEIBL:
-              r_i = STD_lambda;             register_i = REGISTER_M;
-              r_j = STD_nu;                 register_j = REGISTER_Q;
+              r_i = STD_nu;                 register_i = REGISTER_Q;
+              r_j = STD_lambda;             register_j = REGISTER_M;
               break;
             case -MNU_CHI2:
             case -MNU_T:
