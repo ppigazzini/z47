@@ -1112,6 +1112,8 @@ enum REG_NUMBERS {
 #define TI_DEL_ALL_VARIABLES                      97    //DL
 #define TI_ROOTS2                                 98
 #define TI_ROOTS3                                 99
+#define TI_IJ                                    100
+#define TI_MIJ                                   101
 
 // Register browser mode
 #define RBR_GLOBAL                                 0 // Global registers are browsed

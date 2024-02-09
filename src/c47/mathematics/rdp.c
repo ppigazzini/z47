@@ -59,7 +59,7 @@ TO_QSPI void (* const Rdp[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])(uint16_t) = {
  ***********************************************/
 void roundToDecimalPlace(const real_t *source, real_t *destination, uint16_t digits, realContext_t *realContext) {
   real_t val, tmp;
-  int16_t exponent;
+  int32_t exponent;
 
   if(realIsZero(source) || realIsSpecial(source)) {
     realCopy(source, destination);
