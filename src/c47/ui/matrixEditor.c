@@ -242,6 +242,7 @@ void fnSetGrowMode(uint16_t growFlag) {
 void fnIncDecI(uint16_t mode) {
   #if !defined(TESTSUITE_BUILD)
   callByIndexedMatrix((mode == DEC_FLAG) ? decIReal : incIReal, (mode == DEC_FLAG) ? decIComplex : incIComplex);
+  temporaryInformation = TI_IJ;
   #endif // !TESTSUITE_BUILD
 }
 
@@ -249,6 +250,7 @@ void fnIncDecI(uint16_t mode) {
 void fnIncDecJ(uint16_t mode) {
   #if !defined(TESTSUITE_BUILD)
   callByIndexedMatrix((mode == DEC_FLAG) ? decJReal : incJReal, (mode == DEC_FLAG) ? decJComplex : incJComplex);
+  temporaryInformation = TI_IJ;
   #endif // !TESTSUITE_BUILD
 }
 
