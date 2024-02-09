@@ -2091,7 +2091,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
       int32_t iii, jji;
       iii=realToUint32C47(&iir);
       jji=realToUint32C47(&jjr);
-      if(abs(iii) < 200 && abs(jji) < 200) {
+      if(iii >= 0 && iii < 200 && jji >= 0 && jji < 200) {
         prefix[0] = 0;
         *prefixWidth = 0;
         if(temporaryInformation == TI_MIJ) {
