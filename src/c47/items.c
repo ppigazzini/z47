@@ -147,7 +147,7 @@ void fnNop(uint16_t unusedButMandatoryParameter) {
     if(temporaryInformation == TI_LAST_CONST_CATNAME && (currentSolverStatus & 0x000F) != 0) {
       temporaryInformation = TI_NO_INFO;
     } else
-    if(func >= CST_01 && func <= CST_79) {
+    if(func >= CST_01 && func <= CST_82) {
       temporaryInformation = TI_LAST_CONST_CATNAME;
     }
     //else {                                                 //Removed code for TI of any last command
@@ -1389,9 +1389,9 @@ TO_QSPI const item_t indexOfItems[] = {
 /*  205 */  { fnConstant,                   77,                          STD_INFINITY,                                  "inf.plus",                                    (0 << TAM_MAX_BITS) |     0, CAT_CNST | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /*  206 */  { itemToBeCoded,                78,                          "#",                                           "zero",                                        (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_NONE         },
 /*  207 */  { fnConstant,                   TM_VALUE,                    "CNST",                                        "CNST",                                        (0 << TAM_MAX_BITS) |   215, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NUMBER_8_16  }, // 215 is replaced at run time by NUMBER_OF_CONSTANTS_39 + NUMBER_OF_CONSTANTS_51 + NUMBER_OF_CONSTANTS_1071 + NUMBER_OF_CONSTANTS_34 - 1
-/*  208 */  { itemToBeCoded,                NOPARAM,                     "0208",                                        "0208",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
-/*  209 */  { itemToBeCoded,                NOPARAM,                     "0209",                                        "0209",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
-/*  210 */  { itemToBeCoded,                NOPARAM,                     "0210",                                        "0210",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/*  208 */  { fnConstant,                   79,                          "BB",                                          "exp.bb",                                      (0 << TAM_MAX_BITS) |     0, CAT_CNST | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
+/*  209 */  { fnConstant,                   80,                          STD_DELTA STD_SUB_S,                           "r.silver",                                    (0 << TAM_MAX_BITS) |     0, CAT_CNST | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
+/*  210 */  { fnConstant,                   81,                          "SOFA",                                        "move.sofa",                                   (0 << TAM_MAX_BITS) |     0, CAT_CNST | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /*  211 */  { itemToBeCoded,                NOPARAM,                     "0211",                                        "0211",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /*  212 */  { itemToBeCoded,                NOPARAM,                     "0212",                                        "0212",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /*  213 */  { itemToBeCoded,                NOPARAM,                     "0213",                                        "0213",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
