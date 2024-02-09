@@ -15,7 +15,7 @@ CHS STO 11             // REG11: Higher X
   1 +
   STO 00                 // CURRENT LOOP COUNTER, N+1 (STARTNO) DECREMENTS AT 0 IT SKIPS
   STO 02                 // LOOP START VALUE STORED
-  DROP DROP
+  DROPX DROPX
 
   LBL M1                 // CREATE LOOPING LABEL. FOUR LABELS AVAILABLE M1, M2, M3, M4
   RCL 02                 // GET THE START VALUE OF THE LOOP COUNTER
@@ -33,7 +33,7 @@ CHS STO 11             // REG11: Higher X
   X<>Y                   // SHIFT y TO Y AND x TO X
 
   SUM+                   // USE SUM+ TO SEND TO STATS BUFFER
-  DROP DROP              // CLEAN UP STACK
+  DROPX DROPX              // CLEAN UP STACK
   DSZ 00                 // DECREMENT AND SKIP NEXT COMMAND IF RESULT ZERO
   GTO M1                 // THE GTO IS SKIPPED IF RESULT 0
 

@@ -43,10 +43,10 @@
   void WP34S_Qf_Weib  (const real_t *x, const real_t *b, const real_t *t, real_t *res, realContext_t *realContext){}
 
 #else
-  static bool_t checkParamWeibull(real_t *x, real_t *i, real_t *j) {
+  static bool_t checkParamWeibull(real_t *x, real_t *shape, real_t *scale) {
     if (!getRegisterAsReal(REGISTER_X, x)
-        || !getRegisterAsReal(REGISTER_Q, i)
-        || !getRegisterAsReal(REGISTER_M, j))
+        || !getRegisterAsReal(REGISTER_Q, shape)
+        || !getRegisterAsReal(REGISTER_S, scale))
       goto err;
 
     if(realIsNegative(x)) {
@@ -56,7 +56,8 @@
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       goto err;
     }
-    else if(realIsZero(i) || realIsNegative(i) || realIsZero(j) || realIsNegative(j)) {
+    else if(realIsZero(shape) || realIsNegative(shape)
+            || realIsZero(scale) || realIsNegative(scale)) {
       displayDomainErrorMessage(ERROR_INVALID_DISTRIBUTION_PARAM, ERR_REGISTER_LINE, REGISTER_X);
       #if(EXTRA_INFO_ON_CALC_ERROR == 1)
         moreInfoOnError("In function checkParamWeibull:", "cannot calculate for b " STD_LESS_EQUAL " 0 or t " STD_LESS_EQUAL " 0", NULL, NULL);
@@ -81,7 +82,7 @@
     }
 
     if(checkParamWeibull(&val, &shape, &lifetime)) {
-      WP34S_Pdf_Weib(&val, &shape, &lifetime, &ans, &ctxtReal39);
+      WP34S_Pdf_Weib(&val, &lifetime, &shape, &ans, &ctxtReal39);
       convertRealToResultRegister(&ans, REGISTER_X, amNone);
     }
 
@@ -96,7 +97,7 @@
     }
 
     if(checkParamWeibull(&val, &shape, &lifetime)) {
-      WP34S_Cdf_Weib(&val, &shape, &lifetime, &ans, &ctxtReal39);
+      WP34S_Cdf_Weib(&val, &lifetime, &shape, &ans, &ctxtReal39);
       convertRealToResultRegister(&ans, REGISTER_X, amNone);
     }
 
@@ -111,7 +112,7 @@
     }
 
     if(checkParamWeibull(&val, &shape, &lifetime)) {
-      WP34S_Cdfu_Weib(&val, &shape, &lifetime, &ans, &ctxtReal39);
+      WP34S_Cdfu_Weib(&val, &lifetime, &shape, &ans, &ctxtReal39);
       convertRealToResultRegister(&ans, REGISTER_X, amNone);
     }
 
@@ -136,7 +137,7 @@
         }
         return;
       }
-      WP34S_Qf_Weib(&val, &shape, &lifetime, &ans, &ctxtReal39);
+      WP34S_Qf_Weib(&val, &lifetime, &shape, &ans, &ctxtReal39);
       convertRealToResultRegister(&ans, REGISTER_X, amNone);
     }
 
@@ -158,7 +159,7 @@
       return;
     }
     realPower(&p, t, &q, realContext);
-    realMultiply(&q, const__1, &r, realContext);
+    realMinus(&q, &r, realContext);
     realExp(&r, &r, realContext);
     realMultiply(&r, &q, &r, realContext);
     realDivide(&r, &p, &r, realContext);
