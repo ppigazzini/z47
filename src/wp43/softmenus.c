@@ -2776,13 +2776,13 @@ void fnMenuDump(uint16_t menu, uint16_t item) {                              //J
 
   //printf(">>> %s\n",indexOfItems[-softmenu[menu].menuItem].itemSoftmenuName);
   char asciiString[448];
-  char asciiString1[448];
-  stringToASCII(indexOfItems[-softmenu[menu].menuItem].itemSoftmenuName, asciiString1);
-  //printf(">>> Menustring:%s|",asciiString1);
-  stringToFileNameChars(asciiString1, asciiString);
+  char asciiMenuName[448];
+  stringToASCII(indexOfItems[-softmenu[menu].menuItem].itemSoftmenuName, asciiMenuName);
+  //printf(">>> Menustring:%s|",asciiMenuName);
+  stringToFileNameChars(asciiMenuName, asciiString);
   //printf(">>> Menustring:%s|",asciiString);
 
-  sprintf(bmpFileName,"Menu_%s_%4d p%d.bmp",asciiString, menu, (int)(item/18)+1);
+  sprintf(bmpFileName,"Menu_%003d_p%d_%s.bmp", menu, (int)(item/18)+1, asciiString);
   printf(">>> filename:%s|\n",bmpFileName);
 
   bmp = fopen(bmpFileName, "wb");
@@ -2889,17 +2889,18 @@ void fnMenuDump(uint16_t menu, uint16_t item) {                              //J
 
 void fnDumpMenus(uint16_t unusedButMandatoryParameter) {                      //JM
 #if defined(PC_BUILD)
+  printf("Dumping menus\n");
   int16_t m,n;
   m = 0;
     while(softmenu[m].menuItem != 0) {
       n=0;
-      while(n <= softmenu[m].numItems && softmenu[m].numItems != 0) {
-        printf("m=%d n=%d\n",m,n );
-        switch(m) {
-          case 30:
-          case 31:
-          case 32:
-          case 33:
+      while(n < softmenu[m].numItems && softmenu[m].numItems != 0) {
+        printf("m=%d n=%d softmenu[%u].numItems=%u\n",m,n,m,softmenu[m].numItems);
+        switch(-softmenu[m].menuItem) {
+          case MNU_1STDERIV :
+          case MNU_2NDDERIV :
+          case MNU_Sf :      
+          case MNU_Solver :  
             break;      
           default:
            fnMenuDump(m, n);
