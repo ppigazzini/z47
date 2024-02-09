@@ -341,7 +341,7 @@ void real34ToDisplayString2(const real34_t *real34, char *displayString, int16_t
   //Example: 1025 -> 1024^1.000140819 -> 1024^.000140819 * 1024^1 -> 1.000976559 * Ki -> 1.001 Ki
   //             ln(1025)/ln(1024) = 1.000140819;
 
-  int16_t exponentUNlimit = 0;
+  int32_t exponentUNlimit = 0;
   bool_t flag2To10 = getSystemFlag(FLAG_2TO10);
   bool_t flag2To10_baseunit_integer = false;
   real_t tmp4, tmpIp, tmpFp;

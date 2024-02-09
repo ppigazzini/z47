@@ -52,7 +52,7 @@ void fnSdl(uint16_t numberOfShifts) {
   else
     if(getRegisterDataType(REGISTER_X) == dtLongInteger) {
       longInteger_t y, x;
-      uint16_t exponent;
+      uint32_t exponent;
 
       if(!saveLastX()) {
     return;
@@ -104,7 +104,7 @@ void fnSdr(uint16_t numberOfShifts) {
   else
     if(getRegisterDataType(REGISTER_X) == dtLongInteger) {
       longInteger_t y, x;
-      uint16_t exponent;
+      uint32_t exponent;
 
       if(!saveLastX()) {
     return;
