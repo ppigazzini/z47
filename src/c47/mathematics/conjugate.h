@@ -23,6 +23,7 @@
   #include "defines.h"
   #include <stdint.h>
 
+  void conjCplx(void);
   void fnConjugate(uint16_t unusedButMandatoryParameter);
 
 #endif // !CONJUGATE_H

@@ -55,7 +55,7 @@ static void conjCxma(void) {
   }
 }
 
-static void conjCplx(void) {
+void conjCplx(void) {
   real_t r, i;
 
   if (!getRegisterAsComplex(REGISTER_X, &r, &i))
