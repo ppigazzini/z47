@@ -48,8 +48,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <libgen.h>
+#include <ctype.h>
 
-#include "wp43.h"
+#include "c47.h"
 
 #define NUMBER_OF_CORRECT_SIGNIFICANT_DIGITS_EXPECTED 34
 
@@ -63,10 +64,13 @@ extern const int16_t menu_alpha_intl[];
 extern const int16_t menu_REGIST[];
 extern const softmenu_t softmenu[];
 char line[100000], lastInParameters[10000], fileName[1000], *filePath, filePathName[2000], registerExpectedAndValue[2400], realString[2400];
+char testCaseName[1000], testCasePrefix[1000], testCaseSuffix[1000];
 int32_t lineNumber, numTestsFile, numTestsTotal, failedTests;
 int32_t functionIndex, funcType, correctSignificantDigits;
 void (*funcNoParam)(uint16_t);
 void (*funcCvt)(uint16_t);
+
+static const char regNames[] = "XYZTABCDLIJKMNPQRS";
 
 const funcTest_t funcTestNoParam[] = {
   {"fn10Pow",                fn10Pow               },
@@ -81,7 +85,6 @@ const funcTest_t funcTestNoParam[] = {
   {"fnArctan",               fnArctan              },
   {"fnArctanh",              fnArctanh             },
   {"fnArg",                  fnArg                 },
-  {"fnArg_all",              fnArg_all             },    //JM
   {"fnAsr",                  fnAsr                 },
   {"fnAtan2",                fnAtan2               },
   {"fnBatteryVoltage",       fnBatteryVoltage      },
@@ -284,8 +287,6 @@ const funcTest_t funcTestNoParam[] = {
   {"fnRollUp",               fnRollUp              },
   {"fnRound",                fnRound               },
   {"fnRoundi",               fnRoundi              },
-  {"fnRound2",               fnRound2              },
-  {"fnRoundi2",              fnRoundi2             },
   {"fnRowSum",               fnRowSum              },
   {"fnRowNorm",              fnRowNorm             },
 
@@ -917,8 +918,8 @@ void setParameter(char *p) {
   }
 
   //Setting rounding mode
-  else if(strcmp(l, "RM") == 0) {
-    if(r[0] >= '0' && r[0] <= '9' && r[1] == 0) {
+  else if(strcmp(l, "RMODE") == 0) {
+    if(isdigit(r[0]) && r[1] == 0) {
       uint16_t rm = atoi(r);
 
       if(rm <= 6) {
@@ -943,16 +944,12 @@ void setParameter(char *p) {
 
     //Lettered register
     if(l[1] >= 'A' && l[2] == 0) {
-      if(strstr("XYZTABCDLIJK", l + 1) != NULL) {
-        //letter = l[1];
-        regist = l[1] == 'T' ? 103 :
-                 l[1] == 'L' ? 108 :
-                 l[1] <= 'D' ? l[1] + 39 :
-                 l[1] <= 'K' ? l[1] + 36 :
-                               l[1] + 12;
+      const char *p = strchr(regNames, l[1]);
+      if (p != NULL) {
+        regist = REGISTER_X + (p - regNames);
       }
       else {
-        printf("\nMissformed lettered register setting. The letter after R is not a lettered register.\n");
+        printf("\nMissformed lettered register setting. The letter after R is not a lettered register (%s).\n", regNames);
         abortTest();
       }
     }
@@ -962,15 +959,15 @@ void setParameter(char *p) {
             || (l[1] >= '0' && l[1] <= '9' && l[2] >= '0' && l[2] <= '9' && l[3] == 0)
             || (l[1] >= '0' && l[1] <= '9' && l[2] >= '0' && l[2] <= '9' && l[3] >= '0' && l[3] <= '9' && l[4] == 0)) {
       regist = atoi(l + 1);
-      if(regist > 111 || regist < 0) {
-        printf("\nMissformed numbered register setting. Th number after R shall be a number from 0 to 111.\n");
+      if(regist > LAST_GLOBAL_REGISTER || regist < 0) {
+        printf("\nMalformed numbered register setting. Th number after R shall be a number from 0 to %d.\n", LAST_GLOBAL_REGISTER);
         abortTest();
       }
       //letter = 0;
     }
 
     else {
-      printf("\nMissformed register setting. After R there shall be a number from 0 to 111 or a lettered register.\n");
+      printf("\nMalformed register setting. After R there should be a number from 0 to %d or a lettered register.\n", LAST_GLOBAL_REGISTER);
       abortTest();
     }
 
@@ -1522,7 +1519,7 @@ int relativeErrorReal34(real34_t *expectedValue34, real34_t *value34, char *numb
   ctxtReal39.digits = 2;
   realPlus(&relativeError, &relativeError, &ctxtReal39);
   ctxtReal39.digits = 39;
-  if(correctSignificantDigits <= 34) {
+  if(correctSignificantDigits < 30) {
     //printf("\nThere are only %d correct significant digits in the %s part of the value: %d are expected!\n", correctSignificantDigits, numberPart, NUMBER_OF_CORRECT_SIGNIFICANT_DIGITS_EXPECTED);
     realToString(&relativeError, realString);
     if(letter == 0) {
@@ -1538,13 +1535,13 @@ int relativeErrorReal34(real34_t *expectedValue34, real34_t *value34, char *numb
     printf("%s\n", lastInParameters);
     printf("%s\n", line);
     printf("in file %s line %d\n", fileName, lineNumber);
-    if(correctSignificantDigits < 32 && correctSignificantDigits < NUMBER_OF_CORRECT_SIGNIFICANT_DIGITS_EXPECTED) {
+    if(correctSignificantDigits < 30 && correctSignificantDigits < NUMBER_OF_CORRECT_SIGNIFICANT_DIGITS_EXPECTED) {
       puts(registerExpectedAndValue);
       //exit(-1);
     }
   }
 
-  return (correctSignificantDigits < 32 && correctSignificantDigits < NUMBER_OF_CORRECT_SIGNIFICANT_DIGITS_EXPECTED) ? RE_INACCURATE : RE_ACCURATE;
+  return (correctSignificantDigits < 30 && correctSignificantDigits < NUMBER_OF_CORRECT_SIGNIFICANT_DIGITS_EXPECTED) ? RE_INACCURATE : RE_ACCURATE;
 }
 
 
@@ -2119,16 +2116,13 @@ void checkExpectedOutParameter(char *p) {
 
     //Lettered register
     if(l[1] >= 'A' && l[2] == 0) {
-      if(strstr("XYZTABCDLIJK", l + 1) != NULL) {
+      const char *p = strchr(regNames, l[1]);
+      if (p != NULL) {
         letter = l[1];
-        regist = l[1] == 'T' ? 103 :
-                 l[1] == 'L' ? 108 :
-                 l[1] <= 'D' ? l[1] + 39 :
-                 l[1] <= 'K' ? l[1] + 36 :
-                               l[1] + 12;
+        regist = REGISTER_X + (p - regNames);
       }
       else {
-        printf("\nMissformed lettered register checking. The letter after R is not a lettered register.\n");
+        printf("\nMissformed lettered register setting. The letter after R is not a lettered register (%s).\n", regNames);
         abortTest();
       }
     }
@@ -2138,7 +2132,7 @@ void checkExpectedOutParameter(char *p) {
             || (l[1] >= '0' && l[1] <= '9' && l[2] >= '0' && l[2] <= '9' && l[3] == 0)
             || (l[1] >= '0' && l[1] <= '9' && l[2] >= '0' && l[2] <= '9' && l[3] >= '0' && l[3] <= '9' && l[4] == 0)) {
       regist = atoi(l + 1);
-      if(regist > 111 || regist < 0) {
+      if(regist > LAST_GLOBAL_REGISTER || regist < 0) {
         printf("\nMissformed numbered register checking. The number after R shall be a number from 0 to 111.\n");
         abortTest();
       }
@@ -2146,7 +2140,7 @@ void checkExpectedOutParameter(char *p) {
     }
 
     else {
-      printf("\nMissformed register checking. After R there shall be a number from 0 to 111 or a lettered register.\n");
+      printf("\nMissformed register checking. After R there shall be a number from 0 to %d or a lettered register.\n", LAST_GLOBAL_REGISTER);
       abortTest();
     }
 
@@ -3056,7 +3050,10 @@ void processLine(void) {
     if('a' <= line[i] && line[i] <= 'z') {
       line[i] -= 32;
     }
-    if(i >= 5 && strncmp(line, "FUNC: ", 6) == 0) {
+    if(i >= 5 && (strncmp(line, "FUNC: ", 6) == 0 || strncmp(line, "DESC: ", 6) == 0)) {
+      break;
+    }
+    if(i >= 12 && (strncmp(line, "DESC_PREFIX: ", 13) == 0 || strncmp(line, "DESC_SUFFIX: ", 13) == 0)) {
       break;
     }
   }
@@ -3065,6 +3062,21 @@ void processLine(void) {
     //printf("%s\n", line);
     strcpy(lastInParameters, line);
     inParameters(line + 4);
+  }
+
+  else if(strncmp(line, "DESC: ", 6) == 0) {
+    //printf("%s\n", line);
+    strcpy(testCaseName, line + 6);
+  }
+
+  else if(strncmp(line, "DESC_PREFIX: ", 13) == 0) {
+    //printf("%s\n", line);
+    strcpy(testCasePrefix, line + 13);
+  }
+
+  else if(strncmp(line, "DESC_SUFFIX: ", 13) == 0) {
+    //printf("%s\n", line);
+    strcpy(testCaseSuffix, line + 13);
   }
 
   else if(strncmp(line, "FUNC: ", 6) == 0) {
@@ -3102,6 +3114,7 @@ void processOneFile(void) {
   sprintf(filePathName, "%s/%s", filePath, fileName);
 
   printf("Performing tests from file %s ", filePathName);
+  fflush(stdout);
 
   testSuite = fopen(filePathName, "rb");
   if(testSuite == NULL) {

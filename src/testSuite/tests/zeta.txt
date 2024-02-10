@@ -5,7 +5,7 @@
 ;**                                                         **
 ;*************************************************************
 ;*************************************************************
-In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RM=0 IM=2compl SS=4 WS=64
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
 Func: fnZeta
 
 
@@ -40,13 +40,13 @@ Out: EC=24 FL_ASLIFT=0 RX=Stri:"String test"
 
 
 ;=======================================
-; zeta(Real Matrix) --> Error24
+; zeta(Real Matrix) --> Real Matrix
 ;=======================================
 
 
 
 ;=======================================
-; zeta(Complex Matrix) --> Error24
+; zeta(Complex Matrix) --> Complex Matrix
 ;=======================================
 
 

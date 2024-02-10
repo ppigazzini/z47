@@ -5,7 +5,7 @@
 ;**                                                         **
 ;*************************************************************
 ;*************************************************************
-In: FL_SPCRES=0 FL_CPXRES=0 FL_SPCRES=0 SD=0 RM=0 IM=2compl SS=4 WS=64
+In: FL_SPCRES=0 FL_CPXRES=0 FL_SPCRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
 Func: fnArctanh
 
 
@@ -91,10 +91,11 @@ Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=CxMa:"M2,3[0,0i-1,2i-1,-3i2,4i3,-5i-4]" RX=
 
 
 ;=======================================
-; arctanh(Short Integer) --> Error24
+; arctanh(Short Integer) --> Real/Complex
 ;=======================================
-In:  FL_ASLIFT=0 FL_CPXRES=0 RX=ShoI:"5#7"
-Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=ShoI:"5#7"
+In:  FL_ASLIFT=0 FL_CPXRES=1 RX=ShoI:"2#7"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=ShoI:"2#7" RX=Cplx:"0.54930614433405484569762261846126285232374527891137472586734717 i 1.5707963267948966192313216916397514420985846996875529104874723"
+
 
 
 

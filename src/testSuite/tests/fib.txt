@@ -5,15 +5,15 @@
 ;**                                                         **
 ;*************************************************************
 ;*************************************************************
-In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RM=0 IM=2compl SS=4 WS=64
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
 Func: fnFib
 
 
 ;=======================================
 ; fib(Long Integer) --> Long Integer
 ;=======================================
-In:  AM=DEG FL_ASLIFT=1 FL_CPXRES=0 RX=LonI:"5"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"5" RX=LonI:"5"
+In:  AM=DEG FL_ASLIFT=1 FL_CPXRES=0 RX=LonI:"4"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"4" RX=LonI:"3"
 
 In:  AM=DEG FL_ASLIFT=1 FL_CPXRES=0 RX=LonI:"50"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"50" RX=LonI:"12586269025"
@@ -33,8 +33,8 @@ Out: EC=1 FL_CPXRES=0 FL_ASLIFT=1 RX=LonI:"-10"
 ;=======================================
 ; fib(Real) --> Real
 ;=======================================
-In:  AM=DEG FL_ASLIFT=1 FL_CPXRES=0 RX=Real:"5.0"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"5.0" RX=Real:"5.0"
+In:  AM=DEG FL_ASLIFT=1 FL_CPXRES=0 RX=Real:"6.0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"6.0" RX=Real:"8.0"
 
 In:  AM=DEG FL_ASLIFT=1 FL_CPXRES=0 RX=Real:"-5.0"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-5.0" RX=Real:"5.0"
@@ -65,5 +65,5 @@ Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"010.12 i +5.67" RX=Cplx:"93328.050595
 ;=======================================
 ; fib(Short Integer) --> Error
 ;=======================================
-In:  AM=DEG FL_ASLIFT=1 FL_CPXRES=0 RX=ShoI:"5#10"
-Out: EC=24 FL_CPXRES=0 FL_ASLIFT=1 RX=ShoI:"5#10"
+In:  AM=DEG FL_ASLIFT=1 FL_CPXRES=0 RX=ShoI:"6#10"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ShoI:"6#10" RX=LonI:"8"
