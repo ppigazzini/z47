@@ -147,7 +147,7 @@ void fnNop(uint16_t unusedButMandatoryParameter) {
     if(temporaryInformation == TI_LAST_CONST_CATNAME && (currentSolverStatus & 0x000F) != 0) {
       temporaryInformation = TI_NO_INFO;
     } else
-    if(func >= CST_01 && func <= CST_82) {
+    if(func >= FIRST_CONSTANT && func <= LAST_CONSTANT) {
       temporaryInformation = TI_LAST_CONST_CATNAME;
     }
     //else {                                                 //Removed code for TI of any last command

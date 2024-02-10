@@ -229,7 +229,8 @@ uint16_t convertItemToSubOrSup(uint16_t item, int16_t subOrSup) {
                                  item == ITM_op_j_SIGN            ? COMPLEX_UNIT :
                                  item == ITM_zetaX                ? STD_zeta "()" :
                                  item == ITM_GAMMAX               ? STD_GAMMA "()" :
-                                 item >= CST_01 && item <= CST_82 ? indexOfItems[item].itemCatalogName : "";
+                                 item >= FIRST_CONSTANT && 
+                                    item <= LAST_CONSTANT         ? indexOfItems[item].itemCatalogName : "";
 
           char addChar[100];
           int16_t jj = 0;

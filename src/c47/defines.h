@@ -633,6 +633,13 @@ typedef enum {
 #define INC_FLAG                                   0
 #define DEC_FLAG                                   1
 
+
+// List of constants
+#define FIRST_CONSTANT                        CST_01
+#define LAST_CONSTANT                         CST_82
+
+
+
 ///////////////////////////////////////////////////////
 // Register numbering:
 //    0 to  117 global resisters

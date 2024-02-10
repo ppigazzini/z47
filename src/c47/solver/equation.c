@@ -1083,7 +1083,7 @@ static void _parseWord(char *strPtr, uint16_t parseMode, uint16_t parserHint, ch
           bufPtr += stringByteLength(bufPtr) + 1;
           ++tmpVal;
         }
-        for(uint32_t i = CST_01; i <= CST_82; ++i) { // check for constants
+        for(uint32_t i = FIRST_CONSTANT; i <= LAST_CONSTANT; ++i) { // check for constants
           if(compareString(indexOfItems[i].itemCatalogName, strPtr, CMP_NAME) == 0) {
             return;
           }
@@ -1145,7 +1145,7 @@ static void _parseWord(char *strPtr, uint16_t parseMode, uint16_t parserHint, ch
           fnDrop(NOPARAM);
           return;
         }
-        for(uint32_t i = CST_01; i <= CST_82; ++i) { // check for constants
+        for(uint32_t i = FIRST_CONSTANT; i <= LAST_CONSTANT; ++i) { // check for constants
           if(compareString(indexOfItems[i].itemCatalogName, strPtr, CMP_NAME) == 0) {
             runFunction(i);
             _pushNumericStack(mvarBuffer, REGISTER_REAL34_DATA(REGISTER_X), const34_0);

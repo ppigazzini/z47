@@ -154,6 +154,7 @@ void expReal(void) {
 
   real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &x);
   realExp(&x, &x, &ctxtReal39);
+printRealToConsole(&x,"EXP:","\n");
   convertRealToReal34ResultRegister(&x, REGISTER_X);
   setRegisterAngularMode(REGISTER_X, amNone);
 }
