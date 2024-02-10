@@ -435,7 +435,7 @@ void real34ToDisplayString2(const real34_t *real34, char *displayString, int16_t
     if(checkForAndChange_(displayString, real34, &c_temp, &tol34,  STD_SQUARE_ROOT STD_SUB_2                   ,frontSpace)) return_fr;
 
     fnConstantR( 73 /*const_PHI    */,  &constNr, &c_temp);
-    if(checkForAndChange_(displayString, real34, &c_temp, &tol34,  indexOfItems[CST_01+constNr].itemCatalogName,frontSpace)) return_fr;
+    if(checkForAndChange_(displayString, real34, &c_temp, &tol34,  indexOfItems[FIRST_CONSTANT+constNr].itemCatalogName,frontSpace)) return_fr;
 
     realSquareRoot(const_5, &c_temp, &ctxtReal39);
     if(checkForAndChange_(displayString, real34, &c_temp, &tol34,   STD_SQUARE_ROOT STD_SUB_5,frontSpace))                   return_fr;

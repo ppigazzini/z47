@@ -1819,7 +1819,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
       else if(item >= ITM_X_P1 && item <= ITM_X_g6) {
         stringAppend(functionName, indexOfItemsXEQM + 8*(item-fnXEQMENUpos));
       }
-      else if(item >= CST_01 && item <= CST_79) {
+      else if(item >= FIRST_CONSTANT && item <= LAST_CONSTANT) {
         stringAppend(functionName,indexOfItems[abs(item)].itemSoftmenuName);
       }
       else if(item < LAST_ITEM && item != MNU_DYNAMIC) {

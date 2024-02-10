@@ -366,6 +366,10 @@ void generateAllConstants(void) {
 
   generateConstantArray("0",             "0"); c++;
 
+  generateConstantArray("BB",            "+3.566668367128895828373073810012662699038701534076244140e-01"); c++;   //  solution to equation 1.2 in https://arxiv.org/pdf/2309.05050.pdf : sqrt(36x+3) / 4 + sin(2 pi sqrt(12x+1) / 3) = 0
+  generateConstantArray("DeltaS",        "+2.414213562373095048801688724209698078569671875376948073e+00"); c++;   //  1+√2
+  generateConstantArray("movSofa",       "+2.219531668871970000000000000000000000000000000000000000e+00"); c++;   //  https://mathworld.wolfram.com/MovingSofaProblem.html. The moving sofa number is the result of a lot of equation solving
+
   // All the formulas are 100% exact conversion formulas
   generateConstantArray("PointToMm",     "+3.527777777777777777777777777777777777777777777777777778e-01"); // mm     = pt × 0.0254 / 72 × 1000
   generateConstantArray("InchToMm",      "+2.540000000000000000000000000000000000000000000000000000e+01"); // mm     = inch × 0.0254 × 1000

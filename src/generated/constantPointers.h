@@ -174,6 +174,9 @@
   extern const real_t * const const_minusInfinity;
   extern const real_t * const const_plusInfinity;
   extern const real_t * const const_0;
+  extern const real_t * const const_BB;
+  extern const real_t * const const_DeltaS;
+  extern const real_t * const const_movSofa;
   extern const real_t * const const_PointToMm;
   extern const real_t * const const_InchToMm;
   extern const real_t * const const_FtToM;
@@ -415,7 +418,7 @@
   extern const real34_t * const const34_2p32;
   extern const real34_t * const const34_maxDate;
   extern const real34_t * const const34_maxTime;
-#define NUMBER_OF_CONSTANTS_39   236
+#define NUMBER_OF_CONSTANTS_39   239
 #define NUMBER_OF_CONSTANTS_51   30
 #define NUMBER_OF_CONSTANTS_1071 1
 #define NUMBER_OF_CONSTANTS_34   44
