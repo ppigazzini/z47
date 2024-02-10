@@ -81,6 +81,7 @@ All the below: because both Last x and savestack does not work due to multiple s
 #include "mathematics/arg.h"
 #include "mathematics/changeSign.h"
 #include "mathematics/comparisonReals.h"
+#include "mathematics/conjugate.h"
 #include "mathematics/division.h"
 #include "mathematics/multiplication.h"
 #include "mathematics/round.h"
@@ -464,10 +465,11 @@ void fnMultiplySI(uint16_t multiplier) {
 static void cpxToStk(const real_t *real1, const real_t *real2, const bool_t sl) {
   if(sl == forcedLiftTheStack) setSystemFlag(FLAG_ASLIFT);
   liftStack();
-  reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
-  realToReal34(real1, REGISTER_REAL34_DATA(REGISTER_X));
-  realToReal34(real2, REGISTER_IMAG34_DATA(REGISTER_X));
-  adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
+//  reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
+//  realToReal34(real1, REGISTER_REAL34_DATA(REGISTER_X));
+//  realToReal34(real2, REGISTER_IMAG34_DATA(REGISTER_X));
+//  adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
+  convertComplexToResultRegister(real1, real2, REGISTER_X);
 }
 
 
@@ -499,8 +501,8 @@ void fn_cnst_op_aa(uint16_t unusedButMandatoryParameter) {
 
 
 void fn_cnst_op_a(uint16_t unusedButMandatoryParameter) {
-  cpxToStk(const_1on2, const_root3on2, !forcedLiftTheStack);
-  chsReal();
+  fn_cnst_op_aa(0);
+  conjCplx();
 }
 
 
