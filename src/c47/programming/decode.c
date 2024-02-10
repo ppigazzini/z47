@@ -753,8 +753,8 @@ static void _decodeOneStep(uint8_t *step, bool_t textVersion) {
     switch(indexOfItems[op].status & PTP_STATUS) {
       case PTP_NONE: {
         if(textVersion) {
-          if(CST_01 <= op && op <= CST_79) {
-            sprintf(nameOp, "%2i",op - CST_01 + 1);
+          if(FIRST_CONSTANT <= op && op <= LAST_CONSTANT) {
+            sprintf(nameOp, "%2i",op - FIRST_CONSTANT + 1);
             strcat(nameOp," ");
             strcat(nameOp,indexOfItems[op].itemCatalogName);
             strcat(nameOp," ");
@@ -767,7 +767,7 @@ static void _decodeOneStep(uint8_t *step, bool_t textVersion) {
         else if(op == ITM_op_j_pol) sprintf(nameOp,"op_%s" STD_SUB_SUN, COMPLEX_UNIT);
         if(nameOp[0] == 0) strcpy(nameOp,indexOfItems[op].itemCatalogName);
         if(indexOfItems[op].param == multiply || indexOfItems[op].param == divide) expandConversionName(nameOp);
-        sprintf(tmpString, "%s%s", (CST_01 <= op && op <= CST_79) ? "# " : "", nameOp);
+        sprintf(tmpString, "%s%s", (FIRST_CONSTANT <= op && op <= LAST_CONSTANT) ? "# " : "", nameOp);
         break;
       }
 
