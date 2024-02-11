@@ -1379,26 +1379,26 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
 
     decContextDefault(&ctxtReal51, DEC_INIT_DECQUAD);
     ctxtReal51.digits = 51;
-    ctxtReal39.emax   = 999999;
-    ctxtReal39.emin   = -999999;
+    ctxtReal51.emax   = 999999;
+    ctxtReal51.emin   = -999999;
     ctxtReal51.traps  = 0;
 
     decContextDefault(&ctxtReal75, DEC_INIT_DECQUAD);
     ctxtReal75.digits = 75;
-    ctxtReal39.emax   = 999999;
-    ctxtReal39.emin   = -999999;
+    ctxtReal75.emax   = 999999;
+    ctxtReal75.emin   = -999999;
     ctxtReal75.traps  = 0;
 
     decContextDefault(&ctxtReal1071,  DEC_INIT_DECQUAD);
     ctxtReal1071.digits = 1071;
-    ctxtReal39.emax   = 999999;
-    ctxtReal39.emin   = -999999;
+    ctxtReal1071.emax   = 999999;
+    ctxtReal1071.emin   = -999999;
     ctxtReal1071.traps  = 0;
 
     decContextDefault(&ctxtReal2139,  DEC_INIT_DECQUAD);
     ctxtReal2139.digits = 2139;
-    ctxtReal39.emax   = 999999;
-    ctxtReal39.emin   = -999999;
+    ctxtReal2139.emax   = 999999;
+    ctxtReal2139.emin   = -999999;
     ctxtReal2139.traps  = 0;
 
     resetOtherConfigurationStuff();
