@@ -30,6 +30,7 @@
 #include "items.h"
 #include "mathematics/comparisonReals.h"
 #include "mathematics/division.h"
+#include "mathematics/exp.h"
 #include "mathematics/matrix.h"
 #include "mathematics/power.h"
 #include "mathematics/toPolar.h"

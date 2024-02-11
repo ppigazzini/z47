@@ -167,7 +167,6 @@
   #define realCopyAbs(source, destination)                       decNumberCopyAbs         (destination, source)
   #define realDivide(operand1, operand2, res, ctxt)              decNumberDivide          (res, operand1, operand2, ctxt)
   #define realDivideRemainder(operand1, operand2, res, ctxt)     decNumberRemainder       (res, operand1, operand2, ctxt)
-  #define realExp(operand, res, ctxt)                            decNumberExp             (res, operand, ctxt)
   #define realFMA(factor1, factor2, term, res, ctxt)             decNumberFMA             (res, factor1,  factor2,  term, ctxt)
   #define realGetCoefficient(source, destination)                decNumberGetBCD          (source, (uint8_t *)(destination))
   //#define realGetExponent(source)                                ((source)->digits)

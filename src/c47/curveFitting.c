@@ -27,6 +27,7 @@
 #include "items.h"
 #include "longIntegerType.h"
 #include "mathematics/comparisonReals.h"
+#include "mathematics/exp.h"
 #include "mathematics/variance.h"
 #include "mathematics/xthRoot.h"
 #include "mathematics/wp34s.h"
