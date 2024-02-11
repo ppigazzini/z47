@@ -272,23 +272,9 @@ void resizeProgramMemory(uint16_t newSizeInBlocks) {
       }
     }
 
-    for(int i=0; i<=LAST_GLOBAL_REGISTER; i++) {
+    for(int i=FIRST_GLOBAL_REGISTER; i<=LAST_GLOBAL_REGISTER; i++) {
       if(globalRegister[i].pointerToRegisterData == block) {
         sprintf(tmpString, "Global register %02d data: %s (%u)", i, getDataTypeName(globalRegister[i].dataType, false, false), getRegisterFullSizeInBlocks(i));
-        return;
-      }
-    }
-
-    for(int i=0; i<NUMBER_OF_SAVED_STACK_REGISTERS; i++) {
-      if(savedStackRegister[i].pointerToRegisterData == block) {
-        sprintf(tmpString, "Saved stack register %d data: %s (%u)", i + FIRST_SAVED_STACK_REGISTER, getDataTypeName(savedStackRegister[i].dataType, false, false), getRegisterFullSizeInBlocks(i + FIRST_SAVED_STACK_REGISTER));
-        return;
-      }
-    }
-
-    for(int i=NUMBER_OF_SAVED_STACK_REGISTERS; i<NUMBER_OF_SAVED_STACK_REGISTERS + NUMBER_OF_TEMP_REGISTERS; i++) {
-      if(savedStackRegister[i].pointerToRegisterData == block) {
-        sprintf(tmpString, "Temporary register %d data: %s (%u)", i + FIRST_SAVED_STACK_REGISTER, getDataTypeName(savedStackRegister[i].dataType, false, false), getRegisterFullSizeInBlocks(i + FIRST_SAVED_STACK_REGISTER));
         return;
       }
     }
@@ -676,23 +662,13 @@ void resizeProgramMemory(uint16_t newSizeInBlocks) {
   }
 
   void ramDump(void) {
-    for(calcRegister_t regist=0; regist<FIRST_LOCAL_REGISTER; regist++) {
+    for(calcRegister_t regist=FIRST_GLOBAL_REGISTER; regist<=LAST_GLOBAL_REGISTER; regist++) {
       printf("Global register    %3u: dataPointer=(block %5u)     dataType=%2u=%s       tag=%2u=%s\n",
                                  regist,                 globalRegister[regist].pointerToRegisterData,
                                                                            globalRegister[regist].dataType,
                                                                                getDataTypeName(globalRegister[regist].dataType, false, true),
                                                                                             globalRegister[regist].tag,
                                                                                                 getRegisterTagName(regist, true));
-    }
-
-    for(calcRegister_t regist=0; regist<NUMBER_OF_SAVED_STACK_REGISTERS + NUMBER_OF_TEMP_REGISTERS; regist++) {
-      printf("SavStk register   %4u: dataPointer=(block %5u)     dataType=%2u=%s       tag=%2u=%s\n",
-                                regist + FIRST_SAVED_STACK_REGISTER,
-                                                        savedStackRegister[regist].pointerToRegisterData,
-                                                                          savedStackRegister[regist].dataType,
-                                                                              getDataTypeName(savedStackRegister[regist].dataType, false, true),
-                                                                                           savedStackRegister[regist].tag,
-                                                                                               getRegisterTagName(regist + FIRST_SAVED_STACK_REGISTER, true));
     }
 
     printf("\nallSubroutineLevels: numberOfSubroutineLevels=%u  ptrToSubroutineLevel0Data=%u\n", allSubroutineLevels.numberOfSubroutineLevels, allSubroutineLevels.ptrToSubroutineLevel0Data);

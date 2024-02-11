@@ -2823,26 +2823,27 @@ void fnShow_SCROLL(uint16_t fnShow_param) {                // Heavily modified b
     displayFormat = DF_ALL;
     displayFormatDigits = 0;
 
-    #define lowest_SHOW REGISTER_X //0                // Lowest register. Change to 0 for all registers, or use REGISTER_X
     switch(fnShow_param) {
       case NOPARAM:
       case 0:  SHOWregis = REGISTER_X;
                break;
-      case 1:  if(SHOWregis==9999) {SHOWregis = REGISTER_X;}
-               else
-               {
+      case 1:  if(SHOWregis == 9999) {
+                 SHOWregis = REGISTER_X;
+               }
+               else {
                  SHOWregis++;                         //Activated by KEY_UP
-                 if(SHOWregis > REGISTER_S) {
-                   SHOWregis = lowest_SHOW;
+                 if(SHOWregis > REGISTER_W) {
+                   SHOWregis = REGISTER_X;
                  }
                }
                break;
-      case 2:  if(SHOWregis==9999) {SHOWregis = REGISTER_X;}
-               else
-               {
+      case 2:  if(SHOWregis == 9999) {
+                 SHOWregis = REGISTER_X;
+               }
+               else {
                  SHOWregis--;                         //Activate by Key_DOWN
-                 if(SHOWregis < lowest_SHOW) {
-                   SHOWregis = REGISTER_S;
+                 if(SHOWregis < REGISTER_X) {
+                   SHOWregis = REGISTER_W;
                  }
                }
                break;

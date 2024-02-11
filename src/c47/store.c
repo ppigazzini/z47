@@ -41,8 +41,8 @@
 bool_t regInRange(uint16_t regist) {
   bool_t inRange = (
     (regist < FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters) ||
-    (regist >= FIRST_NAMED_VARIABLE && regist - FIRST_NAMED_VARIABLE < numberOfNamedVariables) ||
-    (regist >= FIRST_RESERVED_VARIABLE && regist <= LAST_RESERVED_VARIABLE));
+    (FIRST_NAMED_VARIABLE <= regist && regist < FIRST_NAMED_VARIABLE + numberOfNamedVariables) ||
+    (FIRST_RESERVED_VARIABLE <= regist && regist <= LAST_RESERVED_VARIABLE));
   #if defined(PC_BUILD)
     if(!inRange) {
       if(regist >= FIRST_LOCAL_REGISTER && regist <= LAST_LOCAL_REGISTER) {
@@ -65,7 +65,7 @@ bool_t regInRange(uint16_t regist) {
 }
 
 static bool_t _checkReadOnlyVariable(uint16_t regist) {
-  if(regist >= FIRST_RESERVED_VARIABLE && regist <= LAST_RESERVED_VARIABLE && allReservedVariables[regist - FIRST_RESERVED_VARIABLE].header.readOnly == 1) {
+  if(FIRST_RESERVED_VARIABLE <= regist && regist <= LAST_RESERVED_VARIABLE && allReservedVariables[regist - FIRST_RESERVED_VARIABLE].header.readOnly == 1) {
     displayCalcErrorMessage(ERROR_WRITE_PROTECTED_VAR, ERR_REGISTER_LINE, REGISTER_X);
     #if(EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "reserved variable %s", allReservedVariables[regist - FIRST_RESERVED_VARIABLE].reservedVariableName + 1);
@@ -192,7 +192,7 @@ static void _storeValue(uint16_t regist) {
       longIntegerFree(x);
     }
   }
-  else if(regist >= FIRST_RESERVED_VARIABLE && regist <= LAST_RESERVED_VARIABLE && allReservedVariables[regist - FIRST_RESERVED_VARIABLE].header.dataType == dtReal34) {
+  else if(FIRST_RESERVED_VARIABLE <= regist && regist <= LAST_RESERVED_VARIABLE && allReservedVariables[regist - FIRST_RESERVED_VARIABLE].header.dataType == dtReal34) {
     copySourceRegisterToDestRegister(REGISTER_X, TEMP_REGISTER_1);
     fnToReal(NOPARAM);
     if(lastErrorCode == ERROR_NONE) {
@@ -338,11 +338,11 @@ void fnStoreDiv(uint16_t regist) {
 void fnStoreMin(uint16_t regist) {
   if(_checkReadOnlyVariable(regist) && regInRange(regist)) {
     copySourceRegisterToDestRegister(REGISTER_X, SAVED_REGISTER_X);
-    if(regist >= FIRST_RESERVED_VARIABLE && regist < LAST_RESERVED_VARIABLE && allReservedVariables[regist - FIRST_RESERVED_VARIABLE].header.pointerToRegisterData == C47_NULL) {
+    if(FIRST_RESERVED_VARIABLE <= regist && regist < LAST_RESERVED_VARIABLE && allReservedVariables[regist - FIRST_RESERVED_VARIABLE].header.pointerToRegisterData == C47_NULL) {
       copySourceRegisterToDestRegister(regist, TEMP_REGISTER_1);
       regist = TEMP_REGISTER_1;
     }
-    else if(regist >= FIRST_RESERVED_VARIABLE && regist < LAST_RESERVED_VARIABLE && allReservedVariables[regist - FIRST_RESERVED_VARIABLE].header.pointerToRegisterData == C47_NULL) {
+    else if(FIRST_RESERVED_VARIABLE <= regist && regist < LAST_RESERVED_VARIABLE && allReservedVariables[regist - FIRST_RESERVED_VARIABLE].header.pointerToRegisterData == C47_NULL) {
       fnToReal(NOPARAM);
       if(lastErrorCode == ERROR_NONE) {
         copySourceRegisterToDestRegister(regist, TEMP_REGISTER_1);
@@ -359,11 +359,11 @@ void fnStoreMin(uint16_t regist) {
 void fnStoreMax(uint16_t regist) {
   if(_checkReadOnlyVariable(regist) && regInRange(regist)) {
     copySourceRegisterToDestRegister(REGISTER_X, SAVED_REGISTER_X);
-    if(regist >= FIRST_RESERVED_VARIABLE && regist < LAST_RESERVED_VARIABLE && allReservedVariables[regist - FIRST_RESERVED_VARIABLE].header.pointerToRegisterData == C47_NULL) {
+    if(FIRST_RESERVED_VARIABLE <= regist && regist < LAST_RESERVED_VARIABLE && allReservedVariables[regist - FIRST_RESERVED_VARIABLE].header.pointerToRegisterData == C47_NULL) {
       copySourceRegisterToDestRegister(regist, TEMP_REGISTER_1);
       regist = TEMP_REGISTER_1;
     }
-    else if(regist >= FIRST_RESERVED_VARIABLE && regist < LAST_RESERVED_VARIABLE && allReservedVariables[regist - FIRST_RESERVED_VARIABLE].header.pointerToRegisterData == C47_NULL) {
+    else if(FIRST_RESERVED_VARIABLE <= regist && regist < LAST_RESERVED_VARIABLE && allReservedVariables[regist - FIRST_RESERVED_VARIABLE].header.pointerToRegisterData == C47_NULL) {
       fnToReal(NOPARAM);
       if(lastErrorCode == ERROR_NONE) {
         copySourceRegisterToDestRegister(regist, TEMP_REGISTER_1);
@@ -509,7 +509,7 @@ void fnStoreVElement(uint16_t ix) {
   const int16_t iBak = getIRegisterAsInt(true);
   const int16_t jBak = getJRegisterAsInt(true);
   real_t rx;
-  
+
   if((getRegisterDataType(REGISTER_Y) == dtReal34Matrix) || (getRegisterDataType(REGISTER_Y) == dtComplex34Matrix)) {
     if (!getRegisterAsComplex(REGISTER_X, &rx, &rx) && !getRegisterAsReal(REGISTER_X, &rx)) {
       displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
@@ -549,7 +549,7 @@ void fnStoreVElement(uint16_t ix) {
 }
 
 void fnStoreElementPlus(uint16_t unusedButMandatoryParameter) {
-  _fnStoreElement(true);  
+  _fnStoreElement(true);
   temporaryInformation = TI_MIJ;
 }
 

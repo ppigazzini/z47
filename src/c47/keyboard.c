@@ -2617,6 +2617,76 @@ RELEASE_END:
                 rbr1stDigit = true;
                 currentRegisterBrowserScreen = REGISTER_L;
               }
+              else if(item == ITM_M) {
+                rbrMode = RBR_GLOBAL;
+                rbr1stDigit = true;
+                currentRegisterBrowserScreen = REGISTER_M;
+              }
+              else if(item == ITM_N) {
+                rbrMode = RBR_GLOBAL;
+                rbr1stDigit = true;
+                currentRegisterBrowserScreen = REGISTER_N;
+              }
+              else if(item == ITM_P) {
+                rbrMode = RBR_GLOBAL;
+                rbr1stDigit = true;
+                currentRegisterBrowserScreen = REGISTER_P;
+              }
+              else if(item == ITM_Q) {
+                rbrMode = RBR_GLOBAL;
+                rbr1stDigit = true;
+                currentRegisterBrowserScreen = REGISTER_Q;
+              }
+              else if(item == ITM_R) {
+                rbrMode = RBR_GLOBAL;
+                rbr1stDigit = true;
+                currentRegisterBrowserScreen = REGISTER_R;
+              }
+              else if(item == ITM_S) {
+                rbrMode = RBR_GLOBAL;
+                rbr1stDigit = true;
+                currentRegisterBrowserScreen = REGISTER_S;
+              }
+              else if(item == ITM_E) {
+                rbrMode = RBR_GLOBAL;
+                rbr1stDigit = true;
+                currentRegisterBrowserScreen = REGISTER_E;
+              }
+              else if(item == ITM_F) {
+                rbrMode = RBR_GLOBAL;
+                rbr1stDigit = true;
+                currentRegisterBrowserScreen = REGISTER_F;
+              }
+              else if(item == ITM_G) {
+                rbrMode = RBR_GLOBAL;
+                rbr1stDigit = true;
+                currentRegisterBrowserScreen = REGISTER_G;
+              }
+              else if(item == ITM_H) {
+                rbrMode = RBR_GLOBAL;
+                rbr1stDigit = true;
+                currentRegisterBrowserScreen = REGISTER_H;
+              }
+              else if(item == ITM_O) {
+                rbrMode = RBR_GLOBAL;
+                rbr1stDigit = true;
+                currentRegisterBrowserScreen = REGISTER_O;
+              }
+              else if(item == ITM_U) {
+                rbrMode = RBR_GLOBAL;
+                rbr1stDigit = true;
+                currentRegisterBrowserScreen = REGISTER_U;
+              }
+              else if(item == ITM_V) {
+                rbrMode = RBR_GLOBAL;
+                rbr1stDigit = true;
+                currentRegisterBrowserScreen = REGISTER_V;
+              }
+              else if(item == ITM_W) {
+                rbrMode = RBR_GLOBAL;
+                rbr1stDigit = true;
+                currentRegisterBrowserScreen = REGISTER_W;
+              }
 
               keyActionProcessed = true;
               break;

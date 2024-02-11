@@ -74,7 +74,7 @@ void fnGoto(uint16_t label) {
 
       displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
       #if(EXTRA_INFO_ON_CALC_ERROR == 1)
-        if(label < REGISTER_X) {
+        if(label < REGISTER_X_IN_KS_CODE) {
           sprintf(errorMessage, "there is no local label %02u in current program", label);
         }
         else {
@@ -119,11 +119,11 @@ void goToGlobalStep(int32_t step) {
     if(*labelName == 0) {
       return;
     }
-#if !defined(TESTSUITE_BUILD)
+    #if !defined(TESTSUITE_BUILD)
     if((softmenu[softmenuStack[0].softmenuId].menuItem != -MNU_PROG) && (softmenu[softmenuStack[0].softmenuId].menuItem != -MNU_PROGS)) {  // Don't apply the dupNum logic in configurable menus
       dupNum = 0;
     }
-#endif // !TESTSUITE_BUILD
+    #endif // !TESTSUITE_BUILD
 
     int16_t c, len = stringByteLength((char *)labelName);
     for(uint16_t lbl=0; lbl<numberOfLabels; lbl++) {
@@ -343,8 +343,8 @@ static void _getStringLabelOrVariableName(uint8_t *stringAddress) {
 
 static void _executeWithIndirectRegister(uint8_t *paramAddress, uint16_t op) {
   uint8_t opParam = *(uint8_t *)paramAddress;
-  if(opParam <= LAST_LOCAL_REGISTER) { // Local register from .00 to .98
-      int16_t realParam = indirectAddressing(opParam, (indexOfItems[op].param == TM_FLAGR || indexOfItems[op].param == TM_FLAGW) ? INDPM_FLAG : (indexOfItems[op].param == TM_STORCL || indexOfItems[op].param == TM_M_DIM) ? INDPM_REGISTER : INDPM_PARAM, indexOfItems[op].tamMinMax >> TAM_MAX_BITS, indexOfItems[op].tamMinMax & TAM_MAX_MASK);
+  if(opParam <= LAST_LOCAL_REGISTER_IN_KS_CODE) { // Local register from .00 to .98
+      int16_t realParam = indirectAddressing(regKStoC(opParam), (indexOfItems[op].param == TM_FLAGR || indexOfItems[op].param == TM_FLAGW) ? INDPM_FLAG : (indexOfItems[op].param == TM_STORCL || indexOfItems[op].param == TM_M_DIM) ? INDPM_REGISTER : INDPM_PARAM, indexOfItems[op].tamMinMax >> TAM_MAX_BITS, indexOfItems[op].tamMinMax & TAM_MAX_MASK);
       if(realParam < 9999) {
         reallyRunFunction(op, realParam);
       }
@@ -435,15 +435,15 @@ static void _executeOp(uint8_t *paramAddress, uint16_t op, uint16_t paramMode) {
           case FLAG_SOLVING:
           case FLAG_VMDISP:
           case FLAG_USB:
-            case FLAG_ENDPMT: {
+          case FLAG_ENDPMT: {
             reallyRunFunction(op, (uint16_t)(*paramAddress) | 0xc000);
             break;
-            }
-            default: {
+          }
+          default: {
             reallyRunFunction(op, (uint16_t)(*paramAddress) | 0x8000);
+          }
         }
       }
-        }
       else if(opParam == INDIRECT_REGISTER) {
         _executeWithIndirectRegister(paramAddress, op);
       }
@@ -498,8 +498,8 @@ static void _executeOp(uint8_t *paramAddress, uint16_t op, uint16_t paramMode) {
 
     case PARAM_REGISTER:
       case PARAM_COMPARE: {
-      if(opParam <= LAST_LOCAL_REGISTER) { // Global register from 00 to 99, Lettered register from X to K, or Local register from .00 to .98
-        reallyRunFunction(op, opParam);
+      if(opParam <= LAST_LOCAL_REGISTER_IN_KS_CODE) { // Global register from 00 to 99, Lettered register from X to K, or Local register from .00 to .98
+        reallyRunFunction(op, regKStoC(opParam));
       }
       else if(opParam == STRING_LABEL_VARIABLE) {
         _getStringLabelOrVariableName(paramAddress);

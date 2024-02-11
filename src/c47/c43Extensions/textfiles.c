@@ -113,19 +113,19 @@ void stackregister_csv_out(int16_t reg_b, int16_t reg_e, bool_t oneLine) {
       tmpString[0] = 0;
       tmp_b[0] = 0;
       tmp_e[0] = 0;
-      if(ix >= REGISTER_X && ix <= REGISTER_S) {
+      if(REGISTER_X <= ix && ix <= REGISTER_W) {
         tmp_b[1] = 0;
         tmp_b[0] = letteredRegisterName((calcRegister_t)ix);
         strcat(tmp_b, CSV_TAB);
         }
 
-      else if(ix >= 0 && ix <= 99) {
+      else if(FIRST_GLOBAL_REGISTER <= ix && ix < REGISTER_X) {
         sprintf(tmp_b, "%sR%02d%s%s", CSV_STR, ix, CSV_STR, CSV_TAB);
       }
-      else if(ix >= FIRST_LOCAL_REGISTER && ix <= LAST_LOCAL_REGISTER) {
+      else if(FIRST_LOCAL_REGISTER <= ix && ix <= LAST_LOCAL_REGISTER) {
         sprintf(tmp_b, "%sR.%03d%s%s", CSV_STR, ix-100, CSV_STR, CSV_TAB);
       }
-      else if(ix >= FIRST_NAMED_VARIABLE && ix <= LAST_NAMED_VARIABLE) {
+      else if(FIRST_NAMED_VARIABLE <= ix && ix <= LAST_NAMED_VARIABLE) {
         sprintf(tmp_b, "%sN%03d%s%s%s%s%s%s", CSV_STR, ix-100, CSV_STR, CSV_TAB, CSV_STR, (char *)allNamedVariables[ix - FIRST_NAMED_VARIABLE].variableName + 1, CSV_STR, CSV_TAB);
       }
 

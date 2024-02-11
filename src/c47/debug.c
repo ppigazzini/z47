@@ -1631,46 +1631,15 @@ void debugNIM(void) {
       gtk_widget_show(lbl1[row]);
       gtk_widget_show(lbl2[row++]);
 
-      for(int i=REGISTER_S; i>=REGISTER_I; i--) {
-        sprintf(string, "%3d %c %s %7d %7d", i, i-REGISTER_I+'I', getRegisterDataTypeName(i, false, true), TO_C47MEMPTR(getRegisterDataPointer(i)), TO_BYTES(getRegisterFullSizeInBlocks(i)));
+      for(int i=REGISTER_W; i>=REGISTER_X; i--) {
+        sprintf(string, "%3d %c %s %7d %7d", i, "XYZTABCDLIJKMNPQRSEFGHOUVW"[i-REGISTER_X], getRegisterDataTypeName(i, false, true), TO_C47MEMPTR(getRegisterDataPointer(i)), TO_BYTES(getRegisterFullSizeInBlocks(i)));
         gtk_label_set_label(GTK_LABEL(lbl1[row]), string);
         gtk_widget_show(lbl1[row]);
         debugRegisterValue(i, row++);
       }
-
-      for(int i=LAST_STAT_REGISTER; i>=FIRST_STAT_REGISTER; i--) {
-        sprintf(string, "%3d %c %s %7d %7d", i, "MNPQRS"[i-FIRST_STAT_REGISTER], getRegisterDataTypeName(i, false, true), TO_C47MEMPTR(getRegisterDataPointer(i)), TO_BYTES(getRegisterFullSizeInBlocks(i)));
-        gtk_label_set_label(GTK_LABEL(lbl1[row]), string);
-        gtk_widget_show(lbl1[row]);
-        debugRegisterValue(i, row++);
-      }
-
-      for(int i=REGISTER_D; i>=REGISTER_A; i--) {
-        sprintf(string, "%3d %c %s %7d %7d", i, i-REGISTER_A+'A', getRegisterDataTypeName(i, false, true), TO_C47MEMPTR(getRegisterDataPointer(i)), TO_BYTES(getRegisterFullSizeInBlocks(i)));
-        gtk_label_set_label(GTK_LABEL(lbl1[row]), string);
-        gtk_widget_show(lbl1[row]);
-        debugRegisterValue(i, row++);
-      }
-
-      sprintf(string, "103 T %s %7d %7d", getRegisterDataTypeName(REGISTER_T, false, true), TO_C47MEMPTR(getRegisterDataPointer(REGISTER_T)), TO_BYTES(getRegisterFullSizeInBlocks(REGISTER_T)));
-      gtk_label_set_label(GTK_LABEL(lbl1[row]), string);
-      gtk_widget_show(lbl1[row]);
-      debugRegisterValue(REGISTER_T, row++);
-
-      for(int i=REGISTER_Z; i>=REGISTER_X; i--) {
-        sprintf(string, "%3d %c %s %7d %7d", i, i-REGISTER_X+'X', getRegisterDataTypeName(i, false, true), TO_C47MEMPTR(getRegisterDataPointer(i)), TO_BYTES(getRegisterFullSizeInBlocks(i)));
-        gtk_label_set_label(GTK_LABEL(lbl1[row]), string);
-        gtk_widget_show(lbl1[row]);
-        debugRegisterValue(i, row++);
-      }
-
-      sprintf(string, "108 L %s %7d %7d", getRegisterDataTypeName(REGISTER_L, false, true), TO_C47MEMPTR(getRegisterDataPointer(REGISTER_L)), TO_BYTES(getRegisterFullSizeInBlocks(REGISTER_L)));
-      gtk_label_set_label(GTK_LABEL(lbl1[row]), string);
-      gtk_widget_show(lbl1[row]);
-      debugRegisterValue(REGISTER_L, row++);
 
       row++;
-      for(int i=0; i<100; i++) {
+      for(int i=FIRST_GLOBAL_REGISTER; i<REGISTER_X; i++) {
         if(row < DEBUG_LINES) {
           sprintf(string, "  %02d  %s %7d %7d", i, getRegisterDataTypeName(i, false, true), TO_C47MEMPTR(getRegisterDataPointer(i)), TO_BYTES(getRegisterFullSizeInBlocks(i)));
           gtk_label_set_label(GTK_LABEL(lbl1[row]), string);
@@ -1991,7 +1960,7 @@ void debugNIM(void) {
       gtk_widget_show(lbl1[row]);
       gtk_widget_show(lbl2[row++]);
 
-      for(uint16_t i=1000; i<1000 + numberOfNamedVariables; i++) {
+      for(uint16_t i=FIRST_NAMED_VARIABLE; i<FIRST_NAMED_VARIABLE + numberOfNamedVariables; i++) {
         if(row < DEBUG_LINES) {
           sprintf(string, "%03d   %s %7d %7d", i-FIRST_NAMED_VARIABLE, getRegisterDataTypeName(i, false, true), TO_C47MEMPTR(getRegisterDataPointer(i)), TO_BYTES(getRegisterFullSizeInBlocks(i)));
           gtk_label_set_label(GTK_LABEL(lbl1[row]), string);
@@ -2339,55 +2308,95 @@ void debugNIM(void) {
       printf(" S  %4d           %2u=%s %5u=%s %5u   %5d       ", regist, dataType, getDataTypeName(dataType, false, true), globalRegister[regist].tag, getRegisterTagName(regist, true), globalRegister[regist].pointerToRegisterData, TO_BYTES(getRegisterFullSizeInBlocks(regist)));
       printRegisterToConsole(regist, "", "\n");
 
+      regist = REGISTER_E;
+      dataType = globalRegister[regist].dataType;
+      printf(" E  %4d           %2u=%s %5u=%s %5u   %5d       ", regist, dataType, getDataTypeName(dataType, false, true), globalRegister[regist].tag, getRegisterTagName(regist, true), globalRegister[regist].pointerToRegisterData, TO_BYTES(getRegisterFullSizeInBlocks(regist)));
+      printRegisterToConsole(regist, "", "\n");
+
+      regist = REGISTER_F;
+      dataType = globalRegister[regist].dataType;
+      printf(" F  %4d           %2u=%s %5u=%s %5u   %5d       ", regist, dataType, getDataTypeName(dataType, false, true), globalRegister[regist].tag, getRegisterTagName(regist, true), globalRegister[regist].pointerToRegisterData, TO_BYTES(getRegisterFullSizeInBlocks(regist)));
+      printRegisterToConsole(regist, "", "\n");
+
+      regist = REGISTER_G;
+      dataType = globalRegister[regist].dataType;
+      printf(" G  %4d           %2u=%s %5u=%s %5u   %5d       ", regist, dataType, getDataTypeName(dataType, false, true), globalRegister[regist].tag, getRegisterTagName(regist, true), globalRegister[regist].pointerToRegisterData, TO_BYTES(getRegisterFullSizeInBlocks(regist)));
+      printRegisterToConsole(regist, "", "\n");
+
+      regist = REGISTER_H;
+      dataType = globalRegister[regist].dataType;
+      printf(" H  %4d           %2u=%s %5u=%s %5u   %5d       ", regist, dataType, getDataTypeName(dataType, false, true), globalRegister[regist].tag, getRegisterTagName(regist, true), globalRegister[regist].pointerToRegisterData, TO_BYTES(getRegisterFullSizeInBlocks(regist)));
+      printRegisterToConsole(regist, "", "\n");
+
+      regist = REGISTER_O;
+      dataType = globalRegister[regist].dataType;
+      printf(" O  %4d           %2u=%s %5u=%s %5u   %5d       ", regist, dataType, getDataTypeName(dataType, false, true), globalRegister[regist].tag, getRegisterTagName(regist, true), globalRegister[regist].pointerToRegisterData, TO_BYTES(getRegisterFullSizeInBlocks(regist)));
+      printRegisterToConsole(regist, "", "\n");
+
+      regist = REGISTER_U;
+      dataType = globalRegister[regist].dataType;
+      printf(" U  %4d           %2u=%s %5u=%s %5u   %5d       ", regist, dataType, getDataTypeName(dataType, false, true), globalRegister[regist].tag, getRegisterTagName(regist, true), globalRegister[regist].pointerToRegisterData, TO_BYTES(getRegisterFullSizeInBlocks(regist)));
+      printRegisterToConsole(regist, "", "\n");
+
+      regist = REGISTER_V;
+      dataType = globalRegister[regist].dataType;
+      printf(" V  %4d           %2u=%s %5u=%s %5u   %5d       ", regist, dataType, getDataTypeName(dataType, false, true), globalRegister[regist].tag, getRegisterTagName(regist, true), globalRegister[regist].pointerToRegisterData, TO_BYTES(getRegisterFullSizeInBlocks(regist)));
+      printRegisterToConsole(regist, "", "\n");
+
+      regist = REGISTER_W;
+      dataType = globalRegister[regist].dataType;
+      printf(" W  %4d           %2u=%s %5u=%s %5u   %5d       ", regist, dataType, getDataTypeName(dataType, false, true), globalRegister[regist].tag, getRegisterTagName(regist, true), globalRegister[regist].pointerToRegisterData, TO_BYTES(getRegisterFullSizeInBlocks(regist)));
+      printRegisterToConsole(regist, "", "\n");
+
 
 
       printf("----------------------------------------------------------------------------------------------------------------------------------------\n");
 
       regist = SAVED_REGISTER_X;
-      dataType = savedStackRegister[regist - SAVED_REGISTER_X].dataType;
-      printf("SX  %4d           %2u=%s %5u=%s %5u   %5d       ", regist, dataType, getDataTypeName(dataType, false, true), savedStackRegister[regist - SAVED_REGISTER_X].tag, getRegisterTagName(regist, true), savedStackRegister[regist - SAVED_REGISTER_X].pointerToRegisterData, TO_BYTES(getRegisterFullSizeInBlocks(regist)));
+      dataType = globalRegister[regist].dataType;
+      printf("SX  %4d           %2u=%s %5u=%s %5u   %5d       ", regist, dataType, getDataTypeName(dataType, false, true), globalRegister[regist].tag, getRegisterTagName(regist, true), globalRegister[regist].pointerToRegisterData, TO_BYTES(getRegisterFullSizeInBlocks(regist)));
       printRegisterToConsole(regist, "", "\n");
 
       regist = SAVED_REGISTER_Y;
-      dataType = savedStackRegister[regist - SAVED_REGISTER_X].dataType;
-      printf("SY  %4d           %2u=%s %5u=%s %5u   %5d       ", regist, dataType, getDataTypeName(dataType, false, true), savedStackRegister[regist - SAVED_REGISTER_X].tag, getRegisterTagName(regist, true), savedStackRegister[regist - SAVED_REGISTER_X].pointerToRegisterData, TO_BYTES(getRegisterFullSizeInBlocks(regist)));
+      dataType = globalRegister[regist].dataType;
+      printf("SY  %4d           %2u=%s %5u=%s %5u   %5d       ", regist, dataType, getDataTypeName(dataType, false, true), globalRegister[regist].tag, getRegisterTagName(regist, true), globalRegister[regist].pointerToRegisterData, TO_BYTES(getRegisterFullSizeInBlocks(regist)));
       printRegisterToConsole(regist, "", "\n");
 
       regist = SAVED_REGISTER_Z;
-      dataType = savedStackRegister[regist - SAVED_REGISTER_X].dataType;
-      printf("SZ  %4d           %2u=%s %5u=%s %5u   %5d       ", regist, dataType, getDataTypeName(dataType, false, true), savedStackRegister[regist - SAVED_REGISTER_X].tag, getRegisterTagName(regist, true), savedStackRegister[regist - SAVED_REGISTER_X].pointerToRegisterData, TO_BYTES(getRegisterFullSizeInBlocks(regist)));
+      dataType = globalRegister[regist].dataType;
+      printf("SZ  %4d           %2u=%s %5u=%s %5u   %5d       ", regist, dataType, getDataTypeName(dataType, false, true), globalRegister[regist].tag, getRegisterTagName(regist, true), globalRegister[regist].pointerToRegisterData, TO_BYTES(getRegisterFullSizeInBlocks(regist)));
       printRegisterToConsole(regist, "", "\n");
 
       regist = SAVED_REGISTER_T;
-      dataType = savedStackRegister[regist - SAVED_REGISTER_X].dataType;
-      printf("ST  %4d           %2u=%s %5u=%s %5u   %5d       ", regist, dataType, getDataTypeName(dataType, false, true), savedStackRegister[regist - SAVED_REGISTER_X].tag, getRegisterTagName(regist, true), savedStackRegister[regist - SAVED_REGISTER_X].pointerToRegisterData, TO_BYTES(getRegisterFullSizeInBlocks(regist)));
+      dataType = globalRegister[regist].dataType;
+      printf("ST  %4d           %2u=%s %5u=%s %5u   %5d       ", regist, dataType, getDataTypeName(dataType, false, true), globalRegister[regist].tag, getRegisterTagName(regist, true), globalRegister[regist].pointerToRegisterData, TO_BYTES(getRegisterFullSizeInBlocks(regist)));
       printRegisterToConsole(regist, "", "\n");
 
       printf("----------------------------------------------------------------------------------------------------------------------------------------\n");
 
       regist = SAVED_REGISTER_A;
-      dataType = savedStackRegister[regist - SAVED_REGISTER_X].dataType;
-      printf("SA  %4d           %2u=%s %5u=%s %5u   %5d       ", regist, dataType, getDataTypeName(dataType, false, true), savedStackRegister[regist - SAVED_REGISTER_X].tag, getRegisterTagName(regist, true), savedStackRegister[regist - SAVED_REGISTER_X].pointerToRegisterData, TO_BYTES(getRegisterFullSizeInBlocks(regist)));
+      dataType = globalRegister[regist].dataType;
+      printf("SA  %4d           %2u=%s %5u=%s %5u   %5d       ", regist, dataType, getDataTypeName(dataType, false, true), globalRegister[regist].tag, getRegisterTagName(regist, true), globalRegister[regist].pointerToRegisterData, TO_BYTES(getRegisterFullSizeInBlocks(regist)));
       printRegisterToConsole(regist, "", "\n");
 
       regist = SAVED_REGISTER_B;
-      dataType = savedStackRegister[regist - SAVED_REGISTER_X].dataType;
-      printf("SB  %4d           %2u=%s %5u=%s %5u   %5d       ", regist, dataType, getDataTypeName(dataType, false, true), savedStackRegister[regist - SAVED_REGISTER_X].tag, getRegisterTagName(regist, true), savedStackRegister[regist - SAVED_REGISTER_X].pointerToRegisterData, TO_BYTES(getRegisterFullSizeInBlocks(regist)));
+      dataType = globalRegister[regist].dataType;
+      printf("SB  %4d           %2u=%s %5u=%s %5u   %5d       ", regist, dataType, getDataTypeName(dataType, false, true), globalRegister[regist].tag, getRegisterTagName(regist, true), globalRegister[regist].pointerToRegisterData, TO_BYTES(getRegisterFullSizeInBlocks(regist)));
       printRegisterToConsole(regist, "", "\n");
 
       regist = SAVED_REGISTER_C;
-      dataType = savedStackRegister[regist - SAVED_REGISTER_X].dataType;
-      printf("SC  %4d           %2u=%s %5u=%s %5u   %5d       ", regist, dataType, getDataTypeName(dataType, false, true), savedStackRegister[regist - SAVED_REGISTER_X].tag, getRegisterTagName(regist, true), savedStackRegister[regist - SAVED_REGISTER_X].pointerToRegisterData, TO_BYTES(getRegisterFullSizeInBlocks(regist)));
+      dataType = globalRegister[regist].dataType;
+      printf("SC  %4d           %2u=%s %5u=%s %5u   %5d       ", regist, dataType, getDataTypeName(dataType, false, true), globalRegister[regist].tag, getRegisterTagName(regist, true), globalRegister[regist].pointerToRegisterData, TO_BYTES(getRegisterFullSizeInBlocks(regist)));
       printRegisterToConsole(regist, "", "\n");
 
       regist = SAVED_REGISTER_D;
-      dataType = savedStackRegister[regist - SAVED_REGISTER_X].dataType;
-      printf("SD  %4d           %2u=%s %5u=%s %5u   %5d       ", regist, dataType, getDataTypeName(dataType, false, true), savedStackRegister[regist - SAVED_REGISTER_X].tag, getRegisterTagName(regist, true), savedStackRegister[regist - SAVED_REGISTER_X].pointerToRegisterData, TO_BYTES(getRegisterFullSizeInBlocks(regist)));
+      dataType = globalRegister[regist].dataType;
+      printf("SD  %4d           %2u=%s %5u=%s %5u   %5d       ", regist, dataType, getDataTypeName(dataType, false, true), globalRegister[regist].tag, getRegisterTagName(regist, true), globalRegister[regist].pointerToRegisterData, TO_BYTES(getRegisterFullSizeInBlocks(regist)));
       printRegisterToConsole(regist, "", "\n");
 
       regist = SAVED_REGISTER_L;
-      dataType = savedStackRegister[regist - SAVED_REGISTER_X].dataType;
-      printf("SL  %4d           %2u=%s %5u=%s %5u   %5d       ", regist, dataType, getDataTypeName(dataType, false, true), savedStackRegister[regist - SAVED_REGISTER_X].tag, getRegisterTagName(regist, true), savedStackRegister[regist - SAVED_REGISTER_X].pointerToRegisterData, TO_BYTES(getRegisterFullSizeInBlocks(regist)));
+      dataType = globalRegister[regist].dataType;
+      printf("SL  %4d           %2u=%s %5u=%s %5u   %5d       ", regist, dataType, getDataTypeName(dataType, false, true), globalRegister[regist].tag, getRegisterTagName(regist, true), globalRegister[regist].pointerToRegisterData, TO_BYTES(getRegisterFullSizeInBlocks(regist)));
       printRegisterToConsole(regist, "", "\n");
   //  }
   }

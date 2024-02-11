@@ -2399,14 +2399,30 @@
 #define ITM_REG_Q                   2339
 #define ITM_REG_R                   2340
 #define ITM_REG_S                   2341
-#define VAR_REGM                    2342
-#define VAR_REGN                    2343
-#define VAR_REGP                    2344
-#define VAR_REGQ                    2345
-#define VAR_REGR                    2346
-#define VAR_REGS                    2347
+#define ITM_REG_E                   2342
+#define ITM_REG_F                   2343
+#define ITM_REG_G                   2344
+#define ITM_REG_H                   2345
+#define ITM_REG_O                   2346
+#define ITM_REG_U                   2347
+#define ITM_REG_V                   2348
+#define ITM_REG_W                   2349
+#define VAR_REGM                    2350
+#define VAR_REGN                    2351
+#define VAR_REGP                    2352
+#define VAR_REGQ                    2353
+#define VAR_REGR                    2354
+#define VAR_REGS                    2355
+#define VAR_REGE                    2356
+#define VAR_REGF                    2357
+#define VAR_REGG                    2358
+#define VAR_REGH                    2359
+#define VAR_REGO                    2360
+#define VAR_REGU                    2361
+#define VAR_REGV                    2362
+#define VAR_REGW                    2363
 
-#define LAST_ITEM                   2348
+#define LAST_ITEM                   2364
 
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL
