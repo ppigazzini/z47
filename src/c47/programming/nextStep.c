@@ -319,7 +319,7 @@ static void _showStep(void) {
     int16_t xPos = (lblOrEnd ? 42 : 62);
     int16_t maxWidth = SCREEN_WIDTH - xPos;
 
-    lcd_fill_rect(1, Y_POSITION_OF_REGISTER_T_LINE, xPos+1,  REGISTER_LINE_HEIGHT, LCD_SET_VALUE);
+//    lcd_fill_rect(1, Y_POSITION_OF_REGISTER_T_LINE, xPos+1,  REGISTER_LINE_HEIGHT, LCD_SET_VALUE);
     sprintf(tmpString, "%04" PRIu16 ":" STD_SPACE_4_PER_EM, currentLocalStepNumber);
     showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_T_LINE + 6, vmNormal, true, true);
 
@@ -345,7 +345,7 @@ static void _showStep(void) {
       xstrOrig[1] = STD_ELLIPSIS[1];
       xstrOrig[2] = 0;
     }
-    lcd_fill_rect(xPos, Y_POSITION_OF_REGISTER_T_LINE, stringWidth(tmpString, &standardFont, true, true)+20,  REGISTER_LINE_HEIGHT, LCD_SET_VALUE);
+//    lcd_fill_rect(xPos, Y_POSITION_OF_REGISTER_T_LINE, stringWidth(tmpString, &standardFont, true, true)+20,  REGISTER_LINE_HEIGHT, LCD_SET_VALUE);
     showString(tmpString, &standardFont, xPos, Y_POSITION_OF_REGISTER_T_LINE + 6, vmNormal, true, true);
   #endif // !TESTSUITE_BUILD
 }

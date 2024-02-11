@@ -246,6 +246,7 @@ void fnReturn(uint16_t skip) {
   /* Cancel INPUT */
   if(currentInputVariable != INVALID_VARIABLE) {
     currentInputVariable = INVALID_VARIABLE;
+    screenUpdatingMode = SCRUPD_AUTO; // &= ~SCRUPD_MANUAL_STATUSBAR;
     refreshScreen(3);
     #if defined(DMCP_BUILD)
       lcd_refresh();
@@ -791,13 +792,7 @@ void runProgram(bool_t singleStep, uint16_t menuLabel) {
   programRunStop = PGM_RUNNING;
   if(!getSystemFlag(FLAG_INTING) && !getSystemFlag(FLAG_SOLVING)) {
     showHideHourGlass();
-    screenUpdatingMode = SCRUPD_AUTO; // &= ~SCRUPD_MANUAL_STATUSBAR;
-    refreshScreen(5);
-    #if defined(DMCP_BUILD)
-      lcd_refresh();
-    #else // !DMCP_BUILD
-      refreshLcd(NULL);
-    #endif // DMCP_BUILD
+    screenUpdatingMode = SCRUPD_AUTO;
   }
 
   if(menuLabel != INVALID_VARIABLE) {
@@ -850,6 +845,7 @@ void runProgram(bool_t singleStep, uint16_t menuLabel) {
         key = convertKeyCode(key);
         if(key == 36 || key == 33) {  //JM
           programRunStop = PGM_WAITING;
+          screenUpdatingMode = SCRUPD_AUTO;
           refreshScreen(1);
           lcd_refresh();
           fnTimerStart(TO_KB_ACTV, TO_KB_ACTV, PROGRAM_KB_ACTV);
@@ -868,9 +864,7 @@ void runProgram(bool_t singleStep, uint16_t menuLabel) {
     if(singleStep) {
       break;
     }
-    #if defined(PC_BUILD)
-      refreshLcd(NULL);
-    #endif // PC_BUILD
+    screenUpdatingMode = SCRUPD_AUTO;
   }
 
 stopProgram:
@@ -882,15 +876,10 @@ stopProgram:
   }
   if(!getSystemFlag(FLAG_INTING) && !getSystemFlag(FLAG_SOLVING)) {
     showHideHourGlass();
-    if(screenUpdatingMode == SCRUPD_AUTO) {
+    if(screenUpdatingMode == SCRUPD_AUTO && !singleStep) {
+      //screenUpdatingMode = SCRUPD_AUTO;
       refreshScreen(4);
     }
-    #if defined(DMCP_BUILD)
-      lcd_refresh();
-      fnTimerStart(TO_KB_ACTV, TO_KB_ACTV, PROGRAM_STOP);
-    #else // !DMCP_BUILD
-      refreshLcd(NULL);
-    #endif // DMCP_BUILD
   }
   return;
   #endif // !TESTSUITE_BUILD
