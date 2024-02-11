@@ -28,6 +28,8 @@
 
 #define MODEL USER_C47               // USER_C47 or USER_R47
 
+// The number of elements in an array
+#define NELEM(a)                             (sizeof(a) / sizeof(*(a)))
 
 
   #undef SAVE_SPACE_DM42_0

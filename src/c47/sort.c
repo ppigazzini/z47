@@ -44,7 +44,8 @@ static TO_QSPI struct {
   UNSUBRANGE(STD_SUP_0, STD_SUP_9, '0'),
   UNSUBRANGE(STD_SUB_A, STD_SUB_Z, 'A'),
   UNSUBRANGE(STD_SUB_a, STD_SUB_z, 'a'),
-  UNSUBRANGE(STD_SUB_0, STD_SUB_9, '0'),
+  UNSUBRANGE(STD_SUB_0, STD_SUB_9, '0')
+#undef UNSUBRANGE
 };
 
 static TO_QSPI uint16_t unSupSubTable[] = {
@@ -65,10 +66,11 @@ static TO_QSPI uint16_t unSupSubTable[] = {
 };
 
 static uint16_t _charCodeUnSupSub(uint16_t charCode) {
-  for(unsigned int i = 0; i < sizeof(unSupSubRanges) / sizeof(*unSupSubRanges); i++)
+  for(unsigned int i = 0; i < NELEM(unSupSubRanges); i++)
     if(charCode >= unSupSubRanges[i].low && charCode < unSupSubRanges[i].low + unSupSubRanges[i].num)
       return charCode - unSupSubRanges[i].low + unSupSubRanges[i].base;
-  for(unsigned int i = 0; i < sizeof(unSupSubTable) / sizeof(*unSupSubTable); i += 2) {
+
+  for(unsigned int i = 0; i < NELEM(unSupSubTable); i += 2) {
     if(charCode == unSupSubTable[i]) {
       return unSupSubTable[i + 1];
     }
