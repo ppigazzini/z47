@@ -454,6 +454,7 @@ void fnFreeMemory(uint16_t unusedButMandatoryParameter) {
   uIntToLongInteger(getFreeRamMemory(), mem);
   convertLongIntegerToLongIntegerRegister(mem, REGISTER_X);
   longIntegerFree(mem);
+  temporaryInformation = TI_MEM;
 }
 
 
@@ -582,7 +583,7 @@ void fnBatteryVoltage(uint16_t unusedButMandatoryParameter) {
     int32ToReal(get_vbat(), &value);
   #endif // DMCP_BUILD
 
-  temporaryInformation = TI_V;
+  temporaryInformation = TI_BATTV;
   realDivide(&value, const_1000, &value, &ctxtReal39);
   convertRealToResultRegister(&value, REGISTER_X, amNone);
 }
