@@ -990,13 +990,8 @@ void WP34S_Ln1P(const real_t *x, real_t *res, realContext_t *realContext) {
 void WP34S_ExpM1(const real_t *x, real_t *res, realContext_t *realContext) {
   real_t u, v, w;
 
-  if(realIsInfinite(x)) {
-    if(realIsPositive(x)) {
-      realCopy(const_plusInfinity, res);
-    }
-    else {
-      realCopy(const__1, res);
-    }
+  if (!realExpLimitCheck(x, res, const__1)) {
+    return;
   }
 
   realExp(x, &u, realContext);
@@ -1004,15 +999,15 @@ void WP34S_ExpM1(const real_t *x, real_t *res, realContext_t *realContext) {
   if(realIsZero(&v)) { // |x| is very little
     realCopy(x, res);
   }
-  else {
-    if(realCompareEqual(&v, const__1)) {
-      realCopy(const__1, res);
-    }
-    else {
-      realMultiply(&v, x, &w, realContext);
-      WP34S_Ln(&u, &v, realContext);
-      realDivide(&w, &v, res, realContext);
-    }
+  else if(realCompareEqual(&v, const__1)) {
+    realCopy(const__1, res);
+  }
+  else if (realCompareAbsLessThan(x, const_1on10)) {
+    realMultiply(&v, x, &w, realContext);
+    WP34S_Ln(&u, &v, realContext);
+    realDivide(&w, &v, res, realContext);
+  } else {
+    realCopy(&v, res);
   }
 }
 

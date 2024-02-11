@@ -1598,6 +1598,7 @@ bool_t allowShiftsToClearError = false;
       uint8_t itm2a;
       uint8_t itm3;
       uint8_t itm4;
+      uint8_t itm5;
     } circ_t;
     uint8_t circPtr0 =  0;
     uint8_t circPtr1 = 0;
@@ -1605,58 +1606,92 @@ bool_t allowShiftsToClearError = false;
     uint8_t circPtr2a = 0;
     uint8_t circPtr3 = 0;
     uint8_t circPtr4 = 0;
+    uint8_t circPtr5 = 0;
     TO_QSPI const circ_t circ[] = {
-                  {7 , 7 , 2 , 23, 2 , 2 },   //0
-                  {18, 20, 23, 23, 23, 23},   //1
-                  {30, 30, 18, 18, 18, 18},   //2
-                  {24, 24, 12, 12, 9 , 20},   //3
-                  {12, 12, 29, 29, 13, 9 },   //4
-                  {28, 28, 33, 33, 0,  0 },   //5
-                  {20, 20, 29, 29, 0 , 0 },   //6
-                  {18, 18, 30, 30, 0 , 0 },   //7
-                  {29, 29, 0 , 0 , 0 , 0 },   //8
-                  {0 , 0 , 0 , 0 , 0 , 0 },   //9
+                  {7 , 7 , 2 , 23, 2 , 2 , 2 },   //0
+                  {18, 20, 23, 23, 23, 23, 23},   //1
+                  {30, 30, 18, 18, 18, 18, 18},   //2
+                  {24, 24, 12, 12, 9 , 20, 13},   //3
+                  {12, 12, 29, 29, 13, 9 , 4 },   //4
+                  {28, 28, 33, 33, 0,  0 , 14},   //5
+                  {20, 20, 29, 29, 0 , 0 , 24},   //6
+                  {18, 18, 30, 30, 0 , 0 , 0 },   //7
+                  {29, 29, 0 , 0 , 0 , 0 , 0 },   //8
+                  {0 , 0 , 0 , 0 , 0 , 0 , 0 },   //9
                 };
+
     bool_t checkNumber(uint8_t keyCode) {
-      if((circPtr0 == 0 && keyCode==7) || circPtr0 > nbrOfElements(circ)) circPtr0 = 0;
-      if(circ[circPtr0].itm0==keyCode) circPtr0++; else circPtr0 = 0;
-      if(circPtr0 == 9 && keyCode==29) {
-        fnSetHP35(0);
-        return true;
+      if(calcModel == USER_C47) {
+        if((circPtr0 == 0 && circ[0].itm0==keyCode) || circPtr0 > nbrOfElements(circ)) circPtr0 = 0;
+        if(circ[circPtr0].itm0==keyCode) {
+          if(circ[++circPtr0].itm0==0) {
+            fnSetHP35(0);
+            return true;
+          }
+        } else {
+          circPtr0 = 0;
+        }
+        if((circPtr2 == 0 && circ[0].itm2==keyCode) || circPtr2 > nbrOfElements(circ)) circPtr2 = 0;
+        if(circ[circPtr2].itm2==keyCode) {
+          if(circ[++circPtr2].itm2==0) {
+            fnSetC47(0);
+            return true;
+          }
+        } else {
+          circPtr2 = 0;          
+        }
       }
-      if((circPtr1 == 0 && keyCode==7) || circPtr1 > nbrOfElements(circ)) circPtr1 = 0;
-      if(circ[circPtr1].itm1==keyCode) circPtr1++; else circPtr1 = 0;
-      if(circPtr1 == 9 && keyCode==29) {
-        fnSetHP35(0);
-        return true;
+      if(calcModel == USER_R47) {
+        if((circPtr1 == 0 && circ[0].itm1==keyCode) || circPtr1 > nbrOfElements(circ)) circPtr1 = 0;
+        if(circ[circPtr1].itm1==keyCode) {
+          if(circ[++circPtr1].itm1==0) {
+            fnSetHP35(0);
+            return true;
+          }
+        } else {
+          circPtr1 = 0;          
+        }
+        if((circPtr2a == 0 && circ[0].itm2a==keyCode) || circPtr2a > nbrOfElements(circ)) circPtr2a = 0;
+        if(circ[circPtr2a].itm2a==keyCode) {
+          if(circ[++circPtr2a].itm2a==0) {
+            fnSetC47(0);
+            return true;
+          }
+        } else {
+          circPtr2a = 0;          
+        }
       }
-      if((circPtr2 == 0 && keyCode==2) || circPtr2 > nbrOfElements(circ)) circPtr2 = 0;
-      if(circ[circPtr2].itm2==keyCode) circPtr2++; else circPtr2 = 0;
-      if(circPtr2 == 8 && keyCode==30) {
-        fnSetC47(0);
-        return true;
+
+      if((circPtr3 == 0 && circ[0].itm3==keyCode) || circPtr3 > nbrOfElements(circ)) circPtr3 = 0;
+      if(circ[circPtr3].itm3==keyCode) {
+        if(circ[++circPtr3].itm3==0) {
+          fnSetJM(0);
+          return true;
+        }
+      } else {
+        circPtr3 = 0;        
       }
-      if((circPtr2a == 0 && keyCode==2) || circPtr2a > nbrOfElements(circ)) circPtr2a = 0;
-      if(circ[circPtr2a].itm2a==keyCode) circPtr2a++; else circPtr2a = 0;
-      if(circPtr2a == 8 && keyCode==30) {
-        fnSetC47(0);
-        return true;
+      if((circPtr4 == 0 && circ[0].itm4==keyCode) || circPtr4 > nbrOfElements(circ)) circPtr4 = 0;
+      if(circ[circPtr4].itm4==keyCode) {
+        if(circ[++circPtr4].itm4==0) {
+          fnSetRJ(0);
+          return true;
+        }
+      } else {
+        circPtr4 = 0;        
       }
-      if((circPtr3 == 0 && keyCode==2) || circPtr3 > nbrOfElements(circ)) circPtr3 = 0;
-      if(circ[circPtr3].itm3==keyCode) circPtr3++; else circPtr3 = 0;
-      if(circPtr3 == 5 && keyCode==13) {
-        fnSetJM(0);
-        return true;
-      }
-      if((circPtr4 == 0 && keyCode==2) || circPtr4 > nbrOfElements(circ)) circPtr4 = 0;
-      if(circ[circPtr4].itm4==keyCode) circPtr4++; else circPtr4 = 0;
-      if(circPtr4 == 5 && keyCode==9) {
-        fnSetRJ(0);
-        return true;
+      if((circPtr5 == 0 && circ[0].itm5==keyCode) || circPtr5 > nbrOfElements(circ)) circPtr5 = 0; //C47M ENTER
+      if(circ[circPtr5].itm5==keyCode) {
+        if(circ[++circPtr5].itm5==0) {
+          fnDumpMenus(0);
+          return true;
+        }
+      } else {
+        circPtr5 = 0; 
       }
       //printf("RRRR %i %u %u\n", keyCode, circPtr, circPtr2);
       return false;
-    }
+      }
 
 
 

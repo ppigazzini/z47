@@ -826,7 +826,7 @@ void stringToFileNameChars(const char *str, char *ascii) {
       str++;
       ascii++;
     }
-    else if((uint8_t)(*str) < 0x20 || *str == '/' || *str == '\\') {
+    else if((uint8_t)(*str) < 0x20 || *str == '/' || *str == '\\' || *str == '<' || *str == '>' || *str == ' ') {
       *ascii = '_';
       str++;
       ascii++;
