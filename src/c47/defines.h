@@ -20,7 +20,7 @@
 #if !defined(DEFINES_H)
 #define DEFINES_H
 
-#include <inttypes.h>
+#include <stdint.h>
 
 //*********************************
 // JM VARIOUS OPTIONS
