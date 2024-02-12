@@ -82,7 +82,7 @@ uint8_t *countOpBytes(uint8_t *step, uint16_t paramMode) {
     }
 
     case PARAM_REGISTER: {
-      if(opParam <= LAST_LOCAL_REGISTER_IN_KS_CODE) { // Global registers from 00 to 99, lettered registers from X to K, and local registers from .00 to .98
+      if(opParam <= LAST_SPARE_REGISTERS_IN_KS_CODE) { // Global registers from 00 to 99, lettered registers from X to W, and local registers from .00 to .98
         return step;
       }
       else if(opParam == STRING_LABEL_VARIABLE || opParam == INDIRECT_VARIABLE) {
@@ -100,7 +100,10 @@ uint8_t *countOpBytes(uint8_t *step, uint16_t paramMode) {
     }
 
     case PARAM_FLAG: {
-      if(opParam <= LAST_LOCAL_FLAG) { // Global flags from 00 to 99, lettered flags from X to K, and local flags from .00 to .15 (or .31)
+      if(opParam <= LAST_LOCAL_FLAG_IN_KS_CODE) { // Global flags from 00 to 99, lettered flags from X to K, and local flags from .00 to .31
+        return step;
+      }
+      else if(FLAG_M <= opParam && opParam <= FLAG_W) { // Global flags from M to W
         return step;
       }
       else if(opParam == INDIRECT_REGISTER || opParam == SYSTEM_FLAG_NUMBER) {

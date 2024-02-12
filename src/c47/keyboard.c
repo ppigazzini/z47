@@ -1352,7 +1352,7 @@ bool_t allowShiftsToClearError = false;
     int8_t key_no = stringToKeyNumber(data);
 
     #if defined(PC_BUILD)
-      char tmp[200]; sprintf(tmp,"^^^^^^^keyboard.c: determineitem: key_no: %d:",key_no); jm_show_comment(tmp);
+      char tmp[200]; sprintf(tmp,"^^^^^^^keyboard.c: determineitem: key_no: %d:", key_no); jm_show_comment(tmp);
     #endif //PC_BUILD
 
     //.    if(kbd_usr[36].primaryTam == ITM_EXIT1) //opposite keyboard V43 LT, 43S, V43 RT
@@ -1363,7 +1363,7 @@ bool_t allowShiftsToClearError = false;
     fnTimerExec(TO_FN_EXEC);                                  //dr execute queued fn
 
     #if defined(PC_BUILD)
-      sprintf(tmp,"^^^^^^^keyboard.c: determineitem: key->primary1: %d:",key->primary); jm_show_comment(tmp);
+      sprintf(tmp,"^^^^^^^keyboard.c: determineitem: key->primary1: %d:", key->primary); jm_show_comment(tmp);
     #endif //PC_BUILD
 
     switch(key->primary) {                              //JMSHOW vv
@@ -1638,7 +1638,7 @@ bool_t allowShiftsToClearError = false;
             return true;
           }
         } else {
-          circPtr2 = 0;          
+          circPtr2 = 0;
         }
       }
       if(calcModel == USER_R47) {
@@ -1649,7 +1649,7 @@ bool_t allowShiftsToClearError = false;
             return true;
           }
         } else {
-          circPtr1 = 0;          
+          circPtr1 = 0;
         }
         if((circPtr2a == 0 && circ[0].itm2a==keyCode) || circPtr2a > nbrOfElements(circ)) circPtr2a = 0;
         if(circ[circPtr2a].itm2a==keyCode) {
@@ -1658,7 +1658,7 @@ bool_t allowShiftsToClearError = false;
             return true;
           }
         } else {
-          circPtr2a = 0;          
+          circPtr2a = 0;
         }
       }
 
@@ -1669,7 +1669,7 @@ bool_t allowShiftsToClearError = false;
           return true;
         }
       } else {
-        circPtr3 = 0;        
+        circPtr3 = 0;
       }
       if((circPtr4 == 0 && circ[0].itm4==keyCode) || circPtr4 > nbrOfElements(circ)) circPtr4 = 0;
       if(circ[circPtr4].itm4==keyCode) {
@@ -1678,7 +1678,7 @@ bool_t allowShiftsToClearError = false;
           return true;
         }
       } else {
-        circPtr4 = 0;        
+        circPtr4 = 0;
       }
       if((circPtr5 == 0 && circ[0].itm5==keyCode) || circPtr5 > nbrOfElements(circ)) circPtr5 = 0; //C47M ENTER
       if(circ[circPtr5].itm5==keyCode) {
@@ -1687,7 +1687,7 @@ bool_t allowShiftsToClearError = false;
           return true;
         }
       } else {
-        circPtr5 = 0; 
+        circPtr5 = 0;
       }
       //printf("RRRR %i %u %u\n", keyCode, circPtr, circPtr2);
       return false;
