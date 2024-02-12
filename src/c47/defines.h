@@ -1235,7 +1235,8 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define TI_ROOTS3                                 99
 #define TI_IJ                                    100
 #define TI_MIJ                                   101
-#define TI_MEM                                   102
+#define TI_BYTES                                 102
+#define TI_BITS                                  103
 
 // Register browser mode
 #define RBR_GLOBAL                                 0 // Global registers are browsed

@@ -454,7 +454,7 @@ void fnFreeMemory(uint16_t unusedButMandatoryParameter) {
   uIntToLongInteger(getFreeRamMemory(), mem);
   convertLongIntegerToLongIntegerRegister(mem, REGISTER_X);
   longIntegerFree(mem);
-  temporaryInformation = TI_MEM;
+  temporaryInformation = TI_BYTES;
 }
 
 
@@ -512,6 +512,7 @@ void fnGetWordSize(uint16_t unusedButMandatoryParameter) {
   uIntToLongInteger(shortIntegerWordSize, wordSize);
   convertLongIntegerToLongIntegerRegister(wordSize, REGISTER_X);
   longIntegerFree(wordSize);
+  temporaryInformation = TI_BITS;
 }
 
 
