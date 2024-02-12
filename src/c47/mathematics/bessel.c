@@ -27,6 +27,7 @@
 #include "mathematics/arccosh.h"
 #include "mathematics/comparisonReals.h"
 #include "mathematics/division.h"
+#include "mathematics/exp.h"
 #include "mathematics/multiplication.h"
 #include "mathematics/toRect.h"
 #include "mathematics/wp34s.h"
