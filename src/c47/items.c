@@ -402,7 +402,7 @@ void fnNop(uint16_t unusedButMandatoryParameter) {
     }
 
     #if defined(PC_BUILD)
-      char tmp[200]; sprintf(tmp,"^^^^RunFunction func=%d\n",func); jm_show_comment(tmp);
+      char tmp[200]; sprintf(tmp,"^^^^ReallyRunFunction func=%d\n",func); jm_show_comment(tmp);
     #endif // PC_BUILD
 
     reallyRunFunction(func, indexOfItems[func].param);
