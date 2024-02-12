@@ -30,6 +30,8 @@
 
 #define MODEL USER_C47               // USER_C47 or USER_R47
 
+// The number of elements in an array
+#define NELEM(a)                             (sizeof(a) / sizeof(*(a)))
 
 
   #undef SAVE_SPACE_DM42_0
@@ -1207,7 +1209,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define TI_012                                    73    //JM EE
 #define TI_SHOW_REGISTER_BIG                      74    //JM_SHOW
 #define TI_SHOW_REGISTER_SMALL                    75
-#define TI_V                                      76
+#define TI_BATTV                                  76
 #define TI_FROM_DMS                               77
 #define TI_FROM_MS_TIME                           78
 #define TI_FROM_MS_DEG                            79
@@ -1233,6 +1235,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define TI_ROOTS3                                 99
 #define TI_IJ                                    100
 #define TI_MIJ                                   101
+#define TI_MEM                                   102
 
 // Register browser mode
 #define RBR_GLOBAL                                 0 // Global registers are browsed

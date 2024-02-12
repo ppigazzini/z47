@@ -2266,6 +2266,16 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
         }
       }
 
+      else if(temporaryInformation == TI_BATTV && regist == REGISTER_X) {
+        sprintf(prefix, "V" STD_SPACE_FIGURE "=");
+        displayTemporaryInformationOnX(prefix);
+      }
+
+      else if(temporaryInformation == TI_MEM && regist == REGISTER_X) {
+        sprintf(prefix, "Bytes" STD_SPACE_FIGURE "=");
+        displayTemporaryInformationOnX(prefix);
+      }
+
       else if(temporaryInformation == TI_ARE_YOU_SURE && regist == REGISTER_X) {
         uint16_t id = getConfirmationTiId();
         showString(confirmationTI[id].string, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + 6, vmNormal, true, true);
@@ -2749,13 +2759,6 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
         else if(getRegisterDataType(regist) == dtReal34) {
           if(temporaryInformation == TI_COPY_FROM_SHOW && regist == REGISTER_X) {
             _fnShowRecallTI(prefix, &prefixWidth);
-          }
-
-          else if(temporaryInformation == TI_V) {                             //JMms vv
-            if(regist == REGISTER_X) {
-              strcpy(prefix, "V" STD_SPACE_FIGURE "=");
-              prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
-            }
           }
 
           else if(temporaryInformation == TI_THETA_RADIUS) {
