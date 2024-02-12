@@ -24,6 +24,7 @@
 #include "error.h"
 #include "flags.h"
 #include "mathematics/comparisonReals.h"
+#include "mathematics/exp.h"
 #include "mathematics/expMOne.h"
 #include "mathematics/power.h"
 #include "mathematics/wp34s.h"

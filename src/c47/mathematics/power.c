@@ -27,6 +27,7 @@
 #include "integers.h"
 #include "items.h"
 #include "mathematics/comparisonReals.h"
+#include "mathematics/exp.h"
 #include "mathematics/matrix.h"
 #include "mathematics/toPolar.h"
 #include "mathematics/toRect.h"

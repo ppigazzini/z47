@@ -26,6 +26,7 @@
 #include "flags.h"
 #include "fonts.h"
 #include "items.h"
+#include "mathematics/comparisonReals.h"
 #include "mathematics/matrix.h"
 #include "mathematics/wp34s.h"
 #include "registers.h"
@@ -76,7 +77,29 @@ void fnExp(uint16_t unusedButMandatoryParameter) {
   adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
 }
 
+bool_t realExpLimitCheck(const real_t *x, real_t *res, const real_t *zero) {
+  if(realIsSpecial(x)) {
+    if(realIsInfinite(x)) {
+inf:  if(realIsPositive(x)) {
+        realCopy(const_plusInfinity, res);
+      }
+      else {
+        realCopy(zero, res);
+      }
+    } else {
+      realCopy(const_NaN, res);
+    }
+    return false;
+  }
+  if (realCompareAbsGreaterThan(x, const_2e6))
+    goto inf;
+  return true;
+}
 
+void realExp(const real_t *x, real_t *res, realContext_t *set) {
+  if (realExpLimitCheck(x, res, const_0))
+    decNumberExp(res, x, set);
+}
 
 void expComplex(const real_t *real, const real_t *imag, real_t *resReal, real_t *resImag, realContext_t *realContext) {
   real_t expa, sin, cos;

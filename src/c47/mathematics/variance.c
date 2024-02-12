@@ -25,6 +25,7 @@
 #include "debug.h"
 #include "error.h"
 #include "flags.h"
+#include "mathematics/exp.h"
 #include "registers.h"
 #include "registerValueConversions.h"
 #include "stack.h"
