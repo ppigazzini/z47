@@ -2264,8 +2264,12 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
         displayTemporaryInformationOnX(prefix);
       }
 
-      else if(temporaryInformation == TI_MEM && regist == REGISTER_X) {
+      else if(temporaryInformation == TI_BYTES && regist == REGISTER_X) {
         sprintf(prefix, "Bytes" STD_SPACE_FIGURE "=");
+        displayTemporaryInformationOnX(prefix);
+      }
+      else if(temporaryInformation == TI_BITS && regist == REGISTER_X) {
+        sprintf(prefix, "Bits" STD_SPACE_FIGURE "=");
         displayTemporaryInformationOnX(prefix);
       }
 
