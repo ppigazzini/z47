@@ -397,6 +397,23 @@ void fnCvtHectareM2(uint16_t multiplyDivide) {
 }
 
 
+void fnCvtFt2Hectare(uint16_t multiplyDivide) {
+  unitConversion(const_Ft2ToHa, multiplyDivide, noninverting);
+}
+
+
+void fnCvtFt2M2(uint16_t multiplyDivide) {
+  unitConversion(const_Ft2ToM2, multiplyDivide, noninverting);
+}
+
+
+void fnCvtHectareKm2(uint16_t multiplyDivide) {
+  real_t mm;
+  int32ToReal(100,&mm);
+  unitConversion(&mm, multiplyDivide == multiply ? divide : multiply, noninverting);
+}
+
+
 void fnCvtMuM2(uint16_t multiplyDivide) {
   unitConversion(const_MuToM2, multiplyDivide, noninverting);
 }

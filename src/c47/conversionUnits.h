@@ -97,6 +97,9 @@
   void fnCvtAcreHa    (uint16_t multiplyDivide);
   void fnCvtAcreusHa  (uint16_t multiplyDivide);
   void fnCvtHectareM2 (uint16_t multiplyDivide);
+  void fnCvtFt2Hectare(uint16_t multiplyDivide);
+  void fnCvtFt2M2     (uint16_t multiplyDivide);
+  void fnCvtHectareKm2(uint16_t multiplyDivide);
   void fnCvtMuM2      (uint16_t multiplyDivide);
   void fnCvtMi2Km2    (uint16_t multiplyDivide);
   void fnCvtNmi2Km2   (uint16_t multiplyDivide);
