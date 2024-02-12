@@ -419,7 +419,6 @@
   extern bool_t                 temporaryFlagRect;
   extern bool_t                 temporaryFlagPolar;
   extern int                    vbatIntegrated;
-void test160Bytes(void);
 
 
   #if defined(DMCP_BUILD)

@@ -4183,7 +4183,6 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
 
   int16_t refreshScreenCounter = 0;        //JM
   void refreshScreen(void) {
-test160Bytes();
     if(running_program_jm) { //JM TEST PROGRAM!
       return;
     }

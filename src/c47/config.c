@@ -1234,8 +1234,8 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     }
     memset(ram, 0, TO_BYTES(RAM_SIZE_IN_BLOCKS));
     numberOfFreeMemoryRegions = 1;
-    freeMemoryRegions[0].blockAddress = 40;                     // for reserved variables
-    freeMemoryRegions[0].sizeInBlocks = RAM_SIZE_IN_BLOCKS - 40 - 1; // - 1: one block for an empty program
+    freeMemoryRegions[0].blockAddress = 0;
+    freeMemoryRegions[0].sizeInBlocks = RAM_SIZE_IN_BLOCKS - 1; // - 1: one block for an empty program
 
     #if !defined(DMCP_BUILD)
       numberOfAllocatedMemoryRegions = 0;

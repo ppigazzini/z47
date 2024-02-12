@@ -340,20 +340,6 @@ bool_t temporaryFlagRect;
 bool_t temporaryFlagPolar;
 int vbatIntegrated = 3000;
 
-void test160Bytes(void) {
-  uint8_t *bytes = (uint8_t *)ram;
-  int32_t i;
-  char msg[100];
-
-  for(i = 0; i<160; i++) {
-    if(bytes[i]) {
-      sprintf(msg, "Byte %d = %u", i, bytes[i]);
-      debugf(msg);
-      return;
-    }
-  }
-}
-
 
 #if defined(DMCP_BUILD)
   #if defined(JMSHOWCODES)                                        //JM Test
