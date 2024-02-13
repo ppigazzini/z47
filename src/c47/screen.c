@@ -350,7 +350,7 @@ typedef struct {
 
 #if !defined(TESTSUITE_BUILD)
   char letteredRegisterName(calcRegister_t regist) {
-    return "XYZTABCDLIJKMNPQRS"[regist - REGISTER_X];
+    return "XYZTABCDLIJKMNPQRSEFGHOUVW"[regist - REGISTER_X];
   }
 #endif //TESTSUITE_BUILD
 
@@ -373,7 +373,14 @@ typedef struct {
     char *ptr = clipboardString;
     const char *sep = "";
 
-    for (calcRegister_t r = REGISTER_S; r >= REGISTER_X; r--) {
+    for (calcRegister_t r = REGISTER_K; r >= REGISTER_X; r--) {
+      ptr += sprintf(ptr, "%s%c = ", sep, letteredRegisterName(r));
+      copyRegisterToClipboardString(r, ptr);
+      ptr = strchr(ptr, '\0');
+      sep = LINEBREAK;
+    }
+
+    for (calcRegister_t r = REGISTER_W; r >= REGISTER_S; r--) {
       ptr += sprintf(ptr, "%s%c = ", sep, letteredRegisterName(r));
       copyRegisterToClipboardString(r, ptr);
       ptr = strchr(ptr, '\0');
@@ -1901,11 +1908,11 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
     else if(currentViewRegister <= LAST_LOCAL_REGISTER) {
       sprintf(prefix, " R.%02" PRIu16 STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM, (uint16_t)(currentViewRegister - FIRST_LOCAL_REGISTER));
     }
-    else if(currentViewRegister >= FIRST_NAMED_VARIABLE && currentViewRegister <= LAST_NAMED_VARIABLE) {
+    else if(FIRST_NAMED_VARIABLE <= currentViewRegister && currentViewRegister <= LAST_NAMED_VARIABLE) {
       memcpy(prefix, allNamedVariables[currentViewRegister - FIRST_NAMED_VARIABLE].variableName + 1, allNamedVariables[currentViewRegister - FIRST_NAMED_VARIABLE].variableName[0]);
       strcpy(prefix + allNamedVariables[currentViewRegister - FIRST_NAMED_VARIABLE].variableName[0], STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM);
     }
-    else if(currentViewRegister >= FIRST_RESERVED_VARIABLE && currentViewRegister <= LAST_RESERVED_VARIABLE) {
+    else if(FIRST_RESERVED_VARIABLE <= currentViewRegister && currentViewRegister <= LAST_RESERVED_VARIABLE) {
       memcpy(prefix, allReservedVariables[currentViewRegister - FIRST_RESERVED_VARIABLE].reservedVariableName + 1, allReservedVariables[currentViewRegister - FIRST_RESERVED_VARIABLE].reservedVariableName[0]);
       strcpy(prefix + allReservedVariables[currentViewRegister - FIRST_RESERVED_VARIABLE].reservedVariableName[0], STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM);
     }
@@ -1942,11 +1949,11 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
     else if((currentInputVariable & 0x3fff) <= LAST_LOCAL_REGISTER) {
       sprintf(prefix, " R.%02" PRIu16 "?", (uint16_t)((currentInputVariable & 0x3fff) - FIRST_LOCAL_REGISTER));
     }
-    else if((currentInputVariable & 0x3fff) >= FIRST_NAMED_VARIABLE && (currentInputVariable & 0x3fff) <= LAST_NAMED_VARIABLE) {
+    else if(FIRST_NAMED_VARIABLE <= (currentInputVariable & 0x3fff) && (currentInputVariable & 0x3fff) <= LAST_NAMED_VARIABLE) {
       memcpy(prefix, allNamedVariables[(currentInputVariable & 0x3fff) - FIRST_NAMED_VARIABLE].variableName + 1, allNamedVariables[(currentInputVariable & 0x3fff) - FIRST_NAMED_VARIABLE].variableName[0]);
       strcpy(prefix + allNamedVariables[(currentInputVariable & 0x3fff) - FIRST_NAMED_VARIABLE].variableName[0], "?");
     }
-    else if((currentInputVariable & 0x3fff) >= FIRST_RESERVED_VARIABLE && (currentInputVariable & 0x3fff) <= LAST_RESERVED_VARIABLE) {
+    else if(FIRST_RESERVED_VARIABLE <= (currentInputVariable & 0x3fff) && (currentInputVariable & 0x3fff) <= LAST_RESERVED_VARIABLE) {
       memcpy(prefix, allReservedVariables[(currentInputVariable & 0x3fff) - FIRST_RESERVED_VARIABLE].reservedVariableName + 1, allReservedVariables[(currentInputVariable & 0x3fff) - FIRST_RESERVED_VARIABLE].reservedVariableName[0]);
       strcpy(prefix + allReservedVariables[(currentInputVariable & 0x3fff) - FIRST_RESERVED_VARIABLE].reservedVariableName[0], "?");
     }
@@ -2612,7 +2619,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
         const int16_t baseY = Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X + ((temporaryInformation == TI_VIEW_REGISTER && regist == REGISTER_T) ? 0 : (getRegisterDataType(REGISTER_X) == dtReal34Matrix || getRegisterDataType(REGISTER_X) == dtComplex34Matrix) ? 4 - displayStack : 0));
         calcRegister_t origRegist = regist;
         if(temporaryInformation == TI_VIEW_REGISTER && regist == REGISTER_T) {
-          if(currentViewRegister >= FIRST_RESERVED_VARIABLE && currentViewRegister < LAST_RESERVED_VARIABLE && allReservedVariables[currentViewRegister - FIRST_RESERVED_VARIABLE].header.pointerToRegisterData == C47_NULL) {
+          if(FIRST_RESERVED_VARIABLE <= currentViewRegister && currentViewRegister < LAST_RESERVED_VARIABLE && allReservedVariables[currentViewRegister - FIRST_RESERVED_VARIABLE].header.pointerToRegisterData == C47_NULL) {
             copySourceRegisterToDestRegister(currentViewRegister, TEMP_REGISTER_1);
             regist = TEMP_REGISTER_1;
           }

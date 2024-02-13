@@ -2741,7 +2741,7 @@ void mimShowElement(void) {
 
 #if !defined(TESTSUITE_BUILD)
 
-static void RegName(void) {    //JM using standard reg name, using SHOWregis, not using prefixWidth
+static void RegName(void) {    //JM using standard reg name, using showRegis, not using prefixWidth
   int16_t tmp;
   viewRegName2(tmpString + 2100, &tmp);
   //printf("|%s|%d|\n",tmpString + 2100, 2100+stringByteLength(tmpString + 2100));
@@ -2854,9 +2854,10 @@ void fnShow_SCROLL(uint16_t fnShow_param) {                // Heavily modified b
                break;
       case 0:  showRegis = REGISTER_X;
                break;
-      case 1:  if(showRegis==9999) {showRegis = REGISTER_X;}                       //Activated by KEY_UP
-               else
-               {
+      case 1:  if(showRegis == 9999) {
+                 showRegis = REGISTER_X;
+               }
+               else {
                  if(showRegis >= FIRST_NAMED_VARIABLE + numberOfNamedVariables - 1) {
                    showRegis = 0;
                  } else 
@@ -2865,7 +2866,7 @@ void fnShow_SCROLL(uint16_t fnShow_param) {                // Heavily modified b
                  } else {
                    showRegis++;
                  }
-                 while(!regInRange(showRegis) && showRegis < FIRST_NAMED_VARIABLE + numberOfNamedVariables) {
+                  while(!regInRange(showRegis) && showRegis < FIRST_NAMED_VARIABLE + numberOfNamedVariables) {
                    showRegis++;
                  }
                }
@@ -2873,9 +2874,10 @@ void fnShow_SCROLL(uint16_t fnShow_param) {                // Heavily modified b
                  printf("R=%u TI=%u\n",showRegis, temporaryInformation);
                #endif // PC_BUILD && MONITOR_CLRSCR
                break;
-      case 2:  if(showRegis==9999) {showRegis = REGISTER_X;}                       //Activate by Key_DOWN
-               else
-               {
+      case 2:  if(showRegis == 9999) {
+                 showRegis = REGISTER_X;
+               }
+               else {
                  if(showRegis == 0) {
                    showRegis = FIRST_NAMED_VARIABLE + numberOfNamedVariables - 1;
                  } else
@@ -3173,7 +3175,7 @@ void fnShow_SCROLL(uint16_t fnShow_param) {                // Heavily modified b
 
         shortIntegerToDisplayString(showRegis, tmpString + 2100, true); //jm include X:
   /*
-        if(getRegisterTag(SHOWregis) == 2) {
+        if(getRegisterTag(showRegis) == 2) {
           source = 2100;
           dest = 2400;
           while(tmpString[source] !=0 ) {

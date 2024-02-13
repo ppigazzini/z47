@@ -69,7 +69,6 @@ realContext_t          ctxtReal1071; // 1071 digits: used in radian angle reduct
 realContext_t          ctxtReal2139; // 2139 digits: used for really big modulo
 
 registerHeader_t       globalRegister[NUMBER_OF_GLOBAL_REGISTERS];
-registerHeader_t       savedStackRegister[NUMBER_OF_SAVED_STACK_REGISTERS + NUMBER_OF_TEMP_REGISTERS];
 registerHeader_t      *currentLocalRegisters;
 
 dataBlock_t            allSubroutineLevels;
@@ -251,7 +250,7 @@ int16_t                numberOfTamMenusToPop;
 int16_t                itemToBeAssigned;
 int16_t                cachedDynamicMenu;
 
-uint16_t               globalFlags[7];
+uint16_t               globalFlags[8];
 uint16_t               freeProgramBytes;
 uint16_t               glyphRow[NUMBER_OF_GLYPH_ROWS];
 uint16_t               firstDisplayedLocalStepNumber;

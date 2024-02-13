@@ -223,7 +223,7 @@ void fnRecallMin(uint16_t regist) {
     if(!saveLastX()) {
       return;
     }
-    if(regist >= FIRST_RESERVED_VARIABLE && regist < LAST_RESERVED_VARIABLE && allReservedVariables[regist - FIRST_RESERVED_VARIABLE].header.pointerToRegisterData == C47_NULL) {
+    if(FIRST_RESERVED_VARIABLE <= regist && regist < LAST_RESERVED_VARIABLE && allReservedVariables[regist - FIRST_RESERVED_VARIABLE].header.pointerToRegisterData == C47_NULL) {
       copySourceRegisterToDestRegister(regist == REGISTER_L ? SAVED_REGISTER_L : regist, TEMP_REGISTER_1);
       regist = TEMP_REGISTER_1;
     }
@@ -244,7 +244,7 @@ void fnRecallMax(uint16_t regist) {
     if(!saveLastX()) {
       return;
     }
-    if(regist >= FIRST_RESERVED_VARIABLE && regist < LAST_RESERVED_VARIABLE && allReservedVariables[regist - FIRST_RESERVED_VARIABLE].header.pointerToRegisterData == C47_NULL) {
+    if(FIRST_RESERVED_VARIABLE <= regist && regist < LAST_RESERVED_VARIABLE && allReservedVariables[regist - FIRST_RESERVED_VARIABLE].header.pointerToRegisterData == C47_NULL) {
       copySourceRegisterToDestRegister(regist == REGISTER_L ? SAVED_REGISTER_L : regist, TEMP_REGISTER_1);
       regist = TEMP_REGISTER_1;
     }
@@ -376,14 +376,14 @@ void fnRecallConfig(uint16_t regist) {
 void fnRecallStack(uint16_t regist) {
   uint16_t size = getSystemFlag(FLAG_SSIZE8) ? 8 : 4;
 
-  if(regist + size >= REGISTER_X && regist < REGISTER_X) {
+  if(REGISTER_X - size <= regist && regist < REGISTER_X) {
     displayCalcErrorMessage(ERROR_STACK_CLASH, ERR_REGISTER_LINE, REGISTER_X);
     #if(EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "Cannot execute RCLS, destination register would overlap the stack: %d", regist);
       moreInfoOnError("In function fnRecallStack:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
-  else if((regist >= REGISTER_X && regist < FIRST_LOCAL_REGISTER) || regist + size > FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters) {
+  else if((REGISTER_X <= regist && regist < FIRST_LOCAL_REGISTER) || regist + size > FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters) {
     displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
     #if(EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "Cannot execute RCLS, destination register is out of range: %d", regist);
@@ -411,7 +411,7 @@ void fnRecallStack(uint16_t regist) {
 static void _fnRecallElement(bool_t stepForward);
 
 void fnRecallVElement(uint16_t ix) {
-  #if !defined(TESTSUITE_BUILD)  
+  #if !defined(TESTSUITE_BUILD)
   const int16_t iBak = getIRegisterAsInt(true);
   const int16_t jBak = getJRegisterAsInt(true);
 

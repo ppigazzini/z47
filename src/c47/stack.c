@@ -145,6 +145,11 @@ static void _swapRegs(uint16_t srcReg, uint16_t regist) {
     globalRegister[regist] = savedRegisterHeader;
   }
 
+  else if(regist < FIRST_NAMED_VARIABLE + numberOfNamedVariables) {
+    globalRegister[srcReg] = allNamedVariables[regist - FIRST_NAMED_VARIABLE].header;
+    allNamedVariables[regist - FIRST_NAMED_VARIABLE].header = savedRegisterHeader;
+  }
+
   else if(regist < FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters) {
     globalRegister[srcReg] = currentLocalRegisters[regist - FIRST_LOCAL_REGISTER];
     currentLocalRegisters[regist - FIRST_LOCAL_REGISTER] = savedRegisterHeader;
@@ -157,19 +162,6 @@ static void _swapRegs(uint16_t srcReg, uint16_t regist) {
       moreInfoOnError("In function _swapRegs:", errorMessage, "is not defined!", NULL);
     }
   #endif // PC_BUILD
-
-  else if(regist <= LAST_TEMP_REGISTER) {
-    #if defined(PC_BUILD)
-      displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-      sprintf(errorMessage, "register %d", regist);
-      moreInfoOnError("In function _swapRegs:", errorMessage, "is unsupported!", NULL);
-    #endif // PC_BUILD
-  }
-
-  else if(regist < FIRST_NAMED_VARIABLE + numberOfNamedVariables) {
-    globalRegister[srcReg] = allNamedVariables[regist - FIRST_NAMED_VARIABLE].header;
-    allNamedVariables[regist - FIRST_NAMED_VARIABLE].header = savedRegisterHeader;
-  }
 
   #if defined(PC_BUILD)
     else {
@@ -211,8 +203,8 @@ void fnSwapXY(uint16_t unusedButMandatoryParameter) {
 void fnShuffle(uint16_t regist_order) {
   for(int i=0; i<4; i++) {
     registerHeader_t savedRegisterHeader = globalRegister[REGISTER_X + i];
-    globalRegister[REGISTER_X + i] = savedStackRegister[i];
-    savedStackRegister[i] = savedRegisterHeader;
+    globalRegister[REGISTER_X + i] = globalRegister[i + SAVED_REGISTER_X];
+    globalRegister[i + SAVED_REGISTER_X] = savedRegisterHeader;
   }
   for(int i=0; i<4; i++) {
     uint16_t regist_offset = (regist_order >> (i*2)) & 3;

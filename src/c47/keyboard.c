@@ -1359,7 +1359,7 @@ bool_t allowShiftsToClearError = false;
     int8_t key_no = stringToKeyNumber(data);
 
     #if defined(PC_BUILD)
-      char tmp[200]; sprintf(tmp,"^^^^^^^keyboard.c: determineitem: key_no: %d:",key_no); jm_show_comment(tmp);
+      char tmp[200]; sprintf(tmp,"^^^^^^^keyboard.c: determineitem: key_no: %d:", key_no); jm_show_comment(tmp);
     #endif //PC_BUILD
 
     //.    if(kbd_usr[36].primaryTam == ITM_EXIT1) //opposite keyboard V43 LT, 43S, V43 RT
@@ -1370,7 +1370,7 @@ bool_t allowShiftsToClearError = false;
     fnTimerExec(TO_FN_EXEC);                                  //dr execute queued fn
 
     #if defined(PC_BUILD)
-      sprintf(tmp,"^^^^^^^keyboard.c: determineitem: key->primary1: %d:",key->primary); jm_show_comment(tmp);
+      sprintf(tmp,"^^^^^^^keyboard.c: determineitem: key->primary1: %d:", key->primary); jm_show_comment(tmp);
     #endif //PC_BUILD
 
     if(SHOWMODE) {
@@ -1671,7 +1671,7 @@ bool_t allowShiftsToClearError = false;
             return true;
           }
         } else {
-          circPtr2 = 0;          
+          circPtr2 = 0;
         }
       }
       if(calcModel == USER_R47) {
@@ -1682,7 +1682,7 @@ bool_t allowShiftsToClearError = false;
             return true;
           }
         } else {
-          circPtr1 = 0;          
+          circPtr1 = 0;
         }
         if((circPtr2a == 0 && circ[0].itm2a==keyCode) || circPtr2a > nbrOfElements(circ)) circPtr2a = 0;
         if(circ[circPtr2a].itm2a==keyCode) {
@@ -1691,7 +1691,7 @@ bool_t allowShiftsToClearError = false;
             return true;
           }
         } else {
-          circPtr2a = 0;          
+          circPtr2a = 0;
         }
       }
 
@@ -1702,7 +1702,7 @@ bool_t allowShiftsToClearError = false;
           return true;
         }
       } else {
-        circPtr3 = 0;        
+        circPtr3 = 0;
       }
       if((circPtr4 == 0 && circ[0].itm4==keyCode) || circPtr4 > nbrOfElements(circ)) circPtr4 = 0;
       if(circ[circPtr4].itm4==keyCode) {
@@ -1711,7 +1711,7 @@ bool_t allowShiftsToClearError = false;
           return true;
         }
       } else {
-        circPtr4 = 0;        
+        circPtr4 = 0;
       }
       if((circPtr5 == 0 && circ[0].itm5==keyCode) || circPtr5 > nbrOfElements(circ)) circPtr5 = 0; //C47M ENTER
       if(circ[circPtr5].itm5==keyCode) {
@@ -1720,7 +1720,7 @@ bool_t allowShiftsToClearError = false;
           return true;
         }
       } else {
-        circPtr5 = 0; 
+        circPtr5 = 0;
       }
       //printf("RRRR %i %u %u\n", keyCode, circPtr, circPtr2);
       return false;
@@ -2629,7 +2629,7 @@ RELEASE_END:
                   calcMode = previousCalcMode;
                   if(currentRegisterBrowserScreen >= FIRST_NAMED_VARIABLE + numberOfNamedVariables) { // Reserved variables
                     currentRegisterBrowserScreen -= FIRST_NAMED_VARIABLE + numberOfNamedVariables;
-                    currentRegisterBrowserScreen += FIRST_RESERVED_VARIABLE + NUMBER_OF_LETTERED_REGISTERS;
+                    currentRegisterBrowserScreen += FIRST_RESERVED_VARIABLE + NUMBER_OF_LETTERED_VARIABLES;
                   }
                   fnRecall(currentRegisterBrowserScreen);
                   setSystemFlag(FLAG_ASLIFT);
@@ -2676,6 +2676,76 @@ RELEASE_END:
                 rbrMode = RBR_GLOBAL;
                 rbr1stDigit = true;
                 currentRegisterBrowserScreen = REGISTER_L;
+              }
+              else if(item == ITM_M) {
+                rbrMode = RBR_GLOBAL;
+                rbr1stDigit = true;
+                currentRegisterBrowserScreen = REGISTER_M;
+              }
+              else if(item == ITM_N) {
+                rbrMode = RBR_GLOBAL;
+                rbr1stDigit = true;
+                currentRegisterBrowserScreen = REGISTER_N;
+              }
+              else if(item == ITM_P) {
+                rbrMode = RBR_GLOBAL;
+                rbr1stDigit = true;
+                currentRegisterBrowserScreen = REGISTER_P;
+              }
+              else if(item == ITM_Q) {
+                rbrMode = RBR_GLOBAL;
+                rbr1stDigit = true;
+                currentRegisterBrowserScreen = REGISTER_Q;
+              }
+              else if(item == ITM_R) {
+                rbrMode = RBR_GLOBAL;
+                rbr1stDigit = true;
+                currentRegisterBrowserScreen = REGISTER_R;
+              }
+              else if(item == ITM_S) {
+                rbrMode = RBR_GLOBAL;
+                rbr1stDigit = true;
+                currentRegisterBrowserScreen = REGISTER_S;
+              }
+              else if(item == ITM_E) {
+                rbrMode = RBR_GLOBAL;
+                rbr1stDigit = true;
+                currentRegisterBrowserScreen = REGISTER_E;
+              }
+              else if(item == ITM_F) {
+                rbrMode = RBR_GLOBAL;
+                rbr1stDigit = true;
+                currentRegisterBrowserScreen = REGISTER_F;
+              }
+              else if(item == ITM_G) {
+                rbrMode = RBR_GLOBAL;
+                rbr1stDigit = true;
+                currentRegisterBrowserScreen = REGISTER_G;
+              }
+              else if(item == ITM_H) {
+                rbrMode = RBR_GLOBAL;
+                rbr1stDigit = true;
+                currentRegisterBrowserScreen = REGISTER_H;
+              }
+              else if(item == ITM_O) {
+                rbrMode = RBR_GLOBAL;
+                rbr1stDigit = true;
+                currentRegisterBrowserScreen = REGISTER_O;
+              }
+              else if(item == ITM_U) {
+                rbrMode = RBR_GLOBAL;
+                rbr1stDigit = true;
+                currentRegisterBrowserScreen = REGISTER_U;
+              }
+              else if(item == ITM_V) {
+                rbrMode = RBR_GLOBAL;
+                rbr1stDigit = true;
+                currentRegisterBrowserScreen = REGISTER_V;
+              }
+              else if(item == ITM_W) {
+                rbrMode = RBR_GLOBAL;
+                rbr1stDigit = true;
+                currentRegisterBrowserScreen = REGISTER_W;
               }
 
               keyActionProcessed = true;
@@ -4089,7 +4159,7 @@ void fnKeyUp(uint16_t unusedButMandatoryParameter) {
           currentRegisterBrowserScreen = modulo(currentRegisterBrowserScreen - FIRST_LOCAL_REGISTER + 1, currentNumberOfLocalRegisters) + FIRST_LOCAL_REGISTER;
         }
         else if(rbrMode == RBR_NAMED) {
-          currentRegisterBrowserScreen = modulo(currentRegisterBrowserScreen - FIRST_NAMED_VARIABLE + 1, numberOfNamedVariables + LAST_RESERVED_VARIABLE - FIRST_RESERVED_VARIABLE - (NUMBER_OF_LETTERED_REGISTERS-1)) + FIRST_NAMED_VARIABLE;
+          currentRegisterBrowserScreen = modulo(currentRegisterBrowserScreen - FIRST_NAMED_VARIABLE + 1, numberOfNamedVariables + LAST_RESERVED_VARIABLE - FIRST_RESERVED_VARIABLE - (NUMBER_OF_LETTERED_VARIABLES-1)) + FIRST_NAMED_VARIABLE;
         }
         else {
           sprintf(errorMessage, commonBugScreenMessages[bugMsgRbrMode], "fnKeyUp", "UP", rbrMode);
@@ -4300,7 +4370,7 @@ void fnKeyDown(uint16_t unusedButMandatoryParameter) {
           currentRegisterBrowserScreen = modulo(currentRegisterBrowserScreen - FIRST_LOCAL_REGISTER - 1, currentNumberOfLocalRegisters) + FIRST_LOCAL_REGISTER;
         }
         else if(rbrMode == RBR_NAMED) {
-          currentRegisterBrowserScreen = modulo(currentRegisterBrowserScreen - FIRST_NAMED_VARIABLE - 1, numberOfNamedVariables + LAST_RESERVED_VARIABLE - FIRST_RESERVED_VARIABLE - (NUMBER_OF_LETTERED_REGISTERS-1)) + FIRST_NAMED_VARIABLE;
+          currentRegisterBrowserScreen = modulo(currentRegisterBrowserScreen - FIRST_NAMED_VARIABLE - 1, numberOfNamedVariables + LAST_RESERVED_VARIABLE - FIRST_RESERVED_VARIABLE - (NUMBER_OF_LETTERED_VARIABLES-1)) + FIRST_NAMED_VARIABLE;
         }
         else {
           sprintf(errorMessage, commonBugScreenMessages[bugMsgRbrMode], "fnKeyDown", "DOWN", rbrMode);

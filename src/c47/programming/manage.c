@@ -1367,11 +1367,11 @@ void insertStepInProgram(int16_t func) {
       }
       else if(tam.indirect) {
         tmpString[opBytes    ] = (char)INDIRECT_REGISTER;
-        tmpString[opBytes + 1] = tam.value + (tam.dot ? FIRST_LOCAL_REGISTER : 0);
+        tmpString[opBytes + 1] = (tam.dot ? tam.value + FIRST_LOCAL_REGISTER_IN_KS_CODE : regCtoKS(tam.value));
         _insertInProgram((uint8_t *)tmpString, opBytes + 2);
       }
       else {
-        tmpString[opBytes    ] = tam.value + (tam.dot ? FIRST_LOCAL_REGISTER : 0);
+        tmpString[opBytes    ] = (tam.dot ? tam.value + FIRST_LOCAL_REGISTER_IN_KS_CODE : regCtoKS(tam.value));
         _insertInProgram((uint8_t *)tmpString, opBytes + 1);
       }
   }
@@ -1412,13 +1412,13 @@ void addStepInProgram(int16_t func) {
         }
         default: {
           return;
+        }
       }
-    }
     }
     if(!programListEnd) {
       scrollPemBackwards();
+    }
   }
-}
 }
 
 

@@ -932,13 +932,8 @@ void fnClAll(uint16_t confirmation) {
     // Clear local registers
     allocateLocalRegisters(0);
 
-    // Clear registers including stack, I, J, K, L, MNP QRS
-    for(regist=0; regist<FIRST_LOCAL_REGISTER; regist++) {
-      clearRegister(regist);
-    }
-
-    // Clear saved stack registers
-    for(regist=FIRST_SAVED_STACK_REGISTER; regist<=LAST_TEMP_REGISTER; regist++) {
+    // Clear registers including stack, I, J, K, L, MNP QRS, EFHH OUVW, saved stack and temp
+    for(regist=FIRST_GLOBAL_REGISTER; regist<=LAST_GLOBAL_REGISTER; regist++) {
       clearRegister(regist);
     }
     thereIsSomethingToUndo = false;
@@ -1256,8 +1251,8 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     }
     memset(ram, 0, TO_BYTES(RAM_SIZE_IN_BLOCKS));
     numberOfFreeMemoryRegions = 1;
-    freeMemoryRegions[0].blockAddress = 40;                     // for reserved variables
-    freeMemoryRegions[0].sizeInBlocks = RAM_SIZE_IN_BLOCKS - 40 - 1; // - 1: one block for an empty program
+    freeMemoryRegions[0].blockAddress = 0;
+    freeMemoryRegions[0].sizeInBlocks = RAM_SIZE_IN_BLOCKS - 1; // - 1: one block for an empty program
 
     #if !defined(DMCP_BUILD)
       numberOfAllocatedMemoryRegions = 0;
@@ -1336,16 +1331,7 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
 
     // initialize the global registers
     memset(globalRegister, 0, sizeof(globalRegister));
-    for(calcRegister_t regist=0; regist<=LAST_GLOBAL_REGISTER; regist++) {
-      setRegisterDataType(regist, dtReal34, amNone);
-      memPtr = allocC47Blocks(REAL34_SIZE_IN_BLOCKS);
-      setRegisterDataPointer(regist, memPtr);
-      real34Zero(memPtr);
-    }
-
-    // initialize the NUMBER_OF_SAVED_STACK_REGISTERS + the NUMBER_OF_TEMP_REGISTERS
-    memset(savedStackRegister, 0, sizeof(savedStackRegister));
-    for(calcRegister_t regist=FIRST_SAVED_STACK_REGISTER; regist<=LAST_TEMP_REGISTER; regist++) {
+    for(calcRegister_t regist=FIRST_GLOBAL_REGISTER; regist<=LAST_GLOBAL_REGISTER; regist++) {
       setRegisterDataType(regist, dtReal34, amNone);
       memPtr = allocC47Blocks(REAL34_SIZE_IN_BLOCKS);
       setRegisterDataPointer(regist, memPtr);
