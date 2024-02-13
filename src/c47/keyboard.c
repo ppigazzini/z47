@@ -4073,7 +4073,7 @@ void fnKeyUp(uint16_t unusedButMandatoryParameter) {
       }
       return;
     }
-    if(tam.mode && !catalog) {
+    if(softmenu[menuId].menuItem != -MNU_REG && tam.mode && !catalog) {
       if(tam.alpha) {
         resetAlphaSelectionBuffer();
         if(currentSoftmenuScrolls()) {
@@ -4284,7 +4284,7 @@ void fnKeyDown(uint16_t unusedButMandatoryParameter) {
       }
       return;
     }
-    if(tam.mode && !catalog) {
+    if(softmenu[menuId].menuItem != -MNU_REG && tam.mode && !catalog) {
       if(tam.alpha) {
         resetAlphaSelectionBuffer();
         if(currentSoftmenuScrolls()) {
