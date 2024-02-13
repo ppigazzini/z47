@@ -2838,12 +2838,14 @@ void fnShow_SCROLL(uint16_t fnShow_param) {                // Heavily modified b
 #if !defined(SAVE_SPACE_DM42_9)
   #if !defined(TESTSUITE_BUILD)
     uint8_t savedDisplayFormat = displayFormat, savedDisplayFormatDigits = displayFormatDigits;
+    bool_t savedConstantFractions = constantFractions;
     bool_t thereIsANextLine;
     int16_t source, dest, last, d, maxWidth, i, offset, bytesProcessed, aa, bb, cc, dd, aa2=0, aa3=0, aa4=0;
     uint64_t nn;
 
     displayFormat = DF_ALL;
     displayFormatDigits = 0;
+    constantFractions = false;
 
     switch(fnShow_param) {
       case NOPARAM:
@@ -3425,6 +3427,7 @@ void fnShow_SCROLL(uint16_t fnShow_param) {                // Heavily modified b
 
     displayFormat = savedDisplayFormat;
     displayFormatDigits = savedDisplayFormatDigits;
+    constantFractions = savedConstantFractions;
     #if defined(VERBOSE_SCREEN) && defined(PC_BUILD)
       printf("SHOW:Done |%s|\n",tmpString);
     #endif
