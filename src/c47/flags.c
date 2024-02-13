@@ -649,38 +649,27 @@ void SetSetting(uint16_t jmConfig) {
       #endif //RECT_POLAR_CHANGES_X
       break;
 
-    case DO_SCI:         fnClearFlag(FLAG_ALLENG);                 break;
-    case DO_ENG:         fnSetFlag(FLAG_ALLENG);                   break;
-    case PR_HPRP:        fnFlipFlag(FLAG_HPRP);                    break;
-    case PR_HPBASE:      fnFlipFlag(FLAG_HPBASE);                  break;
-    case PR_2TO10:       fnFlipFlag(FLAG_2TO10);                   break;
-    case DM_ANY:         fnFlipFlag(FLAG_DENANY);                  break;
-    case DM_PROPFR:      fnFlipFlag(FLAG_PROPFR);                  break;
-    case DM_FRACT:       fnFlipFlag(FLAG_FRACT);                   break;
-    case DM_FIX:         fnFlipFlag(FLAG_DENFIX);                  break;
-    case PRTACT:         fnFlipFlag(FLAG_PRTACT);                  break;
-    case JC_BLZ:         fnFlipFlag(FLAG_LEAD0);                   break; //bit LeadingZeros
-    case JC_BCR:         fnFlipFlag(FLAG_CPXRES);                  break; //bit ComplexResult
-    case ITM_CPXRES1:    fnSetFlag(FLAG_CPXRES);                   break; //bit ComplexResult
-    case ITM_CPXRES0:    fnClearFlag(FLAG_CPXRES);                 break; //bit ComplexResult
-    case JC_BSR:         fnFlipFlag(FLAG_SPCRES);                  break; //bit SpecialResult
-    case ITM_SPCRES1:    fnSetFlag(FLAG_SPCRES);                   break; //bit SpecialResult
-    case ITM_SPCRES0:    fnClearFlag(FLAG_SPCRES);                 break; //bit SpecialResult
-    case ITM_PRTACT1:    fnSetFlag(FLAG_PRTACT);                   break;
-    case ITM_PRTACT0:    fnClearFlag(FLAG_PRTACT);                 break;
-    case JC_FRC:         fnFlipFlag(FLAG_FRCSRN);                  break; //bit
-    case JC_NL:          numLock = !numLock; showAlphaModeonGui(); break; //call numlock
-    case JC_UC:     //call flip case
-      numLock = false;
-      if(alphaCase == AC_LOWER) {
-        alphaCase = AC_UPPER;
-      }
-      else {
-        alphaCase = AC_LOWER;
-      }
-      showAlphaModeonGui();
-      break;
-
+    case DO_SCI:      fnClearFlag(FLAG_ALLENG);                              break;
+    case DO_ENG:      fnSetFlag(FLAG_ALLENG);                                break;
+    case PR_HPRP:     fnFlipFlag(FLAG_HPRP);                                 break;
+    case PR_HPBASE:   fnFlipFlag(FLAG_HPBASE);                               break;
+    case PR_2TO10:    fnFlipFlag(FLAG_2TO10);                                break;
+    case DM_ANY:      fnFlipFlag(FLAG_DENANY); clearSystemFlag(FLAG_DENFIX); break;
+    case DM_PROPFR:   fnFlipFlag(FLAG_PROPFR);                               break;
+    case DM_FRACT:    fnFlipFlag(FLAG_FRACT);                                break;
+    case DM_FIX:      fnFlipFlag(FLAG_DENFIX); clearSystemFlag(FLAG_DENANY); break;
+    case PRTACT:      fnFlipFlag(FLAG_PRTACT);                               break;
+    case JC_BLZ:      fnFlipFlag(FLAG_LEAD0);                                break; //bit LeadingZeros
+    case JC_BCR:      fnFlipFlag(FLAG_CPXRES);                               break; //bit ComplexResult
+    case ITM_CPXRES1: fnSetFlag(FLAG_CPXRES);                                break; //bit ComplexResult
+    case ITM_CPXRES0: fnClearFlag(FLAG_CPXRES);                              break; //bit ComplexResult
+    case JC_BSR:      fnFlipFlag(FLAG_SPCRES);                               break; //bit SpecialResult
+    case ITM_SPCRES1: fnSetFlag(FLAG_SPCRES);                                break; //bit SpecialResult
+    case ITM_SPCRES0: fnClearFlag(FLAG_SPCRES);                              break; //bit SpecialResult
+    case ITM_PRTACT1: fnSetFlag(FLAG_PRTACT);                                break;
+    case ITM_PRTACT0: fnClearFlag(FLAG_PRTACT);                              break;
+    case JC_FRC:      fnFlipFlag(FLAG_FRCSRN);                               break; //bit
+    case JC_NL:       numLock = !numLock; showAlphaModeonGui();              break; //call numlock
     case JC_SS:     //call sub/sup script
       if(scrLock == NC_NORMAL) {
         scrLock = NC_SUPERSCRIPT;
@@ -698,8 +687,7 @@ void SetSetting(uint16_t jmConfig) {
       showAlphaModeonGui();
       break;
 
-    default:
-    break;
+    default: break;
   }
-fnRefreshState();
+  fnRefreshState();
 }

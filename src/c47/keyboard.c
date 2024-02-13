@@ -1187,7 +1187,7 @@ int16_t lastItem = 0;
             }
             if(tam.alpha && calcMode != CM_ASSIGN && tam.mode != TM_NEWMENU &&
               !( (tam.mode==TM_STORCL || tam.mode==TM_LABEL || tam.mode == TM_M_DIM || tam.mode == TM_REGISTER || tam.mode == TM_CMP)
-                  && (item == CHR_num || item == CHR_case) )
+                  && (item == CHR_num || item == CHR_case || item == ITM_SCR) )
               ) {
               tamLeaveMode();
             }
