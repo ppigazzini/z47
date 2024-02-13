@@ -59,39 +59,15 @@ static void systemFlagProcess(unsigned int idx, flagAction_t action) {
 
 static void systemFlagAction(uint16_t systemFlag, flagAction_t action) {
   switch(systemFlag) {
-    case FLAG_ALLENG:
-      systemFlagProcess(FLAG_A, action);
-      break;
-
-    case FLAG_OVERFLOW:
-      systemFlagProcess(FLAG_B, action);
-      break;
-
-    case FLAG_CARRY:
-      systemFlagProcess(FLAG_C, action);
-      break;
-
-    case FLAG_SPCRES:
-      systemFlagProcess(FLAG_D, action);
-      break;
-
-    case FLAG_CPXRES:
-      systemFlagProcess(FLAG_I, action);
-      break;
-
-    case FLAG_LEAD0:
-      systemFlagProcess(FLAG_L, action);
-      break;
-
-    case FLAG_TRACE:
-      systemFlagProcess(FLAG_T, action);
-      break;
-
-    case FLAG_POLAR:
-      systemFlagProcess(FLAG_X, action);
-      break;
-
-    default: ;
+    case FLAG_ALLENG:   systemFlagProcess(FLAG_A, action); break;
+    case FLAG_OVERFLOW: systemFlagProcess(FLAG_B, action); break;
+    case FLAG_CARRY:    systemFlagProcess(FLAG_C, action); break;
+    case FLAG_SPCRES:   systemFlagProcess(FLAG_D, action); break;
+    case FLAG_CPXRES:   systemFlagProcess(FLAG_I, action); break;
+    case FLAG_LEAD0:    systemFlagProcess(FLAG_L, action); break;
+    case FLAG_TRACE:    systemFlagProcess(FLAG_T, action); break;
+    case FLAG_POLAR:    systemFlagProcess(FLAG_X, action); break;
+    default:                                               break;
   }
 
   switch(systemFlag) {
@@ -112,12 +88,7 @@ static void systemFlagAction(uint16_t systemFlag, flagAction_t action) {
     case FLAG_ENDPMT:
     case FLAG_HPRP:
     case FLAG_HPBASE:
-    case FLAG_2TO10:
-      fnRefreshState();
-      break;
-
-
-
+    case FLAG_2TO10:  fnRefreshState(); break;
     case FLAG_SBdate:
     case FLAG_SBtime:
     case FLAG_SBcr  :
@@ -133,13 +104,8 @@ static void systemFlagAction(uint16_t systemFlag, flagAction_t action) {
     case FLAG_SBser :
     case FLAG_SBprn :
     case FLAG_SBbatV:
-    case FLAG_SBshfR:
-      fnRefreshState();
-      screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
-      break;
-
-
-    default: ;
+    case FLAG_SBshfR: fnRefreshState(); screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR; break;
+    default: break;
   }
 }
 
@@ -194,10 +160,12 @@ bool_t getSystemFlag(int32_t sf) {
 }
 
 void forceSystemFlag(unsigned int sf, int set) {
-  if(set)
+  if(set) {
     setSystemFlag(sf);
-  else
+  }
+  else {
     clearSystemFlag(sf);
+  }
 }
 
 static void synchronizeSystemFlag(unsigned int sf) {
@@ -253,11 +221,11 @@ bool_t getFlag(uint16_t flag) {
     return getSystemFlag(flag);
   }
 
-  else if(flag < NUMBER_OF_GLOBAL_FLAGS) { // Global flag
+  else if(flag < FLAG_K) { // Global flag
     return (globalFlags[flag/16] & (1u << (flag%16))) != 0;
   }
 
-  else if(flag < FIRST_LOCAL_FLAG+NUMBER_OF_LOCAL_FLAGS) { // Local flag
+  else if(flag < LAST_LOCAL_FLAG) { // Local flag
     if(currentLocalFlags != NULL) {
       flag -= NUMBER_OF_GLOBAL_FLAGS;
       if(flag < NUMBER_OF_LOCAL_FLAGS) {
@@ -275,8 +243,8 @@ bool_t getFlag(uint16_t flag) {
     #endif // PC_BUILD
   }
 
-  else if(flag <= FLAG_W) { // Global flag from M to W
-    flag -= NUMBER_OF_LOCAL_REGISTERS;
+  else if(FLAG_M <= flag && flag <= FLAG_W) { // Extra global flag
+    flag -= 99;
     return (globalFlags[flag/16] & (1u << (flag%16))) != 0;
   }
 
@@ -339,7 +307,7 @@ void fnSetFlag(uint16_t flag) {
     }
   }
 
-  else if(flag < NUMBER_OF_GLOBAL_FLAGS) { // Global flag
+  else if(flag < FLAG_K) { // Global flag
     switch(flag) {
       case FLAG_A: setSystemFlag(FLAG_ALLENG);   break;
       case FLAG_B: setSystemFlag(FLAG_OVERFLOW); break;
@@ -353,7 +321,7 @@ void fnSetFlag(uint16_t flag) {
     }
   }
 
-  else if(flag < FIRST_LOCAL_FLAG+NUMBER_OF_LOCAL_FLAGS) { // Local flag
+  else if(flag < LAST_LOCAL_FLAG) { // Local flag
     if(currentLocalFlags != NULL) {
       flag -= NUMBER_OF_GLOBAL_FLAGS;
       if(flag < NUMBER_OF_LOCAL_FLAGS) {
@@ -371,8 +339,8 @@ void fnSetFlag(uint16_t flag) {
     #endif // PC_BUILD
   }
 
-  else if(flag <= FLAG_W) { // Global flag from M to W
-    flag -= NUMBER_OF_LOCAL_REGISTERS;
+  else if(FLAG_M <= flag && flag <= FLAG_W) { // Extra global flag
+    flag -= 99;
     globalFlags[flag/16] |= 1u << (flag%16);
   }
 
@@ -417,7 +385,7 @@ void fnClearFlag(uint16_t flag) {
     }
   }
 
-  else if(flag < NUMBER_OF_GLOBAL_FLAGS) { // Global flag
+  else if(flag < FLAG_K) { // Global flag
     switch(flag) {
       case FLAG_A: clearSystemFlag(FLAG_ALLENG);   break;
       case FLAG_B: clearSystemFlag(FLAG_OVERFLOW); break;
@@ -431,7 +399,7 @@ void fnClearFlag(uint16_t flag) {
     }
   }
 
-  else if(flag < FIRST_LOCAL_FLAG+NUMBER_OF_LOCAL_FLAGS) { // Local flag
+  else if(flag < LAST_LOCAL_FLAG) { // Local flag
     if(currentLocalFlags != NULL) {
       flag -= NUMBER_OF_GLOBAL_FLAGS;
       if(flag < NUMBER_OF_LOCAL_FLAGS) {
@@ -450,8 +418,8 @@ void fnClearFlag(uint16_t flag) {
     #endif // PC_BUILD
   }
 
-  else if(flag <= FLAG_W) { // Global flag from M to W
-    flag -= NUMBER_OF_LOCAL_REGISTERS;
+  else if(FLAG_M <= flag && flag <= FLAG_W) { // Extra global flag
+    flag -= 99;
     globalFlags[flag/16] &= ~(1u << (flag%16));
   }
 
@@ -501,7 +469,7 @@ void fnFlipFlag(uint16_t flag) {
     }
   }
 
-  else if(flag < NUMBER_OF_GLOBAL_FLAGS) { // Global flag
+  else if(flag <= FLAG_K) { // Global flag
     switch(flag) {
       case FLAG_A: flipSystemFlag(FLAG_ALLENG);   break;
       case FLAG_B: flipSystemFlag(FLAG_OVERFLOW); break;
@@ -515,7 +483,7 @@ void fnFlipFlag(uint16_t flag) {
     }
   }
 
-  else if(flag < FIRST_LOCAL_FLAG+NUMBER_OF_LOCAL_FLAGS) { // Local flag
+  else if(flag < LAST_LOCAL_FLAG) { // Local flag
     if(currentLocalFlags != NULL) {
       flag -= NUMBER_OF_GLOBAL_FLAGS;
       if(flag < NUMBER_OF_LOCAL_FLAGS) {
@@ -533,8 +501,8 @@ void fnFlipFlag(uint16_t flag) {
     #endif // PC_BUILD
   }
 
-  else if(flag <= FLAG_W) { // Global flag from M to W
-    flag -= NUMBER_OF_LOCAL_REGISTERS;
+  else if(FLAG_M <= flag && flag <= FLAG_W) { // Extra global flag
+    flag -= 99;
     globalFlags[flag/16] ^=  1u << (flag%16);
   }
 

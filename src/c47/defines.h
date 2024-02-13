@@ -441,12 +441,14 @@
 #define NUMBER_OF_BUG_SCREEN_MESSAGES             10
 #define SIZE_OF_EACH_BUG_SCREEN_MESSAGE          100
 
+////////////////////////////////////////////////////
+// Flags are numbered the same way in key
+// stroke programs code and in C programs
+// unlike registers
 #define NUMBER_OF_GLOBAL_FLAGS                   112
 #define FIRST_LOCAL_FLAG                         112 // There are 112 global flag from 0 to 111
-#define FIRST_LOCAL_FLAG_IN_KS_CODE              112 // There are 112 global flag from 0 to 111
 #define NUMBER_OF_LOCAL_FLAGS                     32
 #define LAST_LOCAL_FLAG                          143
-#define LAST_LOCAL_FLAG_IN_KS_CODE               143
 
 // Global flags
 #define FLAG_X                                   100
