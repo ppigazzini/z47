@@ -807,6 +807,7 @@ void SetSetting(uint16_t jmConfig) {
 
     case DM_ANY: {
       fnFlipFlag(FLAG_DENANY);
+      clearSystemFlag(FLAG_DENFIX);
       break;
     }
 
@@ -822,6 +823,7 @@ void SetSetting(uint16_t jmConfig) {
 
     case DM_FIX: {
       fnFlipFlag(FLAG_DENFIX);
+      clearSystemFlag(FLAG_DENANY);
       break;
     }
 
