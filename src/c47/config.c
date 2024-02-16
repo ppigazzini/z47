@@ -57,7 +57,7 @@
 #include "solver/equation.h"
 #include "stack.h"
 #include "stats.h"
-#include "statusbar.h"
+#include "statusBar.h"
 #include "store.h"
 #include "recall.h"
 #include <stdlib.h>
