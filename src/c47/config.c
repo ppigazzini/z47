@@ -57,6 +57,7 @@
 #include "solver/equation.h"
 #include "stack.h"
 #include "stats.h"
+#include "statusbar.h"
 #include "store.h"
 #include "recall.h"
 #include <stdlib.h>
@@ -1652,6 +1653,11 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
       refreshDebugPanel();
     #endif // (DEBUG_PANEL == 1)
 
+    #if defined(DMCP_BUILD)
+      //Check and update current power status (USB / LOWBAT)
+      checkBattery();
+    #endif // DMCP_BUILD
+
     //JM TEMPORARY TEST DATA IN REGISTERS
     uint_fast16_t n = nbrOfElements(indexOfStrings);
     for(uint_fast16_t i=0; i<n; i++) {
@@ -1690,6 +1696,58 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
 }
 
 
+#ifdef DMCP_BUILD
+  int updateVbatIntegrated(void) {
+    int tmpVbat = get_vbat();
+    if(tmpVbat > 1500 && tmpVbat < 3100 && tmpVbat < vbatIntegrated) {
+      vbatIntegrated = tmpVbat;
+    } else if(tmpVbat > 1500 && tmpVbat < 3100 && tmpVbat > vbatIntegrated) {
+      vbatIntegrated = vbatIntegrated + ((tmpVbat - vbatIntegrated) >> 4);
+      if(tmpVbat > 2900) vbatIntegrated = tmpVbat;
+      if(vbatIntegrated > 3100) vbatIntegrated = 3100;
+    }
+    return tmpVbat;
+  }
+
+
+  void checkBattery(void) {
+    if(usb_powered() == 1) {
+      if(!getSystemFlag(FLAG_USB)) {
+        setSystemFlag(FLAG_USB);
+        clearSystemFlag(FLAG_LOWBAT);
+        showHideUsbLowBattery();
+      }
+    }
+    else {
+      if(getSystemFlag(FLAG_USB)) {
+        clearSystemFlag(FLAG_USB);
+        showHideUsbLowBattery();
+      }
+
+      int tmpVbat = updateVbatIntegrated();
+
+      if(tmpVbat < 2000 ) {// || vbatIntegrated < 2000) { //temporary disable shutdown
+        if(!getSystemFlag(FLAG_LOWBAT)) {
+          setSystemFlag(FLAG_LOWBAT);
+          showHideUsbLowBattery();
+        }
+        SET_ST(STAT_PGM_END);
+      }
+      else if(tmpVbat < 2500 || vbatIntegrated < 2500) {
+        if(!getSystemFlag(FLAG_LOWBAT)) {
+          setSystemFlag(FLAG_LOWBAT);
+          showHideUsbLowBattery();
+        }
+      }
+      else {
+        if(getSystemFlag(FLAG_LOWBAT)) {
+          clearSystemFlag(FLAG_LOWBAT);
+          showHideUsbLowBattery();
+        }
+      }
+    }
+  }
+#endif //DMCP_BUILD
 
 void backToSystem(uint16_t confirmation) {
   if(confirmation == NOT_CONFIRMED) {
