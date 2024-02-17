@@ -199,18 +199,18 @@ void fnGotoDot(uint16_t globalStepNumber) {
 
 void fnExecute(uint16_t label) {
   if(programRunStop == PGM_RUNNING) {
-    dataBlock_t *_currentSubroutineLevelData = currentSubroutineLevelData;
+    dataBlock_t *oldCurrentSubroutineLevelData = currentSubroutineLevelData;
     allSubroutineLevels.numberOfSubroutineLevels += 1;
     currentSubroutineLevelData = allocC47Blocks(3);
     if(currentSubroutineLevelData) {
-      _currentSubroutineLevelData[2].ptrToNextLevel = TO_C47MEMPTR(currentSubroutineLevelData);
+      oldCurrentSubroutineLevelData[2].ptrToNextLevel = TO_C47MEMPTR(currentSubroutineLevelData);
       currentReturnProgramNumber = currentProgramNumber;
       currentReturnLocalStep = currentLocalStepNumber;
       currentNumberOfLocalRegisters = 0; // No local register
       currentNumberOfLocalFlags = 0; // No local flags
       currentSubroutineLevel = allSubroutineLevels.numberOfSubroutineLevels - 1;
       currentPtrToNextLevel = C47_NULL;
-      currentPtrToPreviousLevel = TO_C47MEMPTR(_currentSubroutineLevelData);
+      currentPtrToPreviousLevel = TO_C47MEMPTR(oldCurrentSubroutineLevelData);
       currentLocalFlags = NULL;
       currentLocalRegisters = NULL;
 
@@ -224,7 +224,7 @@ void fnExecute(uint16_t label) {
     else {
       // OUT OF MEMORY
       // May occur if nested too deeply: we don't have tail recursion optimization
-      currentSubroutineLevelData = _currentSubroutineLevelData;
+      currentSubroutineLevelData = oldCurrentSubroutineLevelData;
       displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
     }
   }
@@ -252,7 +252,7 @@ void fnExecutePlusSkip(uint16_t label) {
 
 
 void fnReturn(uint16_t skip) {
-  dataBlock_t *_currentSubroutineLevelData = currentSubroutineLevelData;
+  dataBlock_t *oldCurrentSubroutineLevelData = currentSubroutineLevelData;
   uint16_t sizeToBeFreedInBlocks;
 
   /* Cancel INPUT */
@@ -284,11 +284,11 @@ void fnReturn(uint16_t skip) {
     }
     if(currentNumberOfLocalRegisters > 0) {
       allocateLocalRegisters(0);
-      _currentSubroutineLevelData = currentSubroutineLevelData;
+      oldCurrentSubroutineLevelData = currentSubroutineLevelData;
     }
-    sizeToBeFreedInBlocks = 3 + (currentNumberOfLocalFlags > 0 ? 1 : 0);
+    sizeToBeFreedInBlocks = 3 + (currentNumberOfLocalFlags > 0);
     currentSubroutineLevelData = TO_PCMEMPTR(currentPtrToPreviousLevel);
-    freeC47Blocks(_currentSubroutineLevelData, sizeToBeFreedInBlocks);
+    freeC47Blocks(oldCurrentSubroutineLevelData, sizeToBeFreedInBlocks);
     currentPtrToNextLevel = C47_NULL;
     allSubroutineLevels.numberOfSubroutineLevels -= 1;
 
@@ -303,7 +303,7 @@ void fnReturn(uint16_t skip) {
       allocateLocalRegisters(0);
     }
     if(currentNumberOfLocalFlags > 0) {
-      freeC47Blocks(currentSubroutineLevelData + 3, 1);
+      reduceC47Blocks(currentSubroutineLevelData, 4, 3);
       currentNumberOfLocalFlags = 0;
     }
     currentLocalFlags = NULL;

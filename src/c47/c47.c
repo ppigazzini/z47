@@ -682,7 +682,7 @@ int vbatIntegrated = 3000;
 //      }
       }
 
-    
+
     checkBattery();
     //now = sys_current_ms();
 

@@ -467,6 +467,55 @@ void setRegisterTag(calcRegister_t regist, const uint32_t tag) {
 
 
 
+static bool_t initLocalRegisters(calcRegister_t r) {
+  bool_t isMemIssue = false;
+
+  if(lastIntegerBase == 0 && (Input_Default == ID_43S || Input_Default == ID_DP)) {                 //JM defaults JMZERO
+    void *newMem = allocC47Blocks(REAL34_SIZE_IN_BLOCKS);
+    if(newMem) {
+      setRegisterDataType(r, dtReal34, amNone);
+      setRegisterDataPointer(r, newMem);
+      real34Zero(REGISTER_REAL34_DATA(r));
+    }
+    else {
+      isMemIssue = true;
+    }
+  }
+  else if(lastIntegerBase == 0 && Input_Default == ID_CPXDP) {                //JM defaults vv
+    void *newMem = allocC47Blocks(COMPLEX34_SIZE_IN_BLOCKS);
+    if(newMem) {
+      setRegisterDataType(r, dtComplex34, amNone);
+      if(getSystemFlag(FLAG_POLAR)) {
+        setRegisterTag(r, currentAngularMode | amPolar);
+      }
+      setRegisterDataPointer(r, newMem);
+      real34Zero(REGISTER_REAL34_DATA(r));
+      real34Zero(REGISTER_IMAG34_DATA(r));
+    }
+    else {
+      isMemIssue = true;
+    }
+  }                                                   //JM defaults ^^
+  else if(lastIntegerBase !=0 || Input_Default == ID_SI) {                   //JM defaults vv
+    longInteger_t lgInt;
+    longIntegerInit(lgInt);
+    uIntToLongInteger(0, lgInt);
+    convertLongIntegerToShortIntegerRegister(lgInt, lastIntegerBase == 0 ? 10 : lastIntegerBase, r);
+    longIntegerFree(lgInt);
+  }                                                   //JM defaults ^^
+  else if(lastIntegerBase == 0 && Input_Default == ID_LI) {                   //JM defaults vv
+    longInteger_t lgInt;
+    longIntegerInit(lgInt);
+    uIntToLongInteger(0, lgInt);
+    convertLongIntegerToLongIntegerRegister(lgInt, r);
+    longIntegerFree(lgInt);
+  }                                                   //JM defaults ^^
+
+  return isMemIssue;
+}
+
+
+
 void allocateLocalRegisters(uint16_t numberOfRegistersToAllocate) {
   dataBlock_t *oldSubroutineLevelData = currentSubroutineLevelData;
 
@@ -483,7 +532,7 @@ void allocateLocalRegisters(uint16_t numberOfRegistersToAllocate) {
   if(currentLocalFlags == NULL) {
     // 1st allocation of local registers in this level of subroutine
 
-//TOCHECK XXXX JM (old)
+    //TOCHECK XXXX JM (old)
     if((currentSubroutineLevelData = reallocC47Blocks(currentSubroutineLevelData, 3, 4 + numberOfRegistersToAllocate))) {
       currentLocalFlags = currentSubroutineLevelData + 3;
       currentLocalFlags->localFlags = 0;
@@ -491,66 +540,23 @@ void allocateLocalRegisters(uint16_t numberOfRegistersToAllocate) {
       currentNumberOfLocalFlags = NUMBER_OF_LOCAL_FLAGS;
       currentNumberOfLocalRegisters = numberOfRegistersToAllocate;
 
-    // All the new local registers are real34s initialized to 0.0
-    for(r=FIRST_LOCAL_REGISTER; r<FIRST_LOCAL_REGISTER+numberOfRegistersToAllocate; r++) {
-      bool_t isMemIssue = false;
+      // All the new local registers are real34s initialized to 0.0
+      for(r=FIRST_LOCAL_REGISTER; r<FIRST_LOCAL_REGISTER+numberOfRegistersToAllocate; r++) {
 
-      if((lastIntegerBase == 0) && (Input_Default == ID_43S || Input_Default == ID_DP)) {                 //JM defaults JMZERO
-        void *newMem = allocC47Blocks(REAL34_SIZE_IN_BLOCKS);
-        if(newMem) {
-          setRegisterDataType(r, dtReal34, amNone);
-          setRegisterDataPointer(r, newMem);
-          real34Zero(REGISTER_REAL34_DATA(r));
-        } else isMemIssue = true;
-      }
-      else if((lastIntegerBase == 0) && (Input_Default == ID_CPXDP)) {                //JM defaults vv
-        void *newMem = allocC47Blocks(COMPLEX34_SIZE_IN_BLOCKS);
-        if(newMem) {
-          setRegisterDataType(r, dtComplex34, amNone);
-          if(getSystemFlag(FLAG_POLAR)) {
-            setRegisterTag(r, currentAngularMode | amPolar);
+        if(initLocalRegisters(r)) {
+          // Not enough memory (!)
+          for(uint16_t rr = FIRST_LOCAL_REGISTER; rr < r; rr++) {
+            freeRegisterData(FIRST_LOCAL_REGISTER + rr);
           }
-          setRegisterDataPointer(r, newMem);
-          real34Zero(REGISTER_REAL34_DATA(r));
-          real34Zero(REGISTER_IMAG34_DATA(r));
-        } else isMemIssue = true;
-      }                                                   //JM defaults ^^
-      else if(lastIntegerBase !=0 || Input_Default == ID_SI) {                   //JM defaults vv
-        longInteger_t lgInt;
-        longIntegerInit(lgInt);
-        uint16_t val =0;
-        uIntToLongInteger(val,lgInt);
-        convertLongIntegerToShortIntegerRegister(lgInt, lastIntegerBase == 0 ? 10:lastIntegerBase, r);
-        longIntegerFree(lgInt);
-      }                                                   //JM defaults ^^
-      else if((lastIntegerBase == 0) && (Input_Default == ID_LI)) {                   //JM defaults vv
-        longInteger_t lgInt;
-        longIntegerInit(lgInt);
-        uint16_t val =0;
-        uIntToLongInteger(val,lgInt);
-        convertLongIntegerToLongIntegerRegister(lgInt, r);
-        longIntegerFree(lgInt);
-      }                                                   //JM defaults ^^
-
-      if(isMemIssue) {
-        // Not enough memory (!)
-        for(uint16_t rr = FIRST_LOCAL_REGISTER; rr < r; rr++) {
-          freeRegisterData(FIRST_LOCAL_REGISTER + rr);
+          reduceC47Blocks(currentSubroutineLevelData, 4 + numberOfRegistersToAllocate, 3);
+          currentLocalFlags = NULL;
+          currentLocalRegisters = NULL;
+          currentNumberOfLocalRegisters = 0;
+          currentNumberOfLocalFlags = NUMBER_OF_LOCAL_FLAGS;
+          displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+          return;
         }
-          reallocC47Blocks(currentSubroutineLevelData, 4 + numberOfRegistersToAllocate, 3);
-        currentLocalFlags = NULL;
-        currentLocalRegisters = NULL;
-        currentNumberOfLocalRegisters = 0;
-        currentNumberOfLocalFlags = NUMBER_OF_LOCAL_FLAGS;
-        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-        return;
-      }
-
-
-    }                                                   //JM defaults ^^
-
-
-
+      }                                                   //JM defaults ^^
     }
     else {
       currentSubroutineLevelData = oldSubroutineLevelData;
@@ -562,58 +568,19 @@ void allocateLocalRegisters(uint16_t numberOfRegistersToAllocate) {
     // The number of allocated local registers changes
     if(numberOfRegistersToAllocate > currentNumberOfLocalRegisters) {
       uint8_t oldNumberOfLocalRegisters = currentNumberOfLocalRegisters;
-      if((currentSubroutineLevelData = reallocC47Blocks(currentSubroutineLevelData, 4 + currentNumberOfLocalRegisters, 4 + numberOfRegistersToAllocate))) {
+      if((currentSubroutineLevelData = reallocC47Blocks(currentSubroutineLevelData, 4 + oldNumberOfLocalRegisters, 4 + numberOfRegistersToAllocate))) {
         currentLocalFlags = currentSubroutineLevelData + 3;
         currentLocalRegisters = (registerHeader_t *)(currentSubroutineLevelData + 4);
         currentNumberOfLocalRegisters = numberOfRegistersToAllocate;
 
-      // All the new local registers are real34s initialized to 0.0
-      for(r=FIRST_LOCAL_REGISTER+oldNumberOfLocalRegisters; r<FIRST_LOCAL_REGISTER+numberOfRegistersToAllocate; r++) {
-        bool_t isMemIssue = false;
-
-        if((lastIntegerBase == 0) && (Input_Default == ID_43S || Input_Default == ID_DP)) {                 //JM defaults JMZERO
-          void *newMem = allocC47Blocks(REAL34_SIZE_IN_BLOCKS);
-          if(newMem) {
-            setRegisterDataType(r, dtReal34, amNone);
-            setRegisterDataPointer(r, newMem);
-            real34Zero(REGISTER_REAL34_DATA(r));
-          } else isMemIssue = true;
-        }
-        else if((lastIntegerBase == 0) && (Input_Default == ID_CPXDP)) {                //JM defaults vv
-          void *newMem = allocC47Blocks(COMPLEX34_SIZE_IN_BLOCKS);
-          if(newMem) {
-            setRegisterDataType(r, dtComplex34, amNone);
-            if(getSystemFlag(FLAG_POLAR)) {
-              setRegisterTag(r, currentAngularMode | amPolar);
-            }
-            setRegisterDataPointer(r, allocC47Blocks(COMPLEX34_SIZE_IN_BLOCKS));
-            real34Zero(REGISTER_REAL34_DATA(r));
-            real34Zero(REGISTER_IMAG34_DATA(r));
-          } else isMemIssue = true;
-        }                                                   //JM defaults ^^
-        else if(lastIntegerBase !=0 || Input_Default == ID_SI) {                   //JM defaults vv
-          longInteger_t lgInt;
-          longIntegerInit(lgInt);
-          uint16_t val =0;
-          uIntToLongInteger(val,lgInt);
-          convertLongIntegerToShortIntegerRegister(lgInt, lastIntegerBase == 0 ? 10:lastIntegerBase, r);
-          longIntegerFree(lgInt);
-        }                                                   //JM defaults ^^
-        else if((lastIntegerBase == 0) && (Input_Default == ID_LI)) {                   //JM defaults vv
-          longInteger_t lgInt;
-          longIntegerInit(lgInt);
-          uint16_t val =0;
-          uIntToLongInteger(val,lgInt);
-          convertLongIntegerToLongIntegerRegister(lgInt, r);
-          longIntegerFree(lgInt);
-        }                                                   //JM defaults ^^
-
-      if(isMemIssue) {
+        // All the new local registers are real34s initialized to 0.0
+        for(r=FIRST_LOCAL_REGISTER+oldNumberOfLocalRegisters; r<FIRST_LOCAL_REGISTER+numberOfRegistersToAllocate; r++) {
+          if(initLocalRegisters(r)) {
             // Not enough memory (!)
             for(uint16_t rr = FIRST_LOCAL_REGISTER + oldNumberOfLocalRegisters; rr < r; rr++) {
               freeRegisterData(FIRST_LOCAL_REGISTER + rr);
             }
-            reallocC47Blocks(currentSubroutineLevelData, 4 + numberOfRegistersToAllocate, 4 + oldNumberOfLocalRegisters);
+            reduceC47Blocks(currentSubroutineLevelData, 4 + numberOfRegistersToAllocate, 4 + oldNumberOfLocalRegisters);
             currentLocalFlags = currentSubroutineLevelData + 3;
             currentLocalRegisters = (registerHeader_t *)(currentSubroutineLevelData + 4);
             currentNumberOfLocalRegisters = numberOfRegistersToAllocate;
@@ -633,10 +600,11 @@ void allocateLocalRegisters(uint16_t numberOfRegistersToAllocate) {
       for(r=numberOfRegistersToAllocate; r<currentNumberOfLocalRegisters; r++) {
         freeRegisterData(FIRST_LOCAL_REGISTER + r);
       }
-      freeC47Blocks(currentSubroutineLevelData + 4 + numberOfRegistersToAllocate, currentNumberOfLocalRegisters - numberOfRegistersToAllocate);
+      reduceC47Blocks(currentSubroutineLevelData, 4 + currentNumberOfLocalRegisters, 4 + numberOfRegistersToAllocate);
       currentLocalFlags = currentSubroutineLevelData + 3;
       currentLocalRegisters = (numberOfRegistersToAllocate == 0 ? NULL : (registerHeader_t *)(currentSubroutineLevelData + 4));
       currentNumberOfLocalRegisters = numberOfRegistersToAllocate;
+      return;
     }
   }
   else {
@@ -926,7 +894,7 @@ void fnDeleteVariable(uint16_t regist) {
     allNamedVariables[numberOfNamedVariables - 1].header.descriptor = 0;
     allNamedVariables[numberOfNamedVariables - 1].variableName[0] = 0;
     allNamedVariables[numberOfNamedVariables - 1].variableName[1] = 0;
-    allNamedVariables = reallocC47Blocks(allNamedVariables, TO_BLOCKS(sizeof(namedVariableHeader_t) * numberOfNamedVariables), TO_BLOCKS(sizeof(namedVariableHeader_t) * (numberOfNamedVariables - 1)));
+    reduceC47Blocks(allNamedVariables, TO_BLOCKS(sizeof(namedVariableHeader_t) * numberOfNamedVariables), TO_BLOCKS(sizeof(namedVariableHeader_t) * (numberOfNamedVariables - 1)));
     numberOfNamedVariables -= 1;
   }
   else if(regist >= FIRST_NAMED_VARIABLE && regist < LAST_NAMED_VARIABLE) {
