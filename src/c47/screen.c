@@ -569,41 +569,7 @@
       }
       fnPollTimerApp();
     }
-
-    if(usb_powered() == 1) {
-      if(!getSystemFlag(FLAG_USB)) {
-        setSystemFlag(FLAG_USB);
-        clearSystemFlag(FLAG_LOWBAT);
-        showHideUsbLowBattery();
-      }
-    }
-    else {
-      if(getSystemFlag(FLAG_USB)) {
-        clearSystemFlag(FLAG_USB);
-      }
-
-      int tmpVbat = updateVbatIntegrated();
-
-      if(tmpVbat < 2000 ) {// || vbatIntegrated < 2000) { //temporary disable shutdown
-        if(!getSystemFlag(FLAG_LOWBAT)) {
-          setSystemFlag(FLAG_LOWBAT);
-          showHideUsbLowBattery();
-        }
-        SET_ST(STAT_PGM_END);
-      }
-      else if(tmpVbat < 2500 || vbatIntegrated < 2500) {
-        if(!getSystemFlag(FLAG_LOWBAT)) {
-          setSystemFlag(FLAG_LOWBAT);
-          showHideUsbLowBattery();
-        }
-      }
-      else {
-        if(getSystemFlag(FLAG_LOWBAT)) {
-          clearSystemFlag(FLAG_LOWBAT);
-          showHideUsbLowBattery();
-        }
-      }
-    }
+    checkBattery();
   }
 #endif // PC_BUILD DMCP_BUILD
 

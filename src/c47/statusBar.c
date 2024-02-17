@@ -515,21 +515,12 @@ void drawBattery(uint16_t voltage) {
 
 
   #if defined(DMCP_BUILD)
-
-    int updateVbatIntegrated(void) {
-      int tmpVbat = get_vbat();
-      if(tmpVbat > 1500 && tmpVbat < 3100 && tmpVbat < vbatIntegrated) {
-        vbatIntegrated = tmpVbat;
-      } else if(tmpVbat > 1500 && tmpVbat < 3100 && tmpVbat > vbatIntegrated) {
-        vbatIntegrated = vbatIntegrated + ((tmpVbat - vbatIntegrated) >> 4);
-        if(tmpVbat > 2900) vbatIntegrated = tmpVbat;
-        if(vbatIntegrated > 3100) vbatIntegrated = 3100;
-      }
-      return tmpVbat;
-    }
-
     void showHideUsbLowBattery(void) {
-      if(!(SBARUPD_Battery)) return;
+      if(!(SBARUPD_Battery)) {
+        // Clear the space used by the USB / LOWBAT glyph
+        lcd_fill_rect(X_BATTERY, 0, 11, 20, LCD_SET_VALUE);
+        return;
+      }
       if(getSystemFlag(FLAG_USB)) {
         showGlyph(STD_USB_SYMBOL, &standardFont, X_BATTERY, 0, vmNormal, true, false); // is 0+9+2 pixel wide
       }
