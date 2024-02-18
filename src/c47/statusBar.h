@@ -120,7 +120,6 @@
     /**
      * Shows or hides the USB or low battery icon in the status bar.
      */
-    int updateVbatIntegrated(void);
     void showHideUsbLowBattery(void);
   #else // !DMCP_BUILD
     /**

@@ -1682,17 +1682,45 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
 }
 
 
+
 #ifdef DMCP_BUILD
-  int updateVbatIntegrated(void) {
-    int tmpVbat = get_vbat();
-    if(tmpVbat > 1500 && tmpVbat < 3100 && tmpVbat < vbatIntegrated) {
-      vbatIntegrated = tmpVbat;
-    } else if(tmpVbat > 1500 && tmpVbat < 3100 && tmpVbat > vbatIntegrated) {
-      vbatIntegrated = vbatIntegrated + ((tmpVbat - vbatIntegrated) >> 4);
-      if(tmpVbat > 2900) vbatIntegrated = tmpVbat;
-      if(vbatIntegrated > 3100) vbatIntegrated = 3100;
+
+  void dmcpResetAutoOff(void) {
+    // Key is ready -> clear auto off timer
+    if(!key_empty() || !getSystemFlag(FLAG_AUTOFF) || getSystemFlag(FLAG_RUNTIM) || programRunStop == PGM_RUNNING || (nextTimerRefresh != 0)) {
+      reset_auto_off();
     }
-    return tmpVbat;
+  }
+
+
+  int loop=0;
+  int updateVbatIntegrated(bool_t minutePulse) {
+    int tmpVbat = get_vbat();
+    if(tmpVbat > 1500 && tmpVbat < 3100) {
+      if(tmpVbat < vbatVIntegrated) {
+        vbatVIntegrated = tmpVbat;                                                        //immediately assume the lowest possibe value measured
+        loop = 0;
+      } else 
+      if(tmpVbat > vbatVIntegrated) {
+        if(tmpVbat > 2900) {                                                              //if high enough, reset
+          vbatVIntegrated = tmpVbat;
+        loop = 0;
+        } else        
+        if(vbatVIntegrated < tmpVbat && minutePulse) {                                    // Every min if vbatTIntegrated is lower than actual V, then creep closer
+          vbatVIntegrated = vbatVIntegrated + max(1,((tmpVbat - vbatVIntegrated) >> 4));  //   (2500 - 2350) >> 4 = 9 increase every minute
+        }
+      }
+    } else {
+      vbatVIntegrated = tmpVbat;
+      loop = 0;
+    }
+
+    //Monitoring for voltage integrator
+    //char aaa[120];
+    //sprintf(aaa,"V=%i VI=%i loop=%i",tmpVbat, vbatVIntegrated, loop++);
+    //print_numberstr(aaa,true);
+
+    return tmpVbat; //returning the direct battery voltage; to enable the selective usage of the integrator
   }
 
 
@@ -1710,16 +1738,16 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
         showHideUsbLowBattery();
       }
 
-      int tmpVbat = updateVbatIntegrated();
+      int tmpVbat = updateVbatIntegrated(false);
 
-      if(tmpVbat < 2000 ) {// || vbatIntegrated < 2000) { //temporary disable shutdown
+      if(tmpVbat < 2000 ) {// || vbatVIntegrated < 2000) { //temporary disable shutdown from the new integrator system. The indicator uses the integrator.
         if(!getSystemFlag(FLAG_LOWBAT)) {
           setSystemFlag(FLAG_LOWBAT);
           showHideUsbLowBattery();
         }
         SET_ST(STAT_PGM_END);
       }
-      else if(tmpVbat < 2500 || vbatIntegrated < 2500) {
+      else if(tmpVbat < 2500 || vbatVIntegrated < 2500) {
         if(!getSystemFlag(FLAG_LOWBAT)) {
           setSystemFlag(FLAG_LOWBAT);
           showHideUsbLowBattery();
