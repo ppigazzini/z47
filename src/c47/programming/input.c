@@ -98,7 +98,8 @@ void fnPause(uint16_t duration) {
       }
     #endif // DMCP_BUILD
     programRunStop = previousProgramRunStop;
-    if(programRunStop != PGM_RUNNING  || duration == 0) {   //make screen refresh for PAUSE 0 during program running as a way to inform user of status
+
+    if(programRunStop != PGM_RUNNING) {                  // Remove this IF to fix PAUSE to update the stack and annunciators
       screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
       screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
       refreshScreen(13);
