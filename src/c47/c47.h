@@ -408,7 +408,7 @@
 
   extern bool_t                 temporaryFlagRect;
   extern bool_t                 temporaryFlagPolar;
-  extern int                    vbatIntegrated;
+  extern int                    vbatVIntegrated;
 
 
   #if defined(DMCP_BUILD)

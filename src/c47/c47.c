@@ -15,6 +15,7 @@
 #include "screen.h"
 #include "softmenus.h"
 #include "stack.h"
+#include "statusBar.h"
 #include "timer.h"
 #include <string.h>
 
@@ -330,7 +331,7 @@ calcRegister_t         regStatsXY;
 
 bool_t temporaryFlagRect;
 bool_t temporaryFlagPolar;
-int vbatIntegrated = 3000;
+int vbatVIntegrated = 3000;
 
 
 #if defined(DMCP_BUILD)
@@ -680,12 +681,13 @@ int vbatIntegrated = 3000;
       // Externally forced LCD repaint
       if(ST(STAT_CLK_WKUP_FLAG)) {
         if(!ST(STAT_OFF) && (nextTimerRefresh == 0)) {
-          #if defined(TMR_OBSERVE)
-            if(fnTestBitIsSet(1) == true) {
-              showString("CLK_WKUP_FLAG", &standardFont, 20, 40, vmNormal, false, false);
-            }
-          #endif // TMR_OBSERVE
 
+                                                  #if defined(TMR_OBSERVE)
+                                                    if(fnTestBitIsSet(1) == true) {
+                                                      showString("CLK_WKUP_FLAG", &standardFont, 20, 40, vmNormal, false, false);
+                                                    }
+                                                  #endif // TMR_OBSERVE
+          updateVbatIntegrated(true);
           refreshLcd();
           lcd_refresh_wait();
         }
@@ -693,6 +695,9 @@ int vbatIntegrated = 3000;
         continue;
       }
       if(ST(STAT_POWER_CHANGE)) {
+        showHideUsbLowBattery();
+        refreshLcd();
+        lcd_refresh_wait();
         if(!ST(STAT_OFF) && (fnTimerGetStatus(TO_KB_ACTV) != TMR_RUNNING)) {
           fnTimerStart(TO_KB_ACTV, TO_KB_ACTV, 40);
         }
@@ -742,10 +747,7 @@ int vbatIntegrated = 3000;
         }
       }
 
-      // Key is ready -> clear auto off timer
-      if(!key_empty() || (nextTimerRefresh != 0)) {
-        reset_auto_off();
-      }
+      dmcpResetAutoOff();
 
       #if defined(NOKEYMAP)
         // Fetch the key
@@ -859,22 +861,22 @@ int vbatIntegrated = 3000;
         standardScreenDump();
       }
 
-    #if defined(JMSHOWCODES)
-      fnDisplayStack(1);
-      //Show key codes
-      if(sys_last_key()!=telltale_lastkey) {
-        telltale_lastkey = sys_last_key();
-        telltale_pos++;
-        telltale_pos = telltale_pos & 0x03;
-        char aaa[100];
-        sprintf   (aaa,"k=%d d=%ld  d=%ld",key, timeSpan_1, timeSpan_B);
-        showString(aaa, &standardFont, 300, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(REGISTER_T - REGISTER_X), vmNormal, true, true);
-        sprintf   (aaa,"Rel=%d, nop=%d, St=%d, Key=%d, FN_kp=%d   ",FN_timed_out_to_RELEASE_EXEC, FN_timed_out_to_NOP, FN_state, sys_last_key(), FN_key_pressed);
-        showString(aaa, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(REGISTER_Z - REGISTER_X), vmNormal, true, true);
-        sprintf   (aaa,"%4d(%4ld)(%4ld)<<",sys_last_key(),timeSpan_1,timeSpan_B);
-        showString(aaa, &standardFont, telltale_pos*90+ 1, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(REGISTER_Y - REGISTER_X), vmNormal, true, true);
-      }
-    #endif // JMSHOWCODES
+                                                  #if defined(JMSHOWCODES)
+                                                    fnDisplayStack(1);
+                                                    //Show key codes
+                                                    if(sys_last_key()!=telltale_lastkey) {
+                                                      telltale_lastkey = sys_last_key();
+                                                      telltale_pos++;
+                                                      telltale_pos = telltale_pos & 0x03;
+                                                      char aaa[100];
+                                                      sprintf   (aaa,"k=%d d=%ld  d=%ld",key, timeSpan_1, timeSpan_B);
+                                                      showString(aaa, &standardFont, 300, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(REGISTER_T - REGISTER_X), vmNormal, true, true);
+                                                      sprintf   (aaa,"Rel=%d, nop=%d, St=%d, Key=%d, FN_kp=%d   ",FN_timed_out_to_RELEASE_EXEC, FN_timed_out_to_NOP, FN_state, sys_last_key(), FN_key_pressed);
+                                                      showString(aaa, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(REGISTER_Z - REGISTER_X), vmNormal, true, true);
+                                                      sprintf   (aaa,"%4d(%4ld)(%4ld)<<",sys_last_key(),timeSpan_1,timeSpan_B);
+                                                      showString(aaa, &standardFont, telltale_pos*90+ 1, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(REGISTER_Y - REGISTER_X), vmNormal, true, true);
+                                                    }
+                                                  #endif // JMSHOWCODES
 
       if(38 <= key && key <=43) { // Function key
         sprintf(charKey, "%c", key+11);
@@ -889,23 +891,23 @@ int vbatIntegrated = 3000;
       //lcd_refresh_dma();
       }
 
-#if defined(FN_RELEASE_CODE_WP43S)
-      else if(key == 0) { // Autorepeat of UP/DOWN or key released
-        if(charKey[1] == 0) { // Last key pressed was one of the 6 function keys
-          btnFnReleased(charKey);
-        }
-        else { // Last key pressed was not one of the 6 function keys
-          //beep(440, 50);
-          btnReleased(charKey);
-          if(calcMode == CM_PEM && shiftF && ((charKey[0] == '1' && charKey[1] == '7') || (charKey[0] == '2' && charKey[1] == '2'))) {    //JM C43
-            shiftF = false;
-            refreshScreen(73);
-          }
-        }
-//      keyAutoRepeat = 0;
-        lcd_refresh();
-      }
-#endif // FN_RELEASE_CODE_WP43S
+                                                  #if defined(FN_RELEASE_CODE_WP43S)
+                                                        else if(key == 0) { // Autorepeat of UP/DOWN or key released
+                                                          if(charKey[1] == 0) { // Last key pressed was one of the 6 function keys
+                                                            btnFnReleased(charKey);
+                                                          }
+                                                          else { // Last key pressed was not one of the 6 function keys
+                                                            //beep(440, 50);
+                                                            btnReleased(charKey);
+                                                            if(calcMode == CM_PEM && shiftF && ((charKey[0] == '1' && charKey[1] == '7') || (charKey[0] == '2' && charKey[1] == '2'))) {    //JM C43
+                                                              shiftF = false;
+                                                              refreshScreen(73);
+                                                            }
+                                                          }
+                                                  //      keyAutoRepeat = 0;
+                                                          lcd_refresh();
+                                                        }
+                                                  #endif // FN_RELEASE_CODE_WP43S
 
       else if(key == 0 && charKey[1] == 0) {            //JM, key=0 is release, therefore there must have been a press before that. If the press was a FN key, FN_key_pressed > 0 when it comes back here for release.
         btnFnReleased(charKey);                                //    in short, it can only execute FN release after there was a FN press.

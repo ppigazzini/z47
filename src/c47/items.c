@@ -218,7 +218,7 @@ void fnNop(uint16_t unusedButMandatoryParameter) {
     indexOfItems[func].func(param);
 
     #if defined(DMCP_BUILD)
-      updateVbatIntegrated();              //Check the battery directly after a task so that the worst case voltage is recorded
+      updateVbatIntegrated(false);              //Check the battery directly after a task so that the worst case voltage is recorded
     #endif
 
 

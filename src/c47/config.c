@@ -44,6 +44,7 @@
 #include "solver/equation.h"
 #include "stack.h"
 #include "stats.h"
+#include "statusBar.h"
 #include "store.h"
 #include "recall.h"
 #include <stdlib.h>
@@ -1658,6 +1659,11 @@ Sett(_Reset);
       refreshDebugPanel();
     #endif // (DEBUG_PANEL == 1)
 
+    #if defined(DMCP_BUILD)
+      //Check and update current power status (USB / LOWBAT)
+      checkBattery();
+    #endif // DMCP_BUILD
+
     //JM TEMPORARY TEST DATA IN REGISTERS
     uint_fast16_t n = nbrOfElements(indexOfStrings);
     for(uint_fast16_t i=0; i<n; i++) {
@@ -1696,6 +1702,86 @@ Sett(_Reset);
 }
 
 
+
+#ifdef DMCP_BUILD
+
+  void dmcpResetAutoOff(void) {
+    // Key is ready -> clear auto off timer
+    if(!key_empty() || !getSystemFlag(FLAG_AUTOFF) || getSystemFlag(FLAG_RUNTIM) || programRunStop == PGM_RUNNING || (nextTimerRefresh != 0)) {
+      reset_auto_off();
+    }
+  }
+
+
+  int loop=0;
+  int updateVbatIntegrated(bool_t minutePulse) {
+    int tmpVbat = get_vbat();
+    if(tmpVbat > 1500 && tmpVbat < 3100) {
+      if(tmpVbat < vbatVIntegrated) {
+        vbatVIntegrated = tmpVbat;                                                        //immediately assume the lowest possibe value measured
+        loop = 0;
+      } else 
+      if(tmpVbat > vbatVIntegrated) {
+        if(tmpVbat > 2900) {                                                              //if high enough, reset
+          vbatVIntegrated = tmpVbat;
+        loop = 0;
+        } else        
+        if(vbatVIntegrated < tmpVbat && minutePulse) {                                    // Every min if vbatTIntegrated is lower than actual V, then creep closer
+          vbatVIntegrated = vbatVIntegrated + max(1,((tmpVbat - vbatVIntegrated) >> 4));  //   (2500 - 2350) >> 4 = 9 increase every minute
+        }
+      }
+    } else {
+      vbatVIntegrated = tmpVbat;
+      loop = 0;
+    }
+
+    //Monitoring for voltage integrator
+    //char aaa[120];
+    //sprintf(aaa,"V=%i VI=%i loop=%i",tmpVbat, vbatVIntegrated, loop++);
+    //print_numberstr(aaa,true);
+
+    return tmpVbat; //returning the direct battery voltage; to enable the selective usage of the integrator
+  }
+
+
+  void checkBattery(void) {
+    if(usb_powered() == 1) {
+      if(!getSystemFlag(FLAG_USB)) {
+        setSystemFlag(FLAG_USB);
+        clearSystemFlag(FLAG_LOWBAT);
+        showHideUsbLowBattery();
+      }
+    }
+    else {
+      if(getSystemFlag(FLAG_USB)) {
+        clearSystemFlag(FLAG_USB);
+        showHideUsbLowBattery();
+      }
+
+      int tmpVbat = updateVbatIntegrated(false);
+
+      if(tmpVbat < 2000 ) {// || vbatVIntegrated < 2000) { //temporary disable shutdown from the new integrator system. The indicator uses the integrator.
+        if(!getSystemFlag(FLAG_LOWBAT)) {
+          setSystemFlag(FLAG_LOWBAT);
+          showHideUsbLowBattery();
+        }
+        SET_ST(STAT_PGM_END);
+      }
+      else if(tmpVbat < 2500 || vbatVIntegrated < 2500) {
+        if(!getSystemFlag(FLAG_LOWBAT)) {
+          setSystemFlag(FLAG_LOWBAT);
+          showHideUsbLowBattery();
+        }
+      }
+      else {
+        if(getSystemFlag(FLAG_LOWBAT)) {
+          clearSystemFlag(FLAG_LOWBAT);
+          showHideUsbLowBattery();
+        }
+      }
+    }
+  }
+#endif //DMCP_BUILD
 
 void backToSystem(uint16_t confirmation) {
   if(confirmation == NOT_CONFIRMED) {
