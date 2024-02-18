@@ -216,7 +216,7 @@ uint16_t convertItemToSubOrSup(uint16_t item, int16_t subOrSup) {
                                  item == ITM_op_j_SIGN            ? COMPLEX_UNIT :
                                  item == ITM_zetaX                ? STD_zeta "()" :
                                  item == ITM_GAMMAX               ? STD_GAMMA "()" :
-                                 item >= FIRST_CONSTANT && 
+                                 item >= FIRST_CONSTANT &&
                                     item <= LAST_CONSTANT         ? indexOfItems[item].itemCatalogName : "";
 
           char addChar[100];
@@ -1516,13 +1516,13 @@ uint16_t convertItemToSubOrSup(uint16_t item, int16_t subOrSup) {
       }
 
       //    C47                                //R47
-      //  1:  B = ITM_1ONX            = BIN      B = ITM_SQUAREROOTX       
+      //  1:  B = ITM_1ONX            = BIN      B = ITM_SQUAREROOTX
       //  3:  D = ITM_LOG = ITM_ENTER = DEC      D = ITM_YX
       //  7:  H = ITM_RCL             = HEX      H = ITM_RCL
       //      O = ITM_EXPONENT        = OCT      ---
       //  8:  I = ITM_Rdown           = INT      I = ITM_Rdown
 
-      // F not active in NIM, per definition not possible if a period is in the input string. 
+      // F not active in NIM, per definition not possible if a period is in the input string.
 
       //JM Only works in direct NIM, that is only when the input buffer already contains #
       case ITM_1ONX: { // B for binary base

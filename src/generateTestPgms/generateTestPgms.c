@@ -2049,7 +2049,7 @@ int main(int argc, char* argv[]) {
 
     // 10
     *(currentStep++) = ITM_STO;
-    *(currentStep++) = 112; // .00
+    *(currentStep++) = FIRST_LOCAL_REGISTER_IN_KS_CODE; // .00
 
     *(currentStep++) = ITM_DEC;
     *(currentStep++) = REGISTER_X_IN_KS_CODE;
@@ -2063,7 +2063,7 @@ int main(int argc, char* argv[]) {
     *(currentStep++) = 't';
 
     *(currentStep++) = ITM_RCLMULT;
-    *(currentStep++) = 112; // .00
+    *(currentStep++) = FIRST_LOCAL_REGISTER_IN_KS_CODE; // .00
 
     *(currentStep++) = ITM_RTN;
 

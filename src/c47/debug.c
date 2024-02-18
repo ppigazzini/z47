@@ -2160,6 +2160,31 @@ void debugNIM(void) {
 
 
 #if defined(PC_BUILD ) || defined(TESTSUITE_BUILD)
+  void dumpSubroutineLevelData(void) {
+    dataBlock_t *current = TO_PCMEMPTR(allSubroutineLevels.ptrToSubroutineLevel0Data);
+
+    printf("allSuballSubroutineLevels.numberOfSubroutineLevels  = %u\n", allSubroutineLevels.numberOfSubroutineLevels);
+    printf("allSuballSubroutineLevels.ptrToSubroutineLevel0Data = %u\n", allSubroutineLevels.ptrToSubroutineLevel0Data);
+    printf("currentSubroutineLevelData                          = %u\n", TO_C47MEMPTR(currentSubroutineLevelData));
+
+    for(int i=1; i<=allSubroutineLevels.numberOfSubroutineLevels; i++) {
+      printf("  Level %d at %u\n", i, TO_C47MEMPTR(current));
+      printf("    returnProgramNumber    = %d\n", current[0].returnProgramNumber);
+      printf("    returnLocalStep        = %u\n", current[0].returnLocalStep);
+      printf("    numberOfLocalFlags     = %u\n", current[1].numberOfLocalFlags);
+      printf("    numberOfLocalRegisters = %u\n", current[1].numberOfLocalRegisters);
+      printf("    subroutineLevel        = %u\n", current[1].subroutineLevel);
+      printf("    ptrToNextLevel         = %u\n", current[2].ptrToNextLevel);
+      printf("    ptrToPreviousLevel     = %u\n", current[2].ptrToPreviousLevel);
+
+      current = TO_PCMEMPTR(current[2].ptrToNextLevel);
+    }
+
+    printf("\n\n");
+  }
+
+
+
   void testRegisters(const char *text) {
     calcRegister_t i;
     bool_t situationIsBad;

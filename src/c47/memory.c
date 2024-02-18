@@ -115,6 +115,16 @@ void *reallocC47Blocks(void *pcMemPtr, size_t oldSizeInBlocks, size_t newSizeInB
   }
 }
 
+void reduceC47Blocks(void *pcMemPtr, size_t oldSizeInBlocks, size_t newSizeInBlocks) {
+  if(newSizeInBlocks == 0) {
+    freeC47Blocks(pcMemPtr, oldSizeInBlocks);
+    return;
+  }
+
+  freeListReduce(pcMemPtr, oldSizeInBlocks, newSizeInBlocks);
+  c47MemInBlocks += newSizeInBlocks - oldSizeInBlocks;
+}
+
 void freeC47Blocks(void *pcMemPtr, size_t sizeInBlocks) {
   if(pcMemPtr == NULL) {
     return;

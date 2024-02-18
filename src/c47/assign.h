@@ -30,13 +30,13 @@
   void assignLeaveAlpha           (void);
   void assignGetName1             (void);
   void assignGetName2             (void);
-  
+
   /**
    * Remove assignments for user items
    *
    * \param[in] item         Category of user items to be removed:
-   *                          - ITM_XEQ for user programs, 
-   *                          - ITM_RCL for User variables, 
+   *                          - ITM_XEQ for user programs,
+   *                          - ITM_RCL for User variables,
    *                          - -MNU_DYNAMIC for user defined menus
    *            userItemName Pointer to the item name to be removed
    *                         If the name is an empty string, all assigned items within the category will be removed
