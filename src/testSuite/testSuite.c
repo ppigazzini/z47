@@ -621,7 +621,7 @@ void setParameter(char *p) {
 
     //Lettered flag
     if(l[3] >= 'A' && l[4] == 0) {
-      if(strstr("XYZTABCDLIJK", l + 3) != NULL) {
+      if(strstr("XYZTABCDLIJKMNPQRSEFGHOUVW", l + 3) != NULL) {
         uint16_t flg;
 
         flg = l[3] == 'T' ? 103 :
@@ -959,7 +959,7 @@ void setParameter(char *p) {
             || (l[1] >= '0' && l[1] <= '9' && l[2] >= '0' && l[2] <= '9' && l[3] == 0)
             || (l[1] >= '0' && l[1] <= '9' && l[2] >= '0' && l[2] <= '9' && l[3] >= '0' && l[3] <= '9' && l[4] == 0)) {
       regist = atoi(l + 1);
-      if(regist > LAST_GLOBAL_REGISTER || regist < 0) {
+      if(regist > LAST_SPARE_REGISTER || regist < 0) {
         printf("\nMalformed numbered register setting. Th number after R shall be a number from 0 to %d.\n", LAST_GLOBAL_REGISTER);
         abortTest();
       }
@@ -1743,7 +1743,7 @@ void checkExpectedOutParameter(char *p) {
 
     //Lettered flag
     if(l[3] >= 'A' && l[4] == 0) {
-      if(strstr("XYZTABCDLIJK", l + 3) != NULL) {
+      if(strstr("XYZTABCDLIJKMNPQRSEFGHOUVW", l + 3) != NULL) {
         uint16_t flg;
 
         flg = l[3] == 'T' ? 103 :
@@ -2132,7 +2132,7 @@ void checkExpectedOutParameter(char *p) {
             || (l[1] >= '0' && l[1] <= '9' && l[2] >= '0' && l[2] <= '9' && l[3] == 0)
             || (l[1] >= '0' && l[1] <= '9' && l[2] >= '0' && l[2] <= '9' && l[3] >= '0' && l[3] <= '9' && l[4] == 0)) {
       regist = atoi(l + 1);
-      if(regist > LAST_GLOBAL_REGISTER || regist < 0) {
+      if(regist > LAST_SPARE_REGISTER || regist < 0) {
         printf("\nMissformed numbered register checking. The number after R shall be a number from 0 to 111.\n");
         abortTest();
       }

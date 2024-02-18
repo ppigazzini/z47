@@ -94,7 +94,7 @@
    * \param[in] regist Register number
    * \param[in] memPtr Data pointer
    */
-  void           setRegisterDataPointer          (calcRegister_t regist, void *memPtr);
+  void           setRegisterDataPointer          (calcRegister_t regist, const void *memPtr);
 
   /**
    * Sets the data information of a register.
@@ -216,7 +216,7 @@
    * \param[in] confirmation Current status of the confirmation of dleting user variables
    */
   void           fnClearAllVariables            (uint16_t confirmation);
-  
+
   /**
    * Sets X to the number of local registers.
    *

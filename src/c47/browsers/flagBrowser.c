@@ -37,7 +37,7 @@
 
 #if !defined(TESTSUITE_BUILD)
 #if !defined(SAVE_SPACE_DM42_8)
-  TO_QSPI const char flagLetter[] = "XYZTABCDLIJK";
+  TO_QSPI const char flagLetter[] = "XYZTABCDLIJKMNPQRSEFGHOUVW";
 
   static void oneSystemFlag(uint16_t systemFlag, const char *systemFlagNamename, int16_t *line, bool_t *firstSystemFlag) {
     if(getSystemFlag(systemFlag)) {
@@ -103,7 +103,11 @@
 
       tmpString[CHARS_PER_LINE * line] = 0;
       firstFlag = true;
-      for(f=0; f<NUMBER_OF_GLOBAL_FLAGS; f++) {
+      for(f=0; f<=FLAG_W; f++) {
+        if(f>FLAG_K && f<FLAG_M) {
+          continue;
+        }
+
         if(getFlag(f)) {
           if(f < 10) {
             flagNumber[0] = '0' + f;
@@ -115,7 +119,7 @@
             flagNumber[2] = 0;
           }
           else {
-            flagNumber[0] = flagLetter[f-100];
+            flagNumber[0] = flagLetter[f <= FLAG_K ? f-FLAG_X : f-(FLAG_M-12)];
             flagNumber[1] = 0;
           }
 
@@ -143,12 +147,7 @@
         }
         else {
           // Local registers
-          if(currentNumberOfLocalRegisters == 1) {
-            strcpy(tmpString + CHARS_PER_LINE * ++line, "1 local register is allocated.");
-          }
-          else {
-            sprintf(tmpString + CHARS_PER_LINE * ++line, "%" PRIu8 " local registers are allocated.", currentNumberOfLocalRegisters);
-          }
+          sprintf(tmpString + CHARS_PER_LINE * ++line, "%" PRIu8 " local register%s allocated.", currentNumberOfLocalRegisters, currentNumberOfLocalRegisters > 1 ? "s are": " is");
         }
 
         // Local flags
@@ -342,9 +341,19 @@
 
       showString("Global flag status (continued):", &standardFont, 1, 22-1, vmNormal, true, true);
 
-      for(f=100/*80*/; f<NUMBER_OF_GLOBAL_FLAGS; f++) {                     //JM100
+      for(f=FLAG_X; f<=FLAG_W; f++) {                     //JM100
+        if(FLAG_K < f && f < FLAG_M) {
+          continue;
+        }
+
+        int16_t g = f - 99*(f > FLAG_K);
         if(getFlag(f)) {
-          lcd_fill_rect(80*(f%5), 22*(f/5)-132-1-44-220, 80*(f%5)+74-(80*(f%5)), 22*(f/5)-132+20-1-44-220-(22*(f/5)-132-1-44-220)+1, 0xFF);
+          if(f <= FLAG_I) {
+            lcd_fill_rect(80*(g%5)+1,          22*(g/5)-397,          75, 21, 0xFF);
+          }
+          else {
+            lcd_fill_rect(50*((g-FLAG_J)%8)+1, 22*((g-FLAG_J)/8)+87,  45, 21, 0xFF);
+          }
         }
 
         switch(f) {
@@ -358,18 +367,38 @@
           case FLAG_D: strcpy(tmpString, "D:SPCRES"); break;
           case FLAG_L: strcpy(tmpString, "L:LEAD0 "); break;
           case FLAG_I: strcpy(tmpString, "I:CPXRES"); break;
-          case FLAG_J: strcpy(tmpString, "J:110   "); break;
-          case FLAG_K: strcpy(tmpString, "K:111   "); break;
-          default:  sprintf(tmpString,"   %d ", f);break;
+          case FLAG_J: strcpy(tmpString, "J:110");    break;
+          case FLAG_K: strcpy(tmpString, "K:111");    break;
+          case FLAG_M: strcpy(tmpString, "M:211");    break;
+          case FLAG_N: strcpy(tmpString, "N:212");    break;
+          case FLAG_P: strcpy(tmpString, "P:213");    break;
+          case FLAG_Q: strcpy(tmpString, "Q:214");    break;
+          case FLAG_R: strcpy(tmpString, "R:215");    break;
+          case FLAG_S: strcpy(tmpString, "S:216");    break;
+          case FLAG_E: strcpy(tmpString, "E:217");    break;
+          case FLAG_F: strcpy(tmpString, "F:218");    break;
+          case FLAG_G: strcpy(tmpString, "G:229");    break;
+          case FLAG_H: strcpy(tmpString, "H:220");    break;
+          case FLAG_O: strcpy(tmpString, "O:221");    break;
+          case FLAG_U: strcpy(tmpString, "U:222");    break;
+          case FLAG_V: strcpy(tmpString, "V:223");    break;
+          case FLAG_W: strcpy(tmpString, "W:224");    break;
+          default:     sprintf(tmpString,"  %d", f);  break;
         }
 
         char ss[2];
-        int16_t i;
+        int16_t i, shift;
         i=0;
         ss[1]=0;
-        while(tmpString[i]!=0){
+        while(tmpString[i] != 0){
           ss[0]=tmpString[i];
-          showString(ss, &standardFont, i*9-32+1+max(0,16-1+2*40*(f%5) + 19 - 16/8), 22*(f/5)-132-1-44-220, getFlag(f) ? vmReverse : vmNormal, true, true);  //JM-44
+          if(f <= FLAG_I) {
+            showString(ss, &standardFont, 80*(g%5)+i*9+3,          22*(g/5)-397,         getFlag(f) ? vmReverse : vmNormal, true, true);  //JM-44
+          }
+          else {
+            shift = 3*(i==0) + 14*(i==1) + (8*i+5)*(i>=2);
+            showString(ss, &standardFont, 50*((g-FLAG_J)%8)+shift, 22*((g-FLAG_J)/8)+87, getFlag(f) ? vmReverse : vmNormal, true, true);  //JM-44
+          }
           i++;
         }
   //      showString(tmpString, &standardFont, max(0,16-1+2*40*(f%5) + 19 - stringWidth(tmpString, &standardFont, false, false)/2), 22*(f/5)-132-1-44-220, getFlag(f) ? vmReverse : vmNormal, true, true);  //JM-44
@@ -377,36 +406,28 @@
 
       if(currentNumberOfLocalFlags == 0) {
         sprintf(tmpString, "No local flags and registers are allocated.");
-        showString(tmpString, &standardFont, 1, 110-1, vmNormal, true, true);
+        showString(tmpString, &standardFont, 1, 131, vmNormal, true, true);
       }
       else {
         if(currentNumberOfLocalRegisters == 0) {
           sprintf(tmpString, "No local registers are allocated.");
-          showString(tmpString, &standardFont, 1, 110-1, vmNormal, true, true);
+          showString(tmpString, &standardFont, 1, 131, vmNormal, true, true);
         }
         else {
-           // Local registers
-          if(currentNumberOfLocalRegisters == 1) {
-            strcpy(tmpString, "1 local register is allocated.");
-            showString(tmpString, &standardFont, 1, 110-1, vmNormal, true, true);
-          }
-          else {
-            sprintf(tmpString,"%" PRIu8 " local registers are allocated.", currentNumberOfLocalRegisters);
-            showString(tmpString, &standardFont, 1, 110-1, vmNormal, true, true);
-          }
+          // Local registers
+          sprintf(tmpString, "%" PRIu8 " local register%s allocated.", currentNumberOfLocalRegisters, currentNumberOfLocalRegisters > 1 ? "s are": " is");
+          showString(tmpString, &standardFont, 1, 131, vmNormal, true, true);
         }
-        showString("Local flag status:", &standardFont, 1, 132-1, vmNormal, true, true);
+        showString("Local flag status:", &standardFont, 1, 153, vmNormal, true, true);
 
         for(f=0; f<NUMBER_OF_LOCAL_FLAGS; f++) {
-          if(getFlag(NUMBER_OF_GLOBAL_FLAGS + f)) {
-            lcd_fill_rect(40*(f%10)+1, 22*(f/10)+198-1-44, 40*(f%10)+39-(40*(f%10)+1), 22*(f/10)+198+20-1-44-(22*(f/10)+198-1-44)+1,  0xFF);
+          if(getFlag(FIRST_LOCAL_FLAG + f)) {
+            lcd_fill_rect(25*(f%16)+1, 22*(f/16)+175, 22, 21,  0xFF);
           }
 
           sprintf(tmpString, "%d", f);
-          showString(tmpString, &standardFont, f<=9 ? 40*(f%10) + 17 : 40*(f%10) + 12, 22*(f/10)+198-1-44, getFlag(NUMBER_OF_GLOBAL_FLAGS + f) ? vmReverse : vmNormal, true, true);     //JM-44
+          showString(tmpString, &standardFont, 25*(f%16)+5+4*(f<=9), 22*(f/16)+175, getFlag(NUMBER_OF_GLOBAL_FLAGS + f) ? vmReverse : vmNormal, true, true);     //JM-44
         }
-
-
       }
 
   #if defined(OOO)

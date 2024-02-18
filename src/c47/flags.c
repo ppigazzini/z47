@@ -59,39 +59,15 @@ static void systemFlagProcess(unsigned int idx, flagAction_t action) {
 
 static void systemFlagAction(uint16_t systemFlag, flagAction_t action) {
   switch(systemFlag) {
-    case FLAG_ALLENG:
-      systemFlagProcess(FLAG_A, action);
-      break;
-
-    case FLAG_OVERFLOW:
-      systemFlagProcess(FLAG_B, action);
-      break;
-
-    case FLAG_CARRY:
-      systemFlagProcess(FLAG_C, action);
-      break;
-
-    case FLAG_SPCRES:
-      systemFlagProcess(FLAG_D, action);
-      break;
-
-    case FLAG_CPXRES:
-      systemFlagProcess(FLAG_I, action);
-      break;
-
-    case FLAG_LEAD0:
-      systemFlagProcess(FLAG_L, action);
-      break;
-
-    case FLAG_TRACE:
-      systemFlagProcess(FLAG_T, action);
-      break;
-
-    case FLAG_POLAR:
-      systemFlagProcess(FLAG_X, action);
-      break;
-
-    default: ;
+    case FLAG_ALLENG:   systemFlagProcess(FLAG_A, action); break;
+    case FLAG_OVERFLOW: systemFlagProcess(FLAG_B, action); break;
+    case FLAG_CARRY:    systemFlagProcess(FLAG_C, action); break;
+    case FLAG_SPCRES:   systemFlagProcess(FLAG_D, action); break;
+    case FLAG_CPXRES:   systemFlagProcess(FLAG_I, action); break;
+    case FLAG_LEAD0:    systemFlagProcess(FLAG_L, action); break;
+    case FLAG_TRACE:    systemFlagProcess(FLAG_T, action); break;
+    case FLAG_POLAR:    systemFlagProcess(FLAG_X, action); break;
+    default:                                               break;
   }
 
   switch(systemFlag) {
@@ -112,12 +88,7 @@ static void systemFlagAction(uint16_t systemFlag, flagAction_t action) {
     case FLAG_ENDPMT:
     case FLAG_HPRP:
     case FLAG_HPBASE:
-    case FLAG_2TO10:
-      fnRefreshState();
-      break;
-
-
-
+    case FLAG_2TO10:  fnRefreshState(); break;
     case FLAG_SBdate:
     case FLAG_SBtime:
     case FLAG_SBcr  :
@@ -133,13 +104,8 @@ static void systemFlagAction(uint16_t systemFlag, flagAction_t action) {
     case FLAG_SBser :
     case FLAG_SBprn :
     case FLAG_SBbatV:
-    case FLAG_SBshfR:
-      fnRefreshState();
-      screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
-      break;
-
-
-    default: ;
+    case FLAG_SBshfR: fnRefreshState(); screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR; break;
+    default: break;
   }
 }
 
@@ -194,10 +160,12 @@ bool_t getSystemFlag(int32_t sf) {
 }
 
 void forceSystemFlag(unsigned int sf, int set) {
-  if(set)
+  if(set) {
     setSystemFlag(sf);
-  else
+  }
+  else {
     clearSystemFlag(sf);
+  }
 }
 
 static void synchronizeSystemFlag(unsigned int sf) {
@@ -252,10 +220,12 @@ bool_t getFlag(uint16_t flag) {
   if(flag & 0x8000) { // System flag
     return getSystemFlag(flag);
   }
-  else if(flag < NUMBER_OF_GLOBAL_FLAGS) { // Global flag
+
+  else if(flag < FLAG_K) { // Global flag
     return (globalFlags[flag/16] & (1u << (flag%16))) != 0;
   }
-  else { // Local flag
+
+  else if(flag < LAST_LOCAL_FLAG) { // Local flag
     if(currentLocalFlags != NULL) {
       flag -= NUMBER_OF_GLOBAL_FLAGS;
       if(flag < NUMBER_OF_LOCAL_FLAGS) {
@@ -267,11 +237,23 @@ bool_t getFlag(uint16_t flag) {
       }
     }
     #if defined(PC_BUILD)
-      else {
-        moreInfoOnError("In function getFlag:", "no local flags defined!", "To do so, you can find LocR here:", "[g] [P.FN] [g] [F5]");
-      }
+    else {
+      moreInfoOnError("In function getFlag:", "no local flags defined!", "To do so, you can find LocR here:", "[f] [P.FN] [f] [F6]");
+    }
     #endif // PC_BUILD
   }
+
+  else if(FLAG_M <= flag && flag <= FLAG_W) { // Extra global flag
+    flag -= 99;
+    return (globalFlags[flag/16] & (1u << (flag%16))) != 0;
+  }
+
+  #if defined(PC_BUILD)
+  else {
+    moreInfoOnError("In function getFlag:", "there is no flag beyond FLAG_W", "", "");
+  }
+  #endif // PC_BUILD
+
   return false;
  }
 
@@ -324,7 +306,8 @@ void fnSetFlag(uint16_t flag) {
       setSystemFlag(flag);
     }
   }
-  else if(flag < NUMBER_OF_GLOBAL_FLAGS) { // Global flag
+
+  else if(flag < FLAG_K) { // Global flag
     switch(flag) {
       case FLAG_A: setSystemFlag(FLAG_ALLENG);   break;
       case FLAG_B: setSystemFlag(FLAG_OVERFLOW); break;
@@ -337,7 +320,8 @@ void fnSetFlag(uint16_t flag) {
       default: globalFlags[flag/16] |= 1u << (flag%16);
     }
   }
-  else { // Local flag
+
+  else if(flag < LAST_LOCAL_FLAG) { // Local flag
     if(currentLocalFlags != NULL) {
       flag -= NUMBER_OF_GLOBAL_FLAGS;
       if(flag < NUMBER_OF_LOCAL_FLAGS) {
@@ -349,11 +333,23 @@ void fnSetFlag(uint16_t flag) {
       }
     }
     #if defined(PC_BUILD)
-      else {
-        moreInfoOnError("In function fnSetFlag:", "no local flags defined!", "To do so, you can find LocR here:", "[g] [P.FN] [g] [F5]");
-      }
+    else {
+      moreInfoOnError("In function fnSetFlag:", "no local flags defined!", "To do so, you can find LocR here:", "[f] [P.FN] [f] [F6]");
+    }
     #endif // PC_BUILD
   }
+
+  else if(FLAG_M <= flag && flag <= FLAG_W) { // Extra global flag
+    flag -= 99;
+    globalFlags[flag/16] |= 1u << (flag%16);
+  }
+
+  #if defined(PC_BUILD)
+  else {
+    sprintf(tmpString, "there is no flag beyond FLAG_W (%" PRIu16 ")", flag);
+    moreInfoOnError("In function fnSetFlag:", tmpString, "", "");
+  }
+  #endif // PC_BUILD
 }
 
 
@@ -388,46 +384,22 @@ void fnClearFlag(uint16_t flag) {
       clearSystemFlag(flag);
     }
   }
-  else if(flag < NUMBER_OF_GLOBAL_FLAGS) { // Global flag
+
+  else if(flag < FLAG_K) { // Global flag
     switch(flag) {
-      case FLAG_A: {
-        clearSystemFlag(FLAG_ALLENG);
-        break;
-      }
-      case FLAG_B: {
-        clearSystemFlag(FLAG_OVERFLOW);
-        break;
-      }
-      case FLAG_C: {
-        clearSystemFlag(FLAG_CARRY);
-        break;
-      }
-      case FLAG_D: {
-        clearSystemFlag(FLAG_SPCRES);
-        break;
-      }
-      case FLAG_I: {
-        clearSystemFlag(FLAG_CPXRES);
-        break;
-      }
-      case FLAG_L: {
-        clearSystemFlag(FLAG_LEAD0);
-        break;
-      }
-      case FLAG_T: {
-        clearSystemFlag(FLAG_TRACE);
-        break;
-      }
-      case FLAG_X: {
-        clearSystemFlag(FLAG_POLAR);
-        break;
-      }
-      default: {
-        globalFlags[flag/16] &= ~(1u << (flag%16));
-      }
+      case FLAG_A: clearSystemFlag(FLAG_ALLENG);   break;
+      case FLAG_B: clearSystemFlag(FLAG_OVERFLOW); break;
+      case FLAG_C: clearSystemFlag(FLAG_CARRY);    break;
+      case FLAG_D: clearSystemFlag(FLAG_SPCRES);   break;
+      case FLAG_I: clearSystemFlag(FLAG_CPXRES);   break;
+      case FLAG_L: clearSystemFlag(FLAG_LEAD0);    break;
+      case FLAG_T: clearSystemFlag(FLAG_TRACE);    break;
+      case FLAG_X: clearSystemFlag(FLAG_POLAR);    break;
+      default:     globalFlags[flag/16] &= ~(1u << (flag%16));
     }
   }
-  else { // Local flag
+
+  else if(flag < LAST_LOCAL_FLAG) { // Local flag
     if(currentLocalFlags != NULL) {
       flag -= NUMBER_OF_GLOBAL_FLAGS;
       if(flag < NUMBER_OF_LOCAL_FLAGS) {
@@ -438,12 +410,25 @@ void fnClearFlag(uint16_t flag) {
         displayBugScreen(errorMessage);
       }
     }
+
     #if defined(PC_BUILD)
       else {
-       moreInfoOnError("In function fnClearFlag:", "no local flags defined!", "To do so, you can find LocR here:", "[g] [P.FN] [g] [F5]");
+       moreInfoOnError("In function fnClearFlag:", "no local flags defined!", "To do so, you can find LocR here:", "[f] [P.FN] [f] [F6]");
       }
     #endif // PC_BUILD
   }
+
+  else if(FLAG_M <= flag && flag <= FLAG_W) { // Extra global flag
+    flag -= 99;
+    globalFlags[flag/16] &= ~(1u << (flag%16));
+  }
+
+  #if defined(PC_BUILD)
+  else {
+    sprintf(tmpString, "there is no flag beyond FLAG_W (%" PRIu16 ")", flag);
+    moreInfoOnError("In function fnClearFlag:", tmpString, "", "");
+  }
+  #endif // PC_BUILD
 }
 
 
@@ -483,46 +468,22 @@ void fnFlipFlag(uint16_t flag) {
       flipSystemFlag(flag);
     }
   }
-  else if(flag < NUMBER_OF_GLOBAL_FLAGS) { // Global flag
+
+  else if(flag <= FLAG_K) { // Global flag
     switch(flag) {
-      case FLAG_A: {
-        flipSystemFlag(FLAG_ALLENG);
-        break;
-      }
-      case FLAG_B: {
-        flipSystemFlag(FLAG_OVERFLOW);
-        break;
-      }
-      case FLAG_C: {
-        flipSystemFlag(FLAG_CARRY);
-        break;
-      }
-      case FLAG_D: {
-        flipSystemFlag(FLAG_SPCRES);
-        break;
-      }
-      case FLAG_I: {
-        flipSystemFlag(FLAG_CPXRES);
-        break;
-      }
-      case FLAG_L: {
-        flipSystemFlag(FLAG_LEAD0);
-        break;
-      }
-      case FLAG_T: {
-        flipSystemFlag(FLAG_TRACE);
-        break;
-      }
-      case FLAG_X: {
-        flipSystemFlag(FLAG_POLAR);
-        break;
-      }
-      default: {
-        globalFlags[flag/16] ^=  1u << (flag%16);
-      }
+      case FLAG_A: flipSystemFlag(FLAG_ALLENG);   break;
+      case FLAG_B: flipSystemFlag(FLAG_OVERFLOW); break;
+      case FLAG_C: flipSystemFlag(FLAG_CARRY);    break;
+      case FLAG_D: flipSystemFlag(FLAG_SPCRES);   break;
+      case FLAG_I: flipSystemFlag(FLAG_CPXRES);   break;
+      case FLAG_L: flipSystemFlag(FLAG_LEAD0);    break;
+      case FLAG_T: flipSystemFlag(FLAG_TRACE);    break;
+      case FLAG_X: flipSystemFlag(FLAG_POLAR);    break;
+      default:     globalFlags[flag/16] ^=  1u << (flag%16);
     }
   }
-  else { // Local flag
+
+  else if(flag < LAST_LOCAL_FLAG) { // Local flag
     if(currentLocalFlags != NULL) {
       flag -= NUMBER_OF_GLOBAL_FLAGS;
       if(flag < NUMBER_OF_LOCAL_FLAGS) {
@@ -535,10 +496,22 @@ void fnFlipFlag(uint16_t flag) {
     }
     #if defined(PC_BUILD)
       else {
-        moreInfoOnError("In function fnFlipFlag:", "no local flags defined!", "To do so, you can find LocR here:", "[g] [P.FN] [g] [F5]");
+        moreInfoOnError("In function fnFlipFlag:", "no local flags defined!", "To do so, you can find LocR here:", "[f] [P.FN] [f] [F6]");
       }
     #endif // PC_BUILD
   }
+
+  else if(FLAG_M <= flag && flag <= FLAG_W) { // Extra global flag
+    flag -= 99;
+    globalFlags[flag/16] ^=  1u << (flag%16);
+  }
+
+  #if defined(PC_BUILD)
+  else {
+    sprintf(tmpString, "there is no flag beyond FLAG_W (%" PRIu16 ")", flag);
+    moreInfoOnError("In function fnFlipFlag:", tmpString, "", "");
+  }
+  #endif // PC_BUILD
 }
 
 
@@ -555,8 +528,9 @@ void fnClFAll(uint16_t confirmation) {
   }
   else {
     // Leave lettered flags as they are
-    memset(globalFlags, 0, sizeof(globalFlags) - sizeof(uint16_t)); // Clear flags from 00 to 95
+    memset(globalFlags, 0, sizeof(globalFlags) - 2*sizeof(uint16_t)); // Clear flags from 00 to 95
     globalFlags[6] &= 0xfff0; // Clear flags from 96 to 99
+    globalFlags[7] = 0;       // Clear flags from M to W
 
     if(currentLocalFlags != NULL) {
       currentLocalFlags->localFlags = 0;
@@ -565,11 +539,9 @@ void fnClFAll(uint16_t confirmation) {
 }
 
 
-
 void fnIsFlagClear(uint16_t flag) {
   temporaryInformation = (getFlag(flag) ? TI_FALSE : TI_TRUE);
 }
-
 
 
 void fnIsFlagClearClear(uint16_t flag) {
@@ -578,12 +550,10 @@ void fnIsFlagClearClear(uint16_t flag) {
 }
 
 
-
 void fnIsFlagClearSet(uint16_t flag) {
   temporaryInformation = (getFlag(flag) ? TI_FALSE : TI_TRUE);
   fnSetFlag(flag);
 }
-
 
 
 void fnIsFlagClearFlip(uint16_t flag) {
@@ -592,12 +562,9 @@ void fnIsFlagClearFlip(uint16_t flag) {
 }
 
 
-
 void fnIsFlagSet(uint16_t flag) {
   temporaryInformation = (getFlag(flag) ? TI_TRUE : TI_FALSE);
 }
-
-
 
 
 void fnIsFlagSetClear(uint16_t flag) {
@@ -606,22 +573,16 @@ void fnIsFlagSetClear(uint16_t flag) {
 }
 
 
-
-
 void fnIsFlagSetSet(uint16_t flag) {
   temporaryInformation = (getFlag(flag) ? TI_TRUE : TI_FALSE);
   fnSetFlag(flag);
 }
 
 
-
-
 void fnIsFlagSetFlip(uint16_t flag) {
   temporaryInformation = (getFlag(flag) ? TI_TRUE : TI_FALSE);
   fnFlipFlag(flag);
 }
-
-
 
 
 
@@ -633,73 +594,16 @@ void fnIsFlagSetFlip(uint16_t flag) {
  ***********************************************/
 void SetSetting(uint16_t jmConfig) {
   switch(jmConfig) {
-
-    case JC_ERPN:
-      eRPN = !eRPN;
-      fnRefreshState();
-      break;
-
-    case JC_G_DOUBLETAP: {
-      jm_G_DOUBLETAP = !jm_G_DOUBLETAP;
-      fnRefreshState();
-      break;
-    }
-
-    case JC_HOME_TRIPLE: {
-      HOME3 = !HOME3;
-      if(HOME3) {
-        MYM3 = false;
-      }
-      fnRefreshState();
-      break;
-    }
-
-    case JC_MYM_TRIPLE: {
-      MYM3 = !MYM3;
-      if(MYM3) {
-        HOME3 = false;
-      }
-      fnRefreshState();
-      break;
-    }
-
-    case JC_SHFT_4s: {
-      ShiftTimoutMode = !ShiftTimoutMode;
-      fnRefreshState();
-      break;
-    }
-
-    case JC_BASE_MYM: {
-      BASE_MYM = !BASE_MYM;
-      if(BASE_MYM) {
-        BASE_HOME = false;
-      }
-      fnRefreshState();
-      break;
-    }
-
-    case JC_BASE_HOME: {
-      BASE_HOME = !BASE_HOME;
-      if(BASE_HOME) {
-        BASE_MYM = false;
-      }
-      fnRefreshState();
-      break;
-    }
-
-    case JC_LARGELI: {
-      jm_LARGELI = !jm_LARGELI;
-      fnRefreshState();
-      break;
-    }
-
-    case JC_CPXMULT: {
-      CPXMULT = !CPXMULT;
-      fnRefreshState();
-      break;
-    }
-
-    case JC_IRFRAC: {
+    case JC_ERPN:        eRPN = !eRPN;                                               fnRefreshState(); break;
+    case JC_G_DOUBLETAP: jm_G_DOUBLETAP = !jm_G_DOUBLETAP;                           fnRefreshState(); break;
+    case JC_HOME_TRIPLE: HOME3 = !HOME3;           if(HOME3) {MYM3 = false;}         fnRefreshState(); break;
+    case JC_MYM_TRIPLE:  MYM3 = !MYM3;             if(MYM3) {HOME3 = false;}         fnRefreshState(); break;
+    case JC_SHFT_4s:     ShiftTimoutMode = !ShiftTimoutMode;                         fnRefreshState(); break;
+    case JC_BASE_MYM:    BASE_MYM = !BASE_MYM;     if(BASE_MYM) {BASE_HOME = false;} fnRefreshState(); break;
+    case JC_BASE_HOME:   BASE_HOME = !BASE_HOME;   if(BASE_HOME) {BASE_MYM = false;} fnRefreshState(); break;
+    case JC_LARGELI:     jm_LARGELI = !jm_LARGELI;                                   fnRefreshState(); break;
+    case JC_CPXMULT:     CPXMULT = !CPXMULT;                                         fnRefreshState(); break;
+    case JC_IRFRAC:
       constantFractions = !constantFractions;
       if(constantFractions) {
         constantFractionsOn = true;
@@ -714,49 +618,16 @@ void SetSetting(uint16_t jmConfig) {
       }
       fnRefreshState();
       break;
-    }
 
-    case TF_H12: {
-      fnClearFlag(FLAG_TDM24);
-      break;
-    }
-
-    case TF_H24: {
-      fnSetFlag(FLAG_TDM24);
-      break;
-    }
-
-    case CU_I: {
-      fnClearFlag(FLAG_CPXj);
-      break;
-    }
-
-    case CU_J: {
-      fnSetFlag(FLAG_CPXj);
-      break;
-    }
-
-    case PS_DOT: {
-      fnClearFlag(FLAG_MULTx);
-      break;
-    }
-
-    case PS_CROSS: {
-      fnSetFlag(FLAG_MULTx);
-      break;
-    }
-
-    case SS_4: {
-      fnClearFlag(FLAG_SSIZE8);
-      break;
-    }
-
-    case SS_8: {
-      fnSetFlag(FLAG_SSIZE8);
-      break;
-    }
-
-    case CM_RECTANGULAR: {
+    case TF_H12:         fnClearFlag(FLAG_TDM24);                  break;
+    case TF_H24:         fnSetFlag(FLAG_TDM24);                    break;
+    case CU_I:           fnClearFlag(FLAG_CPXj);                   break;
+    case CU_J:           fnSetFlag(FLAG_CPXj);                     break;
+    case PS_DOT:         fnClearFlag(FLAG_MULTx);                  break;
+    case PS_CROSS:       fnSetFlag(FLAG_MULTx);                    break;
+    case SS_4:           fnClearFlag(FLAG_SSIZE8);                 break;
+    case SS_8:           fnSetFlag(FLAG_SSIZE8);                   break;
+    case CM_RECTANGULAR:
       fnClearFlag(FLAG_POLAR);
       #if defined(RECT_POLAR_CHANGES_X)
         if(getRegisterDataType(REGISTER_X) == dtComplex34 || getRegisterDataType(REGISTER_X) == dtComplex34Matrix) {
@@ -765,9 +636,8 @@ void SetSetting(uint16_t jmConfig) {
         }
       #endif //RECT_POLAR_CHANGES_X
       break;
-    }
 
-    case CM_POLAR: {
+    case CM_POLAR:
       fnSetFlag(FLAG_POLAR);
       #if defined(RECT_POLAR_CHANGES_X)
         if(getRegisterDataType(REGISTER_X) == dtComplex34 || getRegisterDataType(REGISTER_X) == dtComplex34Matrix) {
@@ -778,147 +648,46 @@ void SetSetting(uint16_t jmConfig) {
         }
       #endif //RECT_POLAR_CHANGES_X
       break;
-    }
 
-    case DO_SCI: {
-      fnClearFlag(FLAG_ALLENG);
-      break;
-    }
-
-    case DO_ENG: {
-      fnSetFlag(FLAG_ALLENG);
-      break;
-    }
-
-    case PR_HPRP: {
-      fnFlipFlag(FLAG_HPRP);
-      break;
-    }
-
-    case PR_HPBASE: {
-      fnFlipFlag(FLAG_HPBASE);
-      break;
-    }
-
-    case PR_2TO10: {
-      fnFlipFlag(FLAG_2TO10);
-      break;
-    }
-
-    case DM_ANY: {
-      fnFlipFlag(FLAG_DENANY);
-      clearSystemFlag(FLAG_DENFIX);
-      break;
-    }
-
-    case DM_PROPFR: {
-      fnFlipFlag(FLAG_PROPFR);
-      break;
-    }
-
-    case DM_FRACT: {
-      fnFlipFlag(FLAG_FRACT);
-      break;
-    }
-
-    case DM_FIX: {
-      fnFlipFlag(FLAG_DENFIX);
-      clearSystemFlag(FLAG_DENANY);
-      break;
-    }
-
-    case PRTACT: {
-      fnFlipFlag(FLAG_PRTACT);
-      break;
-    }
-
-    case JC_BLZ: {    //bit LeadingZeros
-      fnFlipFlag(FLAG_LEAD0);
-      break;
-    }
-
-    case JC_BCR: {    //bit ComplexResult
-      fnFlipFlag(FLAG_CPXRES);
-      break;
-    }
-
-    case ITM_CPXRES1: {    //bit ComplexResult
-      fnSetFlag(FLAG_CPXRES);
-      break;
-    }
-
-    case ITM_CPXRES0: {    //bit ComplexResult
-      fnClearFlag(FLAG_CPXRES);
-      break;
-    }
-
-    case JC_BSR: {    //bit SpecialResult
-      fnFlipFlag(FLAG_SPCRES);
-      break;
-    }
-
-    case ITM_SPCRES1: {    //bit SpecialResult
-      fnSetFlag(FLAG_SPCRES);
-      break;
-    }
-
-    case ITM_SPCRES0: {    //bit SpecialResult
-      fnClearFlag(FLAG_SPCRES);
-      break;
-    }
-
-    case ITM_PRTACT1: {
-      fnSetFlag(FLAG_PRTACT);
-      break;
-    }
-
-    case ITM_PRTACT0: {
-      fnClearFlag(FLAG_PRTACT);
-      break;
-    }
-
-    case JC_FRC: {    //bit
-      fnFlipFlag(FLAG_FRCSRN);
-      break;
-    }
-
-    case JC_NL: {    //call numlock
-      numLock = !numLock;
-      showAlphaModeonGui();
-      break;
-    }
-
-    case JC_UC: {    //call flip case
-      numLock = false;
-      if(alphaCase == AC_LOWER)
-        alphaCase = AC_UPPER;
-      else
-        alphaCase = AC_LOWER;
-       showAlphaModeonGui();
-       break;
-     }
-
-    case JC_SS: {    //call sub/sup script
+    case DO_SCI:      fnClearFlag(FLAG_ALLENG);                              break;
+    case DO_ENG:      fnSetFlag(FLAG_ALLENG);                                break;
+    case PR_HPRP:     fnFlipFlag(FLAG_HPRP);                                 break;
+    case PR_HPBASE:   fnFlipFlag(FLAG_HPBASE);                               break;
+    case PR_2TO10:    fnFlipFlag(FLAG_2TO10);                                break;
+    case DM_ANY:      fnFlipFlag(FLAG_DENANY); clearSystemFlag(FLAG_DENFIX); break;
+    case DM_PROPFR:   fnFlipFlag(FLAG_PROPFR);                               break;
+    case DM_FRACT:    fnFlipFlag(FLAG_FRACT);                                break;
+    case DM_FIX:      fnFlipFlag(FLAG_DENFIX); clearSystemFlag(FLAG_DENANY); break;
+    case PRTACT:      fnFlipFlag(FLAG_PRTACT);                               break;
+    case JC_BLZ:      fnFlipFlag(FLAG_LEAD0);                                break; //bit LeadingZeros
+    case JC_BCR:      fnFlipFlag(FLAG_CPXRES);                               break; //bit ComplexResult
+    case ITM_CPXRES1: fnSetFlag(FLAG_CPXRES);                                break; //bit ComplexResult
+    case ITM_CPXRES0: fnClearFlag(FLAG_CPXRES);                              break; //bit ComplexResult
+    case JC_BSR:      fnFlipFlag(FLAG_SPCRES);                               break; //bit SpecialResult
+    case ITM_SPCRES1: fnSetFlag(FLAG_SPCRES);                                break; //bit SpecialResult
+    case ITM_SPCRES0: fnClearFlag(FLAG_SPCRES);                              break; //bit SpecialResult
+    case ITM_PRTACT1: fnSetFlag(FLAG_PRTACT);                                break;
+    case ITM_PRTACT0: fnClearFlag(FLAG_PRTACT);                              break;
+    case JC_FRC:      fnFlipFlag(FLAG_FRCSRN);                               break; //bit
+    case JC_NL:       numLock = !numLock; showAlphaModeonGui();              break; //call numlock
+    case JC_SS:     //call sub/sup script
       if(scrLock == NC_NORMAL) {
         scrLock = NC_SUPERSCRIPT;
-      } else if(scrLock == NC_SUPERSCRIPT) {
+      }
+      else if(scrLock == NC_SUPERSCRIPT) {
         scrLock = NC_SUBSCRIPT;
-      } else
-      if(scrLock == NC_SUBSCRIPT) {
+      }
+      else if(scrLock == NC_SUBSCRIPT) {
         scrLock = NC_NORMAL;
-      } else {
+      }
+      else {
         scrLock = NC_NORMAL;
       }
       nextChar = scrLock;
       showAlphaModeonGui();
       break;
-    }
 
-
-    default:
-    break;
+    default: break;
   }
-fnRefreshState();
+  fnRefreshState();
 }
-
-

@@ -20,6 +20,8 @@
 #if !defined(DEFINES_H)
 #define DEFINES_H
 
+#include <stdint.h>
+
 //*********************************
 // JM VARIOUS OPTIONS
 //*********************************
@@ -439,6 +441,10 @@
 #define NUMBER_OF_BUG_SCREEN_MESSAGES             10
 #define SIZE_OF_EACH_BUG_SCREEN_MESSAGE          100
 
+////////////////////////////////////////////////////
+// Flags are numbered the same way in key
+// stroke programs code and in C programs
+// unlike registers
 #define NUMBER_OF_GLOBAL_FLAGS                   112
 #define FIRST_LOCAL_FLAG                         112 // There are 112 global flag from 0 to 111
 #define NUMBER_OF_LOCAL_FLAGS                     32
@@ -457,6 +463,20 @@
 #define FLAG_I                                   109
 #define FLAG_J                                   110
 #define FLAG_K                                   111
+#define FLAG_M                                   211
+#define FLAG_N                                   212
+#define FLAG_P                                   213
+#define FLAG_Q                                   214
+#define FLAG_R                                   215
+#define FLAG_S                                   216
+#define FLAG_E                                   217
+#define FLAG_F                                   218
+#define FLAG_G                                   219
+#define FLAG_H                                   220
+#define FLAG_O                                   221
+#define FLAG_U                                   222
+#define FLAG_V                                   223
+#define FLAG_W                                   224
 
 // System flags
 // Bit 15 (MSB) is always set for a system flag
@@ -526,7 +546,7 @@
 #define FLAG_SH_LONGPRESS                     0x803E
 #define FLAG_WRAPEDG                          0xc03F
 
-#define NUMBER_OF_SYSTEM_FLAGS                    60
+#define NUMBER_OF_SYSTEM_FLAGS                    60 // We can have a maximum of 128 system flags
 
 typedef enum {
   LI_ZERO     = 0, // Long integer sign 0
@@ -635,118 +655,244 @@ typedef enum {
 #define INC_FLAG                                   0
 #define DEC_FLAG                                   1
 
-
 // List of constants
 #define FIRST_CONSTANT                        CST_01
 #define LAST_CONSTANT                         CST_82
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Register numbering for                                                                           Register numbering in key
+// the C47 C program:                                                                               stroke programs (one byte)
+// 0…99                                  Global registers from 0 to 99                              0…99
+// 100…111                           Lettered global registers from X to L                          100…111
+// 112…117         Lettered global registers from M to S: no possibility of indirect access         211…216
+// 118…125         Lettered global registers from E to W: no possibility of indirect access         217…224
+//                                        25 undefined free registers                               225…249
+// 126…134                 saved stack registers (UNDO feature) not user accessible
+// 135…136                          temporary registers not user accessible
+// 137…249              113 undefined free registers: no possibility of indirect access
+//
+//                             SYSTEM_FLAG_NUMBER --> Used for system flag access                   250
+//                                  VALUE_0 --> Can't remember what this is!                        251
+//                                  VALUE_1 --> Can't remember what this is!                        252
+//                                           STRING_LABEL_VARIABLE                                  253
+//                                             INDIRECT_REGISTER                                    254
+//                                             INDIRECT_VARIABLE                                    255
+// 256  to 1999                                 named variables
+// 2000 to 2029                               reserved variables
+// 7000 to 7098                         Local registers from .00 to .98                             112…210
 
+enum REG_NUMBERS { // C program register codes
+  FIRST_GLOBAL_REGISTER = 0,                             //   0 - 99 Total 100 registers
 
-///////////////////////////////////////////////////////
-// Register numbering:
-//    0 to  117 global resisters
-//  118 to  216 local registers (from .00 to .98) this are 99 local registers
-//  216 to  219 saved stack registers (UNDO feature)
-//  226 to  228 temporary registers
-//  229 to 1999 named variables
-// 2000 to 2029 reserved variables
+  FIRST_LETTERED_REGISTER = 100,
+  REGISTER_X = FIRST_LETTERED_REGISTER,                  // 100 9 stack registers
+  REGISTER_Y,                                            // 101
+  REGISTER_Z,                                            // 102
+  REGISTER_T,                                            // 103
+  REGISTER_A,                                            // 104
+  REGISTER_B,                                            // 105
+  REGISTER_C,                                            // 106
+  REGISTER_D,                                            // 107
+  REGISTER_L,                                            // 108
+  REGISTER_I,                                            // 109 3 matrix registers
+  REGISTER_J,                                            // 110
+  REGISTER_K,                                            // 111
+  LAST_LETTERED_REGISTER = REGISTER_K,
 
-enum REG_NUMBERS {
-  FIRST_GLOBAL_REGISTER = 0,
-  // Stack registers
-  REGISTER_X = 100,
-  REGISTER_Y,
-  REGISTER_Z,
-  REGISTER_T,
-  REGISTER_A,
-  REGISTER_B,
-  REGISTER_C,
-  REGISTER_D,
-  REGISTER_L,
-  // Matrix registers
-  REGISTER_I,
-  REGISTER_J,
-  REGISTER_K,
   // Statistical parameter registers
   FIRST_STAT_REGISTER,
-    REGISTER_M = FIRST_STAT_REGISTER,
-  REGISTER_N,
-  REGISTER_P,
-  REGISTER_Q,
-  REGISTER_R,
-  REGISTER_S,
-    LAST_STAT_REGISTER = REGISTER_S,
-    LAST_GLOBAL_REGISTER = REGISTER_S,
-  // Local registers
-  FIRST_LOCAL_REGISTER,
-  LAST_LOCAL_REGISTER = FIRST_LOCAL_REGISTER + 99 - 1,
+  REGISTER_M = FIRST_STAT_REGISTER,                      // 112
+  REGISTER_N,                                            // 113
+  REGISTER_P,                                            // 114
+  REGISTER_Q,                                            // 115
+  REGISTER_R,                                            // 116
+  REGISTER_S,                                            // 117
+  LAST_STAT_REGISTER = REGISTER_S,
+
+  // Spare registers
+  FIRST_SPARE_REGISTER,
+  REGISTER_E = FIRST_SPARE_REGISTER,                     // 118
+  REGISTER_F,                                            // 119
+  REGISTER_G,                                            // 120
+  REGISTER_H,                                            // 121
+  REGISTER_O,                                            // 122
+  REGISTER_U,                                            // 123
+  REGISTER_V,                                            // 124
+  REGISTER_W,                                            // 125
+  LAST_SPARE_REGISTER = REGISTER_W,
+
   // Saved stack registers
   FIRST_SAVED_STACK_REGISTER,
-    SAVED_REGISTER_X = FIRST_SAVED_STACK_REGISTER,
-  SAVED_REGISTER_Y,
-  SAVED_REGISTER_Z,
-  SAVED_REGISTER_T,
-  SAVED_REGISTER_A,
-  SAVED_REGISTER_B,
-  SAVED_REGISTER_C,
-  SAVED_REGISTER_D,
-  SAVED_REGISTER_L,
-    LAST_SAVED_STACK_REGISTER = SAVED_REGISTER_L,
-  // Temporary registeres
+  SAVED_REGISTER_X = FIRST_SAVED_STACK_REGISTER,         // 126
+  SAVED_REGISTER_Y,                                      // 127
+  SAVED_REGISTER_Z,                                      // 128
+  SAVED_REGISTER_T,                                      // 129
+  SAVED_REGISTER_A,                                      // 130
+  SAVED_REGISTER_B,                                      // 131
+  SAVED_REGISTER_C,                                      // 132
+  SAVED_REGISTER_D,                                      // 133
+  SAVED_REGISTER_L,                                      // 134
+  LAST_SAVED_STACK_REGISTER = SAVED_REGISTER_L,
+
+  // Temporary registers
   FIRST_TEMP_REGISTER,
-    TEMP_REGISTER_1 = FIRST_TEMP_REGISTER,
-  TEMP_REGISTER_2_SAVED_STATS,
-    LAST_TEMP_REGISTER = TEMP_REGISTER_2_SAVED_STATS,
+  TEMP_REGISTER_1 = FIRST_TEMP_REGISTER,                 // 135
+  TEMP_REGISTER_2_SAVED_STATS,                           // 136
+  LAST_TEMP_REGISTER = TEMP_REGISTER_2_SAVED_STATS,
+
+  LAST_GLOBAL_REGISTER = TEMP_REGISTER_2_SAVED_STATS,
+
   // Named variables
-  FIRST_NAMED_VARIABLE,
-  LAST_NAMED_VARIABLE = 1999,
-  FIRST_RESERVED_VARIABLE = 2000,
-    RESERVED_VARIABLE_X = FIRST_RESERVED_VARIABLE,
-  RESERVED_VARIABLE_Y,
-  RESERVED_VARIABLE_Z,
-  RESERVED_VARIABLE_T,
-  RESERVED_VARIABLE_A,
-  RESERVED_VARIABLE_B,
-  RESERVED_VARIABLE_C,
-  RESERVED_VARIABLE_D,
-  RESERVED_VARIABLE_L,
-  RESERVED_VARIABLE_I,
-  RESERVED_VARIABLE_J,
-  RESERVED_VARIABLE_K,
-  RESERVED_VARIABLE_M,
-  RESERVED_VARIABLE_N,
-  RESERVED_VARIABLE_P,
-  RESERVED_VARIABLE_Q,
-  RESERVED_VARIABLE_R,
-  RESERVED_VARIABLE_S,
-  RESERVED_VARIABLE_ADM,
-    FIRST_NAMED_RESERVED_VARIABLE = RESERVED_VARIABLE_ADM,
-  RESERVED_VARIABLE_DENMAX,
-  RESERVED_VARIABLE_ISM,
-  RESERVED_VARIABLE_REALDF,
-  RESERVED_VARIABLE_NDEC,
-  RESERVED_VARIABLE_ACC,
-  RESERVED_VARIABLE_ULIM,
-  RESERVED_VARIABLE_LLIM,
-  RESERVED_VARIABLE_FV,
-  RESERVED_VARIABLE_IPONA,
-  RESERVED_VARIABLE_NPER,
-  RESERVED_VARIABLE_PERONA,
-  RESERVED_VARIABLE_PMT,
-  RESERVED_VARIABLE_PV,
-  RESERVED_VARIABLE_GRAMOD,
-    LAST_RESERVED_VARIABLE = RESERVED_VARIABLE_GRAMOD,
-  INVALID_VARIABLE,
-  FIRST_LABEL,
-  LAST_LABEL = 6999
+  FIRST_NAMED_VARIABLE = 256,                            // 256
+  LAST_NAMED_VARIABLE = 1999,                            //1999
+
+  // Reserved variables
+  FIRST_RESERVED_VARIABLE,
+  RESERVED_VARIABLE_X = FIRST_RESERVED_VARIABLE,         //2000
+  RESERVED_VARIABLE_Y,                                   //2001
+  RESERVED_VARIABLE_Z,                                   //2002
+  RESERVED_VARIABLE_T,                                   //2003
+  RESERVED_VARIABLE_A,                                   //2004
+  RESERVED_VARIABLE_B,                                   //2005
+  RESERVED_VARIABLE_C,                                   //2006
+  RESERVED_VARIABLE_D,                                   //2007
+  RESERVED_VARIABLE_L,                                   //2008
+  RESERVED_VARIABLE_I,                                   //2009
+  RESERVED_VARIABLE_J,                                   //2010
+  RESERVED_VARIABLE_K,                                   //2011
+  RESERVED_VARIABLE_M,                                   //2012
+  RESERVED_VARIABLE_N,                                   //2013
+  RESERVED_VARIABLE_P,                                   //2014
+  RESERVED_VARIABLE_Q,                                   //2015
+  RESERVED_VARIABLE_R,                                   //2016
+  RESERVED_VARIABLE_S,                                   //2017
+  RESERVED_VARIABLE_E,                                   //2018
+  RESERVED_VARIABLE_F,                                   //2019
+  RESERVED_VARIABLE_G,                                   //2020
+  RESERVED_VARIABLE_H,                                   //2021
+  RESERVED_VARIABLE_O,                                   //2022
+  RESERVED_VARIABLE_U,                                   //2023
+  RESERVED_VARIABLE_V,                                   //2024
+  RESERVED_VARIABLE_W,                                   //2025
+
+  // Named reserved variables
+  FIRST_NAMED_RESERVED_VARIABLE,
+  RESERVED_VARIABLE_ADM = FIRST_NAMED_RESERVED_VARIABLE, //2026
+  RESERVED_VARIABLE_DENMAX,                              //2027
+  RESERVED_VARIABLE_ISM,                                 //2028
+  RESERVED_VARIABLE_REALDF,                              //2029
+  RESERVED_VARIABLE_NDEC,                                //2030
+  RESERVED_VARIABLE_ACC,                                 //2031
+  RESERVED_VARIABLE_ULIM,                                //2032
+  RESERVED_VARIABLE_LLIM,                                //2033
+  RESERVED_VARIABLE_FV,                                  //2034
+  RESERVED_VARIABLE_IPONA,                               //2035
+  RESERVED_VARIABLE_NPER,                                //2036
+  RESERVED_VARIABLE_PERONA,                              //2037
+  RESERVED_VARIABLE_PMT,                                 //2038
+  RESERVED_VARIABLE_PV,                                  //2039
+  RESERVED_VARIABLE_GRAMOD,                              //2040
+  LAST_RESERVED_VARIABLE = RESERVED_VARIABLE_GRAMOD,
+
+//RESERVED_VARIABLE_UX,                                  //2041
+//RESERVED_VARIABLE_LX,                                  //2042
+//LAST_RESERVED_VARIABLE = RESERVED_VARIABLE_LX,
+
+  INVALID_VARIABLE,                                      //2041
+
+  // Labels
+  FIRST_LABEL,                                           //2042
+  LAST_LABEL = 6999,                                     //6999
+
+  // Local registers
+  FIRST_LOCAL_REGISTER,                                  //7000
+  LAST_LOCAL_REGISTER = FIRST_LOCAL_REGISTER + 99 - 1    //7098 total 99 local registers,
 };
 
-#define NUMBER_OF_GLOBAL_REGISTERS          (LAST_GLOBAL_REGISTER - FIRST_GLOBAL_REGISTER + 1)
-#define NUMBER_OF_LOCAL_REGISTERS           (LAST_LOCAL_REGISTER - FIRST_LOCAL_REGISTER + 1)
-#define NUMBER_OF_SAVED_STACK_REGISTERS     (LAST_SAVED_STACK_REGISTER - FIRST_SAVED_STACK_REGISTER + 1)
-#define NUMBER_OF_TEMP_REGISTERS            (LAST_TEMP_REGISTER - FIRST_TEMP_REGISTER + 1)
-#define NUMBER_OF_RESERVED_VARIABLES        (LAST_RESERVED_VARIABLE - FIRST_RESERVED_VARIABLE + 1)
+enum REG_NUMBERS_IN_KS_CODE { // Key Stroke register codes
+  FIRST_GLOBAL_REGISTER_IN_KS_CODE = 0,                                       //  0 - 99 Total 100 global registers
 
+  FIRST_LETTERED_REGISTER_IN_KS_CODE = 100,
+  REGISTER_X_IN_KS_CODE = FIRST_LETTERED_REGISTER_IN_KS_CODE,                 // 100 9 stack registers
+  REGISTER_Y_IN_KS_CODE,                                                      // 101
+  REGISTER_Z_IN_KS_CODE,                                                      // 102
+  REGISTER_T_IN_KS_CODE,                                                      // 103
+  REGISTER_A_IN_KS_CODE,                                                      // 104
+  REGISTER_B_IN_KS_CODE,                                                      // 105
+  REGISTER_C_IN_KS_CODE,                                                      // 106
+  REGISTER_D_IN_KS_CODE,                                                      // 107
+  REGISTER_L_IN_KS_CODE,                                                      // 108
+  REGISTER_I_IN_KS_CODE,                                                      // 109 3 matrix registers
+  REGISTER_J_IN_KS_CODE,                                                      // 110
+  REGISTER_K_IN_KS_CODE,                                                      // 111
+  LAST_LETTERED_REGISTER_IN_KS_CODE = REGISTER_K_IN_KS_CODE,
+
+  LAST_GLOBAL_REGISTER_IN_KS_CODE = LAST_LETTERED_REGISTER_IN_KS_CODE,
+
+  // Local registers
+  FIRST_LOCAL_REGISTER_IN_KS_CODE,                                            // 112
+  LAST_LOCAL_REGISTER_IN_KS_CODE = FIRST_LOCAL_REGISTER_IN_KS_CODE + 99 - 1,  // 210, total 99 registers,
+
+  // Statistical parameter registers
+  FIRST_STAT_REGISTER_IN_KS_CODE,
+  REGISTER_M_IN_KS_CODE = FIRST_STAT_REGISTER_IN_KS_CODE,                     // 211
+  REGISTER_N_IN_KS_CODE,                                                      // 212
+  REGISTER_P_IN_KS_CODE,                                                      // 213
+  REGISTER_Q_IN_KS_CODE,                                                      // 214
+  REGISTER_R_IN_KS_CODE,                                                      // 215
+  REGISTER_S_IN_KS_CODE,                                                      // 216
+  LAST_STAT_REGISTER_IN_KS_CODE = REGISTER_S_IN_KS_CODE,
+
+  // Spare registers
+  FIRST_SPARE_REGISTERS_IN_KS_CODE,
+  REGISTER_E_IN_KS_CODE = FIRST_SPARE_REGISTERS_IN_KS_CODE,                   // 217
+  REGISTER_F_IN_KS_CODE,                                                      // 218
+  REGISTER_G_IN_KS_CODE,                                                      // 219
+  REGISTER_H_IN_KS_CODE,                                                      // 220
+  REGISTER_O_IN_KS_CODE,                                                      // 221
+  REGISTER_U_IN_KS_CODE,                                                      // 222
+  REGISTER_V_IN_KS_CODE,                                                      // 223
+  REGISTER_W_IN_KS_CODE,                                                      // 224
+  LAST_SPARE_REGISTERS_IN_KS_CODE = REGISTER_W_IN_KS_CODE,
+
+  // OP parameter special values
+  CNST_BEYOND_250       = 250,
+  //CNST_BEYOND_500       = 251,
+  //CNST_BEYOND_750       = 252,
+  SYSTEM_FLAG_NUMBER    = 250,
+  VALUE_0               = 251,
+  VALUE_1               = 252,
+  STRING_LABEL_VARIABLE = 253,
+  INDIRECT_REGISTER     = 254,
+  INDIRECT_VARIABLE     = 255,
+};
+
+#define NUMBER_OF_GLOBAL_REGISTERS      (LAST_GLOBAL_REGISTER          - FIRST_GLOBAL_REGISTER          + 1) // 137 = 100 numbered + 12 lettered + 6 stat + 8 spare + 9 saved_stach + 2 temp
+#define NUMBER_OF_LETTERED_REGISTERS    (LAST_LETTERED_REGISTER        - FIRST_LETTERED_REGISTER        + 1) // 12 lettered from X to K
+#define NUMBER_OF_STAT_REGISTERS        (LAST_STAT_REGISTER            - FIRST_STAT_REGISTER            + 1) // 6 lettered from M to S
+#define NUMBER_OF_SPARE_REGISTERS       (LAST_SPARE_REGISTER           - FIRST_SPARE_REGISTER           + 1) // 8 lettered from E to W
+#define NUMBER_OF_SAVED_STACK_REGISTERS (LAST_SAVED_STACK_REGISTER     - FIRST_SAVED_STACK_REGISTER     + 1) // 9
+#define NUMBER_OF_TEMP_REGISTERS        (LAST_TEMP_REGISTER            - FIRST_TEMP_REGISTER            + 1) // 2
+#define NUMBER_OF_LOCAL_REGISTERS       (LAST_LOCAL_REGISTER           - FIRST_LOCAL_REGISTER           + 1) // 99 from .00 to .98
+
+#define NUMBER_OF_RESERVED_VARIABLES    (LAST_RESERVED_VARIABLE        - FIRST_RESERVED_VARIABLE        + 1) // 41
+#define NUMBER_OF_LETTERED_VARIABLES    (FIRST_NAMED_RESERVED_VARIABLE - FIRST_RESERVED_VARIABLE)            // 26
+
+/* Convertion from a key stroke program register code to a C register number
+ */
+static inline int16_t regKStoC(const uint8_t regKS) {
+  return   (int16_t)regKS
+         - (FIRST_STAT_REGISTER_IN_KS_CODE  <= regKS && regKS <= LAST_SPARE_REGISTERS_IN_KS_CODE) * NUMBER_OF_LOCAL_REGISTERS
+         + (FIRST_LOCAL_REGISTER_IN_KS_CODE <= regKS && regKS <= LAST_LOCAL_REGISTER_IN_KS_CODE)  * (FIRST_LOCAL_REGISTER - FIRST_LOCAL_REGISTER_IN_KS_CODE);
+}
+
+/* Convertion from a C register number to a key stroke program register code
+ */
+static inline uint8_t regCtoKS(const int16_t regC) {
+  return (uint8_t)(  regC
+                   + (FIRST_STAT_REGISTER  <= regC && regC <= LAST_SPARE_REGISTER) * NUMBER_OF_LOCAL_REGISTERS
+                   - (FIRST_LOCAL_REGISTER <= regC && regC <= LAST_LOCAL_REGISTER) * (FIRST_LOCAL_REGISTER - FIRST_LOCAL_REGISTER_IN_KS_CODE));
+}
 
 // If one of the 4 next defines is changed: change also Y_POSITION_OF_???_LINE below
 #define AIM_REGISTER_LINE                 REGISTER_X
@@ -785,7 +931,7 @@ enum REG_NUMBERS {
 #define SBARUPD_Date                            (getSystemFlag(FLAG_SBdate ))
 #define SBARUPD_Time                            (getSystemFlag(FLAG_SBtime ))
 #define SBARUPD_ComplexResult                   (getSystemFlag(FLAG_SBcr   ))
-#define SBARUPD_ComplexMode                     (getSystemFlag(FLAG_SBcpx   ))
+#define SBARUPD_ComplexMode                     (getSystemFlag(FLAG_SBcpx  ))
 #define SBARUPD_AngularModeBasic                (getSystemFlag(FLAG_SBang  ))
 #define SBARUPD_AngularMode                     ( 1                         )
 #define SBARUPD_FractionModeAndBaseMode         (getSystemFlag(FLAG_SBfrac ))
@@ -1288,17 +1434,6 @@ enum REG_NUMBERS {
 //#define STRING_ANGLE_DEGREE                       20
 #define STRING_ANGLE_DMS                          21
 //#define STRING_ANGLE_MULTPI                       22
-
-// OP parameter special values
-#define CNST_BEYOND_250                          250
-//#define CNST_BEYOND_500                          251
-//#define CNST_BEYOND_750                          252
-#define SYSTEM_FLAG_NUMBER                       250
-#define VALUE_0                                  251
-#define VALUE_1                                  252
-#define STRING_LABEL_VARIABLE                    253
-#define INDIRECT_REGISTER                        254
-#define INDIRECT_VARIABLE                        255
 
 // OP parameter type
 #define PARAM_DECLARE_LABEL                        1

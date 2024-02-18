@@ -32,14 +32,14 @@
    * \param[in] frequency the frequency of the note to play in mHz
    */
   void audioTone(uint32_t frequency);
-  
+
   /**
    * Set Buzzer volume on the calculator.
    * Only relevant for the DMCP version, not used for the simulator
    * Input : volume level from 0 to 11
    */
   void fnSetVolume(uint16_t volume);
-  
+
   /**
    * Get Buzzer volume on the calculator.
    * Only relevant for the DMCP version, not used for the simulator
@@ -58,7 +58,7 @@
    * Only relevant for the DMCP version, not used for the simulator
    */
   void fnVolumeDown(uint16_t unusedButMandatoryParameter);
-  
+
   /**
    * DM42 squeak sound
    * Only relevant for the DMCP version, not used for the simulator
@@ -77,7 +77,7 @@
    * Only relevant for the DMCP version, not used for the simulator
    */
   void fnPlay(uint16_t regist);
-  
+
   uint16_t getBeepVolume();
-  
+
 #endif // !AUDIO_H

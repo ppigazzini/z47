@@ -52,8 +52,8 @@ static void _getStringLabelOrVariableName(uint8_t *stringAddress) {
 
 static uint16_t _indirectRegister(uint8_t *paramAddress) {
   uint8_t opParam = *(uint8_t *)paramAddress;
-  if(opParam <= LAST_LOCAL_REGISTER) { // Local register from .00 to .98
-      int16_t realParam = indirectAddressing(opParam, INDPM_REGISTER, 0, 99);
+  if(opParam <= LAST_LOCAL_REGISTER_IN_KS_CODE) { // Local register from .00 to .98
+      int16_t realParam = indirectAddressing(regKStoC(opParam), INDPM_REGISTER, 0, 99);
       if(realParam < 9999) {
         return realParam;
       }

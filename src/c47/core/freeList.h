@@ -54,6 +54,17 @@
   void *freeListRealloc(void *pcMemPtr, size_t oldSizeInBlocks, size_t newSizeInBlocks);
 
   /**
+   * Reduce allocated memory.
+   * Decrease the amount of memory of a previous allocation. Since
+   * the amount of memory allocated isn't kept by the allocator, this must be
+   * provided along with the new required size.
+   * \param[in] pcMemPtr pointer to the previously allocated memory
+   * \param[in] oldSizeInBlocks size used when this pointer was allocated
+   * \param[in] newSizeInBlocks new required size for the allocation
+   */
+  void freeListReduce(void *pcMemPtr, size_t oldSizeInBlocks, size_t newSizeInBlocks);
+
+  /**
    * Free allocated memory.
    * Frees memory previous allocated with ::freeListAlloc or ::freeListRealloc.
    * This must be called at some point after memory has been allocated. The
