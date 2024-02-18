@@ -557,9 +557,8 @@
         }
       #endif // (DEBUG_INSTEAD_STATUS_BAR != 1)
 
-      if(!getSystemFlag(FLAG_AUTOFF) || getSystemFlag(FLAG_RUNTIM) || programRunStop == PGM_RUNNING || (nextTimerRefresh != 0)) {
-        reset_auto_off();
-      }
+      dmcpResetAutoOff();
+
       fnPollTimerApp();
     }
     checkBattery();
