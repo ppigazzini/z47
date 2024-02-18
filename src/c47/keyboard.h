@@ -34,7 +34,6 @@
 
 
 void leavePem        (void);
-void showShiftState  (void);
 void processKeyAction(int16_t item);
 
 /**

@@ -854,6 +854,10 @@ int16_t lastItem = 0;
     void btnFnReleased(void *data) {
   #endif // DMCP_BUILD
 
+    if(catalog) {
+      resetAlphaSelectionBuffer();
+    }
+
     if(programRunStop == PGM_KEY_PRESSED_WHILE_PAUSED) {
       programRunStop = PGM_RESUMING;
       screenUpdatingMode &= ~SCRUPD_ONE_TIME_FLAGS;
