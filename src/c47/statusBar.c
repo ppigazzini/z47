@@ -526,7 +526,7 @@ void drawBattery(uint16_t voltage) {
       }
       else {
         if(SBARUPD_BatVoltage) {
-          drawBattery(min(get_vbat(), vbatIntegrated));
+          drawBattery(min(get_vbat(), vbatVIntegrated));
         }
         else if(getSystemFlag(FLAG_LOWBAT)) {
           showGlyph(STD_BATTERY, &standardFont, X_BATTERY, 0, vmNormal, true, false); // is 0+10+1 pixel wide
