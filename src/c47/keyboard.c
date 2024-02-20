@@ -1356,7 +1356,7 @@ bool_t allowShiftsToClearError = false;
     int8_t key_no = stringToKeyNumber(data);
 
     #if defined(PC_BUILD)
-      char tmp[200]; sprintf(tmp,"^^^^^^^keyboard.c: determineitem: key_no: %d:",key_no); jm_show_comment(tmp);
+      char tmp[200]; sprintf(tmp,"^^^^^^^keyboard.c: determineitem: key_no: %d:", key_no); jm_show_comment(tmp);
     #endif //PC_BUILD
 
     //.    if(kbd_usr[36].primaryTam == ITM_EXIT1) //opposite keyboard V43 LT, 43S, V43 RT
@@ -1367,7 +1367,7 @@ bool_t allowShiftsToClearError = false;
     fnTimerExec(TO_FN_EXEC);                                  //dr execute queued fn
 
     #if defined(PC_BUILD)
-      sprintf(tmp,"^^^^^^^keyboard.c: determineitem: key->primary1: %d:",key->primary); jm_show_comment(tmp);
+      sprintf(tmp,"^^^^^^^keyboard.c: determineitem: key->primary1: %d:", key->primary); jm_show_comment(tmp);
     #endif //PC_BUILD
 
     switch(key->primary) {                              //JMSHOW vv
@@ -1390,7 +1390,7 @@ bool_t allowShiftsToClearError = false;
     #endif //PC_BUILD
 
     // Shift f pressed and JM REMOVED shift g not active
-    if((key->primary == ITM_SHIFTf || ShiftOverride == ITM_SHIFTf) && (calcMode == CM_NORMAL || calcMode == CM_AIM || calcMode == CM_NIM  || calcMode == CM_MIM || calcMode == CM_EIM || calcMode == CM_PEM || calcMode == CM_PLOT_STAT || calcMode == CM_GRAPH || calcMode == CM_ASSIGN || calcMode == CM_ASN_BROWSER)) {   //JM shifts
+    if((key->primary == ITM_SHIFTf || ShiftOverride == ITM_SHIFTf) && (calcMode == CM_NORMAL || calcMode == CM_AIM || calcMode == CM_NIM  || calcMode == CM_MIM || calcMode == CM_EIM || calcMode == CM_PEM || calcMode == CM_PLOT_STAT || calcMode == CM_GRAPH || calcMode == CM_ASSIGN || calcMode == CM_ASN_BROWSER || calcMode == CM_REGISTER_BROWSER || calcMode == CM_FLAG_BROWSER || calcMode == CM_FONT_BROWSER)) {   //JM shifts
       if(temporaryInformation == TI_SHOW_REGISTER || temporaryInformation == TI_SHOW_REGISTER_BIG || temporaryInformation == TI_SHOW_REGISTER_SMALL) allowShiftsToClearError = true; //JM
       Shft_LongPress_f_g = true;
       if(Shft_LongPress_f_g && getSystemFlag(FLAG_SH_LONGPRESS)) {
@@ -1420,7 +1420,7 @@ bool_t allowShiftsToClearError = false;
       return ITM_NOP;
     }
     // Shift g pressed and JM REMOVED shift f not active
-    else if((key->primary == ITM_SHIFTg || ShiftOverride == ITM_SHIFTg) && (calcMode == CM_NORMAL || calcMode == CM_AIM || calcMode == CM_NIM  || calcMode == CM_MIM || calcMode == CM_EIM || calcMode == CM_PEM || calcMode == CM_PLOT_STAT || calcMode == CM_GRAPH || calcMode == CM_ASSIGN || calcMode == CM_ASN_BROWSER)) {   //JM shifts
+    else if((key->primary == ITM_SHIFTg || ShiftOverride == ITM_SHIFTg) && (calcMode == CM_NORMAL || calcMode == CM_AIM || calcMode == CM_NIM  || calcMode == CM_MIM || calcMode == CM_EIM || calcMode == CM_PEM || calcMode == CM_PLOT_STAT || calcMode == CM_GRAPH || calcMode == CM_ASSIGN || calcMode == CM_ASN_BROWSER || calcMode == CM_REGISTER_BROWSER || calcMode == CM_FLAG_BROWSER || calcMode == CM_FONT_BROWSER)) {   //JM shifts
       if(temporaryInformation == TI_SHOW_REGISTER || temporaryInformation == TI_SHOW_REGISTER_BIG || temporaryInformation == TI_SHOW_REGISTER_SMALL) allowShiftsToClearError = true; //JM
       Shft_LongPress_f_g = true;
       if(Shft_LongPress_f_g && getSystemFlag(FLAG_SH_LONGPRESS)) {
@@ -1452,7 +1452,7 @@ bool_t allowShiftsToClearError = false;
     }
 
     // JM Shift fg pressed  //JM shifts change f/g to a single function key toggle to match DM42 keyboard
-    else if((key->primary == KEY_fg || ShiftOverride == KEY_fg) && (calcMode == CM_NORMAL || calcMode == CM_AIM || calcMode == CM_NIM  || calcMode == CM_MIM || calcMode == CM_EIM || calcMode == CM_PEM || calcMode == CM_PLOT_STAT || calcMode == CM_GRAPH || calcMode == CM_ASSIGN || calcMode == CM_ASN_BROWSER)) {   //JM shifts
+    else if((key->primary == KEY_fg || ShiftOverride == KEY_fg) && (calcMode == CM_NORMAL || calcMode == CM_AIM || calcMode == CM_NIM  || calcMode == CM_MIM || calcMode == CM_EIM || calcMode == CM_PEM || calcMode == CM_PLOT_STAT || calcMode == CM_GRAPH || calcMode == CM_ASSIGN || calcMode == CM_ASN_BROWSER || calcMode == CM_REGISTER_BROWSER || calcMode == CM_FLAG_BROWSER || calcMode == CM_FONT_BROWSER)) {   //JM shifts
       Shft_LongPress_f_g = false;
       Shft_timeouts = true;
       fnTimerStart(TO_FG_LONG, TO_FG_LONG, JM_TO_FG_LONG);    //vv dr
@@ -1642,7 +1642,7 @@ bool_t allowShiftsToClearError = false;
             return true;
           }
         } else {
-          circPtr2 = 0;          
+          circPtr2 = 0;
         }
       }
       if(calcModel == USER_R47) {
@@ -1653,7 +1653,7 @@ bool_t allowShiftsToClearError = false;
             return true;
           }
         } else {
-          circPtr1 = 0;          
+          circPtr1 = 0;
         }
         if((circPtr2a == 0 && circ[0].itm2a==keyCode) || circPtr2a > nbrOfElements(circ)) circPtr2a = 0;
         if(circ[circPtr2a].itm2a==keyCode) {
@@ -1662,7 +1662,7 @@ bool_t allowShiftsToClearError = false;
             return true;
           }
         } else {
-          circPtr2a = 0;          
+          circPtr2a = 0;
         }
       }
 
@@ -1673,7 +1673,7 @@ bool_t allowShiftsToClearError = false;
           return true;
         }
       } else {
-        circPtr3 = 0;        
+        circPtr3 = 0;
       }
       if((circPtr4 == 0 && circ[0].itm4==keyCode) || circPtr4 > nbrOfElements(circ)) circPtr4 = 0;
       if(circ[circPtr4].itm4==keyCode) {
@@ -1682,7 +1682,7 @@ bool_t allowShiftsToClearError = false;
           return true;
         }
       } else {
-        circPtr4 = 0;        
+        circPtr4 = 0;
       }
       if((circPtr5 == 0 && circ[0].itm5==keyCode) || circPtr5 > nbrOfElements(circ)) circPtr5 = 0; //C47M ENTER
       if(circ[circPtr5].itm5==keyCode) {
@@ -1691,7 +1691,7 @@ bool_t allowShiftsToClearError = false;
           return true;
         }
       } else {
-        circPtr5 = 0; 
+        circPtr5 = 0;
       }
       //printf("RRRR %i %u %u\n", keyCode, circPtr, circPtr2);
       return false;
@@ -2463,6 +2463,21 @@ RELEASE_END:
           }
           break;
         }
+
+        else if(item == ITM_SNAP) {
+          switch(calcMode) { //place modes here which should not work with SNAP
+            //case CM_REGISTER_BROWSER: 
+            //case CM_FLAG_BROWSER:
+            //case CM_FONT_BROWSER:
+              break;
+            default: {
+              runFunction(item);
+              keyActionProcessed = true;
+              break;
+            }
+          }
+        }
+
         else {
           switch(calcMode) {
             case CM_NORMAL: {
@@ -2654,10 +2669,6 @@ RELEASE_END:
             case CM_GRAPH:
             case CM_PLOT_STAT:
             case CM_LISTXY: {
-              if(item == ITM_SNAP) {
-                runFunction(item);
-                keyActionProcessed = true;
-              }
               break;
             }
 
@@ -4069,7 +4080,7 @@ void fnKeyUp(uint16_t unusedButMandatoryParameter) {
 
       case CM_MIM: {
         #if defined(NOMATRIXCURSORS)
-          if(currentSoftmenuScrolls()) {   //JM remove to allow normal arrows to work as cursors
+          if(currentSoftmenuScrolls() && softmenu[softmenuStack[0].softmenuId].menuItem != -MNU_TAMSTORCL) {   //JM remove to allow normal arrows to work as cursors
             menuUp();                      //JM
           }                                //JM
         #else  // !NOMATRIXCURSORS             //JM
@@ -4282,7 +4293,7 @@ void fnKeyDown(uint16_t unusedButMandatoryParameter) {
 
       case CM_MIM: {
         #if defined(NOMATRIXCURSORS)
-          if(currentSoftmenuScrolls()) {   //JM remove to allow normal arrows to work as cursors
+          if(currentSoftmenuScrolls() && softmenu[softmenuStack[0].softmenuId].menuItem != -MNU_TAMSTORCL) {   //JM remove to allow normal arrows to work as cursors
             menuDown();                    //JM
           }                                //JM
         #else  // !NOMATRIXCURSORS             //JM
