@@ -419,7 +419,9 @@
             btnClicked(w, "17");   //Up
           }
           else {
-            btnFnClicked(w, "1");  //F1
+            if(!tam.mode) {
+              btnFnClicked(w, "1");  //F1
+            }
           }
           break;
         case 65364:                                               //JM     // CursorDown //JM
