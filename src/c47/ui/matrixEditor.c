@@ -899,7 +899,7 @@ void showRealMatrix(const real34Matrix_t *matrix, int16_t prefixWidth) {
 smallFont:
     font = &standardFont;
     fontHeight = STANDARD_FONT_HEIGHT;
-    Y_POS = Y_POSITION_OF_REGISTER_X_LINE - STANDARD_FONT_HEIGHT;
+    Y_POS = Y_POSITION_OF_REGISTER_X_LINE - STANDARD_FONT_HEIGHT + 2;
     //maxWidth = MATRIX_LINE_WIDTH_SMALL * 4 - 20;
   }
 
