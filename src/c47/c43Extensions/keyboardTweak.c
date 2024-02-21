@@ -99,7 +99,7 @@ void showShiftState(void) {
       printf("    >>> showShiftState: calcMode=%d\n", calcMode);
     #endif // PC_BUILD_TELLTALE
 
-    if(calcMode != CM_REGISTER_BROWSER && calcMode != CM_FLAG_BROWSER && calcMode != CM_FONT_BROWSER && temporaryInformation != TI_SHOW_REGISTER_BIG && temporaryInformation != TI_SHOW_REGISTER_SMALL && temporaryInformation != TI_SHOW_REGISTER) {
+    if(temporaryInformation != TI_SHOW_REGISTER_BIG && temporaryInformation != TI_SHOW_REGISTER_SMALL && temporaryInformation != TI_SHOW_REGISTER) {
       if(shiftF) {                        //SEE screen.c:refreshScreen
         showGlyph(STD_MODE_F, &standardFont, X_SHIFT, Y_SHIFT, vmNormal, true, true);   // f is pixel 4+8+3 wide
         show_f_jm();
@@ -372,12 +372,14 @@ void resetKeytimers(void) {
             }
           }
             break;
+
           case ITM_BACKSPACE:
             if(tam.mode == 0) {
               longpressDelayedkey2 = longpressDelayedkey1;
               longpressDelayedkey1 = ITM_CLSTK;    //backspace longpress to CLSTK
             }
             break;
+
           case ITM_EXIT1:
             longpressDelayedkey2 = ITM_CLRMOD;     //EXIT longpress DOES CLRMOD
             longpressDelayedkey1 = ITM_BASEMENU;

@@ -615,6 +615,10 @@ void execTimerApp(uint16_t timerType) {
     int16_t x, y, x1, y1, x2, y2;
     uint32_t tmp;
 
+    if(calcMode == CM_REGISTER_BROWSER || calcMode == CM_FLAG_BROWSER || calcMode == CM_FONT_BROWSER) {
+      return;
+    }
+
     if((calcMode == CM_GRAPH || calcMode == CM_PLOT_STAT) && xSoftkey >= 2) {
       return;
     }
@@ -1798,8 +1802,12 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
 
 
   void hideFunctionName(void) {
-    if(!running_program_jm && (tmpString[0] != 0 || calcMode!=CM_AIM)) refreshRegisterLine(REGISTER_T);      //JM DO NOT CHANGE BACK TO CLEARING ONLY A SHORT PIECE. CHANGED IN TWEAKED AS WELL>
-                                                                                      //Added the tempstring isea, not sure why it is used, but I stay compatible
+    if(!running_program_jm && (tmpString[0] != 0 || calcMode!=CM_AIM)) {
+      refreshRegisterLine(REGISTER_T);                                                //JM DO NOT CHANGE BACK TO CLEARING ONLY A SHORT PIECE. CHANGED IN TWEAKED AS WELL>
+      if(getRegisterDataType(REGISTER_X) == dtReal34Matrix || getRegisterDataType(REGISTER_X) == dtReal34Matrix) {
+        refreshRegisterLine(REGISTER_X);
+      }
+    }
     showFunctionNameItem = 0;
     showFunctionNameCounter = 0;
   }
@@ -4434,6 +4442,9 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
 
 
 void fnSNAP(uint16_t unusedButMandatoryParameter) {
+  #ifdef PC_BUILD
+    printf("fnSNAP!\n");
+  #endif
   if(calcMode == CM_AIM) {
     xcopy(tmpString, aimBuffer, ERROR_MESSAGE_LENGTH + AIM_BUFFER_LENGTH + NIM_BUFFER_LENGTH);       //backup portion of the "message buffer" area in DMCP used by ERROR..AIM..NIM buffers, to the tmpstring area in DMCP. DMCP uses this area during create_screenshot.
     fnScreenDump(0);
