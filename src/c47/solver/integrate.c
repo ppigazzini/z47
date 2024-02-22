@@ -142,7 +142,46 @@ void fnIntegrate(uint16_t labelOrVariable) {
     if(realIsZero(&acc)) { // it may freeze if ACC=0
       realCopy(const_1e_6143, &acc);
     }
+
+#undef SPEEDUPEXPERIMENT
+
+#ifdef SPEEDUPEXPERIMENT
+    real_t digits;
+    uint8_t significantDigitsMem = significantDigits;
+    int32_t digitsN = 0;
+    WP34S_Ln(&acc, &digits, &ctxtReal39);
+    realDivide(&digits, const_ln10, &digits, &ctxtReal39);
+    digitsN = -realToInt32C47(&digits);
+    #ifdef PC_BUILD
+      printRealToConsole(&digits, "digits: ","\n");
+      printf("----->>>> digitsN=%i, smallerEpsilon=%u\n",digitsN,smallerEpsilon);
+      printRealToConsole(&acc, "acc: ","\n");
+      printRealToConsole(&llim, "llim: ","\n");
+      printRealToConsole(&ulim, "ulim: ","\n");
+    #endif
+    if(!smallerEpsilon && digitsN < 14 && digitsN > 4) {
+    #ifdef PC_BUILD
+      printf("Reducing digits to %i\n",digitsN);
+    #endif
+      significantDigits = digitsN+1;
+      ctxtReal34.digits = digitsN+1;
+      ctxtReal39.digits = digitsN+3;
+      ctxtReal51.digits = digitsN+4;
+      ctxtReal75.digits = digitsN+6;
+    }
+#endif //SPEEDUPEXPERIMENT
+
     integrate(labelOrVariable, &llim, &ulim, &acc, &res, smallerEpsilon ? &ctxtReal75 : &ctxtReal39);
+
+#ifdef SPEEDUPEXPERIMENT
+      significantDigits = significantDigitsMem;
+      ctxtReal34.digits = 34;
+      ctxtReal39.digits = 39;
+      ctxtReal51.digits = 51;
+      ctxtReal75.digits = 75;
+#endif //SPEEDUPEXPERIMENT
+
+
     fnClearStack(NOPARAM);
     reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
     reallocateRegister(REGISTER_Y, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
@@ -789,7 +828,7 @@ static void _integrate_mm(calcRegister_t regist, const real_t *llim, const real_
 
   realSubtract(&b, &a, &bma2, realContext); // interval half-length
   realMultiply(&bma2, const_1on2, &bma2, realContext);
-  realSubtract(&b, &a, &bpa2, realContext); // centre of interval
+  realAdd(&b, &a, &bpa2, realContext); // centre of interval
   realMultiply(&bpa2, const_1on2, &bpa2, realContext);
   k = 0; // level counter
   DEI_xeq_user(regist, &bpa2, &ss, realContext); // centre of interval
