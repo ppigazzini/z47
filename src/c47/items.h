@@ -1433,7 +1433,7 @@
 #define MNU_TAM                     1385
 #define MNU_TAMCMP                  1386
 #define MNU_TAMSTORCL               1387
-#define MNU_REG                     1388
+#define MNU_1388                    1388
 #define MNU_VAR                     1389
 #define MNU_TAMFLAG                 1390
 #define MNU_TAMSHUFFLE              1391
@@ -2119,8 +2119,8 @@
 #define ITM_F14                     2063
 #define ITM_M14                     2064
 #define ITM_F124                    2065
-#define MNU_2066                    2066        // [DL] Deprecated MNU_TAMLBLALPHA
-#define MNU_2067                    2067        // [DL] Deprecated MNU_TAMSRALPHA
+#define MNU_REG                     2066
+#define MNU_FLG                     2067
 #define MNU_TAMNONREG               2068
 #define ITM_LG_SIGN                 2069
 #define ITM_LN_SIGN                 2070
