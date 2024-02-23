@@ -349,16 +349,20 @@
   void     copyRealMatrix                 (const real34Matrix_t *matrix, real34Matrix_t *res);
 
   #if !defined(TESTSUITE_BUILD)
-    void     insRowRealMatrix               (real34Matrix_t *matrix, uint16_t beforeRowNo);
+    void     insRowRealMatrix               (real34Matrix_t *matrix, uint16_t beforeRowNo, bool_t add);
     void     delRowRealMatrix               (real34Matrix_t *matrix, uint16_t beforeRowNo);
+    void     insColRealMatrix               (real34Matrix_t *matrix, uint16_t beforeRowNo, bool_t add);
+    void     delColRealMatrix               (real34Matrix_t *matrix, uint16_t beforeRowNo);
   #endif // !TESTSUITE_BUILD
   void     transposeRealMatrix            (const real34Matrix_t *matrix, real34Matrix_t *res);
 
   void     copyComplexMatrix              (const complex34Matrix_t *matrix, complex34Matrix_t *res);
 
   #if !defined(TESTSUITE_BUILD)
-    void     insRowComplexMatrix            (complex34Matrix_t *matrix, uint16_t beforeRowNo);
+    void     insRowComplexMatrix            (complex34Matrix_t *matrix, uint16_t beforeRowNo, bool_t add);
     void     delRowComplexMatrix            (complex34Matrix_t *matrix, uint16_t beforeRowNo);
+    void     insColComplexMatrix            (complex34Matrix_t *matrix, uint16_t beforeRowNo, bool_t add);
+    void     delColComplexMatrix            (complex34Matrix_t *matrix, uint16_t beforeRowNo);
   #endif // !TESTSUITE_BUILD
   void     transposeComplexMatrix         (const complex34Matrix_t *matrix, complex34Matrix_t *res);
 
