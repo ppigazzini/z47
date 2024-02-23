@@ -546,7 +546,7 @@
 #define FLAG_SH_LONGPRESS                     0x803E
 #define FLAG_WRAPEDG                          0xc03F
 
-#define NUMBER_OF_SYSTEM_FLAGS                    60 // We can have a maximum of 128 system flags
+#define NUMBER_OF_SYSTEM_FLAGS                    64 // We can have a maximum of 128 system flags
 
 typedef enum {
   LI_ZERO     = 0, // Long integer sign 0
