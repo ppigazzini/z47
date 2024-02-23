@@ -89,7 +89,7 @@ TO_QSPI const reservedVariableHeader_t allReservedVariables[] = { // MUST be in 
 //    LX    */  { .header = {.pointerToRegisterData = 44,         .dataType = dtReal34,      .tag = amNone,      .readOnly = 0, .notUsed = 0}, .reservedVariableName = {3, 161, 147, 'X',  0,   0,   0,   0} },
 };
 
-// REMEMBER: SET LAST_RESERVED_VARIABLE in defines.c
+// REMEMBER: SET LAST_RESERVED_VARIABLE in defines.h
 
 
 static inline registerHeader_t *POINTER_TO_LOCAL_REGISTER(const calcRegister_t a) {

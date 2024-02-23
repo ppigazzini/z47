@@ -1237,8 +1237,10 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     }
     memset(ram, 0, TO_BYTES(RAM_SIZE_IN_BLOCKS));
     numberOfFreeMemoryRegions = 1;
-    freeMemoryRegions[0].blockAddress = (LAST_RESERVED_VARIABLE-FIRST_RESERVED_VARIABLE);                          // for reserved variables
-    freeMemoryRegions[0].sizeInBlocks = RAM_SIZE_IN_BLOCKS - (LAST_RESERVED_VARIABLE-FIRST_RESERVED_VARIABLE) - 1; // - 1: one block for an empty program
+
+    // for reserved variables (for Martin: you moron, think twice when you change something around here!)
+    freeMemoryRegions[0].blockAddress = allReservedVariables[LAST_RESERVED_VARIABLE - FIRST_RESERVED_VARIABLE].header.pointerToRegisterData + REAL34_SIZE_IN_BLOCKS; // + REAL34_SIZE_IN_BLOCKS is wrong because GRAMOD is a dtLongInteger, but it works
+    freeMemoryRegions[0].sizeInBlocks = RAM_SIZE_IN_BLOCKS - freeMemoryRegions[0].blockAddress - 1; // - 1: one block for an empty program
 
     #if !defined(DMCP_BUILD)
       numberOfAllocatedMemoryRegions = 0;
@@ -1700,12 +1702,12 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
       if(tmpVbat < vbatVIntegrated) {
         vbatVIntegrated = tmpVbat;                                                        //immediately assume the lowest possibe value measured
         loop = 0;
-      } else 
+      } else
       if(tmpVbat > vbatVIntegrated) {
         if(tmpVbat > 2900) {                                                              //if high enough, reset
           vbatVIntegrated = tmpVbat;
         loop = 0;
-        } else        
+        } else
         if(vbatVIntegrated < tmpVbat && minutePulse) {                                    // Every min if vbatTIntegrated is lower than actual V, then creep closer
           vbatVIntegrated = vbatVIntegrated + max(1,((tmpVbat - vbatVIntegrated) >> 4));  //   (2500 - 2350) >> 4 = 9 increase every minute
         }
