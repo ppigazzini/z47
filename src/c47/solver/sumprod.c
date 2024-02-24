@@ -58,7 +58,7 @@
 
 #if !defined(TESTSUITE_BUILD)
 
-  static void _showProgress(const real_t *a, real_t *ai, bool_t cpx) {
+  void showProgressReal(const real_t *a, real_t *ai, bool_t cpx) {
     real34_t a34, ai34;
     #if ENABLE_SOLVER_PROGRESS == 1
         uint8_t savedDisplayFormatDigits = displayFormatDigits;
@@ -213,7 +213,7 @@
 
         real34Add(&counter, &loopStep, &counter);
         if(printHalfSecUpdate_Integer(timed, "Loop: ",loop--)) { ; //timed
-          _showProgress(&resultR, &resultRi, changedOverToComplex);
+          showProgressReal(&resultR, &resultRi, changedOverToComplex);
         }
 
         if(keyWaiting()) {

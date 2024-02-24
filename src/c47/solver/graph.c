@@ -24,8 +24,11 @@
 #include "mathematics/comparisonReals.h"
 #include "charString.h"
 #include "constantPointers.h"
+#include "display.h"
 #include "error.h"
 #include "flags.h"
+#include "fonts.h"
+#include "c43Extensions/addons.h"
 #include "c43Extensions/graphs.h"
 #include "items.h"
 #include "mathematics/invert.h"
@@ -37,6 +40,7 @@
 #include "screen.h"
 #include "softmenus.h"
 #include "solver/equation.h"
+#include "solver/sumprod.h"
 #include "statusBar.h"
 #include "stack.h"
 #include "stats.h"
@@ -64,8 +68,8 @@
 
 #define COMPLEXKICKER true       //flag to allow conversion to complex plane if no convergenge found
 #define CHANGE_TO_MOD_SECANT 0   //at iteration nn go to the modified secant method. 0 means immediately
-#define CONVERGE_FACTOR 1.0f        //
-#define NUMBERITERATIONS 35      // Must be smaller than LIM (see STATS)
+#define CONVERGE_FACTOR 1.0f     //
+#define NUMBERITERATIONS 9999    // 35 // Must be smaller than LIM (see STATS)
 
 
 #if !defined(TESTSUITE_BUILD)
@@ -81,17 +85,6 @@ static void fnPlot(uint16_t unusedButMandatoryParameter) {
 }
 
 
-
-static void fnRCL(int16_t inp) { //DONE
-    setSystemFlag(FLAG_ASLIFT);
-    if(inp == TEMP_REGISTER_1) {
-      liftStack();
-      copySourceRegisterToDestRegister(inp, REGISTER_X);
-    }
-    else {
-      fnRecall(inp);
-    }
-  }
 
   static void convertDoubleToReal34RegisterPush(double x, calcRegister_t destination) {
     setSystemFlag(FLAG_ASLIFT);
@@ -497,6 +490,9 @@ void graph_stat(uint16_t unusedButMandatoryParameter) {
 }
 
 
+
+
+
 //###################################################################################
 //SOLVER
 
@@ -551,9 +547,10 @@ void graph_stat(uint16_t unusedButMandatoryParameter) {
     runFunction(ITM_RAD);
     clearSystemFlag(FLAG_SSIZE8);
     setSystemFlag(FLAG_CPXRES);
-    int16_t ix,ixd;
+    int16_t ixd;
     int16_t oscillations = 0;
     int16_t convergent = 0;
+    int ix;
     bool_t checkNaN = false;
     bool_t checkzero = false;
     osc = 0;
@@ -1120,6 +1117,20 @@ void graph_stat(uint16_t unusedButMandatoryParameter) {
       // |dy| is still in Y
       // replace X with ix
       // plot (ix,|dy|)
+
+
+      if (printHalfSecUpdate_Integer(timed, "Iter: ",ix)) { //timed
+        real_t a, ai;
+        getRegisterAsComplex(SREG_X1, &a, &ai);
+        showProgressReal(&a, &ai, false);
+      }
+
+      if(keyWaiting()) {
+          showString("key Waiting ...", &standardFont, 20, 40, vmNormal, false, false);
+          printHalfSecUpdate_Integer(force+1, "Interrupted Iter:",ix);
+          programRunStop = PGM_WAITING;
+        break;
+      }
 
 
       #if defined(PC_BUILD)

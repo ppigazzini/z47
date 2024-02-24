@@ -488,14 +488,12 @@ int solver(calcRegister_t variable, const real34_t *y, const real34_t *x, real34
         _showProgress(&a, &b, &fa, &fb);
       }
 
-      #if defined(DMCP_BUILD)
-        if(keyWaiting()) {
-            showString("key Waiting ...", &standardFont, 20, 40, vmNormal, false, false);
-            printHalfSecUpdate_Integer(force+1, "Interrupted Iter:",loop);
-            programRunStop = PGM_WAITING;
-          break;
-        }
-      #endif //DMCP_BUILD
+      if(keyWaiting()) {
+          showString("key Waiting ...", &standardFont, 20, 40, vmNormal, false, false);
+          printHalfSecUpdate_Integer(force+1, "Interrupted Iter:",loop);
+          programRunStop = PGM_WAITING;
+        break;
+      }
 
       // pre-calculation
       if(realIsSpecial(&bb2)) {
