@@ -63,10 +63,8 @@
     #if ENABLE_SOLVER_PROGRESS == 1
         uint8_t savedDisplayFormatDigits = displayFormatDigits;
 
-//        clearRegisterLine(REGISTER_Z, true, true);
-        if(cpx) {
-          clearRegisterLine(REGISTER_Y, true, true);
-        }
+        clearRegisterLine(REGISTER_Z, true, true);
+        clearRegisterLine(REGISTER_Y, true, true);
         clearRegisterLine(REGISTER_X, true, true);
 
         displayFormatDigits = displayFormat == DF_ALL ? 0 : 33;
