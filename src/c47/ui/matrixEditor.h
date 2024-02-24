@@ -83,6 +83,9 @@
    * \param[in] unusedParamButMandatory
    */
   void       fnInsRow                       (uint16_t unusedParamButMandatory);
+  void       fnInsCol                       (uint16_t unusedParamButMandatory);
+  void       fnAddRow                       (uint16_t unusedParamButMandatory);
+  void       fnAddCol                       (uint16_t unusedParamButMandatory);
 
   /**
    * Delete a row.
@@ -90,6 +93,7 @@
    * \param[in] unusedParamButMandatory
    */
   void       fnDelRow                       (uint16_t unusedParamButMandatory);
+  void       fnDelCol                       (uint16_t unusedParamButMandatory);
 
   #if !defined(TESTSUITE_BUILD)
     int16_t  getIRegisterAsInt              (bool_t asArrayPointer);

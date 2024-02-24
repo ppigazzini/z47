@@ -957,6 +957,10 @@ void fnNop(uint16_t unusedButMandatoryParameter) {
   void fnIncDecJ                   (uint16_t unusedButMandatoryParameter) {}
   void fnInsRow                    (uint16_t unusedButMandatoryParameter) {}
   void fnDelRow                    (uint16_t unusedButMandatoryParameter) {}
+  void fnInsCol                    (uint16_t unusedButMandatoryParameter) {}
+  void fnDelCol                    (uint16_t unusedButMandatoryParameter) {}
+  void fnAddRow                    (uint16_t unusedButMandatoryParameter) {}
+  void fnAddCol                    (uint16_t unusedButMandatoryParameter) {}
   void fnSetMatrixDimensions       (uint16_t unusedButMandatoryParameter) {}
   void fnGetMatrixDimensions       (uint16_t unusedButMandatoryParameter) {}
   void fnTranspose                 (uint16_t unusedButMandatoryParameter) {}
@@ -3567,5 +3571,10 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 2340 */  { addItemToBuffer,              REGISTER_R,                  "R",                                           "R",                                           (0 << TAM_MAX_BITS) |     0, CAT_REGS | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     }, // The
 /* 2341 */  { addItemToBuffer,              REGISTER_S,                  "S",                                           "S",                                           (0 << TAM_MAX_BITS) |     0, CAT_REGS | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     }, // The
 
-/* 2342 */  { itemToBeCoded,                NOPARAM,                     "",                                            "Last item",                                   (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED},
+/* 2342 */  { fnInsCol,                     NOPARAM,                     "M.INSC",                                      "INSC",                                        (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_DISABLED     },
+/* 2343 */  { fnDelCol,                     NOPARAM,                     "M.DELC",                                      "DELC",                                        (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_DISABLED     },
+/* 2344 */  { fnAddRow,                     NOPARAM,                     "M.ROW+1",                                     "ROW+1",                                       (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_DISABLED     },
+/* 2345 */  { fnAddCol,                     NOPARAM,                     "M.COL+1",                                     "COL+1",                                       (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_DISABLED     },
+
+/* 2346 */  { itemToBeCoded,                NOPARAM,                     "",                                            "Last item",                                   (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED},
 };
