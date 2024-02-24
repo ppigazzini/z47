@@ -3473,7 +3473,7 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 2250 */  { fnStoreElementPlus,           NOPARAM,                     "STOSEQ",                                      "STOSEQ",                                      (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 
 // 64 more system flags
-/* 2251 */  { itemToBeCoded,                NOPARAM,                     "2251",                                        "2251",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 2251 */  { fnGetSystemFlag,              FLAG_MONIT,                  "MONIT",                                       "MONIT",                                       (0 << TAM_MAX_BITS) |     0, CAT_SYFL | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2252 */  { itemToBeCoded,                NOPARAM,                     "2252",                                        "2252",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2253 */  { itemToBeCoded,                NOPARAM,                     "2253",                                        "2253",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2254 */  { itemToBeCoded,                NOPARAM,                     "2254",                                        "2254",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
