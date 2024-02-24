@@ -23,6 +23,7 @@
 #include "c43Extensions/addons.h"
 #include "constantPointers.h"
 #include "defines.h"
+#include "display.h"
 #include "error.h"
 #include "flags.h"
 #include "integers.h"
@@ -42,11 +43,33 @@
 #include "timer.h"
 #include "c47.h"
 
-
 #if !defined(TESTSUITE_BUILD)
+
+  static void _showProgress(const longInteger_t a) {
+    #if ENABLE_SOLVER_PROGRESS == 1
+        uint8_t savedDisplayFormatDigits = displayFormatDigits;
+
+        //clearRegisterLine(REGISTER_Z, true, true);
+        //clearRegisterLine(REGISTER_Y, true, true);
+        clearRegisterLine(REGISTER_X, true, true);
+
+        displayFormatDigits = displayFormat == DF_ALL ? 0 : 33;
+        convertLongIntegerToLongIntegerRegister(a, TEMP_REGISTER_1);
+        longIntegerRegisterToDisplayString(TEMP_REGISTER_1, tmpString, TMP_STR_LENGTH, 400, 400, false);//JM added last parameter: Allow LARGELI
+        showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
+        displayFormatDigits = savedDisplayFormatDigits;
+
+      #if defined DMCP_BUILD
+        lcd_refresh();
+      #endif //DMCP_BUILD
+    #endif // ENABLE_SOLVER_PROGRESS == 1
+  }
+
+
   static void _programmableiSumProd(uint16_t label, bool_t prod) {
     uint32_t      loop = 0;
     int16_t       finished = 0;
+    bool_t        abort = false;
     longInteger_t resultLi, xLi;
     longInteger_t loopStep, loopTo, iCounter, iLoop;
     longIntegerInit(loopStep);
@@ -130,17 +153,17 @@
         #endif //VERBOSE_COUNTER
 
         longIntegerAdd(iCounter, loopStep, iCounter);
-        printHalfSecUpdate_Integer(timed, "Loop: ",loop--); //timed
+        if(printHalfSecUpdate_Integer(timed, "Loop: ",loop--)) { //timed
+          _showProgress(resultLi);
+        }
 
-        #if defined(DMCP_BUILD)
-          if(keyWaiting()) {
-              showString("key Waiting ...", &standardFont, 20, 40, vmNormal, false, false);
-              printHalfSecUpdate_Integer(force+1, "Interrupted: ",loop);
-            break;
-          }
-        #endif //DMCP_BUILD
+        if(keyWaiting()) {
+          showString("key Waiting ...", &standardFont, 20, 40, vmNormal, false, false);
+          printHalfSecUpdate_Integer(force+1, "Interrupted: ",loop);
+          abort = true;
+        }
 
-        if(finished == 0) {
+        if(finished == 0 || abort) {
           break;
         }
       } //WHILE
@@ -177,7 +200,11 @@
     hourGlassIconEnabled = false;
     showHideHourGlass();
 
-    printHalfSecUpdate_Integer(force+0, "Loop complete: ",loop);
+    if(abort) {
+      printHalfSecUpdate_Integer(force+0, "Loop aborted: ",loop);
+    } else {
+      printHalfSecUpdate_Integer(force+0, "Loop complete: ",loop);      
+    }
 
   }
 

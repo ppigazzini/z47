@@ -23,8 +23,10 @@
 #include "c43Extensions/addons.h"
 #include "constantPointers.h"
 #include "defines.h"
+#include "display.h"
 #include "error.h"
 #include "flags.h"
+#include "fonts.h"
 #include "integers.h"
 #include "items.h"
 #include "mathematics/comparisonReals.h"
@@ -44,6 +46,7 @@
 #include "timer.h"
 #include "c47.h"
 
+#include <string.h>
 
 
 //Complex operation:
@@ -51,10 +54,54 @@
 //  The result of f(n) can be complex, in which case if CPXRES is set, operation continues in complex.
 //  If not set, an error is raised.
 
+
+
 #if !defined(TESTSUITE_BUILD)
+
+  static void _showProgress(const real_t *a, real_t *ai, bool_t cpx) {
+    real34_t a34, ai34;
+    #if ENABLE_SOLVER_PROGRESS == 1
+        uint8_t savedDisplayFormatDigits = displayFormatDigits;
+
+//        clearRegisterLine(REGISTER_Z, true, true);
+        if(cpx) {
+          clearRegisterLine(REGISTER_Y, true, true);
+        }
+        clearRegisterLine(REGISTER_X, true, true);
+
+        displayFormatDigits = displayFormat == DF_ALL ? 0 : 33;
+        if(!cpx) {
+          realToReal34(a, &a34);
+          real34ToDisplayString(&a34, amNone, tmpString, &standardFont, 9999, 34, false, true);
+          showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
+        } else {
+          realToReal34(a, &a34);
+          realToReal34(ai, &ai34);
+          real34ToDisplayString(&a34, amNone, tmpString, &standardFont, 9999, 34, false, true);          
+          showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_Y_LINE + 6, vmNormal, true, true);
+          uint32_t x = 0;
+          if(real34CompareGreaterEqual(&ai34,const34_0)) {
+            x = showString("+", &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
+          } else {
+            x = showString(" ", &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);            
+          }
+          real34ToDisplayString(&ai34, amNone, tmpString, &standardFont, 9999, 34, false, true);          
+          strcat(tmpString, COMPLEX_UNIT);
+          showString(tmpString, &standardFont, x, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
+        }
+        displayFormatDigits = savedDisplayFormatDigits;
+
+      #if defined DMCP_BUILD
+        lcd_refresh();
+      #endif //DMCP_BUILD
+    #endif // ENABLE_SOLVER_PROGRESS == 1
+  }
+
+
   static void _programmableSumProd(uint16_t label, bool_t prod) {
     uint32_t      loop = 0;
     int16_t       finished = 0;
+    bool_t        abort = false;
     real_t        resultX, resultXi, resultR, resultRi;
     real34_t      loopStep, loopTo, counter, compare, sign, rLoop;
     bool_t        changedOverToComplex = false;
@@ -165,17 +212,17 @@
         #endif // VERBOSE_COUNTER
 
         real34Add(&counter, &loopStep, &counter);
-        printHalfSecUpdate_Integer(timed, "Loop: ",loop--); //timed
+        if(printHalfSecUpdate_Integer(timed, "Loop: ",loop--)) { ; //timed
+          _showProgress(&resultR, &resultRi, changedOverToComplex);
+        }
 
-        #if defined(DMCP_BUILD)
-          if(keyWaiting()) {
-              showString("key Waiting ...", &standardFont, 20, 40, vmNormal, false, false);
-              printHalfSecUpdate_Integer(force+1, "Interrupted: ", loop);
-            break;
-          }
-        #endif // DMCP_BUILD
+        if(keyWaiting()) {
+          showString("key Waiting ...", &standardFont, 20, 40, vmNormal, false, false);
+          printHalfSecUpdate_Integer(force+1, "Interrupted: ", loop);
+          abort = true;
+        }
 
-        if(finished == 0) {
+        if(finished == 0 || abort) {
           break;
         }
       } //WHILE
@@ -217,7 +264,11 @@
     hourGlassIconEnabled = false;
     showHideHourGlass();
 
-    printHalfSecUpdate_Integer(force+0, "Loop complete: ",loop);
+    if(abort) {
+      printHalfSecUpdate_Integer(force+0, "Loop aborted: ",loop);
+    } else {
+      printHalfSecUpdate_Integer(force+0, "Loop complete: ",loop);      
+    }
   }
 
 

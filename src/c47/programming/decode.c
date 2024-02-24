@@ -276,7 +276,7 @@ static void decodeOp(uint8_t *paramAddress, const char *op, uint16_t paramMode, 
           sprintf(tmpString, "%s " STD_LEFT_SINGLE_QUOTE "%s" STD_RIGHT_SINGLE_QUOTE, op, indexOfItems[*paramAddress + SFL_TDM24].itemSoftmenuName);
         }
         else {
-          sprintf(tmpString, "%s " STD_LEFT_SINGLE_QUOTE "%s" STD_RIGHT_SINGLE_QUOTE, op, indexOfItems[*paramAddress + SFL_2247 - 64].itemSoftmenuName);
+          sprintf(tmpString, "%s " STD_LEFT_SINGLE_QUOTE "%s" STD_RIGHT_SINGLE_QUOTE, op, indexOfItems[*paramAddress + SFL_MONIT - 64].itemSoftmenuName);
         }
       }
       else if(opParam == INDIRECT_REGISTER) {

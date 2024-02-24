@@ -1438,6 +1438,7 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     setSystemFlag(FLAG_HPRP);
     setSystemFlag(FLAG_HPBASE);
     clearSystemFlag(FLAG_2TO10);
+    setSystemFlag(FLAG_MONIT);
 
     setSystemFlag(FLAG_SH_LONGPRESS);
 
