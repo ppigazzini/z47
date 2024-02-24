@@ -2399,8 +2399,12 @@
 #define ITM_REG_Q                   2339
 #define ITM_REG_R                   2340
 #define ITM_REG_S                   2341
+#define ITM_M_INSC                  2342
+#define ITM_M_DELC                  2343
+#define ITM_M_ADDR                  2344
+#define ITM_M_ADDC                  2345
 
-#define LAST_ITEM                   2342
+#define LAST_ITEM                   2346
 
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL
