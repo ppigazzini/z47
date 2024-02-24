@@ -43,6 +43,7 @@
 #include "timer.h"
 #include "c47.h"
 
+#if !defined(TESTSUITE_BUILD)
 
   static void _showProgress(const longInteger_t a) {
     #if ENABLE_SOLVER_PROGRESS == 1
@@ -65,8 +66,6 @@
   }
 
 
-
-#if !defined(TESTSUITE_BUILD)
   static void _programmableiSumProd(uint16_t label, bool_t prod) {
     uint32_t      loop = 0;
     int16_t       finished = 0;

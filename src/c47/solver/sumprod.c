@@ -46,6 +46,7 @@
 #include "timer.h"
 #include "c47.h"
 
+#include <string.h>
 
 
 //Complex operation:
@@ -53,6 +54,9 @@
 //  The result of f(n) can be complex, in which case if CPXRES is set, operation continues in complex.
 //  If not set, an error is raised.
 
+
+
+#if !defined(TESTSUITE_BUILD)
 
   static void _showProgress(const real_t *a, real_t *ai, bool_t cpx) {
     real34_t a34, ai34;
@@ -94,8 +98,6 @@
   }
 
 
-
-#if !defined(TESTSUITE_BUILD)
   static void _programmableSumProd(uint16_t label, bool_t prod) {
     uint32_t      loop = 0;
     int16_t       finished = 0;
