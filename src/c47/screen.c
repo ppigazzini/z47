@@ -1610,6 +1610,9 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
 
 
   void force_refresh(uint8_t mode) {
+    if(!getSystemFlag(FLAG_MONIT) && mode == timed) {
+      return;
+    }
     if(mode == force || ((((uint16_t)(getUptimeMs()) >> 4) & 0x0020) == 0x0020) == halfSecTick) {  //Restrict refresh to once per half second. Use this minimally, due to extreme slow response.
       halfSecTick = !halfSecTick;
 
@@ -1628,7 +1631,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
 
 
   uint16_t old_time = 0;
-  bool_t printHalfSecUpdate_Integer(uint8_t mode, char *txt, int loop) {
+  bool_t _printHalfSecUpdate_Integer(uint8_t mode, char *txt, int loop) {
     char tmps[100];
     bool_t ret_value = false;
     uint16_t new_time = (uint16_t)(getUptimeMs());
@@ -1660,6 +1663,13 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
       #endif // DMCP_BUILD
     }
     return ret_value;
+  }
+
+  bool_t printHalfSecUpdate_Integer(uint8_t mode, char *txt, int loop) { //further optimisation, not to even set up the 100 byte array or call getUptimeMs if progress monitor is not selected 
+    if(!getSystemFlag(FLAG_MONIT)) {
+      return false;
+    }
+    return _printHalfSecUpdate_Integer(mode, txt, loop);
   }
 
 
