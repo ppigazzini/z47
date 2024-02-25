@@ -2306,7 +2306,7 @@
 #define ITM_STOELPLUS               2250
 
 // 64 more system flags
-#define SFL_2247                    2251
+#define SFL_MONIT                   2251
 #define SFL_2248                    2252
 #define SFL_2249                    2253
 #define SFL_2250                    2254

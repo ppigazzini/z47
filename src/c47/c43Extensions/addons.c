@@ -132,10 +132,11 @@ void fneRPN(uint16_t state) {
 
 bool_t keyWaiting(void) {
   #if defined(DMCP_BUILD)
-    return key_empty() == 0;   //key_tail() != -1;
-  #else // !DMCP_BUILD
-    return false;
-  #endif // DMCP_BUILD
+    return key_empty() == 0 || key_tail() != -1;
+  #elif defined(PC_BUILD) // !DMCP_BUILD
+    return currentKeyCode == 32; //EXIT1 / EXIT key //Do not us gtk_events_pending() as it triggers for timers too
+  #endif // PC_BUILD
+  return false;
 }
 
 

@@ -1636,6 +1636,9 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
 
 
   void force_refresh(uint8_t mode) {
+    if(!getSystemFlag(FLAG_MONIT) && mode == timed) {
+      return;
+    }
     if(mode == force || ((((uint16_t)(getUptimeMs()) >> 4) & 0x0020) == 0x0020) == halfSecTick) {  //Restrict refresh to once per half second. Use this minimally, due to extreme slow response.
       halfSecTick = !halfSecTick;
 
@@ -1654,7 +1657,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
 
 
   uint16_t old_time = 0;
-  bool_t printHalfSecUpdate_Integer(uint8_t mode, char *txt, int loop, bool_t clearZ, bool_t clearT, bool_t disp) {
+  bool_t _printHalfSecUpdate_Integer(uint8_t mode, char *txt, int loop, bool_t clearZ, bool_t clearT, bool_t disp) {
     char tmps[100];
     bool_t ret_value = false;
     uint16_t new_time = (uint16_t)(getUptimeMs());
@@ -1692,6 +1695,13 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
     return ret_value;
   }
 
+  bool_t printHalfSecUpdate_Integer(uint8_t mode, char *txt, int loop, bool_t clearZ, bool_t clearT, bool_t disp) {//further optimisation, not to even set up the 100 byte array or call getUptimeMs if progress monitor is not selected 
+    if(!getSystemFlag(FLAG_MONIT)) {
+      return false;
+    }
+    return _printHalfSecUpdate_Integer(mode, txt, loop, clearZ, clearT, disp);
+  }
+
 
   void hideCursor(void) {
     if(cursorEnabled) {
@@ -1725,7 +1735,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
     }
     clearRegisterLine(rowReg, true, true);
 
-    strcpy(regS, "Reg_"); 
+    strcpy(regS, "Reg_");
     regS[3] = letteredRegisterName(reg);
     showString(regS, &standardFont, 19, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(rowReg - REGISTER_X) + 6, vmNormal, true, true);
     sprintf(prefix, "= %s =", name);
@@ -2609,7 +2619,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
         if(regist == REGISTER_X && lastErrorCode == 0 && calcMode != CM_PEM && PROBMENU) {
           const char *r_i = NULL, *r_j = NULL, *r_k = NULL;
           calcRegister_t register_i = REGISTER_X, register_j = REGISTER_X, register_k = REGISTER_X;
-          
+
 
           switch(softmenu[softmenuStack[0].softmenuId].menuItem) {
             case -MNU_GEV:

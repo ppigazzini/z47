@@ -52,7 +52,7 @@
 
 #include "c47.h"
 #define BACKUP_VERSION                     1001  // 1st text file backup.cfg version
-#define configFileVersion                  10000008 // New STOCFG and new STATE file; arbitrary starting point version 10 000 001. Allowable values are 10000000 to 20000000
+#define configFileVersion                  10000009 // New STOCFG and new STATE file; arbitrary starting point version 10 000 001. Allowable values are 10000000 to 20000000
 #define VersionAllowed                     10000005 // This code will not autoload versions earlier than this
 
 /*
@@ -2288,6 +2288,9 @@ double stringToDouble(const char *str) {
         if (loadedVersion < 10000006) {
           defaultStatusBar(); //clear systemflags for early version config files
         }
+        if (loadedVersion < 10000009) {
+          setSystemFlag(FLAG_MONIT); //Monitoring is on per default
+        }
       }
     }
 
@@ -2301,6 +2304,9 @@ double stringToDouble(const char *str) {
         systemFlags1 = stringToUint64(tmpString);
         if (loadedVersion < 10000006) {
           defaultStatusBar(); //clear systemflags for early version config files
+        }
+        if (loadedVersion < 10000009) {
+          setSystemFlag(FLAG_MONIT); //Monitoring is on per default
         }
       }
     }

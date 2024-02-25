@@ -446,7 +446,6 @@ void fnClrMod(uint16_t unusedButMandatoryParameter) {        //clear input buffe
   #if defined(PC_BUILD)
     jm_show_comment("^^^^fnClrModa");
   #endif // PC_BUILD
-
   #if !defined(TESTSUITE_BUILD)
     resetKeytimers();  //JM
     clearSystemFlag(FLAG_FRACT);
@@ -1458,6 +1457,7 @@ Sett(_Reset);
 //---    setSystemFlag  (FLAG_HPBASE);
 //---    clearSystemFlag(FLAG_2TO10  );
 
+setSystemFlag(FLAG_MONIT);
     setSystemFlag(FLAG_SH_LONGPRESS);
 
     hourGlassIconEnabled = false;
