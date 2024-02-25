@@ -14,11 +14,7 @@
  * along with C47.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/********************************************//** //JM
- * \file jm.c JM_TEST
- ***********************************************/
 
-/* ADDITIONAL C43 functions and routines */
 
 #include "c43Extensions/jm.h"
 
@@ -103,7 +99,8 @@
       }
       printf("\n");
 
-      printf(".  (tam.mode=%d, catalog=%d)\n",tam.mode, catalog);
+      printf(".  (tam.mode=%d, catalog=%d)   \n",
+                  tam.mode,    catalog    );
       jm_show_comment("calcstate END:");
     #endif //PC_BUILD_TELLTALE
   }
@@ -112,10 +109,10 @@
   void jm_show_comment(char comment[]) {
     #if defined(PC_BUILD_VERBOSE2)
       char tmp[600];
-      strcpy(tmp,comment);
+      tmp[0]=0;
       strcat(tmp,"                                                                                                                                                                ");
-      tmp[130]=0;
-      printf("....%s calcMode=%4d last_CM=%4d tam.mode=%5d catalog=%5d Id=%4d Name=%8s F=%d G=%d \n",tmp, calcMode, last_CM, tam.mode, catalog, softmenuStack[0].softmenuId, indexOfItems[-softmenu[softmenuStack[0].softmenuId].menuItem].itemSoftmenuName,shiftF,shiftG);
+      tmp[100]=0;
+      printf("....%s %s calcMode=%4d last_CM=%4d tam.mode=%5d catalog=%5d Id=%4d Name=%8s f=%d g=%d \n",tmp, comment, calcMode, last_CM, tam.mode, catalog, softmenuStack[0].softmenuId, indexOfItems[-softmenu[softmenuStack[0].softmenuId].menuItem].itemSoftmenuName,shiftF,shiftG);
     //  printf("....%s\n",tmp);
     #endif // PC_BUILD_VERBOSE2
   }
@@ -452,41 +449,6 @@ void fnJM(uint16_t JM_OPCODE) {
       temporaryInformation = TI_ABC;
     }
 
-    else if(JM_OPCODE == 45) {                                  //PRIME stats
-      #if defined(PC_BUILD)
-        //ramDump();
-      #endif // PC_BUILD
-
-      char line1[700];
-      //Create a 3x3 A-matrix
-      TO_QSPI static const char *aa001 = "XEQC47 ERPN RECT 3 ENTER 3 MNEW STO 99 DROPX INDEX 99 1 ENTER 1 STOIJ DROPX DROPX";
-      TO_QSPI static const char *aa002 = " 1 STOEL J+ STOEL J+ STOEL";
-      TO_QSPI static const char *aa003 = " J+ STOEL DROPX 0.5 ENTER CHS 3 ENTER SQRT 2 / CHS COMPLEX J+ STOEL COMPLEX CHS COMPLEX J+ STOEL";
-      TO_QSPI static const char *aa004 = " 1 J+ STOEL DROPX J+ STOEL X^2 J+ STOEL DROPX";
-      TO_QSPI static const char *aa005 = " RCL 99 ";
-      strcpy(line1, aa001);
-      strcat(line1, aa002);
-      strcat(line1, aa003);
-      strcat(line1, aa004);
-      strcat(line1, aa005);
-      fnXEQMexecute(line1);
-      }
-
-    else if(JM_OPCODE == 46) {                                  //PRIME stats
-      char line1[700];
-      //Create a 3x1 matrix from Z Y X
-      TO_QSPI static const char *aa006 = "XEQC47 ERPN 3 ENTER 1 MNEW STO 99 DROPX INDEX 99 3 ENTER 1 STOIJ DROPX DROPX STOEL DROPX  I- STOEL DROPX  I-  STOEL DROPX RCL 99 ";
-      strcpy(line1, aa006);
-      fnXEQMexecute(line1);
-    }
-
-    else if(JM_OPCODE == 47) {                                  //PRIME stats
-      char line1[700];
-      //Create a ZYX form a 3x1 matrix
-      TO_QSPI static const char *aa007 = "XEQC47 ERPN STO 99 INDEX 99 DROPX 1 ENTER 1 STOIJ DROPX DROPX RCLEL I+ RCLEL I+ RCLEL ";
-      strcpy(line1, aa007);
-      fnXEQMexecute(line1);
-    }
 
   #endif // !SAVE_SPACE_DM42_6
   // Item 255 is NOP

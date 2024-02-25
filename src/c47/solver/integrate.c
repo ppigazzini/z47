@@ -20,6 +20,7 @@
 
 #include "solver/integrate.h"
 
+#include "c43Extensions/addons.h"
 #include "constantPointers.h"
 #include "defines.h"
 #include "display.h"
@@ -30,6 +31,7 @@
 #include "mathematics/comparisonReals.h"
 #include "mathematics/exp.h"
 #include "mathematics/wp34s.h"
+#include "plotstat.h"
 #include "programming/lblGtoXeq.h"
 #include "programming/manage.h"
 #include "realType.h"
@@ -140,7 +142,46 @@ void fnIntegrate(uint16_t labelOrVariable) {
     if(realIsZero(&acc)) { // it may freeze if ACC=0
       realCopy(const_1e_6143, &acc);
     }
+
+#undef SPEEDUPEXPERIMENT
+
+#ifdef SPEEDUPEXPERIMENT
+    real_t digits;
+    uint8_t significantDigitsMem = significantDigits;
+    int32_t digitsN = 0;
+    WP34S_Ln(&acc, &digits, &ctxtReal39);
+    realDivide(&digits, const_ln10, &digits, &ctxtReal39);
+    digitsN = -realToInt32C47(&digits);
+    #ifdef PC_BUILD
+      printRealToConsole(&digits, "digits: ","\n");
+      printf("----->>>> digitsN=%i, smallerEpsilon=%u\n",digitsN,smallerEpsilon);
+      printRealToConsole(&acc, "acc: ","\n");
+      printRealToConsole(&llim, "llim: ","\n");
+      printRealToConsole(&ulim, "ulim: ","\n");
+    #endif
+    if(!smallerEpsilon && digitsN < 14 && digitsN > 4) {
+    #ifdef PC_BUILD
+      printf("Reducing digits to %i\n",digitsN);
+    #endif
+      significantDigits = digitsN+1;
+      ctxtReal34.digits = digitsN+1;
+      ctxtReal39.digits = digitsN+3;
+      ctxtReal51.digits = digitsN+4;
+      ctxtReal75.digits = digitsN+6;
+    }
+#endif //SPEEDUPEXPERIMENT
+
     integrate(labelOrVariable, &llim, &ulim, &acc, &res, smallerEpsilon ? &ctxtReal75 : &ctxtReal39);
+
+#ifdef SPEEDUPEXPERIMENT
+      significantDigits = significantDigitsMem;
+      ctxtReal34.digits = 34;
+      ctxtReal39.digits = 39;
+      ctxtReal51.digits = 51;
+      ctxtReal75.digits = 75;
+#endif //SPEEDUPEXPERIMENT
+
+
     fnClearStack(NOPARAM);
     reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
     reallocateRegister(REGISTER_Y, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
@@ -314,7 +355,7 @@ void _showProgress(const real_t *ss, const real_t *bma2, const real_t *h, const 
     real_t tmpr;
     realMultiply(ss, bma2, &res, realContext);
     realMultiply(&res, h, &res, realContext); // load the integral result,
-    realMultiply(&res, fact, &res, realContext); // load the integral result,
+    realMultiply(&res, fact, &res, realContext);
     realToReal34(&res,&rtmp34);
     real34ToDisplayString(&rtmp34, amNone, tmpString, &standardFont, 9999, 34, false, true);
     showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
@@ -332,6 +373,8 @@ void _showProgress(const real_t *ss, const real_t *bma2, const real_t *h, const 
 
 
 static void _integrate(calcRegister_t regist, const real_t *a, const real_t *b, real_t *acc, real_t *res, realContext_t *realContext) { // Double-Exponential Integration
+  currentKeyCode = 255;
+  bool_t exitSignalled = false;
   real_t bma2;            // (b - a)/2, a & b are the integration limits
   real_t bpa2;            // (b + 2)/2
   real_t eps;             // epsilon
@@ -496,16 +539,16 @@ static void _integrate(calcRegister_t regist, const real_t *a, const real_t *b, 
     do { // DEI_j_loop::
       #if !defined(TESTSUITE_BUILD)
         char tmps[64];
+        exitSignalled |= (popKey() == 32); //instead of keyWaiting()
         sprintf(tmps,"level:  %i Iter: ",(int16_t)realToInt32C47(&lvl));
-        if(printHalfSecUpdate_Integer(timed, tmps, loop++)) {; //timed
+        if(printHalfSecUpdate_Integer(timed, tmps, loop++, halfSec_clearZ, halfSec_clearT, halfSec_disp)) {; //timed
           #if ENABLE_SOLVER_PROGRESS == 1
-            _showProgress(&ss, &bma2, &h, &tm, &x, const_pi, realContext);
+            //Error indication: incomplete, set to 0-0
+            _showProgress(&ss, &bma2, &h, const_0, const_0, const_pi, realContext);
           #endif //ENABLE_SOLVER_PROGRESS
-        }
-
-        if(keyWaiting()) {
-          printHalfSecUpdate_Integer(force+1, "Interrupted Iter:",loop);
-          break;
+          if(exitSignalled) {  //EXIT
+            printHalfSecUpdate_Integer(force+1, "Interrupted Iter:",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+          }
         }
       #endif //TESTSUITE_BUILD
 
@@ -583,7 +626,7 @@ static void _integrate(calcRegister_t regist, const real_t *a, const real_t *b, 
         realCopyAbs(&x, &y); // X = ABS(p)
         realMultiply(&ssp, &eps, &x, realContext);
         realSetPositiveSign(&x); // X = ABS(ssp*eps), Y = ABS(p)
-        if(realCompareGreaterEqual(&x, &y)) { // ABS(p) <= ABS(eps*eps)?
+        if(exitSignalled || realCompareGreaterEqual(&x, &y)) { // ABS(p) <= ABS(eps*eps)?
           break;
         }
       }
@@ -630,7 +673,7 @@ static void _integrate(calcRegister_t regist, const real_t *a, const real_t *b, 
     realSetPositiveSign(&y); // ABS(2*ssp - ss)
     realMultiply(&thr, &ss, &x, realContext); // thr*ss
     realSetPositiveSign(&x); // ABS(thr*ss)
-    if(realCompareGreaterThan(&x, &y)) { // ABS(2*ssp - ss) < ABS(thr*ss)?
+    if(exitSignalled || realCompareGreaterThan(&x, &y)) { // ABS(2*ssp - ss) < ABS(thr*ss)?
       break; // yes, computation done
     }
     lg0 = true; // mark level 0 done,
@@ -646,7 +689,7 @@ static void _integrate(calcRegister_t regist, const real_t *a, const real_t *b, 
   realSubtract(&x, &ss1, &x, realContext); // stack: (ss-ss1)-|ss|-ss-?
   realSetPositiveSign(&x); // stack: err-|ss|-ss-?
   realMultiply(&x, const_10, &tmp, realContext); // stack: 10*err-err-|ss|-ss
-  if(realCompareGreaterEqual(&tmp, &y)) { // 10*err < |ss|?
+  if(!exitSignalled && realCompareGreaterEqual(&tmp, &y)) { // 10*err < |ss|?
     // [tmp x y z]
     // no, bad result. stack: |ss|-err-10*err-ss
     // [y x tmp z]
@@ -745,6 +788,11 @@ static void _integrate(calcRegister_t regist, const real_t *a, const real_t *b, 
 
 #if USE_MICHALSKI_MOSIG_TANH_SINH == 1
 static void _integrate_mm(calcRegister_t regist, const real_t *llim, const real_t *ulim, real_t *acc, real_t *res, realContext_t *realContext) { // Double-Exponential Integration
+  #if !defined(TESTSUITE_BUILD)
+    int16_t interruptedLoop = 0;
+    currentKeyCode = 255;
+    bool_t exitSignalled = false;
+  #endif //TESTSUITE_BUILD
   real_t a, b;
   real_t errval, bpa2, bma2;
   real_t eps, tol, h;
@@ -780,7 +828,7 @@ static void _integrate_mm(calcRegister_t regist, const real_t *llim, const real_
 
   realSubtract(&b, &a, &bma2, realContext); // interval half-length
   realMultiply(&bma2, const_1on2, &bma2, realContext);
-  realSubtract(&b, &a, &bpa2, realContext); // centre of interval
+  realAdd(&b, &a, &bpa2, realContext); // centre of interval
   realMultiply(&bpa2, const_1on2, &bpa2, realContext);
   k = 0; // level counter
   DEI_xeq_user(regist, &bpa2, &ss, realContext); // centre of interval
@@ -796,16 +844,32 @@ static void _integrate_mm(calcRegister_t regist, const real_t *llim, const real_
     do {
       #if !defined(TESTSUITE_BUILD)
         char tmps[64];
-        sprintf(tmps,"level:  %i Iter: ",(int16_t)(maxlevel-k));
-        if(printHalfSecUpdate_Integer(timed, tmps, loop++)) { ; //timed
+        exitSignalled |= (popKey() == 32); //instead of keyWaiting()
+        sprintf(tmps,"Level: %i/%i Iter: ",(int16_t)k, (int16_t)maxlevel);
+        if(printHalfSecUpdate_Integer(timed, tmps, loop++, !interruptedLoop, !interruptedLoop, !interruptedLoop)) { ; //timed
           #if ENABLE_SOLVER_PROGRESS == 1
             _showProgress(&sslast, &bma2, &h, &errval, const_0, const_2, realContext);
           #endif //ENABLE_SOLVER_PROGRESS
-        }
-
-        if(keyWaiting()) {
-          printHalfSecUpdate_Integer(force+1, "Interrupted Iter:",loop);
-          break;
+          if(!interruptedLoop && exitSignalled) {  //First EXIT press
+            exitSignalled = false;
+            interruptedLoop = 1;
+            // Delayed exit by increasing the tolerance, to force abortion after level completion
+            realCopy(const_1e_6143, &tol);
+            realDivide(const_1,&tol,&tol,realContext);
+          }
+          if(interruptedLoop) {
+            sprintf(tmps,"Level %i. Allow %5.1f s: Iter: ",(int16_t)k, (float)(40.0 - ((interruptedLoop++)/2.0)));
+            radixProcess(tmps,tmps);
+            printHalfSecUpdate_Integer(force+1, tmps, loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+            if(exitSignalled || interruptedLoop >= 40) {      // Direct exit by exiting and simulating the end values
+              exitSignalled = false;
+              realMultiply(&sslast, &bma2, res, realContext);
+              realMultiply(res, &h, res, realContext); // load the integral result,
+              realMultiply(res, const_2, res, realContext);
+              realCopy(&errval, acc); // its error value,
+              return;
+            }
+          }
         }
       #endif //TESTSUITE_BUILD
 

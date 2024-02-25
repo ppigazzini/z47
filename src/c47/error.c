@@ -1,18 +1,6 @@
-/* This file is part of 43S.
- *
- * 43S is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * 43S is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with 43S.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: GPL-3.0-only
+// SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
+
 
 /********************************************//**
  * \file error.c
@@ -105,7 +93,32 @@ TO_QSPI const char errorMessages[NUMBER_OF_ERROR_CODES][SIZE_OF_EACH_ERROR_MESSA
 /* 53 */  "Bad input", // This error is not in ReM and cannot occur (theoretically).
 /* 54 */  "No program specified",
 /* 55 */  "Cannot write file ",
-/* 56 */  "Function has changed, please replace"
+/* 56 */  "Function has changed, please replace",
+
+//Status output messages for time consuming tasks, to keep user informed 
+/* 57 */  "  Loading state file ...",
+/* 58 */  "  Saving state file ...",
+/* 59 */  "  Restoring stats ...",
+/* 60 */  "  Solving for real/complex root ...",
+/* 61 */  "  Calculating graph coordinates ...",
+/* 62 */  "  Re-calculating sums ... ",
+/* 63 */  "  Solving for real root ...",
+
+//TI Messages (incomplete)
+/* 64 */  "Backup restored",
+/* 65 */  "State file restored",
+/* 66 */  "Saved programs and equations",
+/* 67 */  "appended",
+/* 68 */  "Saved global and local registers",
+/* 69 */  "(w/ local flags) restored",
+/* 70 */  "Saved system settings restored",
+/* 71 */  "Saved statistic data restored",
+/* 72 */  "Saved user variables restored",
+/* 73 */  "Program file loaded",
+/* 74 */  "Not enough memory for undo",
+
+/* 75 */ 
+
 };
 
 

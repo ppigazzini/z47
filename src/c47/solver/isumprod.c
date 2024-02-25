@@ -153,13 +153,13 @@
         #endif //VERBOSE_COUNTER
 
         longIntegerAdd(iCounter, loopStep, iCounter);
-        if(printHalfSecUpdate_Integer(timed, "Loop: ",loop--)) { //timed
+        if(printHalfSecUpdate_Integer(timed, "Loop: ",loop--, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //; //timed
           _showProgress(resultLi);
         }
 
         if(keyWaiting()) {
           showString("key Waiting ...", &standardFont, 20, 40, vmNormal, false, false);
-          printHalfSecUpdate_Integer(force+1, "Interrupted: ",loop);
+          printHalfSecUpdate_Integer(force+1, "Interrupted: ",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
           abort = true;
         }
 
@@ -201,11 +201,10 @@
     showHideHourGlass();
 
     if(abort) {
-      printHalfSecUpdate_Integer(force+0, "Loop aborted: ",loop);
+      printHalfSecUpdate_Integer(force+0, "Loop aborted: ",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
     } else {
-      printHalfSecUpdate_Integer(force+0, "Loop complete: ",loop);      
+      printHalfSecUpdate_Integer(force+0, "Loop complete: ",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
     }
-
   }
 
 

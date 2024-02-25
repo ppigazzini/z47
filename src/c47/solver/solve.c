@@ -1,18 +1,6 @@
-/* This file is part of 43S.
- *
- * 43S is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * 43S is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with 43S.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: GPL-3.0-only
+// SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
+
 
 /********************************************//**
  * \file solve.c
@@ -21,6 +9,7 @@
 #include "solver/solve.h"
 
 #include "c43Extensions/addons.h"
+#include "c43Extensions/graphText.h"
 #include "charString.h"
 #include "constantPointers.h"
 #include "defines.h"
@@ -228,27 +217,28 @@ void fnSolve(uint16_t labelOrVariable) {
 
 void fnSolveVar(uint16_t unusedButMandatoryParameter) {
   #if !defined(TESTSUITE_BUILD)
+  printStatus(1, errorMessages[REAL_SOLVER],force);
   const char *var = (char *)getNthString(dynamicSoftmenu[softmenuStack[0].softmenuId].menuContent, dynamicMenuItem);
   const uint16_t regist = findOrAllocateNamedVariable(var);
   const uint16_t nameLength = stringByteLength(var) + 1;
   if(currentMvarLabel != INVALID_VARIABLE) {
-    if(currentSolverStatus & SOLVER_STATUS_INTERACTIVE) { // MNU_MVAR was displayed by the Solver
-      reallyRunFunction(ITM_STO, regist);
-    }
-    else {  // MNU_MVAR was displayed by VARMNU
-      if(entryStatus & 0x01) { // MVAR menu key pressed after a user entry: save the value in the variable
-        entryStatus &= 0xfe;
-        currentSolverVariable = regist;
-        reallyRunFunction(ITM_STO, regist);
-        temporaryInformation = TI_SOLVER_VARIABLE;
-      }
-      else { // MVAR menu key pressed without a a user entry: store the variable name in K and continue program execution
-        reallocateRegister(REGISTER_K, dtString, nameLength , amNone);
-        xcopy(REGISTER_STRING_DATA(REGISTER_K), var, nameLength );
-        dynamicMenuItem = -1;
-        runProgram(false, INVALID_VARIABLE);
-      }
-    }
+	if(currentSolverStatus & SOLVER_STATUS_INTERACTIVE) { // MNU_MVAR was displayed by the Solver
+		reallyRunFunction(ITM_STO, regist);
+	}
+	else {	// MNU_MVAR was displayed by VARMNU
+		if(entryStatus & 0x01) { // MVAR menu key pressed after a user entry: save the value in the variable
+			entryStatus &= 0xfe;
+			currentSolverVariable = regist;
+			reallyRunFunction(ITM_STO, regist);
+			temporaryInformation = TI_SOLVER_VARIABLE;
+		}
+		else { // MVAR menu key pressed without a a user entry: store the variable name in K and continue program execution
+			reallocateRegister(REGISTER_K, dtString, nameLength , amNone);
+			xcopy(REGISTER_STRING_DATA(REGISTER_K), var, nameLength );
+			dynamicMenuItem = -1;
+			runProgram(false, INVALID_VARIABLE);
+		}
+	}
   }
   else if((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_1ST_DERIVATIVE || (currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_2ND_DERIVATIVE) {
     currentSolverVariable = regist;
@@ -484,16 +474,16 @@ int solver(calcRegister_t variable, const real34_t *y, const real34_t *x, real34
 
 
 
-      if (printHalfSecUpdate_Integer(timed, "Iter: ",loop++)) { //timed
+      if (printHalfSecUpdate_Integer(timed, "Iter: ",loop++, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
         _showProgress(&a, &b, &fa, &fb);
       }
 
-      if(keyWaiting()) {
-          showString("key Waiting ...", &standardFont, 20, 40, vmNormal, false, false);
-          printHalfSecUpdate_Integer(force+1, "Interrupted Iter:",loop);
-          programRunStop = PGM_WAITING;
-        break;
-      }
+        if(keyWaiting()) {
+            showString("key Waiting ...", &standardFont, 20, 40, vmNormal, false, false);
+            printHalfSecUpdate_Integer(force+1, "Interrupted Iter:",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+            programRunStop = PGM_WAITING;
+          break;
+        }
 
       // pre-calculation
       if(realIsSpecial(&bb2)) {

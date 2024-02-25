@@ -292,12 +292,11 @@ bool_t processCurvefitSA(real_t *SA0, real_t *SA1) {
     realMultiply  (&RR,&RR,&RR2,realContext);               //   --> r^2
 
     #if defined(STATDEBUG) && defined(PC_BUILD)
-      printf("##### fnStatSa:\n");
-      char ss[100];
-      formatRealDebug(ss, &RR2); printf("§§ RR^2: %s\n",ss);
-      formatRealDebug(ss, &MX2); printf("§§ MX^2: %s\n",ss);
-      formatRealDebug(ss, &SX2); printf("§§ SX^2: %s\n",ss);
-      formatRealDebug(ss, &SY2); printf("§§ SY^2: %s\n",ss);
+      printf("##### processCurvefitSA:\n");
+      printRealToConsole(&RR2, "§§ RR^2: ","\n");
+      printRealToConsole(&MX2, "§§ MX^2: ","\n");
+      printRealToConsole(&SX2, "§§ SX^2: ","\n");
+      printRealToConsole(&SY2, "§§ SY^2: ","\n");
     #endif // STATDEBUG && PC_BUILD
 
 
@@ -313,7 +312,7 @@ bool_t processCurvefitSA(real_t *SA0, real_t *SA1) {
       default: {
         displayCalcErrorMessage(ERROR_NO_ERRORS_CALCULABLE, ERR_REGISTER_LINE, REGISTER_X);
         #if(EXTRA_INFO_ON_CALC_ERROR == 1)
-          moreInfoOnError("In function fnStatSa:", "No errors are calculable for the selected/chosen model!", NULL, NULL);
+          moreInfoOnError("In function processCurvefitSA:", "No errors are calculable for the selected/chosen model!", NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
         return false;
       }

@@ -507,7 +507,7 @@ bool_t addFactor(longInteger_t factor, real34Matrix_t *matrix) {
 
   uint16_t rows = REGISTER_DATA(REGISTER_X)->matrixRows;
   uint16_t cols = REGISTER_DATA(REGISTER_X)->matrixColumns;
-
+  
   #if !defined(TESTSUITE_BUILD)
     if(!redimMatrixRegister(REGISTER_X, rows, cols+1)) {
       displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
@@ -554,7 +554,7 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
   }
   else if(getRegisterDataType(REGISTER_X) == dtReal34) {
     real34ToIntegralValue(REGISTER_REAL34_DATA(REGISTER_X), &m34, DEC_ROUND_UP);
-    real34Subtract(REGISTER_REAL34_DATA(REGISTER_X), &m34, &m34); // Fractional part
+    real34Subtract(REGISTER_REAL34_DATA(REGISTER_X), &m34, &m34); // Fractional part    
     if(!real34IsZero(&m34)) {
       displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
       #if defined(PC_BUILD)
@@ -586,12 +586,12 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
   while(longIntegerIsPositive(eval)) {
 
     #if !defined(TESTSUITE_BUILD)
-      if (printHalfSecUpdate_Integer(timed, "Tested: ",loop++)) { //timed
+      if (printHalfSecUpdate_Integer(timed, "Tested: ",loop++, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
       }
 
     if(keyWaiting()) {
         showString("key Waiting ...", &standardFont, 20, 40, vmNormal, false, false);
-        printHalfSecUpdate_Integer(force+1, "Interrupted Test:",loop);
+        printHalfSecUpdate_Integer(force+1, "Interrupted Test:",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
         programRunStop = PGM_WAITING;
       break;
     }

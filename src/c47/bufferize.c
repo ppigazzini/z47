@@ -1,18 +1,5 @@
-/* This file is part of 43S.
- *
- * 43S is free software:you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * 43S is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with 43S.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: GPL-3.0-only
+// SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
 #include "bufferize.h"
 
@@ -398,27 +385,27 @@ uint16_t convertItemToSubOrSup(uint16_t item, int16_t subOrSup) {
         if(item == ITM_RIGHT_ARROW) {
           mimEnter(true);
           setJRegisterAsInt(true, getJRegisterAsInt(true) + 1);
-          refreshScreen();
+          refreshScreen(51);
         }
         else if(item == ITM_LEFT_ARROW) {
           mimEnter(true);
           setJRegisterAsInt(true, getJRegisterAsInt(true) - 1);
-          refreshScreen();
+          refreshScreen(52);
         }
         else if(item == ITM_UP_ARROW) {
           mimEnter(true);
           setIRegisterAsInt(true, getIRegisterAsInt(true) - 1);
-          refreshScreen();
+          refreshScreen(53);
         }
         else if(item == ITM_DOWN_ARROW) {
           mimEnter(true);
           setIRegisterAsInt(true, getIRegisterAsInt(true) + 1);
-          refreshScreen();
+          refreshScreen(54);
         }
 
         if((int16_t)item < 0) {
           showSoftmenu(item);
-          refreshScreen();
+          refreshScreen(55);
           return;
         }
 
@@ -860,8 +847,7 @@ uint16_t convertItemToSubOrSup(uint16_t item, int16_t subOrSup) {
           aimBuffer[2] = '.';
           aimBuffer[3] = 0;
           nimNumberPart = NP_REAL_FLOAT_PART;
-          lastIntegerBase = 0;
-          fnRefreshState();                                                //JMNIM
+          setLastintegerBasetoZero();
           break;
         }
 
@@ -871,6 +857,7 @@ uint16_t convertItemToSubOrSup(uint16_t item, int16_t subOrSup) {
           aimBuffer[1] = '0';
           aimBuffer[2] = 0;
           nimNumberPart = NP_INT_10;
+          setLastintegerBasetoZero();
           break;
         }
 
@@ -1095,8 +1082,7 @@ uint16_t convertItemToSubOrSup(uint16_t item, int16_t subOrSup) {
           strcat(aimBuffer, "0");
         }
 
-        lastIntegerBase = 0;
-        fnRefreshState();                                                //JMNIM
+        setLastintegerBasetoZero();
 
         switch(nimNumberPart) {
           case NP_INT_10: {
@@ -1176,8 +1162,7 @@ uint16_t convertItemToSubOrSup(uint16_t item, int16_t subOrSup) {
           strcat(aimBuffer, "1");
         }
 
-        lastIntegerBase = 0;
-        fnRefreshState();                                                //JMNIM
+        setLastintegerBasetoZero();
 
         switch(nimNumberPart) {
           case NP_INT_10: {
@@ -1218,8 +1203,7 @@ uint16_t convertItemToSubOrSup(uint16_t item, int16_t subOrSup) {
       case ITM_toINT: { // #
         done = true;
 
-        lastIntegerBase = 0;
-        fnRefreshState();                                                //JMNIM
+        setLastintegerBasetoZero();
 
         if(nimNumberPart == NP_INT_10 || nimNumberPart == NP_INT_16) {
           strcat(aimBuffer, "#");
@@ -1302,8 +1286,7 @@ uint16_t convertItemToSubOrSup(uint16_t item, int16_t subOrSup) {
 
         done = true;
 
-        lastIntegerBase = 0;
-        fnRefreshState();                                                //JMNIM
+        setLastintegerBasetoZero();
 
         switch(nimNumberPart) {
          case NP_REAL_EXPONENT: {
@@ -1349,6 +1332,7 @@ uint16_t convertItemToSubOrSup(uint16_t item, int16_t subOrSup) {
           done = true;
           strcat(aimBuffer, "3.141592653589793238462643383279503");
           reallyRunFunction(ITM_EXIT1, NOPARAM);
+          setLastintegerBasetoZero();
         }
         break;
       }
@@ -1602,6 +1586,7 @@ uint16_t convertItemToSubOrSup(uint16_t item, int16_t subOrSup) {
       case ITM_DMS: {
         if(nimNumberPart == NP_INT_10 || nimNumberPart == NP_REAL_FLOAT_PART) {
           done = true;
+          setLastintegerBasetoZero();
 
           screenUpdatingMode &= ~SCRUPD_SKIP_STACK_ONE_TIME;
           closeNim();
@@ -1653,6 +1638,7 @@ uint16_t convertItemToSubOrSup(uint16_t item, int16_t subOrSup) {
       case ITM_toHMS:{
         if(nimNumberPart == NP_INT_10 || nimNumberPart == NP_REAL_FLOAT_PART || nimNumberPart == NP_REAL_EXPONENT) {
           done = true;
+          setLastintegerBasetoZero();
 
           screenUpdatingMode &= ~SCRUPD_SKIP_STACK_ONE_TIME;
           closeNim();
@@ -1913,8 +1899,7 @@ uint16_t convertItemToSubOrSup(uint16_t item, int16_t subOrSup) {
       if(calcMode != CM_NIM) {
         if(item == ITM_CONSTpi || (item >= 0 && indexOfItems[item].func == fnConstant)) {
           setSystemFlag(FLAG_ASLIFT);
-          lastIntegerBase = 0;                                             //JMNIM
-          fnRefreshState();                                                //JMNIM
+          setLastintegerBasetoZero();
         }
 
         if(lastErrorCode == 0) {
@@ -2215,6 +2200,7 @@ uint16_t convertItemToSubOrSup(uint16_t item, int16_t subOrSup) {
   void closeNim(void) {
     setSystemFlag(FLAG_ASLIFT);
     //printf("closeNim\n");
+    screenUpdatingMode &= ~(SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME);
 
     if(nimNumberPart == NP_INT_10) {                //JM Input default type vv
       switch(Input_Default) {
@@ -2245,8 +2231,7 @@ uint16_t convertItemToSubOrSup(uint16_t item, int16_t subOrSup) {
       nimNumberPart = NP_INT_BASE;
     }
     else {
-      lastIntegerBase = 0;
-      fnRefreshState();                                                //JMNIM
+      setLastintegerBasetoZero();
     }
 
     int16_t lastChar = strlen(aimBuffer) - 1;

@@ -1,18 +1,6 @@
-/* This file is part of 43S.
- *
- * 43S is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * 43S is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with 43S.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: GPL-3.0-only
+// SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
+
 
 /********************************************//**
  * \file defines.h
@@ -26,7 +14,7 @@
 // JM VARIOUS OPTIONS
 //*********************************
 
-#define VERSION1 "0.108.17.03b2"     // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
+#define VERSION1 "0.109.00.04a6"     // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
 
 #define MODEL USER_C47               // USER_C47 or USER_R47
 
@@ -98,10 +86,18 @@
 
 #define TEXT_MULTILINE_EDIT         // 5 line buffer
 #define MAXLINES 5                  // numner of equavalent lines in small font maximum that is allowed in entry. Entry is hardlocked to multiline 3 lines bif font, but this is still the limit. WP has 2 lines fixed small font.
+#define allowShowDigits false       // true to allow typing of double digits to get to register number nn in SHOW.
 
+#define LOW_GRAPH_ACC                                     //Lowered graph accuracy for EQN graphs
+//#undef LOW_GRAPH_ACC
+#define significantDigitsForEqnGraphs (significantDigits) //If 6 is chosen by user, all four types are changes as follows: 34 to SDIGS; 39 to SDIGS+3; 51 to SDIGS+6; 75 to SDIGS+9
+#define significantDigitsForScreen    4                   //Only for screen coord scaling of the resulting graphic matrix: 34 to 4; 39 to 4+3; 51 to 4+3; 75 to 4+3
 
 //Testing and debugging
-//#define DM42_KEYCLICK              //Add a 1 ms click after key presses and releases, for scope syncing
+  #define    DM42_KEYCLICK              //Add a 1 ms click after key presses and releases, for scope syncing
+  #undef     DM42_KEYCLICK
+  #define    CLICK_REFRESHSCR             //Add a 5 ms click before refresh screen
+  #undef     CLICK_REFRESHSCR
 
 
 
@@ -123,8 +119,42 @@
 
 
 //Verbose options
-#define VERBOSEKEYS
-#undef VERBOSEKEYS
+  #define    VERBOSEKEYS
+  #undef     VERBOSEKEYS
+  #define    MONITOR_CLRSCR
+  #undef     MONITOR_CLRSCR
+  #define    PC_BUILD_TELLTALE            //JM verbose on PC: jm_show_comment
+  #undef     PC_BUILD_TELLTALE
+
+  #define    VERBOSE_REGISTERS
+  #undef     VERBOSE_REGISTERS
+
+//Verbose STAT
+  #define DEBUG_STAT                 0 // PLOT & STATS verbose level can be 0, 1 or 2 (more)
+  #if(DEBUG_STAT == 0)
+    #undef STATDEBUG
+    #undef STATDEBUG_VERBOSE
+    #endif // DEBUG_STAT == 0
+  #if(DEBUG_STAT == 1)
+    #define STATDEBUG
+    #undef STATDEBUG_VERBOSE
+    #endif // DEBUG_STAT == 1
+  #if(DEBUG_STAT == 2)
+    #define STATDEBUG
+    #define STATDEBUG_VERBOSE
+    #endif // DEBUG_STAT == 2
+
+//Debugging
+  #if defined(PC_BUILD)
+    #define DEBUGUNDO
+    #undef DEBUGUNDO
+  #else // !PC_BUILD
+    #undef DEBUGUNDO
+  #endif // PC_BUILD
+
+
+
+
 
 #define PAIMDEBUG
 #undef PAIMDEBUG
@@ -134,9 +164,6 @@
 
 #define VERBOSE_COUNTER               //PI and SIGMA functions
 #undef  VERBOSE_COUNTER
-
-#define PC_BUILD_TELLTALE            //JM verbose on PC: jm_show_comment
-#undef  PC_BUILD_TELLTALE
 
 #define PC_BUILD_VERBOSE0
 #undef PC_BUILD_VERBOSE0
@@ -177,7 +204,7 @@
 #define BUFFER_KEY_COUNT          //dr BUFFER_SIZE has to be at least 8 to become accurate results
 #undef BUFFER_KEY_COUNT
 
-#define BUFFER_SIZE 2             //dr muss 2^n betragen (8, 16, 32, 64 ...)
+#define BUFFER_SIZE 8             //dr muss 2^n betragen (8, 16, 32, 64 ...)
 //* Longpress repeat
 #define FUNCTION_NOPTIME   800   //JM SCREEN NOP TIMEOUT FOR FIRST 15 FUNCTIONS
 
@@ -299,29 +326,6 @@
 #endif // LINUX
 
 
-#define DEBUG_STAT                       0 // PLOT & STATS verbose level can be 0, 1 or 2 (more)
-#if(DEBUG_STAT == 0)
-  #undef STATDEBUG
-  #undef STATDEBUG_VERBOSE
-#endif // DEBUG_STAT == 0
-#if(DEBUG_STAT == 1)
-  #define STATDEBUG
-  #undef STATDEBUG_VERBOSE
-#endif // DEBUG_STAT == 1
-#if(DEBUG_STAT == 2)
-  #define STATDEBUG
-  #define STATDEBUG_VERBOSE
-#endif // DEBUG_STAT == 2
-
-
-#if defined(PC_BUILD)
-  #define DEBUGUNDO
-  #undef DEBUGUNDO
-#else // !PC_BUILD
-  #undef DEBUGUNDO
-#endif // PC_BUILD
-
-
 #define REAL34_WIDTH_TEST 0 // For debugging real34 ALL 0 formating. Use UP/DOWN to shrink or enlarge the available space. The Z register holds the available width.
 
 
@@ -435,7 +439,31 @@
 #define ERROR_CANNOT_WRITE_FILE                   55
 #define ERROR_OLD_ITEM_TO_REPLACE                 56
 
-#define NUMBER_OF_ERROR_CODES                     57
+//Status output messages for time consuming tasks, to keep user informed
+#define LOADING_STATE_FILE                        57
+#define SAVING_STATE_FILE                         58
+#define RESTORING_STATS                           59
+#define COMPLEX_SOLVER                            60
+#define GRAPHING                                  61
+#define RECALC_SUMS                               62
+#define REAL_SOLVER                               63
+
+//TI Messages (incomplete)
+#define TI_Backup_restored                        64
+#define TI_State_file_restored                    65
+#define TI_Saved_programs_and_equations           66
+#define TI_appended                               67
+#define TI_Saved_global_and_local_registers       68
+#define TI_w_local_flags_restored                 69
+#define TI_Saved_system_settings_restored         70
+#define TI_Saved_statistic_data_restored          71
+#define TI_Saved_user_variables_restored          72
+#define TI_Program_file_loaded                    73
+#define TI_Not_enough_memory_for_undo             74
+
+
+
+#define NUMBER_OF_ERROR_CODES                     75
 #define SIZE_OF_EACH_ERROR_MESSAGE                48
 
 #define NUMBER_OF_BUG_SCREEN_MESSAGES             10
@@ -1187,7 +1215,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define TI_SA                                     46
 #define TI_INACCURATE                             47
 #define TI_UNDO_DISABLED                          48
-#define TI_VIEW                                   49
+//#define TI_VIEW                                   49
 #define TI_SOLVER_VARIABLE                        50
 #define TI_SOLVER_FAILED                          51
 #define TI_ACC                                    52
@@ -1230,6 +1258,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define TI_VARIABLES_RESTORED                     89    //DL
 #define TI_SCATTER_SMI                            90
 #define TI_DMCP_ONLY                              91    //DL
+#define TI_SHOWNOTHING                            92
 #define TI_COPY_FROM_SHOW                         92
 #define TI_DATA_LOSS                              93
 #define TI_CLEAR_ALL_MENUS                        94    //DL
@@ -1323,13 +1352,13 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 
 // Screen updating mode
 #define SCRUPD_AUTO                             0x00
-#define SCRUPD_MANUAL_STATUSBAR                 0x01
-#define SCRUPD_MANUAL_STACK                     0x02
-#define SCRUPD_MANUAL_MENU                      0x04
-#define SCRUPD_MANUAL_SHIFT_STATUS              0x08
-//#define SCRUPD_SKIP_STATUSBAR_ONE_TIME          0x10
-#define SCRUPD_SKIP_STACK_ONE_TIME              0x20
-#define SCRUPD_SKIP_MENU_ONE_TIME               0x40
+#define SCRUPD_MANUAL_STATUSBAR                 0x01       //0000 0001
+#define SCRUPD_MANUAL_STACK                     0x02       //0000 0010
+#define SCRUPD_MANUAL_MENU                      0x04       //0000 0100
+#define SCRUPD_MANUAL_SHIFT_STATUS              0x08       //0000 1000
+//#define SCRUPD_SKIP_STATUSBAR_ONE_TIME          0x10     //0001 0000   16d
+#define SCRUPD_SKIP_STACK_ONE_TIME              0x20       //0010 0000   32d
+#define SCRUPD_SKIP_MENU_ONE_TIME               0x40       //0100 0000   64d
 //#define SCRUPD_SHIFT_STATUS                     0x80
 #define SCRUPD_ONE_TIME_FLAGS                   0xf0
 
@@ -1569,6 +1598,20 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 //#define modulo(n, d)                         ((n)%(d)<0 ? ((d)<0 ? (n)%(d) - (d) : (n)%(d) + (d)) : (n)%(d)) // modulo(n,d) = rmd(n,d) (+ |d| if rmd(n,d)<0)  thus the result is always >= 0
 #define modulo(n, d)                         ((n)%(d)<0 ? (n)%(d)+(d) : (n)%(d))                             // This version works only if d > 0
 #define nbrOfElements(x)                     (sizeof(x) / sizeof((x)[0]))                                    //dr
+
+#define PROBMENU                             (-softmenu[softmenuStack[0].softmenuId].menuItem >= MNU_BINOM && -softmenu[softmenuStack[0].softmenuId].menuItem <= ITM_1296)
+
+#define BASEMODEACTIVE                       (!PROBMENU && (lastIntegerBase != 0 || softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_BASE))
+#define BASEMODEREGISTERX                    (BASEMODEACTIVE && \
+                                              displayStackSHOIDISP != 0 && \
+                                              ( \
+                                                (calcMode == CM_NORMAL && getRegisterDataType(REGISTER_X) == dtShortInteger) || \
+                                                (calcMode == CM_NIM && getRegisterDataType(REGISTER_Y) == dtShortInteger) ) \
+                                              )
+
+#define SHOWMODE                             (calcMode == CM_NORMAL && (temporaryInformation == TI_SHOW_REGISTER || temporaryInformation == TI_SHOW_REGISTER_BIG || temporaryInformation == TI_SHOW_REGISTER_SMALL || temporaryInformation == TI_SHOWNOTHING))
+#define GRAPHMODE                            (calcMode == CM_PLOT_STAT || calcMode == CM_GRAPH)
+
 #define COMPLEX_UNIT                         (getSystemFlag(FLAG_CPXj)   ? STD_op_j  : STD_op_i)  //Do not change back to single byte character - code must also change accordingly
 #define PRODUCT_SIGN                         (getSystemFlag(FLAG_MULTx)  ? STD_CROSS : STD_DOT)
 
@@ -1719,7 +1762,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
   #define refreshRegisterLine(a)  do {} while(0)
   #define displayBugScreen(a)     do { printf("\n-----------------------------------------------------------------------\n"); printf("%s\n", a); printf("\n-----------------------------------------------------------------------\n"); } while(0)
   #define showHideHourGlass()     do {} while(0)
-  #define refreshScreen()         do {} while(0)
+  #define refreshScreen(a)        do {} while(0)
   #define refreshLcd(a)           do {} while(0)
   #define initFontBrowser()       do {} while(0)
 #endif // TESTSUITE_BUILD && !GENERATE_CATALOGS

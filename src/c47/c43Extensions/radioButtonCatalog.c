@@ -14,7 +14,6 @@
  * along with C47.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* ADDITIONAL C43 functions and routines */
 
 
 /********************************************//**
@@ -409,7 +408,7 @@ int8_t fnCbIsSet(int16_t item) {
 }
 
 
-void fnRefreshState(void) {
+void fnRefreshState(void) {                      // 2023-07-18 This seems antiquated. If it has no effect, all calls to fnRefreshState can be removed. Leaving commented for a while.
   #if !defined(TESTSUITE_BUILD)
     doRefreshSoftMenu = true;
   #endif //!TESTSUITE_BUILD

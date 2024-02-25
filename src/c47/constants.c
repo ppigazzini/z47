@@ -25,6 +25,7 @@
 #include "c43Extensions/radioButtonCatalog.h"
 #include "registers.h"
 #include "registerValueConversions.h"
+#include "screen.h"
 #include "stack.h"
 
 #include "c47.h"
@@ -66,8 +67,7 @@ void fnConstant(const uint16_t constant) {
 
   adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
 
-  lastIntegerBase = 0;                                                      //JMNIM
-  fnRefreshState();                              //drJM
+  setLastintegerBasetoZero();
 }
 
 
@@ -87,6 +87,5 @@ void fnPi(uint16_t unusedButMandatoryParameter) {
   convertRealToResultRegister(const_pi, REGISTER_X, amNone);
   adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
 
-  lastIntegerBase = 0;                                                      //JMNIM
-  fnRefreshState();                              //drJM
+  setLastintegerBasetoZero();
 }

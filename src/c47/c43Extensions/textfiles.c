@@ -14,14 +14,7 @@
  * along with C47.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* ADDITIONAL C43 functions and routines */
 
-
-/********************************************//** //JM
- * \file jmgraph.c Graphing module
- ***********************************************/
-
-/* ADDITIONAL C43 functions and routines */
 
 //#define DISPLOADING
 
@@ -35,6 +28,26 @@
 #include "typeDefinitions.h"
 
 #include "c47.h"
+
+typedef struct {
+  char     itemName[30];
+} nstr;
+
+
+#if !defined(TESTSUITE_BUILD)
+  TO_QSPI static const nstr ClipBoardMsg[] = { 
+  /*0*/  { "Real matrix " },
+  /*1*/  { " too large for transfer" },
+  /*2*/  { "Complex matrix " },
+  /*3*/  { "res/PROGRAMS" },
+  /*4*/  { "C43_LOG.TXT" },
+  /*5*/  { "Alpha buffer: " },
+  };
+#endif //TESTSUITE_BUILD
+
+
+
+
 
 void addChrBothSides(uint8_t t, char * str) {
   char tt[4];
@@ -75,7 +88,7 @@ void copyRegisterToClipboardString2(calcRegister_t regist, char *clipboardString
           //printf(">>>:: %u ?? %u\n",rows*columns*46,stringByteLength(clipboardString));
         }
         else {
-          sprintf(clipboardString, "Real matrix %dx%d too large for transfer", rows, columns);
+          sprintf(clipboardString, "%s%dx%d%s", ClipBoardMsg[0].itemName, rows, columns, ClipBoardMsg[1].itemName);  //Real matrix   too large for transfer
         }
         break;
       }
@@ -90,7 +103,7 @@ void copyRegisterToClipboardString2(calcRegister_t regist, char *clipboardString
           //printf(">>>:: %u ?? %u\n", rows*columns*92, stringByteLength(clipboardString));
         }
         else {
-          sprintf(clipboardString, "Complex matrix %dx%d too large for transfer", rows, columns);
+          sprintf(clipboardString, "%s%dx%d%s", ClipBoardMsg[2].itemName, rows, columns, ClipBoardMsg[1].itemName);  //Complex matrix   too large for transfer
         }
         break;
       }
@@ -174,7 +187,7 @@ void stackregister_csv_out(int16_t reg_b, int16_t reg_e, bool_t oneLine) {
 void aimBuffer_csv_out(void) {
   #if !defined(TESTSUITE_BUILD)
     export_append_line(CSV_STR);                    //Output append to CSV file
-    export_append_line("Alpha buffer: ");           //Output append to CSV file
+    export_append_line(ClipBoardMsg[5].itemName);  //"Alpha buffer: " //Output append to CSV file
     export_append_line(CSV_STR);                    //Output append to CSV file
     export_append_line(CSV_TAB);                    //Output append to CSV file
     export_append_line(CSV_STR);                    //Output append to CSV file
@@ -188,7 +201,7 @@ void aimBuffer_csv_out(void) {
 //**********************************************************************************************************
 #if !defined(TESTSUITE_BUILD)
   int16_t export_string_to_file(const char line1[TMP_STR_LENGTH]) {
-    return export_string_to_filename(line1, APPEND, "res/PROGRAMS", "C43_LOG.TXT");
+    return export_string_to_filename(line1, APPEND, ClipBoardMsg[3].itemName, ClipBoardMsg[4].itemName);  //"res/PROGRAMS", "C43_LOG.TXT"
   }
 #endif // !TESTSUITE_BUILD
 

@@ -14,7 +14,6 @@
  * along with C47.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* ADDITIONAL C43 functions and routines */
 
 /********************************************//**
  * \file xeqm.c
@@ -49,11 +48,77 @@
 #define SCAN true
 #define EXEC true
 
+typedef struct {
+  char itemName[30];
+} nstr0;
+TO_QSPI const nstr0 XeqmMsgs[] = { 
+/*0*/  { "Loading XEQM program file:" },
+/*1*/  { "Loading XEQM:" },
+/*2*/  { "XEQC47 XEQLBL 01 XXXXXX " },
+/*3*/  { "Press a key" },
+/*4*/  { "XEQMINDEX.TXT" },
+/*5*/  { "XEQM01:HELP;" }
+};
+
+
+typedef struct {
+  char itemName[180];
+} nstr1;
+TO_QSPI const nstr1 helpMsg[] = { 
+   //Std F1 Helpmessage
+      { "XEQLBL 01 HELP ALPHA \"I\" CASE \"n directory \" CASE \"PROGRAMS\" CASEDN \" create \" CASEUP \"XEQM\" CASEDN \"NN\" CASEUP \".TXT\" EXIT "} };
+
+
+
+//Inline XEQC code used in ELEC, in jm.c
+typedef struct {
+  char itemName[130];
+} nstr2;
+
+TO_QSPI const nstr2 xeqTexts[] = { 
+   //Create a 3x3 A-matrix
+      { "XEQC47 ERPN RECT 3 ENTER 3 MNEW STO 99 DROPX INDEX 99 1 ENTER 1 STOIJ DROPX DROPX" },
+      { " 1 STOEL J+ STOEL J+ STOEL" },
+      { " J+ STOEL DROPX 0.5 ENTER CHS 3 ENTER SQRT 2 / CHS COMPLEX J+ STOEL COMPLEX CHS COMPLEX J+ STOEL" },
+      { " 1 J+ STOEL DROPX J+ STOEL X^2 J+ STOEL DROPX" },
+      { " RCL 99 " },
+   //Create a 3x1 matrix from Z Y X
+      { "XEQC47 ERPN 3 ENTER 1 MNEW STO 99 DROPX INDEX 99 3 ENTER 1 STOIJ DROPX DROPX STOEL DROPX  I- STOEL DROPX  I-  STOEL DROPX RCL 99 " },
+   //Create a ZYX form a 3x1 matrix
+      { "XEQC47 ERPN STO 99 INDEX 99 DROPX 1 ENTER 1 STOIJ DROPX DROPX RCLEL I+ RCLEL I+ RCLEL " }
+    };
+
+
+void fnXeqmExecuteText(uint16_t command){
+    char line1[700];
+    if(command == 45) {
+      //Create a 3x3 A-matrix
+      strcpy(line1, xeqTexts[0].itemName);
+      strcat(line1, xeqTexts[1].itemName);
+      strcat(line1, xeqTexts[2].itemName);
+      strcat(line1, xeqTexts[3].itemName);
+      strcat(line1, xeqTexts[4].itemName);
+      fnXEQMexecute(line1);
+      }
+
+    else if(command == 46) {
+      //Create a 3x1 matrix from Z Y X
+      strcpy(line1, xeqTexts[5].itemName);
+      fnXEQMexecute(line1);
+    }
+
+    else if(command == 47) {
+      //Create a ZYX form a 3x1 matrix
+      strcpy(line1, xeqTexts[6].itemName);
+      fnXEQMexecute(line1);
+    }
+}
+
 
 
 void press_key(void) {
   #if defined(DMCP_BUILD)
-    print_inlinestr("Press key", true);
+    print_inlinestr(XeqmMsgs[3].itemName, true);  //Press a key
     wait_for_key_press();
   #endif // DMCP_BUILD
 }
@@ -1004,9 +1069,9 @@ void XEQMENU_Selection(uint16_t selection, char *line1, bool_t exec, bool_t scan
       #else // !DMCP_BUILD
         #define pgmpath "res/PROGRAMS"
       #endif // DMCP_BUILD
-      strcpy(fn_short, "XEQMINDEX.TXT");
+      strcpy(fn_short, XeqmMsgs[4].itemName);    //"XEQMINDEX.TXT"
       strcpy(fn_long,  "");
-      strcpy(fallback, "XEQM01:HELP;");
+      strcpy(fallback, XeqmMsgs[5].itemName);    //"XEQM01:HELP;" 
 
       #if(VERBOSE_LEVEL >= 1)
         strcpy(tmp, fn_short);
@@ -1068,7 +1133,7 @@ void XEQMENU_Selection(uint16_t selection, char *line1, bool_t exec, bool_t scan
 
       //printf(">>> original name:|%s|, replacement file name:|%s|\n", fn_short, fn_long);
       if(selection == 1) {
-        sprintf(fallback, "XEQLBL 01 HELP ALPHA \"I\" CASE \"n directory \" CASE \"PROGRAMS\" CASEDN \" create \" CASEUP \"XEQM\" CASEDN \"NN\" CASEUP \".TXT\" EXIT ");
+        sprintf(fallback, "%s", helpMsg[0].itemName);
       }
       else {
         sprintf(fallback, "XEQLBL %s X%s ", nn, nn);
@@ -1101,7 +1166,7 @@ void XEQMENU_Selection(uint16_t selection, char *line1, bool_t exec, bool_t scan
       #endif // (VERBOSE_LEVEL >= 2)
 
       #if(VERBOSE_LEVEL >= 1)
-        clearScreen_old(false, true, true);
+        clearScreenOld(false, true, true);
       #endif // (VERBOSE_LEVEL >= 1)
 
       displaywords(line1);       //output  is  in  tmpString
@@ -1114,7 +1179,7 @@ void XEQMENU_Selection(uint16_t selection, char *line1, bool_t exec, bool_t scan
       #endif // (VERBOSE_LEVEL >= 2)
 
       #if(VERBOSE_LEVEL >= 1)
-        clearScreen_old(false, true, true);
+        clearScreenOld(false, true, true);
       #endif // (VERBOSE_LEVEL >= 1)
 
       execute_string(line1,exec, scanning);
@@ -1122,7 +1187,7 @@ void XEQMENU_Selection(uint16_t selection, char *line1, bool_t exec, bool_t scan
       #if(VERBOSE_LEVEL >= 2)
         #if defined(DMCP_BUILD)
           press_key();
-          clearScreen_old(false, true, true);
+          clearScreenOld(false, true, true);
         #endif // DMCP_BUILD
       #endif // (VERBOSE_LEVEL >= 2)
 
@@ -1131,13 +1196,18 @@ void XEQMENU_Selection(uint16_t selection, char *line1, bool_t exec, bool_t scan
 }
 
 
+
 void fnXEQMENU(uint16_t XEQM_no) {
   #if !defined(TESTSUITE_BUILD)
-    clearScreen_old(false, true, true);
-    print_linestr("Loading XEQM program file:", true);
+//    clearScreenOld(false, true, true);
+//    print_linestr("Loading XEQM program file:", true);
+
+    printStatus(0, XeqmMsgs[0].itemName,force);
 
     char line[XEQ_STR_LENGTH_LONG];
     XEQMENU_Selection( XEQM_no, line, EXEC, !SCAN);
+
+    refreshScreen(0);
 
     //calcMode = CM_BUG_ON_SCREEN;
     //temporaryInformation = TI_NO_INFO;
@@ -1149,9 +1219,9 @@ void XEQMENU_loadAllfromdisk(void) {
   #if !defined(SAVE_SPACE_DM42_2)
     #if !defined(TESTSUITE_BUILD)
       //uint16_t Delay;
-      clearScreen_old(false, true, true);
+      clearScreenOld(false, true, true);
       print_inlinestr("", true);
-      print_inlinestr("Loading XEQM:", false);
+      print_inlinestr(XeqmMsgs[1].itemName, false); //Loading XEQM:
 
       char line[XEQ_STR_LENGTH_LONG];
 
@@ -1239,7 +1309,7 @@ void fnXEQMSAVE (uint16_t XEQM_no) {                                  //X-REGIST
       #if !defined(TESTSUITE_BUILD)
         stringToUtf8(tmpString + TMP_STR_LENGTH/2, (uint8_t *)tmpString);
         if(tt[0] != 0) {
-          export_string_to_filename(tmpString, OVERWRITE, "res/PROGRAMS", tt);
+          export_string_to_filename(tmpString, OVERWRITE, pgmpath, tt);  //"res/PROGRAMS"
         }
       #endif // !TESTSUITE_BUILD
     }
@@ -1348,7 +1418,7 @@ void fnXSWAP (uint16_t unusedButMandatoryParameter) {
           }
           refreshRegisterLine(REGISTER_X);        //make sure that the mulit line editor check is done
           last_CM = 253;
-          refreshScreen();
+          refreshScreen(64);
         }
       }
       clearRegister(TEMP_REGISTER_1);
@@ -1387,13 +1457,16 @@ void fnXSWAP (uint16_t unusedButMandatoryParameter) {
   #endif //DISALLOW_ZERO_STRING
 
   last_CM = 252;
-  refreshScreen();
+  refreshScreen(63);
   last_CM = 251;
-  refreshScreen();
+  refreshScreen(0);
 }
 
 
 void fnXEQMexecute(char *line1) {
+  #if defined(PC_BUILD)
+    printf("Execute: %s\n",line1);
+  #endif
   displaywords(line1);
   execute_string(line1, !EXEC, !SCAN); //Run to catch all label names
   execute_string(line1,  EXEC, !SCAN); //Run to execute
@@ -1416,7 +1489,7 @@ void fnXEQNEW (uint16_t unusedButMandatoryParameter) {
   #if !defined(SAVE_SPACE_DM42_2)
     setSystemFlag(FLAG_ASLIFT);
     liftStack();
-    fnStrtoX("XEQC47 XEQLBL 01 XXXXXX ");
+    fnStrtoX(XeqmMsgs[2].itemName);  // "XEQC47 XEQLBL 01 XXXXXX "
     fnXSWAP(0);
     fnDrop(0);
   #endif // !SAVE_SPACE_DM42_2

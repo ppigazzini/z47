@@ -1,18 +1,6 @@
-/* This file is part of 43S.
- *
- * 43S is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * 43S is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with 43S.  If not, see <htempp://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: GPL-3.0-only
+// SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
+
 
 /********************************************//** //JM
  * \file graphs.c Graphing module
@@ -74,6 +62,7 @@ void graph_reset(void){
 void fnClGrf(uint16_t unusedButMandatoryParameter) {
   graph_reset();
   fnClDrawMx();
+  strcpy(plotStatMx,"DrwMX");
   fnRefreshState();                //jm
 }
 
@@ -262,23 +251,32 @@ void fnPlotReset(uint16_t unusedButMandatoryParameter) {
 
 
 void fnPlotSQ(uint16_t unusedButMandatoryParameter) {
+  #if !defined(TESTSUITE_BUILD)
   #if defined(DMCP_BUILD)
     lcd_refresh();
   #else // !DMCP_BUILD
     refreshLcd(NULL);
   #endif // DMCP_BUILD
   PLOT_AXIS = true;
-  hourGlassIconEnabled = true;
-  showHideHourGlass();
+//  hourGlassIconEnabled = true;
+  //showHideHourGlass();
   Aspect_Square = true;
-  if(calcMode != CM_GRAPH && calcMode != CM_PLOT_STAT) {
+  if(!GRAPHMODE) {
     previousCalcMode = calcMode;
   }
   if(previousCalcMode == CM_GRAPH || previousCalcMode == CM_PLOT_STAT) {
     previousCalcMode = CM_NORMAL;
   }
+
+  if(!GRAPHMODE) { //Change over hourglass to the left side
+    clearScreenOld(clrStatusBar, !clrRegisterLines, !clrSoftkeys);
+  }
   calcMode = CM_GRAPH;
-  #if !defined(TESTSUITE_BUILD)
+  hourGlassIconEnabled = true;       //clear the current portion of statusbar
+  showHideHourGlass();
+  refreshStatusBar();
+
+  calcMode = CM_GRAPH;
     if(softmenu[softmenuStack[0].softmenuId].menuItem != -MNU_PLOT) {
       showSoftmenu(-MNU_PLOT);                         //JM MENU Prevent resetting the softmenu to the default no 1 page position
     }
@@ -289,7 +287,7 @@ void fnPlotSQ(uint16_t unusedButMandatoryParameter) {
 
 void fnListXY(uint16_t unusedButMandatoryParameter) {
   #if !defined(TESTSUITE_BUILD)
-  if((plotStatMx[0]=='S' ? checkMinimumDataPoints(const_1):false) || (plotStatMx[0]=='D' ? drawMxN() >= 1:false)) {
+  if((plotStatMx[0]=='S' ? statMxN() >= 1 : false) || (plotStatMx[0]=='D' ? drawMxN() >= 1 : false)) {
     calcMode = CM_LISTXY; //Used to view graph/listing
     ListXYposition = 0;
     }
@@ -554,15 +552,39 @@ void graph_plotmem(void) {
         uint16_t i;
         int16_t cnt1;
         cnt1 = drawMxN();
-        printf("Stored values\n");
+        printf("Stored values n=%i of matrix:%s\n",cnt1, plotStatMx);
         for(i = 0; i < cnt1; ++i) {
           printf("i = %3u x = %9f; y = %9f\n", i, grf_x(i), grf_y(i));
         }
       #endif // STATDEBUG && PC_BUILD
 
+      if(!reDraw) {
+        #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
+          printf("graph_plotmem: Not reDrawing, text only\n");
+        #endif // PC_BUILD &&MONITOR_CLRSCR
+        clearScreenGraphs(1, clrTextArea, !clrGraphArea);
+        graph_text();
+        return;
+      } else {
+        #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
+          printf("graph_plotmem: Drawing\n");
+        #endif // PC_BUILD &&MONITOR_CLRSCR
+        clearScreenGraphs(2, !clrTextArea, clrGraphArea);
+        reDraw = false; //draw now and block reDraw in the next round
+      } //continue with draw
+
+      #if defined (LOW_GRAPH_ACC)
+        //Change to SDIGS digit operation for graphs;
+        ctxtReal34.digits = significantDigitsForScreen;
+        ctxtReal39.digits = significantDigitsForScreen+3;
+        ctxtReal51.digits = significantDigitsForScreen+3;
+        ctxtReal75.digits = significantDigitsForScreen+3;
+      #endif //LOW_GRAPH_ACC
+      regStatsXY = findNamedVariable(plotStatMx);
       uint16_t cnt, ix, statnum;
-      uint16_t xo, xn, xN;
-      uint8_t yo, yn, yN;
+      int16_t xo, xn, xN;
+      int16_t yo, yn, yN;
+      int16_t yN0 = 0, yN1 = 0;
       float x;
       float y;
       float sx, sy;
@@ -575,22 +597,9 @@ void graph_plotmem(void) {
 
       statnum = 0;
 
-      roundedTicks = true;
-      graph_axis();                        //Draw the axis on any uncontrolled scale to start. Maybe optimize by remembering if there is an image on screen Otherwise double axis draw.
-      if(PLOT_AXIS) {
-        graph_text();
-      }
-
-      if(PLOT_VECT || PLOT_NVECT) {
-        plotmode = _VECT;
-      }
-      else {
-        plotmode = _SCAT;
-      }
-
-      if((plotStatMx[0]=='S' ? checkMinimumDataPoints(const_2):false) || (plotStatMx[0]=='D' ? drawMxN() >= 2:false)) {
+      if((plotStatMx[0]=='S' ? statMxN() >= 2 : false) || (plotStatMx[0]=='D' ? drawMxN() >= 2:false)) {
         if(plotStatMx[0]=='S') {
-          statnum = realToInt32C47(SIGMA_N);
+          statnum = statMxN();  //          realToInt32(SIGMA_N, statnum);
         }
         else {
           statnum = drawMxN();
@@ -602,6 +611,19 @@ void graph_plotmem(void) {
 
       if(statnum >= 2) {
         //GRAPH SETUP
+
+        roundedTicks = true;
+        graph_axis();                        //Draw the axis on any uncontrolled scale to start. Maybe optimize by remembering if there is an image on screen Otherwise double axis draw.
+        if(PLOT_AXIS) {
+          graph_text();
+        }
+
+      if(PLOT_VECT || PLOT_NVECT) {
+        plotmode = _VECT;
+      }
+      else {
+        plotmode = _SCAT;
+      }
 
         if(PLOT_INTG) {
           rmsy = fabs(grf_y(0));
@@ -994,22 +1016,46 @@ void graph_plotmem(void) {
           xo = xN;
           yo = yN;
           xN = screen_window_x(x_min,x,x_max);
-          yN = screen_window_y(y_min,y,y_max);
+          yN0 = yN1;
+          yN1 = screen_window_y_nolimit(y_min,y,y_max);
+          yN = yN1;
+
 
           #if defined(STATDEBUG)
+            printf("xN = %d : (x_min=%f,x=%f,x_max=%f) \n",xN, x_min,x,x_max);
+            printf("yN = %d yN0 = %d yN1 = %d : (y_min=%f,y=%f,y_max=%f) \n",yN, yN0, yN1, y_min,y,y_max);
             printf("plotting graph table[%d] = x:%f y:%f dydx:%f inty:%f xN:%d yN:%d ", ix, x, y, dydx, inty, xN, yN);
             printf(" ... x-ddx/2=%d dydx=%d inty=%d\n", screen_window_x(x_min, x-ddx/2, x_max), screen_window_y(y_min, dydx, y_max), screen_window_y(y_min, inty, y_max));
           #endif // STATDEBUG
 
           int16_t minN_y, minN_x;
           if(!Aspect_Square) {
-            minN_y = SCREEN_NONSQ_HMIN; minN_x = 0;
+            minN_y = SCREEN_NONSQ_HMIN; 
+            minN_x = 0;
           }
           else {
             minN_y = 0;
             minN_x = SCREEN_WIDTH-SCREEN_HEIGHT_GRAPH;
           }
-          if(xN < SCREEN_WIDTH_GRAPH && xN > minN_x && yN < SCREEN_HEIGHT_GRAPH && yN > minN_y) {
+
+          bool_t bothOutOfScreen01 = ((yN1 > SCREEN_HEIGHT_GRAPH - 1) && (yN0 > SCREEN_HEIGHT_GRAPH - 1)) || ((yN1 < minN_y) && (yN0 < minN_y));
+          bool_t outOfScreen1  = (yN1 > SCREEN_HEIGHT_GRAPH - 1 || yN1 < minN_y);
+          bool_t outOfScreen0  = (yN0 > SCREEN_HEIGHT_GRAPH - 1 || yN0 < minN_y);
+
+          if(yN1 != yN0 && !bothOutOfScreen01 && !outOfScreen1 && outOfScreen0) {
+            int16_t dY1 = yN0 > SCREEN_HEIGHT_GRAPH - 1 ? abs(SCREEN_HEIGHT_GRAPH - 1 - yN1) : abs(yN1);
+            float dxN = ((float)dY1)/(fabs((float)(yN1-yN0))*(float)(xN-xo));
+            if(dxN > 25) dxN = 25;
+            xo += (xN-xo)-dxN;
+            yo = yN0 > SCREEN_HEIGHT_GRAPH - 1 ? SCREEN_HEIGHT_GRAPH - 1 : 0;
+          }
+
+          // Changed to clean up plotting on the edge of the screen
+          if(xN > SCREEN_WIDTH_GRAPH  - 1) xN = SCREEN_WIDTH_GRAPH - 1;
+          if(yN > SCREEN_HEIGHT_GRAPH - 1) yN = SCREEN_HEIGHT_GRAPH - 1;
+          if(yN < minN_y) yN = minN_y;
+
+          if((xN < SCREEN_WIDTH_GRAPH && xN >= minN_x && yN < SCREEN_HEIGHT_GRAPH && yN >= minN_y) && !bothOutOfScreen01)  {
             //yo = yn;                              //old , new, to be able to draw a line between samples
             yn = yN;
             //xo = xn;
@@ -1116,16 +1162,16 @@ void graph_plotmem(void) {
               if(!(xN < SCREEN_WIDTH_GRAPH)) {
                 printf("NOT xN<SCREEN_WIDTH_GRAPH; ");
               }
-              if(!(xN > minN_x)) {
-                printf("NOT xN>minN_x; ");
+              if(!(xN >= minN_x)) {
+                printf("NOT xN>=minN_x; ");
               }
               if(!(yN < SCREEN_HEIGHT_GRAPH)) {
                 printf("NOT yN<SCREEN_HEIGHT_GRAPH");
               }
-              if(!(yN > minN_y)) {
-                printf("NOT yN>minN_y; ");
+              if(!(yN >= minN_y)) {
+                printf("NOT yN>=minN_y; ");
               }
-              printf("Not plotted: xN=%d<SCREEN_WIDTH_GRAPH=%d && xN=%d>minN_x=%d && yN=%d<SCREEN_HEIGHT_GRAPH=%d && yN=%d>minN_y=%d\n", xN, SCREEN_WIDTH_GRAPH, xN, minN_x, yN, SCREEN_HEIGHT_GRAPH, yN, minN_y);
+              printf("Not plotted: xN=%d<SCREEN_WIDTH_GRAPH=%d && xN=%d>=minN_x=%d && yN=%d<SCREEN_HEIGHT_GRAPH=%d && yN=%d>=minN_y=%d\n", xN, SCREEN_WIDTH_GRAPH, xN, minN_x, yN, SCREEN_HEIGHT_GRAPH, yN, minN_y);
             #endif // PC_BUILD
           }
           if(keyWaiting()) {
@@ -1141,6 +1187,14 @@ void graph_plotmem(void) {
           moreInfoOnError("In function graph_plotmem:", errorMessage, NULL, NULL);
         #endif // EXTRA_INFO_ON_CALC_ERROR == 1
       }
+
+      #if defined (LOW_GRAPH_ACC)
+        //Change to normal operation for graphs;
+        ctxtReal34.digits = 34;
+        ctxtReal39.digits = 39;
+        ctxtReal51.digits = 51;
+        ctxtReal75.digits = 75;
+      #endif //LOW_GRAPH_ACC
     #endif // !TESTSUITE_BUILD
   #endif // !SAVE_SPACE_DM42_13GRF_JM
 }
@@ -1162,7 +1216,9 @@ void fnStatList() {
       plotmode = _SCAT;
     }
 
-    if((plotStatMx[0] == 'S' ? checkMinimumDataPoints(const_1) : false) || (plotStatMx[0]=='D' ? drawMxN() >= 1 : false)) {
+    if(regStatsXY != INVALID_VARIABLE && 
+      ((plotStatMx[0] == 'S' ? statMxN() >= 1 : false) || (plotStatMx[0]=='D' ? drawMxN() >= 1 : false))) {
+
       if(plotStatMx[0] == 'S') {
         statnum = realToInt32C47(SIGMA_N);
       }
@@ -1178,7 +1234,7 @@ void fnStatList() {
         printf("Stat data %d - %d (%s)\n",statnum-1, max(0, statnum-1-6), tmpString );
       #endif // STATDEBUG
 
-      if(statnum - 0 - 1 + ListXYposition > statnum-1) {
+      if(ListXYposition > 0) {
         ListXYposition = 0;
       }
       else if(statnum - (min(10,statnum)-1) - 1 + ListXYposition < 0) {
