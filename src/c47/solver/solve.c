@@ -160,7 +160,7 @@ void fnSolve(uint16_t labelOrVariable) {
       int32ToReal34(resultCode, REGISTER_REAL34_DATA(REGISTER_T));
       switch(resultCode) {
         case SOLVER_RESULT_NORMAL: {
-          temporaryInformation = TI_SOLVER_VARIABLE;
+          temporaryInformation = TI_SOLVER_VARIABLE_RESULT;
           lastErrorCode = ERROR_NONE;
           break;
         }
@@ -488,14 +488,12 @@ int solver(calcRegister_t variable, const real34_t *y, const real34_t *x, real34
         _showProgress(&a, &b, &fa, &fb);
       }
 
-      #if defined(DMCP_BUILD)
-        if(keyWaiting()) {
-            showString("key Waiting ...", &standardFont, 20, 40, vmNormal, false, false);
-            printHalfSecUpdate_Integer(force+1, "Interrupted Iter:",loop);
-            programRunStop = PGM_WAITING;
-          break;
-        }
-      #endif //DMCP_BUILD
+      if(keyWaiting()) {
+          showString("key Waiting ...", &standardFont, 20, 40, vmNormal, false, false);
+          printHalfSecUpdate_Integer(force+1, "Interrupted Iter:",loop);
+          programRunStop = PGM_WAITING;
+        break;
+      }
 
       // pre-calculation
       if(realIsSpecial(&bb2)) {

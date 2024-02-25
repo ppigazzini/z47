@@ -1097,6 +1097,7 @@ enum REG_NUMBERS {
 #define TI_MIJ                                   101
 #define TI_BYTES                                 102
 #define TI_BITS                                  103
+#define TI_SOLVER_VARIABLE_RESULT                104
 
 // Register browser mode
 #define RBR_GLOBAL                                 0 // Global registers are browsed
