@@ -1583,7 +1583,7 @@ int16_t indirectAddressing(calcRegister_t regist, uint16_t parameterType, int16_
     case INDPM_FLAG: {
       maxValue = NUMBER_OF_GLOBAL_FLAGS + currentNumberOfLocalFlags - 1;
       break;
-    }
+  }
   }
 
   if(regist >= FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters &&
@@ -2018,8 +2018,8 @@ void reallocateRegister(calcRegister_t regist, uint32_t dataType, uint16_t dataS
     setRegisterTag(regist, tag);
   }
 
-  //sprintf(tmpString, "reallocateRegister %d to %s tag=%u (%u bytes including dataLen) done", regist, getDataTypeName(dataType, false, false), tag, dataSizeWithDataLenBlocks);
-  //memoryDump(tmpString);
+//sprintf(tmpString, "reallocateRegister %d to %s tag=%u (%u bytes including dataLen) done", regist, getDataTypeName(dataType, false, false), tag, dataSizeWithDataLenBlocks);
+//memoryDump(tmpString);
 }
 
 
@@ -2082,8 +2082,8 @@ void fnToReal(uint16_t unusedButMandatoryParameter) {
         moreInfoOnError("In function fnToReal:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return;
-    }
   }
+}
 }
 
 

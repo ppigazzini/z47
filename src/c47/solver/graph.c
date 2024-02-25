@@ -40,8 +40,6 @@
 #include <string.h>
 
 
-//#define DEBUG_GR
-
 #if defined(PC_BUILD)
   //Verbose directives can be simulataneously selected
   //#define VERBOSE_SOLVER00   // minimal text
@@ -67,10 +65,13 @@
 #if !defined(TESTSUITE_BUILD)
 static void fnPlot(uint16_t unusedButMandatoryParameter) {
     lastPlotMode = PLOT_NOTHING;
+    //    fnPlotStat(PLOT_GRAPH);
+    //  C43 advanced plot vv
     strcpy(plotStatMx, "DrwMX");
     PLOT_LINE = true;
     PLOT_SHADE = true;
     fnPlotSQ(0);
+    //  C43 advanced plot ^^
 }
 
 
@@ -254,9 +255,6 @@ uint8_t DXR = 0, DYR = 0, DXI = 0, DYI = 0;
 
 
   void fnClDrawMx(void) {
-    #ifdef PC_BUILD
-      printf("Clearing Draw Matrix\n");
-    #endif
     PLOT_ZOOM = 0;
     calcRegister_t regStats = findNamedVariable("DrwMX");
     if(regStats != INVALID_VARIABLE) {
@@ -1243,7 +1241,7 @@ void fnEqSolvGraph (uint16_t func) {
     graphVariable = -graphVariable;
   }
 
-  if(FIRST_NAMED_VARIABLE <= graphVariable && graphVariable <= LAST_NAMED_VARIABLE) {
+  if(graphVariable >= FIRST_NAMED_VARIABLE && graphVariable <= LAST_NAMED_VARIABLE) {
     #if(defined(VERBOSE_SOLVER00) || defined(VERBOSE_SOLVER0)) && defined(PC_BUILD)
       printf("graphVariable accepted: %i\n", graphVariable);
     #endif // (VERBOSE_SOLVER00 || VERBOSE_SOLVER0) && PC_BUILD
@@ -1290,19 +1288,7 @@ void fnEqSolvGraph (uint16_t func) {
       complexSolver();
       break;
     }
-    case EQ_REPLOT:              //uses LX, UX
-      fnEqSolvGraph(EQ__PLOT);
-      break;
-
-    case EQ_PLOT:                //uses X, Y
-      fnStore(RESERVED_VARIABLE_UX);
-      fnDrop(0);
-      fnStore(RESERVED_VARIABLE_LX);
-      fnRecall(RESERVED_VARIABLE_UX);
-      fnEqSolvGraph(EQ__PLOT);
-      break;
-
-    case EQ__PLOT: {
+    case EQ_PLOT: {
       PLOT_ZMX = 0;
       PLOT_ZMY = 0;
       double higherXStartValue = convertRegisterToDouble(RESERVED_VARIABLE_UX);

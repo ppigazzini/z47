@@ -684,6 +684,7 @@ typedef enum {
 #define INC_FLAG                                   0
 #define DEC_FLAG                                   1
 
+
 // List of constants
 #define FIRST_CONSTANT                        CST_01
 #define LAST_CONSTANT                         CST_82
@@ -958,7 +959,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define SBARUPD_Date                            (getSystemFlag(FLAG_SBdate ))
 #define SBARUPD_Time                            (getSystemFlag(FLAG_SBtime ))
 #define SBARUPD_ComplexResult                   (getSystemFlag(FLAG_SBcr   ))
-#define SBARUPD_ComplexMode                     (getSystemFlag(FLAG_SBcpx  ))
+#define SBARUPD_ComplexMode                     (getSystemFlag(FLAG_SBcpx   ))
 #define SBARUPD_AngularModeBasic                (getSystemFlag(FLAG_SBang  ))
 #define SBARUPD_AngularMode                     ( 1                         )
 #define SBARUPD_FractionModeAndBaseMode         (getSystemFlag(FLAG_SBfrac ))
