@@ -539,7 +539,7 @@ static void _integrate(calcRegister_t regist, const real_t *a, const real_t *b, 
     do { // DEI_j_loop::
       #if !defined(TESTSUITE_BUILD)
         char tmps[64];
-        exitSignalled |= (popKey() == 32);
+        exitSignalled |= (popKey() == 32); //instead of keyWaiting()
         sprintf(tmps,"level:  %i Iter: ",(int16_t)realToInt32C47(&lvl));
         if(printHalfSecUpdate_Integer(timed, tmps, loop++, halfSec_clearZ, halfSec_clearT, halfSec_disp)) {; //timed
           #if ENABLE_SOLVER_PROGRESS == 1
@@ -844,7 +844,7 @@ static void _integrate_mm(calcRegister_t regist, const real_t *llim, const real_
     do {
       #if !defined(TESTSUITE_BUILD)
         char tmps[64];
-        exitSignalled |= (popKey() == 32);
+        exitSignalled |= (popKey() == 32); //instead of keyWaiting()
         sprintf(tmps,"Level: %i/%i Iter: ",(int16_t)k, (int16_t)maxlevel);
         if(printHalfSecUpdate_Integer(timed, tmps, loop++, !interruptedLoop, !interruptedLoop, !interruptedLoop)) { ; //timed
           #if ENABLE_SOLVER_PROGRESS == 1
@@ -933,7 +933,6 @@ static void _integrate_mm(calcRegister_t regist, const real_t *llim, const real_
     ++k;
 
   } while (realCompareGreaterEqual(&errval, &tol) && k <= maxlevel);
-
   realMultiply(&ss, &bma2, res, realContext);
   realMultiply(res, &h, res, realContext); // load the integral result,
   realCopy(&errval, acc); // its error value,

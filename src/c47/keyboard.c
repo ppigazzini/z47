@@ -633,9 +633,9 @@ bool_t lowercaseselected;
     void btnFnPressed(void *data) {
   #endif // DMCP_BUILD
 
-#if defined(VERBOSEKEYS)
-printf(">>>>Z 0010 btnFnPressed SET FN_key_pressed            ; data=|%s| data[0]=%d shiftF=%d shiftG=%d\n",(char*)data, ((char*)data)[0],shiftF, shiftG);
-#endif //VERBOSEKEYS
+      #if defined(VERBOSEKEYS)
+        printf(">>>>Z 0010 btnFnPressed SET FN_key_pressed            ; data=|%s| data[0]=%d shiftF=%d shiftG=%d\n",(char*)data, ((char*)data)[0],shiftF, shiftG);
+      #endif //VERBOSEKEYS
       temporaryInformation = TI_NO_INFO;
       FN_key_pressed = *((char *)data) - '0' + 37;  //to render 38-43, as per original keypress
 

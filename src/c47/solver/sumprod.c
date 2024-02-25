@@ -54,17 +54,17 @@
 //  The result of f(n) can be complex, in which case if CPXRES is set, operation continues in complex.
 //  If not set, an error is raised.
 
+
+
 #if !defined(TESTSUITE_BUILD)
 
-  static void _showProgress(const real_t *a, real_t *ai, bool_t cpx) {
+  void showProgressReal(const real_t *a, real_t *ai, bool_t cpx) {
     real34_t a34, ai34;
     #if ENABLE_SOLVER_PROGRESS == 1
         uint8_t savedDisplayFormatDigits = displayFormatDigits;
 
-//        clearRegisterLine(REGISTER_Z, true, true);
-        if(cpx) {
-          clearRegisterLine(REGISTER_Y, true, true);
-        }
+        clearRegisterLine(REGISTER_Z, true, true);
+        clearRegisterLine(REGISTER_Y, true, true);
         clearRegisterLine(REGISTER_X, true, true);
 
         displayFormatDigits = displayFormat == DF_ALL ? 0 : 33;
@@ -211,7 +211,7 @@
 
         real34Add(&counter, &loopStep, &counter);
         if(printHalfSecUpdate_Integer(timed, "Loop: ",loop--, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { ; //timed
-          _showProgress(&resultR, &resultRi, changedOverToComplex);
+          showProgressReal(&resultR, &resultRi, changedOverToComplex);
         }
 
         if(keyWaiting()) {
