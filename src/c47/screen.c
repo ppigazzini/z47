@@ -557,46 +557,11 @@
         }
       #endif // (DEBUG_INSTEAD_STATUS_BAR != 1)
 
-      if(!getSystemFlag(FLAG_AUTOFF) || getSystemFlag(FLAG_RUNTIM) || programRunStop == PGM_RUNNING || (nextTimerRefresh != 0)) {
-        reset_auto_off();
-      }
+      dmcpResetAutoOff();
+
       fnPollTimerApp();
     }
-
-    if(usb_powered() == 1) {
-      if(!getSystemFlag(FLAG_USB)) {
-        setSystemFlag(FLAG_USB);
-        clearSystemFlag(FLAG_LOWBAT);
-        showHideUsbLowBattery();
-      }
-    }
-    else {
-      if(getSystemFlag(FLAG_USB)) {
-        clearSystemFlag(FLAG_USB);
-      }
-
-      int tmpVbat = updateVbatIntegrated();
-
-      if(tmpVbat < 2000 ) {// || vbatIntegrated < 2000) { //temporary disable shutdown
-        if(!getSystemFlag(FLAG_LOWBAT)) {
-          setSystemFlag(FLAG_LOWBAT);
-          showHideUsbLowBattery();
-        }
-        SET_ST(STAT_PGM_END);
-      }
-      else if(tmpVbat < 2500 || vbatIntegrated < 2500) {
-        if(!getSystemFlag(FLAG_LOWBAT)) {
-          setSystemFlag(FLAG_LOWBAT);
-          showHideUsbLowBattery();
-        }
-      }
-      else {
-        if(getSystemFlag(FLAG_LOWBAT)) {
-          clearSystemFlag(FLAG_LOWBAT);
-          showHideUsbLowBattery();
-        }
-      }
-    }
+    checkBattery();
   }
 #endif // PC_BUILD DMCP_BUILD
 
@@ -642,6 +607,10 @@ void execTimerApp(uint16_t timerType) {
   void underline_softkey(int16_t xSoftkey, int16_t ySoftKey, bool_t dontclear) {
     int16_t x, y, x1, y1, x2, y2;
     uint32_t tmp;
+
+    if(calcMode == CM_REGISTER_BROWSER || calcMode == CM_FLAG_BROWSER || calcMode == CM_FONT_BROWSER) {
+      return;
+    }
 
     if((calcMode == CM_GRAPH || calcMode == CM_PLOT_STAT) && xSoftkey >= 2) {
       return;
@@ -1641,6 +1610,9 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
 
 
   void force_refresh(uint8_t mode) {
+    if(!getSystemFlag(FLAG_MONIT) && mode == timed) {
+      return;
+    }
     if(mode == force || ((((uint16_t)(getUptimeMs()) >> 4) & 0x0020) == 0x0020) == halfSecTick) {  //Restrict refresh to once per half second. Use this minimally, due to extreme slow response.
       halfSecTick = !halfSecTick;
 
@@ -1659,7 +1631,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
 
 
   uint16_t old_time = 0;
-  bool_t printHalfSecUpdate_Integer(uint8_t mode, char *txt, int loop) {
+  bool_t _printHalfSecUpdate_Integer(uint8_t mode, char *txt, int loop) {
     char tmps[100];
     bool_t ret_value = false;
     uint16_t new_time = (uint16_t)(getUptimeMs());
@@ -1693,6 +1665,13 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
     return ret_value;
   }
 
+  bool_t printHalfSecUpdate_Integer(uint8_t mode, char *txt, int loop) { //further optimisation, not to even set up the 100 byte array or call getUptimeMs if progress monitor is not selected 
+    if(!getSystemFlag(FLAG_MONIT)) {
+      return false;
+    }
+    return _printHalfSecUpdate_Integer(mode, txt, loop);
+  }
+
 
   void hideCursor(void) {
     if(cursorEnabled) {
@@ -1712,7 +1691,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
 
 
   static void stats_param_display(const char *name, calcRegister_t reg, char *prefix, char *tmpString, calcRegister_t rowReg) {
-    int prefixWidth;
+    int16_t prefixWidth;
     char regS[5], *p;
     real_t t;
     real34_t u;
@@ -1793,7 +1772,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
       else if(item >= ITM_X_P1 && item <= ITM_X_g6) {
         stringAppend(functionName, indexOfItemsXEQM + 8*(item-fnXEQMENUpos));
       }
-      else if(item >= CST_01 && item <= CST_79) {
+      else if(item >= FIRST_CONSTANT && item <= LAST_CONSTANT) {
         stringAppend(functionName,indexOfItems[abs(item)].itemSoftmenuName);
       }
       else if(item < LAST_ITEM && item != MNU_DYNAMIC) {
@@ -1826,8 +1805,12 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
 
 
   void hideFunctionName(void) {
-    if(!running_program_jm && (tmpString[0] != 0 || calcMode!=CM_AIM)) refreshRegisterLine(REGISTER_T);      //JM DO NOT CHANGE BACK TO CLEARING ONLY A SHORT PIECE. CHANGED IN TWEAKED AS WELL>
-                                                                                      //Added the tempstring isea, not sure why it is used, but I stay compatible
+    if(!running_program_jm && (tmpString[0] != 0 || calcMode!=CM_AIM)) {
+      refreshRegisterLine(REGISTER_T);                                                //JM DO NOT CHANGE BACK TO CLEARING ONLY A SHORT PIECE. CHANGED IN TWEAKED AS WELL>
+      if(getRegisterDataType(REGISTER_X) == dtReal34Matrix || getRegisterDataType(REGISTER_X) == dtReal34Matrix) {
+        refreshRegisterLine(REGISTER_X);
+      }
+    }
     showFunctionNameItem = 0;
     showFunctionNameCounter = 0;
   }
@@ -2080,7 +2063,32 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
     }
   }
 
-  #define PROBMENU (-softmenu[softmenuStack[0].softmenuId].menuItem >= MNU_BINOM && -softmenu[softmenuStack[0].softmenuId].menuItem <= ITM_1290)
+
+  void _displayIJ(char *prefix, int16_t *prefixWidth) {
+    if(currentMenu() != -MNU_MATX || lastErrorCode != 0) {
+      return;
+    }
+    real_t iir,jjr;
+
+    if(getRegisterAsRealQuiet(REGISTER_I, &iir) && getRegisterAsRealQuiet(REGISTER_J, &jjr)) {
+      int32_t iii, jji;
+      iii=realToUint32C47(&iir);
+      jji=realToUint32C47(&jjr);
+      if(iii >= 0 && iii < 200 && jji >= 0 && jji < 200) {
+        prefix[0] = 0;
+        *prefixWidth = 0;
+        if(temporaryInformation == TI_MIJ) {
+          sprintf(prefix,STD_MU "[I" STD_SUB_r STD_SPACE_4_PER_EM "J" STD_SUB_c "]=" STD_MU "[%u" STD_SPACE_3_PER_EM "%u]=",(uint8_t)iii,(uint8_t)jji);
+        } else {
+          sprintf(prefix,"[I" STD_SUB_r STD_SPACE_4_PER_EM "J" STD_SUB_c "]=[%u" STD_SPACE_3_PER_EM "%u]",(uint8_t)iii,(uint8_t)jji);
+        }
+        *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
+      }
+    }
+  }
+
+
+  #define PROBMENU (-softmenu[softmenuStack[0].softmenuId].menuItem >= MNU_BINOM && -softmenu[softmenuStack[0].softmenuId].menuItem <= ITM_1296)
 
   void refreshRegisterLine(calcRegister_t regist) {
     int32_t w;
@@ -2232,6 +2240,20 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
           w = stringWidth(tmpString, &standardFont, true, true);
           showString(tmpString, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + 6, vmNormal, true, true);
         }
+      }
+
+      else if(temporaryInformation == TI_BATTV && regist == REGISTER_X) {
+        sprintf(prefix, "V" STD_SPACE_FIGURE "=");
+        displayTemporaryInformationOnX(prefix);
+      }
+
+      else if(temporaryInformation == TI_BYTES && regist == REGISTER_X) {
+        sprintf(prefix, "Bytes" STD_SPACE_FIGURE "=");
+        displayTemporaryInformationOnX(prefix);
+      }
+      else if(temporaryInformation == TI_BITS && regist == REGISTER_X) {
+        sprintf(prefix, "Bits" STD_SPACE_FIGURE "=");
+        displayTemporaryInformationOnX(prefix);
       }
 
       else if(temporaryInformation == TI_ARE_YOU_SURE && regist == REGISTER_X) {
@@ -2504,8 +2526,8 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
               r_j = STD_gamma;              register_j = REGISTER_S;
               break;
             case -MNU_WEIBL:
-              r_i = STD_nu;                 register_i = REGISTER_Q;
-              r_j = STD_lambda;             register_j = REGISTER_M;
+              r_i = STD_k;                  register_i = REGISTER_Q;
+              r_j = STD_lambda;             register_j = REGISTER_S;
               break;
             case -MNU_CHI2:
             case -MNU_T:
@@ -2717,13 +2739,6 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
         else if(getRegisterDataType(regist) == dtReal34) {
           if(temporaryInformation == TI_COPY_FROM_SHOW && regist == REGISTER_X) {
             _fnShowRecallTI(prefix, &prefixWidth);
-          }
-
-          else if(temporaryInformation == TI_V) {                             //JMms vv
-            if(regist == REGISTER_X) {
-              strcpy(prefix, "V" STD_SPACE_FIGURE "=");
-              prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
-            }
           }
 
           else if(temporaryInformation == TI_THETA_RADIUS) {
@@ -3475,6 +3490,10 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
               }
             }
           }
+          else if(regist == REGISTER_X && (temporaryInformation == TI_IJ || temporaryInformation == TI_MIJ)) {
+            _displayIJ(prefix, &prefixWidth);
+          }
+
 
           if(prefixWidth > 0) {
             if(regist == REGISTER_X) {
@@ -3591,6 +3610,9 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
               prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
             }
             #endif //DISCRIMINANT
+          }
+          else if(regist == REGISTER_X && (temporaryInformation == TI_IJ || temporaryInformation == TI_MIJ)) {
+            _displayIJ(prefix, &prefixWidth);
           }
 
 
@@ -3828,6 +3850,9 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
               prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
             }
           }
+          else if(regist == REGISTER_X && (temporaryInformation == TI_IJ || temporaryInformation == TI_MIJ)) {
+            _displayIJ(prefix, &prefixWidth);
+          }
 
           if(prefixWidth > 0) {
             if(regist == REGISTER_X) {
@@ -3966,6 +3991,9 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
             if(lastErrorCode != 0) {
               refreshRegisterLine(errorMessageRegisterLine);
             }
+            else if(regist == REGISTER_X && (temporaryInformation == TI_IJ || temporaryInformation == TI_MIJ)) {
+              _displayIJ(prefix, &prefixWidth);
+            }
             if(temporaryInformation == TI_TRUE || temporaryInformation == TI_FALSE) {
               refreshRegisterLine(TRUE_FALSE_REGISTER_LINE);
             }
@@ -3991,6 +4019,9 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
             linkToComplexMatrixRegister(regist, &matrix);
             if(temporaryInformation == TI_VIEW && origRegist == REGISTER_T) {
               viewRegName(prefix, &prefixWidth);
+            }
+            else if(regist == REGISTER_X && (temporaryInformation == TI_IJ || temporaryInformation == TI_MIJ)) {
+              _displayIJ(prefix, &prefixWidth);
             }
             showComplexMatrix(&matrix, prefixWidth, getComplexRegisterAngularMode(regist), getComplexRegisterPolarMode(regist) == amPolar);
             if(lastErrorCode != 0) {
@@ -4398,6 +4429,9 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
 
 
 void fnSNAP(uint16_t unusedButMandatoryParameter) {
+  #ifdef PC_BUILD
+    printf("fnSNAP!\n");
+  #endif
   if(calcMode == CM_AIM) {
     xcopy(tmpString, aimBuffer, ERROR_MESSAGE_LENGTH + AIM_BUFFER_LENGTH + NIM_BUFFER_LENGTH);       //backup portion of the "message buffer" area in DMCP used by ERROR..AIM..NIM buffers, to the tmpstring area in DMCP. DMCP uses this area during create_screenshot.
     fnScreenDump(0);

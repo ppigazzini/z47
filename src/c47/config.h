@@ -246,6 +246,9 @@ void     fnConfirmationYes     (uint16_t unusedButMandatoryParameter);
 void     fnConfirmationNo      (uint16_t unusedButMandatoryParameter);
 uint16_t getConfirmationTiId   (void);
 
+void     dmcpResetAutoOff      (void);
+int      updateVbatIntegrated  (bool_t minutePulse);
+void     checkBattery          (void);
 void     fnClAll               (uint16_t confirmation);
 void     backToSystem          (uint16_t confirmation);
 void     runDMCPmenu           (uint16_t confirmation);

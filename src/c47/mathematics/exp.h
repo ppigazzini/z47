@@ -22,9 +22,12 @@
 
   #include "defines.h"
   #include "realType.h"
+  #include "typeDefinitions.h"
   #include <stdint.h>
 
   void fnExp   (uint16_t unusedButMandatoryParameter);
+  void realExp(const real_t *rhs, real_t *res, realContext_t *set);
+  bool_t realExpLimitCheck(const real_t *x, real_t *res, const real_t *zero);
 
   #if(EXTRA_INFO_ON_CALC_ERROR == 1)
     void expError(void);

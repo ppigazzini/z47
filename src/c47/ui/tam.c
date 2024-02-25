@@ -694,7 +694,7 @@
         return;
       }
       else if(!tam.alpha && !tam.digitsSoFar && !tam.dot && !valueParameter) {
-        if(tam.function == ITM_GTO) {
+        if(tam.function == ITM_GTO || tam.function == ITM_XEQ) {
           tam.function = ITM_GTOP;
           tam.min = 0;
           tam.max = max(getNumberOfSteps(), 99);

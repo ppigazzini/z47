@@ -1142,6 +1142,7 @@ void fnSimultaneousLinearEquation(uint16_t numberOfUnknowns) {
   if(allocateNamedMatrix("Mat_A", numberOfUnknowns, numberOfUnknowns) != INVALID_VARIABLE) {
     if(allocateNamedMatrix("Mat_B", numberOfUnknowns, 1) != INVALID_VARIABLE) {
       if(allocateNamedMatrix("Mat_X", numberOfUnknowns, 1) != INVALID_VARIABLE) {
+        popSoftmenu();
         showSoftmenu(-MNU_SIMQ);
         showSoftmenu(-MNU_TAM);
         numberOfTamMenusToPop = 1;
@@ -1221,6 +1222,7 @@ void fnEditLinearEquationMatrixX(uint16_t unusedParamButMandatory) {
     liftStack();
     copySourceRegisterToDestRegister(findNamedVariable("Mat_X"), REGISTER_X);
     popSoftmenu();
+printf("Popped\n");
   }
   #endif // !TESTSUITE_BUILD
 }
@@ -1819,11 +1821,12 @@ void linkToComplexMatrixRegister(calcRegister_t regist, complex34Matrix_t *linke
 
 #if !defined(TESTSUITE_BUILD)
 /* Insert a row */
-void insRowRealMatrix(real34Matrix_t *matrix, uint16_t beforeRowNo) {
+void insRowRealMatrix(real34Matrix_t *matrix, uint16_t beforeRowNo, bool_t add) {
   const uint16_t rows = matrix->header.matrixRows;
   const uint16_t cols = matrix->header.matrixColumns;
   int32_t i;
   real34Matrix_t newMat;
+  if(add) beforeRowNo = rows;
 
   if(realMatrixInit(&newMat, rows + 1, cols)) {
     for(i = 0; i < beforeRowNo * cols; ++i) {
@@ -1847,11 +1850,45 @@ void insRowRealMatrix(real34Matrix_t *matrix, uint16_t beforeRowNo) {
   }
 
 
-void insRowComplexMatrix(complex34Matrix_t *matrix, uint16_t beforeRowNo) {
+void insColRealMatrix(real34Matrix_t *matrix, uint16_t beforeColNo, bool_t add) {
+  const uint16_t rows = matrix->header.matrixRows;
+  const uint16_t cols = matrix->header.matrixColumns;
+  int32_t i, j;
+  real34Matrix_t newMat;
+  if(add) beforeColNo = cols;
+
+  if(realMatrixInit(&newMat, rows, cols + 1)) {
+    for(j = 0; j < beforeColNo; ++j) {
+      for( i = 0; i < rows; i++) {
+        real34Copy(&matrix->matrixElements[j + i*cols], &newMat.matrixElements[j + i*(cols+1)]);
+      }
+    }
+    for(i = 0; i < rows; ++i) {
+      real34Copy(const34_0, &newMat.matrixElements[beforeColNo + i*(cols+1)]);
+    }
+    for(j = beforeColNo; j < cols + 1; ++j) {
+      for( i = 0; i < rows; i++) {
+        real34Copy(&matrix->matrixElements[j + i*cols], &newMat.matrixElements[(j+1) + i*(cols+1)]);
+      }
+    }
+
+    realMatrixFree(matrix);
+    matrix->header.matrixRows    = newMat.header.matrixRows;
+    matrix->header.matrixColumns = newMat.header.matrixColumns;
+    matrix->matrixElements       = newMat.matrixElements;
+  }
+    else {
+      displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    }
+  }
+
+
+void insRowComplexMatrix(complex34Matrix_t *matrix, uint16_t beforeRowNo, bool_t add) {
   const uint16_t rows = matrix->header.matrixRows;
   const uint16_t cols = matrix->header.matrixColumns;
   int32_t i;
   complex34Matrix_t newMat;
+  if(add) beforeRowNo = rows;
 
   if(complexMatrixInit(&newMat, rows + 1, cols)) {
     for(i = 0; i < beforeRowNo * cols; ++i) {
@@ -1863,6 +1900,40 @@ void insRowComplexMatrix(complex34Matrix_t *matrix, uint16_t beforeRowNo) {
     }
     for(i = beforeRowNo * cols; i < cols * rows; ++i) {
       complex34Copy(&matrix->matrixElements[i], &newMat.matrixElements[i + cols]);
+    }
+
+    complexMatrixFree(matrix);
+    matrix->header.matrixRows    = newMat.header.matrixRows;
+    matrix->header.matrixColumns = newMat.header.matrixColumns;
+    matrix->matrixElements       = newMat.matrixElements;
+  }
+    else {
+      displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    }
+  }
+
+
+void insColComplexMatrix(complex34Matrix_t *matrix, uint16_t beforeColNo, bool_t add) {
+  const uint16_t rows = matrix->header.matrixRows;
+  const uint16_t cols = matrix->header.matrixColumns;
+  int32_t i, j;
+  complex34Matrix_t newMat;
+  if(add) beforeColNo = cols;
+
+  if(complexMatrixInit(&newMat, rows, cols + 1)) {
+    for(j = 0; j < beforeColNo; ++j) {
+      for( i = 0; i < rows; i++) {
+        complex34Copy(&matrix->matrixElements[j + i*cols], &newMat.matrixElements[j + i*(cols+1)]);
+      }
+    }
+    for(i = 0; i < rows; ++i) {
+      real34Copy(const34_0, VARIABLE_REAL34_DATA(&newMat.matrixElements[beforeColNo + i*(cols+1)]));
+      real34Copy(const34_0, VARIABLE_IMAG34_DATA(&newMat.matrixElements[beforeColNo + i*(cols+1)]));
+    }
+    for(j = beforeColNo; j < cols + 1; ++j) {
+      for( i = 0; i < rows; i++) {
+        complex34Copy(&matrix->matrixElements[j + i*cols], &newMat.matrixElements[(j+1) + i*(cols+1)]);
+      }
     }
 
     complexMatrixFree(matrix);
@@ -1901,6 +1972,35 @@ void delRowRealMatrix(real34Matrix_t *matrix, uint16_t beforeRowNo) {
     }
   }
 
+/* Delete a col */
+void delColRealMatrix(real34Matrix_t *matrix, uint16_t beforeColNo) {
+  const uint16_t rows = matrix->header.matrixRows;
+  const uint16_t cols = matrix->header.matrixColumns;
+  int32_t i, j;
+  real34Matrix_t newMat;
+
+  if(realMatrixInit(&newMat, rows, cols - 1)) {
+    for(j = 0; j < beforeColNo; ++j) {
+      for( i = 0; i < rows; i++) {
+        real34Copy(&matrix->matrixElements[j + i*cols], &newMat.matrixElements[j + i*(cols-1)]);
+      }
+    }
+    for(j = (beforeColNo + 1); j < cols; ++j) {
+      for( i = 0; i < rows; i++) {
+        real34Copy(&matrix->matrixElements[j + i*cols], &newMat.matrixElements[(j-1) + i*(cols-1)]);
+      }
+    }
+
+    realMatrixFree(matrix);
+    matrix->header.matrixRows    = newMat.header.matrixRows;
+    matrix->header.matrixColumns = newMat.header.matrixColumns;
+    matrix->matrixElements       = newMat.matrixElements;
+  }
+    else {
+      displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    }
+  }
+
 
 void delRowComplexMatrix(complex34Matrix_t *matrix, uint16_t beforeRowNo) {
   const uint16_t rows = matrix->header.matrixRows;
@@ -1925,6 +2025,36 @@ void delRowComplexMatrix(complex34Matrix_t *matrix, uint16_t beforeRowNo) {
       displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
     }
 }
+
+void delColComplexMatrix(complex34Matrix_t *matrix, uint16_t beforeColNo) {
+  const uint16_t rows = matrix->header.matrixRows;
+  const uint16_t cols = matrix->header.matrixColumns;
+  int32_t i, j;
+  complex34Matrix_t newMat;
+
+  if(complexMatrixInit(&newMat, rows, cols - 1)) {
+    for(j = 0; j < beforeColNo; ++j) {
+      for( i = 0; i < rows; i++) {
+        complex34Copy(&matrix->matrixElements[j + i*cols], &newMat.matrixElements[j + i*(cols-1)]);
+      }
+    }
+    for(j = (beforeColNo + 1); j < cols; ++j) {
+      for( i = 0; i < rows; i++) {
+        complex34Copy(&matrix->matrixElements[j + i*cols], &newMat.matrixElements[(j-1) + i*(cols-1)]);
+      }
+    }
+
+    complexMatrixFree(matrix);
+    matrix->header.matrixRows    = newMat.header.matrixRows;
+    matrix->header.matrixColumns = newMat.header.matrixColumns;
+    matrix->matrixElements       = newMat.matrixElements;
+  }
+    else {
+      displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    }
+  }
+
+
 #endif // !TESTSUITE_BUILD
 
 

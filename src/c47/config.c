@@ -57,6 +57,7 @@
 #include "solver/equation.h"
 #include "stack.h"
 #include "stats.h"
+#include "statusBar.h"
 #include "store.h"
 #include "recall.h"
 #include <stdlib.h>
@@ -454,6 +455,7 @@ void fnFreeMemory(uint16_t unusedButMandatoryParameter) {
   uIntToLongInteger(getFreeRamMemory(), mem);
   convertLongIntegerToLongIntegerRegister(mem, REGISTER_X);
   longIntegerFree(mem);
+  temporaryInformation = TI_BYTES;
 }
 
 
@@ -511,6 +513,7 @@ void fnGetWordSize(uint16_t unusedButMandatoryParameter) {
   uIntToLongInteger(shortIntegerWordSize, wordSize);
   convertLongIntegerToLongIntegerRegister(wordSize, REGISTER_X);
   longIntegerFree(wordSize);
+  temporaryInformation = TI_BITS;
 }
 
 
@@ -582,7 +585,7 @@ void fnBatteryVoltage(uint16_t unusedButMandatoryParameter) {
     int32ToReal(get_vbat(), &value);
   #endif // DMCP_BUILD
 
-  temporaryInformation = TI_V;
+  temporaryInformation = TI_BATTV;
   realDivide(&value, const_1000, &value, &ctxtReal39);
   convertRealToResultRegister(&value, REGISTER_X, amNone);
 }
@@ -1373,32 +1376,32 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
 
     decContextDefault(&ctxtReal39, DEC_INIT_DECQUAD);
     ctxtReal39.digits = 39;
-    ctxtReal39.emax   = 99999;
-    ctxtReal39.emin   = -99999;
+    ctxtReal39.emax   = 999999;
+    ctxtReal39.emin   = -999999;
     ctxtReal39.traps  = 0;
 
     decContextDefault(&ctxtReal51, DEC_INIT_DECQUAD);
     ctxtReal51.digits = 51;
-    ctxtReal51.emax   = 99999;
-    ctxtReal51.emin   = -99999;
+    ctxtReal51.emax   = 999999;
+    ctxtReal51.emin   = -999999;
     ctxtReal51.traps  = 0;
 
     decContextDefault(&ctxtReal75, DEC_INIT_DECQUAD);
     ctxtReal75.digits = 75;
-    ctxtReal75.emax   = 99999;
-    ctxtReal75.emin   = -99999;
+    ctxtReal75.emax   = 999999;
+    ctxtReal75.emin   = -999999;
     ctxtReal75.traps  = 0;
 
     decContextDefault(&ctxtReal1071,  DEC_INIT_DECQUAD);
     ctxtReal1071.digits = 1071;
-    ctxtReal1071.emax   = 99999;
-    ctxtReal1071.emin   = -99999;
+    ctxtReal1071.emax   = 999999;
+    ctxtReal1071.emin   = -999999;
     ctxtReal1071.traps  = 0;
 
     decContextDefault(&ctxtReal2139,  DEC_INIT_DECQUAD);
     ctxtReal2139.digits = 2139;
-    ctxtReal2139.emax   = 99999;
-    ctxtReal2139.emin   = -99999;
+    ctxtReal2139.emax   = 999999;
+    ctxtReal2139.emin   = -999999;
     ctxtReal2139.traps  = 0;
 
     resetOtherConfigurationStuff();
@@ -1447,6 +1450,7 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     setSystemFlag(FLAG_HPRP);
     setSystemFlag(FLAG_HPBASE);
     clearSystemFlag(FLAG_2TO10);
+    setSystemFlag(FLAG_MONIT);
 
     setSystemFlag(FLAG_SH_LONGPRESS);
 
@@ -1650,6 +1654,11 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
       refreshDebugPanel();
     #endif // (DEBUG_PANEL == 1)
 
+    #if defined(DMCP_BUILD)
+      //Check and update current power status (USB / LOWBAT)
+      checkBattery();
+    #endif // DMCP_BUILD
+
     //JM TEMPORARY TEST DATA IN REGISTERS
     uint_fast16_t n = nbrOfElements(indexOfStrings);
     for(uint_fast16_t i=0; i<n; i++) {
@@ -1688,6 +1697,86 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
 }
 
 
+
+#ifdef DMCP_BUILD
+
+  void dmcpResetAutoOff(void) {
+    // Key is ready -> clear auto off timer
+    if(!key_empty() || !getSystemFlag(FLAG_AUTOFF) || getSystemFlag(FLAG_RUNTIM) || programRunStop == PGM_RUNNING || (nextTimerRefresh != 0)) {
+      reset_auto_off();
+    }
+  }
+
+
+  int loop=0;
+  int updateVbatIntegrated(bool_t minutePulse) {
+    int tmpVbat = get_vbat();
+    if(tmpVbat > 1500 && tmpVbat < 3100) {
+      if(tmpVbat < vbatVIntegrated) {
+        vbatVIntegrated = tmpVbat;                                                        //immediately assume the lowest possibe value measured
+        loop = 0;
+      } else 
+      if(tmpVbat > vbatVIntegrated) {
+        if(tmpVbat > 2900) {                                                              //if high enough, reset
+          vbatVIntegrated = tmpVbat;
+        loop = 0;
+        } else        
+        if(vbatVIntegrated < tmpVbat && minutePulse) {                                    // Every min if vbatTIntegrated is lower than actual V, then creep closer
+          vbatVIntegrated = vbatVIntegrated + max(1,((tmpVbat - vbatVIntegrated) >> 4));  //   (2500 - 2350) >> 4 = 9 increase every minute
+        }
+      }
+    } else {
+      vbatVIntegrated = tmpVbat;
+      loop = 0;
+    }
+
+    //Monitoring for voltage integrator
+    //char aaa[120];
+    //sprintf(aaa,"V=%i VI=%i loop=%i",tmpVbat, vbatVIntegrated, loop++);
+    //print_numberstr(aaa,true);
+
+    return tmpVbat; //returning the direct battery voltage; to enable the selective usage of the integrator
+  }
+
+
+  void checkBattery(void) {
+    if(usb_powered() == 1) {
+      if(!getSystemFlag(FLAG_USB)) {
+        setSystemFlag(FLAG_USB);
+        clearSystemFlag(FLAG_LOWBAT);
+        showHideUsbLowBattery();
+      }
+    }
+    else {
+      if(getSystemFlag(FLAG_USB)) {
+        clearSystemFlag(FLAG_USB);
+        showHideUsbLowBattery();
+      }
+
+      int tmpVbat = updateVbatIntegrated(false);
+
+      if(tmpVbat < 2000 ) {// || vbatVIntegrated < 2000) { //temporary disable shutdown from the new integrator system. The indicator uses the integrator.
+        if(!getSystemFlag(FLAG_LOWBAT)) {
+          setSystemFlag(FLAG_LOWBAT);
+          showHideUsbLowBattery();
+        }
+        SET_ST(STAT_PGM_END);
+      }
+      else if(tmpVbat < 2500 || vbatVIntegrated < 2500) {
+        if(!getSystemFlag(FLAG_LOWBAT)) {
+          setSystemFlag(FLAG_LOWBAT);
+          showHideUsbLowBattery();
+        }
+      }
+      else {
+        if(getSystemFlag(FLAG_LOWBAT)) {
+          clearSystemFlag(FLAG_LOWBAT);
+          showHideUsbLowBattery();
+        }
+      }
+    }
+  }
+#endif //DMCP_BUILD
 
 void backToSystem(uint16_t confirmation) {
   if(confirmation == NOT_CONFIRMED) {

@@ -357,7 +357,7 @@ void real34ToDisplayString2(const real34_t *real34, char *displayString, int16_t
   //Example: 1025 -> 1024^1.000140819 -> 1024^.000140819 * 1024^1 -> 1.000976559 * Ki -> 1.001 Ki
   //             ln(1025)/ln(1024) = 1.000140819;
 
-  int16_t exponentUNlimit = 0;
+  int32_t exponentUNlimit = 0;
   bool_t flag2To10 = getSystemFlag(FLAG_2TO10);
   bool_t flag2To10_baseunit_integer = false;
   real_t tmp4, tmpIp, tmpFp;
@@ -451,7 +451,7 @@ void real34ToDisplayString2(const real34_t *real34, char *displayString, int16_t
     if(checkForAndChange_(displayString, real34, &c_temp, &tol34,  STD_SQUARE_ROOT STD_SUB_2                   ,frontSpace)) return_fr;
 
     fnConstantR( 73 /*const_PHI    */,  &constNr, &c_temp);
-    if(checkForAndChange_(displayString, real34, &c_temp, &tol34,  indexOfItems[CST_01+constNr].itemCatalogName,frontSpace)) return_fr;
+    if(checkForAndChange_(displayString, real34, &c_temp, &tol34,  indexOfItems[FIRST_CONSTANT+constNr].itemCatalogName,frontSpace)) return_fr;
 
     realSquareRoot(const_5, &c_temp, &ctxtReal39);
     if(checkForAndChange_(displayString, real34, &c_temp, &tol34,   STD_SQUARE_ROOT STD_SUB_5,frontSpace))                   return_fr;
@@ -2816,12 +2816,14 @@ void fnShow_SCROLL(uint16_t fnShow_param) {                // Heavily modified b
 #if !defined(SAVE_SPACE_DM42_9)
   #if !defined(TESTSUITE_BUILD)
     uint8_t savedDisplayFormat = displayFormat, savedDisplayFormatDigits = displayFormatDigits;
+    bool_t savedConstantFractions = constantFractions;
     bool_t thereIsANextLine;
     int16_t source, dest, last, d, maxWidth, i, offset, bytesProcessed, aa, bb, cc, dd, aa2=0, aa3=0, aa4=0;
     uint64_t nn;
 
     displayFormat = DF_ALL;
     displayFormatDigits = 0;
+    constantFractions = false;
 
     #define lowest_SHOW REGISTER_X //0                // Lowest register. Change to 0 for all registers, or use REGISTER_X
     switch(fnShow_param) {
@@ -3377,6 +3379,7 @@ void fnShow_SCROLL(uint16_t fnShow_param) {                // Heavily modified b
 
     displayFormat = savedDisplayFormat;
     displayFormatDigits = savedDisplayFormatDigits;
+    constantFractions = savedConstantFractions;
     #if defined(VERBOSE_SCREEN) && defined(PC_BUILD)
       printf("SHOW:Done |%s|\n",tmpString);
     #endif

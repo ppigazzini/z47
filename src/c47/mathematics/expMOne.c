@@ -79,18 +79,7 @@ void expM1Complex(const real_t *real, const real_t *imag, real_t *resReal, real_
 
 void realExpM1(const real_t *x, real_t *res, realContext_t *realContext)
 {
-  if(realIsInfinite(x) && realIsNegative(x)) {
-    realCopy(const__1, res);
-  }
-  else if(realIsInfinite(x) && realIsPositive(x)) {
-    realCopy(const_plusInfinity, res);
-  }
-  else if(realIsSpecial(x)) {
-    realCopy(const_NaN, res);
-  }
-  else {
-    WP34S_ExpM1(x, res, realContext);
-  }
+  WP34S_ExpM1(x, res, realContext);
 }
 
 static void expM1Real(void) {

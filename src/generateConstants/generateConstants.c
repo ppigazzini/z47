@@ -366,10 +366,16 @@ void generateAllConstants(void) {
 
   generateConstantArray("0",             "0"); c++;
 
+  generateConstantArray("BB",            "+3.566668367128895828373073810012662699038701534076244140e-01"); c++;   //  solution to equation 1.2 in https://arxiv.org/pdf/2309.05050.pdf : sqrt(36x+3) / 4 + sin(2 pi sqrt(12x+1) / 3) = 0
+  generateConstantArray("DeltaS",        "+2.414213562373095048801688724209698078569671875376948073e+00"); c++;   //  1+√2
+  generateConstantArray("movSofa",       "+2.219531668871970000000000000000000000000000000000000000e+00"); c++;   //  https://mathworld.wolfram.com/MovingSofaProblem.html. The moving sofa number is the result of a lot of equation solving
+
   // All the formulas are 100% exact conversion formulas
   generateConstantArray("PointToMm",     "+3.527777777777777777777777777777777777777777777777777778e-01"); // mm     = pt × 0.0254 / 72 × 1000
   generateConstantArray("InchToMm",      "+2.540000000000000000000000000000000000000000000000000000e+01"); // mm     = inch × 0.0254 × 1000
   generateConstantArray("FtToM",         "+3.048000000000000000000000000000000000000000000000000000e-01"); // m      = ft × 12 × 0.0254
+  generateConstantArray("Ft2ToHa",       "+9.290304000000000000000000000000000000000000000000000000e-06"); // Ha     = ft2 × (12 × 0.0254)^2 / 10000
+  generateConstantArray("Ft2ToM2",       "+9.290304000000000000000000000000000000000000000000000000e-02"); // m2     = ft2 × (12 × 0.0254)^2
   generateConstantArray("SfeetToM",      "+3.048006096012192024384048768097536195072390144780289561e-01"); // m      = sfeetus × (1200 / 3937)
   generateConstantArray("YardToM",       "+9.144000000000000000000000000000000000000000000000000000e-01"); // m      = yard × 3 × 12 × 0.0254
   generateConstantArray("FathomToM",     "+1.828800000000000000000000000000000000000000000000000000e+00"); // m      = fathom × 6 × 12 × 0.0254
@@ -535,6 +541,7 @@ void generateAllConstants(void) {
   generateConstantArray("42000",         "+4.200000000000000000000000000000000000000000000000000000e+04");
   generateConstantArray("73766",         "+7.376600000000000000000000000000000000000000000000000000e+04");
   generateConstantArray("1e6",           "+1.000000000000000000000000000000000000000000000000000000e+06");
+  generateConstantArray("2e6",           "+2.000000000000000000000000000000000000000000000000000000e+06");
   generateConstantArray("1e8",           "+1.000000000000000000000000000000000000000000000000000000e+08");
   generateConstantArray("1e9",           "+1.000000000000000000000000000000000000000000000000000000e+09");
   generateConstantArray("2p32",          "+4.294967296000000000000000000000000000000000000000000000e+09");

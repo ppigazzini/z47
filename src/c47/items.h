@@ -226,9 +226,9 @@
 #define CST_78                       205
 #define CST_79                       206
 #define ITM_CNST                     207
-#define ITM_0208                     208
-#define ITM_0209                     209
-#define ITM_0210                     210
+#define CST_80                       208
+#define CST_81                       209
+#define CST_82                       210
 #define ITM_0211                     211
 #define ITM_0212                     212
 #define ITM_0213                     213
@@ -244,14 +244,14 @@
 #define ITM_CtoF                     220
 #define ITM_FtoC                     221
 #define ITM_DBtoPR                   222
-#define ITM_0223                     223
-#define ITM_0224                     224
+#define ITM_FT2toHA                  223
+#define ITM_HAtoFT2                  224
 #define ITM_DBtoFR                   225
-#define ITM_0226                     226
-#define ITM_0227                     227
+#define ITM_FT2toM2                  226
+#define ITM_M2toFT2                  227
 #define ITM_PRtoDB                   228
-#define ITM_0229                     229
-#define ITM_0230                     230
+#define ITM_HAtoKM2                  229
+#define ITM_KM2toHA                  230
 #define ITM_FRtoDB                   231
 #define ITM_0232                     232
 #define ITM_0233                     233
@@ -1335,7 +1335,7 @@
 #define ITM_1287                    1293
 #define ITM_1288                    1294
 #define ITM_1289                    1295
-#define ITM_1290                    1296
+#define ITM_1296                    1296
 
 
 
@@ -2307,7 +2307,7 @@
 #define ITM_STOELPLUS               2250
 
 // 64 more system flags
-#define SFL_2247                    2251
+#define SFL_MONIT                   2251
 #define SFL_2248                    2252
 #define SFL_2249                    2253
 #define SFL_2250                    2254
@@ -2389,8 +2389,8 @@
 #define ITM_STO_S_s                 2328
 #define ITM_STO_M_l                 2329
 #define ITM_STO_Q_xi                2330
-#define ITM_STO_Q_nu                2331
-#define ITM_2332                    2332
+#define ITM_STO_Q_k                 2331
+#define ITM_STO_S_l                 2332
 #define ITM_2333                    2333
 #define ITM_2334                    2334
 #define ITM_2335                    2335
@@ -2400,8 +2400,12 @@
 #define ITM_REG_Q                   2339
 #define ITM_REG_R                   2340
 #define ITM_REG_S                   2341
+#define ITM_M_INSC                  2342
+#define ITM_M_DELC                  2343
+#define ITM_M_ADDR                  2344
+#define ITM_M_ADDC                  2345
 
-#define LAST_ITEM                   2342
+#define LAST_ITEM                   2346
 
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL

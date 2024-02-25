@@ -210,7 +210,7 @@ TO_QSPI const function_t indexOfFunctions[] = {
               {ITM_PRIME,                     "@"},
               {ITM_ENTER,                     "ENTER"},
               {ITM_XexY,                      "X<>Y"},
-              {ITM_DROP,                      "DROP"},
+              {ITM_DROP,                      "DROPX"},
               {ITM_CLX,                       "@"},
               {ITM_FILL,                      "@"},
               {ITM_STO,                       "@"},
@@ -301,7 +301,7 @@ TO_QSPI const function_t indexOfFunctions[] = {
               {ITM_MULPI,                     "MULPI"},
               {ITM_SUM,                       "SUM"},
               {ITM_sincpi,                    "SINCPI"},
-              {ITM_PLOT,                      "PLOT"},
+              {ITM_PLOT,                      "@"},
               {ITM_RAD,                       "@"},
               {ITM_RAN,                       "@"},
               {ITM_RCLEL,                     "@"},
@@ -363,7 +363,7 @@ TO_QSPI const function_t indexOfFunctions[] = {
               {ITM_PARALLEL,                  "||"},
               {ITM_PRINTERSTK,                "PRSTK"},
               {ITM_UNIT,                      "@"},
-              {ITM_M_NEW,                     "@"},
+              {ITM_M_NEW,                     "MNEW"},
 
 
 
@@ -399,8 +399,8 @@ TO_QSPI const function_t indexOfFunctions[] = {
               {ITM_MYMx3,                     "MYM3"},
               {ITM_SHTIM,                     "SH4S"},
               {ITM_IRFRAC,                    "@"},
-              {ITM_BASE_HOME,                 "@"},
-              {ITM_BASE_MYM,                  "@"},
+              {ITM_BASE_HOME,                 "HOMEB"},
+              {ITM_BASE_MYM,                  "MYMB"},
               {ITM_LARGELI,                   "LARGELI"},
               {ITM_CPXRES1,                   "@"},
               {ITM_SPCRES1,                   "@"},
@@ -446,7 +446,14 @@ TO_QSPI const function_t indexOfFunctions[] = {
               {ITM_PRTACT0,                   "@"},
               {ITM_HR_DEG,                    "@"},
               {ITM_SECOND,                    "@"},
-              {ITM_EE_EXP_TH,                 "e^iX"}
+              {ITM_EE_EXP_TH,                 "e^iX"},
+
+              {ITM_SIGMAn,                    "SUMn"},
+              {ITM_iSIGMAn,                   "iSUMn"},
+              {ITM_PIn,                       "PRODn"},
+              {ITM_iPIn,                      "iPRODn"}
+
+
 
   #endif // !SAVE_SPACE_DM42_2
 };

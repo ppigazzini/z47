@@ -68,8 +68,6 @@ void fnVarMnu(uint16_t label) {
 
 void fnPause(uint16_t duration) {
   #if !defined(TESTSUITE_BUILD)
-//    #define timeoutBattery (uint16_t)(20*60/0.1) //20 minutes                 //removed prototyped PAUSE 99
-//    if(duration == 99) duration = (uint16_t)(2*60*60/0.1);    //2 hours       //removed prototyped PAUSE 99
     uint8_t previousProgramRunStop = programRunStop;
     if(tam.mode) {
       tamLeaveMode();
@@ -94,9 +92,6 @@ void fnPause(uint16_t duration) {
           break;
         }
         sys_delay(100);
-//        if((usb_powered() != 1) && duration > timeoutBattery) {            //removed prototyped PAUSE 99
-//          break;                                                           //removed prototyped PAUSE 99
-//        }                                                                  //removed prototyped PAUSE 99
       }
     #else // !DMCP_BUILD
       refreshLcd(NULL);
@@ -115,7 +110,10 @@ void fnPause(uint16_t duration) {
       }
     #endif // DMCP_BUILD
     programRunStop = previousProgramRunStop;
-    if(programRunStop != PGM_RUNNING) {
+
+    if(programRunStop != PGM_RUNNING) {                  // Remove this IF to fix PAUSE to update the stack and annunciators
+      screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
+      screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
       refreshScreen();
       #if defined(DMCP_BUILD)
         lcd_refresh();

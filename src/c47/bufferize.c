@@ -229,7 +229,8 @@ uint16_t convertItemToSubOrSup(uint16_t item, int16_t subOrSup) {
                                  item == ITM_op_j_SIGN            ? COMPLEX_UNIT :
                                  item == ITM_zetaX                ? STD_zeta "()" :
                                  item == ITM_GAMMAX               ? STD_GAMMA "()" :
-                                 item >= CST_01 && item <= CST_77 ? indexOfItems[item].itemCatalogName : "";
+                                 item >= FIRST_CONSTANT && 
+                                    item <= LAST_CONSTANT         ? indexOfItems[item].itemCatalogName : "";
 
           char addChar[100];
           int16_t jj = 0;
@@ -599,6 +600,9 @@ uint16_t convertItemToSubOrSup(uint16_t item, int16_t subOrSup) {
           case CST_77 :
           case CST_78 :
           case CST_79 :
+          case CST_80 :
+          case CST_81 :
+          case CST_82 :
           case ITM_CtoF :
           case ITM_FtoC :
           case ITM_DBtoPR :
@@ -1539,8 +1543,14 @@ uint16_t convertItemToSubOrSup(uint16_t item, int16_t subOrSup) {
       //JM Only works in direct NIM, that is only when the input buffer already contains #
       case ITM_1ONX: { // B for binary base
       case ITM_SQUAREROOTX: //R47
-        if(calcModel == USER_C47 && item == ITM_SQUAREROOTX) break;
-        if(calcModel != USER_C47 && item == ITM_1ONX) break;
+        if(calcModel == USER_C47 && item == ITM_SQUAREROOTX) {
+          keyActionProcessed = false;
+          break;
+        }
+        if(calcModel != USER_C47 && item == ITM_1ONX) {
+          keyActionProcessed = false;
+          break;
+        }
         if(INTEGERSHORTCUTS && nimNumberPart == NP_INT_BASE && aimBuffer[strlen(aimBuffer) - 1] == '#') {
           strcat(aimBuffer, "2");
           goto addItemToNimBuffer_exit;
@@ -1667,15 +1677,16 @@ uint16_t convertItemToSubOrSup(uint16_t item, int16_t subOrSup) {
         break;
       }
 
-      case ITM_DMS2:                       //JM
+      case ITM_DMS2:{                       //JM
         if(nimNumberPart == NP_INT_10 || nimNumberPart == NP_REAL_FLOAT_PART || nimNumberPart == NP_REAL_EXPONENT) {
           done = true;
           closeNim();
           fnAngularModeJM(amDMS); //it cannot be an angle at this point. If closed input, it is only real or longint
         }
         break;
+      }
 
-      case ITM_DRG :                       //JM
+      case ITM_DRG:{                       //JM
         DRG_Cycling = 0;
         if(nimNumberPart == NP_INT_10 || nimNumberPart == NP_REAL_FLOAT_PART || nimNumberPart == NP_REAL_EXPONENT) {
           done = true;
@@ -1704,6 +1715,7 @@ uint16_t convertItemToSubOrSup(uint16_t item, int16_t subOrSup) {
           }
         }
         break;
+      }
 
       default: {
         keyActionProcessed = false;

@@ -24,10 +24,12 @@
 // JM VARIOUS OPTIONS
 //*********************************
 
-#define VERSION1 "0.108.17.03b1"     // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
+#define VERSION1 "0.108.17.03b2"     // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
 
 #define MODEL USER_C47               // USER_C47 or USER_R47
 
+// The number of elements in an array
+#define NELEM(a)                             (sizeof(a) / sizeof(*(a)))
 
 
   #undef SAVE_SPACE_DM42_0
@@ -523,8 +525,9 @@
 #define FLAG_2TO10                            0x803D
 #define FLAG_SH_LONGPRESS                     0x803E
 #define FLAG_WRAPEDG                          0xc03F
+#define FLAG_MONIT                            0x8040 // MONIT MUST be the first of the secoind flag word
 
-#define NUMBER_OF_SYSTEM_FLAGS                    60
+#define NUMBER_OF_SYSTEM_FLAGS                    65
 
 typedef enum {
   LI_ZERO     = 0, // Long integer sign 0
@@ -632,6 +635,13 @@ typedef enum {
 
 #define INC_FLAG                                   0
 #define DEC_FLAG                                   1
+
+
+// List of constants
+#define FIRST_CONSTANT                        CST_01
+#define LAST_CONSTANT                         CST_82
+
+
 
 ///////////////////////////////////////////////////////
 // Register numbering:
@@ -803,27 +813,30 @@ enum REG_NUMBERS {
 
 // Horizontal offsets in the status bar
 #define X_DATE                                   (SBARUPD_Time ? 1 : 25)
-#define X_TIME                                    45  // note: this is used only if DATE is not displayed, otherwise it is printed directly next to date's end
-#define X_REAL_COMPLEX                    136//  133
-#define X_COMPLEX_MODE                    146//  143
+#define X_TIME                                    45  // note: this is used only if DATE is not displayed, otherwise TIME is printed directly next to date's end
+#define X_REAL_COMPLEX                           136
+#define X_COMPLEX_MODE                           146
 #define X_COMPLEX_MODE_ADJ                        -8  // note: auto moved left if REAL_COMPLEX is not present
-#define X_ANGULAR_MODE                    160//  157
-#define X_FRAC_MODE                       187//  185
-#define X_INTEGER_MODE                    262//  260
+#define X_ANGULAR_MODE                           160
+#define X_FRAC_MODE                              187
+#define X_INTEGER_MODE                           262
 #define X_OVERFLOW_CARRY                         292
 #define X_ALPHA_MODE                             300
-#define X_SSIZE_BEGIN                            315  // If this needs to be used, the positioning will clash. Needs to be re-balanced
-#define X_HOURGLASS                              315  // 311
+#define X_SSIZE_BEGIN                            327
+#define X_HOURGLASS                              312
+#define X_ASM                                    X_ALPHA_MODE+34
 #define X_HOURGLASS_GRAPHS                       140
-#define X_WATCH                           335//  336
-#define X_SERIAL_IO                              351
-#define X_PRINTER                                361
+#define X_WATCH                                  337
+#define X_SERIAL_IO                              353
+#define X_PRINTER                                362
 #define X_USER_MODE                              375
 #define X_BATTERY                                389
 #define DX_BATTERY                                 8  // <=2.054 V - minimum bar (one fine line)
 #define DY_BATTERY                                20  // >=3.045 V - maximum bars (tip of battery against the edge)
                                                       // f/g icon either in T-line left; or if date or time is removed, it moves up top left; or if SBAR_SHIFT is active, it goes top right, next to U
-#define X_SHIFT                                  (getSystemFlag(FLAG_SBshfR) ? X_USER_MODE - 15 : 0)
+#define X_SHIFT_L                                  0
+#define X_SHIFT_R                                X_USER_MODE-15
+#define X_SHIFT                                  (getSystemFlag(FLAG_SBshfR) ? X_SHIFT_R : X_SHIFT_L)
 #define Y_SHIFT                                  (((!SBARUPD_Date || !SBARUPD_Time) & !SBAR_SHIFT) ? 0 : (SBAR_SHIFT ? 0 : Y_POSITION_OF_REGISTER_T_LINE ) )
 
 
@@ -1059,7 +1072,7 @@ enum REG_NUMBERS {
 #define TI_012                                    73    //JM EE
 #define TI_SHOW_REGISTER_BIG                      74    //JM_SHOW
 #define TI_SHOW_REGISTER_SMALL                    75
-#define TI_V                                      76
+#define TI_BATTV                                  76
 #define TI_FROM_DMS                               77
 #define TI_FROM_MS_TIME                           78
 #define TI_FROM_MS_DEG                            79
@@ -1083,6 +1096,10 @@ enum REG_NUMBERS {
 #define TI_DEL_ALL_VARIABLES                      97    //DL
 #define TI_ROOTS2                                 98
 #define TI_ROOTS3                                 99
+#define TI_IJ                                    100
+#define TI_MIJ                                   101
+#define TI_BYTES                                 102
+#define TI_BITS                                  103
 
 // Register browser mode
 #define RBR_GLOBAL                                 0 // Global registers are browsed

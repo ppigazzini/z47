@@ -28,6 +28,7 @@
 #include "c43Extensions/addons.h"
 #include "items.h"
 #include "mathematics/comparisonReals.h"
+#include "mathematics/exp.h"
 #include "mathematics/wp34s.h"
 #include "programming/lblGtoXeq.h"
 #include "programming/manage.h"

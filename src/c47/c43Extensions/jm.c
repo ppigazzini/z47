@@ -84,7 +84,8 @@
     #if defined(PC_BUILD_TELLTALE)
       printf("\n%s--------------------------------------------------------------------------------\n",comment);
       printf(".  calcMode: %s   last_CM=%s  AlphaCase=%s  doRefreshSoftMenu=%d    lastErrorCode=%d fnAsnDisplayUSER=%d TI=%u\n",getCalcModeName(calcMode), getCalcModeName(last_CM), getAlphaCaseName(alphaCase), doRefreshSoftMenu,lastErrorCode, fnAsnDisplayUSER, temporaryInformation);
-      printf(".  softmenuStack[0].softmenuId=%d      softmenu[softmenuStack[0].softmenuId].menuItem=%d -MNU_ALPHA=%d\n",softmenuStack[0].softmenuId,softmenu[softmenuStack[0].softmenuId].menuItem, -MNU_ALPHA);
+      printf(".  softmenuStack[0].softmenuId=%d      softmenu[softmenuStack[0].softmenuId].menuItem=%d -MNU_ALPHA=%d\n",
+                 softmenuStack[0].softmenuId,        softmenu[softmenuStack[0].softmenuId].menuItem,   -MNU_ALPHA);
 
       printf(".  ");
       int8_t ix=0;
@@ -458,10 +459,10 @@ void fnJM(uint16_t JM_OPCODE) {
 
       char line1[700];
       //Create a 3x3 A-matrix
-      TO_QSPI static const char *aa001 = "XEQC43 ERPN RECT 3 ENTER 3 M.NEW STO 99 DROP INDEX 99 1 ENTER 1 STOIJ DROP DROP";
+      TO_QSPI static const char *aa001 = "XEQC47 ERPN RECT 3 ENTER 3 MNEW STO 99 DROPX INDEX 99 1 ENTER 1 STOIJ DROPX DROPX";
       TO_QSPI static const char *aa002 = " 1 STOEL J+ STOEL J+ STOEL";
-      TO_QSPI static const char *aa003 = " J+ STOEL DROP 0.5 ENTER CHS 3 ENTER SQRT 2 / CHS COMPLEX J+ STOEL COMPLEX CHS COMPLEX J+ STOEL";
-      TO_QSPI static const char *aa004 = " 1 J+ STOEL DROP J+ STOEL X^2 J+ STOEL DROP";
+      TO_QSPI static const char *aa003 = " J+ STOEL DROPX 0.5 ENTER CHS 3 ENTER SQRT 2 / CHS COMPLEX J+ STOEL COMPLEX CHS COMPLEX J+ STOEL";
+      TO_QSPI static const char *aa004 = " 1 J+ STOEL DROPX J+ STOEL X^2 J+ STOEL DROPX";
       TO_QSPI static const char *aa005 = " RCL 99 ";
       strcpy(line1, aa001);
       strcat(line1, aa002);
@@ -474,7 +475,7 @@ void fnJM(uint16_t JM_OPCODE) {
     else if(JM_OPCODE == 46) {                                  //PRIME stats
       char line1[700];
       //Create a 3x1 matrix from Z Y X
-      TO_QSPI static const char *aa006 = "XEQC43 ERPN 3 ENTER 1 M.NEW STO 99 DROP INDEX 99 3 ENTER 1 STOIJ DROP DROP STOEL DROP  I- STOEL DROP  I-  STOEL DROP RCL 99 ";
+      TO_QSPI static const char *aa006 = "XEQC47 ERPN 3 ENTER 1 MNEW STO 99 DROPX INDEX 99 3 ENTER 1 STOIJ DROPX DROPX STOEL DROPX  I- STOEL DROPX  I-  STOEL DROPX RCL 99 ";
       strcpy(line1, aa006);
       fnXEQMexecute(line1);
     }
@@ -482,7 +483,7 @@ void fnJM(uint16_t JM_OPCODE) {
     else if(JM_OPCODE == 47) {                                  //PRIME stats
       char line1[700];
       //Create a ZYX form a 3x1 matrix
-      TO_QSPI static const char *aa007 = "XEQC43 ERPN STO 99 INDEX 99 DROP 1 ENTER 1 STOIJ DROP DROP RCLEL I+ RCLEL I+ RCLEL ";
+      TO_QSPI static const char *aa007 = "XEQC47 ERPN STO 99 INDEX 99 DROPX 1 ENTER 1 STOIJ DROPX DROPX RCLEL I+ RCLEL I+ RCLEL ";
       strcpy(line1, aa007);
       fnXEQMexecute(line1);
     }
