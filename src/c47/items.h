@@ -2421,8 +2421,12 @@
 #define VAR_REGU                    2361
 #define VAR_REGV                    2362
 #define VAR_REGW                    2363
+#define ITM_M_INSC                  2364
+#define ITM_M_DELC                  2365
+#define ITM_M_ADDR                  2366
+#define ITM_M_ADDC                  2367
 
-#define LAST_ITEM                   2364
+#define LAST_ITEM                   2368
 
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL

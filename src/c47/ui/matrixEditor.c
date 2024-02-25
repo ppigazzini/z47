@@ -43,6 +43,8 @@
 #include "c47.h"
 #include <string.h>
 
+#define addFlag true
+
 #if !defined(TESTSUITE_BUILD)
   any34Matrix_t         openMatrixMIMPointer;
   bool_t                matEditMode;
@@ -66,7 +68,7 @@
   static bool_t incJReal(real34Matrix_t *matrix) {
     setJRegisterAsInt(true, getJRegisterAsInt(true) + 1);
     if(wrapIJ(matrix->header.matrixRows, matrix->header.matrixColumns)) {
-      insRowRealMatrix(matrix, matrix->header.matrixRows);
+      insRowRealMatrix(matrix, matrix->header.matrixRows, !addFlag);
       return true;
     }
     else {
@@ -91,7 +93,7 @@
   static bool_t incJComplex(complex34Matrix_t *matrix) {
     setJRegisterAsInt(true, getJRegisterAsInt(true) + 1);
     if(wrapIJ(matrix->header.matrixRows, matrix->header.matrixColumns)) {
-      insRowComplexMatrix(matrix, matrix->header.matrixRows);
+      insRowComplexMatrix(matrix, matrix->header.matrixRows, !addFlag);
       return true;
     }
     else {
@@ -256,15 +258,16 @@ void fnIncDecJ(uint16_t mode) {
 }
 
 
-void fnInsRow(uint16_t unusedParamButMandatory) {
+
+void _fnInsRow(bool_t add) {
   #if !defined(TESTSUITE_BUILD)
   if(calcMode == CM_MIM) {
     mimEnter(false);
     if(getRegisterDataType(matrixIndex) == dtReal34Matrix) {
-      insRowRealMatrix(&openMatrixMIMPointer.realMatrix, getIRegisterAsInt(true));
+      insRowRealMatrix(&openMatrixMIMPointer.realMatrix, getIRegisterAsInt(true), add);
     }
     else {
-      insRowComplexMatrix(&openMatrixMIMPointer.complexMatrix, getIRegisterAsInt(true));
+      insRowComplexMatrix(&openMatrixMIMPointer.complexMatrix, getIRegisterAsInt(true), add);
     }
     mimEnter(true);
   }
@@ -276,6 +279,44 @@ void fnInsRow(uint16_t unusedParamButMandatory) {
       #endif // PC_BUILD
     }
   #endif // !TESTSUITE_BUILD
+}
+
+
+void fnInsRow(uint16_t unusedParamButMandatory) {
+  _fnInsRow(!addFlag);
+}
+void fnAddRow(uint16_t unusedParamButMandatory) {
+  _fnInsRow(addFlag);
+}
+
+
+void _fnInsCol(bool_t add) {
+  #if !defined(TESTSUITE_BUILD)
+  if(calcMode == CM_MIM) {
+    mimEnter(false);
+    if(getRegisterDataType(matrixIndex) == dtReal34Matrix) {
+      insColRealMatrix(&openMatrixMIMPointer.realMatrix, getJRegisterAsInt(true), add);
+    }
+    else {
+      insColComplexMatrix(&openMatrixMIMPointer.complexMatrix, getJRegisterAsInt(true), add);
+    }
+    mimEnter(true);
+  }
+  else {
+    displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+      #if defined(PC_BUILD)
+      sprintf(errorMessage, "works in MIM only");
+      moreInfoOnError("In function fnInsCol:", errorMessage, NULL, NULL);
+      #endif // PC_BUILD
+    }
+  #endif // !TESTSUITE_BUILD
+}
+
+void fnInsCol(uint16_t unusedParamButMandatory) {
+  _fnInsCol(!addFlag);
+}
+void fnAddCol(uint16_t unusedParamButMandatory) {
+  _fnInsCol(addFlag);
 }
 
 
@@ -297,7 +338,32 @@ void fnDelRow(uint16_t unusedParamButMandatory) {
     displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
       #if defined(PC_BUILD)
       sprintf(errorMessage, "works in MIM only");
-      moreInfoOnError("In function fnGoToElement:", errorMessage, NULL, NULL);
+      moreInfoOnError("In function fnDelRow:", errorMessage, NULL, NULL);
+      #endif // PC_BUILD
+    }
+  #endif // !TESTSUITE_BUILD
+}
+
+
+void fnDelCol(uint16_t unusedParamButMandatory) {
+  #if !defined(TESTSUITE_BUILD)
+  if(calcMode == CM_MIM) {
+    mimEnter(false);
+    if(openMatrixMIMPointer.header.matrixColumns > 1) {
+      if(getRegisterDataType(matrixIndex) == dtReal34Matrix) {
+        delColRealMatrix(&openMatrixMIMPointer.realMatrix, getJRegisterAsInt(true));
+      }
+      else {
+        delColComplexMatrix(&openMatrixMIMPointer.complexMatrix, getJRegisterAsInt(true));
+      }
+    }
+    mimEnter(true);
+  }
+  else {
+    displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+      #if defined(PC_BUILD)
+      sprintf(errorMessage, "works in MIM only");
+      moreInfoOnError("In function fnDelCol:", errorMessage, NULL, NULL);
       #endif // PC_BUILD
     }
   #endif // !TESTSUITE_BUILD
@@ -438,11 +504,11 @@ void showMatrixEditor() {
 
   if(wrapIJ(colVector ? cols : rows, colVector ? 1 : cols)) {
     if(getRegisterDataType(matrixIndex) == dtReal34Matrix) {
-      insRowRealMatrix(&openMatrixMIMPointer.realMatrix, rows);
+      insRowRealMatrix(&openMatrixMIMPointer.realMatrix, rows, !addFlag);
       convertReal34MatrixToReal34MatrixRegister(&openMatrixMIMPointer.realMatrix, matrixIndex);
     }
     else {
-      insRowComplexMatrix(&openMatrixMIMPointer.complexMatrix, rows);
+      insRowComplexMatrix(&openMatrixMIMPointer.complexMatrix, rows, !addFlag);
       convertComplex34MatrixToComplex34MatrixRegister(&openMatrixMIMPointer.complexMatrix, matrixIndex);
     }
   }
