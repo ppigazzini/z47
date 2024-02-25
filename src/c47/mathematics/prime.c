@@ -588,16 +588,15 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
     #if !defined(TESTSUITE_BUILD)
       if (printHalfSecUpdate_Integer(timed, "Tested: ",loop++)) { //timed
       }
-    #endif //!TESTSUITE_BUILD
 
-    #if defined(DMCP_BUILD)
-      if(keyWaiting()) {
-          showString("key Waiting ...", &standardFont, 20, 40, vmNormal, false, false);
-          printHalfSecUpdate_Integer(force+1, "Interrupted Test:",loop);
-          programRunStop = PGM_WAITING;
-        break;
-      }
-    #endif //DMCP_BUILD
+    if(keyWaiting()) {
+        showString("key Waiting ...", &standardFont, 20, 40, vmNormal, false, false);
+        printHalfSecUpdate_Integer(force+1, "Interrupted Test:",loop);
+        programRunStop = PGM_WAITING;
+      break;
+    }
+
+    #endif //!TESTSUITE_BUILD
 
 
     longIntegerDivideQuotientRemainder(currentNumber, nextPrime, quotient, remainder);

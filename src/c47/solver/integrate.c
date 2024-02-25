@@ -503,13 +503,11 @@ static void _integrate(calcRegister_t regist, const real_t *a, const real_t *b, 
           #endif //ENABLE_SOLVER_PROGRESS
         }
 
-      #endif //TESTSUITE_BUILD
-      #if defined(DMCP_BUILD)
         if(keyWaiting()) {
           printHalfSecUpdate_Integer(force+1, "Interrupted Iter:",loop);
           break;
         }
-      #endif //DMCP_BUILD
+      #endif //TESTSUITE_BUILD
 
       WP34S_SinhCosh(&x, NULL, &x, realContext); // cosh(t) (cosh is much faster than sinh/tanh)
       realCopy(&x, &ch); // save for later
@@ -805,13 +803,11 @@ static void _integrate_mm(calcRegister_t regist, const real_t *llim, const real_
           #endif //ENABLE_SOLVER_PROGRESS
         }
 
-      #endif //TESTSUITE_BUILD
-      #if defined(DMCP_BUILD)
         if(keyWaiting()) {
           printHalfSecUpdate_Integer(force+1, "Interrupted Iter:",loop);
           break;
         }
-      #endif //DMCP_BUILD
+      #endif //TESTSUITE_BUILD
 
       int32ToReal(j, &t);
       realMultiply(&t, &h, &t, realContext); // t = h * j
