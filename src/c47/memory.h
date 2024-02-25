@@ -27,6 +27,7 @@
   // The 6 followoing functions are only there to know who allocates and frees memory
   void    *allocC47Blocks       (size_t sizeInBlocks);
   void    *reallocC47Blocks     (void *pcMemPtr, size_t oldSizeInBlocks, size_t newSizeInBlocks);
+  void    reduceC47Blocks       (void *pcMemPtr, size_t oldSizeInBlocks, size_t newSizeInBlocks);
   void    freeC47Blocks         (void *pcMemPtr, size_t sizeInBlocks);
 
   void    *allocGmp             (size_t sizeInBytes);

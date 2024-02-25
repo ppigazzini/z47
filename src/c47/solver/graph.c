@@ -1211,7 +1211,7 @@ void fnEqSolvGraph (uint16_t func) {
     graphVariable = -graphVariable;
   }
 
-  if(graphVariable >= FIRST_NAMED_VARIABLE && graphVariable <= LAST_NAMED_VARIABLE) {
+  if(FIRST_NAMED_VARIABLE <= graphVariable && graphVariable <= LAST_NAMED_VARIABLE) {
     #if(defined(VERBOSE_SOLVER00) || defined(VERBOSE_SOLVER0)) && defined(PC_BUILD)
       printf("graphVariable accepted: %i\n", graphVariable);
     #endif // (VERBOSE_SOLVER00 || VERBOSE_SOLVER0) && PC_BUILD

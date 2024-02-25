@@ -157,7 +157,6 @@
   extern realContext_t          ctxtReal2139; // 2139 digits: used for really big modulo
 
   extern registerHeader_t       globalRegister[NUMBER_OF_GLOBAL_REGISTERS];
-  extern registerHeader_t       savedStackRegister[NUMBER_OF_SAVED_STACK_REGISTERS + NUMBER_OF_TEMP_REGISTERS];
   extern registerHeader_t      *currentLocalRegisters;
   extern dynamicSoftmenu_t      dynamicSoftmenu[NUMBER_OF_DYNAMIC_SOFTMENUS];
 
@@ -286,7 +285,7 @@
   extern int16_t                itemToBeAssigned;
   extern int16_t                cachedDynamicMenu;
 
-  extern uint16_t               globalFlags[7];
+  extern uint16_t               globalFlags[8];
   extern int16_t                longpressDelayedkey2;         //JM
   extern int16_t                longpressDelayedkey3;         //JM
   extern int16_t                T_cursorPos;                  //JMCURSOR

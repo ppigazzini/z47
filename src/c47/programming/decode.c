@@ -139,17 +139,17 @@ static void getStringLabelOrVariableName(uint8_t *stringAddress) {
 
 static void getIndirectRegister(uint8_t *paramAddress, const char *op) {
   uint8_t opParam = *(uint8_t *)paramAddress;
-  if(opParam < REGISTER_X) { // Global register from 00 to 99
+  if(opParam < REGISTER_X_IN_KS_CODE) { // Global register from 00 to 99
     sprintf(tmpString, "%s " STD_RIGHT_ARROW "%02u", op, opParam);
   }
-  else if(opParam <= REGISTER_K) { // Lettered register from X to K
-    sprintf(tmpString, "%s " STD_RIGHT_ARROW "%s", op, indexOfItems[ITM_REG_X + opParam - REGISTER_X].itemSoftmenuName);
+  else if(opParam <= REGISTER_K_IN_KS_CODE) { // Lettered register from X to K
+    sprintf(tmpString, "%s " STD_RIGHT_ARROW "%s", op, indexOfItems[ITM_REG_X + opParam - REGISTER_X_IN_KS_CODE].itemSoftmenuName);
   }
-  else if(opParam >= REGISTER_M && opParam <= REGISTER_S) { // Lettered register from M to S
-    sprintf(tmpString, "%s " STD_RIGHT_ARROW "%s", op, indexOfItems[ITM_REG_M + opParam - REGISTER_M].itemSoftmenuName);
+  else if(opParam <= LAST_LOCAL_REGISTER_IN_KS_CODE) { // Local register from .00 to .98
+    sprintf(tmpString, "%s " STD_RIGHT_ARROW ".%02d", op, opParam - FIRST_LOCAL_REGISTER_IN_KS_CODE);
   }
-  else if(opParam <= LAST_LOCAL_REGISTER) { // Local register from .00 to .98
-    sprintf(tmpString, "%s " STD_RIGHT_ARROW ".%02d", op, opParam - FIRST_LOCAL_REGISTER);
+  else if(opParam <= REGISTER_W_IN_KS_CODE) { // Lettered register from M to S and E to W
+    sprintf(tmpString, "%s " STD_RIGHT_ARROW "%s", op, indexOfItems[ITM_REG_M + opParam - REGISTER_M_IN_KS_CODE].itemSoftmenuName);
   }
   else {
     sprintf(tmpString, "\nIn function getIndirectRegister: %s " STD_RIGHT_ARROW " %u is not a valid parameter!", op, opParam);
@@ -220,17 +220,17 @@ static void decodeOp(uint8_t *paramAddress, const char *op, uint16_t paramMode, 
     }
 
     case PARAM_REGISTER: {
-      if(opParam < REGISTER_X) { // Global register from 00 to 99
+      if(opParam < REGISTER_X_IN_KS_CODE) { // Global register from 00 to 99
         sprintf(tmpString, "%s %02u", op, opParam);
       }
-      else if(opParam <= REGISTER_K) { // Lettered register from X to K
-        sprintf(tmpString, "%s %s", op, indexOfItems[ITM_REG_X + opParam - REGISTER_X].itemSoftmenuName);
+      else if(opParam <= REGISTER_K_IN_KS_CODE) { // Lettered register from X to K
+        sprintf(tmpString, "%s %s", op, indexOfItems[ITM_REG_X + opParam - REGISTER_X_IN_KS_CODE].itemSoftmenuName);
       }
-      else if(opParam >= REGISTER_M && opParam <= REGISTER_S) { // Lettered register from M to S
-        sprintf(tmpString, "%s %s", op, indexOfItems[ITM_REG_M + opParam - REGISTER_M].itemSoftmenuName);
+      else if(opParam <= LAST_LOCAL_REGISTER_IN_KS_CODE) { // Local register from .00 to .98
+        sprintf(tmpString, "%s .%02d", op, opParam - FIRST_LOCAL_REGISTER_IN_KS_CODE);
       }
-      else if(opParam <= LAST_LOCAL_REGISTER) { // Local register from .00 to .98
-        sprintf(tmpString, "%s .%02d", op, opParam - FIRST_LOCAL_REGISTER);
+      else if(opParam <= REGISTER_W_IN_KS_CODE) { // Lettered register from M to S and E to W
+        sprintf(tmpString, "%s %s", op, indexOfItems[ITM_REG_M + opParam - REGISTER_M_IN_KS_CODE].itemSoftmenuName);
       }
       else if(opParam == STRING_LABEL_VARIABLE) {
         char *str = tmpString;
@@ -253,20 +253,23 @@ static void decodeOp(uint8_t *paramAddress, const char *op, uint16_t paramMode, 
     }
 
     case PARAM_FLAG: {
-      if(opParam < REGISTER_X) { // Global flag from 00 to 99
+      if(opParam < FLAG_X) { // Global flag from 00 to 99
         sprintf(tmpString, "%s %02u", op, opParam);
       }
-      else if(opParam <= REGISTER_K) { // Lettered flag from X to K
-        sprintf(tmpString, "%s %s", op, indexOfItems[ITM_REG_X + opParam - REGISTER_X].itemSoftmenuName);
+      else if(opParam <= FLAG_K) { // Lettered flag from X to K
+        sprintf(tmpString, "%s %s", op, indexOfItems[ITM_REG_X + opParam - FLAG_X].itemSoftmenuName);
       }
-      else if(opParam >= REGISTER_M && opParam <= REGISTER_S) { // Lettered flag from M to S
-        sprintf(tmpString, "%s %s", op, indexOfItems[ITM_REG_M + opParam - REGISTER_M].itemSoftmenuName);
-      }
-      else if(opParam <= LAST_LOCAL_FLAG) { // Local flag from .00 to .15 (or .31)
+      else if(opParam <= LAST_LOCAL_FLAG) { // Local flag from .00 to .31
         sprintf(tmpString, "%s .%02d", op, opParam - FIRST_LOCAL_FLAG);
       }
-      else if(FIRST_LOCAL_FLAG + NUMBER_OF_LOCAL_FLAGS <= opParam && opParam < FIRST_LOCAL_FLAG + NUMBER_OF_LOCAL_FLAGS + NUMBER_OF_SYSTEM_FLAGS) { // Local register from .00 to .15 (or .31)
-        sprintf(tmpString, "%s .%02d", op, opParam - FIRST_LOCAL_FLAG);
+      else if(opParam < FLAG_M) { // Local flag from .32 to .98 are illegal
+        sprintf(tmpString, "\nIn function decodeOp: case PARAM_FLAG, %s  %u is not a valid parameter!", op, opParam);
+      }
+      else if(opParam <= FLAG_W) { // Lettered flag from M to S and E to W
+        sprintf(tmpString, "%s %s", op, indexOfItems[ITM_REG_M + opParam - FLAG_M].itemSoftmenuName);
+      }
+      else if(opParam < SYSTEM_FLAG_NUMBER) { // illegal operands
+        sprintf(tmpString, "\nIn function decodeOp: case PARAM_FLAG, %s  %u is not a valid parameter!", op, opParam);
       }
       else if(opParam == SYSTEM_FLAG_NUMBER) {
         if(*paramAddress < 64) {
@@ -296,8 +299,11 @@ static void decodeOp(uint8_t *paramAddress, const char *op, uint16_t paramMode, 
         else if(tamMax <= 99) {
           sprintf(tmpString, "%s %02u", op, opParam);
         }
-        else {
+        else if(tamMax <= 999) {
           sprintf(tmpString, "%s %03u", op, opParam);
+        }
+        else {
+          sprintf(tmpString, "%s %04u", op, opParam);
         }
       }
       else if(opParam == INDIRECT_REGISTER) {
@@ -320,8 +326,11 @@ static void decodeOp(uint8_t *paramAddress, const char *op, uint16_t paramMode, 
         else if(tamMax <= 99) {
           sprintf(tmpString, "%s %02u", op, opParam);
         }
-        else {
+        else if(tamMax <= 999) {
           sprintf(tmpString, "%s %03u", op, opParam);
+        }
+        else {
+          sprintf(tmpString, "%s %04u", op, opParam);
         }
       }
       else if(opParam == CNST_BEYOND_250) { // Value from 250 to 499
@@ -345,17 +354,17 @@ static void decodeOp(uint8_t *paramAddress, const char *op, uint16_t paramMode, 
     }
 
     case PARAM_COMPARE: {
-      if(opParam < REGISTER_X) { // Global register from 00 to 99
+      if(opParam < REGISTER_X_IN_KS_CODE) { // Global register from 00 to 99
         sprintf(tmpString, "%s %02u", op, opParam);
       }
-      else if(opParam <= REGISTER_K) { // Lettered register from X to K
-        sprintf(tmpString, "%s %s", op, indexOfItems[ITM_REG_X + opParam - REGISTER_X].itemSoftmenuName);
+      else if(opParam <= REGISTER_K_IN_KS_CODE) { // Lettered register from X to K
+        sprintf(tmpString, "%s %s", op, indexOfItems[ITM_REG_X + opParam - REGISTER_X_IN_KS_CODE].itemSoftmenuName);
       }
-      else if(opParam >= REGISTER_M && opParam <= REGISTER_S) { // Lettered register from M to S
-        sprintf(tmpString, "%s %s", op, indexOfItems[ITM_REG_M + opParam - REGISTER_M].itemSoftmenuName);
+      else if(opParam <= LAST_LOCAL_REGISTER_IN_KS_CODE) { // Local register from .00 to .98
+        sprintf(tmpString, "%s .%02d", op, opParam - FIRST_LOCAL_REGISTER_IN_KS_CODE);
       }
-      else if(opParam <= LAST_LOCAL_REGISTER) { // Local register from .00 to .98
-        sprintf(tmpString, "%s .%02d", op, opParam - FIRST_LOCAL_REGISTER);
+      else if(opParam <= REGISTER_W_IN_KS_CODE) { // Lettered register from M to S and E to W
+        sprintf(tmpString, "%s %s", op, indexOfItems[ITM_REG_M + opParam - REGISTER_M_IN_KS_CODE].itemSoftmenuName);
       }
       else if(opParam == STRING_LABEL_VARIABLE) {
         char *str = tmpString;
