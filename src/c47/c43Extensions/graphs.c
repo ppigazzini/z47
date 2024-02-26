@@ -61,7 +61,7 @@ void graph_reset(void){
 
 void fnClGrf(uint16_t unusedButMandatoryParameter) {
   graph_reset();
-  fnClDrawMx();
+  fnClDrawMx(2);
   strcpy(plotStatMx,"DrwMX");
   fnRefreshState();                //jm
 }
@@ -276,12 +276,12 @@ void fnPlotSQ(uint16_t unusedButMandatoryParameter) {
   showHideHourGlass();
   refreshStatusBar();
 
-  calcMode = CM_GRAPH;
-    if(softmenu[softmenuStack[0].softmenuId].menuItem != -MNU_PLOT) {
-      showSoftmenu(-MNU_PLOT);                         //JM MENU Prevent resetting the softmenu to the default no 1 page position
-    }
+  if(softmenu[softmenuStack[0].softmenuId].menuItem != -MNU_PLOT) {
+    showSoftmenu(-MNU_PLOT);                         //JM MENU Prevent resetting the softmenu to the default no 1 page position
+  }
+
   #endif // !TESTSUITE_BUILD
-  doRefreshSoftMenu = true;             //Plot graph is part of refreshScreen
+//  doRefreshSoftMenu = true;             //Plot graph is part of refreshScreen
 }
 
 
@@ -546,6 +546,7 @@ void graph_text(void) {
 //######### PLOT MEM #################################
 //####################################################
 void graph_plotmem(void) {
+  currentKeyCode = 255;
   #if !defined(SAVE_SPACE_DM42_13GRF_JM)
     #if !defined(TESTSUITE_BUILD)
       #if defined(STATDEBUG) && defined(PC_BUILD)

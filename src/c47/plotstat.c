@@ -83,6 +83,7 @@ uint32_t  yzero;
 
 
 void statGraphReset(void){
+  currentKeyCode = 255;
   graph_dx      = 0;
   graph_dy      = 0;
   roundedTicks  = true;
@@ -114,9 +115,15 @@ void statGraphReset(void){
 
 #if !defined(TESTSUITE_BUILD)
   float grf_x(int i) {
-    if(keyWaiting()) {
-       return 0;
-    }
+                                  #ifdef STATDEBUG
+                                    char prefix[100];
+                                    memcpy(prefix, allNamedVariables[regStatsXY - FIRST_NAMED_VARIABLE].variableName + 1, allNamedVariables[regStatsXY - FIRST_NAMED_VARIABLE].variableName[0]);
+                                    strcpy(prefix + allNamedVariables[regStatsXY - FIRST_NAMED_VARIABLE].variableName[0], " :");
+                                    printf("X: Reading from Matrix %s\n",prefix);
+                                  #endif //STATDEBUG    
+//    if(keyWaiting()) {
+//       return 0;
+//    }
     float xf=0;
     real_t xr;
 
@@ -136,9 +143,15 @@ void statGraphReset(void){
 
 
   float grf_y(int i) {
-    if(keyWaiting()) {
-       return 0;
-    }
+                                  #ifdef STATDEBUG
+                                    char prefix[100];
+                                    memcpy(prefix, allNamedVariables[regStatsXY - FIRST_NAMED_VARIABLE].variableName + 1, allNamedVariables[regStatsXY - FIRST_NAMED_VARIABLE].variableName[0]);
+                                    strcpy(prefix + allNamedVariables[regStatsXY - FIRST_NAMED_VARIABLE].variableName[0], " :");
+                                    printf("Y: Reading from Matrix %s\n",prefix);
+                                  #endif //STATDEBUG    
+//    if(keyWaiting()) {
+//       return 0;
+//    }
     float yf=0;
     real_t yr;
 
@@ -653,6 +666,9 @@ float auto_tick(float tick_int_f) {
   }
 
   tick_int_f = strtof (tmpString2, NULL);                                        //printf("string:%s converted:%f \n",tmpString2, tick_int_f);
+  if(tick_int_f == 0) {
+    tick_int_f = 1;
+  }
 
   //printf("tick2 %f str %s tx %s \n",tick_int_f, tmpString, tx);
 #endif // !SAVE_SPACE_DM42_13GRF
@@ -679,6 +695,12 @@ void graph_axis (void){
     else {
       tick_int_y = graph_dy;
     }
+
+    #if defined(STATDEBUG)
+     printf("TICKS X=%f Y=%f\n",tick_int_x,tick_int_y);
+    #endif // STATDEBUG
+
+
   #endif // !TESTSUITE_BUILD
   graphAxisDraw();
 #endif //SAVE_SPACE_DM42_13GRF
@@ -924,6 +946,7 @@ void eformat_eng2 (char* s02, const char* s01, double inreal, int8_t digits, con
 
 
 void graphPlotstat(uint16_t selection){
+currentKeyCode = 255;
 #if !defined(SAVE_SPACE_DM42_13GRF)
   #if defined(STATDEBUG) && defined(PC_BUILD)
     printf("#####>>> graphPlotstat: selection:%u:%s  lastplotmode:%u  lrSelection:%u lrChosen:%u\n",selection, getCurveFitModeName(selection), lastPlotMode, lrSelection, lrChosen);

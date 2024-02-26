@@ -388,6 +388,7 @@ static void _executeSolver(calcRegister_t variable, const real34_t *val, real34_
 
 
 int solver(calcRegister_t variable, const real34_t *y, const real34_t *x, real34_t *resZ, real34_t *resY, real34_t *resX) {
+  currentKeyCode = 255;
   #if !defined(TESTSUITE_BUILD)
     real34_t a, b, b1, b2, fa, fb, fb1, m, s, *bp1, fbp1, tmp;
     real_t aa, bb, bb1, bb2, faa, fbb, fbb1, mm, ss, secantSlopeA, secantSlopeB, delta, deltaB, smb, tol;

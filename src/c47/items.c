@@ -225,6 +225,10 @@ void fnNop(uint16_t unusedButMandatoryParameter) {
     switch(func) {
       case ITM_DRAW:       //EQN Draw
 
+      case ITM_REDRAW:     //Xup Xdn
+      case VAR_LX:
+      case VAR_UX:
+
       case ITM_PLOT_STAT:  //Plot menu
       case ITM_PLINE:                     
       case ITM_DIFF:                      

@@ -531,6 +531,7 @@ bool_t addFactor(longInteger_t factor, real34Matrix_t *matrix) {
 
 
 void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
+  currentKeyCode = 255;
   #if !defined(TESTSUITE_BUILD)
     uint32_t loop = 0;
   #endif //TESTSUITE_BUILD
