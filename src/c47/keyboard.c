@@ -3601,7 +3601,7 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
           printf(">>> Undo from fnKeyExit\n");
         #endif // DEBUGUNDO
         fnUndo(NOPARAM);
-        fnClDrawMx();
+        fnClDrawMx(1);
         if(statMx[0]!='S') {
           printStatus(0, errorMessages[RESTORING_STATS],force);
           restoreStats();

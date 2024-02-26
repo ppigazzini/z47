@@ -766,7 +766,7 @@ TO_QSPI const int16_t menu_PLOT[]        = { -MNU_PLOT_RANGE,               ITM_
                                              ITM_PLINE,                     ITM_PLOTRST,                ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,                           //JM GRAPH
                                              ITM_NVECT,                     ITM_VECT,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,                           //JM GRAPH
 
-                                             ITM_SNAP,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
+                                             ITM_SNAP,                      ITM_LISTXY,                 ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
                                              ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,                           //JM GRAPH
                                              ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL};                          //JM GRAPH
 
@@ -1801,11 +1801,17 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
                     }
       case VAR_ULIM:
       case VAR_LLIM:
+      case VAR_UX:
+      case VAR_LX:
                     { stringAppend(itemName, indexOfItems[itemNr%10000].itemSoftmenuName);
                       switch(itemNr%10000) {
                         case VAR_ULIM:  real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_ULIM), &tmpR); 
                                         break;
                         case VAR_LLIM:  real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_LLIM), &tmpR); 
+                                        break;
+                        case VAR_LX:    real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_LX), &tmpR); 
+                                        break;
+                        case VAR_UX:    real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_UX), &tmpR); 
                                         break;
                         default:;
                       }

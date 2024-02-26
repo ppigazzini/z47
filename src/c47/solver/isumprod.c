@@ -67,6 +67,7 @@
 
 
   static void _programmableiSumProd(uint16_t label, bool_t prod) {
+    currentKeyCode = 255;
     uint32_t      loop = 0;
     int16_t       finished = 0;
     bool_t        abort = false;

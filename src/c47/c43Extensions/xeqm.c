@@ -582,6 +582,7 @@ TO_QSPI const function_t indexOfFunctions[] = {
 
 
 void execute_string(const char *inputstring, bool_t exec1, bool_t namescan) {
+  currentKeyCode = 255;
   #if !defined(SAVE_SPACE_DM42_2)
     #if !defined(TESTSUITE_BUILD)
       #if(VERBOSE_LEVEL > 0)
