@@ -1734,7 +1734,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
     }
     clearRegisterLine(rowReg, true, true);
 
-    strcpy(regS, "Reg_");
+    strcpy(regS, "Reg_"); 
     regS[3] = letteredRegisterName(reg);
     showString(regS, &standardFont, 19, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(rowReg - REGISTER_X) + 6, vmNormal, true, true);
     sprintf(prefix, "= %s =", name);
@@ -2126,6 +2126,34 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
         }
         *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
       }
+    }
+  }
+
+  void __displaySolver(calcRegister_t regist, char *prefix, int16_t *prefixWidth) {
+      if(currentSolverVariable >= FIRST_RESERVED_VARIABLE) {
+        memcpy(prefix, allReservedVariables[currentSolverVariable - FIRST_RESERVED_VARIABLE].reservedVariableName + 1, allReservedVariables[currentSolverVariable - FIRST_RESERVED_VARIABLE].reservedVariableName[0]);
+        strcpy(prefix + allReservedVariables[currentSolverVariable - FIRST_RESERVED_VARIABLE].reservedVariableName[0], " =");
+      }
+      else {
+        memcpy(prefix, allNamedVariables[currentSolverVariable - FIRST_NAMED_VARIABLE].variableName + 1, allNamedVariables[currentSolverVariable - FIRST_NAMED_VARIABLE].variableName[0]);
+        strcpy(prefix + allNamedVariables[currentSolverVariable - FIRST_NAMED_VARIABLE].variableName[0], " =");
+      }
+      *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;    
+  }
+
+  void _displaySolverOutput(calcRegister_t regist, char *prefix, int16_t *prefixWidth) {
+    if(regist == REGISTER_X || regist == REGISTER_Y) {
+      __displaySolver(regist, prefix, prefixWidth);
+    } else 
+    if(regist == REGISTER_Z) {
+      strcpy(prefix, "Accuracy " STD_ALMOST_EQUAL);
+      *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
+    }
+  }
+
+  void _displaySolverInput(calcRegister_t regist, char *prefix, int16_t *prefixWidth) {
+    if(regist == REGISTER_X) {
+      __displaySolver(regist, prefix, prefixWidth);
     }
   }
 
@@ -2618,7 +2646,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
         if(regist == REGISTER_X && lastErrorCode == 0 && calcMode != CM_PEM && PROBMENU) {
           const char *r_i = NULL, *r_j = NULL, *r_k = NULL;
           calcRegister_t register_i = REGISTER_X, register_j = REGISTER_X, register_k = REGISTER_X;
-
+          
 
           switch(softmenu[softmenuStack[0].softmenuId].menuItem) {
             case -MNU_GEV:
@@ -3426,34 +3454,10 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
            }
 
           else if(temporaryInformation == TI_SOLVER_VARIABLE_RESULT) {
-            if(regist == REGISTER_X || regist == REGISTER_Y) {
-              if(currentSolverVariable >= FIRST_RESERVED_VARIABLE) {
-                memcpy(prefix, allReservedVariables[currentSolverVariable - FIRST_RESERVED_VARIABLE].reservedVariableName + 1, allReservedVariables[currentSolverVariable - FIRST_RESERVED_VARIABLE].reservedVariableName[0]);
-                strcpy(prefix + allReservedVariables[currentSolverVariable - FIRST_RESERVED_VARIABLE].reservedVariableName[0], " =");
-              }
-              else {
-                memcpy(prefix, allNamedVariables[currentSolverVariable - FIRST_NAMED_VARIABLE].variableName + 1, allNamedVariables[currentSolverVariable - FIRST_NAMED_VARIABLE].variableName[0]);
-                strcpy(prefix + allNamedVariables[currentSolverVariable - FIRST_NAMED_VARIABLE].variableName[0], " =");
-              }
-              prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
-            } else
-            if(regist == REGISTER_Z) {
-              strcpy(prefix, "Accuracy =");
-              prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
-            }
+            _displaySolverOutput(regist, prefix, &prefixWidth);
           }
           else if(temporaryInformation == TI_SOLVER_VARIABLE) {
-            if(regist == REGISTER_X) {
-              if(currentSolverVariable >= FIRST_RESERVED_VARIABLE) {
-                memcpy(prefix, allReservedVariables[currentSolverVariable - FIRST_RESERVED_VARIABLE].reservedVariableName + 1, allReservedVariables[currentSolverVariable - FIRST_RESERVED_VARIABLE].reservedVariableName[0]);
-                strcpy(prefix + allReservedVariables[currentSolverVariable - FIRST_RESERVED_VARIABLE].reservedVariableName[0], " =");
-              }
-              else {
-                memcpy(prefix, allNamedVariables[currentSolverVariable - FIRST_NAMED_VARIABLE].variableName + 1, allNamedVariables[currentSolverVariable - FIRST_NAMED_VARIABLE].variableName[0]);
-                strcpy(prefix + allNamedVariables[currentSolverVariable - FIRST_NAMED_VARIABLE].variableName[0], " =");
-              }
-              prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
-            }
+            _displaySolverInput(regist, prefix, &prefixWidth);
           }
 
           else if(temporaryInformation == TI_ACC) {
@@ -3481,6 +3485,10 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
             if(regist == REGISTER_X) {
               sprintf(prefix, STD_INTEGRAL STD_ALMOST_EQUAL);
               prefixWidth = stringWidth(prefix, &numericFont, true, true) + 1;
+            } else
+            if(regist == REGISTER_Y) {
+              strcpy(prefix, "Accuracy " STD_ALMOST_EQUAL);
+              prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
             }
           }
 
@@ -3640,11 +3648,11 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
           w = stringWidth(tmpString, &numericFont, false, true);
           lineWidth = w;
           if(prefixWidth > 0) {
-            if(temporaryInformation == TI_INTEGRAL) {
-              showString(prefix, &numericFont, 1, baseY, vmNormal, prefixPre, prefixPost);
+            if(temporaryInformation == TI_INTEGRAL && regist == REGISTER_X) {
+              showString(prefix, &numericFont, 1, baseY - checkHPoffset, vmNormal, prefixPre, prefixPost);
             }
             else {
-              showString(prefix, &standardFont, 1, baseY + TEMPORARY_INFO_OFFSET, vmNormal, prefixPre, prefixPost);
+              showString(prefix, &standardFont, 1, baseY - checkHPoffset + TEMPORARY_INFO_OFFSET, vmNormal, prefixPre, prefixPost);
             }
           }
           showString(tmpString, &numericFont, (temporaryInformation == TI_VIEW_REGISTER && origRegist == REGISTER_T) ? prefixWidth : SCREEN_WIDTH - w, baseY - checkHPoffset, vmNormal, false, true);
@@ -3658,32 +3666,13 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
           }
 
           else if(temporaryInformation == TI_SOLVER_VARIABLE_RESULT) {
-            if(regist == REGISTER_X || regist == REGISTER_Y) {
-              if(currentSolverVariable >= FIRST_RESERVED_VARIABLE) {
-                memcpy(prefix, allReservedVariables[currentSolverVariable - FIRST_RESERVED_VARIABLE].reservedVariableName + 1, allReservedVariables[currentSolverVariable - FIRST_RESERVED_VARIABLE].reservedVariableName[0]);
-                strcpy(prefix + allReservedVariables[currentSolverVariable - FIRST_RESERVED_VARIABLE].reservedVariableName[0], " =");
-              }
-              else {
-                memcpy(prefix, allNamedVariables[currentSolverVariable - FIRST_NAMED_VARIABLE].variableName + 1, allNamedVariables[currentSolverVariable - FIRST_NAMED_VARIABLE].variableName[0]);
-                strcpy(prefix + allNamedVariables[currentSolverVariable - FIRST_NAMED_VARIABLE].variableName[0], " =");
-              }
-              prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
-            } else 
-            if(regist == REGISTER_Z) {
-              strcpy(prefix, "Accuracy =");
-              prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
-            }
+            _displaySolverOutput(regist, prefix, &prefixWidth);
           }
           else if(temporaryInformation == TI_SOLVER_VARIABLE) {
-            if(regist == REGISTER_X) {
-              memcpy(prefix, allNamedVariables[currentSolverVariable - FIRST_NAMED_VARIABLE].variableName + 1, allNamedVariables[currentSolverVariable - FIRST_NAMED_VARIABLE].variableName[0]);
-              strcpy(prefix + allNamedVariables[currentSolverVariable - FIRST_NAMED_VARIABLE].variableName[0], " =");
-              prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
-            }
+            _displaySolverInput(regist, prefix, &prefixWidth);
           }
-
           else if(temporaryInformation == TI_VIEW_REGISTER && origRegist == REGISTER_T) {
-            viewRegName(prefix, &prefixWidth);
+              viewRegName(prefix, &prefixWidth);
           }
 
           else if(temporaryInformation == TI_ABC) {                             //JM EE \/
@@ -3921,11 +3910,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
           }
 
           else if(temporaryInformation == TI_SOLVER_VARIABLE) {
-            if(regist == REGISTER_X) {
-              memcpy(prefix, allNamedVariables[currentSolverVariable - FIRST_NAMED_VARIABLE].variableName + 1, allNamedVariables[currentSolverVariable - FIRST_NAMED_VARIABLE].variableName[0]);
-              strcpy(prefix + allNamedVariables[currentSolverVariable - FIRST_NAMED_VARIABLE].variableName[0], " =");
-              prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
-            }
+            _displaySolverInput(regist, prefix, &prefixWidth);
           }
           else if(regist == REGISTER_X && (temporaryInformation == TI_IJ || temporaryInformation == TI_MIJ)) {
             _displayIJ(prefix, &prefixWidth);
