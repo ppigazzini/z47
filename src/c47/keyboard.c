@@ -2549,7 +2549,7 @@ RELEASE_END:
                 keyActionProcessed = true;
               }
               // Following commands do not timeout to NOP
-              else if(item == ITM_UNDO || item == ITM_BST || item == ITM_SST || item == ITM_PR || item == ITM_AIM) {
+              else if(item == ITM_UNDO || item == ITM_BST || item == ITM_SST || item == ITM_PR || item == ITM_AIM || item == ITM_SNAP) {
                 runFunction(item);
                 keyActionProcessed = true;
               }

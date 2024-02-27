@@ -4605,7 +4605,12 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
 
       case CM_LISTXY:                     //JM
         if((last_CM != calcMode) || (doRefreshSoftMenu)) {
-          last_CM = calcMode;
+          if(last_CM == 252) {
+            last_CM--;
+          }
+          else {
+            last_CM = 252; //calcMode;
+          }
           doRefreshSoftMenu = false;
           displayShiftAndTamBuffer();
           refreshStatusBar();
@@ -4678,12 +4683,14 @@ void fnSNAP(uint16_t unusedButMandatoryParameter) {
     printf("fnSNAP!\n");
   #endif
   if(calcMode == CM_AIM) {
+    refreshScreen(80);
     xcopy(tmpString, aimBuffer, ERROR_MESSAGE_LENGTH + AIM_BUFFER_LENGTH + NIM_BUFFER_LENGTH);       //backup portion of the "message buffer" area in DMCP used by ERROR..AIM..NIM buffers, to the tmpstring area in DMCP. DMCP uses this area during create_screenshot.
     fnScreenDump(0);
     xcopy(aimBuffer,tmpString, ERROR_MESSAGE_LENGTH + AIM_BUFFER_LENGTH + NIM_BUFFER_LENGTH);        //   This total area must be less than the tmpString storage area, which it is.
     fnP_Alpha();     //print alpha
   }
   else {
+    refreshScreen(82);
     fnScreenDump(0);
     fnP_All_Regs(1); //print stack
   }
