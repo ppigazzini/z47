@@ -1726,55 +1726,48 @@ void fnPlotStat(uint16_t plotMode){
     case PLOT_START:
     case PLOT_REV:
     case PLOT_NXT:
-      case PLOT_LR: {
-        drawHistogram = 0;
-        if(plotStatMx[0] != 'S') {
-          strcpy(plotStatMx, "STATS");
-        }
-        break;
-      }
-      case H_PLOT: {
-        drawHistogram = 1;
-        if(plotStatMx[0] != 'H') {
-          strcpy(plotStatMx, "HISTO");
-        }
-        break;
-      }
-      case H_NORM: {
-        drawHistogram = 1;
-        if(plotStatMx[0] != 'H') { //???
-          strcpy(plotStatMx, "HISTO");
-        }
-        strcpy(statMx,"HISTO");
-        calcSigma(0);
-        plotMode = PLOT_LR;
-        lastPlotMode = PLOT_START;
-        lrSelectionHistobackup = lrSelection;
-        lrChosenHistobackup = lrChosen;
-        fnCurveFitting(CF_GAUSS_FITTING);
-        break;
-      }
-      default: {
-        break;
-      }
+    case PLOT_LR: {
+      drawHistogram = 0;
+      strcpy(plotStatMx, "STATS");
+      break;
+    }
+    case H_PLOT: {
+      drawHistogram = 1;
+      strcpy(plotStatMx, "HISTO");
+      break;
+    }
+    case H_NORM: {
+      drawHistogram = 1;
+      strcpy(statMx,"HISTO");
+      calcSigma(0);
+      plotMode = PLOT_LR;
+      lastPlotMode = PLOT_START;
+      lrSelectionHistobackup = lrSelection;
+      lrChosenHistobackup = lrChosen;
+      fnCurveFitting(CF_GAUSS_FITTING);
+      break;
+    }
+    default: {
+      break;
+    }
   }
 
-    #if defined(STATDEBUG) && defined(PC_BUILD)
-    printf("fnPlotStat1: plotSelection = %u; Plotmode=%u\n",plotSelection,plotMode);
-    printf("#####>>> fnPlotStat1: plotSelection:%u:%s  Plotmode:%u lastplotmode:%u  lrSelection:%u lrChosen:%u plotStatMx:%s\n",plotSelection, getCurveFitModeName(plotSelection), plotMode, lastPlotMode, lrSelection, lrChosen, plotStatMx);
-      if( (plotStatMx[0]=='S' && checkMinimumDataPoints(const_2)) ||
-          (plotStatMx[0]=='D' && drawMxN() >= 2) ||
-          (plotStatMx[0]=='H' && statMxN() >= 3) ) {
-        int16_t cnt = 0;
-        switch(plotStatMx[0]) {
-          case 'S': cnt = realToInt32C47(SIGMA_N); break;
-          case 'D': cnt = drawMxN();               break;
-          case 'H': cnt = statMxN();               break;
-          default: ;
-        }
-      printf("Stored values %i\n",cnt);
-    }
-    #endif //STATDEBUG
+                                  #if defined(STATDEBUG) && defined(PC_BUILD)
+                                  printf("fnPlotStat1: plotSelection = %u; Plotmode=%u\n",plotSelection,plotMode);
+                                  printf("#####>>> fnPlotStat1: plotSelection:%u:%s  Plotmode:%u lastplotmode:%u  lrSelection:%u lrChosen:%u plotStatMx:%s\n",plotSelection, getCurveFitModeName(plotSelection), plotMode, lastPlotMode, lrSelection, lrChosen, plotStatMx);
+                                    if( (plotStatMx[0]=='S' && checkMinimumDataPoints(const_2)) ||
+                                        (plotStatMx[0]=='D' && drawMxN() >= 2) ||
+                                        (plotStatMx[0]=='H' && statMxN() >= 3) ) {
+                                      int16_t cnt = 0;
+                                      switch(plotStatMx[0]) {
+                                        case 'S': cnt = realToInt32C47(SIGMA_N); break;
+                                        case 'D': cnt = drawMxN();               break;
+                                        case 'H': cnt = statMxN();               break;
+                                        default: ;
+                                      }
+                                    printf("Stored values %i\n",cnt);
+                                  }
+                                  #endif //STATDEBUG
 
 
     if(!GRAPHMODE) { //Change over hourglass to the left side

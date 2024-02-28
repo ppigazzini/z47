@@ -1221,19 +1221,21 @@ void fnStatList() {
       ((plotStatMx[0] == 'S' ? statMxN() >= 1 : false) || (plotStatMx[0]=='D' ? drawMxN() >= 1 : false))) {
 
       if(plotStatMx[0] == 'S') {
-        statnum = realToInt32C47(SIGMA_N);
+        statnum = statMxN();   //   realToInt32C47(SIGMA_N); TODO this needs to be optimised as it needs to find the variable number from the veriable name every time 
       }
       else {
         statnum = drawMxN();
       }
-      runFunction(ITM_NSIGMA);
-      sprintf(tmpString, "Stat data: N = %d", statnum);
 
-      runFunction(ITM_DROP);
+      fnStatSum(0);
+      //      runFunction(ITM_NSIGMA);
+      sprintf(tmpString, "Stat data: N = %d", statnum);
+      //      runFunction(ITM_DROP);
       print_linestr(tmpString, true);
-      #if defined(STATDEBUG)
-        printf("Stat data %d - %d (%s)\n",statnum-1, max(0, statnum-1-6), tmpString );
-      #endif // STATDEBUG
+
+                                  #if defined(STATDEBUG)
+                                    printf("Stat data %d - %d (%s)\n",statnum-1, max(0, statnum-1-6), tmpString );
+                                  #endif // STATDEBUG
 
       if(ListXYposition > 0) {
         ListXYposition = 0;

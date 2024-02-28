@@ -222,7 +222,7 @@ void fnNop(uint16_t unusedButMandatoryParameter) {
     #endif
 
 
-    switch(func) {
+    switch(func) {                              //functions to cause a graph redraw
       case ITM_DRAW:       //EQN Draw
 
       case ITM_REDRAW:     //Xup Xdn
@@ -3033,9 +3033,9 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 1779 */  { fnRecallTimerApp,             TM_REGISTER,                 "RCL",                                         "",                                            (0 << TAM_MAX_BITS) |    99, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 1780 */  { fnDeleteBackup,               NOT_CONFIRMED,               "DELBkup",                                     "DELBkup",                                     (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 1781 */  { fnEqSolvGraph,                EQ_SOLVE,                    "cpxSlv",                                      "cpxSlv",                                      (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_ENABLED   | EIM_DISABLED | PTP_DISABLED     },
-/* 1782 */  { fnEqSolvGraph,                EQ_PLOT,                     "Draw",                                        "Draw",                                        (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_ENABLED   | EIM_DISABLED | PTP_DISABLED     },
-/* 1783 */  { itemToBeCoded,                NOPARAM,                     STD_DOWN_ARROW "X " STD_UP_ARROW "X",          STD_DOWN_ARROW "X " STD_UP_ARROW "X",          (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
-/* 1784 */  { fnEqSolvGraph,                EQ_REPLOT,                   "ReDraw",                                      "ReDraw",                                      (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_ENABLED   | EIM_DISABLED | PTP_DISABLED     },
+/* 1782 */  { fnEqSolvGraph,                EQ_PLOT,                     "DrawYX",                                      "DrawYX",                                      (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_ENABLED   | EIM_DISABLED | PTP_DISABLED     },
+/* 1783 */  { itemToBeCoded,                NOPARAM,                     "Graphs",                                      "Graphs",                                      (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 1784 */  { fnEqSolvGraph,                EQ_REPLOT,                   "DrawX" STD_DOWN_ARROW STD_UP_ARROW,           "DrawX" STD_DOWN_ARROW STD_UP_ARROW,           (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_ENABLED   | EIM_DISABLED | PTP_DISABLED     },
 /* 1785 */  { fn1stDerivEq,                 NOPARAM,                     "f'here",                                      "f'here",                                      (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 1786 */  { fn2ndDerivEq,                 NOPARAM,                     "f\"here",                                     "f\"here",                                     (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 1787 */  { fnSetNBins,                   NOPARAM,                     "nBINS",                                       "nBINS",                                       (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_NONE         },
