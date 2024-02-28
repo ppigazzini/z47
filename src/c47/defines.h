@@ -827,10 +827,10 @@ enum REG_NUMBERS { // C program register codes
   RESERVED_VARIABLE_LX,                                  //2042
   LAST_RESERVED_VARIABLE = RESERVED_VARIABLE_LX,
 
-  INVALID_VARIABLE,                                      //2041
+  INVALID_VARIABLE,                                      //2043
 
   // Labels
-  FIRST_LABEL,                                           //2042
+  FIRST_LABEL,                                           //2044
   LAST_LABEL = 6999,                                     //6999
 
   // Local registers
