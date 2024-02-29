@@ -225,7 +225,7 @@ void fnNop(uint16_t unusedButMandatoryParameter) {
     switch(func) {                              //functions to cause a graph redraw
       case ITM_DRAW:       //EQN Draw
 
-      case ITM_REDRAW:     //Xup Xdn
+      case ITM_DRAW_LU:    //Xup Xdn
       case VAR_LX:
       case VAR_UX:
 
@@ -3032,12 +3032,12 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 1778 */  { fnResetTimerApp,              NOPARAM,                     "RESET",                                       "RESET",                                       (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 1779 */  { fnRecallTimerApp,             TM_REGISTER,                 "RCL",                                         "",                                            (0 << TAM_MAX_BITS) |    99, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 1780 */  { fnDeleteBackup,               NOT_CONFIRMED,               "DELBkup",                                     "DELBkup",                                     (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
-/* 1781 */  { fnEqSolvGraph,                EQ_SOLVE,                    "cpxSlv",                                      "cpxSlv",                                      (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_ENABLED   | EIM_DISABLED | PTP_DISABLED     },
-/* 1782 */  { fnEqSolvGraph,                EQ_PLOT,                     "DrawYX",                                      "DrawYX",                                      (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_ENABLED   | EIM_DISABLED | PTP_DISABLED     },
-/* 1783 */  { itemToBeCoded,                NOPARAM,                     "Graphs",                                      "Graphs",                                      (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
-/* 1784 */  { fnEqSolvGraph,                EQ_REPLOT,                   "DrawX" STD_DOWN_ARROW STD_UP_ARROW,           "DrawX" STD_DOWN_ARROW STD_UP_ARROW,           (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_ENABLED   | EIM_DISABLED | PTP_DISABLED     },
-/* 1785 */  { fn1stDerivEq,                 NOPARAM,                     "f'here",                                      "f'here",                                      (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
-/* 1786 */  { fn2ndDerivEq,                 NOPARAM,                     "f\"here",                                     "f\"here",                                     (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 1781 */  { itemToBeCoded,                NOPARAM,                     "1781",                                        "1781",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 1782 */  { itemToBeCoded,                NOPARAM,                     "1782",                                        "1782",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 1783 */  { itemToBeCoded,                NOPARAM,                     "1783",                                        "1783",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 1784 */  { itemToBeCoded,                NOPARAM,                     "1784",                                        "1784",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 1785 */  { itemToBeCoded,                NOPARAM,                     "1785",                                        "1785",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 1786 */  { itemToBeCoded,                NOPARAM,                     "1786",                                        "1786",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 1787 */  { fnSetNBins,                   NOPARAM,                     "nBINS",                                       "nBINS",                                       (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_NONE         },
 /* 1788 */  { fnSetLoBin,                   NOPARAM,                     STD_DOWN_ARROW "BIN",                          STD_DOWN_ARROW "BIN",                          (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_NONE         },
 /* 1789 */  { fnSetHiBin,                   NOPARAM,                     STD_UP_ARROW "BIN",                            STD_UP_ARROW "BIN",                            (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_NONE         },
@@ -3628,5 +3628,23 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 2366 */  { fnAddRow,                     NOPARAM,                     "M.ROW+1",                                     "ROW+1",                                       (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_DISABLED     },
 /* 2367 */  { fnAddCol,                     NOPARAM,                     "M.COL+1",                                     "COL+1",                                       (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_DISABLED     },
 
-/* 2368 */  { itemToBeCoded,                NOPARAM,                     "",                                            "Last item",                                   (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED},
+/* 2368 */  { itemToBeCoded,                EQ_REALSOLVE,                "realSlv",                                     "realSlv",                                     (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_ENABLED   | EIM_DISABLED | PTP_DISABLED     },
+/* 2369 */  { fnEqSolvGraph,                EQ_REALSOLVE_LU,             "realSlv" STD_DOWN_ARROW STD_UP_ARROW,         "realSlv" STD_DOWN_ARROW STD_UP_ARROW,         (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_ENABLED   | EIM_DISABLED | PTP_DISABLED     },
+/* 2370 */  { fnEqSolvGraph,                EQ_CPXSOLVE,                 "cpxSlv",                                      "cpxSlv",                                      (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_ENABLED   | EIM_DISABLED | PTP_DISABLED     },
+/* 2371 */  { itemToBeCoded,                EQ_CPXSOLVE_LU,              "cpxSlv" STD_DOWN_ARROW STD_UP_ARROW,          "cpxSlv" STD_DOWN_ARROW STD_UP_ARROW,          (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_ENABLED   | EIM_DISABLED | PTP_DISABLED     },
+/* 2372 */  { fnEqSolvGraph,                EQ_PLOT,                     "DrawYX",                                      "DrawYX",                                      (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_ENABLED   | EIM_DISABLED | PTP_DISABLED     },
+/* 2373 */  { fnEqSolvGraph,                EQ_PLOT_LU,                  "DrawX" STD_DOWN_ARROW STD_UP_ARROW,           "DrawX" STD_DOWN_ARROW STD_UP_ARROW,           (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_ENABLED   | EIM_DISABLED | PTP_DISABLED     },
+/* 2374 */  { itemToBeCoded,                NOPARAM,                     "Graphs",                                      "Graphs",                                      (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 2375 */  { itemToBeCoded,                NOPARAM,                     "Tool" STD_INTEGRAL,                           "Tool" STD_INTEGRAL,                           (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 2376 */  { itemToBeCoded,                NOPARAM,                     "ToolS",                                       "ToolS",                                       (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 2377 */  { fn1stDerivEq,                 NOPARAM,                     "f'here",                                      "f'here",                                      (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 2378 */  { fn2ndDerivEq,                 NOPARAM,                     "f\"here",                                     "f\"here",                                     (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+
+
+
+//arrange programming 
+//arrange CAT access
+
+
+/* 2379 */  { itemToBeCoded,                NOPARAM,                     "",                                            "Last item",                                   (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED},
 };

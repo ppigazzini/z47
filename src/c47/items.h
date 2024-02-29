@@ -1830,12 +1830,12 @@
 #define ITM_TIMER_RESET             1778
 #define ITM_TIMER_RCL               1779
 #define ITM_DELBKUP                 1780
-#define ITM_CPXSLV                  1781
-#define ITM_DRAW                    1782
-#define MNU_PLOT_RANGE              1783
-#define ITM_REDRAW                  1784
-#define ITM_FPHERE                  1785
-#define ITM_FPPHERE                 1786
+#define ITM_1781                    1781
+#define ITM_1782                    1782
+#define ITM_1783                    1783
+#define ITM_1784                    1784
+#define ITM_1785                    1785
+#define ITM_1786                    1786
 #define ITM_nBINS                   1787
 #define ITM_LOBIN                   1788
 #define ITM_HIBIN                   1789
@@ -2426,7 +2426,20 @@
 #define ITM_M_ADDR                  2366
 #define ITM_M_ADDC                  2367
 
-#define LAST_ITEM                   2368
+
+#define ITM_REALSLV                 2368
+#define ITM_REALSLV_LU              2369
+#define ITM_CPXSLV                  2370
+#define ITM_CPXSLV_LU               2371
+#define ITM_DRAW                    2372
+#define ITM_DRAW_LU                 2373
+#define MNU_GRAPHS                  2374
+#define MNU_Sf_TOOL                 2375
+#define MNU_Solver_TOOL             2376
+#define ITM_FPHERE                  2377
+#define ITM_FPPHERE                 2378
+
+#define LAST_ITEM                   2379
 
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL

@@ -1287,7 +1287,12 @@ void fnEqSolvGraph (uint16_t func) {
   currentSolverStatus &= ~SOLVER_STATUS_READY_TO_EXECUTE;
 
   switch(func) {
-    case EQ_SOLVE: {
+
+//    case EQ_CPXSOLVE_LU:
+//    case EQ_REALSOLVE_LU:
+//    case EQ_REALSOLVE:
+    
+    case EQ_CPXSOLVE: {
       printStatus(1,errorMessages[COMPLEX_SOLVER],force);
       fnClDrawMx(4);
       strcpy(plotStatMx,"DrwMX");
@@ -1315,7 +1320,7 @@ void fnEqSolvGraph (uint16_t func) {
       break;
     }
 
-    case EQ_REPLOT:              //uses LX, UX
+    case EQ_PLOT_LU:              //uses LX, UX
       fnRecall(RESERVED_VARIABLE_LX);
       fnRecall(RESERVED_VARIABLE_UX);
       fnEqSolvGraph(EQ__PLOT);
