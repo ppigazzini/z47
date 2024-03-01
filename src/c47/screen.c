@@ -772,20 +772,20 @@ void execTimerApp(uint16_t timerType) {
         }
       }
     }
-  }                                        //JM ^^
+  }
 
 
-  void Shft_handler() {                        //JM SHIFT NEW vv
+  void Shft_handler() {
     if(Shft_LongPress_f_g) {
       if(fnTimerGetStatus(TO_FG_LONG) == TMR_COMPLETED) {
         Shft_LongPress_f_g = false;
         fnTimerStop(TO_3S_CTFF);
         fnTimerStop(TO_FG_LONG);
-        if(shiftF) {
+        if(shiftF) {                           //this is for R47 ShiftF
           showSoftmenu(-MNU_HOME);
           showSoftmenuCurrentPart();
         }
-        else if(shiftG) {
+        else if(shiftG) {                      //this is for R47 ShiftG
           showSoftmenu(-MNU_MyMenu);
           showSoftmenuCurrentPart();
         }
@@ -812,34 +812,32 @@ void execTimerApp(uint16_t timerType) {
         }
         else if((!shiftF && shiftG) || (shiftF && shiftG)) {
           Shft_timeouts = false;
-          //fnTimerStop(TO_FG_LONG);                  // vv moved to resetShiftState()
-          //fnTimerStop(TO_FG_TIMR);                  // ^^
-          resetShiftState();                        //force into no shift state, i.e. to wait
+          resetShiftState();                                       //force into no shift state, i.e. to wait
           if(HOME3 || MYM3) {
             #if defined(PC_BUILD)
               jm_show_calc_state("screen.c: Shft_handler: HOME3");
             #endif //PC_BUILD
-            if(HOME3 && currentMenu() == -MNU_HOME) {              //JM shifts    //softmenuStackPointerJM
-              popSoftmenu();                                                                                                  //JM shifts
+            if(HOME3 && currentMenu() == -MNU_HOME) {
+                                                                   //removed popping after fff:              popSoftmenu();
             }
             else {
-              if(calcMode == CM_AIM) {                                                                                        //JM shifts
+              if(calcMode == CM_AIM) {
               }
-              else {                                                                                                          //JM SHIFTS
+              else {
                 if(HOME3) {
                   showSoftmenu(-MNU_HOME);
                 }
                 else if(MYM3) {
                   showSoftmenu(-MNU_MyMenu);
                 }
-              }                                                                                                               //JM shifts
+              }
             }
             showSoftmenuCurrentPart();
           }
         }
       }
     }
-  }                                        //JM ^^
+  }
 
 
   void LongpressKey_handler() {
