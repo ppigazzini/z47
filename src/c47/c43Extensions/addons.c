@@ -1716,7 +1716,7 @@ bool_t checkForAndChange_(char *displayString, const real34_t *value34, const re
     //See if the multiplier to the constant has a whole denominator
     //printReal34ToConsole(&multConstant34,"Check n/d :","\n");
     int32_t smallestDenom = getD(&multConstant34);
-    if(smallestDenom>1) {
+    if(smallestDenom >= 1) {
       sprintf(denomStr,"/%i",(int)smallestDenom);
     }
     //printf(">>># %i\n", smallestDenom);
