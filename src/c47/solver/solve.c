@@ -356,7 +356,7 @@ static void _executeSolver(calcRegister_t variable, const real34_t *val, real34_
   static void _showProgress(const real34_t *a, const real34_t *b, const real34_t *fa, const real34_t *fb) {
     #if ENABLE_SOLVER_PROGRESS == 1
         const real34_t *c;
-        if((currentSolverStatus & (SOLVER_STATUS_TVM_APPLICATION)) == 0 && currentSolverNestingDepth == 1 && programRunStop != PGM_RUNNING) {
+        if((currentSolverStatus & (SOLVER_STATUS_TVM_APPLICATION)) == 0 && currentSolverNestingDepth == 1 && programRunStop) { //} != PGM_RUNNING) { //proposed omission to make progress monitoring while in program running, it can be switched off with MONIT. Not final.
           uint8_t savedDisplayFormatDigits = displayFormatDigits;
 
           if(real34CompareGreaterThan(a, b)) {

@@ -87,7 +87,7 @@ void statGraphReset(void){
   graph_dx      = 0;
   graph_dy      = 0;
   roundedTicks  = true;
-  extentx       = true;
+  extentx       = false;
   extenty       = true;
   PLOT_VECT     = false;
   PLOT_NVECT    = false;
