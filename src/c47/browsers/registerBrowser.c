@@ -168,10 +168,11 @@
   #endif // !SAVE_SPACE_DM42_8
 
   static void registerName(char *s, calcRegister_t regist) {
-    if (regist >= REGISTER_X && regist <= LAST_STAT_REGISTER) {
+    if(REGISTER_X <= regist && regist <= REGISTER_W) {
       tmpString[0] = letteredRegisterName(regist);
       strcpy(tmpString + 1, ":");
-    } else {
+    }
+    else {
       sprintf(tmpString, "R%02d:", regist);
     }
   }
@@ -203,7 +204,7 @@
 
     if(rbrMode == RBR_GLOBAL) { // Global registers
       for(int16_t row=0; row<10; row++) {
-        calcRegister_t regist = (currentRegisterBrowserScreen + row) % FIRST_LOCAL_REGISTER;
+        calcRegister_t regist = (currentRegisterBrowserScreen + row) % (REGISTER_W + 1);
         registerName(tmpString, regist);
 
         // register name or number
@@ -240,6 +241,7 @@
           }
         }
       }
+
       else { // no local register allocated
         rbrMode = RBR_NAMED;
         registerBrowser(NOPARAM);
@@ -267,7 +269,7 @@
         else { // Reserved variables
           if(regist < FIRST_RESERVED_VARIABLE) {
             regist -= FIRST_NAMED_VARIABLE + numberOfNamedVariables;
-            regist += FIRST_RESERVED_VARIABLE + 12;
+            regist += FIRST_RESERVED_VARIABLE + NUMBER_OF_LETTERED_VARIABLES;
           }
 
           if(regist <= LAST_RESERVED_VARIABLE) { // Named variables

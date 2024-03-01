@@ -115,8 +115,8 @@
 
   static void _indirectRegister(uint8_t *paramAddress) {
     uint8_t opParam = *(uint8_t *)paramAddress;
-    if(opParam <= LAST_LOCAL_REGISTER) { // Local register from .00 to .98
-      _clearVar(opParam);
+    if(opParam <= LAST_LOCAL_REGISTER_IN_KS_CODE) { // Local register from .00 to .98
+      _clearVar(regKStoC(opParam));
     }
     else {
       sprintf(tmpString, "\nIn function _executeWithIndirectRegister: " STD_RIGHT_ARROW " %u is not a valid parameter!", opParam);
@@ -159,10 +159,10 @@
       }
 
       case PARAM_FLAG: {
-        if(opParam <= LAST_LOCAL_FLAG) { // Global flag from 00 to 99, Lettered flag from X to K, or Local flag from .00 to .15 (or .31)
+        if(opParam <= LAST_LOCAL_FLAG) { // Global flag from 00 to 99, Lettered flag from X to K, or Local flag from .00 to .31
           // nothing to do
         }
-        else if(FIRST_LOCAL_FLAG + NUMBER_OF_LOCAL_FLAGS <= opParam && opParam < FIRST_LOCAL_FLAG + NUMBER_OF_LOCAL_FLAGS + NUMBER_OF_SYSTEM_FLAGS) { // Local register from .00 to .15 (or .31)
+        else if(FIRST_LOCAL_FLAG + NUMBER_OF_LOCAL_FLAGS <= opParam && opParam < FIRST_LOCAL_FLAG + NUMBER_OF_LOCAL_FLAGS + NUMBER_OF_SYSTEM_FLAGS) { // Local register from .00 to .31
           // nothing to do
         }
         else if(opParam == SYSTEM_FLAG_NUMBER) {
@@ -224,8 +224,8 @@
 
       case PARAM_REGISTER:
       case PARAM_COMPARE: {
-        if(opParam <= LAST_LOCAL_REGISTER) { // Global register from 00 to 99, Lettered register from X to K, or Local register from .00 to .98
-          _clearVar(opParam);
+        if(opParam <= LAST_LOCAL_REGISTER_IN_KS_CODE) { // Global register from 00 to 99, Lettered register from X to K, or Local register from .00 to .98
+          _clearVar(regKStoC(opParam));
         }
         else if(opParam == STRING_LABEL_VARIABLE) {
           _getStringLabelOrVariableName(paramAddress);

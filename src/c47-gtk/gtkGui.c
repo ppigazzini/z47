@@ -856,7 +856,7 @@
 
       }
       return FALSE;
-    } else 
+    } else
 
 
     //ORIGINAL MODIFIED KEYBOARD DETECTION

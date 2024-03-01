@@ -325,7 +325,6 @@ uint16_t flushBufferCnt = 0;
     saveStateValue(dateTimeString,                  sizeof(dateTimeString),                                      "dateTimeString",                 "hexDump");
     saveStateValue(softmenuStack,                   sizeof(softmenuStack),                                       "softmenuStack",                  "hexDump");
     saveStateValue(globalRegister,                  sizeof(globalRegister),                                      "globalRegister",                 "hexDump");
-    saveStateValue(savedStackRegister,              sizeof(savedStackRegister),                                  "savedStackRegister",             "hexDump");
     saveStateValue(kbd_usr,                         sizeof(kbd_usr),                                             "kbd_usr",                        "hexDump");
     saveStateValue(userMenuItems,                   sizeof(userMenuItems),                                       "userMenuItems",                  "hexDump");
     saveStateValue(userAlphaItems,                  sizeof(userAlphaItems),                                      "userAlphaItems",                 "hexDump");
@@ -876,7 +875,6 @@ uint16_t flushBufferCnt = 0;
     restoreStateValue(dateTimeString,                  sizeof(dateTimeString),                                      "dateTimeString",                 "hexDump");
     restoreStateValue(softmenuStack,                   sizeof(softmenuStack),                                       "softmenuStack",                  "hexDump");
     restoreStateValue(globalRegister,                  sizeof(globalRegister),                                      "globalRegister",                 "hexDump");
-    restoreStateValue(savedStackRegister,              sizeof(savedStackRegister),                                  "savedStackRegister",             "hexDump");
     restoreStateValue(kbd_usr,                         sizeof(kbd_usr),                                             "kbd_usr",                        "hexDump");
     restoreStateValue(userMenuItems,                   sizeof(userMenuItems),                                       "userMenuItems",                  "hexDump");
     restoreStateValue(userAlphaItems,                  sizeof(userAlphaItems),                                      "userAlphaItems",                 "hexDump");
@@ -1426,9 +1424,9 @@ void doSave(uint16_t saveType) {
 
 
   // Global registers
-  sprintf(tmpString, "GLOBAL_REGISTERS\n%" PRIu16 "\n", (uint16_t)(FIRST_LOCAL_REGISTER));
+  sprintf(tmpString, "GLOBAL_REGISTERS\n%" PRIu16 "\n", (uint16_t)(LAST_GLOBAL_REGISTER+1));
   save(tmpString, strlen(tmpString));
-  for(regist=0; regist<FIRST_LOCAL_REGISTER; regist++) {
+  for(regist=FIRST_GLOBAL_REGISTER; regist<=LAST_GLOBAL_REGISTER; regist++) {
     registerToSaveString(regist);
     sprintf(tmpString, "R%03" PRId16 "\n%s\n%s\n", regist, aimBuffer1, tmpRegisterString);
     save(tmpString, strlen(tmpString));
@@ -1438,14 +1436,15 @@ void doSave(uint16_t saveType) {
   // Global flags
   strcpy(tmpString, "GLOBAL_FLAGS\n");
   save(tmpString, strlen(tmpString));
-  sprintf(tmpString, "%" PRIu16 " %" PRIu16 " %" PRIu16 " %" PRIu16 " %" PRIu16 " %" PRIu16 " %" PRIu16 "\n",
+  sprintf(tmpString, "%" PRIu16 " %" PRIu16 " %" PRIu16 " %" PRIu16 " %" PRIu16 " %" PRIu16 " %" PRIu16 " %" PRIu16 "\n",
                        globalFlags[0],
                                    globalFlags[1],
                                                globalFlags[2],
                                                            globalFlags[3],
                                                                        globalFlags[4],
                                                                                    globalFlags[5],
-                                                                                               globalFlags[6]);
+                                                                                               globalFlags[6],
+                                                                                                           globalFlags[7]);
   save(tmpString, strlen(tmpString));
 
   // Local registers
@@ -2161,6 +2160,14 @@ double stringToDouble(const char *str) {
           str++;
         }
         globalFlags[6] = stringToInt16(str);
+
+        while(*str != ' ') {
+          str++;
+        }
+        while(*str == ' ') {
+          str++;
+        }
+        globalFlags[7] = stringToInt16(str);
       }
     }
 

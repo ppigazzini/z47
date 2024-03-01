@@ -107,9 +107,9 @@
 
     TO_QSPI const indentType indents[] = {
     //Note that the first condition satisfied, stops the find process
-    //"NNNNN" = Text, 
-    //      A = Newline on previous line 0/1, 
-    //      B = Indented number of spaces on the current line, 
+    //"NNNNN" = Text,
+    //      A = Newline on previous line 0/1,
+    //      B = Indented number of spaces on the current line,
     //      C = Indented number of spaces on the next line.
     //"NNNNN", A, B, C
     //[TEST]
@@ -233,7 +233,7 @@ void fnPExport(uint16_t unusedButMandatoryParameter) {
         addnextLineIndent = 0;
       }
 
-      
+
       if (indent > 0) {
         uint16_t ii = 0;
         stringAppend(tmpString + indent, tmpString);

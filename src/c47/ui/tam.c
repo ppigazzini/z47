@@ -554,86 +554,41 @@
       forceTry = true;
       tryOoR = true;
     }
-    else if(REGISTER_X <= indexOfItems[item].param && indexOfItems[item].param <= REGISTER_S && !tam.dot) {
+    else if(REGISTER_X <= indexOfItems[item].param && indexOfItems[item].param <= REGISTER_W && !tam.dot) {
       if(!tam.digitsSoFar && tam.function != ITM_BESTF && (tam.indirect || (tam.mode != TM_VALUE && tam.mode != TM_VALUE_CHB))) {
         if((tam.mode == TM_LABEL || (tam.mode == TM_KEY && tam.keyInputFinished)) && !tam.indirect) {
           switch(indexOfItems[item].param) {
-            case REGISTER_A: {
-              tam.value = 100 - 'A' + 'A'; forceTry = true; tryOoR = true;
-              break;
-            }
-            case REGISTER_B: {
-              tam.value = 100 - 'A' + 'B'; forceTry = true; tryOoR = true;
-              break;
-            }
-            case REGISTER_C: {
-              tam.value = 100 - 'A' + 'C'; forceTry = true; tryOoR = true;
-              break;
-            }
-            case REGISTER_D: {
-              tam.value = 100 - 'A' + 'D'; forceTry = true; tryOoR = true;
-              break;
-            }
-            case REGISTER_X: {
-              tam.alpha = true; aimBuffer[0] = 'X'; aimBuffer[1] = 0; forceTry = true;
-              break;
-            }
-            case REGISTER_Y: {
-              tam.alpha = true; aimBuffer[0] = 'Y'; aimBuffer[1] = 0; forceTry = true;
-              break;
-            }
-            case REGISTER_Z: {
-              tam.alpha = true; aimBuffer[0] = 'Z'; aimBuffer[1] = 0; forceTry = true;
-              break;
-            }
-            case REGISTER_T: {
-              tam.alpha = true; aimBuffer[0] = 'T'; aimBuffer[1] = 0; forceTry = true;
-              break;
-            }
-            case REGISTER_L: {
-              tam.alpha = true; aimBuffer[0] = 'L'; aimBuffer[1] = 0; forceTry = true;
-              break;
-            }
-            case REGISTER_I: {
-              tam.alpha = true; aimBuffer[0] = 'I'; aimBuffer[1] = 0; forceTry = true;
-              break;
-            }
-            case REGISTER_J: {
-              tam.alpha = true; aimBuffer[0] = 'J'; aimBuffer[1] = 0; forceTry = true;
-              break;
-            }
-            case REGISTER_K: {
-              tam.alpha = true; aimBuffer[0] = 'K'; aimBuffer[1] = 0; forceTry = true;
-              break;
-            }
-            case REGISTER_M: {
-              tam.alpha = true; aimBuffer[0] = 'M'; aimBuffer[1] = 0; forceTry = true;
-              break;
-            }
-            case REGISTER_N: {
-              tam.alpha = true; aimBuffer[0] = 'N'; aimBuffer[1] = 0; forceTry = true;
-              break;
-            }
-            case REGISTER_P: {
-              tam.alpha = true; aimBuffer[0] = 'P'; aimBuffer[1] = 0; forceTry = true;
-              break;
-            }
-            case REGISTER_Q: {
-              tam.alpha = true; aimBuffer[0] = 'Q'; aimBuffer[1] = 0; forceTry = true;
-              break;
-            }
-            case REGISTER_R: {
-              tam.alpha = true; aimBuffer[0] = 'R'; aimBuffer[1] = 0; forceTry = true;
-              break;
-            }
-            case REGISTER_S: {
-              tam.alpha = true; aimBuffer[0] = 'S'; aimBuffer[1] = 0; forceTry = true;
-              break;
-            }
+            case REGISTER_A: tam.value = 100 - 'A' + 'A'; forceTry = true; tryOoR = true; break;
+            case REGISTER_B: tam.value = 100 - 'A' + 'B'; forceTry = true; tryOoR = true; break;
+            case REGISTER_C: tam.value = 100 - 'A' + 'C'; forceTry = true; tryOoR = true; break;
+            case REGISTER_D: tam.value = 100 - 'A' + 'D'; forceTry = true; tryOoR = true; break;
+            case REGISTER_X: tam.alpha = true; aimBuffer[0] = 'X'; aimBuffer[1] = 0; forceTry = true; break;
+            case REGISTER_Y: tam.alpha = true; aimBuffer[0] = 'Y'; aimBuffer[1] = 0; forceTry = true; break;
+            case REGISTER_Z: tam.alpha = true; aimBuffer[0] = 'Z'; aimBuffer[1] = 0; forceTry = true; break;
+            case REGISTER_T: tam.alpha = true; aimBuffer[0] = 'T'; aimBuffer[1] = 0; forceTry = true; break;
+            case REGISTER_L: tam.alpha = true; aimBuffer[0] = 'L'; aimBuffer[1] = 0; forceTry = true; break;
+            case REGISTER_I: tam.alpha = true; aimBuffer[0] = 'I'; aimBuffer[1] = 0; forceTry = true; break;
+            case REGISTER_J: tam.alpha = true; aimBuffer[0] = 'J'; aimBuffer[1] = 0; forceTry = true; break;
+            case REGISTER_K: tam.alpha = true; aimBuffer[0] = 'K'; aimBuffer[1] = 0; forceTry = true; break;
+            case REGISTER_M: tam.alpha = true; aimBuffer[0] = 'M'; aimBuffer[1] = 0; forceTry = true; break;
+            case REGISTER_N: tam.alpha = true; aimBuffer[0] = 'N'; aimBuffer[1] = 0; forceTry = true; break;
+            case REGISTER_P: tam.alpha = true; aimBuffer[0] = 'P'; aimBuffer[1] = 0; forceTry = true; break;
+            case REGISTER_Q: tam.alpha = true; aimBuffer[0] = 'Q'; aimBuffer[1] = 0; forceTry = true; break;
+            case REGISTER_R: tam.alpha = true; aimBuffer[0] = 'R'; aimBuffer[1] = 0; forceTry = true; break;
+            case REGISTER_S: tam.alpha = true; aimBuffer[0] = 'S'; aimBuffer[1] = 0; forceTry = true; break;
+            case REGISTER_E: tam.alpha = true; aimBuffer[0] = 'E'; aimBuffer[1] = 0; forceTry = true; break;
+            case REGISTER_F: tam.alpha = true; aimBuffer[0] = 'F'; aimBuffer[1] = 0; forceTry = true; break;
+            case REGISTER_G: tam.alpha = true; aimBuffer[0] = 'G'; aimBuffer[1] = 0; forceTry = true; break;
+            case REGISTER_H: tam.alpha = true; aimBuffer[0] = 'H'; aimBuffer[1] = 0; forceTry = true; break;
+            case REGISTER_O: tam.alpha = true; aimBuffer[0] = 'O'; aimBuffer[1] = 0; forceTry = true; break;
+            case REGISTER_U: tam.alpha = true; aimBuffer[0] = 'U'; aimBuffer[1] = 0; forceTry = true; break;
+            case REGISTER_V: tam.alpha = true; aimBuffer[0] = 'V'; aimBuffer[1] = 0; forceTry = true; break;
+            case REGISTER_W: tam.alpha = true; aimBuffer[0] = 'W'; aimBuffer[1] = 0; forceTry = true; break;
           }
         }
         else {
           tam.value = indexOfItems[item].param;
+          tam.value += 99*(!tam.dot && (tam.mode == TM_FLAGR || tam.mode == TM_FLAGW) && FLAG_M-99 <= tam.value && tam.value <= FLAG_W-99);
           forceTry = true;
           // Register letters access registers not accessible via number codes, so we shouldn't look at the tam.max value
           // when determining if this is valid
