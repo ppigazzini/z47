@@ -1009,7 +1009,7 @@ int16_t lastItem = 0;
 */
         if(calcMode != CM_CONFIRMATION && data[0] != 0 && !running_program_jm) { //JM data is used if operation is from the real keyboard. item is used directly if called from XEQM
           lastErrorCode = 0;
-          if(item == ITM_INTEGRAL_YX) {
+           if(item == ITM_INTEGRAL_YX && calcMode != CM_PEM) {
             fnStore(RESERVED_VARIABLE_LLIM);
             fnDrop(0);
             fnStore(RESERVED_VARIABLE_ULIM);

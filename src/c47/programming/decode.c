@@ -795,10 +795,10 @@ static void _decodeOneStep(uint8_t *step, bool_t textVersion) {
 
       default: {
         if(op == ITM_INTEGRAL) {
-          strcpy(nameOp,STD_INTEGRAL "fd");
+          strcpy(nameOp,indexOfItems[ITM_INTEGRAL].itemCatalogName); //   STD_INTEGRAL "fd");
         } else
         if(op == ITM_INTEGRAL_YX) {
-          strcpy(nameOp,STD_INTEGRAL "fyxd");
+          strcpy(nameOp,indexOfItems[ITM_INTEGRAL_YX].itemCatalogName); //   STD_INTEGRAL "fyxd");
         }
         else {
           if(textVersion) {

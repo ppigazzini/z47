@@ -1426,7 +1426,7 @@
 #define MNU_ALPHAMISC               1378
 #define MNU_SYSFL                   1379
 #define MNU_Sf                      1380
-#define MNU_Sfdx                    1381
+#define MNU_Sfdx                    1381      //INT
 #define MNU_ANGLECONV_43S           1382
 #define MNU_alpha_omega             1383
 #define MNU_ALPHAintl               1384
@@ -1737,7 +1737,7 @@
 #define ITM_toINT                   1687
 #define ITM_1688                    1688
 #define ITM_1689                    1689
-#define ITM_INTEGRAL_YX             1690
+#define ITM_INTEGRAL_YX             1690   //INT
 #define ITM_toREAL                  1691
 #define ITM_PCSGM_DPCMN             1692
 #define ITM_DPCMEAN                 1693
@@ -1747,7 +1747,7 @@
 #define ITM_PCT                     1697
 #define ITM_PCSIGMA                 1698
 #define ITM_PCPMG                   1699
-#define ITM_INTEGRAL                1700
+#define ITM_INTEGRAL                1700   //INT
 #define ITM_PMOD                    1701
 #define ITM_M_DET                   1702
 #define ITM_PARALLEL                1703

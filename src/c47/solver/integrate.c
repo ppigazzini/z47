@@ -41,6 +41,8 @@
 #include "softmenus.h"
 #include "solver/equation.h"
 #include "stack.h"
+#include "store.h"
+#include "recall.h"
 #include "c47.h"
 
 void fnPgmInt(uint16_t label) {
@@ -93,7 +95,9 @@ void fnPgmInt(uint16_t label) {
   }
 }
 
-void fnIntegrate(uint16_t labelOrVariable) {
+
+
+void _fnIntegrate(uint16_t labelOrVariable, bool_t XY) {
   if((labelOrVariable >= FIRST_LABEL && labelOrVariable <= LAST_LABEL) || (labelOrVariable >= REGISTER_X && labelOrVariable <= REGISTER_T)) {
     // Interactive mode
     fnPgmInt(labelOrVariable);
@@ -101,7 +105,7 @@ void fnIntegrate(uint16_t labelOrVariable) {
       currentSolverStatus = SOLVER_STATUS_INTERACTIVE | SOLVER_STATUS_EQUATION_INTEGRATE;
     }
   }
-  else if(labelOrVariable == RESERVED_VARIABLE_ACC || labelOrVariable == RESERVED_VARIABLE_ULIM || labelOrVariable == RESERVED_VARIABLE_LLIM) {
+  else if(!XY && (labelOrVariable == RESERVED_VARIABLE_ACC || labelOrVariable == RESERVED_VARIABLE_ULIM || labelOrVariable == RESERVED_VARIABLE_LLIM)) {
     fnToReal(NOPARAM);
     if(lastErrorCode == ERROR_NONE) {
       real34Copy(REGISTER_REAL34_DATA(REGISTER_X), REGISTER_REAL34_DATA(labelOrVariable));
@@ -238,6 +242,22 @@ void fnIntegrate(uint16_t labelOrVariable) {
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 }
+
+
+void fnIntegrate(uint16_t labelOrVariable) {
+printf("fnIntegrate\n");
+  _fnIntegrate(labelOrVariable, false);
+}
+
+
+void fnIntegrateYX(uint16_t labelOrVariable) {
+printf("fnIntegrateYX\n");
+  real34Copy(REGISTER_REAL34_DATA(REGISTER_Y), REGISTER_REAL34_DATA(RESERVED_VARIABLE_LLIM));
+  real34Copy(REGISTER_REAL34_DATA(REGISTER_X), REGISTER_REAL34_DATA(RESERVED_VARIABLE_ULIM));
+  _fnIntegrate(labelOrVariable, true);
+}
+
+
 
 void fnIntVar(uint16_t unusedButMandatoryParameter) {
   #if !defined(TESTSUITE_BUILD)
