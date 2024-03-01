@@ -273,7 +273,8 @@ uint8_t *findKey2ndParam(uint8_t *step) {
         return step;
       }
 
-      case PTP_LITERAL: {
+      case PTP_LITERAL:
+      case PTP_REM: {
         return countLiteralBytes(step);
       }
 
