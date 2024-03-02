@@ -326,9 +326,9 @@
     else {
       event_keyval = event->keyval + CTRL_State;
     }
-    //printf("#######%d\n",event_keyval);
+    //printf("#######%d %i %i\n",event_keyval, calcMode, tam.mode);
     //JM ALPHA SECTION FOR ALPHAMODE - TAKE OVER ALPHA KEYBOARD
-    if(calcMode == CM_AIM || calcMode == CM_EIM || tam.mode) {
+    if(calcMode == CM_AIM || calcMode == CM_EIM || tam.mode || (calcMode == CM_PEM && getSystemFlag(FLAG_ALPHA))) {
       printf(">>>>> Keyboard Key Code = %d\n", event_keyval);
       switch(event_keyval) {
         case 65507: // left Ctrl
@@ -350,6 +350,9 @@
             btnFnClicked(w, "4");  //F4
             softmenuStack[0].firstItem = jj;
             showSoftmenuCurrentPart();
+          } else if((calcMode == CM_PEM && getSystemFlag(FLAG_ALPHA))) {
+            shiftF = true;
+            btnClicked(w, "35"); //?
           }
           break;
         case 40:           //(
@@ -543,7 +546,7 @@
           btnClicked_UC(w, "05");
           break;
         case 94:  //^
-          if(calcMode == CM_AIM || calcMode == CM_EIM) {
+          if(calcMode == CM_AIM || calcMode == CM_EIM || (calcMode == CM_PEM && getSystemFlag(FLAG_ALPHA))) {
             shiftG = true;
             btnClicked(w, "01");
           }
@@ -569,7 +572,7 @@
           btnClicked_UC(w, "11");
           break;
         case 124:  //|
-          if(calcMode == CM_AIM || calcMode == CM_EIM) {
+          if(calcMode == CM_AIM || calcMode == CM_EIM || (calcMode == CM_PEM && getSystemFlag(FLAG_ALPHA))) {
             shiftG = true;
             btnClicked(w, "06");
           }
@@ -598,7 +601,7 @@
           btnClicked(w, "16");
           break;
         case 177: //+-
-          if(calcMode == CM_AIM || calcMode == CM_EIM) {
+          if(calcMode == CM_AIM || calcMode == CM_EIM || (calcMode == CM_PEM && getSystemFlag(FLAG_ALPHA))) {
             shiftG = true;
             btnClicked(w, "14");
           }
