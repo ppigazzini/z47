@@ -271,7 +271,8 @@
       switch(indexOfItems[op].status & PTP_STATUS) {
         case PTP_NONE:
         case PTP_DECLARE_LABEL:
-        case PTP_LITERAL: {
+        case PTP_LITERAL:
+        case PTP_REM: {
           return true;
         }
 
