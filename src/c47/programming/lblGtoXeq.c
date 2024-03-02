@@ -766,6 +766,11 @@ int16_t executeOneStep(uint8_t *step) {
           return 1;
         }
 
+        case PTP_REM: {
+          // just ignore it
+          return 1;
+        }
+
         case PTP_KEYG_KEYX: {
           _executeOp(step, op, PARAM_NUMBER_8);
           break;

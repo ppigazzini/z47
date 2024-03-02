@@ -679,7 +679,8 @@ typedef enum {
 #define PTP_NUMBER_8_16                    (10 << 9) //
 #define PTP_SHUFFLE                        (11 << 9) //
 #define PTP_LITERAL                        (12 << 9) // Literal
-#define PTP_DISABLED                       (13 << 9) // Not programmable
+#define PTP_REM                            (13 << 9) //
+#define PTP_DISABLED                       (14 << 9) // Not programmable
 
 
 #define INC_FLAG                                   0

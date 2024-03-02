@@ -11,6 +11,7 @@
 #include "display.h"
 #include "error.h"
 #include "flags.h"
+#include "fonts.h"
 #include "hal/gui.h"
 #include "hal/io.h"
 #include "items.h"
@@ -112,6 +113,8 @@
     //      B = Indented number of spaces on the current line,
     //      C = Indented number of spaces on the next line.
     //"NNNNN", A, B, C
+    {"REM",    0, 0, 0 },
+    {STD_LEFT_SINGLE_QUOTE, 0,0,0},
     //[TEST]
     {"ENTRY?", 0, 0, +2},
     {"KEY?",   0, 0, +2},
@@ -211,7 +214,6 @@ void fnPExport(uint16_t unusedButMandatoryParameter) {
 
     for(line=firstLine; line<9999; line++) {
       nextStep = findNextStep(step);
-      sprintf(asciiString, "%04d:  " , firstDisplayedLocalStepNumber + line - lineOffset + lineOffsetTam);
 
       decodeOneStepXEQM(step);
       indent = 2;
@@ -236,11 +238,14 @@ void fnPExport(uint16_t unusedButMandatoryParameter) {
 
       if (indent > 0) {
         uint16_t ii = 0;
-        stringAppend(tmpString + indent, tmpString);
+        stringAppend(asciiString, tmpString);
+        stringAppend(tmpString + indent, asciiString);
         while(ii < indent) {
           tmpString[ii++]= ' ';
         }
       }
+
+      sprintf(asciiString, "%04d:  " , firstDisplayedLocalStepNumber + line - lineOffset + lineOffsetTam);
 
       if(newLine){                        // Newline before LBL
         char endline[3];
