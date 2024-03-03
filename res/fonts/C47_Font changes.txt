@@ -251,3 +251,7 @@ PLUS                      "\xa4\xff"
 2023-09-24 Numeric font - fixed spacing of the subscript 0 glyph
 
 2023-11-04 Adding the tiny font
+
+2024-03-02 Adding integration limits y->x
+    $29F0 yx              "\xa9\xf0"     // Integration limits
+

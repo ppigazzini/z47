@@ -15,6 +15,7 @@
 #include "display.h"
 #include "error.h"
 #include "flags.h"
+#include "fonts.h"
 #include "hal/gui.h"
 #include "items.h"
 #include "c43Extensions/jm.h"
@@ -184,6 +185,7 @@ printf(">>>>  0093     firstItem=%d itemShift=%d fn=%d",firstItem, itemShift, fn
           item = -MNU_Sf_TOOL;
         }
 
+//TEST!!
 else if( ((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_INTEGRATE) && dynamicMenuItem == 5) {
           item = ITM_INTEGRAL_YX;
         }
@@ -191,6 +193,10 @@ else if( ((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_E
 
         else if((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_INTEGRATE) {
           item = ITM_Sfdx_VAR;
+//TEST!!
+#ifdef PC_BUILD
+  printf("fnIntVar(), " STD_INTEGRAL "fdx VarL  " STD_INTEGRAL "fdx E\n");
+#endif
         }
         else {
           item = ITM_SOLVE_VAR;

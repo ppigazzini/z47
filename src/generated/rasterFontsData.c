@@ -1463,7 +1463,7 @@ TO_QSPI const font_t numericFont = {
 };
 TO_QSPI const font_t standardFont = {
   .id             = 1,
-  .numberOfGlyphs = 648,
+  .numberOfGlyphs = 649,
   .glyphs = {
 
     // uni001D
@@ -4045,6 +4045,10 @@ TO_QSPI const font_t standardFont = {
     // uni2789
     {.charCode=0xa789, .colsBeforeGlyph= 0, .colsGlyph= 3, .colsAfterGlyph= 6, .rowsAboveGlyph=13, .rowsGlyph= 3, .rowsBelowGlyph= 4, .rank1=  9, .rank2=512,
      .data="\xe0\xe0\xe0"},
+
+    // uni29F0
+    {.charCode=0xa9f0, .colsBeforeGlyph= 0, .colsGlyph= 7, .colsAfterGlyph= 2, .rowsAboveGlyph= 0, .rowsGlyph=20, .rowsBelowGlyph= 0, .rank1=355, .rank2=369,
+     .data="\xc6\xee\x7c\x38\x7c\xee\xc6\x00\x00\x00\x00\x00\x00\xc6\xe6\x7c\x3c\x18\x38\x70"},
 
     // uni2DEA
     {.charCode=0xadea, .colsBeforeGlyph= 0, .colsGlyph= 8, .colsAfterGlyph= 2, .rowsAboveGlyph=13, .rowsGlyph= 7, .rowsBelowGlyph= 0, .rank1=424, .rank2=426,

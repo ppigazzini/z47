@@ -146,6 +146,11 @@ void _fnIntegrate(uint16_t labelOrVariable, bool_t XY) {
     if(realIsZero(&acc)) { // it may freeze if ACC=0
       realCopy(const_1e_6143, &acc);
     }
+    if(real34CompareEqual(REGISTER_REAL34_DATA(RESERVED_VARIABLE_ULIM),REGISTER_REAL34_DATA(RESERVED_VARIABLE_LLIM) )) {
+      int32ToReal(0,&res);
+      int32ToReal(0,&acc);
+      goto done;
+    }
 
 #define SPEEDUPEXPERIMENT
 //#undef SPEEDUPEXPERIMENT
@@ -225,7 +230,7 @@ void _fnIntegrate(uint16_t labelOrVariable, bool_t XY) {
     integrate(labelOrVariable, &llim, &ulim, &acc, &res, smallerEpsilon ? &ctxtReal75 : &ctxtReal39);
 #endif //SPEEDUPEXPERIMENT
 
-
+done:
     fnClearStack(NOPARAM);
     reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
     reallocateRegister(REGISTER_Y, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);

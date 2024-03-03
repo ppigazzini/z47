@@ -317,7 +317,7 @@ TO_QSPI const int16_t menu_PLOTTING[]    = { ITM_SIGMAPLUS,                 ITM_
                                              ITM_SIGMAMINUS,                ITM_SIGMAylnx,             ITM_SIGMAlnxy,             ITM_SIGMAxlny,         ITM_SIGMAx2lny,              ITM_SIGMAx2ony,
                                              ITM_NSIGMA,                    ITM_NULL,                  ITM_NULL,                  ITM_SIGMAlnyonx,       ITM_NULL,                    ITM_CLSIGMA                     };
 
-TO_QSPI const int16_t menu_GRAPHS[]      = { ITM_NULL,                      ITM_NULL,                   ITM_DRAW,                 ITM_DRAW_LU,           VAR_LX,                       VAR_UX                    };
+TO_QSPI const int16_t menu_GRAPHS[]      = { ITM_NULL,                      ITM_NULL,                   ITM_DRAW,                 VAR_LX,                VAR_UX,                      ITM_DRAW_LU                     };
 
 TO_QSPI const int16_t menu_PLOT_STAT[]   = {
                                              ITM_PLOT_CENTRL,               ITM_SMI,                    ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
@@ -546,6 +546,9 @@ TO_QSPI const int16_t menu_alphaMisc[]    = { ITM_NUMBER_SIGN,          ITM_AT, 
                                              ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL     };
 
 
+
+
+
 TO_QSPI const int16_t menu_EQN[]         = { ITM_EQ_NEW,                    ITM_EQ_EDI,                 -MNU_2NDDERIV,            -MNU_1STDERIV,         -MNU_Sf,                     -MNU_Solver,
                                              ITM_EQ_DEL,                    ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                     ITM_NULL                     };
 
@@ -566,15 +569,25 @@ TO_QSPI const int16_t menu_Solver[]      = { ITM_NULL,                  ITM_NULL
 //note: the items in here are dynamically assigned, including the static ones (original population was NULL)
 
 
-TO_QSPI const int16_t menu_Sfdx[]        = { ITM_NULL,                  ITM_NULL,                  VAR_ACC,                   VAR_LLIM,                  VAR_ULIM,                  ITM_INTEGRAL,              
-                                             ITM_NULL,                  ITM_NULL,                  ITM_DRAW,                  ITM_DRAW_LU,               VAR_LX,                    VAR_UX                    };
+//TO_QSPI const int16_t menu_Sfdx[]        = { ITM_NULL,                  ITM_NULL,                  VAR_ACC,                   VAR_LLIM,                  VAR_ULIM,                  ITM_INTEGRAL,              
+//                                             ITM_NULL,                  ITM_NULL,                  ITM_DRAW,                  ITM_DRAW_LU,               VAR_LX,                    VAR_UX                    };
+//
+//TO_QSPI const int16_t menu_Sf_TOOL[]     = { ITM_NULL,                  ITM_NULL,                  VAR_ACC,                   VAR_LLIM,                  VAR_ULIM,                  ITM_INTEGRAL,              
+//                                             ITM_NULL,                  ITM_NULL,                  ITM_DRAW,                  VAR_LX,                    VAR_UX,                    ITM_DRAW_LU               };
 
-TO_QSPI const int16_t menu_Sf_TOOL[]     = { ITM_NULL,                  ITM_NULL,                  VAR_ACC,                   VAR_LLIM,                  VAR_ULIM,                  ITM_INTEGRAL,              
-                                             ITM_NULL,                  ITM_NULL,                  ITM_DRAW,                  ITM_DRAW_LU,               VAR_LX,                    VAR_UX                    };
+TO_QSPI const int16_t menu_Sfdx[]        = { ITM_NULL,                   VAR_ACC,                  ITM_INTEGRAL_YX,           VAR_LLIM,                  VAR_ULIM,                  ITM_INTEGRAL,              
+/*same*/                                     ITM_NULL,                  ITM_NULL,                  ITM_DRAW,                  VAR_LX,                    VAR_UX,                    ITM_DRAW_LU               };
+
+TO_QSPI const int16_t menu_Sf_TOOL[]     = { ITM_NULL,                   VAR_ACC,                  ITM_INTEGRAL_YX,           VAR_LLIM,                  VAR_ULIM,                  ITM_INTEGRAL,              
+/*same*/                                     ITM_NULL,                  ITM_NULL,                  ITM_DRAW,                  VAR_LX,                    VAR_UX,                    ITM_DRAW_LU               };
 
 
-TO_QSPI const int16_t menu_Solver_TOOL[] = { ITM_CPXSLV_LU,             ITM_REALSLV_LU,            VAR_LLIM,                  VAR_ULIM,                  ITM_CPXSLV,                ITM_REALSLV, 
-                                             ITM_DRAW,                  ITM_DRAW_LU,               VAR_LX,                    VAR_UX,                    ITM_CALC,                  ITM_SETSIG2,              };
+
+
+TO_QSPI const int16_t menu_Solver_TOOL[] = { ITM_CPXSLV,                ITM_REALSLV,               VAR_LLIM,                  VAR_ULIM,                  ITM_CPXSLV_LU,             ITM_REALSLV_LU,            
+                                             ITM_SETSIG2,               ITM_DRAW,                  VAR_LX,                    VAR_UX,                    ITM_DRAW_LU,               ITM_CALC                  };
+
+
 
 
 
