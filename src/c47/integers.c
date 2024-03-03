@@ -556,6 +556,7 @@ uint64_t WP34S_intChs(uint64_t x) {
   uint64_t value = WP34S_extract_value(x, &signValue);
 
   if(shortIntegerMode == SIM_UNSIGN || (shortIntegerMode == SIM_2COMPL && x == shortIntegerSignBit)) {
+    temporaryInformation = TI_DATA_NEG_OVRFL;
     setSystemFlag(FLAG_OVERFLOW);
     return (-(int64_t)value) & shortIntegerMask;
   }

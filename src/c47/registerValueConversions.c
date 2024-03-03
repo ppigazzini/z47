@@ -234,15 +234,15 @@ void convertShortIntegerRegisterToLongIntegerRegister(calcRegister_t source, cal
 
 void convertUInt64ToShortIntegerRegister(int16_t sign, uint64_t value, uint32_t base, calcRegister_t regist) {
   if(sign) { // Negative value
-    if(shortIntegerMode == SIM_2COMPL) {
+    if((shortIntegerMode == SIM_2COMPL) || (shortIntegerMode == SIM_UNSIGN)) {
       value = (~value) + 1;
-    }
+    } 
     else if(shortIntegerMode == SIM_1COMPL) {
       value = ~value;
-    }
+    } 
     else if(shortIntegerMode == SIM_SIGNMT) {
       value += shortIntegerSignBit;
-    }
+    } 
     else {
       sprintf(errorMessage, commonBugScreenMessages[bugMsgValueFor], "convertUInt64ToShortIntegerRegister", shortIntegerMode, "shortIntegerMode");
       displayBugScreen(errorMessage);
