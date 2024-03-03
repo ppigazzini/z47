@@ -518,9 +518,13 @@ void fnPem(uint16_t unusedButMandatoryParameter) {
       decodeOneStep(step);
       if(firstDisplayedStepNumber + line - lineOffset == currentStepNumber && !tam.mode) {
         if(getSystemFlag(FLAG_ALPHA)) {
-          xcopy(tmpString + 2 + T_cursorPos + 2, tmpString + 2 + T_cursorPos, stringByteLength(tmpString + 2 + T_cursorPos) + 1);
-          tmpString[2 + T_cursorPos    ] = STD_CURSOR[0];
-          tmpString[2 + T_cursorPos + 1] = STD_CURSOR[1];
+          char tmpChar = tmpString[4];
+          tmpString[4] = 0;
+          int16_t cursorInString = (strcmp(tmpString, "REM ") == 0? T_cursorPos + 4: T_cursorPos);
+          tmpString[4] = tmpChar;
+          xcopy(tmpString + 2 + cursorInString + 2, tmpString + 2 + cursorInString, stringByteLength(tmpString + 2 + cursorInString) + 1);
+          tmpString[2 + cursorInString    ] = STD_CURSOR[0];
+          tmpString[2 + cursorInString + 1] = STD_CURSOR[1];
         }
         else if(aimBuffer[0] != 0) {
           char *tstr = tmpString + stringByteLength(tmpString);
@@ -688,10 +692,19 @@ void pemAlpha(int16_t item) {
 
       calcModeAimGui();
 
-      tmpString[0] = ITM_LITERAL;
-      tmpString[1] = (char)STRING_LABEL_VARIABLE;
-      tmpString[2] = 0;
-      _insertInProgram((uint8_t *)tmpString, 3);
+      if(tam.function < 128) { // literal
+        tmpString[0] = tam.function;
+        tmpString[1] = (char)STRING_LABEL_VARIABLE;
+        tmpString[2] = 0;
+        _insertInProgram((uint8_t *)tmpString, 3);
+      }
+      else { // rem
+        tmpString[0] = (tam.function >> 8) | 0x80;
+        tmpString[1] =  tam.function       & 0x7f;
+        tmpString[2] = (char)STRING_LABEL_VARIABLE;
+        tmpString[3] = 0;
+        _insertInProgram((uint8_t *)tmpString, 4);
+      }
       --currentLocalStepNumber;
       currentStep = findPreviousStep(currentStep);
     }
@@ -795,12 +808,29 @@ void pemAlpha(int16_t item) {
       return;
     }
 
+
+    int16_t aimFunc = currentStep[0];
+    if(aimFunc & 0x80) {
+      aimFunc &= 0x7f;
+      aimFunc <<= 8;
+      aimFunc |= currentStep[1];
+    }
     deleteStepsFromTo(currentStep, findNextStep(currentStep));
-    tmpString[0] = ITM_LITERAL;
-    tmpString[1] = (char)STRING_LABEL_VARIABLE;
-    tmpString[2] = stringByteLength(aimBuffer);
-    xcopy(tmpString + 3, aimBuffer, stringByteLength(aimBuffer));
-    _insertInProgram((uint8_t *)tmpString, stringByteLength(aimBuffer) + 3);
+    if(aimFunc < 128) { // literal
+      tmpString[0] = aimFunc;
+      tmpString[1] = (char)STRING_LABEL_VARIABLE;
+      tmpString[2] = stringByteLength(aimBuffer);
+      xcopy(tmpString + 3, aimBuffer, stringByteLength(aimBuffer));
+      _insertInProgram((uint8_t *)tmpString, stringByteLength(aimBuffer) + 3);
+    }
+    else { // rem
+      tmpString[0] = (aimFunc >> 8) | 0x80;
+      tmpString[1] =  aimFunc       & 0x7f;
+      tmpString[2] = (char)STRING_LABEL_VARIABLE;
+      tmpString[3] = stringByteLength(aimBuffer);
+      xcopy(tmpString + 4, aimBuffer, stringByteLength(aimBuffer));
+      _insertInProgram((uint8_t *)tmpString, stringByteLength(aimBuffer) + 4);
+    }
     --currentLocalStepNumber;
     currentStep = findPreviousStep(currentStep);
     if(!programListEnd) {
@@ -1141,6 +1171,17 @@ void insertStepInProgram(int16_t func) {
       pemCloseNumberInput();
       aimBuffer[0] = 0;
     }
+    tam.function = ITM_LITERAL;
+    pemAlpha(func);
+    pemCursorIsZerothStep = false;
+    return;
+  }
+  else if(func == ITM_REM || (!tam.mode && getSystemFlag(FLAG_ALPHA))) {
+    if(aimBuffer[0] != 0 && !getSystemFlag(FLAG_ALPHA)) {
+      pemCloseNumberInput();
+      aimBuffer[0] = 0;
+    }
+    tam.function = ITM_REM;
     pemAlpha(func);
     pemCursorIsZerothStep = false;
     return;
@@ -1338,7 +1379,8 @@ void insertStepInProgram(int16_t func) {
       break;
     }
 
-    case PTP_LITERAL: {
+    case PTP_LITERAL:
+    case PTP_REM: {
       // nothing to do here
       break;
     }
