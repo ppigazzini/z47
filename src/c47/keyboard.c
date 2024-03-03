@@ -910,16 +910,14 @@ int16_t lastItem = 0;
           if(_assignToMenu((uint8_t *)data)) {
             if(previousCalcMode == CM_AIM) {         //vvJM btnFnReleased
               showSoftmenu(-MNU_ALPHA);              //
+              screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
               refreshScreen(108);                       //
             }                                        //^^JM
             return;
           }
-        } else
-
-        {
+        } else {
           return;
         }
-
       }
 
 
@@ -2035,6 +2033,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
         }                                            //^^ JM
         calcMode = previousCalcMode;
         shiftF = shiftG = false;
+        screenUpdatingMode = SCRUPD_AUTO;
         refreshScreen(116);
       }
       else if(showFunctionNameItem != 0) {
