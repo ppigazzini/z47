@@ -185,6 +185,10 @@ void scanLabelsAndPrograms(void) {
     stepNumber++;
   }
 
+  //The folowing 2 lines added to address the FFFFFFFF issue in old state files
+  firstFreeProgramByte = step;
+  freeProgramBytes = (((uint8_t *)(ram + RAM_SIZE_IN_BLOCKS)) - firstFreeProgramByte) - 2;
+
   defineCurrentProgramFromCurrentStep();
 #endif // !SAVE_SPACE_DM42_10
 }
@@ -236,7 +240,7 @@ void fnClPAll(uint16_t confirmation) {
     freeProgramBytes              = 0;
     temporaryInformation          = TI_NO_INFO;
     programRunStop                = PGM_STOPPED;
-    if(wasInRam) {
+    if(wasInRam) { // Not in flash
       currentStep                   = beginOfProgramMemory;
       firstDisplayedStep            = beginOfProgramMemory;
       firstDisplayedLocalStepNumber = 0;
@@ -610,7 +614,7 @@ static void _insertInProgram(const uint8_t *dat, uint16_t size) {
   uint16_t globalStepNumber;
   if(freeProgramBytes < size) {
     uint8_t *oldBeginOfProgramMemory = beginOfProgramMemory;
-    uint32_t programSizeInBlocks = RAM_SIZE_IN_BLOCKS - freeMemoryRegions[numberOfFreeMemoryRegions - 1].blockAddress - freeMemoryRegions[numberOfFreeMemoryRegions - 1].sizeInBlocks;
+    uint32_t programSizeInBlocks = RAM_SIZE_IN_BLOCKS - TO_C47MEMPTR(beginOfProgramMemory);
     uint32_t newProgramSizeInBlocks = TO_BLOCKS(TO_BYTES(programSizeInBlocks) - freeProgramBytes + size);
     freeProgramBytes      += TO_BYTES(newProgramSizeInBlocks - programSizeInBlocks);
     resizeProgramMemory(newProgramSizeInBlocks);
