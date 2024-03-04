@@ -2122,13 +2122,14 @@ RELEASE_END:
 
 #endif //!TESTSUITE_BUILD
   void leavePem(void) {
+    pushToEndOfRAM:
     if(freeProgramBytes >= 4) { // Push the programs to the end of RAM
       uint32_t newProgramSize = (uint32_t)((uint8_t *)(ram + RAM_SIZE_IN_BLOCKS) - beginOfProgramMemory) - (freeProgramBytes & 0xfffc);
       uint16_t localStepNumber = currentLocalStepNumber;
       uint16_t programNumber = currentProgramNumber;
       uint16_t fdLocalStepNumber = firstDisplayedLocalStepNumber;
       bool_t inRam = (programList[currentProgramNumber - 1].step > 0);
-      if(inRam) {
+      if(inRam) { // Not in flash
         currentStep           += (freeProgramBytes & 0xfffc);
         firstDisplayedStep    += (freeProgramBytes & 0xfffc);
         beginOfCurrentProgram += (freeProgramBytes & 0xfffc);
@@ -2145,6 +2146,12 @@ RELEASE_END:
         defineFirstDisplayedStep();
         defineCurrentProgramFromCurrentStep();
       }
+    }
+
+    // The folowing 4 lines added to address the FFFFFFFF issue in old state files
+    if(TO_C47MEMPTR((uint8_t *)((uintptr_t)firstFreeProgramByte & (UINTPTR_MAX - 3))) < RAM_SIZE_IN_BLOCKS - 1) {
+      freeProgramBytes += TO_BYTES(RAM_SIZE_IN_BLOCKS - 1 - TO_C47MEMPTR((uint8_t *)((uintptr_t)firstFreeProgramByte & (UINTPTR_MAX - 3))));
+      goto pushToEndOfRAM;
     }
   }
 
@@ -2466,7 +2473,7 @@ RELEASE_END:
 
         else if(item == ITM_SNAP) {
           switch(calcMode) { //place modes here which should not work with SNAP
-            //case CM_REGISTER_BROWSER: 
+            //case CM_REGISTER_BROWSER:
             //case CM_FLAG_BROWSER:
             //case CM_FONT_BROWSER:
               break;
