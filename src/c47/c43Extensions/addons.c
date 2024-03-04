@@ -534,10 +534,15 @@ void fnJM_2SI(uint16_t unusedButMandatoryParameter) { //Convert Real to Longint;
         mask = ~(mask << (shortIntegerWordSize-1));
         tmp2UI &= mask;
       }
+      else if(tmp2sign) {
+          temporaryInformation = TI_DATA_NEG_OVRFL;
+        }
       convertUInt64ToShortIntegerRegister(tmp2sign, tmp2UI, (lastIntegerBase >= 2 && lastIntegerBase <= 16) ? lastIntegerBase : 10, REGISTER_X);
       convertShortIntegerRegisterToLongInteger(REGISTER_X, tmp1);
       if(longIntegerCompare(tmp1,tmp3) != 0) {
-        temporaryInformation = TI_DATA_LOSS;
+        if(temporaryInformation != TI_DATA_NEG_OVRFL) {
+          temporaryInformation = TI_DATA_LOSS;
+        }
         setSystemFlag(FLAG_OVERFLOW);
       }
       longIntegerFree(tmp1);
