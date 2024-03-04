@@ -3784,8 +3784,12 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
           if(regist == REGISTER_X && (temporaryInformation == TI_DATA_LOSS || temporaryInformation == TI_DATA_NEG_OVRFL)) {
             // show Overflow indication for current X register operation
             shortIntegerToDisplayString(regist, tmpString, true);
-            if(temporaryInformation == TI_DATA_LOSS) sprintf(prefix, "Ovrfl>%ubits:", shortIntegerWordSize);
-            else if(temporaryInformation == TI_DATA_NEG_OVRFL) sprintf(prefix, "Ovrfl<0:");
+            if(temporaryInformation == TI_DATA_LOSS) {
+              sprintf(prefix, "Ovrfl>%ubits:", shortIntegerWordSize);
+            }
+            else if(temporaryInformation == TI_DATA_NEG_OVRFL) {
+              sprintf(prefix, "Ovrfl<0:");
+            }
             prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
             if(prefixWidth + stringWidth(tmpString, fontForShortInteger, true, true) + 1 > SCREEN_WIDTH) {
               sprintf(prefix, "OF");
