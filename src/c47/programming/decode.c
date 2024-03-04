@@ -497,7 +497,7 @@ static void _decodeNumeral(char *startPtr, const char *srcStartPtr, bool_t isLon
 }
 
 static void decodeLiteral(uint8_t *literalAddress) {
-  switch(*(uint8_t *)(literalAddress++)) {
+  switch(*(literalAddress++)) {
     case BINARY_SHORT_INTEGER: {
       reallocateRegister(TEMP_REGISTER_1, dtShortInteger, SHORT_INTEGER_SIZE, *(uint8_t *)(literalAddress++));
       xcopy(REGISTER_DATA(TEMP_REGISTER_1), literalAddress, TO_BYTES(SHORT_INTEGER_SIZE));
@@ -740,7 +740,8 @@ static void decodeLiteral(uint8_t *literalAddress) {
 
     default: {
       #if !defined(DMCP_BUILD)
-        printf("\nERROR: %u is not an acceptable parameter for ITM_LITERAL!\n", *(uint8_t *)(literalAddress - 1));
+        printf("\nERROR: in decodeLiteral() %u is not an acceptable parameter for ITM_LITERAL!\n", *(literalAddress - 1));
+        printf("At address ram + %lu\n", (literalAddress - 1) - (uint8_t *)ram);
       #endif // !DMCP_BUILD
     }
   }

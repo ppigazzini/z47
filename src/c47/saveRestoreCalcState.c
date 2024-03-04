@@ -1568,7 +1568,7 @@ void doSave(uint16_t saveType) {
   }
 
   // Programs
-  uint16_t currentSizeInBlocks = RAM_SIZE_IN_BLOCKS - freeMemoryRegions[numberOfFreeMemoryRegions - 1].blockAddress - freeMemoryRegions[numberOfFreeMemoryRegions - 1].sizeInBlocks;
+  uint16_t currentSizeInBlocks = RAM_SIZE_IN_BLOCKS - TO_C47MEMPTR(beginOfProgramMemory);
   sprintf(tmpString, "PROGRAMS\n%" PRIu16 "\n", currentSizeInBlocks);
   save(tmpString, strlen(tmpString));
 
@@ -2549,7 +2549,7 @@ double stringToDouble(const char *str) {
         }
       #endif //LOADDEBUG
       uint16_t numberOfBlocks;
-      uint16_t oldSizeInBlocks = RAM_SIZE_IN_BLOCKS - freeMemoryRegions[numberOfFreeMemoryRegions - 1].blockAddress - freeMemoryRegions[numberOfFreeMemoryRegions - 1].sizeInBlocks;
+      uint16_t oldSizeInBlocks = RAM_SIZE_IN_BLOCKS - TO_C47MEMPTR(beginOfProgramMemory);
       uint8_t *oldFirstFreeProgramByte = firstFreeProgramByte;
       uint16_t oldFreeProgramBytes = freeProgramBytes;
 
