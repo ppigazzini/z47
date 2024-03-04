@@ -1268,7 +1268,7 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     memset(tamBuffer,        0, TAM_BUFFER_LENGTH);
 
     // Empty program initialization
-    beginOfProgramMemory          = (uint8_t *)(ram + freeMemoryRegions[0].sizeInBlocks);
+    beginOfProgramMemory          = (uint8_t *)(ram + (RAM_SIZE_IN_BLOCKS - 1)); // Last block of RAM
     currentStep                   = beginOfProgramMemory;
     firstFreeProgramByte          = beginOfProgramMemory + 2;
     firstDisplayedStep            = beginOfProgramMemory;
