@@ -24,6 +24,7 @@
 #include "error.h"
 #include "flags.h"
 #include "integers.h"
+#include "mathematics/comparisonReals.h"
 #include "mathematics/matrix.h"
 #include "mathematics/rsd.h"
 #include "mathematics/tan.h"
@@ -860,7 +861,80 @@ bool_t getRegisterAsReal(calcRegister_t reg, real_t *val) {
   return res;
 }
 
+bool_t getRegisterAsShortInt(calcRegister_t reg, bool_t *sign, uint64_t *val, bool_t *overflow, bool_t *fractional) {
+  real_t rval;
+  longInteger_t ival;
+  uint64_t u64;
+  int16_t sign16;
+  bool_t of, frac;
+
+  switch(getRegisterDataType(reg)) {
+    case dtShortInteger:
+      convertShortIntegerRegisterToUInt64(reg, &sign16, val);
+      *sign = sign16 == 0;
+      of = frac = false;
+      break;
+
+    case dtLongInteger:
+      convertLongIntegerRegisterToLongInteger(reg, ival);
+    #if defined(OS32BIT) // 32 bit
+      u64 = *(uint32_t *)(ival->_mp_d);
+      if(abs(ival->_mp_size) > 1) {
+        u64 |= (int64_t)(*(((uint32_t *)(ival->_mp_d)) + 1)) << 32;
+      }
+      of = abs(ival->_mp_size) > 2 || (u64 & shortIntegerMask) != u64;
+      u64 &= shortIntegerMask;
+    #else // 64 bit
+      u64 = *(uint64_t *)(ival->_mp_d) & shortIntegerMask;
+      of = abs(ival->_mp_size) > 1 || (u64 & shortIntegerMask) != u64;
+    #endif // OS32BIT
+      *sign = longIntegerIsNegative(ival);
+      longIntegerFree(ival);
+      *val = u64;
+      break;
+
+    case dtComplex34:
+    case dtReal34:
+      if (getRegisterAsReal(reg, &rval) && !realIsInfinite(&rval)) {
+        *sign = realIsNegative(&rval);
+        realSetPositiveSign(&rval);
+        frac = !realIsAnInteger(&rval);
+        u64 = realToUint64C47(&rval);
+        of = (u64 & shortIntegerMask) != u64;
+        if (!of)
+          switch (shortIntegerMode) {
+            case SIM_UNSIGN:
+              of = realCompareLessThan(&rval, const_2p64);
+              break;
+            case SIM_2COMPL:
+              if (*sign)
+                of = realCompareLessEqual(&rval, const_2p63);
+              else
+                /* fall through */
+            case SIM_1COMPL:
+            case SIM_SIGNMT:
+              of = realCompareLessThan(&rval, const_2p63);
+              break;
+          }
+        break;
+      }
+      /* fall through */
+
+    default:
+      badTypeError(reg);
+      return false;
+  }
+
+  if (overflow != NULL)
+    *overflow = of;
+  if (fractional != NULL)
+    *fractional = frac;
+  return true;
+}
+
 bool_t getRegisterAsLongInt(calcRegister_t reg, longInteger_t val) {
+  real_t rval;
+
   switch(getRegisterDataType(reg)) {
     case dtLongInteger:
       convertLongIntegerRegisterToLongInteger(reg, val);
@@ -869,6 +943,14 @@ bool_t getRegisterAsLongInt(calcRegister_t reg, longInteger_t val) {
     case dtShortInteger:
       convertShortIntegerRegisterToLongInteger(reg, val);
       break;
+
+    case dtComplex34:
+    case dtReal34:
+      if (getRegisterAsReal(reg, &rval) && !realIsInfinite(&rval) && realIsAnInteger(&rval)) {
+        convertRealToLongInteger(&rval, val, DEC_ROUND_DOWN);
+        break;
+      }
+      /* fall through */
 
     default:
       badTypeError(reg);
