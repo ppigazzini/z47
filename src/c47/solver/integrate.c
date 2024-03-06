@@ -853,9 +853,6 @@ static void _integrate_mm(calcRegister_t regist, const real_t *llim, const real_
           if(!interruptedLoop && exitSignalled) {  //First EXIT press
             exitSignalled = false;
             interruptedLoop = 1;
-            // Delayed exit by increasing the tolerance, to force abortion after level completion
-            realCopy(const_1e_6143, &tol);
-            realDivide(const_1,&tol,&tol,realContext);
           }
           if(interruptedLoop) {
             sprintf(tmps,"Level %i. Allow %5.1f s: Iter: ",(int16_t)k, (float)(40.0 - ((interruptedLoop++)/2.0)));
@@ -1092,6 +1089,11 @@ static real_t* exp_sinh_opt_d (calcRegister_t regist, const real_t* a, const rea
  */
 
 static void dbl_exp_int_new (calcRegister_t regist, const real_t *a, const real_t *b, real_t *error, real_t *result, int sign, realContext_t *realContext) {
+  #if !defined(TESTSUITE_BUILD)
+    int16_t interruptedLoop = 0;
+    currentKeyCode = 255;
+    bool_t exitSignalled = false;
+  #endif //TESTSUITE_BUILD
 
   real_t c, d, s, v, h, y, eps;
   real_t s1, s2, s3; // scratch variables
@@ -1192,20 +1194,7 @@ static void dbl_exp_int_new (calcRegister_t regist, const real_t *a, const real_
 	// error for a and const_0 for b.
 	// Note that result and error do not change within this inner loop so
 	// only the loop counter changes each time.
-#if !defined(TESTSUITE_BUILD)
-	char tmps[64];
-	sprintf(tmps,"level:  %i Iter: ",(int16_t)(maxlevel-k));
-	if(printHalfSecUpdate_Integer(timed, tmps, loop++)) { ; //timed
-#if ENABLE_SOLVER_PROGRESS == 1
-	  _showProgress(result, const_1, const_1, error, const_0, const_1, realContext);
-#endif //ENABLE_SOLVER_PROGRESS
-	}
 
-	if(keyWaiting()) {
-	  printHalfSecUpdate_Integer(force+1, "Interrupted Iter:",loop);
-	  return; // result and error already hold the current best estimates of each
-	}
-#endif //TESTSUITE_BUILD
 
 	realDivide (const_1, &t, &s1, realContext); // s1 stores 1/t
 	realSubtract (&s1, &t, &u, realContext);
@@ -1250,20 +1239,29 @@ static void dbl_exp_int_new (calcRegister_t regist, const real_t *a, const real_
       do {
 	real_t r, w, x;
 
-#if !defined(TESTSUITE_BUILD)
-	char tmps[64];
-	sprintf(tmps,"level:  %i Iter: ",(int16_t)(maxlevel-k));
-	if(printHalfSecUpdate_Integer(timed, tmps, loop++)) { ; //timed
-#if ENABLE_SOLVER_PROGRESS == 1
-	  _showProgress(result, const_1, const_1, error, const_0, const_1, realContext);
-#endif //ENABLE_SOLVER_PROGRESS
-	}
-
-	if(keyWaiting()) {
-	  printHalfSecUpdate_Integer(force+1, "Interrupted Iter:",loop);
-	  return; // result and error already hold the previous best estimates of each
-	}
-#endif //TESTSUITE_BUILD
+  #if !defined(TESTSUITE_BUILD)
+    char tmps[64];
+    exitSignalled |= (popKey() == 32); //instead of keyWaiting()
+    sprintf(tmps,"Level: %i/%i Iter: ",(int16_t)k, (int16_t)maxlevel);
+    if(printHalfSecUpdate_Integer(timed, tmps, loop++, !interruptedLoop, !interruptedLoop, !interruptedLoop)) { ; //timed
+      #if ENABLE_SOLVER_PROGRESS == 1
+        _showProgress(result, const_1, const_1, error, const_0, const_1, realContext);
+      #endif //ENABLE_SOLVER_PROGRESS
+      if(!interruptedLoop && exitSignalled) {  //First EXIT press
+        exitSignalled = false;
+        interruptedLoop = 1;
+      }
+      if(interruptedLoop) {
+        sprintf(tmps,"Level %i. Allow %5.1f s: Iter: ",(int16_t)k, (float)(40.0 - ((interruptedLoop++)/2.0)));
+        radixProcess(tmps,tmps);
+        printHalfSecUpdate_Integer(force+1, tmps, loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+        if(exitSignalled || interruptedLoop >= 40) {      // Direct exit 
+          exitSignalled = false;
+          return;
+        }
+      }
+    }
+  #endif //TESTSUITE_BUILD
 
 	realMultiply (&t, const_4, &s1, realContext); // s1 = 4t
 	realDivide (const_1, &s1, &s1, realContext); // s1 = 0.25/t
