@@ -140,8 +140,8 @@ void resetShiftState(void) {
     showShiftState();
     screenUpdatingMode |= (SCRUPD_SKIP_STACK_ONE_TIME | SCRUPD_SKIP_MENU_ONE_TIME); //JMNEWSPEEDUP
     refreshScreen(100);
+    refreshModeGui();                                                             //JM refreshModeGui
   }                                                                             //^^
-  refreshModeGui();                                                             //JM refreshModeGui
 }
 
 

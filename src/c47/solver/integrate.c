@@ -250,15 +250,20 @@ done:
 
 
 void fnIntegrate(uint16_t labelOrVariable) {
-printf("fnIntegrate\n");
+  //printf("fnIntegrate\n");
   _fnIntegrate(labelOrVariable, false);
 }
 
 
 void fnIntegrateYX(uint16_t labelOrVariable) {
-printf("fnIntegrateYX\n");
-  real34Copy(REGISTER_REAL34_DATA(REGISTER_Y), REGISTER_REAL34_DATA(RESERVED_VARIABLE_LLIM));
-  real34Copy(REGISTER_REAL34_DATA(REGISTER_X), REGISTER_REAL34_DATA(RESERVED_VARIABLE_ULIM));
+  //printf("fnIntegrateYX\n");
+  //printRegisterToConsole(REGISTER_X,"X:",", ");
+  //printRegisterToConsole(REGISTER_Y,"Y:","\n");
+  real_t x, y;
+  if(getRegisterAsReal(REGISTER_X, &x) && getRegisterAsReal(REGISTER_Y, &y)) {
+    realToReal34(&x, REGISTER_REAL34_DATA(RESERVED_VARIABLE_ULIM));
+    realToReal34(&y, REGISTER_REAL34_DATA(RESERVED_VARIABLE_LLIM));
+  }
   _fnIntegrate(labelOrVariable, true);
 }
 
@@ -890,6 +895,15 @@ static void _integrate_mm(calcRegister_t regist, const real_t *llim, const real_
   realCopy(acc, &tol);
   // max level
   maxlevel = 7;
+
+  #ifdef PC_BUILD
+    printf"Temporary Debugging info. Can be deleted once done.\n";
+    printRealToConsole(acc,"acc:","\n");
+    printRealToConsole(&eps,"eps:","\n");
+    printf("digits %i\n",realContext->digits);
+    printf("regist %u\n",regist);
+    printf("currentSolverStatus=%u, screenUpdatingMode=%u\n",currentSolverStatus, screenUpdatingMode);
+  #endif //PC_BUILD
 
   realSubtract(&b, &a, &bma2, realContext); // interval half-length
   realMultiply(&bma2, const_1on2, &bma2, realContext);

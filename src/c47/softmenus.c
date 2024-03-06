@@ -569,12 +569,6 @@ TO_QSPI const int16_t menu_Solver[]      = { ITM_NULL,                  ITM_NULL
 //note: the items in here are dynamically assigned, including the static ones (original population was NULL)
 
 
-//TO_QSPI const int16_t menu_Sfdx[]        = { ITM_NULL,                  ITM_NULL,                  VAR_ACC,                   VAR_LLIM,                  VAR_ULIM,                  ITM_INTEGRAL,              
-//                                             ITM_NULL,                  ITM_NULL,                  ITM_DRAW,                  ITM_DRAW_LU,               VAR_LX,                    VAR_UX                    };
-//
-//TO_QSPI const int16_t menu_Sf_TOOL[]     = { ITM_NULL,                  ITM_NULL,                  VAR_ACC,                   VAR_LLIM,                  VAR_ULIM,                  ITM_INTEGRAL,              
-//                                             ITM_NULL,                  ITM_NULL,                  ITM_DRAW,                  VAR_LX,                    VAR_UX,                    ITM_DRAW_LU               };
-
 TO_QSPI const int16_t menu_Sfdx[]        = { ITM_NULL,                   VAR_ACC,                  ITM_INTEGRAL_YX,           VAR_LLIM,                  VAR_ULIM,                  ITM_INTEGRAL,              
 /*same*/                                     ITM_NULL,                  ITM_NULL,                  ITM_DRAW,                  VAR_LX,                    VAR_UX,                    ITM_DRAW_LU               };
 

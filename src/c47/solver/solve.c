@@ -222,23 +222,23 @@ void fnSolveVar(uint16_t unusedButMandatoryParameter) {
   const uint16_t regist = findOrAllocateNamedVariable(var);
   const uint16_t nameLength = stringByteLength(var) + 1;
   if(currentMvarLabel != INVALID_VARIABLE) {
-	if(currentSolverStatus & SOLVER_STATUS_INTERACTIVE) { // MNU_MVAR was displayed by the Solver
-		reallyRunFunction(ITM_STO, regist);
-	}
-	else {	// MNU_MVAR was displayed by VARMNU
-		if(entryStatus & 0x01) { // MVAR menu key pressed after a user entry: save the value in the variable
-			entryStatus &= 0xfe;
-			currentSolverVariable = regist;
-			reallyRunFunction(ITM_STO, regist);
-			temporaryInformation = TI_SOLVER_VARIABLE;
-		}
-		else { // MVAR menu key pressed without a a user entry: store the variable name in K and continue program execution
-			reallocateRegister(REGISTER_K, dtString, nameLength , amNone);
-			xcopy(REGISTER_STRING_DATA(REGISTER_K), var, nameLength );
-			dynamicMenuItem = -1;
-			runProgram(false, INVALID_VARIABLE);
-		}
-	}
+  	if(currentSolverStatus & SOLVER_STATUS_INTERACTIVE) { // MNU_MVAR was displayed by the Solver
+  		reallyRunFunction(ITM_STO, regist);
+  	}
+  	else {	// MNU_MVAR was displayed by VARMNU
+  		if(entryStatus & 0x01) { // MVAR menu key pressed after a user entry: save the value in the variable
+  			entryStatus &= 0xfe;
+  			currentSolverVariable = regist;
+  			reallyRunFunction(ITM_STO, regist);
+  			temporaryInformation = TI_SOLVER_VARIABLE;
+  		}
+  		else { // MVAR menu key pressed without a a user entry: store the variable name in K and continue program execution
+  			reallocateRegister(REGISTER_K, dtString, nameLength , amNone);
+  			xcopy(REGISTER_STRING_DATA(REGISTER_K), var, nameLength );
+  			dynamicMenuItem = -1;
+  			runProgram(false, INVALID_VARIABLE);
+  		}
+  	}
   }
   else if((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_1ST_DERIVATIVE || (currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_2ND_DERIVATIVE) {
     currentSolverVariable = regist;
