@@ -78,7 +78,7 @@
   //  #define SAVE_SPACE_DM42_13GRF_JM //           JM graphics
   //  #define SAVE_SPACE_DM42_12 //047246 bytes: Standard extra 43S math: SLVQ, PRIME, BESSEL, ELLIPTIC, ZETA, BETA, ORTHO_POLY
   //  #define SAVE_SPACE_DM42_15       //           without all distributions, i.e. binomial, cauchy, chi
-  //  #define SAVE_SPACE_DM42_16       //           without Norml
+    #define SAVE_SPACE_DM42_16       //           without Norml
   #endif // TWO_FILE_PGM
 #endif // DMCP_BUILD
 
@@ -299,6 +299,7 @@
 #define SHORT_INTEGER_SIZE               2 // 2 blocks = 8 bytes = 64 bits
 #define ENABLE_SOLVER_PROGRESS           1 // Set to 1 to enable solver progress display (only if called in run mode)
 #define USE_MICHALSKI_MOSIG_TANH_SINH    1 // Set to 1 to use Michalski & Mosig tanh-sinh integration
+#define USE_NEW_DEI_INTEGRATION_CODE     2 // 0 - use prior code. 1 - use new code. 2 - use new code with split point code.
 #define ENABLE_INTEGRATOR_FILE_OUTPUT    0 // Set for PRINTXY to be done after every evaluation of the formula
 #define DECNUMDIGITS                    75 // Default number of digits used in the decNumber library
 
