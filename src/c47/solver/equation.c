@@ -1104,22 +1104,29 @@ static void _parseWord(char *strPtr, uint16_t parseMode, uint16_t parserHint, ch
             #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
           }
           else {
-            if(tmpVal == 1 && ((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_SOLVER)) {   // If the 4th variable has just been added, add Draw and Calc.
-              _menuItem(ITM_SETSIG2, bufPtr);
+
+
+
+            if(tmpVal == 3 && ((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_INTEGRATE)) {   // If the 4th variable has just been added, add Draw and Calc.
+              _menuItem(MNU_Sf_TOOL, bufPtr);
               bufPtr += stringByteLength(bufPtr) + 1;
-              _menuItem(ITM_CPXSLV, bufPtr);
-              bufPtr += stringByteLength(bufPtr) + 1;
-              _menuItem(ITM_DRAW, bufPtr);
+              _menuItem(ITM_INTEGRAL_YX, bufPtr);
+            } else
+
+
+
+            if(tmpVal == 3 && ((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_SOLVER)) {   // If the 4th variable has just been added, add Draw and Calc.
+              _menuItem(MNU_Solver_TOOL, bufPtr);
               bufPtr += stringByteLength(bufPtr) + 1;
               _menuItem(ITM_CALC, bufPtr);
             }
             else if(tmpVal == 3 && ((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_1ST_DERIVATIVE)) {
-              _menuItem(ITM_DRAW, bufPtr);
+              _menuItem(MNU_GRAPHS, bufPtr);
               bufPtr += stringByteLength(bufPtr) + 1;
               _menuItem(ITM_FPHERE, bufPtr);
             }
             else if(tmpVal == 3 && ((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_2ND_DERIVATIVE)) {
-              _menuItem(ITM_DRAW, bufPtr);
+              _menuItem(MNU_GRAPHS, bufPtr);
               bufPtr += stringByteLength(bufPtr) + 1;
               _menuItem(ITM_FPPHERE, bufPtr);
             }
@@ -1559,31 +1566,42 @@ void parseEquation(uint16_t equationId, uint16_t parseMode, char *buffer, char *
       ++tmpVal;
     }
     if((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_SOLVER) {
-      for(; tmpVal < 2; ++tmpVal) {  //If there are less than 4 variables, skip to the 5th item and add Draw & Calc.
+      for(; tmpVal < 4; ++tmpVal) {  //If there are less than 4 variables, skip to the 5th item and add Draw & Calc.
         *(bufPtr++) = 0;
       }
-      if(tmpVal == 2) {
-        _menuItem(ITM_SETSIG2, bufPtr);
-        bufPtr += stringByteLength(bufPtr) + 1;
-        _menuItem(ITM_CPXSLV, bufPtr);
-        bufPtr += stringByteLength(bufPtr) + 1;
-        _menuItem(ITM_DRAW, bufPtr);
+      if(tmpVal == 4) {
+        _menuItem(MNU_Solver_TOOL, bufPtr);
         bufPtr += stringByteLength(bufPtr) + 1;
         _menuItem(ITM_CALC, bufPtr);
       }
     }
+
+
+
+    if((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_INTEGRATE) {                      // MNU_Sf
+      for(; tmpVal < 4; ++tmpVal) {  //If there are less than 4 variables, skip to the 5th item and add Draw & Calc.
+        *(bufPtr++) = 0;
+      }
+      if(tmpVal == 4) {
+        _menuItem(MNU_Sf_TOOL, bufPtr);
+        bufPtr += stringByteLength(bufPtr) + 1;
+        _menuItem(ITM_INTEGRAL_YX, bufPtr);
+      }
+    }
+
+
     if((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_1ST_DERIVATIVE || (currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_2ND_DERIVATIVE) {
       for(; tmpVal < 4; ++tmpVal) {  //If there are less than 4 variables, skip to the 5th item and add Draw & Calc.
         *(bufPtr++) = 0;
       }
       if(tmpVal == 4) {
         if((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_1ST_DERIVATIVE) {
-          _menuItem(ITM_DRAW, bufPtr);
+          _menuItem(MNU_GRAPHS, bufPtr);
           bufPtr += stringByteLength(bufPtr) + 1;
           _menuItem(ITM_FPHERE, bufPtr);
         }
         else {
-          _menuItem(ITM_DRAW, bufPtr);
+          _menuItem(MNU_GRAPHS, bufPtr);
           bufPtr += stringByteLength(bufPtr) + 1;
           _menuItem(ITM_FPPHERE, bufPtr);
         }

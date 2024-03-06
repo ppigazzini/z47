@@ -41,6 +41,8 @@
 #include "softmenus.h"
 #include "solver/equation.h"
 #include "stack.h"
+#include "store.h"
+#include "recall.h"
 #include "c47.h"
 
 void fnPgmInt(uint16_t label) {
@@ -93,7 +95,9 @@ void fnPgmInt(uint16_t label) {
   }
 }
 
-void fnIntegrate(uint16_t labelOrVariable) {
+
+
+void _fnIntegrate(uint16_t labelOrVariable, bool_t XY) {
   if((labelOrVariable >= FIRST_LABEL && labelOrVariable <= LAST_LABEL) || (labelOrVariable >= REGISTER_X && labelOrVariable <= REGISTER_T)) {
     // Interactive mode
     fnPgmInt(labelOrVariable);
@@ -101,7 +105,7 @@ void fnIntegrate(uint16_t labelOrVariable) {
       currentSolverStatus = SOLVER_STATUS_INTERACTIVE | SOLVER_STATUS_EQUATION_INTEGRATE;
     }
   }
-  else if(labelOrVariable == RESERVED_VARIABLE_ACC || labelOrVariable == RESERVED_VARIABLE_ULIM || labelOrVariable == RESERVED_VARIABLE_LLIM) {
+  else if(!XY && (labelOrVariable == RESERVED_VARIABLE_ACC || labelOrVariable == RESERVED_VARIABLE_ULIM || labelOrVariable == RESERVED_VARIABLE_LLIM)) {
     fnToReal(NOPARAM);
     if(lastErrorCode == ERROR_NONE) {
       real34Copy(REGISTER_REAL34_DATA(REGISTER_X), REGISTER_REAL34_DATA(labelOrVariable));
@@ -142,8 +146,14 @@ void fnIntegrate(uint16_t labelOrVariable) {
     if(realIsZero(&acc)) { // it may freeze if ACC=0
       realCopy(const_1e_6143, &acc);
     }
+    if(real34CompareEqual(REGISTER_REAL34_DATA(RESERVED_VARIABLE_ULIM),REGISTER_REAL34_DATA(RESERVED_VARIABLE_LLIM) )) {
+      int32ToReal(0,&res);
+      int32ToReal(0,&acc);
+      goto done;
+    }
 
-#undef SPEEDUPEXPERIMENT
+#define SPEEDUPEXPERIMENT
+//#undef SPEEDUPEXPERIMENT
 
 #ifdef SPEEDUPEXPERIMENT
     real_t digits;
@@ -151,7 +161,7 @@ void fnIntegrate(uint16_t labelOrVariable) {
     int32_t digitsN = 0;
     WP34S_Ln(&acc, &digits, &ctxtReal39);
     realDivide(&digits, const_ln10, &digits, &ctxtReal39);
-    digitsN = -realToInt32C47(&digits);
+    digitsN = max(min(-realToInt32C47(&digits),34-3),1);
     #ifdef PC_BUILD
       printRealToConsole(&digits, "digits: ","\n");
       printf("----->>>> digitsN=%i, smallerEpsilon=%u\n",digitsN,smallerEpsilon);
@@ -159,29 +169,68 @@ void fnIntegrate(uint16_t labelOrVariable) {
       printRealToConsole(&llim, "llim: ","\n");
       printRealToConsole(&ulim, "ulim: ","\n");
     #endif
-    if(!smallerEpsilon && digitsN < 14 && digitsN > 4) {
-    #ifdef PC_BUILD
-      printf("Reducing digits to %i\n",digitsN);
-    #endif
-      significantDigits = digitsN+1;
-      ctxtReal34.digits = digitsN+1;
-      ctxtReal39.digits = digitsN+3;
-      ctxtReal51.digits = digitsN+4;
-      ctxtReal75.digits = digitsN+6;
-    }
-#endif //SPEEDUPEXPERIMENT
 
-    integrate(labelOrVariable, &llim, &ulim, &acc, &res, smallerEpsilon ? &ctxtReal75 : &ctxtReal39);
-
-#ifdef SPEEDUPEXPERIMENT
+    if(digitsN == 6) {
+      #ifdef PC_BUILD
+        printf("Special accuracy test case: N=6 Reducing DEC to single precision and SDIGS digits to %i etc.\n",digitsN+3);
+      #endif
+      significantDigits = digitsN+3;
+      ctxtReal4.digits  = 7;
+      ctxtReal34.digits = digitsN+3;
+      ctxtReal39.digits = digitsN+5;
+      ctxtReal51.digits = digitsN+7;
+      ctxtReal75.digits = digitsN+13;
+      integrate(labelOrVariable, &llim, &ulim, &acc, &res, &ctxtReal4);
+        //WP34S_Ln(&acc, &digits, &ctxtReal39);
+        //realDivide(&digits, const_ln10, &digits, &ctxtReal39);
+        //digitsN = max(min(-realToInt32C47(&digits),34-3),1);
+        //#ifdef PC_BUILD
+        //  printf("nnn=%i\n",digitsN);
+        //#endif
+        //real_t tt;
+        //int32ToReal(-digitsN, &tt);  
+        //realRescale(&res, &res, &tt, &ctxtReal4);
       significantDigits = significantDigitsMem;
+      ctxtReal4.digits  = 6;
       ctxtReal34.digits = 34;
       ctxtReal39.digits = 39;
       ctxtReal51.digits = 51;
       ctxtReal75.digits = 75;
+    } else
+    if(digitsN <= 10) {
+      #ifdef PC_BUILD
+        printf("Special accuracy test case: N<=10 Reducing SDIGS digits to %i etc.\n",digitsN+3);
+      #endif
+      significantDigits = digitsN+3;
+      ctxtReal4.digits  = digitsN+3;
+      ctxtReal34.digits = digitsN+3;
+      ctxtReal39.digits = digitsN+5;
+      ctxtReal51.digits = digitsN+7;
+      ctxtReal75.digits = digitsN+13;
+      integrate(labelOrVariable, &llim, &ulim, &acc, &res, &ctxtReal39);
+        //WP34S_Ln(&acc, &digits, &ctxtReal39);
+        //realDivide(&digits, const_ln10, &digits, &ctxtReal39);
+        //digitsN = max(min(-realToInt32C47(&digits),34-3),1);
+        //#ifdef PC_BUILD
+        //  printf("nnn=%i\n",digitsN);
+        //#endif
+        //real_t tt;
+        //int32ToReal(-digitsN, &tt);
+        //realRescale(&res, &res, &tt, &ctxtReal39);  or ose ACC. But best is to use N decimals. This does not work right
+      significantDigits = significantDigitsMem;
+      ctxtReal4.digits  = 6;
+      ctxtReal34.digits = 34;
+      ctxtReal39.digits = 39;
+      ctxtReal51.digits = 51;
+      ctxtReal75.digits = 75;
+    } else {
+      integrate(labelOrVariable, &llim, &ulim, &acc, &res, smallerEpsilon ? &ctxtReal75 : &ctxtReal39);
+    }
+#else //SPEEDUPEXPERIMENT
+    integrate(labelOrVariable, &llim, &ulim, &acc, &res, smallerEpsilon ? &ctxtReal75 : &ctxtReal39);
 #endif //SPEEDUPEXPERIMENT
 
-
+done:
     fnClearStack(NOPARAM);
     reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
     reallocateRegister(REGISTER_Y, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
@@ -198,6 +247,27 @@ void fnIntegrate(uint16_t labelOrVariable) {
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 }
+
+
+void fnIntegrate(uint16_t labelOrVariable) {
+  //printf("fnIntegrate\n");
+  _fnIntegrate(labelOrVariable, false);
+}
+
+
+void fnIntegrateYX(uint16_t labelOrVariable) {
+  //printf("fnIntegrateYX\n");
+  //printRegisterToConsole(REGISTER_X,"X:",", ");
+  //printRegisterToConsole(REGISTER_Y,"Y:","\n");
+  real_t x, y;
+  if(getRegisterAsReal(REGISTER_X, &x) && getRegisterAsReal(REGISTER_Y, &y)) {
+    realToReal34(&x, REGISTER_REAL34_DATA(RESERVED_VARIABLE_ULIM));
+    realToReal34(&y, REGISTER_REAL34_DATA(RESERVED_VARIABLE_LLIM));
+  }
+  _fnIntegrate(labelOrVariable, true);
+}
+
+
 
 void fnIntVar(uint16_t unusedButMandatoryParameter) {
   #if !defined(TESTSUITE_BUILD)
@@ -826,6 +896,15 @@ static void _integrate_mm(calcRegister_t regist, const real_t *llim, const real_
   // max level
   maxlevel = 7;
 
+  #ifdef PC_BUILD
+    printf"Temporary Debugging info. Can be deleted once done.\n";
+    printRealToConsole(acc,"acc:","\n");
+    printRealToConsole(&eps,"eps:","\n");
+    printf("digits %i\n",realContext->digits);
+    printf("regist %u\n",regist);
+    printf("currentSolverStatus=%u, screenUpdatingMode=%u\n",currentSolverStatus, screenUpdatingMode);
+  #endif //PC_BUILD
+
   realSubtract(&b, &a, &bma2, realContext); // interval half-length
   realMultiply(&bma2, const_1on2, &bma2, realContext);
   realAdd(&b, &a, &bpa2, realContext); // centre of interval
@@ -847,6 +926,9 @@ static void _integrate_mm(calcRegister_t regist, const real_t *llim, const real_
         exitSignalled |= (popKey() == 32); //instead of keyWaiting()
         sprintf(tmps,"Level: %i/%i Iter: ",(int16_t)k, (int16_t)maxlevel);
         if(printHalfSecUpdate_Integer(timed, tmps, loop++, !interruptedLoop, !interruptedLoop, !interruptedLoop)) { ; //timed
+          #if defined(PC_BUILD)
+            printf("%s %i\n",tmps,loop);
+          #endif //PC_BUILD
           #if ENABLE_SOLVER_PROGRESS == 1
             _showProgress(&sslast, &bma2, &h, &errval, const_0, const_2, realContext);
           #endif //ENABLE_SOLVER_PROGRESS

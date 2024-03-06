@@ -15,6 +15,7 @@
 #include "display.h"
 #include "error.h"
 #include "flags.h"
+#include "fonts.h"
 #include "hal/gui.h"
 #include "items.h"
 #include "c43Extensions/jm.h"
@@ -38,6 +39,7 @@
 #include "sort.h"
 #include "stack.h"
 #include "stats.h"
+#include "store.h"
 #include "timer.h"
 #include "ui/tam.h"
 #include "c43Extensions/xeqm.h"
@@ -135,51 +137,71 @@ printf(">>>>  0093     firstItem=%d itemShift=%d fn=%d",firstItem, itemShift, fn
       }
 
       case MNU_MVAR: {
+
         dynamicMenuItem = firstItem + itemShift + fn;
+        #define IS_EQN_INTEGRATE ((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_INTEGRATE)
+        #define IS_FORM_2NDDER   ((currentSolverStatus & SOLVER_STATUS_USES_FORMULA) && (currentSolverStatus & SOLVER_STATUS_INTERACTIVE) && ((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_2ND_DERIVATIVE))
+        #define IS_FORM_1STDER   ((currentSolverStatus & SOLVER_STATUS_USES_FORMULA) && (currentSolverStatus & SOLVER_STATUS_INTERACTIVE) && ((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_1ST_DERIVATIVE))
         if(tam.mode) {
           item = (dynamicMenuItem >= dynamicSoftmenu[menuId].numItems ? ITM_NOP : MNU_DYNAMIC);
         }
         else if(currentMvarLabel != INVALID_VARIABLE) {
           item = (dynamicMenuItem >= dynamicSoftmenu[menuId].numItems ? ITM_NOP : ITM_SOLVE_VAR);
         }
+
+//Solver
         else if((currentSolverStatus & SOLVER_STATUS_USES_FORMULA) && (currentSolverStatus & SOLVER_STATUS_INTERACTIVE) && ((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_SOLVER) && dynamicMenuItem == 5) {
           item = ITM_CALC;
         }
         else if((currentSolverStatus & SOLVER_STATUS_USES_FORMULA) && (currentSolverStatus & SOLVER_STATUS_INTERACTIVE) && ((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_SOLVER) && dynamicMenuItem == 4) {
-          item = ITM_DRAW;
-        }
-        else if((currentSolverStatus & SOLVER_STATUS_USES_FORMULA) && (currentSolverStatus & SOLVER_STATUS_INTERACTIVE) && ((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_SOLVER) && dynamicMenuItem == 3) {
-          item = ITM_CPXSLV;
-        }
-        else if((currentSolverStatus & SOLVER_STATUS_USES_FORMULA) && (currentSolverStatus & SOLVER_STATUS_INTERACTIVE) && ((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_SOLVER) && dynamicMenuItem == 2) {
-          item = ITM_SETSIG2;
+          item = -MNU_Solver_TOOL;
         }
         else if((currentSolverStatus & SOLVER_STATUS_USES_FORMULA) && (currentSolverStatus & SOLVER_STATUS_INTERACTIVE) && *getNthString(dynamicSoftmenu[softmenuStack[0].softmenuId].menuContent, dynamicMenuItem) == 0) {
           item = ITM_NOP;
         }
-        else if((currentSolverStatus & SOLVER_STATUS_USES_FORMULA) && (currentSolverStatus & SOLVER_STATUS_INTERACTIVE) && ((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_1ST_DERIVATIVE) && dynamicMenuItem == 5) {
+
+//f'
+        else if(IS_FORM_1STDER && dynamicMenuItem == 5) {
           item = ITM_FPHERE;
         }
-        else if((currentSolverStatus & SOLVER_STATUS_USES_FORMULA) && (currentSolverStatus & SOLVER_STATUS_INTERACTIVE) && ((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_1ST_DERIVATIVE) && dynamicMenuItem == 4) {
-          item = ITM_DRAW;
+        else if(IS_FORM_1STDER && dynamicMenuItem == 4) {
+          item = -MNU_GRAPHS;
         }
-        else if((currentSolverStatus & SOLVER_STATUS_USES_FORMULA) && (currentSolverStatus & SOLVER_STATUS_INTERACTIVE) && ((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_2ND_DERIVATIVE) && dynamicMenuItem == 5) {
+
+//f''
+        else if(IS_FORM_2NDDER && dynamicMenuItem == 5) {
           item = ITM_FPPHERE;
         }
-        else if((currentSolverStatus & SOLVER_STATUS_USES_FORMULA) && (currentSolverStatus & SOLVER_STATUS_INTERACTIVE) && ((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_2ND_DERIVATIVE) && dynamicMenuItem == 4) {
-          item = ITM_DRAW;
+        else if(IS_FORM_2NDDER && dynamicMenuItem == 4) {
+          item = -MNU_GRAPHS;
         }
+
+
         else if(dynamicMenuItem >= dynamicSoftmenu[menuId].numItems) {
           item = ITM_NOP;
         }
         else if(!(currentSolverStatus & SOLVER_STATUS_INTERACTIVE)) {
           item = MNU_DYNAMIC;
         }
-        else if( ((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_INTEGRATE) && dynamicMenuItem == 2) {
-          item = ITM_DRAW;
+
+//integral MNU_Sf
+        else if( (IS_EQN_INTEGRATE) && dynamicMenuItem == 4) {
+          item = -MNU_Sf_TOOL;
         }
-        else if((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_INTEGRATE) {
+
+//TEST!!
+else if( (IS_EQN_INTEGRATE) && dynamicMenuItem == 5) {
+printf("WWWWWWWWWWWW ITM_INTEGRAL_YX\n");
+          item = ITM_INTEGRAL_YX;
+        }
+
+
+        else if(IS_EQN_INTEGRATE) {
           item = ITM_Sfdx_VAR;
+//TEST!!
+#ifdef PC_BUILD
+  printf("fnIntVar(), " STD_INTEGRAL "fdx VarL  " STD_INTEGRAL "fdx E\n");
+#endif
         }
         else {
           item = ITM_SOLVE_VAR;
@@ -996,6 +1018,11 @@ int16_t lastItem = 0;
 */
         if(calcMode != CM_CONFIRMATION && data[0] != 0 && !running_program_jm) { //JM data is used if operation is from the real keyboard. item is used directly if called from XEQM
           lastErrorCode = 0;
+           if(item == ITM_INTEGRAL_YX && calcMode != CM_PEM) {        //loook at why the two INTEGRAL commands are behaving different.
+//            popSoftmenu();
+printf("GGGGGGGGGGGGG\n");
+            showSoftmenu(-MNU_Sfdx);
+          }
 
           if(calcMode != CM_PEM && item == -MNU_Sfdx) {
             tamEnterMode(MNU_Sfdx);
@@ -1003,7 +1030,8 @@ int16_t lastItem = 0;
             screenUpdatingMode &= ~SCRUPD_ONE_TIME_FLAGS;
             return;
           }
-          else if(calcMode != CM_PEM && item == ITM_INTEGRAL) {
+          else if(calcMode != CM_PEM && (item == ITM_INTEGRAL)) {
+printf("FFFFFFFFFFFF\n");
             switch(calcMode) {
               case CM_NIM: {
                 closeNim();
@@ -1043,7 +1071,7 @@ int16_t lastItem = 0;
                 printf("BB2 screenUpdatingMode=%u temporaryInformation=%u\n", screenUpdatingMode, temporaryInformation);
               #endif // PC_BUILD &&MONITOR_CLRSCR
 
-              if(calcMode == CM_GRAPH && item == -MNU_PLOT_RANGE) {
+              if(calcMode == CM_GRAPH && item == -MNU_GRAPHS) {
                 calcMode = CM_NORMAL;
               } 
 
@@ -3384,9 +3412,9 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
           lastErrorCode = 0;
         }
         else {
-          if(softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_PLOT_RANGE && softmenu[softmenuStack[1].softmenuId].menuItem == -MNU_PLOT) {
+          if(softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_GRAPHS && softmenu[softmenuStack[1].softmenuId].menuItem == -MNU_PLOT) {
             calcMode = CM_GRAPH;
-            fnEqSolvGraph(EQ_REPLOT);
+            fnEqSolvGraph(EQ_PLOT_LU);
             screenUpdatingMode = SCRUPD_AUTO;            
           }
           else
@@ -3593,7 +3621,7 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
           }
         }
         else {
-          if(softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_PLOT && softmenu[softmenuStack[1].softmenuId].menuItem == -MNU_PLOT_RANGE) {
+          if(softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_PLOT && softmenu[softmenuStack[1].softmenuId].menuItem == -MNU_GRAPHS) {
             popSoftmenu();
           }
           popSoftmenu();

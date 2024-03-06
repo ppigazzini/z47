@@ -27,10 +27,15 @@
 
 extern char plotStatMx[8];
 
-#define EQ_SOLVE    0   //fnEqSolvGraph
-#define EQ_PLOT     1   //fnEqSolvGraph
-#define EQ_REPLOT   2   //fnEqSolvGraph
-#define EQ__PLOT    3   //fnEqSolvGraph
+#define EQ_CPXSOLVE       0   //fnEqSolvGraph
+#define EQ_CPXSOLVE_LU    1   //fnEqSolvGraph
+#define EQ_REALSOLVE      2   //fnEqSolvGraph
+#define EQ_REALSOLVE_LU   3   //fnEqSolvGraph
+#define EQ_PLOT           4   //fnEqSolvGraph
+#define EQ_PLOT_LU        5   //fnEqSolvGraph
+#define EQ__PLOT          6   //fnEqSolvGraph
+
+
 #define noInitDrwMx 0
 #define initDrwMx   1
 

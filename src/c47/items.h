@@ -1426,7 +1426,7 @@
 #define MNU_ALPHAMISC               1378
 #define MNU_SYSFL                   1379
 #define MNU_Sf                      1380
-#define MNU_Sfdx                    1381
+#define MNU_Sfdx                    1381      //INT
 #define MNU_ANGLECONV_43S           1382
 #define MNU_alpha_omega             1383
 #define MNU_ALPHAintl               1384
@@ -1737,7 +1737,7 @@
 #define ITM_toINT                   1687
 #define ITM_1688                    1688
 #define ITM_1689                    1689
-#define ITM_1690                    1690
+#define ITM_INTEGRAL_YX             1690   //INT
 #define ITM_toREAL                  1691
 #define ITM_PCSGM_DPCMN             1692
 #define ITM_DPCMEAN                 1693
@@ -1747,7 +1747,7 @@
 #define ITM_PCT                     1697
 #define ITM_PCSIGMA                 1698
 #define ITM_PCPMG                   1699
-#define ITM_INTEGRAL                1700
+#define ITM_INTEGRAL                1700   //INT
 #define ITM_PMOD                    1701
 #define ITM_M_DET                   1702
 #define ITM_PARALLEL                1703
@@ -1830,12 +1830,12 @@
 #define ITM_TIMER_RESET             1778
 #define ITM_TIMER_RCL               1779
 #define ITM_DELBKUP                 1780
-#define ITM_CPXSLV                  1781
-#define ITM_DRAW                    1782
-#define MNU_PLOT_RANGE              1783
-#define ITM_REDRAW                  1784
-#define ITM_FPHERE                  1785
-#define ITM_FPPHERE                 1786
+#define ITM_1781                    1781
+#define ITM_1782                    1782
+#define ITM_1783                    1783
+#define ITM_1784                    1784
+#define ITM_1785                    1785
+#define ITM_1786                    1786
 #define ITM_nBINS                   1787
 #define ITM_LOBIN                   1788
 #define ITM_HIBIN                   1789
@@ -2426,7 +2426,20 @@
 #define ITM_M_ADDR                  2366
 #define ITM_M_ADDC                  2367
 
-#define LAST_ITEM                   2368
+
+#define ITM_REALSLV                 2368
+#define ITM_REALSLV_LU              2369
+#define ITM_CPXSLV                  2370
+#define ITM_CPXSLV_LU               2371
+#define ITM_DRAW                    2372
+#define ITM_DRAW_LU                 2373
+#define MNU_GRAPHS                  2374
+#define MNU_Sf_TOOL                 2375
+#define MNU_Solver_TOOL             2376
+#define ITM_FPHERE                  2377
+#define ITM_FPPHERE                 2378
+
+#define LAST_ITEM                   2379
 
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL
