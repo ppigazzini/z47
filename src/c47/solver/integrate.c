@@ -1276,6 +1276,29 @@ static void dbl_exp_int_new (calcRegister_t regist, const real_t *a, const real_
 	// error for a and const_0 for b.
 	// Note that result and error do not change within this inner loop so
 	// only the loop counter changes each time.
+  #if !defined(TESTSUITE_BUILD)
+    char tmps[64];
+    exitSignalled |= (popKey() == 32); //instead of keyWaiting()
+    sprintf(tmps,"Level: %i/%i Iter: ",(int16_t)k, (int16_t)maxlevel);
+    if(printHalfSecUpdate_Integer(timed, tmps, loop++, !interruptedLoop, !interruptedLoop, !interruptedLoop)) { ; //timed
+      #if ENABLE_SOLVER_PROGRESS == 1
+        _showProgress(result, const_1, const_1, error, const_0, const_1, realContext);
+      #endif //ENABLE_SOLVER_PROGRESS
+      if(!interruptedLoop && exitSignalled) {  //First EXIT press
+        exitSignalled = false;
+        interruptedLoop = 1;
+      }
+      if(interruptedLoop) {
+        sprintf(tmps,"Level %i. Allow %5.1f s: Iter: ",(int16_t)k, (float)(40.0 - ((interruptedLoop++)/2.0)));
+        radixProcess(tmps,tmps);
+        printHalfSecUpdate_Integer(force+1, tmps, loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+        if(exitSignalled || interruptedLoop >= 40) {      // Direct exit 
+          exitSignalled = false;
+          return;
+        }
+      }
+    }
+  #endif //TESTSUITE_BUILD
 
 
 	realDivide (const_1, &t, &s1, realContext); // s1 stores 1/t
