@@ -636,8 +636,8 @@ TO_QSPI const int16_t menu_TamLabel[]    = { ITM_INDIRECTION,               -MNU
 
 
 TO_QSPI const int16_t menu_Eim[]         = {
-                                             ITM_LEFT_PARENTHESIS,          ITM_RIGHT_PARENTHESIS,     ITM_CIRCUMFLEX,            ITM_ROOT_SIGN,         ITM_EQ_LEFT,                 ITM_EQ_RIGHT,
-                                             ITM_ALOG_SIGN,                 ITM_EQUAL,                 CHR_case,                  CHR_num,               ITM_SCR,                     ITM_COLON,
+                                             ITM_LEFT_PARENTHESIS,          ITM_RIGHT_PARENTHESIS,     ITM_CIRCUMFLEX,            CHR_num,               ITM_EQ_LEFT,                 ITM_EQ_RIGHT,
+                                             ITM_ALOG_SIGN,                 ITM_EQUAL,                 ITM_ROOT_SIGN,             CHR_case,              ITM_SCR,                     ITM_COLON,
                                              ITM_NULL,                      ITM_NULL,                  ITM_NULL,                  ITM_NULL,              ITM_NULL,                    ITM_NULL,
 
                                              ITM_sin,                       ITM_cos,                   ITM_tan,                   ITM_pi,                ITM_EQ_LEFT,                 ITM_EQ_RIGHT,
