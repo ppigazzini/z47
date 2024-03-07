@@ -101,23 +101,33 @@ void convertLongIntegerToReal(longInteger_t source, real_t *destination, realCon
 
 
 void convertLongIntegerToShortIntegerRegister(longInteger_t lgInt, uint32_t base, calcRegister_t destination) {
+  uint64_t u64;
+  bool_t overflow;
+
   reallocateRegister(destination, dtShortInteger, SHORT_INTEGER_SIZE, base);
   if(longIntegerIsZero(lgInt)) {
     *(REGISTER_SHORT_INTEGER_DATA(destination)) = 0;
   }
   else {
     #if defined(OS32BIT) // 32 bit
-      uint64_t u64 = *(uint32_t *)(lgInt->_mp_d);
+      u64 = *(uint32_t *)(lgInt->_mp_d);
       if(abs(lgInt->_mp_size) > 1) {
         u64 |= (int64_t)(*(((uint32_t *)(lgInt->_mp_d)) + 1)) << 32;
       }
+      overflow = abs(lgInt->_mp_size) > 2 || (u64 & shortIntegerMask) != u64;
       *(REGISTER_SHORT_INTEGER_DATA(destination)) = u64 & shortIntegerMask;
     #else // 64 bit
-      *(REGISTER_SHORT_INTEGER_DATA(destination)) = *(uint64_t *)(lgInt->_mp_d) & shortIntegerMask;
+      u64 = *(uint64_t *)(lgInt->_mp_d);
+      overflow = abs(lgInt->_mp_size) > 1 || (u64 & shortIntegerMask) != u64;
+      *(REGISTER_SHORT_INTEGER_DATA(destination)) = u64 & shortIntegerMask;
     #endif // OS32BIT
+    
     if(longIntegerIsNegative(lgInt)) {
+      clearSystemFlag(FLAG_OVERFLOW);
       *(REGISTER_SHORT_INTEGER_DATA(destination)) = WP34S_intChs(*(REGISTER_SHORT_INTEGER_DATA(destination)));
     }
+    if (overflow && !getSystemFlag(FLAG_OVERFLOW))
+      setSystemFlag(FLAG_OVERFLOW);
   }
 }
 
