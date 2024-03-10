@@ -569,17 +569,17 @@ TO_QSPI const int16_t menu_Solver[]      = { ITM_NULL,                  ITM_NULL
 //note: the items in here are dynamically assigned, including the static ones (original population was NULL)
 
 
-TO_QSPI const int16_t menu_Sfdx[]        = { ITM_NULL,                   VAR_ACC,                  ITM_INTEGRAL_YX,           VAR_LLIM,                  VAR_ULIM,                  ITM_INTEGRAL,              
-/*same*/                                     ITM_NULL,                  ITM_NULL,                  ITM_DRAW,                  VAR_LX,                    VAR_UX,                    ITM_DRAW_LU               };
+TO_QSPI const int16_t menu_Sfdx[]        = { ITM_INTEGRAL_YX,           VAR_ACC,                  CST_78,                    VAR_LLIM,                  VAR_ULIM,                  ITM_INTEGRAL,              
+/*same*/                                     ITM_DRAW,                  ITM_NULL,                 ITM_NULL,                  VAR_LX,                    VAR_UX,                    ITM_DRAW_LU               };
 
-TO_QSPI const int16_t menu_Sf_TOOL[]     = { ITM_NULL,                   VAR_ACC,                  ITM_INTEGRAL_YX,           VAR_LLIM,                  VAR_ULIM,                  ITM_INTEGRAL,              
-/*same*/                                     ITM_NULL,                  ITM_NULL,                  ITM_DRAW,                  VAR_LX,                    VAR_UX,                    ITM_DRAW_LU               };
+TO_QSPI const int16_t menu_Sf_TOOL[]     = { ITM_INTEGRAL_YX,           CST_77,                   CST_78,                    VAR_LLIM,                  VAR_ULIM,                  ITM_INTEGRAL,              
+/*same*/                                     ITM_DRAW,                  VAR_ACC,                  ITM_NULL,                  VAR_LX,                    VAR_UX,                    ITM_DRAW_LU               };
 
 
 
 
 TO_QSPI const int16_t menu_Solver_TOOL[] = { ITM_CPXSLV,                ITM_REALSLV,               VAR_LLIM,                  VAR_ULIM,                  ITM_CPXSLV_LU,             ITM_REALSLV_LU,            
-                                             ITM_SETSIG2,               ITM_DRAW,                  VAR_LX,                    VAR_UX,                    ITM_DRAW_LU,               ITM_CALC                  };
+                                             ITM_DRAW,                  ITM_SETSIG2,               VAR_LX,                    VAR_UX,                    ITM_CALC,                  ITM_DRAW_LU               };
 
 
 

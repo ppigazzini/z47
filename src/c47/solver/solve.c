@@ -121,28 +121,33 @@ void fnSolve(uint16_t labelOrVariable) {
     real_t tmp;
     int resultCode = 0;
 
+//TEST!!, then remove
     //manipulate the graph minimuma and maximum points based on the solver inputs, part 1
-    float x_0, x_1;
-    float x_diff = 0;
+//    float x_0, x_1;
+//    float x_diff = 0;
+
     if(_realSolverFirstGuesses(REGISTER_Y, &y) && _realSolverFirstGuesses(REGISTER_X, &x)) {
-      x_0 = convertRegisterToDouble(REGISTER_Y);
-      x_1 = convertRegisterToDouble(REGISTER_X);
-      if(x_0 != DOUBLE_NOT_INIT && x_1 != DOUBLE_NOT_INIT) {
-        x_min = x_0;
-        x_max = x_1;
-        x_diff = fabs(x_max-x_min);
-        if(x_diff < 0.001) {
-          x_diff = 0.001; //stay within float range
-        }
-        if(x_diff < 0.01) {
-          x_max = x_max + 0.1 * x_diff;
-          x_min = x_min - 0.1 * x_diff;
-        }
-      }
+
+//TEST!!, then remove
+//Attemptint to remove the auto functions of the graphing
+//      x_0 = convertRegisterToDouble(REGISTER_Y);
+//      x_1 = convertRegisterToDouble(REGISTER_X);
+//      if(x_0 != DOUBLE_NOT_INIT && x_1 != DOUBLE_NOT_INIT) {
+//        x_min = x_0;
+//        x_max = x_1;
+//      //  x_diff = fabs(x_max-x_min);
+//        if(x_diff < 0.001) {
+//          x_diff = 0.001; //stay within float range
+//        }
+//        if(x_diff < 0.01) {
+//          x_max = x_max + 0.1 * x_diff;
+//          x_min = x_min - 0.1 * x_diff;
+//        }
+//      }
 
       currentSolverVariable = labelOrVariable;
       resultCode = solver(labelOrVariable, &y, &x, &z, &y, &x);
-      fnClearStack(NOPARAM); // reset stack to 0.
+      fillStackWithReal0();
       real34ToReal(&z, &tmp), convertRealToReal34ResultRegister(&tmp, REGISTER_Z);
       real34ToReal(&y, &tmp), convertRealToReal34ResultRegister(&tmp, REGISTER_Y);
       real34ToReal(&x, &tmp), convertRealToReal34ResultRegister(&tmp, REGISTER_X);
@@ -181,19 +186,21 @@ void fnSolve(uint16_t labelOrVariable) {
       }
       adjustResult(REGISTER_X, false, false, REGISTER_X, REGISTER_Y, -1);
 
-      //manipulate the graph minimuma and maximum points based on the solver result, part 2
-      x_0 = convertRegisterToDouble(REGISTER_Y);
-      x_1 = convertRegisterToDouble(REGISTER_X);
-      if(x_0 != DOUBLE_NOT_INIT && x_1 != DOUBLE_NOT_INIT) {
-        if(!(x_min<x_0 && x_min<x_1 && x_0<x_max && x_1<x_max)) {
-          if(fmin(x_0,x_1) < x_min) {
-            x_min = fmin(x_0,x_1) - 0.1 * fabs(x_max-fmin(x_0,x_1)); //get the root or maximum/minimum in the centre of the graph interval
-          }
-          if(fmax(x_0,x_1) > x_max) {
-            x_max = fmax(x_0,x_1) + 0.1 * fabs(x_min-fmax(x_0,x_1)); //get the root or maximum/minimum in the centre of the graph interval
-          }
-        }
-      }
+//TEST!!, then remove
+//Attemptint to remove the auto functions of the graphing
+//      //manipulate the graph minimuma and maximum points based on the solver result, part 2
+//      x_0 = convertRegisterToDouble(REGISTER_Y);
+//      x_1 = convertRegisterToDouble(REGISTER_X);
+//      if(x_0 != DOUBLE_NOT_INIT && x_1 != DOUBLE_NOT_INIT) {
+//        if(!(x_min<x_0 && x_min<x_1 && x_0<x_max && x_1<x_max)) {
+//          if(fmin(x_0,x_1) < x_min) {
+//            x_min = fmin(x_0,x_1) - 0.1 * fabs(x_max-fmin(x_0,x_1)); //get the root or maximum/minimum in the centre of the graph interval
+//          }
+//          if(fmax(x_0,x_1) > x_max) {
+//            x_max = fmax(x_0,x_1) + 0.1 * fabs(x_min-fmax(x_0,x_1)); //get the root or maximum/minimum in the centre of the graph interval
+//          }
+//        }
+//      }
 
     }
     else {

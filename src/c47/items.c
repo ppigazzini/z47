@@ -125,6 +125,9 @@ void fnNop(uint16_t unusedButMandatoryParameter) {
 
 
   void reallyRunFunction(int16_t func, uint16_t param) {
+    #if defined(PC_BUILD) && defined(DEBUG_EXECUTE)
+      printf("   >>>  ReallyRunFunction: §%i§%s§%s§\n",func, indexOfItems[abs(func)].itemCatalogName, indexOfItems[abs(func)].itemSoftmenuName);
+    #endif // PC_BUILD
     lastFunc = func;
     lastParam = param;
     if(func != ITM_SOLVE_VAR && (calcMode == CM_NORMAL || calcMode == CM_NIM) &&
@@ -209,8 +212,8 @@ void fnNop(uint16_t unusedButMandatoryParameter) {
     }
     else {
       force_refresh(timed); //Added this to enable 0.5 second refresh during running
-      #if defined(PC_BUILD) && VERBOSE_LEVEL > -1
-        printf("   >>>   reallyRunFunction: §%s§%s§\n",indexOfItems[abs(func)].itemCatalogName, indexOfItems[abs(func)].itemSoftmenuName);
+      #if (defined(PC_BUILD) && VERBOSE_LEVEL > -1) || defined(DEBUG_EXECUTE)
+        printf("   >>>   reallyRunFunction: §%i§%s§%s§\n",func, indexOfItems[abs(func)].itemCatalogName, indexOfItems[abs(func)].itemSoftmenuName);
       #endif // PC_BUILD
     }
 
@@ -342,6 +345,9 @@ void fnNop(uint16_t unusedButMandatoryParameter) {
 
 
   void runFunction(int16_t func) {
+    #if defined(PC_BUILD) && defined(DEBUG_EXECUTE)
+      printf("   >>>RunFunction: §%i§%s§%s§\n",func, indexOfItems[abs(func)].itemCatalogName, indexOfItems[abs(func)].itemSoftmenuName);
+    #endif // PC_BUILD
     funcOK = true;
     #if defined(RECORDLOG)                              //JMEXEC
       #if defined(PC_BUILD)

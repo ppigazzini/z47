@@ -29,6 +29,7 @@
 #include "registerValueConversions.h"
 #include "screen.h"
 #include "softmenus.h"
+#include "solver/solve.h"
 #include "solver/equation.h"
 #include "solver/sumprod.h"
 #include "statusBar.h"
@@ -366,8 +367,7 @@ void graph_eqn(uint16_t mode) {
       }
     #endif
 
-
-    fnClearStack(0);
+    fillStackWithReal0();
 
     convertDoubleToReal34RegisterPush(x_max, REGISTER_X);
     execute_rpn_function();
@@ -521,7 +521,7 @@ void graph_eqn(uint16_t mode) {
       ctxtReal39.digits = 39; //Change back to 39 digit operation for stack;
     #endif //LOW_GRAPH_ACC
 
-    fnClearStack(0);
+    fillStackWithReal0();
 
     #if defined (LOW_GRAPH_ACC)
       //Change to SDIGS digit operation for screen graphs;
@@ -565,7 +565,7 @@ void graph_stat(uint16_t unusedButMandatoryParameter) {
       PLOT_LINE = true;
       PLOT_SHADE = true;
 
-      fnClearStack(0);
+      fillStackWithReal0();
       fnPlotSQ(0);
     } else {
       calcMode = CM_NORMAL;
@@ -1263,45 +1263,10 @@ void graph_stat(uint16_t unusedButMandatoryParameter) {
 
 //-----------------------------------------------------//-----------------------------------------------------
 void fnEqSolvGraph (uint16_t func) {
-  real_t x, y;
-
-
-  switch(func) {
-    case EQ_CPXSOLVE_LU: 
-    case EQ_REALSOLVE_LU: {
-      if(getRegisterAsReal(RESERVED_VARIABLE_LLIM, &y) && getRegisterAsReal(RESERVED_VARIABLE_ULIM, &x)) {
-        realToReal34(&x, REGISTER_REAL34_DATA(REGISTER_X));
-        realToReal34(&y, REGISTER_REAL34_DATA(REGISTER_Y));
-      }
-      break;
-    }   
-    case EQ_CPXSOLVE: 
-    case EQ_REALSOLVE: {
-      if(getRegisterAsReal(REGISTER_X, &x) && getRegisterAsReal(REGISTER_Y, &y)) {
-        realToReal34(&x, REGISTER_REAL34_DATA(RESERVED_VARIABLE_ULIM));
-        realToReal34(&y, REGISTER_REAL34_DATA(RESERVED_VARIABLE_LLIM));
-      }
-      break;
-    }
-    case EQ_PLOT_LU: {           //uses limits
-      if(getRegisterAsReal(RESERVED_VARIABLE_LX, &y) && getRegisterAsReal(RESERVED_VARIABLE_UX, &x)) {
-        realToReal34(&x, REGISTER_REAL34_DATA(REGISTER_X));
-        realToReal34(&y, REGISTER_REAL34_DATA(REGISTER_Y));
-      }
-      break;
-    }   
-    case EQ_PLOT: {              //uses X, Y
-      if(getRegisterAsReal(REGISTER_X, &x) && getRegisterAsReal(REGISTER_Y, &y)) {
-        realToReal34(&x, REGISTER_REAL34_DATA(RESERVED_VARIABLE_UX));
-        realToReal34(&y, REGISTER_REAL34_DATA(RESERVED_VARIABLE_LX));
-      }
-      break;
-    }
-    default:break;
-  }
 
 #if !defined(SAVE_SPACE_DM42_13GRF)
 #if !defined(TESTSUITE_BUILD)
+
   hourGlassIconEnabled = true;
   showHideHourGlass();
   #if defined(DMCP_BUILD)
@@ -1310,37 +1275,87 @@ void fnEqSolvGraph (uint16_t func) {
     refreshLcd(NULL);
   #endif // DMCP_BUILD
 
+  real_t x, y;
+
+
+  switch(func) {
+    case EQ_CPXSOLVE_LU: 
+    case EQ_REALSOLVE_LU: {
+      if(getRegisterAsReal(RESERVED_VARIABLE_LLIM, &y) && getRegisterAsReal(RESERVED_VARIABLE_ULIM, &x)) {
+        liftStack();
+        reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+        liftStack();
+        reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+        realToReal34(&x, REGISTER_REAL34_DATA(REGISTER_X));
+        realToReal34(&y, REGISTER_REAL34_DATA(REGISTER_Y));
+      }
+      break;
+    }   
+    case EQ_CPXSOLVE: 
+    case EQ_REALSOLVE: {
+      if(getRegisterAsReal(REGISTER_X, &x) && getRegisterAsReal(REGISTER_Y, &y)) {
+        reallocateRegister(RESERVED_VARIABLE_ULIM, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+        reallocateRegister(RESERVED_VARIABLE_LLIM, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+        realToReal34(&x, REGISTER_REAL34_DATA(RESERVED_VARIABLE_ULIM));
+        realToReal34(&y, REGISTER_REAL34_DATA(RESERVED_VARIABLE_LLIM));
+      }
+      break;
+    }
+    case EQ_PLOT_LU: {           //uses limits
+      if(getRegisterAsReal(RESERVED_VARIABLE_LX, &y) && getRegisterAsReal(RESERVED_VARIABLE_UX, &x)) {
+        liftStack();
+        reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+        liftStack();
+        reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+        realToReal34(&x, REGISTER_REAL34_DATA(REGISTER_X));
+        realToReal34(&y, REGISTER_REAL34_DATA(REGISTER_Y));
+      }
+      break;
+    }   
+    case EQ_PLOT: {              //uses X, Y
+      if(getRegisterAsReal(REGISTER_X, &x) && getRegisterAsReal(REGISTER_Y, &y)) {
+        reallocateRegister(RESERVED_VARIABLE_UX, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+        reallocateRegister(RESERVED_VARIABLE_LX, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+        realToReal34(&x, REGISTER_REAL34_DATA(RESERVED_VARIABLE_UX));
+        realToReal34(&y, REGISTER_REAL34_DATA(RESERVED_VARIABLE_LX));
+      }
+      break;
+    }
+    default:
+      return;
+      break;
+  }
+
   graphVariable = currentSolverVariable;
   if(graphVariable<0) {
     graphVariable = -graphVariable;
   }
 
+
+printf("aaaa+1\n");
   if(graphVariable >= FIRST_NAMED_VARIABLE && graphVariable <= LAST_NAMED_VARIABLE) {
     #if(defined(VERBOSE_SOLVER00) || defined(VERBOSE_SOLVER0)) && defined(PC_BUILD)
       printf("graphVariable accepted: %i\n", graphVariable);
     #endif // (VERBOSE_SOLVER00 || VERBOSE_SOLVER0) && PC_BUILD
   }
   else {
+printf("aaaa+2\n");
     displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
     #if(EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "unexpected parameter %u", graphVariable);
       moreInfoOnError("In function fnEqSolvGraph:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-    adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
     return;
   }
-
 
   //initialize x
   currentSolverStatus &= ~SOLVER_STATUS_READY_TO_EXECUTE;
 
   switch(func) {
-
-
     case EQ_REALSOLVE_LU:
-    case EQ_REALSOLVE: {
-      if((currentSolverVariable >= FIRST_RESERVED_VARIABLE)) { //&& currentSolverStatus & SOLVER_STATUS_READY_TO_EXECUTE) {
-        reallyRunFunction(ITM_SOLVE, currentSolverVariable);
+    case EQ_REALSOLVE: {      
+      if((currentSolverVariable >= FIRST_NAMED_VARIABLE) ) {//&& currentSolverStatus & SOLVER_STATUS_READY_TO_EXECUTE) {
+        fnSolve(currentSolverVariable);
       }
       break;
     }
@@ -1349,7 +1364,7 @@ void fnEqSolvGraph (uint16_t func) {
     case EQ_CPXSOLVE: {
       printStatus(1,errorMessages[COMPLEX_SOLVER],force);
       fnClDrawMx(4);
-      strcpy(plotStatMx,"DrwMX");
+      strcpy(plotStatMx,"DrwMX"); //why is this graph stuff here?
       statGraphReset();
 
       double higherXStartValue = convertRegisterToDouble(REGISTER_X);

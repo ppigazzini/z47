@@ -231,9 +231,7 @@ void _fnIntegrate(uint16_t labelOrVariable, bool_t XY) {
 #endif //SPEEDUPEXPERIMENT
 
 done:
-    fnClearStack(NOPARAM);
-    reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
-    reallocateRegister(REGISTER_Y, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+    fillStackWithReal0();
     convertRealToReal34ResultRegister(&res, REGISTER_X);
     convertRealToReal34ResultRegister(&acc, REGISTER_Y);
     temporaryInformation = TI_INTEGRAL;

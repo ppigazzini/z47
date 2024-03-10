@@ -396,8 +396,7 @@ void firstDerivative(calcRegister_t label) {
     return;
 
   _1stDerivative(label, &x, &x, &ctxtReal39);
-  fnClearStack(NOPARAM);
-  fnFillStack(NOPARAM);
+  fillStackWithReal0();
   convertRealToResultRegister(&x, REGISTER_X, amNone);
 }
 
@@ -408,7 +407,6 @@ void secondDerivative(calcRegister_t label) {
     return;
 
   _2ndDerivative(label, &x, &x, &ctxtReal39);
-  fnClearStack(NOPARAM);
-  fnFillStack(NOPARAM);
+  fillStackWithReal0();
   convertRealToResultRegister(&x, REGISTER_X, amNone);
 }

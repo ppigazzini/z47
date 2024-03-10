@@ -1281,7 +1281,7 @@ void parseEquation(uint16_t equationId, uint16_t parseMode, char *buffer, char *
   }
   *PARSER_NUMERIC_STACK_POINTER = 0;
   if(parseMode == EQUATION_PARSER_XEQ) {
-    fnClearStack(NOPARAM);
+    fillStackWithReal0();
   }
 
   for(uint32_t i = 0; i < 7; ++i) {

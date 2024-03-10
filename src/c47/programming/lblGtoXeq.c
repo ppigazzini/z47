@@ -710,6 +710,11 @@ int16_t executeOneStep(uint8_t *step) {
     op |= *(step++);
   }
 
+    #if defined(PC_BUILD) && defined(DEBUG_EXECUTE)
+      printf("   >>>  executeOneStep: §%i§%s§%s§\n",op, indexOfItems[(op)].itemCatalogName, indexOfItems[(op)].itemSoftmenuName);
+    #endif // PC_BUILD
+
+
   switch(op) {
     case ITM_GTO:         //     2
     case ITM_XEQ:         //     3

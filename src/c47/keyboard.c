@@ -189,7 +189,7 @@ printf(">>>>  0093     firstItem=%d itemShift=%d fn=%d",firstItem, itemShift, fn
           item = -MNU_Sf_TOOL;
         }
 
-//TEST!!
+//TEST!!, then remove
 else if( (IS_EQN_INTEGRATE) && dynamicMenuItem == 5) {
 printf("WWWWWWWWWWWW ITM_INTEGRAL_YX\n");
           item = ITM_INTEGRAL_YX;
@@ -1020,6 +1020,7 @@ int16_t lastItem = 0;
           lastErrorCode = 0;
            if(item == ITM_INTEGRAL_YX && calcMode != CM_PEM) {        //loook at why the two INTEGRAL commands are behaving different.
 //            popSoftmenu();
+//TEST!!, then remove
 printf("GGGGGGGGGGGGG\n");
             showSoftmenu(-MNU_Sfdx);
           }
@@ -1031,6 +1032,7 @@ printf("GGGGGGGGGGGGG\n");
             return;
           }
           else if(calcMode != CM_PEM && (item == ITM_INTEGRAL)) {
+//TEST!!, then remove
 printf("FFFFFFFFFFFF\n");
             switch(calcMode) {
               case CM_NIM: {

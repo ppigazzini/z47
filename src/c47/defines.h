@@ -149,8 +149,11 @@
   #if defined(PC_BUILD)
     #define DEBUGUNDO
     #undef DEBUGUNDO
+    #define DEBUG_EXECUTE
+    #undef DEBUG_EXECUTE
   #else // !PC_BUILD
     #undef DEBUGUNDO
+    #undef DEBUG_EXECUTE
   #endif // PC_BUILD
 
 

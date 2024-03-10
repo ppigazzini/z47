@@ -145,4 +145,6 @@ void fnClearStack  (uint16_t unusedButMandatoryParameter);
 void fnUndo        (uint16_t unusedButMandatoryParameter);
 void saveForUndo   (void);
 void undo          (void);
+void fillStackWithReal0(void);
+
 #endif // !STACK_H
