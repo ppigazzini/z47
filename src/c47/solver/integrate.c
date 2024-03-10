@@ -983,29 +983,33 @@ static real_t* exp_sinh_opt_d (calcRegister_t regist, const real_t* a, const rea
       uInt32ToReal (1 << (i + j), &r);
       DEI_xeq_user_adr (regist, a, d, &r, &fl, &fr, &h, realContext);
       if (IS_FINITE(&h)) {
-	realCopyAbs (&h, &s1);
-	realAdd (&s, &s1, &s, realContext); // sum |h| to remove noisy cases - probably not needed with decNumbers
-	if (realGetSign (&h) == realGetSign (&h2)) {
-	  i += j; // search right half
-	}
-	else { // search left half
-	  realCopy (&fl, &lfl);
-	  realCopy (&fr, &lfr);
-	  realCopy (&r, &lr);
-	}
+      	realCopyAbs (&h, &s1);
+      	realAdd (&s, &s1, &s, realContext); // sum |h| to remove noisy cases - probably not needed with decNumbers
+      	if (realGetSign (&h) == realGetSign (&h2)) {
+      	  i += j; // search right half
+      	}
+      	else { // search left half
+      	  realCopy (&fl, &lfl);
+      	  realCopy (&fr, &lfr);
+      	  realCopy (&r, &lr);
+      	}
       }
     } while (j > 1);
+    
     if (realCompareGreaterThan (&s, const_1e_32)) { // if sum of |h| > small ...
       realSubtract (&lfl, &lfr, &h, realContext);
       realCopy (&lr, &r);
-      if (!realIsZero (&h)) // if last diff != 0, back up r by one step
-	realDivide (&r, const_2, &r, realContext);
+      if (!realIsZero (&h)) { // if last diff != 0, back up r by one step
+	      realDivide (&r, const_2, &r, realContext);
+      }
       realSetPositiveSign (&lfl);
-      realSetNegativeSign (&lfr);
-      if (realCompareLessThan (&lfl, &lfr))
-	realDivide (d, &r, d, realContext); // move d closer to the finite endpoint
-      else
-	realMultiply (d, &r, d, realContext);  // move d closer to the infinite endpoint 
+      realSetPositiveSign (&lfr);
+      if (realCompareLessThan (&lfl, &lfr)) {
+	      realDivide (d, &r, d, realContext); // move d closer to the finite endpoint
+      }
+      else {
+	      realMultiply (d, &r, d, realContext);  // move d closer to the infinite endpoint 
+      }
     }
   }
 
