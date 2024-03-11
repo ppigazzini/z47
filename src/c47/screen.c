@@ -1732,7 +1732,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
     }
     clearRegisterLine(rowReg, true, true);
 
-    strcpy(regS, "Reg_"); 
+    strcpy(regS, "Reg_");
     regS[3] = letteredRegisterName(reg);
     showString(regS, &standardFont, 19, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(rowReg - REGISTER_X) + 6, vmNormal, true, true);
     sprintf(prefix, "= %s =", name);
@@ -1880,21 +1880,31 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
 
   static void viewRegName(char *prefix, int16_t *prefixWidth) { //using "=" for VIEW
     if(currentViewRegister < REGISTER_X) {
-      sprintf(prefix, " R%02" PRIu16 STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM, currentViewRegister);
+      sprintf(prefix, "%sR%02" PRIu16 STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM, (SBARUPD_Time ? "  " : ""), currentViewRegister);
     }
-    else if(currentViewRegister < FIRST_LOCAL_REGISTER) {
-      sprintf(prefix, " %c" STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM, letteredRegisterName(currentViewRegister));
+    else if(currentViewRegister <= LAST_SPARE_REGISTER) {
+      sprintf(prefix, "%s%c" STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM, (SBARUPD_Time ? "  " : ""), letteredRegisterName(currentViewRegister));
     }
-    else if(currentViewRegister <= LAST_LOCAL_REGISTER) {
-      sprintf(prefix, " R.%02" PRIu16 STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM, (uint16_t)(currentViewRegister - FIRST_LOCAL_REGISTER));
+    else if(currentViewRegister >= FIRST_LOCAL_REGISTER && currentViewRegister <= LAST_LOCAL_REGISTER) {
+      sprintf(prefix, "%sR.%02" PRIu16 STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM, (SBARUPD_Time ? "  " : ""), (uint16_t)(currentViewRegister - FIRST_LOCAL_REGISTER));
     }
     else if(FIRST_NAMED_VARIABLE <= currentViewRegister && currentViewRegister <= LAST_NAMED_VARIABLE) {
-      memcpy(prefix, allNamedVariables[currentViewRegister - FIRST_NAMED_VARIABLE].variableName + 1, allNamedVariables[currentViewRegister - FIRST_NAMED_VARIABLE].variableName[0]);
-      strcpy(prefix + allNamedVariables[currentViewRegister - FIRST_NAMED_VARIABLE].variableName[0], STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM);
+      if(SBARUPD_Time) {
+        prefix[0] = 32;
+        prefix[1] = 32;
+        prefix[2] = 0;
+      }
+      memcpy(prefix + (SBARUPD_Time ? 2 : 0), allNamedVariables[currentViewRegister - FIRST_NAMED_VARIABLE].variableName + 1, allNamedVariables[currentViewRegister - FIRST_NAMED_VARIABLE].variableName[0]);
+      strcpy(prefix + (SBARUPD_Time ? 2 : 0) + allNamedVariables[currentViewRegister - FIRST_NAMED_VARIABLE].variableName[0], STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM);
     }
     else if(FIRST_RESERVED_VARIABLE <= currentViewRegister && currentViewRegister <= LAST_RESERVED_VARIABLE) {
-      memcpy(prefix, allReservedVariables[currentViewRegister - FIRST_RESERVED_VARIABLE].reservedVariableName + 1, allReservedVariables[currentViewRegister - FIRST_RESERVED_VARIABLE].reservedVariableName[0]);
-      strcpy(prefix + allReservedVariables[currentViewRegister - FIRST_RESERVED_VARIABLE].reservedVariableName[0], STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM);
+      if(SBARUPD_Time) {
+        prefix[0] = 32;
+        prefix[1] = 32;
+        prefix[2] = 0;
+      }
+      memcpy(prefix + (SBARUPD_Time ? 2 : 0), allReservedVariables[currentViewRegister - FIRST_RESERVED_VARIABLE].reservedVariableName + 1, allReservedVariables[currentViewRegister - FIRST_RESERVED_VARIABLE].reservedVariableName[0]);
+      strcpy(prefix + (SBARUPD_Time ? 2 : 0) + allReservedVariables[currentViewRegister - FIRST_RESERVED_VARIABLE].reservedVariableName[0], STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM);
     }
     else {
       sprintf(prefix, "?" STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM);
@@ -1923,10 +1933,10 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
     if((currentInputVariable & 0x3fff) < REGISTER_X) {
       sprintf(prefix, " R%02" PRIu16 "?", (uint16_t)(currentInputVariable & 0x3fff));
     }
-    else if((currentInputVariable & 0x3fff) < FIRST_LOCAL_REGISTER) {
+    else if((currentInputVariable & 0x3fff) <= LAST_SPARE_REGISTER) {
       sprintf(prefix, " %c?", letteredRegisterName(currentInputVariable & 0x3fff));
     }
-    else if((currentInputVariable & 0x3fff) <= LAST_LOCAL_REGISTER) {
+    else if(((currentInputVariable & 0x3fff) >= FIRST_LOCAL_REGISTER) && (currentInputVariable & 0x3fff) <= LAST_LOCAL_REGISTER) {
       sprintf(prefix, " R.%02" PRIu16 "?", (uint16_t)((currentInputVariable & 0x3fff) - FIRST_LOCAL_REGISTER));
     }
     else if(FIRST_NAMED_VARIABLE <= (currentInputVariable & 0x3fff) && (currentInputVariable & 0x3fff) <= LAST_NAMED_VARIABLE) {
@@ -2644,7 +2654,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
         if(regist == REGISTER_X && lastErrorCode == 0 && calcMode != CM_PEM && PROBMENU) {
           const char *r_i = NULL, *r_j = NULL, *r_k = NULL;
           calcRegister_t register_i = REGISTER_X, register_j = REGISTER_X, register_k = REGISTER_X;
-          
+
 
           switch(softmenu[softmenuStack[0].softmenuId].menuItem) {
             case -MNU_GEV:
@@ -3220,7 +3230,6 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
             }
           }
 
-
           else if(temporaryInformation == TI_ROOTS3) {
             if(regist == REGISTER_X || regist == REGISTER_Y || regist == REGISTER_Z) {
               strcpy(prefix,"Root" STD_SPACE_FIGURE ":");
@@ -3233,6 +3242,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
             }
             #endif //DISCRIMINANT
           }
+
           else if(temporaryInformation == TI_ROOTS2) {
             if(regist == REGISTER_X || regist == REGISTER_Y) {
               strcpy(prefix,"Root" STD_SPACE_FIGURE ":");
@@ -3245,7 +3255,6 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
             }
             #endif //DISCRIMINANT
           }
-
 
           //L.R. Display
           else if(temporaryInformation == TI_LR && lrChosen != 0) {
