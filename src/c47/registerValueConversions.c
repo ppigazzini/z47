@@ -876,13 +876,12 @@ bool_t getRegisterAsShortInt(calcRegister_t reg, bool_t *sign, uint64_t *val, bo
   longInteger_t ival;
   uint64_t u64;
   int16_t sign16;
-  bool_t of, frac;
+  bool_t of = false, frac = false;
 
   switch(getRegisterDataType(reg)) {
     case dtShortInteger:
       convertShortIntegerRegisterToUInt64(reg, &sign16, val);
       *sign = sign16 == 0;
-      of = frac = false;
       break;
 
     case dtLongInteger:
