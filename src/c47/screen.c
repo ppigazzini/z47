@@ -1880,21 +1880,31 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
 
   static void viewRegName(char *prefix, int16_t *prefixWidth) { //using "=" for VIEW
     if(currentViewRegister < REGISTER_X) {
-      sprintf(prefix, " R%02" PRIu16 STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM, currentViewRegister);
+      sprintf(prefix, "%sR%02" PRIu16 STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM, (SBARUPD_Time ? "  " : ""), currentViewRegister);
     }
     else if(currentViewRegister <= LAST_SPARE_REGISTER) {
-      sprintf(prefix, " %c" STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM, letteredRegisterName(currentViewRegister));
+      sprintf(prefix, "%s%c" STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM, (SBARUPD_Time ? "  " : ""), letteredRegisterName(currentViewRegister));
     }
     else if(currentViewRegister >= FIRST_LOCAL_REGISTER && currentViewRegister <= LAST_LOCAL_REGISTER) {
-      sprintf(prefix, " R.%02" PRIu16 STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM, (uint16_t)(currentViewRegister - FIRST_LOCAL_REGISTER));
+      sprintf(prefix, "%sR.%02" PRIu16 STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM, (SBARUPD_Time ? "  " : ""), (uint16_t)(currentViewRegister - FIRST_LOCAL_REGISTER));
     }
     else if(FIRST_NAMED_VARIABLE <= currentViewRegister && currentViewRegister <= LAST_NAMED_VARIABLE) {
-      memcpy(prefix, allNamedVariables[currentViewRegister - FIRST_NAMED_VARIABLE].variableName + 1, allNamedVariables[currentViewRegister - FIRST_NAMED_VARIABLE].variableName[0]);
-      strcpy(prefix + allNamedVariables[currentViewRegister - FIRST_NAMED_VARIABLE].variableName[0], STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM);
+      if(SBARUPD_Time) {
+        prefix[0] = 32;
+        prefix[1] = 32;
+        prefix[2] = 0;
+      }
+      memcpy(prefix + (SBARUPD_Time ? 2 : 0), allNamedVariables[currentViewRegister - FIRST_NAMED_VARIABLE].variableName + 1, allNamedVariables[currentViewRegister - FIRST_NAMED_VARIABLE].variableName[0]);
+      strcpy(prefix + (SBARUPD_Time ? 2 : 0) + allNamedVariables[currentViewRegister - FIRST_NAMED_VARIABLE].variableName[0], STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM);
     }
     else if(FIRST_RESERVED_VARIABLE <= currentViewRegister && currentViewRegister <= LAST_RESERVED_VARIABLE) {
-      memcpy(prefix, allReservedVariables[currentViewRegister - FIRST_RESERVED_VARIABLE].reservedVariableName + 1, allReservedVariables[currentViewRegister - FIRST_RESERVED_VARIABLE].reservedVariableName[0]);
-      strcpy(prefix + allReservedVariables[currentViewRegister - FIRST_RESERVED_VARIABLE].reservedVariableName[0], STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM);
+      if(SBARUPD_Time) {
+        prefix[0] = 32;
+        prefix[1] = 32;
+        prefix[2] = 0;
+      }
+      memcpy(prefix + (SBARUPD_Time ? 2 : 0), allReservedVariables[currentViewRegister - FIRST_RESERVED_VARIABLE].reservedVariableName + 1, allReservedVariables[currentViewRegister - FIRST_RESERVED_VARIABLE].reservedVariableName[0]);
+      strcpy(prefix + (SBARUPD_Time ? 2 : 0) + allReservedVariables[currentViewRegister - FIRST_RESERVED_VARIABLE].reservedVariableName[0], STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM);
     }
     else {
       sprintf(prefix, "?" STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM);

@@ -2211,8 +2211,11 @@ RELEASE_END:
     else if(temporaryInformation != TI_NO_INFO && item != ITM_UP1 && item != ITM_DOWN1 && item != ITM_EXIT1 && item != ITM_BACKSPACE &&
            !(  ((item == ITM_RCL) || (item >= ITM_0 && item <= ITM_9 && allowShowDigits)) && SHOWMODE  ) ) {
       temporaryInformation = TI_NO_INFO;
-      closeShowMenu();
+      if(SHOWMODE) {
+        closeShowMenu();
+      }
     }
+
     if(programRunStop == PGM_WAITING) {
       programRunStop = PGM_STOPPED;
     }
