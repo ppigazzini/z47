@@ -2122,7 +2122,6 @@ RELEASE_END:
 
 #endif //!TESTSUITE_BUILD
   void leavePem(void) {
-    pushToEndOfRAM:
     if(freeProgramBytes >= 4) { // Push the programs to the end of RAM
       uint32_t newProgramSize = (uint32_t)((uint8_t *)(ram + RAM_SIZE_IN_BLOCKS) - beginOfProgramMemory) - (freeProgramBytes & 0xfffc);
       uint16_t localStepNumber = currentLocalStepNumber;
@@ -2146,12 +2145,6 @@ RELEASE_END:
         defineFirstDisplayedStep();
         defineCurrentProgramFromCurrentStep();
       }
-    }
-
-    // The folowing 4 lines added to address the FFFFFFFF issue in old state files
-    if(TO_C47MEMPTR((uint8_t *)((uintptr_t)firstFreeProgramByte & (UINTPTR_MAX - 3))) < RAM_SIZE_IN_BLOCKS - 1) {
-      freeProgramBytes += TO_BYTES(RAM_SIZE_IN_BLOCKS - 1 - TO_C47MEMPTR((uint8_t *)((uintptr_t)firstFreeProgramByte & (UINTPTR_MAX - 3))));
-      goto pushToEndOfRAM;
     }
   }
 
