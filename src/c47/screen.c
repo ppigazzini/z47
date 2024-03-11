@@ -1847,10 +1847,10 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
     if(currentViewRegister < REGISTER_X) {
       sprintf(prefix, "R%02" PRIu16 STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM, currentViewRegister);
     }
-    else if(currentViewRegister < FIRST_LOCAL_REGISTER) {
+    else if(currentViewRegister <= LAST_SPARE_REGISTER) {
       sprintf(prefix, "%c" STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM, letteredRegisterName(currentViewRegister));
     }
-    else if(currentViewRegister <= LAST_LOCAL_REGISTER) {
+    else if(currentViewRegister >= FIRST_LOCAL_REGISTER && currentViewRegister <= LAST_LOCAL_REGISTER) {
       sprintf(prefix, "R.%02" PRIu16 STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM, (uint16_t)(currentViewRegister - FIRST_LOCAL_REGISTER));
     }
     else if(FIRST_NAMED_VARIABLE <= currentViewRegister && currentViewRegister <= LAST_NAMED_VARIABLE) {
@@ -1888,10 +1888,10 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
     if((currentInputVariable & 0x3fff) < REGISTER_X) {
       sprintf(prefix, "R%02" PRIu16 "?", (uint16_t)(currentInputVariable & 0x3fff));
     }
-    else if((currentInputVariable & 0x3fff) < FIRST_LOCAL_REGISTER) {
+    else if((currentInputVariable & 0x3fff) <= LAST_SPARE_REGISTER) {
       sprintf(prefix, "%c?", letteredRegisterName((currentInputVariable & 0x3fff)));
     }
-    else if((currentInputVariable & 0x3fff) <= LAST_LOCAL_REGISTER) {
+    else if(((currentInputVariable & 0x3fff) >= FIRST_LOCAL_REGISTER) && (currentInputVariable & 0x3fff) <= LAST_LOCAL_REGISTER) {
       sprintf(prefix, "R.%02" PRIu16 "?", (uint16_t)((currentInputVariable & 0x3fff) - FIRST_LOCAL_REGISTER));
     }
     else if(FIRST_NAMED_VARIABLE <= (currentInputVariable & 0x3fff) && (currentInputVariable & 0x3fff) <= LAST_NAMED_VARIABLE) {
