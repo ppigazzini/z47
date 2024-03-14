@@ -369,18 +369,11 @@ typedef struct {
   }
 
 
-  void copyStackRegistersToClipboardString(char *clipboardString) {
+  void copyStackRegistersToClipboardString(char *clipboardString, calcRegister_t lastRegist) {
     char *ptr = clipboardString;
     const char *sep = "";
 
-    for (calcRegister_t r = REGISTER_K; r >= REGISTER_X; r--) {
-      ptr += sprintf(ptr, "%s%c = ", sep, letteredRegisterName(r));
-      copyRegisterToClipboardString(r, ptr);
-      ptr = strchr(ptr, '\0');
-      sep = LINEBREAK;
-    }
-
-    for (calcRegister_t r = REGISTER_W; r >= REGISTER_S; r--) {
+    for (calcRegister_t r = lastRegist; r >= REGISTER_X; r--) {
       ptr += sprintf(ptr, "%s%c = ", sep, letteredRegisterName(r));
       copyRegisterToClipboardString(r, ptr);
       ptr = strchr(ptr, '\0');
@@ -397,7 +390,7 @@ typedef struct {
     gtk_clipboard_clear(clipboard);
     gtk_clipboard_set_text(clipboard, "", 0); //JM FOUND TIP TO PROPERLY CLEAR CLIPBOARD: https://stackoverflow.com/questions/2418487/clear-the-system-clipboard-using-the-gtk-lib-in-c/2419673#2419673
 
-    copyStackRegistersToClipboardString(clipboardString);
+    copyStackRegistersToClipboardString(clipboardString, REGISTER_K);
 
     gtk_clipboard_set_text(clipboard, clipboardString, -1);
   }
@@ -411,7 +404,7 @@ typedef struct {
     gtk_clipboard_clear(clipboard);
     gtk_clipboard_set_text(clipboard, "", 0); //JM FOUND TIP TO PROPERLY CLEAR CLIPBOARD: https://stackoverflow.com/questions/2418487/clear-the-system-clipboard-using-the-gtk-lib-in-c/2419673#2419673
 
-    copyStackRegistersToClipboardString(ptr);
+    copyStackRegistersToClipboardString(ptr, LAST_SPARE_REGISTER);
 
     for(int32_t regist=99; regist>=0; --regist) {
       ptr += strlen(ptr);
