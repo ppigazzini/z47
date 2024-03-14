@@ -68,7 +68,7 @@
 
   static void _programmableiSumProd(uint16_t label, bool_t prod) {
     currentKeyCode = 255;
-    uint32_t      loop = 0;
+    int32_t       loop = 0;
     int16_t       finished = 0;
     bool_t        abort = false;
     longInteger_t resultLi, xLi;
@@ -88,7 +88,7 @@
     if(!longIntegerIsZero(loopStep)) {
       longIntegerDivide(iLoop, loopStep, iLoop);
     }
-    loop = longIntegerModuloUInt(iLoop, 100000);
+    loop = (int32_t)longIntegerModuloUInt(iLoop, 2^31-1);
 
     if(longIntegerCompare(loopTo, iCounter) != 0 &&
         (longIntegerIsZero(loopStep) ||

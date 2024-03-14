@@ -98,7 +98,7 @@
 
   static void _programmableSumProd(uint16_t label, bool_t prod) {
     currentKeyCode = 255;
-    uint32_t      loop = 0;
+    int32_t       loop = 0;
     int16_t       finished = 0;
     bool_t        abort = false;
     real_t        resultX, resultXi, resultR, resultRi;
@@ -122,7 +122,7 @@
     }
     longIntegerInit(iLoop);
     convertReal34ToLongInteger(&rLoop, iLoop, DEC_ROUND_DOWN);
-    loop = longIntegerModuloUInt(iLoop, 100000);
+    loop = (int32_t)longIntegerModuloUInt(iLoop, 2^31-1);
     longIntegerFree(iLoop);
 
     if( !real34CompareEqual(&loopTo, &counter) &&
