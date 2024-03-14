@@ -32,6 +32,7 @@
 #include "registerValueConversions.h"
 #include "display.h"
 #include "screen.h"
+#include <string.h>
 
 #include "c47.h"
 
@@ -468,8 +469,8 @@ void nextPrime(longInteger_t currentNumber, longInteger_t nextPrime) {
 } */
 
 
-static void _showProgress(const real34_t *ss, longInteger_t nextp) {
-  #if !defined (TESTSUITE_BUILD)
+#if !defined (TESTSUITE_BUILD)
+  static void _showProgress(const real34_t *ss, longInteger_t nextp) {
     real34_t rr;
     clearRegisterLine(REGISTER_Z, true, true);
     clearRegisterLine(REGISTER_Y, true, true);
@@ -492,8 +493,8 @@ static void _showProgress(const real34_t *ss, longInteger_t nextp) {
     #if defined DMCP_BUILD
       lcd_refresh();
     #endif //DMCP_BUILD
-  #endif //TESTSUITE_BUILD
-}
+  }
+#endif //TESTSUITE_BUILD
 
 
 
