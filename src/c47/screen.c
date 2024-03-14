@@ -1647,7 +1647,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
   }
 
   uint16_t old_time = 0;
-  static bool_t _printHalfSecUpdate_Integer(uint8_t mode, char *txt, int loop, bool_t clearZ, bool_t clearT, bool_t disp) {
+  static bool_t _printHalfSecUpdate_Integer(uint8_t mode, char *txt, int32_t loop, bool_t clearZ, bool_t clearT, bool_t disp) {
     char tmps[100];
     bool_t ret_value = false;
     uint16_t new_time = (uint16_t)(getUptimeMs());
@@ -1666,9 +1666,9 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
 
       //lcd_refresh();
       fnTimerStart(TO_KB_ACTV, TO_KB_ACTV, JM_TO_KB_ACTV); //PROGRAM_KB_ACTV
-      sprintf(tmps, "%s %" PRIu32 "  ", txt, (uint32_t)loop);
       if(disp) {
-        showString(tmps, &standardFont, 20, /*145-7*/ Y_POSITION_OF_REGISTER_T_LINE + mode * 20, vmNormal, false, false);  //note: 1 line down for "force"
+        sprintf(tmps, "%s %" PRIi32 "  ", txt, loop);
+        showString(tmps, &standardFont, 20, /*145-7*/ Y_POSITION_OF_REGISTER_T_LINE + mode * 20, vmNormal, false, false);  //note: displays info 1 line down, if "force" parameter is set
       }
 
       #if defined(PC_BUILD)
@@ -1685,7 +1685,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
     return ret_value;
   }
 
-  bool_t printHalfSecUpdate_Integer(uint8_t mode, char *txt, int loop, bool_t clearZ, bool_t clearT, bool_t disp) {//further optimisation, not to even set up the 100 byte array or call getUptimeMs if progress monitor is not selected 
+  bool_t printHalfSecUpdate_Integer(uint8_t mode, char *txt, int32_t loop, bool_t clearZ, bool_t clearT, bool_t disp) {//further optimisation, not to even set up the 100 byte array or call getUptimeMs if progress monitor is not selected 
     if(!getSystemFlag(FLAG_MONIT)) {
       return false;
     }
