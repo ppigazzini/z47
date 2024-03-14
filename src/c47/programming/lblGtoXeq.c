@@ -498,7 +498,12 @@ static void _executeOp(uint8_t *paramAddress, uint16_t op, uint16_t paramMode) {
 
     case PARAM_REGISTER:
       case PARAM_COMPARE: {
-      if(opParam <= LAST_LOCAL_REGISTER_IN_KS_CODE) { // Global register from 00 to 99, Lettered register from X to K, or Local register from .00 to .98
+
+//2024-03-14 pi day
+//Martin, this change allows VIEW to work again. VIEW refused to work for VIEW N for example.
+   //I do not know if this is the right way to fix it though, hence just leaving the removed code, and this message.
+
+      if(opParam <= LAST_SPARE_REGISTERS_IN_KS_CODE) { // LAST_LOCAL_REGISTER_IN_KS_CODE) { // Global register from 00 to 99, Lettered register from X to K, or Local register from .00 to .98
         reallyRunFunction(op, regKStoC(opParam));
       }
       else if(opParam == STRING_LABEL_VARIABLE) {
