@@ -88,7 +88,7 @@
     if(!longIntegerIsZero(loopStep)) {
       longIntegerDivide(iLoop, loopStep, iLoop);
     }
-    loop = (int32_t)longIntegerModuloUInt(iLoop, 2^31-1);
+    loop = (int32_t)longIntegerModuloUInt(iLoop, (2^31)-1);
 
     if(longIntegerCompare(loopTo, iCounter) != 0 &&
         (longIntegerIsZero(loopStep) ||
