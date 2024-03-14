@@ -354,18 +354,11 @@
   }
 
 
-  void copyStackRegistersToClipboardString(char *clipboardString) {
+  void copyStackRegistersToClipboardString(char *clipboardString, calcRegister_t lastRegist) {
     char *ptr = clipboardString;
     const char *sep = "";
 
-    for (calcRegister_t r = REGISTER_K; r >= REGISTER_X; r--) {
-      ptr += sprintf(ptr, "%s%c = ", sep, letteredRegisterName(r));
-      copyRegisterToClipboardString(r, ptr);
-      ptr = strchr(ptr, '\0');
-      sep = LINEBREAK;
-    }
-
-    for (calcRegister_t r = REGISTER_W; r >= REGISTER_S; r--) {
+    for (calcRegister_t r = lastRegist; r >= REGISTER_X; r--) {
       ptr += sprintf(ptr, "%s%c = ", sep, letteredRegisterName(r));
       copyRegisterToClipboardString(r, ptr);
       ptr = strchr(ptr, '\0');
@@ -382,7 +375,7 @@
     gtk_clipboard_clear(clipboard);
     gtk_clipboard_set_text(clipboard, "", 0); //JM FOUND TIP TO PROPERLY CLEAR CLIPBOARD: https://stackoverflow.com/questions/2418487/clear-the-system-clipboard-using-the-gtk-lib-in-c/2419673#2419673
 
-    copyStackRegistersToClipboardString(clipboardString);
+    copyStackRegistersToClipboardString(clipboardString, REGISTER_K);
 
     gtk_clipboard_set_text(clipboard, clipboardString, -1);
   }
@@ -396,7 +389,7 @@
     gtk_clipboard_clear(clipboard);
     gtk_clipboard_set_text(clipboard, "", 0); //JM FOUND TIP TO PROPERLY CLEAR CLIPBOARD: https://stackoverflow.com/questions/2418487/clear-the-system-clipboard-using-the-gtk-lib-in-c/2419673#2419673
 
-    copyStackRegistersToClipboardString(ptr);
+    copyStackRegistersToClipboardString(ptr, LAST_SPARE_REGISTER);
 
     for(int32_t regist=99; regist>=0; --regist) {
       ptr += strlen(ptr);
@@ -1847,10 +1840,10 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
     if(currentViewRegister < REGISTER_X) {
       sprintf(prefix, "R%02" PRIu16 STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM, currentViewRegister);
     }
-    else if(currentViewRegister < FIRST_LOCAL_REGISTER) {
+    else if(currentViewRegister <= LAST_SPARE_REGISTER) {
       sprintf(prefix, "%c" STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM, letteredRegisterName(currentViewRegister));
     }
-    else if(currentViewRegister <= LAST_LOCAL_REGISTER) {
+    else if(currentViewRegister >= FIRST_LOCAL_REGISTER && currentViewRegister <= LAST_LOCAL_REGISTER) {
       sprintf(prefix, "R.%02" PRIu16 STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM, (uint16_t)(currentViewRegister - FIRST_LOCAL_REGISTER));
     }
     else if(FIRST_NAMED_VARIABLE <= currentViewRegister && currentViewRegister <= LAST_NAMED_VARIABLE) {
@@ -1888,10 +1881,10 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
     if((currentInputVariable & 0x3fff) < REGISTER_X) {
       sprintf(prefix, "R%02" PRIu16 "?", (uint16_t)(currentInputVariable & 0x3fff));
     }
-    else if((currentInputVariable & 0x3fff) < FIRST_LOCAL_REGISTER) {
+    else if((currentInputVariable & 0x3fff) <= LAST_SPARE_REGISTER) {
       sprintf(prefix, "%c?", letteredRegisterName((currentInputVariable & 0x3fff)));
     }
-    else if((currentInputVariable & 0x3fff) <= LAST_LOCAL_REGISTER) {
+    else if(((currentInputVariable & 0x3fff) >= FIRST_LOCAL_REGISTER) && (currentInputVariable & 0x3fff) <= LAST_LOCAL_REGISTER) {
       sprintf(prefix, "R.%02" PRIu16 "?", (uint16_t)((currentInputVariable & 0x3fff) - FIRST_LOCAL_REGISTER));
     }
     else if(FIRST_NAMED_VARIABLE <= (currentInputVariable & 0x3fff) && (currentInputVariable & 0x3fff) <= LAST_NAMED_VARIABLE) {
