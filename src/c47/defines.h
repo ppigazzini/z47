@@ -1279,6 +1279,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define TI_BITS                                  103
 #define TI_SOLVER_VARIABLE_RESULT                104
 #define TI_DATA_NEG_OVRFL                        105
+#define TI_LASTSTATEFILE                         106
 
 // Register browser mode
 #define RBR_GLOBAL                                 0 // Global registers are browsed

@@ -52,6 +52,9 @@
 
 #include "c47.h"
 
+#include <hal/io.h>
+
+
 
 //C47 defaults (used in both settings arrays)
 #define _gapl   ITM_SPACE_PUNCTUATION
@@ -278,6 +281,7 @@ void Sett(int16_t grp) {
 
 #if !defined(TESTSUITE_BUILD)
   void fnSetHP35(uint16_t unusedButMandatoryParameter) {
+    strcpy(lastStateFileOpened,"HP35 defaults");
     fnKeyExit(0);                            //Clear pending key input
     fnClrMod(0);                             //Get out of NIM or BASE
     fnStoreConfig(35);                       //Store current config into R35
@@ -319,6 +323,8 @@ void Sett(int16_t grp) {
     fnDrop(0);
     fnSquare(0);
     resetOtherConfigurationStuff();
+    strcpy(lastStateFileOpened,"Jaco defaults");
+
 
     //---    defaultStatusBar();
     Sett(_JM);
@@ -356,6 +362,7 @@ void Sett(int16_t grp) {
 
   void fnSetRJ(uint16_t unusedButMandatoryParameter){
     resetOtherConfigurationStuff();
+    strcpy(lastStateFileOpened,"RJvM defaults");
 
     //---    defaultStatusBar();
     Sett(_RJ);
@@ -391,6 +398,7 @@ void Sett(int16_t grp) {
   void _fnSetC47(uint16_t unusedButMandatoryParameter) {         //Reversing the HP35 settings to C47 defaults
     fnKeyExit(0);
     addItemToBuffer(ITM_EXIT1);
+    strcpy(lastStateFileOpened,"C47 defaults");
 
     Sett(_C47);
     //---    fnInDefault(ID_43S);                     //!ID
@@ -1170,6 +1178,7 @@ void defaultStatusBar(void) {
 
 void resetOtherConfigurationStuff(void) {
   cancelFilename = true;
+  lastStateFileOpened[0]=0;
 
   firstGregorianDay = 2361222 /* 14 Sept 1752 */;
 //---  denMax = 64;                                               //JM changed default from MAX_DENMAX default
