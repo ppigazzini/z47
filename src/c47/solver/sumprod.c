@@ -122,7 +122,7 @@
     }
     longIntegerInit(iLoop);
     convertReal34ToLongInteger(&rLoop, iLoop, DEC_ROUND_DOWN);
-    loop = (int32_t)longIntegerModuloUInt(iLoop, (2^31)-1);
+    loop = (int32_t)longIntegerModuloUInt(iLoop, (int32_t)(0x7FFFFFFF));
     longIntegerFree(iLoop);
 
     if( !real34CompareEqual(&loopTo, &counter) &&

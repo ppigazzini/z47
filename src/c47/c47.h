@@ -410,6 +410,10 @@
   extern bool_t                 temporaryFlagPolar;
   extern int                    vbatVIntegrated;
 
+  #define stateFileNameVarLength 20
+  extern  char                  lastStateFileOpened[stateFileNameVarLength+12];
+  extern  char                  fileNameSelected[stateFileNameVarLength];
+
 
   #if defined(DMCP_BUILD)
     extern bool_t              backToDMCP;
