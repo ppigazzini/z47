@@ -25,12 +25,13 @@
 #define LIB_DIR        "LIBRARY"
 #define LIB_FILE       "C47.dat"
 
-#define MRET_SAVESTATE   777
-#define MRET_LOADSTATE   888
+#define MRET_SAVESTATE        777
+#define MRET_LOADSTATE        888
 
-#define FILE_ERROR      00
-#define FILE_OK         01
-#define FILE_CANCEL     02
+#define FILE_ERROR             00
+#define FILE_OK                01
+#define FILE_CANCEL            02
+
 
 // --------------------------------
 
