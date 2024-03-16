@@ -28,6 +28,7 @@
 #include "display.h"
 #include "error.h"
 #include "flags.h"
+#include "fonts.h"
 #include "hal/gui.h"
 #include "items.h"
 #include "c43Extensions/jm.h"
@@ -1367,7 +1368,7 @@ bool_t allowShiftsToClearError = false;
     fnTimerExec(TO_FN_EXEC);                                  //dr execute queued fn
 
     #if defined(PC_BUILD)
-      sprintf(tmp,"^^^^^^^keyboard.c: determineitem: key->primary1: %d:", key->primary); jm_show_comment(tmp);
+      sprintf(tmp,"^^^^^^^keyboard.c: determineitem: key_no: %u, key->primary1: %d:", key_no, key->primary); jm_show_comment(tmp);
     #endif //PC_BUILD
 
     switch(key->primary) {                              //JMSHOW vv
@@ -1507,6 +1508,15 @@ bool_t allowShiftsToClearError = false;
         }
         else if(result == ITM_UP_ARROW || scrLock == NC_SUPERSCRIPT) {
           nextChar = NC_SUPERSCRIPT;
+        }
+      }
+      else if((result == ITM_COMMA || result == ITM_PERIOD) && (calcMode == CM_EIM || calcMode == CM_AIM) && getSystemFlag(FLAG_ALPHA) ) {
+        switch(shiftG*2 + numLock) {                        // gSHIFTED  numLock
+        //case 0: result = key->primaryAim;break;           //    0        0      key->primaryAim 
+          case 1: result = RADIX34_MARK_DEC_ITM; break;     //    0        1      decimal 
+        //case 2: result = RADIX34_MARK_DEC_ITM; break;     //    2        0      decimal 
+          case 3: result = RADIX34_MARK_NOT_DEC_ITM; break; //    2        1      not the decimal 
+          default:;
         }
       }
     }

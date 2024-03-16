@@ -345,6 +345,7 @@ static uint32_t _checkExponent(const char *strPtr) {
         break;
         }
       case '^':
+        case ',': //jm
         case '.': {
         return 0;
         }
@@ -580,7 +581,7 @@ void showEquation(uint16_t equationId, uint16_t startAt, uint16_t cursorAt, bool
         }
 
         /* Numbers */
-        else if((!inLabel) && (((*strPtr) >= '0' && (*strPtr) <= '9') || (*strPtr) == '.')) {
+          else if((!inLabel) && ( ((*strPtr) >= '0' && (*strPtr) <= '9') || (*strPtr) == '.' || (*strPtr) == ',')) { //jm (removed the addition change to change all , & . to Radix, as it also changed veriable names.)
           *(bufPtr + 1) = 0;
           unaryMinus = false;
           inExponent = false;
@@ -588,10 +589,10 @@ void showEquation(uint16_t equationId, uint16_t startAt, uint16_t cursorAt, bool
         }
 
         /* Exponent */
-        else if((!inLabel) && inNumeric && (!beginningOfNumber) && (!inExponent) && (*strPtr) == 'E') {
+        else if((!inLabel) && inNumeric && (!beginningOfNumber) && (!inExponent) && ((*strPtr) == 'E')) {// || compareChar(strPtr, STD_SUB_E_OUTLINE))) {
           if(cursorAt == EQUATION_NO_CURSOR) {
-            *bufPtr       = STD_DOT[0];
-            *(bufPtr + 1) = STD_DOT[1];
+            *bufPtr       = PRODUCT_SIGN[0];
+            *(bufPtr + 1) = PRODUCT_SIGN[1];
             *(bufPtr + 2) = STD_SUB_10[0];
             *(bufPtr + 3) = STD_SUB_10[1];
             *(bufPtr + 4) = 0;
@@ -1170,6 +1171,13 @@ static void _parseWord(char *strPtr, uint16_t parseMode, uint16_t parserHint, ch
       }
       else if(parserHint == PARSER_HINT_NUMERIC) {
         real34_t val;
+        int16_t jj = stringByteLength(strPtr);
+        while(jj>=0) {
+          if(strPtr[jj] == ',') {
+            strPtr[jj] = '.';
+          }
+          jj--;      
+        }
         stringToReal34(strPtr, &val);
         _pushNumericStack(mvarBuffer, &val, const34_0);
       }
@@ -1295,8 +1303,7 @@ void parseEquation(uint16_t equationId, uint16_t parseMode, char *buffer, char *
     #pragma GCC diagnostic push
     #pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
     switch(*strPtr) {
-      case ';':
-      case ',': {
+      case ';': {
         displayCalcErrorMessage(ERROR_SYNTAX_ERROR_IN_EQUATION, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
         #if(EXTRA_INFO_ON_CALC_ERROR == 1)
           sprintf(errorMessage, "%c", *strPtr);
@@ -1407,8 +1414,8 @@ void parseEquation(uint16_t equationId, uint16_t parseMode, char *buffer, char *
           buffer[1] = '1';
           buffer[2] = 0;
           _parseWord(buffer, parseMode, PARSER_HINT_NUMERIC, mvarBuffer);
-          buffer[0] = STD_DOT[0];
-          buffer[1] = STD_DOT[1];
+          buffer[0] = PRODUCT_SIGN[0];
+          buffer[1] = PRODUCT_SIGN[1];
           buffer[2] = 0;
           _parseWord(buffer, parseMode, PARSER_HINT_OPERATOR, mvarBuffer);
           bufPtr = buffer;
@@ -1494,12 +1501,13 @@ void parseEquation(uint16_t equationId, uint16_t parseMode, char *buffer, char *
           afterSpace = false;
         }
 
-        if((*strPtr >= '0' && *strPtr <= '9') || *strPtr == '.') {
+        if((*strPtr >= '0' && *strPtr <= '9') || *strPtr == '.' || *strPtr == ',') { //jm
+
           ++numericCount;
           exponentSignCanOccur = false;
         }
 
-        else if((!inExponent) && *strPtr == 'E' && ((*bufPtr = 0), numericCount == stringGlyphLength(buffer))) {
+        else if((!inExponent) && (*strPtr == 'E' /*|| compareChar(strPtr, STD_SUB_E_OUTLINE)*/ ) && ((*bufPtr = 0), numericCount == stringGlyphLength(buffer))) {
           ++numericCount;
           inExponent = true;
           exponentSignCanOccur = true;
