@@ -1196,6 +1196,7 @@ void fnNop(uint16_t unusedButMandatoryParameter) {
   void fnDeleteAllVariables       (uint16_t unusedButMandatoryParameter) {}   //DL
   void fnConfirmationYes          (uint16_t unusedButMandatoryParameter) {}   //DL
   void fnConfirmationNo           (uint16_t unusedButMandatoryParameter) {}   //DL
+  void fnLoadedFile               (uint16_t unusedButMandatoryParameter) {}
 #endif // GENERATE_CATALOGS
 
 #ifdef TESTSUITE_BUILD
@@ -2695,7 +2696,7 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 1443 */  { fnDblDivide,                  NOPARAM,                     "DBL/",                                        "DBL/",                                        (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /* 1444 */  { fnDecomp,                     NOPARAM,                     "DECOMP",                                      "DECOMP",                                      (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /* 1445 */  { fnAngularMode,                amDegree,                    "DEG",                                         "DEG",                                         (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
-/* 1446 */  { itemToBeCoded,                NOPARAM,                     "1446",                                        "1446",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 1446 */  { fnLoadedFile,                 NOPARAM,                     "STATE?",                                      "STATE?",                                     (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /* 1447 */  { fnStatSa,                     NOPARAM,                     "s(a)",                                        "s(a)",                                        (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /* 1448 */  { itemToBeCoded,                NOPARAM,                     "BLUE47",                                      "BLUE47",                                      (0 << TAM_MAX_BITS) |     0, CAT_MENU | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 1449 */  { fnDot,                        NOPARAM,                     "DOT",                                         "dot",                                         (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },

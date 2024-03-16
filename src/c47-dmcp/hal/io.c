@@ -3,6 +3,7 @@
 
 #include "hal/io.h"
 
+#include "charString.h"
 #include "dateTime.h"
 #include "typeDefinitions.h"
 
@@ -10,6 +11,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <dmcp.h>
+
+#include "c47.h"
 
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 
@@ -70,6 +73,7 @@ int _ioFileNameFromFilePath(ioFilePath_t path, char * filename) {
 int ioFileOpen(ioFilePath_t path, ioFileMode_t mode) {
   assert(!_ioWriteEnabled && !_ioReadEnabled);
   static char filename[40];
+  fileNameSelected[0]=0;
   uint8_t ret = _ioFileNameFromFilePath(path, filename);
   if(ret != FILE_OK) {
     return ret;
@@ -104,7 +108,23 @@ int ioFileOpen(ioFilePath_t path, ioFileMode_t mode) {
     _ioWriteEnabled = false;
     _ioReadEnabled  = false;
   }
-  return (result == FR_OK? FILE_OK : FILE_ERROR);
+  if(result == FR_OK) {
+    if(mode == ioModeRead) {
+      int16_t jj = stringByteLength(filename);
+      int16_t kk = max(0,jj - stateFileNameVarLength + 1);
+      while(jj>kk) {
+        if(filename[jj-1]!='\\' && filename[jj-1]!='/' && filename[jj-1]!=0) {
+          jj--;
+        } else {
+          break;
+        }
+      }
+      stringAppend(fileNameSelected, filename + jj);
+    }
+    return FILE_OK;
+  } else {
+    return FILE_ERROR;
+  }
 }
 
 
