@@ -337,9 +337,11 @@ real34_t               hiBinR;
 char                   statMx[8];
 char                   plotStatMx[8];
 
-bool_t temporaryFlagRect;
-bool_t temporaryFlagPolar;
-int vbatVIntegrated = 3000;
+bool_t                 temporaryFlagRect;
+bool_t                 temporaryFlagPolar;
+int                    vbatVIntegrated = 3000;
+char                   lastStateFileOpened[stateFileNameVarLength+12];
+char                   fileNameSelected[stateFileNameVarLength];
 
 
 #if defined(DMCP_BUILD)

@@ -31,6 +31,7 @@
 #include "c43Extensions/jm.h"
 #include "c43Extensions/radioButtonCatalog.h"
 #include "curveFitting.h"
+#include "dateTime.h"
 #include "mathematics/matrix.h"
 #include "memory.h"
 #include "plotstat.h"
@@ -44,6 +45,7 @@
 #include "solver/equation.h"
 #include "solver/graph.h"
 #include "statusBar.h"
+#include "stack.h"
 #include "sort.h"
 #include "stats.h"
 #include "timer.h"
@@ -2954,12 +2956,21 @@ void doLoad(uint16_t loadMode, uint16_t s, uint16_t n, uint16_t d, uint16_t load
   #if !defined(TESTSUITE_BUILD)
     if(loadType == manualLoad && loadMode == LM_ALL) {
       temporaryInformation = TI_BACKUP_RESTORED;
+      getDateString(lastStateFileOpened);
+      strcat(lastStateFileOpened,": ");
+      stringAppend(lastStateFileOpened + stringByteLength(lastStateFileOpened), fileNameSelected);
     }
     else if((loadType == autoLoad) && (loadedVersion >= VersionAllowed) && (loadedVersion <= configFileVersion) && (loadMode == LM_ALL)) {
       temporaryInformation = TI_BACKUP_RESTORED;
+      getDateString(lastStateFileOpened);
+      strcat(lastStateFileOpened,": ");
+      stringAppend(lastStateFileOpened + stringByteLength(lastStateFileOpened), fileNameSelected);
     }
     else if(loadType == stateLoad) {
       temporaryInformation = TI_STATEFILE_RESTORED;
+      getDateString(lastStateFileOpened);
+      strcat(lastStateFileOpened,": ");
+      stringAppend(lastStateFileOpened + stringByteLength(lastStateFileOpened), fileNameSelected);
     }
     else if(loadMode == LM_PROGRAMS) {
       temporaryInformation = TI_PROGRAMS_RESTORED;
@@ -3004,6 +3015,18 @@ void fnLoadAuto(void) {
   doRefreshSoftMenu = true;
   refreshScreen();
 }
+
+
+void fnLoadedFile (uint16_t unusedButMandatoryParameter) {
+  liftStack();
+
+  int16_t len = stringByteLength(lastStateFileOpened) + 1;
+  reallocateRegister(REGISTER_X, dtString, TO_BLOCKS(len), amNone);
+  xcopy(REGISTER_STRING_DATA(REGISTER_X), lastStateFileOpened , len);
+  temporaryInformation = TI_LASTSTATEFILE;
+}
+
+
 
 #undef BACKUP
 
