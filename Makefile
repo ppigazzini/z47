@@ -1,4 +1,4 @@
-.PHONY: all clean sim test dmcp dmcp5 docs testPgms dist_windows dist_macos dist_dmcp dist_dmcp5
+.PHONY: all clean sim test dmcp dmcp5 docs testPgms dist_windows dist_macos dist_linux dist_dmcp dist_dmcp5
 
 all: sim
 
@@ -10,8 +10,8 @@ endif
 clean:
 	rm -f wp43$(EXE)
 	rm -f c47$(EXE)
-	rm -rf wp43-windows* wp43-macos* wp43-dm42*
-	rm -rf c47-windows* c47-macos* c47-dmcp*
+	rm -rf wp43-windows* wp43-macos* wp43-linux* wp43-dm42*
+	rm -rf c47-windows* c47-macos* c47-linux* c47-dmcp*
 	rm -rf build build.sim build.dmcp build.dmcp5 build.rel
 
 build.sim:
@@ -55,11 +55,13 @@ build.rel/wiki: build.rel
 ifeq ($(CI_COMMIT_TAG),)
   WIN_DIST_DIR = c47-windows
   MAC_DIST_DIR = c47-macos
+  LINUX_DIST_DIR = c47-linux
   DMCP_DIST_DIR = c47-dmcp
   DMCP5_DIST_DIR = c47-dmcp5
 else
   WIN_DIST_DIR = c47-windows-$(CI_COMMIT_TAG)
   MAC_DIST_DIR = c47-macos-$(CI_COMMIT_TAG)
+  LINUX_DIST_DIR = c47-linux-$(CI_COMMIT_TAG)
   DMCP_DIST_DIR = c47-dmcp-$(CI_COMMIT_TAG)
   DMCP5_DIST_DIR = c47-dmcp5-$(CI_COMMIT_TAG)
 endif
@@ -90,6 +92,17 @@ dist_macos: testPgms build.rel
 	cp res/fonts/C47__StandardFont.ttf $(MAC_DIST_DIR)/
 	zip -r c47-macos.zip $(MAC_DIST_DIR)
 	rm -rf $(MAC_DIST_DIR)
+
+dist_linux: testPgms build.rel
+	cd build.rel && ninja sim
+	mkdir -p $(LINUX_DIST_DIR)/res/dmcp
+	cp build.rel/src/c47-gtk/c47 $(LINUX_DIST_DIR)/
+	cp res/dmcp/testPgms.bin $(LINUX_DIST_DIR)/res/dmcp/
+	cp res/c47_pre.css $(LINUX_DIST_DIR)/res/
+	cp res/dm42l_L1.png $(LINUX_DIST_DIR)/res/
+	cp res/fonts/C47__StandardFont.ttf $(LINUX_DIST_DIR)/
+	zip -r c47-linux.zip $(LINUX_DIST_DIR)
+	rm -rf $(LINUX_DIST_DIR)
 
 dist_dmcp: dmcp testPgms build.rel/wiki
 	mkdir -p $(DMCP_DIST_DIR)
@@ -122,4 +135,3 @@ dist_dmcp5: dmcp5 testPgms build.rel/wiki
 	cp build.rel/wiki/Installation-on-a-DM42.md $(DMCP5_DIST_DIR)/readme.txt
 	zip -r c47-dmcp5.zip $(DMCP5_DIST_DIR)
 	rm -rf $(DMCP5_DIST_DIR)
-
