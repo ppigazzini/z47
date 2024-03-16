@@ -32,6 +32,7 @@
 #include "registerValueConversions.h"
 #include "display.h"
 #include "screen.h"
+#include <string.h>
 
 #include "c47.h"
 
@@ -468,26 +469,37 @@ void nextPrime(longInteger_t currentNumber, longInteger_t nextPrime) {
 } */
 
 
-static void _showProgress(const real34_t *ss) {
-  #if !defined (TESTSUITE_BUILD)
+#if !defined (TESTSUITE_BUILD)
+  static void _showProgress(const real34_t *ss, longInteger_t nextp) {
+    real34_t rr;
     clearRegisterLine(REGISTER_Z, true, true);
     clearRegisterLine(REGISTER_Y, true, true);
     clearRegisterLine(REGISTER_X, true, true);
     uint8_t savedDisplayFormatDigits = displayFormatDigits;
-    displayFormatDigits = displayFormat == DF_ALL ? 0 : 33;
-    real34ToDisplayString(ss, amNone, tmpString, &standardFont, 9999, 34, false, true);
-    showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
+    displayFormatDigits = 0;
+    strcpy(tmpString,"Last =  ");
+    real34ToDisplayString(ss, amNone, tmpString+6, &standardFont, 400, 34, false, true);
+    showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_Y_LINE + 6, vmNormal, true, true);
+
+    longIntegerToAllocatedString(nextp, tmpString, TMP_STR_LENGTH);
+    stringToReal34(tmpString, &rr);
+    strcpy(tmpString,"p =  ");
+    real34ToDisplayString(&rr, amNone, tmpString+3, &standardFont, 400, 34, false, true);
+    showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_Z_LINE + 6, vmNormal, true, true);
+
+    refreshRegisterLine(REGISTER_X);
+
     displayFormatDigits = savedDisplayFormatDigits;
     #if defined DMCP_BUILD
       lcd_refresh();
     #endif //DMCP_BUILD
-  #endif //TESTSUITE_BUILD
-}
+  }
+#endif //TESTSUITE_BUILD
 
 
 
 
-bool_t addFactor(longInteger_t factor, real34Matrix_t *matrix) {
+bool_t addFactor(longInteger_t factor, real34Matrix_t *matrix, const real34_t *lastAdded) {
   //printLongIntegerToConsole(factor,"-->","\n");
   if(getRegisterDataType(REGISTER_X) != dtReal34Matrix) {
     //Initialize Memory for Matrix
@@ -522,9 +534,7 @@ bool_t addFactor(longInteger_t factor, real34Matrix_t *matrix) {
   linkToRealMatrixRegister(REGISTER_X,  matrix);
   longIntegerToAllocatedString(factor, tmpString, TMP_STR_LENGTH);
   stringToReal34(tmpString, &matrix->matrixElements[rows * cols]);
-  _showProgress(&matrix->matrixElements[rows * cols]);
-
-
+  real34Copy(&matrix->matrixElements[rows * cols], lastAdded);
   return true;
 }
 
@@ -534,7 +544,7 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
   #if !defined(TESTSUITE_BUILD)
     uint32_t loop = 0;
   #endif //TESTSUITE_BUILD
-  real34_t m34;
+  real34_t m34, lastAdded;
 
   longInteger_t currentNumber, nextPrime, remainder, quotient, eval, temp;
 
@@ -582,11 +592,13 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
   uIntToLongInteger(2,nextPrime);
   uIntToLongInteger(1,remainder);
   uIntToLongInteger(1,eval);
+  int32ToReal34(0,&lastAdded);
 
   while(longIntegerIsPositive(eval)) {
 
     #if !defined(TESTSUITE_BUILD)
-      if (printHalfSecUpdate_Integer(timed, "Tested: ",loop++)) { //timed
+      if (printHalfSecUpdate_Integer(timed, "Tested n =",loop++)) { //timed
+        _showProgress(&lastAdded, nextPrime);
       }
 
     if(keyWaiting()) {
@@ -602,17 +614,23 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
     longIntegerDivideQuotientRemainder(currentNumber, nextPrime, quotient, remainder);
     longIntegerSubtract(quotient, nextPrime, eval);
     if(longIntegerIsZero(remainder)) {
-      if(!addFactor(nextPrime, &matrix)) {
+      if(!addFactor(nextPrime, &matrix, &lastAdded)) {
         goto endandclose;
       }
       longIntegerCopy(quotient,currentNumber);
+      if(longIntegerIsPrime(quotient)) {
+        if(!addFactor(quotient, &matrix, &lastAdded)) {
+          goto endandclose;
+        }
+        goto endandclose;
+      }
     } else {
       longIntegerNextPrime(nextPrime, nextPrime);
     }
     if(!longIntegerIsPositive(eval)) {
       longIntegerSubtractUInt(currentNumber,1,temp);
       if(!longIntegerIsZero(temp)) {
-        if(!addFactor(currentNumber, &matrix)) {
+        if(!addFactor(currentNumber, &matrix, &lastAdded)) {
           goto endandclose;
         }
       }

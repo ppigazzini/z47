@@ -197,7 +197,7 @@ uint8_t *countOpBytes(uint8_t *step, uint16_t paramMode) {
 
 
 uint8_t *countLiteralBytes(uint8_t *step) {
-  switch(*(uint8_t *)(step++)) {
+  switch(*(step++)) {
     case BINARY_SHORT_INTEGER: {
       return step + 9;
     }
@@ -238,7 +238,8 @@ uint8_t *countLiteralBytes(uint8_t *step) {
 
     default: {
       #if !defined(DMCP_BUILD)
-        printf("\nERROR: %u is not an acceptable parameter for ITM_LITERAL!\n", *(uint8_t *)(step - 1));
+        printf("\nERROR: in countLiteralBytes() %u is not an acceptable parameter for ITM_LITERAL!\n", *(step - 1));
+        printf("At address ram + %lu\n", (step - 1) - (uint8_t *)ram);
       #endif // !DMCP_BUILD
       return NULL;
     }

@@ -498,7 +498,8 @@ static void _executeOp(uint8_t *paramAddress, uint16_t op, uint16_t paramMode) {
 
     case PARAM_REGISTER:
       case PARAM_COMPARE: {
-      if(opParam <= LAST_LOCAL_REGISTER_IN_KS_CODE) { // Global register from 00 to 99, Lettered register from X to K, or Local register from .00 to .98
+
+      if(opParam <= LAST_SPARE_REGISTERS_IN_KS_CODE) { // Global register from 00 to 99, Lettered register from X to K, or Local register from .00 to .98
         reallyRunFunction(op, regKStoC(opParam));
       }
       else if(opParam == STRING_LABEL_VARIABLE) {
@@ -553,7 +554,7 @@ static void _executeOp(uint8_t *paramAddress, uint16_t op, uint16_t paramMode) {
   }
 
 static void _putLiteral(uint8_t *literalAddress) {
-  switch(*(uint8_t *)(literalAddress++)) {
+  switch(*(literalAddress++)) {
       case BINARY_SHORT_INTEGER: {
       liftStack();
       setSystemFlag(FLAG_ASLIFT);
@@ -698,7 +699,8 @@ static void _putLiteral(uint8_t *literalAddress) {
 
     default: {
         #if !defined(DMCP_BUILD)
-        printf("\nERROR: %u is not an acceptable parameter for ITM_LITERAL!\n", *(uint8_t *)(literalAddress - 1));
+        printf("\nERROR: in _putLiteral() %u is not an acceptable parameter for ITM_LITERAL!\n", *(literalAddress - 1));
+        printf("At address ram + %lu\n", (literalAddress - 1) - (uint8_t *)ram);
       #endif // !DMCP_BUILD
     }
   }

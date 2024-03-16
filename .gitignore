@@ -1,7 +1,7 @@
 # C47 project specific files
 /build
 /build.sim
-/dep/gmp-6.2.0
+/dep/gmp-6.2.1
 /wp43
 /c47
 /testSuite
@@ -21,6 +21,7 @@ c47.dat
 *.s47
 tags
 /PROGRAMS
+/src/generated
 
 # Created by https://www.toptal.com/developers/gitignore/api/macos,windows,linux,codeblocks,valgrind,vscode
 # Edit at https://www.toptal.com/developers/gitignore?templates=macos,windows,linux,codeblocks,valgrind,vscode

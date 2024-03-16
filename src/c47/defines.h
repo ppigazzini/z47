@@ -271,6 +271,7 @@
 #define SHORT_INTEGER_SIZE               2 // 2 blocks = 8 bytes = 64 bits
 #define ENABLE_SOLVER_PROGRESS           1 // Set to 1 to enable solver progress display (only if called in run mode)
 #define USE_MICHALSKI_MOSIG_TANH_SINH    1 // Set to 1 to use Michalski & Mosig tanh-sinh integration
+#define USE_NEW_DEI_INTEGRATION_CODE     2 // 0 - use prior code. 1 - use new code. 2 - use new code with split point code.
 #define ENABLE_INTEGRATOR_FILE_OUTPUT    0 // Set for PRINTXY to be done after every evaluation of the formula
 #define DECNUMDIGITS                    75 // Default number of digits used in the decNumber library
 
@@ -1245,7 +1246,8 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define TI_BYTES                                 102
 #define TI_BITS                                  103
 #define TI_SOLVER_VARIABLE_RESULT                104
-#define TI_LASTSTATEFILE                         105
+#define TI_DATA_NEG_OVRFL                        105
+#define TI_LASTSTATEFILE                         106
 
 // Register browser mode
 #define RBR_GLOBAL                                 0 // Global registers are browsed

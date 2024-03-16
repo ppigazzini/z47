@@ -119,6 +119,7 @@
   bool_t getRegisterAsRealQuiet(calcRegister_t reg, real_t *val);
   bool_t getRegisterAsRealAngle(calcRegister_t reg, real_t *val, angularMode_t *xAngularMode);
   bool_t getRegisterAsLongInt(calcRegister_t reg, longInteger_t val);
+  bool_t getRegisterAsShortInt(calcRegister_t reg, bool_t *sign, uint64_t *val, bool_t *overflow, bool_t *fractional);
 
   void processRealComplexMonadicFunction(void (*realf)(void), void (*complexf)(void));
   void processIntRealComplexMonadicFunction(void (*realf)(void), void (*complexf)(void), void (*shortintf)(void), void (*longintf)(void));

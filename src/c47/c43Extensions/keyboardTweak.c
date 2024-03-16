@@ -141,8 +141,8 @@ void resetShiftState(void) {
     screenUpdatingMode &= ~SCRUPD_MANUAL_SHIFT_STATUS;
     showShiftState();
     refreshScreen();
+    refreshModeGui();                                                             //JM refreshModeGui
   }                                                                             //^^
-  refreshModeGui();                                                             //JM refreshModeGui
 }
 
 

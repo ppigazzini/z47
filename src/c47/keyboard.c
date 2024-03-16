@@ -2128,7 +2128,7 @@ RELEASE_END:
       uint16_t programNumber = currentProgramNumber;
       uint16_t fdLocalStepNumber = firstDisplayedLocalStepNumber;
       bool_t inRam = (programList[currentProgramNumber - 1].step > 0);
-      if(inRam) {
+      if(inRam) { // Not in flash
         currentStep           += (freeProgramBytes & 0xfffc);
         firstDisplayedStep    += (freeProgramBytes & 0xfffc);
         beginOfCurrentProgram += (freeProgramBytes & 0xfffc);
@@ -2466,7 +2466,7 @@ RELEASE_END:
 
         else if(item == ITM_SNAP) {
           switch(calcMode) { //place modes here which should not work with SNAP
-            //case CM_REGISTER_BROWSER: 
+            //case CM_REGISTER_BROWSER:
             //case CM_FLAG_BROWSER:
             //case CM_FONT_BROWSER:
               break;
