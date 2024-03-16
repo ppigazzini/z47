@@ -903,9 +903,9 @@ uint16_t numlockReplacements(uint16_t id, int16_t item, bool_t NL, bool_t FSHIFT
 
     else if(NL && !FSHIFT) {                           //JMvv Numlock translation: Assumes lower case  is NOT active
 
-      uint16_t ix = 17;
+      uint16_t ix = 15; //include EEX
       while(ix < 37) {
-        if(item == kbd_std[ix].primaryAim && kbd_std[ix].primaryAim != ITM_EXIT1 && kbd_std[ix].primaryAim != ITM_UP1 && kbd_std[ix].primaryAim != ITM_DOWN1) {
+        if((ix >= 17 || ix == 15) && item == kbd_std[ix].primaryAim && kbd_std[ix].primaryAim != ITM_EXIT1 && kbd_std[ix].primaryAim != ITM_UP1 && kbd_std[ix].primaryAim != ITM_DOWN1) {
           *item1 = getSystemFlag(FLAG_USER) ? kbd_usr[ix].gShiftedAim : kbd_std[ix].gShiftedAim;
           break;
         }

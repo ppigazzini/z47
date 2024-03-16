@@ -202,7 +202,8 @@ uint16_t convertItemToSubOrSup(uint16_t item, int16_t subOrSup) {
           displayBugScreen(errorMessage);
         }
         else if(calcMode == CM_EIM) {
-          const char *addChar0 = item == ITM_PAIR_OF_PARENTHESES  ? "()" :
+          const char *addChar0 = item == ITM_EEXCHR               ? "E":                      //PRODUCT_SIGN "10^" :
+                                 item == ITM_PAIR_OF_PARENTHESES  ? "()" :
                                  item == ITM_VERTICAL_BAR         ? "||" :
                                  item == ITM_ROOT_SIGN            ? STD_SQUARE_ROOT "()" :
                                  item == ITM_ALOG_SIGN            ? STD_EulerE "^()" :

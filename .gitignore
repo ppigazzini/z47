@@ -1,7 +1,7 @@
 # C47 project specific files
 /build
 /build.sim
-/dep/gmp-6.2.0
+/dep/gmp-6.2.1
 /wp43
 /c47
 /testSuite
