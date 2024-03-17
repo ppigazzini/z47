@@ -267,7 +267,7 @@ void saveForUndo(void) {
   #endif // DEBUGUNDO
 
   clearRegister(TEMP_REGISTER_2_SAVED_STATS); //clear it here for every saveForUndo call, and explicitly set it in fnEditMatrix() and fnEqSolvGraph() only
-  SAVED_SIGMA_LAct = 0;
+  SAVED_SIGMA_LAc1 = 0;
 
   savedSystemFlags0 = systemFlags0;
   savedSystemFlags1 = systemFlags1;
@@ -368,10 +368,10 @@ void undo(void) {
     entryStatus &= 0xfe;
   }
 
-  if(SAVED_SIGMA_LAct == +1 && statisticalSumsPointer != NULL) {
+  if(SAVED_SIGMA_LAc1 == +1 && statisticalSumsPointer != NULL) {
     fnSigma(-1);
   }
-  else if(SAVED_SIGMA_LAct == -1 && statisticalSumsPointer != NULL) {
+  else if(SAVED_SIGMA_LAc1 == -1 && statisticalSumsPointer != NULL) {
     convertRealToResultRegister(&SAVED_SIGMA_LASTX, REGISTER_X, amNone);             // Can use stack, as the stack will be undone below
     convertRealToResultRegister(&SAVED_SIGMA_LASTY, REGISTER_Y, amNone);
     fnSigma(+1);
@@ -403,7 +403,7 @@ void undo(void) {
     xcopy(statisticalSumsPointer, savedStatisticalSumsPointer, NUMBER_OF_STATISTICAL_SUMS * TO_BYTES(REAL_SIZE_IN_BLOCKS));
   }
 
-  SAVED_SIGMA_LAct = 0;
+  SAVED_SIGMA_LAc1 = 0;
   thereIsSomethingToUndo = false;
   clearRegister(TEMP_REGISTER_2_SAVED_STATS);
   #if defined(DEBUGUNDO)

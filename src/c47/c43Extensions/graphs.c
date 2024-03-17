@@ -431,8 +431,9 @@ void graph_text(void) {
   #if !defined(TESTSUITE_BUILD)
     uint32_t ypos = Y_POSITION_OF_REGISTER_T_LINE -11 + 12 * 5 -45;
     uint16_t ii;
+    #define bufLen 40
     static uint16_t oo;
-    static char outstr[300];
+    static char outstr[bufLen];
     char ss[100], tt[100];
     char tmpbuf[PLOT_TMP_BUF_SIZE];
     int32_t n;
@@ -450,7 +451,7 @@ void graph_text(void) {
     showString(padEquals(tmpbuf, ss), &standardFont, n+3,  ypos, vmNormal, false, false);
     ypos -= 38;
 
-    snprintf(tmpString, TMP_STR_LENGTH, "  y %.3f/tick  ", tick_int_y);
+    snprintf(tmpString, bufLen, "  y %.3f/tick  ", tick_int_y);
     ii = 0;
     oo = 0;
     outstr[0] = 0;
@@ -462,7 +463,7 @@ void graph_text(void) {
     showString(outstr, &standardFont, 1, ypos, vmNormal, true, true);  //JM
     ypos -= 12;
 
-    snprintf(tmpString, TMP_STR_LENGTH, "  x %.3f/tick  ", tick_int_x);
+    snprintf(tmpString, bufLen, "  x %.3f/tick  ", tick_int_x);
     ii = 0;
     oo = 0;
     outstr[0] = 0;
@@ -489,9 +490,9 @@ void graph_text(void) {
                       + (!(xzero == SCREEN_WIDTH-1        || xzero == minnx) ? 1 : 0);
     switch(axisdisp) {
       case 0: strcpy(tmpString,"            ");                    break;
-      case 1: snprintf(tmpString, TMP_STR_LENGTH, "  y-axis x 0"); break;
-      case 2: snprintf(tmpString, TMP_STR_LENGTH, "  x-axis y 0"); break;
-      case 3: snprintf(tmpString, TMP_STR_LENGTH, "  axis 0.0 ");  break;
+      case 1: snprintf(tmpString, bufLen, "  y-axis x 0"); break;
+      case 2: snprintf(tmpString, bufLen, "  x-axis y 0"); break;
+      case 3: snprintf(tmpString, bufLen, "  axis 0.0 ");  break;
       default: ;
     }
 
@@ -515,7 +516,7 @@ void graph_text(void) {
     ypos += 48 + 2*19;
 
     if(PLOT_INTG && !invalid_intg) {
-      snprintf(tmpString, TMP_STR_LENGTH, "  Trapezoid integral");
+      snprintf(tmpString, bufLen, "  Trapezoid integral");
       showStringC43(tmpString, numSmall, nocompress, 1, ypos, vmNormal, true, true);  //JM
       plotintbig(5, ypos+4+4-2);
       plotrect(5+4-1, (ypos+4+4-2+2)-1, 5+4+2, (ypos+4+4-2+2)+2);
@@ -523,14 +524,14 @@ void graph_text(void) {
     }
 
     if(PLOT_DIFF && !invalid_diff) {
-      snprintf(tmpString, TMP_STR_LENGTH, "  Num. differential");
+      snprintf(tmpString, bufLen, "  Num. differential");
       showStringC43(tmpString, numSmall, nocompress, 1, ypos, vmNormal, true, true);  //JM
       plotdeltabig(6, ypos+4+4-2);
       ypos += 20;
     }
 
     if(PLOT_RMS && !invalid_rms) {
-      snprintf(tmpString, TMP_STR_LENGTH, "  RMSy");
+      snprintf(tmpString, bufLen, "  RMSy");
       showStringC43(tmpString, numSmall, nocompress, 1, ypos, vmNormal, true, true);  //JM
       plotrms(6, ypos+4+4-2);
       plotrect(6-1, (ypos+4+4-2)-1, 6+2, (ypos+4+4-2)+2);
