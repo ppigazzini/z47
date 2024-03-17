@@ -1411,7 +1411,7 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     drawHistogram = 0;
     realZero(&SAVED_SIGMA_LASTX);
     realZero(&SAVED_SIGMA_LASTY);
-    SAVED_SIGMA_LAct = 0;
+    SAVED_SIGMA_LAc1 = 0;
 
 //    restoreStats();
     plotStatMx[0] = 0;
@@ -1537,8 +1537,6 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     graph_reset();
 
     running_program_jm=false;                                  //JM program is running flag
-    indic_x=0;                                                 //JM program progress indicators
-    indic_y=0;                                                 //JM program progress indicators
 
     setSystemFlag(FLAG_SPCRES);                                //JM default infinity etc.
     clearSystemFlag(FLAG_DENFIX);                              //JM default
@@ -1636,7 +1634,7 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     currentSolverVariable = INVALID_VARIABLE;
     currentSolverNestingDepth = 0;
 
-    graphVariable = 0;
+    graphVariabl1 = 0;
 
     // Timer application
     timerCraAndDeciseconds = 0x80u;

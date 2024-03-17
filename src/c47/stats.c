@@ -686,7 +686,7 @@ void fnSigma(uint16_t plusMinus) {
         AddtoStatsMatrix(&x, &y);
         realCopy(&x,      &SAVED_SIGMA_LASTX);
         realCopy(&y,      &SAVED_SIGMA_LASTY);
-        SAVED_SIGMA_LAct = +1;
+        SAVED_SIGMA_LAc1 = +1;
 
         #if defined(DEBUGUNDO)
           calcRegister_t regStats = findNamedVariable(statMx);
@@ -751,7 +751,7 @@ void fnSigma(uint16_t plusMinus) {
 
         realCopy(&x,       &SAVED_SIGMA_LASTX);
         realCopy(&y,       &SAVED_SIGMA_LASTY);
-        SAVED_SIGMA_LAct = -1;
+        SAVED_SIGMA_LAc1 = -1;
 
         #if defined(DEBUGUNDO)
           if(statisticalSumsPointer != NULL) {
