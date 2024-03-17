@@ -85,7 +85,7 @@
   #endif // !TWO_FILE_PGM && !NEW_HW
 
   #if defined(TWO_FILE_PGM) //---------THESE ARE THE EXCLUSIONS TO MAKE IT FIT INTO AVAILABLE FLASH EVEN WHILE USING QSPI
-    #define SAVE_SPACE_DM42_20_TIMER
+  //  #define SAVE_SPACE_DM42_20_TIMER
   //  #define SAVE_SPACE_DM42_2  //005672 bytes: XEQM
   //  #define SAVE_SPACE_DM42_13GRF_JM //           JM graphics
   //  #define SAVE_SPACE_DM42_12 //047246 bytes: Standard extra 43S math: SLVQ, PRIME, BESSEL, ELLIPTIC, ZETA, BETA, ORTHO_POLY
