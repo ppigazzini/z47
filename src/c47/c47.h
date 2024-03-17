@@ -336,9 +336,6 @@
   extern bool_t                 constantFractions;            //JM
   extern uint8_t                constantFractionsMode;        //JM
   extern bool_t                 constantFractionsOn;          //JM
-  // Variables from jm.h & xeqm.c
-  extern uint32_t               indic_x;                      //JM program progress indicators
-  extern uint32_t               indic_y;                      //JM program progress indicators
 
 
   extern uint16_t               glyphRow[NUMBER_OF_GLYPH_ROWS];
@@ -378,7 +375,7 @@
   #endif // !DMCP_BUILD
 
   extern int32_t                lgCatalogSelection;
-  extern int32_t                graphVariable;
+  extern calcRegister_t         graphVariabl1;
 
   extern uint32_t               firstGregorianDay;
   extern uint32_t               denMax;

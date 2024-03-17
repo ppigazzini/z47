@@ -96,9 +96,9 @@ static void fnPlot(uint16_t unusedButMandatoryParameter) {
 
 #if !defined(SAVE_SPACE_DM42_13GRF)
   static void initialize_function(void){
-    if(graphVariable > 0) {
+    if(graphVariabl1 > 0) {
       #if defined(PC_BUILD)
-        //printf(">>> graphVariable = %i\n", graphVariable);
+        //printf(">>> graphVariabl1 = %i\n", graphVariabl1);
         if(lastErrorCode != 0) {
           #if defined(VERBOSE_SOLVER00)
           printf("ERROR CODE in initialize_functionA: %u\n",lastErrorCode);
@@ -109,7 +109,7 @@ static void fnPlot(uint16_t unusedButMandatoryParameter) {
     }
     else {
       #if defined(PC_BUILD)
-        //printf(">>> graphVariable = %i\n", graphVariable);
+        //printf(">>> graphVariabl1 = %i\n", graphVariabl1);
         #if defined(VERBOSE_SOLVER00)
           printf("ERROR CODE in initialize_functionB: %u\n",lastErrorCode);
         #endif // VERBOSE_SOLVER00
@@ -120,11 +120,11 @@ static void fnPlot(uint16_t unusedButMandatoryParameter) {
 
 
   static void execute_rpn_function(void){
-    if(graphVariable <= 0 || graphVariable > 65535) {
+    if(graphVariabl1 <= 0 || graphVariabl1 > LAST_LABEL) {
       return;
     }
 
-    calcRegister_t regStats = graphVariable;
+    calcRegister_t regStats = graphVariabl1;
     if(regStats != INVALID_VARIABLE) {
       fnStore(regStats);                  //place X register into x
       fnEqCalc(0);
@@ -337,7 +337,7 @@ void graph_eqn(uint16_t mode) {
     bool_t  grad2IncreaseDetected = false;
     double yAvg = 0.1;
 
-    if(graphVariable <= 0 || graphVariable > 65535) {
+    if(graphVariabl1 <= 0 || graphVariabl1 > LAST_LABEL) {
       return;
     }
     calcMode = CM_GRAPH;
@@ -519,7 +519,7 @@ void graph_stat(uint16_t unusedButMandatoryParameter) {
 #if !defined(SAVE_SPACE_DM42_13GRF)
 #if !defined(TESTSUITE_BUILD)
   static void graph_solver() {         //Input parameters in registers SREG_STARTX0, SREG_STARTX1
-    if(graphVariable <= 0 || graphVariable > 65535) {
+    if(graphVariabl1 <= 0 || graphVariabl1 > LAST_LABEL) {
       return;
     }
 
@@ -1176,20 +1176,20 @@ void fnEqSolvGraph (uint16_t func) {
     refreshLcd(NULL);
   #endif // DMCP_BUILD
 
-  graphVariable = currentSolverVariable;
-  if(graphVariable<0) {
-    graphVariable = -graphVariable;
+  graphVariabl1 = currentSolverVariable;
+  if(graphVariabl1<0) {
+    graphVariabl1 = -graphVariabl1;
   }
 
-  if(FIRST_NAMED_VARIABLE <= graphVariable && graphVariable <= LAST_NAMED_VARIABLE) {
+  if(FIRST_NAMED_VARIABLE <= graphVariabl1 && graphVariabl1 <= LAST_NAMED_VARIABLE) {
     #if(defined(VERBOSE_SOLVER00) || defined(VERBOSE_SOLVER0)) && defined(PC_BUILD)
-      printf("graphVariable accepted: %i\n", graphVariable);
+      printf("graphVariabl1 accepted: %i\n", graphVariabl1);
     #endif // (VERBOSE_SOLVER00 || VERBOSE_SOLVER0) && PC_BUILD
   }
   else {
     displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
     #if(EXTRA_INFO_ON_CALC_ERROR == 1)
-      sprintf(errorMessage, "unexpected parameter %u", graphVariable);
+      sprintf(errorMessage, "unexpected parameter %u", graphVariabl1);
       moreInfoOnError("In function fnEqSolvGraph:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);

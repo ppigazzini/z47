@@ -484,7 +484,8 @@ uint16_t flushBufferCnt = 0;
     saveStateValue(&SAVED_SIGMA_LASTY,              sizeof(SAVED_SIGMA_LASTY),                                   "SAVED_SIGMA_LASTY",              "real");
     saveStateValue(&SAVED_SIGMA_LAc1,               sizeof(SAVED_SIGMA_LAc1),                                    "SAVED_SIGMA_LAc1",               "int8");
     saveStateValue(&currentMvarLabel,               sizeof(currentMvarLabel),                                    "currentMvarLabel",               "uint16");
-    saveStateValue(&graphVariable,                  sizeof(graphVariable),                                       "graphVariable",                  "int32");
+    graphVariabl1 = INVALID_VARIABLE;
+    saveStateValue(&graphVariabl1,                  sizeof(graphVariabl1),                                       "graphVariabl1",                  "int16");
     saveStateValue(&plotStatMx,                     sizeof(plotStatMx),                                          "plotStatMx",                     "hexDump");
     saveStateValue(&drawHistogram,                  sizeof(drawHistogram),                                       "drawHistogram",                  "uint8");
     saveStateValue(&statMx,                         sizeof(statMx),                                              "statMx",                         "hexDump");
@@ -516,8 +517,6 @@ uint16_t flushBufferCnt = 0;
     saveStateValue(&constantFractionsMode,          sizeof(constantFractionsMode),                               "constantFractionsMode",          "uint8");
     saveStateValue(&constantFractionsOn,            sizeof(constantFractionsOn),                                 "constantFractionsOn",            "bool");
     saveStateValue(&running_program_jm,             sizeof(running_program_jm),                                  "running_program_jm",             "bool");
-    saveStateValue(&indic_x,                        sizeof(indic_x),                                             "indic_x",                        "uint32");
-    saveStateValue(&indic_y,                        sizeof(indic_y),                                             "indic_y",                        "uint32");
     saveStateValue(&fnXEQMENUpos,                   sizeof(fnXEQMENUpos),                                        "fnXEQMENUpos",                   "int16");
     saveStateValue(&indexOfItemsXEQM,               sizeof(indexOfItemsXEQM),                                    "indexOfItemsXEQM",               "hexDump");
     saveStateValue(&T_cursorPos,                    sizeof(T_cursorPos),                                         "T_cursorPos",                    "int16");   //JM ^^
@@ -1041,9 +1040,10 @@ uint16_t flushBufferCnt = 0;
     restoreStateValue(&currentInputVariable,           sizeof(currentInputVariable),                                "currentInputVariable",           "uint16");
     restoreStateValue(&SAVED_SIGMA_LASTX,              sizeof(SAVED_SIGMA_LASTX),                                   "SAVED_SIGMA_LASTX",              "real");
     restoreStateValue(&SAVED_SIGMA_LASTY,              sizeof(SAVED_SIGMA_LASTY),                                   "SAVED_SIGMA_LASTY",              "real");
+    SAVED_SIGMA_LAc1 = 0;
     restoreStateValue(&SAVED_SIGMA_LAc1,               sizeof(SAVED_SIGMA_LAc1),                                    "SAVED_SIGMA_LAc1",               "int8");     //manual correction as the type allocation was wrong here
     restoreStateValue(&currentMvarLabel,               sizeof(currentMvarLabel),                                    "currentMvarLabel",               "uint16");
-    restoreStateValue(&graphVariable,                  sizeof(graphVariable),                                       "graphVariable",                  "int32");
+    restoreStateValue(&graphVariabl1,                  sizeof(graphVariabl1),                                       "graphVariabl1",                  "int32");
     restoreStateValue(&plotStatMx,                     sizeof(plotStatMx),                                          "plotStatMx",                     "hexDump");
     restoreStateValue(&drawHistogram,                  sizeof(drawHistogram),                                       "drawHistogram",                  "uint8");
     restoreStateValue(&statMx,                         sizeof(statMx),                                              "statMx",                         "hexDump");
@@ -1075,8 +1075,6 @@ uint16_t flushBufferCnt = 0;
     restoreStateValue(&constantFractionsMode,          sizeof(constantFractionsMode),                               "constantFractionsMode",          "uint8");
     restoreStateValue(&constantFractionsOn,            sizeof(constantFractionsOn),                                 "constantFractionsOn",            "bool");
     restoreStateValue(&running_program_jm,             sizeof(running_program_jm),                                  "running_program_jm",             "bool");
-    restoreStateValue(&indic_x,                        sizeof(indic_x),                                             "indic_x",                        "uint32");
-    restoreStateValue(&indic_y,                        sizeof(indic_y),                                             "indic_y",                        "uint32");
     restoreStateValue(&fnXEQMENUpos,                   sizeof(fnXEQMENUpos),                                        "fnXEQMENUpos",                   "int16");
     restoreStateValue(&indexOfItemsXEQM,               sizeof(indexOfItemsXEQM),                                    "indexOfItemsXEQM",               "hexDump");
     restoreStateValue(&T_cursorPos,                    sizeof(T_cursorPos),                                         "T_cursorPos",                    "int16");   //JM ^^
@@ -2068,7 +2066,7 @@ double stringToDouble(const char *str) {
     calcRegister_t regist;
     char *str;
     #if defined(LOADDEBUG)
-      char line[100];
+      char line[1000];
     #endif //LOADDEBUG
 
     cancelFilename = true;
