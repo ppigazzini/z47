@@ -1403,7 +1403,7 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     drawHistogram = 0;
     realZero(&SAVED_SIGMA_LASTX);
     realZero(&SAVED_SIGMA_LASTY);
-    SAVED_SIGMA_LAct = 0;
+    SAVED_SIGMA_LAc1 = 0;
 
 //    restoreStats();
     plotStatMx[0] = 0;

@@ -1157,7 +1157,7 @@ void graph_stat(uint16_t unusedButMandatoryParameter) {
     }
 
     calcMode = CM_NORMAL;
-    SAVED_SIGMA_LAct = 0;   //prevent undo of last stats add action. REMOVE when STATS are not used anymore
+    SAVED_SIGMA_LAc1 = 0;   //prevent undo of last stats add action. REMOVE when STATS are not used anymore
     return;
   }
 #endif //SAVE_SPACE_DM42_13GRF
