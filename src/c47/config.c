@@ -65,6 +65,9 @@
 
 #include "c47.h"
 
+#include <hal/io.h>
+
+
 
 TO_QSPI static const struct {
     unsigned tdm24 : 1;
@@ -118,6 +121,7 @@ void configCommon(uint16_t idx) {
 
 #if !defined(TESTSUITE_BUILD)
   void fnSetHP35(uint16_t unusedButMandatoryParameter) {
+    strcpy(lastStateFileOpened,"HP35 defaults");
     fnKeyExit(0);                            //Clear pending key input
     fnClrMod(0);                             //Get out of NIM or BASE
     fnStoreConfig(35);                       //Store current config into R35
@@ -158,6 +162,7 @@ void configCommon(uint16_t idx) {
     fnDrop(0);
     fnSquare(0);
     resetOtherConfigurationStuff();
+    strcpy(lastStateFileOpened,"Jaco defaults");
     defaultStatusBar();
     fnClearFlag    (FLAG_USER);              // Clear USER mode
     clearSystemFlag(FLAG_HPRP);              // Clear HP Rect/Polar
@@ -191,6 +196,7 @@ void configCommon(uint16_t idx) {
 
   void fnSetRJ(uint16_t unusedButMandatoryParameter){
     resetOtherConfigurationStuff();
+    strcpy(lastStateFileOpened,"RJvM defaults");
     defaultStatusBar();
     currentAngularMode = amRadian;                 // RAD
     clearSystemFlag(FLAG_HPRP);                    // HP.RP off
@@ -222,6 +228,7 @@ void configCommon(uint16_t idx) {
   void _fnSetC47(uint16_t unusedButMandatoryParameter) {         //Reversing the HP35 settings to C47 defaults
     fnKeyExit(0);
     addItemToBuffer(ITM_EXIT1);
+    strcpy(lastStateFileOpened,"C47 defaults");
 
     fnInDefault(ID_43S);                     //!ID
     fnDisplayFormatAll(3);
@@ -1164,6 +1171,7 @@ void defaultStatusBar(void) {
 
 void resetOtherConfigurationStuff(void) {
   cancelFilename = true;
+  lastStateFileOpened[0]=0;
 
   firstGregorianDay = 2361222 /* 14 Sept 1752 */;
   denMax = 64;                                               //JM changed default from MAX_DENMAX default
@@ -1403,7 +1411,7 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     drawHistogram = 0;
     realZero(&SAVED_SIGMA_LASTX);
     realZero(&SAVED_SIGMA_LASTY);
-    SAVED_SIGMA_LAct = 0;
+    SAVED_SIGMA_LAc1 = 0;
 
 //    restoreStats();
     plotStatMx[0] = 0;
@@ -1529,8 +1537,6 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     graph_reset();
 
     running_program_jm=false;                                  //JM program is running flag
-    indic_x=0;                                                 //JM program progress indicators
-    indic_y=0;                                                 //JM program progress indicators
 
     setSystemFlag(FLAG_SPCRES);                                //JM default infinity etc.
     clearSystemFlag(FLAG_DENFIX);                              //JM default
@@ -1628,7 +1634,7 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     currentSolverVariable = INVALID_VARIABLE;
     currentSolverNestingDepth = 0;
 
-    graphVariable = 0;
+    graphVariabl1 = 0;
 
     // Timer application
     timerCraAndDeciseconds = 0x80u;

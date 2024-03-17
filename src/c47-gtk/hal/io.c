@@ -180,6 +180,7 @@ int ioFileOpen(ioFilePath_t path, ioFileMode_t mode) {
   const char *filemode;
   static char filename[40];
   strcpy(filename, "untitled");
+  fileNameSelected[0]=0;
   int ret = _ioFileNameFromFilePath(path, filename);
   if(ret != FILE_OK) {
     return ret;
@@ -191,7 +192,23 @@ int ioFileOpen(ioFilePath_t path, ioFileMode_t mode) {
     default: return false;
   }
   _ioFileHandle = fopen(filename, filemode);
-  return (_ioFileHandle != NULL ? FILE_OK : FILE_ERROR);
+  if(_ioFileHandle != NULL) {
+    if(mode == ioModeRead) {
+      int16_t jj = stringByteLength(filename);
+      int16_t kk = max(0,jj - stateFileNameVarLength + 1);
+      while(jj>kk) {
+        if(filename[jj-1]!='\\' && filename[jj-1]!='/' && filename[jj-1]!=0) {
+          jj--;
+        } else {
+          break;
+        }
+      }
+      stringAppend(fileNameSelected, filename + jj);
+    }
+    return FILE_OK;
+  } else {
+    return FILE_ERROR;
+  }
 }
 
 

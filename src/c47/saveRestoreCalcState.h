@@ -38,6 +38,7 @@
   void     fnLoad        (uint16_t loadMode);
   void     fnSaveAuto    (void);
   void     fnLoadAuto    (void);
+  void     fnLoadedFile  (uint16_t unusedButMandatoryParameter);
   uint8_t  stringToUint8 (const char *str);
   uint16_t stringToUint16(const char *str);
   uint32_t stringToUint32(const char *str);

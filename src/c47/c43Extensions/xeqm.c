@@ -545,8 +545,8 @@ void execute_string(const char *inputstring, bool_t exec1, bool_t namescan) {
       bool_t   exec = false;
       bool_t   go;
       running_program_jm = true;
-      indic_x = 0;
-      indic_y = SCREEN_HEIGHT-1;
+      int32_t indic_x = 0;
+      int32_t indic_y = SCREEN_HEIGHT-1;
       uint8_t starttoken = 0;
       #if defined(PC_BUILD)
         uint16_t loopnumber = 0;
