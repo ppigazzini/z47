@@ -87,7 +87,7 @@ static void fnPlot(uint16_t unusedButMandatoryParameter) {
 
 #if !defined(SAVE_SPACE_DM42_13GRF)
   static void initialize_function(void){
-    if(graphVariable > 0) {
+    if(graphVariabl1 > 0) {
       #if defined(PC_BUILD)
         //printf(">>> graphVariable = %i\n", graphVariable);
         if(lastErrorCode != 0) {
@@ -111,20 +111,20 @@ static void fnPlot(uint16_t unusedButMandatoryParameter) {
 
 
 static void execute_rpn_function(void){
-  if(graphVariable <= 0 || graphVariable > 65535) {
+  if(graphVariabl1 <= 0 || graphVariabl1 > LAST_LABEL) {
     #if defined(PC_BUILD) //PC_BUILD
-      printf("Error: No graph variable %u\n",graphVariable);
+      printf("Error: No graph variable %u\n",graphVariabl1);
     #endif //PC_BUILD
     return;
   }
 
-  calcRegister_t regStats = graphVariable;
+  calcRegister_t regStats = graphVariabl1;
   if(regStats != INVALID_VARIABLE) {
     fnStore(regStats);                  //place X register into x
 
     #if defined(PC_BUILD) //PC_BUILD
-      printf("Graph variable x=%u: ",graphVariable);
-      printRegisterToConsole(graphVariable, " = ","\n");
+      printf("Graph variable x=%u: ",graphVariabl1);
+      printRegisterToConsole(graphVariabl1, " = ","\n");
     #endif //PC_BUILD
 
     fnEqCalc(0);
@@ -352,7 +352,7 @@ void graph_eqn(uint16_t mode) {
     bool_t jumpedBack = false;
 
 
-    if(graphVariable < FIRST_NAMED_VARIABLE || graphVariable > LAST_NAMED_VARIABLE) {
+    if(graphVariabl1 < FIRST_NAMED_VARIABLE || graphVariabl1 > LAST_NAMED_VARIABLE) {
       regStatsXY = INVALID_VARIABLE;
       return;
     }
@@ -608,7 +608,10 @@ void graph_stat(uint16_t unusedButMandatoryParameter) {
 #if !defined(TESTSUITE_BUILD)
   static void complexSolver() {         //Input parameters in registers SREG_STARTX0, SREG_STARTX1
     currentKeyCode = 255;
-    if(graphVariable <= 0 || graphVariable > 65535) {
+    if(graphVariabl1 <= 0 || graphVariabl1 > LAST_LABEL) {
+      #if defined(PC_BUILD) //PC_BUILD
+        printf("Error: No complex solver variable %u\n",graphVariabl1);
+      #endif //PC_BUILD
       return;
     }
 
@@ -1254,7 +1257,7 @@ void graph_stat(uint16_t unusedButMandatoryParameter) {
     }
 
     calcMode = CM_NORMAL;
-    SAVED_SIGMA_LAct = 0;   //prevent undo of last stats add action. REMOVE when STATS are not used anymore
+    SAVED_SIGMA_LAc1 = 0;   //prevent undo of last stats add action. REMOVE when STATS are not used anymore
     return;
   }
 #endif //SAVE_SPACE_DM42_13GRF
@@ -1263,10 +1266,8 @@ void graph_stat(uint16_t unusedButMandatoryParameter) {
 
 //-----------------------------------------------------//-----------------------------------------------------
 void fnEqSolvGraph (uint16_t func) {
-
 #if !defined(SAVE_SPACE_DM42_13GRF)
 #if !defined(TESTSUITE_BUILD)
-
   hourGlassIconEnabled = true;
   showHideHourGlass();
   #if defined(DMCP_BUILD)
@@ -1326,27 +1327,25 @@ void fnEqSolvGraph (uint16_t func) {
       break;
   }
 
-  graphVariable = currentSolverVariable;
-  if(graphVariable<0) {
-    graphVariable = -graphVariable;
+  graphVariabl1 = currentSolverVariable;
+  if(graphVariabl1<0) {
+    graphVariabl1 = -graphVariabl1;
   }
 
-
-printf("aaaa+1\n");
-  if(graphVariable >= FIRST_NAMED_VARIABLE && graphVariable <= LAST_NAMED_VARIABLE) {
+  if(graphVariabl1 >= FIRST_NAMED_VARIABLE && graphVariabl1 <= LAST_NAMED_VARIABLE) {
     #if(defined(VERBOSE_SOLVER00) || defined(VERBOSE_SOLVER0)) && defined(PC_BUILD)
-      printf("graphVariable accepted: %i\n", graphVariable);
+      printf("graphVariabl1 accepted: %i\n", graphVariabl1);
     #endif // (VERBOSE_SOLVER00 || VERBOSE_SOLVER0) && PC_BUILD
   }
   else {
-printf("aaaa+2\n");
     displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
     #if(EXTRA_INFO_ON_CALC_ERROR == 1)
-      sprintf(errorMessage, "unexpected parameter %u", graphVariable);
+      sprintf(errorMessage, "unexpected parameter %u", graphVariabl1);
       moreInfoOnError("In function fnEqSolvGraph:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     return;
   }
+
 
   //initialize x
   currentSolverStatus &= ~SOLVER_STATUS_READY_TO_EXECUTE;

@@ -1941,7 +1941,7 @@ void debugNIM(void) {
         gtk_label_set_label(GTK_LABEL(lbl2[row]), string);
         gtk_widget_show(lbl2[row++]);
 
-        sprintf(string, "SAVED Last Action %65i", SAVED_SIGMA_LAct);
+        sprintf(string, "SAVED Last Action %65i", SAVED_SIGMA_LAc1);
         gtk_label_set_label(GTK_LABEL(lbl1[row]), string);
         gtk_widget_show(lbl1[row]);
       }

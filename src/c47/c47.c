@@ -186,8 +186,6 @@ bool_t                jm_LARGELI;
 bool_t                constantFractions;                       //JM
 uint8_t               constantFractionsMode;
 bool_t                constantFractionsOn;                     //JM
-uint32_t              indic_x = 0;
-uint32_t              indic_y = SCREEN_HEIGHT-1;
 
 bool_t                eRPN;                                    //JM eRPN Create a flag to enable or disable eRPN. See bufferize.c
 bool_t                HOME3;                                   //JM HOME Create a flag to enable or disable triple shift HOME3. Create a flag to enable or disable HOME TIMER CANCEL.
@@ -289,7 +287,7 @@ int32_t                numberOfFreeMemoryRegions;
 #endif // !DMCP_BUILD
 
 int32_t                lgCatalogSelection;
-int32_t                graphVariable;
+calcRegister_t         graphVariabl1;
 
 uint32_t               firstGregorianDay;
 uint32_t               denMax;
@@ -316,7 +314,7 @@ size_t                 c47MemInBlocks;
 
 real_t                 SAVED_SIGMA_LASTX;
 real_t                 SAVED_SIGMA_LASTY;
-int32_t                SAVED_SIGMA_LAct;
+int8_t                 SAVED_SIGMA_LAc1;
 
 uint16_t               lrSelectionHistobackup;
 uint16_t               lrChosenHistobackup;

@@ -2158,6 +2158,17 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
     }
   }
 
+  void _displaySigmaPlus(calcRegister_t regist, char *prefix, int16_t *prefixWidth) {
+    int32_t w = realToInt32C47(SIGMA_N);
+    if(regist == REGISTER_X) {
+      sprintf(prefix, "%03" PRId32 " data point", w);
+      if(w > 1) {
+        stringAppend(prefix + stringByteLength(prefix), "s");
+      }
+      *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
+      lcd_fill_rect(0, Y_POSITION_OF_REGISTER_Y_LINE - 2, SCREEN_WIDTH, 1, LCD_EMPTY_VALUE);
+    }
+  }
 
   #define PROBMENU (-softmenu[softmenuStack[0].softmenuId].menuItem >= MNU_BINOM && -softmenu[softmenuStack[0].softmenuId].menuItem <= ITM_1296)
 
@@ -3427,17 +3438,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
           }
 
           else if(temporaryInformation == TI_STATISTIC_SUMS) {
-            w = realToInt32C47(SIGMA_N);
-            if(regist == REGISTER_Y) {
-              if(w == 1) {
-                sprintf(prefix, "%03" PRId32 " data point", w);
-              }
-              else {
-                sprintf(prefix, "%03" PRId32 " data points", w);
-              }
-              prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
-              lcd_fill_rect(0, Y_POSITION_OF_REGISTER_Y_LINE - 2, SCREEN_WIDTH, 1, LCD_EMPTY_VALUE);
-            }
+            _displaySigmaPlus(regist, prefix, &prefixWidth);
           }
 
           else if(temporaryInformation == TI_STATISTIC_LR) {
@@ -3761,6 +3762,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
             }
           }
                                                                        //JM EE ^
+
           complex34ToDisplayString(REGISTER_COMPLEX34_DATA(regist), tmpString, &numericFont, SCREEN_WIDTH - prefixWidth, NUMBER_OF_DISPLAY_DIGITS,true, true, getComplexRegisterAngularMode(regist),  getComplexRegisterPolarMode(regist) == amPolar);
 
           w = stringWidth(tmpString, &numericFont, false, true);
@@ -3770,9 +3772,6 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
           }
           showString(tmpString, &numericFont, (temporaryInformation == TI_VIEW_REGISTER && origRegist == REGISTER_T) ? prefixWidth : SCREEN_WIDTH - w, baseY - checkHPoffset, vmNormal, false, true);
         }
-
-
-
 
         else if(getRegisterDataType(regist) == dtString) {
           if(temporaryInformation == TI_COPY_FROM_SHOW && regist == REGISTER_X) {
@@ -3881,6 +3880,14 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
         }
 
         else if(getRegisterDataType(regist) == dtShortInteger) {
+          {
+            shortIntegerToDisplayString(regist, tmpString, true);
+            showString(tmpString, fontForShortInteger, SCREEN_WIDTH - stringWidth(tmpString, fontForShortInteger, false, true), Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + (fontForShortInteger == &standardFont ? 6 : 0) - (fontForShortInteger == &numericFont && temporaryInformation == TI_NO_INFO && checkHP ? 50:0), vmNormal, false, true);
+
+            displayBaseMode(regist);
+        }
+
+
           prefixWidth = 0;
           tmpString[0]=0;
           if(regist == REGISTER_X && (temporaryInformation == TI_DATA_LOSS || temporaryInformation == TI_DATA_NEG_OVRFL)) {
@@ -3898,12 +3905,16 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
               prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
             }
           }
-          if(temporaryInformation == TI_VIEW_REGISTER && origRegist == REGISTER_T) {
+          else if(temporaryInformation == TI_VIEW_REGISTER && origRegist == REGISTER_T) {
             viewRegName(prefix, &prefixWidth);
           }
           else if(temporaryInformation == TI_COPY_FROM_SHOW && regist == REGISTER_X) {
             _fnShowRecallTI(prefix, &prefixWidth);
           }
+          else if(temporaryInformation == TI_STATISTIC_SUMS) {
+            _displaySigmaPlus(regist, prefix, &prefixWidth);
+          }
+
           if(prefixWidth > 0) {
             if(regist == REGISTER_X) {
               showString(prefix, &standardFont, 1, baseY + TEMPORARY_INFO_OFFSET, vmNormal, prefixPre, prefixPost);
@@ -3912,12 +3923,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
               shortIntegerToDisplayString(regist, tmpString, true);
             }
             showString(tmpString, fontForShortInteger, SCREEN_WIDTH - stringWidth(tmpString, fontForShortInteger, false, true), Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + (fontForShortInteger == &standardFont ? 6 : 0) - (fontForShortInteger == &numericFont && temporaryInformation == TI_NO_INFO && checkHP ? 50:0), vmNormal, false, true);
-          } else {
-            shortIntegerToDisplayString(regist, tmpString, true);
-            showString(tmpString, fontForShortInteger, SCREEN_WIDTH - stringWidth(tmpString, fontForShortInteger, false, true), Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + (fontForShortInteger == &standardFont ? 6 : 0) - (fontForShortInteger == &numericFont && temporaryInformation == TI_NO_INFO && checkHP ? 50:0), vmNormal, false, true);
-
-          displayBaseMode(regist);
-        }
+          } 
       }
 
         else if(getRegisterDataType(regist) == dtLongInteger) {
@@ -3930,6 +3936,9 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
           }
           else if(regist == REGISTER_X && (temporaryInformation == TI_IJ || temporaryInformation == TI_MIJ)) {
             _displayIJ(prefix, &prefixWidth);
+          }
+          else if(temporaryInformation == TI_STATISTIC_SUMS) {
+            _displaySigmaPlus(regist, prefix, &prefixWidth);
           }
 
 
