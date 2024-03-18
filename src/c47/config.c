@@ -27,6 +27,7 @@
 #include "charString.h"
 #include "constantPointers.h"
 #include "constants.h"
+#include "dateTime.h"
 #include "debug.h"
 #include "display.h"
 #include "error.h"
@@ -121,7 +122,8 @@ void configCommon(uint16_t idx) {
 
 #if !defined(TESTSUITE_BUILD)
   void fnSetHP35(uint16_t unusedButMandatoryParameter) {
-    strcpy(lastStateFileOpened,"HP35 defaults");
+    getDateString(lastStateFileOpened);
+    strcat(lastStateFileOpened,": HP35 defaults");
     fnKeyExit(0);                            //Clear pending key input
     fnClrMod(0);                             //Get out of NIM or BASE
     fnStoreConfig(35);                       //Store current config into R35
@@ -162,7 +164,8 @@ void configCommon(uint16_t idx) {
     fnDrop(0);
     fnSquare(0);
     resetOtherConfigurationStuff();
-    strcpy(lastStateFileOpened,"Jaco defaults");
+    getDateString(lastStateFileOpened);
+    strcat(lastStateFileOpened,": Jaco defaults");
     defaultStatusBar();
     fnClearFlag    (FLAG_USER);              // Clear USER mode
     clearSystemFlag(FLAG_HPRP);              // Clear HP Rect/Polar
@@ -196,7 +199,8 @@ void configCommon(uint16_t idx) {
 
   void fnSetRJ(uint16_t unusedButMandatoryParameter){
     resetOtherConfigurationStuff();
-    strcpy(lastStateFileOpened,"RJvM defaults");
+    getDateString(lastStateFileOpened);
+    strcat(lastStateFileOpened,": RJvM defaults");
     defaultStatusBar();
     currentAngularMode = amRadian;                 // RAD
     clearSystemFlag(FLAG_HPRP);                    // HP.RP off
@@ -228,7 +232,8 @@ void configCommon(uint16_t idx) {
   void _fnSetC47(uint16_t unusedButMandatoryParameter) {         //Reversing the HP35 settings to C47 defaults
     fnKeyExit(0);
     addItemToBuffer(ITM_EXIT1);
-    strcpy(lastStateFileOpened,"C47 defaults");
+    getDateString(lastStateFileOpened);
+    strcat(lastStateFileOpened,": C47 defaults");
 
     fnInDefault(ID_43S);                     //!ID
     fnDisplayFormatAll(3);
