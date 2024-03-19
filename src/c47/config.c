@@ -14,6 +14,7 @@
 #include "charString.h"
 #include "constantPointers.h"
 #include "constants.h"
+#include "dateTime.h"
 #include "debug.h"
 #include "display.h"
 #include "error.h"
@@ -281,7 +282,8 @@ void Sett(int16_t grp) {
 
 #if !defined(TESTSUITE_BUILD)
   void fnSetHP35(uint16_t unusedButMandatoryParameter) {
-    strcpy(lastStateFileOpened,"HP35 defaults");
+    getDateString(lastStateFileOpened);
+    strcat(lastStateFileOpened,": HP35 defaults");
     fnKeyExit(0);                            //Clear pending key input
     fnClrMod(0);                             //Get out of NIM or BASE
     fnStoreConfig(35);                       //Store current config into R35
@@ -323,7 +325,8 @@ void Sett(int16_t grp) {
     fnDrop(0);
     fnSquare(0);
     resetOtherConfigurationStuff();
-    strcpy(lastStateFileOpened,"Jaco defaults");
+    getDateString(lastStateFileOpened);
+    strcat(lastStateFileOpened,": Jaco defaults");
 
 
     //---    defaultStatusBar();
@@ -336,7 +339,7 @@ void Sett(int16_t grp) {
     //---    SetSetting     (SS_8);                   // SSTACK 8
     //---    SetSetting     (ITM_CPXRES1);            // Set CPXRES
     //---    SetSetting     (ITM_SPCRES1);            // Set SPCRES
-    //---    setSystemFlag  (FLAG_CPXj   );           // Set j
+    //---    setSystemFlag  (FLAG_CPXj);              // Set j
     //---    setSystemFlag  (FLAG_SBbatV);            // Set battery voltage indicator
     //---    fnDisplayFormatSigFig(3);                // SIG 3
     //---    setSystemFlag(FLAG_FRCSRN);              // Display
@@ -362,7 +365,8 @@ void Sett(int16_t grp) {
 
   void fnSetRJ(uint16_t unusedButMandatoryParameter){
     resetOtherConfigurationStuff();
-    strcpy(lastStateFileOpened,"RJvM defaults");
+    getDateString(lastStateFileOpened);
+    strcat(lastStateFileOpened,": RJvM defaults");
 
     //---    defaultStatusBar();
     Sett(_RJ);
@@ -398,7 +402,8 @@ void Sett(int16_t grp) {
   void _fnSetC47(uint16_t unusedButMandatoryParameter) {         //Reversing the HP35 settings to C47 defaults
     fnKeyExit(0);
     addItemToBuffer(ITM_EXIT1);
-    strcpy(lastStateFileOpened,"C47 defaults");
+    getDateString(lastStateFileOpened);
+    strcat(lastStateFileOpened,": C47 defaults");
 
     Sett(_C47);
     //---    fnInDefault(ID_43S);                     //!ID
