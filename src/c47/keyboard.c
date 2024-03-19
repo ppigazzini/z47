@@ -3016,7 +3016,7 @@ void fnKeyEnter(uint16_t unusedButMandatoryParameter) {
     switch(calcMode) {
       case CM_NORMAL: {
 
-        if(!eRPN || (!nimWhenButtonPressed && programRunStop != PGM_RUNNING)) {     //vv PHM eRPN 2021-07;   JM corrected eRPN on 2024-03-19 on master 86fd2a5
+        if(!eRPN || (!nimWhenButtonPressed && programRunStop != PGM_RUNNING) || (eRPN && programRunStop == PGM_RUNNING )) {     //vv PHM eRPN 2021-07;   JM corrected eRPN on 2024-03-19 on master 86fd2a5
           setSystemFlag(FLAG_ASLIFT);
           #if defined(DEBUGUNDO)
             printf(">>> saveForUndo from fnKeyEnterA\n");
