@@ -670,6 +670,13 @@ void SetSetting(uint16_t jmConfig) {
     case ITM_PRTACT0: fnClearFlag(FLAG_PRTACT);                              break;
     case JC_FRC:      fnFlipFlag(FLAG_FRCSRN);                               break; //bit
     case JC_NL:       numLock = !numLock; showAlphaModeonGui();              break; //call numlock
+    case JC_UC:
+      if(alphaCase == AC_LOWER) {
+        alphaCase = AC_UPPER;
+      } else {
+        alphaCase = AC_LOWER;
+      }
+      break;
     case JC_SS:     //call sub/sup script
       if(scrLock == NC_NORMAL) {
         scrLock = NC_SUPERSCRIPT;
