@@ -2388,14 +2388,14 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
       }
 
       else if(temporaryInformation == TI_STATEFILE_RESTORED && regist == REGISTER_X) {
-        sprintf(prefix, "State file restored");
+        sprintf(prefix, "State file loaded");
         displayTemporaryInformationOnX(prefix);
       }
 
       else if(temporaryInformation == TI_PROGRAMS_RESTORED && regist == REGISTER_X) {
         sprintf(prefix, "                                ");
         displayTemporaryInformationOnX(prefix);
-        sprintf(prefix, "Saved programs and equations");
+        sprintf(prefix, "Programs and equations loaded");
         showString(prefix, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) - 3, vmNormal, true, true);
         sprintf(prefix, "appended");
         showString(prefix, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + 17, vmNormal, true, true);
@@ -2404,24 +2404,24 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
       else if(temporaryInformation == TI_REGISTERS_RESTORED && regist == REGISTER_X) {
         sprintf(prefix, "                                  ");
         displayTemporaryInformationOnX(prefix);
-        sprintf(prefix, "Saved global and local registers");
+        sprintf(prefix, "Global and local registers loaded");
         showString(prefix, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) - 3, vmNormal, true, true);
-        sprintf(prefix, "(w/ local flags) restored");
+        sprintf(prefix, "(w/ local flags)");
         showString(prefix, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + 17, vmNormal, true, true);
       }
 
       else if(temporaryInformation == TI_SETTINGS_RESTORED && regist == REGISTER_X) {
-        sprintf(prefix, "Saved system settings restored");
+        sprintf(prefix, "System settings loaded");
         displayTemporaryInformationOnX(prefix);
       }
 
       else if(temporaryInformation == TI_SUMS_RESTORED && regist == REGISTER_X) {
-        sprintf(prefix, "Saved statistic data restored");
+        sprintf(prefix, "Statistical data loaded");
         displayTemporaryInformationOnX(prefix);
       }
 
       else if(temporaryInformation == TI_VARIABLES_RESTORED && regist == REGISTER_X) {
-        sprintf(prefix, "Saved user variables restored");
+        sprintf(prefix, "User variables loaded");
         displayTemporaryInformationOnX(prefix);
       }
 
