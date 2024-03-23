@@ -890,7 +890,7 @@ uint16_t numlockReplacements(uint16_t id, int16_t item, bool_t NL, bool_t FSHIFT
  //Note item1 MUST be set to 0 prior to calling.
  bool_t keyReplacements(int16_t item, int16_t *item1, bool_t NL, bool_t FSHIFT, bool_t GSHIFT) {
    //printf("####B>> %d %d\n", item, *item1);
-   if(calcMode == CM_AIM || calcMode == CM_EIM || calcMode == CM_PEM || (tam.mode && tam.alpha) ) {
+   if(calcMode == CM_AIM || calcMode == CM_EIM || calcMode == CM_PEM || (tam.mode && tam.alpha) || (calcMode == CM_ASSIGN && itemToBeAssigned == 0)) {
 
     if(GSHIFT) {        //ensure that sigma and delta stays uppercase
       switch(item) {
