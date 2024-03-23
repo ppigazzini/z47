@@ -3762,7 +3762,6 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
             }
           }
                                                                        //JM EE ^
-
           complex34ToDisplayString(REGISTER_COMPLEX34_DATA(regist), tmpString, &numericFont, SCREEN_WIDTH - prefixWidth, NUMBER_OF_DISPLAY_DIGITS,true, true, getComplexRegisterAngularMode(regist),  getComplexRegisterPolarMode(regist) == amPolar);
 
           w = stringWidth(tmpString, &numericFont, false, true);
@@ -3772,6 +3771,9 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
           }
           showString(tmpString, &numericFont, (temporaryInformation == TI_VIEW_REGISTER && origRegist == REGISTER_T) ? prefixWidth : SCREEN_WIDTH - w, baseY - checkHPoffset, vmNormal, false, true);
         }
+
+
+
 
         else if(getRegisterDataType(regist) == dtString) {
           if(temporaryInformation == TI_COPY_FROM_SHOW && regist == REGISTER_X) {
@@ -3878,6 +3880,11 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
             }
           }
         }
+
+
+
+
+
 
         else if(getRegisterDataType(regist) == dtShortInteger) {
           {
