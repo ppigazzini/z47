@@ -500,7 +500,7 @@ printf(">>>>Z 0070 btnFnClicked data=|%s| data[0]=%d\n",(char*)data, ((char*)dat
 
 bool_t lastshiftF = false;
 bool_t lastshiftG = false;
-bool_t lowercaseselected;
+bool_t lowercaseselected;    //the only place that this is set, is in processKeyAction
 
   static void processAimInput(int16_t item) {
     int16_t item1 = 0;
@@ -917,6 +917,8 @@ int16_t lastItem = 0;
 //                )  ) {       //prevent "shifts on rows f and g on F6 to be overwritten //Allow any normal mode menu HOME PFN MyM, except shifts not in f or g line
 //          return;
 //        } else
+
+
         if(!(previousCalcMode == CM_AIM && (!shiftG && !shiftF) && ((uint8_t *)data)[0] == '6')) {       //prevent "ALPHA" on F6 to be overwritten
           if(_assignToMenu((uint8_t *)data)) {
             if(previousCalcMode == CM_AIM) {         //vvJM btnFnReleased
@@ -932,7 +934,6 @@ int16_t lastItem = 0;
         }
 
       }
-
 
       btnFnReleased_StateMachine(NULL, data);            //This function does the longpress differentiation, and calls ExecuteFunctio below, via fnbtnclicked
     }
@@ -1213,6 +1214,12 @@ int16_t lastItem = 0;
                 programRunStop = PGM_STOPPED;
               }
               if(calcMode == CM_ASSIGN && itemToBeAssigned == 0 && item != ITM_NOP) {
+                if(item == CHR_case) {
+                  SetSetting(JC_UC);
+                } else
+                if(item == CHR_num) {
+                  SetSetting(JC_NL);
+                } else
                 if(tam.alpha) {
                   processAimInput(item);
                   if(stringGlyphLength(aimBuffer) > 6) {
@@ -2837,7 +2844,14 @@ RELEASE_END:
                       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
                     }
                   }
-                  itemToBeAssigned = item;
+
+
+                  itemToBeAssigned = numlockReplacements(100,item,numLock,false,false);
+                  if(ITM_A <= itemToBeAssigned && itemToBeAssigned <= ITM_Z && lowercaseselected) {
+                    itemToBeAssigned += 26;
+                  }
+
+
                   if(previousCalcMode == CM_AIM) softmenuStack[0].softmenuId = 1;     //JM change ALPHA to MyAlpha to be able to write ASN target
                 }
                 keyActionProcessed = true;
