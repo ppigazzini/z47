@@ -864,27 +864,18 @@ void resetKeytimers(void) {
 #endif // !TESTSUITE_BUILD
 
 
+//numlock replacements require the case to be upper case
 uint16_t numlockReplacements(uint16_t id, int16_t item, bool_t NL, bool_t FSHIFT, bool_t GSHIFT) {
   int16_t item1 = 0;
   //printf("####A>>%u %u %u\n", id, item, item1);
-  if(ITM_A + 26 <= item && item <= ITM_Z + 26) {
-    if(keyReplacements(item - 26, &item1, NL, FSHIFT, GSHIFT)) {
-      return max(item1, -item1);
-    }
-    else {
-      return max(item, -item);
-    }
+
+  if(keyReplacements(item, &item1, NL, FSHIFT, GSHIFT)) {
+    return max(item1, -item1);
   }
   else {
-    if(keyReplacements(item, &item1, NL, FSHIFT, GSHIFT))  {
-      return max(item1, -item1);
-    }
-    else {
-      return max(item, -item);
-    }
+    return max(item, -item);
   }
 }
-
 
 
  //Note item1 MUST be set to 0 prior to calling.
@@ -901,38 +892,24 @@ uint16_t numlockReplacements(uint16_t id, int16_t item, bool_t NL, bool_t FSHIFT
       }
     }
 
-    else if(NL && !FSHIFT) {                           //JMvv Numlock translation: Assumes lower case  is NOT active
-
-      uint16_t ix = 15; //include EEX
-      while(ix < 37) {
-        if((ix >= 17 || ix == 15) && item == kbd_std[ix].primaryAim && kbd_std[ix].primaryAim != ITM_EXIT1 && kbd_std[ix].primaryAim != ITM_UP1 && kbd_std[ix].primaryAim != ITM_DOWN1) {
-          *item1 = getSystemFlag(FLAG_USER) ? kbd_usr[ix].gShiftedAim : kbd_std[ix].gShiftedAim;
-          break;
-        }
-        ix++;
-      }
-    }
-
-    else if(NL && FSHIFT) {                           //JMvv Numlock translation: Assumes lower case  is NOT active
-                                                      //Originally for C47: ITM_MINUS, ITM_PLUS, ITM_SLASH, ITM_PERIOD, ITM_0
-
-      uint16_t ix = 31;
-      while(ix < 37) {
-        if(item == kbd_std[ix].gShiftedAim && kbd_std[ix].primaryAim != ITM_EXIT1 && kbd_std[ix].primaryAim != ITM_UP1 && kbd_std[ix].primaryAim != ITM_DOWN1) {
-          *item1 = getSystemFlag(FLAG_USER) ? kbd_usr[ix].primaryAim : kbd_std[ix].primaryAim;
-          break;
+    else if(NL) {       //JMvv Numlock translation: Assumes lower case is NOT active
+      
+      item -= (ITM_A + 26 <= item && item <= ITM_Z + 26) ? -26 : 0; //Ensures lower case is NOT active
+      uint16_t ix = 15; //from EEX to the bottom of the keyboard, last key 37
+      while(ix < 37) {        
+        if(kbd_std[ix].primaryAim != ITM_EXIT1 && kbd_std[ix].primaryAim != ITM_UP1 && kbd_std[ix].primaryAim != ITM_DOWN1 && kbd_std[ix].primaryAim != ITM_BACKSPACE) {
+          if(!FSHIFT && item == kbd_std[ix].primaryAim) {
+            *item1 = getSystemFlag(FLAG_USER) ? kbd_usr[ix].gShiftedAim : kbd_std[ix].gShiftedAim;
+            break;
+          }
+          if(FSHIFT && ix >= 31 && item == kbd_std[ix].gShiftedAim) {                            //Originally for C47: ITM_MINUS, ITM_PLUS, ITM_SLASH, ITM_PERIOD, ITM_0
+            *item1 = getSystemFlag(FLAG_USER) ? kbd_usr[ix].primaryAim : kbd_std[ix].primaryAim;
+            break;
+          }
         }
         ix++;
       }
 
-
-    } //JM Exception, to change 0 to ";", when !NL & FSHIFT-0
-
-    else if(!NL && FSHIFT) {                           //JMvv Numlock translation: Assumes lower case  is NOT active
-//      switch(item) {
-//        case ITM_0:             *item1 = ITM_SEMICOLON;     break;
-//        default: break;
-//      }
     }
   }
   return *item1 != 0;

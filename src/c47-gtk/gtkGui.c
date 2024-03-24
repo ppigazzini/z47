@@ -2156,16 +2156,9 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
 
       if(key->primaryAim == ITM_NULL) {
         lbl[0] = 0;
-      } else if( (ITM_A <= key->primaryAim && key->primaryAim <= ITM_Z)) {             //if in upper case, show lower case on yellow
-          stringToUtf8(indexOfItems[((max(key->primaryAim, -key->primaryAim)) + ((alphaCase == AC_UPPER) ? 26:0 ))].itemSoftmenuName, lbl);
+      } else { 
+          stringToUtf8(indexOfItems[numlockReplacements(4,max(key->fShiftedAim, -key->fShiftedAim),numLock,true,false)].itemSoftmenuName, lbl);
       }
-      //JM Exception, to change 0 to ";", when !NL & SHFT-0
-//      else if(numlockReplacements(3,max(key->fShiftedAim, -key->fShiftedAim),numLock,true,false) != max(key->fShiftedAim, -key->fShiftedAim)) {
-else          stringToUtf8(indexOfItems[numlockReplacements(4,max(key->fShiftedAim, -key->fShiftedAim),numLock,true,false)].itemSoftmenuName, lbl);
-//      }
-//      else {                                                                                               //
-//          stringToUtf8(indexOfItems[numlockReplacements(1,max(key->primaryAim, -key->primaryAim),!numLock,false,false)].itemSoftmenuName, lbl);
-//      }
 
       if(lbl[0] == 32 && lbl[1]==0) {
         lbl[0]=0xC2;          //JM SPACE the space character is not in the font. \rather use . . for space.
