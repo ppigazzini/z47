@@ -500,7 +500,7 @@ printf(">>>>Z 0070 btnFnClicked data=|%s| data[0]=%d\n",(char*)data, ((char*)dat
 
 bool_t lastshiftF = false;
 bool_t lastshiftG = false;
-bool_t lowercaseselected;
+bool_t lowercaseselected;    //the only place that this is set, is in processKeyAction
 
   static void processAimInput(int16_t item) {
     int16_t item1 = 0;
@@ -919,11 +919,6 @@ int16_t lastItem = 0;
 //        } else
 
 
-        if( (  (itemToBeAssigned == CHR_case || itemToBeAssigned == CHR_num) && (previousCalcMode == CM_AIM))  ) {
-          goto exec;
-        } else
-
-
         if(!(previousCalcMode == CM_AIM && (!shiftG && !shiftF) && ((uint8_t *)data)[0] == '6')) {       //prevent "ALPHA" on F6 to be overwritten
           if(_assignToMenu((uint8_t *)data)) {
             if(previousCalcMode == CM_AIM) {         //vvJM btnFnReleased
@@ -939,9 +934,6 @@ int16_t lastItem = 0;
         }
 
       }
-
-exec:
-printf("\n############## 66\n");
 
       btnFnReleased_StateMachine(NULL, data);            //This function does the longpress differentiation, and calls ExecuteFunctio below, via fnbtnclicked
     }
@@ -2854,30 +2846,9 @@ RELEASE_END:
                   }
 
 
-                  itemToBeAssigned = item;
-                  if(numLock) {
-                    switch(item) {
-                      case ITM_O : itemToBeAssigned = ITM_SUB_E_OUTLINE; break;
-                      case ITM_P : itemToBeAssigned = ITM_7; break;
-                      case ITM_Q : itemToBeAssigned = ITM_8; break;
-                      case ITM_R : itemToBeAssigned = ITM_7; break;
-                      case ITM_T : itemToBeAssigned = ITM_6; break;
-                      case ITM_U : itemToBeAssigned = ITM_5; break;
-                      case ITM_V : itemToBeAssigned = ITM_4; break;
-                      case ITM_X : itemToBeAssigned = ITM_1; break;
-                      case ITM_Y : itemToBeAssigned = ITM_2; break;
-                      case ITM_Z : itemToBeAssigned = ITM_3; break;
-                      case ITM_COLON : itemToBeAssigned = ITM_0; break;
-                      case ITM_COMMA : itemToBeAssigned = ITM_PERIOD; break;
-                      case ITM_QUESTION_MARK : itemToBeAssigned = ITM_SLASH; break;
-                      case ITM_S : itemToBeAssigned = ITM_OBELUS; break;
-                      case ITM_UNDERSCORE : itemToBeAssigned = ITM_MINUS; break;
-                      case ITM_SPACE : itemToBeAssigned = ITM_PLUS; break;
-                      default:itemToBeAssigned = item; break;
-                    }
-                  } 
+                  itemToBeAssigned = numlockReplacements(100,item,numLock,false,false);
                   if(ITM_A <= itemToBeAssigned && itemToBeAssigned <= ITM_Z && lowercaseselected) {
-                    itemToBeAssigned = item + 26;
+                    itemToBeAssigned += 26;
                   }
 
 
