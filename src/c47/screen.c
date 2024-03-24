@@ -2107,6 +2107,18 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
   }
 
 
+  void _displayNoSolverVariable(calcRegister_t regist, char *prefix, int16_t *prefixWidth) {
+    if(regist == REGISTER_X) {
+      switch(temporaryInformation) {
+        case TI_NO_INTEGRATE_VARIABLE: strcpy(prefix,"Select Integrator Variable"); break;
+        case TI_NO_SOLVER_VARIABLE:    strcpy(prefix,"Select Solver Variable"); break;
+        default:prefix[0]=0;
+      }
+      *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
+    }
+  }
+
+
   void _displayIJ(char *prefix, int16_t *prefixWidth) {
     if(currentMenu() != -MNU_MATX || lastErrorCode != 0) {
       return;
@@ -3460,6 +3472,9 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
           else if(temporaryInformation == TI_SOLVER_VARIABLE) {
             _displaySolverInput(regist, prefix, &prefixWidth);
           }
+          else if(temporaryInformation == TI_NO_SOLVER_VARIABLE || temporaryInformation == TI_NO_INTEGRATE_VARIABLE) {
+            _displayNoSolverVariable(regist, prefix, &prefixWidth);
+          }
 
           else if(temporaryInformation == TI_ACC) {
             if(regist == REGISTER_X) {
@@ -3671,6 +3686,9 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
           }
           else if(temporaryInformation == TI_SOLVER_VARIABLE) {
             _displaySolverInput(regist, prefix, &prefixWidth);
+          }
+          else if(temporaryInformation == TI_NO_SOLVER_VARIABLE || temporaryInformation == TI_NO_INTEGRATE_VARIABLE) {
+            _displayNoSolverVariable(regist, prefix, &prefixWidth);
           }
           else if(temporaryInformation == TI_VIEW_REGISTER && origRegist == REGISTER_T) {
               viewRegName(prefix, &prefixWidth);
@@ -3940,6 +3958,9 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
 
           else if(temporaryInformation == TI_SOLVER_VARIABLE) {
             _displaySolverInput(regist, prefix, &prefixWidth);
+          }
+          else if(temporaryInformation == TI_NO_SOLVER_VARIABLE || temporaryInformation == TI_NO_INTEGRATE_VARIABLE) {
+            _displayNoSolverVariable(regist, prefix, &prefixWidth);
           }
           else if(regist == REGISTER_X && (temporaryInformation == TI_IJ || temporaryInformation == TI_MIJ)) {
             _displayIJ(prefix, &prefixWidth);

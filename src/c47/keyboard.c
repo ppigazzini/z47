@@ -4208,6 +4208,10 @@ void fnKeyUp(uint16_t unusedButMandatoryParameter) {
             currentFormula = numberOfFormulae;
           }
           --currentFormula;
+          if(numberOfFormulae > 1) {
+            currentSolverVariable = INVALID_VARIABLE;
+            graphVariabl1 = 0;
+          }
           screenUpdatingMode &= ~SCRUPD_MANUAL_MENU;
         }
         else {
@@ -4418,6 +4422,10 @@ void fnKeyDown(uint16_t unusedButMandatoryParameter) {
           ++currentFormula;
           if(currentFormula == numberOfFormulae) {
             currentFormula = 0;
+          }
+          if(numberOfFormulae > 1) {
+            currentSolverVariable = INVALID_VARIABLE;
+            graphVariabl1 = 0;
           }
           screenUpdatingMode &= ~SCRUPD_MANUAL_MENU;
         }

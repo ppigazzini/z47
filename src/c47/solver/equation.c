@@ -156,6 +156,7 @@ void fnEqNew(uint16_t unusedButMandatoryParameter) {
       allFormulae[0].pointerToFormulaData = C47_NULL;
       allFormulae[0].sizeInBlocks = 0;
       graphVariabl1 = 0;
+      currentSolverVariable = INVALID_VARIABLE;
     }
     else {
       displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
@@ -290,6 +291,7 @@ void deleteEquation(uint16_t equationId) {
       currentFormula = numberOfFormulae - 1;
     }
     graphVariabl1 = 0;
+    currentSolverVariable = INVALID_VARIABLE;
   }
 }
 

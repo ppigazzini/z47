@@ -572,12 +572,13 @@ TO_QSPI const int16_t menu_Solver[]      = { ITM_NULL,                  ITM_NULL
 TO_QSPI const int16_t menu_Sfdx[]        = { ITM_INTEGRAL_YX,           VAR_ACC,                  CST_78,                    VAR_LLIM,                  VAR_ULIM,                  ITM_INTEGRAL,              
 /*same*/                                     ITM_DRAW,                  ITM_NULL,                 ITM_NULL,                  VAR_LX,                    VAR_UX,                    ITM_DRAW_LU               };
 
+// Tool∫ (intgral tools)
 TO_QSPI const int16_t menu_Sf_TOOL[]     = { ITM_INTEGRAL_YX,           CST_77,                   CST_78,                    VAR_LLIM,                  VAR_ULIM,                  ITM_INTEGRAL,              
 /*same*/                                     ITM_DRAW,                  VAR_ACC,                  ITM_NULL,                  VAR_LX,                    VAR_UX,                    ITM_DRAW_LU               };
 
 
 
-
+// ToolS (solver tools)
 TO_QSPI const int16_t menu_Solver_TOOL[] = { ITM_CPXSLV,                ITM_REALSLV,               VAR_LLIM,                  VAR_ULIM,                  ITM_CPXSLV_LU,             ITM_REALSLV_LU,            
                                              ITM_DRAW,                  ITM_SETSIG2,               VAR_LX,                    VAR_UX,                    ITM_CALC,                  ITM_DRAW_LU               };
 
@@ -2010,7 +2011,7 @@ bool_t BASE_OVERRIDEONCE = false;
   int16_t x, y, yDotted=0, currentFirstItem, item, numberOfItems, m = softmenuStack[0].softmenuId;
   bool_t dottedTopLine;
   #if defined(PC_BUILD)
-    char tmp[200]; sprintf(tmp,"^^^^showSoftmenuCurrentPart: Showing Softmenu id=%d item=%i\n",m, currentMenu()); jm_show_comment(tmp);
+    char tmp[200]; sprintf(tmp,"^^^^showSoftmenuCurrentPart: Showing Softmenu id=%d item=%i %s\n",m, currentMenu(), indexOfItems[currentMenu() > 0 ? currentMenu() : -currentMenu()].itemSoftmenuName); jm_show_comment(tmp);
     printf("==>%s\n",tmp);
   #endif // PC_BUILD
 
@@ -2665,7 +2666,12 @@ bool_t BASE_OVERRIDEONCE = false;
     else if(id == -MNU_ALPHA_OMEGA && alphaCase == AC_LOWER) { // alpha...omega
       id = -MNU_alpha_omega;
     }
-    else if(id == -MNU_Solver || id == -MNU_Sf || id == -MNU_1STDERIV || id == -MNU_2NDDERIV || (id == -MNU_MVAR && (currentSolverStatus & SOLVER_STATUS_INTERACTIVE) && !(currentSolverStatus & SOLVER_STATUS_USES_FORMULA) && (currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_INTEGRATE)) {
+    else if(id == -MNU_Solver   ||
+            id == -MNU_Sf       ||
+            id == -MNU_1STDERIV ||
+            id == -MNU_2NDDERIV ||
+            (id == -MNU_MVAR && (currentSolverStatus & SOLVER_STATUS_INTERACTIVE) && !(currentSolverStatus & SOLVER_STATUS_USES_FORMULA) && (currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_INTEGRATE)
+            ) {
       int32_t numberOfVars = -1;
       uint8_t *varList = NULL;
       if(id != -MNU_MVAR) {
@@ -2709,16 +2715,20 @@ bool_t BASE_OVERRIDEONCE = false;
       parseEquation(currentFormula, EQUATION_PARSER_MVAR, aimBuffer, tmpString);
         varList = (uint8_t *)tmpString;
       }
+
       id = -MNU_MVAR;
       while((getNthString(varList, ++numberOfVars))[0] != 0) {
       }
+
       if(numberOfVars > 12) {
         displayCalcErrorMessage(ERROR_EQUATION_TOO_COMPLEX, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
         #if(EXTRA_INFO_ON_CALC_ERROR == 1)
           moreInfoOnError("In function showSoftmenu:", "there are more than 11 variables in this equation!", NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       }
-      else if((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_INTEGRATE && numberOfVars == 1) {
+      else if( ( ((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_INTEGRATE) ||
+                 ((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_SOLVER) 
+               ) && numberOfVars == 1) {
         currentSolverVariable = findOrAllocateNamedVariable((char *)getNthString(varList, 0));
       }
       else if((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_1ST_DERIVATIVE || (currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_2ND_DERIVATIVE) {
@@ -2744,6 +2754,24 @@ bool_t BASE_OVERRIDEONCE = false;
         }
       }
     }
+    else if((id == -MNU_Sf_TOOL || id == -MNU_Solver_TOOL) && currentSolverVariable == INVALID_VARIABLE) {
+      if(id == -MNU_Sf_TOOL) {
+        temporaryInformation = TI_NO_INTEGRATE_VARIABLE;
+        id = -MNU_MVAR;
+      } else
+      if(id == -MNU_Solver_TOOL) {
+        temporaryInformation = TI_NO_SOLVER_VARIABLE;
+        id = -MNU_MVAR;
+      }
+      #ifdef PC_BUILD
+        printf("The solver variable is not selected. Refusing access to Tools menu prior to variable selected.\n");
+      #endif //PC_BUILD
+    } 
+
+//printf("aaa (id == -MNU_Sf_TOOL || id == -MNU_Solver_TOOL)=%u\n", (id == -MNU_Sf_TOOL || id == -MNU_Solver_TOOL));
+//printf("aaa numberOfVars = %u\n",numberOfVars);
+//printf("aaa currentSolverVariable = %u INVALID_VARIABLE = %u\n",currentSolverVariable, INVALID_VARIABLE);
+
 
     m = 0;
     while(softmenu[m].menuItem != 0) {

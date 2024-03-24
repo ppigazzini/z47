@@ -78,7 +78,7 @@
   //  #define SAVE_SPACE_DM42_13GRF_JM //           JM graphics
   //  #define SAVE_SPACE_DM42_12 //047246 bytes: Standard extra 43S math: SLVQ, PRIME, BESSEL, ELLIPTIC, ZETA, BETA, ORTHO_POLY
   //  #define SAVE_SPACE_DM42_15       //           without all distributions, i.e. binomial, cauchy, chi
-  //  #define SAVE_SPACE_DM42_16       //           without Norml
+    #define SAVE_SPACE_DM42_16       //           without Norml
   #endif // TWO_FILE_PGM
 #endif // DMCP_BUILD
 
@@ -1280,6 +1280,8 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define TI_SOLVER_VARIABLE_RESULT                104
 #define TI_DATA_NEG_OVRFL                        105
 #define TI_LASTSTATEFILE                         106
+#define TI_NO_SOLVER_VARIABLE                    107
+#define TI_NO_INTEGRATE_VARIABLE                 108
 
 // Register browser mode
 #define RBR_GLOBAL                                 0 // Global registers are browsed
