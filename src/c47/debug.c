@@ -33,7 +33,7 @@
 
 
 
-TO_QSPI const char typeName[4][10 + 1][24 /* 21 characters + 1 sentinel + 2 padding */] = {
+TO_QSPI const char typeName[6][10 + 1][24 /* 21 characters + 1 sentinel + 2 padding */] = {
   {
     "???",
     "long integer",
@@ -105,6 +105,32 @@ TO_QSPI const char typeName[4][10 + 1][24 /* 21 characters + 1 sentinel + 2 padd
     //"a flags              ",
     //"a pgm step           ",
     //"a directory          ",
+  },
+  {
+    "Linear     ",
+    "Exponential",
+    "Logarithmic",
+    "Power      ",
+    "Root       ",
+    "Hyperbolic ",
+    "Parabolic  ",
+    "Cauchy peak",
+    "Gauss peak ",
+    "Orthogonal ",
+    "???        "
+  },
+  {
+    "a" STD_SUB_0 STD_SPACE_3_PER_EM "+" STD_SPACE_3_PER_EM "a" STD_SUB_1 "x",
+    "a" STD_SUB_0 STD_SPACE_3_PER_EM "e^(a" STD_SUB_1 "x)",
+    "a" STD_SUB_0 STD_SPACE_3_PER_EM "+" STD_SPACE_3_PER_EM "a" STD_SUB_1 "ln(x)",
+    "a" STD_SUB_0 STD_SPACE_3_PER_EM "x^a" STD_SUB_1 ,
+    "a" STD_SUB_0 STD_SPACE_3_PER_EM "a" STD_SUB_1 "^(1/x)",
+    "(a" STD_SUB_0 STD_SPACE_3_PER_EM "+" STD_SPACE_3_PER_EM "a" STD_SUB_1 "x)" STD_SUP_MINUS_1,
+    "a" STD_SUB_0 STD_SPACE_3_PER_EM "+" STD_SPACE_3_PER_EM "a" STD_SUB_1 "x" STD_SPACE_3_PER_EM "+" STD_SPACE_3_PER_EM "a" STD_SUB_2 "x" STD_SUP_2,
+    STD_LEFT_SQUARE_BRACKET "a" STD_SUB_0 "(x+a" STD_SUB_1 ")" STD_SUP_2 "+a" STD_SUB_2 STD_RIGHT_SQUARE_BRACKET STD_SUP_MINUS_1,
+    "a" STD_SUB_0 "e^" STD_LEFT_SQUARE_BRACKET  "(x-a" STD_SUB_1 ")" STD_SUP_2 "/a" STD_SUB_2 STD_RIGHT_SQUARE_BRACKET,
+    "a" STD_SUB_0 STD_SPACE_3_PER_EM "+" STD_SPACE_3_PER_EM "a" STD_SUB_1 "x",
+    "???        "
   },
 };
 
@@ -320,49 +346,63 @@ const char * getRegisterTagName(calcRegister_t regist, bool_t padWithBlanks) {
 }
 
 
+uint16_t LogBaseTwo(uint16_t selection) {
+  switch(orOrtho(selection) & 0x03FF){
+    case CF_LINEAR_FITTING:      { //1
+      return 0;
+      break;
+    }
+    case CF_EXPONENTIAL_FITTING: { //2
+      return 1;
+      break;
+    }
+    case CF_LOGARITHMIC_FITTING: { //4
+      return 2;
+      break;
+    }
+    case CF_POWER_FITTING:       { //8
+      return 3;
+      break;
+    }
+    case CF_ROOT_FITTING:        { //16
+      return 4;
+      break;
+    }
+    case CF_HYPERBOLIC_FITTING:  { //32
+      return 5;
+      break;
+    }
+    case CF_PARABOLIC_FITTING:   { //64
+      return 6;
+      break;
+    }
+    case CF_CAUCHY_FITTING:      { //128
+      return 7;
+      break;
+    }
+    case CF_GAUSS_FITTING:       { //256
+      return 8;
+      break;
+    }
+    case CF_ORTHOGONAL_FITTING:  { //512
+      return 9;
+      break;
+    }
+    default:                     { //other
+      return 10;
+      break;
+    }
+  }
+}
+
 /********************************************//**
  * \brief Returns the single name of a curvefitting mode, or ??? if multiple names are defined in bits
  * \param[in] am uint16_t curvefitting mode
  * \return char*          Name of the curvefitting mode
  ***********************************************/
 const char * getCurveFitModeName(uint16_t selection) {          //Can be only one bit. ??? if invalid.
-    switch( orOrtho(selection) & 0x03FF ){
-      case CF_LINEAR_FITTING: {
-        return "Linear     ";
-      }
-      case CF_EXPONENTIAL_FITTING: {
-        return "Exponential";
-      }
-      case CF_LOGARITHMIC_FITTING: {
-        return "Logarithmic";
-      }
-      case CF_POWER_FITTING: {
-        return "Power      ";
-      }
-      case CF_ROOT_FITTING: {
-        return "Root       ";
-      }
-      case CF_HYPERBOLIC_FITTING: {
-        return "Hyperbolic ";
-      }
-      case CF_PARABOLIC_FITTING: {
-        return "Parabolic  ";
-      }
-      case CF_CAUCHY_FITTING: {
-        return "Cauchy peak";
-      }
-      case CF_GAUSS_FITTING: {
-        return "Gauss peak ";
-      }
-      case CF_ORTHOGONAL_FITTING: {
-        return "Orthogonal ";
-      }
-      default: {
-        return "???        ";
-        break;
-      }
-    }
-  }
+    return typeName[4][LogBaseTwo(selection)];
+}
 
 
 /********************************************//**
@@ -446,41 +486,7 @@ const char * getCurveFitModeNames(uint16_t selection) {
  * \return char*          Formula of the curvefitting mode
  ***********************************************/
 const char * getCurveFitModeFormula(uint16_t selection) {          //Can be only one bit. ??? if invalid.
-  switch( orOrtho(selection) & 0x03FF ){
-    case CF_LINEAR_FITTING: {
-      return "a" STD_SUB_0 STD_SPACE_3_PER_EM "+" STD_SPACE_3_PER_EM "a" STD_SUB_1 "x";
-    }
-    case CF_EXPONENTIAL_FITTING: {
-      return "a" STD_SUB_0 STD_SPACE_3_PER_EM "e^(a" STD_SUB_1 "x)";
-    }
-    case CF_LOGARITHMIC_FITTING: {
-      return "a" STD_SUB_0 STD_SPACE_3_PER_EM "+" STD_SPACE_3_PER_EM "a" STD_SUB_1 "ln(x)";
-    }
-    case CF_POWER_FITTING: {
-      return "a" STD_SUB_0 STD_SPACE_3_PER_EM "x^a" STD_SUB_1 ;
-    }
-    case CF_ROOT_FITTING: {
-      return "a" STD_SUB_0 STD_SPACE_3_PER_EM "a" STD_SUB_1 "^(1/x)";
-    }
-    case CF_HYPERBOLIC_FITTING: {
-      return "(a" STD_SUB_0 STD_SPACE_3_PER_EM "+" STD_SPACE_3_PER_EM "a" STD_SUB_1 "x)" STD_SUP_MINUS_1;
-    }
-    case CF_PARABOLIC_FITTING: {
-      return "a" STD_SUB_0 STD_SPACE_3_PER_EM "+" STD_SPACE_3_PER_EM "a" STD_SUB_1 "x" STD_SPACE_3_PER_EM "+" STD_SPACE_3_PER_EM "a" STD_SUB_2 "x" STD_SUP_2;
-    }
-    case CF_CAUCHY_FITTING: {
-      return STD_LEFT_SQUARE_BRACKET "a" STD_SUB_0 "(x+a" STD_SUB_1 ")" STD_SUP_2 "+a" STD_SUB_2 STD_RIGHT_SQUARE_BRACKET STD_SUP_MINUS_1;
-    }
-    case CF_GAUSS_FITTING: {
-      return "a" STD_SUB_0 "e^" STD_LEFT_SQUARE_BRACKET  "(x-a" STD_SUB_1 ")" STD_SUP_2 "/a" STD_SUB_2 STD_RIGHT_SQUARE_BRACKET;
-    }
-    case CF_ORTHOGONAL_FITTING: {
-      return "a" STD_SUB_0 STD_SPACE_3_PER_EM "+" STD_SPACE_3_PER_EM "a" STD_SUB_1 "x";
-    }
-    default: {
-      return "???        "; break;
-    }
-  }
+    return typeName[5][LogBaseTwo(orOrtho(selection) & 0x03FF)];
 }
 
 
