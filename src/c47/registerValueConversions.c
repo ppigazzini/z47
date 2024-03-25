@@ -1157,6 +1157,9 @@ void processIntRealComplexDyadicFunction(void (*realf)(void), void (*complexf)(v
   } else if (xInt && yInt && longintf != NULL) {
     if(saveLastX())
       longintf();
-  } else
+  } else {
     processRealComplexDyadicFunction(realf, complexf);
+    return;
+  }
+  adjustResult(REGISTER_X, true, true, REGISTER_X, REGISTER_Y, -1);
 }
