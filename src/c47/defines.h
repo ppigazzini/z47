@@ -14,7 +14,7 @@
 // JM VARIOUS OPTIONS
 //*********************************
 
-#define VERSION1 "0.109.00.04a11"     // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
+#define VERSION1 "0.109.00.04a12"     // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
 
 #define MODEL USER_C47               // USER_C47 or USER_R47
 
@@ -78,7 +78,7 @@
   //  #define SAVE_SPACE_DM42_13GRF_JM //           JM graphics
   //  #define SAVE_SPACE_DM42_12 //047246 bytes: Standard extra 43S math: SLVQ, PRIME, BESSEL, ELLIPTIC, ZETA, BETA, ORTHO_POLY
   //  #define SAVE_SPACE_DM42_15       //           without all distributions, i.e. binomial, cauchy, chi
-    #define SAVE_SPACE_DM42_16       //           without Norml
+  //  #define SAVE_SPACE_DM42_16       //           without Norml
   #endif // TWO_FILE_PGM
 #endif // DMCP_BUILD
 
