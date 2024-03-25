@@ -364,17 +364,17 @@ const char * getRegisterTagName(calcRegister_t regist, bool_t padWithBlanks) {
   CF_GAUSS_FITTING                         256  8
   CF_ORTHOGONAL_FITTING                    512  9
   other                                        10
+  Output will be the bit number of the rightmost bit of the input.
  *************************************************/
 
 uint16_t LogBaseTwoOfPowersOfTwo(uint16_t selection) {
 uint16_t jj = orOrtho(selection) & 0x03FF;
-uint16_t jjcount = 0;
-
-while (jjcount < 11 && jj > 1) {
-  jj = (jj >> 1);
-  jjcount++;
-}
-return jjcount;
+jj = jj ^ (jj & (jj - 1));
+uint16_t r = (jj & 0xAAAA) != 0;
+r |= ((jj & 0xFF00) != 0) << 3;
+r |= ((jj & 0xF0F0) != 0) << 2;
+r |= ((jj & 0xCCCC) != 0) << 1;
+return r;
 }
 
 /********************************************//**
