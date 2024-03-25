@@ -569,20 +569,18 @@ TO_QSPI const int16_t menu_Solver[]      = { ITM_NULL,                  ITM_NULL
 //note: the items in here are dynamically assigned, including the static ones (original population was NULL)
 
 
-TO_QSPI const int16_t menu_Sfdx[]        = { ITM_INTEGRAL_YX,           VAR_ACC,                  CST_78,                    VAR_LLIM,                  VAR_ULIM,                  ITM_INTEGRAL,              
-/*same*/                                     ITM_DRAW,                  ITM_NULL,                 ITM_NULL,                  VAR_LX,                    VAR_UX,                    ITM_DRAW_LU               };
-
-// Tool∫ (intgral tools)
-TO_QSPI const int16_t menu_Sf_TOOL[]     = { ITM_INTEGRAL_YX,           CST_77,                   CST_78,                    VAR_LLIM,                  VAR_ULIM,                  ITM_INTEGRAL,              
-/*same*/                                     ITM_DRAW,                  VAR_ACC,                  ITM_NULL,                  VAR_LX,                    VAR_UX,                    ITM_DRAW_LU               };
 
 
+TO_QSPI const int16_t menu_Sfdx[]        = { ITM_DRAW,                  ITM_INTEGRAL_YX,           ITM_INTEGRAL,              ITM_DRAW_LU,               VAR_LLIM,                  VAR_ULIM,                  
+ /*same*/                                    VAR_ACC,                   CST_77,                    CST_78,                    ITM_NULL,                  VAR_LX,                    VAR_UX              };                    
+
+// Tool∫ (intgral tools) 
+TO_QSPI const int16_t menu_Sf_TOOL[]     = { ITM_DRAW,                  ITM_INTEGRAL_YX,           ITM_INTEGRAL,              ITM_DRAW_LU,               VAR_LLIM,                  VAR_ULIM,                  
+ /*same*/                                    VAR_ACC,                   CST_77,                    CST_78,                    ITM_NULL,                  VAR_LX,                    VAR_UX              };                    
 
 // ToolS (solver tools)
-TO_QSPI const int16_t menu_Solver_TOOL[] = { ITM_CPXSLV,                ITM_REALSLV,               VAR_LLIM,                  VAR_ULIM,                  ITM_CPXSLV_LU,             ITM_REALSLV_LU,            
-                                             ITM_DRAW,                  ITM_SETSIG2,               VAR_LX,                    VAR_UX,                    ITM_CALC,                  ITM_DRAW_LU               };
-
-
+TO_QSPI const int16_t menu_Solver_TOOL[] = { ITM_DRAW,                  ITM_CPXSLV,                ITM_CPXSLV_LU,             ITM_DRAW_LU,               VAR_LLIM,                  VAR_ULIM,                  
+                                             ITM_SETSIG2,               ITM_REALSLV,               ITM_REALSLV_LU,            ITM_NULL,                  VAR_LX,                    VAR_UX              };                    
 
 
 
@@ -1856,13 +1854,20 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
                       } else {
                         itemName[3] = 0; //Blank the im of ^Lim to make space for the numbers
                         realToFloat(&tmpR, &tmpF);
-                        float abstmpF = fabs(tmpF);
-                        if(abstmpF<1.0e-34) {
+                        if(tmpF>0 && tmpF<1.0e-34) {
                           strcpy(tmpS,STD_GAUSS_WHITE_L "1E-34");
                         } else
-                        if(abstmpF>1.0e34) {
-                          strcpy(tmpS,STD_GAUSS_WHITE_R "1E+34");
-                        } else {
+                        if(tmpF<0 && tmpF>-1.0e-34) {
+                          strcpy(tmpS,STD_GAUSS_WHITE_R "-1E-34");
+                        } else
+                        if(tmpF>1.0e34) {
+                          strcpy(tmpS,STD_GAUSS_WHITE_R "1E34");
+                        } else 
+                        if(tmpF<-1.0e34) {
+                          strcpy(tmpS,STD_GAUSS_WHITE_L "-1E34");
+                        } else
+
+                        {
                           if((tmpF>=1000 && tmpF<=9999) || (tmpF>=-999.9 && tmpF<=-100)) { // 999.9  -99.9
                             sprintf(tmpS,"%6.1f",tmpF);
                           } else
