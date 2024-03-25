@@ -346,53 +346,35 @@ const char * getRegisterTagName(calcRegister_t regist, bool_t padWithBlanks) {
 }
 
 
-uint16_t LogBaseTwo(uint16_t selection) {
-  switch(orOrtho(selection) & 0x03FF){
-    case CF_LINEAR_FITTING:      { //1
-      return 0;
-      break;
-    }
-    case CF_EXPONENTIAL_FITTING: { //2
-      return 1;
-      break;
-    }
-    case CF_LOGARITHMIC_FITTING: { //4
-      return 2;
-      break;
-    }
-    case CF_POWER_FITTING:       { //8
-      return 3;
-      break;
-    }
-    case CF_ROOT_FITTING:        { //16
-      return 4;
-      break;
-    }
-    case CF_HYPERBOLIC_FITTING:  { //32
-      return 5;
-      break;
-    }
-    case CF_PARABOLIC_FITTING:   { //64
-      return 6;
-      break;
-    }
-    case CF_CAUCHY_FITTING:      { //128
-      return 7;
-      break;
-    }
-    case CF_GAUSS_FITTING:       { //256
-      return 8;
-      break;
-    }
-    case CF_ORTHOGONAL_FITTING:  { //512
-      return 9;
-      break;
-    }
-    default:                     { //other
-      return 10;
-      break;
-    }
-  }
+
+
+/**********************************************//**
+  Obtain the bitnumber for the power of two.
+  Combination bits not supported, the first LSB bit scanned, is deemed to tbe the answer.
+  The purpose is to decode the following table.
+
+  CF_LINEAR_FITTING                          1  0
+  CF_EXPONENTIAL_FITTING                     2  1
+  CF_LOGARITHMIC_FITTING                     4  2
+  CF_POWER_FITTING                           8  3
+  CF_ROOT_FITTING                           16  4
+  CF_HYPERBOLIC_FITTING                     32  5
+  CF_PARABOLIC_FITTING                      64  6
+  CF_CAUCHY_FITTING                        128  7
+  CF_GAUSS_FITTING                         256  8
+  CF_ORTHOGONAL_FITTING                    512  9
+  other                                        10
+ *************************************************/
+
+uint16_t LogBaseTwoOfPowersOfTwo(uint16_t selection) {
+uint16_t jj = orOrtho(selection) & 0x03FF;
+uint16_t jjcount = 0;
+
+while (jjcount < 11 && jj > 1) {
+  jj = (jj >> 1);
+  jjcount++;
+}
+return jjcount;
 }
 
 /********************************************//**
@@ -401,7 +383,7 @@ uint16_t LogBaseTwo(uint16_t selection) {
  * \return char*          Name of the curvefitting mode
  ***********************************************/
 const char * getCurveFitModeName(uint16_t selection) {          //Can be only one bit. ??? if invalid.
-    return typeName[4][LogBaseTwo(selection)];
+    return typeName[4][LogBaseTwoOfPowersOfTwo(selection)];
 }
 
 
@@ -486,7 +468,7 @@ const char * getCurveFitModeNames(uint16_t selection) {
  * \return char*          Formula of the curvefitting mode
  ***********************************************/
 const char * getCurveFitModeFormula(uint16_t selection) {          //Can be only one bit. ??? if invalid.
-    return typeName[5][LogBaseTwo(orOrtho(selection) & 0x03FF)];
+    return typeName[5][LogBaseTwoOfPowersOfTwo(orOrtho(selection) & 0x03FF)];
 }
 
 
