@@ -29,6 +29,7 @@
 #include "registerValueConversions.h"
 #include "screen.h"
 #include "softmenus.h"
+#include "solver/solve.h"
 #include "solver/equation.h"
 #include "solver/sumprod.h"
 #include "statusBar.h"
@@ -88,7 +89,7 @@ static void fnPlot(uint16_t unusedButMandatoryParameter) {
   static void initialize_function(void){
     if(graphVariabl1 > 0) {
       #if defined(PC_BUILD)
-        //printf(">>> graphVariabl1 = %i\n", graphVariabl1);
+        //printf(">>> graphVariable = %i\n", graphVariable);
         if(lastErrorCode != 0) {
           #if defined(VERBOSE_SOLVER00)
           printf("ERROR CODE in initialize_functionA: %u\n",lastErrorCode);
@@ -99,7 +100,7 @@ static void fnPlot(uint16_t unusedButMandatoryParameter) {
     }
     else {
       #if defined(PC_BUILD)
-        //printf(">>> graphVariabl1 = %i\n", graphVariabl1);
+        //printf(">>> graphVariable = %i\n", graphVariable);
         #if defined(VERBOSE_SOLVER00)
           printf("ERROR CODE in initialize_functionB: %u\n",lastErrorCode);
         #endif // VERBOSE_SOLVER00
@@ -366,8 +367,7 @@ void graph_eqn(uint16_t mode) {
       }
     #endif
 
-
-    fnClearStack(0);
+    fillStackWithReal0();
 
     convertDoubleToReal34RegisterPush(x_max, REGISTER_X);
     execute_rpn_function();
@@ -377,9 +377,9 @@ void graph_eqn(uint16_t mode) {
       fnClDrawMx(3);
       strcpy(plotStatMx,"DrwMX");
     }
-    #if defined(DEBUG_GR)
-      printf("dx0=%f discontinuityDetected:%u grad2IncreaseDetected:%u\n",dx0, discontinuityDetected, grad2IncreaseDetected);
-    #endif // DEBUG_GR
+                                  #if defined(DEBUG_GR)
+                                    printf("dx0=%f discontinuityDetected:%u grad2IncreaseDetected:%u\n",dx0, discontinuityDetected, grad2IncreaseDetected);
+                                  #endif // DEBUG_GR
 
     //Main loop, default is 40 x 6 point gaps, across the 240 wide screen
     //  If the grad2 is increasing, then the dx is reduced.
@@ -402,15 +402,12 @@ void graph_eqn(uint16_t mode) {
       ss2 = grad2 == 0 ? 0 : grad2 > 0 ? 1 : -1;
       grad0 = grad1;
       grad1 = grad2;
-
-
-      #if defined(DEBUG_GR)
-        printRegisterToConsole(REGISTER_X,"X:","");
-        printRegisterToConsole(REGISTER_Y," Y:","");
-        printf("%f %f grad2/grad1=%f grad1/grad2=%f \n",grad2, grad1, grad2/grad1, grad1/grad2);
-        printf("ss1 %i ss2 %i y01 %6f y02 %6f\n",ss1,ss2,y01,y02);
-      #endif // DEBUG_GR
-
+                                  #if defined(DEBUG_GR)
+                                    printRegisterToConsole(REGISTER_X,"X:","");
+                                    printRegisterToConsole(REGISTER_Y," Y:","");
+                                    printf("%f %f grad2/grad1=%f grad1/grad2=%f \n",grad2, grad1, grad2/grad1, grad1/grad2);
+                                    printf("ss1 %i ss2 %i y01 %6f y02 %6f\n",ss1,ss2,y01,y02);
+                                  #endif // DEBUG_GR
 
       if(grad1 != 0 && grad2 != 0) {
         grad2IncreaseDetected = (
@@ -441,9 +438,9 @@ void graph_eqn(uint16_t mode) {
       }
 
       if((discontinuityDetected == FINE) || (discontinuityDetected == 0 && grad2IncreaseDetected)) {
-        #if defined(DEBUG_GR)
-          printf("jumping %f %f grad2/grad1=%f  grad1/grad2=%f\n",grad2, grad1, grad2/grad1, grad1/grad2 );
-        #endif // DEBUG_GR
+                                  #if defined(DEBUG_GR)
+                                    printf("jumping %f %f grad2/grad1=%f  grad1/grad2=%f\n",grad2, grad1, grad2/grad1, grad1/grad2 );
+                                  #endif // DEBUG_GR
         x -= dx * (JMP);
         jumpedBack = true;
         convertDoubleToReal34RegisterPush(x, REGISTER_X);
@@ -454,12 +451,13 @@ void graph_eqn(uint16_t mode) {
         ss0 = ss1;
         ss1 = ss2;
         ss2 = grad2 == 0 ? 0 : grad2 > 0 ? 1 : -1;
-        #if defined(DEBUG_GR)
-          printf("Jump back\n");
-          printRegisterToConsole(REGISTER_X,"X:","");
-          printRegisterToConsole(REGISTER_Y," Y:","");
-          printf("%f %f grad2/grad1=%f grad1/grad2=%f \n",grad2, grad1, grad2/grad1, grad1/grad2);
-        #endif // DEBUG_GR
+
+                                  #if defined(DEBUG_GR)
+                                    printf("Jump back\n");
+                                    printRegisterToConsole(REGISTER_X,"X:","");
+                                    printRegisterToConsole(REGISTER_Y," Y:","");
+                                    printf("%f %f grad2/grad1=%f grad1/grad2=%f \n",grad2, grad1, grad2/grad1, grad1/grad2);
+                                  #endif // DEBUG_GR
       }
 
       if(discontinuityDetected > 0 && discontinuityDetected <= FINE) {
@@ -486,17 +484,16 @@ void graph_eqn(uint16_t mode) {
       grad1 = grad2;
       y01 = y02;
       x01 = x;
-
-      #if defined(VERBOSE_SOLVER0) && defined(PC_BUILD)
-        printf(">>> Into DrwMX:%i points ",drawMxN());
-        printRegisterToConsole(REGISTER_X,"X:","");
-        printRegisterToConsole(REGISTER_Y," Y:","\n");
-      #endif // VERBOSE_SOLVER0 && PC_BUILD
-      #if defined(PC_BUILD)
-        if(lastErrorCode == 24) {
-          printf("ERROR CODE CANNOT STAT COMPLEX RESULT, ignored\n"); lastErrorCode = 0;
-        }
-      #endif //PC_BUILD
+                                  #if defined(VERBOSE_SOLVER0) && defined(PC_BUILD)
+                                    printf(">>> Into DrwMX:%i points ",drawMxN());
+                                    printRegisterToConsole(REGISTER_X,"X:","");
+                                    printRegisterToConsole(REGISTER_Y," Y:","\n");
+                                  #endif // VERBOSE_SOLVER0 && PC_BUILD
+                                  #if defined(PC_BUILD)
+                                    if(lastErrorCode == 24) {
+                                      printf("ERROR CODE CANNOT STAT COMPLEX RESULT, ignored\n"); lastErrorCode = 0;
+                                    }
+                                  #endif //PC_BUILD
 
       if(discontinuityDetected != 0) discontinuityDetected --;
       count++;
@@ -524,7 +521,7 @@ void graph_eqn(uint16_t mode) {
       ctxtReal39.digits = 39; //Change back to 39 digit operation for stack;
     #endif //LOW_GRAPH_ACC
 
-    fnClearStack(0);
+    fillStackWithReal0();
 
     #if defined (LOW_GRAPH_ACC)
       //Change to SDIGS digit operation for screen graphs;
@@ -558,22 +555,30 @@ void graph_eqn(uint16_t mode) {
 
 void graph_stat(uint16_t unusedButMandatoryParameter) {
   #if !defined(TESTSUITE_BUILD)
-    calcMode = CM_GRAPH;
-    reDraw = true;
 
-    lastPlotMode = PLOT_NOTHING;
     strcpy(plotStatMx,"STATS");
 
-    PLOT_LINE = true;
-    PLOT_SHADE = true;
+    if(statMxN()) {
+      lastPlotMode = PLOT_NOTHING;
+      calcMode = CM_GRAPH;
+      reDraw = true;
+      PLOT_LINE = true;
+      PLOT_SHADE = true;
 
-    fnClearStack(0);
-    fnPlotSQ(0);
+      fillStackWithReal0();
+      fnPlotSQ(0);
+    } else {
+      calcMode = CM_NORMAL;
+      displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE, REGISTER_X);
+      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+        sprintf(errorMessage, "There is no statistical/plot data available!");
+        moreInfoOnError("In function fnPlotStat:", errorMessage, NULL, NULL);
+      #endif
+    }
+
+
   #endif // !TESTSUITE_BUILD
 }
-
-
-
 
 
 //###################################################################################
@@ -644,6 +649,7 @@ void graph_stat(uint16_t unusedButMandatoryParameter) {
     DXR = 0, DYR = 0, DXI = 0, DYI = 0;
     iterationCounter = 0; oscillationIterationCounter = 0;
     int16_t kicker = 0;
+
 
     // Initialize all temporary registers
     // Registers are being used in the DEMO data programs
@@ -763,6 +769,7 @@ void graph_stat(uint16_t unusedButMandatoryParameter) {
       else {
         DXR = DXR << 1;
       }
+
       if( (real34IsNegative(REGISTER_REAL34_DATA(SREG_DY)) && real34IsPositive(REGISTER_REAL34_DATA(SREG_Yold))) ||
           (real34IsPositive(REGISTER_REAL34_DATA(SREG_DY)) && real34IsNegative(REGISTER_REAL34_DATA(SREG_Yold))) ) {
         DYR = (DYR << 1) + 1;
@@ -770,6 +777,7 @@ void graph_stat(uint16_t unusedButMandatoryParameter) {
       else {
         DYR = DYR << 1;
       }
+
       if((getRegisterDataType(SREG_DX) == dtComplex34 && getRegisterDataType(SREG_Xold) == dtComplex34) &&
            ((real34IsNegative(REGISTER_IMAG34_DATA(SREG_DX)) && real34IsPositive(REGISTER_IMAG34_DATA(SREG_Xold))) ||
             (real34IsPositive(REGISTER_IMAG34_DATA(SREG_DX)) && real34IsNegative(REGISTER_IMAG34_DATA(SREG_Xold))) )) {
@@ -778,6 +786,7 @@ void graph_stat(uint16_t unusedButMandatoryParameter) {
       else {
         DXI = DXI << 1;
       }
+
       if((getRegisterDataType(SREG_DY) == dtComplex34 && getRegisterDataType(SREG_Yold) == dtComplex34) &&
            ((real34IsNegative(REGISTER_IMAG34_DATA(SREG_DY)) && real34IsPositive(REGISTER_IMAG34_DATA(SREG_Yold))) ||
             (real34IsPositive(REGISTER_IMAG34_DATA(SREG_DY)) && real34IsNegative(REGISTER_IMAG34_DATA(SREG_Yold))) )) {
@@ -787,12 +796,11 @@ void graph_stat(uint16_t unusedButMandatoryParameter) {
         DYI = DYI << 1;
       }
 
-      check_osc(DXR);
-      check_osc(DYR);
-      check_osc(DXI);
-      check_osc(DYI);
+     check_osc(DXR);
+     check_osc(DYR);
+     check_osc(DXI);
+     check_osc(DYI);
 
-    
       //If osc flag is active, that is any delta polarity change, then increment oscillation count
       if(osc > 0) {
         oscillations++;
@@ -824,14 +832,14 @@ void graph_stat(uint16_t unusedButMandatoryParameter) {
 
       if(convergent > 6 && oscillations > 3) {
 
-                                  #if defined(PC_BUILD)
-                                                  printf("    --   reset detection from =convergent%i and oscillations=%i to ", convergent, oscillations);
-                                  #endif // PC_BUILD
+        #if defined(PC_BUILD)
+                        printf("    --   reset detection from =convergent%i and oscillations=%i to ", convergent, oscillations);
+        #endif // PC_BUILD
         convergent = 2;
         oscillations = 2;
-                                  #if defined(PC_BUILD)
-                                                  printf("%i and %i\n", convergent, oscillations);
-                                  #endif // PC_BUILD
+        #if defined(PC_BUILD)
+                        printf("%i and %i\n", convergent, oscillations);
+        #endif // PC_BUILD
       }
 
       // If increment is oscillating it is assumed that it is unstable and needs to have a complex starting value
@@ -843,9 +851,9 @@ void graph_stat(uint16_t unusedButMandatoryParameter) {
         oscillationIterationCounter = 0;
         oscillations = 0;
         convergent = 0;
-                                  #if defined(VERBOSE_SOLVER2) && defined(PC_BUILD)
-                                    printRegisterToConsole(SREG_X2,"\n>>>>>>>>>> from ","");
-                                  #endif // VERBOSE_SOLVER2 && PC_BUILD
+        #if defined(VERBOSE_SOLVER2) && defined(PC_BUILD)
+          printRegisterToConsole(SREG_X2,"\n>>>>>>>>>> from ","");
+        #endif // VERBOSE_SOLVER2 && PC_BUILD
         fnRCL(SREG_X2);
 
         //when kicker = 0, then factor is small negative real, after that, it becomes complex, in the first quardrant, multplied by a alrger number every time
@@ -859,21 +867,20 @@ void graph_stat(uint16_t unusedButMandatoryParameter) {
           runFunction(ITM_MULT);
         }
 
-                                  #if(defined(VERBOSE_SOLVER00) || defined(VERBOSE_SOLVER0)) && defined(PC_BUILD)
-                                    printf("------- Kicked oscillation, #%d, ", kicker);
-                                    printRegisterToConsole(REGISTER_X," multiplied: ","\n");
-                                  #endif  // (VERBOSE_SOLVER00 || VERBOSE_SOLVER0) && PC_BUILD
+        #if(defined(VERBOSE_SOLVER00) || defined(VERBOSE_SOLVER0)) && defined(PC_BUILD)
+          printf("------- Kicked oscillation, #%d, ", kicker);
+          printRegisterToConsole(REGISTER_X," multiplied: ","\n");
+        #endif  // (VERBOSE_SOLVER00 || VERBOSE_SOLVER0) && PC_BUILD
 
         kicker++;
 
         runFunction(ITM_MULT);              //add just to force it complex  //
         fnStore(SREG_X2); //replace X2 value                                //
 
-                                  #if defined(VERBOSE_SOLVER2) && defined(PC_BUILD)
-                                    printRegisterToConsole(SREG_X2," to ","\n");
-                                  #endif // VERBOSE_SOLVER2 && PC_BUILD
+        #if defined(VERBOSE_SOLVER2) && defined(PC_BUILD)
+          printRegisterToConsole(SREG_X2," to ","\n");
+        #endif // VERBOSE_SOLVER2 && PC_BUILD
       }
-
 
       //@@@@@@@@@@@@@@@@@ CALCULATE NEW Y2, AND PLAUSIBILITY @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
       fnRCL(SREG_X2);                                       // get (X2,Y2)
@@ -971,29 +978,32 @@ void graph_stat(uint16_t unusedButMandatoryParameter) {
         //
         //###########################
         divFunction(!ADD_RAN, SREG_TOL);
-                                  #if defined(VERBOSE_SOLVER2) && defined(PC_BUILD)
-                                    fnInvert(0);
-                                    printRegisterToConsole(REGISTER_X," SLOPE=","\n");
-                                    fnInvert(0);
-                                  #endif // VERBOSE_SOLVER2 && PC_BUILD
-        fnRCL(SREG_Y2);              // determine increment in x
+        #if defined(VERBOSE_SOLVER2) && defined(PC_BUILD)
+          fnInvert(0);
+          printRegisterToConsole(REGISTER_X," SLOPE=","\n");
+          fnInvert(0);
+        #endif // VERBOSE_SOLVER2 && PC_BUILD
+
+        fnRCL(SREG_Y2);      // determine increment in x
         runFunction(ITM_MULT);       // increment to x is: y1 . DX/DY
-        fnRCL(SREG_F);               // factor to stabilize Newton method. factor=1 is straight. factor=0.1 converges 10x slower.
+        fnRCL(SREG_F);       // factor to stabilize Newton method. factor=1 is straight. factor=0.1 converges 10x slower.
         runFunction(ITM_MULT);       // increment to x
-                                  #if defined(VERBOSE_SOLVER1) && defined(PC_BUILD)
-                                    printRegisterToConsole(SREG_F,"    Factor=        ","\n");
-                                    printRegisterToConsole(SREG_X1,"    New X =        "," - ");
-                                    printRegisterToConsole(REGISTER_X," - (",")\n");
-                                  #endif // VERBOSE_SOLVER1 && PC_BUILD
+
+        #if defined(VERBOSE_SOLVER1) && defined(PC_BUILD)
+          printRegisterToConsole(SREG_F,"    Factor=        ","\n");
+          printRegisterToConsole(SREG_X1,"    New X =        "," - ");
+          printRegisterToConsole(REGISTER_X," - (",")\n");
+        #endif // VERBOSE_SOLVER1 && PC_BUILD
+
         fnRCL(SREG_X2);
         runFunction(ITM_XexY);
-        runFunction(ITM_SUB);        // subtract as per Newton, x1 - f/f'
-        fnStore(SREG_X2N);           // store temporarily to new x2n
-                                  #if defined(VERBOSE_SOLVER00) || defined(VERBOSE_SOLVER0) || defined(VERBOSE_SOLVER1) || defined(VERBOSE_SOLVER2)
-                                    printf("  ");
-                                    printRegisterToConsole(SREG_X2N,"New X=","\n");
-                                    //printRegisterToConsole(REGISTER_Y,"Secant DeltaX=","\n");
-                                  #endif // VERBOSE_SOLVER00 || VERBOSE_SOLVER0 || VERBOSE_SOLVER1 || VERBOSE_SOLVER2
+        runFunction(ITM_SUB);       // subtract as per Newton, x1 - f/f'
+        fnStore(SREG_X2N);          // store temporarily to new x2n
+        #if defined(VERBOSE_SOLVER00) || defined(VERBOSE_SOLVER0) || defined(VERBOSE_SOLVER1) || defined(VERBOSE_SOLVER2)
+          printf("  ");
+          printRegisterToConsole(SREG_X2N,"New X=","\n");
+          //printRegisterToConsole(REGISTER_Y,"Secant DeltaX=","\n");
+        #endif // VERBOSE_SOLVER00 || VERBOSE_SOLVER0 || VERBOSE_SOLVER1 || VERBOSE_SOLVER2
       }
       else {
         // ---------- Modified 3 point Secant ------------
@@ -1008,15 +1018,15 @@ void graph_stat(uint16_t unusedButMandatoryParameter) {
 
           fnStore(SREG_TMP);
 
-                                  #if defined(VERBOSE_SOLVER1) && defined(PC_BUILD)
-                                    printRegisterToConsole(SREG_TMP," m1=","\n");
-                                  #endif // VERBOSE_SOLVER1 && PC_BUILD
+          #if defined(VERBOSE_SOLVER1) && defined(PC_BUILD)
+            printRegisterToConsole(SREG_TMP," m1=","\n");
+          #endif // VERBOSE_SOLVER1 && PC_BUILD
 
           fnRCL(SREG_Y2);fnRCL(SREG_Y1);runFunction(ITM_SUB);runFunction(ITM_MULT);
 
-                                  #if defined(VERBOSE_SOLVER1) && defined(PC_BUILD)
-                                    printRegisterToConsole(REGISTER_X," term1 lower=","\n");
-                                  #endif // VERBOSE_SOLVER1 && PC_BUILD
+          #if defined(VERBOSE_SOLVER1) && defined(PC_BUILD)
+            printRegisterToConsole(REGISTER_X," term1 lower=","\n");
+          #endif // VERBOSE_SOLVER1 && PC_BUILD
           fnStore(SREG_L1);
 
           fnRCL(SREG_TMP);
@@ -1024,49 +1034,49 @@ void graph_stat(uint16_t unusedButMandatoryParameter) {
           fnRCL(SREG_X1);fnRCL(SREG_X0);runFunction(ITM_SUB);
           divFunction(!ADD_RAN, SREG_TOL);
 
-                                  #if defined(VERBOSE_SOLVER1) && defined(PC_BUILD)
-                                    printRegisterToConsole(REGISTER_X," m2=","\n");
-                                  #endif // VERBOSE_SOLVER1 && PC_BUILD
+          #if defined(VERBOSE_SOLVER1) && defined(PC_BUILD)
+            printRegisterToConsole(REGISTER_X," m2=","\n");
+          #endif // VERBOSE_SOLVER1 && PC_BUILD
           runFunction(ITM_SUB);
-                                  #if defined(VERBOSE_SOLVER1) && defined(PC_BUILD)
-                                    printRegisterToConsole(REGISTER_X," m1-m2 diff=","\n");
-                                  #endif // VERBOSE_SOLVER1 && PC_BUILD
+          #if defined(VERBOSE_SOLVER1) && defined(PC_BUILD)
+            printRegisterToConsole(REGISTER_X," m1-m2 diff=","\n");
+          #endif // VERBOSE_SOLVER1 && PC_BUILD
           fnRCL(SREG_Y2);
-                                  #if defined(VERBOSE_SOLVER1) && defined(PC_BUILD)
-                                    printRegisterToConsole(REGISTER_X," Y2=","\n");
-                                  #endif // VERBOSE_SOLVER1 && PC_BUILD
+          #if defined(VERBOSE_SOLVER1) && defined(PC_BUILD)
+            printRegisterToConsole(REGISTER_X," Y2=","\n");
+          #endif // VERBOSE_SOLVER1 && PC_BUILD
           runFunction(ITM_MULT);
-                                  #if defined(VERBOSE_SOLVER1) && defined(PC_BUILD)
-                                    printRegisterToConsole(REGISTER_X," term2 lower=","\n");
-                                  #endif // VERBOSE_SOLVER1 && PC_BUILD
+          #if defined(VERBOSE_SOLVER1) && defined(PC_BUILD)
+            printRegisterToConsole(REGISTER_X," term2 lower=","\n");
+          #endif // VERBOSE_SOLVER1 && PC_BUILD
           fnRecall(SREG_L1);
           runFunction(ITM_XexY);
           runFunction(ITM_SUB);
-                                  #if defined(VERBOSE_SOLVER1) && defined(PC_BUILD)
-                                  printRegisterToConsole(REGISTER_X," lower diff=","\n");
-                                  #endif // VERBOSE_SOLVER1 && PC_BUILD
+          #if defined(VERBOSE_SOLVER1) && defined(PC_BUILD)
+          printRegisterToConsole(REGISTER_X," lower diff=","\n");
+          #endif // VERBOSE_SOLVER1 && PC_BUILD
           fnRCL(SREG_Y2);fnRCL(SREG_Y1);runFunction(ITM_SUB);  //Y2-Y1
           runFunction(ITM_XexY);
           //get the 1/slope
           divFunction(!ADD_RAN, SREG_TOL);
           fnStore(SREG_TMP);
-                                  #if defined(VERBOSE_SOLVER1) && defined(PC_BUILD)
-                                    printRegisterToConsole(REGISTER_X," 1/slope=","\n");
-                                  #endif // VERBOSE_SOLVER1 && PC_BUILD
+          #if defined(VERBOSE_SOLVER1) && defined(PC_BUILD)
+            printRegisterToConsole(REGISTER_X," 1/slope=","\n");
+          #endif // VERBOSE_SOLVER1 && PC_BUILD
           fnRCL(SREG_Y0);              // determine increment in x
           runFunction(ITM_MULT);       // increment to x is: y1 . DX/DY
           fnRCL(SREG_F);               // factor to stabilize Newton method. factor=1 is straight. factor=0.1 converges 10x slower.
           runFunction(ITM_MULT);       // increment to x
-                                  #if defined(VERBOSE_SOLVER1) && defined(PC_BUILD)
-                                    printRegisterToConsole(SREG_F,"    Factor=        ","\n");
-                                    printRegisterToConsole(SREG_X0,"    New X =        "," - (");
-                                    printRegisterToConsole(REGISTER_X,"",")\n");
-                                  #endif // VERBOSE_SOLVER1 && PC_BUILD
+          #if defined(VERBOSE_SOLVER1) && defined(PC_BUILD)
+            printRegisterToConsole(SREG_F,"    Factor=        ","\n");
+            printRegisterToConsole(SREG_X0,"    New X =        "," - (");
+            printRegisterToConsole(REGISTER_X,"",")\n");
+          #endif // VERBOSE_SOLVER1 && PC_BUILD
 
-                                  #if defined(VERBOSE_SOLVER00) || defined(VERBOSE_SOLVER0) || defined(VERBOSE_SOLVER1) || defined(VERBOSE_SOLVER2)
-                                    printf("  ");
-                                    printRegisterToConsole(REGISTER_X,"DeltaX=","\n");
-                                  #endif // VERBOSE_SOLVER00 || VERBOSE_SOLVER0 || VERBOSE_SOLVER1 || VERBOSE_SOLVER2
+          #if defined(VERBOSE_SOLVER00) || defined(VERBOSE_SOLVER0) || defined(VERBOSE_SOLVER1) || defined(VERBOSE_SOLVER2)
+            printf("  ");
+            printRegisterToConsole(REGISTER_X,"DeltaX=","\n");
+          #endif // VERBOSE_SOLVER00 || VERBOSE_SOLVER0 || VERBOSE_SOLVER1 || VERBOSE_SOLVER2
           fnRCL(SREG_X0);
           runFunction(ITM_XexY);
           runFunction(ITM_SUB);        // subtract as per Newton, x1 - f/f'
@@ -1120,13 +1130,13 @@ void graph_stat(uint16_t unusedButMandatoryParameter) {
       //#############################################
 
 
-                                  #if defined(VERBOSE_SOLVER1) && defined(PC_BUILD)
-                                    printf("               ");printRegisterToConsole(SREG_DX,"DX=","");printRegisterToConsole(SREG_DY,"DY=","\n");
-                                    printf("               ");printRegisterToConsole(SREG_X0,"X0=","");printRegisterToConsole(SREG_Y0,"Y0=","\n");
-                                    printf("   -------> newX2: ");printRegisterToConsole(SREG_X2N,"","\n");
-                                    printf("               ");printRegisterToConsole(SREG_X1,"X1=","");printRegisterToConsole(SREG_Y1,"Y1=","\n");
-                                    printf("               ");printRegisterToConsole(SREG_X2,"X2=","");printRegisterToConsole(SREG_Y2,"Y2=","\n");
-                                  #endif // VERBOSE_SOLVER1 && PC_BUILD
+      #if defined(VERBOSE_SOLVER1) && defined(PC_BUILD)
+        printf("               ");printRegisterToConsole(SREG_DX,"DX=","");printRegisterToConsole(SREG_DY,"DY=","\n");
+        printf("               ");printRegisterToConsole(SREG_X0,"X0=","");printRegisterToConsole(SREG_Y0,"Y0=","\n");
+        printf("   -------> newX2: ");printRegisterToConsole(SREG_X2N,"","\n");
+        printf("               ");printRegisterToConsole(SREG_X1,"X1=","");printRegisterToConsole(SREG_Y1,"Y1=","\n");
+        printf("               ");printRegisterToConsole(SREG_X2,"X2=","");printRegisterToConsole(SREG_Y2,"Y2=","\n");
+      #endif // VERBOSE_SOLVER1 && PC_BUILD
 
       copySourceRegisterToDestRegister(SREG_Y1,SREG_Y0); //old y1 copied to y0
       copySourceRegisterToDestRegister(SREG_X1,SREG_X0); //old x1 copied to x0
@@ -1137,10 +1147,12 @@ void graph_stat(uint16_t unusedButMandatoryParameter) {
       fnRCL(SREG_DY);   runFunction(ITM_ABS); //difference |dy| is in Y
       fnRCL(SREG_DX);   runFunction(ITM_ABS); //difference |dx| is in X
 
+
       checkzero =    checkzero
                   || (real34IsZero(REGISTER_REAL34_DATA(REGISTER_X)) && real34IsZero(REGISTER_REAL34_DATA(REGISTER_Y)))
                   || (    (real34CompareAbsLessThan(REGISTER_REAL34_DATA(REGISTER_X), REGISTER_REAL34_DATA(SREG_TOL)))
                        && (real34CompareAbsLessThan(REGISTER_REAL34_DATA(REGISTER_Y), REGISTER_REAL34_DATA(SREG_TOL))));
+
 
       checkNaN =    checkNaN
                  || real34IsNaN(REGISTER_REAL34_DATA(REGISTER_X))
@@ -1183,11 +1195,11 @@ void graph_stat(uint16_t unusedButMandatoryParameter) {
                                     }
                                   #endif // VERBOSE_SOLVER2 && PC_BUILD
 
-                                  #if defined(VERBOSE_SOLVER1) && defined(PC_BUILD)
-                                    printRegisterToConsole(SREG_DX,">>> DX=","");
-                                    printRegisterToConsole(SREG_DY," DY=","");
-                                    printRegisterToConsole(SREG_TMP," 1/SLOPE=","\n");
-                                  #endif // VERBOSE_SOLVER1 && PC_BUILD
+      #if defined(VERBOSE_SOLVER1) && defined(PC_BUILD)
+        printRegisterToConsole(SREG_DX,">>> DX=","");
+        printRegisterToConsole(SREG_DY," DY=","");
+        printRegisterToConsole(SREG_TMP," 1/SLOPE=","\n");
+      #endif // VERBOSE_SOLVER1 && PC_BUILD
 
       copySourceRegisterToDestRegister(SREG_X2N,SREG_X2);  //new x2
 
@@ -1264,6 +1276,57 @@ void fnEqSolvGraph (uint16_t func) {
     refreshLcd(NULL);
   #endif // DMCP_BUILD
 
+  real_t x, y;
+
+
+  switch(func) {
+    case EQ_CPXSOLVE_LU: 
+    case EQ_REALSOLVE_LU: {
+      if(getRegisterAsReal(RESERVED_VARIABLE_LLIM, &y) && getRegisterAsReal(RESERVED_VARIABLE_ULIM, &x)) {
+        liftStack();
+        reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+        liftStack();
+        reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+        realToReal34(&x, REGISTER_REAL34_DATA(REGISTER_X));
+        realToReal34(&y, REGISTER_REAL34_DATA(REGISTER_Y));
+      }
+      break;
+    }   
+    case EQ_CPXSOLVE: 
+    case EQ_REALSOLVE: {
+      if(getRegisterAsReal(REGISTER_X, &x) && getRegisterAsReal(REGISTER_Y, &y)) {
+        reallocateRegister(RESERVED_VARIABLE_ULIM, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+        reallocateRegister(RESERVED_VARIABLE_LLIM, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+        realToReal34(&x, REGISTER_REAL34_DATA(RESERVED_VARIABLE_ULIM));
+        realToReal34(&y, REGISTER_REAL34_DATA(RESERVED_VARIABLE_LLIM));
+      }
+      break;
+    }
+    case EQ_PLOT_LU: {           //uses limits
+      if(getRegisterAsReal(RESERVED_VARIABLE_LX, &y) && getRegisterAsReal(RESERVED_VARIABLE_UX, &x)) {
+        liftStack();
+        reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+        liftStack();
+        reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+        realToReal34(&x, REGISTER_REAL34_DATA(REGISTER_X));
+        realToReal34(&y, REGISTER_REAL34_DATA(REGISTER_Y));
+      }
+      break;
+    }   
+    case EQ_PLOT: {              //uses X, Y
+      if(getRegisterAsReal(REGISTER_X, &x) && getRegisterAsReal(REGISTER_Y, &y)) {
+        reallocateRegister(RESERVED_VARIABLE_UX, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+        reallocateRegister(RESERVED_VARIABLE_LX, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+        realToReal34(&x, REGISTER_REAL34_DATA(RESERVED_VARIABLE_UX));
+        realToReal34(&y, REGISTER_REAL34_DATA(RESERVED_VARIABLE_LX));
+      }
+      break;
+    }
+    default:
+      return;
+      break;
+  }
+
   graphVariabl1 = currentSolverVariable;
   if(graphVariabl1<0) {
     graphVariabl1 = -graphVariabl1;
@@ -1280,7 +1343,6 @@ void fnEqSolvGraph (uint16_t func) {
       sprintf(errorMessage, "unexpected parameter %u", graphVariabl1);
       moreInfoOnError("In function fnEqSolvGraph:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-    adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
     return;
   }
 
@@ -1289,10 +1351,19 @@ void fnEqSolvGraph (uint16_t func) {
   currentSolverStatus &= ~SOLVER_STATUS_READY_TO_EXECUTE;
 
   switch(func) {
-    case EQ_SOLVE: {
+    case EQ_REALSOLVE_LU:
+    case EQ_REALSOLVE: {      
+      if((currentSolverVariable >= FIRST_NAMED_VARIABLE) ) {//&& currentSolverStatus & SOLVER_STATUS_READY_TO_EXECUTE) {
+        fnSolve(currentSolverVariable);
+      }
+      break;
+    }
+
+    case EQ_CPXSOLVE_LU:
+    case EQ_CPXSOLVE: {
       printStatus(1,errorMessages[COMPLEX_SOLVER],force);
       fnClDrawMx(4);
-      strcpy(plotStatMx,"DrwMX");
+      strcpy(plotStatMx,"DrwMX"); //why is this graph stuff here?
       statGraphReset();
 
       double higherXStartValue = convertRegisterToDouble(REGISTER_X);
@@ -1317,21 +1388,9 @@ void fnEqSolvGraph (uint16_t func) {
       break;
     }
 
-    case EQ_REPLOT:              //uses LX, UX
-      fnRecall(RESERVED_VARIABLE_LX);
-      fnRecall(RESERVED_VARIABLE_UX);
-      fnEqSolvGraph(EQ__PLOT);
-      break;
+    case EQ_PLOT_LU:
+    case EQ_PLOT: {
 
-    case EQ_PLOT:                //uses X, Y
-      fnStore(RESERVED_VARIABLE_UX);
-      fnDrop(0);
-      fnStore(RESERVED_VARIABLE_LX);
-      fnRecall(RESERVED_VARIABLE_UX);
-      fnEqSolvGraph(EQ__PLOT);
-      break;
-
-    case EQ__PLOT: {
       PLOT_ZMX = 0;
       PLOT_ZMY = 0;
       double higherXStartValue = convertRegisterToDouble(REGISTER_X);

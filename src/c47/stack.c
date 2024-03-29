@@ -411,3 +411,10 @@ void undo(void) {
   #endif // DEBUGUNDO
 
 }
+
+
+void fillStackWithReal0(void) {
+  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+  int32ToReal34(0, REGISTER_REAL34_DATA(REGISTER_X));
+  fnFillStack(0);
+}

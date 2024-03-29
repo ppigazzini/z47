@@ -14,7 +14,7 @@
 // JM VARIOUS OPTIONS
 //*********************************
 
-#define VERSION1 "0.109.00.04a12"     // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
+#define VERSION1 "0.109.00.04RC1"     // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
 
 #define MODEL USER_C47               // USER_C47 or USER_R47
 
@@ -78,7 +78,7 @@
   //  #define SAVE_SPACE_DM42_13GRF_JM //           JM graphics
   //  #define SAVE_SPACE_DM42_12 //047246 bytes: Standard extra 43S math: SLVQ, PRIME, BESSEL, ELLIPTIC, ZETA, BETA, ORTHO_POLY
   //  #define SAVE_SPACE_DM42_15       //           without all distributions, i.e. binomial, cauchy, chi
-  //  #define SAVE_SPACE_DM42_16       //           without Norml
+    #define SAVE_SPACE_DM42_16       //           without Norml
   #endif // TWO_FILE_PGM
 #endif // DMCP_BUILD
 
@@ -149,8 +149,11 @@
   #if defined(PC_BUILD)
     #define DEBUGUNDO
     #undef DEBUGUNDO
+    #define DEBUG_EXECUTE
+    #undef DEBUG_EXECUTE
   #else // !PC_BUILD
     #undef DEBUGUNDO
+    #undef DEBUG_EXECUTE
   #endif // PC_BUILD
 
 
@@ -1277,6 +1280,8 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define TI_SOLVER_VARIABLE_RESULT                104
 #define TI_DATA_NEG_OVRFL                        105
 #define TI_LASTSTATEFILE                         106
+#define TI_NO_SOLVER_VARIABLE                    107
+#define TI_NO_INTEGRATE_VARIABLE                 108
 
 // Register browser mode
 #define RBR_GLOBAL                                 0 // Global registers are browsed
@@ -1427,7 +1432,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define SIGMA_YMAX   ((real_t *)(statisticalSumsPointer + REAL_SIZE_IN_BLOCKS * SUM_YMAX  )) // could be a real34
 
 #define MAX_NUMBER_OF_GLYPHS_IN_STRING           508 //WP=196: Change to 512 less 3, Also change error message 33, and AIM_BUFFER_LENGTH, and MAXLINES
-#define NUMBER_OF_GLYPH_ROWS                     250  //Used in the font browser application
+#define NUMBER_OF_GLYPH_ROWS                     260  //Used in the font browser application
 
 #define MAX_DENMAX                              9999 // Biggest denominator in fraction display mode
 
@@ -1525,17 +1530,21 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define QF_DISCRETE_CDF_NEGBINOM                   3
 #define QF_DISCRETE_CDF_HYPERGEOMETRIC             4
 
-#define SOLVER_STATUS_READY_TO_EXECUTE             0x0001
-#define SOLVER_STATUS_INTERACTIVE                  0x0002
-#define SOLVER_STATUS_EQUATION_MODE                0x000c
+#define SOLVER_STATUS_READY_TO_EXECUTE             0x0001 //0001
+#define SOLVER_STATUS_INTERACTIVE                  0x0002 //0010
+#define SOLVER_STATUS_EQUATION_MODE                0x000c //1100
 #define SOLVER_STATUS_EQUATION_SOLVER              0x0000
-#define SOLVER_STATUS_EQUATION_INTEGRATE           0x0004
-#define SOLVER_STATUS_EQUATION_1ST_DERIVATIVE      0x0008
-#define SOLVER_STATUS_EQUATION_2ND_DERIVATIVE      0x000C
+#define SOLVER_STATUS_EQUATION_INTEGRATE           0x0004 //0100
+#define SOLVER_STATUS_EQUATION_1ST_DERIVATIVE      0x0008 //1000
+#define SOLVER_STATUS_EQUATION_2ND_DERIVATIVE      0x000C //1100
 #define SOLVER_STATUS_SINGLE_VARIABLE              0x0010
 #define SOLVER_STATUS_USES_FORMULA                 0x0100
 #define SOLVER_STATUS_MVAR_BEING_OPENED            0x0200
 #define SOLVER_STATUS_TVM_APPLICATION              0x1000
+
+#define IS_EQN_INTEGRATE (((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_INTEGRATE) && currentSolverStatus & SOLVER_STATUS_INTERACTIVE)
+#define IS_EQN_2NDDER   ((currentSolverStatus & SOLVER_STATUS_USES_FORMULA) && (currentSolverStatus & SOLVER_STATUS_INTERACTIVE) && ((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_2ND_DERIVATIVE))
+#define IS_EQN_1STDER   ((currentSolverStatus & SOLVER_STATUS_USES_FORMULA) && (currentSolverStatus & SOLVER_STATUS_INTERACTIVE) && ((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_1ST_DERIVATIVE))
 
 #define SOLVER_RESULT_NORMAL                       0
 #define SOLVER_RESULT_SIGN_REVERSAL                1

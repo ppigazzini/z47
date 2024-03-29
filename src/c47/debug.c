@@ -875,7 +875,7 @@ void debugNIM(void) {
       return (char *)indexOfItems[SFL_TDM24 + flag].itemCatalogName;
     }
     else {
-      return (char *)indexOfItems[SFL_2247 + flag - 64].itemCatalogName;
+      return (char *)indexOfItems[SFL_MONIT + flag - 64].itemCatalogName;
     }
   }
 
