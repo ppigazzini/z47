@@ -571,8 +571,8 @@ TO_QSPI const int16_t menu_Solver[]      = { ITM_NULL,                  ITM_NULL
 
 
 
-TO_QSPI const int16_t menu_Sfdx[]        = { ITM_DRAW,                  ITM_INTEGRAL_YX,           ITM_INTEGRAL,              ITM_DRAW_LU,               VAR_LLIM,                  VAR_ULIM,                  
- /*same*/                                    VAR_ACC,                   CST_77,                    CST_78,                    ITM_NULL,                  VAR_LX,                    VAR_UX              };                    
+TO_QSPI const int16_t menu_Sfdx[]        = { ITM_NULL,                  ITM_INTEGRAL_YX,           ITM_INTEGRAL,              ITM_NULL,                  VAR_LLIM,                  VAR_ULIM,                  
+ /*same*/                                    VAR_ACC,                   CST_77,                    CST_78,                    ITM_NULL,                  ITM_NULL,                  ITM_NULL              };                    
 
 // Tool∫ (intgral tools) 
 TO_QSPI const int16_t menu_Sf_TOOL[]     = { ITM_DRAW,                  ITM_INTEGRAL_YX,           ITM_INTEGRAL,              ITM_DRAW_LU,               VAR_LLIM,                  VAR_ULIM,                  
@@ -2728,7 +2728,7 @@ bool_t BASE_OVERRIDEONCE = false;
       if(numberOfVars > 12) {
         displayCalcErrorMessage(ERROR_EQUATION_TOO_COMPLEX, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
         #if(EXTRA_INFO_ON_CALC_ERROR == 1)
-          moreInfoOnError("In function showSoftmenu:", "there are more than 11 variables in this equation!", NULL, NULL);
+          moreInfoOnError("In function showSoftmenu:", "there are more than 12 variables in this equation!", NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       }
       else if( ( ((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_INTEGRATE) ||

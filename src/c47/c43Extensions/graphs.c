@@ -39,8 +39,8 @@ bool_t    invalid_rms  = true;
 void graph_reset(void){
   graph_dx      = 0;
   graph_dy      = 0;
-  extentx       = false;
-  extenty       = false;
+  extentx       = true;
+  extenty       = true;
   PLOT_VECT     = false;
   PLOT_NVECT    = false;
   PLOT_SCALE    = false;

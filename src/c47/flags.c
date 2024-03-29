@@ -679,12 +679,12 @@ void SetSetting(uint16_t jmConfig) {
       break;
     case JC_SS:     //call sub/sup script
       if(scrLock == NC_NORMAL) {
-        scrLock = NC_SUPERSCRIPT;
-      }
-      else if(scrLock == NC_SUPERSCRIPT) {
         scrLock = NC_SUBSCRIPT;
       }
       else if(scrLock == NC_SUBSCRIPT) {
+        scrLock = NC_SUPERSCRIPT;
+      }
+      else if(scrLock == NC_SUPERSCRIPT) {
         scrLock = NC_NORMAL;
       }
       else {

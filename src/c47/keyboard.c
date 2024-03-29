@@ -139,9 +139,6 @@ printf(">>>>  0093     firstItem=%d itemShift=%d fn=%d",firstItem, itemShift, fn
       case MNU_MVAR: {
 
         dynamicMenuItem = firstItem + itemShift + fn;
-        #define IS_EQN_INTEGRATE ((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_INTEGRATE)
-        #define IS_FORM_2NDDER   ((currentSolverStatus & SOLVER_STATUS_USES_FORMULA) && (currentSolverStatus & SOLVER_STATUS_INTERACTIVE) && ((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_2ND_DERIVATIVE))
-        #define IS_FORM_1STDER   ((currentSolverStatus & SOLVER_STATUS_USES_FORMULA) && (currentSolverStatus & SOLVER_STATUS_INTERACTIVE) && ((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_1ST_DERIVATIVE))
         if(tam.mode) {
           item = (dynamicMenuItem >= dynamicSoftmenu[menuId].numItems ? ITM_NOP : MNU_DYNAMIC);
         }
@@ -161,18 +158,18 @@ printf(">>>>  0093     firstItem=%d itemShift=%d fn=%d",firstItem, itemShift, fn
         }
 
 //f'
-        else if(IS_FORM_1STDER && dynamicMenuItem == 5) {
+        else if(IS_EQN_1STDER && dynamicMenuItem == 5) {
           item = ITM_FPHERE;
         }
-        else if(IS_FORM_1STDER && dynamicMenuItem == 4) {
+        else if(IS_EQN_1STDER && dynamicMenuItem == 4) {
           item = -MNU_GRAPHS;
         }
 
 //f''
-        else if(IS_FORM_2NDDER && dynamicMenuItem == 5) {
+        else if(IS_EQN_2NDDER && dynamicMenuItem == 5) {
           item = ITM_FPPHERE;
         }
-        else if(IS_FORM_2NDDER && dynamicMenuItem == 4) {
+        else if(IS_EQN_2NDDER && dynamicMenuItem == 4) {
           item = -MNU_GRAPHS;
         }
 
@@ -189,19 +186,14 @@ printf(">>>>  0093     firstItem=%d itemShift=%d fn=%d",firstItem, itemShift, fn
           item = -MNU_Sf_TOOL;
         }
 
-//TEST!!, then remove
-else if( (IS_EQN_INTEGRATE) && dynamicMenuItem == 5) {
-printf("WWWWWWWWWWWW ITM_INTEGRAL_YX\n");
+//integral y to x
+        else if( (IS_EQN_INTEGRATE) && dynamicMenuItem == 5) {
           item = ITM_INTEGRAL_YX;
         }
 
 
         else if(IS_EQN_INTEGRATE) {
           item = ITM_Sfdx_VAR;
-//TEST!!
-#ifdef PC_BUILD
-  printf("fnIntVar(), " STD_INTEGRAL "fdx VarL  " STD_INTEGRAL "fdx E\n");
-#endif
         }
         else {
           item = ITM_SOLVE_VAR;
@@ -1019,12 +1011,6 @@ int16_t lastItem = 0;
 */
         if(calcMode != CM_CONFIRMATION && data[0] != 0 && !running_program_jm) { //JM data is used if operation is from the real keyboard. item is used directly if called from XEQM
           lastErrorCode = 0;
-           if(item == ITM_INTEGRAL_YX && calcMode != CM_PEM) {        //loook at why the two INTEGRAL commands are behaving different.
-//            popSoftmenu();
-//TEST!!, then remove
-printf("GGGGGGGGGGGGG\n");
-            showSoftmenu(-MNU_Sfdx);
-          }
 
           if(calcMode != CM_PEM && item == -MNU_Sfdx) {
             tamEnterMode(MNU_Sfdx);
@@ -1032,9 +1018,7 @@ printf("GGGGGGGGGGGGG\n");
             screenUpdatingMode &= ~SCRUPD_ONE_TIME_FLAGS;
             return;
           }
-          else if(calcMode != CM_PEM && (item == ITM_INTEGRAL)) {
-//TEST!!, then remove
-printf("FFFFFFFFFFFF\n");
+          else if(calcMode != CM_PEM && (item == ITM_INTEGRAL || item == ITM_INTEGRAL_YX)) {
             switch(calcMode) {
               case CM_NIM: {
                 closeNim();

@@ -580,7 +580,6 @@ void showFracMode(void) {
 
 
   void kill_ASB_icon(void) {
-printf("---->>>> %i\n", calcMode);
     if(!(SBARUPD_AlphaMode) || calcMode == CM_GRAPH) return;
     lcd_fill_rect(X_ALPHA_MODE,18,9,2,0);
     compressString = 1;             //^JM

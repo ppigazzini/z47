@@ -271,9 +271,14 @@ void fnIntVar(uint16_t unusedButMandatoryParameter) {
   #if !defined(TESTSUITE_BUILD)
     const char *var = (char *)getNthString(dynamicSoftmenu[softmenuStack[0].softmenuId].menuContent, dynamicMenuItem);
     const uint16_t regist = findOrAllocateNamedVariable(var);
+    bool_t doubleVarPress = regist == currentSolverVariable;
     currentSolverVariable = regist;
-    if(currentSolverStatus & SOLVER_STATUS_READY_TO_EXECUTE) {
-      showSoftmenu(-MNU_Sfdx);
+    if(doubleVarPress && currentSolverStatus & SOLVER_STATUS_READY_TO_EXECUTE) {
+      if((currentSolverStatus & SOLVER_STATUS_INTERACTIVE)) {
+        showSoftmenu(-MNU_Sfdx);     //in case of RPN formula, which does not yet work with DRAW
+      } else {
+        showSoftmenu(-MNU_Sf_TOOL);  //in case of EQN
+      }
     }
     else {
       reallyRunFunction(ITM_STO, regist);
