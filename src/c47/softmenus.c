@@ -2676,6 +2676,8 @@ bool_t BASE_OVERRIDEONCE = false;
     }
     else if(id == -MNU_Solver   ||
             id == -MNU_Sf       ||
+            id == -MNU_Sf_TOOL     ||
+            id == -MNU_Solver_TOOL ||
             id == -MNU_1STDERIV ||
             id == -MNU_2NDDERIV ||
             (id == -MNU_MVAR && (currentSolverStatus & SOLVER_STATUS_INTERACTIVE) && !(currentSolverStatus & SOLVER_STATUS_USES_FORMULA) && (currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_INTEGRATE)
@@ -2684,13 +2686,15 @@ bool_t BASE_OVERRIDEONCE = false;
       uint8_t *varList = NULL;
       if(id != -MNU_MVAR) {
         currentSolverStatus = SOLVER_STATUS_USES_FORMULA | SOLVER_STATUS_INTERACTIVE;
-      currentMvarLabel = INVALID_VARIABLE;
+        currentMvarLabel = INVALID_VARIABLE;
       }
       switch(-id) {
+        case MNU_Solver_TOOL:
         case MNU_Solver: {
           currentSolverStatus |= SOLVER_STATUS_EQUATION_SOLVER;
           break;
         }
+        case MNU_Sf_TOOL:
         case MNU_Sf: {
           currentSolverStatus |= SOLVER_STATUS_EQUATION_INTEGRATE;
           break;
@@ -2720,11 +2724,13 @@ bool_t BASE_OVERRIDEONCE = false;
         }
       }
       else {
-      parseEquation(currentFormula, EQUATION_PARSER_MVAR, aimBuffer, tmpString);
+        parseEquation(currentFormula, EQUATION_PARSER_MVAR, aimBuffer, tmpString);
         varList = (uint8_t *)tmpString;
       }
 
-      id = -MNU_MVAR;
+      if(id != -MNU_Solver_TOOL && id != -MNU_Sf_TOOL) {
+        id = -MNU_MVAR;
+      }
       while((getNthString(varList, ++numberOfVars))[0] != 0) {
       }
 

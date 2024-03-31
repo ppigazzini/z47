@@ -21,6 +21,7 @@
 #include "solver/integrate.h"
 
 #include "c43Extensions/addons.h"
+#include "charString.h"
 #include "constantPointers.h"
 #include "defines.h"
 #include "display.h"
@@ -48,6 +49,7 @@
 void fnPgmInt(uint16_t label) {
   if(label >= FIRST_LABEL && label <= LAST_LABEL) {
     currentSolverProgram = label - FIRST_LABEL;
+    currentSolverStatus &= ~SOLVER_STATUS_USES_FORMULA;
   }
   else if(label >= REGISTER_X && label <= REGISTER_T) {
     // Interactive mode
@@ -84,6 +86,7 @@ void fnPgmInt(uint16_t label) {
     }
     else {
       currentSolverProgram = label - FIRST_LABEL;
+      currentSolverStatus &= ~SOLVER_STATUS_USES_FORMULA;
     }
   }
   else {
@@ -96,8 +99,42 @@ void fnPgmInt(uint16_t label) {
 }
 
 
+static void printCurrentSolverStatus(int nn, uint16_t currentSolverStatus) {
+printf("%i: currentSolverStatus=%u: ",nn,currentSolverStatus);
+if(currentSolverStatus > SOLVER_STATUS_TVM_APPLICATION)   { currentSolverStatus -= SOLVER_STATUS_TVM_APPLICATION;   printf("TVM ");}
+if(currentSolverStatus > SOLVER_STATUS_MVAR_BEING_OPENED) { currentSolverStatus -= SOLVER_STATUS_MVAR_BEING_OPENED; printf("MVARopen ");}
+if(currentSolverStatus > SOLVER_STATUS_USES_FORMULA)      { currentSolverStatus -= SOLVER_STATUS_USES_FORMULA;      printf("FORMULA ");}
+if(currentSolverStatus > SOLVER_STATUS_SINGLE_VARIABLE)   { currentSolverStatus -= SOLVER_STATUS_SINGLE_VARIABLE;   printf("1VAR ");}
+if(currentSolverStatus > SOLVER_STATUS_SINGLE_VARIABLE)   { currentSolverStatus -= SOLVER_STATUS_SINGLE_VARIABLE;   printf("1VAR ");}
+switch(currentSolverStatus) {
+    case SOLVER_STATUS_READY_TO_EXECUTE        : printf("ReadyExec ");break;   //  0x0001 //0001
+    case SOLVER_STATUS_INTERACTIVE             : printf("Interactive ");break;   //  0x0002 //0010
+//    case SOLVER_STATUS_EQUATION_MODE           : printf("EQN MODE");break;   //  0x000c //1100
+    case SOLVER_STATUS_EQUATION_SOLVER         : printf("EQN SLV ");break;   //  0x0000
+    case SOLVER_STATUS_EQUATION_INTEGRATE      : printf("EQN INT");break;   //  0x0004 //0100
+    case SOLVER_STATUS_EQUATION_1ST_DERIVATIVE : printf("1ST ");break;   //  0x0008 //1000
+    case SOLVER_STATUS_EQUATION_2ND_DERIVATIVE : printf("2ND ");break;   //  0x000C //1100
+    default:break;
+  }
+  printf("\n");
+}
 
 void _fnIntegrate(uint16_t labelOrVariable, bool_t XY) {
+
+  //printCurrentSolverStatus(3, currentSolverStatus);
+  //char yyy[100], yy1[100];
+  //int16_t yy0;
+  //  __displaySolver(labelOrVariable, yyy , &yy0);
+  //  stringToASCII(yyy,yy1);
+  //printf("labelOrVariable=%u %s\n",labelOrVariable, yy1);
+  //  __displaySolver(currentSolverVariable, yyy , &yy0);
+  //  stringToASCII(yyy,yy1);
+  //printf("currentSolverVariable=%u %s\n",currentSolverVariable, yy1);
+  //  xcopy(yyy, labelList[currentSolverProgram].labelPointer + 1, *(labelList[currentSolverProgram].labelPointer));
+  //  yyy[*(labelList[currentSolverProgram].labelPointer)] = 0;
+  //  stringToASCII(yyy,yy1);
+  //printf("currentSolverProgram %u = %s\n", currentSolverProgram, yy1);
+
   if((labelOrVariable >= FIRST_LABEL && labelOrVariable <= LAST_LABEL) || (labelOrVariable >= REGISTER_X && labelOrVariable <= REGISTER_T)) {
     // Interactive mode
     fnPgmInt(labelOrVariable);
@@ -152,6 +189,8 @@ void _fnIntegrate(uint16_t labelOrVariable, bool_t XY) {
       goto done;
     }
 
+calcRegister_t regist = labelOrVariable;  //at this point, it is a register variable
+
 #define SPEEDUPEXPERIMENT
 //#undef SPEEDUPEXPERIMENT
 
@@ -180,7 +219,7 @@ void _fnIntegrate(uint16_t labelOrVariable, bool_t XY) {
       ctxtReal39.digits = digitsN+5;
       ctxtReal51.digits = digitsN+7;
       ctxtReal75.digits = digitsN+13;
-      integrate(labelOrVariable, &llim, &ulim, &acc, &res, &ctxtReal4);
+      integrate(regist, &llim, &ulim, &acc, &res, &ctxtReal4);
         //WP34S_Ln(&acc, &digits, &ctxtReal39);
         //realDivide(&digits, const_ln10, &digits, &ctxtReal39);
         //digitsN = max(min(-realToInt32C47(&digits),34-3),1);
@@ -207,7 +246,7 @@ void _fnIntegrate(uint16_t labelOrVariable, bool_t XY) {
       ctxtReal39.digits = digitsN+5;
       ctxtReal51.digits = digitsN+7;
       ctxtReal75.digits = digitsN+13;
-      integrate(labelOrVariable, &llim, &ulim, &acc, &res, &ctxtReal39);
+      integrate(regist, &llim, &ulim, &acc, &res, &ctxtReal39);
         //WP34S_Ln(&acc, &digits, &ctxtReal39);
         //realDivide(&digits, const_ln10, &digits, &ctxtReal39);
         //digitsN = max(min(-realToInt32C47(&digits),34-3),1);
@@ -224,10 +263,20 @@ void _fnIntegrate(uint16_t labelOrVariable, bool_t XY) {
       ctxtReal51.digits = 51;
       ctxtReal75.digits = 75;
     } else {
-      integrate(labelOrVariable, &llim, &ulim, &acc, &res, smallerEpsilon ? &ctxtReal75 : &ctxtReal39);
+    #ifdef PC_BUILD
+      printf("Temporary Debugging info. Can be deleted once done.\n");
+      printRealToConsole(&llim,"llim:","\n");
+      printRealToConsole(&ulim,"ulim:","\n");
+      printRealToConsole(&acc,"acc:","\n");
+    #endif //PC_BUILD
+    integrate(regist, &llim, &ulim, &acc, &res, smallerEpsilon ? &ctxtReal75 : &ctxtReal39);
+    #ifdef PC_BUILD    
+      printf("Temporary Debugging info. Can be deleted once done.\n");
+      printRealToConsole(&res,"res:","\n");
+    #endif //PC_BUILD
     }
 #else //SPEEDUPEXPERIMENT
-    integrate(labelOrVariable, &llim, &ulim, &acc, &res, smallerEpsilon ? &ctxtReal75 : &ctxtReal39);
+    integrate(regist, &llim, &ulim, &acc, &res, smallerEpsilon ? &ctxtReal75 : &ctxtReal39);
 #endif //SPEEDUPEXPERIMENT
 
 done:
@@ -274,7 +323,7 @@ void fnIntVar(uint16_t unusedButMandatoryParameter) {
     bool_t doubleVarPress = regist == currentSolverVariable;
     currentSolverVariable = regist;
     if(doubleVarPress && currentSolverStatus & SOLVER_STATUS_READY_TO_EXECUTE) {
-      if((currentSolverStatus & SOLVER_STATUS_INTERACTIVE)) {
+      if((currentSolverStatus & SOLVER_STATUS_INTERACTIVE) && !(currentSolverStatus & SOLVER_STATUS_USES_FORMULA)) {
         showSoftmenu(-MNU_Sfdx);     //in case of RPN formula, which does not yet work with DRAW
       } else {
         showSoftmenu(-MNU_Sf_TOOL);  //in case of EQN

@@ -43,6 +43,7 @@ void       fnPoint                            (uint16_t unusedButMandatoryParame
 void       fnAGraph                           (uint16_t regist);
 
 char       letteredRegisterName(calcRegister_t regist);
+void       __displaySolver(calcRegister_t regist, char *prefix, int16_t *prefixWidth);
 
   #if defined(PC_BUILD)
   /**
