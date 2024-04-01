@@ -227,7 +227,7 @@ uint8_t *countLiteralBytes(uint8_t *step) {
     default: {
       #if !defined(DMCP_BUILD)
         printf("\nERROR: in countLiteralBytes() %u is not an acceptable parameter for ITM_LITERAL!\n", *(step - 1));
-        printf("At address ram + %" PRIu64 "\n", (step - 1) - (uint8_t *)ram);
+        printf("At address ram + %" PRIu32 "\n", (uint32_t)((step - 1) - (uint8_t *)ram));
       #endif // !DMCP_BUILD
       return NULL;
     }
