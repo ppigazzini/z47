@@ -1683,7 +1683,7 @@ void changeToSub(char *str) {
 real34_t result_fp1;
 bool_t checkForAndChange_(char *displayString, const real34_t *value34, const real_t *constant, const real34_t *tolerance, const char *constantStr,  bool_t frontSpace) {
     //printf(">>> constantFractionsMode %i\n",constantFractionsMode);
-    bool_t mixedNumber = getSystemFlag(FLAG_PROPFR) && !(constantFractionsMode == CF_COMPLEX_1st_Re_or_L || constantFractionsMode == CF_COMPLEX_2nd_Im);
+    bool_t mixedNumber = getSystemFlag(FLAG_PROPFR);
     //printf(">>>## mixedNumber %u\n",mixedNumber);
     real34_t multConstant34, constant_34;
     real34_t val, val1, result, result_ip, result_fp;
@@ -1721,7 +1721,7 @@ bool_t checkForAndChange_(char *displayString, const real34_t *value34, const re
     //See if the multiplier to the constant has a whole denominator
     //printReal34ToConsole(&multConstant34,"Check n/d :","\n");
     int32_t smallestDenom = getD(&multConstant34);
-    if(smallestDenom >= 1) {
+    if(smallestDenom > 1) {
       sprintf(denomStr,"/%i",(int)smallestDenom);
     }
     //printf(">>># %i\n", smallestDenom);
@@ -1749,9 +1749,21 @@ bool_t checkForAndChange_(char *displayString, const real34_t *value34, const re
     //printReal34ToConsole(&result_ip, "result_ip=", " > ");
     //printReal34ToConsole(&tmpr34, "tmpr34=", " \n");
     if(real34CompareAbsGreaterThan(&result_ip, &tmpr34)) {
-      //printf("<<< break1 >>>\n");
+    //printf("<<< break1 >>>\n");
       return false;
     }
+
+    //printf("QQ:%s§\n",displayString);
+    //char teststr[1000];
+    //char teststr1[1000];
+    //sprintf(teststr,">>>@@@1 |%s|%s|%s| %i %i\n", resstr, constantStr, denomStr, (int16_t)stringByteLength(resstr)-1, resstr[stringByteLength(resstr)-1]);
+    //stringToASCII(teststr,teststr1);
+    //printf("%s\n",teststr1);
+
+    char mixedNumberSep[3];                     //change mixedNumberSep to sign to get the old way of 1+1/3 instead of 1 1/3
+    mixedNumberSep[0] = STD_SPACE_4_PER_EM[0];
+    mixedNumberSep[1] = STD_SPACE_4_PER_EM[1];
+    mixedNumberSep[2] = 0;
 
     if(resultingInteger > 1 && real34CompareAbsLessThan(&result_fp,tolerance)) {
       //a whole multiple of the constant exists
@@ -1761,14 +1773,14 @@ bool_t checkForAndChange_(char *displayString, const real34_t *value34, const re
         int32_t tmp = resultingInteger / smallestDenom;
         resultingInteger = resultingInteger - (tmp * smallestDenom);
         if(constantStr[0]==0) {
-          sprintf(wholePart, "%i%s", (int)tmp, sign);
+          sprintf(wholePart, "%i%s", (int)tmp, mixedNumberSep);
         }
         else {
           if(tmp == 1) {
-            sprintf(wholePart, "%s%s", constantStr, sign);
+            sprintf(wholePart, "%s%s", constantStr, mixedNumberSep);
           }
           else {
-            sprintf(wholePart, "%i%s%s%s", (int)tmp, PRODUCT_SIGN, constantStr, sign);
+            sprintf(wholePart, "%i%s%s%s", (int)tmp, PRODUCT_SIGN, constantStr, mixedNumberSep);
           }
         }
       }
@@ -1790,7 +1802,10 @@ bool_t checkForAndChange_(char *displayString, const real34_t *value34, const re
       //printf(">>> %s\n", resstr);
     }
 
-    //printf(">>>@@@ §%s§%s§%s§ %i %i\n", resstr, constantStr, denomStr, (int16_t)stringByteLength(resstr)-1, resstr[stringByteLength(resstr)-1]);
+    //sprintf(teststr,">>>@@@2 |%s|%s|%s| %i %i\n", resstr, constantStr, denomStr, (int16_t)stringByteLength(resstr)-1, resstr[stringByteLength(resstr)-1]);
+    //stringToASCII(teststr,teststr1);
+    //printf("%s\n",teststr1);
+
     changeToSub(denomStr);
     if((resstr[stringByteLength(resstr)-1]==' ' || resstr[max(0,stringByteLength(resstr)-1)]==0) &&  denomStr[0]=='/' && constantStr[0]==0) {
       sprintf(tmpstr, STD_SUP_1 "%s", denomStr);
@@ -1801,28 +1816,9 @@ bool_t checkForAndChange_(char *displayString, const real34_t *value34, const re
     displayString[0]=0;
 
     if(real34CompareAbsLessThan(&result_fp,tolerance)) {
-      char prefixchar[6];
-      prefixchar[0]=0;
-      if(constantFractionsMode == CF_COMPLEX_1st_Re_or_L) {    //In case of complex polar/Re, save the value to test in the 2nd pass
-        real34Copy(&result_fp,&result_fp1);
+      if(!real34IsZero(&result_fp)) {
+        strcat(displayString, STD_ALMOST_EQUAL);
       }
-      else {
-        if(constantFractionsMode == CF_COMPLEX_2nd_Im) {       //In case of complex Im, use the saved value from previous pass, and the new Im
-          if(!(real34IsZero(&result_fp1) && real34IsZero(&result_fp))) {
-            strcat(prefixchar,STD_ALMOST_EQUAL);               //If either complex part is non-zero then show ~
-          }
-        }
-        else {                                                 //If neither complex parts, then it must be real
-          if(real34IsZero(&result_fp)) {
-            strcat(prefixchar, "");
-          }
-          else {
-            strcat(prefixchar, "" STD_ALMOST_EQUAL);
-          }
-        }
-      }
-
-      strcat(displayString, prefixchar);  //prefix
 
       if(sign[0]=='+') {
         if(frontSpace) {
@@ -1849,8 +1845,6 @@ bool_t checkForAndChange_(char *displayString, const real34_t *value34, const re
         strcat(displayString,constantStr);
         strcat(displayString,denomStr);
       }
-
-      //strcat(displayString, prefixchar);   //postfix
 
       return true;
     }

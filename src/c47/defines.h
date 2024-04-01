@@ -259,8 +259,6 @@
 //constantFractionsMode         //JM
 #define CF_OFF                   0
 #define CF_NORMAL                1
-#define CF_COMPLEX_1st_Re_or_L   2    //Complex numbers have two passes to the display function, first for Real or Length, then for Im.
-#define CF_COMPLEX_2nd_Im        3
 
 
 //Input mode                    //JM
@@ -579,8 +577,9 @@
 #define FLAG_SH_LONGPRESS                     0x803E
 #define FLAG_WRAPEDG                          0xc03F
 #define FLAG_MONIT                            0x8040 // MONIT MUST be the first of the secoind flag word
+#define FLAG_FRCYC                            0x8041
 
-#define NUMBER_OF_SYSTEM_FLAGS                    65 // We can have a maximum of 128 system flags
+#define NUMBER_OF_SYSTEM_FLAGS                    66 // We can have a maximum of 128 system flags
 
 typedef enum {
   LI_ZERO     = 0, // Long integer sign 0

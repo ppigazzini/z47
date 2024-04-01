@@ -760,10 +760,22 @@ void fnAngularMode(uint16_t am) {
 
 
 void fnFractionType(uint16_t unusedButMandatoryParameter) {
+  #define STATE_offbc    0b0000  // B
   #define STATE_bc       0b0001  //1
+  #define STATE_offabc   0b0010  // B
   #define STATE_abc      0b0011  //3
+//                         0100  B
+//                         0101    C if b8==0 the b4=0
+//                         0110  B
+//                         0111    C if b8==0 the b4=0
+//                         1000  A
+//                         1001 
+//                         1010  A
+//                         1011
   #define STATE_exfr_bc  0b1100  //12
+//                         1101
   #define STATE_exfr_abc 0b1110  //14
+//                         1111
   #define STATE          ((constantFractions         ? 8:0) +  \
                          (constantFractionsOn        ? 4:0) +  \
                          (getSystemFlag(FLAG_PROPFR) ? 2:0) +  \
@@ -771,22 +783,33 @@ void fnFractionType(uint16_t unusedButMandatoryParameter) {
   uint8_t state = STATE;
   //printf("%u ",state);
 
-  if(!getSystemFlag(FLAG_FRACT) && constantFractions && !constantFractionsOn) {
-    constantFractionsOn = true;
-    return;
-  } else {
-    if(!constantFractions && !getSystemFlag(FLAG_FRACT)) {
-      flipSystemFlag(FLAG_FRACT);
+  if(getSystemFlag(FLAG_FRCYC)) {
+    if(!getSystemFlag(FLAG_FRACT) && constantFractions && !constantFractionsOn) { // 10x0 --> 11x0 A
+      constantFractionsOn = true;
       return;
+    } else {
+      if(!constantFractions && !getSystemFlag(FLAG_FRACT)) {                      // 0xx0 --> 0xx1 B
+        flipSystemFlag(FLAG_FRACT);
+        return;
+      }
     }
-  }
-
-  switch(state) {
-    case STATE_bc       : state = STATE_exfr_abc; break;
-    case STATE_exfr_abc : state = STATE_exfr_bc; break;
-    case STATE_exfr_bc  : state = STATE_abc; break;
-    case STATE_abc      : state = STATE_bc;  break;
-    default             : state = STATE_abc; break;
+    switch(state) {
+      case STATE_bc          : state = STATE_exfr_abc;  break;                    // 0b0001 --> 
+      case STATE_abc         : state = STATE_bc;        break;                    // 0b0011 --> 
+      case STATE_exfr_bc     : state = STATE_abc;       break;                    // 0b1100 --> 
+      case STATE_exfr_abc    : state = STATE_exfr_bc;   break;                    // 0b1110 --> 
+      default                : state = STATE_abc;       break;                    // 
+    }
+  } else { 
+    switch(state) {
+      case STATE_bc          : state = STATE_exfr_bc;   break;                    // 0b0001 --> 
+      case STATE_abc         : state = STATE_exfr_abc;  break;                    // 0b0011 --> 
+      case STATE_exfr_bc     : state = STATE_offbc;     break;                    // 0b1100 --> 
+      case STATE_exfr_abc    : state = STATE_offabc;    break;                    // 0b1110 --> 
+      case STATE_offbc       : state = STATE_bc;        break;                    // 0b0000 -->
+      case STATE_offabc      : state = STATE_abc;       break;                    // 0b0010 -->
+      default                : state = STATE_abc;       break;                    //
+    }  
   }
   constantFractions   = (state & 8) ? true : false;
   constantFractionsOn = (state & 4) ? true : false;
@@ -1471,7 +1494,9 @@ Sett(_Reset);
 //---    setSystemFlag  (FLAG_HPBASE);
 //---    clearSystemFlag(FLAG_2TO10  );
 
+clearSystemFlag(FLAG_FRCYC);
 setSystemFlag(FLAG_MONIT);
+
     setSystemFlag(FLAG_SH_LONGPRESS);
 
     hourGlassIconEnabled = false;
