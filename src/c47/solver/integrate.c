@@ -98,7 +98,7 @@ void fnPgmInt(uint16_t label) {
   }
 }
 
-
+/*DEBUGINT
 static void printCurrentSolverStatus(int nn, uint16_t currentSolverStatus) {
 printf("%i: currentSolverStatus=%u: ",nn,currentSolverStatus);
 if(currentSolverStatus > SOLVER_STATUS_TVM_APPLICATION)   { currentSolverStatus -= SOLVER_STATUS_TVM_APPLICATION;   printf("TVM ");}
@@ -118,6 +118,7 @@ switch(currentSolverStatus) {
   }
   printf("\n");
 }
+*/
 
 void _fnIntegrate(uint16_t labelOrVariable, bool_t XY) {
 
