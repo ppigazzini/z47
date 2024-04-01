@@ -228,8 +228,6 @@
 //constantFractionsMode         //JM
 #define CF_OFF                   0
 #define CF_NORMAL                1
-#define CF_COMPLEX_1st_Re_or_L   2    //Complex numbers have two passes to the display function, first for Real or Length, then for Im.
-#define CF_COMPLEX_2nd_Im        3
 
 
 //Input mode                    //JM
