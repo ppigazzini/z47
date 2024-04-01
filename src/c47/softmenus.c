@@ -1984,8 +1984,28 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
 }
 
 
+
+bool_t savedspace(int16_t itemNr) {  //strike out all SAVED_SPACE items
+  switch (itemNr) {
+//    #ifdef SAVE_SPACE_DM42_12ORTHO
+      case ITM_HN     :              
+      case ITM_Lm     :       
+      case ITM_LmALPHA:         
+      case ITM_Pn     :      
+      case ITM_Tn     :            
+      case ITM_Un     :
+      case ITM_HNP    : 
+//    #endif //SAVE_SPACE_DM42_12ORTHO
+//    #ifdef SAVE_SPACE_DM42_20_TIMER
+      case ITM_TIMER  :
+//    #endif //SAVE_SPACE_DM42_20_TIMER
+      case 9999       : return true; break;
+    default: return false; break;
+  }
+}
+
 void fnStrikeOutIfNotCoded(int16_t itemNr, int16_t x, int16_t y) {
-  if(itemNr > 0 && indexOfItems[itemNr%10000].func == itemToBeCoded) {
+  if(itemNr > 0 && (indexOfItems[itemNr%10000].func == itemToBeCoded || savedspace(itemNr))) {
     // Strike out non coded functions
     int16_t yStroke = SCREEN_HEIGHT - y*23 - 1;
     for(int16_t xStroke=x*67 + 1 +9 ; xStroke<x*67 + 66 -10; xStroke++) {      //JM mod stroke slash cross out

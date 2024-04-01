@@ -333,7 +333,7 @@ static uint32_t _getTimerValue(void) {
 //#endif // PC_BUILD
 
 void fnItemTimerApp(uint16_t unusedButMandatoryParameter) {
-#if !defined(TESTSUITE_BUILD)
+#if !defined(TESTSUITE_BUILD) && !defined(SAVE_SPACE_DM42_20_TIMER)
   calcMode = CM_TIMER;
   rbr1stDigit = true;
   watchIconEnabled = false;
