@@ -1745,7 +1745,7 @@ bool_t allowShiftsToClearError = false;
       } else {
         circPtr4 = 0;
       }
-      if((circPtr5 == 0 && circ[0].itm5==keyCode) || circPtr5 > nbrOfElements(circ)) circPtr5 = 0; //C47M ENTER
+      if((circPtr5 == 0 && circ[0].itm5==keyCode) || circPtr5 > nbrOfElements(circ)) circPtr5 = 0; //C47MENU
       if(circ[circPtr5].itm5==keyCode) {
         if(circ[++circPtr5].itm5==0) {
           fnDumpMenus(0);

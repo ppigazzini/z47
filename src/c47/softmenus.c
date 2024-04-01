@@ -3080,6 +3080,8 @@ void fnMenuDump(uint16_t menu, uint16_t item) {                              //J
 
 void fnDumpMenus(uint16_t unusedButMandatoryParameter) {                      //JM
 #if defined(PC_BUILD)
+  int cc = currentSolverStatus;
+  currentSolverStatus = currentSolverStatus & (SOLVER_STATUS_USES_FORMULA | SOLVER_STATUS_INTERACTIVE);
   printf("Dumping menus\n");
   int16_t m,n;
   m = 0;
@@ -3092,6 +3094,7 @@ void fnDumpMenus(uint16_t unusedButMandatoryParameter) {                      //
           case MNU_2NDDERIV :
           case MNU_Sf :
           case MNU_Solver :
+          case MNU_SHOW :
             break;
           default:
            fnMenuDump(m, n);
@@ -3100,6 +3103,7 @@ void fnDumpMenus(uint16_t unusedButMandatoryParameter) {                      //
       }
       m++;
     }
+  currentSolverStatus = cc;
 #endif // PC_BUILD
 }                                                                            //JM^^
 

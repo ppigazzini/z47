@@ -741,7 +741,7 @@ static void decodeLiteral(uint8_t *literalAddress) {
     default: {
       #if !defined(DMCP_BUILD)
         printf("\nERROR: in decodeLiteral() %u is not an acceptable parameter for ITM_LITERAL!\n", *(literalAddress - 1));
-        printf("At address ram + %lu\n", (literalAddress - 1) - (uint8_t *)ram);
+        printf("At address ram + %" PRIu64 "\n", (literalAddress - 1) - (uint8_t *)ram);
       #endif // !DMCP_BUILD
     }
   }
