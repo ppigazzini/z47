@@ -182,7 +182,7 @@ void _fnIntegrate(uint16_t labelOrVariable, bool_t XY) {
       smallerEpsilon = smallerEpsilon && (realIsSpecial(&ulim) || realIsSpecial(&llim)); // smallerEpsilon not needed
     #endif // USE_MICHALSKI_MOSIG_TANH_SINH == 1
     if(realIsZero(&acc)) { // it may freeze if ACC=0
-      realCopy(const_1e_6143, &acc);
+      realCopy(const_1e_32, &acc);   //used to be const_1e_6143
     }
     if(real34CompareEqual(REGISTER_REAL34_DATA(RESERVED_VARIABLE_ULIM),REGISTER_REAL34_DATA(RESERVED_VARIABLE_LLIM) )) {
       int32ToReal(0,&res);
