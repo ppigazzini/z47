@@ -138,7 +138,7 @@ void fnIntegrate(uint16_t labelOrVariable) {
       smallerEpsilon = smallerEpsilon && (realIsSpecial(&ulim) || realIsSpecial(&llim)); // smallerEpsilon not needed
     #endif // USE_MICHALSKI_MOSIG_TANH_SINH == 1
     if(realIsZero(&acc)) { // it may freeze if ACC=0
-      realCopy(const_1e_6143, &acc);
+      realCopy(const_1e_32, &acc);   //used to be const_1e_6143
     }
     integrate(labelOrVariable, &llim, &ulim, &acc, &res, smallerEpsilon ? &ctxtReal75 : &ctxtReal39);
     fnClearStack(NOPARAM);
