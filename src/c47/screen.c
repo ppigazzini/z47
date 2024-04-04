@@ -2747,7 +2747,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
             if(distModeActive) {
               lcd_fill_rect(0, ii - 2, SCREEN_WIDTH, 1, 0xFF);
               if(displayStack != origDisplayStack) {
-                refreshScreen(81);                                //recurse into refreshScreen
+//                refreshScreen(81);                                //recurse into refreshScreen
               }
             }
           }
@@ -4587,6 +4587,24 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
     if(calcMode!=CM_AIM && calcMode!=CM_NIM && calcMode!=CM_PLOT_STAT && calcMode!=CM_GRAPH && calcMode!=CM_LISTXY && last_CM != 240) {  //240 specifically to prefent this
       last_CM = 254;  //JM Force NON-CM_AIM and NON-CM_NIM to refresh to be compatible to 43S
     } else if (last_CM == 240) last_CM = calcMode;
+
+
+    switch(softmenu[softmenuStack[0].softmenuId].menuItem) {
+      case -MNU_GEV:
+      case -MNU_BINOM:
+      case -MNU_CAUCH:
+      case -MNU_WEIBL:
+      case -MNU_CHI2:
+      case -MNU_T:
+      case -MNU_EXPON:
+      case -MNU_POISS:
+      case -MNU_F:
+      case -MNU_GEOM:
+      case -MNU_HYPER:
+      case -MNU_LOGIS:
+      case -MNU_NORML: screenUpdatingMode = SCRUPD_AUTO; break;
+      default: ;
+    }
 
     switch(calcMode) {
       case CM_FLAG_BROWSER:
