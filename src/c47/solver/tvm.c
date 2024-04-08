@@ -117,6 +117,9 @@ void fnTvmVar(uint16_t variable) {
           fnToReal(NOPARAM);
           if(lastErrorCode == ERROR_NONE) {
             reallyRunFunction(ITM_STO, variable);
+	    if (variable == RESERVED_VARIABLE_PERONA) {
+	      reallyRunFunction(ITM_STO, RESERVED_VARIABLE_CPERONA);
+	    }
             currentSolverStatus |= SOLVER_STATUS_READY_TO_EXECUTE;
             temporaryInformation = TI_SOLVER_VARIABLE;
           }
@@ -147,7 +150,7 @@ void fnTvmEndMode(uint16_t unusedButMandatoryParameter) {
 
 void tvmEquation(void) {
   real_t fv, iA, nPer, perA, cperA, pmt, pv, i;
-  real_t i1nPer, val, tmp;
+  real_t i1nPer, val, tmp, r;
 
   real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_FV),     &fv);
   real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_IPONA),  &iA);
@@ -156,9 +159,47 @@ void tvmEquation(void) {
   real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_CPERONA), &cperA);
   real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_PMT),    &pmt);
   real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_PV),     &pv);
-  realDivide(&iA, const_100, &i, &ctxtReal39);
-  realDivide(&i, &perA, &i, &ctxtReal39);
+  /*
+    The equation below is:
+    ip = (i / 100) / perA;
+    i1nPer = (1 + ip) ^ nPer;
+    K is either 1 or 1 + ip;
+    val = (K * pmt / ip) * (1 - i1nPer);
+    We return 
+    -pv * (1 + ip) ^ nPer + val - fv;
+    which looks more-or-less ok except perhaps for the handling of odd periods.
+    The idea is to keep this the same, by calculating a different value for ip.
+    Start with iA. The true AER is
+    iAER = (1 + (iA/100)/cperA) ^ cperA - 1.
+    Now we need an interest rate iM which, when compounded perA times in a year
+    gives iAER.
+    So 1 + iAER = (1 + iM) ^ perA.
+    iM = (1 + iAER) ^ (1 / perA) - 1
+       = (1 + (iA/100)/cperA) ^ (cperA / perA) - 1.
+    If cperA = perA this is just iM = (iA/100)/perA.
+    This looks fine, except - perhaps - for odd periods. Ignore for now.
 
+    The Prime doesn't allow solving for perA or cperA. Is this true for the HP-12C? Yes. (perA only, of course.)
+    It seems that the C47 does, so this may be a problem.
+    If perA is being solved for and hasn't been entered, cperA will be zero.
+    It would be nice if cperA could be set to perA by default somehow.
+    If r = cperA / perA, iM = (1 + iA/100/perA/r)^r - 1.
+    So if cperA = 0, r = 1.
+   */
+
+  realDivide(&iA, const_100, &i, &ctxtReal39);
+  realDivide(&cperA, &perA, &r, &ctxtReal39); // r = cperA / perA
+  if (realIsZero (&r) || realCompareEqual(const_1, &r)) {
+    realDivide(&i, &perA, &i, &ctxtReal39);
+  }
+  else {
+    realDivide(&i, &perA, &i, &ctxtReal39); // i = i / perA
+    realDivide(&i, &r, &i, &ctxtReal39); // i = (i / perA) / r
+    realAdd (&i, const_1, &i, &ctxtReal39); // i = (1 + (i/perA)/r)
+    realPower (&i, &r, &i, &ctxtReal39); // i = (1 + (i/perA)/r)^r
+    realSubtract (&i, const_1, &i, &ctxtReal39); // i = (1 + (i/perA)/r)^r - 1
+  }
+  
   realChangeSign(&pv);
 
   realAdd(&i, const_1, &i1nPer, &ctxtReal39);
