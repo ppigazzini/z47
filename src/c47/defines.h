@@ -825,14 +825,15 @@ enum REG_NUMBERS { // C program register codes
   RESERVED_VARIABLE_PMT,                                 //2038
   RESERVED_VARIABLE_PV,                                  //2039
   RESERVED_VARIABLE_GRAMOD,                              //2040
-  RESERVED_VARIABLE_UX,                                  //2041
-  RESERVED_VARIABLE_LX,                                  //2042
+  RESERVED_VARIABLE_CPERONA,                             //2041
+  RESERVED_VARIABLE_UX,                                  //2042
+  RESERVED_VARIABLE_LX,                                  //2043
   LAST_RESERVED_VARIABLE = RESERVED_VARIABLE_LX,
 
-  INVALID_VARIABLE,                                      //2043
+  INVALID_VARIABLE,                                      //2044
 
   // Labels
-  FIRST_LABEL,                                           //2044
+  FIRST_LABEL,                                           //2045
   LAST_LABEL = 6999,                                     //6999
 
   // Local registers

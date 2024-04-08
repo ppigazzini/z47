@@ -44,6 +44,7 @@ void fnTvmVar(uint16_t variable) {
       case RESERVED_VARIABLE_IPONA:
       case RESERVED_VARIABLE_NPER:
       case RESERVED_VARIABLE_PERONA:
+      case RESERVED_VARIABLE_CPERONA:
       case RESERVED_VARIABLE_PMT:
       case RESERVED_VARIABLE_PV: {
         currentSolverStatus |= SOLVER_STATUS_TVM_APPLICATION;
@@ -80,7 +81,8 @@ void fnTvmVar(uint16_t variable) {
               break;
             }
             case RESERVED_VARIABLE_NPER:
-            case RESERVED_VARIABLE_PERONA: {
+            case RESERVED_VARIABLE_PERONA:
+            case RESERVED_VARIABLE_CPERONA: {
               if(real34CompareLessThan(REGISTER_REAL34_DATA(variable), const34_1)) {
                 real34Copy(const34_2, &y);
                 real34Copy(const34_1, &x);
@@ -144,13 +146,14 @@ void fnTvmEndMode(uint16_t unusedButMandatoryParameter) {
 
 
 void tvmEquation(void) {
-  real_t fv, iA, nPer, perA, pmt, pv, i;
+  real_t fv, iA, nPer, perA, cperA, pmt, pv, i;
   real_t i1nPer, val, tmp;
 
   real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_FV),     &fv);
   real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_IPONA),  &iA);
   real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_NPER),   &nPer);
   real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_PERONA), &perA);
+  real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_CPERONA), &cperA);
   real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_PMT),    &pmt);
   real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_PV),     &pv);
   realDivide(&iA, const_100, &i, &ctxtReal39);
