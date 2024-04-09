@@ -1238,8 +1238,7 @@
 #define VAR_PMT                     1199
 #define VAR_PV                      1200
 #define VAR_GRAMOD                  1201
-#define VAR_CPERonA                 1202
-#define VAR_MATA                    1203
+#define VAR_MATA                    1202
 #define VAR_MATB                    1203
 #define VAR_MATX                    1204
 #define VAR_UX                      1205
@@ -1825,7 +1824,6 @@
 #define ITM_RCL_PERonA              1772
 #define ITM_RCL_PMT                 1773
 #define ITM_RCL_PV                  1774
-#define ITM_RCL_CPERonA             1775
 #define ITM_atan2                   1775
 #define ITM_TIMER_ADD               1776
 #define ITM_TIMER_0_1S              1777
@@ -2441,7 +2439,10 @@
 #define ITM_FPHERE                  2377
 #define ITM_FPPHERE                 2378
 
-#define LAST_ITEM                   2379
+#define VAR_CPERonA                 2379
+#define ITM_RCL_CPERonA             2380
+
+#define LAST_ITEM                   2381
 
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL
@@ -2481,3 +2482,4 @@ void itemToBeCoded    (uint16_t unusedButMandatoryParameter);
  */
 void fnNop            (uint16_t unusedButMandatoryParameter);
 #endif // !ITEMS_H
+

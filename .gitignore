@@ -3,7 +3,7 @@
 /build.sim
 /dep/gmp-6.2.1
 /wp43
-/c47
+# /c47
 /testSuite
 /generate*
 /ttf2RasterFonts
