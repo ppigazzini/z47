@@ -581,7 +581,7 @@ void showEquation(uint16_t equationId, uint16_t startAt, uint16_t cursorAt, bool
         }
 
         /* Numbers */
-          else if((!inLabel) && ( ((*strPtr) >= '0' && (*strPtr) <= '9') || (*strPtr) == '.' || (*strPtr) == ',')) { //jm (removed the addition change to change all , & . to Radix, as it also changed veriable names.)
+          else if((!inLabel) && ( ((*strPtr) >= '0' && (*strPtr) <= '9') || (*strPtr) == '.' || (*strPtr) == ',')) {
           *(bufPtr + 1) = 0;
           unaryMinus = false;
           inExponent = false;
@@ -589,7 +589,7 @@ void showEquation(uint16_t equationId, uint16_t startAt, uint16_t cursorAt, bool
         }
 
         /* Exponent */
-        else if((!inLabel) && inNumeric && (!beginningOfNumber) && (!inExponent) && ((*strPtr) == 'E')) {// || compareChar(strPtr, STD_SUB_E_OUTLINE))) {
+        else if((!inLabel) && inNumeric && (!beginningOfNumber) && (!inExponent) && ((*strPtr) == 'E')) {
           if(cursorAt == EQUATION_NO_CURSOR) {
             *bufPtr       = PRODUCT_SIGN[0];
             *(bufPtr + 1) = PRODUCT_SIGN[1];
@@ -1507,7 +1507,7 @@ void parseEquation(uint16_t equationId, uint16_t parseMode, char *buffer, char *
           exponentSignCanOccur = false;
         }
 
-        else if((!inExponent) && (*strPtr == 'E' /*|| compareChar(strPtr, STD_SUB_E_OUTLINE)*/ ) && ((*bufPtr = 0), numericCount == stringGlyphLength(buffer))) {
+        else if((!inExponent) && (*strPtr == 'E') && ((*bufPtr = 0), numericCount == stringGlyphLength(buffer))) {
           ++numericCount;
           inExponent = true;
           exponentSignCanOccur = true;
