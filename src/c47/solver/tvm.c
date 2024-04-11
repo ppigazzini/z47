@@ -50,13 +50,30 @@ void fnTvmVar(uint16_t variable) {
         currentSolverStatus |= SOLVER_STATUS_TVM_APPLICATION;
         currentSolverVariable = variable;
 
+	fnClearFlag (FLAG_TVM_I_KNOWN);
+	
         /* Calculate */
         if(currentSolverStatus & SOLVER_STATUS_READY_TO_EXECUTE) {
           real34_t y, x, resZ, resY, resX;
           saveForUndo();
           thereIsSomethingToUndo = true;
           liftStack();
-          real34Multiply(REGISTER_REAL34_DATA(variable), const34_2, &y);
+
+	  fnClearFlag (FLAG_TVM_I_KNOWN);
+
+	  switch(variable) {
+	  case RESERVED_VARIABLE_IPONA:
+	  case RESERVED_VARIABLE_PERONA:
+	  case RESERVED_VARIABLE_CPERONA: {
+	    fnSetFlag (FLAG_TVM_I_CHANGES);
+	    break;
+	  }
+	  default: {
+	    fnClearFlag (FLAG_TVM_I_CHANGES);	  
+	  }
+	  } // Here, I_KNOWN is faluse and I_CHANGES is set correctly
+
+	  real34Multiply(REGISTER_REAL34_DATA(variable), const34_2, &y);
           real34Multiply(REGISTER_REAL34_DATA(variable), const34_1on2, &x);
           switch(variable) {
             case RESERVED_VARIABLE_PV: {
@@ -80,9 +97,9 @@ void fnTvmVar(uint16_t variable) {
               }
               break;
             }
-            case RESERVED_VARIABLE_NPER:
-            case RESERVED_VARIABLE_PERONA:
-            case RESERVED_VARIABLE_CPERONA: {
+	    case RESERVED_VARIABLE_PERONA:
+	    case RESERVED_VARIABLE_CPERONA:
+	    case RESERVED_VARIABLE_NPER: {
               if(real34CompareLessThan(REGISTER_REAL34_DATA(variable), const34_1)) {
                 real34Copy(const34_2, &y);
                 real34Copy(const34_1, &x);
@@ -149,8 +166,9 @@ void fnTvmEndMode(uint16_t unusedButMandatoryParameter) {
 
 
 void tvmEquation(void) {
-  real_t fv, iA, nPer, perA, cperA, pmt, pv, i;
+  real_t fv, iA, nPer, perA, cperA, pmt, pv;
   real_t i1nPer, val, tmp, r;
+  static real_t i;
 
   real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_FV),     &fv);
   real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_IPONA),  &iA);
@@ -160,44 +178,48 @@ void tvmEquation(void) {
   real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_PMT),    &pmt);
   real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_PV),     &pv);
   /*
-    The equation below is:
-    ip = (i / 100) / perA;
-    i1nPer = (1 + ip) ^ nPer;
-    K is either 1 or 1 + ip;
-    val = (K * pmt / ip) * (1 - i1nPer);
-    We return 
-    -pv * (1 + ip) ^ nPer + val - fv;
-    which looks more-or-less ok except perhaps for the handling of odd periods.
-    The idea is to keep this the same, by calculating a different value for ip.
-    Start with iA. The true AER is
-    iAER = (1 + (iA/100)/cperA) ^ cperA - 1.
-    Now we need an interest rate iM which, when compounded perA times in a year
-    gives iAER.
-    So 1 + iAER = (1 + iM) ^ perA.
-    iM = (1 + iAER) ^ (1 / perA) - 1
-       = (1 + (iA/100)/cperA) ^ (cperA / perA) - 1.
+    The plan is to find an interest rate iM which, 
+    when compounded perA times in a year, gives iAER.
+    (AER stands for annual effective rate.)
+    iAER can be found like this:
+    1 + iAER = (1 + (iA/100)/cperA)^cperA
+    Also,
+    1 + iAER = (1 + iM) ^ perA.
+    So
+    iM = (1 + (iA/100)/cperA)^(cperA/perA) - 1.
     If cperA = perA this is just iM = (iA/100)/perA.
-    This looks fine, except - perhaps - for odd periods. Ignore for now.
 
-    The Prime doesn't allow solving for perA or cperA. Is this true for the HP-12C? Yes. (perA only, of course.)
-    It seems that the C47 does, so this may be a problem.
-    If perA is being solved for and hasn't been entered, cperA will be zero.
-    It would be nice if cperA could be set to perA by default somehow.
-    If r = cperA / perA, iM = (1 + iA/100/perA/r)^r - 1.
-    So if cperA = 0, r = 1.
+    Define r = cperA / perA. r = 1 corresponds to the "normal" case.
+    In terms of r,
+    iM = (1 + iA/100/perA/r)^r - 1.
+    This reduces to iM = (iA/100)/perA when r=1.
+    When perA is set cperA is also set to the same value. So if no value
+    is entered for cperA, r will be 1. We can test for this and short-circuit
+    the calculation.
+    If no value is entered for perA - perhaps it's being solved for so it's zero
+    Can I avoid repeating this calculation each time the TVM equation is called?
+    The calculation of i depends on: iA; perA; cperA. iA could change if i is being solved for;
+    similarly, the other two could change as well if being solved for.
+    This function doesn't know what is being solved for.
+    It takes a lot of iterations to converge but without the calculation of i each time
+    these iterations pass much more quickly. So I do need to do something here.
    */
 
-  realDivide(&iA, const_100, &i, &ctxtReal39);
-  realDivide(&cperA, &perA, &r, &ctxtReal39); // r = cperA / perA
-  if (realIsZero (&r) || realCompareEqual(const_1, &r)) {
+  if ( (!getSystemFlag(FLAG_TVM_I_KNOWN)) || (getSystemFlag(FLAG_TVM_I_CHANGES)) ) { // if i hasn't been found yet or i changes each time
+    realDivide(&iA, const_100, &i, &ctxtReal39);
     realDivide(&i, &perA, &i, &ctxtReal39);
-  }
-  else {
-    realDivide(&i, &perA, &i, &ctxtReal39); // i = i / perA
-    realDivide(&i, &r, &i, &ctxtReal39); // i = (i / perA) / r
-    realAdd (&i, const_1, &i, &ctxtReal39); // i = (1 + (i/perA)/r)
-    realPower (&i, &r, &i, &ctxtReal39); // i = (1 + (i/perA)/r)^r
-    realSubtract (&i, const_1, &i, &ctxtReal39); // i = (1 + (i/perA)/r)^r - 1
+    // i is now (iA / 100) / perA.
+    // This is the "normal" value of i when cperA = perA.
+
+    realDivide(&cperA, &perA, &r, &ctxtReal39); // r = cperA / perA
+			   
+    if ( !(realIsZero (&r) || realCompareEqual(const_1, &r)) ) { // not normal case
+      realDivide(&i, &r, &i, &ctxtReal39);
+      realAdd (&i, const_1, &i, &ctxtReal39);
+      realPower (&i, &r, &i, &ctxtReal39);
+      realSubtract (&i, const_1, &i, &ctxtReal39); // i = (1 + (i/perA)/r)^r - 1
+    }
+    fnSetFlag (FLAG_TVM_I_KNOWN);
   }
   
   realChangeSign(&pv);
