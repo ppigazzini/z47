@@ -71,7 +71,7 @@
   #if defined(TWO_FILE_PGM) //---------THESE ARE THE EXCLUSIONS TO MAKE IT FIT INTO AVAILABLE FLASH EVEN WHILE USING QSPI
     #define SAVE_SPACE_DM42_20_TIMER
   //  #define SAVE_SPACE_DM42_2  //005672 bytes: XEQM
-  //  #define SAVE_SPACE_DM42_13GRF_JM //           JM graphics
+    #define SAVE_SPACE_DM42_13GRF_JM //           JM graphics
   //  #define SAVE_SPACE_DM42_12 //047246 bytes: Standard extra 43S math: SLVQ, PRIME, ELLIPTIC, ZETA, BETA, ORTHO_POLY
   //  #define SAVE_SPACE_DM42_15       //           without all distributions, i.e. binomial, cauchy, chi
   //  #define SAVE_SPACE_DM42_16       //           without Norml
@@ -576,8 +576,9 @@
 #define FLAG_WRAPEDG                          0xc03F
 #define FLAG_MONIT                            0x8040 // MONIT MUST be the first of the secoind flag word
 #define FLAG_FRCYC                            0x8041
-
-#define NUMBER_OF_SYSTEM_FLAGS                    66 // We can have a maximum of 128 system flags
+#define FLAG_TVM_I_KNOWN                      0x8042
+#define FLAG_TVM_I_CHANGES                    0x8043
+#define NUMBER_OF_SYSTEM_FLAGS                    68 // We can have a maximum of 128 system flags
 
 typedef enum {
   LI_ZERO     = 0, // Long integer sign 0
@@ -825,14 +826,15 @@ enum REG_NUMBERS { // C program register codes
   RESERVED_VARIABLE_PMT,                                 //2038
   RESERVED_VARIABLE_PV,                                  //2039
   RESERVED_VARIABLE_GRAMOD,                              //2040
-  RESERVED_VARIABLE_UX,                                  //2041
-  RESERVED_VARIABLE_LX,                                  //2042
+  RESERVED_VARIABLE_CPERONA,                             //2041
+  RESERVED_VARIABLE_UX,                                  //2042
+  RESERVED_VARIABLE_LX,                                  //2043
   LAST_RESERVED_VARIABLE = RESERVED_VARIABLE_LX,
 
-  INVALID_VARIABLE,                                      //2043
+  INVALID_VARIABLE,                                      //2044
 
   // Labels
-  FIRST_LABEL,                                           //2044
+  FIRST_LABEL,                                           //2045
   LAST_LABEL = 6999,                                     //6999
 
   // Local registers

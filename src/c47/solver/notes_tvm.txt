@@ -1,0 +1,33 @@
+I've had to add a space-saving #define (JM Graphics) to
+defines.h. (This was needed before any code changes.)
+
+The aim is to have a number of compounding periods per year (CPER) that is
+separate from the number of payments (PER) per year.
+
+We can do this by finding an interest rate per payment period that,
+when compounded over the year, gives the same result as compounding
+the interest rate per compounding period over the year.
+
+That is,
+(1 + iM) ^ PER = (1 + (i/CPER)) ^ CPER.
+
+Having done this, we can use the existing TVM equation with iM as the
+interest rate per payment period.
+
+New things needed: menu items CPER/a to enter a value, and rCPER/a to
+recall it. This requires additions to items.h and items.c; I've put
+these at the end and have copied the corresponding entries for PERONA.
+Also, add the new menu items to softmenus.c.
+
+I've also had to edit defines.h to put in the new RESERVED_VARIABLE
+and registers.c to give it a local habitation.
+
+Finally, I've made changes to the code in solver/tvm.c .
+
+Tests showed that recalculating iM on each iteration slows the solver
+considerably. To get around this I've added a static variable to the
+tvmEquation() function to hold iM, and a couple of new system flags to
+indicate when iM has been found and whether it should be
+recalculated. These new flags have also required changes to items.c,
+items.h, and defines.h.
+

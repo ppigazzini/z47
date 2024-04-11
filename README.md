@@ -1,3 +1,16 @@
+# TVM mod
+
+This build of C47 has an addition to the TVM solver: the ability to enter a number of compounding periods per year different from the number of payments per year (PER/a).
+
+In the existing solver these two numbers are assumed to be equal. The new item CPER/a in the TVM menu allows the annual number of compounding periods to be set separately from the annual number of payments. (rCper/a recalls its value).
+
+Setting PER/a automatically sets CPER/a to the same value. This means that if no value is entered for CPER/a the solver behaves as it previously did.
+
+The calculations needed to make this work involve finding an interest rate per payment period, \(i_M\), that satisfies
+\[(1+i_M)^{\rm PER_a}=\left(1+{i_a\over\scriptstyle{\rm CPER_a}}\right)^{\rm CPER_a}.\]
+\(i_M\) is a function of i%/a, PER/a, and CPER/a. So long as none of these change the calculation of \(i_M\) can be done once and then re-used in subsequent interations. This gives a noticeable speed increase on the physical calculator. However, if solving for i%/a (or either of the other two quantities) \(i_M\) has to be recalculated on each iteration. This is handled automatically, but the calculation takes a little longer than otherwise.
+
+(Note that I've had to exclude "JM Graphics" from the build to get it to compile on my system. This was needed even before any code changes.)
 # C47
 
 The [C47 project](https://gitlab.com/rpncalculators/c43) is a fork of the [WP43 project](https://gitlab.com/rpncalculators/wp43), adapted to work on a standard Swiss Micros DM42 calculator with the standard keyboard layout.
