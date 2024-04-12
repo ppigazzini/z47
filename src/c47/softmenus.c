@@ -7,11 +7,13 @@
 #include "assign.h"
 #include "calcMode.h"
 #include "charString.h"
+#include "constantPointers.h"
 #include "debug.h"
 #include "error.h"
 #include "fonts.h"
 #include "flags.h"
 #include "items.h"
+#include "mathematics/comparisonReals.h"
 #include "memory.h"
 #include "programming/manage.h"
 #include "c43Extensions/jm.h"
@@ -1796,6 +1798,23 @@ static char *changeItoJ(int16_t item) {
 }
 
 
+typedef struct {
+  char     modeName[5];
+} mstr;
+
+
+#if !defined(TESTSUITE_BUILD)
+  TO_QSPI static const mstr modeNames[] = { 
+  /*0*/  { "ALL" },
+  /*1*/  { "FIX" },
+  /*2*/  { "SCI" },
+  /*3*/  { "ENG" },
+  /*4*/  { "SIG" },
+  /*5*/  { "UNIT"},
+  };
+#endif //TESTSUITE_BUILD
+
+
 
 void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t * vm, int8_t * showCb, int16_t * showValue, char * showText) {
   float tmpF = 0;
@@ -1835,24 +1854,46 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
                       stringAppend(showText + stringByteLength(showText), tmpS);
                       break;
                     }
-      case VAR_ULIM:
-      case VAR_LLIM:
-      case VAR_UX:
-      case VAR_LX:
+
+      case VAR_ULIM   :
+      case VAR_LLIM   :
+      case VAR_UX     :
+      case VAR_LX     :
+
+      case VAR_IPonA  :
+      case VAR_NPPER   :
+      case VAR_PPERonA:
+      case VAR_CPERonA:
+
+        case VAR_PV     : //comment these out to have no decimal subscripted numbers on FV, PV & PMT
+        case VAR_FV     : //comment these out to have no decimal subscripted numbers on FV, PV & PMT
+//        case VAR_PMT    : //comment these out to have no decimal subscripted numbers on FV, PV & PMT
+
                     { stringAppend(itemName, indexOfItems[itemNr%10000].itemSoftmenuName);
                       switch(itemNr%10000) {
-                        case VAR_ULIM:  real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_ULIM), &tmpR); 
-                                        break;
-                        case VAR_LLIM:  real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_LLIM), &tmpR); 
-                                        break;
-                        case VAR_LX:    real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_LX), &tmpR); 
-                                        break;
-                        case VAR_UX:    real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_UX), &tmpR); 
-                                        break;
+                        case VAR_ULIM     : 
+                        case VAR_LLIM     : 
+                        case VAR_LX       : 
+                        case VAR_UX       : 
+
+                        case VAR_IPonA    : 
+                        case VAR_NPPER    : 
+                        case VAR_PPERonA  : 
+                        case VAR_CPERonA  : 
+
+                          case VAR_PV     :
+                          case VAR_FV     :
+                          case VAR_PMT    : real34ToReal(REGISTER_REAL34_DATA(indexOfItems[itemNr%10000].param), &tmpR); break;
+
                         default:;
                       }
-                      if(realIsZero(&tmpR)) {
-                        strcpy(tmpS,"0");
+
+                      //if(realIsZero(&tmpR)) {    //original 0 condition, now taken over byt the generic integer format
+                      //  strcpy(tmpS,"0");
+                      //} else 
+                      if(realIsAnInteger(&tmpR) && realCompareLessThan(&tmpR, const_10000) && realCompareGreaterEqual(&tmpR, const_0)) {
+                        realToFloat(&tmpR, &tmpF);
+                        sprintf(tmpS,"%i",(int)tmpF);
                       } else {
                         itemName[3] = 0; //Blank the im of ^Lim to make space for the numbers
                         realToFloat(&tmpR, &tmpF);
@@ -1870,10 +1911,11 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
                         } else
 
                         {
-                          if((tmpF>=1000 && tmpF<=9999) || (tmpF>=-999.9 && tmpF<=-100)) { // 999.9  -99.9
+                          if(itemNr%10000 == VAR_IPonA) {
                             sprintf(tmpS,"%6.1f",tmpF);
                           } else
-                          if((tmpF>=100 && tmpF<=999.9) || (tmpF>=-99.9 && tmpF<=-10)) { // 999.9  -99.9
+                          if( ((tmpF>=1000 && tmpF<=9999) || (tmpF>=-999.9 && tmpF<=-100)) ||
+                              ((tmpF>=100 && tmpF<=999.9) || (tmpF>=-99.9 && tmpF<=-10  ))) { 
                             sprintf(tmpS,"%6.1f",tmpF);
                           } else
                           if((tmpF>=10 && tmpF<=99.9) || (tmpF>=-9.9 && tmpF<=-1)) {     // 99.9   -9.9
@@ -1884,9 +1926,11 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
                           } else
                           if(tmpF<0) {
                             sprintf(tmpS,"%6.1G",tmpF);
-                          } else {
+                          } else {                           // 1.0 > x >= 0.0
                             sprintf(tmpS,"%6.2G",tmpF);
                           }
+
+
                           strcpy(tmpS, eatSpacesMid(tmpS));
                           uint16_t ii = stringByteLength(tmpS);
                           if(tmpS[ii-4] == 'E' && (tmpS[ii-3] == '+' || tmpS[ii-3] == '-') && tmpS[ii-2] == '0') {
@@ -1894,6 +1938,7 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
                             tmpS[ii-1] = 0;
                           }
                         }
+
                       }
                       radixProcess(tmpS,tmpS);
                       stringAppend(showText + stringByteLength(showText), tmpS);
@@ -1908,15 +1953,16 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
                       break;
 
       case ITM_DSPCYCLE:switch(*showValue) {
-                          case 32700 : stringAppend(showText + stringByteLength(showText), "ALL" ); *showValue = NOVAL; break;
-                          case 32701 : stringAppend(showText + stringByteLength(showText), "FIX" ); *showValue = NOVAL; break;
-                          case 32702 : stringAppend(showText + stringByteLength(showText), "SCI" ); *showValue = NOVAL; break;
-                          case 32703 : stringAppend(showText + stringByteLength(showText), "ENG" ); *showValue = NOVAL; break;
-                          case 32704 : stringAppend(showText + stringByteLength(showText), "SIG" ); *showValue = NOVAL; break;
-                          case 32705 : stringAppend(showText + stringByteLength(showText), "UNIT"); *showValue = NOVAL; break;
+                          case 32700 :
+                          case 32701 :
+                          case 32702 :
+                          case 32703 :
+                          case 32704 :
+                          case 32705 :stringAppend(showText + stringByteLength(showText), modeNames[*showValue - 32700].modeName ); *showValue = NOVAL; break;
                           default: ;
                           }
                           break;
+
       case ITM_SCR    :switch(*showValue) {
                           case NC_NORMAL      : *showValue = NOVAL; break;
                           case NC_SUBSCRIPT   : stringAppend(showText + stringByteLength(showText), alphaCase == AC_LOWER ? STD_SUB_s STD_SUB_u STD_SUB_b : alphaCase == AC_UPPER ? STD_SUB_S STD_SUB_U STD_SUB_B : ""); *showValue = NOVAL;
