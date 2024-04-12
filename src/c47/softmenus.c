@@ -1794,6 +1794,23 @@ static char *changeItoJ(int16_t item) {
 }
 
 
+typedef struct {
+  char     modeName[5];
+} mstr;
+
+
+#if !defined(TESTSUITE_BUILD)
+  TO_QSPI static const mstr modeNames[] = { 
+  /*0*/  { "ALL" },
+  /*1*/  { "FIX" },
+  /*2*/  { "SCI" },
+  /*3*/  { "ENG" },
+  /*4*/  { "SIG" },
+  /*5*/  { "UNIT"},
+  };
+#endif //TESTSUITE_BUILD
+
+
 
 void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t * vm, int8_t * showCb, int16_t * showValue, char * showText) {
   float tmpF = 0;
@@ -1839,14 +1856,13 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
       case VAR_LX:
                     { stringAppend(itemName, indexOfItems[itemNr%10000].itemSoftmenuName);
                       switch(itemNr%10000) {
-                        case VAR_ULIM:  real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_ULIM), &tmpR); 
-                                        break;
-                        case VAR_LLIM:  real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_LLIM), &tmpR); 
-                                        break;
-                        case VAR_LX:    real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_LX), &tmpR); 
-                                        break;
-                        case VAR_UX:    real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_UX), &tmpR); 
-                                        break;
+                        case VAR_ULIM     : 
+                        case VAR_LLIM     : 
+                        case VAR_LX       : 
+                        case VAR_UX       : 
+                        
+                        real34ToReal(REGISTER_REAL34_DATA(indexOfItems[itemNr%10000].param), &tmpR); break;
+
                         default:;
                       }
                       if(realIsZero(&tmpR)) {
@@ -1906,15 +1922,16 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
                       break;
 
       case ITM_DSPCYCLE:switch(*showValue) {
-                          case 32700 : stringAppend(showText + stringByteLength(showText), "ALL" ); *showValue = NOVAL; break;
-                          case 32701 : stringAppend(showText + stringByteLength(showText), "FIX" ); *showValue = NOVAL; break;
-                          case 32702 : stringAppend(showText + stringByteLength(showText), "SCI" ); *showValue = NOVAL; break;
-                          case 32703 : stringAppend(showText + stringByteLength(showText), "ENG" ); *showValue = NOVAL; break;
-                          case 32704 : stringAppend(showText + stringByteLength(showText), "SIG" ); *showValue = NOVAL; break;
-                          case 32705 : stringAppend(showText + stringByteLength(showText), "UNIT"); *showValue = NOVAL; break;
+                          case 32700 :
+                          case 32701 :
+                          case 32702 :
+                          case 32703 :
+                          case 32704 :
+                          case 32705 :stringAppend(showText + stringByteLength(showText), modeNames[*showValue - 32700].modeName ); *showValue = NOVAL; break;
                           default: ;
                           }
                           break;
+
       case ITM_SCR    :switch(*showValue) {
                           case NC_NORMAL      : *showValue = NOVAL; break;
                           case NC_SUBSCRIPT   : stringAppend(showText + stringByteLength(showText), alphaCase == AC_LOWER ? STD_SUB_s STD_SUB_u STD_SUB_b : alphaCase == AC_UPPER ? STD_SUB_S STD_SUB_U STD_SUB_B : ""); *showValue = NOVAL;
