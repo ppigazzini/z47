@@ -49,7 +49,7 @@ void fnTvmVar(uint16_t variable) {
       case RESERVED_VARIABLE_PV: {
         currentSolverStatus |= SOLVER_STATUS_TVM_APPLICATION;
         currentSolverVariable = variable;
-        fnClearFlag (FLAG_TVM_I_KNOWN);
+        clearSystemFlag(FLAG_TVM_I_KNOWN);
 	
         /* Calculate */
         if(currentSolverStatus & SOLVER_STATUS_READY_TO_EXECUTE) {
@@ -58,17 +58,17 @@ void fnTvmVar(uint16_t variable) {
           thereIsSomethingToUndo = true;
           liftStack();
 
-      	  fnClearFlag (FLAG_TVM_I_KNOWN);
+      	  clearSystemFlag(FLAG_TVM_I_KNOWN);
 
       	  switch(variable) {
             case RESERVED_VARIABLE_IPONA:
             case RESERVED_VARIABLE_PERONA:
             case RESERVED_VARIABLE_CPERONA: {
-              fnSetFlag (FLAG_TVM_I_CHANGES);
+              setSystemFlag(FLAG_TVM_I_CHANGES);
               break;
             }
             default: {
-              fnClearFlag (FLAG_TVM_I_CHANGES);	  
+              clearSystemFlag(FLAG_TVM_I_CHANGES);	  
             }
       	  }
       	  real34Multiply(REGISTER_REAL34_DATA(variable), const34_2, &y);
@@ -219,7 +219,7 @@ void tvmEquation(void) {
       realPower (&i, &r, &i, &ctxtReal39);
       realSubtract (&i, const_1, &i, &ctxtReal39); // i = (1 + (i/perA)/r)^r - 1
     }
-    fnSetFlag (FLAG_TVM_I_KNOWN);
+    setSystemFlag(FLAG_TVM_I_KNOWN);
   }
   
   realChangeSign(&pv);

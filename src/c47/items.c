@@ -1211,7 +1211,8 @@ void fnNop(uint16_t unusedButMandatoryParameter) {
 #endif //TEST_SUITE
 
 
-#define NPER_   "n" STD_SUB_P STD_SUB_E STD_SUB_R                    //
+#define PERA_   "/a" //  "/a"
+#define PER_    STD_p // STD_SUB_P STD_SUB_E STD_SUB_R                    //
 #define RANGE_  STD_SUB_R STD_SUB_A STD_SUB_N STD_SUB_G STD_SUB_E    // Strings to maintain table columns below
 #define SUPSUB_ STD_SUP_S STD_SUP_U STD_SUP_P STD_SUB_S STD_SUB_U STD_SUB_B
 
@@ -2442,9 +2443,9 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 1193 */  { fnIntegrate,                  RESERVED_VARIABLE_ULIM,      STD_UP_ARROW "Lim",                            STD_UP_ARROW "Lim",                            (0 << TAM_MAX_BITS) |     0, CAT_RVAR | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 1194 */  { fnIntegrate,                  RESERVED_VARIABLE_LLIM,      STD_DOWN_ARROW "Lim",                          STD_DOWN_ARROW "Lim",                          (0 << TAM_MAX_BITS) |     0, CAT_RVAR | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 1195 */  { fnTvmVar,                     RESERVED_VARIABLE_FV,        "FV",                                          "FV",                                          (0 << TAM_MAX_BITS) |     0, CAT_RVAR | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
-/* 1196 */  { fnTvmVar,                     RESERVED_VARIABLE_IPONA,     "i%/a",                                        "i%/a",                                        (0 << TAM_MAX_BITS) |     0, CAT_RVAR | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
-/* 1197 */  { fnTvmVar,                     RESERVED_VARIABLE_NPER,      NPER_,                                         NPER_,                                         (0 << TAM_MAX_BITS) |     0, CAT_RVAR | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
-/* 1198 */  { fnTvmVar,                     RESERVED_VARIABLE_PERONA,    "PER/a",                                       "PER/a",                                       (0 << TAM_MAX_BITS) |     0, CAT_RVAR | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 1196 */  { fnTvmVar,                     RESERVED_VARIABLE_IPONA,     "i%" PERA_,                                    "i%" PERA_,                                    (0 << TAM_MAX_BITS) |     0, CAT_RVAR | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 1197 */  { fnTvmVar,                     RESERVED_VARIABLE_NPER,      "NP" PER_,                                     "NP" PER_,                                     (0 << TAM_MAX_BITS) |     0, CAT_RVAR | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 1198 */  { fnTvmVar,                     RESERVED_VARIABLE_PPERONA,   "P" PER_ PERA_,                                "P" PER_ PERA_,                                (0 << TAM_MAX_BITS) |     0, CAT_RVAR | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 1199 */  { fnTvmVar,                     RESERVED_VARIABLE_PMT,       "PMT",                                         "PMT",                                         (0 << TAM_MAX_BITS) |     0, CAT_RVAR | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 1200 */  { fnTvmVar,                     RESERVED_VARIABLE_PV,        "PV",                                          "PV",                                          (0 << TAM_MAX_BITS) |     0, CAT_RVAR | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 1201 */  { itemToBeCoded,                NOPARAM,                     "GRAMOD",                                      "GRAMOD",                                      (0 << TAM_MAX_BITS) |     0, CAT_RVAR | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
@@ -3029,9 +3030,9 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 1767 */  { fnEqCalc,                     NOPARAM,                     "Calc",                                        "Calc",                                        (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_DISABLED     },
 /* 1768 */  { fnSquareRoot,                 NOPARAM,                     "SQRT",                                        "SQRT",                                        (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_ENABLED  | PTP_NONE         },
 /* 1769 */  { fnRecall,                     RESERVED_VARIABLE_FV,        STD_SUB_R STD_SPACE_3_PER_EM "FV",             STD_SUB_R STD_SPACE_3_PER_EM "FV",             (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_DISABLED     },
-/* 1770 */  { fnRecall,                     RESERVED_VARIABLE_IPONA,     STD_SUB_R STD_SPACE_3_PER_EM "i%/a",           STD_SUB_R STD_SPACE_3_PER_EM "i%/a",           (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_DISABLED     },
-/* 1771 */  { fnRecall,                     RESERVED_VARIABLE_NPER,      STD_SUB_R STD_SPACE_3_PER_EM NPER_,            STD_SUB_R STD_SPACE_3_PER_EM NPER_,            (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_DISABLED     },
-/* 1772 */  { fnRecall,                     RESERVED_VARIABLE_PERONA,    STD_SUB_R STD_SPACE_3_PER_EM "PER/a",          STD_SUB_R STD_SPACE_3_PER_EM "PER/a",          (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_DISABLED     },
+/* 1770 */  { fnRecall,                     RESERVED_VARIABLE_IPONA,     STD_SUB_R STD_SPACE_3_PER_EM "i%" PERA_,       STD_SUB_R STD_SPACE_3_PER_EM "i%" PERA_,       (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_DISABLED     },
+/* 1771 */  { fnRecall,                     RESERVED_VARIABLE_NPER,      STD_SUB_R STD_SPACE_3_PER_EM "NP" PER_,        STD_SUB_R STD_SPACE_3_PER_EM "NP" PER_,        (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_DISABLED     },
+/* 1772 */  { fnRecall,                     RESERVED_VARIABLE_PPERONA,   STD_SUB_R STD_SPACE_3_PER_EM "P" PER_ PERA_,   STD_SUB_R STD_SPACE_3_PER_EM "P" PER_ PERA_,   (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_DISABLED     },
 /* 1773 */  { fnRecall,                     RESERVED_VARIABLE_PMT,       STD_SUB_R STD_SPACE_3_PER_EM "PMT",            STD_SUB_R STD_SPACE_3_PER_EM "PMT",            (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_DISABLED     },
 /* 1774 */  { fnRecall,                     RESERVED_VARIABLE_PV,        STD_SUB_R STD_SPACE_3_PER_EM "PV",             STD_SUB_R STD_SPACE_3_PER_EM "PV",             (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_DISABLED     },
 /* 1775 */  { fnAtan2,                      NOPARAM /*#JM#*/,            "ATAN2",                                       "ATAN2",                                       (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_ENABLED  | PTP_NONE         },
@@ -3648,8 +3649,8 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 2377 */  { fn1stDerivEq,                 NOPARAM,                     "f'here",                                      "f'here",                                      (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2378 */  { fn2ndDerivEq,                 NOPARAM,                     "f\"here",                                     "f\"here",                                     (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 
-/* 2379 */  { fnTvmVar,                     RESERVED_VARIABLE_CPERONA,    "CPER/a",                                       "CPER/a",                                       (0 << TAM_MAX_BITS) |     0, CAT_RVAR | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
-/* 2380 */  { fnRecall,                     RESERVED_VARIABLE_CPERONA,    STD_SUB_R STD_SPACE_3_PER_EM "CPER/a",          STD_SUB_R STD_SPACE_3_PER_EM "CPER/a",          (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_DISABLED     },
+/* 2379 */  { fnTvmVar,                     RESERVED_VARIABLE_CPERONA,    "C" PER_ PERA_,                               "C" PER_ PERA_,                                (0 << TAM_MAX_BITS) |     0, CAT_RVAR | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 2380 */  { fnRecall,                     RESERVED_VARIABLE_CPERONA,    STD_SUB_R STD_SPACE_3_PER_EM "C" PER_ PERA_,  STD_SUB_R STD_SPACE_3_PER_EM "C" PER_ PERA_,   (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_DISABLED     },
 
 /* 2381 */  { itemToBeCoded,                NOPARAM,                     "",                                            "Last item",                                   (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED},
 
