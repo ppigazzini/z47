@@ -42,7 +42,7 @@ void fnTvmVar(uint16_t variable) {
     switch(variable) {
       case RESERVED_VARIABLE_FV:
       case RESERVED_VARIABLE_IPONA:
-      case RESERVED_VARIABLE_NPER:
+      case RESERVED_VARIABLE_NPPER:
       case RESERVED_VARIABLE_PPERONA:
       case RESERVED_VARIABLE_CPERONA:
       case RESERVED_VARIABLE_PMT:
@@ -97,7 +97,7 @@ void fnTvmVar(uint16_t variable) {
               break;
             }
 
-            case RESERVED_VARIABLE_NPER:
+            case RESERVED_VARIABLE_NPPER:
             case RESERVED_VARIABLE_CPERONA:
             case RESERVED_VARIABLE_PPERONA: {
               if(real34CompareLessThan(REGISTER_REAL34_DATA(variable), const34_1)) {
@@ -172,7 +172,7 @@ void tvmEquation(void) {
 
   real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_FV),     &fv);
   real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_IPONA),  &iA);
-  real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_NPER),   &nPer);
+  real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_NPPER),   &nPer);
   real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_PPERONA), &pperA);
   real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_CPERONA), &cperA);
   real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_PMT),    &pmt);

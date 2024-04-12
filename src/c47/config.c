@@ -1354,7 +1354,7 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     //kbd_usr[19].gShifted    = ITM_SXY;
     //kbd_usr[20].gShifted    = ITM_LYtoM;
 
-    // initialize 9 real34 reserved variables: ACC, ↑Lim, ↓Lim, FV, i%/a, NPER, PER/a, PMT, and PV
+    // initialize 9 real34 reserved variables: ACC, ↑Lim, ↓Lim, FV, i%/a, NPPER, PPER/a, PMT, and PV
     for(int i=0; i<9; i++) {
       real34Zero(allocC47Blocks(REAL34_SIZE_IN_BLOCKS));
     }

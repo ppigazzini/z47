@@ -135,8 +135,8 @@ TO_QSPI const int16_t menu_FIN[]         = { ITM_SIGMAPLUS ,                ITM_
 /*      Menu name                           <----------------------------------------------------------------------------- 6 functions ---------------------------------------------------------------------------->  */
 /*                                          <---------------------------------------------------------------------- 6 f shifted functions ------------------------------------------------------------------------->  */
 /*                                          <---------------------------------------------------------------------- 6 g shifted functions ------------------------------------------------------------------------->  */
-TO_QSPI const int16_t menu_TVM[]         = { VAR_PV,                        VAR_IPonA,                  VAR_PPERonA,              VAR_NPER,              VAR_PMT,                     VAR_FV,
-                                             ITM_RCL_PV,                    ITM_RCL_IPonA,              VAR_CPERonA,              ITM_RCL_NPER,          ITM_RCL_PMT,                 ITM_RCL_FV,
+TO_QSPI const int16_t menu_TVM[]         = { VAR_PV,                        VAR_IPonA,                  VAR_PPERonA,              VAR_NPPER,             VAR_PMT,                     VAR_FV,
+                                             ITM_RCL_PV,                    ITM_RCL_IPonA,              VAR_CPERonA,              ITM_RCL_NPPER,         ITM_RCL_PMT,                 ITM_RCL_FV,
                                              ITM_BEGINP,                    ITM_ENDP,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                   -MNU_FIN                      };
 // remove RCL CPERonA and PPERonA            ITM_BEGINP,                    ITM_ENDP,                   ITM_RCL_PPERonA,          ITM_RCL_CPERonA,       ITM_NULL,                   -MNU_FIN                      };
 

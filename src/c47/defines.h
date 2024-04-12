@@ -821,8 +821,8 @@ enum REG_NUMBERS { // C program register codes
   RESERVED_VARIABLE_LLIM,                                //2033
   RESERVED_VARIABLE_FV,                                  //2034
   RESERVED_VARIABLE_IPONA,                               //2035
-  RESERVED_VARIABLE_NPER,                                //2036
-  RESERVED_VARIABLE_PERONA,                              //2037
+  RESERVED_VARIABLE_NPPER,                               //2036
+  RESERVED_VARIABLE_PPERONA,                             //2037
   RESERVED_VARIABLE_PMT,                                 //2038
   RESERVED_VARIABLE_PV,                                  //2039
   RESERVED_VARIABLE_GRAMOD,                              //2040

@@ -1233,8 +1233,8 @@
 #define VAR_LLIM                    1194
 #define VAR_FV                      1195
 #define VAR_IPonA                   1196
-#define VAR_NPER                    1197
-#define VAR_PERonA                  1198
+#define VAR_NPPER                   1197
+#define VAR_PPERonA                 1198
 #define VAR_PMT                     1199
 #define VAR_PV                      1200
 #define VAR_GRAMOD                  1201
@@ -1820,8 +1820,8 @@
 #define ITM_SQRT                    1768
 #define ITM_RCL_FV                  1769
 #define ITM_RCL_IPonA               1770
-#define ITM_RCL_NPER                1771
-#define ITM_RCL_PERonA              1772
+#define ITM_RCL_NPPER               1771
+#define ITM_RCL_PPERonA             1772
 #define ITM_RCL_PMT                 1773
 #define ITM_RCL_PV                  1774
 #define ITM_atan2                   1775
