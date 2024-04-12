@@ -49,8 +49,7 @@ void fnTvmVar(uint16_t variable) {
       case RESERVED_VARIABLE_PV: {
         currentSolverStatus |= SOLVER_STATUS_TVM_APPLICATION;
         currentSolverVariable = variable;
-
-	fnClearFlag (FLAG_TVM_I_KNOWN);
+        fnClearFlag (FLAG_TVM_I_KNOWN);
 	
         /* Calculate */
         if(currentSolverStatus & SOLVER_STATUS_READY_TO_EXECUTE) {
@@ -59,22 +58,22 @@ void fnTvmVar(uint16_t variable) {
           thereIsSomethingToUndo = true;
           liftStack();
 
-	  fnClearFlag (FLAG_TVM_I_KNOWN);
+      	  fnClearFlag (FLAG_TVM_I_KNOWN);
 
-	  switch(variable) {
-	  case RESERVED_VARIABLE_IPONA:
-	  case RESERVED_VARIABLE_PERONA:
-	  case RESERVED_VARIABLE_CPERONA: {
-	    fnSetFlag (FLAG_TVM_I_CHANGES);
-	    break;
-	  }
-	  default: {
-	    fnClearFlag (FLAG_TVM_I_CHANGES);	  
-	  }
-	  } // Here, I_KNOWN is faluse and I_CHANGES is set correctly
-
-	  real34Multiply(REGISTER_REAL34_DATA(variable), const34_2, &y);
+      	  switch(variable) {
+            case RESERVED_VARIABLE_IPONA:
+            case RESERVED_VARIABLE_PERONA:
+            case RESERVED_VARIABLE_CPERONA: {
+              fnSetFlag (FLAG_TVM_I_CHANGES);
+              break;
+            }
+            default: {
+              fnClearFlag (FLAG_TVM_I_CHANGES);	  
+            }
+      	  }
+      	  real34Multiply(REGISTER_REAL34_DATA(variable), const34_2, &y);
           real34Multiply(REGISTER_REAL34_DATA(variable), const34_1on2, &x);
+
           switch(variable) {
             case RESERVED_VARIABLE_PV: {
               if(real34IsZero(REGISTER_REAL34_DATA(RESERVED_VARIABLE_PV))) {
@@ -97,9 +96,10 @@ void fnTvmVar(uint16_t variable) {
               }
               break;
             }
-	    case RESERVED_VARIABLE_PERONA:
-	    case RESERVED_VARIABLE_CPERONA:
-	    case RESERVED_VARIABLE_NPER: {
+
+            case RESERVED_VARIABLE_NPER:
+            case RESERVED_VARIABLE_CPERONA:
+            case RESERVED_VARIABLE_PERONA: {
               if(real34CompareLessThan(REGISTER_REAL34_DATA(variable), const34_1)) {
                 real34Copy(const34_2, &y);
                 real34Copy(const34_1, &x);
@@ -134,9 +134,9 @@ void fnTvmVar(uint16_t variable) {
           fnToReal(NOPARAM);
           if(lastErrorCode == ERROR_NONE) {
             reallyRunFunction(ITM_STO, variable);
-	    if (variable == RESERVED_VARIABLE_PERONA) {
-	      reallyRunFunction(ITM_STO, RESERVED_VARIABLE_CPERONA);
-	    }
+      	    if (variable == RESERVED_VARIABLE_PERONA) {
+      	      reallyRunFunction(ITM_STO, RESERVED_VARIABLE_CPERONA);
+      	    }
             currentSolverStatus |= SOLVER_STATUS_READY_TO_EXECUTE;
             temporaryInformation = TI_SOLVER_VARIABLE;
           }

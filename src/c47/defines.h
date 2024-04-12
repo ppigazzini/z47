@@ -71,7 +71,7 @@
   #if defined(TWO_FILE_PGM) //---------THESE ARE THE EXCLUSIONS TO MAKE IT FIT INTO AVAILABLE FLASH EVEN WHILE USING QSPI
     #define SAVE_SPACE_DM42_20_TIMER
   //  #define SAVE_SPACE_DM42_2  //005672 bytes: XEQM
-    #define SAVE_SPACE_DM42_13GRF_JM //           JM graphics
+  //  #define SAVE_SPACE_DM42_13GRF_JM //           JM graphics
   //  #define SAVE_SPACE_DM42_12 //047246 bytes: Standard extra 43S math: SLVQ, PRIME, ELLIPTIC, ZETA, BETA, ORTHO_POLY
   //  #define SAVE_SPACE_DM42_15       //           without all distributions, i.e. binomial, cauchy, chi
   //  #define SAVE_SPACE_DM42_16       //           without Norml
@@ -574,10 +574,10 @@
 #define FLAG_2TO10                            0x803D
 #define FLAG_SH_LONGPRESS                     0x803E
 #define FLAG_WRAPEDG                          0xc03F
-#define FLAG_MONIT                            0x8040 // MONIT MUST be the first of the secoind flag word
+#define FLAG_MONIT                            0x8040 // MONIT MUST be the first of the second flag word
 #define FLAG_FRCYC                            0x8041
-#define FLAG_TVM_I_KNOWN                      0x8042
-#define FLAG_TVM_I_CHANGES                    0x8043
+#define FLAG_TVM_I_KNOWN                      0xc042
+#define FLAG_TVM_I_CHANGES                    0xc043
 #define NUMBER_OF_SYSTEM_FLAGS                    68 // We can have a maximum of 128 system flags
 
 typedef enum {
