@@ -75,7 +75,7 @@
   //  #define SAVE_SPACE_DM42_12 //047246 bytes: Standard extra 43S math: SLVQ, PRIME, ELLIPTIC, ZETA, BETA, ORTHO_POLY
   //  #define SAVE_SPACE_DM42_15       //           without all distributions, i.e. binomial, cauchy, chi
   //  #define SAVE_SPACE_DM42_16       //           without Norml
-  //  #define SAVE_SPACE_DM42_12BESSEL //Standard extra BESSEL
+    #define SAVE_SPACE_DM42_12BESSEL //Standard extra BESSEL
     #define SAVE_SPACE_DM42_12ORTHO //Standard extra ORTHO MENU
   #endif // TWO_FILE_PGM
 #endif // DMCP_BUILD
