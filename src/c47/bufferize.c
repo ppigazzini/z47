@@ -179,6 +179,25 @@ uint16_t convertItemToSubOrSup(uint16_t item, int16_t subOrSup) {
     #endif // TESTSUITE_BUILD                       //JM^^
   }
 
+typedef struct {
+  char     noStr[3];
+} numStr;
+
+#if !defined(TESTSUITE_BUILD)
+  TO_QSPI static const numStr NumMsg[] = { 
+    { "^0" },
+    { "^1" },
+    { "^2" },
+    { "^3" },
+    { "^4" },
+    { "^5" },
+    { "^6" },
+    { "^7" },
+    { "^8" },
+    { "^9" },
+  };
+#endif //TESTSUITE_BUILD
+
 
   void addItemToBuffer(uint16_t item) {
     #if defined(PC_BUILD)
@@ -218,7 +237,10 @@ uint16_t convertItemToSubOrSup(uint16_t item, int16_t subOrSup) {
                                  item == ITM_zetaX                ? STD_zeta "()" :
                                  item == ITM_GAMMAX               ? STD_GAMMA "()" :
                                  item >= FIRST_CONSTANT &&
-                                    item <= LAST_CONSTANT         ? indexOfItems[item].itemCatalogName : "";
+                                    item <= LAST_CONSTANT         ? indexOfItems[item].itemCatalogName :
+                                 item >= ITM_SUP_0 && 
+                                    item <= ITM_SUP_9             ? NumMsg[item - ITM_SUP_0].noStr : "";
+
 
           char addChar[100];
           int16_t jj = 0;
@@ -231,6 +253,12 @@ uint16_t convertItemToSubOrSup(uint16_t item, int16_t subOrSup) {
             }
           } else {
             stringAppend(addChar,addChar0);
+            if(addChar0[0] == '^') {
+              if(scrLock == NC_SUPERSCRIPT) {
+                scrLock = NC_NORMAL;
+                fnRefreshState();
+              }
+            }
           }
 
           char *aimCursorPos = aimBuffer;
