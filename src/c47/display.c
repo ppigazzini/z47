@@ -453,8 +453,9 @@ void real34ToDisplayString2(const real34_t *real34, char *displayString, int16_t
     fnConstantR( 73 /*const_PHI    */,  &constNr, &c_temp);
     if(checkForAndChange_(displayString, real34, &c_temp, &tol34,  indexOfItems[FIRST_CONSTANT+constNr].itemCatalogName,frontSpace)) return_fr;
 
-    realSquareRoot(const_5, &c_temp, &ctxtReal39);
-    if(checkForAndChange_(displayString, real34, &c_temp, &tol34,   STD_SQUARE_ROOT STD_SUB_5,frontSpace))                   return_fr;
+    if(checkForAndChange_(displayString, real34, const_rt5, &tol34, STD_SQUARE_ROOT STD_SUB_5,frontSpace))                   return_fr;
+    if(checkForAndChange_(displayString, real34, const_rt7, &tol34, STD_SQUARE_ROOT STD_SUB_7,frontSpace))                   return_fr;
+
   }
   constantFractionsMode = CF_NORMAL;
 
@@ -1291,6 +1292,29 @@ void complex34ToDisplayString(const complex34_t *complex34, char *displayString,
 }
 
 
+void strPrepend(char*dest, char*prefix) {
+  int16_t ii =stringByteLength(prefix);
+  if(ii == 0 || ii > 20) {                  //refuse to work with abnormal prefix lengths
+    return;
+  }
+  while(ii > 0) {
+    strcat(dest," ");
+    ii--;
+  }
+  int16_t jj = stringByteLength(dest)-1;
+  ii =stringByteLength(prefix);
+  while(jj-ii >= 0) {
+    dest[jj] = dest[jj-ii];
+    jj--;
+  }
+  ii--;
+  while(ii >= 0) {
+  dest[ii] = prefix[ii];
+  ii--;
+  }
+}
+
+
 void complex34ToDisplayString2(const complex34_t *complex34, char *displayString, int16_t displayHasNDigits, bool_t limitExponent, bool_t frontSpace, const uint16_t tagAngle, const bool_t tagPolar) {
   int16_t i = 100;
   real34_t real34, imag34, absimag34;
@@ -1309,7 +1333,6 @@ void complex34ToDisplayString2(const complex34_t *complex34, char *displayString
     real34Copy(VARIABLE_IMAG34_DATA(complex34), &imag34);
   }
 
-  constantFractionsMode = CF_COMPLEX_1st_Re_or_L;  //JM
 //printf("###>> displayHasNDigits=%u\n",displayHasNDigits);
   real34ToDisplayString2(&real34, displayString, displayHasNDigits, limitExponent, false, frontSpace);
 
@@ -1322,9 +1345,28 @@ void complex34ToDisplayString2(const complex34_t *complex34, char *displayString
     }
   }
 
-  constantFractionsMode = CF_COMPLEX_2nd_Im;  //JM
 //printf("###>>> displayHasNDigits=%u\n",displayHasNDigits);
   real34ToDisplayString2(&imag34, displayString + i, displayHasNDigits, limitExponent, false, false);
+
+
+  if(strncmp(displayString + i, STD_ALMOST_EQUAL, 2) == 0) {          //if almost equal char in front of IM part, transfer it to the Left (Real) side
+    displayString[i] = 1;    //0x01 is the new 'no char' character
+    displayString[i+1] = 1;  //0x01 is the new 'no char' character
+    if(strncmp(displayString, STD_ALMOST_EQUAL, 2) != 0) {
+      strPrepend(displayString,STD_ALMOST_EQUAL);
+    }
+  }
+
+  //int gg = 0;
+  //while(gg<10){
+  //  printf("%u ",(uint8_t)(displayString[gg++]));
+  //}
+  //printf("\n");
+  // gg = i;
+  //while(gg<10+i){
+  //  printf("%u ",(uint8_t)(displayString[gg++]));
+  //}
+  //printf("\n");
 
   if(tagPolar) { // polar mode
     strcat(displayString, STD_SPACE_4_PER_EM STD_MEASURED_ANGLE STD_SPACE_4_PER_EM);
@@ -1336,21 +1378,27 @@ void complex34ToDisplayString2(const complex34_t *complex34, char *displayString
     }
 
     if(real34IsZero(&real34)) {       //JM
-      if(displayString[i] == '-') {
-        displayString[0]=0;           // force a zero real not to display the real part
-        strcat(displayString, "-");   // re-add the - which could be trailing the real value. Do ot add the +, it is not needed
-        i++;
-      }
-      else {
-        displayString[0]=0;           // force a zero real not to display the real part
+      displayString[0]=0;           // force a zero real not to display the real part
+      int ii = i;
+      while(ii < stringByteLength(displayString + i)) {
+        if(!(displayString[ii-1] & 0x80) && displayString[ii]=='-') {
+          displayString[ii] = 1; //blank no space char
+          strcat(displayString, "-");   // re-add the - which could be trailing the real value. Do ot add the +, it is not needed
+          break;
+        }
       }
     }
     else {                            // JM normal full display of the full imag part, + and - shown
-      if(displayString[i] == '-') {
-        strcat(displayString, "-");
-        i++;
+      int ii = i+1;
+      while(ii <= i+stringByteLength(displayString + i)) {
+        if(!(displayString[ii-1] & 0x80) && displayString[ii]=='-') {    //check if the complex part already has a '-'
+          displayString[ii] = 1; //blank no space char
+          strcat(displayString, "-");   // re-add the - which could be trailing the real value. Do ot add the +, it is not needed
+          break;
+        }
+        ii++;
       }
-      else {
+      if(ii == i+1+stringByteLength(displayString + i)) {   //previous loop run to completion without '-' means there is no '-', then add a '+'
         strcat(displayString, "+");
       }
     }
