@@ -1,5 +1,5 @@
 default:
-  image: ubuntu:latest
+  image: ubuntu:24.04
 
 stages:
   - build
@@ -26,12 +26,18 @@ macOS:
   tags:
     - saas-macos-medium-m1
 
+.linux-script-before: &linux-script-before
+  - apt-get update -qq
+  - apt-get install -qq -y git zip
+  - apt-get install -qq -y pkgconf build-essential ninja-build meson
+  - apt-get install -qq -y cmake libgmp-dev libgtk-3-dev
+
 linux:
   stage: build
+  before_script:
+    - *linux-script-before
+    - apt-get install -qq -y libpulse-dev
   script:
-    - apt-get update -qq
-    - apt-get install -qq -y git python3-pip ninja-build pkg-config build-essential libgtk-3-dev libgmp-dev libpulse-dev zip
-    - python3 -m pip install meson
     - make dist_linux
   artifacts:
     expire_in: 1 day
@@ -53,10 +59,10 @@ windows:
 
 dmcp:
   stage: build
+  before_script:
+    - *linux-script-before
+    - apt-get install -qq -y gcc-arm-none-eabi
   script:
-    - apt-get update -qq
-    - apt-get install -qq -y git python3-pip ninja-build pkg-config build-essential zip libgtk-3-dev libgmp-dev gcc-arm-none-eabi
-    - python3 -m pip install meson
     - make dist_dmcp
   artifacts:
     expire_in: 1 day
@@ -67,10 +73,10 @@ dmcp:
 
 dmcp5:
   stage: build
+  before_script:
+    - *linux-script-before
+    - apt-get install -qq -y gcc-arm-none-eabi
   script:
-    - apt-get update -qq
-    - apt-get install -qq -y git python3-pip ninja-build pkg-config build-essential zip libgtk-3-dev libgmp-dev gcc-arm-none-eabi
-    - python3 -m pip install meson
     - make dist_dmcp5
   artifacts:
     expire_in: 1 day
@@ -81,20 +87,19 @@ dmcp5:
 
 testSuite:
   stage: test
+  before_script:
+    - *linux-script-before
   script:
-    - apt-get update -qq
-    - apt-get install -qq -y git python3-pip ninja-build pkg-config build-essential libgtk-3-dev libgmp-dev
-    - python3 -m pip install meson
     - make test
   tags:
     - saas-linux-small-amd64
 
 codeDocs:
   stage: test
+  before_script:
+    - *linux-script-before
+    - apt-get install -qq -y doxygen python3-sphinx python3-breathe furo
   script:
-    - apt-get update -qq
-    - apt-get install -qq -y git python3-pip ninja-build pkg-config build-essential libgtk-3-dev libgmp-dev doxygen
-    - python3 -m pip install meson 'Sphinx<7.2' breathe furo
     - make docs
 
 upload:
