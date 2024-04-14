@@ -255,3 +255,11 @@ PLUS                      "\xa4\xff"
 2024-03-02 Adding integration limits y->x
     $29F0 yx              "\xa9\xf0"     // Integration limits
 
+2024-04-13 Adding TVM icons
+    STD_per     per (for period)                  "\xa9\xf1"
+    STD_PER     PER (for period)                  "\xa9\xf2"
+    STD_PPY     Periods per year                  "\xa9\xf3"
+    STD_pcPY    Percent per year                  "\xa9\xf4"
+    STD_PPa     Periods per annum                 "\xa9\xf5"
+    STD_pcPa    Percent per annum                 "\xa9\xf6"
+
