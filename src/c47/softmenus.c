@@ -1818,7 +1818,7 @@ typedef struct {
 
 void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t * vm, int8_t * showCb, int16_t * showValue, char * showText) {
   float tmpF = 0;
-  char tmpS[20];
+  char tmpS[30], tmpSS[20];
   real_t tmpR;
   * vm = (itemNr < 0) || (isFunctionItemAMenu(itemNr%10000)) ? vmReverse : vmNormal;
   * showCb = NOVAL;
@@ -1855,81 +1855,68 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
                       break;
                     }
 
-      case VAR_ULIM   :
-      case VAR_LLIM   :
-      case VAR_UX     :
-      case VAR_LX     :
+      case VAR_ULIM    :
+      case VAR_LLIM    :
+      case VAR_UX      :
+      case VAR_LX      :
 
-      case VAR_IPonA  :
+      case VAR_IPonA   :
       case VAR_NPPER   :
-      case VAR_PPERonA:
-      case VAR_CPERonA:
+      case VAR_PPERonA :
+      case VAR_CPERonA :
 
-        case VAR_PV     : //comment these out to have no decimal subscripted numbers on FV, PV & PMT
-        case VAR_FV     : //comment these out to have no decimal subscripted numbers on FV, PV & PMT
-//        case VAR_PMT    : //comment these out to have no decimal subscripted numbers on FV, PV & PMT
+      case VAR_PV      : //comment these out to have no subscripted numbers on FV, PV & PMT
+      case VAR_FV      : //comment these out to have no subscripted numbers on FV, PV & PMT
+      case VAR_PMT     : //comment these out to have no subscripted numbers on FV, PV & PMT
 
                     { stringAppend(itemName, indexOfItems[itemNr%10000].itemSoftmenuName);
-                      switch(itemNr%10000) {
-                        case VAR_ULIM     : 
-                        case VAR_LLIM     : 
-                        case VAR_LX       : 
-                        case VAR_UX       : 
+                      real34ToReal(REGISTER_REAL34_DATA(indexOfItems[itemNr%10000].param), &tmpR);
+                      realToFloat(&tmpR, &tmpF);
 
-                        case VAR_IPonA    : 
-                        case VAR_NPPER    : 
-                        case VAR_PPERonA  : 
-                        case VAR_CPERonA  : 
-
-                          case VAR_PV     :
-                          case VAR_FV     :
-                          case VAR_PMT    : real34ToReal(REGISTER_REAL34_DATA(indexOfItems[itemNr%10000].param), &tmpR); break;
-
-                        default:;
-                      }
-
-                      //if(realIsZero(&tmpR)) {    //original 0 condition, now taken over byt the generic integer format
-                      //  strcpy(tmpS,"0");
-                      //} else 
-                      if(realIsAnInteger(&tmpR) && realCompareLessThan(&tmpR, const_10000) && realCompareGreaterEqual(&tmpR, const_0)) {
-                        realToFloat(&tmpR, &tmpF);
+//                      if(realIsAnInteger(&tmpR) && realCompareLessThan(&tmpR, (itemNr%10000 == VAR_NPPER || itemNr%10000 == VAR_PMT) ? const_1e5 : const_1e6) && realCompareGreaterEqual(&tmpR, const_0)) {
+                      if(tmpF == (int)tmpF &&  tmpF >= 0 && tmpF < ((itemNr%10000 == VAR_NPPER || itemNr%10000 == VAR_PMT) ? 100000 : 1000000)) {
+                        //positive integer smaller than limit
                         sprintf(tmpS,"%i",(int)tmpF);
                       } else {
-                        itemName[3] = 0; //Blank the im of ^Lim to make space for the numbers
-                        realToFloat(&tmpR, &tmpF);
+                        //negative or large integer or float, all are considered float
+                        
+                        //out of range for display
                         if(tmpF>0 && tmpF<1.0e-34) {
-                          strcpy(tmpS,STD_GAUSS_WHITE_L "1E-34");
+                          strcpy(tmpS,STD_GAUSS_WHITE_L STD_GAUSS_WHITE_L );//"1E-34");
                         } else
                         if(tmpF<0 && tmpF>-1.0e-34) {
-                          strcpy(tmpS,STD_GAUSS_WHITE_R "-1E-34");
+                          strcpy(tmpS,STD_GAUSS_WHITE_R STD_GAUSS_WHITE_R );//"-1E-34");
                         } else
                         if(tmpF>1.0e34) {
-                          strcpy(tmpS,STD_GAUSS_WHITE_R "1E34");
+                          strcpy(tmpS,STD_GAUSS_WHITE_R STD_GAUSS_WHITE_R );//"1E34");
                         } else 
                         if(tmpF<-1.0e34) {
-                          strcpy(tmpS,STD_GAUSS_WHITE_L "-1E34");
+                          strcpy(tmpS,STD_GAUSS_WHITE_L STD_GAUSS_WHITE_L );//"-1E34");
                         } else
 
                         {
-                          if(itemNr%10000 == VAR_IPonA) {
+                          if(fabsf(tmpF) < 10000 && itemNr%10000 == VAR_IPonA) {    //force single decimal for percentage
                             sprintf(tmpS,"%6.1f",tmpF);
                           } else
-                          if( ((tmpF>=1000 && tmpF<=9999) || (tmpF>=-999.9 && tmpF<=-100)) ||
-                              ((tmpF>=100 && tmpF<=999.9) || (tmpF>=-99.9 && tmpF<=-10  ))) { 
-                            sprintf(tmpS,"%6.1f",tmpF);
-                          } else
-                          if((tmpF>=10 && tmpF<=99.9) || (tmpF>=-9.9 && tmpF<=-1)) {     // 99.9   -9.9
-                            sprintf(tmpS,"%6.2f",tmpF);
-                          } else
-                          if(tmpF>=1 && tmpF<=9.999) {
-                            sprintf(tmpS,"%6.3f",tmpF);
-                          } else
-                          if(tmpF<0) {
-                            sprintf(tmpS,"%6.1G",tmpF);
-                          } else {                           // 1.0 > x >= 0.0
-                            sprintf(tmpS,"%6.2G",tmpF);
-                          }
 
+
+                          if((tmpF>=10000 && tmpF<10000000) || (tmpF>-1000000 && tmpF<=-10000)) { 
+                            sprintf(tmpS,"%8.0f",tmpF);
+                          } else
+                          if((fabs(tmpF)>=0.1 && fabs(tmpF)<10000)) {
+                            sprintf(tmpS,"%8.2f",tmpF);
+                          } else
+                          if((tmpF>=0.001 && tmpF<0.1) || (tmpF<=-0.01 && tmpF>-0.1)) {
+                            sprintf(tmpS,"%8.4f",tmpF);
+                          } else
+                          if(tmpF<0 && tmpF>-0.01) {
+                            sprintf(tmpS,"%8.1E",tmpF);
+                          } else
+                          if(tmpF>0 && tmpF<0.001) {
+                            sprintf(tmpS,"%8.2E",tmpF);
+                          } else {
+                            sprintf(tmpS,"%8.1G",tmpF);
+                          }
 
                           strcpy(tmpS, eatSpacesMid(tmpS));
                           uint16_t ii = stringByteLength(tmpS);
@@ -1938,9 +1925,39 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
                             tmpS[ii-1] = 0;
                           }
                         }
-
                       }
-                      radixProcess(tmpS,tmpS);
+
+                      //Note this section requires knowledge of where single and double byte unicode letters are in the names
+                      //Future: Improve this to read the unicode characters
+                      switch(itemNr%10000) {
+                        case VAR_ULIM    :
+                        case VAR_LLIM    :
+                          if(stringByteLength(tmpS) > 5) {
+                            itemName[3] = 0;
+                          }
+                          break;
+                        case VAR_IPonA   :
+                        case VAR_NPPER   :
+                        case VAR_PPERonA :
+                        case VAR_CPERonA :
+                        case VAR_PV      : 
+                        case VAR_FV      : 
+                        case VAR_PMT     : 
+                          if(stringByteLength(tmpS) > (itemNr%10000 == VAR_NPPER || itemNr%10000 == VAR_PMT ? 5 : 6)) {
+                            itemName[1] = 0;
+                          }
+                          break;
+                        default:;
+                      }
+
+                      radixProcess(tmpSS,tmpS);
+
+                      //for very short numerics, add one space
+                      if(stringByteLength(tmpSS) < 4) {
+                        sprintf(tmpS, STD_SPACE_3_PER_EM "%s",tmpSS);
+                      } else {
+                        sprintf(tmpS, "%s",tmpSS);                        
+                      }
                       stringAppend(showText + stringByteLength(showText), tmpS);
                       return;
                       break;
