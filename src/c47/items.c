@@ -3650,7 +3650,7 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 2378 */  { fn2ndDerivEq,                 NOPARAM,                     "f\"here",                                     "f\"here",                                     (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 
 /* 2379 */  { fnTvmVar,                     RESERVED_VARIABLE_CPERONA,    "C" STD_PPa,                                  "C" STD_PPa,                                   (0 << TAM_MAX_BITS) |     0, CAT_RVAR | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
-/* 2380 */  { fnRecall,                     RESERVED_VARIABLE_CPERONA,    STD_SUB_R STD_SPACE_3_PER_EM "C" STD_PPa,     STD_SUB_R STD_SPACE_3_PER_EM "C" STD_PPa,      (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_DISABLED     },
+/* 2380 */  { fnRecall,                     RESERVED_VARIABLE_CPERONA,    RCL_ "C" STD_PPa,                             RCL_ "P" STD_PPa,                              (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_DISABLED     },
 
 /* 2381 */  { itemToBeCoded,                NOPARAM,                     "",                                            "Last item",                                   (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED},
 
