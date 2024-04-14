@@ -1855,16 +1855,8 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
       case VAR_UX:
       case VAR_LX:
                     { stringAppend(itemName, indexOfItems[itemNr%10000].itemSoftmenuName);
-                      switch(itemNr%10000) {
-                        case VAR_ULIM     : 
-                        case VAR_LLIM     : 
-                        case VAR_LX       : 
-                        case VAR_UX       : 
-                        
-                        real34ToReal(REGISTER_REAL34_DATA(indexOfItems[itemNr%10000].param), &tmpR); break;
+                        real34ToReal(REGISTER_REAL34_DATA(indexOfItems[itemNr%10000].param), &tmpR);
 
-                        default:;
-                      }
                       if(realIsZero(&tmpR)) {
                         strcpy(tmpS,"0");
                       } else {
