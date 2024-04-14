@@ -1211,7 +1211,7 @@ void fnNop(uint16_t unusedButMandatoryParameter) {
 #endif //TEST_SUITE
 
 
-#define PER_    STD_SUP_P // STD_PER
+#define PER_    STD_PER
 #define RCL_    "RCL" STD_SPACE_4_PER_EM // STD_SUB_R STD_SUB_C STD_SUB_L STD_SPACE_HAIR         // STD_SUB_R STD_SPACE_3_PER_EM
 #define RANGE_  STD_SUB_R STD_SUB_A STD_SUB_N STD_SUB_G STD_SUB_E    // Strings to maintain table columns below
 #define SUPSUB_ STD_SUP_S STD_SUP_U STD_SUP_P STD_SUB_S STD_SUB_U STD_SUB_B

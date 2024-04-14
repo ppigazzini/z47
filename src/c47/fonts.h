@@ -712,10 +712,8 @@
 #define STD_SUB_Z                     "\xa4\xe9"
 #define STD_CHECK_MARK                "\xa7\x13"
 #define STD_YX                        "\xa9\xf0"
-#define STD_per                       "\xa9\xf1"
+#define STD_pera                      "\xa9\xf1"
 #define STD_PER                       "\xa9\xf2"
-#define STD_PPY                       "\xa9\xf3"
-#define STD_pcPY                      "\xa9\xf4"
 #define STD_PPa                       "\xa9\xf5"
 #define STD_pcPa                      "\xa9\xf6"
 #define STD_RIGHT_DOUBLE_ARROW        "\xa1\xD2"    //JM

@@ -1403,7 +1403,7 @@ void fnEqSolvGraph (uint16_t func) {
       strcpy(plotStatMx,"DrwMX");
       //statGraphReset();    //C43 removed to allow changing of graph params
 
-      if(higherXStartValue>lowerXStartValue + 0.01 && higherXStartValue!=DOUBLE_NOT_INIT && lowerXStartValue!=DOUBLE_NOT_INIT) { //pre-condition the plotter
+      if(higherXStartValue>lowerXStartValue + 0.0001 && higherXStartValue!=DOUBLE_NOT_INIT && lowerXStartValue!=DOUBLE_NOT_INIT) { //pre-condition the plotter
         x_min = lowerXStartValue;
         x_max = higherXStartValue;
       }
