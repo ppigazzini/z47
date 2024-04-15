@@ -873,32 +873,25 @@ static char *eng(char *result, double value, int digits) {
   if(isnan(old) || isinf(old)) {
     sprintf(result, "%s%f", sign, old);
   }
-  else if(old>999.9       && old<100000.0) {
-    sprintf(result,"%s%.i",     sign, (int)old);
+
+
+  if(old>=100   && old<100000.0  ) {
+    sprintf(result,"%s%.i",     sign, (int)(roundf(old)));
   }
-  else if(old>99.9999     && old<1000.0  ) {
-    sprintf(result,"%s%.i",     sign, (int)old);
+  else if(old>=1     && old<100.0    ) {
+    sprintf(result,"%s%.*f",    sign, digits-1, old);
   }
-  else if(old>9.99999     && old<100.0   ) {
-    sprintf(result,"%s%.*f",    sign, 1+digits+1-3, old);
-  }
-  else if(old>0.999999    && old<10.0    ) {
-    sprintf(result,"%s%.*f",    sign, digits+2-3  , old);
-  }
-  else if(old>0.0999999   && old<1.0     ) {
-    sprintf(result,"%s%.*f",    sign, 2+digits+3-3, old);
-  }
-  else if(old>0.00999999  && old<0.1     ) {
-    sprintf(result,"%s%.*f",    sign, 1+digits+4-3, old);
+  else if(old>=0.01   && old<1.0     ) {
+    sprintf(result,"%s%.*f",    sign, digits+2, old);
   }
   else if(old == 0.0) {
-    sprintf(result,"%s%.*f",    " ",  digits-1    , old);
+    sprintf(result,"%s%.*f",    " ",  digits-1, old);
   }
   else if(digits-1 <= 0) {
-    sprintf(result,"%s%.0fe%d", sign, value, expof10);
+    sprintf(result,"%s%.0fE%d", sign, value, expof10);
   }
   else {
-    sprintf(result,"%s%.*fe%d", sign, digits-1, value, expof10);
+    sprintf(result,"%s%.*fE%d", sign, digits-1, value, expof10);
   }
   return result;
 }
