@@ -2142,31 +2142,38 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
     }
   }
 
-  void __displaySolver(calcRegister_t regist, char *prefix, int16_t *prefixWidth) {
+  static void __displaySolver(calcRegister_t regist, char *prefix, int16_t *prefixWidth, int16_t no) {
+      char noo[5];
+      strcpy(noo,"  =");
+      if(no != -1) noo[0]=48+no;
       if(currentSolverVariable >= FIRST_RESERVED_VARIABLE) {
         memcpy(prefix, allReservedVariables[currentSolverVariable - FIRST_RESERVED_VARIABLE].reservedVariableName + 1, allReservedVariables[currentSolverVariable - FIRST_RESERVED_VARIABLE].reservedVariableName[0]);
-        strcpy(prefix + allReservedVariables[currentSolverVariable - FIRST_RESERVED_VARIABLE].reservedVariableName[0], " =");
+        strcpy(prefix + allReservedVariables[currentSolverVariable - FIRST_RESERVED_VARIABLE].reservedVariableName[0], noo);
       }
       else {
         memcpy(prefix, allNamedVariables[currentSolverVariable - FIRST_NAMED_VARIABLE].variableName + 1, allNamedVariables[currentSolverVariable - FIRST_NAMED_VARIABLE].variableName[0]);
-        strcpy(prefix + allNamedVariables[currentSolverVariable - FIRST_NAMED_VARIABLE].variableName[0], " =");
+        strcpy(prefix + allNamedVariables[currentSolverVariable - FIRST_NAMED_VARIABLE].variableName[0], noo);
       }
       *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;    
   }
 
   void _displaySolverOutput(calcRegister_t regist, char *prefix, int16_t *prefixWidth) {
     if(regist == REGISTER_X || regist == REGISTER_Y) {
-      __displaySolver(regist, prefix, prefixWidth);
+      __displaySolver(regist, prefix, prefixWidth, regist - REGISTER_X +1);
     } else 
     if(regist == REGISTER_Z) {
       strcpy(prefix, "Accuracy " STD_ALMOST_EQUAL);
+      *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
+    }
+    if(regist == REGISTER_T) {
+      strcpy(prefix, "Output code =");
       *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
     }
   }
 
   void _displaySolverInput(calcRegister_t regist, char *prefix, int16_t *prefixWidth) {
     if(regist == REGISTER_X) {
-      __displaySolver(regist, prefix, prefixWidth);
+      __displaySolver(regist, prefix, prefixWidth, -1);
     }
   }
 
