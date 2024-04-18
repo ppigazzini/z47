@@ -122,10 +122,17 @@ void fnSolve(uint16_t labelOrVariable) {
     int resultCode = 0;
 
     if(_realSolverFirstGuesses(REGISTER_Y, &y) && _realSolverFirstGuesses(REGISTER_X, &x)) {
-
+      fnDrop(0);
+      fnDrop(0);
+      saveForUndo(); //repeat after dropping the input parameters
       currentSolverVariable = labelOrVariable;
       resultCode = solver(labelOrVariable, &y, &x, &z, &y, &x);
-      fillStackWithReal0();
+
+      fnUndo(0);
+      liftStack();
+      liftStack();
+      liftStack();
+      liftStack();
       real34ToReal(&z, &tmp), convertRealToReal34ResultRegister(&tmp, REGISTER_Z);
       real34ToReal(&y, &tmp), convertRealToReal34ResultRegister(&tmp, REGISTER_Y);
       real34ToReal(&x, &tmp), convertRealToReal34ResultRegister(&tmp, REGISTER_X);
@@ -369,7 +376,6 @@ int solver(calcRegister_t variable, const real34_t *y, const real34_t *x, real34
     bool_t was_inting = getSystemFlag(FLAG_INTING);
     int loop = 0;
 
-    saveForUndo();
     convergenceTolerence(&tol);
 
     ++currentSolverNestingDepth;
