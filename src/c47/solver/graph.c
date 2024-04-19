@@ -1249,6 +1249,7 @@ void graph_stat(uint16_t unusedButMandatoryParameter) {
       fnRCL(SREG_Y2);
     }
 
+    fnUndo(0);
     fnRCL(SREG_X1);
     fnRCL(SREG_X2);
 
@@ -1260,6 +1261,41 @@ void graph_stat(uint16_t unusedButMandatoryParameter) {
     SAVED_SIGMA_LAc1 = 0;   //prevent undo of last stats add action. REMOVE when STATS are not used anymore
     return;
   }
+
+
+void fnComplexSolver(void) {
+      printStatus(1,errorMessages[COMPLEX_SOLVER],force);
+      fnClDrawMx(4);
+      strcpy(plotStatMx,"DrwMX"); //why is this graph stuff here?
+      statGraphReset();
+
+      double higherXStartValue = convertRegisterToDouble(REGISTER_X);
+      double lowerXStartValue = convertRegisterToDouble(REGISTER_Y);
+      #if(defined(VERBOSE_SOLVER00) || defined(VERBOSE_SOLVER0)) && defined(PC_BUILD)
+        printRegisterToConsole(REGISTER_Y,">>> lowerXStartValue=","");
+        printRegisterToConsole(REGISTER_X," higherXStartValue=","\n");
+      #endif // (VERBOSE_SOLVER00 || VERBOSE_SOLVER0) && PC_BUILD
+      calcRegister_t SREG_STARTX0 = __STARTX0;
+      calcRegister_t SREG_STARTX1 = __STARTX1;
+      copySourceRegisterToDestRegister(REGISTER_Y,SREG_STARTX0);
+      copySourceRegisterToDestRegister(REGISTER_X,SREG_STARTX1);
+      fnDrop(0);
+      fnDrop(0);
+      saveForUndo(); //repeat after dropping the input parameters
+
+      if(higherXStartValue>lowerXStartValue + 0.01 && higherXStartValue!=DOUBLE_NOT_INIT && lowerXStartValue!=DOUBLE_NOT_INIT) { //pre-condition the plotter
+        x_min = lowerXStartValue;
+        x_max = higherXStartValue;
+      }
+      #if(defined(VERBOSE_SOLVER00) || defined(VERBOSE_SOLVER0)) && defined(PC_BUILD)
+        printf("xmin:%f, xmax:%f\n",x_min,x_max);
+      #endif // (VERBOSE_SOLVER00 || VERBOSE_SOLVER0) && PC_BUILD
+      initialize_function();
+      complexSolver();
+    }
+
+
+
 #endif //SAVE_SPACE_DM42_13GRF
 #endif // !TESTSUITE_BUILD
 
@@ -1304,6 +1340,7 @@ void fnEqSolvGraph (uint16_t func) {
     }
     case EQ_PLOT_LU: {           //uses limits
       if(getRegisterAsReal(RESERVED_VARIABLE_LX, &y) && getRegisterAsReal(RESERVED_VARIABLE_UX, &x)) {
+        saveForUndo();
         liftStack();
         reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
         liftStack();
@@ -1319,7 +1356,8 @@ void fnEqSolvGraph (uint16_t func) {
         reallocateRegister(RESERVED_VARIABLE_LX, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
         realToReal34(&x, REGISTER_REAL34_DATA(RESERVED_VARIABLE_UX));
         realToReal34(&y, REGISTER_REAL34_DATA(RESERVED_VARIABLE_LX));
-      }
+        saveForUndo();
+        }
       break;
     }
     default:
@@ -1361,30 +1399,7 @@ void fnEqSolvGraph (uint16_t func) {
 
     case EQ_CPXSOLVE_LU:
     case EQ_CPXSOLVE: {
-      printStatus(1,errorMessages[COMPLEX_SOLVER],force);
-      fnClDrawMx(4);
-      strcpy(plotStatMx,"DrwMX"); //why is this graph stuff here?
-      statGraphReset();
-
-      double higherXStartValue = convertRegisterToDouble(REGISTER_X);
-      double lowerXStartValue = convertRegisterToDouble(REGISTER_Y);
-      #if(defined(VERBOSE_SOLVER00) || defined(VERBOSE_SOLVER0)) && defined(PC_BUILD)
-        printRegisterToConsole(REGISTER_Y,">>> lowerXStartValue=","");
-        printRegisterToConsole(REGISTER_X," higherXStartValue=","\n");
-      #endif // (VERBOSE_SOLVER00 || VERBOSE_SOLVER0) && PC_BUILD
-      calcRegister_t SREG_STARTX0 = __STARTX0;
-      calcRegister_t SREG_STARTX1 = __STARTX1;
-      copySourceRegisterToDestRegister(REGISTER_Y,SREG_STARTX0);
-      copySourceRegisterToDestRegister(REGISTER_X,SREG_STARTX1);
-      if(higherXStartValue>lowerXStartValue + 0.01 && higherXStartValue!=DOUBLE_NOT_INIT && lowerXStartValue!=DOUBLE_NOT_INIT) { //pre-condition the plotter
-        x_min = lowerXStartValue;
-        x_max = higherXStartValue;
-      }
-      #if(defined(VERBOSE_SOLVER00) || defined(VERBOSE_SOLVER0)) && defined(PC_BUILD)
-        printf("xmin:%f, xmax:%f\n",x_min,x_max);
-      #endif // (VERBOSE_SOLVER00 || VERBOSE_SOLVER0) && PC_BUILD
-      initialize_function();
-      complexSolver();
+      fnComplexSolver();
       break;
     }
 

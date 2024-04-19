@@ -238,12 +238,6 @@ void fnEqCursorRight(uint16_t unusedButMandatoryParameter) {
 }
 
 void fnEqCalc(uint16_t unusedButMandatoryParameter) {
-  #if defined(DEBUGUNDO)
-    printf(">>> saveForUndo from fnEqCalc, calcMode = %i, something to undo (pre) = %i \n",calcMode, thereIsSomethingToUndo);
-  #endif // DEBUGUNDO
-  if(!thereIsSomethingToUndo && !CM_NO_UNDO) {
-    saveForUndo();
-  }
   setSystemFlag(FLAG_SOLVING);
   parseEquation(currentFormula, EQUATION_PARSER_XEQ, tmpString, tmpString + AIM_BUFFER_LENGTH);
   adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);

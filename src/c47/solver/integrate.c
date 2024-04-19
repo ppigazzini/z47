@@ -191,6 +191,7 @@ void _fnIntegrate(uint16_t labelOrVariable, bool_t XY) {
     }
 
 calcRegister_t regist = labelOrVariable;  //at this point, it is a register variable
+saveForUndo();
 
 #define SPEEDUPEXPERIMENT
 //#undef SPEEDUPEXPERIMENT
@@ -281,7 +282,10 @@ calcRegister_t regist = labelOrVariable;  //at this point, it is a register vari
 #endif //SPEEDUPEXPERIMENT
 
 done:
-    fillStackWithReal0();
+    fnUndo(0);
+    liftStack();
+    liftStack();
+
     convertRealToReal34ResultRegister(&res, REGISTER_X);
     convertRealToReal34ResultRegister(&acc, REGISTER_Y);
     temporaryInformation = TI_INTEGRAL;
@@ -311,6 +315,8 @@ void fnIntegrateYX(uint16_t labelOrVariable) {
   if(getRegisterAsReal(REGISTER_X, &x) && getRegisterAsReal(REGISTER_Y, &y)) {
     realToReal34(&x, REGISTER_REAL34_DATA(RESERVED_VARIABLE_ULIM));
     realToReal34(&y, REGISTER_REAL34_DATA(RESERVED_VARIABLE_LLIM));
+    fnDrop(0);
+    fnDrop(0);
   }
   _fnIntegrate(labelOrVariable, true);
 }
