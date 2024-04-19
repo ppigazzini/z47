@@ -826,15 +826,17 @@ enum REG_NUMBERS { // C program register codes
   RESERVED_VARIABLE_PMT,                                 //2038
   RESERVED_VARIABLE_PV,                                  //2039
   RESERVED_VARIABLE_GRAMOD,                              //2040
-  RESERVED_VARIABLE_CPERONA,                             //2041
-  RESERVED_VARIABLE_UX,                                  //2042
-  RESERVED_VARIABLE_LX,                                  //2043
-  LAST_RESERVED_VARIABLE = RESERVED_VARIABLE_LX,
+  RESERVED_VARIABLE_UX,                                  //2041
+  RESERVED_VARIABLE_LX,                                  //2042
+  RESERVED_VARIABLE_CPERONA,                             //2043 (old last number, not anymore)
+  //  RESERVED_SPARES_HERE
+  LAST_RESERVED_VARIABLE = RESERVED_VARIABLE_CPERONA,
 
-  INVALID_VARIABLE,                                      //2044
+  INVALID_VARIABLE_OLD = 2043,                           //2043   //change number. Old config files will contain currentInputVariable to be 2043, which is fixed in the loading
+  INVALID_VARIABLE = 2199,                               //2199   //change number. Old config files will contain currentInputVariable to be 2043, which is fixed in the loading
 
   // Labels
-  FIRST_LABEL,                                           //2045
+  FIRST_LABEL,                                           //2200   //leave enough space for new variables
   LAST_LABEL = 6999,                                     //6999
 
   // Local registers
