@@ -805,6 +805,7 @@ static void _runDyadicFunction(char *mvarBuffer, uint16_t item) {
 
   _popNumericStack(mvarBuffer, &re, &im);
   if(real34IsZero(&im) || real34IsNaN(&im)) {
+    reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
     real34Copy(&re, REGISTER_REAL34_DATA(REGISTER_X));
   }
   else {
@@ -815,6 +816,7 @@ static void _runDyadicFunction(char *mvarBuffer, uint16_t item) {
 
   _popNumericStack(mvarBuffer, &re, &im);
   if(real34IsZero(&im) || real34IsNaN(&im)) {
+    reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
     real34Copy(&re, REGISTER_REAL34_DATA(REGISTER_Y));
   }
   else {
@@ -842,6 +844,7 @@ static void _runMonadicFunction(char *mvarBuffer, uint16_t item) {
 
   _popNumericStack(mvarBuffer, &re, &im);
   if(real34IsZero(&im) || real34IsNaN(&im)) {
+    reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
     real34Copy(&re, REGISTER_REAL34_DATA(REGISTER_X));
   }
   else {
@@ -1284,9 +1287,9 @@ void parseEquation(uint16_t equationId, uint16_t parseMode, char *buffer, char *
     realToReal34(const_NaN, &PARSER_NUMERIC_STACK[i * 2 + 1]);
   }
   *PARSER_NUMERIC_STACK_POINTER = 0;
-  if(parseMode == EQUATION_PARSER_XEQ) {
-    fillStackWithReal0();
-  }
+ // if(parseMode == EQUATION_PARSER_XEQ) {         //Not sure removing the clear stack will not influence the calc. I don't think so 2024-04-20 jm
+ //   fillStackWithReal0();
+ // }
 
   for(uint32_t i = 0; i < 7; ++i) {
     strPtr += ((*strPtr) & 0x80) ? 2 : 1;

@@ -127,7 +127,8 @@ static void execute_rpn_function(void){
       printRegisterToConsole(graphVariabl1, " = ","\n");
     #endif //PC_BUILD
 
-    fnEqCalc(0);
+    parseEquation(currentFormula, EQUATION_PARSER_XEQ, tmpString, tmpString + AIM_BUFFER_LENGTH);
+    adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
 
     #if defined(PC_BUILD) //PC_BUILD
       printf("Graph variable y ");

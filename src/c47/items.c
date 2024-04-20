@@ -154,7 +154,7 @@ void fnNop(uint16_t unusedButMandatoryParameter) {
       DRG_Cycling = 0;  //JM
     }
     if((indexOfItems[func].status & US_STATUS) == US_ENABLED || (indexOfItems[func].status & US_STATUS) == US_ENABL_XEQ) {
-      if((programRunStop != PGM_RUNNING || getSystemFlag(FLAG_IGN1ER))  && calcMode != CM_NO_UNDO && !getSystemFlag(FLAG_SOLVING) && !getSystemFlag(FLAG_INTING)) {
+      if((programRunStop != PGM_RUNNING || getSystemFlag(FLAG_IGN1ER))  && calcMode != CM_NO_UNDO && !getSystemFlag(FLAG_SOLVING) && !getSystemFlag(FLAG_INTING) && !(currentSolverStatus & SOLVER_STATUS_USES_FORMULA)) {
         #if defined(DEBUGUNDO)
           printf(">>> saveForUndo from reallyRunFunction: %i, %s, calcMode = %i ",func, indexOfItems[func].itemCatalogName, calcMode);
         #endif // DEBUGUNDO

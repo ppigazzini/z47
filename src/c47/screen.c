@@ -2166,7 +2166,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
       *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
     }
     if(regist == REGISTER_T) {
-      strcpy(prefix, "Output code =");
+      strcpy(prefix, "Result Code =");
       *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
     }
   }

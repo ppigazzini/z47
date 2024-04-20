@@ -525,7 +525,7 @@ void resetKeytimers(void) {
       //JM TIMER CLRDROP. Autodrop means double click normal key.
       if(JM_auto_doublepress_autodrop_enabled != 0) {
         hideFunctionName();
-        undo();
+//        undo(); Removed undo. I cannot figure why I had it in here not detected in many years - it only started to give issue now with the undo stack worked on! 2024-04-20 jm
         showFunctionName(JM_auto_doublepress_autodrop_enabled, FUNCTION_NOPTIME, "SF:M");            //JM CLRDROP
         *result = JM_auto_doublepress_autodrop_enabled;
         fnTimerStop(TO_CL_DROP);          //JM TIMER CLRDROP ON DOUBLE BACKSPACE
