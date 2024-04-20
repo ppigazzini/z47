@@ -137,7 +137,7 @@ static void execute_rpn_function(void){
     #if defined(PC_BUILD)
       if(lastErrorCode != 0) {
         #if defined(VERBOSE_SOLVER00)
-        printf("ERROR CODE in execute_rpn_function/fnEqCalc: %u\n",lastErrorCode);
+        printf("ERROR CODE in execute_rpn_function: %u\n",lastErrorCode);
         #endif // VERBOSE_SOLVER00
         lastErrorCode = 0;
       }

@@ -143,11 +143,11 @@ void fn2ndDeriv(uint16_t label) {
 }
 
 void fn1stDerivEq(uint16_t unusedButMandatoryParameter) {
-    //new method to maintain solver variable
-    #if !defined(TESTSUITE_BUILD)
-      reallyRunFunction(ITM_RCL, currentSolverVariable);
-      copySourceRegisterToDestRegister(REGISTER_X, TEMP_REGISTER_1);
-    #endif // TESTSUITE_BUILD
+  //new method to maintain solver variable
+  #if !defined(TESTSUITE_BUILD)
+    reallyRunFunction(ITM_RCL, currentSolverVariable);
+    copySourceRegisterToDestRegister(REGISTER_X, TEMP_REGISTER_1);
+  #endif // TESTSUITE_BUILD
   currentSolverStatus |= SOLVER_STATUS_USES_FORMULA;
   firstDerivative(INVALID_VARIABLE);
     #if !defined(TESTSUITE_BUILD)
@@ -160,8 +160,6 @@ void fn1stDerivEq(uint16_t unusedButMandatoryParameter) {
 
 
 void fn2ndDerivEq(uint16_t unusedButMandatoryParameter) {
-printf("fn2stDerivEq: currentSolverStatus=%u \n",currentSolverStatus);
-
     #if !defined(TESTSUITE_BUILD)
     //new method to maintain solver variable
       reallyRunFunction(ITM_RCL, currentSolverVariable);
