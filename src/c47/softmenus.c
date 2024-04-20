@@ -1929,6 +1929,7 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
 
                       //Note this section requires knowledge of where single and double byte unicode letters are in the names
                       //Future: Improve this to read the unicode characters
+                      int buttonDigits = 0;
                       switch(itemNr%10000) {
                         case VAR_ULIM    :
                         case VAR_LLIM    :
@@ -1936,19 +1937,18 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
                             itemName[3] = 0;
                           }
                           break;
-                        case VAR_IPonA   :
-                        case VAR_NPPER   :
+                        case VAR_IPonA   : 
+                        case VAR_NPPER    : buttonDigits = 5; break;
                         case VAR_PPERonA :
-                        case VAR_CPERonA :
+                        case VAR_CPERonA : buttonDigits = 4; break;
                         case VAR_PV      : 
-                        case VAR_FV      : 
-                        case VAR_PMT     : 
-                          if(stringByteLength(tmpS) > (itemNr%10000 == VAR_NPPER || itemNr%10000 == VAR_PMT ? 5 : 6)) {
-                            itemName[1] = 0;
-                          }
-                          break;
+                        case VAR_FV      : buttonDigits = 6; break;
+                        case VAR_PMT     : buttonDigits = 5; break;
                         default:;
                       }
+                      if(buttonDigits != 0 && (stringByteLength(tmpS) > buttonDigits )) {
+                          itemName[1] = 0;
+                        }
 
                       radixProcess(tmpSS,tmpS);
 

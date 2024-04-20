@@ -2144,11 +2144,13 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
 
   static void __displaySolver(calcRegister_t regist, char *prefix, int16_t *prefixWidth, int16_t no) {
       char noo[5];
-      strcpy(noo,"  =");
+      uint16_t variableNo = currentSolverVariable - FIRST_RESERVED_VARIABLE;
+      strcpy(noo," =");
       if(no != -1) noo[0]=48+no;
       if(currentSolverVariable >= FIRST_RESERVED_VARIABLE) {
-        memcpy(prefix, allReservedVariables[currentSolverVariable - FIRST_RESERVED_VARIABLE].reservedVariableName + 1, allReservedVariables[currentSolverVariable - FIRST_RESERVED_VARIABLE].reservedVariableName[0]);
-        strcpy(prefix + allReservedVariables[currentSolverVariable - FIRST_RESERVED_VARIABLE].reservedVariableName[0], noo);
+        memcpy(prefix, allReservedVariables[variableNo].reservedVariableName + 1, allReservedVariables[variableNo].reservedVariableName[0]);
+        strcpy(prefix + allReservedVariables[variableNo].reservedVariableName[0], noo);
+        strcat(prefix + allReservedVariables[variableNo].reservedVariableName[0],&varDescr[variableNo].Desc[0]);
       }
       else {
         memcpy(prefix, allNamedVariables[currentSolverVariable - FIRST_NAMED_VARIABLE].variableName + 1, allNamedVariables[currentSolverVariable - FIRST_NAMED_VARIABLE].variableName[0]);

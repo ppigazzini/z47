@@ -657,10 +657,6 @@
 `U+24FE`,51,51,`Double Circled Digit TEN`,`HP MINUS`,`-`,`-`,`U+002d`
 `U+24FF`,51,51,`Negative Circled Digit Zero`,`HP PLUS`,`+`,`+`,`U+002b`
 `U+29F0`,355,369,`yx`,`yx`,`⧰`,`yx`,`U+0059`
-`U+29F1`,355,369,`pera`,`pera`,`⧱`,`pera`,`U+0050`
-`U+29F2`,355,369,`PER`,`PER`,`⧲`,`PER`,`U+0050`
-`U+29F5`,355,369,`PPa`,`PPa`,`⧵`,`PPa` ,`U+0050`
-`U+29F6`,355,369,`pcPa`,`pcPa`,`⧶`,`pcPa`,`U+0050`
 `U+2dea`,424,426,`Sub Pi`,`Sub pi`,`π`,`π`,`U+03a0`
 `U+2deb`,424,426,`Sup Pi`,`Sup pi`,`π`,`π`,`U+03a0`
 `U+2dec`,424,426,`pi radians`,`pi r`,`π`,`π`,`U+03a0`

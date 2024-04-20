@@ -170,13 +170,13 @@ void tvmEquation(void) {
   real_t i1nPer, val, tmp, r;
   static real_t i;
 
-  real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_FV),     &fv);
-  real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_IPONA),  &iA);
+  real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_FV),      &fv);
+  real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_IPONA),   &iA);
   real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_NPPER),   &nPer);
   real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_PPERONA), &pperA);
   real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_CPERONA), &cperA);
-  real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_PMT),    &pmt);
-  real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_PV),     &pv);
+  real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_PMT),     &pmt);
+  real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_PV),      &pv);
   /*
     The plan is to find an interest rate iM which, 
     when compounded pperA times in a year, gives iAER.
