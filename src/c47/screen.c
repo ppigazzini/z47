@@ -3515,6 +3515,13 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
             }
           }
 
+          else if(temporaryInformation == TI_FUNCTION) {
+            if(regist == REGISTER_X) {
+              sprintf(prefix, "f =");
+              prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
+            }
+          }
+
           else if(temporaryInformation == TI_1ST_DERIVATIVE) {
             if(regist == REGISTER_X) {
               sprintf(prefix, "f' =");
