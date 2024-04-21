@@ -1315,6 +1315,25 @@ void strPrepend(char*dest, char*prefix) {
 }
 
 
+//static void printTempDisplayString(char *displayString, char *displayString2) {
+//printf("Real:");
+//int gg = 0;
+//while(gg<10){
+//  if((uint8_t)(displayString[gg] == 0)) break;
+//  printf("§%s§%c %u\n",displayString, (uint8_t)(displayString[gg]), (uint8_t)(displayString[gg]));  
+//  gg++;
+//}
+//printf("\nImag:");
+// gg = 0;
+//while(gg<10){
+//  if((uint8_t)(displayString2[gg] == 0)) break;
+//  printf("§%s§%c %u\n",displayString2, (uint8_t)(displayString2[gg]), (uint8_t)(displayString2[gg]));  
+//  gg++;
+//}
+//printf("\n");
+//}
+
+
 void complex34ToDisplayString2(const complex34_t *complex34, char *displayString, int16_t displayHasNDigits, bool_t limitExponent, bool_t frontSpace, const uint16_t tagAngle, const bool_t tagPolar) {
   int16_t i = 100;
   real34_t real34, imag34, absimag34;
@@ -1333,7 +1352,6 @@ void complex34ToDisplayString2(const complex34_t *complex34, char *displayString
     real34Copy(VARIABLE_IMAG34_DATA(complex34), &imag34);
   }
 
-//printf("###>> displayHasNDigits=%u\n",displayHasNDigits);
   real34ToDisplayString2(&real34, displayString, displayHasNDigits, limitExponent, false, frontSpace);
 
   if(updateDisplayValueX) {                //This is used by ROUND only and it does not seem to work.
@@ -1345,10 +1363,10 @@ void complex34ToDisplayString2(const complex34_t *complex34, char *displayString
     }
   }
 
-//printf("###>>> displayHasNDigits=%u\n",displayHasNDigits);
   real34ToDisplayString2(&imag34, displayString + i, displayHasNDigits, limitExponent, false, false);
 
 
+  //printTempDisplayString(displayString, displayString+i);
   if(strncmp(displayString + i, STD_ALMOST_EQUAL, 2) == 0) {          //if almost equal char in front of IM part, transfer it to the Left (Real) side
     displayString[i] = 1;    //0x01 is the new 'no char' character
     displayString[i+1] = 1;  //0x01 is the new 'no char' character
@@ -1356,21 +1374,16 @@ void complex34ToDisplayString2(const complex34_t *complex34, char *displayString
       strPrepend(displayString,STD_ALMOST_EQUAL);
     }
   }
-
-  //int gg = 0;
-  //while(gg<10){
-  //  printf("%u ",(uint8_t)(displayString[gg++]));
-  //}
-  //printf("\n");
-  // gg = i;
-  //while(gg<10+i){
-  //  printf("%u ",(uint8_t)(displayString[gg++]));
-  //}
-  //printf("\n");
+  //printTempDisplayString(displayString, displayString+i);
 
   if(tagPolar) { // polar mode
     strcat(displayString, STD_SPACE_4_PER_EM STD_MEASURED_ANGLE STD_SPACE_4_PER_EM);
-    angle34ToDisplayString2(&imag34, tagAngle == amNone ? currentAngularMode : tagAngle, displayString + stringByteLength(displayString), displayHasNDigits, limitExponent, false);
+    uint16_t kk = stringByteLength(displayString);
+    angle34ToDisplayString2(&imag34, tagAngle == amNone ? currentAngularMode : tagAngle, displayString + kk, displayHasNDigits, limitExponent, false);
+    if(strncmp(displayString + kk, STD_ALMOST_EQUAL, 2) == 0) {          //if almost equal char in front of IM part, transfer it to the Left (Real) side
+      displayString[kk] = 1;    //0x01 is the new 'no char' character
+      displayString[kk+1] = 1;  //0x01 is the new 'no char' character
+    }
   }
   else { // rectangular mode
     if(strncmp(displayString + stringByteLength(displayString) - 2, STD_SPACE_HAIR, 2) != 0) {
@@ -1380,25 +1393,28 @@ void complex34ToDisplayString2(const complex34_t *complex34, char *displayString
     if(real34IsZero(&real34)) {       //JM
       displayString[0]=0;           // force a zero real not to display the real part
       int ii = i;
-      while(ii < stringByteLength(displayString + i)) {
-        if(!(displayString[ii-1] & 0x80) && displayString[ii]=='-') {
-          displayString[ii] = 1; //blank no space char
-          strcat(displayString, "-");   // re-add the - which could be trailing the real value. Do ot add the +, it is not needed
-          break;
-        }
-      }
-    }
-    else {                            // JM normal full display of the full imag part, + and - shown
-      int ii = i+1;
-      while(ii <= i+stringByteLength(displayString + i)) {
-        if(!(displayString[ii-1] & 0x80) && displayString[ii]=='-') {    //check if the complex part already has a '-'
+      while(ii < i+stringByteLength(displayString + i)) {
+        //printf("AA0: %i/%i real zero: §%s§%s§ %c § %i §\n", ii, i+stringByteLength(displayString + i)-1, displayString, displayString + i, displayString[ii], displayString[ii]);
+        if((!(displayString[ii-1] & 0x80) || (ii!=i)) && displayString[ii]=='-') {
           displayString[ii] = 1; //blank no space char
           strcat(displayString, "-");   // re-add the - which could be trailing the real value. Do ot add the +, it is not needed
           break;
         }
         ii++;
       }
-      if(ii == i+1+stringByteLength(displayString + i)) {   //previous loop run to completion without '-' means there is no '-', then add a '+'
+    }
+    else {                            // JM normal full display of the full imag part, + and - shown
+      int ii = i;
+      while(ii < i+stringByteLength(displayString + i)) {
+        //printf("AA1: %i/%i not real zero: §%s§%s§ %c § %i §\n", ii, i+stringByteLength(displayString + i)-1, displayString, displayString + i, displayString[ii], displayString[ii]);
+        if((!(displayString[ii-1] & 0x80) || (ii!=i)) && displayString[ii]=='-') {    //check if the complex part already has a '-'
+          displayString[ii] = 1; //blank no space char
+          strcat(displayString, "-");   // re-add the - which could be trailing the real value. Do not add the +, it is not needed
+          break;
+        }
+        ii++;
+      }
+      if(ii == i+stringByteLength(displayString + i)) {   //previous loop run to completion without '-' means there is no '-', then add a '+'
         strcat(displayString, "+");
       }
     }
