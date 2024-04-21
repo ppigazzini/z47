@@ -2143,9 +2143,9 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
   }
 
   static void __displaySolver(calcRegister_t regist, char *prefix, int16_t *prefixWidth, int16_t no) {
-      char noo[10];
+      char noo[12];
       switch(no) {
-        case  2: strcpy(noo,STD_SUB_n STD_SUB_MINUS STD_SUB_1 " ="); break;
+        case  2: strcpy(noo,STD_SUB_p STD_SUB_r STD_SUB_e STD_SUB_v " ="); break;
         default: strcpy(noo," =" ); break;
       }
       if(currentSolverVariable >= FIRST_RESERVED_VARIABLE) {
