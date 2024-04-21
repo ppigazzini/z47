@@ -2143,9 +2143,11 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
   }
 
   static void __displaySolver(calcRegister_t regist, char *prefix, int16_t *prefixWidth, int16_t no) {
-      char noo[5];
-      strcpy(noo,"  =");
-      if(no != -1) noo[0]=48+no;
+      char noo[10];
+      switch(no) {
+        case  2: strcpy(noo,STD_SUB_n STD_SUB_MINUS STD_SUB_1 " ="); break;
+        default: strcpy(noo," =" ); break;
+      }
       if(currentSolverVariable >= FIRST_RESERVED_VARIABLE) {
         memcpy(prefix, allReservedVariables[currentSolverVariable - FIRST_RESERVED_VARIABLE].reservedVariableName + 1, allReservedVariables[currentSolverVariable - FIRST_RESERVED_VARIABLE].reservedVariableName[0]);
         strcpy(prefix + allReservedVariables[currentSolverVariable - FIRST_RESERVED_VARIABLE].reservedVariableName[0], noo);
