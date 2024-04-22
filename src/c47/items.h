@@ -2442,7 +2442,10 @@
 #define VAR_CPERonA                 2379
 #define ITM_RCL_CPERonA             2380
 
-#define LAST_ITEM                   2381
+#define MNU_CASHFL                  2381
+#define MNU_AMORT                   2382
+
+#define LAST_ITEM                   2383
 
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL
