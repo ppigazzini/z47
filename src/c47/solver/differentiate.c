@@ -433,8 +433,9 @@ void firstDerivative(calcRegister_t label) {
   if (!getRegisterAsReal(REGISTER_X, &x))
     return;
 
+  saveForUndo();
   _1stDerivative(label, &x, &x, &ctxtReal39);
-  fillStackWithReal0();
+  undo();
   convertRealToResultRegister(&x, REGISTER_X, amNone);
 }
 
@@ -444,7 +445,8 @@ void secondDerivative(calcRegister_t label) {
   if (!getRegisterAsReal(REGISTER_X, &x))
     return;
 
+  saveForUndo();
   _2ndDerivative(label, &x, &x, &ctxtReal39);
-  fillStackWithReal0();
+  undo();
   convertRealToResultRegister(&x, REGISTER_X, amNone);
 }

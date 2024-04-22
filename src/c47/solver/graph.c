@@ -127,7 +127,8 @@ static void execute_rpn_function(void){
       printRegisterToConsole(graphVariabl1, " = ","\n");
     #endif //PC_BUILD
 
-    fnEqCalc(0);
+    parseEquation(currentFormula, EQUATION_PARSER_XEQ, tmpString, tmpString + AIM_BUFFER_LENGTH);
+    adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
 
     #if defined(PC_BUILD) //PC_BUILD
       printf("Graph variable y ");
@@ -1235,21 +1236,21 @@ void graph_stat(uint16_t unusedButMandatoryParameter) {
 
     bool_t   FLAG_FRACTN = getSystemFlag(FLAG_FRACT);
     clearSystemFlag(FLAG_FRACT);
-    convertDoubleToReal34RegisterPush(0.0, REGISTER_X);
+
+    fnUndo(0);
 
     if(((iterationCounter > NUMBERITERATIONS) && !checkzero) || checkNaN) {
       temporaryInformation = TI_SOLVER_FAILED;
       displayCalcErrorMessage(ERROR_NO_ROOT_FOUND, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-      convertDoubleToReal34RegisterPush(0.0, REGISTER_X);
-      //fnStrtoX(" Root not found. |d|=");
+      convertDoubleToReal34RegisterPush(5.0, REGISTER_X);
     }
     else {
       temporaryInformation = TI_SOLVER_VARIABLE_RESULT;
       lastErrorCode = ERROR_NONE;
-      fnRCL(SREG_Y2);
+      convertDoubleToReal34RegisterPush(0.0, REGISTER_X);
     }
 
-    fnUndo(0);
+    fnRCL(SREG_Y2);
     fnRCL(SREG_X1);
     fnRCL(SREG_X2);
 
