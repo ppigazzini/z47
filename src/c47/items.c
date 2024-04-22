@@ -153,6 +153,7 @@ void fnNop(uint16_t unusedButMandatoryParameter) {
     if(func != ITM_DRG) { //JM Reset DRG cycling flag for any command except DRG
       DRG_Cycling = 0;  //JM
     }
+
     if((indexOfItems[func].status & US_STATUS) == US_ENABLED || (indexOfItems[func].status & US_STATUS) == US_ENABL_XEQ) {
       if((programRunStop != PGM_RUNNING || getSystemFlag(FLAG_IGN1ER))  && calcMode != CM_NO_UNDO && !getSystemFlag(FLAG_SOLVING) && !getSystemFlag(FLAG_INTING) && !(currentSolverStatus & SOLVER_STATUS_USES_FORMULA)) {
         #if defined(DEBUGUNDO)
@@ -3027,7 +3028,7 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 1764 */  { fnEllipticEphi,               NOPARAM,                     "E(" STD_phi ",m)",                            "E(" STD_phi ",m)",                            (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /* 1765 */  { fnJacobiZeta,                 NOPARAM,                     STD_ZETA "(" STD_phi ",m)",                    STD_ZETA "(" STD_phi ",m)",                    (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /* 1766 */  { fnGetHide,                    NOPARAM,                     "HIDE?",                                       "HIDE?",                                       (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
-/* 1767 */  { fnEqCalc,                     NOPARAM,                     "Calc f",                                      "Calc f",                                      (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_DISABLED     },
+/* 1767 */  { fnEqCalc,                     NOPARAM,                     "Calc f",                                      "Calc f",                                      (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_DISABLED     },
 /* 1768 */  { fnSquareRoot,                 NOPARAM,                     "SQRT",                                        "SQRT",                                        (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_ENABLED  | PTP_NONE         },
 /* 1769 */  { fnRecall,                     RESERVED_VARIABLE_FV,        RCL_ "FV",                                     RCL_ "FV",                                     (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_DISABLED     },
 /* 1770 */  { fnRecall,                     RESERVED_VARIABLE_IPONA,     RCL_ "i",                                      RCL_ "i",                                      (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_DISABLED     },

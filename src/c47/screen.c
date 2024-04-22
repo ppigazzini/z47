@@ -2143,10 +2143,12 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
   }
 
   static void __displaySolver(calcRegister_t regist, char *prefix, int16_t *prefixWidth, int16_t no) {
-      char noo[5];
+      char noo[12];
       uint16_t variableNo = currentSolverVariable - FIRST_RESERVED_VARIABLE;
-      strcpy(noo," =");
-      if(no != -1) noo[0]=48+no;
+      switch(no) {
+        case  2: strcpy(noo,STD_SUB_p STD_SUB_r STD_SUB_e STD_SUB_v " ="); break;
+        default: strcpy(noo," =" ); break;
+      }
       if(currentSolverVariable >= FIRST_RESERVED_VARIABLE) {
         memcpy(prefix, allReservedVariables[variableNo].reservedVariableName + 1, allReservedVariables[variableNo].reservedVariableName[0]);
         strcpy(prefix + allReservedVariables[variableNo].reservedVariableName[0], noo);
@@ -3513,6 +3515,13 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
             } else
             if(regist == REGISTER_Y) {
               strcpy(prefix, "Accuracy " STD_ALMOST_EQUAL);
+              prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
+            }
+          }
+
+          else if(temporaryInformation == TI_FUNCTION) {
+            if(regist == REGISTER_X) {
+              sprintf(prefix, "f =");
               prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
             }
           }

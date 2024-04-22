@@ -72,7 +72,7 @@
     #define SAVE_SPACE_DM42_20_TIMER
   //  #define SAVE_SPACE_DM42_2  //005672 bytes: XEQM
   //  #define SAVE_SPACE_DM42_13GRF_JM //           JM graphics
-  //  #define SAVE_SPACE_DM42_12 //047246 bytes: Standard extra 43S math: SLVQ, PRIME, ELLIPTIC, ZETA, BETA, ORTHO_POLY
+  //  #define SAVE_SPACE_DM42_12 //047246 bytes: Standard extra 43S math: SLVQ, PRIME, BESSEL, ELLIPTIC, ZETA, BETA, ORTHO_POLY
   //  #define SAVE_SPACE_DM42_15       //           without all distributions, i.e. binomial, cauchy, chi
   //  #define SAVE_SPACE_DM42_16       //           without Norml
     #define SAVE_SPACE_DM42_12BESSEL //Standard extra BESSEL
@@ -688,7 +688,6 @@ typedef enum {
 #define INC_FLAG                                   0
 #define DEC_FLAG                                   1
 
-
 // List of constants
 #define FIRST_CONSTANT                        CST_01
 #define LAST_CONSTANT                         CST_82
@@ -957,7 +956,7 @@ enum REG_NUMBERS_IN_KS_CODE { // Key Stroke register codes
 #define NUMBER_OF_TEMP_REGISTERS        (LAST_TEMP_REGISTER            - FIRST_TEMP_REGISTER            + 1) // 2
 #define NUMBER_OF_LOCAL_REGISTERS       (LAST_LOCAL_REGISTER           - FIRST_LOCAL_REGISTER           + 1) // 99 from .00 to .98
 
-#define NUMBER_OF_RESERVED_VARIABLES    (LAST_RESERVED_VARIABLE        - FIRST_RESERVED_VARIABLE        + 1) // 43
+#define NUMBER_OF_RESERVED_VARIABLES    (LAST_RESERVED_VARIABLE        - FIRST_RESERVED_VARIABLE        + 1) // 41
 #define NUMBER_OF_LETTERED_VARIABLES    (FIRST_NAMED_RESERVED_VARIABLE - FIRST_RESERVED_VARIABLE)            // 26
 
 /* Convertion from a key stroke program register code to a C register number
@@ -1013,7 +1012,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define SBARUPD_Date                            (getSystemFlag(FLAG_SBdate ))
 #define SBARUPD_Time                            (getSystemFlag(FLAG_SBtime ))
 #define SBARUPD_ComplexResult                   (getSystemFlag(FLAG_SBcr   ))
-#define SBARUPD_ComplexMode                     (getSystemFlag(FLAG_SBcpx   ))
+#define SBARUPD_ComplexMode                     (getSystemFlag(FLAG_SBcpx  ))
 #define SBARUPD_AngularModeBasic                (getSystemFlag(FLAG_SBang  ))
 #define SBARUPD_AngularMode                     ( 1                         )
 #define SBARUPD_FractionModeAndBaseMode         (getSystemFlag(FLAG_SBfrac ))
@@ -1330,6 +1329,8 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define TI_LASTSTATEFILE                         106
 #define TI_NO_SOLVER_VARIABLE                    107
 #define TI_NO_INTEGRATE_VARIABLE                 108
+#define TI_FUNCTION                              109
+
 
 // Register browser mode
 #define RBR_GLOBAL                                 0 // Global registers are browsed
