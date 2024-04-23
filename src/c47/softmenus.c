@@ -138,23 +138,22 @@ TO_QSPI const int16_t menu_FIN[]         = { ITM_SIGMAPLUS ,                ITM_
 /*                                          <---------------------------------------------------------------------- 6 f shifted functions ------------------------------------------------------------------------->  */
 /*                                          <---------------------------------------------------------------------- 6 g shifted functions ------------------------------------------------------------------------->  */
 
-//Pauli
-TO_QSPI const int16_t menu_TVM[]         = { VAR_NPPER,                     VAR_IPonA,                  VAR_PV,                   VAR_PMT,               VAR_FV,                      VAR_PPERonA,                   
-                                             ITM_RCL_NPPER,                 ITM_RCL_IPonA,              ITM_RCL_PV,               ITM_RCL_PMT,           ITM_RCL_FV,                  VAR_CPERonA,                   
-                                             ITM_BEGINP,                    ITM_ENDP,                   ITM_CLTVM,               -MNU_AMORT,            -MNU_CASHFL,                 -MNU_FIN               ,//       };
+////Pauli
+//TO_QSPI const int16_t menu_TVM[]         = { VAR_NPPER,                     VAR_IPonA,                  VAR_PV,                   VAR_PMT,               VAR_FV,                      VAR_PPERonA,                   
+//                                             ITM_RCL_NPPER,                 ITM_RCL_IPonA,              ITM_RCL_PV,               ITM_RCL_PMT,           ITM_RCL_FV,                  VAR_CPERonA,                   
+//                                             ITM_BEGINP,                    ITM_ENDP,                   ITM_CLTVM,               -MNU_AMORT,            -MNU_CASHFL,                 -MNU_FIN               ,//       };
 
 //D option
 //TO_QSPI const int16_t menu_TVM[]         = { 
-                                             VAR_PPERonA,                   VAR_NPPER,                  VAR_IPonA,                VAR_PV,                VAR_PMT,                     VAR_FV,    
-                                             VAR_CPERonA,                   ITM_RCL_NPPER,              ITM_RCL_IPonA,            ITM_RCL_PV,            ITM_RCL_PMT,                 ITM_RCL_FV,
-                                             ITM_BEGINP,                    ITM_ENDP,                   ITM_CLTVM,               -MNU_AMORT,            -MNU_CASHFL,                 -MNU_FIN               ,//       };
+//                                             VAR_PPERonA,                   VAR_NPPER,                  VAR_IPonA,                VAR_PV,                VAR_PMT,                     VAR_FV,    
+//                                             VAR_CPERonA,                   ITM_RCL_NPPER,              ITM_RCL_IPonA,            ITM_RCL_PV,            ITM_RCL_PMT,                 ITM_RCL_FV,
+//                                             ITM_BEGINP,                    ITM_ENDP,                   ITM_CLTVM,               -MNU_AMORT,            -MNU_CASHFL,                 -MNU_FIN               ,//       };
 
-//jaco proposal
-//TO_QSPI const int16_t menu_TVM[]         = { 
-                                             VAR_NPPER,                     VAR_IPonA,                  VAR_PV,                   VAR_PMT,               VAR_FV,                      -MNU_AMORT,              
-                                             ITM_RCL_NPPER,                 ITM_RCL_IPonA,              ITM_RCL_PV,               ITM_RCL_PMT,           ITM_RCL_FV,                  -MNU_CASHFL,              
+//jaco settings on top proposal
+TO_QSPI const int16_t menu_TVM[]         = { 
+                                             VAR_NPPER,                     VAR_IPonA,                  VAR_PV,                   VAR_PMT,               VAR_FV,                      MNU_AMORT,              
+                                             ITM_RCL_NPPER,                 ITM_RCL_IPonA,              ITM_RCL_PV,               ITM_RCL_PMT,           ITM_RCL_FV,                  MNU_CASHFL,              
                                              ITM_BEGINP,                    ITM_ENDP,                   VAR_PPERonA,              VAR_CPERonA,           ITM_CLTVM,                   -MNU_FIN                      };
-
 
 // remove RCL CPERonA and PPERonA            ITM_BEGINP,                    ITM_ENDP,                   ITM_RCL_PPERonA,          ITM_RCL_CPERonA,       ITM_NULL,                   -MNU_FIN                      };
 
@@ -839,10 +838,6 @@ TO_QSPI const int16_t menu_GAP_R[]       = { ITM_GAPPER_R,                  ITM_
 TO_QSPI const int16_t menu_SHOW[]        = {  };
 
 
-TO_QSPI const int16_t menu_CASHFL[]        = {  };
-TO_QSPI const int16_t menu_AMORT[]        = {  };
-
-
 
 #include "softmenuCatalogs.h"
 
@@ -996,11 +991,7 @@ TO_QSPI const softmenu_t softmenu[] = {
 /* 145 */  {.menuItem = -MNU_SHOW,        .numItems = sizeof(menu_SHOW          )/sizeof(int16_t), .softkeyItem = menu_SHOW           },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
 /* 146 */  {.menuItem = -MNU_Solver_TOOL, .numItems = sizeof(menu_Solver_TOOL   )/sizeof(int16_t), .softkeyItem = menu_Solver_TOOL    },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
 /* 147 */  {.menuItem = -MNU_Sf_TOOL,     .numItems = sizeof(menu_Sf_TOOL       )/sizeof(int16_t), .softkeyItem = menu_Sf_TOOL        },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
-
-/* 147 */  {.menuItem = -MNU_CASHFL,      .numItems = sizeof(menu_CASHFL        )/sizeof(int16_t), .softkeyItem = menu_CASHFL         },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
-/* 147 */  {.menuItem = -MNU_AMORT,       .numItems = sizeof(menu_AMORT         )/sizeof(int16_t), .softkeyItem = menu_AMORT          },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
-
-/* 146 */  {.menuItem =  0,               .numItems = 0,                                           .softkeyItem = NULL                }
+/* 148 */  {.menuItem =  0,               .numItems = 0,                                           .softkeyItem = NULL                }
 };
 
 

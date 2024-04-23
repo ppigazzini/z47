@@ -1330,6 +1330,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define TI_NO_SOLVER_VARIABLE                    107
 #define TI_NO_INTEGRATE_VARIABLE                 108
 #define TI_FUNCTION                              109
+#define TI_STORCL                                110
 
 
 // Register browser mode
