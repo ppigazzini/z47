@@ -2842,7 +2842,7 @@ bool_t BASE_OVERRIDEONCE = false;
         }
       }
       else {
-      parseEquation(currentFormula, EQUATION_PARSER_MVAR, aimBuffer, tmpString);
+        parseEquation(currentFormula, EQUATION_PARSER_MVAR, aimBuffer, tmpString);
         varList = (uint8_t *)tmpString;
       }
 
