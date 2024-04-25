@@ -1249,6 +1249,8 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define TI_LASTSTATEFILE                         106
 #define TI_FUNCTION                              107
 
+#define TI_STORCL                                110 //continue after 110 as up to 110 is used in the alpha branch
+
 // Register browser mode
 #define RBR_GLOBAL                                 0 // Global registers are browsed
 #define RBR_LOCAL                                  1 // Local registers are browsed

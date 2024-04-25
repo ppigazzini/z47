@@ -1724,7 +1724,7 @@
 #define ITM_STDDEVPOP               1674
 #define ITM_RANI                    1675
 #define ITM_PRINTERX                1676
-#define ITM_1677                    1677
+#define ITM_LASTT                   1677
 #define ITM_GETRANGE                1678
 #define ITM_M1X                     1679
 #define ITM_XMOD                    1680
@@ -2435,6 +2435,8 @@
 
 char *lastFuncCatalogName(void);
 char *lastFuncSoftmenuName(void);
+int16_t lastSTORCL(void);
+
 
 void reallyRunFunction(int16_t func, uint16_t param);
 

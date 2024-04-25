@@ -417,6 +417,10 @@
   extern bool_t                 temporaryFlagPolar;
   extern int                    vbatVIntegrated;
 
+  extern uint32_t               timeLastOp;
+  extern uint32_t               timeLastOp0;
+  extern uint32_t               timeLastOp1;
+
   #define stateFileNameVarLength 20
   extern  char                  lastStateFileOpened[stateFileNameVarLength+12];
   extern  char                  fileNameSelected[stateFileNameVarLength];
