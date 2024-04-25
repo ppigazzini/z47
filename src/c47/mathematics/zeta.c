@@ -73,16 +73,19 @@ static void zeta_calc_complex(real_t *reg4, real_t *reg5, real_t *reg6, real_t *
   realCopy(const_0, &reg8); realCopy(const_0, &reg9);
 
   do { // zeta_loop
-    int loop = realToInt32C47(&reg0);
-    if (printHalfSecUpdate_Integer(timed, "Iter > 0: ",loop++)) {;//, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
-      //printRealToConsole(&reg0,"Zeta loop: ","\n");
-    }
-    if(keyWaiting()) {
-        showString("key Waiting ...", &standardFont, 20, 40, vmNormal, false, false);
-        printHalfSecUpdate_Integer(force+1, "Interrupted Iter:",loop);//, halfSec_clearZ, halfSec_clearT, halfSec_disp);
-        programRunStop = PGM_WAITING;
-      break;
-    }
+
+    #if !defined(TESTSUITE_BUILD)
+      int loop = realToInt32C47(&reg0);
+      if (printHalfSecUpdate_Integer(timed, "Iter > 0: ",loop++)) {;//, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
+        //printRealToConsole(&reg0,"Zeta loop: ","\n");
+      }
+      if(keyWaiting()) {
+          showString("key Waiting ...", &standardFont, 20, 40, vmNormal, false, false);
+          printHalfSecUpdate_Integer(force+1, "Interrupted Iter:",loop);//, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+          programRunStop = PGM_WAITING;
+        break;
+      }
+    #endif //TESTSUITE_BUILD
 
     realMultiply(reg6, const__1, &q, realContext); realMultiply(reg7, const__1, &p, realContext);
     PowerComplex(&reg0, const_0, &q, &p, &s, &r, realContext);
