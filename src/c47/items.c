@@ -135,6 +135,9 @@ void fnNop(uint16_t unusedButMandatoryParameter) {
     return lastTemp;
   }
 
+  int16_t lastSTORCL(void) {
+    return lastParam;
+  }
 
   void reallyRunFunction(int16_t func, uint16_t param) {
     lastFunc = func;
@@ -149,7 +152,21 @@ void fnNop(uint16_t unusedButMandatoryParameter) {
     } else
     if(func >= FIRST_CONSTANT && func <= LAST_CONSTANT) {
       temporaryInformation = TI_LAST_CONST_CATNAME;
+    } else
+    if(calcMode == CM_NORMAL) {
+      switch(func) {
+        case ITM_RCL_FV      :
+        case ITM_RCL_IPonA   :
+        case ITM_RCL_NPER    :
+        case ITM_RCL_PERonA  :
+        case ITM_RCL_PMT     :
+        case ITM_RCL_PV      :
+        case ITM_STO :
+        case ITM_RCL : temporaryInformation = TI_STORCL; break;
+        default:;
+      }
     }
+
     //else {                                                 //Removed code for TI of any last command
     //  temporaryInformation = TI_LAST_FUNC_CATNAME;
     //}
