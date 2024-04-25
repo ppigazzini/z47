@@ -35,7 +35,7 @@
 
 
 #if defined(SAVE_SPACE_DM42_15)
-  bool_t checkRegisterNoFP(calcRegister_t reg){return false;}
+  bool_t checkRegisterNoFP(const real_t *reg){return false;}
   void fnChi2P(uint16_t unusedButMandatoryParameter){}
   void fnChi2L(uint16_t unusedButMandatoryParameter){}
   void fnChi2R(uint16_t unusedButMandatoryParameter){}
