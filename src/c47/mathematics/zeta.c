@@ -48,11 +48,6 @@
 static void zeta_calc_complex(real_t *reg4, real_t *reg5, real_t *reg6, real_t *reg7, realContext_t *realContext) {
   real_t s, p, q, r, reg0, reg1, reg2, reg3, reg8, reg9;
 
-char ssss[100];
-ssss[0]=0;
-print_numberstr(ssss,true);
-
-
   realCopyAbs(reg7, &p);
   realMultiply(const_piOn2, &p, &q, realContext);
   realMultiply(&p, const_2, &p, realContext);
@@ -79,12 +74,12 @@ print_numberstr(ssss,true);
 
   do { // zeta_loop
     int loop = realToInt32C47(&reg0);
-    if (printHalfSecUpdate_Integer(timed, "Iter > 0: ",loop++, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
+    if (printHalfSecUpdate_Integer(timed, "Iter > 0: ",loop++)) {;//, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
       //printRealToConsole(&reg0,"Zeta loop: ","\n");
     }
     if(keyWaiting()) {
         showString("key Waiting ...", &standardFont, 20, 40, vmNormal, false, false);
-        printHalfSecUpdate_Integer(force+1, "Interrupted Iter:",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+        printHalfSecUpdate_Integer(force+1, "Interrupted Iter:",loop);//, halfSec_clearZ, halfSec_clearT, halfSec_disp);
         programRunStop = PGM_WAITING;
       break;
     }

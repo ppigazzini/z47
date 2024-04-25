@@ -29,7 +29,9 @@
 
 uint32_t getUptimeMs          (void);
 void     fnTicks              (uint16_t unusedButMandatoryParameter);
-void     fnTLastOp            (uint16_t unusedButMandatoryParameter);
+void     fnLastT              (uint16_t unusedButMandatoryParameter);
+void     LastOpTimerReStart   (uint16_t func);
+void     LastOpTimerLap       (uint16_t func);
 
 void     fnItemTimerApp       (uint16_t unusedButMandatoryParameter);
 void     fnAddTimerApp        (uint16_t unusedButMandatoryParameter);

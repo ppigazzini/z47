@@ -1260,6 +1260,9 @@ void resetOtherConfigurationStuff(void) {
   LongPressF = RB_F124;
   fgLN = RB_FGLNFUL;
   lastIntegerBase = 0;
+  timeLastOp = 0;
+  timeLastOp0 = 0;
+  timeLastOp1 = 0;
 }
 
 
