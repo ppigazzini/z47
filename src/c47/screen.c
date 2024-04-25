@@ -2676,10 +2676,10 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
         }
 
         if(temporaryInformation == TI_STORCL && regist == REGISTER_X) {
-          int16_t showRegisN = SHOWregis;
-          SHOWregis = lastSTORCL();
+          int16_t showRegisN = showRegis;
+          showRegis = lastSTORCL();
           viewRegName2(prefix, &prefixWidth);          
-          SHOWregis = showRegisN;
+          showRegis = showRegisN;
         }
 
 
