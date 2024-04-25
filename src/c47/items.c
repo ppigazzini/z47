@@ -3678,4 +3678,3 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 2383 */  { itemToBeCoded,                NOPARAM,                     "",                                            "Last item",                                   (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED},
 
 };
-
