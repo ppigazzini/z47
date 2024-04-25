@@ -518,12 +518,13 @@ void clearFactorAdder(FactorAdder_t *faddr) {
 }
 
 
-bool_t addFactor(longInteger_t factor, real34Matrix_t *matrix, const real34_t *lastAdded,
-                FactorAdder_t *faddr) {
+bool_t addFactor(longInteger_t factor, real34Matrix_t *matrix, const real34_t *lastAdded,FactorAdder_t *faddr) {
   //printLongIntegerToConsole(factor,"-->","\n");
   static mpz_t last_factor; // FIXME
   static bool_t last_factor_initialized = false;
-  printf("wgr:  addFactor()\n");
+  #ifdef WGR
+    printf("wgr:  addFactor()\n");
+  #endif //WGR
   if ( !last_factor_initialized ) {
     mpz_init(last_factor);
     last_factor_initialized = true;
@@ -551,8 +552,9 @@ bool_t addFactor(longInteger_t factor, real34Matrix_t *matrix, const real34_t *l
     faddr->expons[(faddr->n_expons)-1] = 1;
   }
   unsigned wkg_cols = faddr->n_expons;
-  gmp_printf("wgr:  factor==%Zd, rows==%u, cols==%u, n_expons==%u, wkg_cols==%u\n",
-                factor, (unsigned)rows, (unsigned)cols, faddr->n_expons, wkg_cols);
+  #ifdef WGR
+    gmp_printf("wgr:  factor==%Zd, rows==%u, cols==%u, n_expons==%u, wkg_cols==%u\n",factor, (unsigned)rows, (unsigned)cols, faddr->n_expons, wkg_cols);
+  #endif //WGR
 
   #if !defined(TESTSUITE_BUILD)
     if(!redimMatrixRegister(REGISTER_X, rows, wkg_cols)) {
@@ -566,27 +568,36 @@ bool_t addFactor(longInteger_t factor, real34Matrix_t *matrix, const real34_t *l
   #endif
 
   if ( cols == 0 ) {
-    printf("wgr:  zeroing last_factor\n");
+    #ifdef WGR
+      printf("wgr:  zeroing last_factor\n");
+    #endif //WGR
     mpz_set_ui(last_factor, 0);
   }
   linkToRealMatrixRegister(REGISTER_X,  matrix);
-  gmp_printf("wgr:  last_factor==%Zd\n", last_factor);
+  #ifdef WGR
+    gmp_printf("wgr:  last_factor==%Zd\n", last_factor);
+  #endif //WGR
   unsigned n = rows*(faddr->n_expons);
   unsigned c = n/2;
   if ( mpz_sgn(last_factor) != 0 && mpz_cmp(last_factor, factor) == 0 ) {
     ++faddr->expons[(faddr->n_expons)-1];
-    printf("wgr:  last_factor use existing:  created expons %u at %u\n",
-            faddr->expons[(faddr->n_expons)-1], (faddr->n_expons)-1);
+    #ifdef WGR
+      printf("wgr:  last_factor use existing:  created expons %u at %u\n",faddr->expons[(faddr->n_expons)-1], (faddr->n_expons)-1);
+    #endif
   }
   else {
     //unsigned n = rows*cols;
     bool_t inc_n_expons = mpz_sgn(last_factor) ==0 ? false : true;
     if ( !inc_n_expons ) // FIXME Cheat
         c = 0;
-    printf("wgr:  last_factor restart:  n==%u, c==%u, inc_n_expons==%d\n", n, c, inc_n_expons);
+    #ifdef WGR
+      printf("wgr:  last_factor restart:  n==%u, c==%u, inc_n_expons==%d\n", n, c, inc_n_expons);
+    #endif
     longIntegerToAllocatedString(factor, tmpString, TMP_STR_LENGTH);
     stringToReal34(tmpString, &matrix->matrixElements[c]);
-    printf("wgr:  tmpString from lastAdded:  %s\n", tmpString);
+    #ifdef WGR
+      printf("wgr:  tmpString from lastAdded:  %s\n", tmpString);
+    #endif
     real34Copy(&matrix->matrixElements[c], lastAdded);
     if ( inc_n_expons ) {
         if ( faddr->n_expons < MAX_FACTORS ) {
@@ -613,15 +624,19 @@ bool_t addFactor(longInteger_t factor, real34Matrix_t *matrix, const real34_t *l
 
 void dumpExponents(real34Matrix_t *matrix, FactorAdder_t *faddr) {
   unsigned n2 = faddr->n_expons;
-  printf("wgr:  fill expons:  *n_expons==%u, n2==%u\n", faddr->n_expons, n2);
-  uint16_t rows = REGISTER_DATA(REGISTER_X)->matrixRows;
-  uint16_t cols = REGISTER_DATA(REGISTER_X)->matrixColumns;
-  printf("wgr:  rows==%u, cols==%u\n", (unsigned)rows, (unsigned)cols);
+  #ifdef WGR
+    printf("wgr:  fill expons:  *n_expons==%u, n2==%u\n", faddr->n_expons, n2);
+    uint16_t rows = REGISTER_DATA(REGISTER_X)->matrixRows;
+    uint16_t cols = REGISTER_DATA(REGISTER_X)->matrixColumns;
+    printf("wgr:  rows==%u, cols==%u\n", (unsigned)rows, (unsigned)cols);
+  #endif
   linkToRealMatrixRegister(REGISTER_X,  matrix);
   for ( unsigned i = 0;  i < faddr->n_expons;  ++i ) {
     char expon_str[21];
     sprintf(expon_str, "%u", faddr->expons[i]);
-    printf("wgr:  adding expon at n2==%u, i==%u, val %u, sval %s, ind %u\n", n2, i, faddr->expons[i], expon_str, n2+i);
+    #ifdef WGR
+      printf("wgr:  adding expon at n2==%u, i==%u, val %u, sval %s, ind %u\n", n2, i, faddr->expons[i], expon_str, n2+i);
+    #endif //WGR
     stringToReal34(expon_str, &matrix->matrixElements[n2+i]);
   }
 }
