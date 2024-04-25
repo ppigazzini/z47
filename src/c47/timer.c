@@ -76,6 +76,36 @@ void fnTicks(uint16_t unusedButMandatoryParameter) {
   longIntegerFree(lgInt);
 }
 
+void LastOpTimerReStart (uint16_t func) {
+  timeLastOp0 = getUptimeMs() / 100;
+  //printf("Func:%s setting %u Running:%u\n",indexOfItems[func].itemCatalogName, timeLastOp0, programRunStop == PGM_RUNNING);
+}
+
+void LastOpTimerLap (uint16_t func) {
+  timeLastOp1 = getUptimeMs() / 100;
+  if(timeLastOp1 >= timeLastOp0) {
+    timeLastOp = timeLastOp1 - timeLastOp0;
+    //printf("Func:%s setting STOP %u: %u Running:%u\n",indexOfItems[func].itemCatalogName, timeLastOp1, timeLastOp, programRunStop == PGM_RUNNING);
+  } else {
+    timeLastOp =  ((int)(0xFFFFFFFF) / 100 - timeLastOp0) + timeLastOp1; //if loop passed 2^32-1 ms, recalc offset
+    //printf("setting STOP Wrapped %u: %u Running:%u\n",timeLastOp1, timeLastOp, programRunStop == PGM_RUNNING);
+  }
+  if(timeLastOp > 30*24*60*60*10) {                                      //More than one month is an unreasonable amount and probably is due to either timeLastOp0 or timeLastOp1 not set correctly
+    timeLastOp = 0;
+    //printf("setting STOP Error too long %u: %u\n",timeLastOp1, timeLastOp);
+  }
+}
+
+
+void fnLastT (uint16_t unusedButMandatoryParameter) {
+  longInteger_t lgInt;
+  liftStack();
+  longIntegerInit(lgInt);
+  uIntToLongInteger(timeLastOp, lgInt);
+  convertLongIntegerToLongIntegerRegister(lgInt, REGISTER_X);
+  longIntegerFree(lgInt);  
+}
+
 
 
 void fnRebuildTimerRefresh(void) {

@@ -227,7 +227,17 @@ void fnNop(uint16_t unusedButMandatoryParameter) {
     }
 
 
+    if((programRunStop != PGM_RUNNING || timeLastOp0 == 0)) {               //The first manual command including XEQ (re)starts the timer by setting timeLastOp0 
+      LastOpTimerReStart(func);
+    } else if(func == ITM_LASTT) {                                          //If LASTT? is called in a program it laps the timer, but does not stop it. It is never stopped, only timeLastOp1 is set, and it is restarted only with a new command
+      LastOpTimerLap(func);                                                 //stores the last time to timeLastOp
+    }
+
     indexOfItems[func].func(param);
+
+    if(programRunStop != PGM_RUNNING || func == ITM_LASTT) {                //stores the last time to timeLastOp 
+      LastOpTimerLap(func);
+    }
 
     #if defined(DMCP_BUILD)
       updateVbatIntegrated(false);              //Check the battery directly after a task so that the worst case voltage is recorded
@@ -820,6 +830,7 @@ void fnNop(uint16_t unusedButMandatoryParameter) {
   void fnXToAlpha                  (uint16_t unusedButMandatoryParameter) {}
   void fnAlphaToX                  (uint16_t unusedButMandatoryParameter) {}
   void fnTicks                     (uint16_t unusedButMandatoryParameter) {}
+  void fnLastT                     (uint16_t unusedButMandatoryParameter) {}
   void fnSetFirstGregorianDay      (uint16_t unusedButMandatoryParameter) {}
   void fnGetFirstGregorianDay      (uint16_t unusedButMandatoryParameter) {}
   void fnDate                      (uint16_t unusedButMandatoryParameter) {}
@@ -2896,7 +2907,7 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 1674 */  { fnWeightedPopulationStdDev,   NOPARAM,                     STD_sigma STD_SUB_w,                           STD_sigma STD_SUB_w,                           (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /* 1675 */  { fnRandomI,                    NOPARAM,                     "RANI#",                                       "RANI#",                                       (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /* 1676 */  { fnP_All_Regs,                 5              /*#JM#*/,     STD_PRINTER "x",                               STD_PRINTER "x",                               (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
-/* 1677 */  { itemToBeCoded,                NOPARAM,                     "1677",                                        "1677",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 1677 */  { fnLastT,                      NOPARAM,                     "LASTT?",                                      "LASTT?",                                      (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /* 1678 */  { fnGetRange,                   NOPARAM,                     "RANGE?",                                      "RANGE?",                                      (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /* 1679 */  { fnM1Pow,                      NOPARAM,                     "(-1)" STD_SUP_x,                              "(-1)" STD_SUP_x,                              (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /* 1680 */  { fnMulMod,                     NOPARAM,                     STD_CROSS "MOD",                               STD_CROSS "MOD",                               (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
