@@ -226,8 +226,16 @@ void fnNop(uint16_t unusedButMandatoryParameter) {
       #endif // PC_BUILD
     }
 
+    timeLastOp0 = getUptimeMs() / 100;
 
     indexOfItems[func].func(param);
+
+    uint32_t timeLastOp1 = getUptimeMs() / 100;
+    if(timeLastOp1 >= timeLastOp0) {
+      timeLastOp = timeLastOp1 - timeLastOp0;
+    } else {
+      timeLastOp =  (42949673 - timeLastOp0) + timeLastOp1;
+    }
 
     #if defined(DMCP_BUILD)
       updateVbatIntegrated(false);              //Check the battery directly after a task so that the worst case voltage is recorded
@@ -820,6 +828,7 @@ void fnNop(uint16_t unusedButMandatoryParameter) {
   void fnXToAlpha                  (uint16_t unusedButMandatoryParameter) {}
   void fnAlphaToX                  (uint16_t unusedButMandatoryParameter) {}
   void fnTicks                     (uint16_t unusedButMandatoryParameter) {}
+  void fnTLastOp                   (uint16_t unusedButMandatoryParameter) {}
   void fnSetFirstGregorianDay      (uint16_t unusedButMandatoryParameter) {}
   void fnGetFirstGregorianDay      (uint16_t unusedButMandatoryParameter) {}
   void fnDate                      (uint16_t unusedButMandatoryParameter) {}
@@ -2896,7 +2905,7 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 1674 */  { fnWeightedPopulationStdDev,   NOPARAM,                     STD_sigma STD_SUB_w,                           STD_sigma STD_SUB_w,                           (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /* 1675 */  { fnRandomI,                    NOPARAM,                     "RANI#",                                       "RANI#",                                       (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /* 1676 */  { fnP_All_Regs,                 5              /*#JM#*/,     STD_PRINTER "x",                               STD_PRINTER "x",                               (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
-/* 1677 */  { itemToBeCoded,                NOPARAM,                     "1677",                                        "1677",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 1677 */  { fnTLastOp,                    NOPARAM,                     "TLOP?",                                       "TLOP?"  ,                                     (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /* 1678 */  { fnGetRange,                   NOPARAM,                     "RANGE?",                                      "RANGE?",                                      (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /* 1679 */  { fnM1Pow,                      NOPARAM,                     "(-1)" STD_SUP_x,                              "(-1)" STD_SUP_x,                              (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /* 1680 */  { fnMulMod,                     NOPARAM,                     STD_CROSS "MOD",                               STD_CROSS "MOD",                               (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },

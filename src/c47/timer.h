@@ -29,7 +29,7 @@
 
 uint32_t getUptimeMs          (void);
 void     fnTicks              (uint16_t unusedButMandatoryParameter);
-
+void     fnTLastOp            (uint16_t unusedButMandatoryParameter);
 
 void     fnItemTimerApp       (uint16_t unusedButMandatoryParameter);
 void     fnAddTimerApp        (uint16_t unusedButMandatoryParameter);
