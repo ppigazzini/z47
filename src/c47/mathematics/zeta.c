@@ -33,6 +33,9 @@
 #include "realType.h"
 #include "registers.h"
 #include "registerValueConversions.h"
+#include "c43Extensions/graphText.h"
+#include "screen.h"
+#include "c43Extensions/addons.h"
 
 #include "c47.h"
 
@@ -44,6 +47,11 @@
 #if !defined(SAVE_SPACE_DM42_12)
 static void zeta_calc_complex(real_t *reg4, real_t *reg5, real_t *reg6, real_t *reg7, realContext_t *realContext) {
   real_t s, p, q, r, reg0, reg1, reg2, reg3, reg8, reg9;
+
+char ssss[100];
+ssss[0]=0;
+print_numberstr(ssss,true);
+
 
   realCopyAbs(reg7, &p);
   realMultiply(const_piOn2, &p, &q, realContext);
@@ -70,6 +78,17 @@ static void zeta_calc_complex(real_t *reg4, real_t *reg5, real_t *reg6, real_t *
   realCopy(const_0, &reg8); realCopy(const_0, &reg9);
 
   do { // zeta_loop
+    int loop = realToInt32C47(&reg0);
+    if (printHalfSecUpdate_Integer(timed, "Iter > 0: ",loop++, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
+      //printRealToConsole(&reg0,"Zeta loop: ","\n");
+    }
+    if(keyWaiting()) {
+        showString("key Waiting ...", &standardFont, 20, 40, vmNormal, false, false);
+        printHalfSecUpdate_Integer(force+1, "Interrupted Iter:",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+        programRunStop = PGM_WAITING;
+      break;
+    }
+
     realMultiply(reg6, const__1, &q, realContext); realMultiply(reg7, const__1, &p, realContext);
     PowerComplex(&reg0, const_0, &q, &p, &s, &r, realContext);
     realChangeSign(reg5);

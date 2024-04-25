@@ -63,6 +63,16 @@ void fnTicks(uint16_t unusedButMandatoryParameter) {
   longIntegerFree(lgInt);
 }
 
+void fnTLastOp (uint16_t unusedButMandatoryParameter) {
+  longInteger_t lgInt;
+
+  liftStack();
+  longIntegerInit(lgInt);
+  uIntToLongInteger(timeLastOp, lgInt);
+  convertLongIntegerToLongIntegerRegister(lgInt, REGISTER_X);
+  longIntegerFree(lgInt);  
+}
+
 
 
 void fnRebuildTimerRefresh(void) {

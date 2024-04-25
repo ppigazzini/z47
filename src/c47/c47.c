@@ -330,6 +330,9 @@ calcRegister_t         regStatsXY;
 bool_t                 temporaryFlagRect;
 bool_t                 temporaryFlagPolar;
 int                    vbatVIntegrated = 3000;
+uint32_t               timeLastOp = 0;
+uint32_t               timeLastOp0 = 0;
+uint32_t               timeLastOp1 = 0;
 char                   lastStateFileOpened[stateFileNameVarLength+12];
 char                   fileNameSelected[stateFileNameVarLength];
 
