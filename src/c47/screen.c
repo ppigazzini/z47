@@ -2675,6 +2675,14 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
           inputRegName(prefix, &prefixWidth);
         }
 
+        if(temporaryInformation == TI_STORCL && regist == REGISTER_X) {
+          int16_t showRegisN = SHOWregis;
+          SHOWregis = lastSTORCL();
+          viewRegName2(prefix, &prefixWidth);          
+          SHOWregis = showRegisN;
+        }
+
+
         // STATISTICAL DISTR
         if(regist == REGISTER_X && lastErrorCode == 0 && calcMode != CM_PEM && PROBMENU) {
           const char *r_i = NULL, *r_j = NULL, *r_k = NULL;

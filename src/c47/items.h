@@ -2448,6 +2448,8 @@
 
 char *lastFuncCatalogName(void);
 char *lastFuncSoftmenuName(void);
+int16_t lastSTORCL(void);
+
 
 void reallyRunFunction(int16_t func, uint16_t param);
 
