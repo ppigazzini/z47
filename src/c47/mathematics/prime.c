@@ -498,12 +498,39 @@ void nextPrime(longInteger_t currentNumber, longInteger_t nextPrime) {
 
 
 
+#define MAX_FACTORS 50
 
-bool_t addFactor(longInteger_t factor, real34Matrix_t *matrix, const real34_t *lastAdded) {
+typedef struct FactorAdder
+{
+  unsigned n_expons;
+  unsigned expons[MAX_FACTORS];
+  mpz_t last_factor;
+} FactorAdder_t;
+
+
+void initFactorAdder(FactorAdder_t *faddr) {
+  faddr->n_expons = 0;
+  mpz_init(faddr->last_factor);
+};
+
+void clearFactorAdder(FactorAdder_t *faddr) {
+  mpz_clear(faddr->last_factor);
+}
+
+
+bool_t addFactor(longInteger_t factor, real34Matrix_t *matrix, const real34_t *lastAdded,
+                FactorAdder_t *faddr) {
   //printLongIntegerToConsole(factor,"-->","\n");
+  static mpz_t last_factor; // FIXME
+  static bool_t last_factor_initialized = false;
+  printf("wgr:  addFactor()\n");
+  if ( !last_factor_initialized ) {
+    mpz_init(last_factor);
+    last_factor_initialized = true;
+  }
   if(getRegisterDataType(REGISTER_X) != dtReal34Matrix) {
     //Initialize Memory for Matrix
-    if(initMatrixRegister(REGISTER_X, 1, 0, false)) {
+    if(initMatrixRegister(REGISTER_X, 2, 0, false)) {
       setSystemFlag(FLAG_ASLIFT);
     }
     else {
@@ -519,9 +546,16 @@ bool_t addFactor(longInteger_t factor, real34Matrix_t *matrix, const real34_t *l
 
   uint16_t rows = REGISTER_DATA(REGISTER_X)->matrixRows;
   uint16_t cols = REGISTER_DATA(REGISTER_X)->matrixColumns;
+  if ( faddr->n_expons == 0 ) {
+    faddr->n_expons = 1;  // has to be 1 now, as we have this factor
+    faddr->expons[(faddr->n_expons)-1] = 1;
+  }
+  unsigned wkg_cols = faddr->n_expons;
+  gmp_printf("wgr:  factor==%Zd, rows==%u, cols==%u, n_expons==%u, wkg_cols==%u\n",
+                factor, (unsigned)rows, (unsigned)cols, faddr->n_expons, wkg_cols);
 
   #if !defined(TESTSUITE_BUILD)
-    if(!redimMatrixRegister(REGISTER_X, rows, cols+1)) {
+    if(!redimMatrixRegister(REGISTER_X, rows, wkg_cols)) {
       displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
       #if(EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "Not enough memory for a %" PRIu32 STD_CROSS "%" PRIu32 " matrix", rows, cols);
@@ -531,11 +565,65 @@ bool_t addFactor(longInteger_t factor, real34Matrix_t *matrix, const real34_t *l
     }
   #endif
 
+  if ( cols == 0 ) {
+    printf("wgr:  zeroing last_factor\n");
+    mpz_set_ui(last_factor, 0);
+  }
   linkToRealMatrixRegister(REGISTER_X,  matrix);
-  longIntegerToAllocatedString(factor, tmpString, TMP_STR_LENGTH);
-  stringToReal34(tmpString, &matrix->matrixElements[rows * cols]);
-  real34Copy(&matrix->matrixElements[rows * cols], lastAdded);
+  gmp_printf("wgr:  last_factor==%Zd\n", last_factor);
+  unsigned n = rows*(faddr->n_expons);
+  unsigned c = n/2;
+  if ( mpz_sgn(last_factor) != 0 && mpz_cmp(last_factor, factor) == 0 ) {
+    ++faddr->expons[(faddr->n_expons)-1];
+    printf("wgr:  last_factor use existing:  created expons %u at %u\n",
+            faddr->expons[(faddr->n_expons)-1], (faddr->n_expons)-1);
+  }
+  else {
+    //unsigned n = rows*cols;
+    bool_t inc_n_expons = mpz_sgn(last_factor) ==0 ? false : true;
+    if ( !inc_n_expons ) // FIXME Cheat
+        c = 0;
+    printf("wgr:  last_factor restart:  n==%u, c==%u, inc_n_expons==%d\n", n, c, inc_n_expons);
+    longIntegerToAllocatedString(factor, tmpString, TMP_STR_LENGTH);
+    stringToReal34(tmpString, &matrix->matrixElements[c]);
+    printf("wgr:  tmpString from lastAdded:  %s\n", tmpString);
+    real34Copy(&matrix->matrixElements[c], lastAdded);
+    if ( inc_n_expons ) {
+        if ( faddr->n_expons < MAX_FACTORS ) {
+            // TODO Print error message if out of room
+            ++faddr->n_expons;
+        }
+        ++wkg_cols;
+        faddr->expons[faddr->n_expons-1] = 1;
+        if(!redimMatrixRegister(REGISTER_X, rows, wkg_cols)) {
+          displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
+          #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+            sprintf(errorMessage, "Not enough memory for a %" PRIu32 STD_CROSS "%" PRIu32 " matrix", rows, cols);
+            moreInfoOnError("In function fnPrimeFactors:", errorMessage, NULL, NULL);
+          #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+          return false;
+        }
+    }
+    n = rows*(faddr->n_expons);
+    c = n/2;
+    mpz_set(last_factor, factor);
+  }
   return true;
+}
+
+void dumpExponents(real34Matrix_t *matrix, FactorAdder_t *faddr) {
+  unsigned n2 = faddr->n_expons;
+  printf("wgr:  fill expons:  *n_expons==%u, n2==%u\n", faddr->n_expons, n2);
+  uint16_t rows = REGISTER_DATA(REGISTER_X)->matrixRows;
+  uint16_t cols = REGISTER_DATA(REGISTER_X)->matrixColumns;
+  printf("wgr:  rows==%u, cols==%u\n", (unsigned)rows, (unsigned)cols);
+  linkToRealMatrixRegister(REGISTER_X,  matrix);
+  for ( unsigned i = 0;  i < faddr->n_expons;  ++i ) {
+    char expon_str[21];
+    sprintf(expon_str, "%u", faddr->expons[i]);
+    printf("wgr:  adding expon at n2==%u, i==%u, val %u, sval %s, ind %u\n", n2, i, faddr->expons[i], expon_str, n2+i);
+    stringToReal34(expon_str, &matrix->matrixElements[n2+i]);
+  }
 }
 
 
@@ -594,6 +682,9 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
   uIntToLongInteger(1,eval);
   int32ToReal34(0,&lastAdded);
 
+  FactorAdder_t faddr;
+  initFactorAdder(&faddr);
+
   while(longIntegerIsPositive(eval)) {
 
     #if !defined(TESTSUITE_BUILD)
@@ -614,12 +705,12 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
     longIntegerDivideQuotientRemainder(currentNumber, nextPrime, quotient, remainder);
     longIntegerSubtract(quotient, nextPrime, eval);
     if(longIntegerIsZero(remainder)) {
-      if(!addFactor(nextPrime, &matrix, &lastAdded)) {
+      if(!addFactor(nextPrime, &matrix, &lastAdded, &faddr)) {
         goto endandclose;
       }
       longIntegerCopy(quotient,currentNumber);
       if(longIntegerIsPrime(quotient)) {
-        if(!addFactor(quotient, &matrix, &lastAdded)) {
+        if(!addFactor(quotient, &matrix, &lastAdded, &faddr)) {
           goto endandclose;
         }
         goto endandclose;
@@ -630,7 +721,7 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
     if(!longIntegerIsPositive(eval)) {
       longIntegerSubtractUInt(currentNumber,1,temp);
       if(!longIntegerIsZero(temp)) {
-        if(!addFactor(currentNumber, &matrix, &lastAdded)) {
+        if(!addFactor(currentNumber, &matrix, &lastAdded, &faddr)) {
           goto endandclose;
         }
       }
@@ -638,6 +729,8 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
   }
 
 endandclose:
+  dumpExponents(&matrix, &faddr);
+  clearFactorAdder(&faddr);
   longIntegerFree(temp);
   longIntegerFree(eval);
   longIntegerFree(quotient);
