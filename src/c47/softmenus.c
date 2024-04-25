@@ -173,7 +173,7 @@ TO_QSPI const int16_t menu_INFO[]        = { ITM_SSIZE,                     ITM_
                                              ITM_LocRQ,                     ITM_DSK,                    ITM_ULP,                  ITM_NEIGHB,            ITM_GETSDIGS,                ITM_BATT,
                                              ITM_WHO,                       ITM_VERS,                   ITM_M_DIMQ,               ITM_PMINFINITY,        ITM_ALPHAPOS,                ITM_ALPHALENG,
                                              ITM_GETRANGE,                  ITM_GETHIDE,                ITM_GET_JUL_GREG,         ITM_VOLQ,              ITM_SH_ERPN,                 ITM_BESTFQ,
-                                             ITM_GETDMX,                    ITM_LOADEDFILE,             ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL                        };
+                                             ITM_GETDMX,                    ITM_LOADEDFILE,             ITM_LASTT,                ITM_NULL,              ITM_NULL,                    ITM_NULL                        };
 
 
 TO_QSPI const int16_t menu_INTS[]        = { ITM_A,                         ITM_B,                      ITM_C,                    ITM_D,                 ITM_E,                       ITM_F,

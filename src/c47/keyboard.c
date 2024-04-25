@@ -4123,7 +4123,7 @@ void fnKeyUp(uint16_t unusedButMandatoryParameter) {
       }
       return;
     }
-    if(softmenu[menuId].menuItem != -MNU_REG && tam.mode && !catalog) {
+    if(softmenu[menuId].menuItem != -MNU_REG && softmenu[menuId].menuItem != -MNU_FLG && tam.mode && !catalog) {
       if(tam.alpha) {
         resetAlphaSelectionBuffer();
         if(currentSoftmenuScrolls()) {
