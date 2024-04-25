@@ -952,9 +952,11 @@ void print_linestr(const char *line1, bool_t line_init) {
 
 void print_numberstr(const char *line1, bool_t line_init) {     //ONLY N=ASCII NUMBERS AND E AND . //FIXED FONT
   #if !defined(TESTSUITE_BUILD)
-    if(line_init) {
-      g_line_y = 20;
+    if(line_init || g_line_y >= SCREEN_HEIGHT) {
+      g_line_y = 0;
+      g_line_x = 0;
     }
+    g_line_y += 20;
     if(g_line_y < SCREEN_HEIGHT) {
         int16_t cnt = 0;
         char tt[2];
@@ -964,7 +966,6 @@ void print_numberstr(const char *line1, bool_t line_init) {     //ONLY N=ASCII N
           cnt++;
         }
     }
-    g_line_y += 20;
     g_line_x = 0;
     force_refresh(timed);
   #endif // !TESTSUITE_BUILD
