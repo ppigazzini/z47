@@ -334,7 +334,7 @@ TO_QSPI const int16_t menu_PLOTTING[]    = { ITM_SIGMAPLUS,                 ITM_
 
                                              ITM_SIGMAPLUS,                 ITM_SIGMAlnx,              ITM_SIGMAln2x,             ITM_SIGMAlny,          ITM_SIGMAln2y,               ITM_SIGMAx2y,
                                              ITM_SIGMAMINUS,                ITM_SIGMAylnx,             ITM_SIGMAlnxy,             ITM_SIGMAxlny,         ITM_SIGMAx2lny,              ITM_SIGMAx2ony,
-                                             ITM_NSIGMA,                    ITM_NULL,                  ITM_NULL,                  ITM_SIGMAlnyonx,       ITM_NULL,                    ITM_CLSIGMA                   };
+                                             ITM_NSIGMA,                    ITM_NULL,                  ITM_NULL,                  ITM_SIGMAlnyonx,       ITM_NULL,                    ITM_CLSIGMA                     };
 
 TO_QSPI const int16_t menu_GRAPHS[]      = { ITM_DRAW,                      ITM_NULL,                  ITM_NULL,                  ITM_DRAW_LU,           VAR_LX,                      VAR_UX                        };
 
@@ -996,9 +996,6 @@ TO_QSPI const softmenu_t softmenu[] = {
 /* 149 */  {.menuItem = -MNU_AMORT,       .numItems = sizeof(menu_AMORT         )/sizeof(int16_t), .softkeyItem = menu_AMORT          },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
 /* 150 */  {.menuItem =  0,               .numItems = 0,                                           .softkeyItem = NULL                }
 };
-
-
-
 
 
 dynamicSoftmenu_t dynamicSoftmenu[NUMBER_OF_DYNAMIC_SOFTMENUS] = {
@@ -1996,7 +1993,6 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
                           default: ;
                           }
                           break;
-
       case ITM_SCR    :switch(*showValue) {
                           case NC_NORMAL      : *showValue = NOVAL; break;
                           case NC_SUBSCRIPT   : stringAppend(showText + stringByteLength(showText), alphaCase == AC_LOWER ? STD_SUB_s STD_SUB_u STD_SUB_b : alphaCase == AC_UPPER ? STD_SUB_S STD_SUB_U STD_SUB_B : ""); *showValue = NOVAL;
@@ -2087,14 +2083,35 @@ bool_t savedspace(int16_t itemNr) {  //strike out all SAVED_SPACE items
 }
 
 void fnStrikeOutIfNotCoded(int16_t itemNr, int16_t x, int16_t y) {
-  if(itemNr > 0 && (indexOfItems[itemNr%10000].func == itemToBeCoded || savedspace(itemNr))) {
+  int16_t strike = 0;
+  if(itemNr > 0) {
+    if (indexOfItems[itemNr%10000].func == itemToBeCoded || savedspace(itemNr)) {
+      strike = 1;
+    }
+  } else {
+    int16_t m = 0;
+    while(softmenu[m].menuItem != 0) {
+      if(softmenu[m].menuItem == itemNr%10000) {
+       break;
+      }
+      m++;
+    }
+    if (softmenu[m].numItems == 0) {
+      strike = -1;
+    }
+  }
+  if(strike != 0) {
     // Strike out non coded functions
     int16_t yStroke = SCREEN_HEIGHT - y*23 - 1;
     for(int16_t xStroke=x*67 + 1 +9 ; xStroke<x*67 + 66 -10; xStroke++) {      //JM mod stroke slash cross out
       if(xStroke%3 == 0) {
         yStroke--;
       }
-      setBlackPixel(xStroke, yStroke -3);                                      //JM mod
+      if(strike == 1) {
+        setBlackPixel(xStroke, yStroke -3);                                      //JM mod
+      } else {
+        setWhitePixel(xStroke, yStroke -3);                                      //JM mod        
+      }
     }
   }
 }
@@ -2427,9 +2444,8 @@ bool_t BASE_OVERRIDEONCE = false;
               int16_t xStrokeA=x*67 + 66 -12;
               plotline(xStrokeA +2+4, yStrokeA -16-3-1, xStrokeA +2+4+5-1, yStrokeA -16-3+5);
             }
-            fnStrikeOutIfNotCoded(item%10000, x, y-currentFirstItem/6);
-
           }
+          fnStrikeOutIfNotCoded(item%10000, x, y-currentFirstItem/6);
         }
       }
 
@@ -2826,7 +2842,7 @@ bool_t BASE_OVERRIDEONCE = false;
         }
       }
       else {
-        parseEquation(currentFormula, EQUATION_PARSER_MVAR, aimBuffer, tmpString);
+      parseEquation(currentFormula, EQUATION_PARSER_MVAR, aimBuffer, tmpString);
         varList = (uint8_t *)tmpString;
       }
 
@@ -2835,7 +2851,6 @@ bool_t BASE_OVERRIDEONCE = false;
       }
       while((getNthString(varList, ++numberOfVars))[0] != 0) {
       }
-
       if(numberOfVars > 12) {
         displayCalcErrorMessage(ERROR_EQUATION_TOO_COMPLEX, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
         #if(EXTRA_INFO_ON_CALC_ERROR == 1)
