@@ -2096,7 +2096,7 @@ void fnStrikeOutIfNotCoded(int16_t itemNr, int16_t x, int16_t y) {
       }
       m++;
     }
-    if (softmenu[m].numItems == 0) {
+    if (softmenu[m].numItems == 0 && m >= NUMBER_OF_DYNAMIC_SOFTMENUS) {
       strike = -1;
     }
   }

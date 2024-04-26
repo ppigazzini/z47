@@ -2681,6 +2681,10 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
           int16_t showRegisN = showRegis;
           showRegis = lastSTORCL();
           viewRegName2(prefix, &prefixWidth);          
+          if(prefix[0]=='?') {
+            prefix[0] = 0;
+            prefixWidth = 0;
+          }       
           showRegis = showRegisN;
         }
 
