@@ -874,15 +874,15 @@ enum REG_NUMBERS { // C program register codes
   RESERVED_VARIABLE_GRAMOD,                              //2040
   RESERVED_VARIABLE_UX,                                  //2041
   RESERVED_VARIABLE_LX,                                  //2042
-  RESERVED_VARIABLE_CPERONA,                             //2043 (old last number, not anymore)
+  RESERVED_VARIABLE_CPERONA,                             //2043
   //  RESERVED_SPARES_HERE
   LAST_RESERVED_VARIABLE = RESERVED_VARIABLE_CPERONA,
 
-  INVALID_VARIABLE_OLD = 2043,                           //2043   //change number. Old config files will contain currentInputVariable to be 2043, which is fixed in the loading
-  INVALID_VARIABLE = 2199,                               //2199   //change number. Old config files will contain currentInputVariable to be 2043, which is fixed in the loading
+  INVALID_VARIABLE_OLD = 2043,                           //2043   // Used to fix the backup.cfg loading
+  INVALID_VARIABLE = 2199,                               //2199   // Old backup.cfg files will contain currentInputVariable to be 2043, which is fixed
 
   // Labels
-  FIRST_LABEL,                                           //2200   //leave enough space for new variables
+  FIRST_LABEL,                                           //2200   // Leave enough space for new variables, staring at a gap from the VARIABLES
   LAST_LABEL = 6999,                                     //6999
 
   // Local registers
