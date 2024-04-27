@@ -1903,7 +1903,8 @@ void fnStrikeOutIfNotCoded(int16_t itemNr, int16_t x, int16_t y) {
     if (indexOfItems[itemNr%10000].func == itemToBeCoded/* || savedspace(itemNr)*/) {
       strike = 1;
     }
-  } else {
+  } 
+  else if(itemNr < 0) {
     int16_t m = 0;
     while(softmenu[m].menuItem != 0) {
       if(softmenu[m].menuItem == itemNr%10000) {
