@@ -500,7 +500,7 @@ void nextPrime(longInteger_t currentNumber, longInteger_t nextPrime) {
 
 #define WGR              //verbose
 #undef WGR
-#define MAX_FACTORS 50
+#define MAX_FACTORS 87
 
 typedef struct FactorAdder
 {
@@ -619,8 +619,17 @@ bool_t addFactor(longInteger_t factor, real34Matrix_t *matrix, const real34_t *l
     #endif
     real34Copy(&matrix->matrixElements[c], lastAdded);
     if ( incNExpons ) {
-      if ( faddr->nExpons < MAX_FACTORS ) {    // FIXME Print error message if out of room
+      if ( faddr->nExpons < MAX_FACTORS ) {
           ++faddr->nExpons;
+      } else {
+        #if !defined(TESTSUITE_BUILD)
+          displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+          #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+            sprintf(errorMessage, "Maximum number of factors exceeded %" PRIu32 STD_CROSS "%" PRIu32 " matrix", rows, cols);
+            moreInfoOnError("In function addFactor:", errorMessage, NULL, NULL);
+          #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+          return false;
+        #endif // !TESTSUITE_BUILD        
       }
       ++wkgCols;
       faddr->expons[faddr->nExpons-1] = 1;
@@ -629,7 +638,7 @@ bool_t addFactor(longInteger_t factor, real34Matrix_t *matrix, const real34_t *l
           displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
           #if(EXTRA_INFO_ON_CALC_ERROR == 1)
             sprintf(errorMessage, "Not enough memory for a %" PRIu32 STD_CROSS "%" PRIu32 " matrix", rows, cols);
-            moreInfoOnError("In function fnPrimeFactors:", errorMessage, NULL, NULL);
+            moreInfoOnError("In function addFactor:", errorMessage, NULL, NULL);
           #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
           return false;
         }
