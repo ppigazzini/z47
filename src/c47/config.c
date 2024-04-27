@@ -1828,9 +1828,11 @@ Sett(_Reset);
     }
 
     //Monitoring for voltage integrator
-    //char aaa[120];
-    //sprintf(aaa,"V=%i VI=%i loop=%i",tmpVbat, vbatVIntegrated, loop++);
-    //print_numberstr(aaa,true);
+    if(minutePulse) {
+        char aaa[120];
+        sprintf(aaa,"V=%i VI=%i loop=%i",tmpVbat, vbatVIntegrated, loop++);
+        print_numberstr(aaa,true);
+    }
 
     return tmpVbat; //returning the direct battery voltage; to enable the selective usage of the integrator
   }
@@ -1852,7 +1854,7 @@ Sett(_Reset);
 
       int tmpVbat = updateVbatIntegrated(false);
 
-      if(tmpVbat < 2000 ) {// || vbatVIntegrated < 2000) { //temporary disable shutdown from the new integrator system. The indicator uses the integrator.
+      if(tmpVbat < 2100 || vbatVIntegrated < 2100) { //shutdown from the new integrator system. The indicator uses the integrator.
         if(!getSystemFlag(FLAG_LOWBAT)) {
           setSystemFlag(FLAG_LOWBAT);
           showHideUsbLowBattery();
