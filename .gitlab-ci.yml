@@ -30,8 +30,8 @@ linux:
   stage: build
   script:
     - apt-get update -qq
-    - apt-get install -qq -y git python3-pip ninja-build pkg-config build-essential libgtk-3-dev libgmp-dev libpulse-dev zip
-    - python3 -m pip install meson
+    - apt-get install -qq -y git python3-pip python3-mesonpy ninja-build pkg-config build-essential libgtk-3-dev libgmp-dev libpulse-dev zip
+#    - python3 -m --break-system-packages pip install meson
     - make dist_linux
   artifacts:
     expire_in: 1 day
@@ -55,8 +55,8 @@ dmcp:
   stage: build
   script:
     - apt-get update -qq
-    - apt-get install -qq -y git python3-pip ninja-build pkg-config build-essential zip libgtk-3-dev libgmp-dev gcc-arm-none-eabi
-    - python3 -m pip install meson
+    - apt-get install -qq -y git python3-pip python3-mesonpy ninja-build pkg-config build-essential zip libgtk-3-dev libgmp-dev gcc-arm-none-eabi
+#    - python3 -m --break-system-packages pip install meson
     - make dist_dmcp
   artifacts:
     expire_in: 1 day
@@ -69,8 +69,8 @@ dmcp5:
   stage: build
   script:
     - apt-get update -qq
-    - apt-get install -qq -y git python3-pip ninja-build pkg-config build-essential zip libgtk-3-dev libgmp-dev gcc-arm-none-eabi
-    - python3 -m pip install meson
+    - apt-get install -qq -y git python3-pip python3-mesonpy ninja-build pkg-config build-essential zip libgtk-3-dev libgmp-dev gcc-arm-none-eabi
+#    - python3 -m --break-system-packages pip install meson
     - make dist_dmcp5
   artifacts:
     expire_in: 1 day
@@ -83,8 +83,8 @@ testSuite:
   stage: test
   script:
     - apt-get update -qq
-    - apt-get install -qq -y git python3-pip ninja-build pkg-config build-essential libgtk-3-dev libgmp-dev
-    - python3 -m pip install meson
+    - apt-get install -qq -y git python3-pip python3-mesonpy ninja-build pkg-config build-essential libgtk-3-dev libgmp-dev
+#    - python3 -m --break-system-packages pip install meson
     - make test
   tags:
     - saas-linux-small-amd64
