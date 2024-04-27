@@ -38,8 +38,6 @@ linux:
     - *linux-script-before
     - apt-get install -qq -y libpulse-dev
   script:
-    - apt-get update -qq
-    - apt-get install -qq -y git python3-pip python3-mesonpy ninja-build pkg-config build-essential libgtk-3-dev libgmp-dev libpulse-dev zip
     - make dist_linux
   artifacts:
     expire_in: 1 day
@@ -65,8 +63,6 @@ dmcp:
     - *linux-script-before
     - apt-get install -qq -y gcc-arm-none-eabi
   script:
-    - apt-get update -qq
-    - apt-get install -qq -y git python3-pip python3-mesonpy ninja-build pkg-config build-essential zip libgtk-3-dev libgmp-dev gcc-arm-none-eabi
     - make dist_dmcp
   artifacts:
     expire_in: 1 day
@@ -81,8 +77,6 @@ dmcp5:
     - *linux-script-before
     - apt-get install -qq -y gcc-arm-none-eabi
   script:
-    - apt-get update -qq
-    - apt-get install -qq -y git python3-pip python3-mesonpy ninja-build pkg-config build-essential zip libgtk-3-dev libgmp-dev gcc-arm-none-eabi
     - make dist_dmcp5
   artifacts:
     expire_in: 1 day
@@ -96,23 +90,17 @@ testSuite:
   before_script:
     - *linux-script-before
   script:
-    - apt-get update -qq
-    - apt-get install -qq -y git python3-pip python3-mesonpy ninja-build pkg-config build-essential libgtk-3-dev libgmp-dev
     - make test
   tags:
     - saas-linux-small-amd64
 
-#codeDocs:
-#  stage: test
-#  before_script:
-#    - *linux-script-before
-#    - apt-get install -qq -y doxygen python3-sphinx python3-breathe furo
-#  script:
-#    - apt-get update -qq
-#    - apt-get install -qq -y git python3-pip ninja-build pkg-config build-essential libgtk-3-dev libgmp-dev doxygen
-#    # may be use pipx here to avoid that --break-system-packages strange parameter
-#    - python3 -m pip install meson 'Sphinx<7.2' breathe furo --break-system-packages
-#    - make docs
+codeDocs:
+  stage: test
+  before_script:
+    - *linux-script-before
+    - apt-get install -qq -y doxygen python3-sphinx python3-breathe furo
+  script:
+    - make docs
 
 upload:
   stage: upload
