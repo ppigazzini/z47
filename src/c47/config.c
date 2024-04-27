@@ -502,7 +502,7 @@ void fnClrMod(uint16_t unusedButMandatoryParameter) {        //clear input buffe
   #if !defined(TESTSUITE_BUILD)
     resetKeytimers();  //JM
     clearSystemFlag(FLAG_FRACT);
-    temporaryInformation = TI_NO_INFO;
+
     if(calcMode == CM_NIM) {
       strcpy(aimBuffer, "+");
       fnKeyBackspace(0);
@@ -511,7 +511,13 @@ void fnClrMod(uint16_t unusedButMandatoryParameter) {        //clear input buffe
     if(calcMode == CM_ASSIGN) {
       fnKeyExit(0);
     }
+    fnKeyExit(0);           //Call fnkeyExit to ensure the correct home screen is brought up, if HOME is selected.
+    fnKeyExit(0);           //Second time to ensure not only keys exited, but also modes
+    popSoftmenu();
     lastIntegerBase = 0;
+    temporaryInformation = TI_NO_INFO;
+    lastErrorCode = 0;
+    currentInputVariable = INVALID_VARIABLE;
     fnExitAllMenus(0);
     if(!checkHP) {
       fnDisplayStack(4);    //Restore to default DSTACK 4
@@ -522,9 +528,11 @@ void fnClrMod(uint16_t unusedButMandatoryParameter) {        //clear input buffe
     }
     calcModeNormal();
     screenUpdatingMode = SCRUPD_AUTO;
+    shiftF = false;
+    shiftG = false;
+    showShiftState();
+    refreshModeGui();
     refreshScreen(166);
-    fnKeyExit(0);           //Call fnkeyExit to ensure the correct home screen is brought up, if HOME is selected.
-    popSoftmenu();
     #if defined(PC_BUILD_TELLTALE)
       jm_show_calc_state("fnClrMod end: \n");
     #endif //PC_BUILD_TELLTALE
