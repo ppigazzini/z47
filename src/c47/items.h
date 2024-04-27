@@ -1233,8 +1233,8 @@
 #define VAR_LLIM                    1194
 #define VAR_FV                      1195
 #define VAR_IPonA                   1196
-#define VAR_NPER                    1197
-#define VAR_PERonA                  1198
+#define VAR_NPPER                   1197
+#define VAR_PPERonA                 1198
 #define VAR_PMT                     1199
 #define VAR_PV                      1200
 #define VAR_GRAMOD                  1201
@@ -1499,7 +1499,7 @@
 #define ITM_DOT_PROD                1449
 #define ITM_DSTACK                  1450
 #define ITM_DMS                     1451
-#define MNU_1452                    1452
+#define ITM_CLTVM                   1452
 #define ITM_DMY                     1453
 #define ITM_DtoJ                    1454
 #define ITM_DELITM                  1455
@@ -1820,8 +1820,8 @@
 #define ITM_SQRT                    1768
 #define ITM_RCL_FV                  1769
 #define ITM_RCL_IPonA               1770
-#define ITM_RCL_NPER                1771
-#define ITM_RCL_PERonA              1772
+#define ITM_RCL_NPPER               1771
+#define ITM_RCL_PPERonA             1772
 #define ITM_RCL_PMT                 1773
 #define ITM_RCL_PV                  1774
 #define ITM_atan2                   1775
@@ -2308,8 +2308,8 @@
 // 64 more system flags
 #define SFL_MONIT                   2251
 #define SFL_FRCYC                   2252
-#define SFL_2249                    2253
-#define SFL_2250                    2254
+#define SFL_TVM_I_KNOWN             2253
+#define SFL_TVM_I_CHANGES           2254
 #define SFL_2251                    2255
 #define SFL_2252                    2256
 #define SFL_2253                    2257
@@ -2439,7 +2439,13 @@
 #define ITM_FPHERE                  2377
 #define ITM_FPPHERE                 2378
 
-#define LAST_ITEM                   2379
+#define VAR_CPERonA                 2379
+#define ITM_RCL_CPERonA             2380
+
+#define MNU_CASHFL                  2381
+#define MNU_AMORT                   2382
+
+#define LAST_ITEM                   2383
 
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL
@@ -2481,3 +2487,4 @@ void itemToBeCoded    (uint16_t unusedButMandatoryParameter);
  */
 void fnNop            (uint16_t unusedButMandatoryParameter);
 #endif // !ITEMS_H
+

@@ -53,8 +53,8 @@
 #endif
 
 #include "c47.h"
-#define BACKUP_VERSION                     1001  // 1st text file backup.cfg version
 #define configFileVersion                  10000009 // New STOCFG and new STATE file; arbitrary starting point version 10 000 001. Allowable values are 10000000 to 20000000
+#define BACKUP_VERSION                     1002  // increasing number of reserved variable
 #define VersionAllowed                     10000005 // This code will not autoload versions earlier than this
 
 /*
@@ -742,7 +742,7 @@ uint16_t flushBufferCnt = 0;
 
   void restoreCalc(void) {
     printf("RestoreCalc\n");
-    uint32_t ramSizeInBlocks = 0, ramPtr = 0, backupVersion;
+    uint32_t ramSizeInBlocks = 0, ramPtr = 0, backupVersion = 0;
     int ret;
     //save and restore screenData is not mandatory
     //uint8_t *loadedScreen = malloc(SCREEN_WIDTH * SCREEN_HEIGHT / 8);
@@ -786,15 +786,19 @@ uint16_t flushBufferCnt = 0;
     restoreStateValue(&ramSizeInBlocks,                sizeof(ramSizeInBlocks),                                     "ramSizeInBlocks",                "uint32");
     if(ramSizeInBlocks != RAM_SIZE_IN_BLOCKS) {
       refreshScreen(92);
-
       printf("Cannot restore calc's memory from file backup.cfg! File backup.cfg is from incompatible RAM size.\n");
       printf("       Backup file      Program\n");
       printf("ramSize blocks %6u           %6d\n", ramSizeInBlocks, RAM_SIZE_IN_BLOCKS);
       printf("ramSize bytes  %6u           %6d\n", TO_BYTES(ramSizeInBlocks), TO_BYTES(RAM_SIZE_IN_BLOCKS));
       return;
+    } else
+    if(backupVersion == 0) {
+      refreshScreen(92);
+      printf("Cannot restore calc's memory from file backup.cfg! File backup.cfg has invalid version number.\n");
+      return;
     }
 
-    printf("Begin of calc's restoration\n");
+    printf("Begin of calc's restoration, backup version:%i\n", backupVersion);
 
     // The order in which parameters are restored doesn't matter
     // When a parameter is removed, simply remove the corresponding saveStateValue(...) and restoreStateValue(...) lines.
@@ -1030,12 +1034,15 @@ uint16_t flushBufferCnt = 0;
     restoreStateValue(&timerValue,                     sizeof(timerValue),                                          "timerValue",                     "uint32");
     restoreStateValue(&timerTotalTime,                 sizeof(timerTotalTime),                                      "timerTotalTime",                 "uint32");
     restoreStateValue(&currentInputVariable,           sizeof(currentInputVariable),                                "currentInputVariable",           "uint16");
+    if (backupVersion < 1002 && currentInputVariable == INVALID_VARIABLE_OLD) {currentInputVariable = INVALID_VARIABLE;}
     restoreStateValue(&SAVED_SIGMA_LASTX,              sizeof(SAVED_SIGMA_LASTX),                                   "SAVED_SIGMA_LASTX",              "real");
     restoreStateValue(&SAVED_SIGMA_LASTY,              sizeof(SAVED_SIGMA_LASTY),                                   "SAVED_SIGMA_LASTY",              "real");
     SAVED_SIGMA_LAc1 = 0;
     restoreStateValue(&SAVED_SIGMA_LAc1,               sizeof(SAVED_SIGMA_LAc1),                                    "SAVED_SIGMA_LAc1",               "int8");     //manual correction as the type allocation was wrong here
     restoreStateValue(&currentMvarLabel,               sizeof(currentMvarLabel),                                    "currentMvarLabel",               "uint16");
-    restoreStateValue(&graphVariabl1,                  sizeof(graphVariabl1),                                       "graphVariabl1",                  "int32");
+    if (backupVersion < 1002 && currentMvarLabel == INVALID_VARIABLE_OLD) {currentMvarLabel = INVALID_VARIABLE;}
+    restoreStateValue(&graphVariabl1,                  sizeof(graphVariabl1),                                       "graphVariabl1",                  "int16");
+    if (backupVersion < 1002 && graphVariabl1 == INVALID_VARIABLE_OLD) {graphVariabl1 = INVALID_VARIABLE;}
     restoreStateValue(&plotStatMx,                     sizeof(plotStatMx),                                          "plotStatMx",                     "hexDump");
     restoreStateValue(&drawHistogram,                  sizeof(drawHistogram),                                       "drawHistogram",                  "uint8");
     restoreStateValue(&statMx,                         sizeof(statMx),                                              "statMx",                         "hexDump");

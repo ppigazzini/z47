@@ -574,10 +574,11 @@
 #define FLAG_2TO10                            0x803D
 #define FLAG_SH_LONGPRESS                     0x803E
 #define FLAG_WRAPEDG                          0xc03F
-#define FLAG_MONIT                            0x8040 // MONIT MUST be the first of the secoind flag word
+#define FLAG_MONIT                            0x8040 // MONIT MUST be the first of the second flag word
 #define FLAG_FRCYC                            0x8041
-
-#define NUMBER_OF_SYSTEM_FLAGS                    66 // We can have a maximum of 128 system flags
+#define FLAG_TVM_I_KNOWN                      0xc042
+#define FLAG_TVM_I_CHANGES                    0xc043
+#define NUMBER_OF_SYSTEM_FLAGS                    68 // We can have a maximum of 128 system flags
 
 typedef enum {
   LI_ZERO     = 0, // Long integer sign 0
@@ -690,6 +691,53 @@ typedef enum {
 // List of constants
 #define FIRST_CONSTANT                        CST_01
 #define LAST_CONSTANT                         CST_82
+
+
+//Variable names
+#define VAR_NO_X        0 
+#define VAR_NO_Y        1 
+#define VAR_NO_Z        2 
+#define VAR_NO_T        3 
+#define VAR_NO_A        4 
+#define VAR_NO_B        5 
+#define VAR_NO_C        6 
+#define VAR_NO_D        7 
+#define VAR_NO_L        8 
+#define VAR_NO_I        9 
+#define VAR_NO_J       10 
+#define VAR_NO_K       11 
+#define VAR_NO_M       12 
+#define VAR_NO_N       13 
+#define VAR_NO_P       14 
+#define VAR_NO_Q       15 
+#define VAR_NO_R       16 
+#define VAR_NO_S       17 
+#define VAR_NO_E       18 
+#define VAR_NO_F       19 
+#define VAR_NO_G       20 
+#define VAR_NO_H       21 
+#define VAR_NO_O       22 
+#define VAR_NO_U       23 
+#define VAR_NO_V       24 
+#define VAR_NO_W       25 
+#define VAR_NO_ADM     26 
+#define VAR_NO_DENMAX  27 
+#define VAR_NO_ISM     28 
+#define VAR_NO_REALDF  29
+#define VAR_NO_NDEC    30 
+#define VAR_NO_ACC     31 
+#define VAR_NO_ULIM    32 
+#define VAR_NO_LLIM    33 
+#define VAR_NO_FV      34 
+#define VAR_NO_IPONA   35 
+#define VAR_NO_NPPER   36 
+#define VAR_NO_PPERONA 37 
+#define VAR_NO_PMT     38 
+#define VAR_NO_PV      39 
+#define VAR_NO_GRAMOD  40 
+#define VAR_NO_UX      41 
+#define VAR_NO_LX      42 
+#define VAR_NO_CPERONA 43 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Register numbering for                                                                           Register numbering in key
@@ -819,19 +867,22 @@ enum REG_NUMBERS { // C program register codes
   RESERVED_VARIABLE_LLIM,                                //2033
   RESERVED_VARIABLE_FV,                                  //2034
   RESERVED_VARIABLE_IPONA,                               //2035
-  RESERVED_VARIABLE_NPER,                                //2036
-  RESERVED_VARIABLE_PERONA,                              //2037
+  RESERVED_VARIABLE_NPPER,                               //2036
+  RESERVED_VARIABLE_PPERONA,                             //2037
   RESERVED_VARIABLE_PMT,                                 //2038
   RESERVED_VARIABLE_PV,                                  //2039
   RESERVED_VARIABLE_GRAMOD,                              //2040
   RESERVED_VARIABLE_UX,                                  //2041
   RESERVED_VARIABLE_LX,                                  //2042
-  LAST_RESERVED_VARIABLE = RESERVED_VARIABLE_LX,
+  RESERVED_VARIABLE_CPERONA,                             //2043
+  //  RESERVED_SPARES_HERE
+  LAST_RESERVED_VARIABLE = RESERVED_VARIABLE_CPERONA,
 
-  INVALID_VARIABLE,                                      //2043
+  INVALID_VARIABLE_OLD = 2043,                           //2043   // Used to fix the backup.cfg loading
+  INVALID_VARIABLE = 2199,                               //2199   // Old backup.cfg files will contain currentInputVariable to be 2043, which is fixed
 
   // Labels
-  FIRST_LABEL,                                           //2044
+  FIRST_LABEL,                                           //2200   // Leave enough space for new variables, staring at a gap from the VARIABLES
   LAST_LABEL = 6999,                                     //6999
 
   // Local registers
@@ -1279,9 +1330,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define TI_NO_SOLVER_VARIABLE                    107
 #define TI_NO_INTEGRATE_VARIABLE                 108
 #define TI_FUNCTION                              109
-
-
-#define TI_STORCL                                110 //continue after 110 as up to 110 is used in the alpha branch
+#define TI_STORCL                                110
 
 // Register browser mode
 #define RBR_GLOBAL                                 0 // Global registers are browsed

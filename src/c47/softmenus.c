@@ -7,11 +7,13 @@
 #include "assign.h"
 #include "calcMode.h"
 #include "charString.h"
+#include "constantPointers.h"
 #include "debug.h"
 #include "error.h"
 #include "fonts.h"
 #include "flags.h"
 #include "items.h"
+#include "mathematics/comparisonReals.h"
 #include "memory.h"
 #include "programming/manage.h"
 #include "c43Extensions/jm.h"
@@ -81,7 +83,7 @@ TO_QSPI const int16_t menu_CLK[]         = { ITM_DATE,                      ITM_
 
 TO_QSPI const int16_t menu_CLR[]         = { ITM_CF,                        ITM_CLMENU,                 ITM_CLCVAR,               ITM_CLREGS,            ITM_CLSTK,                   ITM_CLX,
                                              ITM_CLFALL,                    ITM_CLMALL,                 ITM_CLVALL,               ITM_CLSIGMA,           ITM_CLGRF,                   ITM_CLLCD,
-                                             ITM_RESET,                     ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                   -MNU_DELETE                    };
+                                             ITM_RESET,                     ITM_NULL,                   ITM_CLTVM,                ITM_NULL,              ITM_NULL,                   -MNU_DELETE                    };
 
 /*      Menu name                           <----------------------------------------------------------------------------- 6 functions ---------------------------------------------------------------------------->  */
 /*                                          <---------------------------------------------------------------------- 6 f shifted functions ------------------------------------------------------------------------->  */
@@ -128,16 +130,33 @@ TO_QSPI const int16_t menu_TRG[]         = { ITM_DEG,                       ITM_
                                              ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_toREC2,                  ITM_toPOL2                    };
 //D47 ^^
 
-TO_QSPI const int16_t menu_FIN[]         = { ITM_SIGMAPLUS ,                ITM_PCT    ,                ITM_PC         ,          ITM_DELTAPC,            ITM_PCPMG,                   -MNU_TVM,
-                                             ITM_SIGMAMINUS,                ITM_SIGMAx ,                ITM_NSIGMA     ,          ITM_XBAR   ,            ITM_PCMRR,                   ITM_NULL,
-                                             ITM_CLSIGMA   ,                ITM_PCSIGMA,                ITM_PCSGM_DPCMN,          ITM_DPCMEAN,            ITM_NULL  ,                  ITM_NULL                     };
+TO_QSPI const int16_t menu_FIN[]         = { ITM_SIGMAPLUS ,                ITM_PCT    ,                ITM_PC         ,          ITM_DELTAPC,            ITM_PCPMG,                   ITM_PCMRR,
+                                             ITM_SIGMAMINUS,                ITM_SIGMAx ,                ITM_NSIGMA     ,          ITM_XBAR   ,            ITM_NULL,                    ITM_NULL,
+                                             ITM_CLSIGMA   ,                ITM_PCSIGMA,                ITM_PCSGM_DPCMN,          ITM_DPCMEAN,            ITM_NULL  ,                  -MNU_TVM                     };
 
 /*      Menu name                           <----------------------------------------------------------------------------- 6 functions ---------------------------------------------------------------------------->  */
 /*                                          <---------------------------------------------------------------------- 6 f shifted functions ------------------------------------------------------------------------->  */
 /*                                          <---------------------------------------------------------------------- 6 g shifted functions ------------------------------------------------------------------------->  */
-TO_QSPI const int16_t menu_TVM[]         = { VAR_NPER,                      VAR_IPonA,                  VAR_PERonA,               VAR_PV,                VAR_PMT,                     VAR_FV,
-                                             ITM_RCL_NPER,                  ITM_RCL_IPonA,              ITM_RCL_PERonA,           ITM_RCL_PV,            ITM_RCL_PMT,                 ITM_RCL_FV,
-                                             ITM_BEGINP,                    ITM_ENDP,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                   -MNU_FIN                      };
+
+////Pauli
+//TO_QSPI const int16_t menu_TVM[]         = { VAR_NPPER,                     VAR_IPonA,                  VAR_PV,                   VAR_PMT,               VAR_FV,                      VAR_PPERonA,                   
+//                                             ITM_RCL_NPPER,                 ITM_RCL_IPonA,              ITM_RCL_PV,               ITM_RCL_PMT,           ITM_RCL_FV,                  VAR_CPERonA,                   
+//                                             ITM_BEGINP,                    ITM_ENDP,                   ITM_CLTVM,               -MNU_AMORT,            -MNU_CASHFL,                 -MNU_FIN               ,//       };
+
+//D option
+//TO_QSPI const int16_t menu_TVM[]         = { 
+//                                             VAR_PPERonA,                   VAR_NPPER,                  VAR_IPonA,                VAR_PV,                VAR_PMT,                     VAR_FV,    
+//                                             VAR_CPERonA,                   ITM_RCL_NPPER,              ITM_RCL_IPonA,            ITM_RCL_PV,            ITM_RCL_PMT,                 ITM_RCL_FV,
+//                                             ITM_BEGINP,                    ITM_ENDP,                   ITM_CLTVM,               -MNU_AMORT,            -MNU_CASHFL,                 -MNU_FIN               ,//       };
+
+//jaco settings on top proposal
+TO_QSPI const int16_t menu_TVM[]         = { 
+                                             VAR_NPPER,                     VAR_IPonA,                  VAR_PV,                   VAR_PMT,               VAR_FV,                      -MNU_AMORT,              
+                                             ITM_RCL_NPPER,                 ITM_RCL_IPonA,              ITM_RCL_PV,               ITM_RCL_PMT,           ITM_RCL_FV,                  -MNU_CASHFL,              
+                                             ITM_BEGINP,                    ITM_ENDP,                   VAR_PPERonA,              VAR_CPERonA,           ITM_CLTVM,                   -MNU_FIN                      };
+
+// remove RCL CPERonA and PPERonA            ITM_BEGINP,                    ITM_ENDP,                   ITM_RCL_PPERonA,          ITM_RCL_CPERonA,       ITM_NULL,                   -MNU_FIN                      };
+
 
 TO_QSPI const int16_t menu_FLAGS[]       = { ITM_SF,                        ITM_FS,                     ITM_FF,                   ITM_STATUS,            ITM_FC,                      ITM_CF,
                                              ITM_FSS,                       ITM_FSC,                    ITM_FSF,                  ITM_FCF,               ITM_FCS,                     ITM_FCC,
@@ -817,7 +836,8 @@ TO_QSPI const int16_t menu_GAP_R[]       = { ITM_GAPPER_R,                  ITM_
                                              ITM_GRP_R,                     ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_GAPNARSPC_R,             ITM_NULL                         };
 
 TO_QSPI const int16_t menu_SHOW[]        = {  };
-
+TO_QSPI const int16_t menu_CASHFL[]      = {  };
+TO_QSPI const int16_t menu_AMORT[]       = {  };
 
 
 #include "softmenuCatalogs.h"
@@ -972,8 +992,9 @@ TO_QSPI const softmenu_t softmenu[] = {
 /* 145 */  {.menuItem = -MNU_SHOW,        .numItems = sizeof(menu_SHOW          )/sizeof(int16_t), .softkeyItem = menu_SHOW           },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
 /* 146 */  {.menuItem = -MNU_Solver_TOOL, .numItems = sizeof(menu_Solver_TOOL   )/sizeof(int16_t), .softkeyItem = menu_Solver_TOOL    },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
 /* 147 */  {.menuItem = -MNU_Sf_TOOL,     .numItems = sizeof(menu_Sf_TOOL       )/sizeof(int16_t), .softkeyItem = menu_Sf_TOOL        },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
-
-/* 146 */  {.menuItem =  0,               .numItems = 0,                                           .softkeyItem = NULL                }
+/* 148 */  {.menuItem = -MNU_CASHFL,      .numItems = sizeof(menu_CASHFL        )/sizeof(int16_t), .softkeyItem = menu_CASHFL         },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
+/* 149 */  {.menuItem = -MNU_AMORT,       .numItems = sizeof(menu_AMORT         )/sizeof(int16_t), .softkeyItem = menu_AMORT          },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
+/* 150 */  {.menuItem =  0,               .numItems = 0,                                           .softkeyItem = NULL                }
 };
 
 
@@ -1811,7 +1832,7 @@ typedef struct {
 
 void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t * vm, int8_t * showCb, int16_t * showValue, char * showText) {
   float tmpF = 0;
-  char tmpS[20];
+  char tmpS[30], tmpSS[20];
   real_t tmpR;
   * vm = (itemNr < 0) || (isFunctionItemAMenu(itemNr%10000)) ? vmReverse : vmNormal;
   * showCb = NOVAL;
@@ -1847,49 +1868,70 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
                       stringAppend(showText + stringByteLength(showText), tmpS);
                       break;
                     }
-      case VAR_ULIM:
-      case VAR_LLIM:
-      case VAR_UX:
-      case VAR_LX:
-                    { stringAppend(itemName, indexOfItems[itemNr%10000].itemSoftmenuName);
-                        real34ToReal(REGISTER_REAL34_DATA(indexOfItems[itemNr%10000].param), &tmpR);
 
-                      if(realIsZero(&tmpR)) {
-                        strcpy(tmpS,"0");
+      case VAR_ULIM    :
+      case VAR_LLIM    :
+      case VAR_UX      :
+      case VAR_LX      :
+
+      case VAR_IPonA   :
+      case VAR_NPPER   :
+      case VAR_PPERonA :
+      case VAR_CPERonA :
+
+      case VAR_PV      : //comment these out to have no subscripted numbers on FV, PV & PMT
+      case VAR_FV      : //comment these out to have no subscripted numbers on FV, PV & PMT
+      case VAR_PMT     : //comment these out to have no subscripted numbers on FV, PV & PMT
+
+                    { stringAppend(itemName, indexOfItems[itemNr%10000].itemSoftmenuName);
+                      real34ToReal(REGISTER_REAL34_DATA(indexOfItems[itemNr%10000].param), &tmpR);
+                      realToFloat(&tmpR, &tmpF);
+
+//                      if(realIsAnInteger(&tmpR) && realCompareLessThan(&tmpR, (itemNr%10000 == VAR_NPPER || itemNr%10000 == VAR_PMT) ? const_1e5 : const_1e6) && realCompareGreaterEqual(&tmpR, const_0)) {
+                      if(tmpF == (int)tmpF &&  tmpF >= 0 && tmpF < ((itemNr%10000 == VAR_NPPER || itemNr%10000 == VAR_PMT) ? 100000 : 1000000)) {
+                        //positive integer smaller than limit
+                        sprintf(tmpS,"%i",(int)tmpF);
                       } else {
-                        itemName[3] = 0; //Blank the im of ^Lim to make space for the numbers
-                        realToFloat(&tmpR, &tmpF);
+                        //negative or large integer or float, all are considered float
+                        
+                        //out of range for display
                         if(tmpF>0 && tmpF<1.0e-34) {
-                          strcpy(tmpS,STD_GAUSS_WHITE_L "1E-34");
+                          strcpy(tmpS,STD_GAUSS_WHITE_L STD_GAUSS_WHITE_L );//"1E-34");
                         } else
                         if(tmpF<0 && tmpF>-1.0e-34) {
-                          strcpy(tmpS,STD_GAUSS_WHITE_R "-1E-34");
+                          strcpy(tmpS,STD_GAUSS_WHITE_R STD_GAUSS_WHITE_R );//"-1E-34");
                         } else
                         if(tmpF>1.0e34) {
-                          strcpy(tmpS,STD_GAUSS_WHITE_R "1E34");
+                          strcpy(tmpS,STD_GAUSS_WHITE_R STD_GAUSS_WHITE_R );//"1E34");
                         } else 
                         if(tmpF<-1.0e34) {
-                          strcpy(tmpS,STD_GAUSS_WHITE_L "-1E34");
+                          strcpy(tmpS,STD_GAUSS_WHITE_L STD_GAUSS_WHITE_L );//"-1E34");
                         } else
 
                         {
-                          if((tmpF>=1000 && tmpF<=9999) || (tmpF>=-999.9 && tmpF<=-100)) { // 999.9  -99.9
+                          if(fabsf(tmpF) < 10000 && itemNr%10000 == VAR_IPonA) {    //force single decimal for percentage
                             sprintf(tmpS,"%6.1f",tmpF);
                           } else
-                          if((tmpF>=100 && tmpF<=999.9) || (tmpF>=-99.9 && tmpF<=-10)) { // 999.9  -99.9
-                            sprintf(tmpS,"%6.1f",tmpF);
+
+
+                          if((tmpF>=10000 && tmpF<10000000) || (tmpF>-1000000 && tmpF<=-10000)) { 
+                            sprintf(tmpS,"%8.0f",tmpF);
                           } else
-                          if((tmpF>=10 && tmpF<=99.9) || (tmpF>=-9.9 && tmpF<=-1)) {     // 99.9   -9.9
-                            sprintf(tmpS,"%6.2f",tmpF);
+                          if((fabs(tmpF)>=0.1 && fabs(tmpF)<10000)) {
+                            sprintf(tmpS,"%8.2f",tmpF);
                           } else
-                          if(tmpF>=1 && tmpF<=9.999) {
-                            sprintf(tmpS,"%6.3f",tmpF);
+                          if((tmpF>=0.001 && tmpF<0.1) || (tmpF<=-0.01 && tmpF>-0.1)) {
+                            sprintf(tmpS,"%8.4f",tmpF);
                           } else
-                          if(tmpF<0) {
-                            sprintf(tmpS,"%6.1G",tmpF);
+                          if(tmpF<0 && tmpF>-0.01) {
+                            sprintf(tmpS,"%8.1E",tmpF);
+                          } else
+                          if(tmpF>0 && tmpF<0.001) {
+                            sprintf(tmpS,"%8.2E",tmpF);
                           } else {
-                            sprintf(tmpS,"%6.2G",tmpF);
+                            sprintf(tmpS,"%8.1G",tmpF);
                           }
+
                           strcpy(tmpS, eatSpacesMid(tmpS));
                           uint16_t ii = stringByteLength(tmpS);
                           if(tmpS[ii-4] == 'E' && (tmpS[ii-3] == '+' || tmpS[ii-3] == '-') && tmpS[ii-2] == '0') {
@@ -1898,7 +1940,38 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
                           }
                         }
                       }
-                      radixProcess(tmpS,tmpS);
+
+                      //Note this section requires knowledge of where single and double byte unicode letters are in the names
+                      //Future: Improve this to read the unicode characters
+                      int buttonDigits = 0;
+                      switch(itemNr%10000) {
+                        case VAR_ULIM    :
+                        case VAR_LLIM    :
+                          if(stringByteLength(tmpS) > 5) {
+                            itemName[3] = 0;
+                          }
+                          break;
+                        case VAR_IPonA   : 
+                        case VAR_NPPER    : buttonDigits = 5; break;
+                        case VAR_PPERonA :
+                        case VAR_CPERonA : buttonDigits = 4; break;
+                        case VAR_PV      : 
+                        case VAR_FV      : buttonDigits = 6; break;
+                        case VAR_PMT     : buttonDigits = 5; break;
+                        default:;
+                      }
+                      if(buttonDigits != 0 && (stringByteLength(tmpS) > buttonDigits )) {
+                          itemName[1] = 0;
+                        }
+
+                      radixProcess(tmpSS,tmpS);
+
+                      //for very short numerics, add one space
+                      if(stringByteLength(tmpSS) < 4) {
+                        sprintf(tmpS, STD_SPACE_3_PER_EM "%s",tmpSS);
+                      } else {
+                        sprintf(tmpS, "%s",tmpSS);                        
+                      }
                       stringAppend(showText + stringByteLength(showText), tmpS);
                       return;
                       break;
@@ -2769,7 +2842,7 @@ bool_t BASE_OVERRIDEONCE = false;
         }
       }
       else {
-      parseEquation(currentFormula, EQUATION_PARSER_MVAR, aimBuffer, tmpString);
+        parseEquation(currentFormula, EQUATION_PARSER_MVAR, aimBuffer, tmpString);
         varList = (uint8_t *)tmpString;
       }
 

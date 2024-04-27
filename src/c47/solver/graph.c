@@ -138,7 +138,7 @@ static void execute_rpn_function(void){
     #if defined(PC_BUILD)
       if(lastErrorCode != 0) {
         #if defined(VERBOSE_SOLVER00)
-        printf("ERROR CODE in execute_rpn_function/fnEqCalc: %u\n",lastErrorCode);
+        printf("ERROR CODE in execute_rpn_function: %u\n",lastErrorCode);
         #endif // VERBOSE_SOLVER00
         lastErrorCode = 0;
       }
@@ -1419,7 +1419,7 @@ void fnEqSolvGraph (uint16_t func) {
       strcpy(plotStatMx,"DrwMX");
       //statGraphReset();    //C43 removed to allow changing of graph params
 
-      if(higherXStartValue>lowerXStartValue + 0.01 && higherXStartValue!=DOUBLE_NOT_INIT && lowerXStartValue!=DOUBLE_NOT_INIT) { //pre-condition the plotter
+      if(higherXStartValue>lowerXStartValue + 0.0001 && higherXStartValue!=DOUBLE_NOT_INIT && lowerXStartValue!=DOUBLE_NOT_INIT) { //pre-condition the plotter
         x_min = lowerXStartValue;
         x_max = higherXStartValue;
       }

@@ -127,100 +127,125 @@ void configCommon(uint16_t idx) {
 #define _RJ    4
 #define _C47   5
 #define _DefltSB 6
-#define _numberOfGrps 6
+#define _TVM     7
+#define _numberOfGrps 7
 
 TO_QSPI const int32_t Settings[] = { 
-//variable     n/a       Reset                        HP35            JM             RJ                         C47           DefltSB    
-       101,    xxx,      xxx,                         ID_DP,          xxx,           xxx,                       ID_43S,       xxx,            //fnInDefault
-       102,    xxx,      xxx,                         9,              3,             xxx,                       xxx,          xxx,            //fnDisplayFormatSigFig
-       103,    xxx,      xxx,                         xxx,            xxx,           xxx,                       3,            xxx,            //fnDisplayFormatAll
-       104,    xxx,      xxx,                         xxx,            xxx,           3,                         xxx,          xxx,            //fnDisplayFormatFix
-       105,    xxx,      1,                           0,              xxx,           xxx,                       1,            xxx,            //BASE_MYM
-       106,    xxx,      0,                           0,              xxx,           xxx,                       0,            xxx,            //BASE_HOME
-       107,    xxx,      6145,                        99,             xxx,           xxx,                       6145,         xxx,            //exponentLimit
-       108,    xxx,      0,                           16,             xxx,           xxx,                       34,           xxx,            //significantDigits
-       109,    xxx,      4,                           1,              xxx,           xxx,                       4,            xxx,            //displayStack
-       110,    xxx,      4,                           1,              xxx,           xxx,                       4,            xxx,            //cachedDisplayStack
-       111,    xxx,      amDegree,                    amRadian,       amDegree,      amRadian,                  amDegree,     xxx,            //currentAngularMode
-       112,    xxx,      3,                           3,              xxx,           xxx,                       _gprl,        xxx,            //grpGroupingLeft
-       113,    xxx,      3,                           3,              xxx,           xxx,                       _gprr,        xxx,            //grpGroupingRight
-       114,    xxx,      0,                           0,              xxx,           xxx,                       _gpr1,        xxx,            //grpGroupingGr1Left
-       115,    xxx,      0,                           0,              xxx,           1,                         _gpr1x,       xxx,            //grpGroupingGr1LeftOverflow
-       116,    xxx,      1,                           0,              xxx,           xxx,                       1,            xxx,            //fneRPN
-       117,    xxx,      xxx,                         RB_FGLNOFF,     xxx,           xxx,                       RB_FGLNFUL,   xxx,            //setFGLSettings
-       118,    xxx,      0,                           xxx,            xxx,           0,                         xxx,          xxx,            //constantFractions    
-       119,    xxx,      CF_NORMAL,                   xxx,            xxx,           xxx,                       xxx,          xxx,            //constantFractionsMode
-       120,    xxx,      0,                           xxx,            xxx,           xxx,                       xxx,          xxx,            //constantFractionsOn
-       121,    xxx,      64,                          xxx,            xxx,           9999,                      64,           xxx,            //denmax
+//variable     n/a       Reset                        HP35            JM             RJ                         C47           DefltSB       TVM
+       101,    xxx,      xxx,                         ID_DP,          xxx,           xxx,                       ID_43S,       xxx,          xxx,    //fnInDefault
+       102,    xxx,      xxx,                         9,              3,             xxx,                       xxx,          xxx,          xxx,    //fnDisplayFormatSigFig
+       103,    xxx,      xxx,                         xxx,            xxx,           xxx,                       3,            xxx,          xxx,    //fnDisplayFormatAll
+       104,    xxx,      xxx,                         xxx,            xxx,           3,                         xxx,          xxx,          xxx,    //fnDisplayFormatFix
+       105,    xxx,      1,                           0,              xxx,           xxx,                       1,            xxx,          xxx,    //BASE_MYM
+       106,    xxx,      0,                           0,              xxx,           xxx,                       0,            xxx,          xxx,    //BASE_HOME
+       107,    xxx,      6145,                        99,             xxx,           xxx,                       6145,         xxx,          xxx,    //exponentLimit
+       108,    xxx,      0,                           16,             xxx,           xxx,                       34,           xxx,          xxx,    //significantDigits
+       109,    xxx,      4,                           1,              xxx,           xxx,                       4,            xxx,          xxx,    //displayStack
+       110,    xxx,      4,                           1,              xxx,           xxx,                       4,            xxx,          xxx,    //cachedDisplayStack
+       111,    xxx,      amDegree,                    amRadian,       amDegree,      amRadian,                  amDegree,     xxx,          xxx,    //currentAngularMode
+       112,    xxx,      3,                           3,              xxx,           xxx,                       _gprl,        xxx,          xxx,    //grpGroupingLeft
+       113,    xxx,      3,                           3,              xxx,           xxx,                       _gprr,        xxx,          xxx,    //grpGroupingRight
+       114,    xxx,      0,                           0,              xxx,           xxx,                       _gpr1,        xxx,          xxx,    //grpGroupingGr1Left
+       115,    xxx,      0,                           0,              xxx,           1,                         _gpr1x,       xxx,          xxx,    //grpGroupingGr1LeftOverflow
+       116,    xxx,      1,                           0,              xxx,           xxx,                       1,            xxx,          xxx,    //fneRPN
+       117,    xxx,      xxx,                         RB_FGLNOFF,     xxx,           xxx,                       RB_FGLNFUL,   xxx,          xxx,    //setFGLSettings
+       118,    xxx,      0,                           xxx,            xxx,           0,                         xxx,          xxx,          xxx,    //constantFractions    
+       119,    xxx,      CF_NORMAL,                   xxx,            xxx,           xxx,                       xxx,          xxx,          xxx,    //constantFractionsMode
+       120,    xxx,      0,                           xxx,            xxx,           xxx,                       xxx,          xxx,          xxx,    //constantFractionsOn
+       121,    xxx,      64,                          xxx,            xxx,           9999,                      64,           xxx,          xxx,    //denmax
 
-//Setsetting   n/a       Reset                        HP35            JM             RJ                         C47           DefltSB    
-       2,      xxx,      xxx,                         SS_4       ,    SS_8,          xxx,                       SS_8,         xxx,            //SetSetting
-       2,      xxx,      xxx,                         ITM_CPXRES0,    ITM_CPXRES1,   xxx,                       ITM_CPXRES1,  xxx,            //SetSetting
-       2,      xxx,      xxx,                         ITM_SPCRES0,    ITM_SPCRES1,   xxx,                       ITM_SPCRES1,  xxx,            //SetSetting
-       2,      xxx,      xxx,                         xxx,            xxx,           JC_IRFRAC,                 xxx,          xxx,            //SetSetting
+//TVM
+ RESERVED_VARIABLE_FV     , xxx,   0,                 xxx,            xxx,           xxx,                       xxx,          xxx,          0,
+ RESERVED_VARIABLE_IPONA  , xxx,   0,                 xxx,            xxx,           xxx,                       xxx,          xxx,          0,
+ RESERVED_VARIABLE_NPPER  , xxx,   0,                 xxx,            xxx,           xxx,                       xxx,          xxx,          0,
+ RESERVED_VARIABLE_PMT    , xxx,   0,                 xxx,            xxx,           xxx,                       xxx,          xxx,          0,
+ RESERVED_VARIABLE_PV     , xxx,   0,                 xxx,            xxx,           xxx,                       xxx,          xxx,          0,
+ RESERVED_VARIABLE_PPERONA, xxx,  12,                 xxx,            xxx,           xxx,                       xxx,          xxx,          12,
+ RESERVED_VARIABLE_CPERONA, xxx,  12,                 xxx,            xxx,           xxx,                       xxx,          xxx,          12,
+       3,      0,        FLAG_TVM_I_KNOWN,            xxx,            xxx,           xxx,                       xxx,          xxx,          FLAG_TVM_I_KNOWN,
+       3,      0,        FLAG_TVM_I_CHANGES,          xxx,            xxx,           xxx,                       xxx,          xxx,          FLAG_TVM_I_CHANGES,
+       3,      1,        FLAG_ENDPMT       ,          xxx,            xxx,           xxx,                       xxx,          xxx,          FLAG_ENDPMT,
+
+
+
+//Setsetting   n/a       Reset                        HP35            JM             RJ                         C47           DefltSB       TVM
+       2,      xxx,      xxx,                         SS_4       ,    SS_8,          xxx,                       SS_8,         xxx,          xxx,   //SetSetting
+       2,      xxx,      xxx,                         ITM_CPXRES0,    ITM_CPXRES1,   xxx,                       ITM_CPXRES1,  xxx,          xxx,   //SetSetting
+       2,      xxx,      xxx,                         ITM_SPCRES0,    ITM_SPCRES1,   xxx,                       ITM_SPCRES1,  xxx,          xxx,   //SetSetting
+       2,      xxx,      xxx,                         xxx,            xxx,           JC_IRFRAC,                 xxx,          xxx,          xxx,   //SetSetting
 
 //FLAG,       set/clear, Reset                        HP35            JM             RJ                         C47           DefltSB    
-       3,      0,        xxx,                         xxx,            FLAG_USER,     FLAG_USER,                 xxx,          xxx        ,    //clearSystemFlag
-       3,      1,        FLAG_SBdate,                 xxx,            xxx,           xxx,                       xxx,          FLAG_SBdate,    //setSystemFlag
-       3,      0,        FLAG_SBtime,                 xxx,            xxx,           xxx,                       xxx,          FLAG_SBtime,    //clearSystemFlag
-       3,      0,        FLAG_SBcr,                   xxx,            xxx,           xxx,                       xxx,          FLAG_SBcr  ,    //clearSystemFlag
-       3,      1,        xxx,                         xxx,            xxx,           FLAG_SBcr,                 xxx,          xxx        ,    //setSystemFlag
-       3,      1,        FLAG_SBcpx,                  xxx,            xxx,           xxx,                       xxx,          FLAG_SBcpx ,    //setSystemFlag
-       3,      0,        FLAG_SBang,                  xxx,            xxx,           xxx,                       xxx,          FLAG_SBang ,    //clearSystemFlag
-       3,      1,        FLAG_SBfrac,                 xxx,            xxx,           xxx,                       xxx,          FLAG_SBfrac,    //setSystemFlag
-       3,      1,        FLAG_SBint ,                 xxx,            xxx,           xxx,                       xxx,          FLAG_SBint ,    //setSystemFlag
-       3,      0,        xxx        ,                 xxx,            xxx,           FLAG_SBint,                xxx,          xxx        ,    //clearSystemFlag
-       3,      0,        FLAG_SBmx  ,                 xxx,            xxx,           xxx,                       xxx,          FLAG_SBmx  ,    //clearSystemFlag
-       3,      1,        xxx        ,                 xxx,            xxx,           FLAG_SBmx,                 xxx,          xxx        ,    //setSystemFlag
-       3,      1,        FLAG_SBtvm ,                 xxx,            xxx,           xxx,                       xxx,          FLAG_SBtvm ,    //setSystemFlag
-       3,      1,        FLAG_SBoc  ,                 xxx,            xxx,           xxx,                       xxx,          FLAG_SBoc  ,    //setSystemFlag
-       3,      0,        FLAG_SBss  ,                 xxx,            xxx,           xxx,                       xxx,          FLAG_SBss  ,    //clearSystemFlag
-       3,      1,        FLAG_SBclk ,                 xxx,            xxx,           xxx,                       xxx,          FLAG_SBclk ,    //setSystemFlag
-       3,      0,        xxx        ,                 xxx,            xxx,           FLAG_SBclk,                xxx,          xxx        ,    //clearSystemFlag
-       3,      1,        FLAG_SBser ,                 xxx,            xxx,           xxx,                       xxx,          FLAG_SBser ,    //setSystemFlag
-       3,      1,        FLAG_SBprn ,                 xxx,            xxx,           xxx,                       xxx,          FLAG_SBprn ,    //setSystemFlag
-       3,      0,        FLAG_SBbatV,                 xxx,            xxx,           xxx,                       xxx,          FLAG_SBbatV,    //clearSystemFlag
-       3,      1,        xxx,                         xxx,            FLAG_SBbatV,   FLAG_SBbatV,               xxx,          xxx        ,    //setSystemFlag
-       3,      0,        FLAG_SBshfR,                 xxx,            xxx,           xxx,                       xxx,          FLAG_SBshfR,    //clearSystemFlag
-       3,      0,        FLAG_FRACT ,                 xxx,            xxx,           xxx,                       xxx,          xxx,            //clearSystemFlag
-       3,      1,        FLAG_DENANY,                 xxx,            xxx,           xxx,                       xxx,          xxx,            //setSystemFlag        //overwritten
-       3,      1,        FLAG_MULTx ,                 xxx,            xxx,           xxx,                       xxx,          xxx,            //setSystemFlag
-       3,      1,        FLAG_AUTOFF,                 xxx,            xxx,           xxx,                       xxx,          xxx,            //setSystemFlag
-       3,      1,        FLAG_ASLIFT,                 xxx,            xxx,           xxx,                       xxx,          xxx,            //setSystemFlag        //overwritten
-       3,      1,        FLAG_PROPFR,                 xxx,            xxx,           xxx,                       xxx,          xxx,            //setSystemFlag
-       3,      1,        FLAG_ENDPMT,                 xxx,            xxx,           xxx,                       xxx,          xxx,            //setSystemFlag
-       3,      1,        FLAG_HPRP  ,                 xxx,            xxx,           xxx,                       xxx,          xxx,            //setSystemFlag
-       3,      0,        xxx        ,                 xxx,            FLAG_HPRP,     FLAG_HPRP,                 xxx,          xxx,            //clearSystemFlag
-       3,      1,        FLAG_HPBASE,                 xxx,            FLAG_HPBASE,   xxx,                       xxx,          xxx,            //setSystemFlag
-       3,      0,        xxx        ,                 xxx,            xxx,           FLAG_HPBASE,               xxx,          xxx,            //clearSystemFlag
-       3,      0,        FLAG_2TO10 ,                 xxx,            FLAG_2TO10,    FLAG_2TO10,                xxx,          xxx,            //clearSystemFlag
-       3,      0,        xxx        ,                 xxx,            FLAG_POLAR,    xxx,                       xxx,          xxx,            //clearSystemFlag
-       3,      0,        xxx ,                        xxx,            xxx,           xxx,                       FLAG_CPXj,    xxx,            //clearSystemFlag
-       3,      1,        xxx,                         xxx,            FLAG_CPXj,     xxx,                       xxx,          xxx,            //setSystemFlag
-       3,      0,        FLAG_FRCSRN ,                xxx,            xxx,           xxx,                       xxx,          xxx,            //clearSystemFlag
-       3,      1,        xxx,                         xxx,            FLAG_FRCSRN,   xxx,                       xxx,          xxx,            //setSystemFlag
-       3,      1,        FLAG_CPXRES,                 xxx,            xxx,           xxx,                       xxx,          xxx,            //setSystemFlag
-       3,      1,        FLAG_SSIZE8,                 xxx,            xxx,           xxx,                       xxx,          xxx,            //setSystemFlag
-       3,      0,        FLAG_DENANY,                 xxx,            xxx,           xxx,                       xxx,          xxx,            //clearSystemFlag
-       3,      1,        xxx,                         xxx,            xxx,           FLAG_DENANY,               xxx,          xxx,            //setSystemFlag
-       3,      0,        FLAG_ASLIFT,                 xxx,            xxx,           xxx,                       xxx,          xxx,            //clearSystemFlag
-       3,      0,        FLAG_DENFIX,                 xxx,            xxx,           xxx,                       xxx,          xxx,            //clearSystemFlag
-       3,      1,        FLAG_SPCRES,                 xxx,            xxx,           xxx,                       xxx,          xxx,            //setSystemFlag
+       3,      0,        FLAG_FRCYC        ,          xxx,            xxx,           xxx,                       xxx,          xxx,          xxx,  //clearSystemFlag(FLAG_FRCYC);
+       3,      1,        FLAG_MONIT        ,          xxx,            xxx,           xxx,                       xxx,          xxx,          xxx,  //setSystemFlag(FLAG_MONIT);
+       3,      1,        FLAG_SH_LONGPRESS ,          xxx,            xxx,           xxx,                       xxx,          xxx,          xxx,  //setSystemFlag(FLAG_SH_LONGPRESS);
+
+       3,      0,        xxx,                         xxx,            FLAG_USER,     FLAG_USER,                 xxx,          xxx        ,  xxx,  //clearSystemFlag
+       3,      1,        FLAG_SBdate,                 xxx,            xxx,           xxx,                       xxx,          FLAG_SBdate,  xxx,  //setSystemFlag
+       3,      0,        FLAG_SBtime,                 xxx,            xxx,           xxx,                       xxx,          FLAG_SBtime,  xxx,  //clearSystemFlag
+       3,      0,        FLAG_SBcr,                   xxx,            xxx,           xxx,                       xxx,          FLAG_SBcr  ,  xxx,  //clearSystemFlag
+       3,      1,        xxx,                         xxx,            xxx,           FLAG_SBcr,                 xxx,          xxx        ,  xxx,  //setSystemFlag
+       3,      1,        FLAG_SBcpx,                  xxx,            xxx,           xxx,                       xxx,          FLAG_SBcpx ,  xxx,  //setSystemFlag
+       3,      0,        FLAG_SBang,                  xxx,            xxx,           xxx,                       xxx,          FLAG_SBang ,  xxx,  //clearSystemFlag
+       3,      1,        FLAG_SBfrac,                 xxx,            xxx,           xxx,                       xxx,          FLAG_SBfrac,  xxx,  //setSystemFlag
+       3,      1,        FLAG_SBint ,                 xxx,            xxx,           xxx,                       xxx,          FLAG_SBint ,  xxx,  //setSystemFlag
+       3,      0,        xxx        ,                 xxx,            xxx,           FLAG_SBint,                xxx,          xxx        ,  xxx,  //clearSystemFlag
+       3,      0,        FLAG_SBmx  ,                 xxx,            xxx,           xxx,                       xxx,          FLAG_SBmx  ,  xxx,  //clearSystemFlag
+       3,      1,        xxx        ,                 xxx,            xxx,           FLAG_SBmx,                 xxx,          xxx        ,  xxx,  //setSystemFlag
+       3,      1,        FLAG_SBtvm ,                 xxx,            xxx,           xxx,                       xxx,          FLAG_SBtvm ,  xxx,  //setSystemFlag
+       3,      1,        FLAG_SBoc  ,                 xxx,            xxx,           xxx,                       xxx,          FLAG_SBoc  ,  xxx,  //setSystemFlag
+       3,      0,        FLAG_SBss  ,                 xxx,            xxx,           xxx,                       xxx,          FLAG_SBss  ,  xxx,  //clearSystemFlag
+       3,      1,        FLAG_SBclk ,                 xxx,            xxx,           xxx,                       xxx,          FLAG_SBclk ,  xxx,  //setSystemFlag
+       3,      0,        xxx        ,                 xxx,            xxx,           FLAG_SBclk,                xxx,          xxx        ,  xxx,  //clearSystemFlag
+       3,      1,        FLAG_SBser ,                 xxx,            xxx,           xxx,                       xxx,          FLAG_SBser ,  xxx,  //setSystemFlag
+       3,      1,        FLAG_SBprn ,                 xxx,            xxx,           xxx,                       xxx,          FLAG_SBprn ,  xxx,  //setSystemFlag
+       3,      0,        FLAG_SBbatV,                 xxx,            xxx,           xxx,                       xxx,          FLAG_SBbatV,  xxx,  //clearSystemFlag
+       3,      1,        xxx,                         xxx,            FLAG_SBbatV,   FLAG_SBbatV,               xxx,          xxx        ,  xxx,  //setSystemFlag
+       3,      0,        FLAG_SBshfR,                 xxx,            xxx,           xxx,                       xxx,          FLAG_SBshfR,  xxx,  //clearSystemFlag
+       3,      0,        FLAG_FRACT ,                 xxx,            xxx,           xxx,                       xxx,          xxx,          xxx,  //clearSystemFlag
+       3,      1,        FLAG_DENANY,                 xxx,            xxx,           xxx,                       xxx,          xxx,          xxx,  //setSystemFlag        //overwritten
+       3,      1,        FLAG_MULTx ,                 xxx,            xxx,           xxx,                       xxx,          xxx,          xxx,  //setSystemFlag
+       3,      1,        FLAG_AUTOFF,                 xxx,            xxx,           xxx,                       xxx,          xxx,          xxx,  //setSystemFlag
+       3,      1,        FLAG_ASLIFT,                 xxx,            xxx,           xxx,                       xxx,          xxx,          xxx,  //setSystemFlag        //overwritten
+       3,      1,        FLAG_PROPFR,                 xxx,            xxx,           xxx,                       xxx,          xxx,          xxx,  //setSystemFlag
+       3,      1,        FLAG_ENDPMT,                 xxx,            xxx,           xxx,                       xxx,          xxx,          xxx,  //setSystemFlag
+       3,      1,        FLAG_HPRP  ,                 xxx,            xxx,           xxx,                       xxx,          xxx,          xxx,  //setSystemFlag
+       3,      0,        xxx        ,                 xxx,            FLAG_HPRP,     FLAG_HPRP,                 xxx,          xxx,          xxx,  //clearSystemFlag
+       3,      1,        FLAG_HPBASE,                 xxx,            FLAG_HPBASE,   xxx,                       xxx,          xxx,          xxx,  //setSystemFlag
+       3,      0,        xxx        ,                 xxx,            xxx,           FLAG_HPBASE,               xxx,          xxx,          xxx,  //clearSystemFlag
+       3,      0,        FLAG_2TO10 ,                 xxx,            FLAG_2TO10,    FLAG_2TO10,                xxx,          xxx,          xxx,  //clearSystemFlag
+       3,      0,        xxx        ,                 xxx,            FLAG_POLAR,    xxx,                       xxx,          xxx,          xxx,  //clearSystemFlag
+       3,      0,        xxx ,                        xxx,            xxx,           xxx,                       FLAG_CPXj,    xxx,          xxx,  //clearSystemFlag
+       3,      1,        xxx,                         xxx,            FLAG_CPXj,     xxx,                       xxx,          xxx,          xxx,  //setSystemFlag
+       3,      0,        FLAG_FRCSRN ,                xxx,            xxx,           xxx,                       xxx,          xxx,          xxx,  //clearSystemFlag
+       3,      1,        xxx,                         xxx,            FLAG_FRCSRN,   xxx,                       xxx,          xxx,          xxx,  //setSystemFlag
+       3,      1,        FLAG_CPXRES,                 xxx,            xxx,           xxx,                       xxx,          xxx,          xxx,  //setSystemFlag
+       3,      1,        FLAG_SSIZE8,                 xxx,            xxx,           xxx,                       xxx,          xxx,          xxx,  //setSystemFlag
+       3,      0,        FLAG_DENANY,                 xxx,            xxx,           xxx,                       xxx,          xxx,          xxx,  //clearSystemFlag
+       3,      1,        xxx,                         xxx,            xxx,           FLAG_DENANY,               xxx,          xxx,          xxx,  //setSystemFlag
+       3,      0,        FLAG_ASLIFT,                 xxx,            xxx,           xxx,                       xxx,          xxx,          xxx,  //clearSystemFlag
+       3,      0,        FLAG_DENFIX,                 xxx,            xxx,           xxx,                       xxx,          xxx,          xxx,  //clearSystemFlag
+       3,      1,        FLAG_SPCRES,                 xxx,            xxx,           xxx,                       xxx,          xxx,          xxx,  //setSystemFlag
 
 //fnSetGapChar n/a       Reset                        HP35            JM             RJ                         C47           DefltSB    
-       4,      xxx,      0+    ITM_SPACE_PUNCTUATION, ITM_NULL,       xxx,           0+    ITM_SPACE_4_PER_EM,  0 +   _gapl,  xxx,            //fnSetGapChar
-       4,      xxx,      32768+ITM_SPACE_PUNCTUATION, ITM_NULL+32768, xxx,           32768+ITM_NULL          ,  32768+_gapr,  xxx,            //fnSetGapChar
-       4,      xxx,      49152+ITM_PERIOD           , ITM_WDOT+49152, xxx,           49152+ITM_WCOMMA        ,  49152+_gaprx, xxx,            //fnSetGapChar
+       4,      xxx,      0+    ITM_SPACE_PUNCTUATION, ITM_NULL,       xxx,           0+    ITM_SPACE_4_PER_EM,  0 +   _gapl,  xxx,          xxx,  //fnSetGapChar
+       4,      xxx,      32768+ITM_SPACE_PUNCTUATION, ITM_NULL+32768, xxx,           32768+ITM_NULL          ,  32768+_gapr,  xxx,          xxx,  //fnSetGapChar
+       4,      xxx,      49152+ITM_PERIOD           , ITM_WDOT+49152, xxx,           49152+ITM_WCOMMA        ,  49152+_gaprx, xxx,          xxx,  //fnSetGapChar
+
+       0,      0,        0,                           0,              0,             0,                         0,            0,            0
     };
 
 
 void Sett(int16_t grp) {
   int16_t ptr = -1;
+  real_t realt;
 
-  while(Settings[++ptr*(_numberOfGrps+2) + 0] >= 101) {
+  while(Settings[++ptr*(_numberOfGrps+2) + 0] != 0) {
     if(Settings[  ptr*(_numberOfGrps+2) + 1 + grp] != xxx) {
+
       #if defined(PC_BUILD)
-        printf("Sett1:%d, line #%d\n",ptr, Settings[ptr*(_numberOfGrps+2) + 0]);
+        if(Settings[ptr*(_numberOfGrps+2) + 0] >= 101 && Settings[ptr*(_numberOfGrps+2) + 0] <= 121) {
+          printf("\nSett1:%5d,  +0=%5d, +1=%5d, +1+grp=%5d ",ptr, Settings[ptr*(_numberOfGrps+2) + 0], Settings[ptr*(_numberOfGrps+2) + 1], Settings[ptr*(_numberOfGrps+2) + 1 + grp]);
+        }
       #endif //PC_BUILD
       switch (Settings[ptr*(_numberOfGrps+2) + 0]) {
         case 101: {fnInDefault                  (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}
@@ -244,38 +269,53 @@ void Sett(int16_t grp) {
         case 119: {constantFractionsMode      = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}
         case 120: {constantFractionsOn        = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]) == 1 ? true : false;break;}
         case 121: {denMax                     = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}
+
+        case RESERVED_VARIABLE_FV     :
+        case RESERVED_VARIABLE_IPONA  : 
+        case RESERVED_VARIABLE_NPPER  : 
+        case RESERVED_VARIABLE_PMT    : 
+        case RESERVED_VARIABLE_PV     :  
+        case RESERVED_VARIABLE_PPERONA:
+        case RESERVED_VARIABLE_CPERONA: {
+            int32ToReal(Settings[ptr*(_numberOfGrps+2) + 1 + grp],&realt);
+            reallocateRegister(Settings[ptr*(_numberOfGrps+2) + 0], dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+            realToReal34(&realt, REGISTER_REAL34_DATA(Settings[ptr*(_numberOfGrps+2) + 0]));
+            #if defined(PC_BUILD)
+              printf("Sett1A Register %d = ",Settings[ptr*(_numberOfGrps+2) + 0]);
+              printRegisterToConsole(Settings[ptr*(_numberOfGrps+2) + 0]," : ","\n");
+            #endif //PC_BUILD
+            break;
+          }
+    
+        case 2 : {
+            #if defined(PC_BUILD)
+              printf("\nSett2:%5d:%5d\n",ptr,Settings[ptr*(_numberOfGrps+2) + 1 + grp]);
+            #endif //PC_BUILD
+            SetSetting (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);
+            break;
+          } 
+
+        case 3: {
+          #if defined(PC_BUILD)
+            printf("\nSett3:%5d:%5d",ptr,Settings[ptr*(_numberOfGrps+2) + 1 + grp]);
+          #endif //PC_BUILD
+          forceSystemFlag (Settings[ptr*(_numberOfGrps+2) + 1 + grp], Settings[  ptr*(_numberOfGrps+2) + 1 ]); 
+          break;
+          } 
+
+        case 4: {
+          #if defined(PC_BUILD)
+            printf("\nSett4:%5d:%5d",ptr,Settings[ptr*(_numberOfGrps+2) + 1 + grp]); 
+          #endif //PC_BUILD
+          fnSetGapChar (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);
+          }
         default:break;
       }
     }
   }
-
-  ptr--;
-  while(Settings[++ptr*(_numberOfGrps+2) + 0] == 2) {
-    if(Settings[  ptr*(_numberOfGrps+2) + 1 + grp] != xxx) {
-      #if defined(PC_BUILD)
-        printf("Sett2:%d:%d\n",ptr,Settings[ptr*(_numberOfGrps+2) + 1 + grp]);
-      #endif //PC_BUILD
-      SetSetting (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);
-    } 
-  }
-  ptr--;
-  while(Settings[++ptr*(_numberOfGrps+2) + 0] == 3) {
-    if(Settings[  ptr*(_numberOfGrps+2) + 1 + grp] != xxx) {
-      #if defined(PC_BUILD)
-        printf("Sett3:%d:%d\n",ptr,Settings[ptr*(_numberOfGrps+2) + 1 + grp]);
-      #endif //PC_BUILD
-      forceSystemFlag (Settings[ptr*(_numberOfGrps+2) + 1 + grp], Settings[  ptr*(_numberOfGrps+2) + 1 ]); 
-    }
-  }
-  ptr--;
-  while(Settings[++ptr*(_numberOfGrps+2) + 0] == 4) {
-    if(Settings[  ptr*(_numberOfGrps+2) + 1 + grp] != xxx) {
-      #if defined(PC_BUILD)
-        printf("Sett4:%d:%d\n",ptr,Settings[ptr*(_numberOfGrps+2) + 1 + grp]); 
-      #endif //PC_BUILD
-      fnSetGapChar (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);
-    } 
-  }
+  #if defined(PC_BUILD)
+    printf("\n");
+  #endif //PC_BUILD
 }
 
 
@@ -1181,6 +1221,9 @@ void fnShowVersion(uint8_t option) {  //KEYS VERSION LOADED
 }
 
 
+void fnResetTVM (uint16_t unusedButMandatoryParameter) {
+  Sett(_TVM);
+}
 
 
 
@@ -1357,7 +1400,7 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     //kbd_usr[19].gShifted    = ITM_SXY;
     //kbd_usr[20].gShifted    = ITM_LYtoM;
 
-    // initialize 9 real34 reserved variables: ACC, ↑Lim, ↓Lim, FV, i%/a, NPER, PER/a, PMT, and PV
+    // initialize 9 real34 reserved variables: ACC, ↑Lim, ↓Lim, FV, i%/a, NPPER, PPER/a, PMT, and PV
     for(int i=0; i<9; i++) {
       real34Zero(allocC47Blocks(REAL34_SIZE_IN_BLOCKS));
     }
@@ -1495,12 +1538,11 @@ Sett(_Reset);
 //---    setSystemFlag  (FLAG_ENDPMT);// TVM application = END mode
 //---    setSystemFlag  (FLAG_HPRP  );
 //---    setSystemFlag  (FLAG_HPBASE);
-//---    clearSystemFlag(FLAG_2TO10  );
+//---    clearSystemFlag(FLAG_2TO10 );
+//---    clearSystemFlag(FLAG_FRCYC );
+//---    setSystemFlag(FLAG_MONIT   );
+//---    setSystemFlag(FLAG_SH_LONGPRESS);
 
-clearSystemFlag(FLAG_FRCYC);
-setSystemFlag(FLAG_MONIT);
-
-    setSystemFlag(FLAG_SH_LONGPRESS);
 
     hourGlassIconEnabled = false;
     watchIconEnabled = false;
