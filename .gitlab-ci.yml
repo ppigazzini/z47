@@ -89,8 +89,8 @@ codeDocs:
   stage: test
   script:
     - apt-get update -qq
-    - apt-get install -qq -y git python3-pip python3-mesonpy python3-breathe ninja-build pkg-config build-essential libgtk-3-dev libgmp-dev doxygen
-    - python3 -m --break-system-packages pip install 'Sphinx<7.2' furo
+    - apt-get install -qq -y git python3-pip python3-mesonpy python3-breathe python3-furo ninja-build pkg-config build-essential libgtk-3-dev libgmp-dev doxygen
+    - python3 -m pip --break-system-packages install 'Sphinx<7.2'
     - make docs
 
 upload:
