@@ -748,7 +748,9 @@ void fnBatteryVoltage(uint16_t unusedButMandatoryParameter) {
   #endif // PC_BUILD
 
   #if defined(DMCP_BUILD)
-    int32ToReal(get_vbat(), &value);
+//    int32ToReal(get_vbat(), &value);
+    int tmpVbat = get_vbat();
+    int32ToReal(tmpVbat < vbatVIntegrated ? tmpVbat : vbatVIntegrated, &value);
   #endif // DMCP_BUILD
 
   temporaryInformation = TI_BATTV;
@@ -1808,6 +1810,9 @@ Sett(_Reset);
   int16_t loop=0;
   int16_t loop2=0;
   int updateVbatIntegrated(bool_t minutePulse) {
+    if(getSystemFlag(FLAG_USB)) {
+        return 3100;
+    }
     int tmpVbat = get_vbat();
     if(tmpVbat > 1500 && tmpVbat < 3100) {
       if(tmpVbat < vbatVIntegrated) {
@@ -1817,7 +1822,7 @@ Sett(_Reset);
       if(tmpVbat > vbatVIntegrated) {
         #ifndef MONITOR_VOLTAGE_INTEGRATOR
           //During monitoring do not force a reset to normal and high voltage
-          if(tmpVbat > 2900) {                                                              //if high enough, reset
+          if(tmpVbat > 2900) {                                                           //if high enough, reset
             vbatVIntegrated = tmpVbat;
           loop = 0;
           } else
@@ -1835,11 +1840,14 @@ Sett(_Reset);
       //Monitoring for voltage integrator
       if(minutePulse) {
         char aaa[120];
-        sprintf(aaa,"         V=%i VI=%i loop=%i %i  ",tmpVbat, vbatVIntegrated, loop++, loop2++);
+        sprintf(aaa,"         V=%i VI=%i loop=%i cnt=%i   ",tmpVbat, vbatVIntegrated, loop++, loop2++);
         print_numberstr(aaa,true);
         convertDoubleToReal34RegisterPush((double)vbatVIntegrated, REGISTER_X);
-        convertDoubleToReal34RegisterPush((double)loop2, REGISTER_X);
+        uint8_t min = rtc_read_min();
+        convertDoubleToReal34RegisterPush((double)min, REGISTER_X);
         fnSigma(1);
+        fnDrop(0);
+        fnDrop(0);
       }
     #endif
 
