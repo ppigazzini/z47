@@ -1805,7 +1805,10 @@ Sett(_Reset);
   }
 
 
-  int loop=0;
+#define MONITOR
+
+  int16_t loop=0;
+  int16_t loop2=0;
   int updateVbatIntegrated(bool_t minutePulse) {
     int tmpVbat = get_vbat();
     if(tmpVbat > 1500 && tmpVbat < 3100) {
@@ -1814,10 +1817,12 @@ Sett(_Reset);
         loop = 0;
       } else
       if(tmpVbat > vbatVIntegrated) {
-        if(tmpVbat > 2900) {                                                              //if high enough, reset
-          vbatVIntegrated = tmpVbat;
-        loop = 0;
-        } else
+        #ifndef MONITOR
+          if(tmpVbat > 2900) {                                                              //if high enough, reset
+            vbatVIntegrated = tmpVbat;
+          loop = 0;
+          } else
+        #endif
         if(vbatVIntegrated < tmpVbat && minutePulse) {                                    // Every min if vbatTIntegrated is lower than actual V, then creep closer
           vbatVIntegrated = vbatVIntegrated + max(1,((tmpVbat - vbatVIntegrated) >> 4));  //   (2500 - 2350) >> 4 = 9 increase every minute
         }
@@ -1827,12 +1832,14 @@ Sett(_Reset);
       loop = 0;
     }
 
-    //Monitoring for voltage integrator
-    if(minutePulse) {
+    #ifdef MONITOR
+      //Monitoring for voltage integrator
+      if(minutePulse) {
         char aaa[120];
-        sprintf(aaa,"V=%i VI=%i loop=%i",tmpVbat, vbatVIntegrated, loop++);
+        sprintf(aaa,"         V=%i VI=%i loop=%i %i",tmpVbat, vbatVIntegrated, loop++, loop2++);
         print_numberstr(aaa,true);
-    }
+      }
+    #endif
 
     return tmpVbat; //returning the direct battery voltage; to enable the selective usage of the integrator
   }
