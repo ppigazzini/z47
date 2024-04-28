@@ -1818,6 +1818,7 @@ Sett(_Reset);
       } else
       if(tmpVbat > vbatVIntegrated) {
         #ifndef MONITOR
+          //During monitoring do not force a reset for normal and high voltage
           if(tmpVbat > 2900) {                                                              //if high enough, reset
             vbatVIntegrated = tmpVbat;
           loop = 0;
@@ -1836,7 +1837,7 @@ Sett(_Reset);
       //Monitoring for voltage integrator
       if(minutePulse) {
         char aaa[120];
-        sprintf(aaa,"         V=%i VI=%i loop=%i %i",tmpVbat, vbatVIntegrated, loop++, loop2++);
+        sprintf(aaa,"         V=%i VI=%i loop=%i %i  ",tmpVbat, vbatVIntegrated, loop++, loop2++);
         print_numberstr(aaa,true);
       }
     #endif
