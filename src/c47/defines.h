@@ -95,13 +95,17 @@
 //Testing and debugging
   #define    DM42_KEYCLICK              //Add a 1 ms click after key presses and releases, for scope syncing
   #undef     DM42_KEYCLICK
-  #define    CLICK_REFRESHSCR             //Add a 5 ms click before refresh screen
+  #define    CLICK_REFRESHSCR           //Add a 5 ms click before refresh screen
   #undef     CLICK_REFRESHSCR
 
 
 
   #define    BATTERYTEST                //RNG nnnn is used to force the battery voltage in the simulator
   #undef     BATTERYTEST
+
+  #define    MONITOR_VOLTAGE_INTEGRATOR
+  #undef     MONITOR_VOLTAGE_INTEGRATOR
+
 
 
 //Debug showFunctionName

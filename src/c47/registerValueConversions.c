@@ -30,6 +30,7 @@
 #include "mathematics/tan.h"
 #include "memory.h"
 #include "registers.h"
+#include "stack.h"
 #include <string.h>
 
 #include "c47.h"
@@ -654,7 +655,19 @@ void convertReal34MatrixRegisterToComplex34MatrixRegister(calcRegister_t source,
       }
     #endif // PC_BUILD
   }
+
+
+  void convertDoubleToReal34RegisterPush(double x, calcRegister_t destination) {
+    setSystemFlag(FLAG_ASLIFT);
+    liftStack();
+    convertDoubleToReal34Register(x, destination);
+    setSystemFlag(FLAG_ASLIFT);
+  }
+
+
+
 #endif // !TESTSUITE_BUILD
+
 
 
 double convertRegisterToDouble(calcRegister_t regist) {

@@ -748,7 +748,9 @@ void fnBatteryVoltage(uint16_t unusedButMandatoryParameter) {
   #endif // PC_BUILD
 
   #if defined(DMCP_BUILD)
-    int32ToReal(get_vbat(), &value);
+//    int32ToReal(get_vbat(), &value);
+    int tmpVbat = get_vbat();
+    int32ToReal(tmpVbat < vbatVIntegrated ? tmpVbat : vbatVIntegrated, &value);
   #endif // DMCP_BUILD
 
   temporaryInformation = TI_BATTV;
@@ -1805,8 +1807,12 @@ Sett(_Reset);
   }
 
 
-  int loop=0;
+  int16_t loop=0;
+  int16_t loop2=0;
   int updateVbatIntegrated(bool_t minutePulse) {
+    if(getSystemFlag(FLAG_USB)) {
+        return 3100;
+    }
     int tmpVbat = get_vbat();
     if(tmpVbat > 1500 && tmpVbat < 3100) {
       if(tmpVbat < vbatVIntegrated) {
@@ -1814,10 +1820,13 @@ Sett(_Reset);
         loop = 0;
       } else
       if(tmpVbat > vbatVIntegrated) {
-        if(tmpVbat > 2900) {                                                              //if high enough, reset
-          vbatVIntegrated = tmpVbat;
-        loop = 0;
-        } else
+        #ifndef MONITOR_VOLTAGE_INTEGRATOR
+          //During monitoring do not force a reset to normal and high voltage
+          if(tmpVbat > 2900) {                                                           //if high enough, reset
+            vbatVIntegrated = tmpVbat;
+          loop = 0;
+          } else
+        #endif
         if(vbatVIntegrated < tmpVbat && minutePulse) {                                    // Every min if vbatTIntegrated is lower than actual V, then creep closer
           vbatVIntegrated = vbatVIntegrated + max(1,((tmpVbat - vbatVIntegrated) >> 4));  //   (2500 - 2350) >> 4 = 9 increase every minute
         }
@@ -1827,10 +1836,20 @@ Sett(_Reset);
       loop = 0;
     }
 
-    //Monitoring for voltage integrator
-    //char aaa[120];
-    //sprintf(aaa,"V=%i VI=%i loop=%i",tmpVbat, vbatVIntegrated, loop++);
-    //print_numberstr(aaa,true);
+    #ifdef MONITOR_VOLTAGE_INTEGRATOR
+      //Monitoring for voltage integrator
+      if(minutePulse) {
+        char aaa[120];
+        sprintf(aaa,"         V=%i VI=%i loop=%i cnt=%i   ",tmpVbat, vbatVIntegrated, loop++, loop2++);
+        print_numberstr(aaa,true);
+        convertDoubleToReal34RegisterPush((double)vbatVIntegrated, REGISTER_X);
+        uint8_t min = rtc_read_min();
+        convertDoubleToReal34RegisterPush((double)min, REGISTER_X);
+        fnSigma(1);
+        fnDrop(0);
+        fnDrop(0);
+      }
+    #endif
 
     return tmpVbat; //returning the direct battery voltage; to enable the selective usage of the integrator
   }
@@ -1852,7 +1871,7 @@ Sett(_Reset);
 
       int tmpVbat = updateVbatIntegrated(false);
 
-      if(tmpVbat < 2000 ) {// || vbatVIntegrated < 2000) { //temporary disable shutdown from the new integrator system. The indicator uses the integrator.
+      if(tmpVbat < 2100 || vbatVIntegrated < 2100) { //shutdown from the new integrator system. The indicator uses the integrator.
         if(!getSystemFlag(FLAG_LOWBAT)) {
           setSystemFlag(FLAG_LOWBAT);
           showHideUsbLowBattery();
