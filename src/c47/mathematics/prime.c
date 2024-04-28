@@ -500,7 +500,7 @@ void nextPrime(longInteger_t currentNumber, longInteger_t nextPrime) {
 
 #define WGR              //verbose
 #undef WGR
-#define MAX_FACTORS 87
+#define MAX_FACTORS 100//87
 
 typedef struct FactorAdder
 {
