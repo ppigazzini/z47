@@ -574,7 +574,7 @@
 #define FLAG_2TO10                            0x803D
 #define FLAG_SH_LONGPRESS                     0x803E
 #define FLAG_WRAPEDG                          0xc03F
-#define FLAG_MONIT                            0x8040 // MONIT MUST be the first of the second flag word
+#define FLAG_MONIT                            0x8040 // MONIT MUST be the first of the secoind flag word
 #define FLAG_FRCYC                            0x8041
 #define FLAG_TVM_I_KNOWN                      0xc042
 #define FLAG_TVM_I_CHANGES                    0xc043
@@ -882,7 +882,7 @@ enum REG_NUMBERS { // C program register codes
   INVALID_VARIABLE = 2199,                               //2199   // Old backup.cfg files will contain currentInputVariable to be 2043, which is fixed
 
   // Labels
-  FIRST_LABEL,                                           //2200   // Leave enough space for new variables, staring at a gap from the VARIABLES
+  FIRST_LABEL,                                           //2044
   LAST_LABEL = 6999,                                     //6999
 
   // Local registers
