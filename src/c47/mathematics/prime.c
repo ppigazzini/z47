@@ -519,12 +519,13 @@ void clearFactorAdder(FactorAdder_t *faddr) {
   longIntegerFree(faddr->lastFactor);
 }
 
-void dumpExponents(real34Matrix_t *matrix, FactorAdder_t *faddr) {
+void dumpExponents(real34Matrix_t *matrix, FactorAdder_t *faddr, uint16_t dumpForFewerThan) {
   uint16_t n2 = faddr->nExpons;
+  uint16_t cols = REGISTER_DATA(REGISTER_X)->matrixColumns;
+  if(cols >= dumpForFewerThan) return;
   #ifdef WGR
     printf("wgr:  fill expons:  *nExpons==%u, n2==%u\n", faddr->nExpons, n2);
     uint16_t rows = REGISTER_DATA(REGISTER_X)->matrixRows;
-    uint16_t cols = REGISTER_DATA(REGISTER_X)->matrixColumns;
     printf("wgr:  rows==%u, cols==%u\n", (uint16_t)rows, (uint16_t)cols);
   #endif
   linkToRealMatrixRegister(REGISTER_X,  matrix);
@@ -538,17 +539,12 @@ void dumpExponents(real34Matrix_t *matrix, FactorAdder_t *faddr) {
   }
 }
 
-bool_t addFactor(longInteger_t factor, real34Matrix_t *matrix, const real34_t *lastAdded,FactorAdder_t *faddr) {
+
+bool_t addFactor(longInteger_t lastFactor, longInteger_t factor, real34Matrix_t *matrix, const real34_t *lastAdded,FactorAdder_t *faddr) {
   //printLongIntegerToConsole(factor,"-->","\n");
-  static longInteger_t lastFactor;
-  static bool_t lastFactor_initialized = false;
   #ifdef WGR
     printf("wgr:  addFactor()\n");
   #endif //WGR
-  if ( !lastFactor_initialized ) {
-    longIntegerInit(lastFactor);
-    lastFactor_initialized = true;
-  }
   if(getRegisterDataType(REGISTER_X) != dtReal34Matrix) {
     //Initialize Memory for Matrix
     if(initMatrixRegister(REGISTER_X, 2, 0, false)) {
@@ -607,8 +603,9 @@ bool_t addFactor(longInteger_t factor, real34Matrix_t *matrix, const real34_t *l
   }
   else {
     bool_t incNExpons = longIntegerSign(lastFactor) ==0 ? false : true;
-    if ( !incNExpons ) // FIXME Cheat
-        c = 0;
+    if ( !incNExpons ) {
+      c = 0;
+    }
     #ifdef WGR
       printf("wgr:  lastFactor restart:  n==%u, c==%u, incNExpons==%d\n", n, c, incNExpons);
     #endif
@@ -628,7 +625,7 @@ bool_t addFactor(longInteger_t factor, real34Matrix_t *matrix, const real34_t *l
             sprintf(errorMessage, "Maximum number of factors exceeded %" PRIu32 STD_CROSS "%" PRIu32 " matrix", rows, cols);
             moreInfoOnError("In function addFactor:", errorMessage, NULL, NULL);
           #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-          return false;
+        return false;
         #endif // !TESTSUITE_BUILD        
       }
       ++wkgCols;
@@ -648,8 +645,7 @@ bool_t addFactor(longInteger_t factor, real34Matrix_t *matrix, const real34_t *l
     c = n/2;
     longIntegerCopy(factor, lastFactor);
   }
-  dumpExponents(matrix, faddr);
-  return true;
+  return true;  
 }
 
 
@@ -660,7 +656,7 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
   #endif //TESTSUITE_BUILD
   real34_t m34, lastAdded;
 
-  longInteger_t currentNumber, nextPrime, remainder, quotient, eval, temp;
+  longInteger_t lastFactor, currentNumber, nextPrime, remainder, quotient, eval, temp;
 
   longIntegerInit(currentNumber);
   longIntegerInit(nextPrime);
@@ -668,6 +664,7 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
   longIntegerInit(quotient);
   longIntegerInit(eval);
   longIntegerInit(temp);
+  longIntegerInit(lastFactor);
   real34Matrix_t matrix;
 
   if(getRegisterDataType(REGISTER_X) == dtShortInteger) {
@@ -715,6 +712,7 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
 
     #if !defined(TESTSUITE_BUILD)
       if (printHalfSecUpdate_Integer(timed, "Tested n =",loop++)) { //timed
+        dumpExponents(&matrix, &faddr, 12);
         _showProgress(&lastAdded, nextPrime);
       }
 
@@ -731,12 +729,12 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
     longIntegerDivideQuotientRemainder(currentNumber, nextPrime, quotient, remainder);
     longIntegerSubtract(quotient, nextPrime, eval);
     if(longIntegerIsZero(remainder)) {
-      if(!addFactor(nextPrime, &matrix, &lastAdded, &faddr)) {
+      if(!addFactor(lastFactor, nextPrime, &matrix, &lastAdded, &faddr)) {
         goto endandclose;
       }
       longIntegerCopy(quotient,currentNumber);
       if(longIntegerIsPrime(quotient)) {
-        if(!addFactor(quotient, &matrix, &lastAdded, &faddr)) {
+        if(!addFactor(lastFactor, quotient, &matrix, &lastAdded, &faddr)) {
           goto endandclose;
         }
         goto endandclose;
@@ -747,7 +745,7 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
     if(!longIntegerIsPositive(eval)) {
       longIntegerSubtractUInt(currentNumber,1,temp);
       if(!longIntegerIsZero(temp)) {
-        if(!addFactor(currentNumber, &matrix, &lastAdded, &faddr)) {
+        if(!addFactor(lastFactor, currentNumber, &matrix, &lastAdded, &faddr)) {
           goto endandclose;
         }
       }
@@ -755,8 +753,9 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
   }
 
 endandclose:
-  dumpExponents(&matrix, &faddr);
+  dumpExponents(&matrix, &faddr, 65535);
   clearFactorAdder(&faddr);
+  longIntegerFree(lastFactor);
   longIntegerFree(temp);
   longIntegerFree(eval);
   longIntegerFree(quotient);
