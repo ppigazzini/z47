@@ -56,6 +56,9 @@ void graph_reset(void){
   PLOT_ZMX      = 0;
   PLOT_ZMY      = 0;
   plotmode      = _SCAT;
+  PLOT_ZOOM     = 0;
+  tick_int_x    = 0;
+  tick_int_y    = 0;
 }
 
 
@@ -219,29 +222,7 @@ void fnPy (uint16_t unusedButMandatoryParameter) {
 
 
 void fnPlotReset(uint16_t unusedButMandatoryParameter) {
-  graph_dx      = 0;
-  graph_dy      = 0;
-  extentx       = true;
-  extenty       = true;
-  PLOT_VECT     = false;
-  PLOT_NVECT    = false;
-  PLOT_SCALE    = false;
-  //Aspect_Square = true;
-  PLOT_LINE     = true;
-  PLOT_CROSS    = true;
-  PLOT_BOX      = false;
-  PLOT_INTG     = false;
-  PLOT_DIFF     = false;
-  PLOT_RMS      = false;
-  PLOT_SHADE    = false;
-  PLOT_AXIS     = true;
-  PLOT_ZMX      = 0;
-  PLOT_ZMY      = 0;
-  PLOT_ZOOM     = 0;
-
-  plotmode      = _SCAT;      //VECTOR or SCATTER
-  tick_int_x    = 0;          //to show axis: tick_in_x & y = 10, PLOT_AXIS = true
-  tick_int_y    = 0;
+  graph_reset();
 
 #if !defined(TESTSUITE_BUILD)
   fnPlotStatAdv(0);
@@ -257,9 +238,8 @@ void fnPlotSQ(uint16_t unusedButMandatoryParameter) {
   #else // !DMCP_BUILD
     refreshLcd(NULL);
   #endif // DMCP_BUILD
+
   PLOT_AXIS = true;
-//  hourGlassIconEnabled = true;
-  //showHideHourGlass();
   Aspect_Square = true;
   if(!GRAPHMODE) {
     previousCalcMode = calcMode;
@@ -329,70 +309,110 @@ void fnListXY(uint16_t unusedButMandatoryParameter) {
   }
 
 
+    typedef struct {              //JM VALUES DEMO
+      int8_t valid;
+      int8_t  xd1;
+      int8_t  yd1;
+      int8_t  xd2;
+      int8_t  yd2;
+    } plotdeltas;
+
+    TO_QSPI const plotdeltas tabDeltaBig[] = {
+      {1,+0,-2,+5,+6},
+      {1,+5,+6,-5,+6},
+      {1,-5,+6,+0,-2},
+      {0,0,0,0,0},
+    };
   void plotdeltabig(uint16_t xn, uint8_t yn) {              // Plots ldifferential sign; uses temporary x1,y1
-    plotline(xn+0,   yn-2,   xn+0+5, yn-2+8);
-    plotline(xn+0+5, yn-2+8, xn+0-5, yn-2+8);
-    plotline(xn+0-5, yn-2+8, xn+0,   yn-2  );
+    int8_t ii=0;
+    while(tabDeltaBig[ii].valid == 1) {
+      plotline(xn+tabDeltaBig[ii].xd1, yn+tabDeltaBig[ii].yd1, xn+tabDeltaBig[ii].xd2, yn+tabDeltaBig[ii].yd2);
+      ii++;
+    }
   }
 
 
+    TO_QSPI const plotdeltas tabDelta[] = {
+      {1,+0,-2,0,0},
+      {1,-1,-1,0,0},
+      {1,-1,+0,0,0},
+      {1,-2,+1,0,0},
+      {1,-2,+2,0,0},
+      {1,+1,-1,0,0},
+      {1,+1,-0,0,0},
+      {1,+2,+1,0,0},
+      {1,+2,+2,0,0},
+      {1,-1,+2,0,0},
+      {1,+0,+2,0,0},
+      {1,+1,+2,0,0},
+      {0,0,0,0,0},
+    };
   void plotdelta(uint16_t xn, uint8_t yn) {             // Plots ldifferential sign; uses temporary x1,y1
-    placePixel(xn+0, yn-2);                             //   PLOT a delta
-    placePixel(xn-1, yn-1);
-    placePixel(xn-1, yn+0);
-    placePixel(xn-2, yn+1);
-    placePixel(xn-2, yn+2);
-    placePixel(xn+1, yn-1);
-    placePixel(xn+1, yn-0);
-    placePixel(xn+2, yn+1);
-    placePixel(xn+2, yn+2);
-    placePixel(xn-1, yn+2);
-    placePixel(xn,   yn+2);
-    placePixel(xn+1, yn+2);
+    int8_t ii=0;
+    while(tabDelta[ii].valid == 1) {
+      placePixel(xn+tabDelta[ii].xd1, yn+tabDelta[ii].yd1);
+      ii++;
+    }
   }
 
 
+    TO_QSPI const plotdeltas tabDeltaIntBig[] = {
+      {1,-0,-2+0,+3,-2+0},
+      {1,-0,-2+1,+3,-2+1},
+      {1,-3,-2+8,+0,-2+8},
+      {1,-3,-2+9,+0,-2+9},
+      {1,+0,-2+7,+0,-2+0},
+      {1,+1,-2+7,+1,-2+0},
+      {0,0,0,0,0},
+    };
   void plotintbig(uint16_t xn, uint8_t yn) {            // Plots integral sign; uses temporary x1,y1
-    plotline(xn-0, yn-2,   xn+3, yn-2);
-    plotline(xn-0, yn-2+1, xn+3, yn-2+1);
-    plotline(xn-3, yn-2+8, xn+0, yn-2+8);
-    plotline(xn-3, yn-2+9, xn+0, yn-2+9);
-
-    plotline(xn+0, yn-2+7, xn+0, yn-2+0);
-    plotline(xn+1, yn-2+7, xn+1, yn-2+0);
+    int8_t ii=0;
+    while(tabDeltaIntBig[ii].valid == 1) {
+      plotline(xn+tabDeltaIntBig[ii].xd1, yn+tabDeltaIntBig[ii].yd1, xn+tabDeltaIntBig[ii].xd2, yn+tabDeltaIntBig[ii].yd2);
+      ii++;
+    }
   }
 
 
+    TO_QSPI const plotdeltas tabDeltaInt[] = {
+      {1,+0,+0,0,0},
+      {1,+0,-1,0,0},
+      {1,+0,-2,0,0},
+      {1,+0,+1,0,0},
+      {1,+0,+2,0,0},
+      {1,+1,-2,0,0},
+      {1,-1,+2,0,0},
+      {0,0,0,0,0},
+    };
   void plotint(uint16_t xn, uint8_t yn) {               // Plots integral sign; uses temporary x1,y1
-    placePixel(xn,   yn);                               //   PLOT a I
-    placePixel(xn,   yn-1);
-    placePixel(xn,   yn-2);
-    placePixel(xn,   yn+1);
-    placePixel(xn,   yn+2);
-    placePixel(xn+1, yn-2);
-    placePixel(xn-1, yn+2);
+    int8_t ii=0;
+    while(tabDeltaInt[ii].valid == 1) {
+      placePixel(xn+tabDeltaInt[ii].xd1, yn+tabDeltaInt[ii].yd1);
+      ii++;
+    }
   }
 
 
+    TO_QSPI const plotdeltas tabDeltaRms[] = {
+      {1,+1,-1,0,0},
+      {1,-1,-1,0,0},
+      {1,-0,-1,0,0},
+      {1,+1,+0,0,0},
+      {1,-1,+0,0,0},
+      {1,-0,+0,0,0},
+      {1,+1,+1,0,0},
+      {1,-1,+1,0,0},
+      {1,-0,+1,0,0},
+      {0,0,0,0,0},
+    };
   void plotrms(uint16_t xn, uint8_t yn) {               // Plots line from xo,yo to xn,yn; uses temporary x1,y1
-    placePixel(xn+1, yn-1);                             //   PLOT a box
-    placePixel(xn-1, yn-1);
-    placePixel(xn-0, yn-1);
-    placePixel(xn+1, yn);                               //   PLOT a box
-    placePixel(xn-1, yn);
-    placePixel(xn-0, yn);
-    placePixel(xn+1, yn+1);                             //   PLOT a box
-    placePixel(xn-1, yn+1);
-    placePixel(xn-0, yn+1);
-
+    int8_t ii=0;
+    while(tabDeltaRms[ii].valid == 1) {
+      placePixel(xn+tabDeltaRms[ii].xd1, yn+tabDeltaRms[ii].yd1);
+      ii++;
+    }
   }
 
-
-  void plottriangle(uint16_t a, uint8_t b, uint16_t c, uint8_t d) {                // Plots rectangle from xo,yo to xn,yn; uses temporary x1,y1
-    plotline(a, b, c, b);
-    plotline(a, b, c, d);
-    plotline(c, d, c, b);
-  }
 #endif  // !TESTSUITE_BUILD
 
 
@@ -593,7 +613,6 @@ void graph_plotmem(void) {
       float ddx = FLoatingMax;
       float dydx = FLoatingMax;
       float inty = 0;
-      float inty0 = 0;
       float inty_off = 0;
       float rmsy = 0;
 
@@ -762,14 +781,18 @@ void graph_plotmem(void) {
 /**/          a2 = a1;
 /**/          a1 = a0;
 /**/          a0 = grf_y(cnt);
-/**/          aa = a8*0.2 + a7 *0.2 + a6*0.1 + a5*0.1 + a4*0.1 + a3*0.1 + a2*0.1 + a1*0.1;
-/**/          if(aa != 0 && fabs(a0/aa) < 3) {
-/**/            aa = a0 * 1.1;
-/**/          }
+/**/          if(cnt < 8) {
+                aa = a0;
+              } else {
+                aa = a8*0.2 + a7 *0.2 + a6*0.1 + a5*0.1 + a4*0.1 + a3*0.1 + a2*0.1 + a1*0.1;
+              }
+/**/     //     if(aa != 0 && fabs(a0/aa) < 3 && a0 != 0) {
+/**/     //       aa = a0 * 1.1;
+/**/     //     }
 /**/          //printf("%f %f %f %f %f %f %f %f %f  %f\n", a8, a7, a6, a5, a4, a3, a2, a1, a0, aa);
 /**/          if(aa < y_min) {
 /**/            y_mincnt++;
-/**/            if(fabs(aa / y_min) < 4 || aa == a0 * 1.1) {
+/**/            if(fabs(aa / y_min) < 4 ) {//|| aa == a0 * 1.1) {
 /**/              if(aa < y_min) {
 /**/               y_min = aa;
 /**/              }
@@ -786,8 +809,10 @@ void graph_plotmem(void) {
 /**/
 /**/          if(aa > y_max) {
 /**/            y_maxcnt++;
-/**/            if(fabs(aa / y_max) < 4 || aa == a0 * 1.1) {
-/**/              if(aa>y_max) y_max = aa;
+/**/            if(fabs(aa / y_max) < 4 ) {//|| aa == a0 * 1.1) {
+/**/              if(aa>y_max) {
+                    y_max = aa;
+                  }
 /**/              y_maxcnt=0;
 /**/            }
 /**/            else if(y_maxcnt==3) {
@@ -998,7 +1023,6 @@ void graph_plotmem(void) {
                 y = rmsy;                 //y is the default graph
               }
               if(PLOT_INTG) {
-                inty0 = inty;
                 inty = inty + (grf_y(ix) + grf_y(ix-1)) / 2 * ddx;
                 y = inty;                 //y is the default graph
               }
@@ -1109,8 +1133,6 @@ void graph_plotmem(void) {
                 #endif // STATDEBUG
                 uint16_t xN0   = screen_window_x(x_min, grf_x(ix-1), x_max);
                 //uint16_t xN1   = screen_window_x(x_min, grf_x(ix), x_max);
-                uint16_t yNoff = screen_window_y(y_min, inty_off, y_max);
-                uint16_t yN0   = screen_window_y(y_min, inty0, y_max);
                 uint16_t yNintg= screen_window_y(y_min, inty, y_max);
                 uint16_t xAvg  = ((xN0+xN) >> 1);
 
@@ -1132,14 +1154,11 @@ void graph_plotmem(void) {
                 }
 
                 if(PLOT_SHADE) {
+                  uint16_t yNoff = screen_window_y(y_min, 0, y_max);
+                  plotrect(xN0, yN0,   xN, yN1);
+                  plotrect(xN0, yNoff, xN, yN0);
                   if(abs((int16_t)(xN-xN0) >= 6)) {
-                    plotrect(xN0, yNoff, xN, yN0);
-                    plotrect(xN0, yN0,   xN, yNintg);
-                    plotline(xN0, yN0,   xN, yNintg);
-                  }
-                  else {
-                    plotrect(xN0, yNoff, xN, yNintg);
-                    plotrect(xN0, yN0,   xN, yNintg);
+                    plotline(xN0, yN0,   xN, yN1);
                   }
                 }
               }

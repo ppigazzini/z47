@@ -3604,10 +3604,9 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
       }
 
       case CM_LISTXY: {                     //JM vv
-        popSoftmenu();
-        calcMode = CM_NORMAL;
+        calcMode = CM_GRAPH;
         keyActionProcessed = true;
-        screenUpdatingMode = SCRUPD_AUTO;
+        fnEqSolvGraph(EQ_PLOT_LU);
         break;                              //JM ^^
       }
 
