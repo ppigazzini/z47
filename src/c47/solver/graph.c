@@ -76,15 +76,6 @@ static void fnPlot(uint16_t unusedButMandatoryParameter) {
 }
 
 
-
-  static void convertDoubleToReal34RegisterPush(double x, calcRegister_t destination) {
-    setSystemFlag(FLAG_ASLIFT);
-    liftStack();
-    convertDoubleToReal34Register(x, destination);
-    setSystemFlag(FLAG_ASLIFT);
-  }
-
-
 #if !defined(SAVE_SPACE_DM42_13GRF)
   static void initialize_function(void){
     if(graphVariabl1 > 0) {

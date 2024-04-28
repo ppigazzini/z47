@@ -1805,8 +1805,6 @@ Sett(_Reset);
   }
 
 
-#define MONITOR
-
   int16_t loop=0;
   int16_t loop2=0;
   int updateVbatIntegrated(bool_t minutePulse) {
@@ -1817,8 +1815,8 @@ Sett(_Reset);
         loop = 0;
       } else
       if(tmpVbat > vbatVIntegrated) {
-        #ifndef MONITOR
-          //During monitoring do not force a reset for normal and high voltage
+        #ifndef MONITOR_VOLTAGE_INTEGRATOR
+          //During monitoring do not force a reset to normal and high voltage
           if(tmpVbat > 2900) {                                                              //if high enough, reset
             vbatVIntegrated = tmpVbat;
           loop = 0;
@@ -1833,12 +1831,15 @@ Sett(_Reset);
       loop = 0;
     }
 
-    #ifdef MONITOR
+    #ifdef MONITOR_VOLTAGE_INTEGRATOR
       //Monitoring for voltage integrator
       if(minutePulse) {
         char aaa[120];
         sprintf(aaa,"         V=%i VI=%i loop=%i %i  ",tmpVbat, vbatVIntegrated, loop++, loop2++);
         print_numberstr(aaa,true);
+        convertDoubleToReal34RegisterPush((double)vbatVIntegrated, REGISTER_X);
+        convertDoubleToReal34RegisterPush((double)loop2, REGISTER_X);
+        fnSigma(1);
       }
     #endif
 
