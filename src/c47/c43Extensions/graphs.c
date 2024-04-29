@@ -223,11 +223,8 @@ void fnPy (uint16_t unusedButMandatoryParameter) {
 
 void fnPlotReset(uint16_t unusedButMandatoryParameter) {
   graph_reset();
-
-#if !defined(TESTSUITE_BUILD)
-  fnPlotStatAdv(0);
-  //fnPlotSQ(0);
-#endif // !TESTSUITE_BUILD
+  fnRefreshState();                //jm
+  fnPlotSQ(0);
 }
 
 
