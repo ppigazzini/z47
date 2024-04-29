@@ -697,7 +697,7 @@ TO_QSPI const int16_t menu_Inl_Tst[]     = { ITM_TEST,                      ITM_
 
 TO_QSPI const int16_t menu_ASN_N[]       = { ITM_N_KEY_SIGMA,           ITM_N_KEY_FSH,             ITM_N_KEY_PRGM,           ITM_N_KEY_USER,             ITM_N_KEY_HOME,            ITM_N_KEY_MM,
                                              ITM_N_KEY_ALPHA,           ITM_N_KEY_GSH,             ITM_N_KEY_DRG,            ITM_N_KEY_CC,               ITM_N_KEY_TGLFRT,          ITM_N_KEY_SNAP,
-                                             ITM_N_KEY_NIL,             ITM_N_KEY_FGSH,            ITM_NULL,                 ITM_NULL,                   ITM_NULL,                  ITM_USER_COPY             };
+                                             ITM_N_KEY_NIL,             ITM_N_KEY_FGSH,            ITM_NULL,                 ITM_N_KEY_op_j,             ITM_NULL,                  ITM_USER_COPY             };
 
 #if defined(DMCP_BUILD) //NULL to be removed in the DMCP version
   #define CC_V47  ITM_NULL
@@ -1765,6 +1765,9 @@ static char *changeItoJ(int16_t item) {
     }
     if(item == ITM_EE_EXP_TH && FF[3] == STD_SUP_i[1]) {
       FF[3]++;
+    }
+    if(item == ITM_N_KEY_op_j && FF[5] == STD_op_i[1]) {
+      FF[5]++;
     }
   }
   return FF;
