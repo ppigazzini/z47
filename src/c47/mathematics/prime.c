@@ -518,15 +518,14 @@ void clearFactorAdder(FactorAdder_t *faddr) {
 
 void dumpExponents(real34Matrix_t *matrix, FactorAdder_t *faddr, uint16_t dumpForFewerThan) {
   uint16_t n2 = faddr->nExpons;
-  uint16_t cols = REGISTER_DATA(REGISTER_X)->matrixColumns;
-  if(cols >= dumpForFewerThan) return;
   #ifdef WGR
-    printf("wgr:  fill expons:  *nExpons==%u, n2==%u\n", faddr->nExpons, n2);
+    printf("wgr:  fill expons:  *nExpons==%u, n2==%u dump=%u\n", faddr->nExpons, n2, dumpForFewerThan);
+    uint16_t cols = REGISTER_DATA(REGISTER_X)->matrixColumns;
     uint16_t rows = REGISTER_DATA(REGISTER_X)->matrixRows;
     printf("wgr:  rows==%u, cols==%u\n", (uint16_t)rows, (uint16_t)cols);
   #endif
   linkToRealMatrixRegister(REGISTER_X,  matrix);
-  for( uint16_t i = 0;  i < faddr->nExpons;  ++i ) {
+  for( uint16_t i = 0;  i < min(n2,dumpForFewerThan);  ++i ) {
     char expon_str[21];
     sprintf(expon_str, "%u", faddr->expons[i]);
     #ifdef WGR
@@ -720,7 +719,7 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
     #if !defined(TESTSUITE_BUILD)
       if (printHalfSecUpdate_Integer(timed, "Tested n =",loop++)) { //timed
         _showProgress(&lastAdded, nextPrime);
-        dumpExponents(&matrix, &faddr, 12);
+        dumpExponents(&matrix, &faddr, 13);
         #if defined DMCP_BUILD
           lcd_refresh();
         #endif //DMCP_BUILD
