@@ -1032,7 +1032,7 @@
 #define ITM_EQ_RIGHT                 996
 #define ITM_PAIR_OF_PARENTHESES      997
 #define ITM_VERTICAL_BAR             998
-#define ITM_ALOG_SIGN              999
+#define ITM_ALOG_SIGN                999
 #define ITM_ROOT_SIGN               1000
 #define ITM_TIMER_SYMBOL            1001
 #define ITM_Sfdx_VAR                1002
@@ -1949,7 +1949,7 @@
 #define KEY_fg                      1893
 #define MNU_1894                    1894        // [DL] Deprecated MNU_TAMCMPALPHA
 #define ITM_HPBASE                  1895
-#define ITM_KEYMAP                  1896
+#define ITM_N_KEY_op_j              1896
 #define ITM_N_KEY_TGLFRT            1897
 #define ITM_N_KEY_ALPHA             1898
 #define ITM_N_KEY_CC                1899
@@ -2011,7 +2011,7 @@
 #define ITM_T_RRIGHT_ARROW          1955
 #define ITM_XNEW                    1956
 #define ITM_XSWAP                   1957
-#define ITM_1958                    1958
+#define ITM_KEYMAP                  1958
 #define ITM_USER_C47                1959
 #define ITM_USER_V47                1960
 #define ITM_USER_D47                1961

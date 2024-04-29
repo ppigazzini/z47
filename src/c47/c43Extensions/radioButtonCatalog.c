@@ -69,6 +69,7 @@ TO_QSPI const radiocb_t indexOfRadioCbEepromItems[] = {
   {ITM_WS32,             32,                     RB_WS},  //fnSetWordSize
   {ITM_WS64,             64,                     RB_WS},  //fnSetWordSize
 
+  {ITM_N_KEY_op_j,       16384+ITM_op_j,         RB_SA},  //fnSigmaAssign
   {ITM_N_KEY_TGLFRT,     16384+ITM_TGLFRT,       RB_SA},  //fnSigmaAssign
   {ITM_N_KEY_ALPHA,      16384+ITM_AIM,          RB_SA},  //fnSigmaAssign
   {ITM_N_KEY_CC,         16384+ITM_CC,           RB_SA},  //fnSigmaAssign
