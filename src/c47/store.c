@@ -211,9 +211,6 @@ void fnStore(uint16_t regist) {
     if(regist >= FIRST_NAMED_VARIABLE && regist == findNamedVariable("STATS")) {
       calcSigma(0);
     }
-    if(regist == REGISTER_I || regist == REGISTER_J) {
-      temporaryInformation = TI_IJ;
-    }
   }
 }
 
@@ -550,12 +547,10 @@ void fnStoreVElement(uint16_t ix) {
 
 void fnStoreElementPlus(uint16_t unusedButMandatoryParameter) {
   _fnStoreElement(true);
-  temporaryInformation = TI_MIJ;
 }
 
 void fnStoreElement(uint16_t unusedButMandatoryParameter) {
   _fnStoreElement(false);
-  temporaryInformation = TI_MIJ;
 }
 
 void _fnStoreElement(bool_t stepForward) {
@@ -596,7 +591,6 @@ void fnStoreIJ(uint16_t unusedButMandatoryParameter) {
     }
     else {
       callByIndexedMatrix(storeIjReal, storeIjComplex);
-      temporaryInformation = TI_IJ;
       if(matrixIndex >= FIRST_NAMED_VARIABLE && matrixIndex == findNamedVariable("STATS")) {
         calcSigma(0);
       }
