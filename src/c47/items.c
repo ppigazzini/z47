@@ -145,16 +145,27 @@ void fnNop(uint16_t unusedButMandatoryParameter) {
       temporaryInformation = TI_LAST_CONST_CATNAME;
     } else
     if(calcMode == CM_NORMAL) {
+      bool_t inMatrixMenu = (tam.mode == 0 ? softmenu[softmenuStack[0].softmenuId].menuItem : softmenu[softmenuStack[1].softmenuId].menuItem) == -MNU_MATX;
       switch(func) {
         case ITM_RCL_FV      :
         case ITM_RCL_IPonA   :
         case ITM_RCL_NPPER   :
         case ITM_RCL_PPERonA :
+        case ITM_RCL_CPERonA :
         case ITM_RCL_PMT     :
-        case ITM_RCL_PV      :
-        case ITM_RCL_CPERonA : //add the special variable recalls to the standard recalls
-        case ITM_STO :
-        case ITM_RCL : temporaryInformation = TI_STORCL; break;
+        case ITM_RCL_PV      : temporaryInformation = TI_STORCL; break;
+        case ITM_STO         :
+        case ITM_RCL         : temporaryInformation = ((param == REGISTER_I || param == REGISTER_J) && inMatrixMenu) ? TI_IJ : TI_STORCL; break;
+        case ITM_RCLELPLUS   :   
+        case ITM_RCLEL       :
+        case ITM_STOELPLUS   :   
+        case ITM_STOEL       : if(inMatrixMenu) temporaryInformation = TI_MIJ;   break;
+        case ITM_IPLUS       :
+        case ITM_IMINUS      :
+        case ITM_JPLUS       :
+        case ITM_JMINUS      :
+        case ITM_RCLIJ       :
+        case ITM_STOIJ       : if(inMatrixMenu) temporaryInformation = TI_IJ;    break;
         default:;
       }
     }

@@ -2120,7 +2120,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
 
 
   void _displayIJ(char *prefix, int16_t *prefixWidth) {
-    if(currentMenu() != -MNU_MATX || lastErrorCode != 0) {
+    if(lastErrorCode != 0) {
       return;
     }
     real_t iir,jjr;
