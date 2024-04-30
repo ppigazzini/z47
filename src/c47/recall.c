@@ -77,9 +77,6 @@ void fnRecall(uint16_t regist) {
       if(getRegisterDataType(REGISTER_X) == dtShortInteger) {
         *(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)) &= shortIntegerMask;
       }
-      if(regist == REGISTER_I || regist == REGISTER_J) {
-        temporaryInformation = TI_IJ;
-      }
     }
   }
 }
@@ -449,12 +446,10 @@ void fnRecallVElement(uint16_t ix) {
 
 void fnRecallElementPlus(uint16_t unusedButMandatoryParameter) {
   _fnRecallElement(true);
-  temporaryInformation = TI_MIJ;
 }
 
 void fnRecallElement(uint16_t unusedButMandatoryParameter) {
   _fnRecallElement(false);
-  temporaryInformation = TI_MIJ;
 }
 
 void _fnRecallElement(bool_t stepForward) {
@@ -523,7 +518,6 @@ void fnRecallIJ(uint16_t unusedButMandatoryParameter) {
 
       adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
       adjustResult(REGISTER_Y, false, true, REGISTER_Y, -1, -1);
-      temporaryInformation = TI_IJ;
 
 
       longIntegerFree(zero);
