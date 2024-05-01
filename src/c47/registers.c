@@ -149,7 +149,7 @@ uint32_t getRegisterDataType(calcRegister_t regist) {
     }
     #if defined(PC_BUILD)
       else {
-        moreInfoOnError("In function getRegisterDataType:", "no local registers defined!", "To do so, you can find LocR here:", "[f] [P.FN] [F5] [f] [F6]");
+        moreInfoOnError("In function getRegisterDataType:", "no local registers defined!", "", "");
       }
     #endif // PC_BUILD
   }
@@ -210,7 +210,7 @@ dataBlock_t *getRegisterDataPointer(calcRegister_t regist) {
     }
     #if defined(PC_BUILD)
       else {
-        moreInfoOnError("In function getRegisterDataPointer:", "no local registers defined!", "To do so, use LocR", NULL);
+        moreInfoOnError("In function getRegisterDataPointer:", "no local registers defined!", "", NULL);
       }
     #endif // PC_BUILD
   }
@@ -271,7 +271,7 @@ uint32_t getRegisterTag(calcRegister_t regist) {
     }
     #if defined(PC_BUILD)
       else {
-       moreInfoOnError("In function getRegisterTag:", "no local registers defined!", "To do so, you can find LocR here:", "[f] [P.FN] [F5] [f] [F6]");
+       moreInfoOnError("In function getRegisterTag:", "no local registers defined!", "", "");
       }
     #endif // PC_BUILD
   }
@@ -338,7 +338,7 @@ void setRegisterDataType(calcRegister_t regist, uint16_t dataType, const uint32_
     }
     #if defined(PC_BUILD)
       else {
-       moreInfoOnError("In function setRegisterDataType:", "no local registers defined!", "To do so, you can find LocR here:", "[f] [P.FN] [F5] [f] [F6]");
+       moreInfoOnError("In function setRegisterDataType:", "no local registers defined!", "", "");
       }
     #endif // PC_BUILD
   }
@@ -398,7 +398,7 @@ void setRegisterDataPointer(calcRegister_t regist, const void *memPtr) {
     }
     #if defined(PC_BUILD)
       else {
-        moreInfoOnError("In function setRegisterDataPointer:", "no local registers defined!", "To do so, you can find LocR here:", "[f] [P.FN] [F5] [f] [F6]");
+        moreInfoOnError("In function setRegisterDataPointer:", "no local registers defined!", "", "");
       }
     #endif // PC_BUILD
   }
@@ -455,7 +455,7 @@ void setRegisterTag(calcRegister_t regist, const uint32_t tag) {
     }
     #if defined(PC_BUILD)
       else {
-        moreInfoOnError("In function setRegisterDataInfo:", "no local registers defined!", "To do so, you can find LocR here:", "[f] [P.FN] [F5] [f] [F6]");
+        moreInfoOnError("In function setRegisterDataInfo:", "no local registers defined!", "", "");
       }
     #endif // PC_BUILD
   }

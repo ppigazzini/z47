@@ -206,7 +206,7 @@ bool_t getFlag(uint16_t flag) {
     }
     #if defined(PC_BUILD)
     else {
-      moreInfoOnError("In function getFlag:", "no local flags defined!", "To do so, you can find LocR here:", "[f] [P.FN] [F5] [g] [F6]");
+      moreInfoOnError("In function getFlag:", "no local flags defined!", "", "");
     }
     #endif // PC_BUILD
   }
@@ -292,7 +292,7 @@ void fnSetFlag(uint16_t flag) {
     }
     #if defined(PC_BUILD)
     else {
-      moreInfoOnError("In function fnSetFlag:", "no local flags defined!", "To do so, you can find LocR here:", "[f] [P.FN] [F5] [g] [F6]");
+      moreInfoOnError("In function fnSetFlag:", "no local flags defined!", "", "");
     }
     #endif // PC_BUILD
   }
@@ -361,7 +361,7 @@ void fnClearFlag(uint16_t flag) {
 
     #if defined(PC_BUILD)
       else {
-       moreInfoOnError("In function fnClearFlag:", "no local flags defined!", "To do so, you can find LocR here:", "[f] [P.FN] [F5] [g] [F6]");
+       moreInfoOnError("In function fnClearFlag:", "no local flags defined!", "", "");
       }
     #endif // PC_BUILD
   }
@@ -434,7 +434,7 @@ void fnFlipFlag(uint16_t flag) {
     }
     #if defined(PC_BUILD)
       else {
-        moreInfoOnError("In function fnFlipFlag:", "no local flags defined!", "To do so, you can find LocR here:", "[f] [P.FN] [F5] [g] [F6]");
+        moreInfoOnError("In function fnFlipFlag:", "no local flags defined!", "", "");
       }
     #endif // PC_BUILD
   }

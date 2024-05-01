@@ -343,7 +343,7 @@ static void _getStringLabelOrVariableName(uint8_t *stringAddress) {
 
 static void _executeWithIndirectRegister(uint8_t *paramAddress, uint16_t op) {
   uint8_t opParam = *(uint8_t *)paramAddress;
-  if(opParam <= LAST_LOCAL_REGISTER_IN_KS_CODE) { // Local register from .00 to .98
+  if(opParam <= LAST_LOCAL_REGISTER_IN_KS_CODE) { // Local register from .00 to .99
       int16_t realParam = indirectAddressing(regKStoC(opParam), (indexOfItems[op].param == TM_FLAGR || indexOfItems[op].param == TM_FLAGW) ? INDPM_FLAG : (indexOfItems[op].param == TM_STORCL || indexOfItems[op].param == TM_M_DIM) ? INDPM_REGISTER : INDPM_PARAM, indexOfItems[op].tamMinMax >> TAM_MAX_BITS, indexOfItems[op].tamMinMax & TAM_MAX_MASK);
       if(realParam < 9999) {
         reallyRunFunction(op, realParam);
@@ -499,7 +499,7 @@ static void _executeOp(uint8_t *paramAddress, uint16_t op, uint16_t paramMode) {
     case PARAM_REGISTER:
       case PARAM_COMPARE: {
 
-      if(opParam <= LAST_SPARE_REGISTERS_IN_KS_CODE) { // Global register from 00 to 99, Lettered register from X to K, or Local register from .00 to .98
+      if(opParam <= LAST_SPARE_REGISTERS_IN_KS_CODE) { // Global register from 00 to 99, Lettered register from X to K, or Local register from .00 to .99
         reallyRunFunction(op, regKStoC(opParam));
       }
       else if(opParam == STRING_LABEL_VARIABLE) {

@@ -164,9 +164,9 @@ void fnNop(uint16_t unusedButMandatoryParameter) {
         case ITM_RCL_PV      : temporaryInformation = TI_STORCL; break;
         case ITM_STO         :
         case ITM_RCL         : temporaryInformation = ((param == REGISTER_I || param == REGISTER_J) && inMatrixMenu) ? TI_IJ : TI_STORCL; break;
-        case ITM_RCLELPLUS   :   
+        case ITM_RCLELPLUS   :
         case ITM_RCLEL       :
-        case ITM_STOELPLUS   :   
+        case ITM_STOELPLUS   :
         case ITM_STOEL       : if(inMatrixMenu) temporaryInformation = TI_MIJ;   break;
         case ITM_IPLUS       :
         case ITM_IMINUS      :
@@ -255,7 +255,7 @@ void fnNop(uint16_t unusedButMandatoryParameter) {
     }
 
 
-    if((programRunStop != PGM_RUNNING || timeLastOp0 == 0)) {               //The first manual command including XEQ (re)starts the timer by setting timeLastOp0 
+    if((programRunStop != PGM_RUNNING || timeLastOp0 == 0)) {               //The first manual command including XEQ (re)starts the timer by setting timeLastOp0
       LastOpTimerReStart(func);
     } else if(func == ITM_LASTT) {                                          //If LASTT? is called in a program it laps the timer, but does not stop it. It is never stopped, only timeLastOp1 is set, and it is restarted only with a new command
       LastOpTimerLap(func);                                                 //stores the last time to timeLastOp
@@ -263,7 +263,7 @@ void fnNop(uint16_t unusedButMandatoryParameter) {
 
     indexOfItems[func].func(param);
 
-    if(programRunStop != PGM_RUNNING || func == ITM_LASTT) {                //stores the last time to timeLastOp 
+    if(programRunStop != PGM_RUNNING || func == ITM_LASTT) {                //stores the last time to timeLastOp
       LastOpTimerLap(func);
     }
 
@@ -2772,7 +2772,7 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 1511 */  { fnLoad,                       LM_REGISTERS,                "LOADR",                                       "LOADR",                                       (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_DISABLED     },
 /* 1512 */  { fnLoad,                       LM_SYSTEM_STATE,             "LOADSS",                                      "LOADSS",                                      (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_DISABLED     },
 /* 1513 */  { fnLoad,                       LM_SUMS,                     "LOAD" STD_SIGMA,                              "LOAD" STD_SIGMA,                              (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_DISABLED     },
-/* 1514 */  { allocateLocalRegisters,       TM_VALUE,                    "LocR",                                        "LocR",                                        (0 << TAM_MAX_BITS) |    99, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NUMBER_8     },
+/* 1514 */  { allocateLocalRegisters,       TM_VALUE,                    "LocR",                                        "LocR",                                        (0 << TAM_MAX_BITS) |   100, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NUMBER_8     },
 /* 1515 */  { fnGetLocR,                    NOPARAM,                     "LocR?",                                       "LocR?",                                       (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /* 1516 */  { fnProcessLR,                  NOPARAM,                     "L.R.",                                        "L.R.",                                        (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /* 1517 */  { fnMant,                       NOPARAM,                     "MANT",                                        "MANT",                                        (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
