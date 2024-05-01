@@ -325,7 +325,7 @@
 
 
     if(currentFlgScr == 3) { // flags from 0 to 99
-  //    clearScreen(false, true, true);
+      //clearScreen(false, true, true);
 
       for(f=0; f<=99/*79*/; f++) {                                          //JM 99
         if(getFlag(f)) {
@@ -337,7 +337,7 @@
     }
 
     if(currentFlgScr == 4) { // Flags from 100 to GLOBALFLAGS, local registers and local flags
-  //    clearScreen(false, true, true);
+      //clearScreen(false, true, true);
 
       showString("Global flag status (continued):", &standardFont, 1, 22-1, vmNormal, true, true);
 
@@ -401,7 +401,7 @@
           }
           i++;
         }
-  //      showString(tmpString, &standardFont, max(0,16-1+2*40*(f%5) + 19 - stringWidth(tmpString, &standardFont, false, false)/2), 22*(f/5)-132-1-44-220, getFlag(f) ? vmReverse : vmNormal, true, true);  //JM-44
+        //showString(tmpString, &standardFont, max(0,16-1+2*40*(f%5) + 19 - stringWidth(tmpString, &standardFont, false, false)/2), 22*(f/5)-132-1-44-220, getFlag(f) ? vmReverse : vmNormal, true, true);  //JM-44
       }
 
       if(currentNumberOfLocalFlags == 0) {
