@@ -2302,12 +2302,7 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
     void labelCaptionTam(const calcKey_t *key, GtkWidget *button) {
       uint8_t lbl[22];
 
-      if(key->primaryTam == 0 || (key->keyId == 32 && tam.mode != TM_VALUE_CHB)) { // Display H for changing base to hexadecimal
-        lbl[0] = 0;
-      }
-      else {
-        stringToUtf8(indexOfItems[key->primaryTam].itemSoftmenuName, lbl);
-      }
+      stringToUtf8(indexOfItems[key->primaryTam].itemSoftmenuName, lbl);
 
       gtk_button_set_label(GTK_BUTTON(button), (gchar *)lbl);
 

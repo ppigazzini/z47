@@ -35,6 +35,7 @@
 #include "screen.h"
 #include "softmenus.h"
 #include "sort.h"
+#include "stack.h"
 #include <string.h>
 
 #include "c47.h"
@@ -518,16 +519,18 @@
         addStepInProgram(ITM_IP);
       }
       else {
+        saveForUndo();
         fnIp(NOPARAM);
       }
       tamLeaveMode();
       return;
     }
-    else if((tam.function == ITM_toINT || tam.function == ITM_HASH_JM)  && item == ITM_alpha) {
+    else if((tam.function == ITM_toINT || tam.function == ITM_HASH_JM)  && ((item == ITM_alpha && calcModel == USER_C47) || (item == ITM_REG_F && calcModel == USER_R47))) {
       if(calcMode == CM_PEM) {
         addStepInProgram(ITM_FP);
       }
       else {
+        saveForUndo();
         fnFp(NOPARAM);
       }
       tamLeaveMode();
@@ -541,19 +544,20 @@
       tam.value = 2;
       forceTry = true;
     }
-    else if((tam.function == ITM_toINT  || tam.function == ITM_HASH_JM) && item == ITM_2HEX) {
+    else if((tam.function == ITM_toINT  || tam.function == ITM_HASH_JM) && item == ITM_REG_H) {
       tam.value = 16;
       forceTry = true;
     }
-    else if((tam.function == ITM_toINT  || tam.function == ITM_HASH_JM) && item == ITM_2OCT) {     //JM BASE added OCT
+    else if((tam.function == ITM_toINT  || tam.function == ITM_HASH_JM) && item == ITM_REG_O) {     //JM BASE added OCT
       tam.value = 8;
       forceTry = true;
     }
-    else if((tam.mode == TM_LABEL || (tam.mode == TM_KEY && tam.keyInputFinished)) && !tam.indirect && item == ITM_E) {
-      tam.value = 100 - 'A' + 'E';
-      forceTry = true;
-      tryOoR = true;
-    }
+//Removing these as I cannot see the situation where this is needed. Not sure though, so not deleting completely.
+//    else if((tam.mode == TM_LABEL || (tam.mode == TM_KEY && tam.keyInputFinished)) && !tam.indirect && item == ITM_E) {
+//      tam.value = 100 - 'A' + 'E';
+//      forceTry = true;
+//      tryOoR = true;
+//    }
     else if(REGISTER_X <= indexOfItems[item].param && indexOfItems[item].param <= REGISTER_W && !tam.dot) {
       if(!tam.digitsSoFar && tam.function != ITM_BESTF && (tam.indirect || (tam.mode != TM_VALUE && tam.mode != TM_VALUE_CHB))) {
         if((tam.mode == TM_LABEL || (tam.mode == TM_KEY && tam.keyInputFinished)) && !tam.indirect) {
