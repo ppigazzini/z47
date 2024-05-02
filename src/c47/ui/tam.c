@@ -35,6 +35,7 @@
 #include "screen.h"
 #include "softmenus.h"
 #include "sort.h"
+#include "stack.h"
 #include <string.h>
 
 #include "c47.h"
@@ -518,6 +519,7 @@
         addStepInProgram(ITM_IP);
       }
       else {
+        saveForUndo();
         fnIp(NOPARAM);
       }
       tamLeaveMode();
@@ -528,6 +530,7 @@
         addStepInProgram(ITM_FP);
       }
       else {
+        saveForUndo();
         fnFp(NOPARAM);
       }
       tamLeaveMode();
