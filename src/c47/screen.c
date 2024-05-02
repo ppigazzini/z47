@@ -1922,6 +1922,66 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
   }
 
 
+  static void viewStoRcl(char *prefix, int16_t *prefixWidth) {
+    int16_t showRegisN = showRegis;
+    showRegis = lastSTORCL();
+    viewRegName2(prefix, prefixWidth);   
+    if(prefix[0]=='?') {
+      prefix[0] = 0;
+      prefixWidth = 0;
+    }       
+    showRegis = showRegisN;
+  }
+
+
+
+  static void elecTI(int16_t regist, char *prefix, int16_t *prefixWidth) {
+    if(temporaryInformation == TI_ABC) {
+      if(regist == REGISTER_X) {
+        strcpy(prefix, "c" STD_SPACE_FIGURE ":");
+        *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
+      }
+      else if(regist == REGISTER_Y) {
+        strcpy(prefix, "b" STD_SPACE_FIGURE ":");
+        *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
+      }
+      else if(regist == REGISTER_Z) {
+        strcpy(prefix, "a" STD_SPACE_FIGURE ":");
+        *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
+      }
+    }
+    else if(temporaryInformation == TI_ABBCCA) {
+      if(regist == REGISTER_X) {
+        strcpy(prefix, "ca" STD_SPACE_FIGURE ":");
+        *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
+      }
+      else if(regist == REGISTER_Y) {
+        strcpy(prefix, "bc" STD_SPACE_FIGURE ":");
+        *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
+      }
+      else if(regist == REGISTER_Z) {
+        strcpy(prefix, "ab" STD_SPACE_FIGURE ":");
+        *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
+      }
+    }  
+    else if(temporaryInformation == TI_012) {
+      if(regist == REGISTER_X) {
+        strcpy(prefix, "sym2" STD_SPACE_FIGURE ":");
+        *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
+      }
+      else if(regist == REGISTER_Y) {
+        strcpy(prefix, "sym1" STD_SPACE_FIGURE ":");
+        *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
+      }
+      else if(regist == REGISTER_Z) {
+        strcpy(prefix, "sym0" STD_SPACE_FIGURE ":");
+        *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
+      }
+    }
+  }
+
+
+
   static void inputRegName(char *prefix, int16_t *prefixWidth) {
     if((currentInputVariable & 0x3fff) < REGISTER_X) {
       sprintf(prefix, " R%02" PRIu16 "?", (uint16_t)(currentInputVariable & 0x3fff));
@@ -2676,18 +2736,6 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
         if(regist == REGISTER_X && currentInputVariable != INVALID_VARIABLE) {
           inputRegName(prefix, &prefixWidth);
         }
-
-        if(temporaryInformation == TI_STORCL && regist == REGISTER_X) {
-          int16_t showRegisN = showRegis;
-          showRegis = lastSTORCL();
-          viewRegName2(prefix, &prefixWidth);          
-          if(prefix[0]=='?') {
-            prefix[0] = 0;
-            prefixWidth = 0;
-          }       
-          showRegis = showRegisN;
-        }
-
 
         // STATISTICAL DISTR
         if(regist == REGISTER_X && lastErrorCode == 0 && calcMode != CM_PEM && PROBMENU) {
@@ -3563,49 +3611,8 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
                 prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
           }
 
-          else if(temporaryInformation == TI_ABC) {                             //JM EE \/
-            if(regist == REGISTER_X) {
-              strcpy(prefix, "c" STD_SPACE_FIGURE ":");
-              prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
-            }
-            else if(regist == REGISTER_Y) {
-              strcpy(prefix, "b" STD_SPACE_FIGURE ":");
-              prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
-            }
-            else if(regist == REGISTER_Z) {
-              strcpy(prefix, "a" STD_SPACE_FIGURE ":");
-              prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
-            }
-          }
-
-          else if(temporaryInformation == TI_ABBCCA) {
-            if(regist == REGISTER_X) {
-              strcpy(prefix, "ca" STD_SPACE_FIGURE ":");
-              prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
-            }
-            else if(regist == REGISTER_Y) {
-              strcpy(prefix, "bc" STD_SPACE_FIGURE ":");
-              prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
-            }
-            else if(regist == REGISTER_Z) {
-              strcpy(prefix, "ab" STD_SPACE_FIGURE ":");
-              prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
-            }
-          }
-
-          else if(temporaryInformation == TI_012) {
-            if(regist == REGISTER_X) {
-              strcpy(prefix, "sym2" STD_SPACE_FIGURE ":");
-              prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
-            }
-            else if(regist == REGISTER_Y) {
-              strcpy(prefix, "sym1" STD_SPACE_FIGURE ":");
-              prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
-            }
-            else if(regist == REGISTER_Z) {
-              strcpy(prefix, "sym0" STD_SPACE_FIGURE ":");
-              prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
-            }
+          else if(temporaryInformation == TI_ABC || temporaryInformation == TI_ABBCCA || temporaryInformation == TI_012) {                             //JM EE \/
+            elecTI(regist, prefix, &prefixWidth);
           }
 
           else if(temporaryInformation == TI_FROM_DMS) {
@@ -3674,6 +3681,9 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
           else if(regist == REGISTER_X && (temporaryInformation == TI_IJ || temporaryInformation == TI_MIJ)) {
             _displayIJ(prefix, &prefixWidth);
           }
+          else if(temporaryInformation == TI_STORCL && regist == REGISTER_X) {
+            viewStoRcl(prefix, &prefixWidth);
+          }
 
 
           if(prefixWidth > 0 && temporaryInformation != TI_VIEW_REGISTER) {
@@ -3724,49 +3734,8 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
               viewRegName(prefix, &prefixWidth);
           }
 
-          else if(temporaryInformation == TI_ABC) {                             //JM EE \/
-            if(regist == REGISTER_X) {
-              strcpy(prefix, "c" STD_SPACE_FIGURE ":");
-              prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
-            }
-            else if(regist == REGISTER_Y) {
-              strcpy(prefix, "b" STD_SPACE_FIGURE ":");
-              prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
-            }
-            else if(regist == REGISTER_Z) {
-              strcpy(prefix, "a" STD_SPACE_FIGURE ":");
-              prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
-            }
-          }
-
-          else if(temporaryInformation == TI_ABBCCA) {
-            if(regist == REGISTER_X) {
-              strcpy(prefix, "ca" STD_SPACE_FIGURE ":");
-              prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
-            }
-            else if(regist == REGISTER_Y) {
-              strcpy(prefix, "bc" STD_SPACE_FIGURE ":");
-              prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
-            }
-            else if(regist == REGISTER_Z) {
-              strcpy(prefix, "ab" STD_SPACE_FIGURE ":");
-              prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
-            }
-          }
-
-          else if(temporaryInformation == TI_012) {
-            if(regist == REGISTER_X) {
-              strcpy(prefix, "sym2" STD_SPACE_FIGURE ":");
-              prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
-            }
-            else if(regist == REGISTER_Y) {
-              strcpy(prefix, "sym1" STD_SPACE_FIGURE ":");
-              prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
-            }
-            else if(regist == REGISTER_Z) {
-              strcpy(prefix, "sym0" STD_SPACE_FIGURE ":");
-              prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
-            }
+          else if(temporaryInformation == TI_ABC || temporaryInformation == TI_ABBCCA || temporaryInformation == TI_012) {                             //JM EE \/
+            elecTI(regist, prefix, &prefixWidth);
           }
 
           else if(temporaryInformation == TI_ROOTS3) {
@@ -3795,6 +3764,9 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
           }
           else if(regist == REGISTER_X && (temporaryInformation == TI_IJ || temporaryInformation == TI_MIJ)) {
             _displayIJ(prefix, &prefixWidth);
+          }
+          else if(temporaryInformation == TI_STORCL && regist == REGISTER_X) {
+            viewStoRcl(prefix, &prefixWidth);
           }
 
 
@@ -3831,7 +3803,9 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
           else if(temporaryInformation == TI_VIEW_REGISTER && origRegist == REGISTER_T) {
             viewRegName(prefix, &prefixWidth);
           }
-
+          else if(temporaryInformation == TI_STORCL && regist == REGISTER_X) {
+            viewStoRcl(prefix, &prefixWidth);
+          }
           else if(temporaryInformation == TI_LASTSTATEFILE) {
                clearRegisterLine(REGISTER_Y, true, false);
                strcpy(prefix,"Last full state file loaded:");
@@ -3969,7 +3943,9 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
           else if(temporaryInformation == TI_STATISTIC_SUMS) {
             _displaySigmaPlus(regist, prefix, &prefixWidth);
           }
-
+          else if(temporaryInformation == TI_STORCL && regist == REGISTER_X) {
+            viewStoRcl(prefix, &prefixWidth);
+          }
           if(prefixWidth > 0) {
             if(regist == REGISTER_X) {
               showString(prefix, &standardFont, 1, baseY + TEMPORARY_INFO_OFFSET, vmNormal, prefixPre, prefixPost);
@@ -3994,6 +3970,12 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
           }
           else if(regist == REGISTER_X && (temporaryInformation == TI_IJ || temporaryInformation == TI_MIJ)) {
             _displayIJ(prefix, &prefixWidth);
+          }
+          else if(temporaryInformation == TI_STORCL && regist == REGISTER_X) {
+            viewStoRcl(prefix, &prefixWidth);
+          }
+          else if(temporaryInformation == TI_ABC || temporaryInformation == TI_ABBCCA || temporaryInformation == TI_012) {                             //JM EE \/
+            elecTI(regist, prefix, &prefixWidth);
           }
           else if(temporaryInformation == TI_STATISTIC_SUMS) {
             _displaySigmaPlus(regist, prefix, &prefixWidth);
@@ -4116,6 +4098,10 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
             else if(regist == REGISTER_X && (temporaryInformation == TI_IJ || temporaryInformation == TI_MIJ)) {
               _displayIJ(prefix, &prefixWidth);
             }
+            else if(temporaryInformation == TI_STORCL && regist == REGISTER_X) {
+              viewStoRcl(prefix, &prefixWidth);
+            }
+
             if(temporaryInformation == TI_TRUE || temporaryInformation == TI_FALSE) {
               refreshRegisterLine(TRUE_FALSE_REGISTER_LINE);
             }
@@ -4145,6 +4131,10 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
             else if(regist == REGISTER_X && (temporaryInformation == TI_IJ || temporaryInformation == TI_MIJ)) {
               _displayIJ(prefix, &prefixWidth);
             }
+            else if(temporaryInformation == TI_STORCL && regist == REGISTER_X) {
+              viewStoRcl(prefix, &prefixWidth);
+            }
+
             showComplexMatrix(&matrix, prefixWidth, getComplexRegisterAngularMode(regist), getComplexRegisterPolarMode(regist) == amPolar);
             if(lastErrorCode != 0) {
               refreshRegisterLine(errorMessageRegisterLine);
