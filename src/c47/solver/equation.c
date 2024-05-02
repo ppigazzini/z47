@@ -393,6 +393,7 @@ static void _addSpace(char **bufPtr, int16_t *strWidth, uint32_t *doubleBytednes
 
 void showEquation(uint16_t equationId, uint16_t startAt, uint16_t cursorAt, bool_t dryRun, bool_t *cursorShown, bool_t *rightEllipsis) {
   #if !defined(TESTSUITE_BUILD)
+  int8_t X_OFF = (cursorAt == EQUATION_NO_CURSOR) ? 0 : 20;
   if(equationId < numberOfFormulae || equationId == EQUATION_AIM_BUFFER) {
     char *bufPtr = tmpString;
     const char *strPtr = equationId == EQUATION_AIM_BUFFER ? aimBuffer : (char *)TO_PCMEMPTR(allFormulae[equationId].pointerToFormulaData);
@@ -665,7 +666,7 @@ void showEquation(uint16_t equationId, uint16_t startAt, uint16_t cursorAt, bool
         }
 
         /* Trailing ellipsis */
-        if(strWidth > (SCREEN_WIDTH - 2)) {
+        if(strWidth > (SCREEN_WIDTH - 2 - X_OFF)) {
           glyphWidth = stringWidth(STD_ELLIPSIS, &standardFont, true, true);
           while(1) {
             if(*bufPtr == STD_CURSOR[0] && *(bufPtr + 1) == STD_CURSOR[1]) {
@@ -673,7 +674,7 @@ void showEquation(uint16_t equationId, uint16_t startAt, uint16_t cursorAt, bool
             }
             strWidth -= stringWidth(bufPtr, &standardFont, true, true);
             *bufPtr = 0;
-            if((strWidth + glyphWidth) <= (SCREEN_WIDTH - 2)) {
+            if((strWidth + glyphWidth) <= (SCREEN_WIDTH - 2 - X_OFF)) {
               break;
             }
             doubleBytednessHistory >>= 1;
@@ -693,7 +694,7 @@ void showEquation(uint16_t equationId, uint16_t startAt, uint16_t cursorAt, bool
     }
 
     if((!dryRun) && (*cursorShown || cursorAt == EQUATION_NO_CURSOR)) {
-      showString(tmpString, &standardFont, 1, SCREEN_HEIGHT - SOFTMENU_HEIGHT * 3 + 2 , vmNormal, true, true);
+      showString(tmpString, &standardFont, 1 + X_OFF, SCREEN_HEIGHT - SOFTMENU_HEIGHT * 3 + 2 , vmNormal, true, true);
     }
   }
   #endif // !TESTSUITE_BUILD

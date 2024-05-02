@@ -2425,8 +2425,6 @@
 #define ITM_M_DELC                  2365
 #define ITM_M_ADDR                  2366
 #define ITM_M_ADDC                  2367
-
-
 #define ITM_REALSLV                 2368
 #define ITM_REALSLV_LU              2369
 #define ITM_CPXSLV                  2370
@@ -2445,7 +2443,9 @@
 #define MNU_CASHFL                  2381
 #define MNU_AMORT                   2382
 
-#define LAST_ITEM                   2383
+#define ITM_x_SIGN                  2383
+
+#define LAST_ITEM                   2384
 
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL
@@ -2487,4 +2487,3 @@ void itemToBeCoded    (uint16_t unusedButMandatoryParameter);
  */
 void fnNop            (uint16_t unusedButMandatoryParameter);
 #endif // !ITEMS_H
-

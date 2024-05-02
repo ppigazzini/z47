@@ -11,7 +11,7 @@
 #include "items.h"
 #include "c43Extensions/jm.h"
 #include "mathematics/compare.h"
-#include "mathematics/integerPart.h"
+#include "mathematics/integerPartLonginteger.h"
 #include "mathematics/matrix.h"
 #include "plotstat.h"
 #include "registerValueConversions.h"
@@ -162,7 +162,7 @@ static bool_t _checkReadOnlyVariable(uint16_t regist) {
 static void _storeValue(uint16_t regist) {
   if(regist == RESERVED_VARIABLE_GRAMOD) {
     copySourceRegisterToDestRegister(REGISTER_X, TEMP_REGISTER_1);
-    fnIp(NOPARAM);
+    fnLint(NOPARAM);
     if(lastErrorCode == ERROR_NONE) {
       longInteger_t x;
       convertLongIntegerRegisterToLongInteger(REGISTER_X, x);

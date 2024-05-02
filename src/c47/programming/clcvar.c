@@ -115,7 +115,7 @@
 
   static void _indirectRegister(uint8_t *paramAddress) {
     uint8_t opParam = *(uint8_t *)paramAddress;
-    if(opParam <= LAST_LOCAL_REGISTER_IN_KS_CODE) { // Local register from .00 to .98
+    if(opParam <= LAST_LOCAL_REGISTER_IN_KS_CODE) { // Local register from .00 to .99
       _clearVar(regKStoC(opParam));
     }
     else {
@@ -224,7 +224,7 @@
 
       case PARAM_REGISTER:
       case PARAM_COMPARE: {
-        if(opParam <= LAST_LOCAL_REGISTER_IN_KS_CODE) { // Global register from 00 to 99, Lettered register from X to K, or Local register from .00 to .98
+        if(opParam <= LAST_LOCAL_REGISTER_IN_KS_CODE) { // Global register from 00 to 99, Lettered register from X to K, or Local register from .00 to .99
           _clearVar(regKStoC(opParam));
         }
         else if(opParam == STRING_LABEL_VARIABLE) {
