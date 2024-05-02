@@ -259,10 +259,12 @@ typedef struct {
           int16_t jj = 0;
           addChar[0]=0;
           if(addChar0[0] == 0) {
-            stringAppend(addChar,indexOfItems[item].itemSoftmenuName);
-            if ((indexOfItems[item].itemSoftmenuName[0]!=0) && (indexOfItems[item].status & EIM_STATUS) == EIM_ENABLED) {
-              stringAppend(addChar + stringByteLength(addChar), "()");
-              jj = 1;
+            if(item != ITM_EQUAL) {       //block the entry of "="
+              stringAppend(addChar,indexOfItems[item].itemSoftmenuName);
+              if ((indexOfItems[item].itemSoftmenuName[0]!=0) && (indexOfItems[item].status & EIM_STATUS) == EIM_ENABLED) {
+                stringAppend(addChar + stringByteLength(addChar), "()");
+                jj = 1;
+              }
             }
           } else {
             stringAppend(addChar,addChar0);
