@@ -32,6 +32,7 @@
 #include "registerValueConversions.h"
 #include "display.h"
 #include "screen.h"
+#include "statusBar.h"
 #include <string.h>
 
 #include "c47.h"
@@ -129,6 +130,8 @@ static bool_t longIntegerIsPrime1(longInteger_t primeCandidate) {
 
 void fnIsPrime(uint16_t unusedButMandatoryParameter) {
 #if !defined(SAVE_SPACE_DM42_12)
+  hourGlassIconEnabled = true;
+  showHideHourGlass();
   longInteger_t primeCandidate;
 
   if(getRegisterDataType(REGISTER_X) == dtShortInteger) {
@@ -149,7 +152,7 @@ void fnIsPrime(uint16_t unusedButMandatoryParameter) {
       sprintf(errorMessage, "the input type %s is not allowed for PRIME?!", getDataTypeName(getRegisterDataType(REGISTER_X), false, false));
       moreInfoOnError("In function fnIsPrime:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-    return;
+    goto return2;
   }
 
   longIntegerSetPositiveSign(primeCandidate);
@@ -157,12 +160,17 @@ void fnIsPrime(uint16_t unusedButMandatoryParameter) {
   //temporaryInformation = (longIntegerIsPrime2(primeCandidate) ? TI_TRUE : TI_FALSE);
   temporaryInformation = (longIntegerIsPrime(primeCandidate) ? TI_TRUE : TI_FALSE);
   longIntegerFree(primeCandidate);
+return2:
+  hourGlassIconEnabled = false;
+  showHideHourGlass();
 #endif // !SAVE_SPACE_DM42_12
 }
 
 
 void fnNextPrime(uint16_t unusedButMandatoryParameter) {
 #if !defined(SAVE_SPACE_DM42_12)
+  hourGlassIconEnabled = true;
+  showHideHourGlass();
   longInteger_t currentNumber, nextPrime;
 
   longIntegerInit(currentNumber);
@@ -189,7 +197,7 @@ void fnNextPrime(uint16_t unusedButMandatoryParameter) {
   }
 
   if(!saveLastX()) {
-    return;
+    goto return1;
   }
 
   longIntegerSetPositiveSign(currentNumber);
@@ -205,6 +213,9 @@ void fnNextPrime(uint16_t unusedButMandatoryParameter) {
 
   longIntegerFree(nextPrime);
   longIntegerFree(currentNumber);
+return1:
+  hourGlassIconEnabled = false;
+  showHideHourGlass();
 #endif // !SAVE_SPACE_DM42_12
 }
 
@@ -507,7 +518,7 @@ typedef struct FactorAdder
 } FactorAdder_t;
 
 
-void initFactorAdder(FactorAdder_t *faddr) {
+static void initFactorAdder(FactorAdder_t *faddr) {
   faddr->nExpons = 0;
   longIntegerInit(faddr->lastFactor);
 };
@@ -536,7 +547,7 @@ void dumpExponents(real34Matrix_t *matrix, FactorAdder_t *faddr, uint16_t dumpFo
 }
 
 
-bool_t addFactor(longInteger_t lastFactor, longInteger_t factor, real34Matrix_t *matrix, const real34_t *lastAdded,FactorAdder_t *faddr) {
+static bool_t addFactor(longInteger_t lastFactor, longInteger_t factor, real34Matrix_t *matrix, const real34_t *lastAdded,FactorAdder_t *faddr) {
   //printLongIntegerToConsole(factor,"-->","\n");
   #ifdef WGR
     printf("wgr:  addFactor()\n");
@@ -647,6 +658,8 @@ bool_t addFactor(longInteger_t lastFactor, longInteger_t factor, real34Matrix_t 
 
 
 void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
+  hourGlassIconEnabled = true;
+  showHideHourGlass();
   currentKeyCode = 255;
   #if !defined(TESTSUITE_BUILD)
     uint32_t loop = 0;
@@ -773,4 +786,6 @@ abort:
   longIntegerFree(remainder);
   longIntegerFree(nextPrime);
   longIntegerFree(currentNumber);
+  hourGlassIconEnabled = false;
+  showHideHourGlass();
 }
