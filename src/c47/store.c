@@ -375,6 +375,19 @@ void fnStoreConfig(uint16_t regist) {
   bool_t compatibility_bool3  = false;           //defaults to use when settings are removed
   bool_t compatibility_bool4  = false;           //defaults to use when settings are removed
   bool_t compatibility_bool5  = false;           //defaults to use when settings are removed
+  bool_t compatibility_bool6  = false;           //defaults to use when settings are removed
+  bool_t compatibility_bool7  = false;           //defaults to use when settings are removed
+  bool_t compatibility_bool8  = false;           //defaults to use when settings are removed
+  bool_t compatibility_bool9  = false;           //defaults to use when settings are removed
+  bool_t compatibility_bool10 = false;           //defaults to use when settings are removed
+  bool_t compatibility_bool11 = false;           //defaults to use when settings are removed
+  bool_t compatibility_bool12 = false;           //defaults to use when settings are removed
+  bool_t compatibility_bool13 = false;           //defaults to use when settings are removed
+  bool_t compatibility_bool14 = false;           //defaults to use when settings are removed
+  bool_t compatibility_bool15 = false;           //defaults to use when settings are removed
+  bool_t compatibility_bool16 = false;           //defaults to use when settings are removed
+  bool_t compatibility_byte0  = 0;               //defaults to use when settings are removed
+  bool_t compatibility_byte1  = 0;               //defaults to use when settings are removed
   float  compatibility_float1 = 0.1;             //defaults to use when settings are removed
   float  compatibility_float2 = 0.2;             //defaults to use when settings are removed
   float  compatibility_float3 = 0.3;             //defaults to use when settings are removed
@@ -426,21 +439,21 @@ void fnStoreConfig(uint16_t regist) {
   storeToDtConfigDescriptor(compatibility_bool1);
   storeToDtConfigDescriptor(compatibility_bool2);
   storeToDtConfigDescriptor(compatibility_bool3);
-  storeToDtConfigDescriptor(PLOT_VECT);
-  storeToDtConfigDescriptor(PLOT_NVECT);
-  storeToDtConfigDescriptor(PLOT_SCALE);
   storeToDtConfigDescriptor(compatibility_bool4);
-  storeToDtConfigDescriptor(PLOT_LINE);
-  storeToDtConfigDescriptor(PLOT_CROSS);
-  storeToDtConfigDescriptor(PLOT_BOX);
-  storeToDtConfigDescriptor(PLOT_INTG);
-  storeToDtConfigDescriptor(PLOT_DIFF);
-  storeToDtConfigDescriptor(PLOT_RMS);
-  storeToDtConfigDescriptor(PLOT_SHADE);
-  storeToDtConfigDescriptor(PLOT_AXIS);
-  storeToDtConfigDescriptor(PLOT_ZMX);
-  storeToDtConfigDescriptor(PLOT_ZMY);
   storeToDtConfigDescriptor(compatibility_bool5);
+  storeToDtConfigDescriptor(compatibility_bool6);
+  storeToDtConfigDescriptor(compatibility_bool7);
+  storeToDtConfigDescriptor(compatibility_bool8); 
+  storeToDtConfigDescriptor(compatibility_bool9); 
+  storeToDtConfigDescriptor(compatibility_bool10); 
+  storeToDtConfigDescriptor(compatibility_bool11); 
+  storeToDtConfigDescriptor(compatibility_bool12); 
+  storeToDtConfigDescriptor(compatibility_bool13); 
+  storeToDtConfigDescriptor(compatibility_bool14); 
+  storeToDtConfigDescriptor(compatibility_bool15); 
+  storeToDtConfigDescriptor(compatibility_byte0); 
+  storeToDtConfigDescriptor(compatibility_byte1);
+  storeToDtConfigDescriptor(compatibility_bool16);
   storeToDtConfigDescriptor(jm_LARGELI);
   storeToDtConfigDescriptor(constantFractions);
   storeToDtConfigDescriptor(constantFractionsMode);

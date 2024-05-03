@@ -21,8 +21,10 @@
 #include "c43Extensions/graphs.h"
 #include "c43Extensions/graphText.h"
 #include "items.h"
+#include "mathematics/imaginaryPart.h"
 #include "mathematics/invert.h"
 #include "mathematics/matrix.h"
+#include "mathematics/realPart.h"
 #include "plotstat.h"
 #include "recall.h"
 #include "registers.h"
@@ -385,109 +387,122 @@ void graph_eqn(uint16_t mode) {
       //leaving y in Y and x in X
       execute_rpn_function();
 
-      y02 = convertRegisterToDouble(REGISTER_Y);
-                                  //printf("Loop x= %f y= %f\n",x,y02);
-      dy = y02 - y01;
-      grad2  = dy / (x - x01);
-      ss0 = ss1;
-      ss1 = ss2;
-      ss2 = grad2 == 0 ? 0 : grad2 > 0 ? 1 : -1;
-      grad0 = grad1;
-      grad1 = grad2;
-                                  #if defined(DEBUG_GR)
-                                    printRegisterToConsole(REGISTER_X,"X:","");
-                                    printRegisterToConsole(REGISTER_Y," Y:","");
-                                    printf("%f %f grad2/grad1=%f grad1/grad2=%f \n",grad2, grad1, grad2/grad1, grad1/grad2);
-                                    printf("ss1 %i ss2 %i y01 %6f y02 %6f\n",ss1,ss2,y01,y02);
-                                  #endif // DEBUG_GR
+      //at this point Y could be complex!! If complex, then split Y in Re in X and Im in Y
+      if(PLOT_CPXPLT) {
+printf("XXXXXXXXXXXXXXX\n");
+        fnRCL(REGISTER_Y);
+        fnStore(TEMP_REGISTER_1);
+        fnImaginaryPart(0);
+        fnRCL(TEMP_REGISTER_1);
+        fnRealPart(0);
+        AddtoDrawMx();
+      } else {
 
-      if(grad1 != 0 && grad2 != 0) {
-        grad2IncreaseDetected = (
-          (fabs(y02/y01) > 1.01 && fabs(grad2/grad1) > SS2) ||                //increase in grad2
-          (fabs(y01/y02) > 1.01 && fabs(grad1/grad2) > SS2) ||                //increase in grad2
-          (ss0 == 1  && ss1 == -1 && ss2 == 1) ||                              //grad2 reversal checking
-          (ss0 == -1 && ss1 == 1  && ss2 == -1) ||                             //grad2 reversal checking
-          (             ss1 == 1  && ss2 == -1  && y01 > 0 && y02 < 0) ||      //grad2 reversal checking
-          (             ss1 == -1 && ss2 == 1   && y01 < 0 && y02 > 0)     );  //grad2 reversal checking
-      } else grad2IncreaseDetected = false;
-
-
-      if(count == 0) {                        //accumulate an average value starting with inflated 2x start value;
-        yAvg += 2 * fabs(y02);
-      }
-      else if(fabs(y02) > yAvg){
-          yAvg += fabs(y02) / count;
-      }
-
-      if(discontinuityDetected == 0) {
-        if((real34IsInfinite(REGISTER_REAL34_DATA(REGISTER_X)) || ((getRegisterDataType(REGISTER_X) == dtComplex34) && (real34IsInfinite(REGISTER_IMAG34_DATA(REGISTER_X)))))
-        || (real34IsNaN     (REGISTER_REAL34_DATA(REGISTER_X)) || ((getRegisterDataType(REGISTER_X) == dtComplex34) && (real34IsNaN     (REGISTER_IMAG34_DATA(REGISTER_X)))))
-        ||((fabs(grad2)/6 > fabs(0.8*grad0 + 0.2*grad1) ) && count > 3)
-        ||((fabs(y02) > 10 * yAvg) && count > 3)
-        ) {
-          discontinuityDetected = FINE;
-        }
-      }
-
-      if((discontinuityDetected == FINE) || (discontinuityDetected == 0 && grad2IncreaseDetected)) {
-                                  #if defined(DEBUG_GR)
-                                    printf("jumping %f %f grad2/grad1=%f  grad1/grad2=%f\n",grad2, grad1, grad2/grad1, grad1/grad2 );
-                                  #endif // DEBUG_GR
-        x -= dx * (JMP);
-        jumpedBack = true;
-        convertDoubleToReal34RegisterPush(x, REGISTER_X);
-        execute_rpn_function();
         y02 = convertRegisterToDouble(REGISTER_Y);
-                                  //printf("Jumped back to x= %f y= %f\n",x,y02);
-        grad2  = (y02 - y01) / (x - x01);
+                                    //printf("Loop x= %f y= %f\n",x,y02);
+        dy = y02 - y01;
+        grad2  = dy / (x - x01);
         ss0 = ss1;
         ss1 = ss2;
         ss2 = grad2 == 0 ? 0 : grad2 > 0 ? 1 : -1;
+        grad0 = grad1;
+        grad1 = grad2;
+                                    #if defined(DEBUG_GR)
+                                      printRegisterToConsole(REGISTER_X,"X:","");
+                                      printRegisterToConsole(REGISTER_Y," Y:","");
+                                      printf("%f %f grad2/grad1=%f grad1/grad2=%f \n",grad2, grad1, grad2/grad1, grad1/grad2);
+                                      printf("ss1 %i ss2 %i y01 %6f y02 %6f\n",ss1,ss2,y01,y02);
+                                    #endif // DEBUG_GR
 
-                                  #if defined(DEBUG_GR)
-                                    printf("Jump back\n");
-                                    printRegisterToConsole(REGISTER_X,"X:","");
-                                    printRegisterToConsole(REGISTER_Y," Y:","");
-                                    printf("%f %f grad2/grad1=%f grad1/grad2=%f \n",grad2, grad1, grad2/grad1, grad1/grad2);
-                                  #endif // DEBUG_GR
-      }
+        if(grad1 != 0 && grad2 != 0) {
+          grad2IncreaseDetected = (
+            (fabs(y02/y01) > 1.01 && fabs(grad2/grad1) > SS2) ||                //increase in grad2
+            (fabs(y01/y02) > 1.01 && fabs(grad1/grad2) > SS2) ||                //increase in grad2
+            (ss0 == 1  && ss1 == -1 && ss2 == 1) ||                              //grad2 reversal checking
+            (ss0 == -1 && ss1 == 1  && ss2 == -1) ||                             //grad2 reversal checking
+            (             ss1 == 1  && ss2 == -1  && y01 > 0 && y02 < 0) ||      //grad2 reversal checking
+            (             ss1 == -1 && ss2 == 1   && y01 < 0 && y02 > 0)     );  //grad2 reversal checking
+        } else grad2IncreaseDetected = false;
 
-      if(discontinuityDetected > 0 && discontinuityDetected <= FINE) {
-        dx = dJMP * dx0;
-      } else if(grad2 == 0 || grad1 == 0) {
-        dx = dx0;
-      } else if(grad2IncreaseDetected){
-        dx = dx0 * ( (grad2/grad1 > SS1 || grad1/grad2 > SS1)  ? 0.5 : 1.0);     //50% dx0 if increased grad2 detected
-      } else {
-        dx = dx0;
-      }
-                                  //if(dx<0) printf("DX <<< 0\n");
-                                  #if defined(DEBUG_GR)
-                                    printf("Graph: dx=%f drawMxN=%i\n",dx,drawMxN());
-                                  #endif // DEBUG_GR
-      if(!jumpedBack && !(dx<0)) {
-        AddtoDrawMx();
-      } else {
-        #ifdef PC_BUILD
-          printf("Not storing into STATS - jumped back");
-        #endif //PC_BUILD
+
+        if(count == 0) {                        //accumulate an average value starting with inflated 2x start value;
+          yAvg += 2 * fabs(y02);
+        }
+        else if(fabs(y02) > yAvg){
+            yAvg += fabs(y02) / count;
+        }
+
+        if(discontinuityDetected == 0) {
+          if((real34IsInfinite(REGISTER_REAL34_DATA(REGISTER_X)) || ((getRegisterDataType(REGISTER_X) == dtComplex34) && (real34IsInfinite(REGISTER_IMAG34_DATA(REGISTER_X)))))
+          || (real34IsNaN     (REGISTER_REAL34_DATA(REGISTER_X)) || ((getRegisterDataType(REGISTER_X) == dtComplex34) && (real34IsNaN     (REGISTER_IMAG34_DATA(REGISTER_X)))))
+          ||((fabs(grad2)/6 > fabs(0.8*grad0 + 0.2*grad1) ) && count > 3)
+          ||((fabs(y02) > 10 * yAvg) && count > 3)
+          ) {
+            discontinuityDetected = FINE;
+          }
+        }
+
+        if((discontinuityDetected == FINE) || (discontinuityDetected == 0 && grad2IncreaseDetected)) {
+                                    #if defined(DEBUG_GR)
+                                      printf("jumping %f %f grad2/grad1=%f  grad1/grad2=%f\n",grad2, grad1, grad2/grad1, grad1/grad2 );
+                                    #endif // DEBUG_GR
+          x -= dx * (JMP);
+          jumpedBack = true;
+          convertDoubleToReal34RegisterPush(x, REGISTER_X);
+          execute_rpn_function();
+          y02 = convertRegisterToDouble(REGISTER_Y);
+                                    //printf("Jumped back to x= %f y= %f\n",x,y02);
+          grad2  = (y02 - y01) / (x - x01);
+          ss0 = ss1;
+          ss1 = ss2;
+          ss2 = grad2 == 0 ? 0 : grad2 > 0 ? 1 : -1;
+
+                                    #if defined(DEBUG_GR)
+                                      printf("Jump back\n");
+                                      printRegisterToConsole(REGISTER_X,"X:","");
+                                      printRegisterToConsole(REGISTER_Y," Y:","");
+                                      printf("%f %f grad2/grad1=%f grad1/grad2=%f \n",grad2, grad1, grad2/grad1, grad1/grad2);
+                                    #endif // DEBUG_GR
+        }
+
+        if(discontinuityDetected > 0 && discontinuityDetected <= FINE) {
+          dx = dJMP * dx0;
+        } else if(grad2 == 0 || grad1 == 0) {
+          dx = dx0;
+        } else if(grad2IncreaseDetected){
+          dx = dx0 * ( (grad2/grad1 > SS1 || grad1/grad2 > SS1)  ? 0.5 : 1.0);     //50% dx0 if increased grad2 detected
+        } else {
+          dx = dx0;
+        }
+                                    //if(dx<0) printf("DX <<< 0\n");
+                                    #if defined(DEBUG_GR)
+                                      printf("Graph: dx=%f drawMxN=%i\n",dx,drawMxN());
+                                    #endif // DEBUG_GR
+        if(!jumpedBack && !(dx<0)) {
+          AddtoDrawMx();
+        } else {
+          #ifdef PC_BUILD
+            printf("Not storing into STATS - jumped back");
+          #endif //PC_BUILD
+        }
+        
+        grad1 = grad2;
+        y01 = y02;
+        x01 = x;
+                                    #if defined(VERBOSE_SOLVER0) && defined(PC_BUILD)
+                                      printf(">>> Into DrwMX:%i points ",drawMxN());
+                                      printRegisterToConsole(REGISTER_X,"X:","");
+                                      printRegisterToConsole(REGISTER_Y," Y:","\n");
+                                    #endif // VERBOSE_SOLVER0 && PC_BUILD
+                                    #if defined(PC_BUILD)
+                                      if(lastErrorCode == 24) {
+                                        printf("ERROR CODE CANNOT STAT COMPLEX RESULT, ignored\n"); lastErrorCode = 0;
+                                      }
+                                    #endif //PC_BUILD
+
+        if(discontinuityDetected != 0) discontinuityDetected --;
       }
       
-      grad1 = grad2;
-      y01 = y02;
-      x01 = x;
-                                  #if defined(VERBOSE_SOLVER0) && defined(PC_BUILD)
-                                    printf(">>> Into DrwMX:%i points ",drawMxN());
-                                    printRegisterToConsole(REGISTER_X,"X:","");
-                                    printRegisterToConsole(REGISTER_Y," Y:","\n");
-                                  #endif // VERBOSE_SOLVER0 && PC_BUILD
-                                  #if defined(PC_BUILD)
-                                    if(lastErrorCode == 24) {
-                                      printf("ERROR CODE CANNOT STAT COMPLEX RESULT, ignored\n"); lastErrorCode = 0;
-                                    }
-                                  #endif //PC_BUILD
-
-      if(discontinuityDetected != 0) discontinuityDetected --;
       count++;
       if(count > 60) break;
                                   #if defined(DEBUG_GR)

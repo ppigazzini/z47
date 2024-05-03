@@ -2436,16 +2436,14 @@
 #define MNU_Solver_TOOL             2376
 #define ITM_FPHERE                  2377
 #define ITM_FPPHERE                 2378
-
 #define VAR_CPERonA                 2379
 #define ITM_RCL_CPERonA             2380
-
 #define MNU_CASHFL                  2381
 #define MNU_AMORT                   2382
-
 #define ITM_x_SIGN                  2383
+#define ITM_CPXPLT                  2384
 
-#define LAST_ITEM                   2384
+#define LAST_ITEM                   2385
 
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL

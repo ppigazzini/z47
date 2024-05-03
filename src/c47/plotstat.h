@@ -41,6 +41,7 @@ extern  bool_t   PLOT_INTG;
 extern  bool_t   PLOT_DIFF;
 extern  bool_t   PLOT_RMS;
 extern  bool_t   PLOT_SHADE;
+extern  bool_t   PLOT_CPXPLT;
 extern  bool_t   PLOT_AXIS;
 extern  int8_t   PLOT_ZMX;
 extern  int8_t   PLOT_ZMY;
