@@ -818,7 +818,7 @@ static void _runDyadicFunction(char *mvarBuffer, uint16_t item) {
 
   _popNumericStack(mvarBuffer, &re, &im);
   if(real34IsZero(&im) || real34IsNaN(&im)) {
-    reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+    reallocateRegister(REGISTER_Y, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
     real34Copy(&re, REGISTER_REAL34_DATA(REGISTER_Y));
   }
   else {
