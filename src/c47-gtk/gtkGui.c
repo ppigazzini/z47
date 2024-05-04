@@ -383,7 +383,7 @@
           break;
         case 40:           //(
           if(calcMode == CM_EIM) {
-            shiftF = false;
+            shiftF = true;
             int16_t jj = softmenuStack[0].firstItem;
             softmenuStack[0].firstItem = 0;
             btnFnClicked(w, "1");  //F1
@@ -393,7 +393,7 @@
           break;
         case 41:           //)
           if(calcMode == CM_EIM) {
-            shiftF = false;
+            shiftF = true;
             int16_t jj = softmenuStack[0].firstItem;
             softmenuStack[0].firstItem = 0;
             btnFnClicked(w, "2");  //F2
@@ -401,7 +401,7 @@
             showSoftmenuCurrentPart();
             }
           break;
-        case 61:
+        case 61: 
           if(calcMode == CM_EIM) {
             shiftF = true;
             int16_t jj = softmenuStack[0].firstItem;
