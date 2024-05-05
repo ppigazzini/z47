@@ -52,7 +52,7 @@ void graph_reset(void){
   PLOT_DIFF     = false;
   PLOT_RMS      = false;
   PLOT_SHADE    = false;
-  PLOT_CPXPLT    = false;
+  PLOT_CPXPLOT  = false;
   PLOT_AXIS     = true;
   PLOT_ZMX      = 0;
   PLOT_ZMY      = 0;
@@ -209,7 +209,7 @@ void fnPshade (uint16_t unusedButMandatoryParameter) {
 
 
 void fnComplexPlot (uint16_t unusedButMandatoryParameter) {
-  PLOT_CPXPLT = !PLOT_CPXPLT;
+  PLOT_CPXPLOT = !PLOT_CPXPLOT;
   fnRefreshState();                //jm
   fnEqSolvGraph(EQ_PLOT_LU);
   fnPlotSQ(0);

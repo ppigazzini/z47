@@ -810,7 +810,7 @@ TO_QSPI const int16_t menu_PLOT[]        = { -MNU_GRAPHS,                   ITM_
 
                                               ITM_PCROS,                    ITM_PBOX,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,                           //JM GRAPH
                                               ITM_PLINE,                    ITM_PLOTRST,                ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,                           //JM GRAPH
-                                              ITM_CPXPLT,                   ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,                           //JM GRAPH
+                                              ITM_CPXPLOT,                  ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,                           //JM GRAPH
 
                                               ITM_DIFF,                     ITM_INTG,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
                                               ITM_RMS,                      ITM_SHADE,                  ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
@@ -2610,7 +2610,7 @@ bool_t BASE_OVERRIDEONCE = false;
     }
 
                                                               //JM ^^
-    if(currentMenu() != -MNU_MODE && currentMenu() != -MNU_DISP) {          //JM reset menu base point only if not MODE & DISP menus
+    if(currentMenu() != -MNU_MODE && currentMenu() != -MNU_DISP && currentMenu() != -MNU_PLOT) {          //JM reset menu base point only if not MODE & DISP menus
       softmenuStack[0].firstItem = 0;
     }
 

@@ -388,8 +388,7 @@ void graph_eqn(uint16_t mode) {
       execute_rpn_function();
 
       //at this point Y could be complex!! If complex, then split Y in Re in X and Im in Y
-      if(PLOT_CPXPLT) {
-printf("XXXXXXXXXXXXXXX\n");
+      if(PLOT_CPXPLOT) {
         fnRCL(REGISTER_Y);
         fnStore(TEMP_REGISTER_1);
         fnImaginaryPart(0);

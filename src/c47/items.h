@@ -2441,7 +2441,7 @@
 #define MNU_CASHFL                  2381
 #define MNU_AMORT                   2382
 #define ITM_x_SIGN                  2383
-#define ITM_CPXPLT                  2384
+#define ITM_CPXPLOT                 2384
 
 #define LAST_ITEM                   2385
 
