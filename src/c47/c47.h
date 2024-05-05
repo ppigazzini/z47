@@ -102,7 +102,8 @@
   extern const font_t                    standardFont, numericFont, tinyFont;
   extern const font_t                   *fontForShortInteger;
   extern const font_t                   *cursorFont;
-  extern const char                      digits[17];
+  extern const char                      hexadecimalDigits[17];
+  extern const char                      registerFlagLetters[27];
   extern any34Matrix_t                   openMatrixMIMPointer;
   extern uint16_t                        matrixIndex;
   extern void                            (* const addition[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS][NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])(void);

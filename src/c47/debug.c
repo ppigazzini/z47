@@ -1620,7 +1620,7 @@ void debugNIM(void) {
       gtk_widget_show(lbl2[row++]);
 
       for(int i=REGISTER_W; i>=REGISTER_X; i--) {
-        sprintf(string, "%3d %c %s %7d %7d", i, "XYZTABCDLIJKMNPQRSEFGHOUVW"[i-REGISTER_X], getRegisterDataTypeName(i, false, true), TO_C47MEMPTR(getRegisterDataPointer(i)), TO_BYTES(getRegisterFullSizeInBlocks(i)));
+        sprintf(string, "%3d %c %s %7d %7d", i, letteredRegisterName(i), getRegisterDataTypeName(i, false, true), TO_C47MEMPTR(getRegisterDataPointer(i)), TO_BYTES(getRegisterFullSizeInBlocks(i)));
         gtk_label_set_label(GTK_LABEL(lbl1[row]), string);
         gtk_widget_show(lbl1[row]);
         debugRegisterValue(i, row++);

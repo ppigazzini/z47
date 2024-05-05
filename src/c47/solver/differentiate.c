@@ -31,6 +31,7 @@
 #include "registers.h"
 #include "registerValueConversions.h"
 #include "solver/equation.h"
+#include "screen.h"
 #include "stack.h"
 #include "c47.h"
 
@@ -41,30 +42,10 @@ void fn1stDeriv(uint16_t label) {
   if(label >= FIRST_LABEL && label <= LAST_LABEL) {
     firstDerivative(label);
   }
-  else if(label >= REGISTER_X && label <= REGISTER_T) {
+  else if(REGISTER_X <= label && label <= REGISTER_T) {
     // Interactive mode
-    char buf[4];
-    switch(label) {
-      case REGISTER_X: {
-        buf[0] = 'X';
-        break;
-      }
-      case REGISTER_Y: {
-        buf[0] = 'Y';
-        break;
-      }
-      case REGISTER_Z: {
-        buf[0] = 'Z';
-        break;
-      }
-      case REGISTER_T: {
-        buf[0] = 'T';
-        break;
-      }
-      default: { /* unlikely */
-        buf[0] = 0;
-      }
-    }
+    char buf[2];
+    buf[0] = letteredRegisterName((calcRegister_t)label);
     buf[1] = 0;
     label = findNamedLabel(buf);
     if(label == INVALID_VARIABLE) {
@@ -97,26 +78,10 @@ void fn2ndDeriv(uint16_t label) {
   if(label >= FIRST_LABEL && label <= LAST_LABEL) {
     secondDerivative(label);
   }
-  else if(label >= REGISTER_X && label <= REGISTER_T) {
+  else if(REGISTER_X <= label && label <= REGISTER_T) {
     // Interactive mode
-    char buf[4];
-    switch(label) {
-      case REGISTER_X: {
-        buf[0] = 'X';
-        break;}
-      case REGISTER_Y: {
-        buf[0] = 'Y';
-        break;}
-      case REGISTER_Z: {
-        buf[0] = 'Z';
-        break;}
-      case REGISTER_T: {
-        buf[0] = 'T';
-        break;}
-      default: { /* unlikely */
-        buf[0] = 0;
-      }
-    }
+    char buf[2];
+    buf[0] = letteredRegisterName((calcRegister_t)label);
     buf[1] = 0;
     label = findNamedLabel(buf);
     if(label == INVALID_VARIABLE) {

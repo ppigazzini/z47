@@ -40,30 +40,10 @@ void fnPgmSlv(uint16_t label) {
   if(label >= FIRST_LABEL && label <= LAST_LABEL) {
     currentSolverProgram = label - FIRST_LABEL;
   }
-  else if(label >= REGISTER_X && label <= REGISTER_T) {
+  else if(REGISTER_X <= label && label <= REGISTER_T) {
     // Interactive mode
-    char buf[4];
-    switch(label) {
-      case REGISTER_X: {
-        buf[0] = 'X';
-        break;
-      }
-      case REGISTER_Y: {
-        buf[0] = 'Y';
-        break;
-      }
-      case REGISTER_Z: {
-        buf[0] = 'Z';
-        break;
-      }
-      case REGISTER_T: {
-        buf[0] = 'T';
-        break;
-      }
-      default: { /* unlikely */
-        buf[0] = 0;
-      }
-    }
+    char buf[2];
+    buf[0] = letteredRegisterName((calcRegister_t)label);
     buf[1] = 0;
     label = findNamedLabel(buf);
     if(label == INVALID_VARIABLE) {

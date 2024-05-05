@@ -37,8 +37,6 @@
 
 #if !defined(TESTSUITE_BUILD)
 #if !defined(SAVE_SPACE_DM42_8)
-  TO_QSPI const char flagLetter[] = "XYZTABCDLIJKMNPQRSEFGHOUVW";
-
   static void oneSystemFlag(uint16_t systemFlag, const char *systemFlagNamename, int16_t *line, bool_t *firstSystemFlag) {
     if(getSystemFlag(systemFlag)) {
       if(stringWidth(tmpString + CHARS_PER_LINE * *line, &standardFont, true, true) + stringWidth(systemFlagNamename, &standardFont, true, false) <= SCREEN_WIDTH - 1 - 8) { // SPACE is 8 pixel wide
@@ -119,7 +117,7 @@
             flagNumber[2] = 0;
           }
           else {
-            flagNumber[0] = flagLetter[f <= FLAG_K ? f-FLAG_X : f-(FLAG_M-12)];
+            flagNumber[0] = registerFlagLetters[f <= FLAG_K ? f-FLAG_X : f-(FLAG_M-12)];
             flagNumber[1] = 0;
           }
 
@@ -356,7 +354,7 @@
           }
         }
 
-        sprintf(tmpString, "%c:%d", flagLetter[g - FLAG_X], f);
+        sprintf(tmpString, "%c:%d", registerFlagLetters[g - FLAG_X], f);
 
         char ss[2];
         int16_t i, shift;
