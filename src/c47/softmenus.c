@@ -590,16 +590,17 @@ TO_QSPI const int16_t menu_Solver[]      = { ITM_NULL,                  ITM_NULL
 
 
 
-TO_QSPI const int16_t menu_Sfdx[]        = { VAR_ACC,                   ITM_INTEGRAL_YX,           ITM_INTEGRAL,              ITM_NULL,                  VAR_LLIM,                  VAR_ULIM,                  
+TO_QSPI const int16_t menu_Sfdx[]        = { VAR_ACC,                   ITM_INTEGRAL_YX,           ITM_INTEGRAL,              VAR_LLIM,                  VAR_ULIM,                  ITM_NULL,
  /*same*/                                    ITM_NULL,                  CST_77,                    CST_78,                    ITM_NULL,                  ITM_NULL,                  ITM_NULL              };                    
 
 // Tool∫ (intgral tools) 
-TO_QSPI const int16_t menu_Sf_TOOL[]     = { ITM_DRAW,                  ITM_INTEGRAL_YX,           ITM_INTEGRAL,              ITM_DRAW_LU,               VAR_LX,                    VAR_UX,                  
- /*same*/                                    VAR_ACC,                   CST_77,                    CST_78,                    ITM_NULL,                  VAR_LLIM,                  VAR_ULIM              };                    
+TO_QSPI const int16_t menu_Sf_TOOL[]     = { VAR_ACC,                   ITM_INTEGRAL_YX,           ITM_INTEGRAL,              VAR_LLIM,                  VAR_ULIM,                  -MNU_GRAPHS,                  
+ /*same*/                                    ITM_NULL,                  CST_77,                    CST_78,                    ITM_NULL,                  ITM_NULL,                  ITM_NULL       };                    
 
 // ToolS (solver tools)
-TO_QSPI const int16_t menu_Solver_TOOL[] = { ITM_DRAW,                  ITM_CPXSLV,                ITM_CPXSLV_LU,             ITM_DRAW_LU,               VAR_LX,                    VAR_UX,                  
-                                             ITM_SETSIG2,               ITM_REALSLV,               ITM_REALSLV_LU,            ITM_NULL,                  VAR_LLIM,                  VAR_ULIM             };                    
+TO_QSPI const int16_t menu_Solver_TOOL[] = { ITM_SETSIG2,               ITM_CPXSLV,                ITM_CPXSLV_LU,             VAR_LLIM,                  VAR_ULIM,                  -MNU_GRAPHS,                  
+                                             ITM_NULL,                  ITM_REALSLV,               ITM_REALSLV_LU,            ITM_NULL,                  ITM_NULL,                  ITM_NULL       };                    
+
 
 
 
