@@ -1716,7 +1716,7 @@ void readLine(char *line) {
 
 void read2Lines(char *line1, char *line2) {  // Needed to capture empty lines due to empty strings saved from registers
   char eol1,eol2;
-  
+
   if(!ioEof()) {
     restore(line1, 1);
     while((*line1 == '\n' || *line1 == '\r') && !ioEof()) {
@@ -1727,12 +1727,12 @@ void read2Lines(char *line1, char *line2) {  // Needed to capture empty lines du
       restore(++line1, 1);
     }
   }
-  eol1 = *line1;  
+  eol1 = *line1;
   *line1 = 0;
-  
+
   if(!ioEof()) {
     restore(line2, 1);
-    eol2 = *line2;   
+    eol2 = *line2;
     if ((((eol1 == '\n') && (eol2 ==  '\n')) || ((eol1 == '\r') && (eol2 ==  '\r'))) && !ioEof()) {   // empty string between two CR or two LF
       *line2 = 0;
       return;

@@ -1060,7 +1060,7 @@ int16_t lastItem = 0;
 
               if(calcMode == CM_GRAPH && item == -MNU_GRAPHS) {
                 calcMode = CM_NORMAL;
-              } 
+              }
 
               if(item == -MNU_ALPHA) {
                 fnAim(0);
@@ -1563,10 +1563,10 @@ bool_t allowShiftsToClearError = false;
       }
       else if((result == ITM_COMMA || result == ITM_PERIOD) && (calcMode == CM_EIM || calcMode == CM_AIM) && getSystemFlag(FLAG_ALPHA) ) {
         switch(shiftG*2 + numLock) {                        // gSHIFTED  numLock
-        //case 0: result = key->primaryAim;break;           //    0        0      key->primaryAim 
-          case 1: result = RADIX34_MARK_DEC_ITM; break;     //    0        1      decimal 
-        //case 2: result = RADIX34_MARK_DEC_ITM; break;     //    2        0      decimal 
-          case 3: result = RADIX34_MARK_NOT_DEC_ITM; break; //    2        1      not the decimal 
+        //case 0: result = key->primaryAim;break;           //    0        0      key->primaryAim
+          case 1: result = RADIX34_MARK_DEC_ITM; break;     //    0        1      decimal
+        //case 2: result = RADIX34_MARK_DEC_ITM; break;     //    2        0      decimal
+          case 3: result = RADIX34_MARK_NOT_DEC_ITM; break; //    2        1      not the decimal
           default:;
         }
       }
@@ -3420,7 +3420,7 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
           if(softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_GRAPHS && softmenu[softmenuStack[1].softmenuId].menuItem == -MNU_PLOT) {
             calcMode = CM_GRAPH;
             fnEqSolvGraph(EQ_PLOT_LU);
-            screenUpdatingMode = SCRUPD_AUTO;            
+            screenUpdatingMode = SCRUPD_AUTO;
           }
           else
           if(softmenuStack[0].softmenuId <= 1) { // MyMenu or MyAlpha is displayed

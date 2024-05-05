@@ -156,9 +156,9 @@ void fnNop(uint16_t unusedButMandatoryParameter) {
         case ITM_RCL_PV      : temporaryInformation = TI_STORCL; break;
         case ITM_STO         :
         case ITM_RCL         : temporaryInformation = ((param == REGISTER_I || param == REGISTER_J) && inMatrixMenu) ? TI_IJ : TI_STORCL; break;
-        case ITM_RCLELPLUS   :   
+        case ITM_RCLELPLUS   :
         case ITM_RCLEL       :
-        case ITM_STOELPLUS   :   
+        case ITM_STOELPLUS   :
         case ITM_STOEL       : if(inMatrixMenu) temporaryInformation = TI_MIJ;   break;
         case ITM_IPLUS       :
         case ITM_IMINUS      :
@@ -247,7 +247,7 @@ void fnNop(uint16_t unusedButMandatoryParameter) {
     }
 
 
-    if((programRunStop != PGM_RUNNING || timeLastOp0 == 0)) {               //The first manual command including XEQ (re)starts the timer by setting timeLastOp0 
+    if((programRunStop != PGM_RUNNING || timeLastOp0 == 0)) {               //The first manual command including XEQ (re)starts the timer by setting timeLastOp0
       LastOpTimerReStart(func);
     } else if(func == ITM_LASTT) {                                          //If LASTT? is called in a program it laps the timer, but does not stop it. It is never stopped, only timeLastOp1 is set, and it is restarted only with a new command
       LastOpTimerLap(func);                                                 //stores the last time to timeLastOp
@@ -255,7 +255,7 @@ void fnNop(uint16_t unusedButMandatoryParameter) {
 
     indexOfItems[func].func(param);
 
-    if(programRunStop != PGM_RUNNING || func == ITM_LASTT) {                //stores the last time to timeLastOp 
+    if(programRunStop != PGM_RUNNING || func == ITM_LASTT) {                //stores the last time to timeLastOp
       LastOpTimerLap(func);
     }
 
@@ -272,24 +272,24 @@ void fnNop(uint16_t unusedButMandatoryParameter) {
       case VAR_UX:
 
       case ITM_PLOT_STAT:  //Plot menu
-      case ITM_PLINE:                     
-      case ITM_DIFF:                      
-      case ITM_RMS:                       
-      case ITM_PCROS:                     
-      case ITM_NVECT:                     
-      case ITM_EXTY:                      
-      case ITM_PZOOMX:                    
-      case ITM_SNAP:                      
-      case ITM_NULL:                      
-      case ITM_SCALE:                 
-      case ITM_INTG:                  
-      case ITM_SHADE:                 
-      case ITM_PBOX:                  
-      case ITM_VECT:                  
-      case ITM_EXTX:                  
-      case ITM_PZOOMY:                
-      case ITM_LISTXY:                
-      case ITM_PLOTRST:               
+      case ITM_PLINE:
+      case ITM_DIFF:
+      case ITM_RMS:
+      case ITM_PCROS:
+      case ITM_NVECT:
+      case ITM_EXTY:
+      case ITM_PZOOMX:
+      case ITM_SNAP:
+      case ITM_NULL:
+      case ITM_SCALE:
+      case ITM_INTG:
+      case ITM_SHADE:
+      case ITM_PBOX:
+      case ITM_VECT:
+      case ITM_EXTX:
+      case ITM_PZOOMY:
+      case ITM_LISTXY:
+      case ITM_PLOTRST:
 
 
       case ITM_PLOT_LR:      //Assess
@@ -298,7 +298,7 @@ void fnNop(uint16_t unusedButMandatoryParameter) {
 
       case ITM_PLOT:         //Scatter
       case ITM_PLOT_CENTRL:
-      case ITM_SMI: 
+      case ITM_SMI:
 
       case ITM_HPLOT:        //HPLOT
       case ITM_HNORM:

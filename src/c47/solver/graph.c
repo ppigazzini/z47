@@ -268,7 +268,7 @@ uint8_t DXR = 0, DYR = 0, DXI = 0, DYI = 0;
                                     memcpy(prefix, allNamedVariables[regStatsXY - FIRST_NAMED_VARIABLE].variableName + 1, allNamedVariables[regStatsXY - FIRST_NAMED_VARIABLE].variableName[0]);
                                     strcpy(prefix + allNamedVariables[regStatsXY - FIRST_NAMED_VARIABLE].variableName[0], " :");
                                     printf("Adding to Draw Matrix %s\n",prefix);
-                                  #endif //STATDEBUG    
+                                  #endif //STATDEBUG
     calcRegister_t regStats = regStatsXY;
     if(!isStatsMatrixN(&rows,regStats)) {
       regStats = allocateNamedMatrix(plotStatMx, 1, 2);
@@ -472,7 +472,7 @@ void graph_eqn(uint16_t mode) {
           printf("Not storing into STATS - jumped back");
         #endif //PC_BUILD
       }
-      
+
       grad1 = grad2;
       y01 = y02;
       x01 = x;
@@ -1213,7 +1213,7 @@ void graph_stat(uint16_t unusedButMandatoryParameter) {
                                     printRegisterToConsole(SREG_X1,"X = "," ");
                                     printRegisterToConsole(REGISTER_Y,"Y = ","\n");
                                   #endif // PC_BUILD
-      
+
     }  //Iteration end
 
     refreshScreen(200);
@@ -1308,7 +1308,7 @@ void fnEqSolvGraph (uint16_t func) {
 
 
   switch(func) {
-    case EQ_CPXSOLVE_LU: 
+    case EQ_CPXSOLVE_LU:
     case EQ_REALSOLVE_LU: {
       if(getRegisterAsReal(RESERVED_VARIABLE_LLIM, &y) && getRegisterAsReal(RESERVED_VARIABLE_ULIM, &x)) {
         liftStack();
@@ -1319,8 +1319,8 @@ void fnEqSolvGraph (uint16_t func) {
         realToReal34(&y, REGISTER_REAL34_DATA(REGISTER_Y));
       }
       break;
-    }   
-    case EQ_CPXSOLVE: 
+    }
+    case EQ_CPXSOLVE:
     case EQ_REALSOLVE: {
       if(getRegisterAsReal(REGISTER_X, &x) && getRegisterAsReal(REGISTER_Y, &y)) {
         reallocateRegister(RESERVED_VARIABLE_ULIM, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
@@ -1341,7 +1341,7 @@ void fnEqSolvGraph (uint16_t func) {
         realToReal34(&y, REGISTER_REAL34_DATA(REGISTER_Y));
       }
       break;
-    }   
+    }
     case EQ_PLOT: {              //uses X, Y
       if(getRegisterAsReal(REGISTER_X, &x) && getRegisterAsReal(REGISTER_Y, &y)) {
         reallocateRegister(RESERVED_VARIABLE_UX, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
@@ -1382,7 +1382,7 @@ void fnEqSolvGraph (uint16_t func) {
 
   switch(func) {
     case EQ_REALSOLVE_LU:
-    case EQ_REALSOLVE: {      
+    case EQ_REALSOLVE: {
       if((currentSolverVariable >= FIRST_NAMED_VARIABLE) ) {//&& currentSolverStatus & SOLVER_STATUS_READY_TO_EXECUTE) {
         fnSolve(currentSolverVariable);
       }

@@ -501,17 +501,17 @@ void showFracMode(void) {
       strcpy(divStr,"/");
       sprintf(statusMessage,"%smax",divStr);
       x = showString(statusMessage, &standardFont, x, L1, vmNormal, true, true);
-    
+
       compressString = 1;             //^JM
       x=xx;
       sprintf(statusMessage, "%s%" PRIu32, divStr,denMax);
       x = showString(statusMessage, &standardFont, x, L2, vmNormal, true, true);
-    
+
       compressString = 1;             //^JM
       x=xx;
       x = showGlyphCode('f',  &standardFont, x, L2, vmNormal, true, false); // f is 0+7+3 pixel wide
       compressString = 1;             //^JM
-    
+
       x=xx;
       x = showString(PRODUCT_SIGN, &standardFont, x, L2, vmNormal, true, false); // STD_DOT is 0+3+2 pixel wide and STD_CROSS is 0+7+2 pixel wide
 
@@ -680,10 +680,10 @@ void drawBattery(uint16_t voltage) {
         else if(getSystemFlag(FLAG_LOWBAT)) {
           showGlyph(STD_BATTERY, &standardFont, X_BATTERY, 0, vmNormal, true, false); // is 0+10+1 pixel wide
         }
-    	  else {
-      		// Clear the space used by the USB / LOWBAT glyph
-      		lcd_fill_rect(X_BATTERY, 0, 11, 20, LCD_SET_VALUE);
-    	  }
+        else {
+          // Clear the space used by the USB / LOWBAT glyph
+          lcd_fill_rect(X_BATTERY, 0, 11, 20, LCD_SET_VALUE);
+        }
       }
     }
   #endif // DMCP_BUILD

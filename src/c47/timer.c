@@ -90,7 +90,7 @@ void fnLastT (uint16_t unusedButMandatoryParameter) {
   longIntegerInit(lgInt);
   uIntToLongInteger(timeLastOp, lgInt);
   convertLongIntegerToLongIntegerRegister(lgInt, REGISTER_X);
-  longIntegerFree(lgInt);  
+  longIntegerFree(lgInt);
 }
 
 

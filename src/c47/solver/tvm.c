@@ -50,7 +50,7 @@ void fnTvmVar(uint16_t variable) {
         currentSolverStatus |= SOLVER_STATUS_TVM_APPLICATION;
         currentSolverVariable = variable;
         clearSystemFlag(FLAG_TVM_I_KNOWN);
-	
+
         /* Calculate */
         if(currentSolverStatus & SOLVER_STATUS_READY_TO_EXECUTE) {
           real34_t y, x, resZ, resY, resX;
@@ -58,9 +58,9 @@ void fnTvmVar(uint16_t variable) {
           thereIsSomethingToUndo = true;
           liftStack();
 
-      	  clearSystemFlag(FLAG_TVM_I_KNOWN);
+          clearSystemFlag(FLAG_TVM_I_KNOWN);
 
-      	  switch(variable) {
+          switch(variable) {
             case RESERVED_VARIABLE_IPONA:
             case RESERVED_VARIABLE_PPERONA:
             case RESERVED_VARIABLE_CPERONA: {
@@ -68,10 +68,10 @@ void fnTvmVar(uint16_t variable) {
               break;
             }
             default: {
-              clearSystemFlag(FLAG_TVM_I_CHANGES);	  
+              clearSystemFlag(FLAG_TVM_I_CHANGES);
             }
-      	  }
-      	  real34Multiply(REGISTER_REAL34_DATA(variable), const34_2, &y);
+          }
+          real34Multiply(REGISTER_REAL34_DATA(variable), const34_2, &y);
           real34Multiply(REGISTER_REAL34_DATA(variable), const34_1on2, &x);
 
           switch(variable) {
@@ -134,9 +134,9 @@ void fnTvmVar(uint16_t variable) {
           fnToReal(NOPARAM);
           if(lastErrorCode == ERROR_NONE) {
             reallyRunFunction(ITM_STO, variable);
-      	    if (variable == RESERVED_VARIABLE_PPERONA) {
-      	      reallyRunFunction(ITM_STO, RESERVED_VARIABLE_CPERONA);
-      	    }
+            if (variable == RESERVED_VARIABLE_PPERONA) {
+              reallyRunFunction(ITM_STO, RESERVED_VARIABLE_CPERONA);
+            }
             currentSolverStatus |= SOLVER_STATUS_READY_TO_EXECUTE;
             temporaryInformation = TI_SOLVER_VARIABLE;
           }
@@ -178,7 +178,7 @@ void tvmEquation(void) {
   real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_PMT),     &pmt);
   real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_PV),      &pv);
   /*
-    The plan is to find an interest rate iM which, 
+    The plan is to find an interest rate iM which,
     when compounded pperA times in a year, gives iAER.
     (AER stands for annual effective rate.)
     iAER can be found like this:
@@ -212,7 +212,7 @@ void tvmEquation(void) {
     // This is the "normal" value of i when cperA = pperA.
 
     realDivide(&cperA, &pperA, &r, &ctxtReal39); // r = cperA / pperA
-			   
+
     if ( !(realIsZero (&r) || realCompareEqual(const_1, &r)) ) { // not normal case
       realDivide(&i, &r, &i, &ctxtReal39);
       realAdd (&i, const_1, &i, &ctxtReal39);
@@ -221,7 +221,7 @@ void tvmEquation(void) {
     }
     setSystemFlag(FLAG_TVM_I_KNOWN);
   }
-  
+
   realChangeSign(&pv);
 
   realAdd(&i, const_1, &i1nPer, &ctxtReal39);

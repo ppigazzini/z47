@@ -1099,7 +1099,7 @@ static void _integrate_mm(calcRegister_t regist, const real_t *llim, const real_
   of fl, fr, and h by calling the user function.
 */
 static void DEI_xeq_user_adr (calcRegister_t regist, const real_t* a, const real_t* d, const real_t* r,
-			      real_t* fl, real_t* fr, real_t* h, realContext_t *realContext) {
+            real_t* fl, real_t* fr, real_t* h, realContext_t *realContext) {
   real_t s1;
   realDivide ( d, r, &s1, realContext); // s1 = d/r
   realAdd (a, &s1, &s1, realContext); // s1 = a+d/r
@@ -1165,16 +1165,16 @@ static real_t* exp_sinh_opt_d (calcRegister_t regist, const real_t* a, const rea
       uInt32ToReal (1 << (i + j), &r);
       DEI_xeq_user_adr (regist, a, d, &r, &fl, &fr, &h, realContext);
       if (IS_FINITE(&h)) {
-      	realCopyAbs (&h, &s1);
-      	realAdd (&s, &s1, &s, realContext); // sum |h| to remove noisy cases - probably not needed with decNumbers
-      	if (realGetSign (&h) == realGetSign (&h2)) {
-      	  i += j; // search right half
-      	}
-      	else { // search left half
-      	  realCopy (&fl, &lfl);
-      	  realCopy (&fr, &lfr);
-      	  realCopy (&r, &lr);
-      	}
+        realCopyAbs (&h, &s1);
+        realAdd (&s, &s1, &s, realContext); // sum |h| to remove noisy cases - probably not needed with decNumbers
+        if (realGetSign (&h) == realGetSign (&h2)) {
+          i += j; // search right half
+        }
+        else { // search left half
+          realCopy (&fl, &lfl);
+          realCopy (&fr, &lfr);
+          realCopy (&r, &lr);
+        }
       }
     } while (j > 1);
 
@@ -1182,15 +1182,15 @@ static real_t* exp_sinh_opt_d (calcRegister_t regist, const real_t* a, const rea
       realSubtract (&lfl, &lfr, &h, realContext);
       realCopy (&lr, &r);
       if (!realIsZero (&h)) { // if last diff != 0, back up r by one step
-	      realDivide (&r, const_2, &r, realContext);
+        realDivide (&r, const_2, &r, realContext);
       }
       realSetPositiveSign (&lfl);
       realSetPositiveSign (&lfr);
       if (realCompareLessThan (&lfl, &lfr)) {
-	      realDivide (d, &r, d, realContext); // move d closer to the finite endpoint
+        realDivide (d, &r, d, realContext); // move d closer to the finite endpoint
       }
       else {
-	      realMultiply (d, &r, d, realContext);  // move d closer to the infinite endpoint
+        realMultiply (d, &r, d, realContext);  // move d closer to the infinite endpoint
       }
     }
   }
@@ -1312,13 +1312,13 @@ static void dbl_exp_int_new (calcRegister_t regist, const real_t *a, const real_
 
     if (mode == 0) { // Tanh-Sinh
       do {
-	real_t u, r, w, x;
-	// Progress display code goes inside inner loop, to be consistent with previous code.
-	// The result and error are in .... result and error! No multiplication needed.
-	// In showprogress: result as ss; const_1 for bma2 and h, and fact;
-	// error for a and const_0 for b.
-	// Note that result and error do not change within this inner loop so
-	// only the loop counter changes each time.
+  real_t u, r, w, x;
+  // Progress display code goes inside inner loop, to be consistent with previous code.
+  // The result and error are in .... result and error! No multiplication needed.
+  // In showprogress: result as ss; const_1 for bma2 and h, and fact;
+  // error for a and const_0 for b.
+  // Note that result and error do not change within this inner loop so
+  // only the loop counter changes each time.
   #if !defined(TESTSUITE_BUILD)
     char tmps[64];
     exitSignalled |= (popKey() == 32); //instead of keyWaiting()
@@ -1344,48 +1344,48 @@ static void dbl_exp_int_new (calcRegister_t regist, const real_t *a, const real_
   #endif //TESTSUITE_BUILD
 
 
-	realDivide (const_1, &t, &s1, realContext); // s1 stores 1/t
-	realSubtract (&s1, &t, &u, realContext);
-	realExp (&u, &u, realContext); // u = exp(1/t-t)
+  realDivide (const_1, &t, &s1, realContext); // s1 stores 1/t
+  realSubtract (&s1, &t, &u, realContext);
+  realExp (&u, &u, realContext); // u = exp(1/t-t)
 
-	realAdd (&u, const_1, &r, realContext);
-	realDivide (&u, &r, &r, realContext);
-	realMultiply (&r, const_2, &r, realContext); // r = 2*u/(1+u);
+  realAdd (&u, const_1, &r, realContext);
+  realDivide (&u, &r, &r, realContext);
+  realMultiply (&r, const_2, &r, realContext); // r = 2*u/(1+u);
 
-	realAdd (&t, &s1, &s2, realContext);
-	realMultiply (&r, &s2, &w, realContext);
-	realAdd (&u, const_1, &s2, realContext);
-	realDivide (&w, &s2, &w, realContext); // w = (t+1/t)*r/(1+u);
+  realAdd (&t, &s1, &s2, realContext);
+  realMultiply (&r, &s2, &w, realContext);
+  realAdd (&u, const_1, &s2, realContext);
+  realDivide (&w, &s2, &w, realContext); // w = (t+1/t)*r/(1+u);
 
-	realMultiply (&d, &r, &x, realContext); // x = d*r;
+  realMultiply (&d, &r, &x, realContext); // x = d*r;
 
-	realAdd (a, &x, &s1, realContext);
-	if (realCompareGreaterThan (&s1, a)) { // if too close to a then reuse previous fp
-	  DEI_xeq_user (regist, &s1, &y, realContext);
-	  if (!realIsInfinite (&y))
-	    realCopy (&y, &fp);  // if f(x) is finite, add to local sum
-	}
+  realAdd (a, &x, &s1, realContext);
+  if (realCompareGreaterThan (&s1, a)) { // if too close to a then reuse previous fp
+    DEI_xeq_user (regist, &s1, &y, realContext);
+    if (!realIsInfinite (&y))
+      realCopy (&y, &fp);  // if f(x) is finite, add to local sum
+  }
 
-	realSubtract (b, &x, &s1, realContext);
-	if (realCompareLessThan (&s1, b)) { // if too close to a then reuse previous fp
-	  DEI_xeq_user (regist, &s1, &y, realContext);
-	  if (!realIsInfinite (&y))
-	    realCopy (&y, &fm);  // if f(x) is finite, add to local sum
-	}
+  realSubtract (b, &x, &s1, realContext);
+  if (realCompareLessThan (&s1, b)) { // if too close to a then reuse previous fp
+    DEI_xeq_user (regist, &s1, &y, realContext);
+    if (!realIsInfinite (&y))
+      realCopy (&y, &fm);  // if f(x) is finite, add to local sum
+  }
 
-	realAdd (&fp, &fm, &s1, realContext);
-	realMultiply (&s1, &w, &q, realContext); // q = w*(fp+fm)
-	realAdd (&p, &q, &p, realContext); // p += q
-	realMultiply (&t, &eh, &t, realContext); // t *= eh
+  realAdd (&fp, &fm, &s1, realContext);
+  realMultiply (&s1, &w, &q, realContext); // q = w*(fp+fm)
+  realAdd (&p, &q, &p, realContext); // p += q
+  realMultiply (&t, &eh, &t, realContext); // t *= eh
 
-	realMultiply (&eps, realCopyAbs (&p, &s1), &s2, realContext); // s2 = eps*abs(p)
+  realMultiply (&eps, realCopyAbs (&p, &s1), &s2, realContext); // s2 = eps*abs(p)
       } while (realCompareGreaterThan (realCopyAbs (&q, &s1), &s2)); // while abs(q) > eps*abs(p)
     }
 
     else {
       realDivide (&t, const_2, &t, realContext);
       do {
-	real_t r, w, x;
+  real_t r, w, x;
 
   #if !defined(TESTSUITE_BUILD)
     char tmps[64];
@@ -1411,47 +1411,47 @@ static void dbl_exp_int_new (calcRegister_t regist, const real_t *a, const real_
     }
   #endif //TESTSUITE_BUILD
 
-	realMultiply (&t, const_4, &s1, realContext); // s1 = 4t
-	realDivide (const_1, &s1, &s1, realContext); // s1 = 0.25/t
-	realSubtract (&t, &s1, &s1, realContext); // s1 = t - 0.25/t
-	realExp (&s1, &r, realContext); // r = exp(t-0.25/t)
+  realMultiply (&t, const_4, &s1, realContext); // s1 = 4t
+  realDivide (const_1, &s1, &s1, realContext); // s1 = 0.25/t
+  realSubtract (&t, &s1, &s1, realContext); // s1 = t - 0.25/t
+  realExp (&s1, &r, realContext); // r = exp(t-0.25/t)
 
-	realCopy (&r, &w);
+  realCopy (&r, &w);
 
-	realZero (&q);
+  realZero (&q);
 
-	if (mode == 1) { // Exp-Sinh
-	  realAdd (&c, realDivide (&d, &r, &s1, realContext), &x, realContext); // x = c+d/r; // d/r in s1
-	  if (realCompareEqual (&x, &c))
-	    break;
-	  DEI_xeq_user (regist, &x, &y, realContext);
-	  if (!realIsInfinite (&y))  // if f(x) is finite, add to local sum
-	    realAdd (&q, realDivide (&y, &w, &s1, realContext), &q, realContext);
-	}
-	else { // Sinh-Sinh
-	  realSubtract (&r, realDivide (const_1, &r, &s2, realContext), &s1, realContext);
-	  realDivide (&s1, const_2, &r, realContext); // r = (r-1/r)/2
+  if (mode == 1) { // Exp-Sinh
+    realAdd (&c, realDivide (&d, &r, &s1, realContext), &x, realContext); // x = c+d/r; // d/r in s1
+    if (realCompareEqual (&x, &c))
+      break;
+    DEI_xeq_user (regist, &x, &y, realContext);
+    if (!realIsInfinite (&y))  // if f(x) is finite, add to local sum
+      realAdd (&q, realDivide (&y, &w, &s1, realContext), &q, realContext);
+  }
+  else { // Sinh-Sinh
+    realSubtract (&r, realDivide (const_1, &r, &s2, realContext), &s1, realContext);
+    realDivide (&s1, const_2, &r, realContext); // r = (r-1/r)/2
 
-	  realAdd (&w, realDivide (const_1, &w, &s2, realContext), &s1, realContext);
-	  realDivide (&s1, const_2, &w, realContext); // w = (w+1/w)/2
+    realAdd (&w, realDivide (const_1, &w, &s2, realContext), &s1, realContext);
+    realDivide (&s1, const_2, &w, realContext); // w = (w+1/w)/2
 
-	  realSubtract (&c, realMultiply (&d, &r, &s1, realContext), &x, realContext); // x = c-d*r; // d*r in s1
-	  DEI_xeq_user (regist, &x, &y, realContext);
-	  if (!realIsInfinite (&y))  // if f(x) is finite, add to local sum
-	    realAdd (&q, realMultiply (&y, &w, &s1, realContext), &q, realContext);
-	}
+    realSubtract (&c, realMultiply (&d, &r, &s1, realContext), &x, realContext); // x = c-d*r; // d*r in s1
+    DEI_xeq_user (regist, &x, &y, realContext);
+    if (!realIsInfinite (&y))  // if f(x) is finite, add to local sum
+      realAdd (&q, realMultiply (&y, &w, &s1, realContext), &q, realContext);
+  }
 
-	realAdd (&c, realMultiply (&d, &r, &s1, realContext), &x, realContext); // x = c+d*r; // d*r in s1
-	DEI_xeq_user (regist, &x, &y, realContext);
+  realAdd (&c, realMultiply (&d, &r, &s1, realContext), &x, realContext); // x = c+d*r; // d*r in s1
+  DEI_xeq_user (regist, &x, &y, realContext);
 
-	if (!realIsInfinite (&y))  // if f(x) is finite, add to local sum
-	  realAdd (&q, realMultiply (&y, &w, &s1, realContext), &q, realContext);
+  if (!realIsInfinite (&y))  // if f(x) is finite, add to local sum
+    realAdd (&q, realMultiply (&y, &w, &s1, realContext), &q, realContext);
 
-	realDivide (const_1, realMultiply (&t, const_4, &s2, realContext), &s1, realContext); //s1 = 1/(4t)
-	realMultiply (&q, realAdd (&t, &s1, &s2, realContext), &q, realContext); // q = q * (t + 1/4t)
-	realAdd (&p, &q, &p, realContext); // p += q;
-	realMultiply (&t, &eh, &t, realContext); // t *= eh;
-	realMultiply (&eps, realCopyAbs (&p, &s1), &s2, realContext); // s2 = eps*abs(p)
+  realDivide (const_1, realMultiply (&t, const_4, &s2, realContext), &s1, realContext); //s1 = 1/(4t)
+  realMultiply (&q, realAdd (&t, &s1, &s2, realContext), &q, realContext); // q = q * (t + 1/4t)
+  realAdd (&p, &q, &p, realContext); // p += q;
+  realMultiply (&t, &eh, &t, realContext); // t *= eh;
+  realMultiply (&eps, realCopyAbs (&p, &s1), &s2, realContext); // s2 = eps*abs(p)
       } while (realCompareGreaterThan (realCopyAbs (&q, &s1), &s2)); // while abs(q) > eps*abs(p)
     }
 
