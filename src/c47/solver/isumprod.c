@@ -67,7 +67,8 @@
 
 
   static void _programmableiSumProd(uint16_t label, bool_t prod) {
-    uint32_t      loop = 0;
+    currentKeyCode = 255;
+    int32_t       loop = 0;
     int16_t       finished = 0;
     bool_t        abort = false;
     longInteger_t resultLi, xLi;
@@ -87,7 +88,7 @@
     if(!longIntegerIsZero(loopStep)) {
       longIntegerDivide(iLoop, loopStep, iLoop);
     }
-    loop = longIntegerModuloUInt(iLoop, 100000);
+    loop = (int32_t)longIntegerModuloUInt(iLoop, (int32_t)(0x7FFFFFFF));
 
     if(longIntegerCompare(loopTo, iCounter) != 0 &&
         (longIntegerIsZero(loopStep) ||
@@ -153,13 +154,13 @@
         #endif //VERBOSE_COUNTER
 
         longIntegerAdd(iCounter, loopStep, iCounter);
-        if(printHalfSecUpdate_Integer(timed, "Loop: ",loop--)) { //timed
+        if(printHalfSecUpdate_Integer(timed, "Loop: ",loop--, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //; //timed
           _showProgress(resultLi);
         }
 
         if(keyWaiting()) {
           showString("key Waiting ...", &standardFont, 20, 40, vmNormal, false, false);
-          printHalfSecUpdate_Integer(force+1, "Interrupted: ",loop);
+          printHalfSecUpdate_Integer(force+1, "Interrupted: ",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
           abort = true;
         }
 
@@ -201,11 +202,10 @@
     showHideHourGlass();
 
     if(abort) {
-      printHalfSecUpdate_Integer(force+0, "Loop aborted: ",loop);
+      printHalfSecUpdate_Integer(force+0, "Loop aborted: ",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
     } else {
-      printHalfSecUpdate_Integer(force+0, "Loop complete: ",loop);      
+      printHalfSecUpdate_Integer(force+0, "Loop complete: ",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
     }
-
   }
 
 

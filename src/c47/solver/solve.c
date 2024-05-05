@@ -1,18 +1,6 @@
-/* This file is part of 43S.
- *
- * 43S is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * 43S is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with 43S.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: GPL-3.0-only
+// SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
+
 
 /********************************************//**
  * \file solve.c
@@ -21,6 +9,7 @@
 #include "solver/solve.h"
 
 #include "c43Extensions/addons.h"
+#include "c43Extensions/graphText.h"
 #include "charString.h"
 #include "constantPointers.h"
 #include "defines.h"
@@ -132,28 +121,18 @@ void fnSolve(uint16_t labelOrVariable) {
     real_t tmp;
     int resultCode = 0;
 
-    //manipulate the graph minimuma and maximum points based on the solver inputs, part 1
-    float x_0, x_1;
-    float x_diff = 0;
     if(_realSolverFirstGuesses(REGISTER_Y, &y) && _realSolverFirstGuesses(REGISTER_X, &x)) {
-      x_0 = convertRegisterToDouble(REGISTER_Y);
-      x_1 = convertRegisterToDouble(REGISTER_X);
-      if(x_0 != DOUBLE_NOT_INIT && x_1 != DOUBLE_NOT_INIT) {
-        x_min = x_0;
-        x_max = x_1;
-        x_diff = fabs(x_max-x_min);
-        if(x_diff < 0.001) {
-          x_diff = 0.001; //stay within float range
-        }
-        if(x_diff < 0.01) {
-          x_max = x_max + 0.1 * x_diff;
-          x_min = x_min - 0.1 * x_diff;
-        }
-      }
-
+      fnDrop(0);
+      fnDrop(0);
+      saveForUndo(); //repeat after dropping the input parameters
       currentSolverVariable = labelOrVariable;
       resultCode = solver(labelOrVariable, &y, &x, &z, &y, &x);
-      fnClearStack(NOPARAM); // reset stack to 0.
+
+      fnUndo(0);
+      liftStack();
+      liftStack();
+      liftStack();
+      liftStack();
       real34ToReal(&z, &tmp), convertRealToReal34ResultRegister(&tmp, REGISTER_Z);
       real34ToReal(&y, &tmp), convertRealToReal34ResultRegister(&tmp, REGISTER_Y);
       real34ToReal(&x, &tmp), convertRealToReal34ResultRegister(&tmp, REGISTER_X);
@@ -192,19 +171,6 @@ void fnSolve(uint16_t labelOrVariable) {
       }
       adjustResult(REGISTER_X, false, false, REGISTER_X, REGISTER_Y, -1);
 
-      //manipulate the graph minimuma and maximum points based on the solver result, part 2
-      x_0 = convertRegisterToDouble(REGISTER_Y);
-      x_1 = convertRegisterToDouble(REGISTER_X);
-      if(x_0 != DOUBLE_NOT_INIT && x_1 != DOUBLE_NOT_INIT) {
-        if(!(x_min<x_0 && x_min<x_1 && x_0<x_max && x_1<x_max)) {
-          if(fmin(x_0,x_1) < x_min) {
-            x_min = fmin(x_0,x_1) - 0.1 * fabs(x_max-fmin(x_0,x_1)); //get the root or maximum/minimum in the centre of the graph interval
-          }
-          if(fmax(x_0,x_1) > x_max) {
-            x_max = fmax(x_0,x_1) + 0.1 * fabs(x_min-fmax(x_0,x_1)); //get the root or maximum/minimum in the centre of the graph interval
-          }
-        }
-      }
 
     }
     else {
@@ -228,27 +194,28 @@ void fnSolve(uint16_t labelOrVariable) {
 
 void fnSolveVar(uint16_t unusedButMandatoryParameter) {
   #if !defined(TESTSUITE_BUILD)
+  printStatus(1, errorMessages[REAL_SOLVER],force);
   const char *var = (char *)getNthString(dynamicSoftmenu[softmenuStack[0].softmenuId].menuContent, dynamicMenuItem);
   const uint16_t regist = findOrAllocateNamedVariable(var);
   const uint16_t nameLength = stringByteLength(var) + 1;
   if(currentMvarLabel != INVALID_VARIABLE) {
-    if(currentSolverStatus & SOLVER_STATUS_INTERACTIVE) { // MNU_MVAR was displayed by the Solver
-      reallyRunFunction(ITM_STO, regist);
-    }
-    else {  // MNU_MVAR was displayed by VARMNU
-      if(entryStatus & 0x01) { // MVAR menu key pressed after a user entry: save the value in the variable
-        entryStatus &= 0xfe;
-        currentSolverVariable = regist;
-        reallyRunFunction(ITM_STO, regist);
-        temporaryInformation = TI_SOLVER_VARIABLE;
-      }
-      else { // MVAR menu key pressed without a a user entry: store the variable name in K and continue program execution
-        reallocateRegister(REGISTER_K, dtString, nameLength , amNone);
-        xcopy(REGISTER_STRING_DATA(REGISTER_K), var, nameLength );
-        dynamicMenuItem = -1;
-        runProgram(false, INVALID_VARIABLE);
-      }
-    }
+  	if(currentSolverStatus & SOLVER_STATUS_INTERACTIVE) { // MNU_MVAR was displayed by the Solver
+  		reallyRunFunction(ITM_STO, regist);
+  	}
+  	else {	// MNU_MVAR was displayed by VARMNU
+  		if(entryStatus & 0x01) { // MVAR menu key pressed after a user entry: save the value in the variable
+  			entryStatus &= 0xfe;
+  			currentSolverVariable = regist;
+  			reallyRunFunction(ITM_STO, regist);
+  			temporaryInformation = TI_SOLVER_VARIABLE;
+  		}
+  		else { // MVAR menu key pressed without a a user entry: store the variable name in K and continue program execution
+  			reallocateRegister(REGISTER_K, dtString, nameLength , amNone);
+  			xcopy(REGISTER_STRING_DATA(REGISTER_K), var, nameLength );
+  			dynamicMenuItem = -1;
+  			runProgram(false, INVALID_VARIABLE);
+  		}
+  	}
   }
   else if((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_1ST_DERIVATIVE || (currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_2ND_DERIVATIVE) {
     currentSolverVariable = regist;
@@ -366,7 +333,7 @@ static void _executeSolver(calcRegister_t variable, const real34_t *val, real34_
   static void _showProgress(const real34_t *a, const real34_t *b, const real34_t *fa, const real34_t *fb) {
     #if ENABLE_SOLVER_PROGRESS == 1
         const real34_t *c;
-        if((currentSolverStatus & (SOLVER_STATUS_TVM_APPLICATION)) == 0 && currentSolverNestingDepth == 1 && programRunStop != PGM_RUNNING) {
+        if((currentSolverStatus & (SOLVER_STATUS_TVM_APPLICATION)) == 0 && currentSolverNestingDepth == 1 && programRunStop) { //} != PGM_RUNNING) { //proposed omission to make progress monitoring while in program running, it can be switched off with MONIT. Not final.
           uint8_t savedDisplayFormatDigits = displayFormatDigits;
 
           if(real34CompareGreaterThan(a, b)) {
@@ -398,6 +365,7 @@ static void _executeSolver(calcRegister_t variable, const real34_t *val, real34_
 
 
 int solver(calcRegister_t variable, const real34_t *y, const real34_t *x, real34_t *resZ, real34_t *resY, real34_t *resX) {
+  currentKeyCode = 255;
   #if !defined(TESTSUITE_BUILD)
     real34_t a, b, b1, b2, fa, fb, fb1, m, s, *bp1, fbp1, tmp;
     real_t aa, bb, bb1, bb2, faa, fbb, fbb1, mm, ss, secantSlopeA, secantSlopeB, delta, deltaB, smb, tol;
@@ -408,7 +376,6 @@ int solver(calcRegister_t variable, const real34_t *y, const real34_t *x, real34
     bool_t was_inting = getSystemFlag(FLAG_INTING);
     int loop = 0;
 
-    saveForUndo();
     convergenceTolerence(&tol);
 
     ++currentSolverNestingDepth;
@@ -440,6 +407,9 @@ int solver(calcRegister_t variable, const real34_t *y, const real34_t *x, real34
 
     // calculation
     _executeSolver(variable, &b, &fb);
+    //printReal34ToConsole(&b1,"JJ2: f(&b1=",")  "); printReal34ToConsole(&fb1,"","\n");
+    //printReal34ToConsole(&b, "JJ2: f(&b=", ")  "); printReal34ToConsole(&fb,"","\n");
+
     if(lastErrorCode != ERROR_NONE) {
       result = SOLVER_RESULT_BAD_GUESS;
     }
@@ -484,16 +454,16 @@ int solver(calcRegister_t variable, const real34_t *y, const real34_t *x, real34
 
 
 
-      if (printHalfSecUpdate_Integer(timed, "Iter: ",loop++)) { //timed
+      if (printHalfSecUpdate_Integer(timed, "Iter: ",loop++, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
         _showProgress(&a, &b, &fa, &fb);
       }
 
-      if(keyWaiting()) {
-          showString("key Waiting ...", &standardFont, 20, 40, vmNormal, false, false);
-          printHalfSecUpdate_Integer(force+1, "Interrupted Iter:",loop);
-          programRunStop = PGM_WAITING;
-        break;
-      }
+        if(keyWaiting()) {
+            showString("key Waiting ...", &standardFont, 20, 40, vmNormal, false, false);
+            printHalfSecUpdate_Integer(force+1, "Interrupted Iter:",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+            programRunStop = PGM_WAITING;
+          break;
+        }
 
       // pre-calculation
       if(realIsSpecial(&bb2)) {
@@ -540,6 +510,9 @@ int solver(calcRegister_t variable, const real34_t *y, const real34_t *x, real34
           }
           real34Subtract(&a, &s, &a);
           _executeSolver(variable, &a, &fa);
+          //printReal34ToConsole(&b1,"JJ3: f(&a=",")  "); printReal34ToConsole(&fa,"","\n");
+          //printReal34ToConsole(&b,"JJ3: f(&b=",")  "); printReal34ToConsole(&fb,"","\n");
+
           real34Add(&b, &s, &s);
         }
         else if(!real34CompareEqual(&b, &a)) {
@@ -581,6 +554,7 @@ int solver(calcRegister_t variable, const real34_t *y, const real34_t *x, real34
       else {
         bp1 = &m;
       }
+      //printReal34ToConsole(bp1,"New point:","\n");
 
       // calculation
       _executeSolver(variable, bp1, &fbp1);
@@ -629,6 +603,7 @@ int solver(calcRegister_t variable, const real34_t *y, const real34_t *x, real34
         real34Copy(&fb, &fb1);
         real34Copy(bp1, &b);
         real34Copy(&fbp1, &fb);
+        //printReal34ToConsole(&b1,"PP: &b1=","  "); printReal34ToConsole(&b,"&b=","\n");
       }
 
       else if(originallyLevel && (real34IsInfinite(&b) || real34IsInfinite(&a))) {
@@ -654,6 +629,12 @@ int solver(calcRegister_t variable, const real34_t *y, const real34_t *x, real34
             (originallyLevel || !((!extendRange && WP34S_RelativeError(&bb, &bb1, &tol, &ctxtReal39)) || real34CompareEqual(&b, &b1) || real34CompareEqual(&fb, const34_0)))
            );
 
+
+    real34Copy(&fb, resZ);
+    _executeSolver(variable, &b, resZ);
+    real34Copy(&b1, resY);
+    real34Copy(&b, resX);
+
     if((extendRange && !originallyLevel) || extremum) {
       result = SOLVER_RESULT_EXTREMUM;
     }
@@ -669,11 +650,6 @@ int solver(calcRegister_t variable, const real34_t *y, const real34_t *x, real34
     if(real34IsZero(&fb)) {
       result = SOLVER_RESULT_NORMAL;
     }
-
-    real34Copy(&fb, resZ);
-    _executeSolver(variable, &b, resZ);
-    real34Copy(&b1, resY);
-    real34Copy(&b, resX);
 
     if(result == SOLVER_RESULT_EXTREMUM) { // Check if the result is really an extremum
       setSystemFlag(FLAG_SOLVING);

@@ -32,6 +32,7 @@
 
   void   fnEqNew        (uint16_t unusedButMandatoryParameter);
   void   fnEqEdit       (uint16_t unusedButMandatoryParameter);
+  void   fnEqCla        (void);
   void   fnEqDelete     (uint16_t unusedButMandatoryParameter);
   void   fnEqCursorLeft (uint16_t unusedButMandatoryParameter);
   void   fnEqCursorRight(uint16_t unusedButMandatoryParameter);

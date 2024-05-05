@@ -660,6 +660,7 @@ static bool_t addFactor(longInteger_t lastFactor, longInteger_t factor, real34Ma
 void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
   hourGlassIconEnabled = true;
   showHideHourGlass();
+  currentKeyCode = 255;
   #if !defined(TESTSUITE_BUILD)
     uint32_t loop = 0;
   #endif //TESTSUITE_BUILD
@@ -730,7 +731,7 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
   while(longIntegerIsPositive(eval)) {
 
     #if !defined(TESTSUITE_BUILD)
-      if (printHalfSecUpdate_Integer(timed, "Tested n =",loop++)) { //timed
+      if (printHalfSecUpdate_Integer(timed, "Tested n =",loop++, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
         _showProgress(&lastAdded, nextPrime);
         dumpExponents(&matrix, &faddr, 13);
         #if defined DMCP_BUILD
@@ -740,7 +741,7 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
 
     if(keyWaiting()) {
         showString("key Waiting ...", &standardFont, 20, 40, vmNormal, false, false);
-        printHalfSecUpdate_Integer(force+1, "Interrupted Test:",loop);
+        printHalfSecUpdate_Integer(force+1, "Interrupted Test:",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
         programRunStop = PGM_WAITING;
       break;
     }

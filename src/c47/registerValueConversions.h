@@ -104,6 +104,7 @@
     void    convertDoubleToString                            (double x, int16_t n, char *buff);  //Reformatting double/float strings that are formatted according to different locale settings
     void    convertDoubleToReal                              (double x, real_t *destination, realContext_t *ctxt);
     void    convertDoubleToReal34Register                    (double x, calcRegister_t destination);
+    void    convertDoubleToReal34RegisterPush                (double x, calcRegister_t destination);
   #endif // !TESTSUITE_BUILD
 
   void    realToFloat                                        (const real_t *vv, float *v);
