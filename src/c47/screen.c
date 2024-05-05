@@ -278,7 +278,7 @@ typedef struct {
         }
         else {
           while(shortInt != 0) {
-            errorMessage[n--] = digits[shortInt % base];
+            errorMessage[n--] = hexadecimalDigits[shortInt % base];
             shortInt /= base;
           }
           if(sign) {
@@ -348,11 +348,9 @@ typedef struct {
 
 #define checkHPoffset (checkHP && temporaryInformation == TI_NO_INFO ? 50:0)
 
-#if !defined(TESTSUITE_BUILD)
-  char letteredRegisterName(calcRegister_t regist) {
-    return "XYZTABCDLIJKMNPQRSEFGHOUVW"[regist - REGISTER_X];
-  }
-#endif //TESTSUITE_BUILD
+char letteredRegisterName(calcRegister_t regist) {
+  return registerFlagLetters[regist - FIRST_LETTERED_REGISTER];
+}
 
 
 #if defined(PC_BUILD)                                         //JMCSV
@@ -1685,7 +1683,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
     return ret_value;
   }
 
-  bool_t printHalfSecUpdate_Integer(uint8_t mode, char *txt, int32_t loop, bool_t clearZ, bool_t clearT, bool_t disp) {//further optimisation, not to even set up the 100 byte array or call getUptimeMs if progress monitor is not selected 
+  bool_t printHalfSecUpdate_Integer(uint8_t mode, char *txt, int32_t loop, bool_t clearZ, bool_t clearT, bool_t disp) {//further optimisation, not to even set up the 100 byte array or call getUptimeMs if progress monitor is not selected
     if(!getSystemFlag(FLAG_MONIT)) {
       return false;
     }
@@ -1925,11 +1923,11 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
   static void viewStoRcl(char *prefix, int16_t *prefixWidth) {
     int16_t showRegisN = showRegis;
     showRegis = lastSTORCL();
-    viewRegName2(prefix, prefixWidth);   
+    viewRegName2(prefix, prefixWidth);
     if(prefix[0]=='?') {
       prefix[0] = 0;
       prefixWidth = 0;
-    }       
+    }
     showRegis = showRegisN;
   }
 
@@ -1963,7 +1961,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
         strcpy(prefix, "ab" STD_SPACE_FIGURE ":");
         *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
       }
-    }  
+    }
     else if(temporaryInformation == TI_012) {
       if(regist == REGISTER_X) {
         strcpy(prefix, "sym2" STD_SPACE_FIGURE ":");
@@ -2218,13 +2216,13 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
         memcpy(prefix, allNamedVariables[currentSolverVariable - FIRST_NAMED_VARIABLE].variableName + 1, allNamedVariables[currentSolverVariable - FIRST_NAMED_VARIABLE].variableName[0]);
         strcpy(prefix + allNamedVariables[currentSolverVariable - FIRST_NAMED_VARIABLE].variableName[0], noo);
       }
-      *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;    
+      *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
   }
 
   void _displaySolverOutput(calcRegister_t regist, char *prefix, int16_t *prefixWidth) {
     if(regist == REGISTER_X || regist == REGISTER_Y) {
       __displaySolver(regist, prefix, prefixWidth, regist - REGISTER_X +1);
-    } else 
+    } else
     if(regist == REGISTER_Z) {
       strcpy(prefix, "Accuracy " STD_ALMOST_EQUAL);
       *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
@@ -3954,7 +3952,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
               shortIntegerToDisplayString(regist, tmpString, true);
             }
             showString(tmpString, fontForShortInteger, SCREEN_WIDTH - stringWidth(tmpString, fontForShortInteger, false, true), Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + (fontForShortInteger == &standardFont ? 6 : 0) - (fontForShortInteger == &numericFont && temporaryInformation == TI_NO_INFO && checkHP ? 50:0), vmNormal, false, true);
-          } 
+          }
       }
 
         else if(getRegisterDataType(regist) == dtLongInteger) {

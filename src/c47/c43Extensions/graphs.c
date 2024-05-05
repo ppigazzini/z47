@@ -1062,7 +1062,7 @@ void graph_plotmem(void) {
 
           int16_t minN_y, minN_x;
           if(!Aspect_Square) {
-            minN_y = SCREEN_NONSQ_HMIN; 
+            minN_y = SCREEN_NONSQ_HMIN;
             minN_x = 0;
           }
           else {
@@ -1243,11 +1243,11 @@ void fnStatList() {
       plotmode = _SCAT;
     }
 
-    if(regStatsXY != INVALID_VARIABLE && 
+    if(regStatsXY != INVALID_VARIABLE &&
       ((plotStatMx[0] == 'S' ? statMxN() >= 1 : false) || (plotStatMx[0]=='D' ? drawMxN() >= 1 : false))) {
 
       if(plotStatMx[0] == 'S') {
-        statnum = statMxN();   //   realToInt32C47(SIGMA_N); TODO this needs to be optimised as it needs to find the variable number from the veriable name every time 
+        statnum = statMxN();   //   realToInt32C47(SIGMA_N); TODO this needs to be optimised as it needs to find the variable number from the veriable name every time
       }
       else {
         statnum = drawMxN();

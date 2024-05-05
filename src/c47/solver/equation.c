@@ -1191,7 +1191,7 @@ static void _parseWord(char *strPtr, uint16_t parseMode, uint16_t parserHint, ch
           if(strPtr[jj] == ',') {
             strPtr[jj] = '.';
           }
-          jj--;      
+          jj--;
         }
         stringToReal34(strPtr, &val);
         _pushNumericStack(mvarBuffer, &val, const34_0);

@@ -423,7 +423,7 @@ TO_QSPI const calcKey_t kbd_std_R47[37] = {
   {83,                  ITM_PERIOD,           ITM_SHOW,             ITM_TGLFRT,           ITM_PERIOD,           ITM_COMMA,            ITM_SEMICOLON,        ITM_PERIOD,           ITM_PERIOD          },
   {84,                  ITM_RS,               ITM_PR,               -MNU_PFN,             ITM_NULL,             ITM_QUESTION_MARK,    ITM_COLON,            ITM_SLASH,            ITM_NULL            },
   {85,                  ITM_ADD,              -MNU_CATALOG,         -MNU_CONST,           ITM_PLUS,             ITM_SPACE,            ITM_EQUAL,            ITM_PLUS,             ITM_ADD             }
-  //keyID,              primary,              fShifted,             gShifted,             keyLblAim,            primaryAim,           fShiftedAim,          gShiftedAim,          primaryTam         
+  //keyID,              primary,              fShifted,             gShifted,             keyLblAim,            primaryAim,           fShiftedAim,          gShiftedAim,          primaryTam
 };
 
 

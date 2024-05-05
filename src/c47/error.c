@@ -95,7 +95,7 @@ TO_QSPI const char errorMessages[NUMBER_OF_ERROR_CODES][SIZE_OF_EACH_ERROR_MESSA
 /* 55 */  "Cannot write file ",
 /* 56 */  "Function has changed, please replace",
 
-//Status output messages for time consuming tasks, to keep user informed 
+//Status output messages for time consuming tasks, to keep user informed
 /* 57 */  "  Loading state file ...",
 /* 58 */  "  Saving state file ...",
 /* 59 */  "  Loading stats ...",
@@ -117,7 +117,7 @@ TO_QSPI const char errorMessages[NUMBER_OF_ERROR_CODES][SIZE_OF_EACH_ERROR_MESSA
 /* 73 */  "Program file loaded",
 /* 74 */  "Not enough memory for undo",
 
-/* 75 */ 
+/* 75 */
 
 };
 

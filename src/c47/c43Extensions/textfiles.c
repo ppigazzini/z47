@@ -35,7 +35,7 @@ typedef struct {
 
 
 #if !defined(TESTSUITE_BUILD)
-  TO_QSPI static const nstr ClipBoardMsg[] = { 
+  TO_QSPI static const nstr ClipBoardMsg[] = {
   /*0*/  { "Real matrix " },
   /*1*/  { " too large for transfer" },
   /*2*/  { "Complex matrix " },

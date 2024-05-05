@@ -243,10 +243,10 @@
 
     switch(event->keyval) {
       case 65505: //left shift
-      case 65506: //right shift 
+      case 65506: //right shift
           if(SHIFT_State != 0) {
             if(getSystemFlag(FLAG_USER) ? kbd_usr[10].primary : kbd_std[10].primary != ITM_SHIFTf) {     //Left Shift
-              btnClicked(w, "27"); 
+              btnClicked(w, "27");
             } else {
               btnClicked(w, "10");
             }
@@ -258,7 +258,7 @@
       case 65508: // right Ctrl
           if(CTRL_State != 0) {
             if(getSystemFlag(FLAG_USER) ? kbd_usr[11].primary : kbd_std[11].primary != ITM_SHIFTg) {
-              btnClicked(w, "27"); 
+              btnClicked(w, "27");
             } else {
               btnClicked(w, "11");
             }
@@ -401,7 +401,7 @@
             showSoftmenuCurrentPart();
             }
           break;
-        case 61: 
+        case 61:
           if(calcMode == CM_EIM) {
             shiftF = true;
             int16_t jj = softmenuStack[0].firstItem;
@@ -2170,7 +2170,7 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
 
       if(key->primaryAim == ITM_NULL) {
         lbl[0] = 0;
-      } else { 
+      } else {
           stringToUtf8(indexOfItems[numlockReplacements(4,max(key->fShiftedAim, -key->fShiftedAim),numLock,true,false)].itemSoftmenuName, lbl);
       }
 

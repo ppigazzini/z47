@@ -1332,8 +1332,8 @@ void insertStepInProgram(int16_t func) {
           break;
       }
 
-        case VAR_UX:           // 
-        case VAR_LX: {         // 
+        case VAR_UX:           //
+        case VAR_LX: {         //
           tmpString[0] = ITM_STO;
           tmpString[1] = (char)STRING_LABEL_VARIABLE;
           tmpString[2] = 3;

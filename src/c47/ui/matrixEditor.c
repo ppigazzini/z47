@@ -992,13 +992,13 @@ smallFont:
   totalWidth = baseWidth + mtxWidth;
 
 
-  bool_t allElementAreIntegers = true;                   //allElementAreIntegers will remain true if ALL elements are integer 
+  bool_t allElementAreIntegers = true;                   //allElementAreIntegers will remain true if ALL elements are integer
   for(int i = 0; i < maxRows; i++) {
     for(int j = 0; j < maxCols; j++) {
       allElementAreIntegers &= real34IsAnInteger(&matrix->matrixElements[i*cols+j]);
     }
   }
-  if(allElementAreIntegers) {                            //allElementAreIntegers will remain true if ALL elements are integer 
+  if(allElementAreIntegers) {                            //allElementAreIntegers will remain true if ALL elements are integer
       displayFormat = DF_FIX;
       displayFormatDigits = 0;
       mtxWidth = getRealMatrixColumnWidths(matrix, prefixWidth, font, colWidth, rPadWidth, &digits, maxCols);

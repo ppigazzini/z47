@@ -35,7 +35,8 @@
 
 const font_t          *fontForShortInteger;
 const font_t          *cursorFont;
-TO_QSPI const char     digits[17] = "0123456789ABCDEF";
+TO_QSPI const char     hexadecimalDigits[17] = "0123456789ABCDEF";
+TO_QSPI const char     registerFlagLetters[27] = "XYZTABCDLIJKMNPQRSEFGHOUVW";
 void                   (*confirmedFunction)(uint16_t);
 
 uint8_t calcModel = MODEL;
@@ -466,10 +467,10 @@ char                   fileNameSelected[stateFileNameVarLength];
                                                         key = key_pop();
                                                       }
                                                     }
-                                                
+
                                                     wp43KbdLayout = (key == 37); // bottom left key
                                                     key = 0;
-                                                
+
                                                   lcd_clear_buf();
                                                 #endif // NOKEYMAP                                           //^^
     doFnReset(CONFIRMED, loadAutoSav);

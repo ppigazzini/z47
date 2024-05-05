@@ -1304,14 +1304,14 @@ void strPrepend(char*dest, char*prefix) {
 //int gg = 0;
 //while(gg<10){
 //  if((uint8_t)(displayString[gg] == 0)) break;
-//  printf("§%s§%c %u\n",displayString, (uint8_t)(displayString[gg]), (uint8_t)(displayString[gg]));  
+//  printf("§%s§%c %u\n",displayString, (uint8_t)(displayString[gg]), (uint8_t)(displayString[gg]));
 //  gg++;
 //}
 //printf("\nImag:");
 // gg = 0;
 //while(gg<10){
 //  if((uint8_t)(displayString2[gg] == 0)) break;
-//  printf("§%s§%c %u\n",displayString2, (uint8_t)(displayString2[gg]), (uint8_t)(displayString2[gg]));  
+//  printf("§%s§%c %u\n",displayString2, (uint8_t)(displayString2[gg]), (uint8_t)(displayString2[gg]));
 //  gg++;
 //}
 //printf("\n");
@@ -1839,7 +1839,7 @@ str3[j] = 0;
       }
     }
     else {                                   //JM BCD^^
-      displayString[i++] = digits[unit];
+      displayString[i++] = hexadecimalDigits[unit];
     }                                          //JM
 
   }
@@ -2924,7 +2924,7 @@ void fnShow_SCROLL(uint16_t fnShow_param) {                // Heavily modified b
                else {
                  if(showRegis >= FIRST_NAMED_VARIABLE + numberOfNamedVariables - 1) {
                    showRegis = 0;
-                 } else 
+                 } else
                  if(showRegis == REGISTER_S) {
                    showRegis = FIRST_NAMED_VARIABLE;
                  } else {
