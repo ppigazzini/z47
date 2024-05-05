@@ -97,7 +97,8 @@
 
 
   static void _programmableSumProd(uint16_t label, bool_t prod) {
-    uint32_t      loop = 0;
+    currentKeyCode = 255;
+    int32_t       loop = 0;
     int16_t       finished = 0;
     bool_t        abort = false;
     real_t        resultX, resultXi, resultR, resultRi;
@@ -121,7 +122,7 @@
     }
     longIntegerInit(iLoop);
     convertReal34ToLongInteger(&rLoop, iLoop, DEC_ROUND_DOWN);
-    loop = longIntegerModuloUInt(iLoop, 100000);
+    loop = (int32_t)longIntegerModuloUInt(iLoop, (int32_t)(0x7FFFFFFF));
     longIntegerFree(iLoop);
 
     if( !real34CompareEqual(&loopTo, &counter) &&
@@ -210,13 +211,13 @@
         #endif // VERBOSE_COUNTER
 
         real34Add(&counter, &loopStep, &counter);
-        if(printHalfSecUpdate_Integer(timed, "Loop: ",loop--)) { ; //timed
+        if(printHalfSecUpdate_Integer(timed, "Loop: ",loop--, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { ; //timed
           showProgressReal(&resultR, &resultRi, changedOverToComplex);
         }
 
         if(keyWaiting()) {
-          showString("key Waiting ...", &standardFont, 20, 40, vmNormal, false, false);
-          printHalfSecUpdate_Integer(force+1, "Interrupted: ", loop);
+          showString("key Waiting ...", &standardFont, 16, Y_POSITION_OF_REGISTER_T_LINE, vmNormal, false, false);
+          printHalfSecUpdate_Integer(force+1, "Interrupted: ", loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
           abort = true;
         }
 
@@ -263,9 +264,9 @@
     showHideHourGlass();
 
     if(abort) {
-      printHalfSecUpdate_Integer(force+0, "Loop aborted: ",loop);
+    printHalfSecUpdate_Integer(force+0, "Loop aborted: ",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
     } else {
-      printHalfSecUpdate_Integer(force+0, "Loop complete: ",loop);      
+    printHalfSecUpdate_Integer(force+0, "Loop complete: ",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
     }
   }
 

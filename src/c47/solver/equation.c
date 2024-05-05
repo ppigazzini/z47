@@ -156,6 +156,7 @@ void fnEqNew(uint16_t unusedButMandatoryParameter) {
       allFormulae[0].pointerToFormulaData = C47_NULL;
       allFormulae[0].sizeInBlocks = 0;
       graphVariabl1 = 0;
+      currentSolverVariable = INVALID_VARIABLE;
     }
     else {
       displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
@@ -213,6 +214,13 @@ void fnEqEdit(uint16_t unusedButMandatoryParameter) {
   #endif // !TESTSUITE_BUILD
 }
 
+
+void fnEqCla(void) {
+  xCursor = 0;
+  aimBuffer[0] = 0;
+}
+
+
 void fnEqDelete(uint16_t unusedButMandatoryParameter) {
   deleteEquation(currentFormula);
 }
@@ -230,12 +238,6 @@ void fnEqCursorRight(uint16_t unusedButMandatoryParameter) {
 }
 
 void fnEqCalc(uint16_t unusedButMandatoryParameter) {
-  #if defined(DEBUGUNDO)
-    printf(">>> saveForUndo from fnEqCalc, calcMode = %i, something to undo (pre) = %i \n",calcMode, thereIsSomethingToUndo);
-  #endif // DEBUGUNDO
-  if(!thereIsSomethingToUndo && !CM_NO_UNDO) {
-    saveForUndo();
-  }
   setSystemFlag(FLAG_SOLVING);
   parseEquation(currentFormula, EQUATION_PARSER_XEQ, tmpString, tmpString + AIM_BUFFER_LENGTH);
   adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
@@ -284,6 +286,7 @@ void deleteEquation(uint16_t equationId) {
       currentFormula = numberOfFormulae - 1;
     }
     graphVariabl1 = 0;
+    currentSolverVariable = INVALID_VARIABLE;
   }
 }
 
@@ -389,8 +392,8 @@ static void _addSpace(char **bufPtr, int16_t *strWidth, uint32_t *doubleBytednes
 #endif // !TESTSUITE_BUILD
 
 void showEquation(uint16_t equationId, uint16_t startAt, uint16_t cursorAt, bool_t dryRun, bool_t *cursorShown, bool_t *rightEllipsis) {
-  int8_t X_OFF = (cursorAt == EQUATION_NO_CURSOR) ? 0 : 20;
   #if !defined(TESTSUITE_BUILD)
+  int8_t X_OFF = (cursorAt == EQUATION_NO_CURSOR) ? 0 : 20;
   if(equationId < numberOfFormulae || equationId == EQUATION_AIM_BUFFER) {
     char *bufPtr = tmpString;
     const char *strPtr = equationId == EQUATION_AIM_BUFFER ? aimBuffer : (char *)TO_PCMEMPTR(allFormulae[equationId].pointerToFormulaData);
@@ -771,7 +774,7 @@ static void _pushNumericStack(char *mvarBuffer, const real34_t *re, const real34
   else {
     displayCalcErrorMessage(ERROR_EQUATION_TOO_COMPLEX, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
     #if(EXTRA_INFO_ON_CALC_ERROR == 1)
-      moreInfoOnError("In function parseEquation:", "numeric stack overflow!", NULL, NULL);
+      moreInfoOnError("In function _pushNumericStack:", "numeric stack overflow!", NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 }
@@ -787,7 +790,7 @@ static void _popNumericStack(char *mvarBuffer, real34_t *re, real34_t *im) {
   else {
     displayCalcErrorMessage(ERROR_SYNTAX_ERROR_IN_EQUATION, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
     #if(EXTRA_INFO_ON_CALC_ERROR == 1)
-      moreInfoOnError("In function parseEquation:", "numeric stack is empty!", NULL, NULL);
+      moreInfoOnError("In function _popNumericStack:", "numeric stack is empty!", NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     realToReal34(const_NaN, re);
     if(im) {
@@ -804,6 +807,7 @@ static void _runDyadicFunction(char *mvarBuffer, uint16_t item) {
 
   _popNumericStack(mvarBuffer, &re, &im);
   if(real34IsZero(&im) || real34IsNaN(&im)) {
+    reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
     real34Copy(&re, REGISTER_REAL34_DATA(REGISTER_X));
   }
   else {
@@ -814,6 +818,7 @@ static void _runDyadicFunction(char *mvarBuffer, uint16_t item) {
 
   _popNumericStack(mvarBuffer, &re, &im);
   if(real34IsZero(&im) || real34IsNaN(&im)) {
+    reallocateRegister(REGISTER_Y, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
     real34Copy(&re, REGISTER_REAL34_DATA(REGISTER_Y));
   }
   else {
@@ -841,6 +846,7 @@ static void _runMonadicFunction(char *mvarBuffer, uint16_t item) {
 
   _popNumericStack(mvarBuffer, &re, &im);
   if(real34IsZero(&im) || real34IsNaN(&im)) {
+    reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
     real34Copy(&re, REGISTER_REAL34_DATA(REGISTER_X));
   }
   else {
@@ -912,7 +918,7 @@ static void _processOperator(uint16_t func, char *mvarBuffer) {
             if(func == PARSER_OPERATOR_ITM_VERTICAL_BAR_RIGHT) {
               displayCalcErrorMessage(ERROR_SYNTAX_ERROR_IN_EQUATION, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
               #if(EXTRA_INFO_ON_CALC_ERROR == 1)
-                moreInfoOnError("In function parseEquation:", "parentheses mismatch!", "parenthesis not closed", NULL);
+                moreInfoOnError("In function _processOperator:", "parentheses mismatch!", "parenthesis not closed", NULL);
               #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
             }
             break;
@@ -922,7 +928,7 @@ static void _processOperator(uint16_t func, char *mvarBuffer) {
             if(func == PARSER_OPERATOR_ITM_PARENTHESIS_RIGHT) {
               displayCalcErrorMessage(ERROR_SYNTAX_ERROR_IN_EQUATION, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
               #if(EXTRA_INFO_ON_CALC_ERROR == 1)
-                moreInfoOnError("In function parseEquation:", "parentheses mismatch!", "unpaired vertical bar within parentheses", NULL);
+                moreInfoOnError("In function _processOperator:", "parentheses mismatch!", "unpaired vertical bar within parentheses", NULL);
               #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
             }
             break;
@@ -956,7 +962,7 @@ static void _processOperator(uint16_t func, char *mvarBuffer) {
             }
             displayCalcErrorMessage(ERROR_SYNTAX_ERROR_IN_EQUATION, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
             #if(EXTRA_INFO_ON_CALC_ERROR == 1)
-              moreInfoOnError("In function parseEquation:", "parentheses mismatch!", "parenthesis not closed", NULL);
+              moreInfoOnError("In function _processOperator:", "parentheses mismatch!", "parenthesis not closed", NULL);
             #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
             break;
           }
@@ -966,14 +972,14 @@ static void _processOperator(uint16_t func, char *mvarBuffer) {
         case PARSER_OPERATOR_ITM_PARENTHESIS_RIGHT: {
           displayCalcErrorMessage(ERROR_SYNTAX_ERROR_IN_EQUATION, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
           #if(EXTRA_INFO_ON_CALC_ERROR == 1)
-            moreInfoOnError("In function parseEquation:", "parentheses mismatch!", "no corresponding opening parenthesis", NULL);
+            moreInfoOnError("In function _processOperator:", "parentheses mismatch!", "no corresponding opening parenthesis", NULL);
           #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
           break;
         }
         case PARSER_OPERATOR_ITM_VERTICAL_BAR_RIGHT: {
           displayCalcErrorMessage(ERROR_SYNTAX_ERROR_IN_EQUATION, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
           #if(EXTRA_INFO_ON_CALC_ERROR == 1)
-            moreInfoOnError("In function parseEquation:", "parentheses mismatch!", "no corresponding opening vertical bar", NULL);
+            moreInfoOnError("In function _processOperator:", "parentheses mismatch!", "no corresponding opening vertical bar", NULL);
           #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
           break;
         }
@@ -1024,7 +1030,7 @@ static void _processOperator(uint16_t func, char *mvarBuffer) {
         else {
           displayCalcErrorMessage(ERROR_EQUATION_TOO_COMPLEX, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
           #if(EXTRA_INFO_ON_CALC_ERROR == 1)
-            moreInfoOnError("In function parseEquation:", "operator stack overflow!", NULL, NULL);
+            moreInfoOnError("In function _processOperator:", "operator stack overflow!", NULL, NULL);
           #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
         }
         return;
@@ -1048,7 +1054,7 @@ static void _processOperator(uint16_t func, char *mvarBuffer) {
   else {
     displayCalcErrorMessage(ERROR_EQUATION_TOO_COMPLEX, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
     #if(EXTRA_INFO_ON_CALC_ERROR == 1)
-      moreInfoOnError("In function parseEquation:", "operator stack overflow!", NULL, NULL);
+      moreInfoOnError("In function _processOperator:", "operator stack overflow!", NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 }
@@ -1058,7 +1064,7 @@ static void _parseWord(char *strPtr, uint16_t parseMode, uint16_t parserHint, ch
   if(parserHint != PARSER_HINT_NUMERIC && stringGlyphLength(strPtr) > 7) {
     displayCalcErrorMessage(ERROR_SYNTAX_ERROR_IN_EQUATION, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
     #if(EXTRA_INFO_ON_CALC_ERROR == 1)
-      moreInfoOnError("In function parseEquation:", strPtr, "token too long!", NULL);
+      moreInfoOnError("In function _processOperator:", strPtr, "token too long!", NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     return;
   }
@@ -1096,26 +1102,33 @@ static void _parseWord(char *strPtr, uint16_t parseMode, uint16_t parserHint, ch
           if((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_SOLVER && var >= FIRST_RESERVED_VARIABLE) {
             displayCalcErrorMessage(ERROR_INVALID_NAME, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
             #if(EXTRA_INFO_ON_CALC_ERROR == 1)
-              moreInfoOnError("In function parseEquation:", strPtr, "names a register or a reserved variable!", NULL);
+              moreInfoOnError("In function _parseWord:", strPtr, "names a register or a reserved variable!", NULL);
             #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
           }
           else {
-            if(tmpVal == 1 && ((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_SOLVER)) {   // If the 4th variable has just been added, add Draw and Calc.
-              _menuItem(ITM_SETSIG2, bufPtr);
+
+
+
+            if(tmpVal == 3 && ((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_INTEGRATE)) {   // If the 4th variable has just been added, add Draw and Calc.
+              _menuItem(MNU_Sf_TOOL, bufPtr);
               bufPtr += stringByteLength(bufPtr) + 1;
-              _menuItem(ITM_CPXSLV, bufPtr);
-              bufPtr += stringByteLength(bufPtr) + 1;
-              _menuItem(ITM_DRAW, bufPtr);
+              _menuItem(ITM_INTEGRAL_YX, bufPtr);
+            } else
+
+
+
+            if(tmpVal == 3 && ((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_SOLVER)) {   // If the 4th variable has just been added, add Draw and Calc.
+              _menuItem(MNU_Solver_TOOL, bufPtr);
               bufPtr += stringByteLength(bufPtr) + 1;
               _menuItem(ITM_CALC, bufPtr);
             }
             else if(tmpVal == 3 && ((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_1ST_DERIVATIVE)) {
-              _menuItem(ITM_DRAW, bufPtr);
+              _menuItem(MNU_GRAPHS, bufPtr);
               bufPtr += stringByteLength(bufPtr) + 1;
               _menuItem(ITM_FPHERE, bufPtr);
             }
             else if(tmpVal == 3 && ((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_2ND_DERIVATIVE)) {
-              _menuItem(ITM_DRAW, bufPtr);
+              _menuItem(MNU_GRAPHS, bufPtr);
               bufPtr += stringByteLength(bufPtr) + 1;
               _menuItem(ITM_FPPHERE, bufPtr);
             }
@@ -1124,7 +1137,7 @@ static void _parseWord(char *strPtr, uint16_t parseMode, uint16_t parserHint, ch
         else {
           displayCalcErrorMessage(ERROR_SYNTAX_ERROR_IN_EQUATION, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
           #if(EXTRA_INFO_ON_CALC_ERROR == 1)
-            moreInfoOnError("In function parseEquation 1:", strPtr, "is not a valid name!", NULL);
+            moreInfoOnError("In function _parseWord 1:", strPtr, "is not a valid name!", NULL);
           #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
         }
       }
@@ -1167,7 +1180,7 @@ static void _parseWord(char *strPtr, uint16_t parseMode, uint16_t parserHint, ch
         else {
           displayCalcErrorMessage(ERROR_SYNTAX_ERROR_IN_EQUATION, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
           #if(EXTRA_INFO_ON_CALC_ERROR == 1)
-            moreInfoOnError("In function parseEquation 2:", strPtr, "is not a valid name!", NULL);
+            moreInfoOnError("In function _parseWord 2:", strPtr, "is not a valid name!", NULL);
           #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
         }
       }
@@ -1245,7 +1258,7 @@ static void _parseWord(char *strPtr, uint16_t parseMode, uint16_t parserHint, ch
         }
         displayCalcErrorMessage(ERROR_FUNCTION_NOT_FOUND, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
         #if(EXTRA_INFO_ON_CALC_ERROR == 1)
-          moreInfoOnError("In function parseEquation:", strPtr, "is not recognized as a function", "or not for equations");
+          moreInfoOnError("In function _parseWord:", strPtr, "is not recognized as a function", "or not for equations");
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       }
       break;
@@ -1276,9 +1289,9 @@ void parseEquation(uint16_t equationId, uint16_t parseMode, char *buffer, char *
     realToReal34(const_NaN, &PARSER_NUMERIC_STACK[i * 2 + 1]);
   }
   *PARSER_NUMERIC_STACK_POINTER = 0;
-  if(parseMode == EQUATION_PARSER_XEQ) {
-    fnClearStack(NOPARAM);
-  }
+ // if(parseMode == EQUATION_PARSER_XEQ) {         //Not sure removing the clear stack will not influence the calc. I don't think so 2024-04-20 jm
+ //   fillStackWithReal0();
+ // }
 
   for(uint32_t i = 0; i < 7; ++i) {
     strPtr += ((*strPtr) & 0x80) ? 2 : 1;
@@ -1562,31 +1575,42 @@ void parseEquation(uint16_t equationId, uint16_t parseMode, char *buffer, char *
       ++tmpVal;
     }
     if((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_SOLVER) {
-      for(; tmpVal < 2; ++tmpVal) {  //If there are less than 4 variables, skip to the 5th item and add Draw & Calc.
+      for(; tmpVal < 4; ++tmpVal) {  //If there are less than 4 variables, skip to the 5th item and add Draw & Calc.
         *(bufPtr++) = 0;
       }
-      if(tmpVal == 2) {
-        _menuItem(ITM_SETSIG2, bufPtr);
-        bufPtr += stringByteLength(bufPtr) + 1;
-        _menuItem(ITM_CPXSLV, bufPtr);
-        bufPtr += stringByteLength(bufPtr) + 1;
-        _menuItem(ITM_DRAW, bufPtr);
+      if(tmpVal == 4) {
+        _menuItem(MNU_Solver_TOOL, bufPtr);
         bufPtr += stringByteLength(bufPtr) + 1;
         _menuItem(ITM_CALC, bufPtr);
       }
     }
+
+
+
+    if((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_INTEGRATE) {                      // MNU_Sf
+      for(; tmpVal < 4; ++tmpVal) {  //If there are less than 4 variables, skip to the 5th item and add Draw & Calc.
+        *(bufPtr++) = 0;
+      }
+      if(tmpVal == 4) {
+        _menuItem(MNU_Sf_TOOL, bufPtr);
+        bufPtr += stringByteLength(bufPtr) + 1;
+        _menuItem(ITM_INTEGRAL_YX, bufPtr);
+      }
+    }
+
+
     if((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_1ST_DERIVATIVE || (currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_2ND_DERIVATIVE) {
       for(; tmpVal < 4; ++tmpVal) {  //If there are less than 4 variables, skip to the 5th item and add Draw & Calc.
         *(bufPtr++) = 0;
       }
       if(tmpVal == 4) {
         if((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_1ST_DERIVATIVE) {
-          _menuItem(ITM_DRAW, bufPtr);
+          _menuItem(MNU_GRAPHS, bufPtr);
           bufPtr += stringByteLength(bufPtr) + 1;
           _menuItem(ITM_FPHERE, bufPtr);
         }
         else {
-          _menuItem(ITM_DRAW, bufPtr);
+          _menuItem(MNU_GRAPHS, bufPtr);
           bufPtr += stringByteLength(bufPtr) + 1;
           _menuItem(ITM_FPPHERE, bufPtr);
         }

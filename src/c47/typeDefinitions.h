@@ -333,6 +333,10 @@ typedef struct {
   uint8_t variableName[16]; ///< Variable name
 } namedVariableHeader_t;
 
+typedef struct {
+  char     Desc[28];
+} reservedVariableDescStr_t;
+
 
 /**
  * \struct reservedVariableHeader_t

@@ -1,18 +1,5 @@
-/* This file is part of 43S.
- *
- * 43S is free software:you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * 43S is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with 43S.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: GPL-3.0-only
+// SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
 #include "bufferize.h"
 
@@ -245,7 +232,7 @@ typedef struct {
                                  item == ITM_COS_SIGN             ? "COS()" :
                                  item == ITM_TAN_SIGN             ? "TAN()" :
                                  item == ITM_OBELUS               ? STD_SLASH :
-                                 item == ITM_poly_SIGN            ? "a4" STD_DOT "x^4+a3" STD_DOT "x^3+a2" STD_DOT "x^2+a1" STD_DOT "x+a0" :
+                                 item == ITM_poly_SIGN            ? "b4" STD_DOT "x^4+b3" STD_DOT "x^3+b2" STD_DOT "x^2+b1" STD_DOT "x+b0" :
                                  item == ITM_op_j_SIGN            ? COMPLEX_UNIT :
                                  item == ITM_zetaX                ? STD_zeta "()" :
                                  item == ITM_GAMMAX               ? STD_GAMMA "()" :
@@ -429,27 +416,27 @@ typedef struct {
         if(item == ITM_RIGHT_ARROW) {
           mimEnter(true);
           setJRegisterAsInt(true, getJRegisterAsInt(true) + 1);
-          refreshScreen();
+          refreshScreen(51);
         }
         else if(item == ITM_LEFT_ARROW) {
           mimEnter(true);
           setJRegisterAsInt(true, getJRegisterAsInt(true) - 1);
-          refreshScreen();
+          refreshScreen(52);
         }
         else if(item == ITM_UP_ARROW) {
           mimEnter(true);
           setIRegisterAsInt(true, getIRegisterAsInt(true) - 1);
-          refreshScreen();
+          refreshScreen(53);
         }
         else if(item == ITM_DOWN_ARROW) {
           mimEnter(true);
           setIRegisterAsInt(true, getIRegisterAsInt(true) + 1);
-          refreshScreen();
+          refreshScreen(54);
         }
 
         if((int16_t)item < 0) {
           showSoftmenu(item);
-          refreshScreen();
+          refreshScreen(55);
           return;
         }
 
@@ -891,8 +878,7 @@ typedef struct {
           aimBuffer[2] = '.';
           aimBuffer[3] = 0;
           nimNumberPart = NP_REAL_FLOAT_PART;
-          lastIntegerBase = 0;
-          fnRefreshState();                                                //JMNIM
+          setLastintegerBasetoZero();
           break;
         }
 
@@ -902,6 +888,7 @@ typedef struct {
           aimBuffer[1] = '0';
           aimBuffer[2] = 0;
           nimNumberPart = NP_INT_10;
+          setLastintegerBasetoZero();
           break;
         }
 
@@ -1126,8 +1113,7 @@ typedef struct {
           strcat(aimBuffer, "0");
         }
 
-        lastIntegerBase = 0;
-        fnRefreshState();                                                //JMNIM
+        setLastintegerBasetoZero();
 
         switch(nimNumberPart) {
           case NP_INT_10: {
@@ -1207,8 +1193,7 @@ typedef struct {
           strcat(aimBuffer, "1");
         }
 
-        lastIntegerBase = 0;
-        fnRefreshState();                                                //JMNIM
+        setLastintegerBasetoZero();
 
         switch(nimNumberPart) {
           case NP_INT_10: {
@@ -1249,8 +1234,7 @@ typedef struct {
       case ITM_toINT: { // #
         done = true;
 
-        lastIntegerBase = 0;
-        fnRefreshState();                                                //JMNIM
+        setLastintegerBasetoZero();
 
         if(nimNumberPart == NP_INT_10 || nimNumberPart == NP_INT_16) {
           strcat(aimBuffer, "#");
@@ -1333,8 +1317,7 @@ typedef struct {
 
         done = true;
 
-        lastIntegerBase = 0;
-        fnRefreshState();                                                //JMNIM
+        setLastintegerBasetoZero();
 
         switch(nimNumberPart) {
          case NP_REAL_EXPONENT: {
@@ -1380,6 +1363,7 @@ typedef struct {
           done = true;
           strcat(aimBuffer, "3.141592653589793238462643383279503");
           reallyRunFunction(ITM_EXIT1, NOPARAM);
+          setLastintegerBasetoZero();
         }
         break;
       }
@@ -1633,6 +1617,7 @@ typedef struct {
       case ITM_DMS: {
         if(nimNumberPart == NP_INT_10 || nimNumberPart == NP_REAL_FLOAT_PART) {
           done = true;
+          setLastintegerBasetoZero();
 
           screenUpdatingMode &= ~SCRUPD_SKIP_STACK_ONE_TIME;
           closeNim();
@@ -1684,6 +1669,7 @@ typedef struct {
       case ITM_toHMS:{
         if(nimNumberPart == NP_INT_10 || nimNumberPart == NP_REAL_FLOAT_PART || nimNumberPart == NP_REAL_EXPONENT) {
           done = true;
+          setLastintegerBasetoZero();
 
           screenUpdatingMode &= ~SCRUPD_SKIP_STACK_ONE_TIME;
           closeNim();
@@ -1944,8 +1930,7 @@ typedef struct {
       if(calcMode != CM_NIM) {
         if(item == ITM_CONSTpi || (item >= 0 && indexOfItems[item].func == fnConstant)) {
           setSystemFlag(FLAG_ASLIFT);
-          lastIntegerBase = 0;                                             //JMNIM
-          fnRefreshState();                                                //JMNIM
+          setLastintegerBasetoZero();
         }
 
         if(lastErrorCode == 0) {
@@ -2246,6 +2231,7 @@ typedef struct {
   void closeNim(void) {
     setSystemFlag(FLAG_ASLIFT);
     //printf("closeNim\n");
+    screenUpdatingMode &= ~(SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME);
 
     if(nimNumberPart == NP_INT_10) {                //JM Input default type vv
       switch(Input_Default) {
@@ -2276,8 +2262,7 @@ typedef struct {
       nimNumberPart = NP_INT_BASE;
     }
     else {
-      lastIntegerBase = 0;
-      fnRefreshState();                                                //JMNIM
+      setLastintegerBasetoZero();
     }
 
     int16_t lastChar = strlen(aimBuffer) - 1;

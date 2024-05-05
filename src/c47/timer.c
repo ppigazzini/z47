@@ -1,18 +1,5 @@
-/* This file is part of 43S.
- *
- * 43S is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * 43S is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with 43S.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: GPL-3.0-only
+// SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
 #include "timer.h"
 
@@ -376,7 +363,7 @@ static uint32_t _getTimerValue(void) {
 //#endif // PC_BUILD
 
 void fnItemTimerApp(uint16_t unusedButMandatoryParameter) {
-#if !defined(TESTSUITE_BUILD)
+#if !defined(TESTSUITE_BUILD) && !defined(SAVE_SPACE_DM42_20_TIMER)
   calcMode = CM_TIMER;
   rbr1stDigit = true;
   watchIconEnabled = false;
@@ -408,7 +395,7 @@ void fnAddTimerApp(uint16_t unusedButMandatoryParameter) {
   realToReal34(&tmp, REGISTER_REAL34_DATA(REGISTER_X));
   fnSigma(1);
 
-  refreshScreen();
+  refreshScreen(30);
   #endif // !TESTSUITE_BUILD
 }
 
@@ -613,7 +600,7 @@ void fnPlusTimerApp(void) {
     fnTimerStart(TO_TIMER_APP, TO_TIMER_APP, TIMER_APP_PERIOD);
   }
 
-  refreshScreen();
+  refreshScreen(31);
   #endif // !TESTSUITE_BUILD
 }
 

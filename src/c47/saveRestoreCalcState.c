@@ -1,18 +1,6 @@
-/* This file is part of 43S.
- *
- * 43S is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * 43S is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with 43S.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: GPL-3.0-only
+// SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
+
 
 #include "saveRestoreCalcState.h"
 
@@ -65,8 +53,8 @@
 #endif
 
 #include "c47.h"
-#define BACKUP_VERSION                     1001  // 1st text file backup.cfg version
 #define configFileVersion                  10000009 // New STOCFG and new STATE file; arbitrary starting point version 10 000 001. Allowable values are 10000000 to 20000000
+#define BACKUP_VERSION                     1002  // increasing number of reserved variable
 #define VersionAllowed                     10000005 // This code will not autoload versions earlier than this
 
 /*
@@ -304,7 +292,7 @@ uint16_t flushBufferCnt = 0;
 
     if(calcMode == CM_CONFIRMATION) {
       calcMode = previousCalcMode;
-      refreshScreen();
+      refreshScreen(90);
     }
 
     printf("Begin of calc's backup\n");
@@ -468,6 +456,7 @@ uint16_t flushBufferCnt = 0;
     saveStateValue(&y_max,                          sizeof(y_max),                                               "y_max",                          "float");
     saveStateValue(&xzero,                          sizeof(xzero),                                               "xzero",                          "uint32");
     saveStateValue(&yzero,                          sizeof(yzero),                                               "yzero",                          "uint32");
+    saveStateValue(&regStatsXY,                     sizeof(regStatsXY),                                          "regStatsXY",                     "int16");
     saveStateValue(&matrixIndex,                    sizeof(matrixIndex),                                         "matrixIndex",                    "uint16");
     saveStateValue(&currentViewRegister,            sizeof(currentViewRegister),                                 "currentViewRegister",            "uint16");
     saveStateValue(&currentSolverStatus,            sizeof(currentSolverStatus),                                 "currentSolverStatus",            "uint16");
@@ -522,7 +511,7 @@ uint16_t flushBufferCnt = 0;
     saveStateValue(&fnXEQMENUpos,                   sizeof(fnXEQMENUpos),                                        "fnXEQMENUpos",                   "int16");
     saveStateValue(&indexOfItemsXEQM,               sizeof(indexOfItemsXEQM),                                    "indexOfItemsXEQM",               "hexDump");
     saveStateValue(&T_cursorPos,                    sizeof(T_cursorPos),                                         "T_cursorPos",                    "int16");   //JM ^^
-    saveStateValue(&SHOWregis,                      sizeof(SHOWregis),                                           "SHOWregis",                      "int16");   //JM ^^
+    saveStateValue(&showRegis,                      sizeof(showRegis),                                           "showRegis",                      "int16");   //JM ^^
     saveStateValue(&displayStackSHOIDISP,           sizeof(displayStackSHOIDISP),                                "displayStackSHOIDISP",           "uint8");   //JM ^^
     saveStateValue(&ListXYposition,                 sizeof(ListXYposition),                                      "ListXYposition",                 "int16");   //JM ^^
     saveStateValue(&numLock,                        sizeof(numLock),                                             "numLock",                        "bool");    //JM ^^
@@ -753,7 +742,7 @@ uint16_t flushBufferCnt = 0;
 
   void restoreCalc(void) {
     printf("RestoreCalc\n");
-    uint32_t ramSizeInBlocks = 0, ramPtr = 0, backupVersion;
+    uint32_t ramSizeInBlocks = 0, ramPtr = 0, backupVersion = 0;
     int ret;
     //save and restore screenData is not mandatory
     //uint8_t *loadedScreen = malloc(SCREEN_WIDTH * SCREEN_HEIGHT / 8);
@@ -768,7 +757,7 @@ uint16_t flushBufferCnt = 0;
       }
       else {
         printf("Cannot restore calc's memory from file backup.cfg! Performing RESET\n");
-        refreshScreen();
+        refreshScreen(91);
         return;
       }
     }
@@ -796,16 +785,20 @@ uint16_t flushBufferCnt = 0;
     restoreStateValue(&backupVersion,                  sizeof(backupVersion),                                       "backupVersion",                  "uint32");
     restoreStateValue(&ramSizeInBlocks,                sizeof(ramSizeInBlocks),                                     "ramSizeInBlocks",                "uint32");
     if(ramSizeInBlocks != RAM_SIZE_IN_BLOCKS) {
-      refreshScreen();
-
+      refreshScreen(92);
       printf("Cannot restore calc's memory from file backup.cfg! File backup.cfg is from incompatible RAM size.\n");
       printf("       Backup file      Program\n");
       printf("ramSize blocks %6u           %6d\n", ramSizeInBlocks, RAM_SIZE_IN_BLOCKS);
       printf("ramSize bytes  %6u           %6d\n", TO_BYTES(ramSizeInBlocks), TO_BYTES(RAM_SIZE_IN_BLOCKS));
       return;
+    } else
+    if(backupVersion == 0) {
+      refreshScreen(92);
+      printf("Cannot restore calc's memory from file backup.cfg! File backup.cfg has invalid version number.\n");
+      return;
     }
 
-    printf("Begin of calc's restoration\n");
+    printf("Begin of calc's restoration, backup version:%i\n", backupVersion);
 
     // The order in which parameters are restored doesn't matter
     // When a parameter is removed, simply remove the corresponding saveStateValue(...) and restoreStateValue(...) lines.
@@ -1026,6 +1019,7 @@ uint16_t flushBufferCnt = 0;
     restoreStateValue(&y_max,                          sizeof(y_max),                                               "y_max",                          "float");
     restoreStateValue(&xzero,                          sizeof(xzero),                                               "xzero",                          "uint32");
     restoreStateValue(&yzero,                          sizeof(yzero),                                               "yzero",                          "uint32");
+    restoreStateValue(&regStatsXY,                     sizeof(regStatsXY),                                          "regStatsXY",                     "int16");
     restoreStateValue(&matrixIndex,                    sizeof(matrixIndex),                                         "matrixIndex",                    "uint16");
     restoreStateValue(&currentViewRegister,            sizeof(currentViewRegister),                                 "currentViewRegister",            "uint16");
     restoreStateValue(&currentSolverStatus,            sizeof(currentSolverStatus),                                 "currentSolverStatus",            "uint16");
@@ -1040,12 +1034,15 @@ uint16_t flushBufferCnt = 0;
     restoreStateValue(&timerValue,                     sizeof(timerValue),                                          "timerValue",                     "uint32");
     restoreStateValue(&timerTotalTime,                 sizeof(timerTotalTime),                                      "timerTotalTime",                 "uint32");
     restoreStateValue(&currentInputVariable,           sizeof(currentInputVariable),                                "currentInputVariable",           "uint16");
+    if (backupVersion < 1002 && currentInputVariable == INVALID_VARIABLE_OLD) {currentInputVariable = INVALID_VARIABLE;}
     restoreStateValue(&SAVED_SIGMA_LASTX,              sizeof(SAVED_SIGMA_LASTX),                                   "SAVED_SIGMA_LASTX",              "real");
     restoreStateValue(&SAVED_SIGMA_LASTY,              sizeof(SAVED_SIGMA_LASTY),                                   "SAVED_SIGMA_LASTY",              "real");
     SAVED_SIGMA_LAc1 = 0;
     restoreStateValue(&SAVED_SIGMA_LAc1,               sizeof(SAVED_SIGMA_LAc1),                                    "SAVED_SIGMA_LAc1",               "int8");     //manual correction as the type allocation was wrong here
     restoreStateValue(&currentMvarLabel,               sizeof(currentMvarLabel),                                    "currentMvarLabel",               "uint16");
-    restoreStateValue(&graphVariabl1,                  sizeof(graphVariabl1),                                       "graphVariabl1",                  "int32");
+    if (backupVersion < 1002 && currentMvarLabel == INVALID_VARIABLE_OLD) {currentMvarLabel = INVALID_VARIABLE;}
+    restoreStateValue(&graphVariabl1,                  sizeof(graphVariabl1),                                       "graphVariabl1",                  "int16");
+    if (backupVersion < 1002 && graphVariabl1 == INVALID_VARIABLE_OLD) {graphVariabl1 = INVALID_VARIABLE;}
     restoreStateValue(&plotStatMx,                     sizeof(plotStatMx),                                          "plotStatMx",                     "hexDump");
     restoreStateValue(&drawHistogram,                  sizeof(drawHistogram),                                       "drawHistogram",                  "uint8");
     restoreStateValue(&statMx,                         sizeof(statMx),                                              "statMx",                         "hexDump");
@@ -1080,7 +1077,7 @@ uint16_t flushBufferCnt = 0;
     restoreStateValue(&fnXEQMENUpos,                   sizeof(fnXEQMENUpos),                                        "fnXEQMENUpos",                   "int16");
     restoreStateValue(&indexOfItemsXEQM,               sizeof(indexOfItemsXEQM),                                    "indexOfItemsXEQM",               "hexDump");
     restoreStateValue(&T_cursorPos,                    sizeof(T_cursorPos),                                         "T_cursorPos",                    "int16");   //JM ^^
-    restoreStateValue(&SHOWregis,                      sizeof(SHOWregis),                                           "SHOWregis",                      "int16");   //JM ^^
+    restoreStateValue(&showRegis,                      sizeof(showRegis),                                           "showRegis",                      "int16");   //JM ^^
     restoreStateValue(&displayStackSHOIDISP,           sizeof(displayStackSHOIDISP),                                "displayStackSHOIDISP",           "uint8");   //JM ^^
     restoreStateValue(&ListXYposition,                 sizeof(ListXYposition),                                      "ListXYposition",                 "int16");   //JM ^^
     restoreStateValue(&numLock,                        sizeof(numLock),                                             "numLock",                        "bool");    //JM ^^
@@ -1197,7 +1194,7 @@ uint16_t flushBufferCnt = 0;
     }
 
     updateMatrixHeightCache();
-    refreshScreen();
+    refreshScreen(93);
   }
 #endif // PC_BUILD
 
@@ -1371,6 +1368,7 @@ void fnSave(uint16_t saveMode) {
 
 void doSave(uint16_t saveType) {
 #if !defined(TESTSUITE_BUILD)
+  printStatus(0, errorMessages[SAVING_STATE_FILE],force);
   ioFilePath_t path;
   char tmpString[3000];           //The concurrent use of the global tmpString
                                   //as target does not work while the source is at
@@ -3032,6 +3030,7 @@ void doLoad(uint16_t loadMode, uint16_t s, uint16_t n, uint16_t d, uint16_t load
 
 
 void fnLoad(uint16_t loadMode) {
+  printStatus(0, errorMessages[LOADING_STATE_FILE],force);
   if(loadMode == LM_STATE_LOAD) {
     doLoad(LM_ALL, 0, 0, 0, stateLoad);
   }
@@ -3040,14 +3039,14 @@ void fnLoad(uint16_t loadMode) {
   }
   fnClearFlag(FLAG_USER);
   doRefreshSoftMenu = true;
-  refreshScreen();
+  refreshScreen(94);
 }
 
 void fnLoadAuto(void) {
   doLoad(LM_ALL, 0, 0, 0, autoLoad);
   fnClearFlag(FLAG_USER);
   doRefreshSoftMenu = true;
-  refreshScreen();
+  refreshScreen(95);
 }
 
 

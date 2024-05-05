@@ -20,6 +20,8 @@
 
 #include "solver/integrate.h"
 
+#include "c43Extensions/addons.h"
+#include "charString.h"
 #include "constantPointers.h"
 #include "defines.h"
 #include "display.h"
@@ -30,6 +32,7 @@
 #include "mathematics/comparisonReals.h"
 #include "mathematics/exp.h"
 #include "mathematics/wp34s.h"
+#include "plotstat.h"
 #include "programming/lblGtoXeq.h"
 #include "programming/manage.h"
 #include "realType.h"
@@ -39,11 +42,14 @@
 #include "softmenus.h"
 #include "solver/equation.h"
 #include "stack.h"
+#include "store.h"
+#include "recall.h"
 #include "c47.h"
 
 void fnPgmInt(uint16_t label) {
   if(label >= FIRST_LABEL && label <= LAST_LABEL) {
     currentSolverProgram = label - FIRST_LABEL;
+    currentSolverStatus &= ~SOLVER_STATUS_USES_FORMULA;
   }
   else if(label >= REGISTER_X && label <= REGISTER_T) {
     // Interactive mode
@@ -80,6 +86,7 @@ void fnPgmInt(uint16_t label) {
     }
     else {
       currentSolverProgram = label - FIRST_LABEL;
+      currentSolverStatus &= ~SOLVER_STATUS_USES_FORMULA;
     }
   }
   else {
@@ -91,7 +98,44 @@ void fnPgmInt(uint16_t label) {
   }
 }
 
-void fnIntegrate(uint16_t labelOrVariable) {
+/*DEBUGINT
+static void printCurrentSolverStatus(int nn, uint16_t currentSolverStatus) {
+printf("%i: currentSolverStatus=%u: ",nn,currentSolverStatus);
+if(currentSolverStatus > SOLVER_STATUS_TVM_APPLICATION)   { currentSolverStatus -= SOLVER_STATUS_TVM_APPLICATION;   printf("TVM ");}
+if(currentSolverStatus > SOLVER_STATUS_MVAR_BEING_OPENED) { currentSolverStatus -= SOLVER_STATUS_MVAR_BEING_OPENED; printf("MVARopen ");}
+if(currentSolverStatus > SOLVER_STATUS_USES_FORMULA)      { currentSolverStatus -= SOLVER_STATUS_USES_FORMULA;      printf("FORMULA ");}
+if(currentSolverStatus > SOLVER_STATUS_SINGLE_VARIABLE)   { currentSolverStatus -= SOLVER_STATUS_SINGLE_VARIABLE;   printf("1VAR ");}
+if(currentSolverStatus > SOLVER_STATUS_SINGLE_VARIABLE)   { currentSolverStatus -= SOLVER_STATUS_SINGLE_VARIABLE;   printf("1VAR ");}
+switch(currentSolverStatus) {
+    case SOLVER_STATUS_READY_TO_EXECUTE        : printf("ReadyExec ");break;   //  0x0001 //0001
+    case SOLVER_STATUS_INTERACTIVE             : printf("Interactive ");break;   //  0x0002 //0010
+//    case SOLVER_STATUS_EQUATION_MODE           : printf("EQN MODE");break;   //  0x000c //1100
+    case SOLVER_STATUS_EQUATION_SOLVER         : printf("EQN SLV ");break;   //  0x0000
+    case SOLVER_STATUS_EQUATION_INTEGRATE      : printf("EQN INT");break;   //  0x0004 //0100
+    case SOLVER_STATUS_EQUATION_1ST_DERIVATIVE : printf("1ST ");break;   //  0x0008 //1000
+    case SOLVER_STATUS_EQUATION_2ND_DERIVATIVE : printf("2ND ");break;   //  0x000C //1100
+    default:break;
+  }
+  printf("\n");
+}
+*/
+
+void _fnIntegrate(uint16_t labelOrVariable, bool_t XY) {
+
+  //printCurrentSolverStatus(3, currentSolverStatus);
+  //char yyy[100], yy1[100];
+  //int16_t yy0;
+  //  __displaySolver(labelOrVariable, yyy , &yy0);
+  //  stringToASCII(yyy,yy1);
+  //printf("labelOrVariable=%u %s\n",labelOrVariable, yy1);
+  //  __displaySolver(currentSolverVariable, yyy , &yy0);
+  //  stringToASCII(yyy,yy1);
+  //printf("currentSolverVariable=%u %s\n",currentSolverVariable, yy1);
+  //  xcopy(yyy, labelList[currentSolverProgram].labelPointer + 1, *(labelList[currentSolverProgram].labelPointer));
+  //  yyy[*(labelList[currentSolverProgram].labelPointer)] = 0;
+  //  stringToASCII(yyy,yy1);
+  //printf("currentSolverProgram %u = %s\n", currentSolverProgram, yy1);
+
   if((labelOrVariable >= FIRST_LABEL && labelOrVariable <= LAST_LABEL) || (labelOrVariable >= REGISTER_X && labelOrVariable <= REGISTER_T)) {
     // Interactive mode
     fnPgmInt(labelOrVariable);
@@ -99,7 +143,7 @@ void fnIntegrate(uint16_t labelOrVariable) {
       currentSolverStatus = SOLVER_STATUS_INTERACTIVE | SOLVER_STATUS_EQUATION_INTEGRATE;
     }
   }
-  else if(labelOrVariable == RESERVED_VARIABLE_ACC || labelOrVariable == RESERVED_VARIABLE_ULIM || labelOrVariable == RESERVED_VARIABLE_LLIM) {
+  else if(!XY && (labelOrVariable == RESERVED_VARIABLE_ACC || labelOrVariable == RESERVED_VARIABLE_ULIM || labelOrVariable == RESERVED_VARIABLE_LLIM)) {
     fnToReal(NOPARAM);
     if(lastErrorCode == ERROR_NONE) {
       real34Copy(REGISTER_REAL34_DATA(REGISTER_X), REGISTER_REAL34_DATA(labelOrVariable));
@@ -140,10 +184,108 @@ void fnIntegrate(uint16_t labelOrVariable) {
     if(realIsZero(&acc)) { // it may freeze if ACC=0
       realCopy(const_1e_32, &acc);   //used to be const_1e_6143
     }
-    integrate(labelOrVariable, &llim, &ulim, &acc, &res, smallerEpsilon ? &ctxtReal75 : &ctxtReal39);
-    fnClearStack(NOPARAM);
-    reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
-    reallocateRegister(REGISTER_Y, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+    if(real34CompareEqual(REGISTER_REAL34_DATA(RESERVED_VARIABLE_ULIM),REGISTER_REAL34_DATA(RESERVED_VARIABLE_LLIM) )) {
+      int32ToReal(0,&res);
+      int32ToReal(0,&acc);
+      goto done;
+    }
+
+calcRegister_t regist = labelOrVariable;  //at this point, it is a register variable
+saveForUndo();
+
+#define SPEEDUPEXPERIMENT
+//#undef SPEEDUPEXPERIMENT
+
+#ifdef SPEEDUPEXPERIMENT
+    real_t digits;
+    uint8_t significantDigitsMem = significantDigits;
+    int32_t digitsN = 0;
+    WP34S_Ln(&acc, &digits, &ctxtReal39);
+    realDivide(&digits, const_ln10, &digits, &ctxtReal39);
+    digitsN = max(min(-realToInt32C47(&digits),34-3),1);
+    #ifdef PC_BUILD
+      printRealToConsole(&digits, "digits: ","\n");
+      printf("----->>>> digitsN=%i, smallerEpsilon=%u\n",digitsN,smallerEpsilon);
+      printRealToConsole(&acc, "acc: ","\n");
+      printRealToConsole(&llim, "llim: ","\n");
+      printRealToConsole(&ulim, "ulim: ","\n");
+    #endif
+
+    if(digitsN == 6) {
+      #ifdef PC_BUILD
+        printf("Special accuracy test case: N=6 Reducing DEC to single precision and SDIGS digits to %i etc.\n",digitsN+3);
+      #endif
+      significantDigits = digitsN+3;
+      ctxtReal4.digits  = 7;
+      ctxtReal34.digits = digitsN+3;
+      ctxtReal39.digits = digitsN+5;
+      ctxtReal51.digits = digitsN+7;
+      ctxtReal75.digits = digitsN+13;
+      integrate(regist, &llim, &ulim, &acc, &res, &ctxtReal4);
+        //WP34S_Ln(&acc, &digits, &ctxtReal39);
+        //realDivide(&digits, const_ln10, &digits, &ctxtReal39);
+        //digitsN = max(min(-realToInt32C47(&digits),34-3),1);
+        //#ifdef PC_BUILD
+        //  printf("nnn=%i\n",digitsN);
+        //#endif
+        //real_t tt;
+        //int32ToReal(-digitsN, &tt);  
+        //realRescale(&res, &res, &tt, &ctxtReal4);
+      significantDigits = significantDigitsMem;
+      ctxtReal4.digits  = 6;
+      ctxtReal34.digits = 34;
+      ctxtReal39.digits = 39;
+      ctxtReal51.digits = 51;
+      ctxtReal75.digits = 75;
+    } else
+    if(digitsN <= 10) {
+      #ifdef PC_BUILD
+        printf("Special accuracy test case: N<=10 Reducing SDIGS digits to %i etc.\n",digitsN+3);
+      #endif
+      significantDigits = digitsN+3;
+      ctxtReal4.digits  = digitsN+3;
+      ctxtReal34.digits = digitsN+3;
+      ctxtReal39.digits = digitsN+5;
+      ctxtReal51.digits = digitsN+7;
+      ctxtReal75.digits = digitsN+13;
+      integrate(regist, &llim, &ulim, &acc, &res, &ctxtReal39);
+        //WP34S_Ln(&acc, &digits, &ctxtReal39);
+        //realDivide(&digits, const_ln10, &digits, &ctxtReal39);
+        //digitsN = max(min(-realToInt32C47(&digits),34-3),1);
+        //#ifdef PC_BUILD
+        //  printf("nnn=%i\n",digitsN);
+        //#endif
+        //real_t tt;
+        //int32ToReal(-digitsN, &tt);
+        //realRescale(&res, &res, &tt, &ctxtReal39);  or ose ACC. But best is to use N decimals. This does not work right
+      significantDigits = significantDigitsMem;
+      ctxtReal4.digits  = 6;
+      ctxtReal34.digits = 34;
+      ctxtReal39.digits = 39;
+      ctxtReal51.digits = 51;
+      ctxtReal75.digits = 75;
+    } else {
+    #ifdef PC_BUILD
+      printf("Temporary Debugging info. Can be deleted once done.\n");
+      printRealToConsole(&llim,"llim:","\n");
+      printRealToConsole(&ulim,"ulim:","\n");
+      printRealToConsole(&acc,"acc:","\n");
+    #endif //PC_BUILD
+    integrate(regist, &llim, &ulim, &acc, &res, smallerEpsilon ? &ctxtReal75 : &ctxtReal39);
+    #ifdef PC_BUILD    
+      printf("Temporary Debugging info. Can be deleted once done.\n");
+      printRealToConsole(&res,"res:","\n");
+    #endif //PC_BUILD
+    }
+#else //SPEEDUPEXPERIMENT
+    integrate(regist, &llim, &ulim, &acc, &res, smallerEpsilon ? &ctxtReal75 : &ctxtReal39);
+#endif //SPEEDUPEXPERIMENT
+
+done:
+    fnUndo(0);
+    liftStack();
+    liftStack();
+
     convertRealToReal34ResultRegister(&res, REGISTER_X);
     convertRealToReal34ResultRegister(&acc, REGISTER_Y);
     temporaryInformation = TI_INTEGRAL;
@@ -158,13 +300,41 @@ void fnIntegrate(uint16_t labelOrVariable) {
   }
 }
 
+
+void fnIntegrate(uint16_t labelOrVariable) {
+  //printf("fnIntegrate\n");
+  _fnIntegrate(labelOrVariable, false);
+}
+
+
+void fnIntegrateYX(uint16_t labelOrVariable) {
+  //printf("fnIntegrateYX\n");
+  //printRegisterToConsole(REGISTER_X,"X:",", ");
+  //printRegisterToConsole(REGISTER_Y,"Y:","\n");
+  real_t x, y;
+  if(getRegisterAsReal(REGISTER_X, &x) && getRegisterAsReal(REGISTER_Y, &y)) {
+    realToReal34(&x, REGISTER_REAL34_DATA(RESERVED_VARIABLE_ULIM));
+    realToReal34(&y, REGISTER_REAL34_DATA(RESERVED_VARIABLE_LLIM));
+    fnDrop(0);
+    fnDrop(0);
+  }
+  _fnIntegrate(labelOrVariable, true);
+}
+
+
+
 void fnIntVar(uint16_t unusedButMandatoryParameter) {
   #if !defined(TESTSUITE_BUILD)
     const char *var = (char *)getNthString(dynamicSoftmenu[softmenuStack[0].softmenuId].menuContent, dynamicMenuItem);
     const uint16_t regist = findOrAllocateNamedVariable(var);
+    bool_t doubleVarPress = regist == currentSolverVariable;
     currentSolverVariable = regist;
-    if(currentSolverStatus & SOLVER_STATUS_READY_TO_EXECUTE) {
-      showSoftmenu(-MNU_Sfdx);
+    if(doubleVarPress && currentSolverStatus & SOLVER_STATUS_READY_TO_EXECUTE) {
+      if((currentSolverStatus & SOLVER_STATUS_INTERACTIVE) && !(currentSolverStatus & SOLVER_STATUS_USES_FORMULA)) {
+        showSoftmenu(-MNU_Sfdx);     //in case of RPN formula, which does not yet work with DRAW
+      } else {
+        showSoftmenu(-MNU_Sf_TOOL);  //in case of EQN
+      }
     }
     else {
       reallyRunFunction(ITM_STO, regist);
@@ -314,7 +484,7 @@ void _showProgress(const real_t *ss, const real_t *bma2, const real_t *h, const 
     real_t tmpr;
     realMultiply(ss, bma2, &res, realContext);
     realMultiply(&res, h, &res, realContext); // load the integral result,
-    realMultiply(&res, fact, &res, realContext); // load the integral result,
+    realMultiply(&res, fact, &res, realContext);
     realToReal34(&res,&rtmp34);
     real34ToDisplayString(&rtmp34, amNone, tmpString, &standardFont, 9999, 34, false, true);
     showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
@@ -332,6 +502,8 @@ void _showProgress(const real_t *ss, const real_t *bma2, const real_t *h, const 
 
 #if USE_NEW_DEI_INTEGRATION_CODE == 0
 static void _integrate(calcRegister_t regist, const real_t *a, const real_t *b, real_t *acc, real_t *res, realContext_t *realContext) { // Double-Exponential Integration
+  currentKeyCode = 255;
+  bool_t exitSignalled = false;
   real_t bma2;            // (b - a)/2, a & b are the integration limits
   real_t bpa2;            // (b + 2)/2
   real_t eps;             // epsilon
@@ -496,16 +668,16 @@ static void _integrate(calcRegister_t regist, const real_t *a, const real_t *b, 
     do { // DEI_j_loop::
       #if !defined(TESTSUITE_BUILD)
         char tmps[64];
+        exitSignalled |= (popKey() == 32); //instead of keyWaiting()
         sprintf(tmps,"level:  %i Iter: ",(int16_t)realToInt32C47(&lvl));
-        if(printHalfSecUpdate_Integer(timed, tmps, loop++)) {; //timed
+        if(printHalfSecUpdate_Integer(timed, tmps, loop++, halfSec_clearZ, halfSec_clearT, halfSec_disp)) {; //timed
           #if ENABLE_SOLVER_PROGRESS == 1
-            _showProgress(&ss, &bma2, &h, &tm, &x, const_pi, realContext);
+            //Error indication: incomplete, set to 0-0
+            _showProgress(&ss, &bma2, &h, const_0, const_0, const_pi, realContext);
           #endif //ENABLE_SOLVER_PROGRESS
-        }
-
-        if(keyWaiting()) {
-          printHalfSecUpdate_Integer(force+1, "Interrupted Iter:",loop);
-          break;
+          if(exitSignalled) {  //EXIT
+            printHalfSecUpdate_Integer(force+1, "Interrupted Iter:",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+          }
         }
       #endif //TESTSUITE_BUILD
 
@@ -583,7 +755,7 @@ static void _integrate(calcRegister_t regist, const real_t *a, const real_t *b, 
         realCopyAbs(&x, &y); // X = ABS(p)
         realMultiply(&ssp, &eps, &x, realContext);
         realSetPositiveSign(&x); // X = ABS(ssp*eps), Y = ABS(p)
-        if(realCompareGreaterEqual(&x, &y)) { // ABS(p) <= ABS(eps*eps)?
+        if(exitSignalled || realCompareGreaterEqual(&x, &y)) { // ABS(p) <= ABS(eps*eps)?
           break;
         }
       }
@@ -630,7 +802,7 @@ static void _integrate(calcRegister_t regist, const real_t *a, const real_t *b, 
     realSetPositiveSign(&y); // ABS(2*ssp - ss)
     realMultiply(&thr, &ss, &x, realContext); // thr*ss
     realSetPositiveSign(&x); // ABS(thr*ss)
-    if(realCompareGreaterThan(&x, &y)) { // ABS(2*ssp - ss) < ABS(thr*ss)?
+    if(exitSignalled || realCompareGreaterThan(&x, &y)) { // ABS(2*ssp - ss) < ABS(thr*ss)?
       break; // yes, computation done
     }
     lg0 = true; // mark level 0 done,
@@ -646,7 +818,7 @@ static void _integrate(calcRegister_t regist, const real_t *a, const real_t *b, 
   realSubtract(&x, &ss1, &x, realContext); // stack: (ss-ss1)-|ss|-ss-?
   realSetPositiveSign(&x); // stack: err-|ss|-ss-?
   realMultiply(&x, const_10, &tmp, realContext); // stack: 10*err-err-|ss|-ss
-  if(realCompareGreaterEqual(&tmp, &y)) { // 10*err < |ss|?
+  if(!exitSignalled && realCompareGreaterEqual(&tmp, &y)) { // 10*err < |ss|?
     // [tmp x y z]
     // no, bad result. stack: |ss|-err-10*err-ss
     // [y x tmp z]
@@ -745,6 +917,11 @@ static void _integrate(calcRegister_t regist, const real_t *a, const real_t *b, 
 
 #if USE_MICHALSKI_MOSIG_TANH_SINH == 1
 static void _integrate_mm(calcRegister_t regist, const real_t *llim, const real_t *ulim, real_t *acc, real_t *res, realContext_t *realContext) { // Double-Exponential Integration
+  #if !defined(TESTSUITE_BUILD)
+    int16_t interruptedLoop = 0;
+    currentKeyCode = 255;
+    bool_t exitSignalled = false;
+  #endif //TESTSUITE_BUILD
   real_t a, b;
   real_t errval, bpa2, bma2;
   real_t eps, tol, h;
@@ -778,6 +955,15 @@ static void _integrate_mm(calcRegister_t regist, const real_t *llim, const real_
   // max level
   maxlevel = 7;
 
+  #ifdef PC_BUILD
+    printf"Temporary Debugging info. Can be deleted once done.\n";
+    printRealToConsole(acc,"acc:","\n");
+    printRealToConsole(&eps,"eps:","\n");
+    printf("digits %i\n",realContext->digits);
+    printf("regist %u\n",regist);
+    printf("currentSolverStatus=%u, screenUpdatingMode=%u\n",currentSolverStatus, screenUpdatingMode);
+  #endif //PC_BUILD
+
   realSubtract(&b, &a, &bma2, realContext); // interval half-length
   realMultiply(&bma2, const_1on2, &bma2, realContext);
   realAdd(&b, &a, &bpa2, realContext); // centre of interval
@@ -796,16 +982,32 @@ static void _integrate_mm(calcRegister_t regist, const real_t *llim, const real_
     do {
       #if !defined(TESTSUITE_BUILD)
         char tmps[64];
-        sprintf(tmps,"level:  %i Iter: ",(int16_t)(maxlevel-k));
-        if(printHalfSecUpdate_Integer(timed, tmps, loop++)) { ; //timed
+        exitSignalled |= (popKey() == 32); //instead of keyWaiting()
+        sprintf(tmps,"Level: %i/%i Iter: ",(int16_t)k, (int16_t)maxlevel);
+        if(printHalfSecUpdate_Integer(timed, tmps, loop++, !interruptedLoop, !interruptedLoop, !interruptedLoop)) { ; //timed
+          #if defined(PC_BUILD)
+            printf("%s %i\n",tmps,loop);
+          #endif //PC_BUILD
           #if ENABLE_SOLVER_PROGRESS == 1
             _showProgress(&sslast, &bma2, &h, &errval, const_0, const_2, realContext);
           #endif //ENABLE_SOLVER_PROGRESS
-        }
-
-        if(keyWaiting()) {
-          printHalfSecUpdate_Integer(force+1, "Interrupted Iter:",loop);
-          break;
+          if(!interruptedLoop && exitSignalled) {  //First EXIT press
+            exitSignalled = false;
+            interruptedLoop = 1;
+          }
+          if(interruptedLoop) {
+            sprintf(tmps,"Level %i. Allow %5.1f s: Iter: ",(int16_t)k, (float)(40.0 - ((interruptedLoop++)/2.0)));
+            radixProcess(tmps,tmps);
+            printHalfSecUpdate_Integer(force+1, tmps, loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+            if(exitSignalled || interruptedLoop >= 40) {      // Direct exit by exiting and simulating the end values
+              exitSignalled = false;
+              realMultiply(&sslast, &bma2, res, realContext);
+              realMultiply(res, &h, res, realContext); // load the integral result,
+              realMultiply(res, const_2, res, realContext);
+              realCopy(&errval, acc); // its error value,
+              return;
+            }
+          }
         }
       #endif //TESTSUITE_BUILD
 
@@ -1032,6 +1234,11 @@ static real_t* exp_sinh_opt_d (calcRegister_t regist, const real_t* a, const rea
  */
 
 static void dbl_exp_int_new (calcRegister_t regist, const real_t *a, const real_t *b, real_t *error, real_t *result, int sign, realContext_t *realContext) {
+  #if !defined(TESTSUITE_BUILD)
+    int16_t interruptedLoop = 0;
+    currentKeyCode = 255;
+    bool_t exitSignalled = false;
+  #endif //TESTSUITE_BUILD
 
   real_t c, d, s, v, h, y, eps;
   real_t s1, s2, s3; // scratch variables
@@ -1132,20 +1339,30 @@ static void dbl_exp_int_new (calcRegister_t regist, const real_t *a, const real_
 	// error for a and const_0 for b.
 	// Note that result and error do not change within this inner loop so
 	// only the loop counter changes each time.
-#if !defined(TESTSUITE_BUILD)
-	char tmps[64];
-	sprintf(tmps,"level:  %i Iter: ",(int16_t)(maxlevel-k));
-	if(printHalfSecUpdate_Integer(timed, tmps, loop++)) { ; //timed
-#if ENABLE_SOLVER_PROGRESS == 1
-	  _showProgress(result, const_1, const_1, error, const_0, const_1, realContext);
-#endif //ENABLE_SOLVER_PROGRESS
-	}
+  #if !defined(TESTSUITE_BUILD)
+    char tmps[64];
+    exitSignalled |= (popKey() == 32); //instead of keyWaiting()
+    sprintf(tmps,"Level: %i/%i Iter: ",(int16_t)k, (int16_t)maxlevel);
+    if(printHalfSecUpdate_Integer(timed, tmps, loop++, !interruptedLoop, !interruptedLoop, !interruptedLoop)) { ; //timed
+      #if ENABLE_SOLVER_PROGRESS == 1
+        _showProgress(result, const_1, const_1, error, const_0, const_1, realContext);
+      #endif //ENABLE_SOLVER_PROGRESS
+      if(!interruptedLoop && exitSignalled) {  //First EXIT press
+        exitSignalled = false;
+        interruptedLoop = 1;
+      }
+      if(interruptedLoop) {
+        sprintf(tmps,"Level %i. Allow %5.1f s: Iter: ",(int16_t)k, (float)(40.0 - ((interruptedLoop++)/2.0)));
+        radixProcess(tmps,tmps);
+        printHalfSecUpdate_Integer(force+1, tmps, loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+        if(exitSignalled || interruptedLoop >= 40) {      // Direct exit 
+          exitSignalled = false;
+          return;
+        }
+      }
+    }
+  #endif //TESTSUITE_BUILD
 
-	if(keyWaiting()) {
-	  printHalfSecUpdate_Integer(force+1, "Interrupted Iter:",loop);
-	  return; // result and error already hold the current best estimates of each
-	}
-#endif //TESTSUITE_BUILD
 
 	realDivide (const_1, &t, &s1, realContext); // s1 stores 1/t
 	realSubtract (&s1, &t, &u, realContext);
@@ -1190,20 +1407,29 @@ static void dbl_exp_int_new (calcRegister_t regist, const real_t *a, const real_
       do {
 	real_t r, w, x;
 
-#if !defined(TESTSUITE_BUILD)
-	char tmps[64];
-	sprintf(tmps,"level:  %i Iter: ",(int16_t)(maxlevel-k));
-	if(printHalfSecUpdate_Integer(timed, tmps, loop++)) { ; //timed
-#if ENABLE_SOLVER_PROGRESS == 1
-	  _showProgress(result, const_1, const_1, error, const_0, const_1, realContext);
-#endif //ENABLE_SOLVER_PROGRESS
-	}
-
-	if(keyWaiting()) {
-	  printHalfSecUpdate_Integer(force+1, "Interrupted Iter:",loop);
-	  return; // result and error already hold the previous best estimates of each
-	}
-#endif //TESTSUITE_BUILD
+  #if !defined(TESTSUITE_BUILD)
+    char tmps[64];
+    exitSignalled |= (popKey() == 32); //instead of keyWaiting()
+    sprintf(tmps,"Level: %i/%i Iter: ",(int16_t)k, (int16_t)maxlevel);
+    if(printHalfSecUpdate_Integer(timed, tmps, loop++, !interruptedLoop, !interruptedLoop, !interruptedLoop)) { ; //timed
+      #if ENABLE_SOLVER_PROGRESS == 1
+        _showProgress(result, const_1, const_1, error, const_0, const_1, realContext);
+      #endif //ENABLE_SOLVER_PROGRESS
+      if(!interruptedLoop && exitSignalled) {  //First EXIT press
+        exitSignalled = false;
+        interruptedLoop = 1;
+      }
+      if(interruptedLoop) {
+        sprintf(tmps,"Level %i. Allow %5.1f s: Iter: ",(int16_t)k, (float)(40.0 - ((interruptedLoop++)/2.0)));
+        radixProcess(tmps,tmps);
+        printHalfSecUpdate_Integer(force+1, tmps, loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+        if(exitSignalled || interruptedLoop >= 40) {      // Direct exit 
+          exitSignalled = false;
+          return;
+        }
+      }
+    }
+  #endif //TESTSUITE_BUILD
 
 	realMultiply (&t, const_4, &s1, realContext); // s1 = 4t
 	realDivide (const_1, &s1, &s1, realContext); // s1 = 0.25/t

@@ -23,7 +23,7 @@
 #include "c47.h"
 
 // Little hexadecimal font for generating a not found glyph
-TO_QSPI const char *hexaFont = "\x69\x99\x99\x60"  // 0
+TO_QSPI const char hexaFont[] = "\x69\x99\x99\x60"  // 0
                                "\x22\x22\x22\x20"  // 1
                                "\xe1\x16\x88\xf0"  // 2
                                "\xe1\x16\x11\xe0"  // 3

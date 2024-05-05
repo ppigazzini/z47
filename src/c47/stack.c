@@ -371,7 +371,7 @@ void undo(void) {
   if(SAVED_SIGMA_LAc1 == +1 && statisticalSumsPointer != NULL) {
     fnSigma(-1);
   }
-  else if(SAVED_SIGMA_LAc1 == -1) {
+  else if(SAVED_SIGMA_LAc1 == -1 && statisticalSumsPointer != NULL) {
     convertRealToResultRegister(&SAVED_SIGMA_LASTX, REGISTER_X, amNone);             // Can use stack, as the stack will be undone below
     convertRealToResultRegister(&SAVED_SIGMA_LASTY, REGISTER_Y, amNone);
     fnSigma(+1);
@@ -410,4 +410,11 @@ void undo(void) {
     printf(">>> Undone, calcMode = %i\n", calcMode);
   #endif // DEBUGUNDO
 
+}
+
+
+void fillStackWithReal0(void) {
+  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+  int32ToReal34(0, REGISTER_REAL34_DATA(REGISTER_X));
+  fnFillStack(0);
 }

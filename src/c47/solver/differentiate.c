@@ -22,6 +22,7 @@
 #include "constantPointers.h"
 #include "debug.h"
 #include "error.h"
+#include "flags.h"
 #include "fonts.h"
 #include "items.h"
 #include "programming/lblGtoXeq.h"
@@ -34,6 +35,9 @@
 #include "c47.h"
 
 void fn1stDeriv(uint16_t label) {
+  currentSolverStatus &= !SOLVER_STATUS_USES_FORMULA;
+  bool_t solving = getSystemFlag(FLAG_SOLVING);
+  setSystemFlag(FLAG_SOLVING);
   if(label >= FIRST_LABEL && label <= LAST_LABEL) {
     firstDerivative(label);
   }
@@ -81,9 +85,15 @@ void fn1stDeriv(uint16_t label) {
       moreInfoOnError("In function fn1stDeriv:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
+  if(!solving) {
+    clearSystemFlag(FLAG_SOLVING);
+  }
 }
 
 void fn2ndDeriv(uint16_t label) {
+  currentSolverStatus &= !SOLVER_STATUS_USES_FORMULA;
+  bool_t solving = getSystemFlag(FLAG_SOLVING);
+  setSystemFlag(FLAG_SOLVING);
   if(label >= FIRST_LABEL && label <= LAST_LABEL) {
     secondDerivative(label);
   }
@@ -127,17 +137,41 @@ void fn2ndDeriv(uint16_t label) {
       moreInfoOnError("In function fn2ndDeriv:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
+  if(!solving) {
+    clearSystemFlag(FLAG_SOLVING);
+  }
 }
 
 void fn1stDerivEq(uint16_t unusedButMandatoryParameter) {
+  //new method to maintain solver variable
+  #if !defined(TESTSUITE_BUILD)
+    reallyRunFunction(ITM_RCL, currentSolverVariable);
+    copySourceRegisterToDestRegister(REGISTER_X, TEMP_REGISTER_1);
+  #endif // TESTSUITE_BUILD
   currentSolverStatus |= SOLVER_STATUS_USES_FORMULA;
   firstDerivative(INVALID_VARIABLE);
+    #if !defined(TESTSUITE_BUILD)
+      reallyRunFunction(ITM_RCL, TEMP_REGISTER_1);
+      reallyRunFunction(ITM_STO, currentSolverVariable);
+      fnDrop(0);
+    #endif // TESTSUITE_BUILD
   temporaryInformation = TI_1ST_DERIVATIVE;
 }
 
+
 void fn2ndDerivEq(uint16_t unusedButMandatoryParameter) {
+    #if !defined(TESTSUITE_BUILD)
+    //new method to maintain solver variable
+      reallyRunFunction(ITM_RCL, currentSolverVariable);
+      copySourceRegisterToDestRegister(REGISTER_X, TEMP_REGISTER_1);
+    #endif // TESTSUITE_BUILD
   currentSolverStatus |= SOLVER_STATUS_USES_FORMULA;
   secondDerivative(INVALID_VARIABLE);
+    #if !defined(TESTSUITE_BUILD)
+      reallyRunFunction(ITM_RCL, TEMP_REGISTER_1);
+      reallyRunFunction(ITM_STO, currentSolverVariable);
+      fnDrop(0);
+    #endif // TESTSUITE_BUILD
   temporaryInformation = TI_2ND_DERIVATIVE;
 }
 
@@ -190,12 +224,14 @@ static void _differentiatorIteration(calcRegister_t label, real_t *r0) {
 
   if(currentSolverStatus & SOLVER_STATUS_USES_FORMULA) {
     #if !defined(TESTSUITE_BUILD)
+      //printf("parseEquation\n");
       reallyRunFunction(ITM_STO, currentSolverVariable);
       parseEquation(currentFormula, EQUATION_PARSER_XEQ, tmpString, tmpString + AIM_BUFFER_LENGTH);
     #endif // TESTSUITE_BUILD
   }
   else {
     dynamicMenuItem = -1;
+    //printf("Running RPN execProgram\n");
     execProgram(label);
     fnToReal(NOPARAM);
   }
@@ -395,9 +431,9 @@ void firstDerivative(calcRegister_t label) {
   if (!getRegisterAsReal(REGISTER_X, &x))
     return;
 
+  saveForUndo();
   _1stDerivative(label, &x, &x, &ctxtReal39);
-  fnClearStack(NOPARAM);
-  fnFillStack(NOPARAM);
+  undo();
   convertRealToResultRegister(&x, REGISTER_X, amNone);
 }
 
@@ -407,8 +443,8 @@ void secondDerivative(calcRegister_t label) {
   if (!getRegisterAsReal(REGISTER_X, &x))
     return;
 
+  saveForUndo();
   _2ndDerivative(label, &x, &x, &ctxtReal39);
-  fnClearStack(NOPARAM);
-  fnFillStack(NOPARAM);
+  undo();
   convertRealToResultRegister(&x, REGISTER_X, amNone);
 }
