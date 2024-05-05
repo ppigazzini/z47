@@ -122,7 +122,7 @@ void convertLongIntegerToShortIntegerRegister(longInteger_t lgInt, uint32_t base
       overflow = abs(lgInt->_mp_size) > 1 || (u64 & shortIntegerMask) != u64;
       *(REGISTER_SHORT_INTEGER_DATA(destination)) = u64 & shortIntegerMask;
     #endif // OS32BIT
-    
+
     if(longIntegerIsNegative(lgInt)) {
       clearSystemFlag(FLAG_OVERFLOW);
       *(REGISTER_SHORT_INTEGER_DATA(destination)) = WP34S_intChs(*(REGISTER_SHORT_INTEGER_DATA(destination)));

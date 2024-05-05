@@ -633,7 +633,7 @@ static bool_t addFactor(longInteger_t lastFactor, longInteger_t factor, real34Ma
             moreInfoOnError("In function addFactor:", errorMessage, NULL, NULL);
           #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
         return false;
-        #endif // !TESTSUITE_BUILD        
+        #endif // !TESTSUITE_BUILD
       }
       ++wkgCols;
       faddr->expons[faddr->nExpons-1] = 1;
@@ -652,7 +652,7 @@ static bool_t addFactor(longInteger_t lastFactor, longInteger_t factor, real34Ma
     c = n/2;
     longIntegerCopy(factor, lastFactor);
   }
-  return true;  
+  return true;
 }
 
 

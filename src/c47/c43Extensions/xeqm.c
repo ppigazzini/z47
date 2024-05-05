@@ -51,7 +51,7 @@
 typedef struct {
   char itemName[30];
 } nstr0;
-TO_QSPI const nstr0 XeqmMsgs[] = { 
+TO_QSPI const nstr0 XeqmMsgs[] = {
 /*0*/  { "Loading XEQM program file:" },
 /*1*/  { "Loading XEQM:" },
 /*2*/  { "XEQC47 XEQLBL 01 XXXXXX " },
@@ -64,7 +64,7 @@ TO_QSPI const nstr0 XeqmMsgs[] = {
 typedef struct {
   char itemName[180];
 } nstr1;
-TO_QSPI const nstr1 helpMsg[] = { 
+TO_QSPI const nstr1 helpMsg[] = {
    //Std F1 Helpmessage
       { "XEQLBL 01 HELP ALPHA \"I\" CASE \"n directory \" CASE \"PROGRAMS\" CASEDN \" create \" CASEUP \"XEQM\" CASEDN \"NN\" CASEUP \".TXT\" EXIT "} };
 
@@ -75,7 +75,7 @@ typedef struct {
   char itemName[130];
 } nstr2;
 
-TO_QSPI const nstr2 xeqTexts[] = { 
+TO_QSPI const nstr2 xeqTexts[] = {
    //Create a 3x3 A-matrix
       { "XEQC47 ERPN RECT 3 ENTER 3 MNEW STO 99 DROPX INDEX 99 1 ENTER 1 STOIJ DROPX DROPX" },
       { " 1 STOEL J+ STOEL J+ STOEL" },
@@ -1072,7 +1072,7 @@ void XEQMENU_Selection(uint16_t selection, char *line1, bool_t exec, bool_t scan
       #endif // DMCP_BUILD
       strcpy(fn_short, XeqmMsgs[4].itemName);    //"XEQMINDEX.TXT"
       strcpy(fn_long,  "");
-      strcpy(fallback, XeqmMsgs[5].itemName);    //"XEQM01:HELP;" 
+      strcpy(fallback, XeqmMsgs[5].itemName);    //"XEQM01:HELP;"
 
       #if(VERBOSE_LEVEL >= 1)
         strcpy(tmp, fn_short);

@@ -120,7 +120,7 @@ void statGraphReset(void){
                                     memcpy(prefix, allNamedVariables[regStatsXY - FIRST_NAMED_VARIABLE].variableName + 1, allNamedVariables[regStatsXY - FIRST_NAMED_VARIABLE].variableName[0]);
                                     strcpy(prefix + allNamedVariables[regStatsXY - FIRST_NAMED_VARIABLE].variableName[0], " :");
                                     printf("X: Reading from Matrix %s\n",prefix);
-                                  #endif //STATDEBUG    
+                                  #endif //STATDEBUG
 //    if(keyWaiting()) {
 //       return 0;
 //    }
@@ -148,7 +148,7 @@ void statGraphReset(void){
                                     memcpy(prefix, allNamedVariables[regStatsXY - FIRST_NAMED_VARIABLE].variableName + 1, allNamedVariables[regStatsXY - FIRST_NAMED_VARIABLE].variableName[0]);
                                     strcpy(prefix + allNamedVariables[regStatsXY - FIRST_NAMED_VARIABLE].variableName[0], " :");
                                     printf("Y: Reading from Matrix %s\n",prefix);
-                                  #endif //STATDEBUG    
+                                  #endif //STATDEBUG
 //    if(keyWaiting()) {
 //       return 0;
 //    }

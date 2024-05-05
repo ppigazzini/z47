@@ -184,7 +184,7 @@ typedef struct {
 } numStr;
 
 #if !defined(TESTSUITE_BUILD)
-  TO_QSPI static const numStr NumMsg[] = { 
+  TO_QSPI static const numStr NumMsg[] = {
     { "^0" },
     { "^1" },
     { "^2" },
@@ -238,7 +238,7 @@ typedef struct {
                                  item == ITM_GAMMAX               ? STD_GAMMA "()" :
                                  item >= FIRST_CONSTANT &&
                                     item <= LAST_CONSTANT         ? indexOfItems[item].itemCatalogName :
-                                 item >= ITM_SUP_0 && 
+                                 item >= ITM_SUP_0 &&
                                     item <= ITM_SUP_9             ? NumMsg[item - ITM_SUP_0].noStr : "";
 
 

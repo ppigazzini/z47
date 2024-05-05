@@ -893,10 +893,10 @@ uint16_t numlockReplacements(uint16_t id, int16_t item, bool_t NL, bool_t FSHIFT
     }
 
     else if(NL) {       //JMvv Numlock translation: Assumes lower case is NOT active
-      
+
       item -= (ITM_A + 26 <= item && item <= ITM_Z + 26) ? -26 : 0; //Ensures lower case is NOT active
       uint16_t ix = 15; //from EEX to the bottom of the keyboard, last key 37
-      while(ix < 37) {        
+      while(ix < 37) {
         if(kbd_std[ix].primaryAim != ITM_EXIT1 && kbd_std[ix].primaryAim != ITM_UP1 && kbd_std[ix].primaryAim != ITM_DOWN1 && kbd_std[ix].primaryAim != ITM_BACKSPACE) {
           if(!FSHIFT && item == kbd_std[ix].primaryAim) {
             *item1 = getSystemFlag(FLAG_USER) ? kbd_usr[ix].gShiftedAim : kbd_std[ix].gShiftedAim;

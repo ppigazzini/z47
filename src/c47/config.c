@@ -130,7 +130,7 @@ void configCommon(uint16_t idx) {
 #define _TVM     7
 #define _numberOfGrps 7
 
-TO_QSPI const int32_t Settings[] = { 
+TO_QSPI const int32_t Settings[] = {
 //variable     n/a       Reset                        HP35            JM             RJ                         C47           DefltSB       TVM
        101,    xxx,      xxx,                         ID_DP,          xxx,           xxx,                       ID_43S,       xxx,          xxx,    //fnInDefault
        102,    xxx,      xxx,                         9,              3,             xxx,                       xxx,          xxx,          xxx,    //fnDisplayFormatSigFig
@@ -149,7 +149,7 @@ TO_QSPI const int32_t Settings[] = {
        115,    xxx,      0,                           0,              xxx,           1,                         _gpr1x,       xxx,          xxx,    //grpGroupingGr1LeftOverflow
        116,    xxx,      1,                           0,              xxx,           xxx,                       1,            xxx,          xxx,    //fneRPN
        117,    xxx,      xxx,                         RB_FGLNOFF,     xxx,           xxx,                       RB_FGLNFUL,   xxx,          xxx,    //setFGLSettings
-       118,    xxx,      0,                           xxx,            xxx,           0,                         xxx,          xxx,          xxx,    //constantFractions    
+       118,    xxx,      0,                           xxx,            xxx,           0,                         xxx,          xxx,          xxx,    //constantFractions
        119,    xxx,      CF_NORMAL,                   xxx,            xxx,           xxx,                       xxx,          xxx,          xxx,    //constantFractionsMode
        120,    xxx,      0,                           xxx,            xxx,           xxx,                       xxx,          xxx,          xxx,    //constantFractionsOn
        121,    xxx,      64,                          xxx,            xxx,           9999,                      64,           xxx,          xxx,    //denmax
@@ -174,7 +174,7 @@ TO_QSPI const int32_t Settings[] = {
        2,      xxx,      xxx,                         ITM_SPCRES0,    ITM_SPCRES1,   xxx,                       ITM_SPCRES1,  xxx,          xxx,   //SetSetting
        2,      xxx,      xxx,                         xxx,            xxx,           JC_IRFRAC,                 xxx,          xxx,          xxx,   //SetSetting
 
-//FLAG,       set/clear, Reset                        HP35            JM             RJ                         C47           DefltSB    
+//FLAG,       set/clear, Reset                        HP35            JM             RJ                         C47           DefltSB
        3,      0,        FLAG_FRCYC        ,          xxx,            xxx,           xxx,                       xxx,          xxx,          xxx,  //clearSystemFlag(FLAG_FRCYC);
        3,      1,        FLAG_MONIT        ,          xxx,            xxx,           xxx,                       xxx,          xxx,          xxx,  //setSystemFlag(FLAG_MONIT);
        3,      1,        FLAG_SH_LONGPRESS ,          xxx,            xxx,           xxx,                       xxx,          xxx,          xxx,  //setSystemFlag(FLAG_SH_LONGPRESS);
@@ -226,7 +226,7 @@ TO_QSPI const int32_t Settings[] = {
        3,      0,        FLAG_DENFIX,                 xxx,            xxx,           xxx,                       xxx,          xxx,          xxx,  //clearSystemFlag
        3,      1,        FLAG_SPCRES,                 xxx,            xxx,           xxx,                       xxx,          xxx,          xxx,  //setSystemFlag
 
-//fnSetGapChar n/a       Reset                        HP35            JM             RJ                         C47           DefltSB    
+//fnSetGapChar n/a       Reset                        HP35            JM             RJ                         C47           DefltSB
        4,      xxx,      0+    ITM_SPACE_PUNCTUATION, ITM_NULL,       xxx,           0+    ITM_SPACE_4_PER_EM,  0 +   _gapl,  xxx,          xxx,  //fnSetGapChar
        4,      xxx,      32768+ITM_SPACE_PUNCTUATION, ITM_NULL+32768, xxx,           32768+ITM_NULL          ,  32768+_gapr,  xxx,          xxx,  //fnSetGapChar
        4,      xxx,      49152+ITM_PERIOD           , ITM_WDOT+49152, xxx,           49152+ITM_WCOMMA        ,  49152+_gaprx, xxx,          xxx,  //fnSetGapChar
@@ -271,10 +271,10 @@ void Sett(int16_t grp) {
         case 121: {denMax                     = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}
 
         case RESERVED_VARIABLE_FV     :
-        case RESERVED_VARIABLE_IPONA  : 
-        case RESERVED_VARIABLE_NPPER  : 
-        case RESERVED_VARIABLE_PMT    : 
-        case RESERVED_VARIABLE_PV     :  
+        case RESERVED_VARIABLE_IPONA  :
+        case RESERVED_VARIABLE_NPPER  :
+        case RESERVED_VARIABLE_PMT    :
+        case RESERVED_VARIABLE_PV     :
         case RESERVED_VARIABLE_PPERONA:
         case RESERVED_VARIABLE_CPERONA: {
             int32ToReal(Settings[ptr*(_numberOfGrps+2) + 1 + grp],&realt);
@@ -286,26 +286,26 @@ void Sett(int16_t grp) {
             #endif //PC_BUILD
             break;
           }
-    
+
         case 2 : {
             #if defined(PC_BUILD)
               printf("\nSett2:%5d:%5d\n",ptr,Settings[ptr*(_numberOfGrps+2) + 1 + grp]);
             #endif //PC_BUILD
             SetSetting (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);
             break;
-          } 
+          }
 
         case 3: {
           #if defined(PC_BUILD)
             printf("\nSett3:%5d:%5d",ptr,Settings[ptr*(_numberOfGrps+2) + 1 + grp]);
           #endif //PC_BUILD
-          forceSystemFlag (Settings[ptr*(_numberOfGrps+2) + 1 + grp], Settings[  ptr*(_numberOfGrps+2) + 1 ]); 
+          forceSystemFlag (Settings[ptr*(_numberOfGrps+2) + 1 + grp], Settings[  ptr*(_numberOfGrps+2) + 1 ]);
           break;
-          } 
+          }
 
         case 4: {
           #if defined(PC_BUILD)
-            printf("\nSett4:%5d:%5d",ptr,Settings[ptr*(_numberOfGrps+2) + 1 + grp]); 
+            printf("\nSett4:%5d:%5d",ptr,Settings[ptr*(_numberOfGrps+2) + 1 + grp]);
           #endif //PC_BUILD
           fnSetGapChar (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);
           }
@@ -819,7 +819,7 @@ void fnFractionType(uint16_t unusedButMandatoryParameter) {
 //                         0110  B
 //                         0111    C if b8==0 the b4=0
 //                         1000  A
-//                         1001 
+//                         1001
 //                         1010  A
 //                         1011
   #define STATE_exfr_bc  0b1100  //12
@@ -844,22 +844,22 @@ void fnFractionType(uint16_t unusedButMandatoryParameter) {
       }
     }
     switch(state) {
-      case STATE_bc          : state = STATE_exfr_abc;  break;                    // 0b0001 --> 
-      case STATE_abc         : state = STATE_bc;        break;                    // 0b0011 --> 
-      case STATE_exfr_bc     : state = STATE_abc;       break;                    // 0b1100 --> 
-      case STATE_exfr_abc    : state = STATE_exfr_bc;   break;                    // 0b1110 --> 
-      default                : state = STATE_abc;       break;                    // 
+      case STATE_bc          : state = STATE_exfr_abc;  break;                    // 0b0001 -->
+      case STATE_abc         : state = STATE_bc;        break;                    // 0b0011 -->
+      case STATE_exfr_bc     : state = STATE_abc;       break;                    // 0b1100 -->
+      case STATE_exfr_abc    : state = STATE_exfr_bc;   break;                    // 0b1110 -->
+      default                : state = STATE_abc;       break;                    //
     }
-  } else { 
+  } else {
     switch(state) {
-      case STATE_bc          : state = STATE_exfr_bc;   break;                    // 0b0001 --> 
-      case STATE_abc         : state = STATE_exfr_abc;  break;                    // 0b0011 --> 
-      case STATE_exfr_bc     : state = STATE_offbc;     break;                    // 0b1100 --> 
-      case STATE_exfr_abc    : state = STATE_offabc;    break;                    // 0b1110 --> 
+      case STATE_bc          : state = STATE_exfr_bc;   break;                    // 0b0001 -->
+      case STATE_abc         : state = STATE_exfr_abc;  break;                    // 0b0011 -->
+      case STATE_exfr_bc     : state = STATE_offbc;     break;                    // 0b1100 -->
+      case STATE_exfr_abc    : state = STATE_offabc;    break;                    // 0b1110 -->
       case STATE_offbc       : state = STATE_bc;        break;                    // 0b0000 -->
       case STATE_offabc      : state = STATE_abc;       break;                    // 0b0010 -->
       default                : state = STATE_abc;       break;                    //
-    }  
+    }
   }
   constantFractions   = (state & 8) ? true : false;
   constantFractionsOn = (state & 4) ? true : false;
@@ -1327,7 +1327,7 @@ void resetOtherConfigurationStuff(void) {
 typedef struct {
   char str2[180];
 } nstr2;
-TO_QSPI const nstr2 msg2[] = { 
+TO_QSPI const nstr2 msg2[] = {
       { "\xff\xf8\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\xff\xf8" }
    };
 

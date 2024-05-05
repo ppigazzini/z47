@@ -36,7 +36,7 @@
 
 
 #if !defined(TESTSUITE_BUILD)
-  TO_QSPI const reservedVariableDescStr_t varDescr[] = { 
+  TO_QSPI const reservedVariableDescStr_t varDescr[] = {
 
 /*  VAR_NO_X        0 */ { ""},
 /*  VAR_NO_Y        1 */ { ""},
@@ -124,7 +124,7 @@ TO_QSPI const reservedVariableHeader_t allReservedVariables[] = { // MUST be in 
 /*  VAR_NO_LLIM    33 */  { .header = {.pointerToRegisterData = 8,          .dataType = dtReal34,      .tag = amNone,      .readOnly = 0, .notUsed = 0}, .reservedVariableName = {5, 161, 147, 'L', 'i', 'm',  0,   0} },
 /*  VAR_NO_FV      34 */  { .header = {.pointerToRegisterData = 12,         .dataType = dtReal34,      .tag = amNone,      .readOnly = 0, .notUsed = 0}, .reservedVariableName = {2, 'F', 'V',  0,   0,   0,   0,   0} },
 /*  VAR_NO_IPONA   35 */  { .header = {.pointerToRegisterData = 16,         .dataType = dtReal34,      .tag = amNone,      .readOnly = 0, .notUsed = 0}, .reservedVariableName = {4, 'i', '%', '/', 'a',  0,   0,   0} },
-/*  VAR_NO_NPPER   36 */  { .header = {.pointerToRegisterData = 20,         .dataType = dtReal34,      .tag = amNone,      .readOnly = 0, .notUsed = 0}, .reservedVariableName = {5, 'N', 'P', 'P', 'E', 'R',  0,   0} }, 
+/*  VAR_NO_NPPER   36 */  { .header = {.pointerToRegisterData = 20,         .dataType = dtReal34,      .tag = amNone,      .readOnly = 0, .notUsed = 0}, .reservedVariableName = {5, 'N', 'P', 'P', 'E', 'R',  0,   0} },
 /*  VAR_NO_PPERONA 37 */  { .header = {.pointerToRegisterData = 24,         .dataType = dtReal34,      .tag = amNone,      .readOnly = 0, .notUsed = 0}, .reservedVariableName = {6, 'P', 'P', 'E', 'R', '/',  'a', 0} },
 /*  VAR_NO_PMT     38 */  { .header = {.pointerToRegisterData = 28,         .dataType = dtReal34,      .tag = amNone,      .readOnly = 0, .notUsed = 0}, .reservedVariableName = {3, 'P', 'M', 'T',  0,   0,   0,   0} },
 /*  VAR_NO_PV      39 */  { .header = {.pointerToRegisterData = 32,         .dataType = dtReal34,      .tag = amNone,      .readOnly = 0, .notUsed = 0}, .reservedVariableName = {2, 'P', 'V',  0,   0,   0,   0,   0} },
