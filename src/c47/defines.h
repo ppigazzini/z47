@@ -1583,21 +1583,29 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define QF_DISCRETE_CDF_NEGBINOM                   3
 #define QF_DISCRETE_CDF_HYPERGEOMETRIC             4
 
-#define SOLVER_STATUS_READY_TO_EXECUTE             0x0001 //0001
-#define SOLVER_STATUS_INTERACTIVE                  0x0002 //0010
-#define SOLVER_STATUS_EQUATION_MODE                0x000c //1100
-#define SOLVER_STATUS_EQUATION_SOLVER              0x0000
-#define SOLVER_STATUS_EQUATION_INTEGRATE           0x0004 //0100
-#define SOLVER_STATUS_EQUATION_1ST_DERIVATIVE      0x0008 //1000
-#define SOLVER_STATUS_EQUATION_2ND_DERIVATIVE      0x000C //1100
-#define SOLVER_STATUS_SINGLE_VARIABLE              0x0010
-#define SOLVER_STATUS_USES_FORMULA                 0x0100
-#define SOLVER_STATUS_MVAR_BEING_OPENED            0x0200
-#define SOLVER_STATUS_TVM_APPLICATION              0x1000
+#define SOLVER_STATUS_READY_TO_EXECUTE             0x0001 // 0000 0000 0000 --01
+#define SOLVER_STATUS_INTERACTIVE                  0x0002 // 0000 0000 0000 --10
 
-#define IS_EQN_INTEGRATE (((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_INTEGRATE) && currentSolverStatus & SOLVER_STATUS_INTERACTIVE)
-#define IS_EQN_2NDDER   ((currentSolverStatus & SOLVER_STATUS_USES_FORMULA) && (currentSolverStatus & SOLVER_STATUS_INTERACTIVE) && ((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_2ND_DERIVATIVE))
-#define IS_EQN_1STDER   ((currentSolverStatus & SOLVER_STATUS_USES_FORMULA) && (currentSolverStatus & SOLVER_STATUS_INTERACTIVE) && ((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_1ST_DERIVATIVE))
+#define SOLVER_STATUS_EQUATION_MODE                0x200c // --1- ---- ---- 1100
+#define SOLVER_STATUS_EQUATION_SOLVER              0x0000 // --0- ---- ---- 00--
+#define SOLVER_STATUS_EQUATION_INTEGRATE           0x0004 // --0- ---- ---- 01--
+#define SOLVER_STATUS_EQUATION_1ST_DERIVATIVE      0x0008 // --0- ---- ---- 10--
+#define SOLVER_STATUS_EQUATION_2ND_DERIVATIVE      0x000C // --0- ---- ---- 11--
+#define SOLVER_STATUS_EQUATION_GRAPHER             0x2000 // --1- ---- ---- 00--
+
+#define SOLVER_STATUS_SINGLE_VARIABLE              0x0010 // 00-0 --00 ---1 ---- 
+#define SOLVER_STATUS_USES_FORMULA                 0x0100 // 00-0 --01 ---0 ----
+#define SOLVER_STATUS_MVAR_BEING_OPENED            0x0200 // 00-0 --10 ---0 ---- 
+#define SOLVER_STATUS_TVM_APPLICATION              0x1000 // 00-1 ---- ---0 ----
+
+#define IS_EQN_INTEGRATE (((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_INTEGRATE) && \
+                            currentSolverStatus & SOLVER_STATUS_INTERACTIVE)
+#define IS_EQN_2NDDER     ((currentSolverStatus & SOLVER_STATUS_USES_FORMULA) && \
+                           (currentSolverStatus & SOLVER_STATUS_INTERACTIVE) &&  \
+                          ((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_2ND_DERIVATIVE))
+#define IS_EQN_1STDER     ((currentSolverStatus & SOLVER_STATUS_USES_FORMULA) && \
+                           (currentSolverStatus & SOLVER_STATUS_INTERACTIVE) && \
+                          ((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_1ST_DERIVATIVE))
 
 #define SOLVER_RESULT_NORMAL                       0
 #define SOLVER_RESULT_SIGN_REVERSAL                1

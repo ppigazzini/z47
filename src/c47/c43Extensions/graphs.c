@@ -920,10 +920,22 @@ void graph_plotmem(void) {
 
         //Cause scales to be the same
         if(PLOT_SCALE) {
-          x_min = min(x_min,y_min);
-          x_max = max(x_max,y_max);
-          y_min = x_min;
-          y_max = x_max;
+          float dx = fabs(x_max - x_min);
+          float dy = fabs(y_max - y_min);
+          if(dx > dy) {
+            dy = dx;
+          } else {
+            dx = dy;
+          }
+//          x_min = min(x_min,y_min);
+//          x_max = max(x_max,y_max);
+//          y_min = x_min;
+//          y_max = x_max;
+
+          x_min = (x_min + x_max)/2 - dx/2; //new equal scale calculation to keep the grpah centre of screen
+          x_max = x_min + dx;
+          y_min = (y_min + y_max)/2 - dy/2;
+          y_max = y_min + dy;
         }
 
         //Calc zoom scales

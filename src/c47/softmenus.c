@@ -2302,6 +2302,12 @@ bool_t BASE_OVERRIDEONCE = false;
                   case MNU_1STDERIV:
                   case MNU_2NDDERIV:
                   case MNU_MVAR: {
+                    if(!compareString((char *)getNthString(dynamicSoftmenu[m].menuContent, x+6*y), indexOfItems[ITM_DRAW].itemSoftmenuName, CMP_NAME)) {
+                       vm = vmReverse;
+                    } else
+                    if(!compareString((char *)getNthString(dynamicSoftmenu[m].menuContent, x+6*y), indexOfItems[ITM_DRAW_LU].itemSoftmenuName, CMP_NAME)) {
+                       vm = vmReverse;
+                    } else
                     if(!compareString((char *)getNthString(dynamicSoftmenu[m].menuContent, x+6*y), indexOfItems[MNU_GRAPHS].itemSoftmenuName, CMP_NAME)) {
                        vm = vmReverse;
                     } else
@@ -2613,8 +2619,14 @@ bool_t BASE_OVERRIDEONCE = false;
     }
 
                                                               //JM ^^
-    if(currentMenu() != -MNU_MODE && currentMenu() != -MNU_DISP && currentMenu() != -MNU_PLOT) {          //JM reset menu base point only if not MODE & DISP menus
-      softmenuStack[0].firstItem = 0;
+    switch(-currentMenu()) {               //reset menu base point only if not MODE & DISP & Graphs menus, otherwise all menues reset to p1
+      case MNU_MODE   :
+      case MNU_DISP   :
+      case MNU_PLOT   : break;
+      default: {
+        softmenuStack[0].firstItem = 0; 
+        break;
+      }
     }
 
     enterAsmModeIfMenuIsACatalog(softmenu[softmenuStack[0].softmenuId].menuItem);
@@ -2801,12 +2813,13 @@ bool_t BASE_OVERRIDEONCE = false;
     else if(id == -MNU_ALPHA_OMEGA && alphaCase == AC_LOWER) { // alpha...omega
       id = -MNU_alpha_omega;
     }
-    else if(id == -MNU_Solver   ||
-            id == -MNU_Sf       ||
+    else if(id == -MNU_Solver      ||
+            id == -MNU_Grapher     ||
+            id == -MNU_Sf          ||
             id == -MNU_Sf_TOOL     ||
             id == -MNU_Solver_TOOL ||
-            id == -MNU_1STDERIV ||
-            id == -MNU_2NDDERIV ||
+            id == -MNU_1STDERIV    ||
+            id == -MNU_2NDDERIV    ||
             (id == -MNU_MVAR && (currentSolverStatus & SOLVER_STATUS_INTERACTIVE) && !(currentSolverStatus & SOLVER_STATUS_USES_FORMULA) && (currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_INTEGRATE)
             ) {
       int32_t numberOfVars = -1;
@@ -2817,6 +2830,10 @@ bool_t BASE_OVERRIDEONCE = false;
       }
       switch(-id) {
         case MNU_Solver_TOOL:
+        case MNU_Grapher: {
+          currentSolverStatus |= SOLVER_STATUS_EQUATION_GRAPHER;
+          break;
+        }
         case MNU_Solver: {
           currentSolverStatus |= SOLVER_STATUS_EQUATION_SOLVER;
           break;
@@ -2867,7 +2884,8 @@ bool_t BASE_OVERRIDEONCE = false;
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       }
       else if( ( ((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_INTEGRATE) ||
-                 ((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_SOLVER)
+                 ((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_SOLVER) ||
+                 ((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_GRAPHER)
                ) && numberOfVars == 1) {
         currentSolverVariable = findOrAllocateNamedVariable((char *)getNthString(varList, 0));
       }
@@ -3198,9 +3216,10 @@ void fnDumpMenus(uint16_t unusedButMandatoryParameter) {                      //
         switch(-softmenu[m].menuItem) {
           case MNU_1STDERIV :
           case MNU_2NDDERIV :
-          case MNU_Sf :
-          case MNU_Solver :
-          case MNU_SHOW :
+          case MNU_Sf       :
+          case MNU_Solver   :
+          case MNU_Grapher   :
+          case MNU_SHOW     :
             break;
           default:
            fnMenuDump(m, n);
