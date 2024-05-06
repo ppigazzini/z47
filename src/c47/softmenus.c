@@ -1418,7 +1418,6 @@ void greyOutBox(int16_t x1, int16_t x2, int16_t y1, int16_t y2) {
 static void showKey2(const char *label0, const char *label1, int16_t x1, int16_t x2, int16_t y1, int16_t y2, bool_t rightMostSlot, videoMode_t videoMode, bool_t topLine, bool_t bottomLine, int8_t showCb, int16_t showValue, const char *showText);
 char label0[30];
 int16_t xx1;
-int16_t xx2;
 
 int8_t maxfLines = 0;
 int8_t maxgLines = 0;
@@ -1535,7 +1534,7 @@ bool_t maxfgLines(int16_t y) {
 char label1[30];
 
 if(xSoftkey == 0 || xSoftkey == 2 || xSoftkey == 4) {
-  xx1 = x1; xx2 = x2;
+  xx1 = x1;
   label0[0]=0;
   stringAppend(label0 + stringByteLength(label0),labelSM1);
   compressConversionName(label0);
@@ -1595,6 +1594,7 @@ if(xSoftkey == 1 || xSoftkey == 3 || xSoftkey == 5) {
   }
 }
 
+#define SWAPCONV true
 
 void showKey2(const char *label0, const char *label1, int16_t x1, int16_t x2, int16_t y1, int16_t y2, bool_t rightMostSlot, videoMode_t videoMode, bool_t topLine, bool_t bottomLine, int8_t showCb, int16_t showValue, const char *showText) {
   #define YY -100
@@ -1607,30 +1607,48 @@ void showKey2(const char *label0, const char *label1, int16_t x1, int16_t x2, in
   float   space0=0;
   float   space1=0;
 
+int16_t w1;
+int16_t w2;
+int16_t w3;
+int16_t w4;
+int16_t arrowSpace;
 
-  int16_t w1 = showStringEnhanced(label0,          &standardFont, 0, y1+YY, videoMode, false, false, DO_compress, NO_raise, NO_Show, NO_LF);
-  int16_t w2 = showStringEnhanced(STD_RIGHT_ARROW, &standardFont, 0, y1+YY, videoMode, false, false, DO_compress, NO_raise, NO_Show, NO_LF);
-  int16_t w3 = showStringEnhanced(STD_LEFT_ARROW,  &standardFont, 0, y1+YY, videoMode, false, false, DO_compress, NO_raise, NO_Show, NO_LF);
-  int16_t w4 = showStringEnhanced(label1,          &standardFont, 0, y1+YY, videoMode, false, false, DO_compress, NO_raise, NO_Show, NO_LF);
-
+if(SWAPCONV) {
+  w1 = showStringEnhanced(label1,          &standardFont, 0, y1+YY, videoMode, false, false, DO_compress, NO_raise, NO_Show, NO_LF);
+  w2 = showStringEnhanced(STD_LEFT_ARROW,  &standardFont, 0, y1+YY, videoMode, false, false, DO_compress, NO_raise, NO_Show, NO_LF);
+  w3 = showStringEnhanced(STD_RIGHT_ARROW, &standardFont, 0, y1+YY, videoMode, false, false, DO_compress, NO_raise, NO_Show, NO_LF);
+  w4 = showStringEnhanced(label0,          &standardFont, 0, y1+YY, videoMode, false, false, DO_compress, NO_raise, NO_Show, NO_LF);
+  arrowSpace = 1;
+} else {
+  w1 = showStringEnhanced(label0,          &standardFont, 0, y1+YY, videoMode, false, false, DO_compress, NO_raise, NO_Show, NO_LF);
+  w2 = showStringEnhanced(STD_RIGHT_ARROW, &standardFont, 0, y1+YY, videoMode, false, false, DO_compress, NO_raise, NO_Show, NO_LF);
+  w3 = showStringEnhanced(STD_LEFT_ARROW,  &standardFont, 0, y1+YY, videoMode, false, false, DO_compress, NO_raise, NO_Show, NO_LF);
+  w4 = showStringEnhanced(label1,          &standardFont, 0, y1+YY, videoMode, false, false, DO_compress, NO_raise, NO_Show, NO_LF);
+  arrowSpace = 10;
+}
 
   midpoint = (x2 - x1) / 2;
-  space0   = ((x2 - x1)/2.0f - w1 - w2 - 10) / 2.0f;   //###
-  Text0    = x1 + midpoint - 10 - w2 - space0 - w1;
-  Arr0     = x1 + midpoint - 10 - w2;
-  space1   = ((x2 - x1)/2.0f - w3 - w4 - 10) / 2.0f;   //###
-  Arr1     = x1 + midpoint + 10;
-  Text1    = x1 + midpoint + 10 + w3 + space1;
-  // s w1 s w2 10 | 10 w3 s w4 s
+  space0   = ((x2 - x1)/2.0f - w1 - w2 - arrowSpace) / 2.0f;   //###
+  Text0    = x1 + midpoint - arrowSpace - w2 - space0 - w1;
+  Arr0     = x1 + midpoint - arrowSpace - w2;
+  space1   = ((x2 - x1)/2.0f - w3 - w4 - arrowSpace) / 2.0f;   //###
+  Arr1     = x1 + midpoint + arrowSpace;
+  Text1    = x1 + midpoint + arrowSpace + w3 + space1;
+  // s w1 s w2 arrowSpace | arrowSpace w3 s w4 s
 
   //printf("@@@@ %f %f\n",space0, space1);
 
-  if(space0 < 10 || space1 < 10) {
+  if(space0 < arrowSpace || space1 < arrowSpace) {
     space    = ((x2 - x1) - w1 - w2 - w3 - w4) / 7.0f;   //###
     Text0    = x1 + space;
-    Arr0     = x1 + space + w1 + space;
     midpoint = 3.5 * space + w1 + w2;
-    Arr1     = x2 - space - w3 - w4 - space;
+    if(SWAPCONV) {
+      Arr0     = x1 + midpoint - arrowSpace - w2;
+      Arr1     = x1 + midpoint + arrowSpace;
+    } else {
+      Arr0     = x1 + space + w1 + space;
+      Arr1     = x2 - space - w3 - w4 - space;      
+    }
     Text1    = x2 - space - w4;
     // s w1 s w2 s. | .s w3 s w4 s
 
@@ -1640,11 +1658,17 @@ void showKey2(const char *label0, const char *label1, int16_t x1, int16_t x2, in
   // Clear inside the frame
   lcd_fill_rect(x1 + 1, y1 + 1, min(x2, SCREEN_WIDTH) - x1 - 1, min(y2, SCREEN_HEIGHT) - y1 - 1, (videoMode == vmNormal ? LCD_SET_VALUE : LCD_EMPTY_VALUE));
 
+if(SWAPCONV) {
+  showStringEnhanced(label1,          &standardFont, Text0 + (rightMostSlot ? 0 : 1), y1 + 1, videoMode, false, false, DO_compress, NO_raise, DO_Show, NO_LF);
+  showStringEnhanced(STD_LEFT_ARROW,  &standardFont, Arr0 +  (rightMostSlot ? 0 : 1), y1 + 1, videoMode, false, false, DO_compress, NO_raise, DO_Show, NO_LF);
+  showStringEnhanced(label0,          &standardFont, Text1 + (rightMostSlot ? 0 : 1), y1 + 1, videoMode, false, false, DO_compress, NO_raise, DO_Show, NO_LF);
+  showStringEnhanced(STD_RIGHT_ARROW, &standardFont, Arr1 +  (rightMostSlot ? 0 : 1), y1 + 1, videoMode, false, false, DO_compress, NO_raise, DO_Show, NO_LF);
+} else {
   showStringEnhanced(label0,          &standardFont, Text0 + (rightMostSlot ? 0 : 1), y1 + 1, videoMode, false, false, DO_compress, NO_raise, DO_Show, NO_LF);
   showStringEnhanced(STD_RIGHT_ARROW, &standardFont, Arr0 +  (rightMostSlot ? 0 : 1), y1 + 1, videoMode, false, false, DO_compress, NO_raise, DO_Show, NO_LF);
   showStringEnhanced(label1,          &standardFont, Text1 + (rightMostSlot ? 0 : 1), y1 + 1, videoMode, false, false, DO_compress, NO_raise, DO_Show, NO_LF);
   showStringEnhanced(STD_LEFT_ARROW,  &standardFont, Arr1 +  (rightMostSlot ? 0 : 1), y1 + 1, videoMode, false, false, DO_compress, NO_raise, DO_Show, NO_LF);
-
+}
 
   // Draw the frame
   //   Top line
@@ -1669,7 +1693,7 @@ void showKey2(const char *label0, const char *label1, int16_t x1, int16_t x2, in
 
   //   Mid line
   if(x1 >= 0) {
-    lcd_fill_rect(x1 + midpoint, y1+5, 1, min(y2, SCREEN_HEIGHT - 1) + 1 - y1 - 2*5, (videoMode == vmNormal ? LCD_EMPTY_VALUE : LCD_SET_VALUE));
+    lcd_fill_rect(x1 + midpoint + (rightMostSlot ? 0 : 1), y1+5, 1, min(y2, SCREEN_HEIGHT - 1) + 1 - y1 - 2*5, (videoMode == vmNormal ? LCD_EMPTY_VALUE : LCD_SET_VALUE));
   }
 }
 
