@@ -582,7 +582,8 @@
 #define FLAG_FRCYC                            0x8041
 #define FLAG_TVM_I_KNOWN                      0xc042
 #define FLAG_TVM_I_CHANGES                    0xc043
-#define NUMBER_OF_SYSTEM_FLAGS                    68 // We can have a maximum of 128 system flags
+#define FLAG_HPCONV                           0x8044
+#define NUMBER_OF_SYSTEM_FLAGS                    69 // We can have a maximum of 128 system flags
 
 typedef enum {
   LI_ZERO     = 0, // Long integer sign 0

@@ -1594,7 +1594,6 @@ if(xSoftkey == 1 || xSoftkey == 3 || xSoftkey == 5) {
   }
 }
 
-#define SWAPCONV true
 
 void showKey2(const char *label0, const char *label1, int16_t x1, int16_t x2, int16_t y1, int16_t y2, bool_t rightMostSlot, videoMode_t videoMode, bool_t topLine, bool_t bottomLine, int8_t showCb, int16_t showValue, const char *showText) {
   #define YY -100
@@ -1613,7 +1612,7 @@ int16_t w3;
 int16_t w4;
 int16_t arrowSpace;
 
-if(SWAPCONV) {
+if(getSystemFlag(FLAG_HPCONV)) {
   w1 = showStringEnhanced(label1,          &standardFont, 0, y1+YY, videoMode, false, false, DO_compress, NO_raise, NO_Show, NO_LF);
   w2 = showStringEnhanced(STD_LEFT_ARROW,  &standardFont, 0, y1+YY, videoMode, false, false, DO_compress, NO_raise, NO_Show, NO_LF);
   w3 = showStringEnhanced(STD_RIGHT_ARROW, &standardFont, 0, y1+YY, videoMode, false, false, DO_compress, NO_raise, NO_Show, NO_LF);
@@ -1642,7 +1641,7 @@ if(SWAPCONV) {
     space    = ((x2 - x1) - w1 - w2 - w3 - w4) / 7.0f;   //###
     Text0    = x1 + space;
     midpoint = 3.5 * space + w1 + w2;
-    if(SWAPCONV) {
+    if(getSystemFlag(FLAG_HPCONV)) {
       Arr0     = x1 + midpoint - arrowSpace - w2;
       Arr1     = x1 + midpoint + arrowSpace;
     } else {
@@ -1658,7 +1657,7 @@ if(SWAPCONV) {
   // Clear inside the frame
   lcd_fill_rect(x1 + 1, y1 + 1, min(x2, SCREEN_WIDTH) - x1 - 1, min(y2, SCREEN_HEIGHT) - y1 - 1, (videoMode == vmNormal ? LCD_SET_VALUE : LCD_EMPTY_VALUE));
 
-if(SWAPCONV) {
+if(getSystemFlag(FLAG_HPCONV)) {
   showStringEnhanced(label1,          &standardFont, Text0 + (rightMostSlot ? 0 : 1), y1 + 1, videoMode, false, false, DO_compress, NO_raise, DO_Show, NO_LF);
   showStringEnhanced(STD_LEFT_ARROW,  &standardFont, Arr0 +  (rightMostSlot ? 0 : 1), y1 + 1, videoMode, false, false, DO_compress, NO_raise, DO_Show, NO_LF);
   showStringEnhanced(label0,          &standardFont, Text1 + (rightMostSlot ? 0 : 1), y1 + 1, videoMode, false, false, DO_compress, NO_raise, DO_Show, NO_LF);
