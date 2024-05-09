@@ -156,9 +156,9 @@ void fnIsPrime(uint16_t unusedButMandatoryParameter) {
   }
 
   longIntegerSetPositiveSign(primeCandidate);
-  //temporaryInformation = (longIntegerIsPrime1(primeCandidate) ? TI_TRUE : TI_FALSE);
-  //temporaryInformation = (longIntegerIsPrime2(primeCandidate) ? TI_TRUE : TI_FALSE);
-  temporaryInformation = (longIntegerIsPrime(primeCandidate) ? TI_TRUE : TI_FALSE);
+  //SET_TI_TRUE_FALSE(longIntegerIsPrime1(primeCandidate));
+  //SET_TI_TRUE_FALSE(longIntegerIsPrime2(primeCandidate));
+  SET_TI_TRUE_FALSE(longIntegerIsPrime(primeCandidate) != 0);
   longIntegerFree(primeCandidate);
 return2:
   hourGlassIconEnabled = false;

@@ -77,10 +77,10 @@ void checkValueLonI(uint16_t mode) {
   if(mode == CHECK_VALUE_POSITIVE_ZERO || mode == CHECK_VALUE_NEGATIVE_ZERO) { // unlikely true
     convertLongIntegerRegisterToLongInteger(REGISTER_X, val);
     if(mode == CHECK_VALUE_POSITIVE_ZERO) {
-      temporaryInformation = (getSystemFlag(FLAG_SPCRES) && longIntegerIsZero(val) && longIntegerIsPositive(val)) ? TI_TRUE : TI_FALSE;
+      SET_TI_TRUE_FALSE(getSystemFlag(FLAG_SPCRES) && longIntegerIsZero(val) && longIntegerIsPositive(val));
     }
     else { // mode == CHECK_VALUE_NEGATIVE_ZERO
-      temporaryInformation = (getSystemFlag(FLAG_SPCRES) && longIntegerIsZero(val) && longIntegerIsNegative(val)) ? TI_TRUE : TI_FALSE;
+      SET_TI_TRUE_FALSE(getSystemFlag(FLAG_SPCRES) && longIntegerIsZero(val) && longIntegerIsNegative(val));
     }
     longIntegerFree(val);
     return;
@@ -98,7 +98,7 @@ void checkValueRema(uint16_t mode) {
       return;
     }
     case CHECK_VALUE_MATRIX_SQUARE: {
-      temporaryInformation = (REGISTER_REAL34_MATRIX_DBLOCK(REGISTER_X)->matrixRows == REGISTER_REAL34_MATRIX_DBLOCK(REGISTER_X)->matrixColumns) ? TI_TRUE : TI_FALSE;
+      SET_TI_TRUE_FALSE(REGISTER_REAL34_MATRIX_DBLOCK(REGISTER_X)->matrixRows == REGISTER_REAL34_MATRIX_DBLOCK(REGISTER_X)->matrixColumns);
       return;
     }
     case CHECK_VALUE_COMPLEX: {
@@ -147,7 +147,7 @@ void checkValueCxma(uint16_t mode) {
       return;
     }
     case CHECK_VALUE_MATRIX_SQUARE: {
-      temporaryInformation = (REGISTER_COMPLEX34_MATRIX_DBLOCK(REGISTER_X)->matrixRows == REGISTER_COMPLEX34_MATRIX_DBLOCK(REGISTER_X)->matrixColumns) ? TI_TRUE : TI_FALSE;
+      SET_TI_TRUE_FALSE(REGISTER_COMPLEX34_MATRIX_DBLOCK(REGISTER_X)->matrixRows == REGISTER_COMPLEX34_MATRIX_DBLOCK(REGISTER_X)->matrixColumns);
       return;
     }
     case CHECK_VALUE_COMPLEX: {
@@ -227,22 +227,22 @@ void checkValueReal(uint16_t mode) {
 
   switch(mode) {
     case CHECK_VALUE_SPECIAL: {
-      temporaryInformation = (getSystemFlag(FLAG_SPCRES) && real34IsSpecial(REGISTER_REAL34_DATA(REGISTER_X))) ? TI_TRUE : TI_FALSE;
+      SET_TI_TRUE_FALSE(getSystemFlag(FLAG_SPCRES) && real34IsSpecial(REGISTER_REAL34_DATA(REGISTER_X)));
       return;
     }
     case CHECK_VALUE_NAN: {
-      temporaryInformation = (getSystemFlag(FLAG_SPCRES) && real34IsNaN(REGISTER_REAL34_DATA(REGISTER_X))) ? TI_TRUE : TI_FALSE;
+      SET_TI_TRUE_FALSE(getSystemFlag(FLAG_SPCRES) && real34IsNaN(REGISTER_REAL34_DATA(REGISTER_X)));
       return;
     }
   }
   if(getRegisterAngularMode(REGISTER_X) == amNone) {
     switch(mode) {
       case CHECK_VALUE_POSITIVE_ZERO: {
-        temporaryInformation = (getSystemFlag(FLAG_SPCRES) && real34IsZero(REGISTER_REAL34_DATA(REGISTER_X)) && real34IsPositive(REGISTER_REAL34_DATA(REGISTER_X))) ? TI_TRUE : TI_FALSE;
+        SET_TI_TRUE_FALSE(getSystemFlag(FLAG_SPCRES) && real34IsZero(REGISTER_REAL34_DATA(REGISTER_X)) && real34IsPositive(REGISTER_REAL34_DATA(REGISTER_X)));
         return;
       }
       case CHECK_VALUE_NEGATIVE_ZERO: {
-        temporaryInformation = (getSystemFlag(FLAG_SPCRES) && real34IsZero(REGISTER_REAL34_DATA(REGISTER_X)) && real34IsNegative(REGISTER_REAL34_DATA(REGISTER_X))) ? TI_TRUE : TI_FALSE;
+        SET_TI_TRUE_FALSE(getSystemFlag(FLAG_SPCRES) && real34IsZero(REGISTER_REAL34_DATA(REGISTER_X)) && real34IsNegative(REGISTER_REAL34_DATA(REGISTER_X)));
         return;
       }
       case CHECK_VALUE_INFINITY: {
@@ -272,19 +272,19 @@ void checkValueReal(uint16_t mode) {
 void checkValueCplx(uint16_t mode) {
   switch(mode) {
     case CHECK_VALUE_COMPLEX: {
-      temporaryInformation = real34IsZero(REGISTER_IMAG34_DATA(REGISTER_X)) ? TI_FALSE : TI_TRUE;
+      SET_TI_TRUE_FALSE(!real34IsZero(REGISTER_IMAG34_DATA(REGISTER_X)));
       return;
     }
     case CHECK_VALUE_REAL: {
-      temporaryInformation = real34IsZero(REGISTER_IMAG34_DATA(REGISTER_X)) ? TI_TRUE : TI_FALSE;
+      SET_TI_TRUE_FALSE(real34IsZero(REGISTER_IMAG34_DATA(REGISTER_X)));
       return;
     }
     case CHECK_VALUE_SPECIAL: {
-      temporaryInformation = (getSystemFlag(FLAG_SPCRES) && (real34IsSpecial(REGISTER_REAL34_DATA(REGISTER_X)) || real34IsSpecial(REGISTER_IMAG34_DATA(REGISTER_X)))) ? TI_TRUE : TI_FALSE;
+      SET_TI_TRUE_FALSE(getSystemFlag(FLAG_SPCRES) && (real34IsSpecial(REGISTER_REAL34_DATA(REGISTER_X)) || real34IsSpecial(REGISTER_IMAG34_DATA(REGISTER_X))));
       return;
     }
     case CHECK_VALUE_NAN: {
-      temporaryInformation = (getSystemFlag(FLAG_SPCRES) && (real34IsNaN(REGISTER_REAL34_DATA(REGISTER_X)) || real34IsNaN(REGISTER_IMAG34_DATA(REGISTER_X)))) ? TI_TRUE : TI_FALSE;
+      SET_TI_TRUE_FALSE(getSystemFlag(FLAG_SPCRES) && (real34IsNaN(REGISTER_REAL34_DATA(REGISTER_X)) || real34IsNaN(REGISTER_IMAG34_DATA(REGISTER_X))));
       return;
     }
     case CHECK_VALUE_MATRIX: {

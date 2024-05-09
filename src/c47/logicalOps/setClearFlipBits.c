@@ -115,7 +115,7 @@ void fnFb(uint16_t bit) { // bit from 0=LSB to shortIntegerWordSize-1=MSB
 void fnBc(uint16_t bit) { // bit from 0=LSB to shortIntegerWordSize-1=MSB
   if(getRegisterDataType(REGISTER_X) == dtShortInteger) {
     thereIsSomethingToUndo = false;
-    temporaryInformation = ((*(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)) & ((uint64_t)1 << bit)) ? TI_FALSE : TI_TRUE);
+    SET_TI_TRUE_FALSE((*(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)) & ((uint64_t)1 << bit)) == 0);
   }
   else {
     displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
@@ -137,7 +137,7 @@ void fnBc(uint16_t bit) { // bit from 0=LSB to shortIntegerWordSize-1=MSB
 void fnBs(uint16_t bit) { // bit from 0=LSB to shortIntegerWordSize-1=MSB
   if(getRegisterDataType(REGISTER_X) == dtShortInteger) {
     thereIsSomethingToUndo = false;
-    temporaryInformation = ((*(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)) & ((uint64_t)1 << bit)) ? TI_TRUE : TI_FALSE);
+    SET_TI_TRUE_FALSE((*(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)) & ((uint64_t)1 << bit)) != 0);
   }
   else {
     displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);

@@ -463,47 +463,47 @@ void fnClFAll(uint16_t confirmation) {
 
 
 void fnIsFlagClear(uint16_t flag) {
-  temporaryInformation = (getFlag(flag) ? TI_FALSE : TI_TRUE);
+  SET_TI_TRUE_FALSE(!getFlag(flag));
 }
 
 
 void fnIsFlagClearClear(uint16_t flag) {
-  temporaryInformation = (getFlag(flag) ? TI_FALSE : TI_TRUE);
+  SET_TI_TRUE_FALSE(!getFlag(flag));
   fnClearFlag(flag);
 }
 
 
 void fnIsFlagClearSet(uint16_t flag) {
-  temporaryInformation = (getFlag(flag) ? TI_FALSE : TI_TRUE);
+  SET_TI_TRUE_FALSE(!getFlag(flag));
   fnSetFlag(flag);
 }
 
 
 void fnIsFlagClearFlip(uint16_t flag) {
-  temporaryInformation = (getFlag(flag) ? TI_FALSE : TI_TRUE);
+  SET_TI_TRUE_FALSE(!getFlag(flag));
   fnFlipFlag(flag);
 }
 
 
 void fnIsFlagSet(uint16_t flag) {
-  temporaryInformation = (getFlag(flag) ? TI_TRUE : TI_FALSE);
+  SET_TI_TRUE_FALSE(getFlag(flag));
 }
 
 
 void fnIsFlagSetClear(uint16_t flag) {
-  temporaryInformation = (getFlag(flag) ? TI_TRUE : TI_FALSE);
+  SET_TI_TRUE_FALSE(getFlag(flag));
   fnClearFlag(flag);
 }
 
 
 void fnIsFlagSetSet(uint16_t flag) {
-  temporaryInformation = (getFlag(flag) ? TI_TRUE : TI_FALSE);
+  SET_TI_TRUE_FALSE(getFlag(flag));
   fnSetFlag(flag);
 }
 
 
 void fnIsFlagSetFlip(uint16_t flag) {
-  temporaryInformation = (getFlag(flag) ? TI_TRUE : TI_FALSE);
+  SET_TI_TRUE_FALSE(getFlag(flag));
   fnFlipFlag(flag);
 }
 
