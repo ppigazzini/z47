@@ -136,21 +136,6 @@ void forceSystemFlag(unsigned int sf, int set) {
   }
 }
 
-static void synchronizeSystemFlag(unsigned int sf) {
-  forceSystemFlag(sf, getSystemFlag(sf));
-}
-
-void synchronizeLetteredFlags(void) {
-  synchronizeSystemFlag(FLAG_ALLENG);
-  synchronizeSystemFlag(FLAG_OVERFLOW);
-  synchronizeSystemFlag(FLAG_CARRY);
-  synchronizeSystemFlag(FLAG_SPCRES);
-  synchronizeSystemFlag(FLAG_CPXRES);
-  synchronizeSystemFlag(FLAG_LEAD0);
-  synchronizeSystemFlag(FLAG_TRACE);
-  synchronizeSystemFlag(FLAG_POLAR);
-}
-
 
 
 #if !defined(TESTSUITE_BUILD)
