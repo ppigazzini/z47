@@ -23,7 +23,6 @@
   #include "typeDefinitions.h"
   #include <stdint.h>
 
-  void   synchronizeLetteredFlags(void);
   bool_t getFlag                 (uint16_t flag);
   void   fnGetSystemFlag         (uint16_t systemFlag);
   void   fnSetFlag               (uint16_t flag);

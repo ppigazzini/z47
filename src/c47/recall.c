@@ -299,7 +299,6 @@ void fnRecallConfig(uint16_t regist) {
     recallFromDtConfigDescriptor(roundingMode);
     recallFromDtConfigDescriptor(systemFlags0);
     recallFromDtConfigDescriptor(systemFlags1);
-    synchronizeLetteredFlags();
     xcopy(kbd_usr, configToRecall->kbd_usr, sizeof(kbd_usr));
     recallFromDtConfigDescriptor(fgLN);
     recallFromDtConfigDescriptor(eRPN);

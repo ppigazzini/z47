@@ -379,7 +379,6 @@ void undo(void) {
 
   systemFlags0 = savedSystemFlags0;
   systemFlags1 = savedSystemFlags1;
-  synchronizeLetteredFlags();
 
   for(calcRegister_t regist=getStackTop(); regist>=REGISTER_X; regist--) {
     copySourceRegisterToDestRegister(SAVED_REGISTER_X - REGISTER_X + regist, regist);
