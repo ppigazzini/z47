@@ -76,12 +76,12 @@ void fnCheckInteger(uint16_t mode) {
       }
 
       case CHECK_INTEGER_EVEN: {
-        temporaryInformation = (longIntegerIsEven(x) ? TI_TRUE : TI_FALSE);
+        SET_TI_TRUE_FALSE(longIntegerIsEven(x));
         break;
       }
 
       case CHECK_INTEGER_ODD: {
-        temporaryInformation = (longIntegerIsOdd(x) ? TI_TRUE : TI_FALSE);
+        SET_TI_TRUE_FALSE(longIntegerIsOdd(x));
         break;
       }
 

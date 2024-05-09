@@ -401,13 +401,13 @@ static void compareRegisters(uint16_t regist, uint8_t mode) {
     // Compare complex numbers
     if((mode == COMPARE_MODE_EQUAL || mode == COMPARE_MODE_NOT_EQUAL) && (getRegisterDataType(REGISTER_X) == dtComplex34 || getRegisterDataType(regist) == dtComplex34)) {
       if(getRegisterDataType(REGISTER_X) == getRegisterDataType(regist)) { // == dtComplex34
-        temporaryInformation = (real34CompareEqual(REGISTER_REAL34_DATA(REGISTER_X), REGISTER_REAL34_DATA(regist)) && real34CompareEqual(REGISTER_IMAG34_DATA(REGISTER_X), REGISTER_IMAG34_DATA(regist))) ? TI_TRUE : TI_FALSE;
+        SET_TI_TRUE_FALSE(real34CompareEqual(REGISTER_REAL34_DATA(REGISTER_X), REGISTER_REAL34_DATA(regist)) && real34CompareEqual(REGISTER_IMAG34_DATA(REGISTER_X), REGISTER_IMAG34_DATA(regist)));
       }
       else if(getRegisterDataType(REGISTER_X) == dtComplex34) {
-        temporaryInformation = isEqualRealComplex(REGISTER_X, regist) ? TI_TRUE : TI_FALSE;
+        SET_TI_TRUE_FALSE(isEqualRealComplex(REGISTER_X, regist));
       }
       else {
-        temporaryInformation = isEqualRealComplex(regist, REGISTER_X) ? TI_TRUE : TI_FALSE;
+        SET_TI_TRUE_FALSE(isEqualRealComplex(regist, REGISTER_X));
       }
       if(mode == COMPARE_MODE_NOT_EQUAL) {
         if(temporaryInformation == TI_TRUE) {
@@ -422,13 +422,13 @@ static void compareRegisters(uint16_t regist, uint8_t mode) {
     // Other comparison
     else if(registerCmp(REGISTER_X, regist, &result)) {
       if(result < 0) {
-        temporaryInformation = (mode & COMPARE_MODE_LESS_THAN) ? TI_TRUE : TI_FALSE;
+        SET_TI_TRUE_FALSE((mode & COMPARE_MODE_LESS_THAN) != 0);
       }
       else if(result > 0) {
-        temporaryInformation = (mode & COMPARE_MODE_GREATER_THAN) ? TI_TRUE : TI_FALSE;
+        SET_TI_TRUE_FALSE((mode & COMPARE_MODE_GREATER_THAN) != 0);
       }
       else {
-        temporaryInformation = (mode & COMPARE_MODE_EQUAL) ? TI_TRUE : TI_FALSE;
+        SET_TI_TRUE_FALSE((mode & COMPARE_MODE_EQUAL) != 0);
       }
     }
     else {
@@ -673,26 +673,16 @@ void fnIsConverged(uint16_t mode) {
   }
 
   if(realIsNaN(&xReal) || realIsNaN(&yReal) || realIsNaN(&xImag) || realIsNaN(&yImag)) {
-    temporaryInformation = (mode & 0x4) ? TI_TRUE : TI_FALSE;
+    SET_TI_TRUE_FALSE((mode & 0x4) != 0);
   }
   else if(realIsInfinite(&xReal) || realIsInfinite(&yReal) || realIsInfinite(&xImag) || realIsInfinite(&yImag)) {
-    temporaryInformation = (mode & 0x2) ? TI_TRUE : TI_FALSE;
+    SET_TI_TRUE_FALSE((mode & 0x2) != 0);
   }
   else if(mode & 0x01) {
-    if(isComplex) {
-      temporaryInformation = WP34S_ComplexAbsError(&xReal, &xImag, &yReal, &yImag, &tol, &ctxtReal39) ? TI_TRUE : TI_FALSE;
-    }
-    else {
-      temporaryInformation = WP34S_AbsoluteError(&xReal, &yReal, &tol, &ctxtReal39) ? TI_TRUE : TI_FALSE;
-    }
+    SET_TI_TRUE_FALSE(isComplex ? WP34S_ComplexAbsError(&xReal, &xImag, &yReal, &yImag, &tol, &ctxtReal39) : WP34S_AbsoluteError(&xReal, &yReal, &tol, &ctxtReal39));
   }
   else {
-    if(isComplex) {
-      temporaryInformation = WP34S_ComplexRelativeError(&xReal, &xImag, &yReal, &yImag, &tol, &ctxtReal39) ? TI_TRUE : TI_FALSE;
-    }
-    else {
-      temporaryInformation = WP34S_RelativeError(&xReal, &yReal, &tol, &ctxtReal39) ? TI_TRUE : TI_FALSE;
-    }
+    SET_TI_TRUE_FALSE(isComplex ? WP34S_ComplexRelativeError(&xReal, &xImag, &yReal, &yImag, &tol, &ctxtReal39) : WP34S_RelativeError(&xReal, &yReal, &tol, &ctxtReal39));
   }
 }
 

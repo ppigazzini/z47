@@ -534,7 +534,7 @@ void fnIsLeap(uint16_t unusedButMandatoryParameter) {
 
   if(checkDateArgument(REGISTER_X, &j)) {
     decomposeJulianDay(&j, &y, &m, &d);
-    temporaryInformation = (isLeapYear(&y) ? TI_TRUE : TI_FALSE);
+    SET_TI_TRUE_FALSE(isLeapYear(&y));
   }
 }
 

@@ -98,7 +98,10 @@ void incDecLonI(uint16_t regist, uint8_t flag) {
 
   (flag == INC_FLAG) ? longIntegerAddUInt(r, 1, r) : longIntegerSubtractUInt(r, 1, r);
 
-  if(running_program_jm) temporaryInformation = longIntegerIsZero(r) ? TI_TRUE : TI_FALSE;    //JM Temporary hack to do DSZ
+  //JM Temporary hack to do DSZ
+  if(running_program_jm) {
+    SET_TI_TRUE_FALSE(longIntegerIsZero(r));
+  }
 
   convertLongIntegerToLongIntegerRegister(r, regist);
 
@@ -113,7 +116,10 @@ void incDecReal(uint16_t regist, uint8_t flag) {
   real34ToReal(REGISTER_REAL34_DATA(regist), &r);
   (flag == INC_FLAG) ? realAdd(&r, const_1, &r, &ctxtReal39) : realSubtract(&r, const_1, &r, &ctxtReal39);
 
-  if(running_program_jm) temporaryInformation = real34IsZero(&r) ? TI_TRUE : TI_FALSE;    //JM Temporary hack to do DSZ
+  //JM Temporary hack to do DSZ
+  if(running_program_jm) {
+    SET_TI_TRUE_FALSE(real34IsZero(&r));
+  }
 
   realToReal34(&r, REGISTER_REAL34_DATA(regist));
 }
@@ -127,7 +133,10 @@ void incDecCplx(uint16_t regist, uint8_t flag) {
 
   (flag == INC_FLAG) ? realAdd(&r_real, const_1, &r_real, &ctxtReal39) : realSubtract(&r_real, const_1, &r_real, &ctxtReal39);
 
-  if(running_program_jm)  temporaryInformation = real34IsZero(&r_real) && real34IsZero(REGISTER_REAL34_DATA(regist)) ? TI_TRUE : TI_FALSE;    //JM Temporary hack to do DSZ
+  //JM Temporary hack to do DSZ
+  if(running_program_jm)  {
+    SET_TI_TRUE_FALSE(real34IsZero(&r_real) && real34IsZero(REGISTER_REAL34_DATA(regist)));
+  }
 
   realToReal34(&r_real, REGISTER_REAL34_DATA(regist));
 }
@@ -147,7 +156,10 @@ void incDecShoI(uint16_t regist, uint8_t flag) {
     (flag == INC_FLAG) ? r_value++ : r_value--;
   }
 
-  if(running_program_jm) temporaryInformation = (r_value == 0) ? TI_TRUE : TI_FALSE;  //JM Temporary hack to do dsz
+  //JM Temporary hack to do DSZ
+  if(running_program_jm) {
+    SET_TI_TRUE_FALSE(r_value == 0);
+  }
 
   convertUInt64ToShortIntegerRegister(r_sign, r_value, getRegisterTag(regist), regist);
 }
