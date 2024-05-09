@@ -2478,7 +2478,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
             moreInfoOnError("In function refreshRegisterLine:", errorMessage, errorMessages[24], NULL);
           #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
           w = stringWidth(tmpString, &standardFont, true, true);
-          showString(tmpString, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + 6, vmNormal, true, true);
+          showString(tmpString, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
         }
       }
 
@@ -2498,7 +2498,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
 
       else if(temporaryInformation == TI_ARE_YOU_SURE && regist == REGISTER_X) {
         uint16_t id = getConfirmationTiId();
-        showString(confirmationTI[id].string, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + 6, vmNormal, true, true);
+        showString(confirmationTI[id].string, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
       }
 
       else if(temporaryInformation == TI_WHO) {
@@ -2529,7 +2529,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
       }
 
       else if(temporaryInformation == TI_KEYS && regist == REGISTER_X) {
-        showString(errorMessage, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + 6, vmNormal, true, true);
+        showString(errorMessage, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
       }
 
       else if(temporaryInformation == TI_FALSE && regist == TRUE_FALSE_REGISTER_LINE) {
@@ -2545,7 +2545,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
       else if(temporaryInformation == TI_RESET && regist == REGISTER_X) {
         sprintf(tmpString, "Data, programs, and definitions cleared");
         w = stringWidth(tmpString, &standardFont, true, true);
-        showString(tmpString, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + 6, vmNormal, true, true);
+        showString(tmpString, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
       }
 
       else if(temporaryInformation == TI_SAVED && regist == REGISTER_X) {
@@ -2556,25 +2556,25 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
       else if(temporaryInformation == TI_CLEAR_ALL_MENUS && regist == REGISTER_X) {
         sprintf(tmpString, "All user menus cleared");
         w = stringWidth(tmpString, &standardFont, true, true);
-        showString(tmpString, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + 6, vmNormal, true, true);
+        showString(tmpString, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
       }
 
       else if(temporaryInformation == TI_CLEAR_ALL_VARIABLES && regist == REGISTER_X) {
         sprintf(tmpString, "All user variables cleared");
         w = stringWidth(tmpString, &standardFont, true, true);
-        showString(tmpString, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + 6, vmNormal, true, true);
+        showString(tmpString, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
       }
 
       else if(temporaryInformation == TI_DEL_ALL_MENUS && regist == REGISTER_X) {
         sprintf(tmpString, "All user menus deleted");
         w = stringWidth(tmpString, &standardFont, true, true);
-        showString(tmpString, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + 6, vmNormal, true, true);
+        showString(tmpString, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
       }
 
       else if(temporaryInformation == TI_DEL_ALL_VARIABLES && regist == REGISTER_X) {
         sprintf(tmpString, "All user variables deleted");
         w = stringWidth(tmpString, &standardFont, true, true);
-        showString(tmpString, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + 6, vmNormal, true, true);
+        showString(tmpString, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
       }
 
       #if defined(PC_BUILD)
@@ -2589,9 +2589,9 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
         clearRegisterLine(REGISTER_Y, true, true);
         clearRegisterLine(REGISTER_Z, true, true);
         clearRegisterLine(REGISTER_T, true, true);
-        showString(errorMessages[TI_Backup_restored], &standardFont, 1, Y_POSITION_OF_REGISTER_Z_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + 6, vmNormal, true, true);
-        showStringEnhanced(versionStr,  &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + 6, vmNormal, true, true, NO_compress, NO_raise, DO_Show, DO_LF);
-        showStringEnhanced(versionStr2, &standardFont, 1, Y_POSITION_OF_REGISTER_Y_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + 6, vmNormal, true, true, NO_compress, NO_raise, DO_Show, DO_LF);
+        showString(errorMessages[TI_Backup_restored], &standardFont, 1, Y_POSITION_OF_REGISTER_Z_LINE + 6, vmNormal, true, true);
+        showStringEnhanced(versionStr,  &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true, NO_compress, NO_raise, DO_Show, DO_LF);
+        showStringEnhanced(versionStr2, &standardFont, 1, Y_POSITION_OF_REGISTER_Y_LINE + 6, vmNormal, true, true, NO_compress, NO_raise, DO_Show, DO_LF);
       }
 
       else if(temporaryInformation == TI_STATEFILE_RESTORED && regist == REGISTER_X) {
@@ -2603,18 +2603,18 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
         sprintf(prefix, "                                ");
         displayTemporaryInformationOnX(prefix);
         sprintf(prefix, "%s", errorMessages[TI_Saved_programs_and_equations]);
-        showString(prefix, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) - 3, vmNormal, true, true);
+        showString(prefix, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE - 3, vmNormal, true, true);
         sprintf(prefix, "%s", errorMessages[TI_appended]);
-        showString(prefix, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + 17, vmNormal, true, true);
+        showString(prefix, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 17, vmNormal, true, true);
      }
 
       else if(temporaryInformation == TI_REGISTERS_RESTORED && regist == REGISTER_X) {
         sprintf(prefix, "                                  ");
         displayTemporaryInformationOnX(prefix);
         sprintf(prefix, "%s", errorMessages[TI_Saved_global_and_local_registers]);
-        showString(prefix, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) - 3, vmNormal, true, true);
+        showString(prefix, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE - 3, vmNormal, true, true);
         sprintf(prefix, "%s", errorMessages[TI_w_local_flags_restored]);
-        showString(prefix, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + 17, vmNormal, true, true);
+        showString(prefix, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 17, vmNormal, true, true);
       }
 
       else if(temporaryInformation == TI_SETTINGS_RESTORED && regist == REGISTER_X) {
@@ -2638,7 +2638,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
       }
 
       else if(temporaryInformation == TI_UNDO_DISABLED && regist == REGISTER_X) {
-        showString(errorMessages[TI_Not_enough_memory_for_undo], &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + 6, vmNormal, true, true);
+        showString(errorMessages[TI_Not_enough_memory_for_undo], &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
       }
 
       //Original SHOW
@@ -3686,13 +3686,13 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
 
           if(prefixWidth > 0 && temporaryInformation != TI_VIEW_REGISTER) {
             if(regist == REGISTER_X) {
-              showString(prefix, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + TEMPORARY_INFO_OFFSET, vmNormal, true, true);
+              showString(prefix, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + TEMPORARY_INFO_OFFSET, vmNormal, true, true);
             }
             else if(regist == REGISTER_Y) {
-              showString(prefix, &standardFont, 1, Y_POSITION_OF_REGISTER_Y_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_Y) + TEMPORARY_INFO_OFFSET, vmNormal, true, true);
+              showString(prefix, &standardFont, 1, Y_POSITION_OF_REGISTER_Y_LINE + TEMPORARY_INFO_OFFSET, vmNormal, true, true);
             }
             else if(regist == REGISTER_Z) {
-              showString(prefix, &standardFont, 1, Y_POSITION_OF_REGISTER_Z_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_Z) + TEMPORARY_INFO_OFFSET, vmNormal, true, true);
+              showString(prefix, &standardFont, 1, Y_POSITION_OF_REGISTER_Z_LINE + TEMPORARY_INFO_OFFSET, vmNormal, true, true);
             }
           }
                                                                       //JM EE ^
@@ -3770,13 +3770,13 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
 
           if(prefixWidth > 0) {
             if(regist == REGISTER_X) {
-              showString(prefix, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + TEMPORARY_INFO_OFFSET, vmNormal, true, true);
+              showString(prefix, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + TEMPORARY_INFO_OFFSET, vmNormal, true, true);
             }
             else if(regist == REGISTER_Y) {
-              showString(prefix, &standardFont, 1, Y_POSITION_OF_REGISTER_Y_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_Y) + TEMPORARY_INFO_OFFSET, vmNormal, true, true);
+              showString(prefix, &standardFont, 1, Y_POSITION_OF_REGISTER_Y_LINE + TEMPORARY_INFO_OFFSET, vmNormal, true, true);
             }
             else if(regist == REGISTER_Z) {
-              showString(prefix, &standardFont, 1, Y_POSITION_OF_REGISTER_Z_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_Z) + TEMPORARY_INFO_OFFSET, vmNormal, true, true);
+              showString(prefix, &standardFont, 1, Y_POSITION_OF_REGISTER_Z_LINE + TEMPORARY_INFO_OFFSET, vmNormal, true, true);
             }
           }
                                                                        //JM EE ^
@@ -3820,9 +3820,9 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
           #if defined(STACK_X_STR_LRG_FONT)
             //This is for X
             w = stringWidthWithLimitC43(REGISTER_STRING_DATA(regist), stdnumEnlarge, nocompress, SCREEN_WIDTH, false, true);
-            if(temporaryInformation != TI_VIEW_REGISTER && regist == REGISTER_X && w<SCREEN_WIDTH) {
+            if(temporaryInformation != TI_VIEW_REGISTER && regist == REGISTER_X && w < SCREEN_WIDTH) {
               lineWidth = w; //slighly incorrect if special characters are there as well.
-              showStringC43(REGISTER_STRING_DATA(regist), stdnumEnlarge, nocompress, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + 6 - checkHPoffset, vmNormal, false, true);
+              showStringC43(REGISTER_STRING_DATA(regist), stdnumEnlarge, nocompress, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_X_LINE + 6 - checkHPoffset, vmNormal, false, true);
             }
             else                                                                   //JM
           #endif // STACK_X_STR_LRG_FONT
@@ -3831,7 +3831,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
             //This is for X
             if(temporaryInformation != TI_VIEW_REGISTER && regist == REGISTER_X && (w = stringWidthWithLimitC43(REGISTER_STRING_DATA(regist), numHalf, nocompress, SCREEN_WIDTH, false, true)) < SCREEN_WIDTH) {
               lineWidth = w;
-              showStringC43(REGISTER_STRING_DATA(regist), numHalf, nocompress, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + 6 - checkHPoffset, vmNormal, false, true);
+              showStringC43(REGISTER_STRING_DATA(regist), numHalf, nocompress, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_X_LINE + 6 - checkHPoffset, vmNormal, false, true);
             }
             else                                                                   //JM
           #endif //STACK_X_STR_MED_FONT
@@ -3912,7 +3912,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
             showString(tmpString, fontForShortInteger, SCREEN_WIDTH - stringWidth(tmpString, fontForShortInteger, false, true), Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + (fontForShortInteger == &standardFont ? 6 : 0) - (fontForShortInteger == &numericFont && temporaryInformation == TI_NO_INFO && checkHP ? 50:0), vmNormal, false, true);
 
             displayBaseMode(regist);
-        }
+          }
 
 
           prefixWidth = 0;
@@ -3948,7 +3948,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
             if(regist == REGISTER_X) {
               showString(prefix, &standardFont, 1, baseY + TEMPORARY_INFO_OFFSET, vmNormal, prefixPre, prefixPost);
             }
-            if(tmpString[0]!=0) {
+            if(tmpString[0] != 0) {
               shortIntegerToDisplayString(regist, tmpString, true);
             }
             showString(tmpString, fontForShortInteger, SCREEN_WIDTH - stringWidth(tmpString, fontForShortInteger, false, true), Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + (fontForShortInteger == &standardFont ? 6 : 0) - (fontForShortInteger == &numericFont && temporaryInformation == TI_NO_INFO && checkHP ? 50:0), vmNormal, false, true);
@@ -3986,7 +3986,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
 
 //          if(prefixWidth > 0) {
   //          if(regist == REGISTER_X) {
-    //          showString(prefix, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + TEMPORARY_INFO_OFFSET - REGISTER_LINE_HEIGHT*(regist - REGISTER_X), vmNormal, true, true);
+    //          showString(prefix, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + TEMPORARY_INFO_OFFSET, vmNormal, true, true);
       //      }
         //  }     //                                                          //JMms ^^
 
