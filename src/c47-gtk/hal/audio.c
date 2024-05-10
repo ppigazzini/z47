@@ -70,8 +70,8 @@ void fnSetVolume(uint16_t volume) {
   temporaryInformation = TI_DMCP_ONLY;
 }
 
-uint16_t getBeepVolume() {
-    return NOVAL;
+uint16_t getBeepVolume(void) {
+  return NOVAL;
 }
 
 void fnGetVolume(uint16_t unusedButMandatoryParameter) {

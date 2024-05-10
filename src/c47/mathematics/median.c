@@ -289,7 +289,7 @@ void fnIQRXY(uint16_t unusedButMandatoryParameter) {
 void fnPercentileXY(uint16_t unusedButMandatoryParameter) {
   real_t p;
 
-  if (!getRegisterAsReal(REGISTER_X, &p))
+  if(!getRegisterAsReal(REGISTER_X, &p))
     return;
 
   // Range saturate if out of scope and scale away percentage

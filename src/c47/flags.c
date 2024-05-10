@@ -136,21 +136,6 @@ void forceSystemFlag(unsigned int sf, int set) {
   }
 }
 
-static void synchronizeSystemFlag(unsigned int sf) {
-  forceSystemFlag(sf, getSystemFlag(sf));
-}
-
-void synchronizeLetteredFlags(void) {
-  synchronizeSystemFlag(FLAG_ALLENG);
-  synchronizeSystemFlag(FLAG_OVERFLOW);
-  synchronizeSystemFlag(FLAG_CARRY);
-  synchronizeSystemFlag(FLAG_SPCRES);
-  synchronizeSystemFlag(FLAG_CPXRES);
-  synchronizeSystemFlag(FLAG_LEAD0);
-  synchronizeSystemFlag(FLAG_TRACE);
-  synchronizeSystemFlag(FLAG_POLAR);
-}
-
 
 
 #if !defined(TESTSUITE_BUILD)
@@ -258,7 +243,7 @@ void fnSetFlag(uint16_t flag) {
         programRunStop = PGM_STOPPED;
       }
       displayCalcErrorMessage(ERROR_WRITE_PROTECTED_SYSTEM_FLAG, ERR_REGISTER_LINE, REGISTER_X);
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "protected system flag (%" PRIu16 ")!", (uint16_t)(flag & 0x3fff));
         moreInfoOnError("In function fnSetFlag:", "Tying to set a write", errorMessage, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -326,7 +311,7 @@ void fnClearFlag(uint16_t flag) {
         programRunStop = PGM_STOPPED;
       }
       displayCalcErrorMessage(ERROR_WRITE_PROTECTED_SYSTEM_FLAG, ERR_REGISTER_LINE, REGISTER_X);
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "protected system flag (%" PRIu16 ")!", (uint16_t)(flag & 0x3fff));
         moreInfoOnError("In function fnClearFlag:", "Tying to clear a write", errorMessage, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -395,7 +380,7 @@ void fnFlipFlag(uint16_t flag) {
         programRunStop = PGM_STOPPED;
       }
       displayCalcErrorMessage(ERROR_WRITE_PROTECTED_SYSTEM_FLAG, ERR_REGISTER_LINE, REGISTER_X);
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "protected system flag (%" PRIu16 ")!", (uint16_t)(flag & 0x3fff));
         moreInfoOnError("In function fnFlipFlag:", "Tying to flip a write", errorMessage, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -478,47 +463,47 @@ void fnClFAll(uint16_t confirmation) {
 
 
 void fnIsFlagClear(uint16_t flag) {
-  temporaryInformation = (getFlag(flag) ? TI_FALSE : TI_TRUE);
+  SET_TI_TRUE_FALSE(!getFlag(flag));
 }
 
 
 void fnIsFlagClearClear(uint16_t flag) {
-  temporaryInformation = (getFlag(flag) ? TI_FALSE : TI_TRUE);
+  SET_TI_TRUE_FALSE(!getFlag(flag));
   fnClearFlag(flag);
 }
 
 
 void fnIsFlagClearSet(uint16_t flag) {
-  temporaryInformation = (getFlag(flag) ? TI_FALSE : TI_TRUE);
+  SET_TI_TRUE_FALSE(!getFlag(flag));
   fnSetFlag(flag);
 }
 
 
 void fnIsFlagClearFlip(uint16_t flag) {
-  temporaryInformation = (getFlag(flag) ? TI_FALSE : TI_TRUE);
+  SET_TI_TRUE_FALSE(!getFlag(flag));
   fnFlipFlag(flag);
 }
 
 
 void fnIsFlagSet(uint16_t flag) {
-  temporaryInformation = (getFlag(flag) ? TI_TRUE : TI_FALSE);
+  SET_TI_TRUE_FALSE(getFlag(flag));
 }
 
 
 void fnIsFlagSetClear(uint16_t flag) {
-  temporaryInformation = (getFlag(flag) ? TI_TRUE : TI_FALSE);
+  SET_TI_TRUE_FALSE(getFlag(flag));
   fnClearFlag(flag);
 }
 
 
 void fnIsFlagSetSet(uint16_t flag) {
-  temporaryInformation = (getFlag(flag) ? TI_TRUE : TI_FALSE);
+  SET_TI_TRUE_FALSE(getFlag(flag));
   fnSetFlag(flag);
 }
 
 
 void fnIsFlagSetFlip(uint16_t flag) {
-  temporaryInformation = (getFlag(flag) ? TI_TRUE : TI_FALSE);
+  SET_TI_TRUE_FALSE(getFlag(flag));
   fnFlipFlag(flag);
 }
 
@@ -611,7 +596,8 @@ void SetSetting(uint16_t jmConfig) {
     case JC_UC:
       if(alphaCase == AC_LOWER) {
         alphaCase = AC_UPPER;
-      } else {
+      }
+      else {
         alphaCase = AC_LOWER;
       }
       break;

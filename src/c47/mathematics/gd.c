@@ -48,7 +48,7 @@ TO_QSPI void (* const gd[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])(uint16_t) = {
  ***********************************************/
 void gdTypeError(uint16_t gdOrInvGd) {
   displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-  #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+  #if (EXTRA_INFO_ON_CALC_ERROR == 1)
     if(gdOrInvGd==GD_DIRECT_FUNCTION) {
       sprintf(errorMessage, "cannot calculate gd(%s)", getRegisterDataTypeName(REGISTER_X, false, false));
       moreInfoOnError("In function fnGd:", errorMessage, NULL, NULL);
@@ -62,7 +62,7 @@ void gdTypeError(uint16_t gdOrInvGd) {
 
 static void gdError(uint16_t gdOrInvGd, uint8_t errorCode) {
   displayCalcErrorMessage(errorCode, ERR_REGISTER_LINE, REGISTER_X);
-  #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+  #if (EXTRA_INFO_ON_CALC_ERROR == 1)
     if(gdOrInvGd==GD_DIRECT_FUNCTION) {
       sprintf(errorMessage, "cannot calculate gd(%s)", getRegisterDataTypeName(REGISTER_X, false, false));
       moreInfoOnError("In function fnGd:", errorMessage, NULL, NULL);

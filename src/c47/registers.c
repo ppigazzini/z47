@@ -567,7 +567,7 @@ void allocateLocalRegisters(uint16_t numberOfRegistersToAllocate) {
 
   if(numberOfRegistersToAllocate > 99) {
     displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "You can allocate up to 99 registers, you requested %" PRIu16, numberOfRegistersToAllocate);
       moreInfoOnError("In function allocateLocalRegisters:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -1014,7 +1014,8 @@ void fnDeleteAllVariables(uint16_t confirmation) {
     initSimEqMatABX();
     if(programRunStop != PGM_RUNNING) {
       temporaryInformation = TI_DEL_ALL_VARIABLES;
-    } else {
+    }
+    else {
       temporaryInformation = TI_NO_INFO;
     }
   }
@@ -1050,14 +1051,15 @@ void fnClearAllVariables(uint16_t confirmation) {
     }
     if(programRunStop != PGM_RUNNING) {
       temporaryInformation = TI_CLEAR_ALL_VARIABLES;
-    } else {
+    }
+    else {
       temporaryInformation = TI_NO_INFO;
     }
   }
 }
 
 
-void setRegisterMaxDataLength(calcRegister_t regist, uint16_t maxDataLen) {
+void setRegisterMaxDataLengthInBlocks(calcRegister_t regist, uint16_t maxDataLen) {
   if(regist <= LAST_GLOBAL_REGISTER) { // Global register
     ((dataBlock_t *)TO_PCMEMPTR(globalRegister[regist].pointerToRegisterData))->dataMaxLength = maxDataLen;
   }
@@ -1068,13 +1070,13 @@ void setRegisterMaxDataLength(calcRegister_t regist, uint16_t maxDataLen) {
         getRegisterDataPointer(regist)->dataMaxLength = maxDataLen;
       }
       else {
-        sprintf(errorMessage, commonBugScreenMessages[bugMsgNotDefinedMustBe], "setRegisterMaxDataLength", "named variable", (uint16_t)(regist - FIRST_NAMED_VARIABLE), (uint16_t)(numberOfNamedVariables - 1));
+        sprintf(errorMessage, commonBugScreenMessages[bugMsgNotDefinedMustBe], "setRegisterMaxDataLengthInBlocks", "named variable", (uint16_t)(regist - FIRST_NAMED_VARIABLE), (uint16_t)(numberOfNamedVariables - 1));
         displayBugScreen(errorMessage);
       }
     }
     #if defined(PC_BUILD)
       else {
-        moreInfoOnError("In function setRegisterMaxDataLength:", "no named variables defined!", NULL, NULL);
+        moreInfoOnError("In function setRegisterMaxsetRegisterMaxDataLengthInBlocksDataLength:", "no named variables defined!", NULL, NULL);
       }
     #endif // PC_BUILD
   }
@@ -1093,19 +1095,19 @@ void setRegisterMaxDataLength(calcRegister_t regist, uint16_t maxDataLen) {
         else {
           sprintf(errorMessage, "local register %" PRId16 " is not defined!", (uint16_t)(regist - FIRST_LOCAL_REGISTER));
           sprintf(errorMessage + ERROR_MESSAGE_LENGTH/2, "Must be from 0 to %" PRIu8, (uint8_t)(currentNumberOfLocalRegisters - 1));
-          moreInfoOnError("In function setRegisterMaxDataLength:", errorMessage, errorMessage + ERROR_MESSAGE_LENGTH/2, NULL);
+          moreInfoOnError("In function setRegisterMaxDataLengthInBlocks:", errorMessage, errorMessage + ERROR_MESSAGE_LENGTH/2, NULL);
         }
       #endif // PC_BUILD
     }
     #if defined(PC_BUILD)
       else {
-       moreInfoOnError("In function setRegisterMaxDataLength:", "no local registers defined!", NULL, NULL);
+       moreInfoOnError("In function setRegisterMaxDataLengthInBlocks:", "no local registers defined!", NULL, NULL);
       }
     #endif // PC_BUILD
   }
 
   else {
-    sprintf(errorMessage, commonBugScreenMessages[bugMsgRegistMustBeLessThan], "setRegisterMaxDataLength", regist, LAST_RESERVED_VARIABLE + 1);
+    sprintf(errorMessage, commonBugScreenMessages[bugMsgRegistMustBeLessThan], "setRegisterMaxDataLengthInBlocks", regist, LAST_RESERVED_VARIABLE + 1);
     displayBugScreen(errorMessage);
   }
 }
@@ -1707,7 +1709,7 @@ int16_t indirectAddressing(calcRegister_t regist, uint16_t parameterType, int16_
     isValidAlpha = true;
     if(value == INVALID_VARIABLE) {
       displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE, REGISTER_X);
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "string '%s' is not a named variable", REGISTER_STRING_DATA(regist));
         moreInfoOnError("In function indirectAddressing:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -2061,7 +2063,7 @@ void reallocateRegister(calcRegister_t regist, uint32_t dataType, uint16_t dataS
       REGISTER_COMPLEX34_MATRIX_DBLOCK(regist)->matrixColumns = dataSizeWithoutDataLenBlocks / COMPLEX34_SIZE_IN_BLOCKS;
     }
     else {
-      setRegisterMaxDataLength(regist, dataSizeWithoutDataLenBlocks);
+      setRegisterMaxDataLengthInBlocks(regist, dataSizeWithoutDataLenBlocks);
     }
   }
 
@@ -2131,7 +2133,7 @@ void fnToReal(uint16_t unusedButMandatoryParameter) {
 
     default: {
       displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "data type %s cannot be converted to a real34!", getRegisterDataTypeName(REGISTER_X, false, false));
         moreInfoOnError("In function fnToReal:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)

@@ -140,10 +140,12 @@ void fnNop(uint16_t unusedButMandatoryParameter) {
     }
     if(temporaryInformation == TI_LAST_CONST_CATNAME && (currentSolverStatus & 0x000F) != 0) {
       temporaryInformation = TI_NO_INFO;
-    } else
+    }
+    else
     if(func >= FIRST_CONSTANT && func <= LAST_CONSTANT && calcMode == CM_NORMAL) {
       temporaryInformation = TI_LAST_CONST_CATNAME;
-    } else
+    }
+    else
     if(calcMode == CM_NORMAL) {
       bool_t inMatrixMenu = (tam.mode == 0 ? softmenu[softmenuStack[0].softmenuId].menuItem : softmenu[softmenuStack[1].softmenuId].menuItem) == -MNU_MATX;
       switch(func) {
@@ -193,7 +195,7 @@ void fnNop(uint16_t unusedButMandatoryParameter) {
       if(lastErrorCode == ERROR_RAM_FULL) {
         if((indexOfItems[func].status & US_STATUS) == US_ENABLED || calcMode == CM_CONFIRMATION) {
           displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-          #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+          #if (EXTRA_INFO_ON_CALC_ERROR == 1)
             moreInfoOnError("In function reallyRunFunction:", "there is not enough memory to save for undo!", NULL, NULL);
           #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
           return;
@@ -201,7 +203,7 @@ void fnNop(uint16_t unusedButMandatoryParameter) {
         else {
           lastErrorCode = ERROR_NONE;
           temporaryInformation = TI_UNDO_DISABLED;
-          #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+          #if (EXTRA_INFO_ON_CALC_ERROR == 1)
             moreInfoOnError("In function reallyRunFunction:", "there is not enough memory to save for undo!", NULL, NULL);
           #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
         }
@@ -249,7 +251,8 @@ void fnNop(uint16_t unusedButMandatoryParameter) {
 
     if((programRunStop != PGM_RUNNING || timeLastOp0 == 0)) {               //The first manual command including XEQ (re)starts the timer by setting timeLastOp0
       LastOpTimerReStart(func);
-    } else if(func == ITM_LASTT) {                                          //If LASTT? is called in a program it laps the timer, but does not stop it. It is never stopped, only timeLastOp1 is set, and it is restarted only with a new command
+    }
+    else if(func == ITM_LASTT) {                                            //If LASTT? is called in a program it laps the timer, but does not stop it. It is never stopped, only timeLastOp1 is set, and it is restarted only with a new command
       LastOpTimerLap(func);                                                 //stores the last time to timeLastOp
     }
 
@@ -410,7 +413,7 @@ void fnNop(uint16_t unusedButMandatoryParameter) {
         }
         else {
           displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE, REGISTER_X);
-          #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+          #if (EXTRA_INFO_ON_CALC_ERROR == 1)
             sprintf(errorMessage, "string '%s' is not a named variable", varCatalogItem);
             moreInfoOnError("In function runFunction:", errorMessage, NULL, NULL);
           #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -425,7 +428,7 @@ void fnNop(uint16_t unusedButMandatoryParameter) {
         }
         else {
           displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
-          #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+          #if (EXTRA_INFO_ON_CALC_ERROR == 1)
             sprintf(errorMessage, "string '%s' is not a named label", varCatalogItem);
             moreInfoOnError("In function runFunction:", errorMessage, NULL, NULL);
           #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -3562,7 +3565,7 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 2252 */  { fnGetSystemFlag,              FLAG_FRCYC,                  "FRCYC",                                       "FRCYC",                                       (0 << TAM_MAX_BITS) |     0, CAT_SYFL | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2253 */  { fnGetSystemFlag,              FLAG_TVM_I_KNOWN,            "IKNOWN",                                      "IKNOWN",                                      (0 << TAM_MAX_BITS) |     0, CAT_SYFL | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2254 */  { fnGetSystemFlag,              FLAG_TVM_I_CHANGES,          "ICHNGS",                                      "ICHNGS",                                      (0 << TAM_MAX_BITS) |     0, CAT_SYFL | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
-/* 2255 */  { itemToBeCoded,                NOPARAM,                     "2255",                                        "2255",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 2255 */  { fnGetSystemFlag,              FLAG_HPCONV,                 "CONV" STD_SUB_H STD_SUB_P,                    "CONV" STD_SUB_H STD_SUB_P,                    (0 << TAM_MAX_BITS) |     0, CAT_SYFL | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2256 */  { itemToBeCoded,                NOPARAM,                     "2256",                                        "2256",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2257 */  { itemToBeCoded,                NOPARAM,                     "2257",                                        "2257",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2258 */  { itemToBeCoded,                NOPARAM,                     "2258",                                        "2258",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },

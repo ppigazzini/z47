@@ -134,15 +134,15 @@
 
 //Verbose STAT
   #define DEBUG_STAT                 0 // PLOT & STATS verbose level can be 0, 1 or 2 (more)
-  #if(DEBUG_STAT == 0)
+  #if (DEBUG_STAT == 0)
     #undef STATDEBUG
     #undef STATDEBUG_VERBOSE
     #endif // DEBUG_STAT == 0
-  #if(DEBUG_STAT == 1)
+  #if (DEBUG_STAT == 1)
     #define STATDEBUG
     #undef STATDEBUG_VERBOSE
     #endif // DEBUG_STAT == 1
-  #if(DEBUG_STAT == 2)
+  #if (DEBUG_STAT == 2)
     #define STATDEBUG
     #define STATDEBUG_VERBOSE
     #endif // DEBUG_STAT == 2
@@ -310,7 +310,7 @@
 #define SIMULATOR_ON_SCREEN_KEYBOARD 1 // Set to 0 if you don't want an onscreen keyboard in addition to the screen
 #define NARROW_SCREEN                1 // 400x1280 portrait screen
 
-#if(BIG_SCREEN_COEF > 1 && SIMULATOR_ON_SCREEN_KEYBOARD == 1)
+#if (BIG_SCREEN_COEF > 1 && SIMULATOR_ON_SCREEN_KEYBOARD == 1)
   #undef SIMULATOR_ON_SCREEN_KEYBOARD
   #define SIMULATOR_ON_SCREEN_KEYBOARD 0
 #endif // BIG_SCREEN_COEF > 1 && SIMULATOR_ON_SCREEN_KEYBOARD == 1
@@ -578,11 +578,12 @@
 #define FLAG_2TO10                            0x803D
 #define FLAG_SH_LONGPRESS                     0x803E
 #define FLAG_WRAPEDG                          0xc03F
-#define FLAG_MONIT                            0x8040 // MONIT MUST be the first of the secoind flag word
+#define FLAG_MONIT                            0x8040 // MONIT MUST be the first of the second flag word
 #define FLAG_FRCYC                            0x8041
 #define FLAG_TVM_I_KNOWN                      0xc042
 #define FLAG_TVM_I_CHANGES                    0xc043
-#define NUMBER_OF_SYSTEM_FLAGS                    68 // We can have a maximum of 128 system flags
+#define FLAG_HPCONV                           0x8044
+#define NUMBER_OF_SYSTEM_FLAGS                    69 // We can have a maximum of 128 system flags
 
 typedef enum {
   LI_ZERO     = 0, // Long integer sign 0
@@ -1051,7 +1052,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define X_ALPHA_MODE                             300
 #define X_SSIZE_BEGIN                            327
 #define X_HOURGLASS                              312
-#define X_ASM                                    X_ALPHA_MODE+34
+#define X_ASM                                    (X_ALPHA_MODE + 34)
 #define X_HOURGLASS_GRAPHS                       140
 #define X_WATCH                                  337
 #define X_SERIAL_IO                              353
@@ -1062,7 +1063,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define DY_BATTERY                                20  // >=3.045 V - maximum bars (tip of battery against the edge)
                                                       // f/g icon either in T-line left; or if date or time is removed, it moves up top left; or if SBAR_SHIFT is active, it goes top right, next to U
 #define X_SHIFT_L                                  0
-#define X_SHIFT_R                                X_USER_MODE-15
+#define X_SHIFT_R                                (X_USER_MODE - 15)
 #define X_SHIFT                                  (getSystemFlag(FLAG_SBshfR) ? X_SHIFT_R : X_SHIFT_L)
 #define Y_SHIFT                                  (((!SBARUPD_Date || !SBARUPD_Time) & !SBAR_SHIFT) ? 0 : (SBAR_SHIFT ? 0 : Y_POSITION_OF_REGISTER_T_LINE ) )
 
@@ -1236,7 +1237,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define TI_VERSION                                10
 #define TI_WHO                                    11
 #define TI_FALSE                                  12
-#define TI_TRUE                                   13
+#define TI_TRUE                                   13 // MUST be (TI_FALSE + 1)
 #define TI_SHOW_REGISTER                          14
 #define TI_VIEW_REGISTER                          15
 #define TI_SUMX_SUMY                              16
@@ -1335,6 +1336,8 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define TI_NO_INTEGRATE_VARIABLE                 108
 #define TI_FUNCTION                              109
 #define TI_STORCL                                110
+
+#define SET_TI_TRUE_FALSE(condition)               do { temporaryInformation = TI_FALSE + (condition); } while(0) // TI_TRUE must be TI_FALSE + 1
 
 // Register browser mode
 #define RBR_GLOBAL                                 0 // Global registers are browsed
@@ -1647,7 +1650,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 //******************************
 //* Macros replacing functions *
 //******************************
-#if(EXTRA_INFO_ON_CALC_ERROR == 0) || defined(TESTSUITE_BUILD) || defined(DMCP_BUILD)
+#if (EXTRA_INFO_ON_CALC_ERROR == 0) || defined(TESTSUITE_BUILD) || defined(DMCP_BUILD)
   #define EXTRA_INFO_MESSAGE(function, msg)
 #else // EXTRA_INFO_ON_CALC_ERROR != 0 && !TESTSUITE_BUILD && !DMCP_BUILD
   #define EXTRA_INFO_MESSAGE(function, msg)  do { sprintf(errorMessage, msg); moreInfoOnError("In function ", function, errorMessage, NULL); } while(0)

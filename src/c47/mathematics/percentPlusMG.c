@@ -45,7 +45,7 @@ static bool_t percentPlusMGReal(const real_t *xReal, const real_t *yReal, real_t
     }
     else {
       displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         moreInfoOnError("In function fnPercentPlusMG:", "cannot divide 0 by 0", NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return false;
@@ -57,7 +57,7 @@ static bool_t percentPlusMGReal(const real_t *xReal, const real_t *yReal, real_t
     }
     else {
       displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         moreInfoOnError("In function fnPercenPlusMG:", "cannot divide a real by 0", NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return false;
@@ -88,13 +88,13 @@ void fnPercentPlusMG(uint16_t unusedButMandatoryParameter) {
   real_t xReal, yReal;
   real_t rReal;
 
-  if (!getRegisterAsReal(REGISTER_X, &xReal) || !getRegisterAsReal(REGISTER_Y, &yReal))
+  if(!getRegisterAsReal(REGISTER_X, &xReal) || !getRegisterAsReal(REGISTER_Y, &yReal))
     return;
 
   if(!saveLastX())
     return;
 
-  if (!percentPlusMGReal(&xReal, &yReal, &rReal, &ctxtReal34))
+  if(!percentPlusMGReal(&xReal, &yReal, &rReal, &ctxtReal34))
     return;
 
   reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);

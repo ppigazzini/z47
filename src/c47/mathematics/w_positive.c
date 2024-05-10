@@ -35,7 +35,7 @@
 static void wPosReal(void) {
   real_t x, res, resi;
 
-  if (!getRegisterAsReal(REGISTER_X, &x))
+  if(!getRegisterAsReal(REGISTER_X, &x))
     return;
 
   if(realCompareGreaterEqual(&x, const__1oneE)) {
@@ -48,7 +48,7 @@ static void wPosReal(void) {
   }
   else {
     displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       moreInfoOnError("In function wPosReal:", "X < -e^(-1)", "and CPXRES is not set!", NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
@@ -57,7 +57,7 @@ static void wPosReal(void) {
 static void wPosCplx(void) {
   real_t xr, xi, resr, resi;
 
-  if (!getRegisterAsComplex(REGISTER_X, &xr, &xi))
+  if(!getRegisterAsComplex(REGISTER_X, &xr, &xi))
     return;
   WP34S_ComplexLambertW(&xr, &xi, &resr, &resi, &ctxtReal39);
   convertComplexToResultRegister(&resr, &resi, REGISTER_X);

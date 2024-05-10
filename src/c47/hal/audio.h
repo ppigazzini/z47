@@ -78,6 +78,6 @@
    */
   void fnPlay(uint16_t regist);
 
-  uint16_t getBeepVolume();
+  uint16_t getBeepVolume(void);
 
 #endif // !AUDIO_H

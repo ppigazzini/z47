@@ -72,7 +72,8 @@
           realToReal34(a, &a34);
           real34ToDisplayString(&a34, amNone, tmpString, &standardFont, 9999, 34, false, true);
           showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
-        } else {
+        }
+        else {
           realToReal34(a, &a34);
           realToReal34(ai, &ai34);
           real34ToDisplayString(&a34, amNone, tmpString, &standardFont, 9999, 34, false, true);
@@ -80,7 +81,8 @@
           uint32_t x = 0;
           if(real34CompareGreaterEqual(&ai34,const34_0)) {
             x = showString("+", &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
-          } else {
+          }
+          else {
             x = showString(" ", &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
           }
           real34ToDisplayString(&ai34, amNone, tmpString, &standardFont, 9999, 34, false, true);
@@ -132,7 +134,7 @@
         )
       ) {
       displayCalcErrorMessage(ERROR_BAD_INPUT, ERR_REGISTER_LINE, REGISTER_X);
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "Counter will not count to destination");
         moreInfoOnError("In function _programmableiSumProd:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -245,7 +247,7 @@
       }
       else {
         displayCalcErrorMessage(lastErrorCode, ERR_REGISTER_LINE, REGISTER_X);
-        #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           sprintf(errorMessage, "Error while calculating");
           moreInfoOnError("In function _programmableSumProd:", errorMessage, NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -265,46 +267,27 @@
 
     if(abort) {
     printHalfSecUpdate_Integer(force+0, "Loop aborted: ",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
-    } else {
-    printHalfSecUpdate_Integer(force+0, "Loop complete: ",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+    }
+    else {
+      printHalfSecUpdate_Integer(force+0, "Loop complete: ",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
     }
   }
 
 
 
   static void _checkArgument(uint16_t label, bool_t prod) {
-    if(label >= FIRST_LABEL && label <= LAST_LABEL) {
+    if(FIRST_LABEL <= label && label <= LAST_LABEL) {
       _programmableSumProd(label, prod);
     }
-    else if(label >= REGISTER_X && label <= REGISTER_T) {
+    else if(REGISTER_X <= label && label <= REGISTER_T) {
       // Interactive mode
-      char buf[4];
-      switch(label) {
-        case REGISTER_X: {
-          buf[0] = 'X';
-          break;
-        }
-        case REGISTER_Y: {
-          buf[0] = 'Y';
-          break;
-        }
-        case REGISTER_Z: {
-          buf[0] = 'Z';
-          break;
-        }
-        case REGISTER_T: {
-          buf[0] = 'T';
-          break;
-        }
-        default: { /* unlikely */
-          buf[0] = 0;
-        }
-      }
+      char buf[2];
+      buf[0] = letteredRegisterName((calcRegister_t)label);
       buf[1] = 0;
       label = findNamedLabel(buf);
       if(label == INVALID_VARIABLE) {
         displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
-        #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           sprintf(errorMessage, "string '%s' is not a named label", buf);
           moreInfoOnError("In function _checkArgument:", errorMessage, NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -315,7 +298,7 @@
     }
     else {
       displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "unexpected parameter %u", label);
         moreInfoOnError("In function _checkArgument:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)

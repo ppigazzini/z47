@@ -2310,7 +2310,7 @@
 #define SFL_FRCYC                   2252
 #define SFL_TVM_I_KNOWN             2253
 #define SFL_TVM_I_CHANGES           2254
-#define SFL_2251                    2255
+#define SFL_HPCONV                  2255
 #define SFL_2252                    2256
 #define SFL_2253                    2257
 #define SFL_2254                    2258

@@ -40,16 +40,17 @@
 static void arctanReal(void) {
   real_t x;
 
-  if (!getRegisterAsReal(REGISTER_X, &x))
+  if(!getRegisterAsReal(REGISTER_X, &x))
     return;
 
   if(realIsInfinite(&x)) {
     if(getSystemFlag(FLAG_SPCRES)) {
       realCopy(realIsPositive(&x) ? const_90 : const__90, &x);
       convertAngleFromTo(&x, amDegree, currentAngularMode, &ctxtReal39);
-  } else {
+  }
+  else {
       displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         moreInfoOnError("In function arctanReal:", "X = " STD_PLUS_MINUS STD_INFINITY, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return;
@@ -67,7 +68,7 @@ static void arctanReal(void) {
 static void arctanCplx(void) {
   real_t xReal, xImag, rReal, rImag;
 
-  if (!getRegisterAsComplex(REGISTER_X, &xReal, &xImag))
+  if(!getRegisterAsComplex(REGISTER_X, &xReal, &xImag))
     return;
 
   ArctanComplex(&xReal, &xImag, &rReal, &rImag, &ctxtReal39);

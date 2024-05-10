@@ -32,7 +32,7 @@
 static void erfReal(void) {
   real_t x;
 
-  if (!getRegisterAsReal(REGISTER_X, &x))
+  if(!getRegisterAsReal(REGISTER_X, &x))
     return;
   WP34S_Erf(&x, &x, &ctxtReal39);
   convertRealToResultRegister(&x, REGISTER_X, amNone);

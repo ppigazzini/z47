@@ -37,7 +37,7 @@
 #include <math.h>
 
 void fnPgmSlv(uint16_t label) {
-  if(label >= FIRST_LABEL && label <= LAST_LABEL) {
+  if(FIRST_LABEL <= label && label <= LAST_LABEL) {
     currentSolverProgram = label - FIRST_LABEL;
   }
   else if(REGISTER_X <= label && label <= REGISTER_T) {
@@ -48,7 +48,7 @@ void fnPgmSlv(uint16_t label) {
     label = findNamedLabel(buf);
     if(label == INVALID_VARIABLE) {
       displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "string '%s' is not a named label", buf);
         moreInfoOnError("In function fnPgmSlv:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -59,7 +59,7 @@ void fnPgmSlv(uint16_t label) {
   }
   else {
     displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "unexpected parameter %u", label);
       moreInfoOnError("In function fnPgmSlv:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -79,7 +79,7 @@ static bool_t _realSolverFirstGuesses(calcRegister_t regist, real34_t *val) {
 }
 
 void fnSolve(uint16_t labelOrVariable) {
-  if((labelOrVariable >= FIRST_LABEL && labelOrVariable <= LAST_LABEL) || (labelOrVariable >= REGISTER_X && labelOrVariable <= REGISTER_T)) {
+  if((FIRST_LABEL <= labelOrVariable && labelOrVariable <= LAST_LABEL) || (REGISTER_X <= labelOrVariable && labelOrVariable <= REGISTER_T)) {
     // Interactive mode
     fnPgmSlv(labelOrVariable);
     if(lastErrorCode == ERROR_NONE) {
@@ -87,23 +87,23 @@ void fnSolve(uint16_t labelOrVariable) {
     }
     adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
   }
-  else if(!(currentSolverStatus & SOLVER_STATUS_USES_FORMULA) && labelOrVariable >= FIRST_NAMED_VARIABLE && labelOrVariable <= LAST_NAMED_VARIABLE && currentSolverProgram >= numberOfLabels) {
+  else if(!(currentSolverStatus & SOLVER_STATUS_USES_FORMULA) && (FIRST_NAMED_VARIABLE <= labelOrVariable && labelOrVariable <= LAST_NAMED_VARIABLE) && currentSolverProgram >= numberOfLabels) {
     displayCalcErrorMessage(ERROR_NO_PROGRAM_SPECIFIED, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "label %u not found", labelOrVariable);
       moreInfoOnError("In function fnSolve:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
   }
-  else if(labelOrVariable >= FIRST_NAMED_VARIABLE && labelOrVariable <= LAST_NAMED_VARIABLE) {
+  else if(FIRST_NAMED_VARIABLE <= labelOrVariable && labelOrVariable <= LAST_NAMED_VARIABLE) {
     // Execute
     real34_t z, y, x;
     real_t tmp;
     int resultCode = 0;
 
     if(_realSolverFirstGuesses(REGISTER_Y, &y) && _realSolverFirstGuesses(REGISTER_X, &x)) {
-      fnDrop(0);
-      fnDrop(0);
+      fnDrop(NOPARAM);
+      fnDrop(NOPARAM);
       saveForUndo(); //repeat after dropping the input parameters
       currentSolverVariable = labelOrVariable;
       resultCode = solver(labelOrVariable, &y, &x, &z, &y, &x);
@@ -164,7 +164,7 @@ void fnSolve(uint16_t labelOrVariable) {
   }
   else {
     displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "unexpected parameter %u", labelOrVariable);
       moreInfoOnError("In function fnSolve:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -434,7 +434,7 @@ int solver(calcRegister_t variable, const real34_t *y, const real34_t *x, real34
 
 
 
-      if (printHalfSecUpdate_Integer(timed, "Iter: ",loop++, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
+      if(printHalfSecUpdate_Integer(timed, "Iter: ",loop++, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
         _showProgress(&a, &b, &fa, &fb);
       }
 

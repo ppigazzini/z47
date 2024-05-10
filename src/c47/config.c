@@ -177,7 +177,9 @@ TO_QSPI const int32_t Settings[] = {
 //FLAG,       set/clear, Reset                        HP35            JM             RJ                         C47           DefltSB
        3,      0,        FLAG_FRCYC        ,          xxx,            xxx,           xxx,                       xxx,          xxx,          xxx,  //clearSystemFlag(FLAG_FRCYC);
        3,      1,        FLAG_MONIT        ,          xxx,            xxx,           xxx,                       xxx,          xxx,          xxx,  //setSystemFlag(FLAG_MONIT);
-       3,      1,        FLAG_SH_LONGPRESS ,          xxx,            xxx,           xxx,                       xxx,          xxx,          xxx,  //setSystemFlag(FLAG_SH_LONGPRESS);
+       3,      0,        xxx               ,          xxx,            FLAG_HPCONV,   FLAG_HPCONV,               xxx,          xxx,          xxx,  //clearSystemFlag(FLAG_HPCONV);
+       3,      1,        FLAG_HPCONV       ,          xxx,            xxx,           xxx,                       xxx,          xxx,          xxx,  //setSystemFlag(FLAG_HPCONV);
+       3,      1,        FLAG_SH_LONGPRESS ,          xxx,        FLAG_SH_LONGPRESS, FLAG_SH_LONGPRESS,         xxx,          xxx,          xxx,  //setSystemFlag(FLAG_SH_LONGPRESS);
 
        3,      0,        xxx,                         xxx,            FLAG_USER,     FLAG_USER,                 xxx,          xxx        ,  xxx,  //clearSystemFlag
        3,      1,        FLAG_SBdate,                 xxx,            xxx,           xxx,                       xxx,          FLAG_SBdate,  xxx,  //setSystemFlag
@@ -362,27 +364,13 @@ void Sett(int16_t grp) {
 
 
   void fnSetJM(uint16_t unusedButMandatoryParameter){
-    fnDrop(0);
+    fnDrop(NOPARAM);
     fnSquare(0);
     resetOtherConfigurationStuff();
     getDateString(lastStateFileOpened);
     strcat(lastStateFileOpened,": Jaco defaults");
 
-
-    //---    defaultStatusBar();
     Sett(_JM);
-    //---    fnClearFlag    (FLAG_USER);              // Clear USER mode
-    //---    clearSystemFlag(FLAG_HPRP  );            // Clear HP Rect/Polar
-    //---    setSystemFlag  (FLAG_HPBASE);            // Set HP Base
-    //---    clearSystemFlag(FLAG_2TO10 );
-    //---    clearSystemFlag(FLAG_POLAR );            // Set rectangular default
-    //---    SetSetting     (SS_8);                   // SSTACK 8
-    //---    SetSetting     (ITM_CPXRES1);            // Set CPXRES
-    //---    SetSetting     (ITM_SPCRES1);            // Set SPCRES
-    //---    setSystemFlag  (FLAG_CPXj);              // Set j
-    //---    setSystemFlag  (FLAG_SBbatV);            // Set battery voltage indicator
-    //---    fnDisplayFormatSigFig(3);                // SIG 3
-    //---    setSystemFlag(FLAG_FRCSRN);              // Display
 
     roundingMode = RM_HALF_UP;
     fnKeysManagement(USER_MC47);
@@ -395,7 +383,6 @@ void Sett(int16_t grp) {
 
     cachedDynamicMenu = 0;
 
-    setSystemFlag(FLAG_SH_LONGPRESS);
     temporaryInformation = TI_NO_INFO;
     fnRefreshState();
     screenUpdatingMode = SCRUPD_AUTO;
@@ -408,34 +395,14 @@ void Sett(int16_t grp) {
     getDateString(lastStateFileOpened);
     strcat(lastStateFileOpened,": RJvM defaults");
 
-    //---    defaultStatusBar();
     Sett(_RJ);
-    //---    currentAngularMode = amRadian;                 // RAD
-    //---    clearSystemFlag(FLAG_HPRP);                    // HP.RP off
-    //---    clearSystemFlag(FLAG_HPBASE);                  // Clear HP Base
-    //---    clearSystemFlag(FLAG_2TO10);
-    //---    denMax = 9999;                                 // DMX 9999
-    //---    constantFractions = false;
-    //---    SetSetting(JC_IRFRAC); // IRFRAC ON (also setting the fractions modes appropriately)
-    //---    setSystemFlag(FLAG_DENANY);                    // DENANY ON
-    //---       setSystemFlag(FLAG_SBbatV );                // SBbatV ON
-    //---     clearSystemFlag(FLAG_SBclk  );                // SBclk OFF
-    //---       setSystemFlag(FLAG_SBcr   );                // SBcr ON
-    //---     clearSystemFlag(FLAG_SBint  );                // SBint OFF
-    //---       setSystemFlag(FLAG_SBmx   );                // SBmx ON
-    //---    fnDisplayFormatFix(3);                        // FIX 3
-    //---     fnSetGapChar(0+    ITM_SPACE_4_PER_EM);       // IPART NSPC
-    //---     fnSetGapChar(32768+ITM_NULL);                 // FPART NONE
-    //---     fnSetGapChar(49152+ITM_WCOMMA);               // RADIX WCOM
-    //---     grpGroupingGr1LeftOverflow = 1;               //IPGRP1x = 1
 
-     setSystemFlag(FLAG_SH_LONGPRESS);
-     fnKeyExit(0);
-     fnDrop(0);
-     fnSquare(0);
-     fnRefreshState();
-     screenUpdatingMode = SCRUPD_AUTO;
-     refreshScreen(165);
+    fnKeyExit(0);
+    fnDrop(NOPARAM);
+    fnSquare(0);
+    fnRefreshState();
+    screenUpdatingMode = SCRUPD_AUTO;
+    refreshScreen(165);
     }
 
 
@@ -446,34 +413,12 @@ void Sett(int16_t grp) {
     strcat(lastStateFileOpened,": C47 defaults");
 
     Sett(_C47);
-    //---    fnInDefault(ID_43S);                     //!ID
-    //---    fnDisplayFormatAll(3);
-    //---    BASE_MYM = true;
-    //---    BASE_HOME = false;
-    //---    exponentLimit     = 6145;                //!ID
-    //---    significantDigits = 34;                  //!ID
-    //---    displayStack = cachedDisplayStack = 4;   //!ID
-    //---    currentAngularMode = amDegree;
-    //---    SetSetting(SS_8);
-    //---    SetSetting(ITM_CPXRES1);
-    //---    SetSetting(ITM_SPCRES1);
-    //---    clearSystemFlag(FLAG_CPXj);
-    //---    fneRPN(1); //eRPN
-    //---    setFGLSettings(RB_FGLNFUL); //fgLine ON
-    //---    grpGroupingLeft            = configSettings[CFG_DFLT].gprl ;
-    //---    grpGroupingGr1LeftOverflow = configSettings[CFG_DFLT].gpr1x;
-    //---    grpGroupingGr1Left         = configSettings[CFG_DFLT].gpr1 ;
-    //---    grpGroupingRight           = configSettings[CFG_DFLT].gprr ;
-    //---    fnSetGapChar (0 + configSettings[CFG_DFLT].gapl);
-    //---    fnSetGapChar (32768+configSettings[CFG_DFLT].gapr);
-    //---    fnSetGapChar (49152+configSettings[CFG_DFLT].gaprx);
-    //---    fnClearFlag(FLAG_USER);                    //Set USER mode
 
     temporaryInformation = TI_NO_INFO;
     fnRefreshState();
 
-    fnDrop(0);
-    fnDrop(0);
+    fnDrop(NOPARAM);
+    fnDrop(NOPARAM);
     runFunction(ITM_SQUARE);
     screenUpdatingMode = SCRUPD_AUTO;
     refreshScreen(162);
@@ -521,7 +466,8 @@ void fnClrMod(uint16_t unusedButMandatoryParameter) {        //clear input buffe
     fnExitAllMenus(0);
     if(!checkHP) {
       fnDisplayStack(4);    //Restore to default DSTACK 4
-    } else {                //Snap out of HP35 mode, and reset all setting needed for that
+    }
+    else {                //Snap out of HP35 mode, and reset all setting needed for that
       _fnSetC47(0);
       fnRecallConfig(35);
       lastErrorCode = 0;
@@ -545,27 +491,30 @@ void fnSetGapChar (uint16_t charParam) {
   //printf(">>>> charParam=%u %u \n", charParam, charParam & 16383);
   if((charParam & 49152) == 0) {                        //+0 for the left hand separator
     gapItemLeft = charParam & 16383;
-  } else
-  if((charParam & 49152) == 32768) {                        //+32768 for the right hand separator
+  }
+  else if((charParam & 49152) == 32768) {                        //+32768 for the right hand separator
     gapItemRight = charParam & 16383;
-  } else
-  if((charParam & 49152) == 49152) {                        //+49152 for the radix separator
+  }
+  else if((charParam & 49152) == 49152) {                        //+49152 for the radix separator
     gapItemRadix = charParam & 16383;
   }
-//printf("LT=%s RT=%s RX=%s\n",Lt, Rt, Rx);
-//printf("Post: gapCharL0=%u gapCharL1=%u gapCharR0=%u gapCharR1=%u gapCharRx0=%u gapCharRx1%u  \n", (uint8_t)gapChar1Left[0], (uint8_t)gapChar1Left[1], (uint8_t)gapChar1Right[0], (uint8_t)gapChar1Right[1],  (uint8_t)gapChar1Radix[0], (uint8_t)gapChar1Radix[1]);
+  //printf("LT=%s RT=%s RX=%s\n",Lt, Rt, Rx);
+  //printf("Post: gapCharL0=%u gapCharL1=%u gapCharR0=%u gapCharR1=%u gapCharRx0=%u gapCharRx1%u  \n", (uint8_t)gapChar1Left[0], (uint8_t)gapChar1Left[1], (uint8_t)gapChar1Right[0], (uint8_t)gapChar1Right[1],  (uint8_t)gapChar1Radix[0], (uint8_t)gapChar1Radix[1]);
 }
 
 
 void fnSettingsDispFormatGrpL   (uint16_t param) {
   grpGroupingLeft = param;
 }
+
 void fnSettingsDispFormatGrp1Lo  (uint16_t param) {
   grpGroupingGr1LeftOverflow = param;
 }
+
 void fnSettingsDispFormatGrp1L  (uint16_t param) {
   grpGroupingGr1Left = param;
 }
+
 void fnSettingsDispFormatGrpR   (uint16_t param) {
   grpGroupingRight = param;
 }
@@ -837,7 +786,8 @@ void fnFractionType(uint16_t unusedButMandatoryParameter) {
     if(!getSystemFlag(FLAG_FRACT) && constantFractions && !constantFractionsOn) { // 10x0 --> 11x0 A
       constantFractionsOn = true;
       return;
-    } else {
+    }
+    else {
       if(!constantFractions && !getSystemFlag(FLAG_FRACT)) {                      // 0xx0 --> 0xx1 B
         flipSystemFlag(FLAG_FRACT);
         return;
@@ -850,7 +800,8 @@ void fnFractionType(uint16_t unusedButMandatoryParameter) {
       case STATE_exfr_abc    : state = STATE_exfr_bc;   break;                    // 0b1110 -->
       default                : state = STATE_abc;       break;                    //
     }
-  } else {
+  }
+  else {
     switch(state) {
       case STATE_bc          : state = STATE_exfr_bc;   break;                    // 0b0001 -->
       case STATE_abc         : state = STATE_exfr_abc;  break;                    // 0b0011 -->
@@ -863,8 +814,8 @@ void fnFractionType(uint16_t unusedButMandatoryParameter) {
   }
   constantFractions   = (state & 8) ? true : false;
   constantFractionsOn = (state & 4) ? true : false;
-  if (((state & 2) == 2) == !getSystemFlag(FLAG_PROPFR)) flipSystemFlag(FLAG_PROPFR);
-  if (((state & 1) == 1) == !getSystemFlag(FLAG_FRACT)) flipSystemFlag(FLAG_FRACT);
+  if(((state & 2) == 2) == !getSystemFlag(FLAG_PROPFR)) flipSystemFlag(FLAG_PROPFR);
+  if(((state & 1) == 1) == !getSystemFlag(FLAG_FRACT)) flipSystemFlag(FLAG_FRACT);
   //printf("--> %u --> %u\n",state, STATE);
 }
 
@@ -1030,7 +981,8 @@ void fnClAll(uint16_t confirmation) {
 
     if(MODEL == USER_R47) {
       fnRESET_MyM(USER_MR47);                  // Reset Menu MyMenu
-    } else {
+    }
+    else {
       fnRESET_MyM(USER_MC47);                  // Reset Menu MyMenu
     }
 
@@ -1245,23 +1197,8 @@ void fnResetTVM (uint16_t unusedButMandatoryParameter) {
 
 void defaultStatusBar(void) {
   Sett(_DefltSB);
-  //---     setSystemFlag(FLAG_SBdate );  // FLAG_SBdate  0x802C
-  //---   clearSystemFlag(FLAG_SBtime );  // FLAG_SBtime  0x802D
-  //---   clearSystemFlag(FLAG_SBcr   );  // FLAG_SBcr    0x802E
-  //---     setSystemFlag(FLAG_SBcpx  );  // FLAG_SBcpx   0x802F
-  //---   clearSystemFlag(FLAG_SBang  );  // FLAG_SBang   0x8030
-  //---     setSystemFlag(FLAG_SBfrac );  // FLAG_SBfrac  0x8031
-  //---     setSystemFlag(FLAG_SBint  );  // FLAG_SBint   0x8032
-  //---   clearSystemFlag(FLAG_SBmx   );  // FLAG_SBmx    0x8033
-  //---     setSystemFlag(FLAG_SBtvm  );  // FLAG_SBtvm   0x8034
-  //---     setSystemFlag(FLAG_SBoc   );  // FLAG_SBoc    0x8035
-  //---   clearSystemFlag(FLAG_SBss   );  // FLAG_SBss    0x8036
-  //---     setSystemFlag(FLAG_SBclk  );  // FLAG_SBclk   0x8037
-  //---     setSystemFlag(FLAG_SBser  );  // FLAG_SBser   0x8038
-  //---     setSystemFlag(FLAG_SBprn  );  // FLAG_SBprn   0x8039
-  //---   clearSystemFlag(FLAG_SBbatV );  // FLAG_SBbatV  0x803A
-  //---   clearSystemFlag(FLAG_SBshfR );  // FLAG_SBshfR  0x803B
 }
+
 
 void resetOtherConfigurationStuff(void) {
   cancelFilename = true;
@@ -1541,24 +1478,8 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
 
 Sett(_Reset);
     //Statusbar default setup   DATE noTIME noCR noANGLE [ADM] FRAC INT MATX TVM CARRY noSS WATCH SERIAL PRN BATVOLT noSHIFTR
-//---    defaultStatusBar();
 
     configCommon(CFG_DFLT);
-
-//---    clearSystemFlag(FLAG_FRACT );                                //Not saved in file, but restored here:  fnDisplayFormatAll(3);
-//---    setSystemFlag  (FLAG_DENANY); //overridden later
-//---    setSystemFlag  (FLAG_MULTx );
-//---    setSystemFlag  (FLAG_AUTOFF);
-//---    setSystemFlag  (FLAG_ASLIFT); //overridden later
-//---    setSystemFlag  (FLAG_PROPFR);
-//---    setSystemFlag  (FLAG_ENDPMT);// TVM application = END mode
-//---    setSystemFlag  (FLAG_HPRP  );
-//---    setSystemFlag  (FLAG_HPBASE);
-//---    clearSystemFlag(FLAG_2TO10 );
-//---    clearSystemFlag(FLAG_FRCYC );
-//---    setSystemFlag(FLAG_MONIT   );
-//---    setSystemFlag(FLAG_SH_LONGPRESS);
-
 
     hourGlassIconEnabled = false;
     watchIconEnabled = false;
@@ -1624,11 +1545,6 @@ Sett(_Reset);
     initUserKeyArgument();
 
     fnClearMenu(NOPARAM);
-//---    clearSystemFlag(FLAG_DENANY);                              //JM Default
-//---    clearSystemFlag(FLAG_ASLIFT);  //JM??
-//---    setSystemFlag(FLAG_SSIZE8);                                //JM Default
-//---    setSystemFlag(FLAG_CPXRES);                                //JM Default
-//---    clearSystemFlag(FLAG_FRCSRN);  //JM??                      //JM Default
 
     #if !defined(TESTSUITE_BUILD)
       calcModeNormal();
@@ -1636,8 +1552,6 @@ Sett(_Reset);
     #endif // !TESTSUITE_BUILD
 
     showRegis = 9999;                                          //JMSHOW
-
-    //JM defaults vv: CONFIG STO/RCL
 
     graph_xmin = -3*3.14159265;                                //JM GRAPH
     graph_xmax = -graph_xmin;                                  //JM GRAPH
@@ -1648,19 +1562,12 @@ Sett(_Reset);
 
     running_program_jm=false;                                  //JM program is running flag
 
-//---    setSystemFlag(FLAG_SPCRES);                                //JM default infinity etc.
-//---    clearSystemFlag(FLAG_DENFIX);                              //JM default
-
     ListXYposition = 0;
-
-     //JM defaults ^^
-
                                                                //Find fnXEQMENU in the indexOfItems array
     fnXEQMENUpos = 0;
     while(indexOfItems[fnXEQMENUpos].func != fnXEQMENU) {
        fnXEQMENUpos++;
     }
-
                                                                //Reset XEQM
     uint16_t ix;
     ix = 0;
@@ -1690,7 +1597,8 @@ Sett(_Reset);
 
     if(MODEL == USER_R47) {
       fnKeysManagement(USER_MR47);                  // Reset Menu MyMenu Ribbon
-    } else {
+    }
+    else {
       fnKeysManagement(USER_MC47);                  // Reset Menu MyMenu Ribbon
     }
 
@@ -1753,7 +1661,7 @@ Sett(_Reset);
     timerStartTime         = TIMER_APP_STOPPED;
     timerTotalTime         = 0u;
 
-    #if(DEBUG_PANEL == 1)
+    #if (DEBUG_PANEL == 1)
       debugWindow = DBG_REGISTERS;
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(chkHexaString), false);
       refreshDebugPanel();
@@ -1769,12 +1677,12 @@ Sett(_Reset);
     for(uint_fast16_t i=0; i<n; i++) {
       if( indexOfStrings[i].itemType== 0) {
         fnStrtoX(indexOfStrings[i].itemName);
-      } else
-      if( indexOfStrings[i].itemType== 1) {
+      }
+      else if( indexOfStrings[i].itemType== 1) {
         fnStrInputLongint(indexOfStrings[i].itemName);
       }
       fnStore(indexOfStrings[i].count);
-      fnDrop(0);
+      fnDrop(NOPARAM);
     }
 
 
@@ -1825,20 +1733,22 @@ Sett(_Reset);
       if(tmpVbat < vbatVIntegrated) {
         vbatVIntegrated = tmpVbat;                                                        //immediately assume the lowest possibe value measured
         loop = 0;
-      } else
-      if(tmpVbat > vbatVIntegrated) {
+      }
+      else if(tmpVbat > vbatVIntegrated) {
         #ifndef MONITOR_VOLTAGE_INTEGRATOR
           //During monitoring do not force a reset to normal and high voltage
           if(tmpVbat > 2900) {                                                           //if high enough, reset
             vbatVIntegrated = tmpVbat;
           loop = 0;
-          } else
+          }
+          else
         #endif
         if(vbatVIntegrated < tmpVbat && minutePulse) {                                    // Every min if vbatTIntegrated is lower than actual V, then creep closer
           vbatVIntegrated = vbatVIntegrated + max(1,((tmpVbat - vbatVIntegrated) >> 4));  //   (2500 - 2350) >> 4 = 9 increase every minute
         }
       }
-    } else {
+    }
+    else {
       vbatVIntegrated = tmpVbat;
       loop = 0;
     }
@@ -1853,8 +1763,8 @@ Sett(_Reset);
         uint8_t min = rtc_read_min();
         convertDoubleToReal34RegisterPush((double)min, REGISTER_X);
         fnSigma(1);
-        fnDrop(0);
-        fnDrop(0);
+        fnDrop(NOPARAM);
+        fnDrop(NOPARAM);
       }
     #endif
 

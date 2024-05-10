@@ -248,12 +248,13 @@ typedef struct {
           if(addChar0[0] == 0) {
             if(item != ITM_EQUAL) {       //block the entry of "="
               stringAppend(addChar,indexOfItems[item].itemSoftmenuName);
-              if ((indexOfItems[item].itemSoftmenuName[0]!=0) && (indexOfItems[item].status & EIM_STATUS) == EIM_ENABLED) {
+              if((indexOfItems[item].itemSoftmenuName[0]!=0) && (indexOfItems[item].status & EIM_STATUS) == EIM_ENABLED) {
                 stringAppend(addChar + stringByteLength(addChar), "()");
                 jj = 1;
               }
             }
-          } else {
+          }
+          else {
             stringAppend(addChar,addChar0);
             if(addChar0[0] == '^') {
               if(scrLock == NC_SUPERSCRIPT) {
@@ -274,8 +275,9 @@ typedef struct {
           }
           xcopy(aimCursorPos, addChar, itemLen);
           if(jj != 0) {
-              xCursor += stringGlyphLength(addChar) - jj;
-          } else {
+            xCursor += stringGlyphLength(addChar) - jj;
+          }
+          else {
             switch(item) {
               case ITM_poly_SIGN: {
                 xCursor += 0;
@@ -396,7 +398,9 @@ typedef struct {
             light_ASB_icon();
           #endif // !TESTSUITE_BUILD
         }
-        if (calcMode == CM_PEM) hourGlassIconEnabled = false;
+        if(calcMode == CM_PEM) {
+          hourGlassIconEnabled = false;
+        }
       }
 
       else if(tam.mode) {
@@ -1523,7 +1527,7 @@ typedef struct {
             if(lastErrorCode == ERROR_RAM_FULL) {
               lastErrorCode = 0;
               temporaryInformation = TI_UNDO_DISABLED;
-              #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+              #if (EXTRA_INFO_ON_CALC_ERROR == 1)
                 moreInfoOnError("In function addItemToNimBuffer:", "there is not enough memory to save for undo!", NULL, NULL);
               #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
             }
@@ -1538,7 +1542,7 @@ typedef struct {
           if(lastErrorCode == ERROR_RAM_FULL) {
             lastErrorCode = 0;
             temporaryInformation = TI_UNDO_DISABLED;
-            #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+            #if (EXTRA_INFO_ON_CALC_ERROR == 1)
               moreInfoOnError("In function addItemToNimBuffer:", "there is not enough memory to save for undo!", NULL, NULL);
             #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
           }
@@ -1569,7 +1573,8 @@ typedef struct {
         if(INTEGERSHORTCUTS && nimNumberPart == NP_INT_BASE && aimBuffer[strlen(aimBuffer) - 1] == '#') {
           strcat(aimBuffer, "2");
           goto addItemToNimBuffer_exit;
-        } else {
+        }
+        else {
           keyActionProcessed = false;
         }
         break;
@@ -1583,7 +1588,8 @@ typedef struct {
         if(INTEGERSHORTCUTS && nimNumberPart == NP_INT_BASE && aimBuffer[strlen(aimBuffer) - 1] == '#') {
           strcat(aimBuffer, "10");
           goto addItemToNimBuffer_exit;
-        } else {
+        }
+        else {
           keyActionProcessed = false;
         }
         break;
@@ -1593,7 +1599,8 @@ typedef struct {
         if(INTEGERSHORTCUTS && nimNumberPart == NP_INT_BASE && aimBuffer[strlen(aimBuffer) - 1] == '#') {
           strcat(aimBuffer, "16");
           goto addItemToNimBuffer_exit;
-        } else {
+        }
+        else {
           keyActionProcessed = false;
         }
         break;
@@ -1604,7 +1611,8 @@ typedef struct {
           aimBuffer[strlen(aimBuffer)-1]=0;
           nimNumberPart = NP_INT_10;
           goto addItemToNimBuffer_exit;
-        } else {
+        }
+        else {
           keyActionProcessed = false;
         }
         break;
@@ -2094,7 +2102,8 @@ typedef struct {
     if(!getSystemFlag(FLAG_FRACT)) {
       setSystemFlag(FLAG_FRACT);          //1     //NOTE CHANGE HERE TO SWITCH OFF AUTO FRAC MODE AFTER FRACTION INPUT
       //changeFractionModeOnENTER = true; //2     //USE either //1 or //2
-    } else {
+    }
+    else {
       changeFractionModeOnENTER = false;
     }
     constantFractionsOn = false;
@@ -2112,7 +2121,7 @@ typedef struct {
     for(i=1; i<posSpace; i++) {
       if(aimBuffer[i]<'0' || aimBuffer[i]>'9') { // This should never happen
         displayCalcErrorMessage(ERROR_BAD_INPUT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-        #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           moreInfoOnError("In function parseNimString:", "there is a non numeric character in the integer part of the fraction!", NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
         return;
@@ -2130,7 +2139,7 @@ typedef struct {
     for(i=posSpace+1; i<posSlash; i++) {
       if(aimBuffer[i]<'0' || aimBuffer[i]>'9') { // This should never happen
        displayCalcErrorMessage(ERROR_BAD_INPUT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-       #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
          moreInfoOnError("In function parseNimString:", "there is a non numeric character in the numerator part of the fraction!", NULL, NULL);
        #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
        return;
@@ -2141,7 +2150,7 @@ typedef struct {
       for(i=posSlash+1; i<lg; i++) {
         if(aimBuffer[i]<'0' || aimBuffer[i]>'9') {
           displayCalcErrorMessage(ERROR_BAD_INPUT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-          #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+          #if (EXTRA_INFO_ON_CALC_ERROR == 1)
             moreInfoOnError("In function parseNimString:", "there is a non numeric character in the denominator part of the fraction!", NULL, NULL);
           #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
           return;
@@ -2165,7 +2174,7 @@ typedef struct {
 
     if(denom == 0 && !getSystemFlag(FLAG_SPCRES)) {
       displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         moreInfoOnError("In function parseNimString:", "the denominator of the fraction should not be 0!", "Unless D flag (Danger) is set.", NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return;
@@ -2286,8 +2295,8 @@ typedef struct {
         if((is_i || is_theta) && !getSystemFlag(FLAG_POLAR)) { // complex i
           aimBuffer[++lastChar] = '1';                                                   //JM 2020-06-22 CHANGED FROM "1" to "0". DEFAULTING TO 0+0xi WHEN ABORTING CC ENTRY. #6072aee
           aimBuffer[lastChar + 1] = 0;                                                   //JM 2023-09-18 reverted partially (for RECT) from "0" to "1", specifically for a blank i
-        } else
-        if((is_i || is_theta) && getSystemFlag(FLAG_POLAR)) { // complex measured angle
+        }
+        else if((is_i || is_theta) && getSystemFlag(FLAG_POLAR)) { // complex measured angle
           aimBuffer[++lastChar] = '0';                                                   //JM 2020-06-22 CHANGED FROM "1" to '0'. DEFAULTING TO 0+0xi WHEN ABORTING CC ENTRY. #6072aee
           aimBuffer[lastChar + 1] = 0;
         }
@@ -2324,7 +2333,7 @@ typedef struct {
               if(aimBuffer[i]<'0' || aimBuffer[i]>'9') {
                 // This should never happen
                 displayCalcErrorMessage(ERROR_INVALID_INTEGER_INPUT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-                #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+                #if (EXTRA_INFO_ON_CALC_ERROR == 1)
                   moreInfoOnError("In function closeNIM:", "there is a non numeric character in the base of the integer!", NULL, NULL);
                 #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
                 return;
@@ -2334,7 +2343,7 @@ typedef struct {
             base = stringToInt32(aimBuffer + posHash + 1);
             if(base < 2 || base > 16) {
               displayCalcErrorMessage(ERROR_INVALID_INTEGER_INPUT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-              #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+              #if (EXTRA_INFO_ON_CALC_ERROR == 1)
                moreInfoOnError("In function closeNIM:", "the base of the integer must be from 2 to 16!", NULL, NULL);
               #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
               return;
@@ -2343,7 +2352,7 @@ typedef struct {
             for(i=aimBuffer[0] == '-' ? 1 :0; i<posHash; i++) {
               if((aimBuffer[i] > '9' ? aimBuffer[i] - 'A' + 10 :aimBuffer[i] - '0') >= base) {
                 displayCalcErrorMessage(ERROR_INVALID_INTEGER_INPUT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-                #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+                #if (EXTRA_INFO_ON_CALC_ERROR == 1)
                   sprintf(errorMessage, "digit %c is not allowed in base %d!", aimBuffer[i], base);
                   moreInfoOnError("In function closeNIM:", errorMessage, NULL, NULL);
                 #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -2395,7 +2404,7 @@ typedef struct {
 
             if(longIntegerCompare(value, minVal) < 0 || longIntegerCompare(value, maxVal) > 0) {
               displayCalcErrorMessage(ERROR_WORD_SIZE_TOO_SMALL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-              #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+              #if (EXTRA_INFO_ON_CALC_ERROR == 1)
                 char strMin[22], strMax[22];
                 longIntegerToAllocatedString(minVal, strMin, sizeof(strMin));
                 longIntegerToAllocatedString(maxVal, strMax, sizeof(strMax));

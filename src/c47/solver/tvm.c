@@ -122,7 +122,7 @@ void fnTvmVar(uint16_t variable) {
           }
           else {
             displayCalcErrorMessage(ERROR_NO_ROOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
-            #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+            #if (EXTRA_INFO_ON_CALC_ERROR == 1)
               moreInfoOnError("In function fnTvmVar:", "cannot compute TVM equation", "with current parameters", NULL);
             #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
           }
@@ -134,7 +134,7 @@ void fnTvmVar(uint16_t variable) {
           fnToReal(NOPARAM);
           if(lastErrorCode == ERROR_NONE) {
             reallyRunFunction(ITM_STO, variable);
-            if (variable == RESERVED_VARIABLE_PPERONA) {
+            if(variable == RESERVED_VARIABLE_PPERONA) {
               reallyRunFunction(ITM_STO, RESERVED_VARIABLE_CPERONA);
             }
             currentSolverStatus |= SOLVER_STATUS_READY_TO_EXECUTE;
@@ -205,7 +205,7 @@ void tvmEquation(void) {
     these iterations pass much more quickly. So I do need to do something here.
    */
 
-  if ( (!getSystemFlag(FLAG_TVM_I_KNOWN)) || (getSystemFlag(FLAG_TVM_I_CHANGES)) ) { // if i hasn't been found yet or i changes each time
+  if((!getSystemFlag(FLAG_TVM_I_KNOWN)) || (getSystemFlag(FLAG_TVM_I_CHANGES))) { // if i hasn't been found yet or i changes each time
     realDivide(&iA, const_100, &i, &ctxtReal39);
     realDivide(&i, &pperA, &i, &ctxtReal39);
     // i is now (iA / 100) / pperA.
@@ -213,11 +213,11 @@ void tvmEquation(void) {
 
     realDivide(&cperA, &pperA, &r, &ctxtReal39); // r = cperA / pperA
 
-    if ( !(realIsZero (&r) || realCompareEqual(const_1, &r)) ) { // not normal case
+    if(!(realIsZero(&r) || realCompareEqual(const_1, &r)) ) { // not normal case
       realDivide(&i, &r, &i, &ctxtReal39);
-      realAdd (&i, const_1, &i, &ctxtReal39);
-      realPower (&i, &r, &i, &ctxtReal39);
-      realSubtract (&i, const_1, &i, &ctxtReal39); // i = (1 + (i/pperA)/r)^r - 1
+      realAdd(&i, const_1, &i, &ctxtReal39);
+      realPower(&i, &r, &i, &ctxtReal39);
+      realSubtract(&i, const_1, &i, &ctxtReal39); // i = (1 + (i/pperA)/r)^r - 1
     }
     setSystemFlag(FLAG_TVM_I_KNOWN);
   }

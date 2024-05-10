@@ -990,7 +990,7 @@ void WP34S_Ln1P(const real_t *x, real_t *res, realContext_t *realContext) {
 void WP34S_ExpM1(const real_t *x, real_t *res, realContext_t *realContext) {
   real_t u, v, w;
 
-  if (!realExpLimitCheck(x, res, const__1)) {
+  if(!realExpLimitCheck(x, res, const__1)) {
     return;
   }
 
@@ -1002,11 +1002,12 @@ void WP34S_ExpM1(const real_t *x, real_t *res, realContext_t *realContext) {
   else if(realCompareEqual(&v, const__1)) {
     realCopy(const__1, res);
   }
-  else if (realCompareAbsLessThan(x, const_1on10)) {
+  else if(realCompareAbsLessThan(x, const_1on10)) {
     realMultiply(&v, x, &w, realContext);
     WP34S_Ln(&u, &v, realContext);
     realDivide(&w, &v, res, realContext);
-  } else {
+  }
+  else {
     realCopy(&v, res);
   }
 }
@@ -1721,11 +1722,12 @@ void WP34S_ComplexLambertW(const real_t *xReal, const real_t *xImag, real_t *res
   realCopy(xReal, &zr), realCopy(xImag, &zi);
   realCopy(const_1, &wr), realCopy(const_1, &wi);
   realAdd(xReal, const_1, &pr, realContext), realCopy(xImag, &pi);
-  if (realIsZero(&zi) && realIsNegative(&zr) && realCompareGreaterEqual(&zr, const__1)) {
+  if(realIsZero(&zi) && realIsNegative(&zr) && realCompareGreaterEqual(&zr, const__1)) {
     // Close to -1/e, the series is very slow to converge
     realCopy(const_1, &pr);
     realCopy(realIsNegative(&pi) ? const__1 : const_1, &pi);
-  } else if (!realIsZero(&pr) || !realIsZero(&pi)) {
+  }
+  else if(!realIsZero(&pr) || !realIsZero(&pi)) {
     lnComplex(&pr, &pi, &pr, &pi, realContext);
     realCopy(&pr, &wr), realCopy(&pi, &wi);
   }

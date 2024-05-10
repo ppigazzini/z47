@@ -23,6 +23,8 @@
 #include "realType.h"
 #include "mathematics/pcg_basic.h"
 #include <stdint.h>
+#include <stdbool.h>
+
   #if defined(PC_BUILD)
   #include <gtk/gtk.h>
   #include <gdk/gdk.h>
@@ -120,13 +122,9 @@ typedef enum {
 
 
 /**
- * \enum bool_t
  * Boolean type.
  */
-typedef enum {
-  false = 0, ///< Value for false
-  true  = 1  ///< Value for true
-} bool_t; // 1 bit
+typedef bool bool_t;
 
 
 /**

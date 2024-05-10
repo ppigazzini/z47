@@ -424,13 +424,13 @@ bool_t   cancelFilename = false;
   /*-DMCP-*/
   /*-DMCP-*/
   /*-DMCP-*/int16_t import_string_from_filename(char *line1,  char *dirname,  char *filename_short,  char *filename,  char *fallback, bool_t scanning) {
-                #if(VERBOSE_LEVEL >= 2)
+                #if (VERBOSE_LEVEL >= 2)
   /*-DMCP-*/      print_inlinestr("From dir:",false);
   /*-DMCP-*/      print_inlinestr(dirname,false);
   /*-DMCP-*/      print_inlinestr(", ",true);
   /*-DMCP-*/    #endif
   /*-DMCP-*/
-                #if(VERBOSE_LEVEL >= 2)
+                #if (VERBOSE_LEVEL >= 2)
   /*-DMCP-*/      char line[300];         // Line buffer
   /*-DMCP-*/    #endif
   /*-DMCP-*/
@@ -446,7 +446,7 @@ bool_t   cancelFilename = false;
   /*-DMCP-*/    strcat(dirfile, "\\");
   /*-DMCP-*/    strcat(dirfile, filename_short);
   /*-DMCP-*/
-                #if(VERBOSE_LEVEL >= 1)
+                #if (VERBOSE_LEVEL >= 1)
   /*-DMCP-*/      print_inlinestr("1: reading:", false);
   /*-DMCP-*/      print_inlinestr(dirfile, false);
   /*-DMCP-*/      print_inlinestr(" ", true);
@@ -455,9 +455,9 @@ bool_t   cancelFilename = false;
   /*-DMCP-*/    // Opens an existing file.
   /*-DMCP-*/    fr = f_open(&fil, dirfile, FA_READ);   // | FA_OPEN_EXISTING
   /*-DMCP-*/    if(fr != FR_OK) {
-                  #if(VERBOSE_LEVEL >= 1)
+                  #if (VERBOSE_LEVEL >= 1)
   /*-DMCP-*/        print_inlinestr("Not open. ",false);
-                    #if(VERBOSE_LEVEL >= 2)
+                    #if (VERBOSE_LEVEL >= 2)
   /*-DMCP-*/          if(fr == 4) {
   /*-DMCP-*/            sprintf(line,"%s%d ",IOMsgs[6].itemName,   fr); //Not found ID006 -->
   /*-DMCP-*/            print_inlinestr(line, false);
@@ -478,7 +478,7 @@ bool_t   cancelFilename = false;
   /*-DMCP-*/          }
                     #endif // VERBOSE_LEVEL >= 2
                   #endif // VERBOSE_LEVEL >= 1
-                  #if(VERBOSE_LEVEL >= 2)
+                  #if (VERBOSE_LEVEL >= 2)
   /*-DMCP-*/        print_inlinestr(".", true);
                   #endif
   /*-DMCP-*/      f_close(&fil);
@@ -487,7 +487,7 @@ bool_t   cancelFilename = false;
   /*-DMCP-*/        strcpy(dirfile, dirname);
   /*-DMCP-*/        strcat(dirfile, "\\");
   /*-DMCP-*/        strcat(dirfile, filename);
-                   #if(VERBOSE_LEVEL >= 1)
+                   #if (VERBOSE_LEVEL >= 1)
   /*-DMCP-*/          print_inlinestr("2: reading:", false);
   /*-DMCP-*/          print_inlinestr(dirfile, false);
   /*-DMCP-*/          print_inlinestr(" ", true);
@@ -496,9 +496,9 @@ bool_t   cancelFilename = false;
   /*-DMCP-*/        /* Opens an existing file. */
   /*-DMCP-*/        fr = f_open(&fil, dirfile, FA_READ );   //| FA_OPEN_EXISTING
   /*-DMCP-*/        if(fr != FR_OK) {
-                      #if(VERBOSE_LEVEL >= 1)
+                      #if (VERBOSE_LEVEL >= 1)
   /*-DMCP-*/            print_inlinestr("Not open. ",false);
-                        #if(VERBOSE_LEVEL >= 2)
+                        #if (VERBOSE_LEVEL >= 2)
   /*-DMCP-*/              if(fr == 4) {
   /*-DMCP-*/                sprintf(line,"%s%d ",IOMsgs[7].itemName,  fr); //No path ID007 -->
   /*-DMCP-*/                print_inlinestr(line, false);
@@ -511,7 +511,7 @@ bool_t   cancelFilename = false;
   /*-DMCP-*/              }
                         #endif // VERBOSE_LEVEL >= 2
                       #endif // VERBOSE_LEVEL >= 1
-                      #if(VERBOSE_LEVEL >= 1)
+                      #if (VERBOSE_LEVEL >= 1)
   /*-DMCP-*/            print_inlinestr((char*)IOMsgs[8].itemName,   true); //. Using fallback.
                       #endif // VERBOSE_LEVEL >= 1
   /*-DMCP-*/          f_close(&fil);
@@ -520,7 +520,7 @@ bool_t   cancelFilename = false;
   /*-DMCP-*/        }
   /*-DMCP-*/      }
   /*-DMCP-*/      else {
-                    #if(VERBOSE_LEVEL >= 1)
+                    #if (VERBOSE_LEVEL >= 1)
   /*-DMCP-*/          print_inlinestr((char*)IOMsgs[8].itemName,   true); //. Using fallback.
                     #endif
   /*-DMCP-*/        strcpy(line1, fallback);
@@ -528,7 +528,7 @@ bool_t   cancelFilename = false;
   /*-DMCP-*/      }
   /*-DMCP-*/    }
   /*-DMCP-*/
-                #if(VERBOSE_LEVEL >= 1)
+                #if (VERBOSE_LEVEL >= 1)
   /*-DMCP-*/      print_inlinestr("reading...",false);
                 #endif
   /*-DMCP-*/
@@ -537,14 +537,14 @@ bool_t   cancelFilename = false;
   /*-DMCP-*/    f_getsline(line1, (scanning ? min(100,TMP_STR_LENGTH) : TMP_STR_LENGTH), &fil);
   /*-DMCP-*/    f_close(&fil);
   /*-DMCP-*/
-                #if(VERBOSE_LEVEL >= 1)
+                #if (VERBOSE_LEVEL >= 1)
   /*-DMCP-*/      print_inlinestr("read:",true);
   /*-DMCP-*/      print_inlinestr(line1,true);
                 #endif
   /*-DMCP-*/
   /*-DMCP-*/    if(stringByteLength(line1) >= TMP_STR_LENGTH-1) {
   /*-DMCP-*/      strcpy(line1, fallback);
-                  #if(VERBOSE_LEVEL >= 1)
+                  #if (VERBOSE_LEVEL >= 1)
   /*-DMCP-*/        print_inlinestr((char*)IOMsgs[9].itemName, true); //ERROR too long file using fallback
                   #endif
   /*-DMCP-*/      return 1;
@@ -620,7 +620,7 @@ bool_t   cancelFilename = false;
   /*-DMCP-*/
   /*-DMCP-*/    fr = f_puts(inputstring, &fil);
   /*-DMCP-*/
-               #if(VERBOSE_LEVEL >= 1)
+               #if (VERBOSE_LEVEL >= 1)
   /*-DMCP-*/      sprintf(line,"wrote %d, %s\n", fr, inputstring);
   /*-DMCP-*/      print_linestr(line, false);
                #endif // VERBOSE_LEVEL >= 1
@@ -645,7 +645,7 @@ bool_t   cancelFilename = false;
   /*-DMCP-*/
   /*-DMCP-*/    sys_disk_write_enable(0);
   /*-DMCP-*/
-               #if(VERBOSE_LEVEL >= 1)
+               #if (VERBOSE_LEVEL >= 1)
   /*-DMCP-*/      print_linestr("-closed return-",false);
                #endif // VERBOSE_LEVEL >= 1
   /*-DMCP-*/
@@ -720,7 +720,7 @@ bool_t   cancelFilename = false;
 
 
   int16_t import_string_from_filename(char *line1,  char *dirname,   char *filename_short,  char *filename,  char *fallback, bool_t scanning) {
-    #if(VERBOSE_LEVEL >= 2)
+    #if (VERBOSE_LEVEL >= 2)
       print_inlinestr("From dir:", false);
       print_inlinestr(dirname, false);
       print_inlinestr(", ", true);
@@ -735,7 +735,7 @@ bool_t   cancelFilename = false;
     strcat(dirfile, "/");
     strcat(dirfile, filename_short);
 
-    #if(VERBOSE_LEVEL >= 1)
+    #if (VERBOSE_LEVEL >= 1)
       print_inlinestr("1: reading:", false);
       print_inlinestr(dirfile, false);
       print_inlinestr(" ", true);
@@ -744,7 +744,7 @@ bool_t   cancelFilename = false;
     // Opens an existing file.
     infile = fopen(dirfile, "rb");
     if(infile == NULL) {
-      #if(VERBOSE_LEVEL >= 1)
+      #if (VERBOSE_LEVEL >= 1)
         #if defined(PC_BUILD)
           printf("Cannot load ID010 %s\n", dirfile);
         #endif // PC_BUILD
@@ -755,7 +755,7 @@ bool_t   cancelFilename = false;
         strcpy(dirfile, dirname);
         strcat(dirfile, "/");
         strcat(dirfile, filename);
-        #if(VERBOSE_LEVEL >= 1)
+        #if (VERBOSE_LEVEL >= 1)
           print_inlinestr("2: reading:", false);
           print_inlinestr(dirfile, false);
           print_inlinestr(" ", true);
@@ -764,7 +764,7 @@ bool_t   cancelFilename = false;
         /* Opens an existing file. */
         infile = fopen(dirfile, "rb");
         if(infile == NULL) {
-          #if(VERBOSE_LEVEL >= 1)
+          #if (VERBOSE_LEVEL >= 1)
             #if defined(PC_BUILD)
               printf("Cannot load %s\n", dirfile);
             #endif // PC_BUILD
@@ -775,7 +775,7 @@ bool_t   cancelFilename = false;
         }
       }
       else {
-        #if(VERBOSE_LEVEL >= 1)
+        #if (VERBOSE_LEVEL >= 1)
           #if defined(PC_BUILD)
             printf("Cannot load %s\n", dirfile);
           #endif // PC_BUILD
@@ -786,7 +786,7 @@ bool_t   cancelFilename = false;
       }
     }
 
-    #if(VERBOSE_LEVEL >= 1)
+    #if (VERBOSE_LEVEL >= 1)
       print_inlinestr("reading...", false);
     #endif // VERBOSE_LEVEL >= 1
 
@@ -798,7 +798,7 @@ bool_t   cancelFilename = false;
     }
     fclose(infile);
 
-    #if(VERBOSE_LEVEL >= 1)
+    #if (VERBOSE_LEVEL >= 1)
       #if defined(PC_BUILD)
         printf("Loaded >>> %s\n", dirfile);
       #endif // PC_BUILD
@@ -806,7 +806,7 @@ bool_t   cancelFilename = false;
       print_inlinestr(line1, true);
     #endif // VERBOSE_LEVEL >= 1
 
-    #if(VERBOSE_LEVEL >= 2)
+    #if (VERBOSE_LEVEL >= 2)
       #if defined(PC_BUILD)
         printf("Loaded %s |%s|\n", dirfile, line1);
       #endif // PC_BUILD
@@ -815,7 +815,7 @@ bool_t   cancelFilename = false;
 
     if(stringByteLength(line1) >= TMP_STR_LENGTH-1) {
       strcpy(line1, fallback);
-      #if(VERBOSE_LEVEL >= 1)
+      #if (VERBOSE_LEVEL >= 1)
         print_inlinestr("ERROR too long file using fallback", true);
       #endif // VERBOSE_LEVEL >= 1
       printf("ERROR too long file using fallback\n");
@@ -905,7 +905,8 @@ void printStatus(uint8_t row, const char *line1, uint8_t forced) {
 
     if(forced == force) {
       force_refresh(force);
-    } else {
+    }
+    else {
       force_refresh(timed);
     }
   #endif // !TESTSUITE_BUILD

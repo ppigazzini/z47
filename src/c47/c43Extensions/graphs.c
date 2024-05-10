@@ -593,7 +593,8 @@ void graph_plotmem(void) {
         clearScreenGraphs(1, clrTextArea, !clrGraphArea);
         graph_text();
         return;
-      } else {
+      }
+      else {
         #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
           printf("graph_plotmem: Drawing\n");
         #endif // PC_BUILD &&MONITOR_CLRSCR
@@ -788,10 +789,11 @@ void graph_plotmem(void) {
 /**/          a1 = a0;
 /**/          a0 = grf_y(cnt);
 /**/          if(cnt < 8) {
-                aa = a0;
-              } else {
-                aa = a8*0.2 + a7 *0.2 + a6*0.1 + a5*0.1 + a4*0.1 + a3*0.1 + a2*0.1 + a1*0.1;
-              }
+/**/            aa = a0;
+/**/          }
+/**/          else {
+/**/            aa = a8*0.2 + a7 *0.2 + a6*0.1 + a5*0.1 + a4*0.1 + a3*0.1 + a2*0.1 + a1*0.1;
+/**/          }
 /**/     //     if(aa != 0 && fabs(a0/aa) < 3 && a0 != 0) {
 /**/     //       aa = a0 * 1.1;
 /**/     //     }
@@ -817,15 +819,18 @@ void graph_plotmem(void) {
 /**/            y_maxcnt++;
 /**/            if(fabs(aa / y_max) < 4 ) {//|| aa == a0 * 1.1) {
 /**/              if(aa>y_max) {
-                    y_max = aa;
-                  }
+/**/                y_max = aa;
+/**/              }
 /**/              y_maxcnt=0;
 /**/            }
 /**/            else if(y_maxcnt==3) {
 /**/              y_max = aa;
 /**/              y_maxcnt=0;
 /**/            }
-/**/          } else y_maxcnt=0;
+/**/          }
+/**/          else {
+/**/            y_maxcnt=0;
+/**/          }
 /**/
 /**/          #if defined(STATDEBUG)
 /**/            printf("Axis0b: x: %f -> %f y: %f -> %f   \n", x_min, x_max, y_min, y_max);
@@ -1221,7 +1226,7 @@ void graph_plotmem(void) {
       }
       else {
         displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE, REGISTER_X);
-        #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           sprintf(errorMessage, "There is no statistical data available!");
           moreInfoOnError("In function graph_plotmem:", errorMessage, NULL, NULL);
         #endif // EXTRA_INFO_ON_CALC_ERROR == 1
