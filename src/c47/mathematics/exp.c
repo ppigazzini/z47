@@ -86,7 +86,8 @@ inf:  if(realIsPositive(x)) {
       else {
         realCopy(zero, res);
       }
-    } else {
+    }
+    else {
       realCopy(const_NaN, res);
     }
     return false;

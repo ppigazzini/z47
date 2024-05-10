@@ -159,7 +159,8 @@ void stackregister_csv_out(int16_t reg_b, int16_t reg_e, bool_t oneLine) {
 
       if(!oneLine || ix == reg_e) {         //use tabs, except at the last register, use newline
         strcat(tmp_e, CSV_NEWLINE);
-      } else {
+      }
+      else {
         strcat(tmp_e, CSV_TAB);
       }
 

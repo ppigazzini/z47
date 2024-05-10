@@ -596,7 +596,8 @@ void SetSetting(uint16_t jmConfig) {
     case JC_UC:
       if(alphaCase == AC_LOWER) {
         alphaCase = AC_UPPER;
-      } else {
+      }
+      else {
         alphaCase = AC_LOWER;
       }
       break;

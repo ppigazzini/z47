@@ -142,7 +142,8 @@ void fnGEVI(uint16_t unusedButMandatoryParameter) {
   if(!domainOkay && !realIsZero(&xi)) {
     if(realIsNegative(&xi)) {
       domainOkay = realCompareEqual(&p, const_1);
-    } else {
+    }
+    else {
       domainOkay = realIsZero(&p);
     }
   }
@@ -164,7 +165,8 @@ void fnGEVI(uint16_t unusedButMandatoryParameter) {
     WP34S_Ln(&lnp, &p, &ctxtReal39);
     realChangeSign(&p);
     realFMA(&sigma, &p, &mu, &x, &ctxtReal39);
-  } else {
+  }
+  else {
     realMinus(&xi, &p, &ctxtReal39);
     PowerReal(&lnp, &p, &lnp, &ctxtReal39);
     realSubtract(&lnp, const_1, &p, &ctxtReal39);

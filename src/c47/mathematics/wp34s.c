@@ -1006,7 +1006,8 @@ void WP34S_ExpM1(const real_t *x, real_t *res, realContext_t *realContext) {
     realMultiply(&v, x, &w, realContext);
     WP34S_Ln(&u, &v, realContext);
     realDivide(&w, &v, res, realContext);
-  } else {
+  }
+  else {
     realCopy(&v, res);
   }
 }
@@ -1725,7 +1726,8 @@ void WP34S_ComplexLambertW(const real_t *xReal, const real_t *xImag, real_t *res
     // Close to -1/e, the series is very slow to converge
     realCopy(const_1, &pr);
     realCopy(realIsNegative(&pi) ? const__1 : const_1, &pi);
-  } else if(!realIsZero(&pr) || !realIsZero(&pi)) {
+  }
+  else if(!realIsZero(&pr) || !realIsZero(&pi)) {
     lnComplex(&pr, &pi, &pr, &pi, realContext);
     realCopy(&pr, &wr), realCopy(&pi, &wi);
   }

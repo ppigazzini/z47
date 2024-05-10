@@ -217,7 +217,8 @@ saveForUndo();
       ctxtReal39.digits = 39;
       ctxtReal51.digits = 51;
       ctxtReal75.digits = 75;
-    } else
+    }
+    else
     if(digitsN <= 10) {
       #ifdef PC_BUILD
         printf("Special accuracy test case: N<=10 Reducing SDIGS digits to %i etc.\n",digitsN+3);
@@ -244,7 +245,8 @@ saveForUndo();
       ctxtReal39.digits = 39;
       ctxtReal51.digits = 51;
       ctxtReal75.digits = 75;
-    } else {
+    }
+    else {
     #ifdef PC_BUILD
       printf("Temporary Debugging info. Can be deleted once done.\n");
       printRealToConsole(&llim,"llim:","\n");
@@ -1039,8 +1041,7 @@ static void _integrate_mm(calcRegister_t regist, const real_t *llim, const real_
       realAdd(&fp, &fm, &p, realContext);
       realMultiply(&p, &w, &p, realContext);
       realAdd(&ssp, &p, &ssp, realContext);
-      if(k > 0) {j += 2;} else {j += 1;}
-
+      j += 1 + (k >2);
       realMultiply(&ssp, &eps, &tmp, realContext);
     } while(realCompareAbsLessThan(&tmp, &p));
 

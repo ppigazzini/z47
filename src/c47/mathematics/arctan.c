@@ -47,7 +47,8 @@ static void arctanReal(void) {
     if(getSystemFlag(FLAG_SPCRES)) {
       realCopy(realIsPositive(&x) ? const_90 : const__90, &x);
       convertAngleFromTo(&x, amDegree, currentAngularMode, &ctxtReal39);
-  } else {
+  }
+  else {
       displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         moreInfoOnError("In function arctanReal:", "X = " STD_PLUS_MINUS STD_INFINITY, NULL, NULL);

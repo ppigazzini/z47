@@ -676,8 +676,8 @@ void setStatisticalSumsUpdate(bool_t para) {
   if(statisticalSumsUpdate && !para) {
     //It is on auto and it is being switched off auto. Stats sums already cleared, just set the flag.
     statisticalSumsUpdate = false;
-  } else
-  if(!statisticalSumsUpdate && para) {
+  }
+  else if(!statisticalSumsUpdate && para) {
     //it is off auto and it is swithing on to auto update. Clear and sums and calc up any existing matrix.
     statisticalSumsUpdate = true;
     initStatisticalSums(); //calcSigma is implied
@@ -764,7 +764,8 @@ void fnSigma(uint16_t plusMinus) {
             if(lastErrorCode != ERROR_NONE) {
               return;
             }
-          } else {
+          }
+          else {
             setStatisticalSumsUpdate(statisticalSumsUpdate);    //ensure it deletes the sums anyway if clear
             if(lastErrorCode != ERROR_NONE) {
               return;
@@ -1032,7 +1033,8 @@ void fnConvertStatsToHisto(uint16_t statsVariableToHistogram) {
           realToReal34(SIGMA_YMIN, &loBinR);                                     //set up the user variables from auto estimates from the data
           realToReal34(SIGMA_YMAX, &hiBinR);                                     //set up the user variables from auto estimates from the data
           histElementXorY = 1;
-        } else if(statsVariableToHistogram == ITM_X) {
+        }
+        else if(statsVariableToHistogram == ITM_X) {
           realToReal34(SIGMA_XMIN, &loBinR);                                     //set up the user variables from auto estimates from the data
           realToReal34(SIGMA_XMAX, &hiBinR);                                     //set up the user variables from auto estimates from the data
           histElementXorY = 0;

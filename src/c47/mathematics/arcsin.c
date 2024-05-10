@@ -71,7 +71,8 @@ static void arcsinReal(void) {
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return;
     }
-  } else {
+  }
+  else {
     WP34S_Asin(&x, &x, &ctxtReal39);
     convertAngleFromTo(&x, amRadian, currentAngularMode, &ctxtReal39);
   }

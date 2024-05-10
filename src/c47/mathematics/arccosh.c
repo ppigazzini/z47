@@ -95,8 +95,10 @@ static void arccoshReal(void) {
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return;
     }
-  } else
+  }
+  else {
     realArcosh(&x, &x, &ctxtReal75);
+  }
 
   convertRealToResultRegister(r, REGISTER_X, amNone);
 }

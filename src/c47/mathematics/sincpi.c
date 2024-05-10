@@ -100,7 +100,8 @@ static void sincpiReal(void) {
     }
     else if(type != dtReal34) {
       r = const_0;
-    } else {
+    }
+    else {
       xAngularMode = getRegisterAngularMode(REGISTER_X);
       if(xAngularMode != amNone)
         convertAngleFromTo(&x, xAngularMode, amRadian, &ctxtReal75);

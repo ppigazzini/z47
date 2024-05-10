@@ -409,7 +409,10 @@ void graph_eqn(uint16_t mode) {
           (ss0 == -1 && ss1 == 1  && ss2 == -1) ||                             //grad2 reversal checking
           (             ss1 == 1  && ss2 == -1  && y01 > 0 && y02 < 0) ||      //grad2 reversal checking
           (             ss1 == -1 && ss2 == 1   && y01 < 0 && y02 > 0)     );  //grad2 reversal checking
-      } else grad2IncreaseDetected = false;
+      }
+      else {
+        grad2IncreaseDetected = false;
+      }
 
 
       if(count == 0) {                        //accumulate an average value starting with inflated 2x start value;
@@ -454,11 +457,14 @@ void graph_eqn(uint16_t mode) {
 
       if(discontinuityDetected > 0 && discontinuityDetected <= FINE) {
         dx = dJMP * dx0;
-      } else if(grad2 == 0 || grad1 == 0) {
+      }
+      else if(grad2 == 0 || grad1 == 0) {
         dx = dx0;
-      } else if(grad2IncreaseDetected){
+      }
+      else if(grad2IncreaseDetected){
         dx = dx0 * ( (grad2/grad1 > SS1 || grad1/grad2 > SS1)  ? 0.5 : 1.0);     //50% dx0 if increased grad2 detected
-      } else {
+      }
+      else {
         dx = dx0;
       }
                                   //if(dx<0) printf("DX <<< 0\n");
@@ -467,7 +473,8 @@ void graph_eqn(uint16_t mode) {
                                   #endif // DEBUG_GR
       if(!jumpedBack && !(dx<0)) {
         AddtoDrawMx();
-      } else {
+      }
+      else {
         #ifdef PC_BUILD
           printf("Not storing into STATS - jumped back");
         #endif //PC_BUILD
@@ -559,7 +566,8 @@ void graph_stat(uint16_t unusedButMandatoryParameter) {
 
       fillStackWithReal0();
       fnPlotSQ(0);
-    } else {
+    }
+    else {
       calcMode = CM_NORMAL;
       displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)

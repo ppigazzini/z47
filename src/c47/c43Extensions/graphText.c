@@ -905,7 +905,8 @@ void printStatus(uint8_t row, const char *line1, uint8_t forced) {
 
     if(forced == force) {
       force_refresh(force);
-    } else {
+    }
+    else {
       force_refresh(timed);
     }
   #endif // !TESTSUITE_BUILD

@@ -254,7 +254,8 @@ static void doRealAGM(void) {
         moreInfoOnError("In function fnAgm:", "cannot use negative X and Y as input of AGM", NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
-  } else {
+  }
+  else {
     realAgm(&a, &b, &r, &ctxtReal75);
     convertRealToResultRegister(&r, REGISTER_X, amNone);
   }

@@ -56,15 +56,16 @@ void fnSetVolume(uint16_t volume) {
     for(i = current_volume; i < volume; i++) {
       beep_volume_up();
     }
-  } else if(volume < current_volume) {
+  }
+  else if(volume < current_volume) {
     for(i = current_volume; i > volume; i--) {
       beep_volume_down();
     }
   }
 }
 
-uint16_t getBeepVolume() {
-    return get_beep_volume();
+uint16_t getBeepVolume(void) {
+  return get_beep_volume();
 }
 
 void fnGetVolume(uint16_t unusedButMandatoryParameter) {
@@ -79,47 +80,52 @@ void fnGetVolume(uint16_t unusedButMandatoryParameter) {
 }
 
 void fnVolumeUp(uint16_t unusedButMandatoryParameter) {
-    beep_volume_up();
-    audioTone(440000);    // tone 8
+  beep_volume_up();
+  audioTone(440000);    // tone 8
 }
 
 void fnVolumeDown(uint16_t unusedButMandatoryParameter) {
-    beep_volume_down();
-    audioTone(440000);    // tone 8
+  beep_volume_down();
+  audioTone(440000);    // tone 8
 }
 
 static uint32_t _getValueFromRegister(calcRegister_t regist) {
-    uint32_t value;
+  uint32_t value;
 
-    if(getRegisterDataType(regist) == dtReal34) {
-      value = real34ToUInt32(REGISTER_REAL34_DATA(regist));
-    }
+  if(getRegisterDataType(regist) == dtReal34) {
+    value = real34ToUInt32(REGISTER_REAL34_DATA(regist));
+  }
 
-    else if(getRegisterDataType(regist) == dtLongInteger) {
-      longInteger_t lgInt;
-      convertLongIntegerRegisterToLongInteger(regist, lgInt);
-      longIntegerToUInt(lgInt, value);
-      longIntegerFree(lgInt);
-    }
+  else if(getRegisterDataType(regist) == dtLongInteger) {
+    longInteger_t lgInt;
+    convertLongIntegerRegisterToLongInteger(regist, lgInt);
+    longIntegerToUInt(lgInt, value);
+    longIntegerFree(lgInt);
+  }
 
-    else {
-      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-      //errorMoreInfo("register %" PRId16 " is %s:\nnot suited for addressing!", regist, getRegisterDataTypeName(regist, true, false));
-      return -1;
-    }
+  else {
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+    //errorMoreInfo("register %" PRId16 " is %s:\nnot suited for addressing!", regist, getRegisterDataTypeName(regist, true, false));
+    return -1;
+  }
 
   return value;
 }
 
 void _Buzz(uint32_t frequency, uint32_t ms_delay) {
   if(ms_delay > 0) {
-    if(ms_delay > 2000) ms_delay = 2000;  // max duration value : 2s
+    if(ms_delay > 2000) {
+      ms_delay = 2000;  // max duration value : 2s
+    }
     if(frequency != 0) {
-      if(frequency > 20000) frequency = 20000;  // max  audible frequency:  20 kHz
+      if(frequency > 20000) {
+        frequency = 20000;  // max  audible frequency:  20 kHz
+      }
       start_buzzer_freq(frequency*1000);
       sys_delay(ms_delay);
       stop_buzzer();
-    } else {
+    }
+    else {
       sys_delay(ms_delay);
     }
   }

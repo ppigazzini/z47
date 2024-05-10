@@ -472,7 +472,8 @@ uint64_t x;
         case 64: x = (b0 << 56) | (b1 << 48) | (b2 << 40) | (b3 << 32) | (b4 << 24) | (b5 << 16) | (b6 << 8 ) | b7; break;
         default:break;
       }
-    } else
+    }
+    else
     if(bitWidth == 16) {
       if(shortIntegerWordSize<32) {fnSetWordSize(32);}
       else

@@ -1106,18 +1106,12 @@ static void _parseWord(char *strPtr, uint16_t parseMode, uint16_t parserHint, ch
             #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
           }
           else {
-
-
-
             if(tmpVal == 3 && ((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_INTEGRATE)) {   // If the 4th variable has just been added, add Draw and Calc.
               _menuItem(MNU_Sf_TOOL, bufPtr);
               bufPtr += stringByteLength(bufPtr) + 1;
               _menuItem(ITM_INTEGRAL_YX, bufPtr);
-            } else
-
-
-
-            if(tmpVal == 3 && ((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_SOLVER)) {   // If the 4th variable has just been added, add Draw and Calc.
+            }
+            else if(tmpVal == 3 && ((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_SOLVER)) {   // If the 4th variable has just been added, add Draw and Calc.
               _menuItem(MNU_Solver_TOOL, bufPtr);
               bufPtr += stringByteLength(bufPtr) + 1;
               _menuItem(ITM_CALC, bufPtr);

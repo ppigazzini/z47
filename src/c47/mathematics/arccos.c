@@ -89,7 +89,8 @@ static void arccosReal(void) {
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return;
     }
-  } else {
+  }
+  else {
     WP34S_Acos(&x, &x, &ctxtReal39);
     convertAngleFromTo(&x, amRadian, currentAngularMode, &ctxtReal39);
   }

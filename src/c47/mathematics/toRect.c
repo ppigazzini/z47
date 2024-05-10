@@ -54,15 +54,17 @@ void fnToRect2(uint16_t unusedButMandatoryParameter) {
   if(!getSystemFlag(FLAG_HPRP)) {  //non-HP mode
     angleInY = -angleInY;
     if(isAngle(dataTypeX,dataAtagX) && isRadius(dataTypeY,dataAtagY)) {
-    } else
+    }
+    else
     if(isAngle(dataTypeY,dataAtagY) && isRadius(dataTypeX,dataAtagX)) {
       angleInY = -angleInY;        //-1 is swapped
     }
-  } else { //HP MODE
+  }
+  else { //HP MODE
     if(isAngle(dataTypeX,dataAtagX) && isRadius(dataTypeY,dataAtagY)) {
       angleInY = -angleInY;
-    } else
-    if(isAngle(dataTypeY,dataAtagY) && isRadius(dataTypeX,dataAtagX)) {
+    }
+    else if(isAngle(dataTypeY,dataAtagY) && isRadius(dataTypeX,dataAtagX)) {
     }
   }
 

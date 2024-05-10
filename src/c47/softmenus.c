@@ -1088,7 +1088,8 @@ void fnDynamicMenu(uint16_t unusedButMandatoryParameter) {
             (compareString(tmpString + 15 * numberOfVars, "Mat_A", CMP_NAME) == 0) || (compareString(tmpString + 15 * numberOfVars, "Mat_B", CMP_NAME) == 0) ||
             (compareString(tmpString + 15 * numberOfVars, "Mat_X", CMP_NAME) == 0))) {
           memset(tmpString + 15 * numberOfVars, 0, 15);
-        } else {
+        }
+        else {
           numberOfVars++;
           numberOfBytes += 1 + allNamedVariables[i].variableName[0];
         }
@@ -1618,7 +1619,8 @@ if(getSystemFlag(FLAG_HPCONV)) {
   w3 = showStringEnhanced(STD_RIGHT_ARROW, &standardFont, 0, y1+YY, videoMode, false, false, DO_compress, NO_raise, NO_Show, NO_LF);
   w4 = showStringEnhanced(label0,          &standardFont, 0, y1+YY, videoMode, false, false, DO_compress, NO_raise, NO_Show, NO_LF);
   arrowSpace = 1;
-} else {
+}
+else {
   w1 = showStringEnhanced(label0,          &standardFont, 0, y1+YY, videoMode, false, false, DO_compress, NO_raise, NO_Show, NO_LF);
   w2 = showStringEnhanced(STD_RIGHT_ARROW, &standardFont, 0, y1+YY, videoMode, false, false, DO_compress, NO_raise, NO_Show, NO_LF);
   w3 = showStringEnhanced(STD_LEFT_ARROW,  &standardFont, 0, y1+YY, videoMode, false, false, DO_compress, NO_raise, NO_Show, NO_LF);
@@ -1644,7 +1646,8 @@ if(getSystemFlag(FLAG_HPCONV)) {
     if(getSystemFlag(FLAG_HPCONV)) {
       Arr0     = x1 + midpoint - arrowSpace - w2;
       Arr1     = x1 + midpoint + arrowSpace;
-    } else {
+    }
+    else {
       Arr0     = x1 + space + w1 + space;
       Arr1     = x2 - space - w3 - w4 - space;
     }
@@ -1657,17 +1660,18 @@ if(getSystemFlag(FLAG_HPCONV)) {
   // Clear inside the frame
   lcd_fill_rect(x1 + 1, y1 + 1, min(x2, SCREEN_WIDTH) - x1 - 1, min(y2, SCREEN_HEIGHT) - y1 - 1, (videoMode == vmNormal ? LCD_SET_VALUE : LCD_EMPTY_VALUE));
 
-if(getSystemFlag(FLAG_HPCONV)) {
-  showStringEnhanced(label1,          &standardFont, Text0 + (rightMostSlot ? 0 : 1), y1 + 1, videoMode, false, false, DO_compress, NO_raise, DO_Show, NO_LF);
-  showStringEnhanced(STD_LEFT_ARROW,  &standardFont, Arr0 +  (rightMostSlot ? 0 : 1), y1 + 1, videoMode, false, false, DO_compress, NO_raise, DO_Show, NO_LF);
-  showStringEnhanced(label0,          &standardFont, Text1 + (rightMostSlot ? 0 : 1), y1 + 1, videoMode, false, false, DO_compress, NO_raise, DO_Show, NO_LF);
-  showStringEnhanced(STD_RIGHT_ARROW, &standardFont, Arr1 +  (rightMostSlot ? 0 : 1), y1 + 1, videoMode, false, false, DO_compress, NO_raise, DO_Show, NO_LF);
-} else {
-  showStringEnhanced(label0,          &standardFont, Text0 + (rightMostSlot ? 0 : 1), y1 + 1, videoMode, false, false, DO_compress, NO_raise, DO_Show, NO_LF);
-  showStringEnhanced(STD_RIGHT_ARROW, &standardFont, Arr0 +  (rightMostSlot ? 0 : 1), y1 + 1, videoMode, false, false, DO_compress, NO_raise, DO_Show, NO_LF);
-  showStringEnhanced(label1,          &standardFont, Text1 + (rightMostSlot ? 0 : 1), y1 + 1, videoMode, false, false, DO_compress, NO_raise, DO_Show, NO_LF);
-  showStringEnhanced(STD_LEFT_ARROW,  &standardFont, Arr1 +  (rightMostSlot ? 0 : 1), y1 + 1, videoMode, false, false, DO_compress, NO_raise, DO_Show, NO_LF);
-}
+  if(getSystemFlag(FLAG_HPCONV)) {
+    showStringEnhanced(label1,          &standardFont, Text0 + (rightMostSlot ? 0 : 1), y1 + 1, videoMode, false, false, DO_compress, NO_raise, DO_Show, NO_LF);
+    showStringEnhanced(STD_LEFT_ARROW,  &standardFont, Arr0 +  (rightMostSlot ? 0 : 1), y1 + 1, videoMode, false, false, DO_compress, NO_raise, DO_Show, NO_LF);
+    showStringEnhanced(label0,          &standardFont, Text1 + (rightMostSlot ? 0 : 1), y1 + 1, videoMode, false, false, DO_compress, NO_raise, DO_Show, NO_LF);
+    showStringEnhanced(STD_RIGHT_ARROW, &standardFont, Arr1 +  (rightMostSlot ? 0 : 1), y1 + 1, videoMode, false, false, DO_compress, NO_raise, DO_Show, NO_LF);
+  }
+  else {
+    showStringEnhanced(label0,          &standardFont, Text0 + (rightMostSlot ? 0 : 1), y1 + 1, videoMode, false, false, DO_compress, NO_raise, DO_Show, NO_LF);
+    showStringEnhanced(STD_RIGHT_ARROW, &standardFont, Arr0 +  (rightMostSlot ? 0 : 1), y1 + 1, videoMode, false, false, DO_compress, NO_raise, DO_Show, NO_LF);
+    showStringEnhanced(label1,          &standardFont, Text1 + (rightMostSlot ? 0 : 1), y1 + 1, videoMode, false, false, DO_compress, NO_raise, DO_Show, NO_LF);
+    showStringEnhanced(STD_LEFT_ARROW,  &standardFont, Arr1 +  (rightMostSlot ? 0 : 1), y1 + 1, videoMode, false, false, DO_compress, NO_raise, DO_Show, NO_LF);
+  }
 
   // Draw the frame
   //   Top line
@@ -1786,7 +1790,8 @@ void showKey(const char *label, int16_t x1, int16_t x2, int16_t y1, int16_t y2, 
       lcd_fill_rect(max(0, x1)+1, y1+1, min(x2, SCREEN_WIDTH) - max(0, x1)-2,1 , (videoMode == vmNormal ? LCD_EMPTY_VALUE : LCD_SET_VALUE));
       lcd_fill_rect(max(0, x1)+1, y1+SOFTMENU_HEIGHT-1, min(x2, SCREEN_WIDTH) - max(0, x1)-2,1 , (videoMode == vmNormal ? LCD_EMPTY_VALUE : LCD_SET_VALUE));
 
-    } else { //positioning of nails or rivits, _off from the norm: -1, 0, +1 tried. +1 is best.
+    }
+    else { //positioning of nails or rivits, _off from the norm: -1, 0, +1 tried. +1 is best.
       lcd_fill_rect(max(0, x1)+2   + _off, y1 +1                   + _off, 3,2, (videoMode == vmNormal ? LCD_EMPTY_VALUE : LCD_SET_VALUE));
       lcd_fill_rect(max(0, x1)+2   + _off, y1 + SOFTMENU_HEIGHT -2 - _off, 3,2, (videoMode == vmNormal ? LCD_EMPTY_VALUE : LCD_SET_VALUE));
       lcd_fill_rect(        x2-1-3 - _off, y1 +1                   + _off, 3,2, (videoMode == vmNormal ? LCD_EMPTY_VALUE : LCD_SET_VALUE));
@@ -1877,17 +1882,19 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
                       real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_ACC), &tmpR);
                       if(realIsZero(&tmpR)) {
                         strcpy(tmpS,"0");
-                      } else {
+                      }
+                      else {
                         realToFloat(&tmpR, &tmpF);
                         if(tmpF<0) {
                           strcpy(tmpS,"NEG");
-                        } else
-                        if(tmpF<1.0e-34) {
+                        }
+                        else if(tmpF<1.0e-34) {
                           strcpy(tmpS,STD_GAUSS_WHITE_L "1E-34");
-                        } else
-                        if(tmpF>1) {
+                        }
+                        else if(tmpF>1) {
                           strcpy(tmpS,STD_GAUSS_WHITE_R "1");
-                        } else {
+                        }
+                        else {
                           sprintf(tmpS,"%5.G",tmpF);
                           strcpy(tmpS, eatSpacesMid(tmpS));
                         }
@@ -1918,44 +1925,43 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
                       if(tmpF == (int)tmpF &&  tmpF >= 0 && tmpF < ((itemNr%10000 == VAR_NPPER || itemNr%10000 == VAR_PMT) ? 100000 : 1000000)) {
                         //positive integer smaller than limit
                         sprintf(tmpS,"%i",(int)tmpF);
-                      } else {
+                      }
+                      else {
                         //negative or large integer or float, all are considered float
 
                         //out of range for display
                         if(tmpF>0 && tmpF<1.0e-34) {
                           strcpy(tmpS,STD_GAUSS_WHITE_L STD_GAUSS_WHITE_L );//"1E-34");
-                        } else
-                        if(tmpF<0 && tmpF>-1.0e-34) {
+                        }
+                        else if(tmpF<0 && tmpF>-1.0e-34) {
                           strcpy(tmpS,STD_GAUSS_WHITE_R STD_GAUSS_WHITE_R );//"-1E-34");
-                        } else
-                        if(tmpF>1.0e34) {
+                        }
+                        else if(tmpF>1.0e34) {
                           strcpy(tmpS,STD_GAUSS_WHITE_R STD_GAUSS_WHITE_R );//"1E34");
-                        } else
-                        if(tmpF<-1.0e34) {
+                        }
+                        else if(tmpF<-1.0e34) {
                           strcpy(tmpS,STD_GAUSS_WHITE_L STD_GAUSS_WHITE_L );//"-1E34");
-                        } else
-
-                        {
+                        }
+                        else {
                           if(fabsf(tmpF) < 10000 && itemNr%10000 == VAR_IPonA) {    //force single decimal for percentage
                             sprintf(tmpS,"%6.1f",tmpF);
-                          } else
-
-
-                          if((tmpF>=10000 && tmpF<10000000) || (tmpF>-1000000 && tmpF<=-10000)) {
+                          }
+                          else if((tmpF>=10000 && tmpF<10000000) || (tmpF>-1000000 && tmpF<=-10000)) {
                             sprintf(tmpS,"%8.0f",tmpF);
-                          } else
-                          if((fabs(tmpF)>=0.1 && fabs(tmpF)<10000)) {
+                          }
+                          else if((fabs(tmpF)>=0.1 && fabs(tmpF)<10000)) {
                             sprintf(tmpS,"%8.2f",tmpF);
-                          } else
-                          if((tmpF>=0.001 && tmpF<0.1) || (tmpF<=-0.01 && tmpF>-0.1)) {
+                          }
+                          else if((tmpF>=0.001 && tmpF<0.1) || (tmpF<=-0.01 && tmpF>-0.1)) {
                             sprintf(tmpS,"%8.4f",tmpF);
-                          } else
-                          if(tmpF<0 && tmpF>-0.01) {
+                          }
+                          else if(tmpF<0 && tmpF>-0.01) {
                             sprintf(tmpS,"%8.1E",tmpF);
-                          } else
-                          if(tmpF>0 && tmpF<0.001) {
+                          }
+                          else if(tmpF>0 && tmpF<0.001) {
                             sprintf(tmpS,"%8.2E",tmpF);
-                          } else {
+                          }
+                          else {
                             sprintf(tmpS,"%8.1G",tmpF);
                           }
 
@@ -1988,15 +1994,16 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
                         default:;
                       }
                       if(buttonDigits != 0 && (stringByteLength(tmpS) > buttonDigits )) {
-                          itemName[1] = 0;
-                        }
+                        itemName[1] = 0;
+                      }
 
                       radixProcess(tmpSS,tmpS);
 
                       //for very short numerics, add one space
                       if(stringByteLength(tmpSS) < 4) {
                         sprintf(tmpS, STD_SPACE_3_PER_EM "%s",tmpSS);
-                      } else {
+                      }
+                      else {
                         sprintf(tmpS, "%s",tmpSS);
                       }
                       stringAppend(showText + stringByteLength(showText), tmpS);
@@ -2006,8 +2013,8 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
 
       case ITM_DSP:
       case ITM_UNIT: if(getSystemFlag(FLAG_2TO10) && displayFormat == DF_UN) {
-                           stringAppend(showText + stringByteLength(showText), STD_SUB_i);
-                        }
+                       stringAppend(showText + stringByteLength(showText), STD_SUB_i);
+                      }
                       break;
 
       case ITM_DSPCYCLE:switch(*showValue) {
@@ -2137,7 +2144,8 @@ void fnStrikeOutIfNotCoded(int16_t itemNr, int16_t x, int16_t y) {
       }
       if(strike == 1) {
         setBlackPixel(xStroke, yStroke -3);                                      //JM mod
-      } else {
+      }
+      else {
         setWhitePixel(xStroke, yStroke -3);                                      //JM mod
       }
     }
@@ -2150,7 +2158,8 @@ bool_t BASE_OVERRIDEONCE = false;
   void showSoftmenuCurrentPart(void) {
     if(currentMenu() == -MNU_HOME) {
       changeToHOME();
-    } else
+    }
+    else
     if(currentMenu() == -MNU_PFN) {
       changeToPFN();
     }
@@ -2323,11 +2332,11 @@ bool_t BASE_OVERRIDEONCE = false;
                   case MNU_MVAR: {
                     if(!compareString((char *)getNthString(dynamicSoftmenu[m].menuContent, x+6*y), indexOfItems[MNU_GRAPHS].itemSoftmenuName, CMP_NAME)) {
                        vm = vmReverse;
-                    } else
-                    if(!compareString((char *)getNthString(dynamicSoftmenu[m].menuContent, x+6*y), indexOfItems[MNU_Solver_TOOL].itemSoftmenuName, CMP_NAME)) {
+                    }
+                    else if(!compareString((char *)getNthString(dynamicSoftmenu[m].menuContent, x+6*y), indexOfItems[MNU_Solver_TOOL].itemSoftmenuName, CMP_NAME)) {
                        vm = vmReverse;
-                    } else
-                    if(!compareString((char *)getNthString(dynamicSoftmenu[m].menuContent, x+6*y), indexOfItems[MNU_Sf_TOOL].itemSoftmenuName, CMP_NAME)) {
+                    }
+                    else if(!compareString((char *)getNthString(dynamicSoftmenu[m].menuContent, x+6*y), indexOfItems[MNU_Sf_TOOL].itemSoftmenuName, CMP_NAME)) {
                        vm = vmReverse;
                     }
 
@@ -2398,16 +2407,16 @@ bool_t BASE_OVERRIDEONCE = false;
               displayBugScreen(errorMessage);
             }
             else if(softmenu[menu].menuItem == -MNU_ALPHA_OMEGA && alphaCase == AC_UPPER) {
-                showSoftkey(indexOfItems[MNU_ALPHA_OMEGA].itemSoftmenuName, x, y-currentFirstItem/6, vmReverse, true, true, NOVAL, NOVAL, NOTEXT);
+              showSoftkey(indexOfItems[MNU_ALPHA_OMEGA].itemSoftmenuName, x, y-currentFirstItem/6, vmReverse, true, true, NOVAL, NOVAL, NOTEXT);
             }
             else if(softmenu[menu].menuItem == -MNU_ALPHA_OMEGA && alphaCase == AC_LOWER) {
-                showSoftkey(indexOfItems[MNU_alpha_omega].itemSoftmenuName, x, y-currentFirstItem/6, vmReverse, true, true, NOVAL, NOVAL, NOTEXT);
+              showSoftkey(indexOfItems[MNU_alpha_omega].itemSoftmenuName, x, y-currentFirstItem/6, vmReverse, true, true, NOVAL, NOVAL, NOTEXT);
             }
             else if(softmenu[menu].menuItem == -MNU_ALPHAINTL && alphaCase == AC_UPPER) {
-                showSoftkey(indexOfItems[MNU_ALPHAINTL].itemSoftmenuName, x, y-currentFirstItem/6, vmReverse, true, true, NOVAL, NOVAL, NOTEXT);
+              showSoftkey(indexOfItems[MNU_ALPHAINTL].itemSoftmenuName, x, y-currentFirstItem/6, vmReverse, true, true, NOVAL, NOVAL, NOTEXT);
             }
             else if(softmenu[menu].menuItem == -MNU_ALPHAINTL && alphaCase == AC_LOWER) {
-                showSoftkey(indexOfItems[MNU_ALPHAintl].itemSoftmenuName, x, y-currentFirstItem/6, vmReverse, true, true, NOVAL, NOVAL, NOTEXT);
+              showSoftkey(indexOfItems[MNU_ALPHAintl].itemSoftmenuName, x, y-currentFirstItem/6, vmReverse, true, true, NOVAL, NOVAL, NOTEXT);
             }
             else {
               #if defined(INLINE_TEST)
@@ -2578,7 +2587,8 @@ bool_t BASE_OVERRIDEONCE = false;
     #endif // PC_BUILD
     if(softmenu[softmenuId].menuItem == -MNU_DYNAMIC) {
       userMenuId = currentUserMenu;
-    } else {
+    }
+    else {
       userMenuId = 0;
     }
    if((softmenuStack[0].softmenuId == softmenuId) && (softmenuStack[0].userMenuId == userMenuId)) { // The menu to push on the stack is already displayed
@@ -2734,10 +2744,11 @@ bool_t BASE_OVERRIDEONCE = false;
   int16_t currentMenu(void) {
     if(softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_DYNAMIC && compareString("HOME", userMenus[currentUserMenu].menuName, CMP_NAME) == 0) {
        return -MNU_HOME;
-    } else
-    if(softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_DYNAMIC && compareString("P.FN", userMenus[currentUserMenu].menuName, CMP_NAME) == 0) {
+    }
+    else if(softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_DYNAMIC && compareString("P.FN", userMenus[currentUserMenu].menuName, CMP_NAME) == 0) {
        return -MNU_PFN;
-    } else {
+    }
+    else {
        return softmenu[softmenuStack[0].softmenuId].menuItem;
     }
   }
@@ -2794,8 +2805,8 @@ bool_t BASE_OVERRIDEONCE = false;
         }
       }
       id = -MNU_DYNAMIC;
-    } else
-    if(id == -MNU_PFN) {
+    }
+    else if(id == -MNU_PFN) {
       if(!setCurrentUserMenu(-MNU_DYNAMIC,"P.FN")) {
         if(!createPFN()) {
           return;
@@ -2917,8 +2928,8 @@ bool_t BASE_OVERRIDEONCE = false;
       if(id == -MNU_Sf_TOOL) {
         temporaryInformation = TI_NO_INTEGRATE_VARIABLE;
         id = -MNU_MVAR;
-      } else
-      if(id == -MNU_Solver_TOOL) {
+      }
+      else if(id == -MNU_Solver_TOOL) {
         temporaryInformation = TI_NO_SOLVER_VARIABLE;
         id = -MNU_MVAR;
       }
@@ -2935,8 +2946,10 @@ bool_t BASE_OVERRIDEONCE = false;
     m = 0;
     while(softmenu[m].menuItem != 0) {
       if(softmenu[m].menuItem == id) {
-       if(!tam.mode) softmenuStack[0].firstItem = lastCatalogPosition[catalog];
-       break;
+        if(!tam.mode) {
+          softmenuStack[0].firstItem = lastCatalogPosition[catalog];
+        }
+        break;
       }
       m++;
     }

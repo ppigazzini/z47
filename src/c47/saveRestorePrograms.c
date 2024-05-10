@@ -230,7 +230,8 @@ void fnPExport(uint16_t unusedButMandatoryParameter) {
           }
           jj++;
         }
-      } else {
+      }
+      else {
         indent += addnextLineIndent;
         addnextLineIndent = 0;
       }

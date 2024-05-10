@@ -346,21 +346,23 @@ void fnTo_ms(uint16_t unusedButMandatoryParameter) {
           if(getRegisterAngularMode(REGISTER_X) == amDMS) {
             if(calcMode == CM_NORMAL) {
               fnToReal(0);
-            } else if(calcMode == CM_NIM) {
+            }
+            else if(calcMode == CM_NIM) {
               addItemToNimBuffer(ITM_dotD);
             }
             fnToHms(0);
-          } else
-          if(getRegisterAngularMode(REGISTER_X) == amDegree // ||
+          }
+          else if(getRegisterAngularMode(REGISTER_X) == amDegree // ||
 //             getRegisterAngularMode(REGISTER_X) == amRadian ||
 //             getRegisterAngularMode(REGISTER_X) == amGrad   ||
 //             getRegisterAngularMode(REGISTER_X) == amMultPi
             ) {
             fnAngularModeJM(amDMS);
-          } else
-          if(getRegisterAngularMode(REGISTER_X) == amNone) {
+          }
+          else if(getRegisterAngularMode(REGISTER_X) == amNone) {
             fnToHms(0);
-          } else {
+          }
+          else {
             displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
             #if (EXTRA_INFO_ON_CALC_ERROR == 1)
               sprintf(errorMessage, "cannot calculate specific type/tag");
@@ -523,7 +525,9 @@ void fnJM_2SI(uint16_t unusedButMandatoryParameter) { //Convert Real to Longint;
       convertLongIntegerRegisterToLongInteger(REGISTER_X, tmp2);
       convertLongIntegerRegisterToLongInteger(REGISTER_X, tmp3);
       tmp2sign = longIntegerIsNegative(tmp2) ? 1:0;
-      if(tmp2sign == 1) longIntegerChangeSign(tmp2);
+      if(tmp2sign == 1) {
+        longIntegerChangeSign(tmp2);
+      }
       longIntegerToUInt(tmp2,tmp2UI);
       if(shortIntegerMode != SIM_UNSIGN) {
         mask = 1;
@@ -531,8 +535,8 @@ void fnJM_2SI(uint16_t unusedButMandatoryParameter) { //Convert Real to Longint;
         tmp2UI &= mask;
       }
       else if(tmp2sign) {
-          temporaryInformation = TI_DATA_NEG_OVRFL;
-        }
+        temporaryInformation = TI_DATA_NEG_OVRFL;
+      }
       convertUInt64ToShortIntegerRegister(tmp2sign, tmp2UI, (lastIntegerBase >= 2 && lastIntegerBase <= 16) ? lastIntegerBase : 10, REGISTER_X);
       convertShortIntegerRegisterToLongInteger(REGISTER_X, tmp1);
       if(longIntegerCompare(tmp1,tmp3) != 0) {
@@ -602,7 +606,8 @@ void exponentToUnitDisplayString(int32_t exponent, bool_t flag2To10, char *displ
       case 15  : displayString[1] = 'P'; break;
       default:                           break;
     }
-  } else if(flag2To10) {
+  }
+  else if(flag2To10) {
     switch(exponent) {                             //exponent of 2^(10/3)
       case  3  : displayString[1] = 'K'; displayString[2] = 'i'; break;
       case  6  : displayString[1] = 'M'; displayString[2] = 'i'; break;
@@ -672,7 +677,8 @@ void fnAngularModeJM(uint16_t AMODE) { //Setting to HMS does not change AM
 
     if(calcMode == CM_NORMAL) {
       fnToReal(0);
-    } else if(calcMode == CM_NIM) {
+    }
+    else if(calcMode == CM_NIM) {
       addItemToNimBuffer(ITM_dotD);
     }
 
@@ -700,7 +706,8 @@ void fnAngularModeJM(uint16_t AMODE) { //Setting to HMS does not change AM
 
         if(calcMode == CM_NORMAL) {         //convert longint, and strip all angles to real.
           fnToReal(0);
-        } else if(calcMode == CM_NIM) {
+        }
+        else if(calcMode == CM_NIM) {
           addItemToNimBuffer(ITM_dotD);
         }
 
@@ -1928,8 +1935,8 @@ void fnRESET_MyM(uint8_t param) {
           case 6: itemToBeAssigned = ITM_LOADST;  break;
           default:break;
         }
-      } else
-      if(param == USER_MFIN) {
+      }
+      else if(param == USER_MFIN) {
         switch(fn) {
           case 1: itemToBeAssigned = ITM_PC;      break;
           case 2: itemToBeAssigned = ITM_DELTAPC; break;
@@ -1939,8 +1946,8 @@ void fnRESET_MyM(uint8_t param) {
           case 6: itemToBeAssigned = -MNU_FIN;    break;
           default:break;
         }
-      } else
-      if(param == USER_MCPX) {
+      }
+      else if(param == USER_MCPX) {
         switch(fn) {
           case 1: itemToBeAssigned = ITM_DRG;      break;
           case 2: itemToBeAssigned = ITM_CC;       break;
@@ -1950,8 +1957,8 @@ void fnRESET_MyM(uint8_t param) {
           case 6: itemToBeAssigned = ITM_op_j;     break;
           default:break;
         }
-      } else
-      if(param == USER_MC47) {
+      }
+      else if(param == USER_MC47) {
         switch(fn) {
           case 1: itemToBeAssigned = ITM_DRG;      break;
           case 2: itemToBeAssigned = ITM_YX;       break;
@@ -1961,8 +1968,8 @@ void fnRESET_MyM(uint8_t param) {
           case 6: itemToBeAssigned = ITM_op_j;     break;
           default:break;
         }
-      } else
-      if(param == USER_MR47) {
+      }
+      else if(param == USER_MR47) {
         switch(fn) {
           case 1: itemToBeAssigned = ITM_op_j;     break;
           case 2: itemToBeAssigned = ITM_op_j_pol; break;
@@ -1972,7 +1979,8 @@ void fnRESET_MyM(uint8_t param) {
           case 6: itemToBeAssigned = -MNU_HOME;    break;
           default:break;
         }
-      } else {
+      }
+      else {
         itemToBeAssigned = ASSIGN_CLEAR;
       }
       assignToMyMenu_(fn - 1);

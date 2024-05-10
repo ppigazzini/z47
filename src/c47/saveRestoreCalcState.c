@@ -791,8 +791,8 @@ uint16_t flushBufferCnt = 0;
       printf("ramSize blocks %6u           %6d\n", ramSizeInBlocks, RAM_SIZE_IN_BLOCKS);
       printf("ramSize bytes  %6u           %6d\n", TO_BYTES(ramSizeInBlocks), TO_BYTES(RAM_SIZE_IN_BLOCKS));
       return;
-    } else
-    if(backupVersion == 0) {
+    }
+    else if(backupVersion == 0) {
       refreshScreen(92);
       printf("Cannot restore calc's memory from file backup.cfg! File backup.cfg has invalid version number.\n");
       return;

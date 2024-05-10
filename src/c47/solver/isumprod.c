@@ -218,14 +218,16 @@ static bool_t _checkRegisters(void) {
       moreInfoOnError("In function _checkiArgument:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     return true;
-  } else if(getRegisterDataType(REGISTER_Y) != dtLongInteger) {
+  }
+  else if(getRegisterDataType(REGISTER_Y) != dtLongInteger) {
     displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_Y);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "Long integer expected");
       moreInfoOnError("In function _checkiArgument:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     return true;
-  } else if(getRegisterDataType(REGISTER_Z) != dtLongInteger) {
+  }
+  else if(getRegisterDataType(REGISTER_Z) != dtLongInteger) {
     displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_Z);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "Long integer expected");

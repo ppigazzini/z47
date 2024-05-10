@@ -1009,7 +1009,8 @@ smallFont:
         maxCols--;
         goto smallFont;
       }
-  } else {
+  }
+  else {
     if(displayFormat == DF_ALL && noFix) {
       displayFormat = getSystemFlag(FLAG_ALLENG) ? DF_ENG : DF_SCI;
       displayFormatDigits = digits;

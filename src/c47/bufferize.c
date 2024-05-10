@@ -253,7 +253,8 @@ typedef struct {
                 jj = 1;
               }
             }
-          } else {
+          }
+          else {
             stringAppend(addChar,addChar0);
             if(addChar0[0] == '^') {
               if(scrLock == NC_SUPERSCRIPT) {
@@ -274,8 +275,9 @@ typedef struct {
           }
           xcopy(aimCursorPos, addChar, itemLen);
           if(jj != 0) {
-              xCursor += stringGlyphLength(addChar) - jj;
-          } else {
+            xCursor += stringGlyphLength(addChar) - jj;
+          }
+          else {
             switch(item) {
               case ITM_poly_SIGN: {
                 xCursor += 0;
@@ -396,7 +398,9 @@ typedef struct {
             light_ASB_icon();
           #endif // !TESTSUITE_BUILD
         }
-        if(calcMode == CM_PEM) hourGlassIconEnabled = false;
+        if(calcMode == CM_PEM) {
+          hourGlassIconEnabled = false;
+        }
       }
 
       else if(tam.mode) {
@@ -1569,7 +1573,8 @@ typedef struct {
         if(INTEGERSHORTCUTS && nimNumberPart == NP_INT_BASE && aimBuffer[strlen(aimBuffer) - 1] == '#') {
           strcat(aimBuffer, "2");
           goto addItemToNimBuffer_exit;
-        } else {
+        }
+        else {
           keyActionProcessed = false;
         }
         break;
@@ -1583,7 +1588,8 @@ typedef struct {
         if(INTEGERSHORTCUTS && nimNumberPart == NP_INT_BASE && aimBuffer[strlen(aimBuffer) - 1] == '#') {
           strcat(aimBuffer, "10");
           goto addItemToNimBuffer_exit;
-        } else {
+        }
+        else {
           keyActionProcessed = false;
         }
         break;
@@ -1593,7 +1599,8 @@ typedef struct {
         if(INTEGERSHORTCUTS && nimNumberPart == NP_INT_BASE && aimBuffer[strlen(aimBuffer) - 1] == '#') {
           strcat(aimBuffer, "16");
           goto addItemToNimBuffer_exit;
-        } else {
+        }
+        else {
           keyActionProcessed = false;
         }
         break;
@@ -1604,7 +1611,8 @@ typedef struct {
           aimBuffer[strlen(aimBuffer)-1]=0;
           nimNumberPart = NP_INT_10;
           goto addItemToNimBuffer_exit;
-        } else {
+        }
+        else {
           keyActionProcessed = false;
         }
         break;
@@ -2094,7 +2102,8 @@ typedef struct {
     if(!getSystemFlag(FLAG_FRACT)) {
       setSystemFlag(FLAG_FRACT);          //1     //NOTE CHANGE HERE TO SWITCH OFF AUTO FRAC MODE AFTER FRACTION INPUT
       //changeFractionModeOnENTER = true; //2     //USE either //1 or //2
-    } else {
+    }
+    else {
       changeFractionModeOnENTER = false;
     }
     constantFractionsOn = false;
@@ -2286,8 +2295,8 @@ typedef struct {
         if((is_i || is_theta) && !getSystemFlag(FLAG_POLAR)) { // complex i
           aimBuffer[++lastChar] = '1';                                                   //JM 2020-06-22 CHANGED FROM "1" to "0". DEFAULTING TO 0+0xi WHEN ABORTING CC ENTRY. #6072aee
           aimBuffer[lastChar + 1] = 0;                                                   //JM 2023-09-18 reverted partially (for RECT) from "0" to "1", specifically for a blank i
-        } else
-        if((is_i || is_theta) && getSystemFlag(FLAG_POLAR)) { // complex measured angle
+        }
+        else if((is_i || is_theta) && getSystemFlag(FLAG_POLAR)) { // complex measured angle
           aimBuffer[++lastChar] = '0';                                                   //JM 2020-06-22 CHANGED FROM "1" to '0'. DEFAULTING TO 0+0xi WHEN ABORTING CC ENTRY. #6072aee
           aimBuffer[lastChar + 1] = 0;
         }

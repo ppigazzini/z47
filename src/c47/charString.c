@@ -94,11 +94,11 @@ typedef struct {
   void charCodeHPReplacement(uint16_t *charCode) {
     #if !defined(TESTSUITE_BUILD)
       if(replace(charCode)) {
-      } else
-      if(*charCode >= charCodeFromString(STD_1, 0) &&  *charCode <= charCodeFromString(STD_9, 0)) {
+      }
+      else if(*charCode >= charCodeFromString(STD_1, 0) &&  *charCode <= charCodeFromString(STD_9, 0)) {
         *charCode = *charCode - charCodeFromString(STD_1, 0) + charCodeFromString(STD_HP_1, 0);
-      } else
-      if(*charCode >= charCodeFromString(STD_SUP_1, 0) &&  *charCode <= charCodeFromString(STD_SUP_9, 0)) {
+      }
+      else if(*charCode >= charCodeFromString(STD_SUP_1, 0) &&  *charCode <= charCodeFromString(STD_SUP_9, 0)) {
         *charCode = *charCode - charCodeFromString(STD_SUP_1, 0) + charCodeFromString(STD_HP_1, 0);
       }
     #endif //TESTSUITE_BUILD
@@ -117,28 +117,31 @@ void expandConversionName(char *msg1) {   // 2x16+1 character limit, rounded up 
   xcopy(inStr, msg1, min(50,stringByteLength(msg1)+1));
   inStr[50]=0;
   msg1[0]=0;
-         while(inStr[i] != 0) { //replace /U with /kWh; U/ with kWh/; hkm with 100km
-            if('h' == inStr[i] && 'k' == inStr[i+1] && 'm' == inStr[i+2]) {    //test beyond end of string is ok, it will not test positive
-              msg1[jj++] = '1'; i++;
-              msg1[jj++] = '0'; i++;
-              msg1[jj++] = '0'; i++;
-              msg1[jj++] = 'k';
-              msg1[jj++] = 'm';
-            } else if('/' == inStr[i] && 'E' == inStr[i+1]) {
-              msg1[jj++] = '/'; i++;
-              msg1[jj++] = 'k'; i++;
-              msg1[jj++] = 'W';
-              msg1[jj++] = 'h';
-            } else if('E' == inStr[i] && '/' == inStr[i+1]) {
-              msg1[jj++] = 'k'; i++;
-              msg1[jj++] = 'W'; i++;
-              msg1[jj++] = 'h';
-              msg1[jj++] = '/';
-            } else {
-              msg1[jj++]=inStr[i++];
-            }
-          }
-        msg1[jj++]=0;
+  while(inStr[i] != 0) { //replace /U with /kWh; U/ with kWh/; hkm with 100km
+    if('h' == inStr[i] && 'k' == inStr[i+1] && 'm' == inStr[i+2]) {    //test beyond end of string is ok, it will not test positive
+      msg1[jj++] = '1'; i++;
+      msg1[jj++] = '0'; i++;
+      msg1[jj++] = '0'; i++;
+      msg1[jj++] = 'k';
+      msg1[jj++] = 'm';
+    }
+    else if('/' == inStr[i] && 'E' == inStr[i+1]) {
+      msg1[jj++] = '/'; i++;
+      msg1[jj++] = 'k'; i++;
+      msg1[jj++] = 'W';
+      msg1[jj++] = 'h';
+    }
+    else if('E' == inStr[i] && '/' == inStr[i+1]) {
+      msg1[jj++] = 'k'; i++;
+      msg1[jj++] = 'W'; i++;
+      msg1[jj++] = 'h';
+      msg1[jj++] = '/';
+    }
+    else {
+      msg1[jj++]=inStr[i++];
+    }
+  }
+  msg1[jj++]=0;
 }
 
 
@@ -149,29 +152,32 @@ void compressConversionName(char *msg1) {   // 2x16+1 character limit, rounded u
   xcopy(inStr, msg1, min(50,stringByteLength(msg1)+1));
   inStr[50]=0;
   msg1[0]=0;
-         while(inStr[i] != 0) { //replace 100k with |ook; 100m with |oom; /kWh with /U; kWh/ with U/
-            if('1' == inStr[i] && '0' == inStr[i+1] && '0' == inStr[i+2] && ('k' == inStr[i+3] || 'm' == inStr[i+3])) {    //test beyond end of string is ok, it will not test positive
-              msg1[jj++] = STD_BINARY_ONE[0];
-              msg1[jj++] = STD_BINARY_ONE[1];
-              msg1[jj++] = STD_BINARY_ZERO[0];
-              msg1[jj++] = STD_BINARY_ZERO[1];
-              msg1[jj++] = STD_BINARY_ZERO[0];
-              msg1[jj++] = STD_BINARY_ZERO[1];
-              msg1[jj++] = inStr[i+3];          //k or m for km or mile
-              i += 4;
-            } else if('/' == inStr[i] && 'k' == inStr[i+1] && 'W' == inStr[i+2] && 'h' == inStr[i+3]) {
-              msg1[jj++] = '/';
-              msg1[jj++] = 'E';
-              i += 4;
-            } else if('k' == inStr[i] && 'W' == inStr[i+1] && 'h' == inStr[i+2] && '/' == inStr[i+3]) {
-              msg1[jj++] = 'E';
-              msg1[jj++] = '/';
-              i += 4;
-            } else {
-              msg1[jj++]=inStr[i++];
-            }
-          }
-        msg1[jj++]=0;
+  while(inStr[i] != 0) { //replace 100k with |ook; 100m with |oom; /kWh with /U; kWh/ with U/
+    if('1' == inStr[i] && '0' == inStr[i+1] && '0' == inStr[i+2] && ('k' == inStr[i+3] || 'm' == inStr[i+3])) {    //test beyond end of string is ok, it will not test positive
+      msg1[jj++] = STD_BINARY_ONE[0];
+      msg1[jj++] = STD_BINARY_ONE[1];
+      msg1[jj++] = STD_BINARY_ZERO[0];
+      msg1[jj++] = STD_BINARY_ZERO[1];
+      msg1[jj++] = STD_BINARY_ZERO[0];
+      msg1[jj++] = STD_BINARY_ZERO[1];
+      msg1[jj++] = inStr[i+3];          //k or m for km or mile
+      i += 4;
+    }
+    else if('/' == inStr[i] && 'k' == inStr[i+1] && 'W' == inStr[i+2] && 'h' == inStr[i+3]) {
+      msg1[jj++] = '/';
+      msg1[jj++] = 'E';
+      i += 4;
+    }
+    else if('k' == inStr[i] && 'W' == inStr[i+1] && 'h' == inStr[i+2] && '/' == inStr[i+3]) {
+      msg1[jj++] = 'E';
+      msg1[jj++] = '/';
+      i += 4;
+    }
+    else {
+      msg1[jj++]=inStr[i++];
+    }
+  }
+  msg1[jj++]=0;
 }
 
 
@@ -718,45 +724,45 @@ void stringToASCII(const char *str, char *ascii) {
           ascii++;
         }
         ascii--;
-      } else
-      //arrows
-      if(a1==(uint8_t)(STD_RIGHT_DOUBLE_ARROW[0]) && a2==(uint8_t)(STD_RIGHT_DOUBLE_ARROW[1])) {
+      }
+      else if(a1==(uint8_t)(STD_RIGHT_DOUBLE_ARROW[0]) && a2==(uint8_t)(STD_RIGHT_DOUBLE_ARROW[1])) { //arrows
         *ascii = '>'; ascii++;
         *ascii = '>'; //to change to >>
-      } else
-      if((a1==(uint8_t)(STD_RIGHT_DASHARROW[0]) && a2==(uint8_t)(STD_RIGHT_DASHARROW[1])) ||
+      }
+      else if((a1==(uint8_t)(STD_RIGHT_DASHARROW[0]) && a2==(uint8_t)(STD_RIGHT_DASHARROW[1])) ||
          (a1==(uint8_t)(STD_RIGHT_ARROW[0]) && a2==(uint8_t)(STD_RIGHT_ARROW[1])) ||
          (a1==(uint8_t)(STD_RIGHT_SHORT_ARROW[0]) && a2==(uint8_t)(STD_RIGHT_SHORT_ARROW[1]))
         ) {
         *ascii = '-'; ascii++;
         *ascii = '>'; //to change to ->
-      } else
-      if((a1==(uint8_t)(STD_LEFT_DASHARROW[0]) && a2==(uint8_t)(STD_LEFT_DASHARROW[1])) ||
+      }
+      else if((a1==(uint8_t)(STD_LEFT_DASHARROW[0]) && a2==(uint8_t)(STD_LEFT_DASHARROW[1])) ||
          (a1==(uint8_t)(STD_LEFT_ARROW[0]) && a2==(uint8_t)(STD_LEFT_ARROW[1]))
         ) {
         *ascii = '<'; ascii++;
         *ascii = '-'; //to change to ->
-      } else
-      if((a1==(uint8_t)(STD_UP_DASHARROW[0]) && a2==(uint8_t)(STD_UP_DASHARROW[1])) ||
+      }
+      else if((a1==(uint8_t)(STD_UP_DASHARROW[0]) && a2==(uint8_t)(STD_UP_DASHARROW[1])) ||
          (a1==(uint8_t)(STD_UP_ARROW[0]) && a2==(uint8_t)(STD_UP_ARROW[1])) ||
          (a1==(uint8_t)(STD_HOLLOW_UP_ARROW[0]) && a2==(uint8_t)(STD_HOLLOW_UP_ARROW[1])) ) {
         *ascii = '^';
-      } else
-      if((a1==(uint8_t)(STD_DOWN_DASHARROW[0]) && a2==(uint8_t)(STD_DOWN_DASHARROW[1])) ||
+      }
+      else if((a1==(uint8_t)(STD_DOWN_DASHARROW[0]) && a2==(uint8_t)(STD_DOWN_DASHARROW[1])) ||
          (a1==(uint8_t)(STD_DOWN_ARROW[0]) && a2==(uint8_t)(STD_DOWN_ARROW[1])) ||
          (a1==(uint8_t)(STD_HOLLOW_DOWN_ARROW[0]) && a2==(uint8_t)(STD_HOLLOW_DOWN_ARROW[1])) ) {
         *ascii = 'v';
-      } else
-     if(a1==(uint8_t)(STD_LEFT_RIGHT_ARROWS[0]) && a2==(uint8_t)(STD_LEFT_RIGHT_ARROWS[1])) {
+      }
+      else if(a1==(uint8_t)(STD_LEFT_RIGHT_ARROWS[0]) && a2==(uint8_t)(STD_LEFT_RIGHT_ARROWS[1])) {
         *ascii = '>'; //to change to ><
         ascii++;
         *ascii = '<'; //to change to ><
-      } else
-     if(a1==(uint8_t)(STD_SUP_pir[0]) && a2==(uint8_t)(STD_SUP_pir[1])) {
+      }
+      else if(a1==(uint8_t)(STD_SUP_pir[0]) && a2==(uint8_t)(STD_SUP_pir[1])) {
         *ascii = 'p'; //to change to ><
         ascii++;
         *ascii = 'i'; //to change to ><
-      } else
+      }
+      else
       //diverse
       if(a1==(uint8_t)(STD_RIGHT_SINGLE_QUOTE[0]) && a2==(uint8_t)(STD_RIGHT_SINGLE_QUOTE[1])) *ascii = '\''; else
       if(a1==(uint8_t)(STD_RIGHT_DOUBLE_QUOTE[0]) && a2==(uint8_t)(STD_RIGHT_DOUBLE_QUOTE[1])) *ascii = '\"'; else

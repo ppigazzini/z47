@@ -140,10 +140,12 @@ void fnNop(uint16_t unusedButMandatoryParameter) {
     }
     if(temporaryInformation == TI_LAST_CONST_CATNAME && (currentSolverStatus & 0x000F) != 0) {
       temporaryInformation = TI_NO_INFO;
-    } else
+    }
+    else
     if(func >= FIRST_CONSTANT && func <= LAST_CONSTANT && calcMode == CM_NORMAL) {
       temporaryInformation = TI_LAST_CONST_CATNAME;
-    } else
+    }
+    else
     if(calcMode == CM_NORMAL) {
       bool_t inMatrixMenu = (tam.mode == 0 ? softmenu[softmenuStack[0].softmenuId].menuItem : softmenu[softmenuStack[1].softmenuId].menuItem) == -MNU_MATX;
       switch(func) {
@@ -249,7 +251,8 @@ void fnNop(uint16_t unusedButMandatoryParameter) {
 
     if((programRunStop != PGM_RUNNING || timeLastOp0 == 0)) {               //The first manual command including XEQ (re)starts the timer by setting timeLastOp0
       LastOpTimerReStart(func);
-    } else if(func == ITM_LASTT) {                                          //If LASTT? is called in a program it laps the timer, but does not stop it. It is never stopped, only timeLastOp1 is set, and it is restarted only with a new command
+    }
+    else if(func == ITM_LASTT) {                                            //If LASTT? is called in a program it laps the timer, but does not stop it. It is never stopped, only timeLastOp1 is set, and it is restarted only with a new command
       LastOpTimerLap(func);                                                 //stores the last time to timeLastOp
     }
 

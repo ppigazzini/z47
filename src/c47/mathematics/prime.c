@@ -625,7 +625,8 @@ static bool_t addFactor(longInteger_t lastFactor, longInteger_t factor, real34Ma
     if( incNExpons ) {
       if( faddr->nExpons < MAX_FACTORS ) {
           ++faddr->nExpons;
-      } else {
+      }
+      else {
         #if !defined(TESTSUITE_BUILD)
           displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
           #if (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -708,7 +709,8 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
 
   if(longIntegerIsZero(currentNumber) || longIntegerSign(currentNumber) == -1) {             // <=0 end
     goto abort;
-  } else {
+  }
+  else {
     longIntegerSubtractUInt(currentNumber,1,temp);                                           // ==1 end
     if(longIntegerIsZero(temp)) {
       goto abort;
@@ -762,7 +764,8 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
         }
         goto endandclose;
       }
-    } else {
+    }
+    else {
       longIntegerNextPrime(nextPrime, nextPrime);
     }
     if(!longIntegerIsPositive(eval)) {

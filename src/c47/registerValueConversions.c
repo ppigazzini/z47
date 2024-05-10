@@ -1102,34 +1102,42 @@ void processRealComplexDyadicFunction(void (*realf)(void), void (*complexf)(void
     if(typeY == dtReal34Matrix) {
       elementwiseRemaRema(realf);
       goto fin;
-    } else if(typeY == dtComplex34Matrix) {
+    }
+    else if(typeY == dtComplex34Matrix) {
       if(complexf != NULL)
         elementwiseCxmaRema(complexf);
       else
         badTypeError(REGISTER_Y);
       goto fin;
-    } else if(yNumber) {
+    }
+    else if(yNumber) {
       if(yCmplx) {
         if(complexf != NULL)
           elementwiseCplxRema(complexf);
         else
           badTypeError(REGISTER_Y);
-      } else
+      }
+      else {
         elementwiseRealRema(realf);
+      }
       goto fin;
     }
-  } else if(typeX == dtComplex34Matrix && complexf != NULL) {
+  }
+  else if(typeX == dtComplex34Matrix && complexf != NULL) {
     if(typeY == dtReal34Matrix) {
       elementwiseRemaCxma(complexf);
       goto fin;
-    } else if(typeY == dtComplex34Matrix) {
+    }
+    else if(typeY == dtComplex34Matrix) {
       elementwiseCxmaCxma(complexf);
       goto fin;
-    } else if(yNumber) {
+    }
+    else if(yNumber) {
       elementwiseCplxCxma(complexf);
       goto fin;
     }
-  } else if(typeY == dtReal34Matrix && xNumber) {
+  }
+  else if(typeY == dtReal34Matrix && xNumber) {
     if(!xCmplx && realf != NULL)
       elementwiseRemaReal(realf);
     else if(complexf != NULL)
@@ -1137,7 +1145,8 @@ void processRealComplexDyadicFunction(void (*realf)(void), void (*complexf)(void
     else
       badTypeError(REGISTER_X);
     goto fin;
-  } else if(typeY == dtComplex34Matrix && xNumber) {
+  }
+  else if(typeY == dtComplex34Matrix && xNumber) {
     elementwiseCxmaCplx(complexf);
     goto fin;
   }
@@ -1167,10 +1176,12 @@ void processIntRealComplexDyadicFunction(void (*realf)(void), void (*complexf)(v
   if(typeX == dtShortInteger && typeY == dtShortInteger && shortintf != NULL) {
     if(saveLastX())
       shortintf();
-  } else if(xInt && yInt && longintf != NULL) {
+  }
+  else if(xInt && yInt && longintf != NULL) {
     if(saveLastX())
       longintf();
-  } else {
+  }
+  else {
     processRealComplexDyadicFunction(realf, complexf);
     return;
   }

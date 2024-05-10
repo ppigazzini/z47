@@ -919,7 +919,8 @@ int16_t lastItem = 0;
 //                ((uint8_t *)data)[0] <= '6'
 //                )  ) {       //prevent "shifts on rows f and g on F6 to be overwritten //Allow any normal mode menu HOME PFN MyM, except shifts not in f or g line
 //          return;
-//        } else
+//        }
+//        else
 
 
         if(!(previousCalcMode == CM_AIM && (!shiftG && !shiftF) && ((uint8_t *)data)[0] == '6')) {       //prevent "ALPHA" on F6 to be overwritten
@@ -931,7 +932,8 @@ int16_t lastItem = 0;
             }                                        //^^JM
             return;
           }
-        } else {
+        }
+        else {
           return;
         }
       }
@@ -1122,7 +1124,8 @@ int16_t lastItem = 0;
               screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
               refreshScreen(115);
               return;
-            } else {
+            }
+            else {
               //no action, continue to insert the command
             }
           }
@@ -1231,11 +1234,11 @@ int16_t lastItem = 0;
               if(calcMode == CM_ASSIGN && itemToBeAssigned == 0 && item != ITM_NOP) {
                 if(item == CHR_case) {
                   SetSetting(JC_UC);
-                } else
-                if(item == CHR_num) {
+                }
+                else if(item == CHR_num) {
                   SetSetting(JC_NL);
-                } else
-                if(tam.alpha) {
+                }
+                else if(tam.alpha) {
                   processAimInput(item);
                   if(stringGlyphLength(aimBuffer) > 6) {
                     assignLeaveAlpha();
@@ -1665,6 +1668,7 @@ bool_t allowShiftsToClearError = false;
       uint8_t itm4;
       uint8_t itm5;
     } circ_t;
+
     uint8_t circPtr0 =  0;
     uint8_t circPtr1 = 0;
     uint8_t circPtr2 = 0;
@@ -1687,71 +1691,92 @@ bool_t allowShiftsToClearError = false;
 
     bool_t checkNumber(uint8_t keyCode) {
       if(calcModel == USER_C47) {
-        if((circPtr0 == 0 && circ[0].itm0==keyCode) || circPtr0 > nbrOfElements(circ)) circPtr0 = 0;
+        if((circPtr0 == 0 && circ[0].itm0==keyCode) || circPtr0 > nbrOfElements(circ)) {
+          circPtr0 = 0;
+        }
         if(circ[circPtr0].itm0==keyCode) {
           if(circ[++circPtr0].itm0==0) {
             fnSetHP35(0);
             return true;
           }
-        } else {
+        }
+        else {
           circPtr0 = 0;
         }
-        if((circPtr2 == 0 && circ[0].itm2==keyCode) || circPtr2 > nbrOfElements(circ)) circPtr2 = 0;
+        if((circPtr2 == 0 && circ[0].itm2==keyCode) || circPtr2 > nbrOfElements(circ)) {
+          circPtr2 = 0;
+        }
         if(circ[circPtr2].itm2==keyCode) {
           if(circ[++circPtr2].itm2==0) {
             fnSetC47(0);
             return true;
           }
-        } else {
+        }
+        else {
           circPtr2 = 0;
         }
       }
       if(calcModel == USER_R47) {
-        if((circPtr1 == 0 && circ[0].itm1==keyCode) || circPtr1 > nbrOfElements(circ)) circPtr1 = 0;
+        if((circPtr1 == 0 && circ[0].itm1==keyCode) || circPtr1 > nbrOfElements(circ)) {
+          circPtr1 = 0;
+        }
         if(circ[circPtr1].itm1==keyCode) {
           if(circ[++circPtr1].itm1==0) {
             fnSetHP35(0);
             return true;
           }
-        } else {
+        }
+        else {
           circPtr1 = 0;
         }
-        if((circPtr2a == 0 && circ[0].itm2a==keyCode) || circPtr2a > nbrOfElements(circ)) circPtr2a = 0;
+        if((circPtr2a == 0 && circ[0].itm2a==keyCode) || circPtr2a > nbrOfElements(circ)) {
+          circPtr2a = 0;
+        }
         if(circ[circPtr2a].itm2a==keyCode) {
           if(circ[++circPtr2a].itm2a==0) {
             fnSetC47(0);
             return true;
           }
-        } else {
+        }
+        else {
           circPtr2a = 0;
         }
       }
 
-      if((circPtr3 == 0 && circ[0].itm3==keyCode) || circPtr3 > nbrOfElements(circ)) circPtr3 = 0;
+      if((circPtr3 == 0 && circ[0].itm3==keyCode) || circPtr3 > nbrOfElements(circ)) {
+        circPtr3 = 0;
+      }
       if(circ[circPtr3].itm3==keyCode) {
         if(circ[++circPtr3].itm3==0) {
           fnSetJM(0);
           return true;
         }
-      } else {
+      }
+      else {
         circPtr3 = 0;
       }
-      if((circPtr4 == 0 && circ[0].itm4==keyCode) || circPtr4 > nbrOfElements(circ)) circPtr4 = 0;
+      if((circPtr4 == 0 && circ[0].itm4==keyCode) || circPtr4 > nbrOfElements(circ)) {
+        circPtr4 = 0;
+      }
       if(circ[circPtr4].itm4==keyCode) {
         if(circ[++circPtr4].itm4==0) {
           fnSetRJ(0);
           return true;
         }
-      } else {
+      }
+      else {
         circPtr4 = 0;
       }
-      if((circPtr5 == 0 && circ[0].itm5==keyCode) || circPtr5 > nbrOfElements(circ)) circPtr5 = 0; //C47MENU
+      if((circPtr5 == 0 && circ[0].itm5==keyCode) || circPtr5 > nbrOfElements(circ)) {
+        circPtr5 = 0; //C47MENU
+      }
       if(circ[circPtr5].itm5==keyCode) {
         if(circ[++circPtr5].itm5==0) {
           fnDumpMenus(0);
           return true;
         }
-      } else {
+      }
+      else {
         circPtr5 = 0;
       }
       //printf("RRRR %i %u %u\n", keyCode, circPtr, circPtr2);
@@ -2261,221 +2286,233 @@ RELEASE_END:
 
     if(GRAPHMODE && item != ITM_BACKSPACE && item != ITM_EXIT1 && item != ITM_UP1 && item != ITM_DOWN1) {
       keyActionProcessed = true;
-    } else
-
-    if(calcMode == CM_ASN_BROWSER && item != ITM_PERIOD && item != ITM_USERMODE && item != ITM_BACKSPACE && item != ITM_EXIT1 && item != ITM_UP1 && item != ITM_DOWN1) {
+    }
+    else if(calcMode == CM_ASN_BROWSER && item != ITM_PERIOD && item != ITM_USERMODE && item != ITM_BACKSPACE && item != ITM_EXIT1 && item != ITM_UP1 && item != ITM_DOWN1) {
       keyActionProcessed = true;
-    } else
-
-    switch(item) {
-      case ITM_BACKSPACE: {
-        if(calcMode == CM_NIM || calcMode == CM_AIM || calcMode == CM_EIM) {
-          temporaryInformation = TI_NO_INFO;
-          refreshRegisterLine(NIM_REGISTER_LINE); }
-        else {
-          //JM No if needed, it does nothing if not in NIM. TO DISPLAY NUMBER KEYPRESS DIRECTLY AFTER PRESS, NOT ONLY UPON RELEASE          break;
-          keyActionProcessed = true;   //JM move this to before fnKeyBackspace to allow fnKeyBackspace to cancel it if needed to allow this function via timing out to NOP, and this is incorporated with the CLRDROP
-          fnKeyBackspace(NOPARAM);
-          if(calcMode != CM_CONFIRMATION) {
+    }
+    else {
+      switch(item) {
+        case ITM_BACKSPACE: {
+          if(calcMode == CM_NIM || calcMode == CM_AIM || calcMode == CM_EIM) {
             temporaryInformation = TI_NO_INFO;
-          }
-        }
-        break;
-      }
-
-      case ITM_UP1: {
-        if(calcMode != CM_CONFIRMATION) {
-          keyActionProcessed = true;   //JM swapped to before fnKeyUp to be able to check if key was processed below. Chose to process it here, as fnKeyUp does not have access to item.
-          fnKeyUp(NOPARAM);
-          if(!keyActionProcessed) {    //JMvv
-            addItemToBuffer(ITM_UP_ARROW);    //Let the arrows produce arrow up and arrow down in ALPHA mode
-          }                            //JM^^
-          if(calcMode != CM_LISTXY && (currentSoftmenuScrolls() || calcMode != CM_NORMAL || temporaryInformation != TI_NO_INFO)) {
-            refreshScreen(118);
-          }
-          keyActionProcessed = true;
-          #if (REAL34_WIDTH_TEST == 1)
-            if(++largeur > SCREEN_WIDTH) {
-              largeur--;
+            refreshRegisterLine(NIM_REGISTER_LINE); }
+          else {
+            //JM No if needed, it does nothing if not in NIM. TO DISPLAY NUMBER KEYPRESS DIRECTLY AFTER PRESS, NOT ONLY UPON RELEASE          break;
+            keyActionProcessed = true;   //JM move this to before fnKeyBackspace to allow fnKeyBackspace to cancel it if needed to allow this function via timing out to NOP, and this is incorporated with the CLRDROP
+            fnKeyBackspace(NOPARAM);
+            if(calcMode != CM_CONFIRMATION) {
+              temporaryInformation = TI_NO_INFO;
             }
-            uIntToLongInteger(largeur, lgInt);
-            convertLongIntegerToLongIntegerRegister(lgInt, REGISTER_Z);
-          #endif // (REAL34_WIDTH_TEST == 1)
-        } else {
-          keyActionProcessed = true;
-        }
-        break;
-      }
-
-      case ITM_DOWN1: {
-        if(calcMode != CM_CONFIRMATION) {
-          keyActionProcessed = true;   //swapped to before fnKeyUp to be able to check if key was processed below. Chose to process it here, as fnKeyUp does not have access to item.
-          fnKeyDown(NOPARAM);
-          if(!keyActionProcessed){     //JM
-             addItemToBuffer(ITM_DOWN_ARROW);    //Let the arrows produce arrow up and arrow down in ALPHA mode
-          }                            //JM^^
-          if(calcMode != CM_LISTXY && (currentSoftmenuScrolls() || calcMode != CM_NORMAL  || temporaryInformation != TI_NO_INFO)) {
-            refreshScreen(119);
           }
-          keyActionProcessed = true;
-          #if (REAL34_WIDTH_TEST == 1)
-            if(--largeur < 20) {
-              largeur++;
+          break;
+        }
+
+        case ITM_UP1: {
+          if(calcMode != CM_CONFIRMATION) {
+            keyActionProcessed = true;   //JM swapped to before fnKeyUp to be able to check if key was processed below. Chose to process it here, as fnKeyUp does not have access to item.
+            fnKeyUp(NOPARAM);
+            if(!keyActionProcessed) {    //JMvv
+              addItemToBuffer(ITM_UP_ARROW);    //Let the arrows produce arrow up and arrow down in ALPHA mode
+            }                            //JM^^
+            if(calcMode != CM_LISTXY && (currentSoftmenuScrolls() || calcMode != CM_NORMAL || temporaryInformation != TI_NO_INFO)) {
+              refreshScreen(118);
             }
-            uIntToLongInteger(largeur, lgInt);
-            convertLongIntegerToLongIntegerRegister(lgInt, REGISTER_Z);
-          #endif // (REAL34_WIDTH_TEST == 1)
-        } else {
-          keyActionProcessed = true;
-        }
-        break;
-      }
-
-      case ITM_EXIT1: {
-        if(calcMode == CM_PEM || SHOWMODE) {    //do action on press, instead of release
-          fnKeyExit(NOPARAM);
-          keyActionProcessed = true;            //Removed to force EXIT on the RELEASE cycle to make it do fnKeyExit later to allow NOP
-        }
-        if((temporaryInformation != TI_NO_INFO) && (calcMode != CM_CONFIRMATION)) {
-          temporaryInformation = TI_NO_INFO;
-          keyActionProcessed = true;
-          refreshScreen(120);
-        }
-        break;
-      }
-
-      case ITM_op_j_pol:
-      case ITM_op_j:
-      case ITM_CC:
-      case ITM_dotD: {
-        if(calcMode == CM_ASSIGN) {
-          if(itemToBeAssigned == 0) {
-            itemToBeAssigned = item;
+            keyActionProcessed = true;
+            #if (REAL34_WIDTH_TEST == 1)
+              if(++largeur > SCREEN_WIDTH) {
+                largeur--;
+              }
+              uIntToLongInteger(largeur, lgInt);
+              convertLongIntegerToLongIntegerRegister(lgInt, REGISTER_Z);
+            #endif // (REAL34_WIDTH_TEST == 1)
           }
           else {
-            tamBuffer[0] = 0;
+            keyActionProcessed = true;
           }
-          keyActionProcessed = true;
+          break;
         }
-        else if(calcMode == CM_REGISTER_BROWSER || calcMode == CM_FLAG_BROWSER || calcMode == CM_ASN_BROWSER || calcMode == CM_FONT_BROWSER || calcMode == CM_TIMER) {
-          keyActionProcessed = true;
-        }
-        else if(calcMode == CM_PEM && item == ITM_dotD && aimBuffer[0] == 0) {
-          addStepInProgram(ITM_toREAL);
-          keyActionProcessed = true;
-        }
-        break;
-      }
 
-      case ITM_ENTER: {
-        if(calcMode == CM_ASSIGN) {
-          if(itemToBeAssigned == 0) {
-            if(tam.alpha) {
-              assignLeaveAlpha();
-              assignGetName1();
+        case ITM_DOWN1: {
+          if(calcMode != CM_CONFIRMATION) {
+            keyActionProcessed = true;   //swapped to before fnKeyUp to be able to check if key was processed below. Chose to process it here, as fnKeyUp does not have access to item.
+            fnKeyDown(NOPARAM);
+            if(!keyActionProcessed){     //JM
+              addItemToBuffer(ITM_DOWN_ARROW);    //Let the arrows produce arrow up and arrow down in ALPHA mode
+            }                            //JM^^
+            if(calcMode != CM_LISTXY && (currentSoftmenuScrolls() || calcMode != CM_NORMAL  || temporaryInformation != TI_NO_INFO)) {
+              refreshScreen(119);
+            }
+            keyActionProcessed = true;
+            #if (REAL34_WIDTH_TEST == 1)
+              if(--largeur < 20) {
+                largeur++;
+              }
+              uIntToLongInteger(largeur, lgInt);
+              convertLongIntegerToLongIntegerRegister(lgInt, REGISTER_Z);
+            #endif // (REAL34_WIDTH_TEST == 1)
+          }
+          else {
+            keyActionProcessed = true;
+          }
+          break;
+        }
+
+        case ITM_EXIT1: {
+          if(calcMode == CM_PEM || SHOWMODE) {    //do action on press, instead of release
+            fnKeyExit(NOPARAM);
+            keyActionProcessed = true;            //Removed to force EXIT on the RELEASE cycle to make it do fnKeyExit later to allow NOP
+          }
+          if((temporaryInformation != TI_NO_INFO) && (calcMode != CM_CONFIRMATION)) {
+            temporaryInformation = TI_NO_INFO;
+            keyActionProcessed = true;
+            refreshScreen(120);
+          }
+          break;
+        }
+
+        case ITM_op_j_pol:
+        case ITM_op_j:
+        case ITM_CC:
+        case ITM_dotD: {
+          if(calcMode == CM_ASSIGN) {
+            if(itemToBeAssigned == 0) {
+              itemToBeAssigned = item;
             }
             else {
-              itemToBeAssigned = ASSIGN_CLEAR;
-              if(previousCalcMode == CM_AIM) {
-                showSoftmenu(-MNU_MyAlpha); //JM push MyAlpha in case ALPHA is up (likely)
+              tamBuffer[0] = 0;
+            }
+            keyActionProcessed = true;
+          }
+          else if(calcMode == CM_REGISTER_BROWSER || calcMode == CM_FLAG_BROWSER || calcMode == CM_ASN_BROWSER || calcMode == CM_FONT_BROWSER || calcMode == CM_TIMER) {
+            keyActionProcessed = true;
+          }
+          else if(calcMode == CM_PEM && item == ITM_dotD && aimBuffer[0] == 0) {
+            addStepInProgram(ITM_toREAL);
+            keyActionProcessed = true;
+          }
+          break;
+        }
+
+        case ITM_ENTER: {
+          if(calcMode == CM_ASSIGN) {
+            if(itemToBeAssigned == 0) {
+              if(tam.alpha) {
+                assignLeaveAlpha();
+                assignGetName1();
               }
+              else {
+                itemToBeAssigned = ASSIGN_CLEAR;
+                if(previousCalcMode == CM_AIM) {
+                  showSoftmenu(-MNU_MyAlpha); //JM push MyAlpha in case ALPHA is up (likely)
+                }
+              }
+            }
+            else {
+              if(tam.alpha && tam.mode != TM_NEWMENU) {
+                assignLeaveAlpha();
+                assignGetName2();
+              }
+              else if(tam.alpha) {
+                tamBuffer[0] = 0;
+              }
+            }
+            keyActionProcessed = true;
+          }
+          else if(calcMode == CM_REGISTER_BROWSER || calcMode == CM_FLAG_BROWSER || calcMode == CM_ASN_BROWSER || calcMode == CM_FONT_BROWSER) {
+            keyActionProcessed = true;
+          }
+          else if(calcMode == CM_CONFIRMATION) {
+            temporaryInformation = TI_ARE_YOU_SURE;      // Keep confirmation message on screen
+            keyActionProcessed = true;
+          }
+          else if(tam.mode) {
+
+            // To TEST and investigate 2023-10-02
+            // User menu name create: ASN + USER 'DDD' has a problem by exiting to MyAlpha
+
+            tamProcessInput(ITM_ENTER);
+            keyActionProcessed = true;
+          }
+          else if(calcMode == CM_NIM) {                             //JMvv
+            addItemToBuffer(item);
+            keyActionProcessed = true;
+          }                                                         //JM^^
+          break;
+        }
+
+        case CHR_caseUP: {                                                   //From keyboard: logic for Up/Dn case/num
+          if(numLock)  {}
+          else if(alphaCase == AC_LOWER) {
+            processKeyAction(CHR_case);
+          }
+          else if(alphaCase == AC_UPPER) {
+            processKeyAction(CHR_numL);
+          }
+          nextChar = NC_NORMAL;
+          keyActionProcessed = true;
+          break;
+        }
+
+        case CHR_caseDN: {                                                   //From keyboard: logic for Up/Dn case/num
+          if(numLock) {
+            alphaCase = AC_UPPER; processKeyAction(CHR_numU);
+          }
+          else if(alphaCase == AC_UPPER) {
+            processKeyAction(CHR_case);
+          }
+          nextChar = NC_NORMAL;
+          keyActionProcessed = true;
+          break;
+        }
+
+        case CHR_numL: {
+          if(!numLock) {
+            processKeyAction(CHR_num);
+          }
+          keyActionProcessed = true;
+          break;
+        }
+        case CHR_numU: {
+          if(numLock) {
+            processKeyAction(CHR_num);
+          }
+          keyActionProcessed = true;
+          break;
+        }
+        case CHR_num: {                                                      //Toggle numlock from shifted arrow shortcut
+          alphaCase = AC_UPPER;
+          numLock = !numLock;
+          if(!numLock) {
+            nextChar = NC_NORMAL;
+          }
+          showAlphaModeonGui(); //dr JM, see keyboardtweaks
+          keyActionProcessed = true;
+          break;
+        }
+
+        case CHR_case: {                                                      //Toggle capslock from shifted arrow shortcut
+          numLock = false;
+          int16_t sm = softmenu[softmenuStack[0].softmenuId].menuItem;
+          nextChar = NC_NORMAL;
+          if(alphaCase == AC_LOWER) {
+            alphaCase = AC_UPPER;
+            if(sm == -MNU_alpha_omega || sm == -MNU_ALPHAintl) {
+              softmenuStack[0].softmenuId--; // Switch case menu
             }
           }
           else {
-            if(tam.alpha && tam.mode != TM_NEWMENU) {
-              assignLeaveAlpha();
-              assignGetName2();
-            }
-            else if(tam.alpha) {
-              tamBuffer[0] = 0;
+            alphaCase = AC_LOWER;
+            if(sm == -MNU_ALPHA_OMEGA || sm == -MNU_ALPHAINTL) {
+              softmenuStack[0].softmenuId++; // Switch case menu
             }
           }
+          showAlphaModeonGui(); //dr JM, see keyboardtweaks
           keyActionProcessed = true;
+          break;
         }
-        else if(calcMode == CM_REGISTER_BROWSER || calcMode == CM_FLAG_BROWSER || calcMode == CM_ASN_BROWSER || calcMode == CM_FONT_BROWSER) {
-          keyActionProcessed = true;
-        }
-        else if(calcMode == CM_CONFIRMATION) {
-          temporaryInformation = TI_ARE_YOU_SURE;      // Keep confirmation message on screen
-          keyActionProcessed = true;
-        }
-        else if(tam.mode) {
-
-// To TEST and investigate 2023-10-02
-// User menu name create: ASN + USER 'DDD' has a problem by exiting to MyAlpha
-
-          tamProcessInput(ITM_ENTER);
-          keyActionProcessed = true;
-        }
-        else if(calcMode == CM_NIM) {                             //JMvv
-          addItemToBuffer(item);
-          keyActionProcessed = true;
-        }                                                         //JM^^
-        break;
-      }
 
 
-      case CHR_caseUP: {                                                   //From keyboard: logic for Up/Dn case/num
-        if(numLock)  { }
-          else if(alphaCase == AC_LOWER)  { processKeyAction(CHR_case); }
-            else if(alphaCase == AC_UPPER)  { processKeyAction(CHR_numL); }
-        nextChar = NC_NORMAL;
-        keyActionProcessed = true;
-        break;
-      }
-      case CHR_caseDN: {                                                   //From keyboard: logic for Up/Dn case/num
-        if(numLock)  { alphaCase = AC_UPPER; processKeyAction(CHR_numU); } else
-          if(alphaCase == AC_UPPER)  { processKeyAction(CHR_case); }
-        nextChar = NC_NORMAL;
-        keyActionProcessed = true;
-        break;
-      }
-
-
-      case CHR_numL: {
-        if(!numLock)  { processKeyAction(CHR_num); }
-        keyActionProcessed = true;
-        break;
-      }
-      case CHR_numU: {
-        if(numLock)  { processKeyAction(CHR_num); }
-        keyActionProcessed = true;
-        break;
-      }
-      case CHR_num: {                                                      //Toggle numlock from shifted arrow shortcut
-        alphaCase = AC_UPPER;
-        numLock = !numLock;
-        if(!numLock) { nextChar = NC_NORMAL;}
-        showAlphaModeonGui(); //dr JM, see keyboardtweaks
-        keyActionProcessed = true;
-        break;
-      }
-
-
-      case CHR_case: {                                                      //Toggle capslock from shifted arrow shortcut
-        numLock = false;
-        int16_t sm = softmenu[softmenuStack[0].softmenuId].menuItem;
-        nextChar = NC_NORMAL;
-        if(alphaCase == AC_LOWER) {
-          alphaCase = AC_UPPER;
-          if(sm == -MNU_alpha_omega || sm == -MNU_ALPHAintl) {
-            softmenuStack[0].softmenuId--; // Switch case menu
-          }
-        }
-        else {
-          alphaCase = AC_LOWER;
-          if(sm == -MNU_ALPHA_OMEGA || sm == -MNU_ALPHAINTL) {
-            softmenuStack[0].softmenuId++; // Switch case menu
-          }
-        }
-        showAlphaModeonGui(); //dr JM, see keyboardtweaks
-        keyActionProcessed = true;
-        break;
-      }
-
-
-      default:
-      {
+      default: {
         #if defined(PC_BUILD) && ((defined VERBOSEKEYS) || (defined MONITOR_CLRSCR))
           printf("Switch - default: processKeyAction: calcMode=%d itemToBeAssigned=%d item=%d SHOWMODE=%u\n",calcMode, itemToBeAssigned, item, SHOWMODE);
         #endif //PC_BUILD
@@ -2564,19 +2601,20 @@ RELEASE_END:
                   setSystemFlag(FLAG_ASLIFT);
                   temporaryInformation = TI_COPY_FROM_SHOW;
                   closeShowMenu();
-                } else if(ITM_0 <= item && item <= ITM_9) {
+                }
+                 else if(ITM_0 <= item && item <= ITM_9) {
                   keyActionProcessed = true;
                   if(showRegis%10 == 0 && showRegis <=90) {  //Will only get to this point if ##SHOWDIGITS is enabled
                     showRegis += (item - ITM_0);
-                  } else {
+                  }
+                  else {
                     showRegis = (item - ITM_0)*10;
                   }
                   fnShow_SCROLL(255);
-//                  refreshScreen(138);
+                  //refreshScreen(138);
                 }
-              } else
-
-              if(item == ITM_EXPONENT || item == ITM_PERIOD || (ITM_0 <= item && item <= ITM_9)) {
+              }
+              else if(item == ITM_EXPONENT || item == ITM_PERIOD || (ITM_0 <= item && item <= ITM_9)) {
                 addItemToNimBuffer(item);
                 keyActionProcessed = true;
               }
@@ -2589,7 +2627,7 @@ RELEASE_END:
             }
 
             case CM_AIM: {
-//JM In AIM, BST and SST is not reaching here, as it is reconfigured for CAPS lock and NUM lock
+              //JM In AIM, BST and SST is not reaching here, as it is reconfigured for CAPS lock and NUM lock
               if(item == ITM_BST || item == ITM_SST) {
                 closeAim();
                 runFunction(item);
@@ -2628,7 +2666,9 @@ RELEASE_END:
               }
               else {
                 keyActionProcessed = true;
-                if(item == ITM_toINT || item == ITM_HASH_JM) resetShiftState();
+                if(item == ITM_toINT || item == ITM_HASH_JM) {
+                  resetShiftState();
+                }
                 addItemToNimBuffer(item);
                 if( ((ITM_0 <= item && item <= ITM_9) || item == ITM_toINT || item == ITM_HASH_JM || item == ITM_ms || ((ITM_A <= item && item <= ITM_F) && (lastIntegerBase >= 2) && topHex) ) || item == ITM_CHS || item == ITM_EXPONENT || item == ITM_PERIOD) {   //JMvv Direct keypresses; //JMNIM Added direct A-F for hex entry
                   refreshRegisterLine(REGISTER_X);
@@ -2811,8 +2851,8 @@ RELEASE_END:
                 keyActionProcessed = true;
                 lastItem = item;
                 refreshScreen(121);
-              } else
-              if(item == ITM_USERMODE) {
+              }
+              else if(item == ITM_USERMODE) {
                 runFunction(item);
                 keyActionProcessed = true;
               }
@@ -2861,7 +2901,9 @@ RELEASE_END:
                 refreshScreen(123);
               }
               else if(aimBuffer[0] != 0 && !getSystemFlag(FLAG_ALPHA) && (item == ITM_HASH_JM || item == ITM_toINT || (nimNumberPart == NP_INT_BASE && item == ITM_RCL))) {
-                if(item == ITM_HASH_JM ) item = ITM_toINT;
+                if(item == ITM_HASH_JM ) {
+                  item = ITM_toINT;
+                }
                 pemAddNumber(item);
                 keyActionProcessed = true;
                 if(item == ITM_RCL) {
@@ -2926,7 +2968,6 @@ RELEASE_END:
                     itemToBeAssigned += 26;
                   }
 
-
                   if(previousCalcMode == CM_AIM) softmenuStack[0].softmenuId = 1;     //JM change ALPHA to MyAlpha to be able to write ASN target
                 }
                 keyActionProcessed = true;
@@ -2958,7 +2999,7 @@ RELEASE_END:
                       keyActionProcessed = true;
                   }
                 }
-              }
+                }
               }
               break;
             }
@@ -2994,7 +3035,7 @@ RELEASE_END:
                 case ITM_RCL: {
                   runFunction(ITM_TIMER_RCL);
                   break;
-              }
+                }
               }
               keyActionProcessed = true;
               break;
@@ -3407,13 +3448,12 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
         if(temporaryInformation == TI_VIEW_REGISTER) {
           temporaryInformation = TI_NO_INFO;
           screenUpdatingMode = SCRUPD_AUTO;
-        } else
-        if(temporaryInformation == TI_SHOW_REGISTER || SHOWMODE) {
+        }
+        else if(temporaryInformation == TI_SHOW_REGISTER || SHOWMODE) {
           temporaryInformation = TI_NO_INFO;
           closeShowMenu();
          }
-        else
-        if(lastErrorCode != 0) {
+        else if(lastErrorCode != 0) {
           lastErrorCode = 0;
         }
         else {
@@ -3422,8 +3462,7 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
             fnEqSolvGraph(EQ_PLOT_LU);
             screenUpdatingMode = SCRUPD_AUTO;
           }
-          else
-          if(softmenuStack[0].softmenuId <= 1) { // MyMenu or MyAlpha is displayed
+          else if(softmenuStack[0].softmenuId <= 1) { // MyMenu or MyAlpha is displayed
             currentInputVariable = INVALID_VARIABLE;
             if(BASE_HOME) {
                showSoftmenu(-MNU_HOME);
@@ -3715,13 +3754,13 @@ void fnKeyCC(uint16_t complex_Type) {    //JM Using 'unusedButMandatoryParameter
       #define isRadius(typ,tag) (typ == dtLongInteger || (typ == dtReal34 && tag == amNone))
       if(getSystemFlag(FLAG_POLAR) && isAngle(sdataTypeY,sdataAtagY) && isRadius(sdataTypeX,sdataAtagX)) {
         fnSwapXY(0);
-      } else
-      if(!getSystemFlag(FLAG_POLAR) && isAngle(sdataTypeY,sdataAtagY) && isRadius(sdataTypeX,sdataAtagX)) {
+      }
+      else if(!getSystemFlag(FLAG_POLAR) && isAngle(sdataTypeY,sdataAtagY) && isRadius(sdataTypeX,sdataAtagX)) {
         fnSwapXY(0);
         setSystemFlag(FLAG_POLAR);
         toClearPolar = true;
-      } else
-      if(!getSystemFlag(FLAG_POLAR) && isAngle(sdataTypeX,sdataAtagX) && isRadius(sdataTypeY,sdataAtagY)) {
+      }
+      else if(!getSystemFlag(FLAG_POLAR) && isAngle(sdataTypeX,sdataAtagX) && isRadius(sdataTypeY,sdataAtagY)) {
         setSystemFlag(FLAG_POLAR);
         toClearPolar = true;
       }
@@ -3756,16 +3795,18 @@ void fnKeyCC(uint16_t complex_Type) {    //JM Using 'unusedButMandatoryParameter
         else {
           displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
         }
-      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         if(!polarOk && getSystemFlag(FLAG_POLAR)) {
           sprintf(errorMessage, "You cannot use CC or COMPLEX to create a Polar complex number with %s(%s) in X and %s(%s) in Y!",       getDataTypeName(getRegisterDataType(REGISTER_X), true, false), getRegisterTagName((REGISTER_X), 0), getDataTypeName(getRegisterDataType(REGISTER_Y), true, false), getRegisterTagName((REGISTER_Y), 0));
-        } else
-        if(!rectOk && !getSystemFlag(FLAG_POLAR)) {
+        }
+        else if(!rectOk && !getSystemFlag(FLAG_POLAR)) {
           sprintf(errorMessage, "You cannot use CC or COMPLEX to create a Rectangular complex number with %s(%s) in X and %s(%s) in Y!", getDataTypeName(getRegisterDataType(REGISTER_X), true, false), getRegisterTagName((REGISTER_X), 0), getDataTypeName(getRegisterDataType(REGISTER_Y), true, false), getRegisterTagName((REGISTER_Y), 0));
-        } else
-        sprintf(errorMessage, "You cannot use CC or COMPLEX with %s in X and %s in Y!", getDataTypeName(getRegisterDataType(REGISTER_X), true, false), getDataTypeName(getRegisterDataType(REGISTER_Y), true, false));
-        moreInfoOnError("In function fnKeyCC:", errorMessage, NULL, NULL);
-      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+        }
+        else {
+          sprintf(errorMessage, "You cannot use CC or COMPLEX with %s in X and %s in Y!", getDataTypeName(getRegisterDataType(REGISTER_X), true, false), getDataTypeName(getRegisterDataType(REGISTER_Y), true, false));
+          moreInfoOnError("In function fnKeyCC:", errorMessage, NULL, NULL);
+        }
+        #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       }
       if(toClearPolar) clearSystemFlag(FLAG_POLAR);
       return;
@@ -3827,9 +3868,9 @@ void fnKeyCC(uint16_t complex_Type) {    //JM Using 'unusedButMandatoryParameter
 void fnKeyBackspace(uint16_t unusedButMandatoryParameter) {
   #if !defined(TESTSUITE_BUILD)
     uint16_t lg;
-#if !defined(SAVE_SPACE_DM42_10)
+  #if !defined(SAVE_SPACE_DM42_10)
     uint8_t *nextStep;
-#endif //SAVE_SPACE_DM42_10
+  #endif //SAVE_SPACE_DM42_10
 
     if(tam.mode) {
       tamProcessInput(ITM_BACKSPACE);

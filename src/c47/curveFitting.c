@@ -120,17 +120,20 @@ void fnCurveFitting_T(uint16_t curveFitting) { // Toggle
   temporaryInformation = TI_STATISTIC_LR;
   curveFitting &= 0x01FF;                      // clear ORTHO
 
-  if(curveFitting == 0) curveFitting = CF_ORTHOGONAL_FITTING;
+  if(curveFitting == 0) {
+    curveFitting = CF_ORTHOGONAL_FITTING;
+  }
 
   if((lrSelection & CF_ORTHOGONAL_FITTING) == CF_ORTHOGONAL_FITTING && curveFitting == CF_ORTHOGONAL_FITTING) {   // if no curves selected (0) and Ortho is not chosen, then default to LIN
     lrSelection = CF_LINEAR_FITTING;
-  } else
-  if((lrSelection & CF_ORTHOGONAL_FITTING) == 0 && curveFitting == CF_ORTHOGONAL_FITTING) {   // if no curves selected (0) and Ortho is not chosen, then default to LIN
+  }
+  else if((lrSelection & CF_ORTHOGONAL_FITTING) == 0 && curveFitting == CF_ORTHOGONAL_FITTING) {   // if no curves selected (0) and Ortho is not chosen, then default to LIN
     lrSelection = CF_ORTHOGONAL_FITTING;
-  } else
-  if(lrCountOnes(curveFitting) == 1) {         // toggle bits of the lrselection word
+  }
+  else if(lrCountOnes(curveFitting) == 1) {         // toggle bits of the lrselection word
     lrSelection = (0x01FF & lrSelection) ^ curveFitting;
-  } else {
+  }
+  else {
     lrSelection = CF_LINEAR_FITTING;
   }
 

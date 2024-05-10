@@ -39,7 +39,8 @@ void drawBattery(uint16_t voltage);
       getDateString(dateTimeString);
       x = showString(dateTimeString, &standardFont, x, 0, vmNormal, true, true);
       x = showGlyph(getSystemFlag(FLAG_TDM24) ? " " : STD_SPACE_3_PER_EM, &standardFont, x, 0, vmNormal, true, true); // is 0+0+8 pixel wide
-    } else {
+    }
+    else {
       x = X_TIME;
     }
 
@@ -220,8 +221,8 @@ void showFracMode(void) {
       for(uint16_t yy = 4; yy<=11; yy++) {
         setWhitePixel(x, yy);
       }
-    } else {
-
+    }
+    else {
       if(getSystemFlag(FLAG_DENANY) && denMax == MAX_DENMAX) {
         sprintf(statusMessage,"%smax",divStr);
         x = showString(statusMessage, &standardFont, x, 0, vmNormal, true, true);
@@ -241,7 +242,6 @@ void showFracMode(void) {
           }
         }
       }
-
     }
   }
 
@@ -312,7 +312,12 @@ void showFracMode(void) {
     if(!(SBARUPD_AlphaMode) || calcMode == CM_GRAPH) return;
     int status=0;
     uint8_t nChar;
-    if(scrLock == NC_NORMAL) { nChar = nextChar; } else { nChar = scrLock; }
+    if(scrLock == NC_NORMAL) {
+      nChar = nextChar;
+    }
+    else {
+      nChar = scrLock;
+    }
     if(((calcMode == CM_AIM || calcMode == CM_EIM || (catalog && catalog != CATALOG_MVAR) || (tam.mode != 0 && tam.alpha) || ((calcMode == CM_PEM || calcMode == CM_ASSIGN) && getSystemFlag(FLAG_ALPHA))))) {
       if(numLock && !shiftF && !shiftG) {
           if(alphaCase == AC_UPPER)                  { status = 3 - (nChar == NC_SUBSCRIPT ? 2 : nChar == NC_SUPERSCRIPT ? 1:0); } else

@@ -71,7 +71,8 @@ static int cmplxSortCompare(const void *v1, const void *v2) {
   if(realIsZero(&p1->i)) {
     if(!realIsZero(&p2->i))
       return -1;
-  } else if(realIsZero(&p2->i))
+  }
+  else if(realIsZero(&p2->i))
       return 1;
 
   // Sort on magnitude
@@ -149,7 +150,8 @@ void fnSlvc(uint16_t unusedButMandatoryParameter) {
     solveQuadraticEquation(&bReal, &bImag, &cReal, &cImag, &dReal, &dImag, &rReal, &rImag, &x[0].r, &x[0].i, &x[1].r, &x[1].i, &ctxtReal75);
     realCopy(const_NaN, &x[2].r);
     realCopy(const_NaN, &x[2].i);
-  } else {
+  }
+  else {
     divComplexComplex(&bReal, &bImag, &aReal, &aImag, &bReal, &bImag, &ctxtReal75);
     divComplexComplex(&cReal, &cImag, &aReal, &aImag, &cReal, &cImag, &ctxtReal75);
     divComplexComplex(&dReal, &dImag, &aReal, &aImag, &dReal, &dImag, &ctxtReal75);
@@ -160,7 +162,8 @@ void fnSlvc(uint16_t unusedButMandatoryParameter) {
   for (int i = 0; i < 3; i++) {
     if(realIsZero(&x[i].i) || (realIsNaN(&x[i].r) && realIsNaN(&x[i].i))) {
       convertRealToResultRegister(&x[i].r, REGISTER_X + i, amNone);
-    } else {
+    }
+    else {
       convertComplexToResultRegister(&x[i].r, &x[i].i, REGISTER_X + i);
     }
     adjustResult(REGISTER_X + i, false, true, REGISTER_X + i, -1, -1);
@@ -300,14 +303,16 @@ void solveCubicEquation(const real_t *c2Real, const real_t *c2Imag, const real_t
       realCopy(const_0, x1Imag);
       realCopy(const_0, x2Imag);
       realCopy(const_0, x3Imag);
-    } else {
+    }
+    else {
       /* One real, two complex roots */
       if(realCompareAbsLessThan(x1Imag, x2Imag)) {
         if(realCompareAbsLessThan(x1Imag, x3Imag))
           realCopy(const_0, x1Imag);
         else
           realCopy(const_0, x3Imag);
-      } else {
+      }
+      else {
         if(realCompareAbsLessThan(x2Imag, x3Imag))
           realCopy(const_0, x2Imag);
         else

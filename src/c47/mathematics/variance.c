@@ -336,7 +336,8 @@ bool_t processCurvefitSA(real_t *SA0, real_t *SA1) {
     realSquareRoot(&SS, &SS, &ctxtReal39);
     realMultiply  (&SS, SA1, SA0, &ctxtReal39);
     return true;
-  } else {
+  }
+  else {
     return false;
   }
 }

@@ -570,7 +570,8 @@ TO_QSPI const function_t indexOfFunctions[] = {
       if(com == indexOfFunctions[i].itemNr) {
         if(indexOfFunctions[i].itemName[0] == '@') {       //if new indicator "@" is found, XEQM uses standard indexOfItems[].itemCatalogName
           strcpy(str, indexOfItems[com].itemCatalogName);
-        } else {
+        }
+        else {
           strcpy(str, indexOfFunctions[i].itemName);
         }
         break;
@@ -1402,7 +1403,8 @@ void fnXSWAP (uint16_t unusedButMandatoryParameter) {
             if(!(getRegisterDataType(TEMP_REGISTER_1) == dtString && REGISTER_STRING_DATA(TEMP_REGISTER_1)[0]!=0)) { //never allow a zero string in a register
               clearRegister(TEMP_REGISTER_1);
               goto returnZeroAim;
-            } else
+            }
+            else
           #endif //DISALLOW_ZERO_STRING
           {
             //copy aimbuffer to X
@@ -1414,7 +1416,8 @@ void fnXSWAP (uint16_t unusedButMandatoryParameter) {
           if(calcMode==CM_AIM) {
             fnSwapXY(0);
             T_cursorPos = stringByteLength(aimBuffer);
-          } else { //EIM
+          }
+          else { //EIM
             xCursor = stringGlyphLength(aimBuffer);
           }
           refreshRegisterLine(REGISTER_X);        //make sure that the mulit line editor check is done
