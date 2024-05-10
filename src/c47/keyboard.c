@@ -2512,7 +2512,7 @@ RELEASE_END:
         }
 
 
-      default: {
+        default: {
         #if defined(PC_BUILD) && ((defined VERBOSEKEYS) || (defined MONITOR_CLRSCR))
           printf("Switch - default: processKeyAction: calcMode=%d itemToBeAssigned=%d item=%d SHOWMODE=%u\n",calcMode, itemToBeAssigned, item, SHOWMODE);
         #endif //PC_BUILD
@@ -3054,6 +3054,7 @@ RELEASE_END:
             #endif
           #endif // RECORDLOG
         }
+      }
       }
     }
     #if (REAL34_WIDTH_TEST == 1)
