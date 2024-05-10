@@ -138,7 +138,7 @@
   }
 
 
-  /* not used? static void _tamUpdateBuffer(void) {
+  static void _tamUpdateBuffer(void) {
     char regists[5];
     char *tbPtr = tamBuffer;
     if(tam.mode == 0) {
@@ -232,7 +232,7 @@
     }
 
     tbPtr[0] = 0;
-  } */
+  }
 
 
 
