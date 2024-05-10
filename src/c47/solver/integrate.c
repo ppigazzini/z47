@@ -1041,7 +1041,7 @@ static void _integrate_mm(calcRegister_t regist, const real_t *llim, const real_
       realAdd(&fp, &fm, &p, realContext);
       realMultiply(&p, &w, &p, realContext);
       realAdd(&ssp, &p, &ssp, realContext);
-      j += 1 + (k >2);
+      j += 1 + (k > 2);
       realMultiply(&ssp, &eps, &tmp, realContext);
     } while(realCompareAbsLessThan(&tmp, &p));
 

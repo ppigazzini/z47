@@ -2513,548 +2513,548 @@ RELEASE_END:
 
 
         default: {
-        #if defined(PC_BUILD) && ((defined VERBOSEKEYS) || (defined MONITOR_CLRSCR))
-          printf("Switch - default: processKeyAction: calcMode=%d itemToBeAssigned=%d item=%d SHOWMODE=%u\n",calcMode, itemToBeAssigned, item, SHOWMODE);
-        #endif //PC_BUILD
-        if(calcMode == CM_ASSIGN && itemToBeAssigned != 0 && item == ITM_USERMODE) {
-          while(softmenuStack[0].softmenuId > 1) {
-            popSoftmenu();
-          }
-          if(previousCalcMode == CM_AIM) {
-            softmenuStack[0].softmenuId = 1;
-            calcModeAimGui();
-          }
-          else {
-            leaveAsmMode();
-          }
-          keyActionProcessed = true;
-        }
-        else if(calcMode == CM_ASSIGN && itemToBeAssigned == 0 && item == ITM_USERMODE) {
-          tamEnterMode(ITM_ASSIGN);
-          calcMode = previousCalcMode;
-          keyActionProcessed = true;
-        }
-        else if(calcMode == CM_ASSIGN && item == ITM_AIM) {
-          assignEnterAlpha();
-          keyActionProcessed = true;
-        }
-        else if((calcMode != CM_PEM || !getSystemFlag(FLAG_ALPHA)) && catalog && catalog != CATALOG_MVAR) {
-          if(ITM_A <= item && item <= ITM_Z && lowercaseselected) {
-            addItemToBuffer(item + 26);
-            keyActionProcessed = true;
-          }
-
-          else if(((ITM_ALPHA <= item && item <= ITM_OMEGA) || (ITM_QOPPA <= item && item <= ITM_SAMPI)) && lowercaseselected) {  //JM GREEK
-            addItemToBuffer(item +  ((ITM_ALPHA <= item && item <= ITM_OMEGA) ? (ITM_alpha - ITM_ALPHA) : (ITM_qoppa - ITM_QOPPA)));
-            keyActionProcessed = true;
-          }
-
-          else if(item == ITM_DOWN_ARROW || item == ITM_UP_ARROW) {
-            addItemToBuffer(item);
-            keyActionProcessed = true;
-          }
-          break;
-        }
-        else if(tam.mode) {
-          if(tam.alpha) {
-            if(indexOfItems[item].func == addItemToBuffer || item < 0) {
-              processAimInput(item);
+          #if defined(PC_BUILD) && ((defined VERBOSEKEYS) || (defined MONITOR_CLRSCR))
+            printf("Switch - default: processKeyAction: calcMode=%d itemToBeAssigned=%d item=%d SHOWMODE=%u\n",calcMode, itemToBeAssigned, item, SHOWMODE);
+          #endif //PC_BUILD
+          if(calcMode == CM_ASSIGN && itemToBeAssigned != 0 && item == ITM_USERMODE) {
+            while(softmenuStack[0].softmenuId > 1) {
+              popSoftmenu();
+            }
+            if(previousCalcMode == CM_AIM) {
+              softmenuStack[0].softmenuId = 1;
+              calcModeAimGui();
             }
             else {
-              keyActionProcessed = true;
+              leaveAsmMode();
             }
-          }
-          else {
-            addItemToBuffer(item);
             keyActionProcessed = true;
           }
-          break;
-        }
-
-        else if(item == ITM_SNAP) {
-          switch(calcMode) { //place modes here which should not work with SNAP
-            //case CM_REGISTER_BROWSER:
-            //case CM_FLAG_BROWSER:
-            //case CM_FONT_BROWSER:
-              break;
-            default: {
-              runFunction(item);
-              keyActionProcessed = true;
-              break;
-            }
+          else if(calcMode == CM_ASSIGN && itemToBeAssigned == 0 && item == ITM_USERMODE) {
+            tamEnterMode(ITM_ASSIGN);
+            calcMode = previousCalcMode;
+            keyActionProcessed = true;
           }
-        }
-
-        else {
-          switch(calcMode) {
-            case CM_NORMAL: {
-              #if defined(PC_BUILD_VERBOSE0)
-                 #if defined(PC_BUILD)
-                   printf("$"); //####
-                 #endif
-              #endif
-              if(SHOWMODE) {
-                //printf("XXXXXXXX @@@@@@ temporaryInformation=%u calcmode=%u showRegis=%u\n", temporaryInformation, calcMode, showRegis);
-                if(item == ITM_RCL) {
-                  keyActionProcessed = true;
-                  fnRecall(showRegis);
-                  setSystemFlag(FLAG_ASLIFT);
-                  temporaryInformation = TI_COPY_FROM_SHOW;
-                  closeShowMenu();
-                }
-                 else if(ITM_0 <= item && item <= ITM_9) {
-                  keyActionProcessed = true;
-                  if(showRegis%10 == 0 && showRegis <=90) {  //Will only get to this point if ##SHOWDIGITS is enabled
-                    showRegis += (item - ITM_0);
-                  }
-                  else {
-                    showRegis = (item - ITM_0)*10;
-                  }
-                  fnShow_SCROLL(255);
-                  //refreshScreen(138);
-                }
-              }
-              else if(item == ITM_EXPONENT || item == ITM_PERIOD || (ITM_0 <= item && item <= ITM_9)) {
-                addItemToNimBuffer(item);
-                keyActionProcessed = true;
-              }
-              // Following commands do not timeout to NOP
-              else if(item == ITM_UNDO || item == ITM_BST || item == ITM_SST || item == ITM_PR || item == ITM_AIM || item == ITM_SNAP) {
-                runFunction(item);
-                keyActionProcessed = true;
-              }
-              break;
+          else if(calcMode == CM_ASSIGN && item == ITM_AIM) {
+            assignEnterAlpha();
+            keyActionProcessed = true;
+          }
+          else if((calcMode != CM_PEM || !getSystemFlag(FLAG_ALPHA)) && catalog && catalog != CATALOG_MVAR) {
+            if(ITM_A <= item && item <= ITM_Z && lowercaseselected) {
+              addItemToBuffer(item + 26);
+              keyActionProcessed = true;
             }
 
-            case CM_AIM: {
-              //JM In AIM, BST and SST is not reaching here, as it is reconfigured for CAPS lock and NUM lock
-              if(item == ITM_BST || item == ITM_SST) {
-                closeAim();
-                runFunction(item);
-                keyActionProcessed = true;
-              }
-              else {
-                screenUpdatingMode &= ~(SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME);
-                processAimInput(item);
-              }
-              break;
+            else if(((ITM_ALPHA <= item && item <= ITM_OMEGA) || (ITM_QOPPA <= item && item <= ITM_SAMPI)) && lowercaseselected) {  //JM GREEK
+              addItemToBuffer(item +  ((ITM_ALPHA <= item && item <= ITM_OMEGA) ? (ITM_alpha - ITM_ALPHA) : (ITM_qoppa - ITM_QOPPA)));
+              keyActionProcessed = true;
             }
 
-            case CM_EIM: {
-              #if defined(PC_BUILD_VERBOSE0)
-                 #if defined(PC_BUILD)
-                   printf("^^^^^ screenUpdatingMode=%u\n",screenUpdatingMode); //####
-                 #endif
-              #endif
-              processAimInput(item);
-              screenUpdatingMode &= ~(SCRUPD_MANUAL_MENU | SCRUPD_SKIP_MENU_ONE_TIME);
-              refreshRegisterLine(AIM_REGISTER_LINE);   //JM  No if needed, it does nothing if not in NIM. TO DISPLAY NUMBER KEYPRESS DIRECTLY AFTER PRESS, NOT ONLY UPON RELEASE          break;
-              break;
-            }
-
-            case CM_NIM: {
-              #if defined(PC_BUILD_VERBOSE0)
-                #if defined(PC_BUILD)
-                  printf("&"); //####
-                #endif
-              #endif
-
-              if(item == ITM_BST || item == ITM_SST) {
-                closeNim();
-                runFunction(item);
-                keyActionProcessed = true;
-              }
-              else {
-                keyActionProcessed = true;
-                if(item == ITM_toINT || item == ITM_HASH_JM) {
-                  resetShiftState();
-                }
-                addItemToNimBuffer(item);
-                if( ((ITM_0 <= item && item <= ITM_9) || item == ITM_toINT || item == ITM_HASH_JM || item == ITM_ms || ((ITM_A <= item && item <= ITM_F) && (lastIntegerBase >= 2) && topHex) ) || item == ITM_CHS || item == ITM_EXPONENT || item == ITM_PERIOD) {   //JMvv Direct keypresses; //JMNIM Added direct A-F for hex entry
-                  refreshRegisterLine(REGISTER_X);
-                }                                                                                   //JM^^
-              }
-              break;
-            }
-
-            case CM_MIM: {
+            else if(item == ITM_DOWN_ARROW || item == ITM_UP_ARROW) {
               addItemToBuffer(item);
               keyActionProcessed = true;
-              break;
             }
+            break;
+          }
+          else if(tam.mode) {
+            if(tam.alpha) {
+              if(indexOfItems[item].func == addItemToBuffer || item < 0) {
+                processAimInput(item);
+              }
+              else {
+                keyActionProcessed = true;
+              }
+            }
+            else {
+              addItemToBuffer(item);
+              keyActionProcessed = true;
+            }
+            break;
+          }
 
-            case CM_REGISTER_BROWSER: {
-              if(item == ITM_PERIOD) {
-                rbr1stDigit = true;
-                if(rbrMode == RBR_GLOBAL) {
-                  if(currentNumberOfLocalRegisters != 0) {
-                    rbrMode = RBR_LOCAL;
-                    currentRegisterBrowserScreen = FIRST_LOCAL_REGISTER;
+          else if(item == ITM_SNAP) {
+            switch(calcMode) { //place modes here which should not work with SNAP
+              //case CM_REGISTER_BROWSER:
+              //case CM_FLAG_BROWSER:
+              //case CM_FONT_BROWSER:
+                break;
+              default: {
+                runFunction(item);
+                keyActionProcessed = true;
+                break;
+              }
+            }
+          }
+
+          else {
+            switch(calcMode) {
+              case CM_NORMAL: {
+                #if defined(PC_BUILD_VERBOSE0)
+                   #if defined(PC_BUILD)
+                     printf("$"); //####
+                   #endif
+                #endif
+                if(SHOWMODE) {
+                  //printf("XXXXXXXX @@@@@@ temporaryInformation=%u calcmode=%u showRegis=%u\n", temporaryInformation, calcMode, showRegis);
+                  if(item == ITM_RCL) {
+                    keyActionProcessed = true;
+                    fnRecall(showRegis);
+                    setSystemFlag(FLAG_ASLIFT);
+                    temporaryInformation = TI_COPY_FROM_SHOW;
+                    closeShowMenu();
                   }
-                  else {
+                   else if(ITM_0 <= item && item <= ITM_9) {
+                    keyActionProcessed = true;
+                    if(showRegis%10 == 0 && showRegis <=90) {  //Will only get to this point if ##SHOWDIGITS is enabled
+                      showRegis += (item - ITM_0);
+                    }
+                    else {
+                      showRegis = (item - ITM_0)*10;
+                    }
+                    fnShow_SCROLL(255);
+                    //refreshScreen(138);
+                  }
+                }
+                else if(item == ITM_EXPONENT || item == ITM_PERIOD || (ITM_0 <= item && item <= ITM_9)) {
+                  addItemToNimBuffer(item);
+                  keyActionProcessed = true;
+                }
+                // Following commands do not timeout to NOP
+                else if(item == ITM_UNDO || item == ITM_BST || item == ITM_SST || item == ITM_PR || item == ITM_AIM || item == ITM_SNAP) {
+                  runFunction(item);
+                  keyActionProcessed = true;
+                }
+                break;
+              }
+
+              case CM_AIM: {
+                //JM In AIM, BST and SST is not reaching here, as it is reconfigured for CAPS lock and NUM lock
+                if(item == ITM_BST || item == ITM_SST) {
+                  closeAim();
+                  runFunction(item);
+                  keyActionProcessed = true;
+                }
+                else {
+                  screenUpdatingMode &= ~(SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME);
+                  processAimInput(item);
+                }
+                break;
+              }
+
+              case CM_EIM: {
+                #if defined(PC_BUILD_VERBOSE0)
+                   #if defined(PC_BUILD)
+                     printf("^^^^^ screenUpdatingMode=%u\n",screenUpdatingMode); //####
+                   #endif
+                #endif
+                processAimInput(item);
+                screenUpdatingMode &= ~(SCRUPD_MANUAL_MENU | SCRUPD_SKIP_MENU_ONE_TIME);
+                refreshRegisterLine(AIM_REGISTER_LINE);   //JM  No if needed, it does nothing if not in NIM. TO DISPLAY NUMBER KEYPRESS DIRECTLY AFTER PRESS, NOT ONLY UPON RELEASE          break;
+                break;
+              }
+
+              case CM_NIM: {
+                #if defined(PC_BUILD_VERBOSE0)
+                  #if defined(PC_BUILD)
+                    printf("&"); //####
+                  #endif
+                #endif
+
+                if(item == ITM_BST || item == ITM_SST) {
+                  closeNim();
+                  runFunction(item);
+                  keyActionProcessed = true;
+                }
+                else {
+                  keyActionProcessed = true;
+                  if(item == ITM_toINT || item == ITM_HASH_JM) {
+                    resetShiftState();
+                  }
+                  addItemToNimBuffer(item);
+                  if( ((ITM_0 <= item && item <= ITM_9) || item == ITM_toINT || item == ITM_HASH_JM || item == ITM_ms || ((ITM_A <= item && item <= ITM_F) && (lastIntegerBase >= 2) && topHex) ) || item == ITM_CHS || item == ITM_EXPONENT || item == ITM_PERIOD) {   //JMvv Direct keypresses; //JMNIM Added direct A-F for hex entry
+                    refreshRegisterLine(REGISTER_X);
+                  }                                                                                   //JM^^
+                }
+                break;
+              }
+
+              case CM_MIM: {
+                addItemToBuffer(item);
+                keyActionProcessed = true;
+                break;
+              }
+
+              case CM_REGISTER_BROWSER: {
+                if(item == ITM_PERIOD) {
+                  rbr1stDigit = true;
+                  if(rbrMode == RBR_GLOBAL) {
+                    if(currentNumberOfLocalRegisters != 0) {
+                      rbrMode = RBR_LOCAL;
+                      currentRegisterBrowserScreen = FIRST_LOCAL_REGISTER;
+                    }
+                    else {
+                      rbrMode = RBR_NAMED;
+                      currentRegisterBrowserScreen = FIRST_NAMED_VARIABLE;
+                    }
+                  }
+                  else if(rbrMode == RBR_LOCAL) {
                     rbrMode = RBR_NAMED;
                     currentRegisterBrowserScreen = FIRST_NAMED_VARIABLE;
                   }
-                }
-                else if(rbrMode == RBR_LOCAL) {
-                  rbrMode = RBR_NAMED;
-                  currentRegisterBrowserScreen = FIRST_NAMED_VARIABLE;
-                }
-                else if(rbrMode == RBR_NAMED) {
-                  rbrMode = RBR_GLOBAL;
-                  currentRegisterBrowserScreen = REGISTER_X;
-                }
-              }
-              else if(item == ITM_RS) {
-                rbr1stDigit = true;
-                showContent = !showContent;
-              }
-              else if(item == ITM_RCL) {
-                rbr1stDigit = true;
-                if(rbrMode == RBR_GLOBAL || rbrMode == RBR_LOCAL) {
-                  calcMode = previousCalcMode;
-                  fnRecall(currentRegisterBrowserScreen);
-                  setSystemFlag(FLAG_ASLIFT);
-                }
-                else if(rbrMode == RBR_NAMED) {
-                  calcMode = previousCalcMode;
-                  if(currentRegisterBrowserScreen >= FIRST_NAMED_VARIABLE + numberOfNamedVariables) { // Reserved variables
-                    currentRegisterBrowserScreen -= FIRST_NAMED_VARIABLE + numberOfNamedVariables;
-                    currentRegisterBrowserScreen += FIRST_RESERVED_VARIABLE + NUMBER_OF_LETTERED_VARIABLES;
+                  else if(rbrMode == RBR_NAMED) {
+                    rbrMode = RBR_GLOBAL;
+                    currentRegisterBrowserScreen = REGISTER_X;
                   }
-                  fnRecall(currentRegisterBrowserScreen);
-                  setSystemFlag(FLAG_ASLIFT);
                 }
-              }
-              else if(ITM_0 <= item && item <= ITM_9) {
-                if(rbr1stDigit) {
-                  rbr1stDigit = false;
-                  rbrRegister = item - ITM_0;
-                }
-                else {
+                else if(item == ITM_RS) {
                   rbr1stDigit = true;
-                  rbrRegister = rbrRegister*10 + item - ITM_0;
+                  showContent = !showContent;
+                }
+                else if(item == ITM_RCL) {
+                  rbr1stDigit = true;
+                  if(rbrMode == RBR_GLOBAL || rbrMode == RBR_LOCAL) {
+                    calcMode = previousCalcMode;
+                    fnRecall(currentRegisterBrowserScreen);
+                    setSystemFlag(FLAG_ASLIFT);
+                  }
+                  else if(rbrMode == RBR_NAMED) {
+                    calcMode = previousCalcMode;
+                    if(currentRegisterBrowserScreen >= FIRST_NAMED_VARIABLE + numberOfNamedVariables) { // Reserved variables
+                      currentRegisterBrowserScreen -= FIRST_NAMED_VARIABLE + numberOfNamedVariables;
+                      currentRegisterBrowserScreen += FIRST_RESERVED_VARIABLE + NUMBER_OF_LETTERED_VARIABLES;
+                    }
+                    fnRecall(currentRegisterBrowserScreen);
+                    setSystemFlag(FLAG_ASLIFT);
+                  }
+                }
+                else if(ITM_0 <= item && item <= ITM_9) {
+                  if(rbr1stDigit) {
+                    rbr1stDigit = false;
+                    rbrRegister = item - ITM_0;
+                  }
+                  else {
+                    rbr1stDigit = true;
+                    rbrRegister = rbrRegister*10 + item - ITM_0;
 
-                  switch(rbrMode) {
-                    case RBR_GLOBAL: {
-                      currentRegisterBrowserScreen = rbrRegister;
-                      break;
-                    }
-                    case RBR_LOCAL: {
-                      rbrRegister = (rbrRegister >= currentNumberOfLocalRegisters ? 0 : rbrRegister);
-                      currentRegisterBrowserScreen = FIRST_LOCAL_REGISTER + rbrRegister;
-                      break;
-                    }
-                    case RBR_NAMED: {
-                      rbrMode = RBR_GLOBAL;
-                      currentRegisterBrowserScreen = rbrRegister;
-                      break;
+                    switch(rbrMode) {
+                      case RBR_GLOBAL: {
+                        currentRegisterBrowserScreen = rbrRegister;
+                        break;
+                      }
+                      case RBR_LOCAL: {
+                        rbrRegister = (rbrRegister >= currentNumberOfLocalRegisters ? 0 : rbrRegister);
+                        currentRegisterBrowserScreen = FIRST_LOCAL_REGISTER + rbrRegister;
+                        break;
+                      }
+                      case RBR_NAMED: {
+                        rbrMode = RBR_GLOBAL;
+                        currentRegisterBrowserScreen = rbrRegister;
+                        break;
+                      }
                     }
                   }
                 }
-              }
-              else if(ITM_A <= item && item <= ITM_D) {
-                rbrMode = RBR_GLOBAL;
-                rbr1stDigit = true;
-                currentRegisterBrowserScreen = item - ITM_A + REGISTER_A;
-              }
-              else if(ITM_I <= item && item <= ITM_K) {
-                rbrMode = RBR_GLOBAL;
-                rbr1stDigit = true;
-                currentRegisterBrowserScreen = item - ITM_I + REGISTER_I;
-              }
-              else if(item == ITM_L) {
-                rbrMode = RBR_GLOBAL;
-                rbr1stDigit = true;
-                currentRegisterBrowserScreen = REGISTER_L;
-              }
-              else if(item == ITM_M) {
-                rbrMode = RBR_GLOBAL;
-                rbr1stDigit = true;
-                currentRegisterBrowserScreen = REGISTER_M;
-              }
-              else if(item == ITM_N) {
-                rbrMode = RBR_GLOBAL;
-                rbr1stDigit = true;
-                currentRegisterBrowserScreen = REGISTER_N;
-              }
-              else if(item == ITM_P) {
-                rbrMode = RBR_GLOBAL;
-                rbr1stDigit = true;
-                currentRegisterBrowserScreen = REGISTER_P;
-              }
-              else if(item == ITM_Q) {
-                rbrMode = RBR_GLOBAL;
-                rbr1stDigit = true;
-                currentRegisterBrowserScreen = REGISTER_Q;
-              }
-              else if(item == ITM_R) {
-                rbrMode = RBR_GLOBAL;
-                rbr1stDigit = true;
-                currentRegisterBrowserScreen = REGISTER_R;
-              }
-              else if(item == ITM_S) {
-                rbrMode = RBR_GLOBAL;
-                rbr1stDigit = true;
-                currentRegisterBrowserScreen = REGISTER_S;
-              }
-              else if(item == ITM_E) {
-                rbrMode = RBR_GLOBAL;
-                rbr1stDigit = true;
-                currentRegisterBrowserScreen = REGISTER_E;
-              }
-              else if(item == ITM_F) {
-                rbrMode = RBR_GLOBAL;
-                rbr1stDigit = true;
-                currentRegisterBrowserScreen = REGISTER_F;
-              }
-              else if(item == ITM_G) {
-                rbrMode = RBR_GLOBAL;
-                rbr1stDigit = true;
-                currentRegisterBrowserScreen = REGISTER_G;
-              }
-              else if(item == ITM_H) {
-                rbrMode = RBR_GLOBAL;
-                rbr1stDigit = true;
-                currentRegisterBrowserScreen = REGISTER_H;
-              }
-              else if(item == ITM_O) {
-                rbrMode = RBR_GLOBAL;
-                rbr1stDigit = true;
-                currentRegisterBrowserScreen = REGISTER_O;
-              }
-              else if(item == ITM_U) {
-                rbrMode = RBR_GLOBAL;
-                rbr1stDigit = true;
-                currentRegisterBrowserScreen = REGISTER_U;
-              }
-              else if(item == ITM_V) {
-                rbrMode = RBR_GLOBAL;
-                rbr1stDigit = true;
-                currentRegisterBrowserScreen = REGISTER_V;
-              }
-              else if(item == ITM_W) {
-                rbrMode = RBR_GLOBAL;
-                rbr1stDigit = true;
-                currentRegisterBrowserScreen = REGISTER_W;
-              }
-
-              keyActionProcessed = true;
-              break;
-            }
-
-            case CM_ASN_BROWSER: {
-              lastItem = 0;
-              lastUserMode = false;
-              if(item == ITM_PERIOD) {
-                fnAsnDisplayUSER = false;
-                keyActionProcessed = true;
-                lastItem = item;
-                refreshScreen(121);
-              }
-              else if(item == ITM_USERMODE) {
-                runFunction(item);
-                keyActionProcessed = true;
-              }
-              break;
-            }
-
-            case CM_FLAG_BROWSER:
-            case CM_FONT_BROWSER:
-            case CM_ERROR_MESSAGE:
-            case CM_BUG_ON_SCREEN: {
-              keyActionProcessed = true;
-              break;
-            }
-
-            case CM_GRAPH:
-            case CM_PLOT_STAT:
-            case CM_LISTXY: {
-              break;
-            }
-
-            case CM_CONFIRMATION: {
-              temporaryInformation = TI_ARE_YOU_SURE;      // Keep confirmation message on screen
-              keyActionProcessed = true;
-              break;
-            }
-
-            case CM_PEM: {
-              if(item == ITM_PR) {
-                leavePem();
-                calcModeNormal();
-                keyActionProcessed = true;
-                screenUpdatingMode = SCRUPD_AUTO;
-              }
-              else if(item == ITM_OFF) {
-                fnOff(NOPARAM);
-                keyActionProcessed = true;
-              }
-              else if(item == ITM_SST) {
-                fnSst(NOPARAM);
-                keyActionProcessed = true;
-                refreshScreen(122);
-              }
-              else if(item == ITM_BST) {
-                fnBst(NOPARAM);
-                keyActionProcessed = true;
-                refreshScreen(123);
-              }
-              else if(aimBuffer[0] != 0 && !getSystemFlag(FLAG_ALPHA) && (item == ITM_HASH_JM || item == ITM_toINT || (nimNumberPart == NP_INT_BASE && item == ITM_RCL))) {
-                if(item == ITM_HASH_JM ) {
-                  item = ITM_toINT;
+                else if(ITM_A <= item && item <= ITM_D) {
+                  rbrMode = RBR_GLOBAL;
+                  rbr1stDigit = true;
+                  currentRegisterBrowserScreen = item - ITM_A + REGISTER_A;
                 }
-                pemAddNumber(item);
+                else if(ITM_I <= item && item <= ITM_K) {
+                  rbrMode = RBR_GLOBAL;
+                  rbr1stDigit = true;
+                  currentRegisterBrowserScreen = item - ITM_I + REGISTER_I;
+                }
+                else if(item == ITM_L) {
+                  rbrMode = RBR_GLOBAL;
+                  rbr1stDigit = true;
+                  currentRegisterBrowserScreen = REGISTER_L;
+                }
+                else if(item == ITM_M) {
+                  rbrMode = RBR_GLOBAL;
+                  rbr1stDigit = true;
+                  currentRegisterBrowserScreen = REGISTER_M;
+                }
+                else if(item == ITM_N) {
+                  rbrMode = RBR_GLOBAL;
+                  rbr1stDigit = true;
+                  currentRegisterBrowserScreen = REGISTER_N;
+                }
+                else if(item == ITM_P) {
+                  rbrMode = RBR_GLOBAL;
+                  rbr1stDigit = true;
+                  currentRegisterBrowserScreen = REGISTER_P;
+                }
+                else if(item == ITM_Q) {
+                  rbrMode = RBR_GLOBAL;
+                  rbr1stDigit = true;
+                  currentRegisterBrowserScreen = REGISTER_Q;
+                }
+                else if(item == ITM_R) {
+                  rbrMode = RBR_GLOBAL;
+                  rbr1stDigit = true;
+                  currentRegisterBrowserScreen = REGISTER_R;
+                }
+                else if(item == ITM_S) {
+                  rbrMode = RBR_GLOBAL;
+                  rbr1stDigit = true;
+                  currentRegisterBrowserScreen = REGISTER_S;
+                }
+                else if(item == ITM_E) {
+                  rbrMode = RBR_GLOBAL;
+                  rbr1stDigit = true;
+                  currentRegisterBrowserScreen = REGISTER_E;
+                }
+                else if(item == ITM_F) {
+                  rbrMode = RBR_GLOBAL;
+                  rbr1stDigit = true;
+                  currentRegisterBrowserScreen = REGISTER_F;
+                }
+                else if(item == ITM_G) {
+                  rbrMode = RBR_GLOBAL;
+                  rbr1stDigit = true;
+                  currentRegisterBrowserScreen = REGISTER_G;
+                }
+                else if(item == ITM_H) {
+                  rbrMode = RBR_GLOBAL;
+                  rbr1stDigit = true;
+                  currentRegisterBrowserScreen = REGISTER_H;
+                }
+                else if(item == ITM_O) {
+                  rbrMode = RBR_GLOBAL;
+                  rbr1stDigit = true;
+                  currentRegisterBrowserScreen = REGISTER_O;
+                }
+                else if(item == ITM_U) {
+                  rbrMode = RBR_GLOBAL;
+                  rbr1stDigit = true;
+                  currentRegisterBrowserScreen = REGISTER_U;
+                }
+                else if(item == ITM_V) {
+                  rbrMode = RBR_GLOBAL;
+                  rbr1stDigit = true;
+                  currentRegisterBrowserScreen = REGISTER_V;
+                }
+                else if(item == ITM_W) {
+                  rbrMode = RBR_GLOBAL;
+                  rbr1stDigit = true;
+                  currentRegisterBrowserScreen = REGISTER_W;
+                }
+
                 keyActionProcessed = true;
-                if(item == ITM_RCL) {
-                  currentStep = findPreviousStep(currentStep);
-                  --currentLocalStepNumber;
-                  if(!programListEnd) {
-                    scrollPemBackwards();
+                break;
+              }
+
+              case CM_ASN_BROWSER: {
+                lastItem = 0;
+                lastUserMode = false;
+                if(item == ITM_PERIOD) {
+                  fnAsnDisplayUSER = false;
+                  keyActionProcessed = true;
+                  lastItem = item;
+                  refreshScreen(121);
+                }
+                else if(item == ITM_USERMODE) {
+                  runFunction(item);
+                  keyActionProcessed = true;
+                }
+                break;
+              }
+
+              case CM_FLAG_BROWSER:
+              case CM_FONT_BROWSER:
+              case CM_ERROR_MESSAGE:
+              case CM_BUG_ON_SCREEN: {
+                keyActionProcessed = true;
+                break;
+              }
+
+              case CM_GRAPH:
+              case CM_PLOT_STAT:
+              case CM_LISTXY: {
+                break;
+              }
+
+              case CM_CONFIRMATION: {
+                temporaryInformation = TI_ARE_YOU_SURE;      // Keep confirmation message on screen
+                keyActionProcessed = true;
+                break;
+              }
+
+              case CM_PEM: {
+                if(item == ITM_PR) {
+                  leavePem();
+                  calcModeNormal();
+                  keyActionProcessed = true;
+                  screenUpdatingMode = SCRUPD_AUTO;
+                }
+                else if(item == ITM_OFF) {
+                  fnOff(NOPARAM);
+                  keyActionProcessed = true;
+                }
+                else if(item == ITM_SST) {
+                  fnSst(NOPARAM);
+                  keyActionProcessed = true;
+                  refreshScreen(122);
+                }
+                else if(item == ITM_BST) {
+                  fnBst(NOPARAM);
+                  keyActionProcessed = true;
+                  refreshScreen(123);
+                }
+                else if(aimBuffer[0] != 0 && !getSystemFlag(FLAG_ALPHA) && (item == ITM_HASH_JM || item == ITM_toINT || (nimNumberPart == NP_INT_BASE && item == ITM_RCL))) {
+                  if(item == ITM_HASH_JM ) {
+                    item = ITM_toINT;
                   }
-                }
-              }
-              else if(item == ITM_RS) {
-                addStepInProgram(ITM_STOP);
-                keyActionProcessed = true;
-              }
-              break;
-            }
-
-            case CM_ASSIGN: {
-              if(item > 0 && itemToBeAssigned == 0) {
-                if(tam.alpha) {
-                  processAimInput(item);
-                  if(stringGlyphLength(aimBuffer) > 6) {
-                    assignLeaveAlpha();
-                    assignGetName1();
-                  }
-                }
-                else {
-                  if(item == ITM_XEQ && getSystemFlag(FLAG_USER) && tmpString[0] != 0) {
-                    char label[15];
-                    xcopy(label,tmpString, stringByteLength(tmpString) + 1);
-                    calcRegister_t regist = findNamedLabel(label);
-                    if(regist != INVALID_VARIABLE) {
-                      item = regist - FIRST_LABEL + ASSIGN_LABELS;
-                    }
-                    else {
-                      displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
-                      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-                        sprintf(errorMessage, "string '%s' is not a named label", label);
-                        moreInfoOnError("In function btnFnReleased:", errorMessage, NULL, NULL);
-                      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+                  pemAddNumber(item);
+                  keyActionProcessed = true;
+                  if(item == ITM_RCL) {
+                    currentStep = findPreviousStep(currentStep);
+                    --currentLocalStepNumber;
+                    if(!programListEnd) {
+                      scrollPemBackwards();
                     }
                   }
-                  else if(item == ITM_RCL && getSystemFlag(FLAG_USER) && tmpString[0] != 0) {
-                    char var[15];
-                    xcopy(var,tmpString, stringByteLength(tmpString) + 1);
-                    calcRegister_t regist = findNamedVariable(var);
-                    if(regist != INVALID_VARIABLE) {
-                      item = regist - FIRST_NAMED_VARIABLE + ASSIGN_NAMED_VARIABLES;
-                    }
-                    else {
-                      displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
-                      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-                        sprintf(errorMessage, "string '%s' is not a named variable", var);
-                        moreInfoOnError("In function btnFnReleased:", errorMessage, NULL, NULL);
-                      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-                    }
-                  }
-
-
-                  itemToBeAssigned = numlockReplacements(100,item,numLock,false,false);
-                  if(ITM_A <= itemToBeAssigned && itemToBeAssigned <= ITM_Z && lowercaseselected) {
-                    itemToBeAssigned += 26;
-                  }
-
-                  if(previousCalcMode == CM_AIM) softmenuStack[0].softmenuId = 1;     //JM change ALPHA to MyAlpha to be able to write ASN target
                 }
-                keyActionProcessed = true;
+                else if(item == ITM_RS) {
+                  addStepInProgram(ITM_STOP);
+                  keyActionProcessed = true;
+                }
+                break;
               }
-              else if(item != 0 && itemToBeAssigned != 0) {
-                if(tam.alpha && tam.mode != TM_NEWMENU) {
-                  if(item > 0) {
+
+              case CM_ASSIGN: {
+                if(item > 0 && itemToBeAssigned == 0) {
+                  if(tam.alpha) {
                     processAimInput(item);
                     if(stringGlyphLength(aimBuffer) > 6) {
                       assignLeaveAlpha();
-                      assignGetName2();
+                      assignGetName1();
                     }
-                    keyActionProcessed = true;
                   }
-                }
-                else {
-                  switch(item) {
-                    case ITM_ENTER:
-                    case ITM_SHIFTf:
-                    case ITM_SHIFTg:
-                    case ITM_USERMODE:
-                    case ITM_EXIT1:
-                    case KEY_fg:        //JM
-                    case ITM_BACKSPACE: {
-                      break;
+                  else {
+                    if(item == ITM_XEQ && getSystemFlag(FLAG_USER) && tmpString[0] != 0) {
+                      char label[15];
+                      xcopy(label,tmpString, stringByteLength(tmpString) + 1);
+                      calcRegister_t regist = findNamedLabel(label);
+                      if(regist != INVALID_VARIABLE) {
+                        item = regist - FIRST_LABEL + ASSIGN_LABELS;
+                      }
+                      else {
+                        displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
+                        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+                          sprintf(errorMessage, "string '%s' is not a named label", label);
+                          moreInfoOnError("In function btnFnReleased:", errorMessage, NULL, NULL);
+                        #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+                      }
                     }
-                    default: {
-                      tamBuffer[0] = 0;
+                    else if(item == ITM_RCL && getSystemFlag(FLAG_USER) && tmpString[0] != 0) {
+                      char var[15];
+                      xcopy(var,tmpString, stringByteLength(tmpString) + 1);
+                      calcRegister_t regist = findNamedVariable(var);
+                      if(regist != INVALID_VARIABLE) {
+                        item = regist - FIRST_NAMED_VARIABLE + ASSIGN_NAMED_VARIABLES;
+                      }
+                      else {
+                        displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
+                        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+                          sprintf(errorMessage, "string '%s' is not a named variable", var);
+                          moreInfoOnError("In function btnFnReleased:", errorMessage, NULL, NULL);
+                        #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+                      }
+                    }
+
+
+                    itemToBeAssigned = numlockReplacements(100,item,numLock,false,false);
+                    if(ITM_A <= itemToBeAssigned && itemToBeAssigned <= ITM_Z && lowercaseselected) {
+                      itemToBeAssigned += 26;
+                    }
+
+                    if(previousCalcMode == CM_AIM) softmenuStack[0].softmenuId = 1;     //JM change ALPHA to MyAlpha to be able to write ASN target
+                  }
+                  keyActionProcessed = true;
+                }
+                else if(item != 0 && itemToBeAssigned != 0) {
+                  if(tam.alpha && tam.mode != TM_NEWMENU) {
+                    if(item > 0) {
+                      processAimInput(item);
+                      if(stringGlyphLength(aimBuffer) > 6) {
+                        assignLeaveAlpha();
+                        assignGetName2();
+                      }
                       keyActionProcessed = true;
+                    }
+                  }
+                  else {
+                    switch(item) {
+                      case ITM_ENTER:
+                      case ITM_SHIFTf:
+                      case ITM_SHIFTg:
+                      case ITM_USERMODE:
+                      case ITM_EXIT1:
+                      case KEY_fg:        //JM
+                      case ITM_BACKSPACE: {
+                        break;
+                      }
+                      default: {
+                        tamBuffer[0] = 0;
+                        keyActionProcessed = true;
+                    }
+                  }
                   }
                 }
-                }
+                break;
               }
-              break;
-            }
 
-            case CM_TIMER: {
-              printf("ITEM: %d\n", item);
-              switch(item) {
-                case ITM_RS: {
-                  fnStartStopTimerApp();
-                  break;
+              case CM_TIMER: {
+                printf("ITEM: %d\n", item);
+                switch(item) {
+                  case ITM_RS: {
+                    fnStartStopTimerApp();
+                    break;
+                  }
+                  case ITM_0:
+                  case ITM_1:
+                  case ITM_2:
+                  case ITM_3:
+                  case ITM_4:
+                  case ITM_5:
+                  case ITM_6:
+                  case ITM_7:
+                  case ITM_8:
+                  case ITM_9: {
+                    fnDigitKeyTimerApp(item - ITM_0);
+                    break;
+                  }
+                  case ITM_PERIOD: {
+                    fnDotTimerApp();
+                    break;
+                  }
+                  case ITM_ADD: {
+                    fnPlusTimerApp();
+                    break;
+                  }
+                  case ITM_RCL: {
+                    runFunction(ITM_TIMER_RCL);
+                    break;
+                  }
                 }
-                case ITM_0:
-                case ITM_1:
-                case ITM_2:
-                case ITM_3:
-                case ITM_4:
-                case ITM_5:
-                case ITM_6:
-                case ITM_7:
-                case ITM_8:
-                case ITM_9: {
-                  fnDigitKeyTimerApp(item - ITM_0);
-                  break;
-                }
-                case ITM_PERIOD: {
-                  fnDotTimerApp();
-                  break;
-                }
-                case ITM_ADD: {
-                  fnPlusTimerApp();
-                  break;
-                }
-                case ITM_RCL: {
-                  runFunction(ITM_TIMER_RCL);
-                  break;
-                }
+                keyActionProcessed = true;
+                break;
               }
-              keyActionProcessed = true;
-              break;
-            }
 
-            default: {
-              sprintf(errorMessage, "In function processKeyAction: %" PRIu8 " is an unexpected value while processing calcMode!", calcMode);
-              displayBugScreen(errorMessage);
+              default: {
+                sprintf(errorMessage, "In function processKeyAction: %" PRIu8 " is an unexpected value while processing calcMode!", calcMode);
+                displayBugScreen(errorMessage);
+              }
             }
+            #if defined(RECORDLOG)
+              #if defined(PC_BUILD)
+                if(keyActionProcessed) {                         //JMEXEC
+                  capture_sequence("keyActionProcessed:", item);  //JMEXEC
+                }                                                //JMEXEC
+              #endif
+            #endif // RECORDLOG
           }
-          #if defined(RECORDLOG)
-            #if defined(PC_BUILD)
-              if(keyActionProcessed) {                         //JMEXEC
-                capture_sequence("keyActionProcessed:", item);  //JMEXEC
-              }                                                //JMEXEC
-            #endif
-          #endif // RECORDLOG
         }
-      }
       }
     }
     #if (REAL34_WIDTH_TEST == 1)
