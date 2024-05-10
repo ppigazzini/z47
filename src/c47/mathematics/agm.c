@@ -223,7 +223,7 @@ static void doComplexAGM(void) {
   real_t aReal, bReal, rReal;
   real_t aImag, bImag, rImag;
 
-  if (!getRegisterAsComplex(REGISTER_X, &aReal, &aImag)
+  if(!getRegisterAsComplex(REGISTER_X, &aReal, &aImag)
       || !getRegisterAsComplex(REGISTER_Y, &bReal, &bImag))
     return;
 
@@ -235,22 +235,22 @@ static void doComplexAGM(void) {
 static void doRealAGM(void) {
   real_t a, b, r;
 
-  if (!getRegisterAsReal(REGISTER_X, &a) || !getRegisterAsReal(REGISTER_Y, &b))
+  if(!getRegisterAsReal(REGISTER_X, &a) || !getRegisterAsReal(REGISTER_Y, &b))
     return;
 
   // Quick check for zero results
   realAdd(&a, &b, &r, &ctxtReal39);
-  if (realIsZero(&a) || realIsZero(&b) || realIsZero(&r)) {
+  if(realIsZero(&a) || realIsZero(&b) || realIsZero(&r)) {
     convertRealToResultRegister(const_0, REGISTER_X, amNone);
     return;
   }
 
-  if (realIsNegative(&a) || realIsNegative(&b)) {
-    if (getFlag(FLAG_CPXRES))
+  if(realIsNegative(&a) || realIsNegative(&b)) {
+    if(getFlag(FLAG_CPXRES))
       doComplexAGM();
     else {
       displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         moreInfoOnError("In function fnAgm:", "cannot use negative X and Y as input of AGM", NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }

@@ -256,7 +256,7 @@ void subNumberToDisplayString(int32_t subNumber, char *displayString, char *disp
 void real34ToDisplayString(const real34_t *real34, uint32_t tag, char *displayString, const font_t *font, int16_t maxWidth, int16_t displayHasNDigits, bool_t limitExponent, bool_t frontSpace) {
   uint8_t savedDisplayFormatDigits = displayFormatDigits;
 
-  #if(REAL34_WIDTH_TEST == 1)
+  #if (REAL34_WIDTH_TEST == 1)
     maxWidth = largeur;
   #endif // (REAL34_WIDTH_TEST == 1)
 
@@ -2010,7 +2010,7 @@ if( str3[1] >= '0' && str3[1] <= '9' && str3[2] >= '0' && str3[2] <= '9' && str3
       return;
     }
 
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       moreInfoOnError("In function shortIntegerToDisplayString: the integer data representation is too wide (1)!", displayString, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
 
@@ -2076,7 +2076,7 @@ if( str3[1] >= '0' && str3[1] <= '9' && str3[2] >= '0' && str3[2] <= '9' && str3
       return;
     }
 
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       moreInfoOnError("In function shortIntegerToDisplayString: the integer data representation is too wide (2)!", displayString, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
 
@@ -2755,7 +2755,7 @@ void fnShow(uint16_t unusedButMandatoryParameter) {
         programRunStop = PGM_STOPPED;
       }
       displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "cannot SHOW %s", getRegisterDataTypeName(REGISTER_X, true, false));
         moreInfoOnError("In function fnShow:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -3483,7 +3483,7 @@ void fnShow_SCROLL(uint16_t fnShow_param) {                // Heavily modified b
       default:
         temporaryInformation = TI_NO_INFO;
         displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, showRegis);
-        #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           sprintf(errorMessage, "cannot SHOW %s%s", tmpString + 2100, getRegisterDataTypeName(showRegis, true, false));
           moreInfoOnError("In function fnShow:", errorMessage, NULL, NULL);
         #endif

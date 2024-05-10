@@ -45,7 +45,7 @@
 
 #if defined(PC_BUILD)
   GtkWidget *grid;
-  #if(SIMULATOR_ON_SCREEN_KEYBOARD == 1)
+  #if (SIMULATOR_ON_SCREEN_KEYBOARD == 1)
     GtkWidget *backgroundImage;
     GtkWidget *lblFKey2;
     GtkWidget *lblGKey2;
@@ -120,7 +120,7 @@
     //JM7 GtkWidget  *lblConfirmY; //JM for Y/N
     //JM7 GtkWidget  *lblConfirmN; //JM for Y/N
 
-    #if(DEBUG_PANEL == 1)
+    #if (DEBUG_PANEL == 1)
       GtkWidget *lbl1[DEBUG_LINES], *lbl2[DEBUG_LINES];
       GtkWidget *btnBitFields, *btnFlags, *btnRegisters, *btnLocalRegisters, *btnStatisticalSums, *btnNamedVariables, *btnSavedStackRegisters;
       GtkWidget *chkHexaString;
@@ -1187,7 +1187,7 @@
   }
 
 
-  #if(SIMULATOR_ON_SCREEN_KEYBOARD == 1)
+  #if (SIMULATOR_ON_SCREEN_KEYBOARD == 1)
     /* Reads the CSS file to configure the calc's GUI style. */
     static void prepareCssData(void) {
       FILE *cssFile;
@@ -1992,15 +1992,15 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
 
   if(key->keyId < 30) {
     keyLogicalId = key->keyId -21;
-  } else if (key->keyId < 40) {
+  } else if(key->keyId < 40) {
     keyLogicalId = key->keyId -25;
-  } else if (key->keyId < 50) {
+  } else if(key->keyId < 50) {
     keyLogicalId = key->keyId -29;
-  } else if (key->keyId < 60) {
+  } else if(key->keyId < 60) {
     keyLogicalId = key->keyId -34;
-  } else if (key->keyId < 70) {
+  } else if(key->keyId < 70) {
     keyLogicalId = key->keyId -39;
-  } else if (key->keyId < 80) {
+  } else if(key->keyId < 80) {
     keyLogicalId = key->keyId -44;
   } else {
     keyLogicalId = key->keyId -49;
@@ -3033,7 +3033,7 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
   * \return void
   ***********************************************/
   void setupUI(void) {
-    #if(SIMULATOR_ON_SCREEN_KEYBOARD == 1)
+    #if (SIMULATOR_ON_SCREEN_KEYBOARD == 1)
       int            numBytes, xPos, yPos;
       GError         *error;
       GtkCssProvider *cssProvider;
@@ -3069,7 +3069,7 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
       frmCalc = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 
       if(calcLandscape) {
-        #if(DEBUG_PANEL == 1)
+        #if (DEBUG_PANEL == 1)
           gtk_window_set_default_size(GTK_WINDOW(frmCalc), 1000, 540);
           debugWidgetDx = 0;
           debugWidgetDy = 545;
@@ -3078,7 +3078,7 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
         #endif
       }
       else {
-        #if(DEBUG_PANEL == 1)
+        #if (DEBUG_PANEL == 1)
           gtk_window_set_default_size(GTK_WINDOW(frmCalc),  1530, 980);
           debugWidgetDx = 531;
           debugWidgetDy = 0;
@@ -3204,7 +3204,7 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
       g_signal_connect(screen, "draw", G_CALLBACK(drawScreen), NULL);
 
 
-      #if(DEBUG_REGISTER_L == 1)
+      #if (DEBUG_REGISTER_L == 1)
         lblRegisterL1 = gtk_label_new("");
         lblRegisterL2 = gtk_label_new("");
         gtk_widget_set_name(lblRegisterL1, "registerL");
@@ -3213,7 +3213,7 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
         gtk_fixed_put(GTK_FIXED(grid), lblRegisterL2, 5, 46);
       #endif // (DEBUG_REGISTER_L == 1)
 
-      #if(SHOW_MEMORY_STATUS == 1)
+      #if (SHOW_MEMORY_STATUS == 1)
         lblMemoryStatus = gtk_label_new("");
         gtk_widget_set_name(lblMemoryStatus, "memoryStatus");
         gtk_fixed_put(GTK_FIXED(grid), lblMemoryStatus, 5, 5);
@@ -4272,7 +4272,7 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
       // gtk_fixed_put(GTK_FIXED(grid), lblOn,   0, 0);     //JM Removed ON to 81
 
       // The debug window
-      #if(DEBUG_PANEL == 1)
+      #if (DEBUG_PANEL == 1)
         for(int i=0; i<DEBUG_LINES; i++) {
           lbl1[i] = gtk_label_new("");
           gtk_widget_set_name(lbl1[i], "debugDejaVu");

@@ -148,7 +148,7 @@ int popKey(void) {
     while(keyWaiting()) {
       tmpf = key_pop();
     }
-    if (tmpf == 44) {
+    if(tmpf == 44) {
       standardScreenDump();
     }
     return tmpf - 1;        //EXIT = 33-1
@@ -275,7 +275,7 @@ void fnFrom_ms(uint16_t unusedButMandatoryParameter){
       if(tmpString100_OUT[0] != 0) {
         reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
         stringToReal34(tmpString100_OUT, REGISTER_REAL34_DATA(REGISTER_X));
-        #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           printf("\n ------- 003 >>>%s<<<\n",tmpString100_OUT);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       }
@@ -362,7 +362,7 @@ void fnTo_ms(uint16_t unusedButMandatoryParameter) {
             fnToHms(0);
           } else {
             displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-            #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+            #if (EXTRA_INFO_ON_CALC_ERROR == 1)
               sprintf(errorMessage, "cannot calculate specific type/tag");
               moreInfoOnError("In function fnTo_ms:", errorMessage, NULL, NULL);
             #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -523,7 +523,7 @@ void fnJM_2SI(uint16_t unusedButMandatoryParameter) { //Convert Real to Longint;
       convertLongIntegerRegisterToLongInteger(REGISTER_X, tmp2);
       convertLongIntegerRegisterToLongInteger(REGISTER_X, tmp3);
       tmp2sign = longIntegerIsNegative(tmp2) ? 1:0;
-      if (tmp2sign == 1) longIntegerChangeSign(tmp2);
+      if(tmp2sign == 1) longIntegerChangeSign(tmp2);
       longIntegerToUInt(tmp2,tmp2UI);
       if(shortIntegerMode != SIM_UNSIGN) {
         mask = 1;
@@ -980,7 +980,7 @@ void fnP_Regs (uint16_t registerNo) {
 
     create_filename(".REGS.TSV");
 
-    #if(VERBOSE_LEVEL >= 1)
+    #if (VERBOSE_LEVEL >= 1)
       clearScreen();
       print_linestr("Output regs to drive:", true);
       print_linestr(filename_csv, false);
@@ -1006,7 +1006,7 @@ void fnP_All_Regs(uint16_t option) {
 
     create_filename(".REGS.TSV");
 
-    #if(VERBOSE_LEVEL >= 1)
+    #if (VERBOSE_LEVEL >= 1)
       clearScreen();
       print_linestr("Output regs to drive:", true);
       print_linestr(filename_csv, false);
@@ -1354,7 +1354,7 @@ void dms34ToReal34(uint16_t dms) {
 void notSexa(void) {
   copySourceRegisterToDestRegister(REGISTER_L, REGISTER_X);
   displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-  #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+  #if (EXTRA_INFO_ON_CALC_ERROR == 1)
     sprintf(errorMessage, "data type %s cannot be converted!", getRegisterDataTypeName(REGISTER_X, false, false));
     moreInfoOnError("In function notSexagecimal:", errorMessage, NULL, NULL);
   #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -1532,7 +1532,7 @@ void fnToTime(uint16_t unusedButMandatoryParameter) {
 
       default:
         displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-        #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           sprintf(errorMessage, "data type %s cannot be converted to a time!", getRegisterDataTypeName(toTimeParamReg[i], false, false));
           moreInfoOnError("In function fnToTime:", errorMessage, NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)

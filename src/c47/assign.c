@@ -589,7 +589,7 @@ void removeUserItemAssignments(int16_t userItem, char *userItemName) {
   bool_t deleteAllItems = false;
 
   itemToBeAssigned = ITM_NULL;
-  if (userItemName[0] == 0) deleteAllItems = true;
+  if(userItemName[0] == 0) deleteAllItems = true;
 
   #if defined(PC_BUILD)
     //printf("**[DL]** userItem %d userItemName %s length %d char1 %x char2 %x char 3 %x char4 %x\n",userItem,userItemName,stringByteLength(userItemName),userItemName[0],userItemName[1],userItemName[2],userItemName[3]);
@@ -1110,7 +1110,7 @@ void createMenu(const char *name) {
     }
     else {
       displayCalcErrorMessage(ERROR_ENTER_NEW_NAME, ERR_REGISTER_LINE, REGISTER_X);
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "the name %s", name);
         moreInfoOnError("In function fnAssign:", errorMessage, "is already in use!", NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -1118,7 +1118,7 @@ void createMenu(const char *name) {
   }
   else {
     displayCalcErrorMessage(ERROR_INVALID_NAME, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       moreInfoOnError("In function fnAssign:", "the menu", name, "does not follow the naming convention");
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }

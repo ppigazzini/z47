@@ -39,7 +39,7 @@
 static void arccoshCplx(void) {
   real_t a, b, real, imag;
 
-  if (!getRegisterAsComplex(REGISTER_X, &a, &b))
+  if(!getRegisterAsComplex(REGISTER_X, &a, &b))
     return;
 
   // arccosh(z) = ln(z + sqrt(z² - 1))
@@ -77,7 +77,7 @@ static void arccoshReal(void) {
   real_t x;
   const real_t *r = &x;
 
-  if (!getRegisterAsReal(REGISTER_X, &x))
+  if(!getRegisterAsReal(REGISTER_X, &x))
     return;
 
   if(realCompareLessThan(&x, const_1)) {
@@ -90,7 +90,7 @@ static void arccoshReal(void) {
     }
     else {
       displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         moreInfoOnError("In function arccoshReal:", "X < 1", "and CPXRES is not set!", NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return;

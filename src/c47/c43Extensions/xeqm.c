@@ -585,7 +585,7 @@ void execute_string(const char *inputstring, bool_t exec1, bool_t namescan) {
   currentKeyCode = 255;
   #if !defined(SAVE_SPACE_DM42_2)
     #if !defined(TESTSUITE_BUILD)
-      #if(VERBOSE_LEVEL > 0)
+      #if (VERBOSE_LEVEL > 0)
         uint32_t ttt = getUptimeMs();
         while(ttt + 300 != getUptimeMs()); // This is bad for battery
         print_linestr(inputstring, true);
@@ -779,7 +779,7 @@ void execute_string(const char *inputstring, bool_t exec1, bool_t namescan) {
                               starttoken = 1;
                             }
                             else if(strcompare(commandnumber, "XEQLBL")) { //EXPECTING FOLLOWING OPERAND Mn
-                              #if(VERBOSE_LEVEL > 0)
+                              #if (VERBOSE_LEVEL > 0)
                                 print_linestr("->XEQLBL", false);
                               #endif // (VERBOSE_LEVEL > 0)
                               xeqlblinprogress =  1;
@@ -1060,7 +1060,7 @@ void XEQMENU_Selection(uint16_t selection, char *line1, bool_t exec, bool_t scan
       char fn_long[200];      // Long file name
       char fn_short[16];      // standard file name
 
-      #if(VERBOSE_LEVEL >= 1)
+      #if (VERBOSE_LEVEL >= 1)
         char tmp[400];          // Messages
       #endif // (VERBOSE_LEVEL >= 1)
 
@@ -1074,7 +1074,7 @@ void XEQMENU_Selection(uint16_t selection, char *line1, bool_t exec, bool_t scan
       strcpy(fn_long,  "");
       strcpy(fallback, XeqmMsgs[5].itemName);    //"XEQM01:HELP;"
 
-      #if(VERBOSE_LEVEL >= 1)
+      #if (VERBOSE_LEVEL >= 1)
         strcpy(tmp, fn_short);
         strcat(tmp, " A: Loading XEQMENU mapping");
         print_linestr(tmp, false);
@@ -1082,12 +1082,12 @@ void XEQMENU_Selection(uint16_t selection, char *line1, bool_t exec, bool_t scan
 
       import_string_from_filename(line1, pgmpath, fn_short, fn_long, fallback, !SCAN);
 
-      #if(VERBOSE_LEVEL >= 1)
+      #if (VERBOSE_LEVEL >= 1)
         sprintf(tmp, " B: XEQMENU mapping Loaded: %u bytes.\n", (uint16_t)stringByteLength(line1));
         print_linestr(tmp, false);
       #endif // (VERBOSE_LEVEL >= 1)
 
-      #if(VERBOSE_LEVEL >= 2)
+      #if (VERBOSE_LEVEL >= 2)
         #if defined(DMCP_BUILD)
           press_key();
         #endif // DMCP_BUILD
@@ -1125,7 +1125,7 @@ void XEQMENU_Selection(uint16_t selection, char *line1, bool_t exec, bool_t scan
       strcat(fn_short, ".TXT");
       strcat(fn_long, ".TXT");
 
-      #if(VERBOSE_LEVEL >= 1)
+      #if (VERBOSE_LEVEL >= 1)
         sprintf(tmp," C: Trying %s then %s.", fn_short, fn_long);
         print_linestr(tmp, false);
       #endif // (VERBOSE_LEVEL >= 1)
@@ -1140,52 +1140,52 @@ void XEQMENU_Selection(uint16_t selection, char *line1, bool_t exec, bool_t scan
         sprintf(fallback, "XEQLBL %s X%s ", nn, nn);
       }
 
-      #if(VERBOSE_LEVEL >= 2)
+      #if (VERBOSE_LEVEL >= 2)
         sprintf(tmp, "  Fallback:%s", fallback);
         print_linestr(tmp, false);
       #endif // (VERBOSE_LEVEL >= 2)
 
       import_string_from_filename(line1,pgmpath,fn_short,fn_long,fallback,scanning);
 
-      #if(VERBOSE_LEVEL >= 1)
+      #if (VERBOSE_LEVEL >= 1)
         sprintf(tmp, " D: PGM Loaded: %u bytes.\n", (uint16_t)stringByteLength(line1) );
         print_linestr(tmp, false);
       #endif // (VERBOSE_LEVEL >= 1)
 
       replaceFF(nn,line1);
 
-      #if(VERBOSE_LEVEL >= 1)
+      #if (VERBOSE_LEVEL >= 1)
         sprintf(tmp, " E: FF: %u bytes.\n", (uint16_t)stringByteLength(line1) );
         print_linestr(tmp, false);
         print_linestr(line1, false);
       #endif // (VERBOSE_LEVEL >= 1)
 
-      #if(VERBOSE_LEVEL >= 2)
+      #if (VERBOSE_LEVEL >= 2)
         #if defined(DMCP_BUILD)
           press_key();
         #endif // DMCP_BUILD
       #endif // (VERBOSE_LEVEL >= 2)
 
-      #if(VERBOSE_LEVEL >= 1)
+      #if (VERBOSE_LEVEL >= 1)
         clearScreenOld(false, true, true);
       #endif // (VERBOSE_LEVEL >= 1)
 
       displaywords(line1);       //output  is  in  tmpString
 
       strcpy(line1,tmpString);
-      #if(VERBOSE_LEVEL >= 2)
+      #if (VERBOSE_LEVEL >= 2)
         #if defined(DMCP_BUILD)
           press_key();
         #endif // DMCP_BUILD
       #endif // (VERBOSE_LEVEL >= 2)
 
-      #if(VERBOSE_LEVEL >= 1)
+      #if (VERBOSE_LEVEL >= 1)
         clearScreenOld(false, true, true);
       #endif // (VERBOSE_LEVEL >= 1)
 
       execute_string(line1,exec, scanning);
 
-      #if(VERBOSE_LEVEL >= 2)
+      #if (VERBOSE_LEVEL >= 2)
         #if defined(DMCP_BUILD)
           press_key();
           clearScreenOld(false, true, true);
@@ -1432,7 +1432,7 @@ void fnXSWAP (uint16_t unusedButMandatoryParameter) {
         }                                        //JM NEWERPN
         strcpy(aimBuffer, REGISTER_STRING_DATA(REGISTER_X));
         T_cursorPos = stringByteLength(aimBuffer);
-        fnDrop(0);
+        fnDrop(NOPARAM);
         #if !defined(TESTSUITE_BUILD)
           resetShiftState();
           calcModeAim(NOPARAM); // Alpha Input Mode
@@ -1479,7 +1479,7 @@ void fnXEQMXXEQ (uint16_t unusedButMandatoryParameter) {
     char line1[XEQ_STR_LENGTH_LONG];
     if(getRegisterDataType(REGISTER_X) == dtString) {
       xcopy(line1, REGISTER_STRING_DATA(REGISTER_X), stringByteLength(REGISTER_STRING_DATA(REGISTER_X)) + 1);
-      fnDrop(0);
+      fnDrop(NOPARAM);
       fnXEQMexecute(line1);
     }
   #endif // !SAVE_SPACE_DM42_2
@@ -1492,6 +1492,6 @@ void fnXEQNEW (uint16_t unusedButMandatoryParameter) {
     liftStack();
     fnStrtoX(XeqmMsgs[2].itemName);  // "XEQC47 XEQLBL 01 XXXXXX "
     fnXSWAP(0);
-    fnDrop(0);
+    fnDrop(NOPARAM);
   #endif // !SAVE_SPACE_DM42_2
 }

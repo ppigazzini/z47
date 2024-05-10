@@ -72,7 +72,7 @@ void fnCurveFitting(uint16_t curveFitting) {
   lrSelection = curveFitting;                 // lrSelection is used to store the BestF method, in inverse, i.e. 1 indicating allowed method
   lrChosen = 0;                               // lrChosen    is used to indicate if there was a L.R. selection. Can be only one bit.
 
-  #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+  #if (EXTRA_INFO_ON_CALC_ERROR == 1)
     uint16_t numberOfOnes;
     numberOfOnes = lrCountOnes(curveFitting);
 
@@ -136,7 +136,7 @@ void fnCurveFitting_T(uint16_t curveFitting) { // Toggle
 
   lrChosen = 0;                                // lrChosen    is used to indicate if there was a L.R. selection. Can be only one bit.
 
-  #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+  #if (EXTRA_INFO_ON_CALC_ERROR == 1)
     uint16_t numberOfOnes;
     numberOfOnes = lrCountOnes(curveFitting);
 
@@ -233,7 +233,7 @@ void fnProcessLRfind(uint16_t curveFitting){
   realCopy(const_0, &aa0);
   realCopy(const_0, &aa1);
   realCopy(const_0, &aa2);
-  #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+  #if (EXTRA_INFO_ON_CALC_ERROR == 1)
     printf("Processing for best fit: %s\n",getCurveFitModeNames(curveFitting));
   #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   realCopy(const__4,&RRMAX);
@@ -243,7 +243,7 @@ void fnProcessLRfind(uint16_t curveFitting){
   for(ix=0; ix<10; ix++) { // up to 2^9 inclusive of 512 which is ORTHOF. The ReM is respectedby usage of 0 only, not by manual selection.
     jx = curveFitting & ((1 << ix));
     if(jx) {
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         printf("processCurvefitSelection curveFitting:%u sweep:%u %s\n",curveFitting,jx,getCurveFitModeNames(jx));
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
 
@@ -262,7 +262,7 @@ void fnProcessLRfind(uint16_t curveFitting){
     s = 0; // error condition, cannot have >1 solutions, do not do L.R.
   }
 
-  #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+  #if (EXTRA_INFO_ON_CALC_ERROR == 1)
     if(s != 0) {
       printf("Found best fit: %u %s\n", s, getCurveFitModeNames(s));
     }
@@ -291,7 +291,7 @@ void fnProcessLRfind(uint16_t curveFitting){
   else {
     if(minLRDataPoints(s) == 65535) {
       displayCalcErrorMessage(ERROR_TOO_FEW_DATA, ERR_REGISTER_LINE, REGISTER_X);
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         moreInfoOnError("In function fnProcessLRfind:", "There is insufficient statistical data to do L.R., possibly due to data manipulation!", NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
@@ -391,7 +391,7 @@ void processCurvefitSelectionAll(uint16_t selection, real_t *RR_, real_t *MX, re
     }
   }
   selection = jx;
-  #if(defined(STATDEBUG) || defined(STAT_DISPLAY_ABCDEFG)) && defined(PC_BUILD)
+  #if (defined(STATDEBUG) || defined(STAT_DISPLAY_ABCDEFG)) && defined(PC_BUILD)
     printf("processCurvefitSelection selection:%u, reduced selection to:%u\n",selection,jx);
   #endif // (STATDEBUG || STAT_DISPLAY_ABCDEFG) && PC_BUILD
 
@@ -727,10 +727,10 @@ void processCurvefitSelectionAll(uint16_t selection, real_t *RR_, real_t *MX, re
       calc_AEFG(&AA, &BB, &CC, &DD, &EE, &FF, &GG);
 
       //      a2 = F; //a2 = (A*B - C*D) / (A*E - C*C) = F. Not in ReM, but the formula is correct and prevents duplicate code.
-      realCopy (&FF, aa2);
+      realCopy(&FF, aa2);
 
       //      a1 = G; //a1 = (D - a2 * C) / A = G; Not in ReM, but the formula is correct and prevents duplicate code.
-      realCopy (&GG, aa1);
+      realCopy(&GG, aa1);
 
       //      a0 = 1.0/nn * (sumy - a2 * sumx2 - a1 * sumx);
       realMultiply(&FF,      SIGMA_X2,  &TT,  realContext);
@@ -1149,7 +1149,7 @@ void fnYIsFnx(uint16_t unusedButMandatoryParameter){
   real_t XX, YY, RR, SMI, aa0, aa1, aa2;
   double x=-99, y = 0, a0=-99, a1=-99, a2=-99;
 
-  if (!getRegisterAsReal(REGISTER_X, &XX))
+  if(!getRegisterAsReal(REGISTER_X, &XX))
     return;
 
   realCopy(const_0, &aa0);
@@ -1204,7 +1204,7 @@ void xIsFny(uint16_t selection, uint8_t rootNo, real_t *XX, real_t *YY, real_t *
     case CF_POWER_FITTING: {
       realDivide(YY,        aa0,     &UU, realContextForecast);
       xthRootReal(&UU,      aa1,          realContextForecast);             //Note X-register gets written here
-      if (!getRegisterAsReal(REGISTER_X, XX))
+      if(!getRegisterAsReal(REGISTER_X, XX))
         return;
       temporaryInformation = TI_CALCX;
       break;
@@ -1288,7 +1288,7 @@ void xIsFny(uint16_t selection, uint8_t rootNo, real_t *XX, real_t *YY, real_t *
 void fnXIsFny(uint16_t unusedButMandatoryParameter){
   real_t XX, YY, RR, SMI, aa0, aa1, aa2;
 
-  if (!getRegisterAsReal(REGISTER_X, &YY))
+  if(!getRegisterAsReal(REGISTER_X, &YY))
     return;
 
   realCopy(const_0, &aa0);

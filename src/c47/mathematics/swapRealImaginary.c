@@ -75,12 +75,12 @@ void fnSwapRealImaginary(uint16_t unusedButMandatoryParameter) {
   if(!saveLastX())
     return;
 
-  if (type == dtReal34Matrix)
+  if(type == dtReal34Matrix)
     swapReImRema();
-  else if (type == dtComplex34Matrix)
+  else if(type == dtComplex34Matrix)
     swapReImCxma();
   else {
-    if (!getRegisterAsComplex(REGISTER_X, &a, &b))
+    if(!getRegisterAsComplex(REGISTER_X, &a, &b))
       return;
     convertComplexToResultRegister(&b, &a, REGISTER_X);
   }

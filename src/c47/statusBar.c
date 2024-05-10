@@ -715,7 +715,7 @@ void drawBattery(uint16_t voltage) {
 //mockupSB();
 //return;
 
-    #if(DEBUG_INSTEAD_STATUS_BAR == 1)
+    #if (DEBUG_INSTEAD_STATUS_BAR == 1)
       char statusMessage[100];
       sprintf(statusMessage, "%s%d %s/%s  mnu:%s fi:%d", catalog ? "asm:" : "", catalog, tam.mode ? "/tam" : "", getCalcModeName(calcMode),indexOfItems[-softmenu[softmenuStack[0].softmenuId].menuItem].itemCatalogName, softmenuStack[0].firstItem);
       showString(statusMessage, &standardFont, X_DATE, 0, vmNormal, true, true);

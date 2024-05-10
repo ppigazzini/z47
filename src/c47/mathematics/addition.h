@@ -27,7 +27,7 @@
 void fnAdd      (uint16_t unusedButMandatoryParameter);
 void addComplex(const real_t *aReal, const real_t *aImag, const real_t *bReal, const real_t *bImag, real_t *resReal, real_t *resImag, realContext_t *realContext);
 
-#if(EXTRA_INFO_ON_CALC_ERROR == 1)
+#if (EXTRA_INFO_ON_CALC_ERROR == 1)
 void addError   (void);
 #else // (EXTRA_INFO_ON_CALC_ERROR == 1)
 #define addError typeError

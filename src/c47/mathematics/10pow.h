@@ -26,7 +26,7 @@
 
   void fn10Pow    (uint16_t unusedButMandatoryParameter);
 
-  #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+  #if (EXTRA_INFO_ON_CALC_ERROR == 1)
     void tenPowError(void);
   #else // (EXTRA_INFO_ON_CALC_ERROR == 1)
     #define tenPowError typeError

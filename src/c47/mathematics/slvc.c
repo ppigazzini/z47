@@ -56,51 +56,51 @@ static int cmplxSortCompare(const void *v1, const void *v2) {
   complexMagnitude2(&p2->r, &p2->i, &v2a, &ctxtReal39);
 
   // NaN's aren't interesting so sort largest
-  if (realIsNaN(&v1a))
+  if(realIsNaN(&v1a))
     return realIsNaN(&v2a) ? 0 : 1;
-  if (realIsNaN(&v2a))
+  if(realIsNaN(&v2a))
     return -1;
 
   // Zeros are uninteresting so sort larger
-  if (realIsZero(&v1a))
+  if(realIsZero(&v1a))
     return realIsZero(&v2a)? 0 : 1;
-  if (realIsZero(&v2a))
+  if(realIsZero(&v2a))
     return -1;
 
   // Complex values are less interesting than real ones
-  if (realIsZero(&p1->i)) {
-    if (!realIsZero(&p2->i))
+  if(realIsZero(&p1->i)) {
+    if(!realIsZero(&p2->i))
       return -1;
-  } else if (realIsZero(&p2->i))
+  } else if(realIsZero(&p2->i))
       return 1;
 
   // Sort on magnitude
   realCompare(&v1a, &v2a, &c, &ctxtReal75);
-  if (!realIsZero(&c))
+  if(!realIsZero(&c))
     return realIsNegative(&c) ? -1 : 1;
 
   // Equal magnitude, favour positive roots over negative
-  if (realIsNegative(&p1->r) && !realIsNegative(&p2->r))
+  if(realIsNegative(&p1->r) && !realIsNegative(&p2->r))
     return 1;
-  if (!realIsNegative(&p1->r) && realIsNegative(&p2->r))
+  if(!realIsNegative(&p1->r) && realIsNegative(&p2->r))
     return -1;
-  if (realIsNegative(&p1->i) && !realIsNegative(&p2->i))
+  if(realIsNegative(&p1->i) && !realIsNegative(&p2->i))
     return 1;
-  if (!realIsNegative(&p1->i) && realIsNegative(&p2->i))
+  if(!realIsNegative(&p1->i) && realIsNegative(&p2->i))
     return -1;
 
   // Favour smaller real parts
   realCompare(&p1->r, &p2->r, &c, &ctxtReal75);
-  if (!realIsZero(&c)) {
-    if (realIsNegative(&p1->r))
+  if(!realIsZero(&c)) {
+    if(realIsNegative(&p1->r))
       return realIsNegative(&c) ? 1 : -1;
     return realIsNegative(&c) ? -1 : 1;
   }
 
   // Favour smaller imaginary parts
   realCompare(&p1->i, &p2->i, &c, &ctxtReal75);
-  if (!realIsZero(&c)) {
-    if (realIsNegative(&p1->i))
+  if(!realIsZero(&c)) {
+    if(realIsNegative(&p1->i))
       return realIsNegative(&c) ? 1 : -1;
     else
       return realIsNegative(&c) ? -1 : 1;
@@ -133,7 +133,7 @@ void fnSlvc(uint16_t unusedButMandatoryParameter) {
      && realIsZero(&bReal) && realIsZero(&bImag)
      && realIsZero(&cReal) && realIsZero(&cImag)) {
     displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       moreInfoOnError("In function fnSlvc:", "cannot use 0 for Y, Z and T as input of SLVC", NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     return;
@@ -158,7 +158,7 @@ void fnSlvc(uint16_t unusedButMandatoryParameter) {
 
   qsort(x, 3, sizeof(x[0]), &cmplxSortCompare);
   for (int i = 0; i < 3; i++) {
-    if (realIsZero(&x[i].i) || (realIsNaN(&x[i].r) && realIsNaN(&x[i].i))) {
+    if(realIsZero(&x[i].i) || (realIsNaN(&x[i].r) && realIsNaN(&x[i].i))) {
       convertRealToResultRegister(&x[i].r, REGISTER_X + i, amNone);
     } else {
       convertComplexToResultRegister(&x[i].r, &x[i].i, REGISTER_X + i);
@@ -294,21 +294,21 @@ void solveCubicEquation(const real_t *c2Real, const real_t *c2Imag, const real_t
   _realCheckedSubtract(x3Real, &rr, x3Real, realContext); _realCheckedSubtract(x3Imag, &ri, x3Imag, realContext);
 
   // Force real outputs when the roots are known to be real
-  if (realIn) {
-    if (realIsZero(rReal) || realIsNegative(rImag)) {
+  if(realIn) {
+    if(realIsZero(rReal) || realIsNegative(rImag)) {
       /* Three real roots */
       realCopy(const_0, x1Imag);
       realCopy(const_0, x2Imag);
       realCopy(const_0, x3Imag);
     } else {
       /* One real, two complex roots */
-      if (realCompareAbsLessThan(x1Imag, x2Imag)) {
-        if (realCompareAbsLessThan(x1Imag, x3Imag))
+      if(realCompareAbsLessThan(x1Imag, x2Imag)) {
+        if(realCompareAbsLessThan(x1Imag, x3Imag))
           realCopy(const_0, x1Imag);
         else
           realCopy(const_0, x3Imag);
       } else {
-        if (realCompareAbsLessThan(x2Imag, x3Imag))
+        if(realCompareAbsLessThan(x2Imag, x3Imag))
           realCopy(const_0, x2Imag);
         else
           realCopy(const_0, x3Imag);

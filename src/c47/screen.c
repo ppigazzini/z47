@@ -505,9 +505,9 @@ char letteredRegisterName(calcRegister_t regist) {
     getTimeString(dateTimeString);
     if(strcmp(dateTimeString, oldTime)) {
       strcpy(oldTime, dateTimeString);
-      #if(DEBUG_INSTEAD_STATUS_BAR != 1)
+      #if (DEBUG_INSTEAD_STATUS_BAR != 1)
         showDateTime();
-        if (Y_SHIFT == 0 && X_SHIFT < 200) {
+        if(Y_SHIFT == 0 && X_SHIFT < 200) {
           showShiftState();
         }
       #endif // (DEBUG_INSTEAD_STATUS_BAR != 1)
@@ -563,9 +563,9 @@ char letteredRegisterName(calcRegister_t regist) {
     getTimeString(dateTimeString);
     if(strcmp(dateTimeString, oldTime)) {
       strcpy(oldTime, dateTimeString);
-      #if(DEBUG_INSTEAD_STATUS_BAR != 1)
+      #if (DEBUG_INSTEAD_STATUS_BAR != 1)
         showDateTime();
-        if (Y_SHIFT == 0 && X_SHIFT < 200) {
+        if(Y_SHIFT == 0 && X_SHIFT < 200) {
           showShiftState();
         }
       #endif // (DEBUG_INSTEAD_STATUS_BAR != 1)
@@ -1232,7 +1232,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
         }
       }
       uint16_t tmp = ch;                                     //LF after 0x0A is recognized (/n)
-      while (LF && (charCodeFromString(string, &tmp) == 0x0A)) {   //do not touch character pointer
+      while(LF && (charCodeFromString(string, &tmp) == 0x0A)) {   //do not touch character pointer
         charCodeFromString(string, &ch);                       //increment character pointer to skip 0x0A
         x = orgX;
         prevX = x;
@@ -1729,7 +1729,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
     sprintf(prefix, "= %s =", name);
     prefixWidth = showString(prefix, &standardFont, 19 + (17+28), Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(rowReg - REGISTER_X) + 6, vmNormal, true, true);
 
-    if (getRegisterAsRealQuiet(reg, &t)) {
+    if(getRegisterAsRealQuiet(reg, &t)) {
       angleMode = getRegisterDataType(reg) == dtReal34 ? getRegisterAngularMode(reg) : amNone;
       realToReal34(&t, &u);
       real34ToDisplayString(&u, angleMode, tmpString, &numericFont, SCREEN_WIDTH - prefixWidth, NUMBER_OF_DISPLAY_DIGITS, true, true);
@@ -2351,7 +2351,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
       fnDisplayStack(4-displayStackSHOIDISP);
     }
 
-    #if(DEBUG_PANEL == 1)
+    #if (DEBUG_PANEL == 1)
       if(programRunStop != PGM_RUNNING) {
         refreshDebugPanel();
       }
@@ -2367,10 +2367,10 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
       }                                                                         //JMSHOW
 
       #if defined(PC_BUILD)
-        #if(DEBUG_REGISTER_L == 1 || SHOW_MEMORY_STATUS == 1)
+        #if (DEBUG_REGISTER_L == 1 || SHOW_MEMORY_STATUS == 1)
           char tmpStr[1000];
         #endif // (DEBUG_REGISTER_L == 1 || SHOW_MEMORY_STATUS == 1)
-        #if(DEBUG_REGISTER_L == 1)
+        #if (DEBUG_REGISTER_L == 1)
           char string1[1000], string2[1000], *p;
           uint16_t i;
 
@@ -2444,7 +2444,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
           gtk_widget_show(lblRegisterL1);
           gtk_widget_show(lblRegisterL2);
         #endif // (DEBUG_REGISTER_L == 1)
-        #if(SHOW_MEMORY_STATUS == 1)
+        #if (SHOW_MEMORY_STATUS == 1)
           char string[1000];
 
           sprintf(string, "%" PRId32 " bytes free (%" PRId32 " region%s), C43 %" PRIu32 " bytes, GMP %" PRIu32 " bytes -> should always be 0", getFreeRamMemory(), numberOfFreeMemoryRegions, numberOfFreeMemoryRegions==1 ? "" : "s", (uint32_t)TO_BYTES((uint64_t)c47MemInBlocks), (uint32_t)gmpMemInBytes);
@@ -2473,7 +2473,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
           else {
             sprintf(tmpString, "L.R. selected to %03" PRIu16 ".", (uint16_t)((lrSelection) & 0x01FF));
           }
-          #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+          #if (EXTRA_INFO_ON_CALC_ERROR == 1)
             sprintf(errorMessage, "BestF is set, but will not work until REAL data points are used.");
             moreInfoOnError("In function refreshRegisterLine:", errorMessage, errorMessages[24], NULL);
           #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -2828,7 +2828,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
             showString(errorMessages[lastErrorCode], &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + 6, vmNormal, true, true);
           }
           else {
-            #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+            #if (EXTRA_INFO_ON_CALC_ERROR == 1)
               sprintf(errorMessage, "Error message %" PRIu8 " is too wide!", lastErrorCode);
               moreInfoOnError("In function refreshRegisterLine:", errorMessage, errorMessages[lastErrorCode], NULL);
             #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -2956,7 +2956,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
             w = stringWidth(tmpString, &standardFont, false, true);
             lineWidth = w;
             if(w > SCREEN_WIDTH) {
-              #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+              #if (EXTRA_INFO_ON_CALC_ERROR == 1)
                 moreInfoOnError("In function refreshRegisterLine:", "Fraction representation too wide!", tmpString, NULL);
               #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
               strcpy(tmpString, "Fraction representation too wide!");
@@ -4016,7 +4016,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
           else {
             w = stringWidth(tmpString, &standardFont, false, true);
             if(w > SCREEN_WIDTH) {
-              #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+              #if (EXTRA_INFO_ON_CALC_ERROR == 1)
                 moreInfoOnError("In function refreshRegisterLine:", "Long integer representation too wide!", tmpString, NULL);
               #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
               strcpy(tmpString, "Long integer representation too wide!");
@@ -4566,7 +4566,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
         if(!(screenUpdatingMode & SCRUPD_MANUAL_STATUSBAR)) {
           refreshStatusBar();
         }
-        #if(REAL34_WIDTH_TEST == 1)
+        #if (REAL34_WIDTH_TEST == 1)
           for(int y=Y_POSITION_OF_REGISTER_Y_LINE; y<Y_POSITION_OF_REGISTER_Y_LINE + 2*REGISTER_LINE_HEIGHT; y++ ) {
             setBlackPixel(SCREEN_WIDTH - largeur - 1, y);
           }
@@ -4604,7 +4604,12 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
 
     if(calcMode!=CM_AIM && calcMode!=CM_NIM && calcMode!=CM_PLOT_STAT && calcMode!=CM_GRAPH && calcMode!=CM_LISTXY && last_CM != 240) {  //240 specifically to prefent this
       last_CM = 254;  //JM Force NON-CM_AIM and NON-CM_NIM to refresh to be compatible to 43S
-    } else if (last_CM == 240) last_CM = calcMode;
+    }
+    else {
+      if(last_CM == 240) {
+        last_CM = calcMode;
+      }
+    }
 
 
     switch(softmenu[softmenuStack[0].softmenuId].menuItem) {

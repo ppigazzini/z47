@@ -48,7 +48,7 @@ static void argError(void) {
 static const real_t *realArg(const real_t *x) {
   if(realIsNaN(x))
     return x;
-  if (realIsZero(x))
+  if(realIsZero(x))
     return getSystemFlag(FLAG_SPCRES) ? x : const_0;
   return realIsPositive(x) ? const_0 : const_180;
 }
@@ -64,13 +64,13 @@ static void argReal(void) {
   real_t x;
   const real_t *r;
 
-  if (!getRegisterAsReal(REGISTER_X, &x))
+  if(!getRegisterAsReal(REGISTER_X, &x))
     return;
 
   r = realArg(&x);
 
   convertRealToResultRegister(r, REGISTER_X, amNone);
-  if (!realIsNaN(r)) {
+  if(!realIsNaN(r)) {
     convertAngle34FromTo(REGISTER_REAL34_DATA(REGISTER_X), amDegree, currentAngularMode);
     setRegisterAngularMode(REGISTER_X, currentAngularMode);
   }
@@ -80,7 +80,7 @@ static void argReal(void) {
 static void argCplx(void) {
   real_t real, imag;
 
-  if (!getRegisterAsComplex(REGISTER_X, &real, &imag))
+  if(!getRegisterAsComplex(REGISTER_X, &real, &imag))
     return;
 
   realRectangularToPolar(&real, &imag, &real, &imag, &ctxtReal39);

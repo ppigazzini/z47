@@ -41,7 +41,7 @@
 static void arcsinCplx(void) {
   real_t xReal, xImag, rReal, rImag;
 
-  if (!getRegisterAsComplex(REGISTER_X, &xReal, &xImag))
+  if(!getRegisterAsComplex(REGISTER_X, &xReal, &xImag))
     return;
 
   ArcsinComplex(&xReal, &xImag, &rReal, &rImag, &ctxtReal39);
@@ -53,7 +53,7 @@ static void arcsinReal(void) {
   real_t x;
   const real_t *r = &x;
 
-  if (!getRegisterAsReal(REGISTER_X, &x))
+  if(!getRegisterAsReal(REGISTER_X, &x))
     return;
 
   if(realCompareAbsGreaterThan(&x, const_1)) {
@@ -66,7 +66,7 @@ static void arcsinReal(void) {
     }
     else {
       displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         moreInfoOnError("In function arcsinReal:", "|X| > 1", "and CPXRES is not set!", NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return;

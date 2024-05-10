@@ -277,7 +277,7 @@ uint16_t               currentUserMenu;
 uint16_t               userKeyLabelSize;
 uint16_t               currentInputVariable = INVALID_VARIABLE;
 uint16_t               currentMvarLabel = INVALID_VARIABLE;
-#if(REAL34_WIDTH_TEST == 1)
+#if (REAL34_WIDTH_TEST == 1)
   uint16_t               largeur=200;
 #endif // (REAL34_WIDTH_TEST == 1)
 

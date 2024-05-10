@@ -52,10 +52,10 @@ static void cosReal(void) {
   const real_t *r = &x;
   angularMode_t xAngularMode;
 
-  if (!getRegisterAsRealAngle(REGISTER_X, &x, &xAngularMode))
+  if(!getRegisterAsRealAngle(REGISTER_X, &x, &xAngularMode))
     return;
 
-  if (realIsSpecial(&x))
+  if(realIsSpecial(&x))
     r = const_NaN;
   else
     WP34S_Cvt2RadSinCosTan(r = &x, xAngularMode, NULL, &x, NULL, &ctxtReal75);
@@ -67,7 +67,7 @@ static void cosReal(void) {
 static void cosCplx(void) {
   real_t zReal, zImag;
 
-  if (!getRegisterAsComplex(REGISTER_X, &zReal, &zImag))
+  if(!getRegisterAsComplex(REGISTER_X, &zReal, &zImag))
     return;
 
   cosComplex(&zReal, &zImag, &zReal, &zImag, &ctxtReal75);

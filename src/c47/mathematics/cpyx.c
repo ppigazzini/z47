@@ -218,7 +218,7 @@ static void pyxCplx(real_t *yReal, real_t *yImag, real_t *xReal, real_t *xImag, 
 static void cpyxLonI(uint16_t combOrPerm) {
   longInteger_t x, y;
 
-  if (!getRegisterAsLongInt(REGISTER_X, x)
+  if(!getRegisterAsLongInt(REGISTER_X, x)
       || !getRegisterAsLongInt(REGISTER_Y, y))
     return;
 
@@ -254,7 +254,7 @@ static void cpyxLonI(uint16_t combOrPerm) {
 static void cpyxReal(uint16_t combOrPerm) {
   real_t x, y;
 
-    if (!getRegisterAsReal(REGISTER_X, &x) || !getRegisterAsReal(REGISTER_Y, &y))
+    if(!getRegisterAsReal(REGISTER_X, &x) || !getRegisterAsReal(REGISTER_Y, &y))
     return;
 
   if(realIsNegative(&x) || realIsNegative(&y) || realCompareGreaterThan(&x, &y)) {
@@ -285,7 +285,7 @@ static void cpyxCplx(uint16_t combOrPerm) {
   real_t xReal, xImag, yReal, yImag;
   real_t tReal, tImag;
 
-  if (!getRegisterAsComplex(REGISTER_X, &xReal, &xImag)
+  if(!getRegisterAsComplex(REGISTER_X, &xReal, &xImag)
       || !getRegisterAsComplex(REGISTER_Y, &yReal, &yImag))
     return;
 
@@ -308,7 +308,7 @@ static void cpyxCplx(uint16_t combOrPerm) {
 static void cpyxShoI(uint16_t combOrPerm) {
   longInteger_t x, y;
 
-  if (!getRegisterAsLongInt(REGISTER_X, x)
+  if(!getRegisterAsLongInt(REGISTER_X, x)
       || !getRegisterAsLongInt(REGISTER_Y, y))
     return;
 

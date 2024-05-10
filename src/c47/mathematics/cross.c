@@ -61,7 +61,7 @@ TO_QSPI void (* const cross[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS][NUMBER_OF_DAT
 static void crossDataTypeError(void) {
   displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
 
-  #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+  #if (EXTRA_INFO_ON_CALC_ERROR == 1)
     sprintf(errorMessage, "cannot raise %s", getRegisterDataTypeName(REGISTER_Y, true, false));
     sprintf(errorMessage + ERROR_MESSAGE_LENGTH/2, "to %s", getRegisterDataTypeName(REGISTER_X, true, false));
     moreInfoOnError("In function fnCross:", errorMessage, errorMessage + ERROR_MESSAGE_LENGTH/2, NULL);
@@ -71,7 +71,7 @@ static void crossDataTypeError(void) {
 //static void crossSizeError() {
 //  displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
 
-//  #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+//  #if (EXTRA_INFO_ON_CALC_ERROR == 1)
 //    sprintf(errorMessage, "cannot calculate CROSS product, matrix size mismatch.");
 //    moreInfoOnError("In function fnCross:", errorMessage, NULL, NULL);
 //  #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -290,7 +290,7 @@ void crossRemaRema(void) {
 
   if((realVectorSize(&y) == 0) || (realVectorSize(&x) == 0) || (realVectorSize(&y) > 3) || (realVectorSize(&x) > 3)) {
     displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "invalid numbers of elements of %d" STD_CROSS "%d-matrix to %d" STD_CROSS "%d-matrix",
               x.header.matrixRows, x.header.matrixColumns,
               y.header.matrixRows, y.header.matrixColumns);
@@ -339,7 +339,7 @@ void crossCpmaCpma(void) {
 
   if((complexVectorSize(&y) == 0) || (complexVectorSize(&x) == 0) || (complexVectorSize(&y) > 3) || (complexVectorSize(&x) > 3)) {
     displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "invalid numbers of elements of %d" STD_CROSS "%d-matrix to %d" STD_CROSS "%d-matrix",
               x.header.matrixRows, x.header.matrixColumns,
               y.header.matrixRows, y.header.matrixColumns);

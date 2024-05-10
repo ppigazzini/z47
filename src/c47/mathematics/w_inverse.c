@@ -34,7 +34,7 @@
 static void wInvReal(void) {
   real_t x, res;
 
-  if (!getRegisterAsReal(REGISTER_X, &x))
+  if(!getRegisterAsReal(REGISTER_X, &x))
     return;
 
   WP34S_InverseW(&x, &res, &ctxtReal39);
@@ -44,7 +44,7 @@ static void wInvReal(void) {
 static void wInvCplx(void) {
   real_t xr, xi, resr, resi;
 
-  if (!getRegisterAsComplex(REGISTER_X, &xr, &xi))
+  if(!getRegisterAsComplex(REGISTER_X, &xr, &xi))
     return;
   WP34S_InverseComplexW(&xr, &xi, &resr, &resi, &ctxtReal39);
   convertComplexToResultRegister(&resr, &resi, REGISTER_X);

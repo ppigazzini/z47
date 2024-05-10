@@ -43,11 +43,11 @@
   uint32_t            *screenData;
   bool_t              screenChange;
   char                debugString[10000];
-  #if(DEBUG_REGISTER_L == 1)
+  #if (DEBUG_REGISTER_L == 1)
     GtkWidget         *lblRegisterL1;
     GtkWidget         *lblRegisterL2;
   #endif // (DEBUG_REGISTER_L == 1)
-  #if(SHOW_MEMORY_STATUS == 1)
+  #if (SHOW_MEMORY_STATUS == 1)
     GtkWidget         *lblMemoryStatus;
   #endif // (SHOW_MEMORY_STATUS == 1)
   calcKeyboard_t       calcKeyboard[43];

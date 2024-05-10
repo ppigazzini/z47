@@ -93,7 +93,7 @@ typedef struct {
   #if !defined(GENERATE_CATALOGS)
   void charCodeHPReplacement(uint16_t *charCode) {
     #if !defined(TESTSUITE_BUILD)
-      if (replace(charCode)) {
+      if(replace(charCode)) {
       } else
       if(*charCode >= charCodeFromString(STD_1, 0) &&  *charCode <= charCodeFromString(STD_9, 0)) {
         *charCode = *charCode - charCodeFromString(STD_1, 0) + charCodeFromString(STD_HP_1, 0);
@@ -713,7 +713,7 @@ void stringToASCII(const char *str, char *ascii) {
       //replacement table
       if(_getText(a1, a2, aa)) {
         int16_t j = 0;
-        while (aa[j] != 0) {
+        while(aa[j] != 0) {
           *ascii = aa[j++];
           ascii++;
         }

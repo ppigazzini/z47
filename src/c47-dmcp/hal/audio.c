@@ -52,11 +52,11 @@ void fnSetVolume(uint16_t volume) {
   uint16_t current_volume;
   current_volume = get_beep_volume();
   //volume++;
-  if (volume > current_volume) {
+  if(volume > current_volume) {
     for(i = current_volume; i < volume; i++) {
       beep_volume_up();
     }
-  } else if (volume < current_volume) {
+  } else if(volume < current_volume) {
     for(i = current_volume; i > volume; i--) {
       beep_volume_down();
     }
@@ -112,10 +112,10 @@ static uint32_t _getValueFromRegister(calcRegister_t regist) {
 }
 
 void _Buzz(uint32_t frequency, uint32_t ms_delay) {
-  if (ms_delay > 0) {
-    if (ms_delay > 2000) ms_delay = 2000;  // max duration value : 2s
-    if (frequency != 0) {
-      if (frequency > 20000) frequency = 20000;  // max  audible frequency:  20 kHz
+  if(ms_delay > 0) {
+    if(ms_delay > 2000) ms_delay = 2000;  // max duration value : 2s
+    if(frequency != 0) {
+      if(frequency > 20000) frequency = 20000;  // max  audible frequency:  20 kHz
       start_buzzer_freq(frequency*1000);
       sys_delay(ms_delay);
       stop_buzzer();
@@ -145,7 +145,7 @@ void fnPlay(uint16_t regist) {
     if(!getSystemFlag(FLAG_QUIET)) {
       linkToRealMatrixRegister(regist, &m);
       cols = m.header.matrixColumns;
-      if ((cols != 2) && (cols != 3)) {
+      if((cols != 2) && (cols != 3)) {
         displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
         //errorMoreInfo("DataType %" PRIu32 " is not a Nx2 matrix", getRegisterDataType(regist));
         return;
@@ -154,11 +154,11 @@ void fnPlay(uint16_t regist) {
         frequency = real34ToUInt32(&m.matrixElements[i * cols]);
         ms_delay  = real34ToUInt32(&m.matrixElements[i * cols + 1]);
         volume    = real34ToUInt32(&m.matrixElements[i * cols + 2]);
-        if (cols == 3) fnSetVolume(volume);
+        if(cols == 3) fnSetVolume(volume);
         _Buzz(frequency, ms_delay);
-        if (ms_delay > 0) sys_delay(ms_delay/8);  // delay between two notes: note duration/8
+        if(ms_delay > 0) sys_delay(ms_delay/8);  // delay between two notes: note duration/8
         while(!key_empty()) {
-          if (key_pop() == KEY_EXIT) {          // exit if user press EXIT
+          if(key_pop() == KEY_EXIT) {          // exit if user press EXIT
             key_pop_all ();
             return;
           }

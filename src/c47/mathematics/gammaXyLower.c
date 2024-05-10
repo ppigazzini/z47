@@ -57,7 +57,7 @@ TO_QSPI void (* const GammaXyLower[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS][NUMBER
  * \param void
  * \return void
  ***********************************************/
-#if(EXTRA_INFO_ON_CALC_ERROR == 1)
+#if (EXTRA_INFO_ON_CALC_ERROR == 1)
   void gammaXyLowerError(void) {
     displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
     sprintf(errorMessage, "cannot calculate " STD_gamma STD_SUB_x STD_SUB_y " for %s and %s", getRegisterDataTypeName(REGISTER_X, true, false), getRegisterDataTypeName(REGISTER_Y, true, false));
@@ -93,7 +93,7 @@ void gammaXyLowerLonILonI(void) {
   convertLongIntegerRegisterToReal(REGISTER_Y, &y, &ctxtReal39);
   if(!getSystemFlag(FLAG_SPCRES) && (realCompareLessEqual(&x, const_0) || realCompareLessThan(&y, const_0))) {
     displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       moreInfoOnError("In function gammaXyLowerLonILonI:", "Y must be non-negative and X must be positive", NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
@@ -113,7 +113,7 @@ void gammaXyLowerLonIReal(void) {
   real34ToReal(REGISTER_REAL34_DATA(REGISTER_Y), &y);
   if(!getSystemFlag(FLAG_SPCRES) && (realCompareLessEqual(&x, const_0) || realCompareLessThan(&y, const_0))) {
     displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       moreInfoOnError("In function gammaXyLowerLonIReal:", "Y must be non-negative and X must be positive", NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
@@ -133,7 +133,7 @@ void gammaXyLowerRealLonI(void) {
   convertLongIntegerRegisterToReal(REGISTER_Y, &y, &ctxtReal39);
   if(!getSystemFlag(FLAG_SPCRES) && (realCompareLessEqual(&x, const_0) || realCompareLessThan(&y, const_0))) {
     displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       moreInfoOnError("In function gammaXyLowerRealLonI:", "Y must be non-negative and X must be positive", NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
@@ -152,7 +152,7 @@ void gammaXyLowerRealReal(void) {
   real34ToReal(REGISTER_REAL34_DATA(REGISTER_Y), &y);
   if(!getSystemFlag(FLAG_SPCRES) && (realCompareLessEqual(&x, const_0) || realCompareLessThan(&y, const_0))) {
     displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       moreInfoOnError("In function gammaXyLowerRealReal:", "Y must be non-negative and X must be positive", NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }

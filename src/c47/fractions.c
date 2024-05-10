@@ -54,7 +54,7 @@ void fnDenMax(uint16_t D) {
   }
   else {
     displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       moreInfoOnError("In function fnDenMax:", getRegisterDataTypeName(REGISTER_X, true, false), "cannot be converted!", NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     return;
@@ -62,7 +62,7 @@ void fnDenMax(uint16_t D) {
 
   if(realIsNaN(&reX)) {
     displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       moreInfoOnError("In function fnDenMax:", "cannot use NaN as X input of fnDenMax", NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     return;
@@ -104,7 +104,7 @@ void fraction(calcRegister_t regist, int16_t *sign, uint64_t *intPart, uint64_t 
     real34ToReal(REGISTER_REAL34_DATA(regist), &temp0);
   }
   else {
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "%s cannot be shown as a fraction!", getRegisterDataTypeName(regist, true, false));
       moreInfoOnError("In function fraction:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -224,7 +224,7 @@ void fraction(calcRegister_t regist, int16_t *sign, uint64_t *intPart, uint64_t 
             // greater than denMax to be useful. In this algorithm we need
             // to stop if the new value of k is greater than 2*denMax.
             // new_k = new_a * k_1 + k_2;
-            // this is true if (y-a) < k_1/(2*denMax)
+            // this is true if(y-a) < k_1/(2*denMax)
             // (and it may be true for slightly larger values of (y-a), but
             // this is caught later).
             // In this case, the current convergent is the best rational approximation

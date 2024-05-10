@@ -50,7 +50,7 @@ TO_QSPI void (* const Exp[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])(void) = {
  * \param void
  * \return void
  ***********************************************/
-#if(EXTRA_INFO_ON_CALC_ERROR == 1)
+#if (EXTRA_INFO_ON_CALC_ERROR == 1)
   void expError(void) {
     displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
     sprintf(errorMessage, "cannot calculate Exp for %s", getRegisterDataTypeName(REGISTER_X, true, false));
@@ -91,13 +91,13 @@ inf:  if(realIsPositive(x)) {
     }
     return false;
   }
-  if (realCompareAbsGreaterThan(x, const_2e6))
+  if(realCompareAbsGreaterThan(x, const_2e6))
     goto inf;
   return true;
 }
 
 void realExp(const real_t *x, real_t *res, realContext_t *set) {
-  if (realExpLimitCheck(x, res, const_0))
+  if(realExpLimitCheck(x, res, const_0))
     decNumberExp(res, x, set);
 }
 
@@ -167,7 +167,7 @@ void expShoI(void) {
 void expReal(void) {
   if(real34IsInfinite(REGISTER_REAL34_DATA(REGISTER_X)) && !getSystemFlag(FLAG_SPCRES)) {
     displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       moreInfoOnError("In function expReal:", "cannot use " STD_PLUS_MINUS STD_INFINITY " as X input of exp when flag D is not set", NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     return;

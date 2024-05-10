@@ -364,7 +364,7 @@ void Sett(int16_t grp) {
 
 
   void fnSetJM(uint16_t unusedButMandatoryParameter){
-    fnDrop(0);
+    fnDrop(NOPARAM);
     fnSquare(0);
     resetOtherConfigurationStuff();
     getDateString(lastStateFileOpened);
@@ -398,7 +398,7 @@ void Sett(int16_t grp) {
     Sett(_RJ);
 
     fnKeyExit(0);
-    fnDrop(0);
+    fnDrop(NOPARAM);
     fnSquare(0);
     fnRefreshState();
     screenUpdatingMode = SCRUPD_AUTO;
@@ -417,8 +417,8 @@ void Sett(int16_t grp) {
     temporaryInformation = TI_NO_INFO;
     fnRefreshState();
 
-    fnDrop(0);
-    fnDrop(0);
+    fnDrop(NOPARAM);
+    fnDrop(NOPARAM);
     runFunction(ITM_SQUARE);
     screenUpdatingMode = SCRUPD_AUTO;
     refreshScreen(162);
@@ -808,8 +808,8 @@ void fnFractionType(uint16_t unusedButMandatoryParameter) {
   }
   constantFractions   = (state & 8) ? true : false;
   constantFractionsOn = (state & 4) ? true : false;
-  if (((state & 2) == 2) == !getSystemFlag(FLAG_PROPFR)) flipSystemFlag(FLAG_PROPFR);
-  if (((state & 1) == 1) == !getSystemFlag(FLAG_FRACT)) flipSystemFlag(FLAG_FRACT);
+  if(((state & 2) == 2) == !getSystemFlag(FLAG_PROPFR)) flipSystemFlag(FLAG_PROPFR);
+  if(((state & 1) == 1) == !getSystemFlag(FLAG_FRACT)) flipSystemFlag(FLAG_FRACT);
   //printf("--> %u --> %u\n",state, STATE);
 }
 
@@ -1651,7 +1651,7 @@ Sett(_Reset);
     timerStartTime         = TIMER_APP_STOPPED;
     timerTotalTime         = 0u;
 
-    #if(DEBUG_PANEL == 1)
+    #if (DEBUG_PANEL == 1)
       debugWindow = DBG_REGISTERS;
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(chkHexaString), false);
       refreshDebugPanel();
@@ -1672,7 +1672,7 @@ Sett(_Reset);
         fnStrInputLongint(indexOfStrings[i].itemName);
       }
       fnStore(indexOfStrings[i].count);
-      fnDrop(0);
+      fnDrop(NOPARAM);
     }
 
 
@@ -1751,8 +1751,8 @@ Sett(_Reset);
         uint8_t min = rtc_read_min();
         convertDoubleToReal34RegisterPush((double)min, REGISTER_X);
         fnSigma(1);
-        fnDrop(0);
-        fnDrop(0);
+        fnDrop(NOPARAM);
+        fnDrop(NOPARAM);
       }
     #endif
 

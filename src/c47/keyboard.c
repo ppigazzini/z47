@@ -50,7 +50,7 @@
 #include "c43Extensions/graphText.h"
 #include "c43Extensions/xeqm.h"
 
-#if(REAL34_WIDTH_TEST == 1)
+#if (REAL34_WIDTH_TEST == 1)
   #include "registerValueConversions.h"
 #endif // (REAL34_WIDTH_TEST == 1)
 #include <string.h>
@@ -253,7 +253,7 @@ printf(">>>>Z 0093c determineFunctionKeyItem  item = %i:   name:=%s\n",item, ind
               }
               else {
                 item = -MNU_DYNAMIC;
-                if (calcMode != CM_ASSIGN) {
+                if(calcMode != CM_ASSIGN) {
                   currentUserMenu = i;
                 }
               }
@@ -701,7 +701,7 @@ bool_t lowercaseselected;    //the only place that this is set, is in processKey
           case MNU_CHARS:
           case MNU_PROGS:
           case MNU_VARS: {
-//            #if(FN_KEY_TIMEOUT_TO_NOP == 1)
+//            #if (FN_KEY_TIMEOUT_TO_NOP == 1)
 //              showFunctionName(item, 1000, "SF:A"); // 1000ms = 1s
 //            #else // (FN_KEY_TIMEOUT_TO_NOP != 1)
               showFunctionNameItem = item;
@@ -776,7 +776,7 @@ bool_t lowercaseselected;    //the only place that this is set, is in processKey
           }
 
           else {
-            #if(FN_KEY_TIMEOUT_TO_NOP == 1)
+            #if (FN_KEY_TIMEOUT_TO_NOP == 1)
               showFunctionName(item, 1000); // 1000ms = 1s
             #else // (FN_KEY_TIMEOUT_TO_NOP != 1)
               showFunctionNameItem = item;
@@ -1001,7 +1001,7 @@ int16_t lastItem = 0;
       if(/*showFunctionNameItem*/item != 0) {
 /* //JM vv Rmove the possibility for error by removing code that may conflict with the state machine
         item = showFunctionNameItem;
-      #if(FN_KEY_TIMEOUT_TO_NOP == 1)
+      #if (FN_KEY_TIMEOUT_TO_NOP == 1)
         hideFunctionName();
       #else // FN_KEY_TIMEOUT_TO_NOP != 1
 */
@@ -1255,7 +1255,7 @@ int16_t lastItem = 0;
                     }
                     else {
                       displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
-                      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+                      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
                         sprintf(errorMessage, "string '%s' is not a named label", varCatalogItem);
                         moreInfoOnError("In function btnFnReleased:", errorMessage, NULL, NULL);
                       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -1269,7 +1269,7 @@ int16_t lastItem = 0;
                     }
                     else {
                       displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
-                      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+                      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
                         sprintf(errorMessage, "string '%s' is not a named variable", varCatalogItem);
                         moreInfoOnError("In function btnFnReleased:", errorMessage, NULL, NULL);
                       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -1413,7 +1413,7 @@ bool_t allowShiftsToClearError = false;
     result = Norm_Key_00_item_in_layout;
     ShiftOverride = Check_SigmaPlus_Assigned(&result, key_no);
 
-    if (ShiftOverride == 0) {                              //disable long and double press if Sigma+ is shift g
+    if(ShiftOverride == 0) {                              //disable long and double press if Sigma+ is shift g
       Setup_MultiPresses( key->primary );
     }
 
@@ -2090,7 +2090,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
         #if defined(PC_BUILD)
           //printf("**[DL]** btnReleased - item %d showFunctionNameArg %s funcParam %s\n",item,showFunctionNameArg,funcParam);
         #endif //PC_BUILD
-        if (showFunctionNameArg != NULL) {
+        if(showFunctionNameArg != NULL) {
           funcParam = showFunctionNameArg;       // Needed when executing a user menu from a long pressed key
           #if defined(PC_BUILD)
             //printf("**[DL]** btnReleased - item %d showFunctionNameArg %s funcParam %s\n",item,showFunctionNameArg,funcParam);
@@ -2120,7 +2120,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
             }
             else {
               displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE, REGISTER_X);
-              #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+              #if (EXTRA_INFO_ON_CALC_ERROR == 1)
                 sprintf(errorMessage, "string '%s' is not a named variable", funcParam);
                 moreInfoOnError("In function btnReleased:", errorMessage, NULL, NULL);
               #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -2133,7 +2133,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
             }
             else {
               displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
-              #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+              #if (EXTRA_INFO_ON_CALC_ERROR == 1)
                 sprintf(errorMessage, "string '%s' is not a named label", funcParam);
                 moreInfoOnError("In function btnReleased:", errorMessage, NULL, NULL);
               #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -2250,7 +2250,7 @@ RELEASE_END:
       programRunStop = PGM_STOPPED;
     }
 
-    #if(REAL34_WIDTH_TEST == 1)
+    #if (REAL34_WIDTH_TEST == 1)
       longInteger_t lgInt;
       longIntegerInit(lgInt);
     #endif // (REAL34_WIDTH_TEST == 1)
@@ -2294,7 +2294,7 @@ RELEASE_END:
             refreshScreen(118);
           }
           keyActionProcessed = true;
-          #if(REAL34_WIDTH_TEST == 1)
+          #if (REAL34_WIDTH_TEST == 1)
             if(++largeur > SCREEN_WIDTH) {
               largeur--;
             }
@@ -2318,7 +2318,7 @@ RELEASE_END:
             refreshScreen(119);
           }
           keyActionProcessed = true;
-          #if(REAL34_WIDTH_TEST == 1)
+          #if (REAL34_WIDTH_TEST == 1)
             if(--largeur < 20) {
               largeur++;
             }
@@ -2898,7 +2898,7 @@ RELEASE_END:
                     }
                     else {
                       displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
-                      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+                      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
                         sprintf(errorMessage, "string '%s' is not a named label", label);
                         moreInfoOnError("In function btnFnReleased:", errorMessage, NULL, NULL);
                       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -2913,7 +2913,7 @@ RELEASE_END:
                     }
                     else {
                       displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
-                      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+                      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
                         sprintf(errorMessage, "string '%s' is not a named variable", var);
                         moreInfoOnError("In function btnFnReleased:", errorMessage, NULL, NULL);
                       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -3015,7 +3015,7 @@ RELEASE_END:
         }
       }
     }
-    #if(REAL34_WIDTH_TEST == 1)
+    #if (REAL34_WIDTH_TEST == 1)
       longIntegerFree(lgInt);
     #endif // (REAL34_WIDTH_TEST == 1)
   }
@@ -3756,7 +3756,7 @@ void fnKeyCC(uint16_t complex_Type) {    //JM Using 'unusedButMandatoryParameter
         else {
           displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
         }
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         if(!polarOk && getSystemFlag(FLAG_POLAR)) {
           sprintf(errorMessage, "You cannot use CC or COMPLEX to create a Polar complex number with %s(%s) in X and %s(%s) in Y!",       getDataTypeName(getRegisterDataType(REGISTER_X), true, false), getRegisterTagName((REGISTER_X), 0), getDataTypeName(getRegisterDataType(REGISTER_Y), true, false), getRegisterTagName((REGISTER_Y), 0));
         } else

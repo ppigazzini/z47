@@ -41,13 +41,13 @@
 static void rmdLonI(void) {
   longInteger_t x, y, remainder;
 
-  if (!getRegisterAsLongInt(REGISTER_X, x)
+  if(!getRegisterAsLongInt(REGISTER_X, x)
     || !getRegisterAsLongInt(REGISTER_Y, y))
   return;
 
   if(longIntegerIsZero(x)) {
     displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       moreInfoOnError("In function rmdLonI:", "cannot IDIVR a long integer by 0", NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
@@ -78,13 +78,13 @@ static void rmdShoI(void) {
   longInteger_t x, y, remainder;
     uint32_t baseY;
 
-  if (!getRegisterAsLongInt(REGISTER_X, x)
+  if(!getRegisterAsLongInt(REGISTER_X, x)
     || !getRegisterAsLongInt(REGISTER_Y, y))
   return;
 
   if(longIntegerIsZero(x)) {
     displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       moreInfoOnError("In function rmdLonILonI:", "cannot IDIVR a short integer by 0", NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
@@ -117,12 +117,12 @@ static void rmdShoI(void) {
 static void rmdReal(void) {
   real_t x, y;
 
-  if (!getRegisterAsReal(REGISTER_X, &x) || !getRegisterAsReal(REGISTER_Y, &y))
+  if(!getRegisterAsReal(REGISTER_X, &x) || !getRegisterAsReal(REGISTER_Y, &y))
     return;
 
   if(realIsZero(&x)) {
     displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       moreInfoOnError("In function rmdReal:", "cannot IDIVR a real34 by 0", NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     return;

@@ -39,12 +39,12 @@
 static void fibLonI(void) {
   longInteger_t x, result;
 
-  if (!getRegisterAsLongInt(REGISTER_X, x))
+  if(!getRegisterAsLongInt(REGISTER_X, x))
     return;
 
   if(longIntegerIsNegative(x)) {
     displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       longIntegerRegisterToDisplayString(REGISTER_X, errorMessage, ERROR_MESSAGE_LENGTH, SCREEN_WIDTH, 50, false);   //JM added last parameter: Allow LARGELI
       sprintf(tmpString, "cannot calculate fib(%s)", errorMessage);
       moreInfoOnError("In function fibLonI:", tmpString, NULL, NULL);
@@ -55,7 +55,7 @@ static void fibLonI(void) {
 
   /*if(shortIntegerMode == SIM_UNSIGN && longIntegerCompareUInt(x, 93) > 0) {
     displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       longIntegerRegisterToDisplayString(REGISTER_X, errorMessage, ERROR_MESSAGE_LENGTH, SCREEN_WIDTH, 50, false);   //JM added last parameter: Allow LARGELI
       sprintf(tmpString, "cannot calculate fib(%s), the limit for UNSIGN is 93", errorMessage);
       moreInfoOnError("In function fibLonI:", tmpString, NULL, NULL);
@@ -65,7 +65,7 @@ static void fibLonI(void) {
   }
   else*/ if(longIntegerCompareUInt(x, 4791) > 0) {
     displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       longIntegerRegisterToDisplayString(REGISTER_X, errorMessage, ERROR_MESSAGE_LENGTH, SCREEN_WIDTH, 50, false);   //JM added last parameter: Allow LARGELI
       sprintf(tmpString, "cannot calculate fib(%s), the limit is 4791, it's to ensure that the 3328 bits limit is not exceeded", errorMessage);
       moreInfoOnError("In function fibLonI:", tmpString, NULL, NULL);
@@ -129,7 +129,7 @@ static void fibReal(void) {
   // FIB(x) = [ PHI^(x) - PHI^(-x)*COS(PI * x) ] / SQRT(5)
   real_t x;
 
-  if (getRegisterAsReal(REGISTER_X, &x)) {;
+  if(getRegisterAsReal(REGISTER_X, &x)) {;
     FibonacciReal(&x, &x, &ctxtReal39);
     convertRealToResultRegister(&x, REGISTER_X, amNone);
   }
@@ -138,7 +138,7 @@ static void fibReal(void) {
 static void fibCplx(void) {
   real_t xReal, xImag;
 
-  if (!getRegisterAsComplex(REGISTER_X,  &xReal, &xImag))
+  if(!getRegisterAsComplex(REGISTER_X,  &xReal, &xImag))
     return;
 
   if(realIsZero(&xImag)) {

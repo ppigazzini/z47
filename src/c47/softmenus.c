@@ -1094,7 +1094,7 @@ void fnDynamicMenu(uint16_t unusedButMandatoryParameter) {
         }
       }
     }
-    if (softmenu[softmenuStack[2].softmenuId].menuItem != -ITM_DELITM) {            // Don't include reserved variables for DELITM
+    if(softmenu[softmenuStack[2].softmenuId].menuItem != -ITM_DELITM) {            // Don't include reserved variables for DELITM
       for(int i=FIRST_NAMED_RESERVED_VARIABLE-FIRST_RESERVED_VARIABLE; i<NUMBER_OF_RESERVED_VARIABLES; i++) {
         calcRegister_t regist = i+FIRST_RESERVED_VARIABLE;
         if((!applyFilter || _filterDataType(regist, typeFilter, isAngular))) {
@@ -1334,7 +1334,7 @@ void fnDynamicMenu(uint16_t unusedButMandatoryParameter) {
         numberOfBytes = 1;
         numberOfGlobalLabels = 0;
         memset(tmpString, 0, TMP_STR_LENGTH);
-        if (softmenu[softmenuStack[1].softmenuId].menuItem != -ITM_DELITM) {     // Don't include predefined menus for DELITM
+        if(softmenu[softmenuStack[1].softmenuId].menuItem != -ITM_DELITM) {     // Don't include predefined menus for DELITM
           for(i=0; i<LAST_ITEM; i++) {
             if((indexOfItems[i].status & CAT_STATUS) == CAT_MENU && indexOfItems[i].itemCatalogName[0] != 0 && i != MNU_CATALOG && i != MNU_MENUS) {
               int16_t len = stringByteLength(indexOfItems[i].itemCatalogName);
@@ -1646,7 +1646,7 @@ if(getSystemFlag(FLAG_HPCONV)) {
       Arr1     = x1 + midpoint + arrowSpace;
     } else {
       Arr0     = x1 + space + w1 + space;
-      Arr1     = x2 - space - w3 - w4 - space;      
+      Arr1     = x2 - space - w3 - w4 - space;
     }
     Text1    = x2 - space - w4;
     // s w1 s w2 s. | .s w3 s w4 s
@@ -2112,7 +2112,7 @@ bool_t savedspace(int16_t itemNr) {  //strike out all SAVED_SPACE items
 void fnStrikeOutIfNotCoded(int16_t itemNr, int16_t x, int16_t y) {
   int16_t strike = 0;
   if(itemNr > 0) {
-    if (indexOfItems[itemNr%10000].func == itemToBeCoded || savedspace(itemNr)) {
+    if(indexOfItems[itemNr%10000].func == itemToBeCoded || savedspace(itemNr)) {
       strike = 1;
     }
   }
@@ -2124,7 +2124,7 @@ void fnStrikeOutIfNotCoded(int16_t itemNr, int16_t x, int16_t y) {
       }
       m++;
     }
-    if (softmenu[m].numItems == 0 && m >= NUMBER_OF_DYNAMIC_SOFTMENUS) {
+    if(softmenu[m].numItems == 0 && m >= NUMBER_OF_DYNAMIC_SOFTMENUS) {
       strike = -1;
     }
   }
@@ -2657,7 +2657,7 @@ bool_t BASE_OVERRIDEONCE = false;
 
 
   bool_t setCurrentUserMenu(int16_t item, char* funcParam) {
-    if (item == -MNU_DYNAMIC) {
+    if(item == -MNU_DYNAMIC) {
       for(uint32_t i = 0; i < numberOfUserMenus; ++i) {
         if(compareString(funcParam, userMenus[i].menuName, CMP_NAME) == 0) {
             currentUserMenu = i;
@@ -2881,7 +2881,7 @@ bool_t BASE_OVERRIDEONCE = false;
       }
       if(numberOfVars > 12) {
         displayCalcErrorMessage(ERROR_EQUATION_TOO_COMPLEX, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-        #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           moreInfoOnError("In function showSoftmenu:", "there are more than 12 variables in this equation!", NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       }
