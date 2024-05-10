@@ -27,7 +27,7 @@
 
   void fnLnP1   (uint16_t unusedButMandatoryParameter);
 
-  #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+  #if (EXTRA_INFO_ON_CALC_ERROR == 1)
     void lnP1Error(void);
   #else // (EXTRA_INFO_ON_CALC_ERROR != 1)
     #define lnP1Error typeError

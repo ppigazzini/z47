@@ -73,7 +73,8 @@ void LastOpTimerLap (uint16_t func) {
   if(timeLastOp1 >= timeLastOp0) {
     timeLastOp = timeLastOp1 - timeLastOp0;
     //printf("Func:%s setting STOP %u: %u Running:%u\n",indexOfItems[func].itemCatalogName, timeLastOp1, timeLastOp, programRunStop == PGM_RUNNING);
-  } else {
+  }
+  else {
     timeLastOp =  ((int)(0xFFFFFFFF) / 100 - timeLastOp0) + timeLastOp1; //if loop passed 2^32-1 ms, recalc offset
     //printf("setting STOP Wrapped %u: %u Running:%u\n",timeLastOp1, timeLastOp, programRunStop == PGM_RUNNING);
   }
@@ -712,7 +713,7 @@ void fnRecallTimerApp(uint16_t regist) {
     }
     default: {
       displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "cannot recall %s to the stopwatch", getRegisterDataTypeName(regist, true, false));
         moreInfoOnError("In function fnRecallTimerApp:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -722,7 +723,7 @@ void fnRecallTimerApp(uint16_t regist) {
 
   if(overflow) {
     displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "the %s does not fit to uint32_t", getRegisterDataTypeName(regist, true, false));
       moreInfoOnError("In function fnRecallTimerApp:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)

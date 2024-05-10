@@ -45,7 +45,7 @@ TO_QSPI void (* const fp[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])(void) = {
  * \param void
  * \return void
  ***********************************************/
-#if(EXTRA_INFO_ON_CALC_ERROR == 1)
+#if (EXTRA_INFO_ON_CALC_ERROR == 1)
   void fpError(void) {
     displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
     sprintf(errorMessage, "cannot calculate FP for %s", getRegisterDataTypeName(REGISTER_X, true, false));
@@ -90,12 +90,12 @@ void fpRema(void) {
 void fpShoI(void) {
   uint64_t x, y = 0;
 
-  if (shortIntegerMode == SIM_1COMPL || shortIntegerMode == SIM_SIGNMT) {
+  if(shortIntegerMode == SIM_1COMPL || shortIntegerMode == SIM_SIGNMT) {
     /* These two modes support negative 0, so the fractional part of a negative
      * number becomes -0 rather than +0.
      */
     x = *(REGISTER_SHORT_INTEGER_DATA(REGISTER_X));
-    if ((x & shortIntegerSignBit) != 0)
+    if((x & shortIntegerSignBit) != 0)
       y = shortIntegerMode == SIM_1COMPL ? shortIntegerMask : shortIntegerSignBit;
   }
   *(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)) = y;

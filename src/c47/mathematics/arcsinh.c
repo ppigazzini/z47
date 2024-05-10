@@ -38,7 +38,7 @@
 static void arcsinhReal(void) {
   real_t x;
 
-  if (!getRegisterAsReal(REGISTER_X, &x))
+  if(!getRegisterAsReal(REGISTER_X, &x))
     return;
 
   ArcsinhReal(&x, &x, &ctxtReal51);
@@ -50,7 +50,7 @@ static void arcsinhReal(void) {
 static void arcsinhCplx(void) {
   real_t xReal, xImag, rReal, rImag;
 
-  if (!getRegisterAsComplex(REGISTER_X, &xReal, &xImag))
+  if(!getRegisterAsComplex(REGISTER_X, &xReal, &xImag))
     return;
 
   ArcsinhComplex(&xReal, &xImag, &rReal, &rImag, &ctxtReal39);

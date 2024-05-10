@@ -364,7 +364,7 @@ void Sett(int16_t grp) {
 
 
   void fnSetJM(uint16_t unusedButMandatoryParameter){
-    fnDrop(0);
+    fnDrop(NOPARAM);
     fnSquare(0);
     resetOtherConfigurationStuff();
     getDateString(lastStateFileOpened);
@@ -398,7 +398,7 @@ void Sett(int16_t grp) {
     Sett(_RJ);
 
     fnKeyExit(0);
-    fnDrop(0);
+    fnDrop(NOPARAM);
     fnSquare(0);
     fnRefreshState();
     screenUpdatingMode = SCRUPD_AUTO;
@@ -417,8 +417,8 @@ void Sett(int16_t grp) {
     temporaryInformation = TI_NO_INFO;
     fnRefreshState();
 
-    fnDrop(0);
-    fnDrop(0);
+    fnDrop(NOPARAM);
+    fnDrop(NOPARAM);
     runFunction(ITM_SQUARE);
     screenUpdatingMode = SCRUPD_AUTO;
     refreshScreen(162);
@@ -466,7 +466,8 @@ void fnClrMod(uint16_t unusedButMandatoryParameter) {        //clear input buffe
     fnExitAllMenus(0);
     if(!checkHP) {
       fnDisplayStack(4);    //Restore to default DSTACK 4
-    } else {                //Snap out of HP35 mode, and reset all setting needed for that
+    }
+    else {                //Snap out of HP35 mode, and reset all setting needed for that
       _fnSetC47(0);
       fnRecallConfig(35);
       lastErrorCode = 0;
@@ -490,27 +491,30 @@ void fnSetGapChar (uint16_t charParam) {
   //printf(">>>> charParam=%u %u \n", charParam, charParam & 16383);
   if((charParam & 49152) == 0) {                        //+0 for the left hand separator
     gapItemLeft = charParam & 16383;
-  } else
-  if((charParam & 49152) == 32768) {                        //+32768 for the right hand separator
+  }
+  else if((charParam & 49152) == 32768) {                        //+32768 for the right hand separator
     gapItemRight = charParam & 16383;
-  } else
-  if((charParam & 49152) == 49152) {                        //+49152 for the radix separator
+  }
+  else if((charParam & 49152) == 49152) {                        //+49152 for the radix separator
     gapItemRadix = charParam & 16383;
   }
-//printf("LT=%s RT=%s RX=%s\n",Lt, Rt, Rx);
-//printf("Post: gapCharL0=%u gapCharL1=%u gapCharR0=%u gapCharR1=%u gapCharRx0=%u gapCharRx1%u  \n", (uint8_t)gapChar1Left[0], (uint8_t)gapChar1Left[1], (uint8_t)gapChar1Right[0], (uint8_t)gapChar1Right[1],  (uint8_t)gapChar1Radix[0], (uint8_t)gapChar1Radix[1]);
+  //printf("LT=%s RT=%s RX=%s\n",Lt, Rt, Rx);
+  //printf("Post: gapCharL0=%u gapCharL1=%u gapCharR0=%u gapCharR1=%u gapCharRx0=%u gapCharRx1%u  \n", (uint8_t)gapChar1Left[0], (uint8_t)gapChar1Left[1], (uint8_t)gapChar1Right[0], (uint8_t)gapChar1Right[1],  (uint8_t)gapChar1Radix[0], (uint8_t)gapChar1Radix[1]);
 }
 
 
 void fnSettingsDispFormatGrpL   (uint16_t param) {
   grpGroupingLeft = param;
 }
+
 void fnSettingsDispFormatGrp1Lo  (uint16_t param) {
   grpGroupingGr1LeftOverflow = param;
 }
+
 void fnSettingsDispFormatGrp1L  (uint16_t param) {
   grpGroupingGr1Left = param;
 }
+
 void fnSettingsDispFormatGrpR   (uint16_t param) {
   grpGroupingRight = param;
 }
@@ -782,7 +786,8 @@ void fnFractionType(uint16_t unusedButMandatoryParameter) {
     if(!getSystemFlag(FLAG_FRACT) && constantFractions && !constantFractionsOn) { // 10x0 --> 11x0 A
       constantFractionsOn = true;
       return;
-    } else {
+    }
+    else {
       if(!constantFractions && !getSystemFlag(FLAG_FRACT)) {                      // 0xx0 --> 0xx1 B
         flipSystemFlag(FLAG_FRACT);
         return;
@@ -795,7 +800,8 @@ void fnFractionType(uint16_t unusedButMandatoryParameter) {
       case STATE_exfr_abc    : state = STATE_exfr_bc;   break;                    // 0b1110 -->
       default                : state = STATE_abc;       break;                    //
     }
-  } else {
+  }
+  else {
     switch(state) {
       case STATE_bc          : state = STATE_exfr_bc;   break;                    // 0b0001 -->
       case STATE_abc         : state = STATE_exfr_abc;  break;                    // 0b0011 -->
@@ -808,8 +814,8 @@ void fnFractionType(uint16_t unusedButMandatoryParameter) {
   }
   constantFractions   = (state & 8) ? true : false;
   constantFractionsOn = (state & 4) ? true : false;
-  if (((state & 2) == 2) == !getSystemFlag(FLAG_PROPFR)) flipSystemFlag(FLAG_PROPFR);
-  if (((state & 1) == 1) == !getSystemFlag(FLAG_FRACT)) flipSystemFlag(FLAG_FRACT);
+  if(((state & 2) == 2) == !getSystemFlag(FLAG_PROPFR)) flipSystemFlag(FLAG_PROPFR);
+  if(((state & 1) == 1) == !getSystemFlag(FLAG_FRACT)) flipSystemFlag(FLAG_FRACT);
   //printf("--> %u --> %u\n",state, STATE);
 }
 
@@ -975,7 +981,8 @@ void fnClAll(uint16_t confirmation) {
 
     if(MODEL == USER_R47) {
       fnRESET_MyM(USER_MR47);                  // Reset Menu MyMenu
-    } else {
+    }
+    else {
       fnRESET_MyM(USER_MC47);                  // Reset Menu MyMenu
     }
 
@@ -1588,7 +1595,8 @@ Sett(_Reset);
 
     if(MODEL == USER_R47) {
       fnKeysManagement(USER_MR47);                  // Reset Menu MyMenu Ribbon
-    } else {
+    }
+    else {
       fnKeysManagement(USER_MC47);                  // Reset Menu MyMenu Ribbon
     }
 
@@ -1651,7 +1659,7 @@ Sett(_Reset);
     timerStartTime         = TIMER_APP_STOPPED;
     timerTotalTime         = 0u;
 
-    #if(DEBUG_PANEL == 1)
+    #if (DEBUG_PANEL == 1)
       debugWindow = DBG_REGISTERS;
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(chkHexaString), false);
       refreshDebugPanel();
@@ -1667,12 +1675,12 @@ Sett(_Reset);
     for(uint_fast16_t i=0; i<n; i++) {
       if( indexOfStrings[i].itemType== 0) {
         fnStrtoX(indexOfStrings[i].itemName);
-      } else
-      if( indexOfStrings[i].itemType== 1) {
+      }
+      else if( indexOfStrings[i].itemType== 1) {
         fnStrInputLongint(indexOfStrings[i].itemName);
       }
       fnStore(indexOfStrings[i].count);
-      fnDrop(0);
+      fnDrop(NOPARAM);
     }
 
 
@@ -1723,20 +1731,22 @@ Sett(_Reset);
       if(tmpVbat < vbatVIntegrated) {
         vbatVIntegrated = tmpVbat;                                                        //immediately assume the lowest possibe value measured
         loop = 0;
-      } else
-      if(tmpVbat > vbatVIntegrated) {
+      }
+      else if(tmpVbat > vbatVIntegrated) {
         #ifndef MONITOR_VOLTAGE_INTEGRATOR
           //During monitoring do not force a reset to normal and high voltage
           if(tmpVbat > 2900) {                                                           //if high enough, reset
             vbatVIntegrated = tmpVbat;
           loop = 0;
-          } else
+          }
+          else
         #endif
         if(vbatVIntegrated < tmpVbat && minutePulse) {                                    // Every min if vbatTIntegrated is lower than actual V, then creep closer
           vbatVIntegrated = vbatVIntegrated + max(1,((tmpVbat - vbatVIntegrated) >> 4));  //   (2500 - 2350) >> 4 = 9 increase every minute
         }
       }
-    } else {
+    }
+    else {
       vbatVIntegrated = tmpVbat;
       loop = 0;
     }
@@ -1751,8 +1761,8 @@ Sett(_Reset);
         uint8_t min = rtc_read_min();
         convertDoubleToReal34RegisterPush((double)min, REGISTER_X);
         fnSigma(1);
-        fnDrop(0);
-        fnDrop(0);
+        fnDrop(NOPARAM);
+        fnDrop(NOPARAM);
       }
     #endif
 

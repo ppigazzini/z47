@@ -61,11 +61,11 @@
     extern uint32_t            *screenData;
     extern bool_t               screenChange;
     extern char                 debugString[10000];
-    #if(DEBUG_REGISTER_L == 1)
+    #if (DEBUG_REGISTER_L == 1)
       extern GtkWidget         *lblRegisterL1;
       extern GtkWidget         *lblRegisterL2;
     #endif // (DEBUG_REGISTER_L == 1)
-    #if(SHOW_MEMORY_STATUS == 1)
+    #if (SHOW_MEMORY_STATUS == 1)
       extern GtkWidget         *lblMemoryStatus;
     #endif // (SHOW_MEMORY_STATUS == 1)
     extern calcKeyboard_t       calcKeyboard[43];
@@ -354,7 +354,7 @@
   extern uint16_t               userKeyLabelSize;
   extern uint16_t               currentInputVariable;
   extern uint16_t               currentMvarLabel;
-  #if(REAL34_WIDTH_TEST == 1)
+  #if (REAL34_WIDTH_TEST == 1)
     extern uint16_t               largeur;
   #endif // (REAL34_WIDTH_TEST == 1)
 

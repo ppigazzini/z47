@@ -25,7 +25,7 @@
 
   void   fnLog10   (uint16_t unusedButMandatoryParameter);
 
-  #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+  #if (EXTRA_INFO_ON_CALC_ERROR == 1)
     void   log10Error(void);
   #else // (EXTRA_INFO_ON_CALC_ERROR != 1)
     #define log10Error typeError

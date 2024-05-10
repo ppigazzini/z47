@@ -148,7 +148,7 @@ void fnIsPrime(uint16_t unusedButMandatoryParameter) {
 
   else {
     displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "the input type %s is not allowed for PRIME?!", getDataTypeName(getRegisterDataType(REGISTER_X), false, false));
       moreInfoOnError("In function fnIsPrime:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -190,7 +190,7 @@ void fnNextPrime(uint16_t unusedButMandatoryParameter) {
 
   else {
     displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "the input type %s is not allowed for PRIME?!", getDataTypeName(getRegisterDataType(REGISTER_X), false, false));
       moreInfoOnError("In function fnIsPrime:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -559,7 +559,7 @@ static bool_t addFactor(longInteger_t lastFactor, longInteger_t factor, real34Ma
     }
     else {
       displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "Not enough memory for a %" PRIu32 STD_CROSS "%" PRIu32 " matrix", 1, 1);
         moreInfoOnError("In function fnPrimeFactors:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -570,7 +570,7 @@ static bool_t addFactor(longInteger_t lastFactor, longInteger_t factor, real34Ma
 
   uint16_t rows = REGISTER_DATA(REGISTER_X)->matrixRows;
   uint16_t cols = REGISTER_DATA(REGISTER_X)->matrixColumns;
-  if ( faddr->nExpons == 0 ) {
+  if( faddr->nExpons == 0 ) {
     faddr->nExpons = 1;  // has to be 1 now, as we have this factor
     faddr->expons[(faddr->nExpons)-1] = 1;
   }
@@ -582,7 +582,7 @@ static bool_t addFactor(longInteger_t lastFactor, longInteger_t factor, real34Ma
   #if !defined(TESTSUITE_BUILD)
     if(!redimMatrixRegister(REGISTER_X, rows, wkgCols)) {
       displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "Not enough memory for a %" PRIu32 STD_CROSS "%" PRIu32 " matrix", rows, cols);
         moreInfoOnError("In function fnPrimeFactors:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -590,7 +590,7 @@ static bool_t addFactor(longInteger_t lastFactor, longInteger_t factor, real34Ma
     }
   #endif // !TESTSUITE_BUILD
 
-  if ( cols == 0 ) {
+  if( cols == 0 ) {
     #ifdef WGR
       printf("wgr:  zeroing lastFactor\n");
     #endif //WGR
@@ -602,7 +602,7 @@ static bool_t addFactor(longInteger_t lastFactor, longInteger_t factor, real34Ma
   #endif //WGR
   uint16_t n = rows*(faddr->nExpons);
   uint16_t c = n/2;
-  if ( longIntegerSign(lastFactor) != 0 && longIntegerCompare(lastFactor, factor) == 0 ) {
+  if( longIntegerSign(lastFactor) != 0 && longIntegerCompare(lastFactor, factor) == 0 ) {
     ++faddr->expons[(faddr->nExpons)-1];
     #ifdef WGR
       printf("wgr:  lastFactor use existing:  created expons %u at %u\n",faddr->expons[(faddr->nExpons)-1], (faddr->nExpons)-1);
@@ -610,7 +610,7 @@ static bool_t addFactor(longInteger_t lastFactor, longInteger_t factor, real34Ma
   }
   else {
     bool_t incNExpons = longIntegerSign(lastFactor) ==0 ? false : true;
-    if ( !incNExpons ) {
+    if( !incNExpons ) {
       c = 0;
     }
     #ifdef WGR
@@ -622,13 +622,14 @@ static bool_t addFactor(longInteger_t lastFactor, longInteger_t factor, real34Ma
       printf("wgr:  tmpString from lastAdded:  %s\n", tmpString);
     #endif
     real34Copy(&matrix->matrixElements[c], lastAdded);
-    if ( incNExpons ) {
-      if ( faddr->nExpons < MAX_FACTORS ) {
+    if( incNExpons ) {
+      if( faddr->nExpons < MAX_FACTORS ) {
           ++faddr->nExpons;
-      } else {
+      }
+      else {
         #if !defined(TESTSUITE_BUILD)
           displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-          #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+          #if (EXTRA_INFO_ON_CALC_ERROR == 1)
             sprintf(errorMessage, "Maximum number of factors exceeded %" PRIu32 STD_CROSS "%" PRIu32 " matrix", rows, cols);
             moreInfoOnError("In function addFactor:", errorMessage, NULL, NULL);
           #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -640,7 +641,7 @@ static bool_t addFactor(longInteger_t lastFactor, longInteger_t factor, real34Ma
       #if !defined(TESTSUITE_BUILD)
         if(!redimMatrixRegister(REGISTER_X, rows, wkgCols)) {
           displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
-          #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+          #if (EXTRA_INFO_ON_CALC_ERROR == 1)
             sprintf(errorMessage, "Not enough memory for a %" PRIu32 STD_CROSS "%" PRIu32 " matrix", rows, cols);
             moreInfoOnError("In function addFactor:", errorMessage, NULL, NULL);
           #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -699,7 +700,7 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
 
   else {
     displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "the input type %s is not allowed for FACTORS!", getDataTypeName(getRegisterDataType(REGISTER_X), false, false));
       moreInfoOnError("In function fnPrimeFactors:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -708,7 +709,8 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
 
   if(longIntegerIsZero(currentNumber) || longIntegerSign(currentNumber) == -1) {             // <=0 end
     goto abort;
-  } else {
+  }
+  else {
     longIntegerSubtractUInt(currentNumber,1,temp);                                           // ==1 end
     if(longIntegerIsZero(temp)) {
       goto abort;
@@ -731,7 +733,7 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
   while(longIntegerIsPositive(eval)) {
 
     #if !defined(TESTSUITE_BUILD)
-      if (printHalfSecUpdate_Integer(timed, "Tested n =",loop++, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
+      if(printHalfSecUpdate_Integer(timed, "Tested n =",loop++, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
         _showProgress(&lastAdded, nextPrime);
         dumpExponents(&matrix, &faddr, 13);
         #if defined DMCP_BUILD
@@ -762,7 +764,8 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
         }
         goto endandclose;
       }
-    } else {
+    }
+    else {
       longIntegerNextPrime(nextPrime, nextPrime);
     }
     if(!longIntegerIsPositive(eval)) {

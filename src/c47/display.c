@@ -212,7 +212,8 @@ void supNumberToDisplayString(int32_t supNumber, char *displayString, char *disp
           xcopy(displayString + 2, displayString, stringByteLength(displayString) + 1);
           displayString[0] = SEPARATOR_LEFT[0];
           displayString[1] = SEPARATOR_LEFT[1];
-        } else if(SEPARATOR_LEFT[0]!=1) {
+        }
+        else if(SEPARATOR_LEFT[0]!=1) {
           xcopy(displayString + 1, displayString, stringByteLength(displayString) + 1);
           displayString[0] = SEPARATOR_LEFT[0];
         }
@@ -256,7 +257,7 @@ void subNumberToDisplayString(int32_t subNumber, char *displayString, char *disp
 void real34ToDisplayString(const real34_t *real34, uint32_t tag, char *displayString, const font_t *font, int16_t maxWidth, int16_t displayHasNDigits, bool_t limitExponent, bool_t frontSpace) {
   uint8_t savedDisplayFormatDigits = displayFormatDigits;
 
-  #if(REAL34_WIDTH_TEST == 1)
+  #if (REAL34_WIDTH_TEST == 1)
     maxWidth = largeur;
   #endif // (REAL34_WIDTH_TEST == 1)
 
@@ -400,7 +401,8 @@ void real34ToDisplayString2(const real34_t *real34, char *displayString, int16_t
       realToReal34(&x, real34);
       //printReal34ToConsole(real34,"---B","\n");
 
-    } else {
+    }
+    else {
       flag2To10 = false;
       flag2To10_baseunit_integer = true;
     }
@@ -423,22 +425,22 @@ void real34ToDisplayString2(const real34_t *real34, char *displayString, int16_t
   //printf(">>>## flag_proper %u\n",getSystemFlag(FLAG_PROPFR));
   if(constantFractions && constantFractionsOn && !getSystemFlag(FLAG_FRACT) && constantFractionsMode != CF_OFF && !real34CompareAbsLessThan(real34,const34_1e_6) && !real34IsAnInteger(real34)) {
 
-    if(checkForAndChange_(displayString, real34, const_1, &tol34, "",frontSpace))                                            return_fr;
+    if(checkForAndChange_(displayString, real34, const_1, &tol34, "",frontSpace))                                                    return_fr;
 
-    if(checkForAndChange_(displayString, real34, const_rt3, &tol34, STD_SQUARE_ROOT STD_SUB_3,frontSpace))                   return_fr;
-    if(checkForAndChange_(displayString, real34, const_pi , &tol34, STD_pi                   ,frontSpace))                   return_fr;
+    if(checkForAndChange_(displayString, real34, const_rt3, &tol34, STD_SQUARE_ROOT STD_SUB_3, frontSpace))                          return_fr;
+    if(checkForAndChange_(displayString, real34, const_pi,  &tol34, STD_pi,                    frontSpace))                          return_fr;
 
     fnConstantR( 8  /*const_eE     */,  &constNr, &c_temp);
-    if(checkForAndChange_(displayString, real34, &c_temp, &tol34,  STD_EulerE                                  ,frontSpace)) return_fr;
+    if(checkForAndChange_(displayString, real34, &c_temp, &tol34,  STD_EulerE,                 frontSpace))                          return_fr;
 
     realMultiply(const_root2on2, const_2, &c_temp, &ctxtReal39);
-    if(checkForAndChange_(displayString, real34, &c_temp, &tol34,  STD_SQUARE_ROOT STD_SUB_2                   ,frontSpace)) return_fr;
+    if(checkForAndChange_(displayString, real34, &c_temp, &tol34,  STD_SQUARE_ROOT STD_SUB_2,  frontSpace))                          return_fr;
 
     fnConstantR( 73 /*const_PHI    */,  &constNr, &c_temp);
     if(checkForAndChange_(displayString, real34, &c_temp, &tol34,  indexOfItems[FIRST_CONSTANT+constNr].itemCatalogName,frontSpace)) return_fr;
 
-    if(checkForAndChange_(displayString, real34, const_rt5, &tol34, STD_SQUARE_ROOT STD_SUB_5,frontSpace))                   return_fr;
-    if(checkForAndChange_(displayString, real34, const_rt7, &tol34, STD_SQUARE_ROOT STD_SUB_7,frontSpace))                   return_fr;
+    if(checkForAndChange_(displayString, real34, const_rt5, &tol34, STD_SQUARE_ROOT STD_SUB_5, frontSpace))                          return_fr;
+    if(checkForAndChange_(displayString, real34, const_rt7, &tol34, STD_SQUARE_ROOT STD_SUB_7, frontSpace))                          return_fr;
 
   }
   constantFractionsMode = CF_NORMAL;
@@ -1739,7 +1741,8 @@ str3[j] = 0;
       if(bcdDisplaySign == BCD9c) {
         strcpy(displayString + i, "1001");
         strcpy(ss,STD_BASE_9);
-      } else
+      }
+      else
       if(bcdDisplaySign == BCD10c) {
         strcpy(displayString + i, "0000");
         strcpy(ss,STD_SUB_o);
@@ -1797,11 +1800,13 @@ str3[j] = 0;
     if(bcdFlag && base == 10) {                //JM BCDVV conversion - Note base 17 is code for BCD display od base 10
       if(bcdDisplaySign == BCD9c) {
         unit = 9 - unit;
-      } else
+      }
+      else
       if(bcdDisplaySign == BCD10c) {           //see https://madformath.com/calculators/digital-systems/complement-calculators/10-s-complement-calculator-alternative/10-s-complement-calculator-alternative
         if(firstNonZero == 0) {
           unit = 0;
-        } else
+        }
+        else
         if(firstNonZero == 1) {
           unit = 9 - unit + 1;
           firstNonZero++;
@@ -2010,7 +2015,7 @@ if( str3[1] >= '0' && str3[1] <= '9' && str3[2] >= '0' && str3[2] <= '9' && str3
       return;
     }
 
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       moreInfoOnError("In function shortIntegerToDisplayString: the integer data representation is too wide (1)!", displayString, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
 
@@ -2076,7 +2081,7 @@ if( str3[1] >= '0' && str3[1] <= '9' && str3[2] >= '0' && str3[2] <= '9' && str3
       return;
     }
 
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       moreInfoOnError("In function shortIntegerToDisplayString: the integer data representation is too wide (2)!", displayString, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
 
@@ -2169,7 +2174,8 @@ void longIntegerRegisterToDisplayString(calcRegister_t regist, char *displayStri
         xcopy(displayString + i + 2, displayString + i, len - i + 1);
         displayString[i] = SEPARATOR_LEFT[0];
         displayString[i + 1] = SEPARATOR_LEFT[1];
-      } else if(SEPARATOR_LEFT[0]!=1){
+      }
+      else if(SEPARATOR_LEFT[0] != 1) {
         xcopy(displayString + i + 1, displayString + i, len - i + 1);
         displayString[i] = SEPARATOR_LEFT[0];
       }
@@ -2178,12 +2184,13 @@ void longIntegerRegisterToDisplayString(calcRegister_t regist, char *displayStri
       len = strlen(displayString);
       for(i=len - GROUPWIDTH_LEFT - (Grp1 + (SEPARATOR_LEFT[1] == 1 ? 1 : 2)); i>0; i-=GROUPWIDTH_LEFT) {
         if(i != 1 || displayString[0] != '-') {
-          if(SEPARATOR_LEFT[1]!=1) {
+          if(SEPARATOR_LEFT[1] != 1) {
             xcopy(displayString + i + 2, displayString + i, len - i + 1);
             displayString[i] = SEPARATOR_LEFT[0];
             displayString[i + 1] = SEPARATOR_LEFT[1];
             len += 2;
-          } else if(SEPARATOR_LEFT[0]!=1) {
+          }
+          else if(SEPARATOR_LEFT[0] != 1) {
             xcopy(displayString + i + 1, displayString + i, len - i + 1);
             displayString[i] = SEPARATOR_LEFT[0];
             len += 1;
@@ -2235,13 +2242,14 @@ void longIntegerRegisterToDisplayString(calcRegister_t regist, char *displayStri
           lastChar = (displayString[0] == '-' ? 1 : 0);
           xcopy(displayString + lastChar + 1, displayString + lastChar, strlen(displayString) + 1);
           displayString[lastChar] = '1';
-          if(SEPARATOR_LEFT[1]!=1) {
+          if(SEPARATOR_LEFT[1] != 1) {
             if(!GROUPLEFT_DISABLED && displayString[lastChar + GROUPWIDTH_LEFT + 2] == SEPARATOR_LEFT[1]) { // We need to insert a new goup SEPARATOR_LEFT
               xcopy(displayString + lastChar + 3, displayString + lastChar + 1, strlen(displayString));
               displayString[lastChar + 1] = SEPARATOR_LEFT[0];
               displayString[lastChar + 2] = SEPARATOR_LEFT[1];
             }
-          } else if(SEPARATOR_LEFT[0]!=1){
+          }
+          else if(SEPARATOR_LEFT[0] !=1 ){
             if(!GROUPLEFT_DISABLED && displayString[lastChar + GROUPWIDTH_LEFT + 1] == SEPARATOR_LEFT[0]) { // We need to insert a new goup SEPARATOR_LEFT
               xcopy(displayString + lastChar + 2, displayString + lastChar + 1, strlen(displayString));
               displayString[lastChar + 1] = SEPARATOR_LEFT[0];
@@ -2755,7 +2763,7 @@ void fnShow(uint16_t unusedButMandatoryParameter) {
         programRunStop = PGM_STOPPED;
       }
       displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "cannot SHOW %s", getRegisterDataTypeName(REGISTER_X, true, false));
         moreInfoOnError("In function fnShow:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -2924,13 +2932,15 @@ void fnShow_SCROLL(uint16_t fnShow_param) {                // Heavily modified b
                else {
                  if(showRegis >= FIRST_NAMED_VARIABLE + numberOfNamedVariables - 1) {
                    showRegis = 0;
-                 } else
-                 if(showRegis == REGISTER_S) {
+                 }
+                 else if(showRegis == REGISTER_S) {
                    showRegis = FIRST_NAMED_VARIABLE;
-                 } else {
+                 }
+                 else {
                    showRegis++;
                  }
-                  while(!regInRange(showRegis) && showRegis < FIRST_NAMED_VARIABLE + numberOfNamedVariables) {
+
+                 while(!regInRange(showRegis) && showRegis < FIRST_NAMED_VARIABLE + numberOfNamedVariables) {
                    showRegis++;
                  }
                }
@@ -2944,10 +2954,11 @@ void fnShow_SCROLL(uint16_t fnShow_param) {                // Heavily modified b
                else {
                  if(showRegis == 0) {
                    showRegis = FIRST_NAMED_VARIABLE + numberOfNamedVariables - 1;
-                 } else
-                 if(showRegis == FIRST_NAMED_VARIABLE) {
+                 }
+                 else if(showRegis == FIRST_NAMED_VARIABLE) {
                    showRegis = REGISTER_S;
-                 } else {
+                 }
+                 else {
                    showRegis--;
                  }
                  while(!regInRange(showRegis) && showRegis != 0) {
@@ -3031,7 +3042,8 @@ void fnShow_SCROLL(uint16_t fnShow_param) {                // Heavily modified b
                      (SEPARATOR_LEFT[1] == 1 && tmpString[dest-1] == SEPARATOR_LEFT[0])) ) {
                 dest--;  //line does not end on separator, so reduce the characters until is does
                 source--;
-              } else {
+              }
+              else {
                 dest--; //line ends on a seperator so reduce only the target and let the next line begins onthe number, not separator
                 if(SEPARATOR_LEFT[1] != 1) dest--; //line ends on a double byte seperator
                 break;
@@ -3095,7 +3107,8 @@ void fnShow_SCROLL(uint16_t fnShow_param) {                // Heavily modified b
                      (SEPARATOR_LEFT[1] == 1 && tmpString[dest-1] == SEPARATOR_LEFT[0])) ) {
                 dest--;  //line does not end on separator, so reduce the characters until is does
                 source--;
-              } else {
+              }
+              else {
                 dest--; //line ends on a seperator so reduce only the target and let the next line begins onthe number, not separator
                 if(SEPARATOR_LEFT[1] != 1) dest--; //line ends on a double byte seperator
                 break;
@@ -3246,7 +3259,8 @@ void fnShow_SCROLL(uint16_t fnShow_param) {                // Heavily modified b
             if((uint8_t)(tmpString[source]) == 160 && (uint8_t)(tmpString[source+1]) == 39) {
               source++;
               tmpString[dest++]=49;
-            } else
+            }
+            else
               if((uint8_t)(tmpString[source]) == 162 && (uint8_t)(tmpString[source+1]) == 14) {
                 source++;
                 tmpString[dest++]=48;
@@ -3483,7 +3497,7 @@ void fnShow_SCROLL(uint16_t fnShow_param) {                // Heavily modified b
       default:
         temporaryInformation = TI_NO_INFO;
         displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, showRegis);
-        #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           sprintf(errorMessage, "cannot SHOW %s%s", tmpString + 2100, getRegisterDataTypeName(showRegis, true, false));
           moreInfoOnError("In function fnShow:", errorMessage, NULL, NULL);
         #endif

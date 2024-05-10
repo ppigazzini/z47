@@ -349,16 +349,19 @@ void resetKeytimers(void) {
                     longpressDelayedkey1 = ITM_AIM;
                     longpressDelayedkey2 = 0;
                     longpressDelayedkey3 = -MNU_XXEQ;
-                  } else if(LongPressM == RB_M124) {
+                  }
+                  else if(LongPressM == RB_M124) {
                     longpressDelayedkey1 = ITM_AIM;
                     longpressDelayedkey2 = 0;
                     longpressDelayedkey3 = -MNU_XXEQ;
-                  } else if(LongPressM == RB_M1234) {
+                  }
+                  else if(LongPressM == RB_M1234) {
                     longpressDelayedkey1 = ITM_AIM;
                     longpressDelayedkey2 = -MNU_XXEQ;
                     longpressDelayedkey3 = tmpg;
                   }
-              } else {
+              }
+              else {
                 longpressDelayedkey1 = -MNU_XXEQ;
                 longpressDelayedkey2 = tmpf_;
                 longpressDelayedkey3 = tmpg_;
@@ -388,11 +391,13 @@ void resetKeytimers(void) {
                   longpressDelayedkey1 = tmpf == ITM_USERMODE && getSystemFlag(FLAG_SH_LONGPRESS) ? ITM_USERMODE : 0;
                   longpressDelayedkey2 = 0;
                   longpressDelayedkey3 = 0;
-                } else if(LongPressM == RB_M124) {
+                }
+                else if(LongPressM == RB_M124) {
                   longpressDelayedkey1 = ITM_USERMODE;
                   longpressDelayedkey2 = 0;
                   longpressDelayedkey3 = 0 ;
-                } else if(LongPressM == RB_M1234) {
+                }
+                else if(LongPressM == RB_M1234) {
                   longpressDelayedkey1 = ITM_USERMODE;
                   longpressDelayedkey2 = tmpg;
                   longpressDelayedkey3 = 0;
@@ -412,16 +417,19 @@ void resetKeytimers(void) {
                   longpressDelayedkey1 = ITM_AIM;
                   longpressDelayedkey2 = 0;
                   longpressDelayedkey3 = -MNU_XXEQ;
-                } else if(LongPressM == RB_M124) {
+                }
+                else if(LongPressM == RB_M124) {
                   longpressDelayedkey1 = ITM_AIM;
                   longpressDelayedkey2 = 0;
                   longpressDelayedkey3 = -MNU_XXEQ;
-                } else if(LongPressM == RB_M1234) {
+                }
+                else if(LongPressM == RB_M1234) {
                   longpressDelayedkey1 = ITM_AIM;
                   longpressDelayedkey2 = -MNU_XXEQ;
                   longpressDelayedkey3 = tmpg;
                 }
-              } else {
+              }
+              else {
                 longpressDelayedkey1 = -MNU_XXEQ;
                 longpressDelayedkey2 = tmpf_;
                 longpressDelayedkey3 = tmpg_;
@@ -446,11 +454,13 @@ void resetKeytimers(void) {
                   longpressDelayedkey1 = tmpf == ITM_USERMODE && getSystemFlag(FLAG_SH_LONGPRESS) ? ITM_USERMODE : 0;
                   longpressDelayedkey2 = 0;
                   longpressDelayedkey3 = 0;
-                } else if(LongPressM == RB_M124) {
+                }
+                else if(LongPressM == RB_M124) {
                   longpressDelayedkey1 = ITM_USERMODE;
                   longpressDelayedkey2 = 0;
                   longpressDelayedkey3 = 0 ;
-                } else if(LongPressM == RB_M1234) {
+                }
+                else if(LongPressM == RB_M1234) {
                   longpressDelayedkey1 = ITM_USERMODE;
                   longpressDelayedkey2 = tmpg;
                   longpressDelayedkey3 = 0;

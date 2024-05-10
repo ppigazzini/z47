@@ -791,7 +791,8 @@ static void _decodeOneStep(uint8_t *step, bool_t textVersion) {
             strcat(nameOp,indexOfItems[op].itemCatalogName);
             strcat(nameOp," ");
             strcat(nameOp,indexOfItems[op].itemSoftmenuName);
-          } else {
+          }
+          else {
             getXeqmText(op, nameOp);
           }
         }
@@ -821,7 +822,8 @@ static void _decodeOneStep(uint8_t *step, bool_t textVersion) {
       default: {
         if(op == ITM_INTEGRAL) {
           strcpy(nameOp,indexOfItems[op].itemCatalogName); //   STD_INTEGRAL "fd");
-        } else
+        }
+        else
         if(op == ITM_INTEGRAL_YX) {
           strcpy(nameOp,indexOfItems[op].itemCatalogName); //   STD_INTEGRAL "fyxd");
         }

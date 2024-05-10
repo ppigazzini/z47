@@ -25,7 +25,7 @@
 
   void fnFactorial(uint16_t unusedButMandatoryParameter);
 
-  #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+  #if (EXTRA_INFO_ON_CALC_ERROR == 1)
     void factError  (void);
   #else // (EXTRA_INFO_ON_CALC_ERROR != 1)
     #define factError typeError

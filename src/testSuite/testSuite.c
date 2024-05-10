@@ -945,7 +945,7 @@ void setParameter(char *p) {
     //Lettered register
     if(l[1] >= 'A' && l[2] == 0) {
       const char *p = strchr(regNames, l[1]);
-      if (p != NULL) {
+      if(p != NULL) {
         regist = REGISTER_X + (p - regNames);
       }
       else {
@@ -2117,7 +2117,7 @@ void checkExpectedOutParameter(char *p) {
     //Lettered register
     if(l[1] >= 'A' && l[2] == 0) {
       const char *p = strchr(regNames, l[1]);
-      if (p != NULL) {
+      if(p != NULL) {
         letter = l[1];
         regist = REGISTER_X + (p - regNames);
       }

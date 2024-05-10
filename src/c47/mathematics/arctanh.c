@@ -45,7 +45,7 @@ static void arctanhCplx(void) {
   real_t numerReal, denomReal;
   real_t numerImag, denomImag;
 
-  if (!getRegisterAsComplex(REGISTER_X, &denomImag, &numerImag))
+  if(!getRegisterAsComplex(REGISTER_X, &denomImag, &numerImag))
     return;
 
   // numer = 1 + (a + ib)
@@ -73,7 +73,7 @@ static void arctanhReal(void) {
   real_t x;
   const real_t *r = &x;
 
-  if (!getRegisterAsReal(REGISTER_X, &x))
+  if(!getRegisterAsReal(REGISTER_X, &x))
     return;
 
   if(realIsZero(&x)) {
@@ -86,7 +86,7 @@ static void arctanhReal(void) {
       }
       else {
         displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-        #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           moreInfoOnError("In function arctanhReal:", "X = 1", "and DANGER flag is not set!", NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
         return;
@@ -98,7 +98,7 @@ static void arctanhReal(void) {
       }
       else {
         displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-        #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           moreInfoOnError("In function arctanhReal:", "X = -1", "and DANGER flag is not set!", NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
         return;
@@ -115,7 +115,7 @@ static void arctanhReal(void) {
         }
         else {
           displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-          #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+          #if (EXTRA_INFO_ON_CALC_ERROR == 1)
             moreInfoOnError("In function arctanhReal:", "|X| > 1", "and CPXRES is not set!", NULL);
           #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
           return;

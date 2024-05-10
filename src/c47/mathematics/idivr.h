@@ -25,7 +25,7 @@
 
   void fnIDivR(uint16_t unusedButMandatoryParameter);
 
-  #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+  #if (EXTRA_INFO_ON_CALC_ERROR == 1)
     void idivrError(void);
   #else // (EXTRA_INFO_ON_CALC_ERROR != 1)
     #define idivrError typeError
