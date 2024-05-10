@@ -27,6 +27,7 @@
 #include "solver/differentiate.h"
 #include "solver/equation.h"
 #include "sort.h"
+#include "stack.h"
 #include "c43Extensions/xeqm.h"
 #include <string.h>
 #include <stdlib.h>
@@ -2893,6 +2894,7 @@ bool_t BASE_OVERRIDEONCE = false;
         if((getNthString(varList, 1))[0] == 0) {
           currentSolverVariable = findOrAllocateNamedVariable((char *)getNthString(varList, 0));
           reallyRunFunction(ITM_STO, currentSolverVariable);
+          saveForUndo();
           if((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_1ST_DERIVATIVE) {
             fn1stDerivEq(NOPARAM);
           }
