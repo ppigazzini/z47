@@ -157,27 +157,27 @@ void configCommon(uint16_t idx) {
 
 TO_QSPI const int32_t Settings[] = {
 //variable,                          n/a,        Reset,                          HP35,            JM,                   RJ,                     C47,             DefltSB,         TVM,                  Comment
-InputDefaultDataType,                xxx,        xxx,                            ID_DP,           xxx,                  xxx,                    ID_43S,          xxx,             xxx,                  
+InputDefaultDataType,                xxx,        xxx,                            ID_DP,           ID_43S,               ID_43S,                 ID_43S,          xxx,             xxx,                  
 SigFigNumberOfDigits,                xxx,        xxx,                            9,               3,                    xxx,                    xxx,             xxx,             xxx,                  
 AllNumberOfDigits,                   xxx,        xxx,                            xxx,             xxx,                  xxx,                    3,               xxx,             xxx,                  
 FixNumberOfDigits,                   xxx,        xxx,                            xxx,             xxx,                  3,                      xxx,             xxx,             xxx,                  
-MymB,                                xxx,        1,                              0,               xxx,                  xxx,                    1,               xxx,             xxx,                  
-HomeB,                               xxx,        0,                              0,               xxx,                  xxx,                    0,               xxx,             xxx,                  
-RNG,                                 xxx,        6145,                           99,              xxx,                  xxx,                    6145,            xxx,             xxx,                  
-SDIGS,                               xxx,        0,                              16,              xxx,                  xxx,                    34,              xxx,             xxx,                  
-DSTACK,                              xxx,        4,                              1,               xxx,                  xxx,                    4,               xxx,             xxx,                  
-CACHEDDSTACK,                        xxx,        4,                              1,               xxx,                  xxx,                    4,               xxx,             xxx,                  
+MymB,                                xxx,        1,                              0,               1,                    1,                      1,               xxx,             xxx,                  
+HomeB,                               xxx,        0,                              0,               0,                    0,                      0,               xxx,             xxx,                  
+RNG,                                 xxx,        6145,                           99,              6145,                 6145,                   6145,            xxx,             xxx,                  
+SDIGS,                               xxx,        0,                              16,              0,                    0,                      34,              xxx,             xxx,                  
+DSTACK,                              xxx,        4,                              1,               4,                    4,                      4,               xxx,             xxx,                  
+CACHEDDSTACK,                        xxx,        4,                              1,               4,                    4,                      4,               xxx,             xxx,                  
 ADM,                                 xxx,        amDegree,                       amRadian,        amDegree,             amRadian,               amDegree,        xxx,             xxx,                  
-IPGRP,                               xxx,        3,                              3,               xxx,                  xxx,                    _gprl,           xxx,             xxx,                  
-FPGRP,                               xxx,        3,                              3,               xxx,                  xxx,                    _gprr,           xxx,             xxx,                  
-IPGRP1,                              xxx,        0,                              0,               xxx,                  xxx,                    _gpr1,           xxx,             xxx,                  
-IPGRP1x,                             xxx,        0,                              0,               xxx,                  1,                      _gpr1x,          xxx,             xxx,                  
-ERPN,                                xxx,        1,                              0,               xxx,                  xxx,                    1,               xxx,             xxx,                  
-fgLongPressSetting,                  xxx,        xxx,                            RB_FGLNOFF,      xxx,                  xxx,                    RB_FGLNFUL,      xxx,             xxx,                  
+IPGRP,                               xxx,        3,                              3,               _gprl,                3,                      _gprl,           xxx,             xxx,                  
+FPGRP,                               xxx,        3,                              3,               _gprr,                3,                      _gprr,           xxx,             xxx,                  
+IPGRP1,                              xxx,        0,                              0,               _gpr1,                0,                      _gpr1,           xxx,             xxx,                  
+IPGRP1x,                             xxx,        0,                              0,               _gpr1x,               1,                      _gpr1x,          xxx,             xxx,                  
+ERPN,                                xxx,        1,                              0,               1,                    1,                      1,               xxx,             xxx,                  
+fgLongPressSetting,                  xxx,        xxx,                            RB_FGLNOFF,      RB_FGLNFUL,           RB_FGLNFUL,             RB_FGLNFUL,      xxx,             xxx,                  
 IRFRAC,                              xxx,        0,                              xxx,             xxx,                  0,                      xxx,             xxx,             xxx,                  
 IRFRACMODE,                          xxx,        CF_NORMAL,                      xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,                  
 IRFRACON,                            xxx,        0,                              xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,                  
-DenMaX,                              xxx,        64,                             xxx,             xxx,                  9999,                   64,              xxx,             xxx,                  
+DenMaX,                              xxx,        64,                             xxx,             64,                   9999,                   64,              xxx,             xxx,                  
 //TVM,                               n/a,        Reset,                          HP35,            JM,                   RJ,                     C47,             DefltSB,         TVM,                  
 RESERVED_VARIABLE_FV,                xxx,        0,                              xxx,             xxx,                  xxx,                    xxx,             xxx,             0,                    
 RESERVED_VARIABLE_IPONA,             xxx,        0,                              xxx,             xxx,                  xxx,                    xxx,             xxx,             0,                    
@@ -190,10 +190,10 @@ RESERVED_VARIABLE_CPERONA,           xxx,        12,                            
 3,                                   0,          FLAG_TVM_I_CHANGES,             xxx,             xxx,                  xxx,                    xxx,             xxx,             FLAG_TVM_I_CHANGES,   // Clear flag FLAG_TVM_I_CHANGES
 3,                                   1,          FLAG_ENDPMT,                    xxx,             xxx,                  xxx,                    xxx,             xxx,             FLAG_ENDPMT,          // Set flag  FLAG_ENDPMT
 //Setsetting,                        n/a,        Reset,                          HP35,            JM,                   RJ,                     C47,             DefltSB,         TVM,                  
-2,                                   xxx,        xxx,                            SS_4,            SS_8,                 xxx,                    SS_8,            xxx,             xxx,                  //SetSetting
-2,                                   xxx,        xxx,                            ITM_CPXRES0,     ITM_CPXRES1,          xxx,                    ITM_CPXRES1,     xxx,             xxx,                  //SetSetting
-2,                                   xxx,        xxx,                            ITM_SPCRES0,     ITM_SPCRES1,          xxx,                    ITM_SPCRES1,     xxx,             xxx,                  //SetSetting
-2,                                   xxx,        xxx,                            xxx,             xxx,                  JC_IRFRAC,              xxx,             xxx,             xxx,                  //SetSetting
+2,                                   xxx,        xxx,                            SS_4,            SS_8,                 SS_8,                   SS_8,            xxx,             xxx,                  //SetSetting
+2,                                   xxx,        xxx,                            ITM_CPXRES0,     ITM_CPXRES1,          ITM_CPXRES1,            ITM_CPXRES1,     xxx,             xxx,                  //SetSetting
+2,                                   xxx,        xxx,                            ITM_SPCRES0,     ITM_SPCRES1,          ITM_SPCRES1,            ITM_SPCRES1,     xxx,             xxx,                  //SetSetting
+2,                                   xxx,        xxx,                            xxx,             JC_IRFRAC,            JC_IRFRAC,              xxx,             xxx,             xxx,                  //SetSetting
 //FLAG,                              set/clear,  Reset,                          HP35,            JM,                   RJ,                     C47,             DefltSB,         TVM,                  
 3,                                   0,          FLAG_FRCYC,                     xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,                  // Clear flag FLAG_FRCYC
 3,                                   1,          FLAG_MONIT,                     xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,                  // Set flag  FLAG_MONIT
@@ -202,7 +202,7 @@ RESERVED_VARIABLE_CPERONA,           xxx,        12,                            
 3,                                   1,          FLAG_SH_LONGPRESS,              xxx,             FLAG_SH_LONGPRESS,    FLAG_SH_LONGPRESS,      xxx,             xxx,             xxx,                  // Set flag  FLAG_SH_LONGPRESS
 3,                                   0,          xxx,                            xxx,             FLAG_USER,            FLAG_USER,              xxx,             xxx,             xxx,                  // Clear flag FLAG_USER
 3,                                   1,          FLAG_SBdate,                    xxx,             xxx,                  xxx,                    xxx,             FLAG_SBdate,     xxx,                  // Set flag  FLAG_SBdate
-3,                                   0,          FLAG_SBtime,                    xxx,             xxx,                  xxx,                    xxx,             FLAG_SBtime,     xxx,                  // Clear flag FLAG_SBtime
+3,                                   0,          FLAG_SBtime,                    xxx,             FLAG_SBtime,          xxx,                    xxx,             FLAG_SBtime,     xxx,                  // Clear flag FLAG_SBtime
 3,                                   0,          FLAG_SBcr,                      xxx,             xxx,                  xxx,                    xxx,             FLAG_SBcr,       xxx,                  // Clear flag FLAG_SBcr
 3,                                   1,          xxx,                            xxx,             xxx,                  FLAG_SBcr,              xxx,             xxx,             xxx,                  // Set flag  FLAG_SBcr
 3,                                   1,          FLAG_SBcpx,                     xxx,             xxx,                  xxx,                    xxx,             FLAG_SBcpx,      xxx,                  // Set flag  FLAG_SBcpx
@@ -223,10 +223,8 @@ RESERVED_VARIABLE_CPERONA,           xxx,        12,                            
 3,                                   1,          xxx,                            xxx,             FLAG_SBbatV,          FLAG_SBbatV,            xxx,             xxx,             xxx,                  // Set flag  FLAG_SBbatV
 3,                                   0,          FLAG_SBshfR,                    xxx,             xxx,                  xxx,                    xxx,             FLAG_SBshfR,     xxx,                  // Clear flag FLAG_SBshfR
 3,                                   0,          FLAG_FRACT,                     xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,                  // Clear flag FLAG_FRACT
-3,                                   1,          FLAG_DENANY,                    xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,                  // Set flag  FLAG_DENANY
 3,                                   1,          FLAG_MULTx,                     xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,                  // Set flag  FLAG_MULTx
 3,                                   1,          FLAG_AUTOFF,                    xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,                  // Set flag  FLAG_AUTOFF
-3,                                   1,          FLAG_ASLIFT,                    xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,                  // Set flag  FLAG_ASLIFT
 3,                                   1,          FLAG_PROPFR,                    xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,                  // Set flag  FLAG_PROPFR
 3,                                   1,          FLAG_ENDPMT,                    xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,                  // Set flag  FLAG_ENDPMT
 3,                                   1,          FLAG_HPRP,                      xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,                  // Set flag  FLAG_HPRP
@@ -247,9 +245,9 @@ RESERVED_VARIABLE_CPERONA,           xxx,        12,                            
 3,                                   0,          FLAG_DENFIX,                    xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,                  // Clear flag FLAG_DENFIX
 3,                                   1,          FLAG_SPCRES,                    xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,                  // Set flag  FLAG_SPCRES
 //fnSetGapChar,                      n/a,        Reset,                          HP35,            JM,                   RJ,                     C47,             DefltSB,         TVM,                  
-4,                                   xxx,        0+ITM_SPACE_PUNCTUATION,        ITM_NULL,        xxx,                  0+ITM_SPACE_4_PER_EM,   0+_gapl,         xxx,             xxx,                  //fnSetGapChar
-4,                                   xxx,        32768+ITM_SPACE_PUNCTUATION,    ITM_NULL+32768,  xxx,                  32768+ITM_NULL,         32768+_gapr,     xxx,             xxx,                  //fnSetGapChar
-4,                                   xxx,        49152+ITM_PERIOD,               ITM_WDOT+49152,  xxx,                  49152+ITM_WCOMMA,       49152+_gaprx,    xxx,             xxx,                  //fnSetGapChar
+4,                                   xxx,        0+ITM_SPACE_PUNCTUATION,        ITM_NULL,        0+_gapl,              0+ITM_SPACE_4_PER_EM,   0+_gapl,         xxx,             xxx,                  //fnSetGapChar
+4,                                   xxx,        32768+ITM_SPACE_PUNCTUATION,    ITM_NULL+32768,  32768+_gapr,          32768+ITM_NULL,         32768+_gapr,     xxx,             xxx,                  //fnSetGapChar
+4,                                   xxx,        49152+ITM_PERIOD,               ITM_WDOT+49152,  49152+_gaprx,         49152+ITM_WCOMMA,       49152+_gaprx,    xxx,             xxx,                  //fnSetGapChar
 0,                                   0,          0,                              0,               0,                    0,                      0,               0,               0,                    //END MARKER
     };
 
@@ -267,27 +265,27 @@ void Sett(int16_t grp) {
         }
       #endif //PC_BUILD
       switch (Settings[ptr*(_numberOfGrps+2) + 0]) {
-        case 101: {fnInDefault                  (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // InputDefaultDataType 
-        case 102: {fnDisplayFormatSigFig        (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // SigFigNumberOfDigits 
-        case 103: {fnDisplayFormatAll           (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // AllNumberOfDigits    
-        case 104: {fnDisplayFormatFix           (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // FixNumberOfDigits    
-        case 105: {BASE_MYM  =                  (Settings[ptr*(_numberOfGrps+2) + 1 + grp]) == 1 ? true : false;break;}   // MymB                 
-        case 106: {BASE_HOME =                  (Settings[ptr*(_numberOfGrps+2) + 1 + grp]) == 1 ? true : false;break;}   // HomeB                
-        case 107: {exponentLimit      =         (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // RNG                  
-        case 108: {significantDigits  =         (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // SDIGS                
-        case 109: {displayStack       =         (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // DSTACK               
-        case 110: {cachedDisplayStack =         (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // CACHEDDSTACK         
-        case 111: {currentAngularMode =         (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // ADM                  
-        case 112: {grpGroupingLeft            = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // IPGRP                
-        case 113: {grpGroupingRight           = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // FPGRP                
-        case 114: {grpGroupingGr1Left         = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // IPGRP1               
-        case 115: {grpGroupingGr1LeftOverflow = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // IPGRP1x              
-        case 116: {fneRPN                       (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // ERPN                 
-        case 117: {setFGLSettings               (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // fgLongPressSetting   
-        case 118: {constantFractions          = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]) == 1 ? true : false;break;}   // IRFRAC               
-        case 119: {constantFractionsMode      = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // IRFRACMODE           
-        case 120: {constantFractionsOn        = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]) == 1 ? true : false;break;}   // IRFRACON             
-        case 121: {denMax                     = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // DenMaX               
+        case InputDefaultDataType : {fnInDefault                  (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // InputDefaultDataType 
+        case SigFigNumberOfDigits : {fnDisplayFormatSigFig        (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // SigFigNumberOfDigits 
+        case AllNumberOfDigits    : {fnDisplayFormatAll           (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // AllNumberOfDigits    
+        case FixNumberOfDigits    : {fnDisplayFormatFix           (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // FixNumberOfDigits    
+        case MymB                 : {BASE_MYM  =                  (Settings[ptr*(_numberOfGrps+2) + 1 + grp]) == 1 ? true : false;break;}   // MymB                 
+        case HomeB                : {BASE_HOME =                  (Settings[ptr*(_numberOfGrps+2) + 1 + grp]) == 1 ? true : false;break;}   // HomeB                
+        case RNG                  : {exponentLimit      =         (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // RNG                  
+        case SDIGS                : {significantDigits  =         (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // SDIGS                
+        case DSTACK               : {displayStack       =         (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // DSTACK               
+        case CACHEDDSTACK         : {cachedDisplayStack =         (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // CACHEDDSTACK         
+        case ADM                  : {currentAngularMode =         (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // ADM                  
+        case IPGRP                : {grpGroupingLeft            = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // IPGRP                
+        case FPGRP                : {grpGroupingRight           = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // FPGRP                
+        case IPGRP1               : {grpGroupingGr1Left         = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // IPGRP1               
+        case IPGRP1x              : {grpGroupingGr1LeftOverflow = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // IPGRP1x              
+        case ERPN                 : {fneRPN                       (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // ERPN                 
+        case fgLongPressSetting   : {setFGLSettings               (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // fgLongPressSetting   
+        case IRFRAC               : {constantFractions          = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]) == 1 ? true : false;break;}   // IRFRAC               
+        case IRFRACMODE           : {constantFractionsMode      = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // IRFRACMODE           
+        case IRFRACON             : {constantFractionsOn        = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]) == 1 ? true : false;break;}   // IRFRACON             
+        case DenMaX               : {denMax                     = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // DenMaX               
 
         case RESERVED_VARIABLE_FV     :
         case RESERVED_VARIABLE_IPONA  :
@@ -1151,8 +1149,10 @@ void restoreStats(void){
       {0,33, "pi.(10^100) (101 digits) longinteger"},
       {1,34, "31415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170680"},
 
-      {0,35, "100 primes' product 2x3x...x541"},
-      {1,36, "4711930799906184953162487834760260422020574773409675520188634839616415335845034221205289256705544681972439104097777157991804380284218315038719444943990492579030720635990538452312528339864352999310398481791730017201031090"},
+      //35 reserved for HP35/C47 swaps config save
+
+      {0,36, "100 primes' product 2x3x...x541"},
+      {1,37, "4711930799906184953162487834760260422020574773409675520188634839616415335845034221205289256705544681972439104097777157991804380284218315038719444943990492579030720635990538452312528339864352999310398481791730017201031090"},
 
     };
 
