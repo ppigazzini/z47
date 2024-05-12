@@ -839,15 +839,30 @@ void fnEvPFacts     (uint16_t unusedButMandatoryParameter) {
         unsigned long k_ul = strtoul(r34strb, NULL, 10);
         longIntegerPowerUIntUInt(p_ul, k_ul, factor);
         longIntegerCopy(prod, tmp_prod);
-        mpz_mul(prod, tmp_prod, factor);
+        longIntegerMultiply(tmp_prod, factor, prod);
       }
       convertLongIntegerToLongIntegerRegister(prod, REGISTER_X);
+      adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
       longIntegerFree(prod);
       longIntegerFree(factor);
       longIntegerFree(tmp_prod);
     }
-
-    adjustResult(REGISTER_X, true, true, REGISTER_X, -1, -1);
+    else {
+      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        sprintf(errorMessage, "Only 2" STD_CROSS "n matrix supported: %" PRIu32 STD_CROSS "%" PRIu32 " matrix", rows, cols);
+        moreInfoOnError("In function fnEvPFacts:", errorMessage, NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+      return;
+    }
+  }
+  else {
+      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        sprintf(errorMessage, "2" STD_CROSS "n matrix required.");
+        moreInfoOnError("In function fnEvPFacts:", errorMessage, NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+      return;
   }
 }
 
@@ -870,52 +885,97 @@ void fnEvPFacts     (uint16_t unusedButMandatoryParameter) {
  * the calculation.
  */
 void fnEulPhi     (uint16_t unusedButMandatoryParameter) {
-  if(!saveLastX()) {
-    return;
+  longInteger_t x;
+  longIntegerInit(x);
+
+  if(getRegisterDataType(REGISTER_X) == dtShortInteger) {
+    convertShortIntegerRegisterToLongInteger(REGISTER_X, x);
   }
-  if(getRegisterDataType(REGISTER_X) == dtLongInteger) {
-    char r34str[101];
-    longInteger_t x, phi_x, p_li, p_li_less_1, phi_x_tmp, phi_x_tmp_b;
-    longIntegerInit(x);
-    longIntegerInit(phi_x);
-    longIntegerInit(p_li);
-    longIntegerInit(p_li_less_1);
-    longIntegerInit(phi_x_tmp);
-    longIntegerInit(phi_x_tmp_b);
-    real34Matrix_t matrix;
-    getRegisterAsLongInt(REGISTER_X, x);
-    longIntegerSubtractUInt(x, 1, phi_x_tmp);
-    if ( longIntegerIsPositive(phi_x_tmp) ) {
-      // Only operate if input long integer in register x is greater than 1
-      fnPrimeFactors (unusedButMandatoryParameter);
-      if(getRegisterDataType(REGISTER_X) == dtReal34Matrix) {
-        // Only operate if we got back a Real 34 Matrix from fnPrimeFactors
-        linkToRealMatrixRegister(REGISTER_X, &matrix);
-        uint16_t rows = REGISTER_DATA(REGISTER_X)->matrixRows;
-        uint16_t cols = REGISTER_DATA(REGISTER_X)->matrixColumns;
-        if ( rows == 2 && cols >= 1 ) {
-          // Only operate if factorisation matrix has two rows and at least one column
-          longIntegerCopy(x, phi_x);
-          for ( uint16_t j = 0;  j < cols;  ++j ) {
-            real34_t p = matrix.matrixElements[j];
-            real34ToString(&p, r34str);
-            stringToLongInteger(r34str, 10, p_li);
-            longIntegerSubtractUInt(p_li, 1, p_li_less_1);
-            longIntegerCopy(phi_x, phi_x_tmp);
-            longIntegerDivide(phi_x_tmp, p_li, phi_x_tmp_b);
-            longIntegerMultiply(phi_x_tmp_b, p_li_less_1, phi_x);
-          }
+
+  else if(getRegisterDataType(REGISTER_X) == dtLongInteger) {
+    convertLongIntegerRegisterToLongInteger(REGISTER_X, x);
+  }
+
+  else if(getRegisterDataType(REGISTER_X) == dtReal34) {
+    convertReal34ToLongInteger(REGISTER_REAL34_DATA(REGISTER_X), x, DEC_ROUND_DOWN);
+  }
+
+  else {
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "The input type %s is not allowed for Euler's Phi function!", getDataTypeName(getRegisterDataType(REGISTER_X), false, false));
+      moreInfoOnError("In function fnEulPhi:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+    goto return1;
+  }
+
+  if(!saveLastX()) {
+    goto return1;
+  }
+
+
+  char r34str[101];
+  longInteger_t phi_x, p_li, p_li_less_1, phi_x_tmp, phi_x_tmp_b;
+  longIntegerInit(phi_x);
+  longIntegerInit(p_li);
+  longIntegerInit(p_li_less_1);
+  longIntegerInit(phi_x_tmp);
+  longIntegerInit(phi_x_tmp_b);
+  real34Matrix_t matrix;
+  longIntegerSubtractUInt(x, 1, phi_x_tmp);
+  if (longIntegerIsPositive(phi_x_tmp)) {
+    // Only operate if input long integer in register x is greater than 1
+    fnPrimeFactors(unusedButMandatoryParameter);
+    if(getRegisterDataType(REGISTER_X) == dtReal34Matrix) {
+      // Only operate if we got back a Real 34 Matrix from fnPrimeFactors
+      linkToRealMatrixRegister(REGISTER_X, &matrix);
+      uint16_t rows = REGISTER_DATA(REGISTER_X)->matrixRows;
+      uint16_t cols = REGISTER_DATA(REGISTER_X)->matrixColumns;
+      if (rows == 2 && cols >= 1) {
+        // Only operate if factorisation matrix has two rows and at least one column
+        longIntegerCopy(x, phi_x);
+        for (uint16_t j = 0;  j < cols; ++j) {
+          real34_t p = matrix.matrixElements[j];
+          real34ToString(&p, r34str);
+          stringToLongInteger(r34str, 10, p_li);
+          longIntegerSubtractUInt(p_li, 1, p_li_less_1);
+          longIntegerCopy(phi_x, phi_x_tmp);
+          longIntegerDivide(phi_x_tmp, p_li, phi_x_tmp_b);
+          longIntegerMultiply(phi_x_tmp_b, p_li_less_1, phi_x);
         }
       }
+      else {
+        goto return2; //matrix dimensions wrong. An error would have been issued by fnPrimeFactors
+      }
     }
-    convertLongIntegerToLongIntegerRegister(phi_x, REGISTER_X);
-    longIntegerFree(x);
-    longIntegerFree(phi_x);
-    longIntegerFree(p_li);
-    longIntegerFree(p_li_less_1);
-    longIntegerFree(phi_x_tmp);
-    longIntegerFree(phi_x_tmp_b);
-    adjustResult(REGISTER_X, true, true, REGISTER_X, -1, -1);
+    else {
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);  //change error type!
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "The intermediate prime factor matrix could not be found.");
+      moreInfoOnError("In function fnEulPhi:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+    goto return2;
+    }
   }
+  else {
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);  //change error type!
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "The input is not larger than 1 for Euler's Phi function!");
+      moreInfoOnError("In function fnEulPhi:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+    goto return2;
+  }
+  convertLongIntegerToLongIntegerRegister(phi_x, REGISTER_X);
+  adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
+
+return2:
+  longIntegerFree(phi_x);
+  longIntegerFree(p_li);
+  longIntegerFree(p_li_less_1);
+  longIntegerFree(phi_x_tmp);
+  longIntegerFree(phi_x_tmp_b);
+
+return1:
+  longIntegerFree(x);
 }
 
