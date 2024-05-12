@@ -2445,7 +2445,10 @@
 
 #define ITM_x_SIGN                  2383
 
-#define LAST_ITEM                   2384
+#define ITM_EVPFACTS                2384
+#define ITM_EULPHI                  2385
+
+#define LAST_ITEM                   2386
 
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL

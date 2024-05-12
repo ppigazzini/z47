@@ -658,6 +658,17 @@ static bool_t addFactor(longInteger_t lastFactor, longInteger_t factor, real34Ma
 
 
 
+/*
+ * This function takes a long integer in the X register, and determines its
+ * prime factorisation.  The result is a matrix with two rows.  The first
+ * row contains all the distinct prime factors.
+ * The second row contains the exponents for each prime factor, that is in
+ * the same column in the first row.
+ * Example:
+ *   Input X register:  1500
+ *   Output X register:  2.  3.  5.
+ *                       2.  1.  3.
+ */
 void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
   hourGlassIconEnabled = true;
   showHideHourGlass();
@@ -792,3 +803,119 @@ abort:
   hourGlassIconEnabled = false;
   showHideHourGlass();
 }
+
+/*
+ * This is the inverse function of fnPrimeFactors.
+ * Given a matrix as produced by fnPrimeFactors, this function expands out
+ * all the prime factors with their exponents, and returns in the X register
+ * the result as a long integer.
+ */
+void fnEvPFacts     (uint16_t unusedButMandatoryParameter) {
+  char r34str[101];
+  char r34strb[101];
+  if(!saveLastX()) {
+    return;
+  }
+
+  if(getRegisterDataType(REGISTER_X) == dtReal34Matrix) {
+    real34Matrix_t matrix;
+
+    linkToRealMatrixRegister(REGISTER_X, &matrix);
+    uint16_t rows = REGISTER_DATA(REGISTER_X)->matrixRows;
+    uint16_t cols = REGISTER_DATA(REGISTER_X)->matrixColumns;
+    if ( rows == 2 && cols >= 1 ) {
+      // Only operate if factorisation matrix has two rows and at least one column
+      longInteger_t prod, factor, tmp_prod;
+      longIntegerInit(prod);
+      longIntegerInit(factor);
+      longIntegerInit(tmp_prod);
+      uIntToLongInteger(1, prod);
+      for ( uint16_t j = 0;  j < cols;  ++j ) {
+        real34_t p = matrix.matrixElements[j];
+        real34_t k = matrix.matrixElements[cols+j];
+        real34ToString(&p, r34str);
+        real34ToString(&k, r34strb);
+        unsigned long p_ul = strtoul(r34str, NULL, 10);
+        unsigned long k_ul = strtoul(r34strb, NULL, 10);
+        longIntegerPowerUIntUInt(p_ul, k_ul, factor);
+        longIntegerCopy(prod, tmp_prod);
+        mpz_mul(prod, tmp_prod, factor);
+      }
+      convertLongIntegerToLongIntegerRegister(prod, REGISTER_X);
+      longIntegerFree(prod);
+      longIntegerFree(factor);
+      longIntegerFree(tmp_prod);
+    }
+
+    adjustResult(REGISTER_X, true, true, REGISTER_X, -1, -1);
+  }
+}
+
+/*
+ * This function accepts a long integer in the X register and computes
+ * the Euler phi function on it.  The result is a new long integer.
+ *
+ * Example:
+ *
+ *   Input X register:  1500
+ *   Output X register:  400
+ *
+ * Formula for euler phi function phi(n):
+ * determine prime factorisation of n:  p[0]**k[0], p[1]**k[1], p[2]**k[2], ... p[r]**k[r] where the p[i] are distinct
+ * phi(n) = n * prod[i=0...r]((p[i]-1)/p[i])
+ *
+ * This is done by grabbing the value n as long integer from the X register.
+ * Then fnPrimeFactors is computed, producing a factorisation matrix.
+ * The prime factors are extracted from this matrix and used to complete
+ * the calculation.
+ */
+void fnEulPhi     (uint16_t unusedButMandatoryParameter) {
+  if(!saveLastX()) {
+    return;
+  }
+  if(getRegisterDataType(REGISTER_X) == dtLongInteger) {
+    char r34str[101];
+    longInteger_t x, phi_x, p_li, p_li_less_1, phi_x_tmp, phi_x_tmp_b;
+    longIntegerInit(x);
+    longIntegerInit(phi_x);
+    longIntegerInit(p_li);
+    longIntegerInit(p_li_less_1);
+    longIntegerInit(phi_x_tmp);
+    longIntegerInit(phi_x_tmp_b);
+    real34Matrix_t matrix;
+    getRegisterAsLongInt(REGISTER_X, x);
+    longIntegerSubtractUInt(x, 1, phi_x_tmp);
+    if ( longIntegerIsPositive(phi_x_tmp) ) {
+      // Only operate if input long integer in register x is greater than 1
+      fnPrimeFactors (unusedButMandatoryParameter);
+      if(getRegisterDataType(REGISTER_X) == dtReal34Matrix) {
+        // Only operate if we got back a Real 34 Matrix from fnPrimeFactors
+        linkToRealMatrixRegister(REGISTER_X, &matrix);
+        uint16_t rows = REGISTER_DATA(REGISTER_X)->matrixRows;
+        uint16_t cols = REGISTER_DATA(REGISTER_X)->matrixColumns;
+        if ( rows == 2 && cols >= 1 ) {
+          // Only operate if factorisation matrix has two rows and at least one column
+          longIntegerCopy(x, phi_x);
+          for ( uint16_t j = 0;  j < cols;  ++j ) {
+            real34_t p = matrix.matrixElements[j];
+            real34ToString(&p, r34str);
+            stringToLongInteger(r34str, 10, p_li);
+            longIntegerSubtractUInt(p_li, 1, p_li_less_1);
+            longIntegerCopy(phi_x, phi_x_tmp);
+            longIntegerDivide(phi_x_tmp, p_li, phi_x_tmp_b);
+            longIntegerMultiply(phi_x_tmp_b, p_li_less_1, phi_x);
+          }
+        }
+      }
+    }
+    convertLongIntegerToLongIntegerRegister(phi_x, REGISTER_X);
+    longIntegerFree(x);
+    longIntegerFree(phi_x);
+    longIntegerFree(p_li);
+    longIntegerFree(p_li_less_1);
+    longIntegerFree(phi_x_tmp);
+    longIntegerFree(phi_x_tmp_b);
+    adjustResult(REGISTER_X, true, true, REGISTER_X, -1, -1);
+  }
+}
+
