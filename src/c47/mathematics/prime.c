@@ -891,15 +891,23 @@ void fnEulPhi     (uint16_t unusedButMandatoryParameter) {
   if(getRegisterDataType(REGISTER_X) == dtShortInteger) {
     convertShortIntegerRegisterToLongInteger(REGISTER_X, x);
   }
-
   else if(getRegisterDataType(REGISTER_X) == dtLongInteger) {
     convertLongIntegerRegisterToLongInteger(REGISTER_X, x);
   }
-
   else if(getRegisterDataType(REGISTER_X) == dtReal34) {
+    real34_t x34, fp34;
+    real34ToIntegralValue(REGISTER_REAL34_DATA(REGISTER_X), &x34, DEC_ROUND_DOWN);
+    real34Subtract(REGISTER_REAL34_DATA(REGISTER_X), &x34 , &fp34);
+    if(!real34IsZero(&fp34)) {
+      displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        sprintf(errorMessage, "The Real input value is not an integer and out of the domain for Euler's Phi function!");
+        moreInfoOnError("In function fnEulPhi:", errorMessage, NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+      goto return1;
+    }
     convertReal34ToLongInteger(REGISTER_REAL34_DATA(REGISTER_X), x, DEC_ROUND_DOWN);
   }
-
   else {
     displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -913,7 +921,6 @@ void fnEulPhi     (uint16_t unusedButMandatoryParameter) {
     goto return1;
   }
 
-
   char r34str[101];
   longInteger_t phi_x, p_li, p_li_less_1, phi_x_tmp, phi_x_tmp_b;
   longIntegerInit(phi_x);
@@ -922,9 +929,19 @@ void fnEulPhi     (uint16_t unusedButMandatoryParameter) {
   longIntegerInit(phi_x_tmp);
   longIntegerInit(phi_x_tmp_b);
   real34Matrix_t matrix;
+  // Check for the trivial case x = 0
+  if(longIntegerIsZero(x)) {
+    longIntegerCopy(x, phi_x);
+    goto returnValue;
+  }
   longIntegerSubtractUInt(x, 1, phi_x_tmp);
-  if (longIntegerIsPositive(phi_x_tmp)) {
-    // Only operate if input long integer in register x is greater than 1
+  // Check for the trivial case x = 1
+  if(longIntegerIsZero(phi_x_tmp)) {
+    longIntegerCopy(x, phi_x);
+    goto returnValue;
+  }
+  if(longIntegerIsPositive(phi_x_tmp)) {
+    // Only operate if input long integer to fnPrimeFactors in register x is greater than 1
     fnPrimeFactors(unusedButMandatoryParameter);
     if(getRegisterDataType(REGISTER_X) == dtReal34Matrix) {
       // Only operate if we got back a Real 34 Matrix from fnPrimeFactors
@@ -949,7 +966,7 @@ void fnEulPhi     (uint16_t unusedButMandatoryParameter) {
       }
     }
     else {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);  //change error type!
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "The intermediate prime factor matrix could not be found.");
       moreInfoOnError("In function fnEulPhi:", errorMessage, NULL, NULL);
@@ -958,24 +975,25 @@ void fnEulPhi     (uint16_t unusedButMandatoryParameter) {
     }
   }
   else {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);  //change error type!
+    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-      sprintf(errorMessage, "The input is not larger than 1 for Euler's Phi function!");
+      sprintf(errorMessage, "The input value is negative and therefore out of the domain for Euler's Phi function!");
       moreInfoOnError("In function fnEulPhi:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     goto return2;
   }
+  returnValue:
   convertLongIntegerToLongIntegerRegister(phi_x, REGISTER_X);
   adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
 
-return2:
+  return2:
   longIntegerFree(phi_x);
   longIntegerFree(p_li);
   longIntegerFree(p_li_less_1);
   longIntegerFree(phi_x_tmp);
   longIntegerFree(phi_x_tmp_b);
 
-return1:
+  return1:
   longIntegerFree(x);
 }
 
