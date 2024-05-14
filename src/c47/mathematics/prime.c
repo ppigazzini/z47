@@ -579,16 +579,16 @@ static bool_t addFactor(longInteger_t lastFactor, longInteger_t factor, real34Ma
     gmp_printf("wgr:  factor==%Zd, rows==%u, cols==%u, nExpons==%u, wkgCols==%u\n",factor, (uint16_t)rows, (uint16_t)cols, faddr->nExpons, wkgCols);
   #endif //WGR
 
-  #if !defined(TESTSUITE_BUILD)
-    if(!redimMatrixRegister(REGISTER_X, rows, wkgCols)) {
+  if(!redimMatrixRegister(REGISTER_X, rows, wkgCols)) {
+    #if !defined(TESTSUITE_BUILD)
       displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "Not enough memory for a %" PRIu32 STD_CROSS "%" PRIu32 " matrix", rows, cols);
         moreInfoOnError("In function fnPrimeFactors:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-      return false;
+    #endif // !TESTSUITE_BUILD
+    return false;
     }
-  #endif // !TESTSUITE_BUILD
 
   if( cols == 0 ) {
     #ifdef WGR
@@ -633,21 +633,21 @@ static bool_t addFactor(longInteger_t lastFactor, longInteger_t factor, real34Ma
             sprintf(errorMessage, "Maximum number of factors exceeded %" PRIu32 STD_CROSS "%" PRIu32 " matrix", rows, cols);
             moreInfoOnError("In function addFactor:", errorMessage, NULL, NULL);
           #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-        return false;
         #endif // !TESTSUITE_BUILD
+        return false;
       }
       ++wkgCols;
       faddr->expons[faddr->nExpons-1] = 1;
-      #if !defined(TESTSUITE_BUILD)
-        if(!redimMatrixRegister(REGISTER_X, rows, wkgCols)) {
+      if(!redimMatrixRegister(REGISTER_X, rows, wkgCols)) {
+        #if !defined(TESTSUITE_BUILD)
           displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
           #if (EXTRA_INFO_ON_CALC_ERROR == 1)
             sprintf(errorMessage, "Not enough memory for a %" PRIu32 STD_CROSS "%" PRIu32 " matrix", rows, cols);
             moreInfoOnError("In function addFactor:", errorMessage, NULL, NULL);
           #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-          return false;
-        }
-      #endif // !TESTSUITE_BUILD
+          #endif // !TESTSUITE_BUILD
+        return false;
+      }
     }
     n = rows*(faddr->nExpons);
     c = n/2;
@@ -811,10 +811,12 @@ abort:
  * the result as a long integer.
  */
 void fnEvPFacts     (uint16_t unusedButMandatoryParameter) {
+  hourGlassIconEnabled = true;
+  showHideHourGlass();
   char r34str[101];
   char r34strb[101];
   if(!saveLastX()) {
-    return;
+    goto return10;
   }
 
   if(getRegisterDataType(REGISTER_X) == dtReal34Matrix) {
@@ -853,7 +855,7 @@ void fnEvPFacts     (uint16_t unusedButMandatoryParameter) {
         sprintf(errorMessage, "Only 2" STD_CROSS "n matrix supported: %" PRIu32 STD_CROSS "%" PRIu32 " matrix", rows, cols);
         moreInfoOnError("In function fnEvPFacts:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-      return;
+      goto return10;
     }
   }
   else {
@@ -862,8 +864,11 @@ void fnEvPFacts     (uint16_t unusedButMandatoryParameter) {
         sprintf(errorMessage, "2" STD_CROSS "n matrix required.");
         moreInfoOnError("In function fnEvPFacts:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-      return;
+      goto return10;
   }
+  return10:
+  hourGlassIconEnabled = false;
+  showHideHourGlass();
 }
 
 /*
@@ -885,6 +890,8 @@ void fnEvPFacts     (uint16_t unusedButMandatoryParameter) {
  * the calculation.
  */
 void fnEulPhi     (uint16_t unusedButMandatoryParameter) {
+  hourGlassIconEnabled = true;
+  showHideHourGlass();
   longInteger_t x;
   longIntegerInit(x);
 
@@ -995,5 +1002,8 @@ void fnEulPhi     (uint16_t unusedButMandatoryParameter) {
 
   return1:
   longIntegerFree(x);
+
+  hourGlassIconEnabled = false;
+  showHideHourGlass();
 }
 
