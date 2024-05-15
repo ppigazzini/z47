@@ -28,6 +28,7 @@
 #include "fonts.h"
 #include "integers.h"
 #include "matrix.h"
+#include "mathematics/power.h"
 #include "registers.h"
 #include "registerValueConversions.h"
 #include "display.h"
@@ -134,33 +135,22 @@ void fnIsPrime(uint16_t unusedButMandatoryParameter) {
   showHideHourGlass();
   longInteger_t primeCandidate;
 
-  if(getRegisterDataType(REGISTER_X) == dtShortInteger) {
-    convertShortIntegerRegisterToLongInteger(REGISTER_X, primeCandidate);
+  longIntegerInit(primeCandidate);
+  if(!getRegisterAsLongInt(REGISTER_X, primeCandidate)) {
+    goto abort;
   }
 
-  else if(getRegisterDataType(REGISTER_X) == dtLongInteger) {
-    convertLongIntegerRegisterToLongInteger(REGISTER_X, primeCandidate);
+  if(longIntegerIsPositive(primeCandidate)) {
+    //SET_TI_TRUE_FALSE(longIntegerIsPrime1(primeCandidate));
+    //SET_TI_TRUE_FALSE(longIntegerIsPrime2(primeCandidate));
+    SET_TI_TRUE_FALSE(longIntegerIsPrime(primeCandidate) != 0);
   }
-
-  else if(getRegisterDataType(REGISTER_X) == dtReal34) {
-    convertReal34ToLongInteger(REGISTER_REAL34_DATA(REGISTER_X), primeCandidate, DEC_ROUND_DOWN);
-  }
-
   else {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-      sprintf(errorMessage, "the input type %s is not allowed for PRIME?!", getDataTypeName(getRegisterDataType(REGISTER_X), false, false));
-      moreInfoOnError("In function fnIsPrime:", errorMessage, NULL, NULL);
-    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-    goto return2;
+    SET_TI_TRUE_FALSE(false);
   }
 
-  longIntegerSetPositiveSign(primeCandidate);
-  //SET_TI_TRUE_FALSE(longIntegerIsPrime1(primeCandidate));
-  //SET_TI_TRUE_FALSE(longIntegerIsPrime2(primeCandidate));
-  SET_TI_TRUE_FALSE(longIntegerIsPrime(primeCandidate) != 0);
+abort:
   longIntegerFree(primeCandidate);
-return2:
   hourGlassIconEnabled = false;
   showHideHourGlass();
 #endif // !SAVE_SPACE_DM42_12
@@ -169,6 +159,7 @@ return2:
 
 void fnNextPrime(uint16_t unusedButMandatoryParameter) {
 #if !defined(SAVE_SPACE_DM42_12)
+  real_t x;
   hourGlassIconEnabled = true;
   showHideHourGlass();
   longInteger_t currentNumber, nextPrime;
@@ -176,31 +167,25 @@ void fnNextPrime(uint16_t unusedButMandatoryParameter) {
   longIntegerInit(currentNumber);
   longIntegerInit(nextPrime);
 
-  if(getRegisterDataType(REGISTER_X) == dtShortInteger) {
-    convertShortIntegerRegisterToLongInteger(REGISTER_X, currentNumber);
+  if(getRegisterDataType(REGISTER_X) == dtReal34) {    //Allow decimals to be rounded down, to be able to get the next prime despite being decimal input;
+    if(!getRegisterAsReal(REGISTER_X, &x)) {
+      goto abort;
+    }
+    convertRealToLongInteger(&x, currentNumber, DEC_ROUND_DOWN);
   }
-
-  else if(getRegisterDataType(REGISTER_X) == dtLongInteger) {
-    convertLongIntegerRegisterToLongInteger(REGISTER_X, currentNumber);
-  }
-
-  else if(getRegisterDataType(REGISTER_X) == dtReal34) {
-    convertReal34ToLongInteger(REGISTER_REAL34_DATA(REGISTER_X), currentNumber, DEC_ROUND_DOWN);
-  }
-
   else {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-      sprintf(errorMessage, "the input type %s is not allowed for PRIME?!", getDataTypeName(getRegisterDataType(REGISTER_X), false, false));
-      moreInfoOnError("In function fnIsPrime:", errorMessage, NULL, NULL);
-    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+    if(!getRegisterAsLongInt(REGISTER_X, currentNumber)) {
+      goto abort;
+    }
   }
 
   if(!saveLastX()) {
-    goto return1;
+    goto abort;
   }
 
-  longIntegerSetPositiveSign(currentNumber);
+  if(!longIntegerIsPositive(currentNumber)) {
+    uIntToLongInteger(1,currentNumber);
+  }
 
   longIntegerNextPrime(currentNumber, nextPrime);
 
@@ -210,10 +195,10 @@ void fnNextPrime(uint16_t unusedButMandatoryParameter) {
   else {
     convertLongIntegerToLongIntegerRegister(nextPrime, REGISTER_X);
   }
-
+abort:
   longIntegerFree(nextPrime);
   longIntegerFree(currentNumber);
-return1:
+
   hourGlassIconEnabled = false;
   showHideHourGlass();
 #endif // !SAVE_SPACE_DM42_12
@@ -676,7 +661,7 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
   #if !defined(TESTSUITE_BUILD)
     uint32_t loop = 0;
   #endif //TESTSUITE_BUILD
-  real34_t m34, lastAdded;
+  real34_t lastAdded;
 
   longInteger_t lastFactor, currentNumber, nextPrime, remainder, quotient, eval, temp;
 
@@ -689,41 +674,18 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
   longIntegerInit(lastFactor);
   real34Matrix_t matrix;
 
-  if(getRegisterDataType(REGISTER_X) == dtShortInteger) {
-    convertShortIntegerRegisterToLongInteger(REGISTER_X, currentNumber);
-  }
-  else if(getRegisterDataType(REGISTER_X) == dtLongInteger) {
-    convertLongIntegerRegisterToLongInteger(REGISTER_X, currentNumber);
-  }
-  else if(getRegisterDataType(REGISTER_X) == dtReal34) {
-    real34ToIntegralValue(REGISTER_REAL34_DATA(REGISTER_X), &m34, DEC_ROUND_UP);
-    real34Subtract(REGISTER_REAL34_DATA(REGISTER_X), &m34, &m34); // Fractional part
-    if(!real34IsZero(&m34)) {
-      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-      #if defined(PC_BUILD)
-        sprintf(errorMessage, "DataType %" PRIu32, getRegisterDataType(REGISTER_X));
-        moreInfoOnError("In function fnPrimeFactors:", errorMessage, "has decimals and cannot have prime factors.", "");
-      #endif
-      goto abort;
-    }
-    convertReal34ToLongInteger(REGISTER_REAL34_DATA(REGISTER_X), currentNumber, DEC_ROUND_DOWN);
-  }
-
-  else {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-      sprintf(errorMessage, "the input type %s is not allowed for FACTORS!", getDataTypeName(getRegisterDataType(REGISTER_X), false, false));
-      moreInfoOnError("In function fnPrimeFactors:", errorMessage, NULL, NULL);
-    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+  if(!getRegisterAsLongInt(REGISTER_X, currentNumber)) {
     goto abort;
   }
 
-  if(longIntegerIsZero(currentNumber) || longIntegerSign(currentNumber) == -1) {             // <=0 end
+  if(longIntegerIsZero(currentNumber) || !longIntegerIsPositive(currentNumber)) {             // currentNumber<=0 -> end
+    badDomainError(REGISTER_X);
     goto abort;
   }
   else {
-    longIntegerSubtractUInt(currentNumber,1,temp);                                           // ==1 end
+    longIntegerSubtractUInt(currentNumber,1,temp);                                           // currentNumber==1 -> end
     if(longIntegerIsZero(temp)) {
+      badDomainError(REGISTER_X);
       goto abort;
     }
   }
@@ -751,14 +713,12 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
           lcd_refresh();
         #endif //DMCP_BUILD
       }
-
     if(keyWaiting()) {
         showString("key Waiting ...", &standardFont, 20, 40, vmNormal, false, false);
         printHalfSecUpdate_Integer(force+1, "Interrupted Test:",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
         programRunStop = PGM_WAITING;
       break;
     }
-
     #endif //!TESTSUITE_BUILD
 
 
@@ -813,8 +773,6 @@ abort:
 void fnEvPFacts     (uint16_t unusedButMandatoryParameter) {
   hourGlassIconEnabled = true;
   showHideHourGlass();
-  char r34str[101];
-  char r34strb[101];
   if(!saveLastX()) {
     goto return10;
   }
@@ -827,19 +785,17 @@ void fnEvPFacts     (uint16_t unusedButMandatoryParameter) {
     uint16_t cols = REGISTER_DATA(REGISTER_X)->matrixColumns;
     if ( rows == 2 && cols >= 1 ) {
       // Only operate if factorisation matrix has two rows and at least one column
-      longInteger_t prod, factor, tmp_prod;
+      longInteger_t prod, factor, tmp_prod, p_li, k_li;
       longIntegerInit(prod);
       longIntegerInit(factor);
+      longIntegerInit(p_li);
+      longIntegerInit(k_li);
       longIntegerInit(tmp_prod);
       uIntToLongInteger(1, prod);
       for ( uint16_t j = 0;  j < cols;  ++j ) {
-        real34_t p = matrix.matrixElements[j];
-        real34_t k = matrix.matrixElements[cols+j];
-        real34ToString(&p, r34str);
-        real34ToString(&k, r34strb);
-        unsigned long p_ul = strtoul(r34str, NULL, 10);
-        unsigned long k_ul = strtoul(r34strb, NULL, 10);
-        longIntegerPowerUIntUInt(p_ul, k_ul, factor);
+        convertReal34ToLongInteger(&matrix.matrixElements[j], p_li, RM_HALF_UP);
+        convertReal34ToLongInteger(&matrix.matrixElements[cols+j], k_li, RM_HALF_UP);
+        longIntegerPower(p_li, k_li, factor);
         longIntegerCopy(prod, tmp_prod);
         longIntegerMultiply(tmp_prod, factor, prod);
       }
@@ -847,6 +803,8 @@ void fnEvPFacts     (uint16_t unusedButMandatoryParameter) {
       adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
       longIntegerFree(prod);
       longIntegerFree(factor);
+      longIntegerFree(p_li);
+      longIntegerFree(k_li);
       longIntegerFree(tmp_prod);
     }
     else {
@@ -895,32 +853,7 @@ void fnEulPhi     (uint16_t unusedButMandatoryParameter) {
   longInteger_t x;
   longIntegerInit(x);
 
-  if(getRegisterDataType(REGISTER_X) == dtShortInteger) {
-    convertShortIntegerRegisterToLongInteger(REGISTER_X, x);
-  }
-  else if(getRegisterDataType(REGISTER_X) == dtLongInteger) {
-    convertLongIntegerRegisterToLongInteger(REGISTER_X, x);
-  }
-  else if(getRegisterDataType(REGISTER_X) == dtReal34) {
-    real34_t x34, fp34;
-    real34ToIntegralValue(REGISTER_REAL34_DATA(REGISTER_X), &x34, DEC_ROUND_DOWN);
-    real34Subtract(REGISTER_REAL34_DATA(REGISTER_X), &x34 , &fp34);
-    if(!real34IsZero(&fp34)) {
-      displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-        sprintf(errorMessage, "The Real input value is not an integer and out of the domain for Euler's Phi function!");
-        moreInfoOnError("In function fnEulPhi:", errorMessage, NULL, NULL);
-      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-      goto return1;
-    }
-    convertReal34ToLongInteger(REGISTER_REAL34_DATA(REGISTER_X), x, DEC_ROUND_DOWN);
-  }
-  else {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-      sprintf(errorMessage, "The input type %s is not allowed for Euler's Phi function!", getDataTypeName(getRegisterDataType(REGISTER_X), false, false));
-      moreInfoOnError("In function fnEulPhi:", errorMessage, NULL, NULL);
-    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+  if(!getRegisterAsLongInt(REGISTER_X, x)) {
     goto return1;
   }
 
