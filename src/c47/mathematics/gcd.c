@@ -64,6 +64,19 @@ TO_QSPI void (* const gcd[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS][NUMBER_OF_DATA_
 #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
 
 
+void _longIntegerGcd(longInteger_t liY, longInteger_t liX, longInteger_t liA) {
+  if(longIntegerIsZero(liY) && longIntegerIsZero(liX)) {
+    #if !defined(TESTSUITE_BUILD)
+      displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        moreInfoOnError("In function fnGcd:", "(0, 0) is not in the function domain.", NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+    #endif //TESTSUITE_BUILD
+  } else {
+    longIntegerGcd(liY, liX, liA);
+  }
+}
+  
 
 /********************************************//**
  * \brief regX ==> regL and GDC(regY, regX) ==> regX
@@ -90,7 +103,7 @@ void gcdLonILonI(void) {
   convertLongIntegerRegisterToLongInteger(REGISTER_X, liX);
   longIntegerSetPositiveSign(liX);
 
-  longIntegerGcd(liY, liX, liX);
+  _longIntegerGcd(liY, liX, liX);
 
   convertLongIntegerToLongIntegerRegister(liX, REGISTER_X);
 
@@ -108,7 +121,7 @@ void gcdLonIShoI(void) {
   convertShortIntegerRegisterToLongInteger(REGISTER_X, liX);
   longIntegerSetPositiveSign(liX);
 
-  longIntegerGcd(liY, liX, liX);
+  _longIntegerGcd(liY, liX, liX);
 
   convertLongIntegerToLongIntegerRegister(liX, REGISTER_X);
 
@@ -126,7 +139,7 @@ void gcdShoILonI(void) {
   convertShortIntegerRegisterToLongInteger(REGISTER_Y, liY);
   longIntegerSetPositiveSign(liY);
 
-  longIntegerGcd(liY, liX, liX);
+  _longIntegerGcd(liY, liX, liX);
 
   convertLongIntegerToLongIntegerRegister(liX, REGISTER_X);
 
