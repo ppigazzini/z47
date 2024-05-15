@@ -41,6 +41,7 @@ void fn1stDeriv(uint16_t label) {
   setSystemFlag(FLAG_SOLVING);
   if(label >= FIRST_LABEL && label <= LAST_LABEL) {
     firstDerivative(label);
+    temporaryInformation = TI_1ST_DERIVATIVE;
   }
   else if(REGISTER_X <= label && label <= REGISTER_T) {
     // Interactive mode
@@ -57,6 +58,7 @@ void fn1stDeriv(uint16_t label) {
     }
     else {
       firstDerivative(label);
+      temporaryInformation = TI_1ST_DERIVATIVE;
     }
   }
   else {
@@ -77,6 +79,7 @@ void fn2ndDeriv(uint16_t label) {
   setSystemFlag(FLAG_SOLVING);
   if(label >= FIRST_LABEL && label <= LAST_LABEL) {
     secondDerivative(label);
+    temporaryInformation = TI_2ND_DERIVATIVE;
   }
   else if(REGISTER_X <= label && label <= REGISTER_T) {
     // Interactive mode
@@ -93,6 +96,7 @@ void fn2ndDeriv(uint16_t label) {
     }
     else {
       secondDerivative(label);
+      temporaryInformation = TI_2ND_DERIVATIVE;
     }
   }
   else {

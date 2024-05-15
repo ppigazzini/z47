@@ -1433,7 +1433,7 @@
 #define MNU_TAM                     1385
 #define MNU_TAMCMP                  1386
 #define MNU_TAMSTORCL               1387
-#define MNU_1388                    1388
+#define MNU_Grapher                 1388
 #define MNU_VAR                     1389
 #define MNU_TAMFLAG                 1390
 #define MNU_TAMSHUFFLE              1391
@@ -2436,15 +2436,19 @@
 #define MNU_Solver_TOOL             2376
 #define ITM_FPHERE                  2377
 #define ITM_FPPHERE                 2378
+
 #define VAR_CPERonA                 2379
 #define ITM_RCL_CPERonA             2380
+
 #define MNU_CASHFL                  2381
 #define MNU_AMORT                   2382
-#define ITM_x_SIGN                  2383
-#define ITM_PFACTORSMULT            2384
-#define ITM_EULPHI                  2385
 
-#define LAST_ITEM                   2386
+#define ITM_x_SIGN                  2383
+#define ITM_CPXPLOT                 2384
+
+#define ITM_PFACTORSMULT            2385
+#define ITM_EULPHI                  2386
+#define LAST_ITEM                   2387
 
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL

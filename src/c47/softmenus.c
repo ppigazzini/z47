@@ -27,6 +27,7 @@
 #include "solver/differentiate.h"
 #include "solver/equation.h"
 #include "sort.h"
+#include "stack.h"
 #include "c43Extensions/xeqm.h"
 #include <string.h>
 #include <stdlib.h>
@@ -572,11 +573,11 @@ TO_QSPI const int16_t menu_alphaMisc[]    = { ITM_NUMBER_SIGN,          ITM_AT, 
 
 
 
-TO_QSPI const int16_t menu_EQN[]         = { ITM_EQ_NEW,                    ITM_EQ_EDI,                 -MNU_2NDDERIV,            -MNU_1STDERIV,         -MNU_Sf,                     -MNU_Solver,
-                                             ITM_EQ_DEL,                    ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                     ITM_NULL                     };
+TO_QSPI const int16_t menu_EQN[]         = { ITM_EQ_NEW,                ITM_EQ_EDI,                 -MNU_2NDDERIV,            -MNU_1STDERIV,            -MNU_Sf,                    -MNU_Solver,
+                                             ITM_EQ_DEL,                ITM_NULL,                   ITM_NULL,                 ITM_NULL,                 ITM_NULL,                   -MNU_Grapher              };
 
-TO_QSPI const int16_t menu_ADV[]         = { ITM_SOLVE,                     ITM_SLVQ,                   ITM_FQX,                  ITM_PIn,               ITM_SIGMAn,                  -MNU_Sfdx,
-                                             ITM_PGMSLV,                    ITM_SLVC,                   ITM_FDQX,                 ITM_iPIn,              ITM_iSIGMAn,                 ITM_PGMINT                    };
+TO_QSPI const int16_t menu_ADV[]         = { ITM_SOLVE,                 ITM_SLVQ,                   ITM_FQX,                  ITM_PIn,                  ITM_SIGMAn,                 -MNU_Sfdx,
+                                             ITM_PGMSLV,                ITM_SLVC,                   ITM_FDQX,                 ITM_iPIn,                 ITM_iSIGMAn,                ITM_PGMINT                };
 
 
 TO_QSPI const int16_t menu_1stDeriv[]    = { ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                 -MNU_GRAPHS,                ITM_FPHERE                };
@@ -591,19 +592,22 @@ TO_QSPI const int16_t menu_Sf[]          = { ITM_NULL,                  ITM_NULL
 TO_QSPI const int16_t menu_Solver[]      = { ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                 ITM_NULL,                   ITM_NULL                  };
 //note: the items in here are dynamically assigned, including the static ones (original population was NULL)
 
+TO_QSPI const int16_t menu_Grapher[]     = { ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                 ITM_NULL,                   ITM_NULL                  };
+//note: the items in here are dynamically assigned, including the static ones (original population was NULL)
 
 
 
-TO_QSPI const int16_t menu_Sfdx[]        = { VAR_ACC,                   ITM_INTEGRAL_YX,           ITM_INTEGRAL,              ITM_NULL,                  VAR_LLIM,                  VAR_ULIM,
- /*same*/                                    ITM_NULL,                  CST_77,                    CST_78,                    ITM_NULL,                  ITM_NULL,                  ITM_NULL              };
+
+TO_QSPI const int16_t menu_Sfdx[]        = { VAR_ACC,                   ITM_INTEGRAL_YX,           ITM_INTEGRAL,              VAR_LLIM,                 VAR_ULIM,                   ITM_NULL,
+ /*same*/                                    ITM_NULL,                  CST_77,                    CST_78,                    ITM_NULL,                 ITM_NULL,                   ITM_NULL                  };
 
 // Tool∫ (intgral tools)
-TO_QSPI const int16_t menu_Sf_TOOL[]     = { ITM_DRAW,                  ITM_INTEGRAL_YX,           ITM_INTEGRAL,              ITM_DRAW_LU,               VAR_LX,                    VAR_UX,
- /*same*/                                    VAR_ACC,                   CST_77,                    CST_78,                    ITM_NULL,                  VAR_LLIM,                  VAR_ULIM              };
+TO_QSPI const int16_t menu_Sf_TOOL[]     = { VAR_ACC,                   ITM_INTEGRAL_YX,           ITM_INTEGRAL,              VAR_LLIM,                 VAR_ULIM,                  -MNU_GRAPHS,
+ /*same*/                                    ITM_NULL,                  CST_77,                    CST_78,                    ITM_NULL,                 ITM_NULL,                   ITM_NULL                  };
 
 // ToolS (solver tools)
-TO_QSPI const int16_t menu_Solver_TOOL[] = { ITM_DRAW,                  ITM_CPXSLV,                ITM_CPXSLV_LU,             ITM_DRAW_LU,               VAR_LX,                    VAR_UX,
-                                             ITM_SETSIG2,               ITM_REALSLV,               ITM_REALSLV_LU,            ITM_NULL,                  VAR_LLIM,                  VAR_ULIM             };
+TO_QSPI const int16_t menu_Solver_TOOL[] = { ITM_SETSIG2,               ITM_CPXSLV,                ITM_CPXSLV_LU,             VAR_LLIM,                 VAR_ULIM,                  -MNU_GRAPHS,
+                                             ITM_NULL,                  ITM_REALSLV,               ITM_REALSLV_LU,            ITM_NULL,                 ITM_NULL,                   ITM_NULL                  };
 
 
 
@@ -813,7 +817,7 @@ TO_QSPI const int16_t menu_PLOT[]        = { -MNU_GRAPHS,                   ITM_
 
                                               ITM_PCROS,                    ITM_PBOX,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,                           //JM GRAPH
                                               ITM_PLINE,                    ITM_PLOTRST,                ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,                           //JM GRAPH
-                                              ITM_NULL,                     ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,                           //JM GRAPH
+                                              ITM_CPXPLOT,                  ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,                           //JM GRAPH
 
                                               ITM_DIFF,                     ITM_INTG,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
                                               ITM_RMS,                      ITM_SHADE,                  ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
@@ -999,7 +1003,8 @@ TO_QSPI const softmenu_t softmenu[] = {
 /* 147 */  {.menuItem = -MNU_Sf_TOOL,     .numItems = sizeof(menu_Sf_TOOL       )/sizeof(int16_t), .softkeyItem = menu_Sf_TOOL        },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
 /* 148 */  {.menuItem = -MNU_CASHFL,      .numItems = sizeof(menu_CASHFL        )/sizeof(int16_t), .softkeyItem = menu_CASHFL         },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
 /* 149 */  {.menuItem = -MNU_AMORT,       .numItems = sizeof(menu_AMORT         )/sizeof(int16_t), .softkeyItem = menu_AMORT          },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
-/* 150 */  {.menuItem =  0,               .numItems = 0,                                           .softkeyItem = NULL                }
+/* 150 */  {.menuItem = -MNU_Grapher,     .numItems = sizeof(menu_Grapher       )/sizeof(int16_t), .softkeyItem = menu_Grapher        },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
+/* 151 */  {.menuItem =  0,               .numItems = 0,                                           .softkeyItem = NULL                }
 };
 
 
@@ -2334,6 +2339,12 @@ bool_t BASE_OVERRIDEONCE = false;
                   case MNU_1STDERIV:
                   case MNU_2NDDERIV:
                   case MNU_MVAR: {
+                    if(!compareString((char *)getNthString(dynamicSoftmenu[m].menuContent, x+6*y), indexOfItems[ITM_DRAW].itemSoftmenuName, CMP_NAME)) {
+                       vm = vmReverse;
+                    } else
+                    if(!compareString((char *)getNthString(dynamicSoftmenu[m].menuContent, x+6*y), indexOfItems[ITM_DRAW_LU].itemSoftmenuName, CMP_NAME)) {
+                       vm = vmReverse;
+                    } else
                     if(!compareString((char *)getNthString(dynamicSoftmenu[m].menuContent, x+6*y), indexOfItems[MNU_GRAPHS].itemSoftmenuName, CMP_NAME)) {
                        vm = vmReverse;
                     }
@@ -2646,8 +2657,14 @@ bool_t BASE_OVERRIDEONCE = false;
     }
 
                                                               //JM ^^
-    if(currentMenu() != -MNU_MODE && currentMenu() != -MNU_DISP) {          //JM reset menu base point only if not MODE & DISP menus
-      softmenuStack[0].firstItem = 0;
+    switch(-currentMenu()) {               //reset menu base point only if not MODE & DISP & Graphs menus, otherwise all menues reset to p1
+      case MNU_MODE   :
+      case MNU_DISP   :
+      case MNU_PLOT   : break;
+      default: {
+        softmenuStack[0].firstItem = 0; 
+        break;
+      }
     }
 
     enterAsmModeIfMenuIsACatalog(softmenu[softmenuStack[0].softmenuId].menuItem);
@@ -2835,12 +2852,13 @@ bool_t BASE_OVERRIDEONCE = false;
     else if(id == -MNU_ALPHA_OMEGA && alphaCase == AC_LOWER) { // alpha...omega
       id = -MNU_alpha_omega;
     }
-    else if(id == -MNU_Solver   ||
-            id == -MNU_Sf       ||
+    else if(id == -MNU_Solver      ||
+            id == -MNU_Grapher     ||
+            id == -MNU_Sf          ||
             id == -MNU_Sf_TOOL     ||
             id == -MNU_Solver_TOOL ||
-            id == -MNU_1STDERIV ||
-            id == -MNU_2NDDERIV ||
+            id == -MNU_1STDERIV    ||
+            id == -MNU_2NDDERIV    ||
             (id == -MNU_MVAR && (currentSolverStatus & SOLVER_STATUS_INTERACTIVE) && !(currentSolverStatus & SOLVER_STATUS_USES_FORMULA) && (currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_INTEGRATE)
             ) {
       int32_t numberOfVars = -1;
@@ -2851,6 +2869,10 @@ bool_t BASE_OVERRIDEONCE = false;
       }
       switch(-id) {
         case MNU_Solver_TOOL:
+        case MNU_Grapher: {
+          currentSolverStatus |= SOLVER_STATUS_EQUATION_GRAPHER;
+          break;
+        }
         case MNU_Solver: {
           currentSolverStatus |= SOLVER_STATUS_EQUATION_SOLVER;
           break;
@@ -2901,7 +2923,8 @@ bool_t BASE_OVERRIDEONCE = false;
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       }
       else if( ( ((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_INTEGRATE) ||
-                 ((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_SOLVER)
+                 ((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_SOLVER) ||
+                 ((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_GRAPHER)
                ) && numberOfVars == 1) {
         currentSolverVariable = findOrAllocateNamedVariable((char *)getNthString(varList, 0));
       }
@@ -2909,6 +2932,7 @@ bool_t BASE_OVERRIDEONCE = false;
         if((getNthString(varList, 1))[0] == 0) {
           currentSolverVariable = findOrAllocateNamedVariable((char *)getNthString(varList, 0));
           reallyRunFunction(ITM_STO, currentSolverVariable);
+          saveForUndo();
           if((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_1ST_DERIVATIVE) {
             fn1stDerivEq(NOPARAM);
           }
@@ -3234,9 +3258,10 @@ void fnDumpMenus(uint16_t unusedButMandatoryParameter) {                      //
         switch(-softmenu[m].menuItem) {
           case MNU_1STDERIV :
           case MNU_2NDDERIV :
-          case MNU_Sf :
-          case MNU_Solver :
-          case MNU_SHOW :
+          case MNU_Sf       :
+          case MNU_Solver   :
+          case MNU_Grapher   :
+          case MNU_SHOW     :
             break;
           default:
            fnMenuDump(m, n);

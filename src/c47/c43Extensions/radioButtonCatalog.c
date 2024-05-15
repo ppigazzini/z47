@@ -165,6 +165,7 @@ TO_QSPI const radiocb_t indexOfRadioCbEepromItems[] = {
   {ITM_DIFF,             JC_DIFF,                CB_JC},  //
   {ITM_RMS,              JC_RMS,                 CB_JC},  //
   {ITM_SHADE,            JC_SHADE,               CB_JC},  //
+  {ITM_CPXPLOT,          JC_CPXPLOT,             CB_JC},
 
   {CHR_num,              JC_NL,                  CB_JC},  //
   {CHR_case,             JC_UC,                  CB_JC},  //
@@ -363,6 +364,7 @@ int8_t fnCbIsSet(int16_t item) {
             case JC_INTG:                cb_param = PLOT_INTG;                                                        break;
             case JC_RMS:                 cb_param = PLOT_RMS;                                                         break;
             case JC_SHADE:               cb_param = PLOT_SHADE;                                                       break;
+            case JC_CPXPLOT:             cb_param = PLOT_CPXPLOT;                                                     break;
             case JC_NL:                  cb_param = numLock;                                                          break;
             case JC_UC:                  cb_param = !alphaCase;                                                       break;
             case JC_UU:                  cb_param = getSystemFlag(FLAG_USER);                                         break;

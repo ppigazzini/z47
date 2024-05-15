@@ -1099,7 +1099,7 @@ static void _parseWord(char *strPtr, uint16_t parseMode, uint16_t parserHint, ch
           xcopy(bufPtr, strPtr, stringByteLength(strPtr) + 1);
           bufPtr += stringByteLength(strPtr) + 1;
           bufPtr[0] = 0;
-          if((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_SOLVER && var >= FIRST_RESERVED_VARIABLE) {
+          if(((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_SOLVER || (currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_GRAPHER ) && var >= FIRST_RESERVED_VARIABLE) {
             displayCalcErrorMessage(ERROR_INVALID_NAME, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
             #if (EXTRA_INFO_ON_CALC_ERROR == 1)
               moreInfoOnError("In function _parseWord:", strPtr, "names a register or a reserved variable!", NULL);
@@ -1110,6 +1110,11 @@ static void _parseWord(char *strPtr, uint16_t parseMode, uint16_t parserHint, ch
               _menuItem(MNU_Sf_TOOL, bufPtr);
               bufPtr += stringByteLength(bufPtr) + 1;
               _menuItem(ITM_INTEGRAL_YX, bufPtr);
+            }
+            else if(tmpVal == 3 && ((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_GRAPHER)) {   // If the 4th variable has just been added, add Draw and Calc.
+              _menuItem(MNU_GRAPHS, bufPtr);
+              bufPtr += stringByteLength(bufPtr) + 1;
+              _menuItem(ITM_DRAW, bufPtr);
             }
             else if(tmpVal == 3 && ((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_SOLVER)) {   // If the 4th variable has just been added, add Draw and Calc.
               _menuItem(MNU_Solver_TOOL, bufPtr);
@@ -1579,8 +1584,19 @@ void parseEquation(uint16_t equationId, uint16_t parseMode, char *buffer, char *
       }
     }
 
+else
+    if((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_GRAPHER) {
+      for(; tmpVal < 4; ++tmpVal) {  //If there are less than 4 variables, skip to the 5th item and add Draw & Calc.
+        *(bufPtr++) = 0;
+      }
+      if(tmpVal == 4) {
+        _menuItem(MNU_GRAPHS, bufPtr);
+        bufPtr += stringByteLength(bufPtr) + 1;
+        _menuItem(ITM_DRAW, bufPtr);
+      }
+    }
 
-
+else
     if((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_INTEGRATE) {                      // MNU_Sf
       for(; tmpVal < 4; ++tmpVal) {  //If there are less than 4 variables, skip to the 5th item and add Draw & Calc.
         *(bufPtr++) = 0;
@@ -1592,7 +1608,7 @@ void parseEquation(uint16_t equationId, uint16_t parseMode, char *buffer, char *
       }
     }
 
-
+else
     if((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_1ST_DERIVATIVE || (currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_2ND_DERIVATIVE) {
       for(; tmpVal < 4; ++tmpVal) {  //If there are less than 4 variables, skip to the 5th item and add Draw & Calc.
         *(bufPtr++) = 0;
