@@ -7,9 +7,9 @@ DOTD
 RCL 01
 RCL 02
 RCL 03
-RCL 01 3 Y^X
-RCL 02 3 Y^X +
-RCL 03 3 Y^X +
+RCL 01 3 EXIT Y^X
+RCL 02 3 EXIT Y^X +
+RCL 03 3 EXIT Y^X +
 ALPHA "Sum of Cubes equals "  ENTER
 X<>Y
 +
