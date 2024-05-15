@@ -21,8 +21,10 @@
 #include "c43Extensions/graphs.h"
 #include "c43Extensions/graphText.h"
 #include "items.h"
+#include "mathematics/imaginaryPart.h"
 #include "mathematics/invert.h"
 #include "mathematics/matrix.h"
+#include "mathematics/realPart.h"
 #include "plotstat.h"
 #include "recall.h"
 #include "registers.h"
@@ -268,7 +270,7 @@ uint8_t DXR = 0, DYR = 0, DXI = 0, DYI = 0;
                                     memcpy(prefix, allNamedVariables[regStatsXY - FIRST_NAMED_VARIABLE].variableName + 1, allNamedVariables[regStatsXY - FIRST_NAMED_VARIABLE].variableName[0]);
                                     strcpy(prefix + allNamedVariables[regStatsXY - FIRST_NAMED_VARIABLE].variableName[0], " :");
                                     printf("Adding to Draw Matrix %s\n",prefix);
-                                  #endif //STATDEBUG
+                                  #endif //STATDEBUG    
     calcRegister_t regStats = regStatsXY;
     if(!isStatsMatrixN(&rows,regStats)) {
       regStats = allocateNamedMatrix(plotStatMx, 1, 2);
@@ -385,21 +387,31 @@ void graph_eqn(uint16_t mode) {
       //leaving y in Y and x in X
       execute_rpn_function();
 
-      y02 = convertRegisterToDouble(REGISTER_Y);
-                                  //printf("Loop x= %f y= %f\n",x,y02);
-      dy = y02 - y01;
-      grad2  = dy / (x - x01);
-      ss0 = ss1;
-      ss1 = ss2;
-      ss2 = grad2 == 0 ? 0 : grad2 > 0 ? 1 : -1;
-      grad0 = grad1;
-      grad1 = grad2;
-                                  #if defined(DEBUG_GR)
-                                    printRegisterToConsole(REGISTER_X,"X:","");
-                                    printRegisterToConsole(REGISTER_Y," Y:","");
-                                    printf("%f %f grad2/grad1=%f grad1/grad2=%f \n",grad2, grad1, grad2/grad1, grad1/grad2);
-                                    printf("ss1 %i ss2 %i y01 %6f y02 %6f\n",ss1,ss2,y01,y02);
-                                  #endif // DEBUG_GR
+      //at this point Y could be complex!! If complex, then split Y in Re in X and Im in Y
+      if(PLOT_CPXPLOT) {
+        fnRCL(REGISTER_Y);
+        fnStore(TEMP_REGISTER_1);
+        fnImaginaryPart(0);
+        fnRCL(TEMP_REGISTER_1);
+        fnRealPart(0);
+        AddtoDrawMx();
+      } else {
+
+        y02 = convertRegisterToDouble(REGISTER_Y);
+                                    //printf("Loop x= %f y= %f\n",x,y02);
+        dy = y02 - y01;
+        grad2  = dy / (x - x01);
+        ss0 = ss1;
+        ss1 = ss2;
+        ss2 = grad2 == 0 ? 0 : grad2 > 0 ? 1 : -1;
+        grad0 = grad1;
+        grad1 = grad2;
+                                    #if defined(DEBUG_GR)
+                                      printRegisterToConsole(REGISTER_X,"X:","");
+                                      printRegisterToConsole(REGISTER_Y," Y:","");
+                                      printf("%f %f grad2/grad1=%f grad1/grad2=%f \n",grad2, grad1, grad2/grad1, grad1/grad2);
+                                      printf("ss1 %i ss2 %i y01 %6f y02 %6f\n",ss1,ss2,y01,y02);
+                                    #endif // DEBUG_GR
 
       if(grad1 != 0 && grad2 != 0) {
         grad2IncreaseDetected = (
@@ -494,7 +506,9 @@ void graph_eqn(uint16_t mode) {
                                     }
                                   #endif //PC_BUILD
 
-      if(discontinuityDetected != 0) discontinuityDetected --;
+        if(discontinuityDetected != 0) discontinuityDetected --;
+      }
+      
       count++;
       if(count > 60) break;
                                   #if defined(DEBUG_GR)
@@ -1221,7 +1235,7 @@ void graph_stat(uint16_t unusedButMandatoryParameter) {
                                     printRegisterToConsole(SREG_X1,"X = "," ");
                                     printRegisterToConsole(REGISTER_Y,"Y = ","\n");
                                   #endif // PC_BUILD
-
+      
     }  //Iteration end
 
     refreshScreen(200);
@@ -1316,7 +1330,7 @@ void fnEqSolvGraph (uint16_t func) {
 
 
   switch(func) {
-    case EQ_CPXSOLVE_LU:
+    case EQ_CPXSOLVE_LU: 
     case EQ_REALSOLVE_LU: {
       if(getRegisterAsReal(RESERVED_VARIABLE_LLIM, &y) && getRegisterAsReal(RESERVED_VARIABLE_ULIM, &x)) {
         liftStack();
@@ -1327,8 +1341,8 @@ void fnEqSolvGraph (uint16_t func) {
         realToReal34(&y, REGISTER_REAL34_DATA(REGISTER_Y));
       }
       break;
-    }
-    case EQ_CPXSOLVE:
+    }   
+    case EQ_CPXSOLVE: 
     case EQ_REALSOLVE: {
       if(getRegisterAsReal(REGISTER_X, &x) && getRegisterAsReal(REGISTER_Y, &y)) {
         reallocateRegister(RESERVED_VARIABLE_ULIM, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
@@ -1349,7 +1363,7 @@ void fnEqSolvGraph (uint16_t func) {
         realToReal34(&y, REGISTER_REAL34_DATA(REGISTER_Y));
       }
       break;
-    }
+    }   
     case EQ_PLOT: {              //uses X, Y
       if(getRegisterAsReal(REGISTER_X, &x) && getRegisterAsReal(REGISTER_Y, &y)) {
         reallocateRegister(RESERVED_VARIABLE_UX, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
@@ -1390,7 +1404,7 @@ void fnEqSolvGraph (uint16_t func) {
 
   switch(func) {
     case EQ_REALSOLVE_LU:
-    case EQ_REALSOLVE: {
+    case EQ_REALSOLVE: {      
       if((currentSolverVariable >= FIRST_NAMED_VARIABLE) ) {//&& currentSolverStatus & SOLVER_STATUS_READY_TO_EXECUTE) {
         fnSolve(currentSolverVariable);
       }

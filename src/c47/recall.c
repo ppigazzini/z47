@@ -270,6 +270,19 @@ void fnRecallConfig(uint16_t regist) {
     __attribute__((unused)) bool_t compatibility_bool3 ;    //for use in spare slots below
     __attribute__((unused)) bool_t compatibility_bool4 ;    //for use in spare slots below
     __attribute__((unused)) bool_t compatibility_bool5 ;    //for use in spare slots below
+    __attribute__((unused)) bool_t compatibility_bool6 ;    //for use in spare slots below
+    __attribute__((unused)) bool_t compatibility_bool7 ;    //for use in spare slots below
+    __attribute__((unused)) bool_t compatibility_bool8 ;    //for use in spare slots below
+    __attribute__((unused)) bool_t compatibility_bool9 ;    //for use in spare slots below
+    __attribute__((unused)) bool_t compatibility_bool10;    //for use in spare slots below
+    __attribute__((unused)) bool_t compatibility_bool11;    //for use in spare slots below
+    __attribute__((unused)) bool_t compatibility_bool12;    //for use in spare slots below
+    __attribute__((unused)) bool_t compatibility_bool13;    //for use in spare slots below
+    __attribute__((unused)) bool_t compatibility_bool14;    //for use in spare slots below
+    __attribute__((unused)) bool_t compatibility_bool15;    //for use in spare slots below
+    __attribute__((unused)) bool_t compatibility_bool16;    //for use in spare slots below
+    __attribute__((unused)) bool_t compatibility_byte0 ;    //for use in spare slots below
+    __attribute__((unused)) bool_t compatibility_byte1 ;    //for use in spare slots below
     __attribute__((unused)) float  compatibility_float1;    //for use in spare slots below
     __attribute__((unused)) float  compatibility_float2;    //for use in spare slots below
     __attribute__((unused)) float  compatibility_float3;    //for use in spare slots below
@@ -318,24 +331,24 @@ void fnRecallConfig(uint16_t regist) {
     recallFromDtConfigDescriptor(compatibility_float4);   //spare
     recallFromDtConfigDescriptor(compatibility_float5);   //spare
     recallFromDtConfigDescriptor(compatibility_float6);   //spare
-    recallFromDtConfigDescriptor(compatibility_bool1);    //spare
-    recallFromDtConfigDescriptor(compatibility_bool2);    //spare
-    recallFromDtConfigDescriptor(compatibility_bool3);    //spare
-    recallFromDtConfigDescriptor(PLOT_VECT);
-    recallFromDtConfigDescriptor(PLOT_NVECT);
-    recallFromDtConfigDescriptor(PLOT_SCALE);
-    recallFromDtConfigDescriptor(compatibility_bool4);    //spare
-    recallFromDtConfigDescriptor(PLOT_LINE);
-    recallFromDtConfigDescriptor(PLOT_CROSS);
-    recallFromDtConfigDescriptor(PLOT_BOX);
-    recallFromDtConfigDescriptor(PLOT_INTG);
-    recallFromDtConfigDescriptor(PLOT_DIFF);
-    recallFromDtConfigDescriptor(PLOT_RMS);
-    recallFromDtConfigDescriptor(PLOT_SHADE);
-    recallFromDtConfigDescriptor(PLOT_AXIS);
-    recallFromDtConfigDescriptor(PLOT_ZMX);
-    recallFromDtConfigDescriptor(PLOT_ZMY);
-    recallFromDtConfigDescriptor(compatibility_bool5);    //spare
+    recallFromDtConfigDescriptor(compatibility_bool1);
+    recallFromDtConfigDescriptor(compatibility_bool2);
+    recallFromDtConfigDescriptor(compatibility_bool3);
+    recallFromDtConfigDescriptor(compatibility_bool4);
+    recallFromDtConfigDescriptor(compatibility_bool5);
+    recallFromDtConfigDescriptor(compatibility_bool6);
+    recallFromDtConfigDescriptor(compatibility_bool7);
+    recallFromDtConfigDescriptor(compatibility_bool8); 
+    recallFromDtConfigDescriptor(compatibility_bool9); 
+    recallFromDtConfigDescriptor(compatibility_bool10); 
+    recallFromDtConfigDescriptor(compatibility_bool11); 
+    recallFromDtConfigDescriptor(compatibility_bool12); 
+    recallFromDtConfigDescriptor(compatibility_bool13); 
+    recallFromDtConfigDescriptor(compatibility_bool14); 
+    recallFromDtConfigDescriptor(compatibility_bool15); 
+    recallFromDtConfigDescriptor(compatibility_byte0);
+    recallFromDtConfigDescriptor(compatibility_byte1);
+    recallFromDtConfigDescriptor(compatibility_bool16);    //spare
     recallFromDtConfigDescriptor(jm_LARGELI);
     recallFromDtConfigDescriptor(constantFractions);
     recallFromDtConfigDescriptor(constantFractionsMode);

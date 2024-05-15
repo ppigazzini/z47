@@ -52,6 +52,7 @@ void graph_reset(void){
   PLOT_DIFF     = false;
   PLOT_RMS      = false;
   PLOT_SHADE    = false;
+  PLOT_CPXPLOT  = false;
   PLOT_AXIS     = true;
   PLOT_ZMX      = 0;
   PLOT_ZMY      = 0;
@@ -203,6 +204,14 @@ void fnPshade (uint16_t unusedButMandatoryParameter) {
   PLOT_VECT   = false;
   PLOT_NVECT  = false;
  fnRefreshState();                //jm
+  fnPlotSQ(0);
+}
+
+
+void fnComplexPlot (uint16_t unusedButMandatoryParameter) {
+  PLOT_CPXPLOT = !PLOT_CPXPLOT;
+  fnRefreshState();                //jm
+  fnEqSolvGraph(EQ_PLOT_LU);
   fnPlotSQ(0);
 }
 
@@ -916,10 +925,22 @@ void graph_plotmem(void) {
 
         //Cause scales to be the same
         if(PLOT_SCALE) {
-          x_min = min(x_min,y_min);
-          x_max = max(x_max,y_max);
-          y_min = x_min;
-          y_max = x_max;
+          float dx = fabs(x_max - x_min);
+          float dy = fabs(y_max - y_min);
+          if(dx > dy) {
+            dy = dx;
+          } else {
+            dx = dy;
+          }
+//          x_min = min(x_min,y_min);
+//          x_max = max(x_max,y_max);
+//          y_min = x_min;
+//          y_max = x_max;
+
+          x_min = (x_min + x_max)/2 - dx/2; //new equal scale calculation to keep the grpah centre of screen
+          x_max = x_min + dx;
+          y_min = (y_min + y_max)/2 - dy/2;
+          y_max = y_min + dy;
         }
 
         //Calc zoom scales

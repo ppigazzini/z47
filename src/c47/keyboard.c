@@ -146,6 +146,14 @@ printf(">>>>  0093     firstItem=%d itemShift=%d fn=%d",firstItem, itemShift, fn
           item = (dynamicMenuItem >= dynamicSoftmenu[menuId].numItems ? ITM_NOP : ITM_SOLVE_VAR);
         }
 
+//Grapher
+        else if((currentSolverStatus & SOLVER_STATUS_USES_FORMULA) && (currentSolverStatus & SOLVER_STATUS_INTERACTIVE) && ((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_GRAPHER) && dynamicMenuItem == 5) {
+          item = ITM_DRAW;
+        }
+        else if((currentSolverStatus & SOLVER_STATUS_USES_FORMULA) && (currentSolverStatus & SOLVER_STATUS_INTERACTIVE) && ((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_GRAPHER) && dynamicMenuItem == 4) {
+          item = -MNU_GRAPHS;
+        }
+
 //Solver
         else if((currentSolverStatus & SOLVER_STATUS_USES_FORMULA) && (currentSolverStatus & SOLVER_STATUS_INTERACTIVE) && ((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_SOLVER) && dynamicMenuItem == 5) {
           item = ITM_CALC;
@@ -1067,7 +1075,7 @@ int16_t lastItem = 0;
               if(item == -MNU_ALPHA) {
                 fnAim(0);
               }
-              if((item == -MNU_Solver || item == -MNU_Sf || item == -MNU_1STDERIV || item == -MNU_2NDDERIV) && lastErrorCode != 0) {
+              if((item == -MNU_Solver || item == -MNU_Grapher || item == -MNU_Sf || item == -MNU_1STDERIV || item == -MNU_2NDDERIV) && lastErrorCode != 0) {
                 popSoftmenu();
                 currentSolverStatus &= ~SOLVER_STATUS_INTERACTIVE;
                 currentSolverStatus &= ~SOLVER_STATUS_EQUATION_MODE;
