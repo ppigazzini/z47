@@ -21,6 +21,7 @@
 #include "mathematics/prime.h"
 
 #include "c43Extensions/addons.h"
+#include "constantPointers.h"
 #include "debug.h"
 #include "display.h"
 #include "error.h"
@@ -28,6 +29,7 @@
 #include "fonts.h"
 #include "integers.h"
 #include "matrix.h"
+#include "mathematics/comparisonReals.h"
 #include "mathematics/power.h"
 #include "registers.h"
 #include "registerValueConversions.h"
@@ -476,9 +478,8 @@ void nextPrime(longInteger_t currentNumber, longInteger_t nextPrime) {
     strcpy(tmpString,"Last =  ");
     real34ToDisplayString(ss, amNone, tmpString+6, &standardFont, 400, 34, false, true);
     showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_Y_LINE + 6, vmNormal, true, true);
+    convertLongIntegerToReal34(nextp, &rr);
 
-    longIntegerToAllocatedString(nextp, tmpString, TMP_STR_LENGTH);
-    stringToReal34(tmpString, &rr);
     strcpy(tmpString,"p =  ");
     real34ToDisplayString(&rr, amNone, tmpString+3, &standardFont, 400, 34, false, true);
     showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_Z_LINE + 6, vmNormal, true, true);
@@ -522,12 +523,10 @@ void dumpExponents(real34Matrix_t *matrix, FactorAdder_t *faddr, uint16_t dumpFo
   #endif
   linkToRealMatrixRegister(REGISTER_X,  matrix);
   for( uint16_t i = 0;  i < min(n2,dumpForFewerThan);  ++i ) {
-    char expon_str[21];
-    sprintf(expon_str, "%u", faddr->expons[i]);
     #ifdef WGR
-      printf("wgr:  adding expon at n2==%u, i==%u, val %u, sval %s, ind %u\n", n2, i, faddr->expons[i], expon_str, n2+i);
+      printf("wgr:  adding expon at n2==%u, i==%u, val %u, sval %u, ind %u\n", n2, i, faddr->expons[i], faddr->expons[i], n2+i);
     #endif //WGR
-    stringToReal34(expon_str, &matrix->matrixElements[n2+i]);
+    uInt32ToReal34(faddr->expons[i], &matrix->matrixElements[n2+i]);
   }
 }
 
@@ -601,10 +600,9 @@ static bool_t addFactor(longInteger_t lastFactor, longInteger_t factor, real34Ma
     #ifdef WGR
       printf("wgr:  lastFactor restart:  n==%u, c==%u, incNExpons==%d\n", n, c, incNExpons);
     #endif
-    longIntegerToAllocatedString(factor, tmpString, TMP_STR_LENGTH);
-    stringToReal34(tmpString, &matrix->matrixElements[c]);
+    convertLongIntegerToReal34(factor, &matrix->matrixElements[c]);
     #ifdef WGR
-      printf("wgr:  tmpString from lastAdded:  %s\n", tmpString);
+      printReal34ToConsole(&matrix->matrixElements[c],"wgr:  from lastAdded:  ","\n");
     #endif
     real34Copy(&matrix->matrixElements[c], lastAdded);
     if( incNExpons ) {
@@ -771,6 +769,7 @@ abort:
  * the result as a long integer.
  */
 void fnEvPFacts     (uint16_t unusedButMandatoryParameter) {
+  real_t factorR, p_liR, k_liR, prodR;
   hourGlassIconEnabled = true;
   showHideHourGlass();
   if(!saveLastX()) {
@@ -792,14 +791,35 @@ void fnEvPFacts     (uint16_t unusedButMandatoryParameter) {
       longIntegerInit(k_li);
       longIntegerInit(tmp_prod);
       uIntToLongInteger(1, prod);
+      realCopy(const_1,&prodR);
+      bool_t sumIsLonginteger = true;
       for ( uint16_t j = 0;  j < cols;  ++j ) {
-        convertReal34ToLongInteger(&matrix.matrixElements[j], p_li, RM_HALF_UP);
-        convertReal34ToLongInteger(&matrix.matrixElements[cols+j], k_li, RM_HALF_UP);
-        longIntegerPower(p_li, k_li, factor);
-        longIntegerCopy(prod, tmp_prod);
-        longIntegerMultiply(tmp_prod, factor, prod);
+        if(real34IsAnInteger(&matrix.matrixElements[j]) && real34IsAnInteger(&matrix.matrixElements[cols+j]) && sumIsLonginteger) {
+          convertReal34ToLongInteger(&matrix.matrixElements[j], p_li, RM_HALF_UP);
+          convertReal34ToLongInteger(&matrix.matrixElements[cols+j], k_li, RM_HALF_UP);
+          longIntegerPower(p_li, k_li, factor);
+          longIntegerCopy(prod, tmp_prod);
+          longIntegerMultiply(tmp_prod, factor, prod);
+        }
+        else {
+          if(sumIsLonginteger) {
+            convertLongIntegerToReal(prod, &prodR, &ctxtReal39);
+            sumIsLonginteger = false;          
+          }
+          real34ToReal(&matrix.matrixElements[j], &p_liR);
+          real34ToReal(&matrix.matrixElements[cols+j], &k_liR);
+          PowerReal(&p_liR, &k_liR, &factorR, &ctxtReal39);
+          realMultiply(&prodR, &factorR, &prodR, &ctxtReal39);
+        }
       }
-      convertLongIntegerToLongIntegerRegister(prod, REGISTER_X);
+
+        if(sumIsLonginteger) {
+          convertLongIntegerToLongIntegerRegister(prod, REGISTER_X);
+        }
+        else {
+          reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+          convertRealToReal34ResultRegister(&prodR, REGISTER_X);
+        }
       adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
       longIntegerFree(prod);
       longIntegerFree(factor);
@@ -817,12 +837,12 @@ void fnEvPFacts     (uint16_t unusedButMandatoryParameter) {
     }
   }
   else {
-      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
-      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-        sprintf(errorMessage, "2" STD_CROSS "n matrix required.");
-        moreInfoOnError("In function fnEvPFacts:", errorMessage, NULL, NULL);
-      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-      goto return10;
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "2" STD_CROSS "n matrix required.");
+      moreInfoOnError("In function fnEvPFacts:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+    goto return10;
   }
   return10:
   hourGlassIconEnabled = false;
@@ -861,7 +881,6 @@ void fnEulPhi     (uint16_t unusedButMandatoryParameter) {
     goto return1;
   }
 
-  char r34str[101];
   longInteger_t phi_x, p_li, p_li_less_1, phi_x_tmp, phi_x_tmp_b;
   longIntegerInit(phi_x);
   longIntegerInit(p_li);
@@ -893,8 +912,7 @@ void fnEulPhi     (uint16_t unusedButMandatoryParameter) {
         longIntegerCopy(x, phi_x);
         for (uint16_t j = 0;  j < cols; ++j) {
           real34_t p = matrix.matrixElements[j];
-          real34ToString(&p, r34str);
-          stringToLongInteger(r34str, 10, p_li);
+          convertReal34ToLongInteger(&p, p_li, RM_HALF_UP);
           longIntegerSubtractUInt(p_li, 1, p_li_less_1);
           longIntegerCopy(phi_x, phi_x_tmp);
           longIntegerDivide(phi_x_tmp, p_li, phi_x_tmp_b);

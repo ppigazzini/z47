@@ -100,6 +100,12 @@ void convertLongIntegerToReal(longInteger_t source, real_t *destination, realCon
 }
 
 
+void convertLongIntegerToReal34(longInteger_t source, real34_t *destination) {
+  longIntegerToAllocatedString(source, tmpString, TMP_STR_LENGTH);
+  stringToReal34(tmpString, destination);
+}
+
+
 
 void convertLongIntegerToShortIntegerRegister(longInteger_t lgInt, uint32_t base, calcRegister_t destination) {
   uint64_t u64;
