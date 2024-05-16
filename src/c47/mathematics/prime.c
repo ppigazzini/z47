@@ -655,6 +655,8 @@ static bool_t addFactor(longInteger_t lastFactor, longInteger_t factor, real34Ma
  *                       2.  1.  3.
  */
 void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
+  #define NOFACTOR 127
+  int8_t initialFactorAdded = NOFACTOR;
   hourGlassIconEnabled = true;
   showHideHourGlass();
   currentKeyCode = 255;
@@ -678,15 +680,16 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
     goto abort;
   }
 
-  if(longIntegerIsZero(currentNumber) || !longIntegerIsPositive(currentNumber)) {             // currentNumber<=0 -> end
-    badDomainError(REGISTER_X);
-    goto abort;
+  if(longIntegerIsZero(currentNumber)) {                       // currentNumber = 0 --> end
+    initialFactorAdded = 0;
+  }
+  else if(!longIntegerIsPositive(currentNumber)) {             // currentNumber <=0 --> end
+    initialFactorAdded = -1;
   }
   else {
-    longIntegerSubtractUInt(currentNumber,1,temp);                                           // currentNumber==1 -> end
+    longIntegerSubtractUInt(currentNumber,1,temp);             // currentNumber = 1 --> end
     if(longIntegerIsZero(temp)) {
-      badDomainError(REGISTER_X);
-      goto abort;
+    initialFactorAdded = 1;
     }
   }
 
@@ -702,6 +705,18 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
 
   FactorAdder_t faddr;
   initFactorAdder(&faddr);
+
+   if(initialFactorAdded != NOFACTOR) {
+     intToLongInteger(initialFactorAdded,nextPrime);
+     if(!addFactor(lastFactor, nextPrime, &matrix, &lastAdded, &faddr)) {
+       goto abort;
+     }
+     if(initialFactorAdded == 0 || initialFactorAdded == 1) {
+      goto endandclose;
+     }
+     uIntToLongInteger(2,nextPrime);
+   }
+
 
   while(longIntegerIsPositive(eval)) {
 
