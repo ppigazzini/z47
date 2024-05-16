@@ -40,6 +40,7 @@
   void convertLongIntegerToLongIntegerRegister               (const longInteger_t longInteger, calcRegister_t regist);
   void convertLongIntegerToShortIntegerRegister              (longInteger_t lgInt, uint32_t base, calcRegister_t destination);
   void convertLongIntegerToReal                              (longInteger_t source, real_t *destination, realContext_t *ctxt);
+  void convertLongIntegerToReal34                            (longInteger_t source, real34_t *destination);
 
   void convertShortIntegerRegisterToReal34Register           (calcRegister_t source, calcRegister_t destination);
   void convertShortIntegerRegisterToLongIntegerRegister      (calcRegister_t source, calcRegister_t destination);
