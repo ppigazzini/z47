@@ -30,6 +30,7 @@
 #include "integers.h"
 #include "matrix.h"
 #include "mathematics/comparisonReals.h"
+#include "mathematics/multiplication.h"
 #include "mathematics/power.h"
 #include "registers.h"
 #include "registerValueConversions.h"
@@ -784,7 +785,7 @@ abort:
  * the result as a long integer.
  */
 void fnEvPFacts     (uint16_t unusedButMandatoryParameter) {
-  real_t factorR, p_liR, k_liR, prodR;
+  real_t factorR, factorI, baseR, expR, prodR, prodI;
   hourGlassIconEnabled = true;
   showHideHourGlass();
   if(!saveLastX()) {
@@ -807,9 +808,12 @@ void fnEvPFacts     (uint16_t unusedButMandatoryParameter) {
       longIntegerInit(tmp_prod);
       uIntToLongInteger(1, prod);
       realCopy(const_1,&prodR);
-      bool_t sumIsLonginteger = true;
+      #define sumTypeInteger 0
+      #define sumTypeReal    1
+      #define sumTypeComplex 2      
+      uint8_t sumType = sumTypeInteger;
       for ( uint16_t j = 0;  j < cols;  ++j ) {
-        if(real34IsAnInteger(&matrix.matrixElements[j]) && real34IsAnInteger(&matrix.matrixElements[cols+j]) && sumIsLonginteger) {
+        if(real34IsAnInteger(&matrix.matrixElements[j]) && real34IsAnInteger(&matrix.matrixElements[cols+j]) && sumType == sumTypeInteger) {
           convertReal34ToLongInteger(&matrix.matrixElements[j], p_li, RM_HALF_UP);
           convertReal34ToLongInteger(&matrix.matrixElements[cols+j], k_li, RM_HALF_UP);
           longIntegerPower(p_li, k_li, factor);
@@ -817,24 +821,51 @@ void fnEvPFacts     (uint16_t unusedButMandatoryParameter) {
           longIntegerMultiply(tmp_prod, factor, prod);
         }
         else {
-          if(sumIsLonginteger) {
+          if(sumType == sumTypeInteger) {
             convertLongIntegerToReal(prod, &prodR, &ctxtReal39);
-            sumIsLonginteger = false;          
+            sumType = sumTypeReal;
           }
-          real34ToReal(&matrix.matrixElements[j], &p_liR);
-          real34ToReal(&matrix.matrixElements[cols+j], &k_liR);
-          PowerReal(&p_liR, &k_liR, &factorR, &ctxtReal39);
-          realMultiply(&prodR, &factorR, &prodR, &ctxtReal39);
+          real34ToReal(&matrix.matrixElements[j], &baseR);
+          real34ToReal(&matrix.matrixElements[cols+j], &expR);
+          if(!(realIsNegative(&baseR) && !realIsAnInteger(&expR)) && sumType == sumTypeReal) {
+            PowerReal(&baseR, &expR, &factorR, &ctxtReal39);
+            realMultiply(&prodR, &factorR, &prodR, &ctxtReal39);
+          }
+          else if(getFlag(FLAG_CPXRES)) {
+            if(sumType == sumTypeReal) {
+              realCopy(const_0,&prodI);
+              sumType = sumTypeComplex;
+            }
+            if(sumType == sumTypeComplex) {
+              PowerComplex(&baseR, const_0, &expR, const_0, &factorR, &factorI, &ctxtReal39);
+              mulComplexComplex(&prodR, &prodI, &factorR, &factorI, &prodR, &prodI, &ctxtReal39);
+            }
+          }
+          else {
+            displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+            #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+              moreInfoOnError("In function fnEvPFacts:", "cannot do complex results if CPXRES is not set", NULL, NULL);
+            #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+            return;
+          }
         }
       }
 
-        if(sumIsLonginteger) {
+      switch(sumType) {
+        case sumTypeInteger: {
           convertLongIntegerToLongIntegerRegister(prod, REGISTER_X);
+          break;
         }
-        else {
-          reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
-          convertRealToReal34ResultRegister(&prodR, REGISTER_X);
+        case sumTypeReal: {
+          convertRealToResultRegister(&prodR, REGISTER_X, amNone);
+          break;
         }
+        case sumTypeComplex: {
+          convertComplexToResultRegister(&prodR, &prodI, REGISTER_X);
+          break;
+        }
+        default: break;
+      }
       adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
       longIntegerFree(prod);
       longIntegerFree(factor);
@@ -862,6 +893,7 @@ void fnEvPFacts     (uint16_t unusedButMandatoryParameter) {
   return10:
   hourGlassIconEnabled = false;
   showHideHourGlass();
+  refreshScreen(253);
 }
 
 /*
