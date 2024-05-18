@@ -558,24 +558,32 @@ void powRealReal(void) {
   real34ToReal(REGISTER_REAL34_DATA(REGISTER_Y), &y);
   real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &x);
 
-  PowerReal(&y, &x, &x, &ctxtReal39);
+  real_t res;
+  PowerReal(&y, &x, &res, &ctxtReal39);
 
-  if(getFlag(FLAG_CPXRES) && realIsNaN(&x)) {
-    real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &x);
+  if(realIsNaN(&res) && realIsNegative(&y) && !realIsAnInteger(&x)) {
+    if(getFlag(FLAG_CPXRES)) {
+      reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
+      convertRealToReal34ResultRegister(&x, REGISTER_X);
+      real34Zero(REGISTER_IMAG34_DATA(REGISTER_X));
 
-    reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
-    convertRealToReal34ResultRegister(&x, REGISTER_X);
-    real34Zero(REGISTER_IMAG34_DATA(REGISTER_X));
+      reallocateRegister(REGISTER_Y, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
+      convertRealToReal34ResultRegister(&y, REGISTER_Y);
+      real34Zero(REGISTER_IMAG34_DATA(REGISTER_Y));
 
-    reallocateRegister(REGISTER_Y, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
-    convertRealToReal34ResultRegister(&y, REGISTER_Y);
-    real34Zero(REGISTER_IMAG34_DATA(REGISTER_Y));
-
-    powCplxCplx();
-    return;
+      powCplxCplx();
+      return;
+    }
+    else {
+      displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        moreInfoOnError("In function powRealReal:", "cannot do complex results if CPXRES is not set", NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+      return;
+    }
   }
 
-  convertRealToReal34ResultRegister(&x, REGISTER_X);
+  convertRealToReal34ResultRegister(&res, REGISTER_X);
   setRegisterAngularMode(REGISTER_X, amNone);
 }
 
