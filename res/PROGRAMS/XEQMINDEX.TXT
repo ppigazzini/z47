@@ -2,7 +2,7 @@ XEQM01:HELP;
 XEQM02:Battery usage plot;
 XEQM03:Mersenne Prime 2203;
 XEQM04:Mersenne Prime 2281;
-XEQM05:Mersenne Prime 3217;
+XEQM05:Mersenne Prime X;
 XEQM06:CUBEs3;
 XEQM07:Gudermannian;
 XEQM08:Pythagoras Hypotenuse;

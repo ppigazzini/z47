@@ -516,7 +516,9 @@ TO_QSPI const function_t indexOfFunctions[] = {
               {ITM_SIGMAn,                    "SUMn"},
               {ITM_iSIGMAn,                   "iSUMn"},
               {ITM_PIn,                       "PRODn"},
-              {ITM_iPIn,                      "iPRODn"}
+              {ITM_iPIn,                      "iPRODn"},
+
+              {ITM_LASTT,                     "LASTT"}
 
 
 
