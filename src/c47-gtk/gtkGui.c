@@ -238,14 +238,14 @@
 
 
   gboolean keyReleased(GtkWidget *w, GdkEventKey *event, gpointer data) {     //JM
-    printf("Released %d\n", event->keyval);
+    printf("Released  %d (SHIFT_State=%u)(shiftF=%u)\n", event->keyval,SHIFT_State,shiftF);
     if(event_keyval == event->keyval + CTRL_State) event_keyval = 99999999;
 
     switch(event->keyval) {
       case 65505: //left shift
       case 65506: //right shift
           if(SHIFT_State != 0) {
-            if(getSystemFlag(FLAG_USER) ? kbd_usr[10].primary : kbd_std[10].primary != ITM_SHIFTf) {     //Left Shift
+            if(getSystemFlag(FLAG_USER) ? kbd_usr[10].primary : kbd_std[10].primary != ITM_SHIFTf) {     //f-shift activated on the release of the shift key, to allow for standard PC shifted chars
               btnClicked(w, "27");
             }
             else {
@@ -334,14 +334,16 @@
     if(event->keyval != 65505 && event->keyval != 65506) {
       SHIFT_State = 0;
     }
+    //printf("Released1 %d (SHIFT_State=%u)(shiftF=%u)\n", event->keyval,SHIFT_State,shiftF);
     return FALSE;
   }
 
 
   gboolean keyPressed(GtkWidget *w, GdkEventKey *event, gpointer data) {
     event_keyval = event->keyval + CTRL_State;
-    printf("Keyboard Key Code: event->keyval=%u event_keyval=%u\n", event->keyval, event_keyval);
+    printf("Keyboard Key Code: event->keyval=%u event_keyval=%u (SHIFT_State=%u)(shiftF=%u)\n", event->keyval, event_keyval, SHIFT_State, shiftF);
 
+    SHIFT_State = 0;
     switch(event_keyval) {
       case 65505: //left shift
       case 65506: //right shift
@@ -358,8 +360,32 @@
     }
 
 
+    if(calcMode == CM_MIM) {
+      switch(event_keyval) {
+        //ROW 0
+        case 65362:                                               //JM     // CursorUp //JM
+            btnFnClicked(w, "1");  //F1
+            return false;
+          break;
+        case 65364:                                               //JM     // CursorDown //JM
+            btnFnClicked(w, "2");  //F2
+            return false;
+          break;
+        case 65361:                                               //JM     // CursorLt BST //JM Left
+            btnFnClicked(w, "5");  //F5
+            return false;
+          break;
+        case 65363:                                               //JM     // CursorRt SST //JM Right
+            btnFnClicked(w, "6");  //F6
+            return false;
+          break;
+        default:;
+      }
+    }
+
+
     //JM ALPHA SECTION FOR ALPHAMODE - TAKE OVER ALPHA KEYBOARD
-    if(calcMode == CM_AIM || calcMode == CM_EIM || calcMode == CM_MIM || tam.mode || (calcMode == CM_PEM && getSystemFlag(FLAG_ALPHA))) {
+    if(calcMode == CM_AIM || calcMode == CM_EIM || tam.mode || (calcMode == CM_PEM && getSystemFlag(FLAG_ALPHA))) {
       //printf(">>>>> ALPHA SECTION Keyboard Key Code = %d\n", event_keyval);
       switch(event_keyval) {
 

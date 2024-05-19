@@ -376,11 +376,6 @@ printf(">>>>  0089 item=%d \n",item);
 
   #if defined(PC_BUILD)
     void btnFnClicked(GtkWidget *notUsed, gpointer data) {
-//      GdkEvent mouseButton; //JM
-//      mouseButton.button.button = 1; //JM
-
-//      btnFnPressed(notUsed, &mouseButton, data);
-//      btnFnReleased(notUsed, &mouseButton, data);
 #if defined(VERBOSEKEYS)
 printf(">>>>Z 0070 btnFnClicked data=|%s| data[0]=%d\n",(char*)data, ((char*)data)[0]);
 #endif //VERBOSEKEYS
@@ -390,8 +385,6 @@ printf(">>>>Z 0070 btnFnClicked data=|%s| data[0]=%d\n",(char*)data, ((char*)dat
 
 #if defined(DMCP_BUILD)
     void btnFnClicked(void *unused, void *data) {
-//      btnFnPressed(data); //JM
-//      btnFnReleased(data); //JM
       executeFunction(data, 0);
     }
 #endif // DMCP_BUILD
