@@ -225,10 +225,10 @@
 #define CST_77                       204
 #define CST_78                       205
 #define CST_79                       206
-#define ITM_CNST                     207
-#define CST_80                       208
-#define CST_81                       209
-#define CST_82                       210
+#define CST_80                       207
+#define CST_81                       208
+#define CST_82                       209
+#define CST_83                       210
 #define ITM_0211                     211
 #define ITM_0212                     212
 #define ITM_0213                     213
@@ -1528,7 +1528,7 @@
 #define ITM_GD                      1478
 #define ITM_GDM1                    1479
 #define ITM_GRAD                    1480
-#define ITM_1481                    1481
+#define ITM_CNST                    1481
 #define ITM_GTOP                    1482
 #define ITM_HN                      1483
 #define ITM_HNP                     1484
