@@ -518,7 +518,8 @@ TO_QSPI const function_t indexOfFunctions[] = {
               {ITM_PIn,                       "PRODn"},
               {ITM_iPIn,                      "iPRODn"},
 
-              {ITM_LASTT,                     "LASTT"}
+              {ITM_LASTT,                     "LASTT"},
+              {ITM_LASTX,                     "LASTX"}
 
 
 
@@ -1374,7 +1375,7 @@ void fnXSWAP (uint16_t unusedButMandatoryParameter) {
         xcopy(REGISTER_STRING_DATA(REGISTER_Y), tmp, len);
         addition[type_x][getRegisterDataType(REGISTER_Y)]();                        //Convert X (number) to string in X
 
-        #if defined (DISALLOW_ZERO_STRING)
+        #if defined(DISALLOW_ZERO_STRING)
           if(!(getRegisterDataType(REGISTER_X) == dtString && REGISTER_STRING_DATA(REGISTER_X)[0]!=0)) { //never allow a zero string in a register
             clearRegister(REGISTER_X);                                                //create 0. instead of zero string
           }
