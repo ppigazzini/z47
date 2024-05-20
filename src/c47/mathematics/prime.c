@@ -143,14 +143,7 @@ void fnIsPrime(uint16_t unusedButMandatoryParameter) {
     goto abort;
   }
 
-  if(longIntegerIsPositive(primeCandidate)) {
-    //SET_TI_TRUE_FALSE(longIntegerIsPrime1(primeCandidate));
-    //SET_TI_TRUE_FALSE(longIntegerIsPrime2(primeCandidate));
-    SET_TI_TRUE_FALSE(longIntegerIsPrime(primeCandidate) != 0);
-  }
-  else {
-    SET_TI_TRUE_FALSE(false);
-  }
+  SET_TI_TRUE_FALSE(longIntegerIsPositive(primeCandidate) && longIntegerIsPrime(primeCandidate) != 0);
 
 abort:
   longIntegerFree(primeCandidate);
@@ -652,6 +645,10 @@ static bool_t addFactor(longInteger_t lastFactor, longInteger_t factor, real34Ma
  *   Input X register:  1500
  *   Output X register:  2.  3.  5.
  *                       2.  1.  3.
+ *
+ *   Input X register:  -1500
+ *   Output X register:  -1. 2.  3.  5.
+ *                        1. 2.  1.  3.
  */
 void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
   #define NOFACTOR 127
@@ -688,7 +685,7 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
   else {
     longIntegerSubtractUInt(currentNumber,1,temp);             // currentNumber = 1 --> end
     if(longIntegerIsZero(temp)) {
-    initialFactorAdded = 1;
+      initialFactorAdded = 1;
     }
   }
 
@@ -935,19 +932,19 @@ void fnEulPhi     (uint16_t unusedButMandatoryParameter) {
   longIntegerInit(phi_x_tmp);
   longIntegerInit(phi_x_tmp_b);
   real34Matrix_t matrix;
-  // Check for the trivial case x = 0
+  // Check for the trivial case x = 0        (*)
   if(longIntegerIsZero(x)) {
     longIntegerCopy(x, phi_x);
     goto returnValue;
   }
   longIntegerSubtractUInt(x, 1, phi_x_tmp);
-  // Check for the trivial case x = 1
+  // Check for the trivial case x = 1        (**)
   if(longIntegerIsZero(phi_x_tmp)) {
     longIntegerCopy(x, phi_x);
     goto returnValue;
   }
   if(longIntegerIsPositive(phi_x_tmp)) {
-    // Only operate if input long integer to fnPrimeFactors in register x is greater than 1
+    // Only operate if input long integer to fnPrimeFactors in register x is greater than 1 (***)
     fnPrimeFactors(unusedButMandatoryParameter);
     if(getRegisterDataType(REGISTER_X) == dtReal34Matrix) {
       // Only operate if we got back a Real 34 Matrix from fnPrimeFactors
@@ -961,6 +958,10 @@ void fnEulPhi     (uint16_t unusedButMandatoryParameter) {
           real34_t p = matrix.matrixElements[j];
           convertReal34ToLongInteger(&p, p_li, RM_HALF_UP);
           longIntegerSubtractUInt(p_li, 1, p_li_less_1);
+          if(j == 0 && !longIntegerIsPositive(p_li_less_1)) {   //ensure 0 is returned is the first factor <= 1. This is achieved above, see (*), (**), (***)
+            uIntToLongInteger(0,phi_x);
+            break;
+          }
           longIntegerCopy(phi_x, phi_x_tmp);
           longIntegerDivide(phi_x_tmp, p_li, phi_x_tmp_b);
           longIntegerMultiply(phi_x_tmp_b, p_li_less_1, phi_x);
