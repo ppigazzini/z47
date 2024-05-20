@@ -21,6 +21,7 @@
 #include "mathematics/prime.h"
 
 #include "c43Extensions/addons.h"
+#include "constantPointers.h"
 #include "debug.h"
 #include "display.h"
 #include "error.h"
@@ -28,6 +29,9 @@
 #include "fonts.h"
 #include "integers.h"
 #include "matrix.h"
+#include "mathematics/comparisonReals.h"
+#include "mathematics/multiplication.h"
+#include "mathematics/power.h"
 #include "registers.h"
 #include "registerValueConversions.h"
 #include "display.h"
@@ -134,33 +138,15 @@ void fnIsPrime(uint16_t unusedButMandatoryParameter) {
   showHideHourGlass();
   longInteger_t primeCandidate;
 
-  if(getRegisterDataType(REGISTER_X) == dtShortInteger) {
-    convertShortIntegerRegisterToLongInteger(REGISTER_X, primeCandidate);
+  longIntegerInit(primeCandidate);
+  if(!getRegisterAsLongInt(REGISTER_X, primeCandidate)) {
+    goto abort;
   }
 
-  else if(getRegisterDataType(REGISTER_X) == dtLongInteger) {
-    convertLongIntegerRegisterToLongInteger(REGISTER_X, primeCandidate);
-  }
+  SET_TI_TRUE_FALSE(longIntegerIsPositive(primeCandidate) && longIntegerIsPrime(primeCandidate) != 0);
 
-  else if(getRegisterDataType(REGISTER_X) == dtReal34) {
-    convertReal34ToLongInteger(REGISTER_REAL34_DATA(REGISTER_X), primeCandidate, DEC_ROUND_DOWN);
-  }
-
-  else {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-      sprintf(errorMessage, "the input type %s is not allowed for PRIME?!", getDataTypeName(getRegisterDataType(REGISTER_X), false, false));
-      moreInfoOnError("In function fnIsPrime:", errorMessage, NULL, NULL);
-    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-    goto return2;
-  }
-
-  longIntegerSetPositiveSign(primeCandidate);
-  //SET_TI_TRUE_FALSE(longIntegerIsPrime1(primeCandidate));
-  //SET_TI_TRUE_FALSE(longIntegerIsPrime2(primeCandidate));
-  SET_TI_TRUE_FALSE(longIntegerIsPrime(primeCandidate) != 0);
+abort:
   longIntegerFree(primeCandidate);
-return2:
   hourGlassIconEnabled = false;
   showHideHourGlass();
 #endif // !SAVE_SPACE_DM42_12
@@ -169,6 +155,7 @@ return2:
 
 void fnNextPrime(uint16_t unusedButMandatoryParameter) {
 #if !defined(SAVE_SPACE_DM42_12)
+  real_t x;
   hourGlassIconEnabled = true;
   showHideHourGlass();
   longInteger_t currentNumber, nextPrime;
@@ -176,31 +163,25 @@ void fnNextPrime(uint16_t unusedButMandatoryParameter) {
   longIntegerInit(currentNumber);
   longIntegerInit(nextPrime);
 
-  if(getRegisterDataType(REGISTER_X) == dtShortInteger) {
-    convertShortIntegerRegisterToLongInteger(REGISTER_X, currentNumber);
+  if(getRegisterDataType(REGISTER_X) == dtReal34) {    //Allow decimals to be rounded down, to be able to get the next prime despite being decimal input;
+    if(!getRegisterAsReal(REGISTER_X, &x)) {
+      goto abort;
+    }
+    convertRealToLongInteger(&x, currentNumber, DEC_ROUND_DOWN);
   }
-
-  else if(getRegisterDataType(REGISTER_X) == dtLongInteger) {
-    convertLongIntegerRegisterToLongInteger(REGISTER_X, currentNumber);
-  }
-
-  else if(getRegisterDataType(REGISTER_X) == dtReal34) {
-    convertReal34ToLongInteger(REGISTER_REAL34_DATA(REGISTER_X), currentNumber, DEC_ROUND_DOWN);
-  }
-
   else {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-      sprintf(errorMessage, "the input type %s is not allowed for PRIME?!", getDataTypeName(getRegisterDataType(REGISTER_X), false, false));
-      moreInfoOnError("In function fnIsPrime:", errorMessage, NULL, NULL);
-    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+    if(!getRegisterAsLongInt(REGISTER_X, currentNumber)) {
+      goto abort;
+    }
   }
 
   if(!saveLastX()) {
-    goto return1;
+    goto abort;
   }
 
-  longIntegerSetPositiveSign(currentNumber);
+  if(!longIntegerIsPositive(currentNumber)) {
+    uIntToLongInteger(1,currentNumber);
+  }
 
   longIntegerNextPrime(currentNumber, nextPrime);
 
@@ -210,10 +191,10 @@ void fnNextPrime(uint16_t unusedButMandatoryParameter) {
   else {
     convertLongIntegerToLongIntegerRegister(nextPrime, REGISTER_X);
   }
-
+abort:
   longIntegerFree(nextPrime);
   longIntegerFree(currentNumber);
-return1:
+
   hourGlassIconEnabled = false;
   showHideHourGlass();
 #endif // !SAVE_SPACE_DM42_12
@@ -491,9 +472,8 @@ void nextPrime(longInteger_t currentNumber, longInteger_t nextPrime) {
     strcpy(tmpString,"Last =  ");
     real34ToDisplayString(ss, amNone, tmpString+6, &standardFont, 400, 34, false, true);
     showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_Y_LINE + 6, vmNormal, true, true);
+    convertLongIntegerToReal34(nextp, &rr);
 
-    longIntegerToAllocatedString(nextp, tmpString, TMP_STR_LENGTH);
-    stringToReal34(tmpString, &rr);
     strcpy(tmpString,"p =  ");
     real34ToDisplayString(&rr, amNone, tmpString+3, &standardFont, 400, 34, false, true);
     showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_Z_LINE + 6, vmNormal, true, true);
@@ -537,12 +517,10 @@ void dumpExponents(real34Matrix_t *matrix, FactorAdder_t *faddr, uint16_t dumpFo
   #endif
   linkToRealMatrixRegister(REGISTER_X,  matrix);
   for( uint16_t i = 0;  i < min(n2,dumpForFewerThan);  ++i ) {
-    char expon_str[21];
-    sprintf(expon_str, "%u", faddr->expons[i]);
     #ifdef WGR
-      printf("wgr:  adding expon at n2==%u, i==%u, val %u, sval %s, ind %u\n", n2, i, faddr->expons[i], expon_str, n2+i);
+      printf("wgr:  adding expon at n2==%u, i==%u, val %u, sval %u, ind %u\n", n2, i, faddr->expons[i], faddr->expons[i], n2+i);
     #endif //WGR
-    stringToReal34(expon_str, &matrix->matrixElements[n2+i]);
+    uInt32ToReal34(faddr->expons[i], &matrix->matrixElements[n2+i]);
   }
 }
 
@@ -579,16 +557,16 @@ static bool_t addFactor(longInteger_t lastFactor, longInteger_t factor, real34Ma
     gmp_printf("wgr:  factor==%Zd, rows==%u, cols==%u, nExpons==%u, wkgCols==%u\n",factor, (uint16_t)rows, (uint16_t)cols, faddr->nExpons, wkgCols);
   #endif //WGR
 
-  #if !defined(TESTSUITE_BUILD)
-    if(!redimMatrixRegister(REGISTER_X, rows, wkgCols)) {
+  if(!redimMatrixRegister(REGISTER_X, rows, wkgCols)) {
+    #if !defined(TESTSUITE_BUILD)
       displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "Not enough memory for a %" PRIu32 STD_CROSS "%" PRIu32 " matrix", rows, cols);
         moreInfoOnError("In function fnPrimeFactors:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-      return false;
+    #endif // !TESTSUITE_BUILD
+    return false;
     }
-  #endif // !TESTSUITE_BUILD
 
   if( cols == 0 ) {
     #ifdef WGR
@@ -616,10 +594,9 @@ static bool_t addFactor(longInteger_t lastFactor, longInteger_t factor, real34Ma
     #ifdef WGR
       printf("wgr:  lastFactor restart:  n==%u, c==%u, incNExpons==%d\n", n, c, incNExpons);
     #endif
-    longIntegerToAllocatedString(factor, tmpString, TMP_STR_LENGTH);
-    stringToReal34(tmpString, &matrix->matrixElements[c]);
+    convertLongIntegerToReal34(factor, &matrix->matrixElements[c]);
     #ifdef WGR
-      printf("wgr:  tmpString from lastAdded:  %s\n", tmpString);
+      printReal34ToConsole(&matrix->matrixElements[c],"wgr:  from lastAdded:  ","\n");
     #endif
     real34Copy(&matrix->matrixElements[c], lastAdded);
     if( incNExpons ) {
@@ -633,21 +610,21 @@ static bool_t addFactor(longInteger_t lastFactor, longInteger_t factor, real34Ma
             sprintf(errorMessage, "Maximum number of factors exceeded %" PRIu32 STD_CROSS "%" PRIu32 " matrix", rows, cols);
             moreInfoOnError("In function addFactor:", errorMessage, NULL, NULL);
           #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-        return false;
         #endif // !TESTSUITE_BUILD
+        return false;
       }
       ++wkgCols;
       faddr->expons[faddr->nExpons-1] = 1;
-      #if !defined(TESTSUITE_BUILD)
-        if(!redimMatrixRegister(REGISTER_X, rows, wkgCols)) {
+      if(!redimMatrixRegister(REGISTER_X, rows, wkgCols)) {
+        #if !defined(TESTSUITE_BUILD)
           displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
           #if (EXTRA_INFO_ON_CALC_ERROR == 1)
             sprintf(errorMessage, "Not enough memory for a %" PRIu32 STD_CROSS "%" PRIu32 " matrix", rows, cols);
             moreInfoOnError("In function addFactor:", errorMessage, NULL, NULL);
           #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-          return false;
-        }
-      #endif // !TESTSUITE_BUILD
+          #endif // !TESTSUITE_BUILD
+        return false;
+      }
     }
     n = rows*(faddr->nExpons);
     c = n/2;
@@ -658,14 +635,31 @@ static bool_t addFactor(longInteger_t lastFactor, longInteger_t factor, real34Ma
 
 
 
+/*
+ * This function takes a long integer in the X register, and determines its
+ * prime factorisation.  The result is a matrix with two rows.  The first
+ * row contains all the distinct prime factors.
+ * The second row contains the exponents for each prime factor, that is in
+ * the same column in the first row.
+ * Example:
+ *   Input X register:  1500
+ *   Output X register:  2.  3.  5.
+ *                       2.  1.  3.
+ *
+ *   Input X register:  -1500
+ *   Output X register:  -1. 2.  3.  5.
+ *                        1. 2.  1.  3.
+ */
 void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
+  #define NOFACTOR 127
+  int8_t initialFactorAdded = NOFACTOR;
   hourGlassIconEnabled = true;
   showHideHourGlass();
   currentKeyCode = 255;
   #if !defined(TESTSUITE_BUILD)
     uint32_t loop = 0;
   #endif //TESTSUITE_BUILD
-  real34_t m34, lastAdded;
+  real34_t lastAdded;
 
   longInteger_t lastFactor, currentNumber, nextPrime, remainder, quotient, eval, temp;
 
@@ -678,42 +672,20 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
   longIntegerInit(lastFactor);
   real34Matrix_t matrix;
 
-  if(getRegisterDataType(REGISTER_X) == dtShortInteger) {
-    convertShortIntegerRegisterToLongInteger(REGISTER_X, currentNumber);
-  }
-  else if(getRegisterDataType(REGISTER_X) == dtLongInteger) {
-    convertLongIntegerRegisterToLongInteger(REGISTER_X, currentNumber);
-  }
-  else if(getRegisterDataType(REGISTER_X) == dtReal34) {
-    real34ToIntegralValue(REGISTER_REAL34_DATA(REGISTER_X), &m34, DEC_ROUND_UP);
-    real34Subtract(REGISTER_REAL34_DATA(REGISTER_X), &m34, &m34); // Fractional part
-    if(!real34IsZero(&m34)) {
-      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-      #if defined(PC_BUILD)
-        sprintf(errorMessage, "DataType %" PRIu32, getRegisterDataType(REGISTER_X));
-        moreInfoOnError("In function fnPrimeFactors:", errorMessage, "has decimals and cannot have prime factors.", "");
-      #endif
-      goto abort;
-    }
-    convertReal34ToLongInteger(REGISTER_REAL34_DATA(REGISTER_X), currentNumber, DEC_ROUND_DOWN);
-  }
-
-  else {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-      sprintf(errorMessage, "the input type %s is not allowed for FACTORS!", getDataTypeName(getRegisterDataType(REGISTER_X), false, false));
-      moreInfoOnError("In function fnPrimeFactors:", errorMessage, NULL, NULL);
-    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+  if(!getRegisterAsLongInt(REGISTER_X, currentNumber)) {
     goto abort;
   }
 
-  if(longIntegerIsZero(currentNumber) || longIntegerSign(currentNumber) == -1) {             // <=0 end
-    goto abort;
+  if(longIntegerIsZero(currentNumber)) {                       // currentNumber = 0 --> end
+    initialFactorAdded = 0;
+  }
+  else if(!longIntegerIsPositive(currentNumber)) {             // currentNumber <=0 --> end
+    initialFactorAdded = -1;
   }
   else {
-    longIntegerSubtractUInt(currentNumber,1,temp);                                           // ==1 end
+    longIntegerSubtractUInt(currentNumber,1,temp);             // currentNumber = 1 --> end
     if(longIntegerIsZero(temp)) {
-      goto abort;
+      initialFactorAdded = 1;
     }
   }
 
@@ -730,6 +702,18 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
   FactorAdder_t faddr;
   initFactorAdder(&faddr);
 
+   if(initialFactorAdded != NOFACTOR) {
+     intToLongInteger(initialFactorAdded,nextPrime);
+     if(!addFactor(lastFactor, nextPrime, &matrix, &lastAdded, &faddr)) {
+       goto abort;
+     }
+     if(initialFactorAdded == 0 || initialFactorAdded == 1) {
+      goto endandclose;
+     }
+     uIntToLongInteger(2,nextPrime);
+   }
+
+
   while(longIntegerIsPositive(eval)) {
 
     #if !defined(TESTSUITE_BUILD)
@@ -740,14 +724,12 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
           lcd_refresh();
         #endif //DMCP_BUILD
       }
-
     if(keyWaiting()) {
         showString("key Waiting ...", &standardFont, 20, 40, vmNormal, false, false);
         printHalfSecUpdate_Integer(force+1, "Interrupted Test:",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
         programRunStop = PGM_WAITING;
       break;
     }
-
     #endif //!TESTSUITE_BUILD
 
 
@@ -792,3 +774,235 @@ abort:
   hourGlassIconEnabled = false;
   showHideHourGlass();
 }
+
+/*
+ * This is the inverse function of fnPrimeFactors.
+ * Given a matrix as produced by fnPrimeFactors, this function expands out
+ * all the prime factors with their exponents, and returns in the X register
+ * the result as a long integer.
+ */
+void fnEvPFacts     (uint16_t unusedButMandatoryParameter) {
+  real_t factorR, factorI, baseR, expR, prodR, prodI;
+  hourGlassIconEnabled = true;
+  showHideHourGlass();
+  if(!saveLastX()) {
+    goto return10;
+  }
+
+  if(getRegisterDataType(REGISTER_X) == dtReal34Matrix) {
+    real34Matrix_t matrix;
+
+    linkToRealMatrixRegister(REGISTER_X, &matrix);
+    uint16_t rows = REGISTER_DATA(REGISTER_X)->matrixRows;
+    uint16_t cols = REGISTER_DATA(REGISTER_X)->matrixColumns;
+    if ( rows == 2 && cols >= 1 ) {
+      // Only operate if factorisation matrix has two rows and at least one column
+      longInteger_t prod, factor, tmp_prod, p_li, k_li;
+      longIntegerInit(prod);
+      longIntegerInit(factor);
+      longIntegerInit(p_li);
+      longIntegerInit(k_li);
+      longIntegerInit(tmp_prod);
+      uIntToLongInteger(1, prod);
+      realCopy(const_1,&prodR);
+      #define sumTypeInteger 0
+      #define sumTypeReal    1
+      #define sumTypeComplex 2      
+      uint8_t sumType = sumTypeInteger;
+      for ( uint16_t j = 0;  j < cols;  ++j ) {
+        if(real34IsAnInteger(&matrix.matrixElements[j]) && real34IsAnInteger(&matrix.matrixElements[cols+j]) && sumType == sumTypeInteger) {
+          convertReal34ToLongInteger(&matrix.matrixElements[j], p_li, RM_HALF_UP);
+          convertReal34ToLongInteger(&matrix.matrixElements[cols+j], k_li, RM_HALF_UP);
+          longIntegerPower(p_li, k_li, factor);
+          longIntegerCopy(prod, tmp_prod);
+          longIntegerMultiply(tmp_prod, factor, prod);
+        }
+        else {
+          if(sumType == sumTypeInteger) {
+            convertLongIntegerToReal(prod, &prodR, &ctxtReal39);
+            sumType = sumTypeReal;
+          }
+          real34ToReal(&matrix.matrixElements[j], &baseR);
+          real34ToReal(&matrix.matrixElements[cols+j], &expR);
+          if(!(realIsNegative(&baseR) && !realIsAnInteger(&expR)) && sumType == sumTypeReal) {
+            PowerReal(&baseR, &expR, &factorR, &ctxtReal39);
+            realMultiply(&prodR, &factorR, &prodR, &ctxtReal39);
+          }
+          else if(getFlag(FLAG_CPXRES)) {
+            if(sumType == sumTypeReal) {
+              realCopy(const_0,&prodI);
+              sumType = sumTypeComplex;
+            }
+            if(sumType == sumTypeComplex) {
+              PowerComplex(&baseR, const_0, &expR, const_0, &factorR, &factorI, &ctxtReal39);
+              mulComplexComplex(&prodR, &prodI, &factorR, &factorI, &prodR, &prodI, &ctxtReal39);
+            }
+          }
+          else {
+            displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+            #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+              moreInfoOnError("In function fnEvPFacts:", "cannot do complex results if CPXRES is not set", NULL, NULL);
+            #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+            return;
+          }
+        }
+      }
+
+      switch(sumType) {
+        case sumTypeInteger: {
+          convertLongIntegerToLongIntegerRegister(prod, REGISTER_X);
+          break;
+        }
+        case sumTypeReal: {
+          convertRealToResultRegister(&prodR, REGISTER_X, amNone);
+          break;
+        }
+        case sumTypeComplex: {
+          convertComplexToResultRegister(&prodR, &prodI, REGISTER_X);
+          break;
+        }
+        default: break;
+      }
+      adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
+      longIntegerFree(prod);
+      longIntegerFree(factor);
+      longIntegerFree(p_li);
+      longIntegerFree(k_li);
+      longIntegerFree(tmp_prod);
+    }
+    else {
+      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        sprintf(errorMessage, "Only 2" STD_CROSS "n matrix supported: %" PRIu32 STD_CROSS "%" PRIu32 " matrix", rows, cols);
+        moreInfoOnError("In function fnEvPFacts:", errorMessage, NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+      goto return10;
+    }
+  }
+  else {
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "2" STD_CROSS "n matrix required.");
+      moreInfoOnError("In function fnEvPFacts:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+    goto return10;
+  }
+  return10:
+  hourGlassIconEnabled = false;
+  showHideHourGlass();
+  refreshScreen(253);
+}
+
+/*
+ * This function accepts a long integer in the X register and computes
+ * the Euler phi function on it.  The result is a new long integer.
+ *
+ * Example:
+ *
+ *   Input X register:  1500
+ *   Output X register:  400
+ *
+ * Formula for euler phi function phi(n):
+ * determine prime factorisation of n:  p[0]**k[0], p[1]**k[1], p[2]**k[2], ... p[r]**k[r] where the p[i] are distinct
+ * phi(n) = n * prod[i=0...r]((p[i]-1)/p[i])
+ *
+ * This is done by grabbing the value n as long integer from the X register.
+ * Then fnPrimeFactors is computed, producing a factorisation matrix.
+ * The prime factors are extracted from this matrix and used to complete
+ * the calculation.
+ */
+void fnEulPhi     (uint16_t unusedButMandatoryParameter) {
+  hourGlassIconEnabled = true;
+  showHideHourGlass();
+  longInteger_t x;
+  longIntegerInit(x);
+
+  if(!getRegisterAsLongInt(REGISTER_X, x)) {
+    goto return1;
+  }
+
+  if(!saveLastX()) {
+    goto return1;
+  }
+
+  longInteger_t phi_x, p_li, p_li_less_1, phi_x_tmp, phi_x_tmp_b;
+  longIntegerInit(phi_x);
+  longIntegerInit(p_li);
+  longIntegerInit(p_li_less_1);
+  longIntegerInit(phi_x_tmp);
+  longIntegerInit(phi_x_tmp_b);
+  real34Matrix_t matrix;
+  // Check for the trivial case x = 0        (*)
+  if(longIntegerIsZero(x)) {
+    longIntegerCopy(x, phi_x);
+    goto returnValue;
+  }
+  longIntegerSubtractUInt(x, 1, phi_x_tmp);
+  // Check for the trivial case x = 1        (**)
+  if(longIntegerIsZero(phi_x_tmp)) {
+    longIntegerCopy(x, phi_x);
+    goto returnValue;
+  }
+  if(longIntegerIsPositive(phi_x_tmp)) {
+    // Only operate if input long integer to fnPrimeFactors in register x is greater than 1 (***)
+    fnPrimeFactors(unusedButMandatoryParameter);
+    if(getRegisterDataType(REGISTER_X) == dtReal34Matrix) {
+      // Only operate if we got back a Real 34 Matrix from fnPrimeFactors
+      linkToRealMatrixRegister(REGISTER_X, &matrix);
+      uint16_t rows = REGISTER_DATA(REGISTER_X)->matrixRows;
+      uint16_t cols = REGISTER_DATA(REGISTER_X)->matrixColumns;
+      if (rows == 2 && cols >= 1) {
+        // Only operate if factorisation matrix has two rows and at least one column
+        longIntegerCopy(x, phi_x);
+        for (uint16_t j = 0;  j < cols; ++j) {
+          real34_t p = matrix.matrixElements[j];
+          convertReal34ToLongInteger(&p, p_li, RM_HALF_UP);
+          longIntegerSubtractUInt(p_li, 1, p_li_less_1);
+          if(j == 0 && !longIntegerIsPositive(p_li_less_1)) {   //ensure 0 is returned is the first factor <= 1. This is achieved above, see (*), (**), (***)
+            uIntToLongInteger(0,phi_x);
+            break;
+          }
+          longIntegerCopy(phi_x, phi_x_tmp);
+          longIntegerDivide(phi_x_tmp, p_li, phi_x_tmp_b);
+          longIntegerMultiply(phi_x_tmp_b, p_li_less_1, phi_x);
+        }
+      }
+      else {
+        goto return2; //matrix dimensions wrong. An error would have been issued by fnPrimeFactors
+      }
+    }
+    else {
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "The intermediate prime factor matrix could not be found.");
+      moreInfoOnError("In function fnEulPhi:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+    goto return2;
+    }
+  }
+  else {
+    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "The input value is negative and therefore out of the domain for Euler's Phi function!");
+      moreInfoOnError("In function fnEulPhi:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+    goto return2;
+  }
+  returnValue:
+  convertLongIntegerToLongIntegerRegister(phi_x, REGISTER_X);
+  adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
+
+  return2:
+  longIntegerFree(phi_x);
+  longIntegerFree(p_li);
+  longIntegerFree(p_li_less_1);
+  longIntegerFree(phi_x_tmp);
+  longIntegerFree(phi_x_tmp_b);
+
+  return1:
+  longIntegerFree(x);
+
+  hourGlassIconEnabled = false;
+  showHideHourGlass();
+}
+

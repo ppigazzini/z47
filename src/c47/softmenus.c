@@ -372,12 +372,16 @@ TO_QSPI const int16_t menu_TEST[]        = { ITM_XLT,                       ITM_
                                              ITM_SPEC,                      ITM_NAN,                    ITM_NULL,                 ITM_M_SQR,             ITM_NULL,                    ITM_NULL                      };
 
 TO_QSPI const int16_t menu_XFN[]         = { ITM_NEXTP,                     ITM_PRIME,                  ITM_FACTORS,              ITM_FIB,               ITM_AGM,                     ITM_LINPOL,
-                                             ITM_PARALLEL,                  ITM_EE_EXP_TH,              ITM_M1X,                  ITM_XFACT,             ITM_MIN,                     ITM_MAX,
-                                             -MNU_ELLIPT,                   ITM_zetaX,                  ITM_GD,                   ITM_GDM1,              ITM_BN,                      ITM_BNS,
+                                             ITM_zetaX,                     ITM_EULPHI,                 ITM_PFACTORSMULT,         ITM_EE_EXP_TH,         ITM_M1X,                     ITM_XFACT,
+                                             ITM_PARALLEL,                  ITM_NULL,                   ITM_GD,                   ITM_GDM1,              ITM_BN,                      ITM_BNS,
 
                                              ITM_gammaXY,                   ITM_GAMMAXY,                ITM_IGAMMAP,              ITM_IGAMMAQ,           ITM_GAMMAX,                  ITM_LNGAMMA,
                                              ITM_WM,                        ITM_WP,                     ITM_WM1,                  ITM_IXYZ,              ITM_BETAXY,                  ITM_LNBETA,
-                                             -MNU_ORTHOG,                   ITM_JYX,                    ITM_YYX,                  ITM_NULL,              ITM_ERF,                     ITM_ERFC };
+                                            -MNU_ELLIPT,                   -MNU_ORTHOG,                 ITM_JYX,                  ITM_YYX,               ITM_ERF,                     ITM_ERFC,
+
+                                             ITM_MIN,                       ITM_MAX,                    ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
+                                             ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
+                                             ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL                      };
 
 TO_QSPI const int16_t menu_Orthog[]      = { ITM_HN,                        ITM_Lm,                     ITM_LmALPHA,              ITM_Pn,                ITM_Tn,                      ITM_Un,
                                              ITM_HNP,                       ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL                      };
@@ -2104,7 +2108,7 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
 
 bool_t savedspace(int16_t itemNr) {  //strike out all SAVED_SPACE items
   switch (itemNr) {
-//    #ifdef SAVE_SPACE_DM42_12ORTHO
+    #ifdef SAVE_SPACE_DM42_12ORTHO
       case ITM_HN     :
       case ITM_Lm     :
       case ITM_LmALPHA:
@@ -2112,10 +2116,10 @@ bool_t savedspace(int16_t itemNr) {  //strike out all SAVED_SPACE items
       case ITM_Tn     :
       case ITM_Un     :
       case ITM_HNP    :
-//    #endif //SAVE_SPACE_DM42_12ORTHO
-//    #ifdef SAVE_SPACE_DM42_20_TIMER
+    #endif //SAVE_SPACE_DM42_12ORTHO
+    #ifdef SAVE_SPACE_DM42_20_TIMER
       case ITM_TIMER  :
-//    #endif //SAVE_SPACE_DM42_20_TIMER
+    #endif //SAVE_SPACE_DM42_20_TIMER
       case 9999       : return true; break;
     default: return false; break;
   }
