@@ -2192,6 +2192,7 @@ bool_t BASE_OVERRIDEONCE = false;
 
   if((!IS_BASEBLANK_(m) || BASE_OVERRIDEONCE) && calcMode != CM_FLAG_BROWSER && calcMode != CM_ASN_BROWSER && calcMode != CM_FONT_BROWSER && calcMode != CM_REGISTER_BROWSER && calcMode != CM_BUG_ON_SCREEN) {           //JM: Added exclusions, as this procedure is not only called from refreshScreen, but from various places due to underline
     clearScreenOld(false, false, true); //JM, added to ensure the f/g underlines are deleted
+    clear_ul();
     BASE_OVERRIDEONCE = false;
     if(tam.mode == TM_KEY && !tam.keyInputFinished) {
       for(y=0; y<=2; y++) {
@@ -2239,9 +2240,6 @@ bool_t BASE_OVERRIDEONCE = false;
       refreshRegisterLine(AIM_REGISTER_LINE);
     } //JM ^^
 */
-    ULFL = false;                                   //JM Underline
-    ULGL = false;                                   //JM Underline
-
 
     if(numberOfItems <= 18) {
       dottedTopLine = false;

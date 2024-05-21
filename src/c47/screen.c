@@ -599,27 +599,72 @@ void execTimerApp(uint16_t timerType) {
   }                                                           //^^
 
 
-  void underline(int16_t y) {                     //JM
+  void toggle6UnderLines(int16_t y) {
     int16_t i;
     for(i=0; i<6; i++ ) {
       if((maxfgLines(y) || (fgLN == RB_FGLNFUL)) && ( !GRAPHMODE || (GRAPHMODE && (i <= 1)) )) {
         underline_softkey(i, y, true);
       }
     }
-  }                                               //JM
+  }
 
 
-  uint32_t ul;
+  uint32_t underLineMask;
   void clear_ul(void) {
     ULGL = false;
     ULFL = false;
-    ul = 0;                                       //JM Set all bits 00-23 to zero
+    underLineMask = 0;                                       //JM Set all bits 00-23 to zero
   }
+
+
+  void show_f_jm(void) {
+    if(!FN_timeouts_in_progress && calcMode != CM_ASN_BROWSER) {
+      if(!ULFL) {
+        toggle6UnderLines(1);
+        ULFL = true;
+      }
+      if(ULGL) {
+        toggle6UnderLines(2);
+        ULGL = false;
+      }
+      doRefreshSoftMenu = true;
+    }
+  }
+
+
+  void show_g_jm(void) {
+    if(!FN_timeouts_in_progress && calcMode != CM_ASN_BROWSER) {
+      if(ULFL) {
+        toggle6UnderLines(1);
+        ULFL = false;
+      }
+      if(!ULGL) {
+        toggle6UnderLines(2);
+        ULGL = true;
+      }
+      doRefreshSoftMenu = true;
+    }
+  }
+
+
+  void clear_fg_jm(void) {
+    if(!FN_timeouts_in_progress) {        //Cancel lines
+      if(ULFL) {
+        toggle6UnderLines(1);
+        ULFL = false;
+      }
+      if(ULGL) {
+        toggle6UnderLines(2);
+        ULGL = false;
+      }
+      doRefreshSoftMenu = true;
+    }
+  }
+
 
                                                 //JM vv LONGPRESS.   false auto clears
   void underline_softkey(int16_t xSoftkey, int16_t ySoftKey, bool_t dontclear) {
     int16_t x, y, x1, y1, x2, y2;
-    uint32_t tmp;
 
     if(calcMode == CM_REGISTER_BROWSER || calcMode == CM_FLAG_BROWSER || calcMode == CM_FONT_BROWSER) {
       return;
@@ -635,15 +680,14 @@ void execTimerApp(uint16_t timerType) {
 
     if(fgLN != RB_FGLNOFF) {
       //JMUL all changed  vv
-      if(!dontclear) {                            //JM Recursively call the same routine to clear the previous line
+      if(!dontclear) {                            //JM Recursively call the same routine up to 2 times for y=0 and y=1, to clear the previous line
         for(y=0; y<ySoftKey; y++) {
-          tmp = ul;
-          if( ((tmp >> (y*6+xSoftkey)) & 1U)) {   //JM To check a bit, shift the number n to the right, then bitwise AND it:
+          if( ((underLineMask >> (y*6+xSoftkey)) & 1U)) {    // To check a bit, shift the number n to the right, then bitwise AND, then check for true/false
             underline_softkey(xSoftkey,y,true);
           }
         }
       }
-      ul ^= 1UL << (ySoftKey*6+xSoftkey);         //JM The XOR operator (^) can be used to toggle a bit.
+      underLineMask ^= 1UL << (ySoftKey*6+xSoftkey);         // The XOR operator (^) used to toggle a bit in the last 18 bits of the word to reflect the current underlined cells 000000 000000 000001, eg. indicates gF6 is underlined.
       //JMUL all changed  ^^
 
       if(0 <= xSoftkey && xSoftkey <= 5) {
@@ -1809,12 +1853,12 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
 
     showFunctionNameItem = item;
     if(running_program_jm) {
-      return;                             //JM
+      return;
     }
     showFunctionNameCounter = delayInMs;
-    stringAppend(padding,functionName);                              //JM
-    stringAppend(padding + stringByteLength(padding),"     ");                                    //JM
-    if(PROBMENU || stringWidth(padding, &standardFont, true, true) + 1 /*JM 20*/ + lineTWidth > SCREEN_WIDTH) {                //JM T-Register clearing
+    stringAppend(padding,functionName);
+    stringAppend(padding + stringByteLength(padding),"     ");
+    if(PROBMENU || stringWidth(padding, &standardFont, true, true) + 1 /*JM 20*/ + lineTWidth > SCREEN_WIDTH) {
       clearRegisterLine(REGISTER_T, true, false);
     }
 
