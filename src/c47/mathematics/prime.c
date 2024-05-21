@@ -41,6 +41,7 @@
 
 #include "c47.h"
 
+#define maximumPrime 308   //10^308
 
 /*
 // primes less than 212
@@ -136,16 +137,24 @@ void fnIsPrime(uint16_t unusedButMandatoryParameter) {
 #if !defined(SAVE_SPACE_DM42_12)
   hourGlassIconEnabled = true;
   showHideHourGlass();
-  longInteger_t primeCandidate;
+  longInteger_t tmp, primeCandidate;
 
   longIntegerInit(primeCandidate);
+  longIntegerInit(tmp);
   if(!getRegisterAsLongInt(REGISTER_X, primeCandidate)) {
+    goto abort;
+  }
+  longIntegerPowerUIntUInt(10,maximumPrime,tmp);
+  longIntegerSubtract(primeCandidate, tmp, tmp);   // (primeCandidate - 10^300) positive is too large
+  if(longIntegerIsPositive(tmp)) {
+    badDomainError(REGISTER_X);
     goto abort;
   }
 
   SET_TI_TRUE_FALSE(longIntegerIsPositive(primeCandidate) && longIntegerIsPrime(primeCandidate) != 0);
 
 abort:
+  longIntegerFree(tmp);
   longIntegerFree(primeCandidate);
   hourGlassIconEnabled = false;
   showHideHourGlass();
@@ -158,10 +167,11 @@ void fnNextPrime(uint16_t unusedButMandatoryParameter) {
   real_t x;
   hourGlassIconEnabled = true;
   showHideHourGlass();
-  longInteger_t currentNumber, nextPrime;
+  longInteger_t tmp, currentNumber, nextPrime;
 
   longIntegerInit(currentNumber);
   longIntegerInit(nextPrime);
+  longIntegerInit(tmp);
 
   if(getRegisterDataType(REGISTER_X) == dtReal34) {    //Allow decimals to be rounded down, to be able to get the next prime despite being decimal input;
     if(!getRegisterAsReal(REGISTER_X, &x)) {
@@ -174,6 +184,14 @@ void fnNextPrime(uint16_t unusedButMandatoryParameter) {
       goto abort;
     }
   }
+
+  longIntegerPowerUIntUInt(10,maximumPrime,tmp);
+  longIntegerSubtract(currentNumber, tmp, tmp);   // (primeCandidate - 10^300) positive is too large
+  if(longIntegerIsPositive(tmp)) {
+    badDomainError(REGISTER_X);
+    goto abort;
+  }
+
 
   if(!saveLastX()) {
     goto abort;
@@ -192,6 +210,7 @@ void fnNextPrime(uint16_t unusedButMandatoryParameter) {
     convertLongIntegerToLongIntegerRegister(nextPrime, REGISTER_X);
   }
 abort:
+  longIntegerFree(tmp);
   longIntegerFree(nextPrime);
   longIntegerFree(currentNumber);
 
@@ -661,7 +680,7 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
   #endif //TESTSUITE_BUILD
   real34_t lastAdded;
 
-  longInteger_t lastFactor, currentNumber, nextPrime, remainder, quotient, eval, temp;
+  longInteger_t lastFactor, currentNumber, nextPrime, remainder, quotient, eval, temp, tmp;
 
   longIntegerInit(currentNumber);
   longIntegerInit(nextPrime);
@@ -670,9 +689,17 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
   longIntegerInit(eval);
   longIntegerInit(temp);
   longIntegerInit(lastFactor);
+  longIntegerInit(tmp);
   real34Matrix_t matrix;
 
   if(!getRegisterAsLongInt(REGISTER_X, currentNumber)) {
+    goto abort;
+  }
+
+  longIntegerPowerUIntUInt(10,maximumPrime,tmp);
+  longIntegerSubtract(currentNumber, tmp, tmp);   // (primeCandidate - 10^300) positive is too large
+  if(longIntegerIsPositive(tmp)) {
+    badDomainError(REGISTER_X);
     goto abort;
   }
 
@@ -764,6 +791,7 @@ endandclose:
   dumpExponents(&matrix, &faddr, 65535);
   clearFactorAdder(&faddr);
 abort:
+  longIntegerFree(tmp);
   longIntegerFree(lastFactor);
   longIntegerFree(temp);
   longIntegerFree(eval);
