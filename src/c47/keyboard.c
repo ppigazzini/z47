@@ -741,7 +741,7 @@ bool_t lowercaseselected;    //the only place that this is set, is in processKey
                     printf(">>>>Z 0012 btnFnPressed >determineFunctionKeyItem_C47?; data=|%s| data[0]=%d shiftF=%d shiftG=%d\n",(char*)data, ((char*)data)[0],shiftF, shiftG);
                     #endif //VERBOSEKEYS
 
-        if( (item != ITM_NOP && item != ITM_NULL) ||                  //JM allow entry into statemachine if item=blank (NOP) but f(item) or g(item) is not blank
+        if( ALLOW_EMPTY_MENU_NOPS == 1 || (item != ITM_NOP && item != ITM_NULL) ||                  //JM allow entry into statemachine if item=blank (NOP) but f(item) or g(item) is not blank
             (determineFunctionKeyItem_C47((char *)data, true, false) != ITM_NOP && determineFunctionKeyItem_C47((char *)data, true, false) != ITM_NULL) ||
             (determineFunctionKeyItem_C47((char *)data, false, true) != ITM_NOP && determineFunctionKeyItem_C47((char *)data, false, true) != ITM_NULL)
            ) {
