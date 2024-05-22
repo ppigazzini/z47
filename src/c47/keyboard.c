@@ -741,18 +741,9 @@ bool_t lowercaseselected;    //the only place that this is set, is in processKey
                     printf(">>>>Z 0012 btnFnPressed >determineFunctionKeyItem_C47?; data=|%s| data[0]=%d shiftF=%d shiftG=%d\n",(char*)data, ((char*)data)[0],shiftF, shiftG);
                     #endif //VERBOSEKEYS
 
-        if( ALLOW_EMPTY_MENU_NOPS == 1 || (item != ITM_NOP && item != ITM_NULL) ||                  //JM allow entry into statemachine if item=blank (NOP) but f(item) or g(item) is not blank
-            (determineFunctionKeyItem_C47((char *)data, true, false) != ITM_NOP && determineFunctionKeyItem_C47((char *)data, true, false) != ITM_NULL) ||
-            (determineFunctionKeyItem_C47((char *)data, false, true) != ITM_NOP && determineFunctionKeyItem_C47((char *)data, false, true) != ITM_NULL)
-           ) {
-
-                    #if defined(VERBOSEKEYS)
-                    printf(">>>>Z 0013 btnFnPressed >>btnFnPressed_StateMachine; data=|%s| data[0]=%d shiftF=%d shiftG=%d\n",(char*)data, ((char*)data)[0],shiftF, shiftG);
-                    #endif //VERBOSEKEYS
-
-          lastErrorCode = 0;
-          btnFnPressed_StateMachine(NULL, data);    //JM This calls original state analysing btnFnPressed routing, which is now renamed to "statemachine" in keyboardtweaks
-                                                    // JM never allow a function key to directly enter into a buffer - always via the key detection btnFnPressed_StateMachine
+        lastErrorCode = 0;
+        btnFnPressed_StateMachine(NULL, data);    //never allow a function key to directly enter into a buffer - always via the key detection btnFnPressed_StateMachine, to pick up longpress or double press conditions
+        
 /*
           if(calcMode != CM_ASSIGN && indexOfItems[item].func == addItemToBuffer) {
             // If we are in the catalog then a normal key press should affect the Alpha Selection Buffer to choose
@@ -789,10 +780,6 @@ bool_t lowercaseselected;    //the only place that this is set, is in processKey
             #endif // (FN_KEY_TIMEOUT_TO_NOP == 1)
           }
 */
-        }
-        else {
-          showFunctionNameItem = ITM_NOP;
-        }
       }
     }
 
