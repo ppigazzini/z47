@@ -276,8 +276,6 @@
 //*********************************
 //* General configuration defines *
 //*********************************
-#undef RECT_POLAR_CHANGES_X                // RECT/POLAR radiobuttons to also change the complex number in X
-
 #define DEBUG_INSTEAD_STATUS_BAR         0 // Debug data instead of the status bar
 #define EXTRA_INFO_ON_CALC_ERROR         1 // Print extra information on the console about an error
 #define DEBUG_PANEL                      0 //1 JM Showing registers, local registers, saved stack registers, flags, statistical sums, ... in a debug panel
