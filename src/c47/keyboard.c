@@ -707,11 +707,7 @@ bool_t lowercaseselected;    //the only place that this is set, is in processKey
           case MNU_CHARS:
           case MNU_PROGS:
           case MNU_VARS: {
-//            #if (FN_KEY_TIMEOUT_TO_NOP == 1)
-//              showFunctionName(item, 1000, "SF:A"); // 1000ms = 1s
-//            #else // (FN_KEY_TIMEOUT_TO_NOP != 1)
               showFunctionNameItem = item;
-//            #endif // (FN_KEY_TIMEOUT_TO_NOP == 1)
             break;
         }
         default: {
@@ -773,11 +769,7 @@ bool_t lowercaseselected;    //the only place that this is set, is in processKey
           }
 
           else {
-            #if (FN_KEY_TIMEOUT_TO_NOP == 1)
-              showFunctionName(item, 1000); // 1000ms = 1s
-            #else // (FN_KEY_TIMEOUT_TO_NOP != 1)
-              showFunctionNameItem = item;
-            #endif // (FN_KEY_TIMEOUT_TO_NOP == 1)
+            showFunctionNameItem = item;
           }
 */
       }
@@ -993,14 +985,8 @@ int16_t lastItem = 0;
       if(/*showFunctionNameItem*/item != 0) {
 /* //JM vv Rmove the possibility for error by removing code that may conflict with the state machine
         item = showFunctionNameItem;
-      #if (FN_KEY_TIMEOUT_TO_NOP == 1)
-        hideFunctionName();
-      #else // FN_KEY_TIMEOUT_TO_NOP != 1
 */
         showFunctionNameItem = 0;
-/*
-      #endif // FN_KEY_TIMEOUT_TO_NOP == 1
-*/
         if(calcMode != CM_CONFIRMATION && data[0] != 0 && !running_program_jm) { //JM data is used if operation is from the real keyboard. item is used directly if called from XEQM
           lastErrorCode = 0;
 
