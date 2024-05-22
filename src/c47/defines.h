@@ -276,7 +276,6 @@
 //*********************************
 //* General configuration defines *
 //*********************************
-#define UNIT_2TO10_LONGINT_DISPLAY         // Allow 2^10 option to also process integers instead of only reals
 #undef RECT_POLAR_CHANGES_X                // RECT/POLAR radiobuttons to also change the complex number in X
 
 #define DEBUG_INSTEAD_STATUS_BAR         0 // Debug data instead of the status bar
