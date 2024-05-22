@@ -21,7 +21,6 @@
   void     Shft_handler();                                                                                        //JM LONGPRESS f/g
   void     LongpressKey_handler();                                                                                //JM LONGPRESS CLX
   void     Shft_stop();                                                                                           //JM reset shift after  4s
-  void     underline(int16_t y);                                                                                  //JM SHIFT LINE
   void     clear_ul(void);                                                                                        //JMUL
   void     closeShowMenu(void);
 
@@ -118,14 +117,11 @@ char       letteredRegisterName(calcRegister_t regist);
   #if !defined(TESTSUITE_BUILD)
 
   void     refreshFn                            (uint16_t timerType);                                           //dr - general timeout handler
-//  uint8_t  combinationFonts;    //TO REMOVE from .h
-//  uint8_t  maxiC;               //TO REMOVE from .h                                                                                            //JM global flags for character control:  enlarged letters
-  extern uint8_t  compressString;                                                                               //JM global flags for character control: compressString
-  extern uint8_t  raiseString;                                                                               //JM global flags for character control: raiseString
+  extern uint8_t  compressString;                                                                               //global flags for character control: compressString
+  extern uint8_t  raiseString;                                                                                  //global flags for character control: raiseString
   extern uint8_t  multiEdLines;
   extern uint16_t current_cursor_x;
   extern uint16_t current_cursor_y;
-
   extern bool_t   reDraw;
 
 
@@ -165,16 +161,16 @@ char       letteredRegisterName(calcRegister_t regist);
     void findOffset(void);
     void incOffset(void);
   #endif // TEXT_MULTILINE_EDIT
-                                                                                                               //JM ^^
-  void     underline_softkey                  (int16_t xSoftkey, int16_t ySoftKey, bool_t dontclear);          //JM LONGPRESS
-  void     refresh_gui                        (void);                                                          //JM
 
-  void     force_refresh(uint8_t mode);                                                          //JM SCREEN
-  bool_t   printHalfSecUpdate_Integer(uint8_t mode, char *txt, int32_t loop, bool_t clearZ, bool_t clearT, bool_t disp);
-
+  void     show_f_jm                          (void);
+  void     show_g_jm                          (void);
+  void     clear_fg_jm                        (void);
+  void     underline_softkey                  (int16_t xSoftkey, int16_t ySoftKey, bool_t dontclear);
+  void     refresh_gui                        (void);
+  void     force_refresh                      (uint8_t mode);
+  bool_t   printHalfSecUpdate_Integer         (uint8_t mode, char *txt, int32_t loop, bool_t clearZ, bool_t clearT, bool_t disp);
   void     refreshScreen                      (uint8_t source);
-  //void     invertPixel                        (uint32_t x, uint32_t y);
-  //int      getPixel                           (uint32_t x, uint32_t y);
+
   /**
    * Displays a 0 terminated string.
    *

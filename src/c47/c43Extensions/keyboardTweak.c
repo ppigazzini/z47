@@ -165,55 +165,6 @@ void resetKeytimers(void) {
   * \param void
   * \return void
   ***********************************************/
-  void show_f_jm(void) {
-    if(!FN_timeouts_in_progress && calcMode != CM_ASN_BROWSER) {
-      if(!ULFL) {
-        underline(1);
-        ULFL = !ULFL;
-        doRefreshSoftMenu = true;
-      }
-      if(ULGL) {
-        underline(2);
-        ULGL = !ULGL;
-        doRefreshSoftMenu = true;
-      }
-    }
-    //}                                                                             //JM - Display dot in the f - line
-  }
-
-
-  void show_g_jm(void) {
-    if(!FN_timeouts_in_progress && calcMode != CM_ASN_BROWSER) {
-      if(ULFL) {
-        underline(1);
-        ULFL = !ULFL;
-        doRefreshSoftMenu = true;
-      }
-      if(!ULGL) {
-        underline(2);
-        ULGL = !ULGL;
-        doRefreshSoftMenu = true;
-      }
-    }
-    //}                                                                             //JM - Display dot in the g - line
-  }
-
-
-  void clear_fg_jm(void) {
-    if(!FN_timeouts_in_progress) {        //Cancel lines
-      if(ULFL) {
-        underline(1);
-        ULFL = !ULFL;
-        doRefreshSoftMenu = true;
-      }
-      if(ULGL) {
-        underline(2);
-        ULGL = !ULGL;
-        doRefreshSoftMenu = true;
-      }
-    }
-  }
-
 
   void fg_processing_jm(void) {
     if(ShiftTimoutMode || HOME3 || MYM3) {
