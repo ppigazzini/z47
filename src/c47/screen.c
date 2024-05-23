@@ -2381,13 +2381,12 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
     #ifdef DMCP_BUILD
       keyBuffer_pop();                                            // This causes key updates while the longer time processing register updates happen
       if( !(regist == REGISTER_X || regist == REGISTER_Y) &&
-          !getSystemFlag(FLAG_USB) && // (LongPressM == RB_M1234 || LongPressM == RB_M124) &&   // This section added to automatically, when in M1234 & when on battery and low processor, change to skip long processing register printing
+          !getSystemFlag(FLAG_USB) &&                             // Automatically, when on battery (hence low processor), change to skip long processing register printing, recovering the fragmented screen here: See timer.c fnTimerDummyTest()
           !emptyKeyBuffer() &&
           key_empty() == 1
           ) {
         return;
       }
-      //if(!key_empty()) return;
     #endif //DMCP
 
     #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)

@@ -196,6 +196,13 @@ void fnTimerDummyTest(uint16_t param) {
 #if defined(PC_BUILD) || defined(TESTSUITE_BUILD)
   printf("fnTimerDummyTest called  %u\n", param);
 #endif // PC_BUILD || TESTSUITE_BUILD
+
+#if defined(DMCP_BUILD)
+  if(!getSystemFlag(FLAG_USB)) {       //update screen after 6 sec timout, to restore the half-updated screen in battery mode. See refreshRegisterLine() in screen.c
+    screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
+    refreshScreen(32);
+  }
+#endif // DMCP_BUILD
 }
 
 
