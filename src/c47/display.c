@@ -834,14 +834,18 @@ void real34ToDisplayString2(const real34_t *real34, char *displayString, int16_t
         bcd[digitToRound]++;
       }
 
-      // Transfert the carry
+      // Transfer the carry
       while(bcd[digitToRound] == 10) {
         bcd[digitToRound--] = 0;
-        if(displayFormat == DF_SF) numDigits--;
+        if(displayFormat == DF_SF) {
+          numDigits--;
+        }
         bcd[digitToRound]++;
       }
 
-      lastDigit = digitToRound; //JM
+      if(displayFormat == DF_SF) {
+        lastDigit = digitToRound;
+      }
 
       // Case when 9.9999 rounds to 10.0000
       if(digitToRound < firstDigit) {
