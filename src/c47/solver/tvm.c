@@ -49,7 +49,7 @@ void fnTvmVar(uint16_t variable) {
       case RESERVED_VARIABLE_PV: {
         currentSolverStatus |= SOLVER_STATUS_TVM_APPLICATION;
         currentSolverVariable = variable;
-        clearSystemFlag(FLAG_TVM_I_KNOWN);
+        tvmIKnown = false;
 
         /* Calculate */
         if(currentSolverStatus & SOLVER_STATUS_READY_TO_EXECUTE) {
@@ -58,17 +58,17 @@ void fnTvmVar(uint16_t variable) {
           thereIsSomethingToUndo = true;
           liftStack();
 
-          clearSystemFlag(FLAG_TVM_I_KNOWN);
+          tvmIKnown = false;
 
           switch(variable) {
             case RESERVED_VARIABLE_IPONA:
             case RESERVED_VARIABLE_PPERONA:
             case RESERVED_VARIABLE_CPERONA: {
-              setSystemFlag(FLAG_TVM_I_CHANGES);
+              tvmIChanges = true;
               break;
             }
             default: {
-              clearSystemFlag(FLAG_TVM_I_CHANGES);
+              tvmIChanges = false;
             }
           }
           real34Multiply(REGISTER_REAL34_DATA(variable), const34_2, &y);
@@ -205,7 +205,7 @@ void tvmEquation(void) {
     these iterations pass much more quickly. So I do need to do something here.
    */
 
-  if((!getSystemFlag(FLAG_TVM_I_KNOWN)) || (getSystemFlag(FLAG_TVM_I_CHANGES))) { // if i hasn't been found yet or i changes each time
+  if((!tvmIKnown) || (tvmIChanges)) { // if i hasn't been found yet or i changes each time
     realDivide(&iA, const_100, &i, &ctxtReal39);
     realDivide(&i, &pperA, &i, &ctxtReal39);
     // i is now (iA / 100) / pperA.
@@ -219,7 +219,7 @@ void tvmEquation(void) {
       realPower(&i, &r, &i, &ctxtReal39);
       realSubtract(&i, const_1, &i, &ctxtReal39); // i = (1 + (i/pperA)/r)^r - 1
     }
-    setSystemFlag(FLAG_TVM_I_KNOWN);
+    tvmIKnown = true;
   }
 
   realChangeSign(&pv);

@@ -326,6 +326,8 @@
   extern bool_t                 constantFractions;            //JM
   extern uint8_t                constantFractionsMode;        //JM
   extern bool_t                 constantFractionsOn;          //JM
+  extern bool_t                 tvmIKnown;
+  extern bool_t                 tvmIChanges;
 
 
   extern uint16_t               glyphRow[NUMBER_OF_GLYPH_ROWS];

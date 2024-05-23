@@ -2308,8 +2308,8 @@
 // 64 more system flags
 #define SFL_MONIT                   2251
 #define SFL_FRCYC                   2252
-#define SFL_TVM_I_KNOWN             2253
-#define SFL_TVM_I_CHANGES           2254
+#define SFL_2249                    2253 //spare, ex TVM
+#define SFL_2250                    2254 //spare, ex TVM
 #define SFL_HPCONV                  2255
 #define SFL_2252                    2256
 #define SFL_2253                    2257
