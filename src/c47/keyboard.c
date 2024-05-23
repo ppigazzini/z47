@@ -723,7 +723,7 @@ bool_t lowercaseselected;    //the only place that this is set, is in processKey
                     printf(">>>>Z 0012 btnFnPressed >>determineFunctionKeyItem_C47; data=|%s| data[0]=%d shiftF=%d shiftG=%d\n",(char*)data, ((char*)data)[0],shiftF, shiftG);
                     #endif //VERBOSEKEYS
 
-        int16_t item = determineFunctionKeyItem_C47((char *)data, shiftF, shiftG);
+//      int16_t item = determineFunctionKeyItem_C47((char *)data, shiftF, shiftG);
 /*
         if(shiftF || shiftG) {
           screenUpdatingMode &= ~SCRUPD_MANUAL_SHIFT_STATUS;
@@ -733,9 +733,6 @@ bool_t lowercaseselected;    //the only place that this is set, is in processKey
         shiftF = false;
         shiftG = false;
 */
-                    #if defined(VERBOSEKEYS)
-                    printf(">>>>Z 0012 btnFnPressed >determineFunctionKeyItem_C47?; data=|%s| data[0]=%d shiftF=%d shiftG=%d\n",(char*)data, ((char*)data)[0],shiftF, shiftG);
-                    #endif //VERBOSEKEYS
 
         lastErrorCode = 0;
         btnFnPressed_StateMachine(NULL, data);    //never allow a function key to directly enter into a buffer - always via the key detection btnFnPressed_StateMachine, to pick up longpress or double press conditions
