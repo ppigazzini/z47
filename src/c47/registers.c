@@ -73,15 +73,15 @@
 /*  VAR_NO_ULIM    32 */ { ""},
 /*  VAR_NO_LLIM    33 */ { ""},
 /*  VAR_NO_FV      34 */ { " Future Value ="            },
-/*  VAR_NO_IPONA   35 */ { " i% p.a. (APR) ="           },
+/*  VAR_NO_IPONA   35 */ { " I%YR = APR ="           },
 /*  VAR_NO_NPPER   36 */ { " n pay periods ="           },
-/*  VAR_NO_PPERONA 37 */ { " Pay periods p.a. ="        },
+/*  VAR_NO_PPERONA 37 */ { " Pay periods YR ="        },
 /*  VAR_NO_PMT     38 */ { " Payment ="                 },
 /*  VAR_NO_PV      39 */ { " Present Value ="           },
 /*  VAR_NO_GRAMOD  40 */ { ""},
 /*  VAR_NO_UX      41 */ { ""},
 /*  VAR_NO_LX      42 */ { ""},
-/*  VAR_NO_CPERONA 43 */ { " Compounding periods p.a. ="}
+/*  VAR_NO_CPERONA 43 */ { " Compounding periods YR ="}
 };
 #endif //TESTSUITE_BUILD
 
@@ -123,7 +123,7 @@ TO_QSPI const reservedVariableHeader_t allReservedVariables[] = { // MUST be in 
 /*  VAR_NO_ULIM    32 */  { .header = {.pointerToRegisterData = 4,          .dataType = dtReal34,      .tag = amNone,      .readOnly = 0, .notUsed = 0}, .reservedVariableName = {5, 161, 145, 'L', 'i', 'm',  0,   0} },
 /*  VAR_NO_LLIM    33 */  { .header = {.pointerToRegisterData = 8,          .dataType = dtReal34,      .tag = amNone,      .readOnly = 0, .notUsed = 0}, .reservedVariableName = {5, 161, 147, 'L', 'i', 'm',  0,   0} },
 /*  VAR_NO_FV      34 */  { .header = {.pointerToRegisterData = 12,         .dataType = dtReal34,      .tag = amNone,      .readOnly = 0, .notUsed = 0}, .reservedVariableName = {2, 'F', 'V',  0,   0,   0,   0,   0} },
-/*  VAR_NO_IPONA   35 */  { .header = {.pointerToRegisterData = 16,         .dataType = dtReal34,      .tag = amNone,      .readOnly = 0, .notUsed = 0}, .reservedVariableName = {4, 'i', '%', '/', 'a',  0,   0,   0} },
+/*  VAR_NO_IPONA   35 */  { .header = {.pointerToRegisterData = 16,         .dataType = dtReal34,      .tag = amNone,      .readOnly = 0, .notUsed = 0}, .reservedVariableName = {4, 'I', '%', '/', 'a',  0,   0,   0} },
 /*  VAR_NO_NPPER   36 */  { .header = {.pointerToRegisterData = 20,         .dataType = dtReal34,      .tag = amNone,      .readOnly = 0, .notUsed = 0}, .reservedVariableName = {5, 'N', 'P', 'P', 'E', 'R',  0,   0} },
 /*  VAR_NO_PPERONA 37 */  { .header = {.pointerToRegisterData = 24,         .dataType = dtReal34,      .tag = amNone,      .readOnly = 0, .notUsed = 0}, .reservedVariableName = {6, 'P', 'P', 'E', 'R', '/',  'a', 0} },
 /*  VAR_NO_PMT     38 */  { .header = {.pointerToRegisterData = 28,         .dataType = dtReal34,      .tag = amNone,      .readOnly = 0, .notUsed = 0}, .reservedVariableName = {3, 'P', 'M', 'T',  0,   0,   0,   0} },

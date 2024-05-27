@@ -141,6 +141,8 @@ void configCommon(uint16_t idx) {
 #define IRFRACMODE            119    // config_constantFractionsMode     
 #define IRFRACON              120    // config_constantFractionsOn       
 #define DenMaX                121    // config_denmax                    
+#define TVMIKnown             122    // tvm          
+#define TVMIChanges           123    // tvm          
 
 
 #define xxx -10001
@@ -179,6 +181,9 @@ IRFRACMODE,                          xxx,        CF_NORMAL,                     
 IRFRACON,                            xxx,        0,                              xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,                  
 DenMaX,                              xxx,        64,                             xxx,             64,                   9999,                   64,              xxx,             xxx,                  
 //TVM,                               n/a,        Reset,                          HP35,            JM,                   RJ,                     C47,             DefltSB,         TVM,                  
+TVMIKnown,                           xxx,        0,                              xxx,             xxx,                  xxx,                    xxx,             xxx,             0,                    // Clear flag TVMIKnown
+TVMIChanges,                         xxx,        0,                              xxx,             xxx,                  xxx,                    xxx,             xxx,             0,                    // Clear flag TVMIChanges
+//TVM,                               n/a,        Reset,                          HP35,            JM,                   RJ,                     C47,             DefltSB,         TVM,                  
 RESERVED_VARIABLE_FV,                xxx,        0,                              xxx,             xxx,                  xxx,                    xxx,             xxx,             0,                    
 RESERVED_VARIABLE_IPONA,             xxx,        0,                              xxx,             xxx,                  xxx,                    xxx,             xxx,             0,                    
 RESERVED_VARIABLE_NPPER,             xxx,        0,                              xxx,             xxx,                  xxx,                    xxx,             xxx,             0,                    
@@ -186,8 +191,6 @@ RESERVED_VARIABLE_PMT,               xxx,        0,                             
 RESERVED_VARIABLE_PV,                xxx,        0,                              xxx,             xxx,                  xxx,                    xxx,             xxx,             0,                    
 RESERVED_VARIABLE_PPERONA,           xxx,        12,                             xxx,             xxx,                  xxx,                    xxx,             xxx,             12,                   
 RESERVED_VARIABLE_CPERONA,           xxx,        12,                             xxx,             xxx,                  xxx,                    xxx,             xxx,             12,                   
-3,                                   0,          FLAG_TVM_I_KNOWN,               xxx,             xxx,                  xxx,                    xxx,             xxx,             FLAG_TVM_I_KNOWN,     // Clear flag FLAG_TVM_I_KNOWN
-3,                                   0,          FLAG_TVM_I_CHANGES,             xxx,             xxx,                  xxx,                    xxx,             xxx,             FLAG_TVM_I_CHANGES,   // Clear flag FLAG_TVM_I_CHANGES
 3,                                   1,          FLAG_ENDPMT,                    xxx,             xxx,                  xxx,                    xxx,             xxx,             FLAG_ENDPMT,          // Set flag  FLAG_ENDPMT
 //Setsetting,                        n/a,        Reset,                          HP35,            JM,                   RJ,                     C47,             DefltSB,         TVM,                  
 2,                                   xxx,        xxx,                            SS_4,            SS_8,                 SS_8,                   SS_8,            xxx,             xxx,                  //SetSetting
@@ -265,27 +268,29 @@ void Sett(int16_t grp) {
         }
       #endif //PC_BUILD
       switch (Settings[ptr*(_numberOfGrps+2) + 0]) {
-        case InputDefaultDataType : {fnInDefault                  (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // InputDefaultDataType 
-        case SigFigNumberOfDigits : {fnDisplayFormatSigFig        (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // SigFigNumberOfDigits 
-        case AllNumberOfDigits    : {fnDisplayFormatAll           (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // AllNumberOfDigits    
-        case FixNumberOfDigits    : {fnDisplayFormatFix           (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // FixNumberOfDigits    
-        case MymB                 : {BASE_MYM  =                  (Settings[ptr*(_numberOfGrps+2) + 1 + grp]) == 1 ? true : false;break;}   // MymB                 
-        case HomeB                : {BASE_HOME =                  (Settings[ptr*(_numberOfGrps+2) + 1 + grp]) == 1 ? true : false;break;}   // HomeB                
-        case RNG                  : {exponentLimit      =         (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // RNG                  
-        case SDIGS                : {significantDigits  =         (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // SDIGS                
-        case DSTACK               : {displayStack       =         (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // DSTACK               
-        case CACHEDDSTACK         : {cachedDisplayStack =         (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // CACHEDDSTACK         
-        case ADM                  : {currentAngularMode =         (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // ADM                  
-        case IPGRP                : {grpGroupingLeft            = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // IPGRP                
-        case FPGRP                : {grpGroupingRight           = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // FPGRP                
-        case IPGRP1               : {grpGroupingGr1Left         = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // IPGRP1               
-        case IPGRP1x              : {grpGroupingGr1LeftOverflow = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // IPGRP1x              
-        case ERPN                 : {fneRPN                       (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // ERPN                 
-        case fgLongPressSetting   : {setFGLSettings               (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // fgLongPressSetting   
-        case IRFRAC               : {constantFractions          = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]) == 1 ? true : false;break;}   // IRFRAC               
-        case IRFRACMODE           : {constantFractionsMode      = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // IRFRACMODE           
-        case IRFRACON             : {constantFractionsOn        = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]) == 1 ? true : false;break;}   // IRFRACON             
-        case DenMaX               : {denMax                     = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // DenMaX               
+        case InputDefaultDataType : {fnInDefault                  (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // InputDefaultDataType
+        case SigFigNumberOfDigits : {fnDisplayFormatSigFig        (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // SigFigNumberOfDigits
+        case AllNumberOfDigits    : {fnDisplayFormatAll           (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // AllNumberOfDigits
+        case FixNumberOfDigits    : {fnDisplayFormatFix           (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // FixNumberOfDigits
+        case MymB                 : {BASE_MYM  =                  (Settings[ptr*(_numberOfGrps+2) + 1 + grp]) == 1 ? true : false;break;}   // MymB
+        case HomeB                : {BASE_HOME =                  (Settings[ptr*(_numberOfGrps+2) + 1 + grp]) == 1 ? true : false;break;}   // HomeB
+        case RNG                  : {exponentLimit      =         (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // RNG
+        case SDIGS                : {significantDigits  =         (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // SDIGS
+        case DSTACK               : {displayStack       =         (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // DSTACK
+        case CACHEDDSTACK         : {cachedDisplayStack =         (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // CACHEDDSTACK
+        case ADM                  : {currentAngularMode =         (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // ADM
+        case IPGRP                : {grpGroupingLeft            = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // IPGRP
+        case FPGRP                : {grpGroupingRight           = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // FPGRP
+        case IPGRP1               : {grpGroupingGr1Left         = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // IPGRP1
+        case IPGRP1x              : {grpGroupingGr1LeftOverflow = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // IPGRP1x
+        case ERPN                 : {fneRPN                       (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // ERPN
+        case fgLongPressSetting   : {setFGLSettings               (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // fgLongPressSetting
+        case IRFRAC               : {constantFractions          = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]) == 1 ? true : false;break;}   // IRFRAC
+        case IRFRACMODE           : {constantFractionsMode      = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // IRFRACMODE
+        case IRFRACON             : {constantFractionsOn        = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]) == 1 ? true : false;break;}   // IRFRACON
+        case DenMaX               : {denMax                     = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // DenMaX
+        case TVMIKnown            : {tvmIKnown                  = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]) == 1 ? true : false;break;}   // TVMIKnown
+        case TVMIChanges          : {tvmIChanges                = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]) == 1 ? true : false;break;}   // TVMIChanges
 
         case RESERVED_VARIABLE_FV     :
         case RESERVED_VARIABLE_IPONA  :

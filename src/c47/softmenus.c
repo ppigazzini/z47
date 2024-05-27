@@ -139,25 +139,10 @@ TO_QSPI const int16_t menu_FIN[]         = { ITM_SIGMAPLUS ,                ITM_
 /*                                          <---------------------------------------------------------------------- 6 f shifted functions ------------------------------------------------------------------------->  */
 /*                                          <---------------------------------------------------------------------- 6 g shifted functions ------------------------------------------------------------------------->  */
 
-////Pauli
-//TO_QSPI const int16_t menu_TVM[]         = { VAR_NPPER,                     VAR_IPonA,                  VAR_PV,                   VAR_PMT,               VAR_FV,                      VAR_PPERonA,
-//                                             ITM_RCL_NPPER,                 ITM_RCL_IPonA,              ITM_RCL_PV,               ITM_RCL_PMT,           ITM_RCL_FV,                  VAR_CPERonA,
-//                                             ITM_BEGINP,                    ITM_ENDP,                   ITM_CLTVM,               -MNU_AMORT,            -MNU_CASHFL,                 -MNU_FIN               ,//       };
-
-//D option
-//TO_QSPI const int16_t menu_TVM[]         = {
-//                                             VAR_PPERonA,                   VAR_NPPER,                  VAR_IPonA,                VAR_PV,                VAR_PMT,                     VAR_FV,
-//                                             VAR_CPERonA,                   ITM_RCL_NPPER,              ITM_RCL_IPonA,            ITM_RCL_PV,            ITM_RCL_PMT,                 ITM_RCL_FV,
-//                                             ITM_BEGINP,                    ITM_ENDP,                   ITM_CLTVM,               -MNU_AMORT,            -MNU_CASHFL,                 -MNU_FIN               ,//       };
-
-//jaco settings on top proposal
 TO_QSPI const int16_t menu_TVM[]         = {
-                                             VAR_NPPER,                     VAR_IPonA,                  VAR_PV,                   VAR_PMT,               VAR_FV,                      -MNU_AMORT,
-                                             ITM_RCL_NPPER,                 ITM_RCL_IPonA,              ITM_RCL_PV,               ITM_RCL_PMT,           ITM_RCL_FV,                  -MNU_CASHFL,
-                                             ITM_BEGINP,                    ITM_ENDP,                   VAR_PPERonA,              VAR_CPERonA,           ITM_CLTVM,                   -MNU_FIN                      };
-
-// remove RCL CPERonA and PPERonA            ITM_BEGINP,                    ITM_ENDP,                   ITM_RCL_PPERonA,          ITM_RCL_CPERonA,       ITM_NULL,                   -MNU_FIN                      };
-
+                                             VAR_NPPER,                     VAR_IPonA,                  VAR_PV,                   VAR_PMT,               VAR_FV,                      ITM_EFF,
+                                             ITM_RCL_NPPER,                 ITM_RCL_IPonA,              ITM_RCL_PV,               ITM_RCL_PMT,           ITM_RCL_FV,                  -MNU_AMORT,
+                                             ITM_BEGINP,                    ITM_ENDP,                   VAR_PPERonA,              VAR_CPERonA,           ITM_CLTVM,                   -MNU_CASHFL                  };
 
 TO_QSPI const int16_t menu_FLAGS[]       = { ITM_SF,                        ITM_FS,                     ITM_FF,                   ITM_STATUS,            ITM_FC,                      ITM_CF,
                                              ITM_FSS,                       ITM_FSC,                    ITM_FSF,                  ITM_FCF,               ITM_FCS,                     ITM_FCC,
