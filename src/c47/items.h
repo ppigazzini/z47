@@ -1233,16 +1233,16 @@
 #define VAR_LLIM                    1194
 #define VAR_FV                      1195
 #define VAR_IPonA                   1196
-#define VAR_NPER                    1197
-#define VAR_PERonA                  1198
+#define VAR_NPPER                   1197
+#define VAR_PPERonA                 1198
 #define VAR_PMT                     1199
 #define VAR_PV                      1200
 #define VAR_GRAMOD                  1201
 #define VAR_MATA                    1202
 #define VAR_MATB                    1203
 #define VAR_MATX                    1204
-#define VAR_1205                    1205
-#define VAR_1206                    1206
+#define VAR_UX                      1205
+#define VAR_LX                      1206
 
 
 // Probability distributions
@@ -1426,14 +1426,14 @@
 #define MNU_ALPHAMISC               1378
 #define MNU_SYSFL                   1379
 #define MNU_Sf                      1380
-#define MNU_Sfdx                    1381
+#define MNU_Sfdx                    1381      //INT
 #define MNU_ANGLECONV_43S           1382
 #define MNU_alpha_omega             1383
 #define MNU_ALPHAintl               1384
 #define MNU_TAM                     1385
 #define MNU_TAMCMP                  1386
 #define MNU_TAMSTORCL               1387
-#define MNU_1388                    1388
+#define MNU_Grapher                 1388
 #define MNU_VAR                     1389
 #define MNU_TAMFLAG                 1390
 #define MNU_TAMSHUFFLE              1391
@@ -1499,7 +1499,7 @@
 #define ITM_DOT_PROD                1449
 #define ITM_DSTACK                  1450
 #define ITM_DMS                     1451
-#define MNU_1452                    1452
+#define ITM_CLTVM                   1452
 #define ITM_DMY                     1453
 #define ITM_DtoJ                    1454
 #define ITM_DELITM                  1455
@@ -1735,9 +1735,9 @@
 #define ITM_toHR                    1685
 #define ITM_toHMS                   1686
 #define ITM_toINT                   1687
-#define MNU_1688                    1688
+#define ITM_1688                    1688
 #define ITM_1689                    1689
-#define ITM_1690                    1690
+#define ITM_INTEGRAL_YX             1690   //INT
 #define ITM_toREAL                  1691
 #define ITM_PCSGM_DPCMN             1692
 #define ITM_DPCMEAN                 1693
@@ -1747,7 +1747,7 @@
 #define ITM_PCT                     1697
 #define ITM_PCSIGMA                 1698
 #define ITM_PCPMG                   1699
-#define ITM_INTEGRAL                1700
+#define ITM_INTEGRAL                1700   //INT
 #define ITM_PMOD                    1701
 #define ITM_M_DET                   1702
 #define ITM_PARALLEL                1703
@@ -1820,8 +1820,8 @@
 #define ITM_SQRT                    1768
 #define ITM_RCL_FV                  1769
 #define ITM_RCL_IPonA               1770
-#define ITM_RCL_NPER                1771
-#define ITM_RCL_PERonA              1772
+#define ITM_RCL_NPPER               1771
+#define ITM_RCL_PPERonA             1772
 #define ITM_RCL_PMT                 1773
 #define ITM_RCL_PV                  1774
 #define ITM_atan2                   1775
@@ -1830,12 +1830,12 @@
 #define ITM_TIMER_RESET             1778
 #define ITM_TIMER_RCL               1779
 #define ITM_DELBKUP                 1780
-#define ITM_CPXSLV                  1781
-#define ITM_DRAW                    1782
-#define MNU_GRAPH                   1783
-#define ITM_REPLT                   1784
-#define ITM_FPHERE                  1785
-#define ITM_FPPHERE                 1786
+#define ITM_1781                    1781
+#define ITM_1782                    1782
+#define ITM_1783                    1783
+#define ITM_1784                    1784
+#define ITM_1785                    1785
+#define ITM_1786                    1786
 #define ITM_nBINS                   1787
 #define ITM_LOBIN                   1788
 #define ITM_HIBIN                   1789
@@ -2308,9 +2308,9 @@
 // 64 more system flags
 #define SFL_MONIT                   2251
 #define SFL_FRCYC                   2252
-#define SFL_2249                    2253
-#define SFL_2250                    2254
-#define SFL_2251                    2255
+#define SFL_TVM_I_KNOWN             2253
+#define SFL_TVM_I_CHANGES           2254
+#define SFL_HPCONV                  2255
 #define SFL_2252                    2256
 #define SFL_2253                    2257
 #define SFL_2254                    2258
@@ -2425,8 +2425,30 @@
 #define ITM_M_DELC                  2365
 #define ITM_M_ADDR                  2366
 #define ITM_M_ADDC                  2367
+#define ITM_REALSLV                 2368
+#define ITM_REALSLV_LU              2369
+#define ITM_CPXSLV                  2370
+#define ITM_CPXSLV_LU               2371
+#define ITM_DRAW                    2372
+#define ITM_DRAW_LU                 2373
+#define MNU_GRAPHS                  2374
+#define MNU_Sf_TOOL                 2375
+#define MNU_Solver_TOOL             2376
+#define ITM_FPHERE                  2377
+#define ITM_FPPHERE                 2378
 
-#define LAST_ITEM                   2368
+#define VAR_CPERonA                 2379
+#define ITM_RCL_CPERonA             2380
+
+#define MNU_CASHFL                  2381
+#define MNU_AMORT                   2382
+
+#define ITM_x_SIGN                  2383
+#define ITM_CPXPLOT                 2384
+
+#define ITM_PFACTORSMULT            2385
+#define ITM_EULPHI                  2386
+#define LAST_ITEM                   2387
 
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL

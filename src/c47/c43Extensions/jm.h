@@ -14,7 +14,7 @@
  * along with C47.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-//c47.h
+//wp43.h
 
 
 /* ADDITIONAL C43 functions and routines */
@@ -96,7 +96,6 @@ void fnJM(uint16_t JM_OPCODE);
 
 
 void fnJM_GetXToNORMmode(uint16_t Rubbish);
-void fnStrtoX       (char aimBuffer[]);
 void fnStrInputReal34 (char inp1[]);
 void fnStrInputLongint(char inp1[]);
 void fnRCL          (int16_t inp);
@@ -127,6 +126,7 @@ void fnRCL          (int16_t inp);
 
 #define JC_ITM_TST             27    //dr
 
+#define JC_CPXPLOT             38
 #define JC_VECT                39    // graph setup
 #define JC_NVECT               40    // graph setup
 #define JC_SCALE               41    // graph setup

@@ -175,6 +175,7 @@ log2
 ln
 lnPOne
 eulersFormula
+eulersphi
 
 arccos
 arcsin

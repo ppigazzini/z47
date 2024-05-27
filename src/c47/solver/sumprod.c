@@ -72,18 +72,20 @@
           realToReal34(a, &a34);
           real34ToDisplayString(&a34, amNone, tmpString, &standardFont, 9999, 34, false, true);
           showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
-        } else {
+        }
+        else {
           realToReal34(a, &a34);
           realToReal34(ai, &ai34);
-          real34ToDisplayString(&a34, amNone, tmpString, &standardFont, 9999, 34, false, true);          
+          real34ToDisplayString(&a34, amNone, tmpString, &standardFont, 9999, 34, false, true);
           showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_Y_LINE + 6, vmNormal, true, true);
           uint32_t x = 0;
           if(real34CompareGreaterEqual(&ai34,const34_0)) {
             x = showString("+", &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
-          } else {
-            x = showString(" ", &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);            
           }
-          real34ToDisplayString(&ai34, amNone, tmpString, &standardFont, 9999, 34, false, true);          
+          else {
+            x = showString(" ", &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
+          }
+          real34ToDisplayString(&ai34, amNone, tmpString, &standardFont, 9999, 34, false, true);
           strcat(tmpString, COMPLEX_UNIT);
           showString(tmpString, &standardFont, x, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
         }
@@ -97,7 +99,8 @@
 
 
   static void _programmableSumProd(uint16_t label, bool_t prod) {
-    uint32_t      loop = 0;
+    currentKeyCode = 255;
+    int32_t       loop = 0;
     int16_t       finished = 0;
     bool_t        abort = false;
     real_t        resultX, resultXi, resultR, resultRi;
@@ -121,7 +124,7 @@
     }
     longIntegerInit(iLoop);
     convertReal34ToLongInteger(&rLoop, iLoop, DEC_ROUND_DOWN);
-    loop = longIntegerModuloUInt(iLoop, 100000);
+    loop = (int32_t)longIntegerModuloUInt(iLoop, (int32_t)(0x7FFFFFFF));
     longIntegerFree(iLoop);
 
     if( !real34CompareEqual(&loopTo, &counter) &&
@@ -131,7 +134,7 @@
         )
       ) {
       displayCalcErrorMessage(ERROR_BAD_INPUT, ERR_REGISTER_LINE, REGISTER_X);
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "Counter will not count to destination");
         moreInfoOnError("In function _programmableiSumProd:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -210,13 +213,13 @@
         #endif // VERBOSE_COUNTER
 
         real34Add(&counter, &loopStep, &counter);
-        if(printHalfSecUpdate_Integer(timed, "Loop: ",loop--)) { ; //timed
+        if(printHalfSecUpdate_Integer(timed, "Loop: ",loop--, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { ; //timed
           showProgressReal(&resultR, &resultRi, changedOverToComplex);
         }
 
         if(keyWaiting()) {
-          showString("key Waiting ...", &standardFont, 20, 40, vmNormal, false, false);
-          printHalfSecUpdate_Integer(force+1, "Interrupted: ", loop);
+          showString("key Waiting ...", &standardFont, 16, Y_POSITION_OF_REGISTER_T_LINE, vmNormal, false, false);
+          printHalfSecUpdate_Integer(force+1, "Interrupted: ", loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
           abort = true;
         }
 
@@ -244,7 +247,7 @@
       }
       else {
         displayCalcErrorMessage(lastErrorCode, ERR_REGISTER_LINE, REGISTER_X);
-        #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           sprintf(errorMessage, "Error while calculating");
           moreInfoOnError("In function _programmableSumProd:", errorMessage, NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -263,47 +266,28 @@
     showHideHourGlass();
 
     if(abort) {
-      printHalfSecUpdate_Integer(force+0, "Loop aborted: ",loop);
-    } else {
-      printHalfSecUpdate_Integer(force+0, "Loop complete: ",loop);      
+    printHalfSecUpdate_Integer(force+0, "Loop aborted: ",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+    }
+    else {
+      printHalfSecUpdate_Integer(force+0, "Loop complete: ",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
     }
   }
 
 
 
   static void _checkArgument(uint16_t label, bool_t prod) {
-    if(label >= FIRST_LABEL && label <= LAST_LABEL) {
+    if(FIRST_LABEL <= label && label <= LAST_LABEL) {
       _programmableSumProd(label, prod);
     }
-    else if(label >= REGISTER_X && label <= REGISTER_T) {
+    else if(REGISTER_X <= label && label <= REGISTER_T) {
       // Interactive mode
-      char buf[4];
-      switch(label) {
-        case REGISTER_X: {
-          buf[0] = 'X';
-          break;
-        }
-        case REGISTER_Y: {
-          buf[0] = 'Y';
-          break;
-        }
-        case REGISTER_Z: {
-          buf[0] = 'Z';
-          break;
-        }
-        case REGISTER_T: {
-          buf[0] = 'T';
-          break;
-        }
-        default: { /* unlikely */
-          buf[0] = 0;
-        }
-      }
+      char buf[2];
+      buf[0] = letteredRegisterName((calcRegister_t)label);
       buf[1] = 0;
       label = findNamedLabel(buf);
       if(label == INVALID_VARIABLE) {
         displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
-        #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           sprintf(errorMessage, "string '%s' is not a named label", buf);
           moreInfoOnError("In function _checkArgument:", errorMessage, NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -314,7 +298,7 @@
     }
     else {
       displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "unexpected parameter %u", label);
         moreInfoOnError("In function _checkArgument:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)

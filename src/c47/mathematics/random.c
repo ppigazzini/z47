@@ -63,7 +63,7 @@ void fnRandomI(uint16_t unusedButMandatoryParameter) {
 
   if(getRegisterDataType(REGISTER_X) != dtLongInteger) {
     displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "cannot RANI# with %s in X", getRegisterDataTypeName(REGISTER_X, true, false));
       moreInfoOnError("In function fnRandomI:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -72,7 +72,7 @@ void fnRandomI(uint16_t unusedButMandatoryParameter) {
 
   if(getRegisterDataType(REGISTER_Y) != dtLongInteger) {
     displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_Y);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "cannot RANI# with %s in Y", getRegisterDataTypeName(REGISTER_Y, true, false));
       moreInfoOnError("In function fnRandomI:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -85,7 +85,7 @@ void fnRandomI(uint16_t unusedButMandatoryParameter) {
   cmp = longIntegerCompare(regX, regY);
   if(cmp == 0) {
     displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       moreInfoOnError("In function fnRandomI:", "cannot RANI# with X = Y", NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     return;
@@ -106,7 +106,7 @@ void fnRandomI(uint16_t unusedButMandatoryParameter) {
   longIntegerAddUInt(regX, 1, regX);
   if(longIntegerCompareUInt(regX, 0xFFFFFFFF) >= 0) { // 2^32 - 1
     displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       moreInfoOnError("In function fnRandomI:", "cannot RANI# with |X - Y| >= 2^32", NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     return;
@@ -168,7 +168,7 @@ void fnSeed(uint16_t unusedButMandatoryParameter) {
   }
   else {
     displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "cannot use %s as a seed for the RNG!\n it must be a SP or DP real or a long integer", getDataTypeName(getRegisterDataType(REGISTER_X), true, false));
       moreInfoOnError("In function fnSeed:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)

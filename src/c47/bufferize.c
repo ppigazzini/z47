@@ -1,18 +1,5 @@
-/* This file is part of 43S.
- *
- * 43S is free software:you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * 43S is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with 43S.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: GPL-3.0-only
+// SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
 #include "bufferize.h"
 
@@ -197,7 +184,7 @@ typedef struct {
 } numStr;
 
 #if !defined(TESTSUITE_BUILD)
-  TO_QSPI static const numStr NumMsg[] = { 
+  TO_QSPI static const numStr NumMsg[] = {
     { "^0" },
     { "^1" },
     { "^2" },
@@ -245,13 +232,13 @@ typedef struct {
                                  item == ITM_COS_SIGN             ? "COS()" :
                                  item == ITM_TAN_SIGN             ? "TAN()" :
                                  item == ITM_OBELUS               ? STD_SLASH :
-                                 item == ITM_poly_SIGN            ? "a4" STD_DOT "x^4+a3" STD_DOT "x^3+a2" STD_DOT "x^2+a1" STD_DOT "x+a0" :
+                                 item == ITM_poly_SIGN            ? "b4" STD_DOT "x^4+b3" STD_DOT "x^3+b2" STD_DOT "x^2+b1" STD_DOT "x+b0" :
                                  item == ITM_op_j_SIGN            ? COMPLEX_UNIT :
                                  item == ITM_zetaX                ? STD_zeta "()" :
                                  item == ITM_GAMMAX               ? STD_GAMMA "()" :
                                  item >= FIRST_CONSTANT &&
                                     item <= LAST_CONSTANT         ? indexOfItems[item].itemCatalogName :
-                                 item >= ITM_SUP_0 && 
+                                 item >= ITM_SUP_0 &&
                                     item <= ITM_SUP_9             ? NumMsg[item - ITM_SUP_0].noStr : "";
 
 
@@ -259,12 +246,15 @@ typedef struct {
           int16_t jj = 0;
           addChar[0]=0;
           if(addChar0[0] == 0) {
-            stringAppend(addChar,indexOfItems[item].itemSoftmenuName);
-            if ((indexOfItems[item].itemSoftmenuName[0]!=0) && (indexOfItems[item].status & EIM_STATUS) == EIM_ENABLED) {
-              stringAppend(addChar + stringByteLength(addChar), "()");
-              jj = 1;
+            if(item != ITM_EQUAL) {       //block the entry of "="
+              stringAppend(addChar,indexOfItems[item].itemSoftmenuName);
+              if((indexOfItems[item].itemSoftmenuName[0]!=0) && (indexOfItems[item].status & EIM_STATUS) == EIM_ENABLED) {
+                stringAppend(addChar + stringByteLength(addChar), "()");
+                jj = 1;
+              }
             }
-          } else {
+          }
+          else {
             stringAppend(addChar,addChar0);
             if(addChar0[0] == '^') {
               if(scrLock == NC_SUPERSCRIPT) {
@@ -285,8 +275,9 @@ typedef struct {
           }
           xcopy(aimCursorPos, addChar, itemLen);
           if(jj != 0) {
-              xCursor += stringGlyphLength(addChar) - jj;
-          } else {
+            xCursor += stringGlyphLength(addChar) - jj;
+          }
+          else {
             switch(item) {
               case ITM_poly_SIGN: {
                 xCursor += 0;
@@ -407,7 +398,9 @@ typedef struct {
             light_ASB_icon();
           #endif // !TESTSUITE_BUILD
         }
-        if (calcMode == CM_PEM) hourGlassIconEnabled = false;
+        if(calcMode == CM_PEM) {
+          hourGlassIconEnabled = false;
+        }
       }
 
       else if(tam.mode) {
@@ -427,27 +420,27 @@ typedef struct {
         if(item == ITM_RIGHT_ARROW) {
           mimEnter(true);
           setJRegisterAsInt(true, getJRegisterAsInt(true) + 1);
-          refreshScreen();
+          refreshScreen(51);
         }
         else if(item == ITM_LEFT_ARROW) {
           mimEnter(true);
           setJRegisterAsInt(true, getJRegisterAsInt(true) - 1);
-          refreshScreen();
+          refreshScreen(52);
         }
         else if(item == ITM_UP_ARROW) {
           mimEnter(true);
           setIRegisterAsInt(true, getIRegisterAsInt(true) - 1);
-          refreshScreen();
+          refreshScreen(53);
         }
         else if(item == ITM_DOWN_ARROW) {
           mimEnter(true);
           setIRegisterAsInt(true, getIRegisterAsInt(true) + 1);
-          refreshScreen();
+          refreshScreen(54);
         }
 
         if((int16_t)item < 0) {
           showSoftmenu(item);
-          refreshScreen();
+          refreshScreen(55);
           return;
         }
 
@@ -889,8 +882,7 @@ typedef struct {
           aimBuffer[2] = '.';
           aimBuffer[3] = 0;
           nimNumberPart = NP_REAL_FLOAT_PART;
-          lastIntegerBase = 0;
-          fnRefreshState();                                                //JMNIM
+          setLastintegerBasetoZero();
           break;
         }
 
@@ -900,6 +892,7 @@ typedef struct {
           aimBuffer[1] = '0';
           aimBuffer[2] = 0;
           nimNumberPart = NP_INT_10;
+          setLastintegerBasetoZero();
           break;
         }
 
@@ -1124,8 +1117,7 @@ typedef struct {
           strcat(aimBuffer, "0");
         }
 
-        lastIntegerBase = 0;
-        fnRefreshState();                                                //JMNIM
+        setLastintegerBasetoZero();
 
         switch(nimNumberPart) {
           case NP_INT_10: {
@@ -1205,8 +1197,7 @@ typedef struct {
           strcat(aimBuffer, "1");
         }
 
-        lastIntegerBase = 0;
-        fnRefreshState();                                                //JMNIM
+        setLastintegerBasetoZero();
 
         switch(nimNumberPart) {
           case NP_INT_10: {
@@ -1247,8 +1238,7 @@ typedef struct {
       case ITM_toINT: { // #
         done = true;
 
-        lastIntegerBase = 0;
-        fnRefreshState();                                                //JMNIM
+        setLastintegerBasetoZero();
 
         if(nimNumberPart == NP_INT_10 || nimNumberPart == NP_INT_16) {
           strcat(aimBuffer, "#");
@@ -1331,8 +1321,7 @@ typedef struct {
 
         done = true;
 
-        lastIntegerBase = 0;
-        fnRefreshState();                                                //JMNIM
+        setLastintegerBasetoZero();
 
         switch(nimNumberPart) {
          case NP_REAL_EXPONENT: {
@@ -1378,6 +1367,7 @@ typedef struct {
           done = true;
           strcat(aimBuffer, "3.141592653589793238462643383279503");
           reallyRunFunction(ITM_EXIT1, NOPARAM);
+          setLastintegerBasetoZero();
         }
         break;
       }
@@ -1537,7 +1527,7 @@ typedef struct {
             if(lastErrorCode == ERROR_RAM_FULL) {
               lastErrorCode = 0;
               temporaryInformation = TI_UNDO_DISABLED;
-              #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+              #if (EXTRA_INFO_ON_CALC_ERROR == 1)
                 moreInfoOnError("In function addItemToNimBuffer:", "there is not enough memory to save for undo!", NULL, NULL);
               #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
             }
@@ -1552,7 +1542,7 @@ typedef struct {
           if(lastErrorCode == ERROR_RAM_FULL) {
             lastErrorCode = 0;
             temporaryInformation = TI_UNDO_DISABLED;
-            #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+            #if (EXTRA_INFO_ON_CALC_ERROR == 1)
               moreInfoOnError("In function addItemToNimBuffer:", "there is not enough memory to save for undo!", NULL, NULL);
             #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
           }
@@ -1583,7 +1573,8 @@ typedef struct {
         if(INTEGERSHORTCUTS && nimNumberPart == NP_INT_BASE && aimBuffer[strlen(aimBuffer) - 1] == '#') {
           strcat(aimBuffer, "2");
           goto addItemToNimBuffer_exit;
-        } else {
+        }
+        else {
           keyActionProcessed = false;
         }
         break;
@@ -1597,7 +1588,8 @@ typedef struct {
         if(INTEGERSHORTCUTS && nimNumberPart == NP_INT_BASE && aimBuffer[strlen(aimBuffer) - 1] == '#') {
           strcat(aimBuffer, "10");
           goto addItemToNimBuffer_exit;
-        } else {
+        }
+        else {
           keyActionProcessed = false;
         }
         break;
@@ -1607,7 +1599,8 @@ typedef struct {
         if(INTEGERSHORTCUTS && nimNumberPart == NP_INT_BASE && aimBuffer[strlen(aimBuffer) - 1] == '#') {
           strcat(aimBuffer, "16");
           goto addItemToNimBuffer_exit;
-        } else {
+        }
+        else {
           keyActionProcessed = false;
         }
         break;
@@ -1618,7 +1611,8 @@ typedef struct {
           aimBuffer[strlen(aimBuffer)-1]=0;
           nimNumberPart = NP_INT_10;
           goto addItemToNimBuffer_exit;
-        } else {
+        }
+        else {
           keyActionProcessed = false;
         }
         break;
@@ -1631,6 +1625,7 @@ typedef struct {
       case ITM_DMS: {
         if(nimNumberPart == NP_INT_10 || nimNumberPart == NP_REAL_FLOAT_PART) {
           done = true;
+          setLastintegerBasetoZero();
 
           screenUpdatingMode &= ~SCRUPD_SKIP_STACK_ONE_TIME;
           closeNim();
@@ -1682,6 +1677,7 @@ typedef struct {
       case ITM_toHMS:{
         if(nimNumberPart == NP_INT_10 || nimNumberPart == NP_REAL_FLOAT_PART || nimNumberPart == NP_REAL_EXPONENT) {
           done = true;
+          setLastintegerBasetoZero();
 
           screenUpdatingMode &= ~SCRUPD_SKIP_STACK_ONE_TIME;
           closeNim();
@@ -1942,8 +1938,7 @@ typedef struct {
       if(calcMode != CM_NIM) {
         if(item == ITM_CONSTpi || (item >= 0 && indexOfItems[item].func == fnConstant)) {
           setSystemFlag(FLAG_ASLIFT);
-          lastIntegerBase = 0;                                             //JMNIM
-          fnRefreshState();                                                //JMNIM
+          setLastintegerBasetoZero();
         }
 
         if(lastErrorCode == 0) {
@@ -2107,7 +2102,8 @@ typedef struct {
     if(!getSystemFlag(FLAG_FRACT)) {
       setSystemFlag(FLAG_FRACT);          //1     //NOTE CHANGE HERE TO SWITCH OFF AUTO FRAC MODE AFTER FRACTION INPUT
       //changeFractionModeOnENTER = true; //2     //USE either //1 or //2
-    } else {
+    }
+    else {
       changeFractionModeOnENTER = false;
     }
     constantFractionsOn = false;
@@ -2125,7 +2121,7 @@ typedef struct {
     for(i=1; i<posSpace; i++) {
       if(aimBuffer[i]<'0' || aimBuffer[i]>'9') { // This should never happen
         displayCalcErrorMessage(ERROR_BAD_INPUT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-        #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           moreInfoOnError("In function parseNimString:", "there is a non numeric character in the integer part of the fraction!", NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
         return;
@@ -2143,7 +2139,7 @@ typedef struct {
     for(i=posSpace+1; i<posSlash; i++) {
       if(aimBuffer[i]<'0' || aimBuffer[i]>'9') { // This should never happen
        displayCalcErrorMessage(ERROR_BAD_INPUT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-       #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
          moreInfoOnError("In function parseNimString:", "there is a non numeric character in the numerator part of the fraction!", NULL, NULL);
        #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
        return;
@@ -2154,7 +2150,7 @@ typedef struct {
       for(i=posSlash+1; i<lg; i++) {
         if(aimBuffer[i]<'0' || aimBuffer[i]>'9') {
           displayCalcErrorMessage(ERROR_BAD_INPUT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-          #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+          #if (EXTRA_INFO_ON_CALC_ERROR == 1)
             moreInfoOnError("In function parseNimString:", "there is a non numeric character in the denominator part of the fraction!", NULL, NULL);
           #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
           return;
@@ -2178,7 +2174,7 @@ typedef struct {
 
     if(denom == 0 && !getSystemFlag(FLAG_SPCRES)) {
       displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         moreInfoOnError("In function parseNimString:", "the denominator of the fraction should not be 0!", "Unless D flag (Danger) is set.", NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return;
@@ -2244,6 +2240,7 @@ typedef struct {
   void closeNim(void) {
     setSystemFlag(FLAG_ASLIFT);
     //printf("closeNim\n");
+    screenUpdatingMode &= ~(SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME);
 
     if(nimNumberPart == NP_INT_10) {                //JM Input default type vv
       switch(Input_Default) {
@@ -2274,8 +2271,7 @@ typedef struct {
       nimNumberPart = NP_INT_BASE;
     }
     else {
-      lastIntegerBase = 0;
-      fnRefreshState();                                                //JMNIM
+      setLastintegerBasetoZero();
     }
 
     int16_t lastChar = strlen(aimBuffer) - 1;
@@ -2299,8 +2295,8 @@ typedef struct {
         if((is_i || is_theta) && !getSystemFlag(FLAG_POLAR)) { // complex i
           aimBuffer[++lastChar] = '1';                                                   //JM 2020-06-22 CHANGED FROM "1" to "0". DEFAULTING TO 0+0xi WHEN ABORTING CC ENTRY. #6072aee
           aimBuffer[lastChar + 1] = 0;                                                   //JM 2023-09-18 reverted partially (for RECT) from "0" to "1", specifically for a blank i
-        } else
-        if((is_i || is_theta) && getSystemFlag(FLAG_POLAR)) { // complex measured angle
+        }
+        else if((is_i || is_theta) && getSystemFlag(FLAG_POLAR)) { // complex measured angle
           aimBuffer[++lastChar] = '0';                                                   //JM 2020-06-22 CHANGED FROM "1" to '0'. DEFAULTING TO 0+0xi WHEN ABORTING CC ENTRY. #6072aee
           aimBuffer[lastChar + 1] = 0;
         }
@@ -2337,7 +2333,7 @@ typedef struct {
               if(aimBuffer[i]<'0' || aimBuffer[i]>'9') {
                 // This should never happen
                 displayCalcErrorMessage(ERROR_INVALID_INTEGER_INPUT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-                #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+                #if (EXTRA_INFO_ON_CALC_ERROR == 1)
                   moreInfoOnError("In function closeNIM:", "there is a non numeric character in the base of the integer!", NULL, NULL);
                 #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
                 return;
@@ -2347,7 +2343,7 @@ typedef struct {
             base = stringToInt32(aimBuffer + posHash + 1);
             if(base < 2 || base > 16) {
               displayCalcErrorMessage(ERROR_INVALID_INTEGER_INPUT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-              #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+              #if (EXTRA_INFO_ON_CALC_ERROR == 1)
                moreInfoOnError("In function closeNIM:", "the base of the integer must be from 2 to 16!", NULL, NULL);
               #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
               return;
@@ -2356,7 +2352,7 @@ typedef struct {
             for(i=aimBuffer[0] == '-' ? 1 :0; i<posHash; i++) {
               if((aimBuffer[i] > '9' ? aimBuffer[i] - 'A' + 10 :aimBuffer[i] - '0') >= base) {
                 displayCalcErrorMessage(ERROR_INVALID_INTEGER_INPUT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-                #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+                #if (EXTRA_INFO_ON_CALC_ERROR == 1)
                   sprintf(errorMessage, "digit %c is not allowed in base %d!", aimBuffer[i], base);
                   moreInfoOnError("In function closeNIM:", errorMessage, NULL, NULL);
                 #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -2408,7 +2404,7 @@ typedef struct {
 
             if(longIntegerCompare(value, minVal) < 0 || longIntegerCompare(value, maxVal) > 0) {
               displayCalcErrorMessage(ERROR_WORD_SIZE_TOO_SMALL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-              #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+              #if (EXTRA_INFO_ON_CALC_ERROR == 1)
                 char strMin[22], strMax[22];
                 longIntegerToAllocatedString(minVal, strMin, sizeof(strMin));
                 longIntegerToAllocatedString(maxVal, strMax, sizeof(strMax));

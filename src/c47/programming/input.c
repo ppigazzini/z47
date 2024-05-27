@@ -1,18 +1,6 @@
-/* This file is part of 43S.
- *
- * 43S is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * 43S is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with 43S.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: GPL-3.0-only
+// SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
+
 
 /********************************************//**
  * \file input.c
@@ -46,7 +34,7 @@ void fnInput(uint16_t regist) {
     programRunStop = PGM_WAITING;
     currentInputVariable = regist;
     fnRecall(regist);
-    refreshScreen();
+    refreshScreen(10);
     #if defined(DMCP_BUILD)
       lcd_refresh();
     #else // !DMCP_BUILD
@@ -74,7 +62,7 @@ void fnPause(uint16_t duration) {
     }
     programRunStop = PGM_PAUSED;
     if(previousProgramRunStop != PGM_RUNNING) {
-      refreshScreen();
+      refreshScreen(11);
     }
     #if defined(DMCP_BUILD)
       lcd_refresh();
@@ -97,7 +85,7 @@ void fnPause(uint16_t duration) {
       refreshLcd(NULL);
       for(uint16_t i = 0; i < duration && (programRunStop == PGM_PAUSED || programRunStop == PGM_KEY_PRESSED_WHILE_PAUSED); ++i) {
         if(previousProgramRunStop != PGM_RUNNING) {
-          refreshScreen();
+          refreshScreen(12);
           refreshLcd(NULL);
         }
         gtk_main_iteration_do(FALSE);
@@ -114,7 +102,7 @@ void fnPause(uint16_t duration) {
     if(programRunStop != PGM_RUNNING) {                  // Remove this IF to fix PAUSE to update the stack and annunciators
       screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
       screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
-      refreshScreen();
+      refreshScreen(13);
       #if defined(DMCP_BUILD)
         lcd_refresh();
       #else // !DMCP_BUILD
@@ -148,7 +136,7 @@ static uint16_t _getKeyArg(uint16_t regist) {
       }
       default: {
         displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-        #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           sprintf(errorMessage, "cannot use %s for the parameter of CASE", getRegisterDataTypeName(REGISTER_X, true, false));
           moreInfoOnError("In function fnCase:", errorMessage, NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -190,7 +178,7 @@ void fnKey(uint16_t regist) {
     }
     else {
       displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "register %u is out of range", regist);
         moreInfoOnError("In function fnKey:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -297,7 +285,7 @@ void fnKeyType(uint16_t regist) {
 
     default: {
       displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "keycode %u is out of range", keyCode);
         moreInfoOnError("In function fnKeyType:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -406,7 +394,7 @@ void fnPutKey(uint16_t regist) {
 
       default: {
         displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-        #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           sprintf(errorMessage, "keycode %u is out of range", keyCode);
           moreInfoOnError("In function fnPutKey:", errorMessage, NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)

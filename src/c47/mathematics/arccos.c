@@ -42,7 +42,7 @@
 static void arccosCplx(void) {
   real_t a, b, real, imag;
 
-  if (!getRegisterAsComplex(REGISTER_X, &a, &b))
+  if(!getRegisterAsComplex(REGISTER_X, &a, &b))
     return;
 
   // arccos(z) = -i.ln(z + i.sqrt(1 - z²))
@@ -71,7 +71,7 @@ static void arccosReal(void) {
   real_t x;
   const real_t *r = &x;
 
-  if (!getRegisterAsReal(REGISTER_X, &x))
+  if(!getRegisterAsReal(REGISTER_X, &x))
     return;
 
   if(realCompareAbsGreaterThan(&x, const_1)) {
@@ -84,12 +84,13 @@ static void arccosReal(void) {
     }
     else {
       displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         moreInfoOnError("In function arccosReal:", "|X| > 1", "and CPXRES is not set!", NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return;
     }
-  } else {
+  }
+  else {
     WP34S_Acos(&x, &x, &ctxtReal39);
     convertAngleFromTo(&x, amRadian, currentAngularMode, &ctxtReal39);
   }

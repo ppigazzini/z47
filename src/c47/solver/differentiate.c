@@ -22,6 +22,7 @@
 #include "constantPointers.h"
 #include "debug.h"
 #include "error.h"
+#include "flags.h"
 #include "fonts.h"
 #include "items.h"
 #include "programming/lblGtoXeq.h"
@@ -30,114 +31,116 @@
 #include "registers.h"
 #include "registerValueConversions.h"
 #include "solver/equation.h"
+#include "screen.h"
 #include "stack.h"
 #include "c47.h"
 
 void fn1stDeriv(uint16_t label) {
+  currentSolverStatus &= !SOLVER_STATUS_USES_FORMULA;
+  bool_t solving = getSystemFlag(FLAG_SOLVING);
+  setSystemFlag(FLAG_SOLVING);
   if(label >= FIRST_LABEL && label <= LAST_LABEL) {
     firstDerivative(label);
+    temporaryInformation = TI_1ST_DERIVATIVE;
   }
-  else if(label >= REGISTER_X && label <= REGISTER_T) {
+  else if(REGISTER_X <= label && label <= REGISTER_T) {
     // Interactive mode
-    char buf[4];
-    switch(label) {
-      case REGISTER_X: {
-        buf[0] = 'X';
-        break;
-      }
-      case REGISTER_Y: {
-        buf[0] = 'Y';
-        break;
-      }
-      case REGISTER_Z: {
-        buf[0] = 'Z';
-        break;
-      }
-      case REGISTER_T: {
-        buf[0] = 'T';
-        break;
-      }
-      default: { /* unlikely */
-        buf[0] = 0;
-      }
-    }
+    char buf[2];
+    buf[0] = letteredRegisterName((calcRegister_t)label);
     buf[1] = 0;
     label = findNamedLabel(buf);
     if(label == INVALID_VARIABLE) {
       displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "string '%s' is not a named label", buf);
         moreInfoOnError("In function fn1stDeriv:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
     else {
       firstDerivative(label);
+      temporaryInformation = TI_1ST_DERIVATIVE;
     }
   }
   else {
     displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "unexpected parameter %u", label);
       moreInfoOnError("In function fn1stDeriv:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
+  if(!solving) {
+    clearSystemFlag(FLAG_SOLVING);
+  }
 }
 
 void fn2ndDeriv(uint16_t label) {
+  currentSolverStatus &= !SOLVER_STATUS_USES_FORMULA;
+  bool_t solving = getSystemFlag(FLAG_SOLVING);
+  setSystemFlag(FLAG_SOLVING);
   if(label >= FIRST_LABEL && label <= LAST_LABEL) {
     secondDerivative(label);
+    temporaryInformation = TI_2ND_DERIVATIVE;
   }
-  else if(label >= REGISTER_X && label <= REGISTER_T) {
+  else if(REGISTER_X <= label && label <= REGISTER_T) {
     // Interactive mode
-    char buf[4];
-    switch(label) {
-      case REGISTER_X: {
-        buf[0] = 'X';
-        break;}
-      case REGISTER_Y: {
-        buf[0] = 'Y';
-        break;}
-      case REGISTER_Z: {
-        buf[0] = 'Z';
-        break;}
-      case REGISTER_T: {
-        buf[0] = 'T';
-        break;}
-      default: { /* unlikely */
-        buf[0] = 0;
-      }
-    }
+    char buf[2];
+    buf[0] = letteredRegisterName((calcRegister_t)label);
     buf[1] = 0;
     label = findNamedLabel(buf);
     if(label == INVALID_VARIABLE) {
       displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "string '%s' is not a named label", buf);
         moreInfoOnError("In function fn2ndDeriv:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
     else {
       secondDerivative(label);
+      temporaryInformation = TI_2ND_DERIVATIVE;
     }
   }
   else {
     displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "unexpected parameter %u", label);
       moreInfoOnError("In function fn2ndDeriv:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
+  if(!solving) {
+    clearSystemFlag(FLAG_SOLVING);
+  }
 }
 
 void fn1stDerivEq(uint16_t unusedButMandatoryParameter) {
+  //new method to maintain solver variable
+  #if !defined(TESTSUITE_BUILD)
+    reallyRunFunction(ITM_RCL, currentSolverVariable);
+    copySourceRegisterToDestRegister(REGISTER_X, TEMP_REGISTER_1);
+  #endif // TESTSUITE_BUILD
   currentSolverStatus |= SOLVER_STATUS_USES_FORMULA;
   firstDerivative(INVALID_VARIABLE);
+    #if !defined(TESTSUITE_BUILD)
+      reallyRunFunction(ITM_RCL, TEMP_REGISTER_1);
+      reallyRunFunction(ITM_STO, currentSolverVariable);
+      fnDrop(NOPARAM);
+    #endif // TESTSUITE_BUILD
   temporaryInformation = TI_1ST_DERIVATIVE;
 }
 
+
 void fn2ndDerivEq(uint16_t unusedButMandatoryParameter) {
+    #if !defined(TESTSUITE_BUILD)
+    //new method to maintain solver variable
+      reallyRunFunction(ITM_RCL, currentSolverVariable);
+      copySourceRegisterToDestRegister(REGISTER_X, TEMP_REGISTER_1);
+    #endif // TESTSUITE_BUILD
   currentSolverStatus |= SOLVER_STATUS_USES_FORMULA;
   secondDerivative(INVALID_VARIABLE);
+    #if !defined(TESTSUITE_BUILD)
+      reallyRunFunction(ITM_RCL, TEMP_REGISTER_1);
+      reallyRunFunction(ITM_STO, currentSolverVariable);
+      fnDrop(NOPARAM);
+    #endif // TESTSUITE_BUILD
   temporaryInformation = TI_2ND_DERIVATIVE;
 }
 
@@ -190,12 +193,14 @@ static void _differentiatorIteration(calcRegister_t label, real_t *r0) {
 
   if(currentSolverStatus & SOLVER_STATUS_USES_FORMULA) {
     #if !defined(TESTSUITE_BUILD)
+      //printf("parseEquation\n");
       reallyRunFunction(ITM_STO, currentSolverVariable);
       parseEquation(currentFormula, EQUATION_PARSER_XEQ, tmpString, tmpString + AIM_BUFFER_LENGTH);
     #endif // TESTSUITE_BUILD
   }
   else {
     dynamicMenuItem = -1;
+    //printf("Running RPN execProgram\n");
     execProgram(label);
     fnToReal(NOPARAM);
   }
@@ -392,23 +397,23 @@ static void _2ndDerivative(calcRegister_t label, const real_t *x, real_t *res, r
 void firstDerivative(calcRegister_t label) {
   real_t x;
 
-  if (!getRegisterAsReal(REGISTER_X, &x))
+  if(!getRegisterAsReal(REGISTER_X, &x))
     return;
 
+  saveForUndo();
   _1stDerivative(label, &x, &x, &ctxtReal39);
-  fnClearStack(NOPARAM);
-  fnFillStack(NOPARAM);
+  undo();
   convertRealToResultRegister(&x, REGISTER_X, amNone);
 }
 
 void secondDerivative(calcRegister_t label) {
   real_t x;
 
-  if (!getRegisterAsReal(REGISTER_X, &x))
+  if(!getRegisterAsReal(REGISTER_X, &x))
     return;
 
+  saveForUndo();
   _2ndDerivative(label, &x, &x, &ctxtReal39);
-  fnClearStack(NOPARAM);
-  fnFillStack(NOPARAM);
+  undo();
   convertRealToResultRegister(&x, REGISTER_X, amNone);
 }

@@ -14,14 +14,7 @@
  * along with C47.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* ADDITIONAL C43 functions and routines */
 
-
-/********************************************//** //JM
- * \file graphText.c TEXTFILES module
- ***********************************************/
-
-/* ADDITIONAL C43 functions and routines */
 
 #if !defined(GRAPHTEXT_H)
 #define GRAPHTEXT_H
@@ -45,8 +38,8 @@
 
 void         create_filename(char *fn);
 
-int16_t      export_append_line(char *inputstring);
-int16_t      export_string_to_filename(const char line1[TMP_STR_LENGTH], uint8_t mode, char *dirname, char *filename);
+int16_t      export_append_line(const char *inputstring);
+int16_t      export_string_to_filename(const char line1[TMP_STR_LENGTH], uint8_t mode, const char *dirname, const char *filename);
 #if defined(DMCP_BUILD)
   int16_t open_text(const char *dirname, const char *dirfile);
   int16_t close_text(const char *dirfile);
@@ -57,6 +50,7 @@ int16_t      export_string_to_filename(const char line1[TMP_STR_LENGTH], uint8_t
 extern char         filename_csv[filenamelen]; //JMMAX                //JM_CSV
 extern uint32_t     mem__32;                                          //JM_CSV
 extern bool_t       cancelFilename;
+void         printStatus    (uint8_t row, const char *line1, uint8_t forced);
 void         print_numberstr(const char *line1, bool_t line_init);
 void         print_linestr  (const char *line1, bool_t line_init);
 int16_t      export_xy_to_file(float x, float y);

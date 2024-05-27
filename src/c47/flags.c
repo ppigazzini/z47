@@ -170,21 +170,6 @@ void forceSystemFlag(unsigned int sf, int set) {
   }
 }
 
-static void synchronizeSystemFlag(unsigned int sf) {
-  forceSystemFlag(sf, getSystemFlag(sf));
-}
-
-void synchronizeLetteredFlags(void) {
-  synchronizeSystemFlag(FLAG_ALLENG);
-  synchronizeSystemFlag(FLAG_OVERFLOW);
-  synchronizeSystemFlag(FLAG_CARRY);
-  synchronizeSystemFlag(FLAG_SPCRES);
-  synchronizeSystemFlag(FLAG_CPXRES);
-  synchronizeSystemFlag(FLAG_LEAD0);
-  synchronizeSystemFlag(FLAG_TRACE);
-  synchronizeSystemFlag(FLAG_POLAR);
-}
-
 
 
 #if !defined(TESTSUITE_BUILD)
@@ -292,7 +277,7 @@ void fnSetFlag(uint16_t flag) {
         programRunStop = PGM_STOPPED;
       }
       displayCalcErrorMessage(ERROR_WRITE_PROTECTED_SYSTEM_FLAG, ERR_REGISTER_LINE, REGISTER_X);
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "protected system flag (%" PRIu16 ")!", (uint16_t)(flag & 0x3fff));
         moreInfoOnError("In function fnSetFlag:", "Tying to set a write", errorMessage, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -370,7 +355,7 @@ void fnClearFlag(uint16_t flag) {
         programRunStop = PGM_STOPPED;
       }
       displayCalcErrorMessage(ERROR_WRITE_PROTECTED_SYSTEM_FLAG, ERR_REGISTER_LINE, REGISTER_X);
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "protected system flag (%" PRIu16 ")!", (uint16_t)(flag & 0x3fff));
         moreInfoOnError("In function fnClearFlag:", "Tying to clear a write", errorMessage, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -449,7 +434,7 @@ void fnFlipFlag(uint16_t flag) {
         programRunStop = PGM_STOPPED;
       }
       displayCalcErrorMessage(ERROR_WRITE_PROTECTED_SYSTEM_FLAG, ERR_REGISTER_LINE, REGISTER_X);
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "protected system flag (%" PRIu16 ")!", (uint16_t)(flag & 0x3fff));
         moreInfoOnError("In function fnFlipFlag:", "Tying to flip a write", errorMessage, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -542,47 +527,47 @@ void fnClFAll(uint16_t confirmation) {
 
 
 void fnIsFlagClear(uint16_t flag) {
-  temporaryInformation = (getFlag(flag) ? TI_FALSE : TI_TRUE);
+  SET_TI_TRUE_FALSE(!getFlag(flag));
 }
 
 
 void fnIsFlagClearClear(uint16_t flag) {
-  temporaryInformation = (getFlag(flag) ? TI_FALSE : TI_TRUE);
+  SET_TI_TRUE_FALSE(!getFlag(flag));
   fnClearFlag(flag);
 }
 
 
 void fnIsFlagClearSet(uint16_t flag) {
-  temporaryInformation = (getFlag(flag) ? TI_FALSE : TI_TRUE);
+  SET_TI_TRUE_FALSE(!getFlag(flag));
   fnSetFlag(flag);
 }
 
 
 void fnIsFlagClearFlip(uint16_t flag) {
-  temporaryInformation = (getFlag(flag) ? TI_FALSE : TI_TRUE);
+  SET_TI_TRUE_FALSE(!getFlag(flag));
   fnFlipFlag(flag);
 }
 
 
 void fnIsFlagSet(uint16_t flag) {
-  temporaryInformation = (getFlag(flag) ? TI_TRUE : TI_FALSE);
+  SET_TI_TRUE_FALSE(getFlag(flag));
 }
 
 
 void fnIsFlagSetClear(uint16_t flag) {
-  temporaryInformation = (getFlag(flag) ? TI_TRUE : TI_FALSE);
+  SET_TI_TRUE_FALSE(getFlag(flag));
   fnClearFlag(flag);
 }
 
 
 void fnIsFlagSetSet(uint16_t flag) {
-  temporaryInformation = (getFlag(flag) ? TI_TRUE : TI_FALSE);
+  SET_TI_TRUE_FALSE(getFlag(flag));
   fnSetFlag(flag);
 }
 
 
 void fnIsFlagSetFlip(uint16_t flag) {
-  temporaryInformation = (getFlag(flag) ? TI_TRUE : TI_FALSE);
+  SET_TI_TRUE_FALSE(getFlag(flag));
   fnFlipFlag(flag);
 }
 
@@ -631,24 +616,20 @@ void SetSetting(uint16_t jmConfig) {
     case SS_8:           fnSetFlag(FLAG_SSIZE8);                   break;
     case CM_RECTANGULAR:
       fnClearFlag(FLAG_POLAR);
-      #if defined(RECT_POLAR_CHANGES_X)
-        if(getRegisterDataType(REGISTER_X) == dtComplex34 || getRegisterDataType(REGISTER_X) == dtComplex34Matrix) {
-          setComplexRegisterPolarMode(REGISTER_X, ~amPolar);
-          setComplexRegisterAngularMode(REGISTER_X, amNone);
-        }
-      #endif //RECT_POLAR_CHANGES_X
+      //if(getRegisterDataType(REGISTER_X) == dtComplex34 || getRegisterDataType(REGISTER_X) == dtComplex34Matrix) {   //RECT/POLAR radiobuttons to also change the complex number in X
+      //  setComplexRegisterPolarMode(REGISTER_X, ~amPolar);
+      //  setComplexRegisterAngularMode(REGISTER_X, amNone);
+      //}
       break;
 
     case CM_POLAR:
       fnSetFlag(FLAG_POLAR);
-      #if defined(RECT_POLAR_CHANGES_X)
-        if(getRegisterDataType(REGISTER_X) == dtComplex34 || getRegisterDataType(REGISTER_X) == dtComplex34Matrix) {
-          setComplexRegisterPolarMode(REGISTER_X, amPolar);
-          if(getComplexRegisterAngularMode(REGISTER_X) == amNone) {
-            setComplexRegisterAngularMode(REGISTER_X, currentAngularMode);
-          }
-        }
-      #endif //RECT_POLAR_CHANGES_X
+      //if(getRegisterDataType(REGISTER_X) == dtComplex34 || getRegisterDataType(REGISTER_X) == dtComplex34Matrix) {   //RECT/POLAR radiobuttons to also change the complex number in X
+      //  setComplexRegisterPolarMode(REGISTER_X, amPolar);
+      //  if(getComplexRegisterAngularMode(REGISTER_X) == amNone) {
+      //    setComplexRegisterAngularMode(REGISTER_X, currentAngularMode);
+      //  }
+      //}
       break;
 
     case DO_SCI:      fnClearFlag(FLAG_ALLENG);                              break;
@@ -675,18 +656,19 @@ void SetSetting(uint16_t jmConfig) {
     case JC_UC:
       if(alphaCase == AC_LOWER) {
         alphaCase = AC_UPPER;
-      } else {
+      }
+      else {
         alphaCase = AC_LOWER;
       }
       break;
     case JC_SS:     //call sub/sup script
       if(scrLock == NC_NORMAL) {
-        scrLock = NC_SUPERSCRIPT;
-      }
-      else if(scrLock == NC_SUPERSCRIPT) {
         scrLock = NC_SUBSCRIPT;
       }
       else if(scrLock == NC_SUBSCRIPT) {
+        scrLock = NC_SUPERSCRIPT;
+      }
+      else if(scrLock == NC_SUPERSCRIPT) {
         scrLock = NC_NORMAL;
       }
       else {

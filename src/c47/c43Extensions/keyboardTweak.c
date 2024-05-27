@@ -14,7 +14,6 @@
  * along with C47.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* ADDITIONAL C43 functions and routines */
 
 /********************************************//**
  * \file keyboardTweak.c
@@ -35,6 +34,7 @@
 #include "stack.h"
 #include "statusBar.h"
 #include "softmenus.h"
+#include "solver/equation.h"
 #include "timer.h"
 
 #include <string.h>
@@ -93,20 +93,18 @@ void showAlphaModeonGui(void) {
 
 void showShiftState(void) {
   #if !defined(TESTSUITE_BUILD)
-    //showAlphaModeonGui();
-
     #if defined(PC_BUILD_TELLTALE)
       printf("    >>> showShiftState: calcMode=%d\n", calcMode);
     #endif // PC_BUILD_TELLTALE
 
-    if(temporaryInformation != TI_SHOW_REGISTER_BIG && temporaryInformation != TI_SHOW_REGISTER_SMALL && temporaryInformation != TI_SHOW_REGISTER) {
+    if(!SHOWMODE && temporaryInformation != TI_SHOW_REGISTER) {
       if(shiftF) {                        //SEE screen.c:refreshScreen
-        showGlyph(STD_MODE_F, &standardFont, X_SHIFT, Y_SHIFT, vmNormal, true, true);   // f is pixel 4+8+3 wide
+        showShiftStateF();
         show_f_jm();
         showHideAlphaMode();
       }
       else if(shiftG) {                   //SEE screen.c:refreshScreen
-        showGlyph(STD_MODE_G, &standardFont, X_SHIFT, Y_SHIFT, vmNormal, true, true);   // g is pixel 4+10+1 wide
+        showShiftStateG();
         show_g_jm();
         showHideAlphaMode();
       }
@@ -140,7 +138,8 @@ void resetShiftState(void) {
     shiftG = false;
     screenUpdatingMode &= ~SCRUPD_MANUAL_SHIFT_STATUS;
     showShiftState();
-    refreshScreen();
+    screenUpdatingMode |= (SCRUPD_SKIP_STACK_ONE_TIME | SCRUPD_SKIP_MENU_ONE_TIME); //JMNEWSPEEDUP
+    refreshScreen(100);
     refreshModeGui();                                                             //JM refreshModeGui
   }                                                                             //^^
 }
@@ -166,60 +165,6 @@ void resetKeytimers(void) {
   * \param void
   * \return void
   ***********************************************/
-  void show_f_jm(void) {
-    //showSoftmenuCurrentPart();                                                    //JM - Redraw boxes etc after shift is shown
-    //JMTOCHECK2        if(softmenuStackPointer >= 0) {                             //JM - Display dot in the f - line
-    if(!FN_timeouts_in_progress && calcMode != CM_ASN_BROWSER) {
-      if(!ULFL) {
-        underline(1);
-        ULFL = !ULFL;
-        doRefreshSoftMenu = true;
-      }
-      if(ULGL) {
-        underline(2);
-        ULGL = !ULGL;
-        doRefreshSoftMenu = true;
-      }
-    }
-    //}                                                                             //JM - Display dot in the f - line
-  }
-
-
-  void show_g_jm(void) {
-    //showSoftmenuCurrentPart();                                                    //JM - Redraw boxes etc after shift is shown
-    //JMTOCHECK2        if(softmenuStackPointer >= 0) {                             //JM - Display dot in the g - line
-    if(!FN_timeouts_in_progress && calcMode != CM_ASN_BROWSER) {
-      if(ULFL) {
-        underline(1);
-        ULFL = !ULFL;
-        doRefreshSoftMenu = true;
-      }
-      if(!ULGL) {
-        underline(2);
-        ULGL = !ULGL;
-        doRefreshSoftMenu = true;
-      }
-    }
-    //}                                                                             //JM - Display dot in the g - line
-  }
-
-
-  void clear_fg_jm(void) {
-    //showSoftmenuCurrentPart();            //JM TO REMOVE STILL !!                 //JM - Redraw boxes etc after shift is shown
-    if(!FN_timeouts_in_progress) {        //Cancel lines
-      if(ULFL) {
-        underline(1);
-        ULFL = !ULFL;
-        doRefreshSoftMenu = true;
-      }
-      if(ULGL) {
-        underline(2);
-        ULGL = !ULGL;
-        doRefreshSoftMenu = true;
-      }
-    }
-  }
-
 
   void fg_processing_jm(void) {
     if(ShiftTimoutMode || HOME3 || MYM3) {
@@ -355,16 +300,19 @@ void resetKeytimers(void) {
                     longpressDelayedkey1 = ITM_AIM;
                     longpressDelayedkey2 = 0;
                     longpressDelayedkey3 = -MNU_XXEQ;
-                  } else if(LongPressM == RB_M124) {
+                  }
+                  else if(LongPressM == RB_M124) {
                     longpressDelayedkey1 = ITM_AIM;
                     longpressDelayedkey2 = 0;
                     longpressDelayedkey3 = -MNU_XXEQ;
-                  } else if(LongPressM == RB_M1234) {
+                  }
+                  else if(LongPressM == RB_M1234) {
                     longpressDelayedkey1 = ITM_AIM;
                     longpressDelayedkey2 = -MNU_XXEQ;
                     longpressDelayedkey3 = tmpg;
                   }
-              } else {
+              }
+              else {
                 longpressDelayedkey1 = -MNU_XXEQ;
                 longpressDelayedkey2 = tmpf_;
                 longpressDelayedkey3 = tmpg_;
@@ -394,11 +342,13 @@ void resetKeytimers(void) {
                   longpressDelayedkey1 = tmpf == ITM_USERMODE && getSystemFlag(FLAG_SH_LONGPRESS) ? ITM_USERMODE : 0;
                   longpressDelayedkey2 = 0;
                   longpressDelayedkey3 = 0;
-                } else if(LongPressM == RB_M124) {
+                }
+                else if(LongPressM == RB_M124) {
                   longpressDelayedkey1 = ITM_USERMODE;
                   longpressDelayedkey2 = 0;
                   longpressDelayedkey3 = 0 ;
-                } else if(LongPressM == RB_M1234) {
+                }
+                else if(LongPressM == RB_M1234) {
                   longpressDelayedkey1 = ITM_USERMODE;
                   longpressDelayedkey2 = tmpg;
                   longpressDelayedkey3 = 0;
@@ -418,16 +368,19 @@ void resetKeytimers(void) {
                   longpressDelayedkey1 = ITM_AIM;
                   longpressDelayedkey2 = 0;
                   longpressDelayedkey3 = -MNU_XXEQ;
-                } else if(LongPressM == RB_M124) {
+                }
+                else if(LongPressM == RB_M124) {
                   longpressDelayedkey1 = ITM_AIM;
                   longpressDelayedkey2 = 0;
                   longpressDelayedkey3 = -MNU_XXEQ;
-                } else if(LongPressM == RB_M1234) {
+                }
+                else if(LongPressM == RB_M1234) {
                   longpressDelayedkey1 = ITM_AIM;
                   longpressDelayedkey2 = -MNU_XXEQ;
                   longpressDelayedkey3 = tmpg;
                 }
-              } else {
+              }
+              else {
                 longpressDelayedkey1 = -MNU_XXEQ;
                 longpressDelayedkey2 = tmpf_;
                 longpressDelayedkey3 = tmpg_;
@@ -452,11 +405,13 @@ void resetKeytimers(void) {
                   longpressDelayedkey1 = tmpf == ITM_USERMODE && getSystemFlag(FLAG_SH_LONGPRESS) ? ITM_USERMODE : 0;
                   longpressDelayedkey2 = 0;
                   longpressDelayedkey3 = 0;
-                } else if(LongPressM == RB_M124) {
+                }
+                else if(LongPressM == RB_M124) {
                   longpressDelayedkey1 = ITM_USERMODE;
                   longpressDelayedkey2 = 0;
                   longpressDelayedkey3 = 0 ;
-                } else if(LongPressM == RB_M1234) {
+                }
+                else if(LongPressM == RB_M1234) {
                   longpressDelayedkey1 = ITM_USERMODE;
                   longpressDelayedkey2 = tmpg;
                   longpressDelayedkey3 = 0;
@@ -531,7 +486,7 @@ void resetKeytimers(void) {
       //JM TIMER CLRDROP. Autodrop means double click normal key.
       if(JM_auto_doublepress_autodrop_enabled != 0) {
         hideFunctionName();
-        undo();
+//        undo(); Removed undo. I cannot figure why I had it in here not detected in many years - it only started to give issue now with the undo stack worked on! 2024-04-20 jm
         showFunctionName(JM_auto_doublepress_autodrop_enabled, FUNCTION_NOPTIME, "SF:M");            //JM CLRDROP
         *result = JM_auto_doublepress_autodrop_enabled;
         fnTimerStop(TO_CL_DROP);          //JM TIMER CLRDROP ON DOUBLE BACKSPACE
@@ -824,16 +779,20 @@ void resetKeytimers(void) {
       hideFunctionName();
 
       if(!FN_timed_out_to_NOP && fnTimerGetStatus(TO_FN_EXEC) != TMR_RUNNING) {
+        #if defined(VERBOSEKEYS)
+          printf(">>>>Z RRR2 LONGPRESS EXECUTE              ------------------       TO_FN_EXEC\n          charKey=|%s| charkey[0]=%d \n", charKey, charKey[0]);
+        #endif // VERBOSEKEYS
         btnFnClicked(unused, charKey);                                             //Execute
       }
 
-      if(!(calcMode == CM_REGISTER_BROWSER || calcMode == CM_FLAG_BROWSER || calcMode == CM_ASN_BROWSER || calcMode == CM_FONT_BROWSER || calcMode == CM_PLOT_STAT || calcMode == CM_GRAPH  || calcMode == CM_LISTXY)) {
+      resetShiftState();
+
+      if(!(calcMode == CM_REGISTER_BROWSER || calcMode == CM_FLAG_BROWSER || calcMode == CM_ASN_BROWSER || calcMode == CM_FONT_BROWSER || GRAPHMODE || calcMode == CM_LISTXY)) {
         if((calcMode == CM_ASSIGN && itemToBeAssigned == 0) || FN_timed_out_to_NOP) { //Clear any possible underline residues
           showSoftmenuCurrentPart();
         }
       }
 
-      resetShiftState();
       FN_cancel();
     }
 
@@ -895,10 +854,10 @@ uint16_t numlockReplacements(uint16_t id, int16_t item, bool_t NL, bool_t FSHIFT
     }
 
     else if(NL) {       //JMvv Numlock translation: Assumes lower case is NOT active
-      
+
       item -= (ITM_A + 26 <= item && item <= ITM_Z + 26) ? -26 : 0; //Ensures lower case is NOT active
       uint16_t ix = 15; //from EEX to the bottom of the keyboard, last key 37
-      while(ix < 37) {        
+      while(ix < 37) {
         if(kbd_std[ix].primaryAim != ITM_EXIT1 && kbd_std[ix].primaryAim != ITM_UP1 && kbd_std[ix].primaryAim != ITM_DOWN1 && kbd_std[ix].primaryAim != ITM_BACKSPACE) {
           if(!FSHIFT && item == kbd_std[ix].primaryAim) {
             *item1 = getSystemFlag(FLAG_USER) ? kbd_usr[ix].gShiftedAim : kbd_std[ix].gShiftedAim;
@@ -1297,7 +1256,7 @@ void fnT_ARROW(uint16_t command) {
           fnT_ARROW(ITM_T_RIGHT_ARROW);
           while(ixx < 75 && (current_cursor_x >= current_cursor_x_old+5 || current_cursor_y == current_cursor_y_old)) {
             fnT_ARROW(ITM_T_LEFT_ARROW);
-            showStringEdC43(lines ,displayAIMbufferoffset, T_cursorPos, aimBuffer, 1, -100, vmNormal, true, true, true);  //display up to the cursor
+            showStringEdC43(multiEdLines ,displayAIMbufferoffset, T_cursorPos, aimBuffer, 1, -100, vmNormal, true, true, true);  //display up to the cursor
             ixx++;
           }
           break;
@@ -1309,7 +1268,7 @@ void fnT_ARROW(uint16_t command) {
           fnT_ARROW(ITM_T_LEFT_ARROW);
           while(ixx < 75 && (current_cursor_x+5 <= current_cursor_x_old || current_cursor_y == current_cursor_y_old)) {
             fnT_ARROW(ITM_T_RIGHT_ARROW);
-            showStringEdC43(lines ,displayAIMbufferoffset, T_cursorPos, aimBuffer, 1, -100, vmNormal, true, true, true);  //display up to the cursor
+            showStringEdC43(multiEdLines ,displayAIMbufferoffset, T_cursorPos, aimBuffer, 1, -100, vmNormal, true, true, true);  //display up to the cursor
             ixx++;
 
             //printf("###^^^ %d %d %d %d %d\n",ixx,current_cursor_x, current_cursor_x_old, current_cursor_y, current_cursor_y_old);
@@ -1355,18 +1314,16 @@ void fnCla(uint16_t unusedButMandatoryParameter) {
     yCursor = Y_POSITION_OF_AIM_LINE + 6;
     cursorFont = &standardFont;
     cursorEnabled = true;
-    last_CM=252;
     #if !defined(TESTSUITE_BUILD)
       clearRegisterLine(AIM_REGISTER_LINE, true, true);
       refreshRegisterLine(AIM_REGISTER_LINE);        //JM Execute here, to make sure that the 5/2 line check is done
     #endif // !TESTSUITE_BUILD
-    last_CM=253;
+    screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
   }
   else if(calcMode == CM_EIM) {
-    while(xCursor > 0) {
-      fnKeyBackspace(0);
-    }
+    fnEqCla();
     refreshRegisterLine(NIM_REGISTER_LINE);
+    screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
   }
 }
 

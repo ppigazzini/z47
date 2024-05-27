@@ -43,19 +43,6 @@ void fnClearStack(uint16_t unusedButMandatoryParameter) {
 
 
 
-void fnDrop(uint16_t unusedButMandatoryParameter) {
-  freeRegisterData(REGISTER_X);
-  for(calcRegister_t regist=REGISTER_X; regist<getStackTop(); regist++) {
-    globalRegister[regist] = globalRegister[regist + 1];
-  }
-
-  uint16_t sizeInBlocks = getRegisterFullSizeInBlocks(getStackTop());
-  setRegisterDataPointer(getStackTop() - 1, allocC47Blocks(sizeInBlocks));
-  xcopy(REGISTER_DATA(getStackTop() - 1), REGISTER_DATA(getStackTop()), TO_BYTES(sizeInBlocks));
-}
-
-
-
 void liftStack(void) {
   if(getSystemFlag(FLAG_ASLIFT)) {
     if(currentInputVariable != INVALID_VARIABLE) {
@@ -94,6 +81,10 @@ void _Drop(calcRegister_t reg) {
   else {
     lastErrorCode = ERROR_RAM_FULL;
   }
+}
+
+void fnDrop(uint16_t unusedButMandatoryParameter) {
+  _Drop(REGISTER_X);
 }
 
 void fnDropY(uint16_t unusedButMandatoryParameter) {
@@ -371,7 +362,7 @@ void undo(void) {
   if(SAVED_SIGMA_LAc1 == +1 && statisticalSumsPointer != NULL) {
     fnSigma(-1);
   }
-  else if(SAVED_SIGMA_LAc1 == -1) {
+  else if(SAVED_SIGMA_LAc1 == -1 && statisticalSumsPointer != NULL) {
     convertRealToResultRegister(&SAVED_SIGMA_LASTX, REGISTER_X, amNone);             // Can use stack, as the stack will be undone below
     convertRealToResultRegister(&SAVED_SIGMA_LASTY, REGISTER_Y, amNone);
     fnSigma(+1);
@@ -379,7 +370,6 @@ void undo(void) {
 
   systemFlags0 = savedSystemFlags0;
   systemFlags1 = savedSystemFlags1;
-  synchronizeLetteredFlags();
 
   for(calcRegister_t regist=getStackTop(); regist>=REGISTER_X; regist--) {
     copySourceRegisterToDestRegister(SAVED_REGISTER_X - REGISTER_X + regist, regist);
@@ -410,4 +400,11 @@ void undo(void) {
     printf(">>> Undone, calcMode = %i\n", calcMode);
   #endif // DEBUGUNDO
 
+}
+
+
+void fillStackWithReal0(void) {
+  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+  int32ToReal34(0, REGISTER_REAL34_DATA(REGISTER_X));
+  fnFillStack(0);
 }

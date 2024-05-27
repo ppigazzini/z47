@@ -1,18 +1,5 @@
-/* This file is part of 43S.
- *
- * 43S is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * 43S is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with 43S.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: GPL-3.0-only
+// SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
 #include "ui/tam.h"
 
@@ -35,6 +22,7 @@
 #include "screen.h"
 #include "softmenus.h"
 #include "sort.h"
+#include "stack.h"
 #include <string.h>
 
 #include "c47.h"
@@ -150,7 +138,7 @@
   }
 
 
-  static void _tamUpdateBuffer() {
+  static void _tamUpdateBuffer(void) {
     char regists[5];
     char *tbPtr = tamBuffer;
     if(tam.mode == 0) {
@@ -518,16 +506,18 @@
         addStepInProgram(ITM_IP);
       }
       else {
+        saveForUndo();
         fnIp(NOPARAM);
       }
       tamLeaveMode();
       return;
     }
-    else if((tam.function == ITM_toINT || tam.function == ITM_HASH_JM)  && item == ITM_alpha) {
+    else if((tam.function == ITM_toINT || tam.function == ITM_HASH_JM)  && ((item == ITM_alpha && calcModel == USER_C47) || (item == ITM_REG_F && calcModel == USER_R47))) {
       if(calcMode == CM_PEM) {
         addStepInProgram(ITM_FP);
       }
       else {
+        saveForUndo();
         fnFp(NOPARAM);
       }
       tamLeaveMode();
@@ -541,19 +531,20 @@
       tam.value = 2;
       forceTry = true;
     }
-    else if((tam.function == ITM_toINT  || tam.function == ITM_HASH_JM) && item == ITM_2HEX) {
+    else if((tam.function == ITM_toINT  || tam.function == ITM_HASH_JM) && item == ITM_REG_H) {
       tam.value = 16;
       forceTry = true;
     }
-    else if((tam.function == ITM_toINT  || tam.function == ITM_HASH_JM) && item == ITM_2OCT) {     //JM BASE added OCT
+    else if((tam.function == ITM_toINT  || tam.function == ITM_HASH_JM) && item == ITM_REG_O) {     //JM BASE added OCT
       tam.value = 8;
       forceTry = true;
     }
-    else if((tam.mode == TM_LABEL || (tam.mode == TM_KEY && tam.keyInputFinished)) && !tam.indirect && item == ITM_E) {
-      tam.value = 100 - 'A' + 'E';
-      forceTry = true;
-      tryOoR = true;
-    }
+//Removing these as I cannot see the situation where this is needed. Not sure though, so not deleting completely.
+//    else if((tam.mode == TM_LABEL || (tam.mode == TM_KEY && tam.keyInputFinished)) && !tam.indirect && item == ITM_E) {
+//      tam.value = 100 - 'A' + 'E';
+//      forceTry = true;
+//      tryOoR = true;
+//    }
     else if(REGISTER_X <= indexOfItems[item].param && indexOfItems[item].param <= REGISTER_W && !tam.dot) {
       if(!tam.digitsSoFar && tam.function != ITM_BESTF && (tam.indirect || (tam.mode != TM_VALUE && tam.mode != TM_VALUE_CHB))) {
         if((tam.mode == TM_LABEL || (tam.mode == TM_KEY && tam.keyInputFinished)) && !tam.indirect) {
@@ -801,7 +792,7 @@
               tamLeaveMode();
             }
             displayCalcErrorMessage(ERROR_FUNCTION_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
-            #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+            #if (EXTRA_INFO_ON_CALC_ERROR == 1)
               sprintf(errorMessage, "string '%s' is neither a named label nor a function name", buffer);
               moreInfoOnError("In function _tamProcessInput:", errorMessage, NULL, NULL);
             #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -814,14 +805,14 @@
         if(value == INVALID_VARIABLE && tam.function != ITM_LBL && tam.function != ITM_LBLQ && (calcMode != CM_PEM || tam.mode != TM_SOLVE)) {
           if(calcMode != CM_PEM && getSystemFlag(FLAG_IGN1ER)) {
             clearSystemFlag(FLAG_IGN1ER);
-            #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+            #if (EXTRA_INFO_ON_CALC_ERROR == 1)
               sprintf(errorMessage, "string '%s' is not a named label", buffer);
               moreInfoOnError("In function _tamProcessInput:", errorMessage, "ignored since IGN1ER was set", NULL);
             #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
           }
-          else if ((calcMode != CM_PEM || tam.function != ITM_GTO)){
+          else if((calcMode != CM_PEM || tam.function != ITM_GTO)){
             displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
-            #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+            #if (EXTRA_INFO_ON_CALC_ERROR == 1)
               sprintf(errorMessage, "string '%s' is not a named label", buffer);
               moreInfoOnError("In function _tamProcessInput:", errorMessage, NULL, NULL);
             #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -839,14 +830,14 @@
         if(value == INVALID_VARIABLE && calcMode != CM_PEM) {
           if(getSystemFlag(FLAG_IGN1ER)) {
             clearSystemFlag(FLAG_IGN1ER);
-            #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+            #if (EXTRA_INFO_ON_CALC_ERROR == 1)
               sprintf(errorMessage, "string '%s' is not a named variable", buffer);
               moreInfoOnError("In function _tamProcessInput:", errorMessage, "ignored since IGN1ER system flag was set", NULL);
             #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
           }
           else {
             displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE, REGISTER_X);
-            #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+            #if (EXTRA_INFO_ON_CALC_ERROR == 1)
               sprintf(errorMessage, "string '%s' is not a named variable", buffer);
               moreInfoOnError("In function _tamProcessInput:", errorMessage, NULL, NULL);
             #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -950,12 +941,16 @@
     switch(tam.mode) {
       case TM_VALUE:
       case TM_VALUE_CHB:
-        showSoftmenu(-MNU_TAMNONREG);
+        if(func != ITM_VIEW || !catalog || catalog != CATALOG_MVAR) {
+          showSoftmenu(-MNU_TAMNONREG);
+        }
         break;
       case TM_REGISTER:
       case TM_M_DIM:
       case TM_KEY: {
-        showSoftmenu(-MNU_TAM);
+        if(func != ITM_VIEW || !catalog || catalog != CATALOG_MVAR) {
+          showSoftmenu(-MNU_TAM);
+        }
         break;
       }
 
@@ -971,7 +966,9 @@
       }
 
       case TM_STORCL: {
-        showSoftmenu(-MNU_TAMSTORCL);
+        if(!catalog || catalog != CATALOG_MVAR) {
+          showSoftmenu(-MNU_TAMSTORCL);
+        }
         break;
       }
 
@@ -1013,6 +1010,7 @@
     }
 
     numberOfTamMenusToPop = 1;
+    //numberOfTamMenusToPop = (func == ITM_ASSIGN) || (catalog && catalog == CATALOG_MVAR && (tam.mode == TM_STORCL || func == ITM_VIEW)) ? 0 : 1;
 
     _tamUpdateBuffer();
 

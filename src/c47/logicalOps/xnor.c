@@ -57,7 +57,7 @@ TO_QSPI void (* const logicalXnor[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS][NUMBER_
  * \param void
  * \return void
  ***********************************************/
-#if(EXTRA_INFO_ON_CALC_ERROR == 1)
+#if (EXTRA_INFO_ON_CALC_ERROR == 1)
   void xnorError24(void) {
     displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
     sprintf(errorMessage, "%s XNOR %s", getRegisterDataTypeName(REGISTER_Y, false, false), getRegisterDataTypeName(REGISTER_X, false, false));
@@ -68,7 +68,7 @@ TO_QSPI void (* const logicalXnor[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS][NUMBER_
 
 void xnorError31(void) {
   displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-  #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+  #if (EXTRA_INFO_ON_CALC_ERROR == 1)
     sprintf(errorMessage, "%s XNOR %s", getRegisterDataTypeName(REGISTER_Y, false, false), getRegisterDataTypeName(REGISTER_X, false, false));
     sprintf(errorMessage + ERROR_MESSAGE_LENGTH/2, "XNOR doesn't allow mixing data types real/long integer and short integer");
     moreInfoOnError("In function xnorError31:", errorMessage, errorMessage + ERROR_MESSAGE_LENGTH/2, NULL);

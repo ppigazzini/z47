@@ -331,7 +331,7 @@ void fnClP(uint16_t label) {
   }
   else {
     displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "label %" PRIu16 " is not a global label", label);
       moreInfoOnError("In function fnClP:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -1332,6 +1332,24 @@ void insertStepInProgram(int16_t func) {
           break;
       }
 
+        case VAR_UX:           //
+        case VAR_LX: {         //
+          tmpString[0] = ITM_STO;
+          tmpString[1] = (char)STRING_LABEL_VARIABLE;
+          tmpString[2] = 3;
+          if(func == VAR_UX) {
+            tmpString[3] = STD_UP_ARROW[0];
+            tmpString[4] = STD_UP_ARROW[1];
+          }
+          else {
+            tmpString[3] = STD_DOWN_ARROW[0];
+            tmpString[4] = STD_DOWN_ARROW[1];
+          }
+          tmpString[5] = 'X';
+          _insertInProgram((uint8_t *)tmpString, 6);
+          break;
+      }
+
         case ITM_USERMODE: {         // 1729
           fnFlipFlag(FLAG_USER);
           break;
@@ -1427,6 +1445,8 @@ void addStepInProgram(int16_t func) {
         case VAR_ACC:            // 1192
         case VAR_ULIM:           // 1193
         case VAR_LLIM:           // 1194
+        case VAR_UX:             // 1205
+        case VAR_LX:             // 1206
         case ITM_DELP:           // 1425
         case ITM_DELPALL:        // 1426
         case ITM_GTOP:           // 1482
