@@ -163,6 +163,38 @@ void fnTvmEndMode(uint16_t unusedButMandatoryParameter) {
 }
 
 
+void fnEff(uint16_t unusedButMandatoryParameter) {
+  real_t iA, cperA, tmp;
+
+  //no need to use tvmIKnown or tvmIChanges, as this is a simplistic output only, which takes the current cperA & iA and produces the effective rate. There is no situation where there is no values in these
+  real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_CPERONA), &cperA);
+  real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_IPONA),   &iA);
+
+  if(!realIsZero(&cperA)) {
+
+    saveForUndo();
+    thereIsSomethingToUndo = true;
+    liftStack();
+
+    realDivide(&iA, const_100, &tmp, &ctxtReal39);
+    realDivide(&tmp, &cperA, &tmp, &ctxtReal39);
+    realAdd(&tmp, const_1, &tmp, &ctxtReal39);
+    realPower(&tmp, &cperA, &tmp, &ctxtReal39);
+    realSubtract(&tmp, const_1, &tmp, &ctxtReal39);
+    realMultiply(&tmp, const_100, &tmp, &ctxtReal39);
+    
+    reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+    convertRealToReal34ResultRegister(&tmp, REGISTER_X);
+    temporaryInformation = TI_TVM_EFF;
+  } else {
+    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      moreInfoOnError("In function fnEff:", "cannot compute EFF%/a ", "with parameters cp/a = 0", NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+  }
+}
+
+
 
 
 void tvmEquation(void) {

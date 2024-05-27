@@ -576,10 +576,8 @@
 #define FLAG_WRAPEDG                          0xc03F
 #define FLAG_MONIT                            0x8040 // MONIT MUST be the first of the second flag word
 #define FLAG_FRCYC                            0x8041
-// spare
-// spare
-#define FLAG_HPCONV                           0x8044
-#define NUMBER_OF_SYSTEM_FLAGS                    69 // We can have a maximum of 128 system flags
+#define FLAG_HPCONV                           0x8042
+#define NUMBER_OF_SYSTEM_FLAGS                    67 // We can have a maximum of 128 system flags
 
 typedef enum {
   LI_ZERO     = 0, // Long integer sign 0
@@ -1332,6 +1330,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define TI_NO_INTEGRATE_VARIABLE                 108
 #define TI_FUNCTION                              109
 #define TI_STORCL                                110
+#define TI_TVM_EFF                               111
 
 #define SET_TI_TRUE_FALSE(condition)               do { temporaryInformation = TI_FALSE + (condition); } while(0) // TI_TRUE must be TI_FALSE + 1
 

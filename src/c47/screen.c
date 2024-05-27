@@ -3688,6 +3688,11 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
             }
           }
 
+          else if(temporaryInformation == TI_TVM_EFF && regist == REGISTER_X) {
+            strcpy(prefix, "EFF%/a = EFF%YR = EAR =");
+            prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
+          }
+
           else if(temporaryInformation == TI_FROM_DATEX) {
             if(regist == REGISTER_X) {
               if(getSystemFlag(FLAG_DMY)) {
