@@ -40,6 +40,7 @@
   void convertLongIntegerToLongIntegerRegister               (const longInteger_t longInteger, calcRegister_t regist);
   void convertLongIntegerToShortIntegerRegister              (longInteger_t lgInt, uint32_t base, calcRegister_t destination);
   void convertLongIntegerToReal                              (longInteger_t source, real_t *destination, realContext_t *ctxt);
+  void convertLongIntegerToReal34                            (longInteger_t source, real34_t *destination);
 
   void convertShortIntegerRegisterToReal34Register           (calcRegister_t source, calcRegister_t destination);
   void convertShortIntegerRegisterToLongIntegerRegister      (calcRegister_t source, calcRegister_t destination);
@@ -104,6 +105,7 @@
     void    convertDoubleToString                            (double x, int16_t n, char *buff);  //Reformatting double/float strings that are formatted according to different locale settings
     void    convertDoubleToReal                              (double x, real_t *destination, realContext_t *ctxt);
     void    convertDoubleToReal34Register                    (double x, calcRegister_t destination);
+    void    convertDoubleToReal34RegisterPush                (double x, calcRegister_t destination);
   #endif // !TESTSUITE_BUILD
 
   void    realToFloat                                        (const real_t *vv, float *v);
@@ -112,6 +114,7 @@
   #define DOUBLE_NOT_INIT 3.402823466e+38f //maximum float value
 
   void badTypeError(calcRegister_t reg);
+  void badDomainError(calcRegister_t reg);
 
   bool_t getRegisterAsComplex(calcRegister_t reg, real_t *r, real_t *c);
   bool_t getRegisterAsComplexOrReal(calcRegister_t reg, real_t *r, real_t *c, bool_t *cmplx);

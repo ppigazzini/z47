@@ -20,6 +20,8 @@
 
 #include "solver/integrate.h"
 
+#include "c43Extensions/addons.h"
+#include "charString.h"
 #include "constantPointers.h"
 #include "defines.h"
 #include "display.h"
@@ -30,6 +32,7 @@
 #include "mathematics/comparisonReals.h"
 #include "mathematics/exp.h"
 #include "mathematics/wp34s.h"
+#include "plotstat.h"
 #include "programming/lblGtoXeq.h"
 #include "programming/manage.h"
 #include "realType.h"
@@ -39,67 +42,88 @@
 #include "softmenus.h"
 #include "solver/equation.h"
 #include "stack.h"
+#include "store.h"
+#include "recall.h"
 #include "c47.h"
 
 void fnPgmInt(uint16_t label) {
-  if(label >= FIRST_LABEL && label <= LAST_LABEL) {
+  if(FIRST_LABEL <= label && label <= LAST_LABEL) {
     currentSolverProgram = label - FIRST_LABEL;
+    currentSolverStatus &= ~SOLVER_STATUS_USES_FORMULA;
   }
-  else if(label >= REGISTER_X && label <= REGISTER_T) {
+  else if(REGISTER_X <= label && label <= REGISTER_T) {
     // Interactive mode
-    char buf[4];
-    switch(label) {
-      case REGISTER_X: {
-        buf[0] = 'X';
-        break;
-      }
-      case REGISTER_Y: {
-        buf[0] = 'Y';
-        break;
-      }
-      case REGISTER_Z: {
-        buf[0] = 'Z';
-        break;
-      }
-      case REGISTER_T: {
-        buf[0] = 'T';
-        break;
-      }
-      default: { /* unlikely */
-        buf[0] = 0;
-      }
-    }
+    char buf[2];
+    buf[0] = letteredRegisterName((calcRegister_t)label);
     buf[1] = 0;
     label = findNamedLabel(buf);
     if(label == INVALID_VARIABLE) {
       displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "string '%s' is not a named label", buf);
         moreInfoOnError("In function fnPgmInt:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
     else {
       currentSolverProgram = label - FIRST_LABEL;
+      currentSolverStatus &= ~SOLVER_STATUS_USES_FORMULA;
     }
   }
   else {
     displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "unexpected parameter %u", label);
       moreInfoOnError("In function fnPgmInt:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 }
 
-void fnIntegrate(uint16_t labelOrVariable) {
-  if((labelOrVariable >= FIRST_LABEL && labelOrVariable <= LAST_LABEL) || (labelOrVariable >= REGISTER_X && labelOrVariable <= REGISTER_T)) {
+/*DEBUGINT
+static void printCurrentSolverStatus(int nn, uint16_t currentSolverStatus) {
+printf("%i: currentSolverStatus=%u: ",nn,currentSolverStatus);
+if(currentSolverStatus > SOLVER_STATUS_TVM_APPLICATION)   { currentSolverStatus -= SOLVER_STATUS_TVM_APPLICATION;   printf("TVM ");}
+if(currentSolverStatus > SOLVER_STATUS_MVAR_BEING_OPENED) { currentSolverStatus -= SOLVER_STATUS_MVAR_BEING_OPENED; printf("MVARopen ");}
+if(currentSolverStatus > SOLVER_STATUS_USES_FORMULA)      { currentSolverStatus -= SOLVER_STATUS_USES_FORMULA;      printf("FORMULA ");}
+if(currentSolverStatus > SOLVER_STATUS_SINGLE_VARIABLE)   { currentSolverStatus -= SOLVER_STATUS_SINGLE_VARIABLE;   printf("1VAR ");}
+if(currentSolverStatus > SOLVER_STATUS_SINGLE_VARIABLE)   { currentSolverStatus -= SOLVER_STATUS_SINGLE_VARIABLE;   printf("1VAR ");}
+switch(currentSolverStatus) {
+    case SOLVER_STATUS_READY_TO_EXECUTE        : printf("ReadyExec ");break;   //  0x0001 //0001
+    case SOLVER_STATUS_INTERACTIVE             : printf("Interactive ");break;   //  0x0002 //0010
+//    case SOLVER_STATUS_EQUATION_MODE           : printf("EQN MODE");break;   //  0x000c //1100
+    case SOLVER_STATUS_EQUATION_SOLVER         : printf("EQN SLV ");break;   //  0x0000
+    case SOLVER_STATUS_EQUATION_INTEGRATE      : printf("EQN INT");break;   //  0x0004 //0100
+    case SOLVER_STATUS_EQUATION_1ST_DERIVATIVE : printf("1ST ");break;   //  0x0008 //1000
+    case SOLVER_STATUS_EQUATION_2ND_DERIVATIVE : printf("2ND ");break;   //  0x000C //1100
+    default:break;
+  }
+  printf("\n");
+}
+*/
+
+void _fnIntegrate(uint16_t labelOrVariable, bool_t XY) {
+
+  //printCurrentSolverStatus(3, currentSolverStatus);
+  //char yyy[100], yy1[100];
+  //int16_t yy0;
+  //  __displaySolver(labelOrVariable, yyy , &yy0);
+  //  stringToASCII(yyy,yy1);
+  //printf("labelOrVariable=%u %s\n",labelOrVariable, yy1);
+  //  __displaySolver(currentSolverVariable, yyy , &yy0);
+  //  stringToASCII(yyy,yy1);
+  //printf("currentSolverVariable=%u %s\n",currentSolverVariable, yy1);
+  //  xcopy(yyy, labelList[currentSolverProgram].labelPointer + 1, *(labelList[currentSolverProgram].labelPointer));
+  //  yyy[*(labelList[currentSolverProgram].labelPointer)] = 0;
+  //  stringToASCII(yyy,yy1);
+  //printf("currentSolverProgram %u = %s\n", currentSolverProgram, yy1);
+
+  if((FIRST_LABEL <= labelOrVariable && labelOrVariable <= LAST_LABEL) || (REGISTER_X <= labelOrVariable && labelOrVariable <= REGISTER_T)) {
     // Interactive mode
     fnPgmInt(labelOrVariable);
     if(lastErrorCode == ERROR_NONE) {
       currentSolverStatus = SOLVER_STATUS_INTERACTIVE | SOLVER_STATUS_EQUATION_INTEGRATE;
     }
   }
-  else if(labelOrVariable == RESERVED_VARIABLE_ACC || labelOrVariable == RESERVED_VARIABLE_ULIM || labelOrVariable == RESERVED_VARIABLE_LLIM) {
+  else if(!XY && (labelOrVariable == RESERVED_VARIABLE_ACC || labelOrVariable == RESERVED_VARIABLE_ULIM || labelOrVariable == RESERVED_VARIABLE_LLIM)) {
     fnToReal(NOPARAM);
     if(lastErrorCode == ERROR_NONE) {
       real34Copy(REGISTER_REAL34_DATA(REGISTER_X), REGISTER_REAL34_DATA(labelOrVariable));
@@ -119,15 +143,15 @@ void fnIntegrate(uint16_t labelOrVariable) {
       }
     }
   }
-  else if(!(currentSolverStatus & SOLVER_STATUS_USES_FORMULA) && labelOrVariable >= FIRST_NAMED_VARIABLE && labelOrVariable <= LAST_NAMED_VARIABLE && currentSolverProgram >= numberOfLabels) {
+  else if(!(currentSolverStatus & SOLVER_STATUS_USES_FORMULA) && (FIRST_NAMED_VARIABLE <= labelOrVariable && labelOrVariable <= LAST_NAMED_VARIABLE) && currentSolverProgram >= numberOfLabels) {
     displayCalcErrorMessage(ERROR_NO_PROGRAM_SPECIFIED, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "label %u not found", labelOrVariable);
       moreInfoOnError("In function fnIntegrate:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
   }
-  else if(labelOrVariable >= FIRST_NAMED_VARIABLE && labelOrVariable <= LAST_NAMED_VARIABLE) {
+  else if(FIRST_NAMED_VARIABLE <= labelOrVariable && labelOrVariable <= LAST_NAMED_VARIABLE) {
     real_t acc, ulim, llim, res;
     bool_t smallerEpsilon = false;
     real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_ACC),  &acc);
@@ -140,10 +164,110 @@ void fnIntegrate(uint16_t labelOrVariable) {
     if(realIsZero(&acc)) { // it may freeze if ACC=0
       realCopy(const_1e_32, &acc);   //used to be const_1e_6143
     }
-    integrate(labelOrVariable, &llim, &ulim, &acc, &res, smallerEpsilon ? &ctxtReal75 : &ctxtReal39);
-    fnClearStack(NOPARAM);
-    reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
-    reallocateRegister(REGISTER_Y, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+    if(real34CompareEqual(REGISTER_REAL34_DATA(RESERVED_VARIABLE_ULIM),REGISTER_REAL34_DATA(RESERVED_VARIABLE_LLIM) )) {
+      int32ToReal(0,&res);
+      int32ToReal(0,&acc);
+      goto done;
+    }
+
+calcRegister_t regist = labelOrVariable;  //at this point, it is a register variable
+saveForUndo();
+
+#define SPEEDUPEXPERIMENT
+//#undef SPEEDUPEXPERIMENT
+
+#ifdef SPEEDUPEXPERIMENT
+    real_t digits;
+    uint8_t significantDigitsMem = significantDigits;
+    int32_t digitsN = 0;
+    WP34S_Ln(&acc, &digits, &ctxtReal39);
+    realDivide(&digits, const_ln10, &digits, &ctxtReal39);
+    digitsN = max(min(-realToInt32C47(&digits),34-3),1);
+    #ifdef PC_BUILD
+      printRealToConsole(&digits, "digits: ","\n");
+      printf("----->>>> digitsN=%i, smallerEpsilon=%u\n",digitsN,smallerEpsilon);
+      printRealToConsole(&acc, "acc: ","\n");
+      printRealToConsole(&llim, "llim: ","\n");
+      printRealToConsole(&ulim, "ulim: ","\n");
+    #endif
+
+    if(digitsN == 6) {
+      #ifdef PC_BUILD
+        printf("Special accuracy test case: N=6 Reducing DEC to single precision and SDIGS digits to %i etc.\n",digitsN+3);
+      #endif
+      significantDigits = digitsN+3;
+      ctxtReal4.digits  = 7;
+      ctxtReal34.digits = digitsN+3;
+      ctxtReal39.digits = digitsN+5;
+      ctxtReal51.digits = digitsN+7;
+      ctxtReal75.digits = digitsN+13;
+      integrate(regist, &llim, &ulim, &acc, &res, &ctxtReal4);
+        //WP34S_Ln(&acc, &digits, &ctxtReal39);
+        //realDivide(&digits, const_ln10, &digits, &ctxtReal39);
+        //digitsN = max(min(-realToInt32C47(&digits),34-3),1);
+        //#ifdef PC_BUILD
+        //  printf("nnn=%i\n",digitsN);
+        //#endif
+        //real_t tt;
+        //int32ToReal(-digitsN, &tt);
+        //realRescale(&res, &res, &tt, &ctxtReal4);
+      significantDigits = significantDigitsMem;
+      ctxtReal4.digits  = 6;
+      ctxtReal34.digits = 34;
+      ctxtReal39.digits = 39;
+      ctxtReal51.digits = 51;
+      ctxtReal75.digits = 75;
+    }
+    else
+    if(digitsN <= 10) {
+      #ifdef PC_BUILD
+        printf("Special accuracy test case: N<=10 Reducing SDIGS digits to %i etc.\n",digitsN+3);
+      #endif
+      significantDigits = digitsN+3;
+      ctxtReal4.digits  = digitsN+3;
+      ctxtReal34.digits = digitsN+3;
+      ctxtReal39.digits = digitsN+5;
+      ctxtReal51.digits = digitsN+7;
+      ctxtReal75.digits = digitsN+13;
+      integrate(regist, &llim, &ulim, &acc, &res, &ctxtReal39);
+        //WP34S_Ln(&acc, &digits, &ctxtReal39);
+        //realDivide(&digits, const_ln10, &digits, &ctxtReal39);
+        //digitsN = max(min(-realToInt32C47(&digits),34-3),1);
+        //#ifdef PC_BUILD
+        //  printf("nnn=%i\n",digitsN);
+        //#endif
+        //real_t tt;
+        //int32ToReal(-digitsN, &tt);
+        //realRescale(&res, &res, &tt, &ctxtReal39);  or ose ACC. But best is to use N decimals. This does not work right
+      significantDigits = significantDigitsMem;
+      ctxtReal4.digits  = 6;
+      ctxtReal34.digits = 34;
+      ctxtReal39.digits = 39;
+      ctxtReal51.digits = 51;
+      ctxtReal75.digits = 75;
+    }
+    else {
+    #ifdef PC_BUILD
+      printf("Temporary Debugging info. Can be deleted once done.\n");
+      printRealToConsole(&llim,"llim:","\n");
+      printRealToConsole(&ulim,"ulim:","\n");
+      printRealToConsole(&acc,"acc:","\n");
+    #endif //PC_BUILD
+    integrate(regist, &llim, &ulim, &acc, &res, smallerEpsilon ? &ctxtReal75 : &ctxtReal39);
+    #ifdef PC_BUILD
+      printf("Temporary Debugging info. Can be deleted once done.\n");
+      printRealToConsole(&res,"res:","\n");
+    #endif //PC_BUILD
+    }
+#else //SPEEDUPEXPERIMENT
+    integrate(regist, &llim, &ulim, &acc, &res, smallerEpsilon ? &ctxtReal75 : &ctxtReal39);
+#endif //SPEEDUPEXPERIMENT
+
+done:
+    fnUndo(0);
+    liftStack();
+    liftStack();
+
     convertRealToReal34ResultRegister(&res, REGISTER_X);
     convertRealToReal34ResultRegister(&acc, REGISTER_Y);
     temporaryInformation = TI_INTEGRAL;
@@ -151,20 +275,49 @@ void fnIntegrate(uint16_t labelOrVariable) {
   }
   else {
     displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "unexpected parameter %u", labelOrVariable);
       moreInfoOnError("In function fnIntegrate:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 }
 
+
+void fnIntegrate(uint16_t labelOrVariable) {
+  //printf("fnIntegrate\n");
+  _fnIntegrate(labelOrVariable, false);
+}
+
+
+void fnIntegrateYX(uint16_t labelOrVariable) {
+  //printf("fnIntegrateYX\n");
+  //printRegisterToConsole(REGISTER_X,"X:",", ");
+  //printRegisterToConsole(REGISTER_Y,"Y:","\n");
+  real_t x, y;
+  if(getRegisterAsReal(REGISTER_X, &x) && getRegisterAsReal(REGISTER_Y, &y)) {
+    realToReal34(&x, REGISTER_REAL34_DATA(RESERVED_VARIABLE_ULIM));
+    realToReal34(&y, REGISTER_REAL34_DATA(RESERVED_VARIABLE_LLIM));
+    fnDrop(NOPARAM);
+    fnDrop(NOPARAM);
+  }
+  _fnIntegrate(labelOrVariable, true);
+}
+
+
+
 void fnIntVar(uint16_t unusedButMandatoryParameter) {
   #if !defined(TESTSUITE_BUILD)
     const char *var = (char *)getNthString(dynamicSoftmenu[softmenuStack[0].softmenuId].menuContent, dynamicMenuItem);
     const uint16_t regist = findOrAllocateNamedVariable(var);
+    bool_t doubleVarPress = regist == currentSolverVariable;
     currentSolverVariable = regist;
-    if(currentSolverStatus & SOLVER_STATUS_READY_TO_EXECUTE) {
-      showSoftmenu(-MNU_Sfdx);
+    if(doubleVarPress && currentSolverStatus & SOLVER_STATUS_READY_TO_EXECUTE) {
+      if((currentSolverStatus & SOLVER_STATUS_INTERACTIVE) && !(currentSolverStatus & SOLVER_STATUS_USES_FORMULA)) {
+        showSoftmenu(-MNU_Sfdx);     //in case of RPN formula, which does not yet work with DRAW
+      }
+      else {
+        showSoftmenu(-MNU_Sf_TOOL);  //in case of EQN
+      }
     }
     else {
       reallyRunFunction(ITM_STO, regist);
@@ -314,7 +467,7 @@ void _showProgress(const real_t *ss, const real_t *bma2, const real_t *h, const 
     real_t tmpr;
     realMultiply(ss, bma2, &res, realContext);
     realMultiply(&res, h, &res, realContext); // load the integral result,
-    realMultiply(&res, fact, &res, realContext); // load the integral result,
+    realMultiply(&res, fact, &res, realContext);
     realToReal34(&res,&rtmp34);
     real34ToDisplayString(&rtmp34, amNone, tmpString, &standardFont, 9999, 34, false, true);
     showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
@@ -332,6 +485,8 @@ void _showProgress(const real_t *ss, const real_t *bma2, const real_t *h, const 
 
 #if USE_NEW_DEI_INTEGRATION_CODE == 0
 static void _integrate(calcRegister_t regist, const real_t *a, const real_t *b, real_t *acc, real_t *res, realContext_t *realContext) { // Double-Exponential Integration
+  currentKeyCode = 255;
+  bool_t exitSignalled = false;
   real_t bma2;            // (b - a)/2, a & b are the integration limits
   real_t bpa2;            // (b + 2)/2
   real_t eps;             // epsilon
@@ -496,16 +651,16 @@ static void _integrate(calcRegister_t regist, const real_t *a, const real_t *b, 
     do { // DEI_j_loop::
       #if !defined(TESTSUITE_BUILD)
         char tmps[64];
+        exitSignalled |= (popKey() == 32); //instead of keyWaiting()
         sprintf(tmps,"level:  %i Iter: ",(int16_t)realToInt32C47(&lvl));
-        if(printHalfSecUpdate_Integer(timed, tmps, loop++)) {; //timed
+        if(printHalfSecUpdate_Integer(timed, tmps, loop++, halfSec_clearZ, halfSec_clearT, halfSec_disp)) {; //timed
           #if ENABLE_SOLVER_PROGRESS == 1
-            _showProgress(&ss, &bma2, &h, &tm, &x, const_pi, realContext);
+            //Error indication: incomplete, set to 0-0
+            _showProgress(&ss, &bma2, &h, const_0, const_0, const_pi, realContext);
           #endif //ENABLE_SOLVER_PROGRESS
-        }
-
-        if(keyWaiting()) {
-          printHalfSecUpdate_Integer(force+1, "Interrupted Iter:",loop);
-          break;
+          if(exitSignalled) {  //EXIT
+            printHalfSecUpdate_Integer(force+1, "Interrupted Iter:",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+          }
         }
       #endif //TESTSUITE_BUILD
 
@@ -583,7 +738,7 @@ static void _integrate(calcRegister_t regist, const real_t *a, const real_t *b, 
         realCopyAbs(&x, &y); // X = ABS(p)
         realMultiply(&ssp, &eps, &x, realContext);
         realSetPositiveSign(&x); // X = ABS(ssp*eps), Y = ABS(p)
-        if(realCompareGreaterEqual(&x, &y)) { // ABS(p) <= ABS(eps*eps)?
+        if(exitSignalled || realCompareGreaterEqual(&x, &y)) { // ABS(p) <= ABS(eps*eps)?
           break;
         }
       }
@@ -630,7 +785,7 @@ static void _integrate(calcRegister_t regist, const real_t *a, const real_t *b, 
     realSetPositiveSign(&y); // ABS(2*ssp - ss)
     realMultiply(&thr, &ss, &x, realContext); // thr*ss
     realSetPositiveSign(&x); // ABS(thr*ss)
-    if(realCompareGreaterThan(&x, &y)) { // ABS(2*ssp - ss) < ABS(thr*ss)?
+    if(exitSignalled || realCompareGreaterThan(&x, &y)) { // ABS(2*ssp - ss) < ABS(thr*ss)?
       break; // yes, computation done
     }
     lg0 = true; // mark level 0 done,
@@ -646,7 +801,7 @@ static void _integrate(calcRegister_t regist, const real_t *a, const real_t *b, 
   realSubtract(&x, &ss1, &x, realContext); // stack: (ss-ss1)-|ss|-ss-?
   realSetPositiveSign(&x); // stack: err-|ss|-ss-?
   realMultiply(&x, const_10, &tmp, realContext); // stack: 10*err-err-|ss|-ss
-  if(realCompareGreaterEqual(&tmp, &y)) { // 10*err < |ss|?
+  if(!exitSignalled && realCompareGreaterEqual(&tmp, &y)) { // 10*err < |ss|?
     // [tmp x y z]
     // no, bad result. stack: |ss|-err-10*err-ss
     // [y x tmp z]
@@ -745,6 +900,11 @@ static void _integrate(calcRegister_t regist, const real_t *a, const real_t *b, 
 
 #if USE_MICHALSKI_MOSIG_TANH_SINH == 1
 static void _integrate_mm(calcRegister_t regist, const real_t *llim, const real_t *ulim, real_t *acc, real_t *res, realContext_t *realContext) { // Double-Exponential Integration
+  #if !defined(TESTSUITE_BUILD)
+    int16_t interruptedLoop = 0;
+    currentKeyCode = 255;
+    bool_t exitSignalled = false;
+  #endif //TESTSUITE_BUILD
   real_t a, b;
   real_t errval, bpa2, bma2;
   real_t eps, tol, h;
@@ -778,6 +938,15 @@ static void _integrate_mm(calcRegister_t regist, const real_t *llim, const real_
   // max level
   maxlevel = 7;
 
+  #ifdef PC_BUILD
+    printf"Temporary Debugging info. Can be deleted once done.\n";
+    printRealToConsole(acc,"acc:","\n");
+    printRealToConsole(&eps,"eps:","\n");
+    printf("digits %i\n",realContext->digits);
+    printf("regist %u\n",regist);
+    printf("currentSolverStatus=%u, screenUpdatingMode=%u\n",currentSolverStatus, screenUpdatingMode);
+  #endif //PC_BUILD
+
   realSubtract(&b, &a, &bma2, realContext); // interval half-length
   realMultiply(&bma2, const_1on2, &bma2, realContext);
   realAdd(&b, &a, &bpa2, realContext); // centre of interval
@@ -796,16 +965,32 @@ static void _integrate_mm(calcRegister_t regist, const real_t *llim, const real_
     do {
       #if !defined(TESTSUITE_BUILD)
         char tmps[64];
-        sprintf(tmps,"level:  %i Iter: ",(int16_t)(maxlevel-k));
-        if(printHalfSecUpdate_Integer(timed, tmps, loop++)) { ; //timed
+        exitSignalled |= (popKey() == 32); //instead of keyWaiting()
+        sprintf(tmps,"Level: %i/%i Iter: ",(int16_t)k, (int16_t)maxlevel);
+        if(printHalfSecUpdate_Integer(timed, tmps, loop++, !interruptedLoop, !interruptedLoop, !interruptedLoop)) { ; //timed
+          #if defined(PC_BUILD)
+            printf("%s %i\n",tmps,loop);
+          #endif //PC_BUILD
           #if ENABLE_SOLVER_PROGRESS == 1
             _showProgress(&sslast, &bma2, &h, &errval, const_0, const_2, realContext);
           #endif //ENABLE_SOLVER_PROGRESS
-        }
-
-        if(keyWaiting()) {
-          printHalfSecUpdate_Integer(force+1, "Interrupted Iter:",loop);
-          break;
+          if(!interruptedLoop && exitSignalled) {  //First EXIT press
+            exitSignalled = false;
+            interruptedLoop = 1;
+          }
+          if(interruptedLoop) {
+            sprintf(tmps,"Level %i. Allow %5.1f s: Iter: ",(int16_t)k, (float)(40.0 - ((interruptedLoop++)/2.0)));
+            radixProcess(tmps,tmps);
+            printHalfSecUpdate_Integer(force+1, tmps, loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+            if(exitSignalled || interruptedLoop >= 40) {      // Direct exit by exiting and simulating the end values
+              exitSignalled = false;
+              realMultiply(&sslast, &bma2, res, realContext);
+              realMultiply(res, &h, res, realContext); // load the integral result,
+              realMultiply(res, const_2, res, realContext);
+              realCopy(&errval, acc); // its error value,
+              return;
+            }
+          }
         }
       #endif //TESTSUITE_BUILD
 
@@ -856,8 +1041,7 @@ static void _integrate_mm(calcRegister_t regist, const real_t *llim, const real_
       realAdd(&fp, &fm, &p, realContext);
       realMultiply(&p, &w, &p, realContext);
       realAdd(&ssp, &p, &ssp, realContext);
-      if(k > 0) {j += 2;} else {j += 1;}
-
+      j += 1 + (k > 2);
       realMultiply(&ssp, &eps, &tmp, realContext);
     } while(realCompareAbsLessThan(&tmp, &p));
 
@@ -868,7 +1052,7 @@ static void _integrate_mm(calcRegister_t regist, const real_t *llim, const real_
     realCopy(&ss, &sslast);
     ++k;
 
-  } while (realCompareGreaterEqual(&errval, &tol) && k <= maxlevel);
+  } while(realCompareGreaterEqual(&errval, &tol) && k <= maxlevel);
   realMultiply(&ss, &bma2, res, realContext);
   realMultiply(res, &h, res, realContext); // load the integral result,
   realCopy(&errval, acc); // its error value,
@@ -880,7 +1064,7 @@ static void _integrate_mm(calcRegister_t regist, const real_t *llim, const real_
 #endif // USE_NEW_DEI_INTEGRATION_CODE
 
 #if USE_NEW_DEI_INTEGRATION_CODE == 2
-/* 
+/*
    The new DEI (double exponential integral) code is an improvement on the
    Michalski-Mosig code. The document
        https://www.genivia.com/files/qthsh.pdf
@@ -888,12 +1072,12 @@ static void _integrate_mm(calcRegister_t regist, const real_t *llim, const real_
    behind the improved code.
 
    The new code here consists of two main functions, along with a couple of helpers.
-  
+
    dbl_exp_int_new is the main integration routine. It is mostly a direct
    copy of the code on pp 33-34 of the above document, using the same variable names
    where possible. double variables are replaced by real_t.
    It handles cases where none, one, or both limits are infinite.
-  
+
    exp_sinh_opt_d chooses an optimum "split point" for the integration routine
    in the case of one infinite limit, before the integral is calculated.
    It involves few function calls and can speed up such integrals significantly.
@@ -906,7 +1090,7 @@ static void _integrate_mm(calcRegister_t regist, const real_t *llim, const real_
 
    The macro USE_NEW_DEI_INTEGRATION_CODE, defined in src/c47/defines.h, controls the
    use of the new routines.
-  
+
    When USE_NEW_DEI_INTEGRATION_CODE == 0 the new routines are not used.
    When USE_NEW_DEI_INTEGRATION_CODE == 1 the new integration routine is used but not the split point routine.
    When USE_NEW_DEI_INTEGRATION_CODE == 2 both routines are used.
@@ -916,20 +1100,19 @@ static void _integrate_mm(calcRegister_t regist, const real_t *llim, const real_
   Helper function called by exp_sinh_opt_d routine to obtain values
   of fl, fr, and h by calling the user function.
 */
-static void DEI_xeq_user_adr (calcRegister_t regist, const real_t* a, const real_t* d, const real_t* r,
-			      real_t* fl, real_t* fr, real_t* h, realContext_t *realContext) {
+static void DEI_xeq_user_adr(calcRegister_t regist, const real_t* a, const real_t* d, const real_t* r, real_t* fl, real_t* fr, real_t* h, realContext_t *realContext) {
   real_t s1;
-  realDivide ( d, r, &s1, realContext); // s1 = d/r
-  realAdd (a, &s1, &s1, realContext); // s1 = a+d/r
-  DEI_xeq_user (regist, &s1, fl, realContext); // fl = f(a+d/r)
-  
-  realMultiply (d, r, &s1, realContext); // s1 = d*r
-  realAdd (a, &s1, &s1, realContext); // s1 = a+d*r
-  DEI_xeq_user (regist, &s1, fr, realContext); // fr = f(a+d*r)
-  realMultiply (fr, r, fr, realContext);
-  realMultiply (fr, r, fr, realContext); // fr = r*r*f(a+d*r)
+  realDivide(d, r, &s1, realContext); // s1 = d/r
+  realAdd(a, &s1, &s1, realContext); // s1 = a+d/r
+  DEI_xeq_user(regist, &s1, fl, realContext); // fl = f(a+d/r)
 
-  realSubtract (fl, fr, h, realContext); // h = fl - fr
+  realMultiply(d, r, &s1, realContext); // s1 = d*r
+  realAdd(a, &s1, &s1, realContext); // s1 = a+d*r
+  DEI_xeq_user(regist, &s1, fr, realContext); // fr = f(a+d*r)
+  realMultiply(fr, r, fr, realContext);
+  realMultiply(fr, r, fr, realContext); // fr = r*r*f(a+d*r)
+
+  realSubtract(fl, fr, h, realContext); // h = fl - fr
 }
 
 /*
@@ -941,7 +1124,7 @@ static void DEI_xeq_user_adr (calcRegister_t regist, const real_t* a, const real
 #define IS_FINITE(X) (!(realIsInfinite(X) || realIsNaN(X)))
 
 /*
-  exp_sinh_opt_d eturns optimized Exp-Sinh (i.e, semi-infinite) 
+  exp_sinh_opt_d eturns optimized Exp-Sinh (i.e, semi-infinite)
   integral split point d.
   This code comes from the qthsh.pdf document.
   It attempts to estimate the maximum value of x*f(x)
@@ -951,64 +1134,64 @@ static void DEI_xeq_user_adr (calcRegister_t regist, const real_t* a, const real
   https://www.hpmuseum.org/forum/thread-16549-post-184118.html#pid184118
 */
 
-static real_t* exp_sinh_opt_d (calcRegister_t regist, const real_t* a, const real_t* eps, real_t* d, realContext_t *realContext) {
+static real_t* exp_sinh_opt_d(calcRegister_t regist, const real_t* a, const real_t* eps, real_t* d, realContext_t *realContext) {
 
   real_t fl, fr, h2;
   real_t r, h;
   real_t lfl, lfr, lr, s;
-  
-  DEI_xeq_user_adr (regist, a, d, const_2, &fl, &fr, &h2, realContext);
-  
-  if ( IS_INFINITE(&h2) || (realIsZero(&fl) && realIsZero(&fr)) ) return d;
-  // function undefined or zero - don't bother.
-  
-  uint16_t i = 1, j = 32; // j=32 is optimal to find r
-  real_t s1; // scratch variable 
 
-  realZero (&s); // 
-  realCopy (const_2, &lr);
+  DEI_xeq_user_adr(regist, a, d, const_2, &fl, &fr, &h2, realContext);
+
+  if(IS_INFINITE(&h2) || (realIsZero(&fl) && realIsZero(&fr))) return d;
+  // function undefined or zero - don't bother.
+
+  uint16_t i = 1, j = 32; // j=32 is optimal to find r
+  real_t s1; // scratch variable
+
+  realZero(&s); //
+  realCopy(const_2, &lr);
   do { // find max j such that fl and fr are both finite - will usually be 16.
     j /= 2;
-    uInt32ToReal (1 << (i + j), &r);
-    DEI_xeq_user_adr (regist, a, d, &r, &fl, &fr, &h, realContext);
-  } while (j > 1 && IS_INFINITE(&h));
+    uInt32ToReal(1 << (i + j), &r);
+    DEI_xeq_user_adr(regist, a, d, &r, &fl, &fr, &h, realContext);
+  } while(j > 1 && IS_INFINITE(&h));
 
-  if (j > 1 && IS_FINITE(&h) && (realGetSign (&h) != realGetSign (&h2))) {
+  if(j > 1 && IS_FINITE(&h) && (realGetSign(&h) != realGetSign(&h2))) {
 
-    realCopy (&fl, &lfl);
-    realCopy (&fr, &lfr);
-    
+    realCopy(&fl, &lfl);
+    realCopy(&fr, &lfr);
+
     do { // bisect in 4 iterations
       j /= 2;
-      uInt32ToReal (1 << (i + j), &r);
-      DEI_xeq_user_adr (regist, a, d, &r, &fl, &fr, &h, realContext);
-      if (IS_FINITE(&h)) {
-      	realCopyAbs (&h, &s1);
-      	realAdd (&s, &s1, &s, realContext); // sum |h| to remove noisy cases - probably not needed with decNumbers
-      	if (realGetSign (&h) == realGetSign (&h2)) {
-      	  i += j; // search right half
-      	}
-      	else { // search left half
-      	  realCopy (&fl, &lfl);
-      	  realCopy (&fr, &lfr);
-      	  realCopy (&r, &lr);
-      	}
+      uInt32ToReal(1 << (i + j), &r);
+      DEI_xeq_user_adr(regist, a, d, &r, &fl, &fr, &h, realContext);
+      if(IS_FINITE(&h)) {
+        realCopyAbs(&h, &s1);
+        realAdd(&s, &s1, &s, realContext); // sum |h| to remove noisy cases - probably not needed with decNumbers
+        if(realGetSign(&h) == realGetSign(&h2)) {
+          i += j; // search right half
+        }
+        else { // search left half
+          realCopy(&fl, &lfl);
+          realCopy(&fr, &lfr);
+          realCopy(&r, &lr);
+        }
       }
-    } while (j > 1);
-    
-    if (realCompareGreaterThan (&s, const_1e_32)) { // if sum of |h| > small ...
-      realSubtract (&lfl, &lfr, &h, realContext);
-      realCopy (&lr, &r);
-      if (!realIsZero (&h)) { // if last diff != 0, back up r by one step
-	      realDivide (&r, const_2, &r, realContext);
+    } while(j > 1);
+
+    if(realCompareGreaterThan(&s, const_1e_32)) { // if sum of |h| > small ...
+      realSubtract(&lfl, &lfr, &h, realContext);
+      realCopy(&lr, &r);
+      if(!realIsZero(&h)) { // if last diff != 0, back up r by one step
+        realDivide(&r, const_2, &r, realContext);
       }
-      realSetPositiveSign (&lfl);
-      realSetPositiveSign (&lfr);
-      if (realCompareLessThan (&lfl, &lfr)) {
-	      realDivide (d, &r, d, realContext); // move d closer to the finite endpoint
+      realSetPositiveSign(&lfl);
+      realSetPositiveSign(&lfr);
+      if(realCompareLessThan(&lfl, &lfr)) {
+        realDivide(d, &r, d, realContext); // move d closer to the finite endpoint
       }
       else {
-	      realMultiply (d, &r, d, realContext);  // move d closer to the infinite endpoint 
+        realMultiply(d, &r, d, realContext);  // move d closer to the infinite endpoint
       }
     }
   }
@@ -1031,30 +1214,36 @@ static real_t* exp_sinh_opt_d (calcRegister_t regist, const real_t* a, const rea
   Code in integrate() below ensures that a < b.
  */
 
-static void dbl_exp_int_new (calcRegister_t regist, const real_t *a, const real_t *b, real_t *error, real_t *result, int sign, realContext_t *realContext) {
+static void dbl_exp_int_new(calcRegister_t regist, const real_t *a, const real_t *b, real_t *error, real_t *result, int sign, realContext_t *realContext) {
+  #if !defined(TESTSUITE_BUILD)
+    int16_t interruptedLoop = 0;
+    currentKeyCode = 255;
+    bool_t exitSignalled = false;
+  #endif //TESTSUITE_BUILD
 
   real_t c, d, s, v, h, y, eps;
   real_t s1, s2, s3; // scratch variables
-  
+
   int k = 0, mode = 0; // Tanh-Sinh = 0, Exp-Sinh = 1, Sinh-Sinh = 2
-  
+
   const int maxlevel = 7;
 
-#if !defined(TESTSUITE_BUILD)
+  #if !defined(TESTSUITE_BUILD)
   int loop = 0;
-#endif //TESTSUITE_BUILD
+  #endif //TESTSUITE_BUILD
 
-  realCopy (error, &eps);  
-  
-  realZero (&c);
-  realCopy (const_1, &d);
-  realCopy (const_2, &h);
-  
+  realCopy(error, &eps);
+
+  realZero(&c);
+  realCopy(const_1, &d);
+  realCopy(const_2, &h);
+
   if(realIsNaN(a) || realIsNaN(b)) { // check for invalid limits
     realCopy(const_NaN, result); // a or b is NaN, exit
     realCopy(const_NaN, error);
     return;
   }
+
   if(realCompareEqual(a, b)) { // check for equal limits
     realZero(result); // a == b, return 0
     realZero(error);
@@ -1063,207 +1252,231 @@ static void dbl_exp_int_new (calcRegister_t regist, const real_t *a, const real_
 
   realZero(error);  // initial error is zero
   realZero(result); // initial result is zero
-  
-  if ( (!realIsInfinite (a)) && (!realIsInfinite (b))) { 
-    realAdd (a, b, &c, realContext);
-    realDivide (&c, const_2, &c, realContext);
 
-    realSubtract (b, a, &d, realContext);
-    realDivide (&d, const_2, &d, realContext);
+  if((!realIsInfinite(a)) && (!realIsInfinite(b))) {
+    realAdd(a, b, &c, realContext);
+    realDivide(&c, const_2, &c, realContext);
 
-    realCopy (&c, &v);    
+    realSubtract(b, a, &d, realContext);
+    realDivide(&d, const_2, &d, realContext);
+
+    realCopy(&c, &v);
   }
-  else if (!realIsInfinite(a)) { // int from a to infinity
+  else if(!realIsInfinite(a)) { // int from a to infinity
     mode = 1; // Exp-Sinh
     realCopy(a, &c); // c = a
 
     // use d = 1 (set above), or optimise
-#if USE_NEW_DEI_INTEGRATION_CODE == 2
-    realCopy (exp_sinh_opt_d (regist, a, &eps, &d, realContext), &d);
-#endif
+    #if USE_NEW_DEI_INTEGRATION_CODE == 2
+    realCopy(exp_sinh_opt_d(regist, a, &eps, &d, realContext), &d);
+    #endif
     realAdd(a, &d, &v, realContext); // v = a + d
-    
+
   }
-  else if (!realIsInfinite(b)) { // int from -infinity to b 
+  else if(!realIsInfinite(b)) { // int from -infinity to b
     mode = 1; // Exp-Sinh
-    realCopy (b, &c); // c = b
+    realCopy(b, &c); // c = b
     sign = -sign;
-    
-    realMinus (&d, &d, realContext); // d = -1
+
+    realMinus(&d, &d, realContext); // d = -1
     // either use d = -1, or optimise
-#if USE_NEW_DEI_INTEGRATION_CODE == 2
-    realCopy (exp_sinh_opt_d (regist, b, &eps, &d, realContext), &d);
-#endif
-    realAdd (b, &d, &v, realContext); // v = b + d
-    
+    #if USE_NEW_DEI_INTEGRATION_CODE == 2
+    realCopy(exp_sinh_opt_d(regist, b, &eps, &d, realContext), &d);
+    #endif
+    realAdd(b, &d, &v, realContext); // v = b + d
   }
   else {
     mode = 2; // Sinh-Sinh
-
-    realZero (&v);
-    
+    realZero(&v);
   }
 
-  DEI_xeq_user (regist, &v, &s, realContext);
+  DEI_xeq_user(regist, &v, &s, realContext);
 
-  // Now a, b, c, d, v, and mode have the correct values. 
+  // Now a, b, c, d, v, and mode have the correct values.
   // k has been set to zero; h is 2.
   // s = f(v)
 
   do {
     real_t p, q, fp, fm, t, eh;
-    realZero (&p);
-    realZero (&fp);
-    realZero (&fm);
+    realZero(&p);
+    realZero(&fp);
+    realZero(&fm);
 
-    realDivide (&h, const_2, &h, realContext);
-    realExp (&h, &eh, realContext);
-    realCopy (&eh, &t);
-    
-    if (k > 0)
-      realMultiply (&eh, &eh, &eh, realContext);
+    realDivide(&h, const_2, &h, realContext);
+    realExp(&h, &eh, realContext);
+    realCopy(&eh, &t);
 
-    if (mode == 0) { // Tanh-Sinh
+    if(k > 0) {
+      realMultiply(&eh, &eh, &eh, realContext);
+    }
+
+    if(mode == 0) { // Tanh-Sinh
       do {
-	real_t u, r, w, x;
-	// Progress display code goes inside inner loop, to be consistent with previous code.
-	// The result and error are in .... result and error! No multiplication needed.
-	// In showprogress: result as ss; const_1 for bma2 and h, and fact;
-	// error for a and const_0 for b.
-	// Note that result and error do not change within this inner loop so
-	// only the loop counter changes each time.
-#if !defined(TESTSUITE_BUILD)
-	char tmps[64];
-	sprintf(tmps,"level:  %i Iter: ",(int16_t)(maxlevel-k));
-	if(printHalfSecUpdate_Integer(timed, tmps, loop++)) { ; //timed
-#if ENABLE_SOLVER_PROGRESS == 1
-	  _showProgress(result, const_1, const_1, error, const_0, const_1, realContext);
-#endif //ENABLE_SOLVER_PROGRESS
-	}
+        real_t u, r, w, x;
+        // Progress display code goes inside inner loop, to be consistent with previous code.
+        // The result and error are in .... result and error! No multiplication needed.
+        // In showprogress: result as ss; const_1 for bma2 and h, and fact;
+        // error for a and const_0 for b.
+        // Note that result and error do not change within this inner loop so
+        // only the loop counter changes each time.
+        #if !defined(TESTSUITE_BUILD)
+          char tmps[64];
+          exitSignalled |= (popKey() == 32); //instead of keyWaiting()
+          sprintf(tmps,"Level: %i/%i Iter: ",(int16_t)k, (int16_t)maxlevel);
+          if(printHalfSecUpdate_Integer(timed, tmps, loop++, !interruptedLoop, !interruptedLoop, !interruptedLoop)) { ; //timed
+            #if ENABLE_SOLVER_PROGRESS == 1
+            _showProgress(result, const_1, const_1, error, const_0, const_1, realContext);
+            #endif //ENABLE_SOLVER_PROGRESS
+            if(!interruptedLoop && exitSignalled) {  //First EXIT press
+              exitSignalled = false;
+              interruptedLoop = 1;
+            }
+            if(interruptedLoop) {
+              sprintf(tmps,"Level %i. Allow %5.1f s: Iter: ",(int16_t)k, (float)(40.0 - ((interruptedLoop++)/2.0)));
+              radixProcess(tmps,tmps);
+              printHalfSecUpdate_Integer(force+1, tmps, loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+              if(exitSignalled || interruptedLoop >= 40) {      // Direct exit
+                exitSignalled = false;
+                return;
+              }
+            }
+          }
+        #endif //TESTSUITE_BUILD
 
-	if(keyWaiting()) {
-	  printHalfSecUpdate_Integer(force+1, "Interrupted Iter:",loop);
-	  return; // result and error already hold the current best estimates of each
-	}
-#endif //TESTSUITE_BUILD
 
-	realDivide (const_1, &t, &s1, realContext); // s1 stores 1/t
-	realSubtract (&s1, &t, &u, realContext);
-	realExp (&u, &u, realContext); // u = exp(1/t-t)
+        realDivide(const_1, &t, &s1, realContext); // s1 stores 1/t
+        realSubtract(&s1, &t, &u, realContext);
+        realExp(&u, &u, realContext); // u = exp(1/t-t)
 
-	realAdd (&u, const_1, &r, realContext);
-	realDivide (&u, &r, &r, realContext);
-	realMultiply (&r, const_2, &r, realContext); // r = 2*u/(1+u);
+        realAdd(&u, const_1, &r, realContext);
+        realDivide(&u, &r, &r, realContext);
+        realMultiply(&r, const_2, &r, realContext); // r = 2*u/(1+u);
 
-	realAdd (&t, &s1, &s2, realContext);
-	realMultiply (&r, &s2, &w, realContext);
-	realAdd (&u, const_1, &s2, realContext);
-	realDivide (&w, &s2, &w, realContext); // w = (t+1/t)*r/(1+u);
+        realAdd(&t, &s1, &s2, realContext);
+        realMultiply(&r, &s2, &w, realContext);
+        realAdd(&u, const_1, &s2, realContext);
+        realDivide(&w, &s2, &w, realContext); // w = (t+1/t)*r/(1+u);
 
-	realMultiply (&d, &r, &x, realContext); // x = d*r;
+        realMultiply(&d, &r, &x, realContext); // x = d*r;
 
-	realAdd (a, &x, &s1, realContext);
-	if (realCompareGreaterThan (&s1, a)) { // if too close to a then reuse previous fp
-	  DEI_xeq_user (regist, &s1, &y, realContext);
-	  if (!realIsInfinite (&y))
-	    realCopy (&y, &fp);  // if f(x) is finite, add to local sum
-	}
-	
-	realSubtract (b, &x, &s1, realContext);
-	if (realCompareLessThan (&s1, b)) { // if too close to a then reuse previous fp
-	  DEI_xeq_user (regist, &s1, &y, realContext);
-	  if (!realIsInfinite (&y))
-	    realCopy (&y, &fm);  // if f(x) is finite, add to local sum
-	}
-	
-	realAdd (&fp, &fm, &s1, realContext);
-	realMultiply (&s1, &w, &q, realContext); // q = w*(fp+fm)
-	realAdd (&p, &q, &p, realContext); // p += q
-	realMultiply (&t, &eh, &t, realContext); // t *= eh
+        realAdd(a, &x, &s1, realContext);
+        if(realCompareGreaterThan(&s1, a)) { // if too close to a then reuse previous fp
+          DEI_xeq_user(regist, &s1, &y, realContext);
+          if(!realIsInfinite(&y))
+            realCopy(&y, &fp);  // if f(x) is finite, add to local sum
+        }
 
-	realMultiply (&eps, realCopyAbs (&p, &s1), &s2, realContext); // s2 = eps*abs(p)
-      } while (realCompareGreaterThan (realCopyAbs (&q, &s1), &s2)); // while abs(q) > eps*abs(p)
+        realSubtract(b, &x, &s1, realContext);
+        if(realCompareLessThan(&s1, b)) { // if too close to a then reuse previous fp
+          DEI_xeq_user(regist, &s1, &y, realContext);
+          if(!realIsInfinite(&y))
+            realCopy(&y, &fm);  // if f(x) is finite, add to local sum
+        }
+
+        realAdd(&fp, &fm, &s1, realContext);
+        realMultiply(&s1, &w, &q, realContext); // q = w*(fp+fm)
+        realAdd(&p, &q, &p, realContext); // p += q
+        realMultiply(&t, &eh, &t, realContext); // t *= eh
+
+        realMultiply(&eps, realCopyAbs(&p, &s1), &s2, realContext); // s2 = eps*abs(p)
+      } while(realCompareGreaterThan(realCopyAbs(&q, &s1), &s2)); // while abs(q) > eps*abs(p)
     }
 
     else {
-      realDivide (&t, const_2, &t, realContext);
+      realDivide(&t, const_2, &t, realContext);
       do {
-	real_t r, w, x;
+        real_t r, w, x;
 
-#if !defined(TESTSUITE_BUILD)
-	char tmps[64];
-	sprintf(tmps,"level:  %i Iter: ",(int16_t)(maxlevel-k));
-	if(printHalfSecUpdate_Integer(timed, tmps, loop++)) { ; //timed
-#if ENABLE_SOLVER_PROGRESS == 1
-	  _showProgress(result, const_1, const_1, error, const_0, const_1, realContext);
-#endif //ENABLE_SOLVER_PROGRESS
-	}
+        #if !defined(TESTSUITE_BUILD)
+          char tmps[64];
+          exitSignalled |= (popKey() == 32); //instead of keyWaiting()
+          sprintf(tmps,"Level: %i/%i Iter: ",(int16_t)k, (int16_t)maxlevel);
+          if(printHalfSecUpdate_Integer(timed, tmps, loop++, !interruptedLoop, !interruptedLoop, !interruptedLoop)) { ; //timed
+            #if ENABLE_SOLVER_PROGRESS == 1
+              _showProgress(result, const_1, const_1, error, const_0, const_1, realContext);
+            #endif //ENABLE_SOLVER_PROGRESS
+            if(!interruptedLoop && exitSignalled) {  //First EXIT press
+              exitSignalled = false;
+              interruptedLoop = 1;
+            }
+            if(interruptedLoop) {
+              sprintf(tmps,"Level %i. Allow %5.1f s: Iter: ",(int16_t)k, (float)(40.0 - ((interruptedLoop++)/2.0)));
+              radixProcess(tmps,tmps);
+              printHalfSecUpdate_Integer(force+1, tmps, loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+              if(exitSignalled || interruptedLoop >= 40) {      // Direct exit
+                exitSignalled = false;
+                return;
+              }
+            }
+          }
+        #endif //TESTSUITE_BUILD
 
-	if(keyWaiting()) {
-	  printHalfSecUpdate_Integer(force+1, "Interrupted Iter:",loop);
-	  return; // result and error already hold the previous best estimates of each
-	}
-#endif //TESTSUITE_BUILD
+        realMultiply(&t, const_4, &s1, realContext); // s1 = 4t
+        realDivide(const_1, &s1, &s1, realContext); // s1 = 0.25/t
+        realSubtract(&t, &s1, &s1, realContext); // s1 = t - 0.25/t
+        realExp(&s1, &r, realContext); // r = exp(t-0.25/t)
 
-	realMultiply (&t, const_4, &s1, realContext); // s1 = 4t
-	realDivide (const_1, &s1, &s1, realContext); // s1 = 0.25/t
-	realSubtract (&t, &s1, &s1, realContext); // s1 = t - 0.25/t
-	realExp (&s1, &r, realContext); // r = exp(t-0.25/t)
-	
-	realCopy (&r, &w);
+        realCopy(&r, &w);
 
-	realZero (&q);
-	
-	if (mode == 1) { // Exp-Sinh
-	  realAdd (&c, realDivide (&d, &r, &s1, realContext), &x, realContext); // x = c+d/r; // d/r in s1
-	  if (realCompareEqual (&x, &c))
-	    break;
-	  DEI_xeq_user (regist, &x, &y, realContext);
-	  if (!realIsInfinite (&y))  // if f(x) is finite, add to local sum
-	    realAdd (&q, realDivide (&y, &w, &s1, realContext), &q, realContext);
-	}
-	else { // Sinh-Sinh
-	  realSubtract (&r, realDivide (const_1, &r, &s2, realContext), &s1, realContext);
-	  realDivide (&s1, const_2, &r, realContext); // r = (r-1/r)/2
-	  
-	  realAdd (&w, realDivide (const_1, &w, &s2, realContext), &s1, realContext);
-	  realDivide (&s1, const_2, &w, realContext); // w = (w+1/w)/2
-	  
-	  realSubtract (&c, realMultiply (&d, &r, &s1, realContext), &x, realContext); // x = c-d*r; // d*r in s1
-	  DEI_xeq_user (regist, &x, &y, realContext);
-	  if (!realIsInfinite (&y))  // if f(x) is finite, add to local sum
-	    realAdd (&q, realMultiply (&y, &w, &s1, realContext), &q, realContext);
-	}
+        realZero(&q);
 
-	realAdd (&c, realMultiply (&d, &r, &s1, realContext), &x, realContext); // x = c+d*r; // d*r in s1
-	DEI_xeq_user (regist, &x, &y, realContext);
+        if(mode == 1) { // Exp-Sinh
+          realAdd(&c, realDivide(&d, &r, &s1, realContext), &x, realContext); // x = c+d/r; // d/r in s1
+          if(realCompareEqual(&x, &c)) {
+            break;
+          }
+          DEI_xeq_user(regist, &x, &y, realContext);
+          if(!realIsInfinite(&y)) { // if f(x) is finite, add to local sum
+            realAdd(&q, realDivide(&y, &w, &s1, realContext), &q, realContext);
+          }
+        }
+        else { // Sinh-Sinh
+          realSubtract(&r, realDivide(const_1, &r, &s2, realContext), &s1, realContext);
+          realDivide(&s1, const_2, &r, realContext); // r = (r-1/r)/2
 
-	if (!realIsInfinite (&y))  // if f(x) is finite, add to local sum
-	  realAdd (&q, realMultiply (&y, &w, &s1, realContext), &q, realContext);
+          realAdd(&w, realDivide(const_1, &w, &s2, realContext), &s1, realContext);
+          realDivide(&s1, const_2, &w, realContext); // w = (w+1/w)/2
 
-	realDivide (const_1, realMultiply (&t, const_4, &s2, realContext), &s1, realContext); //s1 = 1/(4t)
-	realMultiply (&q, realAdd (&t, &s1, &s2, realContext), &q, realContext); // q = q * (t + 1/4t)
-	realAdd (&p, &q, &p, realContext); // p += q;
-	realMultiply (&t, &eh, &t, realContext); // t *= eh;
-	realMultiply (&eps, realCopyAbs (&p, &s1), &s2, realContext); // s2 = eps*abs(p)
-      } while (realCompareGreaterThan (realCopyAbs (&q, &s1), &s2)); // while abs(q) > eps*abs(p)
+          realSubtract(&c, realMultiply(&d, &r, &s1, realContext), &x, realContext); // x = c-d*r; // d*r in s1
+          DEI_xeq_user(regist, &x, &y, realContext);
+          if(!realIsInfinite(&y)) { // if f(x) is finite, add to local sum
+            realAdd(&q, realMultiply(&y, &w, &s1, realContext), &q, realContext);
+          }
+        }
+
+        realAdd(&c, realMultiply(&d, &r, &s1, realContext), &x, realContext); // x = c+d*r; // d*r in s1
+        DEI_xeq_user(regist, &x, &y, realContext);
+
+        if(!realIsInfinite(&y)) { // if f(x) is finite, add to local sum
+          realAdd(&q, realMultiply(&y, &w, &s1, realContext), &q, realContext);
+        }
+
+        realDivide(const_1, realMultiply(&t, const_4, &s2, realContext), &s1, realContext); //s1 = 1/(4t)
+        realMultiply(&q, realAdd(&t, &s1, &s2, realContext), &q, realContext); // q = q * (t + 1/4t)
+        realAdd(&p, &q, &p, realContext); // p += q;
+        realMultiply(&t, &eh, &t, realContext); // t *= eh;
+        realMultiply(&eps, realCopyAbs(&p, &s1), &s2, realContext); // s2 = eps*abs(p)
+      } while(realCompareGreaterThan(realCopyAbs(&q, &s1), &s2)); // while abs(q) > eps*abs(p)
     }
 
-    realSubtract (&s, &p, &v, realContext); // v = s - p
-    realAdd (&s, &p, &s, realContext); // s+=p
+    realSubtract(&s, &p, &v, realContext); // v = s - p
+    realAdd(&s, &p, &s, realContext); // s+=p
 
-    realCopyAbs (&s, &s1); // s1 = abs(s)
-    realCopyAbs (&v, &s2); // s2 = abs(v)
+    realCopyAbs(&s, &s1); // s1 = abs(s)
+    realCopyAbs(&v, &s2); // s2 = abs(v)
     ++k;
     // We want to calculate an estimate of the integral here.
     // It is sign*s*h*d.
-    realMultiply (&d, realMultiply (&s, &h, &s3, realContext), result, realContext);
-    if (sign == -1)
-      realMinus (result, result, realContext); // result = sign*s*h*d
-    // realDivide (&s2, realAdd (&s1, &eps, &s3, realContext), error, realContext); // error = abs(v)/(abs(s)+eps)
-    realDivide (&s2, realAdd (&s1, &s2, &s3, realContext), error, realContext); // error = abs(v)/(abs(s)+abs(v)) - ND change
-    if (realIsNaN(error)) realCopy(const_1, error); // only happens when v, s both zero
-  } while (realCompareGreaterThan ( &s2, realMultiply (const_10, realMultiply (&eps, &s1, &s3, realContext), &s3, realContext)) && k <= maxlevel); // while abs(v) > 10*eps*abs(s)
+    realMultiply(&d, realMultiply(&s, &h, &s3, realContext), result, realContext);
+    if(sign == -1) {
+      realMinus(result, result, realContext); // result = sign*s*h*d
+    }
+    // realDivide(&s2, realAdd(&s1, &eps, &s3, realContext), error, realContext); // error = abs(v)/(abs(s)+eps)
+    realDivide(&s2, realAdd(&s1, &s2, &s3, realContext), error, realContext); // error = abs(v)/(abs(s)+abs(v)) - ND change
+    if(realIsNaN(error)) {
+      realCopy(const_1, error); // only happens when v, s both zero
+    }
+  } while(realCompareGreaterThan( &s2, realMultiply(const_10, realMultiply(&eps, &s1, &s3, realContext), &s3, realContext)) && k <= maxlevel); // while abs(v) > 10*eps*abs(s)
   return;
 }
 
@@ -1274,24 +1487,24 @@ void integrate(calcRegister_t regist, const real_t *a, const real_t *b, real_t *
   ++currentSolverNestingDepth;
   setSystemFlag(FLAG_INTING);
   clearSystemFlag(FLAG_SOLVING);
-#if USE_NEW_DEI_INTEGRATION_CODE > 0
-  if (realCompareLessThan(a, b)) {
-    dbl_exp_int_new (regist, a, b, acc, res, 1, realContext);
+  #if USE_NEW_DEI_INTEGRATION_CODE > 0
+  if(realCompareLessThan(a, b)) {
+    dbl_exp_int_new(regist, a, b, acc, res, 1, realContext);
   }
   else { // a, b might be NaN or both equal; handled in function.
-    dbl_exp_int_new (regist, b, a, acc, res, -1, realContext);
+    dbl_exp_int_new(regist, b, a, acc, res, -1, realContext);
   }
-#else
-#if USE_MICHALSKI_MOSIG_TANH_SINH == 1
-  if(!realIsSpecial(a) && !realIsSpecial(b)) {
-    _integrate_mm(regist, a, b, acc, res, realContext);
-  }
-  else
-#endif // USE_MICHALSKI_MOSIG_TANH_SINH == 1
-  {
-    _integrate(regist, a, b, acc, res, realContext);
-  }
-#endif // USE_NEW_DEI_INTEGRATION_CODE
+  #else
+    #if USE_MICHALSKI_MOSIG_TANH_SINH == 1
+    if(!realIsSpecial(a) && !realIsSpecial(b)) {
+      _integrate_mm(regist, a, b, acc, res, realContext);
+    }
+    else
+  #endif // USE_MICHALSKI_MOSIG_TANH_SINH == 1
+    {
+      _integrate(regist, a, b, acc, res, realContext);
+    }
+  #endif // USE_NEW_DEI_INTEGRATION_CODE
   if((--currentSolverNestingDepth) == 0) {
     clearSystemFlag(FLAG_INTING);
   }

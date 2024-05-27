@@ -1,18 +1,5 @@
-/* This file is part of 43S.
- *
- * 43S is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * 43S is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with 43S.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: GPL-3.0-only
+// SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
 #include "calcMode.h"
 
@@ -37,7 +24,7 @@
 #include "c47.h"
 
 #if !defined(TESTSUITE_BUILD)
-  void fnOff(uint16_t unsuedParamButMandatory) {
+  void fnOff(uint16_t unusedParamButMandatory) {
     shiftF = false;
     shiftG = false;
 
@@ -196,11 +183,12 @@
         catalog = CATALOG_CPXS;
         break;
       }
-      case MNU_Solver:
-      case MNU_Sf:
+      case MNU_Solver  :
+      case MNU_Grapher :
+      case MNU_Sf      :
       case MNU_1STDERIV:
       case MNU_2NDDERIV:
-      case MNU_MVAR: {
+      case MNU_MVAR    : {
         catalog = CATALOG_MVAR;
         break;
       }
@@ -263,7 +251,7 @@
     saveForUndo();
     if(lastErrorCode == ERROR_RAM_FULL) {
       displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         moreInfoOnError("In function calcModeNim:", "there is not enough memory to save for undo!", NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return;

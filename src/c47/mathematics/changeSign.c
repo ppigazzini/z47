@@ -34,7 +34,7 @@
 static void chsLonI(void) {
   longInteger_t x;
 
-  if (!getRegisterAsLongInt(REGISTER_X, x))
+  if(!getRegisterAsLongInt(REGISTER_X, x))
     return;
 
   longIntegerChangeSign(x);
@@ -48,7 +48,7 @@ static void chsShoI(void) {
 
 static void chsZeroCheck(real_t *a) {
   realChangeSign(a);
-  if (realIsZero(a) && !getSystemFlag(FLAG_SPCRES))
+  if(realIsZero(a) && !getSystemFlag(FLAG_SPCRES))
     realSetPositiveSign(a);
 }
 
@@ -56,10 +56,10 @@ void chsReal(void) {
   real_t x;
   angularMode_t mode = amNone;
 
-  if (!getRegisterAsReal(REGISTER_X, &x))
+  if(!getRegisterAsReal(REGISTER_X, &x))
     return;
 
-  if (getRegisterDataType(REGISTER_X) == dtReal34)
+  if(getRegisterDataType(REGISTER_X) == dtReal34)
     mode = getRegisterAngularMode(REGISTER_X);
 
   chsZeroCheck(&x);
@@ -69,7 +69,7 @@ void chsReal(void) {
 void chsCplx(void) {
   real_t a, b;
 
-  if (getRegisterAsComplex(REGISTER_X, &a, &b)) {
+  if(getRegisterAsComplex(REGISTER_X, &a, &b)) {
     chsZeroCheck(&a);
     chsZeroCheck(&b);
     convertComplexToResultRegister(&a, &b, REGISTER_X);

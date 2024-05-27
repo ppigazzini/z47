@@ -1,18 +1,5 @@
-/* This file is part of 43S.
- *
- * 43S is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * 43S is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with 43S.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: GPL-3.0-only
+// SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
 #include "c47.h"
 
@@ -27,11 +14,13 @@
 #include "saveRestoreCalcState.h"
 #include "screen.h"
 #include "softmenus.h"
+#include "stack.h"
 #include "statusBar.h"
 #include "timer.h"
 #include <string.h>
 
 //#define JMSHOWCODES
+//#define BUFFER_CLICK_DETECTION
 
 #if defined(DMCP_BUILD)
   #include "c43Extensions/inlineTest.h"
@@ -46,7 +35,8 @@
 
 const font_t          *fontForShortInteger;
 const font_t          *cursorFont;
-TO_QSPI const char     digits[17] = "0123456789ABCDEF";
+TO_QSPI const char     hexadecimalDigits[17] = "0123456789ABCDEF";
+TO_QSPI const char     registerFlagLetters[27] = "XYZTABCDLIJKMNPQRSEFGHOUVW";
 void                   (*confirmedFunction)(uint16_t);
 
 uint8_t calcModel = MODEL;
@@ -176,6 +166,7 @@ uint8_t                entryStatus;
 uint8_t                screenUpdatingMode;
 uint8_t               *beginOfProgramMemory;
 uint8_t               *firstFreeProgramByte;
+bool_t                 statisticalSumsUpdate;
 
 tamState_t             tam;
 int16_t                currentRegisterBrowserScreen;
@@ -218,7 +209,7 @@ int16_t                longpressDelayedkey2;         //JM
 int16_t                longpressDelayedkey3;         //JM
 int16_t                T_cursorPos;                  //JMCURSOR
 int16_t                displayAIMbufferoffset;       //JMCURSOR
-int16_t                SHOWregis;                    //JMSHOW
+uint16_t               showRegis;                    //JMSHOW
 int16_t                ListXYposition;               //JMSHOW
 int16_t                JM_auto_doublepress_autodrop_enabled;  //JM TIMER CLRDROP //drop
 int16_t                JM_auto_longpress_enabled;    //JM TIMER CLRDROP //clstk
@@ -286,7 +277,7 @@ uint16_t               currentUserMenu;
 uint16_t               userKeyLabelSize;
 uint16_t               currentInputVariable = INVALID_VARIABLE;
 uint16_t               currentMvarLabel = INVALID_VARIABLE;
-#if(REAL34_WIDTH_TEST == 1)
+#if (REAL34_WIDTH_TEST == 1)
   uint16_t               largeur=200;
 #endif // (REAL34_WIDTH_TEST == 1)
 
@@ -334,6 +325,8 @@ real34_t               nBins;
 real34_t               hiBinR;
 char                   statMx[8];
 char                   plotStatMx[8];
+calcRegister_t         regStatsXY;
+
 
 bool_t                 temporaryFlagRect;
 bool_t                 temporaryFlagPolar;
@@ -481,7 +474,7 @@ char                   fileNameSelected[stateFileNameVarLength];
                                                   lcd_clear_buf();
                                                 #endif // NOKEYMAP                                           //^^
     doFnReset(CONFIRMED, loadAutoSav);
-    refreshScreen();
+    refreshScreen(71);
 
                                                 #if defined(JMSHOWCODES)                                        //JM test
                                                   telltale_lastkey = 0;                                   //JM test
@@ -754,7 +747,7 @@ char                   fileNameSelected[stateFileNameVarLength];
             screenUpdatingMode = SCRUPD_AUTO;
             runFunction(ITM_RS);
           }
-          refreshScreen();
+          refreshScreen(72);
         }
       }
 
@@ -880,11 +873,11 @@ char                   fileNameSelected[stateFileNameVarLength];
                                                       telltale_pos++;
                                                       telltale_pos = telltale_pos & 0x03;
                                                       char aaa[100];
-                                                      sprintf   (aaa,"k=%d d=%ld      ",key, timeSpan);
+                                                      sprintf   (aaa,"k=%d d=%ld  d=%ld",key, timeSpan_1, timeSpan_B);
                                                       showString(aaa, &standardFont, 300, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(REGISTER_T - REGISTER_X), vmNormal, true, true);
                                                       sprintf   (aaa,"Rel=%d, nop=%d, St=%d, Key=%d, FN_kp=%d   ",FN_timed_out_to_RELEASE_EXEC, FN_timed_out_to_NOP, FN_state, sys_last_key(), FN_key_pressed);
                                                       showString(aaa, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(REGISTER_Z - REGISTER_X), vmNormal, true, true);
-                                                      sprintf   (aaa,"%4d(%4ld)<<",sys_last_key(),timeSpan);
+                                                      sprintf   (aaa,"%4d(%4ld)(%4ld)<<",sys_last_key(),timeSpan_1,timeSpan_B);
                                                       showString(aaa, &standardFont, telltale_pos*90+ 1, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(REGISTER_Y - REGISTER_X), vmNormal, true, true);
                                                     }
                                                   #endif // JMSHOWCODES
@@ -912,7 +905,7 @@ char                   fileNameSelected[stateFileNameVarLength];
                                                             btnReleased(charKey);
                                                             if(calcMode == CM_PEM && shiftF && ((charKey[0] == '1' && charKey[1] == '7') || (charKey[0] == '2' && charKey[1] == '2'))) {    //JM C43
                                                               shiftF = false;
-                                                              refreshScreen();
+                                                              refreshScreen(73);
                                                             }
                                                           }
                                                   //      keyAutoRepeat = 0;
@@ -930,7 +923,7 @@ char                   fileNameSelected[stateFileNameVarLength];
         keyClick(2);
           if(calcMode == CM_PEM && shiftF && ((charKey[0] == '1' && charKey[1] == '7') || (charKey[0] == '2' && charKey[1] == '2'))) {   //JM C43
             shiftF = false;
-            refreshScreen();
+            refreshScreen(74);
           }
         //lcd_refresh_dma();
       }

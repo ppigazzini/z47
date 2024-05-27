@@ -1,18 +1,5 @@
-/* This file is part of 43S.
- *
- * 43S is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * 43S is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with 43S.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: GPL-3.0-only
+// SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
 #include "timer.h"
 
@@ -86,7 +73,8 @@ void LastOpTimerLap (uint16_t func) {
   if(timeLastOp1 >= timeLastOp0) {
     timeLastOp = timeLastOp1 - timeLastOp0;
     //printf("Func:%s setting STOP %u: %u Running:%u\n",indexOfItems[func].itemCatalogName, timeLastOp1, timeLastOp, programRunStop == PGM_RUNNING);
-  } else {
+  }
+  else {
     timeLastOp =  ((int)(0xFFFFFFFF) / 100 - timeLastOp0) + timeLastOp1; //if loop passed 2^32-1 ms, recalc offset
     //printf("setting STOP Wrapped %u: %u Running:%u\n",timeLastOp1, timeLastOp, programRunStop == PGM_RUNNING);
   }
@@ -103,7 +91,7 @@ void fnLastT (uint16_t unusedButMandatoryParameter) {
   longIntegerInit(lgInt);
   uIntToLongInteger(timeLastOp, lgInt);
   convertLongIntegerToLongIntegerRegister(lgInt, REGISTER_X);
-  longIntegerFree(lgInt);  
+  longIntegerFree(lgInt);
 }
 
 
@@ -208,6 +196,13 @@ void fnTimerDummyTest(uint16_t param) {
 #if defined(PC_BUILD) || defined(TESTSUITE_BUILD)
   printf("fnTimerDummyTest called  %u\n", param);
 #endif // PC_BUILD || TESTSUITE_BUILD
+
+#if defined(DMCP_BUILD)
+  if(!getSystemFlag(FLAG_USB)) {       //update screen after 6 sec timout, to restore the half-updated screen in battery mode. See refreshRegisterLine() in screen.c
+    screenUpdatingMode = SCRUPD_AUTO;
+    refreshScreen(32);
+  }
+#endif // DMCP_BUILD
 }
 
 
@@ -376,7 +371,7 @@ static uint32_t _getTimerValue(void) {
 //#endif // PC_BUILD
 
 void fnItemTimerApp(uint16_t unusedButMandatoryParameter) {
-#if !defined(TESTSUITE_BUILD)
+#if !defined(TESTSUITE_BUILD) && !defined(SAVE_SPACE_DM42_20_TIMER)
   calcMode = CM_TIMER;
   rbr1stDigit = true;
   watchIconEnabled = false;
@@ -408,7 +403,7 @@ void fnAddTimerApp(uint16_t unusedButMandatoryParameter) {
   realToReal34(&tmp, REGISTER_REAL34_DATA(REGISTER_X));
   fnSigma(1);
 
-  refreshScreen();
+  refreshScreen(30);
   #endif // !TESTSUITE_BUILD
 }
 
@@ -613,7 +608,7 @@ void fnPlusTimerApp(void) {
     fnTimerStart(TO_TIMER_APP, TO_TIMER_APP, TIMER_APP_PERIOD);
   }
 
-  refreshScreen();
+  refreshScreen(31);
   #endif // !TESTSUITE_BUILD
 }
 
@@ -725,7 +720,7 @@ void fnRecallTimerApp(uint16_t regist) {
     }
     default: {
       displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "cannot recall %s to the stopwatch", getRegisterDataTypeName(regist, true, false));
         moreInfoOnError("In function fnRecallTimerApp:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -735,7 +730,7 @@ void fnRecallTimerApp(uint16_t regist) {
 
   if(overflow) {
     displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "the %s does not fit to uint32_t", getRegisterDataTypeName(regist, true, false));
       moreInfoOnError("In function fnRecallTimerApp:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)

@@ -54,15 +54,17 @@ void fnToRect2(uint16_t unusedButMandatoryParameter) {
   if(!getSystemFlag(FLAG_HPRP)) {  //non-HP mode
     angleInY = -angleInY;
     if(isAngle(dataTypeX,dataAtagX) && isRadius(dataTypeY,dataAtagY)) {
-    } else
+    }
+    else
     if(isAngle(dataTypeY,dataAtagY) && isRadius(dataTypeX,dataAtagX)) {
       angleInY = -angleInY;        //-1 is swapped
     }
-  } else { //HP MODE
+  }
+  else { //HP MODE
     if(isAngle(dataTypeX,dataAtagX) && isRadius(dataTypeY,dataAtagY)) {
       angleInY = -angleInY;
-    } else
-    if(isAngle(dataTypeY,dataAtagY) && isRadius(dataTypeX,dataAtagX)) {
+    }
+    else if(isAngle(dataTypeY,dataAtagY) && isRadius(dataTypeX,dataAtagX)) {
     }
   }
 
@@ -71,7 +73,7 @@ void fnToRect2(uint16_t unusedButMandatoryParameter) {
   }
   else {
     displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
-  #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+  #if (EXTRA_INFO_ON_CALC_ERROR == 1)
     sprintf(errorMessage, "You cannot use >R or >P with %s in X and %s in Y!", getDataTypeName(getRegisterDataType(REGISTER_X), true, false), getDataTypeName(getRegisterDataType(REGISTER_Y), true, false));
     moreInfoOnError("In function fnToRect2:", errorMessage, NULL, NULL);
   #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -169,7 +171,7 @@ printf("swapped\n");
   }
   else {
     displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REG_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "cannot convert (%s, %s) to rectangular coordinates!", getDataTypeName(getRegisterDataType(REG_X), false, false), getDataTypeName(getRegisterDataType(REG_Y), false, false));
       moreInfoOnError("In function fnToRect:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)

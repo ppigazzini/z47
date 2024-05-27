@@ -27,7 +27,7 @@
   void fnGamma     (uint16_t unusedButMandatoryParameter);
   void fnLnGamma   (uint16_t unusedButMandatoryParameter);
 
-  #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+  #if (EXTRA_INFO_ON_CALC_ERROR == 1)
     void gammaError  (void);
   #else // (EXTRA_INFO_ON_CALC_ERROR != 1)
     #define gammaError typeError

@@ -871,22 +871,22 @@ Out: EC=0 FL_ASLIFT=1 RL=LonI:"0" RX=Real:"NaN"
 
 
 In:  FL_ASLIFT=0 RY=Real:"-10" RX=Real:"-10.2"
-Out: EC=0 FL_ASLIFT=1 RL=Real:"-10.2" RX=Real:"NaN"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"-10.2"
 
 In:  FL_ASLIFT=0 RY=Real:"-10.2" RX=Real:"-10.2"
-Out: EC=0 FL_ASLIFT=1 RL=Real:"-10.2" RX=Real:"NaN"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"-10.2"
 
 In:  FL_ASLIFT=0 RY=LonI:"-10" RX=Real:"-10.2"
-Out: EC=0 FL_ASLIFT=1 RL=Real:"-10.2" RX=Real:"NaN"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"-10.2"
 
 In:  FL_ASLIFT=0 RY=Real:"-10" RX=Real:"10.2"
-Out: EC=0 FL_ASLIFT=1 RL=Real:"10.2" RX=Real:"NaN"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"10.2"
 
 In:  FL_ASLIFT=0 RY=Real:"-10.2" RX=Real:"10.2"
-Out: EC=0 FL_ASLIFT=1 RL=Real:"10.2" RX=Real:"NaN"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"10.2"
 
 In:  FL_ASLIFT=0 RY=LonI:"-10" RX=Real:"10.2"
-Out: EC=0 FL_ASLIFT=1 RL=Real:"10.2" RX=Real:"NaN"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"10.2"
 
 
 In:  FL_ASLIFT=0 RY=Real:"-inf" RX=Real:"5"
@@ -1626,22 +1626,22 @@ Out: EC=0 FL_ASLIFT=1 RL=LonI:"0" RX=Real:"NaN"
 
 
 In:  FL_ASLIFT=0 RY=Real:"-10" RX=Real:"-10.2"
-Out: EC=0 FL_ASLIFT=1 RL=Real:"-10.2" RX=Real:"NaN"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"-10.2"
 
 In:  FL_ASLIFT=0 RY=Real:"-10.2" RX=Real:"-10.2"
-Out: EC=0 FL_ASLIFT=1 RL=Real:"-10.2" RX=Real:"NaN"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"-10.2"
 
 In:  FL_ASLIFT=0 RY=LonI:"-10" RX=Real:"-10.2"
-Out: EC=0 FL_ASLIFT=1 RL=Real:"-10.2" RX=Real:"NaN"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"-10.2"
 
 In:  FL_ASLIFT=0 RY=Real:"-10" RX=Real:"10.2"
-Out: EC=0 FL_ASLIFT=1 RL=Real:"10.2" RX=Real:"NaN"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"10.2"
 
 In:  FL_ASLIFT=0 RY=Real:"-10.2" RX=Real:"10.2"
-Out: EC=0 FL_ASLIFT=1 RL=Real:"10.2" RX=Real:"NaN"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"10.2"
 
 In:  FL_ASLIFT=0 RY=LonI:"-10" RX=Real:"10.2"
-Out: EC=0 FL_ASLIFT=1 RL=Real:"10.2" RX=Real:"NaN"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"10.2"
 
 
 In:  FL_ASLIFT=0 RY=Real:"-inf" RX=Real:"5"

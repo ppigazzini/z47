@@ -1,18 +1,5 @@
-/* This file is part of 43S.
- *
- * 43S is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * 43S is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with 43S.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: GPL-3.0-only
+// SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
 /**
  * \file plot.h
@@ -54,6 +41,7 @@ extern  bool_t   PLOT_INTG;
 extern  bool_t   PLOT_DIFF;
 extern  bool_t   PLOT_RMS;
 extern  bool_t   PLOT_SHADE;
+extern  bool_t   PLOT_CPXPLOT;
 extern  bool_t   PLOT_AXIS;
 extern  int8_t   PLOT_ZMX;
 extern  int8_t   PLOT_ZMY;
@@ -111,6 +99,8 @@ char * padEquals(char *output, const char * ss);
   #if !defined(TESTSUITE_BUILD)
 int16_t screen_window_x(float x_min, float x, float x_max);
 int16_t screen_window_y(float y_min, float y, float y_max);
+int16_t screen_window_y_nolimit(float y_min, float y, float y_max);
+int32_t statMxN(void);
   #endif // !TESTSUITE_BUILD
 
 void    statGraphReset     (void);

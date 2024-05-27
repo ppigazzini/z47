@@ -230,13 +230,14 @@ void fnPExport(uint16_t unusedButMandatoryParameter) {
           }
           jj++;
         }
-      } else {
+      }
+      else {
         indent += addnextLineIndent;
         addnextLineIndent = 0;
       }
 
 
-      if (indent > 0) {
+      if(indent > 0) {
         uint16_t ii = 0;
         stringAppend(asciiString, tmpString);
         stringAppend(tmpString + indent, asciiString);
@@ -297,15 +298,15 @@ void fnExportProgram(uint16_t label) {
         // find the first global label in the current program
         uint16_t currentLabel = 0;
         strcpy(tmpStringLabelOrVariableName, "untitled");
-        while (currentLabel < numberOfLabels) {
-          if (labelList[currentLabel].program == currentProgramNumber) {
+        while(currentLabel < numberOfLabels) {
+          if(labelList[currentLabel].program == currentProgramNumber) {
             break;
           }
           currentLabel++;
         }
         // get the first global label name
-        while (currentLabel < numberOfLabels) {
-          if (labelList[currentLabel].step > 0) {  // global label
+        while(currentLabel < numberOfLabels) {
+          if(labelList[currentLabel].step > 0) {  // global label
             // get current label name (to be used as default file name)
             xcopy(tmpStringLabelOrVariableName, labelList[currentLabel].labelPointer + 1, *(labelList[currentLabel].labelPointer));
             tmpStringLabelOrVariableName[*(labelList[currentLabel].labelPointer)] = 0;
@@ -324,7 +325,7 @@ void fnExportProgram(uint16_t label) {
     // Invalid label
     else {
       displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "label %" PRIu16 " is not a global label", label);
         moreInfoOnError("In function fnSaveProgram:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -391,15 +392,15 @@ void fnSaveProgram(uint16_t label) {
         // find the first global label in the current program
         uint16_t currentLabel = 0;
         strcpy(tmpStringLabelOrVariableName, "untitled");
-        while (currentLabel < numberOfLabels) {
-          if (labelList[currentLabel].program == currentProgramNumber) {
+        while(currentLabel < numberOfLabels) {
+          if(labelList[currentLabel].program == currentProgramNumber) {
             break;
           }
           currentLabel++;
         }
         // get the first global label name
-        while (currentLabel < numberOfLabels) {
-          if (labelList[currentLabel].step > 0) {  // global label
+        while(currentLabel < numberOfLabels) {
+          if(labelList[currentLabel].step > 0) {  // global label
             // get current label name (to be used as default file name)
             xcopy(tmpStringLabelOrVariableName, labelList[currentLabel].labelPointer + 1, *(labelList[currentLabel].labelPointer));
             tmpStringLabelOrVariableName[*(labelList[currentLabel].labelPointer)] = 0;
@@ -418,7 +419,7 @@ void fnSaveProgram(uint16_t label) {
     // Invalid label
     else {
       displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "label %" PRIu16 " is not a global label", label);
         moreInfoOnError("In function fnSaveProgram:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)

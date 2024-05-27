@@ -183,6 +183,7 @@
   #define realNextToward(from, toward, res, ctxt)                decNumberNextToward      (res, from,     toward,   ctxt)
   #define realPlus(operand, res, ctxt)                           decNumberPlus            (res, operand, ctxt)
   #define realPower(operand1, operand2, res, ctxt)               decNumberPower           (res, operand1, operand2, ctxt)
+  #define realRescale(operand, res, acc, ctxt)                   decNumberRescale         (res, operand, acc, ctxt)
   #define realSetNegativeSign(operand)                           (operand)->bits |= 0x80
   #define realSetPositiveSign(operand)                           (operand)->bits &= 0x7F
   #define realSquareRoot(operand, res, ctxt)                     decNumberSquareRoot      (res, operand, ctxt)

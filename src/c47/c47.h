@@ -1,18 +1,5 @@
-/* This file is part of 43S.
- *
- * 43S is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * 43S is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with 43S.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: GPL-3.0-only
+// SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
 /**
  * \file c47.h
@@ -74,11 +61,11 @@
     extern uint32_t            *screenData;
     extern bool_t               screenChange;
     extern char                 debugString[10000];
-    #if(DEBUG_REGISTER_L == 1)
+    #if (DEBUG_REGISTER_L == 1)
       extern GtkWidget         *lblRegisterL1;
       extern GtkWidget         *lblRegisterL2;
     #endif // (DEBUG_REGISTER_L == 1)
-    #if(SHOW_MEMORY_STATUS == 1)
+    #if (SHOW_MEMORY_STATUS == 1)
       extern GtkWidget         *lblMemoryStatus;
     #endif // (SHOW_MEMORY_STATUS == 1)
     extern calcKeyboard_t       calcKeyboard[43];
@@ -93,6 +80,7 @@
   // Variables stored in FLASH
   extern const item_t                    indexOfItems[];
   extern const reservedVariableHeader_t  allReservedVariables[];
+  extern const reservedVariableDescStr_t varDescr[];
   extern const char                      commonBugScreenMessages[NUMBER_OF_BUG_SCREEN_MESSAGES][SIZE_OF_EACH_BUG_SCREEN_MESSAGE];
   extern const char                      errorMessages[NUMBER_OF_ERROR_CODES][SIZE_OF_EACH_ERROR_MESSAGE];
     extern const calcKey_t                 kbd_std_C47[37];
@@ -114,7 +102,8 @@
   extern const font_t                    standardFont, numericFont, tinyFont;
   extern const font_t                   *fontForShortInteger;
   extern const font_t                   *cursorFont;
-  extern const char                      digits[17];
+  extern const char                      hexadecimalDigits[17];
+  extern const char                      registerFlagLetters[27];
   extern any34Matrix_t                   openMatrixMIMPointer;
   extern uint16_t                        matrixIndex;
   extern void                            (* const addition[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS][NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])(void);
@@ -260,6 +249,7 @@
   extern uint8_t                screenUpdatingMode;
   extern uint8_t               *beginOfProgramMemory;
   extern uint8_t               *firstFreeProgramByte;
+  extern bool_t                 statisticalSumsUpdate;
 
   /**
    * Instance of the internal state for TAM.
@@ -290,7 +280,7 @@
   extern int16_t                longpressDelayedkey3;         //JM
   extern int16_t                T_cursorPos;                  //JMCURSOR
   extern int16_t                displayAIMbufferoffset;       //JMCURSOR
-  extern int16_t                SHOWregis;                    //JMSHOW
+  extern uint16_t               showRegis;                    //JMSHOW
   extern int16_t                ListXYposition;               //JM
   extern uint8_t                DRG_Cycling;                  //JM
   extern uint8_t                DM_Cycling;                   //JM
@@ -364,7 +354,7 @@
   extern uint16_t               userKeyLabelSize;
   extern uint16_t               currentInputVariable;
   extern uint16_t               currentMvarLabel;
-  #if(REAL34_WIDTH_TEST == 1)
+  #if (REAL34_WIDTH_TEST == 1)
     extern uint16_t               largeur;
   #endif // (REAL34_WIDTH_TEST == 1)
 
@@ -412,6 +402,8 @@
   extern real34_t               hiBinR;
   extern char                   statMx[8];
   extern char                   plotStatMx[8];
+  extern calcRegister_t         regStatsXY;
+
 
   extern bool_t                 temporaryFlagRect;
   extern bool_t                 temporaryFlagPolar;

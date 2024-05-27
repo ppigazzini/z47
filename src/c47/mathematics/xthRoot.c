@@ -58,7 +58,7 @@ static void xthRootComplex(const real_t *aa, const real_t *bb, const real_t *cc,
   if(!getSystemFlag(FLAG_SPCRES)) {
     if(realIsZero(&c)&&realIsZero(&d)) {
       displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         moreInfoOnError("In function xthRootComplexComplex: 0th Root is not defined!", NULL, NULL, NULL);
       #endif //  (EXTRA_INFO_ON_CALC_ERROR == 1)
       return;
@@ -160,7 +160,7 @@ void xthRootReal(real_t *yy, real_t *xx, realContext_t *realContext) {
   else { // not DANGER
     if(realIsZero(&x)) {
       displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         moreInfoOnError("In function xthRootRealReal: 0th Root is not defined!", NULL, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return;
@@ -186,7 +186,7 @@ void xthRootReal(real_t *yy, real_t *xx, realContext_t *realContext) {
       if(realIsZero(&r)) {                                          // negative base and even exp     (zero means no remainder means even)
         if(!getFlag(FLAG_CPXRES)) {
           displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-          #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+          #if (EXTRA_INFO_ON_CALC_ERROR == 1)
             moreInfoOnError("In function xthRootRealReal:", "cannot do complex xthRoots when CPXRES is not set", NULL, NULL);
           #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
           return;
@@ -211,7 +211,7 @@ void xthRootReal(real_t *yy, real_t *xx, realContext_t *realContext) {
         else {      //neither odd nor even, i.e. not integer
           if(!getFlag(FLAG_CPXRES)) {
             displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-            #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+            #if (EXTRA_INFO_ON_CALC_ERROR == 1)
               moreInfoOnError("In function xthRootRealReal:", "cannot do complex xthRoots when CPXRES is not set", NULL, NULL);
             #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
             return;
@@ -242,13 +242,13 @@ static void doXthRootLonI(void) {
   longInteger_t base, exponent, l;
   int32_t exp;
 
-  if (!getRegisterAsLongInt(REGISTER_Y, base)
+  if(!getRegisterAsLongInt(REGISTER_Y, base)
       || !getRegisterAsLongInt(REGISTER_X, exponent))
     return;
 
   if(longIntegerIsZero(exponent)) {    // 1/0 is not possible
     displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       moreInfoOnError("In function doXthRootLonILonI: Cannot divide by 0!", NULL, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     longIntegerFree(base);
@@ -300,7 +300,7 @@ static void doXthRootLonI(void) {
   longIntegerFree(base);
   longIntegerFree(exponent);
 
-  if (!getRegisterAsReal(REGISTER_X, &x) || !getRegisterAsReal(REGISTER_Y, &y))
+  if(!getRegisterAsReal(REGISTER_X, &x) || !getRegisterAsReal(REGISTER_Y, &y))
     return;
 
   xthRootReal(&y, &x, &ctxtReal75);
@@ -339,12 +339,12 @@ static void doXthRootShoI(void) {
 static void doXthRootReal(void) {
   real_t x, y;
 
-  if (!getRegisterAsReal(REGISTER_X, &x) || !getRegisterAsReal(REGISTER_Y, &y))
+  if(!getRegisterAsReal(REGISTER_X, &x) || !getRegisterAsReal(REGISTER_Y, &y))
     return;
 
   if((realIsInfinite(&x) || realIsInfinite(&y)) && !getSystemFlag(FLAG_SPCRES)) {
     displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       moreInfoOnError("In function xthRootRealReal:", "cannot use " STD_PLUS_MINUS STD_INFINITY " as X or Y input of xthRoot when flag D is not set", NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     return;
@@ -362,7 +362,7 @@ static void doXthRootReal(void) {
 static void doXthRootCplx(void) {                       //checked
   real_t a, b, c, d;
 
-  if (!getRegisterAsComplex(REGISTER_Y, &a, &b)
+  if(!getRegisterAsComplex(REGISTER_Y, &a, &b)
       || !getRegisterAsComplex(REGISTER_X, &c, &d))
     return;
 

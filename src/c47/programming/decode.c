@@ -741,7 +741,7 @@ static void decodeLiteral(uint8_t *literalAddress) {
     default: {
       #if !defined(DMCP_BUILD)
         printf("\nERROR: in decodeLiteral() %u is not an acceptable parameter for ITM_LITERAL!\n", *(literalAddress - 1));
-        printf("At address ram + %lu\n", (literalAddress - 1) - (uint8_t *)ram);
+        printf("At address ram + %" PRIu32 "\n", (uint32_t)((literalAddress - 1) - (uint8_t *)ram));
       #endif // !DMCP_BUILD
     }
   }
@@ -791,7 +791,8 @@ static void _decodeOneStep(uint8_t *step, bool_t textVersion) {
             strcat(nameOp,indexOfItems[op].itemCatalogName);
             strcat(nameOp," ");
             strcat(nameOp,indexOfItems[op].itemSoftmenuName);
-          } else {
+          }
+          else {
             getXeqmText(op, nameOp);
           }
         }
@@ -820,7 +821,11 @@ static void _decodeOneStep(uint8_t *step, bool_t textVersion) {
 
       default: {
         if(op == ITM_INTEGRAL) {
-          strcpy(nameOp,STD_INTEGRAL "fd");
+          strcpy(nameOp,indexOfItems[op].itemCatalogName); //   STD_INTEGRAL "fd");
+        }
+        else
+        if(op == ITM_INTEGRAL_YX) {
+          strcpy(nameOp,indexOfItems[op].itemCatalogName); //   STD_INTEGRAL "fyxd");
         }
         else {
           if(textVersion) {

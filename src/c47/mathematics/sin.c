@@ -50,9 +50,9 @@ static void sinReal(void) {
   const real_t *r = &x;
   angularMode_t xAngularMode;
 
-  if (!getRegisterAsRealAngle(REGISTER_X, &x, &xAngularMode))
+  if(!getRegisterAsRealAngle(REGISTER_X, &x, &xAngularMode))
     return;
-  if (realIsSpecial(&x))
+  if(realIsSpecial(&x))
     r = const_NaN;
   else
     WP34S_Cvt2RadSinCosTan(r = &x, xAngularMode, &x, NULL, NULL, &ctxtReal75);
@@ -64,7 +64,7 @@ static void sinReal(void) {
 static void sinCplx(void) {
   real_t zReal, zImag;
 
-  if (!getRegisterAsComplex(REGISTER_X, &zReal, &zImag))
+  if(!getRegisterAsComplex(REGISTER_X, &zReal, &zImag))
     return;
 
   sinComplex(&zReal, &zImag, &zReal, &zImag, &ctxtReal75);

@@ -25,7 +25,7 @@
   #include <gdk/gdk.h>
   #endif // PC_BUILD
 
-#if(DEBUG_PANEL == 1)
+#if (DEBUG_PANEL == 1)
   extern GtkWidget *lbl1[DEBUG_LINES], *lbl2[DEBUG_LINES];
   extern GtkWidget *btnBitFields, *btnFlags, *btnRegisters, *btnLocalRegisters, *btnTmpAndSavedStackRegisters;
   extern GtkWidget *chkHexaString;
@@ -65,7 +65,7 @@
   void   memoryDump                         (bool_t bitFields, bool_t globalFlags, bool_t globalRegisters, bool_t localFlags, bool_t FIRSTLOCALREGISTERs, bool_t otherVars);
 #endif // (DEBUG_PANEL == 1)
 
-#if(DEBUG_PANEL == 1) || (DEBUG_REGISTER_L == 1) || (DEBUG_STAT >= 1)
+#if (DEBUG_PANEL == 1) || (DEBUG_REGISTER_L == 1) || (DEBUG_STAT >= 1)
   void   formatReal34Debug                  (char *str, real34_t *real34);
   void   formatRealDebug                    (char *str, real_t *real);
   void   formatComplex34Debug               (char *str, void *addr);

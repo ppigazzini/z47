@@ -41,20 +41,20 @@
 static void unitConversion(const real_t * const coefficient, uint16_t multiplyDivide, bool_t invert) {
   real_t reX;
 
-  if (!getRegisterAsReal(REGISTER_X, &reX))
+  if(!getRegisterAsReal(REGISTER_X, &reX))
     return;
 
   if(!saveLastX()) {
     return;
   }
 
-  if (invert && realIsZero(&reX)) {
+  if(invert && realIsZero(&reX)) {
     if(getSystemFlag(FLAG_SPCRES)) {
       convertRealToResultRegister(realIsNegative(&reX) ? const_minusInfinity : const_plusInfinity, REGISTER_X, amNone);
     }
     else {
       displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         moreInfoOnError("In function unitConversion:", "cannot calculate divide by zero", NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
@@ -87,7 +87,7 @@ static void unitConversion(const real_t * const coefficient, uint16_t multiplyDi
 void fnCvtCToF(uint16_t unusedButMandatoryParameter) {
   real_t reX;
 
-  if (!getRegisterAsReal(REGISTER_X, &reX))
+  if(!getRegisterAsReal(REGISTER_X, &reX))
     return;
 
   if(!saveLastX()) {
@@ -113,7 +113,7 @@ void fnCvtCToF(uint16_t unusedButMandatoryParameter) {
 void fnCvtFToC(uint16_t unusedButMandatoryParameter) {
   real_t reX;
 
-  if (!getRegisterAsReal(REGISTER_X, &reX))
+  if(!getRegisterAsReal(REGISTER_X, &reX))
     return;
 
   if(!saveLastX()) {
@@ -600,7 +600,7 @@ void fnK100Mtomik   (uint16_t multiplyDivide) {
 void fnCvtRatioDb(uint16_t tenOrTwenty) { // ten: power ratio   twenty: field ratio
   real_t reX;
 
-  if (!getRegisterAsReal(REGISTER_X, &reX))
+  if(!getRegisterAsReal(REGISTER_X, &reX))
     return;
 
   if(!saveLastX()) {
@@ -627,7 +627,7 @@ void fnCvtRatioDb(uint16_t tenOrTwenty) { // ten: power ratio   twenty: field ra
 void fnCvtDbRatio(uint16_t tenOrTwenty) { // ten: power ratio   twenty: field ratio
   real_t reX;
 
-  if (!getRegisterAsReal(REGISTER_X, &reX))
+  if(!getRegisterAsReal(REGISTER_X, &reX))
     return;
 
   if(!saveLastX()) {

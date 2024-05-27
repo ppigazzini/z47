@@ -45,7 +45,7 @@
 
 #if defined(PC_BUILD)
   GtkWidget *grid;
-  #if(SIMULATOR_ON_SCREEN_KEYBOARD == 1)
+  #if (SIMULATOR_ON_SCREEN_KEYBOARD == 1)
     GtkWidget *backgroundImage;
     GtkWidget *lblFKey2;
     GtkWidget *lblGKey2;
@@ -120,7 +120,7 @@
     //JM7 GtkWidget  *lblConfirmY; //JM for Y/N
     //JM7 GtkWidget  *lblConfirmN; //JM for Y/N
 
-    #if(DEBUG_PANEL == 1)
+    #if (DEBUG_PANEL == 1)
       GtkWidget *lbl1[DEBUG_LINES], *lbl2[DEBUG_LINES];
       GtkWidget *btnBitFields, *btnFlags, *btnRegisters, *btnLocalRegisters, *btnStatisticalSums, *btnNamedVariables, *btnSavedStackRegisters;
       GtkWidget *chkHexaString;
@@ -220,7 +220,8 @@
   }
 
 
-  uint32_t CTRL_State;
+  uint32_t CTRL_State = 0;
+  uint32_t SHIFT_State = 0;
   uint32_t event_keyval = 99999999;
 
   #define AlphaArrowsOffAndUpDn       ((bool_t)( \
@@ -237,14 +238,36 @@
 
 
   gboolean keyReleased(GtkWidget *w, GdkEventKey *event, gpointer data) {     //JM
-    //printf("Released %d\n", event->keyval);
+    printf("Released  %d (SHIFT_State=%u)(shiftF=%u)\n", event->keyval,SHIFT_State,shiftF);
     if(event_keyval == event->keyval + CTRL_State) event_keyval = 99999999;
 
     switch(event->keyval) {
+      case 65505: //left shift
+      case 65506: //right shift
+          if(SHIFT_State != 0) {
+            if(getSystemFlag(FLAG_USER) ? kbd_usr[10].primary : kbd_std[10].primary != ITM_SHIFTf) {     //f-shift activated on the release of the shift key, to allow for standard PC shifted chars
+              btnClicked(w, "27");
+            }
+            else {
+              btnClicked(w, "10");
+            }
+            SHIFT_State = 0;
+          }
+          break;
 
       case 65507: // Left Ctrl
       case 65508: // right Ctrl
-        //printf("key depressed: CTRL De-activate\n");
+          if(CTRL_State != 0) {
+            if(getSystemFlag(FLAG_USER) ? kbd_usr[11].primary : kbd_std[11].primary != ITM_SHIFTg) {
+              btnClicked(w, "27");
+            }
+            else {
+              btnClicked(w, "11");
+            }
+            CTRL_State = 0;
+          }
+          break;
+
         CTRL_State = 0;
         break;
 
@@ -304,40 +327,71 @@
         }
         break;
 
-      case 65505: // left shift  //JM Added this portion to be able to repeat f key on emulator
-        //printf("key pressed: Shift\n"); //dr
-        btnClickedR(w, "27");
-        break;
-
-
       default:
         break;
 
     }
+    if(event->keyval != 65505 && event->keyval != 65506) {
+      SHIFT_State = 0;
+    }
+    //printf("Released1 %d (SHIFT_State=%u)(shiftF=%u)\n", event->keyval,SHIFT_State,shiftF);
     return FALSE;
-  }                                                                           //JM
+  }
 
 
   gboolean keyPressed(GtkWidget *w, GdkEventKey *event, gpointer data) {
-    //printf("Pressed %d\n", event->keyval);                                  //JM
-    if(event_keyval ==  event->keyval + CTRL_State) {
-      return FALSE;
+    event_keyval = event->keyval + CTRL_State;
+    printf("Keyboard Key Code: event->keyval=%u event_keyval=%u (SHIFT_State=%u)(shiftF=%u)\n", event->keyval, event_keyval, SHIFT_State, shiftF);
+
+    SHIFT_State = 0;
+    switch(event_keyval) {
+      case 65505: //left shift
+      case 65506: //right shift
+        SHIFT_State = 65536;
+        //printf("key pressed: Shift Activated\n");
+        break;
+
+      case 65507: // left Ctrl
+      case 65508: // right Ctrl
+        //printf("key pressed: CTRL Activated\n");
+        CTRL_State = 65536;
+        break;
+      default:;
     }
-    else {
-      event_keyval = event->keyval + CTRL_State;
+
+
+    if(calcMode == CM_MIM) {
+      switch(event_keyval) {
+        //ROW 0
+        case 65362:                                               //JM     // CursorUp //JM
+            btnFnClicked(w, "1");  //F1
+            return false;
+          break;
+        case 65364:                                               //JM     // CursorDown //JM
+            btnFnClicked(w, "2");  //F2
+            return false;
+          break;
+        case 65361:                                               //JM     // CursorLt BST //JM Left
+            btnFnClicked(w, "5");  //F5
+            return false;
+          break;
+        case 65363:                                               //JM     // CursorRt SST //JM Right
+            btnFnClicked(w, "6");  //F6
+            return false;
+          break;
+        default:;
+      }
     }
-    //printf("#######%d %i %i\n",event_keyval, calcMode, tam.mode);
+
+
     //JM ALPHA SECTION FOR ALPHAMODE - TAKE OVER ALPHA KEYBOARD
     if(calcMode == CM_AIM || calcMode == CM_EIM || tam.mode || (calcMode == CM_PEM && getSystemFlag(FLAG_ALPHA))) {
-      printf(">>>>> Keyboard Key Code = %d\n", event_keyval);
+      //printf(">>>>> ALPHA SECTION Keyboard Key Code = %d\n", event_keyval);
       switch(event_keyval) {
-        case 65507: // left Ctrl
-        case 65508: // right Ctrl
-          //printf("key pressed: CTRL Activated\n");
-          CTRL_State = 65536;
-          break;
+
         case 72+65536: // Ctrl H
         case 104+65536: // Ctrl h
+          CTRL_State = 0;
           printf("key pressed: CTRL+h Hardcopy\n");
           copyScreenToClipboard();
           break;
@@ -350,14 +404,15 @@
             btnFnClicked(w, "4");  //F4
             softmenuStack[0].firstItem = jj;
             showSoftmenuCurrentPart();
-          } else if((calcMode == CM_PEM && getSystemFlag(FLAG_ALPHA))) {
+          }
+          else if((calcMode == CM_PEM && getSystemFlag(FLAG_ALPHA))) {
             shiftF = true;
             btnClicked(w, "35"); //?
           }
           break;
         case 40:           //(
           if(calcMode == CM_EIM) {
-            shiftF = false;
+            shiftF = true;
             int16_t jj = softmenuStack[0].firstItem;
             softmenuStack[0].firstItem = 0;
             btnFnClicked(w, "1");  //F1
@@ -367,7 +422,7 @@
           break;
         case 41:           //)
           if(calcMode == CM_EIM) {
-            shiftF = false;
+            shiftF = true;
             int16_t jj = softmenuStack[0].firstItem;
             softmenuStack[0].firstItem = 0;
             btnFnClicked(w, "2");  //F2
@@ -642,10 +697,6 @@
           break;
 
         //ROW 7
-        case 65505:                                               //JM     // left shift  //JM
-        //case 65506: // right shift //JM
-          btnClicked(w, "27");
-          break;
         case 88:  //JM SHIFTED CAPITAL ALPHA AND SHIFTED NUMERAL  //JM
           btnClicked_UC(w, "28");
           break;
@@ -847,335 +898,323 @@
           btnClicked(w, "36");
           break;
 
-        /*
-        case 65507: // left Ctrl
-        case 65508: // right Ctrl
-          //printf("key pressed: CTRL_State Hardcopy\n");
-          copyScreenToClipboard();
-          break;
-        */
-
         default: ;
 
       }
       return FALSE;
-    } else
+    }
+    else {
+      //ORIGINAL MODIFIED KEYBOARD DETECTION
+      //FOR NON AIM MODE. AIM HAS RETURNED AT THIS POINT SO NO IF NEEDED
+      switch(event_keyval) {
+        case 65361:                                               //JM     // CursorLt  //JM Left
+          btnFnClicked(w, "5");  //F5
+          break;
+        case 65363:                                               //JM     // CursorRt  //JM Right
+          btnFnClicked(w, "6");  //F6
+          break;
 
+        //ROW 1
+        case 65470: // F1                       //JM Changed these to btnFnPressed from btnFnClicked
+          //printf("key pressed: F1\n");
+          btnFnClickedP(w, "1");
+          break;
 
-    //ORIGINAL MODIFIED KEYBOARD DETECTION
-    //FOR NON AIM MODE. AIM HAS RETURNED AT THIS POINT SO NO IF NEEDED
+        case 65471: // F2
+          //printf("key pressed: F2\n");
+          btnFnClickedP(w, "2");
+          break;
 
-    switch(event_keyval) {
+        case 65472: // F3
+          //printf("key pressed: F3\n");
+          btnFnClickedP(w, "3");
+          break;
 
-      case 65361:                                               //JM     // CursorLt  //JM Left
-        btnFnClicked(w, "5");  //F5
-        break;
-      case 65363:                                               //JM     // CursorRt  //JM Right
-        btnFnClicked(w, "6");  //F6
-        break;
+        case 65473: // F4
+          //printf("key pressed: F4\n");
+          btnFnClickedP(w, "4");
+          break;
 
-      //ROW 1
-      case 65470: // F1                       //JM Changed these to btnFnPressed from btnFnClicked
-        //printf("key pressed: F1\n");
-        btnFnClickedP(w, "1");
-        break;
+        case 65474: // F5
+          //printf("key pressed: F5\n");
+          btnFnClickedP(w, "5");
+          break;
 
-      case 65471: // F2
-        //printf("key pressed: F2\n");
-        btnFnClickedP(w, "2");
-        break;
+        case 65475: // F6
+          //printf("key pressed: F6\n");
+          btnFnClickedP(w, "6");
+          break;
 
-      case 65472: // F3
-        //printf("key pressed: F3\n");
-        btnFnClickedP(w, "3");
-        break;
+        //ROW 2
+        case 97:  // a  //dr
+          //printf("key pressed: a Sigma+\n"); //dr
+          btnClicked(w, "00");
+          break;
 
-      case 65473: // F4
-        //printf("key pressed: F4\n");
-        btnFnClickedP(w, "4");
-        break;
+        case 118: // v //dr
+          //printf("key pressed: v 1/X\n"); //dr
+          btnClicked(w, "01");
+          break;
 
-      case 65474: // F5
-        //printf("key pressed: F5\n");
-        btnFnClickedP(w, "5");
-        break;
+        case 113: // q //dr
+          //printf("key pressed: q SQRT\n"); //dr
+          btnClicked(w, "02");
+          break;
 
-      case 65475: // F6
-        //printf("key pressed: F6\n");
-        btnFnClickedP(w, "6");
-        break;
+        case 111: // o //dr
+          //printf("key pressed: o LOG\n"); //dr
+          btnClicked(w, "03");
+          break;
 
-      //ROW 2
-      case 97:  // a  //dr
-        //printf("key pressed: a Sigma+\n"); //dr
-        btnClicked(w, "00");
-        break;
+        case 108: // l //dr
+          //printf("key pressed: l LN\n"); //dr
+          btnClicked(w, "04");
+          break;
 
-      case 118: // v //dr
-        //printf("key pressed: v 1/X\n"); //dr
-        btnClicked(w, "01");
-        break;
+        case 120: // x //dr
+          //printf("key pressed: x XEQ\n"); //dr
+          btnClicked(w, "05");
+          break;
 
-      case 113: // q //dr
-        //printf("key pressed: q SQRT\n"); //dr
-        btnClicked(w, "02");
-        break;
+        //ROW 3
+        case 109: // m //dr
+          //printf("key pressed: m STO\n"); //dr
+          btnClicked(w, "06");
+          break;
 
-      case 111: // o //dr
-        //printf("key pressed: o LOG\n"); //dr
-        btnClicked(w, "03");
-        break;
+        case 114: // r
+          //printf("key pressed: r RCL\n");
+          btnClicked(w, "07");
+          break;
 
-      case 108: // l //dr
-        //printf("key pressed: l LN\n"); //dr
-        btnClicked(w, "04");
-        break;
+        //dr    case 65366: // PgDn
+        case 100: // d //dr
+          //printf("key pressed: d Rdown\n"); //dr
+          btnClicked(w, "08");
+          break;
 
-      case 120: // x //dr
-        //printf("key pressed: x XEQ\n"); //dr
-        btnClicked(w, "05");
-        break;
+        case 112: // p         //dr                //JM Special case: p = pi
+          //printf("key pressed: p pi\n"); //dr
+          shiftF = true;       //dr
+          shiftG = false;      //JM
+          btnClicked(w, "08"); //dr
+          break;               //dr
 
-      //ROW 3
-      case 109: // m //dr
-        //printf("key pressed: m STO\n"); //dr
-        btnClicked(w, "06");
-        break;
+        case 115: // s //dr
+          //printf("key pressed: s SIN\n"); //dr
+          btnClicked(w, "09");
+          break;
 
-      case 114: // r
-        //printf("key pressed: r RCL\n");
-        btnClicked(w, "07");
-        break;
+        case 99:  // c //dr
+          //printf("key pressed: c COS\n"); //dr
+          btnClicked(w, "10");
+          break;
 
-      //dr    case 65366: // PgDn
-      case 100: // d //dr
-        //printf("key pressed: d Rdown\n"); //dr
-        btnClicked(w, "08");
-        break;
+        case 116: // t //dr
+          //printf("key pressed: t TAN\n"); //dr
+          btnClicked(w, "11");
+          break;
 
-      case 112: // p         //dr                //JM Special case: p = pi
-        //printf("key pressed: p pi\n"); //dr
-        shiftF = true;       //dr
-        shiftG = false;      //JM
-        btnClicked(w, "08"); //dr
-        break;               //dr
+        //ROW 4
+        case 65421: // Enter
+        case 65293: // Enter
+          //printf("key pressed: ENTER\n");
+          btnClicked(w, "12");
+          break;
 
-      case 115: // s //dr
-        //printf("key pressed: s SIN\n"); //dr
-        btnClicked(w, "09");
-        break;
+        //dr    case 65289: // Tab
+        case 119: // w //dr
+          //printf("key pressed: w x<>y\n"); //dr
+          btnClicked(w, "13");
+          break;
 
-      case 99:  // c //dr
-        //printf("key pressed: c COS\n"); //dr
-        btnClicked(w, "10");
-        break;
+        case 110: // n //dr
+          //printf("key pressed: n +/-\n"); //dr
+          btnClicked(w, "14");
+          break;
 
-      case 116: // t //dr
-        //printf("key pressed: t TAN\n"); //dr
-        btnClicked(w, "11");
-        break;
+        //dr    case 69:  // E
+        case 101: // e //dr
+        //printf("key pressed: e EXP\n"); //dr
+          btnClicked(w, "15");
+          break;
 
-      //ROW 4
-      case 65421: // Enter
-      case 65293: // Enter
-        //printf("key pressed: ENTER\n");
-        btnClicked(w, "12");
-        break;
+        case 65288: // Backspace
+          //printf("key pressed: Backspace\n");
+          btnClicked(w, "16");
+          break;
 
-      //dr    case 65289: // Tab
-      case 119: // w //dr
-        //printf("key pressed: w x<>y\n"); //dr
-        btnClicked(w, "13");
-        break;
-
-      case 110: // n //dr
-        //printf("key pressed: n +/-\n"); //dr
-        btnClicked(w, "14");
-        break;
-
-      //dr    case 69:  // E
-      case 101: // e //dr
-      //printf("key pressed: e EXP\n"); //dr
-        btnClicked(w, "15");
-        break;
-
-      case 65288: // Backspace
-        //printf("key pressed: Backspace\n");
-        btnClicked(w, "16");
-        break;
-
-      //ROW 5
-      case 65362: // CursorUp //JM
-                              //JM
-        //printf("key pressed: <Up>\n"); //dr
-        btnClicked(w, "17");
-        break;
-
-      case 55:    // 7
-      case 65463: // 7
-        //printf("key pressed: 7\n");
-        btnClicked(w, "18");
-        break;
-
-      case 56:    // 8
-      case 65464: // 8
-        //printf("key pressed: 8\n");
-        btnClicked(w, "19");
-        break;
-
-      case 57:    // 9
-      case 65465: // 9
-        //printf("key pressed: 9\n");
-        btnClicked(w, "20");
-        break;
-
-      case 47:    // / //JM
-      case 65455: // / //JM
-        //printf("key pressed: divide\n"); //dr
-        btnClicked(w, "21");
-        break;
-
-      //ROW 6
-      case 65364: // CursorDown //JM
+        //ROW 5
+        case 65362: // CursorUp //JM
                                 //JM
-        //printf("key pressed: <Down>\n"); //dr
-        btnClicked(w, "22");
-        break;
+          //printf("key pressed: <Up>\n"); //dr
+          btnClicked(w, "17");
+          break;
 
-      case 52:    // 4
-      case 65460: // 4
-        //printf("key pressed: 4\n");
-        btnClicked(w, "23");
-        break;
+        case 55:    // 7
+        case 65463: // 7
+          //printf("key pressed: 7\n");
+          btnClicked(w, "18");
+          break;
 
-      case 53:    // 5
-      case 65461: // 5
-        //printf("key pressed: 5\n");
-        btnClicked(w, "24");
-        break;
+        case 56:    // 8
+        case 65464: // 8
+          //printf("key pressed: 8\n");
+          btnClicked(w, "19");
+          break;
 
-      case 54:    // 6
-      case 65462: // 6
-        //printf("key pressed: 6\n");
-        btnClicked(w, "25");
-        break;
+        case 57:    // 9
+        case 65465: // 9
+          //printf("key pressed: 9\n");
+          btnClicked(w, "20");
+          break;
 
-      case 42:    // * //JM
-      case 65450: // * //JM
-        //printf("key pressed: multiply\n"); //dr
-        btnClicked(w, "26");
-        break;
+        case 47:    // / //JM
+        case 65455: // / //JM
+          //printf("key pressed: divide\n"); //dr
+          btnClicked(w, "21");
+          break;
 
-      //ROW 7
-      case 65505: // left shift  //JM
-      //case 65506: //JM right shift. 65453: // -  //JM Remove Right Shift, to allow * & +
-        //printf("key pressed: Shift\n"); //dr
-        btnClickedP(w, "27");                         //JM PRESSED FOR KEYBOARD F REPEAT
-        break;
+        //ROW 6
+        case 65364: // CursorDown //JM
+                                  //JM
+          //printf("key pressed: <Down>\n"); //dr
+          btnClicked(w, "22");
+          break;
 
-      case 49:    // 1
-      case 65457: // 1
-        //printf("key pressed: 1\n");
-        btnClicked(w, "28");
-        break;
+        case 52:    // 4
+        case 65460: // 4
+          //printf("key pressed: 4\n");
+          btnClicked(w, "23");
+          break;
 
-      case 50:    // 2
-      case 65458: // 2
-        //printf("key pressed: 2\n");
-        btnClicked(w, "29");
-        break;
+        case 53:    // 5
+        case 65461: // 5
+          //printf("key pressed: 5\n");
+          btnClicked(w, "24");
+          break;
 
-      case 51:    // 3
-      case 65459: // 3
-        //printf("key pressed: 3\n");
-        btnClicked(w, "30");
-        break;
+        case 54:    // 6
+        case 65462: // 6
+          //printf("key pressed: 6\n");
+          btnClicked(w, "25");
+          break;
 
-      case 45:    // - //JM
-      case 65453: // - //JM
-        //printf("key pressed: subtract\n"); //dr
-        btnClicked(w, "31");
-        break;
+        case 42:    // * //JM
+        case 65450: // * //JM
+          //printf("key pressed: multiply\n"); //dr
+          btnClicked(w, "26");
+          break;
 
-      //ROW 8
-      case 65307: // Esc //JM
-                        //JM
-        //printf("key pressed: EXIT\n"); //dr
-        btnClicked(w, "32");
-        break;
+        //ROW 7
+        case 49:    // 1
+        case 65457: // 1
+          //printf("key pressed: 1\n");
+          btnClicked(w, "28");
+          break;
 
-      case 48:    // 0
-      case 65456: // 0
-        //printf("key pressed: 0\n");
-        btnClicked(w, "33");
-        break;
+        case 50:    // 2
+        case 65458: // 2
+          //printf("key pressed: 2\n");
+          btnClicked(w, "29");
+          break;
 
-      case 44:    // ,
-      case 46:    // .
-      case 65454: // .
-        //printf("key pressed: .\n");
-        btnClicked(w, "34");
-        break;
+        case 51:    // 3
+        case 65459: // 3
+          //printf("key pressed: 3\n");
+          btnClicked(w, "30");
+          break;
 
-      case 92: // \                                //JM R/S changed to \ as on Mac CTRL is something else.
-        //printf("key pressed: \\ R/S\n");
-        btnClicked(w, "35");
-        break;
+        case 45:    // - //JM
+        case 65453: // - //JM
+          //printf("key pressed: subtract\n"); //dr
+          btnClicked(w, "31");
+          break;
+
+        //ROW 8
+        case 65307: // Esc //JM
+                          //JM
+          //printf("key pressed: EXIT\n"); //dr
+          btnClicked(w, "32");
+          break;
+
+        case 48:    // 0
+        case 65456: // 0
+          //printf("key pressed: 0\n");
+          btnClicked(w, "33");
+          break;
+
+        case 44:    // ,
+        case 46:    // .
+        case 65454: // .
+          //printf("key pressed: .\n");
+          btnClicked(w, "34");
+          break;
+
+        case 92: // \                                //JM R/S changed to \ as on Mac CTRL is something else.
+          //printf("key pressed: \\ R/S\n");
+          btnClicked(w, "35");
+          break;
 
 
-      case 43:    // + //JM
-      case 65451: // + //JM
-        //printf("key pressed: add\n"); //dr
-        btnClicked(w, "36");
-        break;
+        case 43:    // + //JM
+        case 65451: // + //JM
+          //printf("key pressed: add\n"); //dr
+          btnClicked(w, "36");
+          break;
 
-      /*//JM- Reinstated
-      case 72:  // H    //JM REMOVE CAP H. ONLY lower case wil print
-      case 104: // h
-        //printf("key pressed: h Hardcopy to clipboard\n");
-        copyScreenToClipboard();
-        break;
-      */
+        /*//JM- Reinstated
+        case 72:  // H    //JM REMOVE CAP H. ONLY lower case wil print
+        case 104: // h
+          //printf("key pressed: h Hardcopy to clipboard\n");
+          copyScreenToClipboard();
+          break;
+        */
 
-      case 65507: // left Ctrl
-      case 65508: // right Ctrl
-        //printf("key pressed: CTRL Activated\n");
-        CTRL_State = 65536;
-        break;
+        case 65507: // left Ctrl
+        case 65508: // right Ctrl
+          //printf("key pressed: CTRL Activated\n");
+          CTRL_State = 65536;
+          break;
 
-      case 72+65536: // Ctrl H
-      case 104+65536: // Ctrl h
-        printf("key pressed: CTRL+h Hardcopy\n");
-        copyScreenToClipboard();
-        break;
+        case 72+65536: // Ctrl H
+        case 104+65536: // Ctrl h
+          CTRL_State = 0;
+          printf("key pressed: CTRL+h Hardcopy\n");
+          copyScreenToClipboard();
+          break;
 
-      case 120+65536: // CTRL x
-      case 88+65536: // CTRL X
-      case 99+65536: // CTRL c
-      case 67+65536: // CTRL C
-        printf("key pressed: CTRL+c/x Copy x register to clipboard\n");
-        copyRegisterXToClipboard();
-        break;
+        case 120+65536: // CTRL x
+        case 88+65536: // CTRL X
+        case 99+65536: // CTRL c
+        case 67+65536: // CTRL C
+          CTRL_State = 0;
+          printf("key pressed: CTRL+c/x Copy x register to clipboard\n");
+          copyRegisterXToClipboard();
+          break;
 
-      case 100+65536: // CTRL d
-      case 68+65536: // CTRL D
-        printf("key pressed: CTRL+d Copy Stack registers to clipboard\n");
-        copyStackRegistersToClipboard();
-        break;
+        case 100+65536: // CTRL d
+        case 68+65536: // CTRL D
+          CTRL_State = 0;
+          printf("key pressed: CTRL+d Copy Stack registers to clipboard\n");
+          copyStackRegistersToClipboard();
+          break;
 
-      case 97+65536: // CTRL a
-      case 65+65536: // CTRL A
-        printf("key pressed: CTRL+d Copy All registers to clipboard\n");
-        copyAllRegistersToClipboard();
-        break;
+        case 97+65536: // CTRL a
+        case 65+65536: // CTRL A
+          CTRL_State = 0;
+          printf("key pressed: CTRL+d Copy All registers to clipboard\n");
+          copyAllRegistersToClipboard();
+          break;
 
-        default: ;
+          default: ;
+      }
     }
     return FALSE;
   }
 
 
-  #if(SIMULATOR_ON_SCREEN_KEYBOARD == 1)
+  #if (SIMULATOR_ON_SCREEN_KEYBOARD == 1)
     /* Reads the CSS file to configure the calc's GUI style. */
     static void prepareCssData(void) {
       FILE *cssFile;
@@ -1980,17 +2019,23 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
 
   if(key->keyId < 30) {
     keyLogicalId = key->keyId -21;
-  } else if (key->keyId < 40) {
+  }
+  else if(key->keyId < 40) {
     keyLogicalId = key->keyId -25;
-  } else if (key->keyId < 50) {
+  }
+  else if(key->keyId < 50) {
     keyLogicalId = key->keyId -29;
-  } else if (key->keyId < 60) {
+  }
+  else if(key->keyId < 60) {
     keyLogicalId = key->keyId -34;
-  } else if (key->keyId < 70) {
+  }
+  else if(key->keyId < 70) {
     keyLogicalId = key->keyId -39;
-  } else if (key->keyId < 80) {
+  }
+  else if(key->keyId < 80) {
     keyLogicalId = key->keyId -44;
-  } else {
+  }
+  else {
     keyLogicalId = key->keyId -49;
   }
 
@@ -2148,7 +2193,6 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
         gtk_label_set_label(GTK_LABEL(lblL), (gchar *)lbl);
         gtk_widget_set_name(lblL, "letter");
       }                                                         //JM Brighten up Y and N
-
     }
 
 
@@ -2158,7 +2202,8 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
 
       if(key->primaryAim == ITM_NULL) {
         lbl[0] = 0;
-      } else { 
+      }
+      else {
           stringToUtf8(indexOfItems[numlockReplacements(4,max(key->fShiftedAim, -key->fShiftedAim),numLock,true,false)].itemSoftmenuName, lbl);
       }
 
@@ -2302,12 +2347,7 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
     void labelCaptionTam(const calcKey_t *key, GtkWidget *button) {
       uint8_t lbl[22];
 
-      if(key->primaryTam == 0 || (key->keyId == 32 && tam.mode != TM_VALUE_CHB)) { // Display H for changing base to hexadecimal
-        lbl[0] = 0;
-      }
-      else {
-        stringToUtf8(indexOfItems[key->primaryTam].itemSoftmenuName, lbl);
-      }
+      stringToUtf8(indexOfItems[key->primaryTam].itemSoftmenuName, lbl);
 
       gtk_button_set_label(GTK_BUTTON(button), (gchar *)lbl);
 
@@ -3026,7 +3066,7 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
   * \return void
   ***********************************************/
   void setupUI(void) {
-    #if(SIMULATOR_ON_SCREEN_KEYBOARD == 1)
+    #if (SIMULATOR_ON_SCREEN_KEYBOARD == 1)
       int            numBytes, xPos, yPos;
       GError         *error;
       GtkCssProvider *cssProvider;
@@ -3062,7 +3102,7 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
       frmCalc = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 
       if(calcLandscape) {
-        #if(DEBUG_PANEL == 1)
+        #if (DEBUG_PANEL == 1)
           gtk_window_set_default_size(GTK_WINDOW(frmCalc), 1000, 540);
           debugWidgetDx = 0;
           debugWidgetDy = 545;
@@ -3071,7 +3111,7 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
         #endif
       }
       else {
-        #if(DEBUG_PANEL == 1)
+        #if (DEBUG_PANEL == 1)
           gtk_window_set_default_size(GTK_WINDOW(frmCalc),  1530, 980);
           debugWidgetDx = 531;
           debugWidgetDy = 0;
@@ -3197,7 +3237,7 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
       g_signal_connect(screen, "draw", G_CALLBACK(drawScreen), NULL);
 
 
-      #if(DEBUG_REGISTER_L == 1)
+      #if (DEBUG_REGISTER_L == 1)
         lblRegisterL1 = gtk_label_new("");
         lblRegisterL2 = gtk_label_new("");
         gtk_widget_set_name(lblRegisterL1, "registerL");
@@ -3206,7 +3246,7 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
         gtk_fixed_put(GTK_FIXED(grid), lblRegisterL2, 5, 46);
       #endif // (DEBUG_REGISTER_L == 1)
 
-      #if(SHOW_MEMORY_STATUS == 1)
+      #if (SHOW_MEMORY_STATUS == 1)
         lblMemoryStatus = gtk_label_new("");
         gtk_widget_set_name(lblMemoryStatus, "memoryStatus");
         gtk_fixed_put(GTK_FIXED(grid), lblMemoryStatus, 5, 5);
@@ -4265,7 +4305,7 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
       // gtk_fixed_put(GTK_FIXED(grid), lblOn,   0, 0);     //JM Removed ON to 81
 
       // The debug window
-      #if(DEBUG_PANEL == 1)
+      #if (DEBUG_PANEL == 1)
         for(int i=0; i<DEBUG_LINES; i++) {
           lbl1[i] = gtk_label_new("");
           gtk_widget_set_name(lbl1[i], "debugDejaVu");

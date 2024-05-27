@@ -1,18 +1,6 @@
-/* This file is part of 43S.
- *
- * 43S is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * 43S is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with 43S.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: GPL-3.0-only
+// SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
+
 
 /********************************************//**
  * \file lblGtoXeq.c
@@ -73,7 +61,7 @@ void fnGoto(uint16_t label) {
       }
 
       displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         if(label < REGISTER_X_IN_KS_CODE) {
           sprintf(errorMessage, "there is no local label %02u in current program", label);
         }
@@ -90,7 +78,7 @@ void fnGoto(uint16_t label) {
       }
       else {
         displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
-        #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           sprintf(errorMessage, "label ID %u out of range", label - FIRST_LABEL);
           moreInfoOnError("In function fnGoto:", errorMessage, NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -98,7 +86,7 @@ void fnGoto(uint16_t label) {
     }
     else {
       displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "invalid parameter %u", label);
         moreInfoOnError("In function fnGoto:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -235,7 +223,7 @@ void fnExecute(uint16_t label) {
       #if !defined(TESTSUITE_BUILD)
         if(tam.mode) {
           tamLeaveMode();
-          refreshScreen();
+          refreshScreen(2);
         }
       #endif // TESTSUITE_BUILD
       runProgram(false, INVALID_VARIABLE);
@@ -258,7 +246,8 @@ void fnReturn(uint16_t skip) {
   /* Cancel INPUT */
   if(currentInputVariable != INVALID_VARIABLE) {
     currentInputVariable = INVALID_VARIABLE;
-    refreshScreen();
+    screenUpdatingMode = SCRUPD_AUTO; // &= ~SCRUPD_MANUAL_STATUSBAR;
+    refreshScreen(3);
     #if defined(DMCP_BUILD)
       lcd_refresh();
     #else // !DMCP_BUILD
@@ -366,7 +355,7 @@ static void _executeWithIndirectVariable(uint8_t *stringAddress, uint16_t op) {
   }
   else {
     displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "string '%s' is not a named variable", tmpStringLabelOrVariableName);
       moreInfoOnError("In function _executeOp:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -395,7 +384,7 @@ static void _executeOp(uint8_t *paramAddress, uint16_t op, uint16_t paramMode) {
         }
         else {
           displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
-          #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+          #if (EXTRA_INFO_ON_CALC_ERROR == 1)
             sprintf(errorMessage, "string '%s' is not a named label", tmpStringLabelOrVariableName);
             moreInfoOnError("In function _executeOp:", errorMessage, NULL, NULL);
           #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -513,7 +502,7 @@ static void _executeOp(uint8_t *paramAddress, uint16_t op, uint16_t paramMode) {
         }
         else {
           displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE, REGISTER_X);
-          #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+          #if (EXTRA_INFO_ON_CALC_ERROR == 1)
             sprintf(errorMessage, "string '%s' is not a named variable", tmpStringLabelOrVariableName);
             moreInfoOnError("In function _executeOp:", errorMessage, NULL, NULL);
           #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -700,7 +689,7 @@ static void _putLiteral(uint8_t *literalAddress) {
     default: {
         #if !defined(DMCP_BUILD)
         printf("\nERROR: in _putLiteral() %u is not an acceptable parameter for ITM_LITERAL!\n", *(literalAddress - 1));
-        printf("At address ram + %lu\n", (literalAddress - 1) - (uint8_t *)ram);
+        printf("At address ram + %" PRIu32 "\n", (uint32_t)((literalAddress - 1) - (uint8_t *)ram));
       #endif // !DMCP_BUILD
     }
   }
@@ -721,6 +710,11 @@ int16_t executeOneStep(uint8_t *step) {
     op <<= 8;
     op |= *(step++);
   }
+
+    #if defined(PC_BUILD) && defined(DEBUG_EXECUTE)
+      printf("   >>>  executeOneStep: §%i§%s§%s§\n",op, indexOfItems[(op)].itemCatalogName, indexOfItems[(op)].itemSoftmenuName);
+    #endif // PC_BUILD
+
 
   switch(op) {
     case ITM_GTO:         //     2
@@ -745,6 +739,7 @@ int16_t executeOneStep(uint8_t *step) {
     }
 
     case ITM_SOLVE: {     //  1608
+      currentSolverStatus &= !SOLVER_STATUS_USES_FORMULA;
       _executeOp(step, op, PARAM_REGISTER);
       if(temporaryInformation == TI_SOLVER_FAILED) {
         lastErrorCode = ERROR_NONE;
@@ -768,7 +763,7 @@ int16_t executeOneStep(uint8_t *step) {
 
         case PTP_DISABLED: {
           displayCalcErrorMessage(ERROR_NON_PROGRAMMABLE_COMMAND, ERR_REGISTER_LINE, REGISTER_X);
-          #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+          #if (EXTRA_INFO_ON_CALC_ERROR == 1)
             moreInfoOnError("In function decodeOneStep:", "non-programmable function", indexOfItems[op].itemCatalogName, "appeared in the program!");
           #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
           return 0;
@@ -810,11 +805,7 @@ void runProgram(bool_t singleStep, uint16_t menuLabel) {
   programRunStop = PGM_RUNNING;
   if(!getSystemFlag(FLAG_INTING) && !getSystemFlag(FLAG_SOLVING)) {
     showHideHourGlass();
-    #if defined(DMCP_BUILD)
-      lcd_refresh();
-    #else // !DMCP_BUILD
-      refreshLcd(NULL);
-    #endif // DMCP_BUILD
+    screenUpdatingMode = SCRUPD_AUTO;
   }
 
   if(menuLabel != INVALID_VARIABLE) {
@@ -867,7 +858,8 @@ void runProgram(bool_t singleStep, uint16_t menuLabel) {
         key = convertKeyCode(key);
         if(key == 36 || key == 33) {  //JM
           programRunStop = PGM_WAITING;
-          refreshScreen();
+          screenUpdatingMode = SCRUPD_AUTO;
+          refreshScreen(1);
           lcd_refresh();
           fnTimerStart(TO_KB_ACTV, TO_KB_ACTV, PROGRAM_KB_ACTV);
           wait_for_key_release(0);
@@ -885,9 +877,7 @@ void runProgram(bool_t singleStep, uint16_t menuLabel) {
     if(singleStep) {
       break;
     }
-    #if defined(PC_BUILD)
-      refreshLcd(NULL);
-    #endif // PC_BUILD
+    screenUpdatingMode = SCRUPD_AUTO;
   }
 
 stopProgram:
@@ -899,15 +889,10 @@ stopProgram:
   }
   if(!getSystemFlag(FLAG_INTING) && !getSystemFlag(FLAG_SOLVING)) {
     showHideHourGlass();
-    if(screenUpdatingMode == SCRUPD_AUTO) {
-      refreshScreen();
+    if(screenUpdatingMode == SCRUPD_AUTO && !singleStep) {
+      //screenUpdatingMode = SCRUPD_AUTO;
+      refreshScreen(4);
     }
-    #if defined(DMCP_BUILD)
-      lcd_refresh();
-      fnTimerStart(TO_KB_ACTV, TO_KB_ACTV, PROGRAM_STOP);
-    #else // !DMCP_BUILD
-      refreshLcd(NULL);
-    #endif // DMCP_BUILD
   }
   return;
   #endif // !TESTSUITE_BUILD

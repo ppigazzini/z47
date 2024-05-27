@@ -70,7 +70,7 @@ int32_t functionIndex, funcType, correctSignificantDigits;
 void (*funcNoParam)(uint16_t);
 void (*funcCvt)(uint16_t);
 
-static const char regNames[] = "XYZTABCDLIJKMNPQRS";
+static const char regNames[] = "XYZTABCDLIJKMNPQRSEFGHOUVW";
 
 const funcTest_t funcTestNoParam[] = {
   {"fn10Pow",                fn10Pow               },
@@ -152,6 +152,7 @@ const funcTest_t funcTestNoParam[] = {
   {"fnErfc",                 fnErfc                },
   {"fnEuclideanNorm",        fnEuclideanNorm       },
   {"fnEulersFormula",        fnEulersFormula       },
+  {"fnEulPhi",               fnEulPhi              },
   {"fnExp",                  fnExp                 },
   {"fnExpM1",                fnExpM1               },
   {"fnExpMod",               fnExpMod              },
@@ -621,7 +622,7 @@ void setParameter(char *p) {
 
     //Lettered flag
     if(l[3] >= 'A' && l[4] == 0) {
-      if(strstr("XYZTABCDLIJKMNPQRSEFGHOUVW", l + 3) != NULL) {
+      if(strstr(regNames, l + 3) != NULL) {
         uint16_t flg;
 
         flg = l[3] == 'T' ? 103 :
@@ -945,7 +946,7 @@ void setParameter(char *p) {
     //Lettered register
     if(l[1] >= 'A' && l[2] == 0) {
       const char *p = strchr(regNames, l[1]);
-      if (p != NULL) {
+      if(p != NULL) {
         regist = REGISTER_X + (p - regNames);
       }
       else {
@@ -1743,7 +1744,7 @@ void checkExpectedOutParameter(char *p) {
 
     //Lettered flag
     if(l[3] >= 'A' && l[4] == 0) {
-      if(strstr("XYZTABCDLIJKMNPQRSEFGHOUVW", l + 3) != NULL) {
+      if(strstr(regNames, l + 3) != NULL) {
         uint16_t flg;
 
         flg = l[3] == 'T' ? 103 :
@@ -2117,7 +2118,7 @@ void checkExpectedOutParameter(char *p) {
     //Lettered register
     if(l[1] >= 'A' && l[2] == 0) {
       const char *p = strchr(regNames, l[1]);
-      if (p != NULL) {
+      if(p != NULL) {
         letter = l[1];
         regist = REGISTER_X + (p - regNames);
       }

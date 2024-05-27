@@ -14,14 +14,7 @@
  * along with C47.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* ADDITIONAL C43 functions and routines */
 
-
-/********************************************//** //JM
- * \file jmgraph.c Graphing module
- ***********************************************/
-
-/* ADDITIONAL C43 functions and routines */
 
 //#define DISPLOADING
 
@@ -35,6 +28,26 @@
 #include "typeDefinitions.h"
 
 #include "c47.h"
+
+typedef struct {
+  char     itemName[30];
+} nstr;
+
+
+#if !defined(TESTSUITE_BUILD)
+  TO_QSPI static const nstr ClipBoardMsg[] = {
+  /*0*/  { "Real matrix " },
+  /*1*/  { " too large for transfer" },
+  /*2*/  { "Complex matrix " },
+  /*3*/  { "res/PROGRAMS" },
+  /*4*/  { "C43_LOG.TXT" },
+  /*5*/  { "Alpha buffer: " },
+  };
+#endif //TESTSUITE_BUILD
+
+
+
+
 
 void addChrBothSides(uint8_t t, char * str) {
   char tt[4];
@@ -75,7 +88,7 @@ void copyRegisterToClipboardString2(calcRegister_t regist, char *clipboardString
           //printf(">>>:: %u ?? %u\n",rows*columns*46,stringByteLength(clipboardString));
         }
         else {
-          sprintf(clipboardString, "Real matrix %dx%d too large for transfer", rows, columns);
+          sprintf(clipboardString, "%s%dx%d%s", ClipBoardMsg[0].itemName, rows, columns, ClipBoardMsg[1].itemName);  //Real matrix   too large for transfer
         }
         break;
       }
@@ -90,7 +103,7 @@ void copyRegisterToClipboardString2(calcRegister_t regist, char *clipboardString
           //printf(">>>:: %u ?? %u\n", rows*columns*92, stringByteLength(clipboardString));
         }
         else {
-          sprintf(clipboardString, "Complex matrix %dx%d too large for transfer", rows, columns);
+          sprintf(clipboardString, "%s%dx%d%s", ClipBoardMsg[2].itemName, rows, columns, ClipBoardMsg[1].itemName);  //Complex matrix   too large for transfer
         }
         break;
       }
@@ -129,7 +142,7 @@ void stackregister_csv_out(int16_t reg_b, int16_t reg_e, bool_t oneLine) {
         sprintf(tmp_b, "%sN%03d%s%s%s%s%s%s", CSV_STR, ix-100, CSV_STR, CSV_TAB, CSV_STR, (char *)allNamedVariables[ix - FIRST_NAMED_VARIABLE].variableName + 1, CSV_STR, CSV_TAB);
       }
 
-      #if(VERBOSE_LEVEL >= 1)
+      #if (VERBOSE_LEVEL >= 1)
         print_linestr("-2b", false);
       #endif // VERBOSE_LEVEL >= 1
 
@@ -138,7 +151,7 @@ void stackregister_csv_out(int16_t reg_b, int16_t reg_e, bool_t oneLine) {
       utf8ToString((uint8_t *)tmpString, tmpString2);
       stringToASCII(tmpString2, tmpString);
 
-      #if(VERBOSE_LEVEL >= 1)
+      #if (VERBOSE_LEVEL >= 1)
         char tmpTmp[TMP_STR_LENGTH+100];
         sprintf(tmpTmp, "-2c: len=%u:%s", (uint16_t)stringByteLength(tmpString), tmpString);
         print_linestr(tmpTmp, false);
@@ -146,7 +159,8 @@ void stackregister_csv_out(int16_t reg_b, int16_t reg_e, bool_t oneLine) {
 
       if(!oneLine || ix == reg_e) {         //use tabs, except at the last register, use newline
         strcat(tmp_e, CSV_NEWLINE);
-      } else {
+      }
+      else {
         strcat(tmp_e, CSV_TAB);
       }
 
@@ -154,14 +168,14 @@ void stackregister_csv_out(int16_t reg_b, int16_t reg_e, bool_t oneLine) {
       addStrBothSides(tmpString, tmp_b, tmp_e);
       //printf(">>>: §%s§\n", tmp);
 
-      #if(VERBOSE_LEVEL >= 1)
+      #if (VERBOSE_LEVEL >= 1)
         sprintf(tmpTmp,"-2d: len=%u:%s", (uint16_t)stringByteLength(tmpString), tmpString);
         print_linestr(tmpTmp, false);
       #endif // VERBOSE_LEVEL >= 1
 
       export_append_line(tmpString);                    //Output append to CSV file
 
-      #if(VERBOSE_LEVEL >= 1)
+      #if (VERBOSE_LEVEL >= 1)
         sprintf(tmpString, ":(ix=%u)------->", ix);
         print_linestr(tmpString, false);
       #endif // VERBOSE_LEVEL >= 1
@@ -174,7 +188,7 @@ void stackregister_csv_out(int16_t reg_b, int16_t reg_e, bool_t oneLine) {
 void aimBuffer_csv_out(void) {
   #if !defined(TESTSUITE_BUILD)
     export_append_line(CSV_STR);                    //Output append to CSV file
-    export_append_line("Alpha buffer: ");           //Output append to CSV file
+    export_append_line(ClipBoardMsg[5].itemName);  //"Alpha buffer: " //Output append to CSV file
     export_append_line(CSV_STR);                    //Output append to CSV file
     export_append_line(CSV_TAB);                    //Output append to CSV file
     export_append_line(CSV_STR);                    //Output append to CSV file
@@ -188,7 +202,7 @@ void aimBuffer_csv_out(void) {
 //**********************************************************************************************************
 #if !defined(TESTSUITE_BUILD)
   int16_t export_string_to_file(const char line1[TMP_STR_LENGTH]) {
-    return export_string_to_filename(line1, APPEND, "res/PROGRAMS", "C43_LOG.TXT");
+    return export_string_to_filename(line1, APPEND, ClipBoardMsg[3].itemName, ClipBoardMsg[4].itemName);  //"res/PROGRAMS", "C43_LOG.TXT"
   }
 #endif // !TESTSUITE_BUILD
 
@@ -203,12 +217,12 @@ void displaywords(char *line1) {  //Preprocessor and display
   bb[1] = 0;
   bb[0] = 0;
 
-  #if(VERBOSE_LEVEL >= 2)
+  #if (VERBOSE_LEVEL >= 2)
     print_linestr("Code:", true);
   #endif // VERBOSE_LEVEL >= 2
   //printf("4:%s\n", line1);
 
-  #if(VERBOSE_LEVEL >= 2)
+  #if (VERBOSE_LEVEL >= 2)
     char tmp[400];          //Messages
     sprintf(tmp, " F: Displaywords: %lu bytes.\n", stringByteLength(line1));
     print_linestr(tmp, false);
@@ -270,7 +284,7 @@ void displaywords(char *line1) {  //Preprocessor and display
       #if defined(DISPLOADING)
         strcat(ll, aa);
         if(strlen(ll) > 30 && aa[0] == ' ') {
-          #if(VERBOSE_LEVEL >= 2)
+          #if (VERBOSE_LEVEL >= 2)
             print_linestr(ll, false);
           #endif
           ll[0] = 0;
@@ -283,7 +297,7 @@ void displaywords(char *line1) {  //Preprocessor and display
         #if defined(DISPLOADING)
           strcat(ll, aa);
           if(strlen(ll) > 36) {
-            #if(VERBOSE_LEVEL >= 2)
+            #if (VERBOSE_LEVEL >= 2)
               print_linestr(ll, false);
             #endif // VERBOSE_LEVEL >= 2
             ll[0] = 0;
@@ -295,7 +309,7 @@ void displaywords(char *line1) {  //Preprocessor and display
   }
   #if defined(DISPLOADING)
   if(ll[0] != 0) {
-    #if(VERBOSE_LEVEL >= 2)
+    #if (VERBOSE_LEVEL >= 2)
       print_linestr(ll, false);
     #endif
   }

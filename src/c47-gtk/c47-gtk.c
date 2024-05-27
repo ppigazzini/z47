@@ -43,11 +43,11 @@
   uint32_t            *screenData;
   bool_t              screenChange;
   char                debugString[10000];
-  #if(DEBUG_REGISTER_L == 1)
+  #if (DEBUG_REGISTER_L == 1)
     GtkWidget         *lblRegisterL1;
     GtkWidget         *lblRegisterL2;
   #endif // (DEBUG_REGISTER_L == 1)
-  #if(SHOW_MEMORY_STATUS == 1)
+  #if (SHOW_MEMORY_STATUS == 1)
     GtkWidget         *lblMemoryStatus;
   #endif // (SHOW_MEMORY_STATUS == 1)
   calcKeyboard_t       calcKeyboard[43];
@@ -142,7 +142,7 @@
     restoreCalc();
 
     //ramDump();
-    refreshScreen();
+    refreshScreen(190);
 
     gdk_threads_add_timeout(SCREEN_REFRESH_PERIOD, refreshLcd, NULL); // refreshLcd is called every SCREEN_REFRESH_PERIOD ms
     fnTimerReset();                                                    //dr timeouts for kb handling
@@ -171,7 +171,7 @@
         screenUpdatingMode = SCRUPD_AUTO;
         runFunction(ITM_RS);
       }
-      refreshScreen();
+      refreshScreen(191);
     }
 
     gtk_main();

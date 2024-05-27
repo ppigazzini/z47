@@ -74,11 +74,13 @@
               //printf("xxxx kbd_usr:%d kbd_std:%d Norm_Key_00_VAR:%d\n", kbd_usr[Norm_Key_00_key].primary, kbd_std[Norm_Key_00_key].primary, Norm_Key_00_VAR);
               if(kbd_usr[Norm_Key_00_key].primary != kbd_std[Norm_Key_00_key].primary) {
                 kk = kbd_usr[key].primary;  //user key set, use normally
-              } else {
+              }
+              else {
                 kk = Norm_Key_00_VAR;       //user key not set, use +NRM override
                 Norm_Key_00_used = Norm_Key_00_VAR != kbd_std[key].primary;    //only display in reverse and [] if different from kbd_std
               }
-            } else {
+            }
+            else {
               kk = kbd_usr[key].primary;  //not even the +NRM key location, therefore normal user operation
             }
             break;
@@ -95,7 +97,8 @@
           case 1: if(key == Norm_Key_00_key) {
               kk = Norm_Key_00_VAR;
               Norm_Key_00_used = Norm_Key_00_VAR != kbd_std[key].primary;    //only display in reverse and [] if different from kbd_std
-            } else {
+            }
+            else {
               kk = kbd_std[key].primary;
             }
             break;

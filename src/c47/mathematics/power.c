@@ -62,7 +62,7 @@ TO_QSPI void (* const power[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS][NUMBER_OF_DAT
  * \param[in] unusedButMandatoryParameter
  * \return void
  ***********************************************/
-#if(EXTRA_INFO_ON_CALC_ERROR == 1)
+#if (EXTRA_INFO_ON_CALC_ERROR == 1)
   void powError(void) {
     displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
     sprintf(errorMessage, "cannot raise %s", getRegisterDataTypeName(REGISTER_Y, true, false));
@@ -166,7 +166,7 @@ void powLonILonI(void) {
 
   if(longIntegerIsZero(exponent) && longIntegerIsZero(base)) {
     displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       moreInfoOnError("In function powLonILonI: Cannot calculate 0^0!", NULL, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
 
@@ -558,24 +558,32 @@ void powRealReal(void) {
   real34ToReal(REGISTER_REAL34_DATA(REGISTER_Y), &y);
   real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &x);
 
-  PowerReal(&y, &x, &x, &ctxtReal39);
+  real_t res;
+  PowerReal(&y, &x, &res, &ctxtReal39);
 
-  if(getFlag(FLAG_CPXRES) && realIsNaN(&x)) {
-    real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &x);
+  if(realIsNaN(&res) && realIsNegative(&y) && !realIsAnInteger(&x)) {
+    if(getFlag(FLAG_CPXRES)) {
+      reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
+      convertRealToReal34ResultRegister(&x, REGISTER_X);
+      real34Zero(REGISTER_IMAG34_DATA(REGISTER_X));
 
-    reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
-    convertRealToReal34ResultRegister(&x, REGISTER_X);
-    real34Zero(REGISTER_IMAG34_DATA(REGISTER_X));
+      reallocateRegister(REGISTER_Y, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
+      convertRealToReal34ResultRegister(&y, REGISTER_Y);
+      real34Zero(REGISTER_IMAG34_DATA(REGISTER_Y));
 
-    reallocateRegister(REGISTER_Y, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
-    convertRealToReal34ResultRegister(&y, REGISTER_Y);
-    real34Zero(REGISTER_IMAG34_DATA(REGISTER_Y));
-
-    powCplxCplx();
-    return;
+      powCplxCplx();
+      return;
+    }
+    else {
+      displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        moreInfoOnError("In function powRealReal:", "cannot do complex results if CPXRES is not set", NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+      return;
+    }
   }
 
-  convertRealToReal34ResultRegister(&x, REGISTER_X);
+  convertRealToReal34ResultRegister(&res, REGISTER_X);
   setRegisterAngularMode(REGISTER_X, amNone);
 }
 
@@ -690,7 +698,7 @@ void powCplxCplx(void) {
 
   if(errorCode!=ERROR_NONE) {
     displayCalcErrorMessage(errorCode, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "cannot raise %s", getRegisterDataTypeName(REGISTER_Y, true, false));
       sprintf(errorMessage + ERROR_MESSAGE_LENGTH/2, "to %s", getRegisterDataTypeName(REGISTER_X, true, false));
       moreInfoOnError("In function fnPower:", errorMessage, errorMessage + ERROR_MESSAGE_LENGTH/2, NULL);

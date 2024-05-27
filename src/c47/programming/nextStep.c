@@ -1,18 +1,6 @@
-/* This file is part of 43S.
- *
- * 43S is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * 43S is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with 43S.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: GPL-3.0-only
+// SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
+
 
 /********************************************//**
  * \file nextStep.c
@@ -239,7 +227,7 @@ uint8_t *countLiteralBytes(uint8_t *step) {
     default: {
       #if !defined(DMCP_BUILD)
         printf("\nERROR: in countLiteralBytes() %u is not an acceptable parameter for ITM_LITERAL!\n", *(step - 1));
-        printf("At address ram + %lu\n", (step - 1) - (uint8_t *)ram);
+        printf("At address ram + %" PRIu32 "\n", (uint32_t)((step - 1) - (uint8_t *)ram));
       #endif // !DMCP_BUILD
       return NULL;
     }
@@ -336,6 +324,7 @@ static void _showStep(void) {
     int16_t xPos = (lblOrEnd ? 42 : 62);
     int16_t maxWidth = SCREEN_WIDTH - xPos;
 
+//    lcd_fill_rect(1, Y_POSITION_OF_REGISTER_T_LINE, xPos+1,  REGISTER_LINE_HEIGHT, LCD_SET_VALUE);
     sprintf(tmpString, "%04" PRIu16 ":" STD_SPACE_4_PER_EM, currentLocalStepNumber);
     showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_T_LINE + 6, vmNormal, true, true);
 
@@ -361,6 +350,7 @@ static void _showStep(void) {
       xstrOrig[1] = STD_ELLIPSIS[1];
       xstrOrig[2] = 0;
     }
+//    lcd_fill_rect(xPos, Y_POSITION_OF_REGISTER_T_LINE, stringWidth(tmpString, &standardFont, true, true)+20,  REGISTER_LINE_HEIGHT, LCD_SET_VALUE);
     showString(tmpString, &standardFont, xPos, Y_POSITION_OF_REGISTER_T_LINE + 6, vmNormal, true, true);
   #endif // !TESTSUITE_BUILD
 }
@@ -548,7 +538,7 @@ void fnCase(uint16_t regist) {
     }
     default: {
       displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "cannot use %s for the parameter of CASE", getRegisterDataTypeName(REGISTER_X, true, false));
         moreInfoOnError("In function fnCase:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)

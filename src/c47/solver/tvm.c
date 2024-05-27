@@ -42,12 +42,14 @@ void fnTvmVar(uint16_t variable) {
     switch(variable) {
       case RESERVED_VARIABLE_FV:
       case RESERVED_VARIABLE_IPONA:
-      case RESERVED_VARIABLE_NPER:
-      case RESERVED_VARIABLE_PERONA:
+      case RESERVED_VARIABLE_NPPER:
+      case RESERVED_VARIABLE_PPERONA:
+      case RESERVED_VARIABLE_CPERONA:
       case RESERVED_VARIABLE_PMT:
       case RESERVED_VARIABLE_PV: {
         currentSolverStatus |= SOLVER_STATUS_TVM_APPLICATION;
         currentSolverVariable = variable;
+        clearSystemFlag(FLAG_TVM_I_KNOWN);
 
         /* Calculate */
         if(currentSolverStatus & SOLVER_STATUS_READY_TO_EXECUTE) {
@@ -55,8 +57,23 @@ void fnTvmVar(uint16_t variable) {
           saveForUndo();
           thereIsSomethingToUndo = true;
           liftStack();
+
+          clearSystemFlag(FLAG_TVM_I_KNOWN);
+
+          switch(variable) {
+            case RESERVED_VARIABLE_IPONA:
+            case RESERVED_VARIABLE_PPERONA:
+            case RESERVED_VARIABLE_CPERONA: {
+              setSystemFlag(FLAG_TVM_I_CHANGES);
+              break;
+            }
+            default: {
+              clearSystemFlag(FLAG_TVM_I_CHANGES);
+            }
+          }
           real34Multiply(REGISTER_REAL34_DATA(variable), const34_2, &y);
           real34Multiply(REGISTER_REAL34_DATA(variable), const34_1on2, &x);
+
           switch(variable) {
             case RESERVED_VARIABLE_PV: {
               if(real34IsZero(REGISTER_REAL34_DATA(RESERVED_VARIABLE_PV))) {
@@ -79,8 +96,10 @@ void fnTvmVar(uint16_t variable) {
               }
               break;
             }
-            case RESERVED_VARIABLE_NPER:
-            case RESERVED_VARIABLE_PERONA: {
+
+            case RESERVED_VARIABLE_NPPER:
+            case RESERVED_VARIABLE_CPERONA:
+            case RESERVED_VARIABLE_PPERONA: {
               if(real34CompareLessThan(REGISTER_REAL34_DATA(variable), const34_1)) {
                 real34Copy(const34_2, &y);
                 real34Copy(const34_1, &x);
@@ -103,7 +122,7 @@ void fnTvmVar(uint16_t variable) {
           }
           else {
             displayCalcErrorMessage(ERROR_NO_ROOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
-            #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+            #if (EXTRA_INFO_ON_CALC_ERROR == 1)
               moreInfoOnError("In function fnTvmVar:", "cannot compute TVM equation", "with current parameters", NULL);
             #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
           }
@@ -115,6 +134,9 @@ void fnTvmVar(uint16_t variable) {
           fnToReal(NOPARAM);
           if(lastErrorCode == ERROR_NONE) {
             reallyRunFunction(ITM_STO, variable);
+            if(variable == RESERVED_VARIABLE_PPERONA) {
+              reallyRunFunction(ITM_STO, RESERVED_VARIABLE_CPERONA);
+            }
             currentSolverStatus |= SOLVER_STATUS_READY_TO_EXECUTE;
             temporaryInformation = TI_SOLVER_VARIABLE;
           }
@@ -144,17 +166,61 @@ void fnTvmEndMode(uint16_t unusedButMandatoryParameter) {
 
 
 void tvmEquation(void) {
-  real_t fv, iA, nPer, perA, pmt, pv, i;
-  real_t i1nPer, val, tmp;
+  real_t fv, iA, nPer, pperA, cperA, pmt, pv;
+  real_t i1nPer, val, tmp, r;
+  static real_t i;
 
-  real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_FV),     &fv);
-  real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_IPONA),  &iA);
-  real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_NPER),   &nPer);
-  real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_PERONA), &perA);
-  real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_PMT),    &pmt);
-  real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_PV),     &pv);
-  realDivide(&iA, const_100, &i, &ctxtReal39);
-  realDivide(&i, &perA, &i, &ctxtReal39);
+  real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_FV),      &fv);
+  real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_IPONA),   &iA);
+  real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_NPPER),   &nPer);
+  real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_PPERONA), &pperA);
+  real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_CPERONA), &cperA);
+  real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_PMT),     &pmt);
+  real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_PV),      &pv);
+  /*
+    The plan is to find an interest rate iM which,
+    when compounded pperA times in a year, gives iAER.
+    (AER stands for annual effective rate.)
+    iAER can be found like this:
+    1 + iAER = (1 + (iA/100)/cperA)^cperA
+    Also,
+    1 + iAER = (1 + iM) ^ pperA.
+    So
+    iM = (1 + (iA/100)/cperA)^(cperA/pperA) - 1.
+    If cperA = pperA this is just iM = (iA/100)/pperA.
+
+    Define r = cperA / pperA. r = 1 corresponds to the "normal" case.
+    In terms of r,
+    iM = (1 + iA/100/pperA/r)^r - 1.
+    This reduces to iM = (iA/100)/pperA when r=1.
+    When pperA is set cperA is also set to the same value. So if no value
+    is entered for cperA, r will be 1. We can test for this and short-circuit
+    the calculation.
+    If no value is entered for pperA - perhaps it's being solved for so it's zero
+    Can I avoid repeating this calculation each time the TVM equation is called?
+    The calculation of i depends on: iA; pperA; cperA. iA could change if i is being solved for;
+    similarly, the other two could change as well if being solved for.
+    This function doesn't know what is being solved for.
+    It takes a lot of iterations to converge but without the calculation of i each time
+    these iterations pass much more quickly. So I do need to do something here.
+   */
+
+  if((!getSystemFlag(FLAG_TVM_I_KNOWN)) || (getSystemFlag(FLAG_TVM_I_CHANGES))) { // if i hasn't been found yet or i changes each time
+    realDivide(&iA, const_100, &i, &ctxtReal39);
+    realDivide(&i, &pperA, &i, &ctxtReal39);
+    // i is now (iA / 100) / pperA.
+    // This is the "normal" value of i when cperA = pperA.
+
+    realDivide(&cperA, &pperA, &r, &ctxtReal39); // r = cperA / pperA
+
+    if(!(realIsZero(&r) || realCompareEqual(const_1, &r)) ) { // not normal case
+      realDivide(&i, &r, &i, &ctxtReal39);
+      realAdd(&i, const_1, &i, &ctxtReal39);
+      realPower(&i, &r, &i, &ctxtReal39);
+      realSubtract(&i, const_1, &i, &ctxtReal39); // i = (1 + (i/pperA)/r)^r - 1
+    }
+    setSystemFlag(FLAG_TVM_I_KNOWN);
+  }
 
   realChangeSign(&pv);
 
