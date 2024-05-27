@@ -106,7 +106,17 @@ void fnTvmVar(uint16_t variable) {
               }
               break;
             }
+
+            case RESERVED_VARIABLE_PMT: {
+              if(real34CompareAbsLessThan(REGISTER_REAL34_DATA(variable), const34_1)) {
+                real34Copy(const34_2, &y);
+                real34Copy(const34_1, &x);
+              }
+              break;
+            }
+            default:break;
           }
+
           if((variable == RESERVED_VARIABLE_PV || variable == RESERVED_VARIABLE_FV) &&
             !real34IsZero(REGISTER_REAL34_DATA(RESERVED_VARIABLE_PV)) &&
             !real34IsZero(REGISTER_REAL34_DATA(RESERVED_VARIABLE_FV)) &&
@@ -114,6 +124,11 @@ void fnTvmVar(uint16_t variable) {
               real34ChangeSign(&y);
               real34ChangeSign(&x);
           }
+
+          if(real34CompareAbsLessThan(&x,const34_1e_4) && real34CompareAbsLessThan(&y,const34_1e_4)) {
+            real34Copy(const34_1, &x);
+          }
+
           if(solver(variable, &y, &x, &resZ, &resY, &resX) == SOLVER_RESULT_NORMAL) {
             reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
             real34Copy(&resX, REGISTER_REAL34_DATA(REGISTER_X));
