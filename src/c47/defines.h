@@ -462,20 +462,20 @@
 #define FLAG_I                                   109
 #define FLAG_J                                   110
 #define FLAG_K                                   111
-#define FLAG_M                                   212
-#define FLAG_N                                   213
-#define FLAG_P                                   214
-#define FLAG_Q                                   215
-#define FLAG_R                                   216
-#define FLAG_S                                   217
-#define FLAG_E                                   218
-#define FLAG_F                                   219
-#define FLAG_G                                   220
-#define FLAG_H                                   221
-#define FLAG_O                                   222
-#define FLAG_U                                   223
-#define FLAG_V                                   224
-#define FLAG_W                                   225
+#define FLAG_M                                   211
+#define FLAG_N                                   212
+#define FLAG_P                                   213
+#define FLAG_Q                                   214
+#define FLAG_R                                   215
+#define FLAG_S                                   216
+#define FLAG_E                                   217
+#define FLAG_F                                   218
+#define FLAG_G                                   219
+#define FLAG_H                                   220
+#define FLAG_O                                   221
+#define FLAG_U                                   222
+#define FLAG_V                                   223
+#define FLAG_W                                   224
 
 // System flags
 // Bit 15 (MSB) is always set for a system flag
@@ -666,9 +666,9 @@ typedef enum {
 // the C47 C program:                                                                               stroke programs (one byte)
 // 0…99                                  Global registers from 0 to 99                              0…99
 // 100…111                           Lettered global registers from X to L                          100…111
-// 112…117         Lettered global registers from M to S: no possibility of indirect access         212…217
-// 118…125         Lettered global registers from E to W: no possibility of indirect access         218…225
-//                                        24 undefined free registers                               226…249
+// 112…117         Lettered global registers from M to S: no possibility of indirect access         211…216
+// 118…125         Lettered global registers from E to W: no possibility of indirect access         217…224
+//                                        25 undefined free registers                               225…249
 // 126…134                 saved stack registers (UNDO feature) not user accessible
 // 135…136                          temporary registers not user accessible
 // 137…249              113 undefined free registers: no possibility of indirect access
@@ -681,7 +681,7 @@ typedef enum {
 //                                             INDIRECT_VARIABLE                                    255
 // 256  to 1999                                 named variables
 // 2000 to 2029                               reserved variables
-// 7000 to 7099                         Local registers from .00 to .99                             112…211
+// 7000 to 7098                         Local registers from .00 to .98                             112…210
 
 enum REG_NUMBERS { // C program register codes
   FIRST_GLOBAL_REGISTER = 0,                             //   0 - 99 Total 100 registers
@@ -808,7 +808,7 @@ enum REG_NUMBERS { // C program register codes
 
   // Local registers
   FIRST_LOCAL_REGISTER,                                  //7000
-  LAST_LOCAL_REGISTER = FIRST_LOCAL_REGISTER + 100 - 1   //7099 total 100 local registers,
+  LAST_LOCAL_REGISTER = FIRST_LOCAL_REGISTER + 99 - 1    //7098 total 99 local registers,
 };
 
 enum REG_NUMBERS_IN_KS_CODE { // Key Stroke register codes
@@ -833,28 +833,28 @@ enum REG_NUMBERS_IN_KS_CODE { // Key Stroke register codes
 
   // Local registers
   FIRST_LOCAL_REGISTER_IN_KS_CODE,                                            // 112
-  LAST_LOCAL_REGISTER_IN_KS_CODE = FIRST_LOCAL_REGISTER_IN_KS_CODE + 100 - 1, // 211, total 100 local registers,
+  LAST_LOCAL_REGISTER_IN_KS_CODE = FIRST_LOCAL_REGISTER_IN_KS_CODE + 99 - 1,  // 210, total 99 registers,
 
   // Statistical parameter registers
   FIRST_STAT_REGISTER_IN_KS_CODE,
-  REGISTER_M_IN_KS_CODE = FIRST_STAT_REGISTER_IN_KS_CODE,                     // 212
-  REGISTER_N_IN_KS_CODE,                                                      // 213
-  REGISTER_P_IN_KS_CODE,                                                      // 214
-  REGISTER_Q_IN_KS_CODE,                                                      // 215
-  REGISTER_R_IN_KS_CODE,                                                      // 216
-  REGISTER_S_IN_KS_CODE,                                                      // 217
+  REGISTER_M_IN_KS_CODE = FIRST_STAT_REGISTER_IN_KS_CODE,                     // 211
+  REGISTER_N_IN_KS_CODE,                                                      // 212
+  REGISTER_P_IN_KS_CODE,                                                      // 213
+  REGISTER_Q_IN_KS_CODE,                                                      // 214
+  REGISTER_R_IN_KS_CODE,                                                      // 215
+  REGISTER_S_IN_KS_CODE,                                                      // 216
   LAST_STAT_REGISTER_IN_KS_CODE = REGISTER_S_IN_KS_CODE,
 
   // Spare registers
   FIRST_SPARE_REGISTERS_IN_KS_CODE,
-  REGISTER_E_IN_KS_CODE = FIRST_SPARE_REGISTERS_IN_KS_CODE,                   // 218
-  REGISTER_F_IN_KS_CODE,                                                      // 219
-  REGISTER_G_IN_KS_CODE,                                                      // 220
-  REGISTER_H_IN_KS_CODE,                                                      // 221
-  REGISTER_O_IN_KS_CODE,                                                      // 222
-  REGISTER_U_IN_KS_CODE,                                                      // 223
-  REGISTER_V_IN_KS_CODE,                                                      // 224
-  REGISTER_W_IN_KS_CODE,                                                      // 225
+  REGISTER_E_IN_KS_CODE = FIRST_SPARE_REGISTERS_IN_KS_CODE,                   // 217
+  REGISTER_F_IN_KS_CODE,                                                      // 218
+  REGISTER_G_IN_KS_CODE,                                                      // 219
+  REGISTER_H_IN_KS_CODE,                                                      // 220
+  REGISTER_O_IN_KS_CODE,                                                      // 221
+  REGISTER_U_IN_KS_CODE,                                                      // 222
+  REGISTER_V_IN_KS_CODE,                                                      // 223
+  REGISTER_W_IN_KS_CODE,                                                      // 224
   LAST_SPARE_REGISTERS_IN_KS_CODE = REGISTER_W_IN_KS_CODE,
 
   // OP parameter special values
@@ -875,7 +875,7 @@ enum REG_NUMBERS_IN_KS_CODE { // Key Stroke register codes
 #define NUMBER_OF_SPARE_REGISTERS       (LAST_SPARE_REGISTER           - FIRST_SPARE_REGISTER           + 1) // 8 lettered from E to W
 #define NUMBER_OF_SAVED_STACK_REGISTERS (LAST_SAVED_STACK_REGISTER     - FIRST_SAVED_STACK_REGISTER     + 1) // 9
 #define NUMBER_OF_TEMP_REGISTERS        (LAST_TEMP_REGISTER            - FIRST_TEMP_REGISTER            + 1) // 2
-#define NUMBER_OF_LOCAL_REGISTERS       (LAST_LOCAL_REGISTER           - FIRST_LOCAL_REGISTER           + 1) // 100 from .00 to .99
+#define NUMBER_OF_LOCAL_REGISTERS       (LAST_LOCAL_REGISTER           - FIRST_LOCAL_REGISTER           + 1) // 99 from .00 to .98
 
 #define NUMBER_OF_RESERVED_VARIABLES    (LAST_RESERVED_VARIABLE        - FIRST_RESERVED_VARIABLE        + 1) // 41
 #define NUMBER_OF_LETTERED_VARIABLES    (FIRST_NAMED_RESERVED_VARIABLE - FIRST_RESERVED_VARIABLE)            // 26

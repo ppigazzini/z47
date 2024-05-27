@@ -356,7 +356,35 @@
           }
         }
 
-        sprintf(tmpString, "%c:%d", flagLetter[g - FLAG_X], f);
+        switch(f) {
+          case FLAG_X: strcpy(tmpString, "X:POLAR "); break;
+          case FLAG_Y: strcpy(tmpString, "Y:101   "); break;
+          case FLAG_Z: strcpy(tmpString, "Z:102   "); break;
+          case FLAG_T: strcpy(tmpString, "T:TRACE "); break;
+          case FLAG_A: strcpy(tmpString, "A:ALLENG"); break;
+          case FLAG_B: strcpy(tmpString, "B:OVRFL "); break;
+          case FLAG_C: strcpy(tmpString, "C:CARRY "); break;
+          case FLAG_D: strcpy(tmpString, "D:SPCRES"); break;
+          case FLAG_L: strcpy(tmpString, "L:LEAD0 "); break;
+          case FLAG_I: strcpy(tmpString, "I:CPXRES"); break;
+          case FLAG_J: strcpy(tmpString, "J:110");    break;
+          case FLAG_K: strcpy(tmpString, "K:111");    break;
+          case FLAG_M: strcpy(tmpString, "M:211");    break;
+          case FLAG_N: strcpy(tmpString, "N:212");    break;
+          case FLAG_P: strcpy(tmpString, "P:213");    break;
+          case FLAG_Q: strcpy(tmpString, "Q:214");    break;
+          case FLAG_R: strcpy(tmpString, "R:215");    break;
+          case FLAG_S: strcpy(tmpString, "S:216");    break;
+          case FLAG_E: strcpy(tmpString, "E:217");    break;
+          case FLAG_F: strcpy(tmpString, "F:218");    break;
+          case FLAG_G: strcpy(tmpString, "G:229");    break;
+          case FLAG_H: strcpy(tmpString, "H:220");    break;
+          case FLAG_O: strcpy(tmpString, "O:221");    break;
+          case FLAG_U: strcpy(tmpString, "U:222");    break;
+          case FLAG_V: strcpy(tmpString, "V:223");    break;
+          case FLAG_W: strcpy(tmpString, "W:224");    break;
+          default:     sprintf(tmpString,"  %d", f);  break;
+        }
 
         char ss[2];
         int16_t i, shift;
