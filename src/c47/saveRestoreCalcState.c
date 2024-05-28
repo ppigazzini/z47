@@ -53,7 +53,7 @@
 #endif
 
 #include "c47.h"
-#define configFileVersion                  10000009 // New STOCFG and new STATE file; arbitrary starting point version 10 000 001. Allowable values are 10000000 to 20000000
+#define configFileVersion                  10000010 // Changes to 2 flags; arbitrary starting point version 10 000 001. Allowable values are 10000000 to 20000000
 #define BACKUP_VERSION                     1002  // increasing number of reserved variable
 #define VersionAllowed                     10000005 // This code will not autoload versions earlier than this
 
@@ -972,6 +972,16 @@ uint16_t flushBufferCnt = 0;
     restoreStateValue(&savedSystemFlags0,              sizeof(savedSystemFlags0),                                   "savedSystemFlags",               "uint64");
     savedSystemFlags1 = 0;
     restoreStateValue(&savedSystemFlags1,              sizeof(savedSystemFlags1),                                   "savedSystemFlags1",              "uint64");
+    if(loadedVersion < 10000010) {
+      if(getSystemFlag(FLAG_tmp2)) {; //HP Convert was on FLAG_tmp2
+        setSystemFlag(FLAG_HPCONV);
+      }
+      else {
+        clearSystemFlag(FLAG_HPCONV);
+      }
+      clearSystemFlag(FLAG_tmp1); //restore previously used flags to 0
+      clearSystemFlag(FLAG_tmp2); //restore previously used flags to 0
+    }
     restoreStateValue(&thereIsSomethingToUndo,         sizeof(thereIsSomethingToUndo),                              "thereIsSomethingToUndo",         "bool");
     restoreStateValue(&freeProgramBytes,               sizeof(freeProgramBytes),                                    "freeProgramBytes",               "uint16");
     restoreStateValue(&firstDisplayedLocalStepNumber,  sizeof(firstDisplayedLocalStepNumber),                       "firstDisplayedLocalStepNumber",  "uint16");
@@ -2354,6 +2364,16 @@ double stringToDouble(const char *str) {
         }
         if(loadedVersion < 10000009) {
           setSystemFlag(FLAG_MONIT); //Monitoring is on per default
+        }
+        if(loadedVersion < 10000010) {
+          if(getSystemFlag(FLAG_tmp2)) {; //HP Convert was on FLAG_tmp2
+            setSystemFlag(FLAG_HPCONV);
+          }
+          else {
+            clearSystemFlag(FLAG_HPCONV);
+          }
+          clearSystemFlag(FLAG_tmp1); //restore previously used flags to 0
+          clearSystemFlag(FLAG_tmp2); //restore previously used flags to 0
         }
       }
     }
