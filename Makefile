@@ -124,7 +124,7 @@ dist_dmcp: dmcp testPgms build.rel/wiki
 
 dist_dmcp5: dmcp5 testPgms build.rel/wiki
 	mkdir -p $(DMCP5_DIST_DIR)
-	mkdir -p $(DMCP_DIST_DIR)/demo
+	mkdir -p $(DMCP5_DIST_DIR)/demo
 	cp build.dmcp5/src/c47-dmcp5/C47.pg5 build.dmcp5/src/c47-dmcp5/C47_qspi.bin $(DMCP5_DIST_DIR)
 	cp -r res/offimg/Egypt/ $(DMCP5_DIST_DIR)/offimg
 	cp -r res/offimg/Norway/ $(DMCP5_DIST_DIR)/offimg
