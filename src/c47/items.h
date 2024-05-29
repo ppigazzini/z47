@@ -80,7 +80,7 @@
 #define ITM_XTHROOT                   63
 #define ITM_2X                        64
 #define ITM_EXP                       65
-#define MNU_0066                      66
+#define ITM_SINT                      66
 #define ITM_10x                       67
 #define ITM_LOG2                      68
 #define ITM_LN                        69

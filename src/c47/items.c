@@ -1223,6 +1223,7 @@ void fnNop(uint16_t unusedButMandatoryParameter) {
   void fnSetC47                   (uint16_t unusedButMandatoryParameter) {}
   void fnDiskInfo                 (uint16_t unusedButMandatoryParameter) {}
   void fnLint                     (uint16_t unusedButMandatoryParameter) {}
+  void fnSint                     (uint16_t unusedButMandatoryParameter) {}
   void fnSetVolume                (uint16_t unusedButMandatoryParameter) {}
   void fnGetVolume                (uint16_t unusedButMandatoryParameter) {}
   void fnVolumeUp                 (uint16_t unusedButMandatoryParameter) {}
@@ -1337,7 +1338,7 @@ TO_QSPI const item_t indexOfItems[] = {
 /*   63 */  { fnXthRoot,                    NOPARAM,                     STD_xTH_ROOT STD_y_UNDER_ROOT,                 STD_xTH_ROOT STD_y_UNDER_ROOT,                 (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /*   64 */  { fn2Pow,                       NOPARAM,                     "2" STD_SUP_x,                                 "2" STD_SUP_x,                                 (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /*   65 */  { fnExp,                        NOPARAM,                     STD_EulerE STD_SUP_x,                          STD_EulerE STD_SUP_x,                          (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_ENABLED  | PTP_NONE         },
-/*   66 */  { itemToBeCoded,                NOPARAM,                     "0066",                                        "0066",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/*   66 */  { fnSint,                       NOPARAM,                     "SINT",                                        "SINT",                                        (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /*   67 */  { fn10Pow,                      NOPARAM,                     "10" STD_SUP_x,                                "10" STD_SUP_x,                                (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /*   68 */  { fnLog2,                       NOPARAM/*#JM#*/,             "LB",                                          "LB",                                          (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_ENABLED  | PTP_NONE         },
 /*   69 */  { fnLn,                         NOPARAM/*#JM#*/,             "LN",                                          "LN",                                          (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_ENABLED  | PTP_NONE         },//JM3 change ln to LN
