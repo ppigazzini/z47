@@ -108,6 +108,7 @@ c47_src = files(
   'mathematics/int.c',
   'mathematics/integerPart.c',
   'mathematics/integerPartLonginteger.c',
+  'mathematics/integerPartShortinteger.c',
   'mathematics/invert.c',
   'mathematics/iteration.c',
   'mathematics/ixyz.c',
