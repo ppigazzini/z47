@@ -203,6 +203,7 @@ const funcTest_t funcTestNoParam[] = {
   {"fnInvGd",                fnInvGd               },
   {"fnIp",                   fnIp                  },
   {"fnLint",                 fnLint                },
+  {"fnSint",                 fnSint                },
   {"fnIsPrime",              fnIsPrime             },
   {"fnIxyz",                 fnIxyz                },
   {"fnJacobiAmplitude",      fnJacobiAmplitude     },
