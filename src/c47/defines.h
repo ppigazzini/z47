@@ -276,16 +276,12 @@
 //*********************************
 //* General configuration defines *
 //*********************************
-#define UNIT_2TO10_LONGINT_DISPLAY         // Allow 2^10 option to also process integers instead of only reals
-#undef RECT_POLAR_CHANGES_X                // RECT/POLAR radiobuttons to also change the complex number in X
-
 #define DEBUG_INSTEAD_STATUS_BAR         0 // Debug data instead of the status bar
 #define EXTRA_INFO_ON_CALC_ERROR         1 // Print extra information on the console about an error
 #define DEBUG_PANEL                      0 //1 JM Showing registers, local registers, saved stack registers, flags, statistical sums, ... in a debug panel
 #define DEBUG_REGISTER_L                 0 //1 JM Showing register L content on the PC GUI
 #define SHOW_MEMORY_STATUS               0 //1 JM Showing the memory status on the PC GUI
 #define MMHG_PA_133_3224                 0 //1 JM mmHg to Pa conversion coefficient is 133.3224 an not 133.322387415
-//#define FN_KEY_TIMEOUT_TO_NOP            0 // Set to 1 if you want the 6 function keys to timeout
 #define MAX_LONG_INTEGER_SIZE_IN_BITS    3328 //JMMAX 9965   // 43S:3328 //JMMAX // 1001 decimal digits: 3328 ≃ log2(10^1001)
 #define MAX_FACTORIAL                    450  //JMMAX 1142   // 43S: 450 //JMMAX
 
@@ -580,10 +576,10 @@
 #define FLAG_WRAPEDG                          0xc03F
 #define FLAG_MONIT                            0x8040 // MONIT MUST be the first of the second flag word
 #define FLAG_FRCYC                            0x8041
-#define FLAG_TVM_I_KNOWN                      0xc042
-#define FLAG_TVM_I_CHANGES                    0xc043
-#define FLAG_HPCONV                           0x8044
-#define NUMBER_OF_SYSTEM_FLAGS                    69 // We can have a maximum of 128 system flags
+#define FLAG_HPCONV                           0x8042 //shifted here from 0x8044
+#define NUMBER_OF_SYSTEM_FLAGS                    67 // We can have a maximum of 128 system flags
+#define FLAG_tmp1                             0x8043 //restore previously used flags in version 10000009 to 0; Re-use these flag numbers at will, then remove these defines. 
+#define FLAG_tmp2                             0x8044 //restore previously used flags in version 10000009 to 0; Re-use these flag numbers at will, then remove these defines.
 
 typedef enum {
   LI_ZERO     = 0, // Long integer sign 0
@@ -1336,6 +1332,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define TI_NO_INTEGRATE_VARIABLE                 108
 #define TI_FUNCTION                              109
 #define TI_STORCL                                110
+#define TI_TVM_EFF                               111
 
 #define SET_TI_TRUE_FALSE(condition)               do { temporaryInformation = TI_FALSE + (condition); } while(0) // TI_TRUE must be TI_FALSE + 1
 

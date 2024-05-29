@@ -552,24 +552,20 @@ void SetSetting(uint16_t jmConfig) {
     case SS_8:           fnSetFlag(FLAG_SSIZE8);                   break;
     case CM_RECTANGULAR:
       fnClearFlag(FLAG_POLAR);
-      #if defined(RECT_POLAR_CHANGES_X)
-        if(getRegisterDataType(REGISTER_X) == dtComplex34 || getRegisterDataType(REGISTER_X) == dtComplex34Matrix) {
-          setComplexRegisterPolarMode(REGISTER_X, ~amPolar);
-          setComplexRegisterAngularMode(REGISTER_X, amNone);
-        }
-      #endif //RECT_POLAR_CHANGES_X
+      //if(getRegisterDataType(REGISTER_X) == dtComplex34 || getRegisterDataType(REGISTER_X) == dtComplex34Matrix) {   //RECT/POLAR radiobuttons to also change the complex number in X
+      //  setComplexRegisterPolarMode(REGISTER_X, ~amPolar);
+      //  setComplexRegisterAngularMode(REGISTER_X, amNone);
+      //}
       break;
 
     case CM_POLAR:
       fnSetFlag(FLAG_POLAR);
-      #if defined(RECT_POLAR_CHANGES_X)
-        if(getRegisterDataType(REGISTER_X) == dtComplex34 || getRegisterDataType(REGISTER_X) == dtComplex34Matrix) {
-          setComplexRegisterPolarMode(REGISTER_X, amPolar);
-          if(getComplexRegisterAngularMode(REGISTER_X) == amNone) {
-            setComplexRegisterAngularMode(REGISTER_X, currentAngularMode);
-          }
-        }
-      #endif //RECT_POLAR_CHANGES_X
+      //if(getRegisterDataType(REGISTER_X) == dtComplex34 || getRegisterDataType(REGISTER_X) == dtComplex34Matrix) {   //RECT/POLAR radiobuttons to also change the complex number in X
+      //  setComplexRegisterPolarMode(REGISTER_X, amPolar);
+      //  if(getComplexRegisterAngularMode(REGISTER_X) == amNone) {
+      //    setComplexRegisterAngularMode(REGISTER_X, currentAngularMode);
+      //  }
+      //}
       break;
 
     case DO_SCI:      fnClearFlag(FLAG_ALLENG);                              break;

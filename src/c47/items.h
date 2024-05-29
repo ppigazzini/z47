@@ -1830,7 +1830,7 @@
 #define ITM_TIMER_RESET             1778
 #define ITM_TIMER_RCL               1779
 #define ITM_DELBKUP                 1780
-#define ITM_1781                    1781
+#define ITM_EFF                     1781
 #define ITM_1782                    1782
 #define ITM_1783                    1783
 #define ITM_1784                    1784
@@ -2308,9 +2308,9 @@
 // 64 more system flags
 #define SFL_MONIT                   2251
 #define SFL_FRCYC                   2252
-#define SFL_TVM_I_KNOWN             2253
-#define SFL_TVM_I_CHANGES           2254
-#define SFL_HPCONV                  2255
+#define SFL_HPCONV                  2253
+#define SFL_2250                    2254
+#define SFL_2251                    2255
 #define SFL_2252                    2256
 #define SFL_2253                    2257
 #define SFL_2254                    2258

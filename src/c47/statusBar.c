@@ -418,7 +418,7 @@ void showFracMode(void) {
         }
       }
     }
-    force_refresh(timed);
+    force_refresh(force);
   }
 
 

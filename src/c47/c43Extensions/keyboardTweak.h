@@ -46,9 +46,6 @@ void     fnSHIFTg(uint16_t unusedButMandatoryParameter);
 void     fnSHIFTfg(uint16_t unusedButMandatoryParameter);
 
 #if !defined(TESTSUITE_BUILD)
-void     show_f_jm           (void);
-void     show_g_jm           (void);
-void     clear_fg_jm         (void);
 void     fg_processing_jm    (void);
 int16_t  Check_SigmaPlus_Assigned(int16_t  * result, int16_t tempkey);
 
