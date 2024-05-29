@@ -106,6 +106,7 @@ dist_linux: testPgms build.rel
 
 dist_dmcp: dmcp testPgms build.rel/wiki
 	mkdir -p $(DMCP_DIST_DIR)
+	mkdir -p $(DMCP_DIST_DIR)/demo
 	cp build.dmcp/src/c47-dmcp/C47.pgm build.dmcp/src/c47-dmcp/C47_qspi.bin $(DMCP_DIST_DIR)
 	cp -r res/offimg/Egypt/ $(DMCP_DIST_DIR)/offimg
 	cp -r res/offimg/Norway/ $(DMCP_DIST_DIR)/offimg
@@ -115,13 +116,15 @@ dist_dmcp: dmcp testPgms build.rel/wiki
 	cp -r res/offimg/HP\ related/ $(DMCP_DIST_DIR)/offimg
 	cp -r res/offimg/C47/ $(DMCP_DIST_DIR)/offimg
 	cp -r res/PROGRAMS $(DMCP_DIST_DIR)
-	cp res/dmcp/original_DM42_keymap.bin res/dmcp/testPgms.bin $(DMCP_DIST_DIR)
+	cp res/dmcp/original_DM42_keymap.bin $(DMCP_DIST_DIR)
+	cp res/dmcp/testPgms.bin res/dmcp/testPgms.txt $(DMCP_DIST_DIR)/demo
 	cp build.rel/wiki/Installation-on-a-DM42.md $(DMCP_DIST_DIR)/readme.txt
 	zip -r c47-dmcp.zip $(DMCP_DIST_DIR)
 	rm -rf $(DMCP_DIST_DIR)
 
 dist_dmcp5: dmcp5 testPgms build.rel/wiki
 	mkdir -p $(DMCP5_DIST_DIR)
+	mkdir -p $(DMCP_DIST_DIR)/demo
 	cp build.dmcp5/src/c47-dmcp5/C47.pg5 build.dmcp5/src/c47-dmcp5/C47_qspi.bin $(DMCP5_DIST_DIR)
 	cp -r res/offimg/Egypt/ $(DMCP5_DIST_DIR)/offimg
 	cp -r res/offimg/Norway/ $(DMCP5_DIST_DIR)/offimg
@@ -131,7 +134,8 @@ dist_dmcp5: dmcp5 testPgms build.rel/wiki
 	cp -r res/offimg/HP\ related/ $(DMCP5_DIST_DIR)/offimg
 	cp -r res/offimg/C47/ $(DMCP5_DIST_DIR)/offimg
 	cp -r res/PROGRAMS $(DMCP5_DIST_DIR)
-	cp res/dmcp5/original_DM42_keymap.bin res/dmcp5/testPgms.bin $(DMCP5_DIST_DIR)
+	cp res/dmcp5/original_DM42_keymap.bin $(DMCP5_DIST_DIR)
+	cp res/dmcp5/testPgms.bin res/dmcp5/testPgms.txt $(DMCP5_DIST_DIR)/demo
 	cp build.rel/wiki/Installation-on-a-DM42.md $(DMCP5_DIST_DIR)/readme.txt
 	zip -r c47-dmcp5.zip $(DMCP5_DIST_DIR)
 	rm -rf $(DMCP5_DIST_DIR)
