@@ -1394,7 +1394,7 @@ int16_t lastItem = 0;
                     #endif //PC_BUILD
 
     // Shift f pressed and JM REMOVED shift g not active
-    if((key->primary == ITM_SHIFTf || ShiftOverride == ITM_SHIFTf) && (calcMode == CM_NORMAL || calcMode == CM_AIM || calcMode == CM_NIM  || calcMode == CM_MIM || calcMode == CM_EIM || calcMode == CM_PEM || calcMode == CM_PLOT_STAT || calcMode == CM_GRAPH || calcMode == CM_ASSIGN || calcMode == CM_ASN_BROWSER || calcMode == CM_REGISTER_BROWSER || calcMode == CM_FLAG_BROWSER || calcMode == CM_FONT_BROWSER)) {   //JM shifts
+    if((key->primary == ITM_SHIFTf || ShiftOverride == ITM_SHIFTf) && (calcMode == CM_NORMAL || calcMode == CM_AIM || calcMode == CM_NIM  || calcMode == CM_MIM || calcMode == CM_EIM || calcMode == CM_PEM || calcMode == CM_PLOT_STAT || calcMode == CM_GRAPH || calcMode == CM_ASSIGN || calcMode == CM_ASN_BROWSER || calcMode == CM_REGISTER_BROWSER || calcMode == CM_FLAG_BROWSER || calcMode == CM_FONT_BROWSER || calcMode == CM_TIMER)) {   //JM shifts
       if(temporaryInformation == TI_SHOW_REGISTER || SHOWMODE) allowShiftsToClearError = true; //JM
       Shft_LongPress_f_g = true;
       if(Shft_LongPress_f_g && getSystemFlag(FLAG_SH_LONGPRESS)) {
@@ -1425,7 +1425,7 @@ int16_t lastItem = 0;
       return ITM_NOP;
     }
     // Shift g pressed and JM REMOVED shift f not active
-    else if((key->primary == ITM_SHIFTg || ShiftOverride == ITM_SHIFTg) && (calcMode == CM_NORMAL || calcMode == CM_AIM || calcMode == CM_NIM  || calcMode == CM_MIM || calcMode == CM_EIM || calcMode == CM_PEM || calcMode == CM_PLOT_STAT || calcMode == CM_GRAPH || calcMode == CM_ASSIGN || calcMode == CM_ASN_BROWSER || calcMode == CM_REGISTER_BROWSER || calcMode == CM_FLAG_BROWSER || calcMode == CM_FONT_BROWSER)) {   //JM shifts
+    else if((key->primary == ITM_SHIFTg || ShiftOverride == ITM_SHIFTg) && (calcMode == CM_NORMAL || calcMode == CM_AIM || calcMode == CM_NIM  || calcMode == CM_MIM || calcMode == CM_EIM || calcMode == CM_PEM || calcMode == CM_PLOT_STAT || calcMode == CM_GRAPH || calcMode == CM_ASSIGN || calcMode == CM_ASN_BROWSER || calcMode == CM_REGISTER_BROWSER || calcMode == CM_FLAG_BROWSER || calcMode == CM_FONT_BROWSER || calcMode == CM_TIMER)) {   //JM shifts
       if(temporaryInformation == TI_SHOW_REGISTER || SHOWMODE) allowShiftsToClearError = true; //JM
       Shft_LongPress_f_g = true;
       if(Shft_LongPress_f_g && getSystemFlag(FLAG_SH_LONGPRESS)) {
@@ -1458,7 +1458,7 @@ int16_t lastItem = 0;
     }
 
     // JM Shift fg pressed  //JM shifts change f/g to a single function key toggle to match DM42 keyboard
-    else if((key->primary == KEY_fg || ShiftOverride == KEY_fg) && (calcMode == CM_NORMAL || calcMode == CM_AIM || calcMode == CM_NIM  || calcMode == CM_MIM || calcMode == CM_EIM || calcMode == CM_PEM || calcMode == CM_PLOT_STAT || calcMode == CM_GRAPH || calcMode == CM_ASSIGN || calcMode == CM_ASN_BROWSER || calcMode == CM_REGISTER_BROWSER || calcMode == CM_FLAG_BROWSER || calcMode == CM_FONT_BROWSER)) {   //JM shifts
+    else if((key->primary == KEY_fg || ShiftOverride == KEY_fg) && (calcMode == CM_NORMAL || calcMode == CM_AIM || calcMode == CM_NIM  || calcMode == CM_MIM || calcMode == CM_EIM || calcMode == CM_PEM || calcMode == CM_PLOT_STAT || calcMode == CM_GRAPH || calcMode == CM_ASSIGN || calcMode == CM_ASN_BROWSER || calcMode == CM_REGISTER_BROWSER || calcMode == CM_FLAG_BROWSER || calcMode == CM_FONT_BROWSER || calcMode == CM_TIMER)) {   //JM shifts
       Shft_LongPress_f_g = false;
       Shft_timeouts = true;
       fnTimerStart(TO_FG_LONG, TO_FG_LONG, JM_TO_FG_LONG);    //vv dr
@@ -3000,11 +3000,15 @@ RELEASE_END:
                     break;
                   }
                   case ITM_PERIOD: {
-                    fnDotTimerApp();
+                    fnRegAddLapTimerApp(NOPARAM);      //dot
                     break;
                   }
-                  case ITM_ADD: {
-                    fnPlusTimerApp();
+                  case ITM_SIGMAPLUS: {         // Σ+ =  ADD_T_Σ
+                    fnAddTimerApp(NOPARAM);
+                    break;
+                  }
+                  case ITM_ADD: {               // Σ+ =  ADD_L_Σ
+                    fnAddLapTimerApp(NOPARAM);
                     break;
                   }
                   case ITM_RCL: {
@@ -3272,7 +3276,7 @@ void fnKeyEnter(uint16_t unusedButMandatoryParameter) {
       }
 
       case CM_TIMER: {
-        fnEnterTimerApp();
+        fnRegAddTimerApp(NOPARAM);     //ENTER
         break;
       }
 
@@ -3339,7 +3343,6 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
     }
 
     doRefreshSoftMenu = true;     //dr
-
                     #if defined(PC_BUILD)
                       jm_show_calc_state("fnKeyExit");
                     #endif
@@ -3354,7 +3357,7 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
         case CM_BUG_ON_SCREEN: {
             // Browser or message should be closed first
             break;
-      }
+          }
 
         default: {
             if(catalog && (catalog != CATALOG_MVAR || !tam.mode)) {
@@ -3645,6 +3648,13 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
           }
           popSoftmenu();
         }
+
+        if(softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_TIMERF) {
+          clearScreen();
+          fnItemTimerApp(NOPARAM);
+          return;
+        }
+
 
         lastPlotMode = PLOT_NOTHING;
         plotSelection = 0;
