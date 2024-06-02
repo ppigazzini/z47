@@ -2477,7 +2477,8 @@ bool_t BASE_OVERRIDEONCE = false;
 
             //softkey modifications
 
-            if(jm_G_DOUBLETAP && ( BLOCK_DOUBLEPRESS_MENU(m, x, y))) {  // Indicate disabled double tap
+            if((jm_G_DOUBLETAP && ( BLOCK_DOUBLEPRESS_MENU(m, x, y))) ||           // Indicate disabled double tap
+               (softmenu[m].menuItem == -MNU_TIMERF && y == 0)) {                           // If stopwatch is open
               int16_t yStrokeA = SCREEN_HEIGHT - (y-currentFirstItem/6)*23 - 1;
               int16_t xStrokeA=x*67 + 66 -12;
               plotline(xStrokeA +2+4, yStrokeA -16-3-1, xStrokeA +2+4+5-1, yStrokeA -16-3+5);

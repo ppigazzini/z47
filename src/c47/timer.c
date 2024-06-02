@@ -570,6 +570,7 @@ printf("fnAddTimerApp\n");
   real34Add(REGISTER_REAL34_DATA(REGISTER_X), const34_1, REGISTER_REAL34_DATA(REGISTER_X));
   liftStack();
   realToReal34(&tmp, REGISTER_REAL34_DATA(REGISTER_X));
+  fnSwapXY(NOPARAM);                                       //swapped around to be able to plot correctly
   fnSigma(1);
 
   refreshScreen(30);
@@ -598,6 +599,7 @@ printf("fnAddLapTimerApp\n");
   real34Add(REGISTER_REAL34_DATA(REGISTER_X), const34_1, REGISTER_REAL34_DATA(REGISTER_X));
   liftStack();
   realToReal34(&tmp, REGISTER_REAL34_DATA(REGISTER_X));
+  fnSwapXY(NOPARAM);                                       //swapped around to be able to plot correctly
   fnSigma(1);
 
 //  fnUpTimerApp();
