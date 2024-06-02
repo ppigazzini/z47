@@ -631,7 +631,7 @@ bool_t lowercaseselected;    //the only place that this is set, is in processKey
 
 
   uint8_t asnKey[4] = {0, 0, 0, 0};
-
+  bool_t releaseOverride = false;
 
   #if defined(PC_BUILD)
     void btnFnPressed(GtkWidget *notUsed, GdkEvent *event, gpointer data) {
@@ -655,6 +655,7 @@ bool_t lowercaseselected;    //the only place that this is set, is in processKey
                       printf(">>>>Z 0010 btnFnPressed SET FN_key_pressed            ; data=|%s| data[0]=%d shiftF=%d shiftG=%d\n",(char*)data, ((char*)data)[0],shiftF, shiftG);
                     #endif //VERBOSEKEYS
 
+      releaseOverride = false;
       temporaryInformation = TI_NO_INFO;
       FN_key_pressed = *((char *)data) - '0' + 37;  //to render 38-43, as per original keypress
 
@@ -674,9 +675,7 @@ bool_t lowercaseselected;    //the only place that this is set, is in processKey
       }
 
       //Exception, to activate the primary functions of the timer menu, without allowing longpresses and double presses, in order to have quicker activation
-      if(!shiftF && !shiftF && softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_TIMERF ){//&& asnKey[0] == '5') {
-        //fnStartStopTimerApp();
-
+      if(!shiftF && !shiftF && softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_TIMERF ){
         const int16_t *softkeyItem = softmenu[softmenuStack[0].softmenuId].softkeyItem;
         int16_t _item = softkeyItem[asnKey[0]-'1'];
         //printf("WWWWWWWW-0 %i %i\n",softmenu[softmenuStack[0].softmenuId].menuItem, softkeyItem[asnKey[0]-'1']);
@@ -689,6 +688,7 @@ bool_t lowercaseselected;    //the only place that this is set, is in processKey
           screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
         }
         refreshScreen(136);
+        releaseOverride = true;
         return;
       }
 
@@ -938,8 +938,10 @@ int16_t lastItem = 0;
           return;
         }
       }
-
+if(!releaseOverride) {
       btnFnReleased_StateMachine(NULL, data);            //This function does the longpress differentiation, and calls ExecuteFunctio below, via fnbtnclicked
+releaseOverride = false;
+}
     }
 
     fnTimerStop(TO_3S_CTFF);      //dr

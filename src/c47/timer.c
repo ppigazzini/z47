@@ -504,6 +504,7 @@ void fnUpdateTimerApp(void) {
 }
 
 void fnRegAddTimerApp(uint16_t unusedButMandatoryParameter) {  //ENTER
+printf("fnRegAddTimerApp\n");
   #if !defined(TESTSUITE_BUILD) && !defined(SAVE_SPACE_DM42_20_TIMER)
   if(rbr1stDigit) {
     real_t tmp;
@@ -524,6 +525,7 @@ void fnRegAddTimerApp(uint16_t unusedButMandatoryParameter) {  //ENTER
 }
 
 void fnRegAddLapTimerApp(uint16_t unusedButMandatoryParameter) {   //dot
+printf("fnRegAddLapTimerApp\n");
   #if !defined(TESTSUITE_BUILD) && !defined(SAVE_SPACE_DM42_20_TIMER)
   const uint32_t msec = _getTimerValue();
   real_t tmp;
@@ -550,8 +552,9 @@ void fnRegAddLapTimerApp(uint16_t unusedButMandatoryParameter) {   //dot
 }
 
 
-void fnAddTimerApp(uint16_t unusedButMandatoryParameter) {
+void fnAddTimerApp(uint16_t unusedButMandatoryParameter) {           //Send TIM to STATS
   #if !defined(TESTSUITE_BUILD)
+printf("fnAddTimerApp\n");
   real_t tmp;
 
   uInt32ToReal(_getTimerValue() / 100u, &tmp);
@@ -575,14 +578,15 @@ void fnAddTimerApp(uint16_t unusedButMandatoryParameter) {
 
 
 void fnAddLapTimerApp(uint16_t unusedButMandatoryParameter) {
+printf("fnAddLapTimerApp\n");
   #if !defined(TESTSUITE_BUILD) && !defined(SAVE_SPACE_DM42_20_TIMER)
   const uint32_t msec = _getTimerValue();
   real_t tmp;
 
   uInt32ToReal(msec / 100u, &tmp);
   tmp.exponent -= 1;
-  reallocateRegister(timerCraAndDeciseconds & 0x7fu, dtTime, REAL34_SIZE_IN_BLOCKS, amNone);
-  realToReal34(&tmp, REGISTER_REAL34_DATA(timerCraAndDeciseconds & 0x7fu));
+//  reallocateRegister(timerCraAndDeciseconds & 0x7fu, dtTime, REAL34_SIZE_IN_BLOCKS, amNone);
+//  realToReal34(&tmp, REGISTER_REAL34_DATA(timerCraAndDeciseconds & 0x7fu));
   realDivide(&tmp, const_3600, &tmp, &ctxtReal39);
 
   fnStatSum(0);
@@ -596,7 +600,7 @@ void fnAddLapTimerApp(uint16_t unusedButMandatoryParameter) {
   realToReal34(&tmp, REGISTER_REAL34_DATA(REGISTER_X));
   fnSigma(1);
 
-  fnUpTimerApp();
+//  fnUpTimerApp();
 
   if(timerTotalTime > 0) {
     timerTotalTime += msec - timerValue;
