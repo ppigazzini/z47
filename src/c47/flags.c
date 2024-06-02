@@ -35,7 +35,41 @@
 
 #include "c47.h"
 
-static void systemFlagAction(uint16_t systemFlag) {
+typedef enum { FLAG_CLEAR=0, FLAG_SET=1, FLAG_FLIP=2 } flagAction_t;
+
+static void systemFlagProcess(unsigned int idx, flagAction_t action) {
+  const unsigned int n = idx / 16;
+  const unsigned int b = idx % 16;
+
+  switch(action) {
+    case FLAG_CLEAR: {
+      globalFlags[n] &= ~(1u << b);
+      break;
+    }
+    case FLAG_SET: {
+      globalFlags[n] |=   1u << b;
+      break;
+    }
+    case FLAG_FLIP: {
+      globalFlags[n] ^=   1u << b;
+      break;
+    }
+  }
+}
+
+static void systemFlagAction(uint16_t systemFlag, flagAction_t action) {
+  switch(systemFlag) {
+    case FLAG_ALLENG:   systemFlagProcess(FLAG_A, action); break;
+    case FLAG_OVERFLOW: systemFlagProcess(FLAG_B, action); break;
+    case FLAG_CARRY:    systemFlagProcess(FLAG_C, action); break;
+    case FLAG_SPCRES:   systemFlagProcess(FLAG_D, action); break;
+    case FLAG_CPXRES:   systemFlagProcess(FLAG_I, action); break;
+    case FLAG_LEAD0:    systemFlagProcess(FLAG_L, action); break;
+    case FLAG_TRACE:    systemFlagProcess(FLAG_T, action); break;
+    case FLAG_POLAR:    systemFlagProcess(FLAG_X, action); break;
+    default:                                               break;
+  }
+
   switch(systemFlag) {
     case FLAG_YMD:
     case FLAG_DMY:
@@ -82,11 +116,11 @@ void setSystemFlag(unsigned int sf) {
 
   if(flag < 64) {
     systemFlags0 |= ((uint64_t)1 << flag);
-    systemFlagAction(sf);
+    systemFlagAction(sf, FLAG_SET);
   }
   else {
     systemFlags1 |= ((uint64_t)1 << (flag - 64));
-    systemFlagAction(sf);
+    systemFlagAction(sf, FLAG_SET);
   }
 }
 
@@ -95,11 +129,11 @@ void clearSystemFlag(unsigned int sf) {
 
   if(flag < 64) {
     systemFlags0 &= ~((uint64_t)1 << flag);
-    systemFlagAction(sf);
+    systemFlagAction(sf, FLAG_CLEAR);
   }
   else {
     systemFlags1 &= ~((uint64_t)1 << (flag - 64));
-    systemFlagAction(sf);
+    systemFlagAction(sf, FLAG_CLEAR);
   }
 }
 
@@ -108,11 +142,11 @@ void flipSystemFlag(unsigned int sf) {
 
   if(flag < 64) {
     systemFlags0 ^=  ((uint64_t)1 << flag);
-    systemFlagAction(sf);
+    systemFlagAction(sf, FLAG_FLIP);
   }
   else {
     systemFlags1 ^=  ((uint64_t)1 << (flag - 64));
-    systemFlagAction(sf);
+    systemFlagAction(sf, FLAG_FLIP);
   }
 }
 
@@ -261,7 +295,17 @@ void fnSetFlag(uint16_t flag) {
   }
 
   else if(flag < FLAG_K) { // Global flag
-    globalFlags[flag/16] |= 1u << (flag%16);
+    switch(flag) {
+      case FLAG_A: setSystemFlag(FLAG_ALLENG);   break;
+      case FLAG_B: setSystemFlag(FLAG_OVERFLOW); break;
+      case FLAG_C: setSystemFlag(FLAG_CARRY);    break;
+      case FLAG_D: setSystemFlag(FLAG_SPCRES);   break;
+      case FLAG_I: setSystemFlag(FLAG_CPXRES);   break;
+      case FLAG_L: setSystemFlag(FLAG_LEAD0);    break;
+      case FLAG_T: setSystemFlag(FLAG_TRACE);    break;
+      case FLAG_X: setSystemFlag(FLAG_POLAR);    break;
+      default: globalFlags[flag/16] |= 1u << (flag%16);
+    }
   }
 
   else if(flag < LAST_LOCAL_FLAG) { // Local flag
@@ -329,7 +373,17 @@ void fnClearFlag(uint16_t flag) {
   }
 
   else if(flag < FLAG_K) { // Global flag
-    globalFlags[flag/16] &= ~(1u << (flag%16));
+    switch(flag) {
+      case FLAG_A: clearSystemFlag(FLAG_ALLENG);   break;
+      case FLAG_B: clearSystemFlag(FLAG_OVERFLOW); break;
+      case FLAG_C: clearSystemFlag(FLAG_CARRY);    break;
+      case FLAG_D: clearSystemFlag(FLAG_SPCRES);   break;
+      case FLAG_I: clearSystemFlag(FLAG_CPXRES);   break;
+      case FLAG_L: clearSystemFlag(FLAG_LEAD0);    break;
+      case FLAG_T: clearSystemFlag(FLAG_TRACE);    break;
+      case FLAG_X: clearSystemFlag(FLAG_POLAR);    break;
+      default:     globalFlags[flag/16] &= ~(1u << (flag%16));
+    }
   }
 
   else if(flag < LAST_LOCAL_FLAG) { // Local flag
@@ -403,7 +457,17 @@ void fnFlipFlag(uint16_t flag) {
   }
 
   else if(flag <= FLAG_K) { // Global flag
-    globalFlags[flag/16] ^=  1u << (flag%16);
+    switch(flag) {
+      case FLAG_A: flipSystemFlag(FLAG_ALLENG);   break;
+      case FLAG_B: flipSystemFlag(FLAG_OVERFLOW); break;
+      case FLAG_C: flipSystemFlag(FLAG_CARRY);    break;
+      case FLAG_D: flipSystemFlag(FLAG_SPCRES);   break;
+      case FLAG_I: flipSystemFlag(FLAG_CPXRES);   break;
+      case FLAG_L: flipSystemFlag(FLAG_LEAD0);    break;
+      case FLAG_T: flipSystemFlag(FLAG_TRACE);    break;
+      case FLAG_X: flipSystemFlag(FLAG_POLAR);    break;
+      default:     globalFlags[flag/16] ^=  1u << (flag%16);
+    }
   }
 
   else if(flag < LAST_LOCAL_FLAG) { // Local flag
