@@ -1835,7 +1835,7 @@
 #define ITM_TIMER_SIGMA_L           1783
 #define ITM_TIMER_R_T               1784
 #define ITM_TIMER_R_L               1785
-#define ITM_1786                    1786
+#define ITM_TIMER_R_S               1786
 #define ITM_nBINS                   1787
 #define ITM_LOBIN                   1788
 #define ITM_HIBIN                   1789

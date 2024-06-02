@@ -402,7 +402,7 @@ void fnResetTimerApp(uint16_t unusedButMandatoryParameter) {
   #endif // !TESTSUITE_BUILD
 }
 
-void fnStartStopTimerApp(void) {
+void fnStartStopTimerApp(uint16_t unusedButMandatoryParameter) {
   #if !defined(TESTSUITE_BUILD) && !defined(SAVE_SPACE_DM42_20_TIMER)
   if(timerStartTime == TIMER_APP_STOPPED) {
     setSystemFlag(FLAG_RUNTIM);

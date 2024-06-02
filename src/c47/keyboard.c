@@ -673,6 +673,25 @@ bool_t lowercaseselected;    //the only place that this is set, is in processKey
         return;
       }
 
+      //Exception, to activate the primary functions of the timer menu, without allowing longpresses and double presses, in order to have quicker activation
+      if(!shiftF && !shiftF && softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_TIMERF ){//&& asnKey[0] == '5') {
+        //fnStartStopTimerApp();
+
+        const int16_t *softkeyItem = softmenu[softmenuStack[0].softmenuId].softkeyItem;
+        int16_t _item = softkeyItem[asnKey[0]-'1'];
+        //printf("WWWWWWWW-0 %i %i\n",softmenu[softmenuStack[0].softmenuId].menuItem, softkeyItem[asnKey[0]-'1']);
+        reallyRunFunction(_item,NOPARAM);
+        hourGlassIconEnabled = false;        
+        //printf("WWWWWWWW-1 %i %i\n",softmenu[softmenuStack[0].softmenuId].menuItem, softkeyItem[asnKey[0]-'1']);
+        if(_item == ITM_TIMER_R_S) {
+          screenUpdatingMode |= SCRUPD_SKIP_STACK_ONE_TIME;
+        } else {
+          screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
+        }
+        refreshScreen(136);
+        return;
+      }
+
       lastshiftF = shiftF;
       lastshiftG = shiftG;
 
@@ -2140,7 +2159,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
 
             if(item == ITM_SNAP) {
 //              screenUpdatingMode = SCRUPD_AUTO;
-              refreshScreen(136);
+              refreshScreen(137);
             }
             runFunction(item);
 
@@ -2224,7 +2243,7 @@ RELEASE_END:
     if(lastErrorCode != 0 && item != ITM_EXIT1 && item != ITM_BACKSPACE) {
       lastErrorCode = 0;
       screenUpdatingMode = SCRUPD_AUTO;
-      refreshScreen(136);
+      refreshScreen(138);
     }
 
     if(temporaryInformation == TI_VIEW_REGISTER) {
@@ -2582,7 +2601,7 @@ RELEASE_END:
                       showRegis = (item - ITM_0)*10;
                     }
                     fnShow_SCROLL(255);
-                    //refreshScreen(138);
+                    //refreshScreen(139);
                   }
                 }
                 else if(item == ITM_EXPONENT || item == ITM_PERIOD || (ITM_0 <= item && item <= ITM_9)) {
@@ -2982,8 +3001,9 @@ RELEASE_END:
                     #endif // PC_BUILD
 
                 switch(item) {
+                  case ITM_TIMER_R_S:
                   case ITM_RS: {
-                    fnStartStopTimerApp();
+                    fnStartStopTimerApp(NOPARAM);
                     break;
                   }
                   case ITM_0:
@@ -3602,6 +3622,9 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
       case CM_FONT_BROWSER: {
         rbr1stDigit = true;
         calcMode = previousCalcMode;
+        if(calcMode == CM_TIMER) {
+          previousCalcMode = CM_NORMAL;
+        }
         break;
       }
 

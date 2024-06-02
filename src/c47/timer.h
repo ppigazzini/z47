@@ -37,7 +37,7 @@ void     fnItemTimerApp       (uint16_t unusedButMandatoryParameter);
 void     fnDecisecondTimerApp (uint16_t unusedButMandatoryParameter);
 void     fnResetTimerApp      (uint16_t unusedButMandatoryParameter);
 void     fnRecallTimerApp     (uint16_t regist);
-void     fnStartStopTimerApp  (void);
+void     fnStartStopTimerApp  (uint16_t unusedButMandatoryParameter);
 void     fnStopTimerApp       (void);
 void     fnShowTimerApp       (void);
 void     fnUpdateTimerApp     (void);
