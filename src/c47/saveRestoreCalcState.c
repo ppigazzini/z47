@@ -563,6 +563,12 @@ uint16_t flushBufferCnt = 0;
     ramPtr = TO_C47MEMPTR(currentSubroutineLevelData);
     saveStateValue(&ramPtr,                         sizeof(ramPtr),                                              "currentSubroutineLevelData",     "c47Ptr");
 
+    ramPtr = TO_C47MEMPTR(currentLocalFlags);
+    saveStateValue(&ramPtr,                         sizeof(ramPtr),                                              "currentLocalFlags",              "c47Ptr");
+
+    ramPtr = TO_C47MEMPTR(currentLocalRegisters);
+    saveStateValue(&ramPtr,                         sizeof(ramPtr),                                              "currentLocalRegisters",          "c47Ptr");
+
     ramPtr = TO_C47MEMPTR(beginOfProgramMemory);
     saveStateValue(&ramPtr,                         sizeof(ramPtr),                                              "beginOfProgramMemory",           "c47Ptr"); // beginOfProgramMemory pointer to block
 
@@ -835,6 +841,12 @@ uint16_t flushBufferCnt = 0;
 
     restoreStateValue(&ramPtr,                         sizeof(ramPtr),                                              "currentSubroutineLevelData",     "c47Ptr");
     currentSubroutineLevelData = TO_PCMEMPTR(ramPtr);
+
+    restoreStateValue(&ramPtr,                         sizeof(ramPtr),                                              "currentLocalFlags",              "c47Ptr");
+    currentLocalFlags = TO_PCMEMPTR(ramPtr);
+
+    restoreStateValue(&ramPtr,                         sizeof(ramPtr),                                              "currentLocalRegisters",          "c47Ptr");
+    currentLocalRegisters = TO_PCMEMPTR(ramPtr);
 
     restoreStateValue(&ramPtr,                         sizeof(ramPtr),                                              "beginOfProgramMemory",           "c47Ptr"); // beginOfProgramMemory pointer to block
     beginOfProgramMemory = TO_PCMEMPTR(ramPtr);
