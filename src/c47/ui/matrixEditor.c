@@ -936,6 +936,7 @@ void showRealMatrix(const real34Matrix_t *matrix, int16_t prefixWidth) {
   int16_t fontHeight = NUMERIC_FONT_HEIGHT_;
   int16_t maxWidth = MATRIX_LINE_WIDTH - prefixWidth;
   int16_t colWidth[MATRIX_MAX_COLUMNS] = {}, rPadWidth[MATRIX_MAX_ROWS * MATRIX_MAX_COLUMNS] = {};
+  bool_t allElementsInColAreIntegers[MATRIX_MAX_COLUMNS] = {};
   const bool_t forEditor = matrix == &openMatrixMIMPointer.realMatrix;
   const uint16_t sRow = forEditor ? scrollRow : 0;
   uint16_t sCol = forEditor ? scrollColumn : 0;
@@ -971,67 +972,55 @@ smallFont:
     //maxWidth = MATRIX_LINE_WIDTH_SMALL * 4 - 20;
   }
 
-    if(!forEditor) {
-      Y_POS += REGISTER_LINE_HEIGHT;
-    }
+  if(!forEditor) {
+    Y_POS += REGISTER_LINE_HEIGHT;
+  }
   const bool_t rightEllipsis = (cols > maxCols) && (cols > maxCols + sCol);
   const bool_t leftEllipsis = (sCol > 0);
   int16_t digits;
 
-    if(prefixWidth > 0) {
-      Y_POS = Y_POSITION_OF_REGISTER_T_LINE - REGISTER_LINE_HEIGHT + 1 + maxRows * fontHeight;
-    }
-    if(prefixWidth > 0 && font == &standardFont) {
-      Y_POS += (maxRows == 1 ? STANDARD_FONT_HEIGHT_ : REGISTER_LINE_HEIGHT - STANDARD_FONT_HEIGHT_);
-    }
+  if(prefixWidth > 0) {
+    Y_POS = Y_POSITION_OF_REGISTER_T_LINE - REGISTER_LINE_HEIGHT + 1 + maxRows * fontHeight;
+  }
+  if(prefixWidth > 0 && font == &standardFont) {
+    Y_POS += (maxRows == 1 ? STANDARD_FONT_HEIGHT_ : REGISTER_LINE_HEIGHT - STANDARD_FONT_HEIGHT_);
+  }
 
-    int16_t baseWidth = (leftEllipsis ? stringWidth(STD_ELLIPSIS " ", font, true, true) : 0) + (rightEllipsis ? stringWidth(" " STD_ELLIPSIS, font, true, true) : 0);
-  int16_t mtxWidth = getRealMatrixColumnWidths(matrix, prefixWidth, font, colWidth, rPadWidth, &digits, maxCols);
+  for(int j = 0; j < maxCols; j++) {
+    allElementsInColAreIntegers[j]=true;
+    for(int i = 0; i < maxRows; i++) {
+      if(!real34IsAnInteger(&matrix->matrixElements[i*cols+j])) {
+        allElementsInColAreIntegers[j]=false;
+      }
+    }
+  }
+
+  int16_t baseWidth = (leftEllipsis ? stringWidth(STD_ELLIPSIS " ", font, true, true) : 0) + (rightEllipsis ? stringWidth(" " STD_ELLIPSIS, font, true, true) : 0);
+  int16_t mtxWidth = getRealMatrixColumnWidths(matrix, prefixWidth, font, colWidth, rPadWidth, &digits, maxCols, allElementsInColAreIntegers);
   bool_t noFix = (mtxWidth < 0);
   mtxWidth = abs(mtxWidth);
   totalWidth = baseWidth + mtxWidth;
 
-
-  bool_t allElementAreIntegers = true;                   //allElementAreIntegers will remain true if ALL elements are integer
-  for(int i = 0; i < maxRows; i++) {
-    for(int j = 0; j < maxCols; j++) {
-      allElementAreIntegers &= real34IsAnInteger(&matrix->matrixElements[i*cols+j]);
-    }
+  if(displayFormat == DF_ALL && noFix) {
+    displayFormat = getSystemFlag(FLAG_ALLENG) ? DF_ENG : DF_SCI;
+    displayFormatDigits = digits;
   }
-  if(allElementAreIntegers) {                            //allElementAreIntegers will remain true if ALL elements are integer
-      displayFormat = DF_FIX;
-      displayFormatDigits = 0;
-      mtxWidth = getRealMatrixColumnWidths(matrix, prefixWidth, font, colWidth, rPadWidth, &digits, maxCols);
+  if(totalWidth > maxWidth || leftEllipsis) {
+    if(font == &numericFont) {
+      displayFormat = tmpDisplayFormat;
+      displayFormatDigits = tmpDisplayFormatDigits;
+      goto smallFont;
+    }
+    else {
+      displayFormat = DF_SCI;
+      displayFormatDigits = 3;
+      mtxWidth = getRealMatrixColumnWidths(matrix, prefixWidth, font, colWidth, rPadWidth, &digits, maxCols, allElementsInColAreIntegers);
       noFix = (mtxWidth < 0);
       mtxWidth = abs(mtxWidth);
       totalWidth = baseWidth + mtxWidth;
       if(totalWidth > maxWidth) {
         maxCols--;
         goto smallFont;
-      }
-  }
-  else {
-    if(displayFormat == DF_ALL && noFix) {
-      displayFormat = getSystemFlag(FLAG_ALLENG) ? DF_ENG : DF_SCI;
-      displayFormatDigits = digits;
-    }
-    if(totalWidth > maxWidth || leftEllipsis) {
-      if(font == &numericFont) {
-        displayFormat = tmpDisplayFormat;
-        displayFormatDigits = tmpDisplayFormatDigits;
-        goto smallFont;
-      }
-      else {
-        displayFormat = DF_SCI;
-        displayFormatDigits = 3;
-        mtxWidth = getRealMatrixColumnWidths(matrix, prefixWidth, font, colWidth, rPadWidth, &digits, maxCols);
-        noFix = (mtxWidth < 0);
-        mtxWidth = abs(mtxWidth);
-        totalWidth = baseWidth + mtxWidth;
-        if(totalWidth > maxWidth) {
-          maxCols--;
-          goto smallFont;
-        }
       }
     }
   }
@@ -1051,7 +1040,7 @@ smallFont:
     for(int j = 0; j < maxCols; j++) {
       baseWidth += colWidth[j] + stringWidth(STD_SPACE_FIGURE, font, true, true);
     }
-  baseWidth -= stringWidth(STD_SPACE_FIGURE, font, true, true);
+    baseWidth -= stringWidth(STD_SPACE_FIGURE, font, true, true);
 
     if(prefixWidth > 0) {
       X_POS = prefixWidth;
@@ -1082,6 +1071,8 @@ smallFont:
         clearRegisterLine(REGISTER_X, true, true);
       }
   }
+  const uint16_t displayFormat1 = displayFormat;
+  const uint8_t displayFormatDigits1 = displayFormatDigits;
 
   for(int i = 0; i < maxRows; i++) {
     int16_t colX = stringWidth("[", font, true, true);
@@ -1091,6 +1082,15 @@ smallFont:
       colX += stringWidth(STD_ELLIPSIS " ", font, true, true);
     }
     for(int j = 0; j < maxCols + (rightEllipsis ? 1 : 0); j++) {
+
+      if(allElementsInColAreIntegers[j]) {
+        displayFormat = DF_FIX;
+        displayFormatDigits = 0;
+      } else {
+        displayFormat = displayFormat1;
+        displayFormatDigits = displayFormatDigits1;
+      }
+
       if(((i == maxRows - 1) && (rows > maxRows + sRow)) || ((j == maxCols) && rightEllipsis) || ((i == 0) && (sRow > 0))) {
         strcpy(tmpString, " " STD_ELLIPSIS);
         vm = vmNormal;
@@ -1120,7 +1120,7 @@ smallFont:
 
 }
 
-int16_t getRealMatrixColumnWidths(const real34Matrix_t *matrix, int16_t prefixWidth, const font_t *font, int16_t *colWidth, int16_t *rPadWidth, int16_t *digits, uint16_t maxCols) {
+int16_t getRealMatrixColumnWidths(const real34Matrix_t *matrix, int16_t prefixWidth, const font_t *font, int16_t *colWidth, int16_t *rPadWidth, int16_t *digits, uint16_t maxCols, bool_t *allElementsInColAreIntegers) {
   char tmpString[200];
   const bool_t colVector = matrix->header.matrixColumns == 1 && matrix->header.matrixRows > 1;
   const int rows = colVector ? 1 : matrix->header.matrixRows;
@@ -1145,11 +1145,24 @@ int16_t getRealMatrixColumnWidths(const real34Matrix_t *matrix, int16_t prefixWi
       displayFormat = getSystemFlag(FLAG_ALLENG) ? DF_ENG : DF_SCI;
       displayFormatDigits = k;
     }
+
+    const uint16_t displayFormat1 = displayFormat;
+    const uint8_t displayFormatDigits1 = displayFormatDigits;
+
     for(int i = 0; i < maxRows; i++) {
       for(int j = 0; j < maxCols; j++) {
         real34_t r34Val;
         real34Copy(&matrix->matrixElements[(i+sRow)*cols+j+sCol], &r34Val);
         real34SetPositiveSign(&r34Val);
+
+        if(allElementsInColAreIntegers[j]) {
+          displayFormat = DF_FIX;
+          displayFormatDigits = 0;
+        } else {
+          displayFormat = displayFormat1;
+          displayFormatDigits = displayFormatDigits1;
+        }
+
         real34ToDisplayString(&r34Val, amNone, tmpString, font, maxWidth, displayFormat == DF_ALL ? k : 15, true, true);
         if(displayFormat == DF_ALL && !noFix && strstr(tmpString, STD_SUB_10)) { // something like SCI
           noFix = true;
@@ -1181,6 +1194,10 @@ int16_t getRealMatrixColumnWidths(const real34Matrix_t *matrix, int16_t prefixWi
         }
       }
     }
+
+    displayFormat = displayFormat1;
+    displayFormatDigits = displayFormatDigits1;
+
     for(int i = 0; i < maxRows; i++) {
       for(int j = 0; j < maxCols; j++) {
         if(rPadWidth[i * MATRIX_MAX_COLUMNS + j] & exponentOutOfRange) {
