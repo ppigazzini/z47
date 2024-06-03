@@ -631,7 +631,7 @@ bool_t lowercaseselected;    //the only place that this is set, is in processKey
 
 
   uint8_t asnKey[4] = {0, 0, 0, 0};
-
+  bool_t releaseOverride = false;
 
   #if defined(PC_BUILD)
     void btnFnPressed(GtkWidget *notUsed, GdkEvent *event, gpointer data) {
@@ -655,6 +655,7 @@ bool_t lowercaseselected;    //the only place that this is set, is in processKey
                       printf(">>>>Z 0010 btnFnPressed SET FN_key_pressed            ; data=|%s| data[0]=%d shiftF=%d shiftG=%d\n",(char*)data, ((char*)data)[0],shiftF, shiftG);
                     #endif //VERBOSEKEYS
 
+      releaseOverride = false;
       temporaryInformation = TI_NO_INFO;
       FN_key_pressed = *((char *)data) - '0' + 37;  //to render 38-43, as per original keypress
 
@@ -670,6 +671,24 @@ bool_t lowercaseselected;    //the only place that this is set, is in processKey
 
       if(programRunStop == PGM_PAUSED) {
         programRunStop = PGM_KEY_PRESSED_WHILE_PAUSED;
+        return;
+      }
+
+      //Exception, to activate the primary functions of the timer menu, without allowing longpresses and double presses, in order to have quicker activation
+      if(!shiftF && !shiftF && softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_TIMERF ){
+        const int16_t *softkeyItem = softmenu[softmenuStack[0].softmenuId].softkeyItem;
+        int16_t _item = softkeyItem[asnKey[0]-'1'];
+        //printf("WWWWWWWW-0 %i %i\n",softmenu[softmenuStack[0].softmenuId].menuItem, softkeyItem[asnKey[0]-'1']);
+        reallyRunFunction(_item,NOPARAM);
+        hourGlassIconEnabled = false;        
+        //printf("WWWWWWWW-1 %i %i\n",softmenu[softmenuStack[0].softmenuId].menuItem, softkeyItem[asnKey[0]-'1']);
+        if(_item == ITM_TIMER_R_S) {
+          screenUpdatingMode |= SCRUPD_SKIP_STACK_ONE_TIME;
+        } else {
+          screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
+        }
+        refreshScreen(136);
+        releaseOverride = true;
         return;
       }
 
@@ -919,8 +938,10 @@ int16_t lastItem = 0;
           return;
         }
       }
-
+if(!releaseOverride) {
       btnFnReleased_StateMachine(NULL, data);            //This function does the longpress differentiation, and calls ExecuteFunctio below, via fnbtnclicked
+releaseOverride = false;
+}
     }
 
     fnTimerStop(TO_3S_CTFF);      //dr
@@ -1394,7 +1415,7 @@ int16_t lastItem = 0;
                     #endif //PC_BUILD
 
     // Shift f pressed and JM REMOVED shift g not active
-    if((key->primary == ITM_SHIFTf || ShiftOverride == ITM_SHIFTf) && (calcMode == CM_NORMAL || calcMode == CM_AIM || calcMode == CM_NIM  || calcMode == CM_MIM || calcMode == CM_EIM || calcMode == CM_PEM || calcMode == CM_PLOT_STAT || calcMode == CM_GRAPH || calcMode == CM_ASSIGN || calcMode == CM_ASN_BROWSER || calcMode == CM_REGISTER_BROWSER || calcMode == CM_FLAG_BROWSER || calcMode == CM_FONT_BROWSER)) {   //JM shifts
+    if((key->primary == ITM_SHIFTf || ShiftOverride == ITM_SHIFTf) && (calcMode == CM_NORMAL || calcMode == CM_AIM || calcMode == CM_NIM  || calcMode == CM_MIM || calcMode == CM_EIM || calcMode == CM_PEM || calcMode == CM_PLOT_STAT || calcMode == CM_GRAPH || calcMode == CM_ASSIGN || calcMode == CM_ASN_BROWSER || calcMode == CM_REGISTER_BROWSER || calcMode == CM_FLAG_BROWSER || calcMode == CM_FONT_BROWSER || calcMode == CM_TIMER)) {   //JM shifts
       if(temporaryInformation == TI_SHOW_REGISTER || SHOWMODE) allowShiftsToClearError = true; //JM
       Shft_LongPress_f_g = true;
       if(Shft_LongPress_f_g && getSystemFlag(FLAG_SH_LONGPRESS)) {
@@ -1425,7 +1446,7 @@ int16_t lastItem = 0;
       return ITM_NOP;
     }
     // Shift g pressed and JM REMOVED shift f not active
-    else if((key->primary == ITM_SHIFTg || ShiftOverride == ITM_SHIFTg) && (calcMode == CM_NORMAL || calcMode == CM_AIM || calcMode == CM_NIM  || calcMode == CM_MIM || calcMode == CM_EIM || calcMode == CM_PEM || calcMode == CM_PLOT_STAT || calcMode == CM_GRAPH || calcMode == CM_ASSIGN || calcMode == CM_ASN_BROWSER || calcMode == CM_REGISTER_BROWSER || calcMode == CM_FLAG_BROWSER || calcMode == CM_FONT_BROWSER)) {   //JM shifts
+    else if((key->primary == ITM_SHIFTg || ShiftOverride == ITM_SHIFTg) && (calcMode == CM_NORMAL || calcMode == CM_AIM || calcMode == CM_NIM  || calcMode == CM_MIM || calcMode == CM_EIM || calcMode == CM_PEM || calcMode == CM_PLOT_STAT || calcMode == CM_GRAPH || calcMode == CM_ASSIGN || calcMode == CM_ASN_BROWSER || calcMode == CM_REGISTER_BROWSER || calcMode == CM_FLAG_BROWSER || calcMode == CM_FONT_BROWSER || calcMode == CM_TIMER)) {   //JM shifts
       if(temporaryInformation == TI_SHOW_REGISTER || SHOWMODE) allowShiftsToClearError = true; //JM
       Shft_LongPress_f_g = true;
       if(Shft_LongPress_f_g && getSystemFlag(FLAG_SH_LONGPRESS)) {
@@ -1458,7 +1479,7 @@ int16_t lastItem = 0;
     }
 
     // JM Shift fg pressed  //JM shifts change f/g to a single function key toggle to match DM42 keyboard
-    else if((key->primary == KEY_fg || ShiftOverride == KEY_fg) && (calcMode == CM_NORMAL || calcMode == CM_AIM || calcMode == CM_NIM  || calcMode == CM_MIM || calcMode == CM_EIM || calcMode == CM_PEM || calcMode == CM_PLOT_STAT || calcMode == CM_GRAPH || calcMode == CM_ASSIGN || calcMode == CM_ASN_BROWSER || calcMode == CM_REGISTER_BROWSER || calcMode == CM_FLAG_BROWSER || calcMode == CM_FONT_BROWSER)) {   //JM shifts
+    else if((key->primary == KEY_fg || ShiftOverride == KEY_fg) && (calcMode == CM_NORMAL || calcMode == CM_AIM || calcMode == CM_NIM  || calcMode == CM_MIM || calcMode == CM_EIM || calcMode == CM_PEM || calcMode == CM_PLOT_STAT || calcMode == CM_GRAPH || calcMode == CM_ASSIGN || calcMode == CM_ASN_BROWSER || calcMode == CM_REGISTER_BROWSER || calcMode == CM_FLAG_BROWSER || calcMode == CM_FONT_BROWSER || calcMode == CM_TIMER)) {   //JM shifts
       Shft_LongPress_f_g = false;
       Shft_timeouts = true;
       fnTimerStart(TO_FG_LONG, TO_FG_LONG, JM_TO_FG_LONG);    //vv dr
@@ -2140,7 +2161,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
 
             if(item == ITM_SNAP) {
 //              screenUpdatingMode = SCRUPD_AUTO;
-              refreshScreen(136);
+              refreshScreen(137);
             }
             runFunction(item);
 
@@ -2224,7 +2245,7 @@ RELEASE_END:
     if(lastErrorCode != 0 && item != ITM_EXIT1 && item != ITM_BACKSPACE) {
       lastErrorCode = 0;
       screenUpdatingMode = SCRUPD_AUTO;
-      refreshScreen(136);
+      refreshScreen(138);
     }
 
     if(temporaryInformation == TI_VIEW_REGISTER) {
@@ -2582,7 +2603,7 @@ RELEASE_END:
                       showRegis = (item - ITM_0)*10;
                     }
                     fnShow_SCROLL(255);
-                    //refreshScreen(138);
+                    //refreshScreen(139);
                   }
                 }
                 else if(item == ITM_EXPONENT || item == ITM_PERIOD || (ITM_0 <= item && item <= ITM_9)) {
@@ -2982,8 +3003,9 @@ RELEASE_END:
                     #endif // PC_BUILD
 
                 switch(item) {
+                  case ITM_TIMER_R_S:
                   case ITM_RS: {
-                    fnStartStopTimerApp();
+                    fnStartStopTimerApp(NOPARAM);
                     break;
                   }
                   case ITM_0:
@@ -3000,11 +3022,15 @@ RELEASE_END:
                     break;
                   }
                   case ITM_PERIOD: {
-                    fnDotTimerApp();
+                    fnRegAddLapTimerApp(NOPARAM);      //dot
                     break;
                   }
-                  case ITM_ADD: {
-                    fnPlusTimerApp();
+                  case ITM_SIGMAPLUS: {         // Σ+ =  ADD_T_Σ
+                    fnAddTimerApp(NOPARAM);
+                    break;
+                  }
+                  case ITM_ADD: {               // Σ+ =  ADD_L_Σ
+                    fnAddLapTimerApp(NOPARAM);
                     break;
                   }
                   case ITM_RCL: {
@@ -3272,7 +3298,7 @@ void fnKeyEnter(uint16_t unusedButMandatoryParameter) {
       }
 
       case CM_TIMER: {
-        fnEnterTimerApp();
+        fnRegAddTimerApp(NOPARAM);     //ENTER
         break;
       }
 
@@ -3339,7 +3365,6 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
     }
 
     doRefreshSoftMenu = true;     //dr
-
                     #if defined(PC_BUILD)
                       jm_show_calc_state("fnKeyExit");
                     #endif
@@ -3354,7 +3379,7 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
         case CM_BUG_ON_SCREEN: {
             // Browser or message should be closed first
             break;
-      }
+          }
 
         default: {
             if(catalog && (catalog != CATALOG_MVAR || !tam.mode)) {
@@ -3599,6 +3624,9 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
       case CM_FONT_BROWSER: {
         rbr1stDigit = true;
         calcMode = previousCalcMode;
+        if(calcMode == CM_TIMER) {
+          previousCalcMode = CM_NORMAL;
+        }
         break;
       }
 
@@ -3645,6 +3673,13 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
           }
           popSoftmenu();
         }
+
+        if(softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_TIMERF) {
+          clearScreen();
+          fnItemTimerApp(NOPARAM);
+          return;
+        }
+
 
         lastPlotMode = PLOT_NOTHING;
         plotSelection = 0;
