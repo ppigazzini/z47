@@ -1071,8 +1071,8 @@ smallFont:
         clearRegisterLine(REGISTER_X, true, true);
       }
   }
-const uint16_t displayFormat1 = displayFormat;
-const uint8_t displayFormatDigits1 = displayFormatDigits;
+  const uint16_t displayFormat1 = displayFormat;
+  const uint8_t displayFormatDigits1 = displayFormatDigits;
 
   for(int i = 0; i < maxRows; i++) {
     int16_t colX = stringWidth("[", font, true, true);
@@ -1083,11 +1083,13 @@ const uint8_t displayFormatDigits1 = displayFormatDigits;
     }
     for(int j = 0; j < maxCols + (rightEllipsis ? 1 : 0); j++) {
 
-if(allElementsInColAreIntegers[j]) {
-  displayFormat = DF_FIX; displayFormatDigits = 0;
-} else {
-  displayFormat = displayFormat1; displayFormatDigits = displayFormatDigits1;
-}
+      if(allElementsInColAreIntegers[j]) {
+        displayFormat = DF_FIX;
+        displayFormatDigits = 0;
+      } else {
+        displayFormat = displayFormat1;
+        displayFormatDigits = displayFormatDigits1;
+      }
 
       if(((i == maxRows - 1) && (rows > maxRows + sRow)) || ((j == maxCols) && rightEllipsis) || ((i == 0) && (sRow > 0))) {
         strcpy(tmpString, " " STD_ELLIPSIS);
@@ -1192,6 +1194,10 @@ int16_t getRealMatrixColumnWidths(const real34Matrix_t *matrix, int16_t prefixWi
         }
       }
     }
+
+    displayFormat = displayFormat1;
+    displayFormatDigits = displayFormatDigits1;
+
     for(int i = 0; i < maxRows; i++) {
       for(int j = 0; j < maxCols; j++) {
         if(rPadWidth[i * MATRIX_MAX_COLUMNS + j] & exponentOutOfRange) {
