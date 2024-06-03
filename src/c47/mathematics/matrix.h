@@ -266,7 +266,7 @@
      * \param[in] maxCols Maximum number of columns to allow
      * \return Width of the matrix excluding brackets
      */
-    int16_t  getRealMatrixColumnWidths      (const real34Matrix_t *matrix, int16_t prefixWidth, const font_t *font, int16_t *colWidth, int16_t *rPadWidth, int16_t *digits, uint16_t maxCols);
+    int16_t  getRealMatrixColumnWidths      (const real34Matrix_t *matrix, int16_t prefixWidth, const font_t *font, int16_t *colWidth, int16_t *rPadWidth, int16_t *digits, uint16_t maxCols, bool_t *allElementsInColAreIntegers);
 
     /**
      * Displays a complex matrix.
