@@ -165,7 +165,6 @@
       }
     }
   }
-  #endif // !SAVE_SPACE_DM42_8
 
   static void registerName(char *s, calcRegister_t regist) {
     if(REGISTER_X <= regist && regist <= REGISTER_W) {
@@ -176,6 +175,7 @@
       sprintf(tmpString, "R%02d:", regist);
     }
   }
+  #endif // !SAVE_SPACE_DM42_8
 
   void registerBrowser(uint16_t unusedButMandatoryParameter) {
   #if !defined(SAVE_SPACE_DM42_8)

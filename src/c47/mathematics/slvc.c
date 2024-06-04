@@ -47,6 +47,7 @@ struct cmplxPair {
   real_t r, i;
 };
 
+#if !defined(SAVE_SPACE_DM42_12)
 static int cmplxSortCompare(const void *v1, const void *v2) {
   const struct cmplxPair *p1 = (const struct cmplxPair *)v1;
   const struct cmplxPair *p2 = (const struct cmplxPair *)v2;
@@ -108,6 +109,8 @@ static int cmplxSortCompare(const void *v1, const void *v2) {
   }
   return 0;
 }
+#endif //SAVE_SPACE_DM42_12
+
 
 /********************************************//**
  * \brief (d, c, b, a) ==> (x1, x2, r) c ==> regL
