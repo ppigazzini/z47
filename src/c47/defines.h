@@ -14,32 +14,34 @@
 // JM VARIOUS OPTIONS
 //*********************************
 
-#define VERSION1 "0.109.02.00RC2"     // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
+#define VERSION1 "0.109.02.00RC3"     // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
 
 #define MODEL USER_C47               // USER_C47 or USER_R47
 
-  #undef SAVE_SPACE_DM42_0
-  #undef SAVE_SPACE_DM42_1
-  #undef SAVE_SPACE_DM42_2
-  #undef SAVE_SPACE_DM42_3
-  #undef SAVE_SPACE_DM42_4
-  #undef SAVE_SPACE_DM42_6
-  #undef SAVE_SPACE_DM42_7
-  #undef SAVE_SPACE_DM42_8
-  #undef SAVE_SPACE_DM42_9
-  #undef SAVE_SPACE_DM42_10
-  #undef SAVE_SPACE_DM42_11
-  #undef SAVE_SPACE_DM42_12
-  #undef SAVE_SPACE_DM42_12BESSEL
-  #undef SAVE_SPACE_DM42_12ORTHO 
-  #undef SAVE_SPACE_DM42_13GRF
-  #undef SAVE_SPACE_DM42_13GRF_JM
-  #undef SAVE_SPACE_DM42_14
-  #undef SAVE_SPACE_DM42_15
-  #undef SAVE_SPACE_DM42_16
-//  #undef SAVE_SPACE_DM42_20
-  #undef SAVE_SPACE_DM42_20_TIMER
-  #undef SAVE_SPACE_DM42_21
+#undef SAVE_SPACE_DM42_0
+#undef SAVE_SPACE_DM42_1
+#undef SAVE_SPACE_DM42_2
+#undef SAVE_SPACE_DM42_2LOAD 
+#undef SAVE_SPACE_DM42_3
+#undef SAVE_SPACE_DM42_4
+#undef SAVE_SPACE_DM42_6
+#undef SAVE_SPACE_DM42_8
+#undef SAVE_SPACE_DM42_8ASN
+#undef SAVE_SPACE_DM42_8F
+#undef SAVE_SPACE_DM42_8FL
+#undef SAVE_SPACE_DM42_9
+#undef SAVE_SPACE_DM42_10
+#undef SAVE_SPACE_DM42_11
+#undef SAVE_SPACE_DM42_12
+#undef SAVE_SPACE_DM42_12BESSEL
+#undef SAVE_SPACE_DM42_12ORTHO 
+#undef SAVE_SPACE_DM42_13GRF
+#undef SAVE_SPACE_DM42_13GRF_JM
+#undef SAVE_SPACE_DM42_14
+#undef SAVE_SPACE_DM42_15
+#undef SAVE_SPACE_DM42_16
+#undef SAVE_SPACE_DM42_20_TIMER
+#undef SAVE_SPACE_DM42_21_HP35
 
 #if defined(DMCP_BUILD)
 
@@ -53,32 +55,57 @@
 //  #undef  TWO_FILE_PGM  //See CRC ISSUE - Commented this line to force full QSPI generation
 //                        //Also change the file here: src/c47-dmcp/qspi_crc.h for the single file version
 
-//THESE ARE DMCP COMPILE OPTIONS
+//The byte savings below determined by compiling on Mac on 2024-06-04 using:
+//C compiler for the host machine: ccache arm-none-eabi-gcc (gcc 12.3.1 "arm-none-eabi-gcc (Arm GNU Toolchain 12.3.Rel1 (Build arm-12.35)) 12.3.1 20230626")
+//C linker for the host machine: arm-none-eabi-gcc ld.bfd 12.3
+//C compiler for the build machine: ccache cc (clang 14.0.0 "Apple clang version 14.0.0 (clang-1400.0.29.202)")
+//C linker for the build machine: cc ld64 820.1
+
+//THESE ARE DMCP COMPILE OPTIONS FOR SINGLE FILE NO QSPI (NOT USED ANYMORE - NOT TESTED IN TWO YEARS)
   #if !defined(TWO_FILE_PGM) && !defined(NEW_HW) //---------THESE ARE THE EXCLUSIONS TO MAKE IT FIT WHILE NOT USING QSPI ON OLD HARDWARE
-    #define SAVE_SPACE_DM42_2  //005672 bytes: XEQM
-    #define SAVE_SPACE_DM42_6  //001648 bytes: ELEC functions
-    #define SAVE_SPACE_DM42_7  //002144 bytes: KEYS USER_DM42;
-  //  #define SAVE_SPACE_DM42_8  //007136 bytes: Standard Flag-, Register-, Font- Browser functions
-  //  #define SAVE_SPACE_DM42_9  //004448 bytes: SHOW (new C43)
-  //  #define SAVE_SPACE_DM42_10 //005800 bytes: C47 programming ...
-  //  #define SAVE_SPACE_DM42_11 //001552 bytes: Matrix function on entry ...
-    #define SAVE_SPACE_DM42_12 //047246 bytes: Standard extra 43S math: SLVQ, PRIME, BESSEL, ELLIPTIC, ZETA, BETA, ORTHO_POLY
-    #define SAVE_SPACE_DM42_13GRF //           JM Solver & graphics & stat graphics
-    #define SAVE_SPACE_DM42_13GRF_JM //        JM graphics
-  //  #define SAVE_SPACE_DM42_14    //           programming sample programs
-    #define SAVE_SPACE_DM42_15    //           without all distributions, i.e. binomial, cauchy, chi
-    #define SAVE_SPACE_DM42_16    //           without all distributions, i.e. binomial, cauchy, chi
+      #define SAVE_SPACE_DM42_2        //  4152 bytes // XEQM
+      #define SAVE_SPACE_DM42_2LOAD    //   288 bytes // XEQM AUTOLOAD DEMOS
+      #define SAVE_SPACE_DM42_6        //  1376 bytes // ELEC functions
+  //  #define SAVE_SPACE_DM42_8        //  1856 bytes // Register Browser
+  //  #define SAVE_SPACE_DM42_8FL      //  3280 bytes // Flag Browsers
+  //  #define SAVE_SPACE_DM42_8ASN     //  1704 bytes // Assign Browser
+  //  #define SAVE_SPACE_DM42_8F       //  1216 bytes // Font Browsers
+  //  #define SAVE_SPACE_DM42_9        //  6712 bytes // SHOW
+  //  #define SAVE_SPACE_DM42_10       //  3136 bytes // C47 programming ... (not complete removal but disables it anyway)
+  //  #define SAVE_SPACE_DM42_11       //   800 bytes // Matrix function on entry ...
+      #define SAVE_SPACE_DM42_12       //  3632 bytes // Standard extra 43S math: SLVQ, PRIME, BESSEL, ELLIPTIC, ZETA, BETA, ORTHO_POLY
+  //  #define SAVE_SPACE_DM42_12BESSEL //  5129 bytes // Without BESSEL
+  //  #define SAVE_SPACE_DM42_12ORTHO  //  0768 bytes // Without ORTHO MENU
+      #define SAVE_SPACE_DM42_13GRF    // 17472 bytes // Solver & graphics & stat graphics
+      #define SAVE_SPACE_DM42_13GRF_JM //  7520 bytes // Adv graphics
+  //  #define SAVE_SPACE_DM42_14       //   184 bytes // Programming sample programs
+      #define SAVE_SPACE_DM42_15       // 17592 bytes // Without all distributions, i.e. binomial, cauchy, chi
+      #define SAVE_SPACE_DM42_16       //  2168 bytes // Without Norml
+  //  #define SAVE_SPACE_DM42_20_TIMER //  1232 bytes // STOPW
   #endif // !TWO_FILE_PGM && !NEW_HW
 
+//THESE ARE DMCP COMPILE OPTIONS FOR TWO FILE QSPI
   #if defined(TWO_FILE_PGM) //---------THESE ARE THE EXCLUSIONS TO MAKE IT FIT INTO AVAILABLE FLASH EVEN WHILE USING QSPI
-    #define SAVE_SPACE_DM42_20_TIMER
-  //  #define SAVE_SPACE_DM42_2  //005672 bytes: XEQM
-  //  #define SAVE_SPACE_DM42_13GRF_JM //           JM graphics
-  //  #define SAVE_SPACE_DM42_12 //047246 bytes: Standard extra 43S math: SLVQ, PRIME, BESSEL, ELLIPTIC, ZETA, BETA, ORTHO_POLY
-  //  #define SAVE_SPACE_DM42_15       //           without all distributions, i.e. binomial, cauchy, chi
-  //  #define SAVE_SPACE_DM42_16       //           without Norml
-    #define SAVE_SPACE_DM42_12BESSEL //Standard extra BESSEL
-    #define SAVE_SPACE_DM42_12ORTHO //Standard extra ORTHO MENU
+  //  #define SAVE_SPACE_DM42_2        //  4152 bytes // XEQM
+  //  #define SAVE_SPACE_DM42_2LOAD    //   288 bytes // XEQM AUTOLOAD DEMOS
+  //  #define SAVE_SPACE_DM42_6        //  1376 bytes // ELEC functions
+  //  #define SAVE_SPACE_DM42_8        //  1856 bytes // Register Browser
+  //  #define SAVE_SPACE_DM42_8FL      //  3280 bytes // Flag Browsers
+  //  #define SAVE_SPACE_DM42_8ASN     //  1704 bytes // Assign Browser
+  //  #define SAVE_SPACE_DM42_8F       //  1216 bytes // Font Browsers
+      #define SAVE_SPACE_DM42_9        //  6712 bytes // SHOW
+  //  #define SAVE_SPACE_DM42_10       //  3136 bytes // C47 programming ... (not complete removal but disables it anyway)
+  //  #define SAVE_SPACE_DM42_11       //   800 bytes // Matrix function on entry ...
+  //  #define SAVE_SPACE_DM42_12       //  3632 bytes // Standard extra 43S math: SLVQ, PRIME, BESSEL, ELLIPTIC, ZETA, BETA, ORTHO_POLY
+  //  #define SAVE_SPACE_DM42_12BESSEL //  5129 bytes // Without BESSEL
+  //  #define SAVE_SPACE_DM42_12ORTHO  //  0768 bytes // Without ORTHO MENU
+  //  #define SAVE_SPACE_DM42_13GRF    // 17472 bytes // Solver & graphics & stat graphics
+  //  #define SAVE_SPACE_DM42_13GRF_JM //  7520 bytes // Adv graphics
+      #define SAVE_SPACE_DM42_14       //   184 bytes // Programming sample programs
+  //  #define SAVE_SPACE_DM42_15       // 17592 bytes // Without all distributions, i.e. binomial, cauchy, chi
+  //  #define SAVE_SPACE_DM42_16       //  2168 bytes // Without Norml
+  //  #define SAVE_SPACE_DM42_20_TIMER //  1232 bytes // STOPW
+      #define SAVE_SPACE_DM42_21_HP35  //   200 bytes // Without config file activations only. Not complete removal.
   #endif // TWO_FILE_PGM
 #endif // DMCP_BUILD
 

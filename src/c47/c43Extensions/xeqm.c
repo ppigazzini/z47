@@ -1221,7 +1221,7 @@ void fnXEQMENU(uint16_t XEQM_no) {
 
 
 void XEQMENU_loadAllfromdisk(void) {
-  #if !defined(SAVE_SPACE_DM42_2)
+  #if !defined(SAVE_SPACE_DM42_2LOAD)
     #if !defined(TESTSUITE_BUILD)
       //uint16_t Delay;
       clearScreenOld(false, true, true);
@@ -1240,7 +1240,7 @@ void XEQMENU_loadAllfromdisk(void) {
         ix++;
       }
     #endif // !TESTSUITE_BUILD
-  #endif // !SAVE_SPACE_DM42_2
+  #endif // !SAVE_SPACE_DM42_2LOAD
 }
 
 

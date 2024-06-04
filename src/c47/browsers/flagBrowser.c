@@ -36,7 +36,7 @@
 
 
 #if !defined(TESTSUITE_BUILD)
-#if !defined(SAVE_SPACE_DM42_8)
+#if !defined(SAVE_SPACE_DM42_8FL)
   static void oneSystemFlag(uint16_t systemFlag, const char *systemFlagNamename, int16_t *line, bool_t *firstSystemFlag) {
     if(getSystemFlag(systemFlag)) {
       if(stringWidth(tmpString + CHARS_PER_LINE * *line, &standardFont, true, true) + stringWidth(systemFlagNamename, &standardFont, true, false) <= SCREEN_WIDTH - 1 - 8) { // SPACE is 8 pixel wide
@@ -53,7 +53,7 @@
       }
     }
   }
-#endif // !SAVE_SPACE_DM42_8
+#endif // !SAVE_SPACE_DM42_8FL
 
 
   /********************************************//**
@@ -63,7 +63,7 @@
    * \return void
    ***********************************************/
   void flagBrowser(uint16_t init) {
-  #if !defined(SAVE_SPACE_DM42_8)
+  #if !defined(SAVE_SPACE_DM42_8FL)
     static int16_t line;
     int16_t f;
     bool_t firstFlag;
@@ -448,6 +448,6 @@
 
     }
     lastFlgScr = currentFlgScr;
-  #endif // !SAVE_SPACE_DM42_8
+  #endif // !SAVE_SPACE_DM42_8FL
   }
 #endif // !TESTSUITE_BUILD

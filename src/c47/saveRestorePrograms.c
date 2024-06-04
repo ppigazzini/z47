@@ -158,6 +158,7 @@
 
 
 #ifndef TESTSUITE_BUILD
+#if !defined(SAVE_SPACE_DM42_10)
   static bool_t subStrWildCardCompare(const char *in1, const char *in2) { //wild card is '*', active from the second character being compared
     int16_t i = 0;
     bool_t areEqual = true;
@@ -175,6 +176,7 @@
     }
     return areEqual;
   }
+#endif //SAVE_SPACE_DM42_10
 #endif //TESTSUITE_BUILD
 
 
