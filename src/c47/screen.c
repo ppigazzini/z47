@@ -2091,6 +2091,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
         for(int i = 0; i < rows; i++) {
           if(!real34IsAnInteger(&matrix.matrixElements[i*cols+j])) {
             allElementsInColAreIntegers[j]=false;
+            break;
           }
         }
       }

@@ -991,6 +991,7 @@ smallFont:
     for(int i = 0; i < maxRows; i++) {
       if(!real34IsAnInteger(&matrix->matrixElements[i*cols+j])) {
         allElementsInColAreIntegers[j]=false;
+        break;
       }
     }
   }
