@@ -2084,7 +2084,19 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
       const uint16_t cols = matrix.header.matrixColumns;
       bool_t smallFont = (rows >= 5);
       int16_t dummyVal[MATRIX_MAX_COLUMNS * (MATRIX_MAX_ROWS + 1) + 1] = {};
-      const int16_t mtxWidth = getRealMatrixColumnWidths(&matrix, prefixWidth, &numericFont, dummyVal, dummyVal + MATRIX_MAX_COLUMNS, dummyVal + (MATRIX_MAX_ROWS + 1) * MATRIX_MAX_COLUMNS, cols > MATRIX_MAX_COLUMNS ? MATRIX_MAX_COLUMNS : cols);
+
+      bool_t allElementsInColAreIntegers[MATRIX_MAX_COLUMNS] = {};
+      for(int j = 0; j < cols; j++) {
+        allElementsInColAreIntegers[j]=true;
+        for(int i = 0; i < rows; i++) {
+          if(!real34IsAnInteger(&matrix.matrixElements[i*cols+j])) {
+            allElementsInColAreIntegers[j]=false;
+            break;
+          }
+        }
+      }
+
+      const int16_t mtxWidth = getRealMatrixColumnWidths(&matrix, prefixWidth, &numericFont, dummyVal, dummyVal + MATRIX_MAX_COLUMNS, dummyVal + (MATRIX_MAX_ROWS + 1) * MATRIX_MAX_COLUMNS, cols > MATRIX_MAX_COLUMNS ? MATRIX_MAX_COLUMNS : cols, allElementsInColAreIntegers);
       if(abs(mtxWidth) > MATRIX_LINE_WIDTH) {
         smallFont = true;
       }
