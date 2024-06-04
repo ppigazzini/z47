@@ -14,7 +14,7 @@
 // JM VARIOUS OPTIONS
 //*********************************
 
-#define VERSION1 "0.109.02.00RC3"     // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
+#define VERSION1 "0.109.02.00"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
 
 #define MODEL USER_C47               // USER_C47 or USER_R47
 
@@ -40,6 +40,7 @@
 #undef SAVE_SPACE_DM42_14
 #undef SAVE_SPACE_DM42_15
 #undef SAVE_SPACE_DM42_16
+#undef SAVE_SPACE_DM42_17
 #undef SAVE_SPACE_DM42_20_TIMER
 #undef SAVE_SPACE_DM42_21_HP35
 
@@ -88,27 +89,28 @@
 
 //THESE ARE DMCP COMPILE OPTIONS FOR TWO FILE QSPI
   #if defined(TWO_FILE_PGM) //---------THESE ARE THE EXCLUSIONS TO MAKE IT FIT INTO AVAILABLE FLASH EVEN WHILE USING QSPI
-  //  #define SAVE_SPACE_DM42_2        //  4152 bytes // XEQM
-  //  #define SAVE_SPACE_DM42_2LOAD    //   288 bytes // XEQM AUTOLOAD DEMOS
-  //  #define SAVE_SPACE_DM42_6        //  1376 bytes // ELEC functions
-  //  #define SAVE_SPACE_DM42_8        //  1856 bytes // Register Browser
-  //  #define SAVE_SPACE_DM42_8FL      //  3280 bytes // Flag Browsers
-  //  #define SAVE_SPACE_DM42_8ASN     //  1704 bytes // Assign Browser
-  //  #define SAVE_SPACE_DM42_8F       //  1216 bytes // Font Browsers
-      #define SAVE_SPACE_DM42_9        //  6712 bytes // SHOW (use either old SHOW or VIEW, change in code)
-  //  #define SAVE_SPACE_DM42_10       //  3136 bytes // C47 programming ... (not complete removal but disables it anyway)
-  //  #define SAVE_SPACE_DM42_11       //   800 bytes // Matrix function on entry ...
-  //  #define SAVE_SPACE_DM42_12       //  3288 bytes // SLVC, SLVQ, ELLIPTIC, ZETA, BETA
-  //  #define SAVE_SPACE_DM42_12PRIME  // 27208 bytes // ISPRIME, NEXTPRIME, FACTORS, EULPHI, MATXFACTOR
+  //  #define SAVE_SPACE_DM42_2        //  4152 bytes // Without XEQM
+  //  #define SAVE_SPACE_DM42_2LOAD    //   288 bytes // Without XEQM AUTOLOAD DEMOS
+  //  #define SAVE_SPACE_DM42_6        //  1376 bytes // Without ELEC functions
+  //  #define SAVE_SPACE_DM42_8        //  1856 bytes // Without Register Browser
+  //  #define SAVE_SPACE_DM42_8FL      //  3280 bytes // Without Flag Browsers
+  //  #define SAVE_SPACE_DM42_8ASN     //  1704 bytes // Without Assign Browser
+  //  #define SAVE_SPACE_DM42_8F       //  1216 bytes // Without Font Browsers
+  //  #define SAVE_SPACE_DM42_9        //  6712 bytes // Without SHOW (use either old SHOW or VIEW, change in code)
+  //  #define SAVE_SPACE_DM42_10       //  3136 bytes // Without C47 programming ... (not complete removal but disables it anyway)
+  //  #define SAVE_SPACE_DM42_11       //   800 bytes // Without Matrix function on entry ...
+  //  #define SAVE_SPACE_DM42_12       //  3288 bytes // Without SLVC, SLVQ, ELLIPTIC, ZETA, BETA
+  //  #define SAVE_SPACE_DM42_12PRIME  // 27208 bytes // Without ISPRIME, NEXTPRIME, FACTORS, EULPHI, MATXFACTOR
   //  #define SAVE_SPACE_DM42_12BESSEL //  5129 bytes // Without BESSEL
   //  #define SAVE_SPACE_DM42_12ORTHO  //  0768 bytes // Without ORTHO MENU
-  //  #define SAVE_SPACE_DM42_13GRF    // 17472 bytes // Solver & graphics & stat graphics
-  //  #define SAVE_SPACE_DM42_13GRF_JM //  7520 bytes // More graphics
-      #define SAVE_SPACE_DM42_14       //   184 bytes // Load programming sample programs testPgms
-  //  #define SAVE_SPACE_DM42_15       // 17592 bytes // Without all distributions, i.e. binomial, cauchy, chi
+  //  #define SAVE_SPACE_DM42_13GRF    // 17472 bytes // Without Solver & graphics & stat graphics
+  //  #define SAVE_SPACE_DM42_13GRF_JM //  7520 bytes // Without More graphics
+  //  #define SAVE_SPACE_DM42_14       //   184 bytes // Without Load programming sample programs testPgms
+  //  #define SAVE_SPACE_DM42_15       // 10056 bytes // Without all distributions, i.e. , cauchy, chi, expo, f, logis, t, weibull
   //  #define SAVE_SPACE_DM42_16       //  2168 bytes // Without Norml distribution
+      #define SAVE_SPACE_DM42_17       //  7448 bytes // Without Poisson/Hyper/Binomial/Geometrical distributions
   //  #define SAVE_SPACE_DM42_20_TIMER //  1232 bytes // Without STOPW
-      #define SAVE_SPACE_DM42_21_HP35  //   200 bytes // Without config file activations only. Not complete removal.
+  //  #define SAVE_SPACE_DM42_21_HP35  //   200 bytes // Without config file activations only. Not complete removal.
   #endif // TWO_FILE_PGM
 #endif // DMCP_BUILD
 
@@ -1665,7 +1667,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
   #define beep(frequence, length)            do { while(get_beep_volume() < 11) beep_volume_up(); start_buzzer_freq(frequence * 1000); sys_delay(length); stop_buzzer(); } while(0)
   #undef TO_QSPI
   #if defined(TWO_FILE_PGM)
-    #define TO_QSPI                            __attribute__ ((section(".qspi")))
+    #define TO_QSPI                          __attribute__ ((section(".qspi")))
   #else // !TWO_FILE_PGM
     #define TO_QSPI
   #endif // TWO_FILE_PGM
