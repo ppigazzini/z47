@@ -675,7 +675,7 @@ bool_t lowercaseselected;    //the only place that this is set, is in processKey
       }
 
       //Exception, to activate the primary functions of the timer menu, without allowing longpresses and double presses, in order to have quicker activation
-      if(!shiftF && !shiftF && softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_TIMERF ){
+      if(!shiftF && /*!shiftG &&*/ softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_TIMERF ){   //do not check for g, to enable the g-line fast response on press when keyboard shortcuts help line is pressed
         const int16_t *softkeyItem = softmenu[softmenuStack[0].softmenuId].softkeyItem;
         int16_t _item = softkeyItem[asnKey[0]-'1'];
         //printf("WWWWWWWW-0 %i %i\n",softmenu[softmenuStack[0].softmenuId].menuItem, softkeyItem[asnKey[0]-'1']);
