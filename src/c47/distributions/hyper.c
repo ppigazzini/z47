@@ -37,7 +37,7 @@
 #include "c47.h"
 
 
-#if defined(SAVE_SPACE_DM42_15)
+#if defined(SAVE_SPACE_DM42_17)
   void fnHypergeometricP  (uint16_t unusedButMandatoryParameter){}
   void fnHypergeometricL  (uint16_t unusedButMandatoryParameter){}
   void fnHypergeometricR  (uint16_t unusedButMandatoryParameter){}
@@ -375,4 +375,4 @@
     WP34S_Qf_Newton(QF_NEWTON_HYPERGEOMETRIC, x, &s, k0, n, n0, res, realContext);
   }
 
-#endif
+#endif //SAVE_SPACE_DM42_17
