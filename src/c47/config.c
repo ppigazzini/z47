@@ -344,42 +344,23 @@ void Sett(int16_t grp) {
 
 #if !defined(TESTSUITE_BUILD)
   void fnSetHP35(uint16_t unusedButMandatoryParameter) {
-    getDateString(lastStateFileOpened);
-    strcat(lastStateFileOpened,": HP35 defaults");
-    fnKeyExit(0);                            //Clear pending key input
-    fnClrMod(0);                             //Get out of NIM or BASE
-    fnStoreConfig(35);                       //Store current config into R35
+    #if !defined(SAVE_SPACE_DM42_21_HP35)
+      getDateString(lastStateFileOpened);
+      strcat(lastStateFileOpened,": HP35 defaults");
+      fnKeyExit(0);                            //Clear pending key input
+      fnClrMod(0);                             //Get out of NIM or BASE
+      fnStoreConfig(35);                       //Store current config into R35
 
-    fnClearStack(0);                         //Clear stack
-    fnPi(0);                                 //Put pi on X
+      fnClearStack(0);                         //Clear stack
+      fnPi(0);                                 //Put pi on X
 
-    Sett(_HP35);
-    //---    fnInDefault(ID_DP);                      //Change to Real input only :                                     ID, if changed, also set the conditions for checkHP in defines.h (DP)
-    //---    fnDisplayFormatSigFig(9);                //SIG 9                                                           There is special treatment for the Sig mode in the display driver, to restrict to 9+1 digits while SDIGS > 10
-    //---    BASE_MYM = false;                        //Switch off base = MyMenu
-    //---    BASE_HOME = false;                       //Ensure base = HOME is off
-    //---    exponentLimit     = 99;                  //Set the exponent limit the same as HP35, i.e. 99                ID, if changed, also set the conditions for checkHP in defines.h (99)
-    //---    significantDigits = 16;                  //SETSIG2 = 16                                                    ID, if changed, also set the conditions for checkHP in defines.h (10-16)
-    //---    displayStack = cachedDisplayStack = 1;   //Change to single stack register display                         ID, if changed, also set the conditions for checkHP in defines.h (1)
-    //---    currentAngularMode = amRadian;           //Set to RAD
-    //---    SetSetting(SS_4);                        //SSTACK4
-    //---    SetSetting(ITM_CPXRES0);                 //Clear CPXRES
-    //---    SetSetting(ITM_SPCRES0);                 //Clear SPCRES
-    //---    fneRPN(0);                               //RPN
-    //---    setFGLSettings(RB_FGLNOFF);              //fgLine OFF
-    //---    grpGroupingLeft    =  3;                 //IPGRP 3
-    //---    grpGroupingRight   =  3;                 //FPGRP 3
-    //---    grpGroupingGr1Left =  0;                 //IPGRP1 0
-    //---    grpGroupingGr1LeftOverflow = 0;          //IPGRP1x 0
-    //---    fnSetGapChar(ITM_NULL);                  //IPART nil
-    //---    fnSetGapChar(ITM_NULL+32768);            //FPART nil
-    //---    fnSetGapChar(ITM_WDOT+49152);            //RADIX WDOT
-    //---    fnSetFlag(FLAG_USER);                    //Set USER mode
+      Sett(_HP35);
 
-    temporaryInformation = TI_NO_INFO;       //Clear any pending TI
-    fnRefreshState();
-    screenUpdatingMode = SCRUPD_AUTO;
-    refreshScreen(160);
+      temporaryInformation = TI_NO_INFO;       //Clear any pending TI
+      fnRefreshState();
+      screenUpdatingMode = SCRUPD_AUTO;
+      refreshScreen(160);
+    #endif //SAVE_SPACE_DM42_21_HP35
   }
 
 
@@ -427,21 +408,23 @@ void Sett(int16_t grp) {
 
 
   void _fnSetC47(uint16_t unusedButMandatoryParameter) {         //Reversing the HP35 settings to C47 defaults
-    fnKeyExit(0);
-    addItemToBuffer(ITM_EXIT1);
-    getDateString(lastStateFileOpened);
-    strcat(lastStateFileOpened,": C47 defaults");
+    #if !defined(SAVE_SPACE_DM42_21_HP35)
+      fnKeyExit(0);
+      addItemToBuffer(ITM_EXIT1);
+      getDateString(lastStateFileOpened);
+      strcat(lastStateFileOpened,": C47 defaults");
 
-    Sett(_C47);
+      Sett(_C47);
 
-    temporaryInformation = TI_NO_INFO;
-    fnRefreshState();
+      temporaryInformation = TI_NO_INFO;
+      fnRefreshState();
 
-    fnDrop(NOPARAM);
-    fnDrop(NOPARAM);
-    runFunction(ITM_SQUARE);
-    screenUpdatingMode = SCRUPD_AUTO;
-    refreshScreen(162);
+      fnDrop(NOPARAM);
+      fnDrop(NOPARAM);
+      runFunction(ITM_SQUARE);
+      screenUpdatingMode = SCRUPD_AUTO;
+      refreshScreen(162);
+    #endif //SAVE_SPACE_DM42_21_HP35
   }
 
 
@@ -1580,7 +1563,11 @@ Sett(_Reset);
     }
 
     fnClrMod(0);
-    XEQMENU_loadAllfromdisk();
+
+    #if !defined(SAVE_SPACE_DM42_2LOAD)
+      XEQMENU_loadAllfromdisk();
+    #endif //SAVE_SPACE_DM42_2LOAD
+
 
     displayAIMbufferoffset = 0;
     T_cursorPos = 0;

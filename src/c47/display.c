@@ -2655,7 +2655,6 @@ static void _complex34ToShowTmpString(const real34_t *r, const real34_t *i) {
   }
 }
 
-
 void fnShow(uint16_t unusedButMandatoryParameter) {
   uint8_t savedDisplayFormat = displayFormat, savedDisplayFormatDigits = displayFormatDigits;
   int16_t source, dest, last, d, maxWidth, offset, bytesProcessed;
@@ -2778,6 +2777,7 @@ void fnShow(uint16_t unusedButMandatoryParameter) {
 }
 
 
+
 void mimShowElement(void) {
   #if !defined(TESTSUITE_BUILD)
     uint8_t savedDisplayFormat = displayFormat, savedDisplayFormatDigits = displayFormatDigits;
@@ -2814,6 +2814,7 @@ void mimShowElement(void) {
 
 
 #if !defined(TESTSUITE_BUILD)
+#if !defined(SAVE_SPACE_DM42_9)
 
 static void RegName(void) {    //JM using standard reg name, using showRegis, not using prefixWidth
   int16_t tmp;
@@ -2905,6 +2906,8 @@ static void dispM(uint16_t regist, char * prefix) {
     }
   }
 }
+#endif //SAVE_SPACE_DM42_9
+
 #endif //TESTSUITE_BUILD
 
 
@@ -3516,7 +3519,8 @@ void fnShow_SCROLL(uint16_t fnShow_param) {                // Heavily modified b
 
   #endif // !TESTSUITE_BUILD
 #else
-      fnShow(0);
+//  fnShow(0);          // Use fnSwow, which is an early WP43 version, but it does not properly show complex numbers
+    fnView(REGISTER_X); // Re-direct to use VIEW instead. No more accuracy though
 #endif // !SAVE_SPACE_DM42_9
 }
 

@@ -34,7 +34,7 @@
 
 
 #if !defined(TESTSUITE_BUILD)
-  #if !defined(SAVE_SPACE_DM42_8)
+  #if !defined(SAVE_SPACE_DM42_8ASN)
   static void fnAsnDisplay(uint8_t page) {                // Heavily modified by JM from the original fnShow
   #define YOFF 32
     int xx,yy;
@@ -149,13 +149,13 @@
 
     temporaryInformation = TI_NO_INFO;
   }
-  #endif // !SAVE_SPACE_DM42_8
+  #endif // !SAVE_SPACE_DM42_8ASN
 #endif // !TESTSUITE_BUILD
 
 
 void fnAsnViewer(uint16_t unusedButMandatoryParameter) {
 #if !defined(TESTSUITE_BUILD)
-  #if !defined(SAVE_SPACE_DM42_8)
+  #if !defined(SAVE_SPACE_DM42_8ASN)
     hourGlassIconEnabled = false;
     if(calcMode != CM_ASN_BROWSER) {
       previousCalcMode = calcMode;
@@ -165,7 +165,7 @@ void fnAsnViewer(uint16_t unusedButMandatoryParameter) {
       return;
     }
   fnAsnDisplay(currentAsnScr);
-  #endif // !SAVE_SPACE_DM42_8
+  #endif // !SAVE_SPACE_DM42_8ASN
 #endif // !TESTSUITE_BUILD
 
   }

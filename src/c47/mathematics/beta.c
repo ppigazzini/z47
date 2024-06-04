@@ -143,7 +143,6 @@ static void betaReal(void) {
     convertRealToResultRegister(&r, REGISTER_X, amNone);
   }
 }
-#endif // !SAVE_SPACE_DM42_12
 
 
 /********************************************//**
@@ -156,3 +155,5 @@ static void betaReal(void) {
 void fnBeta(uint16_t unusedButMandatoryParameter) {
   processRealComplexDyadicFunction(&betaReal, &betaComplex);
 }
+
+#endif // !SAVE_SPACE_DM42_12
