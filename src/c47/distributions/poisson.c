@@ -35,7 +35,7 @@
 #include "c47.h"
 
 
-#if defined(SAVE_SPACE_DM42_15)
+#if defined(SAVE_SPACE_DM42_17)
   void fnPoissonP                (uint16_t unusedButMandatoryParameter){}
   void fnPoissonL                (uint16_t unusedButMandatoryParameter){}
   void fnPoissonR                (uint16_t unusedButMandatoryParameter){}
@@ -253,4 +253,4 @@
     WP34S_Qf_Newton(QF_NEWTON_POISSON, x, &q, lambda, NULL, NULL, res, realContext);
   }
 
-#endif //SAVE_SPACE_DM42_15
+#endif //SAVE_SPACE_DM42_17
