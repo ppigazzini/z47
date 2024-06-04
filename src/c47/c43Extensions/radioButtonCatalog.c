@@ -445,10 +445,13 @@ int16_t fnItemShowValue(int16_t item) {
     case ITM_BESTF:     result = (lrSelection) & 0x1FF;                             break;
     case ITM_RMODE:     result = roundingMode;                                      break;
     case ITM_HASH_JM:   if(lastIntegerBase != 0) result = (int16_t)lastIntegerBase; break;
+    case ITM_TIMER_SIGMA_L:
+    case ITM_TIMER_SIGMA_T: result = statisticalSumsPointer == NULL ? 0 : realToUint32C47(SIGMA_N); break;
+    case ITM_TIMER_R_L:
+    case ITM_TIMER_R_T:     result = timerCraAndDeciseconds &0x7F; break;
     case ITM_VOL:
     case ITM_VOLPLUS:
-    case ITM_VOLMINUS:
-                        result = getBeepVolume();                                   break; // DL
+    case ITM_VOLMINUS:  result = getBeepVolume();                                   break; // DL
     default:            if(indexOfItems[itemNr].func == itemToBeCoded) {
                          result = ITEM_NOT_CODED;
                         }
@@ -466,27 +469,6 @@ void add_digitglyph_to_tmp2(char* tmp2, int16_t xx) {
     stringAppend(tmp2, STD_BASE_1);
     tmp2[1] += (xx-1);
   }
-
-//  switch(xx) {
-//    case  0: stringAppend(tmp2 + stringByteLength(tmp2), STD_SUB_0);   break;
-//    case  1: stringAppend(tmp2 + stringByteLength(tmp2), STD_BASE_1);  break;
-//    case  2: stringAppend(tmp2 + stringByteLength(tmp2), STD_BASE_2);  break;
-//    case  3: stringAppend(tmp2 + stringByteLength(tmp2), STD_BASE_3);  break;
-//    case  4: stringAppend(tmp2 + stringByteLength(tmp2), STD_BASE_4);  break;
-//    case  5: stringAppend(tmp2 + stringByteLength(tmp2), STD_BASE_5);  break;
-//    case  6: stringAppend(tmp2 + stringByteLength(tmp2), STD_BASE_6);  break;
-//    case  7: stringAppend(tmp2 + stringByteLength(tmp2), STD_BASE_7);  break;
-//    case  8: stringAppend(tmp2 + stringByteLength(tmp2), STD_BASE_8);  break;
-//    case  9: stringAppend(tmp2 + stringByteLength(tmp2), STD_BASE_9);  break;
-//    case 10: stringAppend(tmp2 + stringByteLength(tmp2), STD_BASE_10); break;
-//    case 11: stringAppend(tmp2 + stringByteLength(tmp2), STD_BASE_11); break;
-//    case 12: stringAppend(tmp2 + stringByteLength(tmp2), STD_BASE_12); break;
-//    case 13: stringAppend(tmp2 + stringByteLength(tmp2), STD_BASE_13); break;
-//    case 14: stringAppend(tmp2 + stringByteLength(tmp2), STD_BASE_14); break;
-//    case 15: stringAppend(tmp2 + stringByteLength(tmp2), STD_BASE_15); break;
-//    case 16: stringAppend(tmp2 + stringByteLength(tmp2), STD_BASE_16); break;
-//    default: ;
-//  }
 }
 
 
