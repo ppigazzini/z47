@@ -45,7 +45,7 @@
 
 #if defined(DMCP_BUILD)
 
-  #define TWO_FILE_PGM                 //JM Normally NOT have TWO_FILE. TWO_FILE means that QSPI is used.
+  #define TWO_FILE_PGM                 //Normally TWO_FILE. TWO_FILE means that QSPI is used.
 
   #if defined(NEW_HW) // DMCP5
     #undef TWO_FILE_PGM
@@ -61,27 +61,29 @@
 //C compiler for the build machine: ccache cc (clang 14.0.0 "Apple clang version 14.0.0 (clang-1400.0.29.202)")
 //C linker for the build machine: cc ld64 820.1
 
-//THESE ARE DMCP COMPILE OPTIONS FOR SINGLE FILE NO QSPI (NOT USED ANYMORE - NOT TESTED IN TWO YEARS)
+//THESE ARE DMCP COMPILE OPTIONS FOR SINGLE FILE NO QSPI (NOT POSSIBLE ANYMORE ON DM42 OLD HARDWARE)
   #if !defined(TWO_FILE_PGM) && !defined(NEW_HW) //---------THESE ARE THE EXCLUSIONS TO MAKE IT FIT WHILE NOT USING QSPI ON OLD HARDWARE
       #define SAVE_SPACE_DM42_2        //  4152 bytes // XEQM
       #define SAVE_SPACE_DM42_2LOAD    //   288 bytes // XEQM AUTOLOAD DEMOS
       #define SAVE_SPACE_DM42_6        //  1376 bytes // ELEC functions
-  //  #define SAVE_SPACE_DM42_8        //  1856 bytes // Register Browser
-  //  #define SAVE_SPACE_DM42_8FL      //  3280 bytes // Flag Browsers
-  //  #define SAVE_SPACE_DM42_8ASN     //  1704 bytes // Assign Browser
-  //  #define SAVE_SPACE_DM42_8F       //  1216 bytes // Font Browsers
-  //  #define SAVE_SPACE_DM42_9        //  6712 bytes // SHOW
-  //  #define SAVE_SPACE_DM42_10       //  3136 bytes // C47 programming ... (not complete removal but disables it anyway)
-  //  #define SAVE_SPACE_DM42_11       //   800 bytes // Matrix function on entry ...
-      #define SAVE_SPACE_DM42_12       //  3632 bytes // Standard extra 43S math: SLVQ, PRIME, BESSEL, ELLIPTIC, ZETA, BETA, ORTHO_POLY
-  //  #define SAVE_SPACE_DM42_12BESSEL //  5129 bytes // Without BESSEL
-  //  #define SAVE_SPACE_DM42_12ORTHO  //  0768 bytes // Without ORTHO MENU
+      #define SAVE_SPACE_DM42_8        //  1856 bytes // Register Browser
+      #define SAVE_SPACE_DM42_8FL      //  3280 bytes // Flag Browsers
+      #define SAVE_SPACE_DM42_8ASN     //  1704 bytes // Assign Browser
+      #define SAVE_SPACE_DM42_8F       //  1216 bytes // Font Browsers
+      #define SAVE_SPACE_DM42_9        //  6712 bytes // SHOW (use either old SHOW or VIEW, change in code)
+      #define SAVE_SPACE_DM42_10       //  3136 bytes // C47 programming ... (not complete removal but disables it anyway)
+      #define SAVE_SPACE_DM42_11       //   800 bytes // Matrix function on entry ...
+      #define SAVE_SPACE_DM42_12       //  3288 bytes // SLVC, SLVQ, ELLIPTIC, ZETA, BETA
+      #define SAVE_SPACE_DM42_12PRIME  // 27208 bytes // ISPRIME, NEXTPRIME, FACTORS, EULPHI, MATXFACTOR
+      #define SAVE_SPACE_DM42_12BESSEL //  5129 bytes // Without BESSEL
+      #define SAVE_SPACE_DM42_12ORTHO  //  0768 bytes // Without ORTHO MENU
       #define SAVE_SPACE_DM42_13GRF    // 17472 bytes // Solver & graphics & stat graphics
-      #define SAVE_SPACE_DM42_13GRF_JM //  7520 bytes // Adv graphics
-  //  #define SAVE_SPACE_DM42_14       //   184 bytes // Programming sample programs
+      #define SAVE_SPACE_DM42_13GRF_JM //  7520 bytes // More graphics
+      #define SAVE_SPACE_DM42_14       //   184 bytes // Load programming sample programs testPgms
       #define SAVE_SPACE_DM42_15       // 17592 bytes // Without all distributions, i.e. binomial, cauchy, chi
-      #define SAVE_SPACE_DM42_16       //  2168 bytes // Without Norml
-  //  #define SAVE_SPACE_DM42_20_TIMER //  1232 bytes // STOPW
+      #define SAVE_SPACE_DM42_16       //  2168 bytes // Without Norml distribution
+      #define SAVE_SPACE_DM42_20_TIMER //  1232 bytes // Without STOPW
+      #define SAVE_SPACE_DM42_21_HP35  //   200 bytes // Without config file activations only. Not complete removal.
   #endif // !TWO_FILE_PGM && !NEW_HW
 
 //THESE ARE DMCP COMPILE OPTIONS FOR TWO FILE QSPI
@@ -93,18 +95,19 @@
   //  #define SAVE_SPACE_DM42_8FL      //  3280 bytes // Flag Browsers
   //  #define SAVE_SPACE_DM42_8ASN     //  1704 bytes // Assign Browser
   //  #define SAVE_SPACE_DM42_8F       //  1216 bytes // Font Browsers
-      #define SAVE_SPACE_DM42_9        //  6712 bytes // SHOW
+      #define SAVE_SPACE_DM42_9        //  6712 bytes // SHOW (use either old SHOW or VIEW, change in code)
   //  #define SAVE_SPACE_DM42_10       //  3136 bytes // C47 programming ... (not complete removal but disables it anyway)
   //  #define SAVE_SPACE_DM42_11       //   800 bytes // Matrix function on entry ...
-  //  #define SAVE_SPACE_DM42_12       //  3632 bytes // Standard extra 43S math: SLVQ, PRIME, BESSEL, ELLIPTIC, ZETA, BETA, ORTHO_POLY
+  //  #define SAVE_SPACE_DM42_12       //  3288 bytes // SLVC, SLVQ, ELLIPTIC, ZETA, BETA
+  //  #define SAVE_SPACE_DM42_12PRIME  // 27208 bytes // ISPRIME, NEXTPRIME, FACTORS, EULPHI, MATXFACTOR
   //  #define SAVE_SPACE_DM42_12BESSEL //  5129 bytes // Without BESSEL
   //  #define SAVE_SPACE_DM42_12ORTHO  //  0768 bytes // Without ORTHO MENU
   //  #define SAVE_SPACE_DM42_13GRF    // 17472 bytes // Solver & graphics & stat graphics
-  //  #define SAVE_SPACE_DM42_13GRF_JM //  7520 bytes // Adv graphics
-      #define SAVE_SPACE_DM42_14       //   184 bytes // Programming sample programs
+  //  #define SAVE_SPACE_DM42_13GRF_JM //  7520 bytes // More graphics
+      #define SAVE_SPACE_DM42_14       //   184 bytes // Load programming sample programs testPgms
   //  #define SAVE_SPACE_DM42_15       // 17592 bytes // Without all distributions, i.e. binomial, cauchy, chi
-  //  #define SAVE_SPACE_DM42_16       //  2168 bytes // Without Norml
-  //  #define SAVE_SPACE_DM42_20_TIMER //  1232 bytes // STOPW
+  //  #define SAVE_SPACE_DM42_16       //  2168 bytes // Without Norml distribution
+  //  #define SAVE_SPACE_DM42_20_TIMER //  1232 bytes // Without STOPW
       #define SAVE_SPACE_DM42_21_HP35  //   200 bytes // Without config file activations only. Not complete removal.
   #endif // TWO_FILE_PGM
 #endif // DMCP_BUILD
