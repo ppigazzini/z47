@@ -25,4 +25,6 @@
   void fnIsPrime      (uint16_t unusedButMandatoryParameter);
   void fnNextPrime    (uint16_t unusedButMandatoryParameter);
   void fnPrimeFactors (uint16_t unusedButMandatoryParameter);
+  void fnEvPFacts     (uint16_t unusedButMandatoryParameter);
+  void fnEulPhi       (uint16_t unusedButMandatoryParameter);
 #endif // !PRIME_H

@@ -834,14 +834,18 @@ void real34ToDisplayString2(const real34_t *real34, char *displayString, int16_t
         bcd[digitToRound]++;
       }
 
-      // Transfert the carry
+      // Transfer the carry
       while(bcd[digitToRound] == 10) {
         bcd[digitToRound--] = 0;
-        if(displayFormat == DF_SF) numDigits--;
+        if(displayFormat == DF_SF) {
+          numDigits--;
+        }
         bcd[digitToRound]++;
       }
 
-      lastDigit = digitToRound; //JM
+      if(displayFormat == DF_SF) {
+        lastDigit = digitToRound;
+      }
 
       // Case when 9.9999 rounds to 10.0000
       if(digitToRound < firstDigit) {
@@ -2135,21 +2139,19 @@ void longIntegerRegisterToDisplayString(calcRegister_t regist, char *displayStri
   longIntegerToAllocatedString(lgInt, displayString, strLg);
 
 
-  #if defined(UNIT_2TO10_LONGINT_DISPLAY)
-    if(getSystemFlag(FLAG_2TO10) && displayFormat == DF_UN) {                            //for the 2^10 UNIT diplay, display long integers in real string, with the Ti suffic
-      real_t tmp4, tmpReal;
-      real34_t tmpReal34;
-      stringToReal(displayString, &tmpReal, &ctxtReal39);
-      int32ToReal(1024,&tmp4);
-      if(!realCompareAbsLessThan(&tmpReal, &tmp4)) {
-        //real34ToDisplayString(&tmpReal34, amNone, displayString, &numericFont, maxWidth, 34, false, false);
-        //printRealToConsole(&tmpReal,"","\n");
-        realToReal34(&tmpReal, &tmpReal34);
-        real34ToDisplayString2(&tmpReal34, displayString, 34, 100, false, false);
-        return;
-      }
+  if(getSystemFlag(FLAG_2TO10) && displayFormat == DF_UN) {    //for the 2^10 UNIT diplay, display long integers in real string, with the Ti suffic
+    real_t tmp4, tmpReal;
+    real34_t tmpReal34;
+    stringToReal(displayString, &tmpReal, &ctxtReal39);
+    int32ToReal(1024,&tmp4);
+    if(!realCompareAbsLessThan(&tmpReal, &tmp4)) {
+      //real34ToDisplayString(&tmpReal34, amNone, displayString, &numericFont, maxWidth, 34, false, false);
+      //printRealToConsole(&tmpReal,"","\n");
+      realToReal34(&tmpReal, &tmpReal34);
+      real34ToDisplayString2(&tmpReal34, displayString, 34, 100, false, false);
+      return;
     }
-  #endif //UNIT_2TO10_LONGINT_DISPLAY
+  }
 
 
   if(updateDisplayValueX) {
@@ -2653,7 +2655,6 @@ static void _complex34ToShowTmpString(const real34_t *r, const real34_t *i) {
   }
 }
 
-
 void fnShow(uint16_t unusedButMandatoryParameter) {
   uint8_t savedDisplayFormat = displayFormat, savedDisplayFormatDigits = displayFormatDigits;
   int16_t source, dest, last, d, maxWidth, offset, bytesProcessed;
@@ -2776,6 +2777,7 @@ void fnShow(uint16_t unusedButMandatoryParameter) {
 }
 
 
+
 void mimShowElement(void) {
   #if !defined(TESTSUITE_BUILD)
     uint8_t savedDisplayFormat = displayFormat, savedDisplayFormatDigits = displayFormatDigits;
@@ -2812,6 +2814,7 @@ void mimShowElement(void) {
 
 
 #if !defined(TESTSUITE_BUILD)
+#if !defined(SAVE_SPACE_DM42_9)
 
 static void RegName(void) {    //JM using standard reg name, using showRegis, not using prefixWidth
   int16_t tmp;
@@ -2903,6 +2906,8 @@ static void dispM(uint16_t regist, char * prefix) {
     }
   }
 }
+#endif //SAVE_SPACE_DM42_9
+
 #endif //TESTSUITE_BUILD
 
 
@@ -3514,7 +3519,8 @@ void fnShow_SCROLL(uint16_t fnShow_param) {                // Heavily modified b
 
   #endif // !TESTSUITE_BUILD
 #else
-      fnShow(0);
+//  fnShow(0);          // Use fnSwow, which is an early WP43 version, but it does not properly show complex numbers
+    fnView(REGISTER_X); // Re-direct to use VIEW instead. No more accuracy though
 #endif // !SAVE_SPACE_DM42_9
 }
 

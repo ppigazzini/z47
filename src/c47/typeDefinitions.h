@@ -212,21 +212,21 @@ typedef struct {
   bool_t compatibility_bool1;               //Spare Byte
   bool_t compatibility_bool2;               //Spare Byte
   bool_t compatibility_bool3;               //Spare Byte
-  bool_t PLOT_VECT;
-  bool_t PLOT_NVECT;
-  bool_t PLOT_SCALE;
   bool_t compatibility_bool4;               //Spare Byte
-  bool_t PLOT_LINE;
-  bool_t PLOT_CROSS;
-  bool_t PLOT_BOX;
-  bool_t PLOT_INTG;
-  bool_t PLOT_DIFF;
-  bool_t PLOT_RMS;
-  bool_t PLOT_SHADE;
-  bool_t PLOT_AXIS;
-  int8_t PLOT_ZMX;
-  int8_t PLOT_ZMY;
   bool_t compatibility_bool5;               //Spare Byte
+  bool_t compatibility_bool6;               //Spare Byte
+  bool_t compatibility_bool7;               //Spare Byte
+  bool_t compatibility_bool8;               //Spare Byte
+  bool_t compatibility_bool9;               //Spare Byte
+  bool_t compatibility_bool10;              //Spare Byte
+  bool_t compatibility_bool11;              //Spare Byte
+  bool_t compatibility_bool12;              //Spare Byte
+  bool_t compatibility_bool13;              //Spare Byte
+  bool_t compatibility_bool14;              //Spare Byte
+  bool_t compatibility_bool15;              //Spare Byte
+  int8_t compatibility_byte0;               //Spare Byte
+  int8_t compatibility_byte1;               //Spare Byte
+  bool_t compatibility_bool16;              //Spare Byte
   bool_t jm_LARGELI;
   bool_t constantFractions;
   uint8_t constantFractionsMode;

@@ -107,7 +107,7 @@
    * \return void
    ***********************************************/
   void fontBrowser(uint16_t unusedButMandatoryParameter) {
-  #if !defined(SAVE_SPACE_DM42_8)
+  #if !defined(SAVE_SPACE_DM42_8F)
 
     uint16_t x, y, first;
 
@@ -210,6 +210,6 @@
     else {
       //displayBugScreen(bugScreenShowFonts);
     }
-  #endif // !SAVE_SPACE_DM42_8
+  #endif // !SAVE_SPACE_DM42_8F
   }
 #endif // !TESTSUITE_BUILD

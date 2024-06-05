@@ -114,6 +114,7 @@
     //      C = Indented number of spaces on the next line.
     //"NNNNN", A, B, C
     {"REM",    0, 0, 0 },
+    {"ENDP",   0, 0, 0 },
     {STD_LEFT_SINGLE_QUOTE, 0,0,0},
     //[TEST]
     {"ENTRY?", 0, 0, +2},
@@ -157,6 +158,7 @@
 
 
 #ifndef TESTSUITE_BUILD
+#if !defined(SAVE_SPACE_DM42_10)
   static bool_t subStrWildCardCompare(const char *in1, const char *in2) { //wild card is '*', active from the second character being compared
     int16_t i = 0;
     bool_t areEqual = true;
@@ -174,6 +176,7 @@
     }
     return areEqual;
   }
+#endif //SAVE_SPACE_DM42_10
 #endif //TESTSUITE_BUILD
 
 

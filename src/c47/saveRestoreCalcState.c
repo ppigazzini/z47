@@ -53,7 +53,7 @@
 #endif
 
 #include "c47.h"
-#define configFileVersion                  10000009 // New STOCFG and new STATE file; arbitrary starting point version 10 000 001. Allowable values are 10000000 to 20000000
+#define configFileVersion                  10000010 // Changes to 2 flags; arbitrary starting point version 10 000 001. Allowable values are 10000000 to 20000000
 #define BACKUP_VERSION                     1002  // increasing number of reserved variable
 #define VersionAllowed                     10000005 // This code will not autoload versions earlier than this
 
@@ -443,6 +443,7 @@ uint16_t flushBufferCnt = 0;
     saveStateValue(&PLOT_DIFF,                      sizeof(PLOT_DIFF),                                           "PLOT_DIFF",                      "bool");
     saveStateValue(&PLOT_RMS,                       sizeof(PLOT_RMS),                                            "PLOT_RMS",                       "bool");
     saveStateValue(&PLOT_SHADE,                     sizeof(PLOT_SHADE),                                          "PLOT_SHADE",                     "bool");
+    saveStateValue(&PLOT_CPXPLOT,                   sizeof(PLOT_CPXPLOT),                                        "PLOT_CPXPLOT",                   "bool");
     saveStateValue(&PLOT_AXIS,                      sizeof(PLOT_AXIS),                                           "PLOT_AXIS",                      "bool");
     saveStateValue(&PLOT_ZMX,                       sizeof(PLOT_ZMX),                                            "PLOT_ZMX",                       "int8");
     saveStateValue(&PLOT_ZMY,                       sizeof(PLOT_ZMY),                                            "PLOT_ZMY",                       "int8");
@@ -561,6 +562,12 @@ uint16_t flushBufferCnt = 0;
 
     ramPtr = TO_C47MEMPTR(currentSubroutineLevelData);
     saveStateValue(&ramPtr,                         sizeof(ramPtr),                                              "currentSubroutineLevelData",     "c47Ptr");
+
+    ramPtr = TO_C47MEMPTR(currentLocalFlags);
+    saveStateValue(&ramPtr,                         sizeof(ramPtr),                                              "currentLocalFlags",              "c47Ptr");
+
+    ramPtr = TO_C47MEMPTR(currentLocalRegisters);
+    saveStateValue(&ramPtr,                         sizeof(ramPtr),                                              "currentLocalRegisters",          "c47Ptr");
 
     ramPtr = TO_C47MEMPTR(beginOfProgramMemory);
     saveStateValue(&ramPtr,                         sizeof(ramPtr),                                              "beginOfProgramMemory",           "c47Ptr"); // beginOfProgramMemory pointer to block
@@ -835,6 +842,12 @@ uint16_t flushBufferCnt = 0;
     restoreStateValue(&ramPtr,                         sizeof(ramPtr),                                              "currentSubroutineLevelData",     "c47Ptr");
     currentSubroutineLevelData = TO_PCMEMPTR(ramPtr);
 
+    restoreStateValue(&ramPtr,                         sizeof(ramPtr),                                              "currentLocalFlags",              "c47Ptr");
+    currentLocalFlags = TO_PCMEMPTR(ramPtr);
+
+    restoreStateValue(&ramPtr,                         sizeof(ramPtr),                                              "currentLocalRegisters",          "c47Ptr");
+    currentLocalRegisters = TO_PCMEMPTR(ramPtr);
+
     restoreStateValue(&ramPtr,                         sizeof(ramPtr),                                              "beginOfProgramMemory",           "c47Ptr"); // beginOfProgramMemory pointer to block
     beginOfProgramMemory = TO_PCMEMPTR(ramPtr);
 
@@ -971,6 +984,16 @@ uint16_t flushBufferCnt = 0;
     restoreStateValue(&savedSystemFlags0,              sizeof(savedSystemFlags0),                                   "savedSystemFlags",               "uint64");
     savedSystemFlags1 = 0;
     restoreStateValue(&savedSystemFlags1,              sizeof(savedSystemFlags1),                                   "savedSystemFlags1",              "uint64");
+    if(loadedVersion < 10000010) {
+      if(getSystemFlag(FLAG_tmp2)) {; //HP Convert was on FLAG_tmp2
+        setSystemFlag(FLAG_HPCONV);
+      }
+      else {
+        clearSystemFlag(FLAG_HPCONV);
+      }
+      clearSystemFlag(FLAG_tmp1); //restore previously used flags to 0
+      clearSystemFlag(FLAG_tmp2); //restore previously used flags to 0
+    }
     restoreStateValue(&thereIsSomethingToUndo,         sizeof(thereIsSomethingToUndo),                              "thereIsSomethingToUndo",         "bool");
     restoreStateValue(&freeProgramBytes,               sizeof(freeProgramBytes),                                    "freeProgramBytes",               "uint16");
     restoreStateValue(&firstDisplayedLocalStepNumber,  sizeof(firstDisplayedLocalStepNumber),                       "firstDisplayedLocalStepNumber",  "uint16");
@@ -1006,6 +1029,8 @@ uint16_t flushBufferCnt = 0;
     restoreStateValue(&PLOT_DIFF,                      sizeof(PLOT_DIFF),                                           "PLOT_DIFF",                      "bool");
     restoreStateValue(&PLOT_RMS,                       sizeof(PLOT_RMS),                                            "PLOT_RMS",                       "bool");
     restoreStateValue(&PLOT_SHADE,                     sizeof(PLOT_SHADE),                                          "PLOT_SHADE",                     "bool");
+    PLOT_CPXPLOT = false;
+    restoreStateValue(&PLOT_CPXPLOT,                   sizeof(PLOT_CPXPLOT),                                        "PLOT_CPXPLOT",                   "bool");
     restoreStateValue(&PLOT_AXIS,                      sizeof(PLOT_AXIS),                                           "PLOT_AXIS",                      "bool");
     restoreStateValue(&PLOT_ZMX,                       sizeof(PLOT_ZMX),                                            "PLOT_ZMX",                       "int8");
     restoreStateValue(&PLOT_ZMY,                       sizeof(PLOT_ZMY),                                            "PLOT_ZMY",                       "int8");
@@ -1688,6 +1713,7 @@ void doSave(uint16_t saveType) {
 /*21*/  sprintf(tmpString, "PLOT_AXIS\n%"                  PRIu8  "\n",     (uint8_t)PLOT_AXIS);           save(tmpString, strlen(tmpString));
 /*22*/  sprintf(tmpString, "PLOT_ZMX\n%"                   PRIu8  "\n",     PLOT_ZMX);                     save(tmpString, strlen(tmpString));
 /*23*/  sprintf(tmpString, "PLOT_ZMY\n%"                   PRIu8  "\n",     PLOT_ZMY);                     save(tmpString, strlen(tmpString));
+/*24*/  sprintf(tmpString, "PLOT_CPXPLOT\n%"               PRIu8  "\n",     (uint8_t)PLOT_CPXPLOT);        save(tmpString, strlen(tmpString));
 
   ioFileClose();
 
@@ -2351,6 +2377,16 @@ double stringToDouble(const char *str) {
         if(loadedVersion < 10000009) {
           setSystemFlag(FLAG_MONIT); //Monitoring is on per default
         }
+        if(loadedVersion < 10000010) {
+          if(getSystemFlag(FLAG_tmp2)) {; //HP Convert was on FLAG_tmp2
+            setSystemFlag(FLAG_HPCONV);
+          }
+          else {
+            clearSystemFlag(FLAG_HPCONV);
+          }
+          clearSystemFlag(FLAG_tmp1); //restore previously used flags to 0
+          clearSystemFlag(FLAG_tmp2); //restore previously used flags to 0
+        }
       }
     }
 
@@ -2839,6 +2875,7 @@ double stringToDouble(const char *str) {
           else if(strcmp(aimBuffer, "PLOT_AXIS"                   ) == 0) { PLOT_AXIS             = (bool_t)stringToUint8(tmpString) != 0; }
           else if(strcmp(aimBuffer, "PLOT_ZMX"                    ) == 0) { PLOT_ZMX              = stringToUint8(tmpString); }
           else if(strcmp(aimBuffer, "PLOT_ZMY"                    ) == 0) { PLOT_ZMY              = stringToUint8(tmpString); }
+          else if(strcmp(aimBuffer, "PLOT_CPXPLOT"                ) == 0) { PLOT_CPXPLOT          = (bool_t)stringToUint8(tmpString) != 0; }
 
 
           hourGlassIconEnabled = false;

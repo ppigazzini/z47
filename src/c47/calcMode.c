@@ -183,11 +183,12 @@
         catalog = CATALOG_CPXS;
         break;
       }
-      case MNU_Solver:
-      case MNU_Sf:
+      case MNU_Solver  :
+      case MNU_Grapher :
+      case MNU_Sf      :
       case MNU_1STDERIV:
       case MNU_2NDDERIV:
-      case MNU_MVAR: {
+      case MNU_MVAR    : {
         catalog = CATALOG_MVAR;
         break;
       }

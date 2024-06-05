@@ -266,7 +266,7 @@
      * \param[in] maxCols Maximum number of columns to allow
      * \return Width of the matrix excluding brackets
      */
-    int16_t  getRealMatrixColumnWidths      (const real34Matrix_t *matrix, int16_t prefixWidth, const font_t *font, int16_t *colWidth, int16_t *rPadWidth, int16_t *digits, uint16_t maxCols);
+    int16_t  getRealMatrixColumnWidths      (const real34Matrix_t *matrix, int16_t prefixWidth, const font_t *font, int16_t *colWidth, int16_t *rPadWidth, int16_t *digits, uint16_t maxCols, bool_t *allElementsInColAreIntegers);
 
     /**
      * Displays a complex matrix.
@@ -308,7 +308,6 @@
    */
   bool_t   initMatrixRegister             (calcRegister_t regist, uint16_t rows, uint16_t cols, bool_t complex);
 
-  #if !defined(TESTSUITE_BUILD)
     /**
      * Redimentions the matrix at given register.
      * Shrinking the matrix is in situ while enlarging the matrix is not.
@@ -324,6 +323,7 @@
      */
     bool_t   redimMatrixRegister            (calcRegister_t regist, uint16_t rows, uint16_t cols);
 
+  #if !defined(TESTSUITE_BUILD)
     /**
      * Allocates a named matrix. Redimentions if the matrix already existed.
      *

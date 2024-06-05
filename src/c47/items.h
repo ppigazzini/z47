@@ -80,7 +80,7 @@
 #define ITM_XTHROOT                   63
 #define ITM_2X                        64
 #define ITM_EXP                       65
-#define MNU_0066                      66
+#define ITM_SINT                      66
 #define ITM_10x                       67
 #define ITM_LOG2                      68
 #define ITM_LN                        69
@@ -1433,7 +1433,7 @@
 #define MNU_TAM                     1385
 #define MNU_TAMCMP                  1386
 #define MNU_TAMSTORCL               1387
-#define MNU_1388                    1388
+#define MNU_Grapher                 1388
 #define MNU_VAR                     1389
 #define MNU_TAMFLAG                 1390
 #define MNU_TAMSHUFFLE              1391
@@ -1825,17 +1825,17 @@
 #define ITM_RCL_PMT                 1773
 #define ITM_RCL_PV                  1774
 #define ITM_atan2                   1775
-#define ITM_TIMER_ADD               1776
+#define ITM_1776                    1776
 #define ITM_TIMER_0_1S              1777
 #define ITM_TIMER_RESET             1778
 #define ITM_TIMER_RCL               1779
 #define ITM_DELBKUP                 1780
-#define ITM_1781                    1781
-#define ITM_1782                    1782
-#define ITM_1783                    1783
-#define ITM_1784                    1784
-#define ITM_1785                    1785
-#define ITM_1786                    1786
+#define ITM_EFF                     1781
+#define ITM_TIMER_SIGMA_T           1782
+#define ITM_TIMER_SIGMA_L           1783
+#define ITM_TIMER_R_T               1784
+#define ITM_TIMER_R_L               1785
+#define ITM_TIMER_R_S               1786
 #define ITM_nBINS                   1787
 #define ITM_LOBIN                   1788
 #define ITM_HIBIN                   1789
@@ -2308,9 +2308,9 @@
 // 64 more system flags
 #define SFL_MONIT                   2251
 #define SFL_FRCYC                   2252
-#define SFL_TVM_I_KNOWN             2253
-#define SFL_TVM_I_CHANGES           2254
-#define SFL_HPCONV                  2255
+#define SFL_HPCONV                  2253
+#define SFL_2250                    2254
+#define SFL_2251                    2255
 #define SFL_2252                    2256
 #define SFL_2253                    2257
 #define SFL_2254                    2258
@@ -2444,8 +2444,11 @@
 #define MNU_AMORT                   2382
 
 #define ITM_x_SIGN                  2383
+#define ITM_CPXPLOT                 2384
 
-#define LAST_ITEM                   2384
+#define ITM_PFACTORSMULT            2385
+#define ITM_EULPHI                  2386
+#define LAST_ITEM                   2387
 
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL

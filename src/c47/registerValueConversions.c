@@ -100,6 +100,12 @@ void convertLongIntegerToReal(longInteger_t source, real_t *destination, realCon
 }
 
 
+void convertLongIntegerToReal34(longInteger_t source, real34_t *destination) {
+  longIntegerToAllocatedString(source, tmpString, TMP_STR_LENGTH);
+  stringToReal34(tmpString, destination);
+}
+
+
 
 void convertLongIntegerToShortIntegerRegister(longInteger_t lgInt, uint32_t base, calcRegister_t destination) {
   uint64_t u64;
@@ -792,6 +798,14 @@ void badTypeError(calcRegister_t reg) {
 #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
 }
 
+void badDomainError(calcRegister_t reg) {
+  displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_T);
+#if (EXTRA_INFO_ON_CALC_ERROR == 1)
+  sprintf(errorMessage, "The input value is outside of the domain.");
+  moreInfoOnError("In function badDomainError:", errorMessage, NULL, NULL);
+#endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+}
+
 bool_t getRegisterAsComplex(calcRegister_t reg, real_t *r, real_t *i) {
   switch(getRegisterDataType(reg)) {
     case dtLongInteger:
@@ -968,9 +982,15 @@ bool_t getRegisterAsLongInt(calcRegister_t reg, longInteger_t val) {
 
     case dtComplex34:
     case dtReal34:
-      if(getRegisterAsReal(reg, &rval) && !realIsInfinite(&rval) && realIsAnInteger(&rval)) {
-        convertRealToLongInteger(&rval, val, DEC_ROUND_DOWN);
-        break;
+      if(getRegisterAsReal(reg, &rval) && !realIsInfinite(&rval)) {
+        if(realIsAnInteger(&rval)) {
+          convertRealToLongInteger(&rval, val, DEC_ROUND_DOWN);
+          break;
+        }
+        else {
+          badDomainError(reg);
+          return false;
+        }
       }
       /* fall through */
 

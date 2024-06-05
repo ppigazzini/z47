@@ -126,6 +126,7 @@ void fnRCL          (int16_t inp);
 
 #define JC_ITM_TST             27    //dr
 
+#define JC_CPXPLOT             38
 #define JC_VECT                39    // graph setup
 #define JC_NVECT               40    // graph setup
 #define JC_SCALE               41    // graph setup

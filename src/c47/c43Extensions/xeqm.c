@@ -516,7 +516,10 @@ TO_QSPI const function_t indexOfFunctions[] = {
               {ITM_SIGMAn,                    "SUMn"},
               {ITM_iSIGMAn,                   "iSUMn"},
               {ITM_PIn,                       "PRODn"},
-              {ITM_iPIn,                      "iPRODn"}
+              {ITM_iPIn,                      "iPRODn"},
+
+              {ITM_LASTT,                     "LASTT"},
+              {ITM_LASTX,                     "LASTX"}
 
 
 
@@ -1218,7 +1221,7 @@ void fnXEQMENU(uint16_t XEQM_no) {
 
 
 void XEQMENU_loadAllfromdisk(void) {
-  #if !defined(SAVE_SPACE_DM42_2)
+  #if !defined(SAVE_SPACE_DM42_2LOAD)
     #if !defined(TESTSUITE_BUILD)
       //uint16_t Delay;
       clearScreenOld(false, true, true);
@@ -1237,7 +1240,7 @@ void XEQMENU_loadAllfromdisk(void) {
         ix++;
       }
     #endif // !TESTSUITE_BUILD
-  #endif // !SAVE_SPACE_DM42_2
+  #endif // !SAVE_SPACE_DM42_2LOAD
 }
 
 
@@ -1372,7 +1375,7 @@ void fnXSWAP (uint16_t unusedButMandatoryParameter) {
         xcopy(REGISTER_STRING_DATA(REGISTER_Y), tmp, len);
         addition[type_x][getRegisterDataType(REGISTER_Y)]();                        //Convert X (number) to string in X
 
-        #if defined (DISALLOW_ZERO_STRING)
+        #if defined(DISALLOW_ZERO_STRING)
           if(!(getRegisterDataType(REGISTER_X) == dtString && REGISTER_STRING_DATA(REGISTER_X)[0]!=0)) { //never allow a zero string in a register
             clearRegister(REGISTER_X);                                                //create 0. instead of zero string
           }
