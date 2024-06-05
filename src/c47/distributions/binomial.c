@@ -37,7 +37,7 @@
 #include "c47.h"
 
 
-#if defined(SAVE_SPACE_DM42_15)
+#if defined(SAVE_SPACE_DM42_17)
   void fnBinomialP           (uint16_t unusedButMandatoryParameter){}
   void fnBinomialL           (uint16_t unusedButMandatoryParameter){}
   void fnBinomialR           (uint16_t unusedButMandatoryParameter){}
@@ -306,4 +306,4 @@
     realCopy(realCompareLessEqual(&p, n) ? &p : n, res);
   }
 
-#endif //SAVE_SPACE_DM42_15
+#endif //SAVE_SPACE_DM42_17

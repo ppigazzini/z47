@@ -2097,6 +2097,7 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
 
 bool_t savedspace(int16_t itemNr) {  //strike out all SAVED_SPACE items
   switch (itemNr) {
+
     #ifdef SAVE_SPACE_DM42_12ORTHO
       case ITM_HN     :
       case ITM_Lm     :
@@ -2106,11 +2107,31 @@ bool_t savedspace(int16_t itemNr) {  //strike out all SAVED_SPACE items
       case ITM_Un     :
       case ITM_HNP    :
     #endif //SAVE_SPACE_DM42_12ORTHO
+    
     #ifdef SAVE_SPACE_DM42_20_TIMER
       case ITM_TIMER  :
     #endif //SAVE_SPACE_DM42_20_TIMER
+    
+    #ifdef SAVE_SPACE_DM42_12BESSEL
+      case ITM_JYX    :
+      case ITM_YYX    :
+    #endif //SAVE_SPACE_DM42_12BESSEL
+
+    #ifdef SAVE_SPACE_DM42_16
+      case ITM_NORMLP :      case ITM_NORML  :      case ITM_NORMLU :      case ITM_NORMLM1:
+      case ITM_LGNRMP :      case ITM_LGNRM  :      case ITM_LGNRMU :      case ITM_LGNRMM1:
+    #endif //SAVE_SPACE_DM42_16
+
+    #ifdef SAVE_SPACE_DM42_17
+      case ITM_BINOMP:     case ITM_BINOM:      case ITM_BINOMU:     case ITM_BINOMM1:
+      case ITM_NBINP :     case ITM_NBIN :      case ITM_NBINU :     case ITM_NBINM1 : 
+      case ITM_HYPERP:     case ITM_HYPER:      case ITM_HYPERU:     case ITM_HYPERM1:
+      case ITM_POISSP:     case ITM_POISS:      case ITM_POISSU:     case ITM_POISSM1:
+      case ITM_GEOMP :     case ITM_GEOM :      case ITM_GEOMU :     case ITM_GEOMM1 :
+    #endif //SAVE_SPACE_DM42_17
+
       case 9999       : return true; break;
-    default: return false; break;
+    default           : return false; break;
   }
 }
 
