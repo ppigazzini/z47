@@ -1562,7 +1562,8 @@ void fnToTime(uint16_t unusedButMandatoryParameter) {
 
 
 // *******************************************************************
-int32_t getD(const real34_t *val) {
+//-int32_t getD(const real34_t *val) {
+int32_t getSmallestDenom(const real_t *val) {
   /*
   ** Adapted from:
   ** https://www.ics.uci.edu/~eppstein/numth/frap.c
@@ -1584,7 +1585,8 @@ int32_t getD(const real34_t *val) {
   */
 
   real34_t xx, temp;
-  real34Copy(val, &xx);
+//-  real34Copy(val, &xx);
+  realToReal34(val, &xx);
 
   int32_t m[2][2];
   int32_t maxden = denMax; /*999*/
@@ -1687,95 +1689,86 @@ void changeToSub(char *str) {
 
 
 //without mixedNumber flag, improper fractions are allowed: In WP43 misnomer: FLAG_PROPFR = MixedNumber = a b/c
-real34_t result_fp1;
-bool_t checkForAndChange_(char *displayString, const real34_t *value34, const real_t *constant, const real34_t *tolerance, const char *constantStr,  bool_t frontSpace) {
+bool_t checkForAndChange_(char *displayString, const real34_t *value34, const real_t *constant, const real_t *tolerance, const char *constantStr,  bool_t frontSpace) {
     //printf(">>> constantFractionsMode %i\n",constantFractionsMode);
     bool_t mixedNumber = getSystemFlag(FLAG_PROPFR);
     //printf(">>>## mixedNumber %u\n",mixedNumber);
-    real34_t multConstant34, constant_34;
-    real34_t val, val1, result, result_ip, result_fp;
-    real_t constDiv;
-    char denomStr[20], wholePart[30], resstr[100], tmpstr[50];
+    real_t smallestDenomR, newConstant, tempResult, tempresult_ip, tempresult_fp, valueRAbs, valueR, multConstant, tmpr;
+    real34ToReal(value34,&valueR);
+    realCopyAbs(&valueR,&valueRAbs);
+
+    char denomStr[20], wholePart[30], resultingIntStr[100], tmpstr[50];
     denomStr[0] = 0;
     wholePart[0] = 0;
-    resstr[0] = 0;
+    resultingIntStr[0] = 0;
     int32_t resultingInteger = 0;
-    real34CopyAbs(value34, &val);
-    real34Copy(value34, &val1);               //initialize val1 as a fallback value
-    real_t newConstant, tempResult, tempresult_ip, tempresult_fp;
-    real_t valr;
-    real34ToReal(&val, &valr);
-
     char sign[2];
+
     if(real34IsPositive(value34)) {
       strcpy(sign, "+");
     }
     else {
       strcpy(sign, "-");
     }
+//                                printRealToConsole(constant, "Constant=", "\n");
 
-    realToReal34(constant,&constant_34);
-    real34Divide(&val,&constant_34,&multConstant34);
-
-    real34_t tmpr34;
-    uInt32ToReal34(2097151,&tmpr34);
-    //printReal34ToConsole(&multConstant34, "multConstant34=", " > ");
-    //printReal34ToConsole(&tmpr34, "tmpr34=", " \n");
-    if(real34CompareAbsGreaterThan(&multConstant34, &tmpr34)) {
+    realDivide(&valueRAbs,constant,&multConstant,&ctxtReal39);
+    uInt32ToReal(0x1FFFFFFF,&tmpr);
+    if(realCompareGreaterThan(&multConstant, &tmpr)) {
+//                                printf("Returning: Multiple of constant is too large\n");
+//                                printRealToConsole(&multConstant, "multiple of the constant=", " > ");
+//                                printRealToConsole(&tmpr, "tmpr=", " \n");
       return false;
     }
 
     //See if the multiplier to the constant has a whole denominator
-    //printReal34ToConsole(&multConstant34,"Check n/d :","\n");
-    int32_t smallestDenom = getD(&multConstant34);
+    int32_t smallestDenom = getSmallestDenom(&multConstant);
     if(smallestDenom > 1) {
       sprintf(denomStr,"/%i",(int)smallestDenom);
     }
-    //printf(">>># %i\n", smallestDenom);
 
     //Create a new constant comprising the constant divided by the whole denominator
-    int32ToReal(smallestDenom, &constDiv);
-    realDivide(constant, &constDiv, &newConstant, &ctxtReal39);
+    int32ToReal(smallestDenom, &smallestDenomR);
+    realDivide(constant, &smallestDenomR, &newConstant, &ctxtReal39);
 
     //See if there is a whole multiple of the new constant
-    realDivide(&valr, &newConstant, &tempResult, &ctxtReal39);
+    realDivide(&valueRAbs, &newConstant, &tempResult, &ctxtReal39);
     realToIntegralValue(&tempResult, &tempresult_ip, DEC_ROUND_HALF_UP, &ctxtReal39);
     realSubtract(&tempResult, &tempresult_ip, &tempresult_fp, &ctxtReal39);
+    resultingInteger = abs(realToInt32C47(&tempresult_ip));
 
-    realToReal34(&tempResult, &result);
-    realToReal34(&tempresult_fp, &result_fp);
-    realToReal34(&tempresult_ip, &result_ip);
+//                                printRealToConsole(&tempresult_ip,"IP=","\n");
+//                                printf(">>>Resultinginteger:%i>1? SmallestDenom:%i\n", resultingInteger, smallestDenom);
+//                                printRealToConsole(&tempresult_fp,"fp:","--\n");
+//                                printRealToConsole(tolerance,"tol:","--\n");
+//                                printf("realCompareAbsLessThan(&tempresult_fp,tolerance):%i\n",realCompareAbsLessThan(&tempresult_fp,tolerance));
+//                                printf(">>> %i ", resultingInteger);
 
-    //printReal34ToConsole(&result_fp,"fp:","--\n");
-
-    resultingInteger = abs(real34ToInt32(&result_ip));
-    //printf(">>> %i ", resultingInteger);
-    //if /*&& resultingInteger > (int32_t)denMax 999*/
-
-    uInt32ToReal34(2147483647,&tmpr34); //3355443
-    //printReal34ToConsole(&result_ip, "result_ip=", " > ");
-    //printReal34ToConsole(&tmpr34, "tmpr34=", " \n");
-    if(real34CompareAbsGreaterThan(&result_ip, &tmpr34)) {
-    //printf("<<< break1 >>>\n");
+    uInt32ToReal(0x1FFFFFFF,&tmpr);
+//                                printRealToConsole(&tempresult_ip, "tempresult_ip=", " > ");
+//                                printRealToConsole(&tmpr, "tmpr=", " \n");
+    if(realCompareAbsGreaterThan(&tempresult_ip, &tmpr)) {
+//                                printf("Returning: Multiple of new constant is too large\n");
+//                                printf("<<< break1 >>>\n");
       return false;
     }
 
-    //printf("QQ:%s§\n",displayString);
-    //char teststr[1000];
-    //char teststr1[1000];
-    //sprintf(teststr,">>>@@@1 |%s|%s|%s| %i %i\n", resstr, constantStr, denomStr, (int16_t)stringByteLength(resstr)-1, resstr[stringByteLength(resstr)-1]);
-    //stringToASCII(teststr,teststr1);
-    //printf("%s\n",teststr1);
+//                               printf("QQ:%s§\n",displayString);
+//                               char teststr[1000];
+//                               char teststr1[1000];
+//                               sprintf(teststr,">>>@@@1 |%s|%s|%s| %i %i\n", resultingIntStr, constantStr, denomStr, (int16_t)stringByteLength(resultingIntStr)-1, resultingIntStr[stringByteLength(resultingIntStr)-1]);
+//                               stringToASCII(teststr,teststr1);
+//                               printf("%s\n",teststr1);
 
     char mixedNumberSep[3];                     //change mixedNumberSep to sign to get the old way of 1+1/3 instead of 1 1/3
     mixedNumberSep[0] = STD_SPACE_4_PER_EM[0];
     mixedNumberSep[1] = STD_SPACE_4_PER_EM[1];
     mixedNumberSep[2] = 0;
 
-    if(resultingInteger > 1 && real34CompareAbsLessThan(&result_fp,tolerance)) {
+//                                printf(">>>Resultinginteger:%i>=1? realCompareAbsLessThan(&tempresult_fp,tolerance):%i\n", resultingInteger, realCompareAbsLessThan(&tempresult_fp,tolerance));
+
+    if(resultingInteger >= 1 && realCompareAbsLessThan(&tempresult_fp,tolerance)) {
       //a whole multiple of the constant exists
-      real34Divide(&val, &result_ip, &val1);
-      //printf(">>>Resultinginteger:%i SmallestDenom:%i\n", resultingInteger, smallestDenom);
       if(resultingInteger > smallestDenom  &&  smallestDenom > 1  && resultingInteger != 0 &&  mixedNumber) {
         int32_t tmp = resultingInteger / smallestDenom;
         resultingInteger = resultingInteger - (tmp * smallestDenom);
@@ -1792,53 +1785,74 @@ bool_t checkForAndChange_(char *displayString, const real34_t *value34, const re
         }
       }
       if(constantStr[0] == 0) {
+//                                printf("constantStr: %s %i\n",constantStr,constantStr[0]);
         sprintf(tmpstr,"%i", (int)resultingInteger);
-        changeToSup(tmpstr);
-        sprintf(resstr, "%s%s", wholePart, tmpstr);
+        if(smallestDenom > 1) {
+//                                printf("Convert to SUP:%i\n",(int)resultingInteger);
+          changeToSup(tmpstr);
+        }
+        sprintf(resultingIntStr, "%s%s", wholePart, tmpstr);
       }
       else {
         if(resultingInteger == 1) {
-          sprintf(resstr,"%s", wholePart);
+          sprintf(resultingIntStr,"%s", wholePart);
         }
         else {
           sprintf(tmpstr,"%i%s",(int)resultingInteger,PRODUCT_SIGN);
           //changeToSup(tmpstr);
-          sprintf(resstr, "%s%s", wholePart, tmpstr);
+          sprintf(resultingIntStr, "%s%s", wholePart, tmpstr);
         }
       }
-      //printf(">>> %s\n", resstr);
+//                                printf(">>>XX1 %s\n", resultingIntStr);
+    } else {
+//      sprintf(resultingIntStr,"%i@@@", (int)resultingInteger);
+      sprintf(resultingIntStr,"%i", (int)resultingInteger);
+//  printf(">>>XX2 %s\n", resultingIntStr);
+//  this line is added otherwise 1.0+1E-28 results in ~ only.menuItem
+//  In fact there are several problems 
+//  define the states and try again
+
+
+// 1. maybe return if lower than some minimum
+//   2. Why does it do .1 but not .01 - where is the limit
+   
     }
 
-    //sprintf(teststr,">>>@@@2 |%s|%s|%s| %i %i\n", resstr, constantStr, denomStr, (int16_t)stringByteLength(resstr)-1, resstr[stringByteLength(resstr)-1]);
-    //stringToASCII(teststr,teststr1);
-    //printf("%s\n",teststr1);
+//                                sprintf(teststr,">>>@@@2 |%s|%s|%s| %i %i\n", resultingIntStr, constantStr, denomStr, (int16_t)stringByteLength(resultingIntStr)-1, resultingIntStr[stringByteLength(resultingIntStr)-1]);
+//                                stringToASCII(teststr,teststr1);
+//                                printf("%s\n",teststr1);
 
-    changeToSub(denomStr);
-    if((resstr[stringByteLength(resstr)-1]==' ' || resstr[max(0,stringByteLength(resstr)-1)]==0) &&  denomStr[0]=='/' && constantStr[0]==0) {
+    if(smallestDenom > 1) {
+      changeToSub(denomStr);
+//                                printf("Convert to SUB:%i : ",(int)smallestDenom);
+//                                printf("%s\n",denomStr);
+    }
+    if((resultingIntStr[stringByteLength(resultingIntStr)-1]==' ' || resultingIntStr[max(0,stringByteLength(resultingIntStr)-1)]==0) &&  denomStr[0]=='/' && constantStr[0]==0) {
       sprintf(tmpstr, STD_SUP_1 "%s", denomStr);
       strcpy(denomStr, tmpstr);
     }
-    //printf(">>>@@@ §%s§%s§%s§\n", resstr, constantStr, denomStr);
+
+//                                printf(">>>@@@3 §%s§%s§%s§\n", resultingIntStr, constantStr, denomStr);
 
     displayString[0]=0;
 
-    if(real34CompareAbsLessThan(&result_fp,tolerance)) {
-      if(!real34IsZero(&result_fp)) {
+    if(realCompareAbsLessThan(&tempresult_fp,tolerance)) {
+      if(!realIsZero(&tempresult_fp)) {
         strcat(displayString, STD_ALMOST_EQUAL);
       }
 
       if(sign[0]=='+') {
         if(frontSpace) {
           strcat(displayString, STD_SPACE_4_PER_EM);  //changed, not allowing for a space equal length to "-"
-          if(resstr[0] !=0 ) {
-            strcat(displayString, resstr);
+          if(resultingIntStr[0] !=0 ) {
+            strcat(displayString, resultingIntStr);
           }
           strcat(displayString,constantStr);
           strcat(displayString,denomStr);
         }
         else {
-          if(resstr[0] != 0) {
-            strcat(displayString, resstr);
+          if(resultingIntStr[0] != 0) {
+            strcat(displayString, resultingIntStr);
           }
           strcat(displayString,constantStr);
           strcat(displayString,denomStr);
@@ -1846,8 +1860,8 @@ bool_t checkForAndChange_(char *displayString, const real34_t *value34, const re
       }
       else {
         strcat(displayString, STD_SPACE_4_PER_EM "-");
-        if(resstr[0] !=0 ) {
-          strcat(displayString, resstr);
+        if(resultingIntStr[0] !=0 ) {
+          strcat(displayString, resultingIntStr);
         }
         strcat(displayString,constantStr);
         strcat(displayString,denomStr);

@@ -416,32 +416,18 @@ void real34ToDisplayString2(const real34_t *real34, char *displayString, int16_t
   //Fractions are switched off id MULTPI is used
   //Checking for root(3), pi, e, root(2), phi, root(5), in this sequence
 
-  real34_t tol34;
-  real_t value, c_temp;
-  uint16_t constNr;
-
-  realToReal34(const_1e_24, &tol34);   //Tolerance declaration 1x10^-32
+  real_t value;
 
   //printf(">>>## flag_proper %u\n",getSystemFlag(FLAG_PROPFR));
   if(constantFractions && constantFractionsOn && !getSystemFlag(FLAG_FRACT) && constantFractionsMode != CF_OFF && !real34CompareAbsLessThan(real34,const34_1e_6) && !real34IsAnInteger(real34)) {
-
-    if(checkForAndChange_(displayString, real34, const_1, &tol34, "",frontSpace))                                                    return_fr;
-
-    if(checkForAndChange_(displayString, real34, const_rt3, &tol34, STD_SQUARE_ROOT STD_SUB_3, frontSpace))                          return_fr;
-    if(checkForAndChange_(displayString, real34, const_pi,  &tol34, STD_pi,                    frontSpace))                          return_fr;
-
-    fnConstantR( 8  /*const_eE     */,  &constNr, &c_temp);
-    if(checkForAndChange_(displayString, real34, &c_temp, &tol34,  STD_EulerE,                 frontSpace))                          return_fr;
-
-    realMultiply(const_root2on2, const_2, &c_temp, &ctxtReal39);
-    if(checkForAndChange_(displayString, real34, &c_temp, &tol34,  STD_SQUARE_ROOT STD_SUB_2,  frontSpace))                          return_fr;
-
-    fnConstantR( 73 /*const_PHI    */,  &constNr, &c_temp);
-    if(checkForAndChange_(displayString, real34, &c_temp, &tol34,  indexOfItems[FIRST_CONSTANT+constNr].itemCatalogName,frontSpace)) return_fr;
-
-    if(checkForAndChange_(displayString, real34, const_rt5, &tol34, STD_SQUARE_ROOT STD_SUB_5, frontSpace))                          return_fr;
-    if(checkForAndChange_(displayString, real34, const_rt7, &tol34, STD_SQUARE_ROOT STD_SUB_7, frontSpace))                          return_fr;
-
+    if(checkForAndChange_(displayString, real34, const_1,    const_1e_24, "",frontSpace))                          return_fr;
+    if(checkForAndChange_(displayString, real34, const_rt3,  const_1e_24, STD_SQUARE_ROOT STD_SUB_3, frontSpace))  return_fr;
+    if(checkForAndChange_(displayString, real34, const_pi,   const_1e_24, STD_pi,                    frontSpace))  return_fr;
+    if(checkForAndChange_(displayString, real34, const_eE,   const_1e_24, STD_EulerE,                frontSpace))  return_fr;
+    if(checkForAndChange_(displayString, real34, const_root2,const_1e_24, STD_SQUARE_ROOT STD_SUB_2, frontSpace))  return_fr;
+    if(checkForAndChange_(displayString, real34, const_PHI,  const_1e_24, STD_phi,                   frontSpace))  return_fr;
+    if(checkForAndChange_(displayString, real34, const_rt5,  const_1e_24, STD_SQUARE_ROOT STD_SUB_5, frontSpace))  return_fr;
+    if(checkForAndChange_(displayString, real34, const_rt7,  const_1e_24, STD_SQUARE_ROOT STD_SUB_7, frontSpace))  return_fr;
   }
   constantFractionsMode = CF_NORMAL;
 
