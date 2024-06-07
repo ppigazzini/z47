@@ -1562,7 +1562,6 @@ void fnToTime(uint16_t unusedButMandatoryParameter) {
 
 
 // *******************************************************************
-//-int32_t getD(const real34_t *val) {
 int32_t getSmallestDenom(const real_t *val) {
   /*
   ** Adapted from:
@@ -1589,7 +1588,7 @@ int32_t getSmallestDenom(const real_t *val) {
   realToReal34(val, &xx);
 
   int32_t m[2][2];
-  int32_t maxden = denMax; /*999*/
+  int32_t maxden = denMax;
   int32_t ai;
 
   /* initialize matrix */
@@ -1690,7 +1689,6 @@ void changeToSub(char *str) {
 
 //without mixedNumber flag, improper fractions are allowed: In WP43 misnomer: FLAG_PROPFR = MixedNumber = a b/c
 bool_t checkForAndChange_(char *displayString, const real34_t *value34, const real_t *constant, const real_t *tolerance, const char *constantStr,  bool_t frontSpace) {
-    //printf(">>> constantFractionsMode %i\n",constantFractionsMode);
     bool_t mixedNumber = getSystemFlag(FLAG_PROPFR);
     //printf(">>>## mixedNumber %u\n",mixedNumber);
     real_t smallestDenomR, newConstant, tempResult, tempresult_ip, tempresult_fp, valueRAbs, valueR, multConstant, tmpr;
