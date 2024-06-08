@@ -36,6 +36,10 @@
 
 #include "c47.h"
 
+#define isComplex true
+#define isReal    false
+void real34ToDisplayString2(const real34_t *real34, char *displayString, int16_t displayHasNDigits, bool_t limitExponent, bool_t noFix, bool_t frontSpace, bool_t complex);
+
 static void fnDisplayFormatReset(uint16_t displayFormatN) {
   displayFormatDigits = displayFormatN > DSP_MAX ? DSP_MAX : displayFormatN;
   clearSystemFlag(FLAG_FRACT);
@@ -268,9 +272,9 @@ void real34ToDisplayString(const real34_t *real34, uint32_t tag, char *displaySt
   if(displayFormat == DF_SF) {        //This portion limits the SIGFIG digits to really n digits, even in the case of SIG3 12345000000000 to be displayed as 1.2340 x 10^5
       uint8_t digits = checkHP ? 10 : displayHasNDigits;
       if(tag == amNone) {
-        real34ToDisplayString2(real34, displayString, digits, limitExponent, false, frontSpace);
+        real34ToDisplayString2(real34, displayString, digits, limitExponent, false, frontSpace, isReal);
         if(stringWidth(displayString, font, true, true) > maxWidth) {
-          real34ToDisplayString2(real34, displayString, digits, limitExponent, true, frontSpace);
+          real34ToDisplayString2(real34, displayString, digits, limitExponent, true, frontSpace, isReal);
         }
       }
       else {
@@ -280,7 +284,7 @@ void real34ToDisplayString(const real34_t *real34, uint32_t tag, char *displaySt
   }
   else { // not DF_SF
     if(tag == amNone) {
-      real34ToDisplayString2(real34, displayString, displayHasNDigits, limitExponent, false, frontSpace);
+      real34ToDisplayString2(real34, displayString, displayHasNDigits, limitExponent, false, frontSpace, isReal);
     }
     else {
       angle34ToDisplayString2(real34, tag, displayString, displayHasNDigits, limitExponent, frontSpace);
@@ -305,7 +309,7 @@ void real34ToDisplayString(const real34_t *real34, uint32_t tag, char *displaySt
     }
 
       if(tag == amNone) {
-        real34ToDisplayString2(real34, displayString, displayHasNDigits, limitExponent, false, frontSpace);
+        real34ToDisplayString2(real34, displayString, displayHasNDigits, limitExponent, false, frontSpace, isReal);
       }
       else {
         angle34ToDisplayString2(real34, tag, displayString, displayHasNDigits, limitExponent, frontSpace);
@@ -317,7 +321,7 @@ void real34ToDisplayString(const real34_t *real34, uint32_t tag, char *displaySt
 }
 
 
-#define return_fr do { constantFractionsMode = CF_NORMAL; return; } while(0)
+#define return_fr do { IrFractionsCurrentStatus = CF_NORMAL; return; } while(0)
 /********************************************//**
  * \brief Formats a real
  *
@@ -325,7 +329,7 @@ void real34ToDisplayString(const real34_t *real34, uint32_t tag, char *displaySt
  * \param[in]  x const real34_t*  Value to format
  * \return void
  ***********************************************/
-void real34ToDisplayString2(const real34_t *real34, char *displayString, int16_t displayHasNDigits, bool_t limitExponent, bool_t noFix, bool_t frontSpace) {
+void real34ToDisplayString2(const real34_t *real34, char *displayString, int16_t displayHasNDigits, bool_t limitExponent, bool_t noFix, bool_t frontSpace, bool_t complex) {
   #undef MAX_DIGITS
   #define MAX_DIGITS 37 // 34 + 1 before (used when rounding from 9.999 to 10.000) + 2 after (used for rounding and ENG display mode)
 
@@ -409,29 +413,25 @@ void real34ToDisplayString2(const real34_t *real34, char *displayString, int16_t
   }
 
 
-// JM^^ multiples and fractions of constants
-
-  //printf(">>---\n");
-  //Not checked for reals smaller than 1x10^-6 and integers
-  //Fractions are switched off id MULTPI is used
-  //Checking for root(3), pi, e, root(2), phi, root(5), in this sequence
-
+  // IRFRAC multiples and fractions of constants
+  //   Not checked for reals smaller than 1x10^-6 and integers
+  //   Fractions are switched off id MULTPI is used
+  //   Checking for root(3), pi, e, root(2), phi, root(5), root(7) in this sequence
   real_t value;
 
   //printf(">>>## flag_proper %u\n",getSystemFlag(FLAG_PROPFR));
-  if(constantFractions && constantFractionsOn && !getSystemFlag(FLAG_FRACT) && constantFractionsMode != CF_OFF && !real34CompareAbsLessThan(real34,const34_1e_6) && !real34IsAnInteger(real34)) {
-    if(checkForAndChange_(displayString, real34, const_1,    const_1e_24, "",frontSpace))                          return_fr;
-    if(checkForAndChange_(displayString, real34, const_rt3,  const_1e_24, STD_SQUARE_ROOT STD_SUB_3, frontSpace))  return_fr;
-    if(checkForAndChange_(displayString, real34, const_pi,   const_1e_24, STD_pi,                    frontSpace))  return_fr;
-    if(checkForAndChange_(displayString, real34, const_eE,   const_1e_24, STD_EulerE,                frontSpace))  return_fr;
-    if(checkForAndChange_(displayString, real34, const_root2,const_1e_24, STD_SQUARE_ROOT STD_SUB_2, frontSpace))  return_fr;
-    if(checkForAndChange_(displayString, real34, const_PHI,  const_1e_24, STD_phi,                   frontSpace))  return_fr;
-    if(checkForAndChange_(displayString, real34, const_rt5,  const_1e_24, STD_SQUARE_ROOT STD_SUB_5, frontSpace))  return_fr;
-    if(checkForAndChange_(displayString, real34, const_rt7,  const_1e_24, STD_SQUARE_ROOT STD_SUB_7, frontSpace))  return_fr;
+  if(constantFractions && constantFractionsOn && !getSystemFlag(FLAG_FRACT) && IrFractionsCurrentStatus != CF_OFF && !real34CompareAbsLessThan(real34,const34_1e_6) && !real34IsAnInteger(real34)) {
+    if(checkForAndChange(displayString, real34, const_1,    const_1e_24, "",                        frontSpace, complex)) return_fr;
+    if(checkForAndChange(displayString, real34, const_rt3,  const_1e_24, STD_SQUARE_ROOT STD_SUB_3, frontSpace, complex)) return_fr;
+    if(checkForAndChange(displayString, real34, const_pi,   const_1e_24, STD_pi,                    frontSpace, complex)) return_fr;
+    if(checkForAndChange(displayString, real34, const_eE,   const_1e_24, STD_EulerE,                frontSpace, complex)) return_fr;
+    if(checkForAndChange(displayString, real34, const_root2,const_1e_24, STD_SQUARE_ROOT STD_SUB_2, frontSpace, complex)) return_fr;
+    if(checkForAndChange(displayString, real34, const_PHI,  const_1e_24, STD_phi,                   frontSpace, complex)) return_fr;
+    if(checkForAndChange(displayString, real34, const_rt5,  const_1e_24, STD_SQUARE_ROOT STD_SUB_5, frontSpace, complex)) return_fr;
+    if(checkForAndChange(displayString, real34, const_rt7,  const_1e_24, STD_SQUARE_ROOT STD_SUB_7, frontSpace, complex)) return_fr;
   }
-  constantFractionsMode = CF_NORMAL;
+  IrFractionsCurrentStatus = CF_NORMAL;
 
-// JM^^ ***********************
 
   //sigfig
   //printReal34ToConsole(real34," ------- 001 >>>>>"," <<<<<\n");   //JM
@@ -1330,7 +1330,7 @@ void complex34ToDisplayString2(const complex34_t *complex34, char *displayString
     real34Copy(VARIABLE_IMAG34_DATA(complex34), &imag34);
   }
 
-  real34ToDisplayString2(&real34, displayString, displayHasNDigits, limitExponent, false, frontSpace);
+  real34ToDisplayString2(&real34, displayString, displayHasNDigits, limitExponent, false, frontSpace, isComplex);
 
   if(updateDisplayValueX) {                //This is used by ROUND only and it does not seem to work.
     if(tagPolar) {
@@ -1341,7 +1341,7 @@ void complex34ToDisplayString2(const complex34_t *complex34, char *displayString
     }
   }
 
-  real34ToDisplayString2(&imag34, displayString + i, displayHasNDigits, limitExponent, false, false);
+  real34ToDisplayString2(&imag34, displayString + i, displayHasNDigits, limitExponent, false, false, isComplex);
 
 
   //printTempDisplayString(displayString, displayString+i);
@@ -1639,12 +1639,12 @@ void angle34ToDisplayString2(const real34_t *angle34, uint8_t mode, char *displa
                                                                                     fs);
   }
   else if(mode == amMultPi) {
-    constantFractionsMode = CF_OFF;        //JM
-    real34ToDisplayString2(angle34, displayString, displayHasNDigits, limitExponent, mode == amSecond, frontSpace);
+    IrFractionsCurrentStatus = CF_OFF;        //JM
+    real34ToDisplayString2(angle34, displayString, displayHasNDigits, limitExponent, mode == amSecond, frontSpace, isReal);
     strcat(displayString, STD_SUP_pir);
   }
   else {
-    real34ToDisplayString2(angle34, displayString, displayHasNDigits, limitExponent, mode == amSecond, frontSpace);
+    real34ToDisplayString2(angle34, displayString, displayHasNDigits, limitExponent, mode == amSecond, frontSpace, isReal);
 
     if(mode == amRadian) {
       strcat(displayString, STD_SUP_r);
@@ -2134,7 +2134,7 @@ void longIntegerRegisterToDisplayString(calcRegister_t regist, char *displayStri
       //real34ToDisplayString(&tmpReal34, amNone, displayString, &numericFont, maxWidth, 34, false, false);
       //printRealToConsole(&tmpReal,"","\n");
       realToReal34(&tmpReal, &tmpReal34);
-      real34ToDisplayString2(&tmpReal34, displayString, 34, 100, false, false);
+      real34ToDisplayString2(&tmpReal34, displayString, 34, 100, false, false, isReal);
       return;
     }
   }

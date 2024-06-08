@@ -1687,10 +1687,9 @@ void changeToSub(char *str) {
 }
 
 
-//without mixedNumber flag, improper fractions are allowed: In WP43 misnomer: FLAG_PROPFR = MixedNumber = a b/c
-bool_t checkForAndChange_(char *displayString, const real34_t *value34, const real_t *constant, const real_t *tolerance, const char *constantStr,  bool_t frontSpace) {
-    bool_t mixedNumber = getSystemFlag(FLAG_PROPFR);
-    //printf(">>>## mixedNumber %u\n",mixedNumber);
+bool_t checkForAndChange(char *displayString, const real34_t *value34, const real_t *constant, const real_t *tolerance, const char *constantStr,  bool_t frontSpace, bool_t complex) {
+    bool_t allowMixedNumbers = getSystemFlag(FLAG_PROPFR) && !complex;
+    //printf(">>>## allowMixedNumbers %u\n",allowMixedNumbers);
     real_t smallestDenomR, newConstant, tempResult, tempresult_ip, tempresult_fp, valueRAbs, valueR, multConstant, tmpr;
     real34ToReal(value34,&valueR);
     realCopyAbs(&valueR,&valueRAbs);
@@ -1702,17 +1701,19 @@ bool_t checkForAndChange_(char *displayString, const real34_t *value34, const re
     int32_t resultingInteger = 0;
     char sign[2];
 
-    if(real34IsPositive(value34)) {
+    if(realIsPositive(&valueR)) {
       strcpy(sign, "+");
     }
     else {
       strcpy(sign, "-");
     }
+
 //                                printRealToConsole(constant, "Constant=", "\n");
 
     realDivide(&valueRAbs,constant,&multConstant,&ctxtReal39);
     uInt32ToReal(0x1FFFFFFF,&tmpr);
     if(realCompareGreaterThan(&multConstant, &tmpr)) {
+
 //                                printf("Returning: Multiple of constant is too large\n");
 //                                printRealToConsole(&multConstant, "multiple of the constant=", " > ");
 //                                printRealToConsole(&tmpr, "tmpr=", " \n");
@@ -1735,55 +1736,53 @@ bool_t checkForAndChange_(char *displayString, const real34_t *value34, const re
     realSubtract(&tempResult, &tempresult_ip, &tempresult_fp, &ctxtReal39);
     resultingInteger = abs(realToInt32C47(&tempresult_ip));
 
+    //See if the ip is out of range
+    uInt32ToReal(0x1FFFFFFF,&tmpr);
+    if(realCompareAbsGreaterThan(&tempresult_ip, &tmpr)) {
+      return false;
+    }
+
 //                                printRealToConsole(&tempresult_ip,"IP=","\n");
 //                                printf(">>>Resultinginteger:%i>1? SmallestDenom:%i\n", resultingInteger, smallestDenom);
 //                                printRealToConsole(&tempresult_fp,"fp:","--\n");
 //                                printRealToConsole(tolerance,"tol:","--\n");
 //                                printf("realCompareAbsLessThan(&tempresult_fp,tolerance):%i\n",realCompareAbsLessThan(&tempresult_fp,tolerance));
 //                                printf(">>> %i ", resultingInteger);
-
-    uInt32ToReal(0x1FFFFFFF,&tmpr);
-//                                printRealToConsole(&tempresult_ip, "tempresult_ip=", " > ");
-//                                printRealToConsole(&tmpr, "tmpr=", " \n");
-    if(realCompareAbsGreaterThan(&tempresult_ip, &tmpr)) {
-//                                printf("Returning: Multiple of new constant is too large\n");
-//                                printf("<<< break1 >>>\n");
-      return false;
-    }
-
-//                               printf("QQ:%s§\n",displayString);
-//                               char teststr[1000];
-//                               char teststr1[1000];
-//                               sprintf(teststr,">>>@@@1 |%s|%s|%s| %i %i\n", resultingIntStr, constantStr, denomStr, (int16_t)stringByteLength(resultingIntStr)-1, resultingIntStr[stringByteLength(resultingIntStr)-1]);
-//                               stringToASCII(teststr,teststr1);
-//                               printf("%s\n",teststr1);
-
-    char mixedNumberSep[3];                     //change mixedNumberSep to sign to get the old way of 1+1/3 instead of 1 1/3
-    mixedNumberSep[0] = STD_SPACE_4_PER_EM[0];
-    mixedNumberSep[1] = STD_SPACE_4_PER_EM[1];
-    mixedNumberSep[2] = 0;
-
+//                                printf("QQ:%s§\n",displayString);
+//                                char teststr[1000];
+//                                char teststr1[1000];
+//                                sprintf(teststr,">>>@@@1 |%s|%s|%s| %i %i\n", resultingIntStr, constantStr, denomStr, (int16_t)stringByteLength(resultingIntStr)-1, resultingIntStr[stringByteLength(resultingIntStr)-1]);
+//                                stringToASCII(teststr,teststr1);
+//                                printf("%s\n",teststr1);
 //                                printf(">>>Resultinginteger:%i>=1? realCompareAbsLessThan(&tempresult_fp,tolerance):%i\n", resultingInteger, realCompareAbsLessThan(&tempresult_fp,tolerance));
 
     if(resultingInteger >= 1 && realCompareAbsLessThan(&tempresult_fp,tolerance)) {
-      //a whole multiple of the constant exists
-      if(resultingInteger > smallestDenom  &&  smallestDenom > 1  && resultingInteger != 0 &&  mixedNumber) {
-        int32_t tmp = resultingInteger / smallestDenom;
-        resultingInteger = resultingInteger - (tmp * smallestDenom);
+
+//                                printf("A whole multiple %i of the 'new' constant exists\n", resultingInteger);
+
+      if(resultingInteger > smallestDenom  &&  smallestDenom > 1  && resultingInteger != 0 &&  allowMixedNumbers) {
+        int32_t wholeInteger = resultingInteger / smallestDenom;
+        resultingInteger = resultingInteger - (wholeInteger * smallestDenom);
+        char allowMixedNumbersSep[3];
         if(constantStr[0]==0) {
-          sprintf(wholePart, "%i%s", (int)tmp, mixedNumberSep);
+          allowMixedNumbersSep[0] = STD_SPACE_4_PER_EM[0];
+          allowMixedNumbersSep[1] = STD_SPACE_4_PER_EM[1];
+          allowMixedNumbersSep[2] = 0;
+          sprintf(wholePart, "%i%s", (int)wholeInteger, allowMixedNumbersSep);
         }
         else {
-          if(tmp == 1) {
-            sprintf(wholePart, "%s%s", constantStr, mixedNumberSep);
+          allowMixedNumbersSep[0] = sign[0];
+          allowMixedNumbersSep[1] = sign[1];
+          allowMixedNumbersSep[2] = 0;
+          if(wholeInteger == 1) {
+            sprintf(wholePart, "%s%s", constantStr, allowMixedNumbersSep);
           }
           else {
-            sprintf(wholePart, "%i%s%s%s", (int)tmp, PRODUCT_SIGN, constantStr, mixedNumberSep);
+            sprintf(wholePart, "%i%s%s%s", (int)wholeInteger, PRODUCT_SIGN, constantStr, allowMixedNumbersSep);
           }
         }
       }
       if(constantStr[0] == 0) {
-//                                printf("constantStr: %s %i\n",constantStr,constantStr[0]);
         sprintf(tmpstr,"%i", (int)resultingInteger);
         if(smallestDenom > 1) {
 //                                printf("Convert to SUP:%i\n",(int)resultingInteger);
@@ -1801,30 +1800,21 @@ bool_t checkForAndChange_(char *displayString, const real34_t *value34, const re
           sprintf(resultingIntStr, "%s%s", wholePart, tmpstr);
         }
       }
-//                                printf(">>>XX1 %s\n", resultingIntStr);
     } else {
-//      sprintf(resultingIntStr,"%i@@@", (int)resultingInteger);
       sprintf(resultingIntStr,"%i", (int)resultingInteger);
-//  printf(">>>XX2 %s\n", resultingIntStr);
-//  this line is added otherwise 1.0+1E-28 results in ~ only.menuItem
-//  In fact there are several problems 
-//  define the states and try again
-
-
-// 1. maybe return if lower than some minimum
-//   2. Why does it do .1 but not .01 - where is the limit
-   
     }
 
 //                                sprintf(teststr,">>>@@@2 |%s|%s|%s| %i %i\n", resultingIntStr, constantStr, denomStr, (int16_t)stringByteLength(resultingIntStr)-1, resultingIntStr[stringByteLength(resultingIntStr)-1]);
-//                                stringToASCII(teststr,teststr1);
-//                                printf("%s\n",teststr1);
+//                                char teststr2[1000];
+//                                stringToASCII(teststr,teststr2);
+//                                printf("%s\n",teststr2);
 
     if(smallestDenom > 1) {
       changeToSub(denomStr);
 //                                printf("Convert to SUB:%i : ",(int)smallestDenom);
 //                                printf("%s\n",denomStr);
     }
+
     if((resultingIntStr[stringByteLength(resultingIntStr)-1]==' ' || resultingIntStr[max(0,stringByteLength(resultingIntStr)-1)]==0) &&  denomStr[0]=='/' && constantStr[0]==0) {
       sprintf(tmpstr, STD_SUP_1 "%s", denomStr);
       strcpy(denomStr, tmpstr);

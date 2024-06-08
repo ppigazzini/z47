@@ -138,19 +138,18 @@ void configCommon(uint16_t idx) {
 #define ERPN                  116    // config_fneRPN                    
 #define fgLongPressSetting    117    // config_setFGLSettings            
 #define IRFRAC                118    // config_constantFractions         
-#define IRFRACMODE            119    // config_constantFractionsMode     
-#define IRFRACON              120    // config_constantFractionsOn       
-#define DenMaX                121    // config_denmax                    
-#define TVMIKnown             122    // tvm          
-#define TVMIChanges           123    // tvm          
+#define IRFRACON              119    // config_constantFractionsOn       
+#define DenMaX                120    // config_denmax                    
+#define TVMIKnown             121    // tvm          
+#define TVMIChanges           122    // tvm          
 
 
 #define xxx -10001
-#define _Reset 1
-#define _HP35  2           //HP35[ENTER]1972
-#define _JM    3           //C47JM
-#define _RJ    4           //C47RJ
-#define _C47   5           //C47[ENTER]2023
+#define _Reset   1
+#define _HP35    2           //HP35[ENTER]1972
+#define _JM      3           //C47JM
+#define _RJ      4           //C47RJ
+#define _C47     5           //C47[ENTER]2023
 #define _DefltSB 6
 #define _TVM     7
 #define _numberOfGrps 7
@@ -177,7 +176,6 @@ IPGRP1x,                             xxx,        0,                             
 ERPN,                                xxx,        1,                              0,               1,                    1,                      1,               xxx,             xxx,                  
 fgLongPressSetting,                  xxx,        xxx,                            RB_FGLNOFF,      RB_FGLNFUL,           RB_FGLNFUL,             RB_FGLNFUL,      xxx,             xxx,                  
 IRFRAC,                              xxx,        0,                              xxx,             1,                    1,                      xxx,             xxx,             xxx,                  
-IRFRACMODE,                          xxx,        CF_NORMAL,                      xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,                  
 IRFRACON,                            xxx,        0,                              xxx,             1,                    1,                      xxx,             xxx,             xxx,                  
 DenMaX,                              xxx,        64,                             xxx,             9999,                 999,                    64,              xxx,             xxx,                  
 //TVM,                               n/a,        Reset,                          HP35,            JM,                   RJ,                     C47,             DefltSB,         TVM,                  
@@ -288,7 +286,6 @@ void Sett(int16_t grp) {
         case ERPN                 : {fneRPN                       (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // ERPN
         case fgLongPressSetting   : {setFGLSettings               (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // fgLongPressSetting
         case IRFRAC               : {constantFractions          = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]) == 1 ? true : false;break;}   // IRFRAC
-        case IRFRACMODE           : {constantFractionsMode      = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // IRFRACMODE
         case IRFRACON             : {constantFractionsOn        = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]) == 1 ? true : false;break;}   // IRFRACON
         case DenMaX               : {denMax                     = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // DenMaX
         case TVMIKnown            : {tvmIKnown                  = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]) == 1 ? true : false;break;}   // TVMIKnown
@@ -1224,6 +1221,7 @@ void resetOtherConfigurationStuff(void) {
   lrSelection = CF_LINEAR_FITTING;
   lrSelectionUndo = lrSelection;                               //Not saved in file, but reset
 
+  IrFractionsCurrentStatus = CF_NORMAL;
   HOME3 = true;
   MYM3 = false;
   ShiftTimoutMode = false;

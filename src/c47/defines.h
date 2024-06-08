@@ -292,7 +292,7 @@
                                     //JM Otherwise, full enlarged standardfont is used.
 
 
-//constantFractionsMode         //JM
+//IrFractionsCurrentStatus
 #define CF_OFF                   0
 #define CF_NORMAL                1
 

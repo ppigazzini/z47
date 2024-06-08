@@ -185,7 +185,7 @@ bool_t                BASE_MYM;                                //JM Screen / key
 bool_t                jm_G_DOUBLETAP;                          //JM Screen / keyboard operation setup
 bool_t                jm_LARGELI;
 bool_t                constantFractions;                       //JM
-uint8_t               constantFractionsMode;
+uint8_t               IrFractionsCurrentStatus;
 bool_t                constantFractionsOn;                     //JM
 bool_t                tvmIKnown;
 bool_t                tvmIChanges;

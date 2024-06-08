@@ -456,7 +456,7 @@ void fnStoreConfig(uint16_t regist) {
   storeToDtConfigDescriptor(compatibility_bool16);
   storeToDtConfigDescriptor(jm_LARGELI);
   storeToDtConfigDescriptor(constantFractions);
-  storeToDtConfigDescriptor(constantFractionsMode);
+  storeToDtConfigDescriptor(IrFractionsCurrentStatus);
   storeToDtConfigDescriptor(constantFractionsOn);
   storeToDtConfigDescriptor(displayStackSHOIDISP);
   storeToDtConfigDescriptor(bcdDisplay);
