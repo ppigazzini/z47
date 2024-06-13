@@ -1413,16 +1413,18 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
 
 
   void showDispSmall(uint16_t offset, uint8_t _h1) {
-    #define line_h0 21
+    #define line_small 21
+    #define line_tiny  10
     const uint32_t line_hMultiLineEdOffset = Y_POSITION_OF_REGISTER_T_LINE;
     if(tmpString[offset]) {
-      uint32_t w = stringWidth(tmpString + offset, &standardFont, true, true);
-      showString(tmpString + offset, &standardFont, SCREEN_WIDTH - w, line_hMultiLineEdOffset + line_h0 * _h1, vmNormal, true, true);
+      uint32_t w = stringWidth(tmpString + offset, temporaryInformation == TI_SHOW_REGISTER_SMALL ? &standardFont : &tinyFont, true, true);
+      showString(tmpString + offset, temporaryInformation == TI_SHOW_REGISTER_SMALL ? &standardFont : &tinyFont, SCREEN_WIDTH - w, line_hMultiLineEdOffset + (temporaryInformation == TI_SHOW_REGISTER_SMALL ? line_small : line_tiny) * _h1, vmNormal, true, true);
       #if defined(VERBOSE_SCREEN) && defined(PC_BUILD)
         printf("^^^^NEW SHOW: %s\n", tmpString + offset);
       #endif // VERBOSE_SCREEN && PC_BUILD
       if(_h1 == 0) {
-        if(temporaryInformation == TI_SHOW_REGISTER_SMALL && tmpString[ 5 * 250] != 0) {   //The softmenu space is used
+        if((temporaryInformation == TI_SHOW_REGISTER_SMALL && tmpString[5*SHOWLineSize] != 0) ||
+           (temporaryInformation == TI_SHOW_REGISTER_TINY && tmpString[14*SHOWLineSize] != 0)    ) {   //The softmenu space is used
         }
         else {
           lcd_fill_rect(0,SCREEN_HEIGHT-3*SOFTMENU_HEIGHT,SCREEN_WIDTH,1,LCD_EMPTY_VALUE);
@@ -2737,43 +2739,69 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
 //      }
 
       // NEW SHOW                                                                  //JMSHOW vv
+//      else if(temporaryInformation == TI_SHOW_REGISTER_SMALL || temporaryInformation == TI_SHOW_REGISTER) {
+//        switch(regist) {
+//          case REGISTER_T:
+//            showDispSmall( 0 * SHOWLineSize, 0);          // L1
+//            break;
+//          case REGISTER_Z:
+//            showDispSmall( 1 * SHOWLineSize, 1);          // L2 & L3
+//            showDispSmall( 2 * SHOWLineSize, 2);
+//            break;
+//          case REGISTER_Y:
+//            showDispSmall( 3 * SHOWLineSize, 3);          // L4 & L5
+//            showDispSmall( 4 * SHOWLineSize, 4);
+//            break;
+//          case REGISTER_X:
+//            showDispSmall( 5 * SHOWLineSize, 5);          // L6 & L7 & L8 & L9 & L10
+//            showDispSmall( 6 * SHOWLineSize, 6);
+//            showDispSmall( 7 * SHOWLineSize, 7);
+//            showDispSmall( 8 * SHOWLineSize, 8);
+//            showDispSmall( 9 * SHOWLineSize, 9);
+//            break;
+//          default: ;
+//        }
+//      }
+
       else if(temporaryInformation == TI_SHOW_REGISTER_SMALL || temporaryInformation == TI_SHOW_REGISTER) {
-        #define line_h0 21
         switch(regist) {
-          // L1
-          case REGISTER_T:
-            showDispSmall( 0 * 250, 0);
-            break;
-          // L2 & L3
-          case REGISTER_Z:
-            showDispSmall( 1 * 250, 1);
-            showDispSmall( 2 * 250, 2);
-            break;
-          // L4 & L5
-          case REGISTER_Y:
-            showDispSmall( 3 * 250, 3);
-            showDispSmall( 4 * 250, 4);
-            break;
-          // L6 & L7
-          case REGISTER_X:
-            showDispSmall( 5 * 250, 5);
-            showDispSmall( 6 * 250, 6);
-            showDispSmall( 7 * 250, 7);
-            showDispSmall( 8 * 250, 8);
-            showDispSmall( 9 * 250, 9);
-            break;
-          default: ;
+          case REGISTER_X:{
+              clearScreenOld(!clrStatusBar, clrRegisterLines, clrSoftkeys);
+              int16_t nn = 0;
+              while (nn <= 9) {
+                showDispSmall( nn * SHOWLineSize, nn);          // L1
+                nn++;
+              } 
+              break;
+            }
+            default: ;
+          }
         }
-      }
+
+
+      else if(temporaryInformation == TI_SHOW_REGISTER_TINY) {
+        switch(regist) {
+          case REGISTER_X:{
+              clearScreenOld(!clrStatusBar, clrRegisterLines, clrSoftkeys);
+              int16_t nn = 0;
+              while (nn<=SCREEN_HEIGHT/line_tiny && nn<SHOWLineMax) {
+                showDispSmall( nn * SHOWLineSize, nn);          // L1
+                nn++;
+              } 
+              break;
+            }
+            default: ;
+          }
+        }
+
 
       else if(temporaryInformation == TI_SHOW_REGISTER_BIG) {
         if(regist == REGISTER_T) {
-            showDisp( 0 * 250, 0);
-            showDisp( 1 * 250, 1);
-            showDisp( 2 * 250, 2);
-            showDisp( 3 * 250, 3);
-            showDisp( 4 * 250, 4); // knowingly overwrite the menu area
-            showDisp( 5 * 250, 5); // knowingly overwrite the menu area
+            int16_t nn = 0;
+            while (nn<=5) {
+              showDisp( nn * SHOWLineSize, nn);
+              nn++;
+            } 
           }
       }
 

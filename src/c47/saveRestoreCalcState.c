@@ -1142,7 +1142,7 @@ uint16_t flushBufferCnt = 0;
 
     setFGLSettings(fgLN);
 
-    if(temporaryInformation == TI_SHOW_REGISTER_BIG || temporaryInformation == TI_SHOW_REGISTER_SMALL || temporaryInformation==TI_SHOW_REGISTER) {
+    if(temporaryInformation == TI_SHOW_REGISTER_BIG || temporaryInformation == TI_SHOW_REGISTER_SMALL || temporaryInformation == TI_SHOW_REGISTER_TINY || temporaryInformation==TI_SHOW_REGISTER) {
       temporaryInformation = TI_NO_INFO;
     }
 

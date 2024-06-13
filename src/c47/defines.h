@@ -119,6 +119,8 @@
 #define TEXT_MULTILINE_EDIT         // 5 line buffer
 #define MAXLINES 5                  // numner of equavalent lines in small font maximum that is allowed in entry. Entry is hardlocked to multiline 3 lines bif font, but this is still the limit. WP has 2 lines fixed small font.
 #define allowShowDigits false       // true to allow typing of double digits to get to register number nn in SHOW.
+#define SHOWLineSize    120         // maximum 250
+#define SHOWLineMax     (uint8_t )(TMP_STR_LENGTH / SHOWLineSize) 
 
 #define LOW_GRAPH_ACC                                                                     //Lowered graph accuracy for EQN graphs
 //#undef LOW_GRAPH_ACC
@@ -1330,43 +1332,44 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define TI_012                                    73    //JM EE
 #define TI_SHOW_REGISTER_BIG                      74    //JM_SHOW
 #define TI_SHOW_REGISTER_SMALL                    75
-#define TI_BATTV                                  76
-#define TI_FROM_DMS                               77
-#define TI_FROM_MS_TIME                           78
-#define TI_FROM_MS_DEG                            79
-#define TI_FROM_HMS                               80
-#define TI_DISP_JULIAN                            81
-#define TI_FROM_DATEX                             82
-#define TI_LAST_CONST_CATNAME                     83
-#define TI_PROGRAM_LOADED                         84    //DL
-#define TI_PROGRAMS_RESTORED                      85    //DL
-#define TI_REGISTERS_RESTORED                     86    //DL
-#define TI_SETTINGS_RESTORED                      87    //DL
-#define TI_SUMS_RESTORED                          88    //DL
-#define TI_VARIABLES_RESTORED                     89    //DL
-#define TI_SCATTER_SMI                            90
-#define TI_DMCP_ONLY                              91    //DL
+#define TI_SHOW_REGISTER_TINY                     76
+#define TI_BATTV                                  77
+#define TI_FROM_DMS                               78
+#define TI_FROM_MS_TIME                           79
+#define TI_FROM_MS_DEG                            80
+#define TI_FROM_HMS                               81
+#define TI_DISP_JULIAN                            82
+#define TI_FROM_DATEX                             83
+#define TI_LAST_CONST_CATNAME                     84
+#define TI_PROGRAM_LOADED                         85    //DL
+#define TI_PROGRAMS_RESTORED                      86    //DL
+#define TI_REGISTERS_RESTORED                     87    //DL
+#define TI_SETTINGS_RESTORED                      88    //DL
+#define TI_SUMS_RESTORED                          89    //DL
+#define TI_VARIABLES_RESTORED                     90    //DL
+#define TI_SCATTER_SMI                            91
+#define TI_DMCP_ONLY                              92    //DL
 #define TI_SHOWNOTHING                            92
-#define TI_COPY_FROM_SHOW                         92
-#define TI_DATA_LOSS                              93
-#define TI_CLEAR_ALL_MENUS                        94    //DL
-#define TI_CLEAR_ALL_VARIABLES                    95    //DL
-#define TI_DEL_ALL_MENUS                          96    //DL
-#define TI_DEL_ALL_VARIABLES                      97    //DL
-#define TI_ROOTS2                                 98
-#define TI_ROOTS3                                 99
-#define TI_IJ                                    100
-#define TI_MIJ                                   101
-#define TI_BYTES                                 102
-#define TI_BITS                                  103
-#define TI_SOLVER_VARIABLE_RESULT                104
-#define TI_DATA_NEG_OVRFL                        105
-#define TI_LASTSTATEFILE                         106
-#define TI_NO_SOLVER_VARIABLE                    107
-#define TI_NO_INTEGRATE_VARIABLE                 108
-#define TI_FUNCTION                              109
-#define TI_STORCL                                110
-#define TI_TVM_EFF                               111
+#define TI_COPY_FROM_SHOW                         93
+#define TI_DATA_LOSS                              94
+#define TI_CLEAR_ALL_MENUS                        95    //DL
+#define TI_CLEAR_ALL_VARIABLES                    96    //DL
+#define TI_DEL_ALL_MENUS                          97    //DL
+#define TI_DEL_ALL_VARIABLES                      98    //DL
+#define TI_ROOTS2                                 99
+#define TI_ROOTS3                                100
+#define TI_IJ                                    101
+#define TI_MIJ                                   102
+#define TI_BYTES                                 103
+#define TI_BITS                                  104
+#define TI_SOLVER_VARIABLE_RESULT                105
+#define TI_DATA_NEG_OVRFL                        106
+#define TI_LASTSTATEFILE                         107
+#define TI_NO_SOLVER_VARIABLE                    108
+#define TI_NO_INTEGRATE_VARIABLE                 109
+#define TI_FUNCTION                              110
+#define TI_STORCL                                111
+#define TI_TVM_EFF                               112
 
 #define SET_TI_TRUE_FALSE(condition)               do { temporaryInformation = TI_FALSE + (condition); } while(0) // TI_TRUE must be TI_FALSE + 1
 
@@ -1721,7 +1724,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
                                                 (calcMode == CM_NIM && getRegisterDataType(REGISTER_Y) == dtShortInteger) ) \
                                               )
 
-#define SHOWMODE                             (calcMode == CM_NORMAL && (temporaryInformation == TI_SHOW_REGISTER || temporaryInformation == TI_SHOW_REGISTER_BIG || temporaryInformation == TI_SHOW_REGISTER_SMALL || temporaryInformation == TI_SHOWNOTHING))
+#define SHOWMODE                             (calcMode == CM_NORMAL && (temporaryInformation == TI_SHOW_REGISTER || temporaryInformation == TI_SHOW_REGISTER_BIG || temporaryInformation == TI_SHOW_REGISTER_SMALL || temporaryInformation == TI_SHOW_REGISTER_TINY || temporaryInformation == TI_SHOWNOTHING))
 #define GRAPHMODE                            (calcMode == CM_PLOT_STAT || calcMode == CM_GRAPH)
 
 #define COMPLEX_UNIT                         (getSystemFlag(FLAG_CPXj)   ? STD_op_j  : STD_op_i)  //Do not change back to single byte character - code must also change accordingly

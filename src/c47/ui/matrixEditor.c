@@ -583,7 +583,7 @@ void showMatrixEditor() {
     mimShowElement();
     clearRegisterLine(REGISTER_T, true, true);
     refreshRegisterLine(REGISTER_T);
-    if(tmpString[250]) {
+    if(tmpString[SHOWLineSize]) {
       clearRegisterLine(REGISTER_Z, true, true);
       refreshRegisterLine(REGISTER_Z);
     }
