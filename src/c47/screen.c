@@ -1422,10 +1422,10 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
         printf("^^^^NEW SHOW: %s\n", tmpString + offset);
       #endif // VERBOSE_SCREEN && PC_BUILD
       if(_h1 == 0) {
-        if(temporaryInformation == TI_SHOW_REGISTER_SMALL && tmpString[1500] != 0) {
+        if(temporaryInformation == TI_SHOW_REGISTER_SMALL && tmpString[ 5 * 250] != 0) {   //The softmenu space is used
         }
         else {
-          lcd_fill_rect(0,240-3*SOFTMENU_HEIGHT,SCREEN_WIDTH,1,LCD_EMPTY_VALUE);
+          lcd_fill_rect(0,SCREEN_HEIGHT-3*SOFTMENU_HEIGHT,SCREEN_WIDTH,1,LCD_EMPTY_VALUE);
         }
       }
     }
@@ -2699,66 +2699,68 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
         showString(errorMessages[TI_Not_enough_memory_for_undo], &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
       }
 
-      //Original SHOW
-      else if(temporaryInformation == TI_SHOW_REGISTER && regist == REGISTER_T) { // L1
-        w = stringWidth(tmpString, &standardFont, true, true);
-        showString(tmpString, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_T_LINE + 21*0, vmNormal, true, true);
-      }
 
-      else if(temporaryInformation == TI_SHOW_REGISTER && regist == REGISTER_Z && tmpString[300] != 0) { // L2 & L3
-        w = stringWidth(tmpString + 300, &standardFont, true, true);
-        showString(tmpString + 300, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_T_LINE + 21*1, vmNormal, true, true);
-
-        if(tmpString[600]) {
-          w = stringWidth(tmpString + 600, &standardFont, true, true);
-          showString(tmpString + 600, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_T_LINE + 21*2, vmNormal, true, true);
-        }
-      }
-
-      else if(temporaryInformation == TI_SHOW_REGISTER && regist == REGISTER_Y && tmpString[900] != 0) { // L4 & L5
-        w = stringWidth(tmpString + 900, &standardFont, true, true);
-        showString(tmpString + 900, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_T_LINE + 21*3, vmNormal, true, true);
-
-        if(tmpString[1200]) {
-          w = stringWidth(tmpString + 1200, &standardFont, true, true);
-          showString(tmpString + 1200, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_T_LINE + 21*4, vmNormal, true, true);
-        }
-      }
-
-      else if(temporaryInformation == TI_SHOW_REGISTER && regist == REGISTER_X && tmpString[1500] != 0) { // L6 & L7
-        w = stringWidth(tmpString + 1500, &standardFont, true, true);
-        showString(tmpString + 1500, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_T_LINE + 21*5, vmNormal, true, true);
-
-        if(tmpString[1800]) {
-          w = stringWidth(tmpString + 1800, &standardFont, true, true);
-          showString(tmpString + 1800, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_T_LINE + 21*6, vmNormal, true, true);
-        }
-      }
+//      //Original SHOW
+//      else if(temporaryInformation == TI_SHOW_REGISTER && regist == REGISTER_T) { // L1
+//        w = stringWidth(tmpString, &standardFont, true, true);
+//        showString(tmpString, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_T_LINE + 21*0, vmNormal, true, true);
+//      }
+//
+//      else if(temporaryInformation == TI_SHOW_REGISTER && regist == REGISTER_Z && tmpString[300] != 0) { // L2 & L3
+//        w = stringWidth(tmpString + 300, &standardFont, true, true);
+//        showString(tmpString + 300, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_T_LINE + 21*1, vmNormal, true, true);
+//
+//        if(tmpString[600]) {
+//          w = stringWidth(tmpString + 600, &standardFont, true, true);
+//          showString(tmpString + 600, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_T_LINE + 21*2, vmNormal, true, true);
+//        }
+//      }
+//
+//      else if(temporaryInformation == TI_SHOW_REGISTER && regist == REGISTER_Y && tmpString[900] != 0) { // L4 & L5
+//        w = stringWidth(tmpString + 900, &standardFont, true, true);
+//        showString(tmpString + 900, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_T_LINE + 21*3, vmNormal, true, true);
+//
+//        if(tmpString[1200]) {
+//          w = stringWidth(tmpString + 1200, &standardFont, true, true);
+//          showString(tmpString + 1200, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_T_LINE + 21*4, vmNormal, true, true);
+//        }
+//      }
+//
+//      else if(temporaryInformation == TI_SHOW_REGISTER && regist == REGISTER_X && tmpString[1500] != 0) { // L6 & L7
+//        w = stringWidth(tmpString + 1500, &standardFont, true, true);
+//        showString(tmpString + 1500, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_T_LINE + 21*5, vmNormal, true, true);
+//
+//        if(tmpString[1800]) {
+//          w = stringWidth(tmpString + 1800, &standardFont, true, true);
+//          showString(tmpString + 1800, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_T_LINE + 21*6, vmNormal, true, true);
+//        }
+//      }
 
       // NEW SHOW                                                                  //JMSHOW vv
-      else if(temporaryInformation == TI_SHOW_REGISTER_SMALL) {
+      else if(temporaryInformation == TI_SHOW_REGISTER_SMALL || temporaryInformation == TI_SHOW_REGISTER) {
         #define line_h0 21
         switch(regist) {
           // L1
           case REGISTER_T:
-            showDispSmall(   0, 0);
+            showDispSmall( 0 * 250, 0);
             break;
           // L2 & L3
           case REGISTER_Z:
-            showDispSmall( 300, 1);
-            showDispSmall( 600, 2);
+            showDispSmall( 1 * 250, 1);
+            showDispSmall( 2 * 250, 2);
             break;
           // L4 & L5
           case REGISTER_Y:
-            showDispSmall( 900, 3);
-            showDispSmall(1200, 4);
+            showDispSmall( 3 * 250, 3);
+            showDispSmall( 4 * 250, 4);
             break;
           // L6 & L7
           case REGISTER_X:
-            showDispSmall(1500, 5);
-            showDispSmall(1800, 6);
-            showDispSmall(2100, 7);
-            showDispSmall(2400, 8);
+            showDispSmall( 5 * 250, 5);
+            showDispSmall( 6 * 250, 6);
+            showDispSmall( 7 * 250, 7);
+            showDispSmall( 8 * 250, 8);
+            showDispSmall( 9 * 250, 9);
             break;
           default: ;
         }
@@ -2766,12 +2768,12 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
 
       else if(temporaryInformation == TI_SHOW_REGISTER_BIG) {
         if(regist == REGISTER_T) {
-            showDisp(   0, 0);
-            showDisp( 300, 1);
-            showDisp( 600, 2);
-            showDisp( 900, 3);
-            showDisp(1200, 4); // knowingly overwrite the menu area
-            showDisp(1500, 5); // knowingly overwrite the menu area
+            showDisp( 0 * 250, 0);
+            showDisp( 1 * 250, 1);
+            showDisp( 2 * 250, 2);
+            showDisp( 3 * 250, 3);
+            showDisp( 4 * 250, 4); // knowingly overwrite the menu area
+            showDisp( 5 * 250, 5); // knowingly overwrite the menu area
           }
       }
 
