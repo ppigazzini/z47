@@ -601,7 +601,7 @@ TO_QSPI const int16_t menu_IO[]          = { ITM_WRITEP,                   ITM_S
                                              ITM_EXPORTP,                  ITM_BEEP,                    ITM_TONE,                 ITM_BUZZ,              ITM_PLAY,                    ITM_VOL                       };
 
 TO_QSPI const int16_t menu_PRINT[]       = { ITM_PRINTERX,                 ITM_PRINTERXY,               ITM_PRINTERSTK,           ITM_P_ALLREGS,         ITM_PRINTERR,                ITM_PRINTERPROG,
-                                            ITM_PRINTERCHAR,               ITM_PRINTERHASH,             ITM_PRINTERLCD,           ITM_PRINTERREGS,       ITM_PRINTERSIGMA,            ITM_PRINTERUSER,
+                                            ITM_PRINTERCHAR,               ITM_PRINTERHASH,             ITM_PRINTERLCD,           ITM_SNAP,              ITM_PRINTERSIGMA,            ITM_PRINTERUSER,
                                             ITM_PRTACT,                    ITM_PRINTERADV,              ITM_PRINTERDLAY,          ITM_PRINTERMODE,       ITM_PRINTERTAB,              ITM_PRINTERWIDTH };
 
 TO_QSPI const int16_t menu_Tam[]         = { ITM_INDIRECTION,               -MNU_VAR,                   ITM_REG_X,                ITM_REG_Y,             ITM_REG_Z,                   ITM_REG_T,
