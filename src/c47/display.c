@@ -2807,7 +2807,6 @@ static void prepLongintIntoLines(int16_t *last, int16_t *source, int16_t *dest, 
     tmpString[*dest] = 0;
     //printf(">>>AA %u %u |%s|\n", d, (uint8_t)tmpString[d], tmpString+d);
     //printf(">>>BB source=%i last=%i dest=%i\n", *source, *last, *dest);
-
   }
 }
 
@@ -2822,7 +2821,7 @@ void fnShow_SCROLL(uint16_t fnShow_param) {                // Heavily modified b
     uint8_t savedDisplayFormat = displayFormat, savedDisplayFormatDigits = displayFormatDigits;
     bool_t savedConstantFractions = constantFractions;
     bool_t thereIsANextLine;
-    int16_t source, dest, last, d, i, offset, bytesProcessed, aa, bb, cc, dd, aa2=0, aa3=0, aa4=0;
+    int16_t source, dest, last, d, i, offset, bytesProcessed, aa, bb, cc, dd, aa2=0, aa3=0, aa4=0, numberOfLines = 0;
     uint64_t nn;
 
     displayFormat = DF_ALL;
@@ -2918,7 +2917,8 @@ void fnShow_SCROLL(uint16_t fnShow_param) {                // Heavily modified b
         //LARGE font
         if(((glyphNumber < 170) )){// && GROUPLEFT_DISABLED) || (!GROUPLEFT_DISABLED && (glyphNumber - glyphNumber / (GROUPWIDTH_LEFT == 0 ? 1000:GROUPWIDTH_LEFT) < 147))) {
           temporaryInformation = TI_SHOW_REGISTER_BIG;
-          prepLongintIntoLines(&last, &source, &dest, &numericFont, SCREEN_WIDTH - stringWidth("0", &numericFont, true, true), 6);
+          numberOfLines = 6;
+          prepLongintIntoLines(&last, &source, &dest, &numericFont, SCREEN_WIDTH - stringWidth("0", &numericFont, true, true), numberOfLines);
           //printf("001 ll=%i source=%i last=%i\n",glyphNumber, source, last);
           if(tmpString[6*SHOWLineSize] == 0) break;
         }
@@ -2929,25 +2929,30 @@ void fnShow_SCROLL(uint16_t fnShow_param) {                // Heavily modified b
           ) {
           SHOW_reset();
           temporaryInformation = TI_SHOW_REGISTER_SMALL;
-          prepLongintIntoLines(&last, &source, &dest, &standardFont, SCREEN_WIDTH - stringWidth("0", &standardFont, true, true), 10);
+          numberOfLines = 10;
+          prepLongintIntoLines(&last, &source, &dest, &standardFont, SCREEN_WIDTH - stringWidth("0", &standardFont, true, true), numberOfLines);
           if(tmpString[10*SHOWLineSize] == 0) {
             break;
           }
           if(fnShow_param == 11 || fnShow_param == 12) goto gbreak;
         } else {
-            tmpString[10*SHOWLineSize] = 32;  //flag to activate next step TINY
+            tmpString[numberOfLines*SHOWLineSize] = 32;  //flag to activate next step TINY
         }
 
         //TINY font
-        if(tmpString[10*SHOWLineSize] != 0) {
+        if(tmpString[numberOfLines*SHOWLineSize] != 0) {
           SHOW_reset();
           temporaryInformation = TI_SHOW_REGISTER_TINY;
-          prepLongintIntoLines(&last, &source, &dest, &tinyFont, SCREEN_WIDTH - stringWidth("0", &tinyFont, true, true), SHOWLineMax);
+          numberOfLines = min(21,SHOWLineMax);
+          prepLongintIntoLines(&last, &source, &dest, &tinyFont, SCREEN_WIDTH - stringWidth("0", &tinyFont, true, true), numberOfLines);
 gbreak:
-          if(source < last) { // The long integer is too long
-            xcopy(tmpString + dest - 2, STD_ELLIPSIS, 2);
-            xcopy(tmpString + dest, STD_SPACE_6_PER_EM, 2);
-            tmpString[dest + 2] = 0;
+
+          if(tmpString[numberOfLines*SHOWLineSize]!=0) {                               // The long integer is too long
+            int16_t ii = stringLastGlyph(tmpString + (numberOfLines-1)*SHOWLineSize);    //last char
+            ii = stringPrevGlyph(tmpString + (numberOfLines-1)*SHOWLineSize,ii);         //backspace
+            xcopy(tmpString + (numberOfLines-1)*SHOWLineSize + ii, STD_ELLIPSIS, 2);
+            xcopy(tmpString + (numberOfLines-1)*SHOWLineSize + ii + 2, STD_SPACE_6_PER_EM, 2);
+            tmpString[(numberOfLines-1)*SHOWLineSize + ii + 4] = 0;
           }
         }
         break;
