@@ -331,6 +331,7 @@ void resetKeytimers(void) {
           case ITM_EXIT1:
             longpressDelayedkey2 = ITM_CLRMOD;     //EXIT longpress DOES CLRMOD
             longpressDelayedkey1 = ITM_BASEMENU;
+                  longpressDelayedkey3 = ITM_OFF;
             break;
 
           case ITM_DRG:

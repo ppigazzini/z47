@@ -1184,6 +1184,13 @@
           copyScreenToClipboard();
           break;
 
+        case 83+65536: // Ctrl S
+        case 115+65536: // Ctrl s
+          CTRL_State = 0;
+          printf("key pressed: CTRL+s SNAP\n");
+          fnSNAP(NOPARAM);
+          break;
+
         case 120+65536: // CTRL x
         case 88+65536: // CTRL X
         case 99+65536: // CTRL c
@@ -3219,7 +3226,7 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
       // LCD screen 400x240
       screen = gtk_drawing_area_new();
       gtk_widget_set_size_request(screen, SCREEN_WIDTH, SCREEN_HEIGHT);
-      gtk_widget_set_tooltip_text(GTK_WIDGET(screen), "Copy to clipboard:\n CTRL+h: Screen image\n CTRL+c/x: X Register\n CTRL+d: Lettered Registers\n CTRL+a: All Registers\n");  //JM
+      gtk_widget_set_tooltip_text(GTK_WIDGET(screen), "Copy to clipboard:\n CTRL+h: Screen image\n CTRL+c/x: X Register\n CTRL+d: Lettered Registers\n CTRL+a: All Registers\nCTRL+s SNAP\n");  //JM
       #if NARROW_SCREEN == 0
         gtk_fixed_put(GTK_FIXED(grid), screen, 63, 72);
       #else // NARROW_SCREEN != 0 --> 400x1280 raspberry screen
