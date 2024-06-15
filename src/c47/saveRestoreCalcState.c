@@ -1142,7 +1142,7 @@ uint16_t flushBufferCnt = 0;
 
     setFGLSettings(fgLN);
 
-    if(temporaryInformation == TI_SHOW_REGISTER_BIG || temporaryInformation == TI_SHOW_REGISTER_SMALL) {
+    if(temporaryInformation == TI_SHOW_REGISTER_BIG || temporaryInformation == TI_SHOW_REGISTER_SMALL || temporaryInformation == TI_SHOW_REGISTER_TINY || temporaryInformation==TI_SHOW_REGISTER) {
       temporaryInformation = TI_NO_INFO;
     }
 
@@ -1153,10 +1153,6 @@ uint16_t flushBufferCnt = 0;
     defineCurrentProgramFromCurrentStep();
 
     //defineCurrentLocalRegisters();
-
-    if(temporaryInformation==TI_SHOW_REGISTER) {
-      temporaryInformation = TI_NO_INFO;
-    }
 
     #if (DEBUG_REGISTER_L == 1)
       refreshRegisterLine(REGISTER_X); // to show L register
