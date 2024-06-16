@@ -1373,7 +1373,7 @@ char aimBuffer1[400];             //The concurrent use of the global aimBuffer
 
 static void doSave(uint16_t saveType);
 
-void fnSaveAuto(void) {
+void fnSaveAuto(uint16_t unusedButMandatoryParameter) {
   doSave(autoSave);
 }
 

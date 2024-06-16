@@ -975,6 +975,6 @@ char                   fileNameSelected[stateFileNameVarLength];
         }
       }
     }
-  fnSaveAuto();
+  fnSaveAuto(NOPARAM);
   }
 #endif // DMCP_BUILD

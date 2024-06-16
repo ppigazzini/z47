@@ -829,7 +829,6 @@ TO_QSPI const confirmationTI_t confirmationTI[] = {
     {.item = ITM_DELPALL,     .string = "Delete all programs?"         },
     {.item = ITM_CLREGS,      .string = "Clear registers?"             },
     {.item = ITM_RESET,       .string = "Reset?"                       },
-    {.item = ITM_SYSTEM,      .string = "Exit to system?"              },
     {.item = ITM_DELBKUP,     .string = "Delete backup file?"          },
     {.item = ITM_CLMALL,      .string = "Clear all user menus?"        },
     {.item = ITM_CLVALL,      .string = "Clear all user variables?"    },
@@ -1800,6 +1799,8 @@ Sett(_Reset);
   }
 #endif //DMCP_BUILD
 
+/* not used anymore, replaced by DMCP and ActUSB
+*/
 void backToSystem(uint16_t confirmation) {
   if(confirmation == NOT_CONFIRMED) {
     setConfirmationMode(backToSystem);
