@@ -249,7 +249,6 @@ void     dmcpResetAutoOff      (void);
 int      updateVbatIntegrated  (bool_t minutePulse);
 void     checkBattery          (void);
 void     fnClAll               (uint16_t confirmation);
-void     backToSystem          (uint16_t confirmation);
 void     runDMCPmenu           (uint16_t confirmation);
 void     activateUSBdisk       (uint16_t confirmation);
 void     fnRange               (uint16_t R);
