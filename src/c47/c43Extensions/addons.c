@@ -1985,6 +1985,16 @@ void fnRESET_MyM(uint8_t param) {
       else {
         itemToBeAssigned = ASSIGN_CLEAR;
       }
+
+      if(itemToBeAssigned == -MNU_PFN) {
+        strcpy(aimBuffer,"P.FN");
+        assignGetName1();
+      }
+      else if(itemToBeAssigned == -MNU_HOME) {
+        strcpy(aimBuffer,"HOME");
+        assignGetName1();
+      }
+
       assignToMyMenu_(fn - 1);
       if(param == 0) {
         itemToBeAssigned = ASSIGN_CLEAR;
