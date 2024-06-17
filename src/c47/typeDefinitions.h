@@ -229,7 +229,7 @@ typedef struct {
   bool_t compatibility_bool16;              //Spare Byte
   bool_t jm_LARGELI;
   bool_t constantFractions;
-  uint8_t constantFractionsMode;
+  uint8_t IrFractionsCurrentStatus;
   bool_t constantFractionsOn;
   uint8_t displayStackSHOIDISP;
   bool_t bcdDisplay;

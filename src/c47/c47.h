@@ -325,7 +325,7 @@
   extern float                  graph_ymax;                   //JM Graph
   extern bool_t                 jm_LARGELI;                   //JM flag to keep large font numbers on screen
   extern bool_t                 constantFractions;            //JM
-  extern uint8_t                constantFractionsMode;        //JM
+  extern uint8_t                IrFractionsCurrentStatus;     //JM
   extern bool_t                 constantFractionsOn;          //JM
   extern bool_t                 tvmIKnown;
   extern bool_t                 tvmIChanges;

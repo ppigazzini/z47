@@ -2257,10 +2257,11 @@ RELEASE_END:
     }
     else if(temporaryInformation != TI_NO_INFO && item != ITM_UP1 && item != ITM_DOWN1 && item != ITM_EXIT1 && item != ITM_BACKSPACE &&
            !(  ((item == ITM_RCL) || (item >= ITM_0 && item <= ITM_9 && allowShowDigits)) && SHOWMODE  ) ) {
-      temporaryInformation = TI_NO_INFO;
       if(SHOWMODE) {
         closeShowMenu();
       }
+      temporaryInformation = TI_NO_INFO;
+      screenUpdatingMode = SCRUPD_AUTO;    //cannot use MENU & STACK update due to being in NIM, and NIM prevents clearing individually
     }
 
     if(programRunStop == PGM_WAITING) {
@@ -4159,8 +4160,12 @@ void fnKeyUp(uint16_t unusedButMandatoryParameter) {
     int16_t menuId = softmenuStack[0].softmenuId; //JM
 
     if(activatescroll() && !tam.mode) { //JMSHOW vv
-      fnShow_SCROLL(1);
+      if(temporaryInformation == TI_SHOW_REGISTER_TINY) {
+        fnShow_SCROLL(11);
+      } else {
+        fnShow_SCROLL(1);
 //      refreshScreen(130);
+      }
       return;
     }                              //JMSHOW ^^
 
@@ -4374,8 +4379,12 @@ void fnKeyDown(uint16_t unusedButMandatoryParameter) {
     int16_t menuId = softmenuStack[0].softmenuId; //JM
 
     if(activatescroll() && !tam.mode) { //JMSHOW vv
-      fnShow_SCROLL(2);
+      if(temporaryInformation == TI_SHOW_REGISTER_TINY) {
+        fnShow_SCROLL(12);
+      } else {
+        fnShow_SCROLL(2);
 //      refreshScreen(133);
+      }
       return;
     }                             //JMSHOW ^^
 
