@@ -2392,13 +2392,16 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
 
     char prefix[200], lastBase[12];
 
+    skippedStackLines = false;
     #ifdef DMCP_BUILD
       keyBuffer_pop();                                            // This causes key updates while the longer time processing register updates happen
-      if( !(regist == REGISTER_X || regist == REGISTER_Y) &&
-          !getSystemFlag(FLAG_USB) &&                             // Automatically, when on battery (hence low processor), change to skip long processing register printing, recovering the fragmented screen here: See timer.c fnTimerDummyTest()
+      if( (calcMode == CM_NORMAL || calcMode == CM_MIM) && 
+          !(regist == REGISTER_X || regist == REGISTER_Y) &&
+          !getSystemFlag(FLAG_USB) &&                             // Automatically, when on battery (hence low processor), change to skip long processing register printing, recovering the fragmented screen here: See timer.c fnTimerEndOfActivity()
           !emptyKeyBuffer() &&
           key_empty() == 1
           ) {
+        skippedStackLines = true;
         return;
       }
     #endif //DMCP
@@ -4547,7 +4550,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
         //printf("##> AAAA screenUpdatingMode  MANUAL STACK=%u SKIP MENU ONCE=%u \n",screenUpdatingMode & SCRUPD_MANUAL_STACK, screenUpdatingMode & SCRUPD_SKIP_STACK_ONE_TIME);
 
         // The ordering of the 4 lines below is important for SHOW (temporaryInformation == TI_SHOW_REGISTER)
-        if(calcMode != CM_NIM && !(screenUpdatingMode & (SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME))) {
+        if((calcMode != CM_NIM || (skippedStackLines && calcMode == CM_NIM)) && !(screenUpdatingMode & (SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME))) {
           if(calcMode != CM_AIM) {
             if(calcMode != CM_TIMER && temporaryInformation != TI_VIEW_REGISTER) {
               refreshRegisterLine(REGISTER_T);

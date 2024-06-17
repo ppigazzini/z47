@@ -123,9 +123,11 @@ void fnNop(uint16_t unusedButMandatoryParameter) {
     return lastTemp;
   }
 
+
   int16_t lastSTORCL(void) {
     return lastParam;
   }
+
 
   void reallyRunFunction(int16_t func, uint16_t param) {
     #if defined(PC_BUILD) && defined(DEBUG_EXECUTE)
@@ -138,44 +140,6 @@ void fnNop(uint16_t unusedButMandatoryParameter) {
         (currentSolverStatus == 258 || currentSolverStatus == 259)) {  //allow interactive functions to clear the SolverReady flag
       currentSolverStatus &= ~SOLVER_STATUS_READY_TO_EXECUTE;
     }
-    if(temporaryInformation == TI_LAST_CONST_CATNAME && (currentSolverStatus & 0x000F) != 0) {
-      temporaryInformation = TI_NO_INFO;
-    }
-    else
-    if(func >= FIRST_CONSTANT && func <= LAST_CONSTANT && calcMode == CM_NORMAL) {
-      temporaryInformation = TI_LAST_CONST_CATNAME;
-    }
-    else
-    if(calcMode == CM_NORMAL) {
-      bool_t inMatrixMenu = (tam.mode == 0 ? softmenu[softmenuStack[0].softmenuId].menuItem : softmenu[softmenuStack[1].softmenuId].menuItem) == -MNU_MATX;
-      switch(func) {
-        case ITM_RCL_FV      :
-        case ITM_RCL_IPonA   :
-        case ITM_RCL_NPPER   :
-        case ITM_RCL_PPERonA :
-        case ITM_RCL_CPERonA :
-        case ITM_RCL_PMT     :
-        case ITM_RCL_PV      : temporaryInformation = TI_STORCL; break;
-        case ITM_STO         :
-        case ITM_RCL         : temporaryInformation = ((param == REGISTER_I || param == REGISTER_J) && inMatrixMenu) ? TI_IJ : TI_STORCL; break;
-        case ITM_RCLELPLUS   :
-        case ITM_RCLEL       :
-        case ITM_STOELPLUS   :
-        case ITM_STOEL       : if(inMatrixMenu) temporaryInformation = TI_MIJ;   break;
-        case ITM_IPLUS       :
-        case ITM_IMINUS      :
-        case ITM_JPLUS       :
-        case ITM_JMINUS      :
-        case ITM_RCLIJ       :
-        case ITM_STOIJ       : if(inMatrixMenu) temporaryInformation = TI_IJ;    break;
-        default:;
-      }
-    }
-
-    //else {                                                 //Removed code for TI of any last command
-    //  temporaryInformation = TI_LAST_FUNC_CATNAME;
-    //}
-
 
 
     if(func != ITM_CLX) { //JM Do not reset for backspace, because the timers need to run after the first action, CLX
@@ -262,9 +226,6 @@ void fnNop(uint16_t unusedButMandatoryParameter) {
       LastOpTimerLap(func);
     }
 
-    #if defined(DMCP_BUILD)
-      updateVbatIntegrated(false);              //Check the battery directly after a task so that the worst case voltage is recorded
-    #endif
 
 
     switch(func) {                              //functions to cause a graph redraw
@@ -309,6 +270,47 @@ void fnNop(uint16_t unusedButMandatoryParameter) {
 
         reDraw = true;
     }
+
+
+    if(temporaryInformation == TI_LAST_CONST_CATNAME && (currentSolverStatus & 0x000F) != 0) {
+      temporaryInformation = TI_NO_INFO;
+    }
+    else
+    if(func >= FIRST_CONSTANT && func <= LAST_CONSTANT && calcMode == CM_NORMAL) {
+      temporaryInformation = TI_LAST_CONST_CATNAME;
+    }
+    else
+    if(calcMode == CM_NORMAL) {
+      bool_t inMatrixMenu = (tam.mode == 0 ? softmenu[softmenuStack[0].softmenuId].menuItem : softmenu[softmenuStack[1].softmenuId].menuItem) == -MNU_MATX;
+      bool_t inRange = ((0 <= param && param <= LAST_LETTERED_REGISTER) ||
+                        (FIRST_STAT_REGISTER >= param && param <= LAST_STAT_REGISTER) ||
+                        (FIRST_SPARE_REGISTER >= param && param <= LAST_SPARE_REGISTER));
+      bool_t isMatrix = inRange ? (getRegisterDataType(param) != dtReal34Matrix && getRegisterDataType(param) != dtComplex34Matrix) : false;
+      switch(func) {
+        case ITM_RCL_FV      :
+        case ITM_RCL_IPonA   :
+        case ITM_RCL_NPPER   :
+        case ITM_RCL_PPERonA :
+        case ITM_RCL_CPERonA :
+        case ITM_RCL_PMT     :
+        case ITM_RCL_PV      : temporaryInformation = TI_STORCL; break;
+        case ITM_STO         :
+        case ITM_RCL         : temporaryInformation = ((param == REGISTER_I || param == REGISTER_J) && inMatrixMenu) ? TI_IJ : \
+                               (isMatrix) ? TI_STORCL : TI_NO_INFO ; break;
+        case ITM_RCLELPLUS   :
+        case ITM_RCLEL       :
+        case ITM_STOELPLUS   :
+        case ITM_STOEL       : if(inMatrixMenu) temporaryInformation = TI_MIJ;   break;
+        case ITM_IPLUS       :
+        case ITM_IMINUS      :
+        case ITM_JPLUS       :
+        case ITM_JMINUS      :
+        case ITM_RCLIJ       :
+        case ITM_STOIJ       : if(inMatrixMenu) temporaryInformation = TI_IJ;    break;
+        default:;
+      }
+    }
+
 
     //TI for conversion menus
     if(lastErrorCode == ERROR_NONE && temporaryInformation == TI_NO_INFO) {
@@ -374,6 +376,12 @@ void fnNop(uint16_t unusedButMandatoryParameter) {
         setSystemFlag(FLAG_ASLIFT);
       }
     }
+
+
+    #if defined(DMCP_BUILD)
+      updateVbatIntegrated(false);              //Check the battery directly after a task so that the worst case voltage is recorded
+    #endif
+
 
     if(programRunStop != PGM_RUNNING) {
       updateMatrixHeightCache();
