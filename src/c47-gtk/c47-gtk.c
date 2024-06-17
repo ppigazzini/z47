@@ -146,24 +146,18 @@
 
     gdk_threads_add_timeout(SCREEN_REFRESH_PERIOD, refreshLcd, NULL); // refreshLcd is called every SCREEN_REFRESH_PERIOD ms
     fnTimerReset();                                                    //dr timeouts for kb handling
-    fnTimerConfig(TO_FG_LONG, refreshFn, TO_FG_LONG/*, 580*/);
-    fnTimerConfig(TO_CL_LONG, refreshFn, TO_CL_LONG/*, 800*/);
-    fnTimerConfig(TO_FG_TIMR, refreshFn, TO_FG_TIMR/*, 4000*/);
-    fnTimerConfig(TO_FN_LONG, refreshFn, TO_FN_LONG/*, 400*/);
-    fnTimerConfig(TO_FN_EXEC, execFnTimeout, 0/*, 150*/);
-    fnTimerConfig(TO_3S_CTFF, shiftCutoff, TO_3S_CTFF/*, 600*/);
-    fnTimerConfig(TO_CL_DROP, fnTimerDummyTest, TO_CL_DROP/*, 500*/);
-    //fnTimerConfig(TO_AUTO_REPEAT, execAutoRepeat, 0/*, 200*/);          //dr no autorepeat for emulator
-    fnTimerConfig(TO_TIMER_APP, execTimerApp, 0/*, 100*/);
+    fnTimerConfig(TO_FG_LONG, refreshFn, TO_FG_LONG);
+    fnTimerConfig(TO_CL_LONG, refreshFn, TO_CL_LONG);
+    fnTimerConfig(TO_FG_TIMR, refreshFn, TO_FG_TIMR);
+    fnTimerConfig(TO_FN_LONG, refreshFn, TO_FN_LONG);
+    fnTimerConfig(TO_FN_EXEC, execFnTimeout, 0);
+    fnTimerConfig(TO_3S_CTFF, shiftCutoff, TO_3S_CTFF);
+    fnTimerConfig(TO_CL_DROP, fnTimerDummy1, TO_CL_DROP);
+    //fnTimerConfig(TO_AUTO_REPEAT, execAutoRepeat, 0);                 //dr no autorepeat for emulator
+    fnTimerConfig(TO_TIMER_APP, execTimerApp, 0);
     fnTimerConfig(TO_ASM_ACTIVE, refreshFn, TO_ASM_ACTIVE);
-    //fnTimerConfig(TO_KB_ACTV, fnTimerDummyTest, TO_KB_ACTV/*, 6000*/);  //dr no keyboard scan boost for emulator
+    //fnTimerConfig(TO_KB_ACTV, fnTimerEndOfActivity, TO_KB_ACTV);      //dr no keyboard scan boost for emulator
     gdk_threads_add_timeout(5, refreshTimer, NULL);                     //dr refreshTimer is called every 5 ms    //^^
-
-    //fnTimerReset();
-    //fnTimerConfig(TO_KB_ACTV, fnTimerDummyTest, TO_KB_ACTV);
-    //fnTimerConfig(TO_TIMER_APP, execTimerApp, 0);
-    //fnTimerConfig(TO_SHOW_NOP, execNOPTimeout, TO_SHOW_NOP);
-    //gdk_threads_add_timeout(5, refreshTimer, NULL);
 
     if(getSystemFlag(FLAG_AUTXEQ)) {
       clearSystemFlag(FLAG_AUTXEQ);

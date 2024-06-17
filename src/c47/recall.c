@@ -351,7 +351,7 @@ void fnRecallConfig(uint16_t regist) {
     recallFromDtConfigDescriptor(compatibility_bool16);    //spare
     recallFromDtConfigDescriptor(jm_LARGELI);
     recallFromDtConfigDescriptor(constantFractions);
-    recallFromDtConfigDescriptor(constantFractionsMode);
+    recallFromDtConfigDescriptor(IrFractionsCurrentStatus);
     recallFromDtConfigDescriptor(constantFractionsOn);
     recallFromDtConfigDescriptor(displayStackSHOIDISP);
     recallFromDtConfigDescriptor(bcdDisplay);

@@ -1401,8 +1401,8 @@
 #define MNU_PARTS                   1353
 #define MNU_PROB                    1354
 #define MNU_PROGS                   1355
-#define MNU_PFN_1                        1356
-#define MNU_PFN_2                        1357
+#define MNU_PFN_1                   1356
+#define MNU_PFN_2                   1357
 #define MNU_CONVP                   1358
 #define MNU_CONVHUM                 1359
 #define MNU_REALS                   1360
@@ -1792,7 +1792,7 @@
 #define ITM_AIM                     1740
 #define ITM_dotD                    1741
 #define ITM_SHOW                    1742
-#define ITM_SYSTEM                  1743
+#define ITM_1743                    1743
 #define ITM_FRACT                   1744
 #define ITM_VANGLE                  1745
 #define ITM_XH                      1746
@@ -2157,13 +2157,13 @@
 #define ITM_RADtoGRAD               2101
 #define MNU_TRG_C47                 2102
 #define MNU_TRG_C47_MORE            2103
-#define ITM_RIBBON_C47                2104
-#define ITM_RIBBON_R47                2105
-#define ITM_RIBBON_SAV                2106
+#define ITM_RIBBON_C47              2104
+#define ITM_RIBBON_R47              2105
+#define ITM_RIBBON_SAV              2106
 #define MNU_PLOTTING                2107
 #define MNU_TAMNONREGIND            2108
-#define ITM_SAVEST                  2109
-#define ITM_LOADST                  2110
+#define ITM_2109                    2109
+#define ITM_2110                    2110
 #define ITM_GAPDOT_L                2111
 #define ITM_GAPWIDDOT_L             2112
 #define ITM_GAPPER_L                2113
@@ -2207,7 +2207,7 @@
 #define MNU_GAP_L                   2151
 #define MNU_GAP_RX                  2152
 #define MNU_GAP_R                   2153
-#define ITM_2154                      2154
+#define ITM_2154                    2154
 #define ITM_GRP_L                   2155
 #define ITM_GRP1_L_OF               2156
 #define ITM_GRP1_L                  2157
@@ -2215,9 +2215,9 @@
 #define ITM_GAP_L                   2159
 #define ITM_GAP_RX                  2160
 #define ITM_GAP_R                   2161
-#define ITM_2162                      2162
-#define ITM_RIBBON_FIN                2163
-#define ITM_RIBBON_CPX                2164
+#define ITM_2162                    2162
+#define ITM_RIBBON_FIN              2163
+#define ITM_RIBBON_CPX              2164
 #define ITM_op_j_SIGN               2165
 #define ITM_poly_SIGN               2166
 #define ITM_NMItoMI                 2167
@@ -2448,7 +2448,12 @@
 
 #define ITM_PFACTORSMULT            2385
 #define ITM_EULPHI                  2386
-#define LAST_ITEM                   2387
+#define ITM_SAVEST                  2387
+#define ITM_LOADST                  2388
+#define ITM_SAVEAUT                 2389
+#define MNU_AUDIO                   2390
+
+#define LAST_ITEM                   2391
 
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL
