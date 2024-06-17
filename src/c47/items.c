@@ -1137,7 +1137,7 @@ void fnNop(uint16_t unusedButMandatoryParameter) {
   void fnJM_2SI                   (uint16_t unusedButMandatoryParameter) {}
   void fnTo_ms                    (uint16_t unusedButMandatoryParameter) {}
   void fnFrom_ms                  (uint16_t unusedButMandatoryParameter) {}
-  void fnShow_SCROLL              (uint16_t unusedButMandatoryParameter) {}
+  void fnC47Show                  (uint16_t unusedButMandatoryParameter) {}
   void fnP_All_Regs               (uint16_t unusedButMandatoryParameter) {}
   void fnP_Regs                   (uint16_t unusedButMandatoryParameter) {}
   void fnToPolar2                 (uint16_t unusedButMandatoryParameter) {}
@@ -3054,7 +3054,7 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 1739 */  { itemToBeCoded,                NOPARAM,                     "1739",                                        "1739",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_DISABLED     },
 /* 1740 */  { fnAim,                        NOPARAM,                     STD_alpha,                                     STD_alpha,                                     (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /* 1741 */  { fnKeyDotD,                    NOPARAM,                     ".d",                                          ".d",                                          (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_NONE         },
-/* 1742 */  { fnShow_SCROLL,                NOPARAM/*#JM#*/,             "SHOW",                                        "SHOW",                                        (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
+/* 1742 */  { fnC47Show,                    NOPARAM,                     "SHOW",                                        "SHOW",                                        (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /* 1743 */  { backToSystem,                 NOT_CONFIRMED  /*#JM#*/,     "SYSTEM",                                      "SYSTEM",                                      (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 1744 */  { SetSetting,                   DM_FRACT,                    "FRACT",                                       "FRACT",                                       (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_NONE         },
 /* 1745 */  { fnVectorAngle,                NOPARAM,                     "V" STD_MEASURED_ANGLE,                        "V" STD_MEASURED_ANGLE,                        (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },

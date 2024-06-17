@@ -1391,7 +1391,7 @@ releaseOverride = false;
                     #endif //PC_BUILD
 
     if(SHOWMODE) {
-      if((allowShowDigits && key->primary >= ITM_0 && key->primary <= ITM_9) || key->primary == ITM_RCL || key->primary == ITM_UP1 || key->primary == ITM_DOWN1) {
+      if((allowShowDigits && key->primary >= ITM_0 && key->primary <= ITM_9) || key->primary == ITM_RCL || key->primary == ITM_PERIOD || key->primary == ITM_RS || key->primary == ITM_UP1 || key->primary == ITM_DOWN1) {
       }
       else {
         showRegis = 9999;
@@ -2255,7 +2255,7 @@ RELEASE_END:
         temporaryInformation = TI_VIEW_REGISTER;
       }
     }
-    else if(temporaryInformation != TI_NO_INFO && item != ITM_UP1 && item != ITM_DOWN1 && item != ITM_EXIT1 && item != ITM_BACKSPACE &&
+    else if(temporaryInformation != TI_NO_INFO && item != ITM_UP1 && item != ITM_DOWN1 && item != ITM_EXIT1 && item != ITM_BACKSPACE && item != ITM_PERIOD && item != ITM_RS &&
            !(  ((item == ITM_RCL) || (item >= ITM_0 && item <= ITM_9 && allowShowDigits)) && SHOWMODE  ) ) {
       if(SHOWMODE) {
         closeShowMenu();
@@ -2276,6 +2276,25 @@ RELEASE_END:
     if(item == KEY_COMPLEX && calcMode == CM_MIM) {   //JM Allow COMPLEX to function as CC if in Matrix
       item = ITM_CC;
     }
+
+    if(calcMode == CM_NORMAL && SHOWMODE && softmenu[softmenuStack[0].softmenuId].menuItem != -MNU_EQN) {
+      switch(item) {
+
+        case ITM_UP1:             //was 1
+        case ITM_DOWN1:           //was 2
+        case ITM_RS:              //was 11
+        case ITM_PERIOD: {        //was 10
+          fnC47Show(item);
+          keyActionProcessed = true;
+//        refreshScreen(00);
+          return;
+          break;
+        }
+
+        default:break;
+      }
+    }
+
 
     if(GRAPHMODE && item != ITM_BACKSPACE && item != ITM_EXIT1 && item != ITM_UP1 && item != ITM_DOWN1) {
       keyActionProcessed = true;
@@ -2603,7 +2622,7 @@ RELEASE_END:
                     else {
                       showRegis = (item - ITM_0)*10;
                     }
-                    fnShow_SCROLL(255);
+                    fnC47Show(ITM_NOP);
                     //refreshScreen(139);
                   }
                 }
@@ -4138,20 +4157,6 @@ void fnKeyBackspace(uint16_t unusedButMandatoryParameter) {
 }
 
 
-#if !defined(TESTSUITE_BUILD)
-static bool_t activatescroll(void) { //jm
-   //This is the portion that allows the arrows shortcut to SHOW in NORMAL MODE
-   return SHOWMODE &&
-          softmenu[softmenuStack[0].softmenuId].menuItem != -MNU_EQN
-//remove menu interlock completely, since the NEW SHOW takes over the screen and does not respect menu operation
-//    &&    (
-//            ((menuId == 0) && !BASE_MYM) ||
-//            ((menuId == 0) && (softmenu[menuId].numItems<=18)) ||
-//            ((menuId >= NUMBER_OF_DYNAMIC_SOFTMENUS) && (softmenu[menuId].numItems<=18))
-//          )
-          ;
- }
- #endif // !TESTSUITE_BUILD
 
 #define RBR_INCDEC1 10
 
@@ -4159,15 +4164,15 @@ void fnKeyUp(uint16_t unusedButMandatoryParameter) {
   #if !defined(TESTSUITE_BUILD)
     int16_t menuId = softmenuStack[0].softmenuId; //JM
 
-    if(activatescroll() && !tam.mode) { //JMSHOW vv
-      if(temporaryInformation == TI_SHOW_REGISTER_TINY) {
-        fnShow_SCROLL(11);
-      } else {
-        fnShow_SCROLL(1);
-//      refreshScreen(130);
-      }
-      return;
-    }                              //JMSHOW ^^
+//--     if(SHOWMODE && softmenu[softmenuStack[0].softmenuId].menuItem != -MNU_EQN && !tam.mode) { //JMSHOW vv
+//--       if(temporaryInformation == TI_SHOW_REGISTER_TINY) {
+//--         fnC47Show(11);
+//--       } else {
+//--         fnC47Show(1);
+//-- //      refreshScreen(130);
+//--       }
+//--       return;
+//--     }                              //JMSHOW ^^
 
     if(tam.mode == TM_KEY && !tam.keyInputFinished) {
       if(tam.digitsSoFar == 0) {
@@ -4378,15 +4383,15 @@ void fnKeyDown(uint16_t unusedButMandatoryParameter) {
   #if !defined(TESTSUITE_BUILD)
     int16_t menuId = softmenuStack[0].softmenuId; //JM
 
-    if(activatescroll() && !tam.mode) { //JMSHOW vv
-      if(temporaryInformation == TI_SHOW_REGISTER_TINY) {
-        fnShow_SCROLL(12);
-      } else {
-        fnShow_SCROLL(2);
-//      refreshScreen(133);
-      }
-      return;
-    }                             //JMSHOW ^^
+//--     if(SHOWMODE && softmenu[softmenuStack[0].softmenuId].menuItem != -MNU_EQN && !tam.mode) { //JMSHOW vv
+//--       if(temporaryInformation == TI_SHOW_REGISTER_TINY) {
+//--         fnShow_SCROLL(12);
+//--       } else {
+//--         fnShow_SCROLL(2);
+//-- //      refreshScreen(133);
+//--       }
+//--       return;
+//--     }                             //JMSHOW ^^
 
     if(tam.mode == TM_KEY && !tam.keyInputFinished) {
       if(tam.digitsSoFar == 0) {
