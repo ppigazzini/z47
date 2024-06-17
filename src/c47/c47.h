@@ -135,6 +135,7 @@
   extern bool_t                 serialIOIconEnabled;
   extern bool_t                 pemCursorIsZerothStep;
   extern bool_t                 halfSecTick;
+  extern bool_t                 skippedStackLines;
 
 
   extern realContext_t          ctxtReal4;    //   Limited digits: used for high speed internal calcs
