@@ -2837,7 +2837,7 @@ bool_t BASE_OVERRIDEONCE = false;
 
 
   void showSoftmenu(int16_t id) {
-//    if(running_program_jm) return;                             //JM
+//    if(running_program_jm) return;
     int16_t m;
     #if defined(PC_BUILD)
       char tmp[200]; sprintf(tmp,"^^^^showSoftmenu: Showing Softmenu id=%d\n",id); jm_show_comment(tmp);
@@ -2851,6 +2851,8 @@ bool_t BASE_OVERRIDEONCE = false;
 
     screenUpdatingMode &= ~(SCRUPD_MANUAL_MENU | SCRUPD_SKIP_MENU_ONE_TIME);
 
+
+    //* *** List of exceptions, fixed menu call finds and opens the equivalent underlying dynamic menu (P.fN and HOME are now user populated, in the user menu space)
     if(id == -MNU_HOME) {
       if(!setCurrentUserMenu(-MNU_DYNAMIC,"HOME")) {
         if(!createHOME()) {
@@ -2884,15 +2886,18 @@ bool_t BASE_OVERRIDEONCE = false;
     else if(id == -MNU_ALPHA_OMEGA && alphaCase == AC_LOWER) { // alpha...omega
       id = -MNU_alpha_omega;
     }
-    else if(id == -MNU_Solver      ||
-            id == -MNU_Grapher     ||
-            id == -MNU_Sf          ||
-            id == -MNU_Sf_TOOL     ||
-            id == -MNU_Solver_TOOL ||
-            id == -MNU_1STDERIV    ||
-            id == -MNU_2NDDERIV    ||
-            (id == -MNU_MVAR && (currentSolverStatus & SOLVER_STATUS_INTERACTIVE) && !(currentSolverStatus & SOLVER_STATUS_USES_FORMULA) && (currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_INTEGRATE)
-            ) {
+
+    else if( ((id == -MNU_Solver      ||
+               id == -MNU_Grapher     ||
+               id == -MNU_Sf          ||
+               id == -MNU_Sf_TOOL     ||
+               id == -MNU_Solver_TOOL ||
+               id == -MNU_1STDERIV    ||
+               id == -MNU_2NDDERIV) && currentSolverVariable != INVALID_VARIABLE)
+               ||
+              (id == -MNU_MVAR && (currentSolverStatus & SOLVER_STATUS_INTERACTIVE) && !(currentSolverStatus & SOLVER_STATUS_USES_FORMULA) && (currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_INTEGRATE)
+           ) {
+
       int32_t numberOfVars = -1;
       uint8_t *varList = NULL;
       if(id != -MNU_MVAR) {
@@ -2938,7 +2943,7 @@ bool_t BASE_OVERRIDEONCE = false;
           varList = (uint8_t *)"\0";
         }
       }
-      else {
+      else if(currentSolverVariable != INVALID_VARIABLE){
         parseEquation(currentFormula, EQUATION_PARSER_MVAR, aimBuffer, tmpString);
         varList = (uint8_t *)tmpString;
       }
@@ -2948,6 +2953,7 @@ bool_t BASE_OVERRIDEONCE = false;
       }
       while((getNthString(varList, ++numberOfVars))[0] != 0) {
       }
+
       if(numberOfVars > 12) {
         displayCalcErrorMessage(ERROR_EQUATION_TOO_COMPLEX, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -2973,8 +2979,10 @@ bool_t BASE_OVERRIDEONCE = false;
           }
         }
       }
+
     }
     else if(id == -MNU_ADV || id == -MNU_EQN) {
+
       currentSolverStatus &= ~SOLVER_STATUS_INTERACTIVE;
       for(int i=0; i<SOFTMENU_STACK_SIZE; i++) { // Searching the stack for MNU_MVAR
         if(softmenu[softmenuStack[i].softmenuId].menuItem == -MNU_MVAR) { // if found, remove it
@@ -2984,24 +2992,22 @@ bool_t BASE_OVERRIDEONCE = false;
         }
       }
     }
-    else if((id == -MNU_Sf_TOOL || id == -MNU_Solver_TOOL) && currentSolverVariable == INVALID_VARIABLE) {
-      if(id == -MNU_Sf_TOOL) {
-        temporaryInformation = TI_NO_INTEGRATE_VARIABLE;
-        id = -MNU_MVAR;
+    else if(currentSolverVariable == INVALID_VARIABLE) {
+      if(id == -MNU_Sf_TOOL    || 
+         id == -MNU_Sf         ||
+         id == -MNU_Solver     ||
+         id == -MNU_Grapher    ||
+         id == -MNU_Solver_TOOL||
+         id == -MNU_1STDERIV   ||
+         id == -MNU_2NDDERIV     ) {
+
+        id = -MNU_EQN;
+        displayCalcErrorMessage(ERROR_VARIABLE_NOT_SELECTED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+          moreInfoOnError("In function showSoftmenu:", "The solver/integrator variable is not selected. Refusing access to Tools/Solver menu prior to variable selected!", NULL, NULL);
+        #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       }
-      else if(id == -MNU_Solver_TOOL) {
-        temporaryInformation = TI_NO_SOLVER_VARIABLE;
-        id = -MNU_MVAR;
-      }
-      #ifdef PC_BUILD
-        printf("The solver variable is not selected. Refusing access to Tools menu prior to variable selected.\n");
-      #endif //PC_BUILD
     }
-
-//printf("aaa (id == -MNU_Sf_TOOL || id == -MNU_Solver_TOOL)=%u\n", (id == -MNU_Sf_TOOL || id == -MNU_Solver_TOOL));
-//printf("aaa numberOfVars = %u\n",numberOfVars);
-//printf("aaa currentSolverVariable = %u INVALID_VARIABLE = %u\n",currentSolverVariable, INVALID_VARIABLE);
-
 
     m = 0;
     while(softmenu[m].menuItem != 0) {
