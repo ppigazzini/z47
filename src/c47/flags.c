@@ -208,11 +208,11 @@ bool_t getFlag(uint16_t flag) {
     return getSystemFlag(flag);
   }
 
-  else if(flag < FLAG_K) { // Global flag
+  else if(flag <= FLAG_K) { // Global flag
     return (globalFlags[flag/16] & (1u << (flag%16))) != 0;
   }
 
-  else if(flag < LAST_LOCAL_FLAG) { // Local flag
+  else if(flag <= LAST_LOCAL_FLAG) { // Local flag
     if(currentLocalFlags != NULL) {
       flag -= NUMBER_OF_GLOBAL_FLAGS;
       if(flag < NUMBER_OF_LOCAL_FLAGS) {
@@ -308,7 +308,7 @@ void fnSetFlag(uint16_t flag) {
     }
   }
 
-  else if(flag < LAST_LOCAL_FLAG) { // Local flag
+  else if(flag <= LAST_LOCAL_FLAG) { // Local flag
     if(currentLocalFlags != NULL) {
       flag -= NUMBER_OF_GLOBAL_FLAGS;
       if(flag < NUMBER_OF_LOCAL_FLAGS) {
@@ -386,7 +386,7 @@ void fnClearFlag(uint16_t flag) {
     }
   }
 
-  else if(flag < LAST_LOCAL_FLAG) { // Local flag
+  else if(flag <= LAST_LOCAL_FLAG) { // Local flag
     if(currentLocalFlags != NULL) {
       flag -= NUMBER_OF_GLOBAL_FLAGS;
       if(flag < NUMBER_OF_LOCAL_FLAGS) {
@@ -470,7 +470,7 @@ void fnFlipFlag(uint16_t flag) {
     }
   }
 
-  else if(flag < LAST_LOCAL_FLAG) { // Local flag
+  else if(flag <= LAST_LOCAL_FLAG) { // Local flag
     if(currentLocalFlags != NULL) {
       flag -= NUMBER_OF_GLOBAL_FLAGS;
       if(flag < NUMBER_OF_LOCAL_FLAGS) {
