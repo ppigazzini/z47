@@ -2706,7 +2706,12 @@ RELEASE_END:
                   rbr1stDigit = true;
                   if(rbrMode == RBR_GLOBAL || rbrMode == RBR_LOCAL) {
                     calcMode = previousCalcMode;
-                    fnRecall(currentRegisterBrowserScreen);
+                    if(rbrMode == RBR_GLOBAL) {
+                      fnRecall((currentRegisterBrowserScreen) % (REGISTER_W + 1));
+                    } 
+                    else if(rbrMode == RBR_LOCAL) {
+                      fnRecall(currentRegisterBrowserScreen);
+                    }
                     setSystemFlag(FLAG_ASLIFT);
                   }
                   else if(rbrMode == RBR_NAMED) {
