@@ -98,6 +98,11 @@
         calcLandscape             = false;
         calcAutoLandscapePortrait = true;
       }
+
+      if(strcmp(argv[arg], "--r47") == 0) {
+        calcModel = USER_R47;
+      }
+
     }
 
     if(strcmp(indexOfItems[LAST_ITEM].itemSoftmenuName, "Last item") != 0) {
