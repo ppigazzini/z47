@@ -60,6 +60,7 @@ bool_t                 programListEnd;
 bool_t                 serialIOIconEnabled;
 bool_t                 pemCursorIsZerothStep;
 bool_t                 halfSecTick;
+bool_t                 skippedStackLines = false;
 
 
 realContext_t          ctxtReal4;    //   limited digits: used for higher speed internal real calcs
@@ -588,11 +589,11 @@ char                   fileNameSelected[stateFileNameVarLength];
     fnTimerConfig(TO_FN_LONG, refreshFn, TO_FN_LONG);
     fnTimerConfig(TO_FN_EXEC, execFnTimeout, 0);
     fnTimerConfig(TO_3S_CTFF, shiftCutoff, TO_3S_CTFF);
-    fnTimerConfig(TO_CL_DROP, fnTimerDummyTest, TO_CL_DROP);
+    fnTimerConfig(TO_CL_DROP, fnTimerDummy1, TO_CL_DROP);
     fnTimerConfig(TO_AUTO_REPEAT, execAutoRepeat, 0);
     fnTimerConfig(TO_TIMER_APP, execTimerApp, 0);
     fnTimerConfig(TO_ASM_ACTIVE, refreshFn, TO_ASM_ACTIVE);
-    fnTimerConfig(TO_KB_ACTV, fnTimerDummyTest, TO_KB_ACTV);
+    fnTimerConfig(TO_KB_ACTV, fnTimerEndOfActivity, TO_KB_ACTV);
 //--fnTimerConfig(TO_SHOW_NOP, execNOPTimeout, TO_SHOW_NOP);
     nextTimerRefresh = 0;
 
@@ -975,6 +976,6 @@ char                   fileNameSelected[stateFileNameVarLength];
         }
       }
     }
-  fnSaveAuto();
+  fnSaveAuto(NOPARAM);
   }
 #endif // DMCP_BUILD

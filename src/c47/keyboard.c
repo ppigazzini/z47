@@ -1061,8 +1061,9 @@ releaseOverride = false;
               if(item == -MNU_ALPHA) {
                 fnAim(0);
               }
-              if((item == -MNU_Solver || item == -MNU_Grapher || item == -MNU_Sf || item == -MNU_1STDERIV || item == -MNU_2NDDERIV) && lastErrorCode != 0) {
-                popSoftmenu();
+
+              if((item == -MNU_Solver || item == -MNU_Grapher || item == -MNU_Sf || item == -MNU_1STDERIV || item == -MNU_2NDDERIV || item == -MNU_Sf_TOOL || item == -MNU_Solver_TOOL) && lastErrorCode != 0) {
+//                popSoftmenu(); removed, because in softmens.c a new menu is pushed and this just pops it off again
                 currentSolverStatus &= ~SOLVER_STATUS_INTERACTIVE;
                 currentSolverStatus &= ~SOLVER_STATUS_EQUATION_MODE;
               }
@@ -2725,7 +2726,12 @@ RELEASE_END:
                   rbr1stDigit = true;
                   if(rbrMode == RBR_GLOBAL || rbrMode == RBR_LOCAL) {
                     calcMode = previousCalcMode;
-                    fnRecall(currentRegisterBrowserScreen);
+                    if(rbrMode == RBR_GLOBAL) {
+                      fnRecall((currentRegisterBrowserScreen) % (REGISTER_W + 1));
+                    } 
+                    else if(rbrMode == RBR_LOCAL) {
+                      fnRecall(currentRegisterBrowserScreen);
+                    }
                     setSystemFlag(FLAG_ASLIFT);
                   }
                   else if(rbrMode == RBR_NAMED) {

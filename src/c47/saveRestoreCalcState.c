@@ -420,6 +420,7 @@ uint16_t flushBufferCnt = 0;
     saveStateValue(&allSubroutineLevels,            sizeof(allSubroutineLevels),                                 "allSubroutineLevels",            "uint32");
     saveStateValue(&pemCursorIsZerothStep,          sizeof(pemCursorIsZerothStep),                               "pemCursorIsZerothStep",          "bool");
     saveStateValue(&halfSecTick,                    sizeof(halfSecTick),                                         "halfSecTick",                    "bool");
+    saveStateValue(&skippedStackLines,              sizeof(skippedStackLines),                                   "skippedStackLines",              "bool");
     saveStateValue(&numberOfTamMenusToPop,          sizeof(numberOfTamMenusToPop),                               "numberOfTamMenusToPop",          "int16");
     saveStateValue(&lrSelection,                    sizeof(lrSelection),                                         "lrSelection",                    "uint16");
     saveStateValue(&lrSelectionUndo,                sizeof(lrSelectionUndo),                                     "lrSelectionUndo",                "uint16");
@@ -1005,6 +1006,7 @@ uint16_t flushBufferCnt = 0;
     restoreStateValue(&allSubroutineLevels,            sizeof(allSubroutineLevels),                                 "allSubroutineLevels",            "uint32");
     restoreStateValue(&pemCursorIsZerothStep,          sizeof(pemCursorIsZerothStep),                               "pemCursorIsZerothStep",          "bool");
     restoreStateValue(&halfSecTick,                    sizeof(halfSecTick),                                         "halfSecTick",                    "bool");
+    restoreStateValue(&skippedStackLines,              sizeof(skippedStackLines),                                   "skippedStackLines",              "bool");
     restoreStateValue(&numberOfTamMenusToPop,          sizeof(numberOfTamMenusToPop),                               "numberOfTamMenusToPop",          "int16");
     restoreStateValue(&lrSelection,                    sizeof(lrSelection),                                         "lrSelection",                    "uint16");
     restoreStateValue(&lrSelectionUndo,                sizeof(lrSelectionUndo),                                     "lrSelectionUndo",                "uint16");
@@ -1373,7 +1375,7 @@ char aimBuffer1[400];             //The concurrent use of the global aimBuffer
 
 static void doSave(uint16_t saveType);
 
-void fnSaveAuto(void) {
+void fnSaveAuto(uint16_t unusedButMandatoryParameter) {
   doSave(autoSave);
 }
 

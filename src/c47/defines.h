@@ -14,7 +14,7 @@
 // JM VARIOUS OPTIONS
 //*********************************
 
-#define VERSION1 "0.109.02.00"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
+#define VERSION1 "0.109.02.01a1"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
 
 #define MODEL USER_C47               // USER_C47 or USER_R47
 
@@ -475,32 +475,33 @@
 #define ERROR_NO_PROGRAM_SPECIFIED                54
 #define ERROR_CANNOT_WRITE_FILE                   55
 #define ERROR_OLD_ITEM_TO_REPLACE                 56
+#define ERROR_VARIABLE_NOT_SELECTED               57
 
 //Status output messages for time consuming tasks, to keep user informed
-#define LOADING_STATE_FILE                        57
-#define SAVING_STATE_FILE                         58
-#define RESTORING_STATS                           59
-#define COMPLEX_SOLVER                            60
-#define GRAPHING                                  61
-#define RECALC_SUMS                               62
-#define REAL_SOLVER                               63
+#define LOADING_STATE_FILE                        58
+#define SAVING_STATE_FILE                         59
+#define RESTORING_STATS                           60
+#define COMPLEX_SOLVER                            61
+#define GRAPHING                                  62
+#define RECALC_SUMS                               63
+#define REAL_SOLVER                               64
 
 //TI Messages (incomplete)
-#define TI_Backup_restored                        64
-#define TI_State_file_restored                    65
-#define TI_Saved_programs_and_equations           66
-#define TI_appended                               67
-#define TI_Saved_global_and_local_registers       68
-#define TI_w_local_flags_restored                 69
-#define TI_Saved_system_settings_restored         70
-#define TI_Saved_statistic_data_restored          71
-#define TI_Saved_user_variables_restored          72
-#define TI_Program_file_loaded                    73
-#define TI_Not_enough_memory_for_undo             74
+#define TI_Backup_restored                        65
+#define TI_State_file_restored                    66
+#define TI_Saved_programs_and_equations           67
+#define TI_appended                               68
+#define TI_Saved_global_and_local_registers       69
+#define TI_w_local_flags_restored                 70
+#define TI_Saved_system_settings_restored         71
+#define TI_Saved_statistic_data_restored          72
+#define TI_Saved_user_variables_restored          73
+#define TI_Program_file_loaded                    74
+#define TI_Not_enough_memory_for_undo             75
 
 
 
-#define NUMBER_OF_ERROR_CODES                     75
+#define NUMBER_OF_ERROR_CODES                     76
 #define SIZE_OF_EACH_ERROR_MESSAGE                48
 
 #define NUMBER_OF_BUG_SCREEN_MESSAGES             10
@@ -1365,11 +1366,9 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define TI_SOLVER_VARIABLE_RESULT                105
 #define TI_DATA_NEG_OVRFL                        106
 #define TI_LASTSTATEFILE                         107
-#define TI_NO_SOLVER_VARIABLE                    108
-#define TI_NO_INTEGRATE_VARIABLE                 109
-#define TI_FUNCTION                              110
-#define TI_STORCL                                111
-#define TI_TVM_EFF                               112
+#define TI_FUNCTION                              108
+#define TI_STORCL                                109
+#define TI_TVM_EFF                               110
 
 #define SET_TI_TRUE_FALSE(condition)               do { temporaryInformation = TI_FALSE + (condition); } while(0) // TI_TRUE must be TI_FALSE + 1
 

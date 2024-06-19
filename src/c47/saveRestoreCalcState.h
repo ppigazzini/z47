@@ -23,7 +23,7 @@
 
   void     fnSave        (uint16_t unusedButMandatoryParameter);
   void     fnLoad        (uint16_t loadMode);
-  void     fnSaveAuto    (void);
+  void     fnSaveAuto    (uint16_t unusedButMandatoryParameter);
   void     fnLoadAuto    (void);
   void     fnLoadedFile  (uint16_t unusedButMandatoryParameter);
   uint8_t  stringToUint8 (const char *str);

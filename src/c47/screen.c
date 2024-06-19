@@ -2225,18 +2225,6 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
   }
 
 
-  void _displayNoSolverVariable(calcRegister_t regist, char *prefix, int16_t *prefixWidth) {
-    if(regist == REGISTER_X) {
-      switch(temporaryInformation) {
-        case TI_NO_INTEGRATE_VARIABLE: strcpy(prefix,"Select Integrator Variable"); break;
-        case TI_NO_SOLVER_VARIABLE:    strcpy(prefix,"Select Solver Variable"); break;
-        default:prefix[0]=0;
-      }
-      *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
-    }
-  }
-
-
   void _displayIJ(char *prefix, int16_t *prefixWidth) {
     if(lastErrorCode != 0) {
       return;
@@ -2392,13 +2380,16 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
 
     char prefix[200], lastBase[12];
 
+    skippedStackLines = false;
     #ifdef DMCP_BUILD
       keyBuffer_pop();                                            // This causes key updates while the longer time processing register updates happen
-      if( !(regist == REGISTER_X || regist == REGISTER_Y) &&
-          !getSystemFlag(FLAG_USB) &&                             // Automatically, when on battery (hence low processor), change to skip long processing register printing, recovering the fragmented screen here: See timer.c fnTimerDummyTest()
+      if( (calcMode == CM_NORMAL || calcMode == CM_MIM) && 
+          !(regist == REGISTER_X || regist == REGISTER_Y) &&
+          !getSystemFlag(FLAG_USB) &&                             // Automatically, when on battery (hence low processor), change to skip long processing register printing, recovering the fragmented screen here: See timer.c fnTimerEndOfActivity()
           !emptyKeyBuffer() &&
           key_empty() == 1
           ) {
+        skippedStackLines = true;
         return;
       }
     #endif //DMCP
@@ -3630,9 +3621,6 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
           else if(temporaryInformation == TI_SOLVER_VARIABLE) {
             _displaySolverInput(regist, prefix, &prefixWidth);
           }
-          else if(temporaryInformation == TI_NO_SOLVER_VARIABLE || temporaryInformation == TI_NO_INTEGRATE_VARIABLE) {
-            _displayNoSolverVariable(regist, prefix, &prefixWidth);
-          }
 
           else if(temporaryInformation == TI_ACC) {
             if(regist == REGISTER_X) {
@@ -3818,9 +3806,6 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
           }
           else if(temporaryInformation == TI_SOLVER_VARIABLE) {
             _displaySolverInput(regist, prefix, &prefixWidth);
-          }
-          else if(temporaryInformation == TI_NO_SOLVER_VARIABLE || temporaryInformation == TI_NO_INTEGRATE_VARIABLE) {
-            _displayNoSolverVariable(regist, prefix, &prefixWidth);
           }
           else if(temporaryInformation == TI_VIEW_REGISTER && origRegist == REGISTER_T) {
               viewRegName(prefix, &prefixWidth);
@@ -4056,9 +4041,6 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
 
           else if(temporaryInformation == TI_SOLVER_VARIABLE) {
             _displaySolverInput(regist, prefix, &prefixWidth);
-          }
-          else if(temporaryInformation == TI_NO_SOLVER_VARIABLE || temporaryInformation == TI_NO_INTEGRATE_VARIABLE) {
-            _displayNoSolverVariable(regist, prefix, &prefixWidth);
           }
           else if(regist == REGISTER_X && (temporaryInformation == TI_IJ || temporaryInformation == TI_MIJ)) {
             _displayIJ(prefix, &prefixWidth);
@@ -4547,7 +4529,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
         //printf("##> AAAA screenUpdatingMode  MANUAL STACK=%u SKIP MENU ONCE=%u \n",screenUpdatingMode & SCRUPD_MANUAL_STACK, screenUpdatingMode & SCRUPD_SKIP_STACK_ONE_TIME);
 
         // The ordering of the 4 lines below is important for SHOW (temporaryInformation == TI_SHOW_REGISTER)
-        if(calcMode != CM_NIM && !(screenUpdatingMode & (SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME))) {
+        if((calcMode != CM_NIM || (skippedStackLines && calcMode == CM_NIM)) && !(screenUpdatingMode & (SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME))) {
           if(calcMode != CM_AIM) {
             if(calcMode != CM_TIMER && temporaryInformation != TI_VIEW_REGISTER) {
               refreshRegisterLine(REGISTER_T);

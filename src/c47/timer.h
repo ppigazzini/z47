@@ -64,7 +64,8 @@ void     refreshTimer         (void);
 
 
 void     fnTimerReset         (void);
-void     fnTimerDummyTest     (uint16_t param);
+void     fnTimerDummy1        (uint16_t param);
+void     fnTimerEndOfActivity (uint16_t param);
 void     fnTimerConfig        (uint8_t nr, void(*func)(uint16_t), uint16_t param);
 void     fnTimerStart         (uint8_t nr, uint16_t param, uint32_t time);      // Start Timer, 0..n-1
 void     fnTimerStop          (uint8_t nr);                                     // Stop Timer, 0..n-1
