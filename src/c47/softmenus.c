@@ -218,7 +218,7 @@ TO_QSPI const int16_t menu_MODE[]        = { ITM_DEG,                       ITM_
 
 // D47 vv
 TO_QSPI const int16_t menu_SETUP[]       = { ITM_SYS2,                      ITM_DMCP,                   ITM_ERPN,                 ITM_HPRP,              ITM_RECT,                    ITM_POLAR,
-                                             ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              -MNU_INFO,                   ITM_CFG,
+                                             ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_CFG,
                                              ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
 
                                              ITM_SSIZE4,                    ITM_SSIZE8,                 ITM_SETSIG2,              ITM_RMODE,             ITM_CB_CPXRES,               ITM_CB_SPCRES,
