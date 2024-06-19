@@ -280,9 +280,9 @@ void fnNop(uint16_t unusedButMandatoryParameter) {
     else
     if(calcMode == CM_NORMAL) {
       bool_t inMatrixMenu = (tam.mode == 0 ? softmenu[softmenuStack[0].softmenuId].menuItem : softmenu[softmenuStack[1].softmenuId].menuItem) == -MNU_MATX;
-      bool_t inRange = ((0 <= param && param <= LAST_LETTERED_REGISTER) ||
-                        (FIRST_STAT_REGISTER >= param && param <= LAST_STAT_REGISTER) ||
-                        (FIRST_SPARE_REGISTER >= param && param <= LAST_SPARE_REGISTER));
+      bool_t inRange = (param <= LAST_LETTERED_REGISTER ||
+                       (FIRST_STAT_REGISTER >= param && param <= LAST_STAT_REGISTER) ||
+                       (FIRST_SPARE_REGISTER >= param && param <= LAST_SPARE_REGISTER));
       bool_t isMatrix = inRange ? (getRegisterDataType(param) != dtReal34Matrix && getRegisterDataType(param) != dtComplex34Matrix) : false;
       switch(func) {
         case ITM_RCL_FV      :

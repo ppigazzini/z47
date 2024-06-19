@@ -152,7 +152,7 @@
         tmpString[CHARS_PER_LINE * ++line] = 0;
         firstFlag = true;
         for(f=0; f<NUMBER_OF_LOCAL_FLAGS; f++) {
-          if(getFlag(NUMBER_OF_GLOBAL_FLAGS + f)) {
+          if(getFlag(FIRST_LOCAL_FLAG + f)) {
             if(f < 10) {
               flagNumber[0] = '0' + f;
               flagNumber[1] = 0;
@@ -424,7 +424,7 @@
           }
 
           sprintf(tmpString, "%d", f);
-          showString(tmpString, &standardFont, 25*(f%16)+5+4*(f<=9), 22*(f/16)+175, getFlag(NUMBER_OF_GLOBAL_FLAGS + f) ? vmReverse : vmNormal, true, true);     //JM-44
+          showString(tmpString, &standardFont, 25*(f%16)+5+4*(f<=9), 22*(f/16)+175, getFlag(FIRST_LOCAL_FLAG + f) ? vmReverse : vmNormal, true, true);     //JM-44
         }
       }
 
@@ -436,12 +436,12 @@
         showString("Local flag status:", &standardFont, 1, 154-1, vmNormal, true, true);
 
         for(f=0; f<16; f++) {
-          if(getFlag(NUMBER_OF_GLOBAL_FLAGS+f)) {
+          if(getFlag(FIRST_LOCAL_FLAG + f)) {
             lcd_fill_rect(40*(f%10)+1, 22*(f/10)+176-1-44, 40*(f%10)+39-(40*(f%10)+1), 22*(f/10)+176+20-1-44-(22*(f/10)+176-1-44)+1,  0xFF);
           }
 
           sprintf(tmpString, "%d", f);
-          showString(tmpString, &standardFont, f<=9 ? 40*(f%10) + 17 : 40*(f%10) + 12, 22*(f/10)+176-1-44, getFlag(NUMBER_OF_GLOBAL_FLAGS+f) ? vmReverse : vmNormal, true, true);     //JM-44
+          showString(tmpString, &standardFont, f<=9 ? 40*(f%10) + 17 : 40*(f%10) + 12, 22*(f/10)+176-1-44, getFlag(FIRST_LOCAL_FLAG + f) ? vmReverse : vmNormal, true, true);     //JM-44
         }
       }
   #endif // OOO
