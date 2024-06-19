@@ -14,7 +14,7 @@ variables:
 
 macOS:
   stage: build
-  image: macos-13-xcode-14
+  image: macos-12-xcode-14
   script:
     - HOMEBREW_NO_AUTO_UPDATE=1 HOMEBREW_NO_INSTALL_CLEANUP=1 HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1 brew install ccache ninja python@3.9 gtk+3 gmp pulseaudio
     - python3 -m pip install meson
