@@ -829,7 +829,6 @@ TO_QSPI const confirmationTI_t confirmationTI[] = {
     {.item = ITM_DELPALL,     .string = "Delete all programs?"         },
     {.item = ITM_CLREGS,      .string = "Clear registers?"             },
     {.item = ITM_RESET,       .string = "Reset?"                       },
-    {.item = ITM_SYSTEM,      .string = "Exit to system?"              },
     {.item = ITM_DELBKUP,     .string = "Delete backup file?"          },
     {.item = ITM_CLMALL,      .string = "Clear all user menus?"        },
     {.item = ITM_CLVALL,      .string = "Clear all user variables?"    },
@@ -1143,6 +1142,12 @@ void restoreStats(void){
 
       {0,38, "Heart:16" STD_CROSS "(sin(t)^3)+i" STD_CROSS "(13" STD_CROSS "cos(t)-5" STD_CROSS "cos(2" STD_CROSS "t)-2" STD_CROSS "cos(3" STD_CROSS "t)-cos(4" STD_CROSS "t))"},
 
+      {1,39, "000123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456700012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345670001234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567000123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456700012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345670001234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567"},
+
+      {1,40, "00000000001111111111222222222233333333334444444444555555555566666666667777777777888888888899999999990123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789000000000011111111112222222222333333333344444444445555555555666666666677777777778888888888999999999901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890000000000111111111122222222223333333333444444444455555555556666666666777777777788888888889999999999"},
+
+//            0                                                                                                   1                                                                                                   2                                                                                                   3                                                                                                   4                                                                                                   5                                                                                                   -
+
     };
 
 
@@ -1273,7 +1278,7 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     memset(ram, 0, TO_BYTES(RAM_SIZE_IN_BLOCKS));
     numberOfFreeMemoryRegions = 1;
 
-    // for reserved variables (for Martin: you moron, think twice when you change something around here!)
+    // for reserved variables (for Martin: you moron, think twice when you change something around here!) ... you are funny ...
     freeMemoryRegions[0].blockAddress = allReservedVariables[LAST_RESERVED_VARIABLE - FIRST_RESERVED_VARIABLE].header.pointerToRegisterData + REAL34_SIZE_IN_BLOCKS; // + REAL34_SIZE_IN_BLOCKS is wrong because GRAMOD is a dtLongInteger, but it works
     freeMemoryRegions[0].sizeInBlocks = RAM_SIZE_IN_BLOCKS - freeMemoryRegions[0].blockAddress - 1; // - 1: one block for an empty program
 
@@ -1325,18 +1330,8 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     //xcopy(glyphNotFound.data, "\xff\xf8\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\xff\xf8", 38);
     xcopy(glyphNotFound.data, msg2[0].str2, 38);
 
-
     // Initialization of user key assignments
     xcopy(kbd_usr, kbd_std, sizeof(kbd_std));
-    //kbd_usr[ 0].keyLblAim   = CHR_A_GRAVE;
-    //kbd_usr[ 0].fShiftedAim = CHR_A_GRAVE;
-    //kbd_usr[ 4].keyLblAim   = CHR_E_ACUTE;
-    //kbd_usr[ 4].fShiftedAim = CHR_E_ACUTE;
-    //kbd_usr[18].fShifted    = -MNU_VARS;
-    //kbd_usr[18].gShifted    = CST_54;
-    //kbd_usr[19].fShifted    = ITM_SW;
-    //kbd_usr[19].gShifted    = ITM_SXY;
-    //kbd_usr[20].gShifted    = ITM_LYtoM;
 
     // initialize 9 real34 reserved variables: ACC, ↑Lim, ↓Lim, FV, i%/a, NPPER, PPER/a, PMT, and PV
     for(int i=0; i<9; i++) {
@@ -1461,7 +1456,7 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     systemFlags0 = 0;
     systemFlags1 = 0;
 
-Sett(_Reset);
+    Sett(_Reset);
     //Statusbar default setup   DATE noTIME noCR noANGLE [ADM] FRAC INT MATX TVM CARRY noSS WATCH SERIAL PRN BATVOLT noSHIFTR
 
     configCommon(CFG_DFLT);
@@ -1477,6 +1472,7 @@ Sett(_Reset);
     shiftF = false;
     shiftG = false;
     halfSecTick = false;
+    skippedStackLines = false;
 
 
     ctxtReal34.round = DEC_ROUND_HALF_EVEN;
@@ -1599,38 +1595,10 @@ Sett(_Reset);
     screenUpdatingMode = SCRUPD_AUTO;
     refreshScreen(163);
 
-    //kbd_usr[0].primary     = ITM_CC;                         //JM CPX TEMP DEFAULT        //JM note. over-writing the content of setupdefaults
-    //kbd_usr[0].gShifted    = KEY_TYPCON_UP;                  //JM TEMP DEFAULT            //JM note. over-writing the content of setupdefaults
-    //kbd_usr[0].fShifted    = KEY_TYPCON_DN;                  //JM TEMP DEFAULT            //JM note. over-writing the content of setupdefaults
-
     // The following lines are test data
     #if !defined(SAVE_SPACE_DM42_14)
       addTestPrograms();
     #endif // !SAVE_SPACE_DM42_14
-    //fnSetFlag(  3);
-    //fnSetFlag( 11);
-    //fnSetFlag( 33);
-    //fnSetFlag( 34);
-    //fnSetFlag( 52);
-    //fnSetFlag( 62);
-    //fnSetFlag( 77);
-    //fnSetFlag( 85);
-    //setSystemFlag(FLAG_CARRY);
-    //setSystemFlag(FLAG_SPCRES);
-
-    //allocateLocalRegisters(3);
-    //fnSetFlag(FIRST_LOCAL_REGISTER+0);
-    //fnSetFlag(NUMBER_OF_GLOBAL_FLAGS+2);
-    //reallocateRegister(FIRST_LOCAL_REGISTER+0, dtReal34, REAL34_SIZE_IN_BLOCKS, RT_REAL);
-    //stringToReal34("5.555", REGISTER_REAL34_DATA(FIRST_LOCAL_REGISTER));
-
-    //strcpy(tmpString, "Pure ASCII string requiring 38 bytes!");
-    //reallocateRegister(FIRST_LOCAL_REGISTER+1, dtString, TO_BLOCKS(strlen(tmpString) + 1), amNone);
-    //strcpy(REGISTER_STRING_DATA(FIRST_LOCAL_REGISTER + 1), tmpString);
-
-    //allocateNamedVariable("Z" STD_a_DIARESIS "hler");
-    //allocateNamedVariable(STD_omega STD_SUB_1);
-    //allocateNamedVariable(STD_omega STD_SUB_2);
 
     // Equation formulae
     allFormulae = NULL;
@@ -1800,6 +1768,8 @@ Sett(_Reset);
   }
 #endif //DMCP_BUILD
 
+/* not used anymore, replaced by DMCP and ActUSB
+*/
 void backToSystem(uint16_t confirmation) {
   if(confirmation == NOT_CONFIRMED) {
     setConfirmationMode(backToSystem);
