@@ -980,7 +980,7 @@ void fnClAll(uint16_t confirmation) {
     fnExitAllMenus(NOPARAM);
     fnDeleteUserMenus(CONFIRMED);             // Delete all user menus and user menus assignments
 
-    if(MODEL == USER_R47) {
+    if(calcModel == USER_R47) {
       fnRESET_MyM(USER_MR47);                  // Reset Menu MyMenu
     }
     else {
@@ -1580,7 +1580,7 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     fnKeysManagement(USER_ARESET);                                      //JM USER
     fnKeysManagement(USER_MRESET);                                      //JM USER
 
-    if(MODEL == USER_R47) {
+    if(calcModel == USER_R47) {
       fnKeysManagement(USER_MR47);                  // Reset Menu MyMenu Ribbon
     }
     else {

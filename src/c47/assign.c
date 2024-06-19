@@ -418,8 +418,8 @@ TO_QSPI const calcKey_t kbd_std_R47[37] = {
   {73,                  ITM_2,                -MNU_UNITCONV,        -MNU_CLK,             ITM_2,                ITM_W,                ITM_w,                ITM_2,                ITM_2               },
   {74,                  ITM_3,                -MNU_FLAGS,           -MNU_ALPHAFN,         ITM_3,                ITM_X,                ITM_x,                ITM_3,                ITM_3               },
   {75,                  ITM_SUB,              -MNU_PROB,            -MNU_FIN,             ITM_MINUS,            ITM_Y,                ITM_y,                ITM_MINUS,            ITM_SUB             },
-  {81,                  ITM_EXIT1,            ITM_OFF,              -MNU_IO,              ITM_EXIT1,            ITM_EXIT1,            ITM_OFF,              ITM_SNAP,             ITM_EXIT1           },
-  {82,                  ITM_0,                ITM_VIEW,             -MNU_INFO,            ITM_0,                ITM_Z,                ITM_z,                ITM_0,                ITM_0               },
+  {81,                  ITM_EXIT1,            ITM_OFF,              -MNU_INFO,            ITM_EXIT1,            ITM_EXIT1,            ITM_OFF,              ITM_SNAP,             ITM_EXIT1           },
+  {82,                  ITM_0,                ITM_VIEW,             -MNU_IO,              ITM_0,                ITM_Z,                ITM_z,                ITM_0,                ITM_0               },
   {83,                  ITM_PERIOD,           ITM_SHOW,             ITM_TGLFRT,           ITM_PERIOD,           ITM_COMMA,            ITM_SEMICOLON,        ITM_PERIOD,           ITM_PERIOD          },
   {84,                  ITM_RS,               ITM_PR,               -MNU_PFN,             ITM_NULL,             ITM_QUESTION_MARK,    ITM_COLON,            ITM_SLASH,            ITM_NULL            },
   {85,                  ITM_ADD,              -MNU_CATALOG,         -MNU_CONST,           ITM_PLUS,             ITM_SPACE,            ITM_EQUAL,            ITM_PLUS,             ITM_ADD             }

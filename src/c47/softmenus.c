@@ -205,7 +205,7 @@ TO_QSPI const int16_t menu_M_EDIT[]      = { ITM_UP_ARROW,                  ITM_
 
 
 TO_QSPI const int16_t menu_MODE[]        = { ITM_DEG,                       ITM_RAD,                    ITM_GRAD,                 ITM_HPRP,              ITM_RECT,                    ITM_POLAR,
-                                             ITM_SYS2,                      ITM_DMCP,                   ITM_NULL,                 ITM_ERPN,             -MNU_INFO,                    ITM_CFG,              //JM
+                                             ITM_SYS2,                      ITM_DMCP,                   ITM_NULL,                 ITM_ERPN,              ITM_NULL,                    ITM_CFG,              //JM
                                              ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,                                       //JM
 
                                              ITM_SSIZE4,                    ITM_SSIZE8,                 ITM_SETSIG2,              ITM_RMODE,             ITM_CB_CPXRES,               ITM_CB_SPCRES,
@@ -604,10 +604,10 @@ TO_QSPI const int16_t menu_AUDIO[]       = { ITM_NULL,                     ITM_B
 
 TO_QSPI const int16_t menu_IO[]          = { ITM_WRITEP,                   ITM_SAVEST,                  ITM_SAVE,                 ITM_LOADP,             ITM_LOADR,                   ITM_LOADV,
                                              ITM_READP,                    ITM_LOADST,                  ITM_LOAD,                 ITM_LOADSIGMA,         ITM_LOADSS,                  -MNU_PRINT,
-                                             ITM_EXPORTP,                  ITM_S_AUT,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    -MNU_AUDIO                       };
+                                             ITM_EXPORTP,                  ITM_S_AUT,                   ITM_NULL,                 ITM_NULL,              ITM_SNAP,                    -MNU_AUDIO                       };
 
 TO_QSPI const int16_t menu_PRINT[]       = { ITM_PRINTERX,                 ITM_PRINTERXY,               ITM_PRINTERSTK,           ITM_P_ALLREGS,         ITM_PRINTERR,                ITM_PRINTERPROG,
-                                            ITM_PRINTERCHAR,               ITM_PRINTERHASH,             ITM_PRINTERLCD,           ITM_SNAP,              ITM_PRINTERSIGMA,            ITM_PRINTERUSER,
+                                            ITM_PRINTERCHAR,               ITM_PRINTERHASH,             ITM_PRINTERLCD,           ITM_NULL,              ITM_PRINTERSIGMA,            ITM_PRINTERUSER,
                                             ITM_PRTACT,                    ITM_PRINTERADV,              ITM_PRINTERDLAY,          ITM_PRINTERMODE,       ITM_PRINTERTAB,              ITM_PRINTERWIDTH };
 
 TO_QSPI const int16_t menu_Tam[]         = { ITM_INDIRECTION,               -MNU_VAR,                   ITM_REG_X,                ITM_REG_Y,             ITM_REG_Z,                   ITM_REG_T,
