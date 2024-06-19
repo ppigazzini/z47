@@ -374,7 +374,9 @@
 
 //fnKeysManagement
 #define JM_ASSIGN        28
-#define USER_COPY        29
+#define TO_USER          29
+#define FROM_USER        30
+
 #define USER_V47         40
 #define USER_SHIFTS2     41
 #define USER_E47         43
