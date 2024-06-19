@@ -1856,12 +1856,18 @@ void fnKeysManagement(uint16_t choice) {
   switch(choice) {
     //---KEYS SIGMA+ ALLOCATIONS: COPY SIGMA+ USER MODE primary to -> ALLMODE
     //-----------------------------------------------------------------------
-    case USER_COPY:
+    case TO_USER:
       if(Norm_Key_00_VAR != ITM_SHIFTf && Norm_Key_00_VAR != ITM_SHIFTg && Norm_Key_00_VAR != KEY_fg) {
         kbd_usr[Norm_Key_00_key].primary = Norm_Key_00_VAR;
         fnRefreshState();
         fnSetFlag(FLAG_USER);
       }
+      break;
+
+    case FROM_USER:
+      Norm_Key_00_VAR = kbd_usr[Norm_Key_00_key].primary;
+      fnRefreshState();
+      fnClearFlag(FLAG_USER);
       break;
 
       case USER_R47:
