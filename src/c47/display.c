@@ -2688,7 +2688,6 @@ static void RegName(void) {    //JM using standard reg name, using showRegis, no
 
 
 static void SHOW_reset(void){
-
   uint8_t ix;
   for(ix=0; ix<=SHOWLineMax; ix++) { //L1 ... L7
     tmpString[ix*SHOWLineSize]=0;
@@ -2773,16 +2772,19 @@ static void dispM(uint16_t regist, char * prefix) {
 #endif //SAVE_SPACE_DM42_9
 
 
-static void prepLongintIntoLines(int16_t *last, int16_t *source, int16_t *dest, const font_t *fontToUse, int16_t maxWidth, int16_t maxLines) {
+static void prepLongintIntoLines(int16_t *last, int16_t *source, int16_t *dest, const font_t *fontToUse, int16_t maxWidth, int16_t maxLines, int16_t *startingLine) {
   int16_t d;
-  *last = stringByteLength(errorMessage);
-  *source = 0;
   *dest = 0;
-  //Fill 0, 250, 500, 750, 1000, 1250, 1500, 1750, 2000, 2250 up to maxLines*250, multiples of SHOWLineSize
-  for(d=0; d<=maxLines*SHOWLineSize ; d+=SHOWLineSize) {
+  for(d=0; d <= maxLines*SHOWLineSize ; d+=SHOWLineSize) {
+    tmpString[d] = 0;
+  }  
+  for(d = (*startingLine)*SHOWLineSize; d <= (*startingLine + maxLines)*SHOWLineSize ; d += SHOWLineSize) {
+    int16_t dd = d - (*startingLine)*SHOWLineSize;
+//printf("dd=%i d=%i startingLine=%i last=%i source=%i dest=%i ...",dd,d,*startingLine,*last,*source,*dest);
     //printf("00>>> source:%u|%s|d:%u|%s|\n",source,errorMessage+source,d,tmpString+d);
-    *dest = d;
-    while(*source < *last && stringWidth(tmpString + d, fontToUse, true, true) <=  maxWidth && *dest < TMP_STR_LENGTH - 6) {
+    *dest = dd;
+    while(*source < *last && stringWidth(tmpString + dd, fontToUse, true, true) <=  maxWidth && *dest < TMP_STR_LENGTH - 6) {
+//printf("----->d=%i startingLine=%i last=%i source=%i dest=%i wid=%i\n",d,*startingLine,*last,*source,*dest,stringWidth(tmpString + dd, fontToUse, true, true));
       tmpString[*dest] = errorMessage[*source];
       if(tmpString[*dest] & 0x80) {
         tmpString[++*dest] = errorMessage[++*source];
@@ -2790,21 +2792,25 @@ static void prepLongintIntoLines(int16_t *last, int16_t *source, int16_t *dest, 
       (*source)++;
       tmpString[++*dest] = 0;
     }
-
     uint8_t cnt = GROUPWIDTH_LEFT+1;
     while(cnt-- != 0 && *source < *last && !GROUPLEFT_DISABLED ) { //Eat away characters at the end to line, up to and excluding the last seperator.
       if(  !((SEPARATOR_LEFT[1] != 1 && tmpString[*dest-2] == SEPARATOR_LEFT[0] && tmpString[*dest-1] == SEPARATOR_LEFT[1]) ||
              (SEPARATOR_LEFT[1] == 1 && tmpString[*dest-1] == SEPARATOR_LEFT[0])) ) {
-        (*dest)--;  //line does not end on separator, so reduce the characters until is does
+        (*dest)--;  //line does not end on separator, so reduce the characters until it does
         (*source)--;
       }
       else {
         (*dest)--; //line ends on a seperator so reduce only the target and let the next line begins onthe number, not separator
-        if(SEPARATOR_LEFT[1] != 1) (*dest)--; //line ends on a double byte seperator
+        (*source)--;
+        if(SEPARATOR_LEFT[1] != 1) { //line ends on a double byte seperator
+          (*dest)--; 
+          (*source)--;
+        }
         break;
       }
     }
     tmpString[*dest] = 0;
+//printf("source=%i dest=%i [..3]=%i %i %i\n",*source,*dest,tmpString[*dest-2],tmpString[*dest-1],tmpString[*dest-0]);
     //printf(">>>AA %u %u |%s|\n", d, (uint8_t)tmpString[d], tmpString+d);
     //printf(">>>BB source=%i last=%i dest=%i\n", *source, *last, *dest);
   }
@@ -2814,29 +2820,77 @@ static void prepLongintIntoLines(int16_t *last, int16_t *source, int16_t *dest, 
 
 
 
+int16_t startingLine = 0;
+int16_t IntShowMode = 0;
+int16_t source = 0;
+#define SHOWAUTO 0
+#define SHOWSML 1
+#define SHOWTNY 2
 
-void fnShow_SCROLL(uint16_t fnShow_param) {                // Heavily modified by JM from the original fnShow
+void fnC47Show(uint16_t fnShow_param) {
 #if !defined(SAVE_SPACE_DM42_9)
   #if !defined(TESTSUITE_BUILD)
     uint8_t savedDisplayFormat = displayFormat, savedDisplayFormatDigits = displayFormatDigits;
     bool_t savedConstantFractions = constantFractions;
     bool_t thereIsANextLine;
-    int16_t source, dest, last, d, i, offset, bytesProcessed, aa, bb, cc, dd, aa2=0, aa3=0, aa4=0, numberOfLines = 0;
+    int16_t dest = 0, last = 0, d, i, offset, bytesProcessed, aa, bb, cc, dd, aa2 = 0, aa3 = 0, aa4 = 0, numberOfLines = 0;
     uint64_t nn;
 
     displayFormat = DF_ALL;
     displayFormatDigits = 0;
     constantFractions = false;
 
+
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
     switch(fnShow_param) {
       case NOPARAM:
-               showSoftmenu(-MNU_SHOW);
+               showSoftmenu(-MNU_SHOW); //continue, don't use 'break'
+      case 0:  
+               source = 0;
                showRegis = REGISTER_X;
+               startingLine = 0;
+               IntShowMode = SHOWAUTO;
                break;
-      case 0:  showRegis = REGISTER_X;
+
+      case ITM_PERIOD: //was 10
+               source = 0;
+               if(getRegisterDataType(showRegis) == dtLongInteger) {
+                 startingLine = 0;
+                 if(IntShowMode == SHOWAUTO) {
+                   IntShowMode = SHOWSML;
+                 }
+                 else if(IntShowMode == SHOWSML) {
+                   IntShowMode = SHOWTNY;
+                 }
+                 else if(IntShowMode == SHOWTNY) {
+                   IntShowMode = SHOWSML;
+                 }
+               }
                break;
-      case 11:
-      case 1:  if(showRegis == 9999) {
+
+      case ITM_RS: //was 11
+               if(getRegisterDataType(showRegis) == dtLongInteger) {
+                 if(temporaryInformation != TI_SHOW_REGISTER_SMALL) {
+                   startingLine = 0;
+                   source = 0;
+                 }
+                 else {
+                   startingLine += 10;
+                   if(startingLine == 30 || source == last) {
+                     startingLine = 0;
+                     source = 0;
+                   }
+                 }
+                 IntShowMode = SHOWSML;
+               }
+               break;
+
+      case ITM_UP1: //was 1
+               source = 0;
+               startingLine = 0;
+               IntShowMode = SHOWAUTO;
+               if(showRegis == 9999) {
                  showRegis = REGISTER_X;
                }
                else {
@@ -2847,9 +2901,7 @@ void fnShow_SCROLL(uint16_t fnShow_param) {                // Heavily modified b
                    showRegis = FIRST_NAMED_VARIABLE;
                  }
                  else {
-                   if(fnShow_param == 1) {
-                     showRegis++;
-                   }
+                   showRegis++;
                  }
 
                  while(!regInRange(showRegis) && showRegis < FIRST_NAMED_VARIABLE + numberOfNamedVariables) {
@@ -2860,8 +2912,12 @@ void fnShow_SCROLL(uint16_t fnShow_param) {                // Heavily modified b
                  printf("R=%u TI=%u\n",showRegis, temporaryInformation);
                #endif // PC_BUILD && MONITOR_CLRSCR
                break;
-      case 12:
-      case 2:  if(showRegis == 9999) {
+      
+      case ITM_DOWN1: //was 2
+               source = 0;
+               startingLine = 0;
+               IntShowMode = SHOWAUTO;
+               if(showRegis == 9999) {
                  showRegis = REGISTER_X;
                }
                else {
@@ -2872,9 +2928,7 @@ void fnShow_SCROLL(uint16_t fnShow_param) {                // Heavily modified b
                    showRegis = REGISTER_S;
                  }
                  else {
-                   if(fnShow_param == 2) {
-                     showRegis--;
-                   }
+                   showRegis--;
                  }
                  while(!regInRange(showRegis) && showRegis != 0) {
                    showRegis--;
@@ -2884,25 +2938,25 @@ void fnShow_SCROLL(uint16_t fnShow_param) {                // Heavily modified b
                  printf("R=%u TI=%u\n",showRegis, temporaryInformation);
                #endif // PC_BUILD && MONITOR_CLRSCR
                break;
-      case 255:                                       //Allow fnView to enter a value into Show without changing the register number
+      case ITM_NOP:                                       //Allow fnView to enter a value into Show without changing the register number
                break;
       default:
         break;
     }
+    #pragma GCC diagnostic pop
+
+// printf("fnC47Show: fnShow_param=%i startingLine=%i IntShowMode=%i source=%i\n",fnShow_param, startingLine, IntShowMode, source);
 
 
     #if !defined(TESTSUITE_BUILD)
       #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
-        printf(">>> ---- clearScreenOld from display.c fnShow_SCROLL\n");
+        printf(">>> ---- clearScreenOld from display.c fnC47Show\n");
       #endif // PC_BUILD && MONITOR_CLRSCR
         //      clearScreenOld(!clrStatusBar, clrRegisterLines, !clrSoftkeys); //Clear screen content while NEW SHOW
         refreshScreen(153);
-
     #endif // !TESTSUITE_BUILD
 
-    int16_t temporaryInformationMem = temporaryInformation;
     SHOW_reset();
-
     switch(getRegisterDataType(showRegis)) {
       case dtLongInteger:
 
@@ -2912,41 +2966,50 @@ void fnShow_SCROLL(uint16_t fnShow_param) {                // Heavily modified b
 
         strcpy(errorMessage,tmpString + 2100);
         longIntegerRegisterToDisplayString(showRegis, errorMessage + stringByteLength(tmpString + 2100), WRITE_BUFFER_LEN, 25*SCREEN_WIDTH, /*10*50-3*/ 1010, false);  //JM added last parameter: AglyphNumberow LARGELI
+        last = stringByteLength(errorMessage);
         int16_t glyphNumber = stringGlyphLength(errorMessage);
+
         //printf("glyphNumber %i\n",glyphNumber);
+
+
         //LARGE font
-        if(((glyphNumber < 170) )){// && GROUPLEFT_DISABLED) || (!GROUPLEFT_DISABLED && (glyphNumber - glyphNumber / (GROUPWIDTH_LEFT == 0 ? 1000:GROUPWIDTH_LEFT) < 147))) {
+        if(IntShowMode == SHOWAUTO && glyphNumber < 170){
           temporaryInformation = TI_SHOW_REGISTER_BIG;
           numberOfLines = 6;
-          prepLongintIntoLines(&last, &source, &dest, &numericFont, SCREEN_WIDTH - stringWidth("0", &numericFont, true, true), numberOfLines);
+          startingLine = 0;
+          prepLongintIntoLines(&last, &source, &dest, &numericFont, SCREEN_WIDTH - stringWidth("0", &numericFont, true, true), numberOfLines, &startingLine);
           //printf("001 ll=%i source=%i last=%i\n",glyphNumber, source, last);
-          if(tmpString[6*SHOWLineSize] == 0) break;
+          if(tmpString[numberOfLines*SHOWLineSize] == 0) {
+            break;
+          }
         }
 
+
         //STANDARD font
-        if( ((glyphNumber < 560) )//&& GROUPLEFT_DISABLED) || (!GROUPLEFT_DISABLED && (glyphNumber - glyphNumber / (GROUPWIDTH_LEFT == 0 ? 1000:GROUPWIDTH_LEFT) < 400) )    //overflow, try using the standard font
-            || ( (fnShow_param == 11 || fnShow_param == 12) && temporaryInformationMem == TI_SHOW_REGISTER_TINY)
-          ) {
+        if(glyphNumber < 560 || IntShowMode == SHOWSML) {
           SHOW_reset();
           temporaryInformation = TI_SHOW_REGISTER_SMALL;
           numberOfLines = 10;
-          prepLongintIntoLines(&last, &source, &dest, &standardFont, SCREEN_WIDTH - stringWidth("0", &standardFont, true, true), numberOfLines);
-          if(tmpString[10*SHOWLineSize] == 0) {
+          prepLongintIntoLines(&last, &source, &dest, &standardFont, SCREEN_WIDTH - stringWidth("0", &standardFont, true, true), numberOfLines, &startingLine);
+          if(tmpString[numberOfLines*SHOWLineSize] == 0) {
             break;
           }
-          if(fnShow_param == 11 || fnShow_param == 12) goto gbreak;
+          if(IntShowMode == SHOWSML) goto goBreak1;
+
         } else {
             tmpString[numberOfLines*SHOWLineSize] = 32;  //flag to activate next step TINY
         }
 
+
         //TINY font
-        if(tmpString[numberOfLines*SHOWLineSize] != 0) {
+        if(tmpString[numberOfLines*SHOWLineSize] != 0 ||  IntShowMode == SHOWTNY) {
           SHOW_reset();
           temporaryInformation = TI_SHOW_REGISTER_TINY;
           numberOfLines = min(21,SHOWLineMax);
-          prepLongintIntoLines(&last, &source, &dest, &tinyFont, SCREEN_WIDTH - stringWidth("0", &tinyFont, true, true), numberOfLines);
-gbreak:
+          startingLine = 0;
+          prepLongintIntoLines(&last, &source, &dest, &tinyFont, SCREEN_WIDTH - stringWidth("0", &tinyFont, true, true), numberOfLines, &startingLine);
 
+goBreak1:
           if(tmpString[numberOfLines*SHOWLineSize]!=0) {                               // The long integer is too long
             int16_t ii = stringLastGlyph(tmpString + (numberOfLines-1)*SHOWLineSize);    //last char
             ii = stringPrevGlyph(tmpString + (numberOfLines-1)*SHOWLineSize,ii);         //backspace
