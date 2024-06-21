@@ -906,32 +906,28 @@ void fnTime(uint16_t unusedButMandatoryParameter) {
 
 
 void fnSetDate(uint16_t unusedButMandatoryParameter) {
-  cancelFilename = true;
-  #if defined(DMCP_BUILD)
-    tm_t timeInfo;
-    dt_t dateInfo;
-    real34_t j, y, m, d;
+  #ifdef DMCP_BUILD
+    cancelFilename = true;
+      tm_t timeInfo;
+      dt_t dateInfo;
+      real34_t j, y, m, d;
 
-    if(checkDateArgument(REGISTER_X, &j)) {
-      rtc_read(&timeInfo, &dateInfo);
-      decomposeJulianDay(&j, &y, &m, &d);
-      dateInfo.year  = real34ToUInt32(&y);
-      dateInfo.month = real34ToUInt32(&m);
-      dateInfo.day   = real34ToUInt32(&d);
-      rtc_write(&timeInfo, &dateInfo);
-    }
-  #else // !DMCP_BUILD
-    displayCalcErrorMessage(ERROR_FUNCTION_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
-    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-      sprintf(errorMessage, "real calculator only!");
-      moreInfoOnError("In function fnSetDate:", errorMessage, NULL, NULL);
-    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-  #endif // DMCP_BUILD
+      if(checkDateArgument(REGISTER_X, &j)) {
+        rtc_read(&timeInfo, &dateInfo);
+        decomposeJulianDay(&j, &y, &m, &d);
+        dateInfo.year  = real34ToUInt32(&y);
+        dateInfo.month = real34ToUInt32(&m);
+        dateInfo.day   = real34ToUInt32(&d);
+        rtc_write(&timeInfo, &dateInfo);
+      }
+  #elif defined(PC_BUILD)
+      temporaryInformation = TI_DMCP_ONLY;
+  #endif //!PC_BUILD
 }
 
 void fnSetTime(uint16_t unusedButMandatoryParameter) {
-  cancelFilename = true;
-  #if defined(DMCP_BUILD)
+  #ifdef DMCP_BUILD
+    cancelFilename = true;
     tm_t timeInfo;
     dt_t dateInfo;
     real34_t time34;
@@ -977,13 +973,9 @@ void fnSetTime(uint16_t unusedButMandatoryParameter) {
     else {
       displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
     }
-  #else // !DMCP_BUILD
-    displayCalcErrorMessage(ERROR_FUNCTION_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
-    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-      sprintf(errorMessage, "real calculator only!");
-      moreInfoOnError("In function fnSetTime:", errorMessage, NULL, NULL);
-    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-  #endif // DMCP_BUILD
+  #elif defined(PC_BUILD)
+    temporaryInformation = TI_DMCP_ONLY;
+  #endif //!PC_BUILD
 }
 
 

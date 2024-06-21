@@ -1375,9 +1375,14 @@ char aimBuffer1[400];             //The concurrent use of the global aimBuffer
 
 static void doSave(uint16_t saveType);
 
-void fnSaveAuto(uint16_t unusedButMandatoryParameter) {
-  doSave(autoSave);
-}
+  void fnSaveAuto(uint16_t unusedButMandatoryParameter) {
+  #ifdef DMCP_BUILD
+    doSave(autoSave);
+  #elif PC_BUILD
+    temporaryInformation = TI_DMCP_ONLY;
+  #endif //DMCP_BUILD
+  }
+
 
 void fnSave(uint16_t saveMode) {
   if(saveMode == SM_MANUAL_SAVE) {

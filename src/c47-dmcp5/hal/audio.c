@@ -156,6 +156,7 @@ void fnPlay(uint16_t regist) {
         //errorMoreInfo("DataType %" PRIu32 " is not a Nx2 matrix", getRegisterDataType(regist));
         return;
       }
+      screenUpdatingMode = SCRUPD_AUTO;
       for(uint16_t i = 0; i < m.header.matrixRows; ++i) {
         frequency = real34ToUInt32(&m.matrixElements[i * cols]);
         ms_delay  = real34ToUInt32(&m.matrixElements[i * cols + 1]);
