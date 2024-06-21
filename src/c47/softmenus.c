@@ -2893,7 +2893,7 @@ bool_t BASE_OVERRIDEONCE = false;
                id == -MNU_Sf_TOOL     ||
                id == -MNU_Solver_TOOL ||
                id == -MNU_1STDERIV    ||
-               id == -MNU_2NDDERIV) && currentSolverVariable != INVALID_VARIABLE)
+               id == -MNU_2NDDERIV) && numberOfFormulae >= 1)
                ||
               (id == -MNU_MVAR && (currentSolverStatus & SOLVER_STATUS_INTERACTIVE) && !(currentSolverStatus & SOLVER_STATUS_USES_FORMULA) && (currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_INTEGRATE)
            ) {
@@ -2943,7 +2943,7 @@ bool_t BASE_OVERRIDEONCE = false;
           varList = (uint8_t *)"\0";
         }
       }
-      else if(currentSolverVariable != INVALID_VARIABLE){
+      else {
         parseEquation(currentFormula, EQUATION_PARSER_MVAR, aimBuffer, tmpString);
         varList = (uint8_t *)tmpString;
       }
