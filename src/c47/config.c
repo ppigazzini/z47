@@ -980,7 +980,7 @@ void fnClAll(uint16_t confirmation) {
     fnExitAllMenus(NOPARAM);
     fnDeleteUserMenus(CONFIRMED);             // Delete all user menus and user menus assignments
 
-    if(MODEL == USER_R47) {
+    if(calcModel == USER_R47) {
       fnRESET_MyM(USER_MR47);                  // Reset Menu MyMenu
     }
     else {
@@ -1580,7 +1580,7 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     fnKeysManagement(USER_ARESET);                                      //JM USER
     fnKeysManagement(USER_MRESET);                                      //JM USER
 
-    if(MODEL == USER_R47) {
+    if(calcModel == USER_R47) {
       fnKeysManagement(USER_MR47);                  // Reset Menu MyMenu Ribbon
     }
     else {
@@ -1826,12 +1826,18 @@ void fnKeysManagement(uint16_t choice) {
   switch(choice) {
     //---KEYS SIGMA+ ALLOCATIONS: COPY SIGMA+ USER MODE primary to -> ALLMODE
     //-----------------------------------------------------------------------
-    case USER_COPY:
+    case TO_USER:
       if(Norm_Key_00_VAR != ITM_SHIFTf && Norm_Key_00_VAR != ITM_SHIFTg && Norm_Key_00_VAR != KEY_fg) {
         kbd_usr[Norm_Key_00_key].primary = Norm_Key_00_VAR;
         fnRefreshState();
         fnSetFlag(FLAG_USER);
       }
+      break;
+
+    case FROM_USER:
+      Norm_Key_00_VAR = kbd_usr[Norm_Key_00_key].primary;
+      fnRefreshState();
+      fnClearFlag(FLAG_USER);
       break;
 
       case USER_R47:

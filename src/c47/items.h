@@ -1947,7 +1947,7 @@
 #define ITM_INP_DEF_LI              1891
 #define ITM_SI_P                    1892
 #define KEY_fg                      1893
-#define MNU_1894                    1894        // [DL] Deprecated MNU_TAMCMPALPHA
+#define ITM_FROM_USER               1894
 #define ITM_HPBASE                  1895
 #define ITM_N_KEY_op_j              1896
 #define ITM_N_KEY_TGLFRT            1897
@@ -1967,8 +1967,8 @@
 #define ITM_INP_DEF_43S             1911
 #define ITM_XXEQ                    1912
 #define MNU_TAMALPHA                1913
-#define ITM_USER_COPY               1914
-#define ITM_N_KEY_NIL                  1915
+#define ITM_TO_USER                 1914
+#define ITM_N_KEY_NIL               1915
 #define ITM_USER_DM42               1916
 #define ITM_HPRP                    1917
 #define ITM_N_KEY_FGSH                 1918
