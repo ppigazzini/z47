@@ -24,7 +24,6 @@ void fnShow                            (uint16_t unusedButMandatoryParameter);
 void mimShowElement                    (void);
 void fnView                            (uint16_t regist);
 void real34ToDisplayString             (const real34_t *real34, uint32_t tag, char *displayString, const font_t *font, int16_t maxWidth, int16_t displayHasNDigits, bool_t limitExponent, bool_t frontSpace);
-void real34ToDisplayString2            (const real34_t *real34, char *displayString, int16_t displayHasNDigits, bool_t limitExponent, bool_t noFix, bool_t frontSpace);
 void dateToDisplayString               (calcRegister_t regist, char *displayString);
 void complex34ToDisplayString          (const complex34_t *complex34, char *displayString, const font_t *font, int16_t maxWidth, int16_t displayHasNDigits, bool_t limitExponent, bool_t frontSpace, const uint16_t tagAngle, const bool_t tagPolar);
 void complex34ToDisplayString2         (const complex34_t *complex34, char *displayString, int16_t displayHasNDigits, bool_t limitExponent, bool_t frontSpace,  const uint16_t tagAngle, const bool_t tagPolar);
@@ -40,6 +39,6 @@ void exponentToDisplayString           (int32_t exponent, char *displayString, c
 void supNumberToDisplayString          (int32_t supNumber, char *displayString, char *displayValueString, bool_t insertGap);
 void subNumberToDisplayString          (int32_t subNumber, char *displayString, char *displayValueString);
 void longIntegerToAllocatedString      (const longInteger_t lgInt, char *str, int32_t strLen);
-void fnShow_SCROLL                     (uint16_t fnShow_param);    //JMSHOW
+void fnC47Show                         (uint16_t fnShow_param);    //JMSHOW
 
 #endif // !DISPLAY_H

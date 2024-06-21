@@ -1413,19 +1413,21 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
 
 
   void showDispSmall(uint16_t offset, uint8_t _h1) {
-    #define line_h0 21
+    #define line_small 21
+    #define line_tiny  10
     const uint32_t line_hMultiLineEdOffset = Y_POSITION_OF_REGISTER_T_LINE;
     if(tmpString[offset]) {
-      uint32_t w = stringWidth(tmpString + offset, &standardFont, true, true);
-      showString(tmpString + offset, &standardFont, SCREEN_WIDTH - w, line_hMultiLineEdOffset + line_h0 * _h1, vmNormal, true, true);
+      uint32_t w = stringWidth(tmpString + offset, temporaryInformation == TI_SHOW_REGISTER_SMALL ? &standardFont : &tinyFont, true, true);
+      showString(tmpString + offset, temporaryInformation == TI_SHOW_REGISTER_SMALL ? &standardFont : &tinyFont, SCREEN_WIDTH - w, line_hMultiLineEdOffset + (temporaryInformation == TI_SHOW_REGISTER_SMALL ? line_small : line_tiny) * _h1, vmNormal, true, true);
       #if defined(VERBOSE_SCREEN) && defined(PC_BUILD)
         printf("^^^^NEW SHOW: %s\n", tmpString + offset);
       #endif // VERBOSE_SCREEN && PC_BUILD
       if(_h1 == 0) {
-        if(temporaryInformation == TI_SHOW_REGISTER_SMALL && tmpString[1500] != 0) {
+        if((temporaryInformation == TI_SHOW_REGISTER_SMALL && tmpString[5*SHOWLineSize] != 0) ||
+           (temporaryInformation == TI_SHOW_REGISTER_TINY && tmpString[14*SHOWLineSize] != 0)    ) {   //The softmenu space is used
         }
         else {
-          lcd_fill_rect(0,240-3*SOFTMENU_HEIGHT,SCREEN_WIDTH,1,LCD_EMPTY_VALUE);
+          lcd_fill_rect(0,SCREEN_HEIGHT-3*SOFTMENU_HEIGHT,SCREEN_WIDTH,1,LCD_EMPTY_VALUE);
         }
       }
     }
@@ -2223,18 +2225,6 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
   }
 
 
-  void _displayNoSolverVariable(calcRegister_t regist, char *prefix, int16_t *prefixWidth) {
-    if(regist == REGISTER_X) {
-      switch(temporaryInformation) {
-        case TI_NO_INTEGRATE_VARIABLE: strcpy(prefix,"Select Integrator Variable"); break;
-        case TI_NO_SOLVER_VARIABLE:    strcpy(prefix,"Select Solver Variable"); break;
-        default:prefix[0]=0;
-      }
-      *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
-    }
-  }
-
-
   void _displayIJ(char *prefix, int16_t *prefixWidth) {
     if(lastErrorCode != 0) {
       return;
@@ -2390,13 +2380,16 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
 
     char prefix[200], lastBase[12];
 
+    skippedStackLines = false;
     #ifdef DMCP_BUILD
       keyBuffer_pop();                                            // This causes key updates while the longer time processing register updates happen
-      if( !(regist == REGISTER_X || regist == REGISTER_Y) &&
-          !getSystemFlag(FLAG_USB) &&                             // Automatically, when on battery (hence low processor), change to skip long processing register printing, recovering the fragmented screen here: See timer.c fnTimerDummyTest()
+      if( (calcMode == CM_NORMAL || calcMode == CM_MIM) && 
+          !(regist == REGISTER_X || regist == REGISTER_Y) &&
+          !getSystemFlag(FLAG_USB) &&                             // Automatically, when on battery (hence low processor), change to skip long processing register printing, recovering the fragmented screen here: See timer.c fnTimerEndOfActivity()
           !emptyKeyBuffer() &&
           key_empty() == 1
           ) {
+        skippedStackLines = true;
         return;
       }
     #endif //DMCP
@@ -2699,79 +2692,107 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
         showString(errorMessages[TI_Not_enough_memory_for_undo], &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
       }
 
-      //Original SHOW
-      else if(temporaryInformation == TI_SHOW_REGISTER && regist == REGISTER_T) { // L1
-        w = stringWidth(tmpString, &standardFont, true, true);
-        showString(tmpString, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_T_LINE + 21*0, vmNormal, true, true);
-      }
 
-      else if(temporaryInformation == TI_SHOW_REGISTER && regist == REGISTER_Z && tmpString[300] != 0) { // L2 & L3
-        w = stringWidth(tmpString + 300, &standardFont, true, true);
-        showString(tmpString + 300, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_T_LINE + 21*1, vmNormal, true, true);
-
-        if(tmpString[600]) {
-          w = stringWidth(tmpString + 600, &standardFont, true, true);
-          showString(tmpString + 600, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_T_LINE + 21*2, vmNormal, true, true);
-        }
-      }
-
-      else if(temporaryInformation == TI_SHOW_REGISTER && regist == REGISTER_Y && tmpString[900] != 0) { // L4 & L5
-        w = stringWidth(tmpString + 900, &standardFont, true, true);
-        showString(tmpString + 900, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_T_LINE + 21*3, vmNormal, true, true);
-
-        if(tmpString[1200]) {
-          w = stringWidth(tmpString + 1200, &standardFont, true, true);
-          showString(tmpString + 1200, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_T_LINE + 21*4, vmNormal, true, true);
-        }
-      }
-
-      else if(temporaryInformation == TI_SHOW_REGISTER && regist == REGISTER_X && tmpString[1500] != 0) { // L6 & L7
-        w = stringWidth(tmpString + 1500, &standardFont, true, true);
-        showString(tmpString + 1500, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_T_LINE + 21*5, vmNormal, true, true);
-
-        if(tmpString[1800]) {
-          w = stringWidth(tmpString + 1800, &standardFont, true, true);
-          showString(tmpString + 1800, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_T_LINE + 21*6, vmNormal, true, true);
-        }
-      }
+//      //Original SHOW
+//      else if(temporaryInformation == TI_SHOW_REGISTER && regist == REGISTER_T) { // L1
+//        w = stringWidth(tmpString, &standardFont, true, true);
+//        showString(tmpString, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_T_LINE + 21*0, vmNormal, true, true);
+//      }
+//
+//      else if(temporaryInformation == TI_SHOW_REGISTER && regist == REGISTER_Z && tmpString[300] != 0) { // L2 & L3
+//        w = stringWidth(tmpString + 300, &standardFont, true, true);
+//        showString(tmpString + 300, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_T_LINE + 21*1, vmNormal, true, true);
+//
+//        if(tmpString[600]) {
+//          w = stringWidth(tmpString + 600, &standardFont, true, true);
+//          showString(tmpString + 600, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_T_LINE + 21*2, vmNormal, true, true);
+//        }
+//      }
+//
+//      else if(temporaryInformation == TI_SHOW_REGISTER && regist == REGISTER_Y && tmpString[900] != 0) { // L4 & L5
+//        w = stringWidth(tmpString + 900, &standardFont, true, true);
+//        showString(tmpString + 900, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_T_LINE + 21*3, vmNormal, true, true);
+//
+//        if(tmpString[1200]) {
+//          w = stringWidth(tmpString + 1200, &standardFont, true, true);
+//          showString(tmpString + 1200, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_T_LINE + 21*4, vmNormal, true, true);
+//        }
+//      }
+//
+//      else if(temporaryInformation == TI_SHOW_REGISTER && regist == REGISTER_X && tmpString[1500] != 0) { // L6 & L7
+//        w = stringWidth(tmpString + 1500, &standardFont, true, true);
+//        showString(tmpString + 1500, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_T_LINE + 21*5, vmNormal, true, true);
+//
+//        if(tmpString[1800]) {
+//          w = stringWidth(tmpString + 1800, &standardFont, true, true);
+//          showString(tmpString + 1800, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_T_LINE + 21*6, vmNormal, true, true);
+//        }
+//      }
 
       // NEW SHOW                                                                  //JMSHOW vv
-      else if(temporaryInformation == TI_SHOW_REGISTER_SMALL) {
-        #define line_h0 21
+//      else if(temporaryInformation == TI_SHOW_REGISTER_SMALL || temporaryInformation == TI_SHOW_REGISTER) {
+//        switch(regist) {
+//          case REGISTER_T:
+//            showDispSmall( 0 * SHOWLineSize, 0);          // L1
+//            break;
+//          case REGISTER_Z:
+//            showDispSmall( 1 * SHOWLineSize, 1);          // L2 & L3
+//            showDispSmall( 2 * SHOWLineSize, 2);
+//            break;
+//          case REGISTER_Y:
+//            showDispSmall( 3 * SHOWLineSize, 3);          // L4 & L5
+//            showDispSmall( 4 * SHOWLineSize, 4);
+//            break;
+//          case REGISTER_X:
+//            showDispSmall( 5 * SHOWLineSize, 5);          // L6 & L7 & L8 & L9 & L10
+//            showDispSmall( 6 * SHOWLineSize, 6);
+//            showDispSmall( 7 * SHOWLineSize, 7);
+//            showDispSmall( 8 * SHOWLineSize, 8);
+//            showDispSmall( 9 * SHOWLineSize, 9);
+//            break;
+//          default: ;
+//        }
+//      }
+
+      else if(temporaryInformation == TI_SHOW_REGISTER_SMALL || temporaryInformation == TI_SHOW_REGISTER) {
         switch(regist) {
-          // L1
-          case REGISTER_T:
-            showDispSmall(   0, 0);
-            break;
-          // L2 & L3
-          case REGISTER_Z:
-            showDispSmall( 300, 1);
-            showDispSmall( 600, 2);
-            break;
-          // L4 & L5
-          case REGISTER_Y:
-            showDispSmall( 900, 3);
-            showDispSmall(1200, 4);
-            break;
-          // L6 & L7
-          case REGISTER_X:
-            showDispSmall(1500, 5);
-            showDispSmall(1800, 6);
-            showDispSmall(2100, 7);
-            showDispSmall(2400, 8);
-            break;
-          default: ;
+          case REGISTER_X:{
+              clearScreenOld(!clrStatusBar, clrRegisterLines, clrSoftkeys);
+              int16_t nn = 0;
+              while (nn <= 9) {
+                showDispSmall( nn * SHOWLineSize, nn);          // L1
+                nn++;
+              } 
+              break;
+            }
+            default: ;
+          }
         }
-      }
+
+
+      else if(temporaryInformation == TI_SHOW_REGISTER_TINY) {
+        switch(regist) {
+          case REGISTER_X:{
+              clearScreenOld(!clrStatusBar, clrRegisterLines, clrSoftkeys);
+              int16_t nn = 0;
+              while (nn<=SCREEN_HEIGHT/line_tiny && nn<SHOWLineMax) {
+                showDispSmall( nn * SHOWLineSize, nn);          // L1
+                nn++;
+              } 
+              break;
+            }
+            default: ;
+          }
+        }
+
 
       else if(temporaryInformation == TI_SHOW_REGISTER_BIG) {
         if(regist == REGISTER_T) {
-            showDisp(   0, 0);
-            showDisp( 300, 1);
-            showDisp( 600, 2);
-            showDisp( 900, 3);
-            showDisp(1200, 4); // knowingly overwrite the menu area
-            showDisp(1500, 5); // knowingly overwrite the menu area
+            int16_t nn = 0;
+            while (nn<=5) {
+              showDisp( nn * SHOWLineSize, nn);
+              nn++;
+            } 
           }
       }
 
@@ -3600,9 +3621,6 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
           else if(temporaryInformation == TI_SOLVER_VARIABLE) {
             _displaySolverInput(regist, prefix, &prefixWidth);
           }
-          else if(temporaryInformation == TI_NO_SOLVER_VARIABLE || temporaryInformation == TI_NO_INTEGRATE_VARIABLE) {
-            _displayNoSolverVariable(regist, prefix, &prefixWidth);
-          }
 
           else if(temporaryInformation == TI_ACC) {
             if(regist == REGISTER_X) {
@@ -3788,9 +3806,6 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
           }
           else if(temporaryInformation == TI_SOLVER_VARIABLE) {
             _displaySolverInput(regist, prefix, &prefixWidth);
-          }
-          else if(temporaryInformation == TI_NO_SOLVER_VARIABLE || temporaryInformation == TI_NO_INTEGRATE_VARIABLE) {
-            _displayNoSolverVariable(regist, prefix, &prefixWidth);
           }
           else if(temporaryInformation == TI_VIEW_REGISTER && origRegist == REGISTER_T) {
               viewRegName(prefix, &prefixWidth);
@@ -4026,9 +4041,6 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
 
           else if(temporaryInformation == TI_SOLVER_VARIABLE) {
             _displaySolverInput(regist, prefix, &prefixWidth);
-          }
-          else if(temporaryInformation == TI_NO_SOLVER_VARIABLE || temporaryInformation == TI_NO_INTEGRATE_VARIABLE) {
-            _displayNoSolverVariable(regist, prefix, &prefixWidth);
           }
           else if(regist == REGISTER_X && (temporaryInformation == TI_IJ || temporaryInformation == TI_MIJ)) {
             _displayIJ(prefix, &prefixWidth);
@@ -4517,7 +4529,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
         //printf("##> AAAA screenUpdatingMode  MANUAL STACK=%u SKIP MENU ONCE=%u \n",screenUpdatingMode & SCRUPD_MANUAL_STACK, screenUpdatingMode & SCRUPD_SKIP_STACK_ONE_TIME);
 
         // The ordering of the 4 lines below is important for SHOW (temporaryInformation == TI_SHOW_REGISTER)
-        if(calcMode != CM_NIM && !(screenUpdatingMode & (SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME))) {
+        if((calcMode != CM_NIM || (skippedStackLines && calcMode == CM_NIM)) && !(screenUpdatingMode & (SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME))) {
           if(calcMode != CM_AIM) {
             if(calcMode != CM_TIMER && temporaryInformation != TI_VIEW_REGISTER) {
               refreshRegisterLine(REGISTER_T);

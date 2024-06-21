@@ -138,19 +138,18 @@ void configCommon(uint16_t idx) {
 #define ERPN                  116    // config_fneRPN                    
 #define fgLongPressSetting    117    // config_setFGLSettings            
 #define IRFRAC                118    // config_constantFractions         
-#define IRFRACMODE            119    // config_constantFractionsMode     
-#define IRFRACON              120    // config_constantFractionsOn       
-#define DenMaX                121    // config_denmax                    
-#define TVMIKnown             122    // tvm          
-#define TVMIChanges           123    // tvm          
+#define IRFRACON              119    // config_constantFractionsOn       
+#define DenMaX                120    // config_denmax                    
+#define TVMIKnown             121    // tvm          
+#define TVMIChanges           122    // tvm          
 
 
 #define xxx -10001
-#define _Reset 1
-#define _HP35  2
-#define _JM    3
-#define _RJ    4
-#define _C47   5
+#define _Reset   1
+#define _HP35    2           //HP35[ENTER]1972
+#define _JM      3           //C47JM
+#define _RJ      4           //C47RJ
+#define _C47     5           //C47[ENTER]2023
 #define _DefltSB 6
 #define _TVM     7
 #define _numberOfGrps 7
@@ -176,10 +175,9 @@ IPGRP1,                              xxx,        0,                             
 IPGRP1x,                             xxx,        0,                              0,               _gpr1x,               1,                      _gpr1x,          xxx,             xxx,                  
 ERPN,                                xxx,        1,                              0,               1,                    1,                      1,               xxx,             xxx,                  
 fgLongPressSetting,                  xxx,        xxx,                            RB_FGLNOFF,      RB_FGLNFUL,           RB_FGLNFUL,             RB_FGLNFUL,      xxx,             xxx,                  
-IRFRAC,                              xxx,        0,                              xxx,             xxx,                  0,                      xxx,             xxx,             xxx,                  
-IRFRACMODE,                          xxx,        CF_NORMAL,                      xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,                  
-IRFRACON,                            xxx,        0,                              xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,                  
-DenMaX,                              xxx,        64,                             xxx,             64,                   9999,                   64,              xxx,             xxx,                  
+IRFRAC,                              xxx,        0,                              xxx,             1,                    1,                      xxx,             xxx,             xxx,                  
+IRFRACON,                            xxx,        0,                              xxx,             1,                    1,                      xxx,             xxx,             xxx,                  
+DenMaX,                              xxx,        64,                             xxx,             9999,                 999,                    64,              xxx,             xxx,                  
 //TVM,                               n/a,        Reset,                          HP35,            JM,                   RJ,                     C47,             DefltSB,         TVM,                  
 TVMIKnown,                           xxx,        0,                              xxx,             xxx,                  xxx,                    xxx,             xxx,             0,                    // Clear flag TVMIKnown
 TVMIChanges,                         xxx,        0,                              xxx,             xxx,                  xxx,                    xxx,             xxx,             0,                    // Clear flag TVMIChanges
@@ -196,7 +194,6 @@ RESERVED_VARIABLE_CPERONA,           xxx,        12,                            
 2,                                   xxx,        xxx,                            SS_4,            SS_8,                 SS_8,                   SS_8,            xxx,             xxx,                  //SetSetting
 2,                                   xxx,        xxx,                            ITM_CPXRES0,     ITM_CPXRES1,          ITM_CPXRES1,            ITM_CPXRES1,     xxx,             xxx,                  //SetSetting
 2,                                   xxx,        xxx,                            ITM_SPCRES0,     ITM_SPCRES1,          ITM_SPCRES1,            ITM_SPCRES1,     xxx,             xxx,                  //SetSetting
-2,                                   xxx,        xxx,                            xxx,             JC_IRFRAC,            JC_IRFRAC,              xxx,             xxx,             xxx,                  //SetSetting
 //FLAG,                              set/clear,  Reset,                          HP35,            JM,                   RJ,                     C47,             DefltSB,         TVM,                  
 3,                                   0,          FLAG_FRCYC,                     xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,                  // Clear flag FLAG_FRCYC
 3,                                   1,          FLAG_MONIT,                     xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,                  // Set flag  FLAG_MONIT
@@ -225,10 +222,8 @@ RESERVED_VARIABLE_CPERONA,           xxx,        12,                            
 3,                                   0,          FLAG_SBbatV,                    xxx,             xxx,                  xxx,                    xxx,             FLAG_SBbatV,     xxx,                  // Clear flag FLAG_SBbatV
 3,                                   1,          xxx,                            xxx,             FLAG_SBbatV,          FLAG_SBbatV,            xxx,             xxx,             xxx,                  // Set flag  FLAG_SBbatV
 3,                                   0,          FLAG_SBshfR,                    xxx,             xxx,                  xxx,                    xxx,             FLAG_SBshfR,     xxx,                  // Clear flag FLAG_SBshfR
-3,                                   0,          FLAG_FRACT,                     xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,                  // Clear flag FLAG_FRACT
 3,                                   1,          FLAG_MULTx,                     xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,                  // Set flag  FLAG_MULTx
 3,                                   1,          FLAG_AUTOFF,                    xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,                  // Set flag  FLAG_AUTOFF
-3,                                   1,          FLAG_PROPFR,                    xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,                  // Set flag  FLAG_PROPFR
 3,                                   1,          FLAG_ENDPMT,                    xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,                  // Set flag  FLAG_ENDPMT
 3,                                   1,          FLAG_HPRP,                      xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,                  // Set flag  FLAG_HPRP
 3,                                   0,          xxx,                            xxx,             FLAG_HPRP,            FLAG_HPRP,              xxx,             xxx,             xxx,                  // Clear flag FLAG_HPRP
@@ -238,15 +233,20 @@ RESERVED_VARIABLE_CPERONA,           xxx,        12,                            
 3,                                   0,          xxx,                            xxx,             FLAG_POLAR,           xxx,                    xxx,             xxx,             xxx,                  // Clear flag FLAG_POLAR
 3,                                   0,          xxx,                            xxx,             xxx,                  xxx,                    FLAG_CPXj,       xxx,             xxx,                  // Clear flag FLAG_CPXj
 3,                                   1,          xxx,                            xxx,             FLAG_CPXj,            xxx,                    xxx,             xxx,             xxx,                  // Set flag  FLAG_CPXj
+3,                                   1,          FLAG_CPXRES,                    xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,                  // Set flag  FLAG_CPXRES
+3,                                   1,          FLAG_SPCRES,                    xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,                  // Set flag  FLAG_SPCRES
+3,                                   1,          FLAG_SSIZE8,                    xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,                  // Set flag  FLAG_SSIZE8
+3,                                   0,          FLAG_ASLIFT,                    xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,                  // Clear flag FLAG_ASLIFT
+
+//fractions
+3,                                   0,          FLAG_DENFIX,                    xxx,             FLAG_DENFIX,          xxx,                    xxx,             xxx,             xxx,                  // Clear flag FLAG_DENFIX
+3,                                   0,          FLAG_FRACT,                     xxx,             FLAG_FRACT,           xxx,                    xxx,             xxx,             xxx,                  // Clear flag FLAG_FRACT
+3,                                   1,          FLAG_PROPFR,                    xxx,             FLAG_PROPFR,          xxx,                    xxx,             xxx,             xxx,                  // Set flag  FLAG_PROPFR
+3,                                   0,          FLAG_DENANY,                    xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,                  // Clear flag FLAG_DENANY
+3,                                   1,          xxx,                            xxx,             FLAG_DENANY,          FLAG_DENANY,            xxx,             xxx,             xxx,                  // Set flag  FLAG_DENANY
 3,                                   0,          FLAG_FRCSRN,                    xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,                  // Clear flag FLAG_FRCSRN
 3,                                   1,          xxx,                            xxx,             FLAG_FRCSRN,          xxx,                    xxx,             xxx,             xxx,                  // Set flag  FLAG_FRCSRN
-3,                                   1,          FLAG_CPXRES,                    xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,                  // Set flag  FLAG_CPXRES
-3,                                   1,          FLAG_SSIZE8,                    xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,                  // Set flag  FLAG_SSIZE8
-3,                                   0,          FLAG_DENANY,                    xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,                  // Clear flag FLAG_DENANY
-3,                                   1,          xxx,                            xxx,             xxx,                  FLAG_DENANY,            xxx,             xxx,             xxx,                  // Set flag  FLAG_DENANY
-3,                                   0,          FLAG_ASLIFT,                    xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,                  // Clear flag FLAG_ASLIFT
-3,                                   0,          FLAG_DENFIX,                    xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,                  // Clear flag FLAG_DENFIX
-3,                                   1,          FLAG_SPCRES,                    xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,                  // Set flag  FLAG_SPCRES
+
 //fnSetGapChar,                      n/a,        Reset,                          HP35,            JM,                   RJ,                     C47,             DefltSB,         TVM,                  
 4,                                   xxx,        0+ITM_SPACE_PUNCTUATION,        ITM_NULL,        0+_gapl,              0+ITM_SPACE_4_PER_EM,   0+_gapl,         xxx,             xxx,                  //fnSetGapChar
 4,                                   xxx,        32768+ITM_SPACE_PUNCTUATION,    ITM_NULL+32768,  32768+_gapr,          32768+ITM_NULL,         32768+_gapr,     xxx,             xxx,                  //fnSetGapChar
@@ -286,7 +286,6 @@ void Sett(int16_t grp) {
         case ERPN                 : {fneRPN                       (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // ERPN
         case fgLongPressSetting   : {setFGLSettings               (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // fgLongPressSetting
         case IRFRAC               : {constantFractions          = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]) == 1 ? true : false;break;}   // IRFRAC
-        case IRFRACMODE           : {constantFractionsMode      = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // IRFRACMODE
         case IRFRACON             : {constantFractionsOn        = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]) == 1 ? true : false;break;}   // IRFRACON
         case DenMaX               : {denMax                     = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // DenMaX
         case TVMIKnown            : {tvmIKnown                  = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]) == 1 ? true : false;break;}   // TVMIKnown
@@ -830,7 +829,6 @@ TO_QSPI const confirmationTI_t confirmationTI[] = {
     {.item = ITM_DELPALL,     .string = "Delete all programs?"         },
     {.item = ITM_CLREGS,      .string = "Clear registers?"             },
     {.item = ITM_RESET,       .string = "Reset?"                       },
-    {.item = ITM_SYSTEM,      .string = "Exit to system?"              },
     {.item = ITM_DELBKUP,     .string = "Delete backup file?"          },
     {.item = ITM_CLMALL,      .string = "Clear all user menus?"        },
     {.item = ITM_CLVALL,      .string = "Clear all user variables?"    },
@@ -1144,6 +1142,12 @@ void restoreStats(void){
 
       {0,38, "Heart:16" STD_CROSS "(sin(t)^3)+i" STD_CROSS "(13" STD_CROSS "cos(t)-5" STD_CROSS "cos(2" STD_CROSS "t)-2" STD_CROSS "cos(3" STD_CROSS "t)-cos(4" STD_CROSS "t))"},
 
+      {1,39, "000123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456700012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345670001234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567000123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456700012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345670001234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567"},
+
+      {1,40, "00000000001111111111222222222233333333334444444444555555555566666666667777777777888888888899999999990123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789000000000011111111112222222222333333333344444444445555555555666666666677777777778888888888999999999901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890000000000111111111122222222223333333333444444444455555555556666666666777777777788888888889999999999"},
+
+//            0                                                                                                   1                                                                                                   2                                                                                                   3                                                                                                   4                                                                                                   5                                                                                                   -
+
     };
 
 
@@ -1222,6 +1226,7 @@ void resetOtherConfigurationStuff(void) {
   lrSelection = CF_LINEAR_FITTING;
   lrSelectionUndo = lrSelection;                               //Not saved in file, but reset
 
+  IrFractionsCurrentStatus = CF_NORMAL;
   HOME3 = true;
   MYM3 = false;
   ShiftTimoutMode = false;
@@ -1273,7 +1278,7 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     memset(ram, 0, TO_BYTES(RAM_SIZE_IN_BLOCKS));
     numberOfFreeMemoryRegions = 1;
 
-    // for reserved variables (for Martin: you moron, think twice when you change something around here!)
+    // for reserved variables (for Martin: you moron, think twice when you change something around here!) ... you are funny ...
     freeMemoryRegions[0].blockAddress = allReservedVariables[LAST_RESERVED_VARIABLE - FIRST_RESERVED_VARIABLE].header.pointerToRegisterData + REAL34_SIZE_IN_BLOCKS; // + REAL34_SIZE_IN_BLOCKS is wrong because GRAMOD is a dtLongInteger, but it works
     freeMemoryRegions[0].sizeInBlocks = RAM_SIZE_IN_BLOCKS - freeMemoryRegions[0].blockAddress - 1; // - 1: one block for an empty program
 
@@ -1325,18 +1330,8 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     //xcopy(glyphNotFound.data, "\xff\xf8\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\xff\xf8", 38);
     xcopy(glyphNotFound.data, msg2[0].str2, 38);
 
-
     // Initialization of user key assignments
     xcopy(kbd_usr, kbd_std, sizeof(kbd_std));
-    //kbd_usr[ 0].keyLblAim   = CHR_A_GRAVE;
-    //kbd_usr[ 0].fShiftedAim = CHR_A_GRAVE;
-    //kbd_usr[ 4].keyLblAim   = CHR_E_ACUTE;
-    //kbd_usr[ 4].fShiftedAim = CHR_E_ACUTE;
-    //kbd_usr[18].fShifted    = -MNU_VARS;
-    //kbd_usr[18].gShifted    = CST_54;
-    //kbd_usr[19].fShifted    = ITM_SW;
-    //kbd_usr[19].gShifted    = ITM_SXY;
-    //kbd_usr[20].gShifted    = ITM_LYtoM;
 
     // initialize 9 real34 reserved variables: ACC, ↑Lim, ↓Lim, FV, i%/a, NPPER, PPER/a, PMT, and PV
     for(int i=0; i<9; i++) {
@@ -1461,7 +1456,7 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     systemFlags0 = 0;
     systemFlags1 = 0;
 
-Sett(_Reset);
+    Sett(_Reset);
     //Statusbar default setup   DATE noTIME noCR noANGLE [ADM] FRAC INT MATX TVM CARRY noSS WATCH SERIAL PRN BATVOLT noSHIFTR
 
     configCommon(CFG_DFLT);
@@ -1477,6 +1472,7 @@ Sett(_Reset);
     shiftF = false;
     shiftG = false;
     halfSecTick = false;
+    skippedStackLines = false;
 
 
     ctxtReal34.round = DEC_ROUND_HALF_EVEN;
@@ -1599,38 +1595,10 @@ Sett(_Reset);
     screenUpdatingMode = SCRUPD_AUTO;
     refreshScreen(163);
 
-    //kbd_usr[0].primary     = ITM_CC;                         //JM CPX TEMP DEFAULT        //JM note. over-writing the content of setupdefaults
-    //kbd_usr[0].gShifted    = KEY_TYPCON_UP;                  //JM TEMP DEFAULT            //JM note. over-writing the content of setupdefaults
-    //kbd_usr[0].fShifted    = KEY_TYPCON_DN;                  //JM TEMP DEFAULT            //JM note. over-writing the content of setupdefaults
-
     // The following lines are test data
     #if !defined(SAVE_SPACE_DM42_14)
       addTestPrograms();
     #endif // !SAVE_SPACE_DM42_14
-    //fnSetFlag(  3);
-    //fnSetFlag( 11);
-    //fnSetFlag( 33);
-    //fnSetFlag( 34);
-    //fnSetFlag( 52);
-    //fnSetFlag( 62);
-    //fnSetFlag( 77);
-    //fnSetFlag( 85);
-    //setSystemFlag(FLAG_CARRY);
-    //setSystemFlag(FLAG_SPCRES);
-
-    //allocateLocalRegisters(3);
-    //fnSetFlag(FIRST_LOCAL_REGISTER+0);
-    //fnSetFlag(NUMBER_OF_GLOBAL_FLAGS+2);
-    //reallocateRegister(FIRST_LOCAL_REGISTER+0, dtReal34, REAL34_SIZE_IN_BLOCKS, RT_REAL);
-    //stringToReal34("5.555", REGISTER_REAL34_DATA(FIRST_LOCAL_REGISTER));
-
-    //strcpy(tmpString, "Pure ASCII string requiring 38 bytes!");
-    //reallocateRegister(FIRST_LOCAL_REGISTER+1, dtString, TO_BLOCKS(strlen(tmpString) + 1), amNone);
-    //strcpy(REGISTER_STRING_DATA(FIRST_LOCAL_REGISTER + 1), tmpString);
-
-    //allocateNamedVariable("Z" STD_a_DIARESIS "hler");
-    //allocateNamedVariable(STD_omega STD_SUB_1);
-    //allocateNamedVariable(STD_omega STD_SUB_2);
 
     // Equation formulae
     allFormulae = NULL;
@@ -1800,6 +1768,8 @@ Sett(_Reset);
   }
 #endif //DMCP_BUILD
 
+/* not used anymore, replaced by DMCP and ActUSB
+*/
 void backToSystem(uint16_t confirmation) {
   if(confirmation == NOT_CONFIRMED) {
     setConfirmationMode(backToSystem);

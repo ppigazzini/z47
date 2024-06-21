@@ -192,14 +192,22 @@ void refreshTimer(void) {                   // This function is called when next
 #endif // DMCP_BUILD
 
 
-void fnTimerDummyTest(uint16_t param) {
+void fnTimerDummy1(uint16_t param) {
 #if defined(PC_BUILD) || defined(TESTSUITE_BUILD)
-  printf("fnTimerDummyTest called  %u\n", param);
+  printf("fnTimerDummy1 called  %u\n", param);
+#endif // PC_BUILD || TESTSUITE_BUILD
+}
+
+
+
+void fnTimerEndOfActivity(uint16_t param) {
+#if defined(PC_BUILD) || defined(TESTSUITE_BUILD)
+  printf("fnTimerEndOfActivity called  %u\n", param);
 #endif // PC_BUILD || TESTSUITE_BUILD
 
 #if defined(DMCP_BUILD)
-  if(!getSystemFlag(FLAG_USB)) {       //update screen after 6 sec timout, to restore the half-updated screen in battery mode. See refreshRegisterLine() in screen.c
-    screenUpdatingMode = SCRUPD_AUTO;
+  if(skippedStackLines && !getSystemFlag(FLAG_USB)) {       //update screen after 6 sec timout, to restore the half-updated screen in battery mode. See refreshRegisterLine() in screen.c
+    screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
     refreshScreen(32);
   }
 #endif // DMCP_BUILD
@@ -214,7 +222,7 @@ void fnTimerReset(void) {
 
   for(int i = 0; i < TMR_NUMBER; i++) {
     timer[i].state = TMR_UNUSED;
-    timer[i].func = fnTimerDummyTest;
+    timer[i].func = fnTimerDummy1;
     timer[i].param = 0;
   }
 
@@ -237,22 +245,22 @@ void fnTimerConfig(uint8_t nr, void(*func)(uint16_t), uint16_t param) {
 
 
 
-void fnTimerStart(uint8_t nr, uint16_t param, uint32_t time) {
+void fnTimerStart(uint8_t nr, uint16_t param, uint32_t time) {//time is in ms
   #if defined(DMCP_BUILD)
-  uint32_t now = (uint32_t)sys_current_ms();
+  uint32_t now = (uint32_t)sys_current_ms();                  //DMCP time is in ms
   #endif // DMCP_BUILD
 
   #if defined(PC_BUILD)
-  gint64 now = g_get_monotonic_time();
+  gint64 now = g_get_monotonic_time();                        //PC time is in us
   #endif // PC_BUILD
 
   if(nr < TMR_NUMBER) {
     timer[nr].param = param;
     #if defined(DMCP_BUILD)
-    timer[nr].timer_will_expire = (uint32_t)(now + time);
+    timer[nr].timer_will_expire = (uint32_t)(now + time);     // is in ms
     #endif // DMCP_BUILD
     #if defined(PC_BUILD)
-    timer[nr].timer_will_expire = (gint64)(now + time *1000);
+    timer[nr].timer_will_expire = (gint64)(now + time *1000); // time * 1000 is in us
     if(timer[nr].timer_will_expire < 0) {
       timer[nr].timer_will_expire = time *1000;
     }
