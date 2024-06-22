@@ -1959,7 +1959,7 @@
 #define ITM_1903                    1903
 #define ITM_N_KEY_USER              1904
 #define ITM_1905                    1905
-#define ITM_1906                    1906
+#define ITM_N_KEY_SIGMA             1906
 #define ITM_1907                    1907
 #define ITM_N_KEY_FSH               1908
 #define ITM_ms                      1909
