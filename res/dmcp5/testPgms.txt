@@ -1,0 +1,3 @@
+Should you wish to try the collection of test RPN programs, copy testPgms.bin to the calculator root folder, example:
+
+cp ./testPgms.bin ../testPgms.bin

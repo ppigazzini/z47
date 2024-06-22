@@ -94,30 +94,31 @@ TO_QSPI const char errorMessages[NUMBER_OF_ERROR_CODES][SIZE_OF_EACH_ERROR_MESSA
 /* 54 */  "No program specified",
 /* 55 */  "Cannot write file ",
 /* 56 */  "Function has changed, please replace",
+/* 57 */  "Variable required, please select variable",
 
 //Status output messages for time consuming tasks, to keep user informed
-/* 57 */  "  Loading state file ...",
-/* 58 */  "  Saving state file ...",
-/* 59 */  "  Loading stats ...",
-/* 60 */  "  Solving for real/complex root ...",
-/* 61 */  "  Calculating graph coordinates ...",
-/* 62 */  "  Re-calculating sums ... ",
-/* 63 */  "  Solving for real root ...",
+/* 58 */  "  Loading state file ...",
+/* 59 */  "  Saving state file ...",
+/* 60 */  "  Loading stats ...",
+/* 61 */  "  Solving for real/complex root ...",
+/* 62 */  "  Calculating graph coordinates ...",
+/* 63 */  "  Re-calculating sums ... ",
+/* 64 */  "  Solving for real root ...",
 
 //TI Messages (incomplete)
-/* 64 */  "Backup restored",
-/* 65 */  "State file loaded",
-/* 66 */  "Programs and equations loaded",
-/* 67 */  "appended",
-/* 68 */  "Global and local registers loaded",
-/* 69 */  "(w/ local flags)",
-/* 70 */  "System settings loaded",
-/* 71 */  "Statistical data loaded",
-/* 72 */  "User variables loaded",
-/* 73 */  "Program file loaded",
-/* 74 */  "Not enough memory for undo",
+/* 65 */  "Backup restored",
+/* 66 */  "State file loaded",
+/* 67 */  "Programs and equations loaded",
+/* 68 */  "appended",
+/* 69 */  "Global and local registers loaded",
+/* 70 */  "(w/ local flags)",
+/* 71 */  "System settings loaded",
+/* 72 */  "Statistical data loaded",
+/* 73 */  "User variables loaded",
+/* 74 */  "Program file loaded",
+/* 75 */  "Not enough memory for undo",
 
-/* 75 */
+/* 76 */
 
 };
 
@@ -194,7 +195,7 @@ void fnErrorMessage(uint16_t unusedButMandatoryParameter) {
 
     default: {
       displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "data type %s cannot be used for this function!", getRegisterDataTypeName(REGISTER_X, false, false));
         moreInfoOnError("In function fnErrorMessage:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -208,7 +209,7 @@ void fnErrorMessage(uint16_t unusedButMandatoryParameter) {
   }
   else {
     displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "the argument is not less than %u or is negative!", NUMBER_OF_ERROR_CODES);
       moreInfoOnError("In function fnErrorMessage:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -340,7 +341,7 @@ void displayDomainErrorMessage(uint8_t errorCode, calcRegister_t errMessageRegis
  * \param void
  * \return void
  ***********************************************/
-#if(EXTRA_INFO_ON_CALC_ERROR != 1)
+#if (EXTRA_INFO_ON_CALC_ERROR != 1)
   void typeError(void) {
     displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
   }

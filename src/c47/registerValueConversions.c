@@ -100,6 +100,12 @@ void convertLongIntegerToReal(longInteger_t source, real_t *destination, realCon
 }
 
 
+void convertLongIntegerToReal34(longInteger_t source, real34_t *destination) {
+  longIntegerToAllocatedString(source, tmpString, TMP_STR_LENGTH);
+  stringToReal34(tmpString, destination);
+}
+
+
 
 void convertLongIntegerToShortIntegerRegister(longInteger_t lgInt, uint32_t base, calcRegister_t destination) {
   uint64_t u64;
@@ -127,7 +133,7 @@ void convertLongIntegerToShortIntegerRegister(longInteger_t lgInt, uint32_t base
       clearSystemFlag(FLAG_OVERFLOW);
       *(REGISTER_SHORT_INTEGER_DATA(destination)) = WP34S_intChs(*(REGISTER_SHORT_INTEGER_DATA(destination)));
     }
-    if (overflow && !getSystemFlag(FLAG_OVERFLOW))
+    if(overflow && !getSystemFlag(FLAG_OVERFLOW))
       setSystemFlag(FLAG_OVERFLOW);
   }
 }
@@ -472,7 +478,7 @@ void convertReal34RegisterToDateRegister(calcRegister_t source, calcRegister_t d
     ( getSystemFlag(FLAG_MDY) && !isValidDay(&part3, &part1, &part2)) ||
     ( getSystemFlag(FLAG_DMY) && !isValidDay(&part3, &part2, &part1))) {
       displayCalcErrorMessage(ERROR_BAD_TIME_OR_DATE_INPUT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         moreInfoOnError("In function convertReal34RegisterToDateRegister:", "Invalid date input like 30 Feb.", NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return;
@@ -770,14 +776,14 @@ void realToDouble(const real_t *vv, double *v) {      //Not using double interna
 static bool_t typeIsNumber(uint32_t type, bool_t *cmplx) {
   switch(type) {
     case dtComplex34:
-      if (cmplx != NULL)
+      if(cmplx != NULL)
           *cmplx = true;
       return true;
 
     case dtLongInteger:
     case dtShortInteger:
     case dtReal34:
-      if (cmplx != NULL)
+      if(cmplx != NULL)
           *cmplx = false;
       return true;
   }
@@ -786,9 +792,17 @@ static bool_t typeIsNumber(uint32_t type, bool_t *cmplx) {
 
 void badTypeError(calcRegister_t reg) {
   displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_T);
-#if(EXTRA_INFO_ON_CALC_ERROR == 1)
+#if (EXTRA_INFO_ON_CALC_ERROR == 1)
   sprintf(errorMessage, "cannot convert Register %d from %s", reg, getRegisterDataTypeName(reg, true, false));
   moreInfoOnError("In function badTypeError:", errorMessage, NULL, NULL);
+#endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+}
+
+void badDomainError(calcRegister_t reg) {
+  displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_T);
+#if (EXTRA_INFO_ON_CALC_ERROR == 1)
+  sprintf(errorMessage, "The input value is outside of the domain.");
+  moreInfoOnError("In function badDomainError:", errorMessage, NULL, NULL);
 #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
 }
 
@@ -837,7 +851,7 @@ bool_t getRegisterAsComplexOrReal(calcRegister_t reg, real_t *r, real_t *i, bool
     case dtComplex34:
       real34ToReal(REGISTER_REAL34_DATA(reg), r);
       real34ToReal(REGISTER_IMAG34_DATA(reg), i);
-      if (cmplx != NULL)
+      if(cmplx != NULL)
         *cmplx = true;
       return true;
 
@@ -864,7 +878,7 @@ bool_t getRegisterAsRealQuiet(calcRegister_t reg, real_t *val) {
       break;
 
     case dtComplex34:
-      if (real34IsZero(REGISTER_IMAG34_DATA(reg))) {
+      if(real34IsZero(REGISTER_IMAG34_DATA(reg))) {
         real34ToReal(REGISTER_REAL34_DATA(reg), val);
         break;
       }
@@ -879,7 +893,7 @@ bool_t getRegisterAsRealQuiet(calcRegister_t reg, real_t *val) {
 bool_t getRegisterAsReal(calcRegister_t reg, real_t *val) {
   bool_t res = getRegisterAsRealQuiet(reg, val);
 
-  if (!res)
+  if(!res)
     badTypeError(reg);
   return res;
 }
@@ -917,19 +931,19 @@ bool_t getRegisterAsShortInt(calcRegister_t reg, bool_t *sign, uint64_t *val, bo
 
     case dtComplex34:
     case dtReal34:
-      if (getRegisterAsReal(reg, &rval) && !realIsInfinite(&rval)) {
+      if(getRegisterAsReal(reg, &rval) && !realIsInfinite(&rval)) {
         *sign = realIsNegative(&rval);
         realSetPositiveSign(&rval);
         frac = !realIsAnInteger(&rval);
         u64 = realToUint64C47(&rval);
         of = (u64 & shortIntegerMask) != u64;
-        if (!of)
+        if(!of)
           switch (shortIntegerMode) {
             case SIM_UNSIGN:
               of = realCompareLessThan(&rval, const_2p64);
               break;
             case SIM_2COMPL:
-              if (*sign)
+              if(*sign)
                 of = realCompareLessEqual(&rval, const_2p63);
               else
                 /* fall through */
@@ -947,9 +961,9 @@ bool_t getRegisterAsShortInt(calcRegister_t reg, bool_t *sign, uint64_t *val, bo
       return false;
   }
 
-  if (overflow != NULL)
+  if(overflow != NULL)
     *overflow = of;
-  if (fractional != NULL)
+  if(fractional != NULL)
     *fractional = frac;
   return true;
 }
@@ -968,9 +982,15 @@ bool_t getRegisterAsLongInt(calcRegister_t reg, longInteger_t val) {
 
     case dtComplex34:
     case dtReal34:
-      if (getRegisterAsReal(reg, &rval) && !realIsInfinite(&rval) && realIsAnInteger(&rval)) {
-        convertRealToLongInteger(&rval, val, DEC_ROUND_DOWN);
-        break;
+      if(getRegisterAsReal(reg, &rval) && !realIsInfinite(&rval)) {
+        if(realIsAnInteger(&rval)) {
+          convertRealToLongInteger(&rval, val, DEC_ROUND_DOWN);
+          break;
+        }
+        else {
+          badDomainError(reg);
+          return false;
+        }
       }
       /* fall through */
 
@@ -1026,12 +1046,12 @@ bool_t getRegisterAsRealAngle(calcRegister_t reg, real_t *val, angularMode_t *xA
     case dtReal34:
       real34ToReal(REGISTER_REAL34_DATA(reg), val);
       *xAngularMode = getRegisterAngularMode(reg);
-      if (*xAngularMode == amNone)
+      if(*xAngularMode == amNone)
         *xAngularMode = currentAngularMode;
       break;
 
     case dtComplex34:
-      if (real34IsZero(REGISTER_IMAG34_DATA(reg))) {
+      if(real34IsZero(REGISTER_IMAG34_DATA(reg))) {
         real34ToReal(REGISTER_REAL34_DATA(reg), val);
         *xAngularMode = amRadian;
         break;
@@ -1057,27 +1077,27 @@ void processIntRealComplexMonadicFunction(void (*realf)(void), void (*complexf)(
   if(!saveLastX())
     return;
 
-  if (type == dtShortInteger) {
-    if (shortintf != NULL) {
+  if(type == dtShortInteger) {
+    if(shortintf != NULL) {
       shortintf();
       goto done;
     }
-    if (longintf != NULL) {
+    if(longintf != NULL) {
       longintf();
       goto done;
     }
   }
 
-  if (type == dtLongInteger && longintf != NULL)
+  if(type == dtLongInteger && longintf != NULL)
     longintf();
-  else if (type == dtReal34Matrix && realf != NULL)
+  else if(type == dtReal34Matrix && realf != NULL)
     elementwiseRema(realf);
-  else if (type == dtComplex34Matrix && complexf != NULL)
+  else if(type == dtComplex34Matrix && complexf != NULL)
     elementwiseCxma(complexf);
-  else if (getRegisterAsComplexOrReal(REGISTER_X, &aReal, &aImag, &cmplxRes)) {
-    if (!cmplxRes && realf != NULL)
+  else if(getRegisterAsComplexOrReal(REGISTER_X, &aReal, &aImag, &cmplxRes)) {
+    if(!cmplxRes && realf != NULL)
       realf();
-    else if (complexf != NULL)
+    else if(complexf != NULL)
       complexf();
     else
       badTypeError(REGISTER_X);
@@ -1098,58 +1118,67 @@ void processRealComplexDyadicFunction(void (*realf)(void), void (*complexf)(void
   if(!saveLastX())
     return;
 
-  if (typeX == dtReal34Matrix && realf != NULL) {
-    if (typeY == dtReal34Matrix) {
+  if(typeX == dtReal34Matrix && realf != NULL) {
+    if(typeY == dtReal34Matrix) {
       elementwiseRemaRema(realf);
       goto fin;
-    } else if (typeY == dtComplex34Matrix) {
-      if (complexf != NULL)
+    }
+    else if(typeY == dtComplex34Matrix) {
+      if(complexf != NULL)
         elementwiseCxmaRema(complexf);
       else
         badTypeError(REGISTER_Y);
       goto fin;
-    } else if (yNumber) {
-      if (yCmplx) {
-        if (complexf != NULL)
+    }
+    else if(yNumber) {
+      if(yCmplx) {
+        if(complexf != NULL)
           elementwiseCplxRema(complexf);
         else
           badTypeError(REGISTER_Y);
-      } else
+      }
+      else {
         elementwiseRealRema(realf);
+      }
       goto fin;
     }
-  } else if (typeX == dtComplex34Matrix && complexf != NULL) {
-    if (typeY == dtReal34Matrix) {
+  }
+  else if(typeX == dtComplex34Matrix && complexf != NULL) {
+    if(typeY == dtReal34Matrix) {
       elementwiseRemaCxma(complexf);
       goto fin;
-    } else if (typeY == dtComplex34Matrix) {
+    }
+    else if(typeY == dtComplex34Matrix) {
       elementwiseCxmaCxma(complexf);
       goto fin;
-    } else if (yNumber) {
+    }
+    else if(yNumber) {
       elementwiseCplxCxma(complexf);
       goto fin;
     }
-  } else if (typeY == dtReal34Matrix && xNumber) {
-    if (!xCmplx && realf != NULL)
+  }
+  else if(typeY == dtReal34Matrix && xNumber) {
+    if(!xCmplx && realf != NULL)
       elementwiseRemaReal(realf);
-    else if (complexf != NULL)
+    else if(complexf != NULL)
       elementwiseRemaCplx(complexf);
     else
       badTypeError(REGISTER_X);
     goto fin;
-  } else if (typeY == dtComplex34Matrix && xNumber) {
+  }
+  else if(typeY == dtComplex34Matrix && xNumber) {
     elementwiseCxmaCplx(complexf);
     goto fin;
   }
 
   /* Fall through to numeric/numeric or error if not */
-  if (!getRegisterAsComplexOrReal(REGISTER_X, &xReal, &xImag, &cmplxRes)
+  if(!getRegisterAsComplexOrReal(REGISTER_X, &xReal, &xImag, &cmplxRes)
       || !getRegisterAsComplexOrReal(REGISTER_Y, &yReal, &yImag, &cmplxRes))
     return;
 
-  if (!cmplxRes && realf != NULL)
+  if(!cmplxRes && realf != NULL)
     realf();
-  else if (complexf != NULL)
+  else if(complexf != NULL)
     complexf();
   else
     badTypeError(xCmplx ? REGISTER_X : REGISTER_Y);
@@ -1164,13 +1193,15 @@ void processIntRealComplexDyadicFunction(void (*realf)(void), void (*complexf)(v
   const bool_t xInt = typeX == dtLongInteger || typeX == dtShortInteger;
   const bool_t yInt = typeY == dtLongInteger || typeY == dtShortInteger;
 
-  if (typeX == dtShortInteger && typeY == dtShortInteger && shortintf != NULL) {
+  if(typeX == dtShortInteger && typeY == dtShortInteger && shortintf != NULL) {
     if(saveLastX())
       shortintf();
-  } else if (xInt && yInt && longintf != NULL) {
+  }
+  else if(xInt && yInt && longintf != NULL) {
     if(saveLastX())
       longintf();
-  } else {
+  }
+  else {
     processRealComplexDyadicFunction(realf, complexf);
     return;
   }

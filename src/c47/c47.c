@@ -39,7 +39,7 @@ TO_QSPI const char     hexadecimalDigits[17] = "0123456789ABCDEF";
 TO_QSPI const char     registerFlagLetters[27] = "XYZTABCDLIJKMNPQRSEFGHOUVW";
 void                   (*confirmedFunction)(uint16_t);
 
-uint8_t calcModel = MODEL;
+uint8_t calcModel = CALCMODEL;
 
 
 // Variables stored in RAM
@@ -60,6 +60,7 @@ bool_t                 programListEnd;
 bool_t                 serialIOIconEnabled;
 bool_t                 pemCursorIsZerothStep;
 bool_t                 halfSecTick;
+bool_t                 skippedStackLines = false;
 
 
 realContext_t          ctxtReal4;    //   limited digits: used for higher speed internal real calcs
@@ -185,8 +186,10 @@ bool_t                BASE_MYM;                                //JM Screen / key
 bool_t                jm_G_DOUBLETAP;                          //JM Screen / keyboard operation setup
 bool_t                jm_LARGELI;
 bool_t                constantFractions;                       //JM
-uint8_t               constantFractionsMode;
+uint8_t               IrFractionsCurrentStatus;
 bool_t                constantFractionsOn;                     //JM
+bool_t                tvmIKnown;
+bool_t                tvmIChanges;
 
 bool_t                eRPN;                                    //JM eRPN Create a flag to enable or disable eRPN. See bufferize.c
 bool_t                HOME3;                                   //JM HOME Create a flag to enable or disable triple shift HOME3. Create a flag to enable or disable HOME TIMER CANCEL.
@@ -277,7 +280,7 @@ uint16_t               currentUserMenu;
 uint16_t               userKeyLabelSize;
 uint16_t               currentInputVariable = INVALID_VARIABLE;
 uint16_t               currentMvarLabel = INVALID_VARIABLE;
-#if(REAL34_WIDTH_TEST == 1)
+#if (REAL34_WIDTH_TEST == 1)
   uint16_t               largeur=200;
 #endif // (REAL34_WIDTH_TEST == 1)
 
@@ -586,11 +589,11 @@ char                   fileNameSelected[stateFileNameVarLength];
     fnTimerConfig(TO_FN_LONG, refreshFn, TO_FN_LONG);
     fnTimerConfig(TO_FN_EXEC, execFnTimeout, 0);
     fnTimerConfig(TO_3S_CTFF, shiftCutoff, TO_3S_CTFF);
-    fnTimerConfig(TO_CL_DROP, fnTimerDummyTest, TO_CL_DROP);
+    fnTimerConfig(TO_CL_DROP, fnTimerDummy1, TO_CL_DROP);
     fnTimerConfig(TO_AUTO_REPEAT, execAutoRepeat, 0);
     fnTimerConfig(TO_TIMER_APP, execTimerApp, 0);
     fnTimerConfig(TO_ASM_ACTIVE, refreshFn, TO_ASM_ACTIVE);
-    fnTimerConfig(TO_KB_ACTV, fnTimerDummyTest, TO_KB_ACTV);
+    fnTimerConfig(TO_KB_ACTV, fnTimerEndOfActivity, TO_KB_ACTV);
 //--fnTimerConfig(TO_SHOW_NOP, execNOPTimeout, TO_SHOW_NOP);
     nextTimerRefresh = 0;
 
@@ -973,6 +976,6 @@ char                   fileNameSelected[stateFileNameVarLength];
         }
       }
     }
-  fnSaveAuto();
+  fnSaveAuto(NOPARAM);
   }
 #endif // DMCP_BUILD

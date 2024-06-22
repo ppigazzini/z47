@@ -505,9 +505,9 @@ char letteredRegisterName(calcRegister_t regist) {
     getTimeString(dateTimeString);
     if(strcmp(dateTimeString, oldTime)) {
       strcpy(oldTime, dateTimeString);
-      #if(DEBUG_INSTEAD_STATUS_BAR != 1)
+      #if (DEBUG_INSTEAD_STATUS_BAR != 1)
         showDateTime();
-        if (Y_SHIFT == 0 && X_SHIFT < 200) {
+        if(Y_SHIFT == 0 && X_SHIFT < 200) {
           showShiftState();
         }
       #endif // (DEBUG_INSTEAD_STATUS_BAR != 1)
@@ -563,9 +563,9 @@ char letteredRegisterName(calcRegister_t regist) {
     getTimeString(dateTimeString);
     if(strcmp(dateTimeString, oldTime)) {
       strcpy(oldTime, dateTimeString);
-      #if(DEBUG_INSTEAD_STATUS_BAR != 1)
+      #if (DEBUG_INSTEAD_STATUS_BAR != 1)
         showDateTime();
-        if (Y_SHIFT == 0 && X_SHIFT < 200) {
+        if(Y_SHIFT == 0 && X_SHIFT < 200) {
           showShiftState();
         }
       #endif // (DEBUG_INSTEAD_STATUS_BAR != 1)
@@ -599,27 +599,72 @@ void execTimerApp(uint16_t timerType) {
   }                                                           //^^
 
 
-  void underline(int16_t y) {                     //JM
+  void toggle6UnderLines(int16_t y) {
     int16_t i;
     for(i=0; i<6; i++ ) {
       if((maxfgLines(y) || (fgLN == RB_FGLNFUL)) && ( !GRAPHMODE || (GRAPHMODE && (i <= 1)) )) {
         underline_softkey(i, y, true);
       }
     }
-  }                                               //JM
+  }
 
 
-  uint32_t ul;
+  uint32_t underLineMask;
   void clear_ul(void) {
     ULGL = false;
     ULFL = false;
-    ul = 0;                                       //JM Set all bits 00-23 to zero
+    underLineMask = 0;                                       //JM Set all bits 00-23 to zero
   }
+
+
+  void show_f_jm(void) {
+    if(!FN_timeouts_in_progress && calcMode != CM_ASN_BROWSER) {
+      if(!ULFL) {
+        toggle6UnderLines(1);
+        ULFL = true;
+      }
+      if(ULGL) {
+        toggle6UnderLines(2);
+        ULGL = false;
+      }
+      doRefreshSoftMenu = true;
+    }
+  }
+
+
+  void show_g_jm(void) {
+    if(!FN_timeouts_in_progress && calcMode != CM_ASN_BROWSER) {
+      if(ULFL) {
+        toggle6UnderLines(1);
+        ULFL = false;
+      }
+      if(!ULGL) {
+        toggle6UnderLines(2);
+        ULGL = true;
+      }
+      doRefreshSoftMenu = true;
+    }
+  }
+
+
+  void clear_fg_jm(void) {
+    if(!FN_timeouts_in_progress) {        //Cancel lines
+      if(ULFL) {
+        toggle6UnderLines(1);
+        ULFL = false;
+      }
+      if(ULGL) {
+        toggle6UnderLines(2);
+        ULGL = false;
+      }
+      doRefreshSoftMenu = true;
+    }
+  }
+
 
                                                 //JM vv LONGPRESS.   false auto clears
   void underline_softkey(int16_t xSoftkey, int16_t ySoftKey, bool_t dontclear) {
     int16_t x, y, x1, y1, x2, y2;
-    uint32_t tmp;
 
     if(calcMode == CM_REGISTER_BROWSER || calcMode == CM_FLAG_BROWSER || calcMode == CM_FONT_BROWSER) {
       return;
@@ -635,15 +680,14 @@ void execTimerApp(uint16_t timerType) {
 
     if(fgLN != RB_FGLNOFF) {
       //JMUL all changed  vv
-      if(!dontclear) {                            //JM Recursively call the same routine to clear the previous line
+      if(!dontclear) {                            //JM Recursively call the same routine up to 2 times for y=0 and y=1, to clear the previous line
         for(y=0; y<ySoftKey; y++) {
-          tmp = ul;
-          if( ((tmp >> (y*6+xSoftkey)) & 1U)) {   //JM To check a bit, shift the number n to the right, then bitwise AND it:
+          if( ((underLineMask >> (y*6+xSoftkey)) & 1U)) {    // To check a bit, shift the number n to the right, then bitwise AND, then check for true/false
             underline_softkey(xSoftkey,y,true);
           }
         }
       }
-      ul ^= 1UL << (ySoftKey*6+xSoftkey);         //JM The XOR operator (^) can be used to toggle a bit.
+      underLineMask ^= 1UL << (ySoftKey*6+xSoftkey);         // The XOR operator (^) used to toggle a bit in the last 18 bits of the word to reflect the current underlined cells 000000 000000 000001, eg. indicates gF6 is underlined.
       //JMUL all changed  ^^
 
       if(0 <= xSoftkey && xSoftkey <= 5) {
@@ -786,8 +830,8 @@ void execTimerApp(uint16_t timerType) {
         }
 
 
-    } else
-    if(Shft_timeouts) {
+    }
+    else if(Shft_timeouts) {
       if(fnTimerGetStatus(TO_FG_LONG) == TMR_COMPLETED) {
         fnTimerStop(TO_3S_CTFF);
         if(!shiftF && !shiftG) {
@@ -839,7 +883,8 @@ void execTimerApp(uint16_t timerType) {
         funcParam = (char *)getNthString((uint8_t *)userKeyLabel, currentKeyCode * 6 + keyStateCode);
         if((funcParam[0] != 0) && ((JM_auto_longpress_enabled == -MNU_DYNAMIC) || (JM_auto_longpress_enabled == ITM_XEQ) || (JM_auto_longpress_enabled == ITM_RCL))) { // For user menu, prog or variable a-feirassignment
           showFunctionName(JM_auto_longpress_enabled, JM_TO_CL_LONG + 50, funcParam);     //Add a marginal amout of time to prevent racing of end conditions.
-        } else {
+        }
+        else {
           showFunctionName(JM_auto_longpress_enabled, JM_TO_CL_LONG + 50, "SF:LL");     //Add a marginal amout of time to prevent racing of end conditions.
         }
         JM_auto_longpress_enabled = 0;                                       //showFunctionName must not time out longer than the timer that is started below
@@ -1232,7 +1277,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
         }
       }
       uint16_t tmp = ch;                                     //LF after 0x0A is recognized (/n)
-      while (LF && (charCodeFromString(string, &tmp) == 0x0A)) {   //do not touch character pointer
+      while(LF && (charCodeFromString(string, &tmp) == 0x0A)) {   //do not touch character pointer
         charCodeFromString(string, &ch);                       //increment character pointer to skip 0x0A
         x = orgX;
         prevX = x;
@@ -1368,19 +1413,21 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
 
 
   void showDispSmall(uint16_t offset, uint8_t _h1) {
-    #define line_h0 21
+    #define line_small 21
+    #define line_tiny  10
     const uint32_t line_hMultiLineEdOffset = Y_POSITION_OF_REGISTER_T_LINE;
     if(tmpString[offset]) {
-      uint32_t w = stringWidth(tmpString + offset, &standardFont, true, true);
-      showString(tmpString + offset, &standardFont, SCREEN_WIDTH - w, line_hMultiLineEdOffset + line_h0 * _h1, vmNormal, true, true);
+      uint32_t w = stringWidth(tmpString + offset, temporaryInformation == TI_SHOW_REGISTER_SMALL ? &standardFont : &tinyFont, true, true);
+      showString(tmpString + offset, temporaryInformation == TI_SHOW_REGISTER_SMALL ? &standardFont : &tinyFont, SCREEN_WIDTH - w, line_hMultiLineEdOffset + (temporaryInformation == TI_SHOW_REGISTER_SMALL ? line_small : line_tiny) * _h1, vmNormal, true, true);
       #if defined(VERBOSE_SCREEN) && defined(PC_BUILD)
         printf("^^^^NEW SHOW: %s\n", tmpString + offset);
       #endif // VERBOSE_SCREEN && PC_BUILD
       if(_h1 == 0) {
-        if(temporaryInformation == TI_SHOW_REGISTER_SMALL && tmpString[1500] != 0) {
+        if((temporaryInformation == TI_SHOW_REGISTER_SMALL && tmpString[5*SHOWLineSize] != 0) ||
+           (temporaryInformation == TI_SHOW_REGISTER_TINY && tmpString[14*SHOWLineSize] != 0)    ) {   //The softmenu space is used
         }
         else {
-          lcd_fill_rect(0,240-3*SOFTMENU_HEIGHT,SCREEN_WIDTH,1,LCD_EMPTY_VALUE);
+          lcd_fill_rect(0,SCREEN_HEIGHT-3*SOFTMENU_HEIGHT,SCREEN_WIDTH,1,LCD_EMPTY_VALUE);
         }
       }
     }
@@ -1729,12 +1776,13 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
     sprintf(prefix, "= %s =", name);
     prefixWidth = showString(prefix, &standardFont, 19 + (17+28), Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(rowReg - REGISTER_X) + 6, vmNormal, true, true);
 
-    if (getRegisterAsRealQuiet(reg, &t)) {
+    if(getRegisterAsRealQuiet(reg, &t)) {
       angleMode = getRegisterDataType(reg) == dtReal34 ? getRegisterAngularMode(reg) : amNone;
       realToReal34(&t, &u);
       real34ToDisplayString(&u, angleMode, tmpString, &numericFont, SCREEN_WIDTH - prefixWidth, NUMBER_OF_DISPLAY_DIGITS, true, true);
       p = tmpString;
-    } else {
+    }
+    else {
       p = "invalid";
     }
 
@@ -1807,12 +1855,12 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
 
     showFunctionNameItem = item;
     if(running_program_jm) {
-      return;                             //JM
+      return;
     }
     showFunctionNameCounter = delayInMs;
-    stringAppend(padding,functionName);                              //JM
-    stringAppend(padding + stringByteLength(padding),"     ");                                    //JM
-    if(PROBMENU || stringWidth(padding, &standardFont, true, true) + 1 /*JM 20*/ + lineTWidth > SCREEN_WIDTH) {                //JM T-Register clearing
+    stringAppend(padding,functionName);
+    stringAppend(padding + stringByteLength(padding),"     ");
+    if(PROBMENU || stringWidth(padding, &standardFont, true, true) + 1 /*JM 20*/ + lineTWidth > SCREEN_WIDTH) {
       clearRegisterLine(REGISTER_T, true, false);
     }
 
@@ -2038,7 +2086,19 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
       const uint16_t cols = matrix.header.matrixColumns;
       bool_t smallFont = (rows >= 5);
       int16_t dummyVal[MATRIX_MAX_COLUMNS * (MATRIX_MAX_ROWS + 1) + 1] = {};
-      const int16_t mtxWidth = getRealMatrixColumnWidths(&matrix, prefixWidth, &numericFont, dummyVal, dummyVal + MATRIX_MAX_COLUMNS, dummyVal + (MATRIX_MAX_ROWS + 1) * MATRIX_MAX_COLUMNS, cols > MATRIX_MAX_COLUMNS ? MATRIX_MAX_COLUMNS : cols);
+
+      bool_t allElementsInColAreIntegers[MATRIX_MAX_COLUMNS] = {};
+      for(int j = 0; j < cols; j++) {
+        allElementsInColAreIntegers[j]=true;
+        for(int i = 0; i < rows; i++) {
+          if(!real34IsAnInteger(&matrix.matrixElements[i*cols+j])) {
+            allElementsInColAreIntegers[j]=false;
+            break;
+          }
+        }
+      }
+
+      const int16_t mtxWidth = getRealMatrixColumnWidths(&matrix, prefixWidth, &numericFont, dummyVal, dummyVal + MATRIX_MAX_COLUMNS, dummyVal + (MATRIX_MAX_ROWS + 1) * MATRIX_MAX_COLUMNS, cols > MATRIX_MAX_COLUMNS ? MATRIX_MAX_COLUMNS : cols, allElementsInColAreIntegers);
       if(abs(mtxWidth) > MATRIX_LINE_WIDTH) {
         smallFont = true;
       }
@@ -2165,18 +2225,6 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
   }
 
 
-  void _displayNoSolverVariable(calcRegister_t regist, char *prefix, int16_t *prefixWidth) {
-    if(regist == REGISTER_X) {
-      switch(temporaryInformation) {
-        case TI_NO_INTEGRATE_VARIABLE: strcpy(prefix,"Select Integrator Variable"); break;
-        case TI_NO_SOLVER_VARIABLE:    strcpy(prefix,"Select Solver Variable"); break;
-        default:prefix[0]=0;
-      }
-      *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
-    }
-  }
-
-
   void _displayIJ(char *prefix, int16_t *prefixWidth) {
     if(lastErrorCode != 0) {
       return;
@@ -2187,12 +2235,13 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
       int32_t iii, jji;
       iii=realToUint32C47(&iir);
       jji=realToUint32C47(&jjr);
-      if(iii >= 0 && iii < 200 && jji >= 0 && jji < 200) {
+      if(0 <= iii && iii < 200 && 0 <= jji && jji < 200) {
         prefix[0] = 0;
         *prefixWidth = 0;
         if(temporaryInformation == TI_MIJ) {
           sprintf(prefix,STD_MU "[I" STD_SUB_r STD_SPACE_4_PER_EM "J" STD_SUB_c "]=" STD_MU "[%u" STD_SPACE_3_PER_EM "%u]=",(uint8_t)iii,(uint8_t)jji);
-        } else {
+        }
+        else {
           sprintf(prefix,"[I" STD_SUB_r STD_SPACE_4_PER_EM "J" STD_SUB_c "]=[%u" STD_SPACE_3_PER_EM "%u]",(uint8_t)iii,(uint8_t)jji);
         }
         *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
@@ -2222,8 +2271,8 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
   void _displaySolverOutput(calcRegister_t regist, char *prefix, int16_t *prefixWidth) {
     if(regist == REGISTER_X || regist == REGISTER_Y) {
       __displaySolver(regist, prefix, prefixWidth, regist - REGISTER_X +1);
-    } else
-    if(regist == REGISTER_Z) {
+    }
+    else if(regist == REGISTER_Z) {
       strcpy(prefix, "Accuracy " STD_ALMOST_EQUAL);
       *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
     }
@@ -2331,16 +2380,18 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
 
     char prefix[200], lastBase[12];
 
+    skippedStackLines = false;
     #ifdef DMCP_BUILD
       keyBuffer_pop();                                            // This causes key updates while the longer time processing register updates happen
-      if( !(regist == REGISTER_X || regist == REGISTER_Y) &&
-          !getSystemFlag(FLAG_USB) && // (LongPressM == RB_M1234 || LongPressM == RB_M124) &&   // This section added to automatically, when in M1234 & when on battery and low processor, change to skip long processing register printing
+      if( (calcMode == CM_NORMAL || calcMode == CM_MIM) && 
+          !(regist == REGISTER_X || regist == REGISTER_Y) &&
+          !getSystemFlag(FLAG_USB) &&                             // Automatically, when on battery (hence low processor), change to skip long processing register printing, recovering the fragmented screen here: See timer.c fnTimerEndOfActivity()
           !emptyKeyBuffer() &&
           key_empty() == 1
           ) {
+        skippedStackLines = true;
         return;
       }
-      //if(!key_empty()) return;
     #endif //DMCP
 
     #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
@@ -2351,7 +2402,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
       fnDisplayStack(4-displayStackSHOIDISP);
     }
 
-    #if(DEBUG_PANEL == 1)
+    #if (DEBUG_PANEL == 1)
       if(programRunStop != PGM_RUNNING) {
         refreshDebugPanel();
       }
@@ -2367,10 +2418,10 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
       }                                                                         //JMSHOW
 
       #if defined(PC_BUILD)
-        #if(DEBUG_REGISTER_L == 1 || SHOW_MEMORY_STATUS == 1)
+        #if (DEBUG_REGISTER_L == 1 || SHOW_MEMORY_STATUS == 1)
           char tmpStr[1000];
         #endif // (DEBUG_REGISTER_L == 1 || SHOW_MEMORY_STATUS == 1)
-        #if(DEBUG_REGISTER_L == 1)
+        #if (DEBUG_REGISTER_L == 1)
           char string1[1000], string2[1000], *p;
           uint16_t i;
 
@@ -2444,7 +2495,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
           gtk_widget_show(lblRegisterL1);
           gtk_widget_show(lblRegisterL2);
         #endif // (DEBUG_REGISTER_L == 1)
-        #if(SHOW_MEMORY_STATUS == 1)
+        #if (SHOW_MEMORY_STATUS == 1)
           char string[1000];
 
           sprintf(string, "%" PRId32 " bytes free (%" PRId32 " region%s), C43 %" PRIu32 " bytes, GMP %" PRIu32 " bytes -> should always be 0", getFreeRamMemory(), numberOfFreeMemoryRegions, numberOfFreeMemoryRegions==1 ? "" : "s", (uint32_t)TO_BYTES((uint64_t)c47MemInBlocks), (uint32_t)gmpMemInBytes);
@@ -2473,12 +2524,12 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
           else {
             sprintf(tmpString, "L.R. selected to %03" PRIu16 ".", (uint16_t)((lrSelection) & 0x01FF));
           }
-          #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+          #if (EXTRA_INFO_ON_CALC_ERROR == 1)
             sprintf(errorMessage, "BestF is set, but will not work until REAL data points are used.");
             moreInfoOnError("In function refreshRegisterLine:", errorMessage, errorMessages[24], NULL);
           #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
           w = stringWidth(tmpString, &standardFont, true, true);
-          showString(tmpString, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + 6, vmNormal, true, true);
+          showString(tmpString, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
         }
       }
 
@@ -2498,7 +2549,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
 
       else if(temporaryInformation == TI_ARE_YOU_SURE && regist == REGISTER_X) {
         uint16_t id = getConfirmationTiId();
-        showString(confirmationTI[id].string, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + 6, vmNormal, true, true);
+        showString(confirmationTI[id].string, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
       }
 
       else if(temporaryInformation == TI_WHO) {
@@ -2529,7 +2580,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
       }
 
       else if(temporaryInformation == TI_KEYS && regist == REGISTER_X) {
-        showString(errorMessage, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + 6, vmNormal, true, true);
+        showString(errorMessage, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
       }
 
       else if(temporaryInformation == TI_FALSE && regist == TRUE_FALSE_REGISTER_LINE) {
@@ -2545,7 +2596,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
       else if(temporaryInformation == TI_RESET && regist == REGISTER_X) {
         sprintf(tmpString, "Data, programs, and definitions cleared");
         w = stringWidth(tmpString, &standardFont, true, true);
-        showString(tmpString, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + 6, vmNormal, true, true);
+        showString(tmpString, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
       }
 
       else if(temporaryInformation == TI_SAVED && regist == REGISTER_X) {
@@ -2556,25 +2607,25 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
       else if(temporaryInformation == TI_CLEAR_ALL_MENUS && regist == REGISTER_X) {
         sprintf(tmpString, "All user menus cleared");
         w = stringWidth(tmpString, &standardFont, true, true);
-        showString(tmpString, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + 6, vmNormal, true, true);
+        showString(tmpString, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
       }
 
       else if(temporaryInformation == TI_CLEAR_ALL_VARIABLES && regist == REGISTER_X) {
         sprintf(tmpString, "All user variables cleared");
         w = stringWidth(tmpString, &standardFont, true, true);
-        showString(tmpString, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + 6, vmNormal, true, true);
+        showString(tmpString, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
       }
 
       else if(temporaryInformation == TI_DEL_ALL_MENUS && regist == REGISTER_X) {
         sprintf(tmpString, "All user menus deleted");
         w = stringWidth(tmpString, &standardFont, true, true);
-        showString(tmpString, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + 6, vmNormal, true, true);
+        showString(tmpString, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
       }
 
       else if(temporaryInformation == TI_DEL_ALL_VARIABLES && regist == REGISTER_X) {
         sprintf(tmpString, "All user variables deleted");
         w = stringWidth(tmpString, &standardFont, true, true);
-        showString(tmpString, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + 6, vmNormal, true, true);
+        showString(tmpString, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
       }
 
       #if defined(PC_BUILD)
@@ -2589,9 +2640,9 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
         clearRegisterLine(REGISTER_Y, true, true);
         clearRegisterLine(REGISTER_Z, true, true);
         clearRegisterLine(REGISTER_T, true, true);
-        showString(errorMessages[TI_Backup_restored], &standardFont, 1, Y_POSITION_OF_REGISTER_Z_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + 6, vmNormal, true, true);
-        showStringEnhanced(versionStr,  &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + 6, vmNormal, true, true, NO_compress, NO_raise, DO_Show, DO_LF);
-        showStringEnhanced(versionStr2, &standardFont, 1, Y_POSITION_OF_REGISTER_Y_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + 6, vmNormal, true, true, NO_compress, NO_raise, DO_Show, DO_LF);
+        showString(errorMessages[TI_Backup_restored], &standardFont, 1, Y_POSITION_OF_REGISTER_Z_LINE + 6, vmNormal, true, true);
+        showStringEnhanced(versionStr,  &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true, NO_compress, NO_raise, DO_Show, DO_LF);
+        showStringEnhanced(versionStr2, &standardFont, 1, Y_POSITION_OF_REGISTER_Y_LINE + 6, vmNormal, true, true, NO_compress, NO_raise, DO_Show, DO_LF);
       }
 
       else if(temporaryInformation == TI_STATEFILE_RESTORED && regist == REGISTER_X) {
@@ -2603,18 +2654,18 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
         sprintf(prefix, "                                ");
         displayTemporaryInformationOnX(prefix);
         sprintf(prefix, "%s", errorMessages[TI_Saved_programs_and_equations]);
-        showString(prefix, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) - 3, vmNormal, true, true);
+        showString(prefix, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE - 3, vmNormal, true, true);
         sprintf(prefix, "%s", errorMessages[TI_appended]);
-        showString(prefix, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + 17, vmNormal, true, true);
+        showString(prefix, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 17, vmNormal, true, true);
      }
 
       else if(temporaryInformation == TI_REGISTERS_RESTORED && regist == REGISTER_X) {
         sprintf(prefix, "                                  ");
         displayTemporaryInformationOnX(prefix);
         sprintf(prefix, "%s", errorMessages[TI_Saved_global_and_local_registers]);
-        showString(prefix, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) - 3, vmNormal, true, true);
+        showString(prefix, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE - 3, vmNormal, true, true);
         sprintf(prefix, "%s", errorMessages[TI_w_local_flags_restored]);
-        showString(prefix, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + 17, vmNormal, true, true);
+        showString(prefix, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 17, vmNormal, true, true);
       }
 
       else if(temporaryInformation == TI_SETTINGS_RESTORED && regist == REGISTER_X) {
@@ -2638,82 +2689,110 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
       }
 
       else if(temporaryInformation == TI_UNDO_DISABLED && regist == REGISTER_X) {
-        showString(errorMessages[TI_Not_enough_memory_for_undo], &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + 6, vmNormal, true, true);
+        showString(errorMessages[TI_Not_enough_memory_for_undo], &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
       }
 
-      //Original SHOW
-      else if(temporaryInformation == TI_SHOW_REGISTER && regist == REGISTER_T) { // L1
-        w = stringWidth(tmpString, &standardFont, true, true);
-        showString(tmpString, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_T_LINE + 21*0, vmNormal, true, true);
-      }
 
-      else if(temporaryInformation == TI_SHOW_REGISTER && regist == REGISTER_Z && tmpString[300] != 0) { // L2 & L3
-        w = stringWidth(tmpString + 300, &standardFont, true, true);
-        showString(tmpString + 300, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_T_LINE + 21*1, vmNormal, true, true);
-
-        if(tmpString[600]) {
-          w = stringWidth(tmpString + 600, &standardFont, true, true);
-          showString(tmpString + 600, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_T_LINE + 21*2, vmNormal, true, true);
-        }
-      }
-
-      else if(temporaryInformation == TI_SHOW_REGISTER && regist == REGISTER_Y && tmpString[900] != 0) { // L4 & L5
-        w = stringWidth(tmpString + 900, &standardFont, true, true);
-        showString(tmpString + 900, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_T_LINE + 21*3, vmNormal, true, true);
-
-        if(tmpString[1200]) {
-          w = stringWidth(tmpString + 1200, &standardFont, true, true);
-          showString(tmpString + 1200, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_T_LINE + 21*4, vmNormal, true, true);
-        }
-      }
-
-      else if(temporaryInformation == TI_SHOW_REGISTER && regist == REGISTER_X && tmpString[1500] != 0) { // L6 & L7
-        w = stringWidth(tmpString + 1500, &standardFont, true, true);
-        showString(tmpString + 1500, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_T_LINE + 21*5, vmNormal, true, true);
-
-        if(tmpString[1800]) {
-          w = stringWidth(tmpString + 1800, &standardFont, true, true);
-          showString(tmpString + 1800, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_T_LINE + 21*6, vmNormal, true, true);
-        }
-      }
+//      //Original SHOW
+//      else if(temporaryInformation == TI_SHOW_REGISTER && regist == REGISTER_T) { // L1
+//        w = stringWidth(tmpString, &standardFont, true, true);
+//        showString(tmpString, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_T_LINE + 21*0, vmNormal, true, true);
+//      }
+//
+//      else if(temporaryInformation == TI_SHOW_REGISTER && regist == REGISTER_Z && tmpString[300] != 0) { // L2 & L3
+//        w = stringWidth(tmpString + 300, &standardFont, true, true);
+//        showString(tmpString + 300, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_T_LINE + 21*1, vmNormal, true, true);
+//
+//        if(tmpString[600]) {
+//          w = stringWidth(tmpString + 600, &standardFont, true, true);
+//          showString(tmpString + 600, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_T_LINE + 21*2, vmNormal, true, true);
+//        }
+//      }
+//
+//      else if(temporaryInformation == TI_SHOW_REGISTER && regist == REGISTER_Y && tmpString[900] != 0) { // L4 & L5
+//        w = stringWidth(tmpString + 900, &standardFont, true, true);
+//        showString(tmpString + 900, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_T_LINE + 21*3, vmNormal, true, true);
+//
+//        if(tmpString[1200]) {
+//          w = stringWidth(tmpString + 1200, &standardFont, true, true);
+//          showString(tmpString + 1200, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_T_LINE + 21*4, vmNormal, true, true);
+//        }
+//      }
+//
+//      else if(temporaryInformation == TI_SHOW_REGISTER && regist == REGISTER_X && tmpString[1500] != 0) { // L6 & L7
+//        w = stringWidth(tmpString + 1500, &standardFont, true, true);
+//        showString(tmpString + 1500, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_T_LINE + 21*5, vmNormal, true, true);
+//
+//        if(tmpString[1800]) {
+//          w = stringWidth(tmpString + 1800, &standardFont, true, true);
+//          showString(tmpString + 1800, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_T_LINE + 21*6, vmNormal, true, true);
+//        }
+//      }
 
       // NEW SHOW                                                                  //JMSHOW vv
-      else if(temporaryInformation == TI_SHOW_REGISTER_SMALL) {
-        #define line_h0 21
+//      else if(temporaryInformation == TI_SHOW_REGISTER_SMALL || temporaryInformation == TI_SHOW_REGISTER) {
+//        switch(regist) {
+//          case REGISTER_T:
+//            showDispSmall( 0 * SHOWLineSize, 0);          // L1
+//            break;
+//          case REGISTER_Z:
+//            showDispSmall( 1 * SHOWLineSize, 1);          // L2 & L3
+//            showDispSmall( 2 * SHOWLineSize, 2);
+//            break;
+//          case REGISTER_Y:
+//            showDispSmall( 3 * SHOWLineSize, 3);          // L4 & L5
+//            showDispSmall( 4 * SHOWLineSize, 4);
+//            break;
+//          case REGISTER_X:
+//            showDispSmall( 5 * SHOWLineSize, 5);          // L6 & L7 & L8 & L9 & L10
+//            showDispSmall( 6 * SHOWLineSize, 6);
+//            showDispSmall( 7 * SHOWLineSize, 7);
+//            showDispSmall( 8 * SHOWLineSize, 8);
+//            showDispSmall( 9 * SHOWLineSize, 9);
+//            break;
+//          default: ;
+//        }
+//      }
+
+      else if(temporaryInformation == TI_SHOW_REGISTER_SMALL || temporaryInformation == TI_SHOW_REGISTER) {
         switch(regist) {
-          // L1
-          case REGISTER_T:
-            showDispSmall(   0, 0);
-            break;
-          // L2 & L3
-          case REGISTER_Z:
-            showDispSmall( 300, 1);
-            showDispSmall( 600, 2);
-            break;
-          // L4 & L5
-          case REGISTER_Y:
-            showDispSmall( 900, 3);
-            showDispSmall(1200, 4);
-            break;
-          // L6 & L7
-          case REGISTER_X:
-            showDispSmall(1500, 5);
-            showDispSmall(1800, 6);
-            showDispSmall(2100, 7);
-            showDispSmall(2400, 8);
-            break;
-          default: ;
+          case REGISTER_X:{
+              clearScreenOld(!clrStatusBar, clrRegisterLines, clrSoftkeys);
+              int16_t nn = 0;
+              while (nn <= 9) {
+                showDispSmall( nn * SHOWLineSize, nn);          // L1
+                nn++;
+              } 
+              break;
+            }
+            default: ;
+          }
         }
-      }
+
+
+      else if(temporaryInformation == TI_SHOW_REGISTER_TINY) {
+        switch(regist) {
+          case REGISTER_X:{
+              clearScreenOld(!clrStatusBar, clrRegisterLines, clrSoftkeys);
+              int16_t nn = 0;
+              while (nn<=SCREEN_HEIGHT/line_tiny && nn<SHOWLineMax) {
+                showDispSmall( nn * SHOWLineSize, nn);          // L1
+                nn++;
+              } 
+              break;
+            }
+            default: ;
+          }
+        }
+
 
       else if(temporaryInformation == TI_SHOW_REGISTER_BIG) {
         if(regist == REGISTER_T) {
-            showDisp(   0, 0);
-            showDisp( 300, 1);
-            showDisp( 600, 2);
-            showDisp( 900, 3);
-            showDisp(1200, 4); // knowingly overwrite the menu area
-            showDisp(1500, 5); // knowingly overwrite the menu area
+            int16_t nn = 0;
+            while (nn<=5) {
+              showDisp( nn * SHOWLineSize, nn);
+              nn++;
+            } 
           }
       }
 
@@ -2828,7 +2907,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
             showString(errorMessages[lastErrorCode], &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + 6, vmNormal, true, true);
           }
           else {
-            #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+            #if (EXTRA_INFO_ON_CALC_ERROR == 1)
               sprintf(errorMessage, "Error message %" PRIu8 " is too wide!", lastErrorCode);
               moreInfoOnError("In function refreshRegisterLine:", errorMessage, errorMessages[lastErrorCode], NULL);
             #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -2956,7 +3035,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
             w = stringWidth(tmpString, &standardFont, false, true);
             lineWidth = w;
             if(w > SCREEN_WIDTH) {
-              #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+              #if (EXTRA_INFO_ON_CALC_ERROR == 1)
                 moreInfoOnError("In function refreshRegisterLine:", "Fraction representation too wide!", tmpString, NULL);
               #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
               strcpy(tmpString, "Fraction representation too wide!");
@@ -3304,7 +3383,8 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
             if(regist == REGISTER_X) {
               strcpy(prefix,STD_UP_ARROW "BIN" STD_SPACE_FIGURE ":");
               prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
-            } else
+            }
+            else
             if(regist == REGISTER_Y) {
               strcpy(prefix,STD_DOWN_ARROW "BIN" STD_SPACE_FIGURE ":");
               prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
@@ -3541,9 +3621,6 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
           else if(temporaryInformation == TI_SOLVER_VARIABLE) {
             _displaySolverInput(regist, prefix, &prefixWidth);
           }
-          else if(temporaryInformation == TI_NO_SOLVER_VARIABLE || temporaryInformation == TI_NO_INTEGRATE_VARIABLE) {
-            _displayNoSolverVariable(regist, prefix, &prefixWidth);
-          }
 
           else if(temporaryInformation == TI_ACC) {
             if(regist == REGISTER_X) {
@@ -3570,8 +3647,8 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
             if(regist == REGISTER_X) {
               sprintf(prefix, STD_INTEGRAL STD_ALMOST_EQUAL);
               prefixWidth = stringWidth(prefix, &numericFont, true, true) + 1;
-            } else
-            if(regist == REGISTER_Y) {
+            }
+            else if(regist == REGISTER_Y) {
               strcpy(prefix, "Accuracy " STD_ALMOST_EQUAL);
               prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
             }
@@ -3641,6 +3718,11 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
             }
           }
 
+          else if(temporaryInformation == TI_TVM_EFF && regist == REGISTER_X) {
+            strcpy(prefix, "EFF%/a = EFF%YR = EAR =");
+            prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
+          }
+
           else if(temporaryInformation == TI_FROM_DATEX) {
             if(regist == REGISTER_X) {
               if(getSystemFlag(FLAG_DMY)) {
@@ -3686,13 +3768,13 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
 
           if(prefixWidth > 0 && temporaryInformation != TI_VIEW_REGISTER) {
             if(regist == REGISTER_X) {
-              showString(prefix, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + TEMPORARY_INFO_OFFSET, vmNormal, true, true);
+              showString(prefix, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + TEMPORARY_INFO_OFFSET, vmNormal, true, true);
             }
             else if(regist == REGISTER_Y) {
-              showString(prefix, &standardFont, 1, Y_POSITION_OF_REGISTER_Y_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_Y) + TEMPORARY_INFO_OFFSET, vmNormal, true, true);
+              showString(prefix, &standardFont, 1, Y_POSITION_OF_REGISTER_Y_LINE + TEMPORARY_INFO_OFFSET, vmNormal, true, true);
             }
             else if(regist == REGISTER_Z) {
-              showString(prefix, &standardFont, 1, Y_POSITION_OF_REGISTER_Z_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_Z) + TEMPORARY_INFO_OFFSET, vmNormal, true, true);
+              showString(prefix, &standardFont, 1, Y_POSITION_OF_REGISTER_Z_LINE + TEMPORARY_INFO_OFFSET, vmNormal, true, true);
             }
           }
                                                                       //JM EE ^
@@ -3724,9 +3806,6 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
           }
           else if(temporaryInformation == TI_SOLVER_VARIABLE) {
             _displaySolverInput(regist, prefix, &prefixWidth);
-          }
-          else if(temporaryInformation == TI_NO_SOLVER_VARIABLE || temporaryInformation == TI_NO_INTEGRATE_VARIABLE) {
-            _displayNoSolverVariable(regist, prefix, &prefixWidth);
           }
           else if(temporaryInformation == TI_VIEW_REGISTER && origRegist == REGISTER_T) {
               viewRegName(prefix, &prefixWidth);
@@ -3770,13 +3849,13 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
 
           if(prefixWidth > 0) {
             if(regist == REGISTER_X) {
-              showString(prefix, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + TEMPORARY_INFO_OFFSET, vmNormal, true, true);
+              showString(prefix, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + TEMPORARY_INFO_OFFSET, vmNormal, true, true);
             }
             else if(regist == REGISTER_Y) {
-              showString(prefix, &standardFont, 1, Y_POSITION_OF_REGISTER_Y_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_Y) + TEMPORARY_INFO_OFFSET, vmNormal, true, true);
+              showString(prefix, &standardFont, 1, Y_POSITION_OF_REGISTER_Y_LINE + TEMPORARY_INFO_OFFSET, vmNormal, true, true);
             }
             else if(regist == REGISTER_Z) {
-              showString(prefix, &standardFont, 1, Y_POSITION_OF_REGISTER_Z_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_Z) + TEMPORARY_INFO_OFFSET, vmNormal, true, true);
+              showString(prefix, &standardFont, 1, Y_POSITION_OF_REGISTER_Z_LINE + TEMPORARY_INFO_OFFSET, vmNormal, true, true);
             }
           }
                                                                        //JM EE ^
@@ -3820,9 +3899,9 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
           #if defined(STACK_X_STR_LRG_FONT)
             //This is for X
             w = stringWidthWithLimitC43(REGISTER_STRING_DATA(regist), stdnumEnlarge, nocompress, SCREEN_WIDTH, false, true);
-            if(temporaryInformation != TI_VIEW_REGISTER && regist == REGISTER_X && w<SCREEN_WIDTH) {
+            if(temporaryInformation != TI_VIEW_REGISTER && regist == REGISTER_X && w < SCREEN_WIDTH) {
               lineWidth = w; //slighly incorrect if special characters are there as well.
-              showStringC43(REGISTER_STRING_DATA(regist), stdnumEnlarge, nocompress, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + 6 - checkHPoffset, vmNormal, false, true);
+              showStringC43(REGISTER_STRING_DATA(regist), stdnumEnlarge, nocompress, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_X_LINE + 6 - checkHPoffset, vmNormal, false, true);
             }
             else                                                                   //JM
           #endif // STACK_X_STR_LRG_FONT
@@ -3831,7 +3910,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
             //This is for X
             if(temporaryInformation != TI_VIEW_REGISTER && regist == REGISTER_X && (w = stringWidthWithLimitC43(REGISTER_STRING_DATA(regist), numHalf, nocompress, SCREEN_WIDTH, false, true)) < SCREEN_WIDTH) {
               lineWidth = w;
-              showStringC43(REGISTER_STRING_DATA(regist), numHalf, nocompress, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + 6 - checkHPoffset, vmNormal, false, true);
+              showStringC43(REGISTER_STRING_DATA(regist), numHalf, nocompress, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_X_LINE + 6 - checkHPoffset, vmNormal, false, true);
             }
             else                                                                   //JM
           #endif //STACK_X_STR_MED_FONT
@@ -3912,7 +3991,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
             showString(tmpString, fontForShortInteger, SCREEN_WIDTH - stringWidth(tmpString, fontForShortInteger, false, true), Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + (fontForShortInteger == &standardFont ? 6 : 0) - (fontForShortInteger == &numericFont && temporaryInformation == TI_NO_INFO && checkHP ? 50:0), vmNormal, false, true);
 
             displayBaseMode(regist);
-        }
+          }
 
 
           prefixWidth = 0;
@@ -3948,7 +4027,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
             if(regist == REGISTER_X) {
               showString(prefix, &standardFont, 1, baseY + TEMPORARY_INFO_OFFSET, vmNormal, prefixPre, prefixPost);
             }
-            if(tmpString[0]!=0) {
+            if(tmpString[0] != 0) {
               shortIntegerToDisplayString(regist, tmpString, true);
             }
             showString(tmpString, fontForShortInteger, SCREEN_WIDTH - stringWidth(tmpString, fontForShortInteger, false, true), Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + (fontForShortInteger == &standardFont ? 6 : 0) - (fontForShortInteger == &numericFont && temporaryInformation == TI_NO_INFO && checkHP ? 50:0), vmNormal, false, true);
@@ -3962,9 +4041,6 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
 
           else if(temporaryInformation == TI_SOLVER_VARIABLE) {
             _displaySolverInput(regist, prefix, &prefixWidth);
-          }
-          else if(temporaryInformation == TI_NO_SOLVER_VARIABLE || temporaryInformation == TI_NO_INTEGRATE_VARIABLE) {
-            _displayNoSolverVariable(regist, prefix, &prefixWidth);
           }
           else if(regist == REGISTER_X && (temporaryInformation == TI_IJ || temporaryInformation == TI_MIJ)) {
             _displayIJ(prefix, &prefixWidth);
@@ -3986,7 +4062,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
 
 //          if(prefixWidth > 0) {
   //          if(regist == REGISTER_X) {
-    //          showString(prefix, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + TEMPORARY_INFO_OFFSET - REGISTER_LINE_HEIGHT*(regist - REGISTER_X), vmNormal, true, true);
+    //          showString(prefix, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + TEMPORARY_INFO_OFFSET, vmNormal, true, true);
       //      }
         //  }     //                                                          //JMms ^^
 
@@ -4016,7 +4092,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
           else {
             w = stringWidth(tmpString, &standardFont, false, true);
             if(w > SCREEN_WIDTH) {
-              #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+              #if (EXTRA_INFO_ON_CALC_ERROR == 1)
                 moreInfoOnError("In function refreshRegisterLine:", "Long integer representation too wide!", tmpString, NULL);
               #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
               strcpy(tmpString, "Long integer representation too wide!");
@@ -4436,7 +4512,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
           screenUpdatingMode = (aimBuffer[0] == 0) ? SCRUPD_AUTO : (SCRUPD_MANUAL_STACK | SCRUPD_MANUAL_SHIFT_STATUS);
         }
         else if(calcMode == CM_TIMER) {
-          screenUpdatingMode = SCRUPD_MANUAL_STACK | SCRUPD_MANUAL_SHIFT_STATUS;
+          screenUpdatingMode = SCRUPD_AUTO; //SCRUPD_MANUAL_STACK | SCRUPD_MANUAL_SHIFT_STATUS;
         }
         else if(calcMode == CM_EIM) {
           screenUpdatingMode &= ~(SCRUPD_MANUAL_MENU);
@@ -4453,7 +4529,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
         //printf("##> AAAA screenUpdatingMode  MANUAL STACK=%u SKIP MENU ONCE=%u \n",screenUpdatingMode & SCRUPD_MANUAL_STACK, screenUpdatingMode & SCRUPD_SKIP_STACK_ONE_TIME);
 
         // The ordering of the 4 lines below is important for SHOW (temporaryInformation == TI_SHOW_REGISTER)
-        if(calcMode != CM_NIM && !(screenUpdatingMode & (SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME))) {
+        if((calcMode != CM_NIM || (skippedStackLines && calcMode == CM_NIM)) && !(screenUpdatingMode & (SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME))) {
           if(calcMode != CM_AIM) {
             if(calcMode != CM_TIMER && temporaryInformation != TI_VIEW_REGISTER) {
               refreshRegisterLine(REGISTER_T);
@@ -4469,7 +4545,8 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
             if(SHOWMODE) {
               screenUpdatingMode |= SCRUPD_MANUAL_MENU; //done with clearing and printing over the menu area, now protecting the menu area
             }
-          } else {
+          }
+          else {
             //printf("##> CCCC 4lines ALPHA Mode\n");
             if(yMultiLineEdOffset == 3) {
               refreshRegisterLine(REGISTER_T);
@@ -4566,7 +4643,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
         if(!(screenUpdatingMode & SCRUPD_MANUAL_STATUSBAR)) {
           refreshStatusBar();
         }
-        #if(REAL34_WIDTH_TEST == 1)
+        #if (REAL34_WIDTH_TEST == 1)
           for(int y=Y_POSITION_OF_REGISTER_Y_LINE; y<Y_POSITION_OF_REGISTER_Y_LINE + 2*REGISTER_LINE_HEIGHT; y++ ) {
             setBlackPixel(SCREEN_WIDTH - largeur - 1, y);
           }
@@ -4604,7 +4681,12 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
 
     if(calcMode!=CM_AIM && calcMode!=CM_NIM && calcMode!=CM_PLOT_STAT && calcMode!=CM_GRAPH && calcMode!=CM_LISTXY && last_CM != 240) {  //240 specifically to prefent this
       last_CM = 254;  //JM Force NON-CM_AIM and NON-CM_NIM to refresh to be compatible to 43S
-    } else if (last_CM == 240) last_CM = calcMode;
+    }
+    else {
+      if(last_CM == 240) {
+        last_CM = calcMode;
+      }
+    }
 
 
     switch(softmenu[softmenuStack[0].softmenuId].menuItem) {

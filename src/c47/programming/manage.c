@@ -331,7 +331,7 @@ void fnClP(uint16_t label) {
   }
   else {
     displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "label %" PRIu16 " is not a global label", label);
       moreInfoOnError("In function fnClP:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)

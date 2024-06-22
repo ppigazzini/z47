@@ -43,7 +43,7 @@ bool_t percentSigma(real_t *xReal, real_t *rReal, realContext_t *realContext) {
     }
     else {
       displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         moreInfoOnError("In function fnPercentSigma:", "cannot divide a real by 0", NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return false;
@@ -65,7 +65,7 @@ bool_t percentSigma(real_t *xReal, real_t *rReal, realContext_t *realContext) {
 static void percentSigmaReal(void) {
   real_t xReal, rReal;
 
-  if (!getRegisterAsReal(REGISTER_X, &xReal) || !percentSigma(&xReal, &rReal, &ctxtReal39))
+  if(!getRegisterAsReal(REGISTER_X, &xReal) || !percentSigma(&xReal, &rReal, &ctxtReal39))
     return;
 
   reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
@@ -87,7 +87,7 @@ static void percentSigmaReal(void) {
 void fnPercentSigma(uint16_t unusedButMandatoryParameter) {
   if(!checkMinimumDataPoints(const_1)) {
     displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "There is no statistical data available!");
       moreInfoOnError("In function fnPercentSigma:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -97,7 +97,7 @@ void fnPercentSigma(uint16_t unusedButMandatoryParameter) {
   if(!saveLastX())
     return;
 
-  if (getRegisterDataType(REGISTER_X) == dtReal34Matrix)
+  if(getRegisterDataType(REGISTER_X) == dtReal34Matrix)
     elementwiseRema(percentSigmaReal);
   else
     percentSigmaReal();

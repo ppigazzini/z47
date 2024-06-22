@@ -35,7 +35,41 @@
 
 #include "c47.h"
 
-static void systemFlagAction(uint16_t systemFlag) {
+typedef enum { FLAG_CLEAR=0, FLAG_SET=1, FLAG_FLIP=2 } flagAction_t;
+
+static void systemFlagProcess(unsigned int idx, flagAction_t action) {
+  const unsigned int n = idx / 16;
+  const unsigned int b = idx % 16;
+
+  switch(action) {
+    case FLAG_CLEAR: {
+      globalFlags[n] &= ~(1u << b);
+      break;
+    }
+    case FLAG_SET: {
+      globalFlags[n] |=   1u << b;
+      break;
+    }
+    case FLAG_FLIP: {
+      globalFlags[n] ^=   1u << b;
+      break;
+    }
+  }
+}
+
+static void systemFlagAction(uint16_t systemFlag, flagAction_t action) {
+  switch(systemFlag) {
+    case FLAG_ALLENG:   systemFlagProcess(FLAG_A, action); break;
+    case FLAG_OVERFLOW: systemFlagProcess(FLAG_B, action); break;
+    case FLAG_CARRY:    systemFlagProcess(FLAG_C, action); break;
+    case FLAG_SPCRES:   systemFlagProcess(FLAG_D, action); break;
+    case FLAG_CPXRES:   systemFlagProcess(FLAG_I, action); break;
+    case FLAG_LEAD0:    systemFlagProcess(FLAG_L, action); break;
+    case FLAG_TRACE:    systemFlagProcess(FLAG_T, action); break;
+    case FLAG_POLAR:    systemFlagProcess(FLAG_X, action); break;
+    default:                                               break;
+  }
+
   switch(systemFlag) {
     case FLAG_YMD:
     case FLAG_DMY:
@@ -82,11 +116,11 @@ void setSystemFlag(unsigned int sf) {
 
   if(flag < 64) {
     systemFlags0 |= ((uint64_t)1 << flag);
-    systemFlagAction(sf);
+    systemFlagAction(sf, FLAG_SET);
   }
   else {
     systemFlags1 |= ((uint64_t)1 << (flag - 64));
-    systemFlagAction(sf);
+    systemFlagAction(sf, FLAG_SET);
   }
 }
 
@@ -95,11 +129,11 @@ void clearSystemFlag(unsigned int sf) {
 
   if(flag < 64) {
     systemFlags0 &= ~((uint64_t)1 << flag);
-    systemFlagAction(sf);
+    systemFlagAction(sf, FLAG_CLEAR);
   }
   else {
     systemFlags1 &= ~((uint64_t)1 << (flag - 64));
-    systemFlagAction(sf);
+    systemFlagAction(sf, FLAG_CLEAR);
   }
 }
 
@@ -108,11 +142,11 @@ void flipSystemFlag(unsigned int sf) {
 
   if(flag < 64) {
     systemFlags0 ^=  ((uint64_t)1 << flag);
-    systemFlagAction(sf);
+    systemFlagAction(sf, FLAG_FLIP);
   }
   else {
     systemFlags1 ^=  ((uint64_t)1 << (flag - 64));
-    systemFlagAction(sf);
+    systemFlagAction(sf, FLAG_FLIP);
   }
 }
 
@@ -134,21 +168,6 @@ void forceSystemFlag(unsigned int sf, int set) {
   else {
     clearSystemFlag(sf);
   }
-}
-
-static void synchronizeSystemFlag(unsigned int sf) {
-  forceSystemFlag(sf, getSystemFlag(sf));
-}
-
-void synchronizeLetteredFlags(void) {
-  synchronizeSystemFlag(FLAG_ALLENG);
-  synchronizeSystemFlag(FLAG_OVERFLOW);
-  synchronizeSystemFlag(FLAG_CARRY);
-  synchronizeSystemFlag(FLAG_SPCRES);
-  synchronizeSystemFlag(FLAG_CPXRES);
-  synchronizeSystemFlag(FLAG_LEAD0);
-  synchronizeSystemFlag(FLAG_TRACE);
-  synchronizeSystemFlag(FLAG_POLAR);
 }
 
 
@@ -189,11 +208,11 @@ bool_t getFlag(uint16_t flag) {
     return getSystemFlag(flag);
   }
 
-  else if(flag < FLAG_K) { // Global flag
+  else if(flag <= FLAG_K) { // Global flag
     return (globalFlags[flag/16] & (1u << (flag%16))) != 0;
   }
 
-  else if(flag < LAST_LOCAL_FLAG) { // Local flag
+  else if(flag <= LAST_LOCAL_FLAG) { // Local flag
     if(currentLocalFlags != NULL) {
       flag -= NUMBER_OF_GLOBAL_FLAGS;
       if(flag < NUMBER_OF_LOCAL_FLAGS) {
@@ -258,7 +277,7 @@ void fnSetFlag(uint16_t flag) {
         programRunStop = PGM_STOPPED;
       }
       displayCalcErrorMessage(ERROR_WRITE_PROTECTED_SYSTEM_FLAG, ERR_REGISTER_LINE, REGISTER_X);
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "protected system flag (%" PRIu16 ")!", (uint16_t)(flag & 0x3fff));
         moreInfoOnError("In function fnSetFlag:", "Tying to set a write", errorMessage, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -276,10 +295,20 @@ void fnSetFlag(uint16_t flag) {
   }
 
   else if(flag < FLAG_K) { // Global flag
-    globalFlags[flag/16] |= 1u << (flag%16);
+    switch(flag) {
+      case FLAG_A: setSystemFlag(FLAG_ALLENG);   break;
+      case FLAG_B: setSystemFlag(FLAG_OVERFLOW); break;
+      case FLAG_C: setSystemFlag(FLAG_CARRY);    break;
+      case FLAG_D: setSystemFlag(FLAG_SPCRES);   break;
+      case FLAG_I: setSystemFlag(FLAG_CPXRES);   break;
+      case FLAG_L: setSystemFlag(FLAG_LEAD0);    break;
+      case FLAG_T: setSystemFlag(FLAG_TRACE);    break;
+      case FLAG_X: setSystemFlag(FLAG_POLAR);    break;
+      default: globalFlags[flag/16] |= 1u << (flag%16);
+    }
   }
 
-  else if(flag < LAST_LOCAL_FLAG) { // Local flag
+  else if(flag <= LAST_LOCAL_FLAG) { // Local flag
     if(currentLocalFlags != NULL) {
       flag -= NUMBER_OF_GLOBAL_FLAGS;
       if(flag < NUMBER_OF_LOCAL_FLAGS) {
@@ -326,7 +355,7 @@ void fnClearFlag(uint16_t flag) {
         programRunStop = PGM_STOPPED;
       }
       displayCalcErrorMessage(ERROR_WRITE_PROTECTED_SYSTEM_FLAG, ERR_REGISTER_LINE, REGISTER_X);
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "protected system flag (%" PRIu16 ")!", (uint16_t)(flag & 0x3fff));
         moreInfoOnError("In function fnClearFlag:", "Tying to clear a write", errorMessage, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -344,10 +373,20 @@ void fnClearFlag(uint16_t flag) {
   }
 
   else if(flag < FLAG_K) { // Global flag
-    globalFlags[flag/16] &= ~(1u << (flag%16));
+    switch(flag) {
+      case FLAG_A: clearSystemFlag(FLAG_ALLENG);   break;
+      case FLAG_B: clearSystemFlag(FLAG_OVERFLOW); break;
+      case FLAG_C: clearSystemFlag(FLAG_CARRY);    break;
+      case FLAG_D: clearSystemFlag(FLAG_SPCRES);   break;
+      case FLAG_I: clearSystemFlag(FLAG_CPXRES);   break;
+      case FLAG_L: clearSystemFlag(FLAG_LEAD0);    break;
+      case FLAG_T: clearSystemFlag(FLAG_TRACE);    break;
+      case FLAG_X: clearSystemFlag(FLAG_POLAR);    break;
+      default:     globalFlags[flag/16] &= ~(1u << (flag%16));
+    }
   }
 
-  else if(flag < LAST_LOCAL_FLAG) { // Local flag
+  else if(flag <= LAST_LOCAL_FLAG) { // Local flag
     if(currentLocalFlags != NULL) {
       flag -= NUMBER_OF_GLOBAL_FLAGS;
       if(flag < NUMBER_OF_LOCAL_FLAGS) {
@@ -395,7 +434,7 @@ void fnFlipFlag(uint16_t flag) {
         programRunStop = PGM_STOPPED;
       }
       displayCalcErrorMessage(ERROR_WRITE_PROTECTED_SYSTEM_FLAG, ERR_REGISTER_LINE, REGISTER_X);
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "protected system flag (%" PRIu16 ")!", (uint16_t)(flag & 0x3fff));
         moreInfoOnError("In function fnFlipFlag:", "Tying to flip a write", errorMessage, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -418,10 +457,20 @@ void fnFlipFlag(uint16_t flag) {
   }
 
   else if(flag <= FLAG_K) { // Global flag
-    globalFlags[flag/16] ^=  1u << (flag%16);
+    switch(flag) {
+      case FLAG_A: flipSystemFlag(FLAG_ALLENG);   break;
+      case FLAG_B: flipSystemFlag(FLAG_OVERFLOW); break;
+      case FLAG_C: flipSystemFlag(FLAG_CARRY);    break;
+      case FLAG_D: flipSystemFlag(FLAG_SPCRES);   break;
+      case FLAG_I: flipSystemFlag(FLAG_CPXRES);   break;
+      case FLAG_L: flipSystemFlag(FLAG_LEAD0);    break;
+      case FLAG_T: flipSystemFlag(FLAG_TRACE);    break;
+      case FLAG_X: flipSystemFlag(FLAG_POLAR);    break;
+      default:     globalFlags[flag/16] ^=  1u << (flag%16);
+    }
   }
 
-  else if(flag < LAST_LOCAL_FLAG) { // Local flag
+  else if(flag <= LAST_LOCAL_FLAG) { // Local flag
     if(currentLocalFlags != NULL) {
       flag -= NUMBER_OF_GLOBAL_FLAGS;
       if(flag < NUMBER_OF_LOCAL_FLAGS) {
@@ -478,47 +527,47 @@ void fnClFAll(uint16_t confirmation) {
 
 
 void fnIsFlagClear(uint16_t flag) {
-  temporaryInformation = (getFlag(flag) ? TI_FALSE : TI_TRUE);
+  SET_TI_TRUE_FALSE(!getFlag(flag));
 }
 
 
 void fnIsFlagClearClear(uint16_t flag) {
-  temporaryInformation = (getFlag(flag) ? TI_FALSE : TI_TRUE);
+  SET_TI_TRUE_FALSE(!getFlag(flag));
   fnClearFlag(flag);
 }
 
 
 void fnIsFlagClearSet(uint16_t flag) {
-  temporaryInformation = (getFlag(flag) ? TI_FALSE : TI_TRUE);
+  SET_TI_TRUE_FALSE(!getFlag(flag));
   fnSetFlag(flag);
 }
 
 
 void fnIsFlagClearFlip(uint16_t flag) {
-  temporaryInformation = (getFlag(flag) ? TI_FALSE : TI_TRUE);
+  SET_TI_TRUE_FALSE(!getFlag(flag));
   fnFlipFlag(flag);
 }
 
 
 void fnIsFlagSet(uint16_t flag) {
-  temporaryInformation = (getFlag(flag) ? TI_TRUE : TI_FALSE);
+  SET_TI_TRUE_FALSE(getFlag(flag));
 }
 
 
 void fnIsFlagSetClear(uint16_t flag) {
-  temporaryInformation = (getFlag(flag) ? TI_TRUE : TI_FALSE);
+  SET_TI_TRUE_FALSE(getFlag(flag));
   fnClearFlag(flag);
 }
 
 
 void fnIsFlagSetSet(uint16_t flag) {
-  temporaryInformation = (getFlag(flag) ? TI_TRUE : TI_FALSE);
+  SET_TI_TRUE_FALSE(getFlag(flag));
   fnSetFlag(flag);
 }
 
 
 void fnIsFlagSetFlip(uint16_t flag) {
-  temporaryInformation = (getFlag(flag) ? TI_TRUE : TI_FALSE);
+  SET_TI_TRUE_FALSE(getFlag(flag));
   fnFlipFlag(flag);
 }
 
@@ -567,24 +616,20 @@ void SetSetting(uint16_t jmConfig) {
     case SS_8:           fnSetFlag(FLAG_SSIZE8);                   break;
     case CM_RECTANGULAR:
       fnClearFlag(FLAG_POLAR);
-      #if defined(RECT_POLAR_CHANGES_X)
-        if(getRegisterDataType(REGISTER_X) == dtComplex34 || getRegisterDataType(REGISTER_X) == dtComplex34Matrix) {
-          setComplexRegisterPolarMode(REGISTER_X, ~amPolar);
-          setComplexRegisterAngularMode(REGISTER_X, amNone);
-        }
-      #endif //RECT_POLAR_CHANGES_X
+      //if(getRegisterDataType(REGISTER_X) == dtComplex34 || getRegisterDataType(REGISTER_X) == dtComplex34Matrix) {   //RECT/POLAR radiobuttons to also change the complex number in X
+      //  setComplexRegisterPolarMode(REGISTER_X, ~amPolar);
+      //  setComplexRegisterAngularMode(REGISTER_X, amNone);
+      //}
       break;
 
     case CM_POLAR:
       fnSetFlag(FLAG_POLAR);
-      #if defined(RECT_POLAR_CHANGES_X)
-        if(getRegisterDataType(REGISTER_X) == dtComplex34 || getRegisterDataType(REGISTER_X) == dtComplex34Matrix) {
-          setComplexRegisterPolarMode(REGISTER_X, amPolar);
-          if(getComplexRegisterAngularMode(REGISTER_X) == amNone) {
-            setComplexRegisterAngularMode(REGISTER_X, currentAngularMode);
-          }
-        }
-      #endif //RECT_POLAR_CHANGES_X
+      //if(getRegisterDataType(REGISTER_X) == dtComplex34 || getRegisterDataType(REGISTER_X) == dtComplex34Matrix) {   //RECT/POLAR radiobuttons to also change the complex number in X
+      //  setComplexRegisterPolarMode(REGISTER_X, amPolar);
+      //  if(getComplexRegisterAngularMode(REGISTER_X) == amNone) {
+      //    setComplexRegisterAngularMode(REGISTER_X, currentAngularMode);
+      //  }
+      //}
       break;
 
     case DO_SCI:      fnClearFlag(FLAG_ALLENG);                              break;
@@ -611,7 +656,8 @@ void SetSetting(uint16_t jmConfig) {
     case JC_UC:
       if(alphaCase == AC_LOWER) {
         alphaCase = AC_UPPER;
-      } else {
+      }
+      else {
         alphaCase = AC_LOWER;
       }
       break;

@@ -61,11 +61,11 @@
     extern uint32_t            *screenData;
     extern bool_t               screenChange;
     extern char                 debugString[10000];
-    #if(DEBUG_REGISTER_L == 1)
+    #if (DEBUG_REGISTER_L == 1)
       extern GtkWidget         *lblRegisterL1;
       extern GtkWidget         *lblRegisterL2;
     #endif // (DEBUG_REGISTER_L == 1)
-    #if(SHOW_MEMORY_STATUS == 1)
+    #if (SHOW_MEMORY_STATUS == 1)
       extern GtkWidget         *lblMemoryStatus;
     #endif // (SHOW_MEMORY_STATUS == 1)
     extern calcKeyboard_t       calcKeyboard[43];
@@ -135,6 +135,7 @@
   extern bool_t                 serialIOIconEnabled;
   extern bool_t                 pemCursorIsZerothStep;
   extern bool_t                 halfSecTick;
+  extern bool_t                 skippedStackLines;
 
 
   extern realContext_t          ctxtReal4;    //   Limited digits: used for high speed internal calcs
@@ -324,8 +325,10 @@
   extern float                  graph_ymax;                   //JM Graph
   extern bool_t                 jm_LARGELI;                   //JM flag to keep large font numbers on screen
   extern bool_t                 constantFractions;            //JM
-  extern uint8_t                constantFractionsMode;        //JM
+  extern uint8_t                IrFractionsCurrentStatus;     //JM
   extern bool_t                 constantFractionsOn;          //JM
+  extern bool_t                 tvmIKnown;
+  extern bool_t                 tvmIChanges;
 
 
   extern uint16_t               glyphRow[NUMBER_OF_GLYPH_ROWS];
@@ -354,7 +357,7 @@
   extern uint16_t               userKeyLabelSize;
   extern uint16_t               currentInputVariable;
   extern uint16_t               currentMvarLabel;
-  #if(REAL34_WIDTH_TEST == 1)
+  #if (REAL34_WIDTH_TEST == 1)
     extern uint16_t               largeur;
   #endif // (REAL34_WIDTH_TEST == 1)
 

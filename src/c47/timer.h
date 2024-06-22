@@ -34,20 +34,22 @@ void     LastOpTimerReStart   (uint16_t func);
 void     LastOpTimerLap       (uint16_t func);
 
 void     fnItemTimerApp       (uint16_t unusedButMandatoryParameter);
-void     fnAddTimerApp        (uint16_t unusedButMandatoryParameter);
 void     fnDecisecondTimerApp (uint16_t unusedButMandatoryParameter);
 void     fnResetTimerApp      (uint16_t unusedButMandatoryParameter);
 void     fnRecallTimerApp     (uint16_t regist);
-void     fnStartStopTimerApp  (void);
+void     fnStartStopTimerApp  (uint16_t unusedButMandatoryParameter);
 void     fnStopTimerApp       (void);
 void     fnShowTimerApp       (void);
 void     fnUpdateTimerApp     (void);
-void     fnEnterTimerApp      (void);
-void     fnDotTimerApp        (void);
 void     fnUpTimerApp         (void);
 void     fnDownTimerApp       (void);
 void     fnDigitKeyTimerApp   (uint16_t digit);
-void     fnPlusTimerApp       (void);
+
+void     fnAddTimerApp        (uint16_t unusedButMandatoryParameter);
+void     fnAddLapTimerApp     (uint16_t unusedButMandatoryParameter);
+void     fnRegAddTimerApp     (uint16_t unusedButMandatoryParameter);
+void     fnRegAddLapTimerApp  (uint16_t unusedButMandatoryParameter);
+
 void     fnBackspaceTimerApp  (void);
 void     fnLeaveTimerApp      (void);
 void     fnPollTimerApp       (void);
@@ -62,7 +64,8 @@ void     refreshTimer         (void);
 
 
 void     fnTimerReset         (void);
-void     fnTimerDummyTest     (uint16_t param);
+void     fnTimerDummy1        (uint16_t param);
+void     fnTimerEndOfActivity (uint16_t param);
 void     fnTimerConfig        (uint8_t nr, void(*func)(uint16_t), uint16_t param);
 void     fnTimerStart         (uint8_t nr, uint16_t param, uint32_t time);      // Start Timer, 0..n-1
 void     fnTimerStop          (uint8_t nr);                                     // Stop Timer, 0..n-1

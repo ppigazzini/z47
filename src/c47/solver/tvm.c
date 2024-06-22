@@ -49,50 +49,51 @@ void fnTvmVar(uint16_t variable) {
       case RESERVED_VARIABLE_PV: {
         currentSolverStatus |= SOLVER_STATUS_TVM_APPLICATION;
         currentSolverVariable = variable;
-        clearSystemFlag(FLAG_TVM_I_KNOWN);
+        tvmIKnown = false;
 
         /* Calculate */
-        if(currentSolverStatus & SOLVER_STATUS_READY_TO_EXECUTE) {
+        if(currentSolverStatus & SOLVER_STATUS_READY_TO_EXECUTE || programRunStop == PGM_RUNNING || programRunStop == PGM_PAUSED) {
           real34_t y, x, resZ, resY, resX;
           saveForUndo();
           thereIsSomethingToUndo = true;
           liftStack();
 
-          clearSystemFlag(FLAG_TVM_I_KNOWN);
+          tvmIKnown = false;
 
           switch(variable) {
             case RESERVED_VARIABLE_IPONA:
             case RESERVED_VARIABLE_PPERONA:
             case RESERVED_VARIABLE_CPERONA: {
-              setSystemFlag(FLAG_TVM_I_CHANGES);
+              tvmIChanges = true;
               break;
             }
             default: {
-              clearSystemFlag(FLAG_TVM_I_CHANGES);
+              tvmIChanges = false;
             }
           }
+
           real34Multiply(REGISTER_REAL34_DATA(variable), const34_2, &y);
           real34Multiply(REGISTER_REAL34_DATA(variable), const34_1on2, &x);
 
           switch(variable) {
             case RESERVED_VARIABLE_PV: {
-              if(real34IsZero(REGISTER_REAL34_DATA(RESERVED_VARIABLE_PV))) {
+              if(real34CompareAbsLessThan(REGISTER_REAL34_DATA(RESERVED_VARIABLE_PV),const34_1e_4)) {
                 real34Multiply(REGISTER_REAL34_DATA(RESERVED_VARIABLE_FV), const34_2, &y);
                 real34Multiply(REGISTER_REAL34_DATA(RESERVED_VARIABLE_FV), const34_1on2, &x);
               }
               break;
             }
             case RESERVED_VARIABLE_FV: {
-              if(real34IsZero(REGISTER_REAL34_DATA(RESERVED_VARIABLE_FV))) {
+              if(real34CompareAbsLessThan(REGISTER_REAL34_DATA(RESERVED_VARIABLE_FV),const34_1e_4)) {
                 real34Multiply(REGISTER_REAL34_DATA(RESERVED_VARIABLE_PV), const34_2, &y);
                 real34Multiply(REGISTER_REAL34_DATA(RESERVED_VARIABLE_PV), const34_1on2, &x);
               }
               break;
             }
             case RESERVED_VARIABLE_IPONA: {
-              if(real34CompareLessThan(REGISTER_REAL34_DATA(variable), const34_1)) {
-                real34Copy(const34_100, &y);
-                real34Copy(const34_1, &x);
+              if(real34CompareAbsLessThan(REGISTER_REAL34_DATA(variable), const34_1on10)) {       //if interest rate p.a. < 0.1% then default to a reasonable 3% to 7% strarting condition
+                real34Copy(const34_3, &y); //3
+                real34Copy(const34_7, &x); //7
               }
               break;
             }
@@ -106,7 +107,14 @@ void fnTvmVar(uint16_t variable) {
               }
               break;
             }
+
+            case RESERVED_VARIABLE_PMT: {
+              //no special x y cases
+              break;
+            }
+            default:break;
           }
+
           if((variable == RESERVED_VARIABLE_PV || variable == RESERVED_VARIABLE_FV) &&
             !real34IsZero(REGISTER_REAL34_DATA(RESERVED_VARIABLE_PV)) &&
             !real34IsZero(REGISTER_REAL34_DATA(RESERVED_VARIABLE_FV)) &&
@@ -114,18 +122,65 @@ void fnTvmVar(uint16_t variable) {
               real34ChangeSign(&y);
               real34ChangeSign(&x);
           }
-          if(solver(variable, &y, &x, &resZ, &resY, &resX) == SOLVER_RESULT_NORMAL) {
-            reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
-            real34Copy(&resX, REGISTER_REAL34_DATA(REGISTER_X));
-            temporaryInformation = TI_SOLVER_VARIABLE;
-            thereIsSomethingToUndo = false;
+
+          if(real34CompareAbsLessThan(&x,const34_1e_4) && real34CompareAbsLessThan(&y,const34_1e_4)) { //still after all the tries, if x & y are still both below 0.0001, then change x to 1 (keeping y = 0)
+            real34Copy(const34_1, &x);
           }
-          else {
+
+          uint16_t iter = 0;
+          real34_t xx, yy;
+
+          #define nIter 6
+          while(iter++ < nIter || !real34CompareEqual(&resX, &resY)) {
+            real34Copy(&x, &xx);
+            real34Copy(&y, &yy);
+            #if defined(PC_BUILD)
+              printReal34ToConsole(&x,"iter x:","\n");
+              printReal34ToConsole(&y,"iter y:","\n");            
+            #endif //PC_BUILD
+            uint16_t solveResult = solver(variable, &y, &x, &resZ, &resY, &resX);
+            #if defined(PC_BUILD)
+              printf("Solve iteration: iter=%u solveResult=%u\n",iter,solveResult);
+            #endif //PC_BUILD
+            if(solveResult == SOLVER_RESULT_NORMAL) {
+              #if defined(PC_BUILD)
+                printReal34ToConsole(&resZ,"solver results: resZ:","\n");
+                printReal34ToConsole(&resY,"solver results: resY:","\n");
+                printReal34ToConsole(&resX,"solver results: resX:","\n");
+              #endif //PC_BUILD
+              reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+              real34Copy(&resX, REGISTER_REAL34_DATA(REGISTER_X));
+              temporaryInformation = TI_SOLVER_VARIABLE;
+              thereIsSomethingToUndo = false;
+              break;
+            } 
+            else {
+              if(real34IsNegative(&xx)) {
+                real34Subtract(&xx, const34_2, &x);
+              } else {
+                real34Add(&xx, const34_1, &x);
+              }
+              if(real34IsNegative(&yy)) {
+                real34Subtract(&yy, const34_1on2, &y);
+              }
+              else {
+                real34Add(&yy, const34_2, &y);
+              }
+              real34Multiply(&x, const34_3, &x);
+              if((iter+1)%3 == 0) {
+                real34ChangeSign(&x);
+              }
+              real34Multiply(&y, const34_2, &y);
+            }
+          }
+          
+          if(iter == nIter) {
             displayCalcErrorMessage(ERROR_NO_ROOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
-            #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+            #if (EXTRA_INFO_ON_CALC_ERROR == 1)
               moreInfoOnError("In function fnTvmVar:", "cannot compute TVM equation", "with current parameters", NULL);
             #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
           }
+
           adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
         }
 
@@ -134,7 +189,7 @@ void fnTvmVar(uint16_t variable) {
           fnToReal(NOPARAM);
           if(lastErrorCode == ERROR_NONE) {
             reallyRunFunction(ITM_STO, variable);
-            if (variable == RESERVED_VARIABLE_PPERONA) {
+            if(variable == RESERVED_VARIABLE_PPERONA) {
               reallyRunFunction(ITM_STO, RESERVED_VARIABLE_CPERONA);
             }
             currentSolverStatus |= SOLVER_STATUS_READY_TO_EXECUTE;
@@ -160,6 +215,38 @@ void fnTvmBeginMode(uint16_t unusedButMandatoryParameter) {
 
 void fnTvmEndMode(uint16_t unusedButMandatoryParameter) {
   setSystemFlag(FLAG_ENDPMT);
+}
+
+
+void fnEff(uint16_t unusedButMandatoryParameter) {
+  real_t iA, cperA, tmp;
+
+  //no need to use tvmIKnown or tvmIChanges, as this is a simplistic output only, which takes the current cperA & iA and produces the effective rate. There is no situation where there is no values in these
+  real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_CPERONA), &cperA);
+  real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_IPONA),   &iA);
+
+  if(!realIsZero(&cperA)) {
+
+    saveForUndo();
+    thereIsSomethingToUndo = true;
+    liftStack();
+
+    realDivide(&iA, const_100, &tmp, &ctxtReal39);
+    realDivide(&tmp, &cperA, &tmp, &ctxtReal39);
+    realAdd(&tmp, const_1, &tmp, &ctxtReal39);
+    realPower(&tmp, &cperA, &tmp, &ctxtReal39);
+    realSubtract(&tmp, const_1, &tmp, &ctxtReal39);
+    realMultiply(&tmp, const_100, &tmp, &ctxtReal39);
+    
+    reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+    convertRealToReal34ResultRegister(&tmp, REGISTER_X);
+    temporaryInformation = TI_TVM_EFF;
+  } else {
+    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      moreInfoOnError("In function fnEff:", "cannot compute EFF%/a ", "with parameters cp/a = 0", NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+  }
 }
 
 
@@ -205,7 +292,7 @@ void tvmEquation(void) {
     these iterations pass much more quickly. So I do need to do something here.
    */
 
-  if ( (!getSystemFlag(FLAG_TVM_I_KNOWN)) || (getSystemFlag(FLAG_TVM_I_CHANGES)) ) { // if i hasn't been found yet or i changes each time
+  if((!tvmIKnown) || (tvmIChanges)) { // if i hasn't been found yet or i changes each time
     realDivide(&iA, const_100, &i, &ctxtReal39);
     realDivide(&i, &pperA, &i, &ctxtReal39);
     // i is now (iA / 100) / pperA.
@@ -213,13 +300,13 @@ void tvmEquation(void) {
 
     realDivide(&cperA, &pperA, &r, &ctxtReal39); // r = cperA / pperA
 
-    if ( !(realIsZero (&r) || realCompareEqual(const_1, &r)) ) { // not normal case
+    if(!(realIsZero(&r) || realCompareEqual(const_1, &r)) ) { // not normal case
       realDivide(&i, &r, &i, &ctxtReal39);
-      realAdd (&i, const_1, &i, &ctxtReal39);
-      realPower (&i, &r, &i, &ctxtReal39);
-      realSubtract (&i, const_1, &i, &ctxtReal39); // i = (1 + (i/pperA)/r)^r - 1
+      realAdd(&i, const_1, &i, &ctxtReal39);
+      realPower(&i, &r, &i, &ctxtReal39);
+      realSubtract(&i, const_1, &i, &ctxtReal39); // i = (1 + (i/pperA)/r)^r - 1
     }
-    setSystemFlag(FLAG_TVM_I_KNOWN);
+    tvmIKnown = true;
   }
 
   realChangeSign(&pv);
@@ -235,6 +322,9 @@ void tvmEquation(void) {
   }
 
   realMultiply(&val, &pmt, &val, &ctxtReal39);
+  if(realCompareAbsLessThan(&i,const_1e_37)) {    //prevent infinity when i = 0, to continue work
+    realCopy(const_1e_37,&i);
+  }
   realDivide(&val, &i, &val, &ctxtReal39);
 
   realSubtract(const_1, &i1nPer, &tmp, &ctxtReal39);

@@ -110,19 +110,19 @@ static void incDecAndCompare(uint16_t regist, uint16_t mode) {
     }
   }
   if(compared > 0) {
-    temporaryInformation = ((mode & 6) == (INC_FLAG << 2)) ? TI_FALSE : TI_TRUE;
+    SET_TI_TRUE_FALSE(!((mode & 6) == (INC_FLAG << 2)));
   }
   else if(compared < 0) {
-    temporaryInformation = ((mode & 6) == (DEC_FLAG << 2)) ? TI_FALSE : TI_TRUE;
+    SET_TI_TRUE_FALSE(!((mode & 6) == (DEC_FLAG << 2)));
   }
   else { // compared==0
-    temporaryInformation = ((mode & 1) ==              0 ) ? TI_FALSE : TI_TRUE;
+    SET_TI_TRUE_FALSE( ((mode & 1) !=              0 ));
   }
   return;
 
 invalidType:
   displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, regist);
-  #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+  #if (EXTRA_INFO_ON_CALC_ERROR == 1)
     sprintf(errorMessage, "incompatible type for iterator.");
     moreInfoOnError("In function incDecAndCompare:", errorMessage, NULL, NULL);
   #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)

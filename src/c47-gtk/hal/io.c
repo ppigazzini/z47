@@ -199,14 +199,16 @@ int ioFileOpen(ioFilePath_t path, ioFileMode_t mode) {
       while(jj>kk) {
         if(filename[jj-1]!='\\' && filename[jj-1]!='/' && filename[jj-1]!=0) {
           jj--;
-        } else {
+        }
+        else {
           break;
         }
       }
       stringAppend(fileNameSelected, filename + jj);
     }
     return FILE_OK;
-  } else {
+  }
+  else {
     return FILE_ERROR;
   }
 }
@@ -271,4 +273,5 @@ void show_warning(char *string) {
 
 
 void fnDiskInfo(uint16_t unusedButMandatoryParameter) {
+  temporaryInformation = TI_DMCP_ONLY;
 }

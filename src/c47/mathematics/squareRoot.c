@@ -55,12 +55,12 @@ static void sqrtShoI(void) {
 static void sqrtReal(void) {
   real_t a;
 
-  if (!getRegisterAsReal(REGISTER_X, &a))
+  if(!getRegisterAsReal(REGISTER_X, &a))
     return;
 
   if(realIsInfinite(&a) && !getSystemFlag(FLAG_SPCRES)) {
     displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       moreInfoOnError("In function sqrtReal:", "cannot use " STD_PLUS_MINUS STD_INFINITY " as X input of sqrt when flag D is not set", NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     return;
@@ -77,7 +77,7 @@ static void sqrtReal(void) {
   }
   else {
     displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, STD_SQUARE_ROOT STD_x_UNDER_ROOT " doesn't work on a negative real when flag I is not set!");
       moreInfoOnError("In function sqrtReal:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -87,7 +87,7 @@ static void sqrtReal(void) {
 static void sqrtCplx(void) {
   real_t a, b;
 
-  if (getRegisterAsComplex(REGISTER_X, &a, &b)) {
+  if(getRegisterAsComplex(REGISTER_X, &a, &b)) {
     sqrtComplex(&a, &b, &a, &b, &ctxtReal39);
     convertComplexToResultRegister(&a, &b, REGISTER_X);
   }

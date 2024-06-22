@@ -44,14 +44,14 @@
 
 #else
   static bool_t checkParamLogistic(real_t *x, real_t *i, real_t *j) {
-    if (!getRegisterAsReal(REGISTER_X, x)
+    if(!getRegisterAsReal(REGISTER_X, x)
         || !getRegisterAsReal(REGISTER_M, i)
         || !getRegisterAsReal(REGISTER_S, j))
       goto err;
 
     if(realIsZero(j) || realIsNegative(j)) {
       displayDomainErrorMessage(ERROR_INVALID_DISTRIBUTION_PARAM, ERR_REGISTER_LINE, REGISTER_X);
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         moreInfoOnError("In function checkParamLogistic:", "cannot calculate for " STD_sigma " " STD_LESS_EQUAL " 0", NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       goto err;
@@ -121,7 +121,7 @@
     if(checkParamLogistic(&val, &mu, &s)) {
       if(realCompareLessEqual(&val, const_0) || realCompareGreaterEqual(&val, const_1)) {
         displayDomainErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-        #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           moreInfoOnError("In function fnLogisticI:", "the argument must be 0 < x < 1", NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
         if(getSystemFlag(FLAG_SPCRES)) {

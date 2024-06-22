@@ -145,7 +145,7 @@ static void getIndirectRegister(uint8_t *paramAddress, const char *op) {
   else if(opParam <= REGISTER_K_IN_KS_CODE) { // Lettered register from X to K
     sprintf(tmpString, "%s " STD_RIGHT_ARROW "%s", op, indexOfItems[ITM_REG_X + opParam - REGISTER_X_IN_KS_CODE].itemSoftmenuName);
   }
-  else if(opParam <= LAST_LOCAL_REGISTER_IN_KS_CODE) { // Local register from .00 to .99
+  else if(opParam <= LAST_LOCAL_REGISTER_IN_KS_CODE) { // Local register from .00 to .98
     sprintf(tmpString, "%s " STD_RIGHT_ARROW ".%02d", op, opParam - FIRST_LOCAL_REGISTER_IN_KS_CODE);
   }
   else if(opParam <= REGISTER_W_IN_KS_CODE) { // Lettered register from M to S and E to W
@@ -226,7 +226,7 @@ static void decodeOp(uint8_t *paramAddress, const char *op, uint16_t paramMode, 
       else if(opParam <= REGISTER_K_IN_KS_CODE) { // Lettered register from X to K
         sprintf(tmpString, "%s %s", op, indexOfItems[ITM_REG_X + opParam - REGISTER_X_IN_KS_CODE].itemSoftmenuName);
       }
-      else if(opParam <= LAST_LOCAL_REGISTER_IN_KS_CODE) { // Local register from .00 to .99
+      else if(opParam <= LAST_LOCAL_REGISTER_IN_KS_CODE) { // Local register from .00 to .98
         sprintf(tmpString, "%s .%02d", op, opParam - FIRST_LOCAL_REGISTER_IN_KS_CODE);
       }
       else if(opParam <= REGISTER_W_IN_KS_CODE) { // Lettered register from M to S and E to W
@@ -262,7 +262,7 @@ static void decodeOp(uint8_t *paramAddress, const char *op, uint16_t paramMode, 
       else if(opParam <= LAST_LOCAL_FLAG) { // Local flag from .00 to .31
         sprintf(tmpString, "%s .%02d", op, opParam - FIRST_LOCAL_FLAG);
       }
-      else if(opParam < FLAG_M) { // Local flag from .32 to .99 are illegal
+      else if(opParam < FLAG_M) { // Local flag from .32 to .98 are illegal
         sprintf(tmpString, "\nIn function decodeOp: case PARAM_FLAG, %s  %u is not a valid parameter!", op, opParam);
       }
       else if(opParam <= FLAG_W) { // Lettered flag from M to S and E to W
@@ -360,7 +360,7 @@ static void decodeOp(uint8_t *paramAddress, const char *op, uint16_t paramMode, 
       else if(opParam <= REGISTER_K_IN_KS_CODE) { // Lettered register from X to K
         sprintf(tmpString, "%s %s", op, indexOfItems[ITM_REG_X + opParam - REGISTER_X_IN_KS_CODE].itemSoftmenuName);
       }
-      else if(opParam <= LAST_LOCAL_REGISTER_IN_KS_CODE) { // Local register from .00 to .99
+      else if(opParam <= LAST_LOCAL_REGISTER_IN_KS_CODE) { // Local register from .00 to .98
         sprintf(tmpString, "%s .%02d", op, opParam - FIRST_LOCAL_REGISTER_IN_KS_CODE);
       }
       else if(opParam <= REGISTER_W_IN_KS_CODE) { // Lettered register from M to S and E to W
@@ -510,14 +510,16 @@ static void decodeLiteral(uint8_t *literalAddress) {
     //}
 
     case BINARY_REAL34: {
-      real34ToDisplayString((real34_t *)literalAddress, amNone, tmpString, &standardFont, 9999, 34, false, false);
+      real34_t realLiteral;
+      xcopy(&realLiteral, literalAddress, TO_BYTES(REAL34_SIZE_IN_BLOCKS));
+      real34ToDisplayString(&realLiteral, amNone, tmpString, &standardFont, 9999, 34, false, false);
       break;
     }
 
     case BINARY_COMPLEX34: {
       complex34_t complexLiteral;
-      xcopy(VARIABLE_REAL34_DATA(&complexLiteral), literalAddress     , 16);
-      xcopy(VARIABLE_IMAG34_DATA(&complexLiteral), literalAddress + 16, 16);
+      xcopy(VARIABLE_REAL34_DATA(&complexLiteral), literalAddress                                  , TO_BYTES(REAL34_SIZE_IN_BLOCKS));
+      xcopy(VARIABLE_IMAG34_DATA(&complexLiteral), literalAddress + TO_BYTES(REAL34_SIZE_IN_BLOCKS), TO_BYTES(REAL34_SIZE_IN_BLOCKS));
       complex34ToDisplayString(&complexLiteral, tmpString, &standardFont, 9999, 34, false, false, currentAngularMode, getSystemFlag(FLAG_POLAR));
       break;
     }
@@ -791,7 +793,8 @@ static void _decodeOneStep(uint8_t *step, bool_t textVersion) {
             strcat(nameOp,indexOfItems[op].itemCatalogName);
             strcat(nameOp," ");
             strcat(nameOp,indexOfItems[op].itemSoftmenuName);
-          } else {
+          }
+          else {
             getXeqmText(op, nameOp);
           }
         }
@@ -821,7 +824,8 @@ static void _decodeOneStep(uint8_t *step, bool_t textVersion) {
       default: {
         if(op == ITM_INTEGRAL) {
           strcpy(nameOp,indexOfItems[op].itemCatalogName); //   STD_INTEGRAL "fd");
-        } else
+        }
+        else
         if(op == ITM_INTEGRAL_YX) {
           strcpy(nameOp,indexOfItems[op].itemCatalogName); //   STD_INTEGRAL "fyxd");
         }

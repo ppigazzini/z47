@@ -52,7 +52,7 @@ static void _getStringLabelOrVariableName(uint8_t *stringAddress) {
 
 static uint16_t _indirectRegister(uint8_t *paramAddress) {
   uint8_t opParam = *(uint8_t *)paramAddress;
-  if(opParam <= LAST_LOCAL_REGISTER_IN_KS_CODE) { // Local register from .00 to .99
+  if(opParam <= LAST_LOCAL_REGISTER_IN_KS_CODE) { // Local register from .00 to .98
       int16_t realParam = indirectAddressing(regKStoC(opParam), INDPM_REGISTER, 0, 99);
       if(realParam < 9999) {
         return realParam;
@@ -76,7 +76,7 @@ static uint16_t _indirectVariable(uint8_t *stringAddress) {
   }
   else {
     displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "string '%s' is not a named variable", tmpStringLabelOrVariableName);
       moreInfoOnError("In function _indirectVariable:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -98,7 +98,7 @@ static uint16_t _get2ndParamOfKey(uint8_t *paramAddress) {
     }
     else {
       displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "string '%s' is not a named label", tmpStringLabelOrVariableName);
         moreInfoOnError("In function get2ndParamOfKey:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -111,7 +111,7 @@ static uint16_t _get2ndParamOfKey(uint8_t *paramAddress) {
     return _indirectVariable(paramAddress);
   }
   else {
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(tmpString, "\nIn function get2ndParamOfKey: %u is not a valid parameter!", opParam);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }

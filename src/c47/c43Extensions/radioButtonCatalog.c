@@ -68,20 +68,11 @@ TO_QSPI const radiocb_t indexOfRadioCbEepromItems[] = {
   {ITM_WS32,             32,                     RB_WS},  //fnSetWordSize
   {ITM_WS64,             64,                     RB_WS},  //fnSetWordSize
 
-  {ITM_N_KEY_op_j,       16384+ITM_op_j,         RB_SA},  //fnSigmaAssign
-  {ITM_N_KEY_TGLFRT,     16384+ITM_TGLFRT,       RB_SA},  //fnSigmaAssign
   {ITM_N_KEY_ALPHA,      16384+ITM_AIM,          RB_SA},  //fnSigmaAssign
-  {ITM_N_KEY_CC,         16384+ITM_CC,           RB_SA},  //fnSigmaAssign
   {ITM_N_KEY_FSH,        16384+ITM_SHIFTf,       RB_SA},  //fnSigmaAssign
   {ITM_N_KEY_GSH,        16384+ITM_SHIFTg,       RB_SA},  //fnSigmaAssign
   {ITM_N_KEY_FGSH,       16384+KEY_fg,           RB_SA},  //fnSigmaAssign
-  {ITM_N_KEY_MM,         16384+-MNU_MyMenu,      RB_SA},  //fnSigmaAssign
-  {ITM_N_KEY_DRG,        16384+ITM_DRG,          RB_SA},  //fnSigmaAssign
-  {ITM_N_KEY_PRGM,       16384+ITM_PR,           RB_SA},  //fnSigmaAssign
   {ITM_N_KEY_USER,       16384+ITM_USERMODE,     RB_SA},  //fnSigmaAssign
-  {ITM_N_KEY_HOME,       16384+-MNU_HOME,        RB_SA},  //fnSigmaAssign
-  {ITM_N_KEY_SIGMA,      16384+ITM_SIGMAPLUS,    RB_SA},  //fnSigmaAssign
-  {ITM_N_KEY_SNAP,       16384+ITM_SNAP,         RB_SA},  //fnSigmaAssign
   {ITM_N_KEY_NIL,        16384+ITM_NULL,         RB_SA},  //fnSigmaAssign
 
 
@@ -165,6 +156,7 @@ TO_QSPI const radiocb_t indexOfRadioCbEepromItems[] = {
   {ITM_DIFF,             JC_DIFF,                CB_JC},  //
   {ITM_RMS,              JC_RMS,                 CB_JC},  //
   {ITM_SHADE,            JC_SHADE,               CB_JC},  //
+  {ITM_CPXPLOT,          JC_CPXPLOT,             CB_JC},
 
   {CHR_num,              JC_NL,                  CB_JC},  //
   {CHR_case,             JC_UC,                  CB_JC},  //
@@ -363,6 +355,7 @@ int8_t fnCbIsSet(int16_t item) {
             case JC_INTG:                cb_param = PLOT_INTG;                                                        break;
             case JC_RMS:                 cb_param = PLOT_RMS;                                                         break;
             case JC_SHADE:               cb_param = PLOT_SHADE;                                                       break;
+            case JC_CPXPLOT:             cb_param = PLOT_CPXPLOT;                                                     break;
             case JC_NL:                  cb_param = numLock;                                                          break;
             case JC_UC:                  cb_param = !alphaCase;                                                       break;
             case JC_UU:                  cb_param = getSystemFlag(FLAG_USER);                                         break;
@@ -443,10 +436,13 @@ int16_t fnItemShowValue(int16_t item) {
     case ITM_BESTF:     result = (lrSelection) & 0x1FF;                             break;
     case ITM_RMODE:     result = roundingMode;                                      break;
     case ITM_HASH_JM:   if(lastIntegerBase != 0) result = (int16_t)lastIntegerBase; break;
+    case ITM_TIMER_SIGMA_L:
+    case ITM_TIMER_SIGMA_T: result = statisticalSumsPointer == NULL ? 0 : realToUint32C47(SIGMA_N); break;
+    case ITM_TIMER_R_L:
+    case ITM_TIMER_R_T:     result = timerCraAndDeciseconds &0x7F; break;
     case ITM_VOL:
     case ITM_VOLPLUS:
-    case ITM_VOLMINUS:
-                        result = getBeepVolume();                                   break; // DL
+    case ITM_VOLMINUS:  result = getBeepVolume();                                   break; // DL
     default:            if(indexOfItems[itemNr].func == itemToBeCoded) {
                          result = ITEM_NOT_CODED;
                         }
@@ -464,27 +460,6 @@ void add_digitglyph_to_tmp2(char* tmp2, int16_t xx) {
     stringAppend(tmp2, STD_BASE_1);
     tmp2[1] += (xx-1);
   }
-
-//  switch(xx) {
-//    case  0: stringAppend(tmp2 + stringByteLength(tmp2), STD_SUB_0);   break;
-//    case  1: stringAppend(tmp2 + stringByteLength(tmp2), STD_BASE_1);  break;
-//    case  2: stringAppend(tmp2 + stringByteLength(tmp2), STD_BASE_2);  break;
-//    case  3: stringAppend(tmp2 + stringByteLength(tmp2), STD_BASE_3);  break;
-//    case  4: stringAppend(tmp2 + stringByteLength(tmp2), STD_BASE_4);  break;
-//    case  5: stringAppend(tmp2 + stringByteLength(tmp2), STD_BASE_5);  break;
-//    case  6: stringAppend(tmp2 + stringByteLength(tmp2), STD_BASE_6);  break;
-//    case  7: stringAppend(tmp2 + stringByteLength(tmp2), STD_BASE_7);  break;
-//    case  8: stringAppend(tmp2 + stringByteLength(tmp2), STD_BASE_8);  break;
-//    case  9: stringAppend(tmp2 + stringByteLength(tmp2), STD_BASE_9);  break;
-//    case 10: stringAppend(tmp2 + stringByteLength(tmp2), STD_BASE_10); break;
-//    case 11: stringAppend(tmp2 + stringByteLength(tmp2), STD_BASE_11); break;
-//    case 12: stringAppend(tmp2 + stringByteLength(tmp2), STD_BASE_12); break;
-//    case 13: stringAppend(tmp2 + stringByteLength(tmp2), STD_BASE_13); break;
-//    case 14: stringAppend(tmp2 + stringByteLength(tmp2), STD_BASE_14); break;
-//    case 15: stringAppend(tmp2 + stringByteLength(tmp2), STD_BASE_15); break;
-//    case 16: stringAppend(tmp2 + stringByteLength(tmp2), STD_BASE_16); break;
-//    default: ;
-//  }
 }
 
 

@@ -80,7 +80,7 @@
 #define ITM_XTHROOT                   63
 #define ITM_2X                        64
 #define ITM_EXP                       65
-#define MNU_0066                      66
+#define ITM_SINT                      66
 #define ITM_10x                       67
 #define ITM_LOG2                      68
 #define ITM_LN                        69
@@ -1401,8 +1401,8 @@
 #define MNU_PARTS                   1353
 #define MNU_PROB                    1354
 #define MNU_PROGS                   1355
-#define MNU_PFN_1                        1356
-#define MNU_PFN_2                        1357
+#define MNU_PFN_1                   1356
+#define MNU_PFN_2                   1357
 #define MNU_CONVP                   1358
 #define MNU_CONVHUM                 1359
 #define MNU_REALS                   1360
@@ -1433,7 +1433,7 @@
 #define MNU_TAM                     1385
 #define MNU_TAMCMP                  1386
 #define MNU_TAMSTORCL               1387
-#define MNU_1388                    1388
+#define MNU_Grapher                 1388
 #define MNU_VAR                     1389
 #define MNU_TAMFLAG                 1390
 #define MNU_TAMSHUFFLE              1391
@@ -1792,7 +1792,7 @@
 #define ITM_AIM                     1740
 #define ITM_dotD                    1741
 #define ITM_SHOW                    1742
-#define ITM_SYSTEM                  1743
+#define ITM_1743                    1743
 #define ITM_FRACT                   1744
 #define ITM_VANGLE                  1745
 #define ITM_XH                      1746
@@ -1825,17 +1825,17 @@
 #define ITM_RCL_PMT                 1773
 #define ITM_RCL_PV                  1774
 #define ITM_atan2                   1775
-#define ITM_TIMER_ADD               1776
+#define ITM_1776                    1776
 #define ITM_TIMER_0_1S              1777
 #define ITM_TIMER_RESET             1778
 #define ITM_TIMER_RCL               1779
 #define ITM_DELBKUP                 1780
-#define ITM_1781                    1781
-#define ITM_1782                    1782
-#define ITM_1783                    1783
-#define ITM_1784                    1784
-#define ITM_1785                    1785
-#define ITM_1786                    1786
+#define ITM_EFF                     1781
+#define ITM_TIMER_SIGMA_T           1782
+#define ITM_TIMER_SIGMA_L           1783
+#define ITM_TIMER_R_T               1784
+#define ITM_TIMER_R_L               1785
+#define ITM_TIMER_R_S               1786
 #define ITM_nBINS                   1787
 #define ITM_LOBIN                   1788
 #define ITM_HIBIN                   1789
@@ -1947,32 +1947,32 @@
 #define ITM_INP_DEF_LI              1891
 #define ITM_SI_P                    1892
 #define KEY_fg                      1893
-#define MNU_1894                    1894        // [DL] Deprecated MNU_TAMCMPALPHA
+#define ITM_FROM_USER               1894
 #define ITM_HPBASE                  1895
-#define ITM_N_KEY_op_j              1896
-#define ITM_N_KEY_TGLFRT            1897
+#define ITM_1896                    1896
+#define ITM_1897                    1897
 #define ITM_N_KEY_ALPHA             1898
-#define ITM_N_KEY_CC                1899
+#define ITM_1899                    1899
 #define ITM_N_KEY_GSH               1900
 #define ITM_N_KEY_MM                1901
-#define ITM_N_KEY_DRG               1902
-#define ITM_N_KEY_PRGM              1903
+#define ITM_1902                    1902
+#define ITM_1903                    1903
 #define ITM_N_KEY_USER              1904
-#define ITM_N_KEY_HOME              1905
-#define ITM_N_KEY_SIGMA             1906
-#define ITM_N_KEY_SNAP              1907
-#define ITM_N_KEY_FSH                  1908
+#define ITM_1905                    1905
+#define ITM_1906                    1906
+#define ITM_1907                    1907
+#define ITM_N_KEY_FSH               1908
 #define ITM_ms                      1909
 #define ITM_msTo                    1910
 #define ITM_INP_DEF_43S             1911
 #define ITM_XXEQ                    1912
 #define MNU_TAMALPHA                1913
-#define ITM_USER_COPY               1914
-#define ITM_N_KEY_NIL                  1915
+#define ITM_TO_USER                 1914
+#define ITM_N_KEY_NIL               1915
 #define ITM_USER_DM42               1916
 #define ITM_HPRP                    1917
-#define ITM_N_KEY_FGSH                 1918
-#define ITM_RESERVE                 1919
+#define ITM_N_KEY_FGSH              1918
+#define ITM_1919                    1919
 #define MNU_ASN_N                   1920
 #define MNU_HOME                    1921
 #define MNU_ALPHA                   1922
@@ -2157,13 +2157,13 @@
 #define ITM_RADtoGRAD               2101
 #define MNU_TRG_C47                 2102
 #define MNU_TRG_C47_MORE            2103
-#define ITM_RIBBON_C47                2104
-#define ITM_RIBBON_R47                2105
-#define ITM_RIBBON_SAV                2106
+#define ITM_RIBBON_C47              2104
+#define ITM_RIBBON_R47              2105
+#define ITM_RIBBON_SAV              2106
 #define MNU_PLOTTING                2107
 #define MNU_TAMNONREGIND            2108
-#define ITM_SAVEST                  2109
-#define ITM_LOADST                  2110
+#define ITM_2109                    2109
+#define ITM_2110                    2110
 #define ITM_GAPDOT_L                2111
 #define ITM_GAPWIDDOT_L             2112
 #define ITM_GAPPER_L                2113
@@ -2207,7 +2207,7 @@
 #define MNU_GAP_L                   2151
 #define MNU_GAP_RX                  2152
 #define MNU_GAP_R                   2153
-#define ITM_2154                      2154
+#define ITM_2154                    2154
 #define ITM_GRP_L                   2155
 #define ITM_GRP1_L_OF               2156
 #define ITM_GRP1_L                  2157
@@ -2215,9 +2215,9 @@
 #define ITM_GAP_L                   2159
 #define ITM_GAP_RX                  2160
 #define ITM_GAP_R                   2161
-#define ITM_2162                      2162
-#define ITM_RIBBON_FIN                2163
-#define ITM_RIBBON_CPX                2164
+#define ITM_2162                    2162
+#define ITM_RIBBON_FIN              2163
+#define ITM_RIBBON_CPX              2164
 #define ITM_op_j_SIGN               2165
 #define ITM_poly_SIGN               2166
 #define ITM_NMItoMI                 2167
@@ -2308,9 +2308,9 @@
 // 64 more system flags
 #define SFL_MONIT                   2251
 #define SFL_FRCYC                   2252
-#define SFL_TVM_I_KNOWN             2253
-#define SFL_TVM_I_CHANGES           2254
-#define SFL_HPCONV                  2255
+#define SFL_HPCONV                  2253
+#define SFL_2250                    2254
+#define SFL_2251                    2255
 #define SFL_2252                    2256
 #define SFL_2253                    2257
 #define SFL_2254                    2258
@@ -2444,8 +2444,16 @@
 #define MNU_AMORT                   2382
 
 #define ITM_x_SIGN                  2383
+#define ITM_CPXPLOT                 2384
 
-#define LAST_ITEM                   2384
+#define ITM_PFACTORSMULT            2385
+#define ITM_EULPHI                  2386
+#define ITM_SAVEST                  2387
+#define ITM_LOADST                  2388
+#define ITM_SAVEAUT                 2389
+#define MNU_AUDIO                   2390
+
+#define LAST_ITEM                   2391
 
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL

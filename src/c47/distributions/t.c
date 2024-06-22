@@ -45,13 +45,13 @@
 
 #else
   static bool_t checkParamT(real_t *x, real_t *i) {
-    if (!getRegisterAsReal(REGISTER_X, x)
+    if(!getRegisterAsReal(REGISTER_X, x)
         || !getRegisterAsReal(REGISTER_M, i))
         goto err;
 
     if(realIsZero(i) || realIsNegative(i)) {
       displayDomainErrorMessage(ERROR_INVALID_DISTRIBUTION_PARAM, ERR_REGISTER_LINE, REGISTER_X);
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         moreInfoOnError("In function checkParamT:", "cannot calculate for " STD_nu " " STD_LESS_EQUAL " 0", NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       goto err;
@@ -124,7 +124,7 @@
     if(checkParamT(&val, &dof)) {
       if(realCompareLessEqual(&val, const_0) || realCompareGreaterEqual(&val, const_1)) {
         displayDomainErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-        #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           moreInfoOnError("In function fnT_I:", "the argument must be 0 < x < 1", NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
         if(getSystemFlag(FLAG_SPCRES)) {
@@ -135,7 +135,7 @@
       WP34S_Qf_T(&val, &dof, &ans, &ctxtReal39);
       if(realIsNaN(&ans)) {
         displayDomainErrorMessage(ERROR_NO_ROOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
-        #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           moreInfoOnError("In function fnT_I:", "WP34S_Qf_T did not converge", NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       }

@@ -25,7 +25,7 @@
 
   void fnFp   (uint16_t unusedButMandatoryParameter);
 
-  #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+  #if (EXTRA_INFO_ON_CALC_ERROR == 1)
     void fpError(void);
   #else // (EXTRA_INFO_ON_CALC_ERROR != 1)
     #define fpError typeError

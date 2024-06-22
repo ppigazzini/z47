@@ -79,6 +79,7 @@
   #include "int.h"
   #include "integerPart.h"
   #include "integerPartLonginteger.h"
+  #include "integerPartShortinteger.h"
   #include "invert.h"
   #include "iteration.h"
   #include "ixyz.h"

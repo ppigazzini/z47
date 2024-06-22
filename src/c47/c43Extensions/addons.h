@@ -84,7 +84,7 @@ void   fnRCL                    (int16_t inp);              //DONE
 
 
 void   fnConstantR              (uint16_t constantAddr, uint16_t *constNr, real_t *rVal);
-bool_t checkForAndChange_       (char *displayString, const real34_t *val, const real_t *constant, const real34_t *tol34, const char *constantStr,  bool_t frontSpace);
+bool_t checkForAndChange        (char *displayString, const real34_t *val, const real_t *constant, const real_t *toleranceR, const char *constantStr,  bool_t frontSpace, bool_t isComplex);
 
 void fnDisplayFormatCycle       (uint16_t unusedButMandatoryParameter);
 

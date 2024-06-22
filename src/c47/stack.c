@@ -43,19 +43,6 @@ void fnClearStack(uint16_t unusedButMandatoryParameter) {
 
 
 
-void fnDrop(uint16_t unusedButMandatoryParameter) {
-  freeRegisterData(REGISTER_X);
-  for(calcRegister_t regist=REGISTER_X; regist<getStackTop(); regist++) {
-    globalRegister[regist] = globalRegister[regist + 1];
-  }
-
-  uint16_t sizeInBlocks = getRegisterFullSizeInBlocks(getStackTop());
-  setRegisterDataPointer(getStackTop() - 1, allocC47Blocks(sizeInBlocks));
-  xcopy(REGISTER_DATA(getStackTop() - 1), REGISTER_DATA(getStackTop()), TO_BYTES(sizeInBlocks));
-}
-
-
-
 void liftStack(void) {
   if(getSystemFlag(FLAG_ASLIFT)) {
     if(currentInputVariable != INVALID_VARIABLE) {
@@ -94,6 +81,10 @@ void _Drop(calcRegister_t reg) {
   else {
     lastErrorCode = ERROR_RAM_FULL;
   }
+}
+
+void fnDrop(uint16_t unusedButMandatoryParameter) {
+  _Drop(REGISTER_X);
 }
 
 void fnDropY(uint16_t unusedButMandatoryParameter) {
@@ -379,7 +370,6 @@ void undo(void) {
 
   systemFlags0 = savedSystemFlags0;
   systemFlags1 = savedSystemFlags1;
-  synchronizeLetteredFlags();
 
   for(calcRegister_t regist=getStackTop(); regist>=REGISTER_X; regist--) {
     copySourceRegisterToDestRegister(SAVED_REGISTER_X - REGISTER_X + regist, regist);

@@ -115,7 +115,7 @@
 
   static void _indirectRegister(uint8_t *paramAddress) {
     uint8_t opParam = *(uint8_t *)paramAddress;
-    if(opParam <= LAST_LOCAL_REGISTER_IN_KS_CODE) { // Local register from .00 to .99
+    if(opParam <= LAST_LOCAL_REGISTER_IN_KS_CODE) { // Local register from .00 to .98
       _clearVar(regKStoC(opParam));
     }
     else {
@@ -224,7 +224,7 @@
 
       case PARAM_REGISTER:
       case PARAM_COMPARE: {
-        if(opParam <= LAST_LOCAL_REGISTER_IN_KS_CODE) { // Global register from 00 to 99, Lettered register from X to K, or Local register from .00 to .99
+        if(opParam <= LAST_LOCAL_REGISTER_IN_KS_CODE) { // Global register from 00 to 99, Lettered register from X to K, or Local register from .00 to .98
           _clearVar(regKStoC(opParam));
         }
         else if(opParam == STRING_LABEL_VARIABLE) {
@@ -278,7 +278,7 @@
 
         case PTP_DISABLED: {
           displayCalcErrorMessage(ERROR_NON_PROGRAMMABLE_COMMAND, ERR_REGISTER_LINE, REGISTER_X);
-          #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+          #if (EXTRA_INFO_ON_CALC_ERROR == 1)
             moreInfoOnError("In function decodeOneStep:", "non-programmable function", indexOfItems[op].itemCatalogName, "appeared in the program!");
           #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
           return false;

@@ -73,7 +73,8 @@ void LastOpTimerLap (uint16_t func) {
   if(timeLastOp1 >= timeLastOp0) {
     timeLastOp = timeLastOp1 - timeLastOp0;
     //printf("Func:%s setting STOP %u: %u Running:%u\n",indexOfItems[func].itemCatalogName, timeLastOp1, timeLastOp, programRunStop == PGM_RUNNING);
-  } else {
+  }
+  else {
     timeLastOp =  ((int)(0xFFFFFFFF) / 100 - timeLastOp0) + timeLastOp1; //if loop passed 2^32-1 ms, recalc offset
     //printf("setting STOP Wrapped %u: %u Running:%u\n",timeLastOp1, timeLastOp, programRunStop == PGM_RUNNING);
   }
@@ -191,10 +192,25 @@ void refreshTimer(void) {                   // This function is called when next
 #endif // DMCP_BUILD
 
 
-void fnTimerDummyTest(uint16_t param) {
+void fnTimerDummy1(uint16_t param) {
 #if defined(PC_BUILD) || defined(TESTSUITE_BUILD)
-  printf("fnTimerDummyTest called  %u\n", param);
+  printf("fnTimerDummy1 called  %u\n", param);
 #endif // PC_BUILD || TESTSUITE_BUILD
+}
+
+
+
+void fnTimerEndOfActivity(uint16_t param) {
+#if defined(PC_BUILD) || defined(TESTSUITE_BUILD)
+  printf("fnTimerEndOfActivity called  %u\n", param);
+#endif // PC_BUILD || TESTSUITE_BUILD
+
+#if defined(DMCP_BUILD)
+  if(skippedStackLines && !getSystemFlag(FLAG_USB)) {       //update screen after 6 sec timout, to restore the half-updated screen in battery mode. See refreshRegisterLine() in screen.c
+    screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
+    refreshScreen(32);
+  }
+#endif // DMCP_BUILD
 }
 
 
@@ -206,7 +222,7 @@ void fnTimerReset(void) {
 
   for(int i = 0; i < TMR_NUMBER; i++) {
     timer[i].state = TMR_UNUSED;
-    timer[i].func = fnTimerDummyTest;
+    timer[i].func = fnTimerDummy1;
     timer[i].param = 0;
   }
 
@@ -229,22 +245,22 @@ void fnTimerConfig(uint8_t nr, void(*func)(uint16_t), uint16_t param) {
 
 
 
-void fnTimerStart(uint8_t nr, uint16_t param, uint32_t time) {
+void fnTimerStart(uint8_t nr, uint16_t param, uint32_t time) {//time is in ms
   #if defined(DMCP_BUILD)
-  uint32_t now = (uint32_t)sys_current_ms();
+  uint32_t now = (uint32_t)sys_current_ms();                  //DMCP time is in ms
   #endif // DMCP_BUILD
 
   #if defined(PC_BUILD)
-  gint64 now = g_get_monotonic_time();
+  gint64 now = g_get_monotonic_time();                        //PC time is in us
   #endif // PC_BUILD
 
   if(nr < TMR_NUMBER) {
     timer[nr].param = param;
     #if defined(DMCP_BUILD)
-    timer[nr].timer_will_expire = (uint32_t)(now + time);
+    timer[nr].timer_will_expire = (uint32_t)(now + time);     // is in ms
     #endif // DMCP_BUILD
     #if defined(PC_BUILD)
-    timer[nr].timer_will_expire = (gint64)(now + time *1000);
+    timer[nr].timer_will_expire = (gint64)(now + time *1000); // time * 1000 is in us
     if(timer[nr].timer_will_expire < 0) {
       timer[nr].timer_will_expire = time *1000;
     }
@@ -376,29 +392,6 @@ void fnItemTimerApp(uint16_t unusedButMandatoryParameter) {
   #endif // !TESTSUITE_BUILD
 }
 
-void fnAddTimerApp(uint16_t unusedButMandatoryParameter) {
-  #if !defined(TESTSUITE_BUILD)
-  real_t tmp;
-
-  uInt32ToReal(_getTimerValue() / 100u, &tmp);
-  tmp.exponent -= 1;
-  realDivide(&tmp, const_3600, &tmp, &ctxtReal39);
-
-  fnStatSum(0);
-  if(lastErrorCode != ERROR_NONE) {
-    liftStack();
-    clearRegister(REGISTER_X);
-    lastErrorCode = ERROR_NONE;
-  }
-  real34Add(REGISTER_REAL34_DATA(REGISTER_X), const34_1, REGISTER_REAL34_DATA(REGISTER_X));
-  liftStack();
-  realToReal34(&tmp, REGISTER_REAL34_DATA(REGISTER_X));
-  fnSigma(1);
-
-  refreshScreen(30);
-  #endif // !TESTSUITE_BUILD
-}
-
 void fnDecisecondTimerApp(uint16_t unusedButMandatoryParameter) {
   #if !defined(TESTSUITE_BUILD)
   timerCraAndDeciseconds ^= 0x80u;
@@ -417,7 +410,7 @@ void fnResetTimerApp(uint16_t unusedButMandatoryParameter) {
   #endif // !TESTSUITE_BUILD
 }
 
-void fnStartStopTimerApp(void) {
+void fnStartStopTimerApp(uint16_t unusedButMandatoryParameter) {
   #if !defined(TESTSUITE_BUILD) && !defined(SAVE_SPACE_DM42_20_TIMER)
   if(timerStartTime == TIMER_APP_STOPPED) {
     setSystemFlag(FLAG_RUNTIM);
@@ -518,7 +511,8 @@ void fnUpdateTimerApp(void) {
   #endif // !TESTSUITE_BUILD
 }
 
-void fnEnterTimerApp(void) {
+void fnRegAddTimerApp(uint16_t unusedButMandatoryParameter) {  //ENTER
+printf("fnRegAddTimerApp\n");
   #if !defined(TESTSUITE_BUILD) && !defined(SAVE_SPACE_DM42_20_TIMER)
   if(rbr1stDigit) {
     real_t tmp;
@@ -538,7 +532,8 @@ void fnEnterTimerApp(void) {
   #endif // !TESTSUITE_BUILD
 }
 
-void fnDotTimerApp(void) {
+void fnRegAddLapTimerApp(uint16_t unusedButMandatoryParameter) {   //dot
+printf("fnRegAddLapTimerApp\n");
   #if !defined(TESTSUITE_BUILD) && !defined(SAVE_SPACE_DM42_20_TIMER)
   const uint32_t msec = _getTimerValue();
   real_t tmp;
@@ -564,15 +559,14 @@ void fnDotTimerApp(void) {
   #endif // !TESTSUITE_BUILD
 }
 
-void fnPlusTimerApp(void) {
-  #if !defined(TESTSUITE_BUILD) && !defined(SAVE_SPACE_DM42_20_TIMER)
-  const uint32_t msec = _getTimerValue();
+
+void fnAddTimerApp(uint16_t unusedButMandatoryParameter) {           //Send TIM to STATS
+  #if !defined(TESTSUITE_BUILD)
+printf("fnAddTimerApp\n");
   real_t tmp;
 
-  uInt32ToReal(msec / 100u, &tmp);
+  uInt32ToReal(_getTimerValue() / 100u, &tmp);
   tmp.exponent -= 1;
-  reallocateRegister(timerCraAndDeciseconds & 0x7fu, dtTime, REAL34_SIZE_IN_BLOCKS, amNone);
-  realToReal34(&tmp, REGISTER_REAL34_DATA(timerCraAndDeciseconds & 0x7fu));
   realDivide(&tmp, const_3600, &tmp, &ctxtReal39);
 
   fnStatSum(0);
@@ -584,9 +578,39 @@ void fnPlusTimerApp(void) {
   real34Add(REGISTER_REAL34_DATA(REGISTER_X), const34_1, REGISTER_REAL34_DATA(REGISTER_X));
   liftStack();
   realToReal34(&tmp, REGISTER_REAL34_DATA(REGISTER_X));
+  fnSwapXY(NOPARAM);                                       //swapped around to be able to plot correctly
   fnSigma(1);
 
-  fnUpTimerApp();
+  refreshScreen(30);
+  #endif // !TESTSUITE_BUILD
+}
+
+
+void fnAddLapTimerApp(uint16_t unusedButMandatoryParameter) {
+printf("fnAddLapTimerApp\n");
+  #if !defined(TESTSUITE_BUILD) && !defined(SAVE_SPACE_DM42_20_TIMER)
+  const uint32_t msec = _getTimerValue();
+  real_t tmp;
+
+  uInt32ToReal(msec / 100u, &tmp);
+  tmp.exponent -= 1;
+//  reallocateRegister(timerCraAndDeciseconds & 0x7fu, dtTime, REAL34_SIZE_IN_BLOCKS, amNone);
+//  realToReal34(&tmp, REGISTER_REAL34_DATA(timerCraAndDeciseconds & 0x7fu));
+  realDivide(&tmp, const_3600, &tmp, &ctxtReal39);
+
+  fnStatSum(0);
+  if(lastErrorCode != ERROR_NONE) {
+    liftStack();
+    clearRegister(REGISTER_X);
+    lastErrorCode = ERROR_NONE;
+  }
+  real34Add(REGISTER_REAL34_DATA(REGISTER_X), const34_1, REGISTER_REAL34_DATA(REGISTER_X));
+  liftStack();
+  realToReal34(&tmp, REGISTER_REAL34_DATA(REGISTER_X));
+  fnSwapXY(NOPARAM);                                       //swapped around to be able to plot correctly
+  fnSigma(1);
+
+//  fnUpTimerApp();
 
   if(timerTotalTime > 0) {
     timerTotalTime += msec - timerValue;
@@ -603,6 +627,7 @@ void fnPlusTimerApp(void) {
   refreshScreen(31);
   #endif // !TESTSUITE_BUILD
 }
+
 
 void fnUpTimerApp(void) {
   #if !defined(TESTSUITE_BUILD) && !defined(SAVE_SPACE_DM42_20_TIMER)
@@ -712,7 +737,7 @@ void fnRecallTimerApp(uint16_t regist) {
     }
     default: {
       displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "cannot recall %s to the stopwatch", getRegisterDataTypeName(regist, true, false));
         moreInfoOnError("In function fnRecallTimerApp:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -722,7 +747,7 @@ void fnRecallTimerApp(uint16_t regist) {
 
   if(overflow) {
     displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "the %s does not fit to uint32_t", getRegisterDataTypeName(regist, true, false));
       moreInfoOnError("In function fnRecallTimerApp:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)

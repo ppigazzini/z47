@@ -36,7 +36,7 @@
 
 
 #if !defined(TESTSUITE_BUILD)
-#if !defined(SAVE_SPACE_DM42_8)
+#if !defined(SAVE_SPACE_DM42_8FL)
   static void oneSystemFlag(uint16_t systemFlag, const char *systemFlagNamename, int16_t *line, bool_t *firstSystemFlag) {
     if(getSystemFlag(systemFlag)) {
       if(stringWidth(tmpString + CHARS_PER_LINE * *line, &standardFont, true, true) + stringWidth(systemFlagNamename, &standardFont, true, false) <= SCREEN_WIDTH - 1 - 8) { // SPACE is 8 pixel wide
@@ -53,7 +53,7 @@
       }
     }
   }
-#endif // !SAVE_SPACE_DM42_8
+#endif // !SAVE_SPACE_DM42_8FL
 
 
   /********************************************//**
@@ -63,7 +63,7 @@
    * \return void
    ***********************************************/
   void flagBrowser(uint16_t init) {
-  #if !defined(SAVE_SPACE_DM42_8)
+  #if !defined(SAVE_SPACE_DM42_8FL)
     static int16_t line;
     int16_t f;
     bool_t firstFlag;
@@ -152,7 +152,7 @@
         tmpString[CHARS_PER_LINE * ++line] = 0;
         firstFlag = true;
         for(f=0; f<NUMBER_OF_LOCAL_FLAGS; f++) {
-          if(getFlag(NUMBER_OF_GLOBAL_FLAGS + f)) {
+          if(getFlag(FIRST_LOCAL_FLAG + f)) {
             if(f < 10) {
               flagNumber[0] = '0' + f;
               flagNumber[1] = 0;
@@ -354,7 +354,35 @@
           }
         }
 
-        sprintf(tmpString, "%c:%d", registerFlagLetters[g - FLAG_X], f);
+        switch(f) {
+          case FLAG_X: strcpy(tmpString, "X:POLAR "); break;
+          case FLAG_Y: strcpy(tmpString, "Y:101   "); break;
+          case FLAG_Z: strcpy(tmpString, "Z:102   "); break;
+          case FLAG_T: strcpy(tmpString, "T:TRACE "); break;
+          case FLAG_A: strcpy(tmpString, "A:ALLENG"); break;
+          case FLAG_B: strcpy(tmpString, "B:OVRFL "); break;
+          case FLAG_C: strcpy(tmpString, "C:CARRY "); break;
+          case FLAG_D: strcpy(tmpString, "D:SPCRES"); break;
+          case FLAG_L: strcpy(tmpString, "L:LEAD0 "); break;
+          case FLAG_I: strcpy(tmpString, "I:CPXRES"); break;
+          case FLAG_J: strcpy(tmpString, "J:110");    break;
+          case FLAG_K: strcpy(tmpString, "K:111");    break;
+          case FLAG_M: strcpy(tmpString, "M:211");    break;
+          case FLAG_N: strcpy(tmpString, "N:212");    break;
+          case FLAG_P: strcpy(tmpString, "P:213");    break;
+          case FLAG_Q: strcpy(tmpString, "Q:214");    break;
+          case FLAG_R: strcpy(tmpString, "R:215");    break;
+          case FLAG_S: strcpy(tmpString, "S:216");    break;
+          case FLAG_E: strcpy(tmpString, "E:217");    break;
+          case FLAG_F: strcpy(tmpString, "F:218");    break;
+          case FLAG_G: strcpy(tmpString, "G:229");    break;
+          case FLAG_H: strcpy(tmpString, "H:220");    break;
+          case FLAG_O: strcpy(tmpString, "O:221");    break;
+          case FLAG_U: strcpy(tmpString, "U:222");    break;
+          case FLAG_V: strcpy(tmpString, "V:223");    break;
+          case FLAG_W: strcpy(tmpString, "W:224");    break;
+          default:     sprintf(tmpString,"  %d", f);  break;
+        }
 
         char ss[2];
         int16_t i, shift;
@@ -396,7 +424,7 @@
           }
 
           sprintf(tmpString, "%d", f);
-          showString(tmpString, &standardFont, 25*(f%16)+5+4*(f<=9), 22*(f/16)+175, getFlag(NUMBER_OF_GLOBAL_FLAGS + f) ? vmReverse : vmNormal, true, true);     //JM-44
+          showString(tmpString, &standardFont, 25*(f%16)+5+4*(f<=9), 22*(f/16)+175, getFlag(FIRST_LOCAL_FLAG + f) ? vmReverse : vmNormal, true, true);     //JM-44
         }
       }
 
@@ -408,18 +436,18 @@
         showString("Local flag status:", &standardFont, 1, 154-1, vmNormal, true, true);
 
         for(f=0; f<16; f++) {
-          if(getFlag(NUMBER_OF_GLOBAL_FLAGS+f)) {
+          if(getFlag(FIRST_LOCAL_FLAG + f)) {
             lcd_fill_rect(40*(f%10)+1, 22*(f/10)+176-1-44, 40*(f%10)+39-(40*(f%10)+1), 22*(f/10)+176+20-1-44-(22*(f/10)+176-1-44)+1,  0xFF);
           }
 
           sprintf(tmpString, "%d", f);
-          showString(tmpString, &standardFont, f<=9 ? 40*(f%10) + 17 : 40*(f%10) + 12, 22*(f/10)+176-1-44, getFlag(NUMBER_OF_GLOBAL_FLAGS+f) ? vmReverse : vmNormal, true, true);     //JM-44
+          showString(tmpString, &standardFont, f<=9 ? 40*(f%10) + 17 : 40*(f%10) + 12, 22*(f/10)+176-1-44, getFlag(FIRST_LOCAL_FLAG + f) ? vmReverse : vmNormal, true, true);     //JM-44
         }
       }
   #endif // OOO
 
     }
     lastFlgScr = currentFlgScr;
-  #endif // !SAVE_SPACE_DM42_8
+  #endif // !SAVE_SPACE_DM42_8FL
   }
 #endif // !TESTSUITE_BUILD

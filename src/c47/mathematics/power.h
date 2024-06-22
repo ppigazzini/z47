@@ -27,7 +27,7 @@
 
   void fnPower    (uint16_t unusedButMandatoryParameter);
 
-  #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+  #if (EXTRA_INFO_ON_CALC_ERROR == 1)
     void powError   (void);
   #else // (EXTRA_INFO_ON_CALC_ERROR != 1)
     #define powError typeError

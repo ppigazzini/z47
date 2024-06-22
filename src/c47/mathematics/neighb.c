@@ -45,7 +45,7 @@ void fnNeighb(uint16_t unusedButMandatoryParameter) {
      || dataTypeX == dtComplex34Matrix || dataTypeY == dtComplex34Matrix
      || dataTypeX == dtComplex34       || dataTypeY == dtComplex34) {
     displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "cannot get the NEIGHB from %s", getRegisterDataTypeName(REGISTER_X, true, false));
       sprintf(errorMessage + ERROR_MESSAGE_LENGTH/2, "towards %s", getRegisterDataTypeName(REGISTER_Y, true, false));
       moreInfoOnError("In function fnNeighb:", errorMessage, errorMessage + ERROR_MESSAGE_LENGTH/2, NULL);

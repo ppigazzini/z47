@@ -53,7 +53,7 @@
 #endif
 
 #include "c47.h"
-#define configFileVersion                  10000009 // New STOCFG and new STATE file; arbitrary starting point version 10 000 001. Allowable values are 10000000 to 20000000
+#define configFileVersion                  10000011 // END_OTHER_PARAM added; Arbitrary starting point version 10 000 001 of STATE files. Allowable values are 10000000 to 20000000
 #define BACKUP_VERSION                     1002  // increasing number of reserved variable
 #define VersionAllowed                     10000005 // This code will not autoload versions earlier than this
 
@@ -420,6 +420,7 @@ uint16_t flushBufferCnt = 0;
     saveStateValue(&allSubroutineLevels,            sizeof(allSubroutineLevels),                                 "allSubroutineLevels",            "uint32");
     saveStateValue(&pemCursorIsZerothStep,          sizeof(pemCursorIsZerothStep),                               "pemCursorIsZerothStep",          "bool");
     saveStateValue(&halfSecTick,                    sizeof(halfSecTick),                                         "halfSecTick",                    "bool");
+    saveStateValue(&skippedStackLines,              sizeof(skippedStackLines),                                   "skippedStackLines",              "bool");
     saveStateValue(&numberOfTamMenusToPop,          sizeof(numberOfTamMenusToPop),                               "numberOfTamMenusToPop",          "int16");
     saveStateValue(&lrSelection,                    sizeof(lrSelection),                                         "lrSelection",                    "uint16");
     saveStateValue(&lrSelectionUndo,                sizeof(lrSelectionUndo),                                     "lrSelectionUndo",                "uint16");
@@ -443,6 +444,7 @@ uint16_t flushBufferCnt = 0;
     saveStateValue(&PLOT_DIFF,                      sizeof(PLOT_DIFF),                                           "PLOT_DIFF",                      "bool");
     saveStateValue(&PLOT_RMS,                       sizeof(PLOT_RMS),                                            "PLOT_RMS",                       "bool");
     saveStateValue(&PLOT_SHADE,                     sizeof(PLOT_SHADE),                                          "PLOT_SHADE",                     "bool");
+    saveStateValue(&PLOT_CPXPLOT,                   sizeof(PLOT_CPXPLOT),                                        "PLOT_CPXPLOT",                   "bool");
     saveStateValue(&PLOT_AXIS,                      sizeof(PLOT_AXIS),                                           "PLOT_AXIS",                      "bool");
     saveStateValue(&PLOT_ZMX,                       sizeof(PLOT_ZMX),                                            "PLOT_ZMX",                       "int8");
     saveStateValue(&PLOT_ZMY,                       sizeof(PLOT_ZMY),                                            "PLOT_ZMY",                       "int8");
@@ -505,7 +507,6 @@ uint16_t flushBufferCnt = 0;
     saveStateValue(&graph_ymax,                     sizeof(graph_ymax),                                          "graph_ymax",                     "float");
     saveStateValue(&jm_LARGELI,                     sizeof(jm_LARGELI),                                          "jm_LARGELI",                     "bool");
     saveStateValue(&constantFractions,              sizeof(constantFractions),                                   "constantFractions",              "bool");
-    saveStateValue(&constantFractionsMode,          sizeof(constantFractionsMode),                               "constantFractionsMode",          "uint8");
     saveStateValue(&constantFractionsOn,            sizeof(constantFractionsOn),                                 "constantFractionsOn",            "bool");
     saveStateValue(&running_program_jm,             sizeof(running_program_jm),                                  "running_program_jm",             "bool");
     saveStateValue(&fnXEQMENUpos,                   sizeof(fnXEQMENUpos),                                        "fnXEQMENUpos",                   "int16");
@@ -561,6 +562,12 @@ uint16_t flushBufferCnt = 0;
 
     ramPtr = TO_C47MEMPTR(currentSubroutineLevelData);
     saveStateValue(&ramPtr,                         sizeof(ramPtr),                                              "currentSubroutineLevelData",     "c47Ptr");
+
+    ramPtr = TO_C47MEMPTR(currentLocalFlags);
+    saveStateValue(&ramPtr,                         sizeof(ramPtr),                                              "currentLocalFlags",              "c47Ptr");
+
+    ramPtr = TO_C47MEMPTR(currentLocalRegisters);
+    saveStateValue(&ramPtr,                         sizeof(ramPtr),                                              "currentLocalRegisters",          "c47Ptr");
 
     ramPtr = TO_C47MEMPTR(beginOfProgramMemory);
     saveStateValue(&ramPtr,                         sizeof(ramPtr),                                              "beginOfProgramMemory",           "c47Ptr"); // beginOfProgramMemory pointer to block
@@ -791,8 +798,8 @@ uint16_t flushBufferCnt = 0;
       printf("ramSize blocks %6u           %6d\n", ramSizeInBlocks, RAM_SIZE_IN_BLOCKS);
       printf("ramSize bytes  %6u           %6d\n", TO_BYTES(ramSizeInBlocks), TO_BYTES(RAM_SIZE_IN_BLOCKS));
       return;
-    } else
-    if(backupVersion == 0) {
+    }
+    else if(backupVersion == 0) {
       refreshScreen(92);
       printf("Cannot restore calc's memory from file backup.cfg! File backup.cfg has invalid version number.\n");
       return;
@@ -834,6 +841,12 @@ uint16_t flushBufferCnt = 0;
 
     restoreStateValue(&ramPtr,                         sizeof(ramPtr),                                              "currentSubroutineLevelData",     "c47Ptr");
     currentSubroutineLevelData = TO_PCMEMPTR(ramPtr);
+
+    restoreStateValue(&ramPtr,                         sizeof(ramPtr),                                              "currentLocalFlags",              "c47Ptr");
+    currentLocalFlags = TO_PCMEMPTR(ramPtr);
+
+    restoreStateValue(&ramPtr,                         sizeof(ramPtr),                                              "currentLocalRegisters",          "c47Ptr");
+    currentLocalRegisters = TO_PCMEMPTR(ramPtr);
 
     restoreStateValue(&ramPtr,                         sizeof(ramPtr),                                              "beginOfProgramMemory",           "c47Ptr"); // beginOfProgramMemory pointer to block
     beginOfProgramMemory = TO_PCMEMPTR(ramPtr);
@@ -971,6 +984,16 @@ uint16_t flushBufferCnt = 0;
     restoreStateValue(&savedSystemFlags0,              sizeof(savedSystemFlags0),                                   "savedSystemFlags",               "uint64");
     savedSystemFlags1 = 0;
     restoreStateValue(&savedSystemFlags1,              sizeof(savedSystemFlags1),                                   "savedSystemFlags1",              "uint64");
+    if(loadedVersion < 10000010) {
+      if(getSystemFlag(FLAG_tmp2)) {; //HP Convert was on FLAG_tmp2
+        setSystemFlag(FLAG_HPCONV);
+      }
+      else {
+        clearSystemFlag(FLAG_HPCONV);
+      }
+      clearSystemFlag(FLAG_tmp1); //restore previously used flags to 0
+      clearSystemFlag(FLAG_tmp2); //restore previously used flags to 0
+    }
     restoreStateValue(&thereIsSomethingToUndo,         sizeof(thereIsSomethingToUndo),                              "thereIsSomethingToUndo",         "bool");
     restoreStateValue(&freeProgramBytes,               sizeof(freeProgramBytes),                                    "freeProgramBytes",               "uint16");
     restoreStateValue(&firstDisplayedLocalStepNumber,  sizeof(firstDisplayedLocalStepNumber),                       "firstDisplayedLocalStepNumber",  "uint16");
@@ -983,6 +1006,7 @@ uint16_t flushBufferCnt = 0;
     restoreStateValue(&allSubroutineLevels,            sizeof(allSubroutineLevels),                                 "allSubroutineLevels",            "uint32");
     restoreStateValue(&pemCursorIsZerothStep,          sizeof(pemCursorIsZerothStep),                               "pemCursorIsZerothStep",          "bool");
     restoreStateValue(&halfSecTick,                    sizeof(halfSecTick),                                         "halfSecTick",                    "bool");
+    restoreStateValue(&skippedStackLines,              sizeof(skippedStackLines),                                   "skippedStackLines",              "bool");
     restoreStateValue(&numberOfTamMenusToPop,          sizeof(numberOfTamMenusToPop),                               "numberOfTamMenusToPop",          "int16");
     restoreStateValue(&lrSelection,                    sizeof(lrSelection),                                         "lrSelection",                    "uint16");
     restoreStateValue(&lrSelectionUndo,                sizeof(lrSelectionUndo),                                     "lrSelectionUndo",                "uint16");
@@ -1006,6 +1030,8 @@ uint16_t flushBufferCnt = 0;
     restoreStateValue(&PLOT_DIFF,                      sizeof(PLOT_DIFF),                                           "PLOT_DIFF",                      "bool");
     restoreStateValue(&PLOT_RMS,                       sizeof(PLOT_RMS),                                            "PLOT_RMS",                       "bool");
     restoreStateValue(&PLOT_SHADE,                     sizeof(PLOT_SHADE),                                          "PLOT_SHADE",                     "bool");
+    PLOT_CPXPLOT = false;
+    restoreStateValue(&PLOT_CPXPLOT,                   sizeof(PLOT_CPXPLOT),                                        "PLOT_CPXPLOT",                   "bool");
     restoreStateValue(&PLOT_AXIS,                      sizeof(PLOT_AXIS),                                           "PLOT_AXIS",                      "bool");
     restoreStateValue(&PLOT_ZMX,                       sizeof(PLOT_ZMX),                                            "PLOT_ZMX",                       "int8");
     restoreStateValue(&PLOT_ZMY,                       sizeof(PLOT_ZMY),                                            "PLOT_ZMY",                       "int8");
@@ -1034,15 +1060,15 @@ uint16_t flushBufferCnt = 0;
     restoreStateValue(&timerValue,                     sizeof(timerValue),                                          "timerValue",                     "uint32");
     restoreStateValue(&timerTotalTime,                 sizeof(timerTotalTime),                                      "timerTotalTime",                 "uint32");
     restoreStateValue(&currentInputVariable,           sizeof(currentInputVariable),                                "currentInputVariable",           "uint16");
-    if (backupVersion < 1002 && currentInputVariable == INVALID_VARIABLE_OLD) {currentInputVariable = INVALID_VARIABLE;}
+    if(backupVersion < 1002 && currentInputVariable == INVALID_VARIABLE_OLD) {currentInputVariable = INVALID_VARIABLE;}
     restoreStateValue(&SAVED_SIGMA_LASTX,              sizeof(SAVED_SIGMA_LASTX),                                   "SAVED_SIGMA_LASTX",              "real");
     restoreStateValue(&SAVED_SIGMA_LASTY,              sizeof(SAVED_SIGMA_LASTY),                                   "SAVED_SIGMA_LASTY",              "real");
     SAVED_SIGMA_LAc1 = 0;
     restoreStateValue(&SAVED_SIGMA_LAc1,               sizeof(SAVED_SIGMA_LAc1),                                    "SAVED_SIGMA_LAc1",               "int8");     //manual correction as the type allocation was wrong here
     restoreStateValue(&currentMvarLabel,               sizeof(currentMvarLabel),                                    "currentMvarLabel",               "uint16");
-    if (backupVersion < 1002 && currentMvarLabel == INVALID_VARIABLE_OLD) {currentMvarLabel = INVALID_VARIABLE;}
+    if(backupVersion < 1002 && currentMvarLabel == INVALID_VARIABLE_OLD) {currentMvarLabel = INVALID_VARIABLE;}
     restoreStateValue(&graphVariabl1,                  sizeof(graphVariabl1),                                       "graphVariabl1",                  "int16");
-    if (backupVersion < 1002 && graphVariabl1 == INVALID_VARIABLE_OLD) {graphVariabl1 = INVALID_VARIABLE;}
+    if(backupVersion < 1002 && graphVariabl1 == INVALID_VARIABLE_OLD) {graphVariabl1 = INVALID_VARIABLE;}
     restoreStateValue(&plotStatMx,                     sizeof(plotStatMx),                                          "plotStatMx",                     "hexDump");
     restoreStateValue(&drawHistogram,                  sizeof(drawHistogram),                                       "drawHistogram",                  "uint8");
     restoreStateValue(&statMx,                         sizeof(statMx),                                              "statMx",                         "hexDump");
@@ -1071,7 +1097,7 @@ uint16_t flushBufferCnt = 0;
     restoreStateValue(&graph_ymax,                     sizeof(graph_ymax),                                          "graph_ymax",                     "float");
     restoreStateValue(&jm_LARGELI,                     sizeof(jm_LARGELI),                                          "jm_LARGELI",                     "bool");
     restoreStateValue(&constantFractions,              sizeof(constantFractions),                                   "constantFractions",              "bool");
-    restoreStateValue(&constantFractionsMode,          sizeof(constantFractionsMode),                               "constantFractionsMode",          "uint8");
+    IrFractionsCurrentStatus = CF_NORMAL;
     restoreStateValue(&constantFractionsOn,            sizeof(constantFractionsOn),                                 "constantFractionsOn",            "bool");
     restoreStateValue(&running_program_jm,             sizeof(running_program_jm),                                  "running_program_jm",             "bool");
     restoreStateValue(&fnXEQMENUpos,                   sizeof(fnXEQMENUpos),                                        "fnXEQMENUpos",                   "int16");
@@ -1118,7 +1144,7 @@ uint16_t flushBufferCnt = 0;
 
     setFGLSettings(fgLN);
 
-    if(temporaryInformation == TI_SHOW_REGISTER_BIG || temporaryInformation == TI_SHOW_REGISTER_SMALL) {
+    if(temporaryInformation == TI_SHOW_REGISTER_BIG || temporaryInformation == TI_SHOW_REGISTER_SMALL || temporaryInformation == TI_SHOW_REGISTER_TINY || temporaryInformation==TI_SHOW_REGISTER) {
       temporaryInformation = TI_NO_INFO;
     }
 
@@ -1130,11 +1156,7 @@ uint16_t flushBufferCnt = 0;
 
     //defineCurrentLocalRegisters();
 
-    if(temporaryInformation==TI_SHOW_REGISTER) {
-      temporaryInformation = TI_NO_INFO;
-    }
-
-    #if(DEBUG_REGISTER_L == 1)
+    #if (DEBUG_REGISTER_L == 1)
       refreshRegisterLine(REGISTER_X); // to show L register
     #endif // (DEBUG_REGISTER_L == 1)
 
@@ -1353,9 +1375,14 @@ char aimBuffer1[400];             //The concurrent use of the global aimBuffer
 
 static void doSave(uint16_t saveType);
 
-void fnSaveAuto(void) {
-  doSave(autoSave);
-}
+  void fnSaveAuto(uint16_t unusedButMandatoryParameter) {
+  #ifdef DMCP_BUILD
+    doSave(autoSave);
+  #elif PC_BUILD
+    temporaryInformation = TI_DMCP_ONLY;
+  #endif //DMCP_BUILD
+  }
+
 
 void fnSave(uint16_t saveMode) {
   if(saveMode == SM_MANUAL_SAVE) {
@@ -1604,90 +1631,84 @@ void doSave(uint16_t saveType) {
   }
 
   // Other configuration stuff
-        sprintf(tmpString, "OTHER_CONFIGURATION_STUFF\n72\n");
-        save(tmpString, strlen(tmpString));    //JM 23+11+15+23
-/*01*/  save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "OTHER_CONFIGURATION_STUFF\n00\n");
+        save(tmpString, strlen(tmpString));
+        save(tmpString, strlen(tmpString));
 
-//23 sprintf(tmpString, "firstGregorianDay\n%" PRIu32 "\n", firstGregorianDay);
-/*02*/  sprintf(tmpString, "denMax\n%"                     PRIu32 "\n",     denMax);                       save(tmpString, strlen(tmpString));
-/*03*/  sprintf(tmpString, "lastDenominator\n%"            PRIu32 "\n",     lastDenominator);              save(tmpString, strlen(tmpString));
-/*04*/  sprintf(tmpString, "displayFormat\n%"              PRIu8  "\n",     displayFormat);                save(tmpString, strlen(tmpString));
-/*05*/  sprintf(tmpString, "displayFormatDigits\n%"        PRIu8  "\n",     displayFormatDigits);          save(tmpString, strlen(tmpString));
-/*06*/  sprintf(tmpString, "timeDisplayFormatDigits\n%"    PRIu8  "\n",     timeDisplayFormatDigits);      save(tmpString, strlen(tmpString));
-/*07*/  sprintf(tmpString, "shortIntegerWordSize\n%"       PRIu8  "\n",     shortIntegerWordSize);         save(tmpString, strlen(tmpString));
-/*08*/  sprintf(tmpString, "shortIntegerMode\n%"           PRIu8  "\n",     shortIntegerMode);             save(tmpString, strlen(tmpString));
-/*09*/  sprintf(tmpString, "significantDigits\n%"          PRIu8  "\n",     significantDigits);            save(tmpString, strlen(tmpString));
-/*10*/  sprintf(tmpString, "currentAngularMode\n%"         PRIu8  "\n",     (uint8_t)currentAngularMode);  save(tmpString, strlen(tmpString));
-/*11*/  sprintf(tmpString, "gapItemLeft\n%"                PRIu16 "\n",     gapItemLeft);                  save(tmpString, strlen(tmpString));
-/*12*/  sprintf(tmpString, "gapItemRight\n%"               PRIu16 "\n",     gapItemRight);                 save(tmpString, strlen(tmpString));
-/*13*/  sprintf(tmpString, "gapItemRadix\n%"               PRIu16 "\n",     gapItemRadix);                 save(tmpString, strlen(tmpString));
-/*14*/  sprintf(tmpString, "grpGroupingLeft\n%"            PRIu8  "\n",     grpGroupingLeft);              save(tmpString, strlen(tmpString));
-/*15*/  sprintf(tmpString, "grpGroupingGr1LeftOverflow\n%" PRIu8  "\n",     grpGroupingGr1LeftOverflow);   save(tmpString, strlen(tmpString));
-/*16*/  sprintf(tmpString, "grpGroupingGr1Left\n%"         PRIu8  "\n",     grpGroupingGr1Left);           save(tmpString, strlen(tmpString));
-/*17*/  sprintf(tmpString, "grpGroupingRight\n%"           PRIu8  "\n",     grpGroupingRight);             save(tmpString, strlen(tmpString));
-/*18*/  sprintf(tmpString, "roundingMode\n%"               PRIu8  "\n",     roundingMode);                 save(tmpString, strlen(tmpString));
-/*19*/  sprintf(tmpString, "displayStack\n%"               PRIu8  "\n",     displayStack);                 save(tmpString, strlen(tmpString));
-/*  */  UI64toString(pcg32_global.state, yy1);
-/*  */  UI64toString(pcg32_global.inc, yy2);
-/*20*/  sprintf(tmpString, "rngState\n%s %s\n", yy1, yy2);                                                 save(tmpString, strlen(tmpString));
-/*21*/  sprintf(tmpString, "exponentLimit\n%"              PRId16  "\n",    exponentLimit);                save(tmpString, strlen(tmpString));
-/*22*/  sprintf(tmpString, "exponentHideLimit\n%"          PRId16  "\n",    exponentHideLimit);            save(tmpString, strlen(tmpString));
-/*23*/  sprintf(tmpString, "bestF\n%"                      PRIu16  "\n",    lrSelection);                  save(tmpString, strlen(tmpString));
-
-//10
-/*01*/  sprintf(tmpString, "fgLN\n%"                       PRIu8  "\n",     (uint8_t)fgLN);                save(tmpString, strlen(tmpString));      //keep save file format by keeping the old setting
-/*02*/  sprintf(tmpString, "eRPN\n%"                       PRIu8  "\n",     (uint8_t)eRPN);                save(tmpString, strlen(tmpString));
-/*03*/  sprintf(tmpString, "HOME3\n%"                      PRIu8  "\n",     (uint8_t)HOME3);               save(tmpString, strlen(tmpString));
-/*04*/  sprintf(tmpString, "MYM3\n%"                       PRIu8  "\n",     (uint8_t)MYM3);                save(tmpString, strlen(tmpString));
-/*05*/  sprintf(tmpString, "ShiftTimoutMode\n%"            PRIu8  "\n",     (uint8_t)ShiftTimoutMode);     save(tmpString, strlen(tmpString));
-/*06*/  sprintf(tmpString, "CPXMult\n%"                    PRIu8  "\n",     (uint8_t)CPXMULT);             save(tmpString, strlen(tmpString));
-/*07*/  sprintf(tmpString, "BASE_HOME\n%"                  PRIu8  "\n",     (uint8_t)BASE_HOME);           save(tmpString, strlen(tmpString));
-/*08*/  sprintf(tmpString, "Norm_Key_00_VAR\n%"            PRId16 "\n",     Norm_Key_00_VAR);              save(tmpString, strlen(tmpString));
-/*09*/  sprintf(tmpString, "Input_Default\n%"              PRIu8  "\n",     Input_Default);                save(tmpString, strlen(tmpString));
-/*10*/  sprintf(tmpString, "BASE_MYM\n%"                   PRIu8  "\n",     (uint8_t)BASE_MYM);            save(tmpString, strlen(tmpString));
-/*11*/  sprintf(tmpString, "jm_G_DOUBLETAP\n%"             PRIu8  "\n",     (uint8_t)jm_G_DOUBLETAP);      save(tmpString, strlen(tmpString));
-
-/*  *///15
-/*01*/  sprintf(tmpString, "compatibility_bool\n%"         PRIu8  "\n",     (uint8_t)0);                   save(tmpString, strlen(tmpString));            //compatibility - use when needed
-/*02*/  sprintf(tmpString, "jm_LARGELI\n%"                 PRIu8  "\n",     (uint8_t)jm_LARGELI);          save(tmpString, strlen(tmpString));
-/*03*/  sprintf(tmpString, "constantFractions\n%"          PRIu8  "\n",     (uint8_t)constantFractions);   save(tmpString, strlen(tmpString));
-/*04*/  sprintf(tmpString, "constantFractionsMode\n%"      PRIu8  "\n",     constantFractionsMode);        save(tmpString, strlen(tmpString));
-/*05*/  sprintf(tmpString, "constantFractionsOn\n%"        PRIu8  "\n",     (uint8_t)constantFractionsOn); save(tmpString, strlen(tmpString));
-/*06*/  sprintf(tmpString, "displayStackSHOIDISP\n%"       PRIu8  "\n",     displayStackSHOIDISP);         save(tmpString, strlen(tmpString));
-/*07*/  sprintf(tmpString, "bcdDisplay\n%"                 PRIu8  "\n",     (uint8_t)bcdDisplay);          save(tmpString, strlen(tmpString));
-/*08*/  sprintf(tmpString, "topHex\n%"                     PRIu8  "\n",     (uint8_t)topHex);              save(tmpString, strlen(tmpString));
-/*09*/  sprintf(tmpString, "bcdDisplaySign\n%"             PRIu8  "\n",     bcdDisplaySign);               save(tmpString, strlen(tmpString));
-/*10*/  sprintf(tmpString, "DRG_Cycling\n%"                PRIu8  "\n",     DRG_Cycling);                  save(tmpString, strlen(tmpString));
-/*11*/  sprintf(tmpString, "DM_Cycling\n%"                 PRIu8  "\n",     DM_Cycling);                   save(tmpString, strlen(tmpString));
-/*12*/  sprintf(tmpString, "SI_All\n%"                     PRIu8  "\n",     (uint8_t)SI_All);              save(tmpString, strlen(tmpString));
-/*13*/  sprintf(tmpString, "LongPressM\n%"                 PRIu8  "\n",     (uint8_t)LongPressM);          save(tmpString, strlen(tmpString));
-/*14*/  sprintf(tmpString, "LongPressF\n%"                 PRIu8  "\n",     (uint8_t)LongPressF);          save(tmpString, strlen(tmpString));
-/*15*/  sprintf(tmpString, "lastIntegerBase\n%"            PRIu8  "\n",     (uint8_t)lastIntegerBase);     save(tmpString, strlen(tmpString));
-
-/*  *///23
-/*01*/  sprintf(tmpString, "lrChosen\n%"                   PRIu16 "\n",     lrChosen);                     save(tmpString, strlen(tmpString));
-/*02*/  sprintf(tmpString, "graph_xmin\n"                  "%f"   "\n",     graph_xmin);                   save(tmpString, strlen(tmpString));
-/*03*/  sprintf(tmpString, "graph_xmax\n"                  "%f"   "\n",     graph_xmax);                   save(tmpString, strlen(tmpString));
-/*04*/  sprintf(tmpString, "graph_ymin\n"                  "%f"   "\n",     graph_ymin);                   save(tmpString, strlen(tmpString));
-/*05*/  sprintf(tmpString, "graph_ymax\n"                  "%f"   "\n",     graph_ymax);                   save(tmpString, strlen(tmpString));
-/*06*/  sprintf(tmpString, "graph_dx\n"                    "%f"   "\n",     graph_dx);                     save(tmpString, strlen(tmpString));
-/*07*/  sprintf(tmpString, "graph_dy\n"                    "%f"   "\n",     graph_dy);                     save(tmpString, strlen(tmpString));
-/*08*/  sprintf(tmpString, "roundedTicks\n%"               PRIu8  "\n",     (uint8_t)roundedTicks);        save(tmpString, strlen(tmpString));
-/*09*/  sprintf(tmpString, "extentx\n%"                    PRIu8  "\n",     (uint8_t)extentx);             save(tmpString, strlen(tmpString));
-/*10*/  sprintf(tmpString, "extenty\n%"                    PRIu8  "\n",     (uint8_t)extenty);             save(tmpString, strlen(tmpString));
-/*11*/  sprintf(tmpString, "PLOT_VECT\n%"                  PRIu8  "\n",     (uint8_t)PLOT_VECT);           save(tmpString, strlen(tmpString));
-/*12*/  sprintf(tmpString, "PLOT_NVECT\n%"                 PRIu8  "\n",     (uint8_t)PLOT_NVECT);          save(tmpString, strlen(tmpString));
-/*13*/  sprintf(tmpString, "PLOT_SCALE\n%"                 PRIu8  "\n",     (uint8_t)PLOT_SCALE);          save(tmpString, strlen(tmpString));
-/*14*/  sprintf(tmpString, "PLOT_LINE\n%"                  PRIu8  "\n",     (uint8_t)PLOT_LINE);           save(tmpString, strlen(tmpString));
-/*15*/  sprintf(tmpString, "PLOT_CROSS\n%"                 PRIu8  "\n",     (uint8_t)PLOT_CROSS);          save(tmpString, strlen(tmpString));
-/*16*/  sprintf(tmpString, "PLOT_BOX\n%"                   PRIu8  "\n",     (uint8_t)PLOT_BOX);            save(tmpString, strlen(tmpString));
-/*17*/  sprintf(tmpString, "PLOT_INTG\n%"                  PRIu8  "\n",     (uint8_t)PLOT_INTG);           save(tmpString, strlen(tmpString));
-/*18*/  sprintf(tmpString, "PLOT_DIFF\n%"                  PRIu8  "\n",     (uint8_t)PLOT_DIFF);           save(tmpString, strlen(tmpString));
-/*19*/  sprintf(tmpString, "PLOT_RMS\n%"                   PRIu8  "\n",     (uint8_t)PLOT_RMS);            save(tmpString, strlen(tmpString));
-/*20*/  sprintf(tmpString, "PLOT_SHADE\n%"                 PRIu8  "\n",     (uint8_t)PLOT_SHADE);          save(tmpString, strlen(tmpString));
-/*21*/  sprintf(tmpString, "PLOT_AXIS\n%"                  PRIu8  "\n",     (uint8_t)PLOT_AXIS);           save(tmpString, strlen(tmpString));
-/*22*/  sprintf(tmpString, "PLOT_ZMX\n%"                   PRIu8  "\n",     PLOT_ZMX);                     save(tmpString, strlen(tmpString));
-/*23*/  sprintf(tmpString, "PLOT_ZMY\n%"                   PRIu8  "\n",     PLOT_ZMY);                     save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "firstGregorianDay\n%"          PRIu32 "\n",     firstGregorianDay);            save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "denMax\n%"                     PRIu32 "\n",     denMax);                       save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "lastDenominator\n%"            PRIu32 "\n",     lastDenominator);              save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "displayFormat\n%"              PRIu8  "\n",     displayFormat);                save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "displayFormatDigits\n%"        PRIu8  "\n",     displayFormatDigits);          save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "timeDisplayFormatDigits\n%"    PRIu8  "\n",     timeDisplayFormatDigits);      save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "shortIntegerWordSize\n%"       PRIu8  "\n",     shortIntegerWordSize);         save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "shortIntegerMode\n%"           PRIu8  "\n",     shortIntegerMode);             save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "significantDigits\n%"          PRIu8  "\n",     significantDigits);            save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "currentAngularMode\n%"         PRIu8  "\n",     (uint8_t)currentAngularMode);  save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "gapItemLeft\n%"                PRIu16 "\n",     gapItemLeft);                  save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "gapItemRight\n%"               PRIu16 "\n",     gapItemRight);                 save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "gapItemRadix\n%"               PRIu16 "\n",     gapItemRadix);                 save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "grpGroupingLeft\n%"            PRIu8  "\n",     grpGroupingLeft);              save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "grpGroupingGr1LeftOverflow\n%" PRIu8  "\n",     grpGroupingGr1LeftOverflow);   save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "grpGroupingGr1Left\n%"         PRIu8  "\n",     grpGroupingGr1Left);           save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "grpGroupingRight\n%"           PRIu8  "\n",     grpGroupingRight);             save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "roundingMode\n%"               PRIu8  "\n",     roundingMode);                 save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "displayStack\n%"               PRIu8  "\n",     displayStack);                 save(tmpString, strlen(tmpString));
+        UI64toString(pcg32_global.state, yy1);
+        UI64toString(pcg32_global.inc, yy2);
+        sprintf(tmpString, "rngState\n%s %s\n", yy1, yy2);                                                 save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "exponentLimit\n%"              PRId16  "\n",    exponentLimit);                save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "exponentHideLimit\n%"          PRId16  "\n",    exponentHideLimit);            save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "bestF\n%"                      PRIu16  "\n",    lrSelection);                  save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "fgLN\n%"                       PRIu8  "\n",     (uint8_t)fgLN);                save(tmpString, strlen(tmpString));      //keep save file format by keeping the old setting
+        sprintf(tmpString, "eRPN\n%"                       PRIu8  "\n",     (uint8_t)eRPN);                save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "HOME3\n%"                      PRIu8  "\n",     (uint8_t)HOME3);               save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "MYM3\n%"                       PRIu8  "\n",     (uint8_t)MYM3);                save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "ShiftTimoutMode\n%"            PRIu8  "\n",     (uint8_t)ShiftTimoutMode);     save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "CPXMult\n%"                    PRIu8  "\n",     (uint8_t)CPXMULT);             save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "BASE_HOME\n%"                  PRIu8  "\n",     (uint8_t)BASE_HOME);           save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "Norm_Key_00_VAR\n%"            PRId16 "\n",     Norm_Key_00_VAR);              save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "Input_Default\n%"              PRIu8  "\n",     Input_Default);                save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "BASE_MYM\n%"                   PRIu8  "\n",     (uint8_t)BASE_MYM);            save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "jm_G_DOUBLETAP\n%"             PRIu8  "\n",     (uint8_t)jm_G_DOUBLETAP);      save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "jm_LARGELI\n%"                 PRIu8  "\n",     (uint8_t)jm_LARGELI);          save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "constantFractions\n%"          PRIu8  "\n",     (uint8_t)constantFractions);   save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "constantFractionsOn\n%"        PRIu8  "\n",     (uint8_t)constantFractionsOn); save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "displayStackSHOIDISP\n%"       PRIu8  "\n",     displayStackSHOIDISP);         save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "bcdDisplay\n%"                 PRIu8  "\n",     (uint8_t)bcdDisplay);          save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "topHex\n%"                     PRIu8  "\n",     (uint8_t)topHex);              save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "bcdDisplaySign\n%"             PRIu8  "\n",     bcdDisplaySign);               save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "DRG_Cycling\n%"                PRIu8  "\n",     DRG_Cycling);                  save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "DM_Cycling\n%"                 PRIu8  "\n",     DM_Cycling);                   save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "SI_All\n%"                     PRIu8  "\n",     (uint8_t)SI_All);              save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "LongPressM\n%"                 PRIu8  "\n",     (uint8_t)LongPressM);          save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "LongPressF\n%"                 PRIu8  "\n",     (uint8_t)LongPressF);          save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "lastIntegerBase\n%"            PRIu8  "\n",     (uint8_t)lastIntegerBase);     save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "lrChosen\n%"                   PRIu16 "\n",     lrChosen);                     save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "graph_xmin\n"                  "%f"   "\n",     graph_xmin);                   save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "graph_xmax\n"                  "%f"   "\n",     graph_xmax);                   save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "graph_ymin\n"                  "%f"   "\n",     graph_ymin);                   save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "graph_ymax\n"                  "%f"   "\n",     graph_ymax);                   save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "graph_dx\n"                    "%f"   "\n",     graph_dx);                     save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "graph_dy\n"                    "%f"   "\n",     graph_dy);                     save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "roundedTicks\n%"               PRIu8  "\n",     (uint8_t)roundedTicks);        save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "extentx\n%"                    PRIu8  "\n",     (uint8_t)extentx);             save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "extenty\n%"                    PRIu8  "\n",     (uint8_t)extenty);             save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "PLOT_VECT\n%"                  PRIu8  "\n",     (uint8_t)PLOT_VECT);           save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "PLOT_NVECT\n%"                 PRIu8  "\n",     (uint8_t)PLOT_NVECT);          save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "PLOT_SCALE\n%"                 PRIu8  "\n",     (uint8_t)PLOT_SCALE);          save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "PLOT_LINE\n%"                  PRIu8  "\n",     (uint8_t)PLOT_LINE);           save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "PLOT_CROSS\n%"                 PRIu8  "\n",     (uint8_t)PLOT_CROSS);          save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "PLOT_BOX\n%"                   PRIu8  "\n",     (uint8_t)PLOT_BOX);            save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "PLOT_INTG\n%"                  PRIu8  "\n",     (uint8_t)PLOT_INTG);           save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "PLOT_DIFF\n%"                  PRIu8  "\n",     (uint8_t)PLOT_DIFF);           save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "PLOT_RMS\n%"                   PRIu8  "\n",     (uint8_t)PLOT_RMS);            save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "PLOT_SHADE\n%"                 PRIu8  "\n",     (uint8_t)PLOT_SHADE);          save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "PLOT_AXIS\n%"                  PRIu8  "\n",     (uint8_t)PLOT_AXIS);           save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "PLOT_ZMX\n%"                   PRIu8  "\n",     PLOT_ZMX);                     save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "PLOT_ZMY\n%"                   PRIu8  "\n",     PLOT_ZMY);                     save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "PLOT_CPXPLOT\n%"               PRIu8  "\n",     (uint8_t)PLOT_CPXPLOT);        save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "END_OTHER_PARAM\n");                                                           save(tmpString, strlen(tmpString));
 
   ioFileClose();
 
@@ -1733,13 +1754,13 @@ void read2Lines(char *line1, char *line2) {  // Needed to capture empty lines du
   if(!ioEof()) {
     restore(line2, 1);
     eol2 = *line2;
-    if ((((eol1 == '\n') && (eol2 ==  '\n')) || ((eol1 == '\r') && (eol2 ==  '\r'))) && !ioEof()) {   // empty string between two CR or two LF
+    if((((eol1 == '\n') && (eol2 ==  '\n')) || ((eol1 == '\r') && (eol2 ==  '\r'))) && !ioEof()) {   // empty string between two CR or two LF
       *line2 = 0;
       return;
     }
-    if ((((eol1 == '\r') && (eol2 ==  '\n')) || ((eol1 == '\n') && (eol2 ==  '\r'))) && !ioEof()) {   // end line is CRLF or LFCR
+    if((((eol1 == '\r') && (eol2 ==  '\n')) || ((eol1 == '\n') && (eol2 ==  '\r'))) && !ioEof()) {   // end line is CRLF or LFCR
       restore(line2, 1);
-      if (((*line2 == '\n') || (*line2 == '\r')) && !ioEof()) {     // empty string after CRLF or LFCR
+      if(((*line2 == '\n') || (*line2 == '\r')) && !ioEof()) {     // empty string after CRLF or LFCR
         *line2 = 0;
         return;
       }
@@ -1987,7 +2008,7 @@ double stringToDouble(const char *str) {
       for(cfg=(char *)REGISTER_CONFIG_DATA(regist), tag=0;  tag < (loadedVersion < 10000008 ? 896 : sizeof(dtConfigDescriptor_t)); tag++, value+=2, cfg++) {
         *cfg = ((*value >= 'A' ? *value - 'A' + 10 : *value - '0') << 4) | (*(value + 1) >= 'A' ? *(value + 1) - 'A' + 10 : *(value + 1) - '0');
       }
-      if (loadedVersion < 10000008) {
+      if(loadedVersion < 10000008) {
         // For earlier version config files of 896 desxcriptor length, the above Write into the register must only be up to the old descriptor content.
         // We add the defaults for the new portion of the new descriptor in the following string.
         char tmpvalue[65];
@@ -2328,10 +2349,10 @@ double stringToDouble(const char *str) {
         #endif //LOADDEBUG
         systemFlags0 = stringToUint64(tmpString);
         systemFlags1 = 0;
-        if (loadedVersion < 10000006) {
+        if(loadedVersion < 10000006) {
           defaultStatusBar(); //clear systemflags for early version config files
         }
-        if (loadedVersion < 10000009) {
+        if(loadedVersion < 10000009) {
           setSystemFlag(FLAG_MONIT); //Monitoring is on per default
         }
       }
@@ -2345,11 +2366,21 @@ double stringToDouble(const char *str) {
           debugPrintf(7, "-", tmpString);
         #endif //LOADDEBUG
         systemFlags1 = stringToUint64(tmpString);
-        if (loadedVersion < 10000006) {
+        if(loadedVersion < 10000006) {
           defaultStatusBar(); //clear systemflags for early version config files
         }
-        if (loadedVersion < 10000009) {
+        if(loadedVersion < 10000009) {
           setSystemFlag(FLAG_MONIT); //Monitoring is on per default
+        }
+        if(loadedVersion < 10000010) {
+          if(getSystemFlag(FLAG_tmp2)) {; //HP Convert was on FLAG_tmp2
+            setSystemFlag(FLAG_HPCONV);
+          }
+          else {
+            clearSystemFlag(FLAG_HPCONV);
+          }
+          clearSystemFlag(FLAG_tmp1); //restore previously used flags to 0
+          clearSystemFlag(FLAG_tmp2); //restore previously used flags to 0
         }
       }
     }
@@ -2726,15 +2757,19 @@ double stringToDouble(const char *str) {
         resetOtherConfigurationStuff(); //Ensure all the configuration stuff below is reset prior to loading.
                                         //That ensures if missing settings, that the proper defaults are set.
       }
-      readLine(tmpString); // Number params
+      readLine(tmpString); // Number params not used anymore, reading until end of file or "END_OTHER_PARAM"; leaving it to read the old parameter in old files
       numberOfRegs = stringToInt16(tmpString);
-      for(i=0; i<numberOfRegs; i++) {
+      i = 0;
+      while(i < 255) {                                                           //adjust for absolute maximum number of OTHER CONFIGUARTION SETTINGS
         readLine(aimBuffer); // param
+        if(strcmp(aimBuffer,"END_OTHER_PARAM") == 0 || aimBuffer[0] == 0) break; //break the reading loop for end of file (zero length read, or in all later files END_OTHER_PARAM)
         readLine(tmpString); // value
         if(loadMode == LM_ALL || loadMode == LM_SYSTEM_STATE) {
           #if defined(LOADDEBUG)
             sprintf(line,", loadMode:%d, %s\n",loadMode,tmpString);
-            debugPrintf(16, "B", tmpString);
+            char aa[333];
+            sprintf(aa,"B|%u|%s",i,aimBuffer);
+            debugPrintf(16, aa, tmpString);
           #endif //LOADDEBUG
 
           if(strcmp(aimBuffer, "firstGregorianDay") == 0) {
@@ -2804,7 +2839,6 @@ double stringToDouble(const char *str) {
           else if(strcmp(aimBuffer, "jm_G_DOUBLETAP"              ) == 0) { jm_G_DOUBLETAP        = (bool_t)stringToUint8(tmpString) != 0; }
           else if(strcmp(aimBuffer, "jm_LARGELI"                  ) == 0) { jm_LARGELI            = (bool_t)stringToUint8(tmpString) != 0; }
           else if(strcmp(aimBuffer, "constantFractions"           ) == 0) { constantFractions     = (bool_t)stringToUint8(tmpString) != 0; }
-          else if(strcmp(aimBuffer, "constantFractionsMode"       ) == 0) { constantFractionsMode = stringToUint8(tmpString); }
           else if(strcmp(aimBuffer, "constantFractionsOn"         ) == 0) { constantFractionsOn   = (bool_t)stringToUint8(tmpString) != 0; }
           else if(strcmp(aimBuffer, "displayStackSHOIDISP"        ) == 0) { displayStackSHOIDISP  = stringToUint8(tmpString); }
           else if(strcmp(aimBuffer, "bcdDisplay"                  ) == 0) { bcdDisplay            = (bool_t)stringToUint8(tmpString) != 0; }
@@ -2839,11 +2873,13 @@ double stringToDouble(const char *str) {
           else if(strcmp(aimBuffer, "PLOT_AXIS"                   ) == 0) { PLOT_AXIS             = (bool_t)stringToUint8(tmpString) != 0; }
           else if(strcmp(aimBuffer, "PLOT_ZMX"                    ) == 0) { PLOT_ZMX              = stringToUint8(tmpString); }
           else if(strcmp(aimBuffer, "PLOT_ZMY"                    ) == 0) { PLOT_ZMY              = stringToUint8(tmpString); }
+          else if(strcmp(aimBuffer, "PLOT_CPXPLOT"                ) == 0) { PLOT_CPXPLOT          = (bool_t)stringToUint8(tmpString) != 0; }
 
 
           hourGlassIconEnabled = false;
 
         }
+      i++;
       }
       hourGlassIconEnabled = false;
       return false; //Signal that this was the last section loaded and no more sections to follow
@@ -3087,7 +3123,7 @@ void fnDeleteBackup(uint16_t confirmation) {
           int e = errno;
           if(e != ENOENT) {
             displayCalcErrorMessage(ERROR_IO, ERR_REGISTER_LINE, REGISTER_X);
-            #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+            #if (EXTRA_INFO_ON_CALC_ERROR == 1)
               sprintf(errorMessage, "removing the backup failed with error code %d", e);
               moreInfoOnError("In function fnDeleteBackup:", errorMessage, NULL, NULL);
             #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)

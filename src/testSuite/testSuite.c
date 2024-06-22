@@ -152,6 +152,7 @@ const funcTest_t funcTestNoParam[] = {
   {"fnErfc",                 fnErfc                },
   {"fnEuclideanNorm",        fnEuclideanNorm       },
   {"fnEulersFormula",        fnEulersFormula       },
+  {"fnEulPhi",               fnEulPhi              },
   {"fnExp",                  fnExp                 },
   {"fnExpM1",                fnExpM1               },
   {"fnExpMod",               fnExpMod              },
@@ -202,6 +203,7 @@ const funcTest_t funcTestNoParam[] = {
   {"fnInvGd",                fnInvGd               },
   {"fnIp",                   fnIp                  },
   {"fnLint",                 fnLint                },
+  {"fnSint",                 fnSint                },
   {"fnIsPrime",              fnIsPrime             },
   {"fnIxyz",                 fnIxyz                },
   {"fnJacobiAmplitude",      fnJacobiAmplitude     },
@@ -945,7 +947,7 @@ void setParameter(char *p) {
     //Lettered register
     if(l[1] >= 'A' && l[2] == 0) {
       const char *p = strchr(regNames, l[1]);
-      if (p != NULL) {
+      if(p != NULL) {
         regist = REGISTER_X + (p - regNames);
       }
       else {
@@ -2117,7 +2119,7 @@ void checkExpectedOutParameter(char *p) {
     //Lettered register
     if(l[1] >= 'A' && l[2] == 0) {
       const char *p = strchr(regNames, l[1]);
-      if (p != NULL) {
+      if(p != NULL) {
         letter = l[1];
         regist = REGISTER_X + (p - regNames);
       }

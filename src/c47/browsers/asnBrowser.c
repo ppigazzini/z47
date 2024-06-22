@@ -34,7 +34,7 @@
 
 
 #if !defined(TESTSUITE_BUILD)
-  #if !defined(SAVE_SPACE_DM42_8)
+  #if !defined(SAVE_SPACE_DM42_8ASN)
   static void fnAsnDisplay(uint8_t page) {                // Heavily modified by JM from the original fnShow
   #define YOFF 32
     int xx,yy;
@@ -74,11 +74,13 @@
               //printf("xxxx kbd_usr:%d kbd_std:%d Norm_Key_00_VAR:%d\n", kbd_usr[Norm_Key_00_key].primary, kbd_std[Norm_Key_00_key].primary, Norm_Key_00_VAR);
               if(kbd_usr[Norm_Key_00_key].primary != kbd_std[Norm_Key_00_key].primary) {
                 kk = kbd_usr[key].primary;  //user key set, use normally
-              } else {
+              }
+              else {
                 kk = Norm_Key_00_VAR;       //user key not set, use +NRM override
                 Norm_Key_00_used = Norm_Key_00_VAR != kbd_std[key].primary;    //only display in reverse and [] if different from kbd_std
               }
-            } else {
+            }
+            else {
               kk = kbd_usr[key].primary;  //not even the +NRM key location, therefore normal user operation
             }
             break;
@@ -95,7 +97,8 @@
           case 1: if(key == Norm_Key_00_key) {
               kk = Norm_Key_00_VAR;
               Norm_Key_00_used = Norm_Key_00_VAR != kbd_std[key].primary;    //only display in reverse and [] if different from kbd_std
-            } else {
+            }
+            else {
               kk = kbd_std[key].primary;
             }
             break;
@@ -146,13 +149,13 @@
 
     temporaryInformation = TI_NO_INFO;
   }
-  #endif // !SAVE_SPACE_DM42_8
+  #endif // !SAVE_SPACE_DM42_8ASN
 #endif // !TESTSUITE_BUILD
 
 
 void fnAsnViewer(uint16_t unusedButMandatoryParameter) {
 #if !defined(TESTSUITE_BUILD)
-  #if !defined(SAVE_SPACE_DM42_8)
+  #if !defined(SAVE_SPACE_DM42_8ASN)
     hourGlassIconEnabled = false;
     if(calcMode != CM_ASN_BROWSER) {
       previousCalcMode = calcMode;
@@ -162,7 +165,7 @@ void fnAsnViewer(uint16_t unusedButMandatoryParameter) {
       return;
     }
   fnAsnDisplay(currentAsnScr);
-  #endif // !SAVE_SPACE_DM42_8
+  #endif // !SAVE_SPACE_DM42_8ASN
 #endif // !TESTSUITE_BUILD
 
   }

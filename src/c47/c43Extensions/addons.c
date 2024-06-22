@@ -148,7 +148,7 @@ int popKey(void) {
     while(keyWaiting()) {
       tmpf = key_pop();
     }
-    if (tmpf == 44) {
+    if(tmpf == 44) {
       standardScreenDump();
     }
     return tmpf - 1;        //EXIT = 33-1
@@ -275,7 +275,7 @@ void fnFrom_ms(uint16_t unusedButMandatoryParameter){
       if(tmpString100_OUT[0] != 0) {
         reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
         stringToReal34(tmpString100_OUT, REGISTER_REAL34_DATA(REGISTER_X));
-        #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           printf("\n ------- 003 >>>%s<<<\n",tmpString100_OUT);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       }
@@ -346,23 +346,25 @@ void fnTo_ms(uint16_t unusedButMandatoryParameter) {
           if(getRegisterAngularMode(REGISTER_X) == amDMS) {
             if(calcMode == CM_NORMAL) {
               fnToReal(0);
-            } else if(calcMode == CM_NIM) {
+            }
+            else if(calcMode == CM_NIM) {
               addItemToNimBuffer(ITM_dotD);
             }
             fnToHms(0);
-          } else
-          if(getRegisterAngularMode(REGISTER_X) == amDegree // ||
+          }
+          else if(getRegisterAngularMode(REGISTER_X) == amDegree // ||
 //             getRegisterAngularMode(REGISTER_X) == amRadian ||
 //             getRegisterAngularMode(REGISTER_X) == amGrad   ||
 //             getRegisterAngularMode(REGISTER_X) == amMultPi
             ) {
             fnAngularModeJM(amDMS);
-          } else
-          if(getRegisterAngularMode(REGISTER_X) == amNone) {
+          }
+          else if(getRegisterAngularMode(REGISTER_X) == amNone) {
             fnToHms(0);
-          } else {
+          }
+          else {
             displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-            #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+            #if (EXTRA_INFO_ON_CALC_ERROR == 1)
               sprintf(errorMessage, "cannot calculate specific type/tag");
               moreInfoOnError("In function fnTo_ms:", errorMessage, NULL, NULL);
             #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -523,7 +525,9 @@ void fnJM_2SI(uint16_t unusedButMandatoryParameter) { //Convert Real to Longint;
       convertLongIntegerRegisterToLongInteger(REGISTER_X, tmp2);
       convertLongIntegerRegisterToLongInteger(REGISTER_X, tmp3);
       tmp2sign = longIntegerIsNegative(tmp2) ? 1:0;
-      if (tmp2sign == 1) longIntegerChangeSign(tmp2);
+      if(tmp2sign == 1) {
+        longIntegerChangeSign(tmp2);
+      }
       longIntegerToUInt(tmp2,tmp2UI);
       if(shortIntegerMode != SIM_UNSIGN) {
         mask = 1;
@@ -531,8 +535,8 @@ void fnJM_2SI(uint16_t unusedButMandatoryParameter) { //Convert Real to Longint;
         tmp2UI &= mask;
       }
       else if(tmp2sign) {
-          temporaryInformation = TI_DATA_NEG_OVRFL;
-        }
+        temporaryInformation = TI_DATA_NEG_OVRFL;
+      }
       convertUInt64ToShortIntegerRegister(tmp2sign, tmp2UI, (lastIntegerBase >= 2 && lastIntegerBase <= 16) ? lastIntegerBase : 10, REGISTER_X);
       convertShortIntegerRegisterToLongInteger(REGISTER_X, tmp1);
       if(longIntegerCompare(tmp1,tmp3) != 0) {
@@ -602,7 +606,8 @@ void exponentToUnitDisplayString(int32_t exponent, bool_t flag2To10, char *displ
       case 15  : displayString[1] = 'P'; break;
       default:                           break;
     }
-  } else if(flag2To10) {
+  }
+  else if(flag2To10) {
     switch(exponent) {                             //exponent of 2^(10/3)
       case  3  : displayString[1] = 'K'; displayString[2] = 'i'; break;
       case  6  : displayString[1] = 'M'; displayString[2] = 'i'; break;
@@ -672,7 +677,8 @@ void fnAngularModeJM(uint16_t AMODE) { //Setting to HMS does not change AM
 
     if(calcMode == CM_NORMAL) {
       fnToReal(0);
-    } else if(calcMode == CM_NIM) {
+    }
+    else if(calcMode == CM_NIM) {
       addItemToNimBuffer(ITM_dotD);
     }
 
@@ -700,7 +706,8 @@ void fnAngularModeJM(uint16_t AMODE) { //Setting to HMS does not change AM
 
         if(calcMode == CM_NORMAL) {         //convert longint, and strip all angles to real.
           fnToReal(0);
-        } else if(calcMode == CM_NIM) {
+        }
+        else if(calcMode == CM_NIM) {
           addItemToNimBuffer(ITM_dotD);
         }
 
@@ -980,7 +987,7 @@ void fnP_Regs (uint16_t registerNo) {
 
     create_filename(".REGS.TSV");
 
-    #if(VERBOSE_LEVEL >= 1)
+    #if (VERBOSE_LEVEL >= 1)
       clearScreen();
       print_linestr("Output regs to drive:", true);
       print_linestr(filename_csv, false);
@@ -1006,7 +1013,7 @@ void fnP_All_Regs(uint16_t option) {
 
     create_filename(".REGS.TSV");
 
-    #if(VERBOSE_LEVEL >= 1)
+    #if (VERBOSE_LEVEL >= 1)
       clearScreen();
       print_linestr("Output regs to drive:", true);
       print_linestr(filename_csv, false);
@@ -1354,7 +1361,7 @@ void dms34ToReal34(uint16_t dms) {
 void notSexa(void) {
   copySourceRegisterToDestRegister(REGISTER_L, REGISTER_X);
   displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-  #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+  #if (EXTRA_INFO_ON_CALC_ERROR == 1)
     sprintf(errorMessage, "data type %s cannot be converted!", getRegisterDataTypeName(REGISTER_X, false, false));
     moreInfoOnError("In function notSexagecimal:", errorMessage, NULL, NULL);
   #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -1532,7 +1539,7 @@ void fnToTime(uint16_t unusedButMandatoryParameter) {
 
       default:
         displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-        #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           sprintf(errorMessage, "data type %s cannot be converted to a time!", getRegisterDataTypeName(toTimeParamReg[i], false, false));
           moreInfoOnError("In function fnToTime:", errorMessage, NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -1555,7 +1562,7 @@ void fnToTime(uint16_t unusedButMandatoryParameter) {
 
 
 // *******************************************************************
-int32_t getD(const real34_t *val) {
+int32_t getSmallestDenom(const real_t *val) {
   /*
   ** Adapted from:
   ** https://www.ics.uci.edu/~eppstein/numth/frap.c
@@ -1577,10 +1584,11 @@ int32_t getD(const real34_t *val) {
   */
 
   real34_t xx, temp;
-  real34Copy(val, &xx);
+//-  real34Copy(val, &xx);
+  realToReal34(val, &xx);
 
   int32_t m[2][2];
-  int32_t maxden = denMax; /*999*/
+  int32_t maxden = denMax;
   int32_t ai;
 
   /* initialize matrix */
@@ -1679,159 +1687,160 @@ void changeToSub(char *str) {
 }
 
 
-//without mixedNumber flag, improper fractions are allowed: In WP43 misnomer: FLAG_PROPFR = MixedNumber = a b/c
-real34_t result_fp1;
-bool_t checkForAndChange_(char *displayString, const real34_t *value34, const real_t *constant, const real34_t *tolerance, const char *constantStr,  bool_t frontSpace) {
-    //printf(">>> constantFractionsMode %i\n",constantFractionsMode);
-    bool_t mixedNumber = getSystemFlag(FLAG_PROPFR);
-    //printf(">>>## mixedNumber %u\n",mixedNumber);
-    real34_t multConstant34, constant_34;
-    real34_t val, val1, result, result_ip, result_fp;
-    real_t constDiv;
-    char denomStr[20], wholePart[30], resstr[100], tmpstr[50];
+bool_t checkForAndChange(char *displayString, const real34_t *value34, const real_t *constant, const real_t *tolerance, const char *constantStr,  bool_t frontSpace, bool_t complex) {
+    bool_t allowMixedNumbers = getSystemFlag(FLAG_PROPFR) && !complex;
+    //printf(">>>## allowMixedNumbers %u\n",allowMixedNumbers);
+    real_t smallestDenomR, newConstant, tempResult, tempresult_ip, tempresult_fp, valueRAbs, valueR, multConstant, tmpr;
+    real34ToReal(value34,&valueR);
+    realCopyAbs(&valueR,&valueRAbs);
+
+    char denomStr[20], wholePart[30], resultingIntStr[100], tmpstr[50];
     denomStr[0] = 0;
     wholePart[0] = 0;
-    resstr[0] = 0;
+    resultingIntStr[0] = 0;
     int32_t resultingInteger = 0;
-    real34CopyAbs(value34, &val);
-    real34Copy(value34, &val1);               //initialize val1 as a fallback value
-    real_t newConstant, tempResult, tempresult_ip, tempresult_fp;
-    real_t valr;
-    real34ToReal(&val, &valr);
-
     char sign[2];
-    if(real34IsPositive(value34)) {
+
+    if(realIsPositive(&valueR)) {
       strcpy(sign, "+");
     }
     else {
       strcpy(sign, "-");
     }
 
-    realToReal34(constant,&constant_34);
-    real34Divide(&val,&constant_34,&multConstant34);
+//                                printRealToConsole(constant, "Constant=", "\n");
 
-    real34_t tmpr34;
-    uInt32ToReal34(2097151,&tmpr34);
-    //printReal34ToConsole(&multConstant34, "multConstant34=", " > ");
-    //printReal34ToConsole(&tmpr34, "tmpr34=", " \n");
-    if(real34CompareAbsGreaterThan(&multConstant34, &tmpr34)) {
+    realDivide(&valueRAbs,constant,&multConstant,&ctxtReal39);
+    uInt32ToReal(0x1FFFFFFF,&tmpr);
+    if(realCompareGreaterThan(&multConstant, &tmpr)) {
+
+//                                printf("Returning: Multiple of constant is too large\n");
+//                                printRealToConsole(&multConstant, "multiple of the constant=", " > ");
+//                                printRealToConsole(&tmpr, "tmpr=", " \n");
       return false;
     }
 
     //See if the multiplier to the constant has a whole denominator
-    //printReal34ToConsole(&multConstant34,"Check n/d :","\n");
-    int32_t smallestDenom = getD(&multConstant34);
+    int32_t smallestDenom = getSmallestDenom(&multConstant);
     if(smallestDenom > 1) {
       sprintf(denomStr,"/%i",(int)smallestDenom);
     }
-    //printf(">>># %i\n", smallestDenom);
 
     //Create a new constant comprising the constant divided by the whole denominator
-    int32ToReal(smallestDenom, &constDiv);
-    realDivide(constant, &constDiv, &newConstant, &ctxtReal39);
+    int32ToReal(smallestDenom, &smallestDenomR);
+    realDivide(constant, &smallestDenomR, &newConstant, &ctxtReal39);
 
     //See if there is a whole multiple of the new constant
-    realDivide(&valr, &newConstant, &tempResult, &ctxtReal39);
+    realDivide(&valueRAbs, &newConstant, &tempResult, &ctxtReal39);
     realToIntegralValue(&tempResult, &tempresult_ip, DEC_ROUND_HALF_UP, &ctxtReal39);
     realSubtract(&tempResult, &tempresult_ip, &tempresult_fp, &ctxtReal39);
+    resultingInteger = abs(realToInt32C47(&tempresult_ip));
 
-    realToReal34(&tempResult, &result);
-    realToReal34(&tempresult_fp, &result_fp);
-    realToReal34(&tempresult_ip, &result_ip);
-
-    //printReal34ToConsole(&result_fp,"fp:","--\n");
-
-    resultingInteger = abs(real34ToInt32(&result_ip));
-    //printf(">>> %i ", resultingInteger);
-    //if /*&& resultingInteger > (int32_t)denMax 999*/
-
-    uInt32ToReal34(2147483647,&tmpr34); //3355443
-    //printReal34ToConsole(&result_ip, "result_ip=", " > ");
-    //printReal34ToConsole(&tmpr34, "tmpr34=", " \n");
-    if(real34CompareAbsGreaterThan(&result_ip, &tmpr34)) {
-    //printf("<<< break1 >>>\n");
+    //See if the ip is out of range
+    uInt32ToReal(0x1FFFFFFF,&tmpr);
+    if(realCompareAbsGreaterThan(&tempresult_ip, &tmpr)) {
       return false;
     }
 
-    //printf("QQ:%s§\n",displayString);
-    //char teststr[1000];
-    //char teststr1[1000];
-    //sprintf(teststr,">>>@@@1 |%s|%s|%s| %i %i\n", resstr, constantStr, denomStr, (int16_t)stringByteLength(resstr)-1, resstr[stringByteLength(resstr)-1]);
-    //stringToASCII(teststr,teststr1);
-    //printf("%s\n",teststr1);
+//                                printRealToConsole(&tempresult_ip,"IP=","\n");
+//                                printf(">>>Resultinginteger:%i>1? SmallestDenom:%i\n", resultingInteger, smallestDenom);
+//                                printRealToConsole(&tempresult_fp,"fp:","--\n");
+//                                printRealToConsole(tolerance,"tol:","--\n");
+//                                printf("realCompareAbsLessThan(&tempresult_fp,tolerance):%i\n",realCompareAbsLessThan(&tempresult_fp,tolerance));
+//                                printf(">>> %i ", resultingInteger);
+//                                printf("QQ:%s§\n",displayString);
+//                                char teststr[1000];
+//                                char teststr1[1000];
+//                                sprintf(teststr,">>>@@@1 |%s|%s|%s| %i %i\n", resultingIntStr, constantStr, denomStr, (int16_t)stringByteLength(resultingIntStr)-1, resultingIntStr[stringByteLength(resultingIntStr)-1]);
+//                                stringToASCII(teststr,teststr1);
+//                                printf("%s\n",teststr1);
+//                                printf(">>>Resultinginteger:%i>=1? realCompareAbsLessThan(&tempresult_fp,tolerance):%i\n", resultingInteger, realCompareAbsLessThan(&tempresult_fp,tolerance));
 
-    char mixedNumberSep[3];                     //change mixedNumberSep to sign to get the old way of 1+1/3 instead of 1 1/3
-    mixedNumberSep[0] = STD_SPACE_4_PER_EM[0];
-    mixedNumberSep[1] = STD_SPACE_4_PER_EM[1];
-    mixedNumberSep[2] = 0;
+    if(resultingInteger >= 1 && realCompareAbsLessThan(&tempresult_fp,tolerance)) {
 
-    if(resultingInteger > 1 && real34CompareAbsLessThan(&result_fp,tolerance)) {
-      //a whole multiple of the constant exists
-      real34Divide(&val, &result_ip, &val1);
-      //printf(">>>Resultinginteger:%i SmallestDenom:%i\n", resultingInteger, smallestDenom);
-      if(resultingInteger > smallestDenom  &&  smallestDenom > 1  && resultingInteger != 0 &&  mixedNumber) {
-        int32_t tmp = resultingInteger / smallestDenom;
-        resultingInteger = resultingInteger - (tmp * smallestDenom);
+//                                printf("A whole multiple %i of the 'new' constant exists\n", resultingInteger);
+
+      if(resultingInteger > smallestDenom  &&  smallestDenom > 1  && resultingInteger != 0 &&  allowMixedNumbers) {
+        int32_t wholeInteger = resultingInteger / smallestDenom;
+        resultingInteger = resultingInteger - (wholeInteger * smallestDenom);
+        char allowMixedNumbersSep[3];
         if(constantStr[0]==0) {
-          sprintf(wholePart, "%i%s", (int)tmp, mixedNumberSep);
+          allowMixedNumbersSep[0] = STD_SPACE_4_PER_EM[0];
+          allowMixedNumbersSep[1] = STD_SPACE_4_PER_EM[1];
+          allowMixedNumbersSep[2] = 0;
+          sprintf(wholePart, "%i%s", (int)wholeInteger, allowMixedNumbersSep);
         }
         else {
-          if(tmp == 1) {
-            sprintf(wholePart, "%s%s", constantStr, mixedNumberSep);
+          allowMixedNumbersSep[0] = sign[0];
+          allowMixedNumbersSep[1] = sign[1];
+          allowMixedNumbersSep[2] = 0;
+          if(wholeInteger == 1) {
+            sprintf(wholePart, "%s%s", constantStr, allowMixedNumbersSep);
           }
           else {
-            sprintf(wholePart, "%i%s%s%s", (int)tmp, PRODUCT_SIGN, constantStr, mixedNumberSep);
+            sprintf(wholePart, "%i%s%s%s", (int)wholeInteger, PRODUCT_SIGN, constantStr, allowMixedNumbersSep);
           }
         }
       }
       if(constantStr[0] == 0) {
         sprintf(tmpstr,"%i", (int)resultingInteger);
-        changeToSup(tmpstr);
-        sprintf(resstr, "%s%s", wholePart, tmpstr);
+        if(smallestDenom > 1) {
+//                                printf("Convert to SUP:%i\n",(int)resultingInteger);
+          changeToSup(tmpstr);
+        }
+        sprintf(resultingIntStr, "%s%s", wholePart, tmpstr);
       }
       else {
         if(resultingInteger == 1) {
-          sprintf(resstr,"%s", wholePart);
+          sprintf(resultingIntStr,"%s", wholePart);
         }
         else {
           sprintf(tmpstr,"%i%s",(int)resultingInteger,PRODUCT_SIGN);
           //changeToSup(tmpstr);
-          sprintf(resstr, "%s%s", wholePart, tmpstr);
+          sprintf(resultingIntStr, "%s%s", wholePart, tmpstr);
         }
       }
-      //printf(">>> %s\n", resstr);
+    } else {
+      sprintf(resultingIntStr,"%i", (int)resultingInteger);
     }
 
-    //sprintf(teststr,">>>@@@2 |%s|%s|%s| %i %i\n", resstr, constantStr, denomStr, (int16_t)stringByteLength(resstr)-1, resstr[stringByteLength(resstr)-1]);
-    //stringToASCII(teststr,teststr1);
-    //printf("%s\n",teststr1);
+//                                sprintf(teststr,">>>@@@2 |%s|%s|%s| %i %i\n", resultingIntStr, constantStr, denomStr, (int16_t)stringByteLength(resultingIntStr)-1, resultingIntStr[stringByteLength(resultingIntStr)-1]);
+//                                char teststr2[1000];
+//                                stringToASCII(teststr,teststr2);
+//                                printf("%s\n",teststr2);
 
-    changeToSub(denomStr);
-    if((resstr[stringByteLength(resstr)-1]==' ' || resstr[max(0,stringByteLength(resstr)-1)]==0) &&  denomStr[0]=='/' && constantStr[0]==0) {
+    if(smallestDenom > 1) {
+      changeToSub(denomStr);
+//                                printf("Convert to SUB:%i : ",(int)smallestDenom);
+//                                printf("%s\n",denomStr);
+    }
+
+    if((resultingIntStr[stringByteLength(resultingIntStr)-1]==' ' || resultingIntStr[max(0,stringByteLength(resultingIntStr)-1)]==0) &&  denomStr[0]=='/' && constantStr[0]==0) {
       sprintf(tmpstr, STD_SUP_1 "%s", denomStr);
       strcpy(denomStr, tmpstr);
     }
-    //printf(">>>@@@ §%s§%s§%s§\n", resstr, constantStr, denomStr);
+
+//                                printf(">>>@@@3 §%s§%s§%s§\n", resultingIntStr, constantStr, denomStr);
 
     displayString[0]=0;
 
-    if(real34CompareAbsLessThan(&result_fp,tolerance)) {
-      if(!real34IsZero(&result_fp)) {
+    if(realCompareAbsLessThan(&tempresult_fp,tolerance)) {
+      if(!realIsZero(&tempresult_fp)) {
         strcat(displayString, STD_ALMOST_EQUAL);
       }
 
       if(sign[0]=='+') {
         if(frontSpace) {
           strcat(displayString, STD_SPACE_4_PER_EM);  //changed, not allowing for a space equal length to "-"
-          if(resstr[0] !=0 ) {
-            strcat(displayString, resstr);
+          if(resultingIntStr[0] !=0 ) {
+            strcat(displayString, resultingIntStr);
           }
           strcat(displayString,constantStr);
           strcat(displayString,denomStr);
         }
         else {
-          if(resstr[0] != 0) {
-            strcat(displayString, resstr);
+          if(resultingIntStr[0] != 0) {
+            strcat(displayString, resultingIntStr);
           }
           strcat(displayString,constantStr);
           strcat(displayString,denomStr);
@@ -1839,8 +1848,8 @@ bool_t checkForAndChange_(char *displayString, const real34_t *value34, const re
       }
       else {
         strcat(displayString, STD_SPACE_4_PER_EM "-");
-        if(resstr[0] !=0 ) {
-          strcat(displayString, resstr);
+        if(resultingIntStr[0] !=0 ) {
+          strcat(displayString, resultingIntStr);
         }
         strcat(displayString,constantStr);
         strcat(displayString,denomStr);
@@ -1928,8 +1937,8 @@ void fnRESET_MyM(uint8_t param) {
           case 6: itemToBeAssigned = ITM_LOADST;  break;
           default:break;
         }
-      } else
-      if(param == USER_MFIN) {
+      }
+      else if(param == USER_MFIN) {
         switch(fn) {
           case 1: itemToBeAssigned = ITM_PC;      break;
           case 2: itemToBeAssigned = ITM_DELTAPC; break;
@@ -1939,8 +1948,8 @@ void fnRESET_MyM(uint8_t param) {
           case 6: itemToBeAssigned = -MNU_FIN;    break;
           default:break;
         }
-      } else
-      if(param == USER_MCPX) {
+      }
+      else if(param == USER_MCPX) {
         switch(fn) {
           case 1: itemToBeAssigned = ITM_DRG;      break;
           case 2: itemToBeAssigned = ITM_CC;       break;
@@ -1950,8 +1959,8 @@ void fnRESET_MyM(uint8_t param) {
           case 6: itemToBeAssigned = ITM_op_j;     break;
           default:break;
         }
-      } else
-      if(param == USER_MC47) {
+      }
+      else if(param == USER_MC47) {
         switch(fn) {
           case 1: itemToBeAssigned = ITM_DRG;      break;
           case 2: itemToBeAssigned = ITM_YX;       break;
@@ -1961,8 +1970,8 @@ void fnRESET_MyM(uint8_t param) {
           case 6: itemToBeAssigned = ITM_op_j;     break;
           default:break;
         }
-      } else
-      if(param == USER_MR47) {
+      }
+      else if(param == USER_MR47) {
         switch(fn) {
           case 1: itemToBeAssigned = ITM_op_j;     break;
           case 2: itemToBeAssigned = ITM_op_j_pol; break;
@@ -1972,9 +1981,20 @@ void fnRESET_MyM(uint8_t param) {
           case 6: itemToBeAssigned = -MNU_HOME;    break;
           default:break;
         }
-      } else {
+      }
+      else {
         itemToBeAssigned = ASSIGN_CLEAR;
       }
+
+      if(itemToBeAssigned == -MNU_PFN) {
+        strcpy(aimBuffer,"P.FN");
+        assignGetName1();
+      }
+      else if(itemToBeAssigned == -MNU_HOME) {
+        strcpy(aimBuffer,"HOME");
+        assignGetName1();
+      }
+
       assignToMyMenu_(fn - 1);
       if(param == 0) {
         itemToBeAssigned = ASSIGN_CLEAR;

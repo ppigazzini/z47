@@ -17,6 +17,7 @@
 #include "error.h"
 #include "flags.h"
 #include "c43Extensions/radioButtonCatalog.h"
+#include "screen.h"
 #include "hal/audio.h"
 
 #include <stdio.h>
@@ -63,15 +64,19 @@ void audioTone(uint32_t frequency) {
       free(samples);
       pa_simple_free(s);
     }
+  #else
+    temporaryInformation = TI_DMCP_ONLY;
+    refreshScreen(240);
   #endif
 }
 
 void fnSetVolume(uint16_t volume) {
   temporaryInformation = TI_DMCP_ONLY;
+  refreshScreen(240);
 }
 
-uint16_t getBeepVolume() {
-    return NOVAL;
+uint16_t getBeepVolume(void) {
+  return NOVAL;
 }
 
 void fnGetVolume(uint16_t unusedButMandatoryParameter) {
@@ -92,4 +97,5 @@ void fnBuzz(uint16_t unusedButMandatoryParameter) {
 
 void fnPlay (uint16_t unusedButMandatoryParameter) {
   temporaryInformation = TI_DMCP_ONLY;
+  refreshScreen(240);
 }

@@ -111,7 +111,7 @@
    * \param[in] regist     Register number
    * \param[in] maxDataLen Max length of the string
    */
-  void           setRegisterMaxDataLength        (calcRegister_t regist, uint16_t maxDataLen);
+  void           setRegisterMaxDataLengthInBlocks(calcRegister_t regist, uint16_t maxDataLen);
 
   /**
    * Allocates local registers.

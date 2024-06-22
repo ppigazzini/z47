@@ -70,7 +70,7 @@ uint8_t *countOpBytes(uint8_t *step, uint16_t paramMode) {
     }
 
     case PARAM_REGISTER: {
-      if(opParam <= LAST_SPARE_REGISTERS_IN_KS_CODE) { // Global registers from 00 to 99, lettered registers from X to W, and local registers from .00 to .99
+      if(opParam <= LAST_SPARE_REGISTERS_IN_KS_CODE) { // Global registers from 00 to 99, lettered registers from X to W, and local registers from .00 to .98
         return step;
       }
       else if(opParam == STRING_LABEL_VARIABLE || opParam == INDIRECT_VARIABLE) {
@@ -152,7 +152,7 @@ uint8_t *countOpBytes(uint8_t *step, uint16_t paramMode) {
     }
 
     case PARAM_COMPARE: {
-      if(opParam <= LAST_LOCAL_REGISTER_IN_KS_CODE || opParam == VALUE_0 || opParam == VALUE_1) { // Global registers from 00 to 99, lettered registers from X to K, and local registers from .00 to .99 OR value 0 OR value 1
+      if(opParam <= LAST_LOCAL_REGISTER_IN_KS_CODE || opParam == VALUE_0 || opParam == VALUE_1) { // Global registers from 00 to 99, lettered registers from X to K, and local registers from .00 to .98 OR value 0 OR value 1
         return step;
       }
       else if(opParam == STRING_LABEL_VARIABLE || opParam == INDIRECT_VARIABLE) {
@@ -538,7 +538,7 @@ void fnCase(uint16_t regist) {
     }
     default: {
       displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-      #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "cannot use %s for the parameter of CASE", getRegisterDataTypeName(REGISTER_X, true, false));
         moreInfoOnError("In function fnCase:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)

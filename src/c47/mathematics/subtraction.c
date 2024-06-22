@@ -62,7 +62,7 @@ TO_QSPI void (* const subtraction[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS][NUMBER_
  * \param void
  * \return void
  ***********************************************/
-#if(EXTRA_INFO_ON_CALC_ERROR == 1)
+#if (EXTRA_INFO_ON_CALC_ERROR == 1)
   void subError(void) {
     displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
     sprintf(errorMessage, "cannot subtract %s", getRegisterDataTypeName(REGISTER_X, true, false));
@@ -110,7 +110,10 @@ void subLonILonI(void) {
 
   longIntegerSubtract(y, x, x);
 
-  if(running_program_jm) temporaryInformation = longIntegerIsZero(x) ? TI_TRUE : TI_FALSE;    //JM Temporary hack to do DSZ
+  //JM Temporary hack to do DSZ
+  if(running_program_jm) {
+    SET_TI_TRUE_FALSE(longIntegerIsZero(x));
+  }
 
   convertLongIntegerToLongIntegerRegister(x, REGISTER_X);
 
@@ -177,7 +180,10 @@ void subLonIShoI(void) {
 
   longIntegerSubtract(y, x, x);
 
-  if(running_program_jm)   temporaryInformation = longIntegerIsZero(x) ? TI_TRUE : TI_FALSE;    //JM Temporary hack to do DSZ
+  //JM Temporary hack to do DSZ
+  if(running_program_jm) {
+    SET_TI_TRUE_FALSE(longIntegerIsZero(x));
+  }
 
   convertLongIntegerToLongIntegerRegister(x, REGISTER_X);
 
@@ -201,7 +207,10 @@ void subShoILonI(void) {
 
   longIntegerSubtract(y, x, x);
 
-  if(running_program_jm)   temporaryInformation = longIntegerIsZero(x) ? TI_TRUE : TI_FALSE;    //JM Temporary hack to do DSZ
+  //JM Temporary hack to do DSZ
+  if(running_program_jm) {
+    SET_TI_TRUE_FALSE(longIntegerIsZero(x));
+  }
 
   convertLongIntegerToLongIntegerRegister(x, REGISTER_X);
 
@@ -236,8 +245,10 @@ void subLonIReal(void) {
     setRegisterAngularMode(REGISTER_X, currentAngularMode);
   }
 
-if(running_program_jm) temporaryInformation = real34IsZero(REGISTER_REAL34_DATA(REGISTER_X)) ? TI_TRUE : TI_FALSE;    //JM Temporary hack to do DSZ
-
+  //JM Temporary hack to do DSZ
+  if(running_program_jm) {
+    SET_TI_TRUE_FALSE(real34IsZero(REGISTER_REAL34_DATA(REGISTER_X)));
+  }
 }
 
 
@@ -268,8 +279,10 @@ void subRealLonI(void) {
     setRegisterAngularMode(REGISTER_X, currentAngularMode);
   }
 
-if(running_program_jm) temporaryInformation = real34IsZero(REGISTER_REAL34_DATA(REGISTER_X)) ? TI_TRUE : TI_FALSE;    //JM Temporary hack to do DSZ
-
+  //JM Temporary hack to do DSZ
+  if(running_program_jm) {
+    SET_TI_TRUE_FALSE(real34IsZero(REGISTER_REAL34_DATA(REGISTER_X)));
+  }
 }
 
 
@@ -291,8 +304,10 @@ void subLonICplx(void) {
   convertRealToReal34ResultRegister(&c, REGISTER_X);
   real34ChangeSign(REGISTER_IMAG34_DATA(REGISTER_X));
 
-  if(running_program_jm) temporaryInformation = (real34IsZero(REGISTER_REAL34_DATA(REGISTER_X)) ? TI_TRUE : TI_FALSE) & (real34IsZero(REGISTER_IMAG34_DATA(REGISTER_X)) ? TI_TRUE : TI_FALSE);    //JM Temporary hack to do DSZ
-
+  //JM Temporary hack to do DSZ
+  if(running_program_jm) {
+    SET_TI_TRUE_FALSE(real34IsZero(REGISTER_REAL34_DATA(REGISTER_X)) && real34IsZero(REGISTER_IMAG34_DATA(REGISTER_X)));
+  }
 }
 
 
@@ -317,8 +332,10 @@ void subCplxLonI(void) {
   convertRealToReal34ResultRegister(&c, REGISTER_X);
   real34Copy(&b, REGISTER_IMAG34_DATA(REGISTER_X));
 
-  if(running_program_jm) temporaryInformation = (real34IsZero(REGISTER_REAL34_DATA(REGISTER_X)) ? TI_TRUE : TI_FALSE) & (real34IsZero(REGISTER_IMAG34_DATA(REGISTER_X)) ? TI_TRUE : TI_FALSE);    //JM Temporary hack to do DSZ
-
+  //JM Temporary hack to do DSZ
+  if(running_program_jm) {
+    SET_TI_TRUE_FALSE(real34IsZero(REGISTER_REAL34_DATA(REGISTER_X)) && real34IsZero(REGISTER_IMAG34_DATA(REGISTER_X)));
+  }
 }
 
 
@@ -505,7 +522,7 @@ void subRemaRema(void) {
   }
   else {
     displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "cannot subtract %d" STD_CROSS "%d-matrix from %d" STD_CROSS "%d-matrix",
               x.header.matrixRows, x.header.matrixColumns,
               y.header.matrixRows, y.header.matrixColumns);
@@ -762,7 +779,7 @@ void subCxmaCxma(void) {
   }
   else {
     displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
-    #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "cannot add %d" STD_CROSS "%d-matrix to %d" STD_CROSS "%d-matrix",
               x.header.matrixRows, x.header.matrixColumns,
               y.header.matrixRows, y.header.matrixColumns);
@@ -979,8 +996,10 @@ void subShoIReal(void) {
     setRegisterAngularMode(REGISTER_X, currentAngularMode);
   }
 
-if(running_program_jm) temporaryInformation = real34IsZero(REGISTER_REAL34_DATA(REGISTER_X)) ? TI_TRUE : TI_FALSE;    //JM Temporary hack to do DSZ
-
+  //JM Temporary hack to do DSZ
+  if(running_program_jm) {
+    SET_TI_TRUE_FALSE(real34IsZero(REGISTER_REAL34_DATA(REGISTER_X)));
+  }
 }
 
 
@@ -1010,8 +1029,10 @@ void subRealShoI(void) {
     setRegisterAngularMode(REGISTER_X, currentAngularMode);
   }
 
-if(running_program_jm) temporaryInformation = real34IsZero(REGISTER_REAL34_DATA(REGISTER_X)) ? TI_TRUE : TI_FALSE;    //JM Temporary hack to do DSZ
-
+  //JM Temporary hack to do DSZ
+  if(running_program_jm) {
+    SET_TI_TRUE_FALSE(real34IsZero(REGISTER_REAL34_DATA(REGISTER_X)));
+  }
 }
 
 
@@ -1026,7 +1047,11 @@ void subShoICplx(void) {
   convertShortIntegerRegisterToReal34Register(REGISTER_Y, REGISTER_Y);
   real34Subtract(REGISTER_REAL34_DATA(REGISTER_Y), REGISTER_REAL34_DATA(REGISTER_X), REGISTER_REAL34_DATA(REGISTER_X)); // real part
   real34ChangeSign(REGISTER_IMAG34_DATA(REGISTER_X));
-  if(running_program_jm) temporaryInformation = (real34IsZero(REGISTER_REAL34_DATA(REGISTER_X)) ? TI_TRUE : TI_FALSE) & (real34IsZero(REGISTER_IMAG34_DATA(REGISTER_X)) ? TI_TRUE : TI_FALSE);    //JM Temporary hack to do DSZ
+
+  //JM Temporary hack to do DSZ
+  if(running_program_jm) {
+    SET_TI_TRUE_FALSE(real34IsZero(REGISTER_REAL34_DATA(REGISTER_X)) && real34IsZero(REGISTER_IMAG34_DATA(REGISTER_X)));
+  }
 }
 
 
@@ -1043,7 +1068,11 @@ void subCplxShoI(void) {
   real34Subtract(REGISTER_REAL34_DATA(REGISTER_Y), REGISTER_REAL34_DATA(REGISTER_X), REGISTER_REAL34_DATA(REGISTER_Y)); // real part
   reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
   complex34Copy(REGISTER_COMPLEX34_DATA(REGISTER_Y), REGISTER_COMPLEX34_DATA(REGISTER_X));
-  if(running_program_jm) temporaryInformation = (real34IsZero(REGISTER_REAL34_DATA(REGISTER_X)) ? TI_TRUE : TI_FALSE) & (real34IsZero(REGISTER_IMAG34_DATA(REGISTER_X)) ? TI_TRUE : TI_FALSE);    //JM Temporary hack to do DSZ
+
+  //JM Temporary hack to do DSZ
+  if(running_program_jm) {
+    SET_TI_TRUE_FALSE(real34IsZero(REGISTER_REAL34_DATA(REGISTER_X)) && real34IsZero(REGISTER_IMAG34_DATA(REGISTER_X)));
+  }
 }
 
 
@@ -1086,8 +1115,10 @@ void subRealReal(void) {
     setRegisterAngularMode(REGISTER_X, currentAngularMode);
   }
 
-if(running_program_jm) temporaryInformation = real34IsZero(REGISTER_REAL34_DATA(REGISTER_X)) ? TI_TRUE : TI_FALSE;    //JM Temporary hack to do DSZ
-
+  //JM Temporary hack to do DSZ
+  if(running_program_jm) {
+    SET_TI_TRUE_FALSE(real34IsZero(REGISTER_REAL34_DATA(REGISTER_X)));
+  }
 }
 
 

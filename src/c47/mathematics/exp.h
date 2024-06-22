@@ -29,7 +29,7 @@
   void realExp(const real_t *rhs, real_t *res, realContext_t *set);
   bool_t realExpLimitCheck(const real_t *x, real_t *res, const real_t *zero);
 
-  #if(EXTRA_INFO_ON_CALC_ERROR == 1)
+  #if (EXTRA_INFO_ON_CALC_ERROR == 1)
     void expError(void);
   #else // (EXTRA_INFO_ON_CALC_ERROR != 1)
     #define expError typeError

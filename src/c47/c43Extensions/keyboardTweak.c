@@ -165,55 +165,6 @@ void resetKeytimers(void) {
   * \param void
   * \return void
   ***********************************************/
-  void show_f_jm(void) {
-    if(!FN_timeouts_in_progress && calcMode != CM_ASN_BROWSER) {
-      if(!ULFL) {
-        underline(1);
-        ULFL = !ULFL;
-        doRefreshSoftMenu = true;
-      }
-      if(ULGL) {
-        underline(2);
-        ULGL = !ULGL;
-        doRefreshSoftMenu = true;
-      }
-    }
-    //}                                                                             //JM - Display dot in the f - line
-  }
-
-
-  void show_g_jm(void) {
-    if(!FN_timeouts_in_progress && calcMode != CM_ASN_BROWSER) {
-      if(ULFL) {
-        underline(1);
-        ULFL = !ULFL;
-        doRefreshSoftMenu = true;
-      }
-      if(!ULGL) {
-        underline(2);
-        ULGL = !ULGL;
-        doRefreshSoftMenu = true;
-      }
-    }
-    //}                                                                             //JM - Display dot in the g - line
-  }
-
-
-  void clear_fg_jm(void) {
-    if(!FN_timeouts_in_progress) {        //Cancel lines
-      if(ULFL) {
-        underline(1);
-        ULFL = !ULFL;
-        doRefreshSoftMenu = true;
-      }
-      if(ULGL) {
-        underline(2);
-        ULGL = !ULGL;
-        doRefreshSoftMenu = true;
-      }
-    }
-  }
-
 
   void fg_processing_jm(void) {
     if(ShiftTimoutMode || HOME3 || MYM3) {
@@ -279,7 +230,7 @@ void resetKeytimers(void) {
 
   int16_t Check_SigmaPlus_Assigned(int16_t * result, int16_t tempkey) {
     //JM NORMKEY CHANGE NORMAL MODE KEY SIGMA+ TO SOMETHING
-    if((calcMode == CM_NORMAL || calcMode == CM_NIM) &&
+    if((calcMode == CM_NORMAL || calcMode == CM_NIM || calcMode == CM_PEM) &&
        (!catalog || (catalog && (Norm_Key_00_VAR != ITM_SHIFTg && Norm_Key_00_VAR != ITM_SHIFTf && Norm_Key_00_VAR != KEY_fg))) &&
        (  (!shiftF && !shiftG && (tempkey == Norm_Key_00_key) && ((kbd_std + Norm_Key_00_key)->primary == *result) )  ||  ((Norm_Key_00_VAR == KEY_fg) && (tempkey == Norm_Key_00_key) && ((kbd_std + Norm_Key_00_key)->primary == *result) )  )
        ) {
@@ -349,16 +300,19 @@ void resetKeytimers(void) {
                     longpressDelayedkey1 = ITM_AIM;
                     longpressDelayedkey2 = 0;
                     longpressDelayedkey3 = -MNU_XXEQ;
-                  } else if(LongPressM == RB_M124) {
+                  }
+                  else if(LongPressM == RB_M124) {
                     longpressDelayedkey1 = ITM_AIM;
                     longpressDelayedkey2 = 0;
                     longpressDelayedkey3 = -MNU_XXEQ;
-                  } else if(LongPressM == RB_M1234) {
+                  }
+                  else if(LongPressM == RB_M1234) {
                     longpressDelayedkey1 = ITM_AIM;
                     longpressDelayedkey2 = -MNU_XXEQ;
                     longpressDelayedkey3 = tmpg;
                   }
-              } else {
+              }
+              else {
                 longpressDelayedkey1 = -MNU_XXEQ;
                 longpressDelayedkey2 = tmpf_;
                 longpressDelayedkey3 = tmpg_;
@@ -388,11 +342,13 @@ void resetKeytimers(void) {
                   longpressDelayedkey1 = tmpf == ITM_USERMODE && getSystemFlag(FLAG_SH_LONGPRESS) ? ITM_USERMODE : 0;
                   longpressDelayedkey2 = 0;
                   longpressDelayedkey3 = 0;
-                } else if(LongPressM == RB_M124) {
+                }
+                else if(LongPressM == RB_M124) {
                   longpressDelayedkey1 = ITM_USERMODE;
                   longpressDelayedkey2 = 0;
                   longpressDelayedkey3 = 0 ;
-                } else if(LongPressM == RB_M1234) {
+                }
+                else if(LongPressM == RB_M1234) {
                   longpressDelayedkey1 = ITM_USERMODE;
                   longpressDelayedkey2 = tmpg;
                   longpressDelayedkey3 = 0;
@@ -412,16 +368,19 @@ void resetKeytimers(void) {
                   longpressDelayedkey1 = ITM_AIM;
                   longpressDelayedkey2 = 0;
                   longpressDelayedkey3 = -MNU_XXEQ;
-                } else if(LongPressM == RB_M124) {
+                }
+                else if(LongPressM == RB_M124) {
                   longpressDelayedkey1 = ITM_AIM;
                   longpressDelayedkey2 = 0;
                   longpressDelayedkey3 = -MNU_XXEQ;
-                } else if(LongPressM == RB_M1234) {
+                }
+                else if(LongPressM == RB_M1234) {
                   longpressDelayedkey1 = ITM_AIM;
                   longpressDelayedkey2 = -MNU_XXEQ;
                   longpressDelayedkey3 = tmpg;
                 }
-              } else {
+              }
+              else {
                 longpressDelayedkey1 = -MNU_XXEQ;
                 longpressDelayedkey2 = tmpf_;
                 longpressDelayedkey3 = tmpg_;
@@ -446,11 +405,13 @@ void resetKeytimers(void) {
                   longpressDelayedkey1 = tmpf == ITM_USERMODE && getSystemFlag(FLAG_SH_LONGPRESS) ? ITM_USERMODE : 0;
                   longpressDelayedkey2 = 0;
                   longpressDelayedkey3 = 0;
-                } else if(LongPressM == RB_M124) {
+                }
+                else if(LongPressM == RB_M124) {
                   longpressDelayedkey1 = ITM_USERMODE;
                   longpressDelayedkey2 = 0;
                   longpressDelayedkey3 = 0 ;
-                } else if(LongPressM == RB_M1234) {
+                }
+                else if(LongPressM == RB_M1234) {
                   longpressDelayedkey1 = ITM_USERMODE;
                   longpressDelayedkey2 = tmpg;
                   longpressDelayedkey3 = 0;

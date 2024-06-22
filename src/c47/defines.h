@@ -14,34 +14,39 @@
 // JM VARIOUS OPTIONS
 //*********************************
 
-#define VERSION1 "0.109.02.00a"     // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
+#define VERSION1 "0.109.02.01RC1"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
 
-#define MODEL USER_C47               // USER_C47 or USER_R47
+#define CALCMODEL USER_C47               // USER_C47 or USER_R47
 
-  #undef SAVE_SPACE_DM42_0
-  #undef SAVE_SPACE_DM42_1
-  #undef SAVE_SPACE_DM42_2
-  #undef SAVE_SPACE_DM42_3
-  #undef SAVE_SPACE_DM42_4
-  #undef SAVE_SPACE_DM42_6
-  #undef SAVE_SPACE_DM42_7
-  #undef SAVE_SPACE_DM42_8
-  #undef SAVE_SPACE_DM42_9
-  #undef SAVE_SPACE_DM42_10
-  #undef SAVE_SPACE_DM42_11
-  #undef SAVE_SPACE_DM42_12
-  #undef SAVE_SPACE_DM42_13GRF
-  #undef SAVE_SPACE_DM42_13GRF_JM
-  #undef SAVE_SPACE_DM42_14
-  #undef SAVE_SPACE_DM42_15
-  #undef SAVE_SPACE_DM42_16
-  #undef SAVE_SPACE_DM42_20
-  #undef SAVE_SPACE_DM42_21
-
+#undef SAVE_SPACE_DM42_0
+#undef SAVE_SPACE_DM42_1
+#undef SAVE_SPACE_DM42_2
+#undef SAVE_SPACE_DM42_2LOAD 
+#undef SAVE_SPACE_DM42_3
+#undef SAVE_SPACE_DM42_4
+#undef SAVE_SPACE_DM42_6
+#undef SAVE_SPACE_DM42_8
+#undef SAVE_SPACE_DM42_8ASN
+#undef SAVE_SPACE_DM42_8F
+#undef SAVE_SPACE_DM42_8FL
+#undef SAVE_SPACE_DM42_9
+#undef SAVE_SPACE_DM42_10
+#undef SAVE_SPACE_DM42_11
+#undef SAVE_SPACE_DM42_12
+#undef SAVE_SPACE_DM42_12BESSEL
+#undef SAVE_SPACE_DM42_12ORTHO 
+#undef SAVE_SPACE_DM42_13GRF
+#undef SAVE_SPACE_DM42_13GRF_JM
+#undef SAVE_SPACE_DM42_14
+#undef SAVE_SPACE_DM42_15
+#undef SAVE_SPACE_DM42_16
+#undef SAVE_SPACE_DM42_17
+#undef SAVE_SPACE_DM42_20_TIMER
+#undef SAVE_SPACE_DM42_21_HP35
 
 #if defined(DMCP_BUILD)
 
-  #define TWO_FILE_PGM                 //JM Normally NOT have TWO_FILE. TWO_FILE means that QSPI is used.
+  #define TWO_FILE_PGM                 //Normally TWO_FILE. TWO_FILE means that QSPI is used.
 
   #if defined(NEW_HW) // DMCP5
     #undef TWO_FILE_PGM
@@ -51,32 +56,61 @@
 //  #undef  TWO_FILE_PGM  //See CRC ISSUE - Commented this line to force full QSPI generation
 //                        //Also change the file here: src/c47-dmcp/qspi_crc.h for the single file version
 
-//THESE ARE DMCP COMPILE OPTIONS
+//The byte savings below determined by compiling on Mac on 2024-06-04 using:
+//C compiler for the host machine: ccache arm-none-eabi-gcc (gcc 12.3.1 "arm-none-eabi-gcc (Arm GNU Toolchain 12.3.Rel1 (Build arm-12.35)) 12.3.1 20230626")
+//C linker for the host machine: arm-none-eabi-gcc ld.bfd 12.3
+//C compiler for the build machine: ccache cc (clang 14.0.0 "Apple clang version 14.0.0 (clang-1400.0.29.202)")
+//C linker for the build machine: cc ld64 820.1
+
+//THESE ARE DMCP COMPILE OPTIONS FOR SINGLE FILE NO QSPI (NOT POSSIBLE ANYMORE ON DM42 OLD HARDWARE)
   #if !defined(TWO_FILE_PGM) && !defined(NEW_HW) //---------THESE ARE THE EXCLUSIONS TO MAKE IT FIT WHILE NOT USING QSPI ON OLD HARDWARE
-    #define SAVE_SPACE_DM42_2  //005672 bytes: XEQM
-    #define SAVE_SPACE_DM42_6  //001648 bytes: ELEC functions
-    #define SAVE_SPACE_DM42_7  //002144 bytes: KEYS USER_DM42;
-  //  #define SAVE_SPACE_DM42_8  //007136 bytes: Standard Flag-, Register-, Font- Browser functions
-  //  #define SAVE_SPACE_DM42_9  //004448 bytes: SHOW (new C43)
-  //  #define SAVE_SPACE_DM42_10 //005800 bytes: C47 programming ...
-  //  #define SAVE_SPACE_DM42_11 //001552 bytes: Matrix function on entry ...
-    #define SAVE_SPACE_DM42_12 //047246 bytes: Standard extra 43S math: SLVQ, PRIME, BESSEL, ELLIPTIC, ZETA, BETA, ORTHO_POLY
-    #define SAVE_SPACE_DM42_13GRF //           JM Solver & graphics & stat graphics
-    #define SAVE_SPACE_DM42_13GRF_JM //        JM graphics
-  //  #define SAVE_SPACE_DM42_14    //           programming sample programs
-    #define SAVE_SPACE_DM42_15    //           without all distributions, i.e. binomial, cauchy, chi
-    #define SAVE_SPACE_DM42_16    //           without all distributions, i.e. binomial, cauchy, chi
+      #define SAVE_SPACE_DM42_2        //  4152 bytes // XEQM
+      #define SAVE_SPACE_DM42_2LOAD    //   288 bytes // XEQM AUTOLOAD DEMOS
+      #define SAVE_SPACE_DM42_6        //  1376 bytes // ELEC functions
+      #define SAVE_SPACE_DM42_8        //  1856 bytes // Register Browser
+      #define SAVE_SPACE_DM42_8FL      //  3280 bytes // Flag Browsers
+      #define SAVE_SPACE_DM42_8ASN     //  1704 bytes // Assign Browser
+      #define SAVE_SPACE_DM42_8F       //  1216 bytes // Font Browsers
+      #define SAVE_SPACE_DM42_9        //  6712 bytes // SHOW (use either old SHOW or VIEW, change in code)
+      #define SAVE_SPACE_DM42_10       //  3136 bytes // C47 programming ... (not complete removal but disables it anyway)
+      #define SAVE_SPACE_DM42_11       //   800 bytes // Matrix function on entry ...
+      #define SAVE_SPACE_DM42_12       //  3288 bytes // SLVC, SLVQ, ELLIPTIC, ZETA, BETA
+      #define SAVE_SPACE_DM42_12PRIME  // 27208 bytes // ISPRIME, NEXTPRIME, FACTORS, EULPHI, MATXFACTOR
+      #define SAVE_SPACE_DM42_12BESSEL //  5129 bytes // Without BESSEL
+      #define SAVE_SPACE_DM42_12ORTHO  //  0768 bytes // Without ORTHO MENU
+      #define SAVE_SPACE_DM42_13GRF    // 17472 bytes // Solver & graphics & stat graphics
+      #define SAVE_SPACE_DM42_13GRF_JM //  7520 bytes // More graphics
+      #define SAVE_SPACE_DM42_14       //   184 bytes // Load programming sample programs testPgms
+      #define SAVE_SPACE_DM42_15       // 17592 bytes // Without all distributions, i.e. binomial, cauchy, chi
+      #define SAVE_SPACE_DM42_16       //  2168 bytes // Without Norml distribution
+      #define SAVE_SPACE_DM42_20_TIMER //  1232 bytes // Without STOPW
+      #define SAVE_SPACE_DM42_21_HP35  //   200 bytes // Without config file activations only. Not complete removal.
   #endif // !TWO_FILE_PGM && !NEW_HW
 
+//THESE ARE DMCP COMPILE OPTIONS FOR TWO FILE QSPI
   #if defined(TWO_FILE_PGM) //---------THESE ARE THE EXCLUSIONS TO MAKE IT FIT INTO AVAILABLE FLASH EVEN WHILE USING QSPI
-    #define SAVE_SPACE_DM42_20_TIMER
-  //  #define SAVE_SPACE_DM42_2  //005672 bytes: XEQM
-  //  #define SAVE_SPACE_DM42_13GRF_JM //           JM graphics
-  //  #define SAVE_SPACE_DM42_12 //047246 bytes: Standard extra 43S math: SLVQ, PRIME, BESSEL, ELLIPTIC, ZETA, BETA, ORTHO_POLY
-  //  #define SAVE_SPACE_DM42_15       //           without all distributions, i.e. binomial, cauchy, chi
-  //  #define SAVE_SPACE_DM42_16       //           without Norml
-    #define SAVE_SPACE_DM42_12BESSEL //Standard extra BESSEL
-    #define SAVE_SPACE_DM42_12ORTHO //Standard extra ORTHO MENU
+  //  #define SAVE_SPACE_DM42_2        //  4152 bytes // Without XEQM
+  //  #define SAVE_SPACE_DM42_2LOAD    //   288 bytes // Without XEQM AUTOLOAD DEMOS
+  //  #define SAVE_SPACE_DM42_6        //  1376 bytes // Without ELEC functions
+  //  #define SAVE_SPACE_DM42_8        //  1856 bytes // Without Register Browser
+  //  #define SAVE_SPACE_DM42_8FL      //  3280 bytes // Without Flag Browsers
+  //  #define SAVE_SPACE_DM42_8ASN     //  1704 bytes // Without Assign Browser
+  //  #define SAVE_SPACE_DM42_8F       //  1216 bytes // Without Font Browsers
+  //  #define SAVE_SPACE_DM42_9        //  6712 bytes // Without SHOW (use either old SHOW or VIEW, change in code)
+  //  #define SAVE_SPACE_DM42_10       //  3136 bytes // Without C47 programming ... (not complete removal but disables it anyway)
+  //  #define SAVE_SPACE_DM42_11       //   800 bytes // Without Matrix function on entry ...
+  //  #define SAVE_SPACE_DM42_12       //  3288 bytes // Without SLVC, SLVQ, ELLIPTIC, ZETA, BETA
+  //  #define SAVE_SPACE_DM42_12PRIME  // 27208 bytes // Without ISPRIME, NEXTPRIME, FACTORS, EULPHI, MATXFACTOR
+  //  #define SAVE_SPACE_DM42_12BESSEL //  5129 bytes // Without BESSEL
+  //  #define SAVE_SPACE_DM42_12ORTHO  //  0768 bytes // Without ORTHO MENU
+  //  #define SAVE_SPACE_DM42_13GRF    // 17472 bytes // Without Solver & graphics & stat graphics
+  //  #define SAVE_SPACE_DM42_13GRF_JM //  7520 bytes // Without More graphics
+  //  #define SAVE_SPACE_DM42_14       //   184 bytes // Without Load programming sample programs testPgms
+  //  #define SAVE_SPACE_DM42_15       // 10056 bytes // Without all distributions, i.e. , cauchy, chi, expo, f, logis, t, weibull
+  //  #define SAVE_SPACE_DM42_16       //  2168 bytes // Without Norml distribution
+      #define SAVE_SPACE_DM42_17       //  7448 bytes // Without Poisson/Hyper/Binomial/Geometrical distributions
+  //  #define SAVE_SPACE_DM42_20_TIMER //  1232 bytes // Without STOPW
+  //  #define SAVE_SPACE_DM42_21_HP35  //   200 bytes // Without config file activations only. Not complete removal.
   #endif // TWO_FILE_PGM
 #endif // DMCP_BUILD
 
@@ -85,6 +119,8 @@
 #define TEXT_MULTILINE_EDIT         // 5 line buffer
 #define MAXLINES 5                  // numner of equavalent lines in small font maximum that is allowed in entry. Entry is hardlocked to multiline 3 lines bif font, but this is still the limit. WP has 2 lines fixed small font.
 #define allowShowDigits false       // true to allow typing of double digits to get to register number nn in SHOW.
+#define SHOWLineSize    120         // maximum 250
+#define SHOWLineMax     (uint8_t )(TMP_STR_LENGTH / SHOWLineSize) 
 
 #define LOW_GRAPH_ACC                                                                     //Lowered graph accuracy for EQN graphs
 //#undef LOW_GRAPH_ACC
@@ -134,15 +170,15 @@
 
 //Verbose STAT
   #define DEBUG_STAT                 0 // PLOT & STATS verbose level can be 0, 1 or 2 (more)
-  #if(DEBUG_STAT == 0)
+  #if (DEBUG_STAT == 0)
     #undef STATDEBUG
     #undef STATDEBUG_VERBOSE
     #endif // DEBUG_STAT == 0
-  #if(DEBUG_STAT == 1)
+  #if (DEBUG_STAT == 1)
     #define STATDEBUG
     #undef STATDEBUG_VERBOSE
     #endif // DEBUG_STAT == 1
-  #if(DEBUG_STAT == 2)
+  #if (DEBUG_STAT == 2)
     #define STATDEBUG
     #define STATDEBUG_VERBOSE
     #endif // DEBUG_STAT == 2
@@ -258,7 +294,7 @@
                                     //JM Otherwise, full enlarged standardfont is used.
 
 
-//constantFractionsMode         //JM
+//IrFractionsCurrentStatus
 #define CF_OFF                   0
 #define CF_NORMAL                1
 
@@ -276,16 +312,12 @@
 //*********************************
 //* General configuration defines *
 //*********************************
-#define UNIT_2TO10_LONGINT_DISPLAY         // Allow 2^10 option to also process integers instead of only reals
-#undef RECT_POLAR_CHANGES_X                // RECT/POLAR radiobuttons to also change the complex number in X
-
 #define DEBUG_INSTEAD_STATUS_BAR         0 // Debug data instead of the status bar
 #define EXTRA_INFO_ON_CALC_ERROR         1 // Print extra information on the console about an error
 #define DEBUG_PANEL                      0 //1 JM Showing registers, local registers, saved stack registers, flags, statistical sums, ... in a debug panel
 #define DEBUG_REGISTER_L                 0 //1 JM Showing register L content on the PC GUI
 #define SHOW_MEMORY_STATUS               0 //1 JM Showing the memory status on the PC GUI
 #define MMHG_PA_133_3224                 0 //1 JM mmHg to Pa conversion coefficient is 133.3224 an not 133.322387415
-//#define FN_KEY_TIMEOUT_TO_NOP            0 // Set to 1 if you want the 6 function keys to timeout
 #define MAX_LONG_INTEGER_SIZE_IN_BITS    3328 //JMMAX 9965   // 43S:3328 //JMMAX // 1001 decimal digits: 3328 ≃ log2(10^1001)
 #define MAX_FACTORIAL                    450  //JMMAX 1142   // 43S: 450 //JMMAX
 
@@ -310,7 +342,7 @@
 #define SIMULATOR_ON_SCREEN_KEYBOARD 1 // Set to 0 if you don't want an onscreen keyboard in addition to the screen
 #define NARROW_SCREEN                1 // 400x1280 portrait screen
 
-#if(BIG_SCREEN_COEF > 1 && SIMULATOR_ON_SCREEN_KEYBOARD == 1)
+#if (BIG_SCREEN_COEF > 1 && SIMULATOR_ON_SCREEN_KEYBOARD == 1)
   #undef SIMULATOR_ON_SCREEN_KEYBOARD
   #define SIMULATOR_ON_SCREEN_KEYBOARD 0
 #endif // BIG_SCREEN_COEF > 1 && SIMULATOR_ON_SCREEN_KEYBOARD == 1
@@ -344,7 +376,9 @@
 
 //fnKeysManagement
 #define JM_ASSIGN        28
-#define USER_COPY        29
+#define TO_USER          29
+#define FROM_USER        30
+
 #define USER_V47         40
 #define USER_SHIFTS2     41
 #define USER_E47         43
@@ -443,32 +477,33 @@
 #define ERROR_NO_PROGRAM_SPECIFIED                54
 #define ERROR_CANNOT_WRITE_FILE                   55
 #define ERROR_OLD_ITEM_TO_REPLACE                 56
+#define ERROR_VARIABLE_NOT_SELECTED               57
 
 //Status output messages for time consuming tasks, to keep user informed
-#define LOADING_STATE_FILE                        57
-#define SAVING_STATE_FILE                         58
-#define RESTORING_STATS                           59
-#define COMPLEX_SOLVER                            60
-#define GRAPHING                                  61
-#define RECALC_SUMS                               62
-#define REAL_SOLVER                               63
+#define LOADING_STATE_FILE                        58
+#define SAVING_STATE_FILE                         59
+#define RESTORING_STATS                           60
+#define COMPLEX_SOLVER                            61
+#define GRAPHING                                  62
+#define RECALC_SUMS                               63
+#define REAL_SOLVER                               64
 
 //TI Messages (incomplete)
-#define TI_Backup_restored                        64
-#define TI_State_file_restored                    65
-#define TI_Saved_programs_and_equations           66
-#define TI_appended                               67
-#define TI_Saved_global_and_local_registers       68
-#define TI_w_local_flags_restored                 69
-#define TI_Saved_system_settings_restored         70
-#define TI_Saved_statistic_data_restored          71
-#define TI_Saved_user_variables_restored          72
-#define TI_Program_file_loaded                    73
-#define TI_Not_enough_memory_for_undo             74
+#define TI_Backup_restored                        65
+#define TI_State_file_restored                    66
+#define TI_Saved_programs_and_equations           67
+#define TI_appended                               68
+#define TI_Saved_global_and_local_registers       69
+#define TI_w_local_flags_restored                 70
+#define TI_Saved_system_settings_restored         71
+#define TI_Saved_statistic_data_restored          72
+#define TI_Saved_user_variables_restored          73
+#define TI_Program_file_loaded                    74
+#define TI_Not_enough_memory_for_undo             75
 
 
 
-#define NUMBER_OF_ERROR_CODES                     75
+#define NUMBER_OF_ERROR_CODES                     76
 #define SIZE_OF_EACH_ERROR_MESSAGE                48
 
 #define NUMBER_OF_BUG_SCREEN_MESSAGES             10
@@ -496,20 +531,20 @@
 #define FLAG_I                                   109
 #define FLAG_J                                   110
 #define FLAG_K                                   111
-#define FLAG_M                                   212
-#define FLAG_N                                   213
-#define FLAG_P                                   214
-#define FLAG_Q                                   215
-#define FLAG_R                                   216
-#define FLAG_S                                   217
-#define FLAG_E                                   218
-#define FLAG_F                                   219
-#define FLAG_G                                   220
-#define FLAG_H                                   221
-#define FLAG_O                                   222
-#define FLAG_U                                   223
-#define FLAG_V                                   224
-#define FLAG_W                                   225
+#define FLAG_M                                   211
+#define FLAG_N                                   212
+#define FLAG_P                                   213
+#define FLAG_Q                                   214
+#define FLAG_R                                   215
+#define FLAG_S                                   216
+#define FLAG_E                                   217
+#define FLAG_F                                   218
+#define FLAG_G                                   219
+#define FLAG_H                                   220
+#define FLAG_O                                   221
+#define FLAG_U                                   222
+#define FLAG_V                                   223
+#define FLAG_W                                   224
 
 // System flags
 // Bit 15 (MSB) is always set for a system flag
@@ -578,12 +613,12 @@
 #define FLAG_2TO10                            0x803D
 #define FLAG_SH_LONGPRESS                     0x803E
 #define FLAG_WRAPEDG                          0xc03F
-#define FLAG_MONIT                            0x8040 // MONIT MUST be the first of the secoind flag word
+#define FLAG_MONIT                            0x8040 // MONIT MUST be the first of the second flag word
 #define FLAG_FRCYC                            0x8041
-#define FLAG_TVM_I_KNOWN                      0xc042
-#define FLAG_TVM_I_CHANGES                    0xc043
-#define FLAG_HPCONV                           0x8044
-#define NUMBER_OF_SYSTEM_FLAGS                    69 // We can have a maximum of 128 system flags
+#define FLAG_HPCONV                           0x8042 //shifted here from 0x8044
+#define NUMBER_OF_SYSTEM_FLAGS                    67 // We can have a maximum of 128 system flags
+#define FLAG_tmp1                             0x8043 //restore previously used flags in version 10000009 to 0; Re-use these flag numbers at will, then remove these defines. 
+#define FLAG_tmp2                             0x8044 //restore previously used flags in version 10000009 to 0; Re-use these flag numbers at will, then remove these defines.
 
 typedef enum {
   LI_ZERO     = 0, // Long integer sign 0
@@ -749,9 +784,9 @@ typedef enum {
 // the C47 C program:                                                                               stroke programs (one byte)
 // 0…99                                  Global registers from 0 to 99                              0…99
 // 100…111                           Lettered global registers from X to L                          100…111
-// 112…117         Lettered global registers from M to S: no possibility of indirect access         212…217
-// 118…125         Lettered global registers from E to W: no possibility of indirect access         218…225
-//                                        24 undefined free registers                               226…249
+// 112…117         Lettered global registers from M to S: no possibility of indirect access         211…216
+// 118…125         Lettered global registers from E to W: no possibility of indirect access         217…224
+//                                        25 undefined free registers                               225…249
 // 126…134                 saved stack registers (UNDO feature) not user accessible
 // 135…136                          temporary registers not user accessible
 // 137…249              113 undefined free registers: no possibility of indirect access
@@ -764,7 +799,7 @@ typedef enum {
 //                                             INDIRECT_VARIABLE                                    255
 // 256  to 1999                                 named variables
 // 2000 to 2029                               reserved variables
-// 7000 to 7099                         Local registers from .00 to .99                             112…211
+// 7000 to 7098                         Local registers from .00 to .98                             112…210
 
 enum REG_NUMBERS { // C program register codes
   FIRST_GLOBAL_REGISTER = 0,                             //   0 - 99 Total 100 registers
@@ -892,7 +927,7 @@ enum REG_NUMBERS { // C program register codes
 
   // Local registers
   FIRST_LOCAL_REGISTER,                                  //7000
-  LAST_LOCAL_REGISTER = FIRST_LOCAL_REGISTER + 100 - 1   //7099 total 100 local registers,
+  LAST_LOCAL_REGISTER = FIRST_LOCAL_REGISTER + 99 - 1    //7098 total 99 local registers,
 };
 
 enum REG_NUMBERS_IN_KS_CODE { // Key Stroke register codes
@@ -917,28 +952,28 @@ enum REG_NUMBERS_IN_KS_CODE { // Key Stroke register codes
 
   // Local registers
   FIRST_LOCAL_REGISTER_IN_KS_CODE,                                            // 112
-  LAST_LOCAL_REGISTER_IN_KS_CODE = FIRST_LOCAL_REGISTER_IN_KS_CODE + 100 - 1, // 211, total 100 local registers,
+  LAST_LOCAL_REGISTER_IN_KS_CODE = FIRST_LOCAL_REGISTER_IN_KS_CODE + 99 - 1,  // 210, total 99 registers,
 
   // Statistical parameter registers
   FIRST_STAT_REGISTER_IN_KS_CODE,
-  REGISTER_M_IN_KS_CODE = FIRST_STAT_REGISTER_IN_KS_CODE,                     // 212
-  REGISTER_N_IN_KS_CODE,                                                      // 213
-  REGISTER_P_IN_KS_CODE,                                                      // 214
-  REGISTER_Q_IN_KS_CODE,                                                      // 215
-  REGISTER_R_IN_KS_CODE,                                                      // 216
-  REGISTER_S_IN_KS_CODE,                                                      // 217
+  REGISTER_M_IN_KS_CODE = FIRST_STAT_REGISTER_IN_KS_CODE,                     // 211
+  REGISTER_N_IN_KS_CODE,                                                      // 212
+  REGISTER_P_IN_KS_CODE,                                                      // 213
+  REGISTER_Q_IN_KS_CODE,                                                      // 214
+  REGISTER_R_IN_KS_CODE,                                                      // 215
+  REGISTER_S_IN_KS_CODE,                                                      // 216
   LAST_STAT_REGISTER_IN_KS_CODE = REGISTER_S_IN_KS_CODE,
 
   // Spare registers
   FIRST_SPARE_REGISTERS_IN_KS_CODE,
-  REGISTER_E_IN_KS_CODE = FIRST_SPARE_REGISTERS_IN_KS_CODE,                   // 218
-  REGISTER_F_IN_KS_CODE,                                                      // 219
-  REGISTER_G_IN_KS_CODE,                                                      // 220
-  REGISTER_H_IN_KS_CODE,                                                      // 221
-  REGISTER_O_IN_KS_CODE,                                                      // 222
-  REGISTER_U_IN_KS_CODE,                                                      // 223
-  REGISTER_V_IN_KS_CODE,                                                      // 224
-  REGISTER_W_IN_KS_CODE,                                                      // 225
+  REGISTER_E_IN_KS_CODE = FIRST_SPARE_REGISTERS_IN_KS_CODE,                   // 217
+  REGISTER_F_IN_KS_CODE,                                                      // 218
+  REGISTER_G_IN_KS_CODE,                                                      // 219
+  REGISTER_H_IN_KS_CODE,                                                      // 220
+  REGISTER_O_IN_KS_CODE,                                                      // 221
+  REGISTER_U_IN_KS_CODE,                                                      // 222
+  REGISTER_V_IN_KS_CODE,                                                      // 223
+  REGISTER_W_IN_KS_CODE,                                                      // 224
   LAST_SPARE_REGISTERS_IN_KS_CODE = REGISTER_W_IN_KS_CODE,
 
   // OP parameter special values
@@ -959,7 +994,7 @@ enum REG_NUMBERS_IN_KS_CODE { // Key Stroke register codes
 #define NUMBER_OF_SPARE_REGISTERS       (LAST_SPARE_REGISTER           - FIRST_SPARE_REGISTER           + 1) // 8 lettered from E to W
 #define NUMBER_OF_SAVED_STACK_REGISTERS (LAST_SAVED_STACK_REGISTER     - FIRST_SAVED_STACK_REGISTER     + 1) // 9
 #define NUMBER_OF_TEMP_REGISTERS        (LAST_TEMP_REGISTER            - FIRST_TEMP_REGISTER            + 1) // 2
-#define NUMBER_OF_LOCAL_REGISTERS       (LAST_LOCAL_REGISTER           - FIRST_LOCAL_REGISTER           + 1) // 100 from .00 to .99
+#define NUMBER_OF_LOCAL_REGISTERS       (LAST_LOCAL_REGISTER           - FIRST_LOCAL_REGISTER           + 1) // 99 from .00 to .98
 
 #define NUMBER_OF_RESERVED_VARIABLES    (LAST_RESERVED_VARIABLE        - FIRST_RESERVED_VARIABLE        + 1) // 41
 #define NUMBER_OF_LETTERED_VARIABLES    (FIRST_NAMED_RESERVED_VARIABLE - FIRST_RESERVED_VARIABLE)            // 26
@@ -1052,7 +1087,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define X_ALPHA_MODE                             300
 #define X_SSIZE_BEGIN                            327
 #define X_HOURGLASS                              312
-#define X_ASM                                    X_ALPHA_MODE+34
+#define X_ASM                                    (X_ALPHA_MODE + 34)
 #define X_HOURGLASS_GRAPHS                       140
 #define X_WATCH                                  337
 #define X_SERIAL_IO                              353
@@ -1063,7 +1098,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define DY_BATTERY                                20  // >=3.045 V - maximum bars (tip of battery against the edge)
                                                       // f/g icon either in T-line left; or if date or time is removed, it moves up top left; or if SBAR_SHIFT is active, it goes top right, next to U
 #define X_SHIFT_L                                  0
-#define X_SHIFT_R                                X_USER_MODE-15
+#define X_SHIFT_R                                (X_USER_MODE - 15)
 #define X_SHIFT                                  (getSystemFlag(FLAG_SBshfR) ? X_SHIFT_R : X_SHIFT_L)
 #define Y_SHIFT                                  (((!SBARUPD_Date || !SBARUPD_Time) & !SBAR_SHIFT) ? 0 : (SBAR_SHIFT ? 0 : Y_POSITION_OF_REGISTER_T_LINE ) )
 
@@ -1237,7 +1272,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define TI_VERSION                                10
 #define TI_WHO                                    11
 #define TI_FALSE                                  12
-#define TI_TRUE                                   13
+#define TI_TRUE                                   13 // MUST be (TI_FALSE + 1)
 #define TI_SHOW_REGISTER                          14
 #define TI_VIEW_REGISTER                          15
 #define TI_SUMX_SUMY                              16
@@ -1300,42 +1335,44 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define TI_012                                    73    //JM EE
 #define TI_SHOW_REGISTER_BIG                      74    //JM_SHOW
 #define TI_SHOW_REGISTER_SMALL                    75
-#define TI_BATTV                                  76
-#define TI_FROM_DMS                               77
-#define TI_FROM_MS_TIME                           78
-#define TI_FROM_MS_DEG                            79
-#define TI_FROM_HMS                               80
-#define TI_DISP_JULIAN                            81
-#define TI_FROM_DATEX                             82
-#define TI_LAST_CONST_CATNAME                     83
-#define TI_PROGRAM_LOADED                         84    //DL
-#define TI_PROGRAMS_RESTORED                      85    //DL
-#define TI_REGISTERS_RESTORED                     86    //DL
-#define TI_SETTINGS_RESTORED                      87    //DL
-#define TI_SUMS_RESTORED                          88    //DL
-#define TI_VARIABLES_RESTORED                     89    //DL
-#define TI_SCATTER_SMI                            90
-#define TI_DMCP_ONLY                              91    //DL
+#define TI_SHOW_REGISTER_TINY                     76
+#define TI_BATTV                                  77
+#define TI_FROM_DMS                               78
+#define TI_FROM_MS_TIME                           79
+#define TI_FROM_MS_DEG                            80
+#define TI_FROM_HMS                               81
+#define TI_DISP_JULIAN                            82
+#define TI_FROM_DATEX                             83
+#define TI_LAST_CONST_CATNAME                     84
+#define TI_PROGRAM_LOADED                         85    //DL
+#define TI_PROGRAMS_RESTORED                      86    //DL
+#define TI_REGISTERS_RESTORED                     87    //DL
+#define TI_SETTINGS_RESTORED                      88    //DL
+#define TI_SUMS_RESTORED                          89    //DL
+#define TI_VARIABLES_RESTORED                     90    //DL
+#define TI_SCATTER_SMI                            91
+#define TI_DMCP_ONLY                              92    //DL
 #define TI_SHOWNOTHING                            92
-#define TI_COPY_FROM_SHOW                         92
-#define TI_DATA_LOSS                              93
-#define TI_CLEAR_ALL_MENUS                        94    //DL
-#define TI_CLEAR_ALL_VARIABLES                    95    //DL
-#define TI_DEL_ALL_MENUS                          96    //DL
-#define TI_DEL_ALL_VARIABLES                      97    //DL
-#define TI_ROOTS2                                 98
-#define TI_ROOTS3                                 99
-#define TI_IJ                                    100
-#define TI_MIJ                                   101
-#define TI_BYTES                                 102
-#define TI_BITS                                  103
-#define TI_SOLVER_VARIABLE_RESULT                104
-#define TI_DATA_NEG_OVRFL                        105
-#define TI_LASTSTATEFILE                         106
-#define TI_NO_SOLVER_VARIABLE                    107
-#define TI_NO_INTEGRATE_VARIABLE                 108
-#define TI_FUNCTION                              109
-#define TI_STORCL                                110
+#define TI_COPY_FROM_SHOW                         93
+#define TI_DATA_LOSS                              94
+#define TI_CLEAR_ALL_MENUS                        95    //DL
+#define TI_CLEAR_ALL_VARIABLES                    96    //DL
+#define TI_DEL_ALL_MENUS                          97    //DL
+#define TI_DEL_ALL_VARIABLES                      98    //DL
+#define TI_ROOTS2                                 99
+#define TI_ROOTS3                                100
+#define TI_IJ                                    101
+#define TI_MIJ                                   102
+#define TI_BYTES                                 103
+#define TI_BITS                                  104
+#define TI_SOLVER_VARIABLE_RESULT                105
+#define TI_DATA_NEG_OVRFL                        106
+#define TI_LASTSTATEFILE                         107
+#define TI_FUNCTION                              108
+#define TI_STORCL                                109
+#define TI_TVM_EFF                               110
+
+#define SET_TI_TRUE_FALSE(condition)               do { temporaryInformation = TI_FALSE + (condition); } while(0) // TI_TRUE must be TI_FALSE + 1
 
 // Register browser mode
 #define RBR_GLOBAL                                 0 // Global registers are browsed
@@ -1584,21 +1621,29 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define QF_DISCRETE_CDF_NEGBINOM                   3
 #define QF_DISCRETE_CDF_HYPERGEOMETRIC             4
 
-#define SOLVER_STATUS_READY_TO_EXECUTE             0x0001 //0001
-#define SOLVER_STATUS_INTERACTIVE                  0x0002 //0010
-#define SOLVER_STATUS_EQUATION_MODE                0x000c //1100
-#define SOLVER_STATUS_EQUATION_SOLVER              0x0000
-#define SOLVER_STATUS_EQUATION_INTEGRATE           0x0004 //0100
-#define SOLVER_STATUS_EQUATION_1ST_DERIVATIVE      0x0008 //1000
-#define SOLVER_STATUS_EQUATION_2ND_DERIVATIVE      0x000C //1100
-#define SOLVER_STATUS_SINGLE_VARIABLE              0x0010
-#define SOLVER_STATUS_USES_FORMULA                 0x0100
-#define SOLVER_STATUS_MVAR_BEING_OPENED            0x0200
-#define SOLVER_STATUS_TVM_APPLICATION              0x1000
+#define SOLVER_STATUS_READY_TO_EXECUTE             0x0001 // 0000 0000 0000 --01
+#define SOLVER_STATUS_INTERACTIVE                  0x0002 // 0000 0000 0000 --10
 
-#define IS_EQN_INTEGRATE (((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_INTEGRATE) && currentSolverStatus & SOLVER_STATUS_INTERACTIVE)
-#define IS_EQN_2NDDER   ((currentSolverStatus & SOLVER_STATUS_USES_FORMULA) && (currentSolverStatus & SOLVER_STATUS_INTERACTIVE) && ((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_2ND_DERIVATIVE))
-#define IS_EQN_1STDER   ((currentSolverStatus & SOLVER_STATUS_USES_FORMULA) && (currentSolverStatus & SOLVER_STATUS_INTERACTIVE) && ((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_1ST_DERIVATIVE))
+#define SOLVER_STATUS_EQUATION_MODE                0x200c // --1- ---- ---- 1100
+#define SOLVER_STATUS_EQUATION_SOLVER              0x0000 // --0- ---- ---- 00--
+#define SOLVER_STATUS_EQUATION_INTEGRATE           0x0004 // --0- ---- ---- 01--
+#define SOLVER_STATUS_EQUATION_1ST_DERIVATIVE      0x0008 // --0- ---- ---- 10--
+#define SOLVER_STATUS_EQUATION_2ND_DERIVATIVE      0x000C // --0- ---- ---- 11--
+#define SOLVER_STATUS_EQUATION_GRAPHER             0x2000 // --1- ---- ---- 00--
+
+#define SOLVER_STATUS_SINGLE_VARIABLE              0x0010 // 00-0 --00 ---1 ---- 
+#define SOLVER_STATUS_USES_FORMULA                 0x0100 // 00-0 --01 ---0 ----
+#define SOLVER_STATUS_MVAR_BEING_OPENED            0x0200 // 00-0 --10 ---0 ---- 
+#define SOLVER_STATUS_TVM_APPLICATION              0x1000 // 00-1 ---- ---0 ----
+
+#define IS_EQN_INTEGRATE (((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_INTEGRATE) && \
+                            currentSolverStatus & SOLVER_STATUS_INTERACTIVE)
+#define IS_EQN_2NDDER     ((currentSolverStatus & SOLVER_STATUS_USES_FORMULA) && \
+                           (currentSolverStatus & SOLVER_STATUS_INTERACTIVE) &&  \
+                          ((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_2ND_DERIVATIVE))
+#define IS_EQN_1STDER     ((currentSolverStatus & SOLVER_STATUS_USES_FORMULA) && \
+                           (currentSolverStatus & SOLVER_STATUS_INTERACTIVE) && \
+                          ((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_1ST_DERIVATIVE))
 
 #define SOLVER_RESULT_NORMAL                       0
 #define SOLVER_RESULT_SIGN_REVERSAL                1
@@ -1626,7 +1671,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
   #define beep(frequence, length)            do { while(get_beep_volume() < 11) beep_volume_up(); start_buzzer_freq(frequence * 1000); sys_delay(length); stop_buzzer(); } while(0)
   #undef TO_QSPI
   #if defined(TWO_FILE_PGM)
-    #define TO_QSPI                            __attribute__ ((section(".qspi")))
+    #define TO_QSPI                          __attribute__ ((section(".qspi")))
   #else // !TWO_FILE_PGM
     #define TO_QSPI
   #endif // TWO_FILE_PGM
@@ -1640,7 +1685,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 //******************************
 //* Macros replacing functions *
 //******************************
-#if(EXTRA_INFO_ON_CALC_ERROR == 0) || defined(TESTSUITE_BUILD) || defined(DMCP_BUILD)
+#if (EXTRA_INFO_ON_CALC_ERROR == 0) || defined(TESTSUITE_BUILD) || defined(DMCP_BUILD)
   #define EXTRA_INFO_MESSAGE(function, msg)
 #else // EXTRA_INFO_ON_CALC_ERROR != 0 && !TESTSUITE_BUILD && !DMCP_BUILD
   #define EXTRA_INFO_MESSAGE(function, msg)  do { sprintf(errorMessage, msg); moreInfoOnError("In function ", function, errorMessage, NULL); } while(0)
@@ -1680,7 +1725,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
                                                 (calcMode == CM_NIM && getRegisterDataType(REGISTER_Y) == dtShortInteger) ) \
                                               )
 
-#define SHOWMODE                             (calcMode == CM_NORMAL && (temporaryInformation == TI_SHOW_REGISTER || temporaryInformation == TI_SHOW_REGISTER_BIG || temporaryInformation == TI_SHOW_REGISTER_SMALL || temporaryInformation == TI_SHOWNOTHING))
+#define SHOWMODE                             (calcMode == CM_NORMAL && (temporaryInformation == TI_SHOW_REGISTER || temporaryInformation == TI_SHOW_REGISTER_BIG || temporaryInformation == TI_SHOW_REGISTER_SMALL || temporaryInformation == TI_SHOW_REGISTER_TINY || temporaryInformation == TI_SHOWNOTHING))
 #define GRAPHMODE                            (calcMode == CM_PLOT_STAT || calcMode == CM_GRAPH)
 
 #define COMPLEX_UNIT                         (getSystemFlag(FLAG_CPXj)   ? STD_op_j  : STD_op_i)  //Do not change back to single byte character - code must also change accordingly
