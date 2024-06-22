@@ -14,9 +14,9 @@
 // JM VARIOUS OPTIONS
 //*********************************
 
-#define VERSION1 "0.109.02.01a1"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
+#define VERSION1 "0.109.02.01RC1"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
 
-#define MODEL USER_C47               // USER_C47 or USER_R47
+#define CALCMODEL USER_C47               // USER_C47 or USER_R47
 
 #undef SAVE_SPACE_DM42_0
 #undef SAVE_SPACE_DM42_1
@@ -376,7 +376,9 @@
 
 //fnKeysManagement
 #define JM_ASSIGN        28
-#define USER_COPY        29
+#define TO_USER          29
+#define FROM_USER        30
+
 #define USER_V47         40
 #define USER_SHIFTS2     41
 #define USER_E47         43
