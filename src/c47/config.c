@@ -1787,31 +1787,34 @@ void backToSystem(uint16_t confirmation) {
 }
 
 void runDMCPmenu(uint16_t confirmation) {
-  if(confirmation == NOT_CONFIRMED) {
-    setConfirmationMode(runDMCPmenu);
-  }
-  else {
-    cancelFilename = true;
-    #if defined(PC_BUILD)  //for consistency with backToSystem
-      fnOff(NOPARAM);
-    #endif // PC_BUILD
-
-    #if defined(DMCP_BUILD)
+  #if defined(DMCP_BUILD)
+    if(confirmation == NOT_CONFIRMED) {
+      setConfirmationMode(runDMCPmenu);
+    }
+    else {
+      cancelFilename = true;
+//      #if defined(PC_BUILD)  //for consistency with backToSystem
+//        fnOff(NOPARAM);
+//      #endif // PC_BUILD
       run_menu_item_sys(MI_DMCP_MENU);
-    #endif // DMCP_BUILD
-  }
+    }
+  #elif defined(PC_BUILD)
+    temporaryInformation = TI_DMCP_ONLY;
+  #endif //!PC_BUILD
 }
 
 void activateUSBdisk(uint16_t confirmation) {
-  if(confirmation == NOT_CONFIRMED) {
-    setConfirmationMode(activateUSBdisk);
-  }
-  else {
-    cancelFilename = true;
-    #if defined(DMCP_BUILD)
+  #if defined(DMCP_BUILD)
+    if(confirmation == NOT_CONFIRMED) {
+      setConfirmationMode(activateUSBdisk);
+    }
+    else {
+      cancelFilename = true;
       run_menu_item_sys(MI_MSC);
-    #endif // DMCP_BUILD
-  }
+    }
+  #elif defined(PC_BUILD)
+    temporaryInformation = TI_DMCP_ONLY;
+  #endif //!PC_BUILD
 }
 
 
