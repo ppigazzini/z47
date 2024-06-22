@@ -1972,7 +1972,7 @@
 #define ITM_USER_DM42               1916
 #define ITM_HPRP                    1917
 #define ITM_N_KEY_FGSH              1918
-#define ITM_RESERVE                 1919
+#define ITM_1919                    1919
 #define MNU_ASN_N                   1920
 #define MNU_HOME                    1921
 #define MNU_ALPHA                   1922

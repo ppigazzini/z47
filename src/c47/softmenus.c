@@ -62,21 +62,13 @@ TO_QSPI const int16_t menu_BITS[]        = { ITM_LOGICALAND,                ITM_
                                              ITM_LJ,                        ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_RJ,                      ITM_ASR,
                                              ITM_1COMPL,                    ITM_2COMPL,                 ITM_UNSIGN,               ITM_SIGNMT,            ITM_NULL,                    ITM_WSIZE                     };
 
-#if defined(DMCP_BUILD)
-  #define ITM_SD ITM_SETDAT
-  #define ITM_ST ITM_SETTIM
-#else // !DMCP_BUILD
-  #define ITM_SD ITM_RESERVE
-  #define ITM_ST ITM_RESERVE
-#endif // DMCP_BUILD
-
 
 TO_QSPI const int16_t menu_CLK[]         = { ITM_DATE,                      ITM_TIME,                   ITM_DTtoJ,                ITM_JtoDT,             ITM_DtoJ,                    ITM_TIMER,
                                              ITM_DATEto,                    ITM_TIMEto,                 ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_XtoDATE,
                                              ITM_toDATE,                    ITM_toTIME,                 ITM_NULL,                 ITM_NULL,              ITM_toHMS,                   ITM_msTo,
 
                                              ITM_DATE,                      ITM_TIME,                   ITM_TDISP,                ITM_DMY,               ITM_MDY,                     ITM_YMD,
-                                             ITM_SD,                        ITM_ST,                     ITM_WDAY,                 ITM_DAY,               ITM_MONTH,                   ITM_YEAR,
+                                             ITM_SETDAT,                    ITM_SETTIM,                 ITM_WDAY,                 ITM_DAY,               ITM_MONTH,                   ITM_YEAR,
                                              ITM_CLK12,                     ITM_CLK24,                  ITM_NULL,                 ITM_SECOND,            ITM_MINUTE,                  ITM_HR_DEG,
 
                                              ITM_GET_JUL_GREG,              ITM_JUL_GREG,               ITM_JUL_GREG_1582,        ITM_JUL_GREG_1752,     ITM_JUL_GREG_1873,           ITM_JUL_GREG_1949             };
@@ -148,15 +140,9 @@ TO_QSPI const int16_t menu_FLAGS[]       = { ITM_SF,                        ITM_
                                              ITM_FSS,                       ITM_FSC,                    ITM_FSF,                  ITM_FCF,               ITM_FCS,                     ITM_FCC,
                                              ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_CLFALL                    };
 
-#if defined(DMCP_BUILD)
-  #define ITM_DSK ITM_DISK
-#else // !DMCP_BUILD
-  #define ITM_DSK ITM_RESERVE
-#endif // DMCP_BUILD
-
 
 TO_QSPI const int16_t menu_INFO[]        = { ITM_SSIZE,                     ITM_MEM,                    ITM_RMODEQ,               ITM_ISM,               ITM_WSIZEQ,                  ITM_KTYP,
-                                             ITM_LocRQ,                     ITM_DSK,                    ITM_ULP,                  ITM_NEIGHB,            ITM_GETSDIGS,                ITM_BATT,
+                                             ITM_LocRQ,                     ITM_DISK,                   ITM_ULP,                  ITM_NEIGHB,            ITM_GETSDIGS,                ITM_BATT,
                                              ITM_WHO,                       ITM_VERS,                   ITM_M_DIMQ,               ITM_PMINFINITY,        ITM_ALPHAPOS,                ITM_ALPHALENG,
                                              ITM_GETRANGE,                  ITM_GETHIDE,                ITM_GET_JUL_GREG,         ITM_VOLQ,              ITM_SH_ERPN,                 ITM_BESTFQ,
                                              ITM_GETDMX,                    ITM_LOADEDFILE,             ITM_LASTT,                ITM_NULL,              ITM_NULL,                    ITM_NULL                        };
@@ -193,19 +179,10 @@ TO_QSPI const int16_t menu_M_EDIT[]      = { ITM_UP_ARROW,                  ITM_
   #define ITM_TST ITM_RESERVE2
 #endif
 
-#if defined(DMCP_BUILD)
-  #define ITM_SYS2 ITM_SYSTEM2
-  #define ITM_DMCP ITM_ACTUSB
-#else // !DMCP_BUILD
-  #define ITM_SYS2 ITM_RESERVE
-  #define ITM_DMCP ITM_RESERVE
-#endif // DMCP_BUILD
-
-
 
 
 TO_QSPI const int16_t menu_MODE[]        = { ITM_DEG,                       ITM_RAD,                    ITM_GRAD,                 ITM_HPRP,              ITM_RECT,                    ITM_POLAR,
-                                             ITM_SYS2,                      ITM_DMCP,                   ITM_NULL,                 ITM_ERPN,              ITM_NULL,                    ITM_CFG,              //JM
+                                             ITM_SYSTEM2,                   ITM_ACTUSB,                 ITM_NULL,                 ITM_ERPN,              ITM_NULL,                    ITM_CFG,              //JM
                                              ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,                                       //JM
 
                                              ITM_SSIZE4,                    ITM_SSIZE8,                 ITM_SETSIG2,              ITM_RMODE,             ITM_CB_CPXRES,               ITM_CB_SPCRES,
@@ -217,7 +194,7 @@ TO_QSPI const int16_t menu_MODE[]        = { ITM_DEG,                       ITM_
                                              ITM_F14,                       ITM_F124,                   ITM_F1234,                ITM_SH_LONGPRESS,      ITM_MYMx3,                   ITM_HOMEx3         };
 
 // D47 vv
-TO_QSPI const int16_t menu_SETUP[]       = { ITM_SYS2,                      ITM_DMCP,                   ITM_ERPN,                 ITM_HPRP,              ITM_RECT,                    ITM_POLAR,
+TO_QSPI const int16_t menu_SETUP[]       = { ITM_SYSTEM2,                   ITM_ACTUSB,                 ITM_ERPN,                 ITM_HPRP,              ITM_RECT,                    ITM_POLAR,
                                              ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_CFG,
                                              ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
 
@@ -581,34 +558,28 @@ TO_QSPI const int16_t menu_Grapher[]     = { ITM_NULL,                  ITM_NULL
 
 
 
-TO_QSPI const int16_t menu_Sfdx[]        = { VAR_ACC,                   ITM_INTEGRAL_YX,           ITM_INTEGRAL,              VAR_LLIM,                 VAR_ULIM,                   ITM_NULL,
- /*same*/                                    ITM_NULL,                  CST_77,                    CST_78,                    ITM_NULL,                 ITM_NULL,                   ITM_NULL                  };
+TO_QSPI const int16_t menu_Sfdx[]        = { VAR_ACC,                       ITM_INTEGRAL_YX,            ITM_INTEGRAL,             VAR_LLIM,              VAR_ULIM,                    ITM_NULL,
+ /*same*/                                    ITM_NULL,                      CST_77,                     CST_78,                   ITM_NULL,              ITM_NULL,                    ITM_NULL                   };
+ 
+// Tool∫ (intgral tools) 
+TO_QSPI const int16_t menu_Sf_TOOL[]     = { VAR_ACC,                       ITM_INTEGRAL_YX,            ITM_INTEGRAL,             VAR_LLIM,              VAR_ULIM,                    -MNU_GRAPHS,
+ /*same*/                                    ITM_NULL,                      CST_77,                     CST_78,                   ITM_NULL,              ITM_NULL,                    ITM_NULL                   };
+ 
+// ToolS (solver tools) 
+TO_QSPI const int16_t menu_Solver_TOOL[] = { ITM_SETSIG2,                   ITM_CPXSLV,                 ITM_CPXSLV_LU,            VAR_LLIM,              VAR_ULIM,                    -MNU_GRAPHS,
+                                             ITM_NULL,                      ITM_REALSLV,                ITM_REALSLV_LU,           ITM_NULL,              ITM_NULL,                    ITM_NULL                   };
+ 
+ 
+TO_QSPI const int16_t menu_AUDIO[]       = { ITM_BEEP,                      ITM_TONE,                   ITM_BUZZ,                 ITM_PLAY,              ITM_VOLPLUS,                 ITM_VOLMINUS,
+                                             ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_VOL                    };
 
-// Tool∫ (intgral tools)
-TO_QSPI const int16_t menu_Sf_TOOL[]     = { VAR_ACC,                   ITM_INTEGRAL_YX,           ITM_INTEGRAL,              VAR_LLIM,                 VAR_ULIM,                  -MNU_GRAPHS,
- /*same*/                                    ITM_NULL,                  CST_77,                    CST_78,                    ITM_NULL,                 ITM_NULL,                   ITM_NULL                  };
+TO_QSPI const int16_t menu_IO[]          = { ITM_WRITEP,                    ITM_SAVEST,                 ITM_SAVE,                 ITM_LOADP,             ITM_LOADR,                   ITM_LOADV,
+                                             ITM_READP,                     ITM_LOADST,                 ITM_LOAD,                 ITM_LOADSIGMA,         ITM_LOADSS,                  -MNU_PRINT,
+                                             ITM_EXPORTP,                   ITM_SAVEAUT,                ITM_NULL,                 ITM_NULL,              ITM_NULL,                    -MNU_AUDIO                    };
 
-// ToolS (solver tools)
-TO_QSPI const int16_t menu_Solver_TOOL[] = { ITM_SETSIG2,               ITM_CPXSLV,                ITM_CPXSLV_LU,             VAR_LLIM,                 VAR_ULIM,                  -MNU_GRAPHS,
-                                             ITM_NULL,                  ITM_REALSLV,               ITM_REALSLV_LU,            ITM_NULL,                 ITM_NULL,                   ITM_NULL                  };
-
-
-TO_QSPI const int16_t menu_AUDIO[]       = { ITM_NULL,                     ITM_BEEP,                    ITM_TONE,                 ITM_BUZZ,              ITM_PLAY,                    ITM_VOL                       };
-
-#if defined(DMCP_BUILD)
-  #define ITM_S_AUT ITM_SAVEAUT
-#else // !DMCP_BUILD
-  #define ITM_S_AUT ITM_RESERVE
-#endif // DMCP_BUILD
-
-
-TO_QSPI const int16_t menu_IO[]          = { ITM_WRITEP,                   ITM_SAVEST,                  ITM_SAVE,                 ITM_LOADP,             ITM_LOADR,                   ITM_LOADV,
-                                             ITM_READP,                    ITM_LOADST,                  ITM_LOAD,                 ITM_LOADSIGMA,         ITM_LOADSS,                  -MNU_PRINT,
-                                             ITM_EXPORTP,                  ITM_S_AUT,                   ITM_NULL,                 ITM_NULL,              ITM_SNAP,                    -MNU_AUDIO                       };
-
-TO_QSPI const int16_t menu_PRINT[]       = { ITM_PRINTERX,                 ITM_PRINTERXY,               ITM_PRINTERSTK,           ITM_P_ALLREGS,         ITM_PRINTERR,                ITM_PRINTERPROG,
-                                            ITM_PRINTERCHAR,               ITM_PRINTERHASH,             ITM_PRINTERLCD,           ITM_NULL,              ITM_PRINTERSIGMA,            ITM_PRINTERUSER,
-                                            ITM_PRTACT,                    ITM_PRINTERADV,              ITM_PRINTERDLAY,          ITM_PRINTERMODE,       ITM_PRINTERTAB,              ITM_PRINTERWIDTH };
+TO_QSPI const int16_t menu_PRINT[]       = { ITM_PRINTERX,                  ITM_PRINTERXY,              ITM_PRINTERSTK,           ITM_P_ALLREGS,         ITM_PRINTERR,                ITM_PRINTERPROG,
+                                            ITM_PRINTERCHAR,                ITM_PRINTERHASH,            ITM_PRINTERLCD,           ITM_PRINTERREGS,       ITM_PRINTERSIGMA,            ITM_PRINTERUSER,
+                                            ITM_PRTACT,                     ITM_PRINTERADV,             ITM_PRINTERDLAY,          ITM_PRINTERMODE,       ITM_PRINTERTAB,              ITM_PRINTERWIDTH };
 
 TO_QSPI const int16_t menu_Tam[]         = { ITM_INDIRECTION,               -MNU_VAR,                   ITM_REG_X,                ITM_REG_Y,             ITM_REG_Z,                   ITM_REG_T,
                                              ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
@@ -2166,6 +2137,36 @@ void fnStrikeOutIfNotCoded(int16_t itemNr, int16_t x, int16_t y) {
 }
 
 
+#ifdef PC_BUILD
+  void fnStrikeThroughIfNotOnSim(int16_t itemNr, int16_t x, int16_t y) {
+    int16_t xStroke, yStroke = SCREEN_HEIGHT - y*23 - 9;
+    switch(itemNr) {
+      case ITM_ACTUSB   :
+      case ITM_SYSTEM2  :
+      case ITM_SETDAT   :
+      case ITM_SETTIM   :
+      case ITM_DISK     :
+      case ITM_SAVEAUT  :
+      case ITM_BUZZ     :
+      case ITM_PLAY     :
+      case ITM_VOL      :
+      case ITM_VOLMINUS :
+      case ITM_VOLPLUS  :
+      case ITM_VOLQ     : {
+        for(xStroke=x*67 + 1 +9 ; xStroke<x*67 + 66 -10; xStroke++) {      //JM mod stroke slash cross out
+          if(itemNr > 0) {
+            setBlackPixel(xStroke, yStroke -3);                                      //JM mod
+          }
+          else {
+            setWhitePixel(xStroke, yStroke -3);                                      //JM mod
+          }
+        }
+      }
+    }
+  }
+#endif //PC_BUILD
+
+
 bool_t BASE_OVERRIDEONCE = false;
 
   void showSoftmenuCurrentPart(void) {
@@ -2382,6 +2383,9 @@ bool_t BASE_OVERRIDEONCE = false;
                 }
                 showSoftkey(itemName, x, y, vm, true, true, showCb, showValue, showText, !greyout);
                 fnStrikeOutIfNotCoded(itemNr, x, y);
+                #ifdef PC_BUILD
+                  fnStrikeThroughIfNotOnSim(item%10000, x, y-currentFirstItem/6);
+                #endif //PC_BUILD
               }
               ptr += stringByteLength((char *)ptr) + 1;
             }
@@ -2517,6 +2521,9 @@ bool_t BASE_OVERRIDEONCE = false;
           }
 
           fnStrikeOutIfNotCoded(item%10000, x, y-currentFirstItem/6);
+          #ifdef PC_BUILD
+            fnStrikeThroughIfNotOnSim(item%10000, x, y-currentFirstItem/6);
+          #endif //PC_BUILD
         }
       }
 
