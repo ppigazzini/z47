@@ -687,8 +687,8 @@ TO_QSPI const int16_t menu_Inl_Tst[]     = { ITM_TEST,                      ITM_
 //#endif // INLINE_TEST
 
 
-TO_QSPI const int16_t menu_ASN_N[]       = { ITM_N_KEY_NIL,                 ITM_N_KEY_USER,             ITM_N_KEY_ALPHA,          ITM_N_KEY_GSH,         ITM_N_KEY_FGSH,              ITM_FROM_USER,
-                                             ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_TO_USER             };
+TO_QSPI const int16_t menu_ASN_N[]       = { ITM_N_KEY_SIGMA,               ITM_N_KEY_USER,             ITM_N_KEY_ALPHA,          ITM_N_KEY_FGSH,        ITM_N_KEY_GSH,               ITM_FROM_USER,
+                                             ITM_N_KEY_NIL,                 ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_TO_USER             };
 
 
 #if defined(DMCP_BUILD) //NULL to be removed in the DMCP version

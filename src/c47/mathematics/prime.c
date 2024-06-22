@@ -766,12 +766,21 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
 
       longIntegerDivideQuotientRemainder(currentNumber, nextPrime, quotient, remainder);
       longIntegerSubtract(quotient, nextPrime, eval);
+
+printLongIntegerToConsole(currentNumber,"doing currentNumber: ","\n");
+printLongIntegerToConsole(nextPrime,"   nextPrime: ","\n");
+printLongIntegerToConsole(quotient,"   quotient: ","\n");
+printLongIntegerToConsole(remainder,"   remainder: ","\n");
+
+
       if(longIntegerIsZero(remainder)) {
         if(!addFactor(lastFactor, nextPrime, &matrix, &lastAdded, &faddr)) {
+printf("    -- remainder zero, added factor");
           goto endandclose;
         }
         longIntegerCopy(quotient,currentNumber);
         if(longIntegerIsPrime(quotient)) {
+printf("    -- quotient prime, added factor");
           if(!addFactor(lastFactor, quotient, &matrix, &lastAdded, &faddr)) {
             goto endandclose;
           }
@@ -783,7 +792,7 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
       }
       if(!longIntegerIsPositive(eval)) {
         longIntegerSubtractUInt(currentNumber,1,temp);
-        if(!longIntegerIsZero(temp)) {
+        if(!longIntegerIsZero(temp) ){// || longIntegerIsPrime(currentNumber)) {
           if(!addFactor(lastFactor, currentNumber, &matrix, &lastAdded, &faddr)) {
             goto endandclose;
           }
