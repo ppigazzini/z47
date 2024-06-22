@@ -730,7 +730,7 @@ typedef enum {
 
 // List of constants
 #define FIRST_CONSTANT                        CST_01
-#define LAST_CONSTANT                         CST_82
+#define LAST_CONSTANT                         CST_83
 
 
 //Variable names
