@@ -39,7 +39,7 @@ TO_QSPI const char     hexadecimalDigits[17] = "0123456789ABCDEF";
 TO_QSPI const char     registerFlagLetters[27] = "XYZTABCDLIJKMNPQRSEFGHOUVW";
 void                   (*confirmedFunction)(uint16_t);
 
-uint8_t calcModel = MODEL;
+uint8_t calcModel = CALCMODEL;
 
 
 // Variables stored in RAM
