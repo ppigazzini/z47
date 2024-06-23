@@ -656,6 +656,8 @@
 `U+24FD`,51,51,`Double Circled Digit NINE`,`Digit HP 9`,`⓽`,`9`,`U+0039`
 `U+24FE`,51,51,`Double Circled Digit TEN`,`HP MINUS`,`-`,`-`,`U+002d`
 `U+24FF`,51,51,`Negative Circled Digit Zero`,`HP PLUS`,`+`,`+`,`U+002b`
+`U+25a2`,355,369,`whitesquarewithroundedcorners`,`box`,`▢`,`[`,`U+005b`
+`U+25a6`,355,369,`squarewithorthogonalcrosshatchfill`,`boxfilled`,`▦`,`[`,`U+005b`
 `U+29F0`,355,369,`yx`,`yx`,`⧰`,`yx`,`U+0059`
 `U+2dea`,424,426,`Sub Pi`,`Sub pi`,`π`,`π`,`U+03a0`
 `U+2deb`,424,426,`Sup Pi`,`Sup pi`,`π`,`π`,`U+03a0`

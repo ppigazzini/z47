@@ -402,6 +402,9 @@
 
 #define STD_BATTERYHALF               "\xa4\x35" //2435
 
+#define STD_BOX                       "\xa5\xa2"     // Box with rounded corners 25A2
+#define STD_BOXFILLED                 "\xa5\xa6"     // Box with hatched fill    25A6
+
 
 #define STD_HP_PERIOD                    "\xa0\x24"     // 2024
 #define STD_HP_0                         "\xa4\xea"     // 24ea
