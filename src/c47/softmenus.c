@@ -182,7 +182,7 @@ TO_QSPI const int16_t menu_M_EDIT[]      = { ITM_UP_ARROW,                  ITM_
 
 
 TO_QSPI const int16_t menu_MODE[]        = { ITM_DEG,                       ITM_RAD,                    ITM_GRAD,                 ITM_HPRP,              ITM_RECT,                    ITM_POLAR,
-                                             ITM_SYSTEM2,                   ITM_ACTUSB,                 ITM_NULL,                 ITM_ERPN,              ITM_NULL,                    ITM_CFG,              //JM
+                                             ITM_SYSTEM2,                   ITM_ACTUSB,                 ITM_NULL,                 ITM_NULL,              ITM_ERPN,                    ITM_CFG,              //JM
                                              ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,                                       //JM
 
                                              ITM_SSIZE4,                    ITM_SSIZE8,                 ITM_SETSIG2,              ITM_RMODE,             ITM_CB_CPXRES,               ITM_CB_SPCRES,
