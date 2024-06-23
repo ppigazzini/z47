@@ -980,7 +980,7 @@ void fnClAll(uint16_t confirmation) {
     fnExitAllMenus(NOPARAM);
     fnDeleteUserMenus(CONFIRMED);             // Delete all user menus and user menus assignments
 
-    if(calcModel == USER_R47) {
+    if(isR47FAM) {
       fnRESET_MyM(USER_MR47);                  // Reset Menu MyMenu
     }
     else {

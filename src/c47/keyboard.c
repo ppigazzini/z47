@@ -1705,7 +1705,7 @@ releaseOverride = false;
           circPtr2 = 0;
         }
       }
-      if(calcModel == USER_R47) {
+      if(isR47FAM) {
         if((circPtr1 == 0 && circ[0].itm1==keyCode) || circPtr1 > nbrOfElements(circ)) {
           circPtr1 = 0;
         }

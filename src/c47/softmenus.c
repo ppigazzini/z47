@@ -2422,7 +2422,7 @@ bool_t BASE_OVERRIDEONCE = false;
             if(item == -MNU_ASN_N && calcModel == USER_C47) {
               showSoftkey(STD_SIGMA "+ KEY", x, y-currentFirstItem/6, vmReverse, true, true, NOVAL, NOVAL, NOTEXT, !greyout);
             }
-            else if(item == -MNU_ASN_N && calcModel == USER_R47) {
+            else if(item == -MNU_ASN_N && isR47FAM) {
               showSoftkey(STD_BOX " KEY", x, y-currentFirstItem/6, vmReverse, true, true, NOVAL, NOVAL, NOTEXT, !greyout);
             }
             else if(item == -MNU_HOME || item == -MNU_PFN ) {  //softmenu[menu].menuItem == 0, or does not exist

@@ -512,7 +512,7 @@
       tamLeaveMode();
       return;
     }
-    else if((tam.function == ITM_toINT || tam.function == ITM_HASH_JM)  && ((item == ITM_alpha && calcModel == USER_C47) || (item == ITM_REG_F && calcModel == USER_R47))) {
+    else if((tam.function == ITM_toINT || tam.function == ITM_HASH_JM)  && ((item == ITM_alpha && calcModel == USER_C47) || (item == ITM_REG_F && isR47FAM))) {
       if(calcMode == CM_PEM) {
         addStepInProgram(ITM_FP);
       }
