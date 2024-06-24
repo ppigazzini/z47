@@ -259,6 +259,9 @@ void resetKeytimers(void) {
   }
 
 
+#define LongpressEXIT1 (calcModel == USER_C47 ? (calcMode == CM_AIM ? -MNU_MyAlpha : ITM_BASEMENU) : ITM_SNAP)   //SNAP on R47, MyMenu on C47
+
+
   void Check_MultiPresses(int16_t *result, int8_t key_no) { //Set up longpress
     int16_t longpressDelayedkey1 = 0;                                   //To Setup the timer locally for the next timed stage
             longpressDelayedkey2 = 0;                                   //To Store the next timed stage
@@ -330,7 +333,7 @@ void resetKeytimers(void) {
 
           case ITM_EXIT1:
             longpressDelayedkey2 = ITM_CLRMOD;     //EXIT longpress DOES CLRMOD
-            longpressDelayedkey1 = ITM_BASEMENU;
+            longpressDelayedkey1 = LongpressEXIT1;
             break;
 
           case ITM_DRG:
@@ -394,7 +397,7 @@ void resetKeytimers(void) {
             break;
           case ITM_EXIT1:
               longpressDelayedkey2 = ITM_CLRMOD;   //EXIT longpress DOES CLRMOD
-              longpressDelayedkey1 = ITM_BASEMENU;
+              longpressDelayedkey1 = LongpressEXIT1;
               break;
           case ITM_DRG:
               longpressDelayedkey1 = 0;
@@ -437,7 +440,7 @@ void resetKeytimers(void) {
             break;
           case ITM_EXIT1:
             longpressDelayedkey2 = ITM_CLRMOD;   //EXIT longpress DOES CLRMOD
-            longpressDelayedkey1 =-MNU_MyAlpha;
+            longpressDelayedkey1 = LongpressEXIT1;
             break;
           case ITM_ENTER:
             if(tam.mode == 0) {

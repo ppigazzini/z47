@@ -255,3 +255,7 @@ PLUS                      "\xa4\xff"
 2024-03-02 Adding integration limits y->x
     $29F0 yx              "\xa9\xf0"     // Integration limits
 
+
+2924096023 Add two boxes
+    $25A2 box        "\xa5\xa2"     // Box with rounded corners
+    $25A6 boxfilled  "\xa5\xa6"     // Box with hatched fill
