@@ -63,9 +63,9 @@ TO_QSPI const int16_t menu_BITS[]        = { ITM_LOGICALAND,                ITM_
                                              ITM_1COMPL,                    ITM_2COMPL,                 ITM_UNSIGN,               ITM_SIGNMT,            ITM_NULL,                    ITM_WSIZE                     };
 
 
-TO_QSPI const int16_t menu_CLK[]         = { ITM_DATE,                      ITM_TIME,                   ITM_DTtoJ,                ITM_JtoDT,             ITM_DtoJ,                    ITM_XtoDATE,
-                                             ITM_DATEto,                    ITM_TIMEto,                 ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
-                                             ITM_toDATE,                    ITM_toTIME,                 ITM_NULL,                 ITM_TIMER,             ITM_toHMS,                   ITM_msTo,
+TO_QSPI const int16_t menu_CLK[]         = { ITM_DATE,                      ITM_TIME,                   ITM_DTtoJ,                ITM_JtoDT,             ITM_DtoJ,                    ITM_TIMER,
+                                             ITM_DATEto,                    ITM_TIMEto,                 ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_XtoDATE,
+                                             ITM_toDATE,                    ITM_toTIME,                 ITM_NULL,                 ITM_NULL,              ITM_toHMS,                   ITM_msTo,
 
                                              ITM_DATE,                      ITM_TIME,                   ITM_TDISP,                ITM_DMY,               ITM_MDY,                     ITM_YMD,
                                              ITM_SETDAT,                    ITM_SETTIM,                 ITM_WDAY,                 ITM_DAY,               ITM_MONTH,                   ITM_YEAR,
@@ -182,7 +182,7 @@ TO_QSPI const int16_t menu_M_EDIT[]      = { ITM_UP_ARROW,                  ITM_
 
 
 TO_QSPI const int16_t menu_MODE[]        = { ITM_DEG,                       ITM_RAD,                    ITM_GRAD,                 ITM_HPRP,              ITM_RECT,                    ITM_POLAR,
-                                             ITM_SYSTEM2,                   ITM_ACTUSB,                 ITM_NULL,                 ITM_ERPN,             -MNU_INFO,                    ITM_CFG,              //JM
+                                             ITM_SYSTEM2,                   ITM_ACTUSB,                 ITM_NULL,                 ITM_NULL,              ITM_ERPN,                    ITM_CFG,              //JM
                                              ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,                                       //JM
 
                                              ITM_SSIZE4,                    ITM_SSIZE8,                 ITM_SETSIG2,              ITM_RMODE,             ITM_CB_CPXRES,               ITM_CB_SPCRES,
@@ -195,7 +195,7 @@ TO_QSPI const int16_t menu_MODE[]        = { ITM_DEG,                       ITM_
 
 // D47 vv
 TO_QSPI const int16_t menu_SETUP[]       = { ITM_SYSTEM2,                   ITM_ACTUSB,                 ITM_ERPN,                 ITM_HPRP,              ITM_RECT,                    ITM_POLAR,
-                                             ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              -MNU_INFO,                   ITM_CFG,
+                                             ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_CFG,
                                              ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
 
                                              ITM_SSIZE4,                    ITM_SSIZE8,                 ITM_SETSIG2,              ITM_RMODE,             ITM_CB_CPXRES,               ITM_CB_SPCRES,
@@ -267,7 +267,7 @@ TO_QSPI const int16_t menu_PFN_1[]       = { ITM_LBL,                       ITM_
                                              ITM_SKIP,                      ITM_BACK,                   ITM_XEQP1,                ITM_RTNP1,             ITM_CASE,                    ITM_LocR,
                                              ITM_INPUT,                     ITM_MSG,                    ITM_ERR,                  ITM_TICKS,             ITM_PAUSE,                   ITM_POPLR                     };
 
-TO_QSPI const int16_t menu_PFN_2[]       = { ITM_AGRAPH,                    ITM_PIXEL,                  ITM_POINT,                ITM_VOL,              -MNU_IO,                     -MNU_PFN_1,
+TO_QSPI const int16_t menu_PFN_2[]       = { ITM_AGRAPH,                    ITM_PIXEL,                  ITM_POINT,                ITM_SNAP,              -MNU_IO,                     -MNU_PFN_1,
                                              ITM_CLMENU,                    ITM_R_COPY,                 ITM_R_SORT,               ITM_R_SWAP,            ITM_R_CLR,                   ITM_EXITALL,
                                              ITM_MENU,                      ITM_KEYG,                   ITM_KEYX,                 ITM_VARMNU,            ITM_MVAR,                    ITM_PUTK                      };
 
@@ -2419,7 +2419,13 @@ bool_t BASE_OVERRIDEONCE = false;
               menu++;
             }
 
-            if(item == -MNU_HOME || item == -MNU_PFN ) {  //softmenu[menu].menuItem == 0, or does not exist
+            if(item == -MNU_ASN_N && calcModel == USER_C47) {
+              showSoftkey(STD_SIGMA "+ KEY", x, y-currentFirstItem/6, vmReverse, true, true, NOVAL, NOVAL, NOTEXT, !greyout);
+            }
+            else if(item == -MNU_ASN_N && isR47FAM) {
+              showSoftkey(STD_BOX " KEY", x, y-currentFirstItem/6, vmReverse, true, true, NOVAL, NOVAL, NOTEXT, !greyout);
+            }
+            else if(item == -MNU_HOME || item == -MNU_PFN ) {  //softmenu[menu].menuItem == 0, or does not exist
               showSoftkey(indexOfItems[-item].itemSoftmenuName, x, y-currentFirstItem/6, vmReverse, true, true, NOVAL, NOVAL, NOTEXT, !greyout);
             }
             else if(softmenu[menu].menuItem == 0) {

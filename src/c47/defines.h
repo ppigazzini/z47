@@ -371,8 +371,7 @@
 #define Norm_Key_00_key   (calcModel == USER_C47 ? 0 :             calcModel == USER_DM42 ? 0 :             calcModel == USER_R47 ? -1 : calcModel == USER_R47bkfg ? 10 :       calcModel == USER_R47fgbk ? 11 : -1)
 #define Norm_Key_00_keyID (calcModel == USER_C47 ? 21 :            calcModel == USER_DM42 ? 21 :            calcModel == USER_R47 ? -1 : calcModel == USER_R47bkfg ? 35 :       calcModel == USER_R47fgbk ? 36 : -1)
 #define Norm_Key_00_item_in_layout  (calcModel == USER_C47 ? ITM_SIGMAPLUS : calcModel == USER_DM42 ? ITM_SIGMAPLUS : calcModel == USER_R47 ? -1 : calcModel == USER_R47bkfg ? ITM_NULL : calcModel == USER_R47fgbk ? ITM_NULL : -1)
-
-
+#define isR47FAM          ((bool_t)(calcModel == USER_R47 || calcModel == USER_R47bkfg || calcModel == USER_R47fgbk || calcModel == USER_R47fg_g))
 
 //fnKeysManagement
 #define JM_ASSIGN        28
