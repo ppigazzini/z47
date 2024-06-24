@@ -236,6 +236,13 @@
                                     softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_ALPHAintl ))
 
 
+  bool_t checkNormal(int16_t keyNr, int16_t item) {
+    int16_t result = Norm_Key_00_item_in_layout; 
+    int16_t ss = Check_SigmaPlus_Assigned(&result, keyNr);
+    //printf("aaaaa ss=%i result=%i  ss==item=%i\n",ss, result, ss==item);
+    return (ss == item);
+  }
+
 
   gboolean keyReleased(GtkWidget *w, GdkEventKey *event, gpointer data) {     //JM
     printf("Released  %d (SHIFT_State=%u)(shiftF=%u)\n", event->keyval,SHIFT_State,shiftF);
@@ -245,23 +252,47 @@
       case 65505: //left shift
       case 65506: //right shift
           if(SHIFT_State != 0) {     //f-shift activated on the release of the shift key, to allow for standard PC shifted chars
+
+             if(checkNormal( 0,KEY_fg))     btnClicked(w, "00"); else
+             if(checkNormal(10,KEY_fg))     btnClicked(w, "10"); else
+             if(checkNormal(11,KEY_fg))     btnClicked(w, "11"); else
+             if(checkNormal( 0,ITM_SHIFTf)) btnClicked(w, "00"); else
+             if(checkNormal(10,ITM_SHIFTf)) btnClicked(w, "10"); else
+             if(checkNormal(11,ITM_SHIFTf)) btnClicked(w, "11"); else
+             // if(checkNormal( 0,ITM_SHIFTg)) btnClicked(w, "00"); else //removed, Robbert needs g on CTRL only
+             // if(checkNormal(10,ITM_SHIFTg)) btnClicked(w, "10"); else
+             // if(checkNormal(11,ITM_SHIFTg)) btnClicked(w, "11");
+
             if(getSystemFlag(FLAG_USER) ? kbd_usr[10].primary : kbd_std[10].primary == ITM_SHIFTf) btnClicked(w, "10"); else
+            if(getSystemFlag(FLAG_USER) ? kbd_usr[ 0].primary : kbd_std[ 0].primary == KEY_fg    ) btnClicked(w, "00"); else
             if(getSystemFlag(FLAG_USER) ? kbd_usr[10].primary : kbd_std[10].primary == KEY_fg    ) btnClicked(w, "10"); else
+            if(getSystemFlag(FLAG_USER) ? kbd_usr[11].primary : kbd_std[11].primary == KEY_fg    ) btnClicked(w, "11"); else
             if(getSystemFlag(FLAG_USER) ? kbd_usr[27].primary : kbd_std[27].primary == KEY_fg    ) btnClicked(w, "27");
-            SHIFT_State = 0;
           }
+          SHIFT_State = 0;
           break;
 
       case 65507: // Left Ctrl
       case 65508: // right Ctrl
           if(CTRL_State != 0) {
-            if(getSystemFlag(FLAG_USER) ? kbd_usr[11].primary : kbd_std[11].primary == ITM_SHIFTg) btnClicked(w, "11"); else
-            if(getSystemFlag(FLAG_USER) ? kbd_usr[11].primary : kbd_std[11].primary == KEY_fg    ) btnClicked(w, "11"); else
-            if(getSystemFlag(FLAG_USER) ? kbd_usr[27].primary : kbd_std[27].primary == KEY_fg    ) btnClicked(w, "27");
-            CTRL_State = 0;
-          }
-          break;
 
+            if(checkNormal( 0,KEY_fg))     btnClicked(w, "00"); else
+            if(checkNormal(10,KEY_fg))     btnClicked(w, "10"); else
+            if(checkNormal(11,KEY_fg))     btnClicked(w, "11"); else
+            // if(checkNormal( 0,ITM_SHIFTf)) btnClicked(w, "00"); else  //removed, Robbert needs f and f/g on SHIFT only
+            // if(checkNormal(10,ITM_SHIFTf)) btnClicked(w, "10"); else
+            // if(checkNormal(11,ITM_SHIFTf)) btnClicked(w, "11"); else
+            if(checkNormal( 0,ITM_SHIFTg)) btnClicked(w, "00"); else
+            if(checkNormal(10,ITM_SHIFTg)) btnClicked(w, "10"); else
+            if(checkNormal(11,ITM_SHIFTg)) btnClicked(w, "11"); else
+
+            if(getSystemFlag(FLAG_USER) ? kbd_usr[11].primary : kbd_std[11].primary == ITM_SHIFTg) btnClicked(w, "11");
+            // if(getSystemFlag(FLAG_USER) ? kbd_usr[ 0].primary : kbd_std[ 0].primary == KEY_fg    ) btnClicked(w, "10"); else   //removed, Robbert needs f and f/g on SHIFT only
+            // if(getSystemFlag(FLAG_USER) ? kbd_usr[10].primary : kbd_std[10].primary == KEY_fg    ) btnClicked(w, "10"); else
+            // if(getSystemFlag(FLAG_USER) ? kbd_usr[11].primary : kbd_std[11].primary == KEY_fg    ) btnClicked(w, "11"); else
+            // if(getSystemFlag(FLAG_USER) ? kbd_usr[27].primary : kbd_std[27].primary == KEY_fg    ) btnClicked(w, "27");
+
+        }
         CTRL_State = 0;
         break;
 
@@ -355,6 +386,10 @@
 
     switch(event_keyval) {
       case 102: //f
+
+          if(checkNormal( 0,ITM_SHIFTf)) btnClicked(w, "00"); else
+          if(checkNormal(10,ITM_SHIFTf)) btnClicked(w, "10"); else
+          if(checkNormal(11,ITM_SHIFTf)) btnClicked(w, "11"); else
           if((getSystemFlag(FLAG_USER) ? kbd_usr[10].primary : kbd_std[10].primary == ITM_SHIFTf )) btnClicked(w, "10"); else
           if((getSystemFlag(FLAG_USER) ? kbd_usr[11].primary : kbd_std[11].primary == ITM_SHIFTf )) btnClicked(w, "11"); else
           if((getSystemFlag(FLAG_USER) ? kbd_usr[10].primary : kbd_std[10].primary == KEY_fg     )) btnClicked(w, "10"); else
@@ -362,11 +397,15 @@
           if((getSystemFlag(FLAG_USER) ? kbd_usr[27].primary : kbd_std[27].primary == KEY_fg     )) btnClicked(w, "27");
         break;
       case 103: //g
+
+          if(checkNormal( 0,ITM_SHIFTg)) btnClicked(w, "00"); else
+          if(checkNormal(10,ITM_SHIFTg)) btnClicked(w, "10"); else
+          if(checkNormal(11,ITM_SHIFTg)) btnClicked(w, "11"); else
           if((getSystemFlag(FLAG_USER) ? kbd_usr[11].primary : kbd_std[11].primary == ITM_SHIFTg )) btnClicked(w, "11"); else
-          if((getSystemFlag(FLAG_USER) ? kbd_usr[10].primary : kbd_std[10].primary == ITM_SHIFTg )) btnClicked(w, "10"); else
-          if((getSystemFlag(FLAG_USER) ? kbd_usr[11].primary : kbd_std[11].primary == KEY_fg     )) btnClicked(w, "11"); else
-          if((getSystemFlag(FLAG_USER) ? kbd_usr[10].primary : kbd_std[10].primary == KEY_fg     )) btnClicked(w, "10"); else
-          if((getSystemFlag(FLAG_USER) ? kbd_usr[27].primary : kbd_std[27].primary == KEY_fg     )) btnClicked(w, "27");
+          if((getSystemFlag(FLAG_USER) ? kbd_usr[10].primary : kbd_std[10].primary == ITM_SHIFTg )) btnClicked(w, "10");
+          // if((getSystemFlag(FLAG_USER) ? kbd_usr[11].primary : kbd_std[11].primary == KEY_fg     )) btnClicked(w, "11"); else
+          // if((getSystemFlag(FLAG_USER) ? kbd_usr[10].primary : kbd_std[10].primary == KEY_fg     )) btnClicked(w, "10"); else
+          // if((getSystemFlag(FLAG_USER) ? kbd_usr[27].primary : kbd_std[27].primary == KEY_fg     )) btnClicked(w, "27");
         break;        
       default:break;
     }

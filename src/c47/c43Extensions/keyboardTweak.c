@@ -233,7 +233,8 @@ void resetKeytimers(void) {
     if(!getSystemFlag(FLAG_USER) &&
        (calcMode == CM_NORMAL || calcMode == CM_NIM || calcMode == CM_PEM) &&
        (!catalog || (catalog && (Norm_Key_00_VAR != ITM_SHIFTg && Norm_Key_00_VAR != ITM_SHIFTf && Norm_Key_00_VAR != KEY_fg))) &&
-       (  (!shiftF && !shiftG && (tempkey == Norm_Key_00_key) && ((kbd_std + Norm_Key_00_key)->primary == *result) )  ||  ((Norm_Key_00_VAR == KEY_fg) && (tempkey == Norm_Key_00_key) && ((kbd_std + Norm_Key_00_key)->primary == *result) )  )
+       (  ( ((!shiftF && !shiftG) || isR47FAM) && (tempkey == Norm_Key_00_key) && ((kbd_std + Norm_Key_00_key)->primary == *result) )  ||   //f & g allowed in R47, not allowed in C47 Σ+
+          ((Norm_Key_00_VAR == KEY_fg) && (tempkey == Norm_Key_00_key) && ((kbd_std + Norm_Key_00_key)->primary == *result))  )             
        ) {
       *result = Norm_Key_00_VAR;
       return (Norm_Key_00_VAR == ITM_SHIFTg || Norm_Key_00_VAR == ITM_SHIFTf || Norm_Key_00_VAR == KEY_fg) ? Norm_Key_00_VAR : 0;
