@@ -2691,6 +2691,7 @@ bool_t BASE_OVERRIDEONCE = false;
                                                               //JM ^^
     switch(-currentMenu()) {               //reset menu base point only if not MODE & DISP & Graphs menus, otherwise all menues reset to p1
       case MNU_MODE   :
+      case MNU_SETUP  :                    //(see "do not drop out of SYSFLG" in keyboard.c)
       case MNU_DISP   :
       case MNU_PLOT   : break;
       default: {
