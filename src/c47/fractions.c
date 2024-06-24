@@ -93,7 +93,7 @@ void fnDenMax(uint16_t D) {
 
 
 
-void fraction(calcRegister_t regist, int16_t *sign, uint64_t *intPart, uint64_t *numer, uint64_t *denom, int16_t *lessEqualGreater) {
+bool_t fraction(calcRegister_t regist, int16_t *sign, uint64_t *intPart, uint64_t *numer, uint64_t *denom, int16_t *lessEqualGreater) {
   // temp0 = fractional_part(absolute_value(real number))
   // temp1 = continued fraction calculation --> fractional_part(1 / temp1)  initialized with temp0
   // delta = difference between the best fraction and the real number
@@ -114,7 +114,7 @@ void fraction(calcRegister_t regist, int16_t *sign, uint64_t *intPart, uint64_t 
     *denom            = 0;
     *lessEqualGreater = 0;
 
-    return;
+    return false;
   }
 
   if(realIsZero(&temp0)) {
@@ -124,7 +124,7 @@ void fraction(calcRegister_t regist, int16_t *sign, uint64_t *intPart, uint64_t 
     *denom            = 1;
     *lessEqualGreater = 0;
 
-    return;
+    return false;
   }
 
   if(realIsNegative(&temp0)) {
@@ -529,4 +529,9 @@ void fraction(calcRegister_t regist, int16_t *sign, uint64_t *intPart, uint64_t 
     *numer += *denom * *intPart;
     *intPart = 0;
   }
+
+  if(fractionDigits == 0 || fractionDigits == 34) return true;
+  real_t tol;
+  fractionTolerence(&tol);
+  return realCompareAbsLessThan(&f,&tol);
 }

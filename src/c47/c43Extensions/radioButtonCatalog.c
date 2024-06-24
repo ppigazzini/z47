@@ -430,6 +430,7 @@ int16_t fnItemShowValue(int16_t item) {
     case ITM_RNG:       result = exponentLimit;                                     break;
     case ITM_DENMAX2:   result = denMax;                                            break;
     case ITM_SETSIG2:   result = (significantDigits == 0 ? 34 : significantDigits); break;
+    case ITM_SETFDIGS:  result = (fractionDigits == 0 ? 34 : fractionDigits);       break;
     case ITM_DSPCYCLE:  result = 32700 + displayFormat;                             break;
     case ITM_SCR:       result = (scrLock & 0x03) | (nextChar & 0x03);              break;
     case ITM_DSP:       result = displayFormatDigits;                               break;

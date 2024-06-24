@@ -26,6 +26,7 @@
 
 // Return a convergence tolerance based on the current display setting
 void convergenceTolerence(real_t *tol);
+void fractionTolerence(real_t *tol);
 
 bool_t  real34CompareAbsGreaterThan (const real34_t *number1, const real34_t *number2);
 bool_t  real34CompareAbsGreaterEqual(const real34_t *number1, const real34_t *number2);

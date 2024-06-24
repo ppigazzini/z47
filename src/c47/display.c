@@ -421,14 +421,16 @@ void real34ToDisplayString2(const real34_t *real34, char *displayString, int16_t
 
   //printf(">>>## flag_proper %u\n",getSystemFlag(FLAG_PROPFR));
   if(constantFractions && constantFractionsOn && !getSystemFlag(FLAG_FRACT) && IrFractionsCurrentStatus != CF_OFF && !real34CompareAbsLessThan(real34,const34_1e_6) && !real34IsAnInteger(real34)) {
-    if(checkForAndChange(displayString, real34, const_1,    const_1e_24, "",                        frontSpace, complex)) return_fr;
-    if(checkForAndChange(displayString, real34, const_rt3,  const_1e_24, STD_SQUARE_ROOT STD_SUB_3, frontSpace, complex)) return_fr;
-    if(checkForAndChange(displayString, real34, const_pi,   const_1e_24, STD_pi,                    frontSpace, complex)) return_fr;
-    if(checkForAndChange(displayString, real34, const_eE,   const_1e_24, STD_EulerE,                frontSpace, complex)) return_fr;
-    if(checkForAndChange(displayString, real34, const_root2,const_1e_24, STD_SQUARE_ROOT STD_SUB_2, frontSpace, complex)) return_fr;
-    if(checkForAndChange(displayString, real34, const_PHI,  const_1e_24, STD_phi,                   frontSpace, complex)) return_fr;
-    if(checkForAndChange(displayString, real34, const_rt5,  const_1e_24, STD_SQUARE_ROOT STD_SUB_5, frontSpace, complex)) return_fr;
-    if(checkForAndChange(displayString, real34, const_rt7,  const_1e_24, STD_SQUARE_ROOT STD_SUB_7, frontSpace, complex)) return_fr;
+    real_t tol;
+    fractionTolerence(&tol);
+    if(checkForAndChange(displayString, real34, const_1,    &tol, "",                        frontSpace, complex)) return_fr;
+    if(checkForAndChange(displayString, real34, const_rt3,  &tol, STD_SQUARE_ROOT STD_SUB_3, frontSpace, complex)) return_fr;
+    if(checkForAndChange(displayString, real34, const_pi,   &tol, STD_pi,                    frontSpace, complex)) return_fr;
+    if(checkForAndChange(displayString, real34, const_eE,   &tol, STD_EulerE,                frontSpace, complex)) return_fr;
+    if(checkForAndChange(displayString, real34, const_root2,&tol, STD_SQUARE_ROOT STD_SUB_2, frontSpace, complex)) return_fr;
+    if(checkForAndChange(displayString, real34, const_PHI,  &tol, STD_phi,                   frontSpace, complex)) return_fr;
+    if(checkForAndChange(displayString, real34, const_rt5,  &tol, STD_SQUARE_ROOT STD_SUB_5, frontSpace, complex)) return_fr;
+    if(checkForAndChange(displayString, real34, const_rt7,  &tol, STD_SQUARE_ROOT STD_SUB_7, frontSpace, complex)) return_fr;
   }
   IrFractionsCurrentStatus = CF_NORMAL;
 
@@ -1432,42 +1434,48 @@ void fractionToDisplayString(calcRegister_t regist, char *displayString) {
   int16_t  u, insertAt, endingZero, gap;
 
   //printf("regist = "); printRegisterToConsole(regist); printf("\n");
-  fraction(regist, &sign, &intPart, &numer, &denom, &lessEqualGreater);
+  bool_t prependFraction = fraction(regist, &sign, &intPart, &numer, &denom, &lessEqualGreater);
 
-  //printf("result of fraction(...) = %c%" PRIu64 " %" PRIu64 "/%" PRIu64 "\n", sign==-1 ? '-' : ' ', intPart, numer, denom);
+  printf("result of fraction(...) = %c%" PRIu64 " %" PRIu64 "/%" PRIu64 "\n", sign==-1 ? '-' : ' ', intPart, numer, denom);
+  printf("  prependFraction=%u fractionDigits=%u\n",prependFraction, fractionDigits);
 
-  // Comparison sign
-  if(getSystemFlag(FLAG_FRCSRN)) {
-    if(lessEqualGreater == -1) {
-      sprintf(displayString, "%c" STD_SPACE_PUNCTUATION ">" STD_SPACE_PUNCTUATION, "xyzt"[regist - REGISTER_X]);
-    }
-    else if(lessEqualGreater ==  0) {
-      sprintf(displayString, "%c" STD_SPACE_PUNCTUATION "=" STD_SPACE_PUNCTUATION, "xyzt"[regist - REGISTER_X]);
-    }
-    else if(lessEqualGreater ==  1) {
-      sprintf(displayString, "%c" STD_SPACE_PUNCTUATION "<" STD_SPACE_PUNCTUATION, "xyzt"[regist - REGISTER_X]);
+
+  if(prependFraction) {
+    // Comparison sign
+    if(getSystemFlag(FLAG_FRCSRN)) {
+      if(lessEqualGreater == -1) {
+        sprintf(displayString, "%c" STD_SPACE_PUNCTUATION ">" STD_SPACE_PUNCTUATION, "xyzt"[regist - REGISTER_X]);
+      }
+      else if(lessEqualGreater ==  0) {
+        sprintf(displayString, "%c" STD_SPACE_PUNCTUATION "=" STD_SPACE_PUNCTUATION, "xyzt"[regist - REGISTER_X]);
+      }
+      else if(lessEqualGreater ==  1) {
+        sprintf(displayString, "%c" STD_SPACE_PUNCTUATION "<" STD_SPACE_PUNCTUATION, "xyzt"[regist - REGISTER_X]);
+      }
+      else {
+        strcpy(displayString, "?" STD_SPACE_PUNCTUATION);
+        sprintf(errorMessage, commonBugScreenMessages[bugMsgValueFor], "fractionToDisplayString", lessEqualGreater, "lessEqualGreater");
+        displayBugScreen(errorMessage);
+      }
     }
     else {
-      strcpy(displayString, "?" STD_SPACE_PUNCTUATION);
-      sprintf(errorMessage, commonBugScreenMessages[bugMsgValueFor], "fractionToDisplayString", lessEqualGreater, "lessEqualGreater");
-      displayBugScreen(errorMessage);
+      if(lessEqualGreater == -1) {
+        sprintf(displayString, ">" STD_SPACE_PUNCTUATION);
+      }
+      else if(lessEqualGreater ==  0) {
+        displayString[0] = 0;
+      }
+      else if(lessEqualGreater ==  1) {
+        sprintf(displayString, "<" STD_SPACE_PUNCTUATION);
+      }
+      else {
+        strcpy(displayString, "?" STD_SPACE_PUNCTUATION);
+        sprintf(errorMessage, commonBugScreenMessages[bugMsgValueFor], "fractionToDisplayString", lessEqualGreater, "lessEqualGreater");
+        displayBugScreen(errorMessage);
+      }
     }
-  }
-  else {
-    if(lessEqualGreater == -1) {
-      sprintf(displayString, ">" STD_SPACE_PUNCTUATION);
-    }
-    else if(lessEqualGreater ==  0) {
-      displayString[0] = 0;
-    }
-    else if(lessEqualGreater ==  1) {
-      sprintf(displayString, "<" STD_SPACE_PUNCTUATION);
-    }
-    else {
-      strcpy(displayString, "?" STD_SPACE_PUNCTUATION);
-      sprintf(errorMessage, commonBugScreenMessages[bugMsgValueFor], "fractionToDisplayString", lessEqualGreater, "lessEqualGreater");
-      displayBugScreen(errorMessage);
-    }
+  } else {
+    displayString[0] = 0;
   }
 
   endingZero = strlen(displayString);
