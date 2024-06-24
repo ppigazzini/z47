@@ -244,13 +244,10 @@
     switch(event->keyval) {
       case 65505: //left shift
       case 65506: //right shift
-          if(SHIFT_State != 0) {
-            if(getSystemFlag(FLAG_USER) ? kbd_usr[10].primary : kbd_std[10].primary != ITM_SHIFTf) {     //f-shift activated on the release of the shift key, to allow for standard PC shifted chars
-              btnClicked(w, "27");
-            }
-            else {
-              btnClicked(w, "10");
-            }
+          if(SHIFT_State != 0) {     //f-shift activated on the release of the shift key, to allow for standard PC shifted chars
+            if(getSystemFlag(FLAG_USER) ? kbd_usr[10].primary : kbd_std[10].primary == ITM_SHIFTf) btnClicked(w, "10"); else
+            if(getSystemFlag(FLAG_USER) ? kbd_usr[10].primary : kbd_std[10].primary == KEY_fg    ) btnClicked(w, "10"); else
+            if(getSystemFlag(FLAG_USER) ? kbd_usr[27].primary : kbd_std[27].primary == KEY_fg    ) btnClicked(w, "27");
             SHIFT_State = 0;
           }
           break;
@@ -258,12 +255,9 @@
       case 65507: // Left Ctrl
       case 65508: // right Ctrl
           if(CTRL_State != 0) {
-            if(getSystemFlag(FLAG_USER) ? kbd_usr[11].primary : kbd_std[11].primary != ITM_SHIFTg) {
-              btnClicked(w, "27");
-            }
-            else {
-              btnClicked(w, "11");
-            }
+            if(getSystemFlag(FLAG_USER) ? kbd_usr[11].primary : kbd_std[11].primary == ITM_SHIFTg) btnClicked(w, "11"); else
+            if(getSystemFlag(FLAG_USER) ? kbd_usr[11].primary : kbd_std[11].primary == KEY_fg    ) btnClicked(w, "11"); else
+            if(getSystemFlag(FLAG_USER) ? kbd_usr[27].primary : kbd_std[27].primary == KEY_fg    ) btnClicked(w, "27");
             CTRL_State = 0;
           }
           break;
@@ -358,6 +352,25 @@
         break;
       default:;
     }
+
+    switch(event_keyval) {
+      case 102: //f
+          if((getSystemFlag(FLAG_USER) ? kbd_usr[10].primary : kbd_std[10].primary == ITM_SHIFTf )) btnClicked(w, "10"); else
+          if((getSystemFlag(FLAG_USER) ? kbd_usr[11].primary : kbd_std[11].primary == ITM_SHIFTf )) btnClicked(w, "11"); else
+          if((getSystemFlag(FLAG_USER) ? kbd_usr[10].primary : kbd_std[10].primary == KEY_fg     )) btnClicked(w, "10"); else
+          if((getSystemFlag(FLAG_USER) ? kbd_usr[11].primary : kbd_std[11].primary == KEY_fg     )) btnClicked(w, "11"); else
+          if((getSystemFlag(FLAG_USER) ? kbd_usr[27].primary : kbd_std[27].primary == KEY_fg     )) btnClicked(w, "27");
+        break;
+      case 103: //g
+          if((getSystemFlag(FLAG_USER) ? kbd_usr[11].primary : kbd_std[11].primary == ITM_SHIFTg )) btnClicked(w, "11"); else
+          if((getSystemFlag(FLAG_USER) ? kbd_usr[10].primary : kbd_std[10].primary == ITM_SHIFTg )) btnClicked(w, "10"); else
+          if((getSystemFlag(FLAG_USER) ? kbd_usr[11].primary : kbd_std[11].primary == KEY_fg     )) btnClicked(w, "11"); else
+          if((getSystemFlag(FLAG_USER) ? kbd_usr[10].primary : kbd_std[10].primary == KEY_fg     )) btnClicked(w, "10"); else
+          if((getSystemFlag(FLAG_USER) ? kbd_usr[27].primary : kbd_std[27].primary == KEY_fg     )) btnClicked(w, "27");
+        break;        
+      default:break;
+    }
+          
 
 
     if(calcMode == CM_MIM) {
