@@ -987,12 +987,9 @@ uint16_t flushBufferCnt = 0;
     if(loadedVersion < 10000010) {
       if(getSystemFlag(FLAG_tmp2)) {; //HP Convert was on FLAG_tmp2
         setSystemFlag(FLAG_HPCONV);
+        clearSystemFlag(FLAG_tmp1); //restore previously used flags to 0
+        clearSystemFlag(FLAG_tmp2); //restore previously used flags to 0
       }
-      else {
-        clearSystemFlag(FLAG_HPCONV);
-      }
-      clearSystemFlag(FLAG_tmp1); //restore previously used flags to 0
-      clearSystemFlag(FLAG_tmp2); //restore previously used flags to 0
     }
     restoreStateValue(&thereIsSomethingToUndo,         sizeof(thereIsSomethingToUndo),                              "thereIsSomethingToUndo",         "bool");
     restoreStateValue(&freeProgramBytes,               sizeof(freeProgramBytes),                                    "freeProgramBytes",               "uint16");
@@ -2375,12 +2372,9 @@ double stringToDouble(const char *str) {
         if(loadedVersion < 10000010) {
           if(getSystemFlag(FLAG_tmp2)) {; //HP Convert was on FLAG_tmp2
             setSystemFlag(FLAG_HPCONV);
+            clearSystemFlag(FLAG_tmp1); //restore previously used flags to 0
+            clearSystemFlag(FLAG_tmp2); //restore previously used flags to 0
           }
-          else {
-            clearSystemFlag(FLAG_HPCONV);
-          }
-          clearSystemFlag(FLAG_tmp1); //restore previously used flags to 0
-          clearSystemFlag(FLAG_tmp2); //restore previously used flags to 0
         }
       }
     }
