@@ -142,6 +142,7 @@ void configCommon(uint16_t idx) {
 #define DenMaX                120    // config_denmax                    
 #define TVMIKnown             121    // tvm          
 #define TVMIChanges           122    // tvm          
+#define FDIGS                 123    // config_fractionDigits         
 
 
 #define xxx -10001
@@ -166,6 +167,7 @@ MymB,                                xxx,        1,                             
 HomeB,                               xxx,        0,                              0,               0,                    0,                      0,               xxx,             xxx,                  
 RNG,                                 xxx,        6145,                           99,              6145,                 6145,                   6145,            xxx,             xxx,                  
 SDIGS,                               xxx,        0,                              16,              0,                    0,                      34,              xxx,             xxx,                  
+FDIGS,                               xxx,        0,                              16,              24,                   0,                      34,              xxx,             xxx,                  
 DSTACK,                              xxx,        4,                              1,               4,                    4,                      4,               xxx,             xxx,                  
 CACHEDDSTACK,                        xxx,        4,                              1,               4,                    4,                      4,               xxx,             xxx,                  
 ADM,                                 xxx,        amDegree,                       amRadian,        amDegree,             amRadian,               amDegree,        xxx,             xxx,                  
@@ -290,6 +292,7 @@ void Sett(int16_t grp) {
         case DenMaX               : {denMax                     = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // DenMaX
         case TVMIKnown            : {tvmIKnown                  = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]) == 1 ? true : false;break;}   // TVMIKnown
         case TVMIChanges          : {tvmIChanges                = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]) == 1 ? true : false;break;}   // TVMIChanges
+        case FDIGS                : {fractionDigits  =            (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // FDIGS
 
         case RESERVED_VARIABLE_FV     :
         case RESERVED_VARIABLE_IPONA  :
@@ -734,6 +737,27 @@ void fnSetSignificantDigits(uint16_t S) {
    significantDigits = S;
    if(significantDigits == 0) {
      significantDigits = 34;
+   }
+ }
+
+
+void fnGetFractionDigits(uint16_t unusedButMandatoryParameter) {
+  longInteger_t sigDigits;
+
+  liftStack();
+
+  longIntegerInit(sigDigits);
+  uIntToLongInteger(fractionDigits == 0 ? 34 : fractionDigits, sigDigits);
+  convertLongIntegerToLongIntegerRegister(sigDigits, REGISTER_X);
+  longIntegerFree(sigDigits);
+}
+
+
+
+void fnSetFractionDigits(uint16_t S) {
+   fractionDigits = S;
+   if(fractionDigits == 0) {
+     fractionDigits = 34;
    }
  }
 

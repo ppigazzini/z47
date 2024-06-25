@@ -1825,7 +1825,7 @@ bool_t checkForAndChange(char *displayString, const real34_t *value34, const rea
     displayString[0]=0;
 
     if(realCompareAbsLessThan(&tempresult_fp,tolerance)) {
-      if(!realIsZero(&tempresult_fp)) {
+      if(!realIsZero(&tempresult_fp) && (fractionDigits == 0 || fractionDigits == 34)) {
         strcat(displayString, STD_ALMOST_EQUAL);
       }
 

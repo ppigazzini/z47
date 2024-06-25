@@ -217,6 +217,7 @@
   extern uint8_t                timeDisplayFormatDigits;
   extern uint8_t                shortIntegerWordSize;
   extern uint8_t                significantDigits;
+  extern uint8_t                fractionDigits;
   extern uint8_t                shortIntegerMode;
   extern uint8_t                previousCalcMode;
   extern uint8_t                grpGroupingLeft;

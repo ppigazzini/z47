@@ -1528,7 +1528,7 @@
 #define ITM_GD                      1478
 #define ITM_GDM1                    1479
 #define ITM_GRAD                    1480
-#define ITM_1481                    1481
+#define ITM_GETFDIGS                1481
 #define ITM_GTOP                    1482
 #define ITM_HN                      1483
 #define ITM_HNP                     1484
@@ -2207,7 +2207,7 @@
 #define MNU_GAP_L                   2151
 #define MNU_GAP_RX                  2152
 #define MNU_GAP_R                   2153
-#define ITM_2154                    2154
+#define ITM_SETFDIGS                2154
 #define ITM_GRP_L                   2155
 #define ITM_GRP1_L_OF               2156
 #define ITM_GRP1_L                  2157
@@ -2452,6 +2452,7 @@
 #define ITM_LOADST                  2388
 #define ITM_SAVEAUT                 2389
 #define MNU_AUDIO                   2390
+
 
 #define LAST_ITEM                   2391
 

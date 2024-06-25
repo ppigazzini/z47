@@ -707,6 +707,8 @@ void fnNop(uint16_t unusedButMandatoryParameter) {
   void fnWho                       (uint16_t unusedButMandatoryParameter) {}
   void fnGetSignificantDigits      (uint16_t unusedButMandatoryParameter) {}
   void fnSetSignificantDigits      (uint16_t unusedButMandatoryParameter) {}
+  void fnGetFractionDigits         (uint16_t unusedButMandatoryParameter) {}
+  void fnSetFractionDigits         (uint16_t unusedButMandatoryParameter) {}
   void fnSdl                       (uint16_t unusedButMandatoryParameter) {}
   void fnSdr                       (uint16_t unusedButMandatoryParameter) {}
   void fnCvtToCurrentAngularMode   (uint16_t unusedButMandatoryParameter) {}
@@ -2797,7 +2799,7 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 1478 */  { fnGd,                         NOPARAM,                     "g" STD_SUB_d,                                 "g" STD_SUB_d,                                 (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_ENABLED  | PTP_NONE         },
 /* 1479 */  { fnInvGd,                      NOPARAM,                     "g" STD_SUB_d STD_SUP_MINUS_1,                 "g" STD_SUB_d STD_SUP_MINUS_1,                 (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_ENABLED  | PTP_NONE         },
 /* 1480 */  { fnAngularMode,                amGrad,                      "GRAD",                                        "GRAD",                                        (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
-/* 1481 */  { itemToBeCoded,                NOPARAM,                     "1481",                                        "1481",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 1481 */  { fnGetFractionDigits,          NOPARAM,                     "FDIGS?",                                      "FDIGS?",                                      (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /* 1482 */  { fnGotoDot,                    NOPARAM,                     "GTO.",                                        "GTO.",                                        (0 << TAM_MAX_BITS) | 16383, CAT_FNCT | SLS_ENABLED   | US_CANCEL    | EIM_DISABLED | PTP_DISABLED     },
 /* 1483 */  { fnHermite,                    NOPARAM,                     "H" STD_SUB_n,                                 "H" STD_SUB_n,                                 (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_ENABLED  | PTP_NONE         },
 /* 1484 */  { fnHermiteP,                   NOPARAM,                     "H" STD_SUB_n STD_SUB_P,                       "H" STD_SUB_n STD_SUB_P,                       (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_ENABLED  | PTP_NONE         },
@@ -3476,7 +3478,7 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 2151 */  { itemToBeCoded,                NOPARAM,                     "IPART",                                       "IPART",                                       (0 << TAM_MAX_BITS) |     0, CAT_MENU | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2152 */  { itemToBeCoded,                NOPARAM,                     "RADIX",                                       "RADIX",                                       (0 << TAM_MAX_BITS) |     0, CAT_MENU | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2153 */  { itemToBeCoded,                NOPARAM,                     "FPART",                                       "FPART",                                       (0 << TAM_MAX_BITS) |     0, CAT_MENU | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
-/* 2154 */  { itemToBeCoded,                NOPARAM,                     "2154",                                        "2154",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 2154 */  { fnSetFractionDigits,          TM_VALUE,                    "FDIGS",                                       "FDIGS",                                       (0 << TAM_MAX_BITS) |    34, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NUMBER_8     },
 /* 2155 */  { fnSettingsDispFormatGrpL,     TM_VALUE,                    "IPGRP",                                       "IPGRP",                                       (2 << TAM_MAX_BITS) |     9, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NUMBER_8     },
 /* 2156 */  { fnSettingsDispFormatGrp1Lo,   TM_VALUE,                    "IPGRP1x",                                     "IPGRP1x",                                     (0 << TAM_MAX_BITS) |     9, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NUMBER_8     },
 /* 2157 */  { fnSettingsDispFormatGrp1L,    TM_VALUE,                    "IPGRP1",                                      "IPGRP1",                                      (0 << TAM_MAX_BITS) |     9, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NUMBER_8     },

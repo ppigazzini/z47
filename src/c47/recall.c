@@ -346,7 +346,7 @@ void fnRecallConfig(uint16_t regist) {
     recallFromDtConfigDescriptor(compatibility_bool13); 
     recallFromDtConfigDescriptor(compatibility_bool14); 
     recallFromDtConfigDescriptor(compatibility_bool15); 
-    recallFromDtConfigDescriptor(compatibility_byte0);
+    recallFromDtConfigDescriptor(fractionDigits);
     recallFromDtConfigDescriptor(compatibility_byte1);
     recallFromDtConfigDescriptor(compatibility_bool16);    //spare
     recallFromDtConfigDescriptor(jm_LARGELI);

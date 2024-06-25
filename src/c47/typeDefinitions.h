@@ -224,7 +224,7 @@ typedef struct {
   bool_t compatibility_bool13;              //Spare Byte
   bool_t compatibility_bool14;              //Spare Byte
   bool_t compatibility_bool15;              //Spare Byte
-  int8_t compatibility_byte0;               //Spare Byte
+  int8_t fractionDigits;
   int8_t compatibility_byte1;               //Spare Byte
   bool_t compatibility_bool16;              //Spare Byte
   bool_t jm_LARGELI;

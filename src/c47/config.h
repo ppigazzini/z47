@@ -201,6 +201,7 @@ uint32_t getFreeFlash          (void);
  * \param[in] unusedButMandatoryParameter uint16_t
  ***********************************************/
 void     fnGetSignificantDigits(uint16_t unusedButMandatoryParameter);
+void     fnGetFractionDigits(uint16_t unusedButMandatoryParameter);
 
 /********************************************//**
  * \brief Sets the number of signficant digits
@@ -209,6 +210,7 @@ void     fnGetSignificantDigits(uint16_t unusedButMandatoryParameter);
  * \param[in] unusedButMandatoryParameter uint16_t
  ***********************************************/
 void     fnSetSignificantDigits(uint16_t S);
+void     fnSetFractionDigits(uint16_t S);
 
 /********************************************//**
  * \brief Sets the rounding mode
