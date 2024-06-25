@@ -384,30 +384,32 @@
       default:;
     }
 
-    switch(event_keyval) {
-      case 102: //f
+    if(!((calcMode == CM_AIM || calcMode == CM_EIM || tam.mode || (calcMode == CM_PEM && getSystemFlag(FLAG_ALPHA)) || (calcMode == CM_ASSIGN && getSystemFlag(FLAG_ALPHA))))) {
+      switch(event_keyval) {
+        case 102: //f
 
-          if(checkNormal( 0,ITM_SHIFTf)) btnClicked(w, "00"); else
-          if(checkNormal(10,ITM_SHIFTf)) btnClicked(w, "10"); else
-          if(checkNormal(11,ITM_SHIFTf)) btnClicked(w, "11"); else
-          if((getSystemFlag(FLAG_USER) ? kbd_usr[10].primary : kbd_std[10].primary == ITM_SHIFTf )) btnClicked(w, "10"); else
-          if((getSystemFlag(FLAG_USER) ? kbd_usr[11].primary : kbd_std[11].primary == ITM_SHIFTf )) btnClicked(w, "11"); else
-          if((getSystemFlag(FLAG_USER) ? kbd_usr[10].primary : kbd_std[10].primary == KEY_fg     )) btnClicked(w, "10"); else
-          if((getSystemFlag(FLAG_USER) ? kbd_usr[11].primary : kbd_std[11].primary == KEY_fg     )) btnClicked(w, "11"); else
-          if((getSystemFlag(FLAG_USER) ? kbd_usr[27].primary : kbd_std[27].primary == KEY_fg     )) btnClicked(w, "27");
-        break;
-      case 103: //g
+            if(checkNormal( 0,ITM_SHIFTf)) btnClicked(w, "00"); else
+            if(checkNormal(10,ITM_SHIFTf)) btnClicked(w, "10"); else
+            if(checkNormal(11,ITM_SHIFTf)) btnClicked(w, "11"); else
+            if((getSystemFlag(FLAG_USER) ? kbd_usr[10].primary : kbd_std[10].primary == ITM_SHIFTf )) btnClicked(w, "10"); else
+            if((getSystemFlag(FLAG_USER) ? kbd_usr[11].primary : kbd_std[11].primary == ITM_SHIFTf )) btnClicked(w, "11"); else
+            if((getSystemFlag(FLAG_USER) ? kbd_usr[10].primary : kbd_std[10].primary == KEY_fg     )) btnClicked(w, "10"); else
+            if((getSystemFlag(FLAG_USER) ? kbd_usr[11].primary : kbd_std[11].primary == KEY_fg     )) btnClicked(w, "11"); else
+            if((getSystemFlag(FLAG_USER) ? kbd_usr[27].primary : kbd_std[27].primary == KEY_fg     )) btnClicked(w, "27");
+          break;
+        case 103: //g
 
-          if(checkNormal( 0,ITM_SHIFTg)) btnClicked(w, "00"); else
-          if(checkNormal(10,ITM_SHIFTg)) btnClicked(w, "10"); else
-          if(checkNormal(11,ITM_SHIFTg)) btnClicked(w, "11"); else
-          if((getSystemFlag(FLAG_USER) ? kbd_usr[11].primary : kbd_std[11].primary == ITM_SHIFTg )) btnClicked(w, "11"); else
-          if((getSystemFlag(FLAG_USER) ? kbd_usr[10].primary : kbd_std[10].primary == ITM_SHIFTg )) btnClicked(w, "10");
-          // if((getSystemFlag(FLAG_USER) ? kbd_usr[11].primary : kbd_std[11].primary == KEY_fg     )) btnClicked(w, "11"); else
-          // if((getSystemFlag(FLAG_USER) ? kbd_usr[10].primary : kbd_std[10].primary == KEY_fg     )) btnClicked(w, "10"); else
-          // if((getSystemFlag(FLAG_USER) ? kbd_usr[27].primary : kbd_std[27].primary == KEY_fg     )) btnClicked(w, "27");
-        break;        
-      default:break;
+            if(checkNormal( 0,ITM_SHIFTg)) btnClicked(w, "00"); else
+            if(checkNormal(10,ITM_SHIFTg)) btnClicked(w, "10"); else
+            if(checkNormal(11,ITM_SHIFTg)) btnClicked(w, "11"); else
+            if((getSystemFlag(FLAG_USER) ? kbd_usr[11].primary : kbd_std[11].primary == ITM_SHIFTg )) btnClicked(w, "11"); else
+            if((getSystemFlag(FLAG_USER) ? kbd_usr[10].primary : kbd_std[10].primary == ITM_SHIFTg )) btnClicked(w, "10");
+            // if((getSystemFlag(FLAG_USER) ? kbd_usr[11].primary : kbd_std[11].primary == KEY_fg     )) btnClicked(w, "11"); else
+            // if((getSystemFlag(FLAG_USER) ? kbd_usr[10].primary : kbd_std[10].primary == KEY_fg     )) btnClicked(w, "10"); else
+            // if((getSystemFlag(FLAG_USER) ? kbd_usr[27].primary : kbd_std[27].primary == KEY_fg     )) btnClicked(w, "27");
+          break;        
+        default:break;
+      }
     }
           
 
@@ -437,7 +439,7 @@
 
 
     //JM ALPHA SECTION FOR ALPHAMODE - TAKE OVER ALPHA KEYBOARD
-    if(calcMode == CM_AIM || calcMode == CM_EIM || tam.mode || (calcMode == CM_PEM && getSystemFlag(FLAG_ALPHA))) {
+    if(calcMode == CM_AIM || calcMode == CM_EIM || tam.mode || (calcMode == CM_PEM && getSystemFlag(FLAG_ALPHA)) || (calcMode == CM_ASSIGN && getSystemFlag(FLAG_ALPHA))) {
       //printf(">>>>> ALPHA SECTION Keyboard Key Code = %d\n", event_keyval);
       switch(event_keyval) {
 
@@ -2115,7 +2117,7 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
     }
   }
 
-      bool_t Norm_Key_00_used = ((calcMode == CM_NORMAL || calcMode == CM_NIM)
+      bool_t Norm_Key_00_used = ((calcMode == CM_NORMAL || calcMode == CM_NIM || calcMode == CM_PEM || calcMode == CM_TIMER )
                                   && key->keyId == Norm_Key_00_keyID
                                   && Norm_Key_00_VAR != Norm_Key_00_item_in_layout
                                   && !getSystemFlag(FLAG_USER)
