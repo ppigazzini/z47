@@ -1,22 +1,5 @@
-/* This file is part of 43S.
- *
- * 43S is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * 43S is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with 43S.  If not, see <http://www.gnu.org/licenses/>.
- */
-
-/********************************************//**
- * \file log2.c
- ***********************************************/
+// SPDX-License-Identifier: GPL-3.0-only
+// SPDX-FileCopyrightText: Copyright The WP43 & C47 Authors
 
 #include "mathematics/log2.h"
 
@@ -27,15 +10,17 @@
 #include "fonts.h"
 #include "integers.h"
 #include "items.h"
+#include "mathematics/integerPart.h"
+#include "mathematics/integerPartLonginteger.h"
+#include "mathematics/ln.h"
 #include "mathematics/matrix.h"
+#include "mathematics/power.h"
 #include "mathematics/toPolar.h"
 #include "mathematics/wp34s.h"
 #include "registers.h"
 #include "registerValueConversions.h"
 
 #include "c47.h"
-
-
 
 TO_QSPI void (* const logBase2[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])(void) = {
 // regX ==> 1            2         3         4          5          6          7          8           9             10
@@ -113,7 +98,23 @@ void log2LonI(void) {
       realDivide(&x, const_ln2, &x, &ctxtReal39);
       reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
       convertRealToReal34ResultRegister(&x, REGISTER_X);
-     }
+
+      {
+        longInteger_t xx, rr, yy;
+        longIntegerInit(xx);
+        longIntegerInit(rr);
+        longIntegerInit(yy);
+        intToLongInteger(2, xx);
+        convertReal34ToLongInteger(REGISTER_REAL34_DATA(REGISTER_X), rr, DEC_ROUND_HALF_EVEN);
+        longIntegerPower(xx, rr, yy);
+        if(longIntegerCompare(lgInt, yy) == 0) {
+          lintReal();
+        }
+        longIntegerFree(yy);
+        longIntegerFree(rr);
+        longIntegerFree(xx);
+      }
+    }
     else if(getFlag(FLAG_CPXRES)) {
       realSetPositiveSign(&x);
       WP34S_Ln(&x, &x, &ctxtReal39);
