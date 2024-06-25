@@ -1,22 +1,5 @@
-/* This file is part of 43S.
- *
- * 43S is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * 43S is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with 43S.  If not, see <http://www.gnu.org/licenses/>.
- */
-
-/********************************************//**
- * \file log10.c
- ***********************************************/
+// SPDX-License-Identifier: GPL-3.0-only
+// SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
 #include "mathematics/log10.h"
 
@@ -27,15 +10,17 @@
 #include "fonts.h"
 #include "integers.h"
 #include "items.h"
+#include "mathematics/integerPart.h"
+#include "mathematics/integerPartLonginteger.h"
+#include "mathematics/ln.h"
 #include "mathematics/matrix.h"
+#include "mathematics/power.h"
 #include "mathematics/toPolar.h"
 #include "mathematics/wp34s.h"
 #include "registers.h"
 #include "registerValueConversions.h"
 
 #include "c47.h"
-
-
 
 TO_QSPI void (* const logBase10[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])(void) = {
 // regX ==> 1            2          3          4           5           6           7          8           9             10
@@ -80,6 +65,13 @@ void fnLog10(uint16_t unusedButMandatoryParameter) {
 
 
 
+void realLog10(const real_t *x, real_t *res, realContext_t *realContext) {
+  WP34S_Ln(x, res, realContext);
+  realDivide(res, const_ln10, res, realContext);
+}
+
+
+
 /**********************************************************************
  * In all the functions below:
  * if X is a number then X = a + ib
@@ -104,7 +96,7 @@ void log10LonI(void) {
     }
   }
   else {
-    real_t x, y;
+    real_t x;
 
     convertLongIntegerRegisterToReal(REGISTER_X, &x, &ctxtReal39);
 
@@ -113,14 +105,31 @@ void log10LonI(void) {
       realDivide(&x, const_ln10, &x, &ctxtReal39);
       reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
       convertRealToReal34ResultRegister(&x, REGISTER_X);
-     }
+
+      {
+        longInteger_t xx, rr, yy;
+        longIntegerInit(xx);
+        longIntegerInit(rr);
+        longIntegerInit(yy);
+        intToLongInteger(10, xx);
+        convertReal34ToLongInteger(REGISTER_REAL34_DATA(REGISTER_X), rr, DEC_ROUND_HALF_EVEN);
+        longIntegerPower(xx, rr, yy);
+        if(longIntegerCompare(lgInt, yy) == 0) {
+          lintReal();
+        }
+        longIntegerFree(yy);
+        longIntegerFree(rr);
+        longIntegerFree(xx);
+      }
+    }
     else if(getFlag(FLAG_CPXRES)) {
       realSetPositiveSign(&x);
       WP34S_Ln(&x, &x, &ctxtReal39);
       realDivide(&x, const_ln10, &x, &ctxtReal39);
       reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
-      realDivide(const_pi, const_ln10, &y, &ctxtReal39);
-      convertComplexToResultRegister(&x, &y, REGISTER_X);
+      convertRealToReal34ResultRegister(&x, REGISTER_X);
+      realDivide(const_pi, const_ln10, &x, &ctxtReal39);
+      convertRealToImag34ResultRegister(&x, REGISTER_X);
     }
     else if(getSystemFlag(FLAG_SPCRES)) {
       reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
@@ -158,7 +167,7 @@ void log10ShoI(void) {
 
 
 void log10Real(void) {
-  real_t x, y;
+  real_t x;
 
   if(real34IsZero(REGISTER_REAL34_DATA(REGISTER_X))) {
     if(getSystemFlag(FLAG_SPCRES)) {
@@ -186,8 +195,9 @@ void log10Real(void) {
       }
       else {
         reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
+        convertRealToReal34ResultRegister(const_plusInfinity, REGISTER_X);
         realDivide(const_pi, const_ln10, &x, &ctxtReal39);
-        convertComplexToResultRegister(const_plusInfinity, &x, REGISTER_X);
+        convertRealToImag34ResultRegister(&x, REGISTER_X);
       }
     }
     else {
@@ -207,8 +217,9 @@ void log10Real(void) {
       WP34S_Ln(&x, &x, &ctxtReal39);
       realDivide(&x, const_ln10, &x, &ctxtReal39);
       reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
-      realDivide(const_pi, const_ln10, &y, &ctxtReal39);
-      convertComplexToResultRegister(&x, &y, REGISTER_X);
+      convertRealToReal34ResultRegister(&x, REGISTER_X);
+      realDivide(const_pi, const_ln10, &x, &ctxtReal39);
+      convertRealToImag34ResultRegister(&x, REGISTER_X);
     }
     else if(getSystemFlag(FLAG_SPCRES)) {
       convertRealToReal34ResultRegister(const_NaN, REGISTER_X);
@@ -248,7 +259,8 @@ void log10Cplx(void) {
     WP34S_Ln(&a, &a, &ctxtReal39);
     realDivide(&a, const_ln10, &a, &ctxtReal39);
     reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
+    convertRealToReal34ResultRegister(&a, REGISTER_X);
     realDivide(&b, const_ln10, &b, &ctxtReal39);
-    convertComplexToResultRegister(&a, &b, REGISTER_X);
+    convertRealToImag34ResultRegister(&b, REGISTER_X);
   }
 }
