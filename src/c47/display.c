@@ -38,7 +38,9 @@
 
 #define isComplex true
 #define isReal    false
-void real34ToDisplayString2(const real34_t *real34, char *displayString, int16_t displayHasNDigits, bool_t limitExponent, bool_t noFix, bool_t frontSpace, bool_t complex);
+static void real34ToDisplayString2(const real34_t *real34, char *displayString, int16_t displayHasNDigits, bool_t limitExponent, bool_t noFix, bool_t frontSpace, bool_t complex);
+static void complex34ToDisplayString2(const complex34_t *complex34, char *displayString, int16_t displayHasNDigits, bool_t limitExponent, bool_t frontSpace, const uint16_t tagAngle, const bool_t tagPolar);
+
 
 static void fnDisplayFormatReset(uint16_t displayFormatN) {
   displayFormatDigits = displayFormatN > DSP_MAX ? DSP_MAX : displayFormatN;
@@ -329,7 +331,7 @@ void real34ToDisplayString(const real34_t *real34, uint32_t tag, char *displaySt
  * \param[in]  x const real34_t*  Value to format
  * \return void
  ***********************************************/
-void real34ToDisplayString2(const real34_t *real34, char *displayString, int16_t displayHasNDigits, bool_t limitExponent, bool_t noFix, bool_t frontSpace, bool_t complex) {
+static void real34ToDisplayString2(const real34_t *real34, char *displayString, int16_t displayHasNDigits, bool_t limitExponent, bool_t noFix, bool_t frontSpace, bool_t complex) {
   #undef MAX_DIGITS
   #define MAX_DIGITS 37 // 34 + 1 before (used when rounding from 9.999 to 10.000) + 2 after (used for rounding and ENG display mode)
 
@@ -422,7 +424,8 @@ void real34ToDisplayString2(const real34_t *real34, char *displayString, int16_t
   //printf(">>>## flag_proper %u\n",getSystemFlag(FLAG_PROPFR));
   if(constantFractions && constantFractionsOn && !getSystemFlag(FLAG_FRACT) && IrFractionsCurrentStatus != CF_OFF && !real34CompareAbsLessThan(real34,const34_1e_6) && !real34IsAnInteger(real34)) {
     real_t tol;
-    fractionTolerence(&tol);
+    //fractionTolerence(&tol);
+    realCopy(const_1e_24, &tol);
     if(checkForAndChange(displayString, real34, const_1,    &tol, "",                        frontSpace, complex)) return_fr;
     if(checkForAndChange(displayString, real34, const_rt3,  &tol, STD_SQUARE_ROOT STD_SUB_3, frontSpace, complex)) return_fr;
     if(checkForAndChange(displayString, real34, const_pi,   &tol, STD_pi,                    frontSpace, complex)) return_fr;
@@ -1312,7 +1315,7 @@ void strPrepend(char*dest, char*prefix) {
 //}
 
 
-void complex34ToDisplayString2(const complex34_t *complex34, char *displayString, int16_t displayHasNDigits, bool_t limitExponent, bool_t frontSpace, const uint16_t tagAngle, const bool_t tagPolar) {
+static void complex34ToDisplayString2(const complex34_t *complex34, char *displayString, int16_t displayHasNDigits, bool_t limitExponent, bool_t frontSpace, const uint16_t tagAngle, const bool_t tagPolar) {
   int16_t i = 100;
   real34_t real34, imag34, absimag34;
   real_t real, imagIc;

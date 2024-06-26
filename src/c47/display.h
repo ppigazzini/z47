@@ -26,7 +26,6 @@ void fnView                            (uint16_t regist);
 void real34ToDisplayString             (const real34_t *real34, uint32_t tag, char *displayString, const font_t *font, int16_t maxWidth, int16_t displayHasNDigits, bool_t limitExponent, bool_t frontSpace);
 void dateToDisplayString               (calcRegister_t regist, char *displayString);
 void complex34ToDisplayString          (const complex34_t *complex34, char *displayString, const font_t *font, int16_t maxWidth, int16_t displayHasNDigits, bool_t limitExponent, bool_t frontSpace, const uint16_t tagAngle, const bool_t tagPolar);
-void complex34ToDisplayString2         (const complex34_t *complex34, char *displayString, int16_t displayHasNDigits, bool_t limitExponent, bool_t frontSpace,  const uint16_t tagAngle, const bool_t tagPolar);
 void angle34ToDisplayString2           (const real34_t *angle34, uint8_t mode, char *displayString, int16_t displayHasNDigits, bool_t limitExponent, bool_t frontSpace);
 void fractionToDisplayString           (calcRegister_t regist, char *displayString);
 void shortIntegerToDisplayString       (calcRegister_t regist, char *displayString, bool_t determineFont);
