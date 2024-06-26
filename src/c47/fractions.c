@@ -501,13 +501,12 @@ bool_t fraction(calcRegister_t regist, int16_t *sign, uint64_t *intPart, uint64_
   real34ToReal(REGISTER_REAL34_DATA(regist), &r);
 
   // The fraction value
-  real_t f, d;
+  real_t f, d, n;
   uInt32ToReal(*intPart, &f);
   uInt32ToReal(*denom, &d);
   realMultiply(&f, &d, &f, &ctxtReal39);
-  uInt32ToReal(*numer, &d);
-  realAdd(&f, &d, &f, &ctxtReal39);
-  uInt32ToReal(*denom, &d);
+  uInt32ToReal(*numer, &n);
+  realAdd(&f, &n, &f, &ctxtReal39);
   realDivide(&f, &d, &f, &ctxtReal39);
   if(*sign == -1) {
     realChangeSign(&f);
@@ -530,8 +529,9 @@ bool_t fraction(calcRegister_t regist, int16_t *sign, uint64_t *intPart, uint64_
     *intPart = 0;
   }
 
-  if(fractionDigits == 0 || fractionDigits == 34) return true;
+  if(fractionDigits == 0 || fractionDigits == 34) return true;     //returns true to prepend the tags, if FDIGS=34 is normal, i.e. no lying
   real_t tol;
-  fractionTolerence(&tol);
-  return realCompareAbsLessThan(&f,&tol);
+  fractionTolerence(&tol);                                         //Arrive here if a tolerance for lying is set
+  return realCompareAbsGreaterThan(&f,&tol);                         //return false to prepend tags, if actual fraction is within tolerance
+                                                                     //return true to prepend tags, if actual fraction is NOT within tolerance
 }

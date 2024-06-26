@@ -1359,30 +1359,33 @@ void divRealReal(void) {
   }
 
   else {
+
+
     real_t y, x;
     angularMode_t yAngularMode, xAngularMode;
-
-    real34ToReal(REGISTER_REAL34_DATA(REGISTER_Y), &y);
     yAngularMode = getRegisterAngularMode(REGISTER_Y);
-    real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &x);
     xAngularMode = getRegisterAngularMode(REGISTER_X);
 
-    if(yAngularMode != amNone && xAngularMode != amNone) { // angle / angle
-      convertAngleFromTo(&x, xAngularMode, yAngularMode, &ctxtReal39);
-      realDivide(&y, &x, &x, &ctxtReal39);
-      convertRealToReal34ResultRegister(&x, REGISTER_X);
-      setRegisterAngularMode(REGISTER_X, amNone);
-    }
-    else if(yAngularMode == amNone) { // real / (real or angle)
+    if(yAngularMode == amNone) { // real / (real or angle)
       real34Divide(REGISTER_REAL34_DATA(REGISTER_Y), REGISTER_REAL34_DATA(REGISTER_X), REGISTER_REAL34_DATA(REGISTER_X));
       setRegisterAngularMode(REGISTER_X, amNone);
     }
-    else { // angle / real
-      realDivide(&y, &x, &x, &ctxtReal39);
+    else {
+      real34ToReal(REGISTER_REAL34_DATA(REGISTER_Y), &y);
+      real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &x);
 
-      convertAngleFromTo(&x, yAngularMode, currentAngularMode, &ctxtReal39);
-      convertRealToReal34ResultRegister(&x, REGISTER_X);
-      setRegisterAngularMode(REGISTER_X, currentAngularMode);
+      if(yAngularMode != amNone && xAngularMode != amNone) { // angle / angle
+        convertAngleFromTo(&x, xAngularMode, yAngularMode, &ctxtReal39);
+        realDivide(&y, &x, &x, &ctxtReal39);
+        convertRealToReal34ResultRegister(&x, REGISTER_X);
+        setRegisterAngularMode(REGISTER_X, amNone);
+      }
+      else { // angle / real
+        realDivide(&y, &x, &x, &ctxtReal39);
+        convertAngleFromTo(&x, yAngularMode, currentAngularMode, &ctxtReal39);
+        convertRealToReal34ResultRegister(&x, REGISTER_X);
+        setRegisterAngularMode(REGISTER_X, currentAngularMode);
+      }
     }
   }
 }
