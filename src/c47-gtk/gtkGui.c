@@ -236,6 +236,13 @@
                                     softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_ALPHAintl ))
 
 
+  bool_t checkNormal(int16_t keyNr, int16_t item) {
+    int16_t result = Norm_Key_00_item_in_layout; 
+    int16_t ss = Check_SigmaPlus_Assigned(&result, keyNr);
+    //printf("aaaaa ss=%i result=%i  ss==item=%i\n",ss, result, ss==item);
+    return (ss == item);
+  }
+
 
   gboolean keyReleased(GtkWidget *w, GdkEventKey *event, gpointer data) {     //JM
     printf("Released  %d (SHIFT_State=%u)(shiftF=%u)\n", event->keyval,SHIFT_State,shiftF);
@@ -244,30 +251,48 @@
     switch(event->keyval) {
       case 65505: //left shift
       case 65506: //right shift
-          if(SHIFT_State != 0) {
-            if(getSystemFlag(FLAG_USER) ? kbd_usr[10].primary : kbd_std[10].primary != ITM_SHIFTf) {     //f-shift activated on the release of the shift key, to allow for standard PC shifted chars
-              btnClicked(w, "27");
-            }
-            else {
-              btnClicked(w, "10");
-            }
-            SHIFT_State = 0;
+          if(SHIFT_State != 0) {     //f-shift activated on the release of the shift key, to allow for standard PC shifted chars
+
+             if(checkNormal( 0,KEY_fg))     btnClicked(w, "00"); else
+             if(checkNormal(10,KEY_fg))     btnClicked(w, "10"); else
+             if(checkNormal(11,KEY_fg))     btnClicked(w, "11"); else
+             if(checkNormal( 0,ITM_SHIFTf)) btnClicked(w, "00"); else
+             if(checkNormal(10,ITM_SHIFTf)) btnClicked(w, "10"); else
+             if(checkNormal(11,ITM_SHIFTf)) btnClicked(w, "11"); else
+             // if(checkNormal( 0,ITM_SHIFTg)) btnClicked(w, "00"); else //removed, Robbert needs g on CTRL only
+             // if(checkNormal(10,ITM_SHIFTg)) btnClicked(w, "10"); else
+             // if(checkNormal(11,ITM_SHIFTg)) btnClicked(w, "11");
+
+            if(getSystemFlag(FLAG_USER) ? kbd_usr[10].primary : kbd_std[10].primary == ITM_SHIFTf) btnClicked(w, "10"); else
+            if(getSystemFlag(FLAG_USER) ? kbd_usr[ 0].primary : kbd_std[ 0].primary == KEY_fg    ) btnClicked(w, "00"); else
+            if(getSystemFlag(FLAG_USER) ? kbd_usr[10].primary : kbd_std[10].primary == KEY_fg    ) btnClicked(w, "10"); else
+            if(getSystemFlag(FLAG_USER) ? kbd_usr[11].primary : kbd_std[11].primary == KEY_fg    ) btnClicked(w, "11"); else
+            if(getSystemFlag(FLAG_USER) ? kbd_usr[27].primary : kbd_std[27].primary == KEY_fg    ) btnClicked(w, "27");
           }
+          SHIFT_State = 0;
           break;
 
       case 65507: // Left Ctrl
       case 65508: // right Ctrl
           if(CTRL_State != 0) {
-            if(getSystemFlag(FLAG_USER) ? kbd_usr[11].primary : kbd_std[11].primary != ITM_SHIFTg) {
-              btnClicked(w, "27");
-            }
-            else {
-              btnClicked(w, "11");
-            }
-            CTRL_State = 0;
-          }
-          break;
 
+            if(checkNormal( 0,KEY_fg))     btnClicked(w, "00"); else
+            if(checkNormal(10,KEY_fg))     btnClicked(w, "10"); else
+            if(checkNormal(11,KEY_fg))     btnClicked(w, "11"); else
+            // if(checkNormal( 0,ITM_SHIFTf)) btnClicked(w, "00"); else  //removed, Robbert needs f and f/g on SHIFT only
+            // if(checkNormal(10,ITM_SHIFTf)) btnClicked(w, "10"); else
+            // if(checkNormal(11,ITM_SHIFTf)) btnClicked(w, "11"); else
+            if(checkNormal( 0,ITM_SHIFTg)) btnClicked(w, "00"); else
+            if(checkNormal(10,ITM_SHIFTg)) btnClicked(w, "10"); else
+            if(checkNormal(11,ITM_SHIFTg)) btnClicked(w, "11"); else
+
+            if(getSystemFlag(FLAG_USER) ? kbd_usr[11].primary : kbd_std[11].primary == ITM_SHIFTg) btnClicked(w, "11");
+            // if(getSystemFlag(FLAG_USER) ? kbd_usr[ 0].primary : kbd_std[ 0].primary == KEY_fg    ) btnClicked(w, "10"); else   //removed, Robbert needs f and f/g on SHIFT only
+            // if(getSystemFlag(FLAG_USER) ? kbd_usr[10].primary : kbd_std[10].primary == KEY_fg    ) btnClicked(w, "10"); else
+            // if(getSystemFlag(FLAG_USER) ? kbd_usr[11].primary : kbd_std[11].primary == KEY_fg    ) btnClicked(w, "11"); else
+            // if(getSystemFlag(FLAG_USER) ? kbd_usr[27].primary : kbd_std[27].primary == KEY_fg    ) btnClicked(w, "27");
+
+        }
         CTRL_State = 0;
         break;
 
@@ -359,6 +384,35 @@
       default:;
     }
 
+    if(!((calcMode == CM_AIM || calcMode == CM_EIM || tam.mode || (calcMode == CM_PEM && getSystemFlag(FLAG_ALPHA)) || (calcMode == CM_ASSIGN && getSystemFlag(FLAG_ALPHA))))) {
+      switch(event_keyval) {
+        case 102: //f
+
+            if(checkNormal( 0,ITM_SHIFTf)) btnClicked(w, "00"); else
+            if(checkNormal(10,ITM_SHIFTf)) btnClicked(w, "10"); else
+            if(checkNormal(11,ITM_SHIFTf)) btnClicked(w, "11"); else
+            if((getSystemFlag(FLAG_USER) ? kbd_usr[10].primary : kbd_std[10].primary == ITM_SHIFTf )) btnClicked(w, "10"); else
+            if((getSystemFlag(FLAG_USER) ? kbd_usr[11].primary : kbd_std[11].primary == ITM_SHIFTf )) btnClicked(w, "11"); else
+            if((getSystemFlag(FLAG_USER) ? kbd_usr[10].primary : kbd_std[10].primary == KEY_fg     )) btnClicked(w, "10"); else
+            if((getSystemFlag(FLAG_USER) ? kbd_usr[11].primary : kbd_std[11].primary == KEY_fg     )) btnClicked(w, "11"); else
+            if((getSystemFlag(FLAG_USER) ? kbd_usr[27].primary : kbd_std[27].primary == KEY_fg     )) btnClicked(w, "27");
+          break;
+        case 103: //g
+
+            if(checkNormal( 0,ITM_SHIFTg)) btnClicked(w, "00"); else
+            if(checkNormal(10,ITM_SHIFTg)) btnClicked(w, "10"); else
+            if(checkNormal(11,ITM_SHIFTg)) btnClicked(w, "11"); else
+            if((getSystemFlag(FLAG_USER) ? kbd_usr[11].primary : kbd_std[11].primary == ITM_SHIFTg )) btnClicked(w, "11"); else
+            if((getSystemFlag(FLAG_USER) ? kbd_usr[10].primary : kbd_std[10].primary == ITM_SHIFTg )) btnClicked(w, "10");
+            // if((getSystemFlag(FLAG_USER) ? kbd_usr[11].primary : kbd_std[11].primary == KEY_fg     )) btnClicked(w, "11"); else
+            // if((getSystemFlag(FLAG_USER) ? kbd_usr[10].primary : kbd_std[10].primary == KEY_fg     )) btnClicked(w, "10"); else
+            // if((getSystemFlag(FLAG_USER) ? kbd_usr[27].primary : kbd_std[27].primary == KEY_fg     )) btnClicked(w, "27");
+          break;        
+        default:break;
+      }
+    }
+          
+
 
     if(calcMode == CM_MIM) {
       switch(event_keyval) {
@@ -385,7 +439,7 @@
 
 
     //JM ALPHA SECTION FOR ALPHAMODE - TAKE OVER ALPHA KEYBOARD
-    if(calcMode == CM_AIM || calcMode == CM_EIM || tam.mode || (calcMode == CM_PEM && getSystemFlag(FLAG_ALPHA))) {
+    if(calcMode == CM_AIM || calcMode == CM_EIM || tam.mode || (calcMode == CM_PEM && getSystemFlag(FLAG_ALPHA)) || (calcMode == CM_ASSIGN && getSystemFlag(FLAG_ALPHA))) {
       //printf(">>>>> ALPHA SECTION Keyboard Key Code = %d\n", event_keyval);
       switch(event_keyval) {
 
@@ -2063,7 +2117,7 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
     }
   }
 
-      bool_t Norm_Key_00_used = ((calcMode == CM_NORMAL || calcMode == CM_NIM)
+      bool_t Norm_Key_00_used = ((calcMode == CM_NORMAL || calcMode == CM_NIM || calcMode == CM_PEM || calcMode == CM_TIMER )
                                   && key->keyId == Norm_Key_00_keyID
                                   && Norm_Key_00_VAR != Norm_Key_00_item_in_layout
                                   && !getSystemFlag(FLAG_USER)
@@ -3226,7 +3280,7 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
       // LCD screen 400x240
       screen = gtk_drawing_area_new();
       gtk_widget_set_size_request(screen, SCREEN_WIDTH, SCREEN_HEIGHT);
-      gtk_widget_set_tooltip_text(GTK_WIDGET(screen), "Copy to clipboard:\n CTRL+h: Screen image\n CTRL+c/x: X Register\n CTRL+d: Lettered Registers\n CTRL+a: All Registers\nCTRL+s SNAP\n");  //JM
+      gtk_widget_set_tooltip_text(GTK_WIDGET(screen), "Copy to clipboard:\n CTRL+h: Screen image\n CTRL+c/x: X Register\n CTRL+d: Lettered Registers\n CTRL+a: All Registers\n CTRL+s SNAP\n");  //JM
       #if NARROW_SCREEN == 0
         gtk_fixed_put(GTK_FIXED(grid), screen, 63, 72);
       #else // NARROW_SCREEN != 0 --> 400x1280 raspberry screen
