@@ -675,6 +675,7 @@ typedef struct FactorAdder
 void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
   #if !defined(SAVE_SPACE_DM42_12PRIME)
     #define NOFACTOR 127
+    #define INITIALISPRIME  126
     int8_t initialFactorAdded = NOFACTOR;
     hourGlassIconEnabled = true;
     showHideHourGlass();
@@ -707,6 +708,9 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
       goto abort;
     }
 
+    if(longIntegerIsPrime(currentNumber)) {
+      initialFactorAdded = INITIALISPRIME;
+    }
     if(longIntegerIsZero(currentNumber)) {                       // currentNumber = 0 --> end
       initialFactorAdded = 0;
     }
@@ -734,11 +738,16 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
     initFactorAdder(&faddr);
 
      if(initialFactorAdded != NOFACTOR) {
-       intToLongInteger(initialFactorAdded,nextPrime);
+       if(initialFactorAdded == INITIALISPRIME) {
+         longIntegerCopy(currentNumber, nextPrime);
+       }
+       else {
+         intToLongInteger(initialFactorAdded,nextPrime);
+       }
        if(!addFactor(lastFactor, nextPrime, &matrix, &lastAdded, &faddr)) {
          goto abort;
        }
-       if(initialFactorAdded == 0 || initialFactorAdded == 1) {
+       if(initialFactorAdded == 0 || initialFactorAdded == 1 || initialFactorAdded == INITIALISPRIME) {
         goto endandclose;
        }
        uIntToLongInteger(2,nextPrime);
