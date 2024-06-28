@@ -2772,25 +2772,29 @@ static void dispM(uint16_t regist, char * prefix) {
 #endif //SAVE_SPACE_DM42_9
 
 
-static void prepLongintIntoLines(int16_t *last, int16_t *source, int16_t *dest, const font_t *fontToUse, int16_t maxWidth, int16_t maxLines, int16_t *startingLine) {
+
+
+
+static void prepLongintIntoLines(int16_t *last, int16_t *source, int16_t *dest, const font_t *fontToUse, int16_t maxWidth, int16_t numberOfLines, int16_t *startingLine) {
   int16_t d;
   *dest = 0;
-  for(d=0; d <= maxLines*SHOWLineSize ; d+=SHOWLineSize) {
+  int16_t sourceReturn = 0;
+  for(d=0; d <= (numberOfLines)*SHOWLineSize ; d+=SHOWLineSize) {   //0 to (n-1)+1 one more that the displayed strings, to detect run-over
     tmpString[d] = 0;
   }  
-  for(d = (*startingLine)*SHOWLineSize; d <= (*startingLine + maxLines)*SHOWLineSize ; d += SHOWLineSize) {
-    int16_t dd = d - (*startingLine)*SHOWLineSize;
-//printf("dd=%i d=%i startingLine=%i last=%i source=%i dest=%i ...",dd,d,*startingLine,*last,*source,*dest);
+  for(d = (*startingLine)*SHOWLineSize; d <= (*startingLine + (numberOfLines-1+1))*SHOWLineSize; d += SHOWLineSize) { //0 to (n-1)+1 one more that the displayed strings, to detect run-over
+    int16_t dCounter = d - (*startingLine)*SHOWLineSize;
+    //printf("dCounter=%i d=%i startingLine=%i last=%i source=%i dest=%i ...",dCounter,d,*startingLine,*last,*source,*dest);
     //printf("00>>> source:%u|%s|d:%u|%s|\n",source,errorMessage+source,d,tmpString+d);
-    *dest = dd;
-    while(*source < *last && stringWidth(tmpString + dd, fontToUse, true, true) <=  maxWidth && *dest < TMP_STR_LENGTH - 6) {
-//printf("----->d=%i startingLine=%i last=%i source=%i dest=%i wid=%i\n",d,*startingLine,*last,*source,*dest,stringWidth(tmpString + dd, fontToUse, true, true));
+    *dest = dCounter;
+    while(*source < *last && stringWidth(tmpString + dCounter, fontToUse, true, true) <=  maxWidth && *dest < TMP_STR_LENGTH - 6) {
       tmpString[*dest] = errorMessage[*source];
+      //printf("----->d=%i startingLine=%i last=%i source=%i dest=%i wid=%i ==>%c \n",d,*startingLine,*last,*source,*dest,stringWidth(tmpString + dCounter, fontToUse, true, true), ((tmpString + (*dest))[0]));
       if(tmpString[*dest] & 0x80) {
         tmpString[++*dest] = errorMessage[++*source];
       }
-      (*source)++;
       tmpString[++*dest] = 0;
+      (*source)++;        
     }
     uint8_t cnt = GROUPWIDTH_LEFT+1;
     while(cnt-- != 0 && *source < *last && !GROUPLEFT_DISABLED ) { //Eat away characters at the end to line, up to and excluding the last seperator.
@@ -2810,10 +2814,15 @@ static void prepLongintIntoLines(int16_t *last, int16_t *source, int16_t *dest, 
       }
     }
     tmpString[*dest] = 0;
-//printf("source=%i dest=%i [..3]=%i %i %i\n",*source,*dest,tmpString[*dest-2],tmpString[*dest-1],tmpString[*dest-0]);
+    if(d == (*startingLine + (numberOfLines-1))*SHOWLineSize) sourceReturn = *source;
+
+    //printf("source=%i dest=%i [..3]=%i %i %i\n",*source,*dest,tmpString[*dest-2],tmpString[*dest-1],tmpString[*dest-0]);
     //printf(">>>AA %u %u |%s|\n", d, (uint8_t)tmpString[d], tmpString+d);
     //printf(">>>BB source=%i last=%i dest=%i\n", *source, *last, *dest);
   }
+  //printf("---B> %i  %s\n",sourceReturn+1, errorMessage+(sourceReturn+1));
+  *source = sourceReturn + 1;
+
 }
 
 #endif //TESTSUITE_BUILD
@@ -2853,7 +2862,7 @@ void fnC47Show(uint16_t fnShow_param) {
                IntShowMode = SHOWAUTO;
                break;
 
-      case ITM_PERIOD: //was 10
+      case ITM_PERIOD:
                source = 0;
                if(getRegisterDataType(showRegis) == dtLongInteger) {
                  startingLine = 0;
@@ -2869,7 +2878,7 @@ void fnC47Show(uint16_t fnShow_param) {
                }
                break;
 
-      case ITM_RS: //was 11
+      case ITM_RS:
                if(getRegisterDataType(showRegis) == dtLongInteger) {
                  if(temporaryInformation != TI_SHOW_REGISTER_SMALL) {
                    startingLine = 0;
@@ -2991,15 +3000,16 @@ void fnC47Show(uint16_t fnShow_param) {
           temporaryInformation = TI_SHOW_REGISTER_SMALL;
           numberOfLines = 10;
           prepLongintIntoLines(&last, &source, &dest, &standardFont, SCREEN_WIDTH - stringWidth("0", &standardFont, true, true), numberOfLines, &startingLine);
-          if(tmpString[numberOfLines*SHOWLineSize] == 0) {
+
+          if(tmpString[(numberOfLines-1)*SHOWLineSize] == 0) {
             break;
           }
-          if(IntShowMode == SHOWSML) goto goBreak1;
-
+          if(tmpString[numberOfLines*SHOWLineSize] == 0 || IntShowMode == SHOWSML) {   //only proceed to second page if page has a long enough number to wrap
+            goto goBreak1;
+          }
         } else {
             tmpString[numberOfLines*SHOWLineSize] = 32;  //flag to activate next step TINY
         }
-
 
         //TINY font
         if(tmpString[numberOfLines*SHOWLineSize] != 0 ||  IntShowMode == SHOWTNY) {
@@ -3010,12 +3020,35 @@ void fnC47Show(uint16_t fnShow_param) {
           prepLongintIntoLines(&last, &source, &dest, &tinyFont, SCREEN_WIDTH - stringWidth("0", &tinyFont, true, true), numberOfLines, &startingLine);
 
 goBreak1:
-          if(tmpString[numberOfLines*SHOWLineSize]!=0) {                               // The long integer is too long
-            int16_t ii = stringLastGlyph(tmpString + (numberOfLines-1)*SHOWLineSize);    //last char
-            ii = stringPrevGlyph(tmpString + (numberOfLines-1)*SHOWLineSize,ii);         //backspace
-            xcopy(tmpString + (numberOfLines-1)*SHOWLineSize + ii, STD_ELLIPSIS, 2);
-            xcopy(tmpString + (numberOfLines-1)*SHOWLineSize + ii + 2, STD_SPACE_6_PER_EM, 2);
-            tmpString[(numberOfLines-1)*SHOWLineSize + ii + 4] = 0;
+
+          if(tmpString[numberOfLines*SHOWLineSize]!=0) {                               // The long integer is too long for the last display string
+            int16_t ii = stringLastGlyph(tmpString + (numberOfLines-1)*SHOWLineSize);    //last char of last display string
+            source = stringPrevNumberGlyph(errorMessage,source);                                                                    //source at this point, points to the start of the next full string. bring left one position
+
+
+            if(! ((48 >= tmpString[ii] || tmpString[ii] >= 57) && tmpString[ii-1] & 0x80) || 
+                 ((tmpString[ii] == 0x01 || tmpString[ii] & 0x80 || tmpString[ii] == 32) && !(tmpString[ii-1] & 0x80))) {      //  if last char is special char, then go one more back
+              ii = stringPrevNumberGlyph(tmpString + (numberOfLines-1)*SHOWLineSize,ii);         //backspace
+              source = stringPrevNumberGlyph(errorMessage,source);
+
+            }
+            if(48 <= tmpString[ii] && tmpString[ii] <= 57 && !(tmpString[ii-1] & 0x080)) {
+              ii = stringPrevNumberGlyph(tmpString + (numberOfLines-1)*SHOWLineSize,ii);         //backspace
+              source = stringPrevNumberGlyph(errorMessage,source);
+
+
+            }
+            if((48 <= tmpString[ii] && tmpString[ii] <= 57) && !(tmpString[ii-1] & 0x080)) {
+              ii = stringPrevNumberGlyph(tmpString + (numberOfLines-1)*SHOWLineSize,ii);         //backspace
+              source = stringPrevGlyph(errorMessage,source);
+
+            }
+
+            xcopy(tmpString + (numberOfLines-1)*SHOWLineSize + ii, STD_ELLIPSIS, 2);        // * Ellipsis needes 6perEM space to line up with two digitss
+            ii += 2;                                                                        // *
+            xcopy(tmpString + (numberOfLines-1)*SHOWLineSize + ii, STD_SPACE_6_PER_EM, 2);  // *
+            ii += 2;                                                                        // *
+            tmpString[(numberOfLines-1)*SHOWLineSize + ii++] = 0;                           // *
           }
         }
         break;
