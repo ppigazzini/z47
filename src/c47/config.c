@@ -828,6 +828,10 @@ void fnFractionType(uint16_t unusedButMandatoryParameter) {
     }
   }
   else {
+    if(constantFractions && !constantFractionsOn) { // 10x0 --> 11x0 A     //Added this to use the 'sticky' IRFRAC flag, meaning change to .d then re-activate the last mode with ab/c
+      constantFractionsOn = true;
+      return;
+    }
     switch(state) {
       case STATE_bc          : state = STATE_exfr_bc;   break;                    // 0b0001 -->
       case STATE_abc         : state = STATE_exfr_abc;  break;                    // 0b0011 -->
