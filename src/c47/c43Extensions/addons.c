@@ -1687,9 +1687,13 @@ void changeToSub(char *str) {
 }
 
 
-bool_t checkForAndChange(char *displayString, const real34_t *value34, const real_t *constant, const real_t *tolerance, const char *constantStr,  bool_t frontSpace, bool_t complex) {
-    bool_t allowMixedNumbers = getSystemFlag(FLAG_PROPFR) && !complex;
-    //printf(">>>## allowMixedNumbers %u\n",allowMixedNumbers);
+
+bool_t checkForAndChange(char *displayString, const real34_t *value34, const real_t *constant, const real_t *tolerance, const char *constantStr,  bool_t frontSpace, bool_t complexMixedNumbers) {
+    #define DISALLOW_MIXED_NUMBER_CONSTANTS true // Dont allow 1 e + e/3, rather write 1 1/3 e
+    #define DISALLOW_MIXED_NUMBER_COMPLEX   false  // Dont allow 1 2/3 and 1e+2e/3, rather use 5/3 and 5e/3
+    char cStr[20];
+    bool_t useMixedNumbers = getSystemFlag(FLAG_PROPFR) && (DISALLOW_MIXED_NUMBER_COMPLEX ? !complexMixedNumbers : true);
+    //printf(">>>## useMixedNumbers %u\n",useMixedNumbers);
     real_t smallestDenomR, newConstant, tempResult, tempresult_ip, tempresult_fp, valueRAbs, valueR, multConstant, tmpr;
     real34ToReal(value34,&valueR);
     realCopyAbs(&valueR,&valueRAbs);
@@ -1723,7 +1727,7 @@ bool_t checkForAndChange(char *displayString, const real34_t *value34, const rea
     //See if the multiplier to the constant has a whole denominator
     int32_t smallestDenom = getSmallestDenom(&multConstant);
     if(smallestDenom > 1) {
-      sprintf(denomStr,"/%i",(int)smallestDenom);
+      sprintf(denomStr,"/%i",(int)smallestDenom);                                                        // "/12"
     }
 
     //Create a new constant comprising the constant divided by the whole denominator
@@ -1744,6 +1748,7 @@ bool_t checkForAndChange(char *displayString, const real34_t *value34, const rea
 
 //                                printRealToConsole(&tempresult_ip,"IP=","\n");
 //                                printf(">>>Resultinginteger:%i>1? SmallestDenom:%i\n", resultingInteger, smallestDenom);
+//                                printf(" Numer=%i Denom:%i\n---\n", resultingInteger, smallestDenom);
 //                                printRealToConsole(&tempresult_fp,"fp:","--\n");
 //                                printRealToConsole(tolerance,"tol:","--\n");
 //                                printf("realCompareAbsLessThan(&tempresult_fp,tolerance):%i\n",realCompareAbsLessThan(&tempresult_fp,tolerance));
@@ -1756,52 +1761,61 @@ bool_t checkForAndChange(char *displayString, const real34_t *value34, const rea
 //                                printf("%s\n",teststr1);
 //                                printf(">>>Resultinginteger:%i>=1? realCompareAbsLessThan(&tempresult_fp,tolerance):%i\n", resultingInteger, realCompareAbsLessThan(&tempresult_fp,tolerance));
 
+
     if(resultingInteger >= 1 && realCompareAbsLessThan(&tempresult_fp,tolerance)) {
 
 //                                printf("A whole multiple %i of the 'new' constant exists\n", resultingInteger);
 
-      if(resultingInteger > smallestDenom  &&  smallestDenom > 1  && resultingInteger != 0 &&  allowMixedNumbers) {
-        int32_t wholeInteger = resultingInteger / smallestDenom;
-        resultingInteger = resultingInteger - (wholeInteger * smallestDenom);
-        char allowMixedNumbersSep[3];
-        if(constantStr[0]==0) {
-          allowMixedNumbersSep[0] = STD_SPACE_4_PER_EM[0];
-          allowMixedNumbersSep[1] = STD_SPACE_4_PER_EM[1];
-          allowMixedNumbersSep[2] = 0;
-          sprintf(wholePart, "%i%s", (int)wholeInteger, allowMixedNumbersSep);
-        }
-        else {
-          allowMixedNumbersSep[0] = sign[0];
-          allowMixedNumbersSep[1] = sign[1];
-          allowMixedNumbersSep[2] = 0;
-          if(wholeInteger == 1) {
-            sprintf(wholePart, "%s%s", constantStr, allowMixedNumbersSep);
-          }
-          else {
-            sprintf(wholePart, "%i%s%s%s", (int)wholeInteger, PRODUCT_SIGN, constantStr, allowMixedNumbersSep);
-          }
-        }
-      }
-      if(constantStr[0] == 0) {
-        sprintf(tmpstr,"%i", (int)resultingInteger);
-        if(smallestDenom > 1) {
-//                                printf("Convert to SUP:%i\n",(int)resultingInteger);
-          changeToSup(tmpstr);
-        }
-        sprintf(resultingIntStr, "%s%s", wholePart, tmpstr);
+
+      if((DISALLOW_MIXED_NUMBER_CONSTANTS && constantStr[0]!=0 && resultingInteger > smallestDenom) && useMixedNumbers) {   //remove this last "&& useMixedNumbers" to change to "3/4 e" instead of "3e/4"
+        cStr[0] = 0;
       }
       else {
-        if(resultingInteger == 1) {
-          sprintf(resultingIntStr,"%s", wholePart);
+        strcpy(cStr,constantStr);
+      }
+
+
+      if(resultingInteger > smallestDenom  &&  smallestDenom > 1  && resultingInteger != 0 && useMixedNumbers) {   // Numer > Denom; 
+        int32_t wholeInteger = resultingInteger / smallestDenom;
+        resultingInteger = resultingInteger - (wholeInteger * smallestDenom);
+        char useMixedNumbersSep[3];
+        if(cStr[0]==0) {                                                                                          // no constant
+          useMixedNumbersSep[0] = STD_SPACE_4_PER_EM[0];
+          useMixedNumbersSep[1] = STD_SPACE_4_PER_EM[1];
+          useMixedNumbersSep[2] = 0;
+          sprintf(wholePart, "%i%s", (int)wholeInteger, useMixedNumbersSep);                                      // "1 "
+        }
+        else {                                                                                                    // constant with numbers
+          useMixedNumbersSep[0] = sign[0];
+          useMixedNumbersSep[1] = sign[1];
+          useMixedNumbersSep[2] = 0;
+          if(wholeInteger == 1) {
+            sprintf(wholePart, "%s%s", cStr, useMixedNumbersSep);                                                 // "e+"
+          }
+          else {
+            sprintf(wholePart, "%i%s%s%s", (int)wholeInteger, PRODUCT_SIGN, cStr, useMixedNumbersSep);            // "2xe+"
+          }
+        }
+      }
+      if(cStr[0] == 0) {                                                                                          // no constant
+        sprintf(tmpstr,"%i", (int)resultingInteger);
+        if(smallestDenom > 1) {
+          changeToSup(tmpstr);
+        }
+        sprintf(resultingIntStr, "%s%s", wholePart, tmpstr);                                                        // "1 1"
+      }
+      else {
+        if(resultingInteger == 1) {                                                                               // constant
+          sprintf(resultingIntStr,"%s", wholePart);                                                                 // "e+" or "2xe+"
         }
         else {
           sprintf(tmpstr,"%i%s",(int)resultingInteger,PRODUCT_SIGN);
           //changeToSup(tmpstr);
-          sprintf(resultingIntStr, "%s%s", wholePart, tmpstr);
+          sprintf(resultingIntStr, "%s%s", wholePart, tmpstr);                                                      // "e+1" or "2xe+1"
         }
       }
     } else {
-      sprintf(resultingIntStr,"%i", (int)resultingInteger);
+      sprintf(resultingIntStr,"%i", (int)resultingInteger);                                                     //0
     }
 
 //                                sprintf(teststr,">>>@@@2 |%s|%s|%s| %i %i\n", resultingIntStr, constantStr, denomStr, (int16_t)stringByteLength(resultingIntStr)-1, resultingIntStr[stringByteLength(resultingIntStr)-1]);
@@ -1815,7 +1829,7 @@ bool_t checkForAndChange(char *displayString, const real34_t *value34, const rea
 //                                printf("%s\n",denomStr);
     }
 
-    if((resultingIntStr[stringByteLength(resultingIntStr)-1]==' ' || resultingIntStr[max(0,stringByteLength(resultingIntStr)-1)]==0) &&  denomStr[0]=='/' && constantStr[0]==0) {
+    if((resultingIntStr[stringByteLength(resultingIntStr)-1]==' ' || resultingIntStr[max(0,stringByteLength(resultingIntStr)-1)]==0) &&  denomStr[0]=='/' && cStr[0]==0) {
       sprintf(tmpstr, STD_SUP_1 "%s", denomStr);
       strcpy(denomStr, tmpstr);
     }
@@ -1835,24 +1849,31 @@ bool_t checkForAndChange(char *displayString, const real34_t *value34, const rea
           if(resultingIntStr[0] !=0 ) {
             strcat(displayString, resultingIntStr);
           }
-          strcat(displayString,constantStr);
-          strcat(displayString,denomStr);
+          strcat(displayString,cStr);
+          strcat(displayString,denomStr);                              // " 2xe+" "e" "/3"
         }
         else {
           if(resultingIntStr[0] != 0) {
             strcat(displayString, resultingIntStr);
           }
-          strcat(displayString,constantStr);
-          strcat(displayString,denomStr);
+          strcat(displayString,cStr);
+          strcat(displayString,denomStr);                              // "2xe+" "e" "/3"
         }
       }
-      else {
+      else { // "-"
         strcat(displayString, STD_SPACE_4_PER_EM "-");
         if(resultingIntStr[0] !=0 ) {
           strcat(displayString, resultingIntStr);
         }
+        strcat(displayString,cStr);
+        strcat(displayString,denomStr);                               // "-2xe+" "e" "/3"
+      }
+
+      if(cStr[0] == 0 && constantStr[0] !=0) {
+        strcat(displayString,STD_SPACE_4_PER_EM);
+        strcat(displayString,PRODUCT_SIGN);
+        strcat(displayString,STD_SPACE_4_PER_EM);
         strcat(displayString,constantStr);
-        strcat(displayString,denomStr);
       }
 
       return true;
