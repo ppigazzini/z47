@@ -1510,7 +1510,12 @@ typedef struct {
 
       case ITM_EXIT1: {
         if(changeFractionModeOnENTER) {
-          setSystemFlag(FLAG_FRACT);
+          if(!getSystemFlag(FLAG_FRACT) && !constantFractions) {
+            setSystemFlag(FLAG_FRACT);
+          }
+          else if(constantFractions) {
+            constantFractionsOn = true;
+          }
           changeFractionModeOnENTER = false;
         }
         addItemToNimBuffer_exit:
@@ -2099,14 +2104,16 @@ typedef struct {
     real34_t temp;
 
     // Set Fraction mode
-    if(!getSystemFlag(FLAG_FRACT)) {
+    if(!getSystemFlag(FLAG_FRACT) && !constantFractions) {
       setSystemFlag(FLAG_FRACT);          //1     //NOTE CHANGE HERE TO SWITCH OFF AUTO FRAC MODE AFTER FRACTION INPUT
       //changeFractionModeOnENTER = true; //2     //USE either //1 or //2
+    }
+    else if(constantFractions) {
+      constantFractionsOn = true;
     }
     else {
       changeFractionModeOnENTER = false;
     }
-    constantFractionsOn = false;
 
     lg = strlen(aimBuffer);
 

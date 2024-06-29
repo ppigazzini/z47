@@ -3174,7 +3174,12 @@ void fnKeyEnter(uint16_t unusedButMandatoryParameter) {
   doRefreshSoftMenu = true;     //dr
   #if !defined(TESTSUITE_BUILD)
     if(changeFractionModeOnENTER) {
-      setSystemFlag(FLAG_FRACT);
+      if(!getSystemFlag(FLAG_FRACT) && !constantFractions) {
+        setSystemFlag(FLAG_FRACT);
+      }
+      else if(constantFractions) {
+        constantFractionsOn = true;
+      }
       changeFractionModeOnENTER = false;
     }
     switch(calcMode) {
