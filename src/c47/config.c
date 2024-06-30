@@ -759,6 +759,9 @@ void fnSetFractionDigits(uint16_t S) {
    if(fractionDigits == 0) {
      fractionDigits = 34;
    }
+   if(S == 34 || S == 0) {
+    clearSystemFlag(FLAG_FRPROX);
+   }
  }
 
 
