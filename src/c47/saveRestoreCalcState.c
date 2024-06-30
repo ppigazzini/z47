@@ -994,7 +994,6 @@ uint16_t flushBufferCnt = 0;
       else {
         clearSystemFlag(FLAG_HPCONV);
       }
-      clearSystemFlag(FLAG_tmp1); //restore previously used flags to 0
       clearSystemFlag(FLAG_tmp2); //restore previously used flags to 0
     }
     restoreStateValue(&thereIsSomethingToUndo,         sizeof(thereIsSomethingToUndo),                              "thereIsSomethingToUndo",         "bool");
@@ -2384,7 +2383,6 @@ double stringToDouble(const char *str) {
           else {
             clearSystemFlag(FLAG_HPCONV);
           }
-          clearSystemFlag(FLAG_tmp1); //restore previously used flags to 0
           clearSystemFlag(FLAG_tmp2); //restore previously used flags to 0
         }
       }

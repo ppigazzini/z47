@@ -222,10 +222,7 @@ void showFracMode(void) {
       }
       if(fractionDigits > 0 && fractionDigits < 34) {
         compressString = 1;
-        x = showString(STD_TILDE, &standardFont, x + 5, 0, vmNormal, true, false);
-        sprintf(statusMessage, "%" PRIu32,fractionDigits);
-        compressString = 1;
-        x = showString(statusMessage, &standardFont, x, 0, vmNormal, true, true);
+        x = showString(STD_ALMOST_EQUAL, &standardFont, x + 5, 0, vmNormal, true, false);
       }
     }
 
@@ -252,19 +249,13 @@ void showFracMode(void) {
       }
       if(fractionDigits == 0 || fractionDigits == 34) {        
       }
-      else if(fractionDigits == 32 || fractionDigits == 33) {   // tags are not evaluated
+      else if(/*(fractionDigits == 32 || fractionDigits == 33) &&*/ getSystemFlag(FLAG_FRPROX)) {
         compressString = 1;
-        x = showString(STD_ALMOST_EQUAL, &standardFont, x, 0, vmNormal, true, false);
-        sprintf(statusMessage, "%" PRIu32,fractionDigits);
-        compressString = 1;
-        x = showString(statusMessage, &standardFont, x, 0, vmNormal, true, true);
+        x = showString(STD_TILDE, &standardFont, x, 0, vmNormal, true, false);
       }
       else {                                                    // tags are evaluated
         compressString = 1;
-        x = showString(STD_TILDE, &standardFont, x, 0, vmNormal, true, false);
-        sprintf(statusMessage, "%" PRIu32,fractionDigits);
-        compressString = 1;
-        x = showString(statusMessage, &standardFont, x, 0, vmNormal, true, true);
+        x = showString(STD_ALMOST_EQUAL, &standardFont, x, 0, vmNormal, true, false);
       }
     }
   }
