@@ -1216,6 +1216,7 @@ uint16_t flushBufferCnt = 0;
     }
 
     updateMatrixHeightCache();
+    screenUpdatingMode = SCRUPD_AUTO;
     refreshScreen(93);
   }
 #endif // PC_BUILD

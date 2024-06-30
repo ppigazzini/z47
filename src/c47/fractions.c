@@ -513,8 +513,13 @@ bool_t fraction(calcRegister_t regist, int16_t *sign, uint64_t *intPart, uint64_
   }
 
   realSubtract(&f, &r, &f, &ctxtReal39);
+  real_t roundingTolerance;
+  fractionTolerence(&roundingTolerance);                              //Arrive here if a tolerance for lying is set
 
-  if(realIsZero(&f)) {
+  
+  if( ((fractionDigits == 0 || fractionDigits == 34) && realIsZero(&f)) ||
+      ((fractionDigits >= 1 && fractionDigits <= 33) && realCompareAbsLessThan(&f,&roundingTolerance)) ) { //broaden the range for it to be deemed zero
+
     *lessEqualGreater = 0;
   }
   else if(realIsNegative(&f)) {
@@ -529,9 +534,13 @@ bool_t fraction(calcRegister_t regist, int16_t *sign, uint64_t *intPart, uint64_
     *intPart = 0;
   }
 
-  if(fractionDigits == 0 || fractionDigits == 34) return true;     //returns true to prepend the tags, if FDIGS=34 is normal, i.e. no lying
-  real_t tol;
-  fractionTolerence(&tol);                                         //Arrive here if a tolerance for lying is set
-  return realCompareAbsGreaterThan(&f,&tol);                         //return false to prepend tags, if actual fraction is within tolerance
-                                                                     //return true to prepend tags, if actual fraction is NOT within tolerance
+  if(fractionDigits == 0 || fractionDigits == 34) {                  //Returns true to prepend the tags, if FDIGS=34 is normal, i.e. no lying
+    return true;
+  }
+  else if(fractionDigits == 32 || fractionDigits == 33) {            //Returns false to not prepend the tags, i.e. lying for 32 & 33 special mode to not show passing tolerances
+    return false;
+  }
+  else {                                                             //Checks if within tolerance for FDIGS<=32
+    return realCompareAbsGreaterThan(&f,&roundingTolerance);           //return true to prepend tags, if actual fraction is outside of tolerance
+  }                                                                    //return false to not prepend tags, if actual fraction is within the tolerance
 }
