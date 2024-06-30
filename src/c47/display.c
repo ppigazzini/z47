@@ -3424,7 +3424,6 @@ goBreak1:
 
   #endif // !TESTSUITE_BUILD
 #else
-//  fnShow(0);          // Use fnSwow, which is an early WP43 version, but it does not properly show complex numbers
     fnView(REGISTER_X); // Re-direct to use VIEW instead. No more accuracy though
 #endif // !SAVE_SPACE_DM42_9
 }
