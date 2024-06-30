@@ -249,7 +249,7 @@ void showFracMode(void) {
       }
       if(fractionDigits == 0 || fractionDigits == 34) {        
       }
-      else if(/*(fractionDigits == 32 || fractionDigits == 33) &&*/ getSystemFlag(FLAG_FRPROX)) {
+      else if(getSystemFlag(FLAG_FRPROX)) {
         compressString = 1;
         x = showString(STD_TILDE, &standardFont, x, 0, vmNormal, true, false);
       }
