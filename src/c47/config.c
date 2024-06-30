@@ -179,7 +179,7 @@ ERPN,                                xxx,        1,                             
 fgLongPressSetting,                  xxx,        xxx,                            RB_FGLNOFF,      RB_FGLNFUL,           RB_FGLNFUL,             RB_FGLNFUL,      xxx,             xxx,                  
 IRFRAC,                              xxx,        0,                              xxx,             1,                    1,                      xxx,             xxx,             xxx,                  
 IRFRACON,                            xxx,        0,                              xxx,             1,                    1,                      xxx,             xxx,             xxx,                  
-DenMaX,                              xxx,        64,                             xxx,             9999,                 999,                    64,              xxx,             xxx,                  
+DenMaX,                              xxx,        64,                             xxx,             200,                  999,                    64,              xxx,             xxx,                  
 //TVM,                               n/a,        Reset,                          HP35,            JM,                   RJ,                     C47,             DefltSB,         TVM,                  
 TVMIKnown,                           xxx,        0,                              xxx,             xxx,                  xxx,                    xxx,             xxx,             0,                    // Clear flag TVMIKnown
 TVMIChanges,                         xxx,        0,                              xxx,             xxx,                  xxx,                    xxx,             xxx,             0,                    // Clear flag TVMIChanges
@@ -197,7 +197,6 @@ RESERVED_VARIABLE_CPERONA,           xxx,        12,                            
 2,                                   xxx,        xxx,                            ITM_CPXRES0,     ITM_CPXRES1,          ITM_CPXRES1,            ITM_CPXRES1,     xxx,             xxx,                  //SetSetting
 2,                                   xxx,        xxx,                            ITM_SPCRES0,     ITM_SPCRES1,          ITM_SPCRES1,            ITM_SPCRES1,     xxx,             xxx,                  //SetSetting
 //FLAG,                              set/clear,  Reset,                          HP35,            JM,                   RJ,                     C47,             DefltSB,         TVM,                  
-3,                                   0,          FLAG_FRCYC,                     xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,                  // Clear flag FLAG_FRCYC
 3,                                   1,          FLAG_MONIT,                     xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,                  // Set flag  FLAG_MONIT
 3,                                   0,          xxx,                            xxx,             FLAG_HPCONV,          FLAG_HPCONV,            xxx,             xxx,             xxx,                  // Clear flag FLAG_HPCONV
 3,                                   1,          FLAG_HPCONV,                    xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,                  // Set flag  FLAG_HPCONV
@@ -246,8 +245,9 @@ RESERVED_VARIABLE_CPERONA,           xxx,        12,                            
 3,                                   1,          FLAG_PROPFR,                    xxx,             FLAG_PROPFR,          xxx,                    xxx,             xxx,             xxx,                  // Set flag  FLAG_PROPFR
 3,                                   0,          FLAG_DENANY,                    xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,                  // Clear flag FLAG_DENANY
 3,                                   1,          xxx,                            xxx,             FLAG_DENANY,          FLAG_DENANY,            xxx,             xxx,             xxx,                  // Set flag  FLAG_DENANY
-3,                                   0,          FLAG_FRCSRN,                    xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,                  // Clear flag FLAG_FRCSRN
-3,                                   1,          xxx,                            xxx,             FLAG_FRCSRN,          xxx,                    xxx,             xxx,             xxx,                  // Set flag  FLAG_FRCSRN
+3,                                   0,          FLAG_FRCSRN,                    xxx,             FLAG_FRCSRN,          xxx,                    xxx,             xxx,             xxx,                  // Clear flag FLAG_FRCSRN
+3,                                   0,          FLAG_FRCYC,                     xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,                  // Clear flag FLAG_FRCYC
+3,                                   0,          FLAG_FRPROX,                    xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,                  // 
 
 //fnSetGapChar,                      n/a,        Reset,                          HP35,            JM,                   RJ,                     C47,             DefltSB,         TVM,                  
 4,                                   xxx,        0+ITM_SPACE_PUNCTUATION,        ITM_NULL,        0+_gapl,              0+ITM_SPACE_4_PER_EM,   0+_gapl,         xxx,             xxx,                  //fnSetGapChar

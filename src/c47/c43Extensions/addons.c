@@ -1691,7 +1691,7 @@ void changeToSub(char *str) {
 bool_t checkForAndChange(char *displayString, const real34_t *value34, const real_t *constant, const real_t *roundingTolerance, const real_t *findingIrrationalTolerance, const char *constantStr,  bool_t frontSpace, bool_t complexMixedNumbers) {
     #define DISALLOW_MIXED_NUMBER_CONSTANTS true // Dont allow 1 e + e/3, rather write 1 1/3 e
     #define DISALLOW_MIXED_NUMBER_COMPLEX   false  // Dont allow 1 2/3 and 1e+2e/3, rather use 5/3 and 5e/3
-    char cStr[20];
+    char cStr[16];
     bool_t useMixedNumbers = getSystemFlag(FLAG_PROPFR) && (DISALLOW_MIXED_NUMBER_COMPLEX ? !complexMixedNumbers : true);
     //printf(">>>## useMixedNumbers %u\n",useMixedNumbers);
     real_t smallestDenomR, newConstant, multipleOfNewConstant, multipleOfNewConstant_ip, multipleOfNewConstant_fp, valueRealAbs, valueReal, multConstant, tmpr;

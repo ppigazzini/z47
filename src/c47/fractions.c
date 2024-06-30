@@ -537,7 +537,7 @@ bool_t fraction(calcRegister_t regist, int16_t *sign, uint64_t *intPart, uint64_
   if(fractionDigits == 0 || fractionDigits == 34) {                  //Returns true to prepend the tags, if FDIGS=34 is normal, i.e. no lying
     return true;
   }
-  else if(fractionDigits == 32 || fractionDigits == 33) {            //Returns false to not prepend the tags, i.e. lying for 32 & 33 special mode to not show passing tolerances
+  else if(/*(fractionDigits == 32 || fractionDigits == 33) &&*/ getSystemFlag(FLAG_FRPROX)) { //Returns false to not prepend the tags, i.e. lying for 32 & 33 special mode to not show passing tolerances
     return false;
   }
   else {                                                             //Checks if within tolerance for FDIGS<=32
