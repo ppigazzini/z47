@@ -49,6 +49,7 @@ int16_t  stringNextGlyph  (const char *str, int16_t pos);
  * \return int16_t              Pointer to the glyph before pos
  ***********************************************/
 int16_t  stringPrevGlyph  (const char *str, int16_t pos);     //JM
+int16_t  stringPrevNumberGlyph(const char *str, int16_t pos);
 
 /********************************************//**
  * \brief Returns a string length in byte

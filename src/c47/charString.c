@@ -368,6 +368,21 @@ int16_t stringPrevGlyph(const char *str, int16_t pos) {
 }
 
 
+int16_t stringPrevNumberGlyph(const char *str, int16_t pos) {
+  int16_t pos2 = pos; 
+
+  do {
+    pos2 = stringPrevGlyph(str,pos2);
+    
+    if(('0' <= str[pos2] && str[pos2] <= '9') || str[pos] == '.' || str[pos] == ',') {
+      return pos2; 
+    }
+  } while (pos2 != 0);
+  return 0;
+}
+
+
+
 int16_t stringLastGlyph(const char *str) {
   int16_t lastGlyph;
 
