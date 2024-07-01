@@ -142,6 +142,7 @@ void configCommon(uint16_t idx) {
 #define DenMaX                120    // config_denmax                    
 #define TVMIKnown             121    // tvm          
 #define TVMIChanges           122    // tvm          
+#define FDIGS                 123    // config_fractionDigits         
 
 
 #define xxx -10001
@@ -166,6 +167,7 @@ MymB,                                xxx,        1,                             
 HomeB,                               xxx,        0,                              0,               0,                    0,                      0,               xxx,             xxx,                  
 RNG,                                 xxx,        6145,                           99,              6145,                 6145,                   6145,            xxx,             xxx,                  
 SDIGS,                               xxx,        0,                              16,              0,                    0,                      34,              xxx,             xxx,                  
+FDIGS,                               xxx,        0,                              16,              24,                   0,                      34,              xxx,             xxx,                  
 DSTACK,                              xxx,        4,                              1,               4,                    4,                      4,               xxx,             xxx,                  
 CACHEDDSTACK,                        xxx,        4,                              1,               4,                    4,                      4,               xxx,             xxx,                  
 ADM,                                 xxx,        amDegree,                       amRadian,        amDegree,             amRadian,               amDegree,        xxx,             xxx,                  
@@ -177,7 +179,7 @@ ERPN,                                xxx,        1,                             
 fgLongPressSetting,                  xxx,        xxx,                            RB_FGLNOFF,      RB_FGLNFUL,           RB_FGLNFUL,             RB_FGLNFUL,      xxx,             xxx,                  
 IRFRAC,                              xxx,        0,                              xxx,             1,                    1,                      xxx,             xxx,             xxx,                  
 IRFRACON,                            xxx,        0,                              xxx,             1,                    1,                      xxx,             xxx,             xxx,                  
-DenMaX,                              xxx,        64,                             xxx,             9999,                 999,                    64,              xxx,             xxx,                  
+DenMaX,                              xxx,        64,                             xxx,             200,                  999,                    64,              xxx,             xxx,                  
 //TVM,                               n/a,        Reset,                          HP35,            JM,                   RJ,                     C47,             DefltSB,         TVM,                  
 TVMIKnown,                           xxx,        0,                              xxx,             xxx,                  xxx,                    xxx,             xxx,             0,                    // Clear flag TVMIKnown
 TVMIChanges,                         xxx,        0,                              xxx,             xxx,                  xxx,                    xxx,             xxx,             0,                    // Clear flag TVMIChanges
@@ -195,7 +197,6 @@ RESERVED_VARIABLE_CPERONA,           xxx,        12,                            
 2,                                   xxx,        xxx,                            ITM_CPXRES0,     ITM_CPXRES1,          ITM_CPXRES1,            ITM_CPXRES1,     xxx,             xxx,                  //SetSetting
 2,                                   xxx,        xxx,                            ITM_SPCRES0,     ITM_SPCRES1,          ITM_SPCRES1,            ITM_SPCRES1,     xxx,             xxx,                  //SetSetting
 //FLAG,                              set/clear,  Reset,                          HP35,            JM,                   RJ,                     C47,             DefltSB,         TVM,                  
-3,                                   0,          FLAG_FRCYC,                     xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,                  // Clear flag FLAG_FRCYC
 3,                                   1,          FLAG_MONIT,                     xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,                  // Set flag  FLAG_MONIT
 3,                                   0,          xxx,                            xxx,             FLAG_HPCONV,          FLAG_HPCONV,            xxx,             xxx,             xxx,                  // Clear flag FLAG_HPCONV
 3,                                   1,          FLAG_HPCONV,                    xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,                  // Set flag  FLAG_HPCONV
@@ -244,8 +245,9 @@ RESERVED_VARIABLE_CPERONA,           xxx,        12,                            
 3,                                   1,          FLAG_PROPFR,                    xxx,             FLAG_PROPFR,          xxx,                    xxx,             xxx,             xxx,                  // Set flag  FLAG_PROPFR
 3,                                   0,          FLAG_DENANY,                    xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,                  // Clear flag FLAG_DENANY
 3,                                   1,          xxx,                            xxx,             FLAG_DENANY,          FLAG_DENANY,            xxx,             xxx,             xxx,                  // Set flag  FLAG_DENANY
-3,                                   0,          FLAG_FRCSRN,                    xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,                  // Clear flag FLAG_FRCSRN
-3,                                   1,          xxx,                            xxx,             FLAG_FRCSRN,          xxx,                    xxx,             xxx,             xxx,                  // Set flag  FLAG_FRCSRN
+3,                                   0,          FLAG_FRCSRN,                    xxx,             FLAG_FRCSRN,          xxx,                    xxx,             xxx,             xxx,                  // Clear flag FLAG_FRCSRN
+3,                                   0,          FLAG_FRCYC,                     xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,                  // Clear flag FLAG_FRCYC
+3,                                   0,          FLAG_FRPROX,                    xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,                  // 
 
 //fnSetGapChar,                      n/a,        Reset,                          HP35,            JM,                   RJ,                     C47,             DefltSB,         TVM,                  
 4,                                   xxx,        0+ITM_SPACE_PUNCTUATION,        ITM_NULL,        0+_gapl,              0+ITM_SPACE_4_PER_EM,   0+_gapl,         xxx,             xxx,                  //fnSetGapChar
@@ -290,6 +292,7 @@ void Sett(int16_t grp) {
         case DenMaX               : {denMax                     = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // DenMaX
         case TVMIKnown            : {tvmIKnown                  = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]) == 1 ? true : false;break;}   // TVMIKnown
         case TVMIChanges          : {tvmIChanges                = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]) == 1 ? true : false;break;}   // TVMIChanges
+        case FDIGS                : {fractionDigits  =            (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // FDIGS
 
         case RESERVED_VARIABLE_FV     :
         case RESERVED_VARIABLE_IPONA  :
@@ -738,6 +741,30 @@ void fnSetSignificantDigits(uint16_t S) {
  }
 
 
+void fnGetFractionDigits(uint16_t unusedButMandatoryParameter) {
+  longInteger_t sigDigits;
+
+  liftStack();
+
+  longIntegerInit(sigDigits);
+  uIntToLongInteger(fractionDigits == 0 ? 34 : fractionDigits, sigDigits);
+  convertLongIntegerToLongIntegerRegister(sigDigits, REGISTER_X);
+  longIntegerFree(sigDigits);
+}
+
+
+
+void fnSetFractionDigits(uint16_t S) {
+   fractionDigits = S;
+   if(fractionDigits == 0) {
+     fractionDigits = 34;
+   }
+   if(S == 34 || S == 0) {
+    clearSystemFlag(FLAG_FRPROX);
+   }
+ }
+
+
 
 void fnRoundingMode(uint16_t RM) {
   if(RM < sizeof(roundingModeTable) / sizeof(*roundingModeTable)) {
@@ -804,6 +831,10 @@ void fnFractionType(uint16_t unusedButMandatoryParameter) {
     }
   }
   else {
+    if(constantFractions && !constantFractionsOn) { // 10x0 --> 11x0 A     //Added this to use the 'sticky' IRFRAC flag, meaning change to .d then re-activate the last mode with ab/c
+      constantFractionsOn = true;
+      return;
+    }
     switch(state) {
       case STATE_bc          : state = STATE_exfr_bc;   break;                    // 0b0001 -->
       case STATE_abc         : state = STATE_exfr_abc;  break;                    // 0b0011 -->

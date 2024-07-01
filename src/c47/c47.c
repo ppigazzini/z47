@@ -137,6 +137,7 @@ uint8_t                displayFormatDigits;
 uint8_t                timeDisplayFormatDigits;
 uint8_t                shortIntegerWordSize;
 uint8_t                significantDigits;
+uint8_t                fractionDigits;
 uint8_t                shortIntegerMode;
 uint8_t                previousCalcMode;
 uint8_t                grpGroupingLeft;

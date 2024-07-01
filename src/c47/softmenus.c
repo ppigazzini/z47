@@ -145,7 +145,7 @@ TO_QSPI const int16_t menu_INFO[]        = { ITM_SSIZE,                     ITM_
                                              ITM_LocRQ,                     ITM_DISK,                   ITM_ULP,                  ITM_NEIGHB,            ITM_GETSDIGS,                ITM_BATT,
                                              ITM_WHO,                       ITM_VERS,                   ITM_M_DIMQ,               ITM_PMINFINITY,        ITM_ALPHAPOS,                ITM_ALPHALENG,
                                              ITM_GETRANGE,                  ITM_GETHIDE,                ITM_GET_JUL_GREG,         ITM_VOLQ,              ITM_SH_ERPN,                 ITM_BESTFQ,
-                                             ITM_GETDMX,                    ITM_LOADEDFILE,             ITM_LASTT,                ITM_NULL,              ITM_NULL,                    ITM_NULL                        };
+                                             ITM_GETDMX,                    ITM_LOADEDFILE,             ITM_LASTT,                ITM_GETFDIGS,          ITM_NULL,                    ITM_NULL                        };
 
 
 TO_QSPI const int16_t menu_INTS[]        = { ITM_A,                         ITM_B,                      ITM_C,                    ITM_D,                 ITM_E,                       ITM_F,
@@ -182,10 +182,10 @@ TO_QSPI const int16_t menu_M_EDIT[]      = { ITM_UP_ARROW,                  ITM_
 
 
 TO_QSPI const int16_t menu_MODE[]        = { ITM_DEG,                       ITM_RAD,                    ITM_GRAD,                 ITM_HPRP,              ITM_RECT,                    ITM_POLAR,
-                                             ITM_SYSTEM2,                   ITM_ACTUSB,                 ITM_NULL,                 ITM_NULL,              ITM_ERPN,                    ITM_CFG,              //JM
+                                             ITM_SYSTEM2,                   ITM_ACTUSB,                 ITM_NULL,                 ITM_SETSIG2,           ITM_SETFDIGS,                ITM_CFG,              //JM
                                              ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,                                       //JM
 
-                                             ITM_SSIZE4,                    ITM_SSIZE8,                 ITM_SETSIG2,              ITM_RMODE,             ITM_CB_CPXRES,               ITM_CB_SPCRES,
+                                             ITM_SSIZE4,                    ITM_SSIZE8,                 ITM_ERPN,                 ITM_CB_CPXRES,         ITM_CB_SPCRES,               ITM_RMODE,
                                              ITM_INP_DEF_43S,               ITM_INP_DEF_DP,             ITM_INP_DEF_CPXDP,        ITM_INP_DEF_LI,        ITM_NULL,                    ITM_CFG,
                                              ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
 
@@ -194,11 +194,11 @@ TO_QSPI const int16_t menu_MODE[]        = { ITM_DEG,                       ITM_
                                              ITM_F14,                       ITM_F124,                   ITM_F1234,                ITM_SH_LONGPRESS,      ITM_MYMx3,                   ITM_HOMEx3         };
 
 // D47 vv
-TO_QSPI const int16_t menu_SETUP[]       = { ITM_SYSTEM2,                   ITM_ACTUSB,                 ITM_ERPN,                 ITM_HPRP,              ITM_RECT,                    ITM_POLAR,
-                                             ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_CFG,
+TO_QSPI const int16_t menu_SETUP[]       = { ITM_SYSTEM2,                   ITM_ACTUSB,                 ITM_NULL,                 ITM_HPRP,              ITM_RECT,                    ITM_POLAR,
+                                             ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_SETSIG2,           ITM_SETFDIGS,                ITM_CFG,
                                              ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
 
-                                             ITM_SSIZE4,                    ITM_SSIZE8,                 ITM_SETSIG2,              ITM_RMODE,             ITM_CB_CPXRES,               ITM_CB_SPCRES,
+                                             ITM_SSIZE4,                    ITM_SSIZE8,                 ITM_ERPN,                 ITM_CB_CPXRES,         ITM_CB_SPCRES,               ITM_RMODE,
                                              ITM_INP_DEF_43S,               ITM_INP_DEF_DP,             ITM_INP_DEF_CPXDP,        ITM_INP_DEF_LI,        ITM_NULL,                    ITM_CFG,
                                              ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
 

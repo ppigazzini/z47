@@ -343,6 +343,7 @@ uint16_t flushBufferCnt = 0;
     saveStateValue(&timeDisplayFormatDigits,        sizeof(timeDisplayFormatDigits),                             "timeDisplayFormatDigits",        "uint8");
     saveStateValue(&shortIntegerWordSize,           sizeof(shortIntegerWordSize),                                "shortIntegerWordSize",           "uint8");
     saveStateValue(&significantDigits,              sizeof(significantDigits),                                   "significantDigits",              "uint8");
+    saveStateValue(&fractionDigits,                 sizeof(fractionDigits),                                      "fractionDigits",                 "uint8");
     saveStateValue(&shortIntegerMode,               sizeof(shortIntegerMode),                                    "shortIntegerMode",               "uint8");
     saveStateValue(&currentAngularMode,             sizeof(currentAngularMode),                                  "currentAngularMode",             "uint32");
     saveStateValue(&scrLock,                        sizeof(scrLock),                                             "scrLock",                        "uint8");
@@ -910,6 +911,8 @@ uint16_t flushBufferCnt = 0;
     restoreStateValue(&timeDisplayFormatDigits,        sizeof(timeDisplayFormatDigits),                             "timeDisplayFormatDigits",        "uint8");
     restoreStateValue(&shortIntegerWordSize,           sizeof(shortIntegerWordSize),                                "shortIntegerWordSize",           "uint8");
     restoreStateValue(&significantDigits,              sizeof(significantDigits),                                   "significantDigits",              "uint8");
+    fractionDigits = 34;
+    restoreStateValue(&fractionDigits,                 sizeof(fractionDigits),                                      "fractionDigits",                 "uint8");
     restoreStateValue(&shortIntegerMode,               sizeof(shortIntegerMode),                                    "shortIntegerMode",               "uint8");
     restoreStateValue(&currentAngularMode,             sizeof(currentAngularMode),                                  "currentAngularMode",             "uint32");
 
@@ -987,7 +990,6 @@ uint16_t flushBufferCnt = 0;
     if(loadedVersion < 10000010) {
       if(getSystemFlag(FLAG_tmp2)) {; //HP Convert was on FLAG_tmp2
         setSystemFlag(FLAG_HPCONV);
-        clearSystemFlag(FLAG_tmp1); //restore previously used flags to 0
         clearSystemFlag(FLAG_tmp2); //restore previously used flags to 0
       }
     }
@@ -1213,6 +1215,7 @@ uint16_t flushBufferCnt = 0;
     }
 
     updateMatrixHeightCache();
+    screenUpdatingMode = SCRUPD_AUTO;
     refreshScreen(93);
   }
 #endif // PC_BUILD
@@ -1641,6 +1644,7 @@ void doSave(uint16_t saveType) {
         sprintf(tmpString, "shortIntegerWordSize\n%"       PRIu8  "\n",     shortIntegerWordSize);         save(tmpString, strlen(tmpString));
         sprintf(tmpString, "shortIntegerMode\n%"           PRIu8  "\n",     shortIntegerMode);             save(tmpString, strlen(tmpString));
         sprintf(tmpString, "significantDigits\n%"          PRIu8  "\n",     significantDigits);            save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "fractionDigits\n%"             PRIu8  "\n",     fractionDigits);               save(tmpString, strlen(tmpString));
         sprintf(tmpString, "currentAngularMode\n%"         PRIu8  "\n",     (uint8_t)currentAngularMode);  save(tmpString, strlen(tmpString));
         sprintf(tmpString, "gapItemLeft\n%"                PRIu16 "\n",     gapItemLeft);                  save(tmpString, strlen(tmpString));
         sprintf(tmpString, "gapItemRight\n%"               PRIu16 "\n",     gapItemRight);                 save(tmpString, strlen(tmpString));
@@ -2372,7 +2376,6 @@ double stringToDouble(const char *str) {
         if(loadedVersion < 10000010) {
           if(getSystemFlag(FLAG_tmp2)) {; //HP Convert was on FLAG_tmp2
             setSystemFlag(FLAG_HPCONV);
-            clearSystemFlag(FLAG_tmp1); //restore previously used flags to 0
             clearSystemFlag(FLAG_tmp2); //restore previously used flags to 0
           }
         }
@@ -2787,6 +2790,7 @@ double stringToDouble(const char *str) {
           else if(strcmp(aimBuffer, "shortIntegerWordSize"        ) == 0) { shortIntegerWordSize = stringToUint8(tmpString);  }
           else if(strcmp(aimBuffer, "shortIntegerMode"            ) == 0) { shortIntegerMode     = stringToUint8(tmpString);  }
           else if(strcmp(aimBuffer, "significantDigits"           ) == 0) { significantDigits    = stringToUint8(tmpString);  }
+          else if(strcmp(aimBuffer, "fractionDigits"              ) == 0) { fractionDigits       = stringToUint8(tmpString);  }
           else if(strcmp(aimBuffer, "currentAngularMode"          ) == 0) { currentAngularMode   = stringToUint8(tmpString);  }
           else if(strcmp(aimBuffer, "groupingGap"                 ) == 0) { //backwards compatible loading old config files
             configCommon(CFG_DFLT);

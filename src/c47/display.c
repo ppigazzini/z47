@@ -38,7 +38,9 @@
 
 #define isComplex true
 #define isReal    false
-void real34ToDisplayString2(const real34_t *real34, char *displayString, int16_t displayHasNDigits, bool_t limitExponent, bool_t noFix, bool_t frontSpace, bool_t complex);
+static void real34ToDisplayString2(const real34_t *real34, char *displayString, int16_t displayHasNDigits, bool_t limitExponent, bool_t noFix, bool_t frontSpace, bool_t complex);
+static void complex34ToDisplayString2(const complex34_t *complex34, char *displayString, int16_t displayHasNDigits, bool_t limitExponent, bool_t frontSpace, const uint16_t tagAngle, const bool_t tagPolar);
+
 
 static void fnDisplayFormatReset(uint16_t displayFormatN) {
   displayFormatDigits = displayFormatN > DSP_MAX ? DSP_MAX : displayFormatN;
@@ -329,7 +331,7 @@ void real34ToDisplayString(const real34_t *real34, uint32_t tag, char *displaySt
  * \param[in]  x const real34_t*  Value to format
  * \return void
  ***********************************************/
-void real34ToDisplayString2(const real34_t *real34, char *displayString, int16_t displayHasNDigits, bool_t limitExponent, bool_t noFix, bool_t frontSpace, bool_t complex) {
+static void real34ToDisplayString2(const real34_t *real34, char *displayString, int16_t displayHasNDigits, bool_t limitExponent, bool_t noFix, bool_t frontSpace, bool_t complex) {
   #undef MAX_DIGITS
   #define MAX_DIGITS 37 // 34 + 1 before (used when rounding from 9.999 to 10.000) + 2 after (used for rounding and ENG display mode)
 
@@ -421,14 +423,17 @@ void real34ToDisplayString2(const real34_t *real34, char *displayString, int16_t
 
   //printf(">>>## flag_proper %u\n",getSystemFlag(FLAG_PROPFR));
   if(constantFractions && constantFractionsOn && !getSystemFlag(FLAG_FRACT) && IrFractionsCurrentStatus != CF_OFF && !real34CompareAbsLessThan(real34,const34_1e_6) && !real34IsAnInteger(real34)) {
-    if(checkForAndChange(displayString, real34, const_1,    const_1e_24, "",                        frontSpace, complex)) return_fr;
-    if(checkForAndChange(displayString, real34, const_rt3,  const_1e_24, STD_SQUARE_ROOT STD_SUB_3, frontSpace, complex)) return_fr;
-    if(checkForAndChange(displayString, real34, const_pi,   const_1e_24, STD_pi,                    frontSpace, complex)) return_fr;
-    if(checkForAndChange(displayString, real34, const_eE,   const_1e_24, STD_EulerE,                frontSpace, complex)) return_fr;
-    if(checkForAndChange(displayString, real34, const_root2,const_1e_24, STD_SQUARE_ROOT STD_SUB_2, frontSpace, complex)) return_fr;
-    if(checkForAndChange(displayString, real34, const_PHI,  const_1e_24, STD_phi,                   frontSpace, complex)) return_fr;
-    if(checkForAndChange(displayString, real34, const_rt5,  const_1e_24, STD_SQUARE_ROOT STD_SUB_5, frontSpace, complex)) return_fr;
-    if(checkForAndChange(displayString, real34, const_rt7,  const_1e_24, STD_SQUARE_ROOT STD_SUB_7, frontSpace, complex)) return_fr;
+    real_t toleranceIrrational, toleranceFDIGS;
+    fractionTolerence(&toleranceFDIGS);
+    realCopy(const_1e_24, &toleranceIrrational);
+    if(checkForAndChange(displayString, real34, const_rt3,   &toleranceFDIGS, &toleranceIrrational, STD_SQUARE_ROOT STD_SUB_3, frontSpace, complex)) return_fr;
+    if(checkForAndChange(displayString, real34, const_pi,    &toleranceFDIGS, &toleranceIrrational, STD_pi,                    frontSpace, complex)) return_fr;
+    if(checkForAndChange(displayString, real34, const_eE,    &toleranceFDIGS, &toleranceIrrational, STD_EulerE,                frontSpace, complex)) return_fr;
+    if(checkForAndChange(displayString, real34, const_root2, &toleranceFDIGS, &toleranceIrrational, STD_SQUARE_ROOT STD_SUB_2, frontSpace, complex)) return_fr;
+    if(checkForAndChange(displayString, real34, const_PHI,   &toleranceFDIGS, &toleranceIrrational, STD_phi,                   frontSpace, complex)) return_fr;
+    if(checkForAndChange(displayString, real34, const_rt5,   &toleranceFDIGS, &toleranceIrrational, STD_SQUARE_ROOT STD_SUB_5, frontSpace, complex)) return_fr;
+    if(checkForAndChange(displayString, real34, const_rt7,   &toleranceFDIGS, &toleranceIrrational, STD_SQUARE_ROOT STD_SUB_7, frontSpace, complex)) return_fr;
+    if(checkForAndChange(displayString, real34, const_1,     &toleranceFDIGS, &toleranceFDIGS,      "",                        frontSpace, complex)) return_fr;
   }
   IrFractionsCurrentStatus = CF_NORMAL;
 
@@ -1310,7 +1315,7 @@ void strPrepend(char*dest, char*prefix) {
 //}
 
 
-void complex34ToDisplayString2(const complex34_t *complex34, char *displayString, int16_t displayHasNDigits, bool_t limitExponent, bool_t frontSpace, const uint16_t tagAngle, const bool_t tagPolar) {
+static void complex34ToDisplayString2(const complex34_t *complex34, char *displayString, int16_t displayHasNDigits, bool_t limitExponent, bool_t frontSpace, const uint16_t tagAngle, const bool_t tagPolar) {
   int16_t i = 100;
   real34_t real34, imag34, absimag34;
   real_t real, imagIc;
@@ -1432,9 +1437,11 @@ void fractionToDisplayString(calcRegister_t regist, char *displayString) {
   int16_t  u, insertAt, endingZero, gap;
 
   //printf("regist = "); printRegisterToConsole(regist); printf("\n");
-  fraction(regist, &sign, &intPart, &numer, &denom, &lessEqualGreater);
+  bool_t prependFraction = fraction(regist, &sign, &intPart, &numer, &denom, &lessEqualGreater);
 
   //printf("result of fraction(...) = %c%" PRIu64 " %" PRIu64 "/%" PRIu64 "\n", sign==-1 ? '-' : ' ', intPart, numer, denom);
+  //printf("  prependFraction=%u fractionDigits=%u\n",prependFraction, fractionDigits);
+
 
   // Comparison sign
   if(getSystemFlag(FLAG_FRCSRN)) {
@@ -1453,7 +1460,7 @@ void fractionToDisplayString(calcRegister_t regist, char *displayString) {
       displayBugScreen(errorMessage);
     }
   }
-  else {
+  else if(prependFraction) {
     if(lessEqualGreater == -1) {
       sprintf(displayString, ">" STD_SPACE_PUNCTUATION);
     }
@@ -1469,6 +1476,10 @@ void fractionToDisplayString(calcRegister_t regist, char *displayString) {
       displayBugScreen(errorMessage);
     }
   }
+  else {
+    displayString[0] = 0;
+  }
+
 
   endingZero = strlen(displayString);
 

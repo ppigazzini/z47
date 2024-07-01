@@ -93,7 +93,7 @@ void fnDenMax(uint16_t D) {
 
 
 
-void fraction(calcRegister_t regist, int16_t *sign, uint64_t *intPart, uint64_t *numer, uint64_t *denom, int16_t *lessEqualGreater) {
+bool_t fraction(calcRegister_t regist, int16_t *sign, uint64_t *intPart, uint64_t *numer, uint64_t *denom, int16_t *lessEqualGreater) {
   // temp0 = fractional_part(absolute_value(real number))
   // temp1 = continued fraction calculation --> fractional_part(1 / temp1)  initialized with temp0
   // delta = difference between the best fraction and the real number
@@ -114,7 +114,7 @@ void fraction(calcRegister_t regist, int16_t *sign, uint64_t *intPart, uint64_t 
     *denom            = 0;
     *lessEqualGreater = 0;
 
-    return;
+    return false;
   }
 
   if(realIsZero(&temp0)) {
@@ -124,7 +124,7 @@ void fraction(calcRegister_t regist, int16_t *sign, uint64_t *intPart, uint64_t 
     *denom            = 1;
     *lessEqualGreater = 0;
 
-    return;
+    return false;
   }
 
   if(realIsNegative(&temp0)) {
@@ -501,21 +501,25 @@ void fraction(calcRegister_t regist, int16_t *sign, uint64_t *intPart, uint64_t 
   real34ToReal(REGISTER_REAL34_DATA(regist), &r);
 
   // The fraction value
-  real_t f, d;
+  real_t f, d, n;
   uInt32ToReal(*intPart, &f);
   uInt32ToReal(*denom, &d);
   realMultiply(&f, &d, &f, &ctxtReal39);
-  uInt32ToReal(*numer, &d);
-  realAdd(&f, &d, &f, &ctxtReal39);
-  uInt32ToReal(*denom, &d);
+  uInt32ToReal(*numer, &n);
+  realAdd(&f, &n, &f, &ctxtReal39);
   realDivide(&f, &d, &f, &ctxtReal39);
   if(*sign == -1) {
     realChangeSign(&f);
   }
 
   realSubtract(&f, &r, &f, &ctxtReal39);
+  real_t roundingTolerance;
+  fractionTolerence(&roundingTolerance);                              //Arrive here if a tolerance for lying is set
 
-  if(realIsZero(&f)) {
+  
+  if( ((fractionDigits == 0 || fractionDigits == 34) && realIsZero(&f)) ||
+      ((fractionDigits >= 1 && fractionDigits <= 33) && realCompareAbsLessThan(&f,&roundingTolerance)) ) { //broaden the range for it to be deemed zero
+
     *lessEqualGreater = 0;
   }
   else if(realIsNegative(&f)) {
@@ -529,4 +533,14 @@ void fraction(calcRegister_t regist, int16_t *sign, uint64_t *intPart, uint64_t 
     *numer += *denom * *intPart;
     *intPart = 0;
   }
+
+  if(fractionDigits == 0 || fractionDigits == 34) {                  //Returns true to prepend the tags, if FDIGS=34 is normal, i.e. no lying
+    return true;
+  }
+  else if(getSystemFlag(FLAG_FRPROX)) {                              //Returns false to not prepend the tags, i.e. lying for 32 & 33 special mode to not show passing tolerances
+    return false;
+  }
+  else {                                                             //Checks if within tolerance for FDIGS<=32
+    return realCompareAbsGreaterThan(&f,&roundingTolerance);           //return true to prepend tags, if actual fraction is outside of tolerance
+  }                                                                    //return false to not prepend tags, if actual fraction is within the tolerance
 }
