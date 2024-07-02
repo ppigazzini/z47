@@ -98,6 +98,15 @@ bool_t fraction(calcRegister_t regist, int16_t *sign, uint64_t *intPart, uint64_
   // temp1 = continued fraction calculation --> fractional_part(1 / temp1)  initialized with temp0
   // delta = difference between the best fraction and the real number
 
+  uint32_t dd = denMax;
+  uint32_t denMax;
+  if(dd == MAX_DENMAX) {
+    denMax = MAX_INTERNAL_DENMAX;
+  }
+  else {
+    denMax = dd;
+  }
+
   real_t temp0;
 
   if(getRegisterDataType(regist) == dtReal34) {

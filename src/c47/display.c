@@ -423,17 +423,16 @@ static void real34ToDisplayString2(const real34_t *real34, char *displayString, 
 
   //printf(">>>## flag_proper %u\n",getSystemFlag(FLAG_PROPFR));
   if(constantFractions && constantFractionsOn && !getSystemFlag(FLAG_FRACT) && IrFractionsCurrentStatus != CF_OFF && !real34CompareAbsLessThan(real34,const34_1e_6) && !real34IsAnInteger(real34)) {
-    real_t toleranceIrrational, toleranceFDIGS;
-    fractionTolerence(&toleranceFDIGS);
+    real_t toleranceIrrational;
     realCopy(const_1e_24, &toleranceIrrational);
-    if(checkForAndChange(displayString, real34, const_rt3,   &toleranceFDIGS, &toleranceIrrational, STD_SQUARE_ROOT STD_SUB_3, frontSpace, complex)) return_fr;
-    if(checkForAndChange(displayString, real34, const_pi,    &toleranceFDIGS, &toleranceIrrational, STD_pi,                    frontSpace, complex)) return_fr;
-    if(checkForAndChange(displayString, real34, const_eE,    &toleranceFDIGS, &toleranceIrrational, STD_EulerE,                frontSpace, complex)) return_fr;
-    if(checkForAndChange(displayString, real34, const_root2, &toleranceFDIGS, &toleranceIrrational, STD_SQUARE_ROOT STD_SUB_2, frontSpace, complex)) return_fr;
-    if(checkForAndChange(displayString, real34, const_PHI,   &toleranceFDIGS, &toleranceIrrational, STD_phi,                   frontSpace, complex)) return_fr;
-    if(checkForAndChange(displayString, real34, const_rt5,   &toleranceFDIGS, &toleranceIrrational, STD_SQUARE_ROOT STD_SUB_5, frontSpace, complex)) return_fr;
-    if(checkForAndChange(displayString, real34, const_rt7,   &toleranceFDIGS, &toleranceIrrational, STD_SQUARE_ROOT STD_SUB_7, frontSpace, complex)) return_fr;
-    if(checkForAndChange(displayString, real34, const_1,     &toleranceFDIGS, &toleranceFDIGS,      "",                        frontSpace, complex)) return_fr;
+    if(checkForAndChange(displayString, real34, const_1,     &toleranceIrrational, "",                        frontSpace, complex)) return_fr;
+    if(checkForAndChange(displayString, real34, const_rt3,   &toleranceIrrational, STD_SQUARE_ROOT STD_SUB_3, frontSpace, complex)) return_fr;
+    if(checkForAndChange(displayString, real34, const_pi,    &toleranceIrrational, STD_pi,                    frontSpace, complex)) return_fr;
+    if(checkForAndChange(displayString, real34, const_eE,    &toleranceIrrational, STD_EulerE,                frontSpace, complex)) return_fr;
+    if(checkForAndChange(displayString, real34, const_root2, &toleranceIrrational, STD_SQUARE_ROOT STD_SUB_2, frontSpace, complex)) return_fr;
+    if(checkForAndChange(displayString, real34, const_PHI,   &toleranceIrrational, STD_phi,                   frontSpace, complex)) return_fr;
+    if(checkForAndChange(displayString, real34, const_rt5,   &toleranceIrrational, STD_SQUARE_ROOT STD_SUB_5, frontSpace, complex)) return_fr;
+    if(checkForAndChange(displayString, real34, const_rt7,   &toleranceIrrational, STD_SQUARE_ROOT STD_SUB_7, frontSpace, complex)) return_fr;
   }
   IrFractionsCurrentStatus = CF_NORMAL;
 
@@ -1424,6 +1423,60 @@ static void complex34ToDisplayString2(const complex34_t *complex34, char *displa
 }
 
 
+void _numerator(uint64_t numer, char *displayString, int16_t *endingZero) {
+  // Numerator
+  int16_t  u, insertAt, gap;
+  insertAt = *endingZero;
+  gap = -1;
+  do {
+    gap++;
+    if(gap == GROUPWIDTH_LEFT) {
+      gap = 0;
+      (*endingZero)++;
+      xcopy(displayString + insertAt + 2, displayString + insertAt, (*endingZero)++ - insertAt);
+      displayString[insertAt]     = SEPARATOR_FRAC[0];
+      displayString[insertAt + 1] = SEPARATOR_FRAC[1];
+    }
+
+    u = numer % 10;
+    numer /= 10;
+    (*endingZero)++;
+    xcopy(displayString + insertAt + 2, displayString + insertAt, (*endingZero)++ - insertAt);
+
+    displayString[insertAt]     = STD_SUP_0[0];
+    displayString[insertAt + 1] = STD_SUP_0[1];
+    displayString[insertAt + 1] += u;
+  } while(numer != 0);
+}
+
+
+void _denominator(uint64_t denom, char *displayString, int16_t *endingZero) {
+  // Denominator
+  int16_t  u, insertAt, gap;
+  insertAt = *endingZero;
+  gap = -1;
+  do {
+    gap++;
+    if(gap == GROUPWIDTH_LEFT) {
+      gap = 0;
+      (*endingZero)++;
+      xcopy(displayString + insertAt + 2, displayString + insertAt, (*endingZero)++ - insertAt);
+      displayString[insertAt]     = SEPARATOR_FRAC[0];
+      displayString[insertAt + 1] = SEPARATOR_FRAC[1];
+    }
+
+    u = denom % 10;
+    denom /= 10;
+    (*endingZero)++;
+    xcopy(displayString + insertAt + 2, displayString + insertAt, (*endingZero)++ - insertAt);
+    displayString[insertAt]     = STD_SUB_0[0];
+    displayString[insertAt + 1] = STD_SUB_0[1];
+    displayString[insertAt + 1] += u;
+  } while(denom != 0);
+}
+
+
+
 /********************************************//**
  * \brief formats a fraction
  *
@@ -1528,56 +1581,14 @@ void fractionToDisplayString(calcRegister_t regist, char *displayString) {
     }
   }
 
-  // Numerator
-  insertAt = endingZero;
-  gap = -1;
-  do {
-    gap++;
-    if(gap == GROUPWIDTH_LEFT) {
-      gap = 0;
-      endingZero++;
-      xcopy(displayString + insertAt + 2, displayString + insertAt, endingZero++ - insertAt);
-      displayString[insertAt]     = SEPARATOR_FRAC[0];
-      displayString[insertAt + 1] = SEPARATOR_FRAC[1];
-    }
 
-    u = numer % 10;
-    numer /= 10;
-    endingZero++;
-    xcopy(displayString + insertAt + 2, displayString + insertAt, endingZero++ - insertAt);
-
-    displayString[insertAt]     = STD_SUP_0[0];
-    displayString[insertAt + 1] = STD_SUP_0[1];
-    displayString[insertAt + 1] += u;
-  } while(numer != 0);
-
+  _numerator(numer, displayString, &endingZero);
 
   // Fraction bar
   strcat(displayString, "/");
   endingZero++;
 
-
-  // Denominator
-  insertAt = endingZero;
-  gap = -1;
-  do {
-    gap++;
-    if(gap == GROUPWIDTH_LEFT) {
-      gap = 0;
-      endingZero++;
-      xcopy(displayString + insertAt + 2, displayString + insertAt, endingZero++ - insertAt);
-      displayString[insertAt]     = SEPARATOR_FRAC[0];
-      displayString[insertAt + 1] = SEPARATOR_FRAC[1];
-    }
-
-    u = denom % 10;
-    denom /= 10;
-    endingZero++;
-    xcopy(displayString + insertAt + 2, displayString + insertAt, endingZero++ - insertAt);
-    displayString[insertAt]     = STD_SUB_0[0];
-    displayString[insertAt + 1] = STD_SUB_0[1];
-    displayString[insertAt + 1] += u;
-  } while(denom != 0);
+  _denominator(denom, displayString, &endingZero);
 }
 
 

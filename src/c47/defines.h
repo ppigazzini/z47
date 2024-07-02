@@ -1524,7 +1524,9 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define MAX_NUMBER_OF_GLYPHS_IN_STRING           508 //WP=196: Change to 512 less 3, Also change error message 33, and AIM_BUFFER_LENGTH, and MAXLINES
 #define NUMBER_OF_GLYPH_ROWS                     260  //Used in the font browser application
 
-#define MAX_DENMAX                              9999 // Biggest denominator in fraction display mode
+#define MAX_DENMAX                              9999 // Biggest denominator in fraction display mode selector, and annunciator. 
+                                                     // The value 9999 gets converted to MAX_INTERNAL_DENMAX
+#define MAX_INTERNAL_DENMAX                   999999 // Biggest denominator in fraction display mode
 
 #if defined(DMCP_BUILD)
   #define SCREEN_REFRESH_PERIOD                  160 // 500 // in milliseconds //JM timeout for lcd refresh in ms 125

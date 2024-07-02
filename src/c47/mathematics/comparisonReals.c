@@ -32,10 +32,15 @@ void convergenceTolerence(real_t *tol)
   tol->exponent -= (significantDigits == 0 || significantDigits >= 32) ? 32 : significantDigits;
 }
 
+void irfractionTolerence(int32_t ii, real_t *tol)
+{
+  int32ToReal((int32_t)ii+1,tol);
+  tol->exponent -= ((fractionDigits == 0 || fractionDigits >= 34) ? 34 : fractionDigits);
+}
+
 void fractionTolerence(real_t *tol)
 {
-  realCopy(const_1, tol);
-  tol->exponent -= (fractionDigits == 0 || fractionDigits >= 34) ? 34 : fractionDigits;  
+  irfractionTolerence(1, tol);
 }
 
 

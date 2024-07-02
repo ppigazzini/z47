@@ -65,6 +65,7 @@ All the below: because both Last x and savestack does not work due to multiple s
 #include "error.h"
 #include "flags.h"
 #include "fonts.h"
+#include "fractions.h"
 #include "c43Extensions/graphText.h"
 #include "hal/audio.h"
 #include "hal/gui.h"
@@ -1583,12 +1584,17 @@ int32_t getSmallestDenom(const real_t *val) {
   ** we just keep the last partial product of these matrices.
   */
 
-  real34_t xx, temp;
-//-  real34Copy(val, &xx);
-  realToReal34(val, &xx);
+  real_t xx, temp;
+  realCopy(val, &xx);
 
   int32_t m[2][2];
-  int32_t maxden = denMax;
+  int32_t maxden;
+  if(denMax == MAX_DENMAX) {
+    maxden = MAX_INTERNAL_DENMAX;
+  } else {
+    maxden = denMax;
+  }
+
   int32_t ai;
 
   /* initialize matrix */
@@ -1596,7 +1602,7 @@ int32_t getSmallestDenom(const real_t *val) {
   m[0][1] = m[1][0] = 0;
 
   /* loop finding terms until denom gets too big */
-  while(m[1][0] *  ( ai = real34ToInt32(&xx) ) + m[1][1] <= maxden) {
+  while(m[1][0] *  ( ai = realToInt32C47(&xx) ) + m[1][1] <= maxden) {
     int32_t t;
     t = m[0][0] * ai + m[0][1];
     m[0][1] = m[0][0];
@@ -1605,15 +1611,15 @@ int32_t getSmallestDenom(const real_t *val) {
     m[1][1] = m[1][0];
     m[1][0] = t;
 
-    int32ToReal34(ai,&temp);
-    real34Subtract(&xx,&temp,&xx);
-    if(real34IsZero(&xx)) {
+    int32ToReal(ai,&temp);
+    realSubtract(&xx,&temp,&xx,&ctxtReal39);
+    if(realIsZero(&xx)) {
       break;  // AF: division by zero
     }
-    real34Divide(const34_1,&xx,&xx);
+    realDivide(const_1,&xx,&xx,&ctxtReal39);
 
-    int32ToReal34(0x7FFFFFFF,&temp);
-    if(real34CompareGreaterThan(&xx,&temp)) {
+    int32ToReal(0x7FFFFFFF,&temp);
+    if(realCompareGreaterThan(&xx,&temp)) {
       break;  // AF: representation failure
     }
   }
@@ -1629,66 +1635,22 @@ int32_t getSmallestDenom(const real_t *val) {
 }
 
 
-void changeToSup(char *str) {
-  char strtmp[100];
-  strcpy(strtmp,str);
-  int16_t u, src = 0;
-  int16_t insertAt = 0;
-  while(strtmp[src]!=0) {
-    u = strtmp[src]-48;
-    if(u <= 1 && u >= 0) {
-      str[insertAt]     = STD_SUP_0[0];
-      str[insertAt + 1] = STD_SUP_0[1];
-      str[insertAt + 1] += u;
-      insertAt += 2;
-    }
-    else if(u <= 3 && u >= 0) {
-      str[insertAt]     = STD_SUP_2[0];
-      str[insertAt + 1] = STD_SUP_2[1];
-      str[insertAt + 1] += u - 2;
-      insertAt += 2;
-    }
-    else if(u <= 9 && u >= 0) {
-      str[insertAt]     = STD_SUP_4[0];
-      str[insertAt + 1] = STD_SUP_4[1];
-      str[insertAt + 1] += u - 4;
-      insertAt += 2;
-    }
-    else {
-      str[insertAt]     = strtmp[src];
-      insertAt ++;
-    }
-    src++;
-  }
-  str[insertAt]=0;
+void changeToSup(uint64_t numer, char *str) {  //numerator
+  int16_t  endingZero = 0;
+  str[0]=0;
+  _numerator(numer, str, &endingZero);
+
+}
+
+void changeToSub(uint64_t denom, char *str) {  //denominator
+  int16_t  endingZero = 1;
+  str[0]='/';
+  str[1]=0;
+  _denominator(denom, str, &endingZero);
 }
 
 
-void changeToSub(char *str) {
-  char strtmp[100];
-  strcpy(strtmp,str);
-  int16_t u, src = 0;
-  int16_t insertAt = 0;
-  while(strtmp[src]!=0) {
-      u = strtmp[src]-48;
-      if(u <= 9 && u >= 0) {
-        str[insertAt]     = STD_SUB_0[0];
-        str[insertAt + 1] = STD_SUB_0[1];
-        str[insertAt + 1] += u;
-        insertAt += 2;
-      }
-      else {
-        str[insertAt]     = strtmp[src];
-        insertAt ++;
-      }
-      src++;
-    }
-  str[insertAt]=0;
-}
-
-
-
-bool_t checkForAndChange(char *displayString, const real34_t *value34, const real_t *constant, const real_t *roundingTolerance, const real_t *findingIrrationalTolerance, const char *constantStr,  bool_t frontSpace, bool_t complexMixedNumbers) {
+bool_t checkForAndChange(char *displayString, const real34_t *value34, const real_t *constant, const real_t *findingIrrationalTolerance, const char *constantStr,  bool_t frontSpace, bool_t complexMixedNumbers) {
     #define DISALLOW_MIXED_NUMBER_CONSTANTS true // Dont allow 1 e + e/3, rather write 1 1/3 e
     #define DISALLOW_MIXED_NUMBER_COMPLEX   false  // Dont allow 1 2/3 and 1e+2e/3, rather use 5/3 and 5e/3
     char cStr[16];
@@ -1722,11 +1684,25 @@ bool_t checkForAndChange(char *displayString, const real34_t *value34, const rea
       return false;
     }
 
+
+#define IRFRAC_ENGINE
+
     //See if the multiplier to the constant has a whole denominator
-    int32_t smallestDenom = getSmallestDenom(&multConstant);
-    if(smallestDenom > 1) {
-      sprintf(denomStr,"/%i",(int)smallestDenom);                                                        // "/12"
-    }
+
+#ifdef FRACT_ENGINE
+    //* This section uses the standard fraction() to calculate the denominator
+    int16_t sign1, lessEqualGreater;
+    uint64_t intPart, numer, denom;
+    reallocateRegister(TEMP_REGISTER_1, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+    realToReal34(&multConstant,REGISTER_REAL34_DATA(TEMP_REGISTER_1));
+    fraction(TEMP_REGISTER_1, &sign1, &intPart, &numer, &denom, &lessEqualGreater);   //does not yet work in all the frac modes.
+    //printf("aaaaaaa: %i%llu + %llu / %llu \n",sign1,intPart,numer,denom);
+    int32_t smallestDenom = denom;
+#endif //FRACT_ENGINE
+#ifdef IRFRAC_ENGINE
+    int32_t smallestDenom = getSmallestDenom(&multConstant);                                                    //denominator
+#endif //IRFRAC_ENGINE
+
 
     //Create a new constant comprising the constant divided by the whole denominator
     int32ToReal(smallestDenom, &smallestDenomR);
@@ -1736,13 +1712,22 @@ bool_t checkForAndChange(char *displayString, const real34_t *value34, const rea
     realDivide(&valueRealAbs, &newConstant, &multipleOfNewConstant, &ctxtReal39);
     realToIntegralValue(&multipleOfNewConstant, &multipleOfNewConstant_ip, DEC_ROUND_HALF_UP, &ctxtReal39);
     realSubtract(&multipleOfNewConstant, &multipleOfNewConstant_ip, &multipleOfNewConstant_fp, &ctxtReal39);
-    multipleOfNewConstantInteger = abs(realToInt32C47(&multipleOfNewConstant_ip));
+    multipleOfNewConstantInteger = abs(realToInt32C47(&multipleOfNewConstant_ip));                              //numerator
 
     //See if the ip is out of range
     uInt32ToReal(0x1FFFFFFF,&tmpr);
     if(realCompareAbsGreaterThan(&multipleOfNewConstant_ip, &tmpr)) {
       return false;
     }
+
+//                                printRealToConsole(constant,"\n\nconstant=","\n");
+//                                printRealToConsole(&valueReal,"valueReal=","\n");
+//                                printRealToConsole(&multConstant,"multConstant=","\n");
+//                                printf("smallestDenom:%i\n",smallestDenom);
+//                                printRealToConsole(&newConstant,"newConstant=","\n");
+//                                printRealToConsole(&multipleOfNewConstant,"multipleOfNewConstant=","\n");
+//                                printRealToConsole(&multipleOfNewConstant_ip,"multipleOfNewConstant_ip=","\n");
+//                                printRealToConsole(&multipleOfNewConstant_fp,"multipleOfNewConstant_fp=","\n");
 
 //                                printRealToConsole(&multipleOfNewConstant_ip,"IP=","\n");
 //                                printf(">>>multipleOfNewConstantInteger:%i>1? SmallestDenom:%i\n", multipleOfNewConstantInteger, smallestDenom);
@@ -1794,9 +1779,8 @@ bool_t checkForAndChange(char *displayString, const real34_t *value34, const rea
         }
       }
       if(cStr[0] == 0) {                                                                                          // no constant
-        sprintf(tmpstr,"%i", (int)multipleOfNewConstantInteger);
         if(smallestDenom > 1) {
-          changeToSup(tmpstr);
+          changeToSup(multipleOfNewConstantInteger, tmpstr);              //numerator
         }
         sprintf(resultingIntStr, "%s%s", wholePart, tmpstr);                                                        // "1 1"
       }
@@ -1820,7 +1804,7 @@ bool_t checkForAndChange(char *displayString, const real34_t *value34, const rea
 //                                printf("%s\n",teststr2);
 
     if(smallestDenom > 1) {
-      changeToSub(denomStr);
+      changeToSub(smallestDenom, denomStr);                                                                    // "/12"
 //                                printf("Convert to SUB:%i : ",(int)smallestDenom);
 //                                printf("%s\n",denomStr);
     }
@@ -1829,14 +1813,21 @@ bool_t checkForAndChange(char *displayString, const real34_t *value34, const rea
       sprintf(tmpstr, STD_SUP_1 "%s", denomStr);
       strcpy(denomStr, tmpstr);
     }
-//                                printf(">>>@@@3 §%s§%s§%s§\n", resultingIntStr, constantStr, denomStr);
-//                                printRealToConsole(&multipleOfNewConstant_fp,"&multipleOfNewConstant_fp=","\n");
+  real_t roundingTolerance1;
+  irfractionTolerence(smallestDenom * 6, &roundingTolerance1); //factor is to make the fraction margin a little wider. Margin calculated, based on denominator.
+
+//                                printRealToConsole(&valueReal,"\n\nInputvalue: valueReal=","\n");
+//                                printRealToConsole(constant,"    constant=","\n");
+//                                printf("    §%s§   §%s§   §%s§\n", resultingIntStr, constantStr, denomStr);
 //                                printRealToConsole(findingIrrationalTolerance,"findingIrrationalTolerance=","\n");
-//                                printRealToConsole(roundingTolerance,"roundingTolerance=","\n");
+//                                printf("Numerator: multipleOfNewConstantInteger   %i\n",multipleOfNewConstantInteger);
+//                                printf("Denominator: smallestDenom                         /            %i\n",smallestDenom);
+//                                printRealToConsole(&multipleOfNewConstant_fp,"&multipleOfNewConstant_fp=","\n");
+//                                printRealToConsole(&roundingTolerance1,"roundingTolerance1=","\n");
     displayString[0] = 0;
     if(realCompareAbsLessThan(&multipleOfNewConstant_fp,findingIrrationalTolerance)) {                                     // irrational tolerance found, show irrational and fraction
 
-      if(!realCompareAbsLessThan(&multipleOfNewConstant_fp,roundingTolerance) ){                                           // prepend the tags; FDIGS=34 is normal, i.e. no lying, meaning opening up the tolerance band for zero
+      if(!realCompareAbsLessThan(&multipleOfNewConstant_fp,&roundingTolerance1) ){                                           // prepend the tags; FDIGS=34 is normal, i.e. no lying, meaning opening up the tolerance band for zero
         strcat(displayString, STD_ALMOST_EQUAL);
       }
 

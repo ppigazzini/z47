@@ -105,7 +105,7 @@ void decompReal(void) {
     uint64_t intPart, numer, denom;
     longInteger_t lgInt;
 
-    denMax = MAX_DENMAX;
+    denMax = MAX_INTERNAL_DENMAX;
     clearSystemFlag(FLAG_PROPFR); // set improper fraction mode
 
     fraction(REGISTER_Y, &sign, &intPart, &numer, &denom, &lessEqualGreater);
