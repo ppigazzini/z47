@@ -2309,7 +2309,7 @@
 #define SFL_MONIT                   2251
 #define SFL_FRCYC                   2252
 #define SFL_HPCONV                  2253
-#define SFL_FRPROX                  2254
+#define SFL_2250                    2254
 #define SFL_2251                    2255
 #define SFL_2252                    2256
 #define SFL_2253                    2257

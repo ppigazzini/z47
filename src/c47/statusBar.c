@@ -199,9 +199,16 @@ void showFracMode(void) {
     if(constantFractions && constantFractionsOn && !getSystemFlag(FLAG_FRACT)) {    //IRFRAC and NOT FRAC
       sprintf(statusMessage,"%s",divStr);
       x = showString(statusMessage, &standardFont, x, 0, vmNormal, true, true);
-      raiseString = 4;
-      sprintf(statusMessage,STD_SUB_c);
-      x = showString(statusMessage, &standardFont, x-2, 0, vmNormal, true, true);
+
+      if(denMax >= MAX_DENMAX) {
+        compressString = 1;
+        sprintf(statusMessage,"max");
+        x = showString(statusMessage, &standardFont, x, 0, vmNormal, true, true);
+      } else {
+        sprintf(statusMessage, "%" PRIu32 ,denMax);
+        compressString = 1;
+        x = showString(statusMessage, &standardFont, x, 0, vmNormal, true, true);
+      }
 
       strcpy(divStr,STD_DOT);
       raiseString = 2;
@@ -227,31 +234,27 @@ void showFracMode(void) {
     }
 
     else if(getSystemFlag(FLAG_FRACT)){                                              //(NOT IRFRAC or FRAC) AND FRAC
-      if(getSystemFlag(FLAG_DENANY) && denMax == MAX_DENMAX) {
+
+      if(denMax >= MAX_DENMAX) {
+        compressString = 1;
         sprintf(statusMessage,"%smax",divStr);
         x = showString(statusMessage, &standardFont, x, 0, vmNormal, true, true);
-      }
-      else {
-        if((getSystemFlag(FLAG_DENANY) && denMax != MAX_DENMAX) || !getSystemFlag(FLAG_DENANY)) {
-          sprintf(statusMessage, "%s%" PRIu32, divStr,denMax);
-          compressString = 1;
-          x = showString(statusMessage, &standardFont, x, 0, vmNormal, true, true);
-        }
-
-        if(!getSystemFlag(FLAG_DENANY)) {
-          if(getSystemFlag(FLAG_DENFIX)) {
-            x = showGlyphCode('f',  &standardFont, x, 0, vmNormal, true, false); // f is 0+7+3 pixel wide
-          }
-          else {
-            x = showString(PRODUCT_SIGN, &standardFont, x, 0, vmNormal, true, false); // STD_DOT is 0+3+2 pixel wide and STD_CROSS is 0+7+2 pixel wide
-          }
-        }
-      }
-      if(fractionDigits == 0 || fractionDigits == 34) {        
-      }
-      else if(getSystemFlag(FLAG_FRPROX)) {
+      } else {
+        sprintf(statusMessage, "%s%" PRIu32, divStr,denMax);
         compressString = 1;
-        x = showString(STD_TILDE, &standardFont, x, 0, vmNormal, true, false);
+        x = showString(statusMessage, &standardFont, x, 0, vmNormal, true, true);
+      }
+
+      if(!getSystemFlag(FLAG_DENANY)) {
+        if(getSystemFlag(FLAG_DENFIX)) {
+          x = showGlyphCode('f',  &standardFont, x, 0, vmNormal, true, false); // f is 0+7+3 pixel wide
+        }
+        else {
+          x = showString(PRODUCT_SIGN, &standardFont, x, 0, vmNormal, true, false); // STD_DOT is 0+3+2 pixel wide and STD_CROSS is 0+7+2 pixel wide
+        }
+      }
+
+      if(fractionDigits == 0 || fractionDigits == 34) {        
       }
       else {                                                    // tags are evaluated
         compressString = 1;
