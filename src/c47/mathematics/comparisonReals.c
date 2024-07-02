@@ -34,13 +34,13 @@ void convergenceTolerence(real_t *tol)
 
 void irfractionTolerence(int32_t ii, real_t *tol)
 {
-  int32ToReal((int32_t)ii+1,tol);
+  int32ToReal((int32_t)ii,tol);
   tol->exponent -= ((fractionDigits == 0 || fractionDigits >= 34) ? 34 : fractionDigits);
 }
 
 void fractionTolerence(real_t *tol)
 {
-  irfractionTolerence(1, tol);
+  irfractionTolerence(2, tol);
 }
 
 

@@ -247,7 +247,6 @@ RESERVED_VARIABLE_CPERONA,           xxx,        12,                            
 3,                                   1,          xxx,                            xxx,             FLAG_DENANY,          FLAG_DENANY,            xxx,             xxx,             xxx,                  // Set flag  FLAG_DENANY
 3,                                   0,          FLAG_FRCSRN,                    xxx,             FLAG_FRCSRN,          xxx,                    xxx,             xxx,             xxx,                  // Clear flag FLAG_FRCSRN
 3,                                   0,          FLAG_FRCYC,                     xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,                  // Clear flag FLAG_FRCYC
-3,                                   0,          FLAG_FRPROX,                    xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,                  // 
 
 //fnSetGapChar,                      n/a,        Reset,                          HP35,            JM,                   RJ,                     C47,             DefltSB,         TVM,                  
 4,                                   xxx,        0+ITM_SPACE_PUNCTUATION,        ITM_NULL,        0+_gapl,              0+ITM_SPACE_4_PER_EM,   0+_gapl,         xxx,             xxx,                  //fnSetGapChar
@@ -758,9 +757,6 @@ void fnSetFractionDigits(uint16_t S) {
    fractionDigits = S;
    if(fractionDigits == 0) {
      fractionDigits = 34;
-   }
-   if(S == 34 || S == 0) {
-    clearSystemFlag(FLAG_FRPROX);
    }
  }
 

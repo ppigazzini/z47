@@ -557,6 +557,7 @@ void generateAllConstants(void) {
   generateConstantArray("rt7",           "+2.645751311064590590501615753639260425710259183082450180e+00");
   generateConstantArray("GaluseqE",      "+3.370000000000000000000000000000000000000000000000000000e+01");
   generateConstantArray("1e_6143",       "+1.000000000000000000000000000000000000000000000000000000e-6143");
+  generateConstantArray("rtpi",          "+1.772453850905516027298167483341145182797549456122387128e+00");
 
 
   // Lanczos's coefficients calculated for N=22 and G=22.61891 using Toth's program: https://www.vttoth.com/CMS/projects/41

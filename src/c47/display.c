@@ -433,6 +433,7 @@ static void real34ToDisplayString2(const real34_t *real34, char *displayString, 
     if(checkForAndChange(displayString, real34, const_PHI,   &toleranceIrrational, STD_phi,                   frontSpace, complex)) return_fr;
     if(checkForAndChange(displayString, real34, const_rt5,   &toleranceIrrational, STD_SQUARE_ROOT STD_SUB_5, frontSpace, complex)) return_fr;
     if(checkForAndChange(displayString, real34, const_rt7,   &toleranceIrrational, STD_SQUARE_ROOT STD_SUB_7, frontSpace, complex)) return_fr;
+    if(checkForAndChange(displayString, real34, const_rtpi,  &toleranceIrrational, STD_SQUARE_ROOT STD_pi,    frontSpace, complex)) return_fr;
   }
   IrFractionsCurrentStatus = CF_NORMAL;
 

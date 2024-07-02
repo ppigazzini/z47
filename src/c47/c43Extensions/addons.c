@@ -1720,6 +1720,12 @@ bool_t checkForAndChange(char *displayString, const real34_t *value34, const rea
       return false;
     }
 
+  real_t findingIrrationalTolerance1;
+  realMultiply(findingIrrationalTolerance, &smallestDenomR, &findingIrrationalTolerance1, &ctxtReal39);         // do relative convergence
+
+
+
+
 //                                printRealToConsole(constant,"\n\nconstant=","\n");
 //                                printRealToConsole(&valueReal,"valueReal=","\n");
 //                                printRealToConsole(&multConstant,"multConstant=","\n");
@@ -1729,7 +1735,6 @@ bool_t checkForAndChange(char *displayString, const real34_t *value34, const rea
 //                                printRealToConsole(&multipleOfNewConstant_ip,"multipleOfNewConstant_ip=","\n");
 //                                printRealToConsole(&multipleOfNewConstant_fp,"multipleOfNewConstant_fp=","\n");
 
-//                                printRealToConsole(&multipleOfNewConstant_ip,"IP=","\n");
 //                                printf(">>>multipleOfNewConstantInteger:%i>1? SmallestDenom:%i\n", multipleOfNewConstantInteger, smallestDenom);
 //                                printf(" Numer=%i Denom:%i\n---\n", multipleOfNewConstantInteger, smallestDenom);
 //                                printRealToConsole(&multipleOfNewConstant_fp,"fp:","--\n");
@@ -1752,13 +1757,21 @@ bool_t checkForAndChange(char *displayString, const real34_t *value34, const rea
       strcpy(cStr,constantStr);
     }
 
+//                                printRealToConsole(&valueReal,"\n\nInputvalue: valueReal=","\n");
+//                                printRealToConsole(constant,"    constant=","\n");
+//                                //printf("    §%s§   §%s§   §%s§\n", resultingIntStr, constantStr, denomStr);
+//                                printRealToConsole(&findingIrrationalTolerance1,"findingIrrationalTolerance1=","\n");
+//                                printf("Numerator: multipleOfNewConstantInteger   %i\n",multipleOfNewConstantInteger);
+//                                printf("Denominator: smallestDenom                         /            %i\n",smallestDenom);
+//                                printRealToConsole(&multipleOfNewConstant_fp,"&multipleOfNewConstant_fp=","\n");
 
-    if(multipleOfNewConstantInteger >= 1 && realCompareAbsLessThan(&multipleOfNewConstant_fp,findingIrrationalTolerance)) {
+    if(multipleOfNewConstantInteger >= 1 && realCompareAbsLessThan(&multipleOfNewConstant_fp,&findingIrrationalTolerance1)) {
 //                                printf("A whole multiple %i of the 'new' constant exists\n", multipleOfNewConstantInteger);
 
       if(multipleOfNewConstantInteger > smallestDenom  &&  smallestDenom > 1  && multipleOfNewConstantInteger != 0 && useMixedNumbers) {   // Numer > Denom; 
         int32_t wholeInteger = multipleOfNewConstantInteger / smallestDenom;
         multipleOfNewConstantInteger = multipleOfNewConstantInteger - (wholeInteger * smallestDenom);
+//                                printf("B  wholeInteger %i, multipleOfNewConstantInteger %i of the 'new' constant exists\n", wholeInteger, multipleOfNewConstantInteger);
         char useMixedNumbersSep[3];
         if(cStr[0]==0) {                                                                                          // no constant
           useMixedNumbersSep[0] = STD_SPACE_4_PER_EM[0];
@@ -1785,17 +1798,16 @@ bool_t checkForAndChange(char *displayString, const real34_t *value34, const rea
         sprintf(resultingIntStr, "%s%s", wholePart, tmpstr);                                                        // "1 1"
       }
       else {
-        if(multipleOfNewConstantInteger == 1) {                                                                               // constant
+        if(multipleOfNewConstantInteger == 1) {                                                                   // constant
           sprintf(resultingIntStr,"%s", wholePart);                                                                 // "e+" or "2xe+"
         }
         else {
           sprintf(tmpstr,"%i%s",(int)multipleOfNewConstantInteger,PRODUCT_SIGN);
-          //changeToSup(tmpstr);
           sprintf(resultingIntStr, "%s%s", wholePart, tmpstr);                                                      // "e+1" or "2xe+1"
         }
       }
     } else {
-      sprintf(resultingIntStr,"%i", (int)multipleOfNewConstantInteger);                                         //0
+        changeToSup(multipleOfNewConstantInteger, resultingIntStr);       //numerator
     }
 
 //                                sprintf(teststr,">>>@@@2 |%s|%s|%s| %i %i\n", resultingIntStr, constantStr, denomStr, (int16_t)stringByteLength(resultingIntStr)-1, resultingIntStr[stringByteLength(resultingIntStr)-1]);
@@ -1804,30 +1816,23 @@ bool_t checkForAndChange(char *displayString, const real34_t *value34, const rea
 //                                printf("%s\n",teststr2);
 
     if(smallestDenom > 1) {
-      changeToSub(smallestDenom, denomStr);                                                                    // "/12"
-//                                printf("Convert to SUB:%i : ",(int)smallestDenom);
-//                                printf("%s\n",denomStr);
+      changeToSub(smallestDenom, denomStr);                                                                     // "/12"
     }
 
     if((resultingIntStr[stringByteLength(resultingIntStr)-1]==' ' || resultingIntStr[max(0,stringByteLength(resultingIntStr)-1)]==0) &&  denomStr[0]=='/' && cStr[0]==0) {
       sprintf(tmpstr, STD_SUP_1 "%s", denomStr);
       strcpy(denomStr, tmpstr);
     }
+
   real_t roundingTolerance1;
-  irfractionTolerence(smallestDenom * 6, &roundingTolerance1); //factor is to make the fraction margin a little wider. Margin calculated, based on denominator.
+  irfractionTolerence(smallestDenom * 6 + 1, &roundingTolerance1);                                              // relative convergence, add (6x+1) i.e about 0.43 digits + 1 for safety margin)
 
-//                                printRealToConsole(&valueReal,"\n\nInputvalue: valueReal=","\n");
-//                                printRealToConsole(constant,"    constant=","\n");
-//                                printf("    §%s§   §%s§   §%s§\n", resultingIntStr, constantStr, denomStr);
-//                                printRealToConsole(findingIrrationalTolerance,"findingIrrationalTolerance=","\n");
-//                                printf("Numerator: multipleOfNewConstantInteger   %i\n",multipleOfNewConstantInteger);
-//                                printf("Denominator: smallestDenom                         /            %i\n",smallestDenom);
-//                                printRealToConsole(&multipleOfNewConstant_fp,"&multipleOfNewConstant_fp=","\n");
-//                                printRealToConsole(&roundingTolerance1,"roundingTolerance1=","\n");
+//                               printRealToConsole(&multipleOfNewConstant_fp,"&multipleOfNewConstant_fp=","\n");
+//                               printRealToConsole(&roundingTolerance1,"roundingTolerance1=","\n");
+
     displayString[0] = 0;
-    if(realCompareAbsLessThan(&multipleOfNewConstant_fp,findingIrrationalTolerance)) {                                     // irrational tolerance found, show irrational and fraction
-
-      if(!realCompareAbsLessThan(&multipleOfNewConstant_fp,&roundingTolerance1) ){                                           // prepend the tags; FDIGS=34 is normal, i.e. no lying, meaning opening up the tolerance band for zero
+    if(!realCompareAbsGreaterThan(&multipleOfNewConstant_fp,&findingIrrationalTolerance1)) {                                     // irrational tolerance found, show irrational and fraction
+      if(!realCompareAbsLessThan(&multipleOfNewConstant_fp,&roundingTolerance1) ){                                               // prepend the tags; FDIGS=34 is normal, i.e. no lying, meaning opening up the tolerance band for zero
         strcat(displayString, STD_ALMOST_EQUAL);
       }
 
@@ -1854,10 +1859,10 @@ bool_t checkForAndChange(char *displayString, const real34_t *value34, const rea
           strcat(displayString, resultingIntStr);
         }
         strcat(displayString,cStr);
-        strcat(displayString,denomStr);                               // "-2xe+" "e" "/3"
+        strcat(displayString,denomStr);                                // "-2xe+" "e" "/3"
       }
 
-      if(cStr[0] == 0 && constantStr[0] !=0) {                        // "-2/3" "e"
+      if(cStr[0] == 0 && constantStr[0] !=0) {                         // "-2/3" "e"
         strcat(displayString,STD_SPACE_4_PER_EM);
         strcat(displayString,PRODUCT_SIGN);
         strcat(displayString,STD_SPACE_4_PER_EM);

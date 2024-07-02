@@ -199,9 +199,16 @@ void showFracMode(void) {
     if(constantFractions && constantFractionsOn && !getSystemFlag(FLAG_FRACT)) {    //IRFRAC and NOT FRAC
       sprintf(statusMessage,"%s",divStr);
       x = showString(statusMessage, &standardFont, x, 0, vmNormal, true, true);
-      raiseString = 4;
-      sprintf(statusMessage,STD_SUB_c);
-      x = showString(statusMessage, &standardFont, x-2, 0, vmNormal, true, true);
+
+      if(denMax >= MAX_DENMAX) {
+        compressString = 1;
+        sprintf(statusMessage,"max");
+        x = showString(statusMessage, &standardFont, x, 0, vmNormal, true, true);
+      } else {
+        sprintf(statusMessage, "%" PRIu32 ,denMax);
+        compressString = 1;
+        x = showString(statusMessage, &standardFont, x, 0, vmNormal, true, true);
+      }
 
       strcpy(divStr,STD_DOT);
       raiseString = 2;
@@ -248,10 +255,6 @@ void showFracMode(void) {
       }
 
       if(fractionDigits == 0 || fractionDigits == 34) {        
-      }
-      else if(getSystemFlag(FLAG_FRPROX)) {
-        compressString = 1;
-        x = showString(STD_TILDE, &standardFont, x, 0, vmNormal, true, false);
       }
       else {                                                    // tags are evaluated
         compressString = 1;
