@@ -2162,8 +2162,8 @@
 #define ITM_RIBBON_SAV              2106
 #define MNU_PLOTTING                2107
 #define MNU_TAMNONREGIND            2108
-#define ITM_2109                    2109
-#define ITM_2110                    2110
+#define MNU_TAMNONREGMAX            2109
+#define ITM_TAMMAX                  2110
 #define ITM_GAPDOT_L                2111
 #define ITM_GAPWIDDOT_L             2112
 #define ITM_GAPPER_L                2113

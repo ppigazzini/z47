@@ -428,7 +428,6 @@ int16_t fnItemShowValue(int16_t item) {
     case ITM_PLOTZOOM:  result = -PLOT_ZOOM;                                        break;
     case ITM_WSIZE:     result = shortIntegerWordSize;                              break; //  664
     case ITM_RNG:       result = exponentLimit;                                     break;
-    case ITM_DENMAX2:   result = denMax;                                            break;
     case ITM_SETSIG2:   result = (significantDigits == 0 ? 34 : significantDigits); break;
     case ITM_SETFDIGS:  result = (fractionDigits == 0 ? 34 : fractionDigits);       break;
     case ITM_DSPCYCLE:  result = 32700 + displayFormat;                             break;

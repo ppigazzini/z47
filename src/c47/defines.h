@@ -1242,7 +1242,8 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define TM_KEY                                 10012
 #define TM_INTEGRATE                           10013
 #define TM_DELITM                              10014
-#define TM_CMP                                 10015 // TM_CMP must be the last in this list
+#define TM_VALUE_MAX                           10015
+#define TM_CMP                                 10016 // TM_CMP must be the last in this list
 
 // NIM number part
 #define NP_EMPTY                                   0
@@ -1524,7 +1525,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define NUMBER_OF_GLYPH_ROWS                     260  //Used in the font browser application
 
 #define MAX_DENMAX                              9999 // Biggest denominator in fraction display mode selector, and annunciator. 
-                                                     // The value 9999 gets converted to MAX_INTERNAL_DENMAX
+                                                     // The value 0 gets converted to MAX_INTERNAL_DENMAX
 #define MAX_INTERNAL_DENMAX                   999999 // Biggest denominator in fraction display mode
 
 #if defined(DMCP_BUILD)

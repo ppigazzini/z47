@@ -1589,7 +1589,7 @@ int32_t getSmallestDenom(const real_t *val) {
 
   int32_t m[2][2];
   int32_t maxden;
-  if(denMax == MAX_DENMAX) {
+  if(denMax == 0 || denMax > MAX_DENMAX) {
     maxden = MAX_INTERNAL_DENMAX;
   } else {
     maxden = denMax;

@@ -594,6 +594,8 @@ TO_QSPI const int16_t menu_TamFlag[]     = { ITM_INDIRECTION,               -MNU
                                              ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
                                              ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    -MNU_FLG                      };
 
+TO_QSPI const int16_t menu_TamNonRegMax[]= { ITM_INDIRECTION,               ITM_TAMMAX,                 ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL                      };
+
 TO_QSPI const int16_t menu_TamNonReg[]   = { ITM_INDIRECTION,               ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL                      };
 TO_QSPI const int16_t menu_TamNonRegInd[]= { ITM_NULL,                      -MNU_VAR,                   ITM_REG_X,                ITM_REG_Y,             ITM_REG_Z,                   ITM_REG_T,
                                              ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    -MNU_REG                      };
@@ -958,6 +960,7 @@ TO_QSPI const softmenu_t softmenu[] = {
 /* 149 */  {.menuItem = -MNU_AMORT,       .numItems = sizeof(menu_AMORT         )/sizeof(int16_t), .softkeyItem = menu_AMORT          },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
 /* 150 */  {.menuItem = -MNU_Grapher,     .numItems = sizeof(menu_Grapher       )/sizeof(int16_t), .softkeyItem = menu_Grapher        },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
 /* 151 */  {.menuItem = -MNU_AUDIO,       .numItems = sizeof(menu_AUDIO         )/sizeof(int16_t), .softkeyItem = menu_AUDIO          },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-06-16 jm
+/* 152 */  {.menuItem = -MNU_TAMNONREGMAX,.numItems = sizeof(menu_TamNonRegMax  )/sizeof(int16_t), .softkeyItem = menu_TamNonRegMax   },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
 /* 152 */  {.menuItem =  0,               .numItems = 0,                                           .softkeyItem = NULL                }
 };
 
@@ -2009,6 +2012,14 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
                           default: ;
                         }
                         break;
+      case ITM_DENMAX2: *showValue = denMax;
+                        if(denMax == 0) {
+                          strcpy(showText, STD_SUB_m STD_SUB_a STD_SUB_x );                          
+                          showText[6] = 0;
+                          *showValue = NOVAL;
+                        }
+                        break;
+
       case ITM_GAP_L  : if(gapItemLeft == ITM_NULL) stringAppend(showText + stringByteLength(showText), "\1\1");
                         else stringAppend(showText + stringByteLength(showText),  indexOfItems[gapItemLeft].itemSoftmenuName);  //  gapCharLeft);
                         *showValue = NOVAL;

@@ -31,8 +31,8 @@
 
 void fnDenMax(uint16_t D) {
   denMax = D;
-  if(denMax < 2) {
-    denMax = 2;
+  if(denMax == 1 || denMax > MAX_DENMAX) {
+    denMax = MAX_DENMAX;
   }
 }
 
@@ -98,10 +98,10 @@ bool_t fraction(calcRegister_t regist, int16_t *sign, uint64_t *intPart, uint64_
   // temp1 = continued fraction calculation --> fractional_part(1 / temp1)  initialized with temp0
   // delta = difference between the best fraction and the real number
 
-  uint32_t dd = denMax;
-  uint32_t denMax;
-  if(dd == MAX_DENMAX) {
-    denMax = MAX_INTERNAL_DENMAX;
+  uint32_t dd = denMax;            //dd = global
+  uint32_t denMax;                 //local
+  if(dd == 0 || dd > MAX_DENMAX) {
+    denMax = MAX_INTERNAL_DENMAX;  //local
   }
   else {
     denMax = dd;
