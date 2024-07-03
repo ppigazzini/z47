@@ -1136,7 +1136,7 @@ releaseOverride = false;
           if(tam.mode && catalog && (tam.digitsSoFar || tam.function == ITM_BESTF || tam.function == ITM_CNST || (!tam.indirect && (tam.mode == TM_VALUE || tam.mode == TM_VALUE_CHB)))) {
             // disabled
           }
-          else if(tam.mode && (!tam.alpha || isAlphabeticSoftmenu())) {
+          else if(tam.mode && (!tam.alpha || isAlphabeticSoftmenu()) && !(tam.mode == TM_VALUE && item == ITM_TAMMAX)) {
             bool_t isInConfig = tam.mode == TM_FLAGW && softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_SYSFL;   //JM Do not drop out of SYSFLG
 
            if(softmenu[softmenuStack[1].softmenuId].menuItem == -MNU_TAMALPHA &&
@@ -1208,6 +1208,9 @@ releaseOverride = false;
                   && (item == CHR_num || item == CHR_case || item == ITM_SCR) )
               ) {
               tamLeaveMode();
+            }
+            else if(tam.mode == TM_VALUE && item == ITM_TAMMAX) {
+              tamLeaveMode();              
             }
 
                     #if defined(VERBOSEKEYS)

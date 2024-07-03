@@ -200,7 +200,7 @@ void showFracMode(void) {
       sprintf(statusMessage,"%s",divStr);
       x = showString(statusMessage, &standardFont, x, 0, vmNormal, true, true);
 
-      if(denMax >= MAX_DENMAX) {
+      if(denMax == 0 || denMax > MAX_DENMAX) {
         compressString = 1;
         sprintf(statusMessage,"max");
         x = showString(statusMessage, &standardFont, x, 0, vmNormal, true, true);
@@ -235,7 +235,7 @@ void showFracMode(void) {
 
     else if(getSystemFlag(FLAG_FRACT)){                                              //(NOT IRFRAC or FRAC) AND FRAC
 
-      if(denMax >= MAX_DENMAX) {
+      if(denMax == 0 || denMax > MAX_DENMAX) {
         compressString = 1;
         sprintf(statusMessage,"%smax",divStr);
         x = showString(statusMessage, &standardFont, x, 0, vmNormal, true, true);
