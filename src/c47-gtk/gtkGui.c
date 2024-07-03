@@ -280,7 +280,7 @@
             if(checkNormal(10,ITM_SHIFTg)) btnClicked(w, "10"); else
             if(checkNormal(11,ITM_SHIFTg)) btnClicked(w, "11"); else
 
-            if(getSystemFlag((FLAG_USER) ? kbd_usr[11].primary : kbd_std[11].primary) == ITM_SHIFTg) btnClicked(w, "11");
+            if((getSystemFlag(FLAG_USER) ? kbd_usr[11].primary : kbd_std[11].primary) == ITM_SHIFTg) btnClicked(w, "11");
 
         }
         CTRL_State = 0;
