@@ -31,8 +31,8 @@
 
 void fnDenMax(uint16_t D) {
   denMax = D;
-  if(denMax < 2) {
-    denMax = 2;
+  if(denMax == 1 || denMax > MAX_DENMAX) {
+    denMax = MAX_DENMAX;
   }
 }
 
@@ -97,6 +97,15 @@ bool_t fraction(calcRegister_t regist, int16_t *sign, uint64_t *intPart, uint64_
   // temp0 = fractional_part(absolute_value(real number))
   // temp1 = continued fraction calculation --> fractional_part(1 / temp1)  initialized with temp0
   // delta = difference between the best fraction and the real number
+
+  uint32_t dd = denMax;            //dd = global
+  uint32_t denMax;                 //local
+  if(dd == 0 || dd > MAX_DENMAX) {
+    denMax = MAX_INTERNAL_DENMAX;  //local
+  }
+  else {
+    denMax = dd;
+  }
 
   real_t temp0;
 
@@ -536,9 +545,6 @@ bool_t fraction(calcRegister_t regist, int16_t *sign, uint64_t *intPart, uint64_
 
   if(fractionDigits == 0 || fractionDigits == 34) {                  //Returns true to prepend the tags, if FDIGS=34 is normal, i.e. no lying
     return true;
-  }
-  else if(getSystemFlag(FLAG_FRPROX)) {                              //Returns false to not prepend the tags, i.e. lying for 32 & 33 special mode to not show passing tolerances
-    return false;
   }
   else {                                                             //Checks if within tolerance for FDIGS<=32
     return realCompareAbsGreaterThan(&f,&roundingTolerance);           //return true to prepend tags, if actual fraction is outside of tolerance

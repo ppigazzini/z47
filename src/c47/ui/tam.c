@@ -939,6 +939,12 @@
     tam.keyInputFinished = false;
 
     switch(tam.mode) {
+      case TM_VALUE_MAX:                                                 //TM_VALUE_MAX, MNU_TAMNONREGMAX: Changing over to TM_VALUE, only used to add the max button for 0
+        if(func != ITM_VIEW || !catalog || catalog != CATALOG_MVAR) {
+          showSoftmenu(-MNU_TAMNONREGMAX);
+        }
+        tam.mode = TM_VALUE;
+        break;
       case TM_VALUE:
       case TM_VALUE_CHB:
         if(func != ITM_VIEW || !catalog || catalog != CATALOG_MVAR) {

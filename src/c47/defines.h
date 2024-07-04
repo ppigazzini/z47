@@ -615,8 +615,7 @@
 #define FLAG_MONIT                            0x8040 // MONIT MUST be the first of the second flag word
 #define FLAG_FRCYC                            0x8041
 #define FLAG_HPCONV                           0x8042 //shifted here from 0x8044
-#define FLAG_FRPROX                           0x8043 
-#define NUMBER_OF_SYSTEM_FLAGS                    68 // We can have a maximum of 128 system flags
+#define NUMBER_OF_SYSTEM_FLAGS                    67 // We can have a maximum of 128 system flags
 #define FLAG_tmp2                             0x8044 //restore previously used flags in version 10000009 to 0; Re-use these flag numbers at will, then remove these defines.
 
 typedef enum {
@@ -1243,7 +1242,8 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define TM_KEY                                 10012
 #define TM_INTEGRATE                           10013
 #define TM_DELITM                              10014
-#define TM_CMP                                 10015 // TM_CMP must be the last in this list
+#define TM_VALUE_MAX                           10015
+#define TM_CMP                                 10016 // TM_CMP must be the last in this list
 
 // NIM number part
 #define NP_EMPTY                                   0
@@ -1524,7 +1524,9 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define MAX_NUMBER_OF_GLYPHS_IN_STRING           508 //WP=196: Change to 512 less 3, Also change error message 33, and AIM_BUFFER_LENGTH, and MAXLINES
 #define NUMBER_OF_GLYPH_ROWS                     260  //Used in the font browser application
 
-#define MAX_DENMAX                              9999 // Biggest denominator in fraction display mode
+#define MAX_DENMAX                              9999 // Biggest denominator in fraction display mode selector, and annunciator. 
+                                                     // The value 0 gets converted to MAX_INTERNAL_DENMAX
+#define MAX_INTERNAL_DENMAX                   999999 // Biggest denominator in fraction display mode
 
 #if defined(DMCP_BUILD)
   #define SCREEN_REFRESH_PERIOD                  160 // 500 // in milliseconds //JM timeout for lcd refresh in ms 125
