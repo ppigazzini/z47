@@ -253,21 +253,18 @@
       case 65506: //right shift
           if(SHIFT_State != 0) {     //f-shift activated on the release of the shift key, to allow for standard PC shifted chars
 
-             if(checkNormal( 0,KEY_fg))     btnClicked(w, "00"); else
-             if(checkNormal(10,KEY_fg))     btnClicked(w, "10"); else
-             if(checkNormal(11,KEY_fg))     btnClicked(w, "11"); else
-             if(checkNormal( 0,ITM_SHIFTf)) btnClicked(w, "00"); else
-             if(checkNormal(10,ITM_SHIFTf)) btnClicked(w, "10"); else
-             if(checkNormal(11,ITM_SHIFTf)) btnClicked(w, "11"); else
-             // if(checkNormal( 0,ITM_SHIFTg)) btnClicked(w, "00"); else //removed, Robbert needs g on CTRL only
-             // if(checkNormal(10,ITM_SHIFTg)) btnClicked(w, "10"); else
-             // if(checkNormal(11,ITM_SHIFTg)) btnClicked(w, "11");
+            if(checkNormal( 0,KEY_fg))     btnClicked(w, "00"); else
+            if(checkNormal(10,KEY_fg))     btnClicked(w, "10"); else
+            if(checkNormal(11,KEY_fg))     btnClicked(w, "11"); else
+            if(checkNormal( 0,ITM_SHIFTf)) btnClicked(w, "00"); else
+            if(checkNormal(10,ITM_SHIFTf)) btnClicked(w, "10"); else
+            if(checkNormal(11,ITM_SHIFTf)) btnClicked(w, "11"); else
 
-            if(getSystemFlag(FLAG_USER) ? kbd_usr[10].primary : kbd_std[10].primary == ITM_SHIFTf) btnClicked(w, "10"); else
-            if(getSystemFlag(FLAG_USER) ? kbd_usr[ 0].primary : kbd_std[ 0].primary == KEY_fg    ) btnClicked(w, "00"); else
-            if(getSystemFlag(FLAG_USER) ? kbd_usr[10].primary : kbd_std[10].primary == KEY_fg    ) btnClicked(w, "10"); else
-            if(getSystemFlag(FLAG_USER) ? kbd_usr[11].primary : kbd_std[11].primary == KEY_fg    ) btnClicked(w, "11"); else
-            if(getSystemFlag(FLAG_USER) ? kbd_usr[27].primary : kbd_std[27].primary == KEY_fg    ) btnClicked(w, "27");
+            if((getSystemFlag(FLAG_USER) ? kbd_usr[10].primary : kbd_std[10].primary) == ITM_SHIFTf) btnClicked(w, "10"); else
+            if((getSystemFlag(FLAG_USER) ? kbd_usr[ 0].primary : kbd_std[ 0].primary) == KEY_fg    ) btnClicked(w, "00"); else
+            if((getSystemFlag(FLAG_USER) ? kbd_usr[10].primary : kbd_std[10].primary) == KEY_fg    ) btnClicked(w, "10"); else
+            if((getSystemFlag(FLAG_USER) ? kbd_usr[11].primary : kbd_std[11].primary) == KEY_fg    ) btnClicked(w, "11"); else
+            if((getSystemFlag(FLAG_USER) ? kbd_usr[27].primary : kbd_std[27].primary) == KEY_fg    ) btnClicked(w, "27");
           }
           SHIFT_State = 0;
           break;
@@ -279,18 +276,11 @@
             if(checkNormal( 0,KEY_fg))     btnClicked(w, "00"); else
             if(checkNormal(10,KEY_fg))     btnClicked(w, "10"); else
             if(checkNormal(11,KEY_fg))     btnClicked(w, "11"); else
-            // if(checkNormal( 0,ITM_SHIFTf)) btnClicked(w, "00"); else  //removed, Robbert needs f and f/g on SHIFT only
-            // if(checkNormal(10,ITM_SHIFTf)) btnClicked(w, "10"); else
-            // if(checkNormal(11,ITM_SHIFTf)) btnClicked(w, "11"); else
             if(checkNormal( 0,ITM_SHIFTg)) btnClicked(w, "00"); else
             if(checkNormal(10,ITM_SHIFTg)) btnClicked(w, "10"); else
             if(checkNormal(11,ITM_SHIFTg)) btnClicked(w, "11"); else
 
-            if(getSystemFlag(FLAG_USER) ? kbd_usr[11].primary : kbd_std[11].primary == ITM_SHIFTg) btnClicked(w, "11");
-            // if(getSystemFlag(FLAG_USER) ? kbd_usr[ 0].primary : kbd_std[ 0].primary == KEY_fg    ) btnClicked(w, "10"); else   //removed, Robbert needs f and f/g on SHIFT only
-            // if(getSystemFlag(FLAG_USER) ? kbd_usr[10].primary : kbd_std[10].primary == KEY_fg    ) btnClicked(w, "10"); else
-            // if(getSystemFlag(FLAG_USER) ? kbd_usr[11].primary : kbd_std[11].primary == KEY_fg    ) btnClicked(w, "11"); else
-            // if(getSystemFlag(FLAG_USER) ? kbd_usr[27].primary : kbd_std[27].primary == KEY_fg    ) btnClicked(w, "27");
+            if((getSystemFlag(FLAG_USER) ? kbd_usr[11].primary : kbd_std[11].primary) == ITM_SHIFTg) btnClicked(w, "11");
 
         }
         CTRL_State = 0;
