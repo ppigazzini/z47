@@ -43,6 +43,7 @@
   //uint64_t WP34S_intSqr               (uint64_t x); Never used
   //uint64_t WP34S_intCube              (uint64_t x); Never used
   uint64_t WP34S_intLCM               (uint64_t y, uint64_t x);
+  uint64_t WP34S_int_gcd              (uint64_t a, uint64_t b);
   uint64_t WP34S_intGCD               (uint64_t y, uint64_t x);
   uint64_t WP34S_intChs               (uint64_t x);
   uint64_t WP34S_intSqrt              (uint64_t x);
