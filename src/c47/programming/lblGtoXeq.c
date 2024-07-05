@@ -557,10 +557,12 @@ static void _putLiteral(uint8_t *literalAddress) {
       //}
 
       case BINARY_REAL34: {
+      real34_t realLiteral;
+      xcopy(&realLiteral, literalAddress, TO_BYTES(REAL34_SIZE_IN_BLOCKS));
       liftStack();
       setSystemFlag(FLAG_ASLIFT);
       reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
-      real34Copy((real34_t *)literalAddress, REGISTER_REAL34_DATA(REGISTER_X));
+      real34Copy(&realLiteral, REGISTER_REAL34_DATA(REGISTER_X));
       break;
       }
 
@@ -569,8 +571,8 @@ static void _putLiteral(uint8_t *literalAddress) {
         liftStack();
         setSystemFlag(FLAG_ASLIFT);
         reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
-        xcopy(VARIABLE_REAL34_DATA(&complexLiteral), literalAddress     , 16);
-        xcopy(VARIABLE_IMAG34_DATA(&complexLiteral), literalAddress + 16, 16);
+        xcopy(VARIABLE_REAL34_DATA(&complexLiteral), literalAddress                                  , TO_BYTES(REAL34_SIZE_IN_BLOCKS));
+        xcopy(VARIABLE_IMAG34_DATA(&complexLiteral), literalAddress + TO_BYTES(REAL34_SIZE_IN_BLOCKS), TO_BYTES(REAL34_SIZE_IN_BLOCKS));
         complex34Copy(&complexLiteral, REGISTER_COMPLEX34_DATA(REGISTER_X));
         break;
       }
