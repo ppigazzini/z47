@@ -3017,9 +3017,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
         else if(getSystemFlag(FLAG_FRACT)
                     && (    getRegisterDataType(regist) == dtReal34
                          && (
-                                (   real34CompareAbsGreaterThan(REGISTER_REAL34_DATA(regist), const34_1e_4)
-                                 && real34CompareAbsLessThan(REGISTER_REAL34_DATA(regist), const34_1e6)
-                                )
+                                real34CompareAbsLessThan(REGISTER_REAL34_DATA(regist), const34_1e6) 
                              || real34IsZero(REGISTER_REAL34_DATA(regist))
                             )
                        )

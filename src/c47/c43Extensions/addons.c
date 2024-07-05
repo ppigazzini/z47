@@ -1661,6 +1661,7 @@ bool_t checkForAndChange(char *displayString, const real34_t *value34, const rea
     realCopyAbs(&valueReal,&valueRealAbs);
 
     char denomStr[20], wholePart[30], resultingIntStr[100], tmpstr[50];
+    tmpstr[0]=0;
     denomStr[0] = 0;
     wholePart[0] = 0;
     resultingIntStr[0] = 0;
@@ -1764,6 +1765,8 @@ bool_t checkForAndChange(char *displayString, const real34_t *value34, const rea
 //                                printf("Numerator: multipleOfNewConstantInteger   %i\n",multipleOfNewConstantInteger);
 //                                printf("Denominator: smallestDenom                         /            %i\n",smallestDenom);
 //                                printRealToConsole(&multipleOfNewConstant_fp,"&multipleOfNewConstant_fp=","\n");
+//                                char displayString1[200];
+//                                stringToASCII(resultingIntStr,displayString1); printf("BBB1 ---> %s %u %u %u %u %u %u %u %u\n",displayString1,(uint8_t)(displayString[0]),(uint8_t)(displayString[1]),(uint8_t)(displayString[2]),(uint8_t)(displayString[3]),(uint8_t)(displayString[4]),(uint8_t)(displayString[5]),(uint8_t)(displayString[6]),(uint8_t)(displayString[7]));
 
     if(multipleOfNewConstantInteger >= 1 && realCompareAbsLessThan(&multipleOfNewConstant_fp,&findingIrrationalTolerance1)) {
 //                                printf("A whole multiple %i of the 'new' constant exists\n", multipleOfNewConstantInteger);
@@ -1791,9 +1794,13 @@ bool_t checkForAndChange(char *displayString, const real34_t *value34, const rea
           }
         }
       }
+
       if(cStr[0] == 0) {                                                                                          // no constant
         if(smallestDenom > 1) {
           changeToSup(multipleOfNewConstantInteger, tmpstr);              //numerator
+        }
+        else {
+          sprintf(tmpstr,"%i",(int)multipleOfNewConstantInteger);
         }
         sprintf(resultingIntStr, "%s%s", wholePart, tmpstr);                                                        // "1 1"
       }
@@ -1810,6 +1817,10 @@ bool_t checkForAndChange(char *displayString, const real34_t *value34, const rea
         changeToSup(multipleOfNewConstantInteger, resultingIntStr);       //numerator
     }
 
+//                                printf("QQ1 %s\n",wholePart);       printf("BBB1 ---> %u %u %u %u %u %u %u %u\n",(uint8_t)(wholePart[0]),(uint8_t)(wholePart[1]),(uint8_t)(wholePart[2]),(uint8_t)(wholePart[3]),(uint8_t)(wholePart[4]),(uint8_t)(wholePart[5]),(uint8_t)(wholePart[6]),(uint8_t)(wholePart[7]));
+//                                printf("  2 %s\n",tmpstr);          printf("BBB2 ---> %u %u %u %u %u %u %u %u\n",(uint8_t)(tmpstr[0]),(uint8_t)(tmpstr[1]),(uint8_t)(tmpstr[2]),(uint8_t)(tmpstr[3]),(uint8_t)(tmpstr[4]),(uint8_t)(tmpstr[5]),(uint8_t)(tmpstr[6]),(uint8_t)(tmpstr[7]));
+//                                printf("  3 %s\n",resultingIntStr); printf("BBB3 ---> %u %u %u %u %u %u %u %u\n",(uint8_t)(resultingIntStr[0]),(uint8_t)(resultingIntStr[1]),(uint8_t)(resultingIntStr[2]),(uint8_t)(resultingIntStr[3]),(uint8_t)(resultingIntStr[4]),(uint8_t)(resultingIntStr[5]),(uint8_t)(resultingIntStr[6]),(uint8_t)(resultingIntStr[7]));
+//                                char teststr[1000];
 //                                sprintf(teststr,">>>@@@2 |%s|%s|%s| %i %i\n", resultingIntStr, constantStr, denomStr, (int16_t)stringByteLength(resultingIntStr)-1, resultingIntStr[stringByteLength(resultingIntStr)-1]);
 //                                char teststr2[1000];
 //                                stringToASCII(teststr,teststr2);
