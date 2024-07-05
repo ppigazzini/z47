@@ -425,15 +425,20 @@ static void real34ToDisplayString2(const real34_t *real34, char *displayString, 
   if(constantFractions && constantFractionsOn && !getSystemFlag(FLAG_FRACT) && IrFractionsCurrentStatus != CF_OFF && !real34CompareAbsLessThan(real34,const34_1e_6) && !real34IsAnInteger(real34)) {
     real_t toleranceIrrational;
     realCopy(const_1e_24, &toleranceIrrational);
-    if(checkForAndChange(displayString, real34, const_1,     &toleranceIrrational, "",                        frontSpace, complex)) return_fr;
-    if(checkForAndChange(displayString, real34, const_rt3,   &toleranceIrrational, STD_SQUARE_ROOT STD_SUB_3, frontSpace, complex)) return_fr;
-    if(checkForAndChange(displayString, real34, const_pi,    &toleranceIrrational, STD_pi,                    frontSpace, complex)) return_fr;
-    if(checkForAndChange(displayString, real34, const_eE,    &toleranceIrrational, STD_EulerE,                frontSpace, complex)) return_fr;
-    if(checkForAndChange(displayString, real34, const_root2, &toleranceIrrational, STD_SQUARE_ROOT STD_SUB_2, frontSpace, complex)) return_fr;
-    if(checkForAndChange(displayString, real34, const_PHI,   &toleranceIrrational, STD_phi,                   frontSpace, complex)) return_fr;
-    if(checkForAndChange(displayString, real34, const_rt5,   &toleranceIrrational, STD_SQUARE_ROOT STD_SUB_5, frontSpace, complex)) return_fr;
-    if(checkForAndChange(displayString, real34, const_rt7,   &toleranceIrrational, STD_SQUARE_ROOT STD_SUB_7, frontSpace, complex)) return_fr;
-    if(checkForAndChange(displayString, real34, const_rtpi,  &toleranceIrrational, STD_SQUARE_ROOT STD_pi,    frontSpace, complex)) return_fr;
+    if(checkForAndChange(displayString, real34, const_1,     &toleranceIrrational, "",                                 frontSpace, complex)) return_fr;
+    if(checkForAndChange(displayString, real34, const_rt3,   &toleranceIrrational, STD_SQUARE_ROOT STD_SUB_3,          frontSpace, complex)) return_fr;
+    if(checkForAndChange(displayString, real34, const_pi,    &toleranceIrrational, STD_pi,                             frontSpace, complex)) return_fr;
+    if(checkForAndChange(displayString, real34, const_eE,    &toleranceIrrational, STD_EulerE,                         frontSpace, complex)) return_fr;
+    if(checkForAndChange(displayString, real34, const_root2, &toleranceIrrational, STD_SQUARE_ROOT STD_SUB_2,          frontSpace, complex)) return_fr;
+    if(checkForAndChange(displayString, real34, const_PHI,   &toleranceIrrational, STD_phi,                            frontSpace, complex)) return_fr;
+    if(checkForAndChange(displayString, real34, const_rt5,   &toleranceIrrational, STD_SQUARE_ROOT STD_SUB_5,          frontSpace, complex)) return_fr;
+    if(checkForAndChange(displayString, real34, const_rt7,   &toleranceIrrational, STD_SQUARE_ROOT STD_SUB_7,          frontSpace, complex)) return_fr;
+    if(checkForAndChange(displayString, real34, const_rtpi,  &toleranceIrrational, STD_SQUARE_ROOT STD_pi,             frontSpace, complex)) return_fr;
+    if(checkForAndChange(displayString, real34, const_1onpi, &toleranceIrrational, STD_pi STD_SUP_MINUS STD_SUP_1,     frontSpace, complex)) return_fr;  //"(" STD_SUP_1 "/" STD_SUB_PI ")"
+    real_t tmp;
+    realCopy(const__1oneE,&tmp);
+    realSetNegativeSign(&tmp);
+    if(checkForAndChange(displayString, real34, &tmp,        &toleranceIrrational, STD_EulerE STD_SUP_MINUS STD_SUP_1, frontSpace, complex)) return_fr;  //"(" STD_SUP_1 "/" STD_e  ")"
   }
   IrFractionsCurrentStatus = CF_NORMAL;
 
@@ -599,13 +604,13 @@ static void real34ToDisplayString2(const real34_t *real34, char *displayString, 
     }
     else if(exponent < -exponentLimit || (exponentHideLimit != 0 && exponent < -exponentHideLimit)) {
       if(real34IsPositive(&value34)) {
-        strcpy(displayString, STD_LEFT_SINGLE_QUOTE "0." STD_RIGHT_SINGLE_QUOTE);
+        strcpy(displayString, STD_ALMOST_EQUAL "0");
         if(updateDisplayValueX) {
           strcpy(displayValueX + strlen(displayValueX), "0");
         }
       }
       else if(real34IsNegative(&value34)) {
-        strcpy(displayString, STD_LEFT_SINGLE_QUOTE "0." STD_RIGHT_SINGLE_QUOTE);
+        strcpy(displayString, STD_ALMOST_EQUAL "0");
         if(updateDisplayValueX) {
           strcpy(displayValueX + strlen(displayValueX), "0");
         }

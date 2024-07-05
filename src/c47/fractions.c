@@ -22,6 +22,7 @@
 #include "flags.h"
 #include "fractions.h"
 #include "mathematics/comparisonReals.h"
+#include "integers.h"
 #include "registers.h"
 #include "registerValueConversions.h"
 
@@ -145,18 +146,107 @@ bool_t fraction(calcRegister_t regist, int16_t *sign, uint64_t *intPart, uint64_
   }
 
   real_t delta, temp3;
-  realPlus(const_9999, &delta, &ctxtReal34);
-
+  realPlus(const_9999, &delta, &ctxtReal34);         // delta is used from this initialisation with no other sets, in OPTIMAL_FRACTION_METHOD = 0
+                                                     //   it is unknown why 9999 and if this has to do with the previous DMX maximum. This may or may not have to change with the new max of 999999.
+                                                     //   it is not in use as in OPTIMAL_FRACTION_METHOD = 1, delta is re-initialized
   uint32_t ip;
   ip = realToUint32C47(&temp0);
   *intPart = ip;
   uInt32ToReal(*intPart, &temp3);
   realSubtract(&temp0, &temp3, &temp0, &ctxtReal34);
 
+
+
+// ** ***************************
+// ** Check for trivial fractions
+  bool_t validResult = false;
+  real_t factorOfOneOnDenMax, checkPoint;
+  uInt32ToReal(denMax,&factorOfOneOnDenMax);
+
+  //check if the fraction is lower than 0.5/DMX
+  realDivide(const_1on2,&factorOfOneOnDenMax,&checkPoint,&ctxtReal39);
+  if(realCompareLessThan(&temp0,&checkPoint)) {
+     *numer = 0;
+     if(getSystemFlag(FLAG_DENANY)) {
+       *denom = 1;
+       validResult = true;
+    }
+    else if (getSystemFlag(FLAG_DENFIX)) {
+      // *denom = denMax;
+      // validResult = true;
+    }
+    else {
+      *denom = 1;
+      validResult = true;
+    }
+    //printf("Forced Zero/DMX ------------------------- %llu/%llu %u\n",*numer,*denom,validResult);
+  }
+
+
+  if(!validResult) {
+    //check if the fraction is lower than 1.5/DMX
+    realDivide(const_3on2,&factorOfOneOnDenMax,&checkPoint,&ctxtReal39);
+    if(realCompareLessThan(&temp0,&checkPoint)) {
+      *numer = 1;
+       if(getSystemFlag(FLAG_DENANY)) {
+        // *denom = denMax;
+        // validResult = true;
+      }
+      else if(getSystemFlag(FLAG_DENFIX)) {
+        // *denom = denMax;
+        // validResult = true;
+      }
+      else {
+        *denom = denMax;
+        validResult = true;
+      }
+      //printf("Forced One/DMX ------------------------- %llu/%llu %u\n",*numer,*denom,validResult);
+    }
+  }
+
+
+  if(!validResult) {
+    //check if fraction is a simple integer/DMX, fast track, only integer GCD needed, not Farey fractions which run to n = DMX loops if the fraction is low
+    realDivide (const_1,&factorOfOneOnDenMax,&factorOfOneOnDenMax,&ctxtReal51);
+    realDivide ( &temp0,&factorOfOneOnDenMax,&factorOfOneOnDenMax,&ctxtReal51);             // printRealToConsole(&factorOfOneOnDenMax,"factorOfOneOnDenMax=","\n");                                           
+    real34_t factorOfOneOnDenMax34;
+    realToReal34(&factorOfOneOnDenMax,&factorOfOneOnDenMax34);                              // printReal34ToConsole(&factorOfOneOnDenMax34,"factorOfOneOnDenMax34=","\n");
+    uint32_t tt = 0;
+    if(real34IsAnInteger(&factorOfOneOnDenMax34)) {
+      tt = real34ToInt32(&factorOfOneOnDenMax34);
+      uint32_t gcd = WP34S_int_gcd(tt, (uint32_t)denMax);
+  
+      if(getSystemFlag(FLAG_DENANY)) {
+        if(gcd != 0) {
+          *numer = tt / gcd;
+          *denom = denMax / gcd;
+          validResult = true;
+        }
+      }
+      else if(getSystemFlag(FLAG_DENFIX)) {
+        //no speed gain:        *numer = tt;
+        //no speed gain:        *denom = denMax;
+        //no speed gain:        validResult = true;
+      }
+      else {
+        if(gcd != 0) {
+          *numer = tt / gcd;
+          *denom = denMax / gcd;
+          validResult = true;
+        }
+      }
+    }
+    //printf("Forced Integer ------------------------- %llu/%llu %u\n",*numer,*denom,validResult);
+  }
+
+
+
+
+
   //*******************
   //* Any denominator *
   //*******************
-  if(getSystemFlag(FLAG_DENANY)) { // denominator up to denMax
+  if(!validResult && getSystemFlag(FLAG_DENANY)) { // denominator up to denMax
     #define OPTIMAL_FRACTION_METHOD 1 // 0=continuous fraction   1=Farey fractions   2=Nigel's method
 
     #if (OPTIMAL_FRACTION_METHOD != 0) && (OPTIMAL_FRACTION_METHOD != 1) && (OPTIMAL_FRACTION_METHOD != 2)
@@ -374,7 +464,7 @@ bool_t fraction(calcRegister_t regist, int16_t *sign, uint64_t *intPart, uint64_
     }
     #endif // OPTIMAL_FRACTION_METHOD == 1
 
-    #if (OPTIMAL_FRACTION_METHOD == 0) // OLD CONTINUOUS FACTION CODE RESULTING IN SUB-OPTIMAL FRACTIONS
+    #if (OPTIMAL_FRACTION_METHOD == 0) // OLD CONTINUOUS FRACTION CODE RESULTING IN SUB-OPTIMAL FRACTIONS
     uint64_t iPart[20], ex, bestNumer=0, bestDenom=1;
     uint32_t invalidOperation;
     int16_t i, j;
@@ -462,7 +552,7 @@ bool_t fraction(calcRegister_t regist, int16_t *sign, uint64_t *intPart, uint64_
   //*******************
   //* Fix denominator *
   //*******************
-  else if(getSystemFlag(FLAG_DENFIX)) { // denominator is D.MAX
+  else if(!validResult && getSystemFlag(FLAG_DENFIX)) { // denominator is D.MAX
     *denom = denMax;
 
     uInt32ToReal(denMax, &delta);
@@ -474,7 +564,7 @@ bool_t fraction(calcRegister_t regist, int16_t *sign, uint64_t *intPart, uint64_
   //******************************
   //* Factors of max denominator *
   //******************************
-  else { // denominator is a factor of D.MAX
+  else if(!validResult) { // denominator is a factor of D.MAX
     uint64_t bestNumer=0, bestDenom=1;
 
     real_t temp4;
@@ -504,6 +594,8 @@ bool_t fraction(calcRegister_t regist, int16_t *sign, uint64_t *intPart, uint64_
     *numer = bestNumer;
     *denom = bestDenom;
   }
+
+//continue here after if..else..
 
   // The register value
   real_t r;
