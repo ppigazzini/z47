@@ -14,7 +14,16 @@
 // JM VARIOUS OPTIONS
 //*********************************
 
-#define VERSION1 "0.109.02.02"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
+#define VERSION1 "0.109.02.04a"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
+
+//Version history
+//0.109.02.00
+//0.109.02.01
+//0.109.02.02
+//0.109.02.03 skipped due to confusion. Files identifying a .02 are tagged as .03
+//0.109.02.04alpha in progress
+
+
 
 #define CALCMODEL USER_C47               // USER_C47 or USER_R47
 
