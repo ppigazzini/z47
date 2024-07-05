@@ -2774,7 +2774,7 @@ double stringToDouble(const char *str) {
           }
           else if(strcmp(aimBuffer, "denMax") == 0) {
             denMax = stringToUint32(tmpString);
-            if(denMax < 0 || denMax == 1 || denMax > MAX_DENMAX) {
+            if(denMax == 1 || denMax > MAX_DENMAX) {
               denMax = MAX_DENMAX;
             }
           }

@@ -98,19 +98,24 @@ void decompReal(void) {
     convertRealToLongIntegerRegister(real34IsNegative(&x) ? const__1 : const_1, REGISTER_Y, DEC_ROUND_HALF_DOWN); // Numerator = +/- 1
   }
   else {
-    uint32_t savedDenMax = denMax;
+//    uint32_t savedDenMax = denMax;        // *** Remove previous C47 characteristic, which fixed DECOMP to 9999. Now adheres to DMX. As per WP43 as well.
     uint64_t ssf0 = systemFlags0;
     uint64_t ssf1 = systemFlags1;
     int16_t sign, lessEqualGreater;
     uint64_t intPart, numer, denom;
     longInteger_t lgInt;
 
-    denMax = MAX_INTERNAL_DENMAX;
+//    if(denMax == 0) {                     // *** remove ^^
+//      denMax = MAX_INTERNAL_DENMAX;       // *** remove ^^
+//    }                                     // *** remove ^^
+//    else {                                // *** remove ^^
+//      denMax = MAX_DENMAX;                // *** remove ^^
+//    }                                     // *** remove ^^
     clearSystemFlag(FLAG_PROPFR); // set improper fraction mode
 
     fraction(REGISTER_Y, &sign, &intPart, &numer, &denom, &lessEqualGreater);
 
-    denMax = savedDenMax;
+//    denMax = savedDenMax;                 // *** remove ^^
     systemFlags0 = ssf0;
     systemFlags1 = ssf1;
 
