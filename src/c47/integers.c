@@ -507,7 +507,7 @@ uint64_t WP34S_intCube(uint64_t x) {
 }
 */
 
-static uint64_t WP34S_int_gcd(uint64_t a, uint64_t b) {
+uint64_t WP34S_int_gcd(uint64_t a, uint64_t b) {
   while(b != 0) {
     uint64_t t = b;
     b = a % b;
