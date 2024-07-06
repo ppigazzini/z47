@@ -45,6 +45,7 @@
 #include "ui/matrixEditor.h"
 #include "version.h"
 #include <string.h>
+#include <math.h>
 
 #include "c47.h"
 
