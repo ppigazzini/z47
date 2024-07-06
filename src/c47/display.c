@@ -2109,12 +2109,17 @@ if( str3[1] >= '0' && str3[1] <= '9' && str3[2] >= '0' && str3[2] <= '9' && str3
 
 
 void longIntegerRegisterToDisplayString(calcRegister_t regist, char *displayString, int32_t strLg, int16_t max_Width, int16_t maxExp, bool_t allowLARGELI) { //JM mod max_Width;   //JM added last parameter: Allow LARGELI
+  longInteger_t lgInt;
+  convertLongIntegerRegisterToLongInteger(regist, lgInt);
+  longIntegerToDisplayString(lgInt, displayString, strLg, max_Width, maxExp, allowLARGELI);
+  longIntegerFree(lgInt);
+}
+
+
+void longIntegerToDisplayString(longInteger_t lgInt, char *displayString, int32_t strLg, int16_t max_Width, int16_t maxExp, bool_t allowLARGELI) { //JM mod max_Width;   //JM added last parameter: Allow LARGELI
   int16_t exponentStep,exponentStep1;
   uint32_t exponentShift, exponentShiftLimit;
-  longInteger_t lgInt;
   int16_t maxWidth;                                         //JM align longints
-
-  convertLongIntegerRegisterToLongInteger(regist, lgInt);
 
   if(longIntegerIsNegative(lgInt)) {maxWidth = max_Width;}  //JM align longints
   else {maxWidth = max_Width - 8;}                          //JM align longints
@@ -2175,7 +2180,6 @@ void longIntegerRegisterToDisplayString(calcRegister_t regist, char *displayStri
     strcpy(displayValueX, displayString);
   }
 
-  longIntegerFree(lgInt);
 
   //IPGRP IPGRP1 IPGRP1x handling
   if(!GROUPLEFT_DISABLED && GROUPWIDTH_LEFT1 > 0) {

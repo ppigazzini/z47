@@ -73,7 +73,6 @@ All the below: because both Last x and savestack does not work due to multiple s
 #include "items.h"
 #include "c43Extensions/jm.h"
 #include "keyboard.h"
-//#include "mathematics/mathematics.h"
 #include "mathematics/arg.h"
 #include "mathematics/changeSign.h"
 #include "mathematics/comparisonReals.h"
@@ -1649,6 +1648,15 @@ void changeToSub(uint64_t denom, char *str) {  //denominator
   _denominator(denom, str, &endingZero);
 }
 
+void changeToWholeString(int32_t intt, char *str, char *str1) {
+  str[0]=0;
+  longInteger_t lgInt;
+  longIntegerInit(lgInt);
+  intToLongInteger((signed long int)intt, lgInt);
+  longIntegerToDisplayString(lgInt, str, 30, SCREEN_WIDTH, 20, true);
+  longIntegerFree(lgInt);
+}
+
 
 bool_t checkForAndChange(char *displayString, const real34_t *value34, const real_t *constant, const real_t *findingIrrationalTolerance, const char *constantStr,  bool_t frontSpace, bool_t complexMixedNumbers) {
     #define DISALLOW_MIXED_NUMBER_CONSTANTS true // Dont allow 1 e + e/3, rather write 1 1/3 e
@@ -1780,7 +1788,7 @@ bool_t checkForAndChange(char *displayString, const real34_t *value34, const rea
           useMixedNumbersSep[0] = STD_SPACE_4_PER_EM[0];
           useMixedNumbersSep[1] = STD_SPACE_4_PER_EM[1];
           useMixedNumbersSep[2] = 0;
-          sprintf(wholePart, "%i%s", (int)wholeInteger, useMixedNumbersSep);                                      // "1 "
+          changeToWholeString(wholeInteger,wholePart,useMixedNumbersSep);                                         // "1 "
         }
         else {                                                                                                    // constant with numbers
           useMixedNumbersSep[0] = sign[0];
@@ -1790,7 +1798,9 @@ bool_t checkForAndChange(char *displayString, const real34_t *value34, const rea
             sprintf(wholePart, "%s%s", cStr, useMixedNumbersSep);                                                 // "e+"
           }
           else {
-            sprintf(wholePart, "%i%s%s%s", (int)wholeInteger, PRODUCT_SIGN, cStr, useMixedNumbersSep);            // "2xe+"
+            changeToWholeString(wholeInteger,wholePart,PRODUCT_SIGN);
+            strcat(wholePart,cStr);
+            strcat(wholePart,useMixedNumbersSep);                                                                 // "2xe+"
           }
         }
       }
@@ -1800,7 +1810,7 @@ bool_t checkForAndChange(char *displayString, const real34_t *value34, const rea
           changeToSup(multipleOfNewConstantInteger, tmpstr);              //numerator
         }
         else {
-          sprintf(tmpstr,"%i",(int)multipleOfNewConstantInteger);
+          sprintf(tmpstr,"%i",(int)multipleOfNewConstantInteger);         //==1
         }
         sprintf(resultingIntStr, "%s%s", wholePart, tmpstr);                                                        // "1 1"
       }
