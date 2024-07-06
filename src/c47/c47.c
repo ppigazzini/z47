@@ -395,7 +395,7 @@ int convertKeyCode(int key) {
   #if CALCMODEL == USER_R47 // R47 keyboard mapping
     /////////////////////////////////////////////////
     // For key reassignment see:
-    // https://technical.swissmicros.com/dm42/devel/dmcp_devel_manual/#_system_key_table
+    // https://technical.swissmicros.com/dmcp/devel/dmcp_devel_manual/#_system_key_table
     //
     // Output of keymap2layout keymap.txt
     //     +-----+-----+-----+-----+-----+-----+
@@ -472,7 +472,7 @@ int convertKeyCode(int key) {
                                                   if(wp43KbdLayout) {
                                                     /////////////////////////////////////////////////
                                                     // For key reassignment see:
-                                                    // https://technical.swissmicros.com/dm42/devel/dmcp_devel_manual/#_system_key_table
+                                                    // https://technical.swissmicros.com/dmcp/devel/dmcp_devel_manual/#_system_key_table
                                                     //
                                                     // Output of keymap2layout keymap.txt
                                                     //
