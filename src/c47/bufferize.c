@@ -1005,15 +1005,13 @@ typedef struct {
               if(aimBuffer[denominatorLocation] == '0') {
                 aimBuffer[denominatorLocation] = 0;
               }
-
-              if(stringToInt32(aimBuffer + denominatorLocation) > 9999) {
+              if(stringToInt32(aimBuffer + denominatorLocation) < 0 || stringToInt32(aimBuffer + denominatorLocation) > 999999999) {  // 999999999 is the largest clean decimal number lower than < 2147483647 being the 2^31-1 limit, enlarged beyond the DENMAX as it has nothing to do with that, it is a fraction input limit
                 aimBuffer[strlen(aimBuffer) - 1] = 0;
               }
             }
             else {
               strcat(aimBuffer, indexOfItems[item].itemSoftmenuName);
-
-              if(stringToInt32(aimBuffer + denominatorLocation) > 9999) {
+              if(stringToInt32(aimBuffer + denominatorLocation) < 0 || stringToInt32(aimBuffer + denominatorLocation) > 999999999) {
                 aimBuffer[strlen(aimBuffer) - 1] = 0;
               }
             }
