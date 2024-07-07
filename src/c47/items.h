@@ -8,6 +8,7 @@
 #if !defined(ITEMS_H)
 #define ITEMS_H
 
+#include "typeDefinitions.h"
 #include <stdint.h>
 
 //This list is generated (manually) from items3.xlsx, EXPORT.H
@@ -2461,9 +2462,11 @@
 #define NOT_CONFIRMED                 9878 // Confirmation for RESET, CLPALL, CLALL
 #define ITM_PROD_SIGN                 9999 // Multiplication sign × or ·
 
-char *lastFuncCatalogName(void);
-char *lastFuncSoftmenuName(void);
-int16_t lastSTORCL(void);
+
+bool_t   itemNotAvail           (int16_t itemNr);
+char     *lastFuncCatalogName   (void);
+char     *lastFuncSoftmenuName  (void);
+int16_t  lastSTORCL             (void);
 
 
 void reallyRunFunction(int16_t func, uint16_t param);

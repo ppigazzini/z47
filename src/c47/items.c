@@ -65,12 +65,11 @@ void itemToBeCoded(uint16_t unusedButMandatoryParameter) {
   funcOK = false;
 }
 
-  void fnOldItemError(uint16_t unusedButMandatoryParameter) {
-    #if !defined(TESTSUITE_BUILD) && !defined(GENERATE_CATALOGS)
-      displayCalcErrorMessage(ERROR_OLD_ITEM_TO_REPLACE, ERR_REGISTER_LINE, REGISTER_X);
-    #endif // !TESTSUITE_BUILD
-  }
-
+void fnOldItemError(uint16_t unusedButMandatoryParameter) {
+  #if !defined(TESTSUITE_BUILD) && !defined(GENERATE_CATALOGS)
+    displayCalcErrorMessage(ERROR_OLD_ITEM_TO_REPLACE, ERR_REGISTER_LINE, REGISTER_X);
+  #endif // !TESTSUITE_BUILD
+}
 
 //#if !defined(GENERATE_CATALOGS)
 //void fnToBeCoded(void) {
@@ -81,9 +80,39 @@ void itemToBeCoded(uint16_t unusedButMandatoryParameter) {
 //}
 //#endif // !GENERATE_CATALOGS
 
-
-
 void fnNop(uint16_t unusedButMandatoryParameter) {
+}
+
+
+//Items in here are both struck through in the softmenu, and are prevented from running, including TAM if in use, and TI_NOT_AVAILABE.
+bool_t itemNotAvail(int16_t itemNr) {
+#ifdef DMCP_BUILD
+//    case ITM_USER_V47 :
+//    case ITM_USER_E47 :
+//    case ITM_USER_D47 :
+//    case ITM_USER_N47 :
+  return false;
+#elif PC_BUILD
+  switch(max(itemNr,-itemNr)) {
+      case ITM_ACTUSB   :
+      case ITM_SYSTEM2  :
+      case ITM_SETDAT   :
+      case ITM_SETTIM   :
+      case ITM_DISK     :
+      case ITM_SAVEAUT  :
+      case ITM_BUZZ     :
+      case ITM_PLAY     :
+      case ITM_VOL      :
+      case ITM_VOLMINUS :
+      case ITM_VOLPLUS  :
+      case ITM_VOLQ     :
+             return true;
+             break;
+      default: 
+             return false;
+             break;
+  }
+#endif //PC_BUILD
 }
 
 
@@ -218,7 +247,15 @@ void fnNop(uint16_t unusedButMandatoryParameter) {
       LastOpTimerLap(func);                                                 //stores the last time to timeLastOp
     }
 
-    indexOfItems[func].func(param);
+
+    //**RunFunction
+    if(!itemNotAvail(func)) {
+      indexOfItems[func].func(param);
+    } else {
+      temporaryInformation = TI_NOT_AVAILABLE;
+      screenUpdatingMode = SCRUPD_AUTO;
+    }
+
 
     if(programRunStop != PGM_RUNNING || func == ITM_LASTT) {                //stores the last time to timeLastOp
       LastOpTimerLap(func);
@@ -445,7 +482,17 @@ void fnNop(uint16_t unusedButMandatoryParameter) {
         #if defined(VERBOSEKEYS)
           printf("itmes.c: runfunction (before tamEnterMode): %i, %s\n", softmenu[softmenuStack[0].softmenuId].menuItem, indexOfItems[-softmenu[softmenuStack[0].softmenuId].menuItem].itemSoftmenuName);
         #endif // VERBOSEKEYS
-        tamEnterMode(func);
+
+
+        //**Start TAM function
+        if(!itemNotAvail(func)) {
+          tamEnterMode(func);
+        } else {
+          temporaryInformation = TI_NOT_AVAILABLE;
+          screenUpdatingMode = SCRUPD_AUTO;
+        }
+
+
         #if defined(VERBOSEKEYS)
           printf("itmes.c: runfunction (after tamEnterMode): %i, %s\n", softmenu[softmenuStack[0].softmenuId].menuItem, indexOfItems[-softmenu[softmenuStack[0].softmenuId].menuItem].itemSoftmenuName);
         #endif // VERBOSEKEYS
@@ -3560,9 +3607,9 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 2233 */  { itemToBeCoded,                NOPARAM,                     "LAYOUTS",                                     "LAYOUTS",                                     (0 << TAM_MAX_BITS) |     0, CAT_MENU | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2234 */  { itemToBeCoded,                NOPARAM,                     "RESETS",                                      "RESETS",                                      (0 << TAM_MAX_BITS) |     0, CAT_MENU | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2235 */  { itemToBeCoded,                NOPARAM,                     "RIBBONS",                                     "RIBBONS",                                     (0 << TAM_MAX_BITS) |     0, CAT_MENU | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
-/* 2236 */  { fnKeysManagement,             USER_R47bkfg,                "R47bkfg",                                     "R47bkfg",                                     (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
-/* 2237 */  { fnKeysManagement,             USER_R47fgbk,                "R47fgbk",                                     "R47fgbk",                                     (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
-/* 2238 */  { fnKeysManagement,             USER_R47fg_g,                "R47fg_g",                                     "R47fg_g",                                     (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 2236 */  { fnKeysManagement,             USER_R47bkfg,                "R47" STD_BOX STD_fg,                          "R47" STD_BOX STD_fg,                          (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 2237 */  { fnKeysManagement,             USER_R47fgbk,                "R47" STD_fg STD_SPACE_6_PER_EM STD_BOX,       "R47" STD_fg STD_SPACE_6_PER_EM STD_BOX,       (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 2238 */  { fnKeysManagement,             USER_R47fg_g,                "R47" STD_fg STD_SPACE_6_PER_EM "g",           "R47" STD_fg STD_SPACE_6_PER_EM "g",           (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2239 */  { fnClearUserMenus,             NOT_CONFIRMED,               "CLMall",                                      "CLMall",                                      (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABL_XEQ | EIM_DISABLED | PTP_NONE         },
 /* 2240 */  { fnClearAllVariables,          NOT_CONFIRMED,               "CLVall",                                      "CLVall",                                      (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABL_XEQ | EIM_DISABLED | PTP_NONE         },
 /* 2241 */  { fnDeleteUserMenus,            NOT_CONFIRMED,               "DELMall",                                     "DELMall",                                     (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABL_XEQ | EIM_DISABLED | PTP_NONE         },

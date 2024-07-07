@@ -64,15 +64,15 @@ void audioTone(uint32_t frequency) {
       free(samples);
       pa_simple_free(s);
     }
-  #else
-    temporaryInformation = TI_DMCP_ONLY;
-    refreshScreen(240);
+//  #else
+//    temporaryInformation = TI_DMCP_ONLY;
+//    refreshScreen(240);
   #endif
 }
 
 void fnSetVolume(uint16_t volume) {
-  temporaryInformation = TI_DMCP_ONLY;
-  refreshScreen(240);
+//  temporaryInformation = TI_DMCP_ONLY;
+//  refreshScreen(240);
 }
 
 uint16_t getBeepVolume(void) {
@@ -80,22 +80,22 @@ uint16_t getBeepVolume(void) {
 }
 
 void fnGetVolume(uint16_t unusedButMandatoryParameter) {
-  temporaryInformation = TI_DMCP_ONLY;
+//  temporaryInformation = TI_DMCP_ONLY;
 }
 
 void fnVolumeUp(uint16_t unusedButMandatoryParameter) {
-  temporaryInformation = TI_DMCP_ONLY;
+//  temporaryInformation = TI_DMCP_ONLY;
 }
 
 void fnVolumeDown(uint16_t unusedButMandatoryParameter) {
-  temporaryInformation = TI_DMCP_ONLY;
+//  temporaryInformation = TI_DMCP_ONLY;
 }
 
 void fnBuzz(uint16_t unusedButMandatoryParameter) {
-  temporaryInformation = TI_DMCP_ONLY;
+//  temporaryInformation = TI_DMCP_ONLY;
 }
 
 void fnPlay (uint16_t unusedButMandatoryParameter) {
-  temporaryInformation = TI_DMCP_ONLY;
-  refreshScreen(240);
+//  temporaryInformation = TI_DMCP_ONLY;
+//  refreshScreen(240);
 }

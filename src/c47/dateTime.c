@@ -920,8 +920,8 @@ void fnSetDate(uint16_t unusedButMandatoryParameter) {
         dateInfo.day   = real34ToUInt32(&d);
         rtc_write(&timeInfo, &dateInfo);
       }
-  #elif defined(PC_BUILD)
-      temporaryInformation = TI_DMCP_ONLY;
+//  #elif defined(PC_BUILD)
+//      temporaryInformation = TI_DMCP_ONLY;
   #endif //!PC_BUILD
 }
 
@@ -973,8 +973,8 @@ void fnSetTime(uint16_t unusedButMandatoryParameter) {
     else {
       displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
     }
-  #elif defined(PC_BUILD)
-    temporaryInformation = TI_DMCP_ONLY;
+//  #elif defined(PC_BUILD)
+//    temporaryInformation = TI_DMCP_ONLY;
   #endif //!PC_BUILD
 }
 

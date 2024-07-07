@@ -259,3 +259,6 @@ PLUS                      "\xa4\xff"
 2924096023 Add two boxes
     $25A2 box        "\xa5\xa2"     // Box with rounded corners
     $25A6 boxfilled  "\xa5\xa6"     // Box with hatched fill
+
+2024-07-07 Adding fg glyph
+    $29F1 fg         "\xa9\xf1"     // R47 variant name

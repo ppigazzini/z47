@@ -1177,14 +1177,14 @@ void restoreStats(void){
 
     TO_QSPI const numberstr indexOfMsgs[] = {
       {0,USER_C47,     "C47: Classic single shift (DM42)"  },
-      {0,USER_R47,     "R47: 2 shifts R (43S mould) /x-+ R"          },
-      {0,USER_R47bkfg, "R47bkfg: 1 shift R (43Ssp mould) /x-+ R"     },
-      {0,USER_R47fgbk, "R47fgbk: 1 shift L (43Ssp mould) /x-+ R"     },
-      {0,USER_R47fg_g, "R47fg_g: 2 shifts f/g g (43Ssp mould) /x-+ R"    },
-      {0,USER_D47,     "D47: Exp 2 shifts R (43S mould) /x-+ R"          },
-      {0,USER_E47,     "E47: Exp 2 shifts L /x-+ R"                      },
-      {0,USER_N47,     "N47: Exp 2 shft L (32 mould) /x-+ R " STD_UP_ARROW STD_DOWN_ARROW " top"  },
-      {0,USER_V47,     "V47: Exp Vintage 2 shifts TopR -+x/ L"           },
+      {0,USER_R47,     "R47:  L.Shift is " STD_f   ", R.Shift is " STD_g  },
+      {0,USER_R47bkfg, "R47v3 L.Shift is " STD_BOX ", R.Shift is " STD_fg },
+      {0,USER_R47fgbk, "R47v1 L.Shift is " STD_f   ", R.Shift is " STD_BOX},
+      {0,USER_R47fg_g, "R47v2 L.Shift is " STD_fg  ", R.Shift is " STD_g  },
+//      {0,USER_D47,     "D47: Exp 2 shifts R (43S mould) /x-+ R"          },
+//      {0,USER_E47,     "E47: Exp 2 shifts L /x-+ R"                      },
+//      {0,USER_N47,     "N47: Exp 2 shft L (32 mould) /x-+ R " STD_UP_ARROW STD_DOWN_ARROW " top"  },
+//      {0,USER_V47,     "V47: Exp Vintage 2 shifts TopR -+x/ L"           },
       {0,USER_DM42,    "DM42: Final Compatibility layout"                },
       {0,USER_HRESET,  "HOME Menu reset to default"                      },
       {0,USER_PRESET,  "P.FN Menu reset to default"                      },
@@ -1819,8 +1819,8 @@ void runDMCPmenu(uint16_t confirmation) {
 //      #endif // PC_BUILD
       run_menu_item_sys(MI_DMCP_MENU);
     }
-  #elif defined(PC_BUILD)
-    temporaryInformation = TI_DMCP_ONLY;
+//  #elif defined(PC_BUILD)
+//    temporaryInformation = TI_DMCP_ONLY;
   #endif //!PC_BUILD
 }
 
@@ -1833,8 +1833,8 @@ void activateUSBdisk(uint16_t confirmation) {
       cancelFilename = true;
       run_menu_item_sys(MI_MSC);
     }
-  #elif defined(PC_BUILD)
-    temporaryInformation = TI_DMCP_ONLY;
+//  #elif defined(PC_BUILD)
+//    temporaryInformation = TI_DMCP_ONLY;
   #endif //!PC_BUILD
 }
 

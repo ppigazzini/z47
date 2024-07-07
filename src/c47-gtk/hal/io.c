@@ -273,5 +273,5 @@ void show_warning(char *string) {
 
 
 void fnDiskInfo(uint16_t unusedButMandatoryParameter) {
-  temporaryInformation = TI_DMCP_ONLY;
+//  temporaryInformation = TI_DMCP_ONLY;
 }

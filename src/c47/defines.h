@@ -1359,7 +1359,6 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define TI_SUMS_RESTORED                          89    //DL
 #define TI_VARIABLES_RESTORED                     90    //DL
 #define TI_SCATTER_SMI                            91
-#define TI_DMCP_ONLY                              92    //DL
 #define TI_SHOWNOTHING                            92
 #define TI_COPY_FROM_SHOW                         93
 #define TI_DATA_LOSS                              94
@@ -1379,6 +1378,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define TI_FUNCTION                              108
 #define TI_STORCL                                109
 #define TI_TVM_EFF                               110
+#define TI_NOT_AVAILABLE                         111
 
 #define SET_TI_TRUE_FALSE(condition)               do { temporaryInformation = TI_FALSE + (condition); } while(0) // TI_TRUE must be TI_FALSE + 1
 

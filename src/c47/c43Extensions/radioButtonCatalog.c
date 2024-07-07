@@ -133,6 +133,16 @@ TO_QSPI const radiocb_t indexOfRadioCbEepromItems[] = {
   {ITM_BEGINP,           FN_BEG,                 RB_TV},  //SetSetting
   {ITM_ENDP,             FN_END,                 RB_TV},  //SetSetting
 
+  {ITM_USER_C47,         USER_C47,               RB_KY},  //SetSetting
+  {ITM_USER_V47,         USER_V47,               RB_KY},  //SetSetting
+  {ITM_USER_D47,         USER_D47,               RB_KY},  //SetSetting
+  {ITM_USER_N47,         USER_N47,               RB_KY},  //SetSetting
+  {ITM_USER_E47,         USER_E47,               RB_KY},  //SetSetting
+  {ITM_USER_R47,         USER_R47,               RB_KY},  //SetSetting
+  {ITM_USER_R47bkfg,     USER_R47bkfg,           RB_KY},  //SetSetting
+  {ITM_USER_R47fgbk,     USER_R47fgbk,           RB_KY},  //SetSetting
+  {ITM_USER_R47fg_g,     USER_R47fg_g,           RB_KY},  //SetSetting
+  {ITM_USER_DM42,        USER_DM42,              RB_KY},  //SetSetting
 
   {ITM_CB_CPXRES,        JC_BCR,                 CB_JC},  //SetSetting
   {ITM_CB_SPCRES,        JC_BSR,                 CB_JC},  //SetSetting
@@ -221,6 +231,11 @@ TO_QSPI const radiocb_t indexOfRadioCbEepromItems[] = {
 int8_t fnCbIsSet(int16_t item) {
   int8_t result = NOVAL;
   int16_t itemNr = max(item, -item);
+
+  if(itemNotAvail(item)) {
+    return result;
+  }
+
   size_t n = nbrOfElements(indexOfRadioCbEepromItems);
   for(uint_fast8_t i = 0; i < n; i++) {
     if(indexOfRadioCbEepromItems[i].itemNr == itemNr) {
@@ -313,6 +328,9 @@ int8_t fnCbIsSet(int16_t item) {
 
         case RB_PRN: if(getSystemFlag(FLAG_PRTACT)) rb_param = PRTACT1;
                      else                           rb_param = PRTACT0;
+                     break;
+
+        case RB_KY:  rb_param = calcModel;
                      break;
 
         case CB_JC:  is_cb = true;

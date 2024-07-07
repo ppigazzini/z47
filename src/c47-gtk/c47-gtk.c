@@ -99,8 +99,36 @@
         calcAutoLandscapePortrait = true;
       }
 
+
       if(strcmp(argv[arg], "--r47") == 0) {
         calcModel = USER_R47;
+      }
+      if(strcmp(argv[arg], "--r47v1") == 0) {
+        calcModel = USER_R47fgbk;
+      }
+      if(strcmp(argv[arg], "--r47v2") == 0) {
+        calcModel = USER_R47fg_g;
+      }
+      if(strcmp(argv[arg], "--r47v3") == 0) {
+        calcModel = USER_R47bkfg;
+      }
+
+
+      if(strcmp(argv[arg], "--e47") == 0) {
+        calcModel = USER_E47;
+      }
+      if(strcmp(argv[arg], "--n47") == 0) {
+        calcModel = USER_N47;
+      }
+      if(strcmp(argv[arg], "--v47") == 0) {
+        calcModel = USER_V47;
+      }
+      if(strcmp(argv[arg], "--d47") == 0) {
+        calcModel = USER_D47;
+      }
+
+      if(strcmp(argv[arg], "--dm42") == 0) {
+        calcModel = USER_DM42;
       }
 
     }
