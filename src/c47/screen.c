@@ -45,6 +45,7 @@
 #include "ui/matrixEditor.h"
 #include "version.h"
 #include <string.h>
+#include <math.h>
 
 #include "c47.h"
 
@@ -2378,7 +2379,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
     const uint8_t origDisplayStack = displayStack;
     bool_t distModeActive = false;
 
-    char prefix[200], lastBase[12];
+    char prefix[200], lastBase[20];
 
     skippedStackLines = false;
     #ifdef DMCP_BUILD
@@ -2934,23 +2935,45 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
           }
           else if(aimBuffer[0] != 0 && aimBuffer[strlen(aimBuffer)-1]=='/') {
             char *lb = lastBase;
-            if(lastDenominator >= 1000) {
-              *(lb++) = STD_SUB_0[0];
-              *(lb++) = STD_SUB_0[1] + (lastDenominator / 1000);
+
+            uint32_t iDigit = pow(10,(int)log10(lastDenominator)+1);
+            uint32_t iDigit1;
+            while(iDigit >= 10) {
+              iDigit1 = iDigit / 10;
+              if(lastDenominator >= iDigit1) {
+                //printf("%i %i %i\n",lastDenominator, iDigit, iDigit1);
+                *(lb++) = STD_SUB_0[0];
+                *(lb++) = STD_SUB_0[1] + (lastDenominator % iDigit) / (iDigit1);
+              }
+              iDigit = iDigit1;
             }
-            if(lastDenominator >= 100) {
-              *(lb++) = STD_SUB_0[0];
-              *(lb++) = STD_SUB_0[1] + (lastDenominator % 1000 / 100);
-            }
-            if(lastDenominator >= 10) {
-              *(lb++) = STD_SUB_0[0];
-              *(lb++) = STD_SUB_0[1] + (lastDenominator % 100 / 10);
-            }
-            *(lb++) = STD_SUB_0[0];
-            *(lb++) = STD_SUB_0[1] + (lastDenominator % 10);
+
+    //        if(lastDenominator >= 100000) {
+    //          *(lb++) = STD_SUB_0[0];
+    //          *(lb++) = STD_SUB_0[1] + (lastDenominator / 100000);
+    //        }
+    //        if(lastDenominator >= 10000) {
+    //          *(lb++) = STD_SUB_0[0];
+    //          *(lb++) = STD_SUB_0[1] + (lastDenominator % 100000 / 10000);
+    //        }
+    //        if(lastDenominator >= 1000) {
+    //          *(lb++) = STD_SUB_0[0];
+    //          *(lb++) = STD_SUB_0[1] + (lastDenominator % 10000 / 1000);
+    //        }
+    //        if(lastDenominator >= 100) {
+    //          *(lb++) = STD_SUB_0[0];
+    //          *(lb++) = STD_SUB_0[1] + (lastDenominator % 1000 / 100);     // 210 % 1000 / 100 ==> 210/100 = 2
+    //        }
+    //        if(lastDenominator >= 10) {
+    //          *(lb++) = STD_SUB_0[0];
+    //          *(lb++) = STD_SUB_0[1] + (lastDenominator % 100 / 10);       // 50 % 100 / 10  ==> 50 / 10 = 5
+    //        }
+    //        *(lb++) = STD_SUB_0[0];
+    //        *(lb++) = STD_SUB_0[1] + (lastDenominator % 10);
+
             *(lb++) = 0;
-            wLastBaseNumeric  = stringWidth(lastBase, &numericFont,  true, true);
-            wLastBaseStandard = stringWidth(lastBase, &standardFont, true, true);
+            wLastBaseNumeric  = stringWidth(lb, &numericFont,  true, true);    //fixed to lb
+            wLastBaseStandard = stringWidth(lb, &standardFont, true, true);    //fixed to lb
           }
           else {
             wLastBaseNumeric  = 0;
@@ -2958,6 +2981,8 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
           }
 
           displayBaseMode(regist);
+          //printStringToConsole(nimBufferDisplay,"XX: nimBufferDisplay:","\n");
+          //printStringToConsole(lastBase,        "YY: lastBase:","\n");
           displayNim(nimBufferDisplay, lastBase, wLastBaseNumeric, wLastBaseStandard);
         }
 

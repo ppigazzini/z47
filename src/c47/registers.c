@@ -1888,6 +1888,31 @@ int16_t indirectAddressing(calcRegister_t regist, uint16_t parameterType, int16_
   }
 
 
+  void printStringToConsole(const char *str, const char *before, const char *after) {
+    uint16_t loop = 0;
+    printf("%s", before);
+    char s2[2000];
+
+    stringToASCII(str,s2);
+    printf("\"%s\"",s2);
+
+    for(int16_t ii=0; ii<stringByteLength(s2) && ii<40; ii++) {
+      printf(" ");
+    }
+    while(str[loop] != 0) {
+      if(str[loop] & 0x80) {
+        printf(" %2x%2x",(uint8_t)(str[loop]),(uint8_t)(str[loop+1]));
+        loop++;
+        loop++;
+      }
+      else {
+        printf("   %2x",(uint8_t)(str[loop++]));
+      }      
+    }
+    printf("%s", after);
+  }
+
+
 
   void printReal34ToConsole(const real34_t *value, const char *before, const char *after) {
     char str[100];
