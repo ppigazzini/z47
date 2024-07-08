@@ -84,20 +84,26 @@
   extern const char                      commonBugScreenMessages[NUMBER_OF_BUG_SCREEN_MESSAGES][SIZE_OF_EACH_BUG_SCREEN_MESSAGE];
   extern const char                      errorMessages[NUMBER_OF_ERROR_CODES][SIZE_OF_EACH_ERROR_MESSAGE];
     extern const calcKey_t                 kbd_std_C47[37];
-    extern const calcKey_t                 kbd_std_WP43[37];
     extern const calcKey_t                 kbd_std_DM42[37];
     extern const calcKey_t                 kbd_std_R47[37];
-    extern const calcKey_t                 kbd_std_R47bkfg[37];
-    extern const calcKey_t                 kbd_std_R47fgbk[37];
+    extern const calcKey_t                 kbd_std_R47f_g[37];
+    extern const calcKey_t                 kbd_std_R47bk_fg[37];
+    extern const calcKey_t                 kbd_std_R47fg_bk[37];
     extern const calcKey_t                 kbd_std_R47fg_g[37];
-    #define kbd_std                        (calcModel == USER_C47 ? kbd_std_C47 : calcModel == USER_DM42 ? kbd_std_DM42 : calcModel == USER_R47 ? kbd_std_R47 : calcModel == USER_R47bkfg ? kbd_std_R47bkfg : calcModel == USER_R47fgbk ? kbd_std_R47fgbk : calcModel == USER_R47fg_g ? kbd_std_R47fg_g : kbd_std_C47)
+
+    #if defined(PC_BUILD)
+      #define kbd_std                      (calcModel == USER_C47 ? kbd_std_C47 : calcModel == USER_DM42 ? kbd_std_DM42 : calcModel == USER_R47f_g ? kbd_std_R47f_g : calcModel == USER_R47bk_fg ? kbd_std_R47bk_fg : calcModel == USER_R47fg_bk ? kbd_std_R47fg_bk : calcModel == USER_R47fg_g ? kbd_std_R47fg_g : \
+                                            calcModel == USER_E47 ? kbd_std_E47 : calcModel == USER_D47 ?  kbd_std_D47 :  calcModel == USER_V47 ? kbd_std_V47 : calcModel == USER_N47 ?     kbd_std_N47 : calcModel == USER_DM42 ?     kbd_std_DM42 :    kbd_std_C47)
+    #else //!PC_BUILD
+      #define kbd_std                      (calcModel == USER_C47 ? kbd_std_C47 : calcModel == USER_DM42 ? kbd_std_DM42 : calcModel == USER_R47f_g ? kbd_std_R47f_g : calcModel == USER_R47bk_fg ? kbd_std_R47bk_fg : calcModel == USER_R47fg_bk ? kbd_std_R47fg_bk : calcModel == USER_R47fg_g ? kbd_std_R47fg_g : kbd_std_C47)
+    #endif //!PC_BUILD
+
   #if defined(PC_BUILD)
+    extern const calcKey_t                 kbd_std_WP43[37];
     extern const calcKey_t                 kbd_std_D47[37];
     extern const calcKey_t                 kbd_std_V47[37];
     extern const calcKey_t                 kbd_std_E47[37];
     extern const calcKey_t                 kbd_std_N47[37];
-    extern const calcKey_t                 kbd_std_R47[37];
-    extern const calcKey_t                 kbd_std_R47bk[37];
   #endif // PC_BUILD
   extern const font_t                    standardFont, numericFont, tinyFont;
   extern const font_t                   *fontForShortInteger;

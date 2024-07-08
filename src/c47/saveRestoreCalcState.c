@@ -1378,8 +1378,6 @@ static void doSave(uint16_t saveType);
   void fnSaveAuto(uint16_t unusedButMandatoryParameter) {
   #ifdef DMCP_BUILD
     doSave(autoSave);
-  #elif PC_BUILD
-    temporaryInformation = TI_DMCP_ONLY;
   #endif //DMCP_BUILD
   }
 

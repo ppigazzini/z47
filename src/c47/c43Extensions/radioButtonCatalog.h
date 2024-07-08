@@ -75,6 +75,7 @@ char*    figlabel              (const char* label, const char* showText, int16_t
 #define RB_x3   'M' // HOME/MYM x3
 #define RB_BA   'N' // BASE SCREEN/MENU
 #define RB_GW   'O' // GROW/WRAP
+#define RB_KY   'P' // KEYS LAYOUT
 
 
 typedef struct {

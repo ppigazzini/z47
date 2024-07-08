@@ -384,7 +384,7 @@ TO_QSPI const calcKey_t kbd_std_DM42[37] = {
 
 // R47 Layout from Layout_template_automation template: Do not change manually
 //This variable is to store in flash memory
-TO_QSPI const calcKey_t kbd_std_R47[37] = {
+TO_QSPI const calcKey_t kbd_std_R47f_g[37] = {
   //keyID,              primary,              fShifted,             gShifted,             keyLblAim,            primaryAim,           fShiftedAim,          gShiftedAim,          primaryTam
   {21,                  ITM_SQUARE,           ITM_op_j,             ITM_toREC2,           ITM_NULL,             ITM_A,                ITM_a,                ITM_op_i_char,        ITM_REG_A           },
   {22,                  ITM_SQUAREROOTX,      ITM_op_j_pol,         ITM_toPOL2,           ITM_ROOT_SIGN,        ITM_B,                ITM_b,                ITM_ROOT_SIGN,        ITM_REG_B           },
@@ -427,9 +427,9 @@ TO_QSPI const calcKey_t kbd_std_R47[37] = {
 };
 
 
-// R47bkfg Layout from Layout_template_automation template: Do not change manually
+// R47bk_fg Layout from Layout_template_automation template: Do not change manually
 //This variable is to store in flash memory
-TO_QSPI const calcKey_t kbd_std_R47bkfg[37] = {
+TO_QSPI const calcKey_t kbd_std_R47bk_fg[37] = {
   //keyID,              primary,              fShifted,             gShifted,             keyLblAim,            primaryAim,           fShiftedAim,          gShiftedAim,          primaryTam
   {21,                  ITM_SQUARE,           ITM_op_j,             ITM_toREC2,           ITM_NULL,             ITM_A,                ITM_a,                ITM_op_i_char,        ITM_REG_A           },
   {22,                  ITM_SQUAREROOTX,      ITM_op_j_pol,         ITM_toPOL2,           ITM_ROOT_SIGN,        ITM_B,                ITM_b,                ITM_ROOT_SIGN,        ITM_REG_B           },
@@ -474,9 +474,9 @@ TO_QSPI const calcKey_t kbd_std_R47bkfg[37] = {
 
 
 
-// R47fgbk Layout from Layout_template_automation template: Do not change manually
+// R47fg_bk Layout from Layout_template_automation template: Do not change manually
 //This variable is to store in flash memory
-TO_QSPI const calcKey_t kbd_std_R47fgbk[37] = {
+TO_QSPI const calcKey_t kbd_std_R47fg_bk[37] = {
   //keyID,              primary,              fShifted,             gShifted,             keyLblAim,            primaryAim,           fShiftedAim,          gShiftedAim,          primaryTam
   {21,                  ITM_SQUARE,           ITM_op_j,             ITM_toREC2,           ITM_NULL,             ITM_A,                ITM_a,                ITM_op_i_char,        ITM_REG_A           },
   {22,                  ITM_SQUAREROOTX,      ITM_op_j_pol,         ITM_toPOL2,           ITM_ROOT_SIGN,        ITM_B,                ITM_b,                ITM_ROOT_SIGN,        ITM_REG_B           },
