@@ -133,6 +133,20 @@ TO_QSPI const radiocb_t indexOfRadioCbEepromItems[] = {
   {ITM_BEGINP,           FN_BEG,                 RB_TV},  //SetSetting
   {ITM_ENDP,             FN_END,                 RB_TV},  //SetSetting
 
+  {ITM_USER_C47,         USER_C47,               RB_KY},  //SetSetting
+  {ITM_USER_DM42,        USER_DM42,              RB_KY},  //SetSetting
+  {ITM_USER_R47,         USER_R47,               RB_KY},  //SetSetting
+  {ITM_USER_EXPR,        USER_EXPR,              RB_KY},  //SetSetting
+
+  {ITM_USER_V47,         USER_V47,               CB_JC},  //SetSetting
+  {ITM_USER_D47,         USER_D47,               CB_JC},  //SetSetting
+  {ITM_USER_N47,         USER_N47,               CB_JC},  //SetSetting
+  {ITM_USER_E47,         USER_E47,               CB_JC},  //SetSetting
+  {ITM_USER_R47f_g,      USER_R47f_g,            CB_JC},  //SetSetting
+  {ITM_USER_R47bk_fg,    USER_R47bk_fg,          CB_JC},  //SetSetting
+  {ITM_USER_R47fg_bk,    USER_R47fg_bk,          CB_JC},  //SetSetting
+  {ITM_USER_R47fg_g,     USER_R47fg_g,           CB_JC},  //SetSetting
+
 
   {ITM_CB_CPXRES,        JC_BCR,                 CB_JC},  //SetSetting
   {ITM_CB_SPCRES,        JC_BSR,                 CB_JC},  //SetSetting
@@ -221,6 +235,11 @@ TO_QSPI const radiocb_t indexOfRadioCbEepromItems[] = {
 int8_t fnCbIsSet(int16_t item) {
   int8_t result = NOVAL;
   int16_t itemNr = max(item, -item);
+
+  if(itemNotAvail(item)) {
+    return result;
+  }
+
   size_t n = nbrOfElements(indexOfRadioCbEepromItems);
   for(uint_fast8_t i = 0; i < n; i++) {
     if(indexOfRadioCbEepromItems[i].itemNr == itemNr) {
@@ -315,8 +334,39 @@ int8_t fnCbIsSet(int16_t item) {
                      else                           rb_param = PRTACT0;
                      break;
 
+        case RB_KY:  rb_param = calcModel;
+                     if(itemNr == ITM_USER_EXPR) {
+                       switch(calcModel) {
+                         case USER_D47 :
+                         case USER_E47 :
+                         case USER_N47 :
+                         case USER_V47 : rb_param = USER_EXPR; break;
+                         default:;
+                       }
+                     }
+                     if(itemNr == ITM_USER_R47) {
+                       switch(calcModel) {
+                         case USER_R47f_g   :
+                         case USER_R47bk_fg :
+                         case USER_R47fg_bk :
+                         case USER_R47fg_g  : rb_param = USER_R47; break;
+                         default:;
+                       }
+                     }
+                     break;
+
         case CB_JC:  is_cb = true;
           switch(indexOfRadioCbEepromItems[i].param) {
+
+            case USER_D47:
+            case USER_E47:
+            case USER_N47:
+            case USER_V47:
+            case USER_R47f_g:
+            case USER_R47bk_fg:
+            case USER_R47fg_bk:
+            case USER_R47fg_g:           cb_param = calcModel == indexOfRadioCbEepromItems[i].param; break;
+
             case JC_LINEAR_FITTING:      cb_param = ((lrSelection & CF_LINEAR_FITTING)      == CF_LINEAR_FITTING     ); break;
             case JC_EXPONENTIAL_FITTING: cb_param = ((lrSelection & CF_EXPONENTIAL_FITTING) == CF_EXPONENTIAL_FITTING); break;
             case JC_LOGARITHMIC_FITTING: cb_param = ((lrSelection & CF_LOGARITHMIC_FITTING) == CF_LOGARITHMIC_FITTING); break;

@@ -117,6 +117,7 @@ void fneRPN(uint16_t state) {
 
 #ifdef DMCP_BUILD
   void standardScreenDump(void) {
+  resetShiftState();                  //JM To avoid f or g top left of the screen, clear to make sure
   uint16_t vol = 0;
   fnGetVolume(vol);
   fnSetVolume(11);

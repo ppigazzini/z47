@@ -101,78 +101,67 @@ void fnStrInputLongint(char inp1[]);
 void fnRCL          (int16_t inp);
 
 
-#define JC_ERPN                 1    // eRPN
-#define JC_HOME_TRIPLE          2    // HOME.3
-#define JC_SHFT_4s              3    // SH_4s
-#define JC_BASE_HOME            4    // HOME
-#define JC_MYM_TRIPLE           5    // HOME.3
-#define JC_BCR                  9    // CB ComplexResult
-#define JC_BLZ                 10    // CB LeadingZeros
-#define JC_PROPER              11    // CB FractionType
-#define JC_IMPROPER            12    // CB FractionType
-#define JC_BSR                 13    // CB SpecialResult
-#define DM_FRACT               15    // FRACT ON OFF
-#define DM_ANY                 16    // DENANY
-#define DM_FIX                 17    // DENFIX
-#define JC_FRC                 18    // CB FRACTION MODE
-#define PR_HPRP                19    // POLAR RECT CLASSIC MODE
-#define PRTACT                 20    // PRTACT checkbox
-#define PRTACT0                21    // PRTACT checkbox
-#define PRTACT1                22    // PRTACT checkbox
-#define DM_PROPFR              23
-#define JC_BASE_MYM            24    // screen setup
-#define JC_G_DOUBLETAP         25    // screen setup
-#define JC_LARGELI             26
+#define JC_ERPN                10001    // eRPN
+#define JC_HOME_TRIPLE         10002    // HOME.3
+#define JC_SHFT_4s             10003    // SH_4s
+#define JC_BASE_HOME           10004    // HOME
+#define JC_MYM_TRIPLE          10005    // HOME.3
+#define JC_BCR                 10006    // CB ComplexResult
+#define JC_BLZ                 10007    // CB LeadingZeros
+#define JC_PROPER              10008    // CB FractionType
+#define JC_IMPROPER            10009    // CB FractionType
+#define JC_BSR                 10010    // CB SpecialResult
+#define DM_FRACT               10011    // FRACT ON OFF
+#define DM_ANY                 10012    // DENANY
+#define DM_FIX                 10013    // DENFIX
+#define JC_FRC                 10014    // CB FRACTION MODE
+#define PR_HPRP                10015    // POLAR RECT CLASSIC MODE
+#define PRTACT                 10016    // PRTACT checkbox
+#define PRTACT0                10017    // PRTACT checkbox
+#define PRTACT1                10018    // PRTACT checkbox
+#define DM_PROPFR              10019
+#define JC_BASE_MYM            10020    // screen setup
+#define JC_G_DOUBLETAP         10021    // screen setup
+#define JC_LARGELI             10022
+#define JC_ITM_TST             10023    //dr
+#define JC_CPXPLOT             10024
+#define JC_VECT                10025    // graph setup
+#define JC_NVECT               10026    // graph setup
+#define JC_SCALE               10027    // graph setup
+#define JC_EXTENTX             10028    // graph setup
+#define JC_EXTENTY             10029    // graph setup
+#define JC_PLINE               10030    // graph setup
+#define JC_PCROS               10031    // graph setup
+#define JC_PBOX                10032    // graph setup
+#define JC_INTG                10033    // graph setup
+#define JC_DIFF                10034    // graph setup
+#define JC_RMS                 10035    // graph setup
+#define JC_SHADE               10036    // graph setup
+#define JC_PZOOMX              10037
+#define JC_PZOOMY              10038
+#define JC_NL                  10039
+#define JC_UC                  10040
+#define JC_LINEAR_FITTING      10041
+#define JC_EXPONENTIAL_FITTING 10042
+#define JC_LOGARITHMIC_FITTING 10043
+#define JC_POWER_FITTING       10044
+#define JC_ROOT_FITTING        10045
+#define JC_HYPERBOLIC_FITTING  10046
+#define JC_PARABOLIC_FITTING   10047
+#define JC_CAUCHY_FITTING      10048
+#define JC_GAUSS_FITTING       10049
+#define JC_ORTHOGONAL_FITTING  10050
+#define JC_IRFRAC              10051
+#define JC_UU                  10052
+#define JC_BCD                 10053
+#define JC_TOPHEX              10054
+#define JC_SI_All              10055
+#define JC_CPXMULT             10056
+#define JC_SS                  10057
+#define PR_HPBASE              10058    // BASE CLASSIC MODE
+#define PR_2TO10               10059    // 2^10 flag for UNIT
+#define JC_LPfg                10060
 
-#define JC_ITM_TST             27    //dr
-
-#define JC_CPXPLOT             38
-#define JC_VECT                39    // graph setup
-#define JC_NVECT               40    // graph setup
-#define JC_SCALE               41    // graph setup
-#define JC_EXTENTX             42    // graph setup
-#define JC_EXTENTY             43    // graph setup
-#define JC_PLINE               44    // graph setup
-#define JC_PCROS               45    // graph setup
-#define JC_PBOX                46    // graph setup
-#define JC_INTG                47    // graph setup
-#define JC_DIFF                48    // graph setup
-#define JC_RMS                 49    // graph setup
-#define JC_SHADE               50    // graph setup
-#define JC_PZOOMX              51
-#define JC_PZOOMY              52
-
-#define JC_NL                  53
-#define JC_UC                  54
-
-#define JC_LINEAR_FITTING      55
-#define JC_EXPONENTIAL_FITTING 56
-#define JC_LOGARITHMIC_FITTING 57
-#define JC_POWER_FITTING       58
-#define JC_ROOT_FITTING        59
-#define JC_HYPERBOLIC_FITTING  60
-#define JC_PARABOLIC_FITTING   61
-#define JC_CAUCHY_FITTING      62
-#define JC_GAUSS_FITTING       63
-#define JC_ORTHOGONAL_FITTING  64
-
-#define JC_IRFRAC              65
-#define JC_UU                  66
-#define JC_BCD                 67
-#define JC_TOPHEX              68
-
-#define JC_SI_All              69
-#define JC_CPXMULT             70
-
-#define JC_SS                  71
-#define PR_HPBASE              72    // BASE CLASSIC MODE
-#define PR_2TO10               73    // 2^10 flag for UNIT
-#define JC_LPfg                74
-
-#if defined(PC_BUILD)
-//keyboard.c
-void JM_DOT(int16_t xx, int16_t yy);
-#endif // PC_BUILD
 
 void fnShowJM  (uint16_t jmConfig);
 

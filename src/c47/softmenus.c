@@ -108,9 +108,9 @@ TO_QSPI const int16_t menu_TRI[]         = { ITM_DEG2,                      ITM_
                                              ITM_sinc,                      ITM_sincpi,                 ITM_atan2,                ITM_arcsin,            ITM_arccos,                  ITM_arctan,                         //JM re-arranged menu TRIG menu
                                              ITM_sinh,                      ITM_cosh,                   ITM_tanh,                 ITM_arsinh,            ITM_arcosh,                  ITM_artanh                    };    //JM re-arranged menu TRIG menu
 
-TO_QSPI const int16_t menu_TRG_C47[]     = { ITM_DEG2,                      ITM_RAD2,                   ITM_GRAD2,                ITM_DMS2,              ITM_MULPI2,                  -MNU_TRG_C47_MORE,
+TO_QSPI const int16_t menu_TRG_C47[]     = { ITM_DEG2,                      ITM_RAD2,                   ITM_GRAD2,                ITM_DMS2,              ITM_MULPI2,                  ITM_DRG,
                                              ITM_sinc,                      ITM_sincpi,                 ITM_atan2,                ITM_ms,                ITM_dotD,                    ITM_msTo,
-                                             ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_toREC2,                  ITM_toPOL2                    };
+                                             -MNU_TRG_C47_MORE,             ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_toREC2,                  ITM_toPOL2                    };
 
 TO_QSPI const int16_t menu_TRG_C47_MORE[]= { ITM_DEG2,                      ITM_RAD2,                   ITM_GRAD2,                ITM_sin,               ITM_cos,                     ITM_tan,
                                              ITM_sinc,                      ITM_sincpi,                 ITM_atan2,                ITM_arcsin,            ITM_arccos,                  ITM_arctan,                         //JM re-arranged menu TRIG menu
@@ -693,34 +693,26 @@ TO_QSPI const int16_t menu_ASN_N[]       = { ITM_N_KEY_SIGMA,               ITM_
                                              ITM_N_KEY_NIL,                 ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_TO_USER             };
 
 
-#if defined(DMCP_BUILD) //NULL to be removed in the DMCP version
+#if !defined(PC_BUILD)       //NULL to be removed in the DMCP version
   #define CC_V47  ITM_NULL
   #define CC_E47  ITM_NULL
-  #define CC_D47  ITM_NULL
+  #define CC_D47  ITM_NULL        //       depreciated, replaced with R47
   #define CC_N47  ITM_NULL
-  #define CC_R47  ITM_USER_R47
-  #define CC_R47bkfg  ITM_USER_R47bkfg
-  #define CC_R47fgbk  ITM_USER_R47fgbk
-  #define CC_R47fg_g  ITM_USER_R47fg_g
-#else // !DMCP_BUILD
-  #define CC_V47  ITM_USER_V47
-  #define CC_E47  ITM_USER_E47
-  #define CC_D47  ITM_USER_D47
-  #define CC_N47  ITM_USER_N47
-  #define CC_R47  ITM_USER_R47
-  #define CC_R47bkfg  ITM_USER_R47bkfg
-  #define CC_R47fgbk  ITM_USER_R47fgbk
-  #define CC_R47fg_g  ITM_USER_R47fg_g
-#endif // !DMCP_BUILD
+#else // !PC_BUILD
+  #define CC_V47  ITM_USER_V47    //
+  #define CC_E47  ITM_USER_E47    //
+  #define CC_D47  ITM_USER_D47    //       depreciated, replaced with R47
+  #define CC_N47  ITM_USER_N47    //
+#endif // !PC_BUILD
 
 
-TO_QSPI const int16_t menu_KEYS[]      =  {  -MNU_LAYOUTS,              -MNU_RIBBONS,              -MNU_RESETS,               ITM_KEYMAP,                ITM_USERMODE,              ITM_ASSIGN,
-                                             ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,
-                                             -MNU_ASN_N,                ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  };
+TO_QSPI const int16_t menu_KEYS[]      =  {  -MNU_LAYOUTS,              -MNU_RIBBONS,              -MNU_RESETS,               -MNU_ASN_N,                ITM_KEYMAP,                ITM_USERMODE,
+                                             ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_ASSIGN,
+                                             ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,         };
 
-TO_QSPI const int16_t menu_LAYOUTS[]   =  {  ITM_USER_C47,              ITM_USER_R47,              ITM_USER_DM42,             ITM_KEYMAP,                ITM_USERMODE,              ITM_ASSIGN,
-                                             ITM_USER_R47fgbk,          ITM_USER_R47fg_g,          ITM_USER_R47bkfg,          ITM_NULL,                  ITM_USER_D47,              ITM_USER_E47,
-                                             ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_USER_N47,              ITM_USER_V47,              };
+TO_QSPI const int16_t menu_LAYOUTS[]   =  {  ITM_USER_C47,              ITM_USER_DM42,             ITM_USER_R47,              ITM_USER_EXPR,             ITM_KEYMAP,                ITM_USERMODE,
+                                             ITM_USER_R47f_g,           ITM_USER_R47fg_bk,         ITM_USER_R47fg_g,          ITM_USER_R47bk_fg,         ITM_NULL,                  ITM_ASSIGN,                  
+                                             CC_D47,                    CC_E47,                    CC_N47,                    CC_V47,                    ITM_NULL,                  ITM_NULL,         };
 
 TO_QSPI const int16_t menu_RESETS[]    =  {  ITM_USER_ARESET,           ITM_USER_MRESET,           ITM_USER_HRESET,           ITM_USER_PRESET,           ITM_NULL,                  ITM_USER_KRESET,
                                              ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,
@@ -2151,26 +2143,13 @@ void fnStrikeOutIfNotCoded(int16_t itemNr, int16_t x, int16_t y) {
 #ifdef PC_BUILD
   void fnStrikeThroughIfNotOnSim(int16_t itemNr, int16_t x, int16_t y) {
     int16_t xStroke, yStroke = SCREEN_HEIGHT - y*23 - 9;
-    switch(itemNr) {
-      case ITM_ACTUSB   :
-      case ITM_SYSTEM2  :
-      case ITM_SETDAT   :
-      case ITM_SETTIM   :
-      case ITM_DISK     :
-      case ITM_SAVEAUT  :
-      case ITM_BUZZ     :
-      case ITM_PLAY     :
-      case ITM_VOL      :
-      case ITM_VOLMINUS :
-      case ITM_VOLPLUS  :
-      case ITM_VOLQ     : {
-        for(xStroke=x*67 + 1 +9 ; xStroke<x*67 + 66 -10; xStroke++) {      //JM mod stroke slash cross out
-          if(itemNr > 0) {
-            setBlackPixel(xStroke, yStroke -3);                                      //JM mod
-          }
-          else {
-            setWhitePixel(xStroke, yStroke -3);                                      //JM mod
-          }
+    if(itemNotAvail(itemNr)) {
+      for(xStroke=x*67 + 1 +9 ; xStroke<x*67 + 66 -10; xStroke++) {      //JM mod stroke slash cross out
+        if(itemNr > 0) {
+          setBlackPixel(xStroke, yStroke -3);                                      //JM mod
+        }
+        else {
+          setWhitePixel(xStroke, yStroke -3);                                      //JM mod
         }
       }
     }
@@ -2395,7 +2374,7 @@ bool_t BASE_OVERRIDEONCE = false;
                 showSoftkey(itemName, x, y, vm, true, true, showCb, showValue, showText, !greyout);
                 fnStrikeOutIfNotCoded(itemNr, x, y);
                 #ifdef PC_BUILD
-                  fnStrikeThroughIfNotOnSim(item%10000, x, y-currentFirstItem/6);
+                  fnStrikeThroughIfNotOnSim(itemNr, x, y-currentFirstItem/6);
                 #endif //PC_BUILD
               }
               ptr += stringByteLength((char *)ptr) + 1;

@@ -1834,19 +1834,25 @@ str3[j] = 0;
           firstNonZero++;
         }
       }
-      switch(unit){
-        case 0:  displayString[i++] = '0'; displayString[i++] = '0'; displayString[i++] = '0'; displayString[i++] = '0'; break;
-        case 1:  displayString[i++] = '1'; displayString[i++] = '0'; displayString[i++] = '0'; displayString[i++] = '0'; break;
-        case 2:  displayString[i++] = '0'; displayString[i++] = '1'; displayString[i++] = '0'; displayString[i++] = '0'; break;
-        case 3:  displayString[i++] = '1'; displayString[i++] = '1'; displayString[i++] = '0'; displayString[i++] = '0'; break;
-        case 4:  displayString[i++] = '0'; displayString[i++] = '0'; displayString[i++] = '1'; displayString[i++] = '0'; break;
-        case 5:  displayString[i++] = '1'; displayString[i++] = '0'; displayString[i++] = '1'; displayString[i++] = '0'; break;
-        case 6:  displayString[i++] = '0'; displayString[i++] = '1'; displayString[i++] = '1'; displayString[i++] = '0'; break;
-        case 7:  displayString[i++] = '1'; displayString[i++] = '1'; displayString[i++] = '1'; displayString[i++] = '0'; break;
-        case 8:  displayString[i++] = '0'; displayString[i++] = '0'; displayString[i++] = '0'; displayString[i++] = '1'; break;
-        case 9:  displayString[i++] = '1'; displayString[i++] = '0'; displayString[i++] = '0'; displayString[i++] = '1'; break;
-        default: break;
-      }
+//      switch(unit){
+//        case 0:  displayString[i++] = '0'; displayString[i++] = '0'; displayString[i++] = '0'; displayString[i++] = '0'; break;
+//        case 1:  displayString[i++] = '1'; displayString[i++] = '0'; displayString[i++] = '0'; displayString[i++] = '0'; break;
+//        case 2:  displayString[i++] = '0'; displayString[i++] = '1'; displayString[i++] = '0'; displayString[i++] = '0'; break;
+//        case 3:  displayString[i++] = '1'; displayString[i++] = '1'; displayString[i++] = '0'; displayString[i++] = '0'; break;
+//        case 4:  displayString[i++] = '0'; displayString[i++] = '0'; displayString[i++] = '1'; displayString[i++] = '0'; break;
+//        case 5:  displayString[i++] = '1'; displayString[i++] = '0'; displayString[i++] = '1'; displayString[i++] = '0'; break;
+//        case 6:  displayString[i++] = '0'; displayString[i++] = '1'; displayString[i++] = '1'; displayString[i++] = '0'; break;
+//        case 7:  displayString[i++] = '1'; displayString[i++] = '1'; displayString[i++] = '1'; displayString[i++] = '0'; break;
+//        case 8:  displayString[i++] = '0'; displayString[i++] = '0'; displayString[i++] = '0'; displayString[i++] = '1'; break;
+//        case 9:  displayString[i++] = '1'; displayString[i++] = '0'; displayString[i++] = '0'; displayString[i++] = '1'; break;
+//        default: break;
+//      }
+
+      displayString[i++] = '0' + ((unit & 0x0001) );
+      displayString[i++] = '0' + ((unit & 0x0002) >> 1);
+      displayString[i++] = '0' + ((unit & 0x0004) >> 2);
+      displayString[i++] = '0' + ((unit & 0x0008) >> 3);
+
       if((orgnumber & 0x0FFFFFFFFFFFFFFF) <= 99999999999) {    //JM BCD add decimal to each BCD nibble
         char ss[5];
         if(unit == 0) {

@@ -1442,41 +1442,38 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
     uint32_t w = stringWidthWithLimitC43(tmpString + offset, stdnumEnlarge, nocompress, SCREEN_WIDTH, true, true);
     if(w < SCREEN_WIDTH) {
       showStringC43(tmpString + offset, stdnumEnlarge, nocompress,  SCREEN_WIDTH - w, line_hMultiLineEdOffset + line_h1 * _h1, vmNormal, true, true);
-      goto gotoReturn;
+      return;
     }
 
     w = stringWidthWithLimitC43(tmpString + offset, stdEnlarge, nocompress, SCREEN_WIDTH, true, true);
     if(w < SCREEN_WIDTH) {
       showStringC43(tmpString + offset, stdEnlarge, nocompress,  SCREEN_WIDTH - w, line_hMultiLineEdOffset + line_h1 * _h1, vmNormal, true, true);
-      goto gotoReturn;
+      return;
     }
 
     w = stringWidthWithLimitC43(tmpString + offset, stdNoEnlarge, nocompress, SCREEN_WIDTH, true, true);
     if(w < SCREEN_WIDTH) {
       showStringC43(tmpString + offset, stdNoEnlarge, nocompress,  SCREEN_WIDTH - w, line_hMultiLineEdOffset + line_h1 * _h1, vmNormal, true, true);
-      goto gotoReturn;
+      return;
     }
 
     w = stringWidthWithLimitC43(tmpString + offset, numSmall, nocompress, SCREEN_WIDTH, true, true);
     if(w < SCREEN_WIDTH) {
       showStringC43(tmpString + offset, numSmall, nocompress,  SCREEN_WIDTH - w, line_hMultiLineEdOffset + line_h1 * _h1, vmNormal, true, true);
-      goto gotoReturn;
+      return;
     }
 
     w = stringWidthWithLimitC43(tmpString + offset, numSmall, DO_compress, SCREEN_WIDTH, true, true);
     if(w < SCREEN_WIDTH) {
       showStringC43(tmpString + offset, numSmall, DO_compress,  SCREEN_WIDTH - w, line_hMultiLineEdOffset + line_h1 * _h1, vmNormal, true, true);
-      goto gotoReturn;
+      return;
     }
 
     w = stringWidth(tmpString + offset + 2, &standardFont, true, true);
     if(w < SCREEN_WIDTH) {
       showString(tmpString + offset + 2, &standardFont,  SCREEN_WIDTH - w, line_hMultiLineEdOffset + line_h1 * _h1, vmNormal, true, true);
-      goto gotoReturn;
+      return;
     }
-
-    gotoReturn:
-    return;
   }
 
 
@@ -2630,7 +2627,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
       }
 
       #if defined(PC_BUILD)
-      else if(temporaryInformation == TI_DMCP_ONLY && regist == REGISTER_X) {
+      else if(temporaryInformation == TI_NOT_AVAILABLE && regist == REGISTER_X) {
         sprintf(prefix, "Not available on the simulator");
         displayTemporaryInformationOnX(prefix);
       }
