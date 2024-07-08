@@ -116,7 +116,7 @@
   //  #define SAVE_SPACE_DM42_13GRF_JM //  7520 bytes // Without More graphics
   //  #define SAVE_SPACE_DM42_14       //   184 bytes // Without Load programming sample programs testPgms
   //  #define SAVE_SPACE_DM42_15       // 10056 bytes // Without all distributions, i.e. , cauchy, chi, expo, f, logis, t, weibull
-  //  #define SAVE_SPACE_DM42_16       //  2168 bytes // Without Norml distribution
+    #define SAVE_SPACE_DM42_16       //  2168 bytes // Without Norml distribution
       #define SAVE_SPACE_DM42_17       //  7448 bytes // Without Poisson/Hyper/Binomial/Geometrical distributions
   //  #define SAVE_SPACE_DM42_20_TIMER //  1232 bytes // Without STOPW
   //  #define SAVE_SPACE_DM42_21_HP35  //   200 bytes // Without config file activations only. Not complete removal.
@@ -377,10 +377,10 @@
 
 
 //Norm_Key_00_VAR, using -1 output for not applicable, purposely out of range
-#define Norm_Key_00_key   (calcModel == USER_C47 ? 0 :             calcModel == USER_DM42 ? 0 :             calcModel == USER_R47 ? -1 : calcModel == USER_R47bkfg ? 10 :       calcModel == USER_R47fgbk ? 11 : -1)
-#define Norm_Key_00_keyID (calcModel == USER_C47 ? 21 :            calcModel == USER_DM42 ? 21 :            calcModel == USER_R47 ? -1 : calcModel == USER_R47bkfg ? 35 :       calcModel == USER_R47fgbk ? 36 : -1)
-#define Norm_Key_00_item_in_layout  (calcModel == USER_C47 ? ITM_SIGMAPLUS : calcModel == USER_DM42 ? ITM_SIGMAPLUS : calcModel == USER_R47 ? -1 : calcModel == USER_R47bkfg ? ITM_NULL : calcModel == USER_R47fgbk ? ITM_NULL : -1)
-#define isR47FAM          ((bool_t)(calcModel == USER_R47 || calcModel == USER_R47bkfg || calcModel == USER_R47fgbk || calcModel == USER_R47fg_g))
+#define Norm_Key_00_key   (calcModel == USER_C47 ? 0 :             calcModel == USER_DM42 ? 0 :             calcModel == USER_R47f_g ? -1 : calcModel == USER_R47bk_fg ? 10 :       calcModel == USER_R47fg_bk ? 11 : -1)
+#define Norm_Key_00_keyID (calcModel == USER_C47 ? 21 :            calcModel == USER_DM42 ? 21 :            calcModel == USER_R47f_g ? -1 : calcModel == USER_R47bk_fg ? 35 :       calcModel == USER_R47fg_bk ? 36 : -1)
+#define Norm_Key_00_item_in_layout  (calcModel == USER_C47 ? ITM_SIGMAPLUS : calcModel == USER_DM42 ? ITM_SIGMAPLUS : calcModel == USER_R47f_g ? -1 : calcModel == USER_R47bk_fg ? ITM_NULL : calcModel == USER_R47fg_bk ? ITM_NULL : -1)
+#define isR47FAM          ((bool_t)(calcModel == USER_R47f_g || calcModel == USER_R47bk_fg || calcModel == USER_R47fg_bk || calcModel == USER_R47fg_g))
 
 //fnKeysManagement
 #define JM_ASSIGN        28
@@ -405,10 +405,14 @@
 #define USER_MR47        57
 #define USER_HRESET      58
 #define USER_PRESET      59
-#define USER_R47         60
-#define USER_R47bkfg     61
-#define USER_R47fgbk     62
-#define USER_R47fg_g     63
+
+#define USER_R47f_g      61
+#define USER_R47bk_fg    62
+#define USER_R47fg_bk    63
+#define USER_R47fg_g     64
+#define USER_EXPR        65
+
+#define USER_R47         66  //only used for RB
 
 
 //*************************
@@ -1827,7 +1831,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define currentPtrToPreviousLevel            (currentSubroutineLevelData[2].ptrToPreviousLevel)
 
 
-#define INTEGERSHORTCUTS                     (calcModel == USER_C47 || calcModel == USER_R47 || calcModel == USER_R47bkfg || calcModel == USER_R47fgbk || calcModel == USER_R47fg_g)    //TRUE is C47; check based on f/g key on DM42 position
+#define INTEGERSHORTCUTS                     (calcModel == USER_C47 || calcModel == USER_R47 || calcModel == USER_R47bk_fg || calcModel == USER_R47fg_bk || calcModel == USER_R47fg_g)    //TRUE is C47; check based on f/g key on DM42 position
 
 
 #if !defined(PC_BUILD) && !defined(DMCP_BUILD)

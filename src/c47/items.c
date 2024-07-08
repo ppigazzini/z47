@@ -112,7 +112,9 @@ bool_t itemNotAvail(int16_t itemNr) {
              return false;
              break;
   }
-#endif //PC_BUILD
+#else //!DMCP_BUILD && !PC_BUILD
+  return false;
+#endif //!DMCP_BUILD && !PC_BUILD
 }
 
 
@@ -3335,7 +3337,7 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 1961 */  { fnKeysManagement,             USER_D47,                    "D47",                                         "D47",                                         (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 1962 */  { fnKeysManagement,             USER_N47,                    "N47",                                         "N47",                                         (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 1963 */  { fnKeysManagement,             USER_E47,                    "E47",                                         "E47",                                         (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
-/* 1964 */  { fnKeysManagement,             USER_R47,                    "R47",                                         "R47",                                         (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 1964 */  { fnKeysManagement,             USER_R47f_g,                 "R47",                                         "R47",                                         (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 1965 */  { fnXEQMENU,                    1,                           "XEQM01",                                      "XEQM01",                                      (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },//JM EXEC
 /* 1966 */  { fnXEQMENU,                    2,                           "XEQM02",                                      "XEQM02",                                      (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },//JM EXEC
 /* 1967 */  { fnXEQMENU,                    3,                           "XEQM03",                                      "XEQM03",                                      (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },//JM EXEC
@@ -3607,9 +3609,10 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 2233 */  { itemToBeCoded,                NOPARAM,                     "LAYOUTS",                                     "LAYOUTS",                                     (0 << TAM_MAX_BITS) |     0, CAT_MENU | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2234 */  { itemToBeCoded,                NOPARAM,                     "RESETS",                                      "RESETS",                                      (0 << TAM_MAX_BITS) |     0, CAT_MENU | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2235 */  { itemToBeCoded,                NOPARAM,                     "RIBBONS",                                     "RIBBONS",                                     (0 << TAM_MAX_BITS) |     0, CAT_MENU | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
-/* 2236 */  { fnKeysManagement,             USER_R47bkfg,                "R47" STD_BOX STD_fg,                          "R47" STD_BOX STD_fg,                          (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
-/* 2237 */  { fnKeysManagement,             USER_R47fgbk,                "R47" STD_fg STD_SPACE_6_PER_EM STD_BOX,       "R47" STD_fg STD_SPACE_6_PER_EM STD_BOX,       (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
-/* 2238 */  { fnKeysManagement,             USER_R47fg_g,                "R47" STD_fg STD_SPACE_6_PER_EM "g",           "R47" STD_fg STD_SPACE_6_PER_EM "g",           (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+
+/* 2236 */  { itemToBeCoded,                NOPARAM,                     "2236",                                        "2236",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 2237 */  { itemToBeCoded,                NOPARAM,                     "2237",                                        "2237",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 2238 */  { itemToBeCoded,                NOPARAM,                     "2238",                                        "2238",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2239 */  { fnClearUserMenus,             NOT_CONFIRMED,               "CLMall",                                      "CLMall",                                      (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABL_XEQ | EIM_DISABLED | PTP_NONE         },
 /* 2240 */  { fnClearAllVariables,          NOT_CONFIRMED,               "CLVall",                                      "CLVall",                                      (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABL_XEQ | EIM_DISABLED | PTP_NONE         },
 /* 2241 */  { fnDeleteUserMenus,            NOT_CONFIRMED,               "DELMall",                                     "DELMall",                                     (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABL_XEQ | EIM_DISABLED | PTP_NONE         },
@@ -3766,7 +3769,15 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 2388 */  { fnLoad,                       LM_STATE_LOAD,               "LOADST",                                      "LOADST",                                      (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_CANCEL    | EIM_DISABLED | PTP_NONE         },
 /* 2389 */  { fnSaveAuto,                   NOPARAM,                     "SAVEAUT",                                     "SAVEAUT",                                     (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /* 2390 */  { itemToBeCoded,                NOPARAM,                     "AUDIO",                                       "AUDIO",                                       (0 << TAM_MAX_BITS) |     0, CAT_MENU | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 2391 */  { fnKeysManagement,             USER_R47f_g,                 "f g",                                         "f g",                                         (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 2392 */  { fnKeysManagement,             USER_R47bk_fg,               STD_BOX " " STD_fg,                            STD_BOX " " STD_fg,                            (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 2393 */  { fnKeysManagement,             USER_R47fg_bk,               STD_fg " " STD_BOX,                            STD_fg " " STD_BOX,                            (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 2394 */  { fnKeysManagement,             USER_R47fg_g,                STD_fg " " "g",                                STD_fg " " "g",                                (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 2395 */  { fnKeysManagement,             USER_E47,                    "EXPR",                                        "EXPR",                                        (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 
-/* 2387 */  { itemToBeCoded,                NOPARAM,                     "",                                            "Last item",                                   (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED},
+
+
+
+/* 2396 */  { itemToBeCoded,                NOPARAM,                     "",                                            "Last item",                                   (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED},
 
 };

@@ -2290,9 +2290,9 @@
 #define MNU_LAYOUTS                 2233
 #define MNU_RESETS                  2234
 #define MNU_RIBBONS                 2235
-#define ITM_USER_R47bkfg            2236
-#define ITM_USER_R47fgbk            2237
-#define ITM_USER_R47fg_g            2238
+#define ITM_2236                    2236
+#define ITM_2237                    2237
+#define ITM_2238                    2238
 #define ITM_CLMALL                  2239
 #define ITM_CLVALL                  2240
 #define ITM_DELMALL                 2241
@@ -2454,8 +2454,15 @@
 #define ITM_SAVEAUT                 2389
 #define MNU_AUDIO                   2390
 
+#define ITM_USER_R47f_g             2391
+#define ITM_USER_R47bk_fg           2392
+#define ITM_USER_R47fg_bk           2393
+#define ITM_USER_R47fg_g            2394
+#define ITM_USER_EXPR               2395
 
-#define LAST_ITEM                   2391
+
+
+#define LAST_ITEM                   2396
 
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL

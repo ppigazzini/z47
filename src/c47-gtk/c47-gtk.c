@@ -101,16 +101,19 @@
 
 
       if(strcmp(argv[arg], "--r47") == 0) {
-        calcModel = USER_R47;
+        calcModel = USER_R47f_g;
+      }
+      if(strcmp(argv[arg], "--r47v0") == 0) {
+        calcModel = USER_R47f_g;
       }
       if(strcmp(argv[arg], "--r47v1") == 0) {
-        calcModel = USER_R47fgbk;
+        calcModel = USER_R47fg_bk;
       }
       if(strcmp(argv[arg], "--r47v2") == 0) {
         calcModel = USER_R47fg_g;
       }
       if(strcmp(argv[arg], "--r47v3") == 0) {
-        calcModel = USER_R47bkfg;
+        calcModel = USER_R47bk_fg;
       }
 
 
