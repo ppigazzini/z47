@@ -1819,8 +1819,6 @@ void runDMCPmenu(uint16_t confirmation) {
 //      #endif // PC_BUILD
       run_menu_item_sys(MI_DMCP_MENU);
     }
-//  #elif defined(PC_BUILD)
-//    temporaryInformation = TI_DMCP_ONLY;
   #endif //!PC_BUILD
 }
 
@@ -1833,8 +1831,6 @@ void activateUSBdisk(uint16_t confirmation) {
       cancelFilename = true;
       run_menu_item_sys(MI_MSC);
     }
-//  #elif defined(PC_BUILD)
-//    temporaryInformation = TI_DMCP_ONLY;
   #endif //!PC_BUILD
 }
 
