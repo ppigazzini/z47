@@ -43,11 +43,19 @@
 #if !defined(__PGM_MAIN_H__)
 #define __PGM_MAIN_H__
 
+#include "defines.h"
 #include "version.h"
 
-#define PROGRAM_NAME    "C47"
-#define PROGRAM_VERSION VERSION_SHORT
+#if (CALCMODEL == USER_C47) // C47
+  #define PROGRAM_NAME    "C47"
+  #define PROGRAM_VERSION VERSION_SHORT
+  #define PROGRAM_KEYMAP_ID 0x32334d44 
+#endif // CALCMODEL == USER_C47
 
-#define PROGRAM_KEYMAP_ID 0x32334d44
+#if (CALCMODEL == USER_R47) // R47
+  #define PROGRAM_NAME    "R47"
+  #define PROGRAM_VERSION VERSION_SHORT
+  #define PROGRAM_KEYMAP_ID 0x00373452   // R47 keymap file
+#endif // CALCMODEL == USER_R47
 
 #endif // __PGM_MAIN_H__

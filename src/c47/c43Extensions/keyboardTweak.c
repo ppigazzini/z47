@@ -895,6 +895,9 @@ uint16_t numlockReplacements(uint16_t id, int16_t item, bool_t NL, bool_t FSHIFT
       tmpKey = -1;
       if(!fullKeyBuffer()) {
         tmpKey = key_pop();
+        #if CALCMODEL == USER_R47
+          tmpKey = convertKeyCode(tmpKey);
+        #endif
         if(tmpKey >= 0) {
           inKeyBuffer(tmpKey);
         }
