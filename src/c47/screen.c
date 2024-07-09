@@ -4427,8 +4427,10 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
         #endif // PC_BUILD && MONITOR_CLRSCR
         lcd_fill_rect(0, 240 - SOFTMENU_HEIGHT * 3, SCREEN_WIDTH - 240 - 2, SOFTMENU_HEIGHT * 3, LCD_SET_VALUE);
         clear_ul(); //JMUL
-        lcd_fill_rect(0, 240 - SOFTMENU_HEIGHT * 3 - 3, 20, 6, LCD_SET_VALUE);
-        if(!GRAPHMODE) { //in GRAPHMODE, protect the square graph area
+        if(!GRAPHMODE || softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_PLOT) { //not in GRAPHMODE, the triangle area indicating more menus 
+          lcd_fill_rect(0, 240 - SOFTMENU_HEIGHT * 3 - 3, 20, 6, LCD_SET_VALUE);
+        }
+         if(!GRAPHMODE) { //in GRAPHMODE, protect the square graph area
           lcd_fill_rect(SCREEN_WIDTH - 240 - 2, 240 - SOFTMENU_HEIGHT * 3, 240 + 2, SOFTMENU_HEIGHT * 3, LCD_SET_VALUE);
         }
       }

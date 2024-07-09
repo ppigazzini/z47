@@ -2585,7 +2585,7 @@ bool_t BASE_OVERRIDEONCE = false;
     if(0 <= yDotted && yDotted <= 2) {
       yDotted = 217 - SOFTMENU_HEIGHT * yDotted;
 
-      if(dottedTopLine) {
+      if(dottedTopLine && (!GRAPHMODE || softmenu[m].menuItem == -MNU_PLOT)) {
         for(x=0; x < (GRAPHMODE ? SCREEN_WIDTH / 3 : SCREEN_WIDTH); x++) {
           if(x%8 < 4) {
             setBlackPixel(x, yDotted);
@@ -2600,7 +2600,7 @@ bool_t BASE_OVERRIDEONCE = false;
         #define t 5
         #define t_o 1.6*t                                                             //offset
         #define tt_o 2                                                             //total offset
-        lcd_fill_rect(0,(uint32_t)(yDotted-t), 20,t+1, 0);
+        lcd_fill_rect(0,(uint32_t)(yDotted-t), 20,t+1, 0);                         // (see screen.c: _selectiveClearScreen)
         uint32_t xx;
         for(xx=0; xx<=t; xx++) {
           if(!catalog) {
