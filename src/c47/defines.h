@@ -25,7 +25,7 @@
 
 
 
-#define CALCMODEL USER_C47               // USER_C47 or USER_R47
+#define CALCMODEL USER_R47               // USER_C47 or USER_R47
 
 #undef SAVE_SPACE_DM42_0
 #undef SAVE_SPACE_DM42_1
@@ -390,7 +390,7 @@
 #define USER_V47         40
 #define USER_SHIFTS2     41
 #define USER_E47         43
-//#define           44
+
 #define USER_DM42        45
 #define USER_C47         46
 #define USER_D47         47
@@ -411,8 +411,7 @@
 #define USER_R47fg_bk    63
 #define USER_R47fg_g     64
 #define USER_EXPR        65
-
-#define USER_R47         66  //only used for RB
+#define USER_R47         66  //only used for RB, profile auto selected is USER_R47f_g
 
 
 //*************************
