@@ -693,26 +693,26 @@ TO_QSPI const int16_t menu_ASN_N[]       = { ITM_N_KEY_SIGMA,               ITM_
                                              ITM_N_KEY_NIL,                 ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_TO_USER             };
 
 
-#if !defined(PC_BUILD)       //NULL to be removed in the DMCP version
-  #define CC_V47  ITM_NULL
-  #define CC_E47  ITM_NULL
-  #define CC_D47  ITM_NULL        //       depreciated, replaced with R47
-  #define CC_N47  ITM_NULL
-#else // !PC_BUILD
-  #define CC_V47  ITM_USER_V47    //
-  #define CC_E47  ITM_USER_E47    //
-  #define CC_D47  ITM_USER_D47    //       depreciated, replaced with R47
-  #define CC_N47  ITM_USER_N47    //
-#endif // !PC_BUILD
-
-
-TO_QSPI const int16_t menu_KEYS[]      =  {  -MNU_LAYOUTS,              -MNU_RIBBONS,              -MNU_RESETS,               -MNU_ASN_N,                ITM_KEYMAP,                ITM_USERMODE,
-                                             ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_ASSIGN,
-                                             ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,         };
-
+//LAYOUT and KEYS menus different for C47hw, R47hw and SIM
+TO_QSPI const int16_t menu_KEYS[]      =  {  -MNU_ASN_N,                -MNU_RIBBONS,              -MNU_RESETS,               ITM_ASSIGN,                ITM_KEYMAP,                ITM_USERMODE,              
+#if (defined PC_BUILD) || ((defined DMCP_BUILD) && (CALCMODEL != USER_R47))
+                                             -MNU_LAYOUTS,              ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,         };
+#else
+                                             ITM_USER_R47f_g,           ITM_USER_R47fg_bk,         ITM_USER_R47fg_g,          ITM_USER_R47bk_fg,         ITM_NULL,                  ITM_NULL,         };
+#endif
+#if (defined PC_BUILD)
 TO_QSPI const int16_t menu_LAYOUTS[]   =  {  ITM_USER_C47,              ITM_USER_DM42,             ITM_USER_R47,              ITM_USER_EXPR,             ITM_KEYMAP,                ITM_USERMODE,
-                                             ITM_USER_R47f_g,           ITM_USER_R47fg_bk,         ITM_USER_R47fg_g,          ITM_USER_R47bk_fg,         ITM_NULL,                  ITM_ASSIGN,                  
-                                             CC_D47,                    CC_E47,                    CC_N47,                    CC_V47,                    ITM_NULL,                  ITM_NULL,         };
+                                             ITM_USER_R47f_g,           ITM_USER_R47fg_bk,         ITM_USER_R47fg_g,          ITM_USER_R47bk_fg,         ITM_NULL,                  ITM_NULL,
+                                             ITM_USER_D47,              ITM_USER_E47,              ITM_USER_N47,              ITM_USER_V47,              ITM_NULL,                  ITM_NULL          };
+#elif (defined DMCP_BUILD) && (CALCMODEL != USER_R47)
+TO_QSPI const int16_t menu_LAYOUTS[]   =  {  ITM_USER_C47,              ITM_USER_DM42,             ITM_USER_R47,              ITM_ASSIGN,                ITM_KEYMAP,                ITM_USERMODE,
+                                             ITM_USER_R47f_g,           ITM_USER_R47fg_bk,         ITM_USER_R47fg_g,          ITM_USER_R47bk_fg,         ITM_NULL,                  ITM_NULL          };
+#else
+TO_QSPI const int16_t menu_LAYOUTS[]   =  {  };
+#endif
+
+
+
 
 TO_QSPI const int16_t menu_RESETS[]    =  {  ITM_USER_ARESET,           ITM_USER_MRESET,           ITM_USER_HRESET,           ITM_USER_PRESET,           ITM_NULL,                  ITM_USER_KRESET,
                                              ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,
