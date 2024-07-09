@@ -39,7 +39,7 @@ TO_QSPI const char     hexadecimalDigits[17] = "0123456789ABCDEF";
 TO_QSPI const char     registerFlagLetters[27] = "XYZTABCDLIJKMNPQRSEFGHOUVW";
 void                   (*confirmedFunction)(uint16_t);
 
-uint8_t calcModel = CALCMODEL;
+uint8_t calcModel = (CALCMODEL == USER_R47 ? USER_R47f_g : CALCMODEL);          //Default set by compiler is "USER_R47" and the profile is changed to USER_R47f_g
 
 
 // Variables stored in RAM
