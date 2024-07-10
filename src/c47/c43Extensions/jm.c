@@ -139,7 +139,7 @@ void fnSigmaAssign(uint16_t sigmaAssign) {             //DONE
  * \param[in] jmConfig to display uint16_t
  * \return void
  ***********************************************/
-void fnShowJM(uint16_t jmConfig) {                               //DONE
+void fnShowErpn(uint16_t jmConfig) {                               //DONE
   longInteger_t mem;
   longIntegerInit(mem);
   saveForUndo();
