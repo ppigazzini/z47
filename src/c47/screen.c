@@ -603,7 +603,7 @@ void execTimerApp(uint16_t timerType) {
   void toggle6UnderLines(int16_t y) {
     int16_t i;
     for(i=0; i<6; i++ ) {
-      if((maxfgLines(y) || (fgLN == RB_FGLNFUL)) && ( !GRAPHMODE || (GRAPHMODE && (i <= 1)) )) {
+      if((maxfgLines(y) || (fgLN == RBX_FGLNFUL)) && ( !GRAPHMODE || (GRAPHMODE && (i <= 1)) )) {
         underline_softkey(i, y, true);
       }
     }
@@ -679,7 +679,7 @@ void execTimerApp(uint16_t timerType) {
       return;
     }
 
-    if(fgLN != RB_FGLNOFF) {
+    if(fgLN != RBX_FGLNOFF) {
       //JMUL all changed  vv
       if(!dontclear) {                            //JM Recursively call the same routine up to 2 times for y=0 and y=1, to clear the previous line
         for(y=0; y<ySoftKey; y++) {
@@ -775,13 +775,13 @@ void execTimerApp(uint16_t timerType) {
       if(fnTimerGetStatus(TO_FN_LONG) == TMR_COMPLETED) {
         FN_handle_timed_out_to_EXEC = false;
         if(!shiftF && !shiftG) {                              //From No_Shift State 1
-          if(LongPressF == RB_F1234) {
+          if(LongPressF == RBX_F1234) {
             FN_handler_StepToF(TIME_FN_1234_F_TO_G);           //To F State 2
           }
-          else if(LongPressF == RB_F124) {
+          else if(LongPressF == RBX_F124) {
             FN_handler_StepToF(TIME_FN_124_F_TO_NOP);            //To F State 2
           }
-          else if(LongPressF == RB_F14) {
+          else if(LongPressF == RBX_F14) {
             FN_handler_StepToNOP();                           //To NOP State 4
           }
 
@@ -790,10 +790,10 @@ void execTimerApp(uint16_t timerType) {
           #endif // FN_TIME_DEBUG1
         }
         else if(shiftF && !shiftG) {                          //From F State 2
-          if(LongPressF == RB_F1234) {
+          if(LongPressF == RBX_F1234) {
             FN_handler_StepToG(TIME_FN_1234_G_TO_NOP);            //To G State 3
           }
-          else if(LongPressF == RB_F124) {
+          else if(LongPressF == RBX_F124) {
             FN_handler_StepToNOP();                           //To NOP State 4
           }
           #if defined(FN_TIME_DEBUG1)
@@ -880,7 +880,7 @@ void execTimerApp(uint16_t timerType) {
     if(fnTimerGetStatus(TO_CL_LONG) == TMR_COMPLETED) {
       if(JM_auto_longpress_enabled != 0) {
         char *funcParam;
-        int keyStateCode = (getSystemFlag(FLAG_ALPHA) ? 3 : 0) + ((LongPressM == RB_M124) ? 1 : longpressDelayedkey3 ? 1 : 2);
+        int keyStateCode = (getSystemFlag(FLAG_ALPHA) ? 3 : 0) + ((LongPressM == RBX_M124) ? 1 : longpressDelayedkey3 ? 1 : 2);
         funcParam = (char *)getNthString((uint8_t *)userKeyLabel, currentKeyCode * 6 + keyStateCode);
         if((funcParam[0] != 0) && ((JM_auto_longpress_enabled == -MNU_DYNAMIC) || (JM_auto_longpress_enabled == ITM_XEQ) || (JM_auto_longpress_enabled == ITM_RCL))) { // For user menu, prog or variable a-feirassignment
           showFunctionName(JM_auto_longpress_enabled, JM_TO_CL_LONG + 50, funcParam);     //Add a marginal amout of time to prevent racing of end conditions.

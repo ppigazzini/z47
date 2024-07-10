@@ -1,18 +1,5 @@
-/* This file is part of C47.
- *
- * C47 is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * C47 is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with C47.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: GPL-3.0-only
+// SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
 
 /********************************************//**
@@ -29,6 +16,7 @@
 #include "hal/gui.h"
 #include "items.h"
 #include "c43Extensions/jm.h"
+#include "c43Extensions/radioButtonCatalog.h"
 #include "keyboard.h"
 #include "screen.h"
 #include "stack.h"
@@ -274,14 +262,14 @@ void resetKeytimers(void) {
     int16_t tmpf = 0, tmpf_ = getSystemFlag(FLAG_USER) ? kbd_usr[key_no].fShifted : kbd_std[key_no].fShifted;
     int16_t tmpg = 0, tmpg_ = getSystemFlag(FLAG_USER) ? kbd_usr[key_no].gShifted : kbd_std[key_no].gShifted;
     if((calcMode == CM_NORMAL || calcMode == CM_NIM) && tam.mode==0) {  //longpress yellow math functions on the first two rows, menus allowed provided it is within keys 00-14
-      if(   ((key_no >= 0 && key_no < 15) && (LongPressM == RB_M1234 || LongPressM == RB_M124))  //any mathkeys
-         || (/*(key_no >= 0 && key_no < 15) && (LongPressM == RB_M14) && */(tmpp_ == ITM_DRG && tmpf_ == ITM_USERMODE ) ) //DRG anywhere mathkeys
+      if(   ((key_no >= 0 && key_no < 15) && (LongPressM == RBX_M1234 || LongPressM == RBX_M124))  //any mathkeys
+         || (/*(key_no >= 0 && key_no < 15) && (LongPressM == RBX_M14) && */(tmpp_ == ITM_DRG && tmpf_ == ITM_USERMODE ) ) //DRG anywhere mathkeys
          || (tmpp_ == ITM_XEQ && tmpf_ == ITM_AIM)                                               //anywhere
         ) {
         if(!shiftF && !shiftG) {
           longpressDelayedkey1 = tmpf_;
           tmpf = tmpf_;
-          if(LongPressM == RB_M1234) {
+          if(LongPressM == RBX_M1234) {
             longpressDelayedkey3 = tmpg_;
             tmpg = tmpg_;
           }
@@ -301,17 +289,17 @@ void resetKeytimers(void) {
             if(tam.mode == 0 && ((char*)funcParam)[0] == 0 && (getSystemFlag(FLAG_USER) ? kbd_usr[key_no].primary == kbd_std[key_no].primary : true)) { //If XEQ (always primary) is not the standard position, or if XEQ has a parameter then do not inject it into the long press cycle
               if(tmpp_ == ITM_XEQ && tmpf == ITM_AIM) {
                 if(getSystemFlag(FLAG_SH_LONGPRESS)) {
-                  if(LongPressM == RB_M14) {
+                  if(LongPressM == RBX_M14) {
                     longpressDelayedkey1 = ITM_AIM;
                     longpressDelayedkey2 = 0;
                     longpressDelayedkey3 = -MNU_XXEQ;
                   }
-                  else if(LongPressM == RB_M124) {
+                  else if(LongPressM == RBX_M124) {
                     longpressDelayedkey1 = ITM_AIM;
                     longpressDelayedkey2 = 0;
                     longpressDelayedkey3 = -MNU_XXEQ;
                   }
-                  else if(LongPressM == RB_M1234) {
+                  else if(LongPressM == RBX_M1234) {
                     longpressDelayedkey1 = ITM_AIM;
                     longpressDelayedkey2 = -MNU_XXEQ;
                     longpressDelayedkey3 = tmpg;
@@ -343,17 +331,17 @@ void resetKeytimers(void) {
               longpressDelayedkey2 = 0;
               longpressDelayedkey3 = 0;
               if(tmpp_ == ITM_DRG) {
-                if(LongPressM == RB_M14) {
+                if(LongPressM == RBX_M14) {
                   longpressDelayedkey1 = tmpf == ITM_USERMODE && getSystemFlag(FLAG_SH_LONGPRESS) ? ITM_USERMODE : 0;
                   longpressDelayedkey2 = 0;
                   longpressDelayedkey3 = 0;
                 }
-                else if(LongPressM == RB_M124) {
+                else if(LongPressM == RBX_M124) {
                   longpressDelayedkey1 = ITM_USERMODE;
                   longpressDelayedkey2 = 0;
                   longpressDelayedkey3 = 0 ;
                 }
-                else if(LongPressM == RB_M1234) {
+                else if(LongPressM == RBX_M1234) {
                   longpressDelayedkey1 = ITM_USERMODE;
                   longpressDelayedkey2 = tmpg;
                   longpressDelayedkey3 = 0;
@@ -369,17 +357,17 @@ void resetKeytimers(void) {
           case ITM_XEQ:
             if(tam.mode == 0 && ((char*)funcParam)[0] == 0 && (getSystemFlag(FLAG_USER) ? kbd_usr[key_no].primary == kbd_std[key_no].primary : true)) { //If XEQ (always primary) is not the standard position, or if XEQ has a parameter then do not inject it into the long press cycle
               if(getSystemFlag(FLAG_SH_LONGPRESS) && tmpp_ == ITM_XEQ && tmpf == ITM_AIM) {
-                if(LongPressM == RB_M14) {
+                if(LongPressM == RBX_M14) {
                   longpressDelayedkey1 = ITM_AIM;
                   longpressDelayedkey2 = 0;
                   longpressDelayedkey3 = -MNU_XXEQ;
                 }
-                else if(LongPressM == RB_M124) {
+                else if(LongPressM == RBX_M124) {
                   longpressDelayedkey1 = ITM_AIM;
                   longpressDelayedkey2 = 0;
                   longpressDelayedkey3 = -MNU_XXEQ;
                 }
-                else if(LongPressM == RB_M1234) {
+                else if(LongPressM == RBX_M1234) {
                   longpressDelayedkey1 = ITM_AIM;
                   longpressDelayedkey2 = -MNU_XXEQ;
                   longpressDelayedkey3 = tmpg;
@@ -406,17 +394,17 @@ void resetKeytimers(void) {
               longpressDelayedkey2 = 0;
               longpressDelayedkey3 = 0;
               if(tmpp_ == ITM_DRG) {
-                if(LongPressM == RB_M14) {
+                if(LongPressM == RBX_M14) {
                   longpressDelayedkey1 = tmpf == ITM_USERMODE && getSystemFlag(FLAG_SH_LONGPRESS) ? ITM_USERMODE : 0;
                   longpressDelayedkey2 = 0;
                   longpressDelayedkey3 = 0;
                 }
-                else if(LongPressM == RB_M124) {
+                else if(LongPressM == RBX_M124) {
                   longpressDelayedkey1 = ITM_USERMODE;
                   longpressDelayedkey2 = 0;
                   longpressDelayedkey3 = 0 ;
                 }
-                else if(LongPressM == RB_M1234) {
+                else if(LongPressM == RBX_M1234) {
                   longpressDelayedkey1 = ITM_USERMODE;
                   longpressDelayedkey2 = tmpg;
                   longpressDelayedkey3 = 0;

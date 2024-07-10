@@ -38,6 +38,7 @@
 #include "plotstat.h"
 #include "programming/decode.h"
 #include "programming/programming.h"
+#include "c43Extensions/radioButtonCatalog.h"
 #include "recall.h"
 #include "registers.h"
 #include "saveRestoreCalcState.h"
@@ -87,10 +88,6 @@ void fnNop(uint16_t unusedButMandatoryParameter) {
 //Items in here are both struck through in the softmenu, and are prevented from running, including TAM if in use, and TI_NOT_AVAILABE.
 bool_t itemNotAvail(int16_t itemNr) {
 #ifdef DMCP_BUILD
-//    case ITM_USER_V47 :
-//    case ITM_USER_E47 :
-//    case ITM_USER_D47 :
-//    case ITM_USER_N47 :
   return false;
 #elif PC_BUILD
   switch(max(itemNr,-itemNr)) {
@@ -106,6 +103,7 @@ bool_t itemNotAvail(int16_t itemNr) {
       case ITM_VOLMINUS :
       case ITM_VOLPLUS  :
       case ITM_VOLQ     :
+             printf("Item %i not available, not executing.\n",itemNr);
              return true;
              break;
       default: 
@@ -1185,11 +1183,10 @@ bool_t itemNotAvail(int16_t itemNr) {
   void fnDisplayFormatSigFig      (uint16_t unusedButMandatoryParameter) {}
   void fnDisplayFormatUnit        (uint16_t unusedButMandatoryParameter) {}
   void fnDisplayFormatCycle       (uint16_t unusedButMandatoryParameter) {}
-  void fnShowJM                   (uint16_t unusedButMandatoryParameter) {}
+  void fnShowErpn                 (uint16_t unusedButMandatoryParameter) {}
   void fnKeysManagement           (uint16_t unusedButMandatoryParameter) {}
   void fnSigmaAssign              (uint16_t unusedButMandatoryParameter) {}
   void fnGetSigmaAssignToX        (uint16_t unusedButMandatoryParameter) {}
-  void fnJM_GetXToNORMmode        (uint16_t unusedButMandatoryParameter) {}
   void fnInDefault                (uint16_t unusedButMandatoryParameter) {}
   void fnJM_2SI                   (uint16_t unusedButMandatoryParameter) {}
   void fnTo_ms                    (uint16_t unusedButMandatoryParameter) {}
@@ -3254,7 +3251,7 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 1878 */  { itemToBeCoded,                NOPARAM,                     "",                                            "CASE UP",                                     (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_NONE         },//JM CASE
 /* 1879 */  { itemToBeCoded,                NOPARAM,                     "",                                            "CASE DN",                                     (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_NONE         },//JM CASE
 /* 1880 */  { fnListXY,                     NOPARAM,                     "LISTXY",                                      "LISTXY",                                      (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_NONE         },
-/* 1881 */  { fnShowJM,                     JC_ERPN,                     "eRPN?",                                       "eRPN?",                                       (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },//JM SHOW
+/* 1881 */  { fnShowErpn,                   JC_ERPN,                     "eRPN?",                                       "eRPN?",                                       (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },//JM SHOW
 /* 1882 */  { fnSysFreeMem,                 NOPARAM,                     "HEAP",                                        "HEAP",                                        (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 1883 */  { itemToBeCoded,                NOPARAM,                     "",                                            "Inl. Tst",                                    (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },//INLINE_TEST
 /* 1884 */  { fnSetInlineTest,              JC_ITM_TST,                  "",                                            "Test",                                        (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },//INLINE_TEST
@@ -3430,15 +3427,15 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 2054 */  { fnKeysManagement,             USER_HRESET,                 "HOME.R",                                      "HOME.R",                                      (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2055 */  { fnKeysManagement,             USER_PRESET,                 "PFN.R",                                       "PFN.R",                                       (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2056 */  { SetSetting,                   JC_IRFRAC,                   "IRFRAC",                                      "IRFRAC",                                      (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
-/* 2057 */  { setFGLSettings,               RB_FGLNOFF,                  "fg.OFF",                                      "fg.OFF",                                      (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_NONE         },
-/* 2058 */  { setFGLSettings,               RB_FGLNLIM,                  "fg.LIM",                                      "fg.LIM",                                      (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_NONE         },
-/* 2059 */  { setFGLSettings,               RB_FGLNFUL,                  "fg.FUL",                                      "fg.FUL",                                      (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_NONE         },
-/* 2060 */  { fnLongPressSwitches,          RB_M124,                     "M.124",                                       "M.124",                                       (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
-/* 2061 */  { fnLongPressSwitches,          RB_F1234,                    "F.1234",                                      "F.1234",                                      (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
-/* 2062 */  { fnLongPressSwitches,          RB_M1234,                    "M.1234",                                      "M.1234",                                      (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
-/* 2063 */  { fnLongPressSwitches,          RB_F14,                      "F.14",                                        "F.14",                                        (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
-/* 2064 */  { fnLongPressSwitches,          RB_M14,                      "M.14",                                        "M.14",                                        (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
-/* 2065 */  { fnLongPressSwitches,          RB_F124,                     "F.124",                                       "F.124",                                       (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
+/* 2057 */  { setFGLSettings,               RBX_FGLNOFF,                 "fg.OFF",                                      "fg.OFF",                                      (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_NONE         },
+/* 2058 */  { setFGLSettings,               RBX_FGLNLIM,                 "fg.LIM",                                      "fg.LIM",                                      (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_NONE         },
+/* 2059 */  { setFGLSettings,               RBX_FGLNFUL,                 "fg.FUL",                                      "fg.FUL",                                      (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_NONE         },
+/* 2060 */  { fnLongPressSwitches,          RBX_M124,                    "M.124",                                       "M.124",                                       (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
+/* 2061 */  { fnLongPressSwitches,          RBX_F1234,                   "F.1234",                                      "F.1234",                                      (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
+/* 2062 */  { fnLongPressSwitches,          RBX_M1234,                   "M.1234",                                      "M.1234",                                      (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
+/* 2063 */  { fnLongPressSwitches,          RBX_F14,                     "F.14",                                        "F.14",                                        (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
+/* 2064 */  { fnLongPressSwitches,          RBX_M14,                     "M.14",                                        "M.14",                                        (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
+/* 2065 */  { fnLongPressSwitches,          RBX_F124,                    "F.124",                                       "F.124",                                       (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /* 2066 */  { itemToBeCoded,                NOPARAM,                     "REG",                                         "REG",                                         (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2067 */  { itemToBeCoded,                NOPARAM,                     "FLG",                                         "FLG",                                         (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2068 */  { itemToBeCoded,                NOPARAM,                     "",                                            "TamNoReg",                                    (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
