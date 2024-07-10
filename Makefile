@@ -1,4 +1,4 @@
-.PHONY: all clean sim test dmcp dmcp5 docs testPgms dist_windows dist_macos dist_linux dist_dmcp dist_dmcp5
+.PHONY: all clean sim test dmcp dmcp5 docs testPgms dist_windows dist_macos dist_linux dist_dmcp dist_dmcp5 dist_dmcp5r47
 
 all: sim
 
@@ -10,8 +10,9 @@ endif
 clean:
 	rm -f wp43$(EXE)
 	rm -f c47$(EXE)
+	rm -f r47$(EXE)
 	rm -rf wp43-windows* wp43-macos* wp43-linux* wp43-dm42*
-	rm -rf c47-windows* c47-macos* c47-linux* c47-dmcp*
+	rm -rf c47-windows* c47-macos* c47-linux* c47-dmcp* r47-dmcp*
 	rm -rf build build.sim build.dmcp build.dmcp5 build.rel
 
 build.sim:
@@ -58,12 +59,14 @@ ifeq ($(CI_COMMIT_TAG),)
   LINUX_DIST_DIR = c47-linux
   DMCP_DIST_DIR = c47-dmcp
   DMCP5_DIST_DIR = c47-dmcp5
+  DMCP5R47_DIST_DIR = r47-dmcp5
 else
   WIN_DIST_DIR = c47-windows-$(CI_COMMIT_TAG)
   MAC_DIST_DIR = c47-macos-$(CI_COMMIT_TAG)
   LINUX_DIST_DIR = c47-linux-$(CI_COMMIT_TAG)
   DMCP_DIST_DIR = c47-dmcp-$(CI_COMMIT_TAG)
   DMCP5_DIST_DIR = c47-dmcp5-$(CI_COMMIT_TAG)
+  DMCP5R47_DIST_DIR = r47-dmcp5-$(CI_COMMIT_TAG)
 endif
 
 dist_windows: testPgms build.rel/wiki
@@ -116,7 +119,7 @@ dist_dmcp: dmcp testPgms build.rel/wiki
 	cp -r res/offimg/HP\ related/ $(DMCP_DIST_DIR)/offimg
 	cp -r res/offimg/C47/ $(DMCP_DIST_DIR)/offimg
 	cp -r res/PROGRAMS $(DMCP_DIST_DIR)
-	cp res/dmcp/original_DM42_keymap.bin $(DMCP_DIST_DIR)
+	cp res/dmcp/DM42_keymap.bin $(DMCP_DIST_DIR)
 	cp res/dmcp/testPgms.bin res/dmcp/testPgms.txt $(DMCP_DIST_DIR)/demo
 	cp build.rel/wiki/Installation-on-a-DM42.md $(DMCP_DIST_DIR)/readme.txt
 	zip -r c47-dmcp.zip $(DMCP_DIST_DIR)
@@ -134,8 +137,34 @@ dist_dmcp5: dmcp5 testPgms build.rel/wiki
 	cp -r res/offimg/HP\ related/ $(DMCP5_DIST_DIR)/offimg
 	cp -r res/offimg/C47/ $(DMCP5_DIST_DIR)/offimg
 	cp -r res/PROGRAMS $(DMCP5_DIST_DIR)
-	cp res/dmcp5/original_DM42_keymap.bin $(DMCP5_DIST_DIR)
+	cp res/dmcp5/DM42_keymap.bin $(DMCP5_DIST_DIR)
+	cp res/dmcp5/R47_keymap.bin $(DMCP5_DIST_DIR)
+	cp res/dmcp5/SwissMicros/DM42_qspi_3.x.bin $(DMCP5_DIST_DIR)
 	cp res/dmcp5/testPgms.bin res/dmcp5/testPgms.txt $(DMCP5_DIST_DIR)/demo
 	cp build.rel/wiki/Installation-on-a-DM42.md $(DMCP5_DIST_DIR)/readme.txt
 	zip -r c47-dmcp5.zip $(DMCP5_DIST_DIR)
 	rm -rf $(DMCP5_DIST_DIR)
+
+
+dist_dmcp5r47: dmcp5 testPgms build.rel/wiki
+	mkdir -p $(DMCP5R47_DIST_DIR)
+	mkdir -p $(DMCP5R47_DIST_DIR)/demo
+	cp build.dmcp5/src/c47-dmcp5/C47.pg5 build.dmcp5/src/c47-dmcp5/R47.pg5
+	rm build.dmcp5/src/c47-dmcp5/C47.pg5
+	cp build.dmcp5/src/c47-dmcp5/R47.pg5 $(DMCP5R47_DIST_DIR)
+	cp -r res/offimg/Egypt/ $(DMCP5R47_DIST_DIR)/offimg
+	cp -r res/offimg/Norway/ $(DMCP5R47_DIST_DIR)/offimg
+	cp -r res/offimg/Netherlands/ $(DMCP5R47_DIST_DIR)/offimg
+	cp -r res/offimg/From\ WP43/ $(DMCP5R47_DIST_DIR)/offimg
+	cp -r res/offimg/General/ $(DMCP5R47_DIST_DIR)/offimg
+	cp -r res/offimg/HP\ related/ $(DMCP5R47_DIST_DIR)/offimg
+	cp -r res/offimg/C47/ $(DMCP5R47_DIST_DIR)/offimg
+	cp -r res/PROGRAMS $(DMCP5R47_DIST_DIR)
+	cp res/dmcp5/DM42_keymap.bin $(DMCP5R47_DIST_DIR)
+	cp res/dmcp5/R47_keymap.bin $(DMCP5R47_DIST_DIR)
+	cp res/dmcp5/SwissMicros/DM42_qspi_3.x.bin $(DMCP5R47_DIST_DIR)
+	cp res/dmcp5/testPgms.bin res/dmcp5/testPgms.txt $(DMCP5R47_DIST_DIR)/demo
+	cp build.rel/wiki/Installation-on-a-DM42.md $(DMCP5R47_DIST_DIR)/readme.txt
+	cp res/dmcp5/install_R47_on_DM32.txt $(DMCP5R47_DIST_DIR)
+	zip -r r47-dmcp5.zip $(DMCP5R47_DIST_DIR)
+	rm -rf $(DMCP5R47_DIST_DIR)

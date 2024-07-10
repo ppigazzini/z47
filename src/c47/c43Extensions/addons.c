@@ -2012,8 +2012,8 @@ void fnRESET_MyM(uint8_t param) {
           case 2: itemToBeAssigned = ITM_op_j_pol; break;
           case 3: itemToBeAssigned = ITM_XFACT;    break;
           case 4: itemToBeAssigned = ITM_XTHROOT;  break;
-          case 5: itemToBeAssigned = ITM_EXP;      break;
-          case 6: itemToBeAssigned = -MNU_HOME;    break;
+          case 5: itemToBeAssigned = ITM_10x;      break;
+          case 6: itemToBeAssigned = ITM_EXP;      break;
           default:break;
         }
       }

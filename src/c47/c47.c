@@ -358,11 +358,121 @@ char                   fileNameSelected[stateFileNameVarLength];
   bool_t               wp43KbdLayout;
 
 
-                                                int convertKeyCode(int key) {
+#if CALCMODEL == USER_R47 // R47 alpha keyboard mapping
+  //Alpha keyboard mapping for DMCP based on the DM41X example from David
+  // includes keycodes remapping for the R47
+  // 
+  const char alpha_upper_transl[] = "_" // code 0 unused
+  //        +-------+-------+-------+-------+-------+-------+
+  //  1- 6  |  x^2  |  SQRT |  1/x  |  y^x  |  LOG  |  LN   |
+               "A"     "B"     "C"     "D"     "E"     "F"  
+  //        +-------+-------+-------+-------+-------+-------+
+  //  7-12  |  STO  |  RCL  |  R↓   |  DRG  |   f   |   g   |
+               "G"     "H"     "I"     "J"     "@"     "@"  
+  //        +-------+-------+-------+-------+-------+
+  // 13-17  | ENTER | x<>y  |  +/-  |   E   |  <--  |
+               "@"     "K"     "M"     "L"     "@"  
+  //        +-------+-------+-------+-------+-------+
+  // 18-22  |  XEQ  |   7   |   8   |   9   |  DIV  |
+               "@"     "N"     "O"     "P"     "Q"  
+  //        +-------+-------+-------+-------+-------+
+  // 23-27  |  UP   |   4   |   5   |   6   |  MUL  |
+               "@"     "R"     "S"     "T"     "U"  
+  //        +-------+-------+-------+-------+-------+
+  // 28-32  |  DOWN |   1   |   2   |   3   |  SUB  |
+               "@"     "V"     "W"     "X"     "Y"  
+  //        +-------+-------+-------+-------+-------+
+  // 33-37  |  ON   |   0   |  DOT  |  R/S  |  ADD  |
+               "@"     "Z"     ","     "?"     " "  ;
+  //The following lines from the DM41X are not included for the WP43 as 
+  // there is no alpha character assigned to the function keys
+  //        +-------+-------+-------+-------+-------+-------+
+  // 38-43  |  Σ+   |  1/x  | SQRT  |  LOG  |  LN   |  PRG  |
+  //           "A"     "B"     "C"     "D"     "E"     "@"  ;  
+#endif // CALCMODEL == USER_R47
+
+int convertKeyCode(int key) {
+  #if CALCMODEL == USER_R47 // R47 keyboard mapping
+    /////////////////////////////////////////////////
+    // For key reassignment see:
+    // https://technical.swissmicros.com/dmcp/devel/dmcp_devel_manual/#_system_key_table
+    //
+    // Output of keymap2layout keymap.txt
+    //     +-----+-----+-----+-----+-----+-----+
+    //  1: | F1  | F2  | F3  | F4  | F5  | F6  |
+    //     |38:38|39:39|40:40|41:41|42:42|43:43|
+    //    +-----+-----+-----+-----+-----+-----+
+    //  2: |Sum+ | 1/x |SQRT | LOG | LN  | XEQ |
+    //     | 1: 1| 2: 2| 3: 3| 4: 4| 5: 5| 6: 6|
+    //     +-----+-----+-----+-----+-----+-----+
+    //  3: | STO | RCL | RDN | SIN |SHIFT| TAN |
+    //     | 7: 7| 8: 8| 9: 9|10:10|11:28|12:12|
+    //     +-----+-----+-----+-----+-----+-----+
+    //  4: |   ENTER   |x<>y |  E  | CHS | <-- |
+    //     |   13:13   |14:14|15:16|16:15|17:17|
+    //     +-----------+-----+-----+-----+-----+
+    //  5: |  COS |   7  |   8  |   9  |  DIV  |
+    //     | 18:11| 19:19| 20:20| 21:21| 22:22 |
+    //     +------+------+------+------+-------+
+    //  6: |  UP  |   4  |   5  |   6  |  MUL  |
+    //     | 23:18| 24:24| 25:25| 26:26| 27:27 |
+    //     +------+------+------+------+-------+
+    //  7: | DOWN |   1  |   2  |   3  |  SUB  |
+    //     | 28:23| 29:29| 30:30| 31:31| 32:32 |
+    //     +------+------+------+------+-------+
+    //  8: | EXIT |   0  |  DOT |  RUN |  ADD  |
+    //     | 33:33| 34:34| 35:35| 36:36| 37:37 |
+    //     +------+------+------+------+-------+
+
+    //The switch instruction below is implemented as follows e.g. for the up arrow key on the R47 layout:
+    //  the output of keymap2layout for this key is UP 23:18 so we need the line:
+    //    case 18: key = 23; break;
+    switch(key) {               // Original
+    //case  1: key =  1; break; // SUM+
+    //case  2: key =  2; break; // 1/x
+    //case  3: key =  3; break; // SQRT
+    //case  4: key =  4; break; // LOG
+    //case  5: key =  5; break; // LN
+    //case  6: key =  6; break; // XEQ
+    //case  7: key =  7; break; // STO
+    //case  8: key =  8; break; // RCL
+    //case  9: key =  9; break; // RDN
+    //case 10: key = 10; break; // SIN
+      case 11: key = 18; break; // COS
+    //case 12: key = 12; break; // TAN
+    //case 13: key = 13; break; // ENTER
+    //case 14: key = 14; break; // x<>y
+      case 15: key = 16; break; // +/-
+      case 16: key = 15; break; // E
+    //case 17: key = 17; break; // <--
+      case 18: key = 23; break; // UP
+    //case 19: key = 19; break; // 7
+    //case 20: key = 20; break; // 8
+    //case 21: key = 21; break; // 9
+    //case 22: key = 18; break; // /
+      case 23: key = 28; break; // DOWN
+    //case 24: key = 24; break; // 4
+    //case 25: key = 25; break; // 5
+    //case 26: key = 26; break; // 6
+    //case 27: key = 27; break; // x
+      case 28: key = 11; break; // SHIFT
+    //case 29: key = 29; break; // 1
+    //case 30: key = 30; break; // 2
+    //case 31: key = 31; break; // 3
+    //case 32: key = 32; break; // -
+    //case 33: key = 33; break; // EXIT
+    //case 34: key = 34; break; // 0
+    //case 35: key = 35; break; // .
+    //case 36: key = 36; break; // R/S
+    //case 37: key = 37; break; // +
+      default: {
+      }
+    }                                                  
+  #else // Default
                                                   if(wp43KbdLayout) {
                                                     /////////////////////////////////////////////////
                                                     // For key reassignment see:
-                                                    // https://technical.swissmicros.com/dm42/devel/dmcp_devel_manual/#_system_key_table
+                                                    // https://technical.swissmicros.com/dmcp/devel/dmcp_devel_manual/#_system_key_table
                                                     //
                                                     // Output of keymap2layout keymap.txt
                                                     //
@@ -437,8 +547,9 @@ char                   fileNameSelected[stateFileNameVarLength];
                                                       }
                                                     }
                                                   }
-                                                  return key;
-                                                }
+  #endif // CALCMODEL == USER_R47
+  return key;
+}
 
                                                 #if defined(INLINE_TEST)
                                                 //#define TMR_OBSERVE
@@ -460,7 +571,12 @@ char                   fileNameSelected[stateFileNameVarLength];
     c47MemInBlocks = 0;
     gmpMemInBytes = 0;
     mp_set_memory_functions(allocGmp, reallocGmp, freeGmp);
-
+    
+    #if CALCMODEL == USER_R47 // R47 meyboard mapping
+      key_to_alpha_table = alpha_upper_transl; //Remap the alpha keyboard layout for DMCP dialogs
+      //SET_ST(STAT_ALPHA_TAB_Fn);             // Alpha key table includes F keys - This doesn't apply to the R47
+    #endif // CALCMODEL == USER_R47
+    
     lcd_clear_buf();
                                                 #if defined(NOKEYMAP)                                             //vv dr - no keymap is used
                                                     lcd_putsAt(t24, 4, "Press the bottom left key."); lcd_refresh();
