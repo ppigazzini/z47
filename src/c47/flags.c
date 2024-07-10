@@ -70,6 +70,13 @@ static void systemFlagAction(uint16_t systemFlag, flagAction_t action) {
     default:                                               break;
   }
 
+  if(systemFlag == FLAG_IRFRAC && (action == FLAG_SET || (action == FLAG_FLIP && !getSystemFlag(FLAG_IRFRAC)))) {
+    setSystemFlag(FLAG_IRF_ON);
+  } 
+  else if(systemFlag == FLAG_IRFRAC && (action == FLAG_CLEAR || (action == FLAG_FLIP && getSystemFlag(FLAG_IRFRAC)))) {
+    clearSystemFlag(FLAG_IRF_ON);
+  } 
+
   switch(systemFlag) {
     case FLAG_YMD:
     case FLAG_DMY:
@@ -88,6 +95,12 @@ static void systemFlagAction(uint16_t systemFlag, flagAction_t action) {
     case FLAG_ENDPMT:
     case FLAG_HPRP:
     case FLAG_HPBASE:
+    case FLAG_NUMLOCK:
+    case FLAG_CPXMULT:
+    case FLAG_ERPN:
+    case FLAG_LARGELI:
+    case FLAG_IRFRAC:
+    case FLAG_IRF_ON:
     case FLAG_2TO10:  fnRefreshState(); break;
 
     case FLAG_SBdate:
@@ -581,30 +594,13 @@ void fnIsFlagSetFlip(uint16_t flag) {
  ***********************************************/
 void SetSetting(uint16_t jmConfig) {
   switch(jmConfig) {
-    case JC_ERPN:        eRPN = !eRPN;                                               fnRefreshState(); break;
     case JC_G_DOUBLETAP: jm_G_DOUBLETAP = !jm_G_DOUBLETAP;                           fnRefreshState(); break;
     case JC_HOME_TRIPLE: HOME3 = !HOME3;           if(HOME3) {MYM3 = false;}         fnRefreshState(); break;
     case JC_MYM_TRIPLE:  MYM3 = !MYM3;             if(MYM3) {HOME3 = false;}         fnRefreshState(); break;
     case JC_SHFT_4s:     ShiftTimoutMode = !ShiftTimoutMode;                         fnRefreshState(); break;
     case JC_BASE_MYM:    BASE_MYM = !BASE_MYM;     if(BASE_MYM) {BASE_HOME = false;} fnRefreshState(); break;
     case JC_BASE_HOME:   BASE_HOME = !BASE_HOME;   if(BASE_HOME) {BASE_MYM = false;} fnRefreshState(); break;
-    case JC_LARGELI:     jm_LARGELI = !jm_LARGELI;                                   fnRefreshState(); break;
-    case JC_CPXMULT:     CPXMULT = !CPXMULT;                                         fnRefreshState(); break;
-    case JC_IRFRAC:
-      constantFractions = !constantFractions;
-      if(constantFractions) {
-        constantFractionsOn = true;
-        if(getSystemFlag(FLAG_FRACT)) {
-          clearSystemFlag(FLAG_FRACT);
-        }
-      }
-      else {
-        if(constantFractionsOn) {
-          constantFractionsOn = false;
-        }
-      }
-      fnRefreshState();
-      break;
+
 
     case TF_H12:         fnClearFlag(FLAG_TDM24);                  break;
     case TF_H24:         fnSetFlag(FLAG_TDM24);                    break;
@@ -652,7 +648,28 @@ void SetSetting(uint16_t jmConfig) {
     case ITM_PRTACT1: fnSetFlag(FLAG_PRTACT);                                break;
     case ITM_PRTACT0: fnClearFlag(FLAG_PRTACT);                              break;
     case JC_FRC:      fnFlipFlag(FLAG_FRCSRN);                               break; //bit
-    case JC_NL:       numLock = !numLock; showAlphaModeonGui();              break; //call numlock
+    case JC_ERPN:     fnFlipFlag(FLAG_ERPN);                                 break; //   eRPN = !eRPN;              fnRefreshState(); break;
+    case JC_LARGELI:  fnFlipFlag(FLAG_LARGELI);                              break; //   jm_LARGELI = !jm_LARGELI;  fnRefreshState(); break;
+    case JC_CPXMULT:  fnFlipFlag(FLAG_CPXMULT);                              break; //   CPXMULT = !CPXMULT;        fnRefreshState(); break;
+    case JC_NL:       fnFlipFlag(FLAG_NUMLOCK); showAlphaModeonGui();        break; //   numLock = !numLock;        showAlphaModeonGui(); break; //call numlock
+    case JC_IRFRAC:  
+      fnFlipFlag(FLAG_IRFRAC);                 //constantFractions = !constantFractions;
+      if(getSystemFlag(FLAG_IRFRAC)) {         //constantFractions
+        setSystemFlag(FLAG_IRF_ON);             //constantFractionsOn = true;
+        if(getSystemFlag(FLAG_FRACT)) {
+          clearSystemFlag(FLAG_FRACT);
+        }
+      }
+      else {
+        if(getSystemFlag(FLAG_IRFRAC)) {       //constantFractionsOn
+          clearSystemFlag(FLAG_IRF_ON);        //constantFractionsOn = false;
+        }
+      }
+      fnRefreshState();
+      break;
+
+
+
     case JC_UC:
       if(alphaCase == AC_LOWER) {
         alphaCase = AC_UPPER;

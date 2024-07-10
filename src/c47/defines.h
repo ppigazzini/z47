@@ -627,8 +627,14 @@
 #define FLAG_MONIT                            0x8040 // MONIT MUST be the first of the second flag word
 #define FLAG_FRCYC                            0x8041
 #define FLAG_HPCONV                           0x8042 //shifted here from 0x8044
-#define NUMBER_OF_SYSTEM_FLAGS                    67 // We can have a maximum of 128 system flags
-#define FLAG_tmp2                             0x8044 //restore previously used flags in version 10000009 to 0; Re-use these flag numbers at will, then remove these defines.
+#define FLAG_NUMLOCK                          0x8043
+#define FLAG_CPXMULT                          0x8044
+#define FLAG_ERPN                             0x8045
+#define FLAG_LARGELI                          0x8046
+#define FLAG_IRFRAC                           0x8047
+#define FLAG_IRF_ON                           0xc048
+
+#define NUMBER_OF_SYSTEM_FLAGS                    73 // We can have a maximum of 128 system flags
 
 typedef enum {
   LI_ZERO     = 0, // Long integer sign 0
