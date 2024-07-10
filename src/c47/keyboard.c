@@ -3177,11 +3177,11 @@ void fnKeyEnter(uint16_t unusedButMandatoryParameter) {
   doRefreshSoftMenu = true;     //dr
   #if !defined(TESTSUITE_BUILD)
     if(changeFractionModeOnENTER) {
-      if(!getSystemFlag(FLAG_FRACT) && !constantFractions) {
+      if(!getSystemFlag(FLAG_FRACT) && !getSystemFlag(FLAG_IRFRAC)) {
         setSystemFlag(FLAG_FRACT);
       }
-      else if(constantFractions) {
-        constantFractionsOn = true;
+      else if(getSystemFlag(FLAG_IRFRAC)) {
+        setSystemFlag(FLAG_IRF_ON);
       }
       changeFractionModeOnENTER = false;
     }
@@ -4617,7 +4617,7 @@ void fnKeyDotD(uint16_t unusedButMandatoryParameter) {
   #if !defined(TESTSUITE_BUILD)
     switch(calcMode) {
       case CM_NORMAL: {
-        constantFractionsOn = false; //JM
+        clearSystemFlag(FLAG_IRF_ON);
         if(getSystemFlag(FLAG_FRACT)) {
           clearSystemFlag(FLAG_FRACT);
         }

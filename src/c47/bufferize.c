@@ -1508,11 +1508,11 @@ typedef struct {
 
       case ITM_EXIT1: {
         if(changeFractionModeOnENTER) {
-          if(!getSystemFlag(FLAG_FRACT) && !constantFractions) {
+          if(!getSystemFlag(FLAG_FRACT) && !getSystemFlag(FLAG_IRFRAC)) {
             setSystemFlag(FLAG_FRACT);
           }
-          else if(constantFractions) {
-            constantFractionsOn = true;
+          else if(getSystemFlag(FLAG_IRFRAC)) {
+            setSystemFlag(FLAG_IRF_ON);
           }
           changeFractionModeOnENTER = false;
         }
@@ -2102,12 +2102,12 @@ typedef struct {
     real34_t temp;
 
     // Set Fraction mode
-    if(!getSystemFlag(FLAG_FRACT) && !constantFractions) {
+    if(!getSystemFlag(FLAG_FRACT) && !getSystemFlag(FLAG_IRFRAC)) {
       setSystemFlag(FLAG_FRACT);          //1     //NOTE CHANGE HERE TO SWITCH OFF AUTO FRAC MODE AFTER FRACTION INPUT
       //changeFractionModeOnENTER = true; //2     //USE either //1 or //2
     }
-    else if(constantFractions) {
-      constantFractionsOn = true;
+    else if(getSystemFlag(FLAG_IRFRAC)) {
+      setSystemFlag(FLAG_IRF_ON);
     }
     else {
       changeFractionModeOnENTER = false;

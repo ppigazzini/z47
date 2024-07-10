@@ -174,7 +174,7 @@ void showFracMode(void) {
     //a b/c
     x = X_FRAC_MODE;                    //vJM
     char divStr[10];
-    if(getSystemFlag(FLAG_FRACT) || (constantFractions && constantFractionsOn)) {
+    if(getSystemFlag(FLAG_FRACT) || (getSystemFlag(FLAG_IRFRAC) && getSystemFlag(FLAG_IRF_ON))) {
       if(!getSystemFlag(FLAG_PROPFR)) {
         raiseString = 9;
         strcpy(divStr,STD_SUB_b);
@@ -196,7 +196,7 @@ void showFracMode(void) {
     }
 
     compressString = 1;             //^JM
-    if(constantFractions && constantFractionsOn && !getSystemFlag(FLAG_FRACT)) {    //IRFRAC and NOT FRAC
+    if(getSystemFlag(FLAG_IRFRAC) && getSystemFlag(FLAG_IRF_ON) && !getSystemFlag(FLAG_FRACT)) {    //IRFRAC and NOT FRAC
       sprintf(statusMessage,"%s",divStr);
       x = showString(statusMessage, &standardFont, x, 0, vmNormal, true, true);
 

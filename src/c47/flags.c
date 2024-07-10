@@ -70,12 +70,12 @@ static void systemFlagAction(uint16_t systemFlag, flagAction_t action) {
     default:                                               break;
   }
 
-  if(systemFlag == FLAG_IRFRAC && (action == FLAG_SET || (action == FLAG_FLIP && !getSystemFlag(FLAG_IRFRAC)))) {
-    setSystemFlag(FLAG_IRF_ON);
-  } 
-  else if(systemFlag == FLAG_IRFRAC && (action == FLAG_CLEAR || (action == FLAG_FLIP && getSystemFlag(FLAG_IRFRAC)))) {
-    clearSystemFlag(FLAG_IRF_ON);
-  } 
+// this will clash with the button! maybe have straight flags only  if(systemFlag == FLAG_IRFRAC && (action == FLAG_SET || (action == FLAG_FLIP && !getSystemFlag(FLAG_IRFRAC)))) {
+// this will clash with the button! maybe have straight flags only    setSystemFlag(FLAG_IRF_ON);
+// this will clash with the button! maybe have straight flags only  } 
+// this will clash with the button! maybe have straight flags only  else if(systemFlag == FLAG_IRFRAC && (action == FLAG_CLEAR || (action == FLAG_FLIP && getSystemFlag(FLAG_IRFRAC)))) {
+// this will clash with the button! maybe have straight flags only    clearSystemFlag(FLAG_IRF_ON);
+// this will clash with the button! maybe have straight flags only  } 
 
   switch(systemFlag) {
     case FLAG_YMD:
@@ -653,16 +653,16 @@ void SetSetting(uint16_t jmConfig) {
     case JC_CPXMULT:  fnFlipFlag(FLAG_CPXMULT);                              break; //   CPXMULT = !CPXMULT;        fnRefreshState(); break;
     case JC_NL:       fnFlipFlag(FLAG_NUMLOCK); showAlphaModeonGui();        break; //   numLock = !numLock;        showAlphaModeonGui(); break; //call numlock
     case JC_IRFRAC:  
-      fnFlipFlag(FLAG_IRFRAC);                 //constantFractions = !constantFractions;
-      if(getSystemFlag(FLAG_IRFRAC)) {         //constantFractions
-        setSystemFlag(FLAG_IRF_ON);             //constantFractionsOn = true;
+      fnFlipFlag(FLAG_IRFRAC);
+      if(getSystemFlag(FLAG_IRFRAC)) {
+        setSystemFlag(FLAG_IRF_ON);
         if(getSystemFlag(FLAG_FRACT)) {
           clearSystemFlag(FLAG_FRACT);
         }
       }
       else {
-        if(getSystemFlag(FLAG_IRFRAC)) {       //constantFractionsOn
-          clearSystemFlag(FLAG_IRF_ON);        //constantFractionsOn = false;
+        if(getSystemFlag(FLAG_IRF_ON)) {
+          clearSystemFlag(FLAG_IRF_ON);
         }
       }
       fnRefreshState();

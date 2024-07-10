@@ -45,7 +45,7 @@ static void complex34ToDisplayString2(const complex34_t *complex34, char *displa
 static void fnDisplayFormatReset(uint16_t displayFormatN) {
   displayFormatDigits = displayFormatN > DSP_MAX ? DSP_MAX : displayFormatN;
   clearSystemFlag(FLAG_FRACT);
-  constantFractionsOn = false;
+  clearSystemFlag(FLAG_IRF_ON);
   DM_Cycling = 0;
 }
 
@@ -422,7 +422,10 @@ static void real34ToDisplayString2(const real34_t *real34, char *displayString, 
   real_t value;
 
   //printf(">>>## flag_proper %u\n",getSystemFlag(FLAG_PROPFR));
-  if(constantFractions && constantFractionsOn && !getSystemFlag(FLAG_FRACT) && IrFractionsCurrentStatus != CF_OFF && !real34CompareAbsLessThan(real34,const34_1e_6) && !real34IsAnInteger(real34)) {
+  if(getSystemFlag(FLAG_IRFRAC) && getSystemFlag(FLAG_IRF_ON) && 
+      !getSystemFlag(FLAG_FRACT) && 
+      IrFractionsCurrentStatus != CF_OFF && 
+      !real34CompareAbsLessThan(real34,const34_1e_6) && !real34IsAnInteger(real34)) {
     real_t toleranceIrrational;
     realCopy(const_1e_24, &toleranceIrrational);
     if(checkForAndChange(displayString, real34, const_1,     &toleranceIrrational, "",                                 frontSpace, complex)) return_fr;
@@ -2878,14 +2881,14 @@ void fnC47Show(uint16_t fnShow_param) {
 #if !defined(SAVE_SPACE_DM42_9)
   #if !defined(TESTSUITE_BUILD)
     uint8_t savedDisplayFormat = displayFormat, savedDisplayFormatDigits = displayFormatDigits;
-    bool_t savedConstantFractions = constantFractions;
+    bool_t savedConstantFractions = getSystemFlag(FLAG_IRFRAC);
     bool_t thereIsANextLine;
     int16_t dest = 0, last = 0, d, i, offset, bytesProcessed, aa, bb, cc, dd, aa2 = 0, aa3 = 0, aa4 = 0, numberOfLines = 0;
     uint64_t nn;
 
     displayFormat = DF_ALL;
     displayFormatDigits = 0;
-    constantFractions = false;
+    clearSystemFlag(FLAG_IRFRAC);
 
 
     #pragma GCC diagnostic push
@@ -3477,7 +3480,12 @@ goBreak1:
 
     displayFormat = savedDisplayFormat;
     displayFormatDigits = savedDisplayFormatDigits;
-    constantFractions = savedConstantFractions;
+    if(savedConstantFractions) {
+      setSystemFlag(FLAG_IRFRAC);
+    }
+    else {
+      clearSystemFlag(FLAG_IRFRAC);
+    }
     #if defined(VERBOSE_SCREEN) && defined(PC_BUILD)
       printf("SHOW:Done |%s|\n",tmpString);
     #endif

@@ -381,7 +381,7 @@ int8_t fnCbIsSet(int16_t item) {
             case JC_NVECT:               cb_param = PLOT_NVECT;                                                       break;
             case JC_SCALE:               cb_param = PLOT_SCALE;                                                       break;
             case JC_LARGELI:             cb_param = jm_LARGELI;                                                       break;
-            case JC_IRFRAC:              cb_param = constantFractions;                                                break;
+            case JC_IRFRAC:              cb_param = getSystemFlag(FLAG_IRFRAC);                                       break;
             case JC_EXTENTX:             cb_param = !extentx;                                                         break;
             case JC_EXTENTY:             cb_param = !extenty;                                                         break;
             case JC_PLINE:               cb_param = PLOT_LINE;                                                        break;

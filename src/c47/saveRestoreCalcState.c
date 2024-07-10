@@ -507,8 +507,6 @@ uint16_t flushBufferCnt = 0;
     saveStateValue(&graph_ymin,                     sizeof(graph_ymin),                                          "graph_ymin",                     "float");
     saveStateValue(&graph_ymax,                     sizeof(graph_ymax),                                          "graph_ymax",                     "float");
     saveStateValue(&jm_LARGELI,                     sizeof(jm_LARGELI),                                          "jm_LARGELI",                     "bool");
-    saveStateValue(&constantFractions,              sizeof(constantFractions),                                   "constantFractions",              "bool");
-    saveStateValue(&constantFractionsOn,            sizeof(constantFractionsOn),                                 "constantFractionsOn",            "bool");
     saveStateValue(&running_program_jm,             sizeof(running_program_jm),                                  "running_program_jm",             "bool");
     saveStateValue(&fnXEQMENUpos,                   sizeof(fnXEQMENUpos),                                        "fnXEQMENUpos",                   "int16");
     saveStateValue(&indexOfItemsXEQM,               sizeof(indexOfItemsXEQM),                                    "indexOfItemsXEQM",               "hexDump");
@@ -987,9 +985,10 @@ uint16_t flushBufferCnt = 0;
     restoreStateValue(&savedSystemFlags0,              sizeof(savedSystemFlags0),                                   "savedSystemFlags",               "uint64");
     savedSystemFlags1 = 0;
     restoreStateValue(&savedSystemFlags1,              sizeof(savedSystemFlags1),                                   "savedSystemFlags1",              "uint64");
-//    if(loadedVersion < 10000012) {
-//      if(xxxx) setSystemFlag(FLAG_) else clearSystemFlag(FLAG_); //restore previously used manually stored flags
-//    }
+    if(loadedVersion < 10000012) {
+      clearSystemFlag(FLAG_IRFRAC); //restore previously used manually stored flags in OTHER STUFF below
+      clearSystemFlag(FLAG_IRF_ON); //restore previously used manually stored flags in OTHER STUFF below
+    }
     restoreStateValue(&thereIsSomethingToUndo,         sizeof(thereIsSomethingToUndo),                              "thereIsSomethingToUndo",         "bool");
     restoreStateValue(&freeProgramBytes,               sizeof(freeProgramBytes),                                    "freeProgramBytes",               "uint16");
     restoreStateValue(&firstDisplayedLocalStepNumber,  sizeof(firstDisplayedLocalStepNumber),                       "firstDisplayedLocalStepNumber",  "uint16");
@@ -1092,9 +1091,7 @@ uint16_t flushBufferCnt = 0;
     restoreStateValue(&graph_ymin,                     sizeof(graph_ymin),                                          "graph_ymin",                     "float");
     restoreStateValue(&graph_ymax,                     sizeof(graph_ymax),                                          "graph_ymax",                     "float");
     restoreStateValue(&jm_LARGELI,                     sizeof(jm_LARGELI),                                          "jm_LARGELI",                     "bool");
-    restoreStateValue(&constantFractions,              sizeof(constantFractions),                                   "constantFractions",              "bool");
     IrFractionsCurrentStatus = CF_NORMAL;
-    restoreStateValue(&constantFractionsOn,            sizeof(constantFractionsOn),                                 "constantFractionsOn",            "bool");
     restoreStateValue(&running_program_jm,             sizeof(running_program_jm),                                  "running_program_jm",             "bool");
     restoreStateValue(&fnXEQMENUpos,                   sizeof(fnXEQMENUpos),                                        "fnXEQMENUpos",                   "int16");
     restoreStateValue(&indexOfItemsXEQM,               sizeof(indexOfItemsXEQM),                                    "indexOfItemsXEQM",               "hexDump");
@@ -1668,8 +1665,6 @@ void doSave(uint16_t saveType) {
         sprintf(tmpString, "BASE_MYM\n%"                   PRIu8  "\n",     (uint8_t)BASE_MYM);            save(tmpString, strlen(tmpString));
         sprintf(tmpString, "jm_G_DOUBLETAP\n%"             PRIu8  "\n",     (uint8_t)jm_G_DOUBLETAP);      save(tmpString, strlen(tmpString));
         sprintf(tmpString, "jm_LARGELI\n%"                 PRIu8  "\n",     (uint8_t)jm_LARGELI);          save(tmpString, strlen(tmpString));
-        sprintf(tmpString, "constantFractions\n%"          PRIu8  "\n",     (uint8_t)constantFractions);   save(tmpString, strlen(tmpString));
-        sprintf(tmpString, "constantFractionsOn\n%"        PRIu8  "\n",     (uint8_t)constantFractionsOn); save(tmpString, strlen(tmpString));
         sprintf(tmpString, "displayStackSHOIDISP\n%"       PRIu8  "\n",     displayStackSHOIDISP);         save(tmpString, strlen(tmpString));
         sprintf(tmpString, "bcdDisplay\n%"                 PRIu8  "\n",     (uint8_t)bcdDisplay);          save(tmpString, strlen(tmpString));
         sprintf(tmpString, "topHex\n%"                     PRIu8  "\n",     (uint8_t)topHex);              save(tmpString, strlen(tmpString));
@@ -2368,9 +2363,10 @@ double stringToDouble(const char *str) {
         if(loadedVersion < 10000009) {
           setSystemFlag(FLAG_MONIT); //Monitoring is on per default
         }
-  //    if(loadedVersion < 10000012) {
-  //      if(xxxx) setSystemFlag(FLAG_) else clearSystemFlag(FLAG_); //restore previously used manually stored flags
-  //    }
+        if(loadedVersion < 10000012) {
+          clearSystemFlag(FLAG_IRFRAC); //restore previously used manually stored flags in OTHER STUFF below
+          clearSystemFlag(FLAG_IRF_ON); //restore previously used manually stored flags in OTHER STUFF below
+        }
       }
     }
 
@@ -2828,8 +2824,26 @@ double stringToDouble(const char *str) {
           else if(strcmp(aimBuffer, "BASE_MYM"                    ) == 0) { BASE_MYM              = (bool_t)stringToUint8(tmpString) != 0; }
           else if(strcmp(aimBuffer, "jm_G_DOUBLETAP"              ) == 0) { jm_G_DOUBLETAP        = (bool_t)stringToUint8(tmpString) != 0; }
           else if(strcmp(aimBuffer, "jm_LARGELI"                  ) == 0) { jm_LARGELI            = (bool_t)stringToUint8(tmpString) != 0; }
-          else if(strcmp(aimBuffer, "constantFractions"           ) == 0) { constantFractions     = (bool_t)stringToUint8(tmpString) != 0; }
-          else if(strcmp(aimBuffer, "constantFractionsOn"         ) == 0) { constantFractionsOn   = (bool_t)stringToUint8(tmpString) != 0; }
+          else if(strcmp(aimBuffer, "constantFractions"           ) == 0) { 
+            if(loadedVersion < 10000012) {
+              if((bool_t)stringToUint8(tmpString) != 0) {
+                setSystemFlag(FLAG_IRFRAC);
+                }
+              else {
+                clearSystemFlag(FLAG_IRFRAC);
+              }
+            } //Keep compatible by repeating, even though setting is now in systemflags
+          }
+          else if(strcmp(aimBuffer, "constantFractionsOn"         ) == 0) {
+            if(loadedVersion < 10000012) {
+              if((bool_t)stringToUint8(tmpString) != 0) {
+                setSystemFlag(FLAG_IRF_ON);
+              }
+              else {
+                clearSystemFlag(FLAG_IRF_ON);
+              }
+            } //Keep compatible by repeating, even though setting is now in systemflags
+          }
           else if(strcmp(aimBuffer, "displayStackSHOIDISP"        ) == 0) { displayStackSHOIDISP  = stringToUint8(tmpString); }
           else if(strcmp(aimBuffer, "bcdDisplay"                  ) == 0) { bcdDisplay            = (bool_t)stringToUint8(tmpString) != 0; }
           else if(strcmp(aimBuffer, "topHex"                      ) == 0) { topHex                = (bool_t)stringToUint8(tmpString) != 0; }

@@ -228,9 +228,9 @@ typedef struct {
   int8_t compatibility_byte1;               //Spare Byte
   bool_t compatibility_bool16;              //Spare Byte
   bool_t jm_LARGELI;
-  bool_t constantFractions;
+  bool_t compatibility_bool17;              //Spare Byte
   uint8_t IrFractionsCurrentStatus;
-  bool_t constantFractionsOn;
+  bool_t compatibility_bool18;              //Spare Byte
   uint8_t displayStackSHOIDISP;
   bool_t bcdDisplay;
   bool_t topHex;

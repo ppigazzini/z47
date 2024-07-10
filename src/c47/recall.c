@@ -281,6 +281,8 @@ void fnRecallConfig(uint16_t regist) {
     __attribute__((unused)) bool_t compatibility_bool14;    //for use in spare slots below
     __attribute__((unused)) bool_t compatibility_bool15;    //for use in spare slots below
     __attribute__((unused)) bool_t compatibility_bool16;    //for use in spare slots below
+    __attribute__((unused)) bool_t compatibility_bool17;    //for use in spare slots below
+    __attribute__((unused)) bool_t compatibility_bool18;    //for use in spare slots below
     __attribute__((unused)) bool_t compatibility_byte0 ;    //for use in spare slots below
     __attribute__((unused)) bool_t compatibility_byte1 ;    //for use in spare slots below
     __attribute__((unused)) float  compatibility_float1;    //for use in spare slots below
@@ -350,9 +352,9 @@ void fnRecallConfig(uint16_t regist) {
     recallFromDtConfigDescriptor(compatibility_byte1);
     recallFromDtConfigDescriptor(compatibility_bool16);    //spare
     recallFromDtConfigDescriptor(jm_LARGELI);
-    recallFromDtConfigDescriptor(constantFractions);
+    recallFromDtConfigDescriptor(compatibility_bool17);
     recallFromDtConfigDescriptor(IrFractionsCurrentStatus);
-    recallFromDtConfigDescriptor(constantFractionsOn);
+    recallFromDtConfigDescriptor(compatibility_bool18);
     recallFromDtConfigDescriptor(displayStackSHOIDISP);
     recallFromDtConfigDescriptor(bcdDisplay);
     recallFromDtConfigDescriptor(topHex);
