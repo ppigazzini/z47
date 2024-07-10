@@ -422,7 +422,10 @@ static void real34ToDisplayString2(const real34_t *real34, char *displayString, 
   real_t value;
 
   //printf(">>>## flag_proper %u\n",getSystemFlag(FLAG_PROPFR));
-  if(constantFractions && constantFractionsOn && !getSystemFlag(FLAG_FRACT) && IrFractionsCurrentStatus != CF_OFF && !real34CompareAbsLessThan(real34,const34_1e_6) && !real34IsAnInteger(real34)) {
+  if(constantFractions && constantFractionsOn && 
+      !getSystemFlag(FLAG_FRACT) && 
+      IrFractionsCurrentStatus != CF_OFF && 
+      !real34CompareAbsLessThan(real34,const34_1e_24) && !real34IsAnInteger(real34)) {
     real_t toleranceIrrational;
     realCopy(const_1e_24, &toleranceIrrational);
     if(checkForAndChange(displayString, real34, const_1,     &toleranceIrrational, "",                                 frontSpace, complex)) return_fr;
