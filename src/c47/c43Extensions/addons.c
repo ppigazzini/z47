@@ -1,19 +1,5 @@
-/* This file is part of C47.
- *
- * C47 is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * C47 is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with C47.  If not, see <http://www.gnu.org/licenses/>.
- */
-
+// SPDX-License-Identifier: GPL-3.0-only
+// SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
 
 /*
@@ -33,15 +19,10 @@ Todo
 All the below: because both Last x and savestack does not work due to multiple steps.
 
   5. Added Star > Delta. Change and put in separate c file, and sort out savestack.
-
   6. vice versa
-
   7. SYM>ABC
-
   8. ABC>SYM
-
   9. e^theta. redo in math file,
-
   10. three phase Ohms Law: 17,18,19
 
 
@@ -1920,7 +1901,7 @@ void fnConstantR(uint16_t constantAddr, uint16_t *constNr, real_t *rVal) {
 
 void fnSafeReset (uint16_t unusedButMandatoryParameter) {
   if(!jm_G_DOUBLETAP && !ShiftTimoutMode && !HOME3 && !MYM3) {
-    fgLN            = RB_FGLNFUL;  //not in conditional clear
+    fgLN            = RBX_FGLNFUL;  //not in conditional clear
     jm_G_DOUBLETAP  = true;
     ShiftTimoutMode = true;
     HOME3           = true;
@@ -1929,7 +1910,7 @@ void fnSafeReset (uint16_t unusedButMandatoryParameter) {
     BASE_MYM        = true;
   }
   else {
-    fgLN            = RB_FGLNOFF;  //not in conditional clear
+    fgLN            = RBX_FGLNOFF;  //not in conditional clear
     jm_G_DOUBLETAP  = false;
     ShiftTimoutMode = false;
     HOME3           = false;
@@ -2385,32 +2366,32 @@ void fnSetBCD (uint16_t bcd) {
 
 void setFGLSettings(uint16_t option) {
   switch(option) {
-    case RB_FGLNOFF:
-    case RB_FGLNLIM:
-    case RB_FGLNFUL:
+    case RBX_FGLNOFF:
+    case RBX_FGLNLIM:
+    case RBX_FGLNFUL:
       fgLN = (uint8_t)option;
       break;
     default:
-      fgLN = RB_FGLNFUL;
+      fgLN = RBX_FGLNFUL;
   }
 }
 
 
 void fnLongPressSwitches (uint16_t option) {
   switch(option) {
-    case RB_F14:
-    case RB_F124:
-    case RB_F1234:
+    case RBX_F14:
+    case RBX_F124:
+    case RBX_F1234:
       LongPressF = option;
       break;
-    case RB_M14   :
-    case RB_M124  :
-    case RB_M1234 :
+    case RBX_M14   :
+    case RBX_M124  :
+    case RBX_M1234 :
       LongPressM = option;
       break;
     default:
-      LongPressM = RB_M1234;
-      LongPressF = RB_F124;
+      LongPressM = RBX_M1234;
+      LongPressF = RBX_F124;
   }
 }
 

@@ -176,7 +176,7 @@ FPGRP,                               xxx,        3,                             
 IPGRP1,                              xxx,        0,                              0,               _gpr1,                0,                      _gpr1,           xxx,             xxx,                  
 IPGRP1x,                             xxx,        0,                              0,               _gpr1x,               1,                      _gpr1x,          xxx,             xxx,                  
 ERPN,                                xxx,        1,                              0,               1,                    1,                      1,               xxx,             xxx,                  
-fgLongPressSetting,                  xxx,        xxx,                            RB_FGLNOFF,      RB_FGLNFUL,           RB_FGLNFUL,             RB_FGLNFUL,      xxx,             xxx,                  
+fgLongPressSetting,                  xxx,        xxx,                            RBX_FGLNOFF,     RBX_FGLNFUL,          RBX_FGLNFUL,            RBX_FGLNFUL,     xxx,             xxx,                  
 IRFRAC,                              xxx,        0,                              xxx,             1,                    1,                      xxx,             xxx,             xxx,                  
 IRFRACON,                            xxx,        0,                              xxx,             1,                    1,                      xxx,             xxx,             xxx,                  
 DenMaX,                              xxx,        64,                             xxx,             200,                  999,                    64,              xxx,             xxx,                  
@@ -1263,9 +1263,9 @@ void resetOtherConfigurationStuff(void) {
   DM_Cycling = 0;
   SI_All = false;                                              //UNIT display full SI prefix display range
   CPXMULT = false;                                             //defaults to the new complex notation with space
-  LongPressM = RB_M1234;
-  LongPressF = RB_F124;
-  fgLN = RB_FGLNFUL;
+  LongPressM = RBX_M1234;
+  LongPressF = RBX_F124;
+  fgLN = RBX_FGLNFUL;
   lastIntegerBase = 0;
   timeLastOp = 0;
   timeLastOp0 = 0;

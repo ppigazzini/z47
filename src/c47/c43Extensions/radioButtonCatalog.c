@@ -1,19 +1,5 @@
-/* This file is part of C47.
- *
- * C47 is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * C47 is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with C47.  If not, see <http://www.gnu.org/licenses/>.
- */
-
+// SPDX-License-Identifier: GPL-3.0-only
+// SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
 
 /********************************************//**
@@ -77,16 +63,15 @@ TO_QSPI const radiocb_t indexOfRadioCbEepromItems[] = {
   {ITM_N_KEY_NIL,        16384+ITM_NULL,         RB_SA},  //fnSigmaAssign
 
 
-  {ITM_F1234,            RB_F1234,               RB_F},   //
-  {ITM_M1234,            RB_M1234,               RB_M},   //
-  {ITM_F14,              RB_F14,                 RB_F},   //
-  {ITM_M14,              RB_M14,                 RB_M},   //
-  {ITM_F124,             RB_F124,                RB_F},   //
-  {ITM_M124,             RB_M124,                RB_M},   //
-
-  {ITM_FGLNOFF,          RB_FGLNOFF,             RB_FG},  //
-  {ITM_FGLNLIM,          RB_FGLNLIM,             RB_FG},  //
-  {ITM_FGLNFUL,          RB_FGLNFUL,             RB_FG},  //
+  {ITM_F1234,            RBX_F1234,              RB_F },   //
+  {ITM_M1234,            RBX_M1234,              RB_M },   //
+  {ITM_F14,              RBX_F14,                RB_F },   //
+  {ITM_M14,              RBX_M14,                RB_M },   //
+  {ITM_F124,             RBX_F124,               RB_F },   //
+  {ITM_M124,             RBX_M124,               RB_M },   //
+  {ITM_FGLNOFF,          RBX_FGLNOFF,            RB_FG},  //
+  {ITM_FGLNLIM,          RBX_FGLNLIM,            RB_FG},  //
+  {ITM_FGLNFUL,          RBX_FGLNFUL,            RB_FG},  //
 
   {ITM_BCDU,             BCDu,                   RB_BCD}, //
   {ITM_BCD9,             BCD9c,                  RB_BCD}, //
