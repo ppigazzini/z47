@@ -2,9 +2,6 @@
 // SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
 
-/********************************************//**
- * \file defines.h
- ***********************************************/
 #if !defined(DEFINES_H)
 #define DEFINES_H
 
@@ -1101,7 +1098,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define X_INTEGER_MODE                           262
 #define X_OVERFLOW_CARRY                         292
 #define X_ALPHA_MODE                             300
-#define X_SSIZE_BEGIN                            327
+#define X_SSIZE_BEGIN                            327 -5
 #define X_HOURGLASS                              312
 #define X_ASM                                    (X_ALPHA_MODE + 34)
 #define X_HOURGLASS_GRAPHS                       140

@@ -1,10 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // SPDX-FileCopyrightText: Copyright The C47 Authors
 
-/**
- * \file items.h
- * Item list and function to run them.
- */
+
 #if !defined(ITEMS_H)
 #define ITEMS_H
 
@@ -1935,7 +1932,7 @@
 #define CHR_caseUP                  1878
 #define CHR_caseDN                  1879
 #define ITM_LISTXY                  1880
-#define ITM_SH_ERPN                 1881
+#define ITM_1881                    1881
 #define ITM_SYS_FREE_RAM            1882
 #define MNU_INL_TST                 1883
 #define ITM_TEST                    1884

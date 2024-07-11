@@ -3188,7 +3188,7 @@ void fnKeyEnter(uint16_t unusedButMandatoryParameter) {
     switch(calcMode) {
       case CM_NORMAL: {
 
-        if(!eRPN || (!nimWhenButtonPressed && programRunStop != PGM_RUNNING) || (eRPN && programRunStop == PGM_RUNNING )) {     //vv PHM eRPN 2021-07;   JM corrected eRPN on 2024-03-19 on master 86fd2a5
+        if(!getSystemFlag(FLAG_ERPN) || (!nimWhenButtonPressed && programRunStop != PGM_RUNNING) || (getSystemFlag(FLAG_ERPN) && programRunStop == PGM_RUNNING )) {     //vv PHM eRPN 2021-07;   JM corrected eRPN on 2024-03-19 on master 86fd2a5
           setSystemFlag(FLAG_ASLIFT);
                     #if defined(DEBUGUNDO)
                       printf(">>> saveForUndo from fnKeyEnterA\n");
@@ -3208,7 +3208,7 @@ void fnKeyEnter(uint16_t unusedButMandatoryParameter) {
           }
         }
 
-        if(eRPN) {
+        if(getSystemFlag(FLAG_ERPN)) {
           setSystemFlag(FLAG_ASLIFT);
         }
         else {                                               //^^ PHM eRPN 2021-07
@@ -3240,7 +3240,7 @@ void fnKeyEnter(uint16_t unusedButMandatoryParameter) {
           reallocateRegister(REGISTER_X, dtString, TO_BLOCKS(lenInBytes), amNone);
           xcopy(REGISTER_STRING_DATA(REGISTER_X), aimBuffer, lenInBytes);
 
-          if(!eRPN) {                                  //PHM eRPN 2021-07
+          if(!getSystemFlag(FLAG_ERPN)) {                                  //PHM eRPN 2021-07
                     #if defined(DEBUGUNDO)
                       printf(">>> saveForUndo from fnKeyEnterB\n");
                     #endif // DEBUGUNDO

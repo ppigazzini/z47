@@ -1,9 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
-/********************************************//**
- * \file config.c
- ***********************************************/
 
 #include "config.h"
 
@@ -135,7 +132,6 @@ void configCommon(uint16_t idx) {
 #define FPGRP                 113    // config_grpGroupingRight          
 #define IPGRP1                114    // config_grpGroupingGr1Left        
 #define IPGRP1x               115    // config_grpGroupingGr1LeftOverflow
-#define ERPN                  116    // config_fneRPN                    
 #define fgLongPressSetting    117    // config_setFGLSettings            
 
 #define DenMaX                120    // config_denmax                    
@@ -174,13 +170,16 @@ IPGRP,                               xxx,        3,                             
 FPGRP,                               xxx,        3,                              3,               _gprr,                3,                      _gprr,           xxx,             xxx,                  
 IPGRP1,                              xxx,        0,                              0,               _gpr1,                0,                      _gpr1,           xxx,             xxx,                  
 IPGRP1x,                             xxx,        0,                              0,               _gpr1x,               1,                      _gpr1x,          xxx,             xxx,                  
-ERPN,                                xxx,        1,                              0,               1,                    1,                      1,               xxx,             xxx,                  
 fgLongPressSetting,                  xxx,        xxx,                            RBX_FGLNOFF,     RBX_FGLNFUL,          RBX_FGLNFUL,            RBX_FGLNFUL,     xxx,             xxx,                  
 
 3,                                   0,          FLAG_IRFRAC,                    xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,
 3,                                   1,          xxx,                            xxx,             FLAG_IRFRAC,          FLAG_IRFRAC,            xxx,             xxx,             xxx,
 3,                                   0,          FLAG_IRF_ON,                    xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,
 3,                                   1,          xxx,                            xxx,             FLAG_IRF_ON,          FLAG_IRF_ON,            xxx,             xxx,             xxx,
+
+3,                                   0,          xxx,                            FLAG_ERPN,       xxx,                  xxx,                    xxx,             xxx,             xxx,
+3,                                   1,          FLAG_ERPN,                      xxx,             FLAG_ERPN,            FLAG_ERPN,              FLAG_ERPN,       xxx,             xxx,
+
 
 DenMaX,                              xxx,        64,                             xxx,             200,                  999,                    64,              xxx,             xxx,                  
 //TVM,                               n/a,        Reset,                          HP35,            JM,                   RJ,                     C47,             DefltSB,         TVM,                  
@@ -287,7 +286,6 @@ void Sett(int16_t grp) {
         case FPGRP                : {grpGroupingRight           = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // FPGRP
         case IPGRP1               : {grpGroupingGr1Left         = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // IPGRP1
         case IPGRP1x              : {grpGroupingGr1LeftOverflow = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // IPGRP1x
-        case ERPN                 : {fneRPN                       (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // ERPN
         case fgLongPressSetting   : {setFGLSettings               (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // fgLongPressSetting
         case DenMaX               : {denMax                     = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // DenMaX
         case TVMIKnown            : {tvmIKnown                  = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]) == 1 ? true : false;break;}   // TVMIKnown

@@ -492,7 +492,6 @@ uint16_t flushBufferCnt = 0;
     saveStateValue(&screenUpdatingMode,             sizeof(screenUpdatingMode),                                  "screenUpdatingMode",             "uint8");
     //save and restore screenData is not mandatory
     //saveStateValue(screenData,                      0,                                                           "screenData",                     "screenData");
-    saveStateValue(&eRPN,                           sizeof(eRPN),                                                "eRPN",                           "bool");    //JM vv
     saveStateValue(&HOME3,                          sizeof(HOME3),                                               "HOME3",                          "bool");
     saveStateValue(&ShiftTimoutMode,                sizeof(ShiftTimoutMode),                                     "ShiftTimoutMode",                "bool");
     saveStateValue(&CPXMULT,                        sizeof(CPXMULT),                                             "CPXMULT",                        "bool");    //JM
@@ -985,11 +984,6 @@ uint16_t flushBufferCnt = 0;
     restoreStateValue(&savedSystemFlags0,              sizeof(savedSystemFlags0),                                   "savedSystemFlags",               "uint64");
     savedSystemFlags1 = 0;
     restoreStateValue(&savedSystemFlags1,              sizeof(savedSystemFlags1),                                   "savedSystemFlags1",              "uint64");
-    if(backupVersion < 1003) {
-      printf("Version number of configfile < 1003, clearing IRFRAC.");
-      clearSystemFlag(FLAG_IRFRAC); //restore previously used manually stored flags in OTHER STUFF below
-      clearSystemFlag(FLAG_IRF_ON); //restore previously used manually stored flags in OTHER STUFF below
-    }
     restoreStateValue(&thereIsSomethingToUndo,         sizeof(thereIsSomethingToUndo),                              "thereIsSomethingToUndo",         "bool");
     restoreStateValue(&freeProgramBytes,               sizeof(freeProgramBytes),                                    "freeProgramBytes",               "uint16");
     restoreStateValue(&firstDisplayedLocalStepNumber,  sizeof(firstDisplayedLocalStepNumber),                       "firstDisplayedLocalStepNumber",  "uint16");
@@ -1077,7 +1071,6 @@ uint16_t flushBufferCnt = 0;
     restoreStateValue(&screenUpdatingMode,             sizeof(screenUpdatingMode),                                  "screenUpdatingMode",             "uint8");
     //save and restore screenData is not mandatory
     //restoreStateValue(loadedScreen,                    0,                                                           "screenData",                     "screenData");
-    restoreStateValue(&eRPN,                           sizeof(eRPN),                                                "eRPN",                           "bool");    //JM vv
     restoreStateValue(&HOME3,                          sizeof(HOME3),                                               "HOME3",                          "bool");
     restoreStateValue(&ShiftTimoutMode,                sizeof(ShiftTimoutMode),                                     "ShiftTimoutMode",                "bool");
     restoreStateValue(&CPXMULT,                        sizeof(CPXMULT),                                             "CPXMULT",                        "bool");    //JM
@@ -1124,6 +1117,40 @@ uint16_t flushBufferCnt = 0;
     // If you create a new parameter, proceed as following:
     //newParam = 42 // default value for newParam if not found in backup.cgf. This is for compatibility with older versions of backup.cfg.
     //restoreStateValue(&newParam,                       sizeof(newParam),                                            "newParam",                       "parameterType");
+
+    bool_t tmp1 = false;
+    restoreStateValue(&tmp1,                           sizeof(tmp1),                                                "constantFractions",              "bool");
+    if(backupVersion < 1003) {
+      printf("Version number of configfile < 1003, transferring IRFRAC.");
+      if(tmp1) {
+        setSystemFlag(FLAG_IRFRAC);
+      }
+      else {
+        clearSystemFlag(FLAG_IRFRAC);
+      }
+    }
+    restoreStateValue(&tmp1,                           sizeof(FLAG_IRF_ON),                                         "constantFractionsOn",            "bool");
+    if(backupVersion < 1003) {
+      printf("Version number of configfile < 1003, transferring IRFRAC.");
+      if(tmp1) {
+        setSystemFlag(FLAG_IRF_ON);
+      }
+      else {
+        clearSystemFlag(FLAG_IRF_ON);
+      }
+    }
+    restoreStateValue(&tmp1,                           sizeof(tmp1),                                                "eRPN",                           "bool");    //JM vv
+    if(backupVersion < 1003) {
+      printf("Version number of configfile < 1003, transferring eRPN.");
+      if(tmp1) {
+        setSystemFlag(FLAG_ERPN);
+      }
+      else {
+        clearSystemFlag(FLAG_ERPN);
+      }
+    }
+
+
 
     // Freeing the space occupied by all the configuration parameters
     paramCurrent = paramHead;
@@ -1654,8 +1681,7 @@ void doSave(uint16_t saveType) {
         sprintf(tmpString, "exponentLimit\n%"              PRId16  "\n",    exponentLimit);                save(tmpString, strlen(tmpString));
         sprintf(tmpString, "exponentHideLimit\n%"          PRId16  "\n",    exponentHideLimit);            save(tmpString, strlen(tmpString));
         sprintf(tmpString, "bestF\n%"                      PRIu16  "\n",    lrSelection);                  save(tmpString, strlen(tmpString));
-        sprintf(tmpString, "fgLN\n%"                       PRIu8  "\n",     (uint8_t)fgLN);                save(tmpString, strlen(tmpString));      //keep save file format by keeping the old setting
-        sprintf(tmpString, "eRPN\n%"                       PRIu8  "\n",     (uint8_t)eRPN);                save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "fgLN\n%"                       PRIu8  "\n",     (uint8_t)fgLN);                save(tmpString, strlen(tmpString));
         sprintf(tmpString, "HOME3\n%"                      PRIu8  "\n",     (uint8_t)HOME3);               save(tmpString, strlen(tmpString));
         sprintf(tmpString, "MYM3\n%"                       PRIu8  "\n",     (uint8_t)MYM3);                save(tmpString, strlen(tmpString));
         sprintf(tmpString, "ShiftTimoutMode\n%"            PRIu8  "\n",     (uint8_t)ShiftTimoutMode);     save(tmpString, strlen(tmpString));
@@ -2812,7 +2838,16 @@ double stringToDouble(const char *str) {
           else if(strcmp(aimBuffer, "bestF"                       ) == 0) { lrSelection           = stringToUint16(tmpString);}
           else if(strcmp(aimBuffer, "fgLN"                        ) == 0) { fgLN                  = stringToUint8(tmpString); }
           else if(strcmp(aimBuffer, "jm_FG_LINE"                  ) == 0) { fgLN                  = stringToUint8(tmpString); }             //Keep compatible with old setting
-          else if(strcmp(aimBuffer, "eRPN"                        ) == 0) { eRPN                  = (bool_t)stringToUint8(tmpString) != 0; }
+          else if(strcmp(aimBuffer, "eRPN"                        ) == 0) {
+            if(loadedVersion < 10000012) {
+              if((bool_t)stringToUint8(tmpString) != 0) {
+                setSystemFlag(FLAG_ERPN);
+                }
+              else {
+                clearSystemFlag(FLAG_ERPN);
+              }
+            } //Keep compatible by repeating, even though setting is now in systemflags
+          }
           else if(strcmp(aimBuffer, "HOME3"                       ) == 0) { HOME3                 = (bool_t)stringToUint8(tmpString) != 0; }
           else if(strcmp(aimBuffer, "MYM3"                        ) == 0) { MYM3                  = (bool_t)stringToUint8(tmpString) != 0; }
           else if(strcmp(aimBuffer, "ShiftTimoutMode"             ) == 0) { ShiftTimoutMode       = (bool_t)stringToUint8(tmpString) != 0; }

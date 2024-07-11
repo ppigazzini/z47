@@ -1,22 +1,6 @@
-/* This file is part of 43S.
- *
- * 43S is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * 43S is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with 43S.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: GPL-3.0-only
+// SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
-/********************************************//**
- * \file fontBrowser.c
- ***********************************************/
 
 #include "browsers/fontBrowser.h"
 
@@ -123,10 +107,10 @@
     if(currentFntScr>=1 && currentFntScr<=numScreensNumericFont) { // Numeric font
       //printf("Numeric  font currentFntScr=%2u\n", currentFntScr);
       for(x=0; x<=9; x++) {
-        showGlyphCode('0'+x, &standardFont, 50+20*x,     20, vmNormal, false, false);
+        showGlyphCode('0'+x, &standardFont, 50+20*x,     20, vmNormal, false, false, false);
       }
       for(x=0; x<=5; x++) {
-        showGlyphCode('A'+x, &standardFont, 50+200+20*x, 20, vmNormal, false, false);
+        showGlyphCode('A'+x, &standardFont, 50+200+20*x, 20, vmNormal, false, false, false);
       }
 
       first = (currentFntScr-1) * NUMBER_OF_NUMERIC_FONT_LINES_PER_SCREEN;
@@ -134,7 +118,7 @@
         sprintf(tmpString, "%04X", glyphRow[y]<0x8000 ? glyphRow[y] : glyphRow[y]-0x8000);
         showString(tmpString, &standardFont, 5, NUMERIC_FONT_HEIGHT*(y-first)+43, vmNormal, false, false);
         for(x=0; x<=15; x++) {
-          showGlyphCode(glyphRow[y]+x, &numericFont, 46+20*x, NUMERIC_FONT_HEIGHT*(y-first)+40, vmNormal, false, false);
+          showGlyphCode(glyphRow[y]+x, &numericFont, 46+20*x, NUMERIC_FONT_HEIGHT*(y-first)+40, vmNormal, false, false, false);
         }
       }
 
@@ -152,10 +136,10 @@
     else if(currentFntScr>numScreensNumericFont && currentFntScr<=numScreensNumericFont+numScreensStandardFont) { // Standard font
       //printf("Standard font currentFntScr=%2u\n", currentFntScr);
       for(x=0; x<=9; x++) {
-        showGlyphCode('0'+x, &standardFont, 50+20*x,     20, vmNormal, false, false);
+        showGlyphCode('0'+x, &standardFont, 50+20*x,     20, vmNormal, false, false, false);
       }
       for(x=0; x<=5; x++) {
-        showGlyphCode('A'+x, &standardFont, 50+200+20*x, 20, vmNormal, false, false);
+        showGlyphCode('A'+x, &standardFont, 50+200+20*x, 20, vmNormal, false, false, false);
       }
 
       first = numLinesNumericFont + (currentFntScr-numScreensNumericFont-1) * NUMBER_OF_STANDARD_FONT_LINES_PER_SCREEN;
@@ -163,7 +147,7 @@
         sprintf(tmpString, "%04X", glyphRow[y]<0x8000 ? glyphRow[y] : glyphRow[y]-0x8000);
         showString(tmpString, &standardFont, 5, STANDARD_FONT_HEIGHT*(y-first)+40, vmNormal, false, false);
         for(x=0; x<=15; x++) {
-          showGlyphCode(glyphRow[y]+x, &standardFont, 50+20*x, STANDARD_FONT_HEIGHT*(y-first)+40, vmNormal, false, false);
+          showGlyphCode(glyphRow[y]+x, &standardFont, 50+20*x, STANDARD_FONT_HEIGHT*(y-first)+40, vmNormal, false, false, false);
         }
       }
 
@@ -181,10 +165,10 @@
     else if(currentFntScr>numScreensNumericFont+numScreensStandardFont && currentFntScr<=numScreensNumericFont+numScreensStandardFont+numScreensTinyFont) { // Tiny font
       //printf("Tiny     font currentFntScr=%2u\n", currentFntScr);
       for(x=0; x<=9; x++) {
-        showGlyphCode('0'+x, &standardFont, 50+20*x,     20, vmNormal, false, false);
+        showGlyphCode('0'+x, &standardFont, 50+20*x,     20, vmNormal, false, false, false);
       }
       for(x=0; x<=5; x++) {
-        showGlyphCode('A'+x, &standardFont, 50+200+20*x, 20, vmNormal, false, false);
+        showGlyphCode('A'+x, &standardFont, 50+200+20*x, 20, vmNormal, false, false, false);
       }
 
       first = numLinesNumericFont + numLinesStandardFont + (currentFntScr-numScreensNumericFont-numScreensStandardFont-1) * NUMBER_OF_STANDARD_FONT_LINES_PER_SCREEN;
@@ -192,7 +176,7 @@
         sprintf(tmpString, "%04X", glyphRow[y]<0x8000 ? glyphRow[y] : glyphRow[y]-0x8000);
         showString(tmpString, &standardFont, 5, STANDARD_FONT_HEIGHT*(y-first)+40, vmNormal, false, false);
         for(x=0; x<=15; x++) {
-          showGlyphCode(glyphRow[y]+x, &tinyFont, 52+20*x, STANDARD_FONT_HEIGHT*(y-first)+46, vmNormal, false, false);
+          showGlyphCode(glyphRow[y]+x, &tinyFont, 52+20*x, STANDARD_FONT_HEIGHT*(y-first)+46, vmNormal, false, false, false);
         }
       }
 

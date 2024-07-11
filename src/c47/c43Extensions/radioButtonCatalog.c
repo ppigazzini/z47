@@ -374,7 +374,7 @@ int8_t fnCbIsSet(int16_t item) {
             case DM_PROPFR:              cb_param = getSystemFlag(FLAG_PROPFR);                                       break;
             case DM_FRACT:               cb_param = getSystemFlag(FLAG_FRACT);                                        break;
             case PRTACT:                 cb_param = getSystemFlag(FLAG_PRTACT);                                       break;
-            case JC_ERPN:                cb_param = eRPN;                                                             break;
+            case JC_ERPN:                cb_param = getSystemFlag(FLAG_ERPN);                                         break;
             case JC_G_DOUBLETAP:         cb_param = jm_G_DOUBLETAP;                                                   break;
             case JC_SHFT_4s:             cb_param = ShiftTimoutMode;                                                  break;
             case JC_VECT:                cb_param = PLOT_VECT;                                                        break;

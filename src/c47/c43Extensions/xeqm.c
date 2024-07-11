@@ -1,18 +1,5 @@
-  /* This file is part of C47.
- *
- * C47 is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * C47 is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with C47.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: GPL-3.0-only
+// SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
 
 /********************************************//**
@@ -1433,7 +1420,7 @@ void fnXSWAP (uint16_t unusedButMandatoryParameter) {
 
     else if(calcMode == CM_NORMAL && getRegisterDataType(REGISTER_X) == dtString) {
       if(stringByteLength(REGISTER_STRING_DATA(REGISTER_X)) < AIM_BUFFER_LENGTH) {
-        if(eRPN) {      //JM NEWERPN
+        if(getSystemFlag(FLAG_ERPN)) {      //JM NEWERPN
           setSystemFlag(FLAG_ASLIFT);            //JM NEWERPN OVERRIDE SLS, AS ERPN ENTER ALWAYS HAS SLS SET
         }                                        //JM NEWERPN
         strcpy(aimBuffer, REGISTER_STRING_DATA(REGISTER_X));
@@ -1451,7 +1438,7 @@ void fnXSWAP (uint16_t unusedButMandatoryParameter) {
       line1[0] = 0;
       strcpy(line1, " ");
       int16_t len = stringByteLength(line1);
-      if(eRPN) {      //JM NEWERPN
+      if(getSystemFlag(FLAG_ERPN)) {      //JM NEWERPN
         setSystemFlag(FLAG_ASLIFT);            //JM NEWERPN OVERRIDE SLS, AS ERPN ENTER ALWAYS HAS SLS SET
       }                                        //JM NEWERPN
       liftStack();
