@@ -54,7 +54,7 @@
 
 #include "c47.h"
 #define configFileVersion                  10000012 // 5 flags converted from C43; Arbitrary starting point version 10 000 001 of STATE files. Allowable values are 10000000 to 20000000
-#define BACKUP_VERSION                     1002  // increasing number of reserved variable
+#define BACKUP_VERSION                     1003  // 5 flags converted from C43;
 #define VersionAllowed                     10000005 // This code will not autoload versions earlier than this
 
 /*
@@ -985,7 +985,8 @@ uint16_t flushBufferCnt = 0;
     restoreStateValue(&savedSystemFlags0,              sizeof(savedSystemFlags0),                                   "savedSystemFlags",               "uint64");
     savedSystemFlags1 = 0;
     restoreStateValue(&savedSystemFlags1,              sizeof(savedSystemFlags1),                                   "savedSystemFlags1",              "uint64");
-    if(loadedVersion < 10000012) {
+    if(backupVersion < 1003) {
+      printf("Version number of configfile < 1003, clearing IRFRAC.");
       clearSystemFlag(FLAG_IRFRAC); //restore previously used manually stored flags in OTHER STUFF below
       clearSystemFlag(FLAG_IRF_ON); //restore previously used manually stored flags in OTHER STUFF below
     }
