@@ -272,6 +272,8 @@ void fnRecallConfig(uint16_t regist) {
     __attribute__((unused)) bool_t compatibility_bool17;    //for use in spare slots below
     __attribute__((unused)) bool_t compatibility_bool18;    //for use in spare slots below
     __attribute__((unused)) bool_t compatibility_bool19;    //for use in spare slots below
+    __attribute__((unused)) bool_t compatibility_bool20;    //for use in spare slots below
+    __attribute__((unused)) bool_t compatibility_bool21;    //for use in spare slots below
     __attribute__((unused)) bool_t compatibility_byte0 ;    //for use in spare slots below
     __attribute__((unused)) bool_t compatibility_byte1 ;    //for use in spare slots below
     __attribute__((unused)) float  compatibility_float1;    //for use in spare slots below
@@ -308,8 +310,8 @@ void fnRecallConfig(uint16_t regist) {
     recallFromDtConfigDescriptor(compatibility_bool19);
     recallFromDtConfigDescriptor(HOME3);
     recallFromDtConfigDescriptor(ShiftTimoutMode);
-    recallFromDtConfigDescriptor(CPXMULT);
-    recallFromDtConfigDescriptor(BASE_HOME);
+    recallFromDtConfigDescriptor(compatibility_bool21);
+    recallFromDtConfigDescriptor(compatibility_bool18);
     recallFromDtConfigDescriptor(compatibility_bool00);   //spare
     recallFromDtConfigDescriptor(Norm_Key_00_VAR);
     recallFromDtConfigDescriptor(Input_Default);
@@ -340,7 +342,7 @@ void fnRecallConfig(uint16_t regist) {
     recallFromDtConfigDescriptor(fractionDigits);
     recallFromDtConfigDescriptor(compatibility_byte1);
     recallFromDtConfigDescriptor(compatibility_bool16);    //spare
-    recallFromDtConfigDescriptor(jm_LARGELI);
+    recallFromDtConfigDescriptor(compatibility_bool20);
     recallFromDtConfigDescriptor(compatibility_bool17);
     recallFromDtConfigDescriptor(IrFractionsCurrentStatus);
     recallFromDtConfigDescriptor(compatibility_bool18);

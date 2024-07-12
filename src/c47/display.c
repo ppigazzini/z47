@@ -1410,7 +1410,7 @@ static void complex34ToDisplayString2(const complex34_t *complex34, char *displa
       }
     }
 
-    if(CPXMULT) {                  // i x 1.0
+    if(getSystemFlag(FLAG_CPXMULT)) {                  // i x 1.0
       strcat(displayString, COMPLEX_UNIT);
       real34CopyAbs(&imag34, &absimag34);
 //      if(!real34CompareEqual(&absimag34, const34_1)) {     //JM force a |imag|=1 not to display. Maybe make it part of IRFRAC.
@@ -1419,7 +1419,7 @@ static void complex34ToDisplayString2(const complex34_t *complex34, char *displa
 //      }
     }
 
-    if(!CPXMULT) {                   // 1.0 i
+    if(!getSystemFlag(FLAG_CPXMULT)) {                   // 1.0 i
       real34CopyAbs(&imag34, &absimag34);
 //      if(!real34CompareEqual(&absimag34, const34_1)) {     //JM force a |imag|=1 not to display.  Maybe make it part of IRFRAC.
         xcopy(strchr(displayString, '\0'), displayString + i, strlen(displayString + i) + 1);
@@ -2232,7 +2232,7 @@ void longIntegerToDisplayString(longInteger_t lgInt, char *displayString, int32_
     }
   }
   //for any exponent display, further manipulation of GRP is not needed
-  if(stringWidth(displayString, allowLARGELI && jm_LARGELI ? &numericFont : &standardFont, false, false) > maxWidth) {      //JM
+  if(stringWidth(displayString, allowLARGELI && getSystemFlag(FLAG_LARGELI) ? &numericFont : &standardFont, false, false) > maxWidth) {      //JM
     char exponentString[14], lastRemovedDigit;
     int16_t lastChar, stringStep, tenExponent;
 
@@ -2246,7 +2246,7 @@ void longIntegerToDisplayString(longInteger_t lgInt, char *displayString, int32_
     }
     exponentString[0] = 0;
     exponentToDisplayString(tenExponent, exponentString, NULL, false);
-    while(stringWidth(displayString,   allowLARGELI && jm_LARGELI ? &numericFont : &standardFont, false, true) + stringWidth(exponentString,   allowLARGELI && jm_LARGELI ? &numericFont : &standardFont, true, false) > maxWidth) {  //JM jm_LARGELI
+    while(stringWidth(displayString,   allowLARGELI && getSystemFlag(FLAG_LARGELI) ? &numericFont : &standardFont, false, true) + stringWidth(exponentString,   allowLARGELI && getSystemFlag(FLAG_LARGELI) ? &numericFont : &standardFont, true, false) > maxWidth) {  //JM getSystemFlag(FLAG_LARGELI)
       lastChar -= stringStep;
       tenExponent += exponentStep;
       lastRemovedDigit = displayString[lastChar + (SEPARATOR_LEFT[1] == 1 ? 1 : 2)];
@@ -2288,7 +2288,7 @@ void longIntegerToDisplayString(longInteger_t lgInt, char *displayString, int32_
           }
 
           // Has the string become too long?
-          if(stringWidth(displayString,   allowLARGELI && jm_LARGELI ? &numericFont : &standardFont, false, true) + stringWidth(exponentString,   allowLARGELI && jm_LARGELI ? &numericFont : &standardFont, true, false) > maxWidth) {   //JM jm_LARGELI
+          if(stringWidth(displayString,   allowLARGELI && getSystemFlag(FLAG_LARGELI) ? &numericFont : &standardFont, false, true) + stringWidth(exponentString,   allowLARGELI && getSystemFlag(FLAG_LARGELI) ? &numericFont : &standardFont, true, false) > maxWidth) {   //JM getSystemFlag(FLAG_LARGELI)
             lastChar = strlen(displayString) - stringStep;
             tenExponent += exponentStep;
             displayString[lastChar] = 0;

@@ -180,12 +180,12 @@ typedef struct {
   bool_t compatibility_bool19;
   bool_t HOME3;
   bool_t ShiftTimoutMode;
-  bool_t CPXMULT;
+  bool_t compatibility_bool21;              //Spare Byte
   bool_t BASE_HOME;
-  bool_t compatibility_bool0;               //Spare Byte !problem
+  bool_t compatibility_bool0;               //Spare Byte
   int16_t Norm_Key_00_VAR;
   uint8_t Input_Default;
-  bool_t compatibility_bool00;               //Spare Byte !problem
+  bool_t compatibility_bool00;              //Spare Byte
   bool_t BASE_MYM;
   bool_t jm_G_DOUBLETAP;
   float  compatibility_float1;              //Spare float
@@ -212,7 +212,7 @@ typedef struct {
   int8_t fractionDigits;
   int8_t compatibility_byte1;               //Spare Byte
   bool_t compatibility_bool16;              //Spare Byte
-  bool_t jm_LARGELI;
+  bool_t compatibility_bool20;              //Spare Byte
   bool_t compatibility_bool17;              //Spare Byte
   uint8_t IrFractionsCurrentStatus;
   bool_t compatibility_bool18;              //Spare Byte

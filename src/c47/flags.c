@@ -643,11 +643,11 @@ void SetSetting(uint16_t jmConfig) {
     case ITM_PRTACT1: fnSetFlag(FLAG_PRTACT);                                break;
     case ITM_PRTACT0: fnClearFlag(FLAG_PRTACT);                              break;
     case JC_FRC:      fnFlipFlag(FLAG_FRCSRN);                               break; //bit
-    case JC_ERPN:     fnFlipFlag(FLAG_ERPN);                                 break; //   eRPN = !eRPN;              fnRefreshState(); break;
+    case JC_ERPN:     fnFlipFlag(FLAG_ERPN);                                 break; //
     case ITM_FRCYC:   fnFlipFlag(FLAG_FRCYC);                                break; //  
     case ITM_FRCSRN:  fnFlipFlag(FLAG_FRCSRN);                               break; //  
-    case JC_LARGELI:  fnFlipFlag(FLAG_LARGELI);                              break; //   jm_LARGELI = !jm_LARGELI;  fnRefreshState(); break;
-    case JC_CPXMULT:  fnFlipFlag(FLAG_CPXMULT);                              break; //   CPXMULT = !CPXMULT;        fnRefreshState(); break;
+    case JC_LARGELI:  fnFlipFlag(FLAG_LARGELI);                              break; // 
+    case JC_CPXMULT:  fnFlipFlag(FLAG_CPXMULT);                              break; //
     case JC_NL:       fnFlipFlag(FLAG_NUMLOCK); showAlphaModeonGui();        break; //   numLock = !numLock;        showAlphaModeonGui(); break; //call numlock
     case JC_IRFRAC:  
       fnFlipFlag(FLAG_IRFRAC);

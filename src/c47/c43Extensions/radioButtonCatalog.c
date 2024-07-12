@@ -385,7 +385,7 @@ int8_t fnCbIsSet(int16_t item) {
             case JC_VECT:                cb_param = PLOT_VECT;                                                        break;
             case JC_NVECT:               cb_param = PLOT_NVECT;                                                       break;
             case JC_SCALE:               cb_param = PLOT_SCALE;                                                       break;
-            case JC_LARGELI:             cb_param = jm_LARGELI;                                                       break;
+            case JC_LARGELI:             cb_param = getSystemFlag(FLAG_LARGELI);                                      break;
             case JC_IRFRAC:              cb_param = getSystemFlag(FLAG_IRFRAC);                                       break;
             case JC_EXTENTX:             cb_param = !extentx;                                                         break;
             case JC_EXTENTY:             cb_param = !extenty;                                                         break;
@@ -400,12 +400,12 @@ int8_t fnCbIsSet(int16_t item) {
             case JC_NL:                  cb_param = numLock;                                                          break;
             case JC_UC:                  cb_param = !alphaCase;                                                       break;
             case JC_UU:                  cb_param = getSystemFlag(FLAG_USER);                                         break;
-            case JC_LPfg:                cb_param = getSystemFlag(FLAG_SH_LONGPRESS);                                         break;
+            case JC_LPfg:                cb_param = getSystemFlag(FLAG_SH_LONGPRESS);                                 break;
             case JC_SS:                  cb_param = scrLock != NC_NORMAL;                                             break;
             case JC_BCD:                 cb_param = bcdDisplay;                                                       break;
             case JC_TOPHEX:              cb_param = topHex;                                                           break;
             case JC_SI_All:              cb_param = SI_All;                                                           break;
-            case JC_CPXMULT:             cb_param = CPXMULT;                                                          break;
+            case JC_CPXMULT:             cb_param = getSystemFlag(FLAG_CPXMULT);                                      break;
             case JC_MYM_TRIPLE:          cb_param = MYM3;
                                          if(MYM3 && HOME3) MYM3 = false;
                                          break;

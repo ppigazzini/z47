@@ -1267,7 +1267,6 @@ bool_t itemNotAvail(int16_t itemNr) {
   void fnSNAP                     (uint16_t unusedButMandatoryParameter) {}
   void fnPcSigmaDeltaPcXmean      (uint16_t unusedButMandatoryParameter) {}
   void fnDeltaPercentXmean        (uint16_t unusedButMandatoryParameter) {}
-  void fnSetCPXmult               (uint16_t unusedButMandatoryParameter) {}
   void setFGLSettings             (uint16_t unusedButMandatoryParameter) {}
   void fnSettingsDispFormatGrpL   (uint16_t unusedButMandatoryParameter) {}
   void fnSettingsDispFormatGrp1L  (uint16_t unusedButMandatoryParameter) {}

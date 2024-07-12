@@ -185,7 +185,6 @@ bool_t                numLock;                       //JM
 bool_t                doRefreshSoftMenu;                       //dr
 bool_t                BASE_MYM;                                //JM Screen / keyboard operation setup
 bool_t                jm_G_DOUBLETAP;                          //JM Screen / keyboard operation setup
-bool_t                jm_LARGELI;
 uint8_t               IrFractionsCurrentStatus;
 bool_t                tvmIKnown;
 bool_t                tvmIChanges;
@@ -226,7 +225,6 @@ bool_t                 FN_handle_timed_out_to_EXEC;
 bool_t                 bcdDisplay = false;
 bool_t                 topHex = false;
 bool_t                 SI_All = true;
-bool_t                 CPXMULT = false;
 bool_t                 fnAsnDisplayUSER = true;
 
 uint8_t                bcdDisplaySign = 0;

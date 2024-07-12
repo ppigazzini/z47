@@ -2408,8 +2408,3 @@ void fnSetSI_All (uint16_t unusedButMandatoryParameter) {
   SI_All = !SI_All;
 }
 
-
-void fnSetCPXMULT (uint16_t unusedButMandatoryParameter) {
-  CPXMULT = !CPXMULT;
-}
-

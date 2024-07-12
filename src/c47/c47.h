@@ -303,7 +303,6 @@
   extern bool_t                 bcdDisplay;
   extern bool_t                 topHex;
   extern bool_t                 SI_All;
-  extern bool_t                 CPXMULT;
   extern uint8_t                bcdDisplaySign;
   extern uint8_t                LongPressM;
   extern uint8_t                LongPressF;
@@ -326,7 +325,6 @@
   extern float                  graph_xmax;                   //JM Graph
   extern float                  graph_ymin;                   //JM Graph
   extern float                  graph_ymax;                   //JM Graph
-  extern bool_t                 jm_LARGELI;                   //JM flag to keep large font numbers on screen
   extern uint8_t                IrFractionsCurrentStatus;     //JM
   extern bool_t                 tvmIKnown;
   extern bool_t                 tvmIChanges;

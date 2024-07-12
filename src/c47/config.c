@@ -180,6 +180,11 @@ fgLongPressSetting,                  xxx,        xxx,                           
 3,                                   0,          xxx,                            FLAG_ERPN,       xxx,                  xxx,                    xxx,             xxx,             xxx,
 3,                                   1,          FLAG_ERPN,                      xxx,             FLAG_ERPN,            FLAG_ERPN,              FLAG_ERPN,       xxx,             xxx,
 
+3,                                   0,          FLAG_CPXMULT,                   xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,
+3,                                   1,          FLAG_LARGELI,                   xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,
+
+
+
 
 DenMaX,                              xxx,        64,                             xxx,             200,                  999,                    64,              xxx,             xxx,                  
 //TVM,                               n/a,        Reset,                          HP35,            JM,                   RJ,                     C47,             DefltSB,         TVM,                  
@@ -1253,7 +1258,6 @@ void resetOtherConfigurationStuff(void) {
   Norm_Key_00_VAR  = Norm_Key_00_item_in_layout;               //JM NORM MODE SIGMA REPLACEMENT KEY
   Input_Default =  ID_43S;
   jm_G_DOUBLETAP = true;
-  jm_LARGELI = true;                                           //Large font for long integers on stack
   displayStackSHOIDISP = 2;            //See if the refresh is needed. fnShoiXRepeats(2); //displayStackSHOIDISP
   bcdDisplay = false;
   topHex = true;                                               //Hex keys enabled
@@ -1261,7 +1265,6 @@ void resetOtherConfigurationStuff(void) {
   DRG_Cycling = 0;
   DM_Cycling = 0;
   SI_All = false;                                              //UNIT display full SI prefix display range
-  CPXMULT = false;                                             //defaults to the new complex notation with space
   LongPressM = RBX_M1234;
   LongPressF = RBX_F124;
   fgLN = RBX_FGLNFUL;
