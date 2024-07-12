@@ -1569,14 +1569,22 @@ int32_t getSmallestDenom(const real_t *val) {
   realCopy(val, &xx);
 
   int32_t m[2][2];
-  int32_t maxden;
+  m[0][0] = 1;
+
+  int32_t maxden, ai, dd;
   if(denMax == 0 || denMax > MAX_DENMAX) {
     maxden = MAX_INTERNAL_DENMAX;
   } else {
     maxden = denMax;
   }
+  int32ToReal(maxden,&temp);
+  realDivide(const_1on4,&temp,&temp,&ctxtReal39);
+  if(realCompareLessThan(&xx,&temp)) {
+    //printf("Lower than 0.25/DMX, quitting before fraction loop.\n");  // Any value lower than 0.5/DMX will be deemed 0. Make the threshold 1/2 of 0.5/DMX
+    dd = 1;
+    goto nothingTodo;
+  }
 
-  int32_t ai;
 
   /* initialize matrix */
   m[0][0] = m[1][1] = 1;
@@ -1584,6 +1592,7 @@ int32_t getSmallestDenom(const real_t *val) {
 
   /* loop finding terms until denom gets too big */
   while(m[1][0] *  ( ai = realToInt32C47(&xx) ) + m[1][1] <= maxden) {
+    //printf("  ai = %8i    ",ai); printf("  m00=%8i m11=%8i m01=%8i m10=%8i   ", m[0][0], m[1][1], m[0][1], m[1][0]); printRealToConsole(&xx,"  xx="," + m[1][1] ");
     int32_t t;
     t = m[0][0] * ai + m[0][1];
     m[0][1] = m[0][0];
@@ -1594,24 +1603,26 @@ int32_t getSmallestDenom(const real_t *val) {
 
     int32ToReal(ai,&temp);
     realSubtract(&xx,&temp,&xx,&ctxtReal39);
-    if(realIsZero(&xx)) {
+    if(realIsZero(&xx) || realCompareAbsLessThan(&xx, const_1e_24)) {
       break;  // AF: division by zero
     }
     realDivide(const_1,&xx,&xx,&ctxtReal39);
 
-    int32ToReal(0x7FFFFFFF,&temp);
-    if(realCompareGreaterThan(&xx,&temp)) {
-      break;  // AF: representation failure
+    if(realCompareGreaterThan(&xx,const_2p31__1)) {
+      #if defined(PC_BUILD)
+        printf("\nRepresentation failure. Quitting fraction loop.\n");
+      #endif //PC_BUILD
+      dd = 1;
+      goto nothingTodo;
     }
   }
 
-  //int nn = (double) m[0][0];
-  int32_t dd = (double) m[1][0];
-  //printf(">>> %i / %i \n", nn, dd);
-
+  dd = m[1][0];
   if(dd == 0) {
     dd = 1;
   }
+nothingTodo:
+  //printf(">>> %i / %i \n",  m[0][0], dd);
   return dd;
 }
 
@@ -1646,7 +1657,7 @@ bool_t checkForAndChange(char *displayString, const real34_t *value34, const rea
     char cStr[16];
     bool_t useMixedNumbers = getSystemFlag(FLAG_PROPFR) && (DISALLOW_MIXED_NUMBER_COMPLEX ? !complexMixedNumbers : true);
     //printf(">>>## useMixedNumbers %u\n",useMixedNumbers);
-    real_t smallestDenomR, newConstant, multipleOfNewConstant, multipleOfNewConstant_ip, multipleOfNewConstant_fp, valueRealAbs, valueReal, multConstant, tmpr;
+    real_t smallestDenomR, newConstant, multipleOfNewConstant, multipleOfNewConstant_ip, multipleOfNewConstant_fp, valueRealAbs, valueReal, multConstant;
     real34ToReal(value34,&valueReal);
     realCopyAbs(&valueReal,&valueRealAbs);
 
@@ -1667,11 +1678,9 @@ bool_t checkForAndChange(char *displayString, const real34_t *value34, const rea
 
     //Returning: Multiple of constant is too large
     realDivide(&valueRealAbs,constant,&multConstant,&ctxtReal39);
-    uInt32ToReal(0x1FFFFFFF,&tmpr);
-    if(realCompareGreaterThan(&multConstant, &tmpr)) {
+    if(realCompareGreaterThan(&multConstant, const_2p31__1)) {
 //                                printf("Returning: Multiple of constant is too large\n");
 //                                printRealToConsole(&multConstant, "multiple of the constant=", " > ");
-//                                printRealToConsole(&tmpr, "tmpr=", " \n");
       return false;
     }
 
@@ -1680,7 +1689,7 @@ bool_t checkForAndChange(char *displayString, const real34_t *value34, const rea
 
     //See if the multiplier to the constant has a whole denominator
 
-#ifdef FRACT_ENGINE
+#ifndef IRFRAC_ENGINE
     //* This section uses the standard fraction() to calculate the denominator
     int16_t sign1, lessEqualGreater;
     uint64_t intPart, numer, denom;
@@ -1706,8 +1715,7 @@ bool_t checkForAndChange(char *displayString, const real34_t *value34, const rea
     multipleOfNewConstantInteger = abs(realToInt32C47(&multipleOfNewConstant_ip));                              //numerator
 
     //See if the ip is out of range
-    uInt32ToReal(0x1FFFFFFF,&tmpr);
-    if(realCompareAbsGreaterThan(&multipleOfNewConstant_ip, &tmpr)) {
+    if(realCompareAbsGreaterThan(&multipleOfNewConstant_ip, const_2p31__1)) {
       return false;
     }
 
