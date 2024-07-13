@@ -147,11 +147,16 @@
     shiftF = shF;
     shiftG = shG;
     uint8_t alphaCase_MEM = alphaCase;
-    bool_t numLock_MEM;  numLock_MEM = numLock;  numLock = false;
+    bool_t numLock_MEM;  numLock_MEM = getSystemFlag(FLAG_NUMLOCK);  clearSystemFlag(FLAG_NUMLOCK);
     bool_t u_mem = getSystemFlag(FLAG_USER); clearSystemFlag(FLAG_USER);
     btnClicked(w, st);
     if(u_mem) setSystemFlag(FLAG_USER);
-    numLock = numLock_MEM;
+    if(numLock_MEM) {
+      setSystemFlag(FLAG_NUMLOCK);
+    }
+    else {
+      clearSystemFlag(FLAG_NUMLOCK);
+    }
     alphaCase = alphaCase_MEM;
     refreshStatusBar();
   }
@@ -165,10 +170,15 @@
   //JM ALPHA SECTION FOR ALPHAMODE - LOWER CASE PC LETTER INPUT. USE LETTER
   void btnClicked_LC(GtkWidget *w, gpointer data) {
     bool_t numLock_MEM;
-    numLock_MEM = numLock;
-    numLock = false;
+    numLock_MEM = getSystemFlag(FLAG_NUMLOCK);
+    clearSystemFlag(FLAG_NUMLOCK);
     btnClicked(w, data);
-    numLock = numLock_MEM;
+    if(numLock_MEM) {
+      setSystemFlag(FLAG_NUMLOCK);
+    }
+    else {
+      clearSystemFlag(FLAG_NUMLOCK);
+    }
     refreshStatusBar();
   }
 
@@ -178,13 +188,18 @@
     uint8_t alphaCase_MEM;
     bool_t numLock_MEM;
     alphaCase_MEM = alphaCase;
-    numLock_MEM = numLock;
+    numLock_MEM = getSystemFlag(FLAG_NUMLOCK);
     if(alphaCase == AC_UPPER) {alphaCase = AC_LOWER;}
     else if(alphaCase == AC_LOWER) {alphaCase = AC_UPPER;}
-    numLock = false;
+    clearSystemFlag(FLAG_NUMLOCK);
     btnClicked(w, data);
     alphaCase = alphaCase_MEM;
-    numLock = numLock_MEM;
+    if(numLock_MEM) {
+      setSystemFlag(FLAG_NUMLOCK);
+    }
+    else {
+      clearSystemFlag(FLAG_NUMLOCK);
+    }
     refreshStatusBar();
   }
 
@@ -192,30 +207,40 @@
   //JM NUMERIC SECTION FOR ALPHAMODE - FORCE Numeral - Numbers from PC --> produce numbers.
   void btnClicked_NU(GtkWidget *w, gpointer data) {
     bool_t numLock_MEM;
-    numLock_MEM = numLock;
+    numLock_MEM = getSystemFlag(FLAG_NUMLOCK);
 
-    numLock = false;
+    clearSystemFlag(FLAG_NUMLOCK);
     shiftF = false;       //JM
     shiftG = true;      //JM
     btnClicked(w, data);
 
-    numLock = numLock_MEM;
+    if(numLock_MEM) {
+      setSystemFlag(FLAG_NUMLOCK);
+    }
+    else {
+      clearSystemFlag(FLAG_NUMLOCK);
+    }
     refreshStatusBar();
   }
 
   //Shifted numbers !@#$%^&*() from PC --> activate shift and use numnber 1234567890. Restore case.
   void btnClicked_SNU(GtkWidget *w, gpointer data) {
     bool_t numLock_MEM;
-    numLock_MEM = numLock;
+    numLock_MEM = getSystemFlag(FLAG_NUMLOCK);
 
-    numLock = false;
+    clearSystemFlag(FLAG_NUMLOCK);
     shiftF = true;       //JM
     shiftG = false;        //JM
     //btnClicked(NULL, "34");     //Alphadot
     btnClicked(w, data);
 
     //Only : is working at this point
-    numLock = numLock_MEM;
+    if(numLock_MEM) {
+      setSystemFlag(FLAG_NUMLOCK);
+    }
+    else {
+      clearSystemFlag(FLAG_NUMLOCK);
+    }
     refreshStatusBar();
   }
 
@@ -2255,7 +2280,7 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
         lbl[0] = 0;
       }
       else {
-          stringToUtf8(indexOfItems[numlockReplacements(4,max(key->fShiftedAim, -key->fShiftedAim),numLock,true,false)].itemSoftmenuName, lbl);
+          stringToUtf8(indexOfItems[numlockReplacements(4,max(key->fShiftedAim, -key->fShiftedAim),getSystemFlag(FLAG_NUMLOCK),true,false)].itemSoftmenuName, lbl);
       }
 
       if(lbl[0] == 32 && lbl[1]==0) {
@@ -2282,16 +2307,16 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
       }
       else {
         if( shiftG && (ITM_A <= key->primaryAim && key->primaryAim <= ITM_Z)) {
-          stringToUtf8(indexOfItems[numlockReplacements(5,max(key->gShiftedAim, -key->gShiftedAim), numLock, shiftF, shiftG)].itemSoftmenuName, lbl);
+          stringToUtf8(indexOfItems[numlockReplacements(5,max(key->gShiftedAim, -key->gShiftedAim), getSystemFlag(FLAG_NUMLOCK), shiftF, shiftG)].itemSoftmenuName, lbl);
         }
         else {
           if( ((!shiftF && (alphaCase == AC_LOWER)) || ( shiftF && (alphaCase == AC_UPPER))) && (ITM_A <= key->primaryAim && key->primaryAim <= ITM_Z)) {
-            stringToUtf8(indexOfItems[numlockReplacements(5,max(key->primaryAim, -key->primaryAim) + 26, numLock, shiftF, shiftG)].itemSoftmenuName, lbl);
+            stringToUtf8(indexOfItems[numlockReplacements(5,max(key->primaryAim, -key->primaryAim) + 26, getSystemFlag(FLAG_NUMLOCK), shiftF, shiftG)].itemSoftmenuName, lbl);
           }
           else {
-            if(shiftF) stringToUtf8(indexOfItems[numlockReplacements(6,max(key->fShiftedAim, -key->fShiftedAim), numLock, shiftF, shiftG)].itemSoftmenuName, lbl); else
-            if(shiftG) stringToUtf8(indexOfItems[numlockReplacements(6,max(key->gShiftedAim, -key->gShiftedAim), numLock, shiftF, shiftG)].itemSoftmenuName, lbl); else
-            stringToUtf8(indexOfItems[numlockReplacements(6,max(key->primaryAim, -key->primaryAim), numLock, shiftF, shiftG)].itemSoftmenuName, lbl);
+            if(shiftF) stringToUtf8(indexOfItems[numlockReplacements(6,max(key->fShiftedAim, -key->fShiftedAim), getSystemFlag(FLAG_NUMLOCK), shiftF, shiftG)].itemSoftmenuName, lbl); else
+            if(shiftG) stringToUtf8(indexOfItems[numlockReplacements(6,max(key->gShiftedAim, -key->gShiftedAim), getSystemFlag(FLAG_NUMLOCK), shiftF, shiftG)].itemSoftmenuName, lbl); else
+            stringToUtf8(indexOfItems[numlockReplacements(6,max(key->primaryAim, -key->primaryAim), getSystemFlag(FLAG_NUMLOCK), shiftF, shiftG)].itemSoftmenuName, lbl);
           }
         }
       }
@@ -2335,14 +2360,14 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
         lbl[3] = 0;
         stringToUtf8(indexOfItems[key->gShiftedAim + (ITM_alpha - ITM_ALPHA)].itemSoftmenuName, lbl + 3);*/
         if(alphaCase == AC_LOWER) {
-          stringToUtf8(indexOfItems[numlockReplacements(8,key->gShiftedAim + (ITM_alpha - ITM_ALPHA), numLock, false, true)].itemSoftmenuName, lbl);
+          stringToUtf8(indexOfItems[numlockReplacements(8,key->gShiftedAim + (ITM_alpha - ITM_ALPHA), getSystemFlag(FLAG_NUMLOCK), false, true)].itemSoftmenuName, lbl);
         }
         else {
-          stringToUtf8(indexOfItems[numlockReplacements(9,key->gShiftedAim, numLock, false, true)].itemSoftmenuName, lbl);
+          stringToUtf8(indexOfItems[numlockReplacements(9,key->gShiftedAim, getSystemFlag(FLAG_NUMLOCK), false, true)].itemSoftmenuName, lbl);
         }                                                               //^^
       }
       else {
-        stringToUtf8(indexOfItems[numlockReplacements(10,key->gShiftedAim, numLock, false, true)].itemSoftmenuName, lbl);
+        stringToUtf8(indexOfItems[numlockReplacements(10,key->gShiftedAim, getSystemFlag(FLAG_NUMLOCK), false, true)].itemSoftmenuName, lbl);
       }
 
       //GShift set label

@@ -1,9 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
-/**
- * \file c47.h
- */
 
 #if !defined(C47_H)
   #define C47_H
@@ -237,7 +234,6 @@
   extern uint8_t                cachedDisplayStack;
   extern uint8_t                displayStackSHOIDISP;         //JM SHOIDISP
   extern uint8_t                scrLock;
-  extern bool_t                 numLock;                      //JM
   extern uint8_t                alphaCase;
   extern uint8_t                numLinesNumericFont;
   extern uint8_t                numLinesStandardFont;
@@ -306,7 +302,6 @@
   extern bool_t                 bcdDisplay;
   extern bool_t                 topHex;
   extern bool_t                 SI_All;
-  extern bool_t                 CPXMULT;
   extern uint8_t                bcdDisplaySign;
   extern uint8_t                LongPressM;
   extern uint8_t                LongPressF;
@@ -317,7 +312,6 @@
   extern uint8_t                FN_state; // = ST_0_INIT;
 
   // Variables from jm.h
-  extern bool_t                 eRPN;                         //JM eRPN Create a flag to enable or disable eRPN. See bufferize.c
   extern bool_t                 HOME3;                        //JM HOME Create a flag to enable or disable triple shift HOME3; enable or disable TRIPLE SHIFT TIMER.
   extern bool_t                 MYM3;                         //JM HOME Create a flag to enable or disable triple shift MYM3; enable or disable TRIPLE SHIFT TIMER.
   extern bool_t                 ShiftTimoutMode;              //JM HOME Create a flag to enable or disable SHIFT TIMER CANCEL.
@@ -330,10 +324,7 @@
   extern float                  graph_xmax;                   //JM Graph
   extern float                  graph_ymin;                   //JM Graph
   extern float                  graph_ymax;                   //JM Graph
-  extern bool_t                 jm_LARGELI;                   //JM flag to keep large font numbers on screen
-  extern bool_t                 constantFractions;            //JM
   extern uint8_t                IrFractionsCurrentStatus;     //JM
-  extern bool_t                 constantFractionsOn;          //JM
   extern bool_t                 tvmIKnown;
   extern bool_t                 tvmIChanges;
 

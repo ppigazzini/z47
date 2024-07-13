@@ -181,18 +181,13 @@ char *                 showFunctionNameArg;
 
 uint8_t               displayStackSHOIDISP;          //JM SHOIDISP
 uint8_t               scrLock;
-bool_t                numLock;                       //JM
 bool_t                doRefreshSoftMenu;                       //dr
 bool_t                BASE_MYM;                                //JM Screen / keyboard operation setup
 bool_t                jm_G_DOUBLETAP;                          //JM Screen / keyboard operation setup
-bool_t                jm_LARGELI;
-bool_t                constantFractions;                       //JM
 uint8_t               IrFractionsCurrentStatus;
-bool_t                constantFractionsOn;                     //JM
 bool_t                tvmIKnown;
 bool_t                tvmIChanges;
 
-bool_t                eRPN;                                    //JM eRPN Create a flag to enable or disable eRPN. See bufferize.c
 bool_t                HOME3;                                   //JM HOME Create a flag to enable or disable triple shift HOME3. Create a flag to enable or disable HOME TIMER CANCEL.
 bool_t                MYM3;                                    //JM HOME Create a flag to enable or disable triple shift MYM3. Create a flag to enable or disable HOME TIMER CANCEL.
 bool_t                ShiftTimoutMode;                         //JM SHIFT Create a flag to enable or disable SHIFT TIMER CANCEL.
@@ -229,7 +224,6 @@ bool_t                 FN_handle_timed_out_to_EXEC;
 bool_t                 bcdDisplay = false;
 bool_t                 topHex = false;
 bool_t                 SI_All = true;
-bool_t                 CPXMULT = false;
 bool_t                 fnAsnDisplayUSER = true;
 
 uint8_t                bcdDisplaySign = 0;

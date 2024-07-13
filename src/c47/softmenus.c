@@ -85,11 +85,9 @@ TO_QSPI const int16_t menu_CPX[]         = { ITM_RE,                        ITM_
                                              KEY_COMPLEX,                   ITM_CONJ,                   ITM_DOT_PROD,             ITM_CROSS_PROD,        ITM_op_j,                    ITM_UNITV,                                          //JM re-arranged menu. CPX menu
                                              ITM_CPXI,                      ITM_CPXJ,                   ITM_CXtoRE,               ITM_REtoCX,            ITM_RECT,                    ITM_POLAR                     };    //JM re-arranged menu
 
-TO_QSPI const int16_t menu_DISP[]        = {
-
-                                             ITM_FIX,                       ITM_SCI,                    ITM_ENG,                  ITM_UNIT,              ITM_SIGFIG,                  ITM_ALL,
-                                             ITM_FRACT,                     ITM_PROPFR,                 ITM_IRFRAC,               ITM_DENMAX2,           ITM_DENANY,                  ITM_DENFIX,
-                                             ITM_GAP_L,                     ITM_GAP_RX,                 ITM_GAP_R,                ITM_TDISP,             ITM_RECT,                    ITM_POLAR,
+TO_QSPI const int16_t menu_DISP[]        = { ITM_FIX,                       ITM_SCI,                    ITM_ENG,                  ITM_UNIT,              ITM_SIGFIG,                  ITM_ALL,
+                                             ITM_FRACT,                     ITM_IRFRAC,                 ITM_PROPFR,               ITM_DENMAX2,           ITM_DENANY,                  ITM_DENFIX,
+                                             ITM_GAP_L,                     ITM_GAP_RX,                 ITM_GAP_R,                ITM_SETFDIGS,          ITM_FRCYC,                   ITM_TDISP,
 
                                              ITM_DMY,                       ITM_MDY,                    ITM_YMD,                  ITM_CPXMULT,           ITM_MULTCR,                  ITM_MULTDOT,
                                              ITM_SI_All,                    ITM_DSTACK,                 ITM_SHOIREP,              ITM_LARGELI,           ITM_CPXI,                    ITM_CPXJ,
@@ -98,7 +96,6 @@ TO_QSPI const int16_t menu_DISP[]        = {
                                              ITM_SETCHN,                    ITM_SETEUR,                 ITM_SETIND,               ITM_SETJPN,            ITM_SETUK,                   ITM_SETUSA,
                                              ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_SETDFLT,
                                              ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL                        };
-
 
 TO_QSPI const int16_t menu_EXP[]         = { ITM_CUBE,                      ITM_YX,                     ITM_SQRT1PX2,             ITM_LOG2,              ITM_LN1X,                    ITM_LOGXY,                          //JM re-arranged menu. logxy and square to follow DM42 keyboard. Re-aligned with 42S keys.
                                              ITM_CUBEROOT,                  ITM_XTHROOT,                ITM_SQUAREROOTX,          ITM_2X,                ITM_EX1,                     ITM_EXP,                           //JM re-arranged menu. Added YˆX to follow DM42 keyboard. Swapped YˆX and Yˆ(1/X). Re-aligned with 42S keys.
@@ -144,7 +141,7 @@ TO_QSPI const int16_t menu_FLAGS[]       = { ITM_SF,                        ITM_
 TO_QSPI const int16_t menu_INFO[]        = { ITM_SSIZE,                     ITM_MEM,                    ITM_RMODEQ,               ITM_ISM,               ITM_WSIZEQ,                  ITM_KTYP,
                                              ITM_LocRQ,                     ITM_DISK,                   ITM_ULP,                  ITM_NEIGHB,            ITM_GETSDIGS,                ITM_BATT,
                                              ITM_WHO,                       ITM_VERS,                   ITM_M_DIMQ,               ITM_PMINFINITY,        ITM_ALPHAPOS,                ITM_ALPHALENG,
-                                             ITM_GETRANGE,                  ITM_GETHIDE,                ITM_GET_JUL_GREG,         ITM_VOLQ,              ITM_SH_ERPN,                 ITM_BESTFQ,
+                                             ITM_GETRANGE,                  ITM_GETHIDE,                ITM_GET_JUL_GREG,         ITM_VOLQ,              ITM_NULL,                    ITM_BESTFQ,
                                              ITM_GETDMX,                    ITM_LOADEDFILE,             ITM_LASTT,                ITM_GETFDIGS,          ITM_NULL,                    ITM_NULL                        };
 
 
@@ -181,12 +178,12 @@ TO_QSPI const int16_t menu_M_EDIT[]      = { ITM_UP_ARROW,                  ITM_
 
 
 
-TO_QSPI const int16_t menu_MODE[]        = { ITM_DEG,                       ITM_RAD,                    ITM_GRAD,                 ITM_HPRP,              ITM_RECT,                    ITM_POLAR,
-                                             ITM_SYSTEM2,                   ITM_ACTUSB,                 ITM_NULL,                 ITM_SETSIG2,           ITM_SETFDIGS,                ITM_CFG,              //JM
+TO_QSPI const int16_t menu_MODE[]        = { ITM_DEG,                       ITM_RAD,                    ITM_GRAD,                 ITM_SETSIG2,           ITM_RECT,                    ITM_POLAR,
+                                             ITM_SYSTEM2,                   ITM_ACTUSB,                 ITM_NULL,                 ITM_ERPN,              ITM_HPRP,                    ITM_CFG,              //JM
                                              ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,                                       //JM
 
-                                             ITM_SSIZE4,                    ITM_SSIZE8,                 ITM_ERPN,                 ITM_CB_CPXRES,         ITM_CB_SPCRES,               ITM_RMODE,
-                                             ITM_INP_DEF_43S,               ITM_INP_DEF_DP,             ITM_INP_DEF_CPXDP,        ITM_INP_DEF_LI,        ITM_NULL,                    ITM_CFG,
+                                             ITM_SSIZE4,                    ITM_SSIZE8,                 ITM_CB_CPXRES,            ITM_CB_SPCRES,         ITM_RECT,                    ITM_POLAR,
+                                             ITM_INP_DEF_43S,               ITM_INP_DEF_DP,             ITM_INP_DEF_CPXDP,        ITM_INP_DEF_LI,        ITM_RMODE,                   ITM_CFG,
                                              ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
 
                                              ITM_FGLNOFF,                   ITM_FGLNLIM,                ITM_FGLNFUL,              ITM_G_DOUBLETAP,       ITM_SHTIM,                   ITM_SAFERESET,
@@ -194,12 +191,12 @@ TO_QSPI const int16_t menu_MODE[]        = { ITM_DEG,                       ITM_
                                              ITM_F14,                       ITM_F124,                   ITM_F1234,                ITM_SH_LONGPRESS,      ITM_MYMx3,                   ITM_HOMEx3         };
 
 // D47 vv
-TO_QSPI const int16_t menu_SETUP[]       = { ITM_SYSTEM2,                   ITM_ACTUSB,                 ITM_NULL,                 ITM_HPRP,              ITM_RECT,                    ITM_POLAR,
-                                             ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_SETSIG2,           ITM_SETFDIGS,                ITM_CFG,
+TO_QSPI const int16_t menu_SETUP[]       = { ITM_SYSTEM2,                   ITM_ACTUSB,                 ITM_NULL,                 ITM_SETSIG2,           ITM_RECT,                    ITM_POLAR,
+                                             ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_ERPN,              ITM_HPRP,                    ITM_CFG,
                                              ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
 
-                                             ITM_SSIZE4,                    ITM_SSIZE8,                 ITM_ERPN,                 ITM_CB_CPXRES,         ITM_CB_SPCRES,               ITM_RMODE,
-                                             ITM_INP_DEF_43S,               ITM_INP_DEF_DP,             ITM_INP_DEF_CPXDP,        ITM_INP_DEF_LI,        ITM_NULL,                    ITM_CFG,
+                                             ITM_SSIZE4,                    ITM_SSIZE8,                 ITM_CB_CPXRES,            ITM_CB_SPCRES,         ITM_RECT,                    ITM_POLAR,
+                                             ITM_INP_DEF_43S,               ITM_INP_DEF_DP,             ITM_INP_DEF_CPXDP,        ITM_INP_DEF_LI,        ITM_RMODE,                   ITM_CFG,
                                              ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
 
                                              ITM_FGLNOFF,                   ITM_FGLNLIM,                ITM_FGLNFUL,              ITM_G_DOUBLETAP,       ITM_SHTIM,                   ITM_SAFERESET,
@@ -953,7 +950,7 @@ TO_QSPI const softmenu_t softmenu[] = {
 /* 150 */  {.menuItem = -MNU_Grapher,     .numItems = sizeof(menu_Grapher       )/sizeof(int16_t), .softkeyItem = menu_Grapher        },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
 /* 151 */  {.menuItem = -MNU_AUDIO,       .numItems = sizeof(menu_AUDIO         )/sizeof(int16_t), .softkeyItem = menu_AUDIO          },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-06-16 jm
 /* 152 */  {.menuItem = -MNU_TAMNONREGMAX,.numItems = sizeof(menu_TamNonRegMax  )/sizeof(int16_t), .softkeyItem = menu_TamNonRegMax   },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
-/* 152 */  {.menuItem =  0,               .numItems = 0,                                           .softkeyItem = NULL                }
+/* 153 */  {.menuItem =  0,               .numItems = 0,                                           .softkeyItem = NULL                }
 };
 
 

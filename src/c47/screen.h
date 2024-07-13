@@ -1,10 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
-/**
- * \file screen.h
- * Screen related functions.
- */
 #if !defined(SCREEN_H)
 #define SCREEN_H
 
@@ -198,7 +194,7 @@ char       letteredRegisterName(calcRegister_t regist);
    * \param[in] showEndingCols  Display the ending empty columns
    * \return x coordinate for the next glyph
    */
-  uint32_t showGlyph                          (const char *ch,    const font_t *font, uint32_t x, uint32_t y, videoMode_t videoMode, bool_t showLeadingCols, bool_t showEndingCols);
+  uint32_t showGlyph                          (const char *ch,    const font_t *font, uint32_t x, uint32_t y, videoMode_t videoMode, bool_t showLeadingCols, bool_t showEndingCols, bool_t noPreClear);
 
   /**
    * Displays a glyph using it's Unicode code point.
@@ -212,7 +208,7 @@ char       letteredRegisterName(calcRegister_t regist);
    * \param[in] showEndingCols  Display the ending empty columns
    * \return x coordinate for the next glyph
    */
-  uint32_t showGlyphCode                      (uint16_t charCode, const font_t *font, uint32_t x, uint32_t y, videoMode_t videoMode, bool_t showLeadingCols, bool_t showEndingCols);
+  uint32_t showGlyphCode                      (uint16_t charCode, const font_t *font, uint32_t x, uint32_t y, videoMode_t videoMode, bool_t showLeadingCols, bool_t showEndingCols, bool_t noPreClear);
 
   /**
    * Hides the cursor.
