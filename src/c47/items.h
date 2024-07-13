@@ -1932,7 +1932,7 @@
 #define CHR_caseUP                  1878
 #define CHR_caseDN                  1879
 #define ITM_LISTXY                  1880
-#define MNU_FRSET                   1881
+#define ITM_1881                    1881
 #define ITM_SYS_FREE_RAM            1882
 #define MNU_INL_TST                 1883
 #define ITM_TEST                    1884
