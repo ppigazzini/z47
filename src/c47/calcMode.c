@@ -87,7 +87,7 @@
 
     alphaCase = AC_UPPER;
     nextChar = NC_NORMAL;
-    numLock = false;
+    clearSystemFlag(FLAG_NUMLOCK);
     scrLock = NC_NORMAL;
 
     if(!tam.mode && calcMode != CM_ASSIGN && calcMode != CM_PEM) {
@@ -208,7 +208,7 @@
         if(calcMode != CM_AIM && calcMode != CM_EIM) {
           alphaCase = AC_UPPER;
           nextChar = NC_NORMAL;
-          numLock = false;
+          clearSystemFlag(FLAG_NUMLOCK);
           scrLock = NC_NORMAL;
         }
 

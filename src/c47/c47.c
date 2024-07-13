@@ -181,7 +181,6 @@ char *                 showFunctionNameArg;
 
 uint8_t               displayStackSHOIDISP;          //JM SHOIDISP
 uint8_t               scrLock;
-bool_t                numLock;                       //JM
 bool_t                doRefreshSoftMenu;                       //dr
 bool_t                BASE_MYM;                                //JM Screen / keyboard operation setup
 bool_t                jm_G_DOUBLETAP;                          //JM Screen / keyboard operation setup

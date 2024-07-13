@@ -204,7 +204,7 @@ void fnEqEdit(uint16_t unusedButMandatoryParameter) {
       calcMode = CM_EIM;
       alphaCase = AC_LOWER;
       nextChar = NC_NORMAL;//JM C43
-      numLock = false;     //JM C43
+      clearSystemFlag(FLAG_NUMLOCK);
       scrLock = NC_NORMAL;
       setSystemFlag(FLAG_ALPHA);
       yCursor = 0;

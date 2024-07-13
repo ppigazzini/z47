@@ -519,7 +519,7 @@ bool_t lowercaseselected;    //the only place that this is set, is in processKey
       nextChar = scrLock;
     }
 
-    if(keyReplacements(item, &item1, numLock, lastshiftF, lastshiftG) > 0) {  //JMvv
+    if(keyReplacements(item, &item1, getSystemFlag(FLAG_NUMLOCK), lastshiftF, lastshiftG) > 0) {  //JMvv
       if(item1 > 0) {
         addItemToBuffer(item1);
                     #if defined(PAIMDEBUG)
@@ -1557,11 +1557,11 @@ releaseOverride = false;
         }
       }
       else if((result == ITM_COMMA || result == ITM_PERIOD) && (calcMode == CM_EIM || calcMode == CM_AIM) && getSystemFlag(FLAG_ALPHA) ) {
-        switch(shiftG*2 + numLock) {                        // gSHIFTED  numLock
-        //case 0: result = key->primaryAim;break;           //    0        0      key->primaryAim
-          case 1: result = RADIX34_MARK_DEC_ITM; break;     //    0        1      decimal
-        //case 2: result = RADIX34_MARK_DEC_ITM; break;     //    2        0      decimal
-          case 3: result = RADIX34_MARK_NOT_DEC_ITM; break; //    2        1      not the decimal
+        switch((shiftG ? 2 : 0) + (getSystemFlag(FLAG_NUMLOCK) ? 1 : 0)) {                // gSHIFTED  numLock
+        //case 0: result = key->primaryAim;break;           //                                   0        0      key->primaryAim
+          case 1: result = RADIX34_MARK_DEC_ITM; break;     //                                   0        1      decimal
+        //case 2: result = RADIX34_MARK_DEC_ITM; break;     //                                   2        0      decimal
+          case 3: result = RADIX34_MARK_NOT_DEC_ITM; break; //                                   2        1      not the decimal
           default:;
         }
       }
@@ -2457,7 +2457,7 @@ RELEASE_END:
         }
 
         case CHR_caseUP: {                                                   //From keyboard: logic for Up/Dn case/num
-          if(numLock)  {}
+          if(getSystemFlag(FLAG_NUMLOCK))  {}
           else if(alphaCase == AC_LOWER) {
             processKeyAction(CHR_case);
           }
@@ -2470,7 +2470,7 @@ RELEASE_END:
         }
 
         case CHR_caseDN: {                                                   //From keyboard: logic for Up/Dn case/num
-          if(numLock) {
+          if(getSystemFlag(FLAG_NUMLOCK)) {
             alphaCase = AC_UPPER; processKeyAction(CHR_numU);
           }
           else if(alphaCase == AC_UPPER) {
@@ -2482,14 +2482,14 @@ RELEASE_END:
         }
 
         case CHR_numL: {
-          if(!numLock) {
+          if(!getSystemFlag(FLAG_NUMLOCK)) {
             processKeyAction(CHR_num);
           }
           keyActionProcessed = true;
           break;
         }
         case CHR_numU: {
-          if(numLock) {
+          if(getSystemFlag(FLAG_NUMLOCK)) {
             processKeyAction(CHR_num);
           }
           keyActionProcessed = true;
@@ -2497,8 +2497,8 @@ RELEASE_END:
         }
         case CHR_num: {                                                      //Toggle numlock from shifted arrow shortcut
           alphaCase = AC_UPPER;
-          numLock = !numLock;
-          if(!numLock) {
+          fnFlipFlag(FLAG_NUMLOCK);
+          if(!getSystemFlag(FLAG_NUMLOCK)) {
             nextChar = NC_NORMAL;
           }
           showAlphaModeonGui(); //dr JM, see keyboardtweaks
@@ -2507,7 +2507,7 @@ RELEASE_END:
         }
 
         case CHR_case: {                                                      //Toggle capslock from shifted arrow shortcut
-          numLock = false;
+          clearSystemFlag(FLAG_NUMLOCK);
           int16_t sm = softmenu[softmenuStack[0].softmenuId].menuItem;
           nextChar = NC_NORMAL;
           if(alphaCase == AC_LOWER) {
@@ -2984,7 +2984,7 @@ RELEASE_END:
                     }
 
 
-                    itemToBeAssigned = numlockReplacements(100,item,numLock,false,false);
+                    itemToBeAssigned = numlockReplacements(100,item,getSystemFlag(FLAG_NUMLOCK),false,false);
                     if(ITM_A <= itemToBeAssigned && itemToBeAssigned <= ITM_Z && lowercaseselected) {
                       itemToBeAssigned += 26;
                     }

@@ -337,7 +337,7 @@ void showFracMode(void) {
       nChar = scrLock;
     }
     if(((calcMode == CM_AIM || calcMode == CM_EIM || (catalog && catalog != CATALOG_MVAR) || (tam.mode != 0 && tam.alpha) || ((calcMode == CM_PEM || calcMode == CM_ASSIGN) && getSystemFlag(FLAG_ALPHA))))) {
-      if(numLock && !shiftF && !shiftG) {
+      if(getSystemFlag(FLAG_NUMLOCK) && !shiftF && !shiftG) {
           if(alphaCase == AC_UPPER)                  { status = 3 - (nChar == NC_SUBSCRIPT ? 2 : nChar == NC_SUPERSCRIPT ? 1:0); } else
           if(alphaCase == AC_LOWER)                  { status = 6 - (nChar == NC_SUBSCRIPT ? 2 : nChar == NC_SUPERSCRIPT ? 1:0); }
         } else
@@ -349,13 +349,13 @@ void showFracMode(void) {
             } else //at this point shiftF is false
               if(alphaCase == AC_UPPER)  { //UPPER
                 setSystemFlag(FLAG_alphaCAP);
-                if(shiftG)                           { status =  3 - (nChar == NC_SUBSCRIPT ? 2 : nChar == NC_SUPERSCRIPT ? 1:0); } else
-                if(!shiftG && !shiftF && !numLock)   { status = 12 - (nChar == NC_SUBSCRIPT ? 2 : nChar == NC_SUPERSCRIPT ? 1:0); }
+                if(shiftG)                                               { status =  3 - (nChar == NC_SUBSCRIPT ? 2 : nChar == NC_SUPERSCRIPT ? 1:0); } else
+                if(!shiftG && !shiftF && !getSystemFlag(FLAG_NUMLOCK))   { status = 12 - (nChar == NC_SUBSCRIPT ? 2 : nChar == NC_SUPERSCRIPT ? 1:0); }
               } else
                 if(alphaCase == AC_LOWER)  { //LOWER
                   clearSystemFlag(FLAG_alphaCAP);
-                  if(shiftG)                         { status =  3 - (nChar == NC_SUBSCRIPT ? 2 : nChar == NC_SUPERSCRIPT ? 1:0); } else
-                  if(!shiftG && !shiftF && !numLock) { status = 18 - (nChar == NC_SUBSCRIPT ? 2 : nChar == NC_SUPERSCRIPT ? 1:0); }
+                  if(shiftG)                                             { status =  3 - (nChar == NC_SUBSCRIPT ? 2 : nChar == NC_SUPERSCRIPT ? 1:0); } else
+                  if(!shiftG && !shiftF && !getSystemFlag(FLAG_NUMLOCK)) { status = 18 - (nChar == NC_SUBSCRIPT ? 2 : nChar == NC_SUPERSCRIPT ? 1:0); }
                 }
     }
     else {

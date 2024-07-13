@@ -397,7 +397,7 @@ int8_t fnCbIsSet(int16_t item) {
             case JC_RMS:                 cb_param = PLOT_RMS;                                                         break;
             case JC_SHADE:               cb_param = PLOT_SHADE;                                                       break;
             case JC_CPXPLOT:             cb_param = PLOT_CPXPLOT;                                                     break;
-            case JC_NL:                  cb_param = numLock;                                                          break;
+            case JC_NL:                  cb_param = getSystemFlag(FLAG_NUMLOCK);                                      break;
             case JC_UC:                  cb_param = !alphaCase;                                                       break;
             case JC_UU:                  cb_param = getSystemFlag(FLAG_USER);                                         break;
             case JC_LPfg:                cb_param = getSystemFlag(FLAG_SH_LONGPRESS);                                 break;

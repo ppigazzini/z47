@@ -511,7 +511,6 @@ uint16_t flushBufferCnt = 0;
     saveStateValue(&showRegis,                      sizeof(showRegis),                                           "showRegis",                      "int16");   //JM ^^
     saveStateValue(&displayStackSHOIDISP,           sizeof(displayStackSHOIDISP),                                "displayStackSHOIDISP",           "uint8");   //JM ^^
     saveStateValue(&ListXYposition,                 sizeof(ListXYposition),                                      "ListXYposition",                 "int16");   //JM ^^
-    saveStateValue(&numLock,                        sizeof(numLock),                                             "numLock",                        "bool");    //JM ^^
     saveStateValue(&DRG_Cycling,                    sizeof(DRG_Cycling),                                         "DRG_Cycling",                    "uint8");   //JM
     saveStateValue(&lastFlgScr,                     sizeof(lastFlgScr),                                          "lastFlgScr",                     "uint8");   //C43 JM
     saveStateValue(&displayAIMbufferoffset,         sizeof(displayAIMbufferoffset),                              "displayAIMbufferoffset",         "int16");   //C43 JM
@@ -1089,7 +1088,6 @@ uint16_t flushBufferCnt = 0;
     restoreStateValue(&showRegis,                      sizeof(showRegis),                                           "showRegis",                      "int16");   //JM ^^
     restoreStateValue(&displayStackSHOIDISP,           sizeof(displayStackSHOIDISP),                                "displayStackSHOIDISP",           "uint8");   //JM ^^
     restoreStateValue(&ListXYposition,                 sizeof(ListXYposition),                                      "ListXYposition",                 "int16");   //JM ^^
-    restoreStateValue(&numLock,                        sizeof(numLock),                                             "numLock",                        "bool");    //JM ^^
     restoreStateValue(&DRG_Cycling,                    sizeof(DRG_Cycling),                                         "DRG_Cycling",                    "uint8");   //JM
     restoreStateValue(&lastFlgScr,                     sizeof(lastFlgScr),                                          "lastFlgScr",                     "uint8");   //C43 JM
     restoreStateValue(&displayAIMbufferoffset,         sizeof(displayAIMbufferoffset),                              "displayAIMbufferoffset",         "int16");   //C43 JM
@@ -1163,6 +1161,16 @@ uint16_t flushBufferCnt = 0;
       }
       else {
         clearSystemFlag(FLAG_CPXMULT);
+      }
+    }
+    restoreStateValue(&tmp1,                           sizeof(tmp1),                                               "numLock",                        "bool");    //JM ^^
+    if(backupVersion < 1003) {
+      printf("Version number of configfile < 1003, transferring NUMLOCK.");
+      if(tmp1) {
+        setSystemFlag(FLAG_NUMLOCK);
+      }
+      else {
+        clearSystemFlag(FLAG_NUMLOCK);
       }
     }
 
