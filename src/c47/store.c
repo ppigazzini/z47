@@ -391,7 +391,6 @@ void fnStoreConfig(uint16_t regist) {
   bool_t compatibility_bool19 = false;           //defaults to use when settings are removed
   bool_t compatibility_bool20 = false;           //defaults to use when settings are removed
   bool_t compatibility_bool21 = false;           //defaults to use when settings are removed
-  bool_t compatibility_byte1  = 0;               //defaults to use when settings are removed
   float  compatibility_float1 = 0.1;             //defaults to use when settings are removed
   float  compatibility_float2 = 0.2;             //defaults to use when settings are removed
   float  compatibility_float3 = 0.3;             //defaults to use when settings are removed
@@ -456,7 +455,7 @@ void fnStoreConfig(uint16_t regist) {
   storeToDtConfigDescriptor(compatibility_bool14); 
   storeToDtConfigDescriptor(compatibility_bool15); 
   storeToDtConfigDescriptor(fractionDigits); 
-  storeToDtConfigDescriptor(compatibility_byte1);
+  storeToDtConfigDescriptor(Output_Default);
   storeToDtConfigDescriptor(compatibility_bool16);
   storeToDtConfigDescriptor(compatibility_bool20);
   storeToDtConfigDescriptor(compatibility_bool17);

@@ -1257,6 +1257,7 @@ void resetOtherConfigurationStuff(void) {
   ShiftTimoutMode = false;
   Norm_Key_00_VAR  = Norm_Key_00_item_in_layout;               //JM NORM MODE SIGMA REPLACEMENT KEY
   Input_Default =  ID_43S;
+  Output_Default = 0;
   jm_G_DOUBLETAP = true;
   displayStackSHOIDISP = 2;            //See if the refresh is needed. fnShoiXRepeats(2); //displayStackSHOIDISP
   bcdDisplay = false;

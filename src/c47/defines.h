@@ -314,7 +314,6 @@
 #define ID_LI                    7    //JM Input Default
 
 
-
 //*********************************
 //* General configuration defines *
 //*********************************
@@ -1751,6 +1750,8 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define RADIX34_MARK_STRING                  (gapChar1Radix)
 #define RADIX34_MARK_DEC_ITM                 (RADIX34_MARK_CHAR == '.' ? ITM_PERIOD : ITM_COMMA)
 #define RADIX34_MARK_NOT_DEC_ITM             (RADIX34_MARK_CHAR == '.' ? ITM_COMMA : ITM_PERIOD)
+
+#define RADIX34_MARK_LI_STRING               (RADIX34_MARK_CHAR == '.' ? STD_PERIOD34 : STD_COMMA34)
 
 #define groupingGap                          ((uint8_t)(grpGroupingLeft)) //ADD HERE THE CONDITIONS FOR NIL SEPS
 

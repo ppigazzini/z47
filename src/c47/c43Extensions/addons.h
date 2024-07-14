@@ -47,6 +47,7 @@ void fnDRG          (uint16_t unusedButMandatoryParameter);
 void fnChangeBaseJM (uint16_t unusedButMandatoryParameter);
 void fnChangeBaseMNU(uint16_t unusedButMandatoryParameter);
 void fnInDefault    (uint16_t inputDefault);
+void fnOutReal      (uint16_t or);
 void fnP_All_Regs   (uint16_t option);
 void fnP_Regs       (uint16_t registerNo);
 void fnP_Alpha      (void);

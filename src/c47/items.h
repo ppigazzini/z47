@@ -1950,7 +1950,7 @@
 #define ITM_FRCYC                   1896
 #define ITM_FRCSRN                  1897
 #define ITM_N_KEY_ALPHA             1898
-#define ITM_1899                    1899
+#define ITM_OREAL                    1899
 #define ITM_N_KEY_GSH               1900
 #define ITM_N_KEY_MM                1901
 #define ITM_1902                    1902

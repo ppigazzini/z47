@@ -498,6 +498,7 @@ uint16_t flushBufferCnt = 0;
     saveStateValue(&BASE_HOME,                      sizeof(BASE_HOME),                                           "BASE_HOME",                      "bool");
     saveStateValue(&Norm_Key_00_VAR,                sizeof(Norm_Key_00_VAR),                                     "Norm_Key_00_VAR",                "int16");
     saveStateValue(&Input_Default,                  sizeof(Input_Default),                                       "Input_Default",                  "uint8");
+    saveStateValue(&Output_Default,                 sizeof(Output_Default),                                      "Output_Default",                 "uint8");
     saveStateValue(&BASE_MYM,                       sizeof(BASE_MYM),                                            "BASE_MYM",                       "bool");
     saveStateValue(&jm_G_DOUBLETAP,                 sizeof(jm_G_DOUBLETAP),                                      "jm_G_DOUBLETAP",                 "bool");
     saveStateValue(&graph_xmin,                     sizeof(graph_xmin),                                          "graph_xmin",                     "float");
@@ -1074,6 +1075,7 @@ uint16_t flushBufferCnt = 0;
     restoreStateValue(&BASE_HOME,                      sizeof(BASE_HOME),                                           "BASE_HOME",                      "bool");
     restoreStateValue(&Norm_Key_00_VAR,                sizeof(Norm_Key_00_VAR),                                     "Norm_Key_00_VAR",                "int16");
     restoreStateValue(&Input_Default,                  sizeof(Input_Default),                                       "Input_Default",                  "uint8");
+    restoreStateValue(&Output_Default,                 sizeof(Output_Default),                                      "Output_Default",                 "uint8");
     restoreStateValue(&BASE_MYM,                       sizeof(BASE_MYM),                                            "BASE_MYM",                       "bool");
     restoreStateValue(&jm_G_DOUBLETAP,                 sizeof(jm_G_DOUBLETAP),                                      "jm_G_DOUBLETAP",                 "bool");
     restoreStateValue(&graph_xmin,                     sizeof(graph_xmin),                                          "graph_xmin",                     "float");
@@ -1712,6 +1714,7 @@ void doSave(uint16_t saveType) {
         sprintf(tmpString, "BASE_HOME\n%"                  PRIu8  "\n",     (uint8_t)BASE_HOME);           save(tmpString, strlen(tmpString));
         sprintf(tmpString, "Norm_Key_00_VAR\n%"            PRId16 "\n",     Norm_Key_00_VAR);              save(tmpString, strlen(tmpString));
         sprintf(tmpString, "Input_Default\n%"              PRIu8  "\n",     Input_Default);                save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "Output_Default\n%"             PRIu8  "\n",     Output_Default);               save(tmpString, strlen(tmpString));
         sprintf(tmpString, "BASE_MYM\n%"                   PRIu8  "\n",     (uint8_t)BASE_MYM);            save(tmpString, strlen(tmpString));
         sprintf(tmpString, "jm_G_DOUBLETAP\n%"             PRIu8  "\n",     (uint8_t)jm_G_DOUBLETAP);      save(tmpString, strlen(tmpString));
         sprintf(tmpString, "displayStackSHOIDISP\n%"       PRIu8  "\n",     displayStackSHOIDISP);         save(tmpString, strlen(tmpString));
@@ -2867,6 +2870,7 @@ double stringToDouble(const char *str) {
           else if(strcmp(aimBuffer, "BASE_HOME"                   ) == 0) { BASE_HOME             = (bool_t)stringToUint8(tmpString) != 0; }
           else if(strcmp(aimBuffer, "Norm_Key_00_VAR"             ) == 0) { Norm_Key_00_VAR       = stringToUint16(tmpString); }
           else if(strcmp(aimBuffer, "Input_Default"               ) == 0) { Input_Default         = stringToUint8(tmpString); }
+          else if(strcmp(aimBuffer, "Output_Default"              ) == 0) { Output_Default        = stringToUint8(tmpString); }
           else if(strcmp(aimBuffer, "jm_BASE_SCREEN"              ) == 0) { BASE_MYM              = (bool_t)stringToUint8(tmpString) != 0; }        //Keep compatible by repeating
           else if(strcmp(aimBuffer, "BASE_MYM"                    ) == 0) { BASE_MYM              = (bool_t)stringToUint8(tmpString) != 0; }
           else if(strcmp(aimBuffer, "jm_G_DOUBLETAP"              ) == 0) { jm_G_DOUBLETAP        = (bool_t)stringToUint8(tmpString) != 0; }

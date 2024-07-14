@@ -45,6 +45,9 @@ TO_QSPI const radiocb_t indexOfRadioCbEepromItems[] = {
   {ITM_INP_DEF_DP,       ID_DP,                  RB_ID},  //fnInDefault
   {ITM_INP_DEF_LI,       ID_LI,                  RB_ID},  //fnInDefault
   {ITM_INP_DEF_SI,       ID_SI,                  RB_ID},  //fnInDefault
+
+  {ITM_OREAL,            ITM_OREAL,              CB_JC},
+
   {ITM_1COMPL,           SIM_1COMPL,             RB_IM},  //fnIntegerMode
   {ITM_2COMPL,           SIM_2COMPL,             RB_IM},  //fnIntegerMode
   {ITM_SIGNMT,           SIM_SIGNMT,             RB_IM},  //fnIntegerMode
@@ -405,6 +408,7 @@ int8_t fnCbIsSet(int16_t item) {
             case JC_BCD:                 cb_param = bcdDisplay;                                                       break;
             case JC_TOPHEX:              cb_param = topHex;                                                           break;
             case JC_SI_All:              cb_param = SI_All;                                                           break;
+            case ITM_OREAL:              cb_param = (Output_Default == 1);                                            break;
             case JC_CPXMULT:             cb_param = getSystemFlag(FLAG_CPXMULT);                                      break;
             case JC_MYM_TRIPLE:          cb_param = MYM3;
                                          if(MYM3 && HOME3) MYM3 = false;

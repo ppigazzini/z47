@@ -1188,6 +1188,7 @@ bool_t itemNotAvail(int16_t itemNr) {
   void fnSigmaAssign              (uint16_t unusedButMandatoryParameter) {}
   void fnGetSigmaAssignToX        (uint16_t unusedButMandatoryParameter) {}
   void fnInDefault                (uint16_t unusedButMandatoryParameter) {}
+  void fnOutReal                  (uint16_t unusedButMandatoryParameter) {}
   void fnJM_2SI                   (uint16_t unusedButMandatoryParameter) {}
   void fnTo_ms                    (uint16_t unusedButMandatoryParameter) {}
   void fnFrom_ms                  (uint16_t unusedButMandatoryParameter) {}
@@ -3268,7 +3269,7 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 1896 */  { SetSetting,                   ITM_FRCYC,                   "FRCYC",                                       "FRCYC",                                       (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 1897 */  { SetSetting,                   ITM_FRCSRN,                  "FRCSRN",                                      "FRCSRN",                                      (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 1898 */  { fnSigmaAssign,                16384+ITM_AIM,               "",                                            STD_RIGHT_DASHARROW STD_SPACE_4_PER_EM STD_alpha,                           (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
-/* 1899 */  { itemToBeCoded,                NOPARAM,                     "1899",                                        "1899",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 1899 */  { fnOutReal,                    ITM_OREAL,                   "o" STD_SPACE_3_PER_EM "REAL",                 "o" STD_SPACE_3_PER_EM "REAL",                 (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },//JM INPUT DEFAULT
 /* 1900 */  { fnSigmaAssign,                16384+ITM_SHIFTg,            "",                                            STD_RIGHT_DASHARROW STD_SPACE_4_PER_EM "g",                                 (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 1901 */  { itemToBeCoded,                NOPARAM,                     "1901",                                        "1901",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 1902 */  { itemToBeCoded,                NOPARAM,                     "1902",                                        "1902",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
