@@ -906,6 +906,7 @@ void fnInDefault(uint16_t inputDefault) {
 void fnOutReal(uint16_t or) {
   if(Output_Default == 0) {
     Output_Default = 1;
+    clearSystemFlag(FLAG_LARGELI);
   }
   else {
     Output_Default = 0;

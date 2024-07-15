@@ -646,9 +646,14 @@ void SetSetting(uint16_t jmConfig) {
     case JC_ERPN:     fnFlipFlag(FLAG_ERPN);                                 break; //
     case ITM_FRCYC:   fnFlipFlag(FLAG_FRCYC);                                break; //  
     case ITM_FRCSRN:  fnFlipFlag(FLAG_FRCSRN);                               break; //  
-    case JC_LARGELI:  fnFlipFlag(FLAG_LARGELI);                              break; // 
     case JC_CPXMULT:  fnFlipFlag(FLAG_CPXMULT);                              break; //
     case JC_NL:       fnFlipFlag(FLAG_NUMLOCK); showAlphaModeonGui();        break; //
+    case JC_LARGELI:  
+      fnFlipFlag(FLAG_LARGELI);
+      if(getSystemFlag(FLAG_LARGELI)) {
+        Output_Default = 0;
+      }
+      break;
     case JC_IRFRAC:  
       fnFlipFlag(FLAG_IRFRAC);
       if(getSystemFlag(FLAG_IRFRAC)) {
