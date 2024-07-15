@@ -2126,6 +2126,22 @@ void longIntegerRegisterToDisplayString(calcRegister_t regist, char *displayStri
 }
 
 
+void longIntegerRegisterToRealDisplayString(calcRegister_t regist, char *displayString, int32_t strLg) {    //This function depends on real34ToDisplayString2, which depends on the getSystemFlag(FLAG_2TO10) && displayFormat == DF_UN to be set
+  longInteger_t lgInt;
+  convertLongIntegerRegisterToLongInteger(regist, lgInt);
+  longIntegerToAllocatedString(lgInt, displayString, strLg);
+  longIntegerFree(lgInt);
+  real_t tmp4, tmpReal;
+  real34_t tmpReal34;
+  stringToReal(displayString, &tmpReal, &ctxtReal39);
+  int32ToReal(1024,&tmp4);
+  if(!realCompareAbsLessThan(&tmpReal, &tmp4)) {
+    realToReal34(&tmpReal, &tmpReal34);
+    real34ToDisplayString2(&tmpReal34, displayString, 34, 100, false, false, isReal);
+  }
+}
+
+
 void longIntegerToDisplayString(longInteger_t lgInt, char *displayString, int32_t strLg, int16_t max_Width, int16_t maxExp, bool_t allowLARGELI) { //JM mod max_Width;   //JM added last parameter: Allow LARGELI
   int16_t exponentStep,exponentStep1;
   uint32_t exponentShift, exponentShiftLimit;
@@ -2169,21 +2185,6 @@ void longIntegerToDisplayString(longInteger_t lgInt, char *displayString, int32_
 
   //printf("B exponentShift=%i exponentShiftLimit=%i\n",exponentShift,exponentShiftLimit);
   longIntegerToAllocatedString(lgInt, displayString, strLg);
-  //printf("AAAA:%s\n",displayString);
-
-  if(getSystemFlag(FLAG_2TO10) && displayFormat == DF_UN) {    //for the 2^10 UNIT diplay, display long integers in real string, with the Ti suffic
-    real_t tmp4, tmpReal;
-    real34_t tmpReal34;
-    stringToReal(displayString, &tmpReal, &ctxtReal39);
-    int32ToReal(1024,&tmp4);
-    if(!realCompareAbsLessThan(&tmpReal, &tmp4)) {
-      //real34ToDisplayString(&tmpReal34, amNone, displayString, &numericFont, maxWidth, 34, false, false);
-      //printRealToConsole(&tmpReal,"","\n");
-      realToReal34(&tmpReal, &tmpReal34);
-      real34ToDisplayString2(&tmpReal34, displayString, 34, 100, false, false, isReal);
-      return;
-    }
-  }
 
 
   if(updateDisplayValueX) {
