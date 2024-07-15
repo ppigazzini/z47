@@ -524,7 +524,8 @@ static void real34ToDisplayString2(const real34_t *real34, char *displayString, 
     real34SetNegativeSign(&value34);
   }
 
-  bcd = (uint8_t *)(tmpString + 256 - MAX_DIGITS);
+  char tmpString100[100];
+  bcd = (uint8_t *)(tmpString100);
   memset(bcd, 0, MAX_DIGITS);
 
   sign = real34GetCoefficient(&value34, bcd + 1);
@@ -2896,7 +2897,12 @@ void fnC47Show(uint16_t fnShow_param) {
     switch(fnShow_param) {
       case NOPARAM:
                showSoftmenu(-MNU_SHOW); //continue, don't use 'break'
-      case 0:  
+               source = 0;
+               showRegis = REGISTER_X;
+               startingLine = 0;
+               IntShowMode = SHOWAUTO;
+               break;
+      case 0:
                source = 0;
                showRegis = REGISTER_X;
                startingLine = 0;
@@ -2907,14 +2913,11 @@ void fnC47Show(uint16_t fnShow_param) {
                source = 0;
                if(getRegisterDataType(showRegis) == dtLongInteger) {
                  startingLine = 0;
-                 if(IntShowMode == SHOWAUTO) {
-                   IntShowMode = SHOWSML;
-                 }
-                 else if(IntShowMode == SHOWSML) {
-                   IntShowMode = SHOWTNY;
-                 }
-                 else if(IntShowMode == SHOWTNY) {
-                   IntShowMode = SHOWSML;
+                 switch(IntShowMode) {
+                   case SHOWAUTO : IntShowMode = SHOWSML;  break;
+                   case SHOWSML  : IntShowMode = SHOWTNY;  break;
+                   case SHOWTNY  : IntShowMode = SHOWAUTO;  break;
+                   default:break;
                  }
                }
                break;
@@ -3023,24 +3026,34 @@ void fnC47Show(uint16_t fnShow_param) {
 
 
         //LARGE font
-        if(IntShowMode == SHOWAUTO && glyphNumber < 170){
-          temporaryInformation = TI_SHOW_REGISTER_BIG;
-          numberOfLines = 6;
-          startingLine = 0;
-          prepLongintIntoLines(&last, &source, &dest, &numericFont, SCREEN_WIDTH - stringWidth("0", &numericFont, true, true), numberOfLines, &startingLine);
-          //printf("001 ll=%i source=%i last=%i\n",glyphNumber, source, last);
-          if(tmpString[numberOfLines*SHOWLineSize] == 0) {
-            break;
+        if(IntShowMode == SHOWAUTO){
+          if(glyphNumber < 170){
+            temporaryInformation = TI_SHOW_REGISTER_BIG;
+            numberOfLines = 6;
+            startingLine = 0;
+            prepLongintIntoLines(&last, &source, &dest, &numericFont, SCREEN_WIDTH - stringWidth("0", &numericFont, true, true), numberOfLines, &startingLine);
+            //printf("001 ll=%i source=%i last=%i\n",glyphNumber, source, last);
+            if(tmpString[numberOfLines*SHOWLineSize] == 0) {
+              break;
+            }
+          }
+          else {
+            IntShowMode = SHOWSML;
           }
         }
 
 
         //STANDARD font
-        if(glyphNumber < 560 || IntShowMode == SHOWSML) {
+        if(IntShowMode == SHOWSML) {
           SHOW_reset();
           temporaryInformation = TI_SHOW_REGISTER_SMALL;
           numberOfLines = 10;
-          prepLongintIntoLines(&last, &source, &dest, &standardFont, SCREEN_WIDTH - stringWidth("0", &standardFont, true, true), numberOfLines, &startingLine);
+          while(true) {
+            prepLongintIntoLines(&last, &source, &dest, &standardFont, SCREEN_WIDTH - stringWidth("0", &standardFont, true, true), numberOfLines, &startingLine);
+            if(tmpString[startingLine*SHOWLineSize] != 0 || startingLine == 0) break;
+            startingLine = 0;
+            source = 0;
+          }
 
           if(tmpString[(numberOfLines-1)*SHOWLineSize] == 0) {
             break;
@@ -3048,12 +3061,10 @@ void fnC47Show(uint16_t fnShow_param) {
           if(tmpString[numberOfLines*SHOWLineSize] == 0 || IntShowMode == SHOWSML) {   //only proceed to second page if page has a long enough number to wrap
             goto goBreak1;
           }
-        } else {
-            tmpString[numberOfLines*SHOWLineSize] = 32;  //flag to activate next step TINY
         }
 
         //TINY font
-        if(tmpString[numberOfLines*SHOWLineSize] != 0 ||  IntShowMode == SHOWTNY) {
+        if(IntShowMode == SHOWTNY) {
           SHOW_reset();
           temporaryInformation = TI_SHOW_REGISTER_TINY;
           numberOfLines = min(21,SHOWLineMax);
