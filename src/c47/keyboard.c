@@ -4178,16 +4178,6 @@ void fnKeyUp(uint16_t unusedButMandatoryParameter) {
   #if !defined(TESTSUITE_BUILD)
     int16_t menuId = softmenuStack[0].softmenuId; //JM
 
-//--     if(SHOWMODE && softmenu[softmenuStack[0].softmenuId].menuItem != -MNU_EQN && !tam.mode) { //JMSHOW vv
-//--       if(temporaryInformation == TI_SHOW_REGISTER_TINY) {
-//--         fnC47Show(11);
-//--       } else {
-//--         fnC47Show(1);
-//-- //      refreshScreen(130);
-//--       }
-//--       return;
-//--     }                              //JMSHOW ^^
-
     if(tam.mode == TM_KEY && !tam.keyInputFinished) {
       if(tam.digitsSoFar == 0) {
         tamProcessInput(ITM_1);
