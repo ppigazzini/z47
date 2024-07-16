@@ -680,7 +680,7 @@ bool_t lowercaseselected;    //the only place that this is set, is in processKey
         int16_t _item = softkeyItem[asnKey[0]-'1'];
         //printf("WWWWWWWW-0 %i %i\n",softmenu[softmenuStack[0].softmenuId].menuItem, softkeyItem[asnKey[0]-'1']);
         reallyRunFunction(_item,NOPARAM);
-        hourGlassIconEnabled = false;        
+        hourGlassIconEnabled = false;
         //printf("WWWWWWWW-1 %i %i\n",softmenu[softmenuStack[0].softmenuId].menuItem, softkeyItem[asnKey[0]-'1']);
         if(_item == ITM_TIMER_R_S) {
           screenUpdatingMode |= SCRUPD_SKIP_STACK_ONE_TIME;
@@ -707,7 +707,7 @@ bool_t lowercaseselected;    //the only place that this is set, is in processKey
                     #endif //VERBOSEKEYS
 
       int16_t item = determineFunctionKeyItem_C47((char *)data, shiftF, shiftG);
-                    
+
                     #if defined(VERBOSEKEYS)
                       printf(">>>>Z 011a btnFnPressed >>determineFunctionKeyItem_C47; data=|%s| data[0]=%d shiftF=%d shiftG=%d\n", (char*)data, ((char*)data)[0], shiftF, shiftG);
                     #endif //VERBOSEKEYS
@@ -755,7 +755,7 @@ bool_t lowercaseselected;    //the only place that this is set, is in processKey
 
         lastErrorCode = 0;
         btnFnPressed_StateMachine(NULL, data);    //never allow a function key to directly enter into a buffer - always via the key detection btnFnPressed_StateMachine, to pick up longpress or double press conditions
-        
+
 /*
           if(calcMode != CM_ASSIGN && indexOfItems[item].func == addItemToBuffer) {
             // If we are in the catalog then a normal key press should affect the Alpha Selection Buffer to choose
@@ -1207,10 +1207,13 @@ releaseOverride = false;
               !( (tam.mode==TM_STORCL || tam.mode==TM_LABEL || tam.mode == TM_M_DIM || tam.mode == TM_REGISTER || tam.mode == TM_CMP)
                   && (item == CHR_num || item == CHR_case || item == ITM_SCR) )
               ) {
+debugf("Here we leave TAM mode but I think this is not correct in issue #454 context");
+if(calcMode != CM_PEM || item != ITM_NOP) {
               tamLeaveMode();
+}
             }
             else if(tam.mode == TM_VALUE && item == ITM_TAMMAX) {
-              tamLeaveMode();              
+              tamLeaveMode();
             }
 
                     #if defined(VERBOSEKEYS)
@@ -1351,7 +1354,7 @@ releaseOverride = false;
                     #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
                       printf(">>>  refreshScreen3 from keyboard.c executeFunction calcMode=%u screenUpdatingMode=%u\n",calcMode, screenUpdatingMode);
                     #endif
-    
+
     refreshScreen(114);
     //TODO 2023-04-15 check here. It needs to be changed not to always refresh the screen.
 
@@ -2731,7 +2734,7 @@ RELEASE_END:
                     calcMode = previousCalcMode;
                     if(rbrMode == RBR_GLOBAL) {
                       fnRecall((currentRegisterBrowserScreen) % (REGISTER_W + 1));
-                    } 
+                    }
                     else if(rbrMode == RBR_LOCAL) {
                       fnRecall(currentRegisterBrowserScreen);
                     }
