@@ -4088,21 +4088,29 @@ if(Output_Default != 0) {
            real34ToDisplayString(REGISTER_REAL34_DATA(TEMP_REGISTER_1), getRegisterAngularMode(TEMP_REGISTER_1), tmpString, &numericFont, SCREEN_WIDTH - prefixWidth, NUMBER_OF_DISPLAY_DIGITS, true, true);
 
            int jj = stringLastGlyph(tmpString);
-           //mark the radix position
-//           int mm = ii;
+           int kk = stringByteLength(tmpString);
            //printf("FFF -2:%u %u %u %u %u\n",(uint8_t)tmpString[jj-2], (uint8_t)tmpString[jj-1], (uint8_t)tmpString[jj], (uint8_t)tmpString[jj+1], (uint8_t)tmpString[jj+2]);
-           int ii = 0;
+           int ii = jj;
            
            //find and replace the radix. Two options, a single byte or two-byte radix
-           while(ii <= jj) {
-             //printf("%u  ",(uint8_t)tmpString[ii]);
-             if(tmpString[ii]==RADIX34_MARK_STRING[0] && tmpString[ii+1]==RADIX34_MARK_STRING[1]) {
+           while(ii >= 0) {
+             //printf("%u %u ",(uint8_t)tmpString[ii],(uint8_t)tmpString[ii+1]);
+             if(tmpString[ii]==RADIX34_MARK_STRING[0] && tmpString[ii+1]==RADIX34_MARK_STRING[1]) {   //remove radix if at end of line
+               if(ii == jj) {
+                 tmpString[ii] = 0;
+                 ii = 0;
+                 break;
+               }
                tmpString[ii] = RADIX34_MARK_LI_STRING[0];
                tmpString[ii+1] = RADIX34_MARK_LI_STRING[1];  //only allow a two byte special period for integer
                break;
              }
-             else if(tmpString[ii]==RADIX34_MARK_STRING[0] && RADIX34_MARK_STRING[1]==1) {
-               int kk = stringByteLength(tmpString);
+             else if(tmpString[ii]==RADIX34_MARK_STRING[0] && RADIX34_MARK_STRING[1]==1) {   //remove radix if at end of line
+               if(ii == jj) {
+                 tmpString[ii] = 0;
+                 ii = 0;
+                 break;
+               }
                //printf("\nIIII -2:%u %u %u %u %u\n",(uint8_t)tmpString[kk-2], (uint8_t)tmpString[kk-1], (uint8_t)tmpString[kk], (uint8_t)tmpString[kk+1], (uint8_t)tmpString[kk+2]);
                while (kk > ii) {
                  tmpString[kk+1] = tmpString[kk];
@@ -4113,11 +4121,17 @@ if(Output_Default != 0) {
                jj++;
                break;
              }
-             ii = stringNextGlyph(tmpString, ii);
+             if(ii <= 0) {
+               break;
+             }
+             ii = stringPrevGlyph(tmpString, ii);
            }
 
+
+           //mark the radix position
+//           int mm = ii;
            //replace the product sign
-           while(ii <= jj) {
+           while(ii <= jj && ii > 0) {
              if(tmpString[ii]==PRODUCT_SIGN[0] && tmpString[ii+1]==PRODUCT_SIGN[1]) {
                tmpString[ii] = PRODUCT_SIGN_LI_STRING[0]; //'x';//STD_x[0];
                tmpString[ii+1] = PRODUCT_SIGN_LI_STRING[1]; //1;  //only allow a two byte special period for integer
@@ -4126,9 +4140,10 @@ if(Output_Default != 0) {
              ii = stringNextGlyph(tmpString, ii);
            }
 
+
            
 //           //replace all insignificant zeroes
-//           while(mm < jj){
+//           while(mm < jj && ii <= 0){
 //             if(tmpString[jj] == '0' && !(tmpString[jj] & 0x80)) {
 //               tmpString[jj] = ZERO_LI_STRING[0]; //'o'; // STD_SPACE[0];
 //             }
