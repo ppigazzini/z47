@@ -4080,13 +4080,16 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
             viewRegName(prefix, &prefixWidth);
           }
 
-//          if(prefixWidth > 0) {
-  //          if(regist == REGISTER_X) {
-    //          showString(prefix, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + TEMPORARY_INFO_OFFSET, vmNormal, true, true);
-      //      }
-        //  }     //                                                          //JMms ^^
 
-          longIntegerRegisterToDisplayString(regist, tmpString, TMP_STR_LENGTH, SCREEN_WIDTH - prefixWidth, 50, true);          //JMms added prefix   //JM added last parameter: Allow LARGELI
+
+          if(getSystemFlag(FLAG_2TO10) && displayFormat == DF_UN) {                                                           //for the 2^10 UNIT diplay, display long integers in real string, with the Ti suffic
+            longIntegerRegisterToRealDisplayString(regist, tmpString, TMP_STR_LENGTH);
+          } 
+          else {
+            longIntegerRegisterToDisplayString(regist, tmpString, TMP_STR_LENGTH, SCREEN_WIDTH - prefixWidth, 50, true);
+          }
+
+
 
           if(temporaryInformation == TI_DAY_OF_WEEK) {
             if(regist == REGISTER_X) {

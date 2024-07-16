@@ -847,7 +847,6 @@ bool_t itemNotAvail(int16_t itemNr) {
   void addItemToBuffer             (uint16_t unusedButMandatoryParameter) {}
   void fnOff                       (uint16_t unusedButMandatoryParameter) {}
   void fnAim                       (uint16_t unusedButMandatoryParameter) {}
-  void fnShow                      (uint16_t unusedButMandatoryParameter) {}
   void fnView                      (uint16_t unusedButMandatoryParameter) {}
   void fnLastX                     (uint16_t unusedButMandatoryParameter) {}
   void fnCyx                       (uint16_t unusedButMandatoryParameter) {}
