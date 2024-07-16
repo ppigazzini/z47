@@ -4083,41 +4083,66 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
 if(Output_Default != 0) {
 //vv this is experimental, to display long integers as reals-------------------------------------------------------------------------------------------
       //printf("\nchange to real STD_BOX:%u %u   RADIX34_MARK_STRING:%u %u\n",(uint8_t)STD_BOX[0], (uint8_t)STD_BOX[1], (uint8_t)RADIX34_MARK_STRING[0], (uint8_t)RADIX34_MARK_STRING[1]);
+
            convertLongIntegerRegisterToReal34Register(regist,TEMP_REGISTER_1);
            real34ToDisplayString(REGISTER_REAL34_DATA(TEMP_REGISTER_1), getRegisterAngularMode(TEMP_REGISTER_1), tmpString, &numericFont, SCREEN_WIDTH - prefixWidth, NUMBER_OF_DISPLAY_DIGITS, true, true);
+
            int jj = stringLastGlyph(tmpString);
-      //printf("FFF -2:%u %u %u %u %u\n",(uint8_t)tmpString[jj-2], (uint8_t)tmpString[jj-1], (uint8_t)tmpString[jj], (uint8_t)tmpString[jj+1], (uint8_t)tmpString[jj+2]);
+           //mark the radix position
+//           int mm = ii;
+           //printf("FFF -2:%u %u %u %u %u\n",(uint8_t)tmpString[jj-2], (uint8_t)tmpString[jj-1], (uint8_t)tmpString[jj], (uint8_t)tmpString[jj+1], (uint8_t)tmpString[jj+2]);
            int ii = 0;
+           
+           //find and replace the radix. Two options, a single byte or two-byte radix
            while(ii <= jj) {
-      //printf("%u  ",(uint8_t)tmpString[ii]);
+             //printf("%u  ",(uint8_t)tmpString[ii]);
              if(tmpString[ii]==RADIX34_MARK_STRING[0] && tmpString[ii+1]==RADIX34_MARK_STRING[1]) {
                tmpString[ii] = RADIX34_MARK_LI_STRING[0];
-               tmpString[ii+1] = RADIX34_MARK_LI_STRING[1];  //only use a two byte special period for integer
+               tmpString[ii+1] = RADIX34_MARK_LI_STRING[1];  //only allow a two byte special period for integer
                break;
              }
              else if(tmpString[ii]==RADIX34_MARK_STRING[0] && RADIX34_MARK_STRING[1]==1) {
                int kk = stringByteLength(tmpString);
-      //printf("\nIIII -2:%u %u %u %u %u\n",(uint8_t)tmpString[kk-2], (uint8_t)tmpString[kk-1], (uint8_t)tmpString[kk], (uint8_t)tmpString[kk+1], (uint8_t)tmpString[kk+2]);
+               //printf("\nIIII -2:%u %u %u %u %u\n",(uint8_t)tmpString[kk-2], (uint8_t)tmpString[kk-1], (uint8_t)tmpString[kk], (uint8_t)tmpString[kk+1], (uint8_t)tmpString[kk+2]);
                while (kk > ii) {
                  tmpString[kk+1] = tmpString[kk];
                  kk--;
                }
                tmpString[ii] = RADIX34_MARK_LI_STRING[0];
-               tmpString[ii+1] = RADIX34_MARK_LI_STRING[1];  //only use a two byte special period for integer
+               tmpString[ii+1] = RADIX34_MARK_LI_STRING[1];  //only allow a two byte special period for integer
                jj++;
                break;
              }
              ii = stringNextGlyph(tmpString, ii);
            }
+
+           //replace the product sign
+           while(ii <= jj) {
+             if(tmpString[ii]==PRODUCT_SIGN[0] && tmpString[ii+1]==PRODUCT_SIGN[1]) {
+               tmpString[ii] = PRODUCT_SIGN_LI_STRING[0]; //'x';//STD_x[0];
+               tmpString[ii+1] = PRODUCT_SIGN_LI_STRING[1]; //1;  //only allow a two byte special period for integer
+               break;
+             }
+             ii = stringNextGlyph(tmpString, ii);
+           }
+
+           
+//           //replace all insignificant zeroes
+//           while(mm < jj){
+//             if(tmpString[jj] == '0' && !(tmpString[jj] & 0x80)) {
+//               tmpString[jj] = ZERO_LI_STRING[0]; //'o'; // STD_SPACE[0];
+//             }
+//             else if(tmpString[jj] > '0' && tmpString[jj] <= '9' && !(tmpString[jj] & 0x80)) {  //count from end of string to radix, and quit when the first non-zero is met.
+//               break;
+//             }
+//             jj = stringPrevGlyph(tmpString, jj);
+//           }
+
+
       //printf("\nGGG -2:%u %u %u %u %u\n",(uint8_t)tmpString[jj-2], (uint8_t)tmpString[jj-1], (uint8_t)tmpString[jj], (uint8_t)tmpString[jj+1], (uint8_t)tmpString[jj+2]);
 //^^ --------------------------------------------------------------------------------------------------------------------------------------------------
 }
-else
-
-
-
-
-          if(getSystemFlag(FLAG_2TO10) && displayFormat == DF_UN) {                                                           //for the 2^10 UNIT diplay, display long integers in real string, with the Ti suffic
+          else if(getSystemFlag(FLAG_2TO10) && displayFormat == DF_UN) {                                                           //for the 2^10 UNIT diplay, display long integers in real string, with the Ti suffic
             longIntegerRegisterToRealDisplayString(regist, tmpString, TMP_STR_LENGTH);
           } 
           else {
