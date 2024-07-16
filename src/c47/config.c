@@ -176,13 +176,11 @@ fgLongPressSetting,                  xxx,        xxx,                           
 3,                                   1,          xxx,                            xxx,             FLAG_IRFRAC,          FLAG_IRFRAC,            xxx,             xxx,             xxx,
 3,                                   0,          FLAG_IRF_ON,                    xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,
 3,                                   1,          xxx,                            xxx,             FLAG_IRF_ON,          FLAG_IRF_ON,            xxx,             xxx,             xxx,
-
 3,                                   0,          xxx,                            FLAG_ERPN,       xxx,                  xxx,                    xxx,             xxx,             xxx,
 3,                                   1,          FLAG_ERPN,                      xxx,             FLAG_ERPN,            FLAG_ERPN,              FLAG_ERPN,       xxx,             xxx,
-
 3,                                   0,          FLAG_CPXMULT,                   xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,
 3,                                   1,          FLAG_LARGELI,                   xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,
-
+3,                                   0,          FLAG_PFX_ALL,                   xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,
 
 
 
@@ -1265,7 +1263,6 @@ void resetOtherConfigurationStuff(void) {
   bcdDisplaySign = BCDu;
   DRG_Cycling = 0;
   DM_Cycling = 0;
-  SI_All = false;                                              //UNIT display full SI prefix display range
   LongPressM = RBX_M1234;
   LongPressF = RBX_F124;
   fgLN = RBX_FGLNFUL;

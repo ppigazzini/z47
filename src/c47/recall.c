@@ -274,6 +274,7 @@ void fnRecallConfig(uint16_t regist) {
     __attribute__((unused)) bool_t compatibility_bool19;    //for use in spare slots below
     __attribute__((unused)) bool_t compatibility_bool20;    //for use in spare slots below
     __attribute__((unused)) bool_t compatibility_bool21;    //for use in spare slots below
+    __attribute__((unused)) bool_t compatibility_bool22;    //for use in spare slots below
     __attribute__((unused)) float  compatibility_float1;    //for use in spare slots below
     __attribute__((unused)) float  compatibility_float2;    //for use in spare slots below
     __attribute__((unused)) float  compatibility_float3;    //for use in spare slots below
@@ -350,7 +351,7 @@ void fnRecallConfig(uint16_t regist) {
     recallFromDtConfigDescriptor(bcdDisplaySign);
     recallFromDtConfigDescriptor(DRG_Cycling);
     recallFromDtConfigDescriptor(DM_Cycling);
-    recallFromDtConfigDescriptor(SI_All);
+    recallFromDtConfigDescriptor(compatibility_bool22);
     recallFromDtConfigDescriptor(LongPressM);
     recallFromDtConfigDescriptor(LongPressF);
     recallFromDtConfigDescriptor(lastDenominator);

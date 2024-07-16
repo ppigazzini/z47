@@ -2071,7 +2071,7 @@
 #define ITM_SETSIG2_OLD             2017
 #define ITM_2018             2018
 #define ITM_RMODEQ                  2019
-#define ITM_SI_All                  2020
+#define ITM_2020                    2020
 #define ITM_USER_ARESET             2021
 #define ITM_USER_MRESET             2022
 #define ITM_USER_KRESET             2023
@@ -2313,7 +2313,7 @@
 #define SFL_LARGELI                 2257
 #define SFL_IRFRAC                  2258
 #define SFL_IRF_ON                  2259
-#define SFL_2256                    2260
+#define SFL_PFX_ALL                 2260
 #define SFL_2257                    2261
 #define SFL_2258                    2262
 #define SFL_2259                    2263

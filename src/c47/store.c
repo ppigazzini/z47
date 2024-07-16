@@ -391,6 +391,7 @@ void fnStoreConfig(uint16_t regist) {
   bool_t compatibility_bool19 = false;           //defaults to use when settings are removed
   bool_t compatibility_bool20 = false;           //defaults to use when settings are removed
   bool_t compatibility_bool21 = false;           //defaults to use when settings are removed
+  bool_t compatibility_bool22 = false;           //defaults to use when settings are removed
   float  compatibility_float1 = 0.1;             //defaults to use when settings are removed
   float  compatibility_float2 = 0.2;             //defaults to use when settings are removed
   float  compatibility_float3 = 0.3;             //defaults to use when settings are removed
@@ -467,7 +468,7 @@ void fnStoreConfig(uint16_t regist) {
   storeToDtConfigDescriptor(bcdDisplaySign);
   storeToDtConfigDescriptor(DRG_Cycling);
   storeToDtConfigDescriptor(DM_Cycling);
-  storeToDtConfigDescriptor(SI_All);
+  storeToDtConfigDescriptor(compatibility_bool22);
   storeToDtConfigDescriptor(LongPressM);
   storeToDtConfigDescriptor(LongPressF);
   storeToDtConfigDescriptor(lastDenominator);

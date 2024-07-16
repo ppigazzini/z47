@@ -629,6 +629,7 @@
 #define FLAG_LARGELI                          0x8046
 #define FLAG_IRFRAC                           0x8047
 #define FLAG_IRF_ON                           0x8048
+#define FLAG_PFX_ALL                          0x8049
 
 #define NUMBER_OF_SYSTEM_FLAGS                    73 // We can have a maximum of 128 system flags
 

@@ -224,7 +224,6 @@ bool_t                 FN_timed_out_to_RELEASE_EXEC; //JM LONGPRESS FN
 bool_t                 FN_handle_timed_out_to_EXEC;
 bool_t                 bcdDisplay = false;
 bool_t                 topHex = false;
-bool_t                 SI_All = true;
 bool_t                 fnAsnDisplayUSER = true;
 
 uint8_t                bcdDisplaySign = 0;
