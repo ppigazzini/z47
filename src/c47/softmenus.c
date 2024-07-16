@@ -64,7 +64,7 @@ TO_QSPI const int16_t menu_BITS[]        = { ITM_LOGICALAND,                ITM_
 
 
 TO_QSPI const int16_t menu_CLK[]         = { ITM_DATE,                      ITM_TIME,                   ITM_DTtoJ,                ITM_JtoDT,             ITM_DtoJ,                    ITM_TIMER,
-                                             ITM_DATEto,                    ITM_TIMEto,                 ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_XtoDATE,
+                                             ITM_DATEto,                    ITM_TIMEto,                 ITM_NULL,                 ITM_NULL,              ITM_LEAP,                    ITM_XtoDATE,
                                              ITM_toDATE,                    ITM_toTIME,                 ITM_NULL,                 ITM_NULL,              ITM_toHMS,                   ITM_msTo,
 
                                              ITM_DATE,                      ITM_TIME,                   ITM_TDISP,                ITM_DMY,               ITM_MDY,                     ITM_YMD,
@@ -107,12 +107,9 @@ TO_QSPI const int16_t menu_TRI[]         = { ITM_DEG2,                      ITM_
 
 TO_QSPI const int16_t menu_TRG_C47[]     = { ITM_DEG2,                      ITM_RAD2,                   ITM_GRAD2,                ITM_DMS2,              ITM_MULPI2,                  ITM_DRG,
                                              ITM_sinc,                      ITM_sincpi,                 ITM_atan2,                ITM_ms,                ITM_dotD,                    ITM_msTo,
-                                             -MNU_TRG_C47_MORE,             ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_toREC2,                  ITM_toPOL2                    };
+                                             ITM_DEG,                       ITM_RAD,                    ITM_GRAD,                 ITM_NULL,              ITM_toREC2,                  ITM_toPOL2                    };
 
-TO_QSPI const int16_t menu_TRG_C47_MORE[]= { ITM_DEG2,                      ITM_RAD2,                   ITM_GRAD2,                ITM_sin,               ITM_cos,                     ITM_tan,
-                                             ITM_sinc,                      ITM_sincpi,                 ITM_atan2,                ITM_arcsin,            ITM_arccos,                  ITM_arctan,                         //JM re-arranged menu TRIG menu
-                                             ITM_sinh,                      ITM_cosh,                   ITM_tanh,                 ITM_arsinh,            ITM_arcosh,                  ITM_artanh                    };    //JM re-arranged menu TRIG menu
-
+TO_QSPI const int16_t menu_TRG_C47_MORE[]= { };  //to remove
 
 //D47 vv
 TO_QSPI const int16_t menu_TRG[]         = { ITM_DEG,                       ITM_RAD,                    ITM_GRAD,                 ITM_sinc,              ITM_sincpi,                  ITM_atan2,
@@ -191,13 +188,20 @@ TO_QSPI const int16_t menu_MODE[]        = { ITM_DEG,                       ITM_
                                              ITM_F14,                       ITM_F124,                   ITM_F1234,                ITM_SH_LONGPRESS,      ITM_MYMx3,                   ITM_HOMEx3         };
 
 // D47 vv
-TO_QSPI const int16_t menu_SETUP[]       = { ITM_SYSTEM2,                   ITM_ACTUSB,                 ITM_NULL,                 ITM_SETSIG2,           ITM_RECT,                    ITM_POLAR,
-                                             ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_ERPN,              ITM_HPRP,                    ITM_CFG,
+TO_QSPI const int16_t menu_PREF[]       = {  ITM_SYSTEM2,                   ITM_ACTUSB,                 ITM_SETSIG2,              ITM_ERPN,              ITM_HPRP,                    ITM_CFG,
+                                             ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
                                              ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
 
-                                             ITM_SSIZE4,                    ITM_SSIZE8,                 ITM_CB_CPXRES,            ITM_CB_SPCRES,         ITM_RECT,                    ITM_POLAR,
-                                             ITM_INP_DEF_43S,               ITM_INP_DEF_DP,             ITM_INP_DEF_CPXDP,        ITM_INP_DEF_LI,        ITM_RMODE,                   ITM_CFG,
-                                             ITM_NULL,                      ITM_OREAL,                  ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
+                                             ITM_SSIZE4,                    ITM_SSIZE8,                 ITM_CB_CPXRES,            ITM_CB_SPCRES,         ITM_RMODE,                   ITM_CFG,
+                                             ITM_INP_DEF_43S,               ITM_INP_DEF_DP,             ITM_INP_DEF_CPXDP,        ITM_INP_DEF_LI,        ITM_NULL,                    ITM_NULL,
+                                             ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
+
+//exp
+////                                             ITM_SYSTEM2,                   ITM_ACTUSB,                 ITM_SETSIG2,              ITM_ERPN,              ITM_HPRP,                    ITM_CFG,
+////                                             ITM_SSIZE4,                    ITM_SSIZE8,                 ITM_CB_CPXRES,            ITM_CB_SPCRES,         ITM_RMODE,                   ITM_NULL,
+////                                             ITM_INP_DEF_43S,               ITM_INP_DEF_DP,             ITM_INP_DEF_CPXDP,        ITM_INP_DEF_LI,        ITM_NULL,                    ITM_NULL,
+
+
 
                                              ITM_FGLNOFF,                   ITM_FGLNLIM,                ITM_FGLNFUL,              ITM_G_DOUBLETAP,       ITM_SHTIM,                   ITM_SAFERESET,
                                              ITM_M14,                       ITM_M124,                   ITM_M1234,                ITM_NULL,              ITM_BASE_MYM,                ITM_BASE_HOME,
@@ -919,7 +923,7 @@ TO_QSPI const softmenu_t softmenu[] = {
 /* 119 */  {.menuItem = -MNU_EE,          .numItems = sizeof(menu_EE            )/sizeof(int16_t), .softkeyItem = menu_EE             },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
 /* 120 */  {.menuItem = -MNU_XXEQ,        .numItems = sizeof(menu_XXEQ          )/sizeof(int16_t), .softkeyItem = menu_XXEQ           },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
 /* 121 */  {.menuItem = -MNU_TRG,         .numItems = sizeof(menu_TRG           )/sizeof(int16_t), .softkeyItem = menu_TRG            },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
-/* 122 */  {.menuItem = -MNU_SETUP,       .numItems = sizeof(menu_SETUP         )/sizeof(int16_t), .softkeyItem = menu_SETUP          },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
+/* 122 */  {.menuItem = -MNU_PREF,        .numItems = sizeof(menu_PREF          )/sizeof(int16_t), .softkeyItem = menu_PREF           },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
 /* 123 */  {.menuItem = -MNU_REGR,        .numItems = sizeof(menu_REGR          )/sizeof(int16_t), .softkeyItem = menu_REGR           },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
 /* 124 */  {.menuItem = -MNU_MODEL,       .numItems = sizeof(menu_MODEL         )/sizeof(int16_t), .softkeyItem = menu_MODEL          },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
 /* 125 */  {.menuItem = -MNU_MISC,        .numItems = sizeof(menu_Misc          )/sizeof(int16_t), .softkeyItem = menu_Misc           },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
@@ -2678,7 +2682,7 @@ bool_t BASE_OVERRIDEONCE = false;
                                                               //JM ^^
     switch(-currentMenu()) {               //reset menu base point only if not MODE & DISP & Graphs menus, otherwise all menues reset to p1
       case MNU_MODE   :
-      case MNU_SETUP  :                    //(see "do not drop out of SYSFLG" in keyboard.c)
+      case MNU_PREF   :                    //(see "do not drop out of SYSFLG" in keyboard.c)
       case MNU_DISP   :
       case MNU_PLOT   : break;
       default: {
