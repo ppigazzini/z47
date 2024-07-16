@@ -714,7 +714,7 @@ void pemAlpha(int16_t item) {
     }
     if(indexOfItems[item].func == addItemToBuffer) {
       int32_t len = stringByteLength(aimBuffer);
-      item = numlockReplacements(0, item, numLock, shiftF, shiftG);
+      item = numlockReplacements(0, item, getSystemFlag(FLAG_NUMLOCK), shiftF, shiftG);
       if(alphaCase == AC_LOWER) {
           if(ITM_A <= item && item <= ITM_Z) {
             item += 26;
@@ -771,12 +771,12 @@ void pemAlpha(int16_t item) {
       nextChar = NC_NORMAL;
     }
 
-    else if(item == CHR_numL && !numLock) { // JM addon
+    else if(item == CHR_numL && !getSystemFlag(FLAG_NUMLOCK)) { // JM addon
       alphaCase = AC_UPPER;
       SetSetting(indexOfItems[CHR_num].param);
       return;
     }
-    else if(item == CHR_numU && numLock) { // JM addon
+    else if(item == CHR_numU && getSystemFlag(FLAG_NUMLOCK)) { // JM addon
       alphaCase = AC_UPPER;
       SetSetting(indexOfItems[CHR_num].param);
       return;
@@ -798,7 +798,7 @@ void pemAlpha(int16_t item) {
     }
     else if(item == CHR_case) { // JM addon
       nextChar = NC_NORMAL;
-      numLock = false;
+      clearSystemFlag(FLAG_NUMLOCK);
       SetSetting(indexOfItems[item].param);
       return;
     }

@@ -1,9 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
-/********************************************//**
- * \file config.c
- ***********************************************/
 
 #include "config.h"
 
@@ -135,10 +132,8 @@ void configCommon(uint16_t idx) {
 #define FPGRP                 113    // config_grpGroupingRight          
 #define IPGRP1                114    // config_grpGroupingGr1Left        
 #define IPGRP1x               115    // config_grpGroupingGr1LeftOverflow
-#define ERPN                  116    // config_fneRPN                    
 #define fgLongPressSetting    117    // config_setFGLSettings            
-#define IRFRAC                118    // config_constantFractions         
-#define IRFRACON              119    // config_constantFractionsOn       
+
 #define DenMaX                120    // config_denmax                    
 #define TVMIKnown             121    // tvm          
 #define TVMIChanges           122    // tvm          
@@ -175,10 +170,22 @@ IPGRP,                               xxx,        3,                             
 FPGRP,                               xxx,        3,                              3,               _gprr,                3,                      _gprr,           xxx,             xxx,                  
 IPGRP1,                              xxx,        0,                              0,               _gpr1,                0,                      _gpr1,           xxx,             xxx,                  
 IPGRP1x,                             xxx,        0,                              0,               _gpr1x,               1,                      _gpr1x,          xxx,             xxx,                  
-ERPN,                                xxx,        1,                              0,               1,                    1,                      1,               xxx,             xxx,                  
 fgLongPressSetting,                  xxx,        xxx,                            RBX_FGLNOFF,     RBX_FGLNFUL,          RBX_FGLNFUL,            RBX_FGLNFUL,     xxx,             xxx,                  
-IRFRAC,                              xxx,        0,                              xxx,             1,                    1,                      xxx,             xxx,             xxx,                  
-IRFRACON,                            xxx,        0,                              xxx,             1,                    1,                      xxx,             xxx,             xxx,                  
+
+3,                                   0,          FLAG_IRFRAC,                    xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,
+3,                                   1,          xxx,                            xxx,             FLAG_IRFRAC,          FLAG_IRFRAC,            xxx,             xxx,             xxx,
+3,                                   0,          FLAG_IRF_ON,                    xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,
+3,                                   1,          xxx,                            xxx,             FLAG_IRF_ON,          FLAG_IRF_ON,            xxx,             xxx,             xxx,
+
+3,                                   0,          xxx,                            FLAG_ERPN,       xxx,                  xxx,                    xxx,             xxx,             xxx,
+3,                                   1,          FLAG_ERPN,                      xxx,             FLAG_ERPN,            FLAG_ERPN,              FLAG_ERPN,       xxx,             xxx,
+
+3,                                   0,          FLAG_CPXMULT,                   xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,
+3,                                   1,          FLAG_LARGELI,                   xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,
+
+
+
+
 DenMaX,                              xxx,        64,                             xxx,             200,                  999,                    64,              xxx,             xxx,                  
 //TVM,                               n/a,        Reset,                          HP35,            JM,                   RJ,                     C47,             DefltSB,         TVM,                  
 TVMIKnown,                           xxx,        0,                              xxx,             xxx,                  xxx,                    xxx,             xxx,             0,                    // Clear flag TVMIKnown
@@ -284,10 +291,7 @@ void Sett(int16_t grp) {
         case FPGRP                : {grpGroupingRight           = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // FPGRP
         case IPGRP1               : {grpGroupingGr1Left         = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // IPGRP1
         case IPGRP1x              : {grpGroupingGr1LeftOverflow = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // IPGRP1x
-        case ERPN                 : {fneRPN                       (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // ERPN
         case fgLongPressSetting   : {setFGLSettings               (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // fgLongPressSetting
-        case IRFRAC               : {constantFractions          = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]) == 1 ? true : false;break;}   // IRFRAC
-        case IRFRACON             : {constantFractionsOn        = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]) == 1 ? true : false;break;}   // IRFRACON
         case DenMaX               : {denMax                     = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // DenMaX
         case TVMIKnown            : {tvmIKnown                  = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]) == 1 ? true : false;break;}   // TVMIKnown
         case TVMIChanges          : {tvmIChanges                = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]) == 1 ? true : false;break;}   // TVMIChanges
@@ -800,20 +804,20 @@ void fnFractionType(uint16_t unusedButMandatoryParameter) {
 //                         1101
   #define STATE_exfr_abc 0b1110  //14
 //                         1111
-  #define STATE          ((constantFractions         ? 8:0) +  \
-                         (constantFractionsOn        ? 4:0) +  \
+  #define STATE         ((getSystemFlag(FLAG_IRFRAC) ? 8:0) +  \
+                         (getSystemFlag(FLAG_IRF_ON) ? 4:0) +  \
                          (getSystemFlag(FLAG_PROPFR) ? 2:0) +  \
                          (getSystemFlag(FLAG_FRACT)  ? 1:0))
   uint8_t state = STATE;
   //printf("%u ",state);
 
   if(getSystemFlag(FLAG_FRCYC)) {
-    if(!getSystemFlag(FLAG_FRACT) && constantFractions && !constantFractionsOn) { // 10x0 --> 11x0 A
-      constantFractionsOn = true;
+    if(!getSystemFlag(FLAG_FRACT) && getSystemFlag(FLAG_IRFRAC) && !getSystemFlag(FLAG_IRF_ON)) { // 10x0 --> 11x0 A
+      setSystemFlag(FLAG_IRF_ON);
       return;
     }
     else {
-      if(!constantFractions && !getSystemFlag(FLAG_FRACT)) {                      // 0xx0 --> 0xx1 B
+      if(!getSystemFlag(FLAG_IRFRAC) && !getSystemFlag(FLAG_FRACT)) {                      // 0xx0 --> 0xx1 B
         flipSystemFlag(FLAG_FRACT);
         return;
       }
@@ -827,8 +831,8 @@ void fnFractionType(uint16_t unusedButMandatoryParameter) {
     }
   }
   else {
-    if(constantFractions && !constantFractionsOn) { // 10x0 --> 11x0 A     //Added this to use the 'sticky' IRFRAC flag, meaning change to .d then re-activate the last mode with ab/c
-      constantFractionsOn = true;
+    if(getSystemFlag(FLAG_IRFRAC) && !getSystemFlag(FLAG_IRF_ON)) { // 10x0 --> 11x0 A     //Added this to use the 'sticky' IRFRAC flag, meaning change to .d then re-activate the last mode with ab/c
+      setSystemFlag(FLAG_IRF_ON);
       return;
     }
     switch(state) {
@@ -841,8 +845,8 @@ void fnFractionType(uint16_t unusedButMandatoryParameter) {
       default                : state = STATE_abc;       break;                    //
     }
   }
-  constantFractions   = (state & 8) ? true : false;
-  constantFractionsOn = (state & 4) ? true : false;
+  if((state & 8)) setSystemFlag(FLAG_IRFRAC); else clearSystemFlag(FLAG_IRFRAC);
+  if((state & 4)) setSystemFlag(FLAG_IRF_ON); else clearSystemFlag(FLAG_IRF_ON);
   if(((state & 2) == 2) == !getSystemFlag(FLAG_PROPFR)) flipSystemFlag(FLAG_PROPFR);
   if(((state & 1) == 1) == !getSystemFlag(FLAG_FRACT)) flipSystemFlag(FLAG_FRACT);
   //printf("--> %u --> %u\n",state, STATE);
@@ -1254,7 +1258,6 @@ void resetOtherConfigurationStuff(void) {
   Norm_Key_00_VAR  = Norm_Key_00_item_in_layout;               //JM NORM MODE SIGMA REPLACEMENT KEY
   Input_Default =  ID_43S;
   jm_G_DOUBLETAP = true;
-  jm_LARGELI = true;                                           //Large font for long integers on stack
   displayStackSHOIDISP = 2;            //See if the refresh is needed. fnShoiXRepeats(2); //displayStackSHOIDISP
   bcdDisplay = false;
   topHex = true;                                               //Hex keys enabled
@@ -1262,7 +1265,6 @@ void resetOtherConfigurationStuff(void) {
   DRG_Cycling = 0;
   DM_Cycling = 0;
   SI_All = false;                                              //UNIT display full SI prefix display range
-  CPXMULT = false;                                             //defaults to the new complex notation with space
   LongPressM = RBX_M1234;
   LongPressF = RBX_F124;
   fgLN = RBX_FGLNFUL;

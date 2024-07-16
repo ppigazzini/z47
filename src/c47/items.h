@@ -1,10 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // SPDX-FileCopyrightText: Copyright The C47 Authors
 
-/**
- * \file items.h
- * Item list and function to run them.
- */
+
 #if !defined(ITEMS_H)
 #define ITEMS_H
 
@@ -1935,7 +1932,7 @@
 #define CHR_caseUP                  1878
 #define CHR_caseDN                  1879
 #define ITM_LISTXY                  1880
-#define ITM_SH_ERPN                 1881
+#define ITM_1881                    1881
 #define ITM_SYS_FREE_RAM            1882
 #define MNU_INL_TST                 1883
 #define ITM_TEST                    1884
@@ -1950,8 +1947,8 @@
 #define KEY_fg                      1893
 #define ITM_FROM_USER               1894
 #define ITM_HPBASE                  1895
-#define ITM_1896                    1896
-#define ITM_1897                    1897
+#define ITM_FRCYC                   1896
+#define ITM_FRCSRN                  1897
 #define ITM_N_KEY_ALPHA             1898
 #define ITM_1899                    1899
 #define ITM_N_KEY_GSH               1900
@@ -2310,12 +2307,12 @@
 #define SFL_MONIT                   2251
 #define SFL_FRCYC                   2252
 #define SFL_HPCONV                  2253
-#define SFL_2250                    2254
-#define SFL_2251                    2255
-#define SFL_2252                    2256
-#define SFL_2253                    2257
-#define SFL_2254                    2258
-#define SFL_2255                    2259
+#define SFL_NUMLOCK                 2254
+#define SFL_CPXMULT                 2255
+#define SFL_ERPN                    2256
+#define SFL_LARGELI                 2257
+#define SFL_IRFRAC                  2258
+#define SFL_IRF_ON                  2259
 #define SFL_2256                    2260
 #define SFL_2257                    2261
 #define SFL_2258                    2262

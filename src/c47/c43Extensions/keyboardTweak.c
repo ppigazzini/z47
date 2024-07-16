@@ -75,7 +75,8 @@ void showAlphaModeonGui(void) {
     #endif // !TESTSUITE_BUILD
     calcModeAimGui();
   }                                                         //^^
-  doRefreshSoftMenu = true;             //jm
+  screenUpdatingMode &= ~SCRUPD_MANUAL_MENU;
+  screenUpdatingMode &= ~SCRUPD_SKIP_MENU_ONE_TIME;
 }
 
 

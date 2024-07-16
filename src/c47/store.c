@@ -386,6 +386,11 @@ void fnStoreConfig(uint16_t regist) {
   bool_t compatibility_bool14 = false;           //defaults to use when settings are removed
   bool_t compatibility_bool15 = false;           //defaults to use when settings are removed
   bool_t compatibility_bool16 = false;           //defaults to use when settings are removed
+  bool_t compatibility_bool17 = false;           //defaults to use when settings are removed
+  bool_t compatibility_bool18 = false;           //defaults to use when settings are removed
+  bool_t compatibility_bool19 = false;           //defaults to use when settings are removed
+  bool_t compatibility_bool20 = false;           //defaults to use when settings are removed
+  bool_t compatibility_bool21 = false;           //defaults to use when settings are removed
   bool_t compatibility_byte1  = 0;               //defaults to use when settings are removed
   float  compatibility_float1 = 0.1;             //defaults to use when settings are removed
   float  compatibility_float2 = 0.2;             //defaults to use when settings are removed
@@ -418,10 +423,10 @@ void fnStoreConfig(uint16_t regist) {
   storeToDtConfigDescriptor(systemFlags1);
   xcopy(configToStore->kbd_usr, kbd_usr, sizeof(kbd_usr));
   storeToDtConfigDescriptor(fgLN);
-  storeToDtConfigDescriptor(eRPN);
+  storeToDtConfigDescriptor(compatibility_bool19);
   storeToDtConfigDescriptor(HOME3);
   storeToDtConfigDescriptor(ShiftTimoutMode);
-  storeToDtConfigDescriptor(CPXMULT);
+  storeToDtConfigDescriptor(compatibility_bool21);
   storeToDtConfigDescriptor(BASE_HOME);
   storeToDtConfigDescriptor(compatibility_bool00);   //added
   storeToDtConfigDescriptor(Norm_Key_00_VAR);
@@ -453,10 +458,10 @@ void fnStoreConfig(uint16_t regist) {
   storeToDtConfigDescriptor(fractionDigits); 
   storeToDtConfigDescriptor(compatibility_byte1);
   storeToDtConfigDescriptor(compatibility_bool16);
-  storeToDtConfigDescriptor(jm_LARGELI);
-  storeToDtConfigDescriptor(constantFractions);
+  storeToDtConfigDescriptor(compatibility_bool20);
+  storeToDtConfigDescriptor(compatibility_bool17);
   storeToDtConfigDescriptor(IrFractionsCurrentStatus);
-  storeToDtConfigDescriptor(constantFractionsOn);
+  storeToDtConfigDescriptor(compatibility_bool18);
   storeToDtConfigDescriptor(displayStackSHOIDISP);
   storeToDtConfigDescriptor(bcdDisplay);
   storeToDtConfigDescriptor(topHex);

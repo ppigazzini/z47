@@ -87,10 +87,10 @@ All the below: because both Last x and savestack does not work due to multiple s
 
 void fneRPN(uint16_t state) {
   if(state == 1) {
-    eRPN = true;
+    setSystemFlag(FLAG_ERPN);
   }
   else if(state == 0) {
-    eRPN = false;
+    clearSystemFlag(FLAG_ERPN);
   }
 }
 
@@ -2406,10 +2406,5 @@ void fnLongPressSwitches (uint16_t option) {
 
 void fnSetSI_All (uint16_t unusedButMandatoryParameter) {
   SI_All = !SI_All;
-}
-
-
-void fnSetCPXMULT (uint16_t unusedButMandatoryParameter) {
-  CPXMULT = !CPXMULT;
 }
 

@@ -38,7 +38,7 @@ void drawBattery(uint16_t voltage);
     if(SBARUPD_Date) {
       getDateString(dateTimeString);
       x = showString(dateTimeString, &standardFont, x, 0, vmNormal, true, true);
-      x = showGlyph(getSystemFlag(FLAG_TDM24) ? " " : STD_SPACE_3_PER_EM, &standardFont, x, 0, vmNormal, true, true); // is 0+0+8 pixel wide
+      x = showGlyph(getSystemFlag(FLAG_TDM24) ? " " : STD_SPACE_3_PER_EM, &standardFont, x, 0, vmNormal, true, true, false); // is 0+0+8 pixel wide
     }
     else {
       x = X_TIME;
@@ -55,10 +55,10 @@ void drawBattery(uint16_t voltage);
   void showRealComplexResult(void) {
     if(!(SBARUPD_ComplexResult)) return;
     if(getSystemFlag(FLAG_CPXRES)) {
-      showGlyph(STD_COMPLEX_C, &standardFont, X_REAL_COMPLEX, 0, vmNormal, true, false); // Complex C is 0+8+3 pixel wide
+      showGlyph(STD_COMPLEX_C, &standardFont, X_REAL_COMPLEX, 0, vmNormal, true, false, false); // Complex C is 0+8+3 pixel wide
     }
     else {
-      showGlyph(STD_REAL_R,    &standardFont, X_REAL_COMPLEX, 0, vmNormal, true, false); // Real R    is 0+8+3 pixel wide
+      showGlyph(STD_REAL_R,    &standardFont, X_REAL_COMPLEX, 0, vmNormal, true, false, false); // Real R    is 0+8+3 pixel wide
     }
   }
 
@@ -69,10 +69,10 @@ void drawBattery(uint16_t voltage);
     uint32_t X_COMPLEX_MODE1 =  SBARUPD_ComplexResult ? X_COMPLEX_MODE : X_COMPLEX_MODE + X_COMPLEX_MODE_ADJ;
 
     if(getSystemFlag(FLAG_POLAR)) { // polar mode
-     showGlyph(STD_SUN,           &standardFont, X_COMPLEX_MODE1, 0, vmNormal, true, true); // Sun         is 0+12+2 pixel wide
+     showGlyph(STD_SUN,           &standardFont, X_COMPLEX_MODE1, 0, vmNormal, true, true, false); // Sun         is 0+12+2 pixel wide
     }
     else { // rectangular mode
-     showGlyph(STD_RIGHT_ANGLE,   &standardFont, X_COMPLEX_MODE1, 0, vmNormal, true, true); // Right angle is 0+12+2 pixel wide
+     showGlyph(STD_RIGHT_ANGLE,   &standardFont, X_COMPLEX_MODE1, 0, vmNormal, true, true, false); // Right angle is 0+12+2 pixel wide
     }
   }
 
@@ -84,37 +84,37 @@ void drawBattery(uint16_t voltage);
     uint32_t x = X_ANGULAR_MODE;
 
     if(SBARUPD_AngularModeBasic) {
-      x = showGlyph(STD_MEASURED_ANGLE, &standardFont, x, 0, vmNormal, true, true); // Angle is 0+9 pixel wide
+      x = showGlyph(STD_MEASURED_ANGLE, &standardFont, x, 0, vmNormal, true, true, false); // Angle is 0+9 pixel wide
     }
 
     switch(currentAngularMode) {
       case amRadian: {
-        showGlyph(STD_SUP_r,              &standardFont, x, 0, vmNormal, true, false); // r  is 0+6 pixel wide
+        showGlyph(STD_SUP_r,              &standardFont, x, 0, vmNormal, true, false, false); // r  is 0+6 pixel wide
         break;
       }
 
       case amMultPi: {
-        showGlyph(STD_SUP_pir,            &standardFont, x, 0, vmNormal, true, false); // pi is 0+9 pixel wide
+        showGlyph(STD_SUP_pir,            &standardFont, x, 0, vmNormal, true, false, false); // pi is 0+9 pixel wide
         break;
       }
 
       case amGrad: {
-        showGlyph(STD_SUP_g,              &standardFont, x, 0, vmNormal, true, false); // g  is 0+6 pixel wide
+        showGlyph(STD_SUP_g,              &standardFont, x, 0, vmNormal, true, false, false); // g  is 0+6 pixel wide
         break;
       }
 
       case amDegree: {
-        showGlyph(STD_DEGREE,             &standardFont, x, 0, vmNormal, true, false); // °  is 0+6 pixel wide
+        showGlyph(STD_DEGREE,             &standardFont, x, 0, vmNormal, true, false, false); // °  is 0+6 pixel wide
         break;
       }
 
       case amDMS: {
-        showGlyph(STD_RIGHT_DOUBLE_QUOTE, &standardFont, x, 0, vmNormal, true, false); // "  is 0+6 pixel wide
+        showGlyph(STD_RIGHT_DOUBLE_QUOTE, &standardFont, x, 0, vmNormal, true, false, false); // "  is 0+6 pixel wide
         break;
       }
 
       default: {
-        showGlyph(STD_QUESTION_MARK,      &standardFont, x, 0, vmNormal, true, false); // ?
+        showGlyph(STD_QUESTION_MARK,      &standardFont, x, 0, vmNormal, true, false, false); // ?
       }
     }
   }
@@ -174,7 +174,7 @@ void showFracMode(void) {
     //a b/c
     x = X_FRAC_MODE;                    //vJM
     char divStr[10];
-    if(getSystemFlag(FLAG_FRACT) || (constantFractions && constantFractionsOn)) {
+    if(getSystemFlag(FLAG_FRACT) || (getSystemFlag(FLAG_IRFRAC) && getSystemFlag(FLAG_IRF_ON))) {
       if(!getSystemFlag(FLAG_PROPFR)) {
         raiseString = 9;
         strcpy(divStr,STD_SUB_b);
@@ -196,7 +196,7 @@ void showFracMode(void) {
     }
 
     compressString = 1;             //^JM
-    if(constantFractions && constantFractionsOn && !getSystemFlag(FLAG_FRACT)) {    //IRFRAC and NOT FRAC
+    if(getSystemFlag(FLAG_IRFRAC) && getSystemFlag(FLAG_IRF_ON) && !getSystemFlag(FLAG_FRACT)) {    //IRFRAC and NOT FRAC
       sprintf(statusMessage,"%s",divStr);
       x = showString(statusMessage, &standardFont, x, 0, vmNormal, true, true);
 
@@ -247,7 +247,7 @@ void showFracMode(void) {
 
         if(!getSystemFlag(FLAG_DENANY)) {
           if(getSystemFlag(FLAG_DENFIX)) {
-            x = showGlyphCode('f',  &standardFont, x, 0, vmNormal, true, false); // f is 0+7+3 pixel wide
+            x = showGlyphCode('f',  &standardFont, x, 0, vmNormal, true, false, false); // f is 0+7+3 pixel wide
           }
           else {
             x = showString(PRODUCT_SIGN, &standardFont, x, 0, vmNormal, true, false); // STD_DOT is 0+3+2 pixel wide and STD_CROSS is 0+7+2 pixel wide
@@ -313,7 +313,7 @@ void showFracMode(void) {
 
   void showOverflowCarry(void) {
     if(!(SBARUPD_OCCarryMode)) return;
-    showGlyph(STD_OVERFLOW_CARRY, &standardFont, X_OVERFLOW_CARRY, 0, vmNormal, true, false); // STD_OVERFLOW_CARRY is 0+6+3 pixel wide
+    showGlyph(STD_OVERFLOW_CARRY, &standardFont, X_OVERFLOW_CARRY, 0, vmNormal, true, false, false); // STD_OVERFLOW_CARRY is 0+6+3 pixel wide
 
     if(!getSystemFlag(FLAG_OVERFLOW)) { // Overflow flag is cleared
       lcd_fill_rect(X_OVERFLOW_CARRY, 2, 6, 7, LCD_SET_VALUE);
@@ -337,7 +337,7 @@ void showFracMode(void) {
       nChar = scrLock;
     }
     if(((calcMode == CM_AIM || calcMode == CM_EIM || (catalog && catalog != CATALOG_MVAR) || (tam.mode != 0 && tam.alpha) || ((calcMode == CM_PEM || calcMode == CM_ASSIGN) && getSystemFlag(FLAG_ALPHA))))) {
-      if(numLock && !shiftF && !shiftG) {
+      if(getSystemFlag(FLAG_NUMLOCK) && !shiftF && !shiftG) {
           if(alphaCase == AC_UPPER)                  { status = 3 - (nChar == NC_SUBSCRIPT ? 2 : nChar == NC_SUPERSCRIPT ? 1:0); } else
           if(alphaCase == AC_LOWER)                  { status = 6 - (nChar == NC_SUBSCRIPT ? 2 : nChar == NC_SUPERSCRIPT ? 1:0); }
         } else
@@ -349,13 +349,13 @@ void showFracMode(void) {
             } else //at this point shiftF is false
               if(alphaCase == AC_UPPER)  { //UPPER
                 setSystemFlag(FLAG_alphaCAP);
-                if(shiftG)                           { status =  3 - (nChar == NC_SUBSCRIPT ? 2 : nChar == NC_SUPERSCRIPT ? 1:0); } else
-                if(!shiftG && !shiftF && !numLock)   { status = 12 - (nChar == NC_SUBSCRIPT ? 2 : nChar == NC_SUPERSCRIPT ? 1:0); }
+                if(shiftG)                                               { status =  3 - (nChar == NC_SUBSCRIPT ? 2 : nChar == NC_SUPERSCRIPT ? 1:0); } else
+                if(!shiftG && !shiftF && !getSystemFlag(FLAG_NUMLOCK))   { status = 12 - (nChar == NC_SUBSCRIPT ? 2 : nChar == NC_SUPERSCRIPT ? 1:0); }
               } else
                 if(alphaCase == AC_LOWER)  { //LOWER
                   clearSystemFlag(FLAG_alphaCAP);
-                  if(shiftG)                         { status =  3 - (nChar == NC_SUBSCRIPT ? 2 : nChar == NC_SUPERSCRIPT ? 1:0); } else
-                  if(!shiftG && !shiftF && !numLock) { status = 18 - (nChar == NC_SUBSCRIPT ? 2 : nChar == NC_SUPERSCRIPT ? 1:0); }
+                  if(shiftG)                                             { status =  3 - (nChar == NC_SUBSCRIPT ? 2 : nChar == NC_SUPERSCRIPT ? 1:0); } else
+                  if(!shiftG && !shiftF && !getSystemFlag(FLAG_NUMLOCK)) { status = 18 - (nChar == NC_SUBSCRIPT ? 2 : nChar == NC_SUPERSCRIPT ? 1:0); }
                 }
     }
     else {
@@ -421,18 +421,18 @@ void showFracMode(void) {
     }
     switch(programRunStop) {
       case PGM_WAITING: {
-        showGlyph(STD_NEG_EXCLAMATION_MARK, &standardFont, (GRAPHMODE ? X_HOURGLASS_GRAPHS : X_HOURGLASS) - 1, 0, vmNormal, true, false);
+        showGlyph(STD_NEG_EXCLAMATION_MARK, &standardFont, (GRAPHMODE ? X_HOURGLASS_GRAPHS : X_HOURGLASS) - 1, 0, vmNormal, true, false, false);
         break;
       }
       case PGM_RUNNING: {
         lcd_fill_rect((GRAPHMODE ? X_HOURGLASS_GRAPHS : X_HOURGLASS) - 1, 0, stringWidth(STD_NEG_EXCLAMATION_MARK, &standardFont, true, false), 20, LCD_SET_VALUE);
-        showGlyph(STD_P, &standardFont, (GRAPHMODE ? X_HOURGLASS_GRAPHS : X_HOURGLASS) + 1, 0, vmNormal, true, false);
+        showGlyph(STD_P, &standardFont, (GRAPHMODE ? X_HOURGLASS_GRAPHS : X_HOURGLASS) + 1, 0, vmNormal, true, false, false);
         break;
       }
       default: {
         lcd_fill_rect((GRAPHMODE ? X_HOURGLASS_GRAPHS : X_HOURGLASS) - 1, 0, stringWidth(STD_NEG_EXCLAMATION_MARK, &standardFont, true, false), 20, LCD_SET_VALUE);
         if(hourGlassIconEnabled) {
-          showGlyph(STD_HOURGLASS, &standardFont, GRAPHMODE ? X_HOURGLASS_GRAPHS : X_HOURGLASS, 0, vmNormal, true, false); // is 0+11+3 pixel wide //Shift the hourglass to a visible part of the status bar
+          showGlyph(STD_HOURGLASS, &standardFont, GRAPHMODE ? X_HOURGLASS_GRAPHS : X_HOURGLASS, 0, vmNormal, true, false, false); // is 0+11+3 pixel wide //Shift the hourglass to a visible part of the status bar
         }
       }
     }
@@ -458,8 +458,8 @@ void showFracMode(void) {
 
       showDateTime();
       if(Y_SHIFT==0 && X_SHIFT<200) showShiftState();
-      showGlyph(STD_MODE_F, &standardFont, X_SHIFT_L, L5, vmNormal, true, true);   // f is pixel 4+8+3 wide
-      showGlyph(STD_MODE_G, &standardFont, X_SHIFT_R, L5, vmNormal, true, true);   // g is pixel 4+10+1 wide
+      showGlyph(STD_MODE_F, &standardFont, X_SHIFT_L, L5, vmNormal, true, true, false);   // f is pixel 4+8+3 wide
+      showGlyph(STD_MODE_G, &standardFont, X_SHIFT_R, L5, vmNormal, true, true, false);   // g is pixel 4+10+1 wide
 
       showRealComplexResult();
       showComplexMode();
@@ -532,7 +532,7 @@ void showFracMode(void) {
 
       compressString = 1;             //^JM
       x=xx;
-      x = showGlyphCode('f',  &standardFont, x, L2, vmNormal, true, false); // f is 0+7+3 pixel wide
+      x = showGlyphCode('f',  &standardFont, x, L2, vmNormal, true, false, false); // f is 0+7+3 pixel wide
       compressString = 1;             //^JM
 
       x=xx;
@@ -549,7 +549,7 @@ void showFracMode(void) {
       sprintf(statusMessage, "END");
       showString(statusMessage, &standardFont, X_INTEGER_MODE, L2, vmNormal, true, true);
 
-      showGlyph(STD_OVERFLOW_CARRY, &standardFont, X_OVERFLOW_CARRY, 0, vmNormal, true, false); // STD_OVERFLOW_CARRY is 0+6+3 pixel wide
+      showGlyph(STD_OVERFLOW_CARRY, &standardFont, X_OVERFLOW_CARRY, 0, vmNormal, true, false, false); // STD_OVERFLOW_CARRY is 0+6+3 pixel wide
 
 
  //       showString(STD_SUB_N, &standardFont, X_ALPHA_MODE, -2, vmNormal, true, false);   //sub    // STD_ALPHA is 0+9+2 pixel wide
@@ -568,24 +568,24 @@ void showFracMode(void) {
 //        showString(STD_SUB_a, &standardFont, X_ALPHA_MODE, -11, vmNormal, true, false);   //sup    //not possible
 //        showString(STD_a    , &standardFont, X_ALPHA_MODE,  0, vmNormal, true, false);   //normal
 
-      showGlyph(STD_HOURGLASS, &standardFont, calcMode == CM_PLOT_STAT || calcMode == CM_GRAPH ? X_HOURGLASS_GRAPHS : X_HOURGLASS, L1, vmNormal, true, false); // is 0+11+3 pixel wide //Shift the hourglass to a visible part of the status bar
-      showGlyph(STD_NEG_EXCLAMATION_MARK, &standardFont, (calcMode == CM_PLOT_STAT || calcMode == CM_GRAPH  ? X_HOURGLASS_GRAPHS : X_HOURGLASS) - 1, L3, vmNormal, true, false);
-      showGlyph(STD_P, &standardFont, (calcMode == CM_PLOT_STAT || calcMode == CM_GRAPH ? X_HOURGLASS_GRAPHS : X_HOURGLASS) + 1, L2, vmNormal, true, false);
+      showGlyph(STD_HOURGLASS, &standardFont, calcMode == CM_PLOT_STAT || calcMode == CM_GRAPH ? X_HOURGLASS_GRAPHS : X_HOURGLASS, L1, vmNormal, true, false, false); // is 0+11+3 pixel wide //Shift the hourglass to a visible part of the status bar
+      showGlyph(STD_NEG_EXCLAMATION_MARK, &standardFont, (calcMode == CM_PLOT_STAT || calcMode == CM_GRAPH  ? X_HOURGLASS_GRAPHS : X_HOURGLASS) - 1, L3, vmNormal, true, false, false);
+      showGlyph(STD_P, &standardFont, (calcMode == CM_PLOT_STAT || calcMode == CM_GRAPH ? X_HOURGLASS_GRAPHS : X_HOURGLASS) + 1, L2, vmNormal, true, false, false);
 
       strcpy(asmBuffer,"XX");
       compressString = 1;             //^JM
       showString(asmBuffer, &standardFont, X_ASM, L1, vmNormal, true, false);
       asmBuffer[0]=0;
 
-      showGlyph(getSystemFlag(FLAG_SSIZE8) ? STD_8 : STD_4, &standardFont, X_SSIZE_BEGIN, 0, vmNormal, true, false); // is 0+6+2 pixel wide
+      showGlyph(getSystemFlag(FLAG_SSIZE8) ? STD_8 : STD_4, &standardFont, X_SSIZE_BEGIN, 0, vmNormal, true, false, false); // is 0+6+2 pixel wide
 
-      showGlyph(STD_TIMER, &standardFont, X_WATCH, 0, vmNormal, true, false); // is 0+13+1 pixel wide
+      showGlyph(STD_TIMER, &standardFont, X_WATCH, 0, vmNormal, true, false, false); // is 0+13+1 pixel wide
 
-      showGlyph(STD_SERIAL_IO, &standardFont, X_SERIAL_IO, 0, vmNormal, true, false); // is 0+8+3 pixel wide
+      showGlyph(STD_SERIAL_IO, &standardFont, X_SERIAL_IO, 0, vmNormal, true, false, false); // is 0+8+3 pixel wide
 
-      showGlyph(STD_PRINTER,   &standardFont, X_PRINTER, 0, vmNormal, true, false); // is 0+12+3 pixel wide
+      showGlyph(STD_PRINTER,   &standardFont, X_PRINTER, 0, vmNormal, true, false, false); // is 0+12+3 pixel wide
 
-      showGlyph(STD_USER_MODE, &standardFont, X_USER_MODE, 0, vmNormal, false, false); // STD_USER_MODE is 0+12+2 pixel wide
+      showGlyph(STD_USER_MODE, &standardFont, X_USER_MODE, 0, vmNormal, false, false, false); // STD_USER_MODE is 0+12+2 pixel wide
 
 
       light_ASB_icon();                            //JM
@@ -612,15 +612,32 @@ void showFracMode(void) {
 
 
   void showStackSize(void) {
+    uint32_t x;
     if(!(SBARUPD_StackSize)) return;
-    showGlyph(getSystemFlag(FLAG_SSIZE8) ? STD_8 : STD_4, &standardFont, X_SSIZE_BEGIN, 0, vmNormal, true, false); // is 0+6+2 pixel wide
+
+    // Standard stack size, inversed if RPN. Note it moved 5 pixels left in X_SSIZE_BEGIN
+    if(getSystemFlag(FLAG_ERPN)) {
+      x = showGlyph(STD_SPACE_6_PER_EM, &standardFont, X_SSIZE_BEGIN, 0, vmNormal, true, true, false); // is 0+6+2 pixel wide      
+      x = showGlyph(getSystemFlag(FLAG_SSIZE8) ? STD_8 : STD_4, &standardFont, X_SSIZE_BEGIN, 0, vmNormal, true, true, false); // is 0+6+2 pixel wide
+    }
+    else {
+      x = showGlyph(STD_SPACE_6_PER_EM, &standardFont, X_SSIZE_BEGIN, 0, vmReverse, false, true, false); // is 0+6+2 pixel wide      
+      x = showGlyph(getSystemFlag(FLAG_SSIZE8) ? STD_8 : STD_4, &standardFont, x, 0, vmReverse, false, true, false); // is 0+6+2 pixel wide      
+    }
+
+// Standard stack size only
+//    showGlyph(getSystemFlag(FLAG_SSIZE8) ? STD_8 : STD_4, &standardFont, X_SSIZE_BEGIN, 0, vmNormal, true, false, false); // is 0+6+2 pixel wide
+
+// eRPN above, with the stack siza underneath it
+//    showGlyph(getSystemFlag(FLAG_ERPN)   ? STD_SUP_e : STD_SUP_r, &standardFont, X_SSIZE_BEGIN, -2, vmNormal, true, false, false); // is 0+6+2 pixel wide
+//    showGlyph(getSystemFlag(FLAG_SSIZE8) ? STD_SUB_8 : STD_SUB_4, &standardFont, X_SSIZE_BEGIN, -2, vmNormal, true, false, true); // is 0+6+2 pixel wide
   }
 
 
   void showHideWatch(void) {
     if(!(SBARUPD_Watch)) return;
     if(watchIconEnabled) {
-      showGlyph(STD_TIMER, &standardFont, X_WATCH, 0, vmNormal, true, false); // is 0+13+1 pixel wide
+      showGlyph(STD_TIMER, &standardFont, X_WATCH, 0, vmNormal, true, false, false); // is 0+13+1 pixel wide
     }
   }
 
@@ -629,7 +646,7 @@ void showFracMode(void) {
   void showHideSerialIO(void) {
     if(!(SBARUPD_SerialIO)) return;
     if(serialIOIconEnabled) {
-      showGlyph(STD_SERIAL_IO, &standardFont, X_SERIAL_IO, 0, vmNormal, true, false); // is 0+8+3 pixel wide
+      showGlyph(STD_SERIAL_IO, &standardFont, X_SERIAL_IO, 0, vmNormal, true, false, false); // is 0+8+3 pixel wide
     }
   }
 
@@ -638,7 +655,7 @@ void showFracMode(void) {
   void showHidePrinter(void) {
     if(!(SBARUPD_Printer)) return;
     if(printerIconEnabled) {
-      showGlyph(STD_PRINTER,   &standardFont, X_PRINTER, 0, vmNormal, true, false); // is 0+12+3 pixel wide
+      showGlyph(STD_PRINTER,   &standardFont, X_PRINTER, 0, vmNormal, true, false, false); // is 0+12+3 pixel wide
     }
   }
 
@@ -661,7 +678,7 @@ void showHideASB(void) {                     //JMvv
 void showHideUserMode(void) {
   if(!(SBARUPD_UserMode)) return;
   if(getSystemFlag(FLAG_USER)) {
-    showGlyph(STD_USER_MODE, &standardFont, X_USER_MODE, 0, vmNormal, false, false); // STD_USER_MODE is 0+12+2 pixel wide
+    showGlyph(STD_USER_MODE, &standardFont, X_USER_MODE, 0, vmNormal, false, false, false); // STD_USER_MODE is 0+12+2 pixel wide
   }
   refreshModeGui(); //JM refreshModeGui
 }
@@ -694,14 +711,14 @@ void drawBattery(uint16_t voltage) {
         return;
       }
       if(getSystemFlag(FLAG_USB)) {
-        showGlyph(STD_USB_SYMBOL, &standardFont, X_BATTERY, 0, vmNormal, true, false); // is 0+9+2 pixel wide
+        showGlyph(STD_USB_SYMBOL, &standardFont, X_BATTERY, 0, vmNormal, true, false, false); // is 0+9+2 pixel wide
       }
       else {
         if(SBARUPD_BatVoltage) {
           drawBattery(min(get_vbat(), vbatVIntegrated));
         }
         else if(getSystemFlag(FLAG_LOWBAT)) {
-          showGlyph(STD_BATTERY, &standardFont, X_BATTERY, 0, vmNormal, true, false); // is 0+10+1 pixel wide
+          showGlyph(STD_BATTERY, &standardFont, X_BATTERY, 0, vmNormal, true, false, false); // is 0+10+1 pixel wide
         }
         else {
           // Clear the space used by the USB / LOWBAT glyph

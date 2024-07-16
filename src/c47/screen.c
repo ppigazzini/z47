@@ -483,7 +483,7 @@ char letteredRegisterName(calcRegister_t regist) {
       if(++cursorBlinkCounter > cursorCycle) {         //JM cursor vv
         cursorBlinkCounter = 0;
         if(cursorBlink && !checkHP) {
-          showGlyph(STD_CURSOR, cursorFont, xCursor, yCursor - checkHPoffset, vmNormal, true, false);
+          showGlyph(STD_CURSOR, cursorFont, xCursor, yCursor - checkHPoffset, vmNormal, true, false, false);
         }                                              //JM cursor ^^
         else {
           hideCursor();
@@ -541,7 +541,7 @@ char letteredRegisterName(calcRegister_t regist) {
       if(++cursorBlinkCounter > cursorCycle) {         //JM cursor vv
         cursorBlinkCounter = 0;
         if(cursorBlink && !checkHP) {
-          showGlyph(STD_CURSOR, cursorFont, xCursor, yCursor - checkHPoffset, vmNormal, true, false);
+          showGlyph(STD_CURSOR, cursorFont, xCursor, yCursor - checkHPoffset, vmNormal, true, false, false);
         }                                              //JM cursor ^^
         else {
           hideCursor();
@@ -1021,7 +1021,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
     ));
 }
 
-  uint32_t showGlyphCode(uint16_t charCode, const font_t *font, uint32_t x, uint32_t y, videoMode_t videoMode, bool_t showLeadingCols, bool_t showEndingCols) {
+  uint32_t showGlyphCode(uint16_t charCode, const font_t *font, uint32_t x, uint32_t y, videoMode_t videoMode, bool_t showLeadingCols, bool_t showEndingCols, bool_t noPreClear) {
     uint32_t col, row, xGlyph, endingCols;
     int32_t  glyphId;
     int8_t   byte, *data;
@@ -1087,7 +1087,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
     // Clearing the space needed by the glyph
     bool_t rep_enlarge = numDouble || (enlarge && combinationFonts != 0);                //JM ENLARGE
     uint32_t yNewMaxDx = (rep_enlarge ? 2 : 1) * (((glyph->rowsAboveGlyph + glyph->rowsGlyph + glyph->rowsBelowGlyph) >> miniC) - (rep_enlarge ? 4 : 0));
-    if(!noShow) {
+    if(!noShow && !noPreClear) {
       lcd_fill_rect(x, y, (uint32_t)(doubling * ((xGlyph + glyph->colsGlyph + endingCols) >> miniC)) >> 3, yNewMaxDx, (videoMode == vmNormal ? LCD_SET_VALUE : LCD_EMPTY_VALUE));  //JMmini
     }
     if(displaymode == numHalf) {
@@ -1163,8 +1163,8 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
   }
 
 
-  uint32_t showGlyph(const char *ch, const font_t *font, uint32_t x, uint32_t y, videoMode_t videoMode, bool_t showLeadingCols, bool_t showEndingCols) {
-    return showGlyphCode(charCodeFromString(ch, 0), font, x, y, videoMode, showLeadingCols, showEndingCols);
+  uint32_t showGlyph(const char *ch, const font_t *font, uint32_t x, uint32_t y, videoMode_t videoMode, bool_t showLeadingCols, bool_t showEndingCols, bool_t noPreClear) {
+    return showGlyphCode(charCodeFromString(ch, 0), font, x, y, videoMode, showLeadingCols, showEndingCols, noPreClear);
   }
 
 
@@ -1250,7 +1250,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
       if(LF && x > SCREEN_WIDTH - 20 && !noShow) {                      //auto LF when line is full
         noShow = true;
         uint16_t tmp = ch;
-        if(x + showGlyphCode(charCodeFromString(string, &tmp), font, 0, 0, videoMode, slc, sec) - compressString > SCREEN_WIDTH) {
+        if(x + showGlyphCode(charCodeFromString(string, &tmp), font, 0, 0, videoMode, slc, sec, false) - compressString > SCREEN_WIDTH) {
           x = orgX;
           prevX = x;
           y += 20;
@@ -1258,13 +1258,13 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
         noShow = false;
       }
 
-      x = showGlyphCode(charCodeFromString(string, &ch), font, x, y - raiseString, videoMode, slc, sec) - compressString;
+      x = showGlyphCode(charCodeFromString(string, &ch), font, x, y - raiseString, videoMode, slc, sec, false) - compressString;
       if(resStr) { // for stringAfterPixelsC43
         if(x > width) {
           if(!showEndingCols) {
             uint32_t tmpX = x;
             ch = *resStr - string;
-            x = showGlyphCode(charCodeFromString(string, &ch), font, prevX, y - raiseString, videoMode, true, false) - compressString;
+            x = showGlyphCode(charCodeFromString(string, &ch), font, prevX, y - raiseString, videoMode, true, false, false) - compressString;
             if(x <= width) {
               *resStr = (char *)(string + ch);
             }
@@ -1623,7 +1623,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
         }
 
         maxiC = 1;                                                                            //JM
-          if(y!=(uint32_t)(-100)) x = showGlyphCode(charCode, font, x, y - raiseString, videoMode, slc, sec) - compressString;        //JM compressString
+          if(y!=(uint32_t)(-100)) x = showGlyphCode(charCode, font, x, y - raiseString, videoMode, slc, sec, false) - compressString;        //JM compressString
         maxiC = 0;                                                                            //JM
       }
       //printf("\n");
@@ -4348,11 +4348,11 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
   }
 
   void showShiftStateF(void) {
-        showGlyph(STD_MODE_F, &standardFont, X_SHIFT, Y_SHIFT, vmNormal, true, true); // f is pixel 4+8+3 wide
+        showGlyph(STD_MODE_F, &standardFont, X_SHIFT, Y_SHIFT, vmNormal, true, true, false); // f is pixel 4+8+3 wide
   }
 
   void showShiftStateG(void) {
-        showGlyph(STD_MODE_G, &standardFont, X_SHIFT, Y_SHIFT, vmNormal, true, true); // g is pixel 4+10+1 wide
+        showGlyph(STD_MODE_G, &standardFont, X_SHIFT, Y_SHIFT, vmNormal, true, true, false); // g is pixel 4+10+1 wide
   }
 
 

@@ -1,18 +1,6 @@
-  /* This file is part of 43S.
- *
- * 43S is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * 43S is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with 43S.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: GPL-3.0-only
+// SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
+
 
 #include "recall.h"
 
@@ -281,6 +269,11 @@ void fnRecallConfig(uint16_t regist) {
     __attribute__((unused)) bool_t compatibility_bool14;    //for use in spare slots below
     __attribute__((unused)) bool_t compatibility_bool15;    //for use in spare slots below
     __attribute__((unused)) bool_t compatibility_bool16;    //for use in spare slots below
+    __attribute__((unused)) bool_t compatibility_bool17;    //for use in spare slots below
+    __attribute__((unused)) bool_t compatibility_bool18;    //for use in spare slots below
+    __attribute__((unused)) bool_t compatibility_bool19;    //for use in spare slots below
+    __attribute__((unused)) bool_t compatibility_bool20;    //for use in spare slots below
+    __attribute__((unused)) bool_t compatibility_bool21;    //for use in spare slots below
     __attribute__((unused)) bool_t compatibility_byte0 ;    //for use in spare slots below
     __attribute__((unused)) bool_t compatibility_byte1 ;    //for use in spare slots below
     __attribute__((unused)) float  compatibility_float1;    //for use in spare slots below
@@ -314,11 +307,11 @@ void fnRecallConfig(uint16_t regist) {
     recallFromDtConfigDescriptor(systemFlags1);
     xcopy(kbd_usr, configToRecall->kbd_usr, sizeof(kbd_usr));
     recallFromDtConfigDescriptor(fgLN);
-    recallFromDtConfigDescriptor(eRPN);
+    recallFromDtConfigDescriptor(compatibility_bool19);
     recallFromDtConfigDescriptor(HOME3);
     recallFromDtConfigDescriptor(ShiftTimoutMode);
-    recallFromDtConfigDescriptor(CPXMULT);
-    recallFromDtConfigDescriptor(BASE_HOME);
+    recallFromDtConfigDescriptor(compatibility_bool21);
+    recallFromDtConfigDescriptor(compatibility_bool18);
     recallFromDtConfigDescriptor(compatibility_bool00);   //spare
     recallFromDtConfigDescriptor(Norm_Key_00_VAR);
     recallFromDtConfigDescriptor(Input_Default);
@@ -349,10 +342,10 @@ void fnRecallConfig(uint16_t regist) {
     recallFromDtConfigDescriptor(fractionDigits);
     recallFromDtConfigDescriptor(compatibility_byte1);
     recallFromDtConfigDescriptor(compatibility_bool16);    //spare
-    recallFromDtConfigDescriptor(jm_LARGELI);
-    recallFromDtConfigDescriptor(constantFractions);
+    recallFromDtConfigDescriptor(compatibility_bool20);
+    recallFromDtConfigDescriptor(compatibility_bool17);
     recallFromDtConfigDescriptor(IrFractionsCurrentStatus);
-    recallFromDtConfigDescriptor(constantFractionsOn);
+    recallFromDtConfigDescriptor(compatibility_bool18);
     recallFromDtConfigDescriptor(displayStackSHOIDISP);
     recallFromDtConfigDescriptor(bcdDisplay);
     recallFromDtConfigDescriptor(topHex);

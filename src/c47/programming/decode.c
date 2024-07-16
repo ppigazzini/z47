@@ -590,16 +590,16 @@ static void decodeLiteral(uint8_t *literalAddress) {
       char *sourceStringPtr = tmpStringLabelOrVariableName;
       getStringLabelOrVariableName(literalAddress);
       _decodeNumeral(dispStringPtr, sourceStringPtr, false, &dispStringPtr, (const char **)&sourceStringPtr);
-      if(!CPXMULT && aimBuffer[0] == 0 && tmpString[0] == '0' && tmpString[1] == '.' && tmpString[2] == 0) {
+      if(!getSystemFlag(FLAG_CPXMULT) && aimBuffer[0] == 0 && tmpString[0] == '0' && tmpString[1] == '.' && tmpString[2] == 0) {
         // remove "0." (not "0.0", "0.00" etc.)
         tmpString[0] = 0;
         dispStringPtr = tmpString;
       }
       if(*sourceStringPtr == 'i' || *sourceStringPtr == 'j') { // unlikely
-        if(CPXMULT || aimBuffer[0] != 0 || tmpString[0] != 0) {
+        if(getSystemFlag(FLAG_CPXMULT) || aimBuffer[0] != 0 || tmpString[0] != 0) {
           *(dispStringPtr++) = '+';
         }
-        if(CPXMULT || aimBuffer[0] != 0) {
+        if(getSystemFlag(FLAG_CPXMULT) || aimBuffer[0] != 0) {
           *(dispStringPtr++) = COMPLEX_UNIT[0];
           *(dispStringPtr++) = COMPLEX_UNIT[1];
         }
@@ -607,21 +607,21 @@ static void decodeLiteral(uint8_t *literalAddress) {
       }
       else if(*sourceStringPtr == '+' || *sourceStringPtr == '-') {
         *(dispStringPtr++) = *(sourceStringPtr++);
-        if(!CPXMULT && aimBuffer[0] == 0 && dispStringPtr - tmpString == 1 && *(sourceStringPtr - 1) == '+') {
+        if(!getSystemFlag(FLAG_CPXMULT) && aimBuffer[0] == 0 && dispStringPtr - tmpString == 1 && *(sourceStringPtr - 1) == '+') {
           --dispStringPtr;
         }
-        if(CPXMULT || aimBuffer[0] != 0) {
+        if(getSystemFlag(FLAG_CPXMULT) || aimBuffer[0] != 0) {
           *(dispStringPtr++) = COMPLEX_UNIT[0];
           *(dispStringPtr++) = COMPLEX_UNIT[1];
         }
         ++sourceStringPtr;
       }
-      if(CPXMULT || aimBuffer[0] != 0) {
+      if(getSystemFlag(FLAG_CPXMULT) || aimBuffer[0] != 0) {
         *(dispStringPtr++) = PRODUCT_SIGN[0];
         *(dispStringPtr++) = PRODUCT_SIGN[1];
       }
       _decodeNumeral(dispStringPtr, sourceStringPtr, calcMode == CM_PEM && aimBuffer[0] != 0 && (currentStep + 2 == literalAddress), &dispStringPtr, NULL);
-      if(!CPXMULT && aimBuffer[0] == 0) {
+      if(!getSystemFlag(FLAG_CPXMULT) && aimBuffer[0] == 0) {
         *(dispStringPtr++) = COMPLEX_UNIT[0];
         *(dispStringPtr++) = COMPLEX_UNIT[1];
         *dispStringPtr = 0;
