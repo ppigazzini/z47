@@ -25,6 +25,7 @@
 #include <stdint.h>
 
 char modelString[50];
+bool_t enableFunctionKeysDisplay;
 
 
 #if !defined(TESTSUITE_BUILD)

@@ -98,6 +98,13 @@
         }
       }
 
+      if(strcmp(argv[arg], "--functionkeys") == 0) {
+        enableFunctionKeysDisplay = true;
+      }
+      else {
+        enableFunctionKeysDisplay = false;
+      }
+
       if(strcmp(argv[arg], "--landscape") == 0) {
         calcLandscape             = true;
         calcAutoLandscapePortrait = false;

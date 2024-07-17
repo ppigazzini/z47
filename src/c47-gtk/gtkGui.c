@@ -43,6 +43,7 @@
 //#define DEBUGMODES
 
 char modelString[50];
+bool_t enableFunctionKeysDisplay;
 
 
 #if defined(PC_BUILD)
@@ -3351,12 +3352,22 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
       #endif // (SHOW_MEMORY_STATUS == 1)
 
       // 1st row: F1 to F6 buttons
-      btn11 = gtk_button_new_with_label("");
-      btn12 = gtk_button_new_with_label("");
-      btn13 = gtk_button_new_with_label("");
-      btn14 = gtk_button_new_with_label("");
-      btn15 = gtk_button_new_with_label("");
-      btn16 = gtk_button_new_with_label("");
+      if(enableFunctionKeysDisplay) {
+        btn11 = gtk_button_new_with_label("F1");
+        btn12 = gtk_button_new_with_label("F2");
+        btn13 = gtk_button_new_with_label("F3");
+        btn14 = gtk_button_new_with_label("F4");
+        btn15 = gtk_button_new_with_label("F5");
+        btn16 = gtk_button_new_with_label("F6");
+      }
+      else {
+        btn11 = gtk_button_new_with_label("");
+        btn12 = gtk_button_new_with_label("");
+        btn13 = gtk_button_new_with_label("");
+        btn14 = gtk_button_new_with_label("");
+        btn15 = gtk_button_new_with_label("");
+        btn16 = gtk_button_new_with_label("");
+      }
 
       gtk_widget_set_tooltip_text(GTK_WIDGET(btn11), "F1");
       gtk_widget_set_tooltip_text(GTK_WIDGET(btn12), "F2");
