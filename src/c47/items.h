@@ -2088,7 +2088,7 @@
 #define ITM_PZOOMX                  2034
 #define ITM_PZOOMY                  2035
 #define MNU_TRG                     2036
-#define MNU_SETUP                   2037
+#define MNU_PREF                    2037
 #define ITM_SAFERESET               2038
 #define ITM_SH_LONGPRESS                   2039
 #define ITM_PLOT_STAT               2040
