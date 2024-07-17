@@ -34,6 +34,8 @@
 #include "c47.h"
 
 #if defined(PC_BUILD)
+  char modelString[50];
+  bool_t enableFunctionKeysDisplay;
   bool_t              calcLandscape;
   bool_t              calcAutoLandscapePortrait;
   GtkWidget           *screen;

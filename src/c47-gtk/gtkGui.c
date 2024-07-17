@@ -42,9 +42,6 @@
 
 //#define DEBUGMODES
 
-char modelString[50];
-bool_t enableFunctionKeysDisplay;
-
 
 #if defined(PC_BUILD)
   GtkWidget *grid;
