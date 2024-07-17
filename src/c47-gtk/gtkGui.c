@@ -42,6 +42,8 @@
 
 //#define DEBUGMODES
 
+char modelString[50];
+
 
 #if defined(PC_BUILD)
   GtkWidget *grid;
@@ -3218,20 +3220,40 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
       gtk_container_add(GTK_CONTAINER(frmCalc), grid);
 
 
-
-      // Backround image
-      if(calcLandscape) {
-        backgroundImage = gtk_image_new_from_file("res/dm42lshort.png");
+      
+      if(modelString[0] == 0) {
+        strcpy(modelString,"res/");
+        switch(calcModel) {
+          case USER_R47f_g  :
+          case USER_R47fg_bk:
+          case USER_R47fg_g :
+          case USER_R47bk_fg:strcat(modelString,"R47"); break;
+          case USER_C47     :
+          default           :strcat(modelString,"C47"); break;
+        }
+        if(calcLandscape) {
+          strcat(modelString,"short.png");
+        } 
+        else {
+          strcat(modelString,".png");        
+        }
       }
       else {
-        #if NARROW_SCREEN == 0
-          backgroundImage = gtk_image_new_from_file("res/dm42l_L1.png");
-          gtk_fixed_put(GTK_FIXED(grid), backgroundImage, 0, 0);
-        #else // NARROW_SCREEN != 0 --> 400x1280 raspberry screen
-          backgroundImage = gtk_image_new_from_file("res/dm42l_L1_narrow_screen.png");
-          gtk_fixed_put(GTK_FIXED(grid), backgroundImage, 0, 240);
-        #endif // NARROW_SCREEN == 0
+        char modelString2[50];
+        strcpy(modelString2,"res/");
+        strcat(modelString2,modelString);
+        strcpy(modelString,modelString2);
       }
+
+
+      // Backround image
+      #if NARROW_SCREEN == 0
+        backgroundImage = gtk_image_new_from_file(modelString);
+        gtk_fixed_put(GTK_FIXED(grid), backgroundImage, 0, 0);
+      #else // NARROW_SCREEN != 0 --> 400x1280 raspberry screen
+        backgroundImage = gtk_image_new_from_file("res/dm42l_L1_narrow_screen.png");
+        gtk_fixed_put(GTK_FIXED(grid), backgroundImage, 0, 240);
+      #endif // NARROW_SCREEN == 0
 
 
 

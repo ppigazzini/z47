@@ -24,6 +24,9 @@
 #include "typeDefinitions.h"
 #include <stdint.h>
 
+char modelString[50];
+
+
 #if !defined(TESTSUITE_BUILD)
   void btn_Clicked_Gen(bool_t shF, bool_t shG, char *st);
   void fnOff                       (uint16_t unsuedParamButMandatory);
