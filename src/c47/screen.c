@@ -4085,7 +4085,22 @@ if(Output_Default != 0) {
       //printf("\nchange to real STD_BOX:%u %u   RADIX34_MARK_STRING:%u %u\n",(uint8_t)STD_BOX[0], (uint8_t)STD_BOX[1], (uint8_t)RADIX34_MARK_STRING[0], (uint8_t)RADIX34_MARK_STRING[1]);
 
            convertLongIntegerRegisterToReal34Register(regist,TEMP_REGISTER_1);
-           real34ToDisplayString(REGISTER_REAL34_DATA(TEMP_REGISTER_1), getRegisterAngularMode(TEMP_REGISTER_1), tmpString, &numericFont, SCREEN_WIDTH - prefixWidth, NUMBER_OF_DISPLAY_DIGITS, true, true);
+             //direct pre-number
+//           strcpy(tmpString,"LI: ");
+           strcpy(tmpString,STD_INTEGER_Z ":" STD_SPACE_4_PER_EM);
+           prefix[0]=0;
+           prefixWidth = stringWidth(tmpString, &numericFont, true, true) + 1; //use prefixwidth to measure the tmpString prefix to the numbers
+
+           //Prefix
+     //      tmpString[0]=0;
+//   //        strcpy(prefix,STD_INTEGER_Z ": ");
+     //      strcpy(prefix,"LI: ");
+     //      prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
+
+
+           real34ToDisplayString(REGISTER_REAL34_DATA(TEMP_REGISTER_1), getRegisterAngularMode(TEMP_REGISTER_1), tmpString+stringByteLength(tmpString), &numericFont, SCREEN_WIDTH - prefixWidth, NUMBER_OF_DISPLAY_DIGITS, true, true);
+           
+
 
            int jj = stringLastGlyph(tmpString);
            int kk = stringByteLength(tmpString);
@@ -4128,17 +4143,17 @@ if(Output_Default != 0) {
            }
 
 
-           //mark the radix position
-//           int mm = ii;
-           //replace the product sign
-           while(ii <= jj && ii > 0) {
-             if(tmpString[ii]==PRODUCT_SIGN[0] && tmpString[ii+1]==PRODUCT_SIGN[1]) {
-               tmpString[ii] = PRODUCT_SIGN_LI_STRING[0]; //'x';//STD_x[0];
-               tmpString[ii+1] = PRODUCT_SIGN_LI_STRING[1]; //1;  //only allow a two byte special period for integer
-               break;
-             }
-             ii = stringNextGlyph(tmpString, ii);
-           }
+//             //mark the radix position
+//  //           int mm = ii;
+//             //replace the product sign
+//             while(ii <= jj && ii > 0) {
+//               if(tmpString[ii]==PRODUCT_SIGN[0] && tmpString[ii+1]==PRODUCT_SIGN[1]) {
+//                 tmpString[ii] = PRODUCT_SIGN_LI_STRING[0]; //'x';//STD_x[0];
+//                 tmpString[ii+1] = PRODUCT_SIGN_LI_STRING[1]; //1;  //only allow a two byte special period for integer
+//                 break;
+//               }
+//               ii = stringNextGlyph(tmpString, ii);
+//             }
 
 
            
