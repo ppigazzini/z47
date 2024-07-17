@@ -210,7 +210,7 @@ typedef struct {
   bool_t compatibility_bool14;              //Spare Byte
   bool_t compatibility_bool15;              //Spare Byte
   int8_t fractionDigits;
-  int8_t Output_Default;
+  int8_t compatibility_bool23;
   bool_t compatibility_bool16;              //Spare Byte
   bool_t compatibility_bool20;              //Spare Byte
   bool_t compatibility_bool17;              //Spare Byte

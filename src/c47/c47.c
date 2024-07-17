@@ -194,7 +194,6 @@ bool_t                ShiftTimoutMode;                         //JM SHIFT Create
 bool_t                BASE_HOME;                               //JM BASEHOME
 int16_t               Norm_Key_00_VAR;                         //JM USER NORMAL
 uint8_t               Input_Default;                           //JM Input Default
-uint8_t               Output_Default;                          //JM Input Default
 float                 graph_xmin;                              //JM Graph
 float                 graph_xmax;                              //JM Graph
 float                 graph_ymin;                              //JM Graph

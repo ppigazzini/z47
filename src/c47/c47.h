@@ -317,7 +317,6 @@
   extern bool_t                 BASE_HOME;                    //JM BASEHOME Create a flag to enable or disable triple shift
   extern int16_t                Norm_Key_00_VAR;              //JM USER NORMAL
   extern uint8_t                Input_Default;                //JM Input Default
-  extern uint8_t                Output_Default;
   extern bool_t                 BASE_MYM;                     //JM Screen / keyboard operation setup
   extern bool_t                 jm_G_DOUBLETAP;               //JM Screen / keyboard operation setup
   extern float                  graph_xmin;                   //JM Graph

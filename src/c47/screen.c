@@ -4080,7 +4080,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
             viewRegName(prefix, &prefixWidth);
           }
 
-if(Output_Default != 0) {
+if(getSystemFlag(FLAG_DREAL)) {
 //vv this is experimental, to display long integers as reals-------------------------------------------------------------------------------------------
       //printf("\nchange to real STD_BOX:%u %u   RADIX34_MARK_STRING:%u %u\n",(uint8_t)STD_BOX[0], (uint8_t)STD_BOX[1], (uint8_t)RADIX34_MARK_STRING[0], (uint8_t)RADIX34_MARK_STRING[1]);
 

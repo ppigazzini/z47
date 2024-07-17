@@ -903,20 +903,6 @@ void fnInDefault(uint16_t inputDefault) {
   fnRefreshState();
 }
 
-void fnOutReal(uint16_t or) {
-  if(Output_Default == 0) {
-    Output_Default = 1;
-    clearSystemFlag(FLAG_LARGELI);
-  }
-  else {
-    Output_Default = 0;
-  }
-  screenUpdatingMode = SCRUPD_AUTO;
-  refreshScreen(44);
-  
-  fnRefreshState();
-}
-
 
 void fnByteShortcutsS(uint16_t size) { //JM POC BASE2 vv
   fnSetWordSize(size);

@@ -275,6 +275,7 @@ void fnRecallConfig(uint16_t regist) {
     __attribute__((unused)) bool_t compatibility_bool20;    //for use in spare slots below
     __attribute__((unused)) bool_t compatibility_bool21;    //for use in spare slots below
     __attribute__((unused)) bool_t compatibility_bool22;    //for use in spare slots below
+    __attribute__((unused)) bool_t compatibility_bool23;    //for use in spare slots below
     __attribute__((unused)) float  compatibility_float1;    //for use in spare slots below
     __attribute__((unused)) float  compatibility_float2;    //for use in spare slots below
     __attribute__((unused)) float  compatibility_float3;    //for use in spare slots below
@@ -339,7 +340,7 @@ void fnRecallConfig(uint16_t regist) {
     recallFromDtConfigDescriptor(compatibility_bool14); 
     recallFromDtConfigDescriptor(compatibility_bool15); 
     recallFromDtConfigDescriptor(fractionDigits);
-    recallFromDtConfigDescriptor(Output_Default);
+    recallFromDtConfigDescriptor(compatibility_bool23);
     recallFromDtConfigDescriptor(compatibility_bool16);    //spare
     recallFromDtConfigDescriptor(compatibility_bool20);
     recallFromDtConfigDescriptor(compatibility_bool17);

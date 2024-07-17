@@ -154,7 +154,7 @@ void configCommon(uint16_t idx) {
 
 TO_QSPI const int32_t Settings[] = {
 //variable,                          n/a,        Reset,                          HP35,            JM,                   RJ,                     C47,             DefltSB,         TVM,                  Comment
-InputDefaultDataType,                xxx,        xxx,                            ID_DP,           ID_43S,               ID_43S,                 ID_43S,          xxx,             xxx,                  
+InputDefaultDataType,                xxx,        xxx,                            ID_DP,           ID_43S,               ID_DP,                  ID_43S,          xxx,             xxx,                  
 SigFigNumberOfDigits,                xxx,        xxx,                            9,               3,                    xxx,                    xxx,             xxx,             xxx,                  
 AllNumberOfDigits,                   xxx,        xxx,                            xxx,             xxx,                  xxx,                    3,               xxx,             xxx,                  
 FixNumberOfDigits,                   xxx,        xxx,                            xxx,             xxx,                  3,                      xxx,             xxx,             xxx,                  
@@ -181,6 +181,8 @@ fgLongPressSetting,                  xxx,        xxx,                           
 3,                                   0,          FLAG_CPXMULT,                   xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,
 3,                                   1,          FLAG_LARGELI,                   xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,
 3,                                   0,          FLAG_PFX_ALL,                   xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,
+3,                                   0,          FLAG_DREAL,                     xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,
+3,                                   1,          FLAG_DREAL,                     xxx,             FLAG_DREAL,           xxx,                    xxx,             xxx,             xxx,
 
 
 
@@ -247,7 +249,7 @@ RESERVED_VARIABLE_CPERONA,           xxx,        12,                            
 //fractions
 3,                                   0,          FLAG_DENFIX,                    xxx,             FLAG_DENFIX,          xxx,                    xxx,             xxx,             xxx,                  // Clear flag FLAG_DENFIX
 3,                                   0,          FLAG_FRACT,                     xxx,             FLAG_FRACT,           xxx,                    xxx,             xxx,             xxx,                  // Clear flag FLAG_FRACT
-3,                                   1,          FLAG_PROPFR,                    xxx,             FLAG_PROPFR,          xxx,                    xxx,             xxx,             xxx,                  // Set flag  FLAG_PROPFR
+3,                                   1,          FLAG_PROPFR,                    xxx,             FLAG_PROPFR,          FLAG_PROPFR,            xxx,             xxx,             xxx,                  // Set flag  FLAG_PROPFR
 3,                                   0,          FLAG_DENANY,                    xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,                  // Clear flag FLAG_DENANY
 3,                                   1,          xxx,                            xxx,             FLAG_DENANY,          FLAG_DENANY,            xxx,             xxx,             xxx,                  // Set flag  FLAG_DENANY
 3,                                   0,          FLAG_FRCSRN,                    xxx,             FLAG_FRCSRN,          xxx,                    xxx,             xxx,             xxx,                  // Clear flag FLAG_FRCSRN
@@ -1255,7 +1257,6 @@ void resetOtherConfigurationStuff(void) {
   ShiftTimoutMode = false;
   Norm_Key_00_VAR  = Norm_Key_00_item_in_layout;               //JM NORM MODE SIGMA REPLACEMENT KEY
   Input_Default =  ID_43S;
-  Output_Default = 0;
   jm_G_DOUBLETAP = true;
   displayStackSHOIDISP = 2;            //See if the refresh is needed. fnShoiXRepeats(2); //displayStackSHOIDISP
   bcdDisplay = false;

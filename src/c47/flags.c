@@ -648,10 +648,16 @@ void SetSetting(uint16_t jmConfig) {
     case ITM_FRCSRN:  fnFlipFlag(FLAG_FRCSRN);                               break; //  
     case JC_CPXMULT:  fnFlipFlag(FLAG_CPXMULT);                              break; //
     case JC_NL:       fnFlipFlag(FLAG_NUMLOCK); showAlphaModeonGui();        break; //
+    case ITM_DREAL:
+      fnFlipFlag(FLAG_DREAL);
+      if(getSystemFlag(FLAG_DREAL)) {
+        clearSystemFlag(FLAG_LARGELI);
+      }
+      break;
     case JC_LARGELI:  
       fnFlipFlag(FLAG_LARGELI);
       if(getSystemFlag(FLAG_LARGELI)) {
-        Output_Default = 0;
+        clearSystemFlag(FLAG_DREAL);
       }
       break;
     case JC_IRFRAC:  
