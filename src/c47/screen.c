@@ -4085,55 +4085,40 @@ if(getSystemFlag(FLAG_DREAL)) {
       //printf("\nchange to real STD_BOX:%u %u   RADIX34_MARK_STRING:%u %u\n",(uint8_t)STD_BOX[0], (uint8_t)STD_BOX[1], (uint8_t)RADIX34_MARK_STRING[0], (uint8_t)RADIX34_MARK_STRING[1]);
 
            convertLongIntegerRegisterToReal34Register(regist,TEMP_REGISTER_1);
-             //direct pre-number
-//           strcpy(tmpString,"LI: ");
-           strcpy(tmpString,STD_INTEGER_Z ":" STD_SPACE_4_PER_EM);
+           strcpy(tmpString,STD_INTEGER_Z_SMALL ":" STD_SPACE_4_PER_EM);
            prefix[0]=0;
-           prefixWidth = stringWidth(tmpString, &numericFont, true, true) + 1; //use prefixwidth to measure the tmpString prefix to the numbers
-
-           //Prefix
-     //      tmpString[0]=0;
-//   //        strcpy(prefix,STD_INTEGER_Z ": ");
-     //      strcpy(prefix,"LI: ");
-     //      prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
-
-
+           prefixWidth = stringWidth(tmpString, &numericFont, true, true) + 1;                                                 //use prefixwidth to measure the tmpString prefix to the numbers
            real34ToDisplayString(REGISTER_REAL34_DATA(TEMP_REGISTER_1), getRegisterAngularMode(TEMP_REGISTER_1), tmpString+stringByteLength(tmpString), &numericFont, SCREEN_WIDTH - prefixWidth, NUMBER_OF_DISPLAY_DIGITS, true, true);
-           
 
-
-           int jj = stringLastGlyph(tmpString);
-           int kk = stringByteLength(tmpString);
-           //printf("FFF -2:%u %u %u %u %u\n",(uint8_t)tmpString[jj-2], (uint8_t)tmpString[jj-1], (uint8_t)tmpString[jj], (uint8_t)tmpString[jj+1], (uint8_t)tmpString[jj+2]);
-           int ii = jj;
+           int lastGlyphPosition = stringLastGlyph(tmpString);
+           int ii = lastGlyphPosition;
            
            //find and replace the radix. Two options, a single byte or two-byte radix
            while(ii >= 0) {
-             //printf("%u %u ",(uint8_t)tmpString[ii],(uint8_t)tmpString[ii+1]);
-             if(tmpString[ii]==RADIX34_MARK_STRING[0] && tmpString[ii+1]==RADIX34_MARK_STRING[1]) {   //remove radix if at end of line
-               if(ii == jj) {
-                 tmpString[ii] = 0;
-                 ii = 0;
+             if((tmpString[ii] & 0x80) && tmpString[ii]==RADIX34_MARK_STRING[0] && tmpString[ii+1]==RADIX34_MARK_STRING[1]) {
+               if(ii == lastGlyphPosition) {                                                                                   //remove two byte radix, if at end of line
+                 tmpString[ii] = 0;                                                                                               //ignore the second byte, as the first one has a zero terminator
+                 ii = 0;                                                                                                          //break with ii=0, signalling end of line radix removed. There cannot be an exponent.
                  break;
                }
-               tmpString[ii] = RADIX34_MARK_LI_STRING[0];
-               tmpString[ii+1] = RADIX34_MARK_LI_STRING[1];  //only allow a two byte special period for integer
-               break;
+                                      //             tmpString[ii] = RADIX34_MARK_LI_STRING[0];
+                                      //             tmpString[ii+1] = RADIX34_MARK_LI_STRING[1];  //only allow a two byte special period for integer
+               break;                                                                                                             //break with i!=0, signalling continue
              }
-             else if(tmpString[ii]==RADIX34_MARK_STRING[0] && RADIX34_MARK_STRING[1]==1) {   //remove radix if at end of line
-               if(ii == jj) {
-                 tmpString[ii] = 0;
-                 ii = 0;
+             else if(!(tmpString[ii] & 0x80) && tmpString[ii]==RADIX34_MARK_STRING[0] && RADIX34_MARK_STRING[1]==1) {
+               if(ii == lastGlyphPosition) {                                                                                   //remove radix if at end of line
+                 tmpString[ii] = 0;                                                                                               //ignore the second byte, as the first one has a zero terminator
+                 ii = 0;                                                                                                          //break with ii=0, signalling end of line radix removed. There cannot be an exponent.
                  break;
                }
-               //printf("\nIIII -2:%u %u %u %u %u\n",(uint8_t)tmpString[kk-2], (uint8_t)tmpString[kk-1], (uint8_t)tmpString[kk], (uint8_t)tmpString[kk+1], (uint8_t)tmpString[kk+2]);
-               while (kk > ii) {
-                 tmpString[kk+1] = tmpString[kk];
-                 kk--;
-               }
-               tmpString[ii] = RADIX34_MARK_LI_STRING[0];
-               tmpString[ii+1] = RADIX34_MARK_LI_STRING[1];  //only allow a two byte special period for integer
-               jj++;
+                                                     //Shift on one byte
+                                      //               while (kk > ii) {
+                                      //                 tmpString[kk+1] = tmpString[kk];
+                                      //                 kk--;
+                                      //                 }
+                                      //               tmpString[ii] = RADIX34_MARK_LI_STRING[0];
+                                      //               tmpString[ii+1] = RADIX34_MARK_LI_STRING[1];  //only allow a two byte special period for integer
+                                      //               lastGlyphPosition++;                                                                                             //shifted up one byute, therefore incrementing lastGlyphPosition
                break;
              }
              if(ii <= 0) {
@@ -4141,32 +4126,31 @@ if(getSystemFlag(FLAG_DREAL)) {
              }
              ii = stringPrevGlyph(tmpString, ii);
            }
+           //if broken out, ii is now the radixposition. If 0, radix is either not found or replaced at end of line, either wat it is a clean integer without decimals.
+           int radixPosition = ii;
 
+           //find the MULT position between the radix and end of line
+             while(ii <= lastGlyphPosition && radixPosition > 0) {
+               if(tmpString[ii]==PRODUCT_SIGN[0] && tmpString[ii+1]==PRODUCT_SIGN[1]) {
+                                                       //replace the product sign
+                                      //                 tmpString[ii] = PRODUCT_SIGN_LI_STRING[0]; //'x';//STD_x[0];
+                                      //                 tmpString[ii+1] = PRODUCT_SIGN_LI_STRING[1]; //1;  //only allow a two byte special period for integer
+                 break;
+               }
+               ii = stringNextGlyph(tmpString, ii);
+             }
 
-//             //mark the radix position
-//  //           int mm = ii;
-//             //replace the product sign
-//             while(ii <= jj && ii > 0) {
-//               if(tmpString[ii]==PRODUCT_SIGN[0] && tmpString[ii+1]==PRODUCT_SIGN[1]) {
-//                 tmpString[ii] = PRODUCT_SIGN_LI_STRING[0]; //'x';//STD_x[0];
-//                 tmpString[ii+1] = PRODUCT_SIGN_LI_STRING[1]; //1;  //only allow a two byte special period for integer
-//                 break;
-//               }
-//               ii = stringNextGlyph(tmpString, ii);
-//             }
-
-
-           
-//           //replace all insignificant zeroes
-//           while(mm < jj && ii <= 0){
-//             if(tmpString[jj] == '0' && !(tmpString[jj] & 0x80)) {
-//               tmpString[jj] = ZERO_LI_STRING[0]; //'o'; // STD_SPACE[0];
-//             }
-//             else if(tmpString[jj] > '0' && tmpString[jj] <= '9' && !(tmpString[jj] & 0x80)) {  //count from end of string to radix, and quit when the first non-zero is met.
-//               break;
-//             }
-//             jj = stringPrevGlyph(tmpString, jj);
-//           }
+           //replace all insignificant zeroes
+           int jj = lastGlyphPosition;
+           while(jj > radixPosition && jj>=1 && radixPosition > 0){
+             if(tmpString[jj] == '0' && !(tmpString[jj-1] & 0x80)) {
+               tmpString[jj] = ZERO_LI_STRING[0]; //'o'; // STD_SPACE[0];
+             }
+             else if(tmpString[jj] > '0' && tmpString[jj] <= '9' && !(tmpString[jj] & 0x80)) {  //count from end of string to radix, and quit when the first non-zero is met.
+               break;
+             }
+             jj = stringPrevGlyph(tmpString, jj);
+           }
 
 
       //printf("\nGGG -2:%u %u %u %u %u\n",(uint8_t)tmpString[jj-2], (uint8_t)tmpString[jj-1], (uint8_t)tmpString[jj], (uint8_t)tmpString[jj+1], (uint8_t)tmpString[jj+2]);
