@@ -4092,34 +4092,16 @@ if(getSystemFlag(FLAG_DREAL)) {
 
            int lastGlyphPosition = stringLastGlyph(tmpString);
            int ii = lastGlyphPosition;
-           
-           //find and replace the radix. Two options, a single byte or two-byte radix
+
+           //find the radix. Two options, a single byte or two-byte radix
            while(ii >= 0) {
-             if((tmpString[ii] & 0x80) && tmpString[ii]==RADIX34_MARK_STRING[0] && tmpString[ii+1]==RADIX34_MARK_STRING[1]) {
+             if(tmpString[ii]==RADIX34_MARK_STRING[0] && (tmpString[ii+1]==RADIX34_MARK_STRING[1] || RADIX34_MARK_STRING[1]==1)) {
                if(ii == lastGlyphPosition) {                                                                                   //remove two byte radix, if at end of line
                  tmpString[ii] = 0;                                                                                               //ignore the second byte, as the first one has a zero terminator
                  ii = 0;                                                                                                          //break with ii=0, signalling end of line radix removed. There cannot be an exponent.
                  break;
                }
-                                      //             tmpString[ii] = RADIX34_MARK_LI_STRING[0];
-                                      //             tmpString[ii+1] = RADIX34_MARK_LI_STRING[1];  //only allow a two byte special period for integer
-               break;                                                                                                             //break with i!=0, signalling continue
-             }
-             else if(!(tmpString[ii] & 0x80) && tmpString[ii]==RADIX34_MARK_STRING[0] && RADIX34_MARK_STRING[1]==1) {
-               if(ii == lastGlyphPosition) {                                                                                   //remove radix if at end of line
-                 tmpString[ii] = 0;                                                                                               //ignore the second byte, as the first one has a zero terminator
-                 ii = 0;                                                                                                          //break with ii=0, signalling end of line radix removed. There cannot be an exponent.
-                 break;
-               }
-                                                     //Shift on one byte
-                                      //               while (kk > ii) {
-                                      //                 tmpString[kk+1] = tmpString[kk];
-                                      //                 kk--;
-                                      //                 }
-                                      //               tmpString[ii] = RADIX34_MARK_LI_STRING[0];
-                                      //               tmpString[ii+1] = RADIX34_MARK_LI_STRING[1];  //only allow a two byte special period for integer
-                                      //               lastGlyphPosition++;                                                                                             //shifted up one byute, therefore incrementing lastGlyphPosition
-               break;
+               break;                                                                                                             //break with ii!=0, signalling continue
              }
              if(ii <= 0) {
                break;
@@ -4127,31 +4109,29 @@ if(getSystemFlag(FLAG_DREAL)) {
              ii = stringPrevGlyph(tmpString, ii);
            }
            //if broken out, ii is now the radixposition. If 0, radix is either not found or replaced at end of line, either wat it is a clean integer without decimals.
+
            int radixPosition = ii;
+//This is disused and must be deleted
+//           //find the MULT position between the radix and end of line
+//             while(ii <= lastGlyphPosition && radixPosition > 0) {
+//               if(tmpString[ii]==PRODUCT_SIGN[0] && tmpString[ii+1]==PRODUCT_SIGN[1]) {
+//                 break;
+//               }
+//               ii = stringNextGlyph(tmpString, ii);
+//             }
 
-           //find the MULT position between the radix and end of line
-             while(ii <= lastGlyphPosition && radixPosition > 0) {
-               if(tmpString[ii]==PRODUCT_SIGN[0] && tmpString[ii+1]==PRODUCT_SIGN[1]) {
-                                                       //replace the product sign
-                                      //                 tmpString[ii] = PRODUCT_SIGN_LI_STRING[0]; //'x';//STD_x[0];
-                                      //                 tmpString[ii+1] = PRODUCT_SIGN_LI_STRING[1]; //1;  //only allow a two byte special period for integer
-                 break;
-               }
-               ii = stringNextGlyph(tmpString, ii);
-             }
-
+//This must be chosen still
            //replace all insignificant zeroes
            int jj = lastGlyphPosition;
            while(jj > radixPosition && jj>=1 && radixPosition > 0){
-             if(tmpString[jj] == '0' && !(tmpString[jj-1] & 0x80)) {
-               tmpString[jj] = ZERO_LI_STRING[0]; //'o'; // STD_SPACE[0];
+             if(tmpString[jj] == '0') {
+               tmpString[jj] = ZERO_LI_STRING[0]; //only single byte allowed, otherwise the string must be shifted by 1
              }
-             else if(tmpString[jj] > '0' && tmpString[jj] <= '9' && !(tmpString[jj] & 0x80)) {  //count from end of string to radix, and quit when the first non-zero is met.
+             else if(tmpString[jj] > '0' && tmpString[jj] <= '9') {  //count from end of string to radix, and quit when the first non-zero is met.
                break;
              }
              jj = stringPrevGlyph(tmpString, jj);
            }
-
 
       //printf("\nGGG -2:%u %u %u %u %u\n",(uint8_t)tmpString[jj-2], (uint8_t)tmpString[jj-1], (uint8_t)tmpString[jj], (uint8_t)tmpString[jj+1], (uint8_t)tmpString[jj+2]);
 //^^ --------------------------------------------------------------------------------------------------------------------------------------------------

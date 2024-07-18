@@ -1753,9 +1753,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define RADIX34_MARK_DEC_ITM                 (RADIX34_MARK_CHAR == '.' ? ITM_PERIOD : ITM_COMMA)
 #define RADIX34_MARK_NOT_DEC_ITM             (RADIX34_MARK_CHAR == '.' ? ITM_COMMA : ITM_PERIOD)
 
-//#define RADIX34_MARK_LI_STRING               (RADIX34_MARK_CHAR == '.' ? STD_PERIOD34 : STD_COMMA34) // STD_SUB_o : STD_SUB_o)  //STD_SUB_SUN : STD_SUB_SUN) //  STD_CURSOR : STD_CURSOR) //STD_PERIOD34 : STD_COMMA34)
-//#define PRODUCT_SIGN_LI_STRING               (getSystemFlag(FLAG_MULTx)  ? (char*) "x\1" : STD_WDOT)// (char*) "o\1")
-#define ZERO_LI_STRING                       (STD_DOUBLEZERO) //only single character!
+#define ZERO_LI_STRING                       (STD_DOUBLEZERO) //(STD_0) //(STD_O) //only single character!
 #define Z_LI_STRING                          (STD_INTEGER_Z_SMALL)
 
 #define groupingGap                          ((uint8_t)(grpGroupingLeft)) //ADD HERE THE CONDITIONS FOR NIL SEPS
