@@ -4080,65 +4080,28 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
             viewRegName(prefix, &prefixWidth);
           }
 
-if(getSystemFlag(FLAG_DREAL)) {
-//vv this is experimental, to display long integers as reals-------------------------------------------------------------------------------------------
-      //printf("\nchange to real STD_BOX:%u %u   RADIX34_MARK_STRING:%u %u\n",(uint8_t)STD_BOX[0], (uint8_t)STD_BOX[1], (uint8_t)RADIX34_MARK_STRING[0], (uint8_t)RADIX34_MARK_STRING[1]);
 
-           convertLongIntegerRegisterToReal34Register(regist,TEMP_REGISTER_1);
-           strcpy(tmpString,STD_INTEGER_Z_SMALL ":" STD_SPACE_4_PER_EM);
-           prefix[0]=0;
-           prefixWidth = stringWidth(tmpString, &numericFont, true, true) + 1;                                                 //use prefixwidth to measure the tmpString prefix to the numbers
-           real34ToDisplayString(REGISTER_REAL34_DATA(TEMP_REGISTER_1), getRegisterAngularMode(TEMP_REGISTER_1), tmpString+stringByteLength(tmpString), &numericFont, SCREEN_WIDTH - prefixWidth, NUMBER_OF_DISPLAY_DIGITS, true, true);
+          //This section to display long integers as reals
+          if(getSystemFlag(FLAG_DREAL)) {
+            convertLongIntegerRegisterToReal34Register(regist,TEMP_REGISTER_1);
+            strcpy(tmpString,STD_INTEGER_Z_SMALL ":" STD_SPACE_4_PER_EM);
+            prefix[0]=0;
+            prefixWidth = stringWidth(tmpString, &numericFont, true, true) + 1; //use prefixwidth to measure the tmpString prefix to the numbers
+            real34ToDisplayString(REGISTER_REAL34_DATA(TEMP_REGISTER_1), getRegisterAngularMode(TEMP_REGISTER_1), tmpString+stringByteLength(tmpString), &numericFont, SCREEN_WIDTH - prefixWidth, NUMBER_OF_DISPLAY_DIGITS, true, true);
 
-           int lastGlyphPosition = stringLastGlyph(tmpString);
-           int ii = lastGlyphPosition;
-
-           //find the radix. Two options, a single byte or two-byte radix
-           while(ii >= 0) {
-             if(tmpString[ii]==RADIX34_MARK_STRING[0] && (tmpString[ii+1]==RADIX34_MARK_STRING[1] || RADIX34_MARK_STRING[1]==1)) {
-               if(ii == lastGlyphPosition) {                                                                                   //remove two byte radix, if at end of line
-                 tmpString[ii] = 0;                                                                                               //ignore the second byte, as the first one has a zero terminator
-                 ii = 0;                                                                                                          //break with ii=0, signalling end of line radix removed. There cannot be an exponent.
-                 break;
-               }
-               break;                                                                                                             //break with ii!=0, signalling continue
-             }
-             if(ii <= 0) {
-               break;
-             }
-             ii = stringPrevGlyph(tmpString, ii);
-           }
-           //if broken out, ii is now the radixposition. If 0, radix is either not found or replaced at end of line, either wat it is a clean integer without decimals.
-
-           int radixPosition = ii;
-//This is disused and must be deleted
-//           //find the MULT position between the radix and end of line
-//             while(ii <= lastGlyphPosition && radixPosition > 0) {
-//               if(tmpString[ii]==PRODUCT_SIGN[0] && tmpString[ii+1]==PRODUCT_SIGN[1]) {
-//                 break;
-//               }
-//               ii = stringNextGlyph(tmpString, ii);
-//             }
-
-//This must be chosen still
-           //replace all insignificant zeroes
-           int jj = lastGlyphPosition;
-           while(jj > radixPosition && jj>=1 && radixPosition > 0){
-             if(tmpString[jj] == '0') {
-               tmpString[jj] = ZERO_LI_STRING[0]; //only single byte allowed, otherwise the string must be shifted by 1
-             }
-             else if(tmpString[jj] > '0' && tmpString[jj] <= '9') {  //count from end of string to radix, and quit when the first non-zero is met.
-               break;
-             }
-             jj = stringPrevGlyph(tmpString, jj);
-           }
-
-      //printf("\nGGG -2:%u %u %u %u %u\n",(uint8_t)tmpString[jj-2], (uint8_t)tmpString[jj-1], (uint8_t)tmpString[jj], (uint8_t)tmpString[jj+1], (uint8_t)tmpString[jj+2]);
-//^^ --------------------------------------------------------------------------------------------------------------------------------------------------
-}
-          else if(getSystemFlag(FLAG_2TO10) && displayFormat == DF_UN) {                                                           //for the 2^10 UNIT diplay, display long integers in real string, with the Ti suffic
+            int lastGlyphPosition = stringLastGlyph(tmpString);
+            //check the radix. Two options, a single byte or two-byte radix. Delete the radix if at the right edge of the string.
+            if(tmpString[lastGlyphPosition]==RADIX34_MARK_STRING[0] && (tmpString[lastGlyphPosition+1]==RADIX34_MARK_STRING[1] || RADIX34_MARK_STRING[1]==1)) {
+              tmpString[lastGlyphPosition] = 0;
+            }
+          }
+          else 
+          
+          //for the 2^10 UNIT diplay, display long integers in real string, with the Ti suffic
+          if(getSystemFlag(FLAG_2TO10) && displayFormat == DF_UN) {
             longIntegerRegisterToRealDisplayString(regist, tmpString, TMP_STR_LENGTH);
           } 
+          
           else {
             longIntegerRegisterToDisplayString(regist, tmpString, TMP_STR_LENGTH, SCREEN_WIDTH - prefixWidth, 50, true);
           }
