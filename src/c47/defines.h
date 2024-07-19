@@ -632,7 +632,7 @@
 #define FLAG_PFX_ALL                          0x8049
 #define FLAG_DREAL                            0x804A
 
-#define NUMBER_OF_SYSTEM_FLAGS                    74 // We can have a maximum of 128 system flags
+#define NUMBER_OF_SYSTEM_FLAGS                    75 // We can have a maximum of 128 system flags
 
 typedef enum {
   LI_ZERO     = 0, // Long integer sign 0
