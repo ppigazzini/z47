@@ -45,6 +45,9 @@ TO_QSPI const radiocb_t indexOfRadioCbEepromItems[] = {
   {ITM_INP_DEF_DP,       ID_DP,                  RB_ID},  //fnInDefault
   {ITM_INP_DEF_LI,       ID_LI,                  RB_ID},  //fnInDefault
   {ITM_INP_DEF_SI,       ID_SI,                  RB_ID},  //fnInDefault
+
+  {ITM_DREAL,            ITM_DREAL,              CB_JC},
+
   {ITM_1COMPL,           SIM_1COMPL,             RB_IM},  //fnIntegerMode
   {ITM_2COMPL,           SIM_2COMPL,             RB_IM},  //fnIntegerMode
   {ITM_SIGNMT,           SIM_SIGNMT,             RB_IM},  //fnIntegerMode
@@ -169,8 +172,6 @@ TO_QSPI const radiocb_t indexOfRadioCbEepromItems[] = {
 
   {ITM_BCD,              JC_BCD,                 CB_JC},  //
   {ITM_TOPHEX,           JC_TOPHEX,              CB_JC},  //
-
-  {ITM_SI_All,           JC_SI_All,              CB_JC},  //
   {ITM_CPXMULT,          JC_CPXMULT,             CB_JC},  //
 
   {ITM_2BIN,             2,                      RB_HX},  //fnChangeBaseJM
@@ -404,7 +405,7 @@ int8_t fnCbIsSet(int16_t item) {
             case JC_SS:                  cb_param = scrLock != NC_NORMAL;                                             break;
             case JC_BCD:                 cb_param = bcdDisplay;                                                       break;
             case JC_TOPHEX:              cb_param = topHex;                                                           break;
-            case JC_SI_All:              cb_param = SI_All;                                                           break;
+            case ITM_DREAL:              cb_param = getSystemFlag(FLAG_DREAL);                                        break;
             case JC_CPXMULT:             cb_param = getSystemFlag(FLAG_CPXMULT);                                      break;
             case JC_MYM_TRIPLE:          cb_param = MYM3;
                                          if(MYM3 && HOME3) MYM3 = false;

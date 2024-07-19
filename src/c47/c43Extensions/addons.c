@@ -560,7 +560,7 @@ void exponentToUnitDisplayString(int32_t exponent, bool_t flag2To10, char *displ
   displayString[3] = 0;
 
   if(!flag2To10 && !getSystemFlag(FLAG_2TO10)) {
-    if(SI_All) {
+    if(getSystemFlag(FLAG_PFX_ALL)) {
       switch(exponent) {
         case -30 : displayString[1] = 'q'; break;
         case -27 : displayString[1] = 'r'; break;
@@ -2403,8 +2403,4 @@ void fnLongPressSwitches (uint16_t option) {
   }
 }
 
-
-void fnSetSI_All (uint16_t unusedButMandatoryParameter) {
-  SI_All = !SI_All;
-}
 

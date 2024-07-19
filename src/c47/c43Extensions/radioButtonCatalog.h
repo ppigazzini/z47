@@ -118,7 +118,7 @@ char*    figlabel              (const char* label, const char* showText, int16_t
 #define JC_UU                  209
 #define JC_BCD                 210
 #define JC_TOPHEX              211
-#define JC_SI_All              212
+
 #define JC_CPXMULT             213
 #define JC_SS                  214
 #define PR_HPBASE              215  // BASE CLASSIC MODE
