@@ -34,6 +34,8 @@
 #include "c47.h"
 
 #if defined(PC_BUILD)
+  char modelString[50];
+  bool_t enableFunctionKeysDisplay;
   bool_t              calcLandscape;
   bool_t              calcAutoLandscapePortrait;
   GtkWidget           *screen;
@@ -80,10 +82,31 @@
     gmpMemInBytes = 0;
     mp_set_memory_functions(allocGmp, reallocGmp, freeGmp);
 
+    modelString[0] = 0;
     calcLandscape             = false;
     calcAutoLandscapePortrait = true;
 
     for(int arg=1; arg<argc; arg++) {
+
+      if(strcmp(argv[arg], "--background") == 0) {    //must be first in the list of evaluations, as it can incremant the counter
+        if(arg+1<argc && (argv[arg+1])[0] != 0) {
+          strcpy(modelString,argv[++arg]);
+          if(arg+1<argc && (argv[arg+1])[0] != 0) {
+            arg++;
+          }
+          else {
+            break;
+          }
+        }
+      }
+
+      if(strcmp(argv[arg], "--functionkeys") == 0) {
+        enableFunctionKeysDisplay = true;
+      }
+      else {
+        enableFunctionKeysDisplay = false;
+      }
+
       if(strcmp(argv[arg], "--landscape") == 0) {
         calcLandscape             = true;
         calcAutoLandscapePortrait = false;
@@ -98,7 +121,6 @@
         calcLandscape             = false;
         calcAutoLandscapePortrait = true;
       }
-
 
       if(strcmp(argv[arg], "--r47") == 0) {
         calcModel = USER_R47f_g;
