@@ -772,7 +772,7 @@ bool_t lowercaseselected;    //the only place that this is set, is in processKey
             }
             else {
               fnKeyInCatalog = 1;
-              addItemToBuffer(item);
+              addItemToBuffer(item);                //this PEM TAM entry moved to keyFnRelease, to pick up the long presses 
               fnKeyInCatalog = 0;
             }
             if(calcMode == CM_EIM && !tam.mode) {   //this EIM portion moved to after release, to allow longpress and double press
@@ -1092,6 +1092,18 @@ releaseOverride = false;
               addStepInProgram(tamOperation());
               tamLeaveMode();
             }
+
+            else  if(indexOfItems[item].func == addItemToBuffer) {   //this section is added, it was commented out in btnFnPressed line 760, it is moved here, as longpress works on release.
+debugf("Here we deal with PEM TAM mode menu entry, i.e. item's sent to buffer. See issue #454 context.");
+              if(getSystemFlag(FLAG_ALPHA)) {
+                processAimInput(item);
+              }
+              else {
+                addStepInProgram(item);    // I am not sure if this can actually be needed: It was in the btnFnPressed section in line 760
+              }
+              hourGlassIconEnabled = false;
+            }
+
             else if(tam.mode) {
               const char *itmLabel = dynmenuGetLabel(dynamicMenuItem);
               uint16_t nameLength = stringByteLength(itmLabel);

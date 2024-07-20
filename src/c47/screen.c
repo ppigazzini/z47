@@ -729,7 +729,9 @@ void execTimerApp(uint16_t timerType) {
     shiftF = true;        //S_shF();                  //   New shift state
     shiftG = false;
     showShiftState();
-    refreshRegisterLine(REGISTER_T); //clearRegisterLine(Y_POSITION_OF_REGISTER_T_LINE - 4, REGISTER_LINE_HEIGHT); //JM FN clear the previous shift function name
+    if(calcMode != CM_PEM) {
+      refreshRegisterLine(REGISTER_T); //clearRegisterLine(Y_POSITION_OF_REGISTER_T_LINE - 4, REGISTER_LINE_HEIGHT); //JM FN clear the previous shift function name
+    }
     char *varCatalogItem = "SF:F";
     int16_t Dyn = nameFunction(FN_key_pressed-37, shiftF, shiftG);
     if(dynamicMenuItem > -1 && !DEBUGSFN) {
@@ -746,7 +748,9 @@ void execTimerApp(uint16_t timerType) {
     shiftF = false;
     shiftG = true;
     showShiftState();
-    refreshRegisterLine(REGISTER_T); //clearRegisterLine(Y_POSITION_OF_REGISTER_T_LINE - 4, REGISTER_LINE_HEIGHT); //JM FN clear the previous shift function name
+    if(calcMode != CM_PEM) {
+      refreshRegisterLine(REGISTER_T); //clearRegisterLine(Y_POSITION_OF_REGISTER_T_LINE - 4, REGISTER_LINE_HEIGHT); //JM FN clear the previous shift function name
+    }
     char *varCatalogItem = "SF:G";
     int16_t Dyn = nameFunction(FN_key_pressed-37, shiftF, shiftG);
     if(dynamicMenuItem > -1 && !DEBUGSFN) {
@@ -760,7 +764,9 @@ void execTimerApp(uint16_t timerType) {
 
 
   void FN_handler_StepToNOP(void) {
-    refreshRegisterLine(REGISTER_T); //clearRegisterLine(Y_POSITION_OF_REGISTER_T_LINE - 4, REGISTER_LINE_HEIGHT); //JM FN clear the previous shift function name
+    if(calcMode != CM_PEM) {
+      refreshRegisterLine(REGISTER_T); //clearRegisterLine(Y_POSITION_OF_REGISTER_T_LINE - 4, REGISTER_LINE_HEIGHT); //JM FN clear the previous shift function name
+    }
     showFunctionName(ITM_NOP, 0, "SF:N");
     FN_timed_out_to_NOP = true;
     underline_softkey(FN_key_pressed-38, 3, false);   //  Purposely select row 3 which does not exist, just to activate the 'clear previous line'
@@ -1858,7 +1864,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
     showFunctionNameCounter = delayInMs;
     stringAppend(padding,functionName);
     stringAppend(padding + stringByteLength(padding),"     ");
-    if(PROBMENU || stringWidth(padding, &standardFont, true, true) + 1 /*JM 20*/ + lineTWidth > SCREEN_WIDTH) {
+    if((PROBMENU || stringWidth(padding, &standardFont, true, true) + 1 /*JM 20*/ + lineTWidth > SCREEN_WIDTH) && calcMode != CM_PEM) {
       clearRegisterLine(REGISTER_T, true, false);
     }
 
@@ -1876,7 +1882,9 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
 
   void hideFunctionName(void) {
     if(!running_program_jm && (tmpString[0] != 0 || calcMode!=CM_AIM)) {
-      refreshRegisterLine(REGISTER_T);                                                //JM DO NOT CHANGE BACK TO CLEARING ONLY A SHORT PIECE. CHANGED IN TWEAKED AS WELL>
+      if(calcMode != CM_PEM) {
+        refreshRegisterLine(REGISTER_T);                                                //JM DO NOT CHANGE BACK TO CLEARING ONLY A SHORT PIECE. CHANGED IN TWEAKED AS WELL>
+      }
       if(getRegisterDataType(REGISTER_X) == dtReal34Matrix || getRegisterDataType(REGISTER_X) == dtReal34Matrix) {
         refreshRegisterLine(REGISTER_X);
       }
