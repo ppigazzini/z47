@@ -24,6 +24,7 @@
 #include "typeDefinitions.h"
 #include <stdint.h>
 
+
 #if !defined(TESTSUITE_BUILD)
   void btn_Clicked_Gen(bool_t shF, bool_t shG, char *st);
   void fnOff                       (uint16_t unsuedParamButMandatory);
@@ -59,6 +60,8 @@
   #endif // !TESTSUITE_BUILD
 
   #if defined(PC_BUILD)
+    extern char modelString[50];
+    extern bool_t enableFunctionKeysDisplay;
     /**
      * Creates the calc's GUI window with all the widgets.
      */

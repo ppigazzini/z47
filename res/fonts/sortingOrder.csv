@@ -93,6 +93,7 @@
 `U+007c`,533,533,`VERTICAL LINE`,`Pipe`,`|`,`|`,`U+007c`
 `U+007d`,459,460,`RIGHT CURLY BRACKET`,`Right curly bracket`,`}`,`{`,`U+007b`
 `U+007e`,511,511,`TILDE`,`Tilde`,`~`,`~`,`U+007e`
+`U+007f`,511,511,`DoubleZero`,`DoubleZero`,`0`,`0`,`U+007f`
 `U+00a1`,488,489,`INVERTED EXCLAMATION MARK`,`Inverted exclamation mark`,`¡`,`!`,`U+0021`
 `U+00a2`,552,555,`CENT SIGN`,`Cent`,`¢`,`%`,`U+0025`
 `U+00a3`,552,556,`POUND SIGN`,`Pound`,`£`,`%`,`U+0025`
@@ -367,6 +368,7 @@
 `U+211a`,265,271,`DOUBLE-STRUCK CAPITAL Q`,`Rational Q`,`ℚ`,`Q`,`U+0051`
 `U+211d`,272,282,`DOUBLE-STRUCK CAPITAL R`,`Real R`,`ℝ`,`R`,`U+0052`
 `U+2124`,369,381,`DOUBLE-STRUCK CAPITAL Z`,`Integer Z`,`ℤ`,`Z`,`U+005a`
+`U+2125`,369,381,`DOUBLE-STRUCK CAPITAL Z SMALL`,`Integer Z Small`,`℥`,`Z`,`U+005a`
 `U+2160`,10,13,`ROMAN NUMERAL ONE`,`Superscript 0`,`Ⅰ`,``,`U+0030`
 `U+2161`,15,19,`ROMAN NUMERAL TWO`,`Superscript 1`,`Ⅱ`,`1`,`U+0031`
 `U+2162`,22,23,`ROMAN NUMERAL THREE`,`Superscript 2`,`Ⅲ`,`2`,`U+0032`

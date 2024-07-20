@@ -109,7 +109,6 @@ void fnDisplayFormatAll(uint16_t displayFormatN) {
 void fnDisplayFormatSigFig(uint16_t displayFormatN) {
   fnDisplayFormatReset(displayFormatN);
   displayFormat = DF_SF;
-  displayFormatDigits = min(18,displayFormatDigits);
   fnRefreshState();
 }
 
@@ -121,7 +120,6 @@ void fnDisplayFormatSigFig(uint16_t displayFormatN) {
  ***********************************************/
 void fnDisplayFormatUnit(uint16_t displayFormatN) {
   fnDisplayFormatReset(displayFormatN);
-  displayFormatDigits = min(20, displayFormatDigits);
   displayFormat = DF_UN;
   fnRefreshState();
 }
@@ -1546,7 +1544,7 @@ void fractionToDisplayString(calcRegister_t regist, char *displayString) {
 
   endingZero = strlen(displayString);
 
-  if(getSystemFlag(FLAG_PROPFR)) { // a b/c
+  if(getSystemFlag(FLAG_PROPFR) && intPart != 0) { // a b/c
     if(updateDisplayValueX) {
       sprintf(displayValueX, "%s%" PRIu32 " %" PRIu32 "/%" PRIu32, (sign == -1 ? "-" : ""), (uint32_t)intPart, (uint32_t)numer, (uint32_t)denom);
     }

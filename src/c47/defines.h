@@ -314,7 +314,6 @@
 #define ID_LI                    7    //JM Input Default
 
 
-
 //*********************************
 //* General configuration defines *
 //*********************************
@@ -630,8 +629,10 @@
 #define FLAG_LARGELI                          0x8046
 #define FLAG_IRFRAC                           0x8047
 #define FLAG_IRF_ON                           0x8048
+#define FLAG_PFX_ALL                          0x8049
+#define FLAG_DREAL                            0x804A
 
-#define NUMBER_OF_SYSTEM_FLAGS                    73 // We can have a maximum of 128 system flags
+#define NUMBER_OF_SYSTEM_FLAGS                    75 // We can have a maximum of 128 system flags
 
 typedef enum {
   LI_ZERO     = 0, // Long integer sign 0
@@ -1751,6 +1752,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define RADIX34_MARK_STRING                  (gapChar1Radix)
 #define RADIX34_MARK_DEC_ITM                 (RADIX34_MARK_CHAR == '.' ? ITM_PERIOD : ITM_COMMA)
 #define RADIX34_MARK_NOT_DEC_ITM             (RADIX34_MARK_CHAR == '.' ? ITM_COMMA : ITM_PERIOD)
+#define Z_LI_STRING                          (STD_INTEGER_Z_SMALL)
 
 #define groupingGap                          ((uint8_t)(grpGroupingLeft)) //ADD HERE THE CONDITIONS FOR NIL SEPS
 
