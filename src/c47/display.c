@@ -109,7 +109,6 @@ void fnDisplayFormatAll(uint16_t displayFormatN) {
 void fnDisplayFormatSigFig(uint16_t displayFormatN) {
   fnDisplayFormatReset(displayFormatN);
   displayFormat = DF_SF;
-  displayFormatDigits = min(18,displayFormatDigits);
   fnRefreshState();
 }
 
@@ -121,7 +120,6 @@ void fnDisplayFormatSigFig(uint16_t displayFormatN) {
  ***********************************************/
 void fnDisplayFormatUnit(uint16_t displayFormatN) {
   fnDisplayFormatReset(displayFormatN);
-  displayFormatDigits = min(20, displayFormatDigits);
   displayFormat = DF_UN;
   fnRefreshState();
 }
