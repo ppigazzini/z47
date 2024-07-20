@@ -518,7 +518,6 @@ uint16_t flushBufferCnt = 0;
     saveStateValue(&topHex,                         sizeof(topHex),                                              "topHex",                         "bool");    //C43 JM
     saveStateValue(&bcdDisplaySign,                 sizeof(bcdDisplaySign),                                      "bcdDisplaySign",                 "uint8");   //C43 JM
     saveStateValue(&DM_Cycling,                     sizeof(DM_Cycling),                                          "DM_Cycling",                     "uint8");   //JM
-    saveStateValue(&SI_All,                         sizeof(SI_All),                                              "SI_All",                         "bool");    //JM
     saveStateValue(&LongPressM,                     sizeof(LongPressM),                                          "LongPressM",                     "uint8");   //JM
     saveStateValue(&LongPressF,                     sizeof(LongPressF),                                          "LongPressF",                     "uint8");   //JM
     saveStateValue(&currentAsnScr,                  sizeof(currentAsnScr),                                       "currentAsnScr",                  "uint8");   //JM
@@ -1095,7 +1094,6 @@ uint16_t flushBufferCnt = 0;
     restoreStateValue(&topHex,                         sizeof(topHex),                                              "topHex",                         "bool");    //C43 JM
     restoreStateValue(&bcdDisplaySign,                 sizeof(bcdDisplaySign),                                      "bcdDisplaySign",                 "uint8");   //C43 JM
     restoreStateValue(&DM_Cycling,                     sizeof(DM_Cycling),                                          "DM_Cycling",                     "uint8");   //JM
-    restoreStateValue(&SI_All,                         sizeof(SI_All),                                              "SI_All",                         "bool");    //JM
     restoreStateValue(&LongPressM,                     sizeof(LongPressM),                                          "LongPressM",                     "uint8");   //JM
     restoreStateValue(&LongPressF,                     sizeof(LongPressF),                                          "LongPressF",                     "uint8");   //JM
     restoreStateValue(&currentAsnScr,                  sizeof(currentAsnScr),                                       "currentAsnScr",                  "uint8");   //JM
@@ -1171,6 +1169,16 @@ uint16_t flushBufferCnt = 0;
       }
       else {
         clearSystemFlag(FLAG_NUMLOCK);
+      }
+    }
+    restoreStateValue(&tmp1,                           sizeof(tmp1),                                              "SI_All",                         "bool");    //JM
+    if(backupVersion < 1003) {
+      printf("Version number of configfile < 1003, transferring PFX_ALL.");
+      if(tmp1) {
+        setSystemFlag(FLAG_PFX_ALL);
+      }
+      else {
+        clearSystemFlag(FLAG_PFX_ALL);
       }
     }
 
@@ -1720,7 +1728,6 @@ void doSave(uint16_t saveType) {
         sprintf(tmpString, "bcdDisplaySign\n%"             PRIu8  "\n",     bcdDisplaySign);               save(tmpString, strlen(tmpString));
         sprintf(tmpString, "DRG_Cycling\n%"                PRIu8  "\n",     DRG_Cycling);                  save(tmpString, strlen(tmpString));
         sprintf(tmpString, "DM_Cycling\n%"                 PRIu8  "\n",     DM_Cycling);                   save(tmpString, strlen(tmpString));
-        sprintf(tmpString, "SI_All\n%"                     PRIu8  "\n",     (uint8_t)SI_All);              save(tmpString, strlen(tmpString));
         sprintf(tmpString, "LongPressM\n%"                 PRIu8  "\n",     (uint8_t)LongPressM);          save(tmpString, strlen(tmpString));
         sprintf(tmpString, "LongPressF\n%"                 PRIu8  "\n",     (uint8_t)LongPressF);          save(tmpString, strlen(tmpString));
         sprintf(tmpString, "lastIntegerBase\n%"            PRIu8  "\n",     (uint8_t)lastIntegerBase);     save(tmpString, strlen(tmpString));
@@ -2876,7 +2883,6 @@ double stringToDouble(const char *str) {
           else if(strcmp(aimBuffer, "bcdDisplaySign"              ) == 0) { bcdDisplaySign        = stringToUint8(tmpString); }
           else if(strcmp(aimBuffer, "DRG_Cycling"                 ) == 0) { DRG_Cycling           = stringToUint8(tmpString); }
           else if(strcmp(aimBuffer, "DM_Cycling"                  ) == 0) { DM_Cycling            = stringToUint8(tmpString); }
-          else if(strcmp(aimBuffer, "SI_All"                      ) == 0) { SI_All                = (bool_t)stringToUint8(tmpString) != 0; }
           else if(strcmp(aimBuffer, "LongPressM"                  ) == 0) { LongPressM            = stringToUint8(tmpString); }                  //10000003
           else if(strcmp(aimBuffer, "LongPressF"                  ) == 0) { LongPressF            = stringToUint8(tmpString); }                  //10000003
           else if(strcmp(aimBuffer, "lastIntegerBase"             ) == 0) { lastIntegerBase       = stringToUint8(tmpString); }                  //10000004
@@ -2954,6 +2960,18 @@ double stringToDouble(const char *str) {
               }
             } //Keep compatible by repeating, even though setting is now in systemflags
           }
+          else if(strcmp(aimBuffer, "SI_All"                      ) == 0) {
+            if(loadedVersion < 10000012) {
+              if((bool_t)stringToUint8(tmpString) != 0) {
+                setSystemFlag(FLAG_PFX_ALL);
+                }
+              else {
+                clearSystemFlag(FLAG_PFX_ALL);
+              }
+            } //Keep compatible by repeating, even though setting is now in systemflags
+          }
+
+
 
           hourGlassIconEnabled = false;
 

@@ -262,3 +262,10 @@ PLUS                      "\xa4\xff"
 
 2024-07-07 Adding fg glyph
     $29F1 fg         "\xa9\xf1"     // R47 variant name
+
+2024-07-18 Adding small double struck Z, and crossed zero
+    $007F doublezero            "\x7f"            STD_DOUBLEZERO
+    $2125 double struck Z small "\xa1\x25"        STD_INTEGER_Z_SMALL
+
+
+
