@@ -1546,7 +1546,7 @@ void fractionToDisplayString(calcRegister_t regist, char *displayString) {
 
   endingZero = strlen(displayString);
 
-  if(getSystemFlag(FLAG_PROPFR)) { // a b/c
+  if(getSystemFlag(FLAG_PROPFR) && intPart != 0) { // a b/c
     if(updateDisplayValueX) {
       sprintf(displayValueX, "%s%" PRIu32 " %" PRIu32 "/%" PRIu32, (sign == -1 ? "-" : ""), (uint32_t)intPart, (uint32_t)numer, (uint32_t)denom);
     }

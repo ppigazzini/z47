@@ -1647,6 +1647,7 @@ void changeToWholeString(int32_t intt, char *str, char *str1) {
   longIntegerInit(lgInt);
   intToLongInteger((signed long int)intt, lgInt);
   longIntegerToDisplayString(lgInt, str, 30, SCREEN_WIDTH, 20, true);
+  strcat(str,str1);
   longIntegerFree(lgInt);
 }
 
@@ -1778,7 +1779,8 @@ bool_t checkForAndChange(char *displayString, const real34_t *value34, const rea
           useMixedNumbersSep[0] = STD_SPACE_4_PER_EM[0];
           useMixedNumbersSep[1] = STD_SPACE_4_PER_EM[1];
           useMixedNumbersSep[2] = 0;
-          changeToWholeString(wholeInteger,wholePart,useMixedNumbersSep);                                         // "1 "
+          changeToWholeString(wholeInteger,wholePart,useMixedNumbersSep);  
+          strcat(wholePart,useMixedNumbersSep);                                                                   // "1 "
         }
         else {                                                                                                    // constant with numbers
           useMixedNumbersSep[0] = sign[0];
