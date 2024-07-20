@@ -2910,7 +2910,7 @@ void fnC47Show(uint16_t fnShow_param) {
                IntShowMode = SHOWAUTO;
                break;
 
-      case ITM_PERIOD:
+      case ITM_PERIOD: //change font for SHOW display LI
                source = 0;
                if(getRegisterDataType(showRegis) == dtLongInteger) {
                  startingLine = 0;
@@ -2923,7 +2923,7 @@ void fnC47Show(uint16_t fnShow_param) {
                }
                break;
 
-      case ITM_RS:
+      case ITM_RS: //change page on SHOW LI, if in StandardFont
                if(getRegisterDataType(showRegis) == dtLongInteger) {
                  if(temporaryInformation != TI_SHOW_REGISTER_SMALL) {
                    startingLine = 0;
@@ -2931,7 +2931,7 @@ void fnC47Show(uint16_t fnShow_param) {
                  }
                  else {
                    startingLine += 10;
-                   if(startingLine == 30 || source == last) {
+                   if(startingLine >= 30 || source == last) {
                      startingLine = 0;
                      source = 0;
                    }
@@ -3026,7 +3026,7 @@ void fnC47Show(uint16_t fnShow_param) {
         //printf("glyphNumber %i\n",glyphNumber);
 
 
-        //LARGE font
+        //LARGE font, one page
         if(IntShowMode == SHOWAUTO){
           if(glyphNumber < 170){
             temporaryInformation = TI_SHOW_REGISTER_BIG;
@@ -3044,27 +3044,24 @@ void fnC47Show(uint16_t fnShow_param) {
         }
 
 
-        //STANDARD font
+        //STANDARD font, three pages
         if(IntShowMode == SHOWSML) {
           SHOW_reset();
           temporaryInformation = TI_SHOW_REGISTER_SMALL;
           numberOfLines = 10;
-          while(true) {
+          do {
             prepLongintIntoLines(&last, &source, &dest, &standardFont, SCREEN_WIDTH - stringWidth("0", &standardFont, true, true), numberOfLines, &startingLine);
-            if(tmpString[startingLine*SHOWLineSize] != 0 || startingLine == 0) break;
+            if(tmpString[0] != 0) break; //break if first line first character is non-terminator, otherwise re-prep the output lines
             startingLine = 0;
             source = 0;
-          }
+          } while(tmpString[0] == 0);
 
-          if(tmpString[(numberOfLines-1)*SHOWLineSize] == 0) {
-            break;
-          }
-          if(tmpString[numberOfLines*SHOWLineSize] == 0 || IntShowMode == SHOWSML) {   //only proceed to second page if page has a long enough number to wrap
+          if(tmpString[numberOfLines*SHOWLineSize] == 0 || IntShowMode == SHOWSML) {   //check first character of the next page, and only proceed to second page if page has a long enough number to wrap
             goto goBreak1;
           }
         }
 
-        //TINY font
+        //TINY font, one page
         if(IntShowMode == SHOWTNY) {
           SHOW_reset();
           temporaryInformation = TI_SHOW_REGISTER_TINY;
