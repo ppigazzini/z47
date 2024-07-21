@@ -18,6 +18,7 @@
  * \file c47-gtk.c
  ***********************************************/
 
+#include "config.h"
 #include "flags.h"
 #include "gtkGui.h"
 #include "items.h"
@@ -35,6 +36,7 @@
 
 #if defined(PC_BUILD)
   char modelString[50];
+  uint8_t             config = 0;
   bool_t enableFunctionKeysDisplay;
   bool_t              calcLandscape;
   bool_t              calcAutoLandscapePortrait;
@@ -151,10 +153,20 @@
       if(strcmp(argv[arg], "--d47") == 0) {
         calcModel = USER_D47;
       }
-
       if(strcmp(argv[arg], "--dm42") == 0) {
         calcModel = USER_DM42;
       }
+
+      if(strcmp(argv[arg], "--jm") == 0) {
+        config = 1;
+      }
+      if(strcmp(argv[arg], "--rj") == 0) {
+        config = 2;
+      }
+      if(strcmp(argv[arg], "--hp35") == 0) {
+        config = 3;
+      }
+
 
     }
 
@@ -198,6 +210,13 @@
     }
 
     restoreCalc();
+
+    switch(config) {
+      case 1: fnSetJM(0);   break;
+      case 2: fnSetRJ(0);   break;
+      case 3: fnSetHP35(0); break;
+      default:;
+    }
 
     //ramDump();
     refreshScreen(190);
