@@ -201,14 +201,10 @@ RESERVED_VARIABLE_PV,                xxx,        0,                             
 RESERVED_VARIABLE_PPERONA,           xxx,        12,                             xxx,             xxx,                  xxx,                    xxx,             xxx,             12,                   
 RESERVED_VARIABLE_CPERONA,           xxx,        12,                             xxx,             xxx,                  xxx,                    xxx,             xxx,             12,                   
 3,                                   1,          FLAG_ENDPMT,                    xxx,             xxx,                  xxx,                    xxx,             xxx,             FLAG_ENDPMT,          // Set flag  FLAG_ENDPMT
-//Setsetting,                        n/a,        Reset,                          HP35,            JM,                   RJ,                     C47,             DefltSB,         TVM,                  
-2,                                   xxx,        xxx,                            SS_4,            SS_8,                 SS_8,                   SS_8,            xxx,             xxx,                  //SetSetting
-2,                                   xxx,        xxx,                            ITM_CPXRES0,     ITM_CPXRES1,          ITM_CPXRES1,            ITM_CPXRES1,     xxx,             xxx,                  //SetSetting
-2,                                   xxx,        xxx,                            ITM_SPCRES0,     ITM_SPCRES1,          ITM_SPCRES1,            ITM_SPCRES1,     xxx,             xxx,                  //SetSetting
 //FLAG,                              set/clear,  Reset,                          HP35,            JM,                   RJ,                     C47,             DefltSB,         TVM,                  
 3,                                   1,          FLAG_MONIT,                     xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,                  // Set flag  FLAG_MONIT
-3,                                   0,          xxx,                            xxx,             FLAG_HPCONV,          FLAG_HPCONV,            xxx,             xxx,             xxx,                  // Clear flag FLAG_HPCONV
 3,                                   1,          FLAG_HPCONV,                    xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,                  // Set flag  FLAG_HPCONV
+3,                                   0,          xxx,                            xxx,             FLAG_HPCONV,          FLAG_HPCONV,            xxx,             xxx,             xxx,                  // Clear flag FLAG_HPCONV
 3,                                   1,          FLAG_SH_LONGPRESS,              xxx,             FLAG_SH_LONGPRESS,    FLAG_SH_LONGPRESS,      xxx,             xxx,             xxx,                  // Set flag  FLAG_SH_LONGPRESS
 3,                                   0,          xxx,                            xxx,             FLAG_USER,            FLAG_USER,              xxx,             xxx,             xxx,                  // Clear flag FLAG_USER
 3,                                   1,          FLAG_SBdate,                    xxx,             xxx,                  xxx,                    xxx,             FLAG_SBdate,     xxx,                  // Set flag  FLAG_SBdate
@@ -233,6 +229,8 @@ RESERVED_VARIABLE_CPERONA,           xxx,        12,                            
 3,                                   1,          xxx,                            xxx,             FLAG_SBbatV,          FLAG_SBbatV,            xxx,             xxx,             xxx,                  // Set flag  FLAG_SBbatV
 3,                                   0,          FLAG_SBshfR,                    xxx,             xxx,                  xxx,                    xxx,             FLAG_SBshfR,     xxx,                  // Clear flag FLAG_SBshfR
 3,                                   1,          FLAG_MULTx,                     xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,                  // Set flag  FLAG_MULTx
+3,                                   0,          xxx,                            xxx,             FLAG_MULTx,           xxx,                    xxx,             xxx,             xxx,                  // Set flag  FLAG_MULTx
+
 3,                                   1,          FLAG_AUTOFF,                    xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,                  // Set flag  FLAG_AUTOFF
 3,                                   1,          FLAG_ENDPMT,                    xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,                  // Set flag  FLAG_ENDPMT
 3,                                   1,          FLAG_HPRP,                      xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,                  // Set flag  FLAG_HPRP
@@ -243,15 +241,20 @@ RESERVED_VARIABLE_CPERONA,           xxx,        12,                            
 3,                                   0,          xxx,                            xxx,             FLAG_POLAR,           xxx,                    xxx,             xxx,             xxx,                  // Clear flag FLAG_POLAR
 3,                                   0,          xxx,                            xxx,             xxx,                  xxx,                    FLAG_CPXj,       xxx,             xxx,                  // Clear flag FLAG_CPXj
 3,                                   1,          xxx,                            xxx,             FLAG_CPXj,            xxx,                    xxx,             xxx,             xxx,                  // Set flag  FLAG_CPXj
-3,                                   1,          FLAG_CPXRES,                    xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,                  // Set flag  FLAG_CPXRES
-3,                                   1,          FLAG_SPCRES,                    xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,                  // Set flag  FLAG_SPCRES
-3,                                   1,          FLAG_SSIZE8,                    xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,                  // Set flag  FLAG_SSIZE8
+3,                                   1,          FLAG_CPXRES,                    xxx,             FLAG_CPXRES,          FLAG_CPXRES,            FLAG_CPXRES,     xxx,             xxx,                  // Set flag  FLAG_CPXRES
+3,                                   0,          xxx,                            FLAG_CPXRES,     xxx,                  xxx,                    xxx,             xxx,             xxx,                  // Set flag  FLAG_CPXRES
+3,                                   1,          FLAG_SPCRES,                    xxx,             FLAG_SPCRES,          FLAG_SPCRES,            FLAG_SPCRES,     xxx,             xxx,                  // Set flag  FLAG_SPCRES
+3,                                   0,          xxx,                            FLAG_SPCRES,     xxx,                  xxx,                    xxx,             xxx,             xxx,                  // Set flag  FLAG_SPCRES
+3,                                   1,          FLAG_SSIZE8,                    xxx,             FLAG_SSIZE8,          FLAG_SSIZE8,            FLAG_SSIZE8,     xxx,             xxx,                  // Set flag  FLAG_SSIZE8
+3,                                   0,          xxx,                            FLAG_SSIZE8,     xxx,                  xxx,                    xxx,             xxx,             xxx,                  // Set flag  FLAG_SSIZE8
 3,                                   0,          FLAG_ASLIFT,                    xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,                  // Clear flag FLAG_ASLIFT
+3,                                   1,          xxx,                            xxx,             FLAG_ALLENG,          xxx,                    xxx,             xxx,             xxx,                  // Clear flag FLAG_ASLIFT
 
 //fractions
 3,                                   0,          FLAG_DENFIX,                    xxx,             FLAG_DENFIX,          xxx,                    xxx,             xxx,             xxx,                  // Clear flag FLAG_DENFIX
 3,                                   0,          FLAG_FRACT,                     xxx,             FLAG_FRACT,           xxx,                    xxx,             xxx,             xxx,                  // Clear flag FLAG_FRACT
-3,                                   1,          FLAG_PROPFR,                    xxx,             FLAG_PROPFR,          FLAG_PROPFR,            xxx,             xxx,             xxx,                  // Set flag  FLAG_PROPFR
+3,                                   1,          FLAG_PROPFR,                    xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,                  // Set flag  FLAG_PROPFR
+3,                                   0,          xxx,                            xxx,             FLAG_PROPFR,          FLAG_PROPFR,            xxx,             xxx,             xxx,                  // Set flag  FLAG_PROPFR
 3,                                   0,          FLAG_DENANY,                    xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,                  // Clear flag FLAG_DENANY
 3,                                   1,          xxx,                            xxx,             FLAG_DENANY,          FLAG_DENANY,            xxx,             xxx,             xxx,                  // Set flag  FLAG_DENANY
 3,                                   0,          FLAG_FRCSRN,                    xxx,             FLAG_FRCSRN,          xxx,                    xxx,             xxx,             xxx,                  // Clear flag FLAG_FRCSRN
@@ -260,8 +263,14 @@ RESERVED_VARIABLE_CPERONA,           xxx,        12,                            
 //fnSetGapChar,                      n/a,        Reset,                          HP35,            JM,                   RJ,                     C47,             DefltSB,         TVM,                  
 4,                                   xxx,        0+ITM_SPACE_PUNCTUATION,        ITM_NULL,        0+_gapl,              0+ITM_SPACE_4_PER_EM,   0+_gapl,         xxx,             xxx,                  //fnSetGapChar
 4,                                   xxx,        32768+ITM_SPACE_PUNCTUATION,    ITM_NULL+32768,  32768+_gapr,          32768+ITM_NULL,         32768+_gapr,     xxx,             xxx,                  //fnSetGapChar
-4,                                   xxx,        49152+ITM_PERIOD,               ITM_WDOT+49152,  49152+_gaprx,         49152+ITM_WCOMMA,       49152+_gaprx,    xxx,             xxx,                  //fnSetGapChar
+4,                                   xxx,        49152+ITM_PERIOD,               ITM_WDOT+49152,  49152+ITM_WDOT,       49152+ITM_WCOMMA,       49152+_gaprx,    xxx,             xxx,                  //fnSetGapChar
 0,                                   0,          0,                              0,               0,                    0,                      0,               0,               0,                    //END MARKER
+
+//Setsetting,                        n/a,        Reset,                          HP35,            JM,                   RJ,                     C47,             DefltSB,         TVM,                  
+//2,                                   xxx,        xxx,                            SS_4,            SS_8,                 SS_8,                   SS_8,            xxx,             xxx,                  //SetSetting
+//2,                                   xxx,        xxx,                            ITM_CPXRES0,     ITM_CPXRES1,          ITM_CPXRES1,            ITM_CPXRES1,     xxx,             xxx,                  //SetSetting
+//2,                                   xxx,        xxx,                            ITM_SPCRES0,     ITM_SPCRES1,          ITM_SPCRES1,            ITM_SPCRES1,     xxx,             xxx,                  //SetSetting
+
     };
 
 
