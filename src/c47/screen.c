@@ -4081,27 +4081,33 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
           }
 
 
-          //This section to display long integers as reals
+        //This section to display long integers as reals
           if(getSystemFlag(FLAG_DREAL)) {
-            convertLongIntegerRegisterToReal34Register(regist,TEMP_REGISTER_1);
-            strcpy(tmpString,STD_INTEGER_Z_SMALL ":" STD_SPACE_4_PER_EM);
+//          convertLongIntegerRegisterToReal34Register(regist,TEMP_REGISTER_1);
+//          strcpy(tmpString,STD_INTEGER_Z_SMALL ":" STD_SPACE_4_PER_EM);
+//          prefix[0]=0;
+//          prefixWidth = stringWidth(tmpString, &numericFont, true, true) + 1; //use prefixwidth to measure the tmpString prefix to the numbers
+//          real34ToDisplayString(REGISTER_REAL34_DATA(TEMP_REGISTER_1), getRegisterAngularMode(TEMP_REGISTER_1), tmpString+stringByteLength(tmpString), &numericFont, SCREEN_WIDTH - prefixWidth, NUMBER_OF_DISPLAY_DIGITS, true, true);
+//  
+//          int lastGlyphPosition = stringLastGlyph(tmpString);
+//          //check the radix. Two options, a single byte or two-byte radix. Delete the radix if at the right edge of the string.
+//          if(tmpString[lastGlyphPosition]==RADIX34_MARK_STRING[0] && (tmpString[lastGlyphPosition+1]==RADIX34_MARK_STRING[1] || RADIX34_MARK_STRING[1]==1)) {
+//            tmpString[lastGlyphPosition] = 0;
+//          }
+            strcpy(tmpString,STD_INTEGER_Z_SMALL ": ");// STD_SPACE_4_PER_EM);
+            int16_t tlen =stringByteLength(tmpString);
+            longIntegerRegisterToRealDisplayString(regist, tmpString+tlen, TMP_STR_LENGTH-tlen, 0, true);
             prefix[0]=0;
-            prefixWidth = stringWidth(tmpString, &numericFont, true, true) + 1; //use prefixwidth to measure the tmpString prefix to the numbers
-            real34ToDisplayString(REGISTER_REAL34_DATA(TEMP_REGISTER_1), getRegisterAngularMode(TEMP_REGISTER_1), tmpString+stringByteLength(tmpString), &numericFont, SCREEN_WIDTH - prefixWidth, NUMBER_OF_DISPLAY_DIGITS, true, true);
-
-            int lastGlyphPosition = stringLastGlyph(tmpString);
-            //check the radix. Two options, a single byte or two-byte radix. Delete the radix if at the right edge of the string.
-            if(tmpString[lastGlyphPosition]==RADIX34_MARK_STRING[0] && (tmpString[lastGlyphPosition+1]==RADIX34_MARK_STRING[1] || RADIX34_MARK_STRING[1]==1)) {
-              tmpString[lastGlyphPosition] = 0;
-            }
           }
-          else 
-          
-          //for the 2^10 UNIT diplay, display long integers in real string, with the Ti suffic
-          if(getSystemFlag(FLAG_2TO10) && displayFormat == DF_UN) {
-            longIntegerRegisterToRealDisplayString(regist, tmpString, TMP_STR_LENGTH);
+                     
+        //for the 2^10 UNIT diplay, display long integers in real string, with the Ti suffic
+          else if(getSystemFlag(FLAG_2TO10) && displayFormat == DF_UN) {
+            strcpy(tmpString,STD_INTEGER_Z_SMALL ": ");// STD_SPACE_4_PER_EM);
+            int16_t tlen =stringByteLength(tmpString);
+            longIntegerRegisterToRealDisplayString(regist, tmpString+tlen, TMP_STR_LENGTH-tlen, 1024, false);
           } 
           
+        //normal longinteger handling
           else {
             longIntegerRegisterToDisplayString(regist, tmpString, TMP_STR_LENGTH, SCREEN_WIDTH - prefixWidth, 50, true);
           }
