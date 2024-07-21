@@ -26,6 +26,7 @@
 #include "flags.h"
 #include "items.h"
 #include "mathematics/comparisonReals.h"
+#include "mathematics/power.h"
 #include "realType.h"
 #include "registers.h"
 #include "registerValueConversions.h"
@@ -220,12 +221,12 @@ void fnTvmEndMode(uint16_t unusedButMandatoryParameter) {
 
 void fnEff(uint16_t unusedButMandatoryParameter) {
   real_t iA, cperA, tmp;
-
   //no need to use tvmIKnown or tvmIChanges, as this is a simplistic output only, which takes the current cperA & iA and produces the effective rate. There is no situation where there is no values in these
-  real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_CPERONA), &cperA);
-  real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_IPONA),   &iA);
+    //   EFF = 100({[iA / 100cperA] + 1} ^ cperA - 1) 
 
-  if(!realIsZero(&cperA)) {
+  if(getRegisterAsRealQuiet(RESERVED_VARIABLE_IPONA, &iA) &&
+     getRegisterAsRealQuiet(RESERVED_VARIABLE_CPERONA, &cperA) &&
+     !realIsZero(&cperA)) {
 
     saveForUndo();
     thereIsSomethingToUndo = true;
@@ -244,10 +245,47 @@ void fnEff(uint16_t unusedButMandatoryParameter) {
   } else {
     displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-      moreInfoOnError("In function fnEff:", "cannot compute EFF%/a ", "with parameters cp/a = 0", NULL);
+      moreInfoOnError("In function fnEff:", "cannot compute EFF%/a ", "with parameter cp/a = 0", NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 }
+
+
+void fnEffToI(uint16_t unusedButMandatoryParameter) {
+  real_t iEFF, tmp, cperA, cperAInv;
+  //no need to use tvmIKnown or tvmIChanges, as this is a simplistic output only, which takes the current cperA & iA and produces the effective rate. There is no situation where there is no values in these
+    // iA = {[(EFF / 100 + 1) ^ (1/cperA) ] - 1 } 100 * cperA
+
+  if(getRegisterAsRealQuiet(REGISTER_X, &iEFF) && 
+     getRegisterAsRealQuiet(RESERVED_VARIABLE_CPERONA, &cperA) && 
+     !realIsZero(&cperA) &&
+     realIsPositive(&iEFF)) {
+
+    saveForUndo();
+    thereIsSomethingToUndo = true;
+
+    realDivide(&iEFF, const_100, &tmp, &ctxtReal39);
+    realAdd(&tmp, const_1, &tmp, &ctxtReal39);
+
+    realDivide(const_1, &cperA, &cperAInv, &ctxtReal39);
+    PowerReal(&tmp, &cperAInv, &tmp, &ctxtReal39);
+    realSubtract(&tmp, const_1, &tmp, &ctxtReal39);
+    realMultiply(&tmp, const_100, &tmp, &ctxtReal39);
+    realMultiply(&tmp, &cperA, &tmp, &ctxtReal39);
+
+    realToReal34(&tmp, REGISTER_REAL34_DATA(RESERVED_VARIABLE_IPONA));
+    reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+    convertRealToReal34ResultRegister(&tmp, REGISTER_X);
+
+    temporaryInformation = TI_TVM_IA;
+  } else {
+    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      moreInfoOnError("In function fnEffToI:", "cannot compute I%/a ", "with parameters n = 0 & EFF/a < 0 ", NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+  }
+}
+
 
 
 
@@ -257,13 +295,13 @@ void tvmEquation(void) {
   real_t i1nPer, val, tmp, r;
   static real_t i;
 
-  real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_FV),      &fv);
-  real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_IPONA),   &iA);
-  real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_NPPER),   &nPer);
-  real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_PPERONA), &pperA);
-  real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_CPERONA), &cperA);
-  real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_PMT),     &pmt);
-  real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_PV),      &pv);
+  real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_FV),      &fv);     //future value
+  real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_IPONA),   &iA);     //interest percentage per annum
+  real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_NPPER),   &nPer);   //number of periods
+  real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_PPERONA), &pperA);  //payment periods per annum
+  real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_CPERONA), &cperA);  //compounding periods per annum
+  real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_PMT),     &pmt);    //payment
+  real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_PV),      &pv);     //present value
   /*
     The plan is to find an interest rate iM which,
     when compounded pperA times in a year, gives iAER.

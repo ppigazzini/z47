@@ -126,8 +126,8 @@ TO_QSPI const int16_t menu_FIN[]         = { ITM_SIGMAPLUS ,                ITM_
 /*                                          <---------------------------------------------------------------------- 6 g shifted functions ------------------------------------------------------------------------->  */
 
 TO_QSPI const int16_t menu_TVM[]         = {
-                                             VAR_NPPER,                     VAR_IPonA,                  VAR_PV,                   VAR_PMT,               VAR_FV,                      ITM_EFF,
-                                             ITM_RCL_NPPER,                 ITM_RCL_IPonA,              ITM_RCL_PV,               ITM_RCL_PMT,           ITM_RCL_FV,                  -MNU_AMORT,
+                                             VAR_NPPER,                     VAR_IPonA,                  VAR_PV,                   VAR_PMT,               VAR_FV,                      ITM_ITOEFF,
+                                             ITM_RCL_NPPER,                 ITM_RCL_IPonA,              ITM_RCL_PV,               ITM_RCL_PMT,           ITM_RCL_FV,                  ITM_EFFTOI,
                                              ITM_BEGINP,                    ITM_ENDP,                   VAR_PPERonA,              VAR_CPERonA,           ITM_CLTVM,                   -MNU_CASHFL                  };
 
 TO_QSPI const int16_t menu_FLAGS[]       = { ITM_SF,                        ITM_FS,                     ITM_FF,                   ITM_STATUS,            ITM_FC,                      ITM_CF,

@@ -3743,6 +3743,11 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
             prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
           }
 
+          else if(temporaryInformation == TI_TVM_IA && regist == REGISTER_X) {
+            strcpy(prefix, "I%/a = I%YR = NAR =");
+            prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
+          }
+
           else if(temporaryInformation == TI_FROM_DATEX) {
             if(regist == REGISTER_X) {
               if(getSystemFlag(FLAG_DMY)) {
