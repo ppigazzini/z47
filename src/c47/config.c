@@ -133,6 +133,7 @@ void configCommon(uint16_t idx) {
 #define IPGRP1                114    // config_grpGroupingGr1Left        
 #define IPGRP1x               115    // config_grpGroupingGr1LeftOverflow
 #define fgLongPressSetting    117    // config_setFGLSettings            
+#define HIDE                  118    // config_exponentHideLimit
 
 #define DenMaX                120    // config_denmax                    
 #define TVMIKnown             121    // tvm          
@@ -162,7 +163,8 @@ MymB,                                xxx,        1,                             
 HomeB,                               xxx,        0,                              0,               0,                    0,                      0,               xxx,             xxx,                  
 RNG,                                 xxx,        6145,                           99,              6145,                 6145,                   6145,            xxx,             xxx,                  
 SDIGS,                               xxx,        0,                              16,              0,                    0,                      34,              xxx,             xxx,                  
-FDIGS,                               xxx,        0,                              16,              24,                   0,                      34,              xxx,             xxx,                  
+FDIGS,                               xxx,        0,                              16,              31,                   0,                      34,              xxx,             xxx,                  
+HIDE,                                xxx,        0,                              0,               31,                   0,                      0,               xxx,             xxx,                  
 DSTACK,                              xxx,        4,                              1,               4,                    4,                      4,               xxx,             xxx,                  
 CACHEDDSTACK,                        xxx,        4,                              1,               4,                    4,                      4,               xxx,             xxx,                  
 ADM,                                 xxx,        amDegree,                       amRadian,        amDegree,             amRadian,               amDegree,        xxx,             xxx,                  
@@ -284,6 +286,8 @@ void Sett(int16_t grp) {
         case HomeB                : {BASE_HOME =                  (Settings[ptr*(_numberOfGrps+2) + 1 + grp]) == 1 ? true : false;break;}   // HomeB
         case RNG                  : {exponentLimit      =         (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // RNG
         case SDIGS                : {significantDigits  =         (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // SDIGS
+        case FDIGS                : {fractionDigits  =            (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // FDIGS
+        case HIDE                 : {exponentHideLimit  =         (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // HIDE
         case DSTACK               : {displayStack       =         (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // DSTACK
         case CACHEDDSTACK         : {cachedDisplayStack =         (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // CACHEDDSTACK
         case ADM                  : {currentAngularMode =         (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // ADM
@@ -295,7 +299,6 @@ void Sett(int16_t grp) {
         case DenMaX               : {denMax                     = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // DenMaX
         case TVMIKnown            : {tvmIKnown                  = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]) == 1 ? true : false;break;}   // TVMIKnown
         case TVMIChanges          : {tvmIChanges                = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]) == 1 ? true : false;break;}   // TVMIChanges
-        case FDIGS                : {fractionDigits  =            (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // FDIGS
 
         case RESERVED_VARIABLE_FV     :
         case RESERVED_VARIABLE_IPONA  :
