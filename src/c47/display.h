@@ -33,7 +33,7 @@ void _numerator                        (uint64_t numer, char *displayString, int
 void _denominator                      (uint64_t denom, char *displayString, int16_t *endingZero);
 void fractionToDisplayString           (calcRegister_t regist, char *displayString);
 void shortIntegerToDisplayString       (calcRegister_t regist, char *displayString, bool_t determineFont);
-void longIntegerRegisterToRealDisplayString(calcRegister_t regist, char *displayString, int32_t strLg);
+void longIntegerRegisterToRealDisplayString     (calcRegister_t regist, char *displayString, int32_t strLg, int32_t minimum, bool_t removeTrailingRadix);
 void longIntegerToDisplayString        (longInteger_t lgInt, char *displayString, int32_t strLg, int16_t max_Width, int16_t maxExp, bool_t allowLARGELI);     //JM mod max_Width;   //JM added last parameter: Allow LARGELI
 void longIntegerRegisterToDisplayString(calcRegister_t regist, char *displayString, int32_t strLg, int16_t maxWidth, int16_t maxExp, bool_t allowLARGELI);    //JM added last parameter: Allow LARGELI
 void dateToDisplayString               (calcRegister_t regist, char *displayString);

@@ -26,6 +26,7 @@
   void fnTvmBeginMode(uint16_t unusedButMandatoryParameter);
   void fnTvmEndMode  (uint16_t unusedButMandatoryParameter);
   void fnEff         (uint16_t unusedButMandatoryParameter);
+  void fnEffToI      (uint16_t unusedButMandatoryParameter);
 
   void tvmEquation   (void);
 #endif // !TVM_H

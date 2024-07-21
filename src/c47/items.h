@@ -1823,12 +1823,12 @@
 #define ITM_RCL_PMT                 1773
 #define ITM_RCL_PV                  1774
 #define ITM_atan2                   1775
-#define ITM_1776                    1776
+#define ITM_EFFTOI                  1776
 #define ITM_TIMER_0_1S              1777
 #define ITM_TIMER_RESET             1778
 #define ITM_TIMER_RCL               1779
 #define ITM_DELBKUP                 1780
-#define ITM_EFF                     1781
+#define ITM_ITOEFF                  1781
 #define ITM_TIMER_SIGMA_T           1782
 #define ITM_TIMER_SIGMA_L           1783
 #define ITM_TIMER_R_T               1784

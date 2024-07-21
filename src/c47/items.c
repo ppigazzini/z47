@@ -1308,6 +1308,8 @@ bool_t itemNotAvail(int16_t itemNr) {
   void fnLoadedFile               (uint16_t unusedButMandatoryParameter) {}
   void fnResetTVM                 (uint16_t unusedButMandatoryParameter) {}
   void fnEff                      (uint16_t unusedButMandatoryParameter) {}
+  void fnEffToI                   (uint16_t unusedButMandatoryParameter) {}
+
 #endif // GENERATE_CATALOGS
 
 #ifdef TESTSUITE_BUILD
@@ -3140,12 +3142,12 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 1773 */  { fnRecall,                     RESERVED_VARIABLE_PMT,       RCL_ "PMT",                                    RCL_ "PMT",                                    (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /* 1774 */  { fnRecall,                     RESERVED_VARIABLE_PV,        RCL_ "PV",                                     RCL_ "PV",                                     (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /* 1775 */  { fnAtan2,                      NOPARAM /*#JM#*/,            "ATAN2",                                       "ATAN2",                                       (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_ENABLED  | PTP_NONE         },
-/* 1776 */  { itemToBeCoded,                NOPARAM,                     "1776",                                        "1776",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 1776 */  { fnEffToI,                     NOPARAM,                     "EFF" STD_RIGHT_ARROW "I/a",                   "EFF" STD_RIGHT_ARROW "I/a",                   (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /* 1777 */  { fnDecisecondTimerApp,         NOPARAM,                     "0.1s",                                        "0.1s",                                        (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 1778 */  { fnResetTimerApp,              NOPARAM,                     "RESET",                                       "RESET",                                       (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 1779 */  { fnRecallTimerApp,             TM_REGISTER,                 "RCL",                                         "",                                            (0 << TAM_MAX_BITS) |    99, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 1780 */  { fnDeleteBackup,               NOT_CONFIRMED,               "DELBkup",                                     "DELBkup",                                     (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
-/* 1781 */  { fnEff,                        NOPARAM,                     "EFF/a",                                       "EFF/a",                                       (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_DISABLED     },
+/* 1781 */  { fnEff,                        NOPARAM,                     "I" STD_RIGHT_ARROW "EFF/a",                  "I" STD_RIGHT_ARROW "EFF/a",                    (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /* 1782 */  { fnAddTimerApp,                NOPARAM,                     "TIM" STD_RIGHT_ARROW STD_SIGMA,              "TIM" STD_RIGHT_ARROW STD_SIGMA,                (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 1783 */  { fnAddLapTimerApp,             NOPARAM,                     "LAP" STD_RIGHT_ARROW STD_SIGMA,              "LAP" STD_RIGHT_ARROW STD_SIGMA,                (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 1784 */  { fnRegAddTimerApp,             NOPARAM,                     "TIM" STD_RIGHT_ARROW "R",                    "TIM" STD_RIGHT_ARROW "R",                      (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
