@@ -1941,7 +1941,7 @@
 #define ITM_INP_DEF_DP              1887
 #define ITM_PROPFR                  1888
 #define ITM_INP_DEF_CPXDP           1889
-#define ITM_INP_DEF_SI              1890
+#define ITM_INP_DEF_43S             1890
 #define ITM_INP_DEF_LI              1891
 #define ITM_SI_P                    1892
 #define KEY_fg                      1893
@@ -1962,7 +1962,7 @@
 #define ITM_N_KEY_FSH               1908
 #define ITM_ms                      1909
 #define ITM_msTo                    1910
-#define ITM_INP_DEF_43S             1911
+#define ITM_1911                    1911
 #define ITM_XXEQ                    1912
 #define MNU_TAMALPHA                1913
 #define ITM_TO_USER                 1914

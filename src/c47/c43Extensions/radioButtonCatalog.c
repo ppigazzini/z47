@@ -44,7 +44,6 @@ TO_QSPI const radiocb_t indexOfRadioCbEepromItems[] = {
   {ITM_INP_DEF_CPXDP,    ID_CPXDP,               RB_ID},  //fnInDefault
   {ITM_INP_DEF_DP,       ID_DP,                  RB_ID},  //fnInDefault
   {ITM_INP_DEF_LI,       ID_LI,                  RB_ID},  //fnInDefault
-  {ITM_INP_DEF_SI,       ID_SI,                  RB_ID},  //fnInDefault
 
   {ITM_DREAL,            ITM_DREAL,              CB_JC},
 
