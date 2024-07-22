@@ -40,6 +40,11 @@
      their discretion
 
 */
+
+// This file is included by dep/DMCP_SDK/dmcp/sys/pgm_syscalls.c
+// It is used to set values in a struct that is read by the DMCP
+// The file name must be main.h for this to be included
+
 #if !defined(__PGM_MAIN_H__)
 #define __PGM_MAIN_H__
 

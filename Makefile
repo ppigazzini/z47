@@ -1,4 +1,4 @@
-.PHONY: all clean sim test dmcp dmcp5 docs testPgms dist_windows dist_macos dist_linux dist_dmcp dist_dmcp5 dist_dmcp5r47
+.PHONY: all clean sim test dmcp dmcp.r47 dmcp5 docs testPgms dist_windows dist_macos dist_linux dist_dmcp dist_dmcp5 dist_dmcp5r47
 
 all: sim
 
@@ -40,9 +40,15 @@ test: build.sim
 dmcp: build.dmcp
 	cd build.dmcp && ninja dmcp
 
+dmcpr47: build.dmcp
+	cd build.dmcp && ninja dmcp_r47
+
 dmcp5: build.dmcp5
 	cd build.dmcp5 && ninja dmcp5
 
+dmcp5r47: build.dmcp5
+	cd build.dmcp5 && ninja dmcp5_r47
+    
 docs: build.sim
 	cd build.sim && ninja docs
 
@@ -58,6 +64,7 @@ ifeq ($(CI_COMMIT_TAG),)
   MAC_DIST_DIR = c47-macos
   LINUX_DIST_DIR = c47-linux
   DMCP_DIST_DIR = c47-dmcp
+  DMCPR47_DIST_DIR = r47-dmcp
   DMCP5_DIST_DIR = c47-dmcp5
   DMCP5R47_DIST_DIR = r47-dmcp5
 else
@@ -65,6 +72,7 @@ else
   MAC_DIST_DIR = c47-macos-$(CI_COMMIT_TAG)
   LINUX_DIST_DIR = c47-linux-$(CI_COMMIT_TAG)
   DMCP_DIST_DIR = c47-dmcp-$(CI_COMMIT_TAG)
+  DMCPR47_DIST_DIR = r47-dmcp-$(CI_COMMIT_TAG)
   DMCP5_DIST_DIR = c47-dmcp5-$(CI_COMMIT_TAG)
   DMCP5R47_DIST_DIR = r47-dmcp5-$(CI_COMMIT_TAG)
 endif
@@ -145,12 +153,29 @@ dist_dmcp5: dmcp5 testPgms build.rel/wiki
 	zip -r c47-dmcp5.zip $(DMCP5_DIST_DIR)
 	rm -rf $(DMCP5_DIST_DIR)
 
+dist_dmcpr47: dmcpr47 testPgms build.rel/wiki
+	mkdir -p $(DMCPR47_DIST_DIR)
+	mkdir -p $(DMCPR47_DIST_DIR)/demo
+	cp build.dmcp/src/c47-dmcp/R47.pgm build.dmcp/src/c47-dmcp/R47_qspi.bin $(DMCPR47_DIST_DIR)
+	cp -r res/offimg/Egypt/ $(DMCPR47_DIST_DIR)/offimg
+	cp -r res/offimg/Norway/ $(DMCPR47_DIST_DIR)/offimg
+	cp -r res/offimg/Netherlands/ $(DMCPR47_DIST_DIR)/offimg
+	cp -r res/offimg/From\ WP43/ $(DMCPR47_DIST_DIR)/offimg
+	cp -r res/offimg/General/ $(DMCPR47_DIST_DIR)/offimg
+	cp -r res/offimg/HP\ related/ $(DMCPR47_DIST_DIR)/offimg
+	cp -r res/offimg/C47/ $(DMCPR47_DIST_DIR)/offimg
+	cp -r res/PROGRAMS $(DMCPR47_DIST_DIR)
+	cp res/dmcp/DM42_keymap.bin $(DMCPR47_DIST_DIR)
+	cp res/dmcp/R47_keymap.bin $(DMCPR47_DIST_DIR)
+	cp res/dmcp/testPgms.bin res/dmcp/testPgms.txt $(DMCPR47_DIST_DIR)/demo
+	cp build.rel/wiki/Installation-on-a-DM42.md $(DMCPR47_DIST_DIR)/readme.txt
+	zip -r r47-dmcp.zip $(DMCPR47_DIST_DIR)
+	rm -rf $(DMCPR47_DIST_DIR)
 
-dist_dmcp5r47: dmcp5 testPgms build.rel/wiki
+
+dist_dmcp5r47: dmcp5r47 testPgms build.rel/wiki
 	mkdir -p $(DMCP5R47_DIST_DIR)
 	mkdir -p $(DMCP5R47_DIST_DIR)/demo
-	cp build.dmcp5/src/c47-dmcp5/C47.pg5 build.dmcp5/src/c47-dmcp5/R47.pg5
-	rm build.dmcp5/src/c47-dmcp5/C47.pg5
 	cp build.dmcp5/src/c47-dmcp5/R47.pg5 $(DMCP5R47_DIST_DIR)
 	cp -r res/offimg/Egypt/ $(DMCP5R47_DIST_DIR)/offimg
 	cp -r res/offimg/Norway/ $(DMCP5R47_DIST_DIR)/offimg
