@@ -138,10 +138,8 @@ TO_QSPI const radiocb_t indexOfRadioCbEepromItems[] = {
   {ITM_CB_CPXRES,        JC_BCR,                 CB_JC},  //SetSetting
   {ITM_CB_SPCRES,        JC_BSR,                 CB_JC},  //SetSetting
   {ITM_CB_LEADING_ZERO,  JC_BLZ,                 CB_JC},  //SetSetting
-  {ITM_CB_FRCSRN,        JC_FRC,                 CB_JC},  //SetSetting
   {ITM_ERPN,             JC_ERPN,                CB_JC},  //SetSetting
   {ITM_FRCYC,            ITM_FRCYC,              CB_JC},
-  {ITM_FRCSRN,           ITM_FRCSRN,             CB_JC},
 
   {ITM_G_DOUBLETAP,      JC_G_DOUBLETAP,         CB_JC},  //SetSetting
   {ITM_SHTIM,            JC_SHFT_4s,             CB_JC},  //SetSetting
@@ -366,7 +364,6 @@ int8_t fnCbIsSet(int16_t item) {
             case JC_GAUSS_FITTING:       cb_param = ((lrSelection & CF_GAUSS_FITTING)       == CF_GAUSS_FITTING      ); break;
             case JC_ORTHOGONAL_FITTING:  cb_param = (orOrtho(lrSelection)                   == CF_ORTHOGONAL_FITTING ); break;
             case JC_BCR:                 cb_param = getSystemFlag(FLAG_CPXRES);                                       break;
-            case JC_FRC:                 cb_param = getSystemFlag(FLAG_FRCSRN);                                       break;
             case JC_BSR:                 cb_param = getSystemFlag(FLAG_SPCRES);                                       break;
             case JC_BLZ:                 cb_param = getSystemFlag(FLAG_LEAD0);                                        break;
             case PR_HPRP:                cb_param = getSystemFlag(FLAG_HPRP);                                         break;
@@ -379,7 +376,6 @@ int8_t fnCbIsSet(int16_t item) {
             case PRTACT:                 cb_param = getSystemFlag(FLAG_PRTACT);                                       break;
             case JC_ERPN:                cb_param = getSystemFlag(FLAG_ERPN);                                         break;
             case ITM_FRCYC:              cb_param = getSystemFlag(FLAG_FRCYC);                                        break;
-            case ITM_FRCSRN:             cb_param = getSystemFlag(FLAG_FRCSRN);                                       break;
             case JC_G_DOUBLETAP:         cb_param = jm_G_DOUBLETAP;                                                   break;
             case JC_SHFT_4s:             cb_param = ShiftTimoutMode;                                                  break;
             case JC_VECT:                cb_param = PLOT_VECT;                                                        break;
