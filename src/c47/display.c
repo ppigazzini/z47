@@ -2776,14 +2776,24 @@ static void checkAndEat(int16_t *source, int16_t last, int16_t *dest) {
 }
 
 
-static void printXAngle(int16_t cc, int16_t d) {
-  real34_t real34;
-  int16_t ww, last, source, dest;
-  real34Copy(REGISTER_REAL34_DATA(showRegis), &real34);
-  convertAngle34FromTo(&real34, getRegisterAngularMode(showRegis), cc);
+static void printXSHOW(int16_t am, int16_t d, int16_t df, int16_t dfd, int16_t dt, bool_t tagPolar) {
+  displayFormat = df;
+  displayFormatDigits = dfd;  
+  int16_t last, source, dest, ww;
   RegName();
   ww = stringWidth(tmpString + 2100, &numericFont, true, true);
-  real34ToDisplayString(&real34, cc, tmpString + 2100 + stringByteLength(tmpString + 2100), &numericFont, SCREEN_WIDTH - ww - 8*2, 34, false, false);
+
+  if(dt == dtReal34) {
+    real34_t real34;
+    real34Copy(REGISTER_REAL34_DATA(showRegis), &real34);
+    convertAngle34FromTo(&real34, getRegisterAngularMode(showRegis), am);
+    real34ToDisplayString(&real34, am, tmpString + 2100 + stringByteLength(tmpString + 2100), &numericFont, SCREEN_WIDTH - ww - 8*2, 34, false, false);
+  }
+  else if(dt == dtComplex34) {
+    complex34ToDisplayString(REGISTER_COMPLEX34_DATA(showRegis), tmpString + 2100 + stringByteLength(tmpString + 2100), &numericFont,SCREEN_WIDTH - ww - 8*2, 34 ,false, false, getComplexRegisterAngularMode(showRegis), tagPolar);
+  }
+
+
   last = 2100 + stringByteLength(tmpString + 2100);
   source = 2100;
   dest = d;
@@ -2907,7 +2917,8 @@ void fnC47Show(uint16_t fnShow_param) {
 #if !defined(SAVE_SPACE_DM42_9)
   #if !defined(TESTSUITE_BUILD)
     uint8_t savedDisplayFormat = displayFormat, savedDisplayFormatDigits = displayFormatDigits;
-    bool_t savedConstantFractions = getSystemFlag(FLAG_IRFRAC);
+    uint64_t ssf0 = systemFlags0;
+    uint64_t ssf1 = systemFlags1;
     bool_t thereIsANextLine;
     int16_t dest = 0, last = 0, d, i, offset, bytesProcessed, aa, bb, cc, dd, aa2 = 0, aa3 = 0, aa4 = 0, numberOfLines = 0;
     uint64_t nn;
@@ -2934,33 +2945,27 @@ void fnC47Show(uint16_t fnShow_param) {
                IntShowMode = SHOWAUTO;
                break;
 
-      case ITM_PERIOD: //change font for SHOW display LI
-               source = 0;
-               if(getRegisterDataType(showRegis) == dtLongInteger) {
-                 startingLine = 0;
-                 switch(IntShowMode) {
-                   case SHOWAUTO : IntShowMode = SHOWSML;  break;
-                   case SHOWSML  : IntShowMode = SHOWTNY;  break;
-                   case SHOWTNY  : IntShowMode = SHOWAUTO;  break;
-                   default:break;
-                 }
-               }
-               break;
-
       case ITM_RS: //change page on SHOW LI, if in StandardFont
                if(getRegisterDataType(showRegis) == dtLongInteger) {
-                 if(temporaryInformation != TI_SHOW_REGISTER_SMALL) {
+                 if(IntShowMode == SHOWTNY) {
                    startingLine = 0;
                    source = 0;
+                   IntShowMode = SHOWAUTO;
+                 }
+                 else
+                 if(IntShowMode != SHOWSML) {
+                   startingLine = 0;
+                   source = 0;
+                   IntShowMode = SHOWSML;
                  }
                  else {
                    startingLine += 10;
                    if(startingLine >= 30 || source == last) {
                      startingLine = 0;
                      source = 0;
+                     IntShowMode = SHOWTNY;
                    }
                  }
-                 IntShowMode = SHOWSML;
                }
                break;
 
@@ -3061,9 +3066,10 @@ void fnC47Show(uint16_t fnShow_param) {
             if(tmpString[numberOfLines*SHOWLineSize] == 0) {
               break;
             }
+            IntShowMode = SHOWSML; // if not broken out, go smaller
           }
           else {
-            IntShowMode = SHOWSML;
+            IntShowMode = SHOWSML;  // if >170 chars, go smaller
           }
         }
 
@@ -3073,17 +3079,18 @@ void fnC47Show(uint16_t fnShow_param) {
           SHOW_reset();
           temporaryInformation = TI_SHOW_REGISTER_SMALL;
           numberOfLines = 10;
-          do {
-            prepLongintIntoLines(&last, &source, &dest, &standardFont, SCREEN_WIDTH - stringWidth("0", &standardFont, true, true), numberOfLines, &startingLine);
-            if(tmpString[0] != 0) break; //break if first line first character is non-terminator, otherwise re-prep the output lines
+          prepLongintIntoLines(&last, &source, &dest, &standardFont, SCREEN_WIDTH - stringWidth("0", &standardFont, true, true), numberOfLines, &startingLine);
+          if(tmpString[0] != 0) {
+            goto goBreak1; //break if first line first character is non-terminator and display
+          }
+          else {
             startingLine = 0;
             source = 0;
-          } while(tmpString[0] == 0);
-
-          if(tmpString[numberOfLines*SHOWLineSize] == 0 || IntShowMode == SHOWSML) {   //check first character of the next page, and only proceed to second page if page has a long enough number to wrap
-            goto goBreak1;
-          }
+            dest = 0;
+            IntShowMode = SHOWTNY;
+          }            
         }
+
 
         //TINY font, one page
         if(IntShowMode == SHOWTNY) {
@@ -3179,10 +3186,18 @@ goBreak1:
             default: ;
           }
 
-          printXAngle(aa, 2*SHOWLineSize);
-          printXAngle(bb, 3*SHOWLineSize);
-          printXAngle(cc, 4*SHOWLineSize);
-          printXAngle(dd, 5*SHOWLineSize);
+          overrideShowBottomLine = 40;     //from bototm, total 5
+          printXSHOW(aa, 2*SHOWLineSize, displayFormat, displayFormatDigits, dtReal34, false);
+          printXSHOW(bb, 3*SHOWLineSize, displayFormat, displayFormatDigits, dtReal34, false);
+          printXSHOW(cc, 4*SHOWLineSize, displayFormat, displayFormatDigits, dtReal34, false);
+          printXSHOW(dd, 5*SHOWLineSize, displayFormat, displayFormatDigits, dtReal34, false);
+        }
+        else {
+          overrideShowBottomLine = 30;    // from bottom, total 5
+          setSystemFlag(FLAG_ALLENG);
+          printXSHOW(amNone, 3*SHOWLineSize, DF_SF, 6, dtReal34, false);
+          printXSHOW(amNone, 4*SHOWLineSize, DF_UN, 3, dtReal34, false);
+          printXSHOW(amNone, 5*SHOWLineSize, DF_SCI, 3, dtReal34, false);
         }
         break;
 
@@ -3229,6 +3244,11 @@ goBreak1:
             }
           }
         }
+
+        overrideShowBottomLine = 20;   //2 from bottom, total 5
+        setSystemFlag(FLAG_ALLENG);
+        printXSHOW(amNone, 4*SHOWLineSize, DF_SF, 4, dtComplex34, true);
+        printXSHOW(amNone, 5*SHOWLineSize, DF_SF, 4, dtComplex34, false);
 
         //if(tmpString[300]==0) {                          //shift up if line is empty
         //  //vv new       strcpy(tmpString + 300, tmpString + 600);
@@ -3513,12 +3533,9 @@ goBreak1:
 
     displayFormat = savedDisplayFormat;
     displayFormatDigits = savedDisplayFormatDigits;
-    if(savedConstantFractions) {
-      setSystemFlag(FLAG_IRFRAC);
-    }
-    else {
-      clearSystemFlag(FLAG_IRFRAC);
-    }
+    systemFlags0 = ssf0;
+    systemFlags1 = ssf1;
+
     #if defined(VERBOSE_SCREEN) && defined(PC_BUILD)
       printf("SHOW:Done |%s|\n",tmpString);
     #endif

@@ -928,7 +928,6 @@ bool_t itemNotAvail(int16_t itemNr) {
   void fnPrimeFactors              (uint16_t unusedButMandatoryParameter) {}
   void fnEvPFacts                  (uint16_t unusedButMandatoryParameter) {}
   void fnEulPhi                    (uint16_t unusedButMandatoryParameter) {}
-  void fnScreenDump                (uint16_t unusedButMandatoryParameter) {}
   void fnArg                       (uint16_t unusedButMandatoryParameter) {}
   void fnRange                     (uint16_t unusedButMandatoryParameter) {}
   void fnGetRange                  (uint16_t unusedButMandatoryParameter) {}

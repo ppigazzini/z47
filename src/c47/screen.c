@@ -1413,6 +1413,31 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
   }
 
 
+
+  void showBottomLine(void) {
+    int yoff = 0;
+    if(!( (temporaryInformation == TI_SHOW_REGISTER_SMALL && tmpString[5*SHOWLineSize] != 0) ||
+          (temporaryInformation == TI_SHOW_REGISTER_TINY && tmpString[14*SHOWLineSize] != 0)      )    //The softmenu space is not used
+      || (overrideShowBottomLine > 0) ) {
+
+
+      if(overrideShowBottomLine > 0) {
+        yoff = SCREEN_HEIGHT - REGISTER_LINE_HEIGHT*(overrideShowBottomLine)/10.0f;   // 40 means 4.0 registers from bottom
+      }
+      else {
+        yoff = SCREEN_HEIGHT - REGISTER_LINE_HEIGHT*2;
+      }
+
+      int offs = (temporaryInformation == TI_SHOW_REGISTER_BIG ? - 2 : temporaryInformation == TI_SHOW_REGISTER_SMALL ? 0 : temporaryInformation == TI_SHOW_REGISTER_TINY ? 0 : 0);
+
+
+      lcd_fill_rect(0, yoff + offs, SCREEN_WIDTH, 1, LCD_EMPTY_VALUE); //HERE SHOW LINE SMALL & TINY
+
+      overrideShowBottomLine = 0;
+    }
+  }
+
+
   void showDispSmall(uint16_t offset, uint8_t _h1) {
     #define line_small 21
     #define line_tiny  10
@@ -1423,14 +1448,6 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
       #if defined(VERBOSE_SCREEN) && defined(PC_BUILD)
         printf("^^^^NEW SHOW: %s\n", tmpString + offset);
       #endif // VERBOSE_SCREEN && PC_BUILD
-      if(_h1 == 0) {
-        if((temporaryInformation == TI_SHOW_REGISTER_SMALL && tmpString[5*SHOWLineSize] != 0) ||
-           (temporaryInformation == TI_SHOW_REGISTER_TINY && tmpString[14*SHOWLineSize] != 0)    ) {   //The softmenu space is used
-        }
-        else {
-          lcd_fill_rect(0,SCREEN_HEIGHT-3*SOFTMENU_HEIGHT,SCREEN_WIDTH,1,LCD_EMPTY_VALUE);
-        }
-      }
     }
   }
 
@@ -2406,7 +2423,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
       }
     #endif // (DEBUG_PANEL == 1)
 
-    if((temporaryInformation == TI_SHOW_REGISTER || SHOWMODE) && regist == REGISTER_X) {     //JM top frame of the SHOW window
+    if((temporaryInformation == TI_SHOW_REGISTER || SHOWMODE) && regist == REGISTER_X) {     //JM top frame of the SHOW window  //HERE SHOW LINE
       lcd_fill_rect(0, Y_POSITION_OF_REGISTER_T_LINE-4, SCREEN_WIDTH, 1, LCD_EMPTY_VALUE);
     }
 
@@ -2691,67 +2708,8 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
       }
 
 
-//      //Original SHOW
-//      else if(temporaryInformation == TI_SHOW_REGISTER && regist == REGISTER_T) { // L1
-//        w = stringWidth(tmpString, &standardFont, true, true);
-//        showString(tmpString, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_T_LINE + 21*0, vmNormal, true, true);
-//      }
-//
-//      else if(temporaryInformation == TI_SHOW_REGISTER && regist == REGISTER_Z && tmpString[300] != 0) { // L2 & L3
-//        w = stringWidth(tmpString + 300, &standardFont, true, true);
-//        showString(tmpString + 300, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_T_LINE + 21*1, vmNormal, true, true);
-//
-//        if(tmpString[600]) {
-//          w = stringWidth(tmpString + 600, &standardFont, true, true);
-//          showString(tmpString + 600, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_T_LINE + 21*2, vmNormal, true, true);
-//        }
-//      }
-//
-//      else if(temporaryInformation == TI_SHOW_REGISTER && regist == REGISTER_Y && tmpString[900] != 0) { // L4 & L5
-//        w = stringWidth(tmpString + 900, &standardFont, true, true);
-//        showString(tmpString + 900, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_T_LINE + 21*3, vmNormal, true, true);
-//
-//        if(tmpString[1200]) {
-//          w = stringWidth(tmpString + 1200, &standardFont, true, true);
-//          showString(tmpString + 1200, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_T_LINE + 21*4, vmNormal, true, true);
-//        }
-//      }
-//
-//      else if(temporaryInformation == TI_SHOW_REGISTER && regist == REGISTER_X && tmpString[1500] != 0) { // L6 & L7
-//        w = stringWidth(tmpString + 1500, &standardFont, true, true);
-//        showString(tmpString + 1500, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_T_LINE + 21*5, vmNormal, true, true);
-//
-//        if(tmpString[1800]) {
-//          w = stringWidth(tmpString + 1800, &standardFont, true, true);
-//          showString(tmpString + 1800, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_T_LINE + 21*6, vmNormal, true, true);
-//        }
-//      }
 
       // NEW SHOW                                                                  //JMSHOW vv
-//      else if(temporaryInformation == TI_SHOW_REGISTER_SMALL || temporaryInformation == TI_SHOW_REGISTER) {
-//        switch(regist) {
-//          case REGISTER_T:
-//            showDispSmall( 0 * SHOWLineSize, 0);          // L1
-//            break;
-//          case REGISTER_Z:
-//            showDispSmall( 1 * SHOWLineSize, 1);          // L2 & L3
-//            showDispSmall( 2 * SHOWLineSize, 2);
-//            break;
-//          case REGISTER_Y:
-//            showDispSmall( 3 * SHOWLineSize, 3);          // L4 & L5
-//            showDispSmall( 4 * SHOWLineSize, 4);
-//            break;
-//          case REGISTER_X:
-//            showDispSmall( 5 * SHOWLineSize, 5);          // L6 & L7 & L8 & L9 & L10
-//            showDispSmall( 6 * SHOWLineSize, 6);
-//            showDispSmall( 7 * SHOWLineSize, 7);
-//            showDispSmall( 8 * SHOWLineSize, 8);
-//            showDispSmall( 9 * SHOWLineSize, 9);
-//            break;
-//          default: ;
-//        }
-//      }
-
       else if(temporaryInformation == TI_SHOW_REGISTER_SMALL || temporaryInformation == TI_SHOW_REGISTER) {
         switch(regist) {
           case REGISTER_X:{
@@ -2760,7 +2718,8 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
               while (nn <= 9) {
                 showDispSmall( nn * SHOWLineSize, nn);          // L1
                 nn++;
-              } 
+              }
+              showBottomLine();
               break;
             }
             default: ;
@@ -2777,6 +2736,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
                 showDispSmall( nn * SHOWLineSize, nn);          // L1
                 nn++;
               } 
+              showBottomLine();
               break;
             }
             default: ;
@@ -2790,7 +2750,8 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
             while (nn<=5) {
               showDisp( nn * SHOWLineSize, nn);
               nn++;
-            } 
+            }
+            showBottomLine();
           }
       }
 
@@ -4906,17 +4867,24 @@ void fnSNAP(uint16_t unusedButMandatoryParameter) {
   #ifdef PC_BUILD
     printf("fnSNAP!\n");
   #endif
+  resetShiftState();                  //JM To avoid f or g top left of the screen, clear to make sure
+  refreshScreen(80);
   if(calcMode == CM_AIM) {
-    refreshScreen(80);
     xcopy(tmpString, aimBuffer, ERROR_MESSAGE_LENGTH + AIM_BUFFER_LENGTH + NIM_BUFFER_LENGTH);       //backup portion of the "message buffer" area in DMCP used by ERROR..AIM..NIM buffers, to the tmpstring area in DMCP. DMCP uses this area during create_screenshot.
-    fnScreenDump(0);
+  }
+  
+  fnScreenDump(0);
+  
+  if(calcMode == CM_AIM) {
     xcopy(aimBuffer,tmpString, ERROR_MESSAGE_LENGTH + AIM_BUFFER_LENGTH + NIM_BUFFER_LENGTH);        //   This total area must be less than the tmpString storage area, which it is.
     fnP_Alpha();     //print alpha
   }
   else {
-    refreshScreen(82);
-    fnScreenDump(0);
     fnP_All_Regs(1); //print stack
+  }
+  if(showRegis != 9999 || SHOWMODE) {
+//check of hierdie moet bly------------------------------------------------------------------------------------------------------------------------------------------------------
+    fnC47Show(ITM_NOP);
   }
 }
 

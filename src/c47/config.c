@@ -1558,6 +1558,8 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     #endif // !TESTSUITE_BUILD
 
     showRegis = 9999;                                          //JMSHOW
+    overrideShowBottomLine = 0;
+
 
     graph_xmin = -3*3.14159265;                                //JM GRAPH
     graph_xmax = -graph_xmin;                                  //JM GRAPH
