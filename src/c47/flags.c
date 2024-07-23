@@ -94,7 +94,7 @@ static void systemFlagAction(uint16_t systemFlag, flagAction_t action) {
     case FLAG_FRCYC: 
     case FLAG_LARGELI:
     case FLAG_IRFRAC:
-//    case FLAG_IRF_ON:
+    case FLAG_IRF_ON:
     case FLAG_2TO10:  fnRefreshState(); break;
 
     case FLAG_SBdate:
