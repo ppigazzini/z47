@@ -209,6 +209,7 @@ int16_t                longpressDelayedkey3;         //JM
 int16_t                T_cursorPos;                  //JMCURSOR
 int16_t                displayAIMbufferoffset;       //JMCURSOR
 uint16_t               showRegis;                    //JMSHOW
+uint8_t                overrideShowBottomLine;
 int16_t                ListXYposition;               //JMSHOW
 int16_t                JM_auto_doublepress_autodrop_enabled;  //JM TIMER CLRDROP //drop
 int16_t                JM_auto_longpress_enabled;    //JM TIMER CLRDROP //clstk

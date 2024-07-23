@@ -2256,8 +2256,7 @@ typedef struct {
       case ID_CPXDP:                               //                       CPX
         nimNumberPart = NP_REAL_FLOAT_PART;
         break;
-      case ID_SI:                                  //   lastIntegerBase is set in fnInDefault; I do not set it here, as the user can change it of course.
-        break;
+      default:;
       }
     }                                               //JM ^^
     if((nimNumberPart == NP_INT_10 || nimNumberPart == NP_INT_16) && lastIntegerBase != 0) {
