@@ -499,7 +499,7 @@
             showSoftmenuCurrentPart();
             }
           break;
-        case 61:
+        case 61:           //=
           if(calcMode == CM_EIM) {
             shiftF = true;
             int16_t jj = softmenuStack[0].firstItem;
@@ -1062,12 +1062,32 @@
           btnClicked(w, "08");
           break;
 
-        case 112: // p         //dr                //JM Special case: p = pi
-          //printf("key pressed: p pi\n"); //dr
+        case 112: // p         //dr                //JM Special case: p = x^2
           shiftF = true;       //dr
           shiftG = false;      //JM
-          btnClicked(w, "08"); //dr
+          btnClicked(w, "02"); //dr
           break;               //dr
+
+        
+        case 61: // =          //                //JM Special case: = = DRG
+          if(calcMode == CM_NIM) {
+            btnClicked(w, "32");  //exit
+          }
+          if(calcMode == CM_NORMAL) {
+            runFunction(ITM_DRG);
+            screenUpdatingMode = SCRUPD_AUTO;
+            refreshScreen(0);
+          }
+          break;               //dr
+
+
+        case 121: // y         //dr                //JM Special case: y: y^x
+          shiftF = true;       //dr
+          shiftG = false;      //JM
+          btnClicked(w, "01"); //dr
+          break;               //dr
+
+
 
         case 115: // s //dr
           //printf("key pressed: s SIN\n"); //dr

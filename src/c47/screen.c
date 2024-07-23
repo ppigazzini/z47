@@ -76,7 +76,14 @@ uint16_t current_cursor_y = 0;
 #if !defined(TESTSUITE_BUILD)
   #define spc STD_SPACE
   #define spc1 STD_SPACE STD_SPACE_3_PER_EM
-  TO_QSPI static const char whoStr1[] = "C47 Development since 2019" spc "by" spc1
+
+  #if (CALCMODEL == USER_R47)
+    #define MODELTEXT "R47"
+  #else
+    #define MODELTEXT "C47"
+  #endif
+
+  TO_QSPI static const char whoStr1[] = "C47 & R47 Development since 2019" spc "by" spc1
                                        "\n"
                                        "Ben" spc "GB," spc1
                                        "D" spc "A" spc "CA," spc1
@@ -92,18 +99,20 @@ uint16_t current_cursor_y = 0;
                                        "RJvM" spc "NL," spc1
                                        "Walter" spc "DE.";
 
-   TO_QSPI static const char disclaimerStr[]     = "  C47 firmware is free, open source and \n  neither provided nor supported by \n  SwissMicros. Press a key to continue.";
+   
 
-   TO_QSPI static const char versionStr[]        = "  C47 " VERSION_STRING ".";
+   TO_QSPI static const char disclaimerStr[]     = "  " MODELTEXT " firmware is free, open source and \n  neither provided nor supported by \n  SwissMicros. Press a key to continue.";
+
+   TO_QSPI static const char versionStr[]        = "  " MODELTEXT " " VERSION_STRING ".";
 
   #if defined(PC_BUILD)
-    TO_QSPI static const char versionStr2[]     = "  C47 Sim " VERSION1 ", compiled " __DATE__ ".";
+    TO_QSPI static const char versionStr2[]     = "  " MODELTEXT " Sim " VERSION1 ", dated " __DATE__ ".";
   #else // !PC_BUILD
     #if defined(TWO_FILE_PGM)
-      TO_QSPI static const char versionStr2[]   = "  C47 QSPI " VERSION1 ", compiled " __DATE__ ".";
+      TO_QSPI static const char versionStr2[]   = "  " MODELTEXT " QSPI " VERSION1 ", dated " __DATE__ ".";
     #else // !TWO_FILE_PGM
       #if !defined(TWO_FILE_PGM)
-        TO_QSPI static const char versionStr2[] = "  C47 No QSPI " VERSION1 ", compiled " __DATE__ ".";
+        TO_QSPI static const char versionStr2[] = "  " MODELTEXT " No QSPI " VERSION1 ", dated " __DATE__ ".";
       #endif // !TWO_FILE_PGM
     #endif // TWO_FILE_PGM
   #endif // PC_BUILD
