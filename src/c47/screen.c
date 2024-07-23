@@ -4386,6 +4386,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
     if(softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_SHOW) {
       popSoftmenu();
     }
+    showRegis = 9999;
     uint8_t calcModeStore = calcMode;
     calcMode = CM_NORMAL;
     screenUpdatingMode = SCRUPD_AUTO;
@@ -4878,23 +4879,24 @@ void fnSNAP(uint16_t unusedButMandatoryParameter) {
   #endif
   resetShiftState();                  //JM To avoid f or g top left of the screen, clear to make sure
   refreshScreen(80);
-  if(calcMode == CM_AIM) {
+  
+  #if defined(PC_BUILD)  //added the xcopy commands needed for hardware, to better duplicate the hardware standardScreenDump
     xcopy(tmpString, aimBuffer, ERROR_MESSAGE_LENGTH + AIM_BUFFER_LENGTH + NIM_BUFFER_LENGTH);       //backup portion of the "message buffer" area in DMCP used by ERROR..AIM..NIM buffers, to the tmpstring area in DMCP. DMCP uses this area during create_screenshot.
-  }
-  
-  fnScreenDump(0);
+    fnScreenDump(0);
+    xcopy(aimBuffer,tmpString, ERROR_MESSAGE_LENGTH + AIM_BUFFER_LENGTH + NIM_BUFFER_LENGTH);        //   This total area must be less than the tmpString storage area, which it is.
+  #elif defined(DMCP_BUILD)
+    standardScreenDump();
+  #endif
   
   if(calcMode == CM_AIM) {
-    xcopy(aimBuffer,tmpString, ERROR_MESSAGE_LENGTH + AIM_BUFFER_LENGTH + NIM_BUFFER_LENGTH);        //   This total area must be less than the tmpString storage area, which it is.
     fnP_Alpha();     //print alpha
   }
   else {
     fnP_All_Regs(1); //print stack
   }
-  if(showRegis != 9999 || SHOWMODE) {
-//check of hierdie moet bly------------------------------------------------------------------------------------------------------------------------------------------------------
-    fnC47Show(ITM_NOP);
-  }
+
+  screenUpdatingMode |= SCRUPD_SKIP_STACK_ONE_TIME | SCRUPD_SKIP_MENU_ONE_TIME;
+
 }
 
 
@@ -5012,12 +5014,6 @@ void fnScreenDump(uint16_t unusedButMandatoryParameter) {
     fclose(bmp);
     screenUpdatingMode |= SCRUPD_SKIP_STACK_ONE_TIME | SCRUPD_SKIP_MENU_ONE_TIME;
   #endif // PC_BUILD
-
-  #if defined(DMCP_BUILD)
-    resetShiftState();                  //JM To avoid f or g top left of the screen, clear to make sure
-    create_screenshot(0);
-    screenUpdatingMode |= SCRUPD_SKIP_STACK_ONE_TIME | SCRUPD_SKIP_MENU_ONE_TIME;
-  #endif // DMCP_BUILD
 }
 
 

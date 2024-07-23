@@ -1394,12 +1394,13 @@ releaseOverride = false;
                       sprintf(tmp,"^^^^^^^keyboard.c: determineitem: key_no: %u, key->primary1: %d:", key_no, key->primary); jm_show_comment(tmp);
                     #endif //PC_BUILD
 
-    if( !SHOWMODE || !((allowShowDigits && key->primary >= ITM_0 && key->primary <= ITM_9)
-                      || key->primary == ITM_RCL 
-                      || key->primary == ITM_RS 
-                      || key->primary == ITM_UP1 
-                      || key->primary == ITM_DOWN1)
-        ) {
+    if( (key->primary != ITM_SHIFTf) && ( !SHOWMODE || !(
+                           key->primary == ITM_RCL 
+                           || key->primary == ITM_RS 
+                           || key->primary == ITM_UP1 
+                           || key->primary == ITM_DOWN1 
+                           || (allowShowDigits && key->primary >= ITM_0 && key->primary <= ITM_9))
+                         ) ) {
       showRegis = 9999;                                      //clear showmode register
     }
 
