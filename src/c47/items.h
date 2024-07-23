@@ -1895,7 +1895,7 @@
 #define ITM_SECOND                  1841
 #define ITM_toTIME                  1842
 #define ITM_TIMEto                  1843
-#define ITM_CB_FRCSRN               1844
+#define ITM_1844                    1844
 #define ITM_qoppa                   1845
 #define ITM_digamma                 1846
 #define ITM_sampi                   1847
@@ -1941,14 +1941,14 @@
 #define ITM_INP_DEF_DP              1887
 #define ITM_PROPFR                  1888
 #define ITM_INP_DEF_CPXDP           1889
-#define ITM_INP_DEF_SI              1890
+#define ITM_INP_DEF_43S             1890
 #define ITM_INP_DEF_LI              1891
 #define ITM_SI_P                    1892
 #define KEY_fg                      1893
 #define ITM_FROM_USER               1894
 #define ITM_HPBASE                  1895
 #define ITM_FRCYC                   1896
-#define ITM_FRCSRN                  1897
+#define ITM_1897                    1897
 #define ITM_N_KEY_ALPHA             1898
 #define ITM_DREAL                   1899
 #define ITM_N_KEY_GSH               1900
@@ -1962,7 +1962,7 @@
 #define ITM_N_KEY_FSH               1908
 #define ITM_ms                      1909
 #define ITM_msTo                    1910
-#define ITM_INP_DEF_43S             1911
+#define ITM_1911                    1911
 #define ITM_XXEQ                    1912
 #define MNU_TAMALPHA                1913
 #define ITM_TO_USER                 1914
@@ -2154,7 +2154,7 @@
 #define ITM_GRADtoRAD               2100
 #define ITM_RADtoGRAD               2101
 #define MNU_TRG_C47                 2102
-#define MNU_TRG_C47_MORE            2103
+#define MNU_2103                    2103
 #define ITM_RIBBON_C47              2104
 #define ITM_RIBBON_R47              2105
 #define ITM_RIBBON_SAV              2106
@@ -2314,7 +2314,7 @@
 #define SFL_IRFRAC                  2258
 #define SFL_IRF_ON                  2259
 #define SFL_PFX_ALL                 2260
-#define SFL_2257                    2261
+#define SFL_DREAL                   2261
 #define SFL_2258                    2262
 #define SFL_2259                    2263
 #define SFL_2260                    2264

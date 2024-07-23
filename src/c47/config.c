@@ -184,7 +184,7 @@ fgLongPressSetting,                  xxx,        xxx,                           
 3,                                   1,          FLAG_LARGELI,                   xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,
 3,                                   0,          FLAG_PFX_ALL,                   xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,
 3,                                   0,          FLAG_DREAL,                     xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,
-3,                                   1,          FLAG_DREAL,                     xxx,             FLAG_DREAL,           xxx,                    xxx,             xxx,             xxx,
+3,                                   1,          xxx,                            xxx,             FLAG_DREAL,           xxx,                    xxx,             xxx,             xxx,
 
 
 
