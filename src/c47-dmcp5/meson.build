@@ -112,7 +112,7 @@ r47_lib = static_library(
   sources             : decNumber_src + c47_src + c47_dmcp_src +
                         [rasterFontsData_c, softmenuCatalogs_h,
                           constantPointers_ch, vcs_h, version_h],
-  c_args              : dmcp_cargs,
+  c_args              : dmcp_cargs + ['-DCALCMODEL=USER_R47'],
   include_directories : [decNumber_inc, c47_inc, dmcp_inc],
   dependencies        : arm_gmp_dep,
   pic                 : false,
