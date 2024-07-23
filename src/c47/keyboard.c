@@ -1149,7 +1149,7 @@ releaseOverride = false;
            }
             addItemToBuffer(item);
 
-            if((softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_MODE || softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_SETUP) && isInConfig && item != ITM_EXIT1 && item != ITM_BACKSPACE) { //JM do not drop out of SYSFLG
+            if((softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_MODE || softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_PREF) && isInConfig && item != ITM_EXIT1 && item != ITM_BACKSPACE) { //JM do not drop out of SYSFLG
               fnCFGsettings(0);       //JM
             }                         //JM
           }

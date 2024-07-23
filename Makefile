@@ -87,7 +87,10 @@ dist_windows: testPgms build.rel/wiki
 	cp res/c47.reg $(WIN_DIST_DIR)/
 	cp res/c47.cmd $(WIN_DIST_DIR)/
 	cp -r res/PROGRAMS $(WIN_DIST_DIR)/res/
-	cp res/dm42l_L1.png $(WIN_DIST_DIR)/res/
+	cp res/C47.png $(WIN_DIST_DIR)/res/
+	cp res/C47short.png $(WIN_DIST_DIR)/res/
+	cp res/R47.png $(WIN_DIST_DIR)/res/
+	cp res/R47short.png $(WIN_DIST_DIR)/res/
 	cp res/fonts/C47__StandardFont.ttf $(WIN_DIST_DIR)/
 	cp build.rel/wiki/Installation-on-Windows.md $(WIN_DIST_DIR)/readme.txt
 	zip -r c47-windows.zip $(WIN_DIST_DIR)
@@ -99,7 +102,10 @@ dist_macos: testPgms build.rel
 	cp build.rel/src/c47-gtk/c47 $(MAC_DIST_DIR)/
 	cp res/dmcp/testPgms.bin $(MAC_DIST_DIR)/res/dmcp/
 	cp res/c47_pre.css $(MAC_DIST_DIR)/res/
-	cp res/dm42l_L1.png $(MAC_DIST_DIR)/res/
+	cp res/C47.png $(MAC_DIST_DIR)/res/
+	cp res/C47short.png $(MAC_DIST_DIR)/res/
+	cp res/R47.png $(MAC_DIST_DIR)/res/
+	cp res/R47short.png $(MAC_DIST_DIR)/res/
 	cp res/fonts/C47__StandardFont.ttf $(MAC_DIST_DIR)/
 	zip -r c47-macos.zip $(MAC_DIST_DIR)
 	rm -rf $(MAC_DIST_DIR)
@@ -110,7 +116,10 @@ dist_linux: testPgms build.rel
 	cp build.rel/src/c47-gtk/c47 $(LINUX_DIST_DIR)/
 	cp res/dmcp/testPgms.bin $(LINUX_DIST_DIR)/res/dmcp/
 	cp res/c47_pre.css $(LINUX_DIST_DIR)/res/
-	cp res/dm42l_L1.png $(LINUX_DIST_DIR)/res/
+	cp res/C47.png $(LINUX_DIST_DIR)/res/
+	cp res/C47short.png $(LINUX_DIST_DIR)/res/
+	cp res/R47.png $(LINUX_DIST_DIR)/res/
+	cp res/R47short.png $(LINUX_DIST_DIR)/res/
 	cp res/fonts/C47__StandardFont.ttf $(LINUX_DIST_DIR)/
 	zip -r c47-linux.zip $(LINUX_DIST_DIR)
 	rm -rf $(LINUX_DIST_DIR)

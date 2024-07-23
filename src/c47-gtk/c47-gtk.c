@@ -18,6 +18,7 @@
  * \file c47-gtk.c
  ***********************************************/
 
+#include "config.h"
 #include "flags.h"
 #include "gtkGui.h"
 #include "items.h"
@@ -34,6 +35,9 @@
 #include "c47.h"
 
 #if defined(PC_BUILD)
+  char modelString[50];
+  uint8_t             config = 0;
+  bool_t enableFunctionKeysDisplay;
   bool_t              calcLandscape;
   bool_t              calcAutoLandscapePortrait;
   GtkWidget           *screen;
@@ -80,10 +84,31 @@
     gmpMemInBytes = 0;
     mp_set_memory_functions(allocGmp, reallocGmp, freeGmp);
 
+    modelString[0] = 0;
     calcLandscape             = false;
     calcAutoLandscapePortrait = true;
 
     for(int arg=1; arg<argc; arg++) {
+
+      if(strcmp(argv[arg], "--background") == 0) {    //must be first in the list of evaluations, as it can incremant the counter
+        if(arg+1<argc && (argv[arg+1])[0] != 0) {
+          strcpy(modelString,argv[++arg]);
+          if(arg+1<argc && (argv[arg+1])[0] != 0) {
+            arg++;
+          }
+          else {
+            break;
+          }
+        }
+      }
+
+      if(strcmp(argv[arg], "--functionkeys") == 0) {
+        enableFunctionKeysDisplay = true;
+      }
+      else {
+        enableFunctionKeysDisplay = false;
+      }
+
       if(strcmp(argv[arg], "--landscape") == 0) {
         calcLandscape             = true;
         calcAutoLandscapePortrait = false;
@@ -98,7 +123,6 @@
         calcLandscape             = false;
         calcAutoLandscapePortrait = true;
       }
-
 
       if(strcmp(argv[arg], "--r47") == 0) {
         calcModel = USER_R47f_g;
@@ -129,10 +153,20 @@
       if(strcmp(argv[arg], "--d47") == 0) {
         calcModel = USER_D47;
       }
-
       if(strcmp(argv[arg], "--dm42") == 0) {
         calcModel = USER_DM42;
       }
+
+      if(strcmp(argv[arg], "--jm") == 0) {
+        config = 1;
+      }
+      if(strcmp(argv[arg], "--rj") == 0) {
+        config = 2;
+      }
+      if(strcmp(argv[arg], "--hp35") == 0) {
+        config = 3;
+      }
+
 
     }
 
@@ -176,6 +210,13 @@
     }
 
     restoreCalc();
+
+    switch(config) {
+      case 1: fnSetJM(0);   break;
+      case 2: fnSetRJ(0);   break;
+      case 3: fnSetHP35(0); break;
+      default:;
+    }
 
     //ramDump();
     refreshScreen(190);

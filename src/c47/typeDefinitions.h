@@ -210,7 +210,7 @@ typedef struct {
   bool_t compatibility_bool14;              //Spare Byte
   bool_t compatibility_bool15;              //Spare Byte
   int8_t fractionDigits;
-  int8_t compatibility_byte1;               //Spare Byte
+  int8_t compatibility_bool23;
   bool_t compatibility_bool16;              //Spare Byte
   bool_t compatibility_bool20;              //Spare Byte
   bool_t compatibility_bool17;              //Spare Byte
@@ -222,7 +222,7 @@ typedef struct {
   uint8_t bcdDisplaySign;
   uint8_t DRG_Cycling;
   uint8_t DM_Cycling;
-  bool_t SI_All;
+  bool_t compatibility_bool22;
   bool_t LongPressM;
   bool_t LongPressF;
 

@@ -76,7 +76,14 @@ uint16_t current_cursor_y = 0;
 #if !defined(TESTSUITE_BUILD)
   #define spc STD_SPACE
   #define spc1 STD_SPACE STD_SPACE_3_PER_EM
-  TO_QSPI static const char whoStr1[] = "C47 Development since 2019" spc "by" spc1
+
+  #if (CALCMODEL == USER_R47)
+    #define MODELTEXT "R47"
+  #else
+    #define MODELTEXT "C47"
+  #endif
+
+  TO_QSPI static const char whoStr1[] = "C47 & R47 Development since 2019" spc "by" spc1
                                        "\n"
                                        "Ben" spc "GB," spc1
                                        "D" spc "A" spc "CA," spc1
@@ -92,18 +99,20 @@ uint16_t current_cursor_y = 0;
                                        "RJvM" spc "NL," spc1
                                        "Walter" spc "DE.";
 
-   TO_QSPI static const char disclaimerStr[]     = "  C47 firmware is free, open source and \n  neither provided nor supported by \n  SwissMicros. Press a key to continue.";
+   
 
-   TO_QSPI static const char versionStr[]        = "  C47 " VERSION_STRING ".";
+   TO_QSPI static const char disclaimerStr[]     = "  " MODELTEXT " firmware is free, open source and \n  neither provided nor supported by \n  SwissMicros. Press a key to continue.";
+
+   TO_QSPI static const char versionStr[]        = "  " MODELTEXT " " VERSION_STRING ".";
 
   #if defined(PC_BUILD)
-    TO_QSPI static const char versionStr2[]     = "  C47 Sim " VERSION1 ", compiled " __DATE__ ".";
+    TO_QSPI static const char versionStr2[]     = "  " MODELTEXT " Sim " VERSION1 ", dated " __DATE__ ".";
   #else // !PC_BUILD
     #if defined(TWO_FILE_PGM)
-      TO_QSPI static const char versionStr2[]   = "  C47 QSPI " VERSION1 ", compiled " __DATE__ ".";
+      TO_QSPI static const char versionStr2[]   = "  " MODELTEXT " QSPI " VERSION1 ", dated " __DATE__ ".";
     #else // !TWO_FILE_PGM
       #if !defined(TWO_FILE_PGM)
-        TO_QSPI static const char versionStr2[] = "  C47 No QSPI " VERSION1 ", compiled " __DATE__ ".";
+        TO_QSPI static const char versionStr2[] = "  " MODELTEXT " No QSPI " VERSION1 ", dated " __DATE__ ".";
       #endif // !TWO_FILE_PGM
     #endif // TWO_FILE_PGM
   #endif // PC_BUILD
@@ -3743,6 +3752,11 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
             prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
           }
 
+          else if(temporaryInformation == TI_TVM_IA && regist == REGISTER_X) {
+            strcpy(prefix, "I%/a = I%YR = NAR =");
+            prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
+          }
+
           else if(temporaryInformation == TI_FROM_DATEX) {
             if(regist == REGISTER_X) {
               if(getSystemFlag(FLAG_DMY)) {
@@ -4081,10 +4095,33 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
           }
 
 
-
-          if(getSystemFlag(FLAG_2TO10) && displayFormat == DF_UN) {                                                           //for the 2^10 UNIT diplay, display long integers in real string, with the Ti suffic
-            longIntegerRegisterToRealDisplayString(regist, tmpString, TMP_STR_LENGTH);
+        //This section to display long integers as reals
+          if(getSystemFlag(FLAG_DREAL)) {
+//          convertLongIntegerRegisterToReal34Register(regist,TEMP_REGISTER_1);
+//          strcpy(tmpString,STD_INTEGER_Z_SMALL ":" STD_SPACE_4_PER_EM);
+//          prefix[0]=0;
+//          prefixWidth = stringWidth(tmpString, &numericFont, true, true) + 1; //use prefixwidth to measure the tmpString prefix to the numbers
+//          real34ToDisplayString(REGISTER_REAL34_DATA(TEMP_REGISTER_1), getRegisterAngularMode(TEMP_REGISTER_1), tmpString+stringByteLength(tmpString), &numericFont, SCREEN_WIDTH - prefixWidth, NUMBER_OF_DISPLAY_DIGITS, true, true);
+//  
+//          int lastGlyphPosition = stringLastGlyph(tmpString);
+//          //check the radix. Two options, a single byte or two-byte radix. Delete the radix if at the right edge of the string.
+//          if(tmpString[lastGlyphPosition]==RADIX34_MARK_STRING[0] && (tmpString[lastGlyphPosition+1]==RADIX34_MARK_STRING[1] || RADIX34_MARK_STRING[1]==1)) {
+//            tmpString[lastGlyphPosition] = 0;
+//          }
+            strcpy(tmpString,STD_INTEGER_Z_SMALL ": ");// STD_SPACE_4_PER_EM);
+            int16_t tlen =stringByteLength(tmpString);
+            longIntegerRegisterToRealDisplayString(regist, tmpString+tlen, TMP_STR_LENGTH-tlen, 0, true);
+            prefix[0]=0;
+          }
+                     
+        //for the 2^10 UNIT diplay, display long integers in real string, with the Ti suffic
+          else if(getSystemFlag(FLAG_2TO10) && displayFormat == DF_UN) {
+            strcpy(tmpString,STD_INTEGER_Z_SMALL ": ");// STD_SPACE_4_PER_EM);
+            int16_t tlen =stringByteLength(tmpString);
+            longIntegerRegisterToRealDisplayString(regist, tmpString+tlen, TMP_STR_LENGTH-tlen, 1024, false);
           } 
+          
+        //normal longinteger handling
           else {
             longIntegerRegisterToDisplayString(regist, tmpString, TMP_STR_LENGTH, SCREEN_WIDTH - prefixWidth, 50, true);
           }

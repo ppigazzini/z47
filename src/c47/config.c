@@ -133,6 +133,7 @@ void configCommon(uint16_t idx) {
 #define IPGRP1                114    // config_grpGroupingGr1Left        
 #define IPGRP1x               115    // config_grpGroupingGr1LeftOverflow
 #define fgLongPressSetting    117    // config_setFGLSettings            
+#define HIDE                  118    // config_exponentHideLimit
 
 #define DenMaX                120    // config_denmax                    
 #define TVMIKnown             121    // tvm          
@@ -154,7 +155,7 @@ void configCommon(uint16_t idx) {
 
 TO_QSPI const int32_t Settings[] = {
 //variable,                          n/a,        Reset,                          HP35,            JM,                   RJ,                     C47,             DefltSB,         TVM,                  Comment
-InputDefaultDataType,                xxx,        xxx,                            ID_DP,           ID_43S,               ID_43S,                 ID_43S,          xxx,             xxx,                  
+InputDefaultDataType,                xxx,        xxx,                            ID_DP,           ID_43S,               ID_DP,                  ID_43S,          xxx,             xxx,                  
 SigFigNumberOfDigits,                xxx,        xxx,                            9,               3,                    xxx,                    xxx,             xxx,             xxx,                  
 AllNumberOfDigits,                   xxx,        xxx,                            xxx,             xxx,                  xxx,                    3,               xxx,             xxx,                  
 FixNumberOfDigits,                   xxx,        xxx,                            xxx,             xxx,                  3,                      xxx,             xxx,             xxx,                  
@@ -162,7 +163,8 @@ MymB,                                xxx,        1,                             
 HomeB,                               xxx,        0,                              0,               0,                    0,                      0,               xxx,             xxx,                  
 RNG,                                 xxx,        6145,                           99,              6145,                 6145,                   6145,            xxx,             xxx,                  
 SDIGS,                               xxx,        0,                              16,              0,                    0,                      34,              xxx,             xxx,                  
-FDIGS,                               xxx,        0,                              16,              24,                   0,                      34,              xxx,             xxx,                  
+FDIGS,                               xxx,        0,                              16,              31,                   0,                      34,              xxx,             xxx,                  
+HIDE,                                xxx,        0,                              0,               31,                   0,                      0,               xxx,             xxx,                  
 DSTACK,                              xxx,        4,                              1,               4,                    4,                      4,               xxx,             xxx,                  
 CACHEDDSTACK,                        xxx,        4,                              1,               4,                    4,                      4,               xxx,             xxx,                  
 ADM,                                 xxx,        amDegree,                       amRadian,        amDegree,             amRadian,               amDegree,        xxx,             xxx,                  
@@ -176,13 +178,13 @@ fgLongPressSetting,                  xxx,        xxx,                           
 3,                                   1,          xxx,                            xxx,             FLAG_IRFRAC,          FLAG_IRFRAC,            xxx,             xxx,             xxx,
 3,                                   0,          FLAG_IRF_ON,                    xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,
 3,                                   1,          xxx,                            xxx,             FLAG_IRF_ON,          FLAG_IRF_ON,            xxx,             xxx,             xxx,
-
 3,                                   0,          xxx,                            FLAG_ERPN,       xxx,                  xxx,                    xxx,             xxx,             xxx,
 3,                                   1,          FLAG_ERPN,                      xxx,             FLAG_ERPN,            FLAG_ERPN,              FLAG_ERPN,       xxx,             xxx,
-
 3,                                   0,          FLAG_CPXMULT,                   xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,
 3,                                   1,          FLAG_LARGELI,                   xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,
-
+3,                                   0,          FLAG_PFX_ALL,                   xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,
+3,                                   0,          FLAG_DREAL,                     xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,
+3,                                   1,          FLAG_DREAL,                     xxx,             FLAG_DREAL,           xxx,                    xxx,             xxx,             xxx,
 
 
 
@@ -249,7 +251,7 @@ RESERVED_VARIABLE_CPERONA,           xxx,        12,                            
 //fractions
 3,                                   0,          FLAG_DENFIX,                    xxx,             FLAG_DENFIX,          xxx,                    xxx,             xxx,             xxx,                  // Clear flag FLAG_DENFIX
 3,                                   0,          FLAG_FRACT,                     xxx,             FLAG_FRACT,           xxx,                    xxx,             xxx,             xxx,                  // Clear flag FLAG_FRACT
-3,                                   1,          FLAG_PROPFR,                    xxx,             FLAG_PROPFR,          xxx,                    xxx,             xxx,             xxx,                  // Set flag  FLAG_PROPFR
+3,                                   1,          FLAG_PROPFR,                    xxx,             FLAG_PROPFR,          FLAG_PROPFR,            xxx,             xxx,             xxx,                  // Set flag  FLAG_PROPFR
 3,                                   0,          FLAG_DENANY,                    xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,                  // Clear flag FLAG_DENANY
 3,                                   1,          xxx,                            xxx,             FLAG_DENANY,          FLAG_DENANY,            xxx,             xxx,             xxx,                  // Set flag  FLAG_DENANY
 3,                                   0,          FLAG_FRCSRN,                    xxx,             FLAG_FRCSRN,          xxx,                    xxx,             xxx,             xxx,                  // Clear flag FLAG_FRCSRN
@@ -284,6 +286,8 @@ void Sett(int16_t grp) {
         case HomeB                : {BASE_HOME =                  (Settings[ptr*(_numberOfGrps+2) + 1 + grp]) == 1 ? true : false;break;}   // HomeB
         case RNG                  : {exponentLimit      =         (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // RNG
         case SDIGS                : {significantDigits  =         (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // SDIGS
+        case FDIGS                : {fractionDigits  =            (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // FDIGS
+        case HIDE                 : {exponentHideLimit  =         (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // HIDE
         case DSTACK               : {displayStack       =         (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // DSTACK
         case CACHEDDSTACK         : {cachedDisplayStack =         (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // CACHEDDSTACK
         case ADM                  : {currentAngularMode =         (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // ADM
@@ -295,7 +299,6 @@ void Sett(int16_t grp) {
         case DenMaX               : {denMax                     = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // DenMaX
         case TVMIKnown            : {tvmIKnown                  = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]) == 1 ? true : false;break;}   // TVMIKnown
         case TVMIChanges          : {tvmIChanges                = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]) == 1 ? true : false;break;}   // TVMIChanges
-        case FDIGS                : {fractionDigits  =            (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);break;}                       // FDIGS
 
         case RESERVED_VARIABLE_FV     :
         case RESERVED_VARIABLE_IPONA  :
@@ -1264,7 +1267,6 @@ void resetOtherConfigurationStuff(void) {
   bcdDisplaySign = BCDu;
   DRG_Cycling = 0;
   DM_Cycling = 0;
-  SI_All = false;                                              //UNIT display full SI prefix display range
   LongPressM = RBX_M1234;
   LongPressF = RBX_F124;
   fgLN = RBX_FGLNFUL;

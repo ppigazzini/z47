@@ -40,6 +40,7 @@
 #define isReal    false
 static void real34ToDisplayString2(const real34_t *real34, char *displayString, int16_t displayHasNDigits, bool_t limitExponent, bool_t noFix, bool_t frontSpace, bool_t complex);
 static void complex34ToDisplayString2(const complex34_t *complex34, char *displayString, int16_t displayHasNDigits, bool_t limitExponent, bool_t frontSpace, const uint16_t tagAngle, const bool_t tagPolar);
+static void insertSepsIntoIntegerText(char *displayString);
 
 
 static void fnDisplayFormatReset(uint16_t displayFormatN) {
@@ -109,7 +110,6 @@ void fnDisplayFormatAll(uint16_t displayFormatN) {
 void fnDisplayFormatSigFig(uint16_t displayFormatN) {
   fnDisplayFormatReset(displayFormatN);
   displayFormat = DF_SF;
-  displayFormatDigits = min(18,displayFormatDigits);
   fnRefreshState();
 }
 
@@ -121,7 +121,6 @@ void fnDisplayFormatSigFig(uint16_t displayFormatN) {
  ***********************************************/
 void fnDisplayFormatUnit(uint16_t displayFormatN) {
   fnDisplayFormatReset(displayFormatN);
-  displayFormatDigits = min(20, displayFormatDigits);
   displayFormat = DF_UN;
   fnRefreshState();
 }
@@ -334,6 +333,7 @@ void real34ToDisplayString(const real34_t *real34, uint32_t tag, char *displaySt
 static void real34ToDisplayString2(const real34_t *real34, char *displayString, int16_t displayHasNDigits, bool_t limitExponent, bool_t noFix, bool_t frontSpace, bool_t complex) {
   #undef MAX_DIGITS
   #define MAX_DIGITS 37 // 34 + 1 before (used when rounding from 9.999 to 10.000) + 2 after (used for rounding and ENG display mode)
+  #define exponentUNlimit1024max 5 //1024^5 is the maximum UNIT_1024^n before skipping over to standard unit presentation
 
   uint8_t charIndex, valueIndex;
   int16_t digitToRound=0;
@@ -378,7 +378,12 @@ static void real34ToDisplayString2(const real34_t *real34, char *displayString, 
 
       //get IP and FP of this
       realToIntegralValue(&x, &tmpIp, DEC_ROUND_DOWN, &ctxtReal34); // tmpIp = Integer Part log base1024 of Real34    = 1
-      exponentUNlimit = realToInt32C47(&tmpIp);
+      int tmpx = realToInt32C47(&tmpIp);
+      if(tmpx > exponentUNlimit1024max) {
+        goto overRange;
+      }
+      exponentUNlimit = min(exponentUNlimit1024max,tmpx);
+      int32ToReal(exponentUNlimit,&tmpIp);
       realSubtract(&x, &tmpIp, &tmpFp, &ctxtReal34);                // tmpFp = Fractional part log base1024 of Real34    = 0.00140
       //printRealToConsole(&tmpIp,"tmpIp Ip ","\n");
       //printRealToConsole(&tmpFp,"Fp ","\n");
@@ -409,8 +414,9 @@ static void real34ToDisplayString2(const real34_t *real34, char *displayString, 
 
     }
     else {
-      flag2To10 = false;
       flag2To10_baseunit_integer = true;
+overRange:
+      flag2To10 = false;
     }
   }
 
@@ -1158,20 +1164,23 @@ if(displayFormat != DF_UN) {
       digitsToDisplay--;
     }
 
-    if(flag2To10 && displayFormat == DF_UN)
-    while(exponent != exponentUNlimit * 3) {
-      //printf("%i \n",exponent);
-      if(exponent > exponentUNlimit * 3) exponent--; else
-      if(exponent < exponentUNlimit * 3) exponent++;
-      displayString[charIndex++] = '0' + bcd[firstDigit];
-      if(updateDisplayValueX) {
-        displayValueX[valueIndex++] = '0' + bcd[firstDigit];
-      }
-      firstDigit++;
-      numDigits--;
-      digitsToDisplay--;
-    }
+//The digits are not in groups of three, as the underlying ENG display needs no more than 3 digits left of the radix. 
+//Therefore 1024^ & UN scheme is limited to 1024^5 --> ^6, if larger numbers are required, separators must be added here.
 
+    if(flag2To10 && displayFormat == DF_UN) {
+      while(exponent != exponentUNlimit * 3) {
+        //printf("%i \n",exponent);
+        if(exponent > exponentUNlimit * 3) exponent--; else
+        if(exponent < exponentUNlimit * 3) exponent++;
+        displayString[charIndex++] = '0' + bcd[firstDigit];
+        if(updateDisplayValueX) {
+          displayValueX[valueIndex++] = '0' + bcd[firstDigit];
+        }
+        firstDigit++;
+        numDigits--;
+        digitsToDisplay--;
+      }
+    }
 
 
     // Radix Mark
@@ -1546,7 +1555,7 @@ void fractionToDisplayString(calcRegister_t regist, char *displayString) {
 
   endingZero = strlen(displayString);
 
-  if(getSystemFlag(FLAG_PROPFR)) { // a b/c
+  if(getSystemFlag(FLAG_PROPFR) && intPart != 0) { // a b/c
     if(updateDisplayValueX) {
       sprintf(displayValueX, "%s%" PRIu32 " %" PRIu32 "/%" PRIu32, (sign == -1 ? "-" : ""), (uint32_t)intPart, (uint32_t)numer, (uint32_t)denom);
     }
@@ -2126,7 +2135,8 @@ void longIntegerRegisterToDisplayString(calcRegister_t regist, char *displayStri
 }
 
 
-void longIntegerRegisterToRealDisplayString(calcRegister_t regist, char *displayString, int32_t strLg) {    //This function depends on real34ToDisplayString2, which depends on the getSystemFlag(FLAG_2TO10) && displayFormat == DF_UN to be set
+
+void longIntegerRegisterToRealDisplayString(calcRegister_t regist, char *displayString, int32_t strLg, int32_t minimum, bool_t removeTrailingRadix) {    //This function depends on real34ToDisplayString2, which depends on the getSystemFlag(FLAG_2TO10) && displayFormat == DF_UN to be set
   longInteger_t lgInt;
   convertLongIntegerRegisterToLongInteger(regist, lgInt);
   longIntegerToAllocatedString(lgInt, displayString, strLg);
@@ -2134,13 +2144,67 @@ void longIntegerRegisterToRealDisplayString(calcRegister_t regist, char *display
   real_t tmp4, tmpReal;
   real34_t tmpReal34;
   stringToReal(displayString, &tmpReal, &ctxtReal39);
-  int32ToReal(1024,&tmp4);
-  if(!realCompareAbsLessThan(&tmpReal, &tmp4)) {
+  int32ToReal(minimum,&tmp4);
+  if(minimum == 0 || !realCompareAbsLessThan(&tmpReal, &tmp4)) {
     realToReal34(&tmpReal, &tmpReal34);
     real34ToDisplayString2(&tmpReal34, displayString, 34, 100, false, false, isReal);
+    if(removeTrailingRadix) {
+      int lastGlyphPosition = stringLastGlyph(displayString);
+      //check the radix. Two options, a single byte or two-byte radix. Delete the radix if at the right edge of the string.
+      if(displayString[lastGlyphPosition]==RADIX34_MARK_STRING[0] && (displayString[lastGlyphPosition+1]==RADIX34_MARK_STRING[1] || RADIX34_MARK_STRING[1]==1)) {
+        displayString[lastGlyphPosition] = 0;
+      }
+    }
   }
 }
 
+
+//this procedure is meant to be integrated into the integer parts of Real, Integer, sup & sub text.
+//TODO. It needs careful consideration and will save some bytes
+
+static void insertSepsIntoIntegerText(char *displayString){
+  //IPGRP IPGRP1 IPGRP1x handling
+  if(!GROUPLEFT_DISABLED && GROUPWIDTH_LEFT1 > 0) {
+    //Handle IPGRP1, bearing in mind with a negative number, the digits start one deeper
+    int16_t len = strlen(displayString);
+    //printf("len %u %u %u %u\n",len, displayString[0], displayString[1], displayString[2]);
+    int16_t digitOne = displayString[0] == '-' ? 1 : 0;
+    int16_t Grp1 = ( (GROUPWIDTH_LEFT1X > 0)
+                  && (displayString[digitOne] - 48 <= GROUPWIDTH_LEFT1X)
+                  && (len - digitOne == GROUPWIDTH_LEFT1 + 1) ? GROUPWIDTH_LEFT1 + 1 : GROUPWIDTH_LEFT1);
+    Grp1 = len >= (checkHP ? 10 : 20) ? GROUPWIDTH_LEFT : Grp1;
+    int16_t i = len - Grp1;
+    if(i > 0 && (i != 1 || displayString[0] != '-')) {
+      if(SEPARATOR_LEFT[1]!=1) {
+        xcopy(displayString + i + 2, displayString + i, len - i + 1);
+        displayString[i] = SEPARATOR_LEFT[0];
+        displayString[i + 1] = SEPARATOR_LEFT[1];
+      }
+      else if(SEPARATOR_LEFT[0] != 1) {
+        xcopy(displayString + i + 1, displayString + i, len - i + 1);
+        displayString[i] = SEPARATOR_LEFT[0];
+      }
+
+      //Handle repeating IPGRP
+      len = strlen(displayString);
+      for(i=len - GROUPWIDTH_LEFT - (Grp1 + (SEPARATOR_LEFT[1] == 1 ? 1 : 2)); i>0; i-=GROUPWIDTH_LEFT) {
+        if(i != 1 || displayString[0] != '-') {
+          if(SEPARATOR_LEFT[1] != 1) {
+            xcopy(displayString + i + 2, displayString + i, len - i + 1);
+            displayString[i] = SEPARATOR_LEFT[0];
+            displayString[i + 1] = SEPARATOR_LEFT[1];
+            len += 2;
+          }
+          else if(SEPARATOR_LEFT[0] != 1) {
+            xcopy(displayString + i + 1, displayString + i, len - i + 1);
+            displayString[i] = SEPARATOR_LEFT[0];
+            len += 1;
+          }
+        }
+      }
+    }
+  }
+}
 
 void longIntegerToDisplayString(longInteger_t lgInt, char *displayString, int32_t strLg, int16_t max_Width, int16_t maxExp, bool_t allowLARGELI) { //JM mod max_Width;   //JM added last parameter: Allow LARGELI
   int16_t exponentStep,exponentStep1;
@@ -2191,48 +2255,8 @@ void longIntegerToDisplayString(longInteger_t lgInt, char *displayString, int32_
     strcpy(displayValueX, displayString);
   }
 
+  insertSepsIntoIntegerText(displayString);
 
-  //IPGRP IPGRP1 IPGRP1x handling
-  if(!GROUPLEFT_DISABLED && GROUPWIDTH_LEFT1 > 0) {
-    //Handle IPGRP1, bearing in mind with a negative number, the digits start one deeper
-    int16_t len = strlen(displayString);
-    //printf("len %u %u %u %u\n",len, displayString[0], displayString[1], displayString[2]);
-    int16_t digitOne = displayString[0] == '-' ? 1 : 0;
-    int16_t Grp1 = ( (GROUPWIDTH_LEFT1X > 0)
-                  && (displayString[digitOne] - 48 <= GROUPWIDTH_LEFT1X)
-                  && (len - digitOne == GROUPWIDTH_LEFT1 + 1) ? GROUPWIDTH_LEFT1 + 1 : GROUPWIDTH_LEFT1);
-    Grp1 = len >= (checkHP ? 10 : 20) ? GROUPWIDTH_LEFT : Grp1;
-    int16_t i = len - Grp1;
-    if(i > 0 && (i != 1 || displayString[0] != '-')) {
-      if(SEPARATOR_LEFT[1]!=1) {
-        xcopy(displayString + i + 2, displayString + i, len - i + 1);
-        displayString[i] = SEPARATOR_LEFT[0];
-        displayString[i + 1] = SEPARATOR_LEFT[1];
-      }
-      else if(SEPARATOR_LEFT[0] != 1) {
-        xcopy(displayString + i + 1, displayString + i, len - i + 1);
-        displayString[i] = SEPARATOR_LEFT[0];
-      }
-
-      //Handle repeating IPGRP
-      len = strlen(displayString);
-      for(i=len - GROUPWIDTH_LEFT - (Grp1 + (SEPARATOR_LEFT[1] == 1 ? 1 : 2)); i>0; i-=GROUPWIDTH_LEFT) {
-        if(i != 1 || displayString[0] != '-') {
-          if(SEPARATOR_LEFT[1] != 1) {
-            xcopy(displayString + i + 2, displayString + i, len - i + 1);
-            displayString[i] = SEPARATOR_LEFT[0];
-            displayString[i + 1] = SEPARATOR_LEFT[1];
-            len += 2;
-          }
-          else if(SEPARATOR_LEFT[0] != 1) {
-            xcopy(displayString + i + 1, displayString + i, len - i + 1);
-            displayString[i] = SEPARATOR_LEFT[0];
-            len += 1;
-          }
-        }
-      }
-    }
-  }
   //for any exponent display, further manipulation of GRP is not needed
   if(stringWidth(displayString, allowLARGELI && getSystemFlag(FLAG_LARGELI) ? &numericFont : &standardFont, false, false) > maxWidth) {      //JM
     char exponentString[14], lastRemovedDigit;
@@ -2910,7 +2934,7 @@ void fnC47Show(uint16_t fnShow_param) {
                IntShowMode = SHOWAUTO;
                break;
 
-      case ITM_PERIOD:
+      case ITM_PERIOD: //change font for SHOW display LI
                source = 0;
                if(getRegisterDataType(showRegis) == dtLongInteger) {
                  startingLine = 0;
@@ -2923,7 +2947,7 @@ void fnC47Show(uint16_t fnShow_param) {
                }
                break;
 
-      case ITM_RS:
+      case ITM_RS: //change page on SHOW LI, if in StandardFont
                if(getRegisterDataType(showRegis) == dtLongInteger) {
                  if(temporaryInformation != TI_SHOW_REGISTER_SMALL) {
                    startingLine = 0;
@@ -2931,7 +2955,7 @@ void fnC47Show(uint16_t fnShow_param) {
                  }
                  else {
                    startingLine += 10;
-                   if(startingLine == 30 || source == last) {
+                   if(startingLine >= 30 || source == last) {
                      startingLine = 0;
                      source = 0;
                    }
@@ -3026,7 +3050,7 @@ void fnC47Show(uint16_t fnShow_param) {
         //printf("glyphNumber %i\n",glyphNumber);
 
 
-        //LARGE font
+        //LARGE font, one page
         if(IntShowMode == SHOWAUTO){
           if(glyphNumber < 170){
             temporaryInformation = TI_SHOW_REGISTER_BIG;
@@ -3044,27 +3068,24 @@ void fnC47Show(uint16_t fnShow_param) {
         }
 
 
-        //STANDARD font
+        //STANDARD font, three pages
         if(IntShowMode == SHOWSML) {
           SHOW_reset();
           temporaryInformation = TI_SHOW_REGISTER_SMALL;
           numberOfLines = 10;
-          while(true) {
+          do {
             prepLongintIntoLines(&last, &source, &dest, &standardFont, SCREEN_WIDTH - stringWidth("0", &standardFont, true, true), numberOfLines, &startingLine);
-            if(tmpString[startingLine*SHOWLineSize] != 0 || startingLine == 0) break;
+            if(tmpString[0] != 0) break; //break if first line first character is non-terminator, otherwise re-prep the output lines
             startingLine = 0;
             source = 0;
-          }
+          } while(tmpString[0] == 0);
 
-          if(tmpString[(numberOfLines-1)*SHOWLineSize] == 0) {
-            break;
-          }
-          if(tmpString[numberOfLines*SHOWLineSize] == 0 || IntShowMode == SHOWSML) {   //only proceed to second page if page has a long enough number to wrap
+          if(tmpString[numberOfLines*SHOWLineSize] == 0 || IntShowMode == SHOWSML) {   //check first character of the next page, and only proceed to second page if page has a long enough number to wrap
             goto goBreak1;
           }
         }
 
-        //TINY font
+        //TINY font, one page
         if(IntShowMode == SHOWTNY) {
           SHOW_reset();
           temporaryInformation = TI_SHOW_REGISTER_TINY;

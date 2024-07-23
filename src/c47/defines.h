@@ -11,14 +11,14 @@
 // JM VARIOUS OPTIONS
 //*********************************
 
-#define VERSION1 "0.109.02.04a"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
+#define VERSION1 "0.109.02.05a3"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
 
 //Version history
 //0.109.02.00
 //0.109.02.01
-//0.109.02.02
-//0.109.02.03 skipped due to confusion. Files identifying a .02 are tagged as .03
-//0.109.02.04alpha in progress
+//0.109.02.02 this version.02 was tagged in GitLab as .03
+//0.109.02.03 this version skipped due to confusion.
+//0.109.02.04
 
 
 
@@ -314,7 +314,6 @@
 #define ID_43D                   5    //JM Input Default
 #define ID_SI                    6    //JM Input Default
 #define ID_LI                    7    //JM Input Default
-
 
 
 //*********************************
@@ -632,8 +631,10 @@
 #define FLAG_LARGELI                          0x8046
 #define FLAG_IRFRAC                           0x8047
 #define FLAG_IRF_ON                           0x8048
+#define FLAG_PFX_ALL                          0x8049
+#define FLAG_DREAL                            0x804A
 
-#define NUMBER_OF_SYSTEM_FLAGS                    73 // We can have a maximum of 128 system flags
+#define NUMBER_OF_SYSTEM_FLAGS                    75 // We can have a maximum of 128 system flags
 
 typedef enum {
   LI_ZERO     = 0, // Long integer sign 0
@@ -1386,7 +1387,8 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define TI_FUNCTION                              108
 #define TI_STORCL                                109
 #define TI_TVM_EFF                               110
-#define TI_NOT_AVAILABLE                         111
+#define TI_TVM_IA                                111
+#define TI_NOT_AVAILABLE                         112
 
 #define SET_TI_TRUE_FALSE(condition)               do { temporaryInformation = TI_FALSE + (condition); } while(0) // TI_TRUE must be TI_FALSE + 1
 
@@ -1753,6 +1755,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define RADIX34_MARK_STRING                  (gapChar1Radix)
 #define RADIX34_MARK_DEC_ITM                 (RADIX34_MARK_CHAR == '.' ? ITM_PERIOD : ITM_COMMA)
 #define RADIX34_MARK_NOT_DEC_ITM             (RADIX34_MARK_CHAR == '.' ? ITM_COMMA : ITM_PERIOD)
+#define Z_LI_STRING                          (STD_INTEGER_Z_SMALL)
 
 #define groupingGap                          ((uint8_t)(grpGroupingLeft)) //ADD HERE THE CONDITIONS FOR NIL SEPS
 

@@ -499,7 +499,7 @@
             showSoftmenuCurrentPart();
             }
           break;
-        case 61:
+        case 61:           //=
           if(calcMode == CM_EIM) {
             shiftF = true;
             int16_t jj = softmenuStack[0].firstItem;
@@ -1062,12 +1062,32 @@
           btnClicked(w, "08");
           break;
 
-        case 112: // p         //dr                //JM Special case: p = pi
-          //printf("key pressed: p pi\n"); //dr
+        case 112: // p         //dr                //JM Special case: p = x^2
           shiftF = true;       //dr
           shiftG = false;      //JM
-          btnClicked(w, "08"); //dr
+          btnClicked(w, "02"); //dr
           break;               //dr
+
+        
+        case 61: // =          //                //JM Special case: = = DRG
+          if(calcMode == CM_NIM) {
+            btnClicked(w, "32");  //exit
+          }
+          if(calcMode == CM_NORMAL) {
+            runFunction(ITM_DRG);
+            screenUpdatingMode = SCRUPD_AUTO;
+            refreshScreen(0);
+          }
+          break;               //dr
+
+
+        case 121: // y         //dr                //JM Special case: y: y^x
+          shiftF = true;       //dr
+          shiftG = false;      //JM
+          btnClicked(w, "01"); //dr
+          break;               //dr
+
+
 
         case 115: // s //dr
           //printf("key pressed: s SIN\n"); //dr
@@ -3218,20 +3238,40 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
       gtk_container_add(GTK_CONTAINER(frmCalc), grid);
 
 
-
-      // Backround image
-      if(calcLandscape) {
-        backgroundImage = gtk_image_new_from_file("res/dm42lshort.png");
+      
+      if(modelString[0] == 0) {
+        strcpy(modelString,"res/");
+        switch(calcModel) {
+          case USER_R47f_g  :
+          case USER_R47fg_bk:
+          case USER_R47fg_g :
+          case USER_R47bk_fg:strcat(modelString,"R47"); break;
+          case USER_C47     :
+          default           :strcat(modelString,"C47"); break;
+        }
+        if(calcLandscape) {
+          strcat(modelString,"short.png");
+        } 
+        else {
+          strcat(modelString,".png");        
+        }
       }
       else {
-        #if NARROW_SCREEN == 0
-          backgroundImage = gtk_image_new_from_file("res/dm42l_L1.png");
-          gtk_fixed_put(GTK_FIXED(grid), backgroundImage, 0, 0);
-        #else // NARROW_SCREEN != 0 --> 400x1280 raspberry screen
-          backgroundImage = gtk_image_new_from_file("res/dm42l_L1_narrow_screen.png");
-          gtk_fixed_put(GTK_FIXED(grid), backgroundImage, 0, 240);
-        #endif // NARROW_SCREEN == 0
+        char modelString2[50];
+        strcpy(modelString2,"res/");
+        strcat(modelString2,modelString);
+        strcpy(modelString,modelString2);
       }
+
+
+      // Backround image
+      #if NARROW_SCREEN == 0
+        backgroundImage = gtk_image_new_from_file(modelString);
+        gtk_fixed_put(GTK_FIXED(grid), backgroundImage, 0, 0);
+      #else // NARROW_SCREEN != 0 --> 400x1280 raspberry screen
+        backgroundImage = gtk_image_new_from_file("res/dm42l_L1_narrow_screen.png");
+        gtk_fixed_put(GTK_FIXED(grid), backgroundImage, 0, 240);
+      #endif // NARROW_SCREEN == 0
 
 
 
@@ -3329,12 +3369,22 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
       #endif // (SHOW_MEMORY_STATUS == 1)
 
       // 1st row: F1 to F6 buttons
-      btn11 = gtk_button_new_with_label("");
-      btn12 = gtk_button_new_with_label("");
-      btn13 = gtk_button_new_with_label("");
-      btn14 = gtk_button_new_with_label("");
-      btn15 = gtk_button_new_with_label("");
-      btn16 = gtk_button_new_with_label("");
+      if(enableFunctionKeysDisplay) {
+        btn11 = gtk_button_new_with_label("F1");
+        btn12 = gtk_button_new_with_label("F2");
+        btn13 = gtk_button_new_with_label("F3");
+        btn14 = gtk_button_new_with_label("F4");
+        btn15 = gtk_button_new_with_label("F5");
+        btn16 = gtk_button_new_with_label("F6");
+      }
+      else {
+        btn11 = gtk_button_new_with_label("");
+        btn12 = gtk_button_new_with_label("");
+        btn13 = gtk_button_new_with_label("");
+        btn14 = gtk_button_new_with_label("");
+        btn15 = gtk_button_new_with_label("");
+        btn16 = gtk_button_new_with_label("");
+      }
 
       gtk_widget_set_tooltip_text(GTK_WIDGET(btn11), "F1");
       gtk_widget_set_tooltip_text(GTK_WIDGET(btn12), "F2");

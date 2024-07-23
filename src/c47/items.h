@@ -1823,12 +1823,12 @@
 #define ITM_RCL_PMT                 1773
 #define ITM_RCL_PV                  1774
 #define ITM_atan2                   1775
-#define ITM_1776                    1776
+#define ITM_EFFTOI                  1776
 #define ITM_TIMER_0_1S              1777
 #define ITM_TIMER_RESET             1778
 #define ITM_TIMER_RCL               1779
 #define ITM_DELBKUP                 1780
-#define ITM_EFF                     1781
+#define ITM_ITOEFF                  1781
 #define ITM_TIMER_SIGMA_T           1782
 #define ITM_TIMER_SIGMA_L           1783
 #define ITM_TIMER_R_T               1784
@@ -1950,7 +1950,7 @@
 #define ITM_FRCYC                   1896
 #define ITM_FRCSRN                  1897
 #define ITM_N_KEY_ALPHA             1898
-#define ITM_1899                    1899
+#define ITM_DREAL                   1899
 #define ITM_N_KEY_GSH               1900
 #define ITM_N_KEY_MM                1901
 #define ITM_1902                    1902
@@ -2071,7 +2071,7 @@
 #define ITM_SETSIG2_OLD             2017
 #define ITM_2018             2018
 #define ITM_RMODEQ                  2019
-#define ITM_SI_All                  2020
+#define ITM_2020                    2020
 #define ITM_USER_ARESET             2021
 #define ITM_USER_MRESET             2022
 #define ITM_USER_KRESET             2023
@@ -2088,7 +2088,7 @@
 #define ITM_PZOOMX                  2034
 #define ITM_PZOOMY                  2035
 #define MNU_TRG                     2036
-#define MNU_SETUP                   2037
+#define MNU_PREF                    2037
 #define ITM_SAFERESET               2038
 #define ITM_SH_LONGPRESS                   2039
 #define ITM_PLOT_STAT               2040
@@ -2313,7 +2313,7 @@
 #define SFL_LARGELI                 2257
 #define SFL_IRFRAC                  2258
 #define SFL_IRF_ON                  2259
-#define SFL_2256                    2260
+#define SFL_PFX_ALL                 2260
 #define SFL_2257                    2261
 #define SFL_2258                    2262
 #define SFL_2259                    2263
