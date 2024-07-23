@@ -103,22 +103,11 @@ void fneRPN(uint16_t state) {
   fnGetVolume(vol);
   fnSetVolume(11);
   _Buzz(100,5);
-  if(calcMode == CM_AIM) {
-    xcopy(tmpString, aimBuffer, ERROR_MESSAGE_LENGTH + AIM_BUFFER_LENGTH + NIM_BUFFER_LENGTH);       //backup portion of the "message buffer" area in DMCP used by ERROR..AIM..NIM buffers, to the tmpstring area in DMCP. DMCP uses this area during create_screenshot.
-  }
-
+  xcopy(tmpString, aimBuffer, ERROR_MESSAGE_LENGTH + AIM_BUFFER_LENGTH + NIM_BUFFER_LENGTH);       //backup portion of the "message buffer" area in DMCP used by ERROR..AIM..NIM buffers, to the tmpstring area in DMCP. DMCP uses this area during create_screenshot.
   create_screenshot(0);      //Screen dump
-
-  if(calcMode == CM_AIM) {
-    xcopy(aimBuffer,tmpString, ERROR_MESSAGE_LENGTH + AIM_BUFFER_LENGTH + NIM_BUFFER_LENGTH);        //   This total area must be less than the tmpString storage area, which it is.
-  }
+  xcopy(aimBuffer,tmpString, ERROR_MESSAGE_LENGTH + AIM_BUFFER_LENGTH + NIM_BUFFER_LENGTH);        //   This total area must be less than the tmpString storage area, which it is.
   _Buzz(100,5);
   fnSetVolume(vol);
-
-  if(showRegis != 9999 || SHOWMODE) {
-    fnC47Show(ITM_NOP);
-//check of hierdie moet bly------------------------------------------------------------------------------------------------------------------------------------------------------
-  }
 }
 #endif //DMCP_BUILD
 
