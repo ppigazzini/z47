@@ -22,7 +22,9 @@
 
 
 
-#define CALCMODEL USER_C47               // USER_C47 or USER_R47
+#if !defined(CALCMODEL)
+  #define CALCMODEL USER_C47               // USER_C47 or USER_R47
+#endif // !CALCMODEL
 
 #undef SAVE_SPACE_DM42_0
 #undef SAVE_SPACE_DM42_1
