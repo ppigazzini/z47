@@ -1394,17 +1394,15 @@ releaseOverride = false;
                       sprintf(tmp,"^^^^^^^keyboard.c: determineitem: key_no: %u, key->primary1: %d:", key_no, key->primary); jm_show_comment(tmp);
                     #endif //PC_BUILD
 
-    if(SHOWMODE) {
-      if((allowShowDigits && key->primary >= ITM_0 && key->primary <= ITM_9) || key->primary == ITM_RCL || key->primary == ITM_PERIOD || key->primary == ITM_RS || key->primary == ITM_UP1 || key->primary == ITM_DOWN1) {
-      }
-      else {
-        showRegis = 9999;
-      }
+    if( (key->primary != ITM_SHIFTf) && ( !SHOWMODE || !(
+                           key->primary == ITM_RCL 
+                           || key->primary == ITM_RS 
+                           || key->primary == ITM_UP1 
+                           || key->primary == ITM_DOWN1 
+                           || (allowShowDigits && key->primary >= ITM_0 && key->primary <= ITM_9))
+                         ) ) {
+      showRegis = 9999;                                      //clear showmode register
     }
-    else {
-      showRegis = 9999;
-    }
-
 
     int16_t ShiftOverride = 0;
     result = Norm_Key_00_item_in_layout;
@@ -2259,8 +2257,8 @@ RELEASE_END:
         temporaryInformation = TI_VIEW_REGISTER;
       }
     }
-    else if(temporaryInformation != TI_NO_INFO && item != ITM_UP1 && item != ITM_DOWN1 && item != ITM_EXIT1 && item != ITM_BACKSPACE && item != ITM_PERIOD && item != ITM_RS &&
-           !(  ((item == ITM_RCL) || (item >= ITM_0 && item <= ITM_9 && allowShowDigits)) && SHOWMODE  ) ) {
+    else if(temporaryInformation != TI_NO_INFO && item != ITM_UP1 && item != ITM_DOWN1 && item != ITM_EXIT1 && item != ITM_BACKSPACE && 
+           !(  (  item == ITM_RCL || item == ITM_RS || (item >= ITM_0 && item <= ITM_9 && allowShowDigits)  ) && SHOWMODE  ) ) {
       if(SHOWMODE) {
         closeShowMenu();
       }
@@ -2283,11 +2281,10 @@ RELEASE_END:
 
     if(calcMode == CM_NORMAL && SHOWMODE && softmenu[softmenuStack[0].softmenuId].menuItem != -MNU_EQN) {
       switch(item) {
-
-        case ITM_UP1:             //was 1
-        case ITM_DOWN1:           //was 2
-        case ITM_RS:              //was 11
-        case ITM_PERIOD: {        //was 10
+        case ITM_UP1:
+        case ITM_DOWN1:
+        case ITM_RS:
+        {
           fnC47Show(item);
           keyActionProcessed = true;
 //        refreshScreen(00);
@@ -2618,9 +2615,9 @@ RELEASE_END:
                     temporaryInformation = TI_COPY_FROM_SHOW;
                     closeShowMenu();
                   }
-                   else if(ITM_0 <= item && item <= ITM_9) {
+                  else if(ITM_0 <= item && item <= ITM_9 && allowShowDigits) {
                     keyActionProcessed = true;
-                    if(showRegis%10 == 0 && showRegis <=90) {  //Will only get to this point if ##SHOWDIGITS is enabled
+                    if(showRegis%10 == 0 && showRegis <=90) {
                       showRegis += (item - ITM_0);
                     }
                     else {
@@ -2630,6 +2627,7 @@ RELEASE_END:
                     //refreshScreen(139);
                   }
                 }
+
                 else if(item == ITM_EXPONENT || item == ITM_PERIOD || (ITM_0 <= item && item <= ITM_9)) {
                   addItemToNimBuffer(item);
                   keyActionProcessed = true;
@@ -3930,7 +3928,7 @@ void fnKeyBackspace(uint16_t unusedButMandatoryParameter) {
           return;
         }
         else
-        if(temporaryInformation == TI_SHOW_REGISTER || SHOWMODE) {
+        if(SHOWMODE) {
           temporaryInformation = TI_NO_INFO;
           keyActionProcessed = true;
           closeShowMenu();

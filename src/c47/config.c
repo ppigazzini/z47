@@ -457,7 +457,7 @@ void fnClrMod(uint16_t unusedButMandatoryParameter) {        //clear input buffe
   #endif // PC_BUILD
   #if !defined(TESTSUITE_BUILD)
     resetKeytimers();  //JM
-    clearSystemFlag(FLAG_FRACT);
+    clearSystemFlag(FLAG_IRF_ON);
 
     if(calcMode == CM_NIM) {
       strcpy(aimBuffer, "+");
@@ -1558,6 +1558,8 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     #endif // !TESTSUITE_BUILD
 
     showRegis = 9999;                                          //JMSHOW
+    overrideShowBottomLine = 0;
+
 
     graph_xmin = -3*3.14159265;                                //JM GRAPH
     graph_xmax = -graph_xmin;                                  //JM GRAPH

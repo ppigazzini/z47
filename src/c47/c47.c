@@ -209,6 +209,7 @@ int16_t                longpressDelayedkey3;         //JM
 int16_t                T_cursorPos;                  //JMCURSOR
 int16_t                displayAIMbufferoffset;       //JMCURSOR
 uint16_t               showRegis;                    //JMSHOW
+uint8_t                overrideShowBottomLine;
 int16_t                ListXYposition;               //JMSHOW
 int16_t                JM_auto_doublepress_autodrop_enabled;  //JM TIMER CLRDROP //drop
 int16_t                JM_auto_longpress_enabled;    //JM TIMER CLRDROP //clstk
@@ -939,9 +940,9 @@ int convertKeyCode(int key) {
                                                   //}
                                                 }
                                                 #else // !BUFFER_KEY_COUNT
-    if(outKeyBuffer(&outKey, &timeStampKey, &timeSpan_1, &timeSpan_B) == BUFFER_SUCCESS) {
-      key = outKey;
-    }
+                                                  if(outKeyBuffer(&outKey, &timeStampKey, &timeSpan_1, &timeSpan_B) == BUFFER_SUCCESS) {
+                                                    key = outKey;
+                                                  }
                                                 #endif // BUFFER_KEY_COUNT
                                                 #else // !BUFFER_CLICK_DETECTION
                                                 #if defined(BUFFER_KEY_COUNT)
@@ -976,6 +977,18 @@ int convertKeyCode(int key) {
 
       if(key == 44) { //DISP for special SCREEN DUMP key code. To be 16 but shift decoding already done to 44 in DMCP
         standardScreenDump();
+        wait_for_key_release(0);
+        charKey[0]=0;
+        charKey[1]=0;
+        resetShiftState();
+        resetKeytimers();
+        key = -1;
+
+        keyBuffer_pop();
+        uint8_t outKey;
+        while (!emptyKeyBuffer()) {
+          outKeyBuffer(&outKey);
+        }
       }
 
                                                   #if defined(JMSHOWCODES)
@@ -1034,7 +1047,9 @@ int convertKeyCode(int key) {
       else if(key == 0) {
         btnReleased(charKey);
         keyClick(2);
-          if(calcMode == CM_PEM && shiftF && ((charKey[0] == '1' && charKey[1] == '7') || (charKey[0] == '2' && charKey[1] == '2'))) {   //JM C43
+          if(calcMode == CM_PEM && shiftF && ( (calcModel == USER_C47 && ((charKey[0] == '1' && charKey[1] == '7') || (charKey[0] == '2' && charKey[1] == '2')))
+                                            || (calcModel == USER_R47 && ((charKey[0] == '2' && charKey[1] == '2') || (charKey[0] == '2' && charKey[1] == '7')))
+                                                 )) {
             shiftF = false;
             refreshScreen(74);
           }
