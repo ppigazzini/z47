@@ -144,7 +144,6 @@
   void btn_Clicked_Gen(bool_t shF, bool_t shG, char *st) {
     GtkWidget *w;
     w = NULL;
-    shiftF = shF;
     shiftG = shG;
     uint8_t alphaCase_MEM = alphaCase;
     bool_t numLock_MEM;  numLock_MEM = getSystemFlag(FLAG_NUMLOCK);  clearSystemFlag(FLAG_NUMLOCK);
@@ -261,8 +260,13 @@
                                     softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_ALPHAintl ))
 
 
+
+
   #define allowCondition true
   #define ExitIfNim true
+
+  TO_QSPI const char     alphakeysC47[38] = "abcdefghijkl#mno##pqrs#tuvw#xyz_#:,? ";
+  TO_QSPI const char     alphakeysR47[38] = "abcdefghij###klm##nopq#rstu#vwxy#z,? ";
 
   bool_t shortCutCommand(GtkWidget *w, int key, int keyCode, bool_t condition1, bool_t exitIfInNIM, int16_t modeForBtnClicked, char *keyForBtnClicked, int16_t modeForRunFunction, int16_t itemForRunFunction) {
     if(key == keyCode && condition1) {
@@ -450,14 +454,98 @@
     }
           
 
-//      if(calcMode == CM_NORMAL || calcMode == CM_NIM) {
-//  
-//  if(shortCutCommand(w, event_keyval,   48,     calcModel == USER_C47,  ExitIfNim, 9999, "",  CM_NORMAL,              ITM_DRG ))        {return true;} else        //                         Key 0
-//  if(shortCutCommand(w, event_keyval,   49,     calcModel == USER_C47,  ExitIfNim, 9999, "",  CM_NORMAL,             ITM_1ONX ))        {return true;} else        //             arbitrary comment
-//  if(shortCutCommand(w, event_keyval,   50,     calcModel == USER_C47,  ExitIfNim, 9999, "",  CM_NORMAL,      ITM_SQUAREROOTX ))        {return true;} else        //                         Key 2
-//  if(shortCutCommand(w, event_keyval,   51,     calcModel == USER_C47,  ExitIfNim, 9999, "",  CM_NORMAL,          ITM_CONSTpi ))        {return true;} else        //                         Key 3
-//        {}
-//      }
+      if(calcMode == CM_NORMAL || calcMode == CM_NIM) {
+
+if(shiftF || shiftG) {
+printf("shifted A %u\n",event_keyval);
+  if((event_keyval >= 'a' && event_keyval <= 'z') || event_keyval == ':' ||  event_keyval == ',' ||  event_keyval == '?' ||  event_keyval == ' ') {
+printf("shifted B %u\n",event_keyval);
+    int ii = 0;
+    while(ii < 42 && event_keyval != (uint16_t)(isR47FAM ? alphakeysR47[ii] : alphakeysC47[ii])) {
+      ii++;
+    }
+printf("shifted C %u\n",ii);
+
+     if(ii!=42) {
+       char ss[5];
+       sprintf(ss,"%02i",ii);
+printf("decoded:%i '%s'\n",ii,ss);
+       btnClicked(w, ss);
+       return true;
+     }
+  }
+}
+else
+
+
+if(shortCutCommand(w, event_keyval,  119,   !isR47FAM,  ExitIfNim, 9999, "",  CM_NORMAL,             ITM_XexY ))        {return true;} else        //                        s[w]ap
+if(shortCutCommand(w, event_keyval,  120,   !isR47FAM,  ExitIfNim, 9999, "",  CM_NORMAL,              ITM_XEQ ))        {return true;} else        //                         [x]eq
+if(shortCutCommand(w, event_keyval,   61,   !isR47FAM,  ExitIfNim, 9999, "",  CM_NORMAL,              ITM_DRG ))        {return true;} else        //                     [=]>D,R,G
+if(shortCutCommand(w, event_keyval,   97,   !isR47FAM,  ExitIfNim, 9999, "",  CM_NORMAL,        ITM_SIGMAPLUS ))        {return true;} else        //                  [a]ccumulate
+if(shortCutCommand(w, event_keyval,  118,   !isR47FAM,  ExitIfNim, 9999, "",  CM_NORMAL,             ITM_1ONX ))        {return true;} else        //                     in[v]erse
+if(shortCutCommand(w, event_keyval,  121,   !isR47FAM,  ExitIfNim, 9999, "",  CM_NORMAL,               ITM_YX ))        {return true;} else        //                         [y]^x
+if(shortCutCommand(w, event_keyval,  110,   !isR47FAM,  ExitIfNim, 9999, "",  CM_NORMAL,              ITM_CHS ))        {return true;} else        //                CHS [n]egative
+if(shortCutCommand(w, event_keyval,   89,   !isR47FAM,  ExitIfNim, 9999, "",  CM_NORMAL,          ITM_XTHROOT ))        {return true;} else        //               xth root of [Y]
+if(shortCutCommand(w, event_keyval,   99,   !isR47FAM,  ExitIfNim, 9999, "",  CM_NORMAL,              ITM_cos ))        {return true;} else        //                      [c]osine
+if(shortCutCommand(w, event_keyval,  115,   !isR47FAM,  ExitIfNim, 9999, "",  CM_NORMAL,              ITM_sin ))        {return true;} else        //                        [s]ine
+if(shortCutCommand(w, event_keyval,  116,   !isR47FAM,  ExitIfNim, 9999, "",  CM_NORMAL,              ITM_tan ))        {return true;} else        //                     [t]angent
+if(shortCutCommand(w, event_keyval,   67,   !isR47FAM,  ExitIfNim, 9999, "",  CM_NORMAL,           ITM_arccos ))        {return true;} else        //                   arc[C]osine
+if(shortCutCommand(w, event_keyval,   83,   !isR47FAM,  ExitIfNim, 9999, "",  CM_NORMAL,           ITM_arcsin ))        {return true;} else        //                     arc[S]ine
+if(shortCutCommand(w, event_keyval,   84,   !isR47FAM,  ExitIfNim, 9999, "",  CM_NORMAL,           ITM_arctan ))        {return true;} else        //                  arc[T]angent
+if(shortCutCommand(w, event_keyval,  108,   !isR47FAM,  ExitIfNim, 9999, "",  CM_NORMAL,               ITM_LN ))        {return true;} else        //                          [l]n
+if(shortCutCommand(w, event_keyval,   76,   !isR47FAM,  ExitIfNim, 9999, "",  CM_NORMAL,              ITM_EXP ))        {return true;} else        //                  anti[L]n e^x
+if(shortCutCommand(w, event_keyval,  111,   !isR47FAM,  ExitIfNim, 9999, "",  CM_NORMAL,            ITM_LOG10 ))        {return true;} else        //                         l[o]g
+if(shortCutCommand(w, event_keyval,   79,   !isR47FAM,  ExitIfNim, 9999, "",  CM_NORMAL,              ITM_10x ))        {return true;} else        //                antil(O)g 10^x
+if(shortCutCommand(w, event_keyval,  112,   !isR47FAM,  ExitIfNim, 9999, "",  CM_NORMAL,           ITM_SQUARE ))        {return true;} else        //              [p]ower (Square)
+if(shortCutCommand(w, event_keyval,   80,   !isR47FAM,  ExitIfNim, 9999, "",  CM_NORMAL,      ITM_SQUAREROOTX ))        {return true;} else        //        sqrt (inverse [P]ower)
+if(shortCutCommand(w, event_keyval,  113,   !isR47FAM,  ExitIfNim, 9999, "",  CM_NORMAL,      ITM_SQUAREROOTX ))        {return true;} else        //                        s[q]rt
+if(shortCutCommand(w, event_keyval,   81,   !isR47FAM,  ExitIfNim, 9999, "",  CM_NORMAL,           ITM_SQUARE ))        {return true;} else        //              power (s[Q]uare)
+if(shortCutCommand(w, event_keyval,   88,   !isR47FAM,  ExitIfNim, 9999, "",  CM_NORMAL,          KEY_COMPLEX ))        {return true;} else        //                     comple[X]
+if(shortCutCommand(w, event_keyval,  114,   !isR47FAM,  ExitIfNim, 9999, "",  CM_NORMAL,           ITM_toREC2 ))        {return true;} else        //                      ->[r]ect
+if(shortCutCommand(w, event_keyval,   82,   !isR47FAM,  ExitIfNim, 9999, "",  CM_NORMAL,           ITM_toPOL2 ))        {return true;} else        //                     ->pola[R]
+if(shortCutCommand(w, event_keyval,  109,   !isR47FAM,  ExitIfNim, 9999, "",  CM_NORMAL,            -MNU_MODE ))        {return true;} else        //                        [M]ODE
+if(shortCutCommand(w, event_keyval,   77,   !isR47FAM,  ExitIfNim, 9999, "",  CM_NORMAL,         -MNU_TRG_C47 ))        {return true;} else        //                           TRG
+if(shortCutCommand(w, event_keyval,  100,   !isR47FAM,  ExitIfNim, 9999, "",  CM_NORMAL,            -MNU_DISP ))        {return true;} else        //                        [D]ISP
+if(shortCutCommand(w, event_keyval,   68,   !isR47FAM,  ExitIfNim, 9999, "",  CM_NORMAL,             -MNU_EXP ))        {return true;} else        //                           EXP
+if(shortCutCommand(w, event_keyval,  107,   !isR47FAM,  ExitIfNim, 9999, "",  CM_NORMAL,             -MNU_STK ))        {return true;} else        //                         ST[k]
+
+
+if(shortCutCommand(w, event_keyval,  119,    isR47FAM,  ExitIfNim, 9999, "",  CM_NORMAL,             ITM_XexY ))        {return true;} else        //                        s[w]ap
+if(shortCutCommand(w, event_keyval,  120,    isR47FAM,  ExitIfNim, 9999, "",  CM_NORMAL,              ITM_XEQ ))        {return true;} else        //                         [x]eq
+if(shortCutCommand(w, event_keyval,   61,    isR47FAM,  ExitIfNim, 9999, "",  CM_NORMAL,              ITM_DRG ))        {return true;} else        //                     [=]>D,R,G
+if(shortCutCommand(w, event_keyval,   97,    isR47FAM,  ExitIfNim, 9999, "",  CM_NORMAL,        ITM_SIGMAPLUS ))        {return true;} else        //                  [a]ccumulate
+if(shortCutCommand(w, event_keyval,  118,    isR47FAM,  ExitIfNim, 9999, "",  CM_NORMAL,             ITM_1ONX ))        {return true;} else        //                     in[v]erse
+if(shortCutCommand(w, event_keyval,  121,    isR47FAM,  ExitIfNim, 9999, "",  CM_NORMAL,               ITM_YX ))        {return true;} else        //                         [y]^x
+if(shortCutCommand(w, event_keyval,  110,    isR47FAM,  ExitIfNim, 9999, "",  CM_NORMAL,              ITM_CHS ))        {return true;} else        //                CHS [n]egative
+if(shortCutCommand(w, event_keyval,   89,    isR47FAM,  ExitIfNim, 9999, "",  CM_NORMAL,          ITM_XTHROOT ))        {return true;} else        //               xth root of [Y]
+if(shortCutCommand(w, event_keyval,   99,    isR47FAM,  ExitIfNim, 9999, "",  CM_NORMAL,              ITM_cos ))        {return true;} else        //                      [c]osine
+if(shortCutCommand(w, event_keyval,  115,    isR47FAM,  ExitIfNim, 9999, "",  CM_NORMAL,              ITM_sin ))        {return true;} else        //                        [s]ine
+if(shortCutCommand(w, event_keyval,  116,    isR47FAM,  ExitIfNim, 9999, "",  CM_NORMAL,              ITM_tan ))        {return true;} else        //                     [t]angent
+if(shortCutCommand(w, event_keyval,   67,    isR47FAM,  ExitIfNim, 9999, "",  CM_NORMAL,           ITM_arccos ))        {return true;} else        //                   arc[C]osine
+if(shortCutCommand(w, event_keyval,   83,    isR47FAM,  ExitIfNim, 9999, "",  CM_NORMAL,           ITM_arcsin ))        {return true;} else        //                     arc[S]ine
+if(shortCutCommand(w, event_keyval,   84,    isR47FAM,  ExitIfNim, 9999, "",  CM_NORMAL,           ITM_arctan ))        {return true;} else        //                  arc[T]angent
+if(shortCutCommand(w, event_keyval,  108,    isR47FAM,  ExitIfNim, 9999, "",  CM_NORMAL,               ITM_LN ))        {return true;} else        //                          [l]n
+if(shortCutCommand(w, event_keyval,   76,    isR47FAM,  ExitIfNim, 9999, "",  CM_NORMAL,              ITM_EXP ))        {return true;} else        //                  anti[L]n e^x
+if(shortCutCommand(w, event_keyval,  111,    isR47FAM,  ExitIfNim, 9999, "",  CM_NORMAL,            ITM_LOG10 ))        {return true;} else        //                         l[o]g
+if(shortCutCommand(w, event_keyval,   79,    isR47FAM,  ExitIfNim, 9999, "",  CM_NORMAL,              ITM_10x ))        {return true;} else        //                antil(O)g 10^x
+if(shortCutCommand(w, event_keyval,  112,    isR47FAM,  ExitIfNim, 9999, "",  CM_NORMAL,           ITM_SQUARE ))        {return true;} else        //              [p]ower (Square)
+if(shortCutCommand(w, event_keyval,   80,    isR47FAM,  ExitIfNim, 9999, "",  CM_NORMAL,      ITM_SQUAREROOTX ))        {return true;} else        //        sqrt (inverse [P]ower)
+if(shortCutCommand(w, event_keyval,  113,    isR47FAM,  ExitIfNim, 9999, "",  CM_NORMAL,      ITM_SQUAREROOTX ))        {return true;} else        //                        s[q]rt
+if(shortCutCommand(w, event_keyval,   81,    isR47FAM,  ExitIfNim, 9999, "",  CM_NORMAL,           ITM_SQUARE ))        {return true;} else        //              power (s[Q]uare)
+if(shortCutCommand(w, event_keyval,   88,    isR47FAM,  ExitIfNim, 9999, "",  CM_NORMAL,          KEY_COMPLEX ))        {return true;} else        //                     comple[X]
+if(shortCutCommand(w, event_keyval,  114,    isR47FAM,  ExitIfNim, 9999, "",  CM_NORMAL,           ITM_toREC2 ))        {return true;} else        //                      ->[r]ect
+if(shortCutCommand(w, event_keyval,   82,    isR47FAM,  ExitIfNim, 9999, "",  CM_NORMAL,           ITM_toPOL2 ))        {return true;} else        //                     ->pola[R]
+if(shortCutCommand(w, event_keyval,  109,    isR47FAM,  ExitIfNim, 9999, "",  CM_NORMAL,            -MNU_MODE ))        {return true;} else        //                        [M]ODE
+if(shortCutCommand(w, event_keyval,   77,    isR47FAM,  ExitIfNim, 9999, "",  CM_NORMAL,         -MNU_TRG_C47 ))        {return true;} else        //                           TRG
+if(shortCutCommand(w, event_keyval,  100,    isR47FAM,  ExitIfNim, 9999, "",  CM_NORMAL,            -MNU_DISP ))        {return true;} else        //                        [D]ISP
+if(shortCutCommand(w, event_keyval,   68,    isR47FAM,  ExitIfNim, 9999, "",  CM_NORMAL,             -MNU_EXP ))        {return true;} else        //                           EXP
+if(shortCutCommand(w, event_keyval,  107,    isR47FAM,  ExitIfNim, 9999, "",  CM_NORMAL,             -MNU_STK ))        {return true;} else        //                         ST[k]
+
+
+
+{}
+
+      }
  
 
 
