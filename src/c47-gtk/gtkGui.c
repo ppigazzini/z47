@@ -261,6 +261,28 @@
                                     softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_ALPHAintl ))
 
 
+  #define allowCondition true
+  #define ExitIfNim true
+
+  bool_t shortCutCommand(GtkWidget *w, int key, int keyCode, bool_t condition1, bool_t exitIfInNIM, int16_t modeForBtnClicked, char *keyForBtnClicked, int16_t modeForRunFunction, int16_t itemForRunFunction) {
+    if(key == keyCode && condition1) {
+      if(exitIfInNIM && calcMode == CM_NIM) {
+        btnClicked(w, "32");                  //EXIT if in NIM
+      }
+      if(calcMode == modeForRunFunction) {
+        runFunction(itemForRunFunction);
+        screenUpdatingMode = SCRUPD_AUTO;
+        refreshScreen(0);
+        return true;
+      }
+    }
+    return false;
+  }
+
+
+
+
+
   bool_t checkNormal(int16_t keyNr, int16_t item) {
     int16_t result = Norm_Key_00_item_in_layout; 
     int16_t ss = Check_SigmaPlus_Assigned(&result, keyNr);
@@ -427,6 +449,19 @@
       }
     }
           
+
+//      if(calcMode == CM_NORMAL || calcMode == CM_NIM) {
+//  
+//  if(shortCutCommand(w, event_keyval,   48,     calcModel == USER_C47,  ExitIfNim, 9999, "",  CM_NORMAL,              ITM_DRG ))        {return true;} else        //                         Key 0
+//  if(shortCutCommand(w, event_keyval,   49,     calcModel == USER_C47,  ExitIfNim, 9999, "",  CM_NORMAL,             ITM_1ONX ))        {return true;} else        //             arbitrary comment
+//  if(shortCutCommand(w, event_keyval,   50,     calcModel == USER_C47,  ExitIfNim, 9999, "",  CM_NORMAL,      ITM_SQUAREROOTX ))        {return true;} else        //                         Key 2
+//  if(shortCutCommand(w, event_keyval,   51,     calcModel == USER_C47,  ExitIfNim, 9999, "",  CM_NORMAL,          ITM_CONSTpi ))        {return true;} else        //                         Key 3
+//        {}
+//      }
+ 
+
+
+
 
 
     if(calcMode == CM_MIM) {
