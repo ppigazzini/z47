@@ -479,33 +479,13 @@
 
       if(calcMode == CM_NORMAL || calcMode == CM_NIM) {
 
-//if(shiftF || shiftG) {
-//printf("shifted A %u\n",event_keyval);
-//  if((event_keyval >= 'a' && event_keyval <= 'z') || event_keyval == ':' ||  event_keyval == ',' ||  event_keyval == '?' ||  event_keyval == ' ') {
-//printf("shifted B %u\n",event_keyval);
-//    int ii = 0;
-//    while(ii < 42 && event_keyval != (uint16_t)(isR47FAM ? alphakeysR47[ii] : alphakeysC47[ii])) {
-//      ii++;
-//    }
-//printf("shifted C %u\n",ii);
-//
-//     if(ii!=42) {
-//       char ss[5];
-//       sprintf(ss,"%02i",ii);
-//printf("decoded:%i '%s'\n",ii,ss);
-//       btnClicked(w, ss);
-//       return true;
-//     }
-//  }
-//}
-//else
 
 if(shortCutCommand(w, event_keyval,    97,   shortcutProfile == USER_C47,  ExitIfNim, 9999,   "00",  CM_NORMAL,        ITM_SIGMAPLUS ))        {return true;} else        //                  [a]ccumulate
 if(shortCutCommand(w, event_keyval,   118,   shortcutProfile == USER_C47,  ExitIfNim, 9999,   "01",  CM_NORMAL,             ITM_1ONX ))        {return true;} else        //                     in[v]erse
 if(shortCutCommand(w, event_keyval,   113,   shortcutProfile == USER_C47,  ExitIfNim, 9999,   "02",  CM_NORMAL,      ITM_SQUAREROOTX ))        {return true;} else        //                        s[q]rt
 if(shortCutCommand(w, event_keyval,   111,   shortcutProfile == USER_C47,  ExitIfNim, 9999,   "03",  CM_NORMAL,            ITM_LOG10 ))        {return true;} else        //                         l[o]g
 if(shortCutCommand(w, event_keyval,   108,   shortcutProfile == USER_C47,  ExitIfNim, 9999,   "04",  CM_NORMAL,               ITM_LN ))        {return true;} else        //                          [l]n
-if(shortCutCommand(w, event_keyval,   120,   shortcutProfile == USER_C47,  ExitIfNim, 9999,   "05",  CM_NORMAL,              ITM_XEQ ))        {return true;} else        //                         [x]eq
+if(shortCutCommand(w, event_keyval,   120,   shortcutProfile == USER_C47, !ExitIfNim, 9999,   "05",  CM_NORMAL,              ITM_XEQ ))        {return true;} else        //                         [x]eq
 if(shortCutCommand(w, event_keyval,   109,   shortcutProfile == USER_C47,  ExitIfNim, 9999,   "06",  CM_NORMAL,              ITM_STO ))        {return true;} else        //                      [m]emory
 if(shortCutCommand(w, event_keyval,   114,   shortcutProfile == USER_C47,  ExitIfNim, 9999,   "07",  CM_NORMAL,              ITM_RCL ))        {return true;} else        //                         [r]cl
 if(shortCutCommand(w, event_keyval,   100,   shortcutProfile == USER_C47,  ExitIfNim, 9999,   "08",  CM_NORMAL,            ITM_Rdown ))        {return true;} else        //                        [d]own
@@ -517,14 +497,14 @@ if(shortCutCommand(w, event_keyval,   119,                         FALSE, !ExitI
 if(shortCutCommand(w, event_keyval,   110,                         FALSE, !ExitIfNim, 9999,   "14",  CM_NORMAL,              ITM_CHS ))        {return true;} else        //                CHS [n]egative
 if(shortCutCommand(w, event_keyval,   101,                         FALSE, !ExitIfNim, 9999,   "15",  CM_NORMAL,         ITM_EXPONENT ))        {return true;} else        //                    [e]xponent
 if(shortCutCommand(w, event_keyval,    61,   shortcutProfile == USER_C47,  ExitIfNim, 9999,  "-01",  CM_NORMAL,              ITM_DRG ))        {return true;} else        //                     [=]>D,R,G
-if(shortCutCommand(w, event_keyval,   121,   shortcutProfile == USER_C47,  ExitIfNim, 9999,  "-01",  CM_NORMAL,               ITM_YX ))        {return true;} else        //                         [y]^x
+if(shortCutCommand(w, event_keyval,    89,   shortcutProfile == USER_C47,  ExitIfNim, 9999,  "-01",  CM_NORMAL,               ITM_YX ))        {return true;} else        //                         [y]^x
 if(shortCutCommand(w, event_keyval,   105,   shortcutProfile == USER_C47,  ExitIfNim, 9999,  "-01",  CM_NORMAL,             ITM_op_j ))        {return true;} else        //                             i
 if(shortCutCommand(w, event_keyval,    88,   shortcutProfile == USER_C47,  ExitIfNim, 9999,  "-01",  CM_NORMAL,          KEY_COMPLEX ))        {return true;} else        //                     comple[X]
 if(shortCutCommand(w, event_keyval,    82,   shortcutProfile == USER_C47,  ExitIfNim, 9999,  "-01",  CM_NORMAL,           ITM_toREC2 ))        {return true;} else        //                           ->R
 if(shortCutCommand(w, event_keyval,    80,   shortcutProfile == USER_C47,  ExitIfNim, 9999,  "-01",  CM_NORMAL,           ITM_toPOL2 ))        {return true;} else        //                           ->P
 if(shortCutCommand(w, event_keyval,   112,   shortcutProfile == USER_C47,  ExitIfNim, 9999,  "-01",  CM_NORMAL,          ITM_CONSTpi ))        {return true;} else        //                            pi
 if(shortCutCommand(w, event_keyval,    86,   shortcutProfile == USER_C47,  ExitIfNim, 9999,  "-01",  CM_NORMAL,             ITM_1ONX ))        {return true;} else        //                     in[V]erse
-if(shortCutCommand(w, event_keyval,    89,   shortcutProfile == USER_C47,  ExitIfNim, 9999,  "-01",  CM_NORMAL,          ITM_XTHROOT ))        {return true;} else        //               xth root of [Y]
+if(shortCutCommand(w, event_keyval,   121,   shortcutProfile == USER_C47,  ExitIfNim, 9999,  "-01",  CM_NORMAL,          ITM_XTHROOT ))        {return true;} else        //               xth root of [Y]
 if(shortCutCommand(w, event_keyval,    67,   shortcutProfile == USER_C47,  ExitIfNim, 9999,  "-01",  CM_NORMAL,           ITM_arccos ))        {return true;} else        //                   arc[C]osine
 if(shortCutCommand(w, event_keyval,    83,   shortcutProfile == USER_C47,  ExitIfNim, 9999,  "-01",  CM_NORMAL,           ITM_arcsin ))        {return true;} else        //                     arc[S]ine
 if(shortCutCommand(w, event_keyval,    84,   shortcutProfile == USER_C47,  ExitIfNim, 9999,  "-01",  CM_NORMAL,           ITM_arctan ))        {return true;} else        //                  arc[T]angent
@@ -537,9 +517,9 @@ if(shortCutCommand(w, event_keyval,    74,   shortcutProfile == USER_C47, !ExitI
 if(shortCutCommand(w, event_keyval,    75,   shortcutProfile == USER_C47, !ExitIfNim, 9999,  "-01",  CM_NORMAL,             -MNU_STK ))        {return true;} else        //                         ST[K]
 if(shortCutCommand(w, event_keyval,    77,   shortcutProfile == USER_C47, !ExitIfNim, 9999,  "-01",  CM_NORMAL,            -MNU_MODE ))        {return true;} else        //                        [M]ODE
 if(shortCutCommand(w, event_keyval,    70,   shortcutProfile == USER_C47, !ExitIfNim, 9999,  "-01",  CM_NORMAL,          -MNU_PREFIX ))        {return true;} else        //                      PRE[F]IX
-
-
-
+if(shortCutCommand(w, event_keyval,    37,   shortcutProfile == USER_C47,  ExitIfNim, 9999,  "-01",  CM_NORMAL,               ITM_PC ))        {return true;} else        //                           [%]
+if(shortCutCommand(w, event_keyval,    33,   shortcutProfile == USER_C47,  ExitIfNim, 9999,  "-01",  CM_NORMAL,            ITM_XFACT ))        {return true;} else        //                          x[!]
+if(shortCutCommand(w, event_keyval,    85,   shortcutProfile == USER_C47,  ExitIfNim, 9999,  "-01",  CM_NORMAL,         ITM_USERMODE ))        {return true;} else        //                        [U]SER
 
 
 
@@ -562,7 +542,7 @@ if(shortCutCommand(w, event_keyval,   119,                         FALSE, !ExitI
 if(shortCutCommand(w, event_keyval,   110,                         FALSE, !ExitIfNim, 9999,   "14",  CM_NORMAL,              ITM_CHS ))        {return true;} else        //                CHS [n]egative
 if(shortCutCommand(w, event_keyval,   101,                         FALSE, !ExitIfNim, 9999,   "15",  CM_NORMAL,         ITM_EXPONENT ))        {return true;} else        //                    [e]xponent
 if(shortCutCommand(w, event_keyval,    97,   shortcutProfile == USER_R47,  ExitIfNim, 9999,  "-01",  CM_NORMAL,        ITM_SIGMAPLUS ))        {return true;} else        //                  [a]ccumulate
-if(shortCutCommand(w, event_keyval,   120,   shortcutProfile == USER_R47,  ExitIfNim, 9999,  "-01",  CM_NORMAL,              ITM_XEQ ))        {return true;} else        //                         [x]eq
+if(shortCutCommand(w, event_keyval,   120,   shortcutProfile == USER_R47, !ExitIfNim, 9999,   "17",  CM_NORMAL,              ITM_XEQ ))        {return true;} else        //                         [x]eq
 if(shortCutCommand(w, event_keyval,   105,   shortcutProfile == USER_R47,  ExitIfNim, 9999,  "-01",  CM_NORMAL,             ITM_op_j ))        {return true;} else        //                             i
 if(shortCutCommand(w, event_keyval,    88,   shortcutProfile == USER_R47,  ExitIfNim, 9999,  "-01",  CM_NORMAL,          KEY_COMPLEX ))        {return true;} else        //                     comple[X]
 if(shortCutCommand(w, event_keyval,    82,   shortcutProfile == USER_R47,  ExitIfNim, 9999,  "-01",  CM_NORMAL,           ITM_toREC2 ))        {return true;} else        //                           ->R
@@ -584,6 +564,11 @@ if(shortCutCommand(w, event_keyval,    68,   shortcutProfile == USER_R47,  ExitI
 if(shortCutCommand(w, event_keyval,    70,   shortcutProfile == USER_R47,  ExitIfNim, 9999,  "-01",  CM_NORMAL,          -MNU_PREFIX ))        {return true;} else        //                      PRE[F]IX
 if(shortCutCommand(w, event_keyval,   112,   shortcutProfile == USER_R47,  ExitIfNim, 9999,  "-01",  CM_NORMAL,          ITM_CONSTpi ))        {return true;} else        //                            pi
 if(shortCutCommand(w, event_keyval,    86,   shortcutProfile == USER_R47,  ExitIfNim, 9999,  "-01",  CM_NORMAL,             ITM_1ONX ))        {return true;} else        //                     in[v]erse
+if(shortCutCommand(w, event_keyval,    37,   shortcutProfile == USER_R47,  ExitIfNim, 9999,  "-01",  CM_NORMAL,               ITM_PC ))        {return true;} else        //                           [%]
+if(shortCutCommand(w, event_keyval,    33,   shortcutProfile == USER_R47,  ExitIfNim, 9999,  "-01",  CM_NORMAL,            ITM_XFACT ))        {return true;} else        //                          x[!]
+if(shortCutCommand(w, event_keyval,    85,   shortcutProfile == USER_R47,  ExitIfNim, 9999,  "-01",  CM_NORMAL,         ITM_USERMODE ))        {return true;} else        //                        [U]SER
+
+
 
 printf("------------------------ skipping to rest of key detections\n");
 
