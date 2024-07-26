@@ -2335,15 +2335,33 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
   #define PROBMENU (-softmenu[softmenuStack[0].softmenuId].menuItem >= MNU_BINOM && -softmenu[softmenuStack[0].softmenuId].menuItem <= ITM_1296)
 
 
-  void displayBaseMode(calcRegister_t regist) {
-//     #if defined(PC_BUILD)
-//       if(!BASEMODEREGISTERX) {
-//         printf("XXXX NOT BASEMODE, regist=%u\n",regist);
-//       setLastintegerBasetoZero();
-//      return;
-//       }
-//     #endif
+  bool_t displayTrueFalse(int8_t clearOffset) {
+      char sss[10];
+      if(temporaryInformation == TI_FALSE) {
+        if(clearOffset != 0) {
+          sprintf(sss, "     ");
+          showString(sss, &standardFont, 1, Y_POSITION_OF_TRUE_FALSE_LINE + 6 + clearOffset, vmNormal, true, true); //blank a little higher, 2 pixel
+        }
+        sprintf(sss, "false");
+        showString(sss, &standardFont, 1, Y_POSITION_OF_TRUE_FALSE_LINE + 6, vmNormal, true, true);
+        return true;
+      }
 
+      else if(temporaryInformation == TI_TRUE) {
+        if(clearOffset > 0) {
+          sprintf(sss, "    ");
+          showString(sss, &standardFont, 1, Y_POSITION_OF_TRUE_FALSE_LINE + 6 + clearOffset, vmNormal, true, true); //blank a little higher, 2 pixel
+        }
+        sprintf(sss, "true");
+        showString(sss, &standardFont, 1, Y_POSITION_OF_TRUE_FALSE_LINE + 6, vmNormal, true, true);
+        return true;
+      }
+      return false;
+  }
+
+
+
+  void displayBaseMode(calcRegister_t regist) {
      calcRegister_t Register_X = calcMode == CM_NIM ? REGISTER_Y : REGISTER_X;
 
      //JM SHOIDISP // use the top part of the screen for HEX and BIN    //JM vv SHOIDISP
@@ -2615,14 +2633,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
         showString(errorMessage, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
       }
 
-      else if(temporaryInformation == TI_FALSE && regist == TRUE_FALSE_REGISTER_LINE) {
-        sprintf(tmpString, "false");
-        showString(tmpString, &standardFont, 1, Y_POSITION_OF_TRUE_FALSE_LINE + 6, vmNormal, true, true);
-      }
-
-      else if(temporaryInformation == TI_TRUE && regist == TRUE_FALSE_REGISTER_LINE) {
-        sprintf(tmpString, "true");
-        showString(tmpString, &standardFont, 1, Y_POSITION_OF_TRUE_FALSE_LINE + 6, vmNormal, true, true);
+      else if(regist == TRUE_FALSE_REGISTER_LINE && displayTrueFalse(-2)) {        
       }
 
       else if(temporaryInformation == TI_RESET && regist == REGISTER_X) {
@@ -3993,7 +4004,11 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
             shortIntegerToDisplayString(regist, tmpString, true);
             showString(tmpString, fontForShortInteger, SCREEN_WIDTH - stringWidth(tmpString, fontForShortInteger, false, true), Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + (fontForShortInteger == &standardFont ? 6 : 0) - (fontForShortInteger == &numericFont && temporaryInformation == TI_NO_INFO && checkHP ? 50:0), vmNormal, false, true);
 
-            displayBaseMode(regist);
+            if(regist == REGISTER_X) {
+              displayBaseMode(regist);
+              displayTrueFalse(-2);
+            }
+
           }
 
 
@@ -4706,11 +4721,6 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
       stop_buzzer();
     #endif // DMCP_BUILD && CLICK_REFRESHSCR
 
-    #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
-      jm_show_calc_state("refreshScreen");
-      printf(">>> refreshScreen(%u), refreshScreenCounter=%d calcMode=%d screenUpdatingMode=%d temporaryInformation=%u\n", source, refreshScreenCounter++, calcMode, screenUpdatingMode, temporaryInformation);    //JMYY
-    #endif // PC_BUILD
-
     if(calcMode!=CM_AIM && calcMode!=CM_NIM && calcMode!=CM_PLOT_STAT && calcMode!=CM_GRAPH && calcMode!=CM_LISTXY && last_CM != 240) {  //240 specifically to prefent this
       last_CM = 254;  //JM Force NON-CM_AIM and NON-CM_NIM to refresh to be compatible to 43S
     }
@@ -4719,6 +4729,34 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
         last_CM = calcMode;
       }
     }
+                             #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
+                               jm_show_calc_state("refreshScreen");
+                             #endif // PC_BUILD
+
+                             #if defined(PC_BUILD)
+                               char ttt[500],sss[500];
+                               convertUInt64ToShortIntegerRegister(0, screenUpdatingMode, 2, TEMP_REGISTER_1 );
+                               shortIntegerToDisplayString(TEMP_REGISTER_1, ttt, false);
+                               stringToASCII(ttt,sss);
+                               strcpy(ttt,"");
+                               if(screenUpdatingMode == 0) strcat(ttt,"AUTO "); else {
+                                 if((screenUpdatingMode & 0x40)) strcat(ttt,"SkpMEN ");      
+                                 if((screenUpdatingMode & 0x20)) strcat(ttt,"SkpSTK ");      
+
+                                 if(!(screenUpdatingMode & 0x08)) strcat(ttt,"SHFT ");      
+                                 if(!(screenUpdatingMode & 0x04)) strcat(ttt,"MENU ");      
+                                 if(!(screenUpdatingMode & 0x02)) strcat(ttt, "STK ");      
+                                 if(!(screenUpdatingMode & 0x01)) strcat(ttt,"STAT ");
+                               }
+                               int16_t m = softmenuStack[0].softmenuId;
+                               char uuu[100];
+                               stringToASCII(indexOfItems[currentMenu() > 0 ? currentMenu() : -currentMenu()].itemSoftmenuName, uuu);
+
+                               printf(">>> refreshScreen(%3u): Cnt=%3d %s calcMode=%2d screenUpdatingMode=%3d=%12s=>%25s TI=%4u MENUid=%2d item=%4i: %16s\n", 
+                                  source, refreshScreenCounter++,
+                                  (last_CM != calcMode) ? "OVR" : "   ",
+                                  calcMode, screenUpdatingMode, sss, ttt, temporaryInformation, m, currentMenu(), uuu);
+                             #endif // PC_BUILD
 
 
     switch(softmenu[softmenuStack[0].softmenuId].menuItem) {
