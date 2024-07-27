@@ -2335,8 +2335,9 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
   #define PROBMENU (-softmenu[softmenuStack[0].softmenuId].menuItem >= MNU_BINOM && -softmenu[softmenuStack[0].softmenuId].menuItem <= ITM_1296)
 
 
-  bool_t displayTrueFalse(int8_t clearOffset) {
+static bool_t displayTrueFalse(calcRegister_t regist) {
       char sss[10];
+      #define clearOffset -2
       if(temporaryInformation == TI_FALSE) {
         if(clearOffset != 0) {
           sprintf(sss, "     ");
@@ -2348,7 +2349,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
       }
 
       else if(temporaryInformation == TI_TRUE) {
-        if(clearOffset > 0) {
+        if(clearOffset != 0) {
           sprintf(sss, "    ");
           showString(sss, &standardFont, 1, Y_POSITION_OF_TRUE_FALSE_LINE + 6 + clearOffset, vmNormal, true, true); //blank a little higher, 2 pixel
         }
@@ -2633,7 +2634,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
         showString(errorMessage, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
       }
 
-      else if(regist == TRUE_FALSE_REGISTER_LINE && displayTrueFalse(-2)) {        
+      else if(regist == TRUE_FALSE_REGISTER_LINE && displayTrueFalse(regist)) {        
       }
 
       else if(temporaryInformation == TI_RESET && regist == REGISTER_X) {
@@ -4006,7 +4007,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
 
             if(regist == REGISTER_X) {
               displayBaseMode(regist);
-              displayTrueFalse(-2);
+              displayTrueFalse(regist);
             }
 
           }
