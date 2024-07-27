@@ -500,7 +500,6 @@
       if(calcMode == CM_NORMAL || calcMode == CM_NIM || calcMode == CM_PEM) {
 
 
-
 if(shortCutCommand(w, event_keyval,    97,                                  shortcutProfile == USER_C47,  ExitIfNim,          tam.mode,    "",   "00",                   0b01101,         -1,        ITM_SIGMAPLUS ))        {return true;} else        //                  [a]ccumulate
 if(shortCutCommand(w, event_keyval,   118,                                  shortcutProfile == USER_C47,  ExitIfNim,          tam.mode,    "",   "01",                   0b01101,         -1,             ITM_1ONX ))        {return true;} else        //                     in[v]erse
 if(shortCutCommand(w, event_keyval,   113,                                  shortcutProfile == USER_C47,  ExitIfNim,          tam.mode,    "",   "02",                   0b01101,         -1,      ITM_SQUAREROOTX ))        {return true;} else        //                        s[q]rt
@@ -583,7 +582,10 @@ if(shortCutCommand(w, event_keyval,   120,                                  shor
 if(shortCutCommand(w, event_keyval,    39,                                  shortcutProfile == USER_R47,  ExitIfNim,             FALSE,   "f",   "17",                   0b01101,         -1,              ITM_AIM ))        {return true;} else        //                     alpha [']
 if(shortCutCommand(w, event_keyval,    71,                                  shortcutProfile == USER_R47,  ExitIfNim,             FALSE,   "g",   "17",                   0b01101,         -1,              ITM_GTO ))        {return true;} else        //                         [g]TO
 if(shortCutCommand(w, event_keyval,    77,                                  shortcutProfile == USER_R47, !ExitIfNim,             FALSE,    "",  "-01",     0b0000011000000001101,         -1,            -MNU_PREF ))        {return true;} else        //                      PREF [M}
-
+if(shortCutCommand(w, event_keyval,   115,                                  shortcutProfile == USER_R47,  ExitIfNim,          tam.mode,    "",  "-01",                   0b01101,         -1,              ITM_sin ))        {return true;} else        //                        [s]ine
+if(shortCutCommand(w, event_keyval,    99,                                  shortcutProfile == USER_R47,  ExitIfNim,          tam.mode,    "",  "-01",                   0b01101,         -1,              ITM_cos ))        {return true;} else        //                      [c]osine
+if(shortCutCommand(w, event_keyval,   116,                                  shortcutProfile == USER_R47,  ExitIfNim,          tam.mode,    "",  "-01",                   0b01101,         -1,              ITM_tan ))        {return true;} else        //                     [t]angent
+if(shortCutCommand(w, event_keyval,    86,                                  shortcutProfile == USER_R47,  ExitIfNim,          tam.mode,    "",  "-01",                   0b01101,         -1,             ITM_1ONX ))        {return true;} else        //                     in[v]erse
 
 
                 
