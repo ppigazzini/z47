@@ -448,37 +448,51 @@ bool_t itemNotAvail(int16_t itemNr) {
     #endif // PC_BUILD
 
     if(programRunStop != PGM_RUNNING) {
-      if(func == ITM_RCL && dynamicMenuItem > -1 && calcMode != CM_PEM) {
+      if(func == ITM_RCL && dynamicMenuItem > -1) {
         char *varCatalogItem = dynmenuGetLabel(dynamicMenuItem);
-        calcRegister_t regist = findNamedVariable(varCatalogItem);
-        if(regist != INVALID_VARIABLE) {
-          reallyRunFunction(func, regist);
+        if (strcmp(varCatalogItem, "RCL") != 0) {
+          calcRegister_t var = findNamedVariable(varCatalogItem);
+          if(var != INVALID_VARIABLE) {
+            if(calcMode == CM_PEM) {
+              insertUserItemInProgram(func, varCatalogItem);
+            }
+            else {
+              reallyRunFunction(func, var);
+            }
+          }
+          else {
+            displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE, REGISTER_X);
+            #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+              sprintf(errorMessage, "string '%s' is not a named variable", varCatalogItem);
+              moreInfoOnError("In function runFunction:", errorMessage, NULL, NULL);
+            #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+          }
+          return;
         }
-        else {
-          displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE, REGISTER_X);
-          #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-            sprintf(errorMessage, "string '%s' is not a named variable", varCatalogItem);
-            moreInfoOnError("In function runFunction:", errorMessage, NULL, NULL);
-          #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-        }
-        return;
       }
-      else if(func == ITM_XEQ && dynamicMenuItem > -1 && calcMode != CM_PEM) {
+      if(func == ITM_XEQ && dynamicMenuItem > -1) {
         char *varCatalogItem = dynmenuGetLabel(dynamicMenuItem);
-        calcRegister_t regist = findNamedLabel(varCatalogItem);
-        if(regist != INVALID_VARIABLE) {
-          reallyRunFunction(func, regist);
+        if (strcmp(varCatalogItem, "XEQ") != 0) {
+          calcRegister_t label = findNamedLabel(varCatalogItem);
+          if(label != INVALID_VARIABLE) {
+            if(calcMode == CM_PEM) {
+              insertUserItemInProgram(func, varCatalogItem);
+            }
+            else {
+              reallyRunFunction(func, label);
+            }
+          }
+          else {
+            displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
+            #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+              sprintf(errorMessage, "string '%s' is not a named label", varCatalogItem);
+              moreInfoOnError("In function runFunction:", errorMessage, NULL, NULL);
+            #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+          }
+          return;
         }
-        else {
-          displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
-          #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-            sprintf(errorMessage, "string '%s' is not a named label", varCatalogItem);
-            moreInfoOnError("In function runFunction:", errorMessage, NULL, NULL);
-          #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-        }
-        return;
       }
-      else if(tam.mode == 0 && TM_VALUE <= indexOfItems[func].param && indexOfItems[func].param <= TM_CMP && (calcMode != CM_PEM || aimBuffer[0] == 0 || nimNumberPart != NP_INT_BASE)) {
+      if(tam.mode == 0 && TM_VALUE <= indexOfItems[func].param && indexOfItems[func].param <= TM_CMP && (calcMode != CM_PEM || aimBuffer[0] == 0 || nimNumberPart != NP_INT_BASE)) {
         #if defined(VERBOSEKEYS)
           printf("itmes.c: runfunction (before tamEnterMode): %i, %s\n", softmenu[softmenuStack[0].softmenuId].menuItem, indexOfItems[-softmenu[softmenuStack[0].softmenuId].menuItem].itemSoftmenuName);
         #endif // VERBOSEKEYS

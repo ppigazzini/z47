@@ -84,8 +84,8 @@
       else {
         switch(page) { //in non-user mode, +NRM overrides kbd_std
           case 1: if(key == Norm_Key_00_key) {
-              kk = Norm_Key_00_VAR;
-              Norm_Key_00_used = Norm_Key_00_VAR != kbd_std[key].primary;    //only display in reverse and [] if different from kbd_std
+              kk = Norm_Key_00.func;
+              Norm_Key_00_used = Norm_Key_00.func != kbd_std[key].primary;    //only display in reverse and [] if different from kbd_std
             }
             else {
               kk = kbd_std[key].primary;
@@ -104,9 +104,16 @@
       if(strcmp(Name, "0000") == 0) {
         Name[0]=0;
       }
-      char *funcParam = (char *)getNthString((uint8_t *)userKeyLabel, key*6+(page-1));
-      if((funcParam[0] != 0) && ((strcmp(Name, "DYNMNU") == 0) || (strcmp(Name, "XEQ") == 0) || (strcmp(Name, "RCL") == 0)))  {
-        strcpy(Name, (char *)getNthString((uint8_t *)userKeyLabel, key*6+(page-1)));       // name of a user menu, program or variable assigned to a key
+      if (Norm_Key_00_used) {
+         if((Norm_Key_00.funcParam[0] != 0) && ((Norm_Key_00.func == -MNU_DYNAMIC)|| (Norm_Key_00.func == ITM_XEQ) || (Norm_Key_00.func == ITM_RCL)))  {
+          strcpy(Name, (char *)&Norm_Key_00.funcParam);       // name of a user menu, program or variable assigned to the Norm key
+        }         
+      }
+      else {
+        char *funcParam = (char *)getNthString((uint8_t *)userKeyLabel, key*6+(page-1));
+        if((funcParam[0] != 0) && ((strcmp(Name, "DYNMNU") == 0) || (strcmp(Name, "XEQ") == 0) || (strcmp(Name, "RCL") == 0)))  {
+          strcpy(Name, (char *)getNthString((uint8_t *)userKeyLabel, key*6+(page-1)));       // name of a user menu, program or variable assigned to a key
+        }
       }
 
 

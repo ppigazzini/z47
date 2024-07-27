@@ -299,7 +299,7 @@ int8_t fnCbIsSet(int16_t item) {
         case RB_BCD: rb_param = bcdDisplaySign;
                      break;
 
-        case RB_SA:  rb_param = 16384 + Norm_Key_00_VAR;
+        case RB_SA:  rb_param = 16384 + Norm_Key_00.func;
                      //printf("^^^^*** activated %d\n", rb_param);
                      break;
 

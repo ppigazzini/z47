@@ -313,7 +313,9 @@ void fnRecallConfig(uint16_t regist) {
     recallFromDtConfigDescriptor(compatibility_bool21);
     recallFromDtConfigDescriptor(compatibility_bool18);
     recallFromDtConfigDescriptor(compatibility_bool00);   //spare
-    recallFromDtConfigDescriptor(Norm_Key_00_VAR);
+    recallFromDtConfigDescriptor(Norm_Key_00.func);
+    xcopy(Norm_Key_00.funcParam, configToRecall->Norm_Key_00.funcParam, sizeof(Norm_Key_00.funcParam));
+    recallFromDtConfigDescriptor(Norm_Key_00.used);
     recallFromDtConfigDescriptor(Input_Default);
     recallFromDtConfigDescriptor(compatibility_bool0);    //spare
     recallFromDtConfigDescriptor(BASE_MYM);
@@ -331,14 +333,14 @@ void fnRecallConfig(uint16_t regist) {
     recallFromDtConfigDescriptor(compatibility_bool5);
     recallFromDtConfigDescriptor(compatibility_bool6);
     recallFromDtConfigDescriptor(compatibility_bool7);
-    recallFromDtConfigDescriptor(compatibility_bool8); 
-    recallFromDtConfigDescriptor(compatibility_bool9); 
-    recallFromDtConfigDescriptor(compatibility_bool10); 
-    recallFromDtConfigDescriptor(compatibility_bool11); 
-    recallFromDtConfigDescriptor(compatibility_bool12); 
-    recallFromDtConfigDescriptor(compatibility_bool13); 
-    recallFromDtConfigDescriptor(compatibility_bool14); 
-    recallFromDtConfigDescriptor(compatibility_bool15); 
+    recallFromDtConfigDescriptor(compatibility_bool8);
+    recallFromDtConfigDescriptor(compatibility_bool9);
+    recallFromDtConfigDescriptor(compatibility_bool10);
+    recallFromDtConfigDescriptor(compatibility_bool11);
+    recallFromDtConfigDescriptor(compatibility_bool12);
+    recallFromDtConfigDescriptor(compatibility_bool13);
+    recallFromDtConfigDescriptor(compatibility_bool14);
+    recallFromDtConfigDescriptor(compatibility_bool15);
     recallFromDtConfigDescriptor(fractionDigits);
     recallFromDtConfigDescriptor(compatibility_bool23);
     recallFromDtConfigDescriptor(compatibility_bool16);    //spare

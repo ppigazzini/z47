@@ -1427,6 +1427,37 @@ void insertStepInProgram(int16_t func) {
 }
 
 
+void insertUserItemInProgram(int16_t func, char *funcParam) {
+  uint32_t opBytes=0;
+  uint16_t nameLength = stringByteLength(funcParam);
+
+  if((!pemCursorIsZerothStep) && ((aimBuffer[0] == 0 && !getSystemFlag(FLAG_ALPHA)) || tam.mode) && !isAtEndOfProgram(currentStep) && !isAtEndOfPrograms(currentStep)) {
+    currentStep = findNextStep(currentStep);
+    ++currentLocalStepNumber;
+  }
+  if(func < 128) {
+    tmpString[opBytes++] = func;
+  }
+  else {
+    tmpString[opBytes++] = (func >> 8) | 0x80;
+    tmpString[opBytes++] =  func       & 0x7f;
+  }
+
+  tmpString[opBytes    ] = (char)STRING_LABEL_VARIABLE;
+  tmpString[opBytes + 1] = nameLength;
+  xcopy(tmpString + opBytes + 2, funcParam, nameLength);
+  _insertInProgram((uint8_t *)tmpString, nameLength + opBytes + 2);
+
+  currentStep = findPreviousStep(currentStep);
+  if(currentLocalStepNumber > 1) {
+    --currentLocalStepNumber;
+  }
+  pemCursorIsZerothStep = false;
+  if(!programListEnd) {
+    scrollPemBackwards();
+  }
+}
+
 
 void addStepInProgram(int16_t func) {
   if((!pemCursorIsZerothStep) && ((aimBuffer[0] == 0 && !getSystemFlag(FLAG_ALPHA)) || tam.mode) && !isAtEndOfProgram(currentStep) && !isAtEndOfPrograms(currentStep)) {
