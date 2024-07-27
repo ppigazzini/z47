@@ -281,7 +281,7 @@ void Sett(int16_t grp) {
   while(Settings[++ptr*(_numberOfGrps+2) + 0] != 0) {
     if(Settings[  ptr*(_numberOfGrps+2) + 1 + grp] != xxx) {
 
-      #if defined(PC_BUILD)
+      #if defined(PC_BUILD) && (VERBOSE_LEVEL > 0)
         if(Settings[ptr*(_numberOfGrps+2) + 0] >= 101 && Settings[ptr*(_numberOfGrps+2) + 0] <= 121) {
           printf("\nSett1:%5d,  +0=%5d, +1=%5d, +1+grp=%5d ",ptr, Settings[ptr*(_numberOfGrps+2) + 0], Settings[ptr*(_numberOfGrps+2) + 1], Settings[ptr*(_numberOfGrps+2) + 1 + grp]);
         }
@@ -319,7 +319,7 @@ void Sett(int16_t grp) {
             int32ToReal(Settings[ptr*(_numberOfGrps+2) + 1 + grp],&realt);
             reallocateRegister(Settings[ptr*(_numberOfGrps+2) + 0], dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
             realToReal34(&realt, REGISTER_REAL34_DATA(Settings[ptr*(_numberOfGrps+2) + 0]));
-            #if defined(PC_BUILD)
+            #if defined(PC_BUILD) && (VERBOSE_LEVEL > -1)
               printf("Sett1A Register %d = ",Settings[ptr*(_numberOfGrps+2) + 0]);
               printRegisterToConsole(Settings[ptr*(_numberOfGrps+2) + 0]," : ","\n");
             #endif //PC_BUILD
@@ -327,7 +327,7 @@ void Sett(int16_t grp) {
           }
 
         case 2 : {
-            #if defined(PC_BUILD)
+            #if defined(PC_BUILD) && (VERBOSE_LEVEL > 0)
               printf("\nSett2:%5d:%5d\n",ptr,Settings[ptr*(_numberOfGrps+2) + 1 + grp]);
             #endif //PC_BUILD
             SetSetting (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);
@@ -335,7 +335,7 @@ void Sett(int16_t grp) {
           }
 
         case 3: {
-          #if defined(PC_BUILD)
+          #if defined(PC_BUILD) && (VERBOSE_LEVEL > 0)
             printf("\nSett3:%5d:%5d",ptr,Settings[ptr*(_numberOfGrps+2) + 1 + grp]);
           #endif //PC_BUILD
           forceSystemFlag (Settings[ptr*(_numberOfGrps+2) + 1 + grp], Settings[  ptr*(_numberOfGrps+2) + 1 ]);
@@ -343,7 +343,7 @@ void Sett(int16_t grp) {
           }
 
         case 4: {
-          #if defined(PC_BUILD)
+          #if defined(PC_BUILD) && (VERBOSE_LEVEL > 0)
             printf("\nSett4:%5d:%5d",ptr,Settings[ptr*(_numberOfGrps+2) + 1 + grp]);
           #endif //PC_BUILD
           fnSetGapChar (Settings[ptr*(_numberOfGrps+2) + 1 + grp]);
@@ -998,6 +998,9 @@ void initSimEqMatABX(void) {
 
 
 void fnClAll(uint16_t confirmation) {
+                                    #if defined(PC_BUILD) && (VERBOSE_LEVEL > -1)
+                                      printf("fnClAll\n");
+                                    #endif
   if(confirmation == NOT_CONFIRMED) {
     setConfirmationMode(fnClAll);
   }
@@ -1032,7 +1035,13 @@ void fnClAll(uint16_t confirmation) {
 
     fnRESET_Mya();                            // Reset Menu MyAlpha
     #if !defined(TESTSUITE_BUILD)
+                                    #if defined(PC_BUILD) && (VERBOSE_LEVEL > -1)
+                                      printf("createHOME\n");
+                                    #endif
       createHOME();                             // Reset Menu HOME
+                                    #if defined(PC_BUILD) && (VERBOSE_LEVEL > -1)
+                                      printf("createPFN CL\n");
+                                    #endif
       createPFN();                              // Reset Menu P.FN
     #endif // !TESTSUITE_BUILD
 
@@ -1300,7 +1309,10 @@ void fnReset(uint16_t confirmation) {
 }
 
 void doFnReset(uint16_t confirmation, bool_t autoSav) {
-  if(confirmation == NOT_CONFIRMED) {
+                                    #if defined(PC_BUILD) && (VERBOSE_LEVEL > -1)
+                                      printf("doFnReset\n");
+                                    #endif
+   if(confirmation == NOT_CONFIRMED) {
     setConfirmationMode(fnReset);
   }
   else {
@@ -1559,6 +1571,9 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
 
     initUserKeyArgument();
 
+                                    #if defined(PC_BUILD) && (VERBOSE_LEVEL > -1)
+                                      printf("fnClearMenu\n");
+                                    #endif
     fnClearMenu(NOPARAM);
 
     #if !defined(TESTSUITE_BUILD)
@@ -1604,28 +1619,48 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     displayAIMbufferoffset = 0;
     T_cursorPos = 0;
 
-//********** JM CHECKQQ
-    //JM Default USER
-    #if defined(PC_BUILD)
-      printf("Doing A.RESET, M.RESET & K.RESET\n");
-    #endif
+
+                                    #if defined(PC_BUILD) && (VERBOSE_LEVEL > -1)
+                                      printf("Doing A.RESET, M.RESET & K.RESET\n");
+                                    #endif
     //    calcMode = CM_BUG_ON_SCREEN; this also removes the false start on MyMenu error
 
+                                    #if defined(PC_BUILD) && (VERBOSE_LEVEL > -1)
+                                      printf("USER_PRESET\n");
+                                    #endif
     fnKeysManagement(USER_PRESET);                                      //JM USER
-    fnKeysManagement(USER_HRESET);                                      //JM USER
+                                   #if defined(PC_BUILD) && (VERBOSE_LEVEL > -1)
+                                     printf("USER_HRESET\n");
+                                   #endif
     fnKeysManagement(USER_ARESET);                                      //JM USER
+                                   #if defined(PC_BUILD) && (VERBOSE_LEVEL > -1)
+                                     printf("USER_PRESET\n");
+                                   #endif
+    fnKeysManagement(USER_ARESET);                                      //JM USER
+                                   #if defined(PC_BUILD) && (VERBOSE_LEVEL > -1)
+                                     printf("USER_MRESET\n");
+                                   #endif
     fnKeysManagement(USER_MRESET);                                      //JM USER
 
     if(isR47FAM) {
+                                   #if defined(PC_BUILD) && (VERBOSE_LEVEL > -1)
+                                     printf("USER_MR47\n");
+                                   #endif
       fnKeysManagement(USER_MR47);                  // Reset Menu MyMenu Ribbon
     }
     else {
+                                   #if defined(PC_BUILD) && (VERBOSE_LEVEL > -1)
+                                     printf("USER_MC47\n");
+                                   #endif
       fnKeysManagement(USER_MC47);                  // Reset Menu MyMenu Ribbon
     }
 
     #if !defined(TESTSUITE_BUILD)
       showSoftmenu(-MNU_MyMenu);                                   //this removes the false start on MyMenu error
     #endif // !TESTSUITE_BUILD
+                                   #if defined(PC_BUILD) && (VERBOSE_LEVEL > -1)
+                                     printf("fnKeysManagement\n");
+                                   #endif
     fnKeysManagement(USER_KRESET);                                      //JM USER
     temporaryInformation = TI_NO_INFO;
     screenUpdatingMode = SCRUPD_AUTO;
@@ -1633,6 +1668,9 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
 
     // The following lines are test data
     #if !defined(SAVE_SPACE_DM42_14)
+                                   #if defined(PC_BUILD) && (VERBOSE_LEVEL > -1)
+                                     printf("addTestPrograms\n");
+                                   #endif
       addTestPrograms();
     #endif // !SAVE_SPACE_DM42_14
 
@@ -1665,6 +1703,10 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
       checkBattery();
     #endif // DMCP_BUILD
 
+
+                                   #if defined(PC_BUILD) && (VERBOSE_LEVEL > -1)
+                                     printf("Populate test data\n");
+                                   #endif
     //JM TEMPORARY TEST DATA IN REGISTERS
     uint_fast16_t n = nbrOfElements(indexOfStrings);
     for(uint_fast16_t i=0; i<n; i++) {
@@ -1678,7 +1720,9 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
       fnDrop(NOPARAM);
     }
 
-
+                                   #if defined(PC_BUILD) && (VERBOSE_LEVEL > -1)
+                                     printf("version\n");
+                                   #endif
     #if !defined(TESTSUITE_BUILD)
       runFunction(ITM_VERS);
     #endif // !TESTSUITE_BUILD

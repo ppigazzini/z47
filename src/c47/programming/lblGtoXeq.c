@@ -858,7 +858,7 @@ void runProgram(bool_t singleStep, uint16_t menuLabel) {
       if(!nestedEngine) {
         int key = key_pop();
         key = convertKeyCode(key);
-        if(key == 36 || key == 33) {  //JM
+        if(key == 36 || key == 33 ) {  //JM R/S or EXIT
           programRunStop = PGM_WAITING;
           screenUpdatingMode = SCRUPD_AUTO;
           refreshScreen(1);
@@ -891,8 +891,10 @@ stopProgram:
   }
   if(!getSystemFlag(FLAG_INTING) && !getSystemFlag(FLAG_SOLVING)) {
     showHideHourGlass();
+    if(temporaryInformation == TI_VIEW_REGISTER) {
+      screenUpdatingMode |= SCRUPD_SKIP_STACK_ONE_TIME;
+    }
     if(screenUpdatingMode == SCRUPD_AUTO && !singleStep) {
-      //screenUpdatingMode = SCRUPD_AUTO;
       refreshScreen(4);
     }
   }

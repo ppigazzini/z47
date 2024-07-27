@@ -70,7 +70,7 @@ void fnPause(uint16_t duration) {
         int key = key_pop();
         key = convertKeyCode(key);
         if(key > 0) {
-          if((key == 36 || key == 33) && previousProgramRunStop == PGM_RUNNING) { //JM
+          if((key == 36 || key == 33) && previousProgramRunStop == PGM_RUNNING) { //JM R/S or EXIT
             previousProgramRunStop = programRunStop = PGM_WAITING;
           }
           setLastKeyCode(key);

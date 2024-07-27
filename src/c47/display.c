@@ -3552,8 +3552,7 @@ void fnView(uint16_t regist) {
     temporaryInformation = TI_VIEW_REGISTER;
     if(programRunStop == PGM_RUNNING) {
       refreshScreen(151);
-      fnPause(10);
-      temporaryInformation = TI_NO_INFO;
+//      temporaryInformation = TI_NO_INFO;  //JM removed to signal to STOP, so that STOP does not clear the screen after VIEW
     }
   }
 }
