@@ -25,6 +25,7 @@
 #include "mathematics/10pow.h"
 #include "mathematics/2pow.h"
 #include "mathematics/rsd.h"
+#include "programming/lblGtoXeq.h"
 #include "c43Extensions/radioButtonCatalog.h"
 #include "registers.h"
 #include "registerValueConversions.h"
@@ -3546,7 +3547,7 @@ goBreak1:
 #endif // !SAVE_SPACE_DM42_9
 }
 
-void fnView(uint16_t regist) {
+void _view(uint16_t regist) {
   if(regInRange(regist)) {
     currentViewRegister = regist;
     temporaryInformation = TI_VIEW_REGISTER;
@@ -3555,4 +3556,17 @@ void fnView(uint16_t regist) {
 //      temporaryInformation = TI_NO_INFO;  //JM removed to signal to STOP, so that STOP does not clear the screen after VIEW
     }
   }
+}
+
+void fnView(uint16_t regist) {
+  _view(regist);
+}
+
+void fnAview(uint16_t regist) {
+  _view(regist);
+}
+
+void fnPrompt(uint16_t regist) {
+  _view(regist);
+  fnStopProgram(NOPARAM);
 }

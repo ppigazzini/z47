@@ -265,10 +265,10 @@ TO_QSPI const int16_t menu_MyPFN[]       = { ITM_LBL,                       ITM_
                                              ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL                     };
 
 TO_QSPI const int16_t menu_PFN_1[]       = { ITM_LBL,                       ITM_GTO,                    ITM_XEQ,                  ITM_RTN,               ITM_END,                    -MNU_PFN_2,
-                                             ITM_SKIP,                      ITM_BACK,                   ITM_XEQP1,                ITM_RTNP1,             ITM_CASE,                    ITM_LocR,
-                                             ITM_INPUT,                     ITM_MSG,                    ITM_ERR,                  ITM_TICKS,             ITM_PAUSE,                   ITM_POPLR                     };
+                                             ITM_SKIP,                      ITM_BACK,                   ITM_XEQP1,                ITM_RTNP1,             ITM_CASE,                    ITM_TICKS,
+                                             ITM_INPUT,                     ITM_AVIEW,                  ITM_PROMPT,               ITM_MSG,               ITM_ERR,                     ITM_PAUSE,                   };
 
-TO_QSPI const int16_t menu_PFN_2[]       = { ITM_AGRAPH,                    ITM_PIXEL,                  ITM_POINT,                ITM_SNAP,              -MNU_IO,                     -MNU_PFN_1,
+TO_QSPI const int16_t menu_PFN_2[]       = { ITM_AGRAPH,                    ITM_PIXEL,                  ITM_POINT,                ITM_LocR,              ITM_POPLR,                  -MNU_PFN_1,
                                              ITM_CLMENU,                    ITM_R_COPY,                 ITM_R_SORT,               ITM_R_SWAP,            ITM_R_CLR,                   ITM_EXITALL,
                                              ITM_MENU,                      ITM_KEYG,                   ITM_KEYX,                 ITM_VARMNU,            ITM_MVAR,                    ITM_PUTK                      };
 
