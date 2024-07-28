@@ -270,8 +270,13 @@
 
 //                                  w, event_keyval,  97,         shortcutProfile == USER_C47,  ExitIfNim,          tam.mode ,      "f",        00",                    modes,                CM_NORMAL,                  ITM_SIGMAPLUS
   bool_t shortCutCommand(GtkWidget *w, int key,      int keyCode, bool_t condition1,            bool_t exitIfInNIM, bool_t disable, char *shift, char *keyForBtnClicked, uint16_t modes, int16_t requiredCalcMode2, int16_t itemForRunFunction) {
-    //printf("\n       New key system: Disable=%i, Key detected %5i=%5i: exitIfInNIM=%i keyForBtnClicked:%s, calcMode=%i, tam.mode=%i\n",disable, key, keyCode, exitIfInNIM, keyForBtnClicked, calcMode, tam.mode);
-    if(disable) return false;
+    if(key == keyCode && condition1 && !disable) {
+      printf("\n       New key system: Disable=%i, Key detected %5i=%5i: exitIfInNIM=%i keyForBtnClicked:%s, calcMode=%i, tam.mode=%i\n",disable, key, keyCode, exitIfInNIM, keyForBtnClicked, calcMode, tam.mode);
+    }
+ 
+    if(disable) return false;                                  //exit directly for disallowed input condition
+    if(tam.mode == TM_LABEL && key != '\'') return false;      //exit directly, not allowing shortcuts during label entry, except to start text using "'"
+
     if(key == keyCode && condition1) {
       printf("       New key system: \n");
       temporaryInformation = TI_NO_INFO;
@@ -284,8 +289,8 @@
 
       //Handle menus
       if(itemForRunFunction < 0) {
-        printf("\n       New key system: Disable=%i, Key detected %5i=%5i: exitIfInNIM=%i keyForBtnClicked:%s, calcMode=%i, tam.mode=%i\n",disable, key, keyCode, exitIfInNIM, keyForBtnClicked, calcMode, tam.mode);
-        printf("       New key system: key:%i: showSoftmenu %i\n",keyCode, itemForRunFunction);
+        //printf("\n       New key system: Disable=%i, Key detected %5i=%5i: exitIfInNIM=%i keyForBtnClicked:%s, calcMode=%i, tam.mode=%i\n",disable, key, keyCode, exitIfInNIM, keyForBtnClicked, calcMode, tam.mode);
+        printf("       New key system: Handle menus: key:%i: showSoftmenu %i\n",keyCode, itemForRunFunction);
         showSoftmenu(itemForRunFunction);
         screenUpdatingMode = SCRUPD_AUTO;
         refreshScreen(0);
@@ -294,11 +299,12 @@
 
       //Handle functions
       if(((1 << calcMode) & modes) || calcMode == requiredCalcMode2) {        
-        printf("\n       New key system: Disable=%i, Key detected %5i=%5i: exitIfInNIM=%i keyForBtnClicked:%s, calcMode=%i, tam.mode=%i\n",disable, key, keyCode, exitIfInNIM, keyForBtnClicked, calcMode, tam.mode);
+        //printf("\n       New key system: Disable=%i, Key detected %5i=%5i: exitIfInNIM=%i keyForBtnClicked:%s, calcMode=%i, tam.mode=%i\n",disable, key, keyCode, exitIfInNIM, keyForBtnClicked, calcMode, tam.mode);
+        printf("       New key system: Handle functions: key:%i: showSoftmenu %i\n",keyCode, itemForRunFunction);
 
         //Handle key presses
         if(keyForBtnClicked[0] != '-') {
-          printf("       New key system: key:%i: btnClicked %s\n",keyCode, keyForBtnClicked);
+          printf("       New key system: Handle key presses: key:%i: btnClicked %s\n",keyCode, keyForBtnClicked);
           if(shift[0] == 'f') {
             shiftF = true;
             shiftG = false;
@@ -315,7 +321,7 @@
 
         //Handle direct functions
         if(itemForRunFunction >= 0) {
-          printf("       New key system: key:%i: runFunction  %i\n",keyCode, itemForRunFunction);
+          printf("       New key system: Handle direct functions: key:%i: runFunction  %i\n",keyCode, itemForRunFunction);
           runFunction(itemForRunFunction);
           screenUpdatingMode = SCRUPD_AUTO;
           refreshScreen(0);
@@ -497,7 +503,7 @@
     }
           
 
-      if(calcMode == CM_NORMAL || calcMode == CM_NIM || calcMode == CM_PEM) {
+      if(calcMode == CM_NORMAL || calcMode == CM_NIM || calcMode == CM_PEM || calcMode == CM_PEM) {
 
 
 if(shortCutCommand(w, event_keyval,    97,                                  shortcutProfile == USER_C47,  ExitIfNim,          tam.mode,    "",   "00",                   0b01101,         -1,        ITM_SIGMAPLUS ))        {return true;} else        //                  [a]ccumulate
@@ -554,10 +560,10 @@ if(shortCutCommand(w, event_keyval,    87,   shortcutProfile == USER_C47 || shor
 if(shortCutCommand(w, event_keyval,    61,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  ExitIfNim,          tam.mode,    "",  "-01",                   0b01101,         -1,             ITM_dotD ))        {return true;} else        //                      .d (dup)
 if(shortCutCommand(w, event_keyval,    69,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  ExitIfNim,          tam.mode,    "",  "-01",                   0b01101,         -1,               CST_09 ))        {return true;} else        //                     Euler's E
 if(shortCutCommand(w, event_keyval,    78,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  ExitIfNim,             FALSE,   "f",   "35",                   0b01101,     CM_PEM,               ITM_PR ))        {return true;} else        //                       PRGM N]
-if(shortCutCommand(w, event_keyval,    66,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  ExitIfNim,          tam.mode,    "",  "-01",                   0b01101,     CM_PEM,              ITM_LBL ))        {return true;} else        //                       LBL [B]
+if(shortCutCommand(w, event_keyval,    98,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  ExitIfNim,          tam.mode,    "",  "-01",                   0b01101,     CM_PEM,              ITM_LBL ))        {return true;} else        //                       LBL [B]
 if(shortCutCommand(w, event_keyval,   117,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  ExitIfNim,             FALSE,   "f",   "16",                   0b01101,     CM_PEM,               ITM_PR ))        {return true;} else        //                        [u]ndo
 if(shortCutCommand(w, event_keyval,    72,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !ExitIfNim,             FALSE,    "",  "-01",     0b0000011000000001101,         -1,            -MNU_HOME ))        {return true;} else        //                        [H]ome
-if(shortCutCommand(w, event_keyval,    98,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !ExitIfNim,             FALSE,    "",  "-01",     0b0000011000000001101,         -1,          -MNU_MyMenu ))        {return true;} else        //                    MyMenu [b]
+if(shortCutCommand(w, event_keyval,    66,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !ExitIfNim,             FALSE,    "",  "-01",     0b0000011000000001101,         -1,          -MNU_MyMenu ))        {return true;} else        //                    MyMenu [b]
 
 
 
@@ -587,12 +593,9 @@ if(shortCutCommand(w, event_keyval,    99,                                  shor
 if(shortCutCommand(w, event_keyval,   116,                                  shortcutProfile == USER_R47,  ExitIfNim,          tam.mode,    "",  "-01",                   0b01101,         -1,              ITM_tan ))        {return true;} else        //                     [t]angent
 if(shortCutCommand(w, event_keyval,    86,                                  shortcutProfile == USER_R47,  ExitIfNim,          tam.mode,    "",  "-01",                   0b01101,         -1,             ITM_1ONX ))        {return true;} else        //                     in[v]erse
 
-
                 
-        printf("------------------------ skipping to rest of key detections\n");
-        {}
-        
-      }
+  printf("------------------------ skipping to rest of key detections\n");        
+}
  
 
 
