@@ -268,7 +268,7 @@ TO_QSPI const int16_t menu_PFN_1[]       = { ITM_LBL,                       ITM_
                                              ITM_SKIP,                      ITM_BACK,                   ITM_XEQP1,                ITM_RTNP1,             ITM_CASE,                    ITM_TICKS,
                                              ITM_INPUT,                     ITM_AVIEW,                  ITM_PROMPT,               ITM_MSG,               ITM_ERR,                     ITM_PAUSE,                   };
 
-TO_QSPI const int16_t menu_PFN_2[]       = { ITM_AGRAPH,                    ITM_PIXEL,                  ITM_POINT,                ITM_LocR,              ITM_POPLR,                  -MNU_PFN_1,
+TO_QSPI const int16_t menu_PFN_2[]       = { ITM_AGRAPH,                    ITM_PIXEL,                  ITM_POINT,                ITM_LocR,              ITM_POPLR,                  -MNU_PFN,
                                              ITM_CLMENU,                    ITM_R_COPY,                 ITM_R_SORT,               ITM_R_SWAP,            ITM_R_CLR,                   ITM_EXITALL,
                                              ITM_MENU,                      ITM_KEYG,                   ITM_KEYX,                 ITM_VARMNU,            ITM_MVAR,                    ITM_PUTK                      };
 
@@ -576,7 +576,7 @@ TO_QSPI const int16_t menu_AUDIO[]       = { ITM_BEEP,                      ITM_
 
 TO_QSPI const int16_t menu_IO[]          = { ITM_WRITEP,                    ITM_SAVEST,                 ITM_SAVE,                 ITM_LOADP,             ITM_LOADR,                   ITM_LOADV,
                                              ITM_READP,                     ITM_LOADST,                 ITM_LOAD,                 ITM_LOADSIGMA,         ITM_LOADSS,                  -MNU_PRINT,
-                                             ITM_EXPORTP,                   ITM_SAVEAUT,                ITM_NULL,                 ITM_NULL,              ITM_NULL,                    -MNU_AUDIO                    };
+                                             ITM_EXPORTP,                   ITM_SAVEAUT,                ITM_NULL,                 ITM_NULL,              ITM_SNAP,                    -MNU_AUDIO                    };
 
 TO_QSPI const int16_t menu_PRINT[]       = { ITM_PRINTERX,                  ITM_PRINTERXY,              ITM_PRINTERSTK,           ITM_P_ALLREGS,         ITM_PRINTERR,                ITM_PRINTERPROG,
                                             ITM_PRINTERCHAR,                ITM_PRINTERHASH,            ITM_PRINTERLCD,           ITM_PRINTERREGS,       ITM_PRINTERSIGMA,            ITM_PRINTERUSER,
@@ -1741,7 +1741,7 @@ void showKey(const char *label, int16_t x1, int16_t x2, int16_t y1, int16_t y2, 
   #define _off 1 // function parameter: +1 is favoured
   if(calcMode == CM_ASSIGN && itemToBeAssigned != 0 &&
       (currentMenu() == -MNU_HOME ||
-       currentMenu() == - MNU_MyMenu ||
+       currentMenu() == -MNU_MyMenu ||
        currentMenu() == -MNU_MyAlpha ||
        currentMenu() == -MNU_PFN ||
        currentMenu() == -MNU_DYNAMIC
@@ -2105,6 +2105,9 @@ bool_t savedspace(int16_t itemNr) {  //strike out all SAVED_SPACE items
 }
 
 void fnStrikeOutIfNotCoded(int16_t itemNr, int16_t x, int16_t y) {
+  if(itemNr == -MNU_HOME || itemNr == -MNU_PFN) {
+    return;
+  }
   int16_t strike = 0;
   if(itemNr > 0) {
     if(indexOfItems[itemNr%10000].func == itemToBeCoded || savedspace(itemNr)) {
@@ -2786,17 +2789,25 @@ bool_t BASE_OVERRIDEONCE = false;
     showSoftmenu(-MNU_ALPHA);
   }
 
-  int16_t currentMenu(void) {
-    if(softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_DYNAMIC && compareString("HOME", userMenus[currentUserMenu].menuName, CMP_NAME) == 0) {
+
+  int16_t menu(uint8_t n) {
+    if(softmenu[softmenuStack[n].softmenuId].menuItem == -MNU_DYNAMIC && compareString("HOME", userMenus[currentUserMenu].menuName, CMP_NAME) == 0) {
        return -MNU_HOME;
     }
-    else if(softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_DYNAMIC && compareString("P.FN", userMenus[currentUserMenu].menuName, CMP_NAME) == 0) {
+    else if(softmenu[softmenuStack[n].softmenuId].menuItem == -MNU_DYNAMIC && compareString("P.FN", userMenus[currentUserMenu].menuName, CMP_NAME) == 0) {
        return -MNU_PFN;
     }
     else {
-       return softmenu[softmenuStack[0].softmenuId].menuItem;
+       return softmenu[softmenuStack[n].softmenuId].menuItem;
     }
   }
+
+  int16_t currentMenu(void) {
+    return menu(0);
+  }
+
+
+
 
 
   void removeUserMenuFromStack(int16_t userMenuId) {
@@ -2804,10 +2815,12 @@ bool_t BASE_OVERRIDEONCE = false;
     bool_t all = (userMenuId == numberOfUserMenus ? 1 : 0);
 
     for(i=0; i<SOFTMENU_STACK_SIZE; i++) { // Searching the stack for the user menu to remove from the stack
-      printf("*** Id %d item %d menuItem %d userMenuId %d\n",userMenuId,i,softmenu[softmenuStack[i].softmenuId].menuItem,softmenuStack[i].userMenuId);
+      #if defined(PC_BUILD) && (VERBOSE_LEVEL > 0)
+        printf("*** Id %d item %d menuItem %d userMenuId %d\n",userMenuId,i,softmenu[softmenuStack[i].softmenuId].menuItem,softmenuStack[i].userMenuId);
+      #endif
       if(softmenu[softmenuStack[i].softmenuId].menuItem == -MNU_DYNAMIC) {
         if((softmenuStack[i].userMenuId == userMenuId) || all==true) { // if found, remove it
-          #if defined(PC_BUILD)
+          #if defined(PC_BUILD) && (VERBOSE_LEVEL > 0)
             printf("*** Remove userMenuId %d\n", softmenuStack[i].userMenuId);
           #endif // PC_BUILD
           xcopy(softmenuStack + i, softmenuStack + i + 1, (SOFTMENU_STACK_SIZE - i) * sizeof(softmenuStack_t));
@@ -2816,7 +2829,7 @@ bool_t BASE_OVERRIDEONCE = false;
           softmenuStack[SOFTMENU_STACK_SIZE - 1].userMenuId = 0;
           i--;
         }
-        else if(softmenuStack[i].userMenuId > userMenuId) { // adjust other menuIDs
+        else if(softmenuStack[i].userMenuId > userMenuId) { // adjust other menuIDs             //this makes no sense!!
           softmenuStack[i].userMenuId--;
         }
       }
@@ -2826,6 +2839,16 @@ bool_t BASE_OVERRIDEONCE = false;
     }
   }
 
+
+  void removeMenuFromStack(int16_t userMenuId) {
+    for(int i=0; i<SOFTMENU_STACK_SIZE; i++) { // Searching the stack for specified menu
+      if(menu(i) == userMenuId) { // if found, remove it
+        xcopy(softmenuStack + i, softmenuStack + i + 1, (SOFTMENU_STACK_SIZE - i - 1) * sizeof(softmenuStack_t));
+        memset(softmenuStack + SOFTMENU_STACK_SIZE - 1, 0, sizeof(softmenuStack_t)); // Put MyMenu in the last stack element
+        --i; // redo
+      }
+    }
+  }
 
 
   void showSoftmenu(int16_t id) {
@@ -2977,13 +3000,7 @@ bool_t BASE_OVERRIDEONCE = false;
     else if(id == -MNU_ADV || id == -MNU_EQN) {
 
       currentSolverStatus &= ~SOLVER_STATUS_INTERACTIVE;
-      for(int i=0; i<SOFTMENU_STACK_SIZE; i++) { // Searching the stack for MNU_MVAR
-        if(softmenu[softmenuStack[i].softmenuId].menuItem == -MNU_MVAR) { // if found, remove it
-          xcopy(softmenuStack + i, softmenuStack + i + 1, (SOFTMENU_STACK_SIZE - i - 1) * sizeof(softmenuStack_t));
-          memset(softmenuStack + SOFTMENU_STACK_SIZE - 1, 0, sizeof(softmenuStack_t)); // Put MyMenu in the last stack element
-          --i; // redo
-        }
-      }
+      removeMenuFromStack(-MNU_MVAR);
     }
     else if(currentSolverVariable == INVALID_VARIABLE) {
       if(id == -MNU_Sf_TOOL    || 

@@ -64,6 +64,7 @@ void     fnExitAllMenus         (uint16_t unusedButMandatoryParameter);
    * Remove a User menu from a softmenu stack.
    */
   void removeUserMenuFromStack  (int16_t userMenuId);
+  void removeMenuFromStack      (int16_t userMenuId);
 
   void   setCatalogLastPos      (void);
   bool_t currentSoftmenuScrolls (void);

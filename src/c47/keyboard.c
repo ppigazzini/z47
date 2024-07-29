@@ -2916,6 +2916,11 @@ RELEASE_END:
                 if(item == ITM_PR) {
                   leavePem();
                   calcModeNormal();
+                  //exit menus immediately when coming out of PEM
+                  removeMenuFromStack(-MNU_PFN);
+                  removeMenuFromStack(-MNU_PFN_1);
+                  removeMenuFromStack(-MNU_PFN_2);
+
                   keyActionProcessed = true;
                   screenUpdatingMode = SCRUPD_AUTO;
                 }
@@ -3630,10 +3635,12 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
           fnBst(NOPARAM); // Set the PGM pointer to the original position
           break;
         }
-        if(softmenuStack[0].softmenuId > 1) { // not MyMenu and not MyAlpha
-          popSoftmenu();
-          break;
-        }
+
+        //exit menus immediately when coming out of PEM
+        removeMenuFromStack(-MNU_PFN);
+        removeMenuFromStack(-MNU_PFN_1);
+        removeMenuFromStack(-MNU_PFN_2);
+
 
         aimBuffer[0] = 0;
         leavePem();

@@ -1950,12 +1950,12 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
 
 
   static void viewRegName(char *prefix, int16_t *prefixWidth) { //using "=" for VIEW
-printf("========================== %i %s\n", lastFuncNo(), lastFuncCatalogName());
-if(lastFuncNo() == ITM_AVIEW || lastFuncNo() == ITM_PROMPT) {
-  prefix[0] = 0;
-  prefixWidth = 0;
-  return;
-}
+    //printf("========================== %i %s\n", lastFuncNo(), lastFuncCatalogName());
+    if(lastFuncNo() == ITM_AVIEW || lastFuncNo() == ITM_PROMPT) {
+      prefix[0] = 0;
+      prefixWidth = 0;
+      return;
+    }
     if(currentViewRegister < REGISTER_X) {
       sprintf(prefix, "%sR%02" PRIu16 STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM, (SBARUPD_Time ? "  " : ""), currentViewRegister);
     }
