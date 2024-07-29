@@ -47,6 +47,7 @@ void     fnExitAllMenus         (uint16_t unusedButMandatoryParameter);
    * \param[in] id ID of softmenu
    */
   void   showSoftmenu           (int16_t id);
+  int16_t menu                  (uint8_t n);
   void   changeToALPHA(void);
   void   changeToHOME(void);
   void   changeToPFN(void);

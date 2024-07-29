@@ -2385,7 +2385,7 @@ RELEASE_END:
         }
 
         case ITM_EXIT1: {
-          if(calcMode == CM_PEM || SHOWMODE) {    //do action on press, instead of release
+          if(SHOWMODE) {    //do action on press, instead of release
             fnKeyExit(NOPARAM);
             keyActionProcessed = true;            //Removed to force EXIT on the RELEASE cycle to make it do fnKeyExit later to allow NOP
           }
@@ -3635,11 +3635,16 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
           fnBst(NOPARAM); // Set the PGM pointer to the original position
           break;
         }
-
-        //exit menus immediately when coming out of PEM
-        removeMenuFromStack(-MNU_PFN);
-        removeMenuFromStack(-MNU_PFN_1);
-        removeMenuFromStack(-MNU_PFN_2);
+        if(softmenuStack[0].softmenuId > 1 && menu(0) != -MNU_PFN) { // not MyMenu and not MyAlpha
+          popSoftmenu();
+          break;
+        }
+        else if(menu(0) == -MNU_PFN){
+          //exit menus immediately when coming out of PEM
+          removeMenuFromStack(-MNU_PFN);
+          removeMenuFromStack(-MNU_PFN_1);
+          removeMenuFromStack(-MNU_PFN_2);
+        }
 
 
         aimBuffer[0] = 0;
