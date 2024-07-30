@@ -2644,6 +2644,7 @@ RELEASE_END:
 
                 else if(item == ITM_EXPONENT || item == ITM_PERIOD || (ITM_0 <= item && item <= ITM_9)) {
                   addItemToNimBuffer(item);
+                  refreshRegisterLine(REGISTER_X);
                   keyActionProcessed = true;
                 }
                 // Following commands do not timeout to NOP
