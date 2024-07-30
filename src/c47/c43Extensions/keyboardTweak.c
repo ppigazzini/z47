@@ -465,6 +465,9 @@ void resetKeytimers(void) {
       case CM_PEM : {
         switch(*result) {
           case ITM_EXIT1:
+            if(getSystemFlag(FLAG_ALPHA)) {          //close AIM in PEM
+              fnKeyExit(NOPARAM);
+            }
             if(!isR47FAM) {
               longpressDelayedkey2 = ITM_CLRMOD;     //EXIT longpress DOES CLRMOD
               longpressDelayedkey1 = -MNU_PFN;
@@ -646,6 +649,9 @@ void resetKeytimers(void) {
         FN_handle_timed_out_to_EXEC = false;
         exexute_double_g = true;
         fnTimerStop(TO_FN_EXEC);
+      }
+      if(menu(0) == -MNU_EQ_EDIT) {
+        exexute_double_g = false;
       }
       //PLACE ANY CONDITION PREVENTING DOUBLE CLICK HERE
       //  old:if(softmenuStack[0].softmenuId == 0) exexute_double_g = false; //JM prevent double click from executing nothing and showing a line, if no menu is showing
