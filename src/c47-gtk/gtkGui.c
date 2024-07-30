@@ -2502,20 +2502,8 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
         lbl[5]=0;             //JM SPACE
       }                       //JM SPACE
 
-      if(lbl[0] == 'Y') {                                       //JM Brighten up Y and N
-        //lbl[0] = '#';                                         //JM Brighten up Y and N
-        gtk_label_set_label(GTK_LABEL(lblL), (gchar *)lbl);     //JM Brighten up Y and N
-        gtk_widget_set_name(lblL, "YN");                        //JM Brighten up Y and N
-      }
-      else if(lbl[0] == 'N') {                                  //JM Brighten up Y and N
-        //lbl[0] = '#';                                         //JM Brighten up Y and N
-        gtk_label_set_label(GTK_LABEL(lblL), (gchar *)lbl);     //JM Brighten up Y and N
-        gtk_widget_set_name(lblL, "YN");                        //JM Brighten up Y and N
-      }
-      else {                                                    //JM Brighten up Y and N
-        gtk_label_set_label(GTK_LABEL(lblL), (gchar *)lbl);
-        gtk_widget_set_name(lblL, "letter");
-      }                                                         //JM Brighten up Y and N
+      gtk_label_set_label(GTK_LABEL(lblL), (gchar *)lbl);
+      gtk_widget_set_name(lblL, "letter");
     }
 
 
