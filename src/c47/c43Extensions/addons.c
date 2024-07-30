@@ -499,41 +499,29 @@ void fn_cnst_1_cpx(uint16_t unusedButMandatoryParameter) {
 
 //Rounding
 void fnJM_2SI(uint16_t unusedButMandatoryParameter) { //Convert Real to Longint; Longint to shortint; shortint to longint
-  longInteger_t tmp1, tmp2, tmp3;
-  uint64_t tmp2UI, mask;
+  longInteger_t tmp1, tmp3;
   uint16_t tmp2sign;
   switch(getRegisterDataType(REGISTER_X)) {
     case dtLongInteger:
-      convertLongIntegerRegisterToLongInteger(REGISTER_X, tmp2);
       convertLongIntegerRegisterToLongInteger(REGISTER_X, tmp3);
-      tmp2sign = longIntegerIsNegative(tmp2) ? 1:0;
-      if(tmp2sign == 1) {
-        longIntegerChangeSign(tmp2);
-      }
-      longIntegerToUInt(tmp2,tmp2UI);
-      if(shortIntegerMode != SIM_UNSIGN) {
-        mask = 1;
-        mask = ~(mask << (shortIntegerWordSize-1));
-        tmp2UI &= mask;
-      }
-      else if(tmp2sign) {
+      tmp2sign = longIntegerIsNegative(tmp3) ? 1:0;
+      if(shortIntegerMode == SIM_UNSIGN && tmp2sign) {
         temporaryInformation = TI_DATA_NEG_OVRFL;
       }
-      convertUInt64ToShortIntegerRegister(tmp2sign, tmp2UI, (lastIntegerBase >= 2 && lastIntegerBase <= 16) ? lastIntegerBase : 10, REGISTER_X);
+      fnChangeBase((lastIntegerBase >= 2 && lastIntegerBase <= 16) ? lastIntegerBase : 10);
       convertShortIntegerRegisterToLongInteger(REGISTER_X, tmp1);
       if(longIntegerCompare(tmp1,tmp3) != 0) {
         if(temporaryInformation != TI_DATA_NEG_OVRFL) {
-          temporaryInformation = TI_DATA_LOSS;
+          temporaryInformation = TI_DATA_LOSS;             // I cannot think of which condition will reach here, without other overflows overriding, but leaving it in
         }
         setSystemFlag(FLAG_OVERFLOW);
       }
       longIntegerFree(tmp1);
-      longIntegerFree(tmp2);
       longIntegerFree(tmp3);
+
       break;
     case dtReal34:
-      //ipReal();                                         //This converts real to longint!
-      fnRoundi(0);
+      fnRoundi(0);                       
       break;
     case dtShortInteger:
       convertShortIntegerRegisterToLongIntegerRegister(REGISTER_X, REGISTER_X); //This shortint to longint!
