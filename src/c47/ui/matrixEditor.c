@@ -1003,7 +1003,7 @@ smallFont:
   totalWidth = baseWidth + mtxWidth;
 
   if(displayFormat == DF_ALL && noFix) {
-    displayFormat = getSystemFlag(FLAG_ALLENG) ? DF_ENG : DF_SCI;
+    displayFormat = getSystemFlag(FLAG_ENGOVR) ? DF_ENG : DF_SCI;
     displayFormatDigits = digits;
   }
   if(totalWidth > maxWidth || leftEllipsis) {
@@ -1143,7 +1143,7 @@ int16_t getRealMatrixColumnWidths(const real34Matrix_t *matrix, int16_t prefixWi
         *digits = k;
       }
     if(displayFormat == DF_ALL && noFix) { // something like SCI
-      displayFormat = getSystemFlag(FLAG_ALLENG) ? DF_ENG : DF_SCI;
+      displayFormat = getSystemFlag(FLAG_ENGOVR) ? DF_ENG : DF_SCI;
       displayFormatDigits = k;
     }
 
@@ -1177,8 +1177,8 @@ int16_t getRealMatrixColumnWidths(const real34Matrix_t *matrix, int16_t prefixWi
         rPadWidth[i * MATRIX_MAX_COLUMNS + j] = 0;
         if(strstr(tmpString, ".") || strstr(tmpString, ",")) {
           for(char *xStr = tmpString; *xStr != 0; xStr++) {
-            if(((displayFormat != DF_ENG && (displayFormat != DF_ALL || !getSystemFlag(FLAG_ALLENG))) && (*xStr == '.' || *xStr == ',')) ||
-               ((displayFormat == DF_ENG || (displayFormat == DF_ALL && getSystemFlag(FLAG_ALLENG))) && xStr[0] == (char)0x80 && (xStr[1] == (char)0x87 || xStr[1] == (char)0xd7))) {
+            if(((displayFormat != DF_ENG && (displayFormat != DF_ALL || !getSystemFlag(FLAG_ENGOVR))) && (*xStr == '.' || *xStr == ',')) ||
+               ((displayFormat == DF_ENG || (displayFormat == DF_ALL && getSystemFlag(FLAG_ENGOVR))) && xStr[0] == (char)0x80 && (xStr[1] == (char)0x87 || xStr[1] == (char)0xd7))) {
               rPadWidth[i * MATRIX_MAX_COLUMNS + j] = stringWidth(xStr, font, true, true) + 1;
                 if(maxRightWidth[j] < rPadWidth[i * MATRIX_MAX_COLUMNS + j]) {
                   maxRightWidth[j] = rPadWidth[i * MATRIX_MAX_COLUMNS + j];
@@ -1510,8 +1510,8 @@ int16_t getComplexMatrixColumnWidths(const complex34Matrix_t *matrix, int16_t pr
         width = stringWidth(tmpString, font, true, true) + 1;
         if(strstr(tmpString, ".") || strstr(tmpString, ",")) {
           for(char *xStr = tmpString; *xStr != 0; xStr++) {
-            if(((displayFormat != DF_ENG && (displayFormat != DF_ALL || !getSystemFlag(FLAG_ALLENG))) && (*xStr == '.' || *xStr == ',')) ||
-               ((displayFormat == DF_ENG || (displayFormat == DF_ALL && getSystemFlag(FLAG_ALLENG))) && xStr[0] == (char)0x80 && (xStr[1] == (char)0x87 || xStr[1] == (char)0xd7))) {
+            if(((displayFormat != DF_ENG && (displayFormat != DF_ALL || !getSystemFlag(FLAG_ENGOVR))) && (*xStr == '.' || *xStr == ',')) ||
+               ((displayFormat == DF_ENG || (displayFormat == DF_ALL && getSystemFlag(FLAG_ENGOVR))) && xStr[0] == (char)0x80 && (xStr[1] == (char)0x87 || xStr[1] == (char)0xd7))) {
               rPadWidth_r[i * MATRIX_MAX_COLUMNS + j] = stringWidth(xStr, font, true, true) + 1;
                 if(maxRightWidth_r[j] < rPadWidth_r[i * MATRIX_MAX_COLUMNS + j]) {
                   maxRightWidth_r[j] = rPadWidth_r[i * MATRIX_MAX_COLUMNS + j];
@@ -1535,8 +1535,8 @@ int16_t getComplexMatrixColumnWidths(const complex34Matrix_t *matrix, int16_t pr
         width = stringWidth(tmpString, font, true, true) + 1;
         if(strstr(tmpString, ".") || strstr(tmpString, ",")) {
           for(char *xStr = tmpString; *xStr != 0; xStr++) {
-            if(((displayFormat != DF_ENG && (displayFormat != DF_ALL || !getSystemFlag(FLAG_ALLENG))) && (*xStr == '.' || *xStr == ',')) ||
-               ((displayFormat == DF_ENG || (displayFormat == DF_ALL && getSystemFlag(FLAG_ALLENG))) && xStr[0] == (char)0x80 && (xStr[1] == (char)0x87 || xStr[1] == (char)0xd7))) {
+            if(((displayFormat != DF_ENG && (displayFormat != DF_ALL || !getSystemFlag(FLAG_ENGOVR))) && (*xStr == '.' || *xStr == ',')) ||
+               ((displayFormat == DF_ENG || (displayFormat == DF_ALL && getSystemFlag(FLAG_ENGOVR))) && xStr[0] == (char)0x80 && (xStr[1] == (char)0x87 || xStr[1] == (char)0xd7))) {
               rPadWidth_i[i * MATRIX_MAX_COLUMNS + j] = stringWidth(xStr, font, true, true) + 1;
                 if(maxRightWidth_i[j] < rPadWidth_i[i * MATRIX_MAX_COLUMNS + j]) {
                   maxRightWidth_i[j] = rPadWidth_i[i * MATRIX_MAX_COLUMNS + j];
