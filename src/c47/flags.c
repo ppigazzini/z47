@@ -59,7 +59,7 @@ static void systemFlagProcess(unsigned int idx, flagAction_t action) {
 
 static void systemFlagAction(uint16_t systemFlag, flagAction_t action) {
   switch(systemFlag) {
-    case FLAG_ALLENG:   systemFlagProcess(FLAG_A, action); break;
+    case FLAG_ENGOVR:   systemFlagProcess(FLAG_A, action); break;
     case FLAG_OVERFLOW: systemFlagProcess(FLAG_B, action); break;
     case FLAG_CARRY:    systemFlagProcess(FLAG_C, action); break;
     case FLAG_SPCRES:   systemFlagProcess(FLAG_D, action); break;
@@ -84,7 +84,7 @@ static void systemFlagAction(uint16_t systemFlag, flagAction_t action) {
     case FLAG_DENFIX:
     case FLAG_SSIZE8:
     case FLAG_MULTx:
-    case FLAG_ALLENG:
+    case FLAG_ENGOVR:
     case FLAG_ENDPMT:
     case FLAG_HPRP:
     case FLAG_HPBASE:
@@ -303,7 +303,7 @@ void fnSetFlag(uint16_t flag) {
 
   else if(flag < FLAG_K) { // Global flag
     switch(flag) {
-      case FLAG_A: setSystemFlag(FLAG_ALLENG);   break;
+      case FLAG_A: setSystemFlag(FLAG_ENGOVR);   break;
       case FLAG_B: setSystemFlag(FLAG_OVERFLOW); break;
       case FLAG_C: setSystemFlag(FLAG_CARRY);    break;
       case FLAG_D: setSystemFlag(FLAG_SPCRES);   break;
@@ -381,7 +381,7 @@ void fnClearFlag(uint16_t flag) {
 
   else if(flag < FLAG_K) { // Global flag
     switch(flag) {
-      case FLAG_A: clearSystemFlag(FLAG_ALLENG);   break;
+      case FLAG_A: clearSystemFlag(FLAG_ENGOVR);   break;
       case FLAG_B: clearSystemFlag(FLAG_OVERFLOW); break;
       case FLAG_C: clearSystemFlag(FLAG_CARRY);    break;
       case FLAG_D: clearSystemFlag(FLAG_SPCRES);   break;
@@ -465,7 +465,7 @@ void fnFlipFlag(uint16_t flag) {
 
   else if(flag <= FLAG_K) { // Global flag
     switch(flag) {
-      case FLAG_A: flipSystemFlag(FLAG_ALLENG);   break;
+      case FLAG_A: flipSystemFlag(FLAG_ENGOVR);   break;
       case FLAG_B: flipSystemFlag(FLAG_OVERFLOW); break;
       case FLAG_C: flipSystemFlag(FLAG_CARRY);    break;
       case FLAG_D: flipSystemFlag(FLAG_SPCRES);   break;
@@ -606,8 +606,8 @@ void SetSetting(uint16_t jmConfig) {
     case SS_8:           fnSetFlag(FLAG_SSIZE8);                                break;
     case CM_RECTANGULAR: fnClearFlag(FLAG_POLAR);                               break;
     case CM_POLAR:       fnSetFlag(FLAG_POLAR);                                 break;
-    case DO_SCI:         fnClearFlag(FLAG_ALLENG);                              break;
-    case DO_ENG:         fnSetFlag(FLAG_ALLENG);                                break;
+    case DO_SCI:         fnClearFlag(FLAG_ENGOVR);                              break;
+    case DO_ENG:         fnSetFlag(FLAG_ENGOVR);                                break;
     case PR_HPRP:        fnFlipFlag(FLAG_HPRP);                                 break;
     case PR_HPBASE:      fnFlipFlag(FLAG_HPBASE);                               break;
     case PR_2TO10:       fnFlipFlag(FLAG_2TO10);                                break;

@@ -248,7 +248,7 @@ RESERVED_VARIABLE_CPERONA,           xxx,        12,                            
 3,                                   1,          FLAG_SSIZE8,                    xxx,             FLAG_SSIZE8,          FLAG_SSIZE8,            FLAG_SSIZE8,     xxx,             xxx,                  // Set flag  FLAG_SSIZE8
 3,                                   0,          xxx,                            FLAG_SSIZE8,     xxx,                  xxx,                    xxx,             xxx,             xxx,                  // Set flag  FLAG_SSIZE8
 3,                                   0,          FLAG_ASLIFT,                    xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,                  // Clear flag FLAG_ASLIFT
-3,                                   1,          xxx,                            xxx,             FLAG_ALLENG,          xxx,                    xxx,             xxx,             xxx,                  // Clear flag FLAG_ASLIFT
+3,                                   1,          xxx,                            xxx,             FLAG_ENGOVR,          xxx,                    xxx,             xxx,             xxx,                  // Clear flag FLAG_ASLIFT
 
 //fractions
 3,                                   0,          FLAG_DENFIX,                    xxx,             FLAG_DENFIX,          xxx,                    xxx,             xxx,             xxx,                  // Clear flag FLAG_DENFIX

@@ -254,7 +254,7 @@ int8_t fnCbIsSet(int16_t item) {
         case RB_DI:  rb_param = displayFormat;
                      break;
 
-        case RB_DO:  if(getSystemFlag(FLAG_ALLENG)) rb_param = DO_ENG;
+        case RB_DO:  if(getSystemFlag(FLAG_ENGOVR)) rb_param = DO_ENG;
                      else                           rb_param = DO_SCI;
                      break;
 

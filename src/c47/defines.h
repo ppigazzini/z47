@@ -585,7 +585,7 @@
 #define FLAG_QUIET                            0x8019
 #define FLAG_WRAPEND                          0xc01a
 #define FLAG_MULTx                            0x801b
-#define FLAG_ALLENG                           0x801c
+#define FLAG_ENGOVR                           0x801c
 #define FLAG_GROW                             0x801d
 #define FLAG_AUTOFF                           0x801e
 #define FLAG_AUTXEQ                           0x801f
