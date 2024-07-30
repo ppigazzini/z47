@@ -11,7 +11,7 @@
 // JM VARIOUS OPTIONS
 //*********************************
 
-#define VERSION1 "0.109.02.05a3"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
+#define VERSION1 "0.109.02.05a4"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
 
 //Version history
 //0.109.02.00
@@ -311,8 +311,6 @@
 #define ID_43S                   0    //JM Input Default
 #define ID_DP                    2    //JM Input Default
 #define ID_CPXDP                 4    //JM Input Default
-#define ID_43D                   5    //JM Input Default
-#define ID_SI                    6    //JM Input Default
 #define ID_LI                    7    //JM Input Default
 
 

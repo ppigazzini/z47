@@ -285,6 +285,7 @@
   extern int16_t                T_cursorPos;                  //JMCURSOR
   extern int16_t                displayAIMbufferoffset;       //JMCURSOR
   extern uint16_t               showRegis;                    //JMSHOW
+  extern uint8_t                overrideShowBottomLine;
   extern int16_t                ListXYposition;               //JM
   extern uint8_t                DRG_Cycling;                  //JM
   extern uint8_t                DM_Cycling;                   //JM

@@ -738,7 +738,9 @@ void execTimerApp(uint16_t timerType) {
     shiftF = true;        //S_shF();                  //   New shift state
     shiftG = false;
     showShiftState();
-    refreshRegisterLine(REGISTER_T); //clearRegisterLine(Y_POSITION_OF_REGISTER_T_LINE - 4, REGISTER_LINE_HEIGHT); //JM FN clear the previous shift function name
+    if(calcMode != CM_PEM) {
+      refreshRegisterLine(REGISTER_T); //clearRegisterLine(Y_POSITION_OF_REGISTER_T_LINE - 4, REGISTER_LINE_HEIGHT); //JM FN clear the previous shift function name
+    }
     char *varCatalogItem = "SF:F";
     int16_t Dyn = nameFunction(FN_key_pressed-37, shiftF, shiftG);
     if(dynamicMenuItem > -1 && !DEBUGSFN) {
@@ -755,7 +757,9 @@ void execTimerApp(uint16_t timerType) {
     shiftF = false;
     shiftG = true;
     showShiftState();
-    refreshRegisterLine(REGISTER_T); //clearRegisterLine(Y_POSITION_OF_REGISTER_T_LINE - 4, REGISTER_LINE_HEIGHT); //JM FN clear the previous shift function name
+    if(calcMode != CM_PEM) {
+      refreshRegisterLine(REGISTER_T); //clearRegisterLine(Y_POSITION_OF_REGISTER_T_LINE - 4, REGISTER_LINE_HEIGHT); //JM FN clear the previous shift function name
+    }
     char *varCatalogItem = "SF:G";
     int16_t Dyn = nameFunction(FN_key_pressed-37, shiftF, shiftG);
     if(dynamicMenuItem > -1 && !DEBUGSFN) {
@@ -769,7 +773,9 @@ void execTimerApp(uint16_t timerType) {
 
 
   void FN_handler_StepToNOP(void) {
-    refreshRegisterLine(REGISTER_T); //clearRegisterLine(Y_POSITION_OF_REGISTER_T_LINE - 4, REGISTER_LINE_HEIGHT); //JM FN clear the previous shift function name
+    if(calcMode != CM_PEM) {
+      refreshRegisterLine(REGISTER_T); //clearRegisterLine(Y_POSITION_OF_REGISTER_T_LINE - 4, REGISTER_LINE_HEIGHT); //JM FN clear the previous shift function name
+    }
     showFunctionName(ITM_NOP, 0, "SF:N");
     FN_timed_out_to_NOP = true;
     underline_softkey(FN_key_pressed-38, 3, false);   //  Purposely select row 3 which does not exist, just to activate the 'clear previous line'
@@ -1422,6 +1428,31 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
   }
 
 
+
+  void showBottomLine(void) {
+    int yoff = 0;
+    if(!( (temporaryInformation == TI_SHOW_REGISTER_SMALL && tmpString[5*SHOWLineSize] != 0) ||
+          (temporaryInformation == TI_SHOW_REGISTER_TINY && tmpString[14*SHOWLineSize] != 0)      )    //The softmenu space is not used
+      || (overrideShowBottomLine > 0) ) {
+
+
+      if(overrideShowBottomLine > 0) {
+        yoff = SCREEN_HEIGHT - REGISTER_LINE_HEIGHT*(overrideShowBottomLine)/10.0f;   // 40 means 4.0 registers from bottom
+      }
+      else {
+        yoff = SCREEN_HEIGHT - REGISTER_LINE_HEIGHT*2;
+      }
+
+      int offs = (temporaryInformation == TI_SHOW_REGISTER_BIG ? - 2 : temporaryInformation == TI_SHOW_REGISTER_SMALL ? 0 : temporaryInformation == TI_SHOW_REGISTER_TINY ? 0 : 0);
+
+
+      lcd_fill_rect(0, yoff + offs, SCREEN_WIDTH, 1, LCD_EMPTY_VALUE); //HERE SHOW LINE SMALL & TINY
+
+      overrideShowBottomLine = 0;
+    }
+  }
+
+
   void showDispSmall(uint16_t offset, uint8_t _h1) {
     #define line_small 21
     #define line_tiny  10
@@ -1432,14 +1463,6 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
       #if defined(VERBOSE_SCREEN) && defined(PC_BUILD)
         printf("^^^^NEW SHOW: %s\n", tmpString + offset);
       #endif // VERBOSE_SCREEN && PC_BUILD
-      if(_h1 == 0) {
-        if((temporaryInformation == TI_SHOW_REGISTER_SMALL && tmpString[5*SHOWLineSize] != 0) ||
-           (temporaryInformation == TI_SHOW_REGISTER_TINY && tmpString[14*SHOWLineSize] != 0)    ) {   //The softmenu space is used
-        }
-        else {
-          lcd_fill_rect(0,SCREEN_HEIGHT-3*SOFTMENU_HEIGHT,SCREEN_WIDTH,1,LCD_EMPTY_VALUE);
-        }
-      }
     }
   }
 
@@ -1867,7 +1890,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
     showFunctionNameCounter = delayInMs;
     stringAppend(padding,functionName);
     stringAppend(padding + stringByteLength(padding),"     ");
-    if(PROBMENU || stringWidth(padding, &standardFont, true, true) + 1 /*JM 20*/ + lineTWidth > SCREEN_WIDTH) {
+    if((PROBMENU || stringWidth(padding, &standardFont, true, true) + 1 /*JM 20*/ + lineTWidth > SCREEN_WIDTH) && calcMode != CM_PEM) {
       clearRegisterLine(REGISTER_T, true, false);
     }
 
@@ -1885,7 +1908,9 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
 
   void hideFunctionName(void) {
     if(!running_program_jm && (tmpString[0] != 0 || calcMode!=CM_AIM)) {
-      refreshRegisterLine(REGISTER_T);                                                //JM DO NOT CHANGE BACK TO CLEARING ONLY A SHORT PIECE. CHANGED IN TWEAKED AS WELL>
+      if(calcMode != CM_PEM) {
+        refreshRegisterLine(REGISTER_T);                                                //JM DO NOT CHANGE BACK TO CLEARING ONLY A SHORT PIECE. CHANGED IN TWEAKED AS WELL>
+      }
       if(getRegisterDataType(REGISTER_X) == dtReal34Matrix || getRegisterDataType(REGISTER_X) == dtReal34Matrix) {
         refreshRegisterLine(REGISTER_X);
       }
@@ -2310,15 +2335,34 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
   #define PROBMENU (-softmenu[softmenuStack[0].softmenuId].menuItem >= MNU_BINOM && -softmenu[softmenuStack[0].softmenuId].menuItem <= ITM_1296)
 
 
-  void displayBaseMode(calcRegister_t regist) {
-//     #if defined(PC_BUILD)
-//       if(!BASEMODEREGISTERX) {
-//         printf("XXXX NOT BASEMODE, regist=%u\n",regist);
-//       setLastintegerBasetoZero();
-//      return;
-//       }
-//     #endif
+static bool_t displayTrueFalse(calcRegister_t regist) {
+      char sss[10];
+      #define clearOffset -2
+      if(temporaryInformation == TI_FALSE) {
+        if(clearOffset != 0) {
+          sprintf(sss, "     ");
+          showString(sss, &standardFont, 1, Y_POSITION_OF_TRUE_FALSE_LINE + 6 + clearOffset, vmNormal, true, true); //blank a little higher, 2 pixel
+        }
+        sprintf(sss, "false");
+        showString(sss, &standardFont, 1, Y_POSITION_OF_TRUE_FALSE_LINE + 6, vmNormal, true, true);
+        return true;
+      }
 
+      else if(temporaryInformation == TI_TRUE) {
+        if(clearOffset != 0) {
+          sprintf(sss, "    ");
+          showString(sss, &standardFont, 1, Y_POSITION_OF_TRUE_FALSE_LINE + 6 + clearOffset, vmNormal, true, true); //blank a little higher, 2 pixel
+        }
+        sprintf(sss, "true");
+        showString(sss, &standardFont, 1, Y_POSITION_OF_TRUE_FALSE_LINE + 6, vmNormal, true, true);
+        return true;
+      }
+      return false;
+  }
+
+
+
+  void displayBaseMode(calcRegister_t regist) {
      calcRegister_t Register_X = calcMode == CM_NIM ? REGISTER_Y : REGISTER_X;
 
      //JM SHOIDISP // use the top part of the screen for HEX and BIN    //JM vv SHOIDISP
@@ -2415,7 +2459,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
       }
     #endif // (DEBUG_PANEL == 1)
 
-    if((temporaryInformation == TI_SHOW_REGISTER || SHOWMODE) && regist == REGISTER_X) {     //JM top frame of the SHOW window
+    if((temporaryInformation == TI_SHOW_REGISTER || SHOWMODE) && regist == REGISTER_X) {     //JM top frame of the SHOW window  //HERE SHOW LINE
       lcd_fill_rect(0, Y_POSITION_OF_REGISTER_T_LINE-4, SCREEN_WIDTH, 1, LCD_EMPTY_VALUE);
     }
 
@@ -2590,14 +2634,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
         showString(errorMessage, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
       }
 
-      else if(temporaryInformation == TI_FALSE && regist == TRUE_FALSE_REGISTER_LINE) {
-        sprintf(tmpString, "false");
-        showString(tmpString, &standardFont, 1, Y_POSITION_OF_TRUE_FALSE_LINE + 6, vmNormal, true, true);
-      }
-
-      else if(temporaryInformation == TI_TRUE && regist == TRUE_FALSE_REGISTER_LINE) {
-        sprintf(tmpString, "true");
-        showString(tmpString, &standardFont, 1, Y_POSITION_OF_TRUE_FALSE_LINE + 6, vmNormal, true, true);
+      else if(regist == TRUE_FALSE_REGISTER_LINE && displayTrueFalse(regist)) {        
       }
 
       else if(temporaryInformation == TI_RESET && regist == REGISTER_X) {
@@ -2700,67 +2737,8 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
       }
 
 
-//      //Original SHOW
-//      else if(temporaryInformation == TI_SHOW_REGISTER && regist == REGISTER_T) { // L1
-//        w = stringWidth(tmpString, &standardFont, true, true);
-//        showString(tmpString, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_T_LINE + 21*0, vmNormal, true, true);
-//      }
-//
-//      else if(temporaryInformation == TI_SHOW_REGISTER && regist == REGISTER_Z && tmpString[300] != 0) { // L2 & L3
-//        w = stringWidth(tmpString + 300, &standardFont, true, true);
-//        showString(tmpString + 300, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_T_LINE + 21*1, vmNormal, true, true);
-//
-//        if(tmpString[600]) {
-//          w = stringWidth(tmpString + 600, &standardFont, true, true);
-//          showString(tmpString + 600, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_T_LINE + 21*2, vmNormal, true, true);
-//        }
-//      }
-//
-//      else if(temporaryInformation == TI_SHOW_REGISTER && regist == REGISTER_Y && tmpString[900] != 0) { // L4 & L5
-//        w = stringWidth(tmpString + 900, &standardFont, true, true);
-//        showString(tmpString + 900, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_T_LINE + 21*3, vmNormal, true, true);
-//
-//        if(tmpString[1200]) {
-//          w = stringWidth(tmpString + 1200, &standardFont, true, true);
-//          showString(tmpString + 1200, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_T_LINE + 21*4, vmNormal, true, true);
-//        }
-//      }
-//
-//      else if(temporaryInformation == TI_SHOW_REGISTER && regist == REGISTER_X && tmpString[1500] != 0) { // L6 & L7
-//        w = stringWidth(tmpString + 1500, &standardFont, true, true);
-//        showString(tmpString + 1500, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_T_LINE + 21*5, vmNormal, true, true);
-//
-//        if(tmpString[1800]) {
-//          w = stringWidth(tmpString + 1800, &standardFont, true, true);
-//          showString(tmpString + 1800, &standardFont, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_T_LINE + 21*6, vmNormal, true, true);
-//        }
-//      }
 
       // NEW SHOW                                                                  //JMSHOW vv
-//      else if(temporaryInformation == TI_SHOW_REGISTER_SMALL || temporaryInformation == TI_SHOW_REGISTER) {
-//        switch(regist) {
-//          case REGISTER_T:
-//            showDispSmall( 0 * SHOWLineSize, 0);          // L1
-//            break;
-//          case REGISTER_Z:
-//            showDispSmall( 1 * SHOWLineSize, 1);          // L2 & L3
-//            showDispSmall( 2 * SHOWLineSize, 2);
-//            break;
-//          case REGISTER_Y:
-//            showDispSmall( 3 * SHOWLineSize, 3);          // L4 & L5
-//            showDispSmall( 4 * SHOWLineSize, 4);
-//            break;
-//          case REGISTER_X:
-//            showDispSmall( 5 * SHOWLineSize, 5);          // L6 & L7 & L8 & L9 & L10
-//            showDispSmall( 6 * SHOWLineSize, 6);
-//            showDispSmall( 7 * SHOWLineSize, 7);
-//            showDispSmall( 8 * SHOWLineSize, 8);
-//            showDispSmall( 9 * SHOWLineSize, 9);
-//            break;
-//          default: ;
-//        }
-//      }
-
       else if(temporaryInformation == TI_SHOW_REGISTER_SMALL || temporaryInformation == TI_SHOW_REGISTER) {
         switch(regist) {
           case REGISTER_X:{
@@ -2769,7 +2747,8 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
               while (nn <= 9) {
                 showDispSmall( nn * SHOWLineSize, nn);          // L1
                 nn++;
-              } 
+              }
+              showBottomLine();
               break;
             }
             default: ;
@@ -2786,6 +2765,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
                 showDispSmall( nn * SHOWLineSize, nn);          // L1
                 nn++;
               } 
+              showBottomLine();
               break;
             }
             default: ;
@@ -2799,7 +2779,8 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
             while (nn<=5) {
               showDisp( nn * SHOWLineSize, nn);
               nn++;
-            } 
+            }
+            showBottomLine();
           }
       }
 
@@ -4024,7 +4005,11 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
             shortIntegerToDisplayString(regist, tmpString, true);
             showString(tmpString, fontForShortInteger, SCREEN_WIDTH - stringWidth(tmpString, fontForShortInteger, false, true), Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + (fontForShortInteger == &standardFont ? 6 : 0) - (fontForShortInteger == &numericFont && temporaryInformation == TI_NO_INFO && checkHP ? 50:0), vmNormal, false, true);
 
-            displayBaseMode(regist);
+            if(regist == REGISTER_X) {
+              displayBaseMode(regist);
+              displayTrueFalse(regist);
+            }
+
           }
 
 
@@ -4425,6 +4410,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
     if(softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_SHOW) {
       popSoftmenu();
     }
+    showRegis = 9999;
     uint8_t calcModeStore = calcMode;
     calcMode = CM_NORMAL;
     screenUpdatingMode = SCRUPD_AUTO;
@@ -4736,11 +4722,6 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
       stop_buzzer();
     #endif // DMCP_BUILD && CLICK_REFRESHSCR
 
-    #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
-      jm_show_calc_state("refreshScreen");
-      printf(">>> refreshScreen(%u), refreshScreenCounter=%d calcMode=%d screenUpdatingMode=%d temporaryInformation=%u\n", source, refreshScreenCounter++, calcMode, screenUpdatingMode, temporaryInformation);    //JMYY
-    #endif // PC_BUILD
-
     if(calcMode!=CM_AIM && calcMode!=CM_NIM && calcMode!=CM_PLOT_STAT && calcMode!=CM_GRAPH && calcMode!=CM_LISTXY && last_CM != 240) {  //240 specifically to prefent this
       last_CM = 254;  //JM Force NON-CM_AIM and NON-CM_NIM to refresh to be compatible to 43S
     }
@@ -4749,6 +4730,34 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
         last_CM = calcMode;
       }
     }
+                             #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
+                               jm_show_calc_state("refreshScreen");
+                             #endif // PC_BUILD
+
+                             #if defined(PC_BUILD)
+                               char ttt[500],sss[500];
+                               convertUInt64ToShortIntegerRegister(0, screenUpdatingMode, 2, TEMP_REGISTER_1 );
+                               shortIntegerToDisplayString(TEMP_REGISTER_1, ttt, false);
+                               stringToASCII(ttt,sss);
+                               strcpy(ttt,"");
+                               if(screenUpdatingMode == 0) strcat(ttt,"AUTO "); else {
+                                 if((screenUpdatingMode & 0x40)) strcat(ttt,"SkpMEN ");      
+                                 if((screenUpdatingMode & 0x20)) strcat(ttt,"SkpSTK ");      
+
+                                 if(!(screenUpdatingMode & 0x08)) strcat(ttt,"SHFT ");      
+                                 if(!(screenUpdatingMode & 0x04)) strcat(ttt,"MENU ");      
+                                 if(!(screenUpdatingMode & 0x02)) strcat(ttt, "STK ");      
+                                 if(!(screenUpdatingMode & 0x01)) strcat(ttt,"STAT ");
+                               }
+                               int16_t m = softmenuStack[0].softmenuId;
+                               char uuu[100];
+                               stringToASCII(indexOfItems[currentMenu() > 0 ? currentMenu() : -currentMenu()].itemSoftmenuName, uuu);
+
+                               printf(">>> refreshScreen(%3u): Cnt=%3d %s calcMode=%2d screenUpdatingMode=%3d=%12s=>%25s TI=%4u MENUid=%2d item=%4i: %16s\n", 
+                                  source, refreshScreenCounter++,
+                                  (last_CM != calcMode) ? "OVR" : "   ",
+                                  calcMode, screenUpdatingMode, sss, ttt, temporaryInformation, m, currentMenu(), uuu);
+                             #endif // PC_BUILD
 
 
     switch(softmenu[softmenuStack[0].softmenuId].menuItem) {
@@ -4915,18 +4924,26 @@ void fnSNAP(uint16_t unusedButMandatoryParameter) {
   #ifdef PC_BUILD
     printf("fnSNAP!\n");
   #endif
-  if(calcMode == CM_AIM) {
-    refreshScreen(80);
+  resetShiftState();                  //JM To avoid f or g top left of the screen, clear to make sure
+  refreshScreen(80);
+  
+  #if defined(PC_BUILD)  //added the xcopy commands needed for hardware, to better duplicate the hardware standardScreenDump
     xcopy(tmpString, aimBuffer, ERROR_MESSAGE_LENGTH + AIM_BUFFER_LENGTH + NIM_BUFFER_LENGTH);       //backup portion of the "message buffer" area in DMCP used by ERROR..AIM..NIM buffers, to the tmpstring area in DMCP. DMCP uses this area during create_screenshot.
     fnScreenDump(0);
     xcopy(aimBuffer,tmpString, ERROR_MESSAGE_LENGTH + AIM_BUFFER_LENGTH + NIM_BUFFER_LENGTH);        //   This total area must be less than the tmpString storage area, which it is.
+  #elif defined(DMCP_BUILD)
+    standardScreenDump();
+  #endif
+  
+  if(calcMode == CM_AIM) {
     fnP_Alpha();     //print alpha
   }
   else {
-    refreshScreen(82);
-    fnScreenDump(0);
     fnP_All_Regs(1); //print stack
   }
+
+  screenUpdatingMode |= SCRUPD_SKIP_STACK_ONE_TIME | SCRUPD_SKIP_MENU_ONE_TIME;
+
 }
 
 
@@ -5044,12 +5061,6 @@ void fnScreenDump(uint16_t unusedButMandatoryParameter) {
     fclose(bmp);
     screenUpdatingMode |= SCRUPD_SKIP_STACK_ONE_TIME | SCRUPD_SKIP_MENU_ONE_TIME;
   #endif // PC_BUILD
-
-  #if defined(DMCP_BUILD)
-    resetShiftState();                  //JM To avoid f or g top left of the screen, clear to make sure
-    create_screenshot(0);
-    screenUpdatingMode |= SCRUPD_SKIP_STACK_ONE_TIME | SCRUPD_SKIP_MENU_ONE_TIME;
-  #endif // DMCP_BUILD
 }
 
 

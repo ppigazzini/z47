@@ -71,7 +71,7 @@ static void systemFlagAction(uint16_t systemFlag, flagAction_t action) {
   }
 
   switch(systemFlag) {
-    case FLAG_YMD:
+    case FLAG_YMD:       //these flags need to update the corresponding softkey status
     case FLAG_DMY:
     case FLAG_MDY:
     case FLAG_TDM24:
@@ -91,8 +91,7 @@ static void systemFlagAction(uint16_t systemFlag, flagAction_t action) {
     case FLAG_NUMLOCK:
     case FLAG_CPXMULT:
     case FLAG_ERPN:
-    case ITM_FRCYC: 
-    case ITM_FRCSRN:
+    case FLAG_FRCYC: 
     case FLAG_LARGELI:
     case FLAG_IRFRAC:
     case FLAG_IRF_ON:
@@ -597,57 +596,39 @@ void SetSetting(uint16_t jmConfig) {
     case JC_BASE_HOME:   BASE_HOME = !BASE_HOME;   if(BASE_HOME) {BASE_MYM = false;} fnRefreshState(); break;
 
 
-    case TF_H12:         fnClearFlag(FLAG_TDM24);                  break;
-    case TF_H24:         fnSetFlag(FLAG_TDM24);                    break;
-    case CU_I:           fnClearFlag(FLAG_CPXj);                   break;
-    case CU_J:           fnSetFlag(FLAG_CPXj);                     break;
-    case PS_DOT:         fnClearFlag(FLAG_MULTx);                  break;
-    case PS_CROSS:       fnSetFlag(FLAG_MULTx);                    break;
-    case SS_4:           fnClearFlag(FLAG_SSIZE8);                 break;
-    case SS_8:           fnSetFlag(FLAG_SSIZE8);                   break;
-    case CM_RECTANGULAR:
-      fnClearFlag(FLAG_POLAR);
-      //if(getRegisterDataType(REGISTER_X) == dtComplex34 || getRegisterDataType(REGISTER_X) == dtComplex34Matrix) {   //RECT/POLAR radiobuttons to also change the complex number in X
-      //  setComplexRegisterPolarMode(REGISTER_X, ~amPolar);
-      //  setComplexRegisterAngularMode(REGISTER_X, amNone);
-      //}
-      break;
-
-    case CM_POLAR:
-      fnSetFlag(FLAG_POLAR);
-      //if(getRegisterDataType(REGISTER_X) == dtComplex34 || getRegisterDataType(REGISTER_X) == dtComplex34Matrix) {   //RECT/POLAR radiobuttons to also change the complex number in X
-      //  setComplexRegisterPolarMode(REGISTER_X, amPolar);
-      //  if(getComplexRegisterAngularMode(REGISTER_X) == amNone) {
-      //    setComplexRegisterAngularMode(REGISTER_X, currentAngularMode);
-      //  }
-      //}
-      break;
-
-    case DO_SCI:      fnClearFlag(FLAG_ALLENG);                              break;
-    case DO_ENG:      fnSetFlag(FLAG_ALLENG);                                break;
-    case PR_HPRP:     fnFlipFlag(FLAG_HPRP);                                 break;
-    case PR_HPBASE:   fnFlipFlag(FLAG_HPBASE);                               break;
-    case PR_2TO10:    fnFlipFlag(FLAG_2TO10);                                break;
-    case DM_ANY:      fnFlipFlag(FLAG_DENANY); clearSystemFlag(FLAG_DENFIX); break;
-    case DM_PROPFR:   fnFlipFlag(FLAG_PROPFR);                               break;
-    case DM_FRACT:    fnFlipFlag(FLAG_FRACT);                                break;
-    case DM_FIX:      fnFlipFlag(FLAG_DENFIX); clearSystemFlag(FLAG_DENANY); break;
-    case PRTACT:      fnFlipFlag(FLAG_PRTACT);                               break;
-    case JC_BLZ:      fnFlipFlag(FLAG_LEAD0);                                break; //bit LeadingZeros
-    case JC_BCR:      fnFlipFlag(FLAG_CPXRES);                               break; //bit ComplexResult
-    case ITM_CPXRES1: fnSetFlag(FLAG_CPXRES);                                break; //bit ComplexResult
-    case ITM_CPXRES0: fnClearFlag(FLAG_CPXRES);                              break; //bit ComplexResult
-    case JC_BSR:      fnFlipFlag(FLAG_SPCRES);                               break; //bit SpecialResult
-    case ITM_SPCRES1: fnSetFlag(FLAG_SPCRES);                                break; //bit SpecialResult
-    case ITM_SPCRES0: fnClearFlag(FLAG_SPCRES);                              break; //bit SpecialResult
-    case ITM_PRTACT1: fnSetFlag(FLAG_PRTACT);                                break;
-    case ITM_PRTACT0: fnClearFlag(FLAG_PRTACT);                              break;
-    case JC_FRC:      fnFlipFlag(FLAG_FRCSRN);                               break; //bit
-    case JC_ERPN:     fnFlipFlag(FLAG_ERPN);                                 break; //
-    case ITM_FRCYC:   fnFlipFlag(FLAG_FRCYC);                                break; //  
-    case ITM_FRCSRN:  fnFlipFlag(FLAG_FRCSRN);                               break; //  
-    case JC_CPXMULT:  fnFlipFlag(FLAG_CPXMULT);                              break; //
-    case JC_NL:       fnFlipFlag(FLAG_NUMLOCK); showAlphaModeonGui();        break; //
+    case TF_H12:         fnClearFlag(FLAG_TDM24);                               break;
+    case TF_H24:         fnSetFlag(FLAG_TDM24);                                 break;
+    case CU_I:           fnClearFlag(FLAG_CPXj);                                break;
+    case CU_J:           fnSetFlag(FLAG_CPXj);                                  break;
+    case PS_DOT:         fnClearFlag(FLAG_MULTx);                               break;
+    case PS_CROSS:       fnSetFlag(FLAG_MULTx);                                 break;
+    case SS_4:           fnClearFlag(FLAG_SSIZE8);                              break;
+    case SS_8:           fnSetFlag(FLAG_SSIZE8);                                break;
+    case CM_RECTANGULAR: fnClearFlag(FLAG_POLAR);                               break;
+    case CM_POLAR:       fnSetFlag(FLAG_POLAR);                                 break;
+    case DO_SCI:         fnClearFlag(FLAG_ALLENG);                              break;
+    case DO_ENG:         fnSetFlag(FLAG_ALLENG);                                break;
+    case PR_HPRP:        fnFlipFlag(FLAG_HPRP);                                 break;
+    case PR_HPBASE:      fnFlipFlag(FLAG_HPBASE);                               break;
+    case PR_2TO10:       fnFlipFlag(FLAG_2TO10);                                break;
+    case DM_ANY:         fnFlipFlag(FLAG_DENANY); clearSystemFlag(FLAG_DENFIX); break;
+    case DM_PROPFR:      fnFlipFlag(FLAG_PROPFR);                               break;
+    case DM_FRACT:       fnFlipFlag(FLAG_FRACT);                                break;
+    case DM_FIX:         fnFlipFlag(FLAG_DENFIX); clearSystemFlag(FLAG_DENANY); break;
+    case PRTACT:         fnFlipFlag(FLAG_PRTACT);                               break;
+    case JC_BLZ:         fnFlipFlag(FLAG_LEAD0);                                break; //bit LeadingZeros
+    case JC_BCR:         fnFlipFlag(FLAG_CPXRES);                               break; //bit ComplexResult
+    case ITM_CPXRES1:    fnSetFlag(FLAG_CPXRES);                                break; //bit ComplexResult
+    case ITM_CPXRES0:    fnClearFlag(FLAG_CPXRES);                              break; //bit ComplexResult
+    case JC_BSR:         fnFlipFlag(FLAG_SPCRES);                               break; //bit SpecialResult
+    case ITM_SPCRES1:    fnSetFlag(FLAG_SPCRES);                                break; //bit SpecialResult
+    case ITM_SPCRES0:    fnClearFlag(FLAG_SPCRES);                              break; //bit SpecialResult
+    case ITM_PRTACT1:    fnSetFlag(FLAG_PRTACT);                                break;
+    case ITM_PRTACT0:    fnClearFlag(FLAG_PRTACT);                              break;
+    case JC_ERPN:        fnFlipFlag(FLAG_ERPN);                                 break; //
+    case ITM_FRCYC:      fnFlipFlag(FLAG_FRCYC);                                break; //  
+    case JC_CPXMULT:     fnFlipFlag(FLAG_CPXMULT);                              break; //
+    case JC_NL:          fnFlipFlag(FLAG_NUMLOCK); showAlphaModeonGui();        break; //
     case ITM_DREAL:
       fnFlipFlag(FLAG_DREAL);
       if(getSystemFlag(FLAG_DREAL)) {

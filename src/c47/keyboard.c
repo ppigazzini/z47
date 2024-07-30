@@ -680,7 +680,7 @@ bool_t lowercaseselected;    //the only place that this is set, is in processKey
         int16_t _item = softkeyItem[asnKey[0]-'1'];
         //printf("WWWWWWWW-0 %i %i\n",softmenu[softmenuStack[0].softmenuId].menuItem, softkeyItem[asnKey[0]-'1']);
         reallyRunFunction(_item,NOPARAM);
-        hourGlassIconEnabled = false;        
+        hourGlassIconEnabled = false;
         //printf("WWWWWWWW-1 %i %i\n",softmenu[softmenuStack[0].softmenuId].menuItem, softkeyItem[asnKey[0]-'1']);
         if(_item == ITM_TIMER_R_S) {
           screenUpdatingMode |= SCRUPD_SKIP_STACK_ONE_TIME;
@@ -707,7 +707,7 @@ bool_t lowercaseselected;    //the only place that this is set, is in processKey
                     #endif //VERBOSEKEYS
 
       int16_t item = determineFunctionKeyItem_C47((char *)data, shiftF, shiftG);
-                    
+
                     #if defined(VERBOSEKEYS)
                       printf(">>>>Z 011a btnFnPressed >>determineFunctionKeyItem_C47; data=|%s| data[0]=%d shiftF=%d shiftG=%d\n", (char*)data, ((char*)data)[0], shiftF, shiftG);
                     #endif //VERBOSEKEYS
@@ -755,7 +755,7 @@ bool_t lowercaseselected;    //the only place that this is set, is in processKey
 
         lastErrorCode = 0;
         btnFnPressed_StateMachine(NULL, data);    //never allow a function key to directly enter into a buffer - always via the key detection btnFnPressed_StateMachine, to pick up longpress or double press conditions
-        
+
 /*
           if(calcMode != CM_ASSIGN && indexOfItems[item].func == addItemToBuffer) {
             // If we are in the catalog then a normal key press should affect the Alpha Selection Buffer to choose
@@ -772,7 +772,7 @@ bool_t lowercaseselected;    //the only place that this is set, is in processKey
             }
             else {
               fnKeyInCatalog = 1;
-              addItemToBuffer(item);
+              addItemToBuffer(item);                //this PEM TAM entry moved to keyFnRelease, to pick up the long presses
               fnKeyInCatalog = 0;
             }
             if(calcMode == CM_EIM && !tam.mode) {   //this EIM portion moved to after release, to allow longpress and double press
@@ -1092,6 +1092,18 @@ releaseOverride = false;
               addStepInProgram(tamOperation());
               tamLeaveMode();
             }
+
+            else  if(indexOfItems[item].func == addItemToBuffer) {   //this section is added, it was commented out in btnFnPressed line 760, it is moved here, as longpress works on release.
+              //Here we deal with PEM TAM mode menu entry, i.e. item's sent to buffer. See issue #454 context.
+              if(getSystemFlag(FLAG_ALPHA)) {
+                processAimInput(item);
+              }
+              else {
+                addStepInProgram(item);    // I am not sure if this can actually be needed: It was in the btnFnPressed section in line 760
+              }
+              hourGlassIconEnabled = false;
+            }
+
             else if(tam.mode) {
               const char *itmLabel = dynmenuGetLabel(dynamicMenuItem);
               uint16_t nameLength = stringByteLength(itmLabel);
@@ -1207,10 +1219,12 @@ releaseOverride = false;
               !( (tam.mode==TM_STORCL || tam.mode==TM_LABEL || tam.mode == TM_M_DIM || tam.mode == TM_REGISTER || tam.mode == TM_CMP)
                   && (item == CHR_num || item == CHR_case || item == ITM_SCR) )
               ) {
-              tamLeaveMode();
+              if(calcMode != CM_PEM || item != ITM_NOP) { // Here we left TAM in the context of issue #454
+                tamLeaveMode();
+              }
             }
             else if(tam.mode == TM_VALUE && item == ITM_TAMMAX) {
-              tamLeaveMode();              
+              tamLeaveMode();
             }
 
                     #if defined(VERBOSEKEYS)
@@ -1351,7 +1365,7 @@ releaseOverride = false;
                     #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
                       printf(">>>  refreshScreen3 from keyboard.c executeFunction calcMode=%u screenUpdatingMode=%u\n",calcMode, screenUpdatingMode);
                     #endif
-    
+
     refreshScreen(114);
     //TODO 2023-04-15 check here. It needs to be changed not to always refresh the screen.
 
@@ -1394,17 +1408,15 @@ releaseOverride = false;
                       sprintf(tmp,"^^^^^^^keyboard.c: determineitem: key_no: %u, key->primary1: %d:", key_no, key->primary); jm_show_comment(tmp);
                     #endif //PC_BUILD
 
-    if(SHOWMODE) {
-      if((allowShowDigits && key->primary >= ITM_0 && key->primary <= ITM_9) || key->primary == ITM_RCL || key->primary == ITM_PERIOD || key->primary == ITM_RS || key->primary == ITM_UP1 || key->primary == ITM_DOWN1) {
-      }
-      else {
-        showRegis = 9999;
-      }
+    if( (key->primary != ITM_SHIFTf) && ( !SHOWMODE || !(
+                           key->primary == ITM_RCL 
+                           || key->primary == ITM_RS 
+                           || key->primary == ITM_UP1 
+                           || key->primary == ITM_DOWN1 
+                           || (allowShowDigits && key->primary >= ITM_0 && key->primary <= ITM_9))
+                         ) ) {
+      showRegis = 9999;                                      //clear showmode register
     }
-    else {
-      showRegis = 9999;
-    }
-
 
     int16_t ShiftOverride = 0;
     result = Norm_Key_00_item_in_layout;
@@ -2259,8 +2271,8 @@ RELEASE_END:
         temporaryInformation = TI_VIEW_REGISTER;
       }
     }
-    else if(temporaryInformation != TI_NO_INFO && item != ITM_UP1 && item != ITM_DOWN1 && item != ITM_EXIT1 && item != ITM_BACKSPACE && item != ITM_PERIOD && item != ITM_RS &&
-           !(  ((item == ITM_RCL) || (item >= ITM_0 && item <= ITM_9 && allowShowDigits)) && SHOWMODE  ) ) {
+    else if(temporaryInformation != TI_NO_INFO && item != ITM_UP1 && item != ITM_DOWN1 && item != ITM_EXIT1 && item != ITM_BACKSPACE && 
+           !(  (  item == ITM_RCL || item == ITM_RS || (item >= ITM_0 && item <= ITM_9 && allowShowDigits)  ) && SHOWMODE  ) ) {
       if(SHOWMODE) {
         closeShowMenu();
       }
@@ -2283,11 +2295,10 @@ RELEASE_END:
 
     if(calcMode == CM_NORMAL && SHOWMODE && softmenu[softmenuStack[0].softmenuId].menuItem != -MNU_EQN) {
       switch(item) {
-
-        case ITM_UP1:             //was 1
-        case ITM_DOWN1:           //was 2
-        case ITM_RS:              //was 11
-        case ITM_PERIOD: {        //was 10
+        case ITM_UP1:
+        case ITM_DOWN1:
+        case ITM_RS:
+        {
           fnC47Show(item);
           keyActionProcessed = true;
 //        refreshScreen(00);
@@ -2618,9 +2629,9 @@ RELEASE_END:
                     temporaryInformation = TI_COPY_FROM_SHOW;
                     closeShowMenu();
                   }
-                   else if(ITM_0 <= item && item <= ITM_9) {
+                  else if(ITM_0 <= item && item <= ITM_9 && allowShowDigits) {
                     keyActionProcessed = true;
-                    if(showRegis%10 == 0 && showRegis <=90) {  //Will only get to this point if ##SHOWDIGITS is enabled
+                    if(showRegis%10 == 0 && showRegis <=90) {
                       showRegis += (item - ITM_0);
                     }
                     else {
@@ -2630,6 +2641,7 @@ RELEASE_END:
                     //refreshScreen(139);
                   }
                 }
+
                 else if(item == ITM_EXPONENT || item == ITM_PERIOD || (ITM_0 <= item && item <= ITM_9)) {
                   addItemToNimBuffer(item);
                   keyActionProcessed = true;
@@ -2731,7 +2743,7 @@ RELEASE_END:
                     calcMode = previousCalcMode;
                     if(rbrMode == RBR_GLOBAL) {
                       fnRecall((currentRegisterBrowserScreen) % (REGISTER_W + 1));
-                    } 
+                    }
                     else if(rbrMode == RBR_LOCAL) {
                       fnRecall(currentRegisterBrowserScreen);
                     }
@@ -3930,7 +3942,7 @@ void fnKeyBackspace(uint16_t unusedButMandatoryParameter) {
           return;
         }
         else
-        if(temporaryInformation == TI_SHOW_REGISTER || SHOWMODE) {
+        if(SHOWMODE) {
           temporaryInformation = TI_NO_INFO;
           keyActionProcessed = true;
           closeShowMenu();

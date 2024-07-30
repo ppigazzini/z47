@@ -542,18 +542,18 @@ static bool_t initLocalRegisters(calcRegister_t r) {
       isMemIssue = true;
     }
   }                                                   //JM defaults ^^
-  else if(lastIntegerBase !=0 || Input_Default == ID_SI) {                   //JM defaults vv
-    longInteger_t lgInt;
-    longIntegerInit(lgInt);
-    uIntToLongInteger(0, lgInt);
-    convertLongIntegerToShortIntegerRegister(lgInt, lastIntegerBase == 0 ? 10 : lastIntegerBase, r);
-    longIntegerFree(lgInt);
-  }                                                   //JM defaults ^^
   else if(lastIntegerBase == 0 && Input_Default == ID_LI) {                   //JM defaults vv
     longInteger_t lgInt;
     longIntegerInit(lgInt);
     uIntToLongInteger(0, lgInt);
     convertLongIntegerToLongIntegerRegister(lgInt, r);
+    longIntegerFree(lgInt);
+  }                                                   //JM defaults ^^
+  else if(lastIntegerBase !=0) {                   //JM defaults vv
+    longInteger_t lgInt;
+    longIntegerInit(lgInt);
+    uIntToLongInteger(0, lgInt);
+    convertLongIntegerToShortIntegerRegister(lgInt, lastIntegerBase == 0 ? 10 : lastIntegerBase, r);
     longIntegerFree(lgInt);
   }                                                   //JM defaults ^^
 
@@ -1257,15 +1257,6 @@ void clearRegister(calcRegister_t regist) {
       real34Zero(REGISTER_IMAG34_DATA(regist));
     }
   }                                                                             //JM defaults ^^
-  else if(lastIntegerBase !=0 || Input_Default == ID_SI) {                                             //JM defaults vv
-    //JM comment: Not checking if already the correct type, just changing it. Wasting some steps.
-    longInteger_t lgInt;
-    longIntegerInit(lgInt);
-    uint16_t val =0;
-    uIntToLongInteger(val,lgInt);
-    convertLongIntegerToShortIntegerRegister(lgInt, lastIntegerBase == 0 ? 10:lastIntegerBase, regist);
-    longIntegerFree(lgInt);
-  }                                                                             //JM defaults ^^
   else if((lastIntegerBase == 0) && (Input_Default == ID_LI)) {                                             //JM defaults vv
     //JM comment: Not checking if already the correct type, just changing it. Wasting some steps.
     longInteger_t lgInt;
@@ -1273,6 +1264,15 @@ void clearRegister(calcRegister_t regist) {
     uint16_t val =0;
     uIntToLongInteger(val,lgInt);
     convertLongIntegerToLongIntegerRegister(lgInt, regist);
+    longIntegerFree(lgInt);
+  }                                                                             //JM defaults ^^
+  else if(lastIntegerBase !=0) {                                             //JM defaults vv
+    //JM comment: Not checking if already the correct type, just changing it. Wasting some steps.
+    longInteger_t lgInt;
+    longIntegerInit(lgInt);
+    uint16_t val =0;
+    uIntToLongInteger(val,lgInt);
+    convertLongIntegerToShortIntegerRegister(lgInt, lastIntegerBase == 0 ? 10:lastIntegerBase, regist);
     longIntegerFree(lgInt);
   }                                                                             //JM defaults ^^
 }
