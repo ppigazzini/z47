@@ -36,7 +36,7 @@ char whiteSpace[50], temp[10000];
 char defines[1000000], externalDeclarations[1000000]; // .h file
 char realArray[1000000], realPointerDeclarations[1000000], real34PointerDeclarations[1000000], real51PointerDeclarations[1000000], real75PointerDeclarations[1000000], real1071PointerDeclarations[1000000]; // .c file
 FILE *constantsC, *constantsH;
-int  idx, c;
+int  idx, cc;
 
 
 void *xcopy(void *dest, const void *source, int n) {
@@ -77,8 +77,8 @@ void generateConstantArray(char *name, char *value) {
   strcat(externalDeclarations, name);
   strcat(externalDeclarations, ";\n");
 
-  if(c <= NUMBER_OF_CONSTANTS_IN_CNST_CATALOG) {
-    sprintf(temp, "  #define CONST_%02d %4d\n", c, idx);
+  if(cc <= NUMBER_OF_CONSTANTS_IN_CNST_CATALOG) {
+    sprintf(temp, "  #define CONST_%02d %4d\n", cc, idx);
     strcat(defines, temp);
   }
 
@@ -268,90 +268,93 @@ void generateAllConstants(void) {
 
   // Physical and mathematical constants
   // each constant has 55 significant digits
-  c = 0;
-/*000*/  generateConstantArray("a",             "+3.652425000000000000000000000000000000000000000000000000e+02"); c++; // per definition
-/*001*/  generateConstantArray("a0",            "+5.291772109030000000000000000000000000000000000000000000e-11"); c++;
-/*002*/  generateConstantArray("aMoon",         "+3.844000000000000000000000000000000000000000000000000000e+08"); c++;
-/*003*/  generateConstantArray("aEarth",        "+1.495979000000000000000000000000000000000000000000000000e+11"); c++;
-/*004*/  generateConstantArray("c",             "+2.997924580000000000000000000000000000000000000000000000e+08"); c++; // per definition
-/*005*/  generateConstantArray("c1",            "+3.741771852192758011367155555929985138219953097124061418e-16"); c++;
-/*006*/  generateConstantArray("c2",            "+1.438776877503933802146671601543911595199069423148099191e-02"); c++;
-/*007*/  generateConstantArray("e",             "+1.602176634000000000000000000000000000000000000000000000e-19"); c++; // per definition
-/*008*/  generateConstantArray("eE",            "+2.718281828459045235360287471352662497757247093699959575e+00"); c++; // math constant e
-/*009*/  generateConstantArray("F",             "+9.648533212331001840000000000000000000000000000000000000e+04"); c++;
-/*010*/  generateConstantArray("Falpha",        "+2.502907875095892822283902873218215786381271376727149977e+00"); c++; // math constant Falpha
-/*011*/  generateConstantArray("Fdelta",        "+4.669201609102990671853203820466201617258185577475768633e+00"); c++; // math constant Fdelta
-/*012*/  generateConstantArray("G",             "+6.674300000000000000000000000000000000000000000000000000e-11"); c++;
-/*013*/  generateConstantArray("G0",            "+7.748091729863650646680823323308763943587286047673370920e-05"); c++;
-/*014*/  generateConstantArray("GC",            "+9.159655941772190150546035149323841107741493742816721343e-01"); c++; // math constant Catalan
-/*015*/  generateConstantArray("ge",            "-2.002319304362560000000000000000000000000000000000000000e+00"); c++;
-/*016*/  generateConstantArray("GM",            "+3.986004418000000000000000000000000000000000000000000000e+14"); c++;
-/*017*/  generateConstantArray("gEarth",        "+9.806650000000000000000000000000000000000000000000000000e+00"); c++; // per definition
-/*018*/  generateConstantArray("Planck",        "+6.626070150000000000000000000000000000000000000000000000e-34"); c++;
-/*019*/  generateConstantArray("PlanckOn2pi",   "+1.054571817646156391262428003302280744722826330020413122e-34"); c++;
-/*020*/  generateConstantArray("k",             "+1.380649000000000000000000000000000000000000000000000000e-23"); c++; // per definition
-/*021*/  generateConstantArray("KJ",            "+4.835978484169836324476582850545281353533511866004014461e+14"); c++;
-/*022*/  generateConstantArray("lPL",           "+1.616255000000000000000000000000000000000000000000000000e-35"); c++;
-/*023*/  generateConstantArray("me",            "+9.109383701500000000000000000000000000000000000000000000e-31"); c++;
-/*024*/  generateConstantArray("MMoon",         "+7.349000000000000000000000000000000000000000000000000000e+22"); c++;
-/*025*/  generateConstantArray("mn",            "+1.674927498040000000000000000000000000000000000000000000e-27"); c++;
-/*026*/  generateConstantArray("mnOnmp",        "+1.001378418980000000000000000000000000000000000000000000e+00"); c++;
-/*027*/  generateConstantArray("mp",            "+1.672621923690000000000000000000000000000000000000000000e-27"); c++;
-/*028*/  generateConstantArray("mPL",           "+2.176435000000000000000000000000000000000000000000000000e-08"); c++;
-/*029*/  generateConstantArray("mpOnme",        "+1.836152673430000000000000000000000000000000000000000000e+03"); c++;
-/*030*/  generateConstantArray("mu",            "+1.660539066600000000000000000000000000000000000000000000e-27"); c++;
-/*031*/  generateConstantArray("muc2",          "+1.492418085600000000000000000000000000000000000000000000e-10"); c++;
-/*032*/  generateConstantArray("mmu",           "+1.883531627000000000000000000000000000000000000000000000e-28"); c++;
-/*033*/  generateConstantArray("mSun",          "+1.989100000000000000000000000000000000000000000000000000e+30"); c++;
-/*034*/  generateConstantArray("mEarth",        "+5.973600000000000000000000000000000000000000000000000000e+24"); c++;
-/*035*/  generateConstantArray("NA",            "+6.022140760000000000000000000000000000000000000000000000e+23"); c++; // per definition
-/*036*/  generateConstantArray("NaN",           "Not a number"                                                 ); c++;
-/*037*/  generateConstantArray("p0",            "+1.013250000000000000000000000000000000000000000000000000e+05"); c++; // per definition
-/*038*/  generateConstantArray("R",             "+8.314462618153240000000000000000000000000000000000000000e+00"); c++;
-/*039*/  generateConstantArray("re",            "+2.817940326200000000000000000000000000000000000000000000e-15"); c++;
-/*040*/  generateConstantArray("RK",            "+2.581280745930450666004551670608744304245727322140342177e+04"); c++;
-/*041*/  generateConstantArray("RMoon",         "+1.737530000000000000000000000000000000000000000000000000e+06"); c++;
-/*042*/  generateConstantArray("RInfinity",     "+1.097373156816000000000000000000000000000000000000000000e+07"); c++;
-/*043*/  generateConstantArray("RSun",          "+6.960000000000000000000000000000000000000000000000000000e+08"); c++;
-/*044*/  generateConstantArray("REarth",        "+6.371010000000000000000000000000000000000000000000000000e+06"); c++;
-/*045*/  generateConstantArray("Sa",            "+6.378137000000000000000000000000000000000000000000000000e+06"); c++; // per definition
-/*046*/  generateConstantArray("Sb",            "+6.356752314200000000000000000000000000000000000000000000e+06"); c++;
-/*047*/  generateConstantArray("Se2",           "+6.694379990140000000000000000000000000000000000000000000e-03"); c++;
-/*048*/  generateConstantArray("Sep2",          "+6.739496742280000000000000000000000000000000000000000000e-03"); c++;
-/*049*/  generateConstantArray("Sfm1",          "+2.982572235630000000000000000000000000000000000000000000e+02"); c++; // per definition
-/*050*/  generateConstantArray("T0",            "+2.731500000000000000000000000000000000000000000000000000e+02"); c++; // per definition
-/*051*/  generateConstantArray("TP",            "+1.416785000000000000000000000000000000000000000000000000e+32"); c++;
-/*052*/  generateConstantArray("tPL",           "+5.391245000000000000000000000000000000000000000000000000e-44"); c++;
-/*053*/  generateConstantArray("Vm",            "+2.241396954501413773501110288675055514433752775721687639e-02"); c++;
-/*054*/  generateConstantArray("Z0",            "+3.767303134617706554681984004203193082686235083524186552e+02"); c++; // mu0 * c
-/*055*/  generateConstantArray("alpha",         "+7.297352569300000000000000000000000000000000000000000000e-03"); c++;
-/*056*/  generateConstantArray("K0",            "+2.685452001065306445309714835481795693820382293994462953e+00"); c++; // math constant Khinchin
-/*057*/  generateConstantArray("gammaEM",       "+5.772156649015328606065120900824024310421593359399235988e-01"); c++; // math constant Euler-Mascheroni
-/*058*/  generateConstantArray("gammap",        "+2.675221874400000000000000000000000000000000000000000000e+08"); c++;
-/*059*/  generateConstantArray("DELTAvcs",      "+9.192631770000000000000000000000000000000000000000000000e+09"); c++; // per definition
-/*060*/  generateConstantArray("epsilon0",      "+8.854187812800000000000000000000000000000000000000000000e-12"); c++;
-/*061*/  generateConstantArray("lambdaC",       "+2.426310238670000000000000000000000000000000000000000000e-12"); c++;
-/*062*/  generateConstantArray("lambdaCn",      "+1.319590905810000000000000000000000000000000000000000000e-15"); c++;
-/*063*/  generateConstantArray("lambdaCp",      "+1.321409855390000000000000000000000000000000000000000000e-15"); c++;
-/*064*/  generateConstantArray("mu0",           "+1.256637062120000000000000000000000000000000000000000000e-06"); c++;
-/*065*/  generateConstantArray("muB",           "+9.274010078000000000000000000000000000000000000000000000e-24"); c++;
-/*066*/  generateConstantArray("mue",           "-9.284764704300000000000000000000000000000000000000000000e-24"); c++;
-/*067*/  generateConstantArray("mueOnmuB",      "-1.001159652181280000000000000000000000000000000000000000e+00"); c++;
-/*068*/  generateConstantArray("mun",           "-9.662365000000000000000000000000000000000000000000000000e-27"); c++;
-/*069*/  generateConstantArray("mup",           "+1.410606797360000000000000000000000000000000000000000000e-26"); c++;
-/*070*/  generateConstantArray("muu",           "+5.050783746100000000000000000000000000000000000000000000e-27"); c++;
-/*071*/  generateConstantArray("mumu",          "-4.490448300000000000000000000000000000000000000000000000e-26"); c++;
-/*072*/  generateConstantArray("sigmaB",        "+5.670374419184429453970996731889230875840122970291303682e-08"); c++;
-/*073*/  generateConstantArray("PHI",           "+1.618033988749894848204586834365638117720309179805762862e+00"); c++; // math constant phi = (1 + sqrt(5)) / 2
-/*074*/  generateConstantArray("PHI0",          "+2.067833848461929323081115412147497340171545654934323552e-15"); c++;
-/*075*/  generateConstantArray("omega",         "+7.292115000000000000000000000000000000000000000000000000e-05"); c++;
-/*076*/  generateConstantArray("minusInfinity", "-9.999999999999999999999999999999999999999999999999999999e+9999"); c++; // math "constant"
-/*077*/  generateConstantArray("plusInfinity",  "+9.999999999999999999999999999999999999999999999999999999e+9999"); c++; // math "constant"
-/*078*/  generateConstantArray("0",             "0"); c++;
-/*079*/  generateConstantArray("BB",            "+3.566668367128895828373073810012662699038701534076244140e-01"); c++;   //  solution to equation 1.2 in https://arxiv.org/pdf/2309.05050.pdf : sqrt(36x+3) / 4 + sin(2 pi sqrt(12x+1) / 3) = 0
-/*080*/  generateConstantArray("DeltaS",        "+2.414213562373095048801688724209698078569671875376948073e+00"); c++;   //  1+√2
-/*081*/  generateConstantArray("movSofa",       "+2.219531668871970000000000000000000000000000000000000000e+00"); c++;   //  https://mathworld.wolfram.com/MovingSofaProblem.html. The moving sofa number is the result of a lot of equation solving
-/*082*/  generateConstantArray("tau",           "+6.283185307179586476925286766559005768394338798750211642e+00"); c++;   //  circle constant
+  cc = 0;
+/*000*/  generateConstantArray("a",             "+3.652425000000000000000000000000000000000000000000000000e+02"); cc++; // per definition
+/*001*/  generateConstantArray("a0",            "+5.291772109030000000000000000000000000000000000000000000e-11"); cc++;
+/*002*/  generateConstantArray("aMoon",         "+3.844000000000000000000000000000000000000000000000000000e+08"); cc++;
+/*003*/  generateConstantArray("aEarth",        "+1.495979000000000000000000000000000000000000000000000000e+11"); cc++;
+/*004*/  generateConstantArray("c",             "+2.997924580000000000000000000000000000000000000000000000e+08"); cc++; // per definition
+/*005*/  generateConstantArray("c1",            "+3.741771852192758011367155555929985138219953097124061418e-16"); cc++;
+/*006*/  generateConstantArray("c2",            "+1.438776877503933802146671601543911595199069423148099191e-02"); cc++;
+/*007*/  generateConstantArray("e",             "+1.602176634000000000000000000000000000000000000000000000e-19"); cc++; // per definition
+/*008*/  generateConstantArray("eE",            "+2.718281828459045235360287471352662497757247093699959575e+00"); cc++; // math constant e
+/*009*/  generateConstantArray("F",             "+9.648533212331001840000000000000000000000000000000000000e+04"); cc++;
+/*010*/  generateConstantArray("Falpha",        "+2.502907875095892822283902873218215786381271376727149977e+00"); cc++; // math constant Falpha
+/*011*/  generateConstantArray("Fdelta",        "+4.669201609102990671853203820466201617258185577475768633e+00"); cc++; // math constant Fdelta
+/*012*/  generateConstantArray("G",             "+6.674300000000000000000000000000000000000000000000000000e-11"); cc++;
+/*013*/  generateConstantArray("G0",            "+7.748091729863650646680823323308763943587286047673370920e-05"); cc++;
+/*014*/  generateConstantArray("GC",            "+9.159655941772190150546035149323841107741493742816721343e-01"); cc++; // math constant Catalan
+/*015*/  generateConstantArray("ge",            "-2.002319304362560000000000000000000000000000000000000000e+00"); cc++;
+/*016*/  generateConstantArray("GM",            "+3.986004418000000000000000000000000000000000000000000000e+14"); cc++;
+/*017*/  generateConstantArray("gEarth",        "+9.806650000000000000000000000000000000000000000000000000e+00"); cc++; // per definition
+/*018*/  generateConstantArray("Planck",        "+6.626070150000000000000000000000000000000000000000000000e-34"); cc++;
+/*019*/  generateConstantArray("PlanckOn2pi",   "+1.054571817646156391262428003302280744722826330020413122e-34"); cc++;
+/*020*/  generateConstantArray("k",             "+1.380649000000000000000000000000000000000000000000000000e-23"); cc++; // per definition
+/*021*/  generateConstantArray("KJ",            "+4.835978484169836324476582850545281353533511866004014461e+14"); cc++;
+/*022*/  generateConstantArray("lPL",           "+1.616255000000000000000000000000000000000000000000000000e-35"); cc++;
+/*023*/  generateConstantArray("me",            "+9.109383701500000000000000000000000000000000000000000000e-31"); cc++;
+/*024*/  generateConstantArray("MMoon",         "+7.349000000000000000000000000000000000000000000000000000e+22"); cc++;
+/*025*/  generateConstantArray("mn",            "+1.674927498040000000000000000000000000000000000000000000e-27"); cc++;
+/*026*/  generateConstantArray("mnOnmp",        "+1.001378418980000000000000000000000000000000000000000000e+00"); cc++;
+/*027*/  generateConstantArray("mp",            "+1.672621923690000000000000000000000000000000000000000000e-27"); cc++;
+/*028*/  generateConstantArray("mPL",           "+2.176435000000000000000000000000000000000000000000000000e-08"); cc++;
+/*029*/  generateConstantArray("mpOnme",        "+1.836152673430000000000000000000000000000000000000000000e+03"); cc++;
+/*030*/  generateConstantArray("mu",            "+1.660539066600000000000000000000000000000000000000000000e-27"); cc++;
+/*031*/  generateConstantArray("muc2",          "+1.492418085600000000000000000000000000000000000000000000e-10"); cc++;
+/*032*/  generateConstantArray("mmu",           "+1.883531627000000000000000000000000000000000000000000000e-28"); cc++;
+/*033*/  generateConstantArray("mSun",          "+1.989100000000000000000000000000000000000000000000000000e+30"); cc++;
+/*034*/  generateConstantArray("mEarth",        "+5.973600000000000000000000000000000000000000000000000000e+24"); cc++;
+/*035*/  generateConstantArray("NA",            "+6.022140760000000000000000000000000000000000000000000000e+23"); cc++; // per definition
+/*036*/  generateConstantArray("NaN",           "Not a number"                                                 ); cc++;
+/*037*/  generateConstantArray("p0",            "+1.013250000000000000000000000000000000000000000000000000e+05"); cc++; // per definition
+/*038*/  generateConstantArray("R",             "+8.314462618153240000000000000000000000000000000000000000e+00"); cc++;
+/*039*/  generateConstantArray("re",            "+2.817940326200000000000000000000000000000000000000000000e-15"); cc++;
+/*040*/  generateConstantArray("RK",            "+2.581280745930450666004551670608744304245727322140342177e+04"); cc++;
+/*041*/  generateConstantArray("RMoon",         "+1.737530000000000000000000000000000000000000000000000000e+06"); cc++;
+/*042*/  generateConstantArray("RInfinity",     "+1.097373156816000000000000000000000000000000000000000000e+07"); cc++;
+/*043*/  generateConstantArray("RSun",          "+6.960000000000000000000000000000000000000000000000000000e+08"); cc++;
+/*044*/  generateConstantArray("REarth",        "+6.371010000000000000000000000000000000000000000000000000e+06"); cc++;
+/*045*/  generateConstantArray("Sa",            "+6.378137000000000000000000000000000000000000000000000000e+06"); cc++; // per definition
+/*046*/  generateConstantArray("Sb",            "+6.356752314200000000000000000000000000000000000000000000e+06"); cc++;
+/*047*/  generateConstantArray("Se2",           "+6.694379990140000000000000000000000000000000000000000000e-03"); cc++;
+/*048*/  generateConstantArray("Sep2",          "+6.739496742280000000000000000000000000000000000000000000e-03"); cc++;
+/*049*/  generateConstantArray("Sfm1",          "+2.982572235630000000000000000000000000000000000000000000e+02"); cc++; // per definition
+/*050*/  generateConstantArray("T0",            "+2.731500000000000000000000000000000000000000000000000000e+02"); cc++; // per definition
+/*051*/  generateConstantArray("TP",            "+1.416785000000000000000000000000000000000000000000000000e+32"); cc++;
+/*052*/  generateConstantArray("tPL",           "+5.391245000000000000000000000000000000000000000000000000e-44"); cc++;
+/*053*/  generateConstantArray("Vm",            "+2.241396954501413773501110288675055514433752775721687639e-02"); cc++;
+/*054*/  generateConstantArray("Z0",            "+3.767303134617706554681984004203193082686235083524186552e+02"); cc++; // mu0 * c
+/*055*/  generateConstantArray("alpha",         "+7.297352569300000000000000000000000000000000000000000000e-03"); cc++;
+/*056*/  generateConstantArray("K0",            "+2.685452001065306445309714835481795693820382293994462953e+00"); cc++; // math constant Khinchin
+/*057*/  generateConstantArray("gammaEM",       "+5.772156649015328606065120900824024310421593359399235988e-01"); cc++; // math constant Euler-Mascheroni
+/*058*/  generateConstantArray("gammap",        "+2.675221874400000000000000000000000000000000000000000000e+08"); cc++;
+/*059*/  generateConstantArray("DELTAvcs",      "+9.192631770000000000000000000000000000000000000000000000e+09"); cc++; // per definition
+/*060*/  generateConstantArray("epsilon0",      "+8.854187812800000000000000000000000000000000000000000000e-12"); cc++;
+/*061*/  generateConstantArray("lambdaC",       "+2.426310238670000000000000000000000000000000000000000000e-12"); cc++;
+/*062*/  generateConstantArray("lambdaCn",      "+1.319590905810000000000000000000000000000000000000000000e-15"); cc++;
+/*063*/  generateConstantArray("lambdaCp",      "+1.321409855390000000000000000000000000000000000000000000e-15"); cc++;
+/*064*/  generateConstantArray("mu0",           "+1.256637062120000000000000000000000000000000000000000000e-06"); cc++;
+/*065*/  generateConstantArray("muB",           "+9.274010078000000000000000000000000000000000000000000000e-24"); cc++;
+/*066*/  generateConstantArray("mue",           "-9.284764704300000000000000000000000000000000000000000000e-24"); cc++;
+/*067*/  generateConstantArray("mueOnmuB",      "-1.001159652181280000000000000000000000000000000000000000e+00"); cc++;
+/*068*/  generateConstantArray("mun",           "-9.662365000000000000000000000000000000000000000000000000e-27"); cc++;
+/*069*/  generateConstantArray("mup",           "+1.410606797360000000000000000000000000000000000000000000e-26"); cc++;
+/*070*/  generateConstantArray("muu",           "+5.050783746100000000000000000000000000000000000000000000e-27"); cc++;
+/*071*/  generateConstantArray("mumu",          "-4.490448300000000000000000000000000000000000000000000000e-26"); cc++;
+/*072*/  generateConstantArray("sigmaB",        "+5.670374419184429453970996731889230875840122970291303682e-08"); cc++;
+/*073*/  generateConstantArray("PHI",           "+1.618033988749894848204586834365638117720309179805762862e+00"); cc++; // math constant phi = (1 + sqrt(5)) / 2
+/*074*/  generateConstantArray("PHI0",          "+2.067833848461929323081115412147497340171545654934323552e-15"); cc++;
+/*075*/  generateConstantArray("omega",         "+7.292115000000000000000000000000000000000000000000000000e-05"); cc++;
+/*076*/  generateConstantArray("minusInfinity", "-9.999999999999999999999999999999999999999999999999999999e+9999"); cc++; // math "constant"
+/*077*/  generateConstantArray("plusInfinity",  "+9.999999999999999999999999999999999999999999999999999999e+9999"); cc++; // math "constant"
+/*078*/  generateConstantArray("0",             "0"); cc++;
+/*079*/  generateConstantArray("BB",            "+3.566668367128895828373073810012662699038701534076244140e-01"); cc++;   //  solution to equation 1.2 in https://arxiv.org/pdf/2309.05050.pdf : sqrt(36x+3) / 4 + sin(2 pi sqrt(12x+1) / 3) = 0
+/*080*/  generateConstantArray("DeltaS",        "+2.414213562373095048801688724209698078569671875376948073e+00"); cc++;   //  1+√2
+/*081*/  generateConstantArray("movSofa",       "+2.219531668871970000000000000000000000000000000000000000e+00"); cc++;   //  https://mathworld.wolfram.com/MovingSofaProblem.html. The moving sofa number is the result of a lot of equation solving
+/*082*/  generateConstantArray("tau",           "+6.283185307179586476925286766559005768394338798750211642e+00"); cc++;   //  circle constant
+/*083*/  generateConstantArray("pi",            "+3.141592653589793238462643383279502884197169399375105821e+00"); cc++;
+
+
 
   // All the formulas are 100% exact conversion formulas
   generateConstantArray("PointToMm",     "+3.527777777777777777777777777777777777777777777777777778e-01"); // mm     = pt × 0.0254 / 72 × 1000
@@ -477,8 +480,6 @@ void generateAllConstants(void) {
   generateConstantArray("ln10",          "+2.302585092994045684017991454684364207601101488628772976e+00");
   generateConstantArray("3piOn4",        "+2.356194490192344928846982537459627163147877049531329366e+00");
   generateConstantArray("3",             "+3.000000000000000000000000000000000000000000000000000000e+00");
-  generateConstantArray("pi",            "+3.141592653589793238462643383279502884197169399375105821e+00");
-
   generateConstantArray("4",             "+4.000000000000000000000000000000000000000000000000000000e+00");
   generateConstantArray("3piOn2",        "+4.712388980384689857693965074919254326295754099062658731e+00");
   generateConstantArray("5",             "+5.000000000000000000000000000000000000000000000000000000e+00");
