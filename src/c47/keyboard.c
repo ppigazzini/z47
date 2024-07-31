@@ -2389,6 +2389,16 @@ RELEASE_END:
             fnKeyExit(NOPARAM);
             keyActionProcessed = true;            //Removed to force EXIT on the RELEASE cycle to make it do fnKeyExit later to allow NOP
           }
+          if(calcMode == CM_PEM) {
+            if(getSystemFlag(FLAG_ALPHA)) {          //close AIM in PEM
+              fnKeyExit(NOPARAM);
+            }
+            // if(menu(0) != -MNU_PFN) {
+            //   showSoftmenu(-MNU_PFN);
+            //   hourGlassIconEnabled = false;
+            //   keyActionProcessed = true;
+            // }
+          }
           if((temporaryInformation != TI_NO_INFO) && (calcMode != CM_CONFIRMATION)) {
             temporaryInformation = TI_NO_INFO;
             keyActionProcessed = true;

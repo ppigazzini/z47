@@ -504,8 +504,7 @@ bool_t itemNotAvail(int16_t itemNr) {
         #endif // VERBOSEKEYS
         return;
       }
-
-      bool_t doNotAddStep = (func == ITM_EXIT1 || func == ITM_CLRMOD || func == ITM_SNAP || func == ITM_NOP ) && currentKeyCode == 32;                  // longpress commands not to be added
+      bool_t doNotAddStep = (func == ITM_EXIT1 || func == ITM_CLRMOD || func == ITM_SNAP || func == ITM_NOP || func == ITM_BASEMENU) && currentKeyCode == 32;                  // longpress commands not to be added
       if(calcMode == CM_PEM && !tam.mode && !isFunctionItemAMenu(func) && (!(catalog && catalog != CATALOG_MVAR && !fnKeyInCatalog)) && !doNotAddStep) {   // && func != ITM_EXIT1 && func != ITM_CLRMOD) {  //change to exclude ITM_EXIT1 for PEM
         addStepInProgram(func);
         return;

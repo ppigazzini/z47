@@ -1950,10 +1950,10 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
 
 
   static void viewRegName(char *prefix, int16_t *prefixWidth) { //using "=" for VIEW
-    //printf("========================== %i %s\n", lastFuncNo(), lastFuncCatalogName());
+    //printf("========================== %i %s %s %i\n", lastFuncNo(), lastFuncCatalogName(), prefix, *prefixWidth);
     if(lastFuncNo() == ITM_AVIEW || lastFuncNo() == ITM_PROMPT) {
       prefix[0] = 0;
-      prefixWidth = 0;
+      *prefixWidth = 1;
       return;
     }
     if(currentViewRegister < REGISTER_X) {

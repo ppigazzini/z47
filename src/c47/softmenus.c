@@ -260,8 +260,8 @@ DISTNMENU2(menu_Norml,      ITM_NORMLP,     ITM_NORML,      ITM_NORMLU,     ITM_
 /*                                 <---------------------------------------------------------------------- 6 f shifted functions ------------------------------------------------------------------------->  */
 /*                                 <---------------------------------------------------------------------- 6 g shifted functions ------------------------------------------------------------------------->  */
 
-TO_QSPI const int16_t menu_MyPFN[]       = { ITM_LBL,                       ITM_GTO,                    ITM_XEQ,                  ITM_RTN,               ITM_REM,                    -MNU_PFN_1,
-                                             ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,             -MNU_LOOP,                   -MNU_TEST,
+TO_QSPI const int16_t menu_MyPFN[]       = { ITM_LBL,                       ITM_GTO,                    ITM_XEQ,                  ITM_RTN,              -MNU_PFN_2,                  -MNU_PFN_1,
+                                             ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_REM,              -MNU_LOOP,                   -MNU_TEST,
                                              ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL                     };
 
 TO_QSPI const int16_t menu_PFN_1[]       = { ITM_LBL,                       ITM_GTO,                    ITM_XEQ,                  ITM_RTN,               ITM_END,                    -MNU_PFN_2,
