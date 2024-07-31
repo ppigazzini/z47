@@ -1658,11 +1658,13 @@ bool_t checkForAndChange(char *displayString, const real34_t *value34, const rea
       strcpy(sign, "-");
     }
 
+    //Returning: Real is too small
+    if(realCompareLessThan(&valueRealAbs, const_1e_16)) {
+      return false;
+    }
     //Returning: Multiple of constant is too large
     realDivide(&valueRealAbs,constant,&multConstant,&ctxtReal39);
     if(realCompareGreaterThan(&multConstant, const_2p31__1)) {
-//                                printf("Returning: Multiple of constant is too large\n");
-//                                printRealToConsole(&multConstant, "multiple of the constant=", " > ");
       return false;
     }
 
@@ -1740,8 +1742,11 @@ bool_t checkForAndChange(char *displayString, const real34_t *value34, const rea
 
 //                                printRealToConsole(&valueReal,"\n\nInputvalue: valueReal=","\n");
 //                                printRealToConsole(constant,"    constant=","\n");
-//                                //printf("    §%s§   §%s§   §%s§\n", resultingIntStr, constantStr, denomStr);
+//                                printf("    §%s§   §%s§   §%s§\n", resultingIntStr, constantStr, denomStr);
 //                                printRealToConsole(&findingIrrationalTolerance1,"findingIrrationalTolerance1=","\n");
+//                                char displayString2[200];
+//                                stringToASCII(constantStr,displayString2); 
+//                                printf("constantStr:%s\n",displayString2);
 //                                printf("Numerator: multipleOfNewConstantInteger   %i\n",multipleOfNewConstantInteger);
 //                                printf("Denominator: smallestDenom                         /            %i\n",smallestDenom);
 //                                printRealToConsole(&multipleOfNewConstant_fp,"&multipleOfNewConstant_fp=","\n");
@@ -1796,8 +1801,14 @@ bool_t checkForAndChange(char *displayString, const real34_t *value34, const rea
           sprintf(resultingIntStr, "%s%s", wholePart, tmpstr);                                                      // "e+1" or "2xe+1"
         }
       }
-    } else {
-        changeToSup(multipleOfNewConstantInteger, resultingIntStr);       //numerator
+    } else {                                                                                  // A whole multiple %i of the 'new' constant does not exist
+        if(smallestDenom == 1) {
+          sprintf(resultingIntStr,"%i", multipleOfNewConstantInteger);                                           // if denom = 1, then use large font
+        }
+        else {
+          changeToSup(multipleOfNewConstantInteger, resultingIntStr);                                            // if denom <> 0, then use superscript, knowing there is a denom
+        }
+
     }
 
 //                                printf("QQ1 %s\n",wholePart);       printf("BBB1 ---> %u %u %u %u %u %u %u %u\n",(uint8_t)(wholePart[0]),(uint8_t)(wholePart[1]),(uint8_t)(wholePart[2]),(uint8_t)(wholePart[3]),(uint8_t)(wholePart[4]),(uint8_t)(wholePart[5]),(uint8_t)(wholePart[6]),(uint8_t)(wholePart[7]));
@@ -1823,6 +1834,7 @@ bool_t checkForAndChange(char *displayString, const real34_t *value34, const rea
 
 //                               printRealToConsole(&multipleOfNewConstant_fp,"&multipleOfNewConstant_fp=","\n");
 //                               printRealToConsole(&roundingTolerance1,"roundingTolerance1=","\n");
+//                               printRealToConsole(&findingIrrationalTolerance1,"findingIrrationalTolerance1=","\n");
 
     displayString[0] = 0;
     if(!realCompareAbsGreaterThan(&multipleOfNewConstant_fp,&findingIrrationalTolerance1)) {                                     // irrational tolerance found, show irrational and fraction
