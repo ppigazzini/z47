@@ -2928,10 +2928,7 @@ RELEASE_END:
                   leavePem();
                   calcModeNormal();
                   //exit menus immediately when coming out of PEM
-                  removeMenuFromStack(-MNU_PFN);
-                  removeMenuFromStack(-MNU_PFN_1);
-                  removeMenuFromStack(-MNU_PFN_2);
-
+                  extractPFNMenus();
                   keyActionProcessed = true;
                   screenUpdatingMode = SCRUPD_AUTO;
                 }
@@ -3652,9 +3649,7 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
         }
         else if(menu(0) == -MNU_PFN){
           //exit menus immediately when coming out of PEM
-          removeMenuFromStack(-MNU_PFN);
-          removeMenuFromStack(-MNU_PFN_1);
-          removeMenuFromStack(-MNU_PFN_2);
+          extractPFNMenus();
         }
 
 

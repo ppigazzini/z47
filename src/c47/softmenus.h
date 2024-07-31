@@ -66,6 +66,7 @@ void     fnExitAllMenus         (uint16_t unusedButMandatoryParameter);
    */
   void removeUserMenuFromStack  (int16_t userMenuId);
   void removeMenuFromStack      (int16_t userMenuId);
+  void extractPFNMenus          (void);
 
   void   setCatalogLastPos      (void);
   bool_t currentSoftmenuScrolls (void);

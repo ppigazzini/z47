@@ -2852,6 +2852,13 @@ bool_t BASE_OVERRIDEONCE = false;
   }
 
 
+
+  void extractPFNMenus(void) {
+    removeMenuFromStack(-MNU_PFN);
+    removeMenuFromStack(-MNU_PFN_1);
+    removeMenuFromStack(-MNU_PFN_2);
+  }
+
   void showSoftmenu(int16_t id) {
 //    if(running_program_jm) return;
     int16_t m;

@@ -4759,7 +4759,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
                                char uuu[100];
                                stringToASCII(indexOfItems[currentMenu() > 0 ? currentMenu() : -currentMenu()].itemSoftmenuName, uuu);
 
-                               printf(">>> refreshScreen(%3u): Cnt=%3d %s calcMode=%2d screenUpdatingMode=%3d=%12s=>%25s TI=%4u MENUid=%2d item=%4i: %16s\n", 
+                               printf(">>> refreshScreen(%3u): Cnt=%3d %s calcMode=%2d screenUpdatingMode=%3d=%12s=>%26s TI=%4u MENUid=%2d item=%4i: %16s\n", 
                                   source, refreshScreenCounter++,
                                   (last_CM != calcMode) ? "OVR" : "   ",
                                   calcMode, screenUpdatingMode, sss, ttt, temporaryInformation, m, currentMenu(), uuu);
