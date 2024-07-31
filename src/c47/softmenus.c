@@ -260,8 +260,8 @@ DISTNMENU2(menu_Norml,      ITM_NORMLP,     ITM_NORML,      ITM_NORMLU,     ITM_
 /*                                 <---------------------------------------------------------------------- 6 f shifted functions ------------------------------------------------------------------------->  */
 /*                                 <---------------------------------------------------------------------- 6 g shifted functions ------------------------------------------------------------------------->  */
 
-TO_QSPI const int16_t menu_MyPFN[]       = { ITM_LBL,                       ITM_GTO,                    ITM_XEQ,                  ITM_RTN,               ITM_REM,                    -MNU_PFN_1,
-                                             ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,             -MNU_LOOP,                   -MNU_TEST,
+TO_QSPI const int16_t menu_MyPFN[]       = { ITM_LBL,                       ITM_GTO,                    ITM_XEQ,                  ITM_RTN,              -MNU_PFN_2,                  -MNU_PFN_1,
+                                             ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_REM,              -MNU_LOOP,                   -MNU_TEST,
                                              ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL                     };
 
 TO_QSPI const int16_t menu_PFN_1[]       = { ITM_LBL,                       ITM_GTO,                    ITM_XEQ,                  ITM_RTN,               ITM_END,                    -MNU_PFN_2,
@@ -2652,6 +2652,7 @@ bool_t BASE_OVERRIDEONCE = false;
     softmenuStack[0].softmenuId = softmenuId;
     softmenuStack[0].firstItem = lastCatalogPosition[catalog];
     softmenuStack[0].userMenuId = userMenuId;
+    softmenuStack[0].calcMode = calcMode;
 
       doRefreshSoftMenu = true;     //dr
   }
@@ -2682,6 +2683,8 @@ bool_t BASE_OVERRIDEONCE = false;
     else if(softmenuStack[0].softmenuId == 1 && calcMode == CM_AIM) {
       changeToALPHA();
     }
+
+    softmenuStack[0].calcMode = calcMode;
 
                                                               //JM ^^
     switch(-currentMenu()) {               //reset menu base point only if not MODE & DISP & Graphs menus, otherwise all menues reset to p1
@@ -2828,6 +2831,7 @@ bool_t BASE_OVERRIDEONCE = false;
           softmenuStack[SOFTMENU_STACK_SIZE - 1].softmenuId = 0;  // Put MyMenu in the last stack element
           softmenuStack[SOFTMENU_STACK_SIZE - 1].firstItem = 0;
           softmenuStack[SOFTMENU_STACK_SIZE - 1].userMenuId = 0;
+          softmenuStack[SOFTMENU_STACK_SIZE - 1].calcMode = 0;
           i--;
         }
         else if(softmenuStack[i].userMenuId > userMenuId) { // adjust other menuIDs             //this makes no sense!!
@@ -2851,6 +2855,21 @@ bool_t BASE_OVERRIDEONCE = false;
     }
   }
 
+
+
+//  void extractPFNMenus(void) {
+//    removeMenuFromStack(-MNU_PFN);
+//    removeMenuFromStack(-MNU_PFN_1);
+//    removeMenuFromStack(-MNU_PFN_2);
+//  }
+  void extractPFNMenus(void) {
+    for(int ii=SOFTMENU_STACK_SIZE-1; ii>=0; ii--) { // Searching the stack for specified menu
+      if(softmenuStack[ii].calcMode == CM_PEM || menu(ii) == -MNU_PFN) {
+        //printf("Removing %i: %i %i\n",ii, softmenu[softmenuStack[ii].softmenuId].menuItem, menu(ii));
+        removeMenuFromStack(menu(ii));
+      }
+    }
+  }
 
   void showSoftmenu(int16_t id) {
 //    if(running_program_jm) return;

@@ -382,6 +382,7 @@ typedef struct {
   int16_t softmenuId; ///< Softmenu ID = rank in dynamicSoftmenu or softmenu
   int16_t firstItem;  ///< Current first item on the screen (unshifted F1 = bottom left)
   int16_t userMenuId; ///< Id of the user menu when softmenuId is a
+  uint8_t calcMode;   ///< Parent mode
 } softmenuStack_t;
 
 

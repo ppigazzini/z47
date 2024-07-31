@@ -308,6 +308,7 @@ TO_QSPI const function_t indexOfFunctions[] = {
               {ITM_DIV,                       "/"},
               {ITM_IDIV,                      "@"},
               {ITM_VIEW,                      "@"},
+              {ITM_AVIEW,                     "@"},
               {ITM_MOD,                       "@"},
               {ITM_MAX,                       "MAX"},
               {ITM_MIN,                       "MIN"},

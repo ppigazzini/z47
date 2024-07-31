@@ -2389,6 +2389,16 @@ RELEASE_END:
             fnKeyExit(NOPARAM);
             keyActionProcessed = true;            //Removed to force EXIT on the RELEASE cycle to make it do fnKeyExit later to allow NOP
           }
+          if(calcMode == CM_PEM) {
+            if(getSystemFlag(FLAG_ALPHA)) {          //close AIM in PEM
+              fnKeyExit(NOPARAM);
+            }
+            // if(menu(0) != -MNU_PFN) {
+            //   showSoftmenu(-MNU_PFN);
+            //   hourGlassIconEnabled = false;
+            //   keyActionProcessed = true;
+            // }
+          }
           if((temporaryInformation != TI_NO_INFO) && (calcMode != CM_CONFIRMATION)) {
             temporaryInformation = TI_NO_INFO;
             keyActionProcessed = true;
@@ -2918,10 +2928,7 @@ RELEASE_END:
                   leavePem();
                   calcModeNormal();
                   //exit menus immediately when coming out of PEM
-                  removeMenuFromStack(-MNU_PFN);
-                  removeMenuFromStack(-MNU_PFN_1);
-                  removeMenuFromStack(-MNU_PFN_2);
-
+                  extractPFNMenus();
                   keyActionProcessed = true;
                   screenUpdatingMode = SCRUPD_AUTO;
                 }
@@ -3642,9 +3649,7 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
         }
         else if(menu(0) == -MNU_PFN){
           //exit menus immediately when coming out of PEM
-          removeMenuFromStack(-MNU_PFN);
-          removeMenuFromStack(-MNU_PFN_1);
-          removeMenuFromStack(-MNU_PFN_2);
+          extractPFNMenus();
         }
 
 
