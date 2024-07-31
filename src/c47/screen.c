@@ -1950,6 +1950,12 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
 
 
   static void viewRegName(char *prefix, int16_t *prefixWidth) { //using "=" for VIEW
+    //printf("========================== %i %s %s %i\n", lastFuncNo(), lastFuncCatalogName(), prefix, *prefixWidth);
+    if(lastFuncNo() == ITM_AVIEW || lastFuncNo() == ITM_PROMPT) {
+      prefix[0] = 0;
+      *prefixWidth = 1;
+      return;
+    }
     if(currentViewRegister < REGISTER_X) {
       sprintf(prefix, "%sR%02" PRIu16 STD_SPACE_4_PER_EM "=" STD_SPACE_4_PER_EM, (SBARUPD_Time ? "  " : ""), currentViewRegister);
     }
@@ -4753,7 +4759,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
                                char uuu[100];
                                stringToASCII(indexOfItems[currentMenu() > 0 ? currentMenu() : -currentMenu()].itemSoftmenuName, uuu);
 
-                               printf(">>> refreshScreen(%3u): Cnt=%3d %s calcMode=%2d screenUpdatingMode=%3d=%12s=>%25s TI=%4u MENUid=%2d item=%4i: %16s\n", 
+                               printf(">>> refreshScreen(%3u): Cnt=%3d %s calcMode=%2d screenUpdatingMode=%3d=%12s=>%26s TI=%4u MENUid=%2d item=%4i: %16s\n", 
                                   source, refreshScreenCounter++,
                                   (last_CM != calcMode) ? "OVR" : "   ",
                                   calcMode, screenUpdatingMode, sss, ttt, temporaryInformation, m, currentMenu(), uuu);
