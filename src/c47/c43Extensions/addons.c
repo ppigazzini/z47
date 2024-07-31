@@ -499,41 +499,29 @@ void fn_cnst_1_cpx(uint16_t unusedButMandatoryParameter) {
 
 //Rounding
 void fnJM_2SI(uint16_t unusedButMandatoryParameter) { //Convert Real to Longint; Longint to shortint; shortint to longint
-  longInteger_t tmp1, tmp2, tmp3;
-  uint64_t tmp2UI, mask;
+  longInteger_t tmp1, tmp3;
   uint16_t tmp2sign;
   switch(getRegisterDataType(REGISTER_X)) {
     case dtLongInteger:
-      convertLongIntegerRegisterToLongInteger(REGISTER_X, tmp2);
       convertLongIntegerRegisterToLongInteger(REGISTER_X, tmp3);
-      tmp2sign = longIntegerIsNegative(tmp2) ? 1:0;
-      if(tmp2sign == 1) {
-        longIntegerChangeSign(tmp2);
-      }
-      longIntegerToUInt(tmp2,tmp2UI);
-      if(shortIntegerMode != SIM_UNSIGN) {
-        mask = 1;
-        mask = ~(mask << (shortIntegerWordSize-1));
-        tmp2UI &= mask;
-      }
-      else if(tmp2sign) {
+      tmp2sign = longIntegerIsNegative(tmp3) ? 1:0;
+      if(shortIntegerMode == SIM_UNSIGN && tmp2sign) {
         temporaryInformation = TI_DATA_NEG_OVRFL;
       }
-      convertUInt64ToShortIntegerRegister(tmp2sign, tmp2UI, (lastIntegerBase >= 2 && lastIntegerBase <= 16) ? lastIntegerBase : 10, REGISTER_X);
+      fnChangeBase((lastIntegerBase >= 2 && lastIntegerBase <= 16) ? lastIntegerBase : 10);
       convertShortIntegerRegisterToLongInteger(REGISTER_X, tmp1);
       if(longIntegerCompare(tmp1,tmp3) != 0) {
         if(temporaryInformation != TI_DATA_NEG_OVRFL) {
-          temporaryInformation = TI_DATA_LOSS;
+          temporaryInformation = TI_DATA_LOSS;             // I cannot think of which condition will reach here, without other overflows overriding, but leaving it in
         }
         setSystemFlag(FLAG_OVERFLOW);
       }
       longIntegerFree(tmp1);
-      longIntegerFree(tmp2);
       longIntegerFree(tmp3);
+
       break;
     case dtReal34:
-      //ipReal();                                         //This converts real to longint!
-      fnRoundi(0);
+      fnRoundi(0);                       
       break;
     case dtShortInteger:
       convertShortIntegerRegisterToLongIntegerRegister(REGISTER_X, REGISTER_X); //This shortint to longint!
@@ -1670,11 +1658,13 @@ bool_t checkForAndChange(char *displayString, const real34_t *value34, const rea
       strcpy(sign, "-");
     }
 
+    //Returning: Real is too small
+    if(realCompareLessThan(&valueRealAbs, const_1e_16)) {
+      return false;
+    }
     //Returning: Multiple of constant is too large
     realDivide(&valueRealAbs,constant,&multConstant,&ctxtReal39);
     if(realCompareGreaterThan(&multConstant, const_2p31__1)) {
-//                                printf("Returning: Multiple of constant is too large\n");
-//                                printRealToConsole(&multConstant, "multiple of the constant=", " > ");
       return false;
     }
 
@@ -1752,8 +1742,11 @@ bool_t checkForAndChange(char *displayString, const real34_t *value34, const rea
 
 //                                printRealToConsole(&valueReal,"\n\nInputvalue: valueReal=","\n");
 //                                printRealToConsole(constant,"    constant=","\n");
-//                                //printf("    §%s§   §%s§   §%s§\n", resultingIntStr, constantStr, denomStr);
+//                                printf("    §%s§   §%s§   §%s§\n", resultingIntStr, constantStr, denomStr);
 //                                printRealToConsole(&findingIrrationalTolerance1,"findingIrrationalTolerance1=","\n");
+//                                char displayString2[200];
+//                                stringToASCII(constantStr,displayString2); 
+//                                printf("constantStr:%s\n",displayString2);
 //                                printf("Numerator: multipleOfNewConstantInteger   %i\n",multipleOfNewConstantInteger);
 //                                printf("Denominator: smallestDenom                         /            %i\n",smallestDenom);
 //                                printRealToConsole(&multipleOfNewConstant_fp,"&multipleOfNewConstant_fp=","\n");
@@ -1808,8 +1801,14 @@ bool_t checkForAndChange(char *displayString, const real34_t *value34, const rea
           sprintf(resultingIntStr, "%s%s", wholePart, tmpstr);                                                      // "e+1" or "2xe+1"
         }
       }
-    } else {
-        changeToSup(multipleOfNewConstantInteger, resultingIntStr);       //numerator
+    } else {                                                                                  // A whole multiple %i of the 'new' constant does not exist
+        if(smallestDenom == 1) {
+          sprintf(resultingIntStr,"%i", multipleOfNewConstantInteger);                                           // if denom = 1, then use large font
+        }
+        else {
+          changeToSup(multipleOfNewConstantInteger, resultingIntStr);                                            // if denom <> 0, then use superscript, knowing there is a denom
+        }
+
     }
 
 //                                printf("QQ1 %s\n",wholePart);       printf("BBB1 ---> %u %u %u %u %u %u %u %u\n",(uint8_t)(wholePart[0]),(uint8_t)(wholePart[1]),(uint8_t)(wholePart[2]),(uint8_t)(wholePart[3]),(uint8_t)(wholePart[4]),(uint8_t)(wholePart[5]),(uint8_t)(wholePart[6]),(uint8_t)(wholePart[7]));
@@ -1835,6 +1834,7 @@ bool_t checkForAndChange(char *displayString, const real34_t *value34, const rea
 
 //                               printRealToConsole(&multipleOfNewConstant_fp,"&multipleOfNewConstant_fp=","\n");
 //                               printRealToConsole(&roundingTolerance1,"roundingTolerance1=","\n");
+//                               printRealToConsole(&findingIrrationalTolerance1,"findingIrrationalTolerance1=","\n");
 
     displayString[0] = 0;
     if(!realCompareAbsGreaterThan(&multipleOfNewConstant_fp,&findingIrrationalTolerance1)) {                                     // irrational tolerance found, show irrational and fraction

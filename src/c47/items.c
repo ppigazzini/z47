@@ -103,7 +103,9 @@ bool_t itemNotAvail(int16_t itemNr) {
       case ITM_VOLMINUS :
       case ITM_VOLPLUS  :
       case ITM_VOLQ     :
-             printf("Item %i not available, not executing.\n",itemNr);
+             #if (VERBOSE_LEVEL >= 0)
+               printf("Item %i Softkey item not available, not executing and/or struck through.\n",itemNr);
+             #endif
              return true;
              break;
       default: 
@@ -1836,7 +1838,7 @@ TO_QSPI const item_t indexOfItems[] = {
 /*  488 */  { fnGetSystemFlag,              FLAG_QUIET,                  "QUIET",                                       "QUIET",                                       (0 << TAM_MAX_BITS) |     0, CAT_SYFL | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /*  489 */  { itemToBeCoded,                FLAG_WRAPEND,                "WRPEND",                                      "WRPEND",                                      (0 << TAM_MAX_BITS) |     0, CAT_SYFL | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /*  490 */  { fnGetSystemFlag,              FLAG_MULTx,                  "MULT" STD_CROSS,                              "MULT" STD_CROSS,                              (0 << TAM_MAX_BITS) |     0, CAT_SYFL | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
-/*  491 */  { fnGetSystemFlag,              FLAG_ALLENG,                 "ALLENG",                                      "ALLENG",                                      (0 << TAM_MAX_BITS) |     0, CAT_SYFL | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/*  491 */  { fnGetSystemFlag,              FLAG_ENGOVR,                 "ENGOVR",                                      "ENGOVR",                                      (0 << TAM_MAX_BITS) |     0, CAT_SYFL | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /*  492 */  { fnGetSystemFlag,              FLAG_GROW,                   "GROW",                                        "GROW",                                        (0 << TAM_MAX_BITS) |     0, CAT_SYFL | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /*  493 */  { fnGetSystemFlag,              FLAG_AUTOFF,                 "AUTOFF",                                      "AUTOFF",                                      (0 << TAM_MAX_BITS) |     0, CAT_SYFL | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /*  494 */  { fnGetSystemFlag,              FLAG_AUTXEQ,                 "AUTXEQ",                                      "AUTXEQ",                                      (0 << TAM_MAX_BITS) |     0, CAT_SYFL | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },

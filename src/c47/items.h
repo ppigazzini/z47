@@ -519,7 +519,7 @@
 #define SFL_QUIET                    488
 #define SFL_WRAPEND                  489
 #define SFL_MULTx                    490
-#define SFL_ALLENG                   491
+#define SFL_ENGOVR                   491
 #define SFL_GROW                     492
 #define SFL_AUTOFF                   493
 #define SFL_AUTXEQ                   494
