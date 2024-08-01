@@ -16,6 +16,12 @@
   #endif // PC_BUILD
 
 /**
+ * Boolean type.
+ */
+typedef bool bool_t;
+
+
+/**
  * \union multiplyDivide_t
    * Used for unit conversions.
    */
@@ -40,6 +46,17 @@ typedef struct {
   int16_t gShiftedAim; ///< ID of the g shifted AIM function: greek letters
   int16_t primaryTam;  ///< ID of the primary TAM function of the key
 } calcKey_t;
+
+
+/**
+ * \struct normKey_t
+   * Structure keeping the informations for the Norm key.
+   */
+typedef struct {
+  int16_t func;            ///< ID of the function of the Norm key
+  char    funcParam[16];   ///< function parameter if required
+  bool_t  used;            ///< True when Norm key is used
+} normKey_t;
 
 
 /**
@@ -104,12 +121,6 @@ typedef enum {
   //dtDirectory       = 14,  ///< Program
   dtNumbers         = 15,  ///< Numbers (LongInteger, Real34, Complex34)
 } dataType_t; // 4 bits (NOT 5 BITS)
-
-
-/**
- * Boolean type.
- */
-typedef bool bool_t;
 
 
 /**
@@ -183,7 +194,7 @@ typedef struct {
   bool_t compatibility_bool21;              //Spare Byte
   bool_t BASE_HOME;
   bool_t compatibility_bool0;               //Spare Byte
-  int16_t Norm_Key_00_VAR;
+  normKey_t Norm_Key_00;
   uint8_t Input_Default;
   bool_t compatibility_bool00;              //Spare Byte
   bool_t BASE_MYM;

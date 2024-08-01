@@ -430,7 +430,9 @@ void fnStoreConfig(uint16_t regist) {
   storeToDtConfigDescriptor(compatibility_bool21);
   storeToDtConfigDescriptor(BASE_HOME);
   storeToDtConfigDescriptor(compatibility_bool00);   //added
-  storeToDtConfigDescriptor(Norm_Key_00_VAR);
+  storeToDtConfigDescriptor(Norm_Key_00.func);
+  xcopy(configToStore->Norm_Key_00.funcParam, Norm_Key_00.funcParam, sizeof(Norm_Key_00.funcParam));
+  storeToDtConfigDescriptor(Norm_Key_00.used);
   storeToDtConfigDescriptor(Input_Default);
   storeToDtConfigDescriptor(compatibility_bool0);    //added
   storeToDtConfigDescriptor(BASE_MYM);
@@ -448,15 +450,15 @@ void fnStoreConfig(uint16_t regist) {
   storeToDtConfigDescriptor(compatibility_bool5);
   storeToDtConfigDescriptor(compatibility_bool6);
   storeToDtConfigDescriptor(compatibility_bool7);
-  storeToDtConfigDescriptor(compatibility_bool8); 
-  storeToDtConfigDescriptor(compatibility_bool9); 
-  storeToDtConfigDescriptor(compatibility_bool10); 
-  storeToDtConfigDescriptor(compatibility_bool11); 
-  storeToDtConfigDescriptor(compatibility_bool12); 
-  storeToDtConfigDescriptor(compatibility_bool13); 
-  storeToDtConfigDescriptor(compatibility_bool14); 
-  storeToDtConfigDescriptor(compatibility_bool15); 
-  storeToDtConfigDescriptor(fractionDigits); 
+  storeToDtConfigDescriptor(compatibility_bool8);
+  storeToDtConfigDescriptor(compatibility_bool9);
+  storeToDtConfigDescriptor(compatibility_bool10);
+  storeToDtConfigDescriptor(compatibility_bool11);
+  storeToDtConfigDescriptor(compatibility_bool12);
+  storeToDtConfigDescriptor(compatibility_bool13);
+  storeToDtConfigDescriptor(compatibility_bool14);
+  storeToDtConfigDescriptor(compatibility_bool15);
+  storeToDtConfigDescriptor(fractionDigits);
   storeToDtConfigDescriptor(compatibility_bool23);
   storeToDtConfigDescriptor(compatibility_bool16);
   storeToDtConfigDescriptor(compatibility_bool20);
