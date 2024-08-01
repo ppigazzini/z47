@@ -625,6 +625,8 @@ typedef struct {
           case CST_80 :
           case CST_81 :
           case CST_82 :
+          case CST_83 :
+          case CST_84 :
           case ITM_CtoF :
           case ITM_FtoC :
           case ITM_DBtoPR :
