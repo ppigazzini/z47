@@ -2846,26 +2846,22 @@ bool_t BASE_OVERRIDEONCE = false;
 
 
   void removeMenuFromStack(int16_t userMenuId) {
-    for(int i=0; i<SOFTMENU_STACK_SIZE; i++) { // Searching the stack for specified menu
+    for(int i=SOFTMENU_STACK_SIZE-1; i>=0; i--) { // Searching the stack for specified menu (JM: reversed action to prevent a possible endless loop +1, -1, ...)
+      //printf("-%1i-",i);
       if(menu(i) == userMenuId) { // if found, remove it
         xcopy(softmenuStack + i, softmenuStack + i + 1, (SOFTMENU_STACK_SIZE - i - 1) * sizeof(softmenuStack_t));
         memset(softmenuStack + SOFTMENU_STACK_SIZE - 1, 0, sizeof(softmenuStack_t)); // Put MyMenu in the last stack element
-        --i; // redo
+        //printf("Blanking %i: %i %s | %i %s\n",i, softmenu[softmenuStack[i].softmenuId].menuItem, indexOfItems[abs(softmenu[softmenuStack[i].softmenuId].menuItem)].itemCatalogName, menu(i), indexOfItems[abs(menu(i))].itemCatalogName);
       }
     }
   }
 
 
-
-//  void extractPFNMenus(void) {
-//    removeMenuFromStack(-MNU_PFN);
-//    removeMenuFromStack(-MNU_PFN_1);
-//    removeMenuFromStack(-MNU_PFN_2);
-//  }
   void extractPFNMenus(void) {
     for(int ii=SOFTMENU_STACK_SIZE-1; ii>=0; ii--) { // Searching the stack for specified menu
+      //printf("+%1i+",ii);
       if(softmenuStack[ii].calcMode == CM_PEM || menu(ii) == -MNU_PFN) {
-        //printf("Removing %i: %i %i\n",ii, softmenu[softmenuStack[ii].softmenuId].menuItem, menu(ii));
+        //printf("Removing %i: %i %s | %i %s\n",ii, softmenu[softmenuStack[ii].softmenuId].menuItem, indexOfItems[abs(softmenu[softmenuStack[ii].softmenuId].menuItem)].itemCatalogName, menu(ii), indexOfItems[abs(menu(ii))].itemCatalogName);
         removeMenuFromStack(menu(ii));
       }
     }

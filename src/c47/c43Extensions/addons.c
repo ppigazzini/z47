@@ -1785,15 +1785,18 @@ bool_t checkForAndChange(char *displayString, const real34_t *value34, const rea
 
       if(cStr[0] == 0) {                                                                                          // no constant
         if(smallestDenom > 1) {
-          changeToSup(multipleOfNewConstantInteger, tmpstr);              //numerator
+          changeToSup(multipleOfNewConstantInteger, tmpstr);                                                      // numerator
         }
         else {
-          sprintf(tmpstr,"%i",(int)multipleOfNewConstantInteger);         //==1
+          return false;
+          //return false, to abort and use standard decimal instead of "1."
+          //sprintf(tmpstr,"%i",(int)multipleOfNewConstantInteger);                                                 //==1
+          //strcat(tmpstr,RADIX34_MARK_STRING);
         }
         sprintf(resultingIntStr, "%s%s", wholePart, tmpstr);                                                        // "1 1"
       }
-      else {
-        if(multipleOfNewConstantInteger == 1) {                                                                   // constant
+      else {                                                                                                      // constant
+        if(multipleOfNewConstantInteger == 1) {
           sprintf(resultingIntStr,"%s", wholePart);                                                                 // "e+" or "2xe+"
         }
         else {
@@ -1803,10 +1806,12 @@ bool_t checkForAndChange(char *displayString, const real34_t *value34, const rea
       }
     } else {                                                                                  // A whole multiple %i of the 'new' constant does not exist
         if(smallestDenom == 1) {
-          sprintf(resultingIntStr,"%i", multipleOfNewConstantInteger);                                           // if denom = 1, then use large font
+          return false;   //unlikely
+          //return false, to abort and use standard decimal instead of "1."
+          //sprintf(resultingIntStr,"%i", (int)multipleOfNewConstantInteger);                                       // if denom = 1, then use large font
         }
         else {
-          changeToSup(multipleOfNewConstantInteger, resultingIntStr);                                            // if denom <> 0, then use superscript, knowing there is a denom
+          changeToSup(multipleOfNewConstantInteger, resultingIntStr);                                             // if denom <> 0, then use superscript, knowing there is a denom
         }
 
     }

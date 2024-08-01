@@ -4417,11 +4417,9 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
       popSoftmenu();
     }
     showRegis = 9999;
-    uint8_t calcModeStore = calcMode;
     calcMode = CM_NORMAL;
     screenUpdatingMode = SCRUPD_AUTO;
     refreshScreen(137);
-    calcMode = calcModeStore;
   }
 
 

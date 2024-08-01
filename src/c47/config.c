@@ -872,7 +872,7 @@ TO_QSPI const confirmationTI_t confirmationTI[] = {
     {.item = ITM_DELPALL,     .string = "Delete all programs?"         },
     {.item = ITM_CLREGS,      .string = "Clear registers?"             },
     {.item = ITM_RESET,       .string = "Reset?"                       },
-    {.item = ITM_DELBKUP,     .string = "Delete backup file?"          },
+    {.item = ITM_DELBKUP,     .string = "Delete both backup files?"    },
     {.item = ITM_CLMALL,      .string = "Clear all user menus?"        },
     {.item = ITM_CLVALL,      .string = "Clear all user variables?"    },
     {.item = ITM_DELMALL,     .string = "Delete all user menus?"       },
