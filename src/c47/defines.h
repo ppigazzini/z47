@@ -11,7 +11,7 @@
 // JM VARIOUS OPTIONS
 //*********************************
 
-#define VERSION1 "0.109.02.05a4"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
+#define VERSION1 "0.109.02.05"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
 
 //Version history
 //0.109.02.00
@@ -19,6 +19,7 @@
 //0.109.02.02 this version.02 was tagged in GitLab as .03
 //0.109.02.03 this version skipped due to confusion.
 //0.109.02.04
+//0.109.02.05
 
 
 
