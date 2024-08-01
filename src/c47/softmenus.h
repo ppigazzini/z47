@@ -47,6 +47,7 @@ void     fnExitAllMenus         (uint16_t unusedButMandatoryParameter);
    * \param[in] id ID of softmenu
    */
   void   showSoftmenu           (int16_t id);
+  int16_t menu                  (uint8_t n);
   void   changeToALPHA(void);
   void   changeToHOME(void);
   void   changeToPFN(void);
@@ -64,6 +65,8 @@ void     fnExitAllMenus         (uint16_t unusedButMandatoryParameter);
    * Remove a User menu from a softmenu stack.
    */
   void removeUserMenuFromStack  (int16_t userMenuId);
+  void removeMenuFromStack      (int16_t userMenuId);
+  void extractPFNMenus          (void);
 
   void   setCatalogLastPos      (void);
   bool_t currentSoftmenuScrolls (void);

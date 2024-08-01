@@ -900,7 +900,8 @@
     }
 
     if(func == ITM_CNST) {
-      tam.max = NUMBER_OF_CONSTANTS_39 + NUMBER_OF_CONSTANTS_51 + NUMBER_OF_CONSTANTS_1071 + NUMBER_OF_CONSTANTS_34 - 1;
+//    tam.max = NUMBER_OF_CONSTANTS_39 + NUMBER_OF_CONSTANTS_51 + NUMBER_OF_CONSTANTS_1071 + NUMBER_OF_CONSTANTS_34 - 1;  //use this line if UI access to all constants are needed.
+      tam.max = LAST_CONSTANT-FIRST_CONSTANT - 1;
     }
 
     if(calcMode == CM_NIM) {
@@ -940,21 +941,21 @@
 
     switch(tam.mode) {
       case TM_VALUE_MAX:                                                 //TM_VALUE_MAX, MNU_TAMNONREGMAX: Changing over to TM_VALUE, only used to add the max button for 0
-        if(func != ITM_VIEW || !catalog || catalog != CATALOG_MVAR) {
+        if((func != ITM_VIEW && func != ITM_AVIEW) || !catalog || catalog != CATALOG_MVAR) {
           showSoftmenu(-MNU_TAMNONREGMAX);
         }
         tam.mode = TM_VALUE;
         break;
       case TM_VALUE:
       case TM_VALUE_CHB:
-        if(func != ITM_VIEW || !catalog || catalog != CATALOG_MVAR) {
+        if((func != ITM_VIEW && func != ITM_AVIEW) || !catalog || catalog != CATALOG_MVAR) {
           showSoftmenu(-MNU_TAMNONREG);
         }
         break;
       case TM_REGISTER:
       case TM_M_DIM:
       case TM_KEY: {
-        if(func != ITM_VIEW || !catalog || catalog != CATALOG_MVAR) {
+        if((func != ITM_VIEW && func != ITM_AVIEW) || !catalog || catalog != CATALOG_MVAR) {
           showSoftmenu(-MNU_TAM);
         }
         break;

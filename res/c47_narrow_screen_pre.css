@@ -281,18 +281,6 @@
   /* JM changed colour from lettergrey to keyLabelColor; Added emphasis (shadow) */
 }
 
-#YN {
-  background:  $bezelBackground;
-  color:       $keyLabelColor;
-  font-family: C47__StandardFont;
-  font-style:  normal;
-  font-weight: normal;
-  font-size:   16px;
-  padding:     0px;
-  text-shadow: 1px 0px $keyLabelColor;
-  /* JM changed colour from lettergrey to keyLabelColor; Added emphasis (shadow) */
-}
-
 #letter {
   background:  $bezelBackground;
   color:       $letterGrey;

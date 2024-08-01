@@ -84,6 +84,13 @@
         ix++;
       }
       printf("\n");
+      printf(".  ");
+      ix=0;
+      while(ix < SOFTMENU_STACK_SIZE) {
+        printf("%9s ", getCalcModeName(softmenuStack[ix].calcMode));
+        ix++;
+      }
+      printf("\n");
 
       printf(".  (tam.mode=%d, catalog=%d)   \n",
                   tam.mode,    catalog    );

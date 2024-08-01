@@ -11,7 +11,7 @@
 // JM VARIOUS OPTIONS
 //*********************************
 
-#define VERSION1 "0.109.02.05a4"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
+#define VERSION1 "0.109.02.05"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
 
 //Version history
 //0.109.02.00
@@ -19,6 +19,7 @@
 //0.109.02.02 this version.02 was tagged in GitLab as .03
 //0.109.02.03 this version skipped due to confusion.
 //0.109.02.04
+//0.109.02.05
 
 
 
@@ -377,6 +378,7 @@
 #define Norm_Key_00_keyID (calcModel == USER_C47 ? 21 :            calcModel == USER_DM42 ? 21 :            calcModel == USER_R47f_g ? -1 : calcModel == USER_R47bk_fg ? 35 :       calcModel == USER_R47fg_bk ? 36 : -1)
 #define Norm_Key_00_item_in_layout  (calcModel == USER_C47 ? ITM_SIGMAPLUS : calcModel == USER_DM42 ? ITM_SIGMAPLUS : calcModel == USER_R47f_g ? -1 : calcModel == USER_R47bk_fg ? ITM_NULL : calcModel == USER_R47fg_bk ? ITM_NULL : -1)
 #define isR47FAM          ((bool_t)(calcModel == USER_R47f_g || calcModel == USER_R47bk_fg || calcModel == USER_R47fg_bk || calcModel == USER_R47fg_g))
+#define shortcutProfile  (calcModel == USER_C47 ? USER_C47 : isR47FAM ? USER_R47 : 0)
 
 //fnKeysManagement
 #define JM_ASSIGN        28
@@ -584,7 +586,7 @@
 #define FLAG_QUIET                            0x8019
 #define FLAG_WRAPEND                          0xc01a
 #define FLAG_MULTx                            0x801b
-#define FLAG_ALLENG                           0x801c
+#define FLAG_ENGOVR                           0x801c
 #define FLAG_GROW                             0x801d
 #define FLAG_AUTOFF                           0x801e
 #define FLAG_AUTXEQ                           0x801f
@@ -744,7 +746,7 @@ typedef enum {
 
 // List of constants
 #define FIRST_CONSTANT                        CST_01
-#define LAST_CONSTANT                         CST_82
+#define LAST_CONSTANT                         CST_84
 
 
 //Variable names

@@ -25,6 +25,8 @@ void fnDisplayFormatUnit               (uint16_t displayFormatN);
 void fnShow                            (uint16_t unusedButMandatoryParameter);
 void mimShowElement                    (void);
 void fnView                            (uint16_t regist);
+void fnAview                           (uint16_t regist);
+void fnPrompt                          (uint16_t regist);
 void real34ToDisplayString             (const real34_t *real34, uint32_t tag, char *displayString, const font_t *font, int16_t maxWidth, int16_t displayHasNDigits, bool_t limitExponent, bool_t frontSpace);
 void dateToDisplayString               (calcRegister_t regist, char *displayString);
 void complex34ToDisplayString          (const complex34_t *complex34, char *displayString, const font_t *font, int16_t maxWidth, int16_t displayHasNDigits, bool_t limitExponent, bool_t frontSpace, const uint16_t tagAngle, const bool_t tagPolar);

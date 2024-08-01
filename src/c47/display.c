@@ -25,6 +25,7 @@
 #include "mathematics/10pow.h"
 #include "mathematics/2pow.h"
 #include "mathematics/rsd.h"
+#include "programming/lblGtoXeq.h"
 #include "c43Extensions/radioButtonCatalog.h"
 #include "registers.h"
 #include "registerValueConversions.h"
@@ -663,8 +664,8 @@ overRange:
     if(noFix || exponent >= displayHasNDigits || (displayFormatDigits != 0 && exponent < -(int32_t)displayFormatDigits) || (displayFormatDigits == 0 && exponent < numDigits - displayHasNDigits)) { // Display in SCI or ENG format
       digitsToDisplay = numDigits - 1;
       digitToRound    = firstDigit + digitsToDisplay;
-      ovrSCI = !getSystemFlag(FLAG_ALLENG);
-      ovrENG = getSystemFlag(FLAG_ALLENG);
+      ovrSCI = !getSystemFlag(FLAG_ENGOVR);
+      ovrENG = getSystemFlag(FLAG_ENGOVR);
     }
     else { // display all digits without ten exponent factor
       // Number of digits to truncate
@@ -809,8 +810,8 @@ overRange:
       ) { // Display in SCI or ENG format
       digitsToDisplay = displayFormatDigits;
       digitToRound    = min(firstDigit + digitsToDisplay, lastDigit);
-      ovrSCI = !getSystemFlag(FLAG_ALLENG);
-      ovrENG = getSystemFlag(FLAG_ALLENG);
+      ovrSCI = !getSystemFlag(FLAG_ENGOVR);
+      ovrENG = getSystemFlag(FLAG_ENGOVR);
     }
     else { // display fix number of digits without ten exponent factor
       // Number of digits to truncate
@@ -2482,7 +2483,7 @@ void timeToDisplayString(calcRegister_t regist, char *displayString, bool_t igno
       displayFormatDigits = 0;
     }
     else {
-      displayFormat = getSystemFlag(FLAG_ALLENG) ? DF_ENG : DF_SCI;
+      displayFormat = getSystemFlag(FLAG_ENGOVR) ? DF_ENG : DF_SCI;
       displayFormatDigits = 3;
     }
     real34ToDisplayString(REGISTER_REAL34_DATA(regist), amSecond, displayString, &standardFont, 2000, ignoreTDisp ? 34 : 16, false, false);
@@ -3194,7 +3195,7 @@ goBreak1:
         }
         else {
           overrideShowBottomLine = 30;    // from bottom, total 5
-          setSystemFlag(FLAG_ALLENG);
+          setSystemFlag(FLAG_ENGOVR);
           printXSHOW(amNone, 3*SHOWLineSize, DF_SF, 6, dtReal34, false);
           printXSHOW(amNone, 4*SHOWLineSize, DF_UN, 3, dtReal34, false);
           printXSHOW(amNone, 5*SHOWLineSize, DF_SCI, 3, dtReal34, false);
@@ -3246,7 +3247,7 @@ goBreak1:
         }
 
         overrideShowBottomLine = 20;   //2 from bottom, total 5
-        setSystemFlag(FLAG_ALLENG);
+        setSystemFlag(FLAG_ENGOVR);
         printXSHOW(amNone, 4*SHOWLineSize, DF_SF, 4, dtComplex34, true);
         printXSHOW(amNone, 5*SHOWLineSize, DF_SF, 4, dtComplex34, false);
 
@@ -3546,14 +3547,26 @@ goBreak1:
 #endif // !SAVE_SPACE_DM42_9
 }
 
-void fnView(uint16_t regist) {
+void _view(uint16_t regist) {
   if(regInRange(regist)) {
     currentViewRegister = regist;
     temporaryInformation = TI_VIEW_REGISTER;
     if(programRunStop == PGM_RUNNING) {
       refreshScreen(151);
-      fnPause(10);
-      temporaryInformation = TI_NO_INFO;
+//      temporaryInformation = TI_NO_INFO;  //JM removed to signal to STOP, so that STOP does not clear the screen after VIEW
     }
   }
+}
+
+void fnView(uint16_t regist) {
+  _view(regist);
+}
+
+void fnAview(uint16_t regist) {
+  _view(regist);
+}
+
+void fnPrompt(uint16_t regist) {
+  _view(regist);
+  fnStopProgram(NOPARAM);
 }

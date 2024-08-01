@@ -227,15 +227,15 @@
 #define CST_80                       208
 #define CST_81                       209
 #define CST_82                       210
-#define ITM_0211                     211
-#define ITM_0212                     212
-#define ITM_0213                     213
-#define ITM_0214                     214
-#define ITM_0215                     215
-#define ITM_0216                     216
-#define ITM_0217                     217
-#define ITM_0218                     218
-#define ITM_0219                     219
+#define CST_83                       211
+#define CST_84                       212
+#define ITM_0212                     213
+#define ITM_0213                     214
+#define ITM_0214                     215
+#define ITM_0215                     216
+#define ITM_0216                     217
+#define ITM_0217                     218
+#define ITM_0218                     219
 
 
 // Conversions
@@ -519,7 +519,7 @@
 #define SFL_QUIET                    488
 #define SFL_WRAPEND                  489
 #define SFL_MULTx                    490
-#define SFL_ALLENG                   491
+#define SFL_ENGOVR                   491
 #define SFL_GROW                     492
 #define SFL_AUTOFF                   493
 #define SFL_AUTXEQ                   494
@@ -1845,7 +1845,7 @@
 
 
 
-//Jaymos C43 extensions
+//C47 extensions
 #define ITM_op_j_pol                1795
 #define ITM_BASE_MYM                1796
 #define ITM_G_DOUBLETAP             1797
@@ -2069,9 +2069,9 @@
 #define ITM_EXTY                    2015
 #define ITM_DENMAX2_OLD             2016
 #define ITM_SETSIG2_OLD             2017
-#define ITM_2018             2018
+#define ITM_AVIEW                   2018
 #define ITM_RMODEQ                  2019
-#define ITM_2020                    2020
+#define ITM_PROMPT                  2020
 #define ITM_USER_ARESET             2021
 #define ITM_USER_MRESET             2022
 #define ITM_USER_KRESET             2023
@@ -2471,6 +2471,7 @@ bool_t   itemNotAvail           (int16_t itemNr);
 char     *lastFuncCatalogName   (void);
 char     *lastFuncSoftmenuName  (void);
 int16_t  lastSTORCL             (void);
+int16_t  lastFuncNo             (void);
 
 
 void reallyRunFunction(int16_t func, uint16_t param);

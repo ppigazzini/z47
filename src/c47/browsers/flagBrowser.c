@@ -274,7 +274,7 @@
       // System flags
       firstFlag = true;
       tmpString[CHARS_PER_LINE * ++line] = 0;
-      oneSystemFlag(FLAG_ALLENG,  "ALLENG",  &line, &firstFlag);
+      oneSystemFlag(FLAG_ENGOVR,  "ENGOVR",  &line, &firstFlag);
       oneSystemFlag(FLAG_ALPIN,   "ALP.IN",  &line, &firstFlag);
       oneSystemFlag(FLAG_AUTOFF,  "AUTOFF",  &line, &firstFlag);
       oneSystemFlag(FLAG_AUTXEQ,  "AUTXEQ",  &line, &firstFlag);
@@ -359,7 +359,7 @@
           case FLAG_Y: strcpy(tmpString, "Y:101   "); break;
           case FLAG_Z: strcpy(tmpString, "Z:102   "); break;
           case FLAG_T: strcpy(tmpString, "T:TRACE "); break;
-          case FLAG_A: strcpy(tmpString, "A:ALLENG"); break;
+          case FLAG_A: strcpy(tmpString, "A:ENGOVR"); break;
           case FLAG_B: strcpy(tmpString, "B:OVRFL "); break;
           case FLAG_C: strcpy(tmpString, "C:CARRY "); break;
           case FLAG_D: strcpy(tmpString, "D:SPCRES"); break;

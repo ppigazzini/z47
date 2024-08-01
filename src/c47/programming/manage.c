@@ -439,6 +439,7 @@ void fnPem(uint16_t unusedButMandatoryParameter) {
     uint16_t linesOfCurrentStep = 1;
 
     if(calcMode != CM_PEM) {
+      showSoftmenu(-MNU_PFN);
       calcMode = CM_PEM;
       hourGlassIconEnabled = false;
       aimBuffer[0] = 0;
