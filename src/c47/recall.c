@@ -253,7 +253,6 @@ void fnRecallMax(uint16_t regist) {
 void fnRecallConfig(uint16_t regist) {
     __attribute__((unused)) bool_t compatibility_bool00;    //for use in spare slots below
     __attribute__((unused)) bool_t compatibility_bool0 ;    //for use in spare slots below
-    __attribute__((unused)) bool_t compatibility_bool1 ;    //for use in spare slots below
     __attribute__((unused)) bool_t compatibility_bool2 ;    //for use in spare slots below
     __attribute__((unused)) bool_t compatibility_bool3 ;    //for use in spare slots below
     __attribute__((unused)) bool_t compatibility_bool4 ;    //for use in spare slots below
@@ -278,10 +277,6 @@ void fnRecallConfig(uint16_t regist) {
     __attribute__((unused)) bool_t compatibility_bool23;    //for use in spare slots below
     __attribute__((unused)) float  compatibility_float1;    //for use in spare slots below
     __attribute__((unused)) float  compatibility_float2;    //for use in spare slots below
-    __attribute__((unused)) float  compatibility_float3;    //for use in spare slots below
-    __attribute__((unused)) float  compatibility_float4;    //for use in spare slots below
-    __attribute__((unused)) float  compatibility_float5;    //for use in spare slots below
-    __attribute__((unused)) float  compatibility_float6;    //for use in spare slots below
   if(getRegisterDataType(regist) == dtConfig) {
     dtConfigDescriptor_t *configToRecall = REGISTER_CONFIG_DATA(regist);
 
@@ -314,19 +309,15 @@ void fnRecallConfig(uint16_t regist) {
     recallFromDtConfigDescriptor(compatibility_bool18);
     recallFromDtConfigDescriptor(compatibility_bool00);   //spare
     recallFromDtConfigDescriptor(Norm_Key_00.func);
-    xcopy(Norm_Key_00.funcParam, configToRecall->Norm_Key_00.funcParam, sizeof(Norm_Key_00.funcParam));
-    recallFromDtConfigDescriptor(Norm_Key_00.used);
     recallFromDtConfigDescriptor(Input_Default);
     recallFromDtConfigDescriptor(compatibility_bool0);    //spare
     recallFromDtConfigDescriptor(BASE_MYM);
     recallFromDtConfigDescriptor(jm_G_DOUBLETAP);
     recallFromDtConfigDescriptor(compatibility_float1);   //spare
     recallFromDtConfigDescriptor(compatibility_float2);   //spare
-    recallFromDtConfigDescriptor(compatibility_float3);   //spare
-    recallFromDtConfigDescriptor(compatibility_float4);   //spare
-    recallFromDtConfigDescriptor(compatibility_float5);   //spare
-    recallFromDtConfigDescriptor(compatibility_float6);   //spare
-    recallFromDtConfigDescriptor(compatibility_bool1);
+    //to maintain exactly the same number of byte in the structure, removed and replaced compatibility floats #3-#6 and compatibility bool #1. That is 4 x 4 bytes + 1 byte
+    xcopy(Norm_Key_00.funcParam, configToRecall->Norm_Key_00.funcParam, sizeof(Norm_Key_00.funcParam));
+    recallFromDtConfigDescriptor(Norm_Key_00.used);
     recallFromDtConfigDescriptor(compatibility_bool2);
     recallFromDtConfigDescriptor(compatibility_bool3);
     recallFromDtConfigDescriptor(compatibility_bool4);

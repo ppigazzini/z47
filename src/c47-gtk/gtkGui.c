@@ -2388,7 +2388,7 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
       if(Norm_Key_00_used) {                                       //Sigma+NRM: JChange the name inside the Sigma+ button; allow USER mode, but override the USER setting for Sigma+, except for shiftg which is not overriden
         //stringToUtf8(indexOfItems[max(Norm_Key_00.func, -Norm_Key_00.func)].itemSoftmenuName, lbl);
         char sstmp[16];
-        if((Norm_Key_00.funcParam[0] != 0) && ((Norm_Key_00.func == -MNU_DYNAMIC)|| (Norm_Key_00.func == ITM_XEQ) || (Norm_Key_00.func == ITM_RCL)))  {
+        if((Norm_Key_00.funcParam[0] != 0) && ((Norm_Key_00.func == -MNU_DYNAMIC) || (Norm_Key_00.func == ITM_XEQ) || (Norm_Key_00.func == ITM_RCL)))  {
           strcpy(sstmp, (char *)&Norm_Key_00.funcParam);       // name of a user menu, program or variable assigned to the Norm key
         }
         else {

@@ -504,7 +504,7 @@ bool_t itemNotAvail(int16_t itemNr) {
       }
       if(tam.mode == 0 && TM_VALUE <= indexOfItems[func].param && indexOfItems[func].param <= TM_CMP && (calcMode != CM_PEM || aimBuffer[0] == 0 || nimNumberPart != NP_INT_BASE)) {
         #if defined(VERBOSEKEYS)
-          printf("itmes.c: runfunction (before tamEnterMode): %i, %s\n", softmenu[softmenuStack[0].softmenuId].menuItem, indexOfItems[-softmenu[softmenuStack[0].softmenuId].menuItem].itemSoftmenuName);
+          printf("items.c: runfunction (before tamEnterMode): %i, %s\n", softmenu[softmenuStack[0].softmenuId].menuItem, indexOfItems[-softmenu[softmenuStack[0].softmenuId].menuItem].itemSoftmenuName);
         #endif // VERBOSEKEYS
 
 

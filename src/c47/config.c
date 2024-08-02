@@ -1920,9 +1920,9 @@ void fnKeysManagement(uint16_t choice) {
       Norm_Key_00.func = kbd_usr[Norm_Key_00_key].primary;
       Norm_Key_00.funcParam[0] = 0;
       Norm_Key_00.used = Norm_Key_00.func != kbd_std[Norm_Key_00_key].primary;
-      char *funcParam = (char *)getNthString((uint8_t *)userKeyLabel, Norm_Key_00_key*6);
+      char *funcParam = (char *)getNthString((uint8_t *)userKeyLabel, Norm_Key_00_key * 6);
       if((funcParam[0] != 0) && ((Norm_Key_00.func == -MNU_DYNAMIC)|| (Norm_Key_00.func == ITM_XEQ) || (Norm_Key_00.func == ITM_RCL)))  {
-        strcpy(Norm_Key_00.funcParam, (char *)getNthString((uint8_t *)userKeyLabel, Norm_Key_00_key*6));       // name of a user menu, program or variable assigned to the Norm key
+        strcpy(Norm_Key_00.funcParam, (char *)getNthString((uint8_t *)userKeyLabel, Norm_Key_00_key * 6));       // name of a user menu, program or variable assigned to the Norm key
       }
       fnRefreshState();
       fnClearFlag(FLAG_USER);
@@ -1940,19 +1940,15 @@ void fnKeysManagement(uint16_t choice) {
         case USER_N47:
         case USER_V47:
       #endif //PC_BUILD
-        calcModel = choice;
-        fnClearFlag(FLAG_USER);
-        fnKeysManagement(USER_KRESET);                        // Reset all user keys when a permanent layout is changed
-        Norm_Key_00.func = Norm_Key_00_item_in_layout;    // Rest +NRM when a permanent layout is changed
-        Norm_Key_00.funcParam[0] = 0;
-        Norm_Key_00.used = false;
-        fnShowVersion(choice);
+      calcModel = choice;
+      fnClearFlag(FLAG_USER);
+      fnKeysManagement(USER_KRESET);                      // Reset all user keys when a permanent layout is changed, Reset +NRM when a permanent layout is changed
       break;
 
 
     case USER_KRESET:
       fnShowVersion(choice);
-      xcopy(kbd_usr, kbd_std, sizeof(kbd_std_C47));         //sizeof does not work when using the define for kbd_std
+      xcopy(kbd_usr, kbd_std, sizeof(kbd_std_C47));       // sizeof does not work when using the define for kbd_std
       Norm_Key_00.func = Norm_Key_00_item_in_layout;
       Norm_Key_00.funcParam[0] = 0;
       Norm_Key_00.used = false;
