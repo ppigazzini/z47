@@ -1918,7 +1918,7 @@ void fnKeysManagement(uint16_t choice) {
           Norm_Key_00.used = false;
           displayCalcErrorMessage(ERROR_CANNOT_ASSIGN_HERE, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
           #if defined(PC_BUILD)
-            moreInfoOnError("In function fnKeysManagement: TO_USER", "the NRM key is not available.");
+            moreInfoOnError("In function fnKeysManagement: TO_USER", "the NRM key is not available.",NULL, NULL);
           #endif // PC_BUILD
         }
 //      }
@@ -1939,7 +1939,7 @@ void fnKeysManagement(uint16_t choice) {
         Norm_Key_00.used = false;
         displayCalcErrorMessage(ERROR_CANNOT_ASSIGN_HERE, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
         #if defined(PC_BUILD)
-          moreInfoOnError("In function fnKeysManagement: FROM_USER", "the NRM key is not available.");
+          moreInfoOnError("In function fnKeysManagement: FROM_USER", "the NRM key is not available.",NULL, NULL);
         #endif // PC_BUILD
       }
       break;
