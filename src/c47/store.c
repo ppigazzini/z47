@@ -368,6 +368,7 @@ void fnStoreMax(uint16_t regist) {
 
 void fnStoreConfig(uint16_t regist) {
     //uint8_t  compatibility_u8 = 0;             //defaults to use when settings are removed
+  int16_t compatibility_int1  = 0;               //defaults to use when settings are removed
   bool_t compatibility_bool00 = false;           //defaults to use when settings are removed
   bool_t compatibility_bool0  = false;           //defaults to use when settings are removed
   bool_t compatibility_bool2  = false;           //defaults to use when settings are removed
@@ -425,14 +426,14 @@ void fnStoreConfig(uint16_t regist) {
   storeToDtConfigDescriptor(compatibility_bool21);
   storeToDtConfigDescriptor(BASE_HOME);
   storeToDtConfigDescriptor(compatibility_bool00);   //added
-  storeToDtConfigDescriptor(Norm_Key_00.func);
+  storeToDtConfigDescriptor(compatibility_int1);    //added
   storeToDtConfigDescriptor(Input_Default);
   storeToDtConfigDescriptor(compatibility_bool0);    //added
   storeToDtConfigDescriptor(BASE_MYM);
   storeToDtConfigDescriptor(jm_G_DOUBLETAP);
   storeToDtConfigDescriptor(compatibility_float1);
   storeToDtConfigDescriptor(compatibility_float2);
-  //to maintain exactly the same number of byte in the structure, removed and replaced compatibility floats #3-#6 and compatibility bool #1. That is 4 x 4 bytes + 1 byte
+  storeToDtConfigDescriptor(Norm_Key_00.func);
   xcopy(configToStore->Norm_Key_00.funcParam, Norm_Key_00.funcParam, sizeof(Norm_Key_00.funcParam));
   storeToDtConfigDescriptor(Norm_Key_00.used);
   storeToDtConfigDescriptor(compatibility_bool2);

@@ -1909,23 +1909,39 @@ void fnKeysManagement(uint16_t choice) {
     //-----------------------------------------------------------------------
     case TO_USER:
 //      if(Norm_Key_00.func != ITM_SHIFTf && Norm_Key_00.func != ITM_SHIFTg && Norm_Key_00.func != KEY_fg) {  //This line removed: it prevents f, g, fg in USER on the Norm_Key
-        kbd_usr[Norm_Key_00_key].primary = Norm_Key_00.func;
-        setUserKeyArgument(Norm_Key_00_key * 6 , Norm_Key_00.funcParam);
-        fnRefreshState();
-        fnSetFlag(FLAG_USER);
+        if(Norm_Key_00_key != -1) {
+          kbd_usr[Norm_Key_00_key].primary = Norm_Key_00.func;
+          setUserKeyArgument(Norm_Key_00_key * 6 , Norm_Key_00.funcParam);
+          fnRefreshState();
+          fnSetFlag(FLAG_USER);
+        } else {
+          Norm_Key_00.used = false;
+          displayCalcErrorMessage(ERROR_CANNOT_ASSIGN_HERE, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+          #if defined(PC_BUILD)
+            moreInfoOnError("In function fnKeysManagement: TO_USER", "the NRM key is not available.");
+          #endif // PC_BUILD
+        }
 //      }
       break;
 
     case FROM_USER:
-      Norm_Key_00.func = kbd_usr[Norm_Key_00_key].primary;
-      Norm_Key_00.funcParam[0] = 0;
-      Norm_Key_00.used = Norm_Key_00.func != kbd_std[Norm_Key_00_key].primary;
-      char *funcParam = (char *)getNthString((uint8_t *)userKeyLabel, Norm_Key_00_key * 6);
-      if((funcParam[0] != 0) && ((Norm_Key_00.func == -MNU_DYNAMIC)|| (Norm_Key_00.func == ITM_XEQ) || (Norm_Key_00.func == ITM_RCL)))  {
-        strcpy(Norm_Key_00.funcParam, (char *)getNthString((uint8_t *)userKeyLabel, Norm_Key_00_key * 6));       // name of a user menu, program or variable assigned to the Norm key
+      if(Norm_Key_00_key != -1) {
+        Norm_Key_00.func = kbd_usr[Norm_Key_00_key].primary;
+        Norm_Key_00.funcParam[0] = 0;
+        Norm_Key_00.used = Norm_Key_00.func != kbd_std[Norm_Key_00_key].primary;
+        char *funcParam = (char *)getNthString((uint8_t *)userKeyLabel, Norm_Key_00_key * 6);
+        if((funcParam[0] != 0) && ((Norm_Key_00.func == -MNU_DYNAMIC)|| (Norm_Key_00.func == ITM_XEQ) || (Norm_Key_00.func == ITM_RCL)))  {
+          strcpy(Norm_Key_00.funcParam, (char *)getNthString((uint8_t *)userKeyLabel, Norm_Key_00_key * 6));       // name of a user menu, program or variable assigned to the Norm key
+        }
+        fnRefreshState();
+        fnClearFlag(FLAG_USER);
+      } else {
+        Norm_Key_00.used = false;
+        displayCalcErrorMessage(ERROR_CANNOT_ASSIGN_HERE, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        #if defined(PC_BUILD)
+          moreInfoOnError("In function fnKeysManagement: FROM_USER", "the NRM key is not available.");
+        #endif // PC_BUILD
       }
-      fnRefreshState();
-      fnClearFlag(FLAG_USER);
       break;
 
       case USER_R47f_g:

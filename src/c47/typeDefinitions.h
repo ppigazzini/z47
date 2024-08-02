@@ -194,18 +194,14 @@ typedef struct {
   bool_t compatibility_bool21;              //Spare Byte
   bool_t BASE_HOME;
   bool_t compatibility_bool0;               //Spare Byte
-  normKey_t Norm_Key_00;
+  int16_t compatibility_int1;               //Spare Word
   uint8_t Input_Default;
   bool_t compatibility_bool00;              //Spare Byte
   bool_t BASE_MYM;
   bool_t jm_G_DOUBLETAP;
   float  compatibility_float1;              //Spare float
   float  compatibility_float2;              //Spare float
-  float  compatibility_float3;              //Spare float
-  float  compatibility_float4;              //Spare float
-  float  compatibility_float5;              //Spare float
-  float  compatibility_float6;              //Spare float
-  bool_t compatibility_bool1;               //Spare Byte
+  normKey_t Norm_Key_00;
   bool_t compatibility_bool2;               //Spare Byte
   bool_t compatibility_bool3;               //Spare Byte
   bool_t compatibility_bool4;               //Spare Byte

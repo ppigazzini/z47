@@ -2884,8 +2884,12 @@ double stringToDouble(const char *str) {
           else if(strcmp(aimBuffer, "BASE_HOME"                   ) == 0) { BASE_HOME             = (bool_t)stringToUint8(tmpString) != 0; }
           else if(strcmp(aimBuffer, "Norm_Key_00_VAR"             ) == 0) {
             // Old state file, before changing Norm_Key_00_VAR to the Norm_Key_00 structure
-            Norm_Key_00.func  = stringToUint16(tmpString);   // only the function is restored, assuming no param
-            Norm_Key_00.used  = Norm_Key_00.func != kbd_std[Norm_Key_00_key].primary;
+            if(Norm_Key_00_key != -1) {
+              Norm_Key_00.func  = stringToUint16(tmpString);   // only the function is restored, assuming no param
+              Norm_Key_00.used  = Norm_Key_00.func != kbd_std[Norm_Key_00_key].primary;
+            } else {
+              Norm_Key_00.used = false;
+            }
           }
           else if(strcmp(aimBuffer, "Norm_Key_00.func"            ) == 0) { Norm_Key_00.func      = stringToUint16(tmpString); }
           else if(strcmp(aimBuffer, "Norm_Key_00.funcParam"       ) == 0) { strcpy(Norm_Key_00.funcParam,tmpString); }
