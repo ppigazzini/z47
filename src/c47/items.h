@@ -1845,7 +1845,7 @@
 
 
 
-//Jaymos C43 extensions
+//C47 extensions
 #define ITM_op_j_pol                1795
 #define ITM_BASE_MYM                1796
 #define ITM_G_DOUBLETAP             1797
@@ -2069,9 +2069,9 @@
 #define ITM_EXTY                    2015
 #define ITM_DENMAX2_OLD             2016
 #define ITM_SETSIG2_OLD             2017
-#define ITM_2018             2018
+#define ITM_AVIEW                   2018
 #define ITM_RMODEQ                  2019
-#define ITM_2020                    2020
+#define ITM_PROMPT                  2020
 #define ITM_USER_ARESET             2021
 #define ITM_USER_MRESET             2022
 #define ITM_USER_KRESET             2023
@@ -2471,6 +2471,7 @@ bool_t   itemNotAvail           (int16_t itemNr);
 char     *lastFuncCatalogName   (void);
 char     *lastFuncSoftmenuName  (void);
 int16_t  lastSTORCL             (void);
+int16_t  lastFuncNo             (void);
 
 
 void reallyRunFunction(int16_t func, uint16_t param);

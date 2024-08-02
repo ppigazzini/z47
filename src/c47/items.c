@@ -161,6 +161,10 @@ bool_t itemNotAvail(int16_t itemNr) {
     return lastParam;
   }
 
+  int16_t lastFuncNo(void) {
+    return lastFunc;
+  }
+
   void reallyRunFunction(int16_t func, uint16_t param) {
     #if defined(PC_BUILD) && defined(DEBUG_EXECUTE)
       printf("   >>>  ReallyRunFunction: §%i§%s§%s§\n",func, indexOfItems[abs(func)].itemCatalogName, indexOfItems[abs(func)].itemSoftmenuName);
@@ -504,9 +508,8 @@ bool_t itemNotAvail(int16_t itemNr) {
         #endif // VERBOSEKEYS
         return;
       }
-
-      // if(calcMode == CM_PEM && !tam.mode && !isFunctionItemAMenu(func)) {
-      if(calcMode == CM_PEM && !tam.mode && !isFunctionItemAMenu(func) && (!(catalog && catalog != CATALOG_MVAR && !fnKeyInCatalog) || func == ITM_EXIT1)) {
+      bool_t doNotAddStep = (func == ITM_EXIT1 || func == ITM_CLRMOD || func == ITM_SNAP || func == ITM_NOP || func == ITM_BASEMENU) && currentKeyCode == 32;                  // longpress commands not to be added
+      if(calcMode == CM_PEM && !tam.mode && !isFunctionItemAMenu(func) && (!(catalog && catalog != CATALOG_MVAR && !fnKeyInCatalog)) && !doNotAddStep) {   // && func != ITM_EXIT1 && func != ITM_CLRMOD) {  //change to exclude ITM_EXIT1 for PEM
         addStepInProgram(func);
         return;
       }
@@ -854,6 +857,8 @@ bool_t itemNotAvail(int16_t itemNr) {
   void fnOff                       (uint16_t unusedButMandatoryParameter) {}
   void fnAim                       (uint16_t unusedButMandatoryParameter) {}
   void fnView                      (uint16_t unusedButMandatoryParameter) {}
+  void fnAview                     (uint16_t unusedButMandatoryParameter) {}
+  void fnPrompt                    (uint16_t unusedButMandatoryParameter) {}
   void fnLastX                     (uint16_t unusedButMandatoryParameter) {}
   void fnCyx                       (uint16_t unusedButMandatoryParameter) {}
   void fnPyx                       (uint16_t unusedButMandatoryParameter) {}
@@ -3393,9 +3398,9 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 2015 */  { fnPy,                         NOPARAM,                     "X.AXIS",                                      "X.AXIS",                                      (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_NONE         },
 /* 2016 */  { fnOldItemError,               NOPARAM,                     ">DMX<",                                       ">DMX<",                                       (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_NONE         },//Old item
 /* 2017 */  { fnOldItemError,               NOPARAM,                     ">SDIGS<",                                     ">SDIGS<",                                     (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_NONE         },//Old item
-/* 2018 */  { fnKeysManagement,             USER_HRESET,                 "HOME-R",                                      "HOME-R",                                      (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 2108 */  { fnAview,                      TM_M_DIM,                    "AVIEW",                                       "AVIEW",                                       (0 << TAM_MAX_BITS) |    99, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_REGISTER     },
 /* 2019 */  { fnGetRoundingMode,            NOPARAM,                     "RMODE?",                                      "RMODE?",                                      (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
-/* 2020 */  { itemToBeCoded,                NOPARAM,                     "2020",                                        "2020",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 2020 */  { fnPrompt,                     TM_M_DIM,                    "PROMPT",                                      "PROMPT",                                      (0 << TAM_MAX_BITS) |    99, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_REGISTER     },
 /* 2021 */  { fnKeysManagement,             USER_ARESET,                 "My" STD_alpha "-R",                           "My" STD_alpha "-R",                           (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2022 */  { fnKeysManagement,             USER_MRESET,                 "MyM-R",                                       "MyM-R",                                       (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2023 */  { fnKeysManagement,             USER_KRESET,                 "KEYS-R",                                      "KEYS-R",                                      (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },

@@ -250,7 +250,7 @@ void resetKeytimers(void) {
   }
 
 
-#define LongpressEXIT1 (calcModel == USER_C47 ? (calcMode == CM_AIM ? -MNU_MyAlpha : ITM_BASEMENU) : ITM_SNAP)   //SNAP on R47, MyMenu on C47
+#define LongpressEXIT1 (calcModel == USER_C47 ? (calcMode == CM_AIM ? -MNU_MyAlpha : ITM_BASEMENU) : ITM_SNAP)   //LongpressEXIT1 : C47: MyAlpha or MyMenu; R47: SNAP
 
 
   void Check_MultiPresses(int16_t *result, int8_t key_no) { //Set up longpress
@@ -323,8 +323,8 @@ void resetKeytimers(void) {
             break;
 
           case ITM_EXIT1:
-            longpressDelayedkey2 = ITM_CLRMOD;     //EXIT longpress DOES CLRMOD
-            longpressDelayedkey1 = LongpressEXIT1;
+            longpressDelayedkey2 = ITM_CLRMOD;     // EXIT longpress DOES CLRMOD
+            longpressDelayedkey1 = LongpressEXIT1; // LongpressEXIT1 : C47: MyAlpha or MyMenu; R47: SNAP
             break;
 
           case ITM_DRG:
@@ -387,8 +387,8 @@ void resetKeytimers(void) {
             }
             break;
           case ITM_EXIT1:
-              longpressDelayedkey2 = ITM_CLRMOD;   //EXIT longpress DOES CLRMOD
-              longpressDelayedkey1 = LongpressEXIT1;
+              longpressDelayedkey2 = ITM_CLRMOD;     // EXIT longpress DOES CLRMOD
+              longpressDelayedkey1 = LongpressEXIT1; // LongpressEXIT1 : C47: MyAlpha or MyMenu; R47: SNAP
               break;
           case ITM_DRG:
               longpressDelayedkey1 = 0;
@@ -430,8 +430,8 @@ void resetKeytimers(void) {
               }
             break;
           case ITM_EXIT1:
-            longpressDelayedkey2 = ITM_CLRMOD;   //EXIT longpress DOES CLRMOD
-            longpressDelayedkey1 = LongpressEXIT1;
+            longpressDelayedkey2 = ITM_CLRMOD;     // EXIT longpress DOES CLRMOD
+            longpressDelayedkey1 = LongpressEXIT1; // LongpressEXIT1 : C47: MyAlpha or MyMenu; R47: SNAP
             break;
           case ITM_ENTER:
             if(tam.mode == 0) {
@@ -457,6 +457,33 @@ void resetKeytimers(void) {
             if(tam.mode == 0) {
               longpressDelayedkey1 = ITM_XSWAP;
             }
+            break;
+          default:;
+        }
+        break;
+      }
+      case CM_PEM : {
+        switch(*result) {
+          case ITM_EXIT1:
+            if(getSystemFlag(FLAG_ALPHA)) {          //close AIM in PEM
+              fnKeyExit(NOPARAM);
+            }
+
+//            if(!isR47FAM) {
+//              longpressDelayedkey2 = ITM_CLRMOD;     //EXIT longpress DOES CLRMOD
+//              longpressDelayedkey1 = -MNU_PFN;
+//            }
+//            else {
+//              longpressDelayedkey3 = ITM_CLRMOD;     //EXIT longpress DOES CLRMOD
+//              longpressDelayedkey2 = LongpressEXIT1; //R47: SNAP
+//              longpressDelayedkey1 = -MNU_PFN;       //R47: PFN
+//            }
+
+            longpressDelayedkey3 = ITM_CLRMOD;     // EXIT longpress DOES CLRMOD
+            longpressDelayedkey2 = LongpressEXIT1; // LongpressEXIT1 : C47: MyAlpha or MyMenu; R47: SNAP
+            longpressDelayedkey1 = -MNU_PFN;
+            break;
+
             break;
           default:;
         }
@@ -629,6 +656,9 @@ void resetKeytimers(void) {
         FN_handle_timed_out_to_EXEC = false;
         exexute_double_g = true;
         fnTimerStop(TO_FN_EXEC);
+      }
+      if(menu(0) == -MNU_EQ_EDIT) {
+        exexute_double_g = false;
       }
       //PLACE ANY CONDITION PREVENTING DOUBLE CLICK HERE
       //  old:if(softmenuStack[0].softmenuId == 0) exexute_double_g = false; //JM prevent double click from executing nothing and showing a line, if no menu is showing

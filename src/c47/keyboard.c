@@ -2385,9 +2385,19 @@ RELEASE_END:
         }
 
         case ITM_EXIT1: {
-          if(calcMode == CM_PEM || SHOWMODE) {    //do action on press, instead of release
+          if(SHOWMODE) {    //do action on press, instead of release
             fnKeyExit(NOPARAM);
             keyActionProcessed = true;            //Removed to force EXIT on the RELEASE cycle to make it do fnKeyExit later to allow NOP
+          }
+          if(calcMode == CM_PEM) {
+            if(getSystemFlag(FLAG_ALPHA)) {          //close AIM in PEM
+              fnKeyExit(NOPARAM);
+            }
+            // if(menu(0) != -MNU_PFN) {
+            //   showSoftmenu(-MNU_PFN);
+            //   hourGlassIconEnabled = false;
+            //   keyActionProcessed = true;
+            // }
           }
           if((temporaryInformation != TI_NO_INFO) && (calcMode != CM_CONFIRMATION)) {
             temporaryInformation = TI_NO_INFO;
@@ -2917,6 +2927,8 @@ RELEASE_END:
                 if(item == ITM_PR) {
                   leavePem();
                   calcModeNormal();
+                  //exit menus immediately when coming out of PEM
+                  extractPFNMenus();
                   keyActionProcessed = true;
                   screenUpdatingMode = SCRUPD_AUTO;
                 }
@@ -3631,10 +3643,15 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
           fnBst(NOPARAM); // Set the PGM pointer to the original position
           break;
         }
-        if(softmenuStack[0].softmenuId > 1) { // not MyMenu and not MyAlpha
+        if(softmenuStack[0].softmenuId > 1 && menu(0) != -MNU_PFN) { // not MyMenu and not MyAlpha
           popSoftmenu();
           break;
         }
+        else if(menu(0) == -MNU_PFN){
+          //exit menus immediately when coming out of PEM
+          extractPFNMenus();
+        }
+
 
         aimBuffer[0] = 0;
         leavePem();
