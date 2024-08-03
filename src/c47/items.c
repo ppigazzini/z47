@@ -327,10 +327,12 @@ bool_t itemNotAvail(int16_t itemNr) {
     else
     if(calcMode == CM_NORMAL) {
       bool_t inMatrixMenu = (tam.mode == 0 ? softmenu[softmenuStack[0].softmenuId].menuItem : softmenu[softmenuStack[1].softmenuId].menuItem) == -MNU_MATX;
-      bool_t inRange = (param <= LAST_LETTERED_REGISTER ||
-                       (FIRST_STAT_REGISTER >= param && param <= LAST_STAT_REGISTER) ||
-                       (FIRST_SPARE_REGISTER >= param && param <= LAST_SPARE_REGISTER));
-      bool_t isMatrix = inRange ? (getRegisterDataType(param) != dtReal34Matrix && getRegisterDataType(param) != dtComplex34Matrix) : false;
+      bool_t inRegisterRange = (param <= LAST_LETTERED_REGISTER ||
+                       (FIRST_STAT_REGISTER  <= param && param <= LAST_STAT_REGISTER) ||
+                       (FIRST_SPARE_REGISTER <= param && param <= LAST_SPARE_REGISTER));
+      bool_t inReservedRange =  (FIRST_NAMED_RESERVED_VARIABLE <= param && param <= LAST_RESERVED_VARIABLE);
+      bool_t inNameRegisterRange =  (FIRST_NAMED_VARIABLE <= param && param <= LAST_NAMED_VARIABLE);
+      bool_t isMatrix = inRegisterRange ? (getRegisterDataType(param) != dtReal34Matrix && getRegisterDataType(param) != dtComplex34Matrix) : false;
       switch(func) {
         case ITM_RCL_FV      :
         case ITM_RCL_IPonA   :
@@ -341,7 +343,8 @@ bool_t itemNotAvail(int16_t itemNr) {
         case ITM_RCL_PV      : temporaryInformation = TI_STORCL; break;
         case ITM_STO         :
         case ITM_RCL         : temporaryInformation = ((param == REGISTER_I || param == REGISTER_J) && inMatrixMenu) ? TI_IJ : \
-                               (isMatrix) ? TI_STORCL : TI_NO_INFO ; break;
+                               (isMatrix) ? TI_STORCL : \
+                               (inReservedRange || inRegisterRange || inNameRegisterRange) ? TI_STORCL : TI_NO_INFO ; break;
         case ITM_RCLELPLUS   :
         case ITM_RCLEL       :
         case ITM_STOELPLUS   :
