@@ -2207,7 +2207,7 @@ if(shortCutCommand(w, event_keyval,    86,                                  shor
 
       yPos += DELTA_KEYS_Y + 1;
 
-  if(calcModel != USER_C47) {
+  if(calcModel != USER_C47 && calcModel != USER_DM42) {
       gtk_widget_get_preferred_size(  lbl71F, NULL, &lblF); //JM REMOVE SHIFT LABELS
       gtk_widget_get_preferred_size(  lbl71G, NULL, &lblG);
       gtk_fixed_move(GTK_FIXED(grid), lbl71F, (2*xPos+KEY_WIDTH_1-lblF.width-GAP*0-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);  //Gap removed to cover up fixed squares
@@ -2893,7 +2893,7 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
       gtk_widget_show(btn74);
       gtk_widget_show(btn75);
 
-      if(calcModel != USER_C47) {
+      if(calcModel != USER_C47 && calcModel != USER_DM42) {
         gtk_widget_show(lbl71F); //JM REMOVE SHIFT LABEL
         gtk_widget_show(lbl71G); //JM REMOVE SHIFT LABEL
       }
