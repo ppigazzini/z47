@@ -115,7 +115,7 @@
   //  #define SAVE_SPACE_DM42_13GRF    // 17472 bytes // Without Solver & graphics & stat graphics
   //  #define SAVE_SPACE_DM42_13GRF_JM //  7520 bytes // Without More graphics
   //  #define SAVE_SPACE_DM42_14       //   184 bytes // Without Load programming sample programs testPgms
-  //  #define SAVE_SPACE_DM42_15       // 10056 bytes // Without all distributions, i.e. , cauchy, chi, expo, f, logis, t, weibull
+    #define SAVE_SPACE_DM42_15       // 10056 bytes // Without all distributions, i.e. , cauchy, chi, expo, f, logis, t, weibull
     #define SAVE_SPACE_DM42_16       //  2168 bytes // Without Norml distribution
       #define SAVE_SPACE_DM42_17       //  7448 bytes // Without Poisson/Hyper/Binomial/Geometrical distributions
   //  #define SAVE_SPACE_DM42_20_TIMER //  1232 bytes // Without STOPW
@@ -378,7 +378,10 @@
 #define Norm_Key_00_keyID (calcModel == USER_C47 ? 21 :            calcModel == USER_DM42 ? 21 :            calcModel == USER_R47f_g ? -1 : calcModel == USER_R47bk_fg ? 35 :       calcModel == USER_R47fg_bk ? 36 : -1)
 #define Norm_Key_00_item_in_layout  (calcModel == USER_C47 ? ITM_SIGMAPLUS : calcModel == USER_DM42 ? ITM_SIGMAPLUS : calcModel == USER_R47f_g ? -1 : calcModel == USER_R47bk_fg ? ITM_NULL : calcModel == USER_R47fg_bk ? ITM_NULL : -1)
 #define isR47FAM          ((bool_t)(calcModel == USER_R47f_g || calcModel == USER_R47bk_fg || calcModel == USER_R47fg_bk || calcModel == USER_R47fg_g))
-#define shortcutProfile  (calcModel == USER_C47 ? USER_C47 : isR47FAM ? USER_R47 : 0)
+
+#define shortcutProfile   (calcModel == USER_C47 ? USER_C47 : isR47FAM ? USER_R47 : 0)
+#define INTEGERSHORTCUTS  (calcMode == CM_NIM && (calcModel == USER_C47 || isR47FAM))
+
 
 //fnKeysManagement
 #define JM_ASSIGN        28
@@ -1837,8 +1840,6 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define currentPtrToNextLevel                (currentSubroutineLevelData[2].ptrToNextLevel)
 #define currentPtrToPreviousLevel            (currentSubroutineLevelData[2].ptrToPreviousLevel)
 
-
-#define INTEGERSHORTCUTS                     (calcModel == USER_C47 || calcModel == USER_R47 || calcModel == USER_R47bk_fg || calcModel == USER_R47fg_bk || calcModel == USER_R47fg_g)    //TRUE is C47; check based on f/g key on DM42 position
 
 
 #if !defined(PC_BUILD) && !defined(DMCP_BUILD)
