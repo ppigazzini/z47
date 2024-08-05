@@ -117,28 +117,28 @@ void configCommon(uint16_t idx) {
 
 
 
-#define InputDefaultDataType  101    // config_fnInDefault               
-#define SigFigNumberOfDigits  102    // config_fnDisplayFormatSigFig     
-#define AllNumberOfDigits     103    // config_fnDisplayFormatAll        
-#define FixNumberOfDigits     104    // config_fnDisplayFormatFix        
-#define MymB                  105    // config_BASE_MYM                  
-#define HomeB                 106    // config_BASE_HOME                 
-#define RNG                   107    // config_exponentLimit             
-#define SDIGS                 108    // config_significantDigits         
-#define DSTACK                109    // config_displayStack              
-#define CACHEDDSTACK          110    // config_cachedDisplayStack        
-#define ADM                   111    // config_currentAngularMode        
-#define IPGRP                 112    // config_grpGroupingLeft           
-#define FPGRP                 113    // config_grpGroupingRight          
-#define IPGRP1                114    // config_grpGroupingGr1Left        
+#define InputDefaultDataType  101    // config_fnInDefault
+#define SigFigNumberOfDigits  102    // config_fnDisplayFormatSigFig
+#define AllNumberOfDigits     103    // config_fnDisplayFormatAll
+#define FixNumberOfDigits     104    // config_fnDisplayFormatFix
+#define MymB                  105    // config_BASE_MYM
+#define HomeB                 106    // config_BASE_HOME
+#define RNG                   107    // config_exponentLimit
+#define SDIGS                 108    // config_significantDigits
+#define DSTACK                109    // config_displayStack
+#define CACHEDDSTACK          110    // config_cachedDisplayStack
+#define ADM                   111    // config_currentAngularMode
+#define IPGRP                 112    // config_grpGroupingLeft
+#define FPGRP                 113    // config_grpGroupingRight
+#define IPGRP1                114    // config_grpGroupingGr1Left
 #define IPGRP1x               115    // config_grpGroupingGr1LeftOverflow
-#define fgLongPressSetting    117    // config_setFGLSettings            
+#define fgLongPressSetting    117    // config_setFGLSettings
 #define HIDE                  118    // config_exponentHideLimit
 
-#define DenMaX                120    // config_denmax                    
-#define TVMIKnown             121    // tvm          
-#define TVMIChanges           122    // tvm          
-#define FDIGS                 123    // config_fractionDigits         
+#define DenMaX                120    // config_denmax
+#define TVMIKnown             121    // tvm
+#define TVMIChanges           122    // tvm
+#define FDIGS                 123    // config_fractionDigits
 
 
 #define xxx -10001
@@ -155,24 +155,24 @@ void configCommon(uint16_t idx) {
 
 TO_QSPI const int32_t Settings[] = {
 //variable,                          n/a,        Reset,                          HP35,            JM,                   RJ,                     C47,             DefltSB,         TVM,                  Comment
-InputDefaultDataType,                xxx,        xxx,                            ID_DP,           ID_43S,               ID_DP,                  ID_43S,          xxx,             xxx,                  
-SigFigNumberOfDigits,                xxx,        xxx,                            9,               3,                    xxx,                    xxx,             xxx,             xxx,                  
-AllNumberOfDigits,                   xxx,        xxx,                            xxx,             xxx,                  xxx,                    3,               xxx,             xxx,                  
-FixNumberOfDigits,                   xxx,        xxx,                            xxx,             xxx,                  3,                      xxx,             xxx,             xxx,                  
-MymB,                                xxx,        1,                              0,               1,                    1,                      1,               xxx,             xxx,                  
-HomeB,                               xxx,        0,                              0,               0,                    0,                      0,               xxx,             xxx,                  
-RNG,                                 xxx,        6145,                           99,              6145,                 6145,                   6145,            xxx,             xxx,                  
-SDIGS,                               xxx,        0,                              16,              0,                    0,                      34,              xxx,             xxx,                  
-FDIGS,                               xxx,        0,                              16,              31,                   0,                      34,              xxx,             xxx,                  
-HIDE,                                xxx,        0,                              0,               31,                   0,                      0,               xxx,             xxx,                  
-DSTACK,                              xxx,        4,                              1,               4,                    4,                      4,               xxx,             xxx,                  
-CACHEDDSTACK,                        xxx,        4,                              1,               4,                    4,                      4,               xxx,             xxx,                  
-ADM,                                 xxx,        amDegree,                       amRadian,        amDegree,             amRadian,               amDegree,        xxx,             xxx,                  
-IPGRP,                               xxx,        3,                              3,               _gprl,                3,                      _gprl,           xxx,             xxx,                  
-FPGRP,                               xxx,        3,                              3,               _gprr,                3,                      _gprr,           xxx,             xxx,                  
-IPGRP1,                              xxx,        0,                              0,               _gpr1,                0,                      _gpr1,           xxx,             xxx,                  
-IPGRP1x,                             xxx,        0,                              0,               _gpr1x,               1,                      _gpr1x,          xxx,             xxx,                  
-fgLongPressSetting,                  xxx,        xxx,                            RBX_FGLNOFF,     RBX_FGLNFUL,          RBX_FGLNFUL,            RBX_FGLNFUL,     xxx,             xxx,                  
+InputDefaultDataType,                xxx,        xxx,                            ID_DP,           ID_43S,               ID_DP,                  ID_43S,          xxx,             xxx,
+SigFigNumberOfDigits,                xxx,        xxx,                            9,               3,                    xxx,                    xxx,             xxx,             xxx,
+AllNumberOfDigits,                   xxx,        xxx,                            xxx,             xxx,                  xxx,                    3,               xxx,             xxx,
+FixNumberOfDigits,                   xxx,        xxx,                            xxx,             xxx,                  3,                      xxx,             xxx,             xxx,
+MymB,                                xxx,        1,                              0,               1,                    1,                      1,               xxx,             xxx,
+HomeB,                               xxx,        0,                              0,               0,                    0,                      0,               xxx,             xxx,
+RNG,                                 xxx,        6145,                           99,              6145,                 6145,                   6145,            xxx,             xxx,
+SDIGS,                               xxx,        0,                              16,              0,                    0,                      34,              xxx,             xxx,
+FDIGS,                               xxx,        0,                              16,              31,                   0,                      34,              xxx,             xxx,
+HIDE,                                xxx,        0,                              0,               31,                   0,                      0,               xxx,             xxx,
+DSTACK,                              xxx,        4,                              1,               4,                    4,                      4,               xxx,             xxx,
+CACHEDDSTACK,                        xxx,        4,                              1,               4,                    4,                      4,               xxx,             xxx,
+ADM,                                 xxx,        amDegree,                       amRadian,        amDegree,             amRadian,               amDegree,        xxx,             xxx,
+IPGRP,                               xxx,        3,                              3,               _gprl,                3,                      _gprl,           xxx,             xxx,
+FPGRP,                               xxx,        3,                              3,               _gprr,                3,                      _gprr,           xxx,             xxx,
+IPGRP1,                              xxx,        0,                              0,               _gpr1,                0,                      _gpr1,           xxx,             xxx,
+IPGRP1x,                             xxx,        0,                              0,               _gpr1x,               1,                      _gpr1x,          xxx,             xxx,
+fgLongPressSetting,                  xxx,        xxx,                            RBX_FGLNOFF,     RBX_FGLNFUL,          RBX_FGLNFUL,            RBX_FGLNFUL,     xxx,             xxx,
 
 3,                                   0,          FLAG_IRFRAC,                    xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,
 3,                                   1,          xxx,                            xxx,             FLAG_IRFRAC,          FLAG_IRFRAC,            xxx,             xxx,             xxx,
@@ -188,20 +188,20 @@ fgLongPressSetting,                  xxx,        xxx,                           
 
 
 
-DenMaX,                              xxx,        64,                             xxx,             200,                  999,                    64,              xxx,             xxx,                  
-//TVM,                               n/a,        Reset,                          HP35,            JM,                   RJ,                     C47,             DefltSB,         TVM,                  
+DenMaX,                              xxx,        64,                             xxx,             200,                  999,                    64,              xxx,             xxx,
+//TVM,                               n/a,        Reset,                          HP35,            JM,                   RJ,                     C47,             DefltSB,         TVM,
 TVMIKnown,                           xxx,        0,                              xxx,             xxx,                  xxx,                    xxx,             xxx,             0,                    // Clear flag TVMIKnown
 TVMIChanges,                         xxx,        0,                              xxx,             xxx,                  xxx,                    xxx,             xxx,             0,                    // Clear flag TVMIChanges
-//TVM,                               n/a,        Reset,                          HP35,            JM,                   RJ,                     C47,             DefltSB,         TVM,                  
-RESERVED_VARIABLE_FV,                xxx,        0,                              xxx,             xxx,                  xxx,                    xxx,             xxx,             0,                    
-RESERVED_VARIABLE_IPONA,             xxx,        0,                              xxx,             xxx,                  xxx,                    xxx,             xxx,             0,                    
-RESERVED_VARIABLE_NPPER,             xxx,        0,                              xxx,             xxx,                  xxx,                    xxx,             xxx,             0,                    
-RESERVED_VARIABLE_PMT,               xxx,        0,                              xxx,             xxx,                  xxx,                    xxx,             xxx,             0,                    
-RESERVED_VARIABLE_PV,                xxx,        0,                              xxx,             xxx,                  xxx,                    xxx,             xxx,             0,                    
-RESERVED_VARIABLE_PPERONA,           xxx,        12,                             xxx,             xxx,                  xxx,                    xxx,             xxx,             12,                   
-RESERVED_VARIABLE_CPERONA,           xxx,        12,                             xxx,             xxx,                  xxx,                    xxx,             xxx,             12,                   
+//TVM,                               n/a,        Reset,                          HP35,            JM,                   RJ,                     C47,             DefltSB,         TVM,
+RESERVED_VARIABLE_FV,                xxx,        0,                              xxx,             xxx,                  xxx,                    xxx,             xxx,             0,
+RESERVED_VARIABLE_IPONA,             xxx,        0,                              xxx,             xxx,                  xxx,                    xxx,             xxx,             0,
+RESERVED_VARIABLE_NPPER,             xxx,        0,                              xxx,             xxx,                  xxx,                    xxx,             xxx,             0,
+RESERVED_VARIABLE_PMT,               xxx,        0,                              xxx,             xxx,                  xxx,                    xxx,             xxx,             0,
+RESERVED_VARIABLE_PV,                xxx,        0,                              xxx,             xxx,                  xxx,                    xxx,             xxx,             0,
+RESERVED_VARIABLE_PPERONA,           xxx,        12,                             xxx,             xxx,                  xxx,                    xxx,             xxx,             12,
+RESERVED_VARIABLE_CPERONA,           xxx,        12,                             xxx,             xxx,                  xxx,                    xxx,             xxx,             12,
 3,                                   1,          FLAG_ENDPMT,                    xxx,             xxx,                  xxx,                    xxx,             xxx,             FLAG_ENDPMT,          // Set flag  FLAG_ENDPMT
-//FLAG,                              set/clear,  Reset,                          HP35,            JM,                   RJ,                     C47,             DefltSB,         TVM,                  
+//FLAG,                              set/clear,  Reset,                          HP35,            JM,                   RJ,                     C47,             DefltSB,         TVM,
 3,                                   1,          FLAG_MONIT,                     xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,                  // Set flag  FLAG_MONIT
 3,                                   1,          FLAG_HPCONV,                    xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,                  // Set flag  FLAG_HPCONV
 3,                                   0,          xxx,                            xxx,             FLAG_HPCONV,          FLAG_HPCONV,            xxx,             xxx,             xxx,                  // Clear flag FLAG_HPCONV
@@ -260,13 +260,13 @@ RESERVED_VARIABLE_CPERONA,           xxx,        12,                            
 3,                                   0,          FLAG_FRCSRN,                    xxx,             FLAG_FRCSRN,          xxx,                    xxx,             xxx,             xxx,                  // Clear flag FLAG_FRCSRN
 3,                                   0,          FLAG_FRCYC,                     xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,                  // Clear flag FLAG_FRCYC
 
-//fnSetGapChar,                      n/a,        Reset,                          HP35,            JM,                   RJ,                     C47,             DefltSB,         TVM,                  
+//fnSetGapChar,                      n/a,        Reset,                          HP35,            JM,                   RJ,                     C47,             DefltSB,         TVM,
 4,                                   xxx,        0+ITM_SPACE_PUNCTUATION,        ITM_NULL,        0+_gapl,              0+ITM_SPACE_4_PER_EM,   0+_gapl,         xxx,             xxx,                  //fnSetGapChar
 4,                                   xxx,        32768+ITM_SPACE_PUNCTUATION,    ITM_NULL+32768,  32768+_gapr,          32768+ITM_NULL,         32768+_gapr,     xxx,             xxx,                  //fnSetGapChar
 4,                                   xxx,        49152+ITM_PERIOD,               ITM_WDOT+49152,  49152+ITM_WDOT,       49152+ITM_WCOMMA,       49152+_gaprx,    xxx,             xxx,                  //fnSetGapChar
 0,                                   0,          0,                              0,               0,                    0,                      0,               0,               0,                    //END MARKER
 
-//Setsetting,                        n/a,        Reset,                          HP35,            JM,                   RJ,                     C47,             DefltSB,         TVM,                  
+//Setsetting,                        n/a,        Reset,                          HP35,            JM,                   RJ,                     C47,             DefltSB,         TVM,
 //2,                                   xxx,        xxx,                            SS_4,            SS_8,                 SS_8,                   SS_8,            xxx,             xxx,                  //SetSetting
 //2,                                   xxx,        xxx,                            ITM_CPXRES0,     ITM_CPXRES1,          ITM_CPXRES1,            ITM_CPXRES1,     xxx,             xxx,                  //SetSetting
 //2,                                   xxx,        xxx,                            ITM_SPCRES0,     ITM_SPCRES1,          ITM_SPCRES1,            ITM_SPCRES1,     xxx,             xxx,                  //SetSetting
@@ -1276,7 +1276,9 @@ void resetOtherConfigurationStuff(void) {
   HOME3 = true;
   MYM3 = false;
   ShiftTimoutMode = false;
-  Norm_Key_00_VAR  = Norm_Key_00_item_in_layout;               //JM NORM MODE SIGMA REPLACEMENT KEY
+  Norm_Key_00.func  = Norm_Key_00_item_in_layout;               //JM NORM MODE SIGMA REPLACEMENT KEY
+  Norm_Key_00.funcParam[0] = 0;
+  Norm_Key_00.used = false;
   Input_Default =  ID_43S;
   jm_G_DOUBLETAP = true;
   displayStackSHOIDISP = 2;            //See if the refresh is needed. fnShoiXRepeats(2); //displayStackSHOIDISP
@@ -1906,17 +1908,40 @@ void fnKeysManagement(uint16_t choice) {
     //---KEYS SIGMA+ ALLOCATIONS: COPY SIGMA+ USER MODE primary to -> ALLMODE
     //-----------------------------------------------------------------------
     case TO_USER:
-//      if(Norm_Key_00_VAR != ITM_SHIFTf && Norm_Key_00_VAR != ITM_SHIFTg && Norm_Key_00_VAR != KEY_fg) {  //This line removed: it prevents f, g, fg in USER on the Norm_Key
-        kbd_usr[Norm_Key_00_key].primary = Norm_Key_00_VAR;
-        fnRefreshState();
-        fnSetFlag(FLAG_USER);
+//      if(Norm_Key_00.func != ITM_SHIFTf && Norm_Key_00.func != ITM_SHIFTg && Norm_Key_00.func != KEY_fg) {  //This line removed: it prevents f, g, fg in USER on the Norm_Key
+        if(Norm_Key_00_key != -1) {
+          kbd_usr[Norm_Key_00_key].primary = Norm_Key_00.func;
+          setUserKeyArgument(Norm_Key_00_key * 6 , Norm_Key_00.funcParam);
+          fnRefreshState();
+          fnSetFlag(FLAG_USER);
+        } else {
+          Norm_Key_00.used = false;
+          displayCalcErrorMessage(ERROR_CANNOT_ASSIGN_HERE, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+          #if defined(PC_BUILD)
+            moreInfoOnError("In function fnKeysManagement: TO_USER", "the NRM key is not available.",NULL, NULL);
+          #endif // PC_BUILD
+        }
 //      }
       break;
 
     case FROM_USER:
-      Norm_Key_00_VAR = kbd_usr[Norm_Key_00_key].primary;
-      fnRefreshState();
-      fnClearFlag(FLAG_USER);
+      if(Norm_Key_00_key != -1) {
+        Norm_Key_00.func = kbd_usr[Norm_Key_00_key].primary;
+        Norm_Key_00.funcParam[0] = 0;
+        Norm_Key_00.used = Norm_Key_00.func != kbd_std[Norm_Key_00_key].primary;
+        char *funcParam = (char *)getNthString((uint8_t *)userKeyLabel, Norm_Key_00_key * 6);
+        if((funcParam[0] != 0) && ((Norm_Key_00.func == -MNU_DYNAMIC)|| (Norm_Key_00.func == ITM_XEQ) || (Norm_Key_00.func == ITM_RCL)))  {
+          strcpy(Norm_Key_00.funcParam, (char *)getNthString((uint8_t *)userKeyLabel, Norm_Key_00_key * 6));       // name of a user menu, program or variable assigned to the Norm key
+        }
+        fnRefreshState();
+        fnClearFlag(FLAG_USER);
+      } else {
+        Norm_Key_00.used = false;
+        displayCalcErrorMessage(ERROR_CANNOT_ASSIGN_HERE, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        #if defined(PC_BUILD)
+          moreInfoOnError("In function fnKeysManagement: FROM_USER", "the NRM key is not available.",NULL, NULL);
+        #endif // PC_BUILD
+      }
       break;
 
       case USER_R47f_g:
@@ -1931,18 +1956,18 @@ void fnKeysManagement(uint16_t choice) {
         case USER_N47:
         case USER_V47:
       #endif //PC_BUILD
-        calcModel = choice;
-        fnClearFlag(FLAG_USER);
-        fnKeysManagement(USER_KRESET);                   // Reset all user keys when a permanent layout is changed
-        Norm_Key_00_VAR = Norm_Key_00_item_in_layout;    // Rest +NRM when a permanent layout is changed
-        fnShowVersion(choice);
+      calcModel = choice;
+      fnClearFlag(FLAG_USER);
+      fnKeysManagement(USER_KRESET);                      // Reset all user keys when a permanent layout is changed, Reset +NRM when a permanent layout is changed
       break;
 
 
     case USER_KRESET:
       fnShowVersion(choice);
-      xcopy(kbd_usr, kbd_std, sizeof(kbd_std_C47));         //sizeof does not work when using the define for kbd_std
-      Norm_Key_00_VAR = Norm_Key_00_item_in_layout;
+      xcopy(kbd_usr, kbd_std, sizeof(kbd_std_C47));       // sizeof does not work when using the define for kbd_std
+      Norm_Key_00.func = Norm_Key_00_item_in_layout;
+      Norm_Key_00.funcParam[0] = 0;
+      Norm_Key_00.used = false;
       fnRefreshState();
       fnClearFlag(FLAG_USER);
       break;

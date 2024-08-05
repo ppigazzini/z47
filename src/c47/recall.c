@@ -251,9 +251,9 @@ void fnRecallMax(uint16_t regist) {
 //}
 
 void fnRecallConfig(uint16_t regist) {
+    __attribute__((unused)) int16_t compatibility_int1;     //for use in spare slots below
     __attribute__((unused)) bool_t compatibility_bool00;    //for use in spare slots below
     __attribute__((unused)) bool_t compatibility_bool0 ;    //for use in spare slots below
-    __attribute__((unused)) bool_t compatibility_bool1 ;    //for use in spare slots below
     __attribute__((unused)) bool_t compatibility_bool2 ;    //for use in spare slots below
     __attribute__((unused)) bool_t compatibility_bool3 ;    //for use in spare slots below
     __attribute__((unused)) bool_t compatibility_bool4 ;    //for use in spare slots below
@@ -278,10 +278,6 @@ void fnRecallConfig(uint16_t regist) {
     __attribute__((unused)) bool_t compatibility_bool23;    //for use in spare slots below
     __attribute__((unused)) float  compatibility_float1;    //for use in spare slots below
     __attribute__((unused)) float  compatibility_float2;    //for use in spare slots below
-    __attribute__((unused)) float  compatibility_float3;    //for use in spare slots below
-    __attribute__((unused)) float  compatibility_float4;    //for use in spare slots below
-    __attribute__((unused)) float  compatibility_float5;    //for use in spare slots below
-    __attribute__((unused)) float  compatibility_float6;    //for use in spare slots below
   if(getRegisterDataType(regist) == dtConfig) {
     dtConfigDescriptor_t *configToRecall = REGISTER_CONFIG_DATA(regist);
 
@@ -313,32 +309,30 @@ void fnRecallConfig(uint16_t regist) {
     recallFromDtConfigDescriptor(compatibility_bool21);
     recallFromDtConfigDescriptor(compatibility_bool18);
     recallFromDtConfigDescriptor(compatibility_bool00);   //spare
-    recallFromDtConfigDescriptor(Norm_Key_00_VAR);
+    recallFromDtConfigDescriptor(compatibility_int1);     //spare
     recallFromDtConfigDescriptor(Input_Default);
     recallFromDtConfigDescriptor(compatibility_bool0);    //spare
     recallFromDtConfigDescriptor(BASE_MYM);
     recallFromDtConfigDescriptor(jm_G_DOUBLETAP);
     recallFromDtConfigDescriptor(compatibility_float1);   //spare
     recallFromDtConfigDescriptor(compatibility_float2);   //spare
-    recallFromDtConfigDescriptor(compatibility_float3);   //spare
-    recallFromDtConfigDescriptor(compatibility_float4);   //spare
-    recallFromDtConfigDescriptor(compatibility_float5);   //spare
-    recallFromDtConfigDescriptor(compatibility_float6);   //spare
-    recallFromDtConfigDescriptor(compatibility_bool1);
+    recallFromDtConfigDescriptor(Norm_Key_00.func);
+    xcopy(Norm_Key_00.funcParam, configToRecall->Norm_Key_00.funcParam, sizeof(Norm_Key_00.funcParam));
+    recallFromDtConfigDescriptor(Norm_Key_00.used);
     recallFromDtConfigDescriptor(compatibility_bool2);
     recallFromDtConfigDescriptor(compatibility_bool3);
     recallFromDtConfigDescriptor(compatibility_bool4);
     recallFromDtConfigDescriptor(compatibility_bool5);
     recallFromDtConfigDescriptor(compatibility_bool6);
     recallFromDtConfigDescriptor(compatibility_bool7);
-    recallFromDtConfigDescriptor(compatibility_bool8); 
-    recallFromDtConfigDescriptor(compatibility_bool9); 
-    recallFromDtConfigDescriptor(compatibility_bool10); 
-    recallFromDtConfigDescriptor(compatibility_bool11); 
-    recallFromDtConfigDescriptor(compatibility_bool12); 
-    recallFromDtConfigDescriptor(compatibility_bool13); 
-    recallFromDtConfigDescriptor(compatibility_bool14); 
-    recallFromDtConfigDescriptor(compatibility_bool15); 
+    recallFromDtConfigDescriptor(compatibility_bool8);
+    recallFromDtConfigDescriptor(compatibility_bool9);
+    recallFromDtConfigDescriptor(compatibility_bool10);
+    recallFromDtConfigDescriptor(compatibility_bool11);
+    recallFromDtConfigDescriptor(compatibility_bool12);
+    recallFromDtConfigDescriptor(compatibility_bool13);
+    recallFromDtConfigDescriptor(compatibility_bool14);
+    recallFromDtConfigDescriptor(compatibility_bool15);
     recallFromDtConfigDescriptor(fractionDigits);
     recallFromDtConfigDescriptor(compatibility_bool23);
     recallFromDtConfigDescriptor(compatibility_bool16);    //spare
