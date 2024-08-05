@@ -2255,7 +2255,9 @@ typedef struct {
         break;
       case ID_DP:                                  //   Do Real default for DP
       case ID_CPXDP:                               //                       CPX
-        nimNumberPart = NP_REAL_FLOAT_PART;
+        if(lastIntegerBase == 0) {
+          nimNumberPart = NP_REAL_FLOAT_PART;
+        }
         break;
       default:;
       }
@@ -2464,7 +2466,7 @@ typedef struct {
           }
           else if(nimNumberPart == NP_REAL_FLOAT_PART || nimNumberPart == NP_REAL_EXPONENT) {
 
-              if(Input_Default == ID_CPXDP) {                                         //JM Input default type
+              if(lastIntegerBase == 0 && Input_Default == ID_CPXDP) {                                         //JM Input default type
                 reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone); //JM Input default type
                 stringToReal34(aimBuffer, REGISTER_REAL34_DATA(REGISTER_X));          //JM Input default type
                 stringToReal34("0", REGISTER_IMAG34_DATA(REGISTER_X));                //JM Input default type
