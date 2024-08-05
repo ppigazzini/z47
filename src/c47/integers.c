@@ -103,6 +103,13 @@ void fnChangeBase(uint16_t base) {
     }
   }
 
+  else if(Input_Default == ID_CPXDP && getRegisterDataType(REGISTER_X) == dtComplex34 && (base == 2 || base == 8 || base == 16 || base == 10)) {   //specific error for the HEX/DEC/OCT/BIN buttons. # is a specific ->INT instruction and gets the standard message
+    displayCalcErrorMessage(ERROR_IPX_INVALID_FOR_SI, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "the input type %s cannot be used with BASE menu HEX/DEC/OCT/BIN for " STD_RIGHT_ARROW "INT!", getDataTypeName(getRegisterDataType(REGISTER_X), false, false));
+      moreInfoOnError("In function fnChangeBase:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+  }
   else {
     displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
