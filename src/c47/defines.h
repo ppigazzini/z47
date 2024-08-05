@@ -457,40 +457,41 @@
 #define ERROR_SINGULAR_MATRIX                     22
 #define ERROR_FLASH_MEMORY_FULL                   23
 #define ERROR_INVALID_DATA_TYPE_FOR_OP            24
-#define ERROR_IPX_INVALID_FOR_SI                  25
-#define ERROR_WP34S_COMPAT                        26
-#define ERROR_ENTER_NEW_NAME                      27
-#define ERROR_CANNOT_DELETE_PREDEF_ITEM           28
-#define ERROR_NO_SUMMATION_DATA                   29
-#define ERROR_ITEM_TO_BE_CODED                    30
-#define ERROR_FUNCTION_TO_BE_CODED                31
-#define ERROR_INPUT_DATA_TYPE_NOT_MATCHING        32
-#define ERROR_WRITE_PROTECTED_SYSTEM_FLAG         33
-#define ERROR_STRING_WOULD_BE_TOO_LONG            34
-#define ERROR_EMPTY_STRING                        35
-#define ERROR_CANNOT_READ_FILE                    36
-#define ERROR_UNDEF_SOURCE_VAR                    37
-#define ERROR_WRITE_PROTECTED_VAR                 38
-#define ERROR_NO_MATRIX_INDEXED                   39
-#define ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX    40
-#define ERROR_NO_ERRORS_CALCULABLE                41
-#define ERROR_LARGE_DELTA_AND_OPPOSITE_SIGN       42
-#define ERROR_SOLVER_REACHED_LOCAL_EXTREMUM       43
-#define ERROR_INITIAL_GUESS_OUT_OF_DOMAIN         44
-#define ERROR_FUNCTION_VALUES_LOOK_CONSTANT       45
-#define ERROR_SYNTAX_ERROR_IN_EQUATION            46
-#define ERROR_EQUATION_TOO_COMPLEX                47
-#define ERROR_CANNOT_ASSIGN_HERE                  48
-#define ERROR_INVALID_NAME                        49
-#define ERROR_TOO_MANY_VARIABLES                  50 // unlikely
-#define ERROR_NON_PROGRAMMABLE_COMMAND            51
-#define ERROR_NO_GLOBAL_LABEL                     52
-#define ERROR_INVALID_DATA_TYPE_FOR_POLAR_RECT    53
-#define ERROR_BAD_INPUT                           54 // This error is not in ReM and cannot occur (theoretically).
-#define ERROR_NO_PROGRAM_SPECIFIED                55
-#define ERROR_CANNOT_WRITE_FILE                   56
-#define ERROR_OLD_ITEM_TO_REPLACE                 57
-#define ERROR_VARIABLE_NOT_SELECTED               58
+#define ERROR_WP34S_COMPAT                        25
+#define ERROR_ENTER_NEW_NAME                      26
+#define ERROR_CANNOT_DELETE_PREDEF_ITEM           27
+#define ERROR_NO_SUMMATION_DATA                   28
+#define ERROR_ITEM_TO_BE_CODED                    29
+#define ERROR_FUNCTION_TO_BE_CODED                30
+#define ERROR_INPUT_DATA_TYPE_NOT_MATCHING        31
+#define ERROR_WRITE_PROTECTED_SYSTEM_FLAG         32
+#define ERROR_STRING_WOULD_BE_TOO_LONG            33
+#define ERROR_EMPTY_STRING                        34
+#define ERROR_CANNOT_READ_FILE                    35
+#define ERROR_UNDEF_SOURCE_VAR                    36
+#define ERROR_WRITE_PROTECTED_VAR                 37
+#define ERROR_NO_MATRIX_INDEXED                   38
+#define ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX    39
+#define ERROR_NO_ERRORS_CALCULABLE                40
+#define ERROR_LARGE_DELTA_AND_OPPOSITE_SIGN       41
+#define ERROR_SOLVER_REACHED_LOCAL_EXTREMUM       42
+#define ERROR_INITIAL_GUESS_OUT_OF_DOMAIN         43
+#define ERROR_FUNCTION_VALUES_LOOK_CONSTANT       44
+#define ERROR_SYNTAX_ERROR_IN_EQUATION            45
+#define ERROR_EQUATION_TOO_COMPLEX                46
+#define ERROR_CANNOT_ASSIGN_HERE                  47
+#define ERROR_INVALID_NAME                        48
+#define ERROR_TOO_MANY_VARIABLES                  49 // unlikely
+#define ERROR_NON_PROGRAMMABLE_COMMAND            50
+#define ERROR_NO_GLOBAL_LABEL                     51
+#define ERROR_INVALID_DATA_TYPE_FOR_POLAR_RECT    52
+#define ERROR_BAD_INPUT                           53 // This error is not in ReM and cannot occur (theoretically).
+#define ERROR_NO_PROGRAM_SPECIFIED                54
+#define ERROR_CANNOT_WRITE_FILE                   55
+#define ERROR_OLD_ITEM_TO_REPLACE                 56
+#define ERROR_VARIABLE_NOT_SELECTED               57
+#define ERROR_IPX_INVALID_FOR_SI                  58
+
 
 //Status output messages for time consuming tasks, to keep user informed
 #define LOADING_STATE_FILE                        59
