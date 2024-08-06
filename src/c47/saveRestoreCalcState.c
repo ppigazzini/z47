@@ -46,7 +46,7 @@
 #include <errno.h>
 #include <string.h>
 #include <sys/stat.h>
-#endif
+#endif //PC_BUILD
 
 #if defined(DMCP_BUILD)
 #include <dmcp.h>
@@ -85,6 +85,16 @@ uint16_t flushBufferCnt = 0;
     return ioFileRead(buffer, size);
   }
 #endif // !TESTSUITE_BUILD
+
+
+uint8_t convert001090400T001090500(uint8_t parameter, uint8_t offset) { //Example: read from file: RB_F14 (which was 0) and and report RBX_F14 (which is 221) to the program.
+uint8_t output = parameter;
+  if(parameter < 20) {
+    output = parameter + offset;
+  }
+  return output;
+}
+
 
 
 
@@ -1075,6 +1085,7 @@ uint16_t flushBufferCnt = 0;
     restoreStateValue(&HOME3,                          sizeof(HOME3),                                               "HOME3",                          "bool");
     restoreStateValue(&ShiftTimoutMode,                sizeof(ShiftTimoutMode),                                     "ShiftTimoutMode",                "bool");
     restoreStateValue(&fgLN,                           sizeof(fgLN),                                                "fgLN",                           "uint8");
+    fgLN = convert001090400T001090500(fgLN,RBX_FGLNOFF);
     restoreStateValue(&BASE_HOME,                      sizeof(BASE_HOME),                                           "BASE_HOME",                      "bool");
     restoreStateValue(&Norm_Key_00.func,               sizeof(Norm_Key_00.func),                                    "Norm_Key_00.func",               "int16");
     restoreStateValue(&Norm_Key_00.funcParam,          sizeof(Norm_Key_00.funcParam),                               "Norm_Key_00.funcParam",          "hexDump");
@@ -1101,9 +1112,12 @@ uint16_t flushBufferCnt = 0;
     restoreStateValue(&bcdDisplay,                     sizeof(bcdDisplay),                                          "bcdDisplay",                     "bool");    //C43 JM
     restoreStateValue(&topHex,                         sizeof(topHex),                                              "topHex",                         "bool");    //C43 JM
     restoreStateValue(&bcdDisplaySign,                 sizeof(bcdDisplaySign),                                      "bcdDisplaySign",                 "uint8");   //C43 JM
+    bcdDisplaySign = convert001090400T001090500(bcdDisplaySign,BCDu);
     restoreStateValue(&DM_Cycling,                     sizeof(DM_Cycling),                                          "DM_Cycling",                     "uint8");   //JM
     restoreStateValue(&LongPressM,                     sizeof(LongPressM),                                          "LongPressM",                     "uint8");   //JM
+    LongPressM = convert001090400T001090500(LongPressM,RBX_M14);
     restoreStateValue(&LongPressF,                     sizeof(LongPressF),                                          "LongPressF",                     "uint8");   //JM
+    LongPressF = convert001090400T001090500(LongPressF,RBX_F14);
     restoreStateValue(&currentAsnScr,                  sizeof(currentAsnScr),                                       "currentAsnScr",                  "uint8");   //JM
     restoreStateValue(&gapItemLeft,                    sizeof(gapItemLeft),                                         "gapItemLeft",                    "uint16");  //JM
     restoreStateValue(&gapItemRight,                   sizeof(gapItemRight),                                        "gapItemRight",                   "uint16");  //JM
@@ -2875,8 +2889,8 @@ double stringToDouble(const char *str) {
           else if(strcmp(aimBuffer, "exponentHideLimit"           ) == 0) { exponentHideLimit     = stringToInt16(tmpString); }
           else if(strcmp(aimBuffer, "notBestF"                    ) == 0) { lrSelection           = stringToUint16(tmpString);}
           else if(strcmp(aimBuffer, "bestF"                       ) == 0) { lrSelection           = stringToUint16(tmpString);}
-          else if(strcmp(aimBuffer, "fgLN"                        ) == 0) { fgLN                  = stringToUint8(tmpString); }
-          else if(strcmp(aimBuffer, "jm_FG_LINE"                  ) == 0) { fgLN                  = stringToUint8(tmpString); }             //Keep compatible with old setting
+          else if(strcmp(aimBuffer, "fgLN"                        ) == 0) { fgLN                  = convert001090400T001090500(stringToUint8(tmpString),RBX_FGLNOFF); }
+          else if(strcmp(aimBuffer, "jm_FG_LINE"                  ) == 0) { fgLN                  = convert001090400T001090500(stringToUint8(tmpString),RBX_FGLNOFF); }             //Keep compatible with old setting
           else if(strcmp(aimBuffer, "HOME3"                       ) == 0) { HOME3                 = (bool_t)stringToUint8(tmpString) != 0; }
           else if(strcmp(aimBuffer, "MYM3"                        ) == 0) { MYM3                  = (bool_t)stringToUint8(tmpString) != 0; }
           else if(strcmp(aimBuffer, "ShiftTimoutMode"             ) == 0) { ShiftTimoutMode       = (bool_t)stringToUint8(tmpString) != 0; }
@@ -2901,11 +2915,11 @@ double stringToDouble(const char *str) {
           else if(strcmp(aimBuffer, "displayStackSHOIDISP"        ) == 0) { displayStackSHOIDISP  = stringToUint8(tmpString); }
           else if(strcmp(aimBuffer, "bcdDisplay"                  ) == 0) { bcdDisplay            = (bool_t)stringToUint8(tmpString) != 0; }
           else if(strcmp(aimBuffer, "topHex"                      ) == 0) { topHex                = (bool_t)stringToUint8(tmpString) != 0; }
-          else if(strcmp(aimBuffer, "bcdDisplaySign"              ) == 0) { bcdDisplaySign        = stringToUint8(tmpString); }
+          else if(strcmp(aimBuffer, "bcdDisplaySign"              ) == 0) { bcdDisplaySign        = convert001090400T001090500(stringToUint8(tmpString),BCDu); }
           else if(strcmp(aimBuffer, "DRG_Cycling"                 ) == 0) { DRG_Cycling           = stringToUint8(tmpString); }
           else if(strcmp(aimBuffer, "DM_Cycling"                  ) == 0) { DM_Cycling            = stringToUint8(tmpString); }
-          else if(strcmp(aimBuffer, "LongPressM"                  ) == 0) { LongPressM            = stringToUint8(tmpString); }                  //10000003
-          else if(strcmp(aimBuffer, "LongPressF"                  ) == 0) { LongPressF            = stringToUint8(tmpString); }                  //10000003
+          else if(strcmp(aimBuffer, "LongPressM"                  ) == 0) { LongPressM            = convert001090400T001090500(stringToUint8(tmpString),RBX_M14); }                  //10000003
+          else if(strcmp(aimBuffer, "LongPressF"                  ) == 0) { LongPressF            = convert001090400T001090500(stringToUint8(tmpString),RBX_F14); }                  //10000003
           else if(strcmp(aimBuffer, "lastIntegerBase"             ) == 0) { lastIntegerBase       = stringToUint8(tmpString); }                  //10000004
           else if(strcmp(aimBuffer, "lrChosen"                    ) == 0) { lrChosen              = stringToUint16(tmpString);}
           else if(strcmp(aimBuffer, "graph_xmin"                  ) == 0) { graph_xmin            = stringToFloat(tmpString); }

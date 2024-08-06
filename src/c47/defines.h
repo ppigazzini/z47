@@ -20,6 +20,7 @@
 //0.109.02.03 this version skipped due to confusion.
 //0.109.02.04
 //0.109.02.05
+//0.109.02.05B for bugfixes
 
 
 
@@ -30,7 +31,7 @@
 #undef SAVE_SPACE_DM42_0
 #undef SAVE_SPACE_DM42_1
 #undef SAVE_SPACE_DM42_2
-#undef SAVE_SPACE_DM42_2LOAD
+#undef SAVE_SPACE_DM42_2LOAD 
 #undef SAVE_SPACE_DM42_3
 #undef SAVE_SPACE_DM42_4
 #undef SAVE_SPACE_DM42_6
@@ -43,7 +44,7 @@
 #undef SAVE_SPACE_DM42_11
 #undef SAVE_SPACE_DM42_12
 #undef SAVE_SPACE_DM42_12BESSEL
-#undef SAVE_SPACE_DM42_12ORTHO
+#undef SAVE_SPACE_DM42_12ORTHO 
 #undef SAVE_SPACE_DM42_13GRF
 #undef SAVE_SPACE_DM42_13GRF_JM
 #undef SAVE_SPACE_DM42_14
@@ -115,8 +116,8 @@
   //  #define SAVE_SPACE_DM42_13GRF    // 17472 bytes // Without Solver & graphics & stat graphics
   //  #define SAVE_SPACE_DM42_13GRF_JM //  7520 bytes // Without More graphics
   //  #define SAVE_SPACE_DM42_14       //   184 bytes // Without Load programming sample programs testPgms
-    #define SAVE_SPACE_DM42_15       // 10056 bytes // Without all distributions, i.e. , cauchy, chi, expo, f, logis, t, weibull
-    #define SAVE_SPACE_DM42_16       //  2168 bytes // Without Norml distribution
+  //  #define SAVE_SPACE_DM42_15       // 10056 bytes // Without all distributions, i.e. , cauchy, chi, expo, f, logis, t, weibull
+      #define SAVE_SPACE_DM42_16       //  2168 bytes // Without Norml distribution
       #define SAVE_SPACE_DM42_17       //  7448 bytes // Without Poisson/Hyper/Binomial/Geometrical distributions
   //  #define SAVE_SPACE_DM42_20_TIMER //  1232 bytes // Without STOPW
   //  #define SAVE_SPACE_DM42_21_HP35  //   200 bytes // Without config file activations only. Not complete removal.
@@ -129,7 +130,7 @@
 #define MAXLINES 5                  // numner of equavalent lines in small font maximum that is allowed in entry. Entry is hardlocked to multiline 3 lines bif font, but this is still the limit. WP has 2 lines fixed small font.
 #define allowShowDigits false       // true to allow typing of double digits to get to register number nn in SHOW.
 #define SHOWLineSize    120         // maximum 250
-#define SHOWLineMax     (uint8_t )(TMP_STR_LENGTH / SHOWLineSize)
+#define SHOWLineMax     (uint8_t )(TMP_STR_LENGTH / SHOWLineSize) 
 
 #define LOW_GRAPH_ACC                                                                     //Lowered graph accuracy for EQN graphs
 //#undef LOW_GRAPH_ACC
@@ -1548,7 +1549,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define MAX_NUMBER_OF_GLYPHS_IN_STRING           508 //WP=196: Change to 512 less 3, Also change error message 33, and AIM_BUFFER_LENGTH, and MAXLINES
 #define NUMBER_OF_GLYPH_ROWS                     260  //Used in the font browser application
 
-#define MAX_DENMAX                              9999 // Biggest denominator in fraction display mode selector, and annunciator.
+#define MAX_DENMAX                              9999 // Biggest denominator in fraction display mode selector, and annunciator. 
                                                      // The value 0 gets converted to MAX_INTERNAL_DENMAX
 #define MAX_INTERNAL_DENMAX                    32500 // Biggest denominator in fraction display mode
 
@@ -1656,9 +1657,9 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define SOLVER_STATUS_EQUATION_2ND_DERIVATIVE      0x000C // --0- ---- ---- 11--
 #define SOLVER_STATUS_EQUATION_GRAPHER             0x2000 // --1- ---- ---- 00--
 
-#define SOLVER_STATUS_SINGLE_VARIABLE              0x0010 // 00-0 --00 ---1 ----
+#define SOLVER_STATUS_SINGLE_VARIABLE              0x0010 // 00-0 --00 ---1 ---- 
 #define SOLVER_STATUS_USES_FORMULA                 0x0100 // 00-0 --01 ---0 ----
-#define SOLVER_STATUS_MVAR_BEING_OPENED            0x0200 // 00-0 --10 ---0 ----
+#define SOLVER_STATUS_MVAR_BEING_OPENED            0x0200 // 00-0 --10 ---0 ---- 
 #define SOLVER_STATUS_TVM_APPLICATION              0x1000 // 00-1 ---- ---0 ----
 
 #define IS_EQN_INTEGRATE (((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_INTEGRATE) && \
