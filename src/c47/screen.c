@@ -4102,7 +4102,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
             strcpy(tmpString,STD_INTEGER_Z_SMALL ": ");// STD_SPACE_4_PER_EM);
             int16_t tlen =stringByteLength(tmpString);
             longIntegerRegisterToRealDisplayString(regist, tmpString+tlen, TMP_STR_LENGTH-tlen, 0, true);
-            prefix[0]=0;
+//          prefix[0]=0;
           }
                      
         //for the 2^10 UNIT diplay, display long integers in real string, with the Ti suffic
