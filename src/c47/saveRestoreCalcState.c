@@ -2150,7 +2150,7 @@ double stringToDouble(const char *str) {
 
 
 #define LOADDEBUG
-//#undef LOADDEBUG
+#undef LOADDEBUG
 #if defined(LOADDEBUG)
   static void debugPrintf(int s1, const char * s2, const char * s3) {
     #if defined(PC_BUILD)
