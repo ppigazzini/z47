@@ -3797,6 +3797,7 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
                     #if defined(DEBUGUNDO)
                       printf(">>> Undo from fnKeyExit\n");
                     #endif // DEBUGUNDO
+        SAVED_SIGMA_LAc1 = 0;
         fnUndo(NOPARAM);
         fnClDrawMx(1);
         if(statMx[0]!='S') {

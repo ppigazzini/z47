@@ -1066,6 +1066,7 @@ uint8_t output = parameter;
     restoreStateValue(&SAVED_SIGMA_LASTY,              sizeof(SAVED_SIGMA_LASTY),                                   "SAVED_SIGMA_LASTY",              "real");
     SAVED_SIGMA_LAc1 = 0;
     restoreStateValue(&SAVED_SIGMA_LAc1,               sizeof(SAVED_SIGMA_LAc1),                                    "SAVED_SIGMA_LAc1",               "int8");     //manual correction as the type allocation was wrong here
+    if(SAVED_SIGMA_LAc1 == -1) SAVED_SIGMA_LAc1 = 2;
     restoreStateValue(&currentMvarLabel,               sizeof(currentMvarLabel),                                    "currentMvarLabel",               "uint16");
     if(backupVersion < 1002 && currentMvarLabel == INVALID_VARIABLE_OLD) {currentMvarLabel = INVALID_VARIABLE;}
     restoreStateValue(&graphVariabl1,                  sizeof(graphVariabl1),                                       "graphVariabl1",                  "int16");

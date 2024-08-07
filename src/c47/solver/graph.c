@@ -569,6 +569,7 @@ void graph_eqn(uint16_t mode) {
 void graph_stat(uint16_t unusedButMandatoryParameter) {
   #if !defined(TESTSUITE_BUILD)
 
+    saveForUndo();
     strcpy(plotStatMx,"STATS");
 
     if(statMxN()) {
