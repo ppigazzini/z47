@@ -359,13 +359,13 @@ void undo(void) {
     entryStatus &= 0xfe;
   }
 
-  if(SAVED_SIGMA_LAc1 == +1 && statisticalSumsPointer != NULL) {
-    fnSigma(-1);
+  if(SAVED_SIGMA_LAc1 == 1 && statisticalSumsPointer != NULL) {
+    fnSigma(2);
   }
-  else if(SAVED_SIGMA_LAc1 == -1 && statisticalSumsPointer != NULL) {
+  else if(SAVED_SIGMA_LAc1 == 2 && statisticalSumsPointer != NULL) {
     convertRealToResultRegister(&SAVED_SIGMA_LASTX, REGISTER_X, amNone);             // Can use stack, as the stack will be undone below
     convertRealToResultRegister(&SAVED_SIGMA_LASTY, REGISTER_Y, amNone);
-    fnSigma(+1);
+    fnSigma(1);
   }
 
   systemFlags0 = savedSystemFlags0;
