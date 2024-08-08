@@ -2397,6 +2397,7 @@ RELEASE_END:
           if(calcMode == CM_PEM) {
             if(getSystemFlag(FLAG_ALPHA)) {          //close AIM in PEM
               fnKeyExit(NOPARAM);
+              keyActionProcessed = true; 
             }
             // if(menu(0) != -MNU_PFN) {
             //   showSoftmenu(-MNU_PFN);
