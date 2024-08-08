@@ -4488,6 +4488,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
         printf("       clearScreenOld calcMode=%u clearStatusBar=%u, clearRegisterLines=%u, clearSoftkeys=%u\n",calcMode, clearStatusBar, clearRegisterLines, clearSoftkeys);
       #endif // PC_BUILD &&MONITOR_CLRSCR
       uint8_t origScreenUpdatingMode = screenUpdatingMode;
+      screenUpdatingMode = SCRUPD_AUTO;
       if(clearStatusBar) {
         screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
         screenUpdatingMode |=  SCRUPD_MANUAL_STACK;
@@ -4581,13 +4582,13 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
             clearScreenOld(!clrStatusBar, !clrRegisterLines, clrSoftkeys);                // this tests the battery powered option on sim
             showSoftmenuCurrentPart();                                                    // this tests the battery powered option on sim
           }                                                                               // this tests the battery powered option on sim
+          clearScreenOld(!clrStatusBar, clrRegisterLines, !clrSoftkeys);                  // this tests the battery powered option on sim
+          fnPem(NOPARAM);                                                                 // this tests the battery powered option on sim
+          displayShiftAndTamBuffer();                                                     // this tests the battery powered option on sim
           if(!(screenUpdatingMode & SCRUPD_MANUAL_STATUSBAR)) {                           // this tests the battery powered option on sim
             clearScreenOld(clrStatusBar, !clrRegisterLines, !clrSoftkeys);                // this tests the battery powered option on sim
             refreshStatusBar();                                                           // this tests the battery powered option on sim
           }                                                                               // this tests the battery powered option on sim
-          clearScreenOld(!clrStatusBar, clrRegisterLines, !clrSoftkeys);                  // this tests the battery powered option on sim
-          fnPem(NOPARAM);                                                                 // this tests the battery powered option on sim
-          displayShiftAndTamBuffer();                                                    
       #endif//!DMCP_BUILD PC_BUILD
   }
 
