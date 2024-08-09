@@ -2256,7 +2256,6 @@ RELEASE_END:
 
 #if !defined(TESTSUITE_BUILD)
   void processKeyAction(int16_t item) {
-printf("AAA000 processKeyAction()\n");
 
                     #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
                       printf(">>>> processKeyAction: calcMode=%u item=%d  programRunStop=%d lastErrorCode=%u SHOWMODE=%u\n",calcMode, item, programRunStop, lastErrorCode, SHOWMODE);
@@ -2325,7 +2324,6 @@ printf("AAA000 processKeyAction()\n");
       keyActionProcessed = true;
     }
     else {
-printf("AAA000 switch\n");
       switch(item) {
         case ITM_BACKSPACE: {
           if(calcMode == CM_NIM || calcMode == CM_AIM || calcMode == CM_EIM) {
@@ -2418,8 +2416,6 @@ printf("AAA000 switch\n");
         case ITM_op_j_pol:
         case ITM_op_j:
         case ITM_CC:
-        case ITM_dotD:
-        case ITM_RI: 
         {
           printf("Monitor: item=%i calcMode=%i nimNumberPart=%i char=%c lastIntegerBase=%i\n",item, calcMode, nimNumberPart, aimBuffer[strlen(aimBuffer) - 1], lastIntegerBase);
           if(calcMode == CM_ASSIGN) {
@@ -2438,20 +2434,6 @@ printf("AAA000 switch\n");
             addStepInProgram(ITM_toREAL);
             keyActionProcessed = true;
           }
-
-          else if(calcMode == CM_NIM && (item == ITM_RI || item == ITM_dotD) && nimNumberPart == NP_INT_10 && lastIntegerBase > 0) {
-            printf("Change NIM to LI\n");
-            lastIntegerBase = 0;
-            resetShiftState();
-            keyActionProcessed = true;
-          } 
-          else if(calcMode == CM_NIM && (item == ITM_RI || item == ITM_dotD) && nimNumberPart == NP_INT_BASE && aimBuffer[strlen(aimBuffer) - 1] == '#') {
-            printf("NIM remove base # to LI B\n");
-            lastIntegerBase = 0;
-            resetShiftState();
-            addItemToNimBuffer(ITM_BACKSPACE);
-            keyActionProcessed = true;
-          } 
           break;
         }
 
@@ -2575,7 +2557,6 @@ printf("AAA000 switch\n");
 
 
         default: {
-printf("AAA00\n");
                     #if defined(PC_BUILD) && ((defined VERBOSEKEYS) || (defined MONITOR_CLRSCR))
                       printf("Switch - default: processKeyAction: calcMode=%d itemToBeAssigned=%d item=%d SHOWMODE=%u\n",calcMode, itemToBeAssigned, item, SHOWMODE);
                     #endif //PC_BUILD
@@ -2649,7 +2630,6 @@ printf("AAA00\n");
           }
 
           else {
-printf("AAA0\n");
             switch(calcMode) {
               case CM_NORMAL: {
                 #if defined(PC_BUILD_VERBOSE0)
@@ -2719,7 +2699,6 @@ printf("AAA0\n");
               }
 
               case CM_NIM: {
-printf("AAA1\n");
                     #if defined(PC_BUILD_VERBOSE0)
                       #if defined(PC_BUILD)
                         printf("&"); //####
@@ -2737,10 +2716,42 @@ printf("AAA1\n");
                     resetShiftState();
                   }
 
-                  if(calcMode == CM_NIM && (item == ITM_HASH_JM || item == ITM_RI || item == ITM_dotD) && nimNumberPart == NP_INT_BASE && aimBuffer[strlen(aimBuffer) - 1] == '#') {
-                    printf("NIM remove base # to LI A\n");
-                    addItemToNimBuffer(ITM_BACKSPACE);
+                  if(calcMode == CM_NIM && (item == ITM_RI || item == ITM_dotD) && nimNumberPart == NP_INT_10 && lastIntegerBase > 0) {
+                    //printf("Change NIM to LI\n");
+                    lastIntegerBase = 0;
+                    resetShiftState();
+                    keyActionProcessed = true;
                   } 
+                  else if(calcMode == CM_NIM && (item == ITM_RI || item == ITM_dotD) && nimNumberPart == NP_INT_BASE && aimBuffer[strlen(aimBuffer) - 1] == '#') {
+                    //printf("NIM remove base # to LI B\n");
+                    lastIntegerBase = 0;
+                    resetShiftState();
+                    addItemToNimBuffer(ITM_BACKSPACE);
+                    keyActionProcessed = true;
+                  }
+                  else if(calcMode == CM_NIM && item == ITM_HASH_JM && nimNumberPart == NP_INT_BASE && aimBuffer[strlen(aimBuffer) - 1] == '#') {
+                    //printf("NIM remove base # to LI A\n");
+                    resetShiftState();
+                    addItemToNimBuffer(ITM_BACKSPACE);
+                    keyActionProcessed = true;
+                  } 
+                  else if(calcMode == CM_NIM && item == ITM_PERIOD && nimNumberPart == NP_INT_BASE && aimBuffer[strlen(aimBuffer) - 1] == '#') {
+                    //printf("NIM replace base # with .\n");
+                    lastIntegerBase = 0;
+                    addItemToNimBuffer(ITM_BACKSPACE);
+                    addItemToNimBuffer(ITM_PERIOD);
+                    refreshRegisterLine(REGISTER_X);
+                    keyActionProcessed = true;
+                  } 
+                  else if(calcMode == CM_NIM && item == ITM_HASH_JM && nimNumberPart == NP_REAL_FLOAT_PART && aimBuffer[strlen(aimBuffer) - 1] == '.') {
+                    //printf("NIM replace base # with .\n");
+                    lastIntegerBase = 0;
+                    addItemToNimBuffer(ITM_BACKSPACE);
+                    addItemToNimBuffer(ITM_toINT);
+                    refreshRegisterLine(REGISTER_X);
+                    keyActionProcessed = true;
+                  } 
+
                   else {
                     addItemToNimBuffer(item);
                   }
