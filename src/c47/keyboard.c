@@ -2454,7 +2454,8 @@ RELEASE_END:
         case ITM_op_j_pol:
         case ITM_op_j:
         case ITM_CC:
-        case ITM_dotD: {
+        {
+          printf("Monitor: item=%i calcMode=%i nimNumberPart=%i char=%c lastIntegerBase=%i\n",item, calcMode, nimNumberPart, aimBuffer[strlen(aimBuffer) - 1], lastIntegerBase);
           if(calcMode == CM_ASSIGN) {
             if(itemToBeAssigned == 0) {
               itemToBeAssigned = item;
@@ -2753,9 +2754,42 @@ RELEASE_END:
                     resetShiftState();
                   }
 
-                  if(INTEGERSHORTCUTS && item == ITM_HASH_JM && nimNumberPart == NP_INT_BASE && aimBuffer[strlen(aimBuffer) - 1] == '#') {
-                    addItemToNimBuffer(ITM_BACKSPACE);
+                  if(calcMode == CM_NIM && (item == ITM_RI || item == ITM_dotD) && nimNumberPart == NP_INT_10 && lastIntegerBase > 0) {
+                    //printf("Change NIM to LI\n");
+                    lastIntegerBase = 0;
+                    resetShiftState();
+                    keyActionProcessed = true;
                   } 
+                  else if(calcMode == CM_NIM && (item == ITM_RI || item == ITM_dotD) && nimNumberPart == NP_INT_BASE && aimBuffer[strlen(aimBuffer) - 1] == '#') {
+                    //printf("NIM remove base # to LI B\n");
+                    lastIntegerBase = 0;
+                    resetShiftState();
+                    addItemToNimBuffer(ITM_BACKSPACE);
+                    keyActionProcessed = true;
+                  }
+                  else if(calcMode == CM_NIM && item == ITM_HASH_JM && nimNumberPart == NP_INT_BASE && aimBuffer[strlen(aimBuffer) - 1] == '#') {
+                    //printf("NIM remove base # to LI A\n");
+                    resetShiftState();
+                    addItemToNimBuffer(ITM_BACKSPACE);
+                    keyActionProcessed = true;
+                  } 
+                  else if(calcMode == CM_NIM && item == ITM_PERIOD && nimNumberPart == NP_INT_BASE && aimBuffer[strlen(aimBuffer) - 1] == '#') {
+                    //printf("NIM replace base # with .\n");
+                    lastIntegerBase = 0;
+                    addItemToNimBuffer(ITM_BACKSPACE);
+                    addItemToNimBuffer(ITM_PERIOD);
+                    refreshRegisterLine(REGISTER_X);
+                    keyActionProcessed = true;
+                  } 
+                  else if(calcMode == CM_NIM && item == ITM_HASH_JM && nimNumberPart == NP_REAL_FLOAT_PART && aimBuffer[strlen(aimBuffer) - 1] == '.') {
+                    //printf("NIM replace base # with .\n");
+                    lastIntegerBase = 0;
+                    addItemToNimBuffer(ITM_BACKSPACE);
+                    addItemToNimBuffer(ITM_toINT);
+                    refreshRegisterLine(REGISTER_X);
+                    keyActionProcessed = true;
+                  } 
+
                   else {
                     addItemToNimBuffer(item);
                   }
