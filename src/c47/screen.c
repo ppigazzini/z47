@@ -2369,6 +2369,8 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
 
 
   void displayBaseMode(calcRegister_t regist) {
+     #define BASEMODE_OFFSET_X 2
+     #define BASEMODE_OFFSET_Y 2
      calcRegister_t Register_X = calcMode == CM_NIM ? REGISTER_Y : REGISTER_X;
 
      //JM SHOIDISP // use the top part of the screen for HEX and BIN    //JM vv SHOIDISP
@@ -2409,7 +2411,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
          setRegisterTag(REGISTER_T, !bcdDisplay ? 16 : 17);
          shortIntegerToDisplayString(REGISTER_T, tmpString, true);
          if(lastErrorCode == 0 && stringWidth(tmpString, fontForShortInteger, false, true) + stringWidth("  X: ", &standardFont, false, true) <= SCREEN_WIDTH) {
-           showString("  X: ", &standardFont, 0, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(REGISTER_T - REGISTER_X) + (fontForShortInteger == &standardFont ? 6 : 0), vmNormal, false, true);
+           showString("  X: ", &standardFont, 0 + BASEMODE_OFFSET_X, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(REGISTER_T - REGISTER_X) + (fontForShortInteger == &standardFont ? 6 : 0) + BASEMODE_OFFSET_Y, vmNormal, false, true);
          }
          showString(tmpString, fontForShortInteger, SCREEN_WIDTH - stringWidth(tmpString, fontForShortInteger, false, true), Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(REGISTER_T - REGISTER_X) + (fontForShortInteger == &standardFont ? 6 : 0), vmNormal, false, true);
          copySourceRegisterToDestRegister(TEMP_REGISTER_1,REGISTER_T);
