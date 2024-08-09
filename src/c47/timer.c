@@ -579,7 +579,7 @@ printf("fnAddTimerApp\n");
   liftStack();
   realToReal34(&tmp, REGISTER_REAL34_DATA(REGISTER_X));
   fnSwapXY(NOPARAM);                                       //swapped around to be able to plot correctly
-  fnSigma(1);
+  fnSigmaAddRem(SIGMA_PLUS);
 
   refreshScreen(30);
   #endif // !TESTSUITE_BUILD
@@ -608,7 +608,7 @@ printf("fnAddLapTimerApp\n");
   liftStack();
   realToReal34(&tmp, REGISTER_REAL34_DATA(REGISTER_X));
   fnSwapXY(NOPARAM);                                       //swapped around to be able to plot correctly
-  fnSigma(1);
+  fnSigmaAddRem(SIGMA_PLUS);
 
 //  fnUpTimerApp();
 
