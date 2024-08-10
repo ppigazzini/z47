@@ -39,6 +39,7 @@
   void pemAddNumber                            (int16_t item);
   void pemCloseNumberInput                     (void);
   void insertStepInProgram                     (int16_t func);
+  void insertUserItemInProgram                 (int16_t func, char *funcParam);
   void addStepInProgram                        (int16_t func);
 
   calcRegister_t findNamedLabel                (const char *labelName);

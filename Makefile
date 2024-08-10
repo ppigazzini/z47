@@ -1,4 +1,4 @@
-.PHONY: all clean sim test dmcp dmcp.r47 dmcp5 docs testPgms dist_windows dist_macos dist_linux dist_dmcp dist_dmcp5 dist_dmcp5r47
+.PHONY: all clean sim test dmcp dmcpr47 dmcp5 dmcp5r47 docs testPgms dist_windows dist_macos dist_linux dist_dmcp dist_dmcpr47 dist_dmcp5 dist_dmcp5r47
 
 all: sim
 
