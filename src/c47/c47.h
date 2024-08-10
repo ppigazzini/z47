@@ -393,7 +393,7 @@
 
   extern real_t                 SAVED_SIGMA_LASTX;
   extern real_t                 SAVED_SIGMA_LASTY;
-  extern int8_t                 SAVED_SIGMA_LAc1;
+  extern int8_t                 SAVED_SIGMA_lastAddRem;
 
   extern uint16_t               lrSelectionHistobackup;
   extern uint16_t               lrChosenHistobackup;

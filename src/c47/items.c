@@ -327,10 +327,12 @@ bool_t itemNotAvail(int16_t itemNr) {
     else
     if(calcMode == CM_NORMAL) {
       bool_t inMatrixMenu = (tam.mode == 0 ? softmenu[softmenuStack[0].softmenuId].menuItem : softmenu[softmenuStack[1].softmenuId].menuItem) == -MNU_MATX;
-      bool_t inRange = (param <= LAST_LETTERED_REGISTER ||
-                       (FIRST_STAT_REGISTER >= param && param <= LAST_STAT_REGISTER) ||
-                       (FIRST_SPARE_REGISTER >= param && param <= LAST_SPARE_REGISTER));
-      bool_t isMatrix = inRange ? (getRegisterDataType(param) != dtReal34Matrix && getRegisterDataType(param) != dtComplex34Matrix) : false;
+      bool_t inRegisterRange = (param <= LAST_LETTERED_REGISTER ||
+                       (FIRST_STAT_REGISTER  <= param && param <= LAST_STAT_REGISTER) ||
+                       (FIRST_SPARE_REGISTER <= param && param <= LAST_SPARE_REGISTER));
+      bool_t inReservedRange =  (FIRST_NAMED_RESERVED_VARIABLE <= param && param <= LAST_RESERVED_VARIABLE);
+      bool_t inNameRegisterRange =  (FIRST_NAMED_VARIABLE <= param && param <= LAST_NAMED_VARIABLE);
+      bool_t isMatrix = inRegisterRange ? (getRegisterDataType(param) != dtReal34Matrix && getRegisterDataType(param) != dtComplex34Matrix) : false;
       switch(func) {
         case ITM_RCL_FV      :
         case ITM_RCL_IPonA   :
@@ -341,7 +343,8 @@ bool_t itemNotAvail(int16_t itemNr) {
         case ITM_RCL_PV      : temporaryInformation = TI_STORCL; break;
         case ITM_STO         :
         case ITM_RCL         : temporaryInformation = ((param == REGISTER_I || param == REGISTER_J) && inMatrixMenu) ? TI_IJ : \
-                               (isMatrix) ? TI_STORCL : TI_NO_INFO ; break;
+                               (isMatrix) ? TI_STORCL : \
+                               (inReservedRange || inRegisterRange || inNameRegisterRange) ? TI_STORCL : TI_NO_INFO ; break;
         case ITM_RCLELPLUS   :
         case ITM_RCLEL       :
         case ITM_STOELPLUS   :
@@ -523,7 +526,7 @@ bool_t itemNotAvail(int16_t itemNr) {
         return;
       }
       bool_t doNotAddStep = (func == ITM_EXIT1 || func == ITM_CLRMOD || func == ITM_SNAP || func == ITM_NOP || func == ITM_BASEMENU) && currentKeyCode == 32;                  // longpress commands not to be added
-      if(calcMode == CM_PEM && !tam.mode && !isFunctionItemAMenu(func) && (!(catalog && catalog != CATALOG_MVAR && !fnKeyInCatalog)) && !doNotAddStep) {   // && func != ITM_EXIT1 && func != ITM_CLRMOD) {  //change to exclude ITM_EXIT1 for PEM
+      if(calcMode == CM_PEM && !tam.mode && (!(catalog && catalog != CATALOG_MVAR && !fnKeyInCatalog)) && !doNotAddStep) {
         addStepInProgram(func);
         return;
       }
@@ -732,7 +735,7 @@ bool_t itemNotAvail(int16_t itemNr) {
   void fnChangeBase                (uint16_t unusedButMandatoryParameter) {}
   void fnDivide                    (uint16_t unusedButMandatoryParameter) {}
   void fnAdd                       (uint16_t unusedButMandatoryParameter) {}
-  void fnSigma                     (uint16_t unusedButMandatoryParameter) {}
+  void fnSigmaAddRem               (uint16_t unusedButMandatoryParameter) {}
   void fnXEqualsTo                 (uint16_t unusedButMandatoryParameter) {}
   void fnXNotEqual                 (uint16_t unusedButMandatoryParameter) {}
   void fnXAlmostEqual              (uint16_t unusedButMandatoryParameter) {}
@@ -1800,8 +1803,8 @@ TO_QSPI const item_t indexOfItems[] = {
 
 
 // Statistical sums
-/*  433 */  { fnSigma,                      1,                           STD_SIGMA "+",                                 STD_SIGMA "+",                                 (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_DISABLED  | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
-/*  434 */  { fnSigma,                      2,                           STD_SIGMA "-",                                 STD_SIGMA "-",                                 (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_DISABLED  | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
+/*  433 */  { fnSigmaAddRem,                SIGMA_PLUS,                  STD_SIGMA "+",                                 STD_SIGMA "+",                                 (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_DISABLED  | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
+/*  434 */  { fnSigmaAddRem,                SIGMA_MINUS,                 STD_SIGMA "-",                                 STD_SIGMA "-",                                 (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_DISABLED  | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /*  435 */  { fnStatSum,                    0,                           "n" STD_SIGMA,                                 "n",                                           (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /*  436 */  { fnStatSum,                    SUM_X,                       STD_SIGMA "x",                                 STD_SIGMA "x",                                 (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /*  437 */  { fnStatSum,                    SUM_Y,                       STD_SIGMA "y",                                 STD_SIGMA "y",                                 (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
@@ -3497,7 +3500,7 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 2100 */  { fnCvtGradRad,                 multiply,                    "grad" STD_RIGHT_ARROW "rad",                  "grad" STD_RIGHT_ARROW "rad",                  (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /* 2101 */  { fnCvtGradRad,                 divide,                      "rad" STD_RIGHT_ARROW "grad",                  "rad" STD_RIGHT_ARROW "grad",                  (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /* 2102 */  { itemToBeCoded,                NOPARAM,                     "TRG",                                         "TRG",                                         (0 << TAM_MAX_BITS) |     0, CAT_MENU | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_NONE         },
-/* 2103 */  { itemToBeCoded,                NOPARAM,                     "2103",                                        "2103",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 2103 */  { itemToBeCoded,                NOPARAM,                     "TRG" STD_ELLIPSIS,                            "TRG" STD_ELLIPSIS,                            (0 << TAM_MAX_BITS) |     0, CAT_MENU | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_NONE         },
 /* 2104 */  { fnKeysManagement,             USER_MC47,                   "M.C47",                                       "M.C47",                                       (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2105 */  { fnKeysManagement,             USER_MR47,                   "M.R47",                                       "M.R47",                                       (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2106 */  { fnKeysManagement,             USER_MSAV,                   "M.SAV",                                       "M.SAV",                                       (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },

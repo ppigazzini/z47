@@ -1484,7 +1484,7 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     drawHistogram = 0;
     realZero(&SAVED_SIGMA_LASTX);
     realZero(&SAVED_SIGMA_LASTY);
-    SAVED_SIGMA_LAc1 = 0;
+    SAVED_SIGMA_lastAddRem = SIGMA_NONE;
 
     plotStatMx[0] = 0;
     regStatsXY = INVALID_VARIABLE;
@@ -1801,7 +1801,7 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
         convertDoubleToReal34RegisterPush((double)vbatVIntegrated, REGISTER_X);
         uint8_t min = rtc_read_min();
         convertDoubleToReal34RegisterPush((double)min, REGISTER_X);
-        fnSigma(1);
+        fnSigmaAddRem(SIGMA_PLUS);
         fnDrop(NOPARAM);
         fnDrop(NOPARAM);
       }
