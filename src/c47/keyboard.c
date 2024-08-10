@@ -1425,7 +1425,10 @@ releaseOverride = false;
     int16_t ShiftOverride = 0;
     result = Norm_Key_00_item_in_layout;
     ShiftOverride = Check_SigmaPlus_Assigned(&result, key_no);
-    printf("**[DL]** determineItem = %d\n",result);
+    #if defined(PC_BUILD) && defined(VERBOSE_DETERMINEITEM)
+      printf("**[DL]** determineItem = %d\n",result);
+    #endif //VERBOSE_DETERMINEITEM
+
 
     if(ShiftOverride == 0) {                              //disable long and double press if Sigma+ is shift g
       Setup_MultiPresses( key->primary );
@@ -1662,7 +1665,9 @@ releaseOverride = false;
         }
       }
     }
-    printf("**[DL]** determineItem = %d\n",result);
+    #if defined(PC_BUILD) && defined(VERBOSE_DETERMINEITEM)
+      printf("**[DL]** determineItem = %d\n",result);
+    #endif //VERBOSE_DETERMINEITEM
     return result;
   }
 
@@ -2126,14 +2131,14 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
         bool_t Norm_Key_00_released = !getSystemFlag(FLAG_USER) && (keyStateCode == 0) && (keyCode == Norm_Key_00_key) && Norm_Key_00.used;
 
         char *funcParam = (Norm_Key_00_released ? Norm_Key_00.funcParam : (char *)getNthString((uint8_t *)userKeyLabel, keyCode * 6 + keyStateCode));
-                    #if defined(PC_BUILD)
+                    #if defined(PC_BUILD) && defined(VERBOSE_DETERMINEITEM)
                       printf("**[DL]** btnReleased1 - item %d showFunctionNameArg %s funcParam %s\n",item,showFunctionNameArg,funcParam);
-                    #endif //PC_BUILD
+                    #endif //VERBOSE_DETERMINEITEM
         if(showFunctionNameArg != NULL) {
           funcParam = showFunctionNameArg;       // Needed when executing a user menu from a long pressed key
-                    #if defined(PC_BUILD)
+                    #if defined(PC_BUILD) && defined(VERBOSE_DETERMINEITEM)
                       printf("**[DL]** btnReleased2 - item %d showFunctionNameArg %s funcParam %s\n",item,showFunctionNameArg,funcParam);
-                    #endif //PC_BUILD
+                    #endif //VERBOSE_DETERMINEITEM
         }
 
         if(item < 0) {
@@ -2156,15 +2161,15 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
             calcRegister_t var = findNamedVariable(funcParam);
             if(var != INVALID_VARIABLE) {
               if(calcMode == CM_PEM) {  // Insert user variable recall in program
-                #if defined(PC_BUILD)
+                #if defined(PC_BUILD) && defined(VERBOSE_DETERMINEITEM)
                   printf("**[DL]** insertUserItemInProgram(item=%d, funcParam=%s)\n",item,funcParam);
-                #endif // PC_BUILD
+                #endif //VERBOSE_DETERMINEITEM
                 insertUserItemInProgram(item, funcParam);
               }
               else {                    // Execute item
-                #if defined(PC_BUILD)
+                #if defined(PC_BUILD) && defined(VERBOSE_DETERMINEITEM)
                   printf("**[DL]** reallyRunFunction(item=%d, var=%d, funcParam=%s)\n",item,var,funcParam);
-                #endif // PC_BUILD
+                #endif //VERBOSE_DETERMINEITEM
                 reallyRunFunction(item, var);
               }
             }
@@ -2180,15 +2185,15 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
             calcRegister_t label = findNamedLabel(funcParam);
             if(label != INVALID_VARIABLE) {
               if(calcMode == CM_PEM) {  // Insert user program call in program
-                #if defined(PC_BUILD)
+                #if defined(PC_BUILD) && defined(VERBOSE_DETERMINEITEM)
                   printf("**[DL]** insertUserItemInProgram(item=%d, funcParam=%s)\n",item,funcParam);
-                #endif // PC_BUILD
+                #endif //VERBOSE_DETERMINEITEM
                 insertUserItemInProgram(item, funcParam);
               }
               else {                    // Execute item
-                #if defined(PC_BUILD)
+                #if defined(PC_BUILD) && defined(VERBOSE_DETERMINEITEM)
                   printf("**[DL]** reallyRunFunction(item=%d, label=%d, funcParam=%s)\n",item,label,funcParam);
-                #endif // PC_BUILD
+                #endif //VERBOSE_DETERMINEITEM
                 reallyRunFunction(item, label);
               }
             }
@@ -3044,7 +3049,9 @@ RELEASE_END:
                     if(ITM_A <= itemToBeAssigned && itemToBeAssigned <= ITM_Z && lowercaseselected) {
                       itemToBeAssigned += 26;
                     }
-                    printf("**[DL]** itemToBeAssigned = %d %s\n",itemToBeAssigned,indexOfItems[itemToBeAssigned].itemSoftmenuName);
+                    #if defined(PC_BUILD) && defined(VERBOSE_DETERMINEITEM)
+                      printf("**[DL]** itemToBeAssigned = %d %s\n",itemToBeAssigned,indexOfItems[itemToBeAssigned].itemSoftmenuName);
+                    #endif //VERBOSE_DETERMINEITEM
 
                     if(previousCalcMode == CM_AIM) softmenuStack[0].softmenuId = 1;     //JM change ALPHA to MyAlpha to be able to write ASN target
                   }
