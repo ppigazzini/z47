@@ -2460,7 +2460,9 @@ RELEASE_END:
         case ITM_op_j:
         case ITM_CC:
         {
-          printf("Monitor: item=%i calcMode=%i nimNumberPart=%i char=%c lastIntegerBase=%i\n",item, calcMode, nimNumberPart, aimBuffer[strlen(aimBuffer) - 1], lastIntegerBase);
+          #if defined(PC_BUILD)
+            //printf("Monitor: item=%i calcMode=%i nimNumberPart=%i char=%c lastIntegerBase=%i\n",item, calcMode, nimNumberPart, aimBuffer[strlen(aimBuffer) - 1], lastIntegerBase);
+          #endif
           if(calcMode == CM_ASSIGN) {
             if(itemToBeAssigned == 0) {
               itemToBeAssigned = item;
