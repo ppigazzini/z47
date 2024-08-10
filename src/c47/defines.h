@@ -174,7 +174,8 @@
   #undef     MONITOR_CLRSCR
   #define    PC_BUILD_TELLTALE            //JM verbose on PC: jm_show_comment
   #undef     PC_BUILD_TELLTALE
-
+  #define    VERBOSE_DETERMINEITEM
+  #undef     VERBOSE_DETERMINEITEM
   #define    VERBOSE_REGISTERS
   #undef     VERBOSE_REGISTERS
 
