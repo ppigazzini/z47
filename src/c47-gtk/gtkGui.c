@@ -345,7 +345,7 @@
 
 
   gboolean keyReleased(GtkWidget *w, GdkEventKey *event, gpointer data) {     //JM
-    printf("Released  %d (SHIFT_State=%u)(shiftF=%u)\n", event->keyval,SHIFT_State,shiftF);
+    printf("PC Key released  %d (SHIFT_State=%u)(shiftF=%u shiftF=%u)\n", event->keyval,SHIFT_State,shiftF,shiftG);
     if(event_keyval == event->keyval + CTRL_State) event_keyval = 99999999;
 
     switch(event->keyval) {
@@ -456,7 +456,7 @@
 
   gboolean keyPressed(GtkWidget *w, GdkEventKey *event, gpointer data) {
     event_keyval = event->keyval + CTRL_State;
-    printf("Keyboard Key Code: event->keyval=%u event_keyval=%u (SHIFT_State=%u)(shiftF=%u)\n", event->keyval, event_keyval, SHIFT_State, shiftF);
+    printf("PC Key pressed: event->keyval=%u event_keyval=%u (SHIFT_State=%u)(shiftF=%u shiftG=%u)\n", event->keyval, event_keyval, SHIFT_State, shiftF, shiftG);
 
     SHIFT_State = 0;
     switch(event_keyval) {

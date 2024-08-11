@@ -4551,7 +4551,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
       #if defined(DMCP_BUILD)
         if(!getSystemFlag(FLAG_USB)) {
           // partial clearscreen, no menu update, no statusbar update on battery
-          if(!(screenUpdatingMode & (SCRUPD_MANUAL_MENU | SCRUPD_SKIP_MENU_ONE_TIME))) {  // battery powered
+          if(doRefreshSoftMenu && !(screenUpdatingMode & (SCRUPD_MANUAL_MENU | SCRUPD_SKIP_MENU_ONE_TIME))) {  // battery powered
             clearScreenOld(!clrStatusBar, !clrRegisterLines, clrSoftkeys);                // battery powered
             showSoftmenuCurrentPart();                                                    // battery powered
           }                                                                               // battery powered
@@ -4577,18 +4577,22 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
           //   displayShiftAndTamBuffer();                                                // this tests the USB powered option on sim
           //   refreshStatusBar();                                                        // this tests the USB powered option on sim
 
-          if(!(screenUpdatingMode & (SCRUPD_MANUAL_MENU | SCRUPD_SKIP_MENU_ONE_TIME))) {  // this tests the battery powered option on sim
+          if(doRefreshSoftMenu && !(screenUpdatingMode & (SCRUPD_MANUAL_MENU | SCRUPD_SKIP_MENU_ONE_TIME))) {  // this tests the battery powered option on sim
+            printf("---0001 PEM menu refresh\n");
             clearScreenOld(!clrStatusBar, !clrRegisterLines, clrSoftkeys);                // this tests the battery powered option on sim
             showSoftmenuCurrentPart();                                                    // this tests the battery powered option on sim
           }                                                                               // this tests the battery powered option on sim
           if(!(screenUpdatingMode & SCRUPD_MANUAL_STATUSBAR)) {                           // this tests the battery powered option on sim
+            printf("---0002 PEM status refresh\n");
             clearScreenOld(clrStatusBar, !clrRegisterLines, !clrSoftkeys);                // this tests the battery powered option on sim
             refreshStatusBar();                                                           // this tests the battery powered option on sim
           }                                                                               // this tests the battery powered option on sim
           clearScreenOld(!clrStatusBar, clrRegisterLines, !clrSoftkeys);                  // this tests the battery powered option on sim
+          printf("---0003 PEM stack refresh\n");
           fnPem(NOPARAM);                                                                 // this tests the battery powered option on sim
           displayShiftAndTamBuffer();                                                    
       #endif//!DMCP_BUILD PC_BUILD
+    doRefreshSoftMenu = false;
   }
 
 
@@ -4855,7 +4859,8 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
         break;
 
       case CM_PEM:
-       _refreshPemScreen();
+        screenUpdatingMode &= ~SCRUPD_MANUAL_MENU;
+        _refreshPemScreen();
         break;
 
 
@@ -4968,6 +4973,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
       default: ;
     }
 
+    doRefreshSoftMenu = false;
     #if !defined(DMCP_BUILD)
       refreshLcd(NULL);
     #endif // !DMCP_BUILD
