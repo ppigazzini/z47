@@ -3211,14 +3211,14 @@ void fnLoad(uint16_t loadMode) {
     doLoad(loadMode, 0, 0, 0, manualLoad);
   }
   fnClearFlag(FLAG_USER);
-  doRefreshSoftMenu = true;
+  screenUpdatingMode &= ~SCRUPD_MANUAL_MENU;
   refreshScreen(94);
 }
 
 void fnLoadAuto(void) {
   doLoad(LM_ALL, 0, 0, 0, autoLoad);
   fnClearFlag(FLAG_USER);
-  doRefreshSoftMenu = true;
+  screenUpdatingMode &= ~SCRUPD_MANUAL_MENU;
   refreshScreen(95);
 }
 
