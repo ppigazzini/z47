@@ -4488,6 +4488,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
         printf("       clearScreenOld calcMode=%u clearStatusBar=%u, clearRegisterLines=%u, clearSoftkeys=%u\n",calcMode, clearStatusBar, clearRegisterLines, clearSoftkeys);
       #endif // PC_BUILD &&MONITOR_CLRSCR
       uint8_t origScreenUpdatingMode = screenUpdatingMode;
+      screenUpdatingMode = SCRUPD_AUTO;
       if(clearStatusBar) {
         screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
         screenUpdatingMode |=  SCRUPD_MANUAL_STACK;
@@ -4533,11 +4534,70 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
 
 
   static void _refreshPemScreen(void) {
-    clearScreen();
-    showSoftmenuCurrentPart();
-    fnPem(NOPARAM);
-    displayShiftAndTamBuffer();
-    refreshStatusBar();
+      #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
+        printf(">>> BEGIN _refreshPemScreen calcMode=%d previousCalcMode=%d screenUpdatingMode=%d skippedStackLines=%u\n", calcMode, previousCalcMode, screenUpdatingMode, skippedStackLines);    //JMYY
+      #endif // PC_BUILD &&MONITOR_CLRSCR
+      skippedStackLines = false;                                    // See timer.c skippedStackLines
+      #if defined(DMCP_BUILD)
+        keyBuffer_pop();                                            // This causes key updates while the longer time processing register updates happen
+        if( !getSystemFlag(FLAG_USB) &&                             // Automatically, when on battery (hence low processor), change to skip long processing register printing, recovering the fragmented screen here: See timer.c fnTimerEndOfActivity()
+            !emptyKeyBuffer() &&
+            key_empty() == 1
+            ) {
+          skippedStackLines = true;
+          return;
+        }
+      #endif //DMCP_BUILD
+
+      #if defined(DMCP_BUILD)
+        if(!getSystemFlag(FLAG_USB)) {
+          // partial clearscreen, no menu update, no statusbar update on battery
+          if(doRefreshSoftMenu && !(screenUpdatingMode & (SCRUPD_MANUAL_MENU | SCRUPD_SKIP_MENU_ONE_TIME))) {  // battery powered
+            clearScreenOld(!clrStatusBar, !clrRegisterLines, clrSoftkeys);                // battery powered
+            showSoftmenuCurrentPart();                                                    // battery powered
+          }                                                                               // battery powered
+
+          clearScreenOld(!clrStatusBar, clrRegisterLines, !clrSoftkeys);                  // battery powered
+          fnPem(NOPARAM);                                                                 // battery powered
+          displayShiftAndTamBuffer();                                                    
+
+          if(!(screenUpdatingMode & SCRUPD_MANUAL_STATUSBAR)) {                           // battery powered
+            clearScreenOld(clrStatusBar, !clrRegisterLines, !clrSoftkeys);                // battery powered
+            refreshStatusBar();                                                           // battery powered
+          }                                                                               // battery powered
+        }
+        else {
+          clearScreen();                                                                  // USB powered
+          showSoftmenuCurrentPart();                                                      // USB powered
+          fnPem(NOPARAM);                                                                 // USB powered
+          displayShiftAndTamBuffer();                                                     // USB powered
+          refreshStatusBar();                                                             // USB powered
+        }
+      #elif defined(PC_BUILD)
+          //   clearScreen();                                                             // this tests the USB powered option on sim
+          //   showSoftmenuCurrentPart();                                                 // this tests the USB powered option on sim
+          //   fnPem(NOPARAM);                                                            // this tests the USB powered option on sim
+          //   displayShiftAndTamBuffer();                                                // this tests the USB powered option on sim
+          //   refreshStatusBar();                                                        // this tests the USB powered option on sim
+
+          if(doRefreshSoftMenu && !(screenUpdatingMode & (SCRUPD_MANUAL_MENU | SCRUPD_SKIP_MENU_ONE_TIME))) {  // this tests the battery powered option on sim
+            printf("---0001 PEM menu refresh\n");
+            clearScreenOld(!clrStatusBar, !clrRegisterLines, clrSoftkeys);                // this tests the battery powered option on sim
+            showSoftmenuCurrentPart();                                                    // this tests the battery powered option on sim
+          }                                                                               // this tests the battery powered option on sim
+
+          clearScreenOld(!clrStatusBar, clrRegisterLines, !clrSoftkeys);                  // this tests the battery powered option on sim
+          printf("---0003 PEM stack refresh\n");
+          fnPem(NOPARAM);                                                                 // this tests the battery powered option on sim
+          displayShiftAndTamBuffer();                                                     // this tests the battery powered option on sim
+
+          if(!(screenUpdatingMode & SCRUPD_MANUAL_STATUSBAR)) {                           // this tests the battery powered option on sim
+            printf("---0002 PEM status refresh\n");
+            clearScreenOld(clrStatusBar, !clrRegisterLines, !clrSoftkeys);                // this tests the battery powered option on sim
+            refreshStatusBar();                                                           // this tests the battery powered option on sim
+          }                                                                               // this tests the battery powered option on sim
+      #endif//!DMCP_BUILD PC_BUILD
+    doRefreshSoftMenu = false;
   }
 
 
@@ -4804,7 +4864,8 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
         break;
 
       case CM_PEM:
-       _refreshPemScreen();
+        screenUpdatingMode &= ~SCRUPD_MANUAL_MENU;
+        _refreshPemScreen();
         break;
 
 
@@ -4917,6 +4978,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
       default: ;
     }
 
+    doRefreshSoftMenu = false;
     #if !defined(DMCP_BUILD)
       refreshLcd(NULL);
     #endif // !DMCP_BUILD
