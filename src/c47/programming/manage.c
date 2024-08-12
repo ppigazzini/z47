@@ -437,6 +437,7 @@ void fnPem(uint16_t unusedButMandatoryParameter) {
     bool_t inTamMode = tam.mode && programList[currentProgramNumber - 1].step > 0;
     uint16_t numberOfSteps = getNumberOfSteps();
     uint16_t linesOfCurrentStep = 1;
+    lastIntegerBase = 0;
 
     if(calcMode != CM_PEM) {
       showSoftmenu(-MNU_PFN);

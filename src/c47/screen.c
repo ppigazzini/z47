@@ -4553,9 +4553,11 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
         }
 
         if(BASEMODEREGISTERX) {
-          screenUpdatingMode |= (SCRUPD_MANUAL_STATUSBAR | SCRUPD_MANUAL_MENU);
+//          screenUpdatingMode = SCRUPD_AUTO;
+          screenUpdatingMode |= SCRUPD_MANUAL_STATUSBAR;
+          screenUpdatingMode &= ~SCRUPD_MANUAL_MENU;
           screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
-          screenUpdatingMode &= ~SCRUPD_SKIP_STACK_ONE_TIME;
+
           if(calcMode == CM_NIM) refreshNIMdone = false;
         }
 
@@ -4569,7 +4571,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
           screenUpdatingMode = SCRUPD_AUTO; //SCRUPD_MANUAL_STACK | SCRUPD_MANUAL_SHIFT_STATUS;
         }
         else if(calcMode == CM_EIM) {
-          screenUpdatingMode &= ~(SCRUPD_MANUAL_MENU);
+          screenUpdatingMode &= ~SCRUPD_MANUAL_MENU;
           screenUpdatingMode |= SCRUPD_MANUAL_STACK;
         }
         else if(SHOWMODE) {
