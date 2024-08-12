@@ -512,7 +512,7 @@ bool_t itemNotAvail(int16_t itemNr) {
         return;
       }
       bool_t doNotAddStep = (func == ITM_EXIT1 || func == ITM_CLRMOD || func == ITM_SNAP || func == ITM_NOP || func == ITM_BASEMENU) && currentKeyCode == 32;                  // longpress commands not to be added
-      if(calcMode == CM_PEM && !tam.mode && !isFunctionItemAMenu(func) && (!(catalog && catalog != CATALOG_MVAR && !fnKeyInCatalog)) && !doNotAddStep) {   // && func != ITM_EXIT1 && func != ITM_CLRMOD) {  //change to exclude ITM_EXIT1 for PEM
+      if(calcMode == CM_PEM && !tam.mode && (!(catalog && catalog != CATALOG_MVAR && !fnKeyInCatalog)) && !doNotAddStep) {
         addStepInProgram(func);
         return;
       }
@@ -721,7 +721,7 @@ bool_t itemNotAvail(int16_t itemNr) {
   void fnChangeBase                (uint16_t unusedButMandatoryParameter) {}
   void fnDivide                    (uint16_t unusedButMandatoryParameter) {}
   void fnAdd                       (uint16_t unusedButMandatoryParameter) {}
-  void fnSigma                     (uint16_t unusedButMandatoryParameter) {}
+  void fnSigmaAddRem               (uint16_t unusedButMandatoryParameter) {}
   void fnXEqualsTo                 (uint16_t unusedButMandatoryParameter) {}
   void fnXNotEqual                 (uint16_t unusedButMandatoryParameter) {}
   void fnXAlmostEqual              (uint16_t unusedButMandatoryParameter) {}
@@ -1789,8 +1789,8 @@ TO_QSPI const item_t indexOfItems[] = {
 
 
 // Statistical sums
-/*  433 */  { fnSigma,                      1,                           STD_SIGMA "+",                                 STD_SIGMA "+",                                 (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_DISABLED  | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
-/*  434 */  { fnSigma,                      2,                           STD_SIGMA "-",                                 STD_SIGMA "-",                                 (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_DISABLED  | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
+/*  433 */  { fnSigmaAddRem,                SIGMA_PLUS,                  STD_SIGMA "+",                                 STD_SIGMA "+",                                 (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_DISABLED  | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
+/*  434 */  { fnSigmaAddRem,                SIGMA_MINUS,                 STD_SIGMA "-",                                 STD_SIGMA "-",                                 (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_DISABLED  | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /*  435 */  { fnStatSum,                    0,                           "n" STD_SIGMA,                                 "n",                                           (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /*  436 */  { fnStatSum,                    SUM_X,                       STD_SIGMA "x",                                 STD_SIGMA "x",                                 (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /*  437 */  { fnStatSum,                    SUM_Y,                       STD_SIGMA "y",                                 STD_SIGMA "y",                                 (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },

@@ -614,7 +614,9 @@ bool_t lowercaseselected;    //the only place that this is set, is in processKey
                     #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
                       printf("refreshScreen(): calcMode=%u End of processAimInput\n", calcMode);
                     #endif //PC_BUILD
-      refreshScreen(101);
+      
+      screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
+      //refreshScreen(101);
     }
 
                     #if defined(PC_BUILD)
@@ -2086,6 +2088,10 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
       return;
     }
 
+      screenUpdatingMode |= SCRUPD_MANUAL_STATUSBAR;
+      screenUpdatingMode |= SCRUPD_MANUAL_MENU;
+      screenUpdatingMode &= ~SCRUPD_SKIP_MENU_ONE_TIME;
+
       if(calcMode == CM_ASSIGN && itemToBeAssigned != 0 && tamBuffer[0] == 0) {
         assignToKey((char *)data);
         if(previousCalcMode == CM_AIM) {             //vv JM RETURN TO AIM MODE
@@ -2129,6 +2135,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
         if(item < 0) {
           setCurrentUserMenu(item, funcParam);
           showSoftmenu(item);
+          screenUpdatingMode &= ~SCRUPD_MANUAL_MENU;
             //printf("AA2 allowShiftsToClearError=%u !checkShifts=%u screenUpdatingMode=%u temporaryInformation=%u\n",allowShiftsToClearError, !checkShifts((char *)data), screenUpdatingMode, temporaryInformation);
         }
         else {
@@ -2204,6 +2211,9 @@ RELEASE_END:
                       jm_show_calc_state("      ##### keyboard.c: btnReleased end");
                     #endif //PC_BUILD
 
+        if(calcMode == CM_PEM) {
+          screenUpdatingMode |= SCRUPD_MANUAL_STATUSBAR;
+        }
         refreshScreen(117);    //TODO 2023-04-15 check here. It needs to be changed not to always refresh the screen.
                                //2023-06-26 improved by organizing the SCRUDP flags better
 
@@ -2252,7 +2262,7 @@ RELEASE_END:
   void processKeyAction(int16_t item) {
 
                     #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
-                      printf(">>>> processKeyAction: calcMode=%u item=%d  programRunStop=%d lastErrorCode=%u SHOWMODE=%u\n",calcMode, item, programRunStop, lastErrorCode, SHOWMODE);
+                      printf(">>>> processKeyAction: calcMode=%u item=%d  programRunStop=%d lastErrorCode=%u SHOWMODE=%u screenUpdatingMode=%i\n",calcMode, item, programRunStop, lastErrorCode, SHOWMODE, screenUpdatingMode);
                     #endif // PC_BUILD &&MONITOR_CLRSCR
 
     keyActionProcessed = false;
@@ -2341,7 +2351,7 @@ RELEASE_END:
             if(!keyActionProcessed) {    //JMvv
               addItemToBuffer(ITM_UP_ARROW);    //Let the arrows produce arrow up and arrow down in ALPHA mode
             }                            //JM^^
-            if(calcMode != CM_LISTXY && (currentSoftmenuScrolls() || calcMode != CM_NORMAL || temporaryInformation != TI_NO_INFO)) {
+            if(calcMode != CM_LISTXY && (currentSoftmenuScrolls() || (calcMode != CM_NORMAL && calcMode != CM_PEM) || temporaryInformation != TI_NO_INFO)) {
               refreshScreen(118);
             }
             keyActionProcessed = true;
@@ -2366,7 +2376,7 @@ RELEASE_END:
             if(!keyActionProcessed){     //JM
               addItemToBuffer(ITM_DOWN_ARROW);    //Let the arrows produce arrow up and arrow down in ALPHA mode
             }                            //JM^^
-            if(calcMode != CM_LISTXY && (currentSoftmenuScrolls() || calcMode != CM_NORMAL  || temporaryInformation != TI_NO_INFO)) {
+            if(calcMode != CM_LISTXY && (currentSoftmenuScrolls() || (calcMode != CM_NORMAL && calcMode != CM_PEM) || temporaryInformation != TI_NO_INFO)) {
               refreshScreen(119);
             }
             keyActionProcessed = true;
@@ -2392,6 +2402,7 @@ RELEASE_END:
           if(calcMode == CM_PEM) {
             if(getSystemFlag(FLAG_ALPHA)) {          //close AIM in PEM
               fnKeyExit(NOPARAM);
+              keyActionProcessed = true; 
             }
             // if(menu(0) != -MNU_PFN) {
             //   showSoftmenu(-MNU_PFN);
@@ -3752,6 +3763,7 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
                     #if defined(DEBUGUNDO)
                       printf(">>> Undo from fnKeyExit\n");
                     #endif // DEBUGUNDO
+        SAVED_SIGMA_lastAddRem = SIGMA_NONE;
         fnUndo(NOPARAM);
         fnClDrawMx(1);
         if(statMx[0]!='S') {
@@ -3794,7 +3806,8 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
       }
     }
 
-    last_CM = 253; //Force redraw   //JMvvv Show effect of Exit immediately
+    last_CM = calcMode; //ignore this method of prioritising refreshes. This method is sunsetting.
+    screenUpdatingMode |= SCRUPD_MANUAL_STATUSBAR;
     refreshScreen(127);
     return;
 

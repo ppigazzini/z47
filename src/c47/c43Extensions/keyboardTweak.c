@@ -465,20 +465,6 @@ void resetKeytimers(void) {
       case CM_PEM : {
         switch(*result) {
           case ITM_EXIT1:
-            if(getSystemFlag(FLAG_ALPHA)) {          //close AIM in PEM
-              fnKeyExit(NOPARAM);
-            }
-
-//            if(!isR47FAM) {
-//              longpressDelayedkey2 = ITM_CLRMOD;     //EXIT longpress DOES CLRMOD
-//              longpressDelayedkey1 = -MNU_PFN;
-//            }
-//            else {
-//              longpressDelayedkey3 = ITM_CLRMOD;     //EXIT longpress DOES CLRMOD
-//              longpressDelayedkey2 = LongpressEXIT1; //R47: SNAP
-//              longpressDelayedkey1 = -MNU_PFN;       //R47: PFN
-//            }
-
             longpressDelayedkey3 = ITM_CLRMOD;     // EXIT longpress DOES CLRMOD
             longpressDelayedkey2 = LongpressEXIT1; // LongpressEXIT1 : C47: MyAlpha or MyMenu; R47: SNAP
             longpressDelayedkey1 = -MNU_PFN;

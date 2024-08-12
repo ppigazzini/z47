@@ -1536,21 +1536,21 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
       if(stringWidth(string + offset, &numericFont, showLeadingCols, showEndingCols) > SCREEN_WIDTH - 50 ) {  //jump from large letters to small letters
         multiEdLines = 3;
         yMultiLineEdOffset = 1;
-//        screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
-        last_CM = 253; //Force redraw if
+        screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
+        last_CM = calcMode; //ignore this method of prioritising refreshes. This method is sunsetting.
       }
       else {
         multiEdLines = 2;              //jump back to small letters
         yMultiLineEdOffset = 3;
-//        screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
-        last_CM = 253; //Force redraw if
+        screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
+        last_CM = calcMode; //ignore this method of prioritising refreshes. This method is sunsetting.
       }
 
       if(checkHP) {
         multiEdLines = 1;
         yMultiLineEdOffset = 1;
-//        screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
-        last_CM = 253; //Force redraw if
+        screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
+        last_CM = calcMode; //ignore this method of prioritising refreshes. This method is sunsetting.
         yincr = 1;
       }
 
@@ -4488,6 +4488,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
         printf("       clearScreenOld calcMode=%u clearStatusBar=%u, clearRegisterLines=%u, clearSoftkeys=%u\n",calcMode, clearStatusBar, clearRegisterLines, clearSoftkeys);
       #endif // PC_BUILD &&MONITOR_CLRSCR
       uint8_t origScreenUpdatingMode = screenUpdatingMode;
+      screenUpdatingMode = SCRUPD_AUTO;
       if(clearStatusBar) {
         screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
         screenUpdatingMode |=  SCRUPD_MANUAL_STACK;
@@ -4533,11 +4534,70 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
 
 
   static void _refreshPemScreen(void) {
-    clearScreen();
-    showSoftmenuCurrentPart();
-    fnPem(NOPARAM);
-    displayShiftAndTamBuffer();
-    refreshStatusBar();
+      #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
+        printf(">>> BEGIN _refreshPemScreen calcMode=%d previousCalcMode=%d screenUpdatingMode=%d skippedStackLines=%u\n", calcMode, previousCalcMode, screenUpdatingMode, skippedStackLines);    //JMYY
+      #endif // PC_BUILD &&MONITOR_CLRSCR
+      skippedStackLines = false;                                    // See timer.c skippedStackLines
+      #if defined(DMCP_BUILD)
+        keyBuffer_pop();                                            // This causes key updates while the longer time processing register updates happen
+        if( !getSystemFlag(FLAG_USB) &&                             // Automatically, when on battery (hence low processor), change to skip long processing register printing, recovering the fragmented screen here: See timer.c fnTimerEndOfActivity()
+            !emptyKeyBuffer() &&
+            key_empty() == 1
+            ) {
+          skippedStackLines = true;
+          return;
+        }
+      #endif //DMCP_BUILD
+
+      #if defined(DMCP_BUILD)
+        if(!getSystemFlag(FLAG_USB)) {
+          // partial clearscreen, no menu update, no statusbar update on battery
+          if(doRefreshSoftMenu && !(screenUpdatingMode & (SCRUPD_MANUAL_MENU | SCRUPD_SKIP_MENU_ONE_TIME))) {  // battery powered
+            clearScreenOld(!clrStatusBar, !clrRegisterLines, clrSoftkeys);                // battery powered
+            showSoftmenuCurrentPart();                                                    // battery powered
+          }                                                                               // battery powered
+
+          clearScreenOld(!clrStatusBar, clrRegisterLines, !clrSoftkeys);                  // battery powered
+          fnPem(NOPARAM);                                                                 // battery powered
+          displayShiftAndTamBuffer();                                                    
+
+          if(!(screenUpdatingMode & SCRUPD_MANUAL_STATUSBAR)) {                           // battery powered
+            clearScreenOld(clrStatusBar, !clrRegisterLines, !clrSoftkeys);                // battery powered
+            refreshStatusBar();                                                           // battery powered
+          }                                                                               // battery powered
+        }
+        else {
+          clearScreen();                                                                  // USB powered
+          showSoftmenuCurrentPart();                                                      // USB powered
+          fnPem(NOPARAM);                                                                 // USB powered
+          displayShiftAndTamBuffer();                                                     // USB powered
+          refreshStatusBar();                                                             // USB powered
+        }
+      #elif defined(PC_BUILD)
+          //   clearScreen();                                                             // this tests the USB powered option on sim
+          //   showSoftmenuCurrentPart();                                                 // this tests the USB powered option on sim
+          //   fnPem(NOPARAM);                                                            // this tests the USB powered option on sim
+          //   displayShiftAndTamBuffer();                                                // this tests the USB powered option on sim
+          //   refreshStatusBar();                                                        // this tests the USB powered option on sim
+
+          if(doRefreshSoftMenu && !(screenUpdatingMode & (SCRUPD_MANUAL_MENU | SCRUPD_SKIP_MENU_ONE_TIME))) {  // this tests the battery powered option on sim
+            printf("---0001 PEM menu refresh\n");
+            clearScreenOld(!clrStatusBar, !clrRegisterLines, clrSoftkeys);                // this tests the battery powered option on sim
+            showSoftmenuCurrentPart();                                                    // this tests the battery powered option on sim
+          }                                                                               // this tests the battery powered option on sim
+
+          clearScreenOld(!clrStatusBar, clrRegisterLines, !clrSoftkeys);                  // this tests the battery powered option on sim
+          printf("---0003 PEM stack refresh\n");
+          fnPem(NOPARAM);                                                                 // this tests the battery powered option on sim
+          displayShiftAndTamBuffer();                                                     // this tests the battery powered option on sim
+
+          if(!(screenUpdatingMode & SCRUPD_MANUAL_STATUSBAR)) {                           // this tests the battery powered option on sim
+            printf("---0002 PEM status refresh\n");
+            clearScreenOld(clrStatusBar, !clrRegisterLines, !clrSoftkeys);                // this tests the battery powered option on sim
+            refreshStatusBar();                                                           // this tests the battery powered option on sim
+          }                                                                               // this tests the battery powered option on sim
+      #endif//!DMCP_BUILD PC_BUILD
+    doRefreshSoftMenu = false;
   }
 
 
@@ -4553,7 +4613,11 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
         }
 
         if(BASEMODEREGISTERX) {
-          screenUpdatingMode = SCRUPD_AUTO;
+//          screenUpdatingMode = SCRUPD_AUTO;
+          screenUpdatingMode |= SCRUPD_MANUAL_STATUSBAR;
+          screenUpdatingMode &= ~SCRUPD_MANUAL_MENU;
+          screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
+
           if(calcMode == CM_NIM) refreshNIMdone = false;
         }
 
@@ -4567,7 +4631,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
           screenUpdatingMode = SCRUPD_AUTO; //SCRUPD_MANUAL_STACK | SCRUPD_MANUAL_SHIFT_STATUS;
         }
         else if(calcMode == CM_EIM) {
-          screenUpdatingMode &= ~(SCRUPD_MANUAL_MENU);
+          screenUpdatingMode &= ~SCRUPD_MANUAL_MENU;
           screenUpdatingMode |= SCRUPD_MANUAL_STACK;
         }
         else if(SHOWMODE) {
@@ -4611,11 +4675,11 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
         }
         else if(calcMode == CM_NIM) {
           #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
-            printf(">>>>      _refreshNormalScreen NIM: calcMode=%u  programRunStop=%d lastErrorCode=%u \n",calcMode, programRunStop, lastErrorCode);
+            printf(">>>>      _refreshNormalScreen NIM: calcMode=%u  programRunStop=%d lastErrorCode=%u screenUpdatingMode=%u\n",calcMode, programRunStop, lastErrorCode, screenUpdatingMode);
           #endif // PC_BUILD &&MONITOR_CLRSCR
           if(!refreshNIMdone) {
             #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
-              printf(">>>>      _refreshNormalScreen NIM FULL\n");
+              printf(">>>>      _refreshNormalScreen NIM: FULL calcMode=%u  programRunStop=%d lastErrorCode=%u screenUpdatingMode=%u\n",calcMode, programRunStop, lastErrorCode, screenUpdatingMode);
             #endif // PC_BUILD &&MONITOR_CLRSCR
             refreshRegisterLine(REGISTER_T);
             refreshRegisterLine(REGISTER_Z);
@@ -4751,7 +4815,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
                                  if(!(screenUpdatingMode & 0x08)) strcat(ttt,"SHFT ");      
                                  if(!(screenUpdatingMode & 0x04)) strcat(ttt,"MENU ");      
                                  if(!(screenUpdatingMode & 0x02)) strcat(ttt, "STK ");      
-                                 if(!(screenUpdatingMode & 0x01)) strcat(ttt,"STAT ");
+                                 if(!(screenUpdatingMode & 0x01)) strcat(ttt, "STS ");
                                }
                                int16_t m = softmenuStack[0].softmenuId;
                                char uuu[100];
@@ -4804,7 +4868,8 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
         break;
 
       case CM_PEM:
-       _refreshPemScreen();
+        screenUpdatingMode &= ~SCRUPD_MANUAL_MENU;
+        _refreshPemScreen();
         break;
 
 
@@ -4917,6 +4982,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
       default: ;
     }
 
+    doRefreshSoftMenu = false;
     #if !defined(DMCP_BUILD)
       refreshLcd(NULL);
     #endif // !DMCP_BUILD
