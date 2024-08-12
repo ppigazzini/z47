@@ -337,7 +337,7 @@
 
 
   bool_t checkNormal(int16_t keyNr, int16_t item) {
-    int16_t result = Norm_Key_00_item_in_layout;
+    int16_t result = Norm_Key_00_item_in_layout; 
     int16_t ss = Check_SigmaPlus_Assigned(&result, keyNr);
     //printf("aaaaa ss=%i result=%i  ss==item=%i\n",ss, result, ss==item);
     return (ss == item);
@@ -345,7 +345,7 @@
 
 
   gboolean keyReleased(GtkWidget *w, GdkEventKey *event, gpointer data) {     //JM
-    printf("PC Key released  %d (SHIFT_State=%u)(shiftF=%u shiftF=%u)\n", event->keyval,SHIFT_State,shiftF,shiftG);
+    printf("PC Key released: %d (SHIFT_State=%u)(shiftF=%u shiftF=%u)\n", event->keyval,SHIFT_State,shiftF,shiftG);
     if(event_keyval == event->keyval + CTRL_State) event_keyval = 99999999;
 
     switch(event->keyval) {
@@ -360,11 +360,11 @@
             if(checkNormal(10,ITM_SHIFTf)) btnClicked(w, "10"); else
             if(checkNormal(11,ITM_SHIFTf)) btnClicked(w, "11"); else
 
-            if((getSystemFlag(FLAG_USER) ? kbd_usr[10].primary : kbd_std[10].primary) == ITM_SHIFTf) btnClicked(w, "10"); else
-            if((getSystemFlag(FLAG_USER) ? kbd_usr[ 0].primary : kbd_std[ 0].primary) == KEY_fg    ) btnClicked(w, "00"); else
-            if((getSystemFlag(FLAG_USER) ? kbd_usr[10].primary : kbd_std[10].primary) == KEY_fg    ) btnClicked(w, "10"); else
-            if((getSystemFlag(FLAG_USER) ? kbd_usr[11].primary : kbd_std[11].primary) == KEY_fg    ) btnClicked(w, "11"); else
-            if((getSystemFlag(FLAG_USER) ? kbd_usr[27].primary : kbd_std[27].primary) == KEY_fg    ) btnClicked(w, "27");
+            if(((getSystemFlag(FLAG_USER) ? kbd_usr[10].primary : kbd_std[10].primary)) == ITM_SHIFTf) btnClicked(w, "10"); else
+            if(((getSystemFlag(FLAG_USER) ? kbd_usr[ 0].primary : kbd_std[ 0].primary)) == KEY_fg    ) btnClicked(w, "00"); else
+            if(((getSystemFlag(FLAG_USER) ? kbd_usr[10].primary : kbd_std[10].primary)) == KEY_fg    ) btnClicked(w, "10"); else
+            if(((getSystemFlag(FLAG_USER) ? kbd_usr[11].primary : kbd_std[11].primary)) == KEY_fg    ) btnClicked(w, "11"); else
+            if(((getSystemFlag(FLAG_USER) ? kbd_usr[27].primary : kbd_std[27].primary)) == KEY_fg    ) btnClicked(w, "27");
           }
           SHIFT_State = 0;
           break;
@@ -481,27 +481,27 @@
             if(checkNormal( 0,ITM_SHIFTf)) btnClicked(w, "00"); else
             if(checkNormal(10,ITM_SHIFTf)) btnClicked(w, "10"); else
             if(checkNormal(11,ITM_SHIFTf)) btnClicked(w, "11"); else
-            if((getSystemFlag(FLAG_USER) ? kbd_usr[10].primary : kbd_std[10].primary == ITM_SHIFTf )) btnClicked(w, "10"); else
-            if((getSystemFlag(FLAG_USER) ? kbd_usr[11].primary : kbd_std[11].primary == ITM_SHIFTf )) btnClicked(w, "11"); else
-            if((getSystemFlag(FLAG_USER) ? kbd_usr[10].primary : kbd_std[10].primary == KEY_fg     )) btnClicked(w, "10"); else
-            if((getSystemFlag(FLAG_USER) ? kbd_usr[11].primary : kbd_std[11].primary == KEY_fg     )) btnClicked(w, "11"); else
-            if((getSystemFlag(FLAG_USER) ? kbd_usr[27].primary : kbd_std[27].primary == KEY_fg     )) btnClicked(w, "27");
+            if(((getSystemFlag(FLAG_USER) ? kbd_usr[10].primary : kbd_std[10].primary) == ITM_SHIFTf )) btnClicked(w, "10"); else
+            if(((getSystemFlag(FLAG_USER) ? kbd_usr[11].primary : kbd_std[11].primary) == ITM_SHIFTf )) btnClicked(w, "11"); else
+            if(((getSystemFlag(FLAG_USER) ? kbd_usr[10].primary : kbd_std[10].primary) == KEY_fg     )) btnClicked(w, "10"); else
+            if(((getSystemFlag(FLAG_USER) ? kbd_usr[11].primary : kbd_std[11].primary) == KEY_fg     )) btnClicked(w, "11"); else
+            if(((getSystemFlag(FLAG_USER) ? kbd_usr[27].primary : kbd_std[27].primary) == KEY_fg     )) btnClicked(w, "27");
           break;
         case 103: //g
 
             if(checkNormal( 0,ITM_SHIFTg)) btnClicked(w, "00"); else
             if(checkNormal(10,ITM_SHIFTg)) btnClicked(w, "10"); else
             if(checkNormal(11,ITM_SHIFTg)) btnClicked(w, "11"); else
-            if((getSystemFlag(FLAG_USER) ? kbd_usr[11].primary : kbd_std[11].primary == ITM_SHIFTg )) btnClicked(w, "11"); else
-            if((getSystemFlag(FLAG_USER) ? kbd_usr[10].primary : kbd_std[10].primary == ITM_SHIFTg )) btnClicked(w, "10");
-            // if((getSystemFlag(FLAG_USER) ? kbd_usr[11].primary : kbd_std[11].primary == KEY_fg     )) btnClicked(w, "11"); else
-            // if((getSystemFlag(FLAG_USER) ? kbd_usr[10].primary : kbd_std[10].primary == KEY_fg     )) btnClicked(w, "10"); else
-            // if((getSystemFlag(FLAG_USER) ? kbd_usr[27].primary : kbd_std[27].primary == KEY_fg     )) btnClicked(w, "27");
+            if(((getSystemFlag(FLAG_USER) ? kbd_usr[11].primary : kbd_std[11].primary) == ITM_SHIFTg )) btnClicked(w, "11"); else
+            if(((getSystemFlag(FLAG_USER) ? kbd_usr[10].primary : kbd_std[10].primary) == ITM_SHIFTg )) btnClicked(w, "10");
+            // if(((getSystemFlag(FLAG_USER) ? kbd_usr[11].primary : kbd_std[11].primary) == KEY_fg     )) btnClicked(w, "11"); else
+            // if(((getSystemFlag(FLAG_USER) ? kbd_usr[10].primary : kbd_std[10].primary) == KEY_fg     )) btnClicked(w, "10"); else
+            // if(((getSystemFlag(FLAG_USER) ? kbd_usr[27].primary : kbd_std[27].primary) == KEY_fg     )) btnClicked(w, "27");
           break;
         default:break;
       }
     }
-
+          
 
       if(!catalog && (calcMode == CM_NORMAL || calcMode == CM_NIM || (calcMode == CM_PEM && !getSystemFlag(FLAG_ALPHA) ))) {
 
@@ -1241,7 +1241,7 @@ if(shortCutCommand(w, event_keyval,    86,                                  shor
           btnClicked(w, "02"); //dr
           break;               //dr
 
-
+        
         case 61: // =          //                //JM Special case: = = DRG
           if(calcMode == CM_NIM) {
             btnClicked(w, "32");  //exit
@@ -2386,7 +2386,7 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
                                   );
 
       if(Norm_Key_00_used) {                                       //Sigma+NRM: JChange the name inside the Sigma+ button; allow USER mode, but override the USER setting for Sigma+, except for shiftg which is not overriden
-        //stringToUtf8(indexOfItems[max(Norm_Key_00.func, -Norm_Key_00.func)].itemSoftmenuName, lbl);
+        //stringToUtf8(indexOfItems[max(Norm_Key_00_VAR, -Norm_Key_00_VAR)].itemSoftmenuName, lbl);
         char sstmp[16];
         if((Norm_Key_00.funcParam[0] != 0) && ((Norm_Key_00.func == -MNU_DYNAMIC) || (Norm_Key_00.func == ITM_XEQ) || (Norm_Key_00.func == ITM_RCL)))  {
           strcpy(sstmp, (char *)&Norm_Key_00.funcParam);       // name of a user menu, program or variable assigned to the Norm key
@@ -3458,15 +3458,15 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
       gtk_container_add(GTK_CONTAINER(frmCalc), grid);
 
 
-
+      
       if(modelString[0] == 0) {
         strcpy(modelString,"res/");
         strcat(modelString, isR47FAM?"R47":"C47");
         if(calcLandscape) {
           strcat(modelString,"short.png");
-        }
+        } 
         else {
-          strcat(modelString,".png");
+          strcat(modelString,".png");        
         }
       }
       else {
