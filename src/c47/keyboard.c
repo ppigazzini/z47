@@ -2215,7 +2215,8 @@ RELEASE_END:
           screenUpdatingMode |= SCRUPD_MANUAL_STATUSBAR;
         }
         refreshScreen(117);    //TODO 2023-04-15 check here. It needs to be changed not to always refresh the screen.
-                               //2023-06-26 improved by organizing the SCRUDP flags better
+                               //2023-06-26 improved by organizing the SCRUPD flags better
+                               //2024-08-12 further improved by managing SCRUPD flags better
 
       }
       screenUpdatingMode &= ~SCRUPD_ONE_TIME_FLAGS;
@@ -3157,6 +3158,7 @@ RELEASE_END:
 
       setCatalogLastPos();
     }
+    doRefreshSoftMenu = true;
                     #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
                       printf("#### menuUp: screenUpdatingMode=%u\n",screenUpdatingMode);
                     #endif // PC_BUILD &&MONITOR_CLRSCR
@@ -3201,6 +3203,7 @@ RELEASE_END:
       }
       setCatalogLastPos();
     }
+    doRefreshSoftMenu = true;
                     #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
                       printf("#### menuDown: screenUpdatingMode=%u\n",screenUpdatingMode);
                     #endif // PC_BUILD &&MONITOR_CLRSCR
