@@ -3898,8 +3898,8 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
     }
 
     last_CM = calcMode; //ignore this method of prioritising refreshes. This method is sunsetting.
-    screenUpdatingMode |= SCRUPD_MANUAL_STATUSBAR;
-    refreshScreen(127);
+    screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
+//    refreshScreen(127);
     return;
 
 undo_disabled:
