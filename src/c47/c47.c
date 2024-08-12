@@ -313,7 +313,7 @@ size_t                 c47MemInBlocks;
 
 real_t                 SAVED_SIGMA_LASTX;
 real_t                 SAVED_SIGMA_LASTY;
-int8_t                 SAVED_SIGMA_LAc1;
+int8_t                 SAVED_SIGMA_lastAddRem;
 
 uint16_t               lrSelectionHistobackup;
 uint16_t               lrChosenHistobackup;

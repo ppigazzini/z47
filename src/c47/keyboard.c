@@ -614,7 +614,9 @@ bool_t lowercaseselected;    //the only place that this is set, is in processKey
                     #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
                       printf("refreshScreen(): calcMode=%u End of processAimInput\n", calcMode);
                     #endif //PC_BUILD
-      refreshScreen(101);
+      
+      screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
+      //refreshScreen(101);
     }
 
                     #if defined(PC_BUILD)
@@ -2209,6 +2211,9 @@ RELEASE_END:
                       jm_show_calc_state("      ##### keyboard.c: btnReleased end");
                     #endif //PC_BUILD
 
+        if(calcMode == CM_PEM) {
+          screenUpdatingMode |= SCRUPD_MANUAL_STATUSBAR;
+        }
         refreshScreen(117);    //TODO 2023-04-15 check here. It needs to be changed not to always refresh the screen.
                                //2023-06-26 improved by organizing the SCRUDP flags better
 
@@ -3758,6 +3763,7 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
                     #if defined(DEBUGUNDO)
                       printf(">>> Undo from fnKeyExit\n");
                     #endif // DEBUGUNDO
+        SAVED_SIGMA_lastAddRem = SIGMA_NONE;
         fnUndo(NOPARAM);
         fnClDrawMx(1);
         if(statMx[0]!='S') {
@@ -3800,7 +3806,8 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
       }
     }
 
-    last_CM = 253; //Force redraw   //JMvvv Show effect of Exit immediately
+    last_CM = calcMode; //ignore this method of prioritising refreshes. This method is sunsetting.
+    screenUpdatingMode |= SCRUPD_MANUAL_STATUSBAR;
     refreshScreen(127);
     return;
 

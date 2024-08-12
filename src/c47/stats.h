@@ -13,12 +13,16 @@
   #include "typeDefinitions.h"
   #include <stdint.h>
 
+  #define SIGMA_PLUS  1
+  #define SIGMA_MINUS 2
+  #define SIGMA_NONE  0
+
   /**
    * Adds a value to the statistic registers.
    *
    * \param[in] unusedButMandatoryParameter
    */
-  void   fnSigma               (uint16_t plusMinus);
+  void   fnSigmaAddRem         (uint16_t plusMinus);
 
   void   fnStatSum             (uint16_t sum);
 

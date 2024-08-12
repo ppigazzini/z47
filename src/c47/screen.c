@@ -1536,21 +1536,21 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
       if(stringWidth(string + offset, &numericFont, showLeadingCols, showEndingCols) > SCREEN_WIDTH - 50 ) {  //jump from large letters to small letters
         multiEdLines = 3;
         yMultiLineEdOffset = 1;
-//        screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
-        last_CM = 253; //Force redraw if
+        screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
+        last_CM = calcMode; //ignore this method of prioritising refreshes. This method is sunsetting.
       }
       else {
         multiEdLines = 2;              //jump back to small letters
         yMultiLineEdOffset = 3;
-//        screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
-        last_CM = 253; //Force redraw if
+        screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
+        last_CM = calcMode; //ignore this method of prioritising refreshes. This method is sunsetting.
       }
 
       if(checkHP) {
         multiEdLines = 1;
         yMultiLineEdOffset = 1;
-//        screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
-        last_CM = 253; //Force redraw if
+        screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
+        last_CM = calcMode; //ignore this method of prioritising refreshes. This method is sunsetting.
         yincr = 1;
       }
 
@@ -4613,7 +4613,11 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
         }
 
         if(BASEMODEREGISTERX) {
-          screenUpdatingMode = SCRUPD_AUTO;
+//          screenUpdatingMode = SCRUPD_AUTO;
+          screenUpdatingMode |= SCRUPD_MANUAL_STATUSBAR;
+          screenUpdatingMode &= ~SCRUPD_MANUAL_MENU;
+          screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
+
           if(calcMode == CM_NIM) refreshNIMdone = false;
         }
 
@@ -4627,7 +4631,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
           screenUpdatingMode = SCRUPD_AUTO; //SCRUPD_MANUAL_STACK | SCRUPD_MANUAL_SHIFT_STATUS;
         }
         else if(calcMode == CM_EIM) {
-          screenUpdatingMode &= ~(SCRUPD_MANUAL_MENU);
+          screenUpdatingMode &= ~SCRUPD_MANUAL_MENU;
           screenUpdatingMode |= SCRUPD_MANUAL_STACK;
         }
         else if(SHOWMODE) {
@@ -4671,11 +4675,11 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
         }
         else if(calcMode == CM_NIM) {
           #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
-            printf(">>>>      _refreshNormalScreen NIM: calcMode=%u  programRunStop=%d lastErrorCode=%u \n",calcMode, programRunStop, lastErrorCode);
+            printf(">>>>      _refreshNormalScreen NIM: calcMode=%u  programRunStop=%d lastErrorCode=%u screenUpdatingMode=%u\n",calcMode, programRunStop, lastErrorCode, screenUpdatingMode);
           #endif // PC_BUILD &&MONITOR_CLRSCR
           if(!refreshNIMdone) {
             #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
-              printf(">>>>      _refreshNormalScreen NIM FULL\n");
+              printf(">>>>      _refreshNormalScreen NIM: FULL calcMode=%u  programRunStop=%d lastErrorCode=%u screenUpdatingMode=%u\n",calcMode, programRunStop, lastErrorCode, screenUpdatingMode);
             #endif // PC_BUILD &&MONITOR_CLRSCR
             refreshRegisterLine(REGISTER_T);
             refreshRegisterLine(REGISTER_Z);
@@ -4811,7 +4815,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
                                  if(!(screenUpdatingMode & 0x08)) strcat(ttt,"SHFT ");      
                                  if(!(screenUpdatingMode & 0x04)) strcat(ttt,"MENU ");      
                                  if(!(screenUpdatingMode & 0x02)) strcat(ttt, "STK ");      
-                                 if(!(screenUpdatingMode & 0x01)) strcat(ttt,"STAT ");
+                                 if(!(screenUpdatingMode & 0x01)) strcat(ttt, "STS ");
                                }
                                int16_t m = softmenuStack[0].softmenuId;
                                char uuu[100];
