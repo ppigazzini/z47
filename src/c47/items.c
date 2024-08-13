@@ -243,10 +243,11 @@ bool_t itemNotAvail(int16_t itemNr) {
     }
     else {
       force_refresh(timed); //Added this to enable 0.5 second refresh during running
-      #if (defined(PC_BUILD) && VERBOSE_LEVEL > -1) || defined(DEBUG_EXECUTE)
-        printf("   >>>   reallyRunFunction: §%i§%s§%s§\n",func, indexOfItems[abs(func)].itemCatalogName, indexOfItems[abs(func)].itemSoftmenuName);
-      #endif // PC_BUILD
     }
+
+    #if defined(PC_BUILD) || defined(DEBUG_EXECUTE)
+      printf("   >>>   reallyRunFunction: § %i § %s § %s § %i\n",func, indexOfItems[abs(func)].itemCatalogName, indexOfItems[abs(func)].itemSoftmenuName, param);
+    #endif // PC_BUILD
 
 
     if((programRunStop != PGM_RUNNING || timeLastOp0 == 0)) {               //The first manual command including XEQ (re)starts the timer by setting timeLastOp0
