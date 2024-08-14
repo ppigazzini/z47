@@ -2718,21 +2718,24 @@ RELEASE_END:
                     resetShiftState();
                   }
 
-                  if(calcMode == CM_NIM && (item == ITM_RI || item == ITM_dotD) && nimNumberPart == NP_INT_10 && lastIntegerBase > 0) {
+                  if(calcMode == CM_NIM && (item == ITM_RI || item == ITM_dotD) && (nimNumberPart == NP_INT_10 || nimNumberPart == NP_INT_16) && lastIntegerBase > 0) {
                     //printf("Change NIM to LI\n");
                     lastIntegerBase = 0;
+                    screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
                     resetShiftState();
                     keyActionProcessed = true;
                   } 
                   else if(calcMode == CM_NIM && (item == ITM_RI || item == ITM_dotD) && nimNumberPart == NP_INT_BASE && aimBuffer[strlen(aimBuffer) - 1] == '#') {
                     //printf("NIM remove base # to LI B\n");
                     lastIntegerBase = 0;
+                    screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
                     resetShiftState();
                     addItemToNimBuffer(ITM_BACKSPACE);
                     keyActionProcessed = true;
                   }
                   else if(calcMode == CM_NIM && item == ITM_HASH_JM && nimNumberPart == NP_INT_BASE && aimBuffer[strlen(aimBuffer) - 1] == '#') {
                     //printf("NIM remove base # to LI A\n");
+                    screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
                     resetShiftState();
                     addItemToNimBuffer(ITM_BACKSPACE);
                     keyActionProcessed = true;
@@ -2740,6 +2743,7 @@ RELEASE_END:
                   else if(calcMode == CM_NIM && item == ITM_PERIOD && nimNumberPart == NP_INT_BASE && aimBuffer[strlen(aimBuffer) - 1] == '#') {
                     //printf("NIM replace base # with .\n");
                     lastIntegerBase = 0;
+                    screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
                     addItemToNimBuffer(ITM_BACKSPACE);
                     addItemToNimBuffer(ITM_PERIOD);
                     refreshRegisterLine(REGISTER_X);
@@ -2748,6 +2752,7 @@ RELEASE_END:
                   else if(calcMode == CM_NIM && item == ITM_HASH_JM && nimNumberPart == NP_REAL_FLOAT_PART && aimBuffer[strlen(aimBuffer) - 1] == '.') {
                     //printf("NIM replace base # with .\n");
                     lastIntegerBase = 0;
+                    screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
                     addItemToNimBuffer(ITM_BACKSPACE);
                     addItemToNimBuffer(ITM_toINT);
                     refreshRegisterLine(REGISTER_X);
