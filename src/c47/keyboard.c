@@ -2436,6 +2436,12 @@ RELEASE_END:
               if(tam.alpha) {
                 assignLeaveAlpha();
                 assignGetName1();
+                if(softmenu[softmenuStack[1].softmenuId].menuItem == -MNU_ALPHA) {
+                  popSoftmenu();
+                }
+                if(softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_ALPHA) {
+                  popSoftmenu();
+                }
               }
               else {
                 itemToBeAssigned = ASSIGN_CLEAR;
