@@ -2211,9 +2211,6 @@ RELEASE_END:
                       jm_show_calc_state("      ##### keyboard.c: btnReleased end");
                     #endif //PC_BUILD
 
-        if(calcMode == CM_PEM) {
-          screenUpdatingMode |= SCRUPD_MANUAL_STATUSBAR;
-        }
         refreshScreen(117);    //TODO 2023-04-15 check here. It needs to be changed not to always refresh the screen.
                                //2023-06-26 improved by organizing the SCRUPD flags better
                                //2024-08-12 further improved by managing SCRUPD flags better
