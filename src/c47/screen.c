@@ -4446,6 +4446,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
           printf("   >>> lcd_fill_rect SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME\n");
         #endif // PC_BUILD && MONITOR_CLRSCR
         lcd_fill_rect(0, Y_POSITION_OF_REGISTER_T_LINE-4, SCREEN_WIDTH - 240 - 2, 240 - Y_POSITION_OF_REGISTER_T_LINE - SOFTMENU_HEIGHT * 3+4, LCD_SET_VALUE);
+        refreshNIMdone = false;
         if(!GRAPHMODE) { //in GRAPHMODE, protect the square graph area
           lcd_fill_rect(SCREEN_WIDTH - 240 - 2, Y_POSITION_OF_REGISTER_T_LINE-4, 240 + 2, 240 - Y_POSITION_OF_REGISTER_T_LINE - SOFTMENU_HEIGHT * 3+4, LCD_SET_VALUE);
         } //C47 had 0,-4,0,+4 to clear from y=20, not y=24.
@@ -4615,14 +4616,19 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
         }
 
         if(BASEMODEREGISTERX) {
-//          screenUpdatingMode = SCRUPD_AUTO;
+          //screenUpdatingMode = SCRUPD_AUTO;
           screenUpdatingMode |= SCRUPD_MANUAL_STATUSBAR;
           screenUpdatingMode &= ~SCRUPD_MANUAL_MENU;
-          screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
-
-          if(calcMode == CM_NIM) refreshNIMdone = false;
+          screenUpdatingMode &= ~(SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME);
+          if(calcMode == CM_NIM) {
+            refreshNIMdone = false;
+          }
         }
 
+        if(BASEMODEACTIVE) {
+          showFracMode();
+//          screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;          
+        }
         if(calcMode == CM_CONFIRMATION) {
           screenUpdatingMode = SCRUPD_AUTO;
         }
@@ -4638,6 +4644,9 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
         }
         else if(SHOWMODE) {
           screenUpdatingMode &= ~(SCRUPD_MANUAL_STACK | SCRUPD_MANUAL_MENU);
+        }
+        else if(calcMode == CM_PEM) {
+          screenUpdatingMode |= SCRUPD_MANUAL_STATUSBAR;
         }
         //else if(temporaryInformation == TI_SHOWNOTHING) {
         //  screenUpdatingMode |= (SCRUPD_MANUAL_MENU | SCRUPD_MANUAL_STACK);
@@ -4677,11 +4686,11 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
         }
         else if(calcMode == CM_NIM) {
           #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
-            printf(">>>>      _refreshNormalScreen NIM: calcMode=%u  programRunStop=%d lastErrorCode=%u screenUpdatingMode=%u\n",calcMode, programRunStop, lastErrorCode, screenUpdatingMode);
+            printf(">>>>      _refreshNormalScreen NIM_LINE: calcMode=%u  programRunStop=%d lastErrorCode=%u screenUpdatingMode=%u\n",calcMode, programRunStop, lastErrorCode, screenUpdatingMode);
           #endif // PC_BUILD &&MONITOR_CLRSCR
           if(!refreshNIMdone) {
             #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
-              printf(">>>>      _refreshNormalScreen NIM: FULL calcMode=%u  programRunStop=%d lastErrorCode=%u screenUpdatingMode=%u\n",calcMode, programRunStop, lastErrorCode, screenUpdatingMode);
+              printf(">>>>      _refreshNormalScreen NIM: FULL\n");
             #endif // PC_BUILD &&MONITOR_CLRSCR
             refreshRegisterLine(REGISTER_T);
             refreshRegisterLine(REGISTER_Z);
