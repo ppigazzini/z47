@@ -26,6 +26,7 @@
 #include "mathematics/reToCx.h"
 #include "memory.h"
 #include "plotstat.h"
+#include "programming/lblGtoXeq.h"
 #include "programming/manage.h"
 #include "programming/nextStep.h"
 #include "programming/programmableMenu.h"
@@ -614,7 +615,7 @@ bool_t lowercaseselected;    //the only place that this is set, is in processKey
                     #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
                       printf("refreshScreen(): calcMode=%u End of processAimInput\n", calcMode);
                     #endif //PC_BUILD
-      
+
       screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
       //refreshScreen(101);
     }
@@ -1697,13 +1698,13 @@ releaseOverride = false;
                   {7 , 7 , 2 , 23, 2 , 2 , 2 },   //0    H  H  C  R  C  C  C
                   {18, 20, 23, 23, 23, 23, 23},   //1    P  P  4  4  4  4  4
                   {30, 30, 18, 18, 18, 18, 18},   //2    3  3  7  7  7  7  7
-                  {24, 24, 12, 12, 9 , 20, 13},   //3    5  5  EN EN J  R  M 
+                  {24, 24, 12, 12, 9 , 20, 13},   //3    5  5  EN EN J  R  M
                   {12, 12, 29, 29, 13, 9 , 4 },   //4    EN EN 2  2  M  J  E
                   {28, 28, 33, 33, 0,  0 , 14},   //5    1  1  0  0        N
                   {20, 20, 29, 29, 0 , 0 , 24},   //6    9  9  2  2        U
                   {18, 18, 30, 30, 0 , 0 , 0 },   //7    7  7  3  3
                   {29, 29, 0 , 0 , 0 , 0 , 0 },   //8    2  2
-                  {0 , 0 , 0 , 0 , 0 , 0 , 0 },   //9    
+                  {0 , 0 , 0 , 0 , 0 , 0 , 0 },   //9
                 };
 
     bool_t checkNumber(uint8_t keyCode) {
@@ -2238,6 +2239,11 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
         }
       }
 
+      if(programRunStop == PGM_SINGLE_STEP) {     // Key pressed was SST
+        programRunStop = PGM_STOPPED;
+        runProgram(true, INVALID_VARIABLE);       // Execute one program step after key released
+      }
+
 //  #if defined(DMCP_BUILD)
 //      else if(keyAutoRepeat) {         // AUTOREPEAT
 //        btnPressed(data);
@@ -2443,7 +2449,7 @@ RELEASE_END:
           if(calcMode == CM_PEM) {
             if(getSystemFlag(FLAG_ALPHA)) {          //close AIM in PEM
               fnKeyExit(NOPARAM);
-              keyActionProcessed = true; 
+              keyActionProcessed = true;
             }
             // if(menu(0) != -MNU_PFN) {
             //   showSoftmenu(-MNU_PFN);
@@ -2776,7 +2782,7 @@ RELEASE_END:
                     screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
                     resetShiftState();
                     keyActionProcessed = true;
-                  } 
+                  }
                   else if(calcMode == CM_NIM && (item == ITM_RI || item == ITM_dotD) && nimNumberPart == NP_INT_BASE && aimBuffer[strlen(aimBuffer) - 1] == '#') {
                     //printf("NIM remove base # to LI B\n");
                     lastIntegerBase = 0;
@@ -2791,7 +2797,7 @@ RELEASE_END:
                     resetShiftState();
                     addItemToNimBuffer(ITM_BACKSPACE);
                     keyActionProcessed = true;
-                  } 
+                  }
                   else if(calcMode == CM_NIM && item == ITM_PERIOD && nimNumberPart == NP_INT_BASE && aimBuffer[strlen(aimBuffer) - 1] == '#') {
                     //printf("NIM replace base # with .\n");
                     lastIntegerBase = 0;
@@ -2800,7 +2806,7 @@ RELEASE_END:
                     addItemToNimBuffer(ITM_PERIOD);
                     refreshRegisterLine(REGISTER_X);
                     keyActionProcessed = true;
-                  } 
+                  }
                   else if(calcMode == CM_NIM && item == ITM_HASH_JM && nimNumberPart == NP_REAL_FLOAT_PART && aimBuffer[strlen(aimBuffer) - 1] == '.') {
                     //printf("NIM replace base # with .\n");
                     lastIntegerBase = 0;
@@ -2809,7 +2815,7 @@ RELEASE_END:
                     addItemToNimBuffer(ITM_toINT);
                     refreshRegisterLine(REGISTER_X);
                     keyActionProcessed = true;
-                  } 
+                  }
 
                   else {
                     addItemToNimBuffer(item);
