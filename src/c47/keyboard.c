@@ -2117,7 +2117,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
           }
         #endif // PC_BUILD
 
-          if(item != ITM_NOP && tam.alpha && indexOfItems[item].func != addItemToBuffer) {
+          if(item != ITM_NOP && tam.alpha && indexOfItems[item].func != addItemToBuffer && aimBuffer[0] == 0) {
             // We are in TAM mode so need to cancel first (equivalent to EXIT)
             tamLeaveMode();
           }
