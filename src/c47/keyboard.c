@@ -1151,9 +1151,11 @@ releaseOverride = false;
           else if(tam.mode && (!tam.alpha || isAlphabeticSoftmenu()) && !(tam.mode == TM_VALUE && item == ITM_TAMMAX)) {
             bool_t isInConfig = tam.mode == TM_FLAGW && currentMenu() == -MNU_SYSFL;   //JM Do not drop out of SYSFLG
 
-           if(menu(1) == -MNU_TAMALPHA && isAlphaSubmenu(0)) {
-             popSoftmenu();
-           }
+            //This section to auto-drop out of alpha submenu.
+            //      if(menu(1) == -MNU_TAMALPHA && isAlphaSubmenu(0)) {
+            //        popSoftmenu();
+            //      }
+
             addItemToBuffer(item);
 
             if((currentMenu() == -MNU_MODE || currentMenu() == -MNU_PREF) && isInConfig && item != ITM_EXIT1 && item != ITM_BACKSPACE) { //JM do not drop out of SYSFLG
