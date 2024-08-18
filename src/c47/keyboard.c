@@ -924,7 +924,8 @@ int16_t lastItem = 0;
 //        else
 
 
-        if(!(previousCalcMode == CM_AIM && (!shiftG && !shiftF) && ((uint8_t *)data)[0] == '6')) {       //prevent "ALPHA" on F6 to be overwritten
+////prevent "ALPHA" on F6 to be overwritten
+//      if(!(previousCalcMode == CM_AIM && (!shiftG && !shiftF) && ((uint8_t *)data)[0] == '6')) {       //prevent "ALPHA" on F6 to be overwritten
           if(_assignToMenu((uint8_t *)data)) {
             if(previousCalcMode == CM_AIM) {         //vvJM btnFnReleased
               showSoftmenu(-MNU_ALPHA);              //
@@ -933,11 +934,12 @@ int16_t lastItem = 0;
             }                                        //^^JM
             return;
           }
+//      }
+//      else {
+//        return;
+//      }
         }
-        else {
-          return;
-        }
-      }
+
 if(!releaseOverride) {
       btnFnReleased_StateMachine(NULL, data);            //This function does the longpress differentiation, and calls ExecuteFunctio below, via fnbtnclicked
 releaseOverride = false;
