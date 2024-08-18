@@ -2811,6 +2811,15 @@ bool_t BASE_OVERRIDEONCE = false;
   }
 
 
+  bool_t isAlphaSubmenu(uint8_t n) {
+    return menu(n) == -MNU_MyAlpha ||
+            menu(n) == -MNU_ALPHA_OMEGA ||
+            menu(n) == -MNU_alpha_omega ||
+            menu(n) == -MNU_ALPHAMATH ||
+            menu(n) == -MNU_ALPHAMISC ||
+            menu(n) == -MNU_ALPHAINTL ||
+            menu(n) == -MNU_ALPHAintl;
+  }
 
 
 
@@ -3085,19 +3094,7 @@ bool_t BASE_OVERRIDEONCE = false;
   }
 
   bool_t isAlphabeticSoftmenu(void) {
-    int16_t menuItem = softmenu[softmenuStack[0].softmenuId].menuItem;
-    switch(menuItem) {
-      case -MNU_ALPHAINTL:
-      case -MNU_ALPHAintl:
-      case -MNU_ALPHA_OMEGA:
-      case -MNU_alpha_omega:
-      case -MNU_ALPHAMATH:
-      case -MNU_MyAlpha:
-      case -MNU_ALPHAMISC:
-        return true;
-      default:
-        return false;
-    }
+    return isAlphaSubmenu(0);
   }
 
   bool_t isJMAlphaSoftmenu(int16_t menuId) {                   //JM
@@ -3112,8 +3109,7 @@ bool_t BASE_OVERRIDEONCE = false;
   }
 
   bool_t isJMAlphaOnlySoftmenu(void) {                    //JM
-    if(softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_ALPHA) return true;
-    else return false;
+    return softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_ALPHA;
   }
 
 

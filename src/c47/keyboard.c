@@ -437,7 +437,7 @@ TO_QSPI static const char bugScreenItemNotDetermined[] = "In function determineI
     //    and that happens if you call CAT and then say CLK or any other menu and runn a command from there. Then CAT is present and the menu closed after the command executed.
 
     static void closeAllCatalogMenus(void) {
-        switch(-softmenu[softmenuStack[0].softmenuId].menuItem) {
+        switch(-currentMenu()) {
           //          case MNU_CATALOG :  //option to include if we need to close the actual CAT menu too, i.e. jump back to before CAT (like 42S does
           case MNU_VARS :
           case MNU_PROGS :
@@ -477,8 +477,8 @@ TO_QSPI static const char bugScreenItemNotDetermined[] = "In function determineI
           break;
         }
       }
-      if(inCatalog || softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_CONST) {
-        switch(-softmenu[softmenuStack[0].softmenuId].menuItem) {
+      if(inCatalog || currentMenu() == -MNU_CONST) {
+        switch(-currentMenu()) {
           case MNU_TAM:
           case MNU_TAMNONREG:
           case MNU_TAMCMP:
@@ -675,13 +675,13 @@ bool_t lowercaseselected;    //the only place that this is set, is in processKey
       }
 
       //Exception, to activate the primary functions of the timer menu, without allowing longpresses and double presses, in order to have quicker activation
-      if(!shiftF && /*!shiftG &&*/ softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_TIMERF ){   //do not check for g, to enable the g-line fast response on press when keyboard shortcuts help line is pressed
+      if(!shiftF && /*!shiftG &&*/ currentMenu() == -MNU_TIMERF ){   //do not check for g, to enable the g-line fast response on press when keyboard shortcuts help line is pressed
         const int16_t *softkeyItem = softmenu[softmenuStack[0].softmenuId].softkeyItem;
         int16_t _item = softkeyItem[asnKey[0]-'1'];
-        //printf("WWWWWWWW-0 %i %i\n",softmenu[softmenuStack[0].softmenuId].menuItem, softkeyItem[asnKey[0]-'1']);
+        //printf("WWWWWWWW-0 %i %i\n",currentMenu(), softkeyItem[asnKey[0]-'1']);
         reallyRunFunction(_item,NOPARAM);
         hourGlassIconEnabled = false;
-        //printf("WWWWWWWW-1 %i %i\n",softmenu[softmenuStack[0].softmenuId].menuItem, softkeyItem[asnKey[0]-'1']);
+        //printf("WWWWWWWW-1 %i %i\n",currentMenu(), softkeyItem[asnKey[0]-'1']);
         if(_item == ITM_TIMER_R_S) {
           screenUpdatingMode |= SCRUPD_SKIP_STACK_ONE_TIME;
         } else {
@@ -714,7 +714,7 @@ bool_t lowercaseselected;    //the only place that this is set, is in processKey
 
       #pragma GCC diagnostic push
       #pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
-        switch(-softmenu[softmenuStack[0].softmenuId].menuItem) {
+        switch(-currentMenu()) {
         case MNU_MENUS: {
             if(item <= ASSIGN_USER_MENU) {
               currentUserMenu = ASSIGN_USER_MENU - item;
@@ -776,7 +776,7 @@ bool_t lowercaseselected;    //the only place that this is set, is in processKey
               fnKeyInCatalog = 0;
             }
             if(calcMode == CM_EIM && !tam.mode) {   //this EIM portion moved to after release, to allow longpress and double press
-              while(softmenu[softmenuStack[0].softmenuId].menuItem != -MNU_EQ_EDIT) {
+              while(currentMenu() != -MNU_EQ_EDIT) {
                 popSoftmenu();
               }
             }
@@ -796,7 +796,7 @@ bool_t lowercaseselected;    //the only place that this is set, is in processKey
 
 
   static bool_t _assignToMenu(uint8_t *data) {
-    switch(-softmenu[softmenuStack[0].softmenuId].menuItem) {
+    switch(-currentMenu()) {
       case MNU_MyMenu: {
         assignToMyMenu((*data - '1') + (shiftG ? 12 : shiftF ? 6 : 0));
         calcMode = previousCalcMode;
@@ -836,7 +836,7 @@ bool_t lowercaseselected;    //the only place that this is set, is in processKey
       default: {
         displayCalcErrorMessage(ERROR_CANNOT_ASSIGN_HERE, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
         #if defined(PC_BUILD)
-          moreInfoOnError("In function _assignToMenu:", "the menu", indexOfItems[-softmenu[softmenuStack[0].softmenuId].menuItem].itemCatalogName, "is write-protected.");
+          moreInfoOnError("In function _assignToMenu:", "the menu", indexOfItems[-currentMenu()].itemCatalogName, "is write-protected.");
         #endif // PC_BUILD
         calcMode = previousCalcMode;
         shiftF = shiftG = false;
@@ -961,7 +961,7 @@ releaseOverride = false;
     int16_t item = ITM_NOP;
 
                     #if defined(VERBOSEKEYS)
-                      printf("keyboard.c: executeFunction %i (beginning of executeFunction): %i, %s tam.mode=%i calcMode=%u aimBuffer=%s\n", item, softmenu[softmenuStack[0].softmenuId].menuItem, indexOfItems[-softmenu[softmenuStack[0].softmenuId].menuItem].itemSoftmenuName, tam.mode, calcMode, aimBuffer);
+                      printf("keyboard.c: executeFunction %i (beginning of executeFunction): %i, %s tam.mode=%i calcMode=%u aimBuffer=%s\n", item, currentMenu(), indexOfItems[-currentMenu()].itemSoftmenuName, tam.mode, calcMode, aimBuffer);
                     #endif //VERBOSEKEYS
 
     if(calcMode != CM_REGISTER_BROWSER && calcMode != CM_FLAG_BROWSER && calcMode != CM_ASN_BROWSER && calcMode != CM_FONT_BROWSER) {
@@ -977,7 +977,7 @@ releaseOverride = false;
         item = determineFunctionKeyItem_C47((char *)data, shiftF, shiftG); }
 
         // Update currentUserMenu for user defined menus selected in an existing function
-        if(softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_DYNAMIC) {
+        if(currentMenu() == -MNU_DYNAMIC) {
           setCurrentUserMenu(item, userMenus[currentUserMenu].menuItem[dynamicMenuItem].argumentName);
         }
 
@@ -1035,7 +1035,7 @@ releaseOverride = false;
             return;
           }
           else if(item < 0) { // softmenu
-            if(calcMode == CM_ASSIGN && itemToBeAssigned == 0 && softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_MENUS) {
+            if(calcMode == CM_ASSIGN && itemToBeAssigned == 0 && currentMenu() == -MNU_MENUS) {
               itemToBeAssigned = item;
               leaveAsmMode();
               popSoftmenu();
@@ -1149,19 +1149,14 @@ releaseOverride = false;
             // disabled
           }
           else if(tam.mode && (!tam.alpha || isAlphabeticSoftmenu()) && !(tam.mode == TM_VALUE && item == ITM_TAMMAX)) {
-            bool_t isInConfig = tam.mode == TM_FLAGW && softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_SYSFL;   //JM Do not drop out of SYSFLG
+            bool_t isInConfig = tam.mode == TM_FLAGW && currentMenu() == -MNU_SYSFL;   //JM Do not drop out of SYSFLG
 
-           if(softmenu[softmenuStack[1].softmenuId].menuItem == -MNU_TAMALPHA &&
-              (softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_MyAlpha ||
-               softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_ALPHA_OMEGA ||
-               softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_ALPHAMATH ||
-               softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_ALPHAMISC ||
-               softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_ALPHAINTL) ) {
+           if(menu(1) == -MNU_TAMALPHA && isAlphaSubmenu(0)) {
              popSoftmenu();
            }
             addItemToBuffer(item);
 
-            if((softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_MODE || softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_PREF) && isInConfig && item != ITM_EXIT1 && item != ITM_BACKSPACE) { //JM do not drop out of SYSFLG
+            if((currentMenu() == -MNU_MODE || currentMenu() == -MNU_PREF) && isInConfig && item != ITM_EXIT1 && item != ITM_BACKSPACE) { //JM do not drop out of SYSFLG
               fnCFGsettings(0);       //JM
             }                         //JM
           }
@@ -1174,13 +1169,13 @@ releaseOverride = false;
   //          }
 
           else if(calcMode == CM_EIM && ((catalog && catalog != CATALOG_MVAR) ||
-                  ( softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_EQ_EDIT &&                       //Allow only EIM enabled functions through to be added as text
+                  ( currentMenu() == -MNU_EQ_EDIT &&                       //Allow only EIM enabled functions through to be added as text
                     item != ITM_EQ_LEFT && item != ITM_EQ_RIGHT && item != CHR_num && item != CHR_case &&
                     (indexOfItems[item].status & EIM_STATUS) == EIM_ENABLED
                     )
                   ))  {
             addItemToBuffer(item);
-            while(softmenu[softmenuStack[0].softmenuId].menuItem != -MNU_EQ_EDIT) {
+            while(currentMenu() != -MNU_EQ_EDIT) {
               popSoftmenu();
             }
           }
@@ -1191,7 +1186,7 @@ releaseOverride = false;
           else if((calcMode == CM_NIM) && ((/*item==ITM_DRG ||*/ item == ITM_DMS2 || item == ITM_dotD) && !catalog)) {   //JM Remove DRG from here, there seems to be no need to send DRG to the buffer
             addItemToNimBuffer(item);
           }                                                                                      //JM
-          else if(calcMode == CM_MIM && softmenu[softmenuStack[0].softmenuId].menuItem != -MNU_M_EDIT && (item != ITM_CC && item != ITM_op_j && item != ITM_op_j_pol)) { //JM added ITM_CC to let it work in matrix edit
+          else if(calcMode == CM_MIM && currentMenu() != -MNU_M_EDIT && (item != ITM_CC && item != ITM_op_j && item != ITM_op_j_pol)) { //JM added ITM_CC to let it work in matrix edit
             addItemToBuffer(item);
           }
           else if(item > 0) { // function
@@ -1291,21 +1286,10 @@ releaseOverride = false;
                   }
                   itemToBeAssigned = item;
 
-                  if(previousCalcMode == CM_AIM) {                            //JMvv close menu to allow only one charac
-                    switch(-softmenu[softmenuStack[0].softmenuId].menuItem) {
-                      case MNU_ALPHAINTL:
-                      case MNU_ALPHA_OMEGA:
-                      case MNU_ALPHAMATH:
-                      case MNU_MyAlpha:
-                      case MNU_ALPHAMISC:
-                      case MNU_alpha_omega:
-                      case MNU_ALPHAintl: {
+                  if(previousCalcMode == CM_AIM && isAlphaSubmenu(0)) {                            //JMvv close menu to allow only one charac
                         popSoftmenu();
                         showSoftmenu(-MNU_MyAlpha); //push MyAlpha in case ALPHA is up (likely)
                       }
-                      default:;
-                    }
-                  }
                 }
               }
               else if(calcMode == CM_ASSIGN && tam.alpha && tam.mode != TM_NEWMENU && item != ITM_NOP) {
@@ -1317,29 +1301,20 @@ releaseOverride = false;
               }
               else {
                     #if defined(VERBOSEKEYS)
-                      printf("keyboard.c: executeFunction calcmode=%U %i (before runfunction): %i, %s tam.mode=%i\n", calcMode, item, softmenu[softmenuStack[0].softmenuId].menuItem, indexOfItems[-softmenu[softmenuStack[0].softmenuId].menuItem].itemSoftmenuName, tam.mode);
+                      printf("keyboard.c: executeFunction calcmode=%U %i (before runfunction): %i, %s tam.mode=%i\n", calcMode, item, currentMenu(), indexOfItems[-currentMenu()].itemSoftmenuName, tam.mode);
                     #endif //VERBOSEKEYS
 
                 runFunction(item);
 
                 if(calcMode == CM_EIM && !tam.mode) {
-                  switch (-softmenu[softmenuStack[0].softmenuId].menuItem) {
-                    //case MNU_ALPHAINTL:
-                    case MNU_ALPHA_OMEGA:
-                    case MNU_ALPHAMATH:
-                    case MNU_MyAlpha:
-                    case MNU_ALPHAMISC:
-                    case MNU_alpha_omega: {
-                    //case MNU_ALPHAintl:
-                      while(softmenu[softmenuStack[0].softmenuId].menuItem != -MNU_EQ_EDIT) {
+                  if(isAlphaSubmenu(0)) {
+                    while(currentMenu() != -MNU_EQ_EDIT) {
                         popSoftmenu();
                       }
-                      default:;
-                    }
                   }
                 }
                     #if defined(VERBOSEKEYS)
-                      printf("keyboard.c: executeFunction calcmode=%u %i (after runfunction): %i, %s tam.mode=%i\n", calcMode, item, softmenu[softmenuStack[0].softmenuId].menuItem, indexOfItems[-softmenu[softmenuStack[0].softmenuId].menuItem].itemSoftmenuName, tam.mode);
+                      printf("keyboard.c: executeFunction calcmode=%u %i (after runfunction): %i, %s tam.mode=%i\n", calcMode, item, currentMenu(), indexOfItems[-currentMenu()].itemSoftmenuName, tam.mode);
                     #endif //VERBOSEKEYS
               }
             }
@@ -1375,7 +1350,7 @@ releaseOverride = false;
 
     screenUpdatingMode &= ~SCRUPD_ONE_TIME_FLAGS;
                     #if defined(VERBOSEKEYS)
-                      printf("keyboard.c: executeFunction (end): calcmode=%u %i, %s\n", calcMode, softmenu[softmenuStack[0].softmenuId].menuItem, indexOfItems[-softmenu[softmenuStack[0].softmenuId].menuItem].itemSoftmenuName);
+                      printf("keyboard.c: executeFunction (end): calcmode=%u %i, %s\n", calcMode, currentMenu(), indexOfItems[-currentMenu()].itemSoftmenuName);
                     #endif //VERBOSEKEYS
   }
 
@@ -2293,7 +2268,7 @@ RELEASE_END:
       item = ITM_CC;
     }
 
-    if(calcMode == CM_NORMAL && SHOWMODE && softmenu[softmenuStack[0].softmenuId].menuItem != -MNU_EQN) {
+    if(calcMode == CM_NORMAL && SHOWMODE && currentMenu() != -MNU_EQN) {
       switch(item) {
         case ITM_UP1:
         case ITM_DOWN1:
@@ -2389,7 +2364,7 @@ RELEASE_END:
             fnKeyExit(NOPARAM);
             keyActionProcessed = true;            //Removed to force EXIT on the RELEASE cycle to make it do fnKeyExit later to allow NOP
           }
-          if(calcMode == CM_PEM) {
+          else if(calcMode == CM_PEM) {
             if(getSystemFlag(FLAG_ALPHA)) {          //close AIM in PEM
               fnKeyExit(NOPARAM);
             }
@@ -2529,7 +2504,7 @@ RELEASE_END:
 
         case CHR_case: {                                                      //Toggle capslock from shifted arrow shortcut
           clearSystemFlag(FLAG_NUMLOCK);
-          int16_t sm = softmenu[softmenuStack[0].softmenuId].menuItem;
+          int16_t sm = currentMenu();
           nextChar = NC_NORMAL;
           if(alphaCase == AC_LOWER) {
             alphaCase = AC_UPPER;
@@ -3243,10 +3218,10 @@ void fnKeyEnter(uint16_t unusedButMandatoryParameter) {
       }
 
       case CM_AIM: {
-          if(softmenuStack[0].softmenuId <= 1 || softmenu[softmenuStack[1].softmenuId].menuItem == -MNU_ALPHA) {
+          if(softmenuStack[0].softmenuId <= 1 || menu(1) == -MNU_ALPHA) {
             popSoftmenu();
           }
-          if(softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_ALPHA) {  //JM get out of the ALPHA menu and go to MyM fto satisfy the old enter routines
+          if(currentMenu() == -MNU_ALPHA) {  //JM get out of the ALPHA menu and go to MyM fto satisfy the old enter routines
             softmenuStack[0].softmenuId = 1;                                  //JM
           }                                                                   //JM
 
@@ -3334,7 +3309,7 @@ void fnKeyEnter(uint16_t unusedButMandatoryParameter) {
         if(aimBuffer[0] != 0) {
           setEquation(currentFormula, aimBuffer);
         }
-        if(softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_EQ_EDIT) {
+        if(currentMenu() == -MNU_EQ_EDIT) {
           calcModeNormal();
           if(allFormulae[currentFormula].pointerToFormulaData == C47_NULL) {
             deleteEquation(currentFormula);
@@ -3391,13 +3366,13 @@ ram_full:
 
 #if !defined(TESTSUITE_BUILD)
   static void stayInAIM(void) {
-    if(calcMode == CM_AIM && (softmenu[softmenuStack[0].softmenuId].menuItem != -MNU_ALPHA && softmenu[softmenuStack[0].softmenuId].menuItem != -MNU_MyAlpha) ) {   //JM
+    if(calcMode == CM_AIM && (currentMenu() != -MNU_ALPHA && currentMenu() != -MNU_MyAlpha) ) {   //JM
       changeToALPHA();
       setSystemFlag(FLAG_ALPHA);                     //JM
     }                                                //JM ^^
 
-    if(calcMode != CM_AIM && (softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_ALPHA ||
-                              softmenu[softmenuStack[1].softmenuId].menuItem == -MNU_ALPHA)) { //JMvv : If ALPHA, switch back to AIM
+    if(calcMode != CM_AIM && (currentMenu() == -MNU_ALPHA ||
+                              menu(1) == -MNU_ALPHA)) { //JMvv : If ALPHA, switch back to AIM
       setSystemFlag(FLAG_ALPHA);                                          //JM
       calcMode = CM_AIM;
     }                                                                     //JM ^^
@@ -3419,7 +3394,7 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
       }
       return;
     }
-    if(lastErrorCode == 0 && softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_MVAR) {
+    if(lastErrorCode == 0 && currentMenu() == -MNU_MVAR) {
       currentSolverStatus &= ~SOLVER_STATUS_INTERACTIVE;
     }
 
@@ -3446,7 +3421,7 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
                     lastErrorCode = 0;
                 }
                 else {
-                    if(softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_SYSFL) {                                                       //JM auto recover out of SYSFL
+                    if(currentMenu() == -MNU_SYSFL) {                                                       //JM auto recover out of SYSFL
                       numberOfTamMenusToPop = 2;                                                   //JM
                       tamLeaveMode();                                                              //JM
                       return;                                                                      //JM
@@ -3492,7 +3467,7 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
       }
 
       case CM_NORMAL: {                                                     //If in Custom Menu
-        if(softmenu[softmenuStack[0].softmenuId].menuItem == -ITM_MENU) {
+        if(currentMenu() == -ITM_MENU) {
           dynamicMenuItem = NUMBER_OF_DYNAMIC_SOFTMENUS + 1;
           fnProgrammableMenu(NOPARAM);
           return;
@@ -3517,7 +3492,7 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
           lastErrorCode = 0;
         }
         else {
-          if(softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_GRAPHS && softmenu[softmenuStack[1].softmenuId].menuItem == -MNU_PLOT) {
+          if(currentMenu() == -MNU_GRAPHS && menu(1) == -MNU_PLOT) {
             calcMode = CM_GRAPH;
             fnEqSolvGraph(EQ_PLOT_LU);
             screenUpdatingMode = SCRUPD_AUTO;
@@ -3534,7 +3509,7 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
           }
           else {                  //jm: this is where 43S cleared an error
             popSoftmenu();
-            if(softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_MVAR && ((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_INTEGRATE) && (currentSolverStatus & SOLVER_STATUS_SINGLE_VARIABLE)) {
+            if(currentMenu() == -MNU_MVAR && ((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_INTEGRATE) && (currentSolverStatus & SOLVER_STATUS_SINGLE_VARIABLE)) {
               popSoftmenu();
               currentSolverStatus &= ~SOLVER_STATUS_EQUATION_MODE;
               currentSolverStatus &= ~SOLVER_STATUS_INTERACTIVE;
@@ -3550,11 +3525,11 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
       }
 
       case CM_AIM: {
-        if(softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_ALPHA) {  //JM get out of the ALPHA menu and go to MyM fto satisfy the old exit routines
+        if(currentMenu() == -MNU_ALPHA) {  //JM get out of the ALPHA menu and go to MyM fto satisfy the old exit routines
           softmenuStack[0].softmenuId = 1;                                  //JM
         }                                                                   //JM
 
-        if(running_program_jm || (softmenuStack[0].softmenuId <= 1 && softmenu[softmenuStack[1].softmenuId].menuItem != -MNU_ALPHA)) { // MyMenu or MyAlpha is displayed
+        if(running_program_jm || (softmenuStack[0].softmenuId <= 1 && menu(1) != -MNU_ALPHA)) { // MyMenu or MyAlpha is displayed
           closeAim();
                     #if defined(DEBUGUNDO)
                       printf(">>> saveForUndo from fnKeyExitA\n");
@@ -3586,7 +3561,7 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
           temporaryInformation = TI_NO_INFO;
         }
         else {
-          if(softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_M_EDIT) {
+          if(currentMenu() == -MNU_M_EDIT) {
             mimEnter(true);
             if(matrixIndex == findNamedVariable(statMx)) {
               calcSigma(0);
@@ -3607,19 +3582,7 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
           break;
         }
         if(getSystemFlag(FLAG_ALPHA) && !tam.mode) {
-          bool_t isInAlphaSubmenu = false;
-          switch(-softmenu[softmenuStack[1].softmenuId].menuItem) {
-            case MNU_ALPHAINTL:
-            case MNU_ALPHAintl:
-            case MNU_ALPHAMATH:
-            case MNU_ALPHA_OMEGA:
-            case MNU_alpha_omega:
-            case MNU_ALPHA:
-            case MNU_MyAlpha:
-              isInAlphaSubmenu = true;
-              break;
-          }
-          if(isInAlphaSubmenu) {
+          if(isAlphaSubmenu(1)) {
             popSoftmenu();
             break;
           }
@@ -3671,7 +3634,7 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
           lastErrorCode = 0;
         }
         else {
-          if(softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_EQ_EDIT) {
+          if(currentMenu() == -MNU_EQ_EDIT) {
             calcModeNormal();
             if(allFormulae[currentFormula].pointerToFormulaData == C47_NULL) {
               deleteEquation(currentFormula);
@@ -3722,23 +3685,23 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
         if(calcMode == CM_PLOT_STAT) {
           for(int16_t ii = 0; ii < 3; ii++) {
             if( (softmenuStack[0].softmenuId > 1) && !(
-              (-softmenu[softmenuStack[0].softmenuId].menuItem == MNU_HIST) ||
-              (-softmenu[softmenuStack[0].softmenuId].menuItem == MNU_PLOTTING) ||
-              (-softmenu[softmenuStack[0].softmenuId].menuItem == MNU_MODEL) ||
-              (-softmenu[softmenuStack[0].softmenuId].menuItem == MNU_REGR)
+              (-currentMenu() == MNU_HIST) ||
+              (-currentMenu() == MNU_PLOTTING) ||
+              (-currentMenu() == MNU_MODEL) ||
+              (-currentMenu() == MNU_REGR)
                )) {
               popSoftmenu();
             }
           }
         }
         else {
-          if(softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_PLOT && softmenu[softmenuStack[1].softmenuId].menuItem == -MNU_GRAPHS) {
+          if(currentMenu() == -MNU_PLOT && menu(1) == -MNU_GRAPHS) {
             popSoftmenu();
           }
           popSoftmenu();
         }
 
-        if(softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_TIMERF) {
+        if(currentMenu() == -MNU_TIMERF) {
           clearScreen();
           fnItemTimerApp(NOPARAM);
           return;
@@ -3773,7 +3736,7 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
       }
 
       case CM_ASSIGN: {
-        if((softmenuStack[0].softmenuId <= 1 && softmenuStack[1].softmenuId <= 1) || (previousCalcMode == CM_EIM && softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_EQ_EDIT)) { // MyMenu or MyAlpha is displayed
+        if((softmenuStack[0].softmenuId <= 1 && softmenuStack[1].softmenuId <= 1) || (previousCalcMode == CM_EIM && currentMenu() == -MNU_EQ_EDIT)) { // MyMenu or MyAlpha is displayed
           calcMode = previousCalcMode;
           if(tam.alpha) {
             assignLeaveAlpha();
@@ -4233,7 +4196,7 @@ void fnKeyUp(uint16_t unusedButMandatoryParameter) {
       return;
     }
 
-    if((calcMode == CM_NORMAL || calcMode == CM_AIM || calcMode == CM_NIM) && softmenu[softmenuStack[0].softmenuId].menuItem == -ITM_MENU) {
+    if((calcMode == CM_NORMAL || calcMode == CM_AIM || calcMode == CM_NIM) && currentMenu() == -ITM_MENU) {
       dynamicMenuItem = NUMBER_OF_DYNAMIC_SOFTMENUS + 1;
       fnProgrammableMenu(NOPARAM);
       return;
@@ -4262,7 +4225,7 @@ void fnKeyUp(uint16_t unusedButMandatoryParameter) {
         if(currentSoftmenuScrolls()) {
           menuUp();
         }
-        else if((calcMode == CM_NORMAL || calcMode == CM_AIM || calcMode == CM_NIM) && (numberOfFormulae < 2 || softmenu[softmenuStack[0].softmenuId].menuItem != -MNU_EQN)) {
+        else if((calcMode == CM_NORMAL || calcMode == CM_AIM || calcMode == CM_NIM) && (numberOfFormulae < 2 || currentMenu() != -MNU_EQN)) {
           screenUpdatingMode = SCRUPD_AUTO;
           if(calcMode == CM_NIM) {
             closeNim();
@@ -4277,11 +4240,11 @@ void fnKeyUp(uint16_t unusedButMandatoryParameter) {
             refreshLcd(NULL);
           #endif // DMCP_BUILD
         }
-        if(softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_PLOT_LR){
+        if(currentMenu() == -MNU_PLOT_LR){
           strcpy(plotStatMx, "STATS");
           fnPlotStat(PLOT_NXT);
         }
-        else if(softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_EQN){
+        else if(currentMenu() == -MNU_EQN){
           if(currentFormula == 0) {
             currentFormula = numberOfFormulae;
           }
@@ -4340,7 +4303,7 @@ void fnKeyUp(uint16_t unusedButMandatoryParameter) {
         resetAlphaSelectionBuffer();
         if(getSystemFlag(FLAG_ALPHA) && alphaCase == AC_LOWER) {
           alphaCase = AC_UPPER;
-          if(softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_alpha_omega || softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_ALPHAintl) {
+          if(currentMenu() == -MNU_alpha_omega || currentMenu() == -MNU_ALPHAintl) {
             softmenuStack[0].softmenuId--; // Switch to the upper case menu
           }
         }
@@ -4363,7 +4326,7 @@ void fnKeyUp(uint16_t unusedButMandatoryParameter) {
 
       case CM_MIM: {
         #if defined(NOMATRIXCURSORS)
-          if(currentSoftmenuScrolls() && softmenu[softmenuStack[0].softmenuId].menuItem != -MNU_TAMSTORCL) {   //JM remove to allow normal arrows to work as cursors
+          if(currentSoftmenuScrolls() && currentMenu() != -MNU_TAMSTORCL) {   //JM remove to allow normal arrows to work as cursors
             menuUp();
           }
         #else  // !NOMATRIXCURSORS
@@ -4417,7 +4380,7 @@ void fnKeyDown(uint16_t unusedButMandatoryParameter) {
   #if !defined(TESTSUITE_BUILD)
     int16_t menuId = softmenuStack[0].softmenuId; //JM
 
-//--     if(SHOWMODE && softmenu[softmenuStack[0].softmenuId].menuItem != -MNU_EQN && !tam.mode) { //JMSHOW vv
+//--     if(SHOWMODE && currentMenu() != -MNU_EQN && !tam.mode) { //JMSHOW vv
 //--       if(temporaryInformation == TI_SHOW_REGISTER_TINY) {
 //--         fnShow_SCROLL(12);
 //--       } else {
@@ -4452,7 +4415,7 @@ void fnKeyDown(uint16_t unusedButMandatoryParameter) {
       return;
     }
 
-    if((calcMode == CM_NORMAL || calcMode == CM_AIM || calcMode == CM_NIM) && softmenu[softmenuStack[0].softmenuId].menuItem == -ITM_MENU) {
+    if((calcMode == CM_NORMAL || calcMode == CM_AIM || calcMode == CM_NIM) && currentMenu() == -ITM_MENU) {
       dynamicMenuItem = NUMBER_OF_DYNAMIC_SOFTMENUS + 1;
       fnProgrammableMenu(NOPARAM);
       return;
@@ -4481,7 +4444,7 @@ void fnKeyDown(uint16_t unusedButMandatoryParameter) {
         if(currentSoftmenuScrolls()) {
           menuDown();
         }
-        else if((calcMode == CM_NORMAL || calcMode == CM_AIM || calcMode == CM_NIM) && (numberOfFormulae < 2 || softmenu[softmenuStack[0].softmenuId].menuItem != -MNU_EQN)) {
+        else if((calcMode == CM_NORMAL || calcMode == CM_AIM || calcMode == CM_NIM) && (numberOfFormulae < 2 || currentMenu() != -MNU_EQN)) {
           screenUpdatingMode = SCRUPD_AUTO;
           if(calcMode == CM_NIM) {
             closeNim();
@@ -4496,11 +4459,11 @@ void fnKeyDown(uint16_t unusedButMandatoryParameter) {
             refreshLcd(NULL);
           #endif // DMCP_BUILD
         }
-        if(softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_PLOT_LR){
+        if(currentMenu() == -MNU_PLOT_LR){
           strcpy(plotStatMx, "STATS");
           fnPlotStat(PLOT_REV); //REVERSE
         }
-        else if(softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_EQN){
+        else if(currentMenu() == -MNU_EQN){
           ++currentFormula;
           if(currentFormula == numberOfFormulae) {
             currentFormula = 0;
@@ -4559,7 +4522,7 @@ void fnKeyDown(uint16_t unusedButMandatoryParameter) {
         resetAlphaSelectionBuffer();
         if(getSystemFlag(FLAG_ALPHA) && alphaCase == AC_UPPER) {
           alphaCase = AC_LOWER;
-          if(softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_ALPHA_OMEGA || softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_ALPHAINTL) {
+          if(currentMenu() == -MNU_ALPHA_OMEGA || currentMenu() == -MNU_ALPHAINTL) {
             softmenuStack[0].softmenuId++; // Switch to the lower case menu
           }
         }
@@ -4583,7 +4546,7 @@ void fnKeyDown(uint16_t unusedButMandatoryParameter) {
 
       case CM_MIM: {
         #if defined(NOMATRIXCURSORS)
-          if(currentSoftmenuScrolls() && softmenu[softmenuStack[0].softmenuId].menuItem != -MNU_TAMSTORCL) {   //JM remove to allow normal arrows to work as cursors
+          if(currentSoftmenuScrolls() && currentMenu() != -MNU_TAMSTORCL) {   //JM remove to allow normal arrows to work as cursors
             menuDown();
           }
         #else  // !NOMATRIXCURSORS
