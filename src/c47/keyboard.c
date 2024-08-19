@@ -3472,7 +3472,7 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
 
       case CM_NORMAL: {                                                     //If in Custom Menu
         if(currentMenu() == -ITM_MENU) {
-          dynamicMenuItem = NUMBER_OF_DYNAMIC_SOFTMENUS + 1;
+          dynamicMenuItem = 20;
           fnProgrammableMenu(NOPARAM);
           return;
         }
@@ -4201,7 +4201,7 @@ void fnKeyUp(uint16_t unusedButMandatoryParameter) {
     }
 
     if((calcMode == CM_NORMAL || calcMode == CM_AIM || calcMode == CM_NIM) && currentMenu() == -ITM_MENU) {
-      dynamicMenuItem = NUMBER_OF_DYNAMIC_SOFTMENUS + 1;
+      dynamicMenuItem = 18;
       fnProgrammableMenu(NOPARAM);
       return;
     }
@@ -4420,7 +4420,7 @@ void fnKeyDown(uint16_t unusedButMandatoryParameter) {
     }
 
     if((calcMode == CM_NORMAL || calcMode == CM_AIM || calcMode == CM_NIM) && currentMenu() == -ITM_MENU) {
-      dynamicMenuItem = NUMBER_OF_DYNAMIC_SOFTMENUS + 1;
+      dynamicMenuItem = 19;
       fnProgrammableMenu(NOPARAM);
       return;
     }
