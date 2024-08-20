@@ -940,10 +940,15 @@ int16_t lastItem = 0;
 //      }
         }
 
-if(!releaseOverride) {
-      btnFnReleased_StateMachine(NULL, data);            //This function does the longpress differentiation, and calls ExecuteFunctio below, via fnbtnclicked
-releaseOverride = false;
-}
+
+      if(!releaseOverride) {
+        btnFnReleased_StateMachine(NULL, data);            //This function does the longpress differentiation, and calls ExecuteFunctio below, via fnbtnclicked
+        releaseOverride = false;
+      }
+
+      if(calcMode == CM_AIM) {
+        refreshRegisterLine(REGISTER_T);
+      }
     }
 
     fnTimerStop(TO_3S_CTFF);      //dr
@@ -3452,11 +3457,14 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
           if(tam.mode == TM_LABEL && (calcMode == CM_NORMAL || calcMode == CM_PEM) && getSystemFlag(FLAG_ALPHA)) {     //MODJM
             if(menu(0) == -MNU_TAMALPHA) {
               popSoftmenu();
+              if(isAlphaSubmenu(0)) {
+                popSoftmenu();
+              }
             }
-            tamLeaveMode();
-            aimBuffer[0] = 0;
-            keyActionProcessed = true;
-            return;
+          tamProcessInput(ITM_ENTER);
+          keyActionProcessed = true;
+          aimBuffer[0] = 0;
+          return;
           }
 
 
