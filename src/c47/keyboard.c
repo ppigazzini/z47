@@ -2035,7 +2035,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
   #if defined(PC_BUILD)
     void btnReleased(GtkWidget *notUsed, GdkEvent *event, gpointer data) {
                     #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
-                      printf(">>> btnReleased showFunctionNameItem=%i screenUpdatingMode=%d temporaryInformation=%u\n", showFunctionNameItem, screenUpdatingMode, temporaryInformation);
+                      printf(">>> btnReleased showFunctionNameItem=%i screenUpdatingMode=%d temporaryInformation=%u tam=%i getSystemFlag(FLAG_ALPHA)=%i\n", showFunctionNameItem, screenUpdatingMode, temporaryInformation, tam.mode, getSystemFlag(FLAG_ALPHA));
                     #endif // PC_BUILD &&MONITOR_CLRSCR
                     jm_show_calc_state("##### keyboard.c: btnReleased begin: showFunctionNameItem");
   #endif // PC_BUILD
@@ -2150,7 +2150,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
           else {
                     #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
                       printf("btnReleased 2: Closed NIM (delayed) delayCloseNim=%u, ",delayCloseNim);
-                      printf("runfunction (%d)\n",item);
+                      printf("runfunction (%d) tam=%i getSystemFlag(FLAG_ALPHA)=%i \n",item, tam.mode, getSystemFlag(FLAG_ALPHA));
                       printf(">>> btnReleased runfunction(%i) calcMode=%d previousCalcMode=%d screenUpdatingMode=%d\n", item, calcMode, previousCalcMode, screenUpdatingMode);    //JMYY
                     #endif // PC_BUILD &&MONITOR_CLRSCR
 
@@ -2162,6 +2162,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
 
                     #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
                       printf(">>> btnReleased ran(%i) calcMode=%d previousCalcMode=%d screenUpdatingMode=%d\n", item, calcMode, previousCalcMode, screenUpdatingMode);    //JMYY
+                      printf("    runfunction (%d) tam=%i getSystemFlag(FLAG_ALPHA)=%i \n",item, tam.mode, getSystemFlag(FLAG_ALPHA));
                     #endif // PC_BUILD &&MONITOR_CLRSCR
           }
         }
@@ -2371,6 +2372,7 @@ RELEASE_END:
           else if(calcMode == CM_PEM) {
             if(getSystemFlag(FLAG_ALPHA)) {          //close AIM in PEM
               fnKeyExit(NOPARAM);
+              keyActionProcessed = true;
             }
             // if(menu(0) != -MNU_PFN) {
             //   showSoftmenu(-MNU_PFN);
@@ -3442,6 +3444,22 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
     }
 
     if(tam.mode) {                               //if in TAM mode
+          if(tam.mode == TM_LABEL && (calcMode == CM_NORMAL || calcMode == CM_PEM) && getSystemFlag(FLAG_ALPHA) && menu(1) == -MNU_TAMALPHA && isAlphaSubmenu(0)) {     //MODJM
+            popSoftmenu();
+            keyActionProcessed = true;
+            return;
+          }
+          if(tam.mode == TM_LABEL && (calcMode == CM_NORMAL || calcMode == CM_PEM) && getSystemFlag(FLAG_ALPHA)) {     //MODJM
+            if(menu(0) == -MNU_TAMALPHA) {
+              popSoftmenu();
+            }
+            tamLeaveMode();
+            aimBuffer[0] = 0;
+            keyActionProcessed = true;
+            return;
+          }
+
+
       if(numberOfTamMenusToPop > 1) {
         popSoftmenu();
         numberOfTamMenusToPop--;
