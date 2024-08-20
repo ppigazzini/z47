@@ -3616,10 +3616,6 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
             screenUpdatingMode |= SCRUPD_SKIP_STACK_ONE_TIME;
           }
         }
-        if(lastIntegerBase >= 2) {
-          lastIntegerBase = 0;
-          screenUpdatingMode = SCRUPD_AUTO;
-        }
         break;
       }
 
