@@ -1265,30 +1265,34 @@ releaseOverride = false;
                 else {
                   if(item == ITM_XEQ && dynamicMenuItem > -1) {
                     char *varCatalogItem = dynmenuGetLabel(dynamicMenuItem);
-                    calcRegister_t regist = findNamedLabel(varCatalogItem);
-                    if(regist != INVALID_VARIABLE) {
-                      item = regist - FIRST_LABEL + ASSIGN_LABELS;
-                    }
-                    else {
-                      displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
-                      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-                        sprintf(errorMessage, "string '%s' is not a named label", varCatalogItem);
-                        moreInfoOnError("In function btnFnReleased:", errorMessage, NULL, NULL);
-                      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+                    if (strcmp(varCatalogItem, "XEQ") != 0) {
+                      calcRegister_t regist = findNamedLabel(varCatalogItem);
+                      if(regist != INVALID_VARIABLE) {
+                        item = regist - FIRST_LABEL + ASSIGN_LABELS;
+                      }
+                      else {
+                        displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
+                        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+                          sprintf(errorMessage, "string '%s' is not a named label", varCatalogItem);
+                          moreInfoOnError("In function btnFnReleased:", errorMessage, NULL, NULL);
+                        #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+                      }
                     }
                   }
                   else if(item == ITM_RCL && dynamicMenuItem > -1) {
                     char *varCatalogItem = dynmenuGetLabel(dynamicMenuItem);
-                    calcRegister_t regist = findNamedVariable(varCatalogItem);
-                    if(regist != INVALID_VARIABLE) {
-                      item = regist - FIRST_NAMED_VARIABLE + ASSIGN_NAMED_VARIABLES;
-                    }
-                    else {
-                      displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
-                      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-                        sprintf(errorMessage, "string '%s' is not a named variable", varCatalogItem);
-                        moreInfoOnError("In function btnFnReleased:", errorMessage, NULL, NULL);
-                      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+                    if (strcmp(varCatalogItem, "RCL") != 0) {
+                      calcRegister_t regist = findNamedVariable(varCatalogItem);
+                      if(regist != INVALID_VARIABLE) {
+                        item = regist - FIRST_NAMED_VARIABLE + ASSIGN_NAMED_VARIABLES;
+                      }
+                      else {
+                        displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
+                        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+                          sprintf(errorMessage, "string '%s' is not a named variable", varCatalogItem);
+                          moreInfoOnError("In function btnFnReleased:", errorMessage, NULL, NULL);
+                        #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+                      }
                     }
                   }
                   itemToBeAssigned = item;
@@ -1411,10 +1415,10 @@ releaseOverride = false;
                     #endif //PC_BUILD
 
     if( (key->primary != ITM_SHIFTf) && ( !SHOWMODE || !(
-                           key->primary == ITM_RCL 
-                           || key->primary == ITM_RS 
-                           || key->primary == ITM_UP1 
-                           || key->primary == ITM_DOWN1 
+                           key->primary == ITM_RCL
+                           || key->primary == ITM_RS
+                           || key->primary == ITM_UP1
+                           || key->primary == ITM_DOWN1
                            || (allowShowDigits && key->primary >= ITM_0 && key->primary <= ITM_9))
                          ) ) {
       showRegis = 9999;                                      //clear showmode register
@@ -1423,6 +1427,10 @@ releaseOverride = false;
     int16_t ShiftOverride = 0;
     result = Norm_Key_00_item_in_layout;
     ShiftOverride = Check_SigmaPlus_Assigned(&result, key_no);
+    #if defined(PC_BUILD) && defined(VERBOSE_DETERMINEITEM)
+      printf("**[DL]** determineItem = %d\n",result);
+    #endif //VERBOSE_DETERMINEITEM
+
 
     if(ShiftOverride == 0) {                              //disable long and double press if Sigma+ is shift g
       Setup_MultiPresses( key->primary );
@@ -1659,7 +1667,9 @@ releaseOverride = false;
         }
       }
     }
-
+    #if defined(PC_BUILD) && defined(VERBOSE_DETERMINEITEM)
+      printf("**[DL]** determineItem = %d\n",result);
+    #endif //VERBOSE_DETERMINEITEM
     return result;
   }
 
@@ -1922,9 +1932,13 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
 
       char *funcParam = "";
 
+      keyStateCode = (getSystemFlag(FLAG_ALPHA) ? 3 : 0) + (g ? 2 : f ? 1 : 0);
       if(getSystemFlag(FLAG_USER)) {
-        keyStateCode = (getSystemFlag(FLAG_ALPHA) ? 3 : 0) + (g ? 2 : f ? 1 : 0);
         funcParam = (char *)getNthString((uint8_t *)userKeyLabel, keyCode * 6 + keyStateCode);
+        xcopy(tmpString, funcParam, stringByteLength(funcParam) + 1);
+      }
+      else if((keyCode == Norm_Key_00_key) && (keyStateCode == 0) && Norm_Key_00.used) {
+        funcParam = Norm_Key_00.funcParam;
         xcopy(tmpString, funcParam, stringByteLength(funcParam) + 1);
       }
       else {
@@ -2067,7 +2081,6 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
   #endif // DMCP_BUILD
 
 //      screenUpdatingMode |= SCRUPD_SKIP_STACK_ONE_TIME; //JMNEWSPEEDUP
-
       if(temporaryInformation == TI_SHOWNOTHING) return;
 
       int16_t item;
@@ -2121,15 +2134,17 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
         hideFunctionName();
 
         int keyCode = (*((char *)data) - '0')*10 + *(((char *)data) + 1) - '0';
-        char *funcParam = (char *)getNthString((uint8_t *)userKeyLabel, keyCode * 6 + keyStateCode);
-                    #if defined(PC_BUILD)
-                      //printf("**[DL]** btnReleased - item %d showFunctionNameArg %s funcParam %s\n",item,showFunctionNameArg,funcParam);
-                    #endif //PC_BUILD
+        bool_t Norm_Key_00_released = !getSystemFlag(FLAG_USER) && (keyStateCode == 0) && (keyCode == Norm_Key_00_key) && Norm_Key_00.used;
+
+        char *funcParam = (Norm_Key_00_released ? Norm_Key_00.funcParam : (char *)getNthString((uint8_t *)userKeyLabel, keyCode * 6 + keyStateCode));
+                    #if defined(PC_BUILD) && defined(VERBOSE_DETERMINEITEM)
+                      printf("**[DL]** btnReleased1 - item %d showFunctionNameArg %s funcParam %s\n",item,showFunctionNameArg,funcParam);
+                    #endif //VERBOSE_DETERMINEITEM
         if(showFunctionNameArg != NULL) {
           funcParam = showFunctionNameArg;       // Needed when executing a user menu from a long pressed key
-                    #if defined(PC_BUILD)
-                      //printf("**[DL]** btnReleased - item %d showFunctionNameArg %s funcParam %s\n",item,showFunctionNameArg,funcParam);
-                    #endif //PC_BUILD
+                    #if defined(PC_BUILD) && defined(VERBOSE_DETERMINEITEM)
+                      printf("**[DL]** btnReleased2 - item %d showFunctionNameArg %s funcParam %s\n",item,showFunctionNameArg,funcParam);
+                    #endif //VERBOSE_DETERMINEITEM
         }
 
         if(item < 0) {
@@ -2149,10 +2164,21 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
             // We are in TAM mode so need to cancel first (equivalent to EXIT)
             tamLeaveMode();
           }
-          if(item == ITM_RCL && getSystemFlag(FLAG_USER) && funcParam[0] != 0) {
+          if(item == ITM_RCL && (getSystemFlag(FLAG_USER) || Norm_Key_00_released) && funcParam[0] != 0) {
             calcRegister_t var = findNamedVariable(funcParam);
             if(var != INVALID_VARIABLE) {
-              reallyRunFunction(item, var);
+              if(calcMode == CM_PEM) {  // Insert user variable recall in program
+                #if defined(PC_BUILD) && defined(VERBOSE_DETERMINEITEM)
+                  printf("**[DL]** insertUserItemInProgram(item=%d, funcParam=%s)\n",item,funcParam);
+                #endif //VERBOSE_DETERMINEITEM
+                insertUserItemInProgram(item, funcParam);
+              }
+              else {                    // Execute item
+                #if defined(PC_BUILD) && defined(VERBOSE_DETERMINEITEM)
+                  printf("**[DL]** reallyRunFunction(item=%d, var=%d, funcParam=%s)\n",item,var,funcParam);
+                #endif //VERBOSE_DETERMINEITEM
+                reallyRunFunction(item, var);
+              }
             }
             else {
               displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE, REGISTER_X);
@@ -2162,10 +2188,21 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
               #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
             }
           }
-          else if(item == ITM_XEQ && getSystemFlag(FLAG_USER) && funcParam[0] != 0) {
+          else if(item == ITM_XEQ && (getSystemFlag(FLAG_USER) || Norm_Key_00_released) && funcParam[0] != 0) {
             calcRegister_t label = findNamedLabel(funcParam);
             if(label != INVALID_VARIABLE) {
-              reallyRunFunction(item, label);
+              if(calcMode == CM_PEM) {  // Insert user program call in program
+                #if defined(PC_BUILD) && defined(VERBOSE_DETERMINEITEM)
+                  printf("**[DL]** insertUserItemInProgram(item=%d, funcParam=%s)\n",item,funcParam);
+                #endif //VERBOSE_DETERMINEITEM
+                insertUserItemInProgram(item, funcParam);
+              }
+              else {                    // Execute item
+                #if defined(PC_BUILD) && defined(VERBOSE_DETERMINEITEM)
+                  printf("**[DL]** reallyRunFunction(item=%d, label=%d, funcParam=%s)\n",item,label,funcParam);
+                #endif //VERBOSE_DETERMINEITEM
+                reallyRunFunction(item, label);
+              }
             }
             else {
               displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
@@ -2279,7 +2316,7 @@ RELEASE_END:
         temporaryInformation = TI_VIEW_REGISTER;
       }
     }
-    else if(temporaryInformation != TI_NO_INFO && item != ITM_UP1 && item != ITM_DOWN1 && item != ITM_EXIT1 && item != ITM_BACKSPACE && 
+    else if(temporaryInformation != TI_NO_INFO && item != ITM_UP1 && item != ITM_DOWN1 && item != ITM_EXIT1 && item != ITM_BACKSPACE &&
            !(  (  item == ITM_RCL || item == ITM_RS || (item >= ITM_0 && item <= ITM_9 && allowShowDigits)  ) && SHOWMODE  ) ) {
       if(SHOWMODE) {
         closeShowMenu();
@@ -2445,6 +2482,12 @@ RELEASE_END:
               if(tam.alpha) {
                 assignLeaveAlpha();
                 assignGetName1();
+                if(softmenu[softmenuStack[1].softmenuId].menuItem == -MNU_ALPHA) {
+                  popSoftmenu();
+                }
+                if(softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_ALPHA) {
+                  popSoftmenu();
+                }
               }
               else {
                 itemToBeAssigned = ASSIGN_CLEAR;
@@ -2986,7 +3029,7 @@ RELEASE_END:
                     }
                   }
                   else {
-                    if(item == ITM_XEQ && getSystemFlag(FLAG_USER) && tmpString[0] != 0) {
+                    if(item == ITM_XEQ && tmpString[0] != 0 && (getSystemFlag(FLAG_USER) || ((currentKeyCode == Norm_Key_00_key) && (keyStateCode == 0) && Norm_Key_00.used))) {
                       char label[15];
                       xcopy(label,tmpString, stringByteLength(tmpString) + 1);
                       calcRegister_t regist = findNamedLabel(label);
@@ -3001,7 +3044,7 @@ RELEASE_END:
                         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
                       }
                     }
-                    else if(item == ITM_RCL && getSystemFlag(FLAG_USER) && tmpString[0] != 0) {
+                    else if(item == ITM_RCL && tmpString[0] != 0 && (getSystemFlag(FLAG_USER) || ((currentKeyCode == Norm_Key_00_key) && (keyStateCode == 0) && Norm_Key_00.used))) {
                       char var[15];
                       xcopy(var,tmpString, stringByteLength(tmpString) + 1);
                       calcRegister_t regist = findNamedVariable(var);
@@ -3017,11 +3060,13 @@ RELEASE_END:
                       }
                     }
 
-
                     itemToBeAssigned = numlockReplacements(100,item,getSystemFlag(FLAG_NUMLOCK),false,false);
                     if(ITM_A <= itemToBeAssigned && itemToBeAssigned <= ITM_Z && lowercaseselected) {
                       itemToBeAssigned += 26;
                     }
+                    #if defined(PC_BUILD) && defined(VERBOSE_DETERMINEITEM)
+                      printf("**[DL]** itemToBeAssigned = %d %s\n",itemToBeAssigned,indexOfItems[itemToBeAssigned].itemSoftmenuName);
+                    #endif //VERBOSE_DETERMINEITEM
 
                     if(previousCalcMode == CM_AIM) softmenuStack[0].softmenuId = 1;     //JM change ALPHA to MyAlpha to be able to write ASN target
                   }
