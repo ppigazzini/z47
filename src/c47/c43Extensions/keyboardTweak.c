@@ -219,14 +219,14 @@ void resetKeytimers(void) {
 
   int16_t Check_SigmaPlus_Assigned(int16_t * result, int16_t tempkey) {
     //JM NORMKEY CHANGE NORMAL MODE KEY SIGMA+ TO SOMETHING
-    if(!getSystemFlag(FLAG_USER) &&
-       (calcMode == CM_NORMAL || calcMode == CM_NIM || calcMode == CM_PEM || calcMode == CM_TIMER) &&
-       (!catalog || (catalog && (Norm_Key_00_VAR != ITM_SHIFTg && Norm_Key_00_VAR != ITM_SHIFTf && Norm_Key_00_VAR != KEY_fg))) &&
+    if(!getSystemFlag(FLAG_USER) && (Norm_Key_00_key != -1) &&
+       (calcMode == CM_NORMAL || calcMode == CM_NIM || calcMode == CM_PEM || calcMode == CM_TIMER || calcMode == CM_ASSIGN) &&
+       (!catalog || (catalog && (Norm_Key_00.func != ITM_SHIFTg && Norm_Key_00.func != ITM_SHIFTf && Norm_Key_00.func != KEY_fg))) &&
        (  ( ((!shiftF && !shiftG) || isR47FAM) && (tempkey == Norm_Key_00_key) && ((kbd_std + Norm_Key_00_key)->primary == *result) )  ||   //f & g allowed in R47, not allowed in C47 Σ+
-          ((Norm_Key_00_VAR == KEY_fg) && (tempkey == Norm_Key_00_key) && ((kbd_std + Norm_Key_00_key)->primary == *result))  )             
+          ((Norm_Key_00.func == KEY_fg) && (tempkey == Norm_Key_00_key) && ((kbd_std + Norm_Key_00_key)->primary == *result))  )
        ) {
-      *result = Norm_Key_00_VAR;
-      return (Norm_Key_00_VAR == ITM_SHIFTg || Norm_Key_00_VAR == ITM_SHIFTf || Norm_Key_00_VAR == KEY_fg) ? Norm_Key_00_VAR : 0;
+      *result = Norm_Key_00.func;
+      return (Norm_Key_00.func == ITM_SHIFTg || Norm_Key_00.func == ITM_SHIFTf || Norm_Key_00.func == KEY_fg) ? Norm_Key_00.func : 0;
     }
     return 0;
   }
@@ -473,20 +473,6 @@ void resetKeytimers(void) {
       case CM_PEM : {
         switch(*result) {
           case ITM_EXIT1:
-            if(getSystemFlag(FLAG_ALPHA)) {          //close AIM in PEM
-              fnKeyExit(NOPARAM);
-            }
-
-//            if(!isR47FAM) {
-//              longpressDelayedkey2 = ITM_CLRMOD;     //EXIT longpress DOES CLRMOD
-//              longpressDelayedkey1 = -MNU_PFN;
-//            }
-//            else {
-//              longpressDelayedkey3 = ITM_CLRMOD;     //EXIT longpress DOES CLRMOD
-//              longpressDelayedkey2 = LongpressEXIT1; //R47: SNAP
-//              longpressDelayedkey1 = -MNU_PFN;       //R47: PFN
-//            }
-
             longpressDelayedkey3 = ITM_CLRMOD;     // EXIT longpress DOES CLRMOD
             longpressDelayedkey2 = LongpressEXIT1; // LongpressEXIT1 : C47: MyAlpha or MyMenu; R47: SNAP
             longpressDelayedkey1 = -MNU_PFN;

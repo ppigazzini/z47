@@ -432,6 +432,7 @@
           case -MNU_TAM       :
           case -MNU_TAMSTORCL :
             showSoftmenu(-MNU_TAMALPHA);
+            screenUpdatingMode = SCRUPD_AUTO;
             break;
           default: break;
         }
@@ -1014,6 +1015,7 @@
 
       case TM_NEWMENU: {
         showSoftmenu(-MNU_TAMALPHA);
+        screenUpdatingMode &= ~SCRUPD_MANUAL_MENU;
         break;
       }
 

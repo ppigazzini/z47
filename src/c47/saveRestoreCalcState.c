@@ -53,8 +53,8 @@
 #endif
 
 #include "c47.h"
-#define configFileVersion                  10000012 // 5 flags converted from C43; Arbitrary starting point version 10 000 001 of STATE files. Allowable values are 10000000 to 20000000
-#define BACKUP_VERSION                     1003  // 5 flags converted from C43;
+#define configFileVersion                  10000013 // Replace Norm_Key_00_VAR by the structure Norm_Key_00; Arbitrary starting point version 10 000 001 of STATE files. Allowable values are 10000000 to 20000000
+#define BACKUP_VERSION                     1004     // Replace Norm_Key_00_VAR by the structure Norm_Key_00;
 #define VersionAllowed                     10000005 // This code will not autoload versions earlier than this
 
 /*
@@ -65,6 +65,8 @@
 10000005 // 2022-01-08 version 108_08q, Pauli changed the real number saver representaiton
 ...
 10000008 // 2023-09-12 version 108.13   Jaco added the missing STOCFG items, remove the unneccary STOCFG items, added the missing STATe file items.
+...
+10000012 // 5 flags converted from C43
 
 Current version defaults all non-loaded settings from previous version files correctly
 */
@@ -506,7 +508,9 @@ uint8_t output = parameter;
     saveStateValue(&ShiftTimoutMode,                sizeof(ShiftTimoutMode),                                     "ShiftTimoutMode",                "bool");
     saveStateValue(&fgLN,                           sizeof(fgLN),                                                "fgLN",                           "uint8");
     saveStateValue(&BASE_HOME,                      sizeof(BASE_HOME),                                           "BASE_HOME",                      "bool");
-    saveStateValue(&Norm_Key_00_VAR,                sizeof(Norm_Key_00_VAR),                                     "Norm_Key_00_VAR",                "int16");
+    saveStateValue(&Norm_Key_00.func,               sizeof(Norm_Key_00.func),                                    "Norm_Key_00.func",               "int16");
+    saveStateValue(&Norm_Key_00.funcParam,          sizeof(Norm_Key_00.funcParam),                               "Norm_Key_00.funcParam",          "hexDump");
+    saveStateValue(&Norm_Key_00.used,               sizeof(Norm_Key_00.used),                                    "Norm_Key_00.used",               "bool");
     saveStateValue(&Input_Default,                  sizeof(Input_Default),                                       "Input_Default",                  "uint8");
     saveStateValue(&BASE_MYM,                       sizeof(BASE_MYM),                                            "BASE_MYM",                       "bool");
     saveStateValue(&jm_G_DOUBLETAP,                 sizeof(jm_G_DOUBLETAP),                                      "jm_G_DOUBLETAP",                 "bool");
@@ -1088,7 +1092,9 @@ uint8_t output = parameter;
     restoreStateValue(&fgLN,                           sizeof(fgLN),                                                "fgLN",                           "uint8");
     fgLN = convert001090400T001090500(fgLN,RBX_FGLNOFF);
     restoreStateValue(&BASE_HOME,                      sizeof(BASE_HOME),                                           "BASE_HOME",                      "bool");
-    restoreStateValue(&Norm_Key_00_VAR,                sizeof(Norm_Key_00_VAR),                                     "Norm_Key_00_VAR",                "int16");
+    restoreStateValue(&Norm_Key_00.func,               sizeof(Norm_Key_00.func),                                    "Norm_Key_00.func",               "int16");
+    restoreStateValue(&Norm_Key_00.funcParam,          sizeof(Norm_Key_00.funcParam),                               "Norm_Key_00.funcParam",          "hexDump");
+    restoreStateValue(&Norm_Key_00.used,               sizeof(Norm_Key_00.used),                                    "Norm_Key_00.used",               "bool");
     restoreStateValue(&Input_Default,                  sizeof(Input_Default),                                       "Input_Default",                  "uint8");
     restoreStateValue(&BASE_MYM,                       sizeof(BASE_MYM),                                            "BASE_MYM",                       "bool");
     restoreStateValue(&jm_G_DOUBLETAP,                 sizeof(jm_G_DOUBLETAP),                                      "jm_G_DOUBLETAP",                 "bool");
@@ -1739,7 +1745,9 @@ void doSave(uint16_t saveType) {
         sprintf(tmpString, "MYM3\n%"                       PRIu8  "\n",     (uint8_t)MYM3);                save(tmpString, strlen(tmpString));
         sprintf(tmpString, "ShiftTimoutMode\n%"            PRIu8  "\n",     (uint8_t)ShiftTimoutMode);     save(tmpString, strlen(tmpString));
         sprintf(tmpString, "BASE_HOME\n%"                  PRIu8  "\n",     (uint8_t)BASE_HOME);           save(tmpString, strlen(tmpString));
-        sprintf(tmpString, "Norm_Key_00_VAR\n%"            PRId16 "\n",     Norm_Key_00_VAR);              save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "Norm_Key_00.func\n%"           PRId16 "\n",     Norm_Key_00.func);             save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "Norm_Key_00.funcParam\n"       "%s"   "\n",     Norm_Key_00.funcParam);        save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "Norm_Key_00.used\n%"           PRIu8  "\n",     (uint8_t)Norm_Key_00.used);    save(tmpString, strlen(tmpString));
         sprintf(tmpString, "Input_Default\n%"              PRIu8  "\n",     Input_Default);                save(tmpString, strlen(tmpString));
         sprintf(tmpString, "BASE_MYM\n%"                   PRIu8  "\n",     (uint8_t)BASE_MYM);            save(tmpString, strlen(tmpString));
         sprintf(tmpString, "jm_G_DOUBLETAP\n%"             PRIu8  "\n",     (uint8_t)jm_G_DOUBLETAP);      save(tmpString, strlen(tmpString));
@@ -2893,7 +2901,18 @@ double stringToDouble(const char *str) {
           else if(strcmp(aimBuffer, "ShiftTimoutMode"             ) == 0) { ShiftTimoutMode       = (bool_t)stringToUint8(tmpString) != 0; }
           else if(strcmp(aimBuffer, "SH_BASE_HOME"                ) == 0) { BASE_HOME             = (bool_t)stringToUint8(tmpString) != 0; }  //Keep compatible with old name by repeating it
           else if(strcmp(aimBuffer, "BASE_HOME"                   ) == 0) { BASE_HOME             = (bool_t)stringToUint8(tmpString) != 0; }
-          else if(strcmp(aimBuffer, "Norm_Key_00_VAR"             ) == 0) { Norm_Key_00_VAR       = stringToUint16(tmpString); }
+          else if(strcmp(aimBuffer, "Norm_Key_00_VAR"             ) == 0) {
+            // Old state file, before changing Norm_Key_00_VAR to the Norm_Key_00 structure
+            if(Norm_Key_00_key != -1) {
+              Norm_Key_00.func  = stringToUint16(tmpString);   // only the function is restored, assuming no param
+              Norm_Key_00.used  = Norm_Key_00.func != kbd_std[Norm_Key_00_key].primary;
+            } else {
+              Norm_Key_00.used = false;
+            }
+          }
+          else if(strcmp(aimBuffer, "Norm_Key_00.func"            ) == 0) { Norm_Key_00.func      = stringToUint16(tmpString); }
+          else if(strcmp(aimBuffer, "Norm_Key_00.funcParam"       ) == 0) { strcpy(Norm_Key_00.funcParam,tmpString); }
+          else if(strcmp(aimBuffer, "Norm_Key_00.used"            ) == 0) { Norm_Key_00.used      = (bool_t)stringToUint8(tmpString) != 0; }
           else if(strcmp(aimBuffer, "Input_Default"               ) == 0) { Input_Default         = stringToUint8(tmpString); }
           else if(strcmp(aimBuffer, "jm_BASE_SCREEN"              ) == 0) { BASE_MYM              = (bool_t)stringToUint8(tmpString) != 0; }        //Keep compatible by repeating
           else if(strcmp(aimBuffer, "BASE_MYM"                    ) == 0) { BASE_MYM              = (bool_t)stringToUint8(tmpString) != 0; }
@@ -2941,7 +2960,7 @@ double stringToDouble(const char *str) {
               }
             } //Keep compatible by repeating, even though setting is now in systemflags
           }
-          else if(strcmp(aimBuffer, "constantFractions"           ) == 0) { 
+          else if(strcmp(aimBuffer, "constantFractions"           ) == 0) {
             if(loadedVersion < 10000012) {
               if((bool_t)stringToUint8(tmpString) != 0) {
                 setSystemFlag(FLAG_IRFRAC);
@@ -3192,14 +3211,14 @@ void fnLoad(uint16_t loadMode) {
     doLoad(loadMode, 0, 0, 0, manualLoad);
   }
   fnClearFlag(FLAG_USER);
-  doRefreshSoftMenu = true;
+  screenUpdatingMode &= ~SCRUPD_MANUAL_MENU;
   refreshScreen(94);
 }
 
 void fnLoadAuto(void) {
   doLoad(LM_ALL, 0, 0, 0, autoLoad);
   fnClearFlag(FLAG_USER);
-  doRefreshSoftMenu = true;
+  screenUpdatingMode &= ~SCRUPD_MANUAL_MENU;
   refreshScreen(95);
 }
 
