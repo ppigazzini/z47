@@ -12,6 +12,9 @@
 #include "fonts.h"
 #include "hal/gui.h"
 #include "items.h"
+#include "c43Extensions/addons.h"
+#include "mathematics/integerPart.h"
+#include "mathematics/integerPartLonginteger.h"
 #include "mathematics/fractionalPart.h"
 #include "mathematics/integerPart.h"
 #include "mathematics/matrix.h"
@@ -406,7 +409,7 @@
       // Do nothing if it wasn't enter or backspace as the text input is handled elsewhere
       return;
     }
-    else if(!((tam.function == ITM_toINT || tam.function == ITM_HASH_JM)) && item == ITM_alpha) {
+    else if(!(tam.function == ITM_toINT || tam.function == ITM_HASH_JM) && item == ITM_alpha) {
       bool_t allowAlphaMode = false, beginWithLowercase = false;
       allowAlphaMode = allowAlphaMode || (!tam.digitsSoFar && !tam.dot && !valueParameter && (tam.mode == TM_STORCL || tam.mode == TM_M_DIM || tam.mode == TM_REGISTER || tam.mode == TM_CMP || tam.function == ITM_MVAR));
       allowAlphaMode = allowAlphaMode || (!tam.digitsSoFar && !tam.dot && tam.indirect);
@@ -502,13 +505,15 @@
       }
       return;
     }
-    else if((tam.function == ITM_toINT || tam.function == ITM_HASH_JM) && item == ITM_REG_I) {
+    else if((tam.function == ITM_toINT || tam.function == ITM_HASH_JM) && item == ITM_REG_I) {        //    vvvvvv    JM BASE: These are the shortcuts NORMAL MODE
       if(calcMode == CM_PEM) {
         addStepInProgram(ITM_IP);
       }
       else {
         saveForUndo();
-        fnIp(NOPARAM);
+        //fnIp(NOPARAM);     // non-round --> retain data type
+        fnJM_2SI(NOPARAM);   // round  Real -> LI; LI->SI; SI->LI;
+        fnLint(NOPARAM);     // change to long integer output
       }
       tamLeaveMode();
       return;
@@ -519,12 +524,13 @@
       }
       else {
         saveForUndo();
-        fnFp(NOPARAM);
+        fnFp(NOPARAM);       // retain data type
+        fnToReal(NOPARAM);   // change to real fp output
       }
       tamLeaveMode();
       return;
     }
-    else if((tam.function == ITM_toINT || tam.function == ITM_HASH_JM) && (item == ITM_REG_D || item == ITM_ENTER)) {   //JM BASE
+    else if((tam.function == ITM_toINT || tam.function == ITM_HASH_JM) && (item == ITM_REG_D || item == ITM_ENTER)) {   //ENTER gives base 10
       tam.value = 10;
       forceTry = true;
     }
@@ -536,10 +542,17 @@
       tam.value = 16;
       forceTry = true;
     }
-    else if((tam.function == ITM_toINT  || tam.function == ITM_HASH_JM) && item == ITM_REG_O) {     //JM BASE added OCT
+    else if((tam.function == ITM_toINT  || tam.function == ITM_HASH_JM) && item == ITM_REG_O) {     //JM BASE added OCT (R47 has O on 8, so althopugh this key will not work in R47, it does the same as "8")
       tam.value = 8;
       forceTry = true;
     }
+    else if((tam.function == ITM_toINT  || tam.function == ITM_HASH_JM) && item == ITM_REG_I) {     //JM BASE --> Long Integer
+      tam.value = 8;
+      forceTry = true;
+    }
+                                                                                                      //    ^^^^^^    JM BASE: These are the shortcuts NORMAL MODE
+
+
 //Removing these as I cannot see the situation where this is needed. Not sure though, so not deleting completely.
 //    else if((tam.mode == TM_LABEL || (tam.mode == TM_KEY && tam.keyInputFinished)) && !tam.indirect && item == ITM_E) {
 //      tam.value = 100 - 'A' + 'E';

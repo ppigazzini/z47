@@ -26,6 +26,7 @@
 #include "mathematics/reToCx.h"
 #include "memory.h"
 #include "plotstat.h"
+#include "programming/lblGtoXeq.h"
 #include "programming/manage.h"
 #include "programming/nextStep.h"
 #include "programming/programmableMenu.h"
@@ -614,7 +615,7 @@ bool_t lowercaseselected;    //the only place that this is set, is in processKey
                     #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
                       printf("refreshScreen(): calcMode=%u End of processAimInput\n", calcMode);
                     #endif //PC_BUILD
-      
+
       screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
       //refreshScreen(101);
     }
@@ -1197,7 +1198,7 @@ releaseOverride = false;
             addItemToBuffer(item);
           }
           else if(item > 0) { // function
-            if(calcMode == CM_NORMAL && (
+            if(calcMode == CM_NORMAL && (                          //switch off BASE mode using the HEX/DEC... buttons
                 (lastIntegerBase ==  2 && item == ITM_2BIN) ||
                 (lastIntegerBase ==  8 && item == ITM_2OCT) ||
                 (lastIntegerBase == 10 && item == ITM_2DEC) ||
@@ -1693,15 +1694,16 @@ releaseOverride = false;
     uint8_t circPtr4 = 0;
     uint8_t circPtr5 = 0;
     TO_QSPI const circ_t circ[] = {               //Circular special command buffer - key numbers, arranged in columns for each command
-                  {7 , 7 , 2 , 23, 2 , 2 , 2 },   //0
-                  {18, 20, 23, 23, 23, 23, 23},   //1
-                  {30, 30, 18, 18, 18, 18, 18},   //2
-                  {24, 24, 12, 12, 9 , 20, 13},   //3
-                  {12, 12, 29, 29, 13, 9 , 4 },   //4
-                  {28, 28, 33, 33, 0,  0 , 14},   //5
-                  {20, 20, 29, 29, 0 , 0 , 24},   //6
-                  {18, 18, 30, 30, 0 , 0 , 0 },   //7
-                  {29, 29, 0 , 0 , 0 , 0 , 0 },   //8
+                                                  //       R47   R47
+                  {7 , 7 , 2 , 23, 2 , 2 , 2 },   //0    H  H  C  R  C  C  C
+                  {18, 20, 23, 23, 23, 23, 23},   //1    P  P  4  4  4  4  4
+                  {30, 30, 18, 18, 18, 18, 18},   //2    3  3  7  7  7  7  7
+                  {24, 24, 12, 12, 9 , 20, 13},   //3    5  5  EN EN J  R  M
+                  {12, 12, 29, 29, 13, 9 , 4 },   //4    EN EN 2  2  M  J  E
+                  {28, 28, 33, 33, 0,  0 , 14},   //5    1  1  0  0        N
+                  {20, 20, 29, 29, 0 , 0 , 24},   //6    9  9  2  2        U
+                  {18, 18, 30, 30, 0 , 0 , 0 },   //7    7  7  3  3
+                  {29, 29, 0 , 0 , 0 , 0 , 0 },   //8    2  2
                   {0 , 0 , 0 , 0 , 0 , 0 , 0 },   //9
                 };
 
@@ -2223,6 +2225,11 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
 //              screenUpdatingMode = SCRUPD_AUTO;
               refreshScreen(137);
             }
+
+            if(CM_NIM && (item == ITM_AIM || item == ITM_XEQ || item == ITM_GTO) && nimNumberPart == NP_INT_BASE && aimBuffer[strlen(aimBuffer) - 1] == '#') {  //do not allow shortinteger base change input to exit when alpha is pressed
+              goto RELEASE_END;
+            }
+
             runFunction(item);
 
                     #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
@@ -2230,6 +2237,11 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
                     #endif // PC_BUILD &&MONITOR_CLRSCR
           }
         }
+      }
+
+      if(programRunStop == PGM_SINGLE_STEP) {     // Key pressed was SST
+        programRunStop = PGM_STOPPED;
+        runProgram(true, INVALID_VARIABLE);       // Execute one program step after key released
       }
 
 //  #if defined(DMCP_BUILD)
@@ -2451,7 +2463,10 @@ RELEASE_END:
         case ITM_op_j_pol:
         case ITM_op_j:
         case ITM_CC:
-        case ITM_dotD: {
+        {
+          #if defined(PC_BUILD)
+            //printf("Monitor: item=%i calcMode=%i nimNumberPart=%i char=%c lastIntegerBase=%i\n",item, calcMode, nimNumberPart, aimBuffer[strlen(aimBuffer) - 1], lastIntegerBase);
+          #endif
           if(calcMode == CM_ASSIGN) {
             if(itemToBeAssigned == 0) {
               itemToBeAssigned = item;
@@ -2755,7 +2770,52 @@ RELEASE_END:
                   if(item == ITM_toINT || item == ITM_HASH_JM) {
                     resetShiftState();
                   }
-                  addItemToNimBuffer(item);
+
+                  if(calcMode == CM_NIM && (item == ITM_RI || item == ITM_dotD) && (nimNumberPart == NP_INT_10 || nimNumberPart == NP_INT_16) && lastIntegerBase > 0) {
+                    //printf("Change NIM to LI\n");
+                    lastIntegerBase = 0;
+                    screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
+                    resetShiftState();
+                    keyActionProcessed = true;
+                  }
+                  else if(calcMode == CM_NIM && (item == ITM_RI || item == ITM_dotD) && nimNumberPart == NP_INT_BASE && aimBuffer[strlen(aimBuffer) - 1] == '#') {
+                    //printf("NIM remove base # to LI B\n");
+                    lastIntegerBase = 0;
+                    screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
+                    resetShiftState();
+                    addItemToNimBuffer(ITM_BACKSPACE);
+                    keyActionProcessed = true;
+                  }
+                  else if(calcMode == CM_NIM && item == ITM_HASH_JM && nimNumberPart == NP_INT_BASE && aimBuffer[strlen(aimBuffer) - 1] == '#') {
+                    //printf("NIM remove base # to LI A\n");
+                    screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
+                    resetShiftState();
+                    addItemToNimBuffer(ITM_BACKSPACE);
+                    keyActionProcessed = true;
+                  }
+                  else if(calcMode == CM_NIM && item == ITM_PERIOD && nimNumberPart == NP_INT_BASE && aimBuffer[strlen(aimBuffer) - 1] == '#') {
+                    //printf("NIM replace base # with .\n");
+                    lastIntegerBase = 0;
+                    screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
+                    addItemToNimBuffer(ITM_BACKSPACE);
+                    addItemToNimBuffer(ITM_PERIOD);
+                    refreshRegisterLine(REGISTER_X);
+                    keyActionProcessed = true;
+                  }
+                  else if(calcMode == CM_NIM && item == ITM_HASH_JM && nimNumberPart == NP_REAL_FLOAT_PART && aimBuffer[strlen(aimBuffer) - 1] == '.') {
+                    //printf("NIM replace base # with .\n");
+                    lastIntegerBase = 0;
+                    screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
+                    addItemToNimBuffer(ITM_BACKSPACE);
+                    addItemToNimBuffer(ITM_toINT);
+                    refreshRegisterLine(REGISTER_X);
+                    keyActionProcessed = true;
+                  }
+
+                  else {
+                    addItemToNimBuffer(item);
+                  }
+
                   if( ((ITM_0 <= item && item <= ITM_9) || item == ITM_toINT || item == ITM_HASH_JM || item == ITM_ms || ((ITM_A <= item && item <= ITM_F) && (lastIntegerBase >= 2) && topHex) ) || item == ITM_CHS || item == ITM_EXPONENT || item == ITM_PERIOD) {   //JMvv Direct keypresses; //JMNIM Added direct A-F for hex entry
                     refreshRegisterLine(REGISTER_X);
                   }                                                                                   //JM^^

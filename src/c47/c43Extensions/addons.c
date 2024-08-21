@@ -499,6 +499,13 @@ void fn_cnst_1_cpx(uint16_t unusedButMandatoryParameter) {
 
 //Rounding
 void fnJM_2SI(uint16_t unusedButMandatoryParameter) { //Convert Real to Longint; Longint to shortint; shortint to longint
+  if(calcMode == CM_NIM) {
+    if((   (nimNumberPart == NP_INT_BASE && aimBuffer[strlen(aimBuffer) - 1] == '#') 
+        || (nimNumberPart == NP_INT_10 && lastIntegerBase > 0)   )) {
+      printf("Do not react when in NIM SI\n");
+      return;
+    }
+  }
   longInteger_t tmp1, tmp3;
   uint16_t tmp2sign;
   switch(getRegisterDataType(REGISTER_X)) {
