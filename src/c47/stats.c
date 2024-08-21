@@ -722,13 +722,13 @@ void fnClSigma(uint16_t unusedButMandatoryParameter) {
 
 
 
-void fnSigma(uint16_t plusMinus) {
+void fnSigmaAddRem(uint16_t plusMinusSelection) {
   #if !defined(TESTSUITE_BUILD)
   real_t x, y;
 
   lrChosen = 0;
 
-  if(plusMinus == 1) { // SIGMA+
+  if(plusMinusSelection == SIGMA_PLUS) { // SIGMA+
     if(getRegisterAsRealQuiet(REGISTER_X, &x) && getRegisterAsRealQuiet(REGISTER_Y, &y)) {
         if(statisticalSumsUpdate && statisticalSumsPointer == NULL) {
           initStatisticalSums();
@@ -743,7 +743,7 @@ void fnSigma(uint16_t plusMinus) {
         AddtoStatsMatrix(&x, &y);
         realCopy(&x,      &SAVED_SIGMA_LASTX);
         realCopy(&y,      &SAVED_SIGMA_LASTY);
-        SAVED_SIGMA_LAc1 = 1;
+        SAVED_SIGMA_lastAddRem = SIGMA_PLUS;
 
         #if defined(DEBUGUNDO)
           calcRegister_t regStats = findNamedVariable(statMx);
@@ -754,7 +754,7 @@ void fnSigma(uint16_t plusMinus) {
           temporaryInformation = TI_STATISTIC_SUMS;
         }
       }
-      else if(getRegisterDataType(REGISTER_X) == dtReal34Matrix && plusMinus == 1) {
+      else if(getRegisterDataType(REGISTER_X) == dtReal34Matrix && plusMinusSelection == SIGMA_PLUS) {
         real34Matrix_t matrix;
         linkToRealMatrixRegister(REGISTER_X, &matrix);
 
@@ -795,7 +795,7 @@ void fnSigma(uint16_t plusMinus) {
           displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
           #if (EXTRA_INFO_ON_CALC_ERROR == 1)
             sprintf(errorMessage, "cannot use %" PRIu16 STD_CROSS "%" PRId16 "-matrix as statistical data!", matrix.header.matrixRows, matrix.header.matrixColumns);
-            moreInfoOnError("In function fnSigma:", errorMessage, NULL, NULL);
+            moreInfoOnError("In function fnSigmaAddRem:", errorMessage, NULL, NULL);
           #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
         }
       }
@@ -803,7 +803,7 @@ void fnSigma(uint16_t plusMinus) {
         badTypeError(REGISTER_X);
       }
     }
-    else { // SIGMA-
+    else if(plusMinusSelection == SIGMA_MINUS) { // SIGMA-
       if(checkMinimumDataPoints(const_1)) {
         getLastRowStatsMatrix(&x, &y);
         if(statisticalSumsUpdate) {
@@ -822,7 +822,7 @@ void fnSigma(uint16_t plusMinus) {
 
         realCopy(&x,       &SAVED_SIGMA_LASTX);
         realCopy(&y,       &SAVED_SIGMA_LASTY);
-        SAVED_SIGMA_LAc1 = 2;
+        SAVED_SIGMA_lastAddRem = SIGMA_MINUS;
 
         #if defined(DEBUGUNDO)
           if(statisticalSumsPointer != NULL) {

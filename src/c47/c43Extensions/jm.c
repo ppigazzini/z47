@@ -7,6 +7,7 @@
 #include "c43Extensions/addons.h"
 #include "charString.h"
 #include "display.h"
+#include "error.h"
 #include "flags.h"
 #include "config.h"
 #include "c43Extensions/graphs.h"
@@ -114,16 +115,27 @@
 
 
 /********************************************//** XXX
- * \brief Set Norm_Key_00_VAR
+ * \brief Set Norm_Key_00
  *
  * \param[in] sigmaAssign uint16_t
  * \return void
  ***********************************************/
 void fnSigmaAssign(uint16_t sigmaAssign) {             //DONE
-  int16_t tt = (int16_t)sigmaAssign;
-  Norm_Key_00_VAR = tt - 16384;
-  fnRefreshState();                                 //drJM
-  fnClearFlag(FLAG_USER);
+  if(Norm_Key_00_key != -1) {
+    int16_t tt = (int16_t)sigmaAssign;
+    Norm_Key_00.func = tt - 16384;
+    Norm_Key_00.funcParam[0] = 0;
+    Norm_Key_00.used = Norm_Key_00.func != kbd_std[Norm_Key_00_key].primary;
+    fnRefreshState();                                 //drJM
+    fnClearFlag(FLAG_USER);
+  } else {
+    Norm_Key_00.used = false;
+    displayCalcErrorMessage(ERROR_CANNOT_ASSIGN_HERE, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    #if defined(PC_BUILD)
+      moreInfoOnError("In function fnSigmaAssign: ", "the NRM key is not available.",NULL, NULL);
+    #endif // PC_BUILD
+  }
+
 }
 
 

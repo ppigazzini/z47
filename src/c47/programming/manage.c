@@ -433,17 +433,20 @@ void fnPem(uint16_t unusedButMandatoryParameter) {
     uint16_t line, firstLine;
     uint16_t stepsThatWouldBeDisplayed = 7;
     uint8_t *step, *nextStep;
-    bool_t lblOrEnd;
+    bool_t lblOrEndOrXeq, gto;
     bool_t inTamMode = tam.mode && programList[currentProgramNumber - 1].step > 0;
     uint16_t numberOfSteps = getNumberOfSteps();
     uint16_t linesOfCurrentStep = 1;
+    lastIntegerBase = 0;
 
     if(calcMode != CM_PEM) {
       showSoftmenu(-MNU_PFN);
+      screenUpdatingMode &= ~SCRUPD_MANUAL_MENU;
       calcMode = CM_PEM;
       hourGlassIconEnabled = false;
       aimBuffer[0] = 0;
       currentInputVariable = INVALID_VARIABLE;
+      refreshScreen(227);
       return;
     }
 
@@ -490,93 +493,104 @@ void fnPem(uint16_t unusedButMandatoryParameter) {
       else {
         showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_T_LINE + 21 * line, vmNormal,  false, true);
       }
-      lblOrEnd = checkOpCodeOfStep(step, ITM_LBL) || isAtEndOfProgram(step) || isAtEndOfPrograms(step);
-      if(programList[currentProgramNumber - 1].step > 0) {
-        if((!pemCursorIsZerothStep && firstDisplayedStepNumber + line - lineOffset == currentStepNumber + 1) || (line == 1 && tam.mode && pemCursorIsZerothStep)) {
-          tamOverPemYPos = Y_POSITION_OF_REGISTER_T_LINE + 21 * line;
-          if(tam.mode) {
-            line += 1;
-            lineOffset += 1;
-            lineOffsetTam += 1;
-            showString(tmpString, &standardFont, 1, tamOverPemYPos, vmReverse, false, true);
-            if(line >= 7) {
-              break;
+
+      //Automatically, when on battery (hence low processor), change to skip long processing register printing, recovering the fragmented screen here: See timer.c fnTimerEndOfActivity() , skippedStackLines
+      #if defined(DMCP_BUILD)                                                      // vvv
+        if( !(!getSystemFlag(FLAG_USB) && !emptyKeyBuffer() && key_empty() == 1) ||(firstDisplayedStepNumber + line - lineOffset == currentStepNumber)) {
+      #endif
+
+        lblOrEndOrXeq = checkOpCodeOfStep(step, ITM_LBL) || checkOpCodeOfStep(step, ITM_XEQ) || isAtEndOfProgram(step) || isAtEndOfPrograms(step);
+        gto = checkOpCodeOfStep(step, ITM_GTO);
+        if(programList[currentProgramNumber - 1].step > 0) {
+          if((!pemCursorIsZerothStep && firstDisplayedStepNumber + line - lineOffset == currentStepNumber + 1) || (line == 1 && tam.mode && pemCursorIsZerothStep)) {
+            tamOverPemYPos = Y_POSITION_OF_REGISTER_T_LINE + 21 * line;
+            if(tam.mode) {
+              line += 1;
+              lineOffset += 1;
+              lineOffsetTam += 1;
+              showString(tmpString, &standardFont, 1, tamOverPemYPos, vmReverse, false, true);
+              if(line >= 7) {
+                break;
+              }
+              sprintf(tmpString, "%04d:" STD_SPACE_4_PER_EM, firstDisplayedLocalStepNumber + line - lineOffset + lineOffsetTam);
+              showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_T_LINE + 21 * line, vmNormal, false, true);
             }
-            sprintf(tmpString, "%04d:" STD_SPACE_4_PER_EM, firstDisplayedLocalStepNumber + line - lineOffset + lineOffsetTam);
-            showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_T_LINE + 21 * line, vmNormal, false, true);
+          }
+          else if(firstDisplayedStepNumber + line - lineOffset == currentStepNumber && lblOrEndOrXeq && (*step != ITM_LBL)) {
+            if(tam.mode) {
+              line += 1;
+              lineOffset += 1;
+              lineOffsetTam += 1;
+              showString(tmpString, &standardFont, 1, tamOverPemYPos, vmReverse, false, true);
+              if(line >= 7) {
+                break;
+              }
+              sprintf(tmpString, "%04d:" STD_SPACE_4_PER_EM, firstDisplayedLocalStepNumber + line - lineOffset + lineOffsetTam);
+              showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_T_LINE + 21 * line, vmNormal, false, true);
+            }
           }
         }
-        else if(firstDisplayedStepNumber + line - lineOffset == currentStepNumber && lblOrEnd && (*step != ITM_LBL)) {
-          if(tam.mode) {
-            line += 1;
-            lineOffset += 1;
-            lineOffsetTam += 1;
-            showString(tmpString, &standardFont, 1, tamOverPemYPos, vmReverse, false, true);
-            if(line >= 7) {
-              break;
-            }
-            sprintf(tmpString, "%04d:" STD_SPACE_4_PER_EM, firstDisplayedLocalStepNumber + line - lineOffset + lineOffsetTam);
-            showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_T_LINE + 21 * line, vmNormal, false, true);
+        decodeOneStep(step);
+        if(firstDisplayedStepNumber + line - lineOffset == currentStepNumber && !tam.mode) {
+          if(getSystemFlag(FLAG_ALPHA)) {
+            char tmpChar = tmpString[4];
+            tmpString[4] = 0;
+            int16_t cursorInString = (strcmp(tmpString, "REM ") == 0? T_cursorPos + 4: T_cursorPos);
+            tmpString[4] = tmpChar;
+            xcopy(tmpString + 2 + cursorInString + 2, tmpString + 2 + cursorInString, stringByteLength(tmpString + 2 + cursorInString) + 1);
+            tmpString[2 + cursorInString    ] = STD_CURSOR[0];
+            tmpString[2 + cursorInString + 1] = STD_CURSOR[1];
+          }
+          else if(aimBuffer[0] != 0) {
+            char *tstr = tmpString + stringByteLength(tmpString);
+            *(tstr++) = STD_CURSOR[0];
+            *(tstr++) = STD_CURSOR[1];
+            *(tstr++) = 0;
           }
         }
-      }
-      decodeOneStep(step);
-      if(firstDisplayedStepNumber + line - lineOffset == currentStepNumber && !tam.mode) {
-        if(getSystemFlag(FLAG_ALPHA)) {
-          char tmpChar = tmpString[4];
-          tmpString[4] = 0;
-          int16_t cursorInString = (strcmp(tmpString, "REM ") == 0? T_cursorPos + 4: T_cursorPos);
-          tmpString[4] = tmpChar;
-          xcopy(tmpString + 2 + cursorInString + 2, tmpString + 2 + cursorInString, stringByteLength(tmpString + 2 + cursorInString) + 1);
-          tmpString[2 + cursorInString    ] = STD_CURSOR[0];
-          tmpString[2 + cursorInString + 1] = STD_CURSOR[1];
+
+        // Split long lines
+        int numberOfExtraLines = 0;
+        int offset = 0;
+        const char *endStr = NULL;
+        while(offset <= 1500 && (*(endStr = stringAfterPixels(tmpString + offset, &standardFont, 337, false, false)) != 0)) {
+          int lineByteLength = endStr - (tmpString + offset);
+          numberOfExtraLines++;
+          xcopy(tmpString + offset + 300, tmpString + offset + lineByteLength, stringByteLength(endStr) + 1);
+          tmpString[offset + lineByteLength] = 0;
+          offset += 300;
         }
-        else if(aimBuffer[0] != 0) {
-          char *tstr = tmpString + stringByteLength(tmpString);
-          *(tstr++) = STD_CURSOR[0];
-          *(tstr++) = STD_CURSOR[1];
-          *(tstr++) = 0;
+        stepsThatWouldBeDisplayed -= numberOfExtraLines;
+        if(firstDisplayedStepNumber + line - lineOffset == currentStepNumber) {
+          linesOfCurrentStep += numberOfExtraLines;
         }
-      }
 
-      // Split long lines
-      int numberOfExtraLines = 0;
-      int offset = 0;
-      const char *endStr = NULL;
-      while(offset <= 1500 && (*(endStr = stringAfterPixels(tmpString + offset, &standardFont, 337, false, false)) != 0)) {
-        int lineByteLength = endStr - (tmpString + offset);
-        numberOfExtraLines++;
-        xcopy(tmpString + offset + 300, tmpString + offset + lineByteLength, stringByteLength(endStr) + 1);
-        tmpString[offset + lineByteLength] = 0;
-        offset += 300;
-      }
-      stepsThatWouldBeDisplayed -= numberOfExtraLines;
-      if(firstDisplayedStepNumber + line - lineOffset == currentStepNumber) {
-        linesOfCurrentStep += numberOfExtraLines;
-      }
+        showString(tmpString, &standardFont, lblOrEndOrXeq ? 42 : gto ? 82 : 62, Y_POSITION_OF_REGISTER_T_LINE + 21 * line, vmNormal,  false, false);
+        offset = 300;
+        while(numberOfExtraLines && line <= 5) {
+          showString(tmpString + offset, &standardFont, 62, Y_POSITION_OF_REGISTER_T_LINE + 21 * (++line), vmNormal,  false, false);
+          numberOfExtraLines--;
+          offset += 300;
+          lineOffset++;
+        }
 
-      showString(tmpString, &standardFont, lblOrEnd ? 42 : 62, Y_POSITION_OF_REGISTER_T_LINE + 21 * line, vmNormal,  false, false);
-      offset = 300;
-      while(numberOfExtraLines && line <= 5) {
-        showString(tmpString + offset, &standardFont, 62, Y_POSITION_OF_REGISTER_T_LINE + 21 * (++line), vmNormal,  false, false);
-        numberOfExtraLines--;
-        offset += 300;
-        lineOffset++;
-      }
-
-      if(isAtEndOfProgram(step)) {
-        programListEnd = true;
-        if(*nextStep == 255 && *(nextStep + 1) == 255) {
+        if(isAtEndOfProgram(step)) {
+          programListEnd = true;
+          if(*nextStep == 255 && *(nextStep + 1) == 255) {
+            lastProgramListEnd = true;
+          }
+          break;
+        }
+        if((*step == 255) && (*(step + 1) == 255)) {
+          programListEnd = true;
           lastProgramListEnd = true;
+          break;
         }
-        break;
+        step = nextStep;
+
+      #if defined(DMCP_BUILD)   //^^
       }
-      if((*step == 255) && (*(step + 1) == 255)) {
-        programListEnd = true;
-        lastProgramListEnd = true;
-        break;
-      }
-      step = nextStep;
+      #endif //DMCP_BUILD
     }
 
     if(lastErrorCode != ERROR_NONE) {
@@ -1427,6 +1441,37 @@ void insertStepInProgram(int16_t func) {
   aimBuffer[0] = 0;
 }
 
+
+void insertUserItemInProgram(int16_t func, char *funcParam) {
+  uint32_t opBytes=0;
+  uint16_t nameLength = stringByteLength(funcParam);
+
+  if((!pemCursorIsZerothStep) && ((aimBuffer[0] == 0 && !getSystemFlag(FLAG_ALPHA)) || tam.mode) && !isAtEndOfProgram(currentStep) && !isAtEndOfPrograms(currentStep)) {
+    currentStep = findNextStep(currentStep);
+    ++currentLocalStepNumber;
+  }
+  if(func < 128) {
+    tmpString[opBytes++] = func;
+  }
+  else {
+    tmpString[opBytes++] = (func >> 8) | 0x80;
+    tmpString[opBytes++] =  func       & 0x7f;
+  }
+
+  tmpString[opBytes    ] = (char)STRING_LABEL_VARIABLE;
+  tmpString[opBytes + 1] = nameLength;
+  xcopy(tmpString + opBytes + 2, funcParam, nameLength);
+  _insertInProgram((uint8_t *)tmpString, nameLength + opBytes + 2);
+
+  currentStep = findPreviousStep(currentStep);
+  if(currentLocalStepNumber > 1) {
+    --currentLocalStepNumber;
+  }
+  pemCursorIsZerothStep = false;
+  if(!programListEnd) {
+    scrollPemBackwards();
+  }
+}
 
 
 void addStepInProgram(int16_t func) {
