@@ -2457,9 +2457,16 @@
 #define ITM_USER_R47fg_g            2394
 #define ITM_USER_EXPR               2395
 
+#define ITM_ANGLEQ                  2396
+#define ITM_DATEQ                   2397
+#define ITM_LINTQ                   2398
+#define ITM_NUMBRQ                  2399
+#define ITM_SINTQ                   2400
+#define ITM_TIMEQ                   2401
+#define ITM_TYPEQ                   2402
 
 
-#define LAST_ITEM                   2396
+#define LAST_ITEM                   2403
 
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL
