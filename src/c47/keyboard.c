@@ -3669,7 +3669,11 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
             stayInAIM(); //JM
           }
           screenUpdatingMode &= ~SCRUPD_MANUAL_MENU;
-          if(temporaryInformation == TI_NO_INFO) {
+
+          if(getRegisterDataType(REGISTER_X) == dtShortInteger) {
+            screenUpdatingMode &= ~SCRUPD_MANUAL_MENU;
+          }
+          else if(temporaryInformation == TI_NO_INFO) {
             screenUpdatingMode |= SCRUPD_SKIP_STACK_ONE_TIME;
           }
         }
