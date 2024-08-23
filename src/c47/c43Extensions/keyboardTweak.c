@@ -267,7 +267,7 @@ void resetKeytimers(void) {
          || (/*(key_no >= 0 && key_no < 15) && (LongPressM == RBX_M14) && */(tmpp_ == ITM_DRG && tmpf_ == ITM_USERMODE ) ) //DRG anywhere mathkeys
          || (tmpp_ == ITM_XEQ && tmpf_ == ITM_AIM)                                               //anywhere
         ) {
-        if(!shiftF && !shiftG) {
+        if(!shiftF && !shiftG && !(lastIntegerBase >= 2 && topHex && key_no >= 0 && key_no <= 5)) { //accept NIM but do not react, stay on default 0 0 0 
           longpressDelayedkey1 = tmpf_;
           tmpf = tmpf_;
           if(LongPressM == RBX_M1234) {
@@ -285,6 +285,14 @@ void resetKeytimers(void) {
       case CM_ASSIGN :
       case CM_NORMAL : {                                         //longpress special keys
         switch(*result) {
+          case ITM_F:
+            //printf("DDD\n");
+            if(lastIntegerBase >= 2 && topHex) {
+              //printf("EEE\n");
+              longpressDelayedkey1 = ITM_XEQ;
+              longpressDelayedkey3 = ITM_GTO;
+            }
+            break;
 
           case ITM_XEQ:
             if(tam.mode == 0 && ((char*)funcParam)[0] == 0 && (getSystemFlag(FLAG_USER) ? kbd_usr[key_no].primary == kbd_std[key_no].primary : true)) { //If XEQ (always primary) is not the standard position, or if XEQ has a parameter then do not inject it into the long press cycle
