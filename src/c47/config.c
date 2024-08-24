@@ -1551,6 +1551,8 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
 
     #if defined(PC_BUILD) || defined(TESTSUITE_BUILD)
       debugMemAllocation = true;
+      forceTamAlpha = false;
+      deadKey = 0;
     #endif // PC_BUILD || TESTSUITE_BUILD
 
 

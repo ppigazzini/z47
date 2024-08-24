@@ -292,7 +292,7 @@
         printf("       New key system: Handle menus: key:%i: showSoftmenu %i\n",keyCode, itemForRunFunction);
         showSoftmenu(itemForRunFunction);
         screenUpdatingMode = SCRUPD_AUTO;
-        refreshScreen(0);
+        refreshScreen(1);
         return true;
       }
 
@@ -314,7 +314,7 @@
           }
           btnClicked(w, keyForBtnClicked);
           screenUpdatingMode = SCRUPD_AUTO;
-          refreshScreen(0);
+          refreshScreen(2);
           return true;
         }
 
@@ -323,7 +323,7 @@
           printf("       New key system: Handle direct functions: key:%i: runFunction  %i\n",keyCode, itemForRunFunction);
           runFunction(itemForRunFunction);
           screenUpdatingMode = SCRUPD_AUTO;
-          refreshScreen(0);
+          refreshScreen(3);
           return true;
         }
       }
@@ -352,7 +352,7 @@
 //        printf("       New key system: Handle menus: key:%i: showSoftmenu %i\n",keyCode, itemForRunFunction);
 //        showSoftmenu(itemForRunFunction);
 //        screenUpdatingMode = SCRUPD_AUTO;
-//        refreshScreen(0);
+//        refreshScreen(4);
 //        return true;
 //      }
 
@@ -375,7 +375,7 @@
           printf("                       Handle key clicks: key:%i: btnClicked %s\n",keyCode, keyForBtnClicked);
           btnFnClicked(w, keyForBtnClicked);
           screenUpdatingMode = SCRUPD_AUTO;
-          refreshScreen(0);
+          refreshScreen(5);
           return true;
         }
 
@@ -385,7 +385,7 @@
 //          printf("       New key system: Handle direct functions: key:%i: runFunction  %i\n",keyCode, itemForRunFunction);
 //          runFunction(itemForRunFunction);
 //          screenUpdatingMode = SCRUPD_AUTO;
-//          refreshScreen(0);
+//          refreshScreen(6);
 //          return true;
 //        }
       }
@@ -409,11 +409,30 @@
 
 
   void sendKey(int16_t sent) {
+    showHideAlphaMode();
     if((calcMode == CM_PEM) && !tam.mode && getSystemFlag(FLAG_ALPHA) && !catalog) {
       pemAlpha(sent);
     } else {
       addItemToBuffer(sent);
     }
+  }
+
+
+
+  void setAlphaCaseToCapsLockState() {
+    //printf("Query case: ");
+    if(!(shiftF || shiftG)) {
+      if(gdk_keymap_get_caps_lock_state(gdk_keymap_get_for_display(gdk_display_get_default()))) {
+        alphaCase = AC_UPPER;
+        //printf("Set to upper case\n");
+      }
+      else {
+        alphaCase = AC_LOWER;
+        //printf("Set to lower case\n");
+      }
+    }
+    showHideAlphaMode();
+    refreshLcd(NULL);
   }
 
 
@@ -427,6 +446,7 @@
 
   gboolean keyReleased(GtkWidget *w, GdkEventKey *event, gpointer data) {     //JM
     printf("PC Key released: %d (SHIFT_State=%u)(shiftF=%u shiftF=%u)\n", event->keyval,SHIFT_State,shiftF,shiftG);
+    setAlphaCaseToCapsLockState();
     if(event_keyval == event->keyval + CTRL_State) event_keyval = 99999999;
 
     switch(event->keyval) {
@@ -745,7 +765,7 @@ if(   catalog
           sendKey(ll);
         noMore:
         screenUpdatingMode = SCRUPD_AUTO;
-        refreshScreen(0);
+        refreshScreen(8);
         return false;
         }
       }
@@ -1383,7 +1403,7 @@ if(   catalog
           if(calcMode == CM_NORMAL) {
             runFunction(ITM_DRG);
             screenUpdatingMode = SCRUPD_AUTO;
-            refreshScreen(0);
+            refreshScreen(9);
           }
           break;               //dr
 

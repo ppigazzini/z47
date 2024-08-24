@@ -31,6 +31,8 @@
 
 #if defined(PC_BUILD) || defined(TESTSUITE_BUILD)
   bool_t              debugMemAllocation;
+  bool                forceTamAlpha;
+  uint32_t            deadKey;
 #endif // PC_BUILD || TESTSUITE_BUILD
 
 const font_t          *fontForShortInteger;

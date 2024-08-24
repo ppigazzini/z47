@@ -531,7 +531,7 @@ bool_t lowercaseselected;    //the only place that this is set, is in processKey
     }
 
     else if(lowercaseselected && (ITM_A <= item && item <= ITM_Z)) {
-      addItemToBuffer(item + 26);
+      addItemToBuffer(item + (ITM_a - ITM_A));
                     #if defined(PAIMDEBUG)
                       printf("---#J %d\n",keyActionProcessed);
                     #endif //PAIMDEBUG
@@ -2649,7 +2649,7 @@ RELEASE_END:
           }
           else if((calcMode != CM_PEM || !getSystemFlag(FLAG_ALPHA)) && catalog && catalog != CATALOG_MVAR) {
             if(ITM_A <= item && item <= ITM_Z && lowercaseselected) {
-              addItemToBuffer(item + 26);
+              addItemToBuffer(item + (ITM_a - ITM_A));
               keyActionProcessed = true;
             }
 

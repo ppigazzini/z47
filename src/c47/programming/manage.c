@@ -44,6 +44,10 @@
 #include "sort.h"
 #include <stdlib.h>
 #include <string.h>
+#if defined(PC_BUILD)
+  #include "gtkGui.h"
+#endif
+
 
 #include "c47.h"
 
@@ -706,6 +710,10 @@ void pemAlpha(int16_t item) {
       //  softmenuStack[0].softmenuId = 1; // MyAlpha
       //}
       showSoftmenu(-MNU_ALPHA); // JM addon
+      
+      #if defined(PC_BUILD)
+        setAlphaCaseToCapsLockState();  // Reflect caps lock key status
+      #endif
 
       setSystemFlag(FLAG_ALPHA);
 
@@ -732,7 +740,7 @@ void pemAlpha(int16_t item) {
       item = numlockReplacements(0, item, getSystemFlag(FLAG_NUMLOCK), shiftF, shiftG);
       if(alphaCase == AC_LOWER) {
           if(ITM_A <= item && item <= ITM_Z) {
-            item += 26;
+            item += (ITM_a - ITM_A);
           }
           else if((ITM_ALPHA <= item && item <= ITM_OMEGA) || (ITM_QOPPA <= item && item <= ITM_SAMPI) ) {
             item +=  (ITM_ALPHA <= item && item <= ITM_OMEGA) ? (ITM_alpha - ITM_ALPHA) : (ITM_qoppa - ITM_QOPPA);

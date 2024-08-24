@@ -221,6 +221,7 @@
     //ramDump();
     refreshScreen(190);
 
+    g_timeout_add_seconds(1, (GSourceFunc) setAlphaCaseToCapsLockState, NULL);
     gdk_threads_add_timeout(SCREEN_REFRESH_PERIOD, refreshLcd, NULL); // refreshLcd is called every SCREEN_REFRESH_PERIOD ms
     fnTimerReset();                                                    //dr timeouts for kb handling
     fnTimerConfig(TO_FG_LONG, refreshFn, TO_FG_LONG);
