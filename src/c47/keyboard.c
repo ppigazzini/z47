@@ -1388,7 +1388,7 @@ releaseOverride = false;
 
 
   bool_t allowShiftsToClearError = false;
-  #define stringToKeyNumber(data)         ((*((char *)data) - '0')*10 + *(((char *)data)+1) - '0')
+  #define stringToKeyNumber(data)         ((*((char *)data) - '0')*10 + *(((char *)data)+1) - '0')    // input string = "28", keynumber = 28  (keys 00-36)
 
 
   int16_t determineItem(const char *data) {
@@ -4807,9 +4807,9 @@ void fnKeyDotD(uint16_t unusedButMandatoryParameter) {
 }
 
 
-void setLastKeyCode(int key) {
-  if(1 <= key && key <= 43) {
-    if(key <=  6) {
+void setLastKeyCode(int key) {             // key = 10      setLastKeyCode = 10-6 +30 = 34 row 3, col 4
+  if(1 <= key && key <= 43) {              // key = 27      setLastKeyCode = 27-22+60 = 65 row 6, col 5
+    if(key <=  6) {                        // key = 28 EXIT setLastKeyCode = 28-27+70 = 71 row 7, col 1
       lastKeyCode = key      + 20;
     }
     else if(key <= 12) {

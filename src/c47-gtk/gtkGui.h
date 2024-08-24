@@ -94,8 +94,8 @@
     /**
      * Creates the calc's GUI window with all the widgets.
      */
-    void setupUI                     (void);
-    void setAlphaCaseToCapsLockState();
+    void     setupUI                     (void);
+    gboolean setAlphaCaseToCapsLockState ();
   #endif // PC_BUILD
 
 #endif // !GTKGUI_H
