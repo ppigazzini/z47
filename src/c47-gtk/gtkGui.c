@@ -28,6 +28,7 @@
 #include "keyboard.h"
 #include "c43Extensions/keyboardTweak.h"
 #include "mathematics/matrix.h"
+#include "programming/manage.h"
 #include "registers.h"
 #include "saveRestoreCalcState.h"
 #include "screen.h"
@@ -259,13 +260,11 @@
                                     softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_ALPHAINTL ||   \
                                     softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_ALPHAintl ))
 
-
-
-
   #define ExitIfNim true
 
-  TO_QSPI const char     alphakeysC47[38] = "abcdefghijkl#mno##pqrs#tuvw#xyz_#:,? ";
-  TO_QSPI const char     alphakeysR47[38] = "abcdefghij###klm##nopq#rstu#vwxy#z,? ";
+  TO_QSPI const char alphakeysC47[38]      = "abcdefghijkl#mno##pqrs#tuvw#xyz_#:,? ";
+  TO_QSPI const char alphakeysR47[38]      = "abcdefghij###klm##nopq#rstu#vwxy#z,? ";
+  TO_QSPI const char asciikeysFrom0020[34] = " !\"#$%&\'()*+,-./:;<=>?@[\\]^_{|}~¡";
 
 
 //                                  w, event_keyval,  97,         shortcutProfile == USER_C47,  ExitIfNim,          tam.mode ,      "f",        00",                    modes,                CM_NORMAL,                  ITM_SIGMAPLUS
@@ -395,8 +394,6 @@
   }
 
 
-
-  TO_QSPI const char asciikeysFrom0020[34] = " !\"#$%&\'()*+,-./:;<=>?@[\\]^_{|}~¡";
   uint16_t asciiToItem(uint8_t in) {
     if('0' <= in && '9' >= in) return ITM_0 + (in - '0'); else
     if('A' <= in && 'Z' >= in) return ITM_A + (in - 'A'); else
@@ -410,6 +407,14 @@
     return 0;
   }
 
+
+  void sendKey(int16_t sent) {
+    if((calcMode == CM_PEM) && !tam.mode && getSystemFlag(FLAG_ALPHA) && !catalog) {
+      pemAlpha(sent);
+    } else {
+      addItemToBuffer(sent);
+    }
+  }
 
 
   bool_t checkNormal(int16_t keyNr, int16_t item) {
@@ -728,16 +733,16 @@ if(   catalog
    ||(tam.mode == TM_LABEL  && getSystemFlag(FLAG_ALPHA))  ) {
   switch(event_keyval) {
     case '`':  //96
-      addItemToBuffer(ITM_NQUOTE);
+      sendKey(ITM_NQUOTE);
       goto noMore;
     case '*':
-      addItemToBuffer(ITM_CROSS);
+      sendKey(ITM_CROSS);
       goto noMore;
     default:
       if(32 <= event_keyval && event_keyval <= 255) {
         uint16_t ll = asciiToItem((uint8_t)event_keyval);
         if(ll != 0) {
-          addItemToBuffer(ll);
+          sendKey(ll);
         noMore:
         screenUpdatingMode = SCRUPD_AUTO;
         refreshScreen(0);
