@@ -717,7 +717,7 @@ if(!catalog) {
   #endif
 }
 
-return FALSE;
+
 
 //New ALPHA SECTION
 if(   catalog 
