@@ -779,6 +779,7 @@ if(   catalog
     //      goto nextchar;
     //    }
     //  }
+
     ll = _keyCodeFromGdkKey(event->keyval);
     if(ll > 0) {
       sendKey(ll);
@@ -4229,6 +4230,8 @@ static int16_t _getGdkKeyItem (uint32_t gdkKey) {
     }
     i++;
   }
+  //printf("_getGdkKeyItem deadKey=%i gdkKey=%i ->\n", deadKey, gdkKey);
+  //printf("               %i ->\n", gdkKeyMap[i].item);
   return gdkKeyMap[i].item;
 }
 
@@ -4323,7 +4326,26 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkK) {
       case GDK_KEY_dead_stroke :
       case GDK_KEY_dead_abovedot :
         if(deadKey != 0 && deadKey == gdkKey && testDeadKeys) {
+          //printf("Cancel deadkey\n");
           deadKey = 0;
+          switch(gdkKey) {
+            case GDK_KEY_dead_circumflex :
+              gdkKey = '^';  // circumflex test dead key
+              break;
+            case GDK_KEY_dead_grave :
+              gdkKey = '\''; // grave test dead key
+              break;
+            case GDK_KEY_dead_acute :
+              gdkKey = '`';  // grave test dead key
+              break;
+            case GDK_KEY_dead_tilde :
+              gdkKey = '~';  // tilde above test dead key
+              break;
+            case GDK_KEY_dead_stroke :
+              gdkKey = '/';  // slash test dead key
+              break;
+            default:;
+          }
           showHideAlphaMode();
           refreshLcd(NULL);
           goto cancelledDeadkey;
@@ -4345,6 +4367,7 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkK) {
         if(item == ITM_PROD_SIGN) {
           item = (getSystemFlag(FLAG_MULTx) ? ITM_CROSS : ITM_DOT);
         }
+        //printf("     gdkKey=%i deadKey=%i item=%i\n",gdkKey, deadKey, item);
 
         if(item != 0) {
           if(deadKey != 0) {
