@@ -1562,7 +1562,17 @@ releaseOverride = false;
       result = shiftF ? key->fShifted :
                shiftG ? key->gShifted :
                         key->primaryAim;
+      switch(result){
+        case ITM_AIM:
+        case ITM_SHIFTf:
+        case ITM_SHIFTg:
+        case KEY_fg:
+          result = ITM_NOP;
+          break;
+        default:break;
+      }
       //printf(">>> ±±±§§§ keys key:%d result:%d Calmode:%d, nimbuffer:%s, lastbase:%d, nimnumberpart:%d\n",key_no, result, calcMode,nimBuffer,lastIntegerBase, nimNumberPart);
+      Check_MultiPresses(&result, key_no);        //JM
       return result;
     }
     else                                                                                                                        //JM^^
@@ -2772,14 +2782,16 @@ RELEASE_END:
                   }
 
                   if(calcMode == CM_NIM && (item == ITM_RI || item == ITM_dotD) && (nimNumberPart == NP_INT_10 || nimNumberPart == NP_INT_16) && lastIntegerBase > 0) {
-                    //printf("Change NIM to LI\n");
+                    //printf("1. Change NIM to LI\n");
                     lastIntegerBase = 0;
                     screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
                     resetShiftState();
+                    screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
+                    screenUpdatingMode &= ~SCRUPD_SKIP_STACK_ONE_TIME;
                     keyActionProcessed = true;
                   }
                   else if(calcMode == CM_NIM && (item == ITM_RI || item == ITM_dotD) && nimNumberPart == NP_INT_BASE && aimBuffer[strlen(aimBuffer) - 1] == '#') {
-                    //printf("NIM remove base # to LI B\n");
+                    //printf("2. NIM remove base # to LI B\n");
                     lastIntegerBase = 0;
                     screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
                     resetShiftState();
@@ -2787,25 +2799,29 @@ RELEASE_END:
                     keyActionProcessed = true;
                   }
                   else if(calcMode == CM_NIM && item == ITM_HASH_JM && nimNumberPart == NP_INT_BASE && aimBuffer[strlen(aimBuffer) - 1] == '#') {
-                    //printf("NIM remove base # to LI A\n");
+                    //printf("3. NIM remove base # to LI A\n");
                     screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
                     resetShiftState();
+                    screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
+                    screenUpdatingMode &= ~SCRUPD_SKIP_STACK_ONE_TIME;
                     addItemToNimBuffer(ITM_BACKSPACE);
                     keyActionProcessed = true;
                   }
                   else if(calcMode == CM_NIM && item == ITM_PERIOD && nimNumberPart == NP_INT_BASE && aimBuffer[strlen(aimBuffer) - 1] == '#') {
-                    //printf("NIM replace base # with .\n");
+                    //printf("4. NIM replace base # with .\n");
                     lastIntegerBase = 0;
                     screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
+                    resetShiftState();
                     addItemToNimBuffer(ITM_BACKSPACE);
                     addItemToNimBuffer(ITM_PERIOD);
                     refreshRegisterLine(REGISTER_X);
                     keyActionProcessed = true;
                   }
                   else if(calcMode == CM_NIM && item == ITM_HASH_JM && nimNumberPart == NP_REAL_FLOAT_PART && aimBuffer[strlen(aimBuffer) - 1] == '.') {
-                    //printf("NIM replace base # with .\n");
+                    //printf("5. NIM replace . with #\n");
                     lastIntegerBase = 0;
                     screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
+                    resetShiftState();
                     addItemToNimBuffer(ITM_BACKSPACE);
                     addItemToNimBuffer(ITM_toINT);
                     refreshRegisterLine(REGISTER_X);
@@ -3653,7 +3669,11 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
             stayInAIM(); //JM
           }
           screenUpdatingMode &= ~SCRUPD_MANUAL_MENU;
-          if(temporaryInformation == TI_NO_INFO) {
+
+          if(getRegisterDataType(REGISTER_X) == dtShortInteger) {
+            screenUpdatingMode &= ~SCRUPD_MANUAL_MENU;
+          }
+          else if(temporaryInformation == TI_NO_INFO) {
             screenUpdatingMode |= SCRUPD_SKIP_STACK_ONE_TIME;
           }
         }
