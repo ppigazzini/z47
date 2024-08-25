@@ -273,26 +273,26 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
 //                                  w, event_keyval,  97,         shortcutProfile == USER_C47,  ExitIfNim,          tam.mode ,      "f",        00",                    modes,                CM_NORMAL,                  ITM_SIGMAPLUS
   static bool_t shortCutCommand(GtkWidget *w, int key,      int keyCode, bool_t condition1,            bool_t exitIfInNIM, bool_t disable, char *shift, char *keyForBtnClicked, uint16_t modes, int16_t requiredCalcMode2, int16_t itemForRunFunction) {
     if(key == keyCode && condition1 && !disable) {
-      printf("\n       New key system: Disable=%i, Key detected %5i=%5i: exitIfInNIM=%i keyForBtnClicked:%s, calcMode=%i, tam.mode=%i\n",disable, key, keyCode, exitIfInNIM, keyForBtnClicked, calcMode, tam.mode);
+      printf("\n       shortCutCommand: Disable=%i, Key detected %5i=%5i: exitIfInNIM=%i keyForBtnClicked:%s, calcMode=%i, tam.mode=%i\n",disable, key, keyCode, exitIfInNIM, keyForBtnClicked, calcMode, tam.mode);
     }
  
     if(disable) return false;                                  //exit directly for disallowed input condition
     if(tam.mode == TM_LABEL && key != '\'') return false;      //exit directly, not allowing shortcuts during label entry, except to start text using "'"
 
     if(key == keyCode && condition1) {
-      printf("       New key system: \n");
+      printf("       shortCutCommand: \n");
       temporaryInformation = TI_NO_INFO;
 
       //Handle clean NIM if needed and if allowed
         if(exitIfInNIM && (calcMode == CM_NIM) && (calcMode != requiredCalcMode2)) {   //if requiredCalcMode2 then no auto NIM clearing, and handle function below
-        printf("       New key system: Reset mode to NORMAL\n");
+        printf("       shortCutCommand: Reset mode to NORMAL\n");
         btnClicked(w, "32");                  //EXIT if in NIM
       }
 
       //Handle menus
       if(itemForRunFunction < 0) {
-        //printf("\n       New key system: Disable=%i, Key detected %5i=%5i: exitIfInNIM=%i keyForBtnClicked:%s, calcMode=%i, tam.mode=%i\n",disable, key, keyCode, exitIfInNIM, keyForBtnClicked, calcMode, tam.mode);
-        printf("       New key system: Handle menus: key:%i: showSoftmenu %i\n",keyCode, itemForRunFunction);
+        //printf("\n       shortCutCommand: Disable=%i, Key detected %5i=%5i: exitIfInNIM=%i keyForBtnClicked:%s, calcMode=%i, tam.mode=%i\n",disable, key, keyCode, exitIfInNIM, keyForBtnClicked, calcMode, tam.mode);
+        printf("       shortCutCommand: Handle menus: key:%i: showSoftmenu %i\n",keyCode, itemForRunFunction);
         showSoftmenu(itemForRunFunction);
         screenUpdatingMode = SCRUPD_AUTO;
         refreshScreen(1);
@@ -301,12 +301,12 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
 
       //Handle functions
       if(((1 << calcMode) & modes) || calcMode == requiredCalcMode2) {        
-        //printf("\n       New key system: Disable=%i, Key detected %5i=%5i: exitIfInNIM=%i keyForBtnClicked:%s, calcMode=%i, tam.mode=%i\n",disable, key, keyCode, exitIfInNIM, keyForBtnClicked, calcMode, tam.mode);
-        printf("       New key system: Handle functions: key:%i: showSoftmenu %i\n",keyCode, itemForRunFunction);
+        //printf("\n       shortCutCommand: Disable=%i, Key detected %5i=%5i: exitIfInNIM=%i keyForBtnClicked:%s, calcMode=%i, tam.mode=%i\n",disable, key, keyCode, exitIfInNIM, keyForBtnClicked, calcMode, tam.mode);
+        printf("       shortCutCommand: Handle functions: key:%i: showSoftmenu %i\n",keyCode, itemForRunFunction);
 
         //Handle key presses
         if(keyForBtnClicked[0] != '-') {
-          printf("       New key system: Handle key presses: key:%i: btnClicked %s\n",keyCode, keyForBtnClicked);
+          printf("       shortCutCommand: Handle key presses: key:%i: btnClicked %s\n",keyCode, keyForBtnClicked);
           if(shift[0] == 'f') {
             shiftF = true;
             shiftG = false;
@@ -323,7 +323,7 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
 
         //Handle direct functions
         if(itemForRunFunction >= 0) {
-          printf("       New key system: Handle direct functions: key:%i: runFunction  %i\n",keyCode, itemForRunFunction);
+          printf("       shortCutCommand: Handle direct functions: key:%i: runFunction  %i\n",keyCode, itemForRunFunction);
           runFunction(itemForRunFunction);
           screenUpdatingMode = SCRUPD_AUTO;
           refreshScreen(3);
@@ -339,20 +339,20 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
 //                                    w, event_keyval,  97,         shortcutProfile == USER_C47,  tam.mode ,      "f",        00",                    modes,                CM_NORMAL,                  ITM_SIGMAPLUS
   static bool_t shortCutFNCommand(GtkWidget *w, int key,      int keyCode, bool_t condition1,            bool_t disable, char *shift, char *keyForBtnClicked, uint16_t modes, int16_t requiredCalcMode2, int16_t itemForRunFunction) {
     if(key == keyCode && condition1 && !disable) {
-      printf("\n       New key system: Disable=%i, Key detected %5i=%5i: keyForBtnClicked:%s, calcMode=%i, tam.mode=%i\n",disable, key, keyCode, keyForBtnClicked, calcMode, tam.mode);
+      printf("\n       shortCutFNCommand: Disable=%i, Key detected %5i=%5i: keyForBtnClicked:%s, calcMode=%i, tam.mode=%i\n",disable, key, keyCode, keyForBtnClicked, calcMode, tam.mode);
     }
  
     if(disable) return false;                                  //exit directly for disallowed input condition
     if(tam.mode == TM_LABEL) return false;                     //exit directly, not allowing label entry
 
     if(key == keyCode && condition1) {
-      printf("       New key system: \n");
+      printf("       shortCutFNCommand: \n");
       temporaryInformation = TI_NO_INFO;
 
 //      //Handle menus
 //      if(itemForRunFunction < 0) {
-//        //printf("\n       New key system: Disable=%i, Key detected %5i=%5i: keyForBtnClicked:%s, calcMode=%i, tam.mode=%i\n",disable, key, keyCode, keyForBtnClicked, calcMode, tam.mode);
-//        printf("       New key system: Handle menus: key:%i: showSoftmenu %i\n",keyCode, itemForRunFunction);
+//        //printf("\n       shortCutFNCommand: Disable=%i, Key detected %5i=%5i: keyForBtnClicked:%s, calcMode=%i, tam.mode=%i\n",disable, key, keyCode, keyForBtnClicked, calcMode, tam.mode);
+//        printf("       shortCutFNCommand: Handle menus: key:%i: showSoftmenu %i\n",keyCode, itemForRunFunction);
 //        showSoftmenu(itemForRunFunction);
 //        screenUpdatingMode = SCRUPD_AUTO;
 //        refreshScreen(4);
@@ -361,8 +361,8 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
 
       //Handle functions
       if(((1 << calcMode) & modes) || calcMode == requiredCalcMode2) {        
-        //printf("\n       New key system: Disable=%i, Key detected %5i=%5i: keyForBtnClicked:%s, calcMode=%i, tam.mode=%i\n",disable, key, keyCode, keyForBtnClicked, calcMode, tam.mode);
-        printf("       New key system: Handle functions: key:%i: showSoftmenu %i\n",keyCode, itemForRunFunction);
+        //printf("\n       shortCutFNCommand: Disable=%i, Key detected %5i=%5i: keyForBtnClicked:%s, calcMode=%i, tam.mode=%i\n",disable, key, keyCode, keyForBtnClicked, calcMode, tam.mode);
+        printf("       shortCutFNCommand: Handle functions: key:%i: showSoftmenu %i\n",keyCode, itemForRunFunction);
 
         //Handle key presses
         if(keyForBtnClicked[0] != '-') {
@@ -385,7 +385,7 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
 
 //        //Handle direct functions
 //        if(itemForRunFunction >= 0) {
-//          printf("       New key system: Handle direct functions: key:%i: runFunction  %i\n",keyCode, itemForRunFunction);
+//          printf("       shortCutFNCommand: Handle direct functions: key:%i: runFunction  %i\n",keyCode, itemForRunFunction);
 //          runFunction(itemForRunFunction);
 //          screenUpdatingMode = SCRUPD_AUTO;
 //          refreshScreen(6);
@@ -638,8 +638,10 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
 // 17 CM_ASN_BROWSER     
 // 18 CM_LISTXY    
 
+printf("   Sim key processing: tam.mode=%i event_keyval=%i\n", tam.mode, event_keyval);
 
-if(!catalog && 
+if( !catalog && 
+   (!(tam.mode == TM_LABEL || tam.mode == TM_STORCL) || (uint8_t)(event_keyval) == '\'') &&
     (calcMode == CM_NORMAL 
   || calcMode == CM_NIM 
   ||(calcMode == CM_PEM && !getSystemFlag(FLAG_ALPHA) ))) {
@@ -739,7 +741,9 @@ if(!catalog &&
  
 
 //New Matrix arrows
-if(!catalog) {
+if(!catalog &&
+    calcMode == CM_NORMAL ) {
+
   //                  *w, int key     ,keyCode,   condition1,                                                         disable,  *shift, *keyForBtnClicked,      modes,  requiredCalcMode2,     itemForRunFunction
   if(shortCutFNCommand(w, event_keyval, 65362 /* F1 */,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, FALSE  ,    "",  "1",         1 << 12,         -1,          0    ))        {return false;} else        //  F1 Up
   if(shortCutFNCommand(w, event_keyval, 65364 /* F2 */,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, FALSE  ,    "",  "2",         1 << 12,         -1,          0    ))        {return false;} else        //  F2 Dn
@@ -760,7 +764,7 @@ if(   catalog
    || calcMode == CM_EIM 
    ||(calcMode == CM_PEM    && getSystemFlag(FLAG_ALPHA)) 
    ||(calcMode == CM_ASSIGN && getSystemFlag(FLAG_ALPHA))
-   ||(tam.mode == TM_LABEL  && getSystemFlag(FLAG_ALPHA))  ) {
+   ||((tam.mode == TM_LABEL || tam.mode == TM_STORCL) )  ) {
 
     //old way
     //  if(32 <= event_keyval && event_keyval <= 255) {
@@ -775,8 +779,7 @@ if(   catalog
     //      goto nextchar;
     //    }
     //  }
-
-    ll = _keyCodeFromGdkKey(event_keyval);
+    ll = _keyCodeFromGdkKey(event->keyval);
     if(ll > 0) {
       sendKey(ll);
       screenUpdatingMode = SCRUPD_AUTO;
