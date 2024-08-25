@@ -48,6 +48,7 @@
     extern bool_t               debugMemAllocation;
     extern bool                 forceTamAlpha;
     extern uint32_t             deadKey;
+    extern bool_t               testDeadKeys;
   #endif // PC_BUILD || TESTSUITE_BUILD
 
   #if defined(PC_BUILD)

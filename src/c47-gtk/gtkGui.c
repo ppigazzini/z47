@@ -267,7 +267,7 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
 
   TO_QSPI const char alphakeysC47[38]      = "abcdefghijkl#mno##pqrs#tuvw#xyz_#:,? ";
   TO_QSPI const char alphakeysR47[38]      = "abcdefghij###klm##nopq#rstu#vwxy#z,? ";
-  TO_QSPI const char asciikeysFrom0020[34] = " !\"#$%&\'()*+,-./:;<=>?@[\\]^_{|}~¡";
+  //TO_QSPI const char asciikeysFrom0020[34] = " !\"#$%&\'()*+,-./:;<=>?@[\\]^_{|}~¡";
 
 
 //                                  w, event_keyval,  97,         shortcutProfile == USER_C47,  ExitIfNim,          tam.mode ,      "f",        00",                    modes,                CM_NORMAL,                  ITM_SIGMAPLUS
@@ -423,15 +423,21 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
 
 
   gboolean setAlphaCaseToCapsLockState() {
-    //printf("Query case: Upper=%i Lower=%i ", alphaCase == AC_UPPER, alphaCase == AC_LOWER);
+    #if defined VERBOSEKEYS_AUTOCASE
+      printf("setAlphaCaseToCapsLockState: Query case: Upper=%i Lower=%i ", alphaCase == AC_UPPER, alphaCase == AC_LOWER);
+    #endif
     if(!(shiftF || shiftG)) {
       if(gdk_keymap_get_caps_lock_state(gdk_keymap_get_for_display(gdk_display_get_default()))) {
         alphaCase = AC_UPPER;
-        //printf("Set to upper case\n");
+        #if defined VERBOSEKEYS_AUTOCASE
+          printf("setAlphaCaseToCapsLockState: Set to upper case\n");
+        #endif
       }
       else {
         alphaCase = AC_LOWER;
-        //printf("Set to lower case\n");
+        #if defined VERBOSEKEYS_AUTOCASE
+          printf("setAlphaCaseToCapsLockState: Set to lower case\n");
+        #endif
       }
     }
     showHideAlphaMode();
@@ -746,55 +752,47 @@ if(!catalog) {
   #endif
 }
 
-
 //New ALPHA SECTION
 int16_t ll;
+
 if(   catalog 
    || calcMode == CM_AIM 
    || calcMode == CM_EIM 
    ||(calcMode == CM_PEM    && getSystemFlag(FLAG_ALPHA)) 
    ||(calcMode == CM_ASSIGN && getSystemFlag(FLAG_ALPHA))
    ||(tam.mode == TM_LABEL  && getSystemFlag(FLAG_ALPHA))  ) {
-  switch(event_keyval) {
-    case '`':  //96
-      sendKey(ITM_NQUOTE);
-      goto noMore;
-    case '*':
-      sendKey((getSystemFlag(FLAG_MULTx) ? ITM_CROSS : ITM_DOT));
-      goto noMore;
-    default:
-//      if(32 <= event_keyval && event_keyval <= 255) {
-//
-//        ll = asciiToItem((uint8_t)event_keyval);
-//        if(ll != 0) {
-//          sendKey(ll);
-//          goto noMore;
-//        }
-//        else {
-//          goto nextchar;
-//        }
-//
-//      } 
-//      else {
-//        nextchar:
 
-        ll = _keyCodeFromGdkKey(event_keyval);
-printf("_keyCodeFromGdkKey -> sendkey: %i\n",ll);
-        if(ll != 0) {
-          sendKey(ll);
-          noMore:
-          screenUpdatingMode = SCRUPD_AUTO;
-          refreshScreen(8);
-          return false;
-        }
-  
-//      }
+    //old way
+    //  if(32 <= event_keyval && event_keyval <= 255) {
+    //    ll = asciiToItem((uint8_t)event_keyval);
+    //    if(ll > 0) {
+    //      sendKey(ll);
+    //      screenUpdatingMode = SCRUPD_AUTO;
+    //      refreshScreen(8);
+    //      return false;
+    //    }
+    //    else {
+    //      goto nextchar;
+    //    }
+    //  }
+
+    ll = _keyCodeFromGdkKey(event_keyval);
+    if(ll > 0) {
+      sendKey(ll);
+      screenUpdatingMode = SCRUPD_AUTO;
+      refreshScreen(8);
+      return false;
     }
+    else if(ll == -1) {   //do not continue looking for keys
+      return false;
+    }
+
     #if defined(VERBOSEKEYS)
       printf("------------------------ Done new alpha detection, skipping to rest of key detections\n");        
     #endif
   }
 
+  //nextchar:
 
     //#if defined(VERBOSEKEYS)
       printf("Continue with old key detection\n");
@@ -4232,9 +4230,8 @@ static int16_t _getGdkKeyItem (uint32_t gdkKey) {
 }
 
 
-static int16_t _getDeadKeyItem (int16_t itm) {
-int16_t item = itm;
-if(item == ITM_Q || item == ITM_q) item = GDK_KEY_dead_macron;
+static int16_t _getDeadKeyItem (int16_t item) {
+  //printf("::: _getDeadKeyItem %i\n",item);
   int16_t i=0;
   while(deadKeysMap[i].item != 0) {
     if(deadKeysMap[i].item == item) {
@@ -4270,7 +4267,7 @@ if(item == ITM_Q || item == ITM_q) item = GDK_KEY_dead_macron;
           return deadKeysMap[i].item_cedilla;
 
         case GDK_KEY_dead_stroke :
-          return deadKeysMap[i].item_ring;
+          return deadKeysMap[i].item_stroke;
 
         case GDK_KEY_dead_abovedot :
           return deadKeysMap[i].item_dot;
@@ -4282,10 +4279,32 @@ if(item == ITM_Q || item == ITM_q) item = GDK_KEY_dead_macron;
 }
 
 
-static int16_t _keyCodeFromGdkKey(uint32_t gdkKey) {
+static int16_t _keyCodeFromGdkKey(uint32_t gdkK) {
+    uint32_t gdkKey = gdkK;
     int16_t item;
 //  printf("**[DL]** _keyCodeFromGdkKey gdkKey %x capslock state %d\n", gdkKey, gdk_keymap_get_caps_lock_state(gdk_keymap_get_for_display(gdk_display_get_default())));
     setAlphaCaseToCapsLockState();
+    
+    if(testDeadKeys) {
+      switch(gdkKey) {
+        case '^' :
+          gdkKey = GDK_KEY_dead_circumflex;   // ^ circumflex test dead key resulting in a -> â
+          break;
+        case '`' :
+          gdkKey = GDK_KEY_dead_grave;        // ' grave test dead key resulting in a -> à
+          break;
+        case '\'' :
+          gdkKey = GDK_KEY_dead_acute;        // ` grave test dead key resulting in a -> á
+          break;
+        case '~' :
+          gdkKey = GDK_KEY_dead_tilde;        // ~ tilde above test dead key resulting in a -> ã
+          break;
+        case '/' :
+          gdkKey = GDK_KEY_dead_stroke;       // / slash test dead key resulting in O -> Ø
+          break;
+        default:;
+      }
+    }
     switch(gdkKey) {
       //dead keys detection
       case GDK_KEY_dead_macron  :
@@ -4300,10 +4319,30 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey) {
       case GDK_KEY_dead_cedilla :
       case GDK_KEY_dead_stroke :
       case GDK_KEY_dead_abovedot :
-        deadKey = gdkKey;
-        return 0;
+        if(deadKey != 0 && deadKey == gdkKey && testDeadKeys) {
+          deadKey = 0;
+          showHideAlphaMode();
+          refreshLcd(NULL);
+          goto cancelledDeadkey;
+        }
+        else {
+          deadKey = gdkKey;
+          showHideAlphaMode();
+          refreshLcd(NULL);
+          return -1;
+        }
       default:
-        item = _getGdkKeyItem(gdkKey);
+        cancelledDeadkey:
+
+        switch(gdkKey) {
+          case '`': item = ITM_NQUOTE; break;
+          case '*': item = ITM_PROD_SIGN; break;
+          default : item = _getGdkKeyItem(gdkKey); break;       //normal translation (also done by prior key code)
+          }
+        if(item == ITM_PROD_SIGN) {
+          item = (getSystemFlag(FLAG_MULTx) ? ITM_CROSS : ITM_DOT);
+        }
+
         if(item != 0) {
           if(deadKey != 0) {
             item = _getDeadKeyItem(item);

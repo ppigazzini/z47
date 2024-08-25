@@ -167,6 +167,12 @@
         config = 3;
       }
 
+      if(strcmp(argv[arg], "--deadtest") == 0) {
+        testDeadKeys = true;
+      }
+      if(strcmp(argv[arg], "--testdead") == 0) {
+        testDeadKeys = true;
+      }
 
     }
 
