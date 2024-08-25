@@ -4222,7 +4222,14 @@ const deadKeysMap_t deadKeysMap[] = {
 };
 
 
-static int16_t _getGdkKeyItem (uint32_t gdkKey) {
+static int16_t _getGdkKeyItem (uint32_t gdkK) {
+  uint32_t gdkKey = gdkK;
+  if('A' <= gdkK && gdkK <= 'Z' && alphaCase == AC_LOWER) {
+    gdkKey += (ITM_a - ITM_A);
+  }
+  else if('a' <= gdkK && gdkK <= 'z' && alphaCase == AC_UPPER) {
+    gdkKey -= (ITM_a - ITM_A);
+  }
   int16_t i=0;
   while(gdkKeyMap[i].item != 0) {
     if(gdkKeyMap[i].gdkKey == gdkKey) {
@@ -4333,10 +4340,10 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkK) {
               gdkKey = '^';  // circumflex test dead key
               break;
             case GDK_KEY_dead_grave :
-              gdkKey = '\''; // grave test dead key
+              gdkKey = '`'; // grave test dead key
               break;
             case GDK_KEY_dead_acute :
-              gdkKey = '`';  // grave test dead key
+              gdkKey = '\'';  // grave test dead key
               break;
             case GDK_KEY_dead_tilde :
               gdkKey = '~';  // tilde above test dead key
