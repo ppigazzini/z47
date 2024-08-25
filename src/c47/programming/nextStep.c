@@ -475,6 +475,9 @@ void fnSst(uint16_t unusedButMandatoryParameter) {
     _sstInPem();
   }
   else {
+    temporaryInformation = TI_NO_INFO;
+    refreshRegisterLine(REGISTER_T);     // Clear previous VIEW or AVIEW data, if any
+    refreshRegisterLine(REGISTER_Z);     // Clear previous test result, if any
     _showStep();
     if(currentInputVariable != INVALID_VARIABLE) {
       if(currentInputVariable & 0x8000) {
@@ -484,7 +487,8 @@ void fnSst(uint16_t unusedButMandatoryParameter) {
       currentInputVariable = INVALID_VARIABLE;
     }
     dynamicMenuItem = -1;
-    runProgram(true, INVALID_VARIABLE);
+    programRunStop = PGM_SINGLE_STEP;
+    //runProgram(true, INVALID_VARIABLE); // [DL] Not executed here, delayed until SST key released
   }
 }
 

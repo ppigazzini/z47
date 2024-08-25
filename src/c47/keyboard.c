@@ -26,6 +26,7 @@
 #include "mathematics/reToCx.h"
 #include "memory.h"
 #include "plotstat.h"
+#include "programming/lblGtoXeq.h"
 #include "programming/manage.h"
 #include "programming/nextStep.h"
 #include "programming/programmableMenu.h"
@@ -614,7 +615,9 @@ bool_t lowercaseselected;    //the only place that this is set, is in processKey
                     #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
                       printf("refreshScreen(): calcMode=%u End of processAimInput\n", calcMode);
                     #endif //PC_BUILD
-      refreshScreen(101);
+
+      screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
+      //refreshScreen(101);
     }
 
                     #if defined(PC_BUILD)
@@ -1195,7 +1198,7 @@ releaseOverride = false;
             addItemToBuffer(item);
           }
           else if(item > 0) { // function
-            if(calcMode == CM_NORMAL && (
+            if(calcMode == CM_NORMAL && (                          //switch off BASE mode using the HEX/DEC... buttons
                 (lastIntegerBase ==  2 && item == ITM_2BIN) ||
                 (lastIntegerBase ==  8 && item == ITM_2OCT) ||
                 (lastIntegerBase == 10 && item == ITM_2DEC) ||
@@ -1559,7 +1562,17 @@ releaseOverride = false;
       result = shiftF ? key->fShifted :
                shiftG ? key->gShifted :
                         key->primaryAim;
+      switch(result){
+        case ITM_AIM:
+        case ITM_SHIFTf:
+        case ITM_SHIFTg:
+        case KEY_fg:
+          result = ITM_NOP;
+          break;
+        default:break;
+      }
       //printf(">>> ±±±§§§ keys key:%d result:%d Calmode:%d, nimbuffer:%s, lastbase:%d, nimnumberpart:%d\n",key_no, result, calcMode,nimBuffer,lastIntegerBase, nimNumberPart);
+      Check_MultiPresses(&result, key_no);        //JM
       return result;
     }
     else                                                                                                                        //JM^^
@@ -1691,15 +1704,16 @@ releaseOverride = false;
     uint8_t circPtr4 = 0;
     uint8_t circPtr5 = 0;
     TO_QSPI const circ_t circ[] = {               //Circular special command buffer - key numbers, arranged in columns for each command
-                  {7 , 7 , 2 , 23, 2 , 2 , 2 },   //0
-                  {18, 20, 23, 23, 23, 23, 23},   //1
-                  {30, 30, 18, 18, 18, 18, 18},   //2
-                  {24, 24, 12, 12, 9 , 20, 13},   //3
-                  {12, 12, 29, 29, 13, 9 , 4 },   //4
-                  {28, 28, 33, 33, 0,  0 , 14},   //5
-                  {20, 20, 29, 29, 0 , 0 , 24},   //6
-                  {18, 18, 30, 30, 0 , 0 , 0 },   //7
-                  {29, 29, 0 , 0 , 0 , 0 , 0 },   //8
+                                                  //       R47   R47
+                  {7 , 7 , 2 , 23, 2 , 2 , 2 },   //0    H  H  C  R  C  C  C
+                  {18, 20, 23, 23, 23, 23, 23},   //1    P  P  4  4  4  4  4
+                  {30, 30, 18, 18, 18, 18, 18},   //2    3  3  7  7  7  7  7
+                  {24, 24, 12, 12, 9 , 20, 13},   //3    5  5  EN EN J  R  M
+                  {12, 12, 29, 29, 13, 9 , 4 },   //4    EN EN 2  2  M  J  E
+                  {28, 28, 33, 33, 0,  0 , 14},   //5    1  1  0  0        N
+                  {20, 20, 29, 29, 0 , 0 , 24},   //6    9  9  2  2        U
+                  {18, 18, 30, 30, 0 , 0 , 0 },   //7    7  7  3  3
+                  {29, 29, 0 , 0 , 0 , 0 , 0 },   //8    2  2
                   {0 , 0 , 0 , 0 , 0 , 0 , 0 },   //9
                 };
 
@@ -2099,6 +2113,10 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
       return;
     }
 
+      screenUpdatingMode |= SCRUPD_MANUAL_STATUSBAR;
+      screenUpdatingMode |= SCRUPD_MANUAL_MENU;
+      screenUpdatingMode &= ~SCRUPD_SKIP_MENU_ONE_TIME;
+
       if(calcMode == CM_ASSIGN && itemToBeAssigned != 0 && tamBuffer[0] == 0) {
         assignToKey((char *)data);
         if(previousCalcMode == CM_AIM) {             //vv JM RETURN TO AIM MODE
@@ -2144,6 +2162,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
         if(item < 0) {
           setCurrentUserMenu(item, funcParam);
           showSoftmenu(item);
+          screenUpdatingMode &= ~SCRUPD_MANUAL_MENU;
             //printf("AA2 allowShiftsToClearError=%u !checkShifts=%u screenUpdatingMode=%u temporaryInformation=%u\n",allowShiftsToClearError, !checkShifts((char *)data), screenUpdatingMode, temporaryInformation);
         }
         else {
@@ -2216,6 +2235,11 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
 //              screenUpdatingMode = SCRUPD_AUTO;
               refreshScreen(137);
             }
+
+            if(CM_NIM && (item == ITM_AIM || item == ITM_XEQ || item == ITM_GTO) && nimNumberPart == NP_INT_BASE && aimBuffer[strlen(aimBuffer) - 1] == '#') {  //do not allow shortinteger base change input to exit when alpha is pressed
+              goto RELEASE_END;
+            }
+
             runFunction(item);
 
                     #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
@@ -2223,6 +2247,11 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
                     #endif // PC_BUILD &&MONITOR_CLRSCR
           }
         }
+      }
+
+      if(programRunStop == PGM_SINGLE_STEP) {     // Key pressed was SST
+        programRunStop = PGM_STOPPED;
+        runProgram(true, INVALID_VARIABLE);       // Execute one program step after key released
       }
 
 //  #if defined(DMCP_BUILD)
@@ -2242,7 +2271,8 @@ RELEASE_END:
                     #endif //PC_BUILD
 
         refreshScreen(117);    //TODO 2023-04-15 check here. It needs to be changed not to always refresh the screen.
-                               //2023-06-26 improved by organizing the SCRUDP flags better
+                               //2023-06-26 improved by organizing the SCRUPD flags better
+                               //2024-08-12 further improved by managing SCRUPD flags better
 
       }
       screenUpdatingMode &= ~SCRUPD_ONE_TIME_FLAGS;
@@ -2289,7 +2319,7 @@ RELEASE_END:
   void processKeyAction(int16_t item) {
 
                     #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
-                      printf(">>>> processKeyAction: calcMode=%u item=%d  programRunStop=%d lastErrorCode=%u SHOWMODE=%u\n",calcMode, item, programRunStop, lastErrorCode, SHOWMODE);
+                      printf(">>>> processKeyAction: calcMode=%u item=%d  programRunStop=%d lastErrorCode=%u SHOWMODE=%u screenUpdatingMode=%i\n",calcMode, item, programRunStop, lastErrorCode, SHOWMODE, screenUpdatingMode);
                     #endif // PC_BUILD &&MONITOR_CLRSCR
 
     keyActionProcessed = false;
@@ -2378,7 +2408,7 @@ RELEASE_END:
             if(!keyActionProcessed) {    //JMvv
               addItemToBuffer(ITM_UP_ARROW);    //Let the arrows produce arrow up and arrow down in ALPHA mode
             }                            //JM^^
-            if(calcMode != CM_LISTXY && (currentSoftmenuScrolls() || calcMode != CM_NORMAL || temporaryInformation != TI_NO_INFO)) {
+            if(calcMode != CM_LISTXY && (currentSoftmenuScrolls() || (calcMode != CM_NORMAL && calcMode != CM_PEM) || temporaryInformation != TI_NO_INFO)) {
               refreshScreen(118);
             }
             keyActionProcessed = true;
@@ -2403,7 +2433,7 @@ RELEASE_END:
             if(!keyActionProcessed){     //JM
               addItemToBuffer(ITM_DOWN_ARROW);    //Let the arrows produce arrow up and arrow down in ALPHA mode
             }                            //JM^^
-            if(calcMode != CM_LISTXY && (currentSoftmenuScrolls() || calcMode != CM_NORMAL  || temporaryInformation != TI_NO_INFO)) {
+            if(calcMode != CM_LISTXY && (currentSoftmenuScrolls() || (calcMode != CM_NORMAL && calcMode != CM_PEM) || temporaryInformation != TI_NO_INFO)) {
               refreshScreen(119);
             }
             keyActionProcessed = true;
@@ -2426,15 +2456,11 @@ RELEASE_END:
             fnKeyExit(NOPARAM);
             keyActionProcessed = true;            //Removed to force EXIT on the RELEASE cycle to make it do fnKeyExit later to allow NOP
           }
-          if(calcMode == CM_PEM) {
+          else if(calcMode == CM_PEM) {
             if(getSystemFlag(FLAG_ALPHA)) {          //close AIM in PEM
               fnKeyExit(NOPARAM);
+              keyActionProcessed = true;
             }
-            // if(menu(0) != -MNU_PFN) {
-            //   showSoftmenu(-MNU_PFN);
-            //   hourGlassIconEnabled = false;
-            //   keyActionProcessed = true;
-            // }
           }
           if((temporaryInformation != TI_NO_INFO) && (calcMode != CM_CONFIRMATION)) {
             temporaryInformation = TI_NO_INFO;
@@ -2447,7 +2473,10 @@ RELEASE_END:
         case ITM_op_j_pol:
         case ITM_op_j:
         case ITM_CC:
-        case ITM_dotD: {
+        {
+          #if defined(PC_BUILD)
+            //printf("Monitor: item=%i calcMode=%i nimNumberPart=%i char=%c lastIntegerBase=%i\n",item, calcMode, nimNumberPart, aimBuffer[strlen(aimBuffer) - 1], lastIntegerBase);
+          #endif
           if(calcMode == CM_ASSIGN) {
             if(itemToBeAssigned == 0) {
               itemToBeAssigned = item;
@@ -2751,7 +2780,58 @@ RELEASE_END:
                   if(item == ITM_toINT || item == ITM_HASH_JM) {
                     resetShiftState();
                   }
-                  addItemToNimBuffer(item);
+
+                  if(calcMode == CM_NIM && (item == ITM_RI || item == ITM_dotD) && (nimNumberPart == NP_INT_10 || nimNumberPart == NP_INT_16) && lastIntegerBase > 0) {
+                    //printf("1. Change NIM to LI\n");
+                    lastIntegerBase = 0;
+                    screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
+                    resetShiftState();
+                    screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
+                    screenUpdatingMode &= ~SCRUPD_SKIP_STACK_ONE_TIME;
+                    keyActionProcessed = true;
+                  }
+                  else if(calcMode == CM_NIM && (item == ITM_RI || item == ITM_dotD) && nimNumberPart == NP_INT_BASE && aimBuffer[strlen(aimBuffer) - 1] == '#') {
+                    //printf("2. NIM remove base # to LI B\n");
+                    lastIntegerBase = 0;
+                    screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
+                    resetShiftState();
+                    addItemToNimBuffer(ITM_BACKSPACE);
+                    keyActionProcessed = true;
+                  }
+                  else if(calcMode == CM_NIM && item == ITM_HASH_JM && nimNumberPart == NP_INT_BASE && aimBuffer[strlen(aimBuffer) - 1] == '#') {
+                    //printf("3. NIM remove base # to LI A\n");
+                    screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
+                    resetShiftState();
+                    screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
+                    screenUpdatingMode &= ~SCRUPD_SKIP_STACK_ONE_TIME;
+                    addItemToNimBuffer(ITM_BACKSPACE);
+                    keyActionProcessed = true;
+                  }
+                  else if(calcMode == CM_NIM && item == ITM_PERIOD && nimNumberPart == NP_INT_BASE && aimBuffer[strlen(aimBuffer) - 1] == '#') {
+                    //printf("4. NIM replace base # with .\n");
+                    lastIntegerBase = 0;
+                    screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
+                    resetShiftState();
+                    addItemToNimBuffer(ITM_BACKSPACE);
+                    addItemToNimBuffer(ITM_PERIOD);
+                    refreshRegisterLine(REGISTER_X);
+                    keyActionProcessed = true;
+                  }
+                  else if(calcMode == CM_NIM && item == ITM_HASH_JM && nimNumberPart == NP_REAL_FLOAT_PART && aimBuffer[strlen(aimBuffer) - 1] == '.') {
+                    //printf("5. NIM replace . with #\n");
+                    lastIntegerBase = 0;
+                    screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
+                    resetShiftState();
+                    addItemToNimBuffer(ITM_BACKSPACE);
+                    addItemToNimBuffer(ITM_toINT);
+                    refreshRegisterLine(REGISTER_X);
+                    keyActionProcessed = true;
+                  }
+
+                  else {
+                    addItemToNimBuffer(item);
+                  }
+
                   if( ((ITM_0 <= item && item <= ITM_9) || item == ITM_toINT || item == ITM_HASH_JM || item == ITM_ms || ((ITM_A <= item && item <= ITM_F) && (lastIntegerBase >= 2) && topHex) ) || item == ITM_CHS || item == ITM_EXPONENT || item == ITM_PERIOD) {   //JMvv Direct keypresses; //JMNIM Added direct A-F for hex entry
                     refreshRegisterLine(REGISTER_X);
                   }                                                                                   //JM^^
@@ -3191,6 +3271,7 @@ RELEASE_END:
 
       setCatalogLastPos();
     }
+    doRefreshSoftMenu = true;
                     #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
                       printf("#### menuUp: screenUpdatingMode=%u\n",screenUpdatingMode);
                     #endif // PC_BUILD &&MONITOR_CLRSCR
@@ -3235,6 +3316,7 @@ RELEASE_END:
       }
       setCatalogLastPos();
     }
+    doRefreshSoftMenu = true;
                     #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
                       printf("#### menuDown: screenUpdatingMode=%u\n",screenUpdatingMode);
                     #endif // PC_BUILD &&MONITOR_CLRSCR
@@ -3587,7 +3669,11 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
             stayInAIM(); //JM
           }
           screenUpdatingMode &= ~SCRUPD_MANUAL_MENU;
-          if(temporaryInformation == TI_NO_INFO) {
+
+          if(getRegisterDataType(REGISTER_X) == dtShortInteger) {
+            screenUpdatingMode &= ~SCRUPD_MANUAL_MENU;
+          }
+          else if(temporaryInformation == TI_NO_INFO) {
             screenUpdatingMode |= SCRUPD_SKIP_STACK_ONE_TIME;
           }
         }
@@ -3840,8 +3926,9 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
       }
     }
 
-    last_CM = 253; //Force redraw   //JMvvv Show effect of Exit immediately
-    refreshScreen(127);
+    last_CM = calcMode; //ignore this method of prioritising refreshes. This method is sunsetting.
+    screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
+//    refreshScreen(127);
     return;
 
 undo_disabled:

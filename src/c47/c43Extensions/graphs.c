@@ -267,7 +267,6 @@ void fnPlotSQ(uint16_t unusedButMandatoryParameter) {
   }
 
   #endif // !TESTSUITE_BUILD
-//  doRefreshSoftMenu = true;             //Plot graph is part of refreshScreen
 }
 
 
