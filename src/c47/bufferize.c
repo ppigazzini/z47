@@ -863,6 +863,7 @@ typedef struct {
 
 
   void addItemToNimBuffer(int16_t item) {
+    //printf("addItemToNimBuffer: %i %s nimNumberPart=%i %s\n",item, indexOfItems[abs(item)].itemCatalogName, nimNumberPart, aimBuffer);
     int16_t lastChar, index;
     uint8_t savedNimNumberPart;
     bool_t done;
@@ -1555,7 +1556,7 @@ typedef struct {
         break;
       }
 
-      //    C47                                //R47
+      //  key C47                                //R47                       //BASE mode shortcuts
       //  1:  B = ITM_1ONX            = BIN      B = ITM_SQUAREROOTX
       //  3:  D = ITM_LOG = ITM_ENTER = DEC      D = ITM_YX
       //  7:  H = ITM_RCL             = HEX      H = ITM_RCL
@@ -1565,13 +1566,9 @@ typedef struct {
       // F not active in NIM, per definition not possible if a period is in the input string.
 
       //JM Only works in direct NIM, that is only when the input buffer already contains #
-      case ITM_1ONX: { // B for binary base
-      case ITM_SQUAREROOTX: //R47
-        if(calcModel == USER_C47 && item == ITM_SQUAREROOTX) {
-          keyActionProcessed = false;
-          break;
-        }
-        if(calcModel != USER_C47 && item == ITM_1ONX) {
+      case ITM_1ONX: {      // C47: B for binary base
+      case ITM_SQUAREROOTX: // R47:
+        if((!isR47FAM && item == ITM_SQUAREROOTX) || (isR47FAM && item == ITM_1ONX)) {
           keyActionProcessed = false;
           break;
         }
@@ -1585,11 +1582,13 @@ typedef struct {
         break;
       }
 
-      case ITM_ENTER:                                  //JM DEFAULT BASE SETTING 10
-      case ITM_LOG10:         // D for decimal base          //JM
-      case ITM_YX: { //R47
-        if(calcModel == USER_C47 && item == ITM_YX) break;
-        if(calcModel != USER_C47 && item == ITM_LOG10) break;
+      case ITM_ENTER:       // D: for decimal base          //JM
+      case ITM_LOG10:       // C47
+      case ITM_YX: {        // R47
+        if((!isR47FAM && item == ITM_YX) || (isR47FAM && item == ITM_LOG10)) {
+          keyActionProcessed = false;
+          break;
+        }
         if(INTEGERSHORTCUTS && nimNumberPart == NP_INT_BASE && aimBuffer[strlen(aimBuffer) - 1] == '#') {
           strcat(aimBuffer, "10");
           goto addItemToNimBuffer_exit;
@@ -2256,7 +2255,9 @@ typedef struct {
         break;
       case ID_DP:                                  //   Do Real default for DP
       case ID_CPXDP:                               //                       CPX
-        nimNumberPart = NP_REAL_FLOAT_PART;
+        if(lastIntegerBase == 0) {
+          nimNumberPart = NP_REAL_FLOAT_PART;
+        }
         break;
       default:;
       }
@@ -2465,7 +2466,7 @@ typedef struct {
           }
           else if(nimNumberPart == NP_REAL_FLOAT_PART || nimNumberPart == NP_REAL_EXPONENT) {
 
-              if(Input_Default == ID_CPXDP) {                                         //JM Input default type
+              if(lastIntegerBase == 0 && Input_Default == ID_CPXDP) {                                         //JM Input default type
                 reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone); //JM Input default type
                 stringToReal34(aimBuffer, REGISTER_REAL34_DATA(REGISTER_X));          //JM Input default type
                 stringToReal34("0", REGISTER_IMAG34_DATA(REGISTER_X));                //JM Input default type

@@ -192,7 +192,7 @@ bool_t                HOME3;                                   //JM HOME Create 
 bool_t                MYM3;                                    //JM HOME Create a flag to enable or disable triple shift MYM3. Create a flag to enable or disable HOME TIMER CANCEL.
 bool_t                ShiftTimoutMode;                         //JM SHIFT Create a flag to enable or disable SHIFT TIMER CANCEL.
 bool_t                BASE_HOME;                               //JM BASEHOME
-int16_t               Norm_Key_00_VAR;                         //JM USER NORMAL
+normKey_t             Norm_Key_00;                             //JM USER NORMAL
 uint8_t               Input_Default;                           //JM Input Default
 float                 graph_xmin;                              //JM Graph
 float                 graph_xmax;                              //JM Graph
@@ -313,7 +313,7 @@ size_t                 c47MemInBlocks;
 
 real_t                 SAVED_SIGMA_LASTX;
 real_t                 SAVED_SIGMA_LASTY;
-int8_t                 SAVED_SIGMA_LAc1;
+int8_t                 SAVED_SIGMA_lastAddRem;
 
 uint16_t               lrSelectionHistobackup;
 uint16_t               lrChosenHistobackup;

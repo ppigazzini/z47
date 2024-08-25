@@ -207,7 +207,12 @@ void fnTimerEndOfActivity(uint16_t param) {
 
 #if defined(DMCP_BUILD)
   if(skippedStackLines && !getSystemFlag(FLAG_USB)) {       //update screen after 6 sec timout, to restore the half-updated screen in battery mode. See refreshRegisterLine() in screen.c
-    screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
+    if(calcMode == CM_PEM) {
+      screenUpdatingMode = SCRUPD_AUTO;
+    }
+    else {
+      screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
+    }
     refreshScreen(32);
   }
 #endif // DMCP_BUILD
@@ -579,7 +584,7 @@ printf("fnAddTimerApp\n");
   liftStack();
   realToReal34(&tmp, REGISTER_REAL34_DATA(REGISTER_X));
   fnSwapXY(NOPARAM);                                       //swapped around to be able to plot correctly
-  fnSigma(1);
+  fnSigmaAddRem(SIGMA_PLUS);
 
   refreshScreen(30);
   #endif // !TESTSUITE_BUILD
@@ -608,7 +613,7 @@ printf("fnAddLapTimerApp\n");
   liftStack();
   realToReal34(&tmp, REGISTER_REAL34_DATA(REGISTER_X));
   fnSwapXY(NOPARAM);                                       //swapped around to be able to plot correctly
-  fnSigma(1);
+  fnSigmaAddRem(SIGMA_PLUS);
 
 //  fnUpTimerApp();
 

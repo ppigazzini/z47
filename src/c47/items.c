@@ -243,10 +243,11 @@ bool_t itemNotAvail(int16_t itemNr) {
     }
     else {
       force_refresh(timed); //Added this to enable 0.5 second refresh during running
-      #if (defined(PC_BUILD) && VERBOSE_LEVEL > -1) || defined(DEBUG_EXECUTE)
-        printf("   >>>   reallyRunFunction: §%i§%s§%s§\n",func, indexOfItems[abs(func)].itemCatalogName, indexOfItems[abs(func)].itemSoftmenuName);
-      #endif // PC_BUILD
     }
+
+    #if defined(PC_BUILD) || defined(DEBUG_EXECUTE)
+      printf("   >>>   reallyRunFunction: § %i § %s § %s § %i\n",func, indexOfItems[abs(func)].itemCatalogName, indexOfItems[abs(func)].itemSoftmenuName, param);
+    #endif // PC_BUILD
 
 
     if((programRunStop != PGM_RUNNING || timeLastOp0 == 0)) {               //The first manual command including XEQ (re)starts the timer by setting timeLastOp0
@@ -327,10 +328,12 @@ bool_t itemNotAvail(int16_t itemNr) {
     else
     if(calcMode == CM_NORMAL) {
       bool_t inMatrixMenu = (tam.mode == 0 ? softmenu[softmenuStack[0].softmenuId].menuItem : softmenu[softmenuStack[1].softmenuId].menuItem) == -MNU_MATX;
-      bool_t inRange = (param <= LAST_LETTERED_REGISTER ||
-                       (FIRST_STAT_REGISTER >= param && param <= LAST_STAT_REGISTER) ||
-                       (FIRST_SPARE_REGISTER >= param && param <= LAST_SPARE_REGISTER));
-      bool_t isMatrix = inRange ? (getRegisterDataType(param) != dtReal34Matrix && getRegisterDataType(param) != dtComplex34Matrix) : false;
+      bool_t inRegisterRange = (param <= LAST_LETTERED_REGISTER ||
+                       (FIRST_STAT_REGISTER  <= param && param <= LAST_STAT_REGISTER) ||
+                       (FIRST_SPARE_REGISTER <= param && param <= LAST_SPARE_REGISTER));
+      bool_t inReservedRange =  (FIRST_NAMED_RESERVED_VARIABLE <= param && param <= LAST_RESERVED_VARIABLE);
+      bool_t inNameRegisterRange =  (FIRST_NAMED_VARIABLE <= param && param <= LAST_NAMED_VARIABLE);
+      bool_t isMatrix = inRegisterRange ? (getRegisterDataType(param) != dtReal34Matrix && getRegisterDataType(param) != dtComplex34Matrix) : false;
       switch(func) {
         case ITM_RCL_FV      :
         case ITM_RCL_IPonA   :
@@ -341,7 +344,8 @@ bool_t itemNotAvail(int16_t itemNr) {
         case ITM_RCL_PV      : temporaryInformation = TI_STORCL; break;
         case ITM_STO         :
         case ITM_RCL         : temporaryInformation = ((param == REGISTER_I || param == REGISTER_J) && inMatrixMenu) ? TI_IJ : \
-                               (isMatrix) ? TI_STORCL : TI_NO_INFO ; break;
+                               (isMatrix) ? TI_STORCL : \
+                               (inReservedRange || inRegisterRange || inNameRegisterRange) ? TI_STORCL : TI_NO_INFO ; break;
         case ITM_RCLELPLUS   :
         case ITM_RCLEL       :
         case ITM_STOELPLUS   :
@@ -458,39 +462,53 @@ bool_t itemNotAvail(int16_t itemNr) {
     #endif // PC_BUILD
 
     if(programRunStop != PGM_RUNNING) {
-      if(func == ITM_RCL && dynamicMenuItem > -1 && calcMode != CM_PEM) {
+      if(func == ITM_RCL && dynamicMenuItem > -1) {
         char *varCatalogItem = dynmenuGetLabel(dynamicMenuItem);
-        calcRegister_t regist = findNamedVariable(varCatalogItem);
-        if(regist != INVALID_VARIABLE) {
-          reallyRunFunction(func, regist);
+        if (strcmp(varCatalogItem, "RCL") != 0) {
+          calcRegister_t var = findNamedVariable(varCatalogItem);
+          if(var != INVALID_VARIABLE) {
+            if(calcMode == CM_PEM) {
+              insertUserItemInProgram(func, varCatalogItem);
+            }
+            else {
+              reallyRunFunction(func, var);
+            }
+          }
+          else {
+            displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE, REGISTER_X);
+            #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+              sprintf(errorMessage, "string '%s' is not a named variable", varCatalogItem);
+              moreInfoOnError("In function runFunction:", errorMessage, NULL, NULL);
+            #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+          }
+          return;
         }
-        else {
-          displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE, REGISTER_X);
-          #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-            sprintf(errorMessage, "string '%s' is not a named variable", varCatalogItem);
-            moreInfoOnError("In function runFunction:", errorMessage, NULL, NULL);
-          #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-        }
-        return;
       }
-      else if(func == ITM_XEQ && dynamicMenuItem > -1 && calcMode != CM_PEM) {
+      if(func == ITM_XEQ && dynamicMenuItem > -1) {
         char *varCatalogItem = dynmenuGetLabel(dynamicMenuItem);
-        calcRegister_t regist = findNamedLabel(varCatalogItem);
-        if(regist != INVALID_VARIABLE) {
-          reallyRunFunction(func, regist);
+        if (strcmp(varCatalogItem, "XEQ") != 0) {
+          calcRegister_t label = findNamedLabel(varCatalogItem);
+          if(label != INVALID_VARIABLE) {
+            if(calcMode == CM_PEM) {
+              insertUserItemInProgram(func, varCatalogItem);
+            }
+            else {
+              reallyRunFunction(func, label);
+            }
+          }
+          else {
+            displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
+            #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+              sprintf(errorMessage, "string '%s' is not a named label", varCatalogItem);
+              moreInfoOnError("In function runFunction:", errorMessage, NULL, NULL);
+            #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+          }
+          return;
         }
-        else {
-          displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
-          #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-            sprintf(errorMessage, "string '%s' is not a named label", varCatalogItem);
-            moreInfoOnError("In function runFunction:", errorMessage, NULL, NULL);
-          #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-        }
-        return;
       }
-      else if(tam.mode == 0 && TM_VALUE <= indexOfItems[func].param && indexOfItems[func].param <= TM_CMP && (calcMode != CM_PEM || aimBuffer[0] == 0 || nimNumberPart != NP_INT_BASE)) {
+      if(tam.mode == 0 && TM_VALUE <= indexOfItems[func].param && indexOfItems[func].param <= TM_CMP && (calcMode != CM_PEM || aimBuffer[0] == 0 || nimNumberPart != NP_INT_BASE)) {
         #if defined(VERBOSEKEYS)
-          printf("itmes.c: runfunction (before tamEnterMode): %i, %s\n", softmenu[softmenuStack[0].softmenuId].menuItem, indexOfItems[-softmenu[softmenuStack[0].softmenuId].menuItem].itemSoftmenuName);
+          printf("items.c: runfunction (before tamEnterMode): %i, %s\n", softmenu[softmenuStack[0].softmenuId].menuItem, indexOfItems[-softmenu[softmenuStack[0].softmenuId].menuItem].itemSoftmenuName);
         #endif // VERBOSEKEYS
 
 
@@ -509,7 +527,7 @@ bool_t itemNotAvail(int16_t itemNr) {
         return;
       }
       bool_t doNotAddStep = (func == ITM_EXIT1 || func == ITM_CLRMOD || func == ITM_SNAP || func == ITM_NOP || func == ITM_BASEMENU) && currentKeyCode == 32;                  // longpress commands not to be added
-      if(calcMode == CM_PEM && !tam.mode && !isFunctionItemAMenu(func) && (!(catalog && catalog != CATALOG_MVAR && !fnKeyInCatalog)) && !doNotAddStep) {   // && func != ITM_EXIT1 && func != ITM_CLRMOD) {  //change to exclude ITM_EXIT1 for PEM
+      if(calcMode == CM_PEM && !tam.mode && (!(catalog && catalog != CATALOG_MVAR && !fnKeyInCatalog)) && !doNotAddStep) {
         addStepInProgram(func);
         return;
       }
@@ -718,7 +736,7 @@ bool_t itemNotAvail(int16_t itemNr) {
   void fnChangeBase                (uint16_t unusedButMandatoryParameter) {}
   void fnDivide                    (uint16_t unusedButMandatoryParameter) {}
   void fnAdd                       (uint16_t unusedButMandatoryParameter) {}
-  void fnSigma                     (uint16_t unusedButMandatoryParameter) {}
+  void fnSigmaAddRem               (uint16_t unusedButMandatoryParameter) {}
   void fnXEqualsTo                 (uint16_t unusedButMandatoryParameter) {}
   void fnXNotEqual                 (uint16_t unusedButMandatoryParameter) {}
   void fnXAlmostEqual              (uint16_t unusedButMandatoryParameter) {}
@@ -1786,8 +1804,8 @@ TO_QSPI const item_t indexOfItems[] = {
 
 
 // Statistical sums
-/*  433 */  { fnSigma,                      1,                           STD_SIGMA "+",                                 STD_SIGMA "+",                                 (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_DISABLED  | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
-/*  434 */  { fnSigma,                      2,                           STD_SIGMA "-",                                 STD_SIGMA "-",                                 (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_DISABLED  | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
+/*  433 */  { fnSigmaAddRem,                SIGMA_PLUS,                  STD_SIGMA "+",                                 STD_SIGMA "+",                                 (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_DISABLED  | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
+/*  434 */  { fnSigmaAddRem,                SIGMA_MINUS,                 STD_SIGMA "-",                                 STD_SIGMA "-",                                 (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_DISABLED  | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /*  435 */  { fnStatSum,                    0,                           "n" STD_SIGMA,                                 "n",                                           (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /*  436 */  { fnStatSum,                    SUM_X,                       STD_SIGMA "x",                                 STD_SIGMA "x",                                 (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /*  437 */  { fnStatSum,                    SUM_Y,                       STD_SIGMA "y",                                 STD_SIGMA "y",                                 (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
@@ -3483,7 +3501,7 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 2100 */  { fnCvtGradRad,                 multiply,                    "grad" STD_RIGHT_ARROW "rad",                  "grad" STD_RIGHT_ARROW "rad",                  (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /* 2101 */  { fnCvtGradRad,                 divide,                      "rad" STD_RIGHT_ARROW "grad",                  "rad" STD_RIGHT_ARROW "grad",                  (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /* 2102 */  { itemToBeCoded,                NOPARAM,                     "TRG",                                         "TRG",                                         (0 << TAM_MAX_BITS) |     0, CAT_MENU | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_NONE         },
-/* 2103 */  { itemToBeCoded,                NOPARAM,                     "2103",                                        "2103",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 2103 */  { itemToBeCoded,                NOPARAM,                     "TRG" STD_ELLIPSIS,                            "TRG" STD_ELLIPSIS,                            (0 << TAM_MAX_BITS) |     0, CAT_MENU | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_NONE         },
 /* 2104 */  { fnKeysManagement,             USER_MC47,                   "M.C47",                                       "M.C47",                                       (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2105 */  { fnKeysManagement,             USER_MR47,                   "M.R47",                                       "M.R47",                                       (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2106 */  { fnKeysManagement,             USER_MSAV,                   "M.SAV",                                       "M.SAV",                                       (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },

@@ -11,7 +11,7 @@
 // JM VARIOUS OPTIONS
 //*********************************
 
-#define VERSION1 "0.109.02.05"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
+#define VERSION1 "0.109.02.06a3"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
 
 //Version history
 //0.109.02.00
@@ -20,6 +20,7 @@
 //0.109.02.03 this version skipped due to confusion.
 //0.109.02.04
 //0.109.02.05
+//0.109.02.05B for bugfixes
 
 
 
@@ -30,7 +31,7 @@
 #undef SAVE_SPACE_DM42_0
 #undef SAVE_SPACE_DM42_1
 #undef SAVE_SPACE_DM42_2
-#undef SAVE_SPACE_DM42_2LOAD 
+#undef SAVE_SPACE_DM42_2LOAD
 #undef SAVE_SPACE_DM42_3
 #undef SAVE_SPACE_DM42_4
 #undef SAVE_SPACE_DM42_6
@@ -43,7 +44,7 @@
 #undef SAVE_SPACE_DM42_11
 #undef SAVE_SPACE_DM42_12
 #undef SAVE_SPACE_DM42_12BESSEL
-#undef SAVE_SPACE_DM42_12ORTHO 
+#undef SAVE_SPACE_DM42_12ORTHO
 #undef SAVE_SPACE_DM42_13GRF
 #undef SAVE_SPACE_DM42_13GRF_JM
 #undef SAVE_SPACE_DM42_14
@@ -98,9 +99,9 @@
 
 //THESE ARE DMCP COMPILE OPTIONS FOR TWO FILE QSPI
   #if defined(TWO_FILE_PGM) //---------THESE ARE THE EXCLUSIONS TO MAKE IT FIT INTO AVAILABLE FLASH EVEN WHILE USING QSPI
-  //  #define SAVE_SPACE_DM42_2        //  4152 bytes // Without XEQM
-  //  #define SAVE_SPACE_DM42_2LOAD    //   288 bytes // Without XEQM AUTOLOAD DEMOS
-  //  #define SAVE_SPACE_DM42_6        //  1376 bytes // Without ELEC functions
+    #define SAVE_SPACE_DM42_2        //  4152 bytes // Without XEQM
+    #define SAVE_SPACE_DM42_2LOAD    //   288 bytes // Without XEQM AUTOLOAD DEMOS
+    #define SAVE_SPACE_DM42_6        //  1376 bytes // Without ELEC functions
   //  #define SAVE_SPACE_DM42_8        //  1856 bytes // Without Register Browser
   //  #define SAVE_SPACE_DM42_8FL      //  3280 bytes // Without Flag Browsers
   //  #define SAVE_SPACE_DM42_8ASN     //  1704 bytes // Without Assign Browser
@@ -115,7 +116,7 @@
   //  #define SAVE_SPACE_DM42_13GRF    // 17472 bytes // Without Solver & graphics & stat graphics
   //  #define SAVE_SPACE_DM42_13GRF_JM //  7520 bytes // Without More graphics
   //  #define SAVE_SPACE_DM42_14       //   184 bytes // Without Load programming sample programs testPgms
-  //  #define SAVE_SPACE_DM42_15       // 10056 bytes // Without all distributions, i.e. , cauchy, chi, expo, f, logis, t, weibull
+    #define SAVE_SPACE_DM42_15       // 10056 bytes // Without all distributions, i.e. , cauchy, chi, expo, f, logis, t, weibull
     #define SAVE_SPACE_DM42_16       //  2168 bytes // Without Norml distribution
       #define SAVE_SPACE_DM42_17       //  7448 bytes // Without Poisson/Hyper/Binomial/Geometrical distributions
   //  #define SAVE_SPACE_DM42_20_TIMER //  1232 bytes // Without STOPW
@@ -129,7 +130,7 @@
 #define MAXLINES 5                  // numner of equavalent lines in small font maximum that is allowed in entry. Entry is hardlocked to multiline 3 lines bif font, but this is still the limit. WP has 2 lines fixed small font.
 #define allowShowDigits false       // true to allow typing of double digits to get to register number nn in SHOW.
 #define SHOWLineSize    120         // maximum 250
-#define SHOWLineMax     (uint8_t )(TMP_STR_LENGTH / SHOWLineSize) 
+#define SHOWLineMax     (uint8_t )(TMP_STR_LENGTH / SHOWLineSize)
 
 #define LOW_GRAPH_ACC                                                                     //Lowered graph accuracy for EQN graphs
 //#undef LOW_GRAPH_ACC
@@ -173,7 +174,8 @@
   #undef     MONITOR_CLRSCR
   #define    PC_BUILD_TELLTALE            //JM verbose on PC: jm_show_comment
   #undef     PC_BUILD_TELLTALE
-
+  #define    VERBOSE_DETERMINEITEM
+  #undef     VERBOSE_DETERMINEITEM
   #define    VERBOSE_REGISTERS
   #undef     VERBOSE_REGISTERS
 
@@ -378,7 +380,10 @@
 #define Norm_Key_00_keyID (calcModel == USER_C47 ? 21 :            calcModel == USER_DM42 ? 21 :            calcModel == USER_R47f_g ? -1 : calcModel == USER_R47bk_fg ? 35 :       calcModel == USER_R47fg_bk ? 36 : -1)
 #define Norm_Key_00_item_in_layout  (calcModel == USER_C47 ? ITM_SIGMAPLUS : calcModel == USER_DM42 ? ITM_SIGMAPLUS : calcModel == USER_R47f_g ? -1 : calcModel == USER_R47bk_fg ? ITM_NULL : calcModel == USER_R47fg_bk ? ITM_NULL : -1)
 #define isR47FAM          ((bool_t)(calcModel == USER_R47f_g || calcModel == USER_R47bk_fg || calcModel == USER_R47fg_bk || calcModel == USER_R47fg_g))
-#define shortcutProfile  (calcModel == USER_C47 ? USER_C47 : isR47FAM ? USER_R47 : 0)
+
+#define shortcutProfile   (calcModel == USER_C47 ? USER_C47 : isR47FAM ? USER_R47 : 0)
+#define INTEGERSHORTCUTS  (calcMode == CM_NIM && (calcModel == USER_C47 || isR47FAM))
+
 
 //fnKeysManagement
 #define JM_ASSIGN        28
@@ -487,32 +492,34 @@
 #define ERROR_CANNOT_WRITE_FILE                   55
 #define ERROR_OLD_ITEM_TO_REPLACE                 56
 #define ERROR_VARIABLE_NOT_SELECTED               57
+#define ERROR_IPX_INVALID_FOR_SI                  58
+
 
 //Status output messages for time consuming tasks, to keep user informed
-#define LOADING_STATE_FILE                        58
-#define SAVING_STATE_FILE                         59
-#define RESTORING_STATS                           60
-#define COMPLEX_SOLVER                            61
-#define GRAPHING                                  62
-#define RECALC_SUMS                               63
-#define REAL_SOLVER                               64
+#define LOADING_STATE_FILE                        59
+#define SAVING_STATE_FILE                         60
+#define RESTORING_STATS                           61
+#define COMPLEX_SOLVER                            62
+#define GRAPHING                                  63
+#define RECALC_SUMS                               64
+#define REAL_SOLVER                               65
 
 //TI Messages (incomplete)
-#define TI_Backup_restored                        65
-#define TI_State_file_restored                    66
-#define TI_Saved_programs_and_equations           67
-#define TI_appended                               68
-#define TI_Saved_global_and_local_registers       69
-#define TI_w_local_flags_restored                 70
-#define TI_Saved_system_settings_restored         71
-#define TI_Saved_statistic_data_restored          72
-#define TI_Saved_user_variables_restored          73
-#define TI_Program_file_loaded                    74
-#define TI_Not_enough_memory_for_undo             75
+#define TI_Backup_restored                        66
+#define TI_State_file_restored                    67
+#define TI_Saved_programs_and_equations           68
+#define TI_appended                               69
+#define TI_Saved_global_and_local_registers       70
+#define TI_w_local_flags_restored                 71
+#define TI_Saved_system_settings_restored         72
+#define TI_Saved_statistic_data_restored          73
+#define TI_Saved_user_variables_restored          74
+#define TI_Program_file_loaded                    75
+#define TI_Not_enough_memory_for_undo             76
 
 
 
-#define NUMBER_OF_ERROR_CODES                     76
+#define NUMBER_OF_ERROR_CODES                     77
 #define SIZE_OF_EACH_ERROR_MESSAGE                48
 
 #define NUMBER_OF_BUG_SCREEN_MESSAGES             10
@@ -1454,6 +1461,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define PGM_PAUSED                                 3
 #define PGM_KEY_PRESSED_WHILE_PAUSED               4
 #define PGM_RESUMING                               5
+#define PGM_SINGLE_STEP                            6
 
 // Save mode
 #define SM_MANUAL_SAVE                             0
@@ -1543,7 +1551,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define MAX_NUMBER_OF_GLYPHS_IN_STRING           508 //WP=196: Change to 512 less 3, Also change error message 33, and AIM_BUFFER_LENGTH, and MAXLINES
 #define NUMBER_OF_GLYPH_ROWS                     260  //Used in the font browser application
 
-#define MAX_DENMAX                              9999 // Biggest denominator in fraction display mode selector, and annunciator. 
+#define MAX_DENMAX                              9999 // Biggest denominator in fraction display mode selector, and annunciator.
                                                      // The value 0 gets converted to MAX_INTERNAL_DENMAX
 #define MAX_INTERNAL_DENMAX                    32500 // Biggest denominator in fraction display mode
 
@@ -1651,9 +1659,9 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define SOLVER_STATUS_EQUATION_2ND_DERIVATIVE      0x000C // --0- ---- ---- 11--
 #define SOLVER_STATUS_EQUATION_GRAPHER             0x2000 // --1- ---- ---- 00--
 
-#define SOLVER_STATUS_SINGLE_VARIABLE              0x0010 // 00-0 --00 ---1 ---- 
+#define SOLVER_STATUS_SINGLE_VARIABLE              0x0010 // 00-0 --00 ---1 ----
 #define SOLVER_STATUS_USES_FORMULA                 0x0100 // 00-0 --01 ---0 ----
-#define SOLVER_STATUS_MVAR_BEING_OPENED            0x0200 // 00-0 --10 ---0 ---- 
+#define SOLVER_STATUS_MVAR_BEING_OPENED            0x0200 // 00-0 --10 ---0 ----
 #define SOLVER_STATUS_TVM_APPLICATION              0x1000 // 00-1 ---- ---0 ----
 
 #define IS_EQN_INTEGRATE (((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_INTEGRATE) && \
@@ -1837,8 +1845,6 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define currentPtrToNextLevel                (currentSubroutineLevelData[2].ptrToNextLevel)
 #define currentPtrToPreviousLevel            (currentSubroutineLevelData[2].ptrToPreviousLevel)
 
-
-#define INTEGERSHORTCUTS                     (calcModel == USER_C47 || calcModel == USER_R47 || calcModel == USER_R47bk_fg || calcModel == USER_R47fg_bk || calcModel == USER_R47fg_g)    //TRUE is C47; check based on f/g key on DM42 position
 
 
 #if !defined(PC_BUILD) && !defined(DMCP_BUILD)
