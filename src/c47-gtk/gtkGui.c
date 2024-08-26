@@ -802,9 +802,11 @@ if(   CTRL_State != 65536
       sendKey(ll);
       screenUpdatingMode = SCRUPD_AUTO;
       refreshScreen(8);
+      resetShiftState();
       return false;
     }
     else if(ll == -1) {   //do not continue looking for keys
+      resetShiftState();
       return false;
     }
 
