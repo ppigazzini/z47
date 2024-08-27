@@ -617,7 +617,7 @@ bool_t lowercaseselected;    //the only place that this is set, is in processKey
                     #endif //PC_BUILD
 
       screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
-      //refreshScreen(101);
+        // refreshScreen(101);
     }
 
                     #if defined(PC_BUILD)
@@ -1976,6 +1976,11 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
 
         if(!keyActionProcessed) {
           showFunctionName(item, 1000, funcParam);// "SF:B"); // 1000ms = 1s
+        }
+        else {
+          screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR; // check this is now going to flash the statusbar again!!! Solves the sup issue though.
+          screenUpdatingMode |= SCRUPD_MANUAL_STACK;
+          refreshScreen(130);
         }
       }
       if(calcMode == CM_ASSIGN && itemToBeAssigned != 0 && tamBuffer[0] == 0) {
