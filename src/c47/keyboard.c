@@ -35,6 +35,7 @@
 #include "registerValueConversions.h"
 #include "screen.h"
 #include "softmenus.h"
+#include "statusBar.h"
 #include "solver/equation.h"
 #include "solver/graph.h"
 #include "sort.h"
@@ -620,6 +621,7 @@ bool_t lowercaseselected;    //the only place that this is set, is in processKey
         // refreshScreen(101);
     }
 
+      showHideAlphaMode();
                     #if defined(PC_BUILD)
                       sprintf(tmp,"^^^^processAimInput:AIM:end %d, processed %d",item,keyActionProcessed); jm_show_comment(tmp);
                       #if defined(PAIMDEBUG)
@@ -1976,11 +1978,6 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
 
         if(!keyActionProcessed) {
           showFunctionName(item, 1000, funcParam);// "SF:B"); // 1000ms = 1s
-        }
-        else {
-          screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR; // check this is now going to flash the statusbar again!!! Solves the sup issue though.
-          screenUpdatingMode |= SCRUPD_MANUAL_STACK;
-          refreshScreen(130);
         }
       }
       if(calcMode == CM_ASSIGN && itemToBeAssigned != 0 && tamBuffer[0] == 0) {
