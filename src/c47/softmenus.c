@@ -2733,12 +2733,17 @@ bool_t BASE_OVERRIDEONCE = false;
 
 
   bool_t createHOME(void) {
+    int16_t itemToBeAssignedMeM = itemToBeAssigned;
     if(!setCurrentUserMenu(-MNU_DYNAMIC,"HOME")) {
       createMenu("HOME");
       if(!setCurrentUserMenu(-MNU_DYNAMIC,"HOME")) {
+        itemToBeAssigned = itemToBeAssignedMeM;
         return false;
       }
     }
+    #if defined (PC_BUILD)
+      printf("----------- ############################ CREATING HOME #########################\n");
+    #endif //PC_BUILD
     for(uint16_t ii=0; ii<18; ii++) {
       itemToBeAssigned = ITM_ENTER;
       screenUpdatingMode = ~SCRUPD_AUTO;
@@ -2753,16 +2758,22 @@ bool_t BASE_OVERRIDEONCE = false;
     }
     screenUpdatingMode = SCRUPD_AUTO;
     refreshScreen(170);
+    itemToBeAssigned = itemToBeAssignedMeM;
     return true;
   }
 
   bool_t createPFN(void) {
+    int16_t itemToBeAssignedMeM = itemToBeAssigned;
     if(!setCurrentUserMenu(-MNU_DYNAMIC,"P.FN")) {
       createMenu("P.FN");
       if(!setCurrentUserMenu(-MNU_DYNAMIC,"P.FN")) {
+        itemToBeAssigned = itemToBeAssignedMeM;
         return false;
       }
     }
+    #if defined (PC_BUILD)
+      printf("----------- ############################ CREATING PFN #########################\n");
+    #endif //PC_BUILD
     for(uint16_t ii=0; ii<18; ii++) {
       itemToBeAssigned = ITM_ENTER;
       screenUpdatingMode = ~SCRUPD_AUTO;
@@ -2777,6 +2788,7 @@ bool_t BASE_OVERRIDEONCE = false;
     }
     screenUpdatingMode = SCRUPD_AUTO;
     refreshScreen(171);
+    itemToBeAssigned = itemToBeAssignedMeM;
     return true;
   }
 
