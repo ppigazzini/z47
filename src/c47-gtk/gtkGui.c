@@ -570,6 +570,7 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
 
 
   gboolean keyPressed(GtkWidget *w, GdkEventKey *event, gpointer data) {
+
     event_keyval = event->keyval + CTRL_State;
 
     //#if defined(VERBOSEKEYS)
@@ -644,10 +645,12 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
 // 17 CM_ASN_BROWSER     
 // 18 CM_LISTXY    
 
-printf("   Sim key processing: tam.mode=%i event_keyval=%i\n", tam.mode, event_keyval);
+//#if defined(VERBOSEKEYS)
+  printf("   Sim key processing: CTRL_State=%i tam.mode=%i event_keyval=%i calcMode=%i catalog=%i getSystemFlag(FLAG_ALPHA)=%i\n", CTRL_State, tam.mode, event_keyval, calcMode, catalog, getSystemFlag(FLAG_ALPHA));
+//#endif //VERBOSEKEYS
 
 event_key_command = event->keyval + (('A' <= event->keyval && event->keyval <= 'Z') ? 'a' - 'A' : 0)    // remove caps lock effect for commands, 'a' to 'z'
-                                  - (event_command_shift == 65536 ? 'a' - 'A' : 0);                     // consider only shift button status to get caps for commands
+                                  - (('A' <= event->keyval && event->keyval <= 'Z') && event_command_shift == 65536 ? 'a' - 'A' : 0);                     // consider only shift button status to get caps for commands
 
 if(     CTRL_State != 65536
      && !catalog
@@ -657,6 +660,7 @@ if(     CTRL_State != 65536
          ||(calcMode == CM_PEM && !getSystemFlag(FLAG_ALPHA) )
         )
   ) {
+
 
   if(shortCutCommand(w, event_key_command,    97,                                  shortcutProfile == USER_C47,  ExitIfNim,          tam.mode,    "",   "00",                   0b01101,         -1,        ITM_SIGMAPLUS ))        {return false;} else        //                  [a]ccumulate
   if(shortCutCommand(w, event_key_command,   118,                                  shortcutProfile == USER_C47,  ExitIfNim,          tam.mode,    "",   "01",                   0b01101,         -1,             ITM_1ONX ))        {return false;} else        //                     in[v]erse
@@ -750,7 +754,7 @@ if(     CTRL_State != 65536
 #endif
 
 }
- 
+
 
 //New Matrix arrows
 if(   CTRL_State != 65536
