@@ -185,11 +185,7 @@
         printf("Activated: %s\n",argv[arg]);
       }
 
-      if(strcmp(argv[arg], "--deadtest") == 0) {
-        testDeadKeys = true;
-        printf("Activated: %s\n",argv[arg]);
-      }
-      if(strcmp(argv[arg], "--testdead") == 0) {
+      if(strcmp(argv[arg], "--deadkeys") == 0) {
         testDeadKeys = true;
         printf("Activated: %s\n",argv[arg]);
       }
