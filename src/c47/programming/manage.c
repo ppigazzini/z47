@@ -437,7 +437,7 @@ void fnPem(uint16_t unusedButMandatoryParameter) {
     uint16_t line, firstLine;
     uint16_t stepsThatWouldBeDisplayed = 7;
     uint8_t *step, *nextStep;
-    bool_t lblOrEndOrXeq, gto;
+    bool_t lblOrEnd, lblOrEndOrXeq, gto;
     bool_t inTamMode = tam.mode && programList[currentProgramNumber - 1].step > 0;
     uint16_t numberOfSteps = getNumberOfSteps();
     uint16_t linesOfCurrentStep = 1;
@@ -503,7 +503,8 @@ void fnPem(uint16_t unusedButMandatoryParameter) {
         if( !(!getSystemFlag(FLAG_USB) && !emptyKeyBuffer() && key_empty() == 1) ||(firstDisplayedStepNumber + line - lineOffset == currentStepNumber)) {
       #endif
 
-        lblOrEndOrXeq = checkOpCodeOfStep(step, ITM_LBL) || checkOpCodeOfStep(step, ITM_XEQ) || isAtEndOfProgram(step) || isAtEndOfPrograms(step);
+        lblOrEndOrXeq = checkOpCodeOfStep(step, ITM_LBL) || isAtEndOfProgram(step) || isAtEndOfPrograms(step) || checkOpCodeOfStep(step, ITM_XEQ);
+        lblOrEnd =      checkOpCodeOfStep(step, ITM_LBL) || isAtEndOfProgram(step) || isAtEndOfPrograms(step);
         gto = checkOpCodeOfStep(step, ITM_GTO);
         if(programList[currentProgramNumber - 1].step > 0) {
           if((!pemCursorIsZerothStep && firstDisplayedStepNumber + line - lineOffset == currentStepNumber + 1) || (line == 1 && tam.mode && pemCursorIsZerothStep)) {
@@ -520,7 +521,7 @@ void fnPem(uint16_t unusedButMandatoryParameter) {
               showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_T_LINE + 21 * line, vmNormal, false, true);
             }
           }
-          else if(firstDisplayedStepNumber + line - lineOffset == currentStepNumber && lblOrEndOrXeq && (*step != ITM_LBL)) {
+          else if(firstDisplayedStepNumber + line - lineOffset == currentStepNumber && lblOrEnd && (*step != ITM_LBL)) {
             if(tam.mode) {
               line += 1;
               lineOffset += 1;
