@@ -1959,6 +1959,7 @@ void fnKeysManagement(uint16_t choice) {
       calcModel = choice;
       fnClearFlag(FLAG_USER);
       fnKeysManagement(USER_KRESET);                      // Reset all user keys when a permanent layout is changed, Reset +NRM when a permanent layout is changed
+      fnShowVersion(choice);
       break;
 
 
