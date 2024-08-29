@@ -35,6 +35,7 @@
 #include "registerValueConversions.h"
 #include "screen.h"
 #include "softmenus.h"
+#include "statusBar.h"
 #include "solver/equation.h"
 #include "solver/graph.h"
 #include "sort.h"
@@ -617,9 +618,10 @@ bool_t lowercaseselected;    //the only place that this is set, is in processKey
                     #endif //PC_BUILD
 
       screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
-      //refreshScreen(101);
+        // refreshScreen(101);
     }
 
+      showHideAlphaMode();
                     #if defined(PC_BUILD)
                       sprintf(tmp,"^^^^processAimInput:AIM:end %d, processed %d",item,keyActionProcessed); jm_show_comment(tmp);
                       #if defined(PAIMDEBUG)
