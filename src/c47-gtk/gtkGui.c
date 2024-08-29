@@ -266,6 +266,9 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
                                     softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_ALPHAINTL ||   \
                                     softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_ALPHAintl ))
 
+
+
+
   #define ExitIfNim true
 
   TO_QSPI const char alphakeysC47[38]      = "abcdefghijkl#mno##pqrs#tuvw#xyz_#:,? ";
@@ -570,7 +573,6 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
 
 
   gboolean keyPressed(GtkWidget *w, GdkEventKey *event, gpointer data) {
-
     event_keyval = event->keyval + CTRL_State;
 
     //#if defined(VERBOSEKEYS)
@@ -720,6 +722,7 @@ if(     CTRL_State != 65536
   if(shortCutCommand(w, event_key_command,   117,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  ExitIfNim,             FALSE,   "f",   "16",                   0b01101,     CM_PEM,               ITM_PR ))        {return false;} else        //                        [u]ndo
   if(shortCutCommand(w, event_key_command,    72,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !ExitIfNim,             FALSE,    "",  "-01",     0b0000011000000001101,         -1,            -MNU_HOME ))        {return false;} else        //                        [H]ome
   if(shortCutCommand(w, event_key_command,    66,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !ExitIfNim,             FALSE,    "",  "-01",     0b0000011000000001101,         -1,          -MNU_MyMenu ))        {return false;} else        //                    MyMenu [b]
+  if(shortCutCommand(w, event_key_command,    60,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  ExitIfNim,          tam.mode,    "",  "-01",                   0b01101,         -1,              ITM_RTN ))        {return false;} else        //                       RTN [<]
 
 
   if(shortCutCommand(w, event_key_command,    81,                                  shortcutProfile == USER_R47,  ExitIfNim,          tam.mode,    "",   "00",                   0b01101,         -1,           ITM_SQUARE ))        {return false;} else        //                      s[Q]uare
@@ -754,7 +757,7 @@ if(     CTRL_State != 65536
 #endif
 
 }
-
+ 
 
 //New Matrix arrows
 if(   CTRL_State != 65536
