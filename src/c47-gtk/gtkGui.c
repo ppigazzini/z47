@@ -3348,147 +3348,76 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
 
 
 const gdkKeyMap_t gdkKeyMap[] = {
-//  #define ITM_INDIRECTION                539
-  { .item = ITM_0                          ,  .gdkKey = GDK_KEY_0                           },
-  { .item = ITM_0                          ,  .gdkKey = GDK_KEY_KP_0                        },
-  { .item = ITM_1                          ,  .gdkKey = GDK_KEY_1                           },
-  { .item = ITM_1                          ,  .gdkKey = GDK_KEY_KP_1                        },
-  { .item = ITM_2                          ,  .gdkKey = GDK_KEY_2                           },
-  { .item = ITM_2                          ,  .gdkKey = GDK_KEY_KP_2                        },
-  { .item = ITM_3                          ,  .gdkKey = GDK_KEY_3                           },
-  { .item = ITM_3                          ,  .gdkKey = GDK_KEY_KP_3                        },
-  { .item = ITM_4                          ,  .gdkKey = GDK_KEY_4                           },
-  { .item = ITM_4                          ,  .gdkKey = GDK_KEY_KP_4                        },
-  { .item = ITM_5                          ,  .gdkKey = GDK_KEY_5                           },
-  { .item = ITM_5                          ,  .gdkKey = GDK_KEY_KP_5                        },
-  { .item = ITM_6                          ,  .gdkKey = GDK_KEY_6                           },
-  { .item = ITM_6                          ,  .gdkKey = GDK_KEY_KP_6                        },
-  { .item = ITM_7                          ,  .gdkKey = GDK_KEY_7                           },
-  { .item = ITM_7                          ,  .gdkKey = GDK_KEY_KP_7                        },
-  { .item = ITM_8                          ,  .gdkKey = GDK_KEY_8                           },
-  { .item = ITM_8                          ,  .gdkKey = GDK_KEY_KP_8                        },
-  { .item = ITM_9                          ,  .gdkKey = GDK_KEY_9                           },
-  { .item = ITM_9                          ,  .gdkKey = GDK_KEY_KP_9                        },
-  { .item = ITM_A                          ,  .gdkKey = GDK_KEY_A                           },
-  { .item = ITM_B                          ,  .gdkKey = GDK_KEY_B                           },
-  { .item = ITM_C                          ,  .gdkKey = GDK_KEY_C                           },
-  { .item = ITM_D                          ,  .gdkKey = GDK_KEY_D                           },
-  { .item = ITM_E                          ,  .gdkKey = GDK_KEY_E                           },
-  { .item = ITM_F                          ,  .gdkKey = GDK_KEY_F                           },
-  { .item = ITM_G                          ,  .gdkKey = GDK_KEY_G                           },
-  { .item = ITM_H                          ,  .gdkKey = GDK_KEY_H                           },
-  { .item = ITM_I                          ,  .gdkKey = GDK_KEY_I                           },
-  { .item = ITM_J                          ,  .gdkKey = GDK_KEY_J                           },
-  { .item = ITM_K                          ,  .gdkKey = GDK_KEY_K                           },
-  { .item = ITM_L                          ,  .gdkKey = GDK_KEY_L                           },
-  { .item = ITM_M                          ,  .gdkKey = GDK_KEY_M                           },
-  { .item = ITM_N                          ,  .gdkKey = GDK_KEY_N                           },
-  { .item = ITM_O                          ,  .gdkKey = GDK_KEY_O                           },
-  { .item = ITM_P                          ,  .gdkKey = GDK_KEY_P                           },
-  { .item = ITM_Q                          ,  .gdkKey = GDK_KEY_Q                           },
-  { .item = ITM_R                          ,  .gdkKey = GDK_KEY_R                           },
-  { .item = ITM_S                          ,  .gdkKey = GDK_KEY_S                           },
-  { .item = ITM_T                          ,  .gdkKey = GDK_KEY_T                           },
-  { .item = ITM_U                          ,  .gdkKey = GDK_KEY_U                           },
-  { .item = ITM_V                          ,  .gdkKey = GDK_KEY_V                           },
-  { .item = ITM_W                          ,  .gdkKey = GDK_KEY_W                           },
-  { .item = ITM_X                          ,  .gdkKey = GDK_KEY_X                           },
-  { .item = ITM_Y                          ,  .gdkKey = GDK_KEY_Y                           },
-  { .item = ITM_Z                          ,  .gdkKey = GDK_KEY_Z                           },
-  { .item = ITM_a                          ,  .gdkKey = GDK_KEY_a                           },
-  { .item = ITM_b                          ,  .gdkKey = GDK_KEY_b                           },
-  { .item = ITM_c                          ,  .gdkKey = GDK_KEY_c                           },
-  { .item = ITM_d                          ,  .gdkKey = GDK_KEY_d                           },
-  { .item = ITM_e                          ,  .gdkKey = GDK_KEY_e                           },
-  { .item = ITM_f                          ,  .gdkKey = GDK_KEY_f                           },
-  { .item = ITM_g                          ,  .gdkKey = GDK_KEY_g                           },
-  { .item = ITM_h                          ,  .gdkKey = GDK_KEY_h                           },
-  { .item = ITM_i                          ,  .gdkKey = GDK_KEY_i                           },
-  { .item = ITM_j                          ,  .gdkKey = GDK_KEY_j                           },
-  { .item = ITM_k                          ,  .gdkKey = GDK_KEY_k                           },
-  { .item = ITM_l                          ,  .gdkKey = GDK_KEY_l                           },
-  { .item = ITM_m                          ,  .gdkKey = GDK_KEY_m                           },
-  { .item = ITM_n                          ,  .gdkKey = GDK_KEY_n                           },
-  { .item = ITM_o                          ,  .gdkKey = GDK_KEY_o                           },
-  { .item = ITM_p                          ,  .gdkKey = GDK_KEY_p                           },
-  { .item = ITM_q                          ,  .gdkKey = GDK_KEY_q                           },
-  { .item = ITM_r                          ,  .gdkKey = GDK_KEY_r                           },
-  { .item = ITM_s                          ,  .gdkKey = GDK_KEY_s                           },
-  { .item = ITM_t                          ,  .gdkKey = GDK_KEY_t                           },
-  { .item = ITM_u                          ,  .gdkKey = GDK_KEY_u                           },
-  { .item = ITM_v                          ,  .gdkKey = GDK_KEY_v                           },
-  { .item = ITM_w                          ,  .gdkKey = GDK_KEY_w                           },
-  { .item = ITM_x                          ,  .gdkKey = GDK_KEY_x                           },
-  { .item = ITM_y                          ,  .gdkKey = GDK_KEY_y                           },
-  { .item = ITM_z                          ,  .gdkKey = GDK_KEY_z                           },
-  { .item = ITM_ALPHA                      ,  .gdkKey = GDK_KEY_Greek_ALPHA                 },
-  { .item = ITM_BETA                       ,  .gdkKey = GDK_KEY_Greek_BETA                  },
-  { .item = ITM_GAMMA                      ,  .gdkKey = GDK_KEY_Greek_GAMMA                 },
-  { .item = ITM_DELTA                      ,  .gdkKey = GDK_KEY_Greek_DELTA                 },
-  { .item = ITM_EPSILON                    ,  .gdkKey = GDK_KEY_Greek_EPSILON               },
-  { .item = ITM_ZETA                       ,  .gdkKey = GDK_KEY_Greek_ZETA                  },
-  { .item = ITM_ETA                        ,  .gdkKey = GDK_KEY_Greek_ETA                   },
-  { .item = ITM_THETA                      ,  .gdkKey = GDK_KEY_Greek_THETA                 },
-  { .item = ITM_IOTA                       ,  .gdkKey = GDK_KEY_Greek_IOTA                  },
-  { .item = ITM_IOTA_DIALYTIKA             ,  .gdkKey = GDK_KEY_Greek_IOTAdieresis          },
-  { .item = ITM_KAPPA                      ,  .gdkKey = GDK_KEY_Greek_KAPPA                 },
-  { .item = ITM_LAMBDA                     ,  .gdkKey = GDK_KEY_Greek_LAMBDA                },
-  { .item = ITM_MU                         ,  .gdkKey = GDK_KEY_Greek_MU                    },
-  { .item = ITM_NU                         ,  .gdkKey = GDK_KEY_Greek_NU                    },
-  { .item = ITM_XI                         ,  .gdkKey = GDK_KEY_Greek_XI                    },
-  { .item = ITM_OMICRON                    ,  .gdkKey = GDK_KEY_Greek_OMICRON               },
-  { .item = ITM_PI                         ,  .gdkKey = GDK_KEY_Greek_PI                    },
-  { .item = ITM_RHO                        ,  .gdkKey = GDK_KEY_Greek_RHO                   },
-  { .item = ITM_SIGMA                      ,  .gdkKey = GDK_KEY_Greek_SIGMA                 },
-  { .item = ITM_TAU                        ,  .gdkKey = GDK_KEY_Greek_TAU                   },
-  { .item = ITM_UPSILON                    ,  .gdkKey = GDK_KEY_Greek_UPSILON               },
-  { .item = ITM_UPSILON_DIALYTIKA          ,  .gdkKey = GDK_KEY_Greek_UPSILONdieresis       },
-  { .item = ITM_PHI                        ,  .gdkKey = GDK_KEY_Greek_PHI                   },
-  { .item = ITM_CHI                        ,  .gdkKey = GDK_KEY_Greek_CHI                   },
-  { .item = ITM_PSI                        ,  .gdkKey = GDK_KEY_Greek_PSI                   },
-  { .item = ITM_OMEGA                      ,  .gdkKey = GDK_KEY_Greek_OMEGA                 },
-  { .item = ITM_alpha                      ,  .gdkKey = GDK_KEY_Greek_alpha                 },
-  { .item = ITM_beta                       ,  .gdkKey = GDK_KEY_Greek_beta                  },
-  { .item = ITM_gamma                      ,  .gdkKey = GDK_KEY_Greek_gamma                 },
-  { .item = ITM_delta                      ,  .gdkKey = GDK_KEY_Greek_delta                 },
-  { .item = ITM_epsilon                    ,  .gdkKey = GDK_KEY_Greek_epsilon               },
-  { .item = ITM_zeta                       ,  .gdkKey = GDK_KEY_Greek_zeta                  },
-  { .item = ITM_eta                        ,  .gdkKey = GDK_KEY_Greek_eta                   },
-  { .item = ITM_theta                      ,  .gdkKey = GDK_KEY_Greek_theta                 },
-  { .item = ITM_iota                       ,  .gdkKey = GDK_KEY_Greek_iota                  },
-  { .item = ITM_iota_DIALYTIKA             ,  .gdkKey = GDK_KEY_Greek_iotadieresis          },
-  { .item = ITM_kappa                      ,  .gdkKey = GDK_KEY_Greek_kappa                 },
-  { .item = ITM_lambda                     ,  .gdkKey = GDK_KEY_Greek_lambda                },
-  { .item = ITM_mu                         ,  .gdkKey = GDK_KEY_Greek_mu                    },
-  { .item = ITM_nu                         ,  .gdkKey = GDK_KEY_Greek_nu                    },
-  { .item = ITM_xi                         ,  .gdkKey = GDK_KEY_Greek_xi                    },
-  { .item = ITM_omicron                    ,  .gdkKey = GDK_KEY_Greek_omicron               },
-  { .item = ITM_pi                         ,  .gdkKey = GDK_KEY_Greek_pi                    },
-  { .item = ITM_rho                        ,  .gdkKey = GDK_KEY_Greek_rho                   },
-  { .item = ITM_sigma                      ,  .gdkKey = GDK_KEY_Greek_sigma                 },
-  { .item = ITM_tau                        ,  .gdkKey = GDK_KEY_Greek_tau                   },
-  { .item = ITM_upsilon                    ,  .gdkKey = GDK_KEY_Greek_upsilon               },
-  { .item = ITM_upsilon_DIALYTIKA          ,  .gdkKey = GDK_KEY_Greek_upsilondieresis       },
-  { .item = ITM_phi                        ,  .gdkKey = GDK_KEY_Greek_phi                   },
-  { .item = ITM_chi                        ,  .gdkKey = GDK_KEY_Greek_chi                   },
-  { .item = ITM_psi                        ,  .gdkKey = GDK_KEY_Greek_psi                   },
-  { .item = ITM_omega                      ,  .gdkKey = GDK_KEY_Greek_omega                 },
-  { .item = ITM_alpha_TONOS                ,  .gdkKey = GDK_KEY_Greek_alphaaccent           },
-  { .item = ITM_epsilon_TONOS              ,  .gdkKey = GDK_KEY_Greek_epsilonaccent         },
-  { .item = ITM_eta_TONOS                  ,  .gdkKey = GDK_KEY_Greek_etaaccent             },
-  { .item = ITM_iotaTON                    ,  .gdkKey = GDK_KEY_Greek_iotaaccent            },
-  { .item = ITM_iota_DIALYTIKA_TONOS       ,  .gdkKey = GDK_KEY_Greek_iotaaccentdieresis    },
-  { .item = ITM_omicron_TONOS              ,  .gdkKey = GDK_KEY_Greek_omicronaccent         },
-  { .item = ITM_sigma_end                  ,  .gdkKey = GDK_KEY_Greek_finalsmallsigma       },
-  { .item = ITM_upsilon_TONOS              ,  .gdkKey = GDK_KEY_Greek_upsilonaccent         },
-  { .item = ITM_upsilon_DIALYTIKA_TONOS    ,  .gdkKey = GDK_KEY_Greek_upsilonaccentdieresis },
-  { .item = ITM_omega_TONOS                ,  .gdkKey = GDK_KEY_Greek_omegaaccent           },
-//  { .item = ITM_QOPPA                      ,  .gdkKey = GDK_KEY_Greek_QOPPA                 },
-//  { .item = ITM_DIGAMMA                    ,  .gdkKey = GDK_KEY_Greek_DIGAMMA               },
-//  { .item = ITM_SAMPI                      ,  .gdkKey = GDK_KEY_Greek_SAMPI                 },
-//  { .item = ITM_qoppa                      ,  .gdkKey = GDK_KEY_Greek_qoppa                 },
-//  { .item = ITM_digamma                    ,  .gdkKey = GDK_KEY_Greek_digamma               },
-//  { .item = ITM_sampi                      ,  .gdkKey = GDK_KEY_Greek_sampi                 },
+
+//C47 has no direct key input Greek letters
+//jm_greek   { .item = ITM_ALPHA                      ,  .gdkKey = GDK_KEY_Greek_ALPHA                 },
+//jm_greek   { .item = ITM_BETA                       ,  .gdkKey = GDK_KEY_Greek_BETA                  },
+//jm_greek   { .item = ITM_GAMMA                      ,  .gdkKey = GDK_KEY_Greek_GAMMA                 },
+//jm_greek   { .item = ITM_DELTA                      ,  .gdkKey = GDK_KEY_Greek_DELTA                 },
+//jm_greek   { .item = ITM_EPSILON                    ,  .gdkKey = GDK_KEY_Greek_EPSILON               },
+//jm_greek   { .item = ITM_ZETA                       ,  .gdkKey = GDK_KEY_Greek_ZETA                  },
+//jm_greek   { .item = ITM_ETA                        ,  .gdkKey = GDK_KEY_Greek_ETA                   },
+//jm_greek   { .item = ITM_THETA                      ,  .gdkKey = GDK_KEY_Greek_THETA                 },
+//jm_greek   { .item = ITM_IOTA                       ,  .gdkKey = GDK_KEY_Greek_IOTA                  },
+//jm_greek   { .item = ITM_IOTA_DIALYTIKA             ,  .gdkKey = GDK_KEY_Greek_IOTAdieresis          },
+//jm_greek   { .item = ITM_KAPPA                      ,  .gdkKey = GDK_KEY_Greek_KAPPA                 },
+//jm_greek   { .item = ITM_LAMBDA                     ,  .gdkKey = GDK_KEY_Greek_LAMBDA                },
+//jm_greek   { .item = ITM_MU                         ,  .gdkKey = GDK_KEY_Greek_MU                    },
+//jm_greek   { .item = ITM_NU                         ,  .gdkKey = GDK_KEY_Greek_NU                    },
+//jm_greek   { .item = ITM_XI                         ,  .gdkKey = GDK_KEY_Greek_XI                    },
+//jm_greek   { .item = ITM_OMICRON                    ,  .gdkKey = GDK_KEY_Greek_OMICRON               },
+//jm_greek   { .item = ITM_PI                         ,  .gdkKey = GDK_KEY_Greek_PI                    },
+//jm_greek   { .item = ITM_RHO                        ,  .gdkKey = GDK_KEY_Greek_RHO                   },
+//jm_greek   { .item = ITM_SIGMA                      ,  .gdkKey = GDK_KEY_Greek_SIGMA                 },
+//jm_greek   { .item = ITM_TAU                        ,  .gdkKey = GDK_KEY_Greek_TAU                   },
+//jm_greek   { .item = ITM_UPSILON                    ,  .gdkKey = GDK_KEY_Greek_UPSILON               },
+//jm_greek   { .item = ITM_UPSILON_DIALYTIKA          ,  .gdkKey = GDK_KEY_Greek_UPSILONdieresis       },
+//jm_greek   { .item = ITM_PHI                        ,  .gdkKey = GDK_KEY_Greek_PHI                   },
+//jm_greek   { .item = ITM_CHI                        ,  .gdkKey = GDK_KEY_Greek_CHI                   },
+//jm_greek   { .item = ITM_PSI                        ,  .gdkKey = GDK_KEY_Greek_PSI                   },
+//jm_greek   { .item = ITM_OMEGA                      ,  .gdkKey = GDK_KEY_Greek_OMEGA                 },
+//jm_greek   { .item = ITM_alpha                      ,  .gdkKey = GDK_KEY_Greek_alpha                 },
+//jm_greek   { .item = ITM_beta                       ,  .gdkKey = GDK_KEY_Greek_beta                  },
+//jm_greek   { .item = ITM_gamma                      ,  .gdkKey = GDK_KEY_Greek_gamma                 },
+//jm_greek   { .item = ITM_delta                      ,  .gdkKey = GDK_KEY_Greek_delta                 },
+//jm_greek   { .item = ITM_epsilon                    ,  .gdkKey = GDK_KEY_Greek_epsilon               },
+//jm_greek   { .item = ITM_zeta                       ,  .gdkKey = GDK_KEY_Greek_zeta                  },
+//jm_greek   { .item = ITM_eta                        ,  .gdkKey = GDK_KEY_Greek_eta                   },
+//jm_greek   { .item = ITM_theta                      ,  .gdkKey = GDK_KEY_Greek_theta                 },
+//jm_greek   { .item = ITM_iota                       ,  .gdkKey = GDK_KEY_Greek_iota                  },
+//jm_greek   { .item = ITM_iota_DIALYTIKA             ,  .gdkKey = GDK_KEY_Greek_iotadieresis          },
+//jm_greek   { .item = ITM_kappa                      ,  .gdkKey = GDK_KEY_Greek_kappa                 },
+//jm_greek   { .item = ITM_lambda                     ,  .gdkKey = GDK_KEY_Greek_lambda                },
+//jm_greek   { .item = ITM_mu                         ,  .gdkKey = GDK_KEY_Greek_mu                    },
+//jm_greek   { .item = ITM_nu                         ,  .gdkKey = GDK_KEY_Greek_nu                    },
+//jm_greek   { .item = ITM_xi                         ,  .gdkKey = GDK_KEY_Greek_xi                    },
+//jm_greek   { .item = ITM_omicron                    ,  .gdkKey = GDK_KEY_Greek_omicron               },
+//jm_greek   { .item = ITM_pi                         ,  .gdkKey = GDK_KEY_Greek_pi                    },
+//jm_greek   { .item = ITM_rho                        ,  .gdkKey = GDK_KEY_Greek_rho                   },
+//jm_greek   { .item = ITM_sigma                      ,  .gdkKey = GDK_KEY_Greek_sigma                 },
+//jm_greek   { .item = ITM_tau                        ,  .gdkKey = GDK_KEY_Greek_tau                   },
+//jm_greek   { .item = ITM_upsilon                    ,  .gdkKey = GDK_KEY_Greek_upsilon               },
+//jm_greek   { .item = ITM_upsilon_DIALYTIKA          ,  .gdkKey = GDK_KEY_Greek_upsilondieresis       },
+//jm_greek   { .item = ITM_phi                        ,  .gdkKey = GDK_KEY_Greek_phi                   },
+//jm_greek   { .item = ITM_chi                        ,  .gdkKey = GDK_KEY_Greek_chi                   },
+//jm_greek   { .item = ITM_psi                        ,  .gdkKey = GDK_KEY_Greek_psi                   },
+//jm_greek   { .item = ITM_omega                      ,  .gdkKey = GDK_KEY_Greek_omega                 },
+//jm_greek   { .item = ITM_alpha_TONOS                ,  .gdkKey = GDK_KEY_Greek_alphaaccent           },
+//jm_greek   { .item = ITM_epsilon_TONOS              ,  .gdkKey = GDK_KEY_Greek_epsilonaccent         },
+//jm_greek   { .item = ITM_eta_TONOS                  ,  .gdkKey = GDK_KEY_Greek_etaaccent             },
+//jm_greek   { .item = ITM_iotaTON                    ,  .gdkKey = GDK_KEY_Greek_iotaaccent            },
+//jm_greek   { .item = ITM_iota_DIALYTIKA_TONOS       ,  .gdkKey = GDK_KEY_Greek_iotaaccentdieresis    },
+//jm_greek   { .item = ITM_omicron_TONOS              ,  .gdkKey = GDK_KEY_Greek_omicronaccent         },
+//jm_greek   { .item = ITM_sigma_end                  ,  .gdkKey = GDK_KEY_Greek_finalsmallsigma       },
+//jm_greek   { .item = ITM_upsilon_TONOS              ,  .gdkKey = GDK_KEY_Greek_upsilonaccent         },
+//jm_greek   { .item = ITM_upsilon_DIALYTIKA_TONOS    ,  .gdkKey = GDK_KEY_Greek_upsilonaccentdieresis },
+//jm_greek   { .item = ITM_omega_TONOS                ,  .gdkKey = GDK_KEY_Greek_omegaaccent           },
+//jm_greek //  { .item = ITM_QOPPA                      ,  .gdkKey = GDK_KEY_Greek_QOPPA                 },
+//jm_greek //  { .item = ITM_DIGAMMA                    ,  .gdkKey = GDK_KEY_Greek_DIGAMMA               },
+//jm_greek //  { .item = ITM_SAMPI                      ,  .gdkKey = GDK_KEY_Greek_SAMPI                 },
+//jm_greek //  { .item = ITM_qoppa                      ,  .gdkKey = GDK_KEY_Greek_qoppa                 },
+//jm_greek //  { .item = ITM_digamma                    ,  .gdkKey = GDK_KEY_Greek_digamma               },
+//jm_greek //  { .item = ITM_sampi                      ,  .gdkKey = GDK_KEY_Greek_sampi                 },
   { .item = ITM_A_MACRON                   ,  .gdkKey = GDK_KEY_Amacron                     },
   { .item = ITM_A_ACUTE                    ,  .gdkKey = GDK_KEY_Aacute                      },
   { .item = ITM_A_BREVE                    ,  .gdkKey = GDK_KEY_Abreve                      },
@@ -3631,34 +3560,7 @@ const gdkKeyMap_t gdkKeyMap[] = {
   { .item = ITM_z_ACUTE                    ,  .gdkKey = GDK_KEY_zacute                      },
   { .item = ITM_z_CARON                    ,  .gdkKey = GDK_KEY_zcaron                      },
   { .item = ITM_z_DOT                      ,  .gdkKey = GDK_KEY_zabovedot                   },
-  { .item = ITM_SPACE                      ,  .gdkKey = GDK_KEY_space                       },
-  { .item = ITM_EXCLAMATION_MARK           ,  .gdkKey = GDK_KEY_exclam                      },
-  { .item = ITM_DOUBLE_QUOTE               ,  .gdkKey = GDK_KEY_quotedbl                    },
-  { .item = ITM_NUMBER_SIGN                ,  .gdkKey = GDK_KEY_numbersign                  },
-  { .item = ITM_DOLLAR                     ,  .gdkKey = GDK_KEY_dollar                      },
-  { .item = ITM_PERCENT                    ,  .gdkKey = GDK_KEY_percent                     },
-  { .item = ITM_AMPERSAND                  ,  .gdkKey = GDK_KEY_ampersand                   },
-  { .item = ITM_QUOTE                      ,  .gdkKey = GDK_KEY_apostrophe                  },
-  { .item = ITM_LEFT_PARENTHESIS           ,  .gdkKey = GDK_KEY_parenleft                   },
-  { .item = ITM_RIGHT_PARENTHESIS          ,  .gdkKey = GDK_KEY_parenright                  },
-  { .item = ITM_ASTERISK                   ,  .gdkKey = GDK_KEY_asterisk                    },
-  { .item = ITM_ASTERISK                   ,  .gdkKey = GDK_KEY_KP_Multiply                 },
-  { .item = ITM_PLUS                       ,  .gdkKey = GDK_KEY_plus                        },
-  { .item = ITM_PLUS                       ,  .gdkKey = GDK_KEY_KP_Add                      },
-  { .item = ITM_COMMA                      ,  .gdkKey = GDK_KEY_comma                       },
-  { .item = ITM_COMMA                      ,  .gdkKey = GDK_KEY_KP_Decimal                  },
-  { .item = ITM_MINUS                      ,  .gdkKey = GDK_KEY_minus                       },
-  { .item = ITM_MINUS                      ,  .gdkKey = GDK_KEY_KP_Subtract                 },
-  { .item = ITM_PERIOD                     ,  .gdkKey = GDK_KEY_period                      },
-  { .item = ITM_SLASH                      ,  .gdkKey = GDK_KEY_slash                       },
-  { .item = ITM_SLASH                      ,  .gdkKey = GDK_KEY_KP_Divide                   },
-  { .item = ITM_COLON                      ,  .gdkKey = GDK_KEY_colon                       },
-  { .item = ITM_SEMICOLON                  ,  .gdkKey = GDK_KEY_semicolon                   },
-  { .item = ITM_LESS_THAN                  ,  .gdkKey = GDK_KEY_less                        },
-  { .item = ITM_EQUAL                      ,  .gdkKey = GDK_KEY_equal                       },
-  { .item = ITM_GREATER_THAN               ,  .gdkKey = GDK_KEY_greater                     },
-  { .item = ITM_QUESTION_MARK              ,  .gdkKey = GDK_KEY_question                    },
-  { .item = ITM_AT                         ,  .gdkKey = GDK_KEY_at                          },
+
   { .item = ITM_LEFT_SQUARE_BRACKET        ,  .gdkKey = GDK_KEY_bracketleft                 },
   { .item = ITM_BACK_SLASH                 ,  .gdkKey = GDK_KEY_backslash                   },
   { .item = ITM_RIGHT_SQUARE_BRACKET       ,  .gdkKey = GDK_KEY_bracketright                },
@@ -3668,6 +3570,7 @@ const gdkKeyMap_t gdkKeyMap[] = {
   { .item = ITM_PIPE                       ,  .gdkKey = GDK_KEY_bar                         },
   { .item = ITM_RIGHT_CURLY_BRACKET        ,  .gdkKey = GDK_KEY_braceright                  },
   { .item = ITM_TILDE                      ,  .gdkKey = GDK_KEY_asciitilde                  },
+
   { .item = ITM_INVERTED_EXCLAMATION_MARK  ,  .gdkKey = GDK_KEY_exclamdown                  },
   { .item = ITM_CENT                       ,  .gdkKey = GDK_KEY_cent                        },
   { .item = ITM_POUND                      ,  .gdkKey = GDK_KEY_sterling                    },
@@ -3786,6 +3689,7 @@ const gdkKeyMap_t gdkKeyMap[] = {
 //  #define ITM_MUCH_GREATER 952                                ,                                        ,
 //  #define ITM_SUN 953                                ,                                        ,
   { .item = ITM_TRANSPOSED                 ,  .gdkKey = GDK_KEY_downtack                    },
+
 //  #define ITM_PERPENDICULAR 955                                ,                                        ,
 //  #define ITM_XOR 956                                ,                                        ,
 //  #define ITM_NAND 957                                ,                                        ,
@@ -3849,6 +3753,9 @@ const gdkKeyMap_t gdkKeyMap[] = {
   { .item = ITM_SUP_7                      ,  .gdkKey = GDK_KEY_sevensuperior               },
   { .item = ITM_SUP_8                      ,  .gdkKey = GDK_KEY_eightsuperior               },
   { .item = ITM_SUP_9                      ,  .gdkKey = GDK_KEY_ninesuperior                },
+
+//NOTE: This is considered the maximum
+
 //  #define ITM_SUP_A 1018                                ,                                        ,
 //  #define ITM_SUP_B 1019                                ,                                        ,
 //  #define ITM_SUP_C 1020                                ,                                        ,
@@ -3911,16 +3818,7 @@ const gdkKeyMap_t gdkKeyMap[] = {
 //  #define ITM_SUB_INFINITY 1077                                ,                                        ,
 //  #define ITM_SUB_10 1078                                ,                                        ,
 //  #define ITM_SUB_E_OUTLINE 1079                                ,                                        ,
-  { .item = ITM_SUB_0                      ,  .gdkKey = GDK_KEY_zerosubscript               },
-  { .item = ITM_SUB_1                      ,  .gdkKey = GDK_KEY_onesubscript                },
-  { .item = ITM_SUB_2                      ,  .gdkKey = GDK_KEY_twosubscript                },
-  { .item = ITM_SUB_3                      ,  .gdkKey = GDK_KEY_threesubscript              },
-  { .item = ITM_SUB_4                      ,  .gdkKey = GDK_KEY_foursubscript               },
-  { .item = ITM_SUB_5                      ,  .gdkKey = GDK_KEY_fivesubscript               },
-  { .item = ITM_SUB_6                      ,  .gdkKey = GDK_KEY_sixsubscript                },
-  { .item = ITM_SUB_7                      ,  .gdkKey = GDK_KEY_sevensubscript              },
-  { .item = ITM_SUB_8                      ,  .gdkKey = GDK_KEY_eightsubscript              },
-  { .item = ITM_SUB_9                      ,  .gdkKey = GDK_KEY_ninesubscript               },
+
 //  #define ITM_SUB_A 1090                                ,                                        ,
 //  #define ITM_SUB_B 1091                                ,                                        ,
 //  #define ITM_SUB_C 1092                                ,                                        ,
@@ -4026,16 +3924,52 @@ static int16_t _getGdkKeyItem (uint32_t gdkK) {
   else if('a' <= gdkK && gdkK <= 'z' && alphaCase == AC_UPPER) {
     gdkKey -= (ITM_a - ITM_A);
   }
-  int16_t i=0;
-  while(gdkKeyMap[i].item != 0) {
-    if(gdkKeyMap[i].gdkKey == gdkKey) {
-      break;
-    }
-    i++;
+
+  else if( (GDK_KEY_Shift_L <= gdkKey && gdkKey <= GDK_KEY_Hyper_R)
+        || (GDK_KEY_Home <= gdkKey && gdkKey <= GDK_KEY_Begin)
+        || (GDK_KEY_F1 <= gdkKey && gdkKey <= GDK_KEY_F14)
+        || (GDK_KEY_zerosubscript < gdkKey)) {
+    return 0;
   }
-  //printf("_getGdkKeyItem deadKey=%i gdkKey=%i ->\n", deadKey, gdkKey);
-  //printf("               %i ->\n", gdkKeyMap[i].item);
-  return gdkKeyMap[i].item;
+  else if(GDK_KEY_0 <= gdkKey && gdkKey <= GDK_KEY_9 ) {
+    return ITM_0 + (gdkKey - GDK_KEY_0);
+  }
+  else if(GDK_KEY_A <= gdkKey && gdkKey <= GDK_KEY_Z ) {
+    return ITM_A + (gdkKey - GDK_KEY_A);
+  }
+  else if(GDK_KEY_a <= gdkKey && gdkKey <= GDK_KEY_z ) {
+    return ITM_a + (gdkKey - GDK_KEY_a);
+  }
+  else if(GDK_KEY_KP_0 <= gdkKey && gdkKey <= GDK_KEY_KP_9 ) {
+    return ITM_0 + (gdkKey - GDK_KEY_KP_0);
+  }
+  else if(GDK_KEY_KP_Multiply <= gdkKey && gdkKey <= GDK_KEY_KP_Divide ) {
+    return ITM_ASTERISK + (gdkKey - GDK_KEY_KP_Multiply);
+  }
+  else if(GDK_KEY_space <= gdkKey && gdkKey <= GDK_KEY_slash ) {
+    return ITM_SPACE + (gdkKey - GDK_KEY_space);
+  }
+  else if(GDK_KEY_colon <= gdkKey && gdkKey <= GDK_KEY_at ) {
+    return ITM_COLON + (gdkKey - GDK_KEY_colon);
+  }
+  else if(GDK_KEY_zerosubscript <= gdkKey && gdkKey <= GDK_KEY_ninesubscript ) {
+    return ITM_SUB_0 + (gdkKey - GDK_KEY_zerosubscript);
+  }
+  else {
+    int16_t i=0;
+    //printf("starting table search ...");
+    while(gdkKeyMap[i].item != 0) {
+      if(gdkKeyMap[i].gdkKey == gdkKey) {
+        break;
+      }
+      i++;
+    }
+    //printf("_getGdkKeyItem deadKey=%i gdkKey=%i ->\n", deadKey, gdkKey);
+    //printf("               %i ->\n", gdkKeyMap[i].item);
+    //printf("table search done.");
+    return gdkKeyMap[i].item;
+  }
+  return 0;
 }
 
 
