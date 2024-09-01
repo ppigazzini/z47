@@ -122,15 +122,15 @@ void resetShiftState(void) {
   fnTimerStop(TO_3S_CTFF);     //to make sure a repeated key does not restart the f shift which just reset
   fnTimerStop(TO_AUTO_REPEAT);
 
-  if(shiftF || shiftG) {                                                        //vv dr
+  if(shiftF || shiftG) {
     shiftF = false;
     shiftG = false;
     screenUpdatingMode &= ~SCRUPD_MANUAL_SHIFT_STATUS;
     showShiftState();
-    screenUpdatingMode |= (SCRUPD_SKIP_STACK_ONE_TIME | SCRUPD_SKIP_MENU_ONE_TIME); //JMNEWSPEEDUP
+    screenUpdatingMode |= (SCRUPD_SKIP_STACK_ONE_TIME);                         // | SCRUPD_SKIP_MENU_ONE_TIME); //JMNEWSPEEDUP; removed the MENU skip again, as the fglines do not get deleted in PEM AIM
     refreshScreen(100);
-    refreshModeGui();                                                             //JM refreshModeGui
-  }                                                                             //^^
+    refreshModeGui();                                                           //JM refreshModeGui
+  }
 }
 
 
@@ -282,7 +282,17 @@ void resetKeytimers(void) {
     //printf("\n\n >>>> ## result=%i key_no=%i *funcParam=%s  [0]=%u\n", *result, key_no, (char*)funcParam, ((char*)funcParam)[0]);
 
     switch(calcMode) {
-      case CM_ASSIGN :
+      case CM_ASSIGN :{
+        switch(*result) {
+          case ITM_EXIT1:
+            longpressDelayedkey3 = -MNU_PFN;
+            longpressDelayedkey2 = -MNU_HOME;
+            longpressDelayedkey1 = -MNU_MyMenu;
+            break;
+          default:;
+        }
+        break;
+      }
       case CM_NORMAL : {                                         //longpress special keys
         switch(*result) {
           case ITM_F:
@@ -476,8 +486,6 @@ void resetKeytimers(void) {
             longpressDelayedkey3 = ITM_CLRMOD;     // EXIT longpress DOES CLRMOD
             longpressDelayedkey2 = LongpressEXIT1; // LongpressEXIT1 : C47: MyAlpha or MyMenu; R47: SNAP
             longpressDelayedkey1 = -MNU_PFN;
-            break;
-
             break;
           default:;
         }
