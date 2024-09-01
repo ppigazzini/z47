@@ -282,7 +282,17 @@ void resetKeytimers(void) {
     //printf("\n\n >>>> ## result=%i key_no=%i *funcParam=%s  [0]=%u\n", *result, key_no, (char*)funcParam, ((char*)funcParam)[0]);
 
     switch(calcMode) {
-      case CM_ASSIGN :
+      case CM_ASSIGN :{
+        switch(*result) {
+          case ITM_EXIT1:
+            longpressDelayedkey3 = -MNU_PFN;
+            longpressDelayedkey2 = -MNU_HOME;
+            longpressDelayedkey1 = -MNU_MyMenu;
+            break;
+          default:;
+        }
+        break;
+      }
       case CM_NORMAL : {                                         //longpress special keys
         switch(*result) {
           case ITM_F:
@@ -476,8 +486,6 @@ void resetKeytimers(void) {
             longpressDelayedkey3 = ITM_CLRMOD;     // EXIT longpress DOES CLRMOD
             longpressDelayedkey2 = LongpressEXIT1; // LongpressEXIT1 : C47: MyAlpha or MyMenu; R47: SNAP
             longpressDelayedkey1 = -MNU_PFN;
-            break;
-
             break;
           default:;
         }

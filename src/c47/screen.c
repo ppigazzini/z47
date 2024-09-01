@@ -1893,7 +1893,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
     showFunctionNameCounter = delayInMs;
     stringAppend(padding,functionName);
     stringAppend(padding + stringByteLength(padding),"     ");
-    if((PROBMENU || stringWidth(padding, &standardFont, true, true) + 1 /*JM 20*/ + lineTWidth > SCREEN_WIDTH) && calcMode != CM_PEM) {
+    if(calcMode == CM_ASSIGN || ((PROBMENU || stringWidth(padding, &standardFont, true, true) + 1 /*JM 20*/ + lineTWidth > SCREEN_WIDTH) && calcMode != CM_PEM)) {
       clearRegisterLine(REGISTER_T, true, false);
     }
 

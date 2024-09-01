@@ -829,6 +829,38 @@ bool_t lowercaseselected;    //the only place that this is set, is in processKey
         screenUpdatingMode &= ~SCRUPD_ONE_TIME_FLAGS;
         return true;
       }
+
+      case MNU_HOME: {
+        if(!setCurrentUserMenu(-MNU_DYNAMIC,"HOME")) {
+          #if defined(PC_BUILD)
+            printf("Not done!\n");
+          #endif //PC_BUILD
+          return false;
+        }
+        assignToUserMenu((*data - '1') + (shiftG ? 12 : shiftF ? 6 : 0));
+        calcMode = previousCalcMode;
+        shiftF = shiftG = false;
+        _closeCatalog();
+        refreshScreen(102);
+        screenUpdatingMode &= ~SCRUPD_ONE_TIME_FLAGS;
+        return true;
+      }
+      case MNU_PFN: {
+        if(!setCurrentUserMenu(-MNU_DYNAMIC,"P.FN")) {
+          #if defined(PC_BUILD)
+            printf("Not done!\n");
+          #endif //PC_BUILD
+          return false;
+        }
+        assignToUserMenu((*data - '1') + (shiftG ? 12 : shiftF ? 6 : 0));
+        calcMode = previousCalcMode;
+        shiftF = shiftG = false;
+        _closeCatalog();
+        refreshScreen(102);
+        screenUpdatingMode &= ~SCRUPD_ONE_TIME_FLAGS;
+        return true;
+      }
+
       case MNU_CATALOG:
       case MNU_ALPHA: //JM
       case MNU_CHARS:
@@ -1051,6 +1083,11 @@ int16_t lastItem = 0;
               itemToBeAssigned = item;
               leaveAsmMode();
               popSoftmenu();
+            }
+            else if(calcMode == CM_ASSIGN && itemToBeAssigned != 0 && (item == -MNU_HOME || item == -MNU_PFN || item == -MNU_MyMenu)) {
+              itemToBeAssigned = item;
+              leaveAsmMode();
+              showSoftmenu(item);
             }
             else {
                     #if defined(VERBOSEKEYS)
@@ -2098,6 +2135,9 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
       goto RELEASE_END;
       return;
     }
+
+
+      //printf("release: showFunctionNameItem=%i calcMode=%i lastItem = %i keyActionProcessed=%i showFunctionNameItem=%i releaseOverride=%i tam.mode=%i tamBuffer=%s tamBuffer[0]=%u\n", showFunctionNameItem, calcMode, lastItem, keyActionProcessed, showFunctionNameItem, releaseOverride, tam.mode, tamBuffer, tamBuffer[0]);
 
       screenUpdatingMode |= SCRUPD_MANUAL_STATUSBAR;
       screenUpdatingMode |= SCRUPD_MANUAL_MENU;
@@ -3152,11 +3192,22 @@ RELEASE_END:
                       case ITM_BACKSPACE: {
                         break;
                       }
-                      default: {
-                        tamBuffer[0] = 0;
-                        keyActionProcessed = true;
+                      default: { //any other item
+                        //printf("AAA: calcMode=%i lastItem = %i keyActionProcessed=%i showFunctionNameItem=%i releaseOverride=%i tam.mode=%i tamBuffer=%s tamBuffer[0]=%u\n", calcMode, lastItem, keyActionProcessed, showFunctionNameItem, releaseOverride, tam.mode, tamBuffer, tamBuffer[0]);
+                        //enable this code to let the HOME and P.FN menus on the keyboard be active
+                        #if defined(HOME_AND_PFN_KEYS)
+                        if((item == -MNU_HOME || item == -MNU_PFN || item == -MNU_MyMenu) && tamBuffer[0] != 0) {
+                          showSoftmenu(item);
+                          shiftG = false;
+                          shiftF = false;
+                        } else
+                        #endif //HOME_AND_PFN_KEYS
+                        {
+                          tamBuffer[0] = 0;
+                          keyActionProcessed = true;
+                        }
+                      }
                     }
-                  }
                   }
                 }
                 break;
