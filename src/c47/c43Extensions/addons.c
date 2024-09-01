@@ -2052,8 +2052,8 @@ void fnRESET_Mya(void){
       itemToBeAssigned = ASSIGN_CLEAR;
       assignToMyAlpha_(12 + fn - 1);
     }
-    itemToBeAssigned = -MNU_ALPHA;
-    assignToMyAlpha_(5);
+//    itemToBeAssigned = -MNU_ALPHA;
+//    assignToMyAlpha_(5);
     refreshScreen(43);
   #endif // !TESTSUITE_BUILD
 }
