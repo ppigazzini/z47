@@ -122,15 +122,15 @@ void resetShiftState(void) {
   fnTimerStop(TO_3S_CTFF);     //to make sure a repeated key does not restart the f shift which just reset
   fnTimerStop(TO_AUTO_REPEAT);
 
-  if(shiftF || shiftG) {                                                        //vv dr
+  if(shiftF || shiftG) {
     shiftF = false;
     shiftG = false;
     screenUpdatingMode &= ~SCRUPD_MANUAL_SHIFT_STATUS;
     showShiftState();
-    screenUpdatingMode |= (SCRUPD_SKIP_STACK_ONE_TIME | SCRUPD_SKIP_MENU_ONE_TIME); //JMNEWSPEEDUP
+    screenUpdatingMode |= (SCRUPD_SKIP_STACK_ONE_TIME);                         // | SCRUPD_SKIP_MENU_ONE_TIME); //JMNEWSPEEDUP; removed the MENU skip again, as the fglines do not get deleted in PEM AIM
     refreshScreen(100);
-    refreshModeGui();                                                             //JM refreshModeGui
-  }                                                                             //^^
+    refreshModeGui();                                                           //JM refreshModeGui
+  }
 }
 
 

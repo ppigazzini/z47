@@ -3160,7 +3160,7 @@ RELEASE_END:
 
                     itemToBeAssigned = numlockReplacements(100,item,getSystemFlag(FLAG_NUMLOCK),false,false);
                     if(ITM_A <= itemToBeAssigned && itemToBeAssigned <= ITM_Z && lowercaseselected) {
-                      itemToBeAssigned += 26;
+                      itemToBeAssigned += (ITM_a - ITM_A);
                     }
                     #if defined(PC_BUILD) && defined(VERBOSE_DETERMINEITEM)
                       printf("**[DL]** itemToBeAssigned = %d %s\n",itemToBeAssigned,indexOfItems[itemToBeAssigned].itemSoftmenuName);
