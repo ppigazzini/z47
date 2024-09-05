@@ -1580,7 +1580,7 @@ int32_t getSmallestDenom(const real_t *val) {
 
   /* loop finding terms until denom gets too big */
   while(m[1][0] *  ( ai = realToInt32C47(&xx) ) + m[1][1] <= maxden) {
-    //printf("  ai = %8i    ",ai); printf("  m00=%8i m11=%8i m01=%8i m10=%8i   ", m[0][0], m[1][1], m[0][1], m[1][0]); printRealToConsole(&xx,"  xx="," + m[1][1] ");
+    //printf("  ai = %12i  condition:%8i<%6i ",ai, m[1][0] * ai + m[1][1], maxden ); printf("  m00=%8i m11=%8i m01=%8i m10=%8i   ", m[0][0], m[1][1], m[0][1], m[1][0]); printRealToConsole(&xx,"  xx="," + m[1][1] \n");
     int32_t t;
     t = m[0][0] * ai + m[0][1];
     m[0][1] = m[0][0];
@@ -1591,12 +1591,13 @@ int32_t getSmallestDenom(const real_t *val) {
 
     int32ToReal(ai,&temp);
     realSubtract(&xx,&temp,&xx,&ctxtReal39);
+    //printf("                                               "); printf("  m00=%8i m11=%8i m01=%8i m10=%8i   ", m[0][0], m[1][1], m[0][1], m[1][0]); printRealToConsole(&xx,"  xx="," + m[1][1] \n");
     if(realIsZero(&xx) || realCompareAbsLessThan(&xx, const_1e_24)) {
       break;  // AF: division by zero
     }
     realDivide(const_1,&xx,&xx,&ctxtReal39);
 
-    if(realCompareGreaterThan(&xx,const_2p31__1)) {
+    if(realCompareGreaterThan(&xx,const_10p9__1)) {
       #if defined(PC_BUILD)
         printf("\nRepresentation failure. Quitting fraction loop.\n");
       #endif //PC_BUILD
