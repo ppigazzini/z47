@@ -53,10 +53,19 @@
 #endif
 
 #include "c47.h"
-#define configFileVersion                  10000013 // Replace Norm_Key_00_VAR by the structure Norm_Key_00; Arbitrary starting point version 10 000 001 of STATE files. Allowable values are 10000000 to 20000000
-#define BACKUP_VERSION                     1004     // Replace Norm_Key_00_VAR by the structure Norm_Key_00;
-#define VersionAllowed                     10000005 // This code will not autoload versions earlier than this
 
+// This is used for the backup.cfg simulator backup file
+// The variable backupVersion is used in the connection
+#define BACKUP_VERSION                     1005     // Remove superfluous reporting when old cfg file items are not found in new files
+/*
+1004     // Replace Norm_Key_00_VAR by the structure Norm_Key_00;
+1005     // 2024-09-06 Remove superfluous reporting when old cfg file items are not found in new files
+*/
+
+
+// This is used for the state files
+#define configFileVersion                  10000013 // Replace Norm_Key_00_VAR by the structure Norm_Key_00; Arbitrary starting point version 10 000 001 of STATE files. Allowable values are 10000000 to 20000000
+#define VersionAllowed                     10000005 // This code will not autoload versions earlier than this
 /*
 10000001 // arbitrary starting point version 10 000 001
 10000002 // 2022-12-05 First release, version 108_08f
@@ -1065,7 +1074,9 @@ uint8_t output = parameter;
     restoreStateValue(&SAVED_SIGMA_LASTX,              sizeof(SAVED_SIGMA_LASTX),                                   "SAVED_SIGMA_LASTX",              "real");
     restoreStateValue(&SAVED_SIGMA_LASTY,              sizeof(SAVED_SIGMA_LASTY),                                   "SAVED_SIGMA_LASTY",              "real");
     SAVED_SIGMA_lastAddRem = SIGMA_NONE;
-    restoreStateValue(&SAVED_SIGMA_lastAddRem,         sizeof(SAVED_SIGMA_lastAddRem),                              "SAVED_SIGMA_LAc1",               "int8");     //manual correction as the type allocation was wrong here
+    if(backupVersion <= 1004) {
+      restoreStateValue(&SAVED_SIGMA_lastAddRem,         sizeof(SAVED_SIGMA_lastAddRem),                              "SAVED_SIGMA_LAc1",               "int8");     //manual correction as the type allocation was wrong here
+    }
     restoreStateValue(&SAVED_SIGMA_lastAddRem,         sizeof(SAVED_SIGMA_lastAddRem),                              "SAVED_SIGMA_lastAddRem",         "int8");     //manual correction as the type allocation was wrong here
     if(SAVED_SIGMA_lastAddRem == -1) SAVED_SIGMA_lastAddRem = SIGMA_MINUS;
   //if(SAVED_SIGMA_lastAddRem == 0 ) SAVED_SIGMA_lastAddRem = SIGMA_NONE;
@@ -1138,8 +1149,8 @@ uint8_t output = parameter;
     //restoreStateValue(&newParam,                       sizeof(newParam),                                            "newParam",                       "parameterType");
 
     bool_t tmp1 = false;
-    restoreStateValue(&tmp1,                           sizeof(tmp1),                                                "constantFractions",              "bool");
     if(backupVersion < 1003) {
+      restoreStateValue(&tmp1,                           sizeof(tmp1),                                                "constantFractions",              "bool");
       printf("Version number of configfile < 1003, transferring IRFRAC.");
       if(tmp1) {
         setSystemFlag(FLAG_IRFRAC);
@@ -1148,8 +1159,8 @@ uint8_t output = parameter;
         clearSystemFlag(FLAG_IRFRAC);
       }
     }
-    restoreStateValue(&tmp1,                           sizeof(tmp1),                                                "constantFractionsOn",            "bool");
     if(backupVersion < 1003) {
+      restoreStateValue(&tmp1,                           sizeof(tmp1),                                                "constantFractionsOn",            "bool");
       printf("Version number of configfile < 1003, transferring IRF_ON.");
       if(tmp1) {
         setSystemFlag(FLAG_IRF_ON);
@@ -1158,8 +1169,8 @@ uint8_t output = parameter;
         clearSystemFlag(FLAG_IRF_ON);
       }
     }
-    restoreStateValue(&tmp1,                           sizeof(tmp1),                                                "eRPN",                           "bool");    //JM vv
     if(backupVersion < 1003) {
+      restoreStateValue(&tmp1,                           sizeof(tmp1),                                                "eRPN",                           "bool");    //JM vv
       printf("Version number of configfile < 1003, transferring eRPN.");
       if(tmp1) {
         setSystemFlag(FLAG_ERPN);
@@ -1168,8 +1179,8 @@ uint8_t output = parameter;
         clearSystemFlag(FLAG_ERPN);
       }
     }
-    restoreStateValue(&tmp1,                           sizeof(tmp1),                                                "jm_LARGELI",                     "bool");
     if(backupVersion < 1003) {
+      restoreStateValue(&tmp1,                           sizeof(tmp1),                                                "jm_LARGELI",                     "bool");
       printf("Version number of configfile < 1003, transferring jm_LARGELI.");
       if(tmp1) {
         setSystemFlag(FLAG_LARGELI);
@@ -1178,8 +1189,8 @@ uint8_t output = parameter;
         clearSystemFlag(FLAG_LARGELI);
       }
     }
-    restoreStateValue(&tmp1,                           sizeof(tmp1),                                                "CPXMULT",                        "bool");    //JM
     if(backupVersion < 1003) {
+      restoreStateValue(&tmp1,                           sizeof(tmp1),                                                "CPXMULT",                        "bool");    //JM
       printf("Version number of configfile < 1003, transferring CPXMULT.");
       if(tmp1) {
         setSystemFlag(FLAG_CPXMULT);
@@ -1188,8 +1199,8 @@ uint8_t output = parameter;
         clearSystemFlag(FLAG_CPXMULT);
       }
     }
-    restoreStateValue(&tmp1,                           sizeof(tmp1),                                               "numLock",                        "bool");    //JM ^^
     if(backupVersion < 1003) {
+      restoreStateValue(&tmp1,                           sizeof(tmp1),                                               "numLock",                        "bool");    //JM ^^
       printf("Version number of configfile < 1003, transferring NUMLOCK.");
       if(tmp1) {
         setSystemFlag(FLAG_NUMLOCK);
@@ -1198,8 +1209,8 @@ uint8_t output = parameter;
         clearSystemFlag(FLAG_NUMLOCK);
       }
     }
-    restoreStateValue(&tmp1,                           sizeof(tmp1),                                              "SI_All",                         "bool");    //JM
     if(backupVersion < 1003) {
+      restoreStateValue(&tmp1,                           sizeof(tmp1),                                              "SI_All",                         "bool");    //JM
       printf("Version number of configfile < 1003, transferring PFX_ALL.");
       if(tmp1) {
         setSystemFlag(FLAG_PFX_ALL);
