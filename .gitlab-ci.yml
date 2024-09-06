@@ -14,10 +14,13 @@ variables:
 
 macOS:
   stage: build
-  image: macos-12-xcode-14
+  image: macos-14-xcode-15
   script:
     - HOMEBREW_NO_AUTO_UPDATE=1 HOMEBREW_NO_INSTALL_CLEANUP=1 HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1 brew install ccache ninja python@3.9 gtk+3 gmp pulseaudio
-    - python3 -m pip install meson
+    - pip3 install --upgrade pip
+    - python3 -m pip install --user meson
+    - USER_BASE_BIN=$(python3 -m site --user-base)/bin 
+    - export PATH="$USER_BASE_BIN:$PATH"  # Add local bin to PATH
     - make dist_macos
   artifacts:
     expire_in: 1 day

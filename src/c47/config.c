@@ -842,21 +842,16 @@ void fnFractionType(uint16_t unusedButMandatoryParameter) {
       default                : state = STATE_abc;       break;                    //
     }
   }
-  else {
-    if(getSystemFlag(FLAG_IRFRAC) && !getSystemFlag(FLAG_IRF_ON)) { // 10x0 --> 11x0 A     //Added this to use the 'sticky' IRFRAC flag, meaning change to .d then re-activate the last mode with ab/c
-      setSystemFlag(FLAG_IRF_ON);
-      return;
-    }
-    switch(state) {
-      case STATE_bc          : state = STATE_exfr_bc;   break;                    // 0b0001 -->
-      case STATE_abc         : state = STATE_exfr_abc;  break;                    // 0b0011 -->
-      case STATE_exfr_bc     : state = STATE_offbc;     break;                    // 0b1100 -->
-      case STATE_exfr_abc    : state = STATE_offabc;    break;                    // 0b1110 -->
-      case STATE_offbc       : state = STATE_bc;        break;                    // 0b0000 -->
-      case STATE_offabc      : state = STATE_abc;       break;                    // 0b0010 -->
-      default                : state = STATE_abc;       break;                    //
-    }
+  else if(getSystemFlag(FLAG_IRFRAC)) {
+    flipSystemFlag(FLAG_IRF_ON);
+    return;
   }
+  else if(!getSystemFlag(FLAG_IRFRAC)) {
+    clearSystemFlag(FLAG_IRF_ON);
+    flipSystemFlag(FLAG_FRACT);
+    return;
+  }
+
   if((state & 8)) setSystemFlag(FLAG_IRFRAC); else clearSystemFlag(FLAG_IRFRAC);
   if((state & 4)) setSystemFlag(FLAG_IRF_ON); else clearSystemFlag(FLAG_IRF_ON);
   if(((state & 2) == 2) == !getSystemFlag(FLAG_PROPFR)) flipSystemFlag(FLAG_PROPFR);
@@ -1959,6 +1954,7 @@ void fnKeysManagement(uint16_t choice) {
       calcModel = choice;
       fnClearFlag(FLAG_USER);
       fnKeysManagement(USER_KRESET);                      // Reset all user keys when a permanent layout is changed, Reset +NRM when a permanent layout is changed
+      fnShowVersion(choice);
       break;
 
 

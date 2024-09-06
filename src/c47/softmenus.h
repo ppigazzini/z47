@@ -13,6 +13,8 @@
 #include <stdint.h>
 
 int16_t currentMenu(void);
+bool_t  isAlphaSubmenu(uint8_t n);
+
 
 
 uint8_t *getNthString           (uint8_t *ptr, int16_t n); // Starting with string 0 (the 1st string is returned for n=0)

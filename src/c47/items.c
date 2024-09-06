@@ -522,12 +522,33 @@ bool_t itemNotAvail(int16_t itemNr) {
 
 
         #if defined(VERBOSEKEYS)
-          printf("itmes.c: runfunction (after tamEnterMode): %i, %s\n", softmenu[softmenuStack[0].softmenuId].menuItem, indexOfItems[-softmenu[softmenuStack[0].softmenuId].menuItem].itemSoftmenuName);
+          printf("items.c: runfunction (after tamEnterMode): %i, %s\n", softmenu[softmenuStack[0].softmenuId].menuItem, indexOfItems[-softmenu[softmenuStack[0].softmenuId].menuItem].itemSoftmenuName);
         #endif // VERBOSEKEYS
         return;
       }
-      bool_t doNotAddStep = (func == ITM_EXIT1 || func == ITM_CLRMOD || func == ITM_SNAP || func == ITM_NOP || func == ITM_BASEMENU) && currentKeyCode == 32;                  // longpress commands not to be added
+      bool_t doNotAddStep = ((func == ITM_EXIT1 || func == ITM_CLRMOD || func == ITM_SNAP || func == ITM_NOP || func == ITM_BASEMENU) && currentKeyCode == 32);                 // longpress commands not to be added
+      switch(func) {
+        case ITM_T_UP_ARROW:
+        case ITM_T_DOWN_ARROW:
+        case ITM_T_LLEFT_ARROW:
+        case ITM_T_RRIGHT_ARROW:
+        case ITM_T_LEFT_ARROW:
+        case ITM_T_RIGHT_ARROW:
+        case ITM_ASSIGN:
+        case ITM_XSWAP:
+        case ITM_XPARSE:
+        case CHR_case:
+        case CHR_num:
+        case ITM_SCR:
+        case ITM_USERMODE:
+                doNotAddStep |= (calcMode == CM_PEM && getSystemFlag(FLAG_ALPHA)); break;
+        default:;
+      }
+
       if(calcMode == CM_PEM && !tam.mode && (!(catalog && catalog != CATALOG_MVAR && !fnKeyInCatalog)) && !doNotAddStep) {
+        #if defined(VERBOSEKEYS)
+          printf("items.c: runfunction (before addStepInProgram) func=%i\n",func);
+        #endif // VERBOSEKEYS
         addStepInProgram(func);
         return;
       }
@@ -3799,7 +3820,15 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 2393 */  { fnKeysManagement,             USER_R47fg_bk,               STD_fg " " STD_BOX,                            STD_fg " " STD_BOX,                            (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2394 */  { fnKeysManagement,             USER_R47fg_g,                STD_fg " " "g",                                STD_fg " " "g",                                (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2395 */  { fnKeysManagement,             USER_E47,                    "EXPR",                                        "EXPR",                                        (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 2396 */  { itemToBeCoded,                NOPARAM,                     "ANGLE?",                                      "ANGLE?",                                      (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_NONE         },
+/* 2397 */  { itemToBeCoded,                NOPARAM,                     "DATE?",                                       "DATE?",                                       (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_NONE         },
+/* 2398 */  { itemToBeCoded,                NOPARAM,                     "LINT?",                                       "LINT?",                                       (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_NONE         },
+/* 2399 */  { itemToBeCoded,                NOPARAM,                     "NUMBR?",                                      "NUMBR?",                                      (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_NONE         },
+/* 2400 */  { itemToBeCoded,                NOPARAM,                     "SINT?",                                       "SINT?",                                       (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_NONE         },
+/* 2401 */  { itemToBeCoded,                NOPARAM,                     "TIME?",                                       "TIME?",                                       (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_NONE         },
+/* 2402 */  { itemToBeCoded,                NOPARAM,                     "TYPE?",                                       "TYPE?",                                       (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_NONE         },
 
-/* 2396 */  { itemToBeCoded,                NOPARAM,                     "",                                            "Last item",                                   (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED},
+
+/* 2403 */  { itemToBeCoded,                NOPARAM,                     "",                                            "Last item",                                   (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED},
 
 };
