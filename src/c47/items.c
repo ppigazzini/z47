@@ -522,12 +522,33 @@ bool_t itemNotAvail(int16_t itemNr) {
 
 
         #if defined(VERBOSEKEYS)
-          printf("itmes.c: runfunction (after tamEnterMode): %i, %s\n", softmenu[softmenuStack[0].softmenuId].menuItem, indexOfItems[-softmenu[softmenuStack[0].softmenuId].menuItem].itemSoftmenuName);
+          printf("items.c: runfunction (after tamEnterMode): %i, %s\n", softmenu[softmenuStack[0].softmenuId].menuItem, indexOfItems[-softmenu[softmenuStack[0].softmenuId].menuItem].itemSoftmenuName);
         #endif // VERBOSEKEYS
         return;
       }
-      bool_t doNotAddStep = (func == ITM_EXIT1 || func == ITM_CLRMOD || func == ITM_SNAP || func == ITM_NOP || func == ITM_BASEMENU) && currentKeyCode == 32;                  // longpress commands not to be added
+      bool_t doNotAddStep = ((func == ITM_EXIT1 || func == ITM_CLRMOD || func == ITM_SNAP || func == ITM_NOP || func == ITM_BASEMENU) && currentKeyCode == 32);                 // longpress commands not to be added
+      switch(func) {
+        case ITM_T_UP_ARROW:
+        case ITM_T_DOWN_ARROW:
+        case ITM_T_LLEFT_ARROW:
+        case ITM_T_RRIGHT_ARROW:
+        case ITM_T_LEFT_ARROW:
+        case ITM_T_RIGHT_ARROW:
+        case ITM_ASSIGN:
+        case ITM_XSWAP:
+        case ITM_XPARSE:
+        case CHR_case:
+        case CHR_num:
+        case ITM_SCR:
+        case ITM_USERMODE:
+                doNotAddStep |= (calcMode == CM_PEM && getSystemFlag(FLAG_ALPHA)); break;
+        default:;
+      }
+
       if(calcMode == CM_PEM && !tam.mode && (!(catalog && catalog != CATALOG_MVAR && !fnKeyInCatalog)) && !doNotAddStep) {
+        #if defined(VERBOSEKEYS)
+          printf("items.c: runfunction (before addStepInProgram) func=%i\n",func);
+        #endif // VERBOSEKEYS
         addStepInProgram(func);
         return;
       }
