@@ -11,7 +11,7 @@
 // JM VARIOUS OPTIONS
 //*********************************
 
-#define VERSION1 "0.109.02.06β2"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
+#define VERSION1 "0.109.02.06B2"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
 
 //Version history
 //0.109.02.00
@@ -21,7 +21,7 @@
 //0.109.02.04
 //0.109.02.05
 //0.109.02.05B for bugfixes
-//0.109.02.06β2 for bugfixes
+//0.109.02.06B2 for bugfixes
 
 
 
