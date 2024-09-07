@@ -339,6 +339,9 @@ uint8_t output = parameter;
     saveStateValue(kbd_usr,                         sizeof(kbd_usr),                                             "kbd_usr",                        "hexDump");
     saveStateValue(userMenuItems,                   sizeof(userMenuItems),                                       "userMenuItems",                  "hexDump");
     saveStateValue(userAlphaItems,                  sizeof(userAlphaItems),                                      "userAlphaItems",                 "hexDump");
+    saveStateValue(lastTemp,                        sizeof(lastTemp),                                            "lastTemp",                       "hexDump");
+    saveStateValue(&lastFunc,                       sizeof(lastFunc),                                            "lastFunc",                       "int16");
+    saveStateValue(&lastParam,                      sizeof(lastParam),                                           "lastParam",                      "int16");
     saveStateValue(&tam.mode,                       sizeof(tam.mode),                                            "tam.mode",                       "uint16");
     saveStateValue(&tam.function,                   sizeof(tam.function),                                        "tam.function",                   "int16");
     saveStateValue(&tam.alpha,                      sizeof(tam.alpha),                                           "tam.alpha",                      "bool");
@@ -903,6 +906,9 @@ uint8_t output = parameter;
     restoreStateValue(kbd_usr,                         sizeof(kbd_usr),                                             "kbd_usr",                        "hexDump");
     restoreStateValue(userMenuItems,                   sizeof(userMenuItems),                                       "userMenuItems",                  "hexDump");
     restoreStateValue(userAlphaItems,                  sizeof(userAlphaItems),                                      "userAlphaItems",                 "hexDump");
+    restoreStateValue(lastTemp,                        sizeof(lastTemp),                                            "lastTemp",                       "hexDump");
+    restoreStateValue(&lastFunc,                       sizeof(lastFunc),                                            "lastFunc",                       "int16");
+    restoreStateValue(&lastParam,                      sizeof(lastParam),                                           "lastParam",                      "int16");
     restoreStateValue(&tam.mode,                       sizeof(tam.mode),                                            "tam.mode",                       "uint16");
     restoreStateValue(&tam.function,                   sizeof(tam.function),                                        "tam.function",                   "int16");
     restoreStateValue(&tam.alpha,                      sizeof(tam.alpha),                                           "tam.alpha",                      "bool");
@@ -1143,6 +1149,8 @@ uint8_t output = parameter;
     restoreStateValue(&grpGroupingGr1Left,             sizeof(grpGroupingGr1Left),                                  "grpGroupingGr1Left",             "uint8");   //JM
     restoreStateValue(&grpGroupingRight,               sizeof(grpGroupingRight),                                    "grpGroupingRight",               "uint8");   //JM
     restoreStateValue(&MYM3,                           sizeof(MYM3),                                                "MYM3",                           "bool");
+
+
 
     // If you create a new parameter, proceed as following:
     //newParam = 42 // default value for newParam if not found in backup.cgf. This is for compatibility with older versions of backup.cfg.
