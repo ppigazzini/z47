@@ -2137,7 +2137,7 @@ void longIntegerRegisterToDisplayString(calcRegister_t regist, char *displayStri
 
 
 
-void longIntegerRegisterToRealDisplayString(calcRegister_t regist, char *displayString, int32_t strLg, int32_t minimum, bool_t removeTrailingRadix) {    //This function depends on real34ToDisplayString2, which depends on the getSystemFlag(FLAG_2TO10) && displayFormat == DF_UN to be set
+void longIntegerRegisterToRealDisplayString(calcRegister_t regist, char *displayString, int32_t strLg, int16_t maxWidth, int32_t minimum, bool_t removeTrailingRadix) {    //This function depends on real34ToDisplayString2, which depends on the getSystemFlag(FLAG_2TO10) && displayFormat == DF_UN to be set
   longInteger_t lgInt;
   convertLongIntegerRegisterToLongInteger(regist, lgInt);
   longIntegerToAllocatedString(lgInt, displayString, strLg);
@@ -2148,7 +2148,10 @@ void longIntegerRegisterToRealDisplayString(calcRegister_t regist, char *display
   int32ToReal(minimum,&tmp4);
   if(minimum == 0 || !realCompareAbsLessThan(&tmpReal, &tmp4)) {
     realToReal34(&tmpReal, &tmpReal34);
-    real34ToDisplayString2(&tmpReal34, displayString, 34, 100, false, false, isReal);
+    //real34ToDisplayString2(&tmpReal34, displayString,                            34, 100, false, false, isReal);
+    real34ToDisplayString (&tmpReal34, amNone, displayString, &standardFont, maxWidth,  34, 100,        false);
+
+
     if(removeTrailingRadix) {
       int lastGlyphPosition = stringLastGlyph(displayString);
       //check the radix. Two options, a single byte or two-byte radix. Delete the radix if at the right edge of the string.

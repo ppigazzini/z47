@@ -1289,6 +1289,14 @@ void resetOtherConfigurationStuff(void) {
   timeLastOp = 0;
   timeLastOp0 = 0;
   timeLastOp1 = 0;
+
+  #if !defined(TESTSUITE_BUILD) && !defined(GENERATE_CATALOGS)
+    lastFunc    = 0;
+    lastParam   = 0;
+    lastTemp[0] = 0;
+  #endif // !TESTSUITE_BUILD && !GENERATE_CATALOGS
+
+
 }
 
 

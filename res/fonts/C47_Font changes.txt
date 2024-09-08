@@ -267,5 +267,6 @@ PLUS                      "\xa4\xff"
     $007F doublezero            "\x7f"            STD_DOUBLEZERO
     $2125 double struck Z small "\xa1\x25"        STD_INTEGER_Z_SMALL
 
-
+2024-09-08 Add CR glyph
+    $21B5 Downwards Arrow with Corner Leftwards used for CR  STD_CR
 
