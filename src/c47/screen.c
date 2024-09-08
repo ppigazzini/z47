@@ -2033,7 +2033,10 @@ void createSubstrings(uint8_t number) {
   uint16_t mm = stringByteLength(tmpString);
   while(nn <= mm){
     //printf("#%u ",nn);
-    if(tmpString[nn] == ';' || tmpString[nn] == 0x00 || tmpString[nn] == 0x0d || (tmpString[nn] == STD_CR[0] && tmpString[nn+1] == STD_CR[1])) {
+    if(tmpString[nn] == 0x00 || 
+       //tmpString[nn] == ';' || 
+       //tmpString[nn] == 0x0d || 
+      (tmpString[nn] == STD_CR[0] && tmpString[nn+1] == STD_CR[1])) {
       if(tmpString[nn] == STD_CR[0] && tmpString[nn+1] == STD_CR[1]) {
         tmpString[nn++] = 32;
         tmpString[nn  ] = 0;
