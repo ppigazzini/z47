@@ -785,6 +785,7 @@ void stringToASCII(const char *str, char *ascii) {
       if(a1==(uint8_t)(STD_op_j              [0]) && a2==(uint8_t)(STD_op_j              [1])) *ascii = 'j'; else
       if(a1==(uint8_t)(STD_BINARY_ONE        [0]) && a2==(uint8_t)(STD_BINARY_ONE        [1])) *ascii = '1'; else
       if(a1==(uint8_t)(STD_BINARY_ZERO       [0]) && a2==(uint8_t)(STD_BINARY_ZERO       [1])) *ascii = '0'; else
+      if(a1==(uint8_t)(STD_CR                [0]) && a2==(uint8_t)(STD_CR                [1])) *ascii = '|'; else
       //seps
       if(a1==(uint8_t)(STD_RIGHT_TACK        [0]) && a2==(uint8_t)(STD_RIGHT_TACK        [1])) *ascii = '\''; else
       if(a1==(uint8_t)(STD_WDOT              [0]) && a2==(uint8_t)(STD_WDOT              [1])) *ascii = '.'; else

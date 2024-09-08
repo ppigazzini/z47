@@ -2027,30 +2027,31 @@ void createSubstrings(uint8_t number) {
   if(!(lastFuncNo() == ITM_AVIEW || lastFuncNo() == ITM_PROMPT)) {
     return;
   }
-  //printf("createSubstrings(%i): tmpString: %s\n",number, tmpString);
+  //printf("\n\ncreateSubstrings(%i): tmpString: %s\n",number, tmpString);
   uint16_t nn = 0;
   uint16_t counter = 0;
   uint16_t mm = stringByteLength(tmpString);
   while(nn <= mm){
+    //printf("#%u ",nn);
     if(tmpString[nn] == ';' || tmpString[nn] == 0x00 || tmpString[nn] == 0x0d || (tmpString[nn] == STD_CR[0] && tmpString[nn+1] == STD_CR[1])) {
-      if(tmpString[nn] == STD_CR[0] && tmpString[nn+1] == STD_CR[nn+1]) {
+      if(tmpString[nn] == STD_CR[0] && tmpString[nn+1] == STD_CR[1]) {
         tmpString[nn++] = 32;
         tmpString[nn  ] = 0;
+      }
+      else if(tmpString[nn] & 0x80) {
+        nn++;
       }
       else {
         tmpString[nn] = 0;
       }
-      //printf("SSS %u @ %u\n",counter, nn);
+      //printf("\nSSS %u @ %u\n",counter, nn);
       if(++counter == number) break;
     }
     nn++;
-    if(tmpString[nn] & 0x80) {
-      nn++;
-    }
     //printStringToConsole(tmpString,">>","<<\n");
     //printf("ZZZZ n=%u %u %u\n", nn, (uint8_t)tmpString[nn], (uint8_t)tmpString[nn+1]);
   }
-  //    printf("TTT %u nn=%u\n",counter,nn);
+  //printf("TTT %u nn=%u\n",counter,nn);
   tmpString[  nn] = 0;
   while(counter < number && number <= 4) {   //allow up to 5 sub-strings
     tmpString[++nn] = 0;
