@@ -115,7 +115,7 @@ void fnPause(uint16_t duration) {
 //  if(programRunStop != PGM_RUNNING) {                  // Remove this IF to fix PAUSE to update the stack and annunciators
       screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
       screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
-      refreshScreen(13);
+  //    refreshScreen(13);
       #if defined(DMCP_BUILD)
         lcd_refresh();
       #else // !DMCP_BUILD
