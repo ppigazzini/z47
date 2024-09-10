@@ -1629,9 +1629,9 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
                                    #if defined(PC_BUILD) && (VERBOSE_LEVEL > -1)
                                      printf("USER_HRESET\n");
                                    #endif
-    fnKeysManagement(USER_ARESET);                                      //JM USER
+    fnKeysManagement(USER_HRESET);                                      //JM USER
                                    #if defined(PC_BUILD) && (VERBOSE_LEVEL > -1)
-                                     printf("USER_PRESET\n");
+                                     printf("USER_ARESET\n");
                                    #endif
     fnKeysManagement(USER_ARESET);                                      //JM USER
                                    #if defined(PC_BUILD) && (VERBOSE_LEVEL > -1)
