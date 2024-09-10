@@ -24,6 +24,7 @@
 #include "bufferize.h"
 #include "c43Extensions/keyboardTweak.h"
 #include "charString.h"
+#include "calcMode.h"
 #include "config.h"
 #include "dateTime.h"
 #include "defines.h"
@@ -1247,6 +1248,12 @@ void insertStepInProgram(int16_t func) {
     if(aimBuffer[0] != 0 && !getSystemFlag(FLAG_ALPHA)) {
       pemCloseNumberInput();
       aimBuffer[0] = 0;
+    }
+    if(catalog) {      // If called from a catalog such as FNCS, exit catalog and Asm Mode
+      #if !defined(TESTSUITE_BUILD)
+        leaveAsmMode();
+        popSoftmenu();
+      #endif // !TESTSUITE_BUILD
     }
     tam.function = ITM_REM;
     pemAlpha(func);
