@@ -53,11 +53,13 @@ void fnVarMnu(uint16_t label) {
 }
 
 
-uint16_t gTime = 0; 
-static gboolean gTimer(gpointer user_data) {
-  gTime++;
-  return TRUE;
-}
+#if defined(PC_BUILD)
+  uint16_t gTime = 0; 
+  static gboolean gTimer(gpointer user_data) {
+    gTime++;
+    return TRUE;
+  }
+#endif //PC_BUILD
 
 
 void fnPause(uint16_t duration) {
