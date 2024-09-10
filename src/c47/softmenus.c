@@ -261,17 +261,23 @@ DISTNMENU2(menu_Norml,      ITM_NORMLP,     ITM_NORML,      ITM_NORMLU,     ITM_
 /*                                 <---------------------------------------------------------------------- 6 f shifted functions ------------------------------------------------------------------------->  */
 /*                                 <---------------------------------------------------------------------- 6 g shifted functions ------------------------------------------------------------------------->  */
 
-TO_QSPI const int16_t menu_MyPFN[]       = { ITM_LBL,                       ITM_GTO,                    ITM_XEQ,                  ITM_RTN,              -MNU_PFN_2,                  -MNU_PFN_1,
-                                             ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_REM,              -MNU_LOOP,                   -MNU_TEST,
-                                             ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL                     };
 
-TO_QSPI const int16_t menu_PFN_1[]       = { ITM_LBL,                       ITM_GTO,                    ITM_XEQ,                  ITM_RTN,               ITM_END,                    -MNU_PFN_2,
-                                             ITM_SKIP,                      ITM_BACK,                   ITM_XEQP1,                ITM_RTNP1,             ITM_CASE,                    ITM_TICKS,
-                                             ITM_INPUT,                     ITM_AVIEW,                  ITM_PROMPT,               ITM_MSG,               ITM_ERR,                     ITM_PAUSE,                   };
+TO_QSPI const int16_t menu_MyPFN[]       = { ITM_LBL,                   ITM_GTO,                   ITM_XEQ,                   ITM_RTN,                   ITM_END,                   -MNU_PFN_1,                
+                                             ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  -MNU_LOOP,                 -MNU_TEST,                 
+                                             ITM_ALPHA_EDIT,            ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  -MNU_PFN_3,                -MNU_PFN_2                     };
 
-TO_QSPI const int16_t menu_PFN_2[]       = { ITM_AGRAPH,                    ITM_PIXEL,                  ITM_POINT,                ITM_LocR,              ITM_POPLR,                  -MNU_PFN,
-                                             ITM_CLMENU,                    ITM_R_COPY,                 ITM_R_SORT,               ITM_R_SWAP,            ITM_R_CLR,                   ITM_EXITALL,
-                                             ITM_MENU,                      ITM_KEYG,                   ITM_KEYX,                 ITM_VARMNU,            ITM_MVAR,                    ITM_PUTK                      };
+TO_QSPI const int16_t menu_PFN_1[]       = { ITM_INPUT,                 ITM_AVIEW,                 ITM_PROMPT,                ITM_PAUSE,                 ITM_TICKS,                 -MNU_PFN_2,                
+                                             ITM_MSG,                   ITM_ERR,                   ITM_KEYQ,                  ITM_KTYP,                  ITM_PUTK,                  ITM_NULL,                  
+                                             ITM_PIXEL,                 ITM_POINT,                 ITM_AGRAPH,                ITM_NULL,                  ITM_NULL,                  ITM_NULL                       };
+
+TO_QSPI const int16_t menu_PFN_2[]       = { ITM_KEYG,                  ITM_KEYX,                  ITM_MENU,                  ITM_MVAR,                  ITM_VARMNU,                -MNU_PFN_3,                
+                                             ITM_LocR,                  ITM_POPLR,                 ITM_CLMENU,                ITM_OPEN_MENU,             ITM_EXITALL,               ITM_NULL,                  
+                                             ITM_R_COPY,                ITM_R_SORT,                ITM_R_SWAP,                ITM_R_CLR,                 ITM_NULL,                  ITM_NULL                       };
+
+TO_QSPI const int16_t menu_PFN_3[]       = { ITM_LBL,                   ITM_GTO,                   ITM_XEQ,                   ITM_RTN,                   ITM_END,                   -MNU_PFN,                  
+                                             ITM_SKIP,                  ITM_BACK,                  ITM_XEQP1,                 ITM_RTNP1,                 -MNU_LOOP,                 -MNU_TEST,                 
+                                             ITM_ALPHA_EDIT,            ITM_CASE,                  ITM_REM,                   ITM_NULL,                  ITM_NULL,                  ITM_USER_PRESET                };
+
 
 TO_QSPI const int16_t menu_STAT[]        = { ITM_SIGMAPLUS,                 ITM_XBAR,                   ITM_STDDEVWEIGHTED,       ITM_STDDEV,            ITM_SM,                      ITM_XRMS,
                                              ITM_SIGMAMINUS,                ITM_XW,                     ITM_SW,                   ITM_STDDEVPOP,         ITM_SMW,                     ITM_XH,
@@ -959,7 +965,8 @@ TO_QSPI const softmenu_t softmenu[] = {
 /* 150 */  {.menuItem = -MNU_Grapher,     .numItems = sizeof(menu_Grapher       )/sizeof(int16_t), .softkeyItem = menu_Grapher        },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
 /* 151 */  {.menuItem = -MNU_AUDIO,       .numItems = sizeof(menu_AUDIO         )/sizeof(int16_t), .softkeyItem = menu_AUDIO          },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-06-16 jm
 /* 152 */  {.menuItem = -MNU_TAMNONREGMAX,.numItems = sizeof(menu_TamNonRegMax  )/sizeof(int16_t), .softkeyItem = menu_TamNonRegMax   },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
-/* 153 */  {.menuItem =  0,               .numItems = 0,                                           .softkeyItem = NULL                }
+/* 153 */  {.menuItem = -MNU_PFN_3,       .numItems = sizeof(menu_PFN_3         )/sizeof(int16_t), .softkeyItem = menu_PFN_3          },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
+/* 154 */  {.menuItem =  0,               .numItems = 0,                                           .softkeyItem = NULL                }
 };
 
 
@@ -1782,7 +1789,6 @@ bool_t isFunctionItemAMenu(int16_t item) { //masquarading
          item == ITM_GAP_R     ||
          item == ITM_PLOT_STAT ||
          item == ITM_EQ_NEW    ||
-         item == ITM_VARMNU    ||
          item == ITM_SIM_EQ    ||
          item == ITM_DELITM    ||
          item == ITM_M_EDI;

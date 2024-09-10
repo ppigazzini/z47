@@ -697,11 +697,49 @@ static void _closeAlphaMenus(void) {
 
 void pemAlpha(int16_t item) {
   #if !defined(TESTSUITE_BUILD)
-    if(!getSystemFlag(FLAG_ALPHA)) {
-      resetShiftState();  //JM
-      displayAIMbufferoffset = 0;
-      T_cursorPos = 0;
+
+  uint16_t editCommand = 0;
+  if(item == ITM_ALPHA_EDIT && !getSystemFlag(FLAG_ALPHA)) {
+    int16_t aimFunc = currentStep[0];
+    if(aimFunc & 0x80) {
+      aimFunc &= 0x7f;
+      aimFunc <<= 8;
+      aimFunc |= currentStep[1];
+    }
+    decodeOneStep(currentStep);
+    if(aimFunc < 128)  { // literal
+      uint16_t ll = stringByteLength(tmpString);
+      xcopy(aimBuffer, tmpString + 2, ll);        //purposely overshoot aimbuffer, as there is sufficient space
+      aimBuffer[ll - 4] = 0;
+      T_cursorPos = stringLastGlyph(aimBuffer) + 1;
+      deleteStepsFromTo(currentStep, findNextStep(currentStep));
+      editCommand = 1;
+      item = 0;
+    }
+    else if(aimFunc == ITM_REM)  { // REM
+      uint16_t ll = stringByteLength(tmpString);
+      xcopy(aimBuffer, tmpString + 6, ll);        //purposely overshoot aimbuffer, as there is sufficient space
+      aimBuffer[ll - 2 - 6] = 0;
+      T_cursorPos = stringLastGlyph(aimBuffer) + 1;
+      deleteStepsFromTo(currentStep, findNextStep(currentStep));
+      tam.function = ITM_REM;
+      editCommand = 2;
+      item = ITM_REM;
+    }
+    else {
       aimBuffer[0] = 0;
+      return;
+    }
+  }
+
+  if(!getSystemFlag(FLAG_ALPHA)) {
+      resetShiftState();
+      displayAIMbufferoffset = 0;
+      if(editCommand == 0) {
+        T_cursorPos = 0;
+        aimBuffer[0] = 0;
+      }
+
 
       //if(softmenuStack[0].softmenuId == 0) { // MyMenu
       //  softmenuStack[0].softmenuId = 1; // MyAlpha
@@ -871,6 +909,15 @@ void pemCloseAlphaInput(void) {
     _closeAlphaMenus();
   #endif // !TESTSUITE_BUILD
 }
+
+
+void pemAlphaEdit (uint16_t unusedButMandatoryParameter) {
+  if(calcMode == CM_PEM && !getSystemFlag(FLAG_ALPHA) && !tam.mode) {
+    pemAlpha(ITM_ALPHA_EDIT);
+    hourGlassIconEnabled = false;
+  }
+}
+
 
 void pemAddNumber(int16_t item) {
   #if !defined(TESTSUITE_BUILD)
