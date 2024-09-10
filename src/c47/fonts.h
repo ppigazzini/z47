@@ -43,6 +43,7 @@
   #define NUM_9_b                       "\xa4\x7c"
 
 //<----------- Standard font glyphs ----------->
+#define STD_CR                        "\xa1\xb5"
 #define STD_SPACE                     "\x20"
 #define STD_EXCLAMATION_MARK          "\x21"
 #define STD_DOUBLE_QUOTE              "\x22"

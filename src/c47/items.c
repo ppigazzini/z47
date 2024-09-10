@@ -120,9 +120,6 @@ bool_t itemNotAvail(int16_t itemNr) {
 
 
 #if !defined(TESTSUITE_BUILD) && !defined(GENERATE_CATALOGS)
-  int16_t lastFunc = 0;
-  int16_t lastParam = 0;
-  char    lastTemp[16];
   char *lastFuncCatalogName(void) {
     if(lastFunc == ITM_VERS || lastFunc == NOPARAM) return "";
     if(lastFunc == ITM_CNST) {
@@ -2575,7 +2572,7 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 1169 */  { addItemToBuffer,              ITM_UP_DASHARROW,            "",                                            STD_UP_DASHARROW,                              (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 1170 */  { addItemToBuffer,              ITM_USB_SYMBOL,              "",                                            STD_USB_SYMBOL,                                (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 1171 */  { addItemToBuffer,              ITM_LEFT_RIGHT_DOUBLE_ARROW, "",                                            STD_LEFT_RIGHT_DOUBLE_ARROW,                   (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
-/* 1172 */  { itemToBeCoded,                NOPARAM,                     "1172",                                        "1172",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 1172 */  { addItemToBuffer,              ITM_CR,                      "",                                            STD_CR,                                        (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 1173 */  { itemToBeCoded,                NOPARAM,                     "1173",                                        "1173",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 1174 */  { itemToBeCoded,                NOPARAM,                     "1174",                                        "1174",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 

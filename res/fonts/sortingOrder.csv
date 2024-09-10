@@ -386,6 +386,7 @@
 `U+2192`,512,512,`RIGHTWARDS ARROW`,`Right arrow`,`→`,`→`,`U+2192`
 `U+2193`,520,520,`DOWNWARDS ARROW`,`Down arrow`,`↓`,`↓`,`U+2193`
 `U+2194`,520,520,`LEFT RIGHT ARROW`,`Left right arrow`,`↔`,`↔`,`U+2194`
+`U+21B5`,514,514,`Downwards Arrow with Corner Leftwards`,`Carriage Return`,`↵`,`↵`,`U+21E0`
 `U+21E0`,514,514,`LEFTWARDS ARROW`,`Left arrow`,`⇠`,`⇠`,`U+21E0`
 `U+21E1`,516,516,`UPWARDS ARROW`,`Up arrow`,`⇡`,`⇡`,`U+21E1`
 `U+21E2`,512,512,`RIGHTWARDS ARROW`,`Right arrow`,`⇢`,`⇢`,`U+21E2`
