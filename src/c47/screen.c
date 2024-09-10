@@ -2032,27 +2032,19 @@ void createSubstrings(uint8_t number) {
   uint16_t counter = 0;
   uint16_t mm = stringByteLength(tmpString);
   while(nn <= mm){
-    //printf("#%u ",nn);
-    if(tmpString[nn] == 0x00 || 
-       //tmpString[nn] == ';' || 
-       //tmpString[nn] == 0x0d || 
-      (tmpString[nn] == STD_CR[0] && tmpString[nn+1] == STD_CR[1])) {
-      if(tmpString[nn] == STD_CR[0] && tmpString[nn+1] == STD_CR[1]) {
-        tmpString[nn++] = 32;
-        tmpString[nn  ] = 0;
-      }
-      else if(tmpString[nn] & 0x80) {
-        nn++;
-      }
-      else {
-        tmpString[nn] = 0;
-      }
-      //printf("\nSSS %u @ %u\n",counter, nn);
+    //printf("#%u tmpString[nn]=%u",nn,(uint8_t)(tmpString[nn]));
+    if(tmpString[nn] == STD_CR[0] && tmpString[nn+1] == STD_CR[1]) {
+      tmpString[nn++] = 32;
+      tmpString[nn  ] = 0;
+      //printf("ZERO\n");
       if(++counter == number) break;
     }
+    else if(tmpString[nn] & 0x80) {
+      nn++;
+    }
     nn++;
+    //printf("\nSSS %u @ %u ; ",counter, nn);
     //printStringToConsole(tmpString,">>","<<\n");
-    //printf("ZZZZ n=%u %u %u\n", nn, (uint8_t)tmpString[nn], (uint8_t)tmpString[nn+1]);
   }
   //printf("TTT %u nn=%u\n",counter,nn);
   tmpString[  nn] = 0;
@@ -2060,12 +2052,8 @@ void createSubstrings(uint8_t number) {
     tmpString[++nn] = 0;
     counter++;
   }
-  //printf("String: %s\n",tmpString);
-  //printf("substring 0 :%s\n",(char *)getNthString((uint8_t *)tmpString,0));
-  //printf("substring 1 :%s\n",(char *)getNthString((uint8_t *)tmpString,1));
-  //printf("substring 2 :%s\n",(char *)getNthString((uint8_t *)tmpString,2));
-  //printf("substring 3 :%s\n",(char *)getNthString((uint8_t *)tmpString,3));
-  //printf("substring 4 :%s\n",(char *)getNthString((uint8_t *)tmpString,4));
+  //printStringToConsole(tmpString,"String: ","\n");
+  //printStringToConsole((char *)getNthString((uint8_t *)tmpString,0),"substring 0: ","\n");
   return;
 }
 
@@ -2078,17 +2066,16 @@ void createSubstrings(uint8_t number) {
     if(temporaryInformation == TI_VIEW_REGISTER && getRegisterDataType(viewRegister) == dtString) {
       xcopy(tmpString, REGISTER_STRING_DATA(viewRegister), stringByteLength(REGISTER_STRING_DATA(viewRegister)) + 1);
       createSubstrings(4);
-
       if(refreshRegist == REGISTER_X) {
-        strcpy(prefix, (char *)getNthString((uint8_t *)tmpString,1));
+        xcopy(prefix, (char *)getNthString((uint8_t *)tmpString,1), stringByteLength((char *)getNthString((uint8_t *)tmpString,1)) + 1);        
         *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
       }
       else if(refreshRegist == REGISTER_Y) {
-        strcpy(prefix, (char *)getNthString((uint8_t *)tmpString,2));
+        xcopy(prefix, (char *)getNthString((uint8_t *)tmpString,2), stringByteLength((char *)getNthString((uint8_t *)tmpString,2)) + 1);        
         *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
       }
       else if(refreshRegist == REGISTER_Z) {
-        strcpy(prefix, (char *)getNthString((uint8_t *)tmpString,3));
+        xcopy(prefix, (char *)getNthString((uint8_t *)tmpString,3), stringByteLength((char *)getNthString((uint8_t *)tmpString,3)) + 1);        
         *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
       }
     }
