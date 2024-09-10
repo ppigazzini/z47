@@ -16,7 +16,7 @@ clean:
 	rm -rf build build.sim build.dmcp build.dmcp5 build.rel
 
 build.sim:
-	meson setup build.sim --buildtype=debug -DRASPBERRY=`tools/onARaspberry`
+	meson setup build.sim --buildtype=custom -DRASPBERRY=`tools/onARaspberry`
 
 build.rel:
 	meson setup build.rel --buildtype=release -DCI_COMMIT_TAG=$(CI_COMMIT_TAG)
