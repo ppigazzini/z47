@@ -2053,10 +2053,15 @@ void createSubstrings(uint8_t number) {
     counter++;
   }
   //printStringToConsole(tmpString,"String: ","\n");
-  //printStringToConsole((char *)getNthString((uint8_t *)tmpString,0),"substring 0: ","\n");
+  //printStringToConsole((char *)getNthString((uint8_t *)tmpString,0),"createSubstrings: substring 0: ","\n");
+  //printStringToConsole((char *)getNthString((uint8_t *)tmpString,1),"createSubstrings: substring 1: ","\n");
+  //printStringToConsole((char *)getNthString((uint8_t *)tmpString,2),"createSubstrings: substring 2: ","\n");
+  //printStringToConsole((char *)getNthString((uint8_t *)tmpString,3),"createSubstrings: substring 3: ","\n");
   return;
 }
 
+
+ 
 
   static void userTI(int16_t viewRegister, int16_t refreshRegist, char *prefix, int16_t *prefixWidth) {
     if(!(lastFuncNo() == ITM_AVIEW || lastFuncNo() == ITM_PROMPT)) {
@@ -2064,18 +2069,34 @@ void createSubstrings(uint8_t number) {
     }
     //printf("TTTT:refreshRegist:%i %i string:%s type:%i\n",viewRegister, refreshRegist, tmpString, getRegisterDataType(viewRegister));
     if(temporaryInformation == TI_VIEW_REGISTER && getRegisterDataType(viewRegister) == dtString) {
+      //tmpString[0]=0;
       xcopy(tmpString, REGISTER_STRING_DATA(viewRegister), stringByteLength(REGISTER_STRING_DATA(viewRegister)) + 1);
       createSubstrings(4);
-      if(refreshRegist == REGISTER_X) {
-        xcopy(prefix, (char *)getNthString((uint8_t *)tmpString,1), stringByteLength((char *)getNthString((uint8_t *)tmpString,1)) + 1);        
+      if(refreshRegist == REGISTER_T) {
+        char *string1 = "";
+        string1 = (char *)getNthString((uint8_t *)tmpString,0);
+        xcopy(tmpString, string1, stringByteLength(string1) + 1);
+        //printStringToConsole(tmpString,"--userTI substring 0: ","\n");
+      }
+      else if(refreshRegist == REGISTER_X) {
+        char *string1 = "";
+        string1 = (char *)getNthString((uint8_t *)tmpString,1);
+        xcopy(prefix, string1, stringByteLength(string1) + 1);
+        //printStringToConsole(prefix,"--userTI substring 1: ","\n");
         *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
       }
       else if(refreshRegist == REGISTER_Y) {
-        xcopy(prefix, (char *)getNthString((uint8_t *)tmpString,2), stringByteLength((char *)getNthString((uint8_t *)tmpString,2)) + 1);        
+        char *string1 = "";
+        string1 = (char *)getNthString((uint8_t *)tmpString,2);
+        xcopy(prefix, string1, stringByteLength(string1) + 1);
+        //printStringToConsole(prefix,"--userTI substring 2: ","\n");
         *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
       }
       else if(refreshRegist == REGISTER_Z) {
-        xcopy(prefix, (char *)getNthString((uint8_t *)tmpString,3), stringByteLength((char *)getNthString((uint8_t *)tmpString,3)) + 1);        
+        char *string1 = "";
+        string1 = (char *)getNthString((uint8_t *)tmpString,3);
+        xcopy(prefix, string1, stringByteLength(string1) + 1);
+        //printStringToConsole(prefix,"--userTI substring 3: ","\n");
         *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
       }
     }
@@ -4054,8 +4075,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
 
           {
             //printf("^^^^#### combinationFonts=%d maxiC=%d miniC=%d displaymode=%d\n", combinationFonts, maxiC, miniC, displaymode);
-            
-
+            w = stringWidth(REGISTER_STRING_DATA(regist), &standardFont, false, true);
             if(w >= SCREEN_WIDTH - prefixWidth) {
               char *tmpStrW;
               if(regist == REGISTER_X || (temporaryInformation == TI_VIEW_REGISTER && origRegist == REGISTER_T)) {
