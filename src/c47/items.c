@@ -542,6 +542,8 @@ bool_t itemNotAvail(int16_t itemNr) {
         case ITM_SCR:
         case ITM_USERMODE:
                 doNotAddStep |= (calcMode == CM_PEM && getSystemFlag(FLAG_ALPHA)); break;
+        case ITM_ALPHA_EDIT:
+                doNotAddStep |= (calcMode == CM_PEM && !getSystemFlag(FLAG_ALPHA)); break;
         default:;
       }
 
@@ -1358,6 +1360,8 @@ bool_t itemNotAvail(int16_t itemNr) {
   void fnResetTVM                 (uint16_t unusedButMandatoryParameter) {}
   void fnEff                      (uint16_t unusedButMandatoryParameter) {}
   void fnEffToI                   (uint16_t unusedButMandatoryParameter) {}
+  void pemAlphaEdit               (uint16_t unusedButMandatoryParameter) {}
+
 
 #endif // GENERATE_CATALOGS
 
@@ -3827,8 +3831,11 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 2400 */  { itemToBeCoded,                NOPARAM,                     "SINT?",                                       "SINT?",                                       (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_NONE         },
 /* 2401 */  { itemToBeCoded,                NOPARAM,                     "TIME?",                                       "TIME?",                                       (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_NONE         },
 /* 2402 */  { itemToBeCoded,                NOPARAM,                     "TYPE?",                                       "TYPE?",                                       (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_NONE         },
+/* 2403 */  { itemToBeCoded,                NOPARAM,                     "P.FN3",                                       "P.FN3",                                       (0 << TAM_MAX_BITS) |     0, CAT_MENU | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 2404 */  { pemAlphaEdit,                 NOPARAM,                     STD_alpha "EDIT",                              STD_alpha "EDIT",                              (0 << TAM_MAX_BITS) |     0, CAT_MENU | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 2405 */  { itemToBeCoded,                NOPARAM,                     "OPENM",                                       "OPENM",                                       (0 << TAM_MAX_BITS) |     0, CAT_MENU | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+//pemAlphaEdit
 
-
-/* 2403 */  { itemToBeCoded,                NOPARAM,                     "",                                            "Last item",                                   (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED},
+/* 2406 */  { itemToBeCoded,                NOPARAM,                     "",                                            "Last item",                                   (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED},
 
 };

@@ -2465,8 +2465,11 @@
 #define ITM_TIMEQ                   2401
 #define ITM_TYPEQ                   2402
 
+#define MNU_PFN_3                   2403
+#define ITM_ALPHA_EDIT              2404
+#define ITM_OPEN_MENU               2405
 
-#define LAST_ITEM                   2403
+#define LAST_ITEM                   2406
 
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL
