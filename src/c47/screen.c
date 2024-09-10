@@ -4817,7 +4817,8 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
                              #endif // PC_BUILD
 
                              #if defined(PC_BUILD)
-                               char ttt[500],sss[500];
+                               char ttt[500] = "";
+                               char sss[500] = "";
                                convertUInt64ToShortIntegerRegister(0, screenUpdatingMode, 2, TEMP_REGISTER_1 );
                                shortIntegerToDisplayString(TEMP_REGISTER_1, ttt, false);
                                stringToASCII(ttt,sss);
