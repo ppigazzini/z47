@@ -94,7 +94,7 @@ void fnPause(uint16_t dur) {
         if(previousProgramRunStop != PGM_RUNNING) {
           screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
           refreshScreen(12);
-          refreshLcd(NULL);
+          lcd_refresh();
         }
         int key = key_pop();
         key = convertKeyCode(key);
@@ -139,8 +139,13 @@ void fnPause(uint16_t dur) {
     if(programRunStop != PGM_RUNNING) {
       screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
       refreshScreen(13);
-      refreshLcd(NULL);
-    }
+      #if defined(DMCP_BUILD)
+        lcd_refresh();
+      #else // !DMCP_BUILD
+        refreshLcd(NULL);
+        g_source_remove (timeout_id);
+      #endif // DMCP_BUILD
+        }
   #endif // !TESTSUITE_BUILD
 }
 
