@@ -94,37 +94,39 @@ void fnPause(uint16_t duration) {
       guint timeout_id = g_timeout_add(100, (GSourceFunc) gTimer, NULL);
       refreshLcd(NULL);
       uint16_t countCheck = 1;
-      printf("Start timing %u %u\n", gTime, duration);
-      while(gTime < duration && gTime < 100) {
-        if(gTime == countCheck) {
+      printf("Start timing: %u/%u:", gTime, duration);
+      while(gTime <= duration && gTime < 100) {
+        if(gTime == countCheck) { //arrive here every 100ms, do nothing, just increment the co9unter to trap it at the next 100ms
           countCheck++;
+          printf(".");
+          fflush(stdout);
           //printf("   Timing %u %u\n", gTime, duration);
 //        if(previousProgramRunStop != PGM_RUNNING) {
 //          refreshScreen(12);
 //          refreshLcd(NULL);
 //        }
         }
-        if(!(programRunStop == PGM_PAUSED || programRunStop == PGM_KEY_PRESSED_WHILE_PAUSED)) break;
         g_main_context_iteration (g_main_context_default (), FALSE);
+        if(!(programRunStop == PGM_PAUSED || programRunStop == PGM_KEY_PRESSED_WHILE_PAUSED)) break;
       }
-      printf(" Done timing %u %u\n", gTime, duration);
+      printf("; Done timing %u/%u\n", gTime, duration);
       if(programRunStop == PGM_WAITING) {
         previousProgramRunStop = PGM_WAITING;
       }
     #endif // DMCP_BUILD
     programRunStop = previousProgramRunStop;
 
-//  if(programRunStop != PGM_RUNNING) {                  // Remove this IF to fix PAUSE to update the stack and annunciators
+    if(duration != 0 || programRunStop != PGM_RUNNING) {
       screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
       screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
-  //    refreshScreen(13);
-      #if defined(DMCP_BUILD)
-        lcd_refresh();
-      #else // !DMCP_BUILD
-        refreshLcd(NULL);
-        g_source_remove (timeout_id);
-      #endif // DMCP_BUILD
-//  }
+      refreshScreen(13);
+    }
+    #if defined(DMCP_BUILD)
+      lcd_refresh();
+    #else // !DMCP_BUILD
+      refreshLcd(NULL);
+      g_source_remove (timeout_id);
+    #endif // DMCP_BUILD
   #endif // !TESTSUITE_BUILD
 }
 
