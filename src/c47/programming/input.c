@@ -11,6 +11,7 @@
 #include "defines.h"
 #include "debug.h"
 #include "error.h"
+#include "flags.h"
 #include "items.h"
 #include "keyboard.h"
 #include "longIntegerType.h"
@@ -53,20 +54,48 @@ void fnVarMnu(uint16_t label) {
 }
 
 
+#if defined(PC_BUILD)
+  int32_t gTime = 0; 
+  static gboolean gTimer(gpointer user_data) {
+    gTime++;
+    return TRUE;
+  }
+#endif //PC_BUILD
 
-void fnPause(uint16_t duration) {
+
+void fnPause(uint16_t dur) {
+  int32_t duration = dur;
+    if(duration == 99) {      //99 signifies infinity, which is 2 hours on battery, and (2^31-1)/10 seconds = 59652 hours on USB. Note that this is determined at the start of pause, not changing during timing
+      if(!getSystemFlag(FLAG_USB)) {
+        duration = 2*60*60*10; //2 hours
+        duration = 50;
+      }
+      else {
+        duration = 0x7FFFFFFF; //maximum counter value of 59652 hours
+        duration = 100;
+      }
+    }
+
   #if !defined(TESTSUITE_BUILD)
     uint8_t previousProgramRunStop = programRunStop;
     if(tam.mode) {
       tamLeaveMode();
     }
-    programRunStop = PGM_PAUSED;
-    if(previousProgramRunStop != PGM_RUNNING) {
+    if(duration != 0 || previousProgramRunStop != PGM_RUNNING) {
+      screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
+      screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
       refreshScreen(11);
     }
+    programRunStop = PGM_PAUSED;
+
     #if defined(DMCP_BUILD)
       lcd_refresh();
-      for(uint16_t i = 0; i < duration && (programRunStop == PGM_PAUSED || programRunStop == PGM_KEY_PRESSED_WHILE_PAUSED); ++i) {
+      for(int32_t i = 0; i < duration && (programRunStop == PGM_PAUSED || programRunStop == PGM_KEY_PRESSED_WHILE_PAUSED); ++i) {
+        if(previousProgramRunStop != PGM_RUNNING) {
+          screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
+          refreshScreen(12);
+          refreshLcd(NULL);
+        }
         int key = key_pop();
         key = convertKeyCode(key);
         if(key > 0) {
@@ -81,36 +110,41 @@ void fnPause(uint16_t duration) {
         }
         sys_delay(100);
       }
-    #else // !DMCP_BUILD
+    #else // !DMCP_BUILD  PC_BUILD
+      gTime = 0;
+      guint timeout_id = g_timeout_add(100, (GSourceFunc) gTimer, NULL);
       refreshLcd(NULL);
-      for(uint16_t i = 0; i < duration && (programRunStop == PGM_PAUSED || programRunStop == PGM_KEY_PRESSED_WHILE_PAUSED); ++i) {
-        if(previousProgramRunStop != PGM_RUNNING) {
-          refreshScreen(12);
-          refreshLcd(NULL);
+      int32_t i = 1;
+      printf("Start timing %3.1f s:", (float)(duration/10));
+      while(gTime <= duration && (programRunStop == PGM_PAUSED || programRunStop == PGM_KEY_PRESSED_WHILE_PAUSED)) {
+        g_main_context_iteration (g_main_context_default (), FALSE);
+        if(gTime == i) { //arrive here every 100ms, do nothing, just increment the coounter to trap the next 100ms
+          i++;
+          if(previousProgramRunStop != PGM_RUNNING) {
+            screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
+            refreshScreen(12);
+            refreshLcd(NULL);
+          }
+          printf(".");
+          fflush(stdout);
         }
-        gtk_main_iteration_do(FALSE);
-        usleep(100000);
-        printf("Timing %u %u\n", i, duration);
       }
-      printf(" done timing\n");
-      if(programRunStop == PGM_WAITING) {
-        previousProgramRunStop = PGM_WAITING;
-      }
-    #endif // DMCP_BUILD
+      printf("; Done timing %i/%i/%i\n", i, gTime, duration);
+      g_source_remove (timeout_id);
+    #endif // PC_BUILD
+    if(programRunStop == PGM_WAITING) {
+      previousProgramRunStop = PGM_WAITING;
+    }
     programRunStop = previousProgramRunStop;
-
-    if(programRunStop != PGM_RUNNING) {                  // Remove this IF to fix PAUSE to update the stack and annunciators
-      screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
+    if(programRunStop != PGM_RUNNING) {
       screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
       refreshScreen(13);
-      #if defined(DMCP_BUILD)
-        lcd_refresh();
-      #else // !DMCP_BUILD
-        refreshLcd(NULL);
-      #endif // DMCP_BUILD
+      refreshLcd(NULL);
     }
   #endif // !TESTSUITE_BUILD
 }
+
+
 
 
 
