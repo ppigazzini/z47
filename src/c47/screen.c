@@ -4536,7 +4536,8 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
     getGlyphBounds(STD_MODE_G, 0, &standardFont, &gcol, &grow);
     lcd_fill_rect(X_SHIFT, Y_SHIFT, (fcol > gcol ? fcol : gcol), (frow > grow ? frow : grow), LCD_SET_VALUE);
     if(calcMode == CM_PEM) {
-        fnPem(NOPARAM);
+//        fnPem(NOPARAM);
+//REMOVED AS THIS IS REPEATED MULTIPLE TIMES BETWEEN KEYPRESSES - WASTES TIME!!!!!
     }
   }
 
