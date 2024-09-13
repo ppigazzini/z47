@@ -22,6 +22,7 @@
 
 #include "assign.h"
 #include "bufferize.h"
+#include "calcMode.h"
 #include "c43Extensions/keyboardTweak.h"
 #include "charString.h"
 #include "config.h"
@@ -44,6 +45,7 @@
 #include "sort.h"
 #include <stdlib.h>
 #include <string.h>
+#include "ui/tam.h"
 
 #include "c47.h"
 
@@ -698,8 +700,8 @@ static void _closeAlphaMenus(void) {
 void pemAlpha(int16_t item) {
   #if !defined(TESTSUITE_BUILD)
 
-  uint16_t editCommand = 0;
-  if(item == ITM_ALPHA_EDIT && !getSystemFlag(FLAG_ALPHA)) {
+  bool_t editCommand = false;
+  if(item == ITM_ALPHA_EDIT) {
     int16_t aimFunc = currentStep[0];
     if(aimFunc & 0x80) {
       aimFunc &= 0x7f;
@@ -707,25 +709,28 @@ void pemAlpha(int16_t item) {
       aimFunc |= currentStep[1];
     }
     decodeOneStep(currentStep);
-    if(aimFunc < 128)  { // literal
-      uint16_t ll = stringByteLength(tmpString);
+    uint16_t ll = stringByteLength(tmpString);
+    if(aimFunc == ITM_LITERAL)  { // literal
       xcopy(aimBuffer, tmpString + 2, ll);        //purposely overshoot aimbuffer, as there is sufficient space
-      aimBuffer[ll - 4] = 0;
+      aimBuffer[ll - 2 - 2] = 0;
       T_cursorPos = stringLastGlyph(aimBuffer) + 1;
       deleteStepsFromTo(currentStep, findNextStep(currentStep));
-      editCommand = 1;
+      editCommand = true;
       item = 0;
     }
     else if(aimFunc == ITM_REM)  { // REM
-      uint16_t ll = stringByteLength(tmpString);
       xcopy(aimBuffer, tmpString + 6, ll);        //purposely overshoot aimbuffer, as there is sufficient space
       aimBuffer[ll - 2 - 6] = 0;
+
       T_cursorPos = stringLastGlyph(aimBuffer) + 1;
       deleteStepsFromTo(currentStep, findNextStep(currentStep));
-      tam.function = ITM_REM;
-      editCommand = 2;
-      item = ITM_REM;
+      tam.function = aimFunc;
+      editCommand = true;
+      item = aimFunc;
     }
+
+
+
     else {
       aimBuffer[0] = 0;
       return;
@@ -735,7 +740,7 @@ void pemAlpha(int16_t item) {
   if(!getSystemFlag(FLAG_ALPHA)) {
       resetShiftState();
       displayAIMbufferoffset = 0;
-      if(editCommand == 0) {
+      if(!editCommand) {
         T_cursorPos = 0;
         aimBuffer[0] = 0;
       }
@@ -911,11 +916,106 @@ void pemCloseAlphaInput(void) {
 }
 
 
+
+//  static void _tamUpdateBuffer(void) {
+//    char *tbPtr = tamBuffer;
+//    if(tam.mode == 0) {
+//      return;
+//    }
+//
+//        tbPtr = stringAppend(tbPtr, STD_LEFT_SINGLE_QUOTE);
+//        if(aimBuffer[0] == 0) {
+//          tbPtr = stringAppend(tbPtr, "_");
+//        }
+//        else {
+//          tbPtr = stringAppend(tbPtr, aimBuffer);
+//          tbPtr = stringAppend(tbPtr, STD_RIGHT_SINGLE_QUOTE);
+//        }
+//
+//    tbPtr[0] = 0;
+//  }
+//
+//   void tamEditLabel(int16_t func) {
+//     if(func & 0x80) {
+//       return;
+//     }
+//     tam.mode = TM_LABEL;
+//     tam.function = func;
+//     tam.min = indexOfItems[func].tamMinMax >> TAM_MAX_BITS;
+//     tam.max = indexOfItems[func].tamMinMax & TAM_MAX_MASK;
+// 
+//     screenUpdatingMode = SCRUPD_AUTO;
+// 
+//     if(tam.max == 16383) { // Only case featuring more than TAM_MAX_BITS bits is GTO.
+//       tam.max = 32766;
+//     }
+// 
+//     tam.alpha = false;
+//     tam.currentOperation = tam.function;
+//     tam.digitsSoFar = 0;
+//     tam.dot = false;
+//     tam.indirect = false;
+//     tam.value = 0;
+// 
+//     tam.key = 0;
+//     tam.keyAlpha = false;
+//     tam.keyDot = false;
+//     tam.keyIndirect = false;
+//     tam.keyInputFinished = false;
+// 
+// 
+//     _tamUpdateBuffer();
+// 
+//     tam.alpha = true;
+//     setSystemFlag(FLAG_ALPHA);
+//     calcModeAim(NOPARAM);
+// //    showSoftmenu(-MNU_TAMALPHA);
+//     showSoftmenu(-MNU_ALPHA);
+//     numberOfTamMenusToPop = 1;
+// 
+//     screenUpdatingMode = SCRUPD_AUTO;
+//     refreshScreen(0);
+// 
+//   }
+
+
+
+
+
 void pemAlphaEdit (uint16_t unusedButMandatoryParameter) {
-  if(calcMode == CM_PEM && !getSystemFlag(FLAG_ALPHA) && !tam.mode) {
-    pemAlpha(ITM_ALPHA_EDIT);
-    hourGlassIconEnabled = false;
+  if(getSystemFlag(FLAG_ALPHA) || calcMode != CM_PEM || tam.mode) {
+    return;
   }
+  int16_t func = currentStep[0];
+  //printf("DDDDDa func[0] [1] = %i %i\n",func, currentStep[1]);
+  if(func & 0x80) {
+    func &= 0x7f;
+    func <<= 8;
+    func |= currentStep[1];
+  }
+  if((func == ITM_LITERAL || func == ITM_REM)) {
+    pemAlpha(ITM_ALPHA_EDIT);
+  }
+
+//Removed - kept for future - this did not work 100% and needs subsequent improvements to be able to use the cursors in TAM TM_LABEL entry
+//  else if(func == ITM_XEQ || func == ITM_LBL || func == ITM_GTO)  {
+//      decodeOneStep(currentStep);
+//      uint16_t ll = stringByteLength(tmpString);
+//      xcopy(aimBuffer, tmpString + 6, ll - 6 - 3);
+//      aimBuffer[ll - 6 - 3 + 1 ] = 0;
+//
+//      //printStringToConsole(aimBuffer,"BBBB|","|\n");
+//      T_cursorPos = stringLastGlyph(aimBuffer) + 1;
+//      deleteStepsFromTo(currentStep, findNextStep(currentStep));
+//      //printStringToConsole(aimBuffer,"BBBBa|","|\n");
+//
+//      --currentLocalStepNumber;
+//      currentStep = findPreviousStep(currentStep);
+//      tamEditLabel(func);
+//      fnPem(NOPARAM);
+//    }
+
+  hourGlassIconEnabled = false;
 }
 
 
