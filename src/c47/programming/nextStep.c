@@ -173,6 +173,21 @@ uint8_t *countOpBytes(uint8_t *step, uint16_t paramMode) {
     case PARAM_SHUFFLE: {
       return step;
     }
+    
+    case PARAM_MENU: {
+      if(opParam == STRING_LABEL_VARIABLE || opParam == INDIRECT_VARIABLE) {
+        return step + *step + 1;
+      }
+      else if(opParam == INDIRECT_REGISTER) {
+        return step + 1;
+      }
+      else {
+        #if !defined(DMCP_BUILD)
+          printf("\nIn function countOpBytes: case PARAM_MENU, %u is not a valid parameter!", opParam);
+        #endif // !DMCP_BUILD
+        return NULL;
+      }
+    }
 
     default: {
       #if !defined(DMCP_BUILD)

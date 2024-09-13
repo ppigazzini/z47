@@ -1329,8 +1329,11 @@ static void _pemCloseDmsInput(void) {
 }
 
 void insertStepInProgram(int16_t func) {
+  char buffer[16];
   uint32_t opBytes = (func >= 128) ? 2 : 1;
-
+  
+  xcopy(buffer, tmpString, 16);    // Save tmpString content for dynamic menus
+  
   if(func == ITM_AIM || (!tam.mode && getSystemFlag(FLAG_ALPHA))) {
     if(aimBuffer[0] != 0 && !getSystemFlag(FLAG_ALPHA)) {
       pemCloseNumberInput();
@@ -1571,6 +1574,22 @@ void insertStepInProgram(int16_t func) {
         tmpString[opBytes + 1] = tam.value;
         _insertInProgram((uint8_t *)tmpString, opBytes + 2);
       }
+      else if((tam.mode == TM_MENU) && !tam.alpha && !tam.indirect) {
+        uint16_t nameLength;
+        tmpString[opBytes    ] = (char)STRING_LABEL_VARIABLE;
+        if(tam.value == MNU_DYNAMIC) {
+          nameLength  = stringByteLength(buffer);
+          tmpString[opBytes + 1] = nameLength;
+          xcopy(tmpString + opBytes + 2, buffer, nameLength);
+          _insertInProgram((uint8_t *)tmpString, nameLength + opBytes + 2);            
+        }
+        else {
+          nameLength  = stringByteLength(indexOfItems[tam.value].itemCatalogName);
+          tmpString[opBytes + 1] = nameLength;
+          xcopy(tmpString + opBytes + 2, indexOfItems[tam.value].itemCatalogName, nameLength);
+          _insertInProgram((uint8_t *)tmpString, nameLength + opBytes + 2);
+        }
+      } 
       else if(tam.alpha) {
         uint16_t nameLength = stringByteLength(aimBuffer);
         tmpString[opBytes    ] = (char)(tam.indirect ? INDIRECT_VARIABLE : STRING_LABEL_VARIABLE);
@@ -1587,7 +1606,7 @@ void insertStepInProgram(int16_t func) {
         tmpString[opBytes    ] = (tam.dot ? tam.value + FIRST_LOCAL_REGISTER_IN_KS_CODE : regCtoKS(tam.value));
         _insertInProgram((uint8_t *)tmpString, opBytes + 1);
       }
-  }
+    }
   }
 
   aimBuffer[0] = 0;
