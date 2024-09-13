@@ -721,16 +721,12 @@ void pemAlpha(int16_t item) {
     else if(aimFunc == ITM_REM)  { // REM
       xcopy(aimBuffer, tmpString + 6, ll);        //purposely overshoot aimbuffer, as there is sufficient space
       aimBuffer[ll - 2 - 6] = 0;
-
       T_cursorPos = stringLastGlyph(aimBuffer) + 1;
       deleteStepsFromTo(currentStep, findNextStep(currentStep));
       tam.function = aimFunc;
       editCommand = true;
       item = aimFunc;
     }
-
-
-
     else {
       aimBuffer[0] = 0;
       return;
@@ -984,6 +980,7 @@ void pemCloseAlphaInput(void) {
 
 void pemAlphaEdit (uint16_t unusedButMandatoryParameter) {
   if(getSystemFlag(FLAG_ALPHA) || calcMode != CM_PEM || tam.mode) {
+    hourGlassIconEnabled = false;
     return;
   }
   int16_t func = currentStep[0];
