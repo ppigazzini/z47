@@ -36,6 +36,7 @@
   void scrollPemForwards                       (void);
   void pemAlpha                                (int16_t item);
   void pemCloseAlphaInput                      (void);
+  void pemAlphaEdit                            (uint16_t unusedButMandatoryParameter);
   void pemAddNumber                            (int16_t item);
   void pemCloseNumberInput                     (void);
   void insertStepInProgram                     (int16_t func);

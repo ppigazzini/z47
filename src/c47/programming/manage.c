@@ -22,6 +22,7 @@
 
 #include "assign.h"
 #include "bufferize.h"
+#include "calcMode.h"
 #include "c43Extensions/keyboardTweak.h"
 #include "charString.h"
 #include "config.h"
@@ -44,6 +45,7 @@
 #include "sort.h"
 #include <stdlib.h>
 #include <string.h>
+#include "ui/tam.h"
 
 #include "c47.h"
 
@@ -418,6 +420,14 @@ void scrollPemForwards(void) {
 }
 
 
+int32_t pemLeftOffset(int32_t y) {
+  if(y > Y_POSITION_OF_REGISTER_T_LINE || X_SHIFT == X_SHIFT_R || Y_SHIFT == 0){
+    return 0;
+  }
+  else {
+    return 16; //Offset to allow for f/g
+  }
+}
 
 void fnPem(uint16_t unusedButMandatoryParameter) {
 #if !defined(SAVE_SPACE_DM42_10)
@@ -469,10 +479,9 @@ void fnPem(uint16_t unusedButMandatoryParameter) {
     lastProgramListEnd       = false;
 
     if(firstDisplayedLocalStepNumber == 0) {
-      showString("0000:" STD_SPACE_4_PER_EM, &standardFont, 1, Y_POSITION_OF_REGISTER_T_LINE, (pemCursorIsZerothStep && !tam.mode && aimBuffer[0] == 0) ? vmReverse : vmNormal, false, true);
-      sprintf(tmpString, "{ Prgm #%d: %" PRIu32 " bytes / %" PRIu16 " step%s }", currentProgramNumber, _getProgramSize(),
-                                                                               numberOfSteps, numberOfSteps == 1 ? "" : "s");
-      showString(tmpString, &standardFont, 42, Y_POSITION_OF_REGISTER_T_LINE, vmNormal, false, false);
+      showString("0000:" STD_SPACE_4_PER_EM, &standardFont, pemLeftOffset(Y_POSITION_OF_REGISTER_T_LINE) + 1, Y_POSITION_OF_REGISTER_T_LINE, (pemCursorIsZerothStep && !tam.mode && aimBuffer[0] == 0) ? vmReverse : vmNormal, false, true);
+      sprintf(tmpString, "{ Prgm #%d: %" PRIu32 " bytes / %" PRIu16 " step%s }", currentProgramNumber, _getProgramSize(),numberOfSteps, numberOfSteps == 1 ? "" : "s");
+      showString(tmpString, &standardFont, pemLeftOffset(Y_POSITION_OF_REGISTER_T_LINE) + 42, Y_POSITION_OF_REGISTER_T_LINE, vmNormal, false, false);
       firstLine = 1;
     }
     else {
@@ -485,13 +494,13 @@ void fnPem(uint16_t unusedButMandatoryParameter) {
       nextStep = findNextStep(step);
       //uint16_t stepSize = (uint16_t)(nextStep - step);
       sprintf(tmpString, "%04d:" STD_SPACE_4_PER_EM, firstDisplayedLocalStepNumber + line - lineOffset + lineOffsetTam);
+      tamOverPemYPos = Y_POSITION_OF_REGISTER_T_LINE + 21 * line;
       if(firstDisplayedStepNumber + line - lineOffset == currentStepNumber) {
-        tamOverPemYPos = Y_POSITION_OF_REGISTER_T_LINE + 21 * line;
-        showString(tmpString, &standardFont, 1, tamOverPemYPos, ((pemCursorIsZerothStep && !tam.mode && aimBuffer[0] == 0) || (tam.mode && (programList[currentProgramNumber - 1].step > 0))) ? vmNormal : vmReverse, false, true);
+        showString(tmpString, &standardFont, pemLeftOffset(tamOverPemYPos) + 1, tamOverPemYPos, ((pemCursorIsZerothStep && !tam.mode && aimBuffer[0] == 0) || (tam.mode && (programList[currentProgramNumber - 1].step > 0))) ? vmNormal : vmReverse, false, true);
         currentStep = step;
       }
       else {
-        showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_T_LINE + 21 * line, vmNormal,  false, true);
+        showString(tmpString, &standardFont, pemLeftOffset(tamOverPemYPos) + 1, tamOverPemYPos, vmNormal,  false, true);
       }
 
       //Automatically, when on battery (hence low processor), change to skip long processing register printing, recovering the fragmented screen here: See timer.c fnTimerEndOfActivity() , skippedStackLines
@@ -509,12 +518,12 @@ void fnPem(uint16_t unusedButMandatoryParameter) {
               line += 1;
               lineOffset += 1;
               lineOffsetTam += 1;
-              showString(tmpString, &standardFont, 1, tamOverPemYPos, vmReverse, false, true);
+              showString(tmpString, &standardFont, pemLeftOffset(tamOverPemYPos) + 1, tamOverPemYPos, vmReverse, false, true);
               if(line >= 7) {
                 break;
               }
               sprintf(tmpString, "%04d:" STD_SPACE_4_PER_EM, firstDisplayedLocalStepNumber + line - lineOffset + lineOffsetTam);
-              showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_T_LINE + 21 * line, vmNormal, false, true);
+              showString(tmpString, &standardFont, pemLeftOffset(Y_POSITION_OF_REGISTER_T_LINE + 21 * line) + 1, Y_POSITION_OF_REGISTER_T_LINE + 21 * line, vmNormal, false, true);
             }
           }
           else if(firstDisplayedStepNumber + line - lineOffset == currentStepNumber && lblOrEnd && (*step != ITM_LBL)) {
@@ -522,12 +531,12 @@ void fnPem(uint16_t unusedButMandatoryParameter) {
               line += 1;
               lineOffset += 1;
               lineOffsetTam += 1;
-              showString(tmpString, &standardFont, 1, tamOverPemYPos, vmReverse, false, true);
+              showString(tmpString, &standardFont, pemLeftOffset(tamOverPemYPos) + 1, tamOverPemYPos, vmReverse, false, true);
               if(line >= 7) {
                 break;
               }
               sprintf(tmpString, "%04d:" STD_SPACE_4_PER_EM, firstDisplayedLocalStepNumber + line - lineOffset + lineOffsetTam);
-              showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_T_LINE + 21 * line, vmNormal, false, true);
+              showString(tmpString, &standardFont, pemLeftOffset(Y_POSITION_OF_REGISTER_T_LINE + 21 * line) + 1, Y_POSITION_OF_REGISTER_T_LINE + 21 * line, vmNormal, false, true);
             }
           }
         }
@@ -566,10 +575,11 @@ void fnPem(uint16_t unusedButMandatoryParameter) {
           linesOfCurrentStep += numberOfExtraLines;
         }
 
-        showString(tmpString, &standardFont, lblOrEndOrXeq ? 42 : gto ? 82 : 62, Y_POSITION_OF_REGISTER_T_LINE + 21 * line, vmNormal,  false, false);
+        showString(tmpString, &standardFont, pemLeftOffset(Y_POSITION_OF_REGISTER_T_LINE + 21 * line) + (lblOrEndOrXeq ? 42 : gto ? 82 : 62), Y_POSITION_OF_REGISTER_T_LINE + 21 * line, vmNormal,  false, false);
         offset = 300;
         while(numberOfExtraLines && line <= 5) {
-          showString(tmpString + offset, &standardFont, 62, Y_POSITION_OF_REGISTER_T_LINE + 21 * (++line), vmNormal,  false, false);
+          line++;
+          showString(tmpString + offset, &standardFont, pemLeftOffset(Y_POSITION_OF_REGISTER_T_LINE + 21 * (line)) + 62, Y_POSITION_OF_REGISTER_T_LINE + 21 * (line), vmNormal,  false, false);
           numberOfExtraLines--;
           offset += 300;
           lineOffset++;
@@ -697,11 +707,48 @@ static void _closeAlphaMenus(void) {
 
 void pemAlpha(int16_t item) {
   #if !defined(TESTSUITE_BUILD)
-    if(!getSystemFlag(FLAG_ALPHA)) {
-      resetShiftState();  //JM
-      displayAIMbufferoffset = 0;
-      T_cursorPos = 0;
+
+  bool_t editCommand = false;
+  if(item == ITM_ALPHA_EDIT) {
+    int16_t aimFunc = currentStep[0];
+    if(aimFunc & 0x80) {
+      aimFunc &= 0x7f;
+      aimFunc <<= 8;
+      aimFunc |= currentStep[1];
+    }
+    decodeOneStep(currentStep);
+    uint16_t ll = stringByteLength(tmpString);
+    if(aimFunc == ITM_LITERAL)  { // literal
+      xcopy(aimBuffer, tmpString + 2, ll);        //purposely overshoot aimbuffer, as there is sufficient space
+      aimBuffer[ll - 2 - 2] = 0;
+      T_cursorPos = stringLastGlyph(aimBuffer) + 1;
+      deleteStepsFromTo(currentStep, findNextStep(currentStep));
+      editCommand = true;
+      item = 0;
+    }
+    else if(aimFunc == ITM_REM)  { // REM
+      xcopy(aimBuffer, tmpString + 6, ll);        //purposely overshoot aimbuffer, as there is sufficient space
+      aimBuffer[ll - 2 - 6] = 0;
+      T_cursorPos = stringLastGlyph(aimBuffer) + 1;
+      deleteStepsFromTo(currentStep, findNextStep(currentStep));
+      tam.function = aimFunc;
+      editCommand = true;
+      item = aimFunc;
+    }
+    else {
       aimBuffer[0] = 0;
+      return;
+    }
+  }
+
+  if(!getSystemFlag(FLAG_ALPHA)) {
+      resetShiftState();
+      displayAIMbufferoffset = 0;
+      if(!editCommand) {
+        T_cursorPos = 0;
+        aimBuffer[0] = 0;
+      }
+
 
       //if(softmenuStack[0].softmenuId == 0) { // MyMenu
       //  softmenuStack[0].softmenuId = 1; // MyAlpha
@@ -871,6 +918,26 @@ void pemCloseAlphaInput(void) {
     _closeAlphaMenus();
   #endif // !TESTSUITE_BUILD
 }
+
+
+void pemAlphaEdit (uint16_t unusedButMandatoryParameter) {
+  if(getSystemFlag(FLAG_ALPHA) || calcMode != CM_PEM || tam.mode) {
+    hourGlassIconEnabled = false;
+    return;
+  }
+  int16_t func = currentStep[0];
+  //printf("DDDDDa func[0] [1] = %i %i\n",func, currentStep[1]);
+  if(func & 0x80) {
+    func &= 0x7f;
+    func <<= 8;
+    func |= currentStep[1];
+  }
+  if((func == ITM_LITERAL || func == ITM_REM)) {
+    pemAlpha(ITM_ALPHA_EDIT);
+  }
+  hourGlassIconEnabled = false;
+}
+
 
 void pemAddNumber(int16_t item) {
   #if !defined(TESTSUITE_BUILD)
