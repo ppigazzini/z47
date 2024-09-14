@@ -1714,12 +1714,11 @@ void shortIntegerToDisplayString(calcRegister_t regist, char *displayString, boo
   uint64_t orgnumber, number, sign;
 
 //JM Pre-load X:
-char str3[4];
+char str3[3];
 j = 0;
 str3[j] = displayString[j]; j++;
 str3[j] = displayString[j]; j++;
-str3[j] = displayString[j]; j++;
-str3[j] = 0;
+str3[j] = displayString[j];
 
   base    = getRegisterTag(regist);
   number  = *(REGISTER_SHORT_INTEGER_DATA(regist));
@@ -1927,13 +1926,13 @@ str3[j] = 0;
   }
 
 //JM SHOW //ONLY ADD REGISTER NAME IF IT IS A LETTERED REGISTER - NO SPACE FOR MORE
-if( str3[0] >= 'A' && str3[0] <= 'Z' && str3[1] == ':' && str3[2] == ' ' && str3[3] == 0 && !(base == 2 && orgnumber > 0x3FFF))
+if( str3[0] >= 'A' && str3[0] <= 'Z' && str3[1] == ':' && str3[2] == ' ' && !(base == 2 && orgnumber > 0x3FFF))
 {
   displayString[i++] = str3[2];
   displayString[i++] = str3[1];
   displayString[i++] = str3[0];
 }
-if( str3[1] >= '0' && str3[1] <= '9' && str3[2] >= '0' && str3[2] <= '9' && str3[0] == 'R' && str3[3] == 0 && !(base == 2 && orgnumber > 0x3FFF))
+if( str3[1] >= '0' && str3[1] <= '9' && str3[2] >= '0' && str3[2] <= '9' && str3[0] == 'R' && !(base == 2 && orgnumber > 0x3FFF))
 {
   displayString[i++] = ':';
   displayString[i++] = str3[2];

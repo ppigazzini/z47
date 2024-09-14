@@ -234,6 +234,7 @@ TO_QSPI static const char bugScreenItemNotDetermined[] = "In function determineI
         break;
       }
 
+      case MNU_MENU:
       case MNU_MENUS: {
         dynamicMenuItem = firstItem + itemShift + fn;
         item = ITM_NOP;
@@ -1031,7 +1032,7 @@ int16_t lastItem = 0;
                     #if defined(PC_BUILD)
                       printf(">>>Function selected: executeFunction data=|%s| f=%d g=%d tam.mode=%i\n",(char *)data, shiftF, shiftG, tam.mode);
                       if(item<0)  printf("    item=%d=%s f=%d g=%d\n",item,indexOfItems[-item].itemCatalogName, shiftF, shiftG);
-                      if(item>=0) printf("    item=%d=%s f=%d g=%d\n",item,indexOfItems[item].itemCatalogName, shiftF, shiftG);
+                      //if(item>=0) printf("    item=%d=%s f=%d g=%d\n",item,indexOfItems[item].itemCatalogName, shiftF, shiftG);
                     #endif //PC_BUILD
 
         resetShiftState();                               //shift cancelling delayed to this point after state machine
@@ -1088,6 +1089,18 @@ int16_t lastItem = 0;
               itemToBeAssigned = item;
               leaveAsmMode();
               showSoftmenu(item);
+            }
+            else if((tam.mode == TM_MENU) && (item != -MNU_MENU)) {
+              if ((currentMenu() ==  -MNU_TAM) && ((item == -MNU_VAR) || (item == -MNU_REG))) {
+                showSoftmenu(item);
+              }  
+              else {
+                fnKeyInCatalog = 1;
+                if(item < 0) {
+                  item = -item;
+                }
+                addItemToBuffer(item);
+              }
             }
             else {
                     #if defined(VERBOSEKEYS)
@@ -3445,16 +3458,16 @@ void fnKeyEnter(uint16_t unusedButMandatoryParameter) {
             }
             clearSystemFlag(FLAG_ASLIFT);
 
-          copySourceRegisterToDestRegister(REGISTER_Y, REGISTER_X);
-          if(lastErrorCode == ERROR_RAM_FULL) {
-            goto ram_full;
+            copySourceRegisterToDestRegister(REGISTER_Y, REGISTER_X);
+            if(lastErrorCode == ERROR_RAM_FULL) {
+              goto ram_full;
+            }
+            aimBuffer[0] = 0;              //PHM JM Keeping the structure like 43S, to be able to pick up changes from their side easier
           }
-          aimBuffer[0] = 0;              //PHM JM Keeping the structure like 43S, to be able to pick up changes from their side easier
-        }
-        else {
-          setSystemFlag(FLAG_ASLIFT);
-          aimBuffer[0] = 0;              //PHM JM Keeping the structure like 43S, to be able to pick up changes from their side easier
-        }
+          else {
+            setSystemFlag(FLAG_ASLIFT);
+            aimBuffer[0] = 0;              //PHM JM Keeping the structure like 43S, to be able to pick up changes from their side easier
+          }
         }
         break;
       }

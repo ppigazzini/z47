@@ -2468,14 +2468,18 @@
 #define MNU_PFN_3                   2403
 #define ITM_ALPHA_EDIT              2404
 #define ITM_OPEN_MENU               2405
+#define MNU_TAMMENU                 2406
+#define MNU_MENU                    2407
+#define ITM_MENUQ                   2408
 
-#define LAST_ITEM                   2406
+#define LAST_ITEM                   2409
 
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL
 #define NOT_CONFIRMED                 9878 // Confirmation for RESET, CLPALL, CLALL
 #define ITM_PROD_SIGN                 9999 // Multiplication sign × or ·
 
+#define INVALID_MENU                LAST_ITEM
 
 bool_t   itemNotAvail           (int16_t itemNr);
 char     *lastFuncCatalogName   (void);

@@ -530,7 +530,7 @@ void resetKeytimers(void) {
     func = determineFunctionKeyItem_C47(str, shiftF, shiftG);
 
     #if defined(PC_BUILD)
-      printf(">>> nameFunction fn=%i shifts=%u %u: %s %s\n", fn, shiftF, shiftG, indexOfItems[abs(func)].itemCatalogName, indexOfItems[abs(func)].itemSoftmenuName);
+      //printf(">>> nameFunction fn=%i shifts=%u %u: %s %s\n", fn, shiftF, shiftG, indexOfItems[abs(func)].itemCatalogName, indexOfItems[abs(func)].itemSoftmenuName);
     #endif // PC_BUILD
 
     return abs(func);

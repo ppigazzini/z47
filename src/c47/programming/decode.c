@@ -416,6 +416,27 @@ static void decodeOp(uint8_t *paramAddress, const char *op, uint16_t paramMode, 
       break;
     }
 
+    case PARAM_MENU: {
+      if(opParam == STRING_LABEL_VARIABLE) {
+        char *str = tmpString;
+        getStringLabelOrVariableName(paramAddress);
+        str = stringAppend(str, op);
+        str = stringAppend(str, " " STD_LEFT_SINGLE_QUOTE);
+        str = stringAppend(str, tmpStringLabelOrVariableName);
+        str = stringAppend(str, STD_RIGHT_SINGLE_QUOTE);
+      }
+      else if(opParam == INDIRECT_REGISTER) {
+        getIndirectRegister(paramAddress, op);
+      }
+      else if(opParam == INDIRECT_VARIABLE) {
+        getIndirectVariable(paramAddress, op);
+      }
+      else {
+        sprintf(tmpString, "\nIn function decodeOp: case PARAM_MENU, %s  %u is not a valid parameter!", op, opParam);
+      }
+      break;
+    }
+
     default: {
       sprintf(tmpString, "\nIn function decodeOp: paramMode %u is not valid!\n", paramMode);
     }

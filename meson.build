@@ -4,6 +4,10 @@ project('c47', 'c',
   default_options : ['warning_level=2']
 )
 
+if get_option('buildtype') == 'custom'
+  add_project_arguments('-g3', native: true, language : 'c')
+endif
+
 # Simulator and generate tools arguments
 add_project_arguments('-DPC_BUILD',   native : true, language : 'c')
 if build_machine.system() == 'windows'
