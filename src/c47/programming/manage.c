@@ -920,72 +920,6 @@ void pemCloseAlphaInput(void) {
 }
 
 
-
-//  static void _tamUpdateBuffer(void) {
-//    char *tbPtr = tamBuffer;
-//    if(tam.mode == 0) {
-//      return;
-//    }
-//
-//        tbPtr = stringAppend(tbPtr, STD_LEFT_SINGLE_QUOTE);
-//        if(aimBuffer[0] == 0) {
-//          tbPtr = stringAppend(tbPtr, "_");
-//        }
-//        else {
-//          tbPtr = stringAppend(tbPtr, aimBuffer);
-//          tbPtr = stringAppend(tbPtr, STD_RIGHT_SINGLE_QUOTE);
-//        }
-//
-//    tbPtr[0] = 0;
-//  }
-//
-//   void tamEditLabel(int16_t func) {
-//     if(func & 0x80) {
-//       return;
-//     }
-//     tam.mode = TM_LABEL;
-//     tam.function = func;
-//     tam.min = indexOfItems[func].tamMinMax >> TAM_MAX_BITS;
-//     tam.max = indexOfItems[func].tamMinMax & TAM_MAX_MASK;
-// 
-//     screenUpdatingMode = SCRUPD_AUTO;
-// 
-//     if(tam.max == 16383) { // Only case featuring more than TAM_MAX_BITS bits is GTO.
-//       tam.max = 32766;
-//     }
-// 
-//     tam.alpha = false;
-//     tam.currentOperation = tam.function;
-//     tam.digitsSoFar = 0;
-//     tam.dot = false;
-//     tam.indirect = false;
-//     tam.value = 0;
-// 
-//     tam.key = 0;
-//     tam.keyAlpha = false;
-//     tam.keyDot = false;
-//     tam.keyIndirect = false;
-//     tam.keyInputFinished = false;
-// 
-// 
-//     _tamUpdateBuffer();
-// 
-//     tam.alpha = true;
-//     setSystemFlag(FLAG_ALPHA);
-//     calcModeAim(NOPARAM);
-// //    showSoftmenu(-MNU_TAMALPHA);
-//     showSoftmenu(-MNU_ALPHA);
-//     numberOfTamMenusToPop = 1;
-// 
-//     screenUpdatingMode = SCRUPD_AUTO;
-//     refreshScreen(0);
-// 
-//   }
-
-
-
-
-
 void pemAlphaEdit (uint16_t unusedButMandatoryParameter) {
   if(getSystemFlag(FLAG_ALPHA) || calcMode != CM_PEM || tam.mode) {
     hourGlassIconEnabled = false;
@@ -1001,25 +935,6 @@ void pemAlphaEdit (uint16_t unusedButMandatoryParameter) {
   if((func == ITM_LITERAL || func == ITM_REM)) {
     pemAlpha(ITM_ALPHA_EDIT);
   }
-
-//Removed - kept for future - this did not work 100% and needs subsequent improvements to be able to use the cursors in TAM TM_LABEL entry
-//  else if(func == ITM_XEQ || func == ITM_LBL || func == ITM_GTO)  {
-//      decodeOneStep(currentStep);
-//      uint16_t ll = stringByteLength(tmpString);
-//      xcopy(aimBuffer, tmpString + 6, ll - 6 - 3);
-//      aimBuffer[ll - 6 - 3 + 1 ] = 0;
-//
-//      //printStringToConsole(aimBuffer,"BBBB|","|\n");
-//      T_cursorPos = stringLastGlyph(aimBuffer) + 1;
-//      deleteStepsFromTo(currentStep, findNextStep(currentStep));
-//      //printStringToConsole(aimBuffer,"BBBBa|","|\n");
-//
-//      --currentLocalStepNumber;
-//      currentStep = findPreviousStep(currentStep);
-//      tamEditLabel(func);
-//      fnPem(NOPARAM);
-//    }
-
   hourGlassIconEnabled = false;
 }
 

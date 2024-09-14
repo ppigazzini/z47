@@ -4596,18 +4596,15 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
           //   refreshStatusBar();                                                        // this tests the USB powered option on sim
 
           if(doRefreshSoftMenu && !(screenUpdatingMode & (SCRUPD_MANUAL_MENU | SCRUPD_SKIP_MENU_ONE_TIME))) {  // this tests the battery powered option on sim
-            printf("---0001 PEM menu refresh\n");
             clearScreenOld(!clrStatusBar, !clrRegisterLines, clrSoftkeys);                // this tests the battery powered option on sim
             showSoftmenuCurrentPart();                                                    // this tests the battery powered option on sim
           }                                                                               // this tests the battery powered option on sim
 
           clearScreenOld(!clrStatusBar, clrRegisterLines, !clrSoftkeys);                  // this tests the battery powered option on sim
-          printf("---0003 PEM stack refresh\n");
           fnPem(NOPARAM);                                                                 // this tests the battery powered option on sim
           displayShiftAndTamBuffer();                                                     // this tests the battery powered option on sim
 
           if(!(screenUpdatingMode & SCRUPD_MANUAL_STATUSBAR)) {                           // this tests the battery powered option on sim
-            printf("---0002 PEM status refresh\n");
             clearScreenOld(clrStatusBar, !clrRegisterLines, !clrSoftkeys);                // this tests the battery powered option on sim
             refreshStatusBar();                                                           // this tests the battery powered option on sim
           }                                                                               // this tests the battery powered option on sim
