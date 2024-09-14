@@ -32,7 +32,7 @@
 #undef SAVE_SPACE_DM42_0
 #undef SAVE_SPACE_DM42_1
 #undef SAVE_SPACE_DM42_2
-#undef SAVE_SPACE_DM42_2LOAD 
+#undef SAVE_SPACE_DM42_2LOAD
 #undef SAVE_SPACE_DM42_3
 #undef SAVE_SPACE_DM42_4
 #undef SAVE_SPACE_DM42_6
@@ -45,7 +45,7 @@
 #undef SAVE_SPACE_DM42_11
 #undef SAVE_SPACE_DM42_12
 #undef SAVE_SPACE_DM42_12BESSEL
-#undef SAVE_SPACE_DM42_12ORTHO 
+#undef SAVE_SPACE_DM42_12ORTHO
 #undef SAVE_SPACE_DM42_13GRF
 #undef SAVE_SPACE_DM42_13GRF_JM
 #undef SAVE_SPACE_DM42_14
@@ -131,7 +131,7 @@
 #define MAXLINES 5                  // numner of equavalent lines in small font maximum that is allowed in entry. Entry is hardlocked to multiline 3 lines bif font, but this is still the limit. WP has 2 lines fixed small font.
 #define allowShowDigits false       // true to allow typing of double digits to get to register number nn in SHOW.
 #define SHOWLineSize    120         // maximum 250
-#define SHOWLineMax     (uint8_t )(TMP_STR_LENGTH / SHOWLineSize) 
+#define SHOWLineMax     (uint8_t )(TMP_STR_LENGTH / SHOWLineSize)
 
 #define LOW_GRAPH_ACC                                                                     //Lowered graph accuracy for EQN graphs
 //#undef LOW_GRAPH_ACC
@@ -494,33 +494,34 @@
 #define ERROR_OLD_ITEM_TO_REPLACE                 56
 #define ERROR_VARIABLE_NOT_SELECTED               57
 #define ERROR_IPX_INVALID_FOR_SI                  58
+#define ERROR_UNDEF_MENU                          59
 
 
 //Status output messages for time consuming tasks, to keep user informed
-#define LOADING_STATE_FILE                        59
-#define SAVING_STATE_FILE                         60
-#define RESTORING_STATS                           61
-#define COMPLEX_SOLVER                            62
-#define GRAPHING                                  63
-#define RECALC_SUMS                               64
-#define REAL_SOLVER                               65
+#define LOADING_STATE_FILE                        60
+#define SAVING_STATE_FILE                         61
+#define RESTORING_STATS                           62
+#define COMPLEX_SOLVER                            63
+#define GRAPHING                                  64
+#define RECALC_SUMS                               65
+#define REAL_SOLVER                               66
 
 //TI Messages (incomplete)
-#define TI_Backup_restored                        66
-#define TI_State_file_restored                    67
-#define TI_Saved_programs_and_equations           68
-#define TI_appended                               69
-#define TI_Saved_global_and_local_registers       70
-#define TI_w_local_flags_restored                 71
-#define TI_Saved_system_settings_restored         72
-#define TI_Saved_statistic_data_restored          73
-#define TI_Saved_user_variables_restored          74
-#define TI_Program_file_loaded                    75
-#define TI_Not_enough_memory_for_undo             76
+#define TI_Backup_restored                        67
+#define TI_State_file_restored                    68
+#define TI_Saved_programs_and_equations           69
+#define TI_appended                               70
+#define TI_Saved_global_and_local_registers       71
+#define TI_w_local_flags_restored                 72
+#define TI_Saved_system_settings_restored         73
+#define TI_Saved_statistic_data_restored          74
+#define TI_Saved_user_variables_restored          75
+#define TI_Program_file_loaded                    76
+#define TI_Not_enough_memory_for_undo             77
 
 
 
-#define NUMBER_OF_ERROR_CODES                     77
+#define NUMBER_OF_ERROR_CODES                     78
 #define SIZE_OF_EACH_ERROR_MESSAGE                48
 
 #define NUMBER_OF_BUG_SCREEN_MESSAGES             10
@@ -744,9 +745,10 @@ typedef enum {
 #define PTP_SKIP_BACK                      ( 9 << 9) //   below.
 #define PTP_NUMBER_8_16                    (10 << 9) //
 #define PTP_SHUFFLE                        (11 << 9) //
-#define PTP_LITERAL                        (12 << 9) // Literal
-#define PTP_REM                            (13 << 9) //
-#define PTP_DISABLED                       (14 << 9) // Not programmable
+#define PTP_MENU                           (12 << 9) //
+#define PTP_LITERAL                        (13 << 9) // Literal
+#define PTP_REM                            (14 << 9) //
+#define PTP_DISABLED                       (15 << 9) // Not programmable
 
 
 #define INC_FLAG                                   0
@@ -1068,7 +1070,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define Y_POSITION_OF_REGISTER_Y_LINE             96
 #define Y_POSITION_OF_REGISTER_X_LINE            132
 
-#define NUMBER_OF_DYNAMIC_SOFTMENUS               21
+#define NUMBER_OF_DYNAMIC_SOFTMENUS               22
 #define SOFTMENU_HEIGHT                           23
 
 
@@ -1269,7 +1271,8 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define TM_INTEGRATE                           10013
 #define TM_DELITM                              10014
 #define TM_VALUE_MAX                           10015
-#define TM_CMP                                 10016 // TM_CMP must be the last in this list
+#define TM_MENU                                10016
+#define TM_CMP                                 10017 // TM_CMP must be the last in this list
 
 // NIM number part
 #define NP_EMPTY                                   0
@@ -1446,6 +1449,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define INDPM_PARAM                                0
 #define INDPM_REGISTER                             1
 #define INDPM_FLAG                                 2
+#define INDPM_MENU                                 3
 
 // Combination / permutation
 #define CP_PERMUTATION                             0
@@ -1552,7 +1556,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define MAX_NUMBER_OF_GLYPHS_IN_STRING           508 //WP=196: Change to 512 less 3, Also change error message 33, and AIM_BUFFER_LENGTH, and MAXLINES
 #define NUMBER_OF_GLYPH_ROWS                     260  //Used in the font browser application
 
-#define MAX_DENMAX                              9999 // Biggest denominator in fraction display mode selector, and annunciator. 
+#define MAX_DENMAX                              9999 // Biggest denominator in fraction display mode selector, and annunciator.
                                                      // The value 0 gets converted to MAX_INTERNAL_DENMAX
 #define MAX_INTERNAL_DENMAX                    32500 // Biggest denominator in fraction display mode
 
@@ -1610,6 +1614,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define PARAM_SKIP_BACK                            9
 #define PARAM_NUMBER_8_16                         10
 #define PARAM_SHUFFLE                             11
+#define PARAM_MENU                                12
 
 #define CHECK_INTEGER                              0
 #define CHECK_INTEGER_EVEN                         1
@@ -1660,9 +1665,9 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define SOLVER_STATUS_EQUATION_2ND_DERIVATIVE      0x000C // --0- ---- ---- 11--
 #define SOLVER_STATUS_EQUATION_GRAPHER             0x2000 // --1- ---- ---- 00--
 
-#define SOLVER_STATUS_SINGLE_VARIABLE              0x0010 // 00-0 --00 ---1 ---- 
+#define SOLVER_STATUS_SINGLE_VARIABLE              0x0010 // 00-0 --00 ---1 ----
 #define SOLVER_STATUS_USES_FORMULA                 0x0100 // 00-0 --01 ---0 ----
-#define SOLVER_STATUS_MVAR_BEING_OPENED            0x0200 // 00-0 --10 ---0 ---- 
+#define SOLVER_STATUS_MVAR_BEING_OPENED            0x0200 // 00-0 --10 ---0 ----
 #define SOLVER_STATUS_TVM_APPLICATION              0x1000 // 00-1 ---- ---0 ----
 
 #define IS_EQN_INTEGRATE (((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_INTEGRATE) && \
