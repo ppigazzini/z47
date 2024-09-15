@@ -2214,6 +2214,8 @@ typedef struct {
     if(imaginarySign == -1) {
       real34SetNegativeSign(dest_i);
     }
+    //printf("----------------\n\ncloseNimWithComplex temporaryFlagRect=%i temporaryFlagPolar=%i\n", temporaryFlagRect, temporaryFlagPolar);
+    //printReal34ToConsole(dest_r,"DestR:","  "); printReal34ToConsole(dest_i,"Desti:","  \n");
 
     if((getSystemFlag(FLAG_POLAR) && !temporaryFlagRect) || temporaryFlagPolar) { // polar mode
       if(real34CompareEqual(dest_r, const34_0)) {
@@ -2221,7 +2223,6 @@ typedef struct {
       }
       else {
         real_t magnitude, theta;
-
         real34ToReal(dest_r, &magnitude);
         real34ToReal(dest_i, &theta);
         convertAngleFromTo(&theta, currentAngularMode, amRadian, &ctxtReal39);
@@ -2234,8 +2235,16 @@ typedef struct {
         realToReal34(&magnitude, dest_r);
         realToReal34(&theta,     dest_i);
       }
-//      if(temporaryFlagPolar) fnToPolar2(0);
-      if(getSystemFlag(FLAG_POLAR)) fnToPolar2(0);
+      fnToPolar2(0);
+    }
+
+    else if((!getSystemFlag(FLAG_POLAR) && !temporaryFlagPolar) || temporaryFlagRect) { // rect mode
+      real_t xx, yy;
+      real34ToReal(dest_r, &xx);
+      real34ToReal(dest_i, &yy);
+      realToReal34(&xx, dest_r);
+      realToReal34(&yy, dest_i);
+      fnToRect2(0);
     }
     temporaryFlagRect = false;
     temporaryFlagPolar = false;

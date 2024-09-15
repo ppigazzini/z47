@@ -1318,14 +1318,14 @@ void strPrepend(char*dest, char*prefix) {
 //static void printTempDisplayString(char *displayString, char *displayString2) {
 //printf("Real:");
 //int gg = 0;
-//while(gg<10){
+//while(gg<30){
 //  if((uint8_t)(displayString[gg] == 0)) break;
 //  printf("§%s§%c %u\n",displayString, (uint8_t)(displayString[gg]), (uint8_t)(displayString[gg]));
 //  gg++;
 //}
 //printf("\nImag:");
 // gg = 0;
-//while(gg<10){
+//while(gg<30){
 //  if((uint8_t)(displayString2[gg] == 0)) break;
 //  printf("§%s§%c %u\n",displayString2, (uint8_t)(displayString2[gg]), (uint8_t)(displayString2[gg]));
 //  gg++;
@@ -1342,10 +1342,10 @@ static void complex34ToDisplayString2(const complex34_t *complex34, char *displa
   if(tagPolar) { // polar mode
     real34ToReal(VARIABLE_REAL34_DATA(complex34), &real);
     real34ToReal(VARIABLE_IMAG34_DATA(complex34), &imagIc);
-    if(temporaryInformation == TI_NO_INFO) ctxtReal39.digits = 16; //speedup
+    if(temporaryInformation == TI_NO_INFO) ctxtReal39.digits = 21; //speedup for display purposes (FIX max 19)
     realRectangularToPolar(&real, &imagIc, &real, &imagIc, &ctxtReal39); // imagIc in radian
     convertAngleFromTo(&imagIc, amRadian, tagAngle == amNone ? currentAngularMode : tagAngle, &ctxtReal39);
-    ctxtReal39.digits = 39; //speedup
+    ctxtReal39.digits = 39; //speedup (end speedup)
     realToReal34(&real, &real34);
     realToReal34(&imagIc, &imag34);
   }
