@@ -25,6 +25,15 @@
   void fnIsPrime      (uint16_t unusedButMandatoryParameter);
   void fnNextPrime    (uint16_t unusedButMandatoryParameter);
   void fnPrimeFactors (uint16_t unusedButMandatoryParameter);
+
+
+  #define M_EULER_SIGMA_0  0  // k = 0
+  #define M_EULER_SIGMA_1  1  // k = 1
+  #define M_EULER_SIGMA_2  2  // k > 1
+//#define M_EULER_SIGMA_p  3  //proper
+//#define M_EULER_SIGMA_pk 4  //proper genereralized
+  #define M_FACTORS        5
   void fnEvPFacts     (uint16_t unusedButMandatoryParameter);
+
   void fnEulPhi       (uint16_t unusedButMandatoryParameter);
 #endif // !PRIME_H
