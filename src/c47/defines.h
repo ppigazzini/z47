@@ -119,9 +119,9 @@
   //  #define SAVE_SPACE_DM42_14       //   184 bytes // Without Load programming sample programs testPgms
     #define SAVE_SPACE_DM42_15       // 10056 bytes // Without all distributions, i.e. , cauchy, chi, expo, f, logis, t, weibull
     #define SAVE_SPACE_DM42_16       //  2168 bytes // Without Norml distribution
-      #define SAVE_SPACE_DM42_17       //  7448 bytes // Without Poisson/Hyper/Binomial/Geometrical distributions
+    #define SAVE_SPACE_DM42_17       //  7448 bytes // Without Poisson/Hyper/Binomial/Geometrical distributions
   //  #define SAVE_SPACE_DM42_20_TIMER //  1232 bytes // Without STOPW
-  //  #define SAVE_SPACE_DM42_21_HP35  //   200 bytes // Without config file activations only. Not complete removal.
+    #define SAVE_SPACE_DM42_21_HP35  //   200 bytes // Without config file activations only. Not complete removal.
   #endif // TWO_FILE_PGM
 #endif // DMCP_BUILD
 

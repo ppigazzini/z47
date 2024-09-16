@@ -87,6 +87,7 @@ dataBlock_t           *currentSubroutineLevelData;
 
 namedVariableHeader_t *allNamedVariables;
 softmenuStack_t        softmenuStack[SOFTMENU_STACK_SIZE];
+uint16_t               menuPageNumber;
 userMenuItem_t         userMenuItems[18];
 userMenuItem_t         userAlphaItems[18];
 userMenu_t            *userMenus;
