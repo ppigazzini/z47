@@ -2214,8 +2214,6 @@ typedef struct {
     if(imaginarySign == -1) {
       real34SetNegativeSign(dest_i);
     }
-    //printf("----------------\n\ncloseNimWithComplex temporaryFlagRect=%i temporaryFlagPolar=%i\n", temporaryFlagRect, temporaryFlagPolar);
-    //printReal34ToConsole(dest_r,"DestR:","  "); printReal34ToConsole(dest_i,"Desti:","  \n");
 
     if((getSystemFlag(FLAG_POLAR) && !temporaryFlagRect) || temporaryFlagPolar) { // polar mode
       if(real34CompareEqual(dest_r, const34_0)) {
