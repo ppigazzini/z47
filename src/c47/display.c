@@ -1342,10 +1342,12 @@ static void complex34ToDisplayString2(const complex34_t *complex34, char *displa
   if(tagPolar) { // polar mode
     real34ToReal(VARIABLE_REAL34_DATA(complex34), &real);
     real34ToReal(VARIABLE_IMAG34_DATA(complex34), &imagIc);
-    if(temporaryInformation == TI_NO_INFO) ctxtReal39.digits = 21; //speedup for display purposes (FIX max 19)
-    realRectangularToPolar(&real, &imagIc, &real, &imagIc, &ctxtReal39); // imagIc in radian
-    convertAngleFromTo(&imagIc, amRadian, tagAngle == amNone ? currentAngularMode : tagAngle, &ctxtReal39);
-    ctxtReal39.digits = 39; //speedup (end speedup)
+
+    decContext c = ctxtReal39;
+    if(temporaryInformation == TI_NO_INFO) c.digits = 21; //speedup for display purposes (FIX max 19)
+    realRectangularToPolar(&real, &imagIc, &real, &imagIc, &c); // imagIc in radian
+    convertAngleFromTo(&imagIc, amRadian, tagAngle == amNone ? currentAngularMode : tagAngle, &c);
+
     realToReal34(&real, &real34);
     realToReal34(&imagIc, &imag34);
   }
