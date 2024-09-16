@@ -2239,11 +2239,6 @@ typedef struct {
     }
 
     else if((!getSystemFlag(FLAG_POLAR) && !temporaryFlagPolar) || temporaryFlagRect) { // rect mode
-      real_t xx, yy;
-      real34ToReal(dest_r, &xx);
-      real34ToReal(dest_i, &yy);
-      realToReal34(&xx, dest_r);
-      realToReal34(&yy, dest_i);
       fnToRect2(0);
     }
     temporaryFlagRect = false;
