@@ -1037,7 +1037,7 @@ void _fnEvPFacts     (uint16_t param) {
 
 
 
-void fnEvPFacts     (uint16_t param) {
+void fnEvPFacts (uint16_t param) {
   longInteger_t xx;
   int32_t k = 1;
 
@@ -1046,7 +1046,7 @@ void fnEvPFacts     (uint16_t param) {
   if(!saveLastX()) {
     goto return10;
   }
-
+  saveForUndo();
   if(param == M_EULER_SIGMA_pk) {
     if(!getRegisterAsLongInt(REGISTER_X, xx)) {
       return;
