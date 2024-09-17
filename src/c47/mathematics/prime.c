@@ -28,14 +28,18 @@
 #include "flags.h"
 #include "fonts.h"
 #include "integers.h"
+#include "items.h"
 #include "matrix.h"
 #include "mathematics/comparisonReals.h"
 #include "mathematics/multiplication.h"
 #include "mathematics/power.h"
+#include "mathematics/subtraction.h"
 #include "registers.h"
 #include "registerValueConversions.h"
+#include "store.h"
 #include "display.h"
 #include "screen.h"
+#include "stack.h"
 #include "statusBar.h"
 #include <string.h>
 
@@ -826,20 +830,87 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
   #endif //SAVE_SPACE_DM42_12PRIME
 }
 
+
+
+// *** This is used with the Euler sigma function
+void longIntegerSumPowers(longInteger_t base, longInteger_t exponent, uint32_t k, longInteger_t result) {
+  longInteger_t count, sum, pwr, tmp, tmpbase;
+  longIntegerInit(count);
+  longIntegerInit(sum);
+  longIntegerInit(pwr);
+  longIntegerInit(tmp);
+  longIntegerInit(tmpbase);
+  uIntToLongInteger(0, sum);
+  longIntegerCopy(exponent, count);
+
+  while(!longIntegerIsNegative(count)) {
+    //printLongIntegerToConsole(count,"  count:"," \n");
+    if(k == 0) {                                    // Divisor Count is the generalized sigma function, with k = 0
+      //longIntegerMultiplyUInt(tmp, 0, tmp);
+      uIntToLongInteger(0, tmp);
+    }
+    else {                                          // Euler's sigma function is the generalized sigma function, with k = 1
+      longIntegerCopy(count, tmp);
+    }
+    if(k >= 2) {                                    // Generalized sigma function, with k > 1
+      longIntegerMultiplyUInt(tmp, k, tmp);
+    }
+    longIntegerCopy(base, tmpbase);
+    longIntegerPower(tmpbase, tmp, pwr);
+    longIntegerCopy(pwr, tmp);
+    longIntegerAdd(sum, tmp, sum);
+    //printLongIntegerToConsole(pwr,"  pwr:"," ");
+    //printLongIntegerToConsole(sum,"  sum:","\n");
+    longIntegerSubtractUInt(count, 1, count);
+  }
+
+  longIntegerCopy(sum, result);
+  longIntegerFree(tmpbase);
+  longIntegerFree(tmp);
+  longIntegerFree(pwr);
+  longIntegerFree(sum);
+  longIntegerFree(count);
+}
+
+
+
 /*
  * This is the inverse function of fnPrimeFactors.
  * Given a matrix as produced by fnPrimeFactors, this function expands out
  * all the prime factors with their exponents, and returns in the X register
  * the result as a long integer.
  */
-void fnEvPFacts     (uint16_t unusedButMandatoryParameter) {
+void _fnEvPFacts     (uint16_t param) {
   #if !defined(SAVE_SPACE_DM42_12PRIME)
     real_t factorR, factorI, baseR, expR, prodR, prodI;
-    hourGlassIconEnabled = true;
-    showHideHourGlass();
-    if(!saveLastX()) {
-      goto return10;
+
+    //parameter X required for k
+    int32_t pwr = param;
+    real_t x;
+    longInteger_t currentNumber;
+    longIntegerInit(currentNumber);
+    if(param == M_EULER_SIGMA_k) {
+      if(getRegisterDataType(REGISTER_X) == dtReal34) {    //Allow decimals to be rounded down, to be able to get the next prime despite being decimal input;
+        if(!getRegisterAsReal(REGISTER_X, &x)) {
+          goto abort;
+        }
+        pwr = realToInt32C47(&x);
+        fnDrop(NOPARAM);
+      }
+      else {
+        if(!getRegisterAsLongInt(REGISTER_X, currentNumber)) {
+          goto abort;
+        }
+        longIntegerToInt(currentNumber, pwr);
+        if(pwr > 3321 || pwr < 0) {
+          goto abort;
+        }
+        fnDrop(NOPARAM);
+      }
     }
+    longIntegerFree(currentNumber);
+
+
 
     if(getRegisterDataType(REGISTER_X) == dtReal34Matrix) {
       real34Matrix_t matrix;
@@ -859,13 +930,22 @@ void fnEvPFacts     (uint16_t unusedButMandatoryParameter) {
         realCopy(const_1,&prodR);
         #define sumTypeInteger 0
         #define sumTypeReal    1
-        #define sumTypeComplex 2      
+        #define sumTypeComplex 2
         uint8_t sumType = sumTypeInteger;
         for ( uint16_t j = 0;  j < cols;  ++j ) {
           if(real34IsAnInteger(&matrix.matrixElements[j]) && real34IsAnInteger(&matrix.matrixElements[cols+j]) && sumType == sumTypeInteger) {
             convertReal34ToLongInteger(&matrix.matrixElements[j], p_li, RM_HALF_UP);
             convertReal34ToLongInteger(&matrix.matrixElements[cols+j], k_li, RM_HALF_UP);
-            longIntegerPower(p_li, k_li, factor);
+            //printLongIntegerToConsole(p_li,"base:","  ");
+            //printLongIntegerToConsole(k_li,"exp:","\n");
+            switch(param){
+              case M_FACTORS:        longIntegerPower(p_li, k_li, factor); break;
+              case M_EULER_SIGMA_0:
+              case M_EULER_SIGMA_1:
+              case M_EULER_SIGMA_k:  longIntegerSumPowers(p_li, k_li, pwr, factor); break;
+              default:;
+            }
+            //printLongIntegerToConsole(factor,"factor:","\n");
             longIntegerCopy(prod, tmp_prod);
             longIntegerMultiply(tmp_prod, factor, prod);
           }
@@ -943,8 +1023,82 @@ void fnEvPFacts     (uint16_t unusedButMandatoryParameter) {
     hourGlassIconEnabled = false;
     showHideHourGlass();
     refreshScreen(253);
+    return;
+
+    abort:
+    longIntegerFree(currentNumber);
+    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      moreInfoOnError("In function fnEvPFacts:", "cannot do Euler sigma function due to parameter issue", NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+    goto return10;
+
   #endif //SAVE_SPACE_DM42_12PRIME
 }
+
+
+
+void fnEvPFacts     (uint16_t param) {
+  longInteger_t xx;
+  int32_t k = 1;
+
+  hourGlassIconEnabled = true;
+  showHideHourGlass();
+  if(!saveLastX()) {
+    goto return10;
+  }
+
+  if(param == M_EULER_SIGMA_pk) {
+    if(!getRegisterAsLongInt(REGISTER_X, xx)) {
+      return;
+    }
+    longIntegerToInt(xx, k);
+    longIntegerFree(xx);
+    fnSwapXY(NOPARAM);
+  }
+ 
+  if(param == M_EULER_SIGMA_p1 || param == M_EULER_SIGMA_pk) {
+    longInteger_t y, x, z, tmp;
+    _fnEvPFacts(M_FACTORS);                                      //longinteger register output
+    convertLongIntegerRegisterToLongInteger(REGISTER_X, y);
+  printLongIntegerToConsole(y,"Y:","\n");
+    longIntegerInit(z);
+    longIntegerInit(tmp);
+    uIntToLongInteger(k, z);
+    longIntegerPower(y, z, tmp);
+    longIntegerCopy(tmp,y);                                      //y is the number to be subtracted
+  printLongIntegerToConsole(y,"Y:","\n");
+    copySourceRegisterToDestRegister(SAVED_REGISTER_X, REGISTER_X);
+    copySourceRegisterToDestRegister(SAVED_REGISTER_Y, REGISTER_Y);
+    switch(param) {
+      case M_EULER_SIGMA_p1: _fnEvPFacts(M_EULER_SIGMA_1); break;      //longintger register output
+      case M_EULER_SIGMA_pk: _fnEvPFacts(M_EULER_SIGMA_k); break;      //longintger register output
+      default:;
+    }
+    convertLongIntegerRegisterToLongInteger(REGISTER_X, x);
+printLongIntegerToConsole(x,"x:","  ");
+printLongIntegerToConsole(y,"y:","\n");
+    longIntegerSubtract(x, y, x);
+printLongIntegerToConsole(x,"x:","\n");
+    convertLongIntegerToLongIntegerRegister(x, REGISTER_X);
+    longIntegerFree(tmp);
+    longIntegerFree(z);
+    longIntegerFree(y);
+    longIntegerFree(x);
+  } else {
+    _fnEvPFacts(param);
+  }
+
+
+
+  return10:
+
+  hourGlassIconEnabled = false;
+  showHideHourGlass();
+  refreshScreen(254);
+}
+
+
 
 /*
  * This function accepts a long integer in the X register and computes

@@ -2471,8 +2471,14 @@
 #define MNU_TAMMENU                 2406
 #define MNU_MENU                    2407
 #define ITM_MENUQ                   2408
+#define ITM_E_SIGMA0                2409
+#define ITM_E_SIGMA1                2410
+#define ITM_E_SIGMAk                2411
+#define ITM_E_SIGMAp1               2412
+#define ITM_E_SIGMApk               2413
+#define MNU_E_SIGMA                 2414
 
-#define LAST_ITEM                   2409
+#define LAST_ITEM                   2415
 
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL
