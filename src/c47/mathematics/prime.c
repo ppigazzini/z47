@@ -846,7 +846,6 @@ void longIntegerSumPowers(longInteger_t base, longInteger_t exponent, uint32_t k
   while(!longIntegerIsNegative(count)) {
     //printLongIntegerToConsole(count,"  count:"," \n");
     if(k == 0) {                                    // Divisor Count is the generalized sigma function, with k = 0
-      //longIntegerMultiplyUInt(tmp, 0, tmp);
       uIntToLongInteger(0, tmp);
     }
     else {                                          // Euler's sigma function is the generalized sigma function, with k = 1
@@ -1061,13 +1060,13 @@ void fnEvPFacts     (uint16_t param) {
     longInteger_t y, x, z, tmp;
     _fnEvPFacts(M_FACTORS);                                      //longinteger register output
     convertLongIntegerRegisterToLongInteger(REGISTER_X, y);
-  printLongIntegerToConsole(y,"Y:","\n");
+    //printLongIntegerToConsole(y,"Y:","\n");
     longIntegerInit(z);
     longIntegerInit(tmp);
     uIntToLongInteger(k, z);
     longIntegerPower(y, z, tmp);
     longIntegerCopy(tmp,y);                                      //y is the number to be subtracted
-  printLongIntegerToConsole(y,"Y:","\n");
+    //printLongIntegerToConsole(y,"Y:","\n");
     copySourceRegisterToDestRegister(SAVED_REGISTER_X, REGISTER_X);
     copySourceRegisterToDestRegister(SAVED_REGISTER_Y, REGISTER_Y);
     switch(param) {
@@ -1076,10 +1075,10 @@ void fnEvPFacts     (uint16_t param) {
       default:;
     }
     convertLongIntegerRegisterToLongInteger(REGISTER_X, x);
-printLongIntegerToConsole(x,"x:","  ");
-printLongIntegerToConsole(y,"y:","\n");
+    //printLongIntegerToConsole(x,"x:","  ");
+    //printLongIntegerToConsole(y,"y:","\n");
     longIntegerSubtract(x, y, x);
-printLongIntegerToConsole(x,"x:","\n");
+    //printLongIntegerToConsole(x,"x:","\n");
     convertLongIntegerToLongIntegerRegister(x, REGISTER_X);
     longIntegerFree(tmp);
     longIntegerFree(z);

@@ -243,7 +243,10 @@ bool_t itemNotAvail(int16_t itemNr) {
     }
 
     #if defined(PC_BUILD) || defined(DEBUG_EXECUTE)
-      printf("   >>>   reallyRunFunction: § %i § %s § %s § %i\n",func, indexOfItems[abs(func)].itemCatalogName, indexOfItems[abs(func)].itemSoftmenuName, param);
+      char ss1[30], ss2[30];
+      stringToASCII(indexOfItems[abs(func)].itemCatalogName, ss1);
+      stringToASCII(indexOfItems[abs(func)].itemSoftmenuName, ss2);
+      printf("   >>>   reallyRunFunction: § %i § %s § %s § %i\n",func, ss1, ss2, param);
     #endif // PC_BUILD
 
 
