@@ -1063,6 +1063,7 @@ void fnOpenMenu(uint16_t menu) {
       moreInfoOnError("In function fnOpenMenu:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
+  menuPageNumber = 1;                                              // Restore default menu page number
 #endif // !TESTSUITE_BUILD
 }
 
@@ -1098,7 +1099,6 @@ int16_t findMenu(char *buffer) {
   int16_t i;
   bool found = false;
   _stripMenuName(buffer,name);
-  printf("**[DL]** buffer %s name %s\n",buffer,name);fflush(stdout);
   for(i=0; i<LAST_ITEM; i++) {        // Search in predefined menus
     if((indexOfItems[i].status & CAT_STATUS) == CAT_MENU && indexOfItems[i].itemCatalogName[0] != 0 && i != MNU_CATALOG && i != MNU_MENUS && i != MNU_MENU) {
       if(compareString(name, indexOfItems[i].itemCatalogName, CMP_NAME) == 0) {
@@ -1118,6 +1118,9 @@ int16_t findMenu(char *buffer) {
         break;
       }
     }
+  }
+  if(menu_id == INVALID_MENU) {
+    menuPageNumber = 1;       // Restore default menu page number
   }
 #endif // !TESTSUITE_BUILD
   return menu_id;
