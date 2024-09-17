@@ -115,7 +115,9 @@ void fnPause(uint16_t dur) {
       guint timeout_id = g_timeout_add(100, (GSourceFunc) gTimer, NULL);
       refreshLcd(NULL);
       int32_t i = 1;
-      printf("Start timing %3.1f s:", (float)(duration/10));
+      #if defined(PC_BUILD_TELLTALE)
+        printf("Start timing %3.1f s:", (float)(duration/10));
+      #endif //PC_BUILD_TELLTALE
       while(gTime <= duration && (programRunStop == PGM_PAUSED || programRunStop == PGM_KEY_PRESSED_WHILE_PAUSED)) {
         g_main_context_iteration (g_main_context_default (), FALSE);
         if(gTime == i) { //arrive here every 100ms, do nothing, just increment the coounter to trap the next 100ms
@@ -125,11 +127,15 @@ void fnPause(uint16_t dur) {
             refreshScreen(12);
             refreshLcd(NULL);
           }
-          printf(".");
+          #if defined(PC_BUILD_TELLTALE)
+            printf(".");
+          #endif //PC_BUILD_TELLTALE
           fflush(stdout);
         }
       }
-      printf("; Done timing %i/%i/%i\n", i, gTime, duration);
+      #if defined(PC_BUILD_TELLTALE)
+        printf("; Done timing %i/%i/%i\n", i, gTime, duration);
+      #endif //PC_BUILD_TELLTALE
       g_source_remove (timeout_id);
     #endif // PC_BUILD
     if(programRunStop == PGM_WAITING) {
