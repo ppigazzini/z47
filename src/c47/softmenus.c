@@ -1042,7 +1042,7 @@ void fnOpenMenu(uint16_t menu) {
     }
     i++;
   }
-  if((menuPageNumber > 0) && (menuPageNumber <= 9) && (numItems > 18 * (menuPageNumber-1))) {    // Check if menuPageNumber is within the menu
+  if((menuPageNumber > 0) && (menuPageNumber <= 9) && (((numItems > 18 * (menuPageNumber-1))) || ((numItems == 0) && (menuPageNumber == 1)))) {    // Check if menuPageNumber is within the menu
     if(menu == MNU_DYNAMIC) {
       for(i=0; i<numberOfUserMenus; i++) {
         if(compareString(tmpString, userMenus[i].menuName, CMP_NAME) == 0) {
