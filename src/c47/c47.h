@@ -167,6 +167,7 @@
 
   extern namedVariableHeader_t *allNamedVariables;
   extern softmenuStack_t        softmenuStack[SOFTMENU_STACK_SIZE];
+  extern uint16_t               menuPageNumber;
   extern userMenuItem_t         userMenuItems[18];
   extern userMenuItem_t         userAlphaItems[18];
   extern userMenu_t            *userMenus;
