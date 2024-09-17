@@ -450,7 +450,8 @@
           if(item == ITM_Max) { // UP
             if(currentLocalStepNumber == 1) { // We are on 1st step of current program
               if(currentProgramNumber == 1) { // It's the 1st program in memory
-                return;
+                tamLeaveMode();
+                //return;
               }
               else { // It isn't the 1st program in memory
                 tam.value = programList[currentProgramNumber - 2].step;
@@ -468,7 +469,8 @@
 
           if(item == ITM_Min) { // DOWN
             if(currentProgramNumber == numberOfPrograms) { // We are in the last program in memory
-              return;
+              tamLeaveMode();
+              //return;
             }
 
             tam.value = programList[currentProgramNumber].step;
