@@ -354,8 +354,8 @@ TO_QSPI const int16_t menu_XFN[]         = { ITM_NEXTP,                     ITM_
                                              ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
                                              ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL                      };
 
-TO_QSPI const int16_t menu_EULERs[]      = { ITM_FACTORS,                   ITM_PFACTORSMULT,           ITM_E_SIGMA0,             ITM_E_SIGMA1,          ITM_E_SIGMA2,                ITM_NULL,                     };
-
+TO_QSPI const int16_t menu_EULERs[]      = { ITM_FACTORS,                   ITM_E_SIGMA0,               ITM_E_SIGMA1,             ITM_E_SIGMAk,          ITM_E_SIGMAp1,               ITM_E_SIGMApk,
+                                             ITM_PFACTORSMULT,              ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL                      };
 
 TO_QSPI const int16_t menu_Orthog[]      = { ITM_HN,                        ITM_Lm,                     ITM_LmALPHA,              ITM_Pn,                ITM_Tn,                      ITM_Un,
                                              ITM_HNP,                       ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL                      };
