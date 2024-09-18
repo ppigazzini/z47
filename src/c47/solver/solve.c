@@ -150,6 +150,11 @@ void fnSolve(uint16_t labelOrVariable) {
           displayCalcErrorMessage(ERROR_NO_ROOT_FOUND, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
           break;
         }
+        case SOLVER_RESULT_ABORTED: {
+          temporaryInformation = TI_SOLVER_FAILED;
+          displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+          break;
+        }
       }
       adjustResult(REGISTER_X, false, false, REGISTER_X, REGISTER_Y, -1);
 
@@ -218,6 +223,10 @@ void fnSolveVar(uint16_t unusedButMandatoryParameter) {
 
 #if !defined(TESTSUITE_BUILD)
   static void _solverIteration(real34_t *res) {
+    if(lastErrorCode == ERROR_SOLVER_ABORT) {
+      realToReal34(const_NaN, res);
+      return;
+    }
     if(currentSolverStatus & SOLVER_STATUS_TVM_APPLICATION) {
       tvmEquation();
     }
@@ -478,6 +487,7 @@ retryLevel:
             showString("key Waiting ...", &standardFont, 20, 40, vmNormal, false, false);
             printHalfSecUpdate_Integer(force+1, "Interrupted Iter:",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
             programRunStop = PGM_WAITING;
+            displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
           break;
         }
 
@@ -718,6 +728,10 @@ retryLevel:
 
     if(result == SOLVER_RESULT_NORMAL && real34IsInfinite(REGISTER_REAL34_DATA(variable)) && extendRange && real34IsZero(resZ)) {
       result = SOLVER_RESULT_CONSTANT;
+    }
+
+    if(lastErrorCode == ERROR_SOLVER_ABORT) {
+      result = SOLVER_RESULT_ABORTED;
     }
 
     return result;
