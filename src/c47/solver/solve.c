@@ -698,6 +698,10 @@ retryLevel:
           result = SOLVER_RESULT_OTHER_FAILURE;
           break;
         }
+        else if((currentSolverStatus & SOLVER_STATUS_TVM_APPLICATION) && (real34IsSpecial(&a) || real34IsSpecial(&b))) { // terminate the TVM solver to avoid possible infinite loop
+          result = SOLVER_RESULT_CONSTANT;
+          break;
+        }
         else if(real34IsZero(&fa) || real34IsZero(&fb)) {
           real34Multiply(&tmp, const34_100, &tmp);
         }
