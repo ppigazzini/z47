@@ -1092,18 +1092,26 @@ int16_t findMenu(char *buffer) {
   int16_t menu_id = INVALID_MENU;
 #if !defined(TESTSUITE_BUILD)
   char name[16];
-  int16_t i;
+  int16_t i, menuItem;
   bool found = false;
+  
   _stripMenuName(buffer,name);
-  for(i=0; i<LAST_ITEM; i++) {        // Search in predefined menus
-    if((indexOfItems[i].status & CAT_STATUS) == CAT_MENU && indexOfItems[i].itemCatalogName[0] != 0 && i != MNU_CATALOG && i != MNU_MENUS && i != MNU_MENU) {
-      if(compareString(name, indexOfItems[i].itemCatalogName, CMP_NAME) == 0) {
+  
+  i = 0;
+  menuItem = MNU_MyMenu;
+  
+  while(menuItem != 0) {      // Search in predefined menus
+    if((indexOfItems[menuItem].status & CAT_STATUS) == CAT_MENU) {
+      if(compareString(name, indexOfItems[menuItem].itemCatalogName, CMP_CLEANED_STRING_ONLY) == 0) {
         found = true;
-        menu_id = i;
+        menu_id = menuItem;
         break;
       }
     }
+    i++;
+    menuItem = -softmenu[i].menuItem;
   }
+
   if(!found) {                // If not found in predefined menus, search in user menus
     for(i=0; i<numberOfUserMenus; i++) {
       if(compareString(name, userMenus[i].menuName, CMP_NAME) == 0) {
@@ -1115,6 +1123,7 @@ int16_t findMenu(char *buffer) {
       }
     }
   }
+  
   if(menu_id == INVALID_MENU) {
     menuPageNumber = 1;       // Restore default menu page number
   }
