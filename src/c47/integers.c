@@ -66,60 +66,26 @@ void fnChangeBase(uint16_t base) {
       longInteger_t lgInt;
       real_t x, value;
       bool_t isNegative;
+      uint32_t tmp32;
 
       real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &x);
       isNegative = realIsNegative(&x);
       realSetPositiveSign(&x);
       realToIntegralValue(&x, &x, DEC_ROUND_DOWN, &ctxtReal39);
+
+      // Calculate 32 bit high word
+      realDivide(&x, const_2p32, &value, &ctxtReal39);
+
+      tmp32 = realToUint32C47(&value);
       longIntegerInit(lgInt);
+      uIntToLongInteger(tmp32, lgInt);
+      longIntegerLeftShift(lgInt, 32, lgInt);
 
+      // Calculate 32 bit low word
+      WP34S_Mod(&x, const_2p32, &value, &ctxtReal39);
 
-
-//vvvvvvvvvvvvv Replace this part with a proper realToUint64C47 when this function is rectified
-      // This part replaces the conversion in SHA 6c2cf1e which used the realToUint32C47() which did not convert higher  values than 999 999 999. realToUint32C47(), realToInt32C47, realToUint64C47(), realToInt64C47() need to be replaced.
-      // TEMPORARY CONVERSION FROM REAL to 64 bit integer
-      // Calculate 16 bit words, from the highest word
-      uint32_t tmp16;
-      longInteger_t lgInt2;
-      real_t val2;
-      int32_t jj = 4;
-      int32_t kk = 0;
-      longIntegerSetZero(lgInt);
-      longIntegerInit(lgInt2);
-      while(jj != 0) {
-        switch(jj) {
-          case 4: kk = 48;
-                  realDivide(&x, const_2p32, &value, &ctxtReal39);
-                  realDivide(&value, const_2p16, &value, &ctxtReal39);
-                  break;
-          case 3: kk = 32;
-                  realDivide(&x, const_2p32, &value, &ctxtReal39);
-                  break;
-          case 2: kk = 16;
-                  realDivide(&x, const_2p16, &value, &ctxtReal39);
-                  break;
-          case 1: kk = 0;
-                  realCopy(&x, &value);
-                  break;
-          default:;
-        }
-        realToIntegralValue(&value, &value, DEC_ROUND_DOWN, &ctxtReal39);
-        tmp16 = realToUint32C47(&value) & 0xFFFF;
-        uIntToLongInteger(tmp16, lgInt2);
-        if(kk > 0) {
-          longIntegerLeftShift(lgInt2, kk, lgInt2);
-        }
-        longIntegerAdd(lgInt, lgInt2, lgInt);
-        if(kk > 0) {
-          convertLongIntegerToReal(lgInt2, &val2, &ctxtReal39);
-          realSubtract(&x, &val2, &x, &ctxtReal39);
-        }
-        jj--;
-      }
-      longIntegerFree(lgInt2);
-//^^^^^^^^^^^^^ Replace this part with a proper realToUint64C47 when this function is rectified
-
-
+      tmp32 = realToUint32C47(&value);
+      longIntegerAddUInt(lgInt, tmp32, lgInt);
       if(isNegative) {
         longIntegerSetNegativeSign(lgInt);
       }
