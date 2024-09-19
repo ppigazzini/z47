@@ -1097,6 +1097,13 @@
     _tamUpdateBuffer();
 
     clearSystemFlag(FLAG_ALPHA);
+    
+    #if defined(PC_BUILD)
+      if(forceTamAlpha) {
+        forceTamAlpha = false;
+        tamProcessInput(ITM_alpha);  // (DL] enter tam alpha for simulator easy keyboard entry
+      }
+    #endif // PC_BUILD
 
     if(tam.mode == TM_NEWMENU) {
       setSystemFlag(FLAG_ALPHA);
