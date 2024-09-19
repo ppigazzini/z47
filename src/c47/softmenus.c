@@ -1029,7 +1029,7 @@ void fnOpenMenu(uint16_t menu) {
 #if !defined(TESTSUITE_BUILD)
   int16_t i, numItems;
   i=0;
-  while(true) {
+  while(softmenu[i].menuItem != 0) {
     if(softmenu[i].menuItem == -menu) {
       if(i < NUMBER_OF_DYNAMIC_SOFTMENUS) {
         initVariableSoftmenu(i);
@@ -1042,6 +1042,17 @@ void fnOpenMenu(uint16_t menu) {
     }
     i++;
   }
+
+  if(softmenu[i].menuItem == 0) {                                              // Should never happen as menu is checked before the call fnOpenMenu
+    displayCalcErrorMessage(ERROR_UNDEF_MENU, ERR_REGISTER_LINE, REGISTER_X);  // No check for FLAG_IGN1ER to ensure this error case is reported if it happens anyway
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "menu '%d' is not a valid menu item", menu);
+      moreInfoOnError("In function fnOpenMenu:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+    menuPageNumber = 1;                                            // Restore default menu page number
+    return;
+  }
+
   if((menuPageNumber > 0) && (menuPageNumber <= 9) && (((numItems > 18 * (menuPageNumber-1))) || ((numItems == 0) && (menuPageNumber == 1)))) {    // Check if menuPageNumber is within the menu
     if(menu == MNU_DYNAMIC) {
       for(i=0; i<numberOfUserMenus; i++) {
@@ -1057,13 +1068,22 @@ void fnOpenMenu(uint16_t menu) {
     lastCatalogPosition[CATALOG_NONE] = 0;                           // Return to default page for non catalog menus
   }
   else {
-    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+    if(getSystemFlag(FLAG_IGN1ER)) {
+      clearSystemFlag(FLAG_IGN1ER);
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "Page Number %" PRIu16 " is not a valid page for the menu %" PRIu16 "", menuPageNumber,menu);
-      moreInfoOnError("In function fnOpenMenu:", errorMessage, NULL, NULL);
-    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+        moreInfoOnError("In function fnOpenMenu:", errorMessage, "ignored since IGN1ER system flag was set", NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+    }
+    else {
+      displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        sprintf(errorMessage, "Page Number %" PRIu16 " is not a valid page for the menu %" PRIu16 "", menuPageNumber,menu);
+        moreInfoOnError("In function fnOpenMenu:", errorMessage, NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+    }
   }
-  menuPageNumber = 1;                                              // Restore default menu page number
+  menuPageNumber = 1;                                                // Restore default menu page number
 #endif // !TESTSUITE_BUILD
 }
 
@@ -1075,7 +1095,7 @@ void _stripMenuName(char *buffer, char *name) {
   while(buffer[i] !=0) {
     if((buffer[i] == (char)(STD_CR[0])) && (buffer[i+1] == (char)(STD_CR[1]))) {
       if((buffer[i+3] == 0) && (buffer[i+2] > STD_0[0]) && (buffer[i+2] <= STD_9[0])) {
-        name[i] = 0; 
+        name[i] = 0;
         menuPageNumber = buffer[i+2] - STD_0[0];   // Get menu page number from the menu name string if it's there
       }
       else {
@@ -1098,12 +1118,12 @@ int16_t findMenu(char *buffer) {
   char name[16];
   int16_t i, menuItem;
   bool found = false;
-  
+
   _stripMenuName(buffer,name);
-  
+
   i = 0;
   menuItem = MNU_MyMenu;
-  
+
   while(menuItem != 0) {      // Search in predefined menus
     if((indexOfItems[menuItem].status & CAT_STATUS) == CAT_MENU) {
       if(compareString(name, indexOfItems[menuItem].itemCatalogName, CMP_CLEANED_STRING_ONLY) == 0) {
@@ -1127,7 +1147,7 @@ int16_t findMenu(char *buffer) {
       }
     }
   }
-  
+
   if(menu_id == INVALID_MENU) {
     menuPageNumber = 1;       // Restore default menu page number
   }
