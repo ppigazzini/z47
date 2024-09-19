@@ -420,6 +420,75 @@ uInt decNumberToUInt32(const decNumber *dn, decContext *set) {
   return 0;
   } // decNumberToUInt32
 
+
+int64_t decNumberToInt64(const decNumber *dn, decContext *set) {
+  #if DECCHECK
+  if (decCheckOperands(DECUNRESU, DECUNUSED, dn, set)) return 0;
+  #endif
+
+  // special or too many digits, or bad exponent
+  if ((dn->bits&DECSPECIAL) || dn->digits>19 || dn->exponent!=0){;} // bad
+   else { // is a finite integer with 19 or fewer digits
+    Int d;                         // work
+    const Unit *up;                // ..
+    uint64_t hi=0;
+    unsigned int lo;                 // ..
+    up=dn->lsu;                    // -> lsu
+    lo=*up;                        // get 1 to 9 digits
+    #if DECDPUN>1                  // split to higher
+      hi=lo/10;
+      lo=lo%10;
+    #endif
+    up++;
+    // collect remaining Units, if any, into hi
+    for (d=DECDPUN; d<dn->digits; up++, d+=DECDPUN) hi+=*up*powers[d-1];
+    // now low has the lsd, hi the remainder
+    if (hi>922337203685477580ull || (hi==922337203685477580ull && lo>7)) { // out of range?
+      // most-negative is a reprieve
+      if ((dn->bits&DECNEG) && hi==922337203685477580ull && lo==8) return 0x8000000000000000ull;
+      // bad -- drop through
+      }
+     else { // in-range always
+      Int i=X10(hi)+lo;
+      if (dn->bits&DECNEG) return -i;
+      return i;
+      }
+    } // integer
+  decContextSetStatus(set, DEC_Invalid_operation); // [may not return]
+  return 0;
+  } // decNumberToInt64
+
+uint64_t decNumberToUInt64(const decNumber *dn, decContext *set) {
+  #if DECCHECK
+  if (decCheckOperands(DECUNRESU, DECUNUSED, dn, set)) return 0;
+  #endif
+  // special or too many digits, or bad exponent, or negative (<0)
+   if ((dn->bits&DECSPECIAL) || dn->digits>20 || dn->exponent!=0
+     || ((dn->bits&DECNEG) && !ISZERO(dn))){;}               // bad
+   else { // is a finite integer with 20 or fewer digits
+    Int d;                         // work
+    const Unit *up;                // ..
+    uint64_t hi=0;
+    unsigned int lo;                 // ..
+    up=dn->lsu;                    // -> lsu
+    lo=*up;                        // get 1 to 9 digits
+    #if DECDPUN>1                  // split to higher
+      hi=lo/10;
+      lo=lo%10;
+    #endif
+    up++;
+    // collect remaining Units, if any, into hi
+    for (d=DECDPUN; d<dn->digits; up++, d+=DECDPUN) hi+=*up*powers[d-1];
+
+    // now low has the lsd, hi the remainder
+    if (hi>1844674407370955161ull || (hi==1844674407370955161ull && lo>5)){;} // no reprieve possible
+    else return X10(hi)+lo;
+    } // integer
+  decContextSetStatus(set, DEC_Invalid_operation); // [may not return]
+  return 0;
+  } // decNumberToUInt64
+
+
 /* ------------------------------------------------------------------ */
 /* to-scientific-string -- conversion to numeric string               */
 /* to-engineering-string -- conversion to numeric string              */
