@@ -171,6 +171,8 @@
 //Verbose options
   #define    VERBOSEKEYS
   #undef     VERBOSEKEYS
+  #define    VERBOSEKEYS_AUTOCASE         //specifically visualizing the 1 second auto case indication in sim
+  #undef     VERBOSEKEYS_AUTOCASE
   #define    MONITOR_CLRSCR
   #undef     MONITOR_CLRSCR
   #define    PC_BUILD_TELLTALE            //JM verbose on PC: jm_show_comment

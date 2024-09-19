@@ -533,7 +533,7 @@ bool_t lowercaseselected;    //the only place that this is set, is in processKey
     }
 
     else if(lowercaseselected && (ITM_A <= item && item <= ITM_Z)) {
-      addItemToBuffer(item + 26);
+      addItemToBuffer(item + (ITM_a - ITM_A));
                     #if defined(PAIMDEBUG)
                       printf("---#J %d\n",keyActionProcessed);
                     #endif //PAIMDEBUG
@@ -1424,7 +1424,7 @@ int16_t lastItem = 0;
 
 
   bool_t allowShiftsToClearError = false;
-  #define stringToKeyNumber(data)         ((*((char *)data) - '0')*10 + *(((char *)data)+1) - '0')
+  #define stringToKeyNumber(data)         ((*((char *)data) - '0')*10 + *(((char *)data)+1) - '0')    // input string = "28", keynumber = 28  (keys 00-36)
 
 
   int16_t determineItem(const char *data) {
@@ -2689,7 +2689,7 @@ RELEASE_END:
           }
           else if((calcMode != CM_PEM || !getSystemFlag(FLAG_ALPHA)) && catalog && catalog != CATALOG_MVAR) {
             if(ITM_A <= item && item <= ITM_Z && lowercaseselected) {
-              addItemToBuffer(item + 26);
+              addItemToBuffer(item + (ITM_a - ITM_A));
               keyActionProcessed = true;
             }
 
@@ -4865,9 +4865,9 @@ void fnKeyDotD(uint16_t unusedButMandatoryParameter) {
 }
 
 
-void setLastKeyCode(int key) {
-  if(1 <= key && key <= 43) {
-    if(key <=  6) {
+void setLastKeyCode(int key) {             // key = 10      setLastKeyCode = 10-6 +30 = 34 row 3, col 4
+  if(1 <= key && key <= 43) {              // key = 27      setLastKeyCode = 27-22+60 = 65 row 6, col 5
+    if(key <=  6) {                        // key = 28 EXIT setLastKeyCode = 28-27+70 = 71 row 7, col 1
       lastKeyCode = key      + 20;
     }
     else if(key <= 12) {

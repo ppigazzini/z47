@@ -91,6 +91,7 @@
     for(int arg=1; arg<argc; arg++) {
 
       if(strcmp(argv[arg], "--background") == 0) {    //must be first in the list of evaluations, as it can incremant the counter
+        printf("Activated: %s\n",argv[arg]);
         if(arg+1<argc && (argv[arg+1])[0] != 0) {
           strcpy(modelString,argv[++arg]);
           if(arg+1<argc && (argv[arg+1])[0] != 0) {
@@ -104,6 +105,7 @@
 
       if(strcmp(argv[arg], "--functionkeys") == 0) {
         enableFunctionKeysDisplay = true;
+        printf("Activated: %s\n",argv[arg]);
       }
       else {
         enableFunctionKeysDisplay = false;
@@ -112,61 +114,81 @@
       if(strcmp(argv[arg], "--landscape") == 0) {
         calcLandscape             = true;
         calcAutoLandscapePortrait = false;
+        printf("Activated: %s\n",argv[arg]);
       }
 
       if(strcmp(argv[arg], "--portrait") == 0) {
         calcLandscape             = false;
         calcAutoLandscapePortrait = false;
+        printf("Activated: %s\n",argv[arg]);
       }
 
       if(strcmp(argv[arg], "--auto") == 0) {
         calcLandscape             = false;
         calcAutoLandscapePortrait = true;
+        printf("Activated: %s\n",argv[arg]);
       }
 
       if(strcmp(argv[arg], "--r47") == 0) {
         calcModel = USER_R47f_g;
+        printf("Activated: %s\n",argv[arg]);
       }
       if(strcmp(argv[arg], "--r47v0") == 0) {
         calcModel = USER_R47f_g;
+        printf("Activated: %s\n",argv[arg]);
       }
       if(strcmp(argv[arg], "--r47v1") == 0) {
         calcModel = USER_R47fg_bk;
+        printf("Activated: %s\n",argv[arg]);
       }
       if(strcmp(argv[arg], "--r47v2") == 0) {
         calcModel = USER_R47fg_g;
+        printf("Activated: %s\n",argv[arg]);
       }
       if(strcmp(argv[arg], "--r47v3") == 0) {
         calcModel = USER_R47bk_fg;
+        printf("Activated: %s\n",argv[arg]);
       }
 
 
       if(strcmp(argv[arg], "--e47") == 0) {
         calcModel = USER_E47;
+        printf("Activated: %s\n",argv[arg]);
       }
       if(strcmp(argv[arg], "--n47") == 0) {
         calcModel = USER_N47;
+        printf("Activated: %s\n",argv[arg]);
       }
       if(strcmp(argv[arg], "--v47") == 0) {
         calcModel = USER_V47;
+        printf("Activated: %s\n",argv[arg]);
       }
       if(strcmp(argv[arg], "--d47") == 0) {
         calcModel = USER_D47;
+        printf("Activated: %s\n",argv[arg]);
       }
       if(strcmp(argv[arg], "--dm42") == 0) {
         calcModel = USER_DM42;
+        printf("Activated: %s\n",argv[arg]);
       }
 
       if(strcmp(argv[arg], "--jm") == 0) {
         config = 1;
+        printf("Activated: %s\n",argv[arg]);
       }
       if(strcmp(argv[arg], "--rj") == 0) {
         config = 2;
+        printf("Activated: %s\n",argv[arg]);
       }
       if(strcmp(argv[arg], "--hp35") == 0) {
         config = 3;
+        printf("Activated: %s\n",argv[arg]);
       }
 
+      if(strcmp(argv[arg], "--deadkeys") == 0) {
+        testDeadKeys = true;
+        printf("Activated: %s\n",argv[arg]);
+      }
 
     }
 
@@ -220,6 +242,10 @@
 
     //ramDump();
     refreshScreen(190);
+
+    #if defined(OSX)
+      g_timeout_add(100, (GSourceFunc) setAlphaCaseToCapsLockState, NULL);
+    #endif // OSX
 
     gdk_threads_add_timeout(SCREEN_REFRESH_PERIOD, refreshLcd, NULL); // refreshLcd is called every SCREEN_REFRESH_PERIOD ms
     fnTimerReset();                                                    //dr timeouts for kb handling

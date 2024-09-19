@@ -62,10 +62,40 @@
   #if defined(PC_BUILD)
     extern char modelString[50];
     extern bool_t enableFunctionKeysDisplay;
+  /**
+   * \struct gdkKeyMap_t
+   * Structure keeping the mapping between character items and GDK_KEY values.
+   */
+  typedef struct {
+    int16_t   item;
+    uint32_t  gdkKey;
+  } gdkKeyMap_t;
+  
+  /**
+   * \struct deadKeys_t
+   * Structure keeping the mapping between character items and their equivalent when dead keys are used.
+   */
+  typedef struct {
+    int16_t   item;
+    int16_t   item_macron;
+    int16_t   item_acute;
+    int16_t   item_breve;
+    int16_t   item_grave;
+    int16_t   item_diaresis;
+    int16_t   item_tilde;
+    int16_t   item_circ;
+    int16_t   item_caron;
+    int16_t   item_ogonek;
+    int16_t   item_ring;
+    int16_t   item_cedilla;
+    int16_t   item_stroke;
+    int16_t   item_dot;
+  }   deadKeysMap_t;
     /**
      * Creates the calc's GUI window with all the widgets.
      */
-    void setupUI                     (void);
+    void     setupUI                     (void);
+    gboolean setAlphaCaseToCapsLockState ();
   #endif // PC_BUILD
 
 #endif // !GTKGUI_H

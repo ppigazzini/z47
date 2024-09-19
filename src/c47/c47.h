@@ -51,6 +51,9 @@
   #endif // !TESTSUITE_BUILD && !GENERATE_CATALOGS
   #if defined(PC_BUILD) || defined(TESTSUITE_BUILD)
     extern bool_t               debugMemAllocation;
+    extern bool                 forceTamAlpha;
+    extern uint32_t             deadKey;
+    extern bool_t               testDeadKeys;
   #endif // PC_BUILD || TESTSUITE_BUILD
 
   #if defined(PC_BUILD)

@@ -37,6 +37,10 @@
 #include "ui/matrixEditor.h"
 #include "ui/tam.h"
 #include <string.h>
+#if defined(PC_BUILD)
+  #include "gtkGui.h"
+#endif
+
 
 #include "c47.h"
 
@@ -54,6 +58,11 @@ TO_QSPI static const char bugScreenNoParam[] = "In function addItemToBuffer:item
       aimBuffer[0] = 0;
     }
     calcModeAim(NOPARAM); // Alpha Input Mode
+
+    #if defined(PC_BUILD)
+      setAlphaCaseToCapsLockState();  // Reflect caps lock key status
+    #endif
+
     if(programRunStop != PGM_RUNNING) {
       entryStatus |= 0x01;
       setSystemFlag(FLAG_ALPIN);
