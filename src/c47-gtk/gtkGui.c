@@ -429,6 +429,8 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
 
 
   gboolean setAlphaCaseToCapsLockState() {
+  return false; //pending removal, hence returning here
+
     #if defined VERBOSEKEYS_AUTOCASE
       printf("setAlphaCaseToCapsLockState: Query case: Upper=%i Lower=%i ", alphaCase == AC_UPPER, alphaCase == AC_LOWER);
     #endif
