@@ -1203,7 +1203,7 @@
 #define ITM_UP_DASHARROW            1169
 #define ITM_USB_SYMBOL              1170
 #define ITM_LEFT_RIGHT_DOUBLE_ARROW 1171
-#define VAR_1172                    1172
+#define ITM_CR                      1172
 #define VAR_1173                    1173
 #define VAR_1174                    1174
 
@@ -2465,14 +2465,27 @@
 #define ITM_TIMEQ                   2401
 #define ITM_TYPEQ                   2402
 
+#define MNU_PFN_3                   2403
+#define ITM_ALPHA_EDIT              2404
+#define ITM_OPEN_MENU               2405
+#define MNU_TAMMENU                 2406
+#define MNU_MENU                    2407
+#define ITM_MENUQ                   2408
+#define ITM_E_SIGMA0                2409
+#define ITM_E_SIGMA1                2410
+#define ITM_E_SIGMAk                2411
+#define ITM_E_SIGMAp1               2412
+#define ITM_E_SIGMApk               2413
+#define MNU_E_SIGMA                 2414
 
-#define LAST_ITEM                   2403
+#define LAST_ITEM                   2415
 
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL
 #define NOT_CONFIRMED                 9878 // Confirmation for RESET, CLPALL, CLALL
 #define ITM_PROD_SIGN                 9999 // Multiplication sign × or ·
 
+#define INVALID_MENU                LAST_ITEM
 
 bool_t   itemNotAvail           (int16_t itemNr);
 char     *lastFuncCatalogName   (void);

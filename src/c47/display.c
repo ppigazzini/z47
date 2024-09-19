@@ -1318,14 +1318,14 @@ void strPrepend(char*dest, char*prefix) {
 //static void printTempDisplayString(char *displayString, char *displayString2) {
 //printf("Real:");
 //int gg = 0;
-//while(gg<10){
+//while(gg<30){
 //  if((uint8_t)(displayString[gg] == 0)) break;
 //  printf("§%s§%c %u\n",displayString, (uint8_t)(displayString[gg]), (uint8_t)(displayString[gg]));
 //  gg++;
 //}
 //printf("\nImag:");
 // gg = 0;
-//while(gg<10){
+//while(gg<30){
 //  if((uint8_t)(displayString2[gg] == 0)) break;
 //  printf("§%s§%c %u\n",displayString2, (uint8_t)(displayString2[gg]), (uint8_t)(displayString2[gg]));
 //  gg++;
@@ -1342,10 +1342,12 @@ static void complex34ToDisplayString2(const complex34_t *complex34, char *displa
   if(tagPolar) { // polar mode
     real34ToReal(VARIABLE_REAL34_DATA(complex34), &real);
     real34ToReal(VARIABLE_IMAG34_DATA(complex34), &imagIc);
-    if(temporaryInformation == TI_NO_INFO) ctxtReal39.digits = 16; //speedup
-    realRectangularToPolar(&real, &imagIc, &real, &imagIc, &ctxtReal39); // imagIc in radian
-    convertAngleFromTo(&imagIc, amRadian, tagAngle == amNone ? currentAngularMode : tagAngle, &ctxtReal39);
-    ctxtReal39.digits = 39; //speedup
+
+    decContext c = ctxtReal39;
+    if(temporaryInformation == TI_NO_INFO) c.digits = 21; //speedup for display purposes (FIX max 19)
+    realRectangularToPolar(&real, &imagIc, &real, &imagIc, &c); // imagIc in radian
+    convertAngleFromTo(&imagIc, amRadian, tagAngle == amNone ? currentAngularMode : tagAngle, &c);
+
     realToReal34(&real, &real34);
     realToReal34(&imagIc, &imag34);
   }
@@ -1714,12 +1716,11 @@ void shortIntegerToDisplayString(calcRegister_t regist, char *displayString, boo
   uint64_t orgnumber, number, sign;
 
 //JM Pre-load X:
-char str3[4];
+char str3[3];
 j = 0;
 str3[j] = displayString[j]; j++;
 str3[j] = displayString[j]; j++;
-str3[j] = displayString[j]; j++;
-str3[j] = 0;
+str3[j] = displayString[j];
 
   base    = getRegisterTag(regist);
   number  = *(REGISTER_SHORT_INTEGER_DATA(regist));
@@ -1927,13 +1928,13 @@ str3[j] = 0;
   }
 
 //JM SHOW //ONLY ADD REGISTER NAME IF IT IS A LETTERED REGISTER - NO SPACE FOR MORE
-if( str3[0] >= 'A' && str3[0] <= 'Z' && str3[1] == ':' && str3[2] == ' ' && str3[3] == 0 && !(base == 2 && orgnumber > 0x3FFF))
+if( str3[0] >= 'A' && str3[0] <= 'Z' && str3[1] == ':' && str3[2] == ' ' && !(base == 2 && orgnumber > 0x3FFF))
 {
   displayString[i++] = str3[2];
   displayString[i++] = str3[1];
   displayString[i++] = str3[0];
 }
-if( str3[1] >= '0' && str3[1] <= '9' && str3[2] >= '0' && str3[2] <= '9' && str3[0] == 'R' && str3[3] == 0 && !(base == 2 && orgnumber > 0x3FFF))
+if( str3[1] >= '0' && str3[1] <= '9' && str3[2] >= '0' && str3[2] <= '9' && str3[0] == 'R' && !(base == 2 && orgnumber > 0x3FFF))
 {
   displayString[i++] = ':';
   displayString[i++] = str3[2];
@@ -2137,7 +2138,7 @@ void longIntegerRegisterToDisplayString(calcRegister_t regist, char *displayStri
 
 
 
-void longIntegerRegisterToRealDisplayString(calcRegister_t regist, char *displayString, int32_t strLg, int32_t minimum, bool_t removeTrailingRadix) {    //This function depends on real34ToDisplayString2, which depends on the getSystemFlag(FLAG_2TO10) && displayFormat == DF_UN to be set
+void longIntegerRegisterToRealDisplayString(calcRegister_t regist, char *displayString, int32_t strLg, int16_t maxWidth, int32_t minimum, bool_t removeTrailingRadix) {    //This function depends on real34ToDisplayString2, which depends on the getSystemFlag(FLAG_2TO10) && displayFormat == DF_UN to be set
   longInteger_t lgInt;
   convertLongIntegerRegisterToLongInteger(regist, lgInt);
   longIntegerToAllocatedString(lgInt, displayString, strLg);
@@ -2148,7 +2149,10 @@ void longIntegerRegisterToRealDisplayString(calcRegister_t regist, char *display
   int32ToReal(minimum,&tmp4);
   if(minimum == 0 || !realCompareAbsLessThan(&tmpReal, &tmp4)) {
     realToReal34(&tmpReal, &tmpReal34);
-    real34ToDisplayString2(&tmpReal34, displayString, 34, 100, false, false, isReal);
+    //real34ToDisplayString2(&tmpReal34, displayString,                            34, 100, false, false, isReal);
+    real34ToDisplayString (&tmpReal34, amNone, displayString, &standardFont, maxWidth,  34, 100,        false);
+
+
     if(removeTrailingRadix) {
       int lastGlyphPosition = stringLastGlyph(displayString);
       //check the radix. Two options, a single byte or two-byte radix. Delete the radix if at the right edge of the string.

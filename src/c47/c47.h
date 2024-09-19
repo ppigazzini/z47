@@ -44,6 +44,11 @@
   #include "typeDefinitions.h"
 
   // Variables for the simulator
+  #if !defined(TESTSUITE_BUILD) && !defined(GENERATE_CATALOGS)
+    extern int16_t lastFunc;
+    extern int16_t lastParam;
+    extern char    lastTemp[16];
+  #endif // !TESTSUITE_BUILD && !GENERATE_CATALOGS
   #if defined(PC_BUILD) || defined(TESTSUITE_BUILD)
     extern bool_t               debugMemAllocation;
     extern bool                 forceTamAlpha;

@@ -1206,8 +1206,8 @@ void restoreStats(void){
       {0,USER_N47,     "N47: Exp 2 shft L (32 mould) /x-+ R " STD_UP_ARROW STD_DOWN_ARROW " top"  },
       {0,USER_V47,     "V47: Exp Vintage 2 shifts TopR -+x/ L"           },
       {0,USER_DM42,    "DM42: Final Compatibility layout"                },
-      {0,USER_HRESET,  "HOME Menu reset to default"                      },
-      {0,USER_PRESET,  "P.FN Menu reset to default"                      },
+      {0,USER_HRESET,  "HOME menu reset to default"                      },
+      {0,USER_PRESET,  "P.FN menu reset to default"                      },
       {0,USER_KRESET,  "USER keys cleaned"                               },
       {0,USER_MRESET,  "MyMenu menu cleaned"                             },
       {0,USER_ARESET,  "My" STD_alpha " menu cleaned"                    },
@@ -1289,6 +1289,14 @@ void resetOtherConfigurationStuff(void) {
   timeLastOp = 0;
   timeLastOp0 = 0;
   timeLastOp1 = 0;
+
+  #if !defined(TESTSUITE_BUILD) && !defined(GENERATE_CATALOGS)
+    lastFunc    = 0;
+    lastParam   = 0;
+    lastTemp[0] = 0;
+  #endif // !TESTSUITE_BUILD && !GENERATE_CATALOGS
+
+
 }
 
 
@@ -1631,9 +1639,9 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
                                    #if defined(PC_BUILD) && (VERBOSE_LEVEL > -1)
                                      printf("USER_HRESET\n");
                                    #endif
-    fnKeysManagement(USER_ARESET);                                      //JM USER
+    fnKeysManagement(USER_HRESET);                                      //JM USER
                                    #if defined(PC_BUILD) && (VERBOSE_LEVEL > -1)
-                                     printf("USER_PRESET\n");
+                                     printf("USER_ARESET\n");
                                    #endif
     fnKeysManagement(USER_ARESET);                                      //JM USER
                                    #if defined(PC_BUILD) && (VERBOSE_LEVEL > -1)

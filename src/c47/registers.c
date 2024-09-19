@@ -29,6 +29,7 @@
 #include "sort.h"
 #include "stack.h"
 #include "screen.h"
+#include "softmenus.h"
 #include "stats.h"
 #include <string.h>
 
@@ -1626,8 +1627,10 @@ void copySourceRegisterToDestRegister(calcRegister_t sourceRegister, calcRegiste
 int16_t indirectAddressing(calcRegister_t regist, uint16_t parameterType, int16_t minValue, int16_t maxValue) {
   int16_t value;
   bool_t isValidAlpha = false;
-  printf("parameterType %u\n", parameterType); fflush(stdout);
-  printf("currentNumberOfLocalFlags %u\n", currentNumberOfLocalFlags); fflush(stdout);
+  #if defined(PC_BUILD)
+    printf("parameterType %u\n", parameterType); fflush(stdout);
+    printf("currentNumberOfLocalFlags %u\n", currentNumberOfLocalFlags); fflush(stdout);
+  #endif   // PC_BUILD
 
   switch(parameterType) {
     case INDPM_REGISTER: {
@@ -1653,11 +1656,11 @@ int16_t indirectAddressing(calcRegister_t regist, uint16_t parameterType, int16_
     return 9999;
   }
 
-  else if(getRegisterDataType(regist) == dtReal34) {
-    real34_t maxValue34;
+  else if(getRegisterDataType(regist) == dtReal34 && parameterType != INDPM_MENU) {
+    real34_t maxValue34plusOne;
 
-    int32ToReal34(maxValue, &maxValue34);
-    if(real34CompareLessThan(REGISTER_REAL34_DATA(regist), const34_0) || real34CompareGreaterEqual(REGISTER_REAL34_DATA(regist), &maxValue34)) {
+    int32ToReal34(maxValue+1, &maxValue34plusOne);
+    if(real34CompareLessThan(REGISTER_REAL34_DATA(regist), const34_0) || real34CompareGreaterEqual(REGISTER_REAL34_DATA(regist), &maxValue34plusOne)) {
       displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
       #if defined(PC_BUILD)
         real34ToString(REGISTER_REAL34_DATA(regist), errorMessage);
@@ -1669,7 +1672,7 @@ int16_t indirectAddressing(calcRegister_t regist, uint16_t parameterType, int16_
     value = real34ToInt32(REGISTER_REAL34_DATA(regist));
   }
 
-  else if(getRegisterDataType(regist) == dtLongInteger) {
+  else if(getRegisterDataType(regist) == dtLongInteger && parameterType != INDPM_MENU) {
     longInteger_t lgInt;
 
     convertLongIntegerRegisterToLongInteger(regist, lgInt);
@@ -1687,7 +1690,7 @@ int16_t indirectAddressing(calcRegister_t regist, uint16_t parameterType, int16_
     longIntegerFree(lgInt);
   }
 
-  else if(getRegisterDataType(regist) == dtShortInteger) {
+  else if(getRegisterDataType(regist) == dtShortInteger && parameterType != INDPM_MENU) {
     uint64_t val;
     int16_t sign;
 
@@ -1711,6 +1714,19 @@ int16_t indirectAddressing(calcRegister_t regist, uint16_t parameterType, int16_
       displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "string '%s' is not a named variable", REGISTER_STRING_DATA(regist));
+        moreInfoOnError("In function indirectAddressing:", errorMessage, NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+      return 9999;
+    }
+  }
+
+  else if(getRegisterDataType(regist) == dtString && parameterType == INDPM_MENU) {
+    value = findMenu(REGISTER_STRING_DATA(regist));
+    isValidAlpha = true;
+    if(value == INVALID_MENU) {
+      displayCalcErrorMessage(ERROR_UNDEF_MENU, ERR_REGISTER_LINE, REGISTER_X);
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        sprintf(errorMessage, "string '%s' is not a menu name", REGISTER_STRING_DATA(regist));
         moreInfoOnError("In function indirectAddressing:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return 9999;
@@ -1907,7 +1923,7 @@ int16_t indirectAddressing(calcRegister_t regist, uint16_t parameterType, int16_
       }
       else {
         printf("   %2x",(uint8_t)(str[loop++]));
-      }      
+      }
     }
     printf("%s", after);
   }

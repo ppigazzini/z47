@@ -332,8 +332,8 @@ static void _getStringLabelOrVariableName(uint8_t *stringAddress) {
 
 static void _executeWithIndirectRegister(uint8_t *paramAddress, uint16_t op) {
   uint8_t opParam = *(uint8_t *)paramAddress;
-  if(opParam <= LAST_LOCAL_REGISTER_IN_KS_CODE) { // Local register from .00 to .98
-      int16_t realParam = indirectAddressing(regKStoC(opParam), (indexOfItems[op].param == TM_FLAGR || indexOfItems[op].param == TM_FLAGW) ? INDPM_FLAG : (indexOfItems[op].param == TM_STORCL || indexOfItems[op].param == TM_M_DIM) ? INDPM_REGISTER : INDPM_PARAM, indexOfItems[op].tamMinMax >> TAM_MAX_BITS, indexOfItems[op].tamMinMax & TAM_MAX_MASK);
+  if(opParam <= LAST_SPARE_REGISTERS_IN_KS_CODE) { // Local register from .00 to .98
+      int16_t realParam = indirectAddressing(regKStoC(opParam), (indexOfItems[op].param == TM_FLAGR || indexOfItems[op].param == TM_FLAGW) ? INDPM_FLAG : (indexOfItems[op].param == TM_STORCL || indexOfItems[op].param == TM_M_DIM) ? INDPM_REGISTER : (indexOfItems[op].param == TM_MENU) ? INDPM_MENU : INDPM_PARAM, indexOfItems[op].tamMinMax >> TAM_MAX_BITS, indexOfItems[op].tamMinMax & TAM_MAX_MASK);
       if(realParam < 9999) {
         reallyRunFunction(op, realParam);
       }
@@ -348,7 +348,7 @@ static void _executeWithIndirectVariable(uint8_t *stringAddress, uint16_t op) {
   _getStringLabelOrVariableName(stringAddress);
   regist = findNamedVariable(tmpStringLabelOrVariableName);
   if(regist != INVALID_VARIABLE) {
-      int16_t realParam = indirectAddressing(regist, (indexOfItems[op].param == TM_FLAGR || indexOfItems[op].param == TM_FLAGW) ? INDPM_FLAG : (indexOfItems[op].param == TM_STORCL || indexOfItems[op].param == TM_M_DIM) ? INDPM_REGISTER : INDPM_PARAM, indexOfItems[op].tamMinMax >> TAM_MAX_BITS, indexOfItems[op].tamMinMax & TAM_MAX_MASK);
+      int16_t realParam = indirectAddressing(regist, (indexOfItems[op].param == TM_FLAGR || indexOfItems[op].param == TM_FLAGW) ? INDPM_FLAG : (indexOfItems[op].param == TM_STORCL || indexOfItems[op].param == TM_M_DIM) ? INDPM_REGISTER : (indexOfItems[op].param == TM_MENU) ? INDPM_MENU : INDPM_PARAM, indexOfItems[op].tamMinMax >> TAM_MAX_BITS, indexOfItems[op].tamMinMax & TAM_MAX_MASK);
       if(realParam < 9999) {
         reallyRunFunction(op, realParam);
       }
@@ -367,7 +367,7 @@ static void _executeOp(uint8_t *paramAddress, uint16_t op, uint16_t paramMode) {
   bool_t tryAllocate = (op == ITM_STO || op == ITM_M_DIM || op == ITM_MVAR || op == ITM_INPUT);
 
   switch(paramMode) {
-      case PARAM_DECLARE_LABEL: {
+    case PARAM_DECLARE_LABEL: {
       // nothing to do
       break;
       }
@@ -402,7 +402,7 @@ static void _executeOp(uint8_t *paramAddress, uint16_t op, uint16_t paramMode) {
       break;
       }
 
-      case PARAM_FLAG: {
+    case PARAM_FLAG: {
       if(opParam <= LAST_LOCAL_FLAG) { // Global flag from 00 to 99, Lettered flag from X to K, or Local flag from .00 to .31
         reallyRunFunction(op, opParam);
       }
@@ -445,7 +445,7 @@ static void _executeOp(uint8_t *paramAddress, uint16_t op, uint16_t paramMode) {
       break;
       }
 
-      case PARAM_NUMBER_8: {
+    case PARAM_NUMBER_8: {
       if(opParam <= (indexOfItems[op].tamMinMax & TAM_MAX_MASK)) { // Value from 0 to 99
         reallyRunFunction(op, opParam);
       }
@@ -461,7 +461,7 @@ static void _executeOp(uint8_t *paramAddress, uint16_t op, uint16_t paramMode) {
       break;
       }
 
-      case PARAM_NUMBER_8_16: {
+    case PARAM_NUMBER_8_16: {
         if(opParam <= 249) { // Value from 0 to 249
           reallyRunFunction(op, opParam);
         }
@@ -480,14 +480,13 @@ static void _executeOp(uint8_t *paramAddress, uint16_t op, uint16_t paramMode) {
         break;
       }
 
-      case PARAM_NUMBER_16: {
+    case PARAM_NUMBER_16: {
       reallyRunFunction(op, opParam + 256 * *(paramAddress));
       break;
       }
 
     case PARAM_REGISTER:
-      case PARAM_COMPARE: {
-
+    case PARAM_COMPARE: {
       if(opParam <= LAST_SPARE_REGISTERS_IN_KS_CODE) { // Global register from 00 to 99, Lettered register from X to K, or Local register from .00 to .98
         reallyRunFunction(op, regKStoC(opParam));
       }
@@ -517,6 +516,36 @@ static void _executeOp(uint8_t *paramAddress, uint16_t op, uint16_t paramMode) {
         reallocateRegister(TEMP_REGISTER_1, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
         real34Copy(const34_1, REGISTER_REAL34_DATA(TEMP_REGISTER_1));
         reallyRunFunction(op, TEMP_REGISTER_1);
+      }
+      else if(opParam == INDIRECT_REGISTER) {
+        _executeWithIndirectRegister(paramAddress, op);
+      }
+      else if(opParam == INDIRECT_VARIABLE) {
+        _executeWithIndirectVariable(paramAddress, op);
+      }
+      else {
+        sprintf(tmpString, "\nIn function _executeOp: case PARAM_REGISTER / PARAM_COMPARE, %s  %u is not a valid parameter!", indexOfItems[op].itemCatalogName, opParam);
+      }
+      break;
+      }
+
+    case PARAM_MENU: {
+      if(opParam == STRING_LABEL_VARIABLE) {
+        _getStringLabelOrVariableName(paramAddress);
+        int16_t menu_id = findMenu(tmpStringLabelOrVariableName);
+        if(tryAllocate) {
+          reallyRunFunction(op, findOrAllocateNamedVariable(tmpStringLabelOrVariableName));
+        }
+        else if(menu_id != INVALID_MENU) {
+          reallyRunFunction(op, menu_id);
+        }
+        else {
+          displayCalcErrorMessage(ERROR_UNDEF_MENU, ERR_REGISTER_LINE, REGISTER_X);
+          #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+            sprintf(errorMessage, "string '%s' is not a menu name", tmpStringLabelOrVariableName);
+            moreInfoOnError("In function _executeOp:", errorMessage, NULL, NULL);
+          #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+        }
       }
       else if(opParam == INDIRECT_REGISTER) {
         _executeWithIndirectRegister(paramAddress, op);
