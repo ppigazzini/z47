@@ -3845,7 +3845,11 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 2412 */  { fnEvPFacts,                   M_EULER_SIGMA_p1,            STD_sigma STD_SUB_E STD_SUP_ASTERISK,          STD_sigma STD_SUB_E STD_SUP_ASTERISK,          (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /* 2413 */  { fnEvPFacts,                   M_EULER_SIGMA_pk,            STD_sigma STD_SUB_E STD_SUP_ASTERISK STD_SPACE_HAIR STD_SUB_k,  STD_sigma STD_SUB_E STD_SUP_ASTERISK STD_SPACE_HAIR STD_SUB_k,(0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /* 2414 */  { itemToBeCoded,                NOPARAM,                     "EULER" STD_SPACE_6_PER_EM STD_sigma,          "EULER" STD_SPACE_6_PER_EM STD_sigma,          (0 << TAM_MAX_BITS) |     0, CAT_MENU | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 2415 */  { addItemToBuffer,              REGISTER_X,                  STD_RIGHT_ARROW "X",                           STD_RIGHT_ARROW "X",                           (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 2416 */  { addItemToBuffer,              REGISTER_Z,                  STD_RIGHT_ARROW "Y",                           STD_RIGHT_ARROW "Y",                           (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 2417 */  { addItemToBuffer,              REGISTER_Y,                  STD_RIGHT_ARROW "Z",                           STD_RIGHT_ARROW "Z",                           (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 2418 */  { addItemToBuffer,              REGISTER_T,                  STD_RIGHT_ARROW "T",                           STD_RIGHT_ARROW "T",                           (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 
-/* 2415 */  { itemToBeCoded,                NOPARAM,                     "",                                            "Last item",                                   (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED},
+/* 2419 */  { itemToBeCoded,                NOPARAM,                     "",                                            "Last item",                                   (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED},
 
 };

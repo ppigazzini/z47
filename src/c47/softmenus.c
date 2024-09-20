@@ -606,9 +606,9 @@ TO_QSPI const int16_t menu_TamFlag[]     = { ITM_INDIRECTION,               -MNU
                                              ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
                                              ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    -MNU_FLG                      };
 
-TO_QSPI const int16_t menu_TamNonRegMax[]= { ITM_INDIRECTION,               ITM_TAMMAX,                 ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL                      };
+TO_QSPI const int16_t menu_TamNonRegMax[]= { ITM_INDIRECTION,               ITM_TAMMAX,                 ITM_INDIRECT_X,           ITM_INDIRECT_Y,        ITM_INDIRECT_Z,              ITM_INDIRECT_T                };
 
-TO_QSPI const int16_t menu_TamNonReg[]   = { ITM_INDIRECTION,               ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL                      };
+TO_QSPI const int16_t menu_TamNonReg[]   = { ITM_INDIRECTION,               ITM_NULL,                   ITM_INDIRECT_X,           ITM_INDIRECT_Y,        ITM_INDIRECT_Z,              ITM_INDIRECT_T                };
 TO_QSPI const int16_t menu_TamNonRegInd[]= { ITM_NULL,                      -MNU_VAR,                   ITM_REG_X,                ITM_REG_Y,             ITM_REG_Z,                   ITM_REG_T,
                                              ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    -MNU_REG                      };
 
@@ -635,7 +635,7 @@ TO_QSPI const int16_t menu_TamShuffle[]  = { ITM_NULL,                      ITM_
 
 TO_QSPI const int16_t menu_TamLabel[]    = { ITM_INDIRECTION,               -MNU_PROG,                  ITM_REG_X,                ITM_REG_Y,             ITM_REG_Z,                   ITM_REG_T                     };
 
-TO_QSPI const int16_t menu_TamMenu []    = { ITM_INDIRECTION,               -MNU_MENU,                  ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL                      };
+TO_QSPI const int16_t menu_TamMenu []    = { ITM_INDIRECTION,               -MNU_MENU,                  ITM_INDIRECT_X,           ITM_INDIRECT_Y,        ITM_INDIRECT_Z,              ITM_INDIRECT_T                };
 
 
 TO_QSPI const int16_t menu_Eim[]         = {
