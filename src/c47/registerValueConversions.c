@@ -931,7 +931,11 @@ bool_t getRegisterAsShortInt(calcRegister_t reg, bool_t *sign, uint64_t *val, bo
 
     case dtComplex34:
     case dtReal34:
-      if(getRegisterAsReal(reg, &rval) && !realIsInfinite(&rval)) {
+      if(getRegisterAsReal(reg, &rval)) {
+        if (realIsSpecial(&rval)) {
+          badDomainError(reg);
+          return false;
+        }
         *sign = realIsNegative(&rval);
         realSetPositiveSign(&rval);
         frac = !realIsAnInteger(&rval);
@@ -968,7 +972,7 @@ bool_t getRegisterAsShortInt(calcRegister_t reg, bool_t *sign, uint64_t *val, bo
   return true;
 }
 
-bool_t getRegisterAsLongInt(calcRegister_t reg, longInteger_t val) {
+bool_t getRegisterAsLongInt(calcRegister_t reg, longInteger_t val, bool_t *fractional) {
   real_t rval;
 
   switch(getRegisterDataType(reg)) {
@@ -982,15 +986,19 @@ bool_t getRegisterAsLongInt(calcRegister_t reg, longInteger_t val) {
 
     case dtComplex34:
     case dtReal34:
-      if(getRegisterAsReal(reg, &rval) && !realIsInfinite(&rval)) {
-        if(realIsAnInteger(&rval)) {
-          convertRealToLongInteger(&rval, val, DEC_ROUND_DOWN);
-          break;
-        }
-        else {
+      if(getRegisterAsReal(reg, &rval)) {
+        if (realIsSpecial(&rval)) {
           badDomainError(reg);
           return false;
         }
+        if (!realIsAnInteger(&rval)) {
+          realToIntegralValue(&rval, &rval, DEC_ROUND_DOWN, &ctxtReal39);
+          if (fractional != NULL)
+            *fractional = 1;
+        } else if (fractional != NULL)
+          *fractional = 0;
+        convertRealToLongInteger(&rval, val, DEC_ROUND_DOWN);
+        break;
       }
       /* fall through */
 
