@@ -109,7 +109,7 @@ bool_t itemNotAvail(int16_t itemNr) {
              #endif
              return true;
              break;
-      default: 
+      default:
              return false;
              break;
   }
@@ -3836,7 +3836,11 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 2406 */  { itemToBeCoded,                NOPARAM,                     "",                                            "TamMenu",                                     (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2407 */  { itemToBeCoded,                NOPARAM,                     "MENU",                                        "MENU",                                        (0 << TAM_MAX_BITS) |     0, CAT_MENU | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2408 */  { fnGetMenu,                    NOPARAM,                     "MENU?",                                       "MENU?",                                       (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
+/* 2409 */  { addItemToBuffer,              REGISTER_X,                  STD_RIGHT_ARROW "X",                           STD_RIGHT_ARROW "X",                           (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 2410 */  { addItemToBuffer,              REGISTER_Z,                  STD_RIGHT_ARROW "Y",                           STD_RIGHT_ARROW "Y",                           (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 2411 */  { addItemToBuffer,              REGISTER_Y,                  STD_RIGHT_ARROW "Z",                           STD_RIGHT_ARROW "Z",                           (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 2412 */  { addItemToBuffer,              REGISTER_T,                  STD_RIGHT_ARROW "T",                           STD_RIGHT_ARROW "T",                           (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 
-/* 2409 */  { itemToBeCoded,                NOPARAM,                     "",                                            "Last item",                                   (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED},
+/* 2413 */  { itemToBeCoded,                NOPARAM,                     "",                                            "Last item",                                   (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED},
 
 };
