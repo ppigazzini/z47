@@ -36,7 +36,7 @@
 #include "c47.h"
 
 void fn1stDeriv(uint16_t label) {
-  currentSolverStatus &= !SOLVER_STATUS_USES_FORMULA;
+  currentSolverStatus &= ~SOLVER_STATUS_USES_FORMULA;
   bool_t solving = getSystemFlag(FLAG_SOLVING);
   setSystemFlag(FLAG_SOLVING);
   if(label >= FIRST_LABEL && label <= LAST_LABEL) {
@@ -74,7 +74,7 @@ void fn1stDeriv(uint16_t label) {
 }
 
 void fn2ndDeriv(uint16_t label) {
-  currentSolverStatus &= !SOLVER_STATUS_USES_FORMULA;
+  currentSolverStatus &= ~SOLVER_STATUS_USES_FORMULA;
   bool_t solving = getSystemFlag(FLAG_SOLVING);
   setSystemFlag(FLAG_SOLVING);
   if(label >= FIRST_LABEL && label <= LAST_LABEL) {
