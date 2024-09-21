@@ -20,6 +20,7 @@
 
 #include "mathematics/bessel.h"
 
+#include "c43Extensions/addons.h"
 #include "constantPointers.h"
 #include "debug.h"
 #include "error.h"
