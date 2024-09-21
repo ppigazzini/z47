@@ -453,6 +453,11 @@ static void bessel_recur(const real_t *nu, const real_t *x, bool_t is_y, bool_t 
     plusMinus(descending, &alpha, const_1, &alpha, realContext);
     realCopy(&jnx, &jn_1x);
     realCopy(res, &jnx);
+
+    if(popKey() == 32) { // instead of keyWaiting()
+      displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+      return;
+    }
   }
 }
 
