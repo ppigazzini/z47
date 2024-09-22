@@ -1266,7 +1266,6 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define CAPS_EQN_DEFAULT                           AC_LOWER
 #define CAPS_AIM_DEFAULT                           AC_UPPER
 #define CAPS_ASMcat_DEFAULT                        AC_UPPER
-#define CAPS_TAM_LOWER_DEFAULT                     
 #define CAPS_STOetc_DEFAULT                        AC_LOWER
 #define CAPS_TAMother_DEFAULT                      AC_UPPER
 
