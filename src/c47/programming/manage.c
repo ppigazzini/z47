@@ -786,6 +786,7 @@ void pemAlpha(int16_t item) {
     if(indexOfItems[item].func == addItemToBuffer) {
       int32_t len = stringByteLength(aimBuffer);
       item = numlockReplacements(0, item, getSystemFlag(FLAG_NUMLOCK), shiftF, shiftG);
+//TOREMOVEGREEKKEY vv as C47 has no direct alpha keys that need case selection
       if(alphaCase == AC_LOWER) {
           if(ITM_A <= item && item <= ITM_Z) {
             item += (ITM_a - ITM_A);

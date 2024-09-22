@@ -429,7 +429,10 @@
         aimBuffer[0] = 0;
         calcModeAim(NOPARAM);
         if(beginWithLowercase) {
-          alphaCase = AC_LOWER;
+          alphaCase = CAPS_STOetc_DEFAULT;
+        } 
+        else {
+          alphaCase = CAPS_TAMother_DEFAULT;
         }
         switch(softmenu[softmenuStack[0].softmenuId].menuItem) {
           case -MNU_TAMCMP    :
