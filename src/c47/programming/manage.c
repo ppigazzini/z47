@@ -494,13 +494,13 @@ void fnPem(uint16_t unusedButMandatoryParameter) {
       nextStep = findNextStep(step);
       //uint16_t stepSize = (uint16_t)(nextStep - step);
       sprintf(tmpString, "%04d:" STD_SPACE_4_PER_EM, firstDisplayedLocalStepNumber + line - lineOffset + lineOffsetTam);
-      tamOverPemYPos = Y_POSITION_OF_REGISTER_T_LINE + 21 * line;
       if(firstDisplayedStepNumber + line - lineOffset == currentStepNumber) {
+        tamOverPemYPos = Y_POSITION_OF_REGISTER_T_LINE + 21 * line;
         showString(tmpString, &standardFont, pemLeftOffset(tamOverPemYPos) + 1, tamOverPemYPos, ((pemCursorIsZerothStep && !tam.mode && aimBuffer[0] == 0) || (tam.mode && (programList[currentProgramNumber - 1].step > 0))) ? vmNormal : vmReverse, false, true);
         currentStep = step;
       }
       else {
-        showString(tmpString, &standardFont, pemLeftOffset(tamOverPemYPos) + 1, tamOverPemYPos, vmNormal,  false, true);
+        showString(tmpString, &standardFont, pemLeftOffset(Y_POSITION_OF_REGISTER_T_LINE + 21 * line) + 1, Y_POSITION_OF_REGISTER_T_LINE + 21 * line, vmNormal,  false, true);
       }
 
       //Automatically, when on battery (hence low processor), change to skip long processing register printing, recovering the fragmented screen here: See timer.c fnTimerEndOfActivity() , skippedStackLines
