@@ -908,7 +908,7 @@ bool_t getRegisterAsShortInt(calcRegister_t reg, bool_t *sign, uint64_t *val, bo
   switch(getRegisterDataType(reg)) {
     case dtShortInteger:
       convertShortIntegerRegisterToUInt64(reg, &sign16, val);
-      *sign = sign16 == 0;
+      *sign = sign16 != 0;
       break;
 
     case dtLongInteger:
