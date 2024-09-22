@@ -189,7 +189,6 @@
         testDeadKeys = true;
         printf("Activated: %s\n",argv[arg]);
       }
-
     }
 
     if(strcmp(indexOfItems[LAST_ITEM].itemSoftmenuName, "Last item") != 0) {
@@ -242,10 +241,6 @@
 
     //ramDump();
     refreshScreen(190);
-
-    #if defined(OSX)
-      g_timeout_add(100, (GSourceFunc) setAlphaCaseToCapsLockState, NULL);
-    #endif // OSX
 
     gdk_threads_add_timeout(SCREEN_REFRESH_PERIOD, refreshLcd, NULL); // refreshLcd is called every SCREEN_REFRESH_PERIOD ms
     fnTimerReset();                                                    //dr timeouts for kb handling
