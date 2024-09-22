@@ -39,7 +39,7 @@
 static void fibLonI(void) {
   longInteger_t x, result;
 
-  if(!getRegisterAsLongInt(REGISTER_X, x))
+  if(!getRegisterAsLongInt(REGISTER_X, x, NULL))
     return;
 
   if(longIntegerIsNegative(x)) {

@@ -218,8 +218,8 @@ static void pyxCplx(real_t *yReal, real_t *yImag, real_t *xReal, real_t *xImag, 
 static void cpyxLonI(uint16_t combOrPerm) {
   longInteger_t x, y;
 
-  if(!getRegisterAsLongInt(REGISTER_X, x)
-      || !getRegisterAsLongInt(REGISTER_Y, y))
+  if(!getRegisterAsLongInt(REGISTER_X, x, NULL)
+      || !getRegisterAsLongInt(REGISTER_Y, y, NULL))
     return;
 
   if(longIntegerIsNegative(x) || longIntegerIsNegative(y) || longIntegerCompare(y, x) < 0) {
@@ -308,8 +308,8 @@ static void cpyxCplx(uint16_t combOrPerm) {
 static void cpyxShoI(uint16_t combOrPerm) {
   longInteger_t x, y;
 
-  if(!getRegisterAsLongInt(REGISTER_X, x)
-      || !getRegisterAsLongInt(REGISTER_Y, y))
+  if(!getRegisterAsLongInt(REGISTER_X, x, NULL)
+      || !getRegisterAsLongInt(REGISTER_Y, y, NULL))
     return;
 
   if(longIntegerIsNegative(x) || longIntegerIsNegative(y) || longIntegerCompare(y, x) < 0) {
