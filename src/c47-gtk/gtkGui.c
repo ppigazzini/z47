@@ -859,25 +859,50 @@ if(   CTRL_State != 65536
     //    }
     //  }
 
-    ll = _keyCodeFromGdkKey(event->keyval);        //utilise the raw key event value, which will be contain a-z or A-Z
+    uint8_t alphaCase_MEM = alphaCase;
+    ll = event->keyval;
+  
+    if('A' <= ll && ll <= 'Z' && alphaCase == AC_UPPER) {         //A-Z is shifted on PC, and flips
+      ll += ('a' - 'A');
+      alphaCase = AC_LOWER;
+    }
+    else if('A' <= ll && ll <= 'Z' && alphaCase == AC_LOWER) {
+      alphaCase = AC_UPPER;
+    }
+    else if('a' <= ll && ll <= 'z' && alphaCase == AC_UPPER) {    //a-z is natural on PC, and if CAPS(o) produce CAPS
+      ll -= ('a' - 'A');
+    }
+    else if('a' <= ll && ll <= 'z' && alphaCase == AC_LOWER) {    //a-z is natural on PC, and if CAPS( ) produces LC
+    }
+  //refreshStatusBar();
+
+    ll = _keyCodeFromGdkKey(ll);        //utilise the raw key event value, which will be contain a-z or A-Z
     if(ll > 0) {
       sendKey(ll);
       screenUpdatingMode = SCRUPD_AUTO;
+      refreshStatusBar();
       refreshScreen(8);
+      refreshLcd(NULL);
       resetShiftState();
+      alphaCase = alphaCase_MEM;
       return false;
     }
     else if(ll == -1) {   //do not continue looking for keys
+      screenUpdatingMode = SCRUPD_AUTO;
+      alphaCase = alphaCase_MEM;
+      refreshStatusBar();
+      refreshScreen(8);
+      refreshLcd(NULL);
       resetShiftState();
       return false;
     }
+    alphaCase = alphaCase_MEM;
 
     #if defined(VERBOSEKEYS)
       printf("------------------------ Done new alpha detection, skipping to rest of key detections\n");        
     #endif
   }
 
-  //nextchar:
 
 
 
@@ -3978,17 +4003,8 @@ const deadKeysMap_t deadKeysMap[] = {
 };
 
 
-static int16_t _getGdkKeyItem (uint32_t gdkK) {
-//TOCHECK
-  uint32_t gdkKey = gdkK;
-  if('A' <= gdkK && gdkK <= 'Z' && alphaCase == AC_LOWER) {
-    gdkKey += (ITM_a - ITM_A);
-  }
-  else if('a' <= gdkK && gdkK <= 'z' && alphaCase == AC_UPPER) {
-    gdkKey -= (ITM_a - ITM_A);
-  }
-
-  else if( (GDK_KEY_Shift_L <= gdkKey && gdkKey <= GDK_KEY_Hyper_R)
+static int16_t _getGdkKeyItem (uint32_t gdkKey) {
+  if( (GDK_KEY_Shift_L <= gdkKey && gdkKey <= GDK_KEY_Hyper_R)
         || (GDK_KEY_Home <= gdkKey && gdkKey <= GDK_KEY_Begin)
         || (GDK_KEY_F1 <= gdkKey && gdkKey <= GDK_KEY_F14)
         || (GDK_KEY_zerosubscript < gdkKey)) {
