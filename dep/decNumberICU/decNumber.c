@@ -461,7 +461,6 @@ uint64_t decNumberToUInt64(const decNumber *dn, decContext *set) {
   if (decCheckOperands(DECUNRESU, DECUNUSED, dn, set)) return 0;
   #endif
   // special or too many digits, or bad exponent, or negative (<0)
-    printf("digits %d  lsu %u  exponent %d\n", (int)dn->digits, (unsigned)*dn->lsu, (int)dn->exponent);
    if ((dn->bits&DECSPECIAL) || dn->digits>20 || dn->exponent!=0
      || ((dn->bits&DECNEG) && !ISZERO(dn))){;}               // bad
    else { // is a finite non-negative integer with 20 or fewer digits
@@ -483,7 +482,6 @@ uint64_t decNumberToUInt64(const decNumber *dn, decContext *set) {
         goto err;
       }
     }
-    printf("return %lu\n       %lx\n", acc, acc);
       return acc;
     }
 err:
