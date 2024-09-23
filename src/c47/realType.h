@@ -27,7 +27,6 @@
   #include "decDouble.h"
   #include "decQuad.h"
   #include "realType.h"
-  extern int decGetInt(const decNumber *x); // Because decNumberToInt32 seems buggy! Needs more investigation
 
   typedef struct {
     int32_t digits;      // Count of digits in the coefficient; >0
