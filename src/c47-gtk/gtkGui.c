@@ -696,12 +696,10 @@ if(     (CTRL_State != 65536 || ((event->state & 16) == 16))
   #endif //VERBOSEKEYS
 
 //C47 & R47 AltGr============
-if((event->keyval == 65514) || ((event->state & 16) == 16)) {
-
-  printf("AltGr #2%s detected; keyval=%u state=%u, event_key_command=%u\n",
+if((event->keyval == 65514) || ((event->state & 16) == 16)) { //AltGr Dani & Didier 0x14 for AltGr, and 0x1C for \#
+  printf("AltGr #2 (NM ) %s detected; keyval=%u state=%u, event_key_command=%u\n",
     (event->keyval == GDK_KEY_at) ? "+@" : (event->keyval == GDK_KEY_numbersign) ? "+#" : (event->keyval == GDK_KEY_bar) ? "+|" : "",
     (uint16_t)event->keyval, (uint16_t)event->state, (uint16_t)event_key_command);
-    //print_numberstr(aaa,true);
 }
 
 //C47 & R47============
@@ -855,7 +853,7 @@ if(   CTRL_State != 65536
 //New ALPHA SECTION
 int32_t ll;
 
-if(   CTRL_State != 65536 
+if(   (CTRL_State != 65536 || ((event->state & 16) == 16))
    && (    catalog 
         || calcMode == CM_AIM 
         || calcMode == CM_EIM 
@@ -864,6 +862,12 @@ if(   CTRL_State != 65536
         ||((tam.mode == TM_LABEL || tam.mode == TM_STORCL) )
       )  
   ) {
+
+if((event->keyval == 65514) || ((event->state & 16) == 16)) { //AltGr Dani & Didier 0x14 for AltGr, and 0x1C for \#
+  printf("AltGr #3 (AIM) %s detected; keyval=%u state=%u, event_key_command=%u\n",
+    (event->keyval == GDK_KEY_at) ? "+@" : (event->keyval == GDK_KEY_numbersign) ? "+#" : (event->keyval == GDK_KEY_bar) ? "+|" : "",
+    (uint16_t)event->keyval, (uint16_t)event->state, (uint16_t)event_key_command);
+}
 
     //old way
     //  if(32 <= event_keyval && event_keyval <= 255) {
