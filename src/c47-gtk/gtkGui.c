@@ -599,6 +599,11 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
       printf("\nPC Key pressed: labelText=%i plainTextMode=%i event->keyval=%u event_keyval=%u (SHIFT_State=%u)(shiftF=%u shiftG=%u)\n",labelText, plainTextMode, event->keyval, event_keyval, SHIFT_State, shiftF, shiftG);
     //#endif
 
+  printf("AltGr #1:%s         ; keyval=%u state=%u, event_key_strip_capslock=%u\n",
+    (event->keyval == GDK_KEY_at) ? "+@" : (event->keyval == GDK_KEY_numbersign) ? "+#" : (event->keyval == GDK_KEY_bar) ? "+|" : "",
+    (uint16_t)event->keyval, (uint16_t)event->state, (uint16_t)event_key_strip_capslock);
+
+
     SHIFT_State = 0;
     switch(event_keyval) {
       case GDK_KEY_Shift_L: //left shift
@@ -692,8 +697,8 @@ if(     (CTRL_State != 65536 || ((event->state & 16) == 16))
 
 //C47 & R47 AltGr============
 if((event->keyval == 65514) || ((event->state & 16) == 16)) {
-  char aaa[120];
-  sprintf(aaa,"AltGr%s detected; keyval=%u state=%u, event_key_command=%u\n",
+
+  printf("AltGr #2%s detected; keyval=%u state=%u, event_key_command=%u\n",
     (event->keyval == GDK_KEY_at) ? "+@" : (event->keyval == GDK_KEY_numbersign) ? "+#" : (event->keyval == GDK_KEY_bar) ? "+|" : "",
     (uint16_t)event->keyval, (uint16_t)event->state, (uint16_t)event_key_command);
     //print_numberstr(aaa,true);
@@ -4075,7 +4080,6 @@ static int16_t _getDeadKeyItem (int16_t item) {
   int16_t i=0;
   if(deadKey == GDK_KEY_F12) {
     switch(item){
-      case ITM_SECTION: return ITM_CR; break;
       case ITM_A: return ITM_ALPHA; break;
       case ITM_B: return ITM_BETA; break;
       case ITM_C: return ITM_GAMMA; break;
@@ -4253,6 +4257,8 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkK) {
         cancelledDeadkey:
 
         switch(gdkKey) {
+          case GDK_KEY_Tab: 
+                    item = ITM_CR; break;
           case '`': item = ITM_NQUOTE; break;
           case '*': item = ITM_PROD_SIGN; break;
           default : item = _getGdkKeyItem(gdkKey); break;       //normal translation (also done by prior key code)
