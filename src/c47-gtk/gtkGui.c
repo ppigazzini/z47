@@ -833,7 +833,7 @@ if(   CTRL_State != 65536
 }
 
 //New ALPHA SECTION
-int16_t ll;
+int32_t ll;
 
 if(   CTRL_State != 65536 
    && (    catalog 
@@ -861,6 +861,9 @@ if(   CTRL_State != 65536
 
     uint8_t alphaCase_MEM = alphaCase;
     ll = event->keyval;
+
+    //Deadkey ^ simulation
+    //if(ll=='a') ll = 65106;
   
     if('A' <= ll && ll <= 'Z' && alphaCase == AC_UPPER) {         //A-Z is shifted on PC, and flips
       ll += ('a' - 'A');
@@ -4055,7 +4058,65 @@ static int16_t _getGdkKeyItem (uint32_t gdkKey) {
 static int16_t _getDeadKeyItem (int16_t item) {
   //printf("::: _getDeadKeyItem %i\n",item);
   int16_t i=0;
-  while(deadKeysMap[i].item != 0) {
+  if(deadKey == GDK_KEY_F12) {
+    switch(item){
+      case ITM_SECTION: return ITM_CR; break;
+      case ITM_A: return ITM_ALPHA; break;
+      case ITM_B: return ITM_BETA; break;
+      case ITM_C: return ITM_GAMMA; break;
+      case ITM_D: return ITM_DELTA; break;
+      case ITM_E: return ITM_EPSILON; break;
+      case ITM_F: return ITM_PHI; break;
+      case ITM_G: return ITM_GAMMA; break;
+      case ITM_H: return ITM_CHI; break;
+      case ITM_I: return ITM_IOTA; break;
+      case ITM_J: return ITM_ETA; break;
+      case ITM_K: return ITM_KAPPA; break;
+      case ITM_L: return ITM_LAMBDA; break;
+      case ITM_M: return ITM_MU; break;
+      case ITM_N: return ITM_NU; break;
+      case ITM_O: return ITM_OMEGA; break;
+      case ITM_P: return ITM_PI; break;
+      case ITM_Q: return ITM_OMICRON; break;
+      case ITM_R: return ITM_RHO; break;
+      case ITM_S: return ITM_SIGMA; break;
+      case ITM_T: return ITM_TAU; break;
+      case ITM_U: return ITM_THETA; break;
+      case ITM_V: return ITM_QOPPA; break;
+      case ITM_W: return ITM_PSI; break;
+      case ITM_X: return ITM_XI; break;
+      case ITM_Y: return ITM_UPSILON; break;
+      case ITM_Z: return ITM_ZETA; break;
+      case ITM_a: return ITM_alpha; break;
+      case ITM_b: return ITM_beta; break;
+      case ITM_c: return ITM_gamma; break;
+      case ITM_d: return ITM_delta; break;
+      case ITM_e: return ITM_epsilon; break;
+      case ITM_f: return ITM_phi; break;
+      case ITM_g: return ITM_gamma; break;
+      case ITM_h: return ITM_chi; break;
+      case ITM_i: return ITM_iota; break;
+      case ITM_j: return ITM_eta; break;
+      case ITM_k: return ITM_kappa; break;
+      case ITM_l: return ITM_lambda; break;
+      case ITM_m: return ITM_mu; break;
+      case ITM_n: return ITM_nu; break;
+      case ITM_o: return ITM_omega; break;
+      case ITM_p: return ITM_pi; break;
+      case ITM_q: return ITM_omicron; break;
+      case ITM_r: return ITM_rho; break;
+      case ITM_s: return ITM_sigma; break;
+      case ITM_t: return ITM_tau; break;
+      case ITM_u: return ITM_theta; break;
+      case ITM_v: return ITM_qoppa; break;
+      case ITM_w: return ITM_psi; break;
+      case ITM_x: return ITM_xi; break;
+      case ITM_y: return ITM_upsilon; break;
+      case ITM_z: return ITM_zeta; break;
+      default:;
+    }
+  }
+  else while(deadKeysMap[i].item != 0) {
     if(deadKeysMap[i].item == item) {
       switch(deadKey) {
         case GDK_KEY_dead_macron :
@@ -4129,6 +4190,7 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkK) {
     }
     switch(gdkKey) {
       //dead keys detection
+      case GDK_KEY_F12  :
       case GDK_KEY_dead_macron  :
       case GDK_KEY_dead_acute  :
       case GDK_KEY_dead_breve  :
