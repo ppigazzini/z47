@@ -1535,6 +1535,7 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     currentRegisterBrowserScreen = 9999;
 
     memset(softmenuStack, 0, sizeof(softmenuStack)); // This works because the ID of MyMenu is 0
+    menuPageNumber = 1;                              // Set default menu page number for OPENM
 
     aimBuffer[0] = 0;
     lastErrorCode = 0;

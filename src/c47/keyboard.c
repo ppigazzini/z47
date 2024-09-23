@@ -1090,10 +1090,10 @@ int16_t lastItem = 0;
               leaveAsmMode();
               showSoftmenu(item);
             }
-            else if((tam.mode == TM_MENU) && (item != -MNU_MENU)) {
+            else if((tam.mode == TM_MENU) && (item != -MNU_MENU) && !tam.alpha) {
               if ((currentMenu() ==  -MNU_TAM) && ((item == -MNU_VAR) || (item == -MNU_REG))) {
                 showSoftmenu(item);
-              }  
+              }
               else {
                 fnKeyInCatalog = 1;
                 if(item < 0) {
