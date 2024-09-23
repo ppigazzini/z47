@@ -118,10 +118,10 @@
   //  #define SAVE_SPACE_DM42_13GRF_JM //  7520 bytes // Without More graphics
   //  #define SAVE_SPACE_DM42_14       //   184 bytes // Without Load programming sample programs testPgms
     #define SAVE_SPACE_DM42_15       // 10056 bytes // Without all distributions, i.e. , cauchy, chi, expo, f, logis, t, weibull
-    #define SAVE_SPACE_DM42_16       //  2168 bytes // Without Norml distribution
+  //  #define SAVE_SPACE_DM42_16       //  2168 bytes // Without Norml distribution
     #define SAVE_SPACE_DM42_17       //  7448 bytes // Without Poisson/Hyper/Binomial/Geometrical distributions
   //  #define SAVE_SPACE_DM42_20_TIMER //  1232 bytes // Without STOPW
-    #define SAVE_SPACE_DM42_21_HP35  //   200 bytes // Without config file activations only. Not complete removal.
+  //  #define SAVE_SPACE_DM42_21_HP35  //   200 bytes // Without config file activations only. Not complete removal.
   #endif // TWO_FILE_PGM
 #endif // DMCP_BUILD
 
@@ -1126,7 +1126,8 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define X_SHIFT_L                                  0
 #define X_SHIFT_R                                (X_USER_MODE - 15)
 #define X_SHIFT                                  (getSystemFlag(FLAG_SBshfR) ? X_SHIFT_R : X_SHIFT_L)
-#define Y_SHIFT                                  (((!SBARUPD_Date || !SBARUPD_Time) & !SBAR_SHIFT) ? 0 : (SBAR_SHIFT ? 0 : Y_POSITION_OF_REGISTER_T_LINE ) )
+#define Y_SHIFT_LO                               (Y_POSITION_OF_REGISTER_T_LINE)
+#define Y_SHIFT                                  (((!SBARUPD_Date || !SBARUPD_Time) & !SBAR_SHIFT) ? 0 : (SBAR_SHIFT ? 0 : Y_SHIFT_LO ) )
 
 
 

@@ -210,7 +210,7 @@ void showFracMode(void) {
       x = showString(statusMessage, &standardFont, x, 0, vmNormal, true, true);
       }
 
-      strcpy(divStr,STD_DOT);
+      strcpy(divStr,PRODUCT_SIGN);
       raiseString = 2;
       x = showString(divStr, &standardFont, x+1, 0, vmNormal, true, true);
 

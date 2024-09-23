@@ -1045,7 +1045,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
     int8_t   byte, *data;
     const glyph_t *glyph;
 
-    if(charCode == 1) {
+    if(charCode == STD_NOCHAR) {
       return x; //This is special usage of the 01 ASCII code, to ignore the code and return with nothing printed
     }
 
@@ -1891,16 +1891,26 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
       return;
     }
     showFunctionNameCounter = delayInMs;
-    stringAppend(padding,functionName);
-    stringAppend(padding + stringByteLength(padding),"     ");
-    if(calcMode == CM_ASSIGN || ((PROBMENU || stringWidth(padding, &standardFont, true, true) + 1 /*JM 20*/ + lineTWidth > SCREEN_WIDTH) && calcMode != CM_PEM)) {
-      clearRegisterLine(REGISTER_T, true, false);
+
+    if(functionName[0] != 0)
+    {
+      bool_t overLapPossible = (calcMode == CM_PEM); 
+      padding[0] = 0;
+      if(overLapPossible) {
+        stringAppend(padding," "); 
+      }
+      stringAppend(padding + stringByteLength(padding),functionName);
+      stringAppend(padding + stringByteLength(padding),"     ");
+      if(calcMode == CM_ASSIGN || ((PROBMENU || stringWidth(padding, &standardFont, true, true) + 1 /*JM 20*/ + lineTWidth > SCREEN_WIDTH) && calcMode != CM_PEM)) {
+        clearRegisterLine(REGISTER_T, true, false);
+      }
+      // Clear SHIFT f and SHIFT g in case they were present (otherwise they will be obscured by the function name)
+      clearShiftState();
+      int xx = showString(padding, &standardFont, 18, Y_POSITION_OF_REGISTER_T_LINE + 6, vmNormal, true, true);      //JM
+      if(overLapPossible) {
+        plotrect(18,Y_POSITION_OF_REGISTER_T_LINE + 6,xx,Y_POSITION_OF_REGISTER_T_LINE + 6 + STANDARD_FONT_HEIGHT - 1);
+      }
     }
-
-    // Clear SHIFT f and SHIFT g in case they were present (otherwise they will be obscured by the function name)
-    clearShiftState();
-    showString(padding, &standardFont, 18, Y_POSITION_OF_REGISTER_T_LINE + 6, vmNormal, true, true);      //JM
-
     if(temporaryInformation != TI_NO_INFO) {
       temporaryInformation = TI_NO_INFO;
       lastErrorCode = 0;
@@ -4536,8 +4546,6 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
     getGlyphBounds(STD_MODE_G, 0, &standardFont, &gcol, &grow);
     lcd_fill_rect(X_SHIFT, Y_SHIFT, (fcol > gcol ? fcol : gcol), (frow > grow ? frow : grow), LCD_SET_VALUE);
     if(calcMode == CM_PEM) {
-//        fnPem(NOPARAM);
-//REMOVED AS THIS IS REPEATED MULTIPLE TIMES BETWEEN KEYPRESSES - WASTES TIME!!!!!
     }
   }
 
@@ -4748,18 +4756,15 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
           //   refreshStatusBar();                                                        // this tests the USB powered option on sim
 
           if(doRefreshSoftMenu && !(screenUpdatingMode & (SCRUPD_MANUAL_MENU | SCRUPD_SKIP_MENU_ONE_TIME))) {  // this tests the battery powered option on sim
-            printf("---0001 PEM menu refresh\n");
             clearScreenOld(!clrStatusBar, !clrRegisterLines, clrSoftkeys);                // this tests the battery powered option on sim
             showSoftmenuCurrentPart();                                                    // this tests the battery powered option on sim
           }                                                                               // this tests the battery powered option on sim
 
           clearScreenOld(!clrStatusBar, clrRegisterLines, !clrSoftkeys);                  // this tests the battery powered option on sim
-          printf("---0003 PEM stack refresh\n");
           fnPem(NOPARAM);                                                                 // this tests the battery powered option on sim
           displayShiftAndTamBuffer();                                                     // this tests the battery powered option on sim
 
           if(!(screenUpdatingMode & SCRUPD_MANUAL_STATUSBAR)) {                           // this tests the battery powered option on sim
-            printf("---0002 PEM status refresh\n");
             clearScreenOld(clrStatusBar, !clrRegisterLines, !clrSoftkeys);                // this tests the battery powered option on sim
             refreshStatusBar();                                                           // this tests the battery powered option on sim
           }                                                                               // this tests the battery powered option on sim

@@ -2227,7 +2227,6 @@ typedef struct {
       }
       else {
         real_t magnitude, theta;
-
         real34ToReal(dest_r, &magnitude);
         real34ToReal(dest_i, &theta);
         convertAngleFromTo(&theta, currentAngularMode, amRadian, &ctxtReal39);
@@ -2240,8 +2239,11 @@ typedef struct {
         realToReal34(&magnitude, dest_r);
         realToReal34(&theta,     dest_i);
       }
-//      if(temporaryFlagPolar) fnToPolar2(0);
-      if(getSystemFlag(FLAG_POLAR)) fnToPolar2(0);
+      fnToPolar2(0);
+    }
+
+    else if((!getSystemFlag(FLAG_POLAR) && !temporaryFlagPolar) || temporaryFlagRect) { // rect mode
+      fnToRect2(0);
     }
     temporaryFlagRect = false;
     temporaryFlagPolar = false;

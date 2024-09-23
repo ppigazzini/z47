@@ -400,8 +400,36 @@ uInt decNumberToUInt32(const decNumber *dn, decContext *set) {
      || ((dn->bits&DECNEG) && !ISZERO(dn))){;}               // bad
    else { // is a finite integer with 10 or fewer digits
     Int d;                         // work
+    const Unit *up = dn->lsu;                // ..
+    uint32_t acc = *up++, tmp, cur;
+
+    // collect remaining Units, if any, into hi
+    for (d=DECDPUN; d<dn->digits; d+=DECDPUN) {
+      cur = *up++;
+      if (__builtin_mul_overflow(cur, powers[d], &tmp)
+            || __builtin_add_overflow(tmp, acc, &acc))
+        goto err;
+      }
+      return acc;
+    }
+err:
+  decContextSetStatus(set, DEC_Invalid_operation); // [may not return]
+  return 0;
+  } // decNumberToUInt32
+
+#if 0 /* Currently unused */
+int64_t decNumberToInt64(const decNumber *dn, decContext *set) {
+  #if DECCHECK
+  if (decCheckOperands(DECUNRESU, DECUNUSED, dn, set)) return 0;
+  #endif
+
+  // special or too many digits, or bad exponent
+  if ((dn->bits&DECSPECIAL) || dn->digits>19 || dn->exponent!=0){;} // bad
+   else { // is a finite integer with 19 or fewer digits
+    Int d;                         // work
     const Unit *up;                // ..
-    uInt hi=0, lo;                 // ..
+    uint64_t hi=0;
+    unsigned int lo;                 // ..
     up=dn->lsu;                    // -> lsu
     lo=*up;                        // get 1 to 9 digits
     #if DECDPUN>1                  // split to higher
@@ -411,14 +439,56 @@ uInt decNumberToUInt32(const decNumber *dn, decContext *set) {
     up++;
     // collect remaining Units, if any, into hi
     for (d=DECDPUN; d<dn->digits; up++, d+=DECDPUN) hi+=*up*powers[d-1];
-
     // now low has the lsd, hi the remainder
-    if (hi>429496729 || (hi==429496729 && lo>5)){;} // no reprieve possible
-    else return X10(hi)+lo;
+    if (hi>922337203685477580ull || (hi==922337203685477580ull && lo>7)) { // out of range?
+      // most-negative is a reprieve
+      if ((dn->bits&DECNEG) && hi==922337203685477580ull && lo==8) return 0x8000000000000000ull;
+      // bad -- drop through
+      }
+     else { // in-range always
+      Int i=X10(hi)+lo;
+      if (dn->bits&DECNEG) return -i;
+      return i;
+      }
     } // integer
   decContextSetStatus(set, DEC_Invalid_operation); // [may not return]
   return 0;
-  } // decNumberToUInt32
+  } // decNumberToInt64
+#endif
+
+uint64_t decNumberToUInt64(const decNumber *dn, decContext *set) {
+  #if DECCHECK
+  if (decCheckOperands(DECUNRESU, DECUNUSED, dn, set)) return 0;
+  #endif
+  // special or too many digits, or bad exponent, or negative (<0)
+   if ((dn->bits&DECSPECIAL) || dn->digits>20 || dn->exponent!=0
+     || ((dn->bits&DECNEG) && !ISZERO(dn))){;}               // bad
+   else { // is a finite non-negative integer with 20 or fewer digits
+    Int d;                         // work
+    const Unit *up = dn->lsu;                // ..
+    uint64_t acc = *up++, tmp, cur, p10 = 1;
+
+    // collect remaining Units, if any, into hi
+    for (d=DECDPUN; d<dn->digits; d+=DECDPUN) {
+      cur = *up++;
+      p10 *= powers[DECDPUN];
+      /* Only the final iteration can possibly fail but the code is smaller
+       * this way and not really any slower.
+       */
+      if (__builtin_mul_overflow(cur, p10, &tmp)) {
+          goto err;
+      }
+      if (__builtin_add_overflow(tmp, acc, &acc)) {
+        goto err;
+      }
+    }
+      return acc;
+    }
+err:
+  decContextSetStatus(set, DEC_Invalid_operation); // [may not return]
+  return 0;
+  } // decNumberToUInt64
+
 
 /* ------------------------------------------------------------------ */
 /* to-scientific-string -- conversion to numeric string               */

@@ -41,8 +41,8 @@
 static void rmdLonI(void) {
   longInteger_t x, y, remainder;
 
-  if(!getRegisterAsLongInt(REGISTER_X, x)
-    || !getRegisterAsLongInt(REGISTER_Y, y))
+  if(!getRegisterAsLongInt(REGISTER_X, x, NULL)
+    || !getRegisterAsLongInt(REGISTER_Y, y, NULL))
   return;
 
   if(longIntegerIsZero(x)) {
@@ -78,8 +78,8 @@ static void rmdShoI(void) {
   longInteger_t x, y, remainder;
     uint32_t baseY;
 
-  if(!getRegisterAsLongInt(REGISTER_X, x)
-    || !getRegisterAsLongInt(REGISTER_Y, y))
+  if(!getRegisterAsLongInt(REGISTER_X, x, NULL)
+    || !getRegisterAsLongInt(REGISTER_Y, y, NULL))
   return;
 
   if(longIntegerIsZero(x)) {

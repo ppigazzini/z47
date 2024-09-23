@@ -36,7 +36,7 @@
 static void squareLonI(void) {
   longInteger_t lgInt;
 
-  if(!getRegisterAsLongInt(REGISTER_X, lgInt))
+  if(!getRegisterAsLongInt(REGISTER_X, lgInt, NULL))
     return;
 
   longIntegerMultiply(lgInt, lgInt, lgInt);

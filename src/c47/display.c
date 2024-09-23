@@ -621,9 +621,9 @@ overRange:
         }
       }
       else if(real34IsNegative(&value34)) {
-        strcpy(displayString, STD_ALMOST_EQUAL "0");
+        strcpy(displayString, STD_ALMOST_EQUAL "-0");
         if(updateDisplayValueX) {
-          strcpy(displayValueX + strlen(displayValueX), "0");
+          strcpy(displayValueX + strlen(displayValueX), "-0");
         }
       }
       return;
@@ -1315,37 +1315,41 @@ void strPrepend(char*dest, char*prefix) {
 }
 
 
-//static void printTempDisplayString(char *displayString, char *displayString2) {
-//printf("Real:");
-//int gg = 0;
-//while(gg<10){
-//  if((uint8_t)(displayString[gg] == 0)) break;
-//  printf("§%s§%c %u\n",displayString, (uint8_t)(displayString[gg]), (uint8_t)(displayString[gg]));
-//  gg++;
-//}
-//printf("\nImag:");
-// gg = 0;
-//while(gg<10){
-//  if((uint8_t)(displayString2[gg] == 0)) break;
-//  printf("§%s§%c %u\n",displayString2, (uint8_t)(displayString2[gg]), (uint8_t)(displayString2[gg]));
-//  gg++;
-//}
-//printf("\n");
-//}
 
+#if defined(PC_BUILD_TELLTALE)
+  static void printTempDisplayString(char *displayString, char *displayString2) {
+  printf("Real:");
+  int gg = 0;
+  while(gg<10){
+    if((uint8_t)(displayString[gg] == 0)) break;
+    printf("§%s§%c %u\n",displayString, (uint8_t)(displayString[gg]), (uint8_t)(displayString[gg]));
+    gg++;
+  }
+  printf("\nImag:");
+   gg = 0;
+  while(gg<10){
+    if((uint8_t)(displayString2[gg] == 0)) break;
+    printf("§%s§%c %u\n",displayString2, (uint8_t)(displayString2[gg]), (uint8_t)(displayString2[gg]));
+    gg++;
+  }
+  printf("\n");
+  }
+#endif //PC_BUILD_TELLTALE
 
 static void complex34ToDisplayString2(const complex34_t *complex34, char *displayString, int16_t displayHasNDigits, bool_t limitExponent, bool_t frontSpace, const uint16_t tagAngle, const bool_t tagPolar) {
-  int16_t i = 100;
+  int16_t imagOffset = 100;
   real34_t real34, imag34, absimag34;
   real_t real, imagIc;
 
   if(tagPolar) { // polar mode
     real34ToReal(VARIABLE_REAL34_DATA(complex34), &real);
     real34ToReal(VARIABLE_IMAG34_DATA(complex34), &imagIc);
-    if(temporaryInformation == TI_NO_INFO) ctxtReal39.digits = 16; //speedup
-    realRectangularToPolar(&real, &imagIc, &real, &imagIc, &ctxtReal39); // imagIc in radian
-    convertAngleFromTo(&imagIc, amRadian, tagAngle == amNone ? currentAngularMode : tagAngle, &ctxtReal39);
-    ctxtReal39.digits = 39; //speedup
+
+    decContext c = ctxtReal39;
+    if(temporaryInformation == TI_NO_INFO) c.digits = 21; //speedup for display purposes (FIX max 19)
+    realRectangularToPolar(&real, &imagIc, &real, &imagIc, &c); // imagIc in radian
+    convertAngleFromTo(&imagIc, amRadian, tagAngle == amNone ? currentAngularMode : tagAngle, &c);
+
     realToReal34(&real, &real34);
     realToReal34(&imagIc, &imag34);
   }
@@ -1365,26 +1369,35 @@ static void complex34ToDisplayString2(const complex34_t *complex34, char *displa
     }
   }
 
-  real34ToDisplayString2(&imag34, displayString + i, displayHasNDigits, limitExponent, false, false, isComplex);
+  real34ToDisplayString2(&imag34, displayString + imagOffset, displayHasNDigits, limitExponent, false, false, isComplex);
 
+  #if defined(PC_BUILD_TELLTALE)
+    printTempDisplayString(displayString, displayString + imagOffset);
+    printStringToConsole(displayString,"Real$$$: ","\n");
+  #endif //PC_BUILD_TELLTALE
 
-  //printTempDisplayString(displayString, displayString+i);
-  if(strncmp(displayString + i, STD_ALMOST_EQUAL, 2) == 0) {          //if almost equal char in front of IM part, transfer it to the Left (Real) side
-    displayString[i] = 1;    //0x01 is the new 'no char' character
-    displayString[i+1] = 1;  //0x01 is the new 'no char' character
+  
+  if(!real34IsZero(&real34) && strncmp(displayString + imagOffset, STD_ALMOST_EQUAL, 2) == 0) { //if real is not zero, and almost equal char in front of IM part, transfer it to the Left (Real) side
+    displayString[imagOffset] = STD_NOCHAR;    //0x01 is the new 'no char' character
+    displayString[imagOffset + 1] = STD_NOCHAR;  //0x01 is the new 'no char' character
     if(strncmp(displayString, STD_ALMOST_EQUAL, 2) != 0) {
       strPrepend(displayString,STD_ALMOST_EQUAL);
     }
   }
-  //printTempDisplayString(displayString, displayString+i);
+
+  #if defined(PC_BUILD_TELLTALE)
+    printTempDisplayString(displayString, displayString + imagOffset);
+    printStringToConsole(displayString,"Imag$$$: ","\n");
+  #endif //PC_BUILD_TELLTALE
+
 
   if(tagPolar) { // polar mode
     strcat(displayString, STD_SPACE_4_PER_EM STD_MEASURED_ANGLE STD_SPACE_4_PER_EM);
     uint16_t kk = stringByteLength(displayString);
     angle34ToDisplayString2(&imag34, tagAngle == amNone ? currentAngularMode : tagAngle, displayString + kk, displayHasNDigits, limitExponent, false);
     if(strncmp(displayString + kk, STD_ALMOST_EQUAL, 2) == 0) {          //if almost equal char in front of IM part, transfer it to the Left (Real) side
-      displayString[kk] = 1;    //0x01 is the new 'no char' character
-      displayString[kk+1] = 1;  //0x01 is the new 'no char' character
+      displayString[kk] = STD_NOCHAR;    //0x01 is the new 'no char' character
+      displayString[kk+1] = STD_NOCHAR;  //0x01 is the new 'no char' character
     }
   }
   else { // rectangular mode
@@ -1392,31 +1405,42 @@ static void complex34ToDisplayString2(const complex34_t *complex34, char *displa
       strcat(displayString, STD_SPACE_HAIR);
     }
 
-    if(real34IsZero(&real34)) {       //JM
-      displayString[0]=0;           // force a zero real not to display the real part
-      int ii = i;
-      while(ii < i+stringByteLength(displayString + i)) {
-        //printf("AA0: %i/%i real zero: §%s§%s§ %c § %i §\n", ii, i+stringByteLength(displayString + i)-1, displayString, displayString + i, displayString[ii], displayString[ii]);
-        if((!(displayString[ii-1] & 0x80) || (ii!=i)) && displayString[ii]=='-') {
-          displayString[ii] = 1; //blank no space char
-          strcat(displayString, "-");   // re-add the - which could be trailing the real value. Do ot add the +, it is not needed
-          break;
-        }
-        ii++;
-      }
+    if(real34IsZero(&real34)) {           // JM
+      #if defined(PC_BUILD_TELLTALE)
+        char tmp_a[100];
+        char tmp_b[100];
+        stringToASCII(displayString + imagOffset,tmp_a);
+        stringToASCII(displayString,tmp_b);
+        printf("AA10 %i Real is zero: §%s§%s§\n", imagOffset + stringByteLength(displayString + imagOffset) - 1, tmp_b, tmp_a);
+      #endif //PC_BUILD_TELLTALE
+      displayString[0]=0;                 // force a zero real not to display the real part
     }
-    else {                            // JM normal full display of the full imag part, + and - shown
-      int ii = i;
-      while(ii < i+stringByteLength(displayString + i)) {
-        //printf("AA1: %i/%i not real zero: §%s§%s§ %c § %i §\n", ii, i+stringByteLength(displayString + i)-1, displayString, displayString + i, displayString[ii], displayString[ii]);
-        if((!(displayString[ii-1] & 0x80) || (ii!=i)) && displayString[ii]=='-') {    //check if the complex part already has a '-'
-          displayString[ii] = 1; //blank no space char
-          strcat(displayString, "-");   // re-add the - which could be trailing the real value. Do not add the +, it is not needed
+    else {                                // JM normal full display of the full imag part, + and - shown
+      int ii = imagOffset;
+      bool_t imagNegative = false;
+      while(ii < imagOffset + min(4,stringByteLength(displayString + imagOffset))) {    //scan first 4 chars, covering two glyphs
+
+        #if defined(PC_BUILD_TELLTALE)
+          char tmp_a[100];
+          char tmp_b[100];
+          stringToASCII(displayString + imagOffset,tmp_a);
+          stringToASCII(displayString,tmp_b);
+          printf("AA1: %i/%i Real is non-zero: §%s§%s§ %c § %i §\n", ii, imagOffset + stringByteLength(displayString + imagOffset) - 1, tmp_b, tmp_a, (uint8_t)(displayString[ii]), (uint8_t)(displayString[ii]));
+        #endif //PC_BUILD_TELLTALE
+        
+        if((displayString[ii] & 0x80)) { // if any two-byte character is reached, it means negative is not in play
           break;
         }
-        ii++;
+        if(displayString[ii]=='-') {
+          displayString[ii] = STD_NOCHAR; // blank no space char in beginning of imag
+          strcat(displayString, "-");     // add the - to trail the real value
+          imagNegative = true;
+          break;
+        }
+        ii = imagOffset + stringNextGlyph(displayString + imagOffset, ii - imagOffset);
       }
-      if(ii == i+stringByteLength(displayString + i)) {   //previous loop run to completion without '-' means there is no '-', then add a '+'
+
+      if(!imagNegative) {               //there is no '-', then add a '+' trailing real
         strcat(displayString, "+");
       }
     }
@@ -1426,14 +1450,14 @@ static void complex34ToDisplayString2(const complex34_t *complex34, char *displa
       real34CopyAbs(&imag34, &absimag34);
 //      if(!real34CompareEqual(&absimag34, const34_1)) {     //JM force a |imag|=1 not to display. Maybe make it part of IRFRAC.
         strcat(displayString, PRODUCT_SIGN);
-        xcopy(strchr(displayString, '\0'), displayString + i, strlen(displayString + i) + 1);
+        xcopy(strchr(displayString, '\0'), displayString + imagOffset, strlen(displayString + imagOffset) + 1);
 //      }
     }
 
     if(!getSystemFlag(FLAG_CPXMULT)) {                   // 1.0 i
       real34CopyAbs(&imag34, &absimag34);
 //      if(!real34CompareEqual(&absimag34, const34_1)) {     //JM force a |imag|=1 not to display.  Maybe make it part of IRFRAC.
-        xcopy(strchr(displayString, '\0'), displayString + i, strlen(displayString + i) + 1);
+        xcopy(strchr(displayString, '\0'), displayString + imagOffset, strlen(displayString + imagOffset) + 1);
 //      }
       strcat(displayString, STD_SPACE_HAIR);
       strcat(displayString, STD_SPACE_HAIR);
@@ -3212,17 +3236,38 @@ goBreak1:
 
         complex34ToDisplayString(REGISTER_COMPLEX34_DATA(showRegis), tmpString, &numericFont,2000, 34 ,true, true, getComplexRegisterAngularMode(showRegis), getComplexRegisterPolarMode(showRegis));
         for(i=stringByteLength(tmpString) - 1; i>0; i--) {
-          if(tmpString[i] == 0x08) {
+          if(tmpString[i] == 0x08) { //change punctuation space to EM4
             tmpString[i] = 0x05;
           }
         }
-
 
         //copy result into destination 2100 (label already in 2100-2102)
         last = 2100;
         while(tmpString[last]) last++;
         xcopy(tmpString + last, tmpString + 0,  strlen(tmpString + 0) + 1);
         tmpString[0] = 0;
+
+
+        int32_t strWid = stringWidth(tmpString + 2100, &numericFont, true, true);
+        d = 2100;
+        int16_t hadFirstRealDigit = 0;
+        while ( d < 2100 + stringByteLength(tmpString + 2100)) {
+          if(hadFirstRealDigit == 0 && tmpString[d] >= '0' && tmpString[d] <='9') {
+            hadFirstRealDigit = d - 2100;
+          }
+          if(hadFirstRealDigit > 0 && (tmpString[d] == '+' || tmpString[d] == '-')) break;
+          d = 2100 + stringNextGlyph(tmpString + 2100,d - 2100);
+        }
+        int8_t tmpp = tmpString[d];
+        tmpString[d] = 0;
+        int32_t strWidReal = stringWidth(tmpString + 2100, &numericFont, true, true);
+        tmpString[d] = tmpp;
+        int32_t strWidImag = stringWidth(tmpString + d, &numericFont, true, true);
+        int32_t strWidCur = 0;
+        bool_t changedOverToImag = false;
+        
+        //printf("\ntmpString: %i %s %i %i %i\n",hadFirstRealDigit, tmpString + 2100, strWid, strWidReal, strWidImag);
+        //printStringToConsole(tmpString + 2100,"tmpStr ","\n");
 
         //write 2100+ into four lines, 0+ to 750+
         last = 2100 + stringByteLength(tmpString + 2100);
@@ -3238,10 +3283,17 @@ goBreak1:
             source++;
             tmpString[++dest] = 0;
 
-            if(stringWidth(tmpString + d, &numericFont, true, true) >= SCREEN_WIDTH -60 && (uint8_t)tmpString[source-2] == 160 && tmpString[source-1]==5) break;
-            if(d>0 &&
-              (    ( !(getComplexRegisterPolarMode(showRegis) == amPolar) && (tmpString[source]=='+' || tmpString[source]=='-')) ||
-                   ( (uint8_t)tmpString[source]==162)
+            #define strWidLim ((55*(changedOverToImag ? (strWidImag) : (strWidReal)))/100)
+
+            strWidCur = stringWidth(tmpString + d, &numericFont, true, true);
+
+            if( (strWidCur >= SCREEN_WIDTH-60 && strWidCur > strWidLim) && (uint8_t)tmpString[source-2] == 160 && (uint8_t)tmpString[source-1]==5) break;   // breaking on seps
+            if(d == 0 && source - 2100 > hadFirstRealDigit && strWid > SCREEN_WIDTH && ( !(getComplexRegisterPolarMode(showRegis) == amPolar) && (tmpString[source]=='+' || tmpString[source]=='-'))) break;     // break before the + -)
+            if( source - 2100 > hadFirstRealDigit && ((uint8_t)tmpString[source]=='+' || (uint8_t)tmpString[source+1]=='-')) changedOverToImag = true;
+            if(d>0 && 
+              (    ( !(getComplexRegisterPolarMode(showRegis) == amPolar) && (tmpString[source]=='+' || tmpString[source]=='-'))       //break before the + -
+                   || (stringWidth(tmpString + d, &numericFont, true, true) >= (SCREEN_WIDTH*4)/5 && (uint8_t)tmpString[source]==RADIX34_MARK_STRING[0] && (uint8_t)tmpString[source+1]==RADIX34_MARK_STRING[1])  //break before the radix
+                   || (getSystemFlag(FLAG_CPXMULT) && (uint8_t)tmpString[source]==COMPLEX_UNIT[0] && (uint8_t)tmpString[source+1]==COMPLEX_UNIT[1])  //break before the complex operator
               ) ) {
               break;
             }
