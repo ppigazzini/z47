@@ -908,7 +908,7 @@ bool_t getRegisterAsShortInt(calcRegister_t reg, bool_t *sign, uint64_t *val, bo
   switch(getRegisterDataType(reg)) {
     case dtShortInteger:
       convertShortIntegerRegisterToUInt64(reg, &sign16, val);
-      *sign = sign16 == 0;
+      *sign = sign16 != 0;
       break;
 
     case dtLongInteger:
@@ -931,7 +931,11 @@ bool_t getRegisterAsShortInt(calcRegister_t reg, bool_t *sign, uint64_t *val, bo
 
     case dtComplex34:
     case dtReal34:
-      if(getRegisterAsReal(reg, &rval) && !realIsInfinite(&rval)) {
+      if(getRegisterAsReal(reg, &rval)) {
+        if (realIsSpecial(&rval)) {
+          badDomainError(reg);
+          return false;
+        }
         *sign = realIsNegative(&rval);
         realSetPositiveSign(&rval);
         frac = !realIsAnInteger(&rval);
@@ -952,6 +956,7 @@ bool_t getRegisterAsShortInt(calcRegister_t reg, bool_t *sign, uint64_t *val, bo
               of = realCompareLessThan(&rval, const_2p63);
               break;
           }
+        *val = u64;
         break;
       }
       /* fall through */
@@ -968,8 +973,9 @@ bool_t getRegisterAsShortInt(calcRegister_t reg, bool_t *sign, uint64_t *val, bo
   return true;
 }
 
-bool_t getRegisterAsLongInt(calcRegister_t reg, longInteger_t val) {
+bool_t getRegisterAsLongInt(calcRegister_t reg, longInteger_t val, bool_t *fractional) {
   real_t rval;
+  bool_t frac = false;
 
   switch(getRegisterDataType(reg)) {
     case dtLongInteger:
@@ -982,15 +988,17 @@ bool_t getRegisterAsLongInt(calcRegister_t reg, longInteger_t val) {
 
     case dtComplex34:
     case dtReal34:
-      if(getRegisterAsReal(reg, &rval) && !realIsInfinite(&rval)) {
-        if(realIsAnInteger(&rval)) {
-          convertRealToLongInteger(&rval, val, DEC_ROUND_DOWN);
-          break;
-        }
-        else {
+      if(getRegisterAsReal(reg, &rval)) {
+        if (realIsSpecial(&rval)) {
           badDomainError(reg);
           return false;
         }
+        if (!realIsAnInteger(&rval)) {
+          realToIntegralValue(&rval, &rval, DEC_ROUND_DOWN, &ctxtReal39);
+          frac = true;
+        }
+        convertRealToLongInteger(&rval, val, DEC_ROUND_DOWN);
+        break;
       }
       /* fall through */
 
@@ -998,6 +1006,8 @@ bool_t getRegisterAsLongInt(calcRegister_t reg, longInteger_t val) {
       badTypeError(reg);
       return false;
   }
+  if (fractional != NULL)
+    *fractional = frac;
   return true;
 }
 

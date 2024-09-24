@@ -408,7 +408,13 @@ typedef struct {
       }
 
       else if(tam.mode) {
-        tamProcessInput(item);
+        if((item == ITM_INDIRECT_X) || (item == ITM_INDIRECT_Y) || (item == ITM_INDIRECT_Z) || (item == ITM_INDIRECT_T)) {
+          tamProcessInput(ITM_INDIRECTION);
+          tamProcessInput(item - (ITM_INDIRECT_X - ITM_REG_X));
+        }
+        else {
+          tamProcessInput(item);
+        }
       }
 
       else if(calcMode == CM_NIM) {

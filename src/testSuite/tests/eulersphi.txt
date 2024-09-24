@@ -76,10 +76,10 @@ In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"NaN"
 Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"NaN"
 
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"Inf"
-Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"Inf"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"Inf"
 
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"-Inf"
-Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"-Inf"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"-Inf"
 
 
 ;=======================================

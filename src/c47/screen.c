@@ -1045,7 +1045,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
     int8_t   byte, *data;
     const glyph_t *glyph;
 
-    if(charCode == 1) {
+    if(charCode == STD_NOCHAR) {
       return x; //This is special usage of the 01 ASCII code, to ignore the code and return with nothing printed
     }
 

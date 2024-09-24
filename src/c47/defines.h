@@ -11,7 +11,7 @@
 // JM VARIOUS OPTIONS
 //*********************************
 
-#define VERSION1 "0.109.02.06b3"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
+#define VERSION1 "0.109.02.06b4"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
 
 //Version history
 //0.109.02.00
@@ -100,9 +100,9 @@
 
 //THESE ARE DMCP COMPILE OPTIONS FOR TWO FILE QSPI
   #if defined(TWO_FILE_PGM) //---------THESE ARE THE EXCLUSIONS TO MAKE IT FIT INTO AVAILABLE FLASH EVEN WHILE USING QSPI
-    #define SAVE_SPACE_DM42_2        //  4152 bytes // Without XEQM
-    #define SAVE_SPACE_DM42_2LOAD    //   288 bytes // Without XEQM AUTOLOAD DEMOS
-    #define SAVE_SPACE_DM42_6        //  1376 bytes // Without ELEC functions
+  //  #define SAVE_SPACE_DM42_2        //  4152 bytes // Without XEQM
+  //  #define SAVE_SPACE_DM42_2LOAD    //   288 bytes // Without XEQM AUTOLOAD DEMOS
+  //  #define SAVE_SPACE_DM42_6        //  1376 bytes // Without ELEC functions
   //  #define SAVE_SPACE_DM42_8        //  1856 bytes // Without Register Browser
   //  #define SAVE_SPACE_DM42_8FL      //  3280 bytes // Without Flag Browsers
   //  #define SAVE_SPACE_DM42_8ASN     //  1704 bytes // Without Assign Browser
@@ -118,8 +118,8 @@
   //  #define SAVE_SPACE_DM42_13GRF_JM //  7520 bytes // Without More graphics
   //  #define SAVE_SPACE_DM42_14       //   184 bytes // Without Load programming sample programs testPgms
     #define SAVE_SPACE_DM42_15       // 10056 bytes // Without all distributions, i.e. , cauchy, chi, expo, f, logis, t, weibull
-    #define SAVE_SPACE_DM42_16       //  2168 bytes // Without Norml distribution
-      #define SAVE_SPACE_DM42_17       //  7448 bytes // Without Poisson/Hyper/Binomial/Geometrical distributions
+  //  #define SAVE_SPACE_DM42_16       //  2168 bytes // Without Norml distribution
+    #define SAVE_SPACE_DM42_17       //  7448 bytes // Without Poisson/Hyper/Binomial/Geometrical distributions
   //  #define SAVE_SPACE_DM42_20_TIMER //  1232 bytes // Without STOPW
   //  #define SAVE_SPACE_DM42_21_HP35  //   200 bytes // Without config file activations only. Not complete removal.
   #endif // TWO_FILE_PGM

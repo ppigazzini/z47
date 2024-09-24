@@ -2477,8 +2477,12 @@
 #define ITM_E_SIGMAp1               2412
 #define ITM_E_SIGMApk               2413
 #define MNU_E_SIGMA                 2414
+#define ITM_INDIRECT_X              2415
+#define ITM_INDIRECT_Y              2416
+#define ITM_INDIRECT_Z              2417
+#define ITM_INDIRECT_T              2418
 
-#define LAST_ITEM                   2415
+#define LAST_ITEM                   2419
 
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL
