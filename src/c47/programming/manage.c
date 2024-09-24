@@ -757,14 +757,8 @@ void pemAlpha(int16_t item) {
       //if(softmenuStack[0].softmenuId == 0) { // MyMenu
       //  softmenuStack[0].softmenuId = 1; // MyAlpha
       //}
-      showSoftmenu(-MNU_ALPHA); // JM addon
-      
-      #if defined(PC_BUILD)
-        setAlphaCaseToCapsLockState();  // Reflect caps lock key status
-      #endif
-
+      showSoftmenu(-MNU_ALPHA);
       setSystemFlag(FLAG_ALPHA);
-
       calcModeAimGui();
 
       if(tam.function < 128) { // literal

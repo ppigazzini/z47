@@ -30,7 +30,6 @@
 #include "mathematics/matrix.h"
 #include "programming/manage.h"
 #include "registers.h"
-#include "c43Extensions/graphText.h"
 #include "saveRestoreCalcState.h"
 #include "screen.h"
 #include "stack.h"
@@ -463,13 +462,6 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
   }
 
 
-
-  gboolean setAlphaCaseToCapsLockState() {
-  return false; //pending removal, hence returning here
-
-  }
-
-
   static bool_t checkNormal(int16_t keyNr, int16_t item) {
     int16_t result = Norm_Key_00_item_in_layout; 
     int16_t ss = Check_SigmaPlus_Assigned(&result, keyNr);
@@ -482,7 +474,6 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
 
   gboolean keyReleased(GtkWidget *w, GdkEventKey *event, gpointer data) {     //JM
     printf("PC Key released: %d (SHIFT_State=%u)(shiftF=%u shiftF=%u)\n", event->keyval,SHIFT_State,shiftF,shiftG);
-    setAlphaCaseToCapsLockState();
     if(event_keyval == event->keyval + CTRL_State) event_keyval = 99999999;
 
     switch(event->keyval) {
@@ -4189,7 +4180,6 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkK) {
     uint32_t gdkKey = gdkK;
     int16_t item;
 //  printf("**[DL]** _keyCodeFromGdkKey gdkKey %x capslock state %d\n", gdkKey, gdk_keymap_get_caps_lock_state(gdk_keymap_get_for_display(gdk_display_get_default())));
-    setAlphaCaseToCapsLockState();
     
     if(testDeadKeys) {
       switch(gdkKey) {
