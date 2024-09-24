@@ -58,11 +58,6 @@ TO_QSPI static const char bugScreenNoParam[] = "In function addItemToBuffer:item
       aimBuffer[0] = 0;
     }
     calcModeAim(NOPARAM); // Alpha Input Mode
-
-    #if defined(PC_BUILD)
-      setAlphaCaseToCapsLockState();  // Reflect caps lock key status
-    #endif
-
     if(programRunStop != PGM_RUNNING) {
       entryStatus |= 0x01;
       setSystemFlag(FLAG_ALPIN);
