@@ -26,7 +26,8 @@
 #include <stdint.h>
 
 
-
+#define XEDIT 1
+#define XSWAP 0
 extern bool_t running_program_jm;
 
 void fnXeqmExecuteText       (uint16_t command);
