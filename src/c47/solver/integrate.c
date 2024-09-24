@@ -270,7 +270,9 @@ done:
 
     convertRealToReal34ResultRegister(&res, REGISTER_X);
     convertRealToReal34ResultRegister(&acc, REGISTER_Y);
-    temporaryInformation = TI_INTEGRAL;
+    if(lastErrorCode != ERROR_SOLVER_ABORT) {
+      temporaryInformation = TI_INTEGRAL;
+    }
     adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
   }
   else {
@@ -330,6 +332,9 @@ void fnIntVar(uint16_t unusedButMandatoryParameter) {
 
 
 static void _integratorIteration(void) {
+  if(lastErrorCode == ERROR_SOLVER_ABORT) {
+    return;
+  }
   #if ENABLE_INTEGRATOR_FILE_OUTPUT == 1
     copySourceRegisterToDestRegister(REGISTER_X, TEMP_REGISTER_1);
   #endif //ENABLE_INTEGRATOR_FILE_OUTPUT == 1
@@ -431,8 +436,11 @@ static void _integratorIteration(void) {
 // 16 local registers
 
 static void DEI_xeq_user(calcRegister_t regist, const real_t *x, real_t *res, realContext_t *realContext) {
+  if(lastErrorCode == ERROR_SOLVER_ABORT) { // Aborted?
+    realZero(res);
+  }
   // call user's function  -------------------------------
-  if(!realIsSpecial(x)) { // abscissa is good?
+  else if(!realIsSpecial(x)) { // abscissa is good?
     //bool_t d = getSystemFlag(FLAG_SPCRES);
     //clearSystemFlag(FLAG_SPCRES);
     reallocateRegister(regist, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
@@ -659,6 +667,7 @@ static void _integrate(calcRegister_t regist, const real_t *a, const real_t *b, 
             _showProgress(&ss, &bma2, &h, const_0, const_0, const_pi, realContext);
           #endif //ENABLE_SOLVER_PROGRESS
           if(exitSignalled) {  //EXIT
+            displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
             printHalfSecUpdate_Integer(force+1, "Interrupted Iter:",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
           }
         }
@@ -746,6 +755,9 @@ static void _integrate(calcRegister_t regist, const real_t *a, const real_t *b, 
       // DEI_updte_j::
       realAdd(&j, const_1, &j, realContext); // j += 1
       realMultiply(&j, &h, &x, realContext); // X = t = j*h
+      if(lastErrorCode == ERROR_SOLVER_ABORT) { // Aborted?
+        break;
+      }
     } while(realCompareLessEqual(&x, &tm)); // t <= tm?
                                             // yes, continue j loop
     // done with j loop ++++++++++++++++++++++++++++++++++++
@@ -790,6 +802,9 @@ static void _integrate(calcRegister_t regist, const real_t *a, const real_t *b, 
     }
     lg0 = true; // mark level 0 done,
     realSubtract(&lvl, const_1, &lvl, realContext); // update level &...
+    if(lastErrorCode == ERROR_SOLVER_ABORT) { // Aborted?
+      break;
+    }
   } while(realCompareGreaterEqual(&lvl, const_0)); // loop.
   // DEI_fin::
   realCopy(&z, &x); // recall result
@@ -975,8 +990,9 @@ static void _integrate_mm(calcRegister_t regist, const real_t *llim, const real_
             _showProgress(&sslast, &bma2, &h, &errval, const_0, const_2, realContext);
           #endif //ENABLE_SOLVER_PROGRESS
           if(!interruptedLoop && exitSignalled) {  //First EXIT press
-            exitSignalled = false;
+            //exitSignalled = false;
             interruptedLoop = 1;
+            displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
           }
           if(interruptedLoop) {
             sprintf(tmps,"Level %i. Allow %5.1f s: Iter: ",(int16_t)k, (float)(40.0 - ((interruptedLoop++)/2.0)));
@@ -1328,8 +1344,9 @@ static void dbl_exp_int_new(calcRegister_t regist, const real_t *a, const real_t
             _showProgress(result, const_1, const_1, error, const_0, const_1, realContext);
             #endif //ENABLE_SOLVER_PROGRESS
             if(!interruptedLoop && exitSignalled) {  //First EXIT press
-              exitSignalled = false;
+              //exitSignalled = false;
               interruptedLoop = 1;
+              displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
             }
             if(interruptedLoop) {
               sprintf(tmps,"Level %i. Allow %5.1f s: Iter: ",(int16_t)k, (float)(40.0 - ((interruptedLoop++)/2.0)));
@@ -1396,8 +1413,9 @@ static void dbl_exp_int_new(calcRegister_t regist, const real_t *a, const real_t
               _showProgress(result, const_1, const_1, error, const_0, const_1, realContext);
             #endif //ENABLE_SOLVER_PROGRESS
             if(!interruptedLoop && exitSignalled) {  //First EXIT press
-              exitSignalled = false;
+              //exitSignalled = false;
               interruptedLoop = 1;
+              displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
             }
             if(interruptedLoop) {
               sprintf(tmps,"Level %i. Allow %5.1f s: Iter: ",(int16_t)k, (float)(40.0 - ((interruptedLoop++)/2.0)));
