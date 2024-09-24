@@ -20,6 +20,7 @@
 
 #include "solver/tvm.h"
 
+#include "c43Extensions/addons.h"
 #include "constantPointers.h"
 #include "defines.h"
 #include "error.h"
@@ -161,6 +162,9 @@ void fnTvmVar(uint16_t variable) {
             }
             else if(solveResult == SOLVER_RESULT_ABORTED) { // solver aborted
               iter = nIter;
+              #if defined(DMCP_BUILD)
+                while(popKey() == 32) {}
+              #endif // DMCP_BUILD
               break;
             }
             else {
