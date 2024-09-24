@@ -2008,7 +2008,7 @@
 #define ITM_T_LLEFT_ARROW           1954
 #define ITM_T_RRIGHT_ARROW          1955
 #define ITM_XNEW                    1956
-#define ITM_XSWAP                   1957
+#define ITM_1957                    1957
 #define ITM_KEYMAP                  1958
 #define ITM_USER_C47                1959
 #define ITM_USER_V47                1960
@@ -2481,8 +2481,10 @@
 #define ITM_INDIRECT_Y              2416
 #define ITM_INDIRECT_Z              2417
 #define ITM_INDIRECT_T              2418
+#define ITM_XSWAP                   2419
+#define ITM_XEDIT                   2420
 
-#define LAST_ITEM                   2419
+#define LAST_ITEM                   2421
 
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL
