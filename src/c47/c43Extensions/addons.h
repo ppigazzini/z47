@@ -22,7 +22,8 @@
 #include "typeDefinitions.h"
 #include <stdint.h>
 
-bool_t keyWaiting(void);
+//bool_t anyKeyWaiting(void);
+bool_t exitKeyWaiting(void);
 int    popKey(void);
 
 #ifdef DMCP_BUILD

@@ -31,6 +31,7 @@
 #include "realType.h"
 #include "registers.h"
 #include "registerValueConversions.h"
+#include "screen.h"
 #include "solver/solve.h"
 #include "stack.h"
 #include "c47.h"
@@ -162,10 +163,13 @@ void fnTvmVar(uint16_t variable) {
             }
             else if(solveResult == SOLVER_RESULT_ABORTED) { // solver aborted
               iter = nIter;
-              #if defined(DMCP_BUILD)
-                while(popKey() == 32) {}
-              #endif // DMCP_BUILD
-              break;
+              if(exitKeyWaiting()) {
+                showString("key Waiting ...", &standardFont, 20, 40, vmNormal, false, false);
+                #if defined(DMCP_BUILD)
+                  while(popKey() == 32) {}
+                #endif // DMCP_BUILD
+                break;
+              }
             }
             else {
               if(real34IsNegative(&xx)) {

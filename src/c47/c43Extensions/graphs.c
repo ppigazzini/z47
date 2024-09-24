@@ -741,7 +741,7 @@ void graph_plotmem(void) {
 /**/              }
 /**/            }
 /**/          }
-/**/          if(keyWaiting()) {
+/**/          if(exitKeyWaiting()) {
 /**/             return;
 /**/          }
 /**/        }
@@ -834,7 +834,7 @@ void graph_plotmem(void) {
 /**/          #if defined(STATDEBUG)
 /**/            printf("Axis0b: x: %f -> %f y: %f -> %f   \n", x_min, x_max, y_min, y_max);
 /**/          #endif // STATDEBUG
-/**/          if(keyWaiting()) {
+/**/          if(exitKeyWaiting()) {
 /**/            return;
 /**/          }
 /**/        }
@@ -859,7 +859,7 @@ void graph_plotmem(void) {
 /**/        if(sy > y_max) {
 /**/          y_max = sy;
 /**/        }
-/**/        if(keyWaiting()) {
+/**/        if(exitKeyWaiting()) {
 /**/          return;
 /**/        }
 /**/      }
@@ -1217,7 +1217,7 @@ void graph_plotmem(void) {
               printf("Not plotted: xN=%d<SCREEN_WIDTH_GRAPH=%d && xN=%d>=minN_x=%d && yN=%d<SCREEN_HEIGHT_GRAPH=%d && yN=%d>=minN_y=%d\n", xN, SCREEN_WIDTH_GRAPH, xN, minN_x, yN, SCREEN_HEIGHT_GRAPH, yN, minN_y);
             #endif // PC_BUILD
           }
-          if(keyWaiting()) {
+          if(exitKeyWaiting()) {
             return;
           }
         }

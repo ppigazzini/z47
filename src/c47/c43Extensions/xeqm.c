@@ -989,7 +989,7 @@ void execute_string(const char *inputstring, bool_t exec1, bool_t namescan) {
           }
           ix++;
           //}
-          if(keyWaiting()) {
+          if(exitKeyWaiting()) {
             break;
           }
         } //while
@@ -1003,7 +1003,7 @@ void execute_string(const char *inputstring, bool_t exec1, bool_t namescan) {
           exec = false;
         }
 
-        if(keyWaiting()) {
+        if(exitKeyWaiting()) {
           goto exec_exit;
         }
       }

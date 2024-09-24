@@ -217,7 +217,7 @@
           showProgressReal(&resultR, &resultRi, changedOverToComplex);
         }
 
-        if(keyWaiting()) {
+        if(exitKeyWaiting()) {
           showString("key Waiting ...", &standardFont, 16, Y_POSITION_OF_REGISTER_T_LINE, vmNormal, false, false);
           printHalfSecUpdate_Integer(force+1, "Interrupted: ", loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
           abort = true;

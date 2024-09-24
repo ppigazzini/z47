@@ -112,7 +112,7 @@ void fneRPN(uint16_t state) {
 #endif //DMCP_BUILD
 
 
-bool_t keyWaiting(void) {
+bool_t anyKeyWaiting(void) {
   #if defined(DMCP_BUILD)
     return key_empty() == 0 || key_tail() != -1;
   #elif defined(PC_BUILD) // !DMCP_BUILD
@@ -122,12 +122,23 @@ bool_t keyWaiting(void) {
   return false;
 }
 
+bool_t exitKeyWaiting(void) {  
+  #if defined(DMCP_BUILD)
+    return popKey() == 32;
+  #elif defined(PC_BUILD) // !DMCP_BUILD
+    //printf("KeyWaiting keyCode=%u",currentKeyCode);
+    return currentKeyCode == 32; //EXIT1 / EXIT key //Do not us gtk_events_pending() as it triggers for timers too
+  #endif // PC_BUILD
+  return false;
+}
+
+
 
 int popKey(void) {
   int tmpf = -1;
   #if defined(DMCP_BUILD)
-    if(!keyWaiting()) return -1;
-    while(keyWaiting()) {
+    if(!anyKeyWaiting()) return -1;
+    while(anyKeyWaiting()) {
       tmpf = key_pop();
     }
     if(tmpf == 44) {

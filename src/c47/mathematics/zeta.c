@@ -79,7 +79,7 @@ static void zeta_calc_complex(real_t *reg4, real_t *reg5, real_t *reg6, real_t *
     if(printHalfSecUpdate_Integer(timed, "Iter > 0: ",loop++, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
       //printRealToConsole(&reg0,"Zeta loop: ","\n");
     }
-    if(keyWaiting()) {
+    if(exitKeyWaiting()) {
         showString("key Waiting ...", &standardFont, 20, 40, vmNormal, false, false);
         printHalfSecUpdate_Integer(force+1, "Interrupted Iter:",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
         programRunStop = PGM_WAITING;
