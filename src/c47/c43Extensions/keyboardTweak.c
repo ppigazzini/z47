@@ -851,6 +851,46 @@ void resetKeytimers(void) {
 #endif // !TESTSUITE_BUILD
 
 
+bool_t caseReplacements(uint8_t id, bool_t lowerCaseSelected, int16_t item, int16_t *itemOut) {
+    *itemOut = item;
+    if(lowerCaseSelected && (ITM_A <= item && item <= ITM_Z)) {
+      *itemOut = item + (ITM_a - ITM_A);
+      goto returnTrue;
+    }
+    else if(!lowerCaseSelected && (ITM_A <= item && item <= ITM_Z)) {  //JM
+      goto returnTrue;
+    }
+    else if(!lowerCaseSelected && (ITM_a <= item && item <= ITM_z)) {  //JM
+      *itemOut = item - (ITM_a - ITM_A);
+      goto returnTrue;
+    }
+    else if(lowerCaseSelected && (ITM_a <= item && item <= ITM_z)) {  //JM
+      goto returnTrue;
+    }
+    goto returnFalse;
+
+returnTrue:
+    #if defined(VERBOSEKEYS) || defined(PAIMDEBUG)
+      printf("Translating upper/lower case: lowercaseselected=%i item=%i itemOut=%i\n",lowerCaseSelected, item, *itemOut);
+      switch(id){
+        case 0: printf("keyboard.c processAimInput() %i\n",id); break;
+        case 1: printf("manage.c   pemAlpha()        %i\n",id); break;
+        case 2: printf("gtkGui.c   sendKey()         %i\n",id); break;
+        default:;
+      }
+    #endif //VERBOSEKEYS || PAIMDEBUG
+    return true;
+
+returnFalse:
+    #if defined(VERBOSEKEYS) || defined(PAIMDEBUG)
+      printf("Translating upper/lower case: No translation: lowercaseselected=%i item=%i itemOut=%i\n",lowerCaseSelected, item, *itemOut);
+    #endif //VERBOSEKEYS || PAIMDEBUG
+    return false;
+  }
+
+
+
+
 //numlock replacements require the case to be upper case
 uint16_t numlockReplacements(uint16_t id, int16_t item, bool_t NL, bool_t FSHIFT, bool_t GSHIFT) {
   int16_t item1 = 0;

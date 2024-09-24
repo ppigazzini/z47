@@ -171,6 +171,8 @@
 //Verbose options
   #define    VERBOSEKEYS
   #undef     VERBOSEKEYS
+  #define    VERBOSEKEYS_AUTOCASE         //specifically visualizing the 1 second auto case indication in sim
+  #undef     VERBOSEKEYS_AUTOCASE
   #define    MONITOR_CLRSCR
   #undef     MONITOR_CLRSCR
   #define    PC_BUILD_TELLTALE            //JM verbose on PC: jm_show_comment
@@ -1255,6 +1257,17 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 // Alpha case 1 bit
 #define AC_UPPER                                   0
 #define AC_LOWER                                   1
+#define plainTextMode                              (bool_t)( calcMode == CM_AIM   || ((calcMode == CM_PEM  || calcMode == CM_ASSIGN) && getSystemFlag(FLAG_ALPHA)))
+#define labelText                                  (bool_t)((tam.mode == TM_LABEL || tam.mode == TM_STORCL || calcMode == CM_ASSIGN) && getSystemFlag(FLAG_ALPHA))
+//#define plainText                                  (bool_t)( calcMode == CM_AIM   || calcMode == CM_EIM    || (calcMode == CM_PEM    && getSystemFlag(FLAG_ALPHA) && !tam.mode)) 
+#define noCapsLockSync                             0
+#define onlyCapsLockSync                           1
+#define allKeysCapsLockSync                        2
+#define CAPS_EQN_DEFAULT                           AC_LOWER
+#define CAPS_AIM_DEFAULT                           AC_UPPER
+#define CAPS_ASMcat_DEFAULT                        AC_UPPER
+#define CAPS_STOetc_DEFAULT                        AC_LOWER
+#define CAPS_TAMother_DEFAULT                      AC_UPPER
 
 // TAM mode
 #define TM_VALUE                               10001 // TM_VALUE must be the 1st in this list

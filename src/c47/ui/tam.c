@@ -429,7 +429,10 @@
         aimBuffer[0] = 0;
         calcModeAim(NOPARAM);
         if(beginWithLowercase) {
-          alphaCase = AC_LOWER;
+          alphaCase = CAPS_STOetc_DEFAULT;
+        } 
+        else {
+          alphaCase = CAPS_TAMother_DEFAULT;
         }
         switch(softmenu[softmenuStack[0].softmenuId].menuItem) {
           case -MNU_TAMCMP    :
@@ -1097,6 +1100,13 @@
     _tamUpdateBuffer();
 
     clearSystemFlag(FLAG_ALPHA);
+    
+    #if defined(PC_BUILD)
+      if(forceTamAlpha) {
+        forceTamAlpha = false;
+        tamProcessInput(ITM_alpha);  // (DL] enter tam alpha for simulator easy keyboard entry
+      }
+    #endif // PC_BUILD
 
     if(tam.mode == TM_NEWMENU) {
       setSystemFlag(FLAG_ALPHA);

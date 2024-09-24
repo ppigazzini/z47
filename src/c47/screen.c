@@ -5002,10 +5002,15 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
                                char uuu[100];
                                stringToASCII(indexOfItems[currentMenu() > 0 ? currentMenu() : -currentMenu()].itemSoftmenuName, uuu);
 
-                               printf(">>> refreshScreen(%3u): Cnt=%3d %s calcMode=%2d screenUpdatingMode=%3d=%12s=>%26s TI=%4u MENUid=%2d item=%4i: %16s\n", 
+                               printf("   refrsh(%3u): Cnt=%3d %s CM=%2d scr..upd:%3d=%12s=>%26s TI=%4u CL=%s tam:%5i MENUid=%2d:%4i:%s\n", 
                                   source, refreshScreenCounter++,
                                   (last_CM != calcMode) ? "OVR" : "   ",
-                                  calcMode, screenUpdatingMode, sss, ttt, temporaryInformation, m, currentMenu(), uuu);
+                                  calcMode, 
+                                  screenUpdatingMode, sss, ttt, 
+                                  temporaryInformation, 
+                                  (alphaCase == AC_LOWER)?"LO":"UP",
+                                  tam.mode,
+                                  m, currentMenu(), uuu);
                              #endif // PC_BUILD
 
 
