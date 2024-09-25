@@ -591,8 +591,8 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
     //#endif
 
     //printf("AltGr #1:%s         ; keyval=%u state=%u, event_key_strip_capslock=%u\n",
-    (event->keyval == GDK_KEY_at) ? "+@" : (event->keyval == GDK_KEY_numbersign) ? "+#" : (event->keyval == GDK_KEY_bar) ? "+|" : "",
-    (uint16_t)event->keyval, (uint16_t)event->state, (uint16_t)event_key_strip_capslock);
+    //(event->keyval == GDK_KEY_at) ? "+@" : (event->keyval == GDK_KEY_numbersign) ? "+#" : (event->keyval == GDK_KEY_bar) ? "+|" : "",
+    //(uint16_t)event->keyval, (uint16_t)event->state, (uint16_t)event_key_strip_capslock);
 
 
     SHIFT_State = 0;
@@ -687,11 +687,11 @@ if(     (CTRL_State != 65536 || ((event->state & 16) == 16))
   #endif //VERBOSEKEYS
 
 //C47 & R47 AltGr============
-if((event->keyval == 65514) || ((event->state & 16) == 16)) { //AltGr Dani & Didier 0x14 for AltGr, and 0x1C for \#
+//if((event->keyval == 65514) || ((event->state & 16) == 16)) { //AltGr Dani & Didier 0x14 for AltGr, and 0x1C for \#
     //printf("AltGr #2 (NM ) %s detected; keyval=%u state=%u, event_key_command=%u\n",
-    (event->keyval == GDK_KEY_at) ? "+@" : (event->keyval == GDK_KEY_numbersign) ? "+#" : (event->keyval == GDK_KEY_bar) ? "+|" : "",
-    (uint16_t)event->keyval, (uint16_t)event->state, (uint16_t)event_key_command);
-}
+    //(event->keyval == GDK_KEY_at) ? "+@" : (event->keyval == GDK_KEY_numbersign) ? "+#" : (event->keyval == GDK_KEY_bar) ? "+|" : "",
+    //(uint16_t)event->keyval, (uint16_t)event->state, (uint16_t)event_key_command);
+//}
 
 //C47 & R47============
   if(shortCutCommand(w, event_key_command, GDK_KEY_a           /* a 97    */    ,                                  shortcutProfile == USER_C47,  ExitIfNim,          tam.mode,    "",   "00",                   0b01101,         -1,        ITM_SIGMAPLUS ))        {return false;} else        //                  [a]ccumulate
@@ -854,11 +854,11 @@ if(   (CTRL_State != 65536 || ((event->state & 16) == 16))
       )  
   ) {
 
-if((event->keyval == 65514) || ((event->state & 16) == 16)) { //AltGr Dani & Didier 0x14 for AltGr, and 0x1C for \#
+//if((event->keyval == 65514) || ((event->state & 16) == 16)) { //AltGr Dani & Didier 0x14 for AltGr, and 0x1C for \#
     //printf("AltGr #3 (AIM) %s detected; keyval=%u state=%u, event_key_command=%u\n",
-    (event->keyval == GDK_KEY_at) ? "+@" : (event->keyval == GDK_KEY_numbersign) ? "+#" : (event->keyval == GDK_KEY_bar) ? "+|" : "",
-    (uint16_t)event->keyval, (uint16_t)event->state, (uint16_t)event_key_command);
-}
+    //(event->keyval == GDK_KEY_at) ? "+@" : (event->keyval == GDK_KEY_numbersign) ? "+#" : (event->keyval == GDK_KEY_bar) ? "+|" : "",
+    //(uint16_t)event->keyval, (uint16_t)event->state, (uint16_t)event_key_command);
+//}
 
     //old way
     //  if(32 <= event_keyval && event_keyval <= 255) {
