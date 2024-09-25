@@ -614,7 +614,11 @@ void SetSetting(uint16_t jmConfig) {
     case PR_2TO10:       fnFlipFlag(FLAG_2TO10);                                break;
     case DM_ANY:         fnFlipFlag(FLAG_DENANY); clearSystemFlag(FLAG_DENFIX); break;
     case DM_PROPFR:      fnFlipFlag(FLAG_PROPFR);                               break;
-    case DM_FRACT:       fnFlipFlag(FLAG_FRACT);                                break;
+    case DM_FRACT:       fnFlipFlag(FLAG_FRACT);
+      if(getSystemFlag(FLAG_FRACT) && !getSystemFlag(FLAG_FRCYC)) {
+        clearSystemFlag(FLAG_IRFRAC);
+      }
+      break;
     case DM_FIX:         fnFlipFlag(FLAG_DENFIX); clearSystemFlag(FLAG_DENANY); break;
     case PRTACT:         fnFlipFlag(FLAG_PRTACT);                               break;
     case JC_BLZ:         fnFlipFlag(FLAG_LEAD0);                                break; //bit LeadingZeros
