@@ -1566,8 +1566,8 @@ typedef struct {
       // F not active in NIM, per definition not possible if a period is in the input string.
 
       //JM Only works in direct NIM, that is only when the input buffer already contains #
-      case ITM_1ONX: {      // C47: B for binary base
-      case ITM_SQUAREROOTX: // R47:
+      case ITM_1ONX:          // C47: B for binary base
+      case ITM_SQUAREROOTX: { // R47:
         if((!isR47FAM && item == ITM_SQUAREROOTX) || (isR47FAM && item == ITM_1ONX)) {
           keyActionProcessed = false;
           break;

@@ -380,7 +380,7 @@
 #define isR47FAM          ((bool_t)(calcModel == USER_R47f_g || calcModel == USER_R47bk_fg || calcModel == USER_R47fg_bk || calcModel == USER_R47fg_g))
 
 #define shortcutProfile   (calcModel == USER_C47 ? USER_C47 : isR47FAM ? USER_R47 : 0)
-#define INTEGERSHORTCUTS  (calcMode == CM_NIM && (calcModel == USER_C47 || isR47FAM))
+#define INTEGERSHORTCUTS  ((calcMode == CM_NIM || calcMode == CM_PEM) && (calcModel == USER_C47 || isR47FAM))
 
 
 //fnKeysManagement
