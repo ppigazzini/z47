@@ -603,7 +603,7 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
       printf("\nPC Key pressed: labelText=%i plainTextMode=%i event->keyval=%u event_keyval=%u (SHIFT_State=%u)(shiftF=%u shiftG=%u)\n",labelText, plainTextMode, event->keyval, event_keyval, SHIFT_State, shiftF, shiftG);
     //#endif
 
-  printf("AltGr #1:%s         ; keyval=%u state=%u, event_key_strip_capslock=%u\n",
+    //printf("AltGr #1:%s         ; keyval=%u state=%u, event_key_strip_capslock=%u\n",
     (event->keyval == GDK_KEY_at) ? "+@" : (event->keyval == GDK_KEY_numbersign) ? "+#" : (event->keyval == GDK_KEY_bar) ? "+|" : "",
     (uint16_t)event->keyval, (uint16_t)event->state, (uint16_t)event_key_strip_capslock);
 
@@ -707,7 +707,7 @@ if(     (CTRL_State != 65536 || ((event->state & 16) == 16))
 
 //C47 & R47 AltGr============
 if((event->keyval == 65514) || ((event->state & 16) == 16)) { //AltGr Dani & Didier 0x14 for AltGr, and 0x1C for \#
-  printf("AltGr #2 (NM ) %s detected; keyval=%u state=%u, event_key_command=%u\n",
+    //printf("AltGr #2 (NM ) %s detected; keyval=%u state=%u, event_key_command=%u\n",
     (event->keyval == GDK_KEY_at) ? "+@" : (event->keyval == GDK_KEY_numbersign) ? "+#" : (event->keyval == GDK_KEY_bar) ? "+|" : "",
     (uint16_t)event->keyval, (uint16_t)event->state, (uint16_t)event_key_command);
 }
@@ -874,7 +874,7 @@ if(   (CTRL_State != 65536 || ((event->state & 16) == 16))
   ) {
 
 if((event->keyval == 65514) || ((event->state & 16) == 16)) { //AltGr Dani & Didier 0x14 for AltGr, and 0x1C for \#
-  printf("AltGr #3 (AIM) %s detected; keyval=%u state=%u, event_key_command=%u\n",
+    //printf("AltGr #3 (AIM) %s detected; keyval=%u state=%u, event_key_command=%u\n",
     (event->keyval == GDK_KEY_at) ? "+@" : (event->keyval == GDK_KEY_numbersign) ? "+#" : (event->keyval == GDK_KEY_bar) ? "+|" : "",
     (uint16_t)event->keyval, (uint16_t)event->state, (uint16_t)event_key_command);
 }
