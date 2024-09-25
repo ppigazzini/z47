@@ -493,7 +493,13 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
             if(((getSystemFlag(FLAG_USER) ? kbd_usr[ 0].primary : kbd_std[ 0].primary)) == KEY_fg    ) btnClicked(w, "00"); else
             if(((getSystemFlag(FLAG_USER) ? kbd_usr[10].primary : kbd_std[10].primary)) == KEY_fg    ) btnClicked(w, "10"); else
             if(((getSystemFlag(FLAG_USER) ? kbd_usr[11].primary : kbd_std[11].primary)) == KEY_fg    ) btnClicked(w, "11"); else
-            if(((getSystemFlag(FLAG_USER) ? kbd_usr[27].primary : kbd_std[27].primary)) == KEY_fg    ) btnClicked(w, "27");
+            if(((getSystemFlag(FLAG_USER) ? kbd_usr[27].primary : kbd_std[27].primary)) == KEY_fg    ) btnClicked(w, "27"); else
+            {
+              shiftF = !shiftF;
+              shiftG = false;
+              refreshStatusBar();
+              showShiftState();
+            }
           }
           SHIFT_State = 0;
           break;
@@ -509,7 +515,14 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
             if(checkNormal(10,ITM_SHIFTg)) btnClicked(w, "10"); else
             if(checkNormal(11,ITM_SHIFTg)) btnClicked(w, "11"); else
 
-            if((getSystemFlag(FLAG_USER) ? kbd_usr[11].primary : kbd_std[11].primary) == ITM_SHIFTg) btnClicked(w, "11");
+            if((getSystemFlag(FLAG_USER) ? kbd_usr[11].primary : kbd_std[11].primary) == ITM_SHIFTg) btnClicked(w, "11"); else
+            {
+              shiftF = false;
+              shiftG = !shiftG;
+              refreshStatusBar();
+              showShiftState();
+            }
+
 
         }
         CTRL_State = 0;
@@ -632,7 +645,13 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
             if(checkNormal(10,ITM_SHIFTg)) btnClicked(w, "10"); else
             if(checkNormal(11,ITM_SHIFTg)) btnClicked(w, "11"); else
             if(((getSystemFlag(FLAG_USER) ? kbd_usr[11].primary : kbd_std[11].primary) == ITM_SHIFTg )) btnClicked(w, "11"); else
-            if(((getSystemFlag(FLAG_USER) ? kbd_usr[10].primary : kbd_std[10].primary) == ITM_SHIFTg )) btnClicked(w, "10");
+            if(((getSystemFlag(FLAG_USER) ? kbd_usr[10].primary : kbd_std[10].primary) == ITM_SHIFTg )) btnClicked(w, "10"); else
+            {
+              shiftF = false;
+              shiftG = !shiftG;
+              refreshStatusBar();
+              showShiftState();
+            }
             // if(((getSystemFlag(FLAG_USER) ? kbd_usr[11].primary : kbd_std[11].primary) == KEY_fg     )) btnClicked(w, "11"); else
             // if(((getSystemFlag(FLAG_USER) ? kbd_usr[10].primary : kbd_std[10].primary) == KEY_fg     )) btnClicked(w, "10"); else
             // if(((getSystemFlag(FLAG_USER) ? kbd_usr[27].primary : kbd_std[27].primary) == KEY_fg     )) btnClicked(w, "27");
