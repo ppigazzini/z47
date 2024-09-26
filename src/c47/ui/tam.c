@@ -322,10 +322,13 @@
           // backspaces within AIM are handled by addItemToBuffer, so this is if the aimBuffer is already empty
           tam.alpha = false;
           clearSystemFlag(FLAG_ALPHA);
-          calcModeTamGui();
-          if(softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_TAMALPHA) {
+          popSoftmenu();                     // pop current menu : either MNU_TAMALPHA or an Alpha submenu
+          --numberOfTamMenusToPop;
+          if(menu(0) == -MNU_TAMALPHA) {     // if back to MNU_TAMALPHA, pop it also to complete exit from tam.alpha
             popSoftmenu();
+            --numberOfTamMenusToPop;
           }
+          calcModeTamGui();
         }
       }
       else if(tam.digitsSoFar > 0) {
@@ -349,9 +352,29 @@
       }
       else if(tam.indirect) {
         tam.indirect = false;
-        if(tam.mode == TM_FLAGR || tam.mode == TM_FLAGW) {
+        if(tam.mode == TM_VALUE || tam.mode == TM_VALUE_CHB) {
+          popSoftmenu();
+          if(tam.function == ITM_DENMAX2) {
+            showSoftmenu(-MNU_TAMNONREGMAX);
+          }
+          else {
+            showSoftmenu(-MNU_TAMNONREG);
+          }
+          --numberOfTamMenusToPop;
+        }
+        else if(tam.mode == TM_REGISTER || tam.mode == TM_M_DIM) {
+          popSoftmenu();
+          showSoftmenu(-MNU_TAM);
+          --numberOfTamMenusToPop;
+        }
+        else if(tam.mode == TM_FLAGR || tam.mode == TM_FLAGW) {
           popSoftmenu();
           showSoftmenu(-MNU_TAMFLAG);
+          --numberOfTamMenusToPop;
+        }
+        else if(tam.mode == TM_STORCL) {
+          popSoftmenu();
+          showSoftmenu(-MNU_TAMSTORCL);
           --numberOfTamMenusToPop;
         }
         else if(tam.mode == TM_LABEL || (tam.mode == TM_KEY && tam.keyInputFinished)) {
@@ -359,14 +382,24 @@
           showSoftmenu(-MNU_TAMLABEL);
           --numberOfTamMenusToPop;
         }
-        else if(tam.mode == TM_MENU || (tam.mode == TM_KEY && tam.keyInputFinished)) {
+        else if(tam.mode == TM_SOLVE) {
+          popSoftmenu();
+          if(tam.function == ITM_SOLVE && calcMode == CM_PEM) {
+            showSoftmenu(-MNU_TAM);
+          }
+          else {
+            showSoftmenu(-MNU_TAMLABEL);
+          }
+          --numberOfTamMenusToPop;
+        }
+        else if(tam.mode == TM_MENU) {
           popSoftmenu();
           showSoftmenu(-MNU_TAMMENU);
           --numberOfTamMenusToPop;
         }
-        else if(tam.mode == TM_VALUE) {
+        else if(tam.mode == TM_CMP) {
           popSoftmenu();
-          showSoftmenu(-MNU_TAMNONREG);
+          showSoftmenu(-MNU_TAMCMP);
           --numberOfTamMenusToPop;
         }
       }
@@ -432,11 +465,12 @@
           alphaCase = AC_LOWER;
         }
         switch(softmenu[softmenuStack[0].softmenuId].menuItem) {
-          case -MNU_TAMCMP    :
-          case -MNU_TAMLABEL  :
-          case -MNU_TAM       :
-          case -MNU_TAMSTORCL :
-          case -MNU_TAMMENU   :
+          case -MNU_TAMCMP      :
+          case -MNU_TAMLABEL    :
+          case -MNU_TAM         :
+          case -MNU_TAMSTORCL   :
+          case -MNU_TAMMENU     :
+          case -MNU_TAMINDIRECT :
             showSoftmenu(-MNU_TAMALPHA);
             screenUpdatingMode = SCRUPD_AUTO;
             break;
@@ -680,14 +714,9 @@
     }
     else if(item == ITM_INDIRECTION) {
       if(!tam.alpha && !tam.digitsSoFar && !tam.dot && !valueParameter && (indexOfItems[tam.function].status & PTP_STATUS) != PTP_SKIP_BACK && (indexOfItems[tam.function].status & PTP_STATUS) != PTP_DECLARE_LABEL) {
-        if(!tam.indirect && (tam.mode == TM_FLAGR || tam.mode == TM_FLAGW || tam.mode == TM_LABEL || tam.mode == TM_MENU)) {
+        if(!tam.indirect) {
           popSoftmenu();
-          showSoftmenu(-MNU_TAM);
-          --numberOfTamMenusToPop;
-        }
-        if(!tam.indirect && tam.mode == TM_VALUE) {
-          popSoftmenu();
-          showSoftmenu(-MNU_TAMNONREGIND);
+          showSoftmenu(-MNU_TAMINDIRECT);
           --numberOfTamMenusToPop;
         }
         tam.indirect = true;

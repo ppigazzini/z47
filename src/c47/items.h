@@ -2159,7 +2159,7 @@
 #define ITM_RIBBON_R47              2105
 #define ITM_RIBBON_SAV              2106
 #define MNU_PLOTTING                2107
-#define MNU_TAMNONREGIND            2108
+#define MNU_TAMINDIRECT             2108
 #define MNU_TAMNONREGMAX            2109
 #define ITM_TAMMAX                  2110
 #define ITM_GAPDOT_L                2111
