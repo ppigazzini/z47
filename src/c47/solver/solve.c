@@ -484,12 +484,9 @@ retryLevel:
       }
 
         if(exitKeyWaiting()) {
-            showString("key Waiting ...", &standardFont, 20, 40, vmNormal, false, false);
             printHalfSecUpdate_Integer(force+1, "Interrupted Iter:",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
-            //programRunStop = PGM_WAITING;
-            #if defined(DMCP_BUILD)
-              while(popKey() == 32) {}
-            #endif // DMCP_BUILD
+            displayStringWhileExitPressed("Exit Waiting ...");
+            programRunStop = PGM_WAITING;
             displayCalcErrorMessage(ERROR_SOLVER_ABORT, REGISTER_T, NIM_REGISTER_LINE);
           break;
         }

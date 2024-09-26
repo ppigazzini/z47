@@ -24,7 +24,9 @@
 
 //bool_t anyKeyWaiting(void);
 bool_t exitKeyWaiting(void);
-int    popKey(void);
+int    C47PopKeyNoBuffer(void);
+void displayStringWhileExitPressed(char *string);
+
 
 #ifdef DMCP_BUILD
   void standardScreenDump(void);

@@ -519,6 +519,7 @@ void graph_eqn(uint16_t mode) {
       #if defined(DMCP_BUILD)
         if(exitKeyWaiting()) {
           printHalfSecUpdate_Integer(force+1, "Interrupted Iter:",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+          displayStringWhileExitPressed("Exit Waiting ...");
           fnClearStack(0);
           calcMode = CM_NORMAL;
           screenUpdatingMode = SCRUPD_AUTO;

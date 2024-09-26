@@ -164,10 +164,7 @@ void fnTvmVar(uint16_t variable) {
             else if(solveResult == SOLVER_RESULT_ABORTED) { // solver aborted
               iter = nIter;
               if(exitKeyWaiting()) {
-                showString("key Waiting ...", &standardFont, 20, 40, vmNormal, false, false);
-                #if defined(DMCP_BUILD)
-                  while(popKey() == 32) {}
-                #endif // DMCP_BUILD
+                displayStringWhileExitPressed("key Waiting ...");
                 break;
               }
             }

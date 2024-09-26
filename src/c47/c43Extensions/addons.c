@@ -124,7 +124,7 @@ bool_t anyKeyWaiting(void) {
 
 bool_t exitKeyWaiting(void) {  
   #if defined(DMCP_BUILD)
-    return popKey() == 32;
+    return C47PopKeyNoBuffer() == 32;
   #elif defined(PC_BUILD) // !DMCP_BUILD
     //printf("KeyWaiting keyCode=%u",currentKeyCode);
     return currentKeyCode == 32; //EXIT1 / EXIT key //Do not us gtk_events_pending() as it triggers for timers too
@@ -132,9 +132,15 @@ bool_t exitKeyWaiting(void) {
   return false;
 }
 
+void displayStringWhileExitPressed(char *string) {
+  showString(string, &standardFont, 20, 40, vmNormal, false, false);
+  #if defined(DMCP_BUILD)
+    while(C47PopKeyNoBuffer() == 32) {}
+  #endif // DMCP_BUILD
+}
 
 
-int popKey(void) {
+int C47PopKeyNoBuffer(void) {
   int tmpf = -1;
   #if defined(DMCP_BUILD)
     if(!anyKeyWaiting()) return -1;

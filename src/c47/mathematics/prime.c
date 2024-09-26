@@ -490,11 +490,11 @@ void calculateNextPrime(longInteger_t currentNumber, longInteger_t nextPrime) {
 
 
       #if !defined(TESTSUITE_BUILD)
-        if(printHalfSecUpdate_Integer(timed, "P:",loop++, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
+        if(printHalfSecUpdate_Integer(timed, "Iter > 0: ",loop++, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
         }
       if(exitKeyWaiting()) {
-        showString("key Waiting ...", &standardFont, 20, 40, vmNormal, false, false);
         printHalfSecUpdate_Integer(force+1, "Interrupted Test:",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+        displayStringWhileExitPressed("Exit Waiting ...");
         displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
         return;
       }
@@ -789,8 +789,8 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
           #endif //DMCP_BUILD
         }
       if(exitKeyWaiting()) {
-          showString("key Waiting ...", &standardFont, 20, 40, vmNormal, false, false);
           printHalfSecUpdate_Integer(force+1, "Interrupted Test:",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+          displayStringWhileExitPressed("Exit Waiting ...");
           programRunStop = PGM_WAITING;
         break;
       }
