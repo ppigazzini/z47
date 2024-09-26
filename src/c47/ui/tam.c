@@ -304,7 +304,7 @@
     min2 = (tam.indirect ? 0 : min);
     max2 = (tam.indirect ? (tam.dot ? (calcMode == CM_PEM ? 98 : currentNumberOfLocalRegisters) : 99) : max);
     dupNum = 0;
-    if((item == ITM_ENTER && !(tam.function == ITM_toINT || tam.function == ITM_HASH_JM)) || (tam.alpha && stringGlyphLength(aimBuffer) > 6)) {
+    if((item == ITM_ENTER && !(tam.function == ITM_toINT || tam.function == ITM_HASH_JM)) || (tam.alpha && stringGlyphLength(aimBuffer) > (tam.mode != TM_MENU ? 6 : 8))) {
       forceTry = true;
     }
     else if(item == ITM_BACKSPACE) {
@@ -357,6 +357,11 @@
         else if(tam.mode == TM_LABEL || (tam.mode == TM_KEY && tam.keyInputFinished)) {
           popSoftmenu();
           showSoftmenu(-MNU_TAMLABEL);
+          --numberOfTamMenusToPop;
+        }
+        else if(tam.mode == TM_MENU || (tam.mode == TM_KEY && tam.keyInputFinished)) {
+          popSoftmenu();
+          showSoftmenu(-MNU_TAMMENU);
           --numberOfTamMenusToPop;
         }
         else if(tam.mode == TM_VALUE) {
@@ -415,7 +420,7 @@
       allowAlphaMode = allowAlphaMode || (!tam.digitsSoFar && !tam.dot && tam.indirect);
       allowAlphaMode = allowAlphaMode || (!tam.digitsSoFar && !tam.dot && tam.mode == TM_SOLVE && calcMode == CM_PEM);
       beginWithLowercase = allowAlphaMode;
-      allowAlphaMode = allowAlphaMode || (!tam.digitsSoFar && !tam.dot && tam.mode == TM_LABEL);
+      allowAlphaMode = allowAlphaMode || (!tam.digitsSoFar && !tam.dot && ((tam.mode == TM_LABEL) || (tam.mode == TM_MENU)));
       allowAlphaMode = allowAlphaMode || (!tam.digitsSoFar && !tam.dot && tam.keyInputFinished && tam.mode == TM_KEY);
       allowAlphaMode = allowAlphaMode || (!tam.digitsSoFar && (tam.function == ITM_LBL || tam.function == ITM_GTOP));
       if(allowAlphaMode) {
@@ -431,7 +436,9 @@
           case -MNU_TAMLABEL  :
           case -MNU_TAM       :
           case -MNU_TAMSTORCL :
+          case -MNU_TAMMENU   :
             showSoftmenu(-MNU_TAMALPHA);
+            screenUpdatingMode = SCRUPD_AUTO;
             break;
           default: break;
         }
@@ -444,7 +451,8 @@
           if(item == ITM_Max) { // UP
             if(currentLocalStepNumber == 1) { // We are on 1st step of current program
               if(currentProgramNumber == 1) { // It's the 1st program in memory
-                return;
+                tamLeaveMode();
+                //return;
               }
               else { // It isn't the 1st program in memory
                 tam.value = programList[currentProgramNumber - 2].step;
@@ -462,7 +470,8 @@
 
           if(item == ITM_Min) { // DOWN
             if(currentProgramNumber == numberOfPrograms) { // We are in the last program in memory
-              return;
+              tamLeaveMode();
+              //return;
             }
 
             tam.value = programList[currentProgramNumber].step;
@@ -661,7 +670,7 @@
         else if(tam.indirect && (currentNumberOfLocalRegisters || calcMode == CM_PEM)) {
           tam.dot = true;
         }
-        else if(tam.mode != TM_VALUE && tam.mode != TM_VALUE_CHB && tam.mode != TM_LABEL) {
+        else if(tam.mode != TM_VALUE && tam.mode != TM_VALUE_CHB && tam.mode != TM_LABEL && tam.mode != TM_MENU) {
           if(calcMode == CM_PEM || ((tam.mode == TM_FLAGR || tam.mode == TM_FLAGW) && currentLocalFlags != NULL) || ((tam.mode != TM_FLAGR && tam.mode != TM_FLAGW) && currentNumberOfLocalRegisters)) {
             tam.dot = true;
           }
@@ -671,7 +680,7 @@
     }
     else if(item == ITM_INDIRECTION) {
       if(!tam.alpha && !tam.digitsSoFar && !tam.dot && !valueParameter && (indexOfItems[tam.function].status & PTP_STATUS) != PTP_SKIP_BACK && (indexOfItems[tam.function].status & PTP_STATUS) != PTP_DECLARE_LABEL) {
-        if(!tam.indirect && (tam.mode == TM_FLAGR || tam.mode == TM_FLAGW || tam.mode == TM_LABEL)) {
+        if(!tam.indirect && (tam.mode == TM_FLAGR || tam.mode == TM_FLAGW || tam.mode == TM_LABEL || tam.mode == TM_MENU)) {
           popSoftmenu();
           showSoftmenu(-MNU_TAM);
           --numberOfTamMenusToPop;
@@ -690,6 +699,9 @@
       tam.value = indexOfItems[item].param;
       tryOoR = true;
       forceTry = true;
+    }
+    else if(tam.mode == TM_MENU && softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_MENU) {
+        tam.value = item;
     }
     else {
       // Do nothing
@@ -726,14 +738,14 @@
     }
     else if(!tam.alpha && !forcedVar) {
       // Check whether it is possible to add any more digits: if not, execute the function
-      if((tryOoR || (min2 <= tam.value && tam.value <= max2)) && (forceTry || tam.value*10 > max2)) {
+      if((tryOoR || (min2 <= tam.value && tam.value <= max2)) && (forceTry || tam.value*10 > max2) && ((tam.mode != TM_MENU) || tam.indirect)) {
         int16_t value = tam.value;
         bool_t run = true;
         if(tam.dot) {
           value += FIRST_LOCAL_REGISTER;
         }
         if(tam.indirect && calcMode != CM_PEM) {
-          value = indirectAddressing(value, (indexOfItems[tamOperation()].param == TM_FLAGR || indexOfItems[tamOperation()].param == TM_FLAGW) ? INDPM_FLAG : (tam.mode == TM_STORCL || tam.mode == TM_M_DIM) ? INDPM_REGISTER : INDPM_PARAM, min, max);
+          value = indirectAddressing(value, (indexOfItems[tamOperation()].param == TM_FLAGR || indexOfItems[tamOperation()].param == TM_FLAGW) ? INDPM_FLAG : (tam.mode == TM_STORCL || tam.mode == TM_M_DIM) ? INDPM_REGISTER : (tam.mode == TM_MENU) ? INDPM_MENU : INDPM_PARAM, min, max);
           run = (lastErrorCode == 0);
         }
         if(tam.function == ITM_GTOP) {
@@ -760,6 +772,9 @@
               break;
             }
             default: {
+              if(tam.mode == TM_MENU) {                        // Leave TAM menu before opening a new menu
+                tamLeaveMode();
+              }
               reallyRunFunction(tamOperation(), value);
             }
           }
@@ -772,6 +787,21 @@
           if(tam.mode) {
             tamLeaveMode();
           }
+        }
+      }
+      else if(tam.mode == TM_MENU && softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_MENU) {
+        int16_t value = tam.value;
+        if(calcMode == CM_PEM) {
+          addStepInProgram(tamOperation());
+          if(tam.mode) {
+            tamLeaveMode();
+          }
+        }
+        else {
+          if(tam.mode) {
+            tamLeaveMode();
+          }
+          reallyRunFunction(tamOperation(), value);
         }
       }
     }
@@ -838,6 +868,26 @@
       else if(tryAllocate) {
         value = findOrAllocateNamedVariable(buffer);
       }
+      else if((tam.mode == TM_MENU) && !tam.indirect && (calcMode != CM_PEM)) {
+        value = findMenu(buffer);
+        tam.value = value;
+        if(value == INVALID_MENU && calcMode != CM_PEM) {
+          if(getSystemFlag(FLAG_IGN1ER)) {
+            clearSystemFlag(FLAG_IGN1ER);
+            #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+              sprintf(errorMessage, "string '%s' is not a menu name", buffer);
+              moreInfoOnError("In function _tamProcessInput:", errorMessage, "ignored since IGN1ER system flag was set", NULL);
+            #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+          }
+          else {
+            displayCalcErrorMessage(ERROR_UNDEF_MENU, ERR_REGISTER_LINE, REGISTER_X);
+            #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+              sprintf(errorMessage, "string '%s' is not a menu name", buffer);
+              moreInfoOnError("In function _tamProcessInput:", errorMessage, NULL, NULL);
+            #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+          }
+        }
+      }
       else {
         value = findNamedVariable(buffer);
         if(value == INVALID_VARIABLE && calcMode != CM_PEM) {
@@ -864,7 +914,7 @@
         aimBuffer[0] = 0;
       }
       if(tam.indirect && value != INVALID_VARIABLE && calcMode != CM_PEM) {
-        value = indirectAddressing(value, (indexOfItems[tam.function].param == TM_FLAGR || indexOfItems[tam.function].param == TM_FLAGW) ? INDPM_FLAG : (tam.mode == TM_STORCL || tam.mode == TM_M_DIM) ? INDPM_REGISTER : INDPM_PARAM, min, max);
+        value = indirectAddressing(value, (indexOfItems[tam.function].param == TM_FLAGR || indexOfItems[tam.function].param == TM_FLAGW) ? INDPM_FLAG : (tam.mode == TM_STORCL || tam.mode == TM_M_DIM) ? INDPM_REGISTER : (tam.mode == TM_MENU) ? INDPM_MENU : INDPM_PARAM, min, max);
         if(lastErrorCode != 0) {
           value = INVALID_VARIABLE;
         }
@@ -881,6 +931,12 @@
         }
         else if(calcMode == CM_PEM) {
           // already done
+        }
+        else if(tam.mode == TM_MENU) {
+          if(value != INVALID_MENU) {
+            tamLeaveMode();                                // Leave TAM menu before opening a new menu
+            reallyRunFunction(tamOperation(), value);
+          }
         }
         else {
           reallyRunFunction(tamOperation(), value);
@@ -1002,6 +1058,11 @@
         break;
       }
 
+      case TM_MENU: {
+        showSoftmenu(-MNU_TAMMENU);
+        break;
+      }
+
       case TM_SOLVE: {
         if(func == ITM_SOLVE && calcMode == CM_PEM) {
           showSoftmenu(-MNU_TAM);
@@ -1014,6 +1075,7 @@
 
       case TM_NEWMENU: {
         showSoftmenu(-MNU_TAMALPHA);
+        screenUpdatingMode &= ~SCRUPD_MANUAL_MENU;
         break;
       }
 

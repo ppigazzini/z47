@@ -155,6 +155,10 @@ void fnTvmVar(uint16_t variable) {
               thereIsSomethingToUndo = false;
               break;
             } 
+            else if(solveResult == SOLVER_RESULT_CONSTANT) { // in cases with prevented infinite loop
+              iter = nIter;
+              break;
+            }
             else {
               if(real34IsNegative(&xx)) {
                 real34Subtract(&xx, const34_2, &x);

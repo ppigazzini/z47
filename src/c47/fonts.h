@@ -30,6 +30,10 @@
    */
   void    generateNotFoundGlyph(const int16_t font, uint16_t charCode);
 
+  //<------------ Control character ------------->
+  #define STD_NOCHAR                    1
+
+
   //<------------ Numeric font glyphs -----------> Not used for now
   #define NUM_0_b                       "\xa4\x73"
   #define NUM_1_b                       "\xa4\x74"
@@ -43,6 +47,7 @@
   #define NUM_9_b                       "\xa4\x7c"
 
 //<----------- Standard font glyphs ----------->
+#define STD_CR                        "\xa1\xb5"
 #define STD_SPACE                     "\x20"
 #define STD_EXCLAMATION_MARK          "\x21"
 #define STD_DOUBLE_QUOTE              "\x22"

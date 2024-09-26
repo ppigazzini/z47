@@ -46,17 +46,26 @@
 #include <errno.h>
 #include <string.h>
 #include <sys/stat.h>
-#endif
+#endif //PC_BUILD
 
 #if defined(DMCP_BUILD)
 #include <dmcp.h>
 #endif
 
 #include "c47.h"
-#define configFileVersion                  10000012 // 5 flags converted from C43; Arbitrary starting point version 10 000 001 of STATE files. Allowable values are 10000000 to 20000000
-#define BACKUP_VERSION                     1003  // 5 flags converted from C43;
-#define VersionAllowed                     10000005 // This code will not autoload versions earlier than this
 
+// This is used for the backup.cfg simulator backup file
+// The variable backupVersion is used in the connection
+#define BACKUP_VERSION                     1005     // Remove superfluous reporting when old cfg file items are not found in new files
+/*
+1004     // Replace Norm_Key_00_VAR by the structure Norm_Key_00;
+1005     // 2024-09-06 Remove superfluous reporting when old cfg file items are not found in new files
+*/
+
+
+// This is used for the state files
+#define configFileVersion                  10000013 // Replace Norm_Key_00_VAR by the structure Norm_Key_00; Arbitrary starting point version 10 000 001 of STATE files. Allowable values are 10000000 to 20000000
+#define VersionAllowed                     10000005 // This code will not autoload versions earlier than this
 /*
 10000001 // arbitrary starting point version 10 000 001
 10000002 // 2022-12-05 First release, version 108_08f
@@ -65,6 +74,8 @@
 10000005 // 2022-01-08 version 108_08q, Pauli changed the real number saver representaiton
 ...
 10000008 // 2023-09-12 version 108.13   Jaco added the missing STOCFG items, remove the unneccary STOCFG items, added the missing STATe file items.
+...
+10000012 // 5 flags converted from C43
 
 Current version defaults all non-loaded settings from previous version files correctly
 */
@@ -83,6 +94,16 @@ uint16_t flushBufferCnt = 0;
     return ioFileRead(buffer, size);
   }
 #endif // !TESTSUITE_BUILD
+
+
+uint8_t convert001090400T001090500(uint8_t parameter, uint8_t offset) { //Example: read from file: RB_F14 (which was 0) and and report RBX_F14 (which is 221) to the program.
+uint8_t output = parameter;
+  if(parameter < 20) {
+    output = parameter + offset;
+  }
+  return output;
+}
+
 
 
 
@@ -318,6 +339,9 @@ uint16_t flushBufferCnt = 0;
     saveStateValue(kbd_usr,                         sizeof(kbd_usr),                                             "kbd_usr",                        "hexDump");
     saveStateValue(userMenuItems,                   sizeof(userMenuItems),                                       "userMenuItems",                  "hexDump");
     saveStateValue(userAlphaItems,                  sizeof(userAlphaItems),                                      "userAlphaItems",                 "hexDump");
+    saveStateValue(lastTemp,                        sizeof(lastTemp),                                            "lastTemp",                       "hexDump");
+    saveStateValue(&lastFunc,                       sizeof(lastFunc),                                            "lastFunc",                       "int16");
+    saveStateValue(&lastParam,                      sizeof(lastParam),                                           "lastParam",                      "int16");
     saveStateValue(&tam.mode,                       sizeof(tam.mode),                                            "tam.mode",                       "uint16");
     saveStateValue(&tam.function,                   sizeof(tam.function),                                        "tam.function",                   "int16");
     saveStateValue(&tam.alpha,                      sizeof(tam.alpha),                                           "tam.alpha",                      "bool");
@@ -476,7 +500,7 @@ uint16_t flushBufferCnt = 0;
     saveStateValue(&currentInputVariable,           sizeof(currentInputVariable),                                "currentInputVariable",           "uint16");
     saveStateValue(&SAVED_SIGMA_LASTX,              sizeof(SAVED_SIGMA_LASTX),                                   "SAVED_SIGMA_LASTX",              "real");
     saveStateValue(&SAVED_SIGMA_LASTY,              sizeof(SAVED_SIGMA_LASTY),                                   "SAVED_SIGMA_LASTY",              "real");
-    saveStateValue(&SAVED_SIGMA_LAc1,               sizeof(SAVED_SIGMA_LAc1),                                    "SAVED_SIGMA_LAc1",               "int8");
+    saveStateValue(&SAVED_SIGMA_lastAddRem,         sizeof(SAVED_SIGMA_lastAddRem),                              "SAVED_SIGMA_lastAddRem",         "int8");
     saveStateValue(&currentMvarLabel,               sizeof(currentMvarLabel),                                    "currentMvarLabel",               "uint16");
     graphVariabl1 = INVALID_VARIABLE;
     saveStateValue(&graphVariabl1,                  sizeof(graphVariabl1),                                       "graphVariabl1",                  "int16");
@@ -496,7 +520,9 @@ uint16_t flushBufferCnt = 0;
     saveStateValue(&ShiftTimoutMode,                sizeof(ShiftTimoutMode),                                     "ShiftTimoutMode",                "bool");
     saveStateValue(&fgLN,                           sizeof(fgLN),                                                "fgLN",                           "uint8");
     saveStateValue(&BASE_HOME,                      sizeof(BASE_HOME),                                           "BASE_HOME",                      "bool");
-    saveStateValue(&Norm_Key_00_VAR,                sizeof(Norm_Key_00_VAR),                                     "Norm_Key_00_VAR",                "int16");
+    saveStateValue(&Norm_Key_00.func,               sizeof(Norm_Key_00.func),                                    "Norm_Key_00.func",               "int16");
+    saveStateValue(&Norm_Key_00.funcParam,          sizeof(Norm_Key_00.funcParam),                               "Norm_Key_00.funcParam",          "hexDump");
+    saveStateValue(&Norm_Key_00.used,               sizeof(Norm_Key_00.used),                                    "Norm_Key_00.used",               "bool");
     saveStateValue(&Input_Default,                  sizeof(Input_Default),                                       "Input_Default",                  "uint8");
     saveStateValue(&BASE_MYM,                       sizeof(BASE_MYM),                                            "BASE_MYM",                       "bool");
     saveStateValue(&jm_G_DOUBLETAP,                 sizeof(jm_G_DOUBLETAP),                                      "jm_G_DOUBLETAP",                 "bool");
@@ -880,6 +906,9 @@ uint16_t flushBufferCnt = 0;
     restoreStateValue(kbd_usr,                         sizeof(kbd_usr),                                             "kbd_usr",                        "hexDump");
     restoreStateValue(userMenuItems,                   sizeof(userMenuItems),                                       "userMenuItems",                  "hexDump");
     restoreStateValue(userAlphaItems,                  sizeof(userAlphaItems),                                      "userAlphaItems",                 "hexDump");
+    restoreStateValue(lastTemp,                        sizeof(lastTemp),                                            "lastTemp",                       "hexDump");
+    restoreStateValue(&lastFunc,                       sizeof(lastFunc),                                            "lastFunc",                       "int16");
+    restoreStateValue(&lastParam,                      sizeof(lastParam),                                           "lastParam",                      "int16");
     restoreStateValue(&tam.mode,                       sizeof(tam.mode),                                            "tam.mode",                       "uint16");
     restoreStateValue(&tam.function,                   sizeof(tam.function),                                        "tam.function",                   "int16");
     restoreStateValue(&tam.alpha,                      sizeof(tam.alpha),                                           "tam.alpha",                      "bool");
@@ -1050,8 +1079,15 @@ uint16_t flushBufferCnt = 0;
     if(backupVersion < 1002 && currentInputVariable == INVALID_VARIABLE_OLD) {currentInputVariable = INVALID_VARIABLE;}
     restoreStateValue(&SAVED_SIGMA_LASTX,              sizeof(SAVED_SIGMA_LASTX),                                   "SAVED_SIGMA_LASTX",              "real");
     restoreStateValue(&SAVED_SIGMA_LASTY,              sizeof(SAVED_SIGMA_LASTY),                                   "SAVED_SIGMA_LASTY",              "real");
-    SAVED_SIGMA_LAc1 = 0;
-    restoreStateValue(&SAVED_SIGMA_LAc1,               sizeof(SAVED_SIGMA_LAc1),                                    "SAVED_SIGMA_LAc1",               "int8");     //manual correction as the type allocation was wrong here
+    SAVED_SIGMA_lastAddRem = SIGMA_NONE;
+    if(backupVersion <= 1004) {
+      restoreStateValue(&SAVED_SIGMA_lastAddRem,         sizeof(SAVED_SIGMA_lastAddRem),                              "SAVED_SIGMA_LAc1",               "int8");     //manual correction as the type allocation was wrong here
+    }
+    restoreStateValue(&SAVED_SIGMA_lastAddRem,         sizeof(SAVED_SIGMA_lastAddRem),                              "SAVED_SIGMA_lastAddRem",         "int8");     //manual correction as the type allocation was wrong here
+    if(SAVED_SIGMA_lastAddRem == -1) SAVED_SIGMA_lastAddRem = SIGMA_MINUS;
+  //if(SAVED_SIGMA_lastAddRem == 0 ) SAVED_SIGMA_lastAddRem = SIGMA_NONE;
+  //if(SAVED_SIGMA_lastAddRem == 1 ) SAVED_SIGMA_lastAddRem = SIGMA_PLUS;
+  //if(SAVED_SIGMA_lastAddRem == 2 ) SAVED_SIGMA_lastAddRem = SIGMA_MINUS;
     restoreStateValue(&currentMvarLabel,               sizeof(currentMvarLabel),                                    "currentMvarLabel",               "uint16");
     if(backupVersion < 1002 && currentMvarLabel == INVALID_VARIABLE_OLD) {currentMvarLabel = INVALID_VARIABLE;}
     restoreStateValue(&graphVariabl1,                  sizeof(graphVariabl1),                                       "graphVariabl1",                  "int16");
@@ -1071,8 +1107,11 @@ uint16_t flushBufferCnt = 0;
     restoreStateValue(&HOME3,                          sizeof(HOME3),                                               "HOME3",                          "bool");
     restoreStateValue(&ShiftTimoutMode,                sizeof(ShiftTimoutMode),                                     "ShiftTimoutMode",                "bool");
     restoreStateValue(&fgLN,                           sizeof(fgLN),                                                "fgLN",                           "uint8");
+    fgLN = convert001090400T001090500(fgLN,RBX_FGLNOFF);
     restoreStateValue(&BASE_HOME,                      sizeof(BASE_HOME),                                           "BASE_HOME",                      "bool");
-    restoreStateValue(&Norm_Key_00_VAR,                sizeof(Norm_Key_00_VAR),                                     "Norm_Key_00_VAR",                "int16");
+    restoreStateValue(&Norm_Key_00.func,               sizeof(Norm_Key_00.func),                                    "Norm_Key_00.func",               "int16");
+    restoreStateValue(&Norm_Key_00.funcParam,          sizeof(Norm_Key_00.funcParam),                               "Norm_Key_00.funcParam",          "hexDump");
+    restoreStateValue(&Norm_Key_00.used,               sizeof(Norm_Key_00.used),                                    "Norm_Key_00.used",               "bool");
     restoreStateValue(&Input_Default,                  sizeof(Input_Default),                                       "Input_Default",                  "uint8");
     restoreStateValue(&BASE_MYM,                       sizeof(BASE_MYM),                                            "BASE_MYM",                       "bool");
     restoreStateValue(&jm_G_DOUBLETAP,                 sizeof(jm_G_DOUBLETAP),                                      "jm_G_DOUBLETAP",                 "bool");
@@ -1095,9 +1134,12 @@ uint16_t flushBufferCnt = 0;
     restoreStateValue(&bcdDisplay,                     sizeof(bcdDisplay),                                          "bcdDisplay",                     "bool");    //C43 JM
     restoreStateValue(&topHex,                         sizeof(topHex),                                              "topHex",                         "bool");    //C43 JM
     restoreStateValue(&bcdDisplaySign,                 sizeof(bcdDisplaySign),                                      "bcdDisplaySign",                 "uint8");   //C43 JM
+    bcdDisplaySign = convert001090400T001090500(bcdDisplaySign,BCDu);
     restoreStateValue(&DM_Cycling,                     sizeof(DM_Cycling),                                          "DM_Cycling",                     "uint8");   //JM
     restoreStateValue(&LongPressM,                     sizeof(LongPressM),                                          "LongPressM",                     "uint8");   //JM
+    LongPressM = convert001090400T001090500(LongPressM,RBX_M14);
     restoreStateValue(&LongPressF,                     sizeof(LongPressF),                                          "LongPressF",                     "uint8");   //JM
+    LongPressF = convert001090400T001090500(LongPressF,RBX_F14);
     restoreStateValue(&currentAsnScr,                  sizeof(currentAsnScr),                                       "currentAsnScr",                  "uint8");   //JM
     restoreStateValue(&gapItemLeft,                    sizeof(gapItemLeft),                                         "gapItemLeft",                    "uint16");  //JM
     restoreStateValue(&gapItemRight,                   sizeof(gapItemRight),                                        "gapItemRight",                   "uint16");  //JM
@@ -1108,13 +1150,15 @@ uint16_t flushBufferCnt = 0;
     restoreStateValue(&grpGroupingRight,               sizeof(grpGroupingRight),                                    "grpGroupingRight",               "uint8");   //JM
     restoreStateValue(&MYM3,                           sizeof(MYM3),                                                "MYM3",                           "bool");
 
+
+
     // If you create a new parameter, proceed as following:
     //newParam = 42 // default value for newParam if not found in backup.cgf. This is for compatibility with older versions of backup.cfg.
     //restoreStateValue(&newParam,                       sizeof(newParam),                                            "newParam",                       "parameterType");
 
     bool_t tmp1 = false;
-    restoreStateValue(&tmp1,                           sizeof(tmp1),                                                "constantFractions",              "bool");
     if(backupVersion < 1003) {
+      restoreStateValue(&tmp1,                           sizeof(tmp1),                                                "constantFractions",              "bool");
       printf("Version number of configfile < 1003, transferring IRFRAC.");
       if(tmp1) {
         setSystemFlag(FLAG_IRFRAC);
@@ -1123,8 +1167,8 @@ uint16_t flushBufferCnt = 0;
         clearSystemFlag(FLAG_IRFRAC);
       }
     }
-    restoreStateValue(&tmp1,                           sizeof(tmp1),                                                "constantFractionsOn",            "bool");
     if(backupVersion < 1003) {
+      restoreStateValue(&tmp1,                           sizeof(tmp1),                                                "constantFractionsOn",            "bool");
       printf("Version number of configfile < 1003, transferring IRF_ON.");
       if(tmp1) {
         setSystemFlag(FLAG_IRF_ON);
@@ -1133,8 +1177,8 @@ uint16_t flushBufferCnt = 0;
         clearSystemFlag(FLAG_IRF_ON);
       }
     }
-    restoreStateValue(&tmp1,                           sizeof(tmp1),                                                "eRPN",                           "bool");    //JM vv
     if(backupVersion < 1003) {
+      restoreStateValue(&tmp1,                           sizeof(tmp1),                                                "eRPN",                           "bool");    //JM vv
       printf("Version number of configfile < 1003, transferring eRPN.");
       if(tmp1) {
         setSystemFlag(FLAG_ERPN);
@@ -1143,8 +1187,8 @@ uint16_t flushBufferCnt = 0;
         clearSystemFlag(FLAG_ERPN);
       }
     }
-    restoreStateValue(&tmp1,                           sizeof(tmp1),                                                "jm_LARGELI",                     "bool");
     if(backupVersion < 1003) {
+      restoreStateValue(&tmp1,                           sizeof(tmp1),                                                "jm_LARGELI",                     "bool");
       printf("Version number of configfile < 1003, transferring jm_LARGELI.");
       if(tmp1) {
         setSystemFlag(FLAG_LARGELI);
@@ -1153,8 +1197,8 @@ uint16_t flushBufferCnt = 0;
         clearSystemFlag(FLAG_LARGELI);
       }
     }
-    restoreStateValue(&tmp1,                           sizeof(tmp1),                                                "CPXMULT",                        "bool");    //JM
     if(backupVersion < 1003) {
+      restoreStateValue(&tmp1,                           sizeof(tmp1),                                                "CPXMULT",                        "bool");    //JM
       printf("Version number of configfile < 1003, transferring CPXMULT.");
       if(tmp1) {
         setSystemFlag(FLAG_CPXMULT);
@@ -1163,8 +1207,8 @@ uint16_t flushBufferCnt = 0;
         clearSystemFlag(FLAG_CPXMULT);
       }
     }
-    restoreStateValue(&tmp1,                           sizeof(tmp1),                                               "numLock",                        "bool");    //JM ^^
     if(backupVersion < 1003) {
+      restoreStateValue(&tmp1,                           sizeof(tmp1),                                               "numLock",                        "bool");    //JM ^^
       printf("Version number of configfile < 1003, transferring NUMLOCK.");
       if(tmp1) {
         setSystemFlag(FLAG_NUMLOCK);
@@ -1173,8 +1217,8 @@ uint16_t flushBufferCnt = 0;
         clearSystemFlag(FLAG_NUMLOCK);
       }
     }
-    restoreStateValue(&tmp1,                           sizeof(tmp1),                                              "SI_All",                         "bool");    //JM
     if(backupVersion < 1003) {
+      restoreStateValue(&tmp1,                           sizeof(tmp1),                                              "SI_All",                         "bool");    //JM
       printf("Version number of configfile < 1003, transferring PFX_ALL.");
       if(tmp1) {
         setSystemFlag(FLAG_PFX_ALL);
@@ -1720,7 +1764,9 @@ void doSave(uint16_t saveType) {
         sprintf(tmpString, "MYM3\n%"                       PRIu8  "\n",     (uint8_t)MYM3);                save(tmpString, strlen(tmpString));
         sprintf(tmpString, "ShiftTimoutMode\n%"            PRIu8  "\n",     (uint8_t)ShiftTimoutMode);     save(tmpString, strlen(tmpString));
         sprintf(tmpString, "BASE_HOME\n%"                  PRIu8  "\n",     (uint8_t)BASE_HOME);           save(tmpString, strlen(tmpString));
-        sprintf(tmpString, "Norm_Key_00_VAR\n%"            PRId16 "\n",     Norm_Key_00_VAR);              save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "Norm_Key_00.func\n%"           PRId16 "\n",     Norm_Key_00.func);             save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "Norm_Key_00.funcParam\n"       "%s"   "\n",     Norm_Key_00.funcParam);        save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "Norm_Key_00.used\n%"           PRIu8  "\n",     (uint8_t)Norm_Key_00.used);    save(tmpString, strlen(tmpString));
         sprintf(tmpString, "Input_Default\n%"              PRIu8  "\n",     Input_Default);                save(tmpString, strlen(tmpString));
         sprintf(tmpString, "BASE_MYM\n%"                   PRIu8  "\n",     (uint8_t)BASE_MYM);            save(tmpString, strlen(tmpString));
         sprintf(tmpString, "jm_G_DOUBLETAP\n%"             PRIu8  "\n",     (uint8_t)jm_G_DOUBLETAP);      save(tmpString, strlen(tmpString));
@@ -2867,14 +2913,25 @@ double stringToDouble(const char *str) {
           else if(strcmp(aimBuffer, "exponentHideLimit"           ) == 0) { exponentHideLimit     = stringToInt16(tmpString); }
           else if(strcmp(aimBuffer, "notBestF"                    ) == 0) { lrSelection           = stringToUint16(tmpString);}
           else if(strcmp(aimBuffer, "bestF"                       ) == 0) { lrSelection           = stringToUint16(tmpString);}
-          else if(strcmp(aimBuffer, "fgLN"                        ) == 0) { fgLN                  = stringToUint8(tmpString); }
-          else if(strcmp(aimBuffer, "jm_FG_LINE"                  ) == 0) { fgLN                  = stringToUint8(tmpString); }             //Keep compatible with old setting
+          else if(strcmp(aimBuffer, "fgLN"                        ) == 0) { fgLN                  = convert001090400T001090500(stringToUint8(tmpString),RBX_FGLNOFF); }
+          else if(strcmp(aimBuffer, "jm_FG_LINE"                  ) == 0) { fgLN                  = convert001090400T001090500(stringToUint8(tmpString),RBX_FGLNOFF); }             //Keep compatible with old setting
           else if(strcmp(aimBuffer, "HOME3"                       ) == 0) { HOME3                 = (bool_t)stringToUint8(tmpString) != 0; }
           else if(strcmp(aimBuffer, "MYM3"                        ) == 0) { MYM3                  = (bool_t)stringToUint8(tmpString) != 0; }
           else if(strcmp(aimBuffer, "ShiftTimoutMode"             ) == 0) { ShiftTimoutMode       = (bool_t)stringToUint8(tmpString) != 0; }
           else if(strcmp(aimBuffer, "SH_BASE_HOME"                ) == 0) { BASE_HOME             = (bool_t)stringToUint8(tmpString) != 0; }  //Keep compatible with old name by repeating it
           else if(strcmp(aimBuffer, "BASE_HOME"                   ) == 0) { BASE_HOME             = (bool_t)stringToUint8(tmpString) != 0; }
-          else if(strcmp(aimBuffer, "Norm_Key_00_VAR"             ) == 0) { Norm_Key_00_VAR       = stringToUint16(tmpString); }
+          else if(strcmp(aimBuffer, "Norm_Key_00_VAR"             ) == 0) {
+            // Old state file, before changing Norm_Key_00_VAR to the Norm_Key_00 structure
+            if(Norm_Key_00_key != -1) {
+              Norm_Key_00.func  = stringToUint16(tmpString);   // only the function is restored, assuming no param
+              Norm_Key_00.used  = Norm_Key_00.func != kbd_std[Norm_Key_00_key].primary;
+            } else {
+              Norm_Key_00.used = false;
+            }
+          }
+          else if(strcmp(aimBuffer, "Norm_Key_00.func"            ) == 0) { Norm_Key_00.func      = stringToUint16(tmpString); }
+          else if(strcmp(aimBuffer, "Norm_Key_00.funcParam"       ) == 0) { strcpy(Norm_Key_00.funcParam,tmpString); }
+          else if(strcmp(aimBuffer, "Norm_Key_00.used"            ) == 0) { Norm_Key_00.used      = (bool_t)stringToUint8(tmpString) != 0; }
           else if(strcmp(aimBuffer, "Input_Default"               ) == 0) { Input_Default         = stringToUint8(tmpString); }
           else if(strcmp(aimBuffer, "jm_BASE_SCREEN"              ) == 0) { BASE_MYM              = (bool_t)stringToUint8(tmpString) != 0; }        //Keep compatible by repeating
           else if(strcmp(aimBuffer, "BASE_MYM"                    ) == 0) { BASE_MYM              = (bool_t)stringToUint8(tmpString) != 0; }
@@ -2882,11 +2939,11 @@ double stringToDouble(const char *str) {
           else if(strcmp(aimBuffer, "displayStackSHOIDISP"        ) == 0) { displayStackSHOIDISP  = stringToUint8(tmpString); }
           else if(strcmp(aimBuffer, "bcdDisplay"                  ) == 0) { bcdDisplay            = (bool_t)stringToUint8(tmpString) != 0; }
           else if(strcmp(aimBuffer, "topHex"                      ) == 0) { topHex                = (bool_t)stringToUint8(tmpString) != 0; }
-          else if(strcmp(aimBuffer, "bcdDisplaySign"              ) == 0) { bcdDisplaySign        = stringToUint8(tmpString); }
+          else if(strcmp(aimBuffer, "bcdDisplaySign"              ) == 0) { bcdDisplaySign        = convert001090400T001090500(stringToUint8(tmpString),BCDu); }
           else if(strcmp(aimBuffer, "DRG_Cycling"                 ) == 0) { DRG_Cycling           = stringToUint8(tmpString); }
           else if(strcmp(aimBuffer, "DM_Cycling"                  ) == 0) { DM_Cycling            = stringToUint8(tmpString); }
-          else if(strcmp(aimBuffer, "LongPressM"                  ) == 0) { LongPressM            = stringToUint8(tmpString); }                  //10000003
-          else if(strcmp(aimBuffer, "LongPressF"                  ) == 0) { LongPressF            = stringToUint8(tmpString); }                  //10000003
+          else if(strcmp(aimBuffer, "LongPressM"                  ) == 0) { LongPressM            = convert001090400T001090500(stringToUint8(tmpString),RBX_M14); }                  //10000003
+          else if(strcmp(aimBuffer, "LongPressF"                  ) == 0) { LongPressF            = convert001090400T001090500(stringToUint8(tmpString),RBX_F14); }                  //10000003
           else if(strcmp(aimBuffer, "lastIntegerBase"             ) == 0) { lastIntegerBase       = stringToUint8(tmpString); }                  //10000004
           else if(strcmp(aimBuffer, "lrChosen"                    ) == 0) { lrChosen              = stringToUint16(tmpString);}
           else if(strcmp(aimBuffer, "graph_xmin"                  ) == 0) { graph_xmin            = stringToFloat(tmpString); }
@@ -2922,7 +2979,7 @@ double stringToDouble(const char *str) {
               }
             } //Keep compatible by repeating, even though setting is now in systemflags
           }
-          else if(strcmp(aimBuffer, "constantFractions"           ) == 0) { 
+          else if(strcmp(aimBuffer, "constantFractions"           ) == 0) {
             if(loadedVersion < 10000012) {
               if((bool_t)stringToUint8(tmpString) != 0) {
                 setSystemFlag(FLAG_IRFRAC);
@@ -3173,14 +3230,14 @@ void fnLoad(uint16_t loadMode) {
     doLoad(loadMode, 0, 0, 0, manualLoad);
   }
   fnClearFlag(FLAG_USER);
-  doRefreshSoftMenu = true;
+  screenUpdatingMode &= ~SCRUPD_MANUAL_MENU;
   refreshScreen(94);
 }
 
 void fnLoadAuto(void) {
   doLoad(LM_ALL, 0, 0, 0, autoLoad);
   fnClearFlag(FLAG_USER);
-  doRefreshSoftMenu = true;
+  screenUpdatingMode &= ~SCRUPD_MANUAL_MENU;
   refreshScreen(95);
 }
 

@@ -122,6 +122,7 @@
         catalog = CATALOG_CNST;
         break;
       }
+      case MNU_MENU:
       case MNU_MENUS: {
         catalog = CATALOG_MENU;
         break;

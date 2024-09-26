@@ -246,6 +246,22 @@
         break;
       }
 
+      case PARAM_MENU: {
+        if(opParam == STRING_LABEL_VARIABLE) {
+          // nothing to do
+        }
+        else if(opParam == INDIRECT_REGISTER) {
+          _indirectRegister(paramAddress);
+        }
+        else if(opParam == INDIRECT_VARIABLE) {
+          _indirectVariable(paramAddress);
+        }
+        else {
+          sprintf(tmpString, "\nIn function _processOp: case PARAM_MENU, %s  %u is not a valid parameter!", indexOfItems[op].itemCatalogName, opParam);
+        }
+        break;
+      }
+
       default: {
         sprintf(tmpString, "\nIn function _processOp: paramMode %u is not valid!\n", paramMode);
       }

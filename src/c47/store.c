@@ -368,9 +368,9 @@ void fnStoreMax(uint16_t regist) {
 
 void fnStoreConfig(uint16_t regist) {
     //uint8_t  compatibility_u8 = 0;             //defaults to use when settings are removed
+  int16_t compatibility_int1  = 0;               //defaults to use when settings are removed
   bool_t compatibility_bool00 = false;           //defaults to use when settings are removed
   bool_t compatibility_bool0  = false;           //defaults to use when settings are removed
-  bool_t compatibility_bool1  = false;           //defaults to use when settings are removed
   bool_t compatibility_bool2  = false;           //defaults to use when settings are removed
   bool_t compatibility_bool3  = false;           //defaults to use when settings are removed
   bool_t compatibility_bool4  = false;           //defaults to use when settings are removed
@@ -395,10 +395,6 @@ void fnStoreConfig(uint16_t regist) {
   bool_t compatibility_bool23 = false;           //defaults to use when settings are removed
   float  compatibility_float1 = 0.1;             //defaults to use when settings are removed
   float  compatibility_float2 = 0.2;             //defaults to use when settings are removed
-  float  compatibility_float3 = 0.3;             //defaults to use when settings are removed
-  float  compatibility_float4 = 0.4;             //defaults to use when settings are removed
-  float  compatibility_float5 = 0.5;             //defaults to use when settings are removed
-  float  compatibility_float6 = 0.6;             //defaults to use when settings are removed
   reallocateRegister(regist, dtConfig, CONFIG_SIZE_IN_BLOCKS, amNone);
   dtConfigDescriptor_t *configToStore = REGISTER_CONFIG_DATA(regist);
 
@@ -430,33 +426,31 @@ void fnStoreConfig(uint16_t regist) {
   storeToDtConfigDescriptor(compatibility_bool21);
   storeToDtConfigDescriptor(BASE_HOME);
   storeToDtConfigDescriptor(compatibility_bool00);   //added
-  storeToDtConfigDescriptor(Norm_Key_00_VAR);
+  storeToDtConfigDescriptor(compatibility_int1);    //added
   storeToDtConfigDescriptor(Input_Default);
   storeToDtConfigDescriptor(compatibility_bool0);    //added
   storeToDtConfigDescriptor(BASE_MYM);
   storeToDtConfigDescriptor(jm_G_DOUBLETAP);
   storeToDtConfigDescriptor(compatibility_float1);
   storeToDtConfigDescriptor(compatibility_float2);
-  storeToDtConfigDescriptor(compatibility_float3);
-  storeToDtConfigDescriptor(compatibility_float4);
-  storeToDtConfigDescriptor(compatibility_float5);
-  storeToDtConfigDescriptor(compatibility_float6);
-  storeToDtConfigDescriptor(compatibility_bool1);
+  storeToDtConfigDescriptor(Norm_Key_00.func);
+  xcopy(configToStore->Norm_Key_00.funcParam, Norm_Key_00.funcParam, sizeof(Norm_Key_00.funcParam));
+  storeToDtConfigDescriptor(Norm_Key_00.used);
   storeToDtConfigDescriptor(compatibility_bool2);
   storeToDtConfigDescriptor(compatibility_bool3);
   storeToDtConfigDescriptor(compatibility_bool4);
   storeToDtConfigDescriptor(compatibility_bool5);
   storeToDtConfigDescriptor(compatibility_bool6);
   storeToDtConfigDescriptor(compatibility_bool7);
-  storeToDtConfigDescriptor(compatibility_bool8); 
-  storeToDtConfigDescriptor(compatibility_bool9); 
-  storeToDtConfigDescriptor(compatibility_bool10); 
-  storeToDtConfigDescriptor(compatibility_bool11); 
-  storeToDtConfigDescriptor(compatibility_bool12); 
-  storeToDtConfigDescriptor(compatibility_bool13); 
-  storeToDtConfigDescriptor(compatibility_bool14); 
-  storeToDtConfigDescriptor(compatibility_bool15); 
-  storeToDtConfigDescriptor(fractionDigits); 
+  storeToDtConfigDescriptor(compatibility_bool8);
+  storeToDtConfigDescriptor(compatibility_bool9);
+  storeToDtConfigDescriptor(compatibility_bool10);
+  storeToDtConfigDescriptor(compatibility_bool11);
+  storeToDtConfigDescriptor(compatibility_bool12);
+  storeToDtConfigDescriptor(compatibility_bool13);
+  storeToDtConfigDescriptor(compatibility_bool14);
+  storeToDtConfigDescriptor(compatibility_bool15);
+  storeToDtConfigDescriptor(fractionDigits);
   storeToDtConfigDescriptor(compatibility_bool23);
   storeToDtConfigDescriptor(compatibility_bool16);
   storeToDtConfigDescriptor(compatibility_bool20);

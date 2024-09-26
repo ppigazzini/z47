@@ -242,8 +242,8 @@ static void doXthRootLonI(void) {
   longInteger_t base, exponent, l;
   int32_t exp;
 
-  if(!getRegisterAsLongInt(REGISTER_Y, base)
-      || !getRegisterAsLongInt(REGISTER_X, exponent))
+  if(!getRegisterAsLongInt(REGISTER_Y, base, NULL)
+      || !getRegisterAsLongInt(REGISTER_X, exponent, NULL))
     return;
 
   if(longIntegerIsZero(exponent)) {    // 1/0 is not possible

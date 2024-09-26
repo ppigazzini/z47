@@ -34,7 +34,7 @@
 static void chsLonI(void) {
   longInteger_t x;
 
-  if(!getRegisterAsLongInt(REGISTER_X, x))
+  if(!getRegisterAsLongInt(REGISTER_X, x, NULL))
     return;
 
   longIntegerChangeSign(x);

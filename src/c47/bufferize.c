@@ -404,7 +404,13 @@ typedef struct {
       }
 
       else if(tam.mode) {
-        tamProcessInput(item);
+        if((item == ITM_INDIRECT_X) || (item == ITM_INDIRECT_Y) || (item == ITM_INDIRECT_Z) || (item == ITM_INDIRECT_T)) {
+          tamProcessInput(ITM_INDIRECTION);
+          tamProcessInput(item - (ITM_INDIRECT_X - ITM_REG_X));
+        }
+        else {
+          tamProcessInput(item);
+        }
       }
 
       else if(calcMode == CM_NIM) {
@@ -2221,7 +2227,6 @@ typedef struct {
       }
       else {
         real_t magnitude, theta;
-
         real34ToReal(dest_r, &magnitude);
         real34ToReal(dest_i, &theta);
         convertAngleFromTo(&theta, currentAngularMode, amRadian, &ctxtReal39);
@@ -2234,8 +2239,11 @@ typedef struct {
         realToReal34(&magnitude, dest_r);
         realToReal34(&theta,     dest_i);
       }
-//      if(temporaryFlagPolar) fnToPolar2(0);
-      if(getSystemFlag(FLAG_POLAR)) fnToPolar2(0);
+      fnToPolar2(0);
+    }
+
+    else if((!getSystemFlag(FLAG_POLAR) && !temporaryFlagPolar) || temporaryFlagRect) { // rect mode
+      fnToRect2(0);
     }
     temporaryFlagRect = false;
     temporaryFlagPolar = false;
@@ -2255,7 +2263,9 @@ typedef struct {
         break;
       case ID_DP:                                  //   Do Real default for DP
       case ID_CPXDP:                               //                       CPX
-        nimNumberPart = NP_REAL_FLOAT_PART;
+        if(lastIntegerBase == 0) {
+          nimNumberPart = NP_REAL_FLOAT_PART;
+        }
         break;
       default:;
       }
@@ -2464,7 +2474,7 @@ typedef struct {
           }
           else if(nimNumberPart == NP_REAL_FLOAT_PART || nimNumberPart == NP_REAL_EXPONENT) {
 
-              if(Input_Default == ID_CPXDP) {                                         //JM Input default type
+              if(lastIntegerBase == 0 && Input_Default == ID_CPXDP) {                                         //JM Input default type
                 reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone); //JM Input default type
                 stringToReal34(aimBuffer, REGISTER_REAL34_DATA(REGISTER_X));          //JM Input default type
                 stringToReal34("0", REGISTER_IMAG34_DATA(REGISTER_X));                //JM Input default type
