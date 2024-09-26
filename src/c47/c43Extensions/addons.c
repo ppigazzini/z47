@@ -133,7 +133,9 @@ bool_t exitKeyWaiting(void) {
 }
 
 void displayStringWhileExitPressed(char *string) {
-  showString(string, &standardFont, 20, 40, vmNormal, false, false);
+  #if !defined(TESTSUITE_BUILD)
+    showString(string, &standardFont, 20, 40, vmNormal, false, false);
+  #endif //!TESTSUITE_BUILD
   #if defined(DMCP_BUILD)
     while(C47PopKeyNoBuffer() == 32) {}
   #endif // DMCP_BUILD

@@ -435,7 +435,9 @@ bool_t longIntegerIsPrime2(longInteger_t primeCandidate) {
 //void nextPrime(longInteger_t currentNumber, longInteger_t nextPrime) {
 void calculateNextPrime(longInteger_t currentNumber, longInteger_t nextPrime) {
   uint32_t cn, i, x, s, e, m, o;
-  uint32_t loop = 0;
+  #if !defined(TESTSUITE_BUILD)
+    uint32_t loop = 0;
+  #endif //TESTSUITE_BUILD
 
 
   if(longIntegerCompareUInt(currentNumber, 2) < 0) {
