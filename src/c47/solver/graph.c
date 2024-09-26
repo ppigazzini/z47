@@ -517,8 +517,9 @@ void graph_eqn(uint16_t mode) {
 
       printHalfSecUpdate_Integer(timed, "Iter: ",loop++, halfSec_clearZ, halfSec_clearT, halfSec_disp); //timed
       #if defined(DMCP_BUILD)
-        if(keyWaiting()) {
+        if(exitKeyWaiting()) {
           printHalfSecUpdate_Integer(force+1, "Interrupted Iter:",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+          displayStringWhileExitPressed("Exit Waiting ...");
           fnClearStack(0);
           calcMode = CM_NORMAL;
           screenUpdatingMode = SCRUPD_AUTO;
@@ -1224,7 +1225,7 @@ void graph_stat(uint16_t unusedButMandatoryParameter) {
         showProgressReal(&a, &ai, getRegisterDataType(SREG_X1) == dtComplex34);
       }
 
-      if(keyWaiting()) {
+      if(exitKeyWaiting()) {
         showString("key Waiting ...", &standardFont, 20, 40, vmNormal, false, false);
         printHalfSecUpdate_Integer(force+1, "Interrupted Iter:",iterationCounter, halfSec_clearZ, halfSec_clearT, halfSec_disp);
         calcMode = CM_NORMAL;

@@ -435,6 +435,8 @@ bool_t longIntegerIsPrime2(longInteger_t primeCandidate) {
 //void nextPrime(longInteger_t currentNumber, longInteger_t nextPrime) {
 void calculateNextPrime(longInteger_t currentNumber, longInteger_t nextPrime) {
   uint32_t cn, i, x, s, e, m, o;
+  uint32_t loop = 0;
+
 
   if(longIntegerCompareUInt(currentNumber, 2) < 0) {
     uIntToLongInteger(2, nextPrime);
@@ -485,10 +487,18 @@ void calculateNextPrime(longInteger_t currentNumber, longInteger_t nextPrime) {
         return;
       }
       longIntegerAddUInt(nextPrime, offsets[o % 48], nextPrime);
-      if(popKey() == 32) { // instead of keyWaiting()
+
+
+      #if !defined(TESTSUITE_BUILD)
+        if(printHalfSecUpdate_Integer(timed, "Iter > 0: ",loop++, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
+        }
+      if(exitKeyWaiting()) {
+        printHalfSecUpdate_Integer(force+1, "Interrupted Test:",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+        displayStringWhileExitPressed("Exit Waiting ...");
         displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
         return;
       }
+      #endif //!TESTSUITE_BUILD
     }
   }
 }
@@ -778,9 +788,9 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
             lcd_refresh();
           #endif //DMCP_BUILD
         }
-      if(keyWaiting()) {
-          showString("key Waiting ...", &standardFont, 20, 40, vmNormal, false, false);
+      if(exitKeyWaiting()) {
           printHalfSecUpdate_Integer(force+1, "Interrupted Test:",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+          displayStringWhileExitPressed("Exit Waiting ...");
           programRunStop = PGM_WAITING;
         break;
       }

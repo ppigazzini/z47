@@ -35,6 +35,7 @@
 #include "memory.h"
 #include "registers.h"
 #include "registerValueConversions.h"
+#include "screen.h"
 
 #include "c47.h"
 
@@ -429,6 +430,7 @@ static void plusMinus(bool_t subtracting, const real_t *a, const real_t *b, real
 }
 static void bessel_recur(const real_t *nu, const real_t *x, bool_t is_y, bool_t descending, real_t *res, realContext_t *realContext) {
   real_t jnx, jn_1x, alpha, floor_nu;
+  int loop = 0;
 
   realToIntegralValue(nu, &floor_nu, DEC_ROUND_FLOOR, realContext);
   plusMinus(!descending, nu, &floor_nu, &alpha, realContext);
@@ -455,10 +457,16 @@ static void bessel_recur(const real_t *nu, const real_t *x, bool_t is_y, bool_t 
     realCopy(&jnx, &jn_1x);
     realCopy(res, &jnx);
 
-    if(popKey() == 32) { // instead of keyWaiting()
-      displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-      return;
-    }
+    #if !defined(TESTSUITE_BUILD)
+      if(printHalfSecUpdate_Integer(timed, "Iter > 0: ",loop++, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
+      }
+      if(exitKeyWaiting()) {
+        printHalfSecUpdate_Integer(force+1, "Interrupted Test:",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+        displayStringWhileExitPressed("Exit Waiting ...");
+        displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        return;
+      }
+    #endif //TESTSUITE_BUILD
   }
 }
 

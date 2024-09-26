@@ -483,11 +483,11 @@ retryLevel:
         _showProgress(&a, &b, &fa, &fb);
       }
 
-        if(keyWaiting()) {
-            showString("key Waiting ...", &standardFont, 20, 40, vmNormal, false, false);
+        if(exitKeyWaiting()) {
             printHalfSecUpdate_Integer(force+1, "Interrupted Iter:",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+            displayStringWhileExitPressed("Exit Waiting ...");
             programRunStop = PGM_WAITING;
-            displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+            displayCalcErrorMessage(ERROR_SOLVER_ABORT, REGISTER_T, NIM_REGISTER_LINE);
           break;
         }
 

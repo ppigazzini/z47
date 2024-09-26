@@ -158,9 +158,9 @@
           _showProgress(resultLi);
         }
 
-        if(keyWaiting()) {
-          showString("key Waiting ...", &standardFont, 20, 40, vmNormal, false, false);
+        if(exitKeyWaiting()) {
           printHalfSecUpdate_Integer(force+1, "Interrupted: ",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+          displayStringWhileExitPressed("Exit Waiting ...");
           abort = true;
         }
 
