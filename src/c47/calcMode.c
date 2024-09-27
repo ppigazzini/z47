@@ -85,7 +85,7 @@
       showSoftmenu(-MNU_ALPHA);        //JM ALPHA-HOME  Change to initialize the menu stack. it was true.
     }
 
-    alphaCase = AC_UPPER;
+    alphaCase = CAPS_AIM_DEFAULT;
     nextChar = NC_NORMAL;
     clearSystemFlag(FLAG_NUMLOCK);
     scrLock = NC_NORMAL;
@@ -207,7 +207,7 @@
       }
       if(calcMode != CM_PEM || !getSystemFlag(FLAG_ALPHA)) {
         if(calcMode != CM_AIM && calcMode != CM_EIM) {
-          alphaCase = AC_UPPER;
+          alphaCase = CAPS_ASMcat_DEFAULT;
           nextChar = NC_NORMAL;
           clearSystemFlag(FLAG_NUMLOCK);
           scrLock = NC_NORMAL;

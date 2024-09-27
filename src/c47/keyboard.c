@@ -507,7 +507,8 @@ TO_QSPI static const char bugScreenItemNotDetermined[] = "In function determineI
 
 bool_t lastshiftF = false;
 bool_t lastshiftG = false;
-bool_t lowercaseselected;    //the only place that this is set, is in processKeyAction
+
+#define lowercaseselected  (bool_t)((alphaCase == AC_LOWER && !lastshiftF) || (alphaCase == AC_UPPER && lastshiftF /*&& !numLock*/)) // //JM remove last !numlock if you want the shift, during numlock, to produce lower case
 
   static void processAimInput(int16_t item) {
     int16_t item1 = 0;
@@ -522,6 +523,7 @@ bool_t lowercaseselected;    //the only place that this is set, is in processKey
       nextChar = scrLock;
     }
 
+    int16_t itemOut = item;
     if(keyReplacements(item, &item1, getSystemFlag(FLAG_NUMLOCK), lastshiftF, lastshiftG) > 0) {  //JMvv
       if(item1 > 0) {
         addItemToBuffer(item1);
@@ -532,34 +534,10 @@ bool_t lowercaseselected;    //the only place that this is set, is in processKey
       }
     }
 
-    else if(lowercaseselected && (ITM_A <= item && item <= ITM_Z)) {
-      addItemToBuffer(item + 26);
-                    #if defined(PAIMDEBUG)
-                      printf("---#J %d\n",keyActionProcessed);
-                    #endif //PAIMDEBUG
-      keyActionProcessed = true;
-    }
-
-    else if(!lowercaseselected && (ITM_A <= item && item <= ITM_Z)) {  //JM
-      addItemToBuffer(item);
-                    #if defined(PAIMDEBUG)
-                      printf("---#I %d +%s+\n",keyActionProcessed, aimBuffer);
-                    #endif //PAIMDEBUG
-      keyActionProcessed = true;
-    }
-
-    else if(!lowercaseselected && (ITM_a <= item && item <= ITM_z)) {  //JM
-      addItemToBuffer(item - 26);
+    else if(caseReplacements(0, lowercaseselected, item, &itemOut)) {
+      addItemToBuffer(itemOut);
                     #if defined(PAIMDEBUG)
                       printf("---#H %d\n",keyActionProcessed);
-                    #endif //PAIMDEBUG
-      keyActionProcessed = true;
-    }
-
-    else if(lowercaseselected && (ITM_a <= item && item <= ITM_z)) {  //JM
-      addItemToBuffer(item);
-                    #if defined(PAIMDEBUG)
-                      printf("---#G %d\n",keyActionProcessed);
                     #endif //PAIMDEBUG
       keyActionProcessed = true;
     }
@@ -572,6 +550,7 @@ bool_t lowercaseselected;    //the only place that this is set, is in processKey
       keyActionProcessed = true;
     }
 
+//TOREMOVEGREEKKEY vv as C47 has no direct alpha keys that need case selection
     else if(lowercaseselected && ((ITM_ALPHA <= item && item <= ITM_OMEGA) || (ITM_QOPPA <= item && item <= ITM_SAMPI))) {  //JM GREEK
       addItemToBuffer(item /* +(ITM_alpha - ITM_ALPHA) */); //JM Remove the ability to shift to lower cap greek for the reason that the limited greek on the keyboard are defined per case, not generic
                     #if defined(PAIMDEBUG)
@@ -587,6 +566,7 @@ bool_t lowercaseselected;    //the only place that this is set, is in processKey
                     #endif //PAIMDEBUG
       keyActionProcessed = true;
     }
+//TOREMOVEGREEKKEY ^^
 
     else if(item == ITM_DOWN_ARROW) {
       if(nextChar == NC_NORMAL) nextChar = NC_SUBSCRIPT; else if(nextChar == NC_SUPERSCRIPT) nextChar = NC_NORMAL; //JM stack the SUP/NORMAL/SUB
@@ -1424,7 +1404,7 @@ int16_t lastItem = 0;
 
 
   bool_t allowShiftsToClearError = false;
-  #define stringToKeyNumber(data)         ((*((char *)data) - '0')*10 + *(((char *)data)+1) - '0')
+  #define stringToKeyNumber(data)         ((*((char *)data) - '0')*10 + *(((char *)data)+1) - '0')    // input string = "28", keynumber = 28  (keys 00-36)
 
 
   int16_t determineItem(const char *data) {
@@ -2363,7 +2343,6 @@ RELEASE_END:
                     #endif // PC_BUILD &&MONITOR_CLRSCR
 
     keyActionProcessed = false;
-    lowercaseselected = ((alphaCase == AC_LOWER && !lastshiftF) || (alphaCase == AC_UPPER && lastshiftF /*&& !numLock*/)); //JM remove last !numlock if you want the shift, during numlock, to produce lower case
 
     if(lastErrorCode != 0 && item != ITM_EXIT1 && item != ITM_BACKSPACE) {
       lastErrorCode = 0;
@@ -2604,7 +2583,8 @@ RELEASE_END:
 
         case CHR_caseDN: {                                                   //From keyboard: logic for Up/Dn case/num
           if(getSystemFlag(FLAG_NUMLOCK)) {
-            alphaCase = AC_UPPER; processKeyAction(CHR_numU);
+            alphaCase = AC_UPPER;
+            processKeyAction(CHR_numU);
           }
           else if(alphaCase == AC_UPPER) {
             processKeyAction(CHR_case);
@@ -2689,14 +2669,16 @@ RELEASE_END:
           }
           else if((calcMode != CM_PEM || !getSystemFlag(FLAG_ALPHA)) && catalog && catalog != CATALOG_MVAR) {
             if(ITM_A <= item && item <= ITM_Z && lowercaseselected) {
-              addItemToBuffer(item + 26);
+              addItemToBuffer(item + (ITM_a - ITM_A));
               keyActionProcessed = true;
             }
 
+//TOREMOVEGREEKKEY vv
             else if(((ITM_ALPHA <= item && item <= ITM_OMEGA) || (ITM_QOPPA <= item && item <= ITM_SAMPI)) && lowercaseselected) {  //JM GREEK
               addItemToBuffer(item +  ((ITM_ALPHA <= item && item <= ITM_OMEGA) ? (ITM_alpha - ITM_ALPHA) : (ITM_qoppa - ITM_QOPPA)));
               keyActionProcessed = true;
             }
+//TOREMOVEGREEKKEY ^^
 
             else if(item == ITM_DOWN_ARROW || item == ITM_UP_ARROW) {
               addItemToBuffer(item);
@@ -4865,9 +4847,9 @@ void fnKeyDotD(uint16_t unusedButMandatoryParameter) {
 }
 
 
-void setLastKeyCode(int key) {
-  if(1 <= key && key <= 43) {
-    if(key <=  6) {
+void setLastKeyCode(int key) {             // key = 10      setLastKeyCode = 10-6 +30 = 34 row 3, col 4
+  if(1 <= key && key <= 43) {              // key = 27      setLastKeyCode = 27-22+60 = 65 row 6, col 5
+    if(key <=  6) {                        // key = 28 EXIT setLastKeyCode = 28-27+70 = 71 row 7, col 1
       lastKeyCode = key      + 20;
     }
     else if(key <= 12) {
