@@ -1,0 +1,77 @@
+XX In progress: XX means to edit still
+All steps to be tested - changed by thinking about it, not testing it
+
+------------------------------------
+Converting from working DM42n to C47
+------------------------------------
+
+XX Go to SETUP using keys f C
+3. System
+2. Enter System Menu
+5. Format FAT Disk
+2. Format FAT disk
+EXIT
+4. Reset to DMCP menu
+6. Activate USB Disk
+Observe the disk name is now DM42n (or DM42 or as you may have changed it)
+
+On DM42n drive:
+Copy all files in c47-dmcp5 to the (empty) DM42n root risk
+Release the drive from Mac/PC
+
+Press Option 4: Load QSPI ** may start automatically
+  Observe DM42_qspi_3.x.bin be installed
+  Press key to restart / Exit
+
+Press 3. DMCP Menu
+Press Option 3: Load Program
+  Choose C47.pg5 ** may start automatically
+  Press key to restart / Exit 
+
+
+C47 is loaded
+
+
+---------------------------
+Returning from C47 to DM42n
+---------------------------
+
+Go to DMCP using keys f MODE
+7. System Menu
+5. Format
+2. Format FAT Disk
+EXIT
+4. Reset to DMCP menu
+6. Activate USB Disk
+Observe the disk name is now DMCP
+
+XX Copy the file DMCP5_flash_3.50t38_DM32-2.09.bin (or later) from SwissMicros Site to the Disk
+Release the drive from Mac/PC
+
+  Press any key to continue
+
+Observe the "Load Flash From FAT" message, etc. 
+  Press ENTER to Continue
+XX  Observe DMCP5_flash_3.50t38_DM32-2.09.bin being installed and observe verification
+  Reboot automatic
+  Press EXIT to continue
+
+1. Start DM42n Anyway (not safe) (not sure why it says not safe!)
+  Observe complaint that there is an error loading the state file, which is normal if you have no state file loaded!
+  Press any key to continue
+
+DM42n running
+
+
+
+
+----------------------------------------------
+Notes
+----------------------------------------------
+
+
+
+
+
+
+
