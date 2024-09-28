@@ -1071,7 +1071,7 @@ int16_t lastItem = 0;
               showSoftmenu(item);
             }
             else if((tam.mode == TM_MENU) && (item != -MNU_MENU) && !tam.alpha) {
-              if ((currentMenu() ==  -MNU_TAM) && ((item == -MNU_VAR) || (item == -MNU_REG))) {
+              if ((currentMenu() ==  -MNU_TAMINDIRECT) && ((item == -MNU_VAR) || (item == -MNU_REG))) {
                 showSoftmenu(item);
               }
               else {
@@ -2193,7 +2193,24 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
 
           if(item != ITM_NOP && tam.alpha && indexOfItems[item].func != addItemToBuffer && aimBuffer[0] == 0) {
             // We are in TAM mode so need to cancel first (equivalent to EXIT)
-            tamLeaveMode();
+            if(item == ITM_EXIT1) {
+              if(menu(0) == -MNU_TAMALPHA){
+                popSoftmenu();
+                numberOfTamMenusToPop--;
+                tam.alpha = false;
+              }
+            }
+            else {
+              tamLeaveMode();
+            }
+          }
+          if(item == ITM_EXIT1 && tam.alpha && aimBuffer[0] != 0)  {
+            if(menu(0) == -MNU_TAMALPHA){
+              popSoftmenu();
+              numberOfTamMenusToPop--;
+              aimBuffer[0] = 0;
+              tam.alpha = false;
+            }
           }
           if(item == ITM_RCL && (getSystemFlag(FLAG_USER) || Norm_Key_00_released) && funcParam[0] != 0) {
             calcRegister_t var = findNamedVariable(funcParam);
@@ -3623,7 +3640,8 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
     }
 
     if(tam.mode) {                               //if in TAM mode
-          if(tam.mode == TM_LABEL && (calcMode == CM_NORMAL || calcMode == CM_PEM) && getSystemFlag(FLAG_ALPHA) && menu(1) == -MNU_TAMALPHA && isAlphaSubmenu(0)) {     //MODJM
+      // [DL] : TM_LABEL specific Alpha Exit logic below replaced by TM generic exit logic, so it should not be needed anymore
+        /*if(tam.mode == TM_LABEL && (calcMode == CM_NORMAL || calcMode == CM_PEM) && getSystemFlag(FLAG_ALPHA) && menu(1) == -MNU_TAMALPHA && isAlphaSubmenu(0)) {     //MODJM
             popSoftmenu();
             keyActionProcessed = true;
             return;
@@ -3639,10 +3657,9 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
           keyActionProcessed = true;
           aimBuffer[0] = 0;
           return;
-          }
+          }*/
 
-
-      if(numberOfTamMenusToPop > 1) {
+      if((numberOfTamMenusToPop > 1) && (menu(0) != -MNU_TAMALPHA)) {
         popSoftmenu();
         numberOfTamMenusToPop--;
       }
