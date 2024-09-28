@@ -23,6 +23,7 @@
 #include "mathematics/matrix.h"
 #include "mathematics/rsd.h"
 #include "memory.h"
+#include "programming/manage.h"
 #include "c43Extensions/radioButtonCatalog.h"
 #include "registerValueConversions.h"
 #include "saveRestoreCalcState.h"
@@ -1642,7 +1643,11 @@ int16_t indirectAddressing(calcRegister_t regist, uint16_t parameterType, int16_
     case INDPM_FLAG: {
       maxValue = NUMBER_OF_GLOBAL_FLAGS + currentNumberOfLocalFlags - 1;
       break;
-  }
+    }
+    case INDPM_LABEL: {
+      maxValue = 104;
+      break;
+    }
   }
 
   if(regist >= FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters &&
@@ -1653,7 +1658,7 @@ int16_t indirectAddressing(calcRegister_t regist, uint16_t parameterType, int16_
       sprintf(errorMessage, "local indirection register .%02d", regist - FIRST_LOCAL_REGISTER);
       moreInfoOnError("In function indirectAddressing:", errorMessage, "is not defined!", NULL);
     #endif // PC_BUILD
-    return 9999;
+    return FAILED_INDIRECTION;
   }
 
   else if(getRegisterDataType(regist) == dtReal34 && parameterType != INDPM_MENU) {
@@ -1667,7 +1672,7 @@ int16_t indirectAddressing(calcRegister_t regist, uint16_t parameterType, int16_
         sprintf(tmpString, "register %" PRId16 " = %s:", regist, errorMessage);
         moreInfoOnError("In function indirectAddressing:", tmpString, "this value is negative or too big!", NULL);
       #endif // PC_BUILD
-      return 9999;
+      return FAILED_INDIRECTION;
     }
     value = real34ToInt32(REGISTER_REAL34_DATA(regist));
   }
@@ -1684,7 +1689,7 @@ int16_t indirectAddressing(calcRegister_t regist, uint16_t parameterType, int16_
         moreInfoOnError("In function indirectAddressing:", tmpString, "this value is negative or too big!", NULL);
       #endif // PC_BUILD
       longIntegerFree(lgInt);
-      return 9999;
+      return FAILED_INDIRECTION;
     }
     longIntegerToUInt(lgInt, value);
     longIntegerFree(lgInt);
@@ -1702,7 +1707,7 @@ int16_t indirectAddressing(calcRegister_t regist, uint16_t parameterType, int16_
         sprintf(tmpString, "register %" PRId16 " = %s:", regist, errorMessage);
         moreInfoOnError("In function indirectAddressing:", tmpString, "this value is negative or too big!", NULL);
       #endif // PC_BUILD
-      return 9999;
+      return FAILED_INDIRECTION;
     }
     value = val;
   }
@@ -1716,7 +1721,20 @@ int16_t indirectAddressing(calcRegister_t regist, uint16_t parameterType, int16_
         sprintf(errorMessage, "string '%s' is not a named variable", REGISTER_STRING_DATA(regist));
         moreInfoOnError("In function indirectAddressing:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-      return 9999;
+      return FAILED_INDIRECTION;
+    }
+  }
+
+  else if(getRegisterDataType(regist) == dtString && parameterType == INDPM_LABEL) {
+    value = findNamedLabel(REGISTER_STRING_DATA(regist));
+    isValidAlpha = true;
+    if(value == INVALID_VARIABLE) {
+      displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        sprintf(errorMessage, "string '%s' is not a named label", REGISTER_STRING_DATA(regist));
+        moreInfoOnError("In function indirectAddressing:", errorMessage, NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+      return FAILED_INDIRECTION;
     }
   }
 
@@ -1729,7 +1747,7 @@ int16_t indirectAddressing(calcRegister_t regist, uint16_t parameterType, int16_
         sprintf(errorMessage, "string '%s' is not a menu name", REGISTER_STRING_DATA(regist));
         moreInfoOnError("In function indirectAddressing:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-      return 9999;
+      return FAILED_INDIRECTION;
     }
   }
 
@@ -1739,7 +1757,7 @@ int16_t indirectAddressing(calcRegister_t regist, uint16_t parameterType, int16_
       sprintf(errorMessage, "register %" PRId16 " is %s:", regist, getRegisterDataTypeName(regist, true, false));
       moreInfoOnError("In function indirectAddressing:", errorMessage, "not suited for indirect addressing!", NULL);
     #endif // PC_BUILD
-    return 9999;
+    return FAILED_INDIRECTION;
   }
 
   if(minValue <= value && (value <= maxValue || isValidAlpha)) {
@@ -1751,7 +1769,7 @@ int16_t indirectAddressing(calcRegister_t regist, uint16_t parameterType, int16_
         sprintf(errorMessage, "value = %d! Should be from %d to %d.", value, minValue, maxValue);
         moreInfoOnError("In function indirectAddressing:", errorMessage, NULL, NULL);
       #endif // PC_BUILD
-      return 9999;
+      return FAILED_INDIRECTION;
     }
   }
 

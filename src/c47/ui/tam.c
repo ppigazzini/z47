@@ -286,7 +286,6 @@
   }
 
 
-
   static void _tamProcessInput(uint16_t item) {
     int16_t min, max, min2, max2, dupNum;
     bool_t forceTry = false, tryOoR = false;
@@ -463,7 +462,7 @@
         calcModeAim(NOPARAM);
         if(beginWithLowercase) {
           alphaCase = CAPS_STOetc_DEFAULT;
-        } 
+        }
         else {
           alphaCase = CAPS_TAMother_DEFAULT;
         }
@@ -777,7 +776,7 @@
           value += FIRST_LOCAL_REGISTER;
         }
         if(tam.indirect && calcMode != CM_PEM) {
-          value = indirectAddressing(value, (indexOfItems[tamOperation()].param == TM_FLAGR || indexOfItems[tamOperation()].param == TM_FLAGW) ? INDPM_FLAG : (tam.mode == TM_STORCL || tam.mode == TM_M_DIM) ? INDPM_REGISTER : (tam.mode == TM_MENU) ? INDPM_MENU : INDPM_PARAM, min, max);
+          value = indirectAddressing(value, indirectionType(tamOperation()), min, max);
           run = (lastErrorCode == 0);
         }
         if(tam.function == ITM_GTOP) {
@@ -946,7 +945,7 @@
         aimBuffer[0] = 0;
       }
       if(tam.indirect && value != INVALID_VARIABLE && calcMode != CM_PEM) {
-        value = indirectAddressing(value, (indexOfItems[tam.function].param == TM_FLAGR || indexOfItems[tam.function].param == TM_FLAGW) ? INDPM_FLAG : (tam.mode == TM_STORCL || tam.mode == TM_M_DIM) ? INDPM_REGISTER : (tam.mode == TM_MENU) ? INDPM_MENU : INDPM_PARAM, min, max);
+        value = indirectAddressing(value, indirectionType(tamOperation()), min, max);
         if(lastErrorCode != 0) {
           value = INVALID_VARIABLE;
         }
@@ -1129,7 +1128,7 @@
     _tamUpdateBuffer();
 
     clearSystemFlag(FLAG_ALPHA);
-    
+
     #if defined(PC_BUILD)
       if(forceTamAlpha) {
         forceTamAlpha = false;

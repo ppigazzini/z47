@@ -1027,6 +1027,8 @@ enum REG_NUMBERS_IN_KS_CODE { // Key Stroke register codes
 #define NUMBER_OF_RESERVED_VARIABLES    (LAST_RESERVED_VARIABLE        - FIRST_RESERVED_VARIABLE        + 1) // 41
 #define NUMBER_OF_LETTERED_VARIABLES    (FIRST_NAMED_RESERVED_VARIABLE - FIRST_RESERVED_VARIABLE)            // 26
 
+#define FAILED_INDIRECTION                      9999
+
 /* Convertion from a key stroke program register code to a C register number
  */
 static inline int16_t regKStoC(const uint8_t regKS) {
@@ -1259,7 +1261,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define AC_LOWER                                   1
 #define plainTextMode                              (bool_t)( calcMode == CM_AIM   || ((calcMode == CM_PEM  || calcMode == CM_ASSIGN) && getSystemFlag(FLAG_ALPHA)))
 #define labelText                                  (bool_t)((tam.mode == TM_LABEL || tam.mode == TM_STORCL || calcMode == CM_ASSIGN) && getSystemFlag(FLAG_ALPHA))
-//#define plainText                                  (bool_t)( calcMode == CM_AIM   || calcMode == CM_EIM    || (calcMode == CM_PEM    && getSystemFlag(FLAG_ALPHA) && !tam.mode)) 
+//#define plainText                                  (bool_t)( calcMode == CM_AIM   || calcMode == CM_EIM    || (calcMode == CM_PEM    && getSystemFlag(FLAG_ALPHA) && !tam.mode))
 #define noCapsLockSync                             0
 #define onlyCapsLockSync                           1
 #define allKeysCapsLockSync                        2
@@ -1463,7 +1465,8 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define INDPM_PARAM                                0
 #define INDPM_REGISTER                             1
 #define INDPM_FLAG                                 2
-#define INDPM_MENU                                 3
+#define INDPM_LABEL                                3
+#define INDPM_MENU                                 4
 
 // Combination / permutation
 #define CP_PERMUTATION                             0
