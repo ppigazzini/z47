@@ -691,7 +691,7 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
 //                                  - (('A' <= event->keyval && event->keyval <= 'Z') && event_command_shift == 65536 ? 'a' - 'A' : 0);                     // consider only shift button status to get caps for commands
 
 if(     (CTRL_State != 65536 || ((event->state & 16) == 16))
-     && !catalog
+     && (!catalog || (catalog && currentMenu() == -MNU_MVAR))
      && (!(tam.mode == TM_LABEL || tam.mode == TM_STORCL) || (uint8_t)(event->keyval) == GDK_KEY_apostrophe)
      && (   calcMode == CM_NORMAL 
          || calcMode == CM_NIM 
@@ -864,7 +864,7 @@ if(   CTRL_State != 65536
 int32_t ll;
 
 if(   (CTRL_State != 65536 || ((event->state & 16) == 16))
-   && (    catalog 
+   && (   (catalog && currentMenu() != -MNU_MVAR)
         || calcMode == CM_AIM 
         || calcMode == CM_EIM 
         ||(calcMode == CM_PEM    && getSystemFlag(FLAG_ALPHA)) 
