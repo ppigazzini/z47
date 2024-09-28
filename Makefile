@@ -139,7 +139,7 @@ dist_dmcp: dmcp testPgms build.rel/wiki
 	cp res/dmcp/DM42_keymap.bin $(DMCP_DIST_DIR)
 	zip -r $(DMCP_DIST_DIR)/resources/C47.map.zip build.dmcp/src/c47-dmcp/C47.map
 	cp res/dmcp/testPgms.bin res/dmcp/testPgms.txt $(DMCP_DIST_DIR)/resources
-	cp build.rel/wiki/Installation-on-a-DM42.md $(DMCP_DIST_DIR)/readme.txt
+	cp build.rel/wiki/Installation-on-a-DM42.md $(DMCP_DIST_DIR)/install_C47_on_DM42_readme_on_wiki.txt
 	zip -r c47-dmcp.zip $(DMCP_DIST_DIR)
 	rm -rf $(DMCP_DIST_DIR)
 
@@ -160,7 +160,7 @@ dist_dmcp5: dmcp5 testPgms build.rel/wiki
 	cp res/dmcp5/SwissMicros/DM42_qspi_3.x.bin $(DMCP5_DIST_DIR)
 	zip -r $(DMCP5_DIST_DIR)/resources/C47.map.zip build.dmcp5/src/c47-dmcp5/C47.map
 	cp res/dmcp5/testPgms.bin res/dmcp5/testPgms.txt $(DMCP5_DIST_DIR)/resources
-	cp build.rel/wiki/Installation-on-a-DM42.md $(DMCP5_DIST_DIR)/readme.txt
+	cp res/dmcp5/install_C47_on_DM42n.txt $(DMCP5_DIST_DIR)
 	zip -r c47-dmcp5.zip $(DMCP5_DIST_DIR)
 	rm -rf $(DMCP5_DIST_DIR)
 
@@ -180,7 +180,7 @@ dist_dmcpr47: dmcpr47 testPgms build.rel/wiki
 	cp res/dmcp/R47_keymap.bin $(DMCPR47_DIST_DIR)
 	zip -r $(DMCPR47_DIST_DIR)/resources/R47.map.zip build.dmcp/src/c47-dmcp/C47.map
 	cp res/dmcp/testPgms.bin res/dmcp/testPgms.txt $(DMCPR47_DIST_DIR)/resources
-	cp build.rel/wiki/Installation-on-a-DM42.md $(DMCPR47_DIST_DIR)/readme.txt
+	cp build.rel/wiki/Installation-on-a-DM42.md $(DMCPR47_DIST_DIR)/install_C47_on_DM42_readme_on_wiki.txt
 	zip -r r47-dmcp.zip $(DMCPR47_DIST_DIR)
 	rm -rf $(DMCPR47_DIST_DIR)
 
@@ -202,7 +202,6 @@ dist_dmcp5r47: dmcp5r47 testPgms build.rel/wiki
 	cp res/dmcp5/SwissMicros/DM42_qspi_3.x.bin $(DMCP5R47_DIST_DIR)
 	zip -r $(DMCP5R47_DIST_DIR)/resources/R47.map.zip build.dmcp5/src/c47-dmcp5/C47.map
 	cp res/dmcp5/testPgms.bin res/dmcp5/testPgms.txt $(DMCP5R47_DIST_DIR)/resources
-	cp build.rel/wiki/Installation-on-a-DM42.md $(DMCP5R47_DIST_DIR)/readme.txt
 	cp res/dmcp5/install_R47_on_DM32.txt $(DMCP5R47_DIST_DIR)
 	zip -r r47-dmcp5.zip $(DMCP5R47_DIST_DIR)
 	rm -rf $(DMCP5R47_DIST_DIR)
