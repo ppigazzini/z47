@@ -690,7 +690,7 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
 //event_key_command = event->keyval + (('A' <= event->keyval && event->keyval <= 'Z') ? 'a' - 'A' : 0)    // remove caps lock effect for commands, 'a' to 'z'
 //                                  - (('A' <= event->keyval && event->keyval <= 'Z') && event_command_shift == 65536 ? 'a' - 'A' : 0);                     // consider only shift button status to get caps for commands
 
-if(false || (     (CTRL_State != 65536 || ((event->state & 16) == 16))
+if(     (CTRL_State != 65536 || ((event->state & 16) == 16))
      && (!catalog || (catalog && currentMenu() == -MNU_MVAR))
      && (!(tam.mode == TM_LABEL || tam.mode == TM_STORCL) || (uint8_t)(event->keyval) == GDK_KEY_apostrophe)
      && (   calcMode == CM_NORMAL 
@@ -699,7 +699,7 @@ if(false || (     (CTRL_State != 65536 || ((event->state & 16) == 16))
          || (calcMode == CM_ASSIGN && itemToBeAssigned == 0)//do not include ASN TO here, as you need to assign to a KEY or a SOFTKEY using the MOUSE
         )
      && !getSystemFlag(FLAG_ALPHA)
-  )) {
+  ) {
   event_key_command = event_key_strip_capslock;   // remain in lower case, do not translate or use dead keys
   #if defined(VERBOSEKEYS)
     printf("\n   ### Command key: CTRL_State=%i SHFT_State=%i tam.mode=%i event_keyval=%i => event_key_command=%i calcMode=%i catalog=%i getSystemFlag(FLAG_ALPHA)=%i\n", CTRL_State, SHIFT_State, tam.mode, event_keyval, event_key_command, calcMode, catalog, getSystemFlag(FLAG_ALPHA));
