@@ -90,10 +90,7 @@
           showString(tmpString, &standardFont, x, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
         }
         displayFormatDigits = savedDisplayFormatDigits;
-
-      #if defined DMCP_BUILD
-        lcd_refresh();
-      #endif //DMCP_BUILD
+      force_refresh(force);
     #endif // ENABLE_SOLVER_PROGRESS == 1
   }
 
@@ -102,7 +99,6 @@
     currentKeyCode = 255;
     int32_t       loop = 0;
     int16_t       finished = 0;
-    bool_t        abort = false;
     real_t        resultX, resultXi, resultR, resultRi;
     real34_t      loopStep, loopTo, counter, compare, sign, rLoop;
     bool_t        changedOverToComplex = false;
@@ -144,8 +140,10 @@
       setSystemFlag(FLAG_SOLVING);
 
       while(lastErrorCode == ERROR_NONE) {
-        hourGlassIconEnabled = true;
-        showHideHourGlass();
+
+        if(printHalfSecUpdate_Integer(timed, "Loop: ",loop--, halfSec_clearZ, halfSec_clearT, halfSec_disp)) {
+          showProgressReal(&resultR, &resultRi, changedOverToComplex);
+        }
 
         real34Compare(&counter, &loopTo, &compare);
         real34Compare(&loopStep, const34_0, &sign);
@@ -213,17 +211,8 @@
         #endif // VERBOSE_COUNTER
 
         real34Add(&counter, &loopStep, &counter);
-        if(printHalfSecUpdate_Integer(timed, "Loop: ",loop--, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { ; //timed
-          showProgressReal(&resultR, &resultRi, changedOverToComplex);
-        }
 
-        if(keyWaiting()) {
-          showString("key Waiting ...", &standardFont, 16, Y_POSITION_OF_REGISTER_T_LINE, vmNormal, false, false);
-          printHalfSecUpdate_Integer(force+1, "Interrupted: ", loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
-          abort = true;
-        }
-
-        if(finished == 0 || abort) {
+        if(finished == 0) {
           break;
         }
       } //WHILE
@@ -251,7 +240,6 @@
           sprintf(errorMessage, "Error while calculating");
           moreInfoOnError("In function _programmableSumProd:", errorMessage, NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-        fnUndo(0);
       }
 
       temporaryInformation = TI_NO_INFO;
@@ -261,15 +249,6 @@
     } //MAIN IF
     if((--currentSolverNestingDepth) == 0) {
       clearSystemFlag(FLAG_SOLVING);
-    }
-    hourGlassIconEnabled = false;
-    showHideHourGlass();
-
-    if(abort) {
-    printHalfSecUpdate_Integer(force+0, "Loop aborted: ",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
-    }
-    else {
-      printHalfSecUpdate_Integer(force+0, "Loop complete: ",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
     }
   }
 

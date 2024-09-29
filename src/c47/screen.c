@@ -1771,6 +1771,19 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
   }
 
 
+
+  bool_t monitorExit(int32_t *loop, char* str) {
+    if(printHalfSecUpdate_Integer(timed, str, (*loop)++, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
+      //no additional 1/2 sec monitoring here
+      }
+    if(exitKeyWaiting()) {
+      printHalfSecUpdate_Integer(force+1, "Interrupted: ",*loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+      return true;
+    }
+    return false;
+  }
+  
+
   void hideCursor(void) {
     if(cursorEnabled) {
       if(cursorFont == &standardFont) {

@@ -164,7 +164,7 @@ bool_t itemNotAvail(int16_t itemNr) {
 
   void reallyRunFunction(int16_t func, uint16_t param) {
     #if defined(PC_BUILD) && defined(DEBUG_EXECUTE)
-      printf("   >>>  ReallyRunFunction: §%i§%s§%s§\n",func, indexOfItems[abs(func)].itemCatalogName, indexOfItems[abs(func)].itemSoftmenuName);
+      printf("   >>>  ReallyRunFunction: %5i%8s%8s\n",func, indexOfItems[abs(func)].itemCatalogName, indexOfItems[abs(func)].itemSoftmenuName);
     #endif // PC_BUILD
     lastFunc = func;
     lastParam = param;
@@ -219,6 +219,7 @@ bool_t itemNotAvail(int16_t itemNr) {
       if(func != ITM_SNAP) {
         hourGlassIconEnabled = true;
       }
+      screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
       showHideHourGlass();
 
       if(func == ITM_GTO || func == ITM_XEQ || func == ITM_GTOP) {
@@ -246,7 +247,7 @@ bool_t itemNotAvail(int16_t itemNr) {
       char ss1[30], ss2[30];
       stringToASCII(indexOfItems[abs(func)].itemCatalogName, ss1);
       stringToASCII(indexOfItems[abs(func)].itemSoftmenuName, ss2);
-      printf("   >>>   reallyRunFunction: § %i § %s § %s § %i\n",func, ss1, ss2, param);
+      printf("   >>>   reallyRunFunction: %5i%8s§%8s%  5i\n",func, ss1, ss2, param);
     #endif // PC_BUILD
 
 
@@ -445,7 +446,7 @@ bool_t itemNotAvail(int16_t itemNr) {
 
   void runFunction(int16_t func) {
     #if defined(PC_BUILD) && defined(DEBUG_EXECUTE)
-      printf("   >>>RunFunction: §%i§%s§%s§\n",func, indexOfItems[abs(func)].itemCatalogName, indexOfItems[abs(func)].itemSoftmenuName);
+      printf("   >>>RunFunction: %5i%8s%8s\n",func, indexOfItems[abs(func)].itemCatalogName, indexOfItems[abs(func)].itemSoftmenuName);
     #endif // PC_BUILD
     funcOK = true;
     #if defined(RECORDLOG)                              //JMEXEC

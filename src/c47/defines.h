@@ -498,33 +498,34 @@
 #define ERROR_VARIABLE_NOT_SELECTED               57
 #define ERROR_IPX_INVALID_FOR_SI                  58
 #define ERROR_UNDEF_MENU                          59
+#define ERROR_SOLVER_ABORT                        60
 
 
 //Status output messages for time consuming tasks, to keep user informed
-#define LOADING_STATE_FILE                        60
-#define SAVING_STATE_FILE                         61
-#define RESTORING_STATS                           62
-#define COMPLEX_SOLVER                            63
-#define GRAPHING                                  64
-#define RECALC_SUMS                               65
-#define REAL_SOLVER                               66
+#define LOADING_STATE_FILE                        61
+#define SAVING_STATE_FILE                         62
+#define RESTORING_STATS                           63
+#define COMPLEX_SOLVER                            64
+#define GRAPHING                                  65
+#define RECALC_SUMS                               66
+#define REAL_SOLVER                               67
 
 //TI Messages (incomplete)
-#define TI_Backup_restored                        67
-#define TI_State_file_restored                    68
-#define TI_Saved_programs_and_equations           69
-#define TI_appended                               70
-#define TI_Saved_global_and_local_registers       71
-#define TI_w_local_flags_restored                 72
-#define TI_Saved_system_settings_restored         73
-#define TI_Saved_statistic_data_restored          74
-#define TI_Saved_user_variables_restored          75
-#define TI_Program_file_loaded                    76
-#define TI_Not_enough_memory_for_undo             77
+#define TI_Backup_restored                        68
+#define TI_State_file_restored                    69
+#define TI_Saved_programs_and_equations           70
+#define TI_appended                               71
+#define TI_Saved_global_and_local_registers       72
+#define TI_w_local_flags_restored                 73
+#define TI_Saved_system_settings_restored         74
+#define TI_Saved_statistic_data_restored          75
+#define TI_Saved_user_variables_restored          76
+#define TI_Program_file_loaded                    77
+#define TI_Not_enough_memory_for_undo             78
 
 
 
-#define NUMBER_OF_ERROR_CODES                     78
+#define NUMBER_OF_ERROR_CODES                     79
 #define SIZE_OF_EACH_ERROR_MESSAGE                48
 
 #define NUMBER_OF_BUG_SCREEN_MESSAGES             10
@@ -1700,6 +1701,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define SOLVER_RESULT_BAD_GUESS                    3
 #define SOLVER_RESULT_CONSTANT                     4
 #define SOLVER_RESULT_OTHER_FAILURE                5
+#define SOLVER_RESULT_ABORTED                      6
 
 #define ASSIGN_NAMED_VARIABLES                 10000
 #define ASSIGN_LABELS                          12000

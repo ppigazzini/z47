@@ -20,6 +20,7 @@
 
 #include "solver/tvm.h"
 
+#include "c43Extensions/addons.h"
 #include "constantPointers.h"
 #include "defines.h"
 #include "error.h"
@@ -30,6 +31,7 @@
 #include "realType.h"
 #include "registers.h"
 #include "registerValueConversions.h"
+#include "screen.h"
 #include "solver/solve.h"
 #include "stack.h"
 #include "c47.h"
@@ -154,10 +156,16 @@ void fnTvmVar(uint16_t variable) {
               temporaryInformation = TI_SOLVER_VARIABLE;
               thereIsSomethingToUndo = false;
               break;
-            } 
+            }
             else if(solveResult == SOLVER_RESULT_CONSTANT) { // in cases with prevented infinite loop
               iter = nIter;
               break;
+            }
+            else if(solveResult == SOLVER_RESULT_ABORTED) { // solver aborted
+              iter = nIter;
+              if(exitKeyWaiting()) {
+                break;
+              }
             }
             else {
               if(real34IsNegative(&xx)) {
@@ -180,7 +188,9 @@ void fnTvmVar(uint16_t variable) {
           }
           
           if(iter == nIter) {
-            displayCalcErrorMessage(ERROR_NO_ROOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
+            if(lastErrorCode != ERROR_SOLVER_ABORT) {
+              displayCalcErrorMessage(ERROR_NO_ROOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
+            }
             #if (EXTRA_INFO_ON_CALC_ERROR == 1)
               moreInfoOnError("In function fnTvmVar:", "cannot compute TVM equation", "with current parameters", NULL);
             #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
