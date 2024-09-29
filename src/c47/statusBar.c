@@ -782,7 +782,7 @@ void drawBattery(uint16_t voltage) {
         showOverflowCarry();
       }
       showHideAlphaMode();
-      showHideHourGlass();
+//      showHideHourGlass();    Temporary removed hear as it is duplicated a few lines up. Not sure if this is meant to be duplicated due to screen overwriting. To test over time.
       showStackSize();
       showHideWatch();
       showHideSerialIO();

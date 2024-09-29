@@ -164,7 +164,6 @@ void fnTvmVar(uint16_t variable) {
             else if(solveResult == SOLVER_RESULT_ABORTED) { // solver aborted
               iter = nIter;
               if(exitKeyWaiting()) {
-                displayStringWhileExitPressed("key Waiting ...");
                 break;
               }
             }

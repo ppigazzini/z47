@@ -150,6 +150,13 @@ static void bessel_asymptotic_large_x(const real_t *alpha, const real_t *x, bool
   realCopy(const_1, &k21);
   realCopy(&q, &nm), realCopy(const_1, &qq);
   for(k = 2; k < 1000; ++k) {
+    #if !defined(TESTSUITE_BUILD)
+      int32_t loop = k;
+      if(monitorExit(&loop, "Iter: ")) {
+        break;
+      }
+    #endif //!TESTSUITE_BUILD
+
     if(k % 2 == 0) {
       realCopy(&p, &pp);
     }
@@ -430,7 +437,9 @@ static void plusMinus(bool_t subtracting, const real_t *a, const real_t *b, real
 }
 static void bessel_recur(const real_t *nu, const real_t *x, bool_t is_y, bool_t descending, real_t *res, realContext_t *realContext) {
   real_t jnx, jn_1x, alpha, floor_nu;
-  int loop = 0;
+  #if !defined(TESTSUITE_BUILD)
+    int32_t loop = 0;
+  #endif //!TESTSUITE_BUILD
 
   realToIntegralValue(nu, &floor_nu, DEC_ROUND_FLOOR, realContext);
   plusMinus(!descending, nu, &floor_nu, &alpha, realContext);
@@ -458,15 +467,11 @@ static void bessel_recur(const real_t *nu, const real_t *x, bool_t is_y, bool_t 
     realCopy(res, &jnx);
 
     #if !defined(TESTSUITE_BUILD)
-      if(printHalfSecUpdate_Integer(timed, "Iter > 0: ",loop++, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
-      }
-      if(exitKeyWaiting()) {
-        printHalfSecUpdate_Integer(force+1, "Interrupted Test:",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
-        displayStringWhileExitPressed("Exit Waiting ...");
+      if(monitorExit(&loop, "Iter: ")) {
         displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
         return;
       }
-    #endif //TESTSUITE_BUILD
+    #endif //!TESTSUITE_BUILD
   }
 }
 
@@ -509,6 +514,13 @@ static void bessel(const real_t *alpha, const real_t *x, bool_t neg, real_t *res
   realZero(&m);
 
   for(n=0; n<1000; n++) {
+    #if !defined(TESTSUITE_BUILD)
+      int32_t loop = n;
+      if(monitorExit(&loop, "Iter: ")) {
+        break;
+      }
+    #endif //!TESTSUITE_BUILD
+
     realMultiply(&term, &x2on4, &q, realContext);
     realAdd(&m, const_1, &m, realContext);     // m = m+1
     realDivide(&q, &m, &r, realContext);
@@ -579,6 +591,9 @@ static void bessel2_int_series(const real_t *n, const real_t *x, real_t *res, re
   real_t xon2, xon2n, x2on4;
   real_t k, npk, t, u, v, s, p, nf, absn;
   int32_t i, in, n_neg;
+  #if !defined(TESTSUITE_BUILD)
+    int32_t loop = 0;
+  #endif //!TESTSUITE_BUILD
 
   realDivide(const__1, const_pi, &factor, realContext);
 
@@ -653,6 +668,13 @@ static void bessel2_int_series(const real_t *n, const real_t *x, real_t *res, re
       break;
     }
     realCopy(&u, &s);
+
+    #if !defined(TESTSUITE_BUILD)
+      if(monitorExit(&loop, "Iter: ")) {
+        displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        return;
+      }
+    #endif //!TESTSUITE_BUILD
   }
   realMultiply(&s, &xon2n, &t, realContext);
 

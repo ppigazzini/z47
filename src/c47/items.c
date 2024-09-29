@@ -219,6 +219,7 @@ bool_t itemNotAvail(int16_t itemNr) {
       if(func != ITM_SNAP) {
         hourGlassIconEnabled = true;
       }
+      screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
       showHideHourGlass();
 
       if(func == ITM_GTO || func == ITM_XEQ || func == ITM_GTOP) {

@@ -128,8 +128,13 @@ void resetShiftState(void) {
     screenUpdatingMode &= ~SCRUPD_MANUAL_SHIFT_STATUS;
     showShiftState();
     screenUpdatingMode |= (SCRUPD_SKIP_STACK_ONE_TIME);                         // | SCRUPD_SKIP_MENU_ONE_TIME); //JMNEWSPEEDUP; removed the MENU skip again, as the fglines do not get deleted in PEM AIM
-    refreshScreen(100);
-    refreshModeGui();                                                           //JM refreshModeGui
+
+//    refreshScreen(100);
+    #if !defined(TESTSUITE_BUILD)
+      force_refresh(timed);
+    #endif //TESTSUITE_BUILD
+
+    refreshModeGui();
   }
 }
 

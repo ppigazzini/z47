@@ -76,14 +76,10 @@ static void zeta_calc_complex(real_t *reg4, real_t *reg5, real_t *reg6, real_t *
 
     #if !defined(TESTSUITE_BUILD)
     int loop = realToInt32C47(&reg0);
-    if(printHalfSecUpdate_Integer(timed, "Iter > 0: ",loop++, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
-    }
-    if(exitKeyWaiting()) {
-        printHalfSecUpdate_Integer(force+1, "Interrupted Iter:",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
-        displayStringWhileExitPressed("Exit Waiting ...");
-      break;
-    }
-    #endif //TESTSUITE_BUILD
+      if(monitorExit(&loop, "Iter: ")) {
+        break;
+      }
+    #endif //!TESTSUITE_BUILD
 
     realMultiply(reg6, const__1, &q, realContext); realMultiply(reg7, const__1, &p, realContext);
     PowerComplex(&reg0, const_0, &q, &p, &s, &r, realContext);

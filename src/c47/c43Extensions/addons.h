@@ -22,10 +22,9 @@
 #include "typeDefinitions.h"
 #include <stdint.h>
 
-//bool_t anyKeyWaiting(void);
-bool_t exitKeyWaiting(void);
-int    C47PopKeyNoBuffer(void);
-void displayStringWhileExitPressed(char *string);
+bool_t  exitKeyWaiting(void);
+#define DISPLAY_WAIT_FOR_RELEASE true
+int     C47PopKeyNoBuffer(bool_t displayWaitForRelease);
 
 
 #ifdef DMCP_BUILD

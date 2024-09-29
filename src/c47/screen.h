@@ -165,6 +165,7 @@ char       letteredRegisterName(calcRegister_t regist);
   void     refresh_gui                        (void);
   void     force_refresh                      (uint8_t mode);
   bool_t   printHalfSecUpdate_Integer         (uint8_t mode, char *txt, int32_t loop, bool_t clearZ, bool_t clearT, bool_t disp);
+  bool_t   monitorExit                        (int32_t *loop, char* str);
   void     refreshScreen                      (uint8_t source);
 
   /**

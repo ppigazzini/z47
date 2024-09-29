@@ -485,7 +485,6 @@ retryLevel:
 
         if(exitKeyWaiting()) {
             printHalfSecUpdate_Integer(force+1, "Interrupted Iter:",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
-            displayStringWhileExitPressed("Exit Waiting ...");
             programRunStop = PGM_WAITING;
             displayCalcErrorMessage(ERROR_SOLVER_ABORT, REGISTER_T, NIM_REGISTER_LINE);
           break;

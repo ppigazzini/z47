@@ -141,8 +141,6 @@ static bool_t longIntegerIsPrime1(longInteger_t primeCandidate) {
 
 void fnIsPrime(uint16_t unusedButMandatoryParameter) {
   #if !defined(SAVE_SPACE_DM42_12PRIME)
-    hourGlassIconEnabled = true;
-    showHideHourGlass();
     longInteger_t tmp, primeCandidate;
 
     longIntegerInit(primeCandidate);
@@ -162,8 +160,6 @@ void fnIsPrime(uint16_t unusedButMandatoryParameter) {
   abort:
     longIntegerFree(tmp);
     longIntegerFree(primeCandidate);
-    hourGlassIconEnabled = false;
-    showHideHourGlass();
   #endif // !SAVE_SPACE_DM42_12PRIME
 }
 
@@ -171,8 +167,6 @@ void fnIsPrime(uint16_t unusedButMandatoryParameter) {
 void fnNextPrime(uint16_t unusedButMandatoryParameter) {
   #if !defined(SAVE_SPACE_DM42_12PRIME)
     real_t x;
-    hourGlassIconEnabled = true;
-    showHideHourGlass();
     longInteger_t tmp, currentNumber, nextPrime;
 
     longIntegerInit(currentNumber);
@@ -220,9 +214,6 @@ void fnNextPrime(uint16_t unusedButMandatoryParameter) {
     longIntegerFree(tmp);
     longIntegerFree(nextPrime);
     longIntegerFree(currentNumber);
-
-    hourGlassIconEnabled = false;
-    showHideHourGlass();
   #endif // !SAVE_SPACE_DM42_12PRIME
 }
 
@@ -436,7 +427,7 @@ bool_t longIntegerIsPrime2(longInteger_t primeCandidate) {
 void calculateNextPrime(longInteger_t currentNumber, longInteger_t nextPrime) {
   uint32_t cn, i, x, s, e, m, o;
   #if !defined(TESTSUITE_BUILD)
-    uint32_t loop = 0;
+    int32_t loop = 0;
   #endif //TESTSUITE_BUILD
 
 
@@ -490,16 +481,11 @@ void calculateNextPrime(longInteger_t currentNumber, longInteger_t nextPrime) {
       }
       longIntegerAddUInt(nextPrime, offsets[o % 48], nextPrime);
 
-
       #if !defined(TESTSUITE_BUILD)
-        if(printHalfSecUpdate_Integer(timed, "Iter > 0: ",loop++, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
+        if(monitorExit(&loop, "Iter: ")) {
+          displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+          return;
         }
-      if(exitKeyWaiting()) {
-        printHalfSecUpdate_Integer(force+1, "Interrupted Test:",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
-        displayStringWhileExitPressed("Exit Waiting ...");
-        displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-        return;
-      }
       #endif //!TESTSUITE_BUILD
     }
   }
@@ -703,11 +689,9 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
     #define NOFACTOR 127
     #define INITIALISPRIME  126
     int8_t initialFactorAdded = NOFACTOR;
-    hourGlassIconEnabled = true;
-    showHideHourGlass();
     currentKeyCode = 255;
     #if !defined(TESTSUITE_BUILD)
-      uint32_t loop = 0;
+      int32_t loop = 0;
     #endif //TESTSUITE_BUILD
     real34_t lastAdded;
 
@@ -786,14 +770,11 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
         if(printHalfSecUpdate_Integer(timed, "Tested n =",loop++, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
           _showProgress(&lastAdded, nextPrime);
           dumpExponents(&matrix, &faddr, 13);
-          #if defined DMCP_BUILD
-            lcd_refresh();
-          #endif //DMCP_BUILD
+          force_refresh(force);
         }
       if(exitKeyWaiting()) {
-          printHalfSecUpdate_Integer(force+1, "Interrupted Test:",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
-          displayStringWhileExitPressed("Exit Waiting ...");
-          programRunStop = PGM_WAITING;
+        printHalfSecUpdate_Integer(force+1, "Interrupted: ",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+        programRunStop = PGM_WAITING;
         break;
       }
       #endif //!TESTSUITE_BUILD
@@ -847,8 +828,6 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
     longIntegerFree(remainder);
     longIntegerFree(nextPrime);
     longIntegerFree(currentNumber);
-    hourGlassIconEnabled = false;
-    showHideHourGlass();
   #endif //SAVE_SPACE_DM42_12PRIME
 }
 
@@ -1041,8 +1020,6 @@ void _fnEvPFacts     (uint16_t param) {
       goto return10;
     }
     return10:
-    hourGlassIconEnabled = false;
-    showHideHourGlass();
     refreshScreen(253);
     return;
 
@@ -1063,8 +1040,6 @@ void fnEvPFacts (uint16_t param) {
   longInteger_t xx;
   int32_t k = 1;
 
-  hourGlassIconEnabled = true;
-  showHideHourGlass();
   if(!saveLastX()) {
     goto return10;
   }
@@ -1114,8 +1089,6 @@ void fnEvPFacts (uint16_t param) {
 
   return10:
 
-  hourGlassIconEnabled = false;
-  showHideHourGlass();
   refreshScreen(254);
 }
 
@@ -1141,8 +1114,6 @@ void fnEvPFacts (uint16_t param) {
  */
 void fnEulPhi     (uint16_t unusedButMandatoryParameter) {
   #if !defined(SAVE_SPACE_DM42_12PRIME)
-    hourGlassIconEnabled = true;
-    showHideHourGlass();
     longInteger_t x;
     longIntegerInit(x);
 
@@ -1231,8 +1202,6 @@ void fnEulPhi     (uint16_t unusedButMandatoryParameter) {
     return1:
     longIntegerFree(x);
 
-    hourGlassIconEnabled = false;
-    showHideHourGlass();
   #endif //SAVE_SPACE_DM42_12PRIME
 }
 

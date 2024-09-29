@@ -58,11 +58,8 @@
         longIntegerRegisterToDisplayString(TEMP_REGISTER_1, tmpString, TMP_STR_LENGTH, 400, 400, false);//JM added last parameter: Allow LARGELI
         showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
         displayFormatDigits = savedDisplayFormatDigits;
-
-      #if defined DMCP_BUILD
-        lcd_refresh();
-      #endif //DMCP_BUILD
-    #endif // ENABLE_SOLVER_PROGRESS == 1
+        force_refresh(force);
+  #endif // ENABLE_SOLVER_PROGRESS == 1
   }
 
 
@@ -70,7 +67,6 @@
     currentKeyCode = 255;
     int32_t       loop = 0;
     int16_t       finished = 0;
-    bool_t        abort = false;
     longInteger_t resultLi, xLi;
     longInteger_t loopStep, loopTo, iCounter, iLoop;
     longIntegerInit(loopStep);
@@ -105,10 +101,11 @@
       ++currentSolverNestingDepth;
       setSystemFlag(FLAG_SOLVING);
 
-
       while(lastErrorCode == ERROR_NONE) {
-        hourGlassIconEnabled = true;
-        showHideHourGlass();
+
+        if(printHalfSecUpdate_Integer(timed, "Loop: ",loop--, halfSec_clearZ, halfSec_clearT, halfSec_disp)) {
+          _showProgress(resultLi);
+        }
 
         finished = longIntegerCompare(iCounter, loopTo);            // 0 mean equal
         finished = finished * longIntegerCompareUInt(loopStep, 0);
@@ -154,17 +151,8 @@
         #endif //VERBOSE_COUNTER
 
         longIntegerAdd(iCounter, loopStep, iCounter);
-        if(printHalfSecUpdate_Integer(timed, "Loop: ",loop--, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //; //timed
-          _showProgress(resultLi);
-        }
 
-        if(exitKeyWaiting()) {
-          printHalfSecUpdate_Integer(force+1, "Interrupted: ",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
-          displayStringWhileExitPressed("Exit Waiting ...");
-          abort = true;
-        }
-
-        if(finished == 0 || abort) {
+        if(finished == 0) {
           break;
         }
       } //WHILE
@@ -179,7 +167,6 @@
           sprintf(errorMessage, "Error while calculating");
           moreInfoOnError("In function _programmableiSumProd:", errorMessage, NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-        fnUndo(0);
       }
 
       longIntegerFree(resultLi);
@@ -197,15 +184,6 @@
     } //MAIN IF
     if((--currentSolverNestingDepth) == 0) {
       clearSystemFlag(FLAG_SOLVING);
-    }
-    hourGlassIconEnabled = false;
-    showHideHourGlass();
-
-    if(abort) {
-      printHalfSecUpdate_Integer(force+0, "Loop aborted: ",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
-    }
-    else {
-      printHalfSecUpdate_Integer(force+0, "Loop complete: ",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
     }
   }
 

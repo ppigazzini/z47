@@ -32,6 +32,7 @@
 #include "store.h"
 #include "timer.h"
 #include "ui/tam.h"
+#include "c43Extensions/addons.h"
 
 #include "c47.h"
 
@@ -885,8 +886,9 @@ void runProgram(bool_t singleStep, uint16_t menuLabel) {
     }
     #if defined(DMCP_BUILD)
       if(!nestedEngine) {
-        int key = key_pop();
-        key = convertKeyCode(key);
+          int key = C47PopKeyNoBuffer(DISPLAY_WAIT_FOR_RELEASE) + 1;
+//        int key = key_pop();
+//        key = convertKeyCode(key);
         if(key == 36 || key == 33 ) {  //JM R/S or EXIT
           programRunStop = PGM_WAITING;
           screenUpdatingMode = SCRUPD_AUTO;
