@@ -97,7 +97,7 @@ TO_QSPI const char errorMessages[NUMBER_OF_ERROR_CODES][SIZE_OF_EACH_ERROR_MESSA
 /* 57 */  "Variable required, please select variable",
 /* 58 */  "HEX/DEC/OCT/BIN not usable with iCPX",
 /* 59 */  "Undefined menu name",
-/* 60 */  "Solver aborted",
+/* 60 */  "Operation aborted",
 
 //Status output messages for time consuming tasks, to keep user informed
 /* 61 */  "  Loading state file ...",

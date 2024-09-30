@@ -323,11 +323,10 @@ bool_t itemNotAvail(int16_t itemNr) {
     }
     else
     if(((FIRST_CONSTANT <= func && func <= LAST_CONSTANT) || func == ITM_CNST) && calcMode == CM_NORMAL) {   //including ITM_CNST inside the range (historically)
-
       temporaryInformation = TI_LAST_CONST_CATNAME;
     }
     else
-    if(calcMode == CM_NORMAL) {
+    if(calcMode == CM_NORMAL && !getSystemFlag(FLAG_INTING) && !getSystemFlag(FLAG_SOLVING)) {
       bool_t inMatrixMenu = (tam.mode == 0 ? softmenu[softmenuStack[0].softmenuId].menuItem : softmenu[softmenuStack[1].softmenuId].menuItem) == -MNU_MATX;
       bool_t inRegisterRange = (param <= LAST_LETTERED_REGISTER ||
                        (FIRST_STAT_REGISTER  <= param && param <= LAST_STAT_REGISTER) ||
@@ -359,48 +358,48 @@ bool_t itemNotAvail(int16_t itemNr) {
         case ITM_STOIJ       : if(inMatrixMenu) temporaryInformation = TI_IJ;    break;
         default:;
       }
-    }
 
-
-    //TI for conversion menus
-    if(lastErrorCode == ERROR_NONE && temporaryInformation == TI_NO_INFO) {
-      switch(softmenu[softmenuStack[0].softmenuId].menuItem) {
-        case -MNU_CONVE :
-        case -MNU_CONVP :
-        case -MNU_CONVFP:
-        case -MNU_CONVM :
-        case -MNU_CONVX :
-        case -MNU_CONVV :
-        case -MNU_CONVA :
-        case -MNU_CONVS :
-        case -MNU_CONVANG :
-        case -MNU_MISC :
-        case -MNU_CONVHUM :
-        case -MNU_CONVYMMV : {
-          errorMessage[0]=0;
-          strcat(errorMessage,indexOfItems[func].itemCatalogName);
-          temporaryInformation = TI_NO_INFO;
-          int16_t i = 0;
-          while(errorMessage[i+1] != 0) {
-            if(STD_RIGHT_ARROW[0] == errorMessage[i] && (STD_RIGHT_ARROW[1] == errorMessage[i+1] || STD_RIGHT_SHORT_ARROW[1] == errorMessage[i+1])) {
-              temporaryInformation = TI_CONV_MENU_STR;
-              errorMessage[i++] = 0;
-              errorMessage[i++] = 0;
-              break;
+      //TI for conversion menus
+      if(lastErrorCode == ERROR_NONE && temporaryInformation == TI_NO_INFO) {
+        switch(softmenu[softmenuStack[0].softmenuId].menuItem) {
+          case -MNU_CONVE :
+          case -MNU_CONVP :
+          case -MNU_CONVFP:
+          case -MNU_CONVM :
+          case -MNU_CONVX :
+          case -MNU_CONVV :
+          case -MNU_CONVA :
+          case -MNU_CONVS :
+          case -MNU_CONVANG :
+          case -MNU_MISC :
+          case -MNU_CONVHUM :
+          case -MNU_CONVYMMV : {
+            errorMessage[0]=0;
+            strcat(errorMessage,indexOfItems[func].itemCatalogName);
+            temporaryInformation = TI_NO_INFO;
+            int16_t i = 0;
+            while(errorMessage[i+1] != 0) {
+              if(STD_RIGHT_ARROW[0] == errorMessage[i] && (STD_RIGHT_ARROW[1] == errorMessage[i+1] || STD_RIGHT_SHORT_ARROW[1] == errorMessage[i+1])) {
+                temporaryInformation = TI_CONV_MENU_STR;
+                errorMessage[i++] = 0;
+                errorMessage[i++] = 0;
+                break;
+              }
+              i++;
             }
-            i++;
+            int16_t j = 0;
+            errorMessage[j] = 0;
+            while(errorMessage[i] != 0) {
+              errorMessage[j++] =  errorMessage[i++];
+            }
+            errorMessage[j] = 0;
+            expandConversionName(errorMessage);
+            break;
           }
-          int16_t j = 0;
-          errorMessage[j] = 0;
-          while(errorMessage[i] != 0) {
-            errorMessage[j++] =  errorMessage[i++];
-          }
-          errorMessage[j] = 0;
-          expandConversionName(errorMessage);
-          break;
+          default:break;
         }
-        default:break;
       }
+
     }
 
 
