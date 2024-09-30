@@ -56,9 +56,15 @@ void fnVarMnu(uint16_t label) {
 
 #if defined(PC_BUILD)
   int32_t gTime = 0; 
+  bool_t  gRemoveTimer = false;
   static gboolean gTimer(gpointer user_data) {
     gTime++;
-    return TRUE;
+    if(gRemoveTimer) {
+      return FALSE;
+    }
+    else {
+      return TRUE;
+    }
   }
 #endif //PC_BUILD
 
@@ -112,6 +118,7 @@ void fnPause(uint16_t dur) {
       }
     #else // !DMCP_BUILD  PC_BUILD
       gTime = 0;
+      gRemoveTimer = false;
       guint timeout_id = g_timeout_add(100, (GSourceFunc) gTimer, NULL);
       refreshLcd(NULL);
       int32_t i = 1;
@@ -136,7 +143,7 @@ void fnPause(uint16_t dur) {
       #if defined(PC_BUILD_TELLTALE)
         printf("; Done timing %i/%i/%i\n", i, gTime, duration);
       #endif //PC_BUILD_TELLTALE
-      g_source_remove (timeout_id);
+      gRemoveTimer = true;
     #endif // PC_BUILD
     if(programRunStop == PGM_WAITING) {
       previousProgramRunStop = PGM_WAITING;
@@ -149,7 +156,6 @@ void fnPause(uint16_t dur) {
         lcd_refresh();
       #else // !DMCP_BUILD
         refreshLcd(NULL);
-        g_source_remove (timeout_id);
       #endif // DMCP_BUILD
         }
   #endif // !TESTSUITE_BUILD
