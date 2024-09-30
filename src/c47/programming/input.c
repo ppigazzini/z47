@@ -119,7 +119,7 @@ void fnPause(uint16_t dur) {
     #else // !DMCP_BUILD  PC_BUILD
       gTime = 0;
       gRemoveTimer = false;
-      guint timeout_id = g_timeout_add(100, (GSourceFunc) gTimer, NULL);
+      g_timeout_add(100, (GSourceFunc) gTimer, NULL);
       refreshLcd(NULL);
       int32_t i = 1;
       #if defined(PC_BUILD_TELLTALE)
