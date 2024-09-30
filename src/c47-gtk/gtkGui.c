@@ -470,17 +470,37 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
   }
 
 
+// GDK_SHIFT_MASK:     0x0001     Indicates that the Shift key is pressed.
+// GDK_CONTROL_MASK:   0x0002     Indicates that the Control key is pressed.
+// GDK_MOD1_MASK:      0x0004     Indicates that the Alt key (or Meta key) is pressed.
+// GDK_MOD2_MASK:      0x0008     Indicates that the Num Lock key is pressed.
+// GDK_MOD3_MASK:      0x0010     Indicates that the Scroll Lock key is pressed.
+// GDK_MOD4_MASK:      0x0020     Indicates that the Super (Windows) key is pressed.
+// GDK_MOD5_MASK:      0x0040     Indicates that the Hyper key is pressed.
+
+
+
   #define event_key_strip_capslock        (( ('A' <= event->keyval && event->keyval <= 'Z') || ('a' <= event->keyval && event->keyval <= 'z')) ? (((event->keyval) & 0xFFFFDF) + (0x20 & ~(event_command_shift >> (16 - 5)))) : event->keyval)
 
   gboolean keyReleased(GtkWidget *w, GdkEventKey *event, gpointer data) {     //JM
-    printf("PC Key released: %d (SHIFT_State=%u)(shiftF=%u shiftF=%u)\n", event->keyval,SHIFT_State,shiftF,shiftG);
+    char strr[30];
+    strr[0]=0;
+    strcat(strr,(((event->state) & GDK_SHIFT_MASK  ) != 0) ? "Shf" : "---");
+    strcat(strr,(((event->state) & GDK_CONTROL_MASK) != 0) ? "Ctr" : "---");
+    strcat(strr,(((event->state) & GDK_MOD1_MASK   ) != 0) ? "Alt" : "---");
+    strcat(strr,(((event->state) & GDK_MOD2_MASK   ) != 0) ? "Num" : "---");
+    strcat(strr,(((event->state) & GDK_MOD3_MASK   ) != 0) ? "Scl" : "---");
+    strcat(strr,(((event->state) & GDK_MOD4_MASK   ) != 0) ? "Win" : "---");
+    strcat(strr,(((event->state) & GDK_MOD5_MASK   ) != 0) ? "Hyp" : "---");
+
+    printf("PC Key released: _keyval=%5d _state=%5d %s (SHIFT_State=%5u)(F=%u G=%u)\n", event->keyval, event->state, strr, SHIFT_State,shiftF,shiftG);
     if(event_keyval == event->keyval + CTRL_State) event_keyval = 99999999;
 
     switch(event->keyval) {
       case GDK_KEY_Shift_L: //left shift
       case GDK_KEY_Shift_R: //right shift
           event_command_shift = 0;
-          if(SHIFT_State != 0) {     //f-shift activated on the release of the shift key, to allow for standard PC shifted chars
+          if(SHIFT_State != 0 && event->state & GDK_SHIFT_MASK ) {     //f-shift activated on the release of the shift key, to allow for standard PC shifted chars
 
             if(checkNormal( 0,KEY_fg))     btnClicked(w, "00"); else
             if(checkNormal(10,KEY_fg))     btnClicked(w, "10"); else
@@ -506,7 +526,7 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
 
       case GDK_KEY_Control_L: // Left Ctrl
       case GDK_KEY_Control_R: // right Ctrl
-          if(CTRL_State != 0) {
+          if(CTRL_State != 0 && event->state & GDK_CONTROL_MASK) {
 
             if(checkNormal( 0,KEY_fg))     btnClicked(w, "00"); else
             if(checkNormal(10,KEY_fg))     btnClicked(w, "10"); else
@@ -599,8 +619,18 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
   gboolean keyPressed(GtkWidget *w, GdkEventKey *event, gpointer data) {
     event_keyval = event->keyval + CTRL_State;
 
+    char strr[30];
+    strr[0]=0;
+    strcat(strr,(((event->state) & GDK_SHIFT_MASK  ) != 0) ? "Shf" : "---");
+    strcat(strr,(((event->state) & GDK_CONTROL_MASK) != 0) ? "Ctr" : "---");
+    strcat(strr,(((event->state) & GDK_MOD1_MASK   ) != 0) ? "Alt" : "---");
+    strcat(strr,(((event->state) & GDK_MOD2_MASK   ) != 0) ? "Num" : "---");
+    strcat(strr,(((event->state) & GDK_MOD3_MASK   ) != 0) ? "Scl" : "---");
+    strcat(strr,(((event->state) & GDK_MOD4_MASK   ) != 0) ? "Win" : "---");
+    strcat(strr,(((event->state) & GDK_MOD5_MASK   ) != 0) ? "Hyp" : "---");
+
     //#if defined(VERBOSEKEYS)
-      printf("\nPC Key pressed: labelText=%i plainTextMode=%i event->keyval=%u event_keyval=%u (SHIFT_State=%u)(shiftF=%u shiftG=%u)\n",labelText, plainTextMode, event->keyval, event_keyval, SHIFT_State, shiftF, shiftG);
+      printf(  "PC Key pressed:  _keyval=%5d _state=%5d %s (SHIFT_State=%5u)(F=%u G=%u) labelText=%i plainTextMode=%i\n", event->keyval, event->state, strr, SHIFT_State,shiftF,shiftG,labelText, plainTextMode);
     //#endif
 
     //printf("AltGr #1:%s         ; keyval=%u state=%u, event_key_strip_capslock=%u\n",
@@ -684,7 +714,7 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
 // 18 CM_LISTXY    
 
 //#if defined(VERBOSEKEYS)
-  printf("   Sim key processing: CTRL_State=%i tam.mode=%i event_keyval=%i calcMode=%i catalog=%i getSystemFlag(FLAG_ALPHA)=%i\n", CTRL_State, tam.mode, event_keyval, calcMode, catalog, getSystemFlag(FLAG_ALPHA));
+  printf("   Sim key processing: CTRL_State=%i tam.mode=%i event_keyval=%5i calcMode=%i catalog=%i getSystemFlag(FLAG_ALPHA)=%i\n", CTRL_State, tam.mode, event_keyval, calcMode, catalog, getSystemFlag(FLAG_ALPHA));
 //#endif //VERBOSEKEYS
 
 //event_key_command = event->keyval + (('A' <= event->keyval && event->keyval <= 'Z') ? 'a' - 'A' : 0)    // remove caps lock effect for commands, 'a' to 'z'
@@ -945,7 +975,7 @@ if(   (CTRL_State != 65536 || ((event->state & 16) == 16))
 
 
     //#if defined(VERBOSEKEYS)
-      printf("\nContinue with old key detection using event_keyval=%u\n",event_keyval);
+      printf("   Continue with old key detection using event_keyval=%u\n\n",event_keyval);
     //#endif
     //JM ALPHA SECTION FOR ALPHAMODE - TAKE OVER ALPHA KEYBOARD
     if(calcMode == CM_AIM || calcMode == CM_EIM || tam.mode || (calcMode == CM_PEM && getSystemFlag(FLAG_ALPHA)) || (calcMode == CM_ASSIGN && getSystemFlag(FLAG_ALPHA))) {
