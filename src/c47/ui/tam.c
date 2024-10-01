@@ -351,56 +351,42 @@
       }
       else if(tam.indirect) {
         tam.indirect = false;
+        popSoftmenu();
         if(tam.mode == TM_VALUE || tam.mode == TM_VALUE_CHB) {
-          popSoftmenu();
           if(tam.function == ITM_DENMAX2) {
             showSoftmenu(-MNU_TAMNONREGMAX);
           }
           else {
             showSoftmenu(-MNU_TAMNONREG);
           }
-          --numberOfTamMenusToPop;
         }
         else if(tam.mode == TM_REGISTER || tam.mode == TM_M_DIM) {
-          popSoftmenu();
           showSoftmenu(-MNU_TAM);
-          --numberOfTamMenusToPop;
         }
         else if(tam.mode == TM_FLAGR || tam.mode == TM_FLAGW) {
-          popSoftmenu();
           showSoftmenu(-MNU_TAMFLAG);
-          --numberOfTamMenusToPop;
         }
         else if(tam.mode == TM_STORCL) {
-          popSoftmenu();
           showSoftmenu(-MNU_TAMSTORCL);
-          --numberOfTamMenusToPop;
         }
         else if(tam.mode == TM_LABEL || (tam.mode == TM_KEY && tam.keyInputFinished)) {
-          popSoftmenu();
           showSoftmenu(-MNU_TAMLABEL);
-          --numberOfTamMenusToPop;
         }
         else if(tam.mode == TM_SOLVE) {
-          popSoftmenu();
           if(tam.function == ITM_SOLVE && calcMode == CM_PEM) {
             showSoftmenu(-MNU_TAM);
           }
           else {
             showSoftmenu(-MNU_TAMLABEL);
           }
-          --numberOfTamMenusToPop;
         }
         else if(tam.mode == TM_MENU) {
-          popSoftmenu();
           showSoftmenu(-MNU_TAMMENU);
-          --numberOfTamMenusToPop;
         }
         else if(tam.mode == TM_CMP) {
-          popSoftmenu();
           showSoftmenu(-MNU_TAMCMP);
-          --numberOfTamMenusToPop;
         }
+        --numberOfTamMenusToPop;
       }
       else if(tam.currentOperation != tam.function) {
         tam.currentOperation = tam.function;
@@ -771,12 +757,13 @@
       // Check whether it is possible to add any more digits: if not, execute the function
       if((tryOoR || (min2 <= tam.value && tam.value <= max2)) && (forceTry || tam.value*10 > max2) && ((tam.mode != TM_MENU) || tam.indirect)) {
         int16_t value = tam.value;
-        bool_t run = true;
+        bool_t  tryAllocate = isFunctionAllowingNewVariable(tam.function);
+        bool_t  run = true;
         if(tam.dot) {
           value += FIRST_LOCAL_REGISTER;
         }
         if(tam.indirect && calcMode != CM_PEM) {
-          value = indirectAddressing(value, indirectionType(tamOperation()), min, max);
+          value = indirectAddressing(value, indirectionType(tamOperation()), min, max, tryAllocate);
           run = (lastErrorCode == 0);
         }
         if(tam.function == ITM_GTOP) {
@@ -838,45 +825,66 @@
     }
     else {
       char *buffer = (forcedVar ? forcedVar : aimBuffer);
-      bool_t tryAllocate = ((tam.function == ITM_STO || tam.function == ITM_M_DIM || tam.function == ITM_MVAR || tam.function == ITM_INPUT) && !tam.indirect);
-      int16_t value;
+      bool_t tryAllocate = isFunctionAllowingNewVariable(tam.function);
+      int16_t value, value2;
       if(tam.mode == TM_NEWMENU) {
         value = 1;
       }
-      else if((tam.function == ITM_XEQ) || (tam.function == ITM_XEQP1)) {
-        value = findNamedLabelWithDuplicate(buffer, dupNum);
-        if(value == INVALID_VARIABLE) {
-          for(int i = 0; i < LAST_ITEM; ++i) {
-            if((indexOfItems[i].status & CAT_STATUS) == CAT_FNCT && compareString(buffer, indexOfItems[i].itemCatalogName, CMP_NAME) == 0) {
-              if(tam.mode) {
-                tamLeaveMode();
-              }
-              if(calcMode == CM_PEM) {
-                aimBuffer[0] = 0;
-                if(!programListEnd) {
-                  scrollPemBackwards();
+      else if(tam.mode == TM_LABEL || tam.mode == TM_SOLVE || (tam.mode == TM_KEY && tam.keyInputFinished) || (tam.mode == TM_DELITM && softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_PROGS)) {
+        if(!tam.indirect) {
+          value = findNamedLabelWithDuplicate(buffer, dupNum);
+        }
+        else {
+          value = findNamedVariable(buffer);
+          if(calcMode != CM_PEM) {
+            if(value != INVALID_VARIABLE) {
+              value2 = indirectAddressing(value, indirectionType(tam.function), min, max, tryAllocate);
+              buffer = REGISTER_STRING_DATA(value);
+              dynamicMenuItem = -1;
+              value = (value2 != FAILED_INDIRECTION ? value2 : INVALID_VARIABLE);
+            }
+            else {
+              displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE, REGISTER_X);
+              #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+                sprintf(errorMessage, "string '%s' is not a named variable", buffer);
+                moreInfoOnError("In function _tamProcessInput:", errorMessage, NULL, NULL);
+              #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+            }
+          }
+        }
+        if(value == INVALID_VARIABLE && ((tam.function == ITM_XEQ) || (tam.function == ITM_XEQP1))) {  // If no label found then look for XEQ 'function'
+          if(!tam.indirect) {                                                                          //  indirection (XEQ -> 'function') not supported
+            for(int i = 0; i < LAST_ITEM; ++i) {
+              if((indexOfItems[i].status & CAT_STATUS) == CAT_FNCT && compareString(buffer, indexOfItems[i].itemCatalogName, CMP_NAME) == 0) {
+                if(tam.mode) {
+                  tamLeaveMode();
                 }
+                if(calcMode == CM_PEM) {
+                  aimBuffer[0] = 0;
+                  if(!programListEnd) {
+                    scrollPemBackwards();
+                  }
+                }
+                runFunction(i);
+                return;
               }
-              runFunction(i);
-              return;
             }
           }
           if(calcMode != CM_PEM) {
             if(tam.mode) {
               tamLeaveMode();
             }
-            displayCalcErrorMessage(ERROR_FUNCTION_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
-            #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-              sprintf(errorMessage, "string '%s' is neither a named label nor a function name", buffer);
-              moreInfoOnError("In function _tamProcessInput:", errorMessage, NULL, NULL);
-            #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+            if(!tam.indirect) {
+              displayCalcErrorMessage(ERROR_FUNCTION_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
+              #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+                sprintf(errorMessage, "string '%s' is neither a named label nor a function name", buffer);
+                moreInfoOnError("In function _tamProcessInput:", errorMessage, NULL, NULL);
+              #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+            }
             return;
           }
         }
-      }
-      else if(tam.mode == TM_LABEL || tam.mode == TM_SOLVE || (tam.mode == TM_KEY && tam.keyInputFinished) || (tam.mode == TM_DELITM && softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_PROGS)) {
-        value = findNamedLabelWithDuplicate(buffer, dupNum);
-        if(value == INVALID_VARIABLE && tam.function != ITM_LBL && tam.function != ITM_LBLQ && (calcMode != CM_PEM || tam.mode != TM_SOLVE)) {
+        else if(value == INVALID_VARIABLE && tam.function != ITM_LBL && tam.function != ITM_LBLQ && (calcMode != CM_PEM || tam.mode != TM_SOLVE)) {
           if(calcMode != CM_PEM && getSystemFlag(FLAG_IGN1ER)) {
             clearSystemFlag(FLAG_IGN1ER);
             #if (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -892,11 +900,18 @@
             #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
           }
         }
+        else if (calcMode != CM_PEM) {
+          reallyRunFunction(tamOperation(), value);
+          if(tam.mode) {
+            tamLeaveMode();
+          }
+          return;
+        }
       }
       else if(tam.mode == TM_DELITM && softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_MENUS) {
         value = tam.value;
       }
-      else if(tryAllocate) {
+      else if(tryAllocate && !tam.indirect) {
         value = findOrAllocateNamedVariable(buffer);
       }
       else if((tam.mode == TM_MENU) && !tam.indirect && (calcMode != CM_PEM)) {
@@ -945,7 +960,7 @@
         aimBuffer[0] = 0;
       }
       if(tam.indirect && value != INVALID_VARIABLE && calcMode != CM_PEM) {
-        value = indirectAddressing(value, indirectionType(tamOperation()), min, max);
+        value = indirectAddressing(value, indirectionType(tam.function), min, max, tryAllocate);
         if(lastErrorCode != 0) {
           value = INVALID_VARIABLE;
         }

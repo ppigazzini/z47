@@ -225,7 +225,7 @@ void fnExecute(uint16_t label) {
           tamLeaveMode();
           refreshScreen(2);
         }
-      #endif // TESTSUITE_BUILD
+      #endif // TESTSUITE_BUILD*
       runProgram(false, INVALID_VARIABLE);
     }
   }
@@ -332,8 +332,9 @@ static void _getStringLabelOrVariableName(uint8_t *stringAddress) {
 
 static void _executeWithIndirectRegister(uint8_t *paramAddress, uint16_t op) {
   uint8_t opParam = *(uint8_t *)paramAddress;
+  bool_t  tryAllocate = isFunctionAllowingNewVariable(op);
   if(opParam <= LAST_SPARE_REGISTERS_IN_KS_CODE) { // Local register from .00 to .98
-      int16_t realParam = indirectAddressing(regKStoC(opParam), indirectionType(op), indexOfItems[op].tamMinMax >> TAM_MAX_BITS, indexOfItems[op].tamMinMax & TAM_MAX_MASK);
+      int16_t realParam = indirectAddressing(regKStoC(opParam), indirectionType(op), indexOfItems[op].tamMinMax >> TAM_MAX_BITS, indexOfItems[op].tamMinMax & TAM_MAX_MASK, tryAllocate);
       if(realParam != FAILED_INDIRECTION) {
         reallyRunFunction(op, realParam);
       }
@@ -345,10 +346,11 @@ static void _executeWithIndirectRegister(uint8_t *paramAddress, uint16_t op) {
 
 static void _executeWithIndirectVariable(uint8_t *stringAddress, uint16_t op) {
   calcRegister_t regist;
+  bool_t  tryAllocate = isFunctionAllowingNewVariable(op);
   _getStringLabelOrVariableName(stringAddress);
   regist = findNamedVariable(tmpStringLabelOrVariableName);
   if(regist != INVALID_VARIABLE) {
-      int16_t realParam = indirectAddressing(regist, indirectionType(op), indexOfItems[op].tamMinMax >> TAM_MAX_BITS, indexOfItems[op].tamMinMax & TAM_MAX_MASK);
+      int16_t realParam = indirectAddressing(regist, indirectionType(op), indexOfItems[op].tamMinMax >> TAM_MAX_BITS, indexOfItems[op].tamMinMax & TAM_MAX_MASK, tryAllocate);
       if(realParam != FAILED_INDIRECTION) {
         reallyRunFunction(op, realParam);
       }

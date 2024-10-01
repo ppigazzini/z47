@@ -239,7 +239,7 @@
    *
    * \param regist Register
    */
-  int16_t        indirectAddressing              (calcRegister_t regist, uint16_t parameterType, int16_t minValue, int16_t maxValue);
+  int16_t        indirectAddressing              (calcRegister_t regist, uint16_t parameterType, int16_t minValue, int16_t maxValue, bool_t tryAllocate);
 
   void           reallocateRegister              (calcRegister_t regist, uint32_t dataType, uint16_t dataSizeWithoutDataLenBlocks, uint32_t tag);
   void           fnToReal                        (uint16_t unusedButMandatoryParameter);
@@ -304,4 +304,5 @@
   void      fnRegCopy                       (uint16_t unusedButMandatoryParameter);
   void      fnRegSort                       (uint16_t unusedButMandatoryParameter);
   void      fnRegSwap                       (uint16_t unusedButMandatoryParameter);
+  bool_t    isFunctionAllowingNewVariable   (uint16_t op);
 #endif // !REGISTERS_H

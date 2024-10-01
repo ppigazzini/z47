@@ -109,7 +109,7 @@ bool_t itemNotAvail(int16_t itemNr) {
              #endif
              return true;
              break;
-      default: 
+      default:
              return false;
              break;
   }
@@ -129,7 +129,7 @@ bool_t itemNotAvail(int16_t itemNr) {
       }
       case TM_STORCL  :
       case TM_REGISTER:
-      case TM_CMP     : 
+      case TM_CMP     :
       case TM_M_DIM   : {
         return INDPM_REGISTER;
       }
@@ -144,7 +144,7 @@ bool_t itemNotAvail(int16_t itemNr) {
       }
     }
   }
-  
+
   char *lastFuncCatalogName(void) {
     if(lastFunc == ITM_VERS || lastFunc == NOPARAM) return "";
     if(lastFunc == ITM_CNST) {
@@ -290,7 +290,6 @@ bool_t itemNotAvail(int16_t itemNr) {
       temporaryInformation = TI_NOT_AVAILABLE;
       screenUpdatingMode = SCRUPD_AUTO;
     }
-
 
     if(programRunStop != PGM_RUNNING || func == ITM_LASTT) {                //stores the last time to timeLastOp
       LastOpTimerLap(func);
