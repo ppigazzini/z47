@@ -2605,6 +2605,7 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
     //dr
     void labelCaptionAimFa(const calcKey_t* key, GtkWidget* lblF) {
       uint8_t lbl[22];
+      bool_t R47LongpressColour = false;
 
       if(key->primaryAim == ITM_NULL) {
         lbl[0] = 0;
