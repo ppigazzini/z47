@@ -662,8 +662,7 @@ typedef enum {
   #define GAP                                        6 //JM original GUI legacy
   #define Y_OFFSET_LETTER                           18 //JM original GUI legacy
   #define X_OFFSET_LETTER                            3 //JM original GUI legacy
-  #define Y_OFFSET_AimF                             25 //JM original GUI legacy
-  #define Y_OFFSET_AimG                             25 //JM original GUI legacy
+  #define Y_OFFSET_Aim                              25 //JM original GUI legacy
 
   #define DELTA_KEYS_X                              67 // Horizontal key step in pixel (row of 6 keys)
   #define DELTA_KEYS_Y                              74 // Vertical key step in pixel
@@ -681,8 +680,7 @@ typedef enum {
   #define GAP                                        6 //JM original GUI legacy
   #define Y_OFFSET_LETTER                           18 //JM original GUI legacy
   #define X_OFFSET_LETTER                            3 //JM original GUI legacy
-  #define Y_OFFSET_AimF                             25 //JM original GUI legacy
-  #define Y_OFFSET_AimG                             25 //JM original GUI legacy
+  #define Y_OFFSET_Aim                              25 //JM original GUI legacy
 
   #define DELTA_KEYS_X                              78 // Horizontal key step in pixel (row of 6 keys)
   #define DELTA_KEYS_Y                              74 // Vertical key step in pixel
