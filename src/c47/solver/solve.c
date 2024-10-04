@@ -12,6 +12,7 @@
 #include "c43Extensions/graphText.h"
 #include "charString.h"
 #include "constantPointers.h"
+#include "conversionAngles.h"
 #include "defines.h"
 #include "display.h"
 #include "error.h"
@@ -67,7 +68,11 @@ void fnPgmSlv(uint16_t label) {
 }
 
 static bool_t _realSolverFirstGuesses(calcRegister_t regist, real34_t *val) {
-  if(getRegisterDataType(regist) == dtReal34 && getRegisterAngularMode(regist) == amNone) {
+  if(getRegisterDataType(regist) == dtReal34) {
+    if(getRegisterAngularMode(regist) != amNone) {
+      convertAngle34FromTo(REGISTER_REAL34_DATA(regist), getRegisterAngularMode(regist), currentAngularMode);
+      setRegisterAngularMode(regist, currentAngularMode);
+    }
     real34Copy(REGISTER_REAL34_DATA(regist), val);
     return true;
   }
@@ -250,7 +255,11 @@ void fnSolveVar(uint16_t unusedButMandatoryParameter) {
     else if(lastErrorCode != ERROR_NONE) {
       realToReal34(const_NaN, res);
     }
-    else if(getRegisterDataType(REGISTER_X) == dtReal34 && getRegisterAngularMode(REGISTER_X) == amNone) {
+    else if(getRegisterDataType(REGISTER_X) == dtReal34) {
+      if(getRegisterAngularMode(REGISTER_X) != amNone) {
+        convertAngle34FromTo(REGISTER_REAL34_DATA(REGISTER_X), getRegisterAngularMode(REGISTER_X), currentAngularMode);
+        setRegisterAngularMode(REGISTER_X, currentAngularMode);
+      }
       real34Copy(REGISTER_REAL34_DATA(REGISTER_X), res);
     }
     else if(getRegisterDataType(REGISTER_X) == dtLongInteger) {
