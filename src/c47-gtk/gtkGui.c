@@ -499,6 +499,30 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
    PC Key pressed:  _keyval=65513 _state=    0 -------------------- (SHIFT_State=    0)(F=0 G=0) labelText=0 plainTextMode=0`        GDK_KEY_Alt_L
    PC Key released: _keyval=65513 _state=    0 -------------------- (SHIFT_State=    0)(F=0 G=0)`
   
+
+   Didier 2
+
+   PC Key pressed:  _keyval=65507 _state=    4 ------b2 ------------ (SHIFT_State=    0)(F=0 G=0) labelText=0 plainTextMode=0 progr=0        GDK_KEY_Control_L
+     Sim key processing: CTRL_State=65536 tam.mode=0 event_keyval=65507 calcMode=0 catalog=0 getSystemFlag(FLAG_ALPHA)=0
+     Continue with old key detection using event_keyval=65507
+
+   PC Key pressed:  _keyval=65514 _state=   20 ------b2 ---b4 ------ (SHIFT_State=    0)(F=0 G=0) labelText=0 plainTextMode=0 progr=1        GDK_KEY_Alt_R
+     Sim key processing: CTRL_State=65536 tam.mode=0 event_keyval=131050 calcMode=0 catalog=0 getSystemFlag(FLAG_ALPHA)=0
+
+   ### Command key: CTRL_State=65536 SHFT_State=0 tam.mode=0 event_keyval=131050 => event_key_command=65514 calcMode=0 catalog=0 getSystemFlag(FLAG_ALPHA)=0
+       shortCutCommand: No action found
+       ...
+       shortCutCommand: No action found
+------------------------ Checked commands, skipping to rest of key detections
+------------------------ Checking Matric arrows functions
+------------------------ Checked matrix arrows detection, skipping to rest of key detections
+   Continue with old key detection using event_keyval=131050
+
+PC Key released: _keyval=65507 _state=    8 ---------b3 --------- (SHIFT_State=    0)(F=0 G=0) inProg=0
+PC Key released: _keyval=65514 _state=    0 --------------------- (SHIFT_State=    0)(F=0 G=1) inProg=0
+
+
+
   
    From intenet summary (This seems a bit skewed compared to the experiments. Ignore this in favour of the two experiments.
    GDK_SHIFT_MASK:     0x0001     Indicates that the Shift key is pressed.
@@ -516,11 +540,15 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
   uint32_t previousEventKeyR = 0;
   uint32_t previousEventStateP = 0;
   uint32_t previousEventKeyP = 0;
-  #define C47SpecialKeyInProgress    (( previousEventKeyP == GDK_KEY_Alt_R     && previousEventStateR == 0b10100) \
-                                   ||  (event->keyval     == GDK_KEY_Alt_R     && event->state        == 0b10100) \
-                                   ||  (event->keyval     != GDK_KEY_Alt_R     && (event->state       &  0b10000)) \
-                                   )
-  #define C47SpecialKey_AltGr_Released   (event->keyval == GDK_KEY_Alt_R && event->state & 0b00000 && previousEventKeyR == GDK_KEY_Control_L && previousEventStateR == 0b1000) 
+  #define C47SpecialAltGrInProgress           (( previousEventKeyP == GDK_KEY_Alt_R && previousEventStateP  == 0b10100) \
+                                          ||  (  event->keyval     == GDK_KEY_Alt_R && event->state         == 0b10100) \
+                                          ||  (  event->keyval     != GDK_KEY_Alt_R && (event->state & 0b10000        )) \
+                                          )
+  #define C47SpecialKey_Ctrl_Pressed            (event->keyval == GDK_KEY_Control_L && event->state  & 0b00100)
+  #define C47SpecialKey_Ctrl_Released          ((event->keyval == GDK_KEY_Control_L && event->state  & 0b00000) && (previousEventKeyP == GDK_KEY_Control_L && previousEventStateP == 0b00100)) 
+  #define C47SpecialKey_AltGr_Released          (event->keyval == GDK_KEY_Alt_R     && event->state  & 0b00000  &&  previousEventKeyR == GDK_KEY_Control_L && previousEventStateR == 0b1000) 
+
+
 
   gboolean keyReleased(GtkWidget *w, GdkEventKey *event, gpointer data) {     //JM
     if(event_keyval == event->keyval + CTRL_State) event_keyval = 99999999;
@@ -536,10 +564,14 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
       strcat(strr,(((event->state) & 0x0040) != 0) ? "b6 " : "---");
     #endif //VERBOSEKEYS
     //#if defined(VERBOSEKEYS)
-      printf("PC Key released: _keyval=%5d _state=%5d %s (SHIFT_State=%5u)(F=%u G=%u) inProg=%i\n", event->keyval, event->state, strr, SHIFT_State,shiftF,shiftG, C47SpecialKeyInProgress);
+      printf("PC Key released: _keyval=%5d _state=%5d %s (SHIFT_State=%5u)(F=%u G=%u) inProg=%i\n", event->keyval, event->state, strr, SHIFT_State,shiftF,shiftG, C47SpecialAltGrInProgress);
     //#endif //VERBOSEKEYS
 
-    if(C47SpecialKey_AltGr_Released) {
+    if(C47SpecialKey_Ctrl_Released) goto returnKeyReleasedFalse;
+
+    if(C47SpecialKey_AltGr_Released) { //clear any valid or invalid prior control key activation
+      SHIFT_State = 0;
+      event_command_shift = 0;
       CTRL_State = 0;
       shiftF = false;
       shiftG = false;
@@ -687,14 +719,26 @@ returnKeyReleasedFalse:
       strcat(strr,(((event->state) & 0x0040) != 0) ? "b6 " : "---");
     #endif //VERBOSEKEYS
     //#if defined(VERBOSEKEYS)
-      printf(  "PC Key pressed:  _keyval=%5d _state=%5d %s (SHIFT_State=%5u)(F=%u G=%u) labelText=%i plainTextMode=%i progr=%i\n", event->keyval, event->state, strr, SHIFT_State,shiftF,shiftG,labelText, plainTextMode, C47SpecialKeyInProgress);
+      printf(  "PC Key pressed:  _keyval=%5d _state=%5d %s (SHIFT_State=%5u)(F=%u G=%u) labelText=%i plainTextMode=%i progr=%i\n", event->keyval, event->state, strr, SHIFT_State,shiftF,shiftG,labelText, plainTextMode, C47SpecialAltGrInProgress);
     //#endif //VERBOSEKEYS
 
     //printf("AltGr #1:%s         ; keyval=%u state=%u, event_key_strip_capslock=%u\n",
     //(event->keyval == GDK_KEY_at) ? "+@" : (event->keyval == GDK_KEY_numbersign) ? "+#" : (event->keyval == GDK_KEY_bar) ? "+|" : "",
     //(uint16_t)event->keyval, (uint16_t)event->state, (uint16_t)event_key_strip_capslock);
 
-  if(!C47SpecialKeyInProgress) {
+    if(C47SpecialKey_Ctrl_Pressed) goto returnKeyPressedFalse;
+
+    if(C47SpecialAltGrInProgress) { //clear any valid or invalid prior control key activation
+      SHIFT_State = 0;
+      event_command_shift = 0;
+      CTRL_State = 0;
+      shiftF = false;
+      shiftG = false;
+      refreshStatusBar();
+      showShiftState();
+      goto returnKeyPressedFalse;
+    }
+
     SHIFT_State = 0;
     switch(event_keyval) {
       case GDK_KEY_Shift_L: //left shift
@@ -711,9 +755,7 @@ returnKeyReleasedFalse:
         break;
       default:;
     }
-  }
 
-  if(!C47SpecialKeyInProgress) {  
     if(!((calcMode == CM_AIM || calcMode == CM_EIM || tam.mode || (calcMode == CM_PEM && getSystemFlag(FLAG_ALPHA)) || (calcMode == CM_ASSIGN && getSystemFlag(FLAG_ALPHA))))) {
       switch(event_key_strip_capslock) {
         case GDK_KEY_f: //f
@@ -747,7 +789,6 @@ returnKeyReleasedFalse:
         default:break;
       }
     }
-  }
           
 //#define VERBOSEKEYS
 
@@ -780,7 +821,7 @@ returnKeyReleasedFalse:
 //                                  - (('A' <= event->keyval && event->keyval <= 'Z') && event_command_shift == 65536 ? 'a' - 'A' : 0);                     // consider only shift button status to get caps for commands
 
 //#define allowAltGrKey ((event->state & 16) == 16)
-#define allowAltGrKey (C47SpecialKeyInProgress)
+#define allowAltGrKey (C47SpecialAltGrInProgress)
 
 if(     (CTRL_State != 65536 || allowAltGrKey)
      && (!catalog || (catalog && currentMenu() == -MNU_MVAR))
