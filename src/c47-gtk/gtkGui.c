@@ -2488,6 +2488,9 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
     keyLogicalId = key->keyId -49;
   }
 
+  bool_t R47LongpressColour = false;
+
+
   if(key->primary == 0) {
     lbl[0] = 0;
   }
@@ -2563,32 +2566,52 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
       else {
         gtk_widget_set_name(button, "calcKey");
       }
+char sstmp[16];
 
 //  stringToUtf8(indexOfItems[max(key->fShifted, -key->fShifted)].itemSoftmenuName, lbl);
-  char sstmp[16];
-  strcpy(sstmp, indexOfItems[max(key->fShifted, -key->fShifted)].itemSoftmenuName);
-  if((key->fShifted == ITM_op_j || key->fShifted == ITM_op_j_pol) && getSystemFlag(FLAG_CPXj)) sstmp[1]++;
-  if(key->fShifted == ITM_EE_EXP_TH && getSystemFlag(FLAG_CPXj)) sstmp[3]++;
-  stringToUtf8(sstmp, lbl);
-  if((userKeyLabelSize > 0) && ((strcmp((char *)lbl, "DYNMNU") == 0) || (strcmp((char *)lbl, "XEQ") == 0) || (strcmp((char *)lbl, "RCL") == 0))) {
-    if(*(getNthString((uint8_t *)userKeyLabel, keyLogicalId*6+1)) != 0) {
-      stringToUtf8((char *)getNthString((uint8_t *)userKeyLabel, keyLogicalId*6+1),lbl);
+  if(isR47FAM && key->fShifted == ITM_NULL && key->primary == ITM_SHIFTf) {
+    stringToUtf8(indexOfItems[MNU_HOME].itemSoftmenuName, lbl);
+    R47LongpressColour = true;
+  }
+  else if(isR47FAM && key->fShifted == ITM_NULL && key->primary == ITM_SHIFTg) {
+    stringToUtf8(indexOfItems[MNU_MyMenu].itemSoftmenuName, lbl);
+    R47LongpressColour = true;
+  }
+  else if(key->fShifted == 0) {
+      lbl[0] = 0;
+  }
+  else {
+    strcpy(sstmp, indexOfItems[max(key->fShifted, -key->fShifted)].itemSoftmenuName);
+    if((key->fShifted == ITM_op_j || key->fShifted == ITM_op_j_pol) && getSystemFlag(FLAG_CPXj)) sstmp[1]++;
+    if(key->fShifted == ITM_EE_EXP_TH && getSystemFlag(FLAG_CPXj)) sstmp[3]++;
+    stringToUtf8(sstmp, lbl);
+    if((userKeyLabelSize > 0) && ((strcmp((char *)lbl, "DYNMNU") == 0) || (strcmp((char *)lbl, "XEQ") == 0) || (strcmp((char *)lbl, "RCL") == 0))) {
+      if(*(getNthString((uint8_t *)userKeyLabel, keyLogicalId*6+1)) != 0) {
+        stringToUtf8((char *)getNthString((uint8_t *)userKeyLabel, keyLogicalId*6+1),lbl);
+      }
     }
   }
 
-  if(key->fShifted == 0) {
-    lbl[0] = 0;
-  }
-  else if(strcmp((char *)lbl, "CAT") == 0 && key->keyId != 85) {   //JM was 85  //JM Changed CATALOG to CAT
+  if(strcmp((char *)lbl, "CAT") == 0 && key->keyId != 85) {   //JM was 85  //JM Changed CATALOG to CAT
     lbl[3] = 0;
   }
+  
+  if(key->primary == ITM_SHIFTg && key->keyId == 71) {
+    strcpy((char *)lbl,"      "); //blank the dots above the shift g key, if it is shift g specifically instead of shift f/g
+  }
 
-      if(key->primary == ITM_SHIFTg && key->keyId == 71) {
-        strcpy((char *)lbl,"      "); //blank the dots above the shift g key, if it is shift g specifically instead of shift f/g
-      }
+  gtk_label_set_label(GTK_LABEL(lblF), (gchar *)lbl);
+  //printf("--THIS IS f-shifted:               %s\n",lbl);
 
-      gtk_label_set_label(GTK_LABEL(lblF), (gchar *)lbl);
-      if(key->fShifted < 0) gtk_widget_set_name(lblF, "fShiftedUnderline"); else  gtk_widget_set_name(lblF, "fShifted");
+  if(R47LongpressColour) {
+    gtk_widget_set_name(lblF, "letter");
+  }
+  else if(key->fShifted < 0) {
+    gtk_widget_set_name(lblF, "fShiftedUnderline"); 
+  }
+  else {
+    gtk_widget_set_name(lblF, "fShifted");
+  }
 
 //  if(key->gShifted == ITM_op_j) strcpy((char *)lbl, getSystemFlag(FLAG_CPXj)   ? "j"  : "i");
 //  else
@@ -2644,11 +2667,11 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
         lbl[0] = 0;
       }
       else if(isR47FAM && key->fShiftedAim == ITM_NULL && key->primaryAim == ITM_SHIFTf) {
-        stringToUtf8(indexOfItems[MNU_HOME].itemSoftmenuName, lbl);
+        stringToUtf8(indexOfItems[MNU_ALPHA].itemSoftmenuName, lbl);
         R47LongpressColour = true;
       }
       else if(isR47FAM && key->fShiftedAim == ITM_NULL && key->primaryAim == ITM_SHIFTg) {
-        stringToUtf8(indexOfItems[MNU_MyMenu].itemSoftmenuName, lbl);
+        stringToUtf8(indexOfItems[MNU_MyAlpha].itemSoftmenuName, lbl);
         R47LongpressColour = true;
       }
       else {
