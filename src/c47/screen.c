@@ -833,11 +833,11 @@ void execTimerApp(uint16_t timerType) {
         fnTimerStop(TO_3S_CTFF);
         fnTimerStop(TO_FG_LONG);
         if(shiftF) {                           //this is for R47 ShiftF
-          showSoftmenu(-MNU_HOME);
+          showSoftmenu(calcMode == CM_AIM ? -MNU_ALPHA : -MNU_HOME);
           showSoftmenuCurrentPart();
         }
         else if(shiftG) {                      //this is for R47 ShiftG
-          showSoftmenu(-MNU_MyMenu);
+          showSoftmenu(calcMode == CM_AIM ? -MNU_MyAlpha : -MNU_MyMenu);
           showSoftmenuCurrentPart();
         }
         shiftF = 0;
