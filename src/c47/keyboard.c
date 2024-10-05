@@ -2691,6 +2691,7 @@ RELEASE_END:
             }
 
 //TOREMOVEGREEKKEY vv
+//although case change is not needed, the actual add to buffer is probably required
             else if(((ITM_ALPHA <= item && item <= ITM_OMEGA) || (ITM_QOPPA <= item && item <= ITM_SAMPI)) && lowercaseselected) {  //JM GREEK
               addItemToBuffer(item +  ((ITM_ALPHA <= item && item <= ITM_OMEGA) ? (ITM_alpha - ITM_ALPHA) : (ITM_qoppa - ITM_QOPPA)));
               keyActionProcessed = true;
@@ -2783,6 +2784,8 @@ RELEASE_END:
                   runFunction(item);
                   keyActionProcessed = true;
                 }
+
+//See ALL_AIM_LP_CYCLE
                 else {
                   screenUpdatingMode &= ~(SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME);
                   processAimInput(item);
