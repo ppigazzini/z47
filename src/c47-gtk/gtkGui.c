@@ -500,48 +500,29 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
    PC Key released: _keyval=65513 _state=    0 -------------------- (SHIFT_State=    0)(F=0 G=0)`
   
 
-   Didier 2
-
-   PC Key pressed:  _keyval=65507 _state=    4 ------b2 ------------ (SHIFT_State=    0)(F=0 G=0) labelText=0 plainTextMode=0 progr=0        GDK_KEY_Control_L
-     Sim key processing: CTRL_State=65536 tam.mode=0 event_keyval=65507 calcMode=0 catalog=0 getSystemFlag(FLAG_ALPHA)=0
-     Continue with old key detection using event_keyval=65507
-
-   PC Key pressed:  _keyval=65514 _state=   20 ------b2 ---b4 ------ (SHIFT_State=    0)(F=0 G=0) labelText=0 plainTextMode=0 progr=1        GDK_KEY_Alt_R
-     Sim key processing: CTRL_State=65536 tam.mode=0 event_keyval=131050 calcMode=0 catalog=0 getSystemFlag(FLAG_ALPHA)=0
-
-   ### Command key: CTRL_State=65536 SHFT_State=0 tam.mode=0 event_keyval=131050 => event_key_command=65514 calcMode=0 catalog=0 getSystemFlag(FLAG_ALPHA)=0
-       shortCutCommand: No action found
-       ...
-       shortCutCommand: No action found
------------------------- Checked commands, skipping to rest of key detections
------------------------- Checking Matric arrows functions
------------------------- Checked matrix arrows detection, skipping to rest of key detections
-   Continue with old key detection using event_keyval=131050
-
-PC Key released: _keyval=65507 _state=    8 ---------b3 --------- (SHIFT_State=    0)(F=0 G=0) inProg=0
-PC Key released: _keyval=65514 _state=    0 --------------------- (SHIFT_State=    0)(F=0 G=1) inProg=0
-
-
-   From intenet summary (This seems a bit skewed compared to the experiments. Ignore this in favour of the two experiments.
-   GDK_SHIFT_MASK:     0x0001     Indicates that the Shift key is pressed.
-   GDK_CONTROL_MASK:   0x0002     Indicates that the Control key is pressed.
-   GDK_MOD1_MASK:      0x0004     Indicates that the Alt key (or Meta key) is pressed.
-   GDK_MOD2_MASK:      0x0008     Indicates that the Num Lock key is pressed.
-   GDK_MOD3_MASK:      0x0010     Indicates that the Scroll Lock key is pressed.
-   GDK_MOD4_MASK:      0x0020     Indicates that the Super (Windows) key is pressed.
-   GDK_MOD5_MASK:      0x0040     Indicates that the Hyper key is pressed.
-
-
-   Didier 3
-PC Key pressed:  _keyval=65507 _state=    4 ------b2 ------------ (SHIFT_State=    0)(F=0 G=0) labelText=0 plainTextMode=0 progr=0  GDK_KEY_Control_L 00100   C47SpecialKey_Ctrl_Pressed true
-PC Key pressed:  _keyval=65514 _state=   20 ------b2 ---b4 ------ (SHIFT_State=    0)(F=0 G=0) labelText=0 plainTextMode=0 progr=1  GDK_KEY_Alt_R     10100
-PC Key pressed:  _keyval=   35 _state=   28 ------b2 b3 b4 ------ (SHIFT_State=    0)(F=0 G=0) labelText=0 plainTextMode=0 progr=1  3                 11100
-PC Key released: _keyval=   35 _state=   28 ------b2 b3 b4 ------ (SHIFT_State=    0)(F=0 G=0) inProg=1
-PC Key released: _keyval=65507 _state=    8 ---------b3 --------- (SHIFT_State=    0)(F=0 G=0) inProg=0
-PC Key released: _keyval=65514 _state=    0 --------------------- (SHIFT_State=    0)(F=0 G=0) inProg=0   
-
-
-
+   Didier 4
+   PC Key pressed:  _keyval=65507 _state=    4 ------b2 ------------ (SHIFT_State=    0)(F=0 G=0) labelText=0 plainTextMode=0 AltGr_P=0 Ctrl_P=1 Valid_P=0 Ctrl_R=0 AltGr_R=0
+   PC Key pressed:  _keyval=65514 _state=   20 ------b2 ---b4 ------ (SHIFT_State=    0)(F=0 G=0) labelText=0 plainTextMode=0 AltGr_P=1 Ctrl_P=0 Valid_P=0 Ctrl_R=0 AltGr_R=0
+   PC Key pressed:  _keyval=   35 _state=   28 ------b2 b3 b4 ------ (SHIFT_State=    0)(F=0 G=0) labelText=0 plainTextMode=0 AltGr_P=0 Ctrl_P=0 Valid_P=1 Ctrl_R=0 AltGr_R=0
+      Sim key processing: CTRL_State=0 tam.mode=0 event_keyval=   35 calcMode=0 catalog=0 getSystemFlag(FLAG_ALPHA)=0
+      ### Command key: CTRL_State=0 SHFT_State=0 tam.mode=0 event_keyval=35 => event_key_command=35 calcMode=0 catalog=0 getSystemFlag(FLAG_ALPHA)=0
+          shortCutCommand: No action found
+          ...
+          shortCutCommand: No action found   
+          shortCutCommand: Disable=0, Key detected    35=   35: exitIfInNIM=0 keyForBtnClicked:01, calcMode=0, tam.mode=0
+          shortCutCommand:
+          shortCutCommand: Handle functions: key:35: showSoftmenu 1872
+          shortCutCommand: Handle key presses: key:35: btnClicked 01
+      refrsh(100): Cnt= 82 OVR CM= 0 scr..upd: 39=   10 0111#2=>              SkpSTK SHFT  TI=   0 CL=UP tam:    0 MENUid= 0:-1349:MyM
+   >>>>Z 1001 btnPressed       data=|01| data[0]=48 item=1872 calcMode=0
+   Switch - default: processKeyAction: calcMode=0 itemToBeAssigned=1830 item=1872 SHOWMODE=0
+   items.c: runfunction (before tamEnterMode): -1349, MyM
+   items.c: runfunction (after tamEnterMode): -2068, TamNoReg
+      refrsh(117): Cnt= 83 OVR CM= 0 scr..upd:  0=         0#2=>                     AUTO  TI=   0 CL=UP tam:10002 MENUid=131:-2068:TamNoReg
+      refrsh(  2): Cnt= 84 OVR CM= 0 scr..upd:  0=         0#2=>                     AUTO  TI=   0 CL=UP tam:10002 MENUid=131:-2068:TamNoReg
+   PC Key released: _keyval=   35 _state=   28 ------b2 b3 b4 ------ (SHIFT_State=    0)(F=0 G=0) AltGr_P=0 Ctrl_P=0 Valid_P=1 Ctrl_R=0 AltGr_R=0
+   PC Key released: _keyval=65507 _state=    8 ---------b3 --------- (SHIFT_State=    0)(F=0 G=0) AltGr_P=0 Ctrl_P=0 Valid_P=1 Ctrl_R=0 AltGr_R=0
+   PC Key released: _keyval=65514 _state=    0 --------------------- (SHIFT_State=    0)(F=0 G=0) AltGr_P=0 Ctrl_P=0 Valid_P=0 Ctrl_R=0 AltGr_R=0
 #endif //DONOTINCLUDE
 
 
