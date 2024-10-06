@@ -463,7 +463,7 @@
         calcModeAim(NOPARAM);
         if(beginWithLowercase) {
           alphaCase = CAPS_STOetc_DEFAULT;
-        } 
+        }
         else {
           alphaCase = CAPS_TAMother_DEFAULT;
         }
@@ -488,8 +488,8 @@
           if(item == ITM_Max) { // UP
             if(currentLocalStepNumber == 1) { // We are on 1st step of current program
               if(currentProgramNumber == 1) { // It's the 1st program in memory
-                tamLeaveMode();
-                //return;
+                tamLeaveMode();               // Nothing to do
+                return;
               }
               else { // It isn't the 1st program in memory
                 tam.value = programList[currentProgramNumber - 2].step;
@@ -507,13 +507,15 @@
 
           if(item == ITM_Min) { // DOWN
             if(currentProgramNumber == numberOfPrograms) { // We are in the last program in memory
-              tamLeaveMode();
-              //return;
+              tam.value = programList[currentProgramNumber - 1].step;
+              reallyRunFunction(ITM_GTOP, tam.value);      // Go to the first step of the program
+              reallyRunFunction(ITM_BST, NOPARAM);         // BST to go to .END.
             }
-
-            tam.value = programList[currentProgramNumber].step;
-            reallyRunFunction(ITM_GTOP, tam.value);
-            pemCursorIsZerothStep = true;
+            else {
+              tam.value = programList[currentProgramNumber].step;
+              reallyRunFunction(ITM_GTOP, tam.value);
+              pemCursorIsZerothStep = true;
+            }
             tamLeaveMode();
             hourGlassIconEnabled = false;
             return;
@@ -1129,7 +1131,7 @@
     _tamUpdateBuffer();
 
     clearSystemFlag(FLAG_ALPHA);
-    
+
     #if defined(PC_BUILD)
       if(forceTamAlpha) {
         forceTamAlpha = false;
