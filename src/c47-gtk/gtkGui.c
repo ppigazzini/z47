@@ -522,8 +522,6 @@ PC Key released: _keyval=65507 _state=    8 ---------b3 --------- (SHIFT_State= 
 PC Key released: _keyval=65514 _state=    0 --------------------- (SHIFT_State=    0)(F=0 G=1) inProg=0
 
 
-
-  
    From intenet summary (This seems a bit skewed compared to the experiments. Ignore this in favour of the two experiments.
    GDK_SHIFT_MASK:     0x0001     Indicates that the Shift key is pressed.
    GDK_CONTROL_MASK:   0x0002     Indicates that the Control key is pressed.
@@ -532,6 +530,18 @@ PC Key released: _keyval=65514 _state=    0 --------------------- (SHIFT_State= 
    GDK_MOD3_MASK:      0x0010     Indicates that the Scroll Lock key is pressed.
    GDK_MOD4_MASK:      0x0020     Indicates that the Super (Windows) key is pressed.
    GDK_MOD5_MASK:      0x0040     Indicates that the Hyper key is pressed.
+
+
+   Didier 3
+PC Key pressed:  _keyval=65507 _state=    4 ------b2 ------------ (SHIFT_State=    0)(F=0 G=0) labelText=0 plainTextMode=0 progr=0  GDK_KEY_Control_L 00100   C47SpecialKey_Ctrl_Pressed true
+PC Key pressed:  _keyval=65514 _state=   20 ------b2 ---b4 ------ (SHIFT_State=    0)(F=0 G=0) labelText=0 plainTextMode=0 progr=1  GDK_KEY_Alt_R     10100
+PC Key pressed:  _keyval=   35 _state=   28 ------b2 b3 b4 ------ (SHIFT_State=    0)(F=0 G=0) labelText=0 plainTextMode=0 progr=1  3                 11100
+PC Key released: _keyval=   35 _state=   28 ------b2 b3 b4 ------ (SHIFT_State=    0)(F=0 G=0) inProg=1
+PC Key released: _keyval=65507 _state=    8 ---------b3 --------- (SHIFT_State=    0)(F=0 G=0) inProg=0
+PC Key released: _keyval=65514 _state=    0 --------------------- (SHIFT_State=    0)(F=0 G=0) inProg=0   
+
+
+
 #endif //DONOTINCLUDE
 
 
@@ -540,11 +550,10 @@ PC Key released: _keyval=65514 _state=    0 --------------------- (SHIFT_State= 
   uint32_t previousEventKeyR = 0;
   uint32_t previousEventStateP = 0;
   uint32_t previousEventKeyP = 0;
-  #define C47SpecialAltGrInProgress           (( previousEventKeyP == GDK_KEY_Alt_R && previousEventStateP  == 0b10100) \
-                                          ||  (  event->keyval     == GDK_KEY_Alt_R && event->state         == 0b10100) \
-                                          ||  (  event->keyval     != GDK_KEY_Alt_R && (event->state & 0b10000        )) \
-                                          )
+  #define C47SpecialKey_AltGr_Pressed           (event->keyval == GDK_KEY_Alt_R     && event->state  & 0b10100)
   #define C47SpecialKey_Ctrl_Pressed            (event->keyval == GDK_KEY_Control_L && event->state  & 0b00100)
+  #define C47SpecialKey_Valid_Pressed           (!C47SpecialKey_AltGr_Pressed && !C47SpecialKey_Ctrl_Pressed && event->state & 0b11100)
+  //C47SpecialKey_Valid_Released not required as normal keys are not evaluated on release
   #define C47SpecialKey_Ctrl_Released          ((event->keyval == GDK_KEY_Control_L && event->state  & 0b00000) && (previousEventKeyP == GDK_KEY_Control_L && previousEventStateP == 0b00100)) 
   #define C47SpecialKey_AltGr_Released          (event->keyval == GDK_KEY_Alt_R     && event->state  & 0b00000  &&  previousEventKeyR == GDK_KEY_Control_L && previousEventStateR == 0b1000) 
 
@@ -564,7 +573,8 @@ PC Key released: _keyval=65514 _state=    0 --------------------- (SHIFT_State= 
       strcat(strr,(((event->state) & 0x0040) != 0) ? "b6 " : "---");
     #endif //VERBOSEKEYS
     //#if defined(VERBOSEKEYS)
-      printf("PC Key released: _keyval=%5d _state=%5d %s (SHIFT_State=%5u)(F=%u G=%u) inProg=%i\n", event->keyval, event->state, strr, SHIFT_State,shiftF,shiftG, C47SpecialAltGrInProgress);
+      printf("PC Key released: _keyval=%5d _state=%5d %s (SHIFT_State=%5u)(F=%u G=%u) AltGr_P=%i Ctrl_P=%i Valid_P=%i Ctrl_R=%i AltGr_R=%i\n", event->keyval, event->state, strr, SHIFT_State,shiftF,shiftG,
+                  C47SpecialKey_AltGr_Pressed, C47SpecialKey_Ctrl_Pressed, C47SpecialKey_Valid_Pressed, C47SpecialKey_Ctrl_Released, C47SpecialKey_AltGr_Released);
     //#endif //VERBOSEKEYS
 
     if(C47SpecialKey_Ctrl_Released) goto returnKeyReleasedFalse;
@@ -719,7 +729,8 @@ returnKeyReleasedFalse:
       strcat(strr,(((event->state) & 0x0040) != 0) ? "b6 " : "---");
     #endif //VERBOSEKEYS
     //#if defined(VERBOSEKEYS)
-      printf(  "PC Key pressed:  _keyval=%5d _state=%5d %s (SHIFT_State=%5u)(F=%u G=%u) labelText=%i plainTextMode=%i progr=%i\n", event->keyval, event->state, strr, SHIFT_State,shiftF,shiftG,labelText, plainTextMode, C47SpecialAltGrInProgress);
+      printf(  "PC Key pressed:  _keyval=%5d _state=%5d %s (SHIFT_State=%5u)(F=%u G=%u) labelText=%i plainTextMode=%i AltGr_P=%i Ctrl_P=%i Valid_P=%i Ctrl_R=%i AltGr_R=%i\n", event->keyval, event->state, strr, SHIFT_State,shiftF,shiftG,labelText, plainTextMode,
+                  C47SpecialKey_AltGr_Pressed, C47SpecialKey_Ctrl_Pressed, C47SpecialKey_Valid_Pressed, C47SpecialKey_Ctrl_Released, C47SpecialKey_AltGr_Released);
     //#endif //VERBOSEKEYS
 
     //printf("AltGr #1:%s         ; keyval=%u state=%u, event_key_strip_capslock=%u\n",
@@ -728,7 +739,7 @@ returnKeyReleasedFalse:
 
     if(C47SpecialKey_Ctrl_Pressed) goto returnKeyPressedFalse;
 
-    if(C47SpecialAltGrInProgress) { //clear any valid or invalid prior control key activation
+    if(C47SpecialKey_AltGr_Pressed) { //clear any valid or invalid prior control key activation
       SHIFT_State = 0;
       event_command_shift = 0;
       CTRL_State = 0;
@@ -820,8 +831,9 @@ returnKeyReleasedFalse:
 //event_key_command = event->keyval + (('A' <= event->keyval && event->keyval <= 'Z') ? 'a' - 'A' : 0)    // remove caps lock effect for commands, 'a' to 'z'
 //                                  - (('A' <= event->keyval && event->keyval <= 'Z') && event_command_shift == 65536 ? 'a' - 'A' : 0);                     // consider only shift button status to get caps for commands
 
-//#define allowAltGrKey ((event->state & 16) == 16)
-#define allowAltGrKey (C47SpecialAltGrInProgress)
+
+//#define allowAltGrKey ((event->state & 16) == 16) this will also allow the actual involved AltGr shifts. Narrowing will make it more accurate but may exclude other non-standard bitmasks
+#define allowAltGrKey (C47SpecialKey_Valid_Pressed)
 
 if(     (CTRL_State != 65536 || allowAltGrKey)
      && (!catalog || (catalog && currentMenu() == -MNU_MVAR))
