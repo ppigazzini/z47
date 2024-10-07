@@ -742,6 +742,9 @@ returnKeyReleasedFalse:
       default:;
     }
 
+
+    if(CTRL_State == 65536 && !C47SpecialKey_Ctrl_Pressed) goto continueWithOldDetections;
+
     if(!((calcMode == CM_AIM || calcMode == CM_EIM || tam.mode || (calcMode == CM_PEM && getSystemFlag(FLAG_ALPHA)) || (calcMode == CM_ASSIGN && getSystemFlag(FLAG_ALPHA))))) {
       switch(event_key_strip_capslock) {
         case GDK_KEY_f: //f
@@ -1093,33 +1096,59 @@ if(   (CTRL_State != 65536 || allowAltGrKey)
 
 
 
-
+continueWithOldDetections:
     //#if defined(VERBOSEKEYS)
       printf("   Continue with old key detection using event_keyval=%u\n\n",event_keyval);
     //#endif
+
+    switch(event_keyval) {
+      case GDK_KEY_H+65536: // Ctrl H
+      case GDK_KEY_h+65536: // Ctrl h
+        CTRL_State = 0;
+        printf("key pressed: CTRL+h Hardcopy\n");
+        copyScreenToClipboard();
+        break;
+
+      case 83+65536: // Ctrl S
+      case 115+65536: // Ctrl s
+        CTRL_State = 0;
+        printf("key pressed: CTRL+s SNAP\n");
+        fnSNAP(NOPARAM);
+        break;
+
+      case 120+65536: // CTRL x
+      case 88+65536: // CTRL X
+      case 99+65536: // CTRL c
+      case 67+65536: // CTRL C
+        CTRL_State = 0;
+        printf("key pressed: CTRL+c/x Copy x register to clipboard\n");
+        copyRegisterXToClipboard();
+        break;
+
+      case 100+65536: // CTRL d
+      case 68+65536: // CTRL D
+        CTRL_State = 0;
+        printf("key pressed: CTRL+d Copy Stack registers to clipboard\n");
+        copyStackRegistersToClipboard();
+        break;
+
+      case 97+65536: // CTRL a
+      case 65+65536: // CTRL A
+        CTRL_State = 0;
+        printf("key pressed: CTRL+d Copy All registers to clipboard\n");
+        copyAllRegistersToClipboard();
+        break;
+    
+      default:;
+    }
+
+
+
     //JM ALPHA SECTION FOR ALPHAMODE - TAKE OVER ALPHA KEYBOARD
     if(calcMode == CM_AIM || calcMode == CM_EIM || tam.mode || (calcMode == CM_PEM && getSystemFlag(FLAG_ALPHA)) || (calcMode == CM_ASSIGN && getSystemFlag(FLAG_ALPHA))) {
       //printf(">>>>> ALPHA SECTION Keyboard Key Code = %d\n", event_keyval);
-
       switch(event_keyval) {
-        case GDK_KEY_H+65536: // Ctrl H
-        case GDK_KEY_h+65536: // Ctrl h
-          CTRL_State = 0;
-          printf("key pressed: CTRL+h Hardcopy\n");
-          copyScreenToClipboard();
-          break;
-
-//        case 61:           //=
-//          if(calcMode == CM_EIM) {
-//            shiftF = true;
-//            int16_t jj = softmenuStack[0].firstItem;
-//            softmenuStack[0].firstItem = 0;
-//            btnFnClicked(w, "2");  //= F2
-//            softmenuStack[0].firstItem = jj;
-//            showSoftmenuCurrentPart();
-//          }
-//          break;
-
+ 
         //ROW 0
         case GDK_KEY_Up:                                               //JM     // CursorUp //JM
           if(AlphaArrowsOffAndUpDn) {            
@@ -1682,44 +1711,7 @@ if(   (CTRL_State != 65536 || allowAltGrKey)
           CTRL_State = 65536;
           break;
 
-        case 72+65536: // Ctrl H
-        case 104+65536: // Ctrl h
-          CTRL_State = 0;
-          printf("key pressed: CTRL+h Hardcopy\n");
-          copyScreenToClipboard();
-          break;
-
-        case 83+65536: // Ctrl S
-        case 115+65536: // Ctrl s
-          CTRL_State = 0;
-          printf("key pressed: CTRL+s SNAP\n");
-          fnSNAP(NOPARAM);
-          break;
-
-        case 120+65536: // CTRL x
-        case 88+65536: // CTRL X
-        case 99+65536: // CTRL c
-        case 67+65536: // CTRL C
-          CTRL_State = 0;
-          printf("key pressed: CTRL+c/x Copy x register to clipboard\n");
-          copyRegisterXToClipboard();
-          break;
-
-        case 100+65536: // CTRL d
-        case 68+65536: // CTRL D
-          CTRL_State = 0;
-          printf("key pressed: CTRL+d Copy Stack registers to clipboard\n");
-          copyStackRegistersToClipboard();
-          break;
-
-        case 97+65536: // CTRL a
-        case 65+65536: // CTRL A
-          CTRL_State = 0;
-          printf("key pressed: CTRL+d Copy All registers to clipboard\n");
-          copyAllRegistersToClipboard();
-          break;
-
-          default: ;
+        default: ;
       }
     }
 returnKeyPressedFalse:
