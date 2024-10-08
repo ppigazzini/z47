@@ -348,6 +348,9 @@
 #define USE_MICHALSKI_MOSIG_TANH_SINH    1 // Set to 1 to use Michalski & Mosig tanh-sinh integration
 #define USE_NEW_DEI_INTEGRATION_CODE     2 // 0 - use prior code. 1 - use new code. 2 - use new code with split point code.
 #define ENABLE_INTEGRATOR_FILE_OUTPUT    0 // Set for PRINTXY to be done after every evaluation of the formula
+#define INTEGRATION_TWO_STAGE_EXIT         // If set allows a level to complete before exiting the integrator
+#undef  INTEGRATION_TWO_STAGE_EXIT
+
 #define DECNUMDIGITS                    75 // Default number of digits used in the decNumber library
 
 #define BIG_SCREEN_COEF              1 // 2 = 2 times the standard screen, that is 800x480. Can be a decimal like 1.333

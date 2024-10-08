@@ -67,12 +67,9 @@ void fnPgmSlv(uint16_t label) {
 }
 
 static bool_t _realSolverFirstGuesses(calcRegister_t regist, real34_t *val) {
-  if(getRegisterDataType(regist) == dtReal34 && getRegisterAngularMode(regist) == amNone) {
+  if(getRegisterDataType(regist) == dtLongInteger || getRegisterDataType(regist) == dtReal34) {
+    fnToReal(0); // ensure the result is a plain real34
     real34Copy(REGISTER_REAL34_DATA(regist), val);
-    return true;
-  }
-  else if(getRegisterDataType(regist) == dtLongInteger) {
-    convertLongIntegerRegisterToReal34(regist, val);
     return true;
   }
   return false;
@@ -250,11 +247,9 @@ void fnSolveVar(uint16_t unusedButMandatoryParameter) {
     else if(lastErrorCode != ERROR_NONE) {
       realToReal34(const_NaN, res);
     }
-    else if(getRegisterDataType(REGISTER_X) == dtReal34 && getRegisterAngularMode(REGISTER_X) == amNone) {
+    else if(getRegisterDataType(REGISTER_X) == dtLongInteger || getRegisterDataType(REGISTER_X) == dtReal34) {
+      fnToReal(0); // ensure the result is a plain real34
       real34Copy(REGISTER_REAL34_DATA(REGISTER_X), res);
-    }
-    else if(getRegisterDataType(REGISTER_X) == dtLongInteger) {
-      convertLongIntegerRegisterToReal34(REGISTER_X, res);
     }
     else if(getRegisterDataType(REGISTER_X) == dtComplex34 && real34IsZero(REGISTER_REAL34_DATA(REGISTER_X))) {
       real34Copy(REGISTER_IMAG34_DATA(REGISTER_X), res);
