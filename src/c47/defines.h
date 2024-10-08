@@ -100,7 +100,7 @@
 
 //THESE ARE DMCP COMPILE OPTIONS FOR TWO FILE QSPI
   #if defined(TWO_FILE_PGM) //---------THESE ARE THE EXCLUSIONS TO MAKE IT FIT INTO AVAILABLE FLASH EVEN WHILE USING QSPI
-  //  #define SAVE_SPACE_DM42_2        //  4152 bytes // Without XEQM
+    #define SAVE_SPACE_DM42_2        //  4152 bytes // Without XEQM
     #define SAVE_SPACE_DM42_2LOAD    //   288 bytes // Without XEQM AUTOLOAD DEMOS
   //  #define SAVE_SPACE_DM42_6        //  1376 bytes // Without ELEC functions
   //  #define SAVE_SPACE_DM42_8        //  1856 bytes // Without Register Browser
@@ -116,12 +116,12 @@
   //  #define SAVE_SPACE_DM42_12ORTHO  //  0768 bytes // Without ORTHO MENU
   //  #define SAVE_SPACE_DM42_13GRF    // 17472 bytes // Without Solver & graphics & stat graphics
   //  #define SAVE_SPACE_DM42_13GRF_JM //  7520 bytes // Without More graphics
-  //  #define SAVE_SPACE_DM42_14       //   184 bytes // Without Load programming sample programs testPgms
+    #define SAVE_SPACE_DM42_14       //   184 bytes // Without Load programming sample programs testPgms
     #define SAVE_SPACE_DM42_15       // 10056 bytes // Without all distributions, i.e. , cauchy, chi, expo, f, logis, t, weibull
   //  #define SAVE_SPACE_DM42_16       //  2168 bytes // Without Norml distribution
     #define SAVE_SPACE_DM42_17       //  7448 bytes // Without Poisson/Hyper/Binomial/Geometrical distributions
   //  #define SAVE_SPACE_DM42_20_TIMER //  1232 bytes // Without STOPW
-  //  #define SAVE_SPACE_DM42_21_HP35  //   200 bytes // Without config file activations only. Not complete removal.
+    #define SAVE_SPACE_DM42_21_HP35  //   200 bytes // Without config file activations only. Not complete removal.
   #endif // TWO_FILE_PGM
 #endif // DMCP_BUILD
 
@@ -1025,6 +1025,8 @@ enum REG_NUMBERS_IN_KS_CODE { // Key Stroke register codes
 #define NUMBER_OF_RESERVED_VARIABLES    (LAST_RESERVED_VARIABLE        - FIRST_RESERVED_VARIABLE        + 1) // 41
 #define NUMBER_OF_LETTERED_VARIABLES    (FIRST_NAMED_RESERVED_VARIABLE - FIRST_RESERVED_VARIABLE)            // 26
 
+#define FAILED_INDIRECTION                      9999
+
 /* Convertion from a key stroke program register code to a C register number
  */
 static inline int16_t regKStoC(const uint8_t regKS) {
@@ -1257,7 +1259,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define AC_LOWER                                   1
 #define plainTextMode                              (bool_t)( calcMode == CM_AIM   || ((calcMode == CM_PEM  || calcMode == CM_ASSIGN) && getSystemFlag(FLAG_ALPHA)))
 #define labelText                                  (bool_t)((tam.mode == TM_LABEL || tam.mode == TM_STORCL || calcMode == CM_ASSIGN) && getSystemFlag(FLAG_ALPHA))
-//#define plainText                                  (bool_t)( calcMode == CM_AIM   || calcMode == CM_EIM    || (calcMode == CM_PEM    && getSystemFlag(FLAG_ALPHA) && !tam.mode)) 
+//#define plainText                                  (bool_t)( calcMode == CM_AIM   || calcMode == CM_EIM    || (calcMode == CM_PEM    && getSystemFlag(FLAG_ALPHA) && !tam.mode))
 #define noCapsLockSync                             0
 #define onlyCapsLockSync                           1
 #define allKeysCapsLockSync                        2
@@ -1461,7 +1463,8 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define INDPM_PARAM                                0
 #define INDPM_REGISTER                             1
 #define INDPM_FLAG                                 2
-#define INDPM_MENU                                 3
+#define INDPM_LABEL                                3
+#define INDPM_MENU                                 4
 
 // Combination / permutation
 #define CP_PERMUTATION                             0

@@ -23,6 +23,7 @@
 #include "mathematics/matrix.h"
 #include "mathematics/rsd.h"
 #include "memory.h"
+#include "programming/manage.h"
 #include "c43Extensions/radioButtonCatalog.h"
 #include "registerValueConversions.h"
 #include "saveRestoreCalcState.h"
@@ -1624,7 +1625,7 @@ void copySourceRegisterToDestRegister(calcRegister_t sourceRegister, calcRegiste
 
 
 
-int16_t indirectAddressing(calcRegister_t regist, uint16_t parameterType, int16_t minValue, int16_t maxValue) {
+int16_t indirectAddressing(calcRegister_t regist, uint16_t parameterType, int16_t minValue, int16_t maxValue, bool_t tryAllocate) {
   int16_t value;
   bool_t isValidAlpha = false;
   #if defined(PC_BUILD)
@@ -1642,7 +1643,11 @@ int16_t indirectAddressing(calcRegister_t regist, uint16_t parameterType, int16_
     case INDPM_FLAG: {
       maxValue = NUMBER_OF_GLOBAL_FLAGS + currentNumberOfLocalFlags - 1;
       break;
-  }
+    }
+    case INDPM_LABEL: {
+      maxValue = 104;
+      break;
+    }
   }
 
   if(regist >= FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters &&
@@ -1653,7 +1658,7 @@ int16_t indirectAddressing(calcRegister_t regist, uint16_t parameterType, int16_
       sprintf(errorMessage, "local indirection register .%02d", regist - FIRST_LOCAL_REGISTER);
       moreInfoOnError("In function indirectAddressing:", errorMessage, "is not defined!", NULL);
     #endif // PC_BUILD
-    return 9999;
+    return FAILED_INDIRECTION;
   }
 
   else if(getRegisterDataType(regist) == dtReal34 && parameterType != INDPM_MENU) {
@@ -1667,7 +1672,7 @@ int16_t indirectAddressing(calcRegister_t regist, uint16_t parameterType, int16_
         sprintf(tmpString, "register %" PRId16 " = %s:", regist, errorMessage);
         moreInfoOnError("In function indirectAddressing:", tmpString, "this value is negative or too big!", NULL);
       #endif // PC_BUILD
-      return 9999;
+      return FAILED_INDIRECTION;
     }
     value = real34ToInt32(REGISTER_REAL34_DATA(regist));
   }
@@ -1684,7 +1689,7 @@ int16_t indirectAddressing(calcRegister_t regist, uint16_t parameterType, int16_
         moreInfoOnError("In function indirectAddressing:", tmpString, "this value is negative or too big!", NULL);
       #endif // PC_BUILD
       longIntegerFree(lgInt);
-      return 9999;
+      return FAILED_INDIRECTION;
     }
     longIntegerToUInt(lgInt, value);
     longIntegerFree(lgInt);
@@ -1702,21 +1707,34 @@ int16_t indirectAddressing(calcRegister_t regist, uint16_t parameterType, int16_
         sprintf(tmpString, "register %" PRId16 " = %s:", regist, errorMessage);
         moreInfoOnError("In function indirectAddressing:", tmpString, "this value is negative or too big!", NULL);
       #endif // PC_BUILD
-      return 9999;
+      return FAILED_INDIRECTION;
     }
     value = val;
   }
 
   else if(getRegisterDataType(regist) == dtString && parameterType == INDPM_REGISTER) {
-    value = findNamedVariable(REGISTER_STRING_DATA(regist));
+    value = (tryAllocate ? findOrAllocateNamedVariable(REGISTER_STRING_DATA(regist)) : findNamedVariable(REGISTER_STRING_DATA(regist)));
     isValidAlpha = true;
-    if(value == INVALID_VARIABLE) {
+    if((value == INVALID_VARIABLE) && (lastErrorCode != ERROR_ENTER_NEW_NAME)) {
       displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-        sprintf(errorMessage, "string '%s' is not a named variable", REGISTER_STRING_DATA(regist));
+        sprintf(errorMessage, "string '%s' is not a named variable - tryAllocate is %s", REGISTER_STRING_DATA(regist),(tryAllocate? "true" : "false"));
         moreInfoOnError("In function indirectAddressing:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-      return 9999;
+      return FAILED_INDIRECTION;
+    }
+  }
+
+  else if(getRegisterDataType(regist) == dtString && parameterType == INDPM_LABEL) {
+    value = findNamedLabel(REGISTER_STRING_DATA(regist));
+    isValidAlpha = true;
+    if(value == INVALID_VARIABLE) {
+      displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        sprintf(errorMessage, "string '%s' is not a named label", REGISTER_STRING_DATA(regist));
+        moreInfoOnError("In function indirectAddressing:", errorMessage, NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+      return FAILED_INDIRECTION;
     }
   }
 
@@ -1729,7 +1747,7 @@ int16_t indirectAddressing(calcRegister_t regist, uint16_t parameterType, int16_
         sprintf(errorMessage, "string '%s' is not a menu name", REGISTER_STRING_DATA(regist));
         moreInfoOnError("In function indirectAddressing:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-      return 9999;
+      return FAILED_INDIRECTION;
     }
   }
 
@@ -1739,7 +1757,7 @@ int16_t indirectAddressing(calcRegister_t regist, uint16_t parameterType, int16_
       sprintf(errorMessage, "register %" PRId16 " is %s:", regist, getRegisterDataTypeName(regist, true, false));
       moreInfoOnError("In function indirectAddressing:", errorMessage, "not suited for indirect addressing!", NULL);
     #endif // PC_BUILD
-    return 9999;
+    return FAILED_INDIRECTION;
   }
 
   if(minValue <= value && (value <= maxValue || isValidAlpha)) {
@@ -1751,7 +1769,7 @@ int16_t indirectAddressing(calcRegister_t regist, uint16_t parameterType, int16_
         sprintf(errorMessage, "value = %d! Should be from %d to %d.", value, minValue, maxValue);
         moreInfoOnError("In function indirectAddressing:", errorMessage, NULL, NULL);
       #endif // PC_BUILD
-      return 9999;
+      return FAILED_INDIRECTION;
     }
   }
 
@@ -2449,3 +2467,33 @@ void fnRegSwap(uint16_t unusedButMandatoryParameter) {
     displayCalcErrorMessage(lastErrorCode, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
   }
 }
+
+
+bool_t isFunctionAllowingNewVariable(uint16_t op) {
+  switch(op) {
+    case ITM_INPUT:
+    case ITM_STO:
+    case ITM_STOADD:
+    case ITM_STOSUB:
+    case ITM_STOMULT:
+    case ITM_STODIV:
+    case ITM_KEYQ:
+    case ITM_M_DIM:
+    case ITM_MVAR:
+    case ITM_SOLVE:
+    case ITM_STOCFG:
+    case ITM_STOMAX:
+    case ITM_STOMIN:
+    case ITM_XtoALPHA:
+    case ITM_Xex:
+    case ITM_Yex:
+    case ITM_Zex:
+    case ITM_Tex:
+    case ITM_INTEGRAL:
+      return true;
+
+    default:
+      return false;
+  }
+}
+
