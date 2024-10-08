@@ -117,7 +117,7 @@
   //  #define SAVE_SPACE_DM42_12ORTHO  //  0768 bytes // Without ORTHO MENU
   //  #define SAVE_SPACE_DM42_13GRF    // 17472 bytes // Without Solver & graphics & stat graphics
   //  #define SAVE_SPACE_DM42_13GRF_JM //  7520 bytes // Without More graphics
-  //  #define SAVE_SPACE_DM42_14       //   184 bytes // Without Load programming sample programs testPgms
+    #define SAVE_SPACE_DM42_14       //   184 bytes // Without Load programming sample programs testPgms
     #define SAVE_SPACE_DM42_15       // 10056 bytes // Without all distributions, i.e. , cauchy, chi, expo, f, logis, t, weibull
   //  #define SAVE_SPACE_DM42_16       //  2168 bytes // Without Norml distribution
   //  #define SAVE_SPACE_DM42_17       //  7448 bytes // Without Poisson/Hyper/Binomial/Geometrical distributions
@@ -1030,6 +1030,8 @@ enum REG_NUMBERS_IN_KS_CODE { // Key Stroke register codes
 #define NUMBER_OF_RESERVED_VARIABLES    (LAST_RESERVED_VARIABLE        - FIRST_RESERVED_VARIABLE        + 1) // 41
 #define NUMBER_OF_LETTERED_VARIABLES    (FIRST_NAMED_RESERVED_VARIABLE - FIRST_RESERVED_VARIABLE)            // 26
 
+#define FAILED_INDIRECTION                      9999
+
 /* Convertion from a key stroke program register code to a C register number
  */
 static inline int16_t regKStoC(const uint8_t regKS) {
@@ -1466,7 +1468,8 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define INDPM_PARAM                                0
 #define INDPM_REGISTER                             1
 #define INDPM_FLAG                                 2
-#define INDPM_MENU                                 3
+#define INDPM_LABEL                                3
+#define INDPM_MENU                                 4
 
 // Combination / permutation
 #define CP_PERMUTATION                             0
