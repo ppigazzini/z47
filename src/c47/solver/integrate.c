@@ -670,6 +670,10 @@ static void _integrate(calcRegister_t regist, const real_t *a, const real_t *b, 
             _showProgress(&ss, &bma2, &h, const_0, const_0, const_pi, realContext);
           #endif //ENABLE_SOLVER_PROGRESS
           if(!interruptedLoop && exitSignalled) {  //First EXIT press
+            #if !defined(INTEGRATION_TWO_STAGE_EXIT)
+              displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+              return;
+            #endif //INTEGRATION_TWO_STAGE_EXIT
             exitSignalled = false;
             interruptedLoop = 1;
           }
@@ -1007,9 +1011,12 @@ static void _integrate_mm(calcRegister_t regist, const real_t *llim, const real_
             _showProgress(&sslast, &bma2, &h, &errval, const_0, const_2, realContext);
           #endif //ENABLE_SOLVER_PROGRESS
           if(!interruptedLoop && exitSignalled) {  //First EXIT press
+            #if !defined(INTEGRATION_TWO_STAGE_EXIT)
+              displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+              return;
+            #endif //INTEGRATION_TWO_STAGE_EXIT
             exitSignalled = false;
             interruptedLoop = 1;
-          }
           if(interruptedLoop) {
             sprintf(tmps,"Level %i. %5.1fs or EXIT: Iter: ",(int16_t)k, (float)(40.0 - ((interruptedLoop++)/2.0)));
             radixProcess(tmps,tmps);
@@ -1363,7 +1370,11 @@ static void dbl_exp_int_new(calcRegister_t regist, const real_t *a, const real_t
             #if ENABLE_SOLVER_PROGRESS == 1
             _showProgress(result, const_1, const_1, error, const_0, const_1, realContext);
             #endif //ENABLE_SOLVER_PROGRESS
-            if(!interruptedLoop && exitSignalled) {  //First EXIT press
+          if(!interruptedLoop && exitSignalled) {  //First EXIT press
+              #if !defined(INTEGRATION_TWO_STAGE_EXIT)
+                displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+                return;
+              #endif //INTEGRATION_TWO_STAGE_EXIT
               exitSignalled = false;
               interruptedLoop = 1;
             }
@@ -1436,6 +1447,10 @@ static void dbl_exp_int_new(calcRegister_t regist, const real_t *a, const real_t
               _showProgress(result, const_1, const_1, error, const_0, const_1, realContext);
             #endif //ENABLE_SOLVER_PROGRESS
             if(!interruptedLoop && exitSignalled) {  //First EXIT press
+              #if !defined(INTEGRATION_TWO_STAGE_EXIT)
+                displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+                return;
+              #endif //INTEGRATION_TWO_STAGE_EXIT
               exitSignalled = false;
               interruptedLoop = 1;
             }
