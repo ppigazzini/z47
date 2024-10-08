@@ -1349,7 +1349,7 @@ int16_t lastItem = 0;
               }
               else {
                     #if defined(VERBOSEKEYS)
-                      printf("keyboard.c: executeFunction calcmode=%U %i (before runfunction): %i, %s tam.mode=%i\n", calcMode, item, currentMenu(), indexOfItems[-currentMenu()].itemSoftmenuName, tam.mode);
+                      printf("keyboard.c: executeFunction calcmode=%u %i (before runfunction): %i, %s tam.mode=%i\n", calcMode, item, currentMenu(), indexOfItems[-currentMenu()].itemSoftmenuName, tam.mode);
                     #endif //VERBOSEKEYS
 
                 runFunction(item);
