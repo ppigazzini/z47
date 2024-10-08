@@ -285,7 +285,7 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
       #endif //VERBOSEKEYS
       return false;                                  //exit directly for disallowed input condition
     }
-    if(tam.mode == TM_LABEL && key != '\'') {
+    if(tam.mode == TM_LABEL && !(key == '\'' || key == GDK_KEY_Up || key == GDK_KEY_Down)) {
       #if defined(VERBOSEKEYS)
         printf("       shortCutCommand: Returning, shortcut blocked in TM_LABEL\n");
       #endif //VERBOSEKEYS
@@ -838,30 +838,45 @@ if(     (CTRL_State != 65536 || allowAltGrKey)
 
 }
 else if(     (CTRL_State != 65536 || allowAltGrKey)
-     && (tam.mode == TM_STORCL)
      && (    calcMode == CM_NORMAL 
          ||  calcMode == CM_PEM
         )
      && !getSystemFlag(FLAG_ALPHA)
   ) {
-  #if defined(VERBOSEKEYS)
-    printf("------------------------ Checking STO/RCL ancillary functions event->keyval=%i, GDK_KEY_Up=%i\n",event->keyval, GDK_KEY_Up);        
-  #endif
-  if(shortCutCommand(w, event->keyval, GDK_KEY_Up         ,   shortcutProfile == USER_C47                               , !EXITIFNIM, !DISABLED,    "",   "17", 0b01001, -1, 0))        {return false;} else        //                         [x]eq
-  if(shortCutCommand(w, event->keyval, GDK_KEY_Down       ,   shortcutProfile == USER_C47                               , !EXITIFNIM, !DISABLED,    "",   "22", 0b01001, -1, 0))        {return false;} else        //                         [x]eq
-  if(shortCutCommand(w, event->keyval, GDK_KEY_Up         ,                                  shortcutProfile == USER_R47, !EXITIFNIM, !DISABLED,    "",   "22", 0b01001, -1, 0))        {return false;} else        //                         [x]eq
-  if(shortCutCommand(w, event->keyval, GDK_KEY_Down       ,                                  shortcutProfile == USER_R47, !EXITIFNIM, !DISABLED,    "",   "27", 0b01001, -1, 0))        {return false;} else        //                         [x]eq
-  if(shortCutCommand(w, event->keyval, '/'                ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !EXITIFNIM, !DISABLED,    "",   "21", 0b01001, -1, 0))        {return false;} else        //                         [x]eq
-  if(shortCutCommand(w, event->keyval, '*'                ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !EXITIFNIM, !DISABLED,    "",   "26", 0b01001, -1, 0))        {return false;} else        //                         [x]eq
-  if(shortCutCommand(w, event->keyval, '-'                ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !EXITIFNIM, !DISABLED,    "",   "31", 0b01001, -1, 0))        {return false;} else        //                         [x]eq
-  if(shortCutCommand(w, event->keyval, '+'                ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !EXITIFNIM, !DISABLED,    "",   "36", 0b01001, -1, 0))        {return false;} else        //                         [x]eq
-#if defined(VERBOSEKEYS)
-  printf("------------------------ Checked STO/RCL arrow +-*/, skipping to rest of key detections\n");        
-#else
-  {}
-#endif
 
-}
+    if(tam.mode == TM_STORCL) {
+      #if defined(VERBOSEKEYS)
+        printf("------------------------ Checking STO/RCL ancillary functions event->keyval=%i, GDK_KEY_Up=%i\n",event->keyval, GDK_KEY_Up);        
+      #endif
+      if(shortCutCommand(w, event->keyval, GDK_KEY_Up         ,   shortcutProfile == USER_C47                               , !EXITIFNIM, !DISABLED,    "",   "17", 0b01001, -1, 0))        {return false;} else        //                         [x]eq
+      if(shortCutCommand(w, event->keyval, GDK_KEY_Down       ,   shortcutProfile == USER_C47                               , !EXITIFNIM, !DISABLED,    "",   "22", 0b01001, -1, 0))        {return false;} else        //                         [x]eq
+      if(shortCutCommand(w, event->keyval, GDK_KEY_Up         ,                                  shortcutProfile == USER_R47, !EXITIFNIM, !DISABLED,    "",   "22", 0b01001, -1, 0))        {return false;} else        //                         [x]eq
+      if(shortCutCommand(w, event->keyval, GDK_KEY_Down       ,                                  shortcutProfile == USER_R47, !EXITIFNIM, !DISABLED,    "",   "27", 0b01001, -1, 0))        {return false;} else        //                         [x]eq
+      if(shortCutCommand(w, event->keyval, '/'                ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !EXITIFNIM, !DISABLED,    "",   "21", 0b01001, -1, 0))        {return false;} else        //                         [x]eq
+      if(shortCutCommand(w, event->keyval, '*'                ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !EXITIFNIM, !DISABLED,    "",   "26", 0b01001, -1, 0))        {return false;} else        //                         [x]eq
+      if(shortCutCommand(w, event->keyval, '-'                ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !EXITIFNIM, !DISABLED,    "",   "31", 0b01001, -1, 0))        {return false;} else        //                         [x]eq
+      if(shortCutCommand(w, event->keyval, '+'                ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !EXITIFNIM, !DISABLED,    "",   "36", 0b01001, -1, 0))        {return false;} else        //                         [x]eq
+      #if defined(VERBOSEKEYS)
+        printf("------------------------ Checked STO/RCL arrow +-*/, skipping to rest of key detections\n");        
+      #else
+        {}
+      #endif
+    }
+    else if(tam.mode == TM_LABEL && !getSystemFlag(FLAG_ALPHA)) { 
+      #if defined(VERBOSEKEYS)
+        printf("------------------------ Checking GTO Up Dn ancillary functions event->keyval=%i, GDK_KEY_Up=%i\n",event->keyval, GDK_KEY_Up);        
+      #endif
+      if(shortCutCommand(w, event->keyval, GDK_KEY_Up         ,   shortcutProfile == USER_C47                               , !EXITIFNIM, !DISABLED,    "",   "17", 0b01001, -1, 0))        {return false;} else        //                         [x]eq
+      if(shortCutCommand(w, event->keyval, GDK_KEY_Down       ,   shortcutProfile == USER_C47                               , !EXITIFNIM, !DISABLED,    "",   "22", 0b01001, -1, 0))        {return false;} else        //                         [x]eq
+      if(shortCutCommand(w, event->keyval, GDK_KEY_Up         ,                                  shortcutProfile == USER_R47, !EXITIFNIM, !DISABLED,    "",   "22", 0b01001, -1, 0))        {return false;} else        //                         [x]eq
+      if(shortCutCommand(w, event->keyval, GDK_KEY_Down       ,                                  shortcutProfile == USER_R47, !EXITIFNIM, !DISABLED,    "",   "27", 0b01001, -1, 0))        {return false;} else        //                         [x]eq
+      #if defined(VERBOSEKEYS)
+        printf("------------------------ Checked GTO Up Dn, skipping to rest of key detections\n");        
+      #else
+        {}
+      #endif
+    }
+  }
 
  
 
