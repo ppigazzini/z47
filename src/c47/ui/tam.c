@@ -763,7 +763,7 @@
           value += FIRST_LOCAL_REGISTER;
         }
         if(tam.indirect && calcMode != CM_PEM) {
-          value = indirectAddressing(value, indirectionType(tamOperation()), min, max, tryAllocate);
+          value = indirectAddressing(value, indirectionType(tam.function), min, max, tryAllocate);
           run = (lastErrorCode == 0);
         }
         if(tam.function == ITM_GTOP) {
