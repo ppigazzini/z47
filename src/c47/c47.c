@@ -35,6 +35,9 @@
 #endif // !TESTSUITE_BUILD && !GENERATE_CATALOGS
 #if defined(PC_BUILD) || defined(TESTSUITE_BUILD)
   bool_t              debugMemAllocation;
+  bool                forceTamAlpha;
+  uint32_t            deadKey;
+  bool_t              testDeadKeys = false;
 #endif // PC_BUILD || TESTSUITE_BUILD
 
 const font_t          *fontForShortInteger;
@@ -87,6 +90,7 @@ dataBlock_t           *currentSubroutineLevelData;
 
 namedVariableHeader_t *allNamedVariables;
 softmenuStack_t        softmenuStack[SOFTMENU_STACK_SIZE];
+uint16_t               menuPageNumber;
 userMenuItem_t         userMenuItems[18];
 userMenuItem_t         userAlphaItems[18];
 userMenu_t            *userMenus;

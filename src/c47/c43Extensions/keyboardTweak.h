@@ -59,6 +59,7 @@ void     resetKeytimers      (void);
 #endif // !TESTSUITE_BUILD
 
 uint16_t numlockReplacements(uint16_t id, int16_t item, bool_t NL, bool_t SHFT, bool_t GSHFT);
+bool_t caseReplacements(uint8_t id, bool_t lowerCaseSelected, int16_t item, int16_t *itemOut);
 bool_t keyReplacements(int16_t item, int16_t * item1, bool_t NL, bool_t SHFT, bool_t GSHFT);
 
 #if defined(PC_BUILD)

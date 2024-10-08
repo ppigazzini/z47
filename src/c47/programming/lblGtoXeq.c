@@ -771,7 +771,7 @@ int16_t executeOneStep(uint8_t *step) {
     }
 
     case ITM_SOLVE: {     //  1608
-      currentSolverStatus &= !SOLVER_STATUS_USES_FORMULA;
+      currentSolverStatus &= ~SOLVER_STATUS_USES_FORMULA;
       _executeOp(step, op, PARAM_REGISTER);
       if(temporaryInformation == TI_SOLVER_FAILED) {
         lastErrorCode = ERROR_NONE;

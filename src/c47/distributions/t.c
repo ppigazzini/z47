@@ -205,7 +205,7 @@
       realAdd(&p, nu, &q, realContext);
       realDivide(&p, &q, &p, realContext);
       realMultiply(nu, const_1on2, &q, realContext);
-      WP34S_betai(&p, const_1on2, &q, &r, realContext);
+      WP34S_betai(&q, const_1on2, &p, &r, realContext);
       realMultiply(&r, const_1on2, &r, realContext);
       realChangeSign(&r);
       realAdd(&r, const_1on2, res, realContext);

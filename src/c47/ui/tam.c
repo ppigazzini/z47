@@ -304,7 +304,7 @@
     min2 = (tam.indirect ? 0 : min);
     max2 = (tam.indirect ? (tam.dot ? (calcMode == CM_PEM ? 98 : currentNumberOfLocalRegisters) : 99) : max);
     dupNum = 0;
-    if((item == ITM_ENTER && !(tam.function == ITM_toINT || tam.function == ITM_HASH_JM)) || (tam.alpha && stringGlyphLength(aimBuffer) > 6)) {
+    if((item == ITM_ENTER && !(tam.function == ITM_toINT || tam.function == ITM_HASH_JM)) || (tam.alpha && stringGlyphLength(aimBuffer) > (tam.mode != TM_MENU ? 6 : 8))) {
       forceTry = true;
     }
     else if(item == ITM_BACKSPACE) {
@@ -322,10 +322,13 @@
           // backspaces within AIM are handled by addItemToBuffer, so this is if the aimBuffer is already empty
           tam.alpha = false;
           clearSystemFlag(FLAG_ALPHA);
-          calcModeTamGui();
-          if(softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_TAMALPHA) {
+          popSoftmenu();                     // pop current menu : either MNU_TAMALPHA or an Alpha submenu
+          --numberOfTamMenusToPop;
+          if(menu(0) == -MNU_TAMALPHA) {     // if back to MNU_TAMALPHA, pop it also to complete exit from tam.alpha
             popSoftmenu();
+            --numberOfTamMenusToPop;
           }
+          calcModeTamGui();
         }
       }
       else if(tam.digitsSoFar > 0) {
@@ -349,9 +352,29 @@
       }
       else if(tam.indirect) {
         tam.indirect = false;
-        if(tam.mode == TM_FLAGR || tam.mode == TM_FLAGW) {
+        if(tam.mode == TM_VALUE || tam.mode == TM_VALUE_CHB) {
+          popSoftmenu();
+          if(tam.function == ITM_DENMAX2) {
+            showSoftmenu(-MNU_TAMNONREGMAX);
+          }
+          else {
+            showSoftmenu(-MNU_TAMNONREG);
+          }
+          --numberOfTamMenusToPop;
+        }
+        else if(tam.mode == TM_REGISTER || tam.mode == TM_M_DIM) {
+          popSoftmenu();
+          showSoftmenu(-MNU_TAM);
+          --numberOfTamMenusToPop;
+        }
+        else if(tam.mode == TM_FLAGR || tam.mode == TM_FLAGW) {
           popSoftmenu();
           showSoftmenu(-MNU_TAMFLAG);
+          --numberOfTamMenusToPop;
+        }
+        else if(tam.mode == TM_STORCL) {
+          popSoftmenu();
+          showSoftmenu(-MNU_TAMSTORCL);
           --numberOfTamMenusToPop;
         }
         else if(tam.mode == TM_LABEL || (tam.mode == TM_KEY && tam.keyInputFinished)) {
@@ -359,14 +382,24 @@
           showSoftmenu(-MNU_TAMLABEL);
           --numberOfTamMenusToPop;
         }
-        else if(tam.mode == TM_MENU || (tam.mode == TM_KEY && tam.keyInputFinished)) {
+        else if(tam.mode == TM_SOLVE) {
+          popSoftmenu();
+          if(tam.function == ITM_SOLVE && calcMode == CM_PEM) {
+            showSoftmenu(-MNU_TAM);
+          }
+          else {
+            showSoftmenu(-MNU_TAMLABEL);
+          }
+          --numberOfTamMenusToPop;
+        }
+        else if(tam.mode == TM_MENU) {
           popSoftmenu();
           showSoftmenu(-MNU_TAMMENU);
           --numberOfTamMenusToPop;
         }
-        else if(tam.mode == TM_VALUE) {
+        else if(tam.mode == TM_CMP) {
           popSoftmenu();
-          showSoftmenu(-MNU_TAMNONREG);
+          showSoftmenu(-MNU_TAMCMP);
           --numberOfTamMenusToPop;
         }
       }
@@ -429,13 +462,18 @@
         aimBuffer[0] = 0;
         calcModeAim(NOPARAM);
         if(beginWithLowercase) {
-          alphaCase = AC_LOWER;
+          alphaCase = CAPS_STOetc_DEFAULT;
+        }
+        else {
+          alphaCase = CAPS_TAMother_DEFAULT;
         }
         switch(softmenu[softmenuStack[0].softmenuId].menuItem) {
-          case -MNU_TAMCMP    :
-          case -MNU_TAMLABEL  :
-          case -MNU_TAM       :
-          case -MNU_TAMSTORCL :
+          case -MNU_TAMCMP      :
+          case -MNU_TAMLABEL    :
+          case -MNU_TAM         :
+          case -MNU_TAMSTORCL   :
+          case -MNU_TAMMENU     :
+          case -MNU_TAMINDIRECT :
             showSoftmenu(-MNU_TAMALPHA);
             screenUpdatingMode = SCRUPD_AUTO;
             break;
@@ -450,8 +488,8 @@
           if(item == ITM_Max) { // UP
             if(currentLocalStepNumber == 1) { // We are on 1st step of current program
               if(currentProgramNumber == 1) { // It's the 1st program in memory
-                tamLeaveMode();
-                //return;
+                tamLeaveMode();               // Nothing to do
+                return;
               }
               else { // It isn't the 1st program in memory
                 tam.value = programList[currentProgramNumber - 2].step;
@@ -469,13 +507,15 @@
 
           if(item == ITM_Min) { // DOWN
             if(currentProgramNumber == numberOfPrograms) { // We are in the last program in memory
-              tamLeaveMode();
-              //return;
+              tam.value = programList[currentProgramNumber - 1].step;
+              reallyRunFunction(ITM_GTOP, tam.value);      // Go to the first step of the program
+              reallyRunFunction(ITM_BST, NOPARAM);         // BST to go to .END.
             }
-
-            tam.value = programList[currentProgramNumber].step;
-            reallyRunFunction(ITM_GTOP, tam.value);
-            pemCursorIsZerothStep = true;
+            else {
+              tam.value = programList[currentProgramNumber].step;
+              reallyRunFunction(ITM_GTOP, tam.value);
+              pemCursorIsZerothStep = true;
+            }
             tamLeaveMode();
             hourGlassIconEnabled = false;
             return;
@@ -679,14 +719,9 @@
     }
     else if(item == ITM_INDIRECTION) {
       if(!tam.alpha && !tam.digitsSoFar && !tam.dot && !valueParameter && (indexOfItems[tam.function].status & PTP_STATUS) != PTP_SKIP_BACK && (indexOfItems[tam.function].status & PTP_STATUS) != PTP_DECLARE_LABEL) {
-        if(!tam.indirect && (tam.mode == TM_FLAGR || tam.mode == TM_FLAGW || tam.mode == TM_LABEL || tam.mode == TM_MENU)) {
+        if(!tam.indirect) {
           popSoftmenu();
-          showSoftmenu(-MNU_TAM);
-          --numberOfTamMenusToPop;
-        }
-        if(!tam.indirect && tam.mode == TM_VALUE) {
-          popSoftmenu();
-          showSoftmenu(-MNU_TAMNONREGIND);
+          showSoftmenu(-MNU_TAMINDIRECT);
           --numberOfTamMenusToPop;
         }
         tam.indirect = true;
@@ -706,9 +741,9 @@
       // Do nothing
       return;
     }
-    
+
     // All operations that may try and evaluate the function shouldn't return but let execution fall through to here
-    
+
     if(tam.mode == TM_KEY && !tam.keyInputFinished) {
       if(tam.alpha || forcedVar || ((tryOoR || (min2 <= tam.value && tam.value <= max2)) && (forceTry || tam.value*10 > max2))) {
         tam.key              = tam.value;
@@ -773,7 +808,7 @@
             default: {
               if(tam.mode == TM_MENU) {                        // Leave TAM menu before opening a new menu
                 tamLeaveMode();
-              } 
+              }
               reallyRunFunction(tamOperation(), value);
             }
           }
@@ -794,7 +829,7 @@
           addStepInProgram(tamOperation());
           if(tam.mode) {
             tamLeaveMode();
-          }            
+          }
         }
         else {
           if(tam.mode) {
@@ -867,7 +902,7 @@
       else if(tryAllocate) {
         value = findOrAllocateNamedVariable(buffer);
       }
-      else if((tam.mode == TM_MENU) && !tam.indirect) {
+      else if((tam.mode == TM_MENU) && !tam.indirect && (calcMode != CM_PEM)) {
         value = findMenu(buffer);
         tam.value = value;
         if(value == INVALID_MENU && calcMode != CM_PEM) {
@@ -1061,7 +1096,7 @@
         showSoftmenu(-MNU_TAMMENU);
         break;
       }
-      
+
       case TM_SOLVE: {
         if(func == ITM_SOLVE && calcMode == CM_PEM) {
           showSoftmenu(-MNU_TAM);
@@ -1096,6 +1131,13 @@
     _tamUpdateBuffer();
 
     clearSystemFlag(FLAG_ALPHA);
+
+    #if defined(PC_BUILD)
+      if(forceTamAlpha) {
+        forceTamAlpha = false;
+        tamProcessInput(ITM_alpha);  // (DL] enter tam alpha for simulator easy keyboard entry
+      }
+    #endif // PC_BUILD
 
     if(tam.mode == TM_NEWMENU) {
       setSystemFlag(FLAG_ALPHA);

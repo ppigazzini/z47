@@ -138,6 +138,19 @@ static bool_t longIntegerIsPrime1(longInteger_t primeCandidate) {
   return true;
 } */
 
+static bool_t getIntArg(longInteger_t x) {
+  bool_t fractional;
+
+  if(!getRegisterAsLongInt(REGISTER_X, x, &fractional))
+    return false;
+
+  if (fractional) {
+    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+    return false;
+  }
+  return true;
+}
+
 
 void fnIsPrime(uint16_t unusedButMandatoryParameter) {
   #if !defined(SAVE_SPACE_DM42_12PRIME)
@@ -145,9 +158,8 @@ void fnIsPrime(uint16_t unusedButMandatoryParameter) {
 
     longIntegerInit(primeCandidate);
     longIntegerInit(tmp);
-    if(!getRegisterAsLongInt(REGISTER_X, primeCandidate)) {
+    if (!getIntArg(primeCandidate))
       goto abort;
-    }
     longIntegerPowerUIntUInt(10,maximumPrime,tmp);
     longIntegerSubtract(primeCandidate, tmp, tmp);   // (primeCandidate - 10^300) positive is too large
     if(longIntegerIsPositive(tmp)) {
@@ -180,7 +192,7 @@ void fnNextPrime(uint16_t unusedButMandatoryParameter) {
       convertRealToLongInteger(&x, currentNumber, DEC_ROUND_DOWN);
     }
     else {
-      if(!getRegisterAsLongInt(REGISTER_X, currentNumber)) {
+      if(!getIntArg(currentNumber)) {
         goto abort;
       }
     }
@@ -707,7 +719,7 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
     longIntegerInit(tmp);
     real34Matrix_t matrix;
 
-    if(!getRegisterAsLongInt(REGISTER_X, currentNumber)) {
+    if(!getIntArg(currentNumber)) {
       goto abort;
     }
 
@@ -898,7 +910,7 @@ void _fnEvPFacts     (uint16_t param) {
         fnDrop(NOPARAM);
       }
       else {
-        if(!getRegisterAsLongInt(REGISTER_X, currentNumber)) {
+        if(!getIntArg(currentNumber)) {
           goto abort;
         }
         longIntegerToInt(currentNumber, pwr);
@@ -1045,7 +1057,8 @@ void fnEvPFacts (uint16_t param) {
   }
   saveForUndo();
   if(param == M_EULER_SIGMA_pk) {
-    if(!getRegisterAsLongInt(REGISTER_X, xx)) {
+    longIntegerInit(xx);
+    if(!getIntArg(xx)) {
       return;
     }
     longIntegerToInt(xx, k);
@@ -1117,7 +1130,7 @@ void fnEulPhi     (uint16_t unusedButMandatoryParameter) {
     longInteger_t x;
     longIntegerInit(x);
 
-    if(!getRegisterAsLongInt(REGISTER_X, x)) {
+    if(!getIntArg(x)) {
       goto return1;
     }
 

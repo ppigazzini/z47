@@ -37,6 +37,10 @@
 #include "ui/matrixEditor.h"
 #include "ui/tam.h"
 #include <string.h>
+#if defined(PC_BUILD)
+  #include "gtkGui.h"
+#endif
+
 
 #include "c47.h"
 
@@ -404,7 +408,13 @@ typedef struct {
       }
 
       else if(tam.mode) {
-        tamProcessInput(item);
+        if((item == ITM_INDIRECT_X) || (item == ITM_INDIRECT_Y) || (item == ITM_INDIRECT_Z) || (item == ITM_INDIRECT_T)) {
+          tamProcessInput(ITM_INDIRECTION);
+          tamProcessInput(item - (ITM_INDIRECT_X - ITM_REG_X));
+        }
+        else {
+          tamProcessInput(item);
+        }
       }
 
       else if(calcMode == CM_NIM) {
@@ -1566,8 +1576,8 @@ typedef struct {
       // F not active in NIM, per definition not possible if a period is in the input string.
 
       //JM Only works in direct NIM, that is only when the input buffer already contains #
-      case ITM_1ONX: {      // C47: B for binary base
-      case ITM_SQUAREROOTX: // R47:
+      case ITM_1ONX:          // C47: B for binary base
+      case ITM_SQUAREROOTX: { // R47:
         if((!isR47FAM && item == ITM_SQUAREROOTX) || (isR47FAM && item == ITM_1ONX)) {
           keyActionProcessed = false;
           break;

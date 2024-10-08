@@ -833,11 +833,11 @@ void execTimerApp(uint16_t timerType) {
         fnTimerStop(TO_3S_CTFF);
         fnTimerStop(TO_FG_LONG);
         if(shiftF) {                           //this is for R47 ShiftF
-          showSoftmenu(-MNU_HOME);
+          showSoftmenu(calcMode == CM_AIM ? -MNU_ALPHA : -MNU_HOME);
           showSoftmenuCurrentPart();
         }
         else if(shiftG) {                      //this is for R47 ShiftG
-          showSoftmenu(-MNU_MyMenu);
+          showSoftmenu(calcMode == CM_AIM ? -MNU_MyAlpha : -MNU_MyMenu);
           showSoftmenuCurrentPart();
         }
         shiftF = 0;
@@ -1045,7 +1045,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
     int8_t   byte, *data;
     const glyph_t *glyph;
 
-    if(charCode == 1) {
+    if(charCode == STD_NOCHAR) {
       return x; //This is special usage of the 01 ASCII code, to ignore the code and return with nothing printed
     }
 
@@ -1835,29 +1835,42 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
     showString(p, &numericFont, SCREEN_WIDTH - stringWidth(p, &numericFont, false, true), Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(rowReg - REGISTER_X), vmNormal, false, true);
   }
 
+  #define PRIORITY_itemCatalogName true
+  #define PRIORITY_itemSoftmenuName false
+  const char* pickValidItemFromItems(int16_t item, bool_t priority) {
+    bool_t takeCat = false;
+    if (priority == PRIORITY_itemCatalogName) {
+      if ((indexOfItems[abs(item)].itemCatalogName)[0] != 0) {
+        takeCat = true;
+      }
+    } else { // PRIORITY_itemSoftmenuName
+      if ((indexOfItems[abs(item)].itemSoftmenuName)[0] == 0) {
+        takeCat = true;
+      }
+    }    
+    if (takeCat) {
+      return indexOfItems[abs(item)].itemCatalogName;
+    } else {
+      return indexOfItems[abs(item)].itemSoftmenuName;
+    }
+  }
 
+#define DEBUG_SHOWNAME
   void showFunctionName(int16_t itm, int16_t delayInMs, const char *arg) {
     int16_t item = (int16_t)itm;
-    //printf("---Function par:%4u %4u-- converted %4u--arg:|%s|-=-", itm, (int16_t)itm, item, arg );
-    //uint32_t fcol, frow, gcol, grow;
+    //printf("---Function par:%4u %4u-- converted %4u--arg:|%s|-=-\n", itm, (int16_t)itm, item, arg );
     char functionName[64];
-    char padding[20];                                          //JM
+    char padding[20];
     functionName[0] = 0;
     showFunctionNameArg = NULL;
 
-    //FIX //REMOVE DISPLAYING TEMP STRING as in C43 the tmpstring does NOT show the last keystroke or whatever this tempstr is needed for. It gets executed from timers
-    //if(tmpString[0] != 0) {
-    //  strcpy(functionName,tmpString);
-    //}
-    //else
-
     #if defined(DEBUG_SHOWNAME)
       if(item < LAST_ITEM && (item == ITM_XEQ || item != ITM_RCL)) {
-        stringAppend(functionName + stringByteLength(functionName), indexOfItems[abs(item)].itemCatalogName);
+        stringAppend(functionName + stringByteLength(functionName), pickValidItemFromItems(item, PRIORITY_itemCatalogName));
         stringAppend(functionName + stringByteLength(functionName), ":");
       }
       if(item < LAST_ITEM && (item == ITM_RCL || item != ITM_XEQ)) {
-        stringAppend(functionName + stringByteLength(functionName), indexOfItems[abs(item)].itemSoftmenuName);
+        stringAppend(functionName + stringByteLength(functionName), pickValidItemFromItems(item, PRIORITY_itemSoftmenuName));
         stringAppend(functionName + stringByteLength(functionName), ":");
       }
       if(arg != NULL) {
@@ -1888,13 +1901,13 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
         stringAppend(functionName, indexOfItemsXEQM + 8*(item-fnXEQMENUpos));
       }
       else if(item >= FIRST_CONSTANT && item <= LAST_CONSTANT) {
-        stringAppend(functionName,indexOfItems[abs(item)].itemSoftmenuName);
+        stringAppend(functionName,pickValidItemFromItems(item, PRIORITY_itemSoftmenuName));
       }
       else if(item < LAST_ITEM && item != MNU_DYNAMIC) {
-        stringAppend(functionName,indexOfItems[abs(item)].itemCatalogName);
+        stringAppend(functionName,pickValidItemFromItems(item, PRIORITY_itemCatalogName));
       }
-      else {
-        if(dynamicMenuItem > -1) stringAppend(functionName,dynmenuGetLabel(dynamicMenuItem));
+      else if(dynamicMenuItem > -1) {
+        stringAppend(functionName,dynmenuGetLabel(dynamicMenuItem));
       }
     #endif //DEBUG_SHOWNAME
       //printf("---|%s|---\n", functionName);
@@ -5015,10 +5028,15 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
                                char uuu[100];
                                stringToASCII(indexOfItems[currentMenu() > 0 ? currentMenu() : -currentMenu()].itemSoftmenuName, uuu);
 
-                               printf(">>> refreshScreen(%3u): Cnt=%3d %s calcMode=%2d screenUpdatingMode=%3d=%12s=>%26s TI=%4u MENUid=%2d item=%4i: %16s\n", 
+                               printf("   refrsh(%3u): Cnt=%3d %s CM=%2d scr..upd:%3d=%12s=>%26s TI=%4u CL=%s tam:%5i MENUid=%2d:%4i:%s\n", 
                                   source, refreshScreenCounter++,
                                   (last_CM != calcMode) ? "OVR" : "   ",
-                                  calcMode, screenUpdatingMode, sss, ttt, temporaryInformation, m, currentMenu(), uuu);
+                                  calcMode, 
+                                  screenUpdatingMode, sss, ttt, 
+                                  temporaryInformation, 
+                                  (alphaCase == AC_LOWER)?"LO":"UP",
+                                  tam.mode,
+                                  m, currentMenu(), uuu);
                              #endif // PC_BUILD
 
 

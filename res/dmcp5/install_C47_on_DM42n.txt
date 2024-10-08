@@ -1,0 +1,50 @@
+------------------------------------
+Converting from working DM42n to C47 – we need a separate one for R47, not mix this in here
+------------------------------------
+
+In DM42n, go to SETUP
+6. Activate USB Disk
+Backup contents of FAT disk to your computer for when you want to go back to using DM42n. If you do not have a *DM42n*.bin or *DMM42n*.pg5 file, try find it on the SwissMicro’s web site. Without this this file you cannot return to DM42n from C47. As of 2024-09-28 the DM42n file was still not on the SwissMicros Technical portion of their web site.
+3. System
+2. Enter System Menu
+5. Format FAT Disk
+EXIT
+4. Reset to DMCP menu
+6. Activate USB Disk
+Observe the disk name is now DM42
+
+On DM42 drive:x
+Copy all files in c47-dmcp5 to the (empty) DM42 root risk
+
+As alternative, copy only the necessary, i.e. the following files and directories in c47-dmcp5 to the (empty) DM42 root risk:
+• Create a directory OFFIMG on the DM42 drive and copy the contents of the offimg folder to it (deselect those you don’t want or add your own)
+• Copy PROGRAMS to DM42
+• Copy testPgms.bin from resources to DM42 (if you want the test programs)
+• Copy C47.pg5  to DM42
+• Copy DM42_qspi_3.x.bin to DM42
+• C47_qspi.bin is not needed and needs not be copied. It is there for completeness.
+
+*** finish up Release the drive from Mac/PC
+
+Press Option 4: Load QSPI ** may start automatically
+  Observe DM42_qspi_3.x.bin be installed
+  Press key to restart / Exit
+
+Press 3. DMCP Menu
+Press Option 3: Load Program
+  Choose C47.pg5 ** may start automatically or a message: “Start C47 Anyway (not safe)” may appear
+Choose the option to start C47 Anyway
+
+ Press key to restart / Exit 
+
+Should the DMCP report a QSPI error, repeat the procedure to mount the DM42 and copy the file DM42_qspi_3.x.bin again and continue with *** finish up
+
+C47 is loaded
+
+
+---------------------------
+Returning from C47 to DM42n
+---------------------------
+
+Until SwissMicros publishes a firmware update file for DM42n, you cannot return to DM42n operation. This is expected soon but as of 2024-09-28 this has not been available on the SwissMicros Technical section of their web site.
+

@@ -202,7 +202,7 @@ void fnEqEdit(uint16_t unusedButMandatoryParameter) {
           aimBuffer[0] = 0;
         }
       calcMode = CM_EIM;
-      alphaCase = AC_LOWER;
+      alphaCase = CAPS_EQN_DEFAULT;
       nextChar = NC_NORMAL;//JM C43
       clearSystemFlag(FLAG_NUMLOCK);
       scrLock = NC_NORMAL;

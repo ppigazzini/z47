@@ -283,6 +283,27 @@ void resetKeytimers(void) {
       }
     }                                                                   //yellow and blue function keys ^^
 
+#undef ALL_AIM_LP_CYCLE
+#if defined(ALL_AIM_LP_CYCLE)
+    else if((calcMode == CM_AIM || calcMode == CM_EIM || (calcMode == CM_PEM && getSystemFlag(FLAG_ALPHA))) && tam.mode==0) {  //longpress yellow math functions on the first two rows, menus allowed provided it is within keys 00-15
+      tmpp_ = getSystemFlag(FLAG_USER) ? kbd_usr[key_no].primaryAim  : kbd_std[key_no].primaryAim;
+      tmpf_ = getSystemFlag(FLAG_USER) ? kbd_usr[key_no].fShiftedAim : kbd_std[key_no].fShiftedAim;
+      tmpg_ = getSystemFlag(FLAG_USER) ? kbd_usr[key_no].gShiftedAim : kbd_std[key_no].gShiftedAim;
+      if(   ((key_no != 32 && tmpp_ != ITM_SHIFTf && tmpp_ != ITM_SHIFTg && tmpp_ != KEY_fg && tmpp_ != ITM_BACKSPACE) && (LongPressM == RBX_M1234 || LongPressM == RBX_M124))  //any mathkeys
+        ) {
+        if(!shiftF && !shiftG) {
+          longpressDelayedkey1 = tmpf_;
+          tmpf = tmpf_;
+          if(LongPressM == RBX_M1234) {
+            longpressDelayedkey3 = tmpg_;
+            tmpg = tmpg_;
+          }
+        }
+      }
+    }                                                                   //yellow and blue function keys ^^
+#endif //ALL_AIM_LP_CYCLE
+
+
     char *funcParam = (char *)getNthString((uint8_t *)userKeyLabel, key_no); //keyCode * 6 + g ? 2 : f ? 1 : 0);
     //printf("\n\n >>>> ## result=%i key_no=%i *funcParam=%s  [0]=%u\n", *result, key_no, (char*)funcParam, ((char*)funcParam)[0]);
 
@@ -456,12 +477,14 @@ void resetKeytimers(void) {
             longpressDelayedkey2 = ITM_CLRMOD;     // EXIT longpress DOES CLRMOD
             longpressDelayedkey1 = LongpressEXIT1; // LongpressEXIT1 : C47: MyAlpha or MyMenu; R47: SNAP
             break;
+#if !defined(ALL_AIM_LP_CYCLE)
           case ITM_ENTER:
             if(tam.mode == 0) {
-              longpressDelayedkey1 = ITM_XSWAP;
-              // longpressDelayedkey2 = ITM_XPARSE; //not yet implemented
+              longpressDelayedkey1 = ITM_XEDIT;
+              longpressDelayedkey3 = ITM_CR;
             }
             break;
+#endif //ALL_AIM_LP_CYCLE
           default:;
         }
         break;
@@ -476,11 +499,14 @@ void resetKeytimers(void) {
           case ITM_EXIT1:
             longpressDelayedkey1 = ITM_CLRMOD;   //EXIT longpress DOES CLRMOD
             break;
+#if !defined(ALL_AIM_LP_CYCLE)
           case ITM_ENTER:
             if(tam.mode == 0) {
-              longpressDelayedkey1 = ITM_XSWAP;
+              longpressDelayedkey1 = ITM_XEDIT;
+              longpressDelayedkey3 = ITM_CR;
             }
             break;
+#endif //ALL_AIM_LP_CYCLE
           default:;
         }
         break;
@@ -491,6 +517,11 @@ void resetKeytimers(void) {
             longpressDelayedkey3 = ITM_CLRMOD;     // EXIT longpress DOES CLRMOD
             longpressDelayedkey2 = LongpressEXIT1; // LongpressEXIT1 : C47: MyAlpha or MyMenu; R47: SNAP
             longpressDelayedkey1 = -MNU_PFN;
+            break;
+          case ITM_ENTER:
+            if(tam.mode == 0) {
+              longpressDelayedkey1 = ITM_CR;   //XEDIT removed, as it makes no sense and does not work in PEM
+            }
             break;
           default:;
         }
@@ -854,6 +885,46 @@ void resetKeytimers(void) {
   }
   //---------------------------------------------------------------
 #endif // !TESTSUITE_BUILD
+
+
+bool_t caseReplacements(uint8_t id, bool_t lowerCaseSelected, int16_t item, int16_t *itemOut) {
+    *itemOut = item;
+    if(lowerCaseSelected && (ITM_A <= item && item <= ITM_Z)) {
+      *itemOut = item + (ITM_a - ITM_A);
+      goto returnTrue;
+    }
+    else if(!lowerCaseSelected && (ITM_A <= item && item <= ITM_Z)) {  //JM
+      goto returnTrue;
+    }
+    else if(!lowerCaseSelected && (ITM_a <= item && item <= ITM_z)) {  //JM
+      *itemOut = item - (ITM_a - ITM_A);
+      goto returnTrue;
+    }
+    else if(lowerCaseSelected && (ITM_a <= item && item <= ITM_z)) {  //JM
+      goto returnTrue;
+    }
+    goto returnFalse;
+
+returnTrue:
+    #if defined(VERBOSEKEYS) || defined(PAIMDEBUG)
+      printf("Translating upper/lower case: lowercaseselected=%i item=%i itemOut=%i\n",lowerCaseSelected, item, *itemOut);
+      switch(id){
+        case 0: printf("keyboard.c processAimInput() %i\n",id); break;
+        case 1: printf("manage.c   pemAlpha()        %i\n",id); break;
+        case 2: printf("gtkGui.c   sendKey()         %i\n",id); break;
+        default:;
+      }
+    #endif //VERBOSEKEYS || PAIMDEBUG
+    return true;
+
+returnFalse:
+    #if defined(VERBOSEKEYS) || defined(PAIMDEBUG)
+      printf("Translating upper/lower case: No translation: lowercaseselected=%i item=%i itemOut=%i\n",lowerCaseSelected, item, *itemOut);
+    #endif //VERBOSEKEYS || PAIMDEBUG
+    return false;
+  }
+
+
 
 
 //numlock replacements require the case to be upper case

@@ -1342,9 +1342,10 @@ void fnXEQMLOAD (uint16_t XEQM_no) {                                  //DISK to 
 }
 
 
-#define DISALLOW_ZERO_STRING
+void fnXSWAP (uint16_t mode) {
+  #define isEdit (mode > 0)
+  #define isSwap (!isEdit)
 
-void fnXSWAP (uint16_t unusedButMandatoryParameter) {
     if(calcMode == CM_EIM || calcMode == CM_AIM) {
       if(calcMode==CM_AIM) fnSwapXY(0);
       //convert X to string if needed
@@ -1362,14 +1363,8 @@ void fnXSWAP (uint16_t unusedButMandatoryParameter) {
         reallocateRegister(REGISTER_Y, dtString, TO_BLOCKS(len), amNone);           //Make blank string in Y
         xcopy(REGISTER_STRING_DATA(REGISTER_Y), tmp, len);
         addition[type_x][getRegisterDataType(REGISTER_Y)]();                        //Convert X (number) to string in X
-
-        #if defined(DISALLOW_ZERO_STRING)
-          if(!(getRegisterDataType(REGISTER_X) == dtString && REGISTER_STRING_DATA(REGISTER_X)[0]!=0)) { //never allow a zero string in a register
-            clearRegister(REGISTER_X);                                                //create 0. instead of zero string
-          }
-        #endif //DISALLOW_ZERO_STRING
-
         adjustResult(REGISTER_X, false, false, -1, -1, -1);
+
         copySourceRegisterToDestRegister(TEMP_REGISTER_1, REGISTER_Y);              //restore Y
         clearRegister(TEMP_REGISTER_1);                                             //Clear in case it was a really long longinteger
         //resulting in a converted string in X, with Y unchanged
@@ -1378,11 +1373,13 @@ void fnXSWAP (uint16_t unusedButMandatoryParameter) {
         if(calcMode==CM_AIM) fnSwapXY(0);                                           //  This could be optimized to still restore the original X register if it had failed to convert
         return;
       }
-      //Save aimbuffer to TEMP1 as a string register
-      int16_t len = stringByteLength(aimBuffer) + 1;
-      reallocateRegister(TEMP_REGISTER_1, dtString, TO_BLOCKS(len), amNone);
-      xcopy(REGISTER_STRING_DATA(TEMP_REGISTER_1), aimBuffer, len);
 
+      if(isSwap) {
+        //Save aimbuffer to TEMP1 as a string register
+        int16_t len = stringByteLength(aimBuffer) + 1;
+        reallocateRegister(TEMP_REGISTER_1, dtString, TO_BLOCKS(len), amNone);
+        xcopy(REGISTER_STRING_DATA(TEMP_REGISTER_1), aimBuffer, len);
+      } 
       //In essence, after conversions,
       //If X is string shorter than buffer max, copy X to aimbuffer
       //If X is no string, ignore, then aimbuffer remains unchanged.
@@ -1390,23 +1387,17 @@ void fnXSWAP (uint16_t unusedButMandatoryParameter) {
         if(stringByteLength(REGISTER_STRING_DATA(REGISTER_X)) < AIM_BUFFER_LENGTH) {
           strcpy(aimBuffer, REGISTER_STRING_DATA(REGISTER_X));
 
-          #if defined(DISALLOW_ZERO_STRING)
-            if(!(getRegisterDataType(TEMP_REGISTER_1) == dtString && REGISTER_STRING_DATA(TEMP_REGISTER_1)[0]!=0)) { //never allow a zero string in a register
-              clearRegister(TEMP_REGISTER_1);
-              goto returnZeroAim;
-            }
-            else
-          #endif //DISALLOW_ZERO_STRING
-          {
+          if(isSwap) {
             //copy aimbuffer to X
             copySourceRegisterToDestRegister(TEMP_REGISTER_1, REGISTER_X);
           }
-
-
           //Set cursors
           if(calcMode==CM_AIM) {
             fnSwapXY(0);
             T_cursorPos = stringByteLength(aimBuffer);
+            if(isEdit) {
+              fnDrop(NOPARAM);
+            }
           }
           else { //EIM
             xCursor = stringGlyphLength(aimBuffer);
@@ -1447,9 +1438,6 @@ void fnXSWAP (uint16_t unusedButMandatoryParameter) {
       strcpy(REGISTER_STRING_DATA(REGISTER_X), line1);
       fnXSWAP(0);
     }
-  #if defined(DISALLOW_ZERO_STRING)
-    returnZeroAim:
-  #endif //DISALLOW_ZERO_STRING
 
   last_CM = 252;
   refreshScreen(63);

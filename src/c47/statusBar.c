@@ -336,30 +336,40 @@ void showFracMode(void) {
     else {
       nChar = scrLock;
     }
-    if(((calcMode == CM_AIM || calcMode == CM_EIM || (catalog && catalog != CATALOG_MVAR) || (tam.mode != 0 && tam.alpha) || ((calcMode == CM_PEM || calcMode == CM_ASSIGN) && getSystemFlag(FLAG_ALPHA))))) {
+    if(((plainTextMode || calcMode == CM_EIM || (catalog && catalog != CATALOG_MVAR) || (tam.mode != 0 && tam.alpha)))) {
+
+      #if defined (PC_BUILD)
+        if(deadKey != 0) {
+          status = 20;
+        } else
+      #endif
+
+      if(plainTextMode) {                  //TODO this flag's purpose must be checked
+        if(alphaCase == AC_UPPER) {
+          setSystemFlag(FLAG_alphaCAP);
+        } else {
+          clearSystemFlag(FLAG_alphaCAP);          
+        }
+      }
+
       if(getSystemFlag(FLAG_NUMLOCK) && !shiftF && !shiftG) {
           if(alphaCase == AC_UPPER)                  { status = 3 - (nChar == NC_SUBSCRIPT ? 2 : nChar == NC_SUPERSCRIPT ? 1:0); } else
           if(alphaCase == AC_LOWER)                  { status = 6 - (nChar == NC_SUBSCRIPT ? 2 : nChar == NC_SUPERSCRIPT ? 1:0); }
         } else
           if(alphaCase == AC_LOWER && shiftF){
-            setSystemFlag(FLAG_alphaCAP);              status = 12 - (nChar == NC_SUBSCRIPT ? 2 : nChar == NC_SUPERSCRIPT ? 1:0); //A
+                                                       status = 12 - (nChar == NC_SUBSCRIPT ? 2 : nChar == NC_SUPERSCRIPT ? 1:0); //A
           } else
             if(alphaCase == AC_UPPER && shiftF){
-              clearSystemFlag(FLAG_alphaCAP);          status = 18 - (nChar == NC_SUBSCRIPT ? 2 : nChar == NC_SUPERSCRIPT ? 1:0);   //a
+                                                       status = 18 - (nChar == NC_SUBSCRIPT ? 2 : nChar == NC_SUPERSCRIPT ? 1:0);   //a
             } else //at this point shiftF is false
               if(alphaCase == AC_UPPER)  { //UPPER
-                setSystemFlag(FLAG_alphaCAP);
                 if(shiftG)                                               { status =  3 - (nChar == NC_SUBSCRIPT ? 2 : nChar == NC_SUPERSCRIPT ? 1:0); } else
                 if(!shiftG && !shiftF && !getSystemFlag(FLAG_NUMLOCK))   { status = 12 - (nChar == NC_SUBSCRIPT ? 2 : nChar == NC_SUPERSCRIPT ? 1:0); }
               } else
                 if(alphaCase == AC_LOWER)  { //LOWER
-                  clearSystemFlag(FLAG_alphaCAP);
                   if(shiftG)                                             { status =  3 - (nChar == NC_SUBSCRIPT ? 2 : nChar == NC_SUPERSCRIPT ? 1:0); } else
                   if(!shiftG && !shiftF && !getSystemFlag(FLAG_NUMLOCK)) { status = 18 - (nChar == NC_SUBSCRIPT ? 2 : nChar == NC_SUPERSCRIPT ? 1:0); }
                 }
-    }
-    else {
-      clearSystemFlag(FLAG_alphaCAP);
     }
 
     if((SBARUPD_AlphaMode)) {
@@ -388,6 +398,10 @@ void showFracMode(void) {
         case 16: showString(STD_SUB_a, &standardFont, X_ALPHA_MODE, -2, vmNormal, true, false); break; //sub
         case 17: showString(STD_SUB_a, &standardFont, X_ALPHA_MODE, -11, vmNormal, true, false); break; //sup    //not possible
         case 18: showString(STD_a    , &standardFont, X_ALPHA_MODE,  0, vmNormal, true, false); break; //normal
+        
+        #if defined (PC_BUILD)
+          case 20: showString(STD_BOX  , &standardFont, X_ALPHA_MODE,  0, vmNormal, true, false); break; //deadkey
+        #endif
         default:;
       }
     }

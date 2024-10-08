@@ -242,7 +242,7 @@
   /* JM removed "text-decoration: underline;" and changed from "background:  $bezelBackground;" */
 }
 
-#greek {
+#AimfShifted {
   background:  $bezelBackground;
   color:       $gBlue;
   font-family: C47__StandardFont;
@@ -252,7 +252,7 @@
   padding:     0px;
 }
 
-#greekUnderline {
+#AimfShiftedUnderline {
   background:  $bezelBackground;
   color:       $gBlue;
   font-family: C47__StandardFont;

@@ -51,6 +51,9 @@
   #endif // !TESTSUITE_BUILD && !GENERATE_CATALOGS
   #if defined(PC_BUILD) || defined(TESTSUITE_BUILD)
     extern bool_t               debugMemAllocation;
+    extern bool                 forceTamAlpha;
+    extern uint32_t             deadKey;
+    extern bool_t               testDeadKeys;
   #endif // PC_BUILD || TESTSUITE_BUILD
 
   #if defined(PC_BUILD)
@@ -167,6 +170,7 @@
 
   extern namedVariableHeader_t *allNamedVariables;
   extern softmenuStack_t        softmenuStack[SOFTMENU_STACK_SIZE];
+  extern uint16_t               menuPageNumber;
   extern userMenuItem_t         userMenuItems[18];
   extern userMenuItem_t         userAlphaItems[18];
   extern userMenu_t            *userMenus;

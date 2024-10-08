@@ -28,6 +28,7 @@
 #include "keyboard.h"
 #include "c43Extensions/keyboardTweak.h"
 #include "mathematics/matrix.h"
+#include "programming/manage.h"
 #include "registers.h"
 #include "saveRestoreCalcState.h"
 #include "screen.h"
@@ -41,6 +42,9 @@
 
 
 //#define DEBUGMODES
+
+
+static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
 
 
 #if defined(PC_BUILD)
@@ -59,7 +63,6 @@
     GtkWidget *lbl21F,  *lbl22F,  *lbl23F,  *lbl24F,  *lbl25F,  *lbl26F;
     GtkWidget *lbl21G,  *lbl22G,  *lbl23G,  *lbl24G,  *lbl25G,  *lbl26G;
     GtkWidget *lbl21L,  *lbl22L,  *lbl23L,  *lbl24L,  *lbl25L,  *lbl26L;
-    GtkWidget *lbl21H;
     GtkWidget *lbl21Gr, *lbl22Gr, *lbl23Gr, *lbl24Gr, *lbl25Gr, *lbl26Gr;
     GtkWidget *btn21A,  *btn22A,  *btn23A,  *btn24A,  *btn25A,  *btn26A;    //dr - new AIM
     GtkWidget *lbl21Fa, *lbl22Fa, *lbl23Fa, *lbl24Fa, *lbl25Fa, *lbl26Fa;                                 //JM
@@ -68,7 +71,6 @@
     GtkWidget *lbl31F,  *lbl32F,  *lbl33F,  *lbl34F,  *lbl35F,  *lbl36F;
     GtkWidget *lbl31G,  *lbl32G,  *lbl33G,  *lbl34G,  *lbl35G,  *lbl36G;
     GtkWidget *lbl31L,  *lbl32L,  *lbl33L,  *lbl34L,  *lbl35L,  *lbl36L;
-    //GtkWidget                     *lbl33H;                                  //JMALPHA2 Removed lbl34H, to be replaced with lbl34Fa
     GtkWidget *lbl31Gr, *lbl32Gr, *lbl33Gr, *lbl34Gr, *lbl35Gr, *lbl36Gr;
     GtkWidget *btn31A,  *btn32A,  *btn33A,  *btn34A,  *btn35A,  *btn36A;    //dr - new AIM
     GtkWidget *lbl31Fa, *lbl32Fa, *lbl33Fa,  *lbl34Fa, *lbl35Fa, *lbl36Fa;                                 //JMALPHA2
@@ -77,7 +79,6 @@
     GtkWidget *lbl41F,  *lbl42F,  *lbl43F,  *lbl44F,  *lbl45F;
     GtkWidget *lbl41G,  *lbl42G,  *lbl43G,  *lbl44G,  *lbl45G;
     GtkWidget *lbl41L,  *lbl42L,  *lbl43L,  *lbl44L,  *lbl45L;
-    GtkWidget           *lbl42H,  *lbl43P;//,  *lbl44P;
     GtkWidget *lbl41Gr, *lbl42Gr, *lbl43Gr, *lbl44Gr, *lbl45Gr;
     GtkWidget           *btn42A,  *btn43A,  *btn44A;                        //vv dr - new AIM
     GtkWidget *lbl41Fa, *lbl42Fa, *lbl43Fa, *lbl44Fa, *lbl45Fa;                                 //^^
@@ -88,31 +89,28 @@
     GtkWidget *lbl51L,  *lbl52L,  *lbl53L,  *lbl54L,  *lbl55L;
     GtkWidget *lbl51Gr, *lbl52Gr, *lbl53Gr, *lbl54Gr, *lbl55Gr;
     GtkWidget           *btn52A,  *btn53A,  *btn54A,  *btn55A;              //vv dr - new AIM
-    GtkWidget           *lbl52Fa, *lbl53Fa, *lbl54Fa, *lbl55Fa;             //^^
+    GtkWidget *lbl51Fa, *lbl52Fa, *lbl53Fa, *lbl54Fa, *lbl55Fa;             //^^
 
     GtkWidget *btn61,   *btn62,   *btn63,   *btn64,   *btn65;
     GtkWidget *lbl61F,  *lbl62F,  *lbl63F,  *lbl64F,  *lbl65F;
     GtkWidget *lbl61G,  *lbl62G,  *lbl63G,  *lbl64G,  *lbl65G;
     GtkWidget *lbl61L,  *lbl62L,  *lbl63L,  *lbl64L,  *lbl65L;
-    GtkWidget                                         *lbl65H;  //JM
     GtkWidget *lbl61Gr, *lbl62Gr, *lbl63Gr, *lbl64Gr, *lbl65Gr;
     GtkWidget           *btn62A,  *btn63A,  *btn64A,  *btn65A;              //vv dr - new AIM
-    GtkWidget           *lbl62Fa, *lbl63Fa, *lbl64Fa, *lbl65Fa;             //^^
+    GtkWidget *lbl61Fa, *lbl62Fa, *lbl63Fa, *lbl64Fa, *lbl65Fa;             //^^
 
     GtkWidget *btn71,   *btn72,   *btn73,   *btn74,   *btn75;
     GtkWidget *lbl71F,  *lbl72F,  *lbl73F,  *lbl74F,  *lbl75F;
     GtkWidget *lbl71G,  *lbl72G,  *lbl73G,  *lbl74G,  *lbl75G;
     GtkWidget *lbl71L,  *lbl72L,  *lbl73L,  *lbl74L,  *lbl75L;
-    GtkWidget           *lbl72H,  *lbl73H;                      //JM
     GtkWidget *lbl71Gr, *lbl72Gr, *lbl73Gr, *lbl74Gr, *lbl75Gr;
     GtkWidget *btn71A,  *btn72A,  *btn73A,  *btn74A,  *btn75A;              //vv dr - new AIM
-    GtkWidget           *lbl72Fa, *lbl73Fa, *lbl74Fa, *lbl75Fa;             //^^
+    GtkWidget *lbl71Fa, *lbl72Fa, *lbl73Fa, *lbl74Fa, *lbl75Fa;             //^^
 
     GtkWidget *btn81,   *btn82,   *btn83,   *btn84,   *btn85;
     GtkWidget *lbl81F,  *lbl82F,  *lbl83F,  *lbl84F,  *lbl85F;
     GtkWidget *lbl81G,  *lbl82G,  *lbl83G,  *lbl84G,  *lbl85G;
     GtkWidget *lbl81L,  *lbl82L,  *lbl83L,  *lbl84L,  *lbl85L;
-    GtkWidget           *lbl82H,  *lbl83H,  *lbl84H,  *lbl85H;  //JM
     GtkWidget *lbl81Gr, *lbl82Gr, *lbl83Gr, *lbl84Gr, *lbl85Gr;
     GtkWidget           *btn82A,  *btn83A,  *btn84A,  *btn85A;              //vv dr - new AIM
     GtkWidget           *lbl82Fa, *lbl83Fa, *lbl84Fa, *lbl85Fa;             //^^
@@ -141,24 +139,24 @@
   }
 
 
-  void btn_Clicked_Gen(bool_t shF, bool_t shG, char *st) {
-    GtkWidget *w;
-    w = NULL;
-    shiftG = shG;
-    uint8_t alphaCase_MEM = alphaCase;
-    bool_t numLock_MEM;  numLock_MEM = getSystemFlag(FLAG_NUMLOCK);  clearSystemFlag(FLAG_NUMLOCK);
-    bool_t u_mem = getSystemFlag(FLAG_USER); clearSystemFlag(FLAG_USER);
-    btnClicked(w, st);
-    if(u_mem) setSystemFlag(FLAG_USER);
-    if(numLock_MEM) {
-      setSystemFlag(FLAG_NUMLOCK);
-    }
-    else {
-      clearSystemFlag(FLAG_NUMLOCK);
-    }
-    alphaCase = alphaCase_MEM;
-    refreshStatusBar();
-  }
+//  void btn_Clicked_Gen(bool_t shF, bool_t shG, char *st) {
+//    GtkWidget *w;
+//    w = NULL;
+//    shiftG = shG;
+//    uint8_t alphaCase_MEM = alphaCase;
+//    bool_t numLock_MEM;  numLock_MEM = getSystemFlag(FLAG_NUMLOCK);  clearSystemFlag(FLAG_NUMLOCK);
+//    bool_t u_mem = getSystemFlag(FLAG_USER); clearSystemFlag(FLAG_USER);
+//    btnClicked(w, st);
+//    if(u_mem) setSystemFlag(FLAG_USER);
+//    if(numLock_MEM) {
+//      setSystemFlag(FLAG_NUMLOCK);
+//    }
+//    else {
+//      clearSystemFlag(FLAG_NUMLOCK);
+//    }
+//    alphaCase = alphaCase_MEM;
+//    refreshStatusBar();
+//  }
 
 
 
@@ -166,41 +164,41 @@
   //JM Upper case alpha letters from PC --> change case and produce letter. Restore case.
 
 
-  //JM ALPHA SECTION FOR ALPHAMODE - LOWER CASE PC LETTER INPUT. USE LETTER
-  void btnClicked_LC(GtkWidget *w, gpointer data) {
-    bool_t numLock_MEM;
-    numLock_MEM = getSystemFlag(FLAG_NUMLOCK);
-    clearSystemFlag(FLAG_NUMLOCK);
-    btnClicked(w, data);
-    if(numLock_MEM) {
-      setSystemFlag(FLAG_NUMLOCK);
-    }
-    else {
-      clearSystemFlag(FLAG_NUMLOCK);
-    }
-    refreshStatusBar();
-  }
+//  //JM ALPHA SECTION FOR ALPHAMODE - LOWER CASE PC LETTER INPUT. USE LETTER
+//  void btnClicked_LC(GtkWidget *w, gpointer data) {
+//    bool_t numLock_MEM;
+//    numLock_MEM = getSystemFlag(FLAG_NUMLOCK);
+//    clearSystemFlag(FLAG_NUMLOCK);
+//    btnClicked(w, data);
+//    if(numLock_MEM) {
+//      setSystemFlag(FLAG_NUMLOCK);
+//    }
+//    else {
+//      clearSystemFlag(FLAG_NUMLOCK);
+//    }
+//    refreshStatusBar();
+//  }
 
 
-  //JM ALPHA SECTION FOR ALPHAMODE -  UPPER CASE PC LETTER INPUT. INVERT C43 CASE. USE LETTER.
-  void btnClicked_UC(GtkWidget *w, gpointer data) {
-    uint8_t alphaCase_MEM;
-    bool_t numLock_MEM;
-    alphaCase_MEM = alphaCase;
-    numLock_MEM = getSystemFlag(FLAG_NUMLOCK);
-    if(alphaCase == AC_UPPER) {alphaCase = AC_LOWER;}
-    else if(alphaCase == AC_LOWER) {alphaCase = AC_UPPER;}
-    clearSystemFlag(FLAG_NUMLOCK);
-    btnClicked(w, data);
-    alphaCase = alphaCase_MEM;
-    if(numLock_MEM) {
-      setSystemFlag(FLAG_NUMLOCK);
-    }
-    else {
-      clearSystemFlag(FLAG_NUMLOCK);
-    }
-    refreshStatusBar();
-  }
+//  //JM ALPHA SECTION FOR ALPHAMODE -  UPPER CASE PC LETTER INPUT. INVERT C43 CASE. USE LETTER.
+//  void btnClicked_UC(GtkWidget *w, gpointer data) {
+//    uint8_t alphaCase_MEM;
+//    bool_t numLock_MEM;
+//    alphaCase_MEM = alphaCase;
+//    numLock_MEM = getSystemFlag(FLAG_NUMLOCK);
+//    if(alphaCase == AC_UPPER && !pcKeyboardCapsLockEngaged) {alphaCase = AC_LOWER;}
+//    else if(alphaCase == AC_LOWER && !pcKeyboardCapsLockEngaged) {alphaCase = AC_UPPER;}
+//    clearSystemFlag(FLAG_NUMLOCK);
+//    btnClicked(w, data);
+//    alphaCase = alphaCase_MEM;
+//    if(numLock_MEM) {
+//      setSystemFlag(FLAG_NUMLOCK);
+//    }
+//    else {
+//      clearSystemFlag(FLAG_NUMLOCK);
+//    }
+//    refreshStatusBar();
+//  }
 
 
   //JM NUMERIC SECTION FOR ALPHAMODE - FORCE Numeral - Numbers from PC --> produce numbers.
@@ -222,31 +220,34 @@
     refreshStatusBar();
   }
 
-  //Shifted numbers !@#$%^&*() from PC --> activate shift and use numnber 1234567890. Restore case.
-  void btnClicked_SNU(GtkWidget *w, gpointer data) {
-    bool_t numLock_MEM;
-    numLock_MEM = getSystemFlag(FLAG_NUMLOCK);
-
-    clearSystemFlag(FLAG_NUMLOCK);
-    shiftF = true;       //JM
-    shiftG = false;        //JM
-    //btnClicked(NULL, "34");     //Alphadot
-    btnClicked(w, data);
-
-    //Only : is working at this point
-    if(numLock_MEM) {
-      setSystemFlag(FLAG_NUMLOCK);
-    }
-    else {
-      clearSystemFlag(FLAG_NUMLOCK);
-    }
-    refreshStatusBar();
-  }
+//  //Shifted numbers !@#$%^&*() from PC --> activate shift and use numnber 1234567890. Restore case.
+//  void btnClicked_SNU(GtkWidget *w, gpointer data) {
+//    bool_t numLock_MEM;
+//    numLock_MEM = getSystemFlag(FLAG_NUMLOCK);
+//
+//    clearSystemFlag(FLAG_NUMLOCK);
+//    shiftF = true;       //JM
+//    shiftG = false;        //JM
+//    //btnClicked(NULL, "34");     //Alphadot
+//    btnClicked(w, data);
+//
+//    //Only : is working at this point
+//    if(numLock_MEM) {
+//      setSystemFlag(FLAG_NUMLOCK);
+//    }
+//    else {
+//      clearSystemFlag(FLAG_NUMLOCK);
+//    }
+//    refreshStatusBar();
+//  }
 
 
   uint32_t CTRL_State = 0;
   uint32_t SHIFT_State = 0;
   uint32_t event_keyval = 99999999;
+
+  uint32_t event_command_shift = 0;
+  uint32_t event_key_command = 99999999;
 
   #define AlphaArrowsOffAndUpDn       ((bool_t)( \
                                     softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_SYSFL ||       \
@@ -262,49 +263,69 @@
 
 
 
-  #define ExitIfNim true
+  #define EXITIFNIM true
+  #define DISABLED  true
 
-  TO_QSPI const char     alphakeysC47[38] = "abcdefghijkl#mno##pqrs#tuvw#xyz_#:,? ";
-  TO_QSPI const char     alphakeysR47[38] = "abcdefghij###klm##nopq#rstu#vwxy#z,? ";
+  TO_QSPI const char alphakeysC47[38]      = "abcdefghijkl#mno##pqrs#tuvw#xyz_#:,? ";
+  TO_QSPI const char alphakeysR47[38]      = "abcdefghij###klm##nopq#rstu#vwxy#z,? ";
+  //TO_QSPI const char asciikeysFrom0020[34] = " !\"#$%&\'()*+,-./:;<=>?@[\\]^_{|}~¡";
 
 
-//                                  w, event_keyval,  97,         shortcutProfile == USER_C47,  ExitIfNim,          tam.mode ,      "f",        00",                    modes,                CM_NORMAL,                  ITM_SIGMAPLUS
-  bool_t shortCutCommand(GtkWidget *w, int key,      int keyCode, bool_t condition1,            bool_t exitIfInNIM, bool_t disable, char *shift, char *keyForBtnClicked, uint16_t modes, int16_t requiredCalcMode2, int16_t itemForRunFunction) {
+//                                  w, event_keyval,  97,         shortcutProfile == USER_C47,  EXITIFNIM,          tam.mode ,      "f",        00",                    modes,                CM_NORMAL,                  ITM_SIGMAPLUS
+  static bool_t shortCutCommand(GtkWidget *w, int key,      int keyCode, bool_t condition1,            bool_t exitIfInNIM, bool_t disable, char *shift, char *keyForBtnClicked, uint16_t modes, int16_t requiredCalcMode2, int16_t itemForRunFunction) {
     if(key == keyCode && condition1 && !disable) {
-      printf("\n       New key system: Disable=%i, Key detected %5i=%5i: exitIfInNIM=%i keyForBtnClicked:%s, calcMode=%i, tam.mode=%i\n",disable, key, keyCode, exitIfInNIM, keyForBtnClicked, calcMode, tam.mode);
+//      #if defined(VERBOSEKEYS)
+        printf("\n       shortCutCommand: Disable=%i, Key detected %5i=%5i: exitIfInNIM=%i keyForBtnClicked:%s, calcMode=%i, tam.mode=%i\n",disable, key, keyCode, exitIfInNIM, keyForBtnClicked, calcMode, tam.mode);
+//        #endif //VERBOSEKEYS
     }
  
-    if(disable) return false;                                  //exit directly for disallowed input condition
-    if(tam.mode == TM_LABEL && key != '\'') return false;      //exit directly, not allowing shortcuts during label entry, except to start text using "'"
+    if(disable) {
+      #if defined(VERBOSEKEYS)
+        printf("       shortCutCommand: Returning, shortcut disabled\n");
+      #endif //VERBOSEKEYS
+      return false;                                  //exit directly for disallowed input condition
+    }
+    if(tam.mode == TM_LABEL && !(key == '\'' || key == GDK_KEY_Up || key == GDK_KEY_Down)) {
+      #if defined(VERBOSEKEYS)
+        printf("       shortCutCommand: Returning, shortcut blocked in TM_LABEL\n");
+      #endif //VERBOSEKEYS
+      return false;      //exit directly, not allowing shortcuts during label entry, except to start text using "'"
+    }
 
     if(key == keyCode && condition1) {
-      printf("       New key system: \n");
+      printf("       shortCutCommand: \n");
       temporaryInformation = TI_NO_INFO;
 
       //Handle clean NIM if needed and if allowed
         if(exitIfInNIM && (calcMode == CM_NIM) && (calcMode != requiredCalcMode2)) {   //if requiredCalcMode2 then no auto NIM clearing, and handle function below
-        printf("       New key system: Reset mode to NORMAL\n");
+        printf("       shortCutCommand: Reset mode to NORMAL\n");
         btnClicked(w, "32");                  //EXIT if in NIM
       }
 
       //Handle menus
       if(itemForRunFunction < 0) {
-        //printf("\n       New key system: Disable=%i, Key detected %5i=%5i: exitIfInNIM=%i keyForBtnClicked:%s, calcMode=%i, tam.mode=%i\n",disable, key, keyCode, exitIfInNIM, keyForBtnClicked, calcMode, tam.mode);
-        printf("       New key system: Handle menus: key:%i: showSoftmenu %i\n",keyCode, itemForRunFunction);
+        #if defined(VERBOSEKEYS)
+        //printf("\n       shortCutCommand: Disable=%i, Key detected %5i=%5i: exitIfInNIM=%i keyForBtnClicked:%s, calcMode=%i, tam.mode=%i\n",disable, key, keyCode, exitIfInNIM, keyForBtnClicked, calcMode, tam.mode);
+          printf("       shortCutCommand: Handle menus: key:%i: showSoftmenu %i\n",keyCode, itemForRunFunction);
+        #endif //VERBOSEKEYS
         showSoftmenu(itemForRunFunction);
         screenUpdatingMode = SCRUPD_AUTO;
-        refreshScreen(0);
+        refreshScreen(1);
         return true;
       }
 
       //Handle functions
       if(((1 << calcMode) & modes) || calcMode == requiredCalcMode2) {        
-        //printf("\n       New key system: Disable=%i, Key detected %5i=%5i: exitIfInNIM=%i keyForBtnClicked:%s, calcMode=%i, tam.mode=%i\n",disable, key, keyCode, exitIfInNIM, keyForBtnClicked, calcMode, tam.mode);
-        printf("       New key system: Handle functions: key:%i: showSoftmenu %i\n",keyCode, itemForRunFunction);
+        #if defined(VERBOSEKEYS)
+        //printf("\n       shortCutCommand: Disable=%i, Key detected %5i=%5i: exitIfInNIM=%i keyForBtnClicked:%s, calcMode=%i, tam.mode=%i\n",disable, key, keyCode, exitIfInNIM, keyForBtnClicked, calcMode, tam.mode);
+          printf("       shortCutCommand: Handle functions: key:%i: showSoftmenu %i\n",keyCode, itemForRunFunction);
+        #endif //VERBOSEKEYS
 
         //Handle key presses
         if(keyForBtnClicked[0] != '-') {
-          printf("       New key system: Handle key presses: key:%i: btnClicked %s\n",keyCode, keyForBtnClicked);
+          #if defined(VERBOSEKEYS)
+            printf("       shortCutCommand: Handle key presses: key:%i: btnClicked %s\n",keyCode, keyForBtnClicked);
+          #endif //VERBOSEKEYS
           if(shift[0] == 'f') {
             shiftF = true;
             shiftG = false;
@@ -315,28 +336,128 @@
           }
           btnClicked(w, keyForBtnClicked);
           screenUpdatingMode = SCRUPD_AUTO;
-          refreshScreen(0);
+          refreshScreen(2);
           return true;
         }
 
         //Handle direct functions
         if(itemForRunFunction >= 0) {
-          printf("       New key system: Handle direct functions: key:%i: runFunction  %i\n",keyCode, itemForRunFunction);
+          #if defined(VERBOSEKEYS)
+            printf("       shortCutCommand: Handle direct functions: key:%i: runFunction  %i\n",keyCode, itemForRunFunction);
+          #endif //VERBOSEKEYS
           runFunction(itemForRunFunction);
           screenUpdatingMode = SCRUPD_AUTO;
-          refreshScreen(0);
+          refreshScreen(3);
           return true;
         }
+      }
+    }
+    #if defined(VERBOSEKEYS)
+      printf("       shortCutCommand: No action found\n");
+    #endif //VERBOSEKEYS
+    return false;
+  }
+
+
+//                                    w, event_keyval,  97,         shortcutProfile == USER_C47,  tam.mode ,      "f",        00",                    modes,                CM_NORMAL,                  ITM_SIGMAPLUS
+  static bool_t shortCutFNCommand(GtkWidget *w, int key,      int keyCode, bool_t condition1,            bool_t disable, char *shift, char *keyForBtnClicked, uint16_t modes, int16_t requiredCalcMode2, int16_t itemForRunFunction) {
+    if(key == keyCode && condition1 && !disable) {
+//    #if defined(VERBOSEKEYS)
+        printf("\n       shortCutFNCommand: Disable=%i, Key detected %5i=%5i: keyForBtnClicked:%s, calcMode=%i, tam.mode=%i\n",disable, key, keyCode, keyForBtnClicked, calcMode, tam.mode);
+//    #endif //VERBOSEKEYS
+    }
+ 
+    if(disable) return false;                                  //exit directly for disallowed input condition
+    if(tam.mode == TM_LABEL) return false;                     //exit directly, not allowing label entry
+
+    if(key == keyCode && condition1) {
+      #if defined(VERBOSEKEYS)
+        printf("       shortCutFNCommand: \n");
+      #endif //VERBOSEKEYS
+      temporaryInformation = TI_NO_INFO;
+
+//      //Handle menus
+//      if(itemForRunFunction < 0) {
+//        //printf("\n       shortCutFNCommand: Disable=%i, Key detected %5i=%5i: keyForBtnClicked:%s, calcMode=%i, tam.mode=%i\n",disable, key, keyCode, keyForBtnClicked, calcMode, tam.mode);
+//        printf("       shortCutFNCommand: Handle menus: key:%i: showSoftmenu %i\n",keyCode, itemForRunFunction);
+//        showSoftmenu(itemForRunFunction);
+//        screenUpdatingMode = SCRUPD_AUTO;
+//        refreshScreen(4);
+//        return true;
+//      }
+
+      //Handle functions
+      if(((1 << calcMode) & modes) || calcMode == requiredCalcMode2) {        
+        #if defined(VERBOSEKEYS)
+          //printf("\n       shortCutFNCommand: Disable=%i, Key detected %5i=%5i: keyForBtnClicked:%s, calcMode=%i, tam.mode=%i\n",disable, key, keyCode, keyForBtnClicked, calcMode, tam.mode);
+          printf("       shortCutFNCommand: Handle functions: key:%i: showSoftmenu %i\n",keyCode, itemForRunFunction);
+        #endif //VERBOSEKEYS
+
+        //Handle key presses
+        if(keyForBtnClicked[0] != '-') {
+          #if defined(VERBOSEKEYS)
+            printf("                       Handle key presses: key:%i: btnClicked %s F=%i G=%i\n",keyCode, keyForBtnClicked, shiftF, shiftG);
+          #endif //VERBOSEKEYS
+          if(shift[0] == 'f') {
+            shiftF = true;
+            shiftG = false;
+          }
+          else if(shift[0] == 'g') {
+            shiftF = false;
+            shiftG = true;
+          }
+          #if defined(VERBOSEKEYS)
+            printf("                       Handle key clicks: key:%i: btnClicked %s\n",keyCode, keyForBtnClicked);
+          #endif //VERBOSEKEYS
+          btnFnClicked(w, keyForBtnClicked);
+          screenUpdatingMode = SCRUPD_AUTO;
+          refreshScreen(5);
+          return true;
+        }
+
+
+//        //Handle direct functions
+//        if(itemForRunFunction >= 0) {
+//          printf("       shortCutFNCommand: Handle direct functions: key:%i: runFunction  %i\n",keyCode, itemForRunFunction);
+//          runFunction(itemForRunFunction);
+//          screenUpdatingMode = SCRUPD_AUTO;
+//          refreshScreen(6);
+//          return true;
+//        }
       }
     }
     return false;
   }
 
 
+//  static uint16_t asciiToItem(uint8_t in) {
+//    if('0' <= in && '9' >= in) return ITM_0 + (in - '0'); else
+//    if('A' <= in && 'Z' >= in) return ITM_A + (in - 'A'); else
+//    if('a' <= in && 'z' >= in) return ITM_a + (in - 'a'); else
+//    for(int g=0; g <= stringByteLength(asciikeysFrom0020);) {
+//      if(asciikeysFrom0020[g] == in) {
+//        return ITM_SPACE + g;
+//      }
+//      g++;
+//    }
+//    return 0;
+//  }
 
 
+  static void sendKey(int16_t sent) {
+    #if defined(VERBOSEKEYS)
+      printf("Sending ... %i\n", sent);
+    #endif //VERBOSEKEYS
+    showHideAlphaMode();
+    if((calcMode == CM_PEM) && !tam.mode && getSystemFlag(FLAG_ALPHA) && !catalog) {
+      pemAlpha(sent);
+    } else {
+        addItemToBuffer(sent);
+      }
+    }
 
-  bool_t checkNormal(int16_t keyNr, int16_t item) {
+
+  static bool_t checkNormal(int16_t keyNr, int16_t item) {
     int16_t result = Norm_Key_00_item_in_layout; 
     int16_t ss = Check_SigmaPlus_Assigned(&result, keyNr);
     //printf("aaaaa ss=%i result=%i  ss==item=%i\n",ss, result, ss==item);
@@ -344,13 +465,16 @@
   }
 
 
+  #define event_key_strip_capslock        (( ('A' <= event->keyval && event->keyval <= 'Z') || ('a' <= event->keyval && event->keyval <= 'z')) ? (((event->keyval) & 0xFFFFDF) + (0x20 & ~(event_command_shift >> (16 - 5)))) : event->keyval)
+
   gboolean keyReleased(GtkWidget *w, GdkEventKey *event, gpointer data) {     //JM
     printf("PC Key released: %d (SHIFT_State=%u)(shiftF=%u shiftF=%u)\n", event->keyval,SHIFT_State,shiftF,shiftG);
     if(event_keyval == event->keyval + CTRL_State) event_keyval = 99999999;
 
     switch(event->keyval) {
-      case 65505: //left shift
-      case 65506: //right shift
+      case GDK_KEY_Shift_L: //left shift
+      case GDK_KEY_Shift_R: //right shift
+          event_command_shift = 0;
           if(SHIFT_State != 0) {     //f-shift activated on the release of the shift key, to allow for standard PC shifted chars
 
             if(checkNormal( 0,KEY_fg))     btnClicked(w, "00"); else
@@ -364,13 +488,19 @@
             if(((getSystemFlag(FLAG_USER) ? kbd_usr[ 0].primary : kbd_std[ 0].primary)) == KEY_fg    ) btnClicked(w, "00"); else
             if(((getSystemFlag(FLAG_USER) ? kbd_usr[10].primary : kbd_std[10].primary)) == KEY_fg    ) btnClicked(w, "10"); else
             if(((getSystemFlag(FLAG_USER) ? kbd_usr[11].primary : kbd_std[11].primary)) == KEY_fg    ) btnClicked(w, "11"); else
-            if(((getSystemFlag(FLAG_USER) ? kbd_usr[27].primary : kbd_std[27].primary)) == KEY_fg    ) btnClicked(w, "27");
+            if(((getSystemFlag(FLAG_USER) ? kbd_usr[27].primary : kbd_std[27].primary)) == KEY_fg    ) btnClicked(w, "27"); else
+            {
+              shiftF = !shiftF;
+              shiftG = false;
+              refreshStatusBar();
+              showShiftState();
+            }
           }
           SHIFT_State = 0;
           break;
 
-      case 65507: // Left Ctrl
-      case 65508: // right Ctrl
+      case GDK_KEY_Control_L: // Left Ctrl
+      case GDK_KEY_Control_R: // right Ctrl
           if(CTRL_State != 0) {
 
             if(checkNormal( 0,KEY_fg))     btnClicked(w, "00"); else
@@ -380,64 +510,71 @@
             if(checkNormal(10,ITM_SHIFTg)) btnClicked(w, "10"); else
             if(checkNormal(11,ITM_SHIFTg)) btnClicked(w, "11"); else
 
-            if((getSystemFlag(FLAG_USER) ? kbd_usr[11].primary : kbd_std[11].primary) == ITM_SHIFTg) btnClicked(w, "11");
+            if((getSystemFlag(FLAG_USER) ? kbd_usr[11].primary : kbd_std[11].primary) == ITM_SHIFTg) btnClicked(w, "11"); else
+            {
+              shiftF = false;
+              shiftG = !shiftG;
+              refreshStatusBar();
+              showShiftState();
+            }
+
 
         }
         CTRL_State = 0;
         break;
 
 
-      case 65470: // F1                                                    //**************-- FUNCTION KEYS --***************//
+      case GDK_KEY_F1: // F1                                                    //**************-- FUNCTION KEYS --***************//
                   //                                                       //JM Added this portion to be able to go to NOP on emulator
         #if defined(VERBOSEKEYS)
           printf("key FNPressed - RELEASE: F1\n");
         #endif
-        if(!tam.mode || (tam.mode && AlphaArrowsOffAndUpDn)) {
+        if(labelText || !tam.mode || (tam.mode && AlphaArrowsOffAndUpDn)) {
           btnFnClickedR(w, "1");
         }
         break;
 
-      case 65471: // F2
+      case GDK_KEY_F2: // F2
         #if defined(VERBOSEKEYS)
           printf("key FNPressed - RELEASE: F2\n");
         #endif
-        if(!tam.mode || (tam.mode && AlphaArrowsOffAndUpDn)) {
+        if(labelText || !tam.mode || (tam.mode && AlphaArrowsOffAndUpDn)) {
           btnFnClickedR(w, "2");
         }
         break;
 
-      case 65472: // F3
+      case GDK_KEY_F3: // F3
         #if defined(VERBOSEKEYS)
           printf("key FNPressed - RELEASE: F3\n");
         #endif
-        if(!tam.mode || (tam.mode && AlphaArrowsOffAndUpDn)) {
+        if(labelText || !tam.mode || (tam.mode && AlphaArrowsOffAndUpDn)) {
           btnFnClickedR(w, "3");
         }
         break;
 
-      case 65473: // F4
+      case GDK_KEY_F4: // F4
         #if defined(VERBOSEKEYS)
           printf("key FNPressed - RELEASE: F4\n");
         #endif
-        if(!tam.mode || (tam.mode && AlphaArrowsOffAndUpDn)) {
+        if(labelText || !tam.mode || (tam.mode && AlphaArrowsOffAndUpDn)) {
           btnFnClickedR(w, "4");
         }
         break;
 
-      case 65474: // F5
+      case GDK_KEY_F5: // F5
         #if defined(VERBOSEKEYS)
           printf("key FNPressed - RELEASE: F5\n");
         #endif
-        if(!tam.mode || (tam.mode && AlphaArrowsOffAndUpDn)) {
+        if(labelText || !tam.mode || (tam.mode && AlphaArrowsOffAndUpDn)) {
           btnFnClickedR(w, "5");
         }
         break;
 
-      case 65475: // F6
+      case GDK_KEY_F6: // F6
         #if defined(VERBOSEKEYS)
           printf("key FNPressed - RELEASE: F6\n");
         #endif
-        if(!tam.mode || (tam.mode && AlphaArrowsOffAndUpDn)) {
+        if(labelText || !tam.mode || (tam.mode && AlphaArrowsOffAndUpDn)) {
           btnFnClickedR(w, "6");
         }
         break;
@@ -446,7 +583,7 @@
         break;
 
     }
-    if(event->keyval != 65505 && event->keyval != 65506) {
+    if(event->keyval != GDK_KEY_Shift_L && event->keyval != GDK_KEY_Shift_R) {
       SHIFT_State = 0;
     }
     //printf("Released1 %d (SHIFT_State=%u)(shiftF=%u)\n", event->keyval,SHIFT_State,shiftF);
@@ -456,27 +593,37 @@
 
   gboolean keyPressed(GtkWidget *w, GdkEventKey *event, gpointer data) {
     event_keyval = event->keyval + CTRL_State;
-    printf("PC Key pressed: event->keyval=%u event_keyval=%u (SHIFT_State=%u)(shiftF=%u shiftG=%u)\n", event->keyval, event_keyval, SHIFT_State, shiftF, shiftG);
+
+    //#if defined(VERBOSEKEYS)
+      printf("\nPC Key pressed: labelText=%i plainTextMode=%i event->keyval=%u event_keyval=%u (SHIFT_State=%u)(shiftF=%u shiftG=%u)\n",labelText, plainTextMode, event->keyval, event_keyval, SHIFT_State, shiftF, shiftG);
+    //#endif
+
+    //printf("AltGr #1:%s         ; keyval=%u state=%u, event_key_strip_capslock=%u\n",
+    //(event->keyval == GDK_KEY_at) ? "+@" : (event->keyval == GDK_KEY_numbersign) ? "+#" : (event->keyval == GDK_KEY_bar) ? "+|" : "",
+    //(uint16_t)event->keyval, (uint16_t)event->state, (uint16_t)event_key_strip_capslock);
+
 
     SHIFT_State = 0;
     switch(event_keyval) {
-      case 65505: //left shift
-      case 65506: //right shift
+      case GDK_KEY_Shift_L: //left shift
+      case GDK_KEY_Shift_R: //right shift
         SHIFT_State = 65536;
+        event_command_shift = 65536;
         //printf("key pressed: Shift Activated\n");
         break;
 
-      case 65507: // left Ctrl
-      case 65508: // right Ctrl
+      case GDK_KEY_Control_L: // left Ctrl
+      case GDK_KEY_Control_R: // right Ctrl
         //printf("key pressed: CTRL Activated\n");
         CTRL_State = 65536;
         break;
       default:;
     }
 
+    
     if(!((calcMode == CM_AIM || calcMode == CM_EIM || tam.mode || (calcMode == CM_PEM && getSystemFlag(FLAG_ALPHA)) || (calcMode == CM_ASSIGN && getSystemFlag(FLAG_ALPHA))))) {
-      switch(event_keyval) {
-        case 102: //f
+      switch(event_key_strip_capslock) {
+        case GDK_KEY_f: //f
 
             if(checkNormal( 0,ITM_SHIFTf)) btnClicked(w, "00"); else
             if(checkNormal(10,ITM_SHIFTf)) btnClicked(w, "10"); else
@@ -487,13 +634,19 @@
             if(((getSystemFlag(FLAG_USER) ? kbd_usr[11].primary : kbd_std[11].primary) == KEY_fg     )) btnClicked(w, "11"); else
             if(((getSystemFlag(FLAG_USER) ? kbd_usr[27].primary : kbd_std[27].primary) == KEY_fg     )) btnClicked(w, "27");
           break;
-        case 103: //g
+        case GDK_KEY_g: //g
 
             if(checkNormal( 0,ITM_SHIFTg)) btnClicked(w, "00"); else
             if(checkNormal(10,ITM_SHIFTg)) btnClicked(w, "10"); else
             if(checkNormal(11,ITM_SHIFTg)) btnClicked(w, "11"); else
             if(((getSystemFlag(FLAG_USER) ? kbd_usr[11].primary : kbd_std[11].primary) == ITM_SHIFTg )) btnClicked(w, "11"); else
-            if(((getSystemFlag(FLAG_USER) ? kbd_usr[10].primary : kbd_std[10].primary) == ITM_SHIFTg )) btnClicked(w, "10");
+            if(((getSystemFlag(FLAG_USER) ? kbd_usr[10].primary : kbd_std[10].primary) == ITM_SHIFTg )) btnClicked(w, "10"); else
+            {
+              shiftF = false;
+              shiftG = !shiftG;
+              refreshStatusBar();
+              showShiftState();
+            }
             // if(((getSystemFlag(FLAG_USER) ? kbd_usr[11].primary : kbd_std[11].primary) == KEY_fg     )) btnClicked(w, "11"); else
             // if(((getSystemFlag(FLAG_USER) ? kbd_usr[10].primary : kbd_std[10].primary) == KEY_fg     )) btnClicked(w, "10"); else
             // if(((getSystemFlag(FLAG_USER) ? kbd_usr[27].primary : kbd_std[27].primary) == KEY_fg     )) btnClicked(w, "27");
@@ -502,191 +655,364 @@
       }
     }
           
+//#define VERBOSEKEYS
 
-      if(!catalog && (calcMode == CM_NORMAL || calcMode == CM_NIM || (calcMode == CM_PEM && !getSystemFlag(FLAG_ALPHA) ))) {
+//Bits for modes
+//  0 CM_NORMAL          
+//  1 CM_AIM             
+//  2 CM_NIM             
+//  3 CM_PEM             
+//  4 CM_ASSIGN          
+//  5 CM_REGISTER_BROWSER
+//  6 CM_FLAG_BROWSER    
+//  7 CM_FONT_BROWSER    
+//  8 CM_PLOT_STAT       
+//  9 CM_ERROR_MESSAGE   
+// 10 CM_BUG_ON_SCREEN   
+// 11 CM_CONFIRMATION    
+// 12 CM_MIM             
+// 13 CM_EIM             
+// 14 CM_TIMER           
+// 15 CM_GRAPH           
+// 16 CM_NO_UNDO         
+// 17 CM_ASN_BROWSER     
+// 18 CM_LISTXY    
+
+//#if defined(VERBOSEKEYS)
+  printf("   Sim key processing: CTRL_State=%i tam.mode=%i event_keyval=%i calcMode=%i catalog=%i getSystemFlag(FLAG_ALPHA)=%i\n", CTRL_State, tam.mode, event_keyval, calcMode, catalog, getSystemFlag(FLAG_ALPHA));
+//#endif //VERBOSEKEYS
+
+//event_key_command = event->keyval + (('A' <= event->keyval && event->keyval <= 'Z') ? 'a' - 'A' : 0)    // remove caps lock effect for commands, 'a' to 'z'
+//                                  - (('A' <= event->keyval && event->keyval <= 'Z') && event_command_shift == 65536 ? 'a' - 'A' : 0);                     // consider only shift button status to get caps for commands
+
+#define allowAltGrKey ((event->state & 16) == 16)
+
+if(     (CTRL_State != 65536 || allowAltGrKey)
+     && (!catalog || (catalog && currentMenu() == -MNU_MVAR))
+     && (!(tam.mode == TM_LABEL || tam.mode == TM_STORCL) || (uint8_t)(event->keyval) == GDK_KEY_apostrophe)
+     && (    calcMode == CM_NORMAL 
+         ||  calcMode == CM_NIM 
+         ||  calcMode == CM_PEM
+         || (calcMode == CM_ASSIGN && itemToBeAssigned == 0)//do not include ASN TO here, as you need to assign to a KEY or a SOFTKEY using the MOUSE
+        )
+     && !getSystemFlag(FLAG_ALPHA)
+  ) {
+  event_key_command = event_key_strip_capslock;   // remain in lower case, do not translate or use dead keys
+  #if defined(VERBOSEKEYS)
+    printf("\n   ### Command key: CTRL_State=%i SHFT_State=%i tam.mode=%i event_keyval=%i => event_key_command=%i calcMode=%i catalog=%i getSystemFlag(FLAG_ALPHA)=%i\n", CTRL_State, SHIFT_State, tam.mode, event_keyval, event_key_command, calcMode, catalog, getSystemFlag(FLAG_ALPHA));
+  #endif //VERBOSEKEYS
+
+//C47 & R47 AltGr============
+//if((event->keyval == 65514) || ((event->state & 16) == 16)) { //AltGr Dani & Didier 0x14 for AltGr, and 0x1C for \#
+    //printf("AltGr #2 (NM ) %s detected; keyval=%u state=%u, event_key_command=%u\n",
+    //(event->keyval == GDK_KEY_at) ? "+@" : (event->keyval == GDK_KEY_numbersign) ? "+#" : (event->keyval == GDK_KEY_bar) ? "+|" : "",
+    //(uint16_t)event->keyval, (uint16_t)event->state, (uint16_t)event_key_command);
+//}
+
+//C47 & R47============
+  if(shortCutCommand(w, event_key_command, GDK_KEY_a           /* a 97    */    ,                                  shortcutProfile == USER_C47,  EXITIFNIM,          tam.mode,    "",   "00",                   0b01101,         -1,        ITM_SIGMAPLUS ))        {return false;} else        //                  [a]ccumulate
+  if(shortCutCommand(w, event_key_command, GDK_KEY_v           /* v 118   */    ,                                  shortcutProfile == USER_C47,  EXITIFNIM,          tam.mode,    "",   "01",                   0b01101,         -1,             ITM_1ONX ))        {return false;} else        //                     in[v]erse
+  if(shortCutCommand(w, event_key_command, GDK_KEY_q           /* q 113   */    ,                                  shortcutProfile == USER_C47,  EXITIFNIM,          tam.mode,    "",   "02",                   0b01101,         -1,      ITM_SQUAREROOTX ))        {return false;} else        //                        s[q]rt
+  if(shortCutCommand(w, event_key_command, GDK_KEY_o           /* o 111   */    ,                                  shortcutProfile == USER_C47,  EXITIFNIM,          tam.mode,    "",   "03",                   0b01101,         -1,            ITM_LOG10 ))        {return false;} else        //                         l[o]g
+  if(shortCutCommand(w, event_key_command, GDK_KEY_l           /* l 108   */    ,                                  shortcutProfile == USER_C47,  EXITIFNIM,          tam.mode,    "",   "04",                   0b01101,         -1,               ITM_LN ))        {return false;} else        //                          [l]n
+  if(shortCutCommand(w, event_key_command, GDK_KEY_x           /* x 120   */    ,                                  shortcutProfile == USER_C47, !EXITIFNIM,             FALSE,    "",   "05",                   0b01101,         -1,              ITM_XEQ ))        {return false;} else        //                         [x]eq
+  if(shortCutCommand(w, event_key_command, GDK_KEY_m           /* m 109   */    ,                                  shortcutProfile == USER_C47,  EXITIFNIM,          tam.mode,    "",   "06",                   0b01101,         -1,              ITM_STO ))        {return false;} else        //                      [m]emory
+  if(shortCutCommand(w, event_key_command, GDK_KEY_r           /* r 114   */    ,                                  shortcutProfile == USER_C47,  EXITIFNIM,          tam.mode,    "",   "07",                   0b01101,         -1,              ITM_RCL ))        {return false;} else        //                         [r]cl
+  if(shortCutCommand(w, event_key_command, GDK_KEY_d           /* d 100   */    ,                                  shortcutProfile == USER_C47,  EXITIFNIM,          tam.mode,    "",   "08",                   0b01101,         -1,            ITM_Rdown ))        {return false;} else        //                        [d]own
+  if(shortCutCommand(w, event_key_command, GDK_KEY_s           /* s 115   */    ,                                  shortcutProfile == USER_C47,  EXITIFNIM,          tam.mode,    "",   "09",                   0b01101,         -1,              ITM_sin ))        {return false;} else        //                        [s]ine
+  if(shortCutCommand(w, event_key_command, GDK_KEY_i           /* i 105   */    ,                                  shortcutProfile == USER_C47, !EXITIFNIM,          tam.mode,   "g",   "09",                   0b11101,         -1,             ITM_op_j ))        {return false;} else        //                             i
+  if(shortCutCommand(w, event_key_command, GDK_KEY_j           /* j 106   */    ,                                  shortcutProfile == USER_C47, !EXITIFNIM,          tam.mode,   "g",   "09",                   0b11101,         -1,             ITM_op_j ))        {return false;} else        //                             i
+  if(shortCutCommand(w, event_key_command, GDK_KEY_k           /* k 107   */    ,                                  shortcutProfile == USER_C47, !EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,             ITM_op_j_pol ))    {return false;} else        //                             i
+  if(shortCutCommand(w, event_key_command, GDK_KEY_c           /* c 99    */    ,                                  shortcutProfile == USER_C47,  EXITIFNIM,          tam.mode,    "",   "10",                   0b01101,         -1,              ITM_cos ))        {return false;} else        //                      [c]osine
+  if(shortCutCommand(w, event_key_command, GDK_KEY_t           /* t 116   */    ,                                  shortcutProfile == USER_C47,  EXITIFNIM,          tam.mode,    "",   "11",                   0b01101,         -1,              ITM_tan ))        {return false;} else        //                     [t]angent
+  if(shortCutCommand(w, event_key_command, GDK_KEY_Return      /* ENTER 65293 */,                                                        FALSE, !EXITIFNIM,             FALSE,    "",   "12",                   0b01101,         -1,            ITM_ENTER ))        {return false;} else        //                           key
+  if(shortCutCommand(w, event_key_command, GDK_KEY_Tab         /* tab 65289   */,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !EXITIFNIM,          tam.mode,    "",   "13",                   0b01101,         -1,             ITM_XexY ))        {return false;} else        //                        s[w]ap
+  if(shortCutCommand(w, event_key_command, GDK_KEY_w           /* w 119   */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !EXITIFNIM,          tam.mode,    "",   "13",                   0b01101,         -1,             ITM_XexY ))        {return false;} else        //                        s[w]ap
+  if(shortCutCommand(w, event_key_command, GDK_KEY_n           /* n 110   */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !EXITIFNIM,          tam.mode,    "",   "14",                   0b01101,         -1,              ITM_CHS ))        {return false;} else        //                CHS [n]egative
+  if(shortCutCommand(w, event_key_command, GDK_KEY_e           /* e 101   */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !EXITIFNIM,          tam.mode,    "",   "15",                   0b01101,         -1,         ITM_EXPONENT ))        {return false;} else        //                    [e]xponent  
+  if(shortCutCommand(w, event_key_command, GDK_KEY_greater     /* > 62    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,              ITM_DRG ))        {return false;} else        //                     [=]>D,R,G
+  if(shortCutCommand(w, event_key_command, GDK_KEY_Y           /* Y 89    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,               ITM_YX ))        {return false;} else        //                         [y]^x
+  if(shortCutCommand(w, event_key_command, GDK_KEY_X           /* X 88    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,          KEY_COMPLEX ))        {return false;} else        //                     comple[X]
+  if(shortCutCommand(w, event_key_command, GDK_KEY_R           /* R 82    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,           ITM_toREC2 ))        {return false;} else        //                           ->R
+  if(shortCutCommand(w, event_key_command, GDK_KEY_P           /* P 80    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,           ITM_toPOL2 ))        {return false;} else        //                           ->P
+  if(shortCutCommand(w, event_key_command, GDK_KEY_p           /* p 112   */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,          ITM_CONSTpi ))        {return false;} else        //                            pi
+  if(shortCutCommand(w, event_key_command, GDK_KEY_V           /* V 86    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,             ITM_1ONX ))        {return false;} else        //                     in[V]erse
+  if(shortCutCommand(w, event_key_command, GDK_KEY_y           /* y 121   */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,          ITM_XTHROOT ))        {return false;} else        //               xth root of [Y]
+  if(shortCutCommand(w, event_key_command, GDK_KEY_C           /* C 67    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,           ITM_arccos ))        {return false;} else        //                   arc[C]osine
+  if(shortCutCommand(w, event_key_command, GDK_KEY_S           /* S 83    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,           ITM_arcsin ))        {return false;} else        //                     arc[S]ine
+  if(shortCutCommand(w, event_key_command, GDK_KEY_T           /* T 84    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,           ITM_arctan ))        {return false;} else        //                  arc[T]angent
+  if(shortCutCommand(w, event_key_command, GDK_KEY_L           /* L 76    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,              ITM_EXP ))        {return false;} else        //                  anti[L]n e^x
+  if(shortCutCommand(w, event_key_command, GDK_KEY_O           /* O 79    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,              ITM_10x ))        {return false;} else        //                antil[O]g 10^x
+  if(shortCutCommand(w, event_key_command, GDK_KEY_Q           /* Q 81    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,           ITM_SQUARE ))        {return false;} else        //                      s[Q]uare
+  if(shortCutCommand(w, event_key_command, GDK_KEY_D           /* D 68    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,              ITM_Rup ))        {return false;} else        //                        Up [D]
+  if(shortCutCommand(w, event_key_command, GDK_KEY_I           /* I 73    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !EXITIFNIM,             FALSE,    "",  "-01",     0b0000011000000001101,         -1,            -MNU_DISP ))        {return false;} else        //                        D[I]SP
+  if(shortCutCommand(w, event_key_command, GDK_KEY_J           /* J 74    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !EXITIFNIM,             FALSE,    "",  "-01",     0b0000011000000001101,         -1,             -MNU_EXP ))        {return false;} else        //                           EXP
+  if(shortCutCommand(w, event_key_command, GDK_KEY_K           /* K 75    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !EXITIFNIM,             FALSE,    "",  "-01",     0b0000011000000001101,         -1,             -MNU_STK ))        {return false;} else        //                         ST[K]
+  if(shortCutCommand(w, event_key_command, GDK_KEY_M           /* M 77    */    ,                                  shortcutProfile == USER_C47, !EXITIFNIM,             FALSE,    "",  "-01",     0b0000011000000001101,         -1,            -MNU_MODE ))        {return false;} else        //                        [M]ODE
+
+  if(shortCutCommand(w, event_key_command, GDK_KEY_F           /* F 70    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !EXITIFNIM,             FALSE,    "",  "-01",     0b0000011000000001101,         -1,          -MNU_PREFIX ))        {return false;} else        //                      PRE[F]IX
+
+  if(shortCutCommand(w, event_key_command, GDK_KEY_percent     /* % 37    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,               ITM_PC ))        {return false;} else        //                           [%]
+  if(shortCutCommand(w, event_key_command, GDK_KEY_exclam      /* ! 33    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,            ITM_XFACT ))        {return false;} else        //                          x[!]
+  if(shortCutCommand(w, event_key_command, GDK_KEY_U           /* U 85    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,             FALSE,    "",  "-01",                    0xffff,         -1,         ITM_USERMODE ))        {return false;} else        //                        [U]SER
+  if(shortCutCommand(w, event_key_command, GDK_KEY_apostrophe  /* ' 39    */    ,                                  shortcutProfile == USER_C47,  EXITIFNIM,             FALSE,   "f",   "05",                   0b11101,         -1,              ITM_AIM ))        {return false;} else        //                     alpha [']
+  if(shortCutCommand(w, event_key_command, GDK_KEY_G           /* G 71    */    ,                                  shortcutProfile == USER_C47,  EXITIFNIM,             FALSE,   "g",   "05",                   0b01101,         -1,              ITM_GTO ))        {return false;} else        //                         [g]TO
+  if(shortCutCommand(w, event_key_command, GDK_KEY_A           /* A 65    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,              ITM_ARG ))        {return false;} else        //                       [A]ngle
+  if(shortCutCommand(w, event_key_command, GDK_KEY_Z           /* Z 90    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,        ITM_MAGNITUDE ))        {return false;} else        //                        Si[Z]e
+  if(shortCutCommand(w, event_key_command, GDK_KEY_bar         /* | 124   */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,        ITM_MAGNITUDE ))        {return false;} else        //                Size [|] (dup)
+  if(shortCutCommand(w, event_key_command, 126       /*DUP left   | 124/6 */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,        ITM_MAGNITUDE ))        {return false;} else        //                Size [|] (dup)
+//if(shortCutCommand(w, event_key_command, GDK_KEY_F7          /*   65476 */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,           ITM_TGLFRT ))        {return false;} else        //                          a/bc
+//if(shortCutCommand(w, event_key_command, GDK_KEY_F8          /*   65477 */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,          ITM_HASH_JM ))        {return false;} else        //                             #
+//if(shortCutCommand(w, event_key_command, GDK_KEY_F9          /*   65478 */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,     CM_NIM,               ITM_ms ))        {return false;} else        //                           .ms
+//if(shortCutCommand(w, event_key_command, GDK_KEY_F10         /*   65479 */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,             ITM_dotD ))        {return false;} else        //                            .d
+  if(shortCutCommand(w, event_key_command, GDK_KEY_F7          /*   65476 */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,             ITM_SI_n ))        {return false;} else        //                            .d
+  if(shortCutCommand(w, event_key_command, GDK_KEY_F8          /*   65477 */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,             ITM_SI_u ))        {return false;} else        //                            .d
+  if(shortCutCommand(w, event_key_command, GDK_KEY_F9          /*   65478 */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,             ITM_SI_m ))        {return false;} else        //                            .d
+  if(shortCutCommand(w, event_key_command, GDK_KEY_F10         /*   65479 */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,             ITM_SI_k ))        {return false;} else        //                            .d
+  if(shortCutCommand(w, event_key_command, GDK_KEY_F11         /*   65480 */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,             ITM_SI_M ))        {return false;} else        //                            .d
+  if(shortCutCommand(w, event_key_command, GDK_KEY_W           /* W 87    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,            ITM_LASTX ))        {return false;} else        //                        Last X
+  if(shortCutCommand(w, event_key_command, GDK_KEY_equal       /* = 61    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,             ITM_dotD ))        {return false;} else        //                      .d (dup)
+  if(shortCutCommand(w, event_key_command, GDK_KEY_E           /* E 69    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,               CST_09 ))        {return false;} else        //                     Euler's E
+  if(shortCutCommand(w, event_key_command, GDK_KEY_N           /* N 78    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,             FALSE,   "f",   "35",                   0b01101,     CM_PEM,               ITM_PR ))        {return false;} else        //                       PRGM N]
+  if(shortCutCommand(w, event_key_command, GDK_KEY_b           /* b 98    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,     CM_PEM,              ITM_LBL ))        {return false;} else        //                       LBL [B]
+  if(shortCutCommand(w, event_key_command, GDK_KEY_u           /* u 117   */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,             FALSE,   "f",   "16",                   0b01101,     CM_PEM,               ITM_PR ))        {return false;} else        //                        [u]ndo
+  if(shortCutCommand(w, event_key_command, GDK_KEY_H           /* H 72    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !EXITIFNIM,             FALSE,    "",  "-01",     0b0000011000000001101,         -1,            -MNU_HOME ))        {return false;} else        //                        [H]ome
+  if(shortCutCommand(w, event_key_command, GDK_KEY_B           /* B 66    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !EXITIFNIM,             FALSE,    "",  "-01",     0b0000011000000001101,         -1,          -MNU_MyMenu ))        {return false;} else        //                    MyMenu [b]
+  if(shortCutCommand(w, event_key_command, GDK_KEY_less        /* < 60    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,              ITM_RTN ))        {return false;} else        //                       RTN [<]
+  if(shortCutCommand(w, event_key_command, GDK_KEY_twosuperior /* ² 178   */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,           ITM_SQUARE ))        {return false;} else        //     Square on French keyboard
+  if(shortCutCommand(w, event_key_command, GDK_KEY_colon       /* : 58    */    ,                                  shortcutProfile == USER_C47,  EXITIFNIM,          tam.mode,   "g",   "00",                   0b01101,         -1,           ITM_TGLFRT ))        {return false;} else        //                          ab/c
+  if(shortCutCommand(w, event_key_command, GDK_KEY_numbersign  /* # 35    */    ,                                  shortcutProfile == USER_C47, !EXITIFNIM,          tam.mode,   "g",   "01",                   0b11101,         -1,          ITM_HASH_JM ))        {return false;} else        //                             #
+  if(shortCutCommand(w, event_key_command, GDK_KEY_quotedbl    /* " 34  FR*/    ,                                  shortcutProfile == USER_C47, !EXITIFNIM,          tam.mode,   "g",   "01",                   0b11101,         -1,          ITM_HASH_JM ))        {return false;} else        //                             #
+  if(shortCutCommand(w, event_key_command, GDK_KEY_at          /* @ 64    */    ,                                  shortcutProfile == USER_C47, !EXITIFNIM,          tam.mode,   "g",   "03",                   0b11101,         -1,             ITM_dotD ))        {return false;} else        //                            .d
+  if(shortCutCommand(w, event_key_command, GDK_KEY_eacute      /* é 233 FR*/    ,                                  shortcutProfile == USER_C47, !EXITIFNIM,          tam.mode,   "g",   "03",                   0b11101,         -1,             ITM_dotD ))        {return false;} else        //                            .d
+  if(shortCutCommand(w, event_key_command, GDK_KEY_asciicircum /* ^ 94    */    ,                                  shortcutProfile == USER_C47,  EXITIFNIM,          tam.mode,   "f",   "01",                   0b01101,         -1,               ITM_YX ))        {return false;} else        //                         [y]^x
+  if(shortCutCommand(w, event_key_command, GDK_KEY_dollar      /* $ 36    */    ,                                  shortcutProfile == USER_C47, !EXITIFNIM,          tam.mode,   "g",   "02",                   0b11101,         -1,               ITM_ms ))        {return false;} else        //                            .d
+  if(shortCutCommand(w, event_key_command, GDK_KEY_backslash   /* \ 92    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !EXITIFNIM,             FALSE,    "",   "35",                   0b01101,         -1,              ITM_STOP))        {return false;} else        //                         [x]eq
+  if(shortCutCommand(w, event_key_command, 96        /*DUP left   \ 92/6  */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !EXITIFNIM,             FALSE,    "",   "35",                   0b01101,         -1,              ITM_STOP))        {return false;} else        //                         [x]eq
+  if(shortCutCommand(w, event_key_command, GDK_KEY_z           /* z 122 DE*/    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !EXITIFNIM,             FALSE,    "",   "35",                   0b01101,         -1,              ITM_STOP))        {return false;} else        //                         [x]eq
+//                                             PC_GTK3_code                                          Logic Condition to enable line,  Close NIM,   Disabling state,  Shift/KEYno ,            Valid CalcMode requiredCalcMode2  itemForRunFunction
+
+  if(shortCutCommand(w, event_key_command, GDK_KEY_Q           /* Q 81    */    ,                                  shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",   "00",                   0b01101,         -1,           ITM_SQUARE ))        {return false;} else        //                      s[Q]uare
+  if(shortCutCommand(w, event_key_command, GDK_KEY_i           /* i 105   */    ,                                  shortcutProfile == USER_R47, !EXITIFNIM,          tam.mode,   "f",   "00",                   0b11101,         -1,             ITM_op_j ))        {return false;} else        //                             i
+  if(shortCutCommand(w, event_key_command, GDK_KEY_j           /* j 106   */    ,                                  shortcutProfile == USER_R47, !EXITIFNIM,          tam.mode,   "f",   "00",                   0b11101,         -1,             ITM_op_j ))        {return false;} else        //                             i
+  if(shortCutCommand(w, event_key_command, GDK_KEY_q           /* q 113   */    ,                                  shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",   "01",                   0b01101,         -1,      ITM_SQUAREROOTX ))        {return false;} else        //                        s[q]rt
+  if(shortCutCommand(w, event_key_command, GDK_KEY_k           /* k 107   */    ,                                  shortcutProfile == USER_R47, !EXITIFNIM,          tam.mode,   "f",   "01",                   0b11101,         -1,             ITM_op_j_pol ))    {return false;} else        //                          ipol
+  if(shortCutCommand(w, event_key_command, GDK_KEY_v           /* v 118   */    ,                                  shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",   "02",                   0b01101,         -1,             ITM_1ONX ))        {return false;} else        //                     in[v]erse
+  if(shortCutCommand(w, event_key_command, GDK_KEY_Y           /* Y 89    */    ,                                  shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",   "03",                   0b01101,         -1,               ITM_YX ))        {return false;} else        //                         [y]^x
+  if(shortCutCommand(w, event_key_command, GDK_KEY_asciicircum /* ^ 94    */    ,                                  shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",   "03",                   0b01101,         -1,               ITM_YX ))        {return false;} else        //                         [y]^x
+  if(shortCutCommand(w, event_key_command, GDK_KEY_o           /* o 111   */    ,                                  shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",   "04",                   0b01101,         -1,            ITM_LOG10 ))        {return false;} else        //                         l[o]g
+  if(shortCutCommand(w, event_key_command, GDK_KEY_l           /* l 108   */    ,                                  shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",   "05",                   0b01101,         -1,               ITM_LN ))        {return false;} else        //                          [l]n
+  if(shortCutCommand(w, event_key_command, GDK_KEY_m           /* m 109   */    ,                                  shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",   "06",                   0b01101,         -1,              ITM_STO ))        {return false;} else        //                      [m]emory
+  if(shortCutCommand(w, event_key_command, GDK_KEY_r           /* r 114   */    ,                                  shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",   "07",                   0b01101,         -1,              ITM_RCL ))        {return false;} else        //                         [r]cl
+  if(shortCutCommand(w, event_key_command, GDK_KEY_d           /* d 100   */    ,                                  shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",   "08",                   0b01101,         -1,            ITM_Rdown ))        {return false;} else        //                        [d]own
+  if(shortCutCommand(w, event_key_command, GDK_KEY_greater     /* > 62    */    ,                                  shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,              ITM_DRG ))        {return false;} else        //                     [=]>D,R,G
+  if(shortCutCommand(w, event_key_command, GDK_KEY_f           /* f 102   */    ,                                                        FALSE, !EXITIFNIM,          tam.mode,    "",   "10",                   0b01101,         -1,           ITM_SHIFTf ))        {return false;} else        //                             f
+  if(shortCutCommand(w, event_key_command, GDK_KEY_g           /* g 103   */    ,                                                        FALSE, !EXITIFNIM,          tam.mode,    "",   "11",                   0b01101,         -1,           ITM_SHIFTg ))        {return false;} else        //                             g
+  if(shortCutCommand(w, event_key_command, GDK_KEY_E           /* E 69 EE */    ,                                                        FALSE, !EXITIFNIM,             FALSE,    "",   "12",                   0b01101,         -1,            ITM_ENTER ))        {return false;} else        //                           key
+  if(shortCutCommand(w, event_key_command, GDK_KEY_w           /* w 119   */    ,                                                        FALSE, !EXITIFNIM,          tam.mode,    "",   "13",                   0b01101,         -1,             ITM_XexY ))        {return false;} else        //                        s[w]ap
+  if(shortCutCommand(w, event_key_command, GDK_KEY_n           /* n 110   */    ,                                                        FALSE, !EXITIFNIM,          tam.mode,    "",   "14",                   0b01101,         -1,              ITM_CHS ))        {return false;} else        //                CHS [n]egative
+  if(shortCutCommand(w, event_key_command, GDK_KEY_e           /* e 101   */    ,                                                        FALSE, !EXITIFNIM,          tam.mode,    "",   "15",                   0b01101,         -1,         ITM_EXPONENT ))        {return false;} else        //                    [e]xponent
+  if(shortCutCommand(w, event_key_command, GDK_KEY_a           /* a 97    */    ,                                  shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,        ITM_SIGMAPLUS ))        {return false;} else        //                  [a]ccumulate
+  if(shortCutCommand(w, event_key_command, GDK_KEY_x           /* x 120   */    ,                                  shortcutProfile == USER_R47, !EXITIFNIM,             FALSE,    "",   "17",                   0b01101,         -1,              ITM_XEQ ))        {return false;} else        //                         [x]eq
+  if(shortCutCommand(w, event_key_command, GDK_KEY_apostrophe  /* ' 39    */    ,                                  shortcutProfile == USER_R47,  EXITIFNIM,             FALSE,   "f",   "17",                   0b01101,         -1,              ITM_AIM ))        {return false;} else        //                     alpha [']
+  if(shortCutCommand(w, event_key_command, GDK_KEY_G           /* G 71    */    ,                                  shortcutProfile == USER_R47,  EXITIFNIM,             FALSE,   "g",   "17",                   0b01101,         -1,              ITM_GTO ))        {return false;} else        //                         [g]TO
+  if(shortCutCommand(w, event_key_command, GDK_KEY_M           /* M 77    */    ,                                  shortcutProfile == USER_R47, !EXITIFNIM,             FALSE,    "",  "-01",     0b0000011000000001101,         -1,            -MNU_PREF ))        {return false;} else        //                      PREF [M}
+  if(shortCutCommand(w, event_key_command, GDK_KEY_s           /* s 115   */    ,                                  shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,              ITM_sin ))        {return false;} else        //                        [s]ine
+  if(shortCutCommand(w, event_key_command, GDK_KEY_c           /* c 99    */    ,                                  shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,              ITM_cos ))        {return false;} else        //                      [c]osine
+  if(shortCutCommand(w, event_key_command, GDK_KEY_t           /* t 116   */    ,                                  shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,              ITM_tan ))        {return false;} else        //                     [t]angent
+  if(shortCutCommand(w, event_key_command, GDK_KEY_V           /* V 86    */    ,                                  shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,             ITM_1ONX ))        {return false;} else        //                     in[v]erse
+  if(shortCutCommand(w, event_key_command, GDK_KEY_colon       /* : 58    */    ,                                  shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,   "g",   "34",                   0b01101,         -1,           ITM_TGLFRT ))        {return false;} else        //                          ab/c
+  if(shortCutCommand(w, event_key_command, GDK_KEY_numbersign  /* # 35    */    ,                                  shortcutProfile == USER_R47, !EXITIFNIM,          tam.mode,   "g",   "05",                   0b11101,         -1,          ITM_HASH_JM ))        {return false;} else        //                             #
+  if(shortCutCommand(w, event_key_command, GDK_KEY_quotedbl    /* " 34  FR*/    ,                                  shortcutProfile == USER_R47, !EXITIFNIM,          tam.mode,   "g",   "05",                   0b11101,         -1,          ITM_HASH_JM ))        {return false;} else        //                             #
+  if(shortCutCommand(w, event_key_command, GDK_KEY_at          /* @ 64    */    ,                                  shortcutProfile == USER_R47, !EXITIFNIM,          tam.mode,   "g",   "03",                   0b11101,         -1,             ITM_dotD ))        {return false;} else        //                            .d
+  if(shortCutCommand(w, event_key_command, GDK_KEY_eacute      /* é 233 FR*/    ,                                  shortcutProfile == USER_R47, !EXITIFNIM,          tam.mode,   "g",   "03",                   0b11101,         -1,             ITM_dotD ))        {return false;} else        //                            .d
+  if(shortCutCommand(w, event_key_command, GDK_KEY_asciicircum /* ^ 94    */    ,                                  shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",   "03",                   0b01101,         -1,               ITM_YX ))        {return false;} else        //                         [y]^x
+  if(shortCutCommand(w, event_key_command, GDK_KEY_dollar      /* $ 36    */    ,                                  shortcutProfile == USER_R47, !EXITIFNIM,          tam.mode,   "g",   "02",                   0b11101,         -1,               ITM_ms ))        {return false;} else        //                            .d
 
 
-if(shortCutCommand(w, event_keyval,    97,                                  shortcutProfile == USER_C47,  ExitIfNim,          tam.mode,    "",   "00",                   0b01101,         -1,        ITM_SIGMAPLUS ))        {return true;} else        //                  [a]ccumulate
-if(shortCutCommand(w, event_keyval,   118,                                  shortcutProfile == USER_C47,  ExitIfNim,          tam.mode,    "",   "01",                   0b01101,         -1,             ITM_1ONX ))        {return true;} else        //                     in[v]erse
-if(shortCutCommand(w, event_keyval,   113,                                  shortcutProfile == USER_C47,  ExitIfNim,          tam.mode,    "",   "02",                   0b01101,         -1,      ITM_SQUAREROOTX ))        {return true;} else        //                        s[q]rt
-if(shortCutCommand(w, event_keyval,   111,                                  shortcutProfile == USER_C47,  ExitIfNim,          tam.mode,    "",   "03",                   0b01101,         -1,            ITM_LOG10 ))        {return true;} else        //                         l[o]g
-if(shortCutCommand(w, event_keyval,   108,                                  shortcutProfile == USER_C47,  ExitIfNim,          tam.mode,    "",   "04",                   0b01101,         -1,               ITM_LN ))        {return true;} else        //                          [l]n
-if(shortCutCommand(w, event_keyval,   120,                                  shortcutProfile == USER_C47, !ExitIfNim,             FALSE,    "",   "05",                   0b01101,         -1,              ITM_XEQ ))        {return true;} else        //                         [x]eq
-if(shortCutCommand(w, event_keyval,   109,                                  shortcutProfile == USER_C47,  ExitIfNim,          tam.mode,    "",   "06",                   0b01101,         -1,              ITM_STO ))        {return true;} else        //                      [m]emory
-if(shortCutCommand(w, event_keyval,   114,                                  shortcutProfile == USER_C47,  ExitIfNim,          tam.mode,    "",   "07",                   0b01101,         -1,              ITM_RCL ))        {return true;} else        //                         [r]cl
-if(shortCutCommand(w, event_keyval,   100,                                  shortcutProfile == USER_C47,  ExitIfNim,          tam.mode,    "",   "08",                   0b01101,         -1,            ITM_Rdown ))        {return true;} else        //                        [d]own
-if(shortCutCommand(w, event_keyval,   115,                                  shortcutProfile == USER_C47,  ExitIfNim,          tam.mode,    "",   "09",                   0b01101,         -1,              ITM_sin ))        {return true;} else        //                        [s]ine
-if(shortCutCommand(w, event_keyval,    99,                                  shortcutProfile == USER_C47,  ExitIfNim,          tam.mode,    "",   "10",                   0b01101,         -1,              ITM_cos ))        {return true;} else        //                      [c]osine
-if(shortCutCommand(w, event_keyval,   116,                                  shortcutProfile == USER_C47,  ExitIfNim,          tam.mode,    "",   "11",                   0b01101,         -1,              ITM_tan ))        {return true;} else        //                     [t]angent
-if(shortCutCommand(w, event_keyval, 65293,                                                        FALSE, !ExitIfNim,             FALSE,    "",   "12",                   0b01101,         -1,            ITM_ENTER ))        {return true;} else        //                           key
-if(shortCutCommand(w, event_keyval,   119,                                                        FALSE, !ExitIfNim,          tam.mode,    "",   "13",                   0b01101,         -1,             ITM_XexY ))        {return true;} else        //                        s[w]ap
-if(shortCutCommand(w, event_keyval,   110,                                                        FALSE, !ExitIfNim,          tam.mode,    "",   "14",                   0b01101,         -1,              ITM_CHS ))        {return true;} else        //                CHS [n]egative
-if(shortCutCommand(w, event_keyval,   101,                                                        FALSE, !ExitIfNim,          tam.mode,    "",   "15",                   0b01101,         -1,         ITM_EXPONENT ))        {return true;} else        //                    [e]xponent
-if(shortCutCommand(w, event_keyval,    62,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  ExitIfNim,          tam.mode,    "",  "-01",                   0b01101,         -1,              ITM_DRG ))        {return true;} else        //                     [=]>D,R,G
-if(shortCutCommand(w, event_keyval,    89,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  ExitIfNim,          tam.mode,    "",  "-01",                   0b01101,         -1,               ITM_YX ))        {return true;} else        //                         [y]^x
-if(shortCutCommand(w, event_keyval,   105,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  ExitIfNim,          tam.mode,    "",  "-01",                   0b01101,         -1,             ITM_op_j ))        {return true;} else        //                             i
-if(shortCutCommand(w, event_keyval,    88,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  ExitIfNim,          tam.mode,    "",  "-01",                   0b01101,         -1,          KEY_COMPLEX ))        {return true;} else        //                     comple[X]
-if(shortCutCommand(w, event_keyval,    82,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  ExitIfNim,          tam.mode,    "",  "-01",                   0b01101,         -1,           ITM_toREC2 ))        {return true;} else        //                           ->R
-if(shortCutCommand(w, event_keyval,    80,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  ExitIfNim,          tam.mode,    "",  "-01",                   0b01101,         -1,           ITM_toPOL2 ))        {return true;} else        //                           ->P
-if(shortCutCommand(w, event_keyval,   112,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  ExitIfNim,          tam.mode,    "",  "-01",                   0b01101,         -1,          ITM_CONSTpi ))        {return true;} else        //                            pi
-if(shortCutCommand(w, event_keyval,    86,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  ExitIfNim,          tam.mode,    "",  "-01",                   0b01101,         -1,             ITM_1ONX ))        {return true;} else        //                     in[V]erse
-if(shortCutCommand(w, event_keyval,   121,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  ExitIfNim,          tam.mode,    "",  "-01",                   0b01101,         -1,          ITM_XTHROOT ))        {return true;} else        //               xth root of [Y]
-if(shortCutCommand(w, event_keyval,    67,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  ExitIfNim,          tam.mode,    "",  "-01",                   0b01101,         -1,           ITM_arccos ))        {return true;} else        //                   arc[C]osine
-if(shortCutCommand(w, event_keyval,    83,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  ExitIfNim,          tam.mode,    "",  "-01",                   0b01101,         -1,           ITM_arcsin ))        {return true;} else        //                     arc[S]ine
-if(shortCutCommand(w, event_keyval,    84,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  ExitIfNim,          tam.mode,    "",  "-01",                   0b01101,         -1,           ITM_arctan ))        {return true;} else        //                  arc[T]angent
-if(shortCutCommand(w, event_keyval,    76,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  ExitIfNim,          tam.mode,    "",  "-01",                   0b01101,         -1,              ITM_EXP ))        {return true;} else        //                  anti[L]n e^x
-if(shortCutCommand(w, event_keyval,    79,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  ExitIfNim,          tam.mode,    "",  "-01",                   0b01101,         -1,              ITM_10x ))        {return true;} else        //                antil[O]g 10^x
-if(shortCutCommand(w, event_keyval,    81,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  ExitIfNim,          tam.mode,    "",  "-01",                   0b01101,         -1,           ITM_SQUARE ))        {return true;} else        //                      s[Q]uare
-if(shortCutCommand(w, event_keyval,    68,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  ExitIfNim,          tam.mode,    "",  "-01",                   0b01101,         -1,              ITM_Rup ))        {return true;} else        //                        Up [D]
-if(shortCutCommand(w, event_keyval,    73,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !ExitIfNim,             FALSE,    "",  "-01",     0b0000011000000001101,         -1,            -MNU_DISP ))        {return true;} else        //                        D[I]SP
-if(shortCutCommand(w, event_keyval,    74,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !ExitIfNim,             FALSE,    "",  "-01",     0b0000011000000001101,         -1,             -MNU_EXP ))        {return true;} else        //                           EXP
-if(shortCutCommand(w, event_keyval,    75,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !ExitIfNim,             FALSE,    "",  "-01",     0b0000011000000001101,         -1,             -MNU_STK ))        {return true;} else        //                         ST[K]
-if(shortCutCommand(w, event_keyval,    77,                                  shortcutProfile == USER_C47, !ExitIfNim,             FALSE,    "",  "-01",     0b0000011000000001101,         -1,            -MNU_MODE ))        {return true;} else        //                        [M]ODE
-if(shortCutCommand(w, event_keyval,    70,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !ExitIfNim,             FALSE,    "",  "-01",     0b0000011000000001101,         -1,          -MNU_PREFIX ))        {return true;} else        //                      PRE[F]IX
-if(shortCutCommand(w, event_keyval,    37,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  ExitIfNim,          tam.mode,    "",  "-01",                   0b01101,         -1,               ITM_PC ))        {return true;} else        //                           [%]
-if(shortCutCommand(w, event_keyval,    33,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  ExitIfNim,          tam.mode,    "",  "-01",                   0b01101,         -1,            ITM_XFACT ))        {return true;} else        //                          x[!]
-if(shortCutCommand(w, event_keyval,    85,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  ExitIfNim,             FALSE,    "",  "-01",                    0xffff,         -1,         ITM_USERMODE ))        {return true;} else        //                        [U]SER
-if(shortCutCommand(w, event_keyval,    39,                                  shortcutProfile == USER_C47,  ExitIfNim,             FALSE,   "f",   "05",                   0b01101,         -1,              ITM_AIM ))        {return true;} else        //                     alpha [']
-if(shortCutCommand(w, event_keyval,    71,                                  shortcutProfile == USER_C47,  ExitIfNim,             FALSE,   "g",   "05",                   0b01101,         -1,              ITM_GTO ))        {return true;} else        //                         [g]TO
-if(shortCutCommand(w, event_keyval,    65,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  ExitIfNim,          tam.mode,    "",  "-01",                   0b01101,         -1,              ITM_ARG ))        {return true;} else        //                       [A]ngle
-if(shortCutCommand(w, event_keyval,    90,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  ExitIfNim,          tam.mode,    "",  "-01",                   0b01101,         -1,        ITM_MAGNITUDE ))        {return true;} else        //                        Si[Z]e
-if(shortCutCommand(w, event_keyval,   124,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  ExitIfNim,          tam.mode,    "",  "-01",                   0b01101,         -1,        ITM_MAGNITUDE ))        {return true;} else        //                Size [|] (dup)
-if(shortCutCommand(w, event_keyval,   106,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  ExitIfNim,          tam.mode,    "",  "-01",                   0b01101,         -1,             ITM_op_j ))        {return true;} else        //                             j
-if(shortCutCommand(w, event_keyval, 65476,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  ExitIfNim,          tam.mode,    "",  "-01",                   0b01101,         -1,           ITM_TGLFRT ))        {return true;} else        //                          a/bc
-if(shortCutCommand(w, event_keyval, 65477,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  ExitIfNim,          tam.mode,    "",  "-01",                   0b01101,         -1,          ITM_HASH_JM ))        {return true;} else        //                             #
-if(shortCutCommand(w, event_keyval, 65478,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  ExitIfNim,          tam.mode,    "",  "-01",                   0b01101,     CM_NIM,               ITM_ms ))        {return true;} else        //                           .ms
-if(shortCutCommand(w, event_keyval, 65479,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  ExitIfNim,          tam.mode,    "",  "-01",                   0b01101,         -1,             ITM_dotD ))        {return true;} else        //                            .d
-if(shortCutCommand(w, event_keyval,    87,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  ExitIfNim,          tam.mode,    "",  "-01",                   0b01101,         -1,            ITM_LASTX ))        {return true;} else        //                        Last X
-if(shortCutCommand(w, event_keyval,    61,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  ExitIfNim,          tam.mode,    "",  "-01",                   0b01101,         -1,             ITM_dotD ))        {return true;} else        //                      .d (dup)
-if(shortCutCommand(w, event_keyval,    69,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  ExitIfNim,          tam.mode,    "",  "-01",                   0b01101,         -1,               CST_09 ))        {return true;} else        //                     Euler's E
-if(shortCutCommand(w, event_keyval,    78,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  ExitIfNim,             FALSE,   "f",   "35",                   0b01101,     CM_PEM,               ITM_PR ))        {return true;} else        //                       PRGM N]
-if(shortCutCommand(w, event_keyval,    98,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  ExitIfNim,          tam.mode,    "",  "-01",                   0b01101,     CM_PEM,              ITM_LBL ))        {return true;} else        //                       LBL [B]
-if(shortCutCommand(w, event_keyval,   117,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  ExitIfNim,             FALSE,   "f",   "16",                   0b01101,     CM_PEM,               ITM_PR ))        {return true;} else        //                        [u]ndo
-if(shortCutCommand(w, event_keyval,    72,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !ExitIfNim,             FALSE,    "",  "-01",     0b0000011000000001101,         -1,            -MNU_HOME ))        {return true;} else        //                        [H]ome
-if(shortCutCommand(w, event_keyval,    66,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !ExitIfNim,             FALSE,    "",  "-01",     0b0000011000000001101,         -1,          -MNU_MyMenu ))        {return true;} else        //                    MyMenu [b]
-if(shortCutCommand(w, event_keyval,    60,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  ExitIfNim,          tam.mode,    "",  "-01",                   0b01101,         -1,              ITM_RTN ))        {return true;} else        //                       RTN [<]
+#if defined(VERBOSEKEYS)
+  printf("------------------------ Checked commands, skipping to rest of key detections\n");        
+#else
+  {}
+#endif
 
-
-
-if(shortCutCommand(w, event_keyval,    81,                                  shortcutProfile == USER_R47,  ExitIfNim,          tam.mode,    "",   "00",                   0b01101,         -1,           ITM_SQUARE ))        {return true;} else        //                      s[Q]uare
-if(shortCutCommand(w, event_keyval,   113,                                  shortcutProfile == USER_R47,  ExitIfNim,          tam.mode,    "",   "01",                   0b01101,         -1,      ITM_SQUAREROOTX ))        {return true;} else        //                        s[q]rt
-if(shortCutCommand(w, event_keyval,   118,                                  shortcutProfile == USER_R47,  ExitIfNim,          tam.mode,    "",   "02",                   0b01101,         -1,             ITM_1ONX ))        {return true;} else        //                     in[v]erse
-if(shortCutCommand(w, event_keyval,    89,                                  shortcutProfile == USER_R47,  ExitIfNim,          tam.mode,    "",   "03",                   0b01101,         -1,               ITM_YX ))        {return true;} else        //                         [y]^x
-if(shortCutCommand(w, event_keyval,   111,                                  shortcutProfile == USER_R47,  ExitIfNim,          tam.mode,    "",   "04",                   0b01101,         -1,            ITM_LOG10 ))        {return true;} else        //                         l[o]g
-if(shortCutCommand(w, event_keyval,   108,                                  shortcutProfile == USER_R47,  ExitIfNim,          tam.mode,    "",   "05",                   0b01101,         -1,               ITM_LN ))        {return true;} else        //                          [l]n
-if(shortCutCommand(w, event_keyval,   109,                                  shortcutProfile == USER_R47,  ExitIfNim,          tam.mode,    "",   "06",                   0b01101,         -1,              ITM_STO ))        {return true;} else        //                      [m]emory
-if(shortCutCommand(w, event_keyval,   114,                                  shortcutProfile == USER_R47,  ExitIfNim,          tam.mode,    "",   "07",                   0b01101,         -1,              ITM_RCL ))        {return true;} else        //                         [r]cl
-if(shortCutCommand(w, event_keyval,   100,                                  shortcutProfile == USER_R47,  ExitIfNim,          tam.mode,    "",   "08",                   0b01101,         -1,            ITM_Rdown ))        {return true;} else        //                        [d]own
-if(shortCutCommand(w, event_keyval,    62,                                  shortcutProfile == USER_R47,  ExitIfNim,          tam.mode,    "",  "-01",                   0b01101,         -1,              ITM_DRG ))        {return true;} else        //                     [=]>D,R,G
-if(shortCutCommand(w, event_keyval,   102,                                                        FALSE, !ExitIfNim,          tam.mode,    "",   "10",                   0b01101,         -1,           ITM_SHIFTf ))        {return true;} else        //                             f
-if(shortCutCommand(w, event_keyval,   103,                                                        FALSE, !ExitIfNim,          tam.mode,    "",   "11",                   0b01101,         -1,           ITM_SHIFTg ))        {return true;} else        //                             g
-if(shortCutCommand(w, event_keyval,    69,                                                        FALSE, !ExitIfNim,             FALSE,    "",   "12",                   0b01101,         -1,            ITM_ENTER ))        {return true;} else        //                           key
-if(shortCutCommand(w, event_keyval,   119,                                                        FALSE, !ExitIfNim,          tam.mode,    "",   "13",                   0b01101,         -1,             ITM_XexY ))        {return true;} else        //                        s[w]ap
-if(shortCutCommand(w, event_keyval,   110,                                                        FALSE, !ExitIfNim,          tam.mode,    "",   "14",                   0b01101,         -1,              ITM_CHS ))        {return true;} else        //                CHS [n]egative
-if(shortCutCommand(w, event_keyval,   101,                                                        FALSE, !ExitIfNim,          tam.mode,    "",   "15",                   0b01101,         -1,         ITM_EXPONENT ))        {return true;} else        //                    [e]xponent
-if(shortCutCommand(w, event_keyval,    97,                                  shortcutProfile == USER_R47,  ExitIfNim,          tam.mode,    "",  "-01",                   0b01101,         -1,        ITM_SIGMAPLUS ))        {return true;} else        //                  [a]ccumulate
-if(shortCutCommand(w, event_keyval,   120,                                  shortcutProfile == USER_R47, !ExitIfNim,             FALSE,    "",   "17",                   0b01101,         -1,              ITM_XEQ ))        {return true;} else        //                         [x]eq
-if(shortCutCommand(w, event_keyval,    39,                                  shortcutProfile == USER_R47,  ExitIfNim,             FALSE,   "f",   "17",                   0b01101,         -1,              ITM_AIM ))        {return true;} else        //                     alpha [']
-if(shortCutCommand(w, event_keyval,    71,                                  shortcutProfile == USER_R47,  ExitIfNim,             FALSE,   "g",   "17",                   0b01101,         -1,              ITM_GTO ))        {return true;} else        //                         [g]TO
-if(shortCutCommand(w, event_keyval,    77,                                  shortcutProfile == USER_R47, !ExitIfNim,             FALSE,    "",  "-01",     0b0000011000000001101,         -1,            -MNU_PREF ))        {return true;} else        //                      PREF [M}
-if(shortCutCommand(w, event_keyval,   115,                                  shortcutProfile == USER_R47,  ExitIfNim,          tam.mode,    "",  "-01",                   0b01101,         -1,              ITM_sin ))        {return true;} else        //                        [s]ine
-if(shortCutCommand(w, event_keyval,    99,                                  shortcutProfile == USER_R47,  ExitIfNim,          tam.mode,    "",  "-01",                   0b01101,         -1,              ITM_cos ))        {return true;} else        //                      [c]osine
-if(shortCutCommand(w, event_keyval,   116,                                  shortcutProfile == USER_R47,  ExitIfNim,          tam.mode,    "",  "-01",                   0b01101,         -1,              ITM_tan ))        {return true;} else        //                     [t]angent
-if(shortCutCommand(w, event_keyval,    86,                                  shortcutProfile == USER_R47,  ExitIfNim,          tam.mode,    "",  "-01",                   0b01101,         -1,             ITM_1ONX ))        {return true;} else        //                     in[v]erse
-
-                
-  printf("------------------------ skipping to rest of key detections\n");        
 }
+else if(     (CTRL_State != 65536 || allowAltGrKey)
+     && (    calcMode == CM_NORMAL 
+         ||  calcMode == CM_PEM
+        )
+     && !getSystemFlag(FLAG_ALPHA)
+  ) {
+
+    if(tam.mode == TM_STORCL) {
+      #if defined(VERBOSEKEYS)
+        printf("------------------------ Checking STO/RCL ancillary functions event->keyval=%i, GDK_KEY_Up=%i\n",event->keyval, GDK_KEY_Up);        
+      #endif
+      if(shortCutCommand(w, event->keyval, GDK_KEY_Up         ,   shortcutProfile == USER_C47                               , !EXITIFNIM, !DISABLED,    "",   "17", 0b01001, -1, 0))        {return false;} else        //                         [x]eq
+      if(shortCutCommand(w, event->keyval, GDK_KEY_Down       ,   shortcutProfile == USER_C47                               , !EXITIFNIM, !DISABLED,    "",   "22", 0b01001, -1, 0))        {return false;} else        //                         [x]eq
+      if(shortCutCommand(w, event->keyval, GDK_KEY_Up         ,                                  shortcutProfile == USER_R47, !EXITIFNIM, !DISABLED,    "",   "22", 0b01001, -1, 0))        {return false;} else        //                         [x]eq
+      if(shortCutCommand(w, event->keyval, GDK_KEY_Down       ,                                  shortcutProfile == USER_R47, !EXITIFNIM, !DISABLED,    "",   "27", 0b01001, -1, 0))        {return false;} else        //                         [x]eq
+      if(shortCutCommand(w, event->keyval, '/'                ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !EXITIFNIM, !DISABLED,    "",   "21", 0b01001, -1, 0))        {return false;} else        //                         [x]eq
+      if(shortCutCommand(w, event->keyval, '*'                ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !EXITIFNIM, !DISABLED,    "",   "26", 0b01001, -1, 0))        {return false;} else        //                         [x]eq
+      if(shortCutCommand(w, event->keyval, '-'                ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !EXITIFNIM, !DISABLED,    "",   "31", 0b01001, -1, 0))        {return false;} else        //                         [x]eq
+      if(shortCutCommand(w, event->keyval, '+'                ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !EXITIFNIM, !DISABLED,    "",   "36", 0b01001, -1, 0))        {return false;} else        //                         [x]eq
+      #if defined(VERBOSEKEYS)
+        printf("------------------------ Checked STO/RCL arrow +-*/, skipping to rest of key detections\n");        
+      #else
+        {}
+      #endif
+    }
+    else if(tam.mode == TM_LABEL && !getSystemFlag(FLAG_ALPHA)) { 
+      #if defined(VERBOSEKEYS)
+        printf("------------------------ Checking GTO Up Dn ancillary functions event->keyval=%i, GDK_KEY_Up=%i\n",event->keyval, GDK_KEY_Up);        
+      #endif
+      if(shortCutCommand(w, event->keyval, GDK_KEY_Up         ,   shortcutProfile == USER_C47                               , !EXITIFNIM, !DISABLED,    "",   "17", 0b01001, -1, 0))        {return false;} else        //                         [x]eq
+      if(shortCutCommand(w, event->keyval, GDK_KEY_Down       ,   shortcutProfile == USER_C47                               , !EXITIFNIM, !DISABLED,    "",   "22", 0b01001, -1, 0))        {return false;} else        //                         [x]eq
+      if(shortCutCommand(w, event->keyval, GDK_KEY_Up         ,                                  shortcutProfile == USER_R47, !EXITIFNIM, !DISABLED,    "",   "22", 0b01001, -1, 0))        {return false;} else        //                         [x]eq
+      if(shortCutCommand(w, event->keyval, GDK_KEY_Down       ,                                  shortcutProfile == USER_R47, !EXITIFNIM, !DISABLED,    "",   "27", 0b01001, -1, 0))        {return false;} else        //                         [x]eq
+      #if defined(VERBOSEKEYS)
+        printf("------------------------ Checked GTO Up Dn, skipping to rest of key detections\n");        
+      #else
+        {}
+      #endif
+    }
+  }
+
  
 
+//New Matrix arrows
+if(   CTRL_State != 65536
+   && !catalog
+   && calcMode == CM_NORMAL 
+  ) {
+  #if defined(VERBOSEKEYS)
+      printf("------------------------ Checking Matric arrows functions\n");        
+  #endif
 
+  //                  *w, int key     ,keyCode,   condition1,                                                         disable,  *shift, *keyForBtnClicked,      modes,  requiredCalcMode2,     itemForRunFunction
+  if(shortCutFNCommand(w, event_keyval, GDK_KEY_Up    /* F1 */,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, FALSE  ,    "",  "1",         1 << 12,         -1,          0    ))        {return false;} else        //  F1 Up
+  if(shortCutFNCommand(w, event_keyval, GDK_KEY_Down  /* F2 */,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, FALSE  ,    "",  "2",         1 << 12,         -1,          0    ))        {return false;} else        //  F2 Dn
+  if(shortCutFNCommand(w, event_keyval, GDK_KEY_Left  /* F5 */,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, FALSE  ,    "",  "5",         1 << 12,         -1,          0    ))        {return false;} else        //  F5 Lt
+  if(shortCutFNCommand(w, event_keyval, GDK_KEY_Right /* F6 */,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, FALSE  ,    "",  "6",         1 << 12,         -1,          0    ))        {return false;} else        //  F6 Rt
+  #if defined(VERBOSEKEYS)
+    printf("------------------------ Checked matrix arrows detection, skipping to rest of key detections\n");        
+  #else
+    {}
+  #endif
+}
 
+//New ALPHA SECTION
+int32_t ll;
 
+if(   (CTRL_State != 65536 || ((event->state & 16) == 16))
+   && (   (catalog && currentMenu() != -MNU_MVAR)
+        || calcMode == CM_AIM 
+        || calcMode == CM_EIM 
+        ||(calcMode == CM_PEM    && getSystemFlag(FLAG_ALPHA)) 
+        ||(calcMode == CM_ASSIGN && getSystemFlag(FLAG_ALPHA))
+        ||((tam.mode == TM_LABEL || tam.mode == TM_STORCL) )
+      )  
+  ) {
 
-    if(calcMode == CM_MIM) {
-      switch(event_keyval) {
-        //ROW 0
-        case 65362:                                               //JM     // CursorUp //JM
-            btnFnClicked(w, "1");  //F1
-            return false;
-          break;
-        case 65364:                                               //JM     // CursorDown //JM
-            btnFnClicked(w, "2");  //F2
-            return false;
-          break;
-        case 65361:                                               //JM     // CursorLt BST //JM Left
-            btnFnClicked(w, "5");  //F5
-            return false;
-          break;
-        case 65363:                                               //JM     // CursorRt SST //JM Right
-            btnFnClicked(w, "6");  //F6
-            return false;
-          break;
-        default:;
-      }
+//if((event->keyval == 65514) || ((event->state & 16) == 16)) { //AltGr Dani & Didier 0x14 for AltGr, and 0x1C for \#
+    //printf("AltGr #3 (AIM) %s detected; keyval=%u state=%u, event_key_command=%u\n",
+    //(event->keyval == GDK_KEY_at) ? "+@" : (event->keyval == GDK_KEY_numbersign) ? "+#" : (event->keyval == GDK_KEY_bar) ? "+|" : "",
+    //(uint16_t)event->keyval, (uint16_t)event->state, (uint16_t)event_key_command);
+//}
+
+    //old way
+    //  if(32 <= event_keyval && event_keyval <= 255) {
+    //    ll = asciiToItem((uint8_t)event_keyval);
+    //    if(ll > 0) {
+    //      sendKey(ll);
+    //      screenUpdatingMode = SCRUPD_AUTO;
+    //      refreshScreen(8);
+    //      return false;
+    //    }
+    //    else {
+    //      goto nextchar;
+    //    }
+    //  }
+
+    uint8_t alphaCase_MEM = alphaCase;
+    ll = event->keyval;
+
+    //Deadkey ^ simulation
+    //if(ll=='a') ll = 65106;
+  
+    if('A' <= ll && ll <= 'Z' && alphaCase == AC_UPPER) {         //A-Z is shifted on PC, and flips
+      ll += ('a' - 'A');
+      alphaCase = AC_LOWER;
     }
+    else if('A' <= ll && ll <= 'Z' && alphaCase == AC_LOWER) {
+      alphaCase = AC_UPPER;
+    }
+    else if('a' <= ll && ll <= 'z' && alphaCase == AC_UPPER) {    //a-z is natural on PC, and if CAPS(o) produce CAPS
+      ll -= ('a' - 'A');
+    }
+    else if('a' <= ll && ll <= 'z' && alphaCase == AC_LOWER) {    //a-z is natural on PC, and if CAPS( ) produces LC
+    }
+  //refreshStatusBar();
+
+    ll = _keyCodeFromGdkKey(ll);        //utilise the raw key event value, which will be contain a-z or A-Z
+    if(ll > 0) {
+      sendKey(ll);
+      screenUpdatingMode = SCRUPD_AUTO;
+      refreshStatusBar();
+      refreshScreen(8);
+      refreshLcd(NULL);
+      resetShiftState();
+      alphaCase = alphaCase_MEM;
+      return false;
+    }
+    else if(ll == -1) {   //do not continue looking for keys
+      screenUpdatingMode = SCRUPD_AUTO;
+      alphaCase = alphaCase_MEM;
+      refreshStatusBar();
+      refreshScreen(8);
+      refreshLcd(NULL);
+      resetShiftState();
+      return false;
+    }
+    alphaCase = alphaCase_MEM;
+
+    #if defined(VERBOSEKEYS)
+      printf("------------------------ Done new alpha detection, skipping to rest of key detections\n");        
+    #endif
+  }
 
 
+
+
+
+    //#if defined(VERBOSEKEYS)
+      printf("\nContinue with old key detection using event_keyval=%u\n",event_keyval);
+    //#endif
     //JM ALPHA SECTION FOR ALPHAMODE - TAKE OVER ALPHA KEYBOARD
     if(calcMode == CM_AIM || calcMode == CM_EIM || tam.mode || (calcMode == CM_PEM && getSystemFlag(FLAG_ALPHA)) || (calcMode == CM_ASSIGN && getSystemFlag(FLAG_ALPHA))) {
       //printf(">>>>> ALPHA SECTION Keyboard Key Code = %d\n", event_keyval);
-      switch(event_keyval) {
 
-        case 72+65536: // Ctrl H
-        case 104+65536: // Ctrl h
+      switch(event_keyval) {
+        case GDK_KEY_H+65536: // Ctrl H
+        case GDK_KEY_h+65536: // Ctrl h
           CTRL_State = 0;
           printf("key pressed: CTRL+h Hardcopy\n");
           copyScreenToClipboard();
           break;
 
-        case 33:           //!
-          if(calcMode == CM_EIM) {
-            shiftF = true;
-            int16_t jj = softmenuStack[0].firstItem;
-            softmenuStack[0].firstItem = 18*3;
-            btnFnClicked(w, "4");  //F4
-            softmenuStack[0].firstItem = jj;
-            showSoftmenuCurrentPart();
-          }
-          else if((calcMode == CM_PEM && getSystemFlag(FLAG_ALPHA))) {
-            shiftF = true;
-            btnClicked(w, "35"); //?
-          }
-          break;
-        case 40:           //(
-          if(calcMode == CM_EIM) {
-            shiftF = true;
-            int16_t jj = softmenuStack[0].firstItem;
-            softmenuStack[0].firstItem = 0;
-            btnFnClicked(w, "1");  //F1
-            softmenuStack[0].firstItem = jj;
-            showSoftmenuCurrentPart();
-          }
-          break;
-        case 41:           //)
-          if(calcMode == CM_EIM) {
-            shiftF = true;
-            int16_t jj = softmenuStack[0].firstItem;
-            softmenuStack[0].firstItem = 0;
-            btnFnClicked(w, "2");  //F2
-            softmenuStack[0].firstItem = jj;
-            showSoftmenuCurrentPart();
-            }
-          break;
-        case 61:           //=
-          if(calcMode == CM_EIM) {
-            shiftF = true;
-            int16_t jj = softmenuStack[0].firstItem;
-            softmenuStack[0].firstItem = 0;
-            btnFnClicked(w, "2");  //= F2
-            softmenuStack[0].firstItem = jj;
-            showSoftmenuCurrentPart();
-          }
-          break;
-
+//        case 61:           //=
+//          if(calcMode == CM_EIM) {
+//            shiftF = true;
+//            int16_t jj = softmenuStack[0].firstItem;
+//            softmenuStack[0].firstItem = 0;
+//            btnFnClicked(w, "2");  //= F2
+//            softmenuStack[0].firstItem = jj;
+//            showSoftmenuCurrentPart();
+//          }
+//          break;
 
         //ROW 0
-        case 65362:                                               //JM     // CursorUp //JM
+        case GDK_KEY_Up:                                               //JM     // CursorUp //JM
           if(AlphaArrowsOffAndUpDn) {            
             btnClicked(w,  isR47FAM?"22":"17");   //Up
           }
@@ -699,7 +1025,7 @@ if(shortCutCommand(w, event_keyval,    86,                                  shor
             }
           }
           break;
-        case 65364:                                               //JM     // CursorDown //JM
+        case GDK_KEY_Down:                                               //JM     // CursorDown //JM
           if(AlphaArrowsOffAndUpDn)
             btnClicked(w, isR47FAM?"27":"22");   //Up
           else if(calcMode == CM_EIM)
@@ -707,7 +1033,7 @@ if(shortCutCommand(w, event_keyval,    86,                                  shor
           else
             btnFnClicked(w, "2");  //F2
           break;
-        case 65361:                                               //JM     // CursorLt BST //JM Left
+        case GDK_KEY_Left:                                               //JM     // CursorLt BST //JM Left
           if(AlphaArrowsOffAndUpDn) {
           }
           else if(calcMode == CM_EIM) {
@@ -721,7 +1047,7 @@ if(shortCutCommand(w, event_keyval,    86,                                  shor
           else
             btnFnClicked(w, "5");  //F5
           break;
-        case 65363:                                               //JM     // CursorRt SST //JM Right
+        case GDK_KEY_Right:                                               //JM     // CursorRt SST //JM Right
           if(AlphaArrowsOffAndUpDn) {
           }
           else if(calcMode == CM_EIM) {
@@ -739,8 +1065,8 @@ if(shortCutCommand(w, event_keyval,    86,                                  shor
 
 
         //ROW 1
-        case 65470: // F1                                                    //**************-- FUNCTION KEYS --***************//
-          if(calcMode == CM_EIM || AlphaArrowsOffAndUpDn) {
+        case GDK_KEY_F1: // F1                                                    //**************-- FUNCTION KEYS --***************//
+          if(calcMode == CM_EIM || AlphaArrowsOffAndUpDn || labelText) {
             #if defined(VERBOSEKEYS)
               printf("key FNPressed - PRESS: F1\n");
             #endif
@@ -753,8 +1079,8 @@ if(shortCutCommand(w, event_keyval,    86,                                  shor
             btnFnClicked(w, "1");
           }
           break;
-        case 65471: // F2
-          if(calcMode == CM_EIM || AlphaArrowsOffAndUpDn) {
+        case GDK_KEY_F2: // F2
+          if(calcMode == CM_EIM || AlphaArrowsOffAndUpDn || labelText) {
             #if defined(VERBOSEKEYS)
               printf("key FNPressed - PRESS: F2\n");
             #endif
@@ -767,8 +1093,8 @@ if(shortCutCommand(w, event_keyval,    86,                                  shor
             btnFnClicked(w, "2");
           }
           break;
-        case 65472: // F3
-          if(calcMode == CM_EIM || AlphaArrowsOffAndUpDn) {
+        case GDK_KEY_F3: // F3
+          if(calcMode == CM_EIM || AlphaArrowsOffAndUpDn || labelText) {
             #if defined(VERBOSEKEYS)
               printf("key FNPressed - PRESS: F3\n");
             #endif
@@ -781,8 +1107,8 @@ if(shortCutCommand(w, event_keyval,    86,                                  shor
             btnFnClicked(w, "3");
           }
           break;
-        case 65473: // F4
-          if(calcMode == CM_EIM || AlphaArrowsOffAndUpDn) {
+        case GDK_KEY_F4: // F4
+          if(calcMode == CM_EIM || AlphaArrowsOffAndUpDn || labelText) {
             #if defined(VERBOSEKEYS)
               printf("key FNPressed - PRESS: F4\n");
             #endif
@@ -795,8 +1121,8 @@ if(shortCutCommand(w, event_keyval,    86,                                  shor
             btnFnClicked(w, "4");
           }
           break;
-        case 65474: // F5
-          if(calcMode == CM_EIM || AlphaArrowsOffAndUpDn) {
+        case GDK_KEY_F5: // F5
+          if(calcMode == CM_EIM || AlphaArrowsOffAndUpDn || labelText) {
             #if defined(VERBOSEKEYS)
               printf("key FNPressed - PRESS: F5\n");
             #endif
@@ -809,8 +1135,8 @@ if(shortCutCommand(w, event_keyval,    86,                                  shor
             btnFnClicked(w, "5");
           }
           break;
-        case 65475: // F6
-          if(calcMode == CM_EIM || AlphaArrowsOffAndUpDn) {
+        case GDK_KEY_F6: // F6
+          if(calcMode == CM_EIM || AlphaArrowsOffAndUpDn || labelText) {
             #if defined(VERBOSEKEYS)
               printf("key FNPressed - PRESS: F6\n");
             #endif
@@ -824,221 +1150,123 @@ if(shortCutCommand(w, event_keyval,    86,                                  shor
           }
           break;
 
+
+
         //ROW 2
         case 65:  //JM SHIFTED CAPITAL ALPHA AND SHIFTED NUMERAL  //JM.    //**************-- ALPHA KEYS UPPER CASE --***************//
-          btnClicked_UC(w, "00");                                          //UPPER CASE PC LETTER INPUT. INVERT C43 CASE. USE LETTER.
-          break;
         case 66:  //JM SHIFTED CAPITAL ALPHA AND SHIFTED NUMERAL  //JM
-          btnClicked_UC(w, "01");
-          break;
         case 67:  //JM SHIFTED CAPITAL ALPHA AND SHIFTED NUMERAL  //JM
-          btnClicked_UC(w, "02");
-          break;
         case 68:  //JM SHIFTED CAPITAL ALPHA AND SHIFTED NUMERAL  //JM
-          btnClicked_UC(w, "03");
-          break;
         case 69:  //JM SHIFTED CAPITAL ALPHA AND SHIFTED NUMERAL  //JM
-          btnClicked_UC(w, "04");
-          break;
         case 70:  //JM SHIFTED CAPITAL ALPHA AND SHIFTED NUMERAL  //JM
-          btnClicked_UC(w, "05");
-          break;
         case 94:  //^
-          if(calcMode == CM_AIM || calcMode == CM_EIM || (calcMode == CM_PEM && getSystemFlag(FLAG_ALPHA))) {
-            shiftG = true;
-            btnClicked(w, "01");
-          }
-          break;
 
         //ROW 3
         case 71:  //JM SHIFTED CAPITAL ALPHA AND SHIFTED NUMERAL  //JM
-          btnClicked_UC(w, "06");
-          break;
         case 72:  //JM SHIFTED CAPITAL ALPHA AND SHIFTED NUMERAL  //JM
-          btnClicked_UC(w, "07");
-          break;
         case 73:  //JM SHIFTED CAPITAL ALPHA AND SHIFTED NUMERAL  //JM
-          btnClicked_UC(w, "08");
-          break;
         case 74:  //JM SHIFTED CAPITAL ALPHA AND SHIFTED NUMERAL  //JM
-          btnClicked_UC(w, "09");
-          break;
         case 75:  //JM SHIFTED CAPITAL ALPHA AND SHIFTED NUMERAL  //JM
-          btnClicked_UC(w, "10");
-          break;
         case 76:  //JM SHIFTED CAPITAL ALPHA AND SHIFTED NUMERAL  //JM
-          btnClicked_UC(w, "11");
-          break;
         case 124:  //|
-          if(calcMode == CM_AIM || calcMode == CM_EIM || (calcMode == CM_PEM && getSystemFlag(FLAG_ALPHA))) {
-            shiftG = true;
-            btnClicked(w, "06");
-          }
           break;
 
         //ROW 4
-        case 65421:                                               //JM    // Enter
-        case 65293:                                               //JM    // Enter
-          btnClicked(w, "12");
-          break;
         case 77:  //JM SHIFTED CAPITAL ALPHA AND SHIFTED NUMERAL  //JM
-          btnClicked_UC(w, "13");
-          break;
         case 78:  //JM SHIFTED CAPITAL ALPHA AND SHIFTED NUMERAL  //JM
-          btnClicked_UC(w, "14");
-          break;
         case 79:  //JM SHIFTED CAPITAL ALPHA AND SHIFTED NUMERAL  //JM
-          btnClicked_UC(w, "15");
-          break;
-        case 65288: // Backspace
-          btnClicked(w, "16");
-          break;
-        case 65439:
-        case 65535: // Delete
-          fnT_ARROW(ITM_T_RIGHT_ARROW);
-          btnClicked(w, "16");
-          break;
         case 177: //+-
-          if(calcMode == CM_AIM || calcMode == CM_EIM || (calcMode == CM_PEM && getSystemFlag(FLAG_ALPHA))) {
-            shiftG = true;
-            btnClicked(w, "14");
-          }
-          break;
 
         //ROW 5
-        case 65360:                                               //JM     // HOME  //JM
-          btnClicked(w, "17");
-          break;
         case 80:  //JM SHIFTED CAPITAL ALPHA AND SHIFTED NUMERAL  //JM
-          btnClicked_UC(w, "18");
-          break;
         case 81:  //JM SHIFTED CAPITAL ALPHA AND SHIFTED NUMERAL  //JM
-          btnClicked_UC(w, "19");
-          break;
         case 82:  //JM SHIFTED CAPITAL ALPHA AND SHIFTED NUMERAL  //JM
-          btnClicked_UC(w, "20");
-          break;
         case 83:  //JM SHIFTED CAPITAL ALPHA AND SHIFTED NUMERAL  //JM
-          btnClicked_UC(w, "21");
-          break;
 
         //ROW 6
-        case 65367:                                               //JM     // END  //JM
-          btnClicked(w, "22");
-          break;
         case 84:  //JM SHIFTED CAPITAL ALPHA AND SHIFTED NUMERAL  //JM
-          btnClicked_UC(w, "23");
-          break;
         case 85:  //JM SHIFTED CAPITAL ALPHA AND SHIFTED NUMERAL  //JM
-          btnClicked_UC(w, "24");
-          break;
         case 86:  //JM SHIFTED CAPITAL ALPHA AND SHIFTED NUMERAL  //JM
-          btnClicked_UC(w, "25");
-          break;
         case 87:  //JM SHIFTED CAPITAL ALPHA AND SHIFTED NUMERAL  //JM
-          btnClicked_UC(w, "26");
-          break;
 
         //ROW 7
         case 88:  //JM SHIFTED CAPITAL ALPHA AND SHIFTED NUMERAL  //JM
-          btnClicked_UC(w, "28");
-          break;
         case 89:  //JM SHIFTED CAPITAL ALPHA AND SHIFTED NUMERAL  //JM
-          btnClicked_UC(w, "29");
-          break;
         case 90:  //JM SHIFTED CAPITAL ALPHA AND SHIFTED NUMERAL  //JM
-          btnClicked_UC(w, "30");
-          break;
 
         //JM ALPHA LOWER CASE SECTION FOR ALPHAMODE - TAKE OVER ALPHA KEYBOARD
         //ROW 2
         case 65+32:  //JM SHIFTED CAPITAL ALPHA AND SHIFTED NUMERAL  //JM     //**************-- ALPHA KEYS LOWER CASE --***************//
-          btnClicked_LC(w, "00");                                             //LOWER CASE PC LETTER INPUT. USE LETTER IN THE CURRENT C43 CASE.
-          break;
         case 66+32:  //JM SHIFTED CAPITAL ALPHA AND SHIFTED NUMERAL  //JM
-          btnClicked_LC(w, "01");
-          break;
         case 67+32:  //JM SHIFTED CAPITAL ALPHA AND SHIFTED NUMERAL  //JM
-          btnClicked_LC(w, "02");
-          break;
         case 68+32:  //JM SHIFTED CAPITAL ALPHA AND SHIFTED NUMERAL  //JM
-          btnClicked_LC(w, "03");
-          break;
         case 69+32:  //JM SHIFTED CAPITAL ALPHA AND SHIFTED NUMERAL  //JM
-          btnClicked_LC(w, "04");
-          break;
         case 70+32:  //JM SHIFTED CAPITAL ALPHA AND SHIFTED NUMERAL  //JM
-          btnClicked_LC(w, "05");
-          break;
 
         //ROW 3
         case 71+32:  //JM SHIFTED CAPITAL ALPHA AND SHIFTED NUMERAL  //JM
-          btnClicked_LC(w, "06");
-          break;
         case 72+32:  //JM SHIFTED CAPITAL ALPHA AND SHIFTED NUMERAL  //JM
-          btnClicked_LC(w, "07");
-          break;
         case 73+32:  //JM SHIFTED CAPITAL ALPHA AND SHIFTED NUMERAL  //JM
-          btnClicked_LC(w, "08");
-          break;
         case 74+32:  //JM SHIFTED CAPITAL ALPHA AND SHIFTED NUMERAL  //JM
-          btnClicked_LC(w, "09");
-          break;
         case 75+32:  //JM SHIFTED CAPITAL ALPHA AND SHIFTED NUMERAL  //JM
-          btnClicked_LC(w, "10");
-          break;
         case 76+32:  //JM SHIFTED CAPITAL ALPHA AND SHIFTED NUMERAL  //JM
-          btnClicked_LC(w, "11");
-          break;
 
         //ROW 4
         case 77+32:  //JM SHIFTED CAPITAL ALPHA AND SHIFTED NUMERAL  //JM
-          btnClicked_LC(w, "13");
-          break;
         case 78+32:  //JM SHIFTED CAPITAL ALPHA AND SHIFTED NUMERAL  //JM
-          btnClicked_LC(w, "14");
-          break;
         case 79+32:  //JM SHIFTED CAPITAL ALPHA AND SHIFTED NUMERAL  //JM
-          btnClicked_LC(w, "15");
-          break;
 
         //ROW 5
         case 80+32:  //JM SHIFTED CAPITAL ALPHA AND SHIFTED NUMERAL  //JM
-          btnClicked_LC(w, "18");
-          break;
         case 81+32:  //JM SHIFTED CAPITAL ALPHA AND SHIFTED NUMERAL  //JM
-          btnClicked_LC(w, "19");
-          break;
         case 82+32:  //JM SHIFTED CAPITAL ALPHA AND SHIFTED NUMERAL  //JM
-          btnClicked_LC(w, "20");
-          break;
         case 83+32:  //JM SHIFTED CAPITAL ALPHA AND SHIFTED NUMERAL  //JM
-          btnClicked_LC(w, "21");
-          break;
 
         //ROW 6
         case 84+32:  //JM SHIFTED CAPITAL ALPHA AND SHIFTED NUMERAL  //JM
-          btnClicked_LC(w, "23");
-          break;
         case 85+32:  //JM SHIFTED CAPITAL ALPHA AND SHIFTED NUMERAL  //JM
-          btnClicked_LC(w, "24");
-          break;
         case 86+32:  //JM SHIFTED CAPITAL ALPHA AND SHIFTED NUMERAL  //JM
-          btnClicked_LC(w, "25");
-          break;
         case 87+32:  //JM SHIFTED CAPITAL ALPHA AND SHIFTED NUMERAL  //JM
-          btnClicked_LC(w, "26");
-          break;
 
         //ROW 7
         case 88+32:  //JM SHIFTED CAPITAL ALPHA AND SHIFTED NUMERAL  //JM
-          btnClicked_LC(w, "28");
-          break;
         case 89+32:  //JM SHIFTED CAPITAL ALPHA AND SHIFTED NUMERAL  //JM
-          btnClicked_LC(w, "29");
-          break;
         case 90+32:  //JM SHIFTED CAPITAL ALPHA AND SHIFTED NUMERAL  //JM
-          btnClicked_LC(w, "30");
+
+        case 95:                //JM UNDERSCORE   //JM
+        case 58:                 // COLON.        //JM
+        case 59:                 // semicolon.    //JM
+        case 44:                 // ,             //JM
+        case 63:                 // ?             //JM
+        case 32:                //JM SPACE        //JM
+
+          printf("-------------------------------------------\n\n\n######## MISSING OLD TEXT OUTPUT A %i ########\n\n", event_keyval);
+          break;
+
+
+
+        //ROW 4
+        case GDK_KEY_KP_Enter:                                               //JM    // Enter
+        case GDK_KEY_Return:                                                 //JM    // Enter
+          btnClicked(w, "12");
+          break;
+        case GDK_KEY_BackSpace: // Backspace
+          btnClicked(w, "16");
+          break;
+        case GDK_KEY_KP_Delete:
+        case GDK_KEY_Delete: // Delete
+          fnT_ARROW(ITM_T_RIGHT_ARROW);
+          btnClicked(w, "16");
+          break;
+
+        //ROW 5
+        case GDK_KEY_Home:                                               //JM     // HOME  //JM
+          btnClicked(w, "17");
+          break;
+
+        //ROW 6
+        case GDK_KEY_End:                                               //JM     // END  //JM
+          btnClicked(w, "22");
           break;
 
         //JM  NUMERALS FOR ALPHAMODE - TAKE OVER ALPHA KEYBOARD
@@ -1112,33 +1340,8 @@ if(shortCutCommand(w, event_keyval,    86,                                  shor
           btnClicked_NU(w, "36");
           break;
 
-        //ROW 7/8
-        case 95:                //JM UNDERSCORE   //JM
-          btnClicked(w, "31");
-          break;
-
         case 65307:              // Esc EXIT      //JM                   //JM     //**************-- OTHER DIRECT ALPHA MODE KEYBOARD KEYS  --***************//
           btnClicked(w, "32");
-          break;
-
-        case 58:                 // COLON.        //JM
-          btnClicked(w, "33");
-          break;
-
-        case 59:                 // semicolon.    //JM
-          btnClicked_SNU(w, "33");
-          break;
-
-        case 44:                 // ,             //JM
-          btnClicked(w, "34");
-          break;
-
-        case 63:                 // ?             //JM
-          btnClicked(w, "35");
-          break;
-
-        case 32:                //JM SPACE        //JM
-          btnClicked(w, "36");
           break;
 
         default: ;
@@ -1150,136 +1353,66 @@ if(shortCutCommand(w, event_keyval,    86,                                  shor
       //ORIGINAL MODIFIED KEYBOARD DETECTION
       //FOR NON AIM MODE. AIM HAS RETURNED AT THIS POINT SO NO IF NEEDED
       switch(event_keyval) {
-        case 65361:                                               //JM     // CursorLt  //JM Left
+        case GDK_KEY_Left:                                               //JM     // CursorLt  //JM Left
           btnFnClicked(w, "5");  //F5
           break;
-        case 65363:                                               //JM     // CursorRt  //JM Right
+        case GDK_KEY_Right:                                               //JM     // CursorRt  //JM Right
           btnFnClicked(w, "6");  //F6
           break;
 
         //ROW 1
-        case 65470: // F1                       //JM Changed these to btnFnPressed from btnFnClicked
+        case GDK_KEY_F1: // F1                       //JM Changed these to btnFnPressed from btnFnClicked
           //printf("key pressed: F1\n");
           btnFnClickedP(w, "1");
           break;
 
-        case 65471: // F2
+        case GDK_KEY_F2: // F2
           //printf("key pressed: F2\n");
           btnFnClickedP(w, "2");
           break;
 
-        case 65472: // F3
+        case GDK_KEY_F3: // F3
           //printf("key pressed: F3\n");
           btnFnClickedP(w, "3");
           break;
 
-        case 65473: // F4
+        case GDK_KEY_F4: // F4
           //printf("key pressed: F4\n");
           btnFnClickedP(w, "4");
           break;
 
-        case 65474: // F5
+        case GDK_KEY_F5: // F5
           //printf("key pressed: F5\n");
           btnFnClickedP(w, "5");
           break;
 
-        case 65475: // F6
+        case GDK_KEY_F6: // F6
           //printf("key pressed: F6\n");
           btnFnClickedP(w, "6");
           break;
 
-        //ROW 2
+
         case 97:  // a  //dr
-          //printf("key pressed: a Sigma+\n"); //dr
-          btnClicked(w, "00");
-          break;
-
         case 118: // v //dr
-          //printf("key pressed: v 1/X\n"); //dr
-          btnClicked(w, "01");
-          break;
-
         case 113: // q //dr
-          //printf("key pressed: q SQRT\n"); //dr
-          btnClicked(w, "02");
-          break;
-
         case 111: // o //dr
-          //printf("key pressed: o LOG\n"); //dr
-          btnClicked(w, "03");
-          break;
-
         case 108: // l //dr
-          //printf("key pressed: l LN\n"); //dr
-          btnClicked(w, "04");
-          break;
-
         case 120: // x //dr
-          //printf("key pressed: x XEQ\n"); //dr
-          btnClicked(w, "05");
-          break;
-
-        //ROW 3
         case 109: // m //dr
-          //printf("key pressed: m STO\n"); //dr
-          btnClicked(w, "06");
-          break;
-
         case 114: // r
-          //printf("key pressed: r RCL\n");
-          btnClicked(w, "07");
-          break;
-
-        //dr    case 65366: // PgDn
         case 100: // d //dr
-          //printf("key pressed: d Rdown\n"); //dr
-          btnClicked(w, "08");
-          break;
-
         case 112: // p         //dr                //JM Special case: p = x^2
-          shiftF = true;       //dr
-          shiftG = false;      //JM
-          btnClicked(w, "02"); //dr
-          break;               //dr
-
-        
         case 61: // =          //                //JM Special case: = = DRG
-          if(calcMode == CM_NIM) {
-            btnClicked(w, "32");  //exit
-          }
-          if(calcMode == CM_NORMAL) {
-            runFunction(ITM_DRG);
-            screenUpdatingMode = SCRUPD_AUTO;
-            refreshScreen(0);
-          }
-          break;               //dr
-
-
         case 121: // y         //dr                //JM Special case: y: y^x
-          shiftF = true;       //dr
-          shiftG = false;      //JM
-          btnClicked(w, "01"); //dr
-          break;               //dr
-
-
-
         case 115: // s //dr
-          //printf("key pressed: s SIN\n"); //dr
-          btnClicked(w, "09");
-          break;
-
         case 99:  // c //dr
-          //printf("key pressed: c COS\n"); //dr
-          btnClicked(w, "10");
-          break;
-
         case 116: // t //dr
-          //printf("key pressed: t TAN\n"); //dr
-          btnClicked(w, "11");
+
+          printf("-------------------------------------------\n\n\n######## MISSING OLD TEXT OUTPUT B %i ########\n\n", event_keyval);
           break;
 
         //ROW 4
-        case 65421: // Enter
+        case GDK_KEY_KP_Enter: // Enter
         case 65293: // Enter
           //printf("key pressed: ENTER\n");
           btnClicked(w, "12");
@@ -1302,13 +1435,13 @@ if(shortCutCommand(w, event_keyval,    86,                                  shor
           btnClicked(w, "15");
           break;
 
-        case 65288: // Backspace
+        case GDK_KEY_BackSpace: // Backspace
           //printf("key pressed: Backspace\n");
           btnClicked(w, "16");
           break;
 
         //ROW 5
-        case 65362: // CursorUp //JM
+        case GDK_KEY_Up: // CursorUp //JM
                                 //JM
           //printf("key pressed: <Up>\n"); //dr
           btnClicked(w, isR47FAM?"22":"17");
@@ -1339,7 +1472,7 @@ if(shortCutCommand(w, event_keyval,    86,                                  shor
           break;
 
         //ROW 6
-        case 65364: // CursorDown //JM
+        case GDK_KEY_Down: // CursorDown //JM
                                   //JM
           //printf("key pressed: <Down>\n"); //dr
           btnClicked(w, isR47FAM?"27":"22");
@@ -1414,10 +1547,10 @@ if(shortCutCommand(w, event_keyval,    86,                                  shor
           btnClicked(w, "34");
           break;
 
-        case 92: // \                                //JM R/S changed to \ as on Mac CTRL is something else.
-          //printf("key pressed: \\ R/S\n");
-          btnClicked(w, "35");
-          break;
+//taken over        case 92: // \                                //JM R/S changed to \ as on Mac CTRL is something else.
+//taken over          //printf("key pressed: \\ R/S\n");
+//taken over          btnClicked(w, "35");
+//taken over          break;
 
 
         case 43:    // + //JM
@@ -1434,8 +1567,8 @@ if(shortCutCommand(w, event_keyval,    86,                                  shor
           break;
         */
 
-        case 65507: // left Ctrl
-        case 65508: // right Ctrl
+        case GDK_KEY_Control_L: // left Ctrl
+        case GDK_KEY_Control_R: // right Ctrl
           //printf("key pressed: CTRL Activated\n");
           CTRL_State = 65536;
           break;
@@ -1637,7 +1770,6 @@ if(shortCutCommand(w, event_keyval,    86,                                  shor
 
       gtk_widget_hide(lbl21F);
       gtk_widget_hide(lbl21G);
-      //gtk_widget_hide(lbl21H);  //JMALPHA
       gtk_widget_hide(lbl21L);
       gtk_widget_hide(lbl22F);
       gtk_widget_hide(lbl22G);
@@ -1690,11 +1822,9 @@ if(shortCutCommand(w, event_keyval,    86,                                  shor
       gtk_widget_hide(lbl32L);
       gtk_widget_hide(lbl33F);
       gtk_widget_hide(lbl33G);
-      //gtk_widget_hide(lbl33H);
       gtk_widget_hide(lbl33L);
       gtk_widget_hide(lbl34F);
       gtk_widget_hide(lbl34G);
-      //gtk_widget_hide(lbl34H);  //JM CAPS //JMALPHA2 temporary remove A from J
       gtk_widget_hide(lbl34L);
       gtk_widget_hide(lbl35F);
       gtk_widget_hide(lbl35G);
@@ -1733,12 +1863,10 @@ if(shortCutCommand(w, event_keyval,    86,                                  shor
       gtk_widget_hide(lbl41L);
       gtk_widget_hide(lbl42F);
       gtk_widget_hide(lbl42G);
-      gtk_widget_hide(lbl42H);
       gtk_widget_hide(lbl42L);
       gtk_widget_hide(lbl43F);
       gtk_widget_hide(lbl43G);
       gtk_widget_hide(lbl43L);
-      gtk_widget_hide(lbl43P);
       gtk_widget_hide(lbl44F);
       gtk_widget_hide(lbl44G);
       gtk_widget_hide(lbl44L);
@@ -1787,6 +1915,7 @@ if(shortCutCommand(w, event_keyval,    86,                                  shor
       gtk_widget_hide(lbl53Gr);
       gtk_widget_hide(lbl54Gr);
       gtk_widget_hide(lbl55Gr);
+      gtk_widget_hide(lbl51Fa);
       gtk_widget_hide(lbl52Fa); //vv dr - new AIM
       gtk_widget_hide(lbl53Fa);
       gtk_widget_hide(lbl54Fa);
@@ -1814,7 +1943,6 @@ if(shortCutCommand(w, event_keyval,    86,                                  shor
       gtk_widget_hide(lbl64F);
       gtk_widget_hide(lbl64G);
       gtk_widget_hide(lbl64L);
-      gtk_widget_hide(lbl65H);  //JM
       gtk_widget_hide(lbl65F);
       gtk_widget_hide(lbl65G);
       gtk_widget_hide(lbl65L);
@@ -1823,7 +1951,8 @@ if(shortCutCommand(w, event_keyval,    86,                                  shor
       gtk_widget_hide(lbl63Gr);
       gtk_widget_hide(lbl64Gr);
       gtk_widget_hide(lbl65Gr);
-      gtk_widget_hide(lbl62Fa); //vv dr - new AIM
+      gtk_widget_hide(lbl61Fa);
+      gtk_widget_hide(lbl62Fa);
       gtk_widget_hide(lbl63Fa);
       gtk_widget_hide(lbl64Fa);
       gtk_widget_hide(lbl65Fa); //^^
@@ -1842,11 +1971,9 @@ if(shortCutCommand(w, event_keyval,    86,                                  shor
       gtk_widget_hide(lbl71F);
       gtk_widget_hide(lbl71G);
       gtk_widget_hide(lbl71L);
-      gtk_widget_hide(lbl73H);  //JM
       gtk_widget_hide(lbl72F);
       gtk_widget_hide(lbl72G);
       gtk_widget_hide(lbl72L);
-      gtk_widget_hide(lbl72H);
       gtk_widget_hide(lbl73F);
       gtk_widget_hide(lbl73G);
       gtk_widget_hide(lbl73L);
@@ -1861,7 +1988,8 @@ if(shortCutCommand(w, event_keyval,    86,                                  shor
       gtk_widget_hide(lbl73Gr);
       gtk_widget_hide(lbl74Gr);
       gtk_widget_hide(lbl75Gr);
-      gtk_widget_hide(lbl72Fa); //vv dr - new AIM
+      gtk_widget_hide(lbl71Fa);
+      gtk_widget_hide(lbl72Fa);
       gtk_widget_hide(lbl73Fa);
       gtk_widget_hide(lbl74Fa);
       gtk_widget_hide(lbl75Fa); //^^
@@ -1879,22 +2007,17 @@ if(shortCutCommand(w, event_keyval,    86,                                  shor
       gtk_widget_hide(lbl81F);
       gtk_widget_hide(lbl81G);
       gtk_widget_hide(lbl81L);
-      //gtk_widget_hide(lbl81H);  //JM
       gtk_widget_hide(lbl82F);
       gtk_widget_hide(lbl82G);
-      gtk_widget_hide(lbl82H);  //JM Keep menu appreviation on AIM to identify with menu name
       gtk_widget_hide(lbl82L);
       gtk_widget_hide(lbl83F);
       gtk_widget_hide(lbl83G);
       gtk_widget_hide(lbl83L);
-      gtk_widget_hide(lbl83H);  //JM Keep menu appreviation on AIM to identify with menu name
       gtk_widget_hide(lbl84F);
       gtk_widget_hide(lbl84G);
       gtk_widget_hide(lbl84L);
-      gtk_widget_hide(lbl84H);  //JM Keep menu appreviation on AIM to identify with menu name
       gtk_widget_hide(lbl85F);
       gtk_widget_hide(lbl85G);
-      gtk_widget_hide(lbl85H);  //JM Keep menu appreviation on AIM to identify with menu name
       gtk_widget_hide(lbl85L);
       gtk_widget_hide(lbl81Gr);
       gtk_widget_hide(lbl82Gr);
@@ -1933,329 +2056,346 @@ if(shortCutCommand(w, event_keyval,    86,                                  shor
 
       gtk_widget_get_preferred_size(  lbl21F, NULL, &lblF);
       gtk_widget_get_preferred_size(  lbl21G, NULL, &lblG);
-      gtk_fixed_move(GTK_FIXED(grid), lbl21F, (2*xPos+KEY_WIDTH_1-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);
-      gtk_fixed_move(GTK_FIXED(grid), lbl21G, (2*xPos+KEY_WIDTH_1+lblF.width+GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);
+      gtk_fixed_move(GTK_FIXED(grid), lbl21F, (2*xPos+KEY_WIDTH_1-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);
+      gtk_fixed_move(GTK_FIXED(grid), lbl21G, (2*xPos+KEY_WIDTH_1+lblF.width+GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);
       gtk_widget_get_preferred_size(  lbl21Gr, NULL, &lblG);
-      gtk_fixed_move(GTK_FIXED(grid), lbl21Gr, xPos+KEY_WIDTH_1*2/3,                              yPos - Y_OFFSET_GREEK);
+      gtk_fixed_move(GTK_FIXED(grid), lbl21Gr, xPos+KEY_WIDTH_1*2/3,                              yPos - Y_OFFSET_Aim);
       gtk_widget_get_preferred_size(  lbl21Fa, NULL, &lblF);                                                                        //vv dr - new AIM
-      gtk_fixed_move(GTK_FIXED(grid), lbl21Fa, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);  //^^
+      gtk_fixed_move(GTK_FIXED(grid), lbl21Fa, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);  //^^
 
       xPos += DELTA_KEYS_X;
       gtk_widget_get_preferred_size(  lbl22F, NULL, &lblF);
       gtk_widget_get_preferred_size(  lbl22G, NULL, &lblG);
-      gtk_fixed_move(GTK_FIXED(grid), lbl22F, (2*xPos+KEY_WIDTH_1-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);
-      gtk_fixed_move(GTK_FIXED(grid), lbl22G, (2*xPos+KEY_WIDTH_1+lblF.width+GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);
+      gtk_fixed_move(GTK_FIXED(grid), lbl22F, (2*xPos+KEY_WIDTH_1-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);
+      gtk_fixed_move(GTK_FIXED(grid), lbl22G, (2*xPos+KEY_WIDTH_1+lblF.width+GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);
       gtk_widget_get_preferred_size(  lbl22Gr, NULL, &lblG);
-      gtk_fixed_move(GTK_FIXED(grid), lbl22Gr, xPos+KEY_WIDTH_1*2/3,                              yPos - Y_OFFSET_GREEK);
+      gtk_fixed_move(GTK_FIXED(grid), lbl22Gr, xPos+KEY_WIDTH_1*2/3,                              yPos - Y_OFFSET_Aim);
       gtk_widget_get_preferred_size(  lbl22Fa, NULL, &lblF);                                                                        //vv dr - new AIM
-      gtk_fixed_move(GTK_FIXED(grid), lbl22Fa, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);  //^^
+      gtk_fixed_move(GTK_FIXED(grid), lbl22Fa, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);  //^^
 
       xPos += DELTA_KEYS_X;
       gtk_widget_get_preferred_size(  lbl23F, NULL, &lblF);
       gtk_widget_get_preferred_size(  lbl23G, NULL, &lblG);
-      gtk_fixed_move(GTK_FIXED(grid), lbl23F, (2*xPos+KEY_WIDTH_1-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);
-      gtk_fixed_move(GTK_FIXED(grid), lbl23G, (2*xPos+KEY_WIDTH_1+lblF.width+GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);
+      gtk_fixed_move(GTK_FIXED(grid), lbl23F, (2*xPos+KEY_WIDTH_1-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);
+      gtk_fixed_move(GTK_FIXED(grid), lbl23G, (2*xPos+KEY_WIDTH_1+lblF.width+GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);
       gtk_widget_get_preferred_size(  lbl23Gr, NULL, &lblG);
-      gtk_fixed_move(GTK_FIXED(grid), lbl23Gr, xPos+KEY_WIDTH_1*2/3,                              yPos - Y_OFFSET_GREEK);
+      gtk_fixed_move(GTK_FIXED(grid), lbl23Gr, xPos+KEY_WIDTH_1*2/3,                              yPos - Y_OFFSET_Aim);
       gtk_widget_get_preferred_size(  lbl23Fa, NULL, &lblF);                                                                        //vv dr - new AIM
-      gtk_fixed_move(GTK_FIXED(grid), lbl23Fa, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);  //^^
+      gtk_fixed_move(GTK_FIXED(grid), lbl23Fa, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);  //^^
 
       xPos += DELTA_KEYS_X;
       gtk_widget_get_preferred_size(  lbl24F, NULL, &lblF);
       gtk_widget_get_preferred_size(  lbl24G, NULL, &lblG);
-      gtk_fixed_move(GTK_FIXED(grid), lbl24F, (2*xPos+KEY_WIDTH_1-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);
-      gtk_fixed_move(GTK_FIXED(grid), lbl24G, (2*xPos+KEY_WIDTH_1+lblF.width+GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);
+      gtk_fixed_move(GTK_FIXED(grid), lbl24F, (2*xPos+KEY_WIDTH_1-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);
+      gtk_fixed_move(GTK_FIXED(grid), lbl24G, (2*xPos+KEY_WIDTH_1+lblF.width+GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);
       gtk_widget_get_preferred_size(  lbl24Gr, NULL, &lblG);
-      gtk_fixed_move(GTK_FIXED(grid), lbl24Gr, xPos+KEY_WIDTH_1*2/3,                              yPos - Y_OFFSET_GREEK);
+      gtk_fixed_move(GTK_FIXED(grid), lbl24Gr, xPos+KEY_WIDTH_1*2/3,                              yPos - Y_OFFSET_Aim);
       gtk_widget_get_preferred_size(  lbl24Fa, NULL, &lblF);                                                                        //vv dr - new AIM
-      gtk_fixed_move(GTK_FIXED(grid), lbl24Fa, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);  //^^
+      gtk_fixed_move(GTK_FIXED(grid), lbl24Fa, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);  //^^
 
       xPos += DELTA_KEYS_X;
       gtk_widget_get_preferred_size(  lbl25F, NULL, &lblF);
       gtk_widget_get_preferred_size(  lbl25G, NULL, &lblG);
-      gtk_fixed_move(GTK_FIXED(grid), lbl25F, (2*xPos+KEY_WIDTH_1-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);
-      gtk_fixed_move(GTK_FIXED(grid), lbl25G, (2*xPos+KEY_WIDTH_1+lblF.width+GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);
+      gtk_fixed_move(GTK_FIXED(grid), lbl25F, (2*xPos+KEY_WIDTH_1-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);
+      gtk_fixed_move(GTK_FIXED(grid), lbl25G, (2*xPos+KEY_WIDTH_1+lblF.width+GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);
       gtk_widget_get_preferred_size(  lbl25Gr, NULL, &lblG);
-      gtk_fixed_move(GTK_FIXED(grid), lbl25Gr, xPos+KEY_WIDTH_1*2/3,                              yPos - Y_OFFSET_GREEK);
+      gtk_fixed_move(GTK_FIXED(grid), lbl25Gr, xPos+KEY_WIDTH_1*2/3,                              yPos - Y_OFFSET_Aim);
       gtk_widget_get_preferred_size(  lbl25Fa, NULL, &lblF);                                                                        //vv dr - new AIM
-      gtk_fixed_move(GTK_FIXED(grid), lbl25Fa, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);  //^^
+      gtk_fixed_move(GTK_FIXED(grid), lbl25Fa, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);  //^^
 
       xPos += DELTA_KEYS_X;
       gtk_widget_get_preferred_size(  lbl26F, NULL, &lblF);
       gtk_widget_get_preferred_size(  lbl26G, NULL, &lblG);
-      gtk_fixed_move(GTK_FIXED(grid), lbl26F, (2*xPos+KEY_WIDTH_1-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);
-      gtk_fixed_move(GTK_FIXED(grid), lbl26G, (2*xPos+KEY_WIDTH_1+lblF.width+GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);
+      gtk_fixed_move(GTK_FIXED(grid), lbl26F, (2*xPos+KEY_WIDTH_1-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);
+      gtk_fixed_move(GTK_FIXED(grid), lbl26G, (2*xPos+KEY_WIDTH_1+lblF.width+GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);
       gtk_widget_get_preferred_size(  lbl26Gr, NULL, &lblG);
-      gtk_fixed_move(GTK_FIXED(grid), lbl26Gr, xPos+KEY_WIDTH_1*2/3,                              yPos - Y_OFFSET_GREEK);
+      gtk_fixed_move(GTK_FIXED(grid), lbl26Gr, xPos+KEY_WIDTH_1*2/3,                              yPos - Y_OFFSET_Aim);
       gtk_widget_get_preferred_size(  lbl26Fa, NULL, &lblF);                                                                        //vv dr - new AIM
-      gtk_fixed_move(GTK_FIXED(grid), lbl26Fa, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);  //^^
+      gtk_fixed_move(GTK_FIXED(grid), lbl26Fa, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);  //^^
 
       xPos = calcLandscape ? X_LEFT_LANDSCAPE : X_LEFT_PORTRAIT;
 
       yPos += DELTA_KEYS_Y;
       gtk_widget_get_preferred_size(  lbl31F, NULL, &lblF);
       gtk_widget_get_preferred_size(  lbl31G, NULL, &lblG);
-      gtk_fixed_move(GTK_FIXED(grid), lbl31F, (2*xPos+KEY_WIDTH_1-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);
-      gtk_fixed_move(GTK_FIXED(grid), lbl31G, (2*xPos+KEY_WIDTH_1+lblF.width+GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);
+      gtk_fixed_move(GTK_FIXED(grid), lbl31F, (2*xPos+KEY_WIDTH_1-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);
+      gtk_fixed_move(GTK_FIXED(grid), lbl31G, (2*xPos+KEY_WIDTH_1+lblF.width+GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);
       gtk_widget_get_preferred_size(  lbl31Gr, NULL, &lblG);
-      gtk_fixed_move(GTK_FIXED(grid), lbl31Gr, xPos+KEY_WIDTH_1*2/3,                              yPos - Y_OFFSET_GREEK);
+      gtk_fixed_move(GTK_FIXED(grid), lbl31Gr, xPos+KEY_WIDTH_1*2/3,                              yPos - Y_OFFSET_Aim);
       gtk_widget_get_preferred_size(  lbl31Fa, NULL, &lblF);                                                                        //vv dr - new AIM
-      gtk_fixed_move(GTK_FIXED(grid), lbl31Fa, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);  //^^
+      gtk_fixed_move(GTK_FIXED(grid), lbl31Fa, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);  //^^
 
       xPos += DELTA_KEYS_X;
       gtk_widget_get_preferred_size(  lbl32F, NULL, &lblF);
       gtk_widget_get_preferred_size(  lbl32G, NULL, &lblG);
-      gtk_fixed_move(GTK_FIXED(grid), lbl32F, (2*xPos+KEY_WIDTH_1-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);
-      gtk_fixed_move(GTK_FIXED(grid), lbl32G, (2*xPos+KEY_WIDTH_1+lblF.width+GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);
+      gtk_fixed_move(GTK_FIXED(grid), lbl32F, (2*xPos+KEY_WIDTH_1-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);
+      gtk_fixed_move(GTK_FIXED(grid), lbl32G, (2*xPos+KEY_WIDTH_1+lblF.width+GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);
       gtk_widget_get_preferred_size(  lbl32Gr, NULL, &lblG);
-      gtk_fixed_move(GTK_FIXED(grid), lbl32Gr, xPos+KEY_WIDTH_1*2/3,                              yPos - Y_OFFSET_GREEK);
+      gtk_fixed_move(GTK_FIXED(grid), lbl32Gr, xPos+KEY_WIDTH_1*2/3,                              yPos - Y_OFFSET_Aim);
       gtk_widget_get_preferred_size(  lbl32Fa, NULL, &lblF);                                                                        //vv dr - new AIM
-      gtk_fixed_move(GTK_FIXED(grid), lbl32Fa, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);  //^^
+      gtk_fixed_move(GTK_FIXED(grid), lbl32Fa, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);  //^^
 
       xPos += DELTA_KEYS_X;
       gtk_widget_get_preferred_size(  lbl33F, NULL, &lblF);
       gtk_widget_get_preferred_size(  lbl33G, NULL, &lblG);
-      gtk_fixed_move(GTK_FIXED(grid), lbl33F, (2*xPos+KEY_WIDTH_1-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);
-      gtk_fixed_move(GTK_FIXED(grid), lbl33G, (2*xPos+KEY_WIDTH_1+lblF.width+GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);
+      gtk_fixed_move(GTK_FIXED(grid), lbl33F, (2*xPos+KEY_WIDTH_1-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);
+      gtk_fixed_move(GTK_FIXED(grid), lbl33G, (2*xPos+KEY_WIDTH_1+lblF.width+GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);
       gtk_widget_get_preferred_size(  lbl33Gr, NULL, &lblG);
-      gtk_fixed_move(GTK_FIXED(grid), lbl33Gr, xPos+KEY_WIDTH_1*2/3,                              yPos - Y_OFFSET_GREEK);
+      gtk_fixed_move(GTK_FIXED(grid), lbl33Gr, xPos+KEY_WIDTH_1*2/3,                              yPos - Y_OFFSET_Aim);
       gtk_widget_get_preferred_size(  lbl33Fa, NULL, &lblF);                                                                        //vv dr - new AIM
-      gtk_fixed_move(GTK_FIXED(grid), lbl33Fa, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);  //^^
+      gtk_fixed_move(GTK_FIXED(grid), lbl33Fa, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);  //^^
 
       xPos += DELTA_KEYS_X;
       gtk_widget_get_preferred_size(  lbl34F, NULL, &lblF);
       gtk_widget_get_preferred_size(  lbl34G, NULL, &lblG);
-      gtk_fixed_move(GTK_FIXED(grid), lbl34F, (2*xPos+KEY_WIDTH_1-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);
-      gtk_fixed_move(GTK_FIXED(grid), lbl34G, (2*xPos+KEY_WIDTH_1+lblF.width+GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);
+      gtk_fixed_move(GTK_FIXED(grid), lbl34F, (2*xPos+KEY_WIDTH_1-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);
+      gtk_fixed_move(GTK_FIXED(grid), lbl34G, (2*xPos+KEY_WIDTH_1+lblF.width+GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);
       gtk_widget_get_preferred_size(  lbl34Gr, NULL, &lblG);
-      gtk_fixed_move(GTK_FIXED(grid), lbl34Gr, xPos+KEY_WIDTH_1*2/3,                              yPos - Y_OFFSET_GREEK);
+      gtk_fixed_move(GTK_FIXED(grid), lbl34Gr, xPos+KEY_WIDTH_1*2/3,                              yPos - Y_OFFSET_Aim);
       gtk_widget_get_preferred_size(  lbl34Fa, NULL, &lblF);                                                                        //vv dr - new AIM
-      gtk_fixed_move(GTK_FIXED(grid), lbl34Fa, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);  //^^
+      gtk_fixed_move(GTK_FIXED(grid), lbl34Fa, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);  //^^
 
       xPos += DELTA_KEYS_X;
       gtk_widget_get_preferred_size(  lbl35F, NULL, &lblF);
       gtk_widget_get_preferred_size(  lbl35G, NULL, &lblG);
-      gtk_fixed_move(GTK_FIXED(grid), lbl35F, (2*xPos+KEY_WIDTH_1-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);
-      gtk_fixed_move(GTK_FIXED(grid), lbl35G, (2*xPos+KEY_WIDTH_1+lblF.width+GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);
+      gtk_fixed_move(GTK_FIXED(grid), lbl35F, (2*xPos+KEY_WIDTH_1-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);
+      gtk_fixed_move(GTK_FIXED(grid), lbl35G, (2*xPos+KEY_WIDTH_1+lblF.width+GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);
       gtk_widget_get_preferred_size(  lbl35Gr, NULL, &lblG);                                                               //JM !! GR
-      gtk_fixed_move(GTK_FIXED(grid), lbl35Gr, xPos+KEY_WIDTH_1*2/3,                              yPos - Y_OFFSET_GREEK);  //JM !! GR
+      gtk_fixed_move(GTK_FIXED(grid), lbl35Gr, xPos+KEY_WIDTH_1*2/3,                              yPos - Y_OFFSET_Aim);  //JM !! GR
       gtk_widget_get_preferred_size(  lbl35Fa, NULL, &lblF);                                                                        //vv dr - new AIM
-      gtk_fixed_move(GTK_FIXED(grid), lbl35Fa, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);  //^^
+      gtk_fixed_move(GTK_FIXED(grid), lbl35Fa, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);  //^^
 
       xPos += DELTA_KEYS_X;
       gtk_widget_get_preferred_size(  lbl36F, NULL, &lblF);
       gtk_widget_get_preferred_size(  lbl36G, NULL, &lblG);
-      gtk_fixed_move(GTK_FIXED(grid), lbl36F, (2*xPos+KEY_WIDTH_1-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);
-      gtk_fixed_move(GTK_FIXED(grid), lbl36G, (2*xPos+KEY_WIDTH_1+lblF.width+GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);
+      gtk_fixed_move(GTK_FIXED(grid), lbl36F, (2*xPos+KEY_WIDTH_1-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);
+      gtk_fixed_move(GTK_FIXED(grid), lbl36G, (2*xPos+KEY_WIDTH_1+lblF.width+GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);
       gtk_widget_get_preferred_size(  lbl36Gr, NULL, &lblG);                                                               //JM !! GR
-      gtk_fixed_move(GTK_FIXED(grid), lbl36Gr, xPos+KEY_WIDTH_1*2/3,                              yPos - Y_OFFSET_GREEK);  //JM !! GR
+      gtk_fixed_move(GTK_FIXED(grid), lbl36Gr, xPos+KEY_WIDTH_1*2/3,                              yPos - Y_OFFSET_Aim);  //JM !! GR
       gtk_widget_get_preferred_size(  lbl36Fa, NULL, &lblF);                                                                        //vv dr - new AIM
-      gtk_fixed_move(GTK_FIXED(grid), lbl36Fa, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);  //^^
+      gtk_fixed_move(GTK_FIXED(grid), lbl36Fa, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);  //^^
 
       xPos = calcLandscape ? X_LEFT_LANDSCAPE : X_LEFT_PORTRAIT;
 
       yPos += DELTA_KEYS_Y;
       gtk_widget_get_preferred_size(  lbl41F, NULL, &lblF);
       gtk_widget_get_preferred_size(  lbl41G, NULL, &lblG);
-      gtk_fixed_move(GTK_FIXED(grid), lbl41F, (2*xPos+KEY_WIDTH_1+DELTA_KEYS_X-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);
-      gtk_fixed_move(GTK_FIXED(grid), lbl41G, (2*xPos+KEY_WIDTH_1+DELTA_KEYS_X+lblF.width+GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);
+      gtk_fixed_move(GTK_FIXED(grid), lbl41F, (2*xPos+KEY_WIDTH_1+DELTA_KEYS_X-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);
+      gtk_fixed_move(GTK_FIXED(grid), lbl41G, (2*xPos+KEY_WIDTH_1+DELTA_KEYS_X+lblF.width+GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);
       gtk_widget_get_preferred_size(  lbl41Gr, NULL, &lblG);                                                               //JM !! GR
-      gtk_fixed_move(GTK_FIXED(grid), lbl41Gr, xPos+KEY_WIDTH_1*4/3, yPos - Y_OFFSET_SHIFTED_LABEL);  //JM !! GR
+      gtk_fixed_move(GTK_FIXED(grid), lbl41Gr, xPos+KEY_WIDTH_1*4/3, yPos - Y_OFFSET_Aim);  //JM !! GR
       gtk_widget_get_preferred_size(  lbl41Fa, NULL, &lblF);                                                                        //vv dr - new AIM
-      gtk_fixed_move(GTK_FIXED(grid), lbl41Fa, xPos-KEY_WIDTH_1*0, yPos - Y_OFFSET_SHIFTED_LABEL);  //^^
+      gtk_fixed_move(GTK_FIXED(grid), lbl41Fa, xPos-KEY_WIDTH_1*0, yPos - Y_OFFSET_Aim);  //^^
 
       xPos += 2*DELTA_KEYS_X;
       gtk_widget_get_preferred_size(  lbl42F, NULL, &lblF);
       gtk_widget_get_preferred_size(  lbl42G, NULL, &lblG);
-      gtk_fixed_move(GTK_FIXED(grid), lbl42F, (2*xPos+KEY_WIDTH_1-lblF.width-GAP/2-lblG.width+2)/2-GAP/2, yPos - Y_OFFSET_SHIFTED_LABEL);           //JMWIDTH MODIFIED FOR EXP, CPX & BASE mod
-      gtk_fixed_move(GTK_FIXED(grid), lbl42G, (2*xPos+KEY_WIDTH_1+lblF.width+GAP/2-lblG.width+2)/2-GAP/2, yPos - Y_OFFSET_SHIFTED_LABEL);           //JMWIDTH MODIFIED FOR EXP, CPX & BASE mod
+      gtk_fixed_move(GTK_FIXED(grid), lbl42F, (2*xPos+KEY_WIDTH_1-lblF.width-GAP/2-lblG.width+2)/2-GAP/2, yPos - Y_OFFSET_Aim);           //JMWIDTH MODIFIED FOR EXP, CPX & BASE mod
+      gtk_fixed_move(GTK_FIXED(grid), lbl42G, (2*xPos+KEY_WIDTH_1+lblF.width+GAP/2-lblG.width+2)/2-GAP/2, yPos - Y_OFFSET_Aim);           //JMWIDTH MODIFIED FOR EXP, CPX & BASE mod
       gtk_widget_get_preferred_size(  lbl42Gr, NULL, &lblG);
-      gtk_fixed_move(GTK_FIXED(grid), lbl42Gr, xPos+KEY_WIDTH_1*2/3,                              yPos - Y_OFFSET_GREEK);
+      gtk_fixed_move(GTK_FIXED(grid), lbl42Gr, xPos+KEY_WIDTH_1*2/3,                              yPos - Y_OFFSET_Aim);
       gtk_widget_get_preferred_size(  lbl42Fa, NULL, &lblF);                                                                        //vv dr - new AIM
-      gtk_fixed_move(GTK_FIXED(grid), lbl42Fa, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);  //^^
+      gtk_fixed_move(GTK_FIXED(grid), lbl42Fa, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);  //^^
 
       xPos += DELTA_KEYS_X;
       gtk_widget_get_preferred_size(  lbl43F, NULL, &lblF);
       gtk_widget_get_preferred_size(  lbl43G, NULL, &lblG);
-      gtk_fixed_move(GTK_FIXED(grid), lbl43F, (2*xPos+KEY_WIDTH_1-lblF.width-GAP/2-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);                 //JMWIDTH MODIFIED FOR EXP, CPX & BASE mod
-      gtk_fixed_move(GTK_FIXED(grid), lbl43G, (2*xPos+KEY_WIDTH_1+lblF.width+GAP/2-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);                 //JMWIDTH MODIFIED FOR EXP, CPX & BASE mod
+      gtk_fixed_move(GTK_FIXED(grid), lbl43F, (2*xPos+KEY_WIDTH_1-lblF.width-GAP/2-lblG.width+2)/2, yPos - Y_OFFSET_Aim);                 //JMWIDTH MODIFIED FOR EXP, CPX & BASE mod
+      gtk_fixed_move(GTK_FIXED(grid), lbl43G, (2*xPos+KEY_WIDTH_1+lblF.width+GAP/2-lblG.width+2)/2, yPos - Y_OFFSET_Aim);                 //JMWIDTH MODIFIED FOR EXP, CPX & BASE mod
       gtk_widget_get_preferred_size(  lbl43Gr, NULL, &lblG);
-      gtk_fixed_move(GTK_FIXED(grid), lbl43Gr, xPos+KEY_WIDTH_1*2/3,                              yPos - Y_OFFSET_GREEK);
+      gtk_fixed_move(GTK_FIXED(grid), lbl43Gr, xPos+KEY_WIDTH_1*2/3,                              yPos - Y_OFFSET_Aim);
       gtk_widget_get_preferred_size(  lbl43Fa, NULL, &lblF);                                                                        //vv dr - new AIM
-      gtk_fixed_move(GTK_FIXED(grid), lbl43Fa, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);  //^^
+      gtk_fixed_move(GTK_FIXED(grid), lbl43Fa, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);  //^^
 
       xPos += DELTA_KEYS_X;
       gtk_widget_get_preferred_size(  lbl44F, NULL, &lblF);
       gtk_widget_get_preferred_size(  lbl44G, NULL, &lblG);
-      gtk_fixed_move(GTK_FIXED(grid), lbl44F, (2*xPos+KEY_WIDTH_1-lblF.width-GAP/2-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);                 //JMWIDTH MODIFIED FOR EXP, CPX & BASE mod
-      gtk_fixed_move(GTK_FIXED(grid), lbl44G, (2*xPos+KEY_WIDTH_1+lblF.width+GAP/2-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);                 //JMWIDTH MODIFIED FOR EXP, CPX & BASE mod
+      gtk_fixed_move(GTK_FIXED(grid), lbl44F, (2*xPos+KEY_WIDTH_1-lblF.width-GAP/2-lblG.width+2)/2, yPos - Y_OFFSET_Aim);                 //JMWIDTH MODIFIED FOR EXP, CPX & BASE mod
+      gtk_fixed_move(GTK_FIXED(grid), lbl44G, (2*xPos+KEY_WIDTH_1+lblF.width+GAP/2-lblG.width+2)/2, yPos - Y_OFFSET_Aim);                 //JMWIDTH MODIFIED FOR EXP, CPX & BASE mod
       gtk_widget_get_preferred_size(  lbl44Gr, NULL, &lblG);
-      gtk_fixed_move(GTK_FIXED(grid), lbl44Gr, xPos+KEY_WIDTH_1*2/3,                              yPos - Y_OFFSET_GREEK);
+      gtk_fixed_move(GTK_FIXED(grid), lbl44Gr, xPos+KEY_WIDTH_1*2/3,                              yPos - Y_OFFSET_Aim);
       gtk_widget_get_preferred_size(  lbl44Fa, NULL, &lblF);                                                                        //vv dr - new AIM
-      gtk_fixed_move(GTK_FIXED(grid), lbl44Fa, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);  //^^
+      gtk_fixed_move(GTK_FIXED(grid), lbl44Fa, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);  //^^
 
       xPos += DELTA_KEYS_X;
       gtk_widget_get_preferred_size(  lbl45F, NULL, &lblF);
       gtk_widget_get_preferred_size(  lbl45G, NULL, &lblG);
-      gtk_fixed_move(GTK_FIXED(grid), lbl45F, (2*xPos+KEY_WIDTH_1-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);
-      gtk_fixed_move(GTK_FIXED(grid), lbl45G, (2*xPos+KEY_WIDTH_1+lblF.width+GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);
+      gtk_fixed_move(GTK_FIXED(grid), lbl45F, (2*xPos+KEY_WIDTH_1-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);
+      gtk_fixed_move(GTK_FIXED(grid), lbl45G, (2*xPos+KEY_WIDTH_1+lblF.width+GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);
       gtk_widget_get_preferred_size(  lbl45Fa, NULL, &lblF);                                                                        //vv dr - new AIM
-      gtk_fixed_move(GTK_FIXED(grid), lbl45Fa, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);  //^^
+      gtk_fixed_move(GTK_FIXED(grid), lbl45Fa, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);  //^^
 
       xPos = calcLandscape ? X_LEFT_LANDSCAPE : X_LEFT_PORTRAIT;
 
       yPos += DELTA_KEYS_Y + 1;
-      gtk_widget_get_preferred_size(  lbl51F, NULL, &lblF);
-      gtk_widget_get_preferred_size(  lbl51G, NULL, &lblG);
-      gtk_fixed_move(GTK_FIXED(grid), lbl51F, (2*xPos+KEY_WIDTH_1-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);//JM align [f] arrowUp (*0-40)
-      gtk_fixed_move(GTK_FIXED(grid), lbl51G, (2*xPos+KEY_WIDTH_1+lblF.width+GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);//JM align [f] arrowUp (*0-40)
+
+      if(calcMode != CM_AIM) {
+        gtk_widget_get_preferred_size(  lbl51F, NULL, &lblF);
+        gtk_widget_get_preferred_size(  lbl51G, NULL, &lblG);
+        gtk_fixed_move(GTK_FIXED(grid), lbl51F, (2*xPos+KEY_WIDTH_1-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);//JM align [f] arrowUp (*0-40)
+        gtk_fixed_move(GTK_FIXED(grid), lbl51G, (2*xPos+KEY_WIDTH_1+lblF.width+GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);//JM align [f] arrowUp (*0-40)
+      }
       gtk_widget_get_preferred_size(  lbl51Gr, NULL, &lblG); //JMAHOME
-      //gtk_fixed_move(GTK_FIXED(grid), lbl51Gr, xPos+KEY_WIDTH_1*2/3,                              yPos - Y_OFFSET_GREEK); //JMAHOME
-      gtk_fixed_move(GTK_FIXED(grid), lbl51Gr, (2*xPos+KEY_WIDTH_2+lblF.width+GAP*6-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);      //JM JMAHOME ALPHA BLUE MENU LABELS //^^
+      gtk_widget_get_preferred_size(  lbl51Fa, NULL, &lblF);                                                                        //vv dr - new AIM
+      //gtk_fixed_move(GTK_FIXED(grid), lbl51Gr, xPos+KEY_WIDTH_1*2/3,                              yPos - Y_OFFSET_Aim); //JMAHOME
+      gtk_fixed_move(GTK_FIXED(grid), lbl51Gr, (2*xPos+KEY_WIDTH_2+lblF.width+GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);
+      gtk_fixed_move(GTK_FIXED(grid), lbl51Fa, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);  //^^
 
       xPos += DELTA_KEYS_X + LARGE_KEY_SPACING_1;
       gtk_widget_get_preferred_size(  lbl52F, NULL, &lblF);
       gtk_widget_get_preferred_size(  lbl52G, NULL, &lblG);
-      gtk_fixed_move(GTK_FIXED(grid), lbl52F, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);
-      gtk_fixed_move(GTK_FIXED(grid), lbl52G, (2*xPos+KEY_WIDTH_2+lblF.width+GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);
+      gtk_fixed_move(GTK_FIXED(grid), lbl52F, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);
+      gtk_fixed_move(GTK_FIXED(grid), lbl52G, (2*xPos+KEY_WIDTH_2+lblF.width+GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);
       gtk_widget_get_preferred_size(  lbl52Gr, NULL, &lblG);
-      gtk_fixed_move(GTK_FIXED(grid), lbl52Gr, xPos+KEY_WIDTH_2*2/3,                              yPos - Y_OFFSET_GREEK);
+      gtk_fixed_move(GTK_FIXED(grid), lbl52Gr, xPos+KEY_WIDTH_2*2/3,                              yPos - Y_OFFSET_Aim);
       gtk_widget_get_preferred_size(  lbl52Fa, NULL, &lblF);                                                                        //vv dr - new AIM
-      gtk_fixed_move(GTK_FIXED(grid), lbl52Fa, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);  //^^
+      gtk_fixed_move(GTK_FIXED(grid), lbl52Fa, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);  //^^
 
       xPos += DELTA_KEYS_X + LARGE_KEY_SPACING_2;
       gtk_widget_get_preferred_size(  lbl53F, NULL, &lblF);
       gtk_widget_get_preferred_size(  lbl53G, NULL, &lblG);
-      gtk_fixed_move(GTK_FIXED(grid), lbl53F, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);
-      gtk_fixed_move(GTK_FIXED(grid), lbl53G, (2*xPos+KEY_WIDTH_2+lblF.width+GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);
+      gtk_fixed_move(GTK_FIXED(grid), lbl53F, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);
+      gtk_fixed_move(GTK_FIXED(grid), lbl53G, (2*xPos+KEY_WIDTH_2+lblF.width+GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);
       gtk_widget_get_preferred_size(  lbl53Gr, NULL, &lblG);
-      gtk_fixed_move(GTK_FIXED(grid), lbl53Gr, xPos+KEY_WIDTH_2*2/3,                              yPos - Y_OFFSET_GREEK);
+      gtk_fixed_move(GTK_FIXED(grid), lbl53Gr, xPos+KEY_WIDTH_2*2/3,                              yPos - Y_OFFSET_Aim);
       gtk_widget_get_preferred_size(  lbl53Fa, NULL, &lblF);                                                                        //vv dr - new AIM
-      gtk_fixed_move(GTK_FIXED(grid), lbl53Fa, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);  //^^
+      gtk_fixed_move(GTK_FIXED(grid), lbl53Fa, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);  //^^
 
       xPos += DELTA_KEYS_X + LARGE_KEY_SPACING_2;
       gtk_widget_get_preferred_size(  lbl54F, NULL, &lblF);
       gtk_widget_get_preferred_size(  lbl54G, NULL, &lblG);
-      gtk_fixed_move(GTK_FIXED(grid), lbl54F, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);
-      gtk_fixed_move(GTK_FIXED(grid), lbl54G, (2*xPos+KEY_WIDTH_2+lblF.width+GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);
+      gtk_fixed_move(GTK_FIXED(grid), lbl54F, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);
+      gtk_fixed_move(GTK_FIXED(grid), lbl54G, (2*xPos+KEY_WIDTH_2+lblF.width+GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);
       gtk_widget_get_preferred_size(  lbl54Gr, NULL, &lblG);
-      gtk_fixed_move(GTK_FIXED(grid), lbl54Gr, xPos+KEY_WIDTH_2*2/3,                              yPos - Y_OFFSET_GREEK);
+      gtk_fixed_move(GTK_FIXED(grid), lbl54Gr, xPos+KEY_WIDTH_2*2/3,                              yPos - Y_OFFSET_Aim);
       gtk_widget_get_preferred_size(  lbl54Fa, NULL, &lblF);                                                                        //vv dr - new AIM
-      gtk_fixed_move(GTK_FIXED(grid), lbl54Fa, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);  //^^
+      gtk_fixed_move(GTK_FIXED(grid), lbl54Fa, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);  //^^
 
       xPos += DELTA_KEYS_X + LARGE_KEY_SPACING_2;
       gtk_widget_get_preferred_size(  lbl55F, NULL, &lblF);
       gtk_widget_get_preferred_size(  lbl55G, NULL, &lblG);
-      gtk_fixed_move(GTK_FIXED(grid), lbl55F, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);
-      gtk_fixed_move(GTK_FIXED(grid), lbl55G, (2*xPos+KEY_WIDTH_2+lblF.width+GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);
+      gtk_fixed_move(GTK_FIXED(grid), lbl55F, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);
+      gtk_fixed_move(GTK_FIXED(grid), lbl55G, (2*xPos+KEY_WIDTH_2+lblF.width+GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);
       gtk_widget_get_preferred_size(  lbl55Gr, NULL, &lblG);                                                                //JM GREEK
-      gtk_fixed_move(GTK_FIXED(grid), lbl55Gr, xPos+KEY_WIDTH_2*2/3,                              yPos - Y_OFFSET_GREEK);   //JM GREEK
+      gtk_fixed_move(GTK_FIXED(grid), lbl55Gr, xPos+KEY_WIDTH_2*2/3,                              yPos - Y_OFFSET_Aim);   //JM GREEK
       gtk_widget_get_preferred_size(  lbl55Fa, NULL, &lblF);                                                                        //vv dr - new AIM
-      gtk_fixed_move(GTK_FIXED(grid), lbl55Fa, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);  //^^
+      gtk_fixed_move(GTK_FIXED(grid), lbl55Fa, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);  //^^
 
       xPos = calcLandscape ? X_LEFT_LANDSCAPE : X_LEFT_PORTRAIT;
 
       yPos += DELTA_KEYS_Y + 1;
-      gtk_widget_get_preferred_size(  lbl61F, NULL, &lblF);
-      gtk_widget_get_preferred_size(  lbl61G, NULL, &lblG);
-      gtk_fixed_move(GTK_FIXED(grid), lbl61F, (2*xPos+KEY_WIDTH_1-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);   //JM align [f] arrowDn (*0-40)
-      gtk_fixed_move(GTK_FIXED(grid), lbl61G, (2*xPos+KEY_WIDTH_1+lblF.width+GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);   //JM align [f] arrowDn (*0-40)
+
+      if(calcMode != CM_AIM) {
+        gtk_widget_get_preferred_size(  lbl61F, NULL, &lblF);
+        gtk_widget_get_preferred_size(  lbl61G, NULL, &lblG);
+        gtk_fixed_move(GTK_FIXED(grid), lbl61F, (2*xPos+KEY_WIDTH_1-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);   //JM align [f] arrowDn (*0-40)
+        gtk_fixed_move(GTK_FIXED(grid), lbl61G, (2*xPos+KEY_WIDTH_1+lblF.width+GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);   //JM align [f] arrowDn (*0-40)
+      }
       gtk_widget_get_preferred_size(  lbl61Gr, NULL, &lblG); //JMAHOME2                                                                       //JM10
-      //gtk_fixed_move(GTK_FIXED(grid), lbl61Gr, xPos+KEY_WIDTH_1*2/3,                              yPos - Y_OFFSET_GREEK);          //JM10
-      gtk_fixed_move(GTK_FIXED(grid), lbl61Gr, (2*xPos+KEY_WIDTH_2+lblF.width+GAP*6-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);      //JM JMAHOME2 ALPHA BLUE MENU LABELS //^^
+      gtk_widget_get_preferred_size(  lbl61Fa, NULL, &lblF);                                                                        //vv dr - new AIM
+      //gtk_fixed_move(GTK_FIXED(grid), lbl61Gr, xPos+KEY_WIDTH_1*2/3,                              yPos - Y_OFFSET_Aim);          //JM10
+      gtk_fixed_move(GTK_FIXED(grid), lbl61Gr, (2*xPos+KEY_WIDTH_2+lblF.width+GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);      //JM JMAHOME2 ALPHA BLUE MENU LABELS //^^
+      gtk_fixed_move(GTK_FIXED(grid), lbl61Fa, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);  //^^
 
       xPos += DELTA_KEYS_X + LARGE_KEY_SPACING_1;
       gtk_widget_get_preferred_size(  lbl62F, NULL, &lblF);
       gtk_widget_get_preferred_size(  lbl62G, NULL, &lblG);
-      gtk_fixed_move(GTK_FIXED(grid), lbl62F, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);
-      gtk_fixed_move(GTK_FIXED(grid), lbl62G, (2*xPos+KEY_WIDTH_2+lblF.width+GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);
+      gtk_fixed_move(GTK_FIXED(grid), lbl62F, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);
+      gtk_fixed_move(GTK_FIXED(grid), lbl62G, (2*xPos+KEY_WIDTH_2+lblF.width+GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);
       gtk_widget_get_preferred_size(  lbl62Gr, NULL, &lblG);
-      gtk_fixed_move(GTK_FIXED(grid), lbl62Gr, xPos+KEY_WIDTH_2*2/3,                              yPos - Y_OFFSET_GREEK);
+      gtk_fixed_move(GTK_FIXED(grid), lbl62Gr, xPos+KEY_WIDTH_2*2/3,                              yPos - Y_OFFSET_Aim);
       gtk_widget_get_preferred_size(  lbl62Fa, NULL, &lblF);                                                                        //vv dr - new AIM
-      gtk_fixed_move(GTK_FIXED(grid), lbl62Fa, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);  //^^
+      gtk_fixed_move(GTK_FIXED(grid), lbl62Fa, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);  //^^
 
       xPos += DELTA_KEYS_X + LARGE_KEY_SPACING_2;
       gtk_widget_get_preferred_size(  lbl63F, NULL, &lblF);
       gtk_widget_get_preferred_size(  lbl63G, NULL, &lblG);
-      gtk_fixed_move(GTK_FIXED(grid), lbl63F, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);
-      gtk_fixed_move(GTK_FIXED(grid), lbl63G, (2*xPos+KEY_WIDTH_2+lblF.width+GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);
+      gtk_fixed_move(GTK_FIXED(grid), lbl63F, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);
+      gtk_fixed_move(GTK_FIXED(grid), lbl63G, (2*xPos+KEY_WIDTH_2+lblF.width+GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);
       gtk_widget_get_preferred_size(  lbl63Gr, NULL, &lblG);
-      gtk_fixed_move(GTK_FIXED(grid), lbl63Gr, xPos+KEY_WIDTH_2*2/3,                              yPos - Y_OFFSET_GREEK);
+      gtk_fixed_move(GTK_FIXED(grid), lbl63Gr, xPos+KEY_WIDTH_2*2/3,                              yPos - Y_OFFSET_Aim);
       gtk_widget_get_preferred_size(  lbl63Fa, NULL, &lblF);                                                                        //vv dr - new AIM
-      gtk_fixed_move(GTK_FIXED(grid), lbl63Fa, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);  //^^
+      gtk_fixed_move(GTK_FIXED(grid), lbl63Fa, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);  //^^
 
       xPos += DELTA_KEYS_X + LARGE_KEY_SPACING_2;
       gtk_widget_get_preferred_size(  lbl64F, NULL, &lblF);
       gtk_widget_get_preferred_size(  lbl64G, NULL, &lblG);
-      gtk_fixed_move(GTK_FIXED(grid), lbl64F, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);
-      gtk_fixed_move(GTK_FIXED(grid), lbl64G, (2*xPos+KEY_WIDTH_2+lblF.width+GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);
+      gtk_fixed_move(GTK_FIXED(grid), lbl64F, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);
+      gtk_fixed_move(GTK_FIXED(grid), lbl64G, (2*xPos+KEY_WIDTH_2+lblF.width+GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);
       gtk_widget_get_preferred_size(  lbl64Gr, NULL, &lblG);
-      gtk_fixed_move(GTK_FIXED(grid), lbl64Gr, xPos+KEY_WIDTH_2*2/3,                              yPos - Y_OFFSET_GREEK);
+      gtk_fixed_move(GTK_FIXED(grid), lbl64Gr, xPos+KEY_WIDTH_2*2/3,                              yPos - Y_OFFSET_Aim);
       gtk_widget_get_preferred_size(  lbl64Fa, NULL, &lblF);                                                                        //vv dr - new AIM
-      gtk_fixed_move(GTK_FIXED(grid), lbl64Fa, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);  //^^
+      gtk_fixed_move(GTK_FIXED(grid), lbl64Fa, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);  //^^
 
       xPos += DELTA_KEYS_X + LARGE_KEY_SPACING_2;
       gtk_widget_get_preferred_size(  lbl65F, NULL, &lblF);
       gtk_widget_get_preferred_size(  lbl65G, NULL, &lblG);
-      gtk_fixed_move(GTK_FIXED(grid), lbl65F, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);
-      gtk_fixed_move(GTK_FIXED(grid), lbl65G, (2*xPos+KEY_WIDTH_2+lblF.width+GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);
+      gtk_fixed_move(GTK_FIXED(grid), lbl65F, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);
+      gtk_fixed_move(GTK_FIXED(grid), lbl65G, (2*xPos+KEY_WIDTH_2+lblF.width+GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);
       gtk_widget_get_preferred_size(  lbl65Gr, NULL, &lblG);                                                                //JM
-      gtk_fixed_move(GTK_FIXED(grid), lbl65Gr, xPos+KEY_WIDTH_2*2/3,                              yPos - Y_OFFSET_GREEK);   //JM
+      gtk_fixed_move(GTK_FIXED(grid), lbl65Gr, xPos+KEY_WIDTH_2*2/3,                              yPos - Y_OFFSET_Aim);   //JM
       gtk_widget_get_preferred_size(  lbl65Fa, NULL, &lblF);                                                                        //vv dr - new AIM
-      gtk_fixed_move(GTK_FIXED(grid), lbl65Fa, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);  //^^
+      gtk_fixed_move(GTK_FIXED(grid), lbl65Fa, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);  //^^
 
       xPos = calcLandscape ? X_LEFT_LANDSCAPE : X_LEFT_PORTRAIT;
 
       yPos += DELTA_KEYS_Y + 1;
 
-  if(calcModel != USER_C47 && calcModel != USER_DM42) {
-      gtk_widget_get_preferred_size(  lbl71F, NULL, &lblF); //JM REMOVE SHIFT LABELS
-      gtk_widget_get_preferred_size(  lbl71G, NULL, &lblG);
-      gtk_fixed_move(GTK_FIXED(grid), lbl71F, (2*xPos+KEY_WIDTH_1-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);  //Gap removed to cover up fixed squares
-      gtk_fixed_move(GTK_FIXED(grid), lbl71G, (2*xPos+KEY_WIDTH_1+lblF.width+GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);  //Gap removed to cover up fixed squares
-      //  gtk_widget_get_preferred_size(  lbl71Gr, NULL, &lblG);
-      //  gtk_fixed_move(GTK_FIXED(grid), lbl71Gr, xPos+KEY_WIDTH_1*2/3,                              yPos - Y_OFFSET_GREEK);
-    }
+
+      //Not interfering with the dots on the f/g button
+      if(calcModel != USER_C47 && calcModel != USER_DM42) {
+        if(calcMode != CM_AIM) {
+          gtk_widget_get_preferred_size(  lbl71F, NULL, &lblF); //JM REMOVE SHIFT LABELS
+          gtk_widget_get_preferred_size(  lbl71G, NULL, &lblG);
+          gtk_fixed_move(GTK_FIXED(grid), lbl71F, (2*xPos+KEY_WIDTH_1-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);  //Gap removed to cover up fixed squares
+          gtk_fixed_move(GTK_FIXED(grid), lbl71G, (2*xPos+KEY_WIDTH_1+lblF.width+GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);  //Gap removed to cover up fixed squares
+        }
+        gtk_widget_get_preferred_size(  lbl71Gr, NULL, &lblG);
+        gtk_widget_get_preferred_size(  lbl71Fa, NULL, &lblF);                                                                        //vv dr - new AIM
+        //gtk_fixed_move(GTK_FIXED(grid), lbl71Gr, xPos+KEY_WIDTH_1*2/3,                              yPos - Y_OFFSET_Aim);
+        gtk_fixed_move(GTK_FIXED(grid), lbl71Gr, (2*xPos+KEY_WIDTH_2+lblF.width+GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);      //JM JMAHOME2 ALPHA BLUE MENU LABELS //^^
+        gtk_fixed_move(GTK_FIXED(grid), lbl71Fa, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);  //^^
+      }
 
       xPos += DELTA_KEYS_X + LARGE_KEY_SPACING_1;
       gtk_widget_get_preferred_size(  lbl72F, NULL, &lblF);
       gtk_widget_get_preferred_size(  lbl72G, NULL, &lblG);
-      gtk_fixed_move(GTK_FIXED(grid), lbl72F, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);
-      gtk_fixed_move(GTK_FIXED(grid), lbl72G, (2*xPos+KEY_WIDTH_2+lblF.width+GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);
+      gtk_fixed_move(GTK_FIXED(grid), lbl72F, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);
+      gtk_fixed_move(GTK_FIXED(grid), lbl72G, (2*xPos+KEY_WIDTH_2+lblF.width+GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);
       gtk_widget_get_preferred_size(  lbl72Gr, NULL, &lblG);
-      gtk_fixed_move(GTK_FIXED(grid), lbl72Gr, xPos+KEY_WIDTH_2*2/3,                              yPos - Y_OFFSET_GREEK);
+      gtk_fixed_move(GTK_FIXED(grid), lbl72Gr, xPos+KEY_WIDTH_2*2/3,                              yPos - Y_OFFSET_Aim);
       gtk_widget_get_preferred_size(  lbl72Fa, NULL, &lblF);                                                                        //vv dr - new AIM
-      gtk_fixed_move(GTK_FIXED(grid), lbl72Fa, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);  //^^
+      gtk_fixed_move(GTK_FIXED(grid), lbl72Fa, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);  //^^
 
       xPos += DELTA_KEYS_X + LARGE_KEY_SPACING_2;
       gtk_widget_get_preferred_size(  lbl73F, NULL, &lblF);
       gtk_widget_get_preferred_size(  lbl73G, NULL, &lblG);
-      gtk_fixed_move(GTK_FIXED(grid), lbl73F, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);
-      gtk_fixed_move(GTK_FIXED(grid), lbl73G, (2*xPos+KEY_WIDTH_2+lblF.width+GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);
+      gtk_fixed_move(GTK_FIXED(grid), lbl73F, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);
+      gtk_fixed_move(GTK_FIXED(grid), lbl73G, (2*xPos+KEY_WIDTH_2+lblF.width+GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);
       gtk_widget_get_preferred_size(  lbl73Gr, NULL, &lblG);
-      gtk_fixed_move(GTK_FIXED(grid), lbl73Gr, xPos+KEY_WIDTH_2*2/3,                              yPos - Y_OFFSET_GREEK);
+      gtk_fixed_move(GTK_FIXED(grid), lbl73Gr, xPos+KEY_WIDTH_2*2/3,                              yPos - Y_OFFSET_Aim);
       gtk_widget_get_preferred_size(  lbl73Fa, NULL, &lblF);                                                                        //vv dr - new AIM
-      gtk_fixed_move(GTK_FIXED(grid), lbl73Fa, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);  //^^
+      gtk_fixed_move(GTK_FIXED(grid), lbl73Fa, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);  //^^
 
       xPos += DELTA_KEYS_X + LARGE_KEY_SPACING_2;
       gtk_widget_get_preferred_size(  lbl74F, NULL, &lblF);
       gtk_widget_get_preferred_size(  lbl74G, NULL, &lblG);
-      gtk_fixed_move(GTK_FIXED(grid), lbl74F, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);
-      gtk_fixed_move(GTK_FIXED(grid), lbl74G, (2*xPos+KEY_WIDTH_2+lblF.width+GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);
+      gtk_fixed_move(GTK_FIXED(grid), lbl74F, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);
+      gtk_fixed_move(GTK_FIXED(grid), lbl74G, (2*xPos+KEY_WIDTH_2+lblF.width+GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);
       gtk_widget_get_preferred_size(  lbl74Gr, NULL, &lblG);
-      gtk_fixed_move(GTK_FIXED(grid), lbl74Gr, xPos+KEY_WIDTH_2*2/3,                              yPos - Y_OFFSET_GREEK);
+      gtk_fixed_move(GTK_FIXED(grid), lbl74Gr, xPos+KEY_WIDTH_2*2/3,                              yPos - Y_OFFSET_Aim);
       gtk_widget_get_preferred_size(  lbl74Fa, NULL, &lblF);                                                                        //vv dr - new AIM
-      gtk_fixed_move(GTK_FIXED(grid), lbl74Fa, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);  //^^
+      gtk_fixed_move(GTK_FIXED(grid), lbl74Fa, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);  //^^
 
       xPos += DELTA_KEYS_X + LARGE_KEY_SPACING_2;
       gtk_widget_get_preferred_size(  lbl75F, NULL, &lblF);
       gtk_widget_get_preferred_size(  lbl75G, NULL, &lblG);
-      gtk_fixed_move(GTK_FIXED(grid), lbl75F, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);
-      gtk_fixed_move(GTK_FIXED(grid), lbl75G, (2*xPos+KEY_WIDTH_2+lblF.width+GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);
+      gtk_fixed_move(GTK_FIXED(grid), lbl75F, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);
+      gtk_fixed_move(GTK_FIXED(grid), lbl75G, (2*xPos+KEY_WIDTH_2+lblF.width+GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);
       gtk_widget_get_preferred_size(  lbl75Gr, NULL, &lblG);                                                                //JM added
-      gtk_fixed_move(GTK_FIXED(grid), lbl75Gr, xPos+KEY_WIDTH_2*2/3,                              yPos - Y_OFFSET_GREEK);   //JMadded
+      gtk_fixed_move(GTK_FIXED(grid), lbl75Gr, xPos+KEY_WIDTH_2*2/3,                              yPos - Y_OFFSET_Aim);   //JMadded
       gtk_widget_get_preferred_size(  lbl75Fa, NULL, &lblF);                                                                        //vv dr - new AIM
-      gtk_fixed_move(GTK_FIXED(grid), lbl75Fa, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);  //^^
+      gtk_fixed_move(GTK_FIXED(grid), lbl75Fa, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);  //^^
 
       xPos = calcLandscape ? X_LEFT_LANDSCAPE : X_LEFT_PORTRAIT;
 
@@ -2265,21 +2405,21 @@ if(shortCutCommand(w, event_keyval,    86,                                  shor
 
 
 
-      //-last one  gtk_fixed_move(GTK_FIXED(grid), lbl81F, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);
-      //-last one  gtk_fixed_move(GTK_FIXED(grid), lbl81G, (2*xPos+KEY_WIDTH_1+lblF.width+GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);
+      //-last one  gtk_fixed_move(GTK_FIXED(grid), lbl81F, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);
+      //-last one  gtk_fixed_move(GTK_FIXED(grid), lbl81G, (2*xPos+KEY_WIDTH_1+lblF.width+GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);
       //JM MANUAL positioning
-      //gtk_fixed_move(GTK_FIXED(grid), lbl81F, (2*xPos+KEY_WIDTH_1-22)/2, yPos - Y_OFFSET_SHIFTED_LABEL);   //JM
+      //gtk_fixed_move(GTK_FIXED(grid), lbl81F, (2*xPos+KEY_WIDTH_1-22)/2, yPos - Y_OFFSET_Aim);   //JM
 
       //JMPRT removed for template-  gtk_fixed_move(GTK_FIXED(grid), lbl81G, (2*xPos+KEY_WIDTH_1+lblF.width+2)/2 + 15, yPos + 10);                       //JM
       //gtk_widget_get_preferred_size(  lblOn, NULL, &lblF);                                                          //JM
 
-      gtk_fixed_move(GTK_FIXED(grid), lbl81F, (2*xPos+KEY_WIDTH_1-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);
-      gtk_fixed_move(GTK_FIXED(grid), lbl81G, (2*xPos+KEY_WIDTH_1+lblF.width+GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);
-      //gtk_fixed_move(GTK_FIXED(grid), lblOn,  (2*xPos+KEY_WIDTH_1+lblF.width+2*GAP-lblG.width+2)/2 -10, yPos - Y_OFFSET_SHIFTED_LABEL);
+      gtk_fixed_move(GTK_FIXED(grid), lbl81F, (2*xPos+KEY_WIDTH_1-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);
+      gtk_fixed_move(GTK_FIXED(grid), lbl81G, (2*xPos+KEY_WIDTH_1+lblF.width+GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);
+      //gtk_fixed_move(GTK_FIXED(grid), lblOn,  (2*xPos+KEY_WIDTH_1+lblF.width+2*GAP-lblG.width+2)/2 -10, yPos - Y_OFFSET_Aim);
       //gtk_fixed_move(GTK_FIXED(grid), lblOn,  (2*xPos+KEY_WIDTH_1-20)/2, yPos + 38);    //JM
 
       //gtk_widget_get_preferred_size(  lbl81Gr, NULL, &lblG);         //JMPRTA                                                     //JM++_ //JMAPRT
-      //gtk_fixed_move(GTK_FIXED(grid), lbl81Gr, xPos+KEY_WIDTH_1*2/3,                              yPos - Y_OFFSET_GREEK); //JM ++ //JMAPRT
+      //gtk_fixed_move(GTK_FIXED(grid), lbl81Gr, xPos+KEY_WIDTH_1*2/3,                              yPos - Y_OFFSET_Aim); //JM ++ //JMAPRT
       //JMPRT removed for template-    gtk_fixed_move(GTK_FIXED(grid), lbl81Gr, (2*xPos+KEY_WIDTH_1+lblF.width+2)/2 + 20, yPos + 10);      //JM JMAPRT ALPHA BLUE MENU LABELS //^^
       //JM^^
 
@@ -2288,50 +2428,50 @@ if(shortCutCommand(w, event_keyval,    86,                                  shor
       xPos += DELTA_KEYS_X + LARGE_KEY_SPACING_1;
       gtk_widget_get_preferred_size(  lbl82F, NULL, &lblF);
       gtk_widget_get_preferred_size(  lbl82G, NULL, &lblG);
-      gtk_fixed_move(GTK_FIXED(grid), lbl82F, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);
-      gtk_fixed_move(GTK_FIXED(grid), lbl82G, (2*xPos+KEY_WIDTH_2+lblF.width+GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);
+      gtk_fixed_move(GTK_FIXED(grid), lbl82F, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);
+      gtk_fixed_move(GTK_FIXED(grid), lbl82G, (2*xPos+KEY_WIDTH_2+lblF.width+GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);
       gtk_widget_get_preferred_size(  lbl82Gr, NULL, &lblG);                                                                            //JM ALPHA BLUE MENU LABELS
-      //gtk_fixed_move(GTK_FIXED(grid), lbl82Gr, (2*xPos+KEY_WIDTH_2-GAP-lblG.width+2)/2,           yPos + GAP - Y_OFFSET_SHIFTED_LABEL); //JM ALPHA BLUE MENU LABELS //vv dr - new AIM
-      gtk_fixed_move(GTK_FIXED(grid), lbl82Gr, (2*xPos+KEY_WIDTH_2+lblF.width+GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);      //JM ALPHA BLUE MENU LABELS //^^
       gtk_widget_get_preferred_size(  lbl82Fa, NULL, &lblF);                                                                        //vv dr - new AIM
-      gtk_fixed_move(GTK_FIXED(grid), lbl82Fa, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);  //^^
+      //gtk_fixed_move(GTK_FIXED(grid), lbl82Gr, (2*xPos+KEY_WIDTH_2-GAP-lblG.width+2)/2,           yPos + GAP - Y_OFFSET_Aim); //JM ALPHA BLUE MENU LABELS //vv dr - new AIM
+      gtk_fixed_move(GTK_FIXED(grid), lbl82Gr, (2*xPos+KEY_WIDTH_2+lblF.width+GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);      //JM ALPHA BLUE MENU LABELS //^^
+      gtk_fixed_move(GTK_FIXED(grid), lbl82Fa, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);  //^^
 
       xPos += DELTA_KEYS_X + LARGE_KEY_SPACING_2;
       gtk_widget_get_preferred_size(  lbl83F, NULL, &lblF);
       gtk_widget_get_preferred_size(  lbl83G, NULL, &lblG);
-      gtk_fixed_move(GTK_FIXED(grid), lbl83F, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);
-      gtk_fixed_move(GTK_FIXED(grid), lbl83G, (2*xPos+KEY_WIDTH_2+lblF.width+GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);
+      gtk_fixed_move(GTK_FIXED(grid), lbl83F, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);
+      gtk_fixed_move(GTK_FIXED(grid), lbl83G, (2*xPos+KEY_WIDTH_2+lblF.width+GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);
       gtk_widget_get_preferred_size(  lbl83Gr, NULL, &lblG);                                                                            //JM ALPHA BLUE MENU LABELS
-      //gtk_fixed_move(GTK_FIXED(grid), lbl83Gr, (2*xPos+KEY_WIDTH_2-GAP-lblG.width+2)/2,           yPos + GAP - Y_OFFSET_SHIFTED_LABEL); //JM ALPHA BLUE MENU LABELS //vv dr - new AIM
-      gtk_fixed_move(GTK_FIXED(grid), lbl83Gr, (2*xPos+KEY_WIDTH_2+lblF.width+GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);      //JM ALPHA BLUE MENU LABELS //^^
       gtk_widget_get_preferred_size(  lbl83Fa, NULL, &lblF);                                                                        //vv dr - new AIM
-      gtk_fixed_move(GTK_FIXED(grid), lbl83Fa, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);  //^^
+      //gtk_fixed_move(GTK_FIXED(grid), lbl83Gr, (2*xPos+KEY_WIDTH_2-GAP-lblG.width+2)/2,           yPos + GAP - Y_OFFSET_Aim); //JM ALPHA BLUE MENU LABELS //vv dr - new AIM
+      gtk_fixed_move(GTK_FIXED(grid), lbl83Gr, (2*xPos+KEY_WIDTH_2+lblF.width+GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);      //JM ALPHA BLUE MENU LABELS //^^
+      gtk_fixed_move(GTK_FIXED(grid), lbl83Fa, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);  //^^
 
       xPos += DELTA_KEYS_X + LARGE_KEY_SPACING_2;
       gtk_widget_get_preferred_size(  lbl84F, NULL, &lblF);
       gtk_widget_get_preferred_size(  lbl84G, NULL, &lblG);
-      gtk_fixed_move(GTK_FIXED(grid), lbl84F, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);
-      gtk_fixed_move(GTK_FIXED(grid), lbl84G, (2*xPos+KEY_WIDTH_2+lblF.width+GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);
+      gtk_fixed_move(GTK_FIXED(grid), lbl84F, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);
+      gtk_fixed_move(GTK_FIXED(grid), lbl84G, (2*xPos+KEY_WIDTH_2+lblF.width+GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);
       gtk_widget_get_preferred_size(  lbl84Gr, NULL, &lblG);                                                                            //JM ALPHA BLUE MENU LABELS
-      //gtk_fixed_move(GTK_FIXED(grid), lbl84Gr, (2*xPos+KEY_WIDTH_2-GAP-lblG.width+2)/2,           yPos + GAP - Y_OFFSET_SHIFTED_LABEL); //JM ALPHA BLUE MENU LABELS //vv dr - new AIM
-      gtk_fixed_move(GTK_FIXED(grid), lbl84Gr, (2*xPos+KEY_WIDTH_2+lblF.width+GAP*4-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);      //JM ALPHA BLUE MENU LABELS //^^              //JM MANUAL GAP ADJUSTMENT TO 4x
       gtk_widget_get_preferred_size(  lbl84Fa, NULL, &lblF);                                                                        //vv dr - new AIM
-      gtk_fixed_move(GTK_FIXED(grid), lbl84Fa, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);  //^^
+      //gtk_fixed_move(GTK_FIXED(grid), lbl84Gr, (2*xPos+KEY_WIDTH_2-GAP-lblG.width+2)/2,           yPos + GAP - Y_OFFSET_Aim); //JM ALPHA BLUE MENU LABELS //vv dr - new AIM
+      gtk_fixed_move(GTK_FIXED(grid), lbl84Gr, (2*xPos+KEY_WIDTH_2+lblF.width+GAP*4-lblG.width+2)/2, yPos - Y_OFFSET_Aim);      //JM ALPHA BLUE MENU LABELS //^^              //JM MANUAL GAP ADJUSTMENT TO 4x
+      gtk_fixed_move(GTK_FIXED(grid), lbl84Fa, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);  //^^
 
       xPos += DELTA_KEYS_X + LARGE_KEY_SPACING_2;
       gtk_widget_get_preferred_size(  lbl85F, NULL, &lblF);
-      //gtk_fixed_move(GTK_FIXED(grid), lbl85F, (2*xPos+KEY_WIDTH_2-lblF.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL); //JM
+      //gtk_fixed_move(GTK_FIXED(grid), lbl85F, (2*xPos+KEY_WIDTH_2-lblF.width+2)/2, yPos - Y_OFFSET_Aim); //JM
 
       //gtk_widget_get_preferred_size(  lblOn,  NULL, &lblF); //JM
       gtk_widget_get_preferred_size(  lbl85G, NULL, &lblG);
 
-      gtk_fixed_move(GTK_FIXED(grid), lbl85F, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL); //JM
-      gtk_fixed_move(GTK_FIXED(grid), lbl85G, (2*xPos+KEY_WIDTH_2+lblF.width+GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL); //JM
+      gtk_fixed_move(GTK_FIXED(grid), lbl85F, (2*xPos+KEY_WIDTH_2-lblF.width-GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim); //JM
+      gtk_fixed_move(GTK_FIXED(grid), lbl85G, (2*xPos+KEY_WIDTH_2+lblF.width+GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim); //JM
       gtk_widget_get_preferred_size(  lbl85Gr, NULL, &lblG);                                                                              //JM ALPHA BLUE MENU LABELS
-      //gtk_fixed_move(GTK_FIXED(grid), lbl85Gr, (2*xPos+KEY_WIDTH_2-GAP-lblG.width+2)/2,           yPos + GAP - Y_OFFSET_SHIFTED_LABEL);   //JM ALPHA BLUE MENU LABELS //vv dr - new AIM
-      gtk_fixed_move(GTK_FIXED(grid), lbl85Gr, (2*xPos+KEY_WIDTH_2+lblF.width+2*GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);        //JM ALPHA BLUE MENU LABELS //^^
       gtk_widget_get_preferred_size(  lbl85Fa, NULL, &lblF);                                                                        //vv dr - new AIM
-      gtk_fixed_move(GTK_FIXED(grid), lbl85Fa, (2*xPos+KEY_WIDTH_2-lblF.width-2*GAP-lblG.width+2)/2, yPos - Y_OFFSET_SHIFTED_LABEL);  //^^
+      //gtk_fixed_move(GTK_FIXED(grid), lbl85Gr, (2*xPos+KEY_WIDTH_2-GAP-lblG.width+2)/2,           yPos + GAP - Y_OFFSET_Aim);   //JM ALPHA BLUE MENU LABELS //vv dr - new AIM
+      gtk_fixed_move(GTK_FIXED(grid), lbl85Gr, (2*xPos+KEY_WIDTH_2+lblF.width+2*GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);        //JM ALPHA BLUE MENU LABELS //^^
+      gtk_fixed_move(GTK_FIXED(grid), lbl85Fa, (2*xPos+KEY_WIDTH_2-lblF.width-2*GAP-lblG.width+2)/2, yPos - Y_OFFSET_Aim);  //^^
 
     }
 
@@ -2362,6 +2502,9 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
   else {
     keyLogicalId = key->keyId -49;
   }
+
+  bool_t R47LongpressColour = false;
+
 
   if(key->primary == 0) {
     lbl[0] = 0;
@@ -2400,11 +2543,8 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
         stringToUtf8(sstmp, lbl);
       }
 
-      if(strcmp((char *)lbl, "CAT") == 0 && key->keyId != 85) {    //JM wqs 85  //JM Changed CATALOG to CAT
-        lbl[3] = 0;
-      }
-
       gtk_button_set_label(GTK_BUTTON(button), (gchar *)lbl);
+      //printf("--THIS IS NORMAL mode primary-position:   %s\n",lbl);
 
       //if(strcmp((char *)lbl, "/") == 0 && key->keyId == 55) {    //JM if "/", re-do to "÷". Presumed easier than to fix the UTf8 conversion above.
       //  gtk_button_set_label(GTK_BUTTON(button), "÷");           //JM DIV
@@ -2441,32 +2581,52 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
       else {
         gtk_widget_set_name(button, "calcKey");
       }
+char sstmp[16];
 
 //  stringToUtf8(indexOfItems[max(key->fShifted, -key->fShifted)].itemSoftmenuName, lbl);
-  char sstmp[16];
-  strcpy(sstmp, indexOfItems[max(key->fShifted, -key->fShifted)].itemSoftmenuName);
-  if((key->fShifted == ITM_op_j || key->fShifted == ITM_op_j_pol) && getSystemFlag(FLAG_CPXj)) sstmp[1]++;
-  if(key->fShifted == ITM_EE_EXP_TH && getSystemFlag(FLAG_CPXj)) sstmp[3]++;
-  stringToUtf8(sstmp, lbl);
-  if((userKeyLabelSize > 0) && ((strcmp((char *)lbl, "DYNMNU") == 0) || (strcmp((char *)lbl, "XEQ") == 0) || (strcmp((char *)lbl, "RCL") == 0))) {
-    if(*(getNthString((uint8_t *)userKeyLabel, keyLogicalId*6+1)) != 0) {
-      stringToUtf8((char *)getNthString((uint8_t *)userKeyLabel, keyLogicalId*6+1),lbl);
+  if(isR47FAM && key->fShifted == ITM_NULL && key->primary == ITM_SHIFTf) {
+    stringToUtf8(indexOfItems[MNU_HOME].itemSoftmenuName, lbl);
+    R47LongpressColour = true;
+  }
+  else if(isR47FAM && key->fShifted == ITM_NULL && key->primary == ITM_SHIFTg) {
+    stringToUtf8(indexOfItems[MNU_MyMenu].itemSoftmenuName, lbl);
+    R47LongpressColour = true;
+  }
+  else if(key->fShifted == 0) {
+      lbl[0] = 0;
+  }
+  else {
+    strcpy(sstmp, indexOfItems[max(key->fShifted, -key->fShifted)].itemSoftmenuName);
+    if((key->fShifted == ITM_op_j || key->fShifted == ITM_op_j_pol) && getSystemFlag(FLAG_CPXj)) sstmp[1]++;
+    if(key->fShifted == ITM_EE_EXP_TH && getSystemFlag(FLAG_CPXj)) sstmp[3]++;
+    stringToUtf8(sstmp, lbl);
+    if((userKeyLabelSize > 0) && ((strcmp((char *)lbl, "DYNMNU") == 0) || (strcmp((char *)lbl, "XEQ") == 0) || (strcmp((char *)lbl, "RCL") == 0))) {
+      if(*(getNthString((uint8_t *)userKeyLabel, keyLogicalId*6+1)) != 0) {
+        stringToUtf8((char *)getNthString((uint8_t *)userKeyLabel, keyLogicalId*6+1),lbl);
+      }
     }
   }
 
-  if(key->fShifted == 0) {
-    lbl[0] = 0;
-  }
-  else if(strcmp((char *)lbl, "CAT") == 0 && key->keyId != 85) {   //JM was 85  //JM Changed CATALOG to CAT
+  if(strcmp((char *)lbl, "CAT") == 0 && key->keyId != 85) {   //JM was 85  //JM Changed CATALOG to CAT
     lbl[3] = 0;
   }
+  
+  if(key->primary == ITM_SHIFTg && key->keyId == 71) {
+    strcpy((char *)lbl,"      "); //blank the dots above the shift g key, if it is shift g specifically instead of shift f/g
+  }
 
-      if(key->primary == ITM_SHIFTg && key->keyId == 71) {
-        strcpy((char *)lbl,"      "); //blank the dots above the shift g key, if it is shit g specifically instead of shift f/g
-      }
+  gtk_label_set_label(GTK_LABEL(lblF), (gchar *)lbl);
+  //printf("--THIS IS f-shifted:               %s\n",lbl);
 
-      gtk_label_set_label(GTK_LABEL(lblF), (gchar *)lbl);
-      if(key->fShifted < 0) gtk_widget_set_name(lblF, "fShiftedUnderline"); else  gtk_widget_set_name(lblF, "fShifted");
+  if(R47LongpressColour) {
+    gtk_widget_set_name(lblF, "letter");
+  }
+  else if(key->fShifted < 0) {
+    gtk_widget_set_name(lblF, "fShiftedUnderline"); 
+  }
+  else {
+    gtk_widget_set_name(lblF, "fShifted");
+  }
 
 //  if(key->gShifted == ITM_op_j) strcpy((char *)lbl, getSystemFlag(FLAG_CPXj)   ? "j"  : "i");
 //  else
@@ -2516,9 +2676,18 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
     //dr
     void labelCaptionAimFa(const calcKey_t* key, GtkWidget* lblF) {
       uint8_t lbl[22];
+      bool_t R47LongpressColour = false;
 
       if(key->primaryAim == ITM_NULL) {
         lbl[0] = 0;
+      }
+      else if(isR47FAM && key->fShiftedAim == ITM_NULL && key->primaryAim == ITM_SHIFTf) {
+        stringToUtf8(indexOfItems[MNU_ALPHA].itemSoftmenuName, lbl);
+        R47LongpressColour = true;
+      }
+      else if(isR47FAM && key->fShiftedAim == ITM_NULL && key->primaryAim == ITM_SHIFTg) {
+        stringToUtf8(indexOfItems[MNU_MyAlpha].itemSoftmenuName, lbl);
+        R47LongpressColour = true;
       }
       else {
           stringToUtf8(indexOfItems[numlockReplacements(4,max(key->fShiftedAim, -key->fShiftedAim),getSystemFlag(FLAG_NUMLOCK),true,false)].itemSoftmenuName, lbl);
@@ -2532,18 +2701,30 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
         lbl[4]=0xb7;          //JM SPACE
         lbl[5]=0;             //JM SPACE
       }
+      else if(key->fShiftedAim == CHR_caseUP || key->fShiftedAim == CHR_caseDN) {
+        lbl[5] = 0;
+      }
+
 
       gtk_label_set_label(GTK_LABEL(lblF), (gchar*)lbl);
-      if(key->primary < 0) gtk_widget_set_name(lblF, "fShiftedUnderline"); else  gtk_widget_set_name(lblF, "fShifted");
+      if(R47LongpressColour) {
+        gtk_widget_set_name(lblF, "letter");
+      }
+      else if(key->primary < 0) {
+        gtk_widget_set_name(lblF, "fShiftedUnderline");
+      }
+      else {
+        gtk_widget_set_name(lblF, "fShifted");
+      }
     }
 
 
 
 
-    void labelCaptionAim(const calcKey_t *key, GtkWidget *button, GtkWidget *lblGreek, GtkWidget *lblL) {
+    void labelCaptionAim(const calcKey_t *key, GtkWidget *button, GtkWidget *lblG, GtkWidget *lblL) {
       uint8_t lbl[22];
 
-      if(key->primaryAim == ITM_NULL) {
+      if(key->primaryAim == ITM_NULL || key->gShiftedAim == ITM_NULL) {
         lbl[0] = 0;
       }
       else {
@@ -2572,6 +2753,7 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
       }
 
       gtk_button_set_label(GTK_BUTTON(button), (gchar *)lbl);
+      //printf("--THIS IS AIM primary face:               %s\n",lbl);
 
       //Specify the different categories of coloured zones
       if(key->keyLblAim == ITM_SHIFTf) {
@@ -2616,25 +2798,15 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
         lbl[0] = 0;
       }
 
-      /* JM TEST PROCEDURE TO TEST DISPLAY
-      else if(key->gShiftedAim == ITM_DIGAMMA ) {
-        lbl[0] = 0xCF;
-        lbl[1] = 0x9C;
-        lbl[2] = 32;
-        lbl[3] = 0xCF;
-        lbl[4] = 0x9D;
-        lbl[5] = 0;
-      }
-      */
-
-      gtk_label_set_label(GTK_LABEL(lblGreek), (gchar *)lbl);
+      gtk_label_set_label(GTK_LABEL(lblG), (gchar *)lbl);
+      //printf("--THIS IS AIM g-position:                 %s\n",lbl);
 
       //GShift colours
       if(key->gShiftedAim < 0) {
-        gtk_widget_set_name(lblGreek, "gShiftedUnderline");     //dr - new AIM
+        gtk_widget_set_name(lblG, "gShiftedUnderline");     //dr - new AIM
       }
       else {
-        gtk_widget_set_name(lblGreek, "greek");
+        gtk_widget_set_name(lblG, "AimfShifted");
       }
 
       //Primaries, convert to UTF
@@ -2655,7 +2827,10 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
         lbl[5]=0;             //JM SPACE
       }                       //JM SPACE
 
+
+      //LOAD letter in AIM, NOT SURE WHERE THIS IS. SUSPECT C47 DOES NOT USE IT
       gtk_label_set_label(GTK_LABEL(lblL), (gchar *)lbl);
+      //printf("----ZZ %s\n",lbl);
       gtk_widget_set_name(lblL, "letter");
     }
 
@@ -2666,6 +2841,7 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
 
       stringToUtf8(indexOfItems[key->primaryTam].itemSoftmenuName, lbl);
 
+      //THIS IS FOR TAM
       gtk_button_set_label(GTK_BUTTON(button), (gchar *)lbl);
 
       if(strcmp((char *)lbl, "/") == 0 && key->keyId == 55) {    //JM if "/", re-do to "÷". Presumed easier than to fix the UTf8 conversion above.
@@ -2778,7 +2954,6 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
 
       gtk_widget_show(lbl21F);
       gtk_widget_show(lbl21G);
-      //gtk_widget_show(lbl21H); //JMALPHA temporary remove A from Sigma+
       gtk_widget_show(lbl21L);
       gtk_widget_show(lbl22F);
       gtk_widget_show(lbl22G);
@@ -2811,11 +2986,9 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
       gtk_widget_show(lbl32L);
       gtk_widget_show(lbl33F);
       gtk_widget_show(lbl33G);
-      //gtk_widget_show(lbl33H);
       gtk_widget_show(lbl33L);
       gtk_widget_show(lbl34F);
       gtk_widget_show(lbl34G);
-      //gtk_widget_show(lbl34H);//JMALPHA2 temporary remove A from J
       gtk_widget_show(lbl34L);
       gtk_widget_show(lbl35L); // JM !!
       gtk_widget_show(lbl36L); // JM !!
@@ -2835,12 +3008,10 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
       gtk_widget_show(lbl41G);
       gtk_widget_show(lbl42F);
       gtk_widget_show(lbl42G);
-      gtk_widget_show(lbl42H);
       gtk_widget_show(lbl42L);
       gtk_widget_show(lbl43F);
       gtk_widget_show(lbl43G);
       gtk_widget_show(lbl43L);
-      gtk_widget_show(lbl43P);
       gtk_widget_show(lbl44F);
       gtk_widget_show(lbl44G);
       gtk_widget_show(lbl44L);
@@ -2888,7 +3059,6 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
       gtk_widget_show(lbl64F);
       gtk_widget_show(lbl64G);
       gtk_widget_show(lbl64L);
-      gtk_widget_show(lbl65H); //JM
       gtk_widget_show(lbl65F);
       gtk_widget_show(lbl65G);
       gtk_widget_show(lbl65L); //JM added
@@ -2904,11 +3074,9 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
         gtk_widget_show(lbl71G); //JM REMOVE SHIFT LABEL
       }
       gtk_widget_show(lbl71L);
-      gtk_widget_show(lbl72H); //JM
       gtk_widget_show(lbl72F);
       gtk_widget_show(lbl72G);
       gtk_widget_show(lbl72L);
-      gtk_widget_show(lbl73H); //JM
       gtk_widget_show(lbl73F);
       gtk_widget_show(lbl73G);
       gtk_widget_show(lbl73L);
@@ -2929,22 +3097,17 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
       gtk_widget_show(lbl81F);
       gtk_widget_show(lbl81G); //JM
       gtk_widget_show(lbl81L);
-      //gtk_widget_show(lbl81H);  //JM
       gtk_widget_show(lbl82F);
       gtk_widget_show(lbl82G);
-      gtk_widget_show(lbl82H); //JM
       gtk_widget_show(lbl82L);
       gtk_widget_show(lbl83F);
       gtk_widget_show(lbl83G);
       gtk_widget_show(lbl83L);
-      gtk_widget_show(lbl83H);
       gtk_widget_show(lbl84F);
       gtk_widget_show(lbl84G);
-      gtk_widget_show(lbl84H);
       gtk_widget_show(lbl84L);
       gtk_widget_show(lbl85F);
       gtk_widget_show(lbl85G);
-      gtk_widget_show(lbl85H); //JM
       gtk_widget_show(lbl85L);  //JM add ?
 
       //gtk_widget_show(lblOn);
@@ -3004,10 +3167,10 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
       labelCaptionAim(keys++, btn43A, lbl43Gr, lbl43L);
       labelCaptionAimFa(keys, lbl44Fa);                     //vv dr - new AIM //JM newest AIM
       labelCaptionAim(keys++, btn44A, lbl44Gr, lbl44L);     //^^
-
       labelCaptionAimFa(keys, lbl45Fa);                     //vv dr - new AIM //JM newest AIM
       labelCaptionAim(keys++, btn45,  lbl45Gr, lbl45L);
 
+      labelCaptionAimFa(keys, lbl51Fa);                     //vv dr - new AIM //JM newest AIM
       labelCaptionAim(keys++, btn51,  lbl51Gr, lbl51L);
       labelCaptionAimFa(keys, lbl52Fa);                     //vv dr - new AIM
       labelCaptionAim(keys++, btn52A, lbl52Gr, lbl52L);
@@ -3018,6 +3181,7 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
       labelCaptionAimFa(keys, lbl55Fa);
       labelCaptionAim(keys++, btn55A, lbl55Gr, lbl55L);     //^^
 
+      labelCaptionAimFa(keys, lbl61Fa);                     //vv dr - new AIM //JM newest AIM
       labelCaptionAim(keys++, btn61,  lbl61Gr, lbl61L);
       labelCaptionAimFa(keys, lbl62Fa);                     //vv dr - new AIM
       labelCaptionAim(keys++, btn62A, lbl62Gr, lbl62L);
@@ -3028,6 +3192,7 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
       labelCaptionAimFa(keys, lbl65Fa);
       labelCaptionAim(keys++, btn65A, lbl65Gr, lbl65L);     //^^
 
+      labelCaptionAimFa(keys, lbl71Fa);                     //vv dr - new AIM //JM newest AIM
       labelCaptionAim(keys++, btn71A, lbl71Gr, lbl71L);
       labelCaptionAimFa(keys, lbl72Fa);                     //vv dr - new AIM
       labelCaptionAim(keys++, btn72A, lbl72Gr, lbl72L);
@@ -3069,7 +3234,6 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
       gtk_widget_show(lbl25Fa);    //JM AIM2
       gtk_widget_show(lbl26Fa);    //JM AIM2
 
-      //gtk_widget_show(lbl21H); //JMALPHA temporary remove A from Sigma+
       /*gtk_widget_show(lbl21L);
       gtk_widget_show(lbl22L);
       gtk_widget_show(lbl23L);
@@ -3107,12 +3271,10 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
       //gtk_widget_show(lbl31F);  JM
       //gtk_widget_show(lbl31L);    //dr - new AIM
       //gtk_widget_show(lbl32L);    //dr - new AIM
-      //gtk_widget_show(lbl33H);
       //gtk_widget_show(lbl33L);    //dr - new AIM
       //gtk_widget_show(lbl34L);    //dr - new AIM
       //gtk_widget_show(lbl35L); // JM !!    //dr - new AIM
       //gtk_widget_show(lbl36L); // JM !!    //dr - new AIM
-      //gtk_widget_show(lbl34H);  //JMALPHA2 reinstate CAPS //JMALPHA2 temporary remove A from J
       gtk_widget_show(lbl31Gr);
       gtk_widget_show(lbl32Gr);
       gtk_widget_show(lbl33Gr);
@@ -3134,7 +3296,6 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
       gtk_widget_show(lbl42Fa);
       gtk_widget_show(lbl43Fa);     //^^
       gtk_widget_show(lbl44Fa);    //JM AIM2
-      gtk_widget_show(lbl43P);
       //gtk_widget_show(lbl44L);    //dr - new AIM
       //gtk_widget_show(lbl44P);
       //gtk_widget_show(lbl45F);
@@ -3152,7 +3313,7 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
       gtk_widget_show(btn55A);      //^^
 
       gtk_widget_show(lbl51L);
-      gtk_widget_show(lbl51F);
+
       //gtk_widget_show(lbl51G); //JM__
       //gtk_widget_show(lbl55F); //JM__
       //gtk_widget_show(lbl55G); //JM__
@@ -3160,6 +3321,7 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
       gtk_widget_show(lbl53L);
       gtk_widget_show(lbl54L);
       gtk_widget_show(lbl55L);*/
+      gtk_widget_show(lbl51Fa);
       gtk_widget_show(lbl52Fa);
       gtk_widget_show(lbl53Fa);
       gtk_widget_show(lbl54Fa);
@@ -3176,20 +3338,16 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
       gtk_widget_show(btn64A);
       gtk_widget_show(btn65A);      //^^
 
-      gtk_widget_show(lbl61L);
+//      gtk_widget_show(lbl61L);
       /*gtk_widget_show(lbl62L);      //vv dr - new AIM
       gtk_widget_show(lbl63L);
       gtk_widget_show(lbl64L);
       gtk_widget_show(lbl65L); //JM added*/
+      gtk_widget_show(lbl61Fa);
       gtk_widget_show(lbl62Fa);
       gtk_widget_show(lbl63Fa);
       gtk_widget_show(lbl64Fa);
       gtk_widget_show(lbl65Fa);     //^^
-
-      gtk_widget_show(lbl61F); //JM_
-      //gtk_widget_show(lbl61G); //JM_
-      //gtk_widget_show(lbl65F); //JM
-      //gtk_widget_show(lbl65G);
       gtk_widget_show(lbl61Gr); //JMAHOME2
       gtk_widget_show(lbl62Gr);
       gtk_widget_show(lbl63Gr);
@@ -3203,17 +3361,16 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
       gtk_widget_show(btn74A);
       gtk_widget_show(btn75A);      //^^
 
-      gtk_widget_show(lbl71L);
+//      gtk_widget_show(lbl71L);
       /*gtk_widget_show(lbl72L);      //vv dr - new AIM
       gtk_widget_show(lbl73L);
       gtk_widget_show(lbl74L);
       gtk_widget_show(lbl75L); //JM added*/
+      gtk_widget_show(lbl71Fa);
       gtk_widget_show(lbl72Fa);
       gtk_widget_show(lbl73Fa);
       gtk_widget_show(lbl74Fa);
       gtk_widget_show(lbl75Fa);     //^^
-      gtk_widget_show(lbl71F);  //JM_          //JM REMOVE SHIFT LABEL
-      gtk_widget_show(lbl71G); //JM_
       gtk_widget_show(lbl71Gr);
       gtk_widget_show(lbl72Gr);
       gtk_widget_show(lbl73Gr);
@@ -3226,7 +3383,7 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
       gtk_widget_show(btn84A);
       gtk_widget_show(btn85A);      //^^
 
-      gtk_widget_show(lbl81L);
+ //     gtk_widget_show(lbl81L);
       gtk_widget_show(lbl81F); //JM added OFF with Layout 42 LAYOUT42
       gtk_widget_show(lbl81G); //JM added OFF with Layout 42 LAYOUT42
       /*gtk_widget_show(lbl82L);      //vv dr - new AIM
@@ -3237,10 +3394,6 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
       gtk_widget_show(lbl83Fa);
       gtk_widget_show(lbl84Fa);
       gtk_widget_show(lbl85Fa);     //^^
-      /*gtk_widget_show(lbl82H);  //JM AIM MENU   //vv dr - new AIM
-      gtk_widget_show(lbl83H);  //JM AIM MENU
-      gtk_widget_show(lbl84H);  //JM AIM MENU
-      gtk_widget_show(lbl85H);  //JM AIM MENU*/ //^^
       //gtk_widget_show(lbl85F); //JM
       //gtk_widget_show(lbl85G); //JM
 
@@ -3374,6 +3527,835 @@ void labelCaptionNormal(const calcKey_t *key, GtkWidget *button, GtkWidget *lblF
       moveLabels();
     }
   #endif // SIMULATOR_ON_SCREEN_KEYBOARD == 1
+
+
+
+const gdkKeyMap_t gdkKeyMap[] = {
+
+//TOREMOVEGREEKKEY vv
+//C47 has no direct key input Greek letters
+//jm_greek   { .item = ITM_ALPHA                      ,  .gdkKey = GDK_KEY_Greek_ALPHA                 },
+//jm_greek   { .item = ITM_BETA                       ,  .gdkKey = GDK_KEY_Greek_BETA                  },
+//jm_greek   { .item = ITM_GAMMA                      ,  .gdkKey = GDK_KEY_Greek_GAMMA                 },
+//jm_greek   { .item = ITM_DELTA                      ,  .gdkKey = GDK_KEY_Greek_DELTA                 },
+//jm_greek   { .item = ITM_EPSILON                    ,  .gdkKey = GDK_KEY_Greek_EPSILON               },
+//jm_greek   { .item = ITM_ZETA                       ,  .gdkKey = GDK_KEY_Greek_ZETA                  },
+//jm_greek   { .item = ITM_ETA                        ,  .gdkKey = GDK_KEY_Greek_ETA                   },
+//jm_greek   { .item = ITM_THETA                      ,  .gdkKey = GDK_KEY_Greek_THETA                 },
+//jm_greek   { .item = ITM_IOTA                       ,  .gdkKey = GDK_KEY_Greek_IOTA                  },
+//jm_greek   { .item = ITM_IOTA_DIALYTIKA             ,  .gdkKey = GDK_KEY_Greek_IOTAdieresis          },
+//jm_greek   { .item = ITM_KAPPA                      ,  .gdkKey = GDK_KEY_Greek_KAPPA                 },
+//jm_greek   { .item = ITM_LAMBDA                     ,  .gdkKey = GDK_KEY_Greek_LAMBDA                },
+//jm_greek   { .item = ITM_MU                         ,  .gdkKey = GDK_KEY_Greek_MU                    },
+//jm_greek   { .item = ITM_NU                         ,  .gdkKey = GDK_KEY_Greek_NU                    },
+//jm_greek   { .item = ITM_XI                         ,  .gdkKey = GDK_KEY_Greek_XI                    },
+//jm_greek   { .item = ITM_OMICRON                    ,  .gdkKey = GDK_KEY_Greek_OMICRON               },
+//jm_greek   { .item = ITM_PI                         ,  .gdkKey = GDK_KEY_Greek_PI                    },
+//jm_greek   { .item = ITM_RHO                        ,  .gdkKey = GDK_KEY_Greek_RHO                   },
+//jm_greek   { .item = ITM_SIGMA                      ,  .gdkKey = GDK_KEY_Greek_SIGMA                 },
+//jm_greek   { .item = ITM_TAU                        ,  .gdkKey = GDK_KEY_Greek_TAU                   },
+//jm_greek   { .item = ITM_UPSILON                    ,  .gdkKey = GDK_KEY_Greek_UPSILON               },
+//jm_greek   { .item = ITM_UPSILON_DIALYTIKA          ,  .gdkKey = GDK_KEY_Greek_UPSILONdieresis       },
+//jm_greek   { .item = ITM_PHI                        ,  .gdkKey = GDK_KEY_Greek_PHI                   },
+//jm_greek   { .item = ITM_CHI                        ,  .gdkKey = GDK_KEY_Greek_CHI                   },
+//jm_greek   { .item = ITM_PSI                        ,  .gdkKey = GDK_KEY_Greek_PSI                   },
+//jm_greek   { .item = ITM_OMEGA                      ,  .gdkKey = GDK_KEY_Greek_OMEGA                 },
+//jm_greek   { .item = ITM_alpha                      ,  .gdkKey = GDK_KEY_Greek_alpha                 },
+//jm_greek   { .item = ITM_beta                       ,  .gdkKey = GDK_KEY_Greek_beta                  },
+//jm_greek   { .item = ITM_gamma                      ,  .gdkKey = GDK_KEY_Greek_gamma                 },
+//jm_greek   { .item = ITM_delta                      ,  .gdkKey = GDK_KEY_Greek_delta                 },
+//jm_greek   { .item = ITM_epsilon                    ,  .gdkKey = GDK_KEY_Greek_epsilon               },
+//jm_greek   { .item = ITM_zeta                       ,  .gdkKey = GDK_KEY_Greek_zeta                  },
+//jm_greek   { .item = ITM_eta                        ,  .gdkKey = GDK_KEY_Greek_eta                   },
+//jm_greek   { .item = ITM_theta                      ,  .gdkKey = GDK_KEY_Greek_theta                 },
+//jm_greek   { .item = ITM_iota                       ,  .gdkKey = GDK_KEY_Greek_iota                  },
+//jm_greek   { .item = ITM_iota_DIALYTIKA             ,  .gdkKey = GDK_KEY_Greek_iotadieresis          },
+//jm_greek   { .item = ITM_kappa                      ,  .gdkKey = GDK_KEY_Greek_kappa                 },
+//jm_greek   { .item = ITM_lambda                     ,  .gdkKey = GDK_KEY_Greek_lambda                },
+//jm_greek   { .item = ITM_mu                         ,  .gdkKey = GDK_KEY_Greek_mu                    },
+//jm_greek   { .item = ITM_nu                         ,  .gdkKey = GDK_KEY_Greek_nu                    },
+//jm_greek   { .item = ITM_xi                         ,  .gdkKey = GDK_KEY_Greek_xi                    },
+//jm_greek   { .item = ITM_omicron                    ,  .gdkKey = GDK_KEY_Greek_omicron               },
+//jm_greek   { .item = ITM_pi                         ,  .gdkKey = GDK_KEY_Greek_pi                    },
+//jm_greek   { .item = ITM_rho                        ,  .gdkKey = GDK_KEY_Greek_rho                   },
+//jm_greek   { .item = ITM_sigma                      ,  .gdkKey = GDK_KEY_Greek_sigma                 },
+//jm_greek   { .item = ITM_tau                        ,  .gdkKey = GDK_KEY_Greek_tau                   },
+//jm_greek   { .item = ITM_upsilon                    ,  .gdkKey = GDK_KEY_Greek_upsilon               },
+//jm_greek   { .item = ITM_upsilon_DIALYTIKA          ,  .gdkKey = GDK_KEY_Greek_upsilondieresis       },
+//jm_greek   { .item = ITM_phi                        ,  .gdkKey = GDK_KEY_Greek_phi                   },
+//jm_greek   { .item = ITM_chi                        ,  .gdkKey = GDK_KEY_Greek_chi                   },
+//jm_greek   { .item = ITM_psi                        ,  .gdkKey = GDK_KEY_Greek_psi                   },
+//jm_greek   { .item = ITM_omega                      ,  .gdkKey = GDK_KEY_Greek_omega                 },
+//jm_greek   { .item = ITM_alpha_TONOS                ,  .gdkKey = GDK_KEY_Greek_alphaaccent           },
+//jm_greek   { .item = ITM_epsilon_TONOS              ,  .gdkKey = GDK_KEY_Greek_epsilonaccent         },
+//jm_greek   { .item = ITM_eta_TONOS                  ,  .gdkKey = GDK_KEY_Greek_etaaccent             },
+//jm_greek   { .item = ITM_iotaTON                    ,  .gdkKey = GDK_KEY_Greek_iotaaccent            },
+//jm_greek   { .item = ITM_iota_DIALYTIKA_TONOS       ,  .gdkKey = GDK_KEY_Greek_iotaaccentdieresis    },
+//jm_greek   { .item = ITM_omicron_TONOS              ,  .gdkKey = GDK_KEY_Greek_omicronaccent         },
+//jm_greek   { .item = ITM_sigma_end                  ,  .gdkKey = GDK_KEY_Greek_finalsmallsigma       },
+//jm_greek   { .item = ITM_upsilon_TONOS              ,  .gdkKey = GDK_KEY_Greek_upsilonaccent         },
+//jm_greek   { .item = ITM_upsilon_DIALYTIKA_TONOS    ,  .gdkKey = GDK_KEY_Greek_upsilonaccentdieresis },
+//jm_greek   { .item = ITM_omega_TONOS                ,  .gdkKey = GDK_KEY_Greek_omegaaccent           },
+//jm_greek //  { .item = ITM_QOPPA                      ,  .gdkKey = GDK_KEY_Greek_QOPPA                 },
+//jm_greek //  { .item = ITM_DIGAMMA                    ,  .gdkKey = GDK_KEY_Greek_DIGAMMA               },
+//jm_greek //  { .item = ITM_SAMPI                      ,  .gdkKey = GDK_KEY_Greek_SAMPI                 },
+//jm_greek //  { .item = ITM_qoppa                      ,  .gdkKey = GDK_KEY_Greek_qoppa                 },
+//jm_greek //  { .item = ITM_digamma                    ,  .gdkKey = GDK_KEY_Greek_digamma               },
+//jm_greek //  { .item = ITM_sampi                      ,  .gdkKey = GDK_KEY_Greek_sampi                 },
+//TOREMOVEGREEKKEY ^^
+  { .item = ITM_A_MACRON                   ,  .gdkKey = GDK_KEY_Amacron                     },
+  { .item = ITM_A_ACUTE                    ,  .gdkKey = GDK_KEY_Aacute                      },
+  { .item = ITM_A_BREVE                    ,  .gdkKey = GDK_KEY_Abreve                      },
+  { .item = ITM_A_GRAVE                    ,  .gdkKey = GDK_KEY_Agrave                      },
+  { .item = ITM_A_DIARESIS                 ,  .gdkKey = GDK_KEY_Adiaeresis                  },
+  { .item = ITM_A_TILDE                    ,  .gdkKey = GDK_KEY_Atilde                      },
+  { .item = ITM_A_CIRC                     ,  .gdkKey = GDK_KEY_Acircumflex                 },
+  { .item = ITM_A_RING                     ,  .gdkKey = GDK_KEY_Aring                       },
+  { .item = ITM_AE                         ,  .gdkKey = GDK_KEY_AE                          },
+  { .item = ITM_A_OGONEK                   ,  .gdkKey = GDK_KEY_Aogonek                     },
+  { .item = ITM_C_ACUTE                    ,  .gdkKey = GDK_KEY_Cacute                      },
+  { .item = ITM_C_CARON                    ,  .gdkKey = GDK_KEY_Ccaron                      },
+  { .item = ITM_C_CEDILLA                  ,  .gdkKey = GDK_KEY_Ccedilla                    },
+  { .item = ITM_D_STROKE                   ,  .gdkKey = GDK_KEY_Dstroke                     },
+  { .item = ITM_D_CARON                    ,  .gdkKey = GDK_KEY_Dcaron                      },
+  { .item = ITM_E_MACRON                   ,  .gdkKey = GDK_KEY_Emacron                     },
+  { .item = ITM_E_ACUTE                    ,  .gdkKey = GDK_KEY_Eacute                      },
+//  #define ITM_E_BREVE 681                                ,                                        ,
+  { .item = ITM_E_GRAVE                    ,  .gdkKey = GDK_KEY_Egrave                      },
+  { .item = ITM_E_DIARESIS                 ,  .gdkKey = GDK_KEY_Ediaeresis                  },
+  { .item = ITM_E_CIRC                     ,  .gdkKey = GDK_KEY_Ecircumflex                 },
+  { .item = ITM_E_OGONEK                   ,  .gdkKey = GDK_KEY_Eogonek                     },
+  { .item = ITM_G_BREVE                    ,  .gdkKey = GDK_KEY_Gbreve                      },
+  { .item = ITM_I_MACRON                   ,  .gdkKey = GDK_KEY_Imacron                     },
+  { .item = ITM_I_ACUTE                    ,  .gdkKey = GDK_KEY_Iacute                      },
+  { .item = ITM_I_BREVE                    ,  .gdkKey = GDK_KEY_Ibreve                      },
+  { .item = ITM_I_GRAVE                    ,  .gdkKey = GDK_KEY_Igrave                      },
+  { .item = ITM_I_DIARESIS                 ,  .gdkKey = GDK_KEY_Idiaeresis                  },
+  { .item = ITM_I_CIRC                     ,  .gdkKey = GDK_KEY_Icircumflex                 },
+  { .item = ITM_I_OGONEK                   ,  .gdkKey = GDK_KEY_Iogonek                     },
+//  #define ITM_I_DOT 694                                ,                                        ,
+//  #define ITM_I_DOTLESS 695                                ,                                        ,
+  { .item = ITM_L_STROKE                   ,  .gdkKey = GDK_KEY_Lstroke                     },
+  { .item = ITM_L_ACUTE                    ,  .gdkKey = GDK_KEY_Lacute                      },
+//  #define ITM_L_APOSTROPHE 698                                ,                                        ,
+  { .item = ITM_N_ACUTE                    ,  .gdkKey = GDK_KEY_Nacute                      },
+  { .item = ITM_N_CARON                    ,  .gdkKey = GDK_KEY_Ncaron                      },
+  { .item = ITM_N_TILDE                    ,  .gdkKey = GDK_KEY_Ntilde                      },
+  { .item = ITM_O_MACRON                   ,  .gdkKey = GDK_KEY_Omacron                     },
+  { .item = ITM_O_ACUTE                    ,  .gdkKey = GDK_KEY_Oacute                      },
+//  #define ITM_O_BREVE 704                                ,                                        ,
+  { .item = ITM_O_GRAVE                    ,  .gdkKey = GDK_KEY_Ograve                      },
+  { .item = ITM_O_DIARESIS                 ,  .gdkKey = GDK_KEY_Odiaeresis                  },
+  { .item = ITM_O_TILDE                    ,  .gdkKey = GDK_KEY_Otilde                      },
+  { .item = ITM_O_CIRC                     ,  .gdkKey = GDK_KEY_Ocircumflex                 },
+//  #define ITM_O_STROKE 709                                ,                                        ,
+  { .item = ITM_OE                         ,  .gdkKey = GDK_KEY_OE                          },
+  { .item = ITM_S_SHARP                    ,  .gdkKey = GDK_KEY_ssharp                      },
+  { .item = ITM_S_ACUTE                    ,  .gdkKey = GDK_KEY_Sacute                      },
+  { .item = ITM_S_CARON                    ,  .gdkKey = GDK_KEY_Scaron                      },
+  { .item = ITM_S_CEDILLA                  ,  .gdkKey = GDK_KEY_Scedilla                    },
+  { .item = ITM_T_CARON                    ,  .gdkKey = GDK_KEY_Tcaron                      },
+  { .item = ITM_T_CEDILLA                  ,  .gdkKey = GDK_KEY_Tcedilla                    },
+  { .item = ITM_U_MACRON                   ,  .gdkKey = GDK_KEY_Umacron                     },
+  { .item = ITM_U_ACUTE                    ,  .gdkKey = GDK_KEY_Uacute                      },
+  { .item = ITM_U_BREVE                    ,  .gdkKey = GDK_KEY_Ubreve                      },
+  { .item = ITM_U_GRAVE                    ,  .gdkKey = GDK_KEY_Ugrave                      },
+  { .item = ITM_U_DIARESIS                 ,  .gdkKey = GDK_KEY_Udiaeresis                  },
+  { .item = ITM_U_TILDE                    ,  .gdkKey = GDK_KEY_Utilde                      },
+  { .item = ITM_U_CIRC                     ,  .gdkKey = GDK_KEY_Ucircumflex                 },
+  { .item = ITM_U_RING                     ,  .gdkKey = GDK_KEY_Uring                       },
+  { .item = ITM_W_CIRC                     ,  .gdkKey = GDK_KEY_Wcircumflex                 },
+  { .item = ITM_Y_CIRC                     ,  .gdkKey = GDK_KEY_Ycircumflex                 },
+  { .item = ITM_Y_ACUTE                    ,  .gdkKey = GDK_KEY_Yacute                      },
+  { .item = ITM_Y_DIARESIS                 ,  .gdkKey = GDK_KEY_Ydiaeresis                  },
+  { .item = ITM_Z_ACUTE                    ,  .gdkKey = GDK_KEY_Zacute                      },
+  { .item = ITM_Z_CARON                    ,  .gdkKey = GDK_KEY_Zcaron                      },
+  { .item = ITM_Z_DOT                      ,  .gdkKey = GDK_KEY_Zabovedot                   },
+  { .item = ITM_a_MACRON                   ,  .gdkKey = GDK_KEY_amacron                     },
+  { .item = ITM_a_ACUTE                    ,  .gdkKey = GDK_KEY_aacute                      },
+  { .item = ITM_a_BREVE                    ,  .gdkKey = GDK_KEY_abreve                      },
+  { .item = ITM_a_GRAVE                    ,  .gdkKey = GDK_KEY_agrave                      },
+  { .item = ITM_a_DIARESIS                 ,  .gdkKey = GDK_KEY_adiaeresis                  },
+  { .item = ITM_a_TILDE                    ,  .gdkKey = GDK_KEY_atilde                      },
+  { .item = ITM_a_CIRC                     ,  .gdkKey = GDK_KEY_acircumflex                 },
+  { .item = ITM_a_RING                     ,  .gdkKey = GDK_KEY_aring                       },
+  { .item = ITM_ae                         ,  .gdkKey = GDK_KEY_ae                          },
+  { .item = ITM_a_OGONEK                   ,  .gdkKey = GDK_KEY_aogonek                     },
+  { .item = ITM_c_ACUTE                    ,  .gdkKey = GDK_KEY_cacute                      },
+  { .item = ITM_c_CARON                    ,  .gdkKey = GDK_KEY_ccaron                      },
+  { .item = ITM_c_CEDILLA                  ,  .gdkKey = GDK_KEY_ccedilla                    },
+  { .item = ITM_d_STROKE                   ,  .gdkKey = GDK_KEY_dstroke                     },
+//  #define ITM_d_APOSTROPHE 746                                ,                                        ,
+  { .item = ITM_e_MACRON                   ,  .gdkKey = GDK_KEY_emacron                     },
+  { .item = ITM_e_ACUTE                    ,  .gdkKey = GDK_KEY_eacute                      },
+//  #define ITM_e_BREVE 749                                ,                                        ,
+  { .item = ITM_e_GRAVE                    ,  .gdkKey = GDK_KEY_egrave                      },
+  { .item = ITM_e_DIARESIS                 ,  .gdkKey = GDK_KEY_ediaeresis                  },
+  { .item = ITM_e_CIRC                     ,  .gdkKey = GDK_KEY_ecircumflex                 },
+  { .item = ITM_e_OGONEK                   ,  .gdkKey = GDK_KEY_eogonek                     },
+  { .item = ITM_g_BREVE                    ,  .gdkKey = GDK_KEY_gbreve                      },
+  { .item = ITM_h_STROKE                   ,  .gdkKey = GDK_KEY_hstroke                     },
+  { .item = ITM_i_MACRON                   ,  .gdkKey = GDK_KEY_imacron                     },
+  { .item = ITM_i_ACUTE                    ,  .gdkKey = GDK_KEY_iacute                      },
+  { .item = ITM_i_BREVE                    ,  .gdkKey = GDK_KEY_ibreve                      },
+  { .item = ITM_i_GRAVE                    ,  .gdkKey = GDK_KEY_igrave                      },
+  { .item = ITM_i_DIARESIS                 ,  .gdkKey = GDK_KEY_idiaeresis                  },
+  { .item = ITM_i_CIRC                     ,  .gdkKey = GDK_KEY_icircumflex                 },
+  { .item = ITM_i_OGONEK                   ,  .gdkKey = GDK_KEY_iogonek                     },
+//  #define ITM_i_DOT 763                                ,                                        ,
+  { .item = ITM_i_DOTLESS                  ,  .gdkKey = GDK_KEY_idotless                    },
+  { .item = ITM_l_STROKE                   ,  .gdkKey = GDK_KEY_lstroke                     },
+  { .item = ITM_l_ACUTE                    ,  .gdkKey = GDK_KEY_lacute                      },
+//  #define ITM_l_APOSTROPHE 767                                ,                                        ,
+  { .item = ITM_n_ACUTE                    ,  .gdkKey = GDK_KEY_nacute                      },
+  { .item = ITM_n_CARON                    ,  .gdkKey = GDK_KEY_ncaron                      },
+  { .item = ITM_n_TILDE                    ,  .gdkKey = GDK_KEY_ntilde                      },
+  { .item = ITM_o_MACRON                   ,  .gdkKey = GDK_KEY_omacron                     },
+  { .item = ITM_o_ACUTE                    ,  .gdkKey = GDK_KEY_oacute                      },
+//  #define ITM_o_BREVE 773                                ,                                        ,
+  { .item = ITM_o_GRAVE                    ,  .gdkKey = GDK_KEY_ograve                      },
+  { .item = ITM_o_DIARESIS                 ,  .gdkKey = GDK_KEY_odiaeresis                  },
+  { .item = ITM_o_TILDE                    ,  .gdkKey = GDK_KEY_otilde                      },
+  { .item = ITM_o_CIRC                     ,  .gdkKey = GDK_KEY_ocircumflex                 },
+//  #define ITM_o_STROKE 778                                ,                                        ,
+  { .item = ITM_oe                         ,  .gdkKey = GDK_KEY_oe                          },
+  { .item = ITM_r_CARON                    ,  .gdkKey = GDK_KEY_rcaron                      },
+  { .item = ITM_r_ACUTE                    ,  .gdkKey = GDK_KEY_racute                      },
+//  #define ITM_s_SHARP 782                                ,                                        ,
+  { .item = ITM_s_ACUTE                    ,  .gdkKey = GDK_KEY_sacute                      },
+  { .item = ITM_s_CARON                    ,  .gdkKey = GDK_KEY_scaron                      },
+  { .item = ITM_s_CEDILLA                  ,  .gdkKey = GDK_KEY_scedilla                    },
+//  #define ITM_t_APOSTROPHE 786                                ,                                        ,
+  { .item = ITM_t_CEDILLA                  ,  .gdkKey = GDK_KEY_tcedilla                    },
+  { .item = ITM_u_MACRON                   ,  .gdkKey = GDK_KEY_umacron                     },
+  { .item = ITM_u_ACUTE                    ,  .gdkKey = GDK_KEY_uacute                      },
+  { .item = ITM_u_BREVE                    ,  .gdkKey = GDK_KEY_ubreve                      },
+  { .item = ITM_u_GRAVE                    ,  .gdkKey = GDK_KEY_ugrave                      },
+  { .item = ITM_u_DIARESIS                 ,  .gdkKey = GDK_KEY_udiaeresis                  },
+  { .item = ITM_u_TILDE                    ,  .gdkKey = GDK_KEY_utilde                      },
+  { .item = ITM_u_CIRC                     ,  .gdkKey = GDK_KEY_ucircumflex                 },
+  { .item = ITM_u_RING                     ,  .gdkKey = GDK_KEY_uring                       },
+  { .item = ITM_w_CIRC                     ,  .gdkKey = GDK_KEY_wcircumflex                 },
+//  #define ITM_x_BAR 797                                ,                                        ,
+//  #define ITM_x_CIRC 798                                ,                                        ,
+//  #define ITM_y_BAR 799                                ,                                        ,
+  { .item = ITM_y_CIRC                     ,  .gdkKey = GDK_KEY_ycircumflex                 },
+  { .item = ITM_y_ACUTE                    ,  .gdkKey = GDK_KEY_yacute                      },
+  { .item = ITM_y_DIARESIS                 ,  .gdkKey = GDK_KEY_ydiaeresis                  },
+  { .item = ITM_z_ACUTE                    ,  .gdkKey = GDK_KEY_zacute                      },
+  { .item = ITM_z_CARON                    ,  .gdkKey = GDK_KEY_zcaron                      },
+  { .item = ITM_z_DOT                      ,  .gdkKey = GDK_KEY_zabovedot                   },
+
+  { .item = ITM_LEFT_SQUARE_BRACKET        ,  .gdkKey = GDK_KEY_bracketleft                 },
+  { .item = ITM_BACK_SLASH                 ,  .gdkKey = GDK_KEY_backslash                   },
+  { .item = ITM_RIGHT_SQUARE_BRACKET       ,  .gdkKey = GDK_KEY_bracketright                },
+  { .item = ITM_CIRCUMFLEX                 ,  .gdkKey = GDK_KEY_asciicircum                 },
+  { .item = ITM_UNDERSCORE                 ,  .gdkKey = GDK_KEY_underscore                  },
+  { .item = ITM_LEFT_CURLY_BRACKET         ,  .gdkKey = GDK_KEY_braceleft                   },
+  { .item = ITM_PIPE                       ,  .gdkKey = GDK_KEY_bar                         },
+  { .item = ITM_RIGHT_CURLY_BRACKET        ,  .gdkKey = GDK_KEY_braceright                  },
+  { .item = ITM_TILDE                      ,  .gdkKey = GDK_KEY_asciitilde                  },
+
+  { .item = ITM_INVERTED_EXCLAMATION_MARK  ,  .gdkKey = GDK_KEY_exclamdown                  },
+  { .item = ITM_CENT                       ,  .gdkKey = GDK_KEY_cent                        },
+  { .item = ITM_POUND                      ,  .gdkKey = GDK_KEY_sterling                    },
+  { .item = ITM_YEN                        ,  .gdkKey = GDK_KEY_yen                         },
+  { .item = ITM_SECTION                    ,  .gdkKey = GDK_KEY_section                     },
+//  #define ITM_OVERFLOW_CARRY 843                                ,                                        ,
+  { .item = ITM_LEFT_DOUBLE_ANGLE          ,  .gdkKey = GDK_KEY_guillemotleft               },
+  { .item = ITM_NOT                        ,  .gdkKey = GDK_KEY_notsign                     },
+  { .item = ITM_DEGREE                     ,  .gdkKey = GDK_KEY_degree                      },
+  { .item = ITM_PLUS_MINUS                 ,  .gdkKey = GDK_KEY_plusminus                   },
+  { .item = ITM_MICRO                      ,  .gdkKey = GDK_KEY_mu                          },
+//  #define ITM_DOT 849                                ,                                        ,
+  { .item = ITM_RIGHT_DOUBLE_ANGLE         ,  .gdkKey = GDK_KEY_guillemotright              },
+  { .item = ITM_ONE_HALF                   ,  .gdkKey = GDK_KEY_onehalf                     },
+  { .item = ITM_ONE_QUARTER                ,  .gdkKey = GDK_KEY_onequarter                  },
+  { .item = ITM_ONE_HALF                   ,  .gdkKey = GDK_KEY_onehalf                     },
+  { .item = ITM_INVERTED_QUESTION_MARK     ,  .gdkKey = GDK_KEY_questiondown                },
+  { .item = ITM_ETH                        ,  .gdkKey = GDK_KEY_ETH                         },
+  { .item = ITM_CROSS                      ,  .gdkKey = GDK_KEY_multiply                    },
+  { .item = ITM_eth                        ,  .gdkKey = GDK_KEY_eth                         },
+//  #define ITM_OBELUS 857                                ,                                        ,
+  { .item = ITM_E_DOT                      ,  .gdkKey = GDK_KEY_Eabovedot                   },
+  { .item = ITM_e_DOT                      ,  .gdkKey = GDK_KEY_eabovedot                   },
+  { .item = ITM_E_CARON                    ,  .gdkKey = GDK_KEY_Ecaron                      },
+  { .item = ITM_e_CARON                    ,  .gdkKey = GDK_KEY_ecaron                      },
+  { .item = ITM_R_ACUTE                    ,  .gdkKey = GDK_KEY_Racute                      },
+  { .item = ITM_R_CARON                    ,  .gdkKey = GDK_KEY_Rcaron                      },
+  { .item = ITM_U_OGONEK                   ,  .gdkKey = GDK_KEY_Uogonek                     },
+  { .item = ITM_u_OGONEK                   ,  .gdkKey = GDK_KEY_uogonek                     },
+//  #define ITM_y_UNDER_ROOT 866                                ,                                        ,
+//  #define ITM_x_UNDER_ROOT 867                                ,                                        ,
+  { .item = ITM_SPACE_EM                   ,  .gdkKey = GDK_KEY_emspace                     },
+  { .item = ITM_SPACE_3_PER_EM             ,  .gdkKey = GDK_KEY_em3space                    },
+  { .item = ITM_SPACE_4_PER_EM             ,  .gdkKey = GDK_KEY_em4space                    },
+//  #define ITM_SPACE_6_PER_EM 871                                ,                                        ,
+  { .item = ITM_SPACE_FIGURE               ,  .gdkKey = GDK_KEY_digitspace                  },
+  { .item = ITM_SPACE_PUNCTUATION          ,  .gdkKey = GDK_KEY_punctspace                  },
+  { .item = ITM_SPACE_HAIR                 ,  .gdkKey = GDK_KEY_hairspace                   },
+  { .item = ITM_LEFT_SINGLE_QUOTE          ,  .gdkKey = GDK_KEY_leftsinglequotemark         },
+  { .item = ITM_RIGHT_SINGLE_QUOTE         ,  .gdkKey = GDK_KEY_rightsinglequotemark        },
+  { .item = ITM_SINGLE_LOW_QUOTE           ,  .gdkKey = GDK_KEY_singlelowquotemark          },
+//  #define ITM_SINGLE_HIGH_QUOTE 878                                ,                                        ,
+  { .item = ITM_LEFT_DOUBLE_QUOTE          ,  .gdkKey = GDK_KEY_leftdoublequotemark         },
+  { .item = ITM_RIGHT_DOUBLE_QUOTE         ,  .gdkKey = GDK_KEY_rightdoublequotemark        },
+  { .item = ITM_DOUBLE_LOW_QUOTE           ,  .gdkKey = GDK_KEY_doublelowquotemark          },
+//  #define ITM_DOUBLE_HIGH_QUOTE 882                                ,                                        ,
+  { .item = ITM_ELLIPSIS                   ,  .gdkKey = GDK_KEY_ellipsis                    },
+//  #define ITM_BINARY_ONE 884                                ,                                        ,
+  { .item = ITM_EURO                       ,  .gdkKey = GDK_KEY_EuroSign                    },
+//  #define ITM_COMPLEX_C 886                                ,                                        ,
+//  #define ITM_PLANCK 887                                ,                                        ,
+//  #define ITM_PLANCK_2PI 888                                ,                                        ,
+//  #define ITM_NATURAL_N 889                                ,                                        ,
+//  #define ITM_RATIONAL_Q 890                                ,                                        ,
+//  #define ITM_REAL_R 891                                ,                                        ,
+  { .item = ITM_LEFT_ARROW                 ,  .gdkKey = GDK_KEY_leftarrow                   },
+  { .item = ITM_UP_ARROW                   ,  .gdkKey = GDK_KEY_uparrow                     },
+  { .item = ITM_RIGHT_ARROW                ,  .gdkKey = GDK_KEY_rightarrow                  },
+  { .item = ITM_DOWN_ARROW                 ,  .gdkKey = GDK_KEY_downarrow                   },
+//  #define ITM_SERIAL_IO 896                                ,                                        ,
+//  #define ITM_RIGHT_SHORT_ARROW 897                                ,                                        ,
+//  #define ITM_LEFT_RIGHT_ARROWS 898                                ,                                        ,
+//  #define ITM_BST_SIGN 899                                ,                                        ,
+//  #define ITM_SST_SIGN 900                                ,                                        ,
+//  #define ITM_HAMBURGER 901                                ,                                        ,
+//  #define ITM_UNDO_SIGN 902                                ,                                        ,
+//  #define ITM_FOR_ALL 903                                ,                                        ,
+//  #define ITM_COMPLEMENT 904                                ,                                        ,
+  { .item = ITM_PARTIAL_DIFF               ,  .gdkKey = GDK_KEY_partialderivative           },
+//  #define ITM_THERE_EXISTS 906                                ,                                        ,
+//  #define ITM_THERE_DOES_NOT_EXIST 907                                ,                                        ,
+  { .item = ITM_EMPTY_SET                  ,  .gdkKey = GDK_KEY_emptyset                    },
+//  #define ITM_INCREMENT 909                                ,                                        ,
+  { .item = ITM_NABLA                      ,  .gdkKey = GDK_KEY_nabla                       },
+  { .item = ITM_ELEMENT_OF                 ,  .gdkKey = GDK_KEY_elementof                   },
+  { .item = ITM_NOT_ELEMENT_OF             ,  .gdkKey = GDK_KEY_notelementof                },
+  { .item = ITM_CONTAINS                   ,  .gdkKey = GDK_KEY_containsas                  },
+//  #define ITM_DOES_NOT_CONTAIN 914                                ,                                        ,
+//  #define ITM_BINARY_ZERO 915                                ,                                        ,
+//  #define ITM_PRODUCT 916                                ,                                        ,
+  { .item = ITM_MINUS_PLUS                 ,  .gdkKey = GDK_KEY_plusminus                   },
+  { .item = ITM_RING                       ,  .gdkKey = GDK_KEY_jot                         },
+  { .item = ITM_BULLET                     ,  .gdkKey = GDK_KEY_enfilledcircbullet          },
+  { .item = ITM_SQUARE_ROOT                ,  .gdkKey = GDK_KEY_squareroot                  },
+  { .item = ITM_CUBEROOT_SIGN              ,  .gdkKey = GDK_KEY_cuberoot                    },
+//  #define ITM_xTH_ROOT 922                                ,                                        ,
+//  #define ITM_PROPORTIONAL 923                                ,                                        ,
+  { .item = ITM_INFINITY                   ,  .gdkKey = GDK_KEY_infinity                    },
+//  #define ITM_RIGHT_ANGLE 925                                ,                                        ,
+//  #define ITM_ANGLE_SIGN 926                                ,                                        ,
+//  #define ITM_MEASURED_ANGLE 927                                ,                                        ,
+//  #define ITM_DIVIDES 928                                ,                                        ,
+//  #define ITM_DOES_NOT_DIVIDE 929                                ,                                        ,
+//  #define ITM_PARALLEL_SIGN 930                                ,                                        ,
+//  #define ITM_NOT_PARALLEL 931                                ,                                        ,
+  { .item = ITM_AND                        ,  .gdkKey = GDK_KEY_logicaland                  },
+  { .item = ITM_OR                         ,  .gdkKey = GDK_KEY_logicalor                   },
+  { .item = ITM_INTERSECTION               ,  .gdkKey = GDK_KEY_intersection                },
+  { .item = ITM_UNION                      ,  .gdkKey = GDK_KEY_union                       },
+  { .item = ITM_INTEGRAL_SIGN              ,  .gdkKey = GDK_KEY_integral                    },
+  { .item = ITM_DOUBLE_INTEGRAL            ,  .gdkKey = GDK_KEY_dintegral                   },
+//  #define ITM_CONTOUR_INTEGRAL 938                                ,                                        ,
+//  #define ITM_SURFACE_INTEGRAL 939                                ,                                        ,
+//  #define ITM_RATIO 940                                ,                                        ,
+  { .item = ITM_CHECK_MARK                 ,  .gdkKey = GDK_KEY_checkmark                   },
+  { .item = ITM_ASYMPOTICALLY_EQUAL        ,  .gdkKey = GDK_KEY_similarequal                },
+  { .item = ITM_ALMOST_EQUAL               ,  .gdkKey = GDK_KEY_approximate                 },
+//  #define ITM_COLON_EQUALS 944                                ,                                        ,
+//  #define ITM_CORRESPONDS_TO 945                                ,                                        ,
+//  #define ITM_ESTIMATES 946                                ,                                        ,
+  { .item = ITM_NOT_EQUAL                  ,  .gdkKey = GDK_KEY_notequal                    },
+  { .item = ITM_IDENTICAL_TO               ,  .gdkKey = GDK_KEY_identical                   },
+  { .item = ITM_LESS_EQUAL                 ,  .gdkKey = GDK_KEY_lessthanequal               },
+  { .item = ITM_GREATER_EQUAL              ,  .gdkKey = GDK_KEY_greaterthanequal            },
+//  #define ITM_MUCH_LESS 951                                ,                                        ,
+//  #define ITM_MUCH_GREATER 952                                ,                                        ,
+//  #define ITM_SUN 953                                ,                                        ,
+  { .item = ITM_TRANSPOSED                 ,  .gdkKey = GDK_KEY_downtack                    },
+
+//  #define ITM_PERPENDICULAR 955                                ,                                        ,
+//  #define ITM_XOR 956                                ,                                        ,
+//  #define ITM_NAND 957                                ,                                        ,
+//  #define ITM_NOR 958                                ,                                        ,
+//  #define ITM_WATCH 959                                ,                                        ,
+//  #define ITM_HOURGLASS 960                                ,                                        ,
+//  #define ITM_PRINTER 961                                ,                                        ,
+//  #define ITM_MAT_TL 962                                ,                                        ,
+//  #define ITM_MAT_ML 963                                ,                                        ,
+//  #define ITM_MAT_BL 964                                ,                                        ,
+//  #define ITM_MAT_TR 965                                ,                                        ,
+//  #define ITM_MAT_MR 966                                ,                                        ,
+//  #define ITM_MAT_BR 967                                ,                                        ,
+//  #define ITM_OBLIQUE1 968                                ,                                        ,
+//  #define ITM_OBLIQUE2 969                                ,                                        ,
+//  #define ITM_OBLIQUE3 970                                ,                                        ,
+//  #define ITM_OBLIQUE4 971                                ,                                        ,
+//  #define ITM_CURSOR 972                                ,                                        ,
+//  #define ITM_PERIOD34 973                                ,                                        ,
+//  #define ITM_COMMA34 974                                ,                                        ,
+//  #define ITM_BATTERY 975                                ,                                        ,
+//  #define ITM_PGM_BEGIN 976                                ,                                        ,
+//  #define ITM_USER_MODE 977                                ,                                        ,
+//  #define ITM_UK 978                                ,                                        ,
+//  #define ITM_US 979                                ,                                        ,
+//  #define ITM_NEG_EXCLAMATION_MARK 980                                ,                                        ,
+//  #define ITM_ex 981                                ,                                        ,
+//  #define ITM_Max 982                                ,                                        ,
+//  #define ITM_Min 983                                ,                                        ,
+//  #define ITM_Config 984                                ,                                        ,
+//  #define ITM_Stack 985                                ,                                        ,
+//  #define ITM_dddEL 986                                ,                                        ,
+//  #define ITM_dddIJ 987                                ,                                        ,
+//  #define ITM_0P 988                                ,                                        ,
+//  #define ITM_1P 989                                ,                                        ,
+//  #define ITM_EXPONENT 990                                ,                                        ,
+//  #define ITM_HEX 991                                ,                                        ,
+//  #define ITM_M_GOTO_ROW 992                                ,                                        ,
+//  #define ITM_M_GOTO_COLUMN 993                                ,                                        ,
+//  #define ITM_SOLVE_VAR 994                                ,                                        ,
+//  #define ITM_EQ_LEFT 995                                ,                                        ,
+//  #define ITM_EQ_RIGHT 996                                ,                                        ,
+//  #define ITM_PAIR_OF_PARENTHESES 997                                ,                                        ,
+//  #define ITM_VERTICAL_BAR 998                                ,                                        ,
+//  #define ITM_ALOG_SYMBOL 999                                ,                                        ,
+//  #define ITM_ROOT_SIGN 1000                                ,                                        ,
+//  #define ITM_TIMER_SYMBOL 1001                                ,                                        ,
+//  #define ITM_Sfdx_VAR 1002                                ,                                        ,
+//  #define ITM_SUP_PLUS 1003                                ,                                        ,
+//  #define ITM_SUP_MINUS 1004                                ,                                        ,
+//  #define ITM_SUP_MINUS_1 1005                                ,                                        ,
+//  #define ITM_SUP_INFINITY 1006                                ,                                        ,
+//  #define ITM_SUP_ASTERISK 1007                                ,                                        ,
+  { .item = ITM_SUP_0                      ,  .gdkKey = GDK_KEY_zerosuperior                },
+  { .item = ITM_SUP_1                      ,  .gdkKey = GDK_KEY_onesuperior                 },
+  { .item = ITM_SUP_2                      ,  .gdkKey = GDK_KEY_twosuperior                 },
+  { .item = ITM_SUP_3                      ,  .gdkKey = GDK_KEY_threesuperior               },
+  { .item = ITM_SUP_4                      ,  .gdkKey = GDK_KEY_foursuperior                },
+  { .item = ITM_SUP_5                      ,  .gdkKey = GDK_KEY_fivesuperior                },
+  { .item = ITM_SUP_6                      ,  .gdkKey = GDK_KEY_sixsuperior                 },
+  { .item = ITM_SUP_7                      ,  .gdkKey = GDK_KEY_sevensuperior               },
+  { .item = ITM_SUP_8                      ,  .gdkKey = GDK_KEY_eightsuperior               },
+  { .item = ITM_SUP_9                      ,  .gdkKey = GDK_KEY_ninesuperior                },
+
+//NOTE: This is considered the maximum
+
+//  #define ITM_SUP_A 1018                                ,                                        ,
+//  #define ITM_SUP_B 1019                                ,                                        ,
+//  #define ITM_SUP_C 1020                                ,                                        ,
+//  #define ITM_SUP_D 1021                                ,                                        ,
+//  #define ITM_SUP_E 1022                                ,                                        ,
+//  #define ITM_SUP_F 1023                                ,                                        ,
+//  #define ITM_SUP_G 1024                                ,                                        ,
+//  #define ITM_SUP_H 1025                                ,                                        ,
+//  #define ITM_SUP_I 1026                                ,                                        ,
+//  #define ITM_SUP_J 1027                                ,                                        ,
+//  #define ITM_SUP_K 1028                                ,                                        ,
+//  #define ITM_SUP_L 1029                                ,                                        ,
+//  #define ITM_SUP_M 1030                                ,                                        ,
+//  #define ITM_SUP_N 1031                                ,                                        ,
+//  #define ITM_SUP_O 1032                                ,                                        ,
+//  #define ITM_SUP_P 1033                                ,                                        ,
+//  #define ITM_SUP_Q 1034                                ,                                        ,
+//  #define ITM_SUP_R 1035                                ,                                        ,
+//  #define ITM_SUP_S 1036                                ,                                        ,
+//  #define ITM_SUP_T 1037                                ,                                        ,
+//  #define ITM_SUP_U 1038                                ,                                        ,
+//  #define ITM_SUP_V 1039                                ,                                        ,
+//  #define ITM_SUP_W 1040                                ,                                        ,
+//  #define ITM_SUP_X 1041                                ,                                        ,
+//  #define ITM_SUP_Y 1042                                ,                                        ,
+//  #define ITM_SUP_Z 1043                                ,                                        ,
+//  #define ITM_SUP_a 1044                                ,                                        ,
+//  #define ITM_SUP_b 1045                                ,                                        ,
+//  #define ITM_SUP_c 1046                                ,                                        ,
+//  #define ITM_SUP_d 1047                                ,                                        ,
+//  #define ITM_SUP_e 1048                                ,                                        ,
+//  #define ITM_SUP_f 1049                                ,                                        ,
+//  #define ITM_SUP_g 1050                                ,                                        ,
+//  #define ITM_SUP_h 1051                                ,                                        ,
+//  #define ITM_SUP_i 1052                                ,                                        ,
+//  #define ITM_SUP_j 1053                                ,                                        ,
+//  #define ITM_SUP_k 1054                                ,                                        ,
+//  #define ITM_SUP_l 1055                                ,                                        ,
+//  #define ITM_SUP_m 1056                                ,                                        ,
+//  #define ITM_SUP_n 1057                                ,                                        ,
+//  #define ITM_SUP_o 1058                                ,                                        ,
+//  #define ITM_SUP_p 1059                                ,                                        ,
+//  #define ITM_SUP_q 1060                                ,                                        ,
+//  #define ITM_SUP_r 1061                                ,                                        ,
+//  #define ITM_SUP_s 1062                                ,                                        ,
+//  #define ITM_SUP_t 1063                                ,                                        ,
+//  #define ITM_SUP_u 1064                                ,                                        ,
+//  #define ITM_SUP_v 1065                                ,                                        ,
+//  #define ITM_SUP_w 1066                                ,                                        ,
+//  #define ITM_SUP_x 1067                                ,                                        ,
+//  #define ITM_SUP_y 1068                                ,                                        ,
+//  #define ITM_SUP_z 1069                                ,                                        ,
+//  #define ITM_SUB_alpha 1070                                ,                                        ,
+//  #define ITM_SUB_delta 1071                                ,                                        ,
+//  #define ITM_SUB_mu 1072                                ,                                        ,
+//  #define ITM_SUB_SUN 1073                                ,                                        ,
+//  #define ITM_SUB_EARTH 1074                                ,                                        ,
+//  #define ITM_SUB_PLUS 1075                                ,                                        ,
+//  #define ITM_SUB_MINUS 1076                                ,                                        ,
+//  #define ITM_SUB_INFINITY 1077                                ,                                        ,
+//  #define ITM_SUB_10 1078                                ,                                        ,
+//  #define ITM_SUB_E_OUTLINE 1079                                ,                                        ,
+
+//  #define ITM_SUB_A 1090                                ,                                        ,
+//  #define ITM_SUB_B 1091                                ,                                        ,
+//  #define ITM_SUB_C 1092                                ,                                        ,
+//  #define ITM_SUB_D 1093                                ,                                        ,
+//  #define ITM_SUB_E 1094                                ,                                        ,
+//  #define ITM_SUB_F 1095                                ,                                        ,
+//  #define ITM_SUB_G 1096                                ,                                        ,
+//  #define ITM_SUB_H 1097                                ,                                        ,
+//  #define ITM_SUB_I 1098                                ,                                        ,
+//  #define ITM_SUB_J 1099                                ,                                        ,
+//  #define ITM_SUB_K 1100                                ,                                        ,
+//  #define ITM_SUB_L 1101                                ,                                        ,
+//  #define ITM_SUB_M 1102                                ,                                        ,
+//  #define ITM_SUB_N 1103                                ,                                        ,
+//  #define ITM_SUB_O 1104                                ,                                        ,
+//  #define ITM_SUB_P 1105                                ,                                        ,
+//  #define ITM_SUB_Q 1106                                ,                                        ,
+//  #define ITM_SUB_R 1107                                ,                                        ,
+//  #define ITM_SUB_S 1108                                ,                                        ,
+//  #define ITM_SUB_T 1109                                ,                                        ,
+//  #define ITM_SUB_U 1110                                ,                                        ,
+//  #define ITM_SUB_V 1111                                ,                                        ,
+//  #define ITM_SUB_W 1112                                ,                                        ,
+//  #define ITM_SUB_X 1113                                ,                                        ,
+//  #define ITM_SUB_Y 1114                                ,                                        ,
+//  #define ITM_SUB_Z 1115                                ,                                        ,
+//  #define ITM_SUB_a 1116                                ,                                        ,
+//  #define ITM_SUB_b 1117                                ,                                        ,
+//  #define ITM_SUB_c 1118                                ,                                        ,
+//  #define ITM_SUB_d 1119                                ,                                        ,
+//  #define ITM_SUB_e 1120                                ,                                        ,
+//  #define ITM_SUB_f 1121                                ,                                        ,
+//  #define ITM_SUB_g 1122                                ,                                        ,
+//  #define ITM_SUB_h 1123                                ,                                        ,
+//  #define ITM_SUB_i 1124                                ,                                        ,
+//  #define ITM_SUB_j 1125                                ,                                        ,
+//  #define ITM_SUB_k 1126                                ,                                        ,
+//  #define ITM_SUB_l 1127                                ,                                        ,
+//  #define ITM_SUB_m 1128                                ,                                        ,
+//  #define ITM_SUB_n 1129                                ,                                        ,
+//  #define ITM_SUB_o 1130                                ,                                        ,
+//  #define ITM_SUB_p 1131                                ,                                        ,
+//  #define ITM_SUB_q 1132                                ,                                        ,
+//  #define ITM_SUB_r 1133                                ,                                        ,
+//  #define ITM_SUB_s 1134                                ,                                        ,
+//  #define ITM_SUB_t 1135                                ,                                        ,
+//  #define ITM_SUB_u 1136                                ,                                        ,
+//  #define ITM_SUB_v 1137                                ,                                        ,
+//  #define ITM_SUB_w 1138                                ,                                        ,
+//  #define ITM_SUB_x 1139                                ,                                        ,
+//  #define ITM_SUB_y 1140                                ,                                        ,
+//  #define ITM_SUB_z 1141                                ,                                        ,
+
+    {.item = 0                            ,  .gdkKey = 0                                    }
+};
+
+const deadKeysMap_t deadKeysMap[] = {
+//    item           item_macron      item_acute      item_breve      item_grave      item_diaresis      item_tilde      item_circ       item_caron     item_ogonek    item_ring      item_cedilla   item_stroke    item_dot
+    { ITM_A        , ITM_A_MACRON   , ITM_A_ACUTE   , ITM_A_BREVE   , ITM_A_GRAVE   , ITM_A_DIARESIS   , ITM_A_TILDE   , ITM_A_CIRC    , ITM_A        , ITM_A_OGONEK , ITM_A_RING   , ITM_A        , ITM_A        , ITM_A        },
+    { ITM_C        , ITM_C          , ITM_C_ACUTE   , ITM_C         , ITM_C         , ITM_C            , ITM_C         , ITM_C         , ITM_C_CARON  , ITM_C        , ITM_C        , ITM_C_CEDILLA, ITM_C        , ITM_C        },
+    { ITM_D        , ITM_D          , ITM_D         , ITM_D         , ITM_D         , ITM_D            , ITM_D         , ITM_D         , ITM_D_CARON  , ITM_D        , ITM_D        , ITM_D        , ITM_D_STROKE , ITM_D        },
+    { ITM_E        , ITM_E_MACRON   , ITM_E_ACUTE   , ITM_E_BREVE   , ITM_E_GRAVE   , ITM_E_DIARESIS   , ITM_E         , ITM_E_CIRC    , ITM_E_CARON  , ITM_E_OGONEK , ITM_E        , ITM_E        , ITM_E        , ITM_E_DOT    },
+    { ITM_G        , ITM_G          , ITM_G         , ITM_G_BREVE   , ITM_G         , ITM_G            , ITM_G         , ITM_G         , ITM_G        , ITM_G        , ITM_G        , ITM_G        , ITM_G        , ITM_G        },
+    { ITM_I        , ITM_I_MACRON   , ITM_I_ACUTE   , ITM_I_BREVE   , ITM_I_GRAVE   , ITM_I_DIARESIS   , ITM_I         , ITM_I_CIRC    , ITM_I        , ITM_I_OGONEK , ITM_I        , ITM_I        , ITM_I        , ITM_I_DOT    },
+    { ITM_L        , ITM_L          , ITM_L_ACUTE   , ITM_L         , ITM_L         , ITM_L            , ITM_L         , ITM_L         , ITM_L        , ITM_L        , ITM_L        , ITM_L        , ITM_L_STROKE , ITM_L        },
+    { ITM_N        , ITM_N          , ITM_N_ACUTE   , ITM_N         , ITM_N         , ITM_N            , ITM_N_TILDE   , ITM_N         , ITM_N_CARON  , ITM_N        , ITM_N        , ITM_N        , ITM_N        , ITM_N        },
+    { ITM_O        , ITM_O_MACRON   , ITM_O_ACUTE   , ITM_O_BREVE   , ITM_O_GRAVE   , ITM_O_DIARESIS   , ITM_O_TILDE   , ITM_O_CIRC    , ITM_O        , ITM_O        , ITM_O        , ITM_O        , ITM_O_STROKE , ITM_O        },
+    { ITM_R        , ITM_R          , ITM_R_ACUTE   , ITM_R         , ITM_R         , ITM_R            , ITM_R         , ITM_R         , ITM_R_CARON  , ITM_R        , ITM_R        , ITM_R        , ITM_R        , ITM_R        },
+    { ITM_S        , ITM_S          , ITM_S_ACUTE   , ITM_S         , ITM_S         , ITM_S            , ITM_S         , ITM_S         , ITM_S_CARON  , ITM_S        , ITM_S        , ITM_S_CEDILLA, ITM_S        , ITM_S        },
+    { ITM_T        , ITM_T          , ITM_T         , ITM_T         , ITM_T         , ITM_T            , ITM_T         , ITM_T         , ITM_T_CARON  , ITM_T        , ITM_T        , ITM_T_CEDILLA, ITM_T        , ITM_T        },
+    { ITM_U        , ITM_U_MACRON   , ITM_U_ACUTE   , ITM_U_BREVE   , ITM_U_GRAVE   , ITM_U_DIARESIS   , ITM_U_TILDE   , ITM_U_CIRC    , ITM_U        , ITM_U_OGONEK , ITM_U_RING   , ITM_U        , ITM_U        , ITM_U        },
+    { ITM_W        , ITM_W          , ITM_W         , ITM_W         , ITM_W         , ITM_W            , ITM_W         , ITM_W_CIRC    , ITM_W        , ITM_W        , ITM_W        , ITM_W        , ITM_W        , ITM_W        },
+    { ITM_Y        , ITM_Y          , ITM_Y_ACUTE   , ITM_Y         , ITM_Y         , ITM_Y_DIARESIS   , ITM_Y         , ITM_Y_CIRC    , ITM_Y        , ITM_Y        , ITM_Y        , ITM_Y        , ITM_Y        , ITM_Y        },
+    { ITM_Z        , ITM_Z          , ITM_Z_ACUTE   , ITM_Z         , ITM_Z         , ITM_Z            , ITM_Z         , ITM_Z         , ITM_Z_CARON  , ITM_Z        , ITM_Z        , ITM_Z        , ITM_Z        , ITM_Z_DOT    },
+    { ITM_a        , ITM_a_MACRON   , ITM_a_ACUTE   , ITM_a_BREVE   , ITM_a_GRAVE   , ITM_a_DIARESIS   , ITM_a_TILDE   , ITM_a_CIRC    , ITM_a        , ITM_a_OGONEK , ITM_a_RING   , ITM_a        , ITM_a        , ITM_a        },
+    { ITM_c        , ITM_c          , ITM_c_ACUTE   , ITM_c         , ITM_c         , ITM_c            , ITM_c         , ITM_c         , ITM_c_CARON  , ITM_c        , ITM_c        , ITM_c_CEDILLA, ITM_c        , ITM_c        },
+    { ITM_d        , ITM_d          , ITM_d         , ITM_d         , ITM_d         , ITM_d            , ITM_d         , ITM_d         , ITM_d        , ITM_d        , ITM_d        , ITM_d        , ITM_d_STROKE , ITM_d        },
+    { ITM_e        , ITM_e_MACRON   , ITM_e_ACUTE   , ITM_e_BREVE   , ITM_e_GRAVE   , ITM_e_DIARESIS   , ITM_e         , ITM_e_CIRC    , ITM_e_CARON  , ITM_e_OGONEK , ITM_e        , ITM_e        , ITM_e        , ITM_e_DOT    },
+    { ITM_g        , ITM_g          , ITM_g         , ITM_g_BREVE   , ITM_g         , ITM_g            , ITM_g         , ITM_g         , ITM_g        , ITM_g        , ITM_g        , ITM_g        , ITM_g        , ITM_g        },
+    { ITM_h        , ITM_h          , ITM_h         , ITM_h         , ITM_h         , ITM_h            , ITM_h         , ITM_h         , ITM_h        , ITM_h        , ITM_h        , ITM_h        , ITM_h_STROKE , ITM_h        },
+    { ITM_i        , ITM_i_MACRON   , ITM_i_ACUTE   , ITM_i_BREVE   , ITM_i_GRAVE   , ITM_i_DIARESIS   , ITM_i         , ITM_i_CIRC    , ITM_i        , ITM_i_OGONEK , ITM_i        , ITM_i        , ITM_i        , ITM_i_DOT    },
+    { ITM_l        , ITM_l          , ITM_l_ACUTE   , ITM_l         , ITM_l         , ITM_l            , ITM_l         , ITM_l         , ITM_l        , ITM_l        , ITM_l        , ITM_l        , ITM_l_STROKE , ITM_l        },
+    { ITM_n        , ITM_n          , ITM_n_ACUTE   , ITM_n         , ITM_n         , ITM_n            , ITM_n_TILDE   , ITM_n         , ITM_n_CARON  , ITM_n        , ITM_n        , ITM_n        , ITM_n        , ITM_n        },
+    { ITM_o        , ITM_o_MACRON   , ITM_o_ACUTE   , ITM_o_BREVE   , ITM_o_GRAVE   , ITM_o_DIARESIS   , ITM_o_TILDE   , ITM_o_CIRC    , ITM_o        , ITM_o        , ITM_o        , ITM_o        , ITM_o_STROKE , ITM_o        },
+    { ITM_r        , ITM_r          , ITM_r_ACUTE   , ITM_r         , ITM_r         , ITM_r            , ITM_r         , ITM_r         , ITM_r_CARON  , ITM_r        , ITM_r        , ITM_r        , ITM_r        , ITM_r        },
+    { ITM_s        , ITM_s          , ITM_s_ACUTE   , ITM_s         , ITM_s         , ITM_s            , ITM_s         , ITM_s         , ITM_s_CARON  , ITM_s        , ITM_s        , ITM_s_CEDILLA, ITM_s        , ITM_s        },
+    { ITM_t        , ITM_t          , ITM_t         , ITM_t         , ITM_t         , ITM_t            , ITM_t         , ITM_t         , ITM_t        , ITM_t        , ITM_t        , ITM_t_CEDILLA, ITM_t        , ITM_t        },
+    { ITM_u        , ITM_u_MACRON   , ITM_u_ACUTE   , ITM_u_BREVE   , ITM_u_GRAVE   , ITM_u_DIARESIS   , ITM_u_TILDE   , ITM_u_CIRC    , ITM_u        , ITM_u_OGONEK , ITM_u_RING   , ITM_u        , ITM_u        , ITM_u        },
+    { ITM_w        , ITM_w          , ITM_w         , ITM_w         , ITM_w         , ITM_w            , ITM_w         , ITM_w_CIRC    , ITM_w        , ITM_w        , ITM_w        , ITM_w        , ITM_w        , ITM_w        },
+    { ITM_x        , ITM_x          , ITM_x         , ITM_x         , ITM_x         , ITM_x            , ITM_x         , ITM_x_CIRC    , ITM_x        , ITM_x        , ITM_x        , ITM_x        , ITM_x        , ITM_x        },
+    { ITM_y        , ITM_y          , ITM_y_ACUTE   , ITM_y         , ITM_y         , ITM_y_DIARESIS   , ITM_y         , ITM_y_CIRC    , ITM_y        , ITM_y        , ITM_y        , ITM_y        , ITM_y        , ITM_y        },
+    { ITM_z        , ITM_z          , ITM_z_ACUTE   , ITM_z         , ITM_z         , ITM_z            , ITM_z         , ITM_z         , ITM_z_CARON  , ITM_z        , ITM_z        , ITM_z        , ITM_z        , ITM_z_DOT    },
+    { ITM_SPACE    , ITM_SPACE      , ITM_SPACE     , ITM_SPACE     , ITM_SPACE     , ITM_SPACE        , ITM_TILDE     , ITM_CIRCUMFLEX, ITM_SPACE    , ITM_SPACE    , ITM_RING     , ITM_SPACE    , ITM_SPACE    , ITM_DOT      },
+    { 0            , 0              , 0             , 0             , 0             , 0                , 0             , 0             , 0            , 0            , 0            , 0            , 0            , 0            }
+};
+
+
+static int16_t _getGdkKeyItem (uint32_t gdkKey) {
+  if( (GDK_KEY_Shift_L <= gdkKey && gdkKey <= GDK_KEY_Hyper_R)
+        || (GDK_KEY_Home <= gdkKey && gdkKey <= GDK_KEY_Begin)
+        || (GDK_KEY_F1 <= gdkKey && gdkKey <= GDK_KEY_F14)
+        || (GDK_KEY_zerosubscript < gdkKey)) {
+    return 0;
+  }
+  else if(GDK_KEY_0 <= gdkKey && gdkKey <= GDK_KEY_9 ) {
+    return ITM_0 + (gdkKey - GDK_KEY_0);
+  }
+  else if(GDK_KEY_A <= gdkKey && gdkKey <= GDK_KEY_Z ) {
+    return ITM_A + (gdkKey - GDK_KEY_A);
+  }
+  else if(GDK_KEY_a <= gdkKey && gdkKey <= GDK_KEY_z ) {
+    return ITM_a + (gdkKey - GDK_KEY_a);
+  }
+  else if(GDK_KEY_KP_0 <= gdkKey && gdkKey <= GDK_KEY_KP_9 ) {
+    return ITM_0 + (gdkKey - GDK_KEY_KP_0);
+  }
+  else if(GDK_KEY_KP_Multiply <= gdkKey && gdkKey <= GDK_KEY_KP_Divide ) {
+    return ITM_ASTERISK + (gdkKey - GDK_KEY_KP_Multiply);
+  }
+  else if(GDK_KEY_space <= gdkKey && gdkKey <= GDK_KEY_slash ) {
+    return ITM_SPACE + (gdkKey - GDK_KEY_space);
+  }
+  else if(GDK_KEY_colon <= gdkKey && gdkKey <= GDK_KEY_at ) {
+    return ITM_COLON + (gdkKey - GDK_KEY_colon);
+  }
+  else if(GDK_KEY_zerosubscript <= gdkKey && gdkKey <= GDK_KEY_ninesubscript ) {
+    return ITM_SUB_0 + (gdkKey - GDK_KEY_zerosubscript);
+  }
+  else {
+    int16_t i=0;
+    //printf("starting table search ...");
+    while(gdkKeyMap[i].item != 0) {
+      if(gdkKeyMap[i].gdkKey == gdkKey) {
+        break;
+      }
+      i++;
+    }
+    //printf("_getGdkKeyItem deadKey=%i gdkKey=%i ->\n", deadKey, gdkKey);
+    //printf("               %i ->\n", gdkKeyMap[i].item);
+    //printf("table search done.");
+    return gdkKeyMap[i].item;
+  }
+  return 0;
+}
+
+
+static int16_t _getDeadKeyItem (int16_t item) {
+  //printf("::: _getDeadKeyItem %i\n",item);
+  int16_t i=0;
+  if(deadKey == GDK_KEY_F12) {
+    switch(item){
+      case ITM_A: return ITM_ALPHA; break;
+      case ITM_B: return ITM_BETA; break;
+      case ITM_C: return ITM_GAMMA; break;
+      case ITM_D: return ITM_DELTA; break;
+      case ITM_E: return ITM_EPSILON; break;
+      case ITM_F: return ITM_PHI; break;
+      case ITM_G: return ITM_GAMMA; break;
+      case ITM_H: return ITM_CHI; break;
+      case ITM_I: return ITM_IOTA; break;
+      case ITM_J: return ITM_ETA; break;
+      case ITM_K: return ITM_KAPPA; break;
+      case ITM_L: return ITM_LAMBDA; break;
+      case ITM_M: return ITM_MU; break;
+      case ITM_N: return ITM_NU; break;
+      case ITM_O: return ITM_OMEGA; break;
+      case ITM_P: return ITM_PI; break;
+      case ITM_Q: return ITM_OMICRON; break;
+      case ITM_R: return ITM_RHO; break;
+      case ITM_S: return ITM_SIGMA; break;
+      case ITM_T: return ITM_TAU; break;
+      case ITM_U: return ITM_THETA; break;
+      case ITM_V: return ITM_QOPPA; break;
+      case ITM_W: return ITM_PSI; break;
+      case ITM_X: return ITM_XI; break;
+      case ITM_Y: return ITM_UPSILON; break;
+      case ITM_Z: return ITM_ZETA; break;
+      case ITM_a: return ITM_alpha; break;
+      case ITM_b: return ITM_beta; break;
+      case ITM_c: return ITM_gamma; break;
+      case ITM_d: return ITM_delta; break;
+      case ITM_e: return ITM_epsilon; break;
+      case ITM_f: return ITM_phi; break;
+      case ITM_g: return ITM_gamma; break;
+      case ITM_h: return ITM_chi; break;
+      case ITM_i: return ITM_iota; break;
+      case ITM_j: return ITM_eta; break;
+      case ITM_k: return ITM_kappa; break;
+      case ITM_l: return ITM_lambda; break;
+      case ITM_m: return ITM_mu; break;
+      case ITM_n: return ITM_nu; break;
+      case ITM_o: return ITM_omega; break;
+      case ITM_p: return ITM_pi; break;
+      case ITM_q: return ITM_omicron; break;
+      case ITM_r: return ITM_rho; break;
+      case ITM_s: return ITM_sigma; break;
+      case ITM_t: return ITM_tau; break;
+      case ITM_u: return ITM_theta; break;
+      case ITM_v: return ITM_qoppa; break;
+      case ITM_w: return ITM_psi; break;
+      case ITM_x: return ITM_xi; break;
+      case ITM_y: return ITM_upsilon; break;
+      case ITM_z: return ITM_zeta; break;
+      default:;
+    }
+  }
+  else while(deadKeysMap[i].item != 0) {
+    if(deadKeysMap[i].item == item) {
+      switch(deadKey) {
+        case GDK_KEY_dead_macron :
+          return deadKeysMap[i].item_macron;
+
+        case GDK_KEY_dead_acute :
+          return deadKeysMap[i].item_acute;
+
+        case GDK_KEY_dead_breve :
+          return deadKeysMap[i].item_breve;
+
+        case GDK_KEY_dead_grave :
+          return deadKeysMap[i].item_grave;
+
+        case GDK_KEY_dead_diaeresis :
+          return deadKeysMap[i].item_diaresis;
+
+        case GDK_KEY_dead_tilde :
+          return deadKeysMap[i].item_tilde;
+
+        case GDK_KEY_dead_circumflex:
+          return deadKeysMap[i].item_circ;
+
+        case GDK_KEY_dead_ogonek :
+          return deadKeysMap[i].item_ogonek;
+
+        case GDK_KEY_dead_abovering :
+          return deadKeysMap[i].item_ring;
+
+        case GDK_KEY_dead_cedilla :
+          return deadKeysMap[i].item_cedilla;
+
+        case GDK_KEY_dead_stroke :
+          return deadKeysMap[i].item_stroke;
+
+        case GDK_KEY_dead_abovedot :
+          return deadKeysMap[i].item_dot;
+      }
+    }
+    i++;
+  }
+  return item;
+}
+
+
+static int16_t _keyCodeFromGdkKey(uint32_t gdkK) {
+    uint32_t gdkKey = gdkK;
+    int16_t item;
+//  printf("**[DL]** _keyCodeFromGdkKey gdkKey %x capslock state %d\n", gdkKey, gdk_keymap_get_caps_lock_state(gdk_keymap_get_for_display(gdk_display_get_default())));
+    
+    if(testDeadKeys) {
+      switch(gdkKey) {
+        case '^' :
+          gdkKey = GDK_KEY_dead_circumflex;   // ^ circumflex test dead key resulting in a -> â
+          break;
+        case '`' :
+          gdkKey = GDK_KEY_dead_grave;        // ' grave test dead key resulting in a -> à
+          break;
+        case '\'' :
+          gdkKey = GDK_KEY_dead_acute;        // ` grave test dead key resulting in a -> á
+          break;
+        case '~' :
+          gdkKey = GDK_KEY_dead_tilde;        // ~ tilde above test dead key resulting in a -> ã
+          break;
+        case '/' :
+          gdkKey = GDK_KEY_dead_stroke;       // / slash test dead key resulting in O -> Ø
+          break;
+        default:;
+      }
+    }
+    switch(gdkKey) {
+      //dead keys detection
+      case GDK_KEY_F12  :
+      case GDK_KEY_dead_macron  :
+      case GDK_KEY_dead_acute  :
+      case GDK_KEY_dead_breve  :
+      case GDK_KEY_dead_grave  :
+      case GDK_KEY_dead_diaeresis :
+      case GDK_KEY_dead_tilde :
+      case GDK_KEY_dead_circumflex:
+      case GDK_KEY_dead_ogonek  :
+      case GDK_KEY_dead_abovering :
+      case GDK_KEY_dead_cedilla :
+      case GDK_KEY_dead_stroke :
+      case GDK_KEY_dead_abovedot :
+        if(deadKey != 0 && deadKey == gdkKey && testDeadKeys) {
+          //printf("Cancel deadkey\n");
+          deadKey = 0;
+          switch(gdkKey) {
+            case GDK_KEY_dead_circumflex :
+              gdkKey = '^';  // circumflex test dead key
+              break;
+            case GDK_KEY_dead_grave :
+              gdkKey = '`'; // grave test dead key
+              break;
+            case GDK_KEY_dead_acute :
+              gdkKey = '\'';  // grave test dead key
+              break;
+            case GDK_KEY_dead_tilde :
+              gdkKey = '~';  // tilde above test dead key
+              break;
+            case GDK_KEY_dead_stroke :
+              gdkKey = '/';  // slash test dead key
+              break;
+            default:;
+          }
+          showHideAlphaMode();
+          refreshLcd(NULL);
+          goto cancelledDeadkey;
+        }
+        else {
+          deadKey = gdkKey;
+          showHideAlphaMode();
+          refreshLcd(NULL);
+          return -1;
+        }
+      default:
+        cancelledDeadkey:
+
+        switch(gdkKey) {
+          case GDK_KEY_Tab: 
+                    item = ITM_CR; break;
+          case '`': item = ITM_NQUOTE; break;
+          case '*': item = ITM_PROD_SIGN; break;
+          default : item = _getGdkKeyItem(gdkKey); break;       //normal translation (also done by prior key code)
+          }
+        if(item == ITM_PROD_SIGN) {
+          item = (getSystemFlag(FLAG_MULTx) ? ITM_CROSS : ITM_DOT);
+        }
+        //printf("     gdkKey=%i deadKey=%i item=%i\n",gdkKey, deadKey, item);
+
+        if(item != 0) {
+          if(deadKey != 0) {
+            item = _getDeadKeyItem(item);
+            deadKey = 0;
+          }
+        }
+        return item;
+      }
+    }
+
+
+
+
+
 
 
   /********************************************//**
@@ -3705,7 +4687,6 @@ int keyCntA = 0;
       lbl24G  = gtk_label_new("");
       lbl25G  = gtk_label_new("");
       lbl26G  = gtk_label_new("");
-      //lbl21H  = gtk_label_new("A"); // ? //JMALPHA
       lbl21L  = gtk_label_new("");
       lbl22L  = gtk_label_new("");
       lbl23L  = gtk_label_new("");
@@ -3732,7 +4713,6 @@ int keyCntA = 0;
       gtk_widget_set_size_request(btn25A, KEY_WIDTH_1, 0);
       gtk_widget_set_size_request(btn26A, KEY_WIDTH_1, 0);  //^^
 
-      //gtk_widget_set_name(lbl21H,  "fShiftedUnderline"); //JMALPHA
       //gtk_widget_set_name(lbl21Fa,  "fShiftedUnderline"); //JMALPHA2
 
 
@@ -3797,7 +4777,6 @@ int keyCntA = 0;
 
       gtk_fixed_put(GTK_FIXED(grid), btn21,  xPos,                         yPos);
       gtk_fixed_put(GTK_FIXED(grid), lbl21L, xPos + KEY_WIDTH_1 + X_OFFSET_LETTER, yPos + Y_OFFSET_LETTER);
-      //gtk_fixed_put(GTK_FIXED(grid), lbl21H, xPos + KEY_WIDTH_1 + X_OFFSET_LETTER, yPos -  1); //JMALPHA
       gtk_fixed_put(GTK_FIXED(grid), btn21A, xPos,                         yPos);   //dr - new AIM
 
       xPos += DELTA_KEYS_X;
@@ -3872,9 +4851,6 @@ int keyCntA = 0;
       lbl34G  = gtk_label_new("");
       lbl35G  = gtk_label_new("");
       lbl36G  = gtk_label_new("");
-      //lbl33H  = gtk_label_new("\u21e9"); // Hollow down
-      //lbl34H  = gtk_label_new("\u2102"); //JM CAPS LOCK    //JMALPHA2 REMOVED                          // ("\u03b7"); // eta          //JM removed1
-      //JM  lbl35H  = gtk_label_new("");                                               // ("\u03b7"); // eta          //JM removed1
 
       lbl31L  = gtk_label_new("");
       lbl32L  = gtk_label_new("");
@@ -3974,13 +4950,11 @@ int keyCntA = 0;
       xPos += DELTA_KEYS_X;
       gtk_fixed_put(GTK_FIXED(grid), btn33,  xPos,                         yPos);
       gtk_fixed_put(GTK_FIXED(grid), lbl33L, xPos + KEY_WIDTH_1 + X_OFFSET_LETTER, yPos + Y_OFFSET_LETTER);
-      //gtk_fixed_put(GTK_FIXED(grid), lbl33H, xPos + KEY_WIDTH_1 + X_OFFSET_LETTER, yPos -  1);
       gtk_fixed_put(GTK_FIXED(grid), btn33A, xPos,                         yPos);   //dr - new AIM
 
       xPos += DELTA_KEYS_X;
       gtk_fixed_put(GTK_FIXED(grid), btn34,  xPos,                         yPos);
       gtk_fixed_put(GTK_FIXED(grid), lbl34L, xPos + KEY_WIDTH_1 + X_OFFSET_LETTER, yPos + Y_OFFSET_LETTER);
-      //gtk_fixed_put(GTK_FIXED(grid), lbl34H, xPos + KEY_WIDTH_1 + X_OFFSET_LETTER, yPos -  1);               //JM CAPS //JMALPHA temporary remove A from J
       gtk_fixed_put(GTK_FIXED(grid), btn34A, xPos,                         yPos);   //dr - new AIM
 
       xPos += DELTA_KEYS_X;
@@ -4028,9 +5002,6 @@ int keyCntA = 0;
       lbl43G  = gtk_label_new("");
       lbl44G  = gtk_label_new("");
       lbl45G  = gtk_label_new("");
-      lbl42H  = gtk_label_new("");
-      lbl43P  = gtk_label_new("");
-      //lbl44P  = gtk_label_new("\u21e7"); // Hollow up
       lbl41L  = gtk_label_new("");
       lbl42L  = gtk_label_new("");
       lbl43L  = gtk_label_new("");
@@ -4051,8 +5022,6 @@ int keyCntA = 0;
       gtk_widget_set_size_request(btn43A, KEY_WIDTH_1,                0);
       gtk_widget_set_size_request(btn44A, KEY_WIDTH_1,                0);    //^^
 
-      gtk_widget_set_name(lbl43P,  "fShifted");
-      //gtk_widget_set_name(lbl44P,  "fShifted");
 
       g_signal_connect(btn41, "button-press-event",    G_CALLBACK(btnPressed),  "12");
       g_signal_connect(btn42, "button-press-event",    G_CALLBACK(btnPressed),  "13");
@@ -4101,13 +5070,11 @@ int keyCntA = 0;
       xPos += DELTA_KEYS_X*2;
       gtk_fixed_put(GTK_FIXED(grid), btn42,  xPos,                         yPos);
       gtk_fixed_put(GTK_FIXED(grid), lbl42L, xPos + KEY_WIDTH_1 + X_OFFSET_LETTER, yPos + Y_OFFSET_LETTER);
-      gtk_fixed_put(GTK_FIXED(grid), lbl42H, xPos + KEY_WIDTH_1 + X_OFFSET_LETTER, yPos -  1);
       gtk_fixed_put(GTK_FIXED(grid), btn42A, xPos,                         yPos);   //dr - new AIM
 
       xPos += DELTA_KEYS_X;
       gtk_fixed_put(GTK_FIXED(grid), btn43,  xPos,                         yPos);
       gtk_fixed_put(GTK_FIXED(grid), lbl43L, xPos + KEY_WIDTH_1 + X_OFFSET_LETTER, yPos + Y_OFFSET_LETTER);
-      gtk_fixed_put(GTK_FIXED(grid), lbl43P, xPos + KEY_WIDTH_1 + X_OFFSET_LETTER, yPos -  1);
       gtk_fixed_put(GTK_FIXED(grid), btn43A, xPos,                         yPos);   //dr - new AIM
 
       xPos += DELTA_KEYS_X;
@@ -4146,6 +5113,7 @@ int keyCntA = 0;
       lbl53F  = gtk_label_new("");
       lbl54F  = gtk_label_new("");
       lbl55F  = gtk_label_new("");
+      lbl51Fa = gtk_label_new("");
       lbl52Fa = gtk_label_new("");  //vv dr - new AIM
       lbl53Fa = gtk_label_new("");
       lbl54Fa = gtk_label_new("");
@@ -4200,6 +5168,7 @@ int keyCntA = 0;
       gtk_fixed_put(GTK_FIXED(grid), lbl53F,  0, 0);
       gtk_fixed_put(GTK_FIXED(grid), lbl54F,  0, 0);
       gtk_fixed_put(GTK_FIXED(grid), lbl55F,  0, 0);
+      gtk_fixed_put(GTK_FIXED(grid), lbl51Fa, 0, 0);
       gtk_fixed_put(GTK_FIXED(grid), lbl52Fa, 0, 0);    //vv dr - new AIM
       gtk_fixed_put(GTK_FIXED(grid), lbl53Fa, 0, 0);
       gtk_fixed_put(GTK_FIXED(grid), lbl54Fa, 0, 0);
@@ -4267,6 +5236,7 @@ int keyCntA = 0;
       lbl63F  = gtk_label_new("");
       lbl64F  = gtk_label_new("");
       lbl65F  = gtk_label_new("");
+      lbl61Fa = gtk_label_new("");
       lbl62Fa = gtk_label_new("");  //vv dr - new AIM
       lbl63Fa = gtk_label_new("");
       lbl64Fa = gtk_label_new("");
@@ -4276,7 +5246,6 @@ int keyCntA = 0;
       lbl63G  = gtk_label_new("");
       lbl64G  = gtk_label_new("");
       lbl65G  = gtk_label_new("");
-      lbl65H  = gtk_label_new("");          // "\u03b8");  //JM.   //JM Removed1
       lbl61L  = gtk_label_new("");
       lbl62L  = gtk_label_new("");
       lbl63L  = gtk_label_new("");
@@ -4297,8 +5266,6 @@ int keyCntA = 0;
       gtk_widget_set_size_request(btn63A, KEY_WIDTH_2, 0);
       gtk_widget_set_size_request(btn64A, KEY_WIDTH_2, 0);
       gtk_widget_set_size_request(btn65A, KEY_WIDTH_2, 0);  //^^
-
-      gtk_widget_set_name(lbl65H,  "gShifted");  //JM
 
       g_signal_connect(btn61,  "button-press-event",   G_CALLBACK(btnPressed),  "22");
       g_signal_connect(btn62,  "button-press-event",   G_CALLBACK(btnPressed),  "23");
@@ -4323,6 +5290,7 @@ int keyCntA = 0;
       gtk_fixed_put(GTK_FIXED(grid), lbl62F,  0, 0);
       gtk_fixed_put(GTK_FIXED(grid), lbl63F,  0, 0);
       gtk_fixed_put(GTK_FIXED(grid), lbl64F,  0, 0);
+      gtk_fixed_put(GTK_FIXED(grid), lbl61Fa, 0, 0);
       gtk_fixed_put(GTK_FIXED(grid), lbl62Fa, 0, 0);    //vv dr - new AIM
       gtk_fixed_put(GTK_FIXED(grid), lbl63Fa, 0, 0);
       gtk_fixed_put(GTK_FIXED(grid), lbl64Fa, 0, 0);
@@ -4364,7 +5332,6 @@ int keyCntA = 0;
       xPos += DELTA_KEYS_X + LARGE_KEY_SPACING_2;
       gtk_fixed_put(GTK_FIXED(grid), btn65,  xPos,                         yPos);
       gtk_fixed_put(GTK_FIXED(grid), lbl65L, xPos + KEY_WIDTH_2 + X_OFFSET_LETTER, yPos + Y_OFFSET_LETTER);
-      gtk_fixed_put(GTK_FIXED(grid), lbl65H, xPos + KEY_WIDTH_2 + X_OFFSET_LETTER, yPos -  1); //JM
       gtk_fixed_put(GTK_FIXED(grid), btn65A, xPos,                         yPos);   //dr - new AIM
 
 
@@ -4395,6 +5362,7 @@ int keyCntA = 0;
       lbl73F  = gtk_label_new("");
       lbl74F  = gtk_label_new("");
       lbl75F  = gtk_label_new("");
+      lbl71Fa = gtk_label_new("");
       lbl72Fa = gtk_label_new("");  //vv dr - new AIM
       lbl73Fa = gtk_label_new("");
       lbl74Fa = gtk_label_new("");
@@ -4404,8 +5372,6 @@ int keyCntA = 0;
       lbl73G  = gtk_label_new("");
       lbl74G  = gtk_label_new("");
       lbl75G  = gtk_label_new("");
-      lbl72H  = gtk_label_new("");      //M Menu alphaMATH for AIM //JM REMOVED
-      lbl73H  = gtk_label_new("");  //"\u03c8"); // psi  //JM REMOVED
       lbl71L  = gtk_label_new("");
       lbl72L  = gtk_label_new("");
       lbl73L  = gtk_label_new("");
@@ -4428,8 +5394,6 @@ int keyCntA = 0;
       gtk_widget_set_size_request(btn74A, KEY_WIDTH_2, 0);
       gtk_widget_set_size_request(btn75A, KEY_WIDTH_2, 0);  //^^
 
-      //JM Removed1 gtk_widget_set_name(lbl72H,  "gShiftedUnderline"); //JM
-      //JM Removed1   gtk_widget_set_name(lbl73H,  "gShifted");  //JM
 
       g_signal_connect(btn71,  "button-press-event",   G_CALLBACK(btnPressed),  "27");
       g_signal_connect(btn72,  "button-press-event",   G_CALLBACK(btnPressed),  "28");
@@ -4457,6 +5421,7 @@ int keyCntA = 0;
       gtk_fixed_put(GTK_FIXED(grid), lbl73F,  0, 0);
       gtk_fixed_put(GTK_FIXED(grid), lbl74F,  0, 0);
       gtk_fixed_put(GTK_FIXED(grid), lbl75F,  0, 0);
+      gtk_fixed_put(GTK_FIXED(grid), lbl71Fa, 0, 0);
       gtk_fixed_put(GTK_FIXED(grid), lbl72Fa, 0, 0);    //vv dr - new AIM
       gtk_fixed_put(GTK_FIXED(grid), lbl73Fa, 0, 0);
       gtk_fixed_put(GTK_FIXED(grid), lbl74Fa, 0, 0);
@@ -4483,14 +5448,11 @@ int keyCntA = 0;
       xPos += DELTA_KEYS_X + LARGE_KEY_SPACING_1;
       gtk_fixed_put(GTK_FIXED(grid), btn72,  xPos,                         yPos);
       gtk_fixed_put(GTK_FIXED(grid), lbl72L, xPos + KEY_WIDTH_2 + X_OFFSET_LETTER, yPos + Y_OFFSET_LETTER);
-      //gtk_fixed_put(GTK_FIXED(grid), lbl72H, xPos + KEY_WIDTH_2 + X_OFFSET_LETTER, yPos -  1); //JM
-      gtk_fixed_put(GTK_FIXED(grid), lbl72H, xPos + KEY_WIDTH_2 + X_OFFSET_LETTER, yPos -  1); //JM
       gtk_fixed_put(GTK_FIXED(grid), btn72A, xPos,                         yPos);   //dr - new AIM
 
       xPos += DELTA_KEYS_X + LARGE_KEY_SPACING_2;
       gtk_fixed_put(GTK_FIXED(grid), btn73,  xPos,                         yPos);
       gtk_fixed_put(GTK_FIXED(grid), lbl73L, xPos + KEY_WIDTH_2 + X_OFFSET_LETTER, yPos + Y_OFFSET_LETTER);
-      gtk_fixed_put(GTK_FIXED(grid), lbl73H, xPos + KEY_WIDTH_2 + X_OFFSET_LETTER, yPos -  1); //JM
       gtk_fixed_put(GTK_FIXED(grid), btn73A, xPos,                         yPos);   //dr - new AIM
 
       xPos += DELTA_KEYS_X + LARGE_KEY_SPACING_2;
@@ -4538,10 +5500,6 @@ int keyCntA = 0;
       lbl83G  = gtk_label_new("");
       lbl84G  = gtk_label_new("");
       lbl85G  = gtk_label_new("");
-      lbl82H  = gtk_label_new("");//("\u03B1");        //JM ALPHA u221D
-      lbl83H  = gtk_label_new("");//("\u2219");  //JM Alphadot -  Menu alphaDOT for AIM 2218
-      lbl84H  = gtk_label_new("");//("\u221E");  //JM Alpha MATH - also considered pi \u03C0 and integral u222E
-      lbl85H  = gtk_label_new("");//("\u00f1");  //JM Alpha Intnl - also considered \u2139
       lbl81L  = gtk_label_new("");
       lbl82L  = gtk_label_new("");
       lbl83L  = gtk_label_new("");
@@ -4551,7 +5509,6 @@ int keyCntA = 0;
       lbl82Gr = gtk_label_new("");
       lbl83Gr = gtk_label_new("");
       lbl84Gr = gtk_label_new("");
-      //lbl84H  = gtk_label_new("\u2399"); // Printer   //JM: WHY DID THIS LINE COME BACK ??
       lbl85Gr = gtk_label_new("");
       //lblOn   = gtk_label_new("ON");
 
@@ -4565,10 +5522,6 @@ int keyCntA = 0;
       gtk_widget_set_size_request(btn84A, KEY_WIDTH_2, 0);
       gtk_widget_set_size_request(btn85A, KEY_WIDTH_2, 0);  //^^
 
-      gtk_widget_set_name(lbl82H, "greekUnderline");    //JM was gShiftedUnderline, changed to greekUnderline, x4
-      gtk_widget_set_name(lbl83H, "greekUnderline");
-      gtk_widget_set_name(lbl84H, "greekUnderline");
-      gtk_widget_set_name(lbl85H, "greekUnderline");    //JM
       //gtk_widget_set_name(lblOn,  "On");
 
       g_signal_connect(btn81,  "button-press-event",   G_CALLBACK(btnPressed),  "32");
@@ -4622,25 +5575,21 @@ int keyCntA = 0;
       xPos += DELTA_KEYS_X + LARGE_KEY_SPACING_1;
       gtk_fixed_put(GTK_FIXED(grid), btn82,  xPos,                         yPos);
       gtk_fixed_put(GTK_FIXED(grid), lbl82L, xPos + KEY_WIDTH_2 + X_OFFSET_LETTER, yPos + Y_OFFSET_LETTER);
-      gtk_fixed_put(GTK_FIXED(grid), lbl82H, xPos + KEY_WIDTH_2 + X_OFFSET_LETTER, yPos -  1);                //JM
       gtk_fixed_put(GTK_FIXED(grid), btn82A, xPos,                         yPos);   //dr - new AIM
 
       xPos += DELTA_KEYS_X + LARGE_KEY_SPACING_2;
       gtk_fixed_put(GTK_FIXED(grid), btn83,  xPos,                         yPos);
       gtk_fixed_put(GTK_FIXED(grid), lbl83L, xPos + KEY_WIDTH_2 + X_OFFSET_LETTER, yPos + Y_OFFSET_LETTER);
-      gtk_fixed_put(GTK_FIXED(grid), lbl83H, xPos + KEY_WIDTH_2 + X_OFFSET_LETTER, yPos -  1);
       gtk_fixed_put(GTK_FIXED(grid), btn83A, xPos,                         yPos);   //dr - new AIM
 
       xPos += DELTA_KEYS_X + LARGE_KEY_SPACING_2;
       gtk_fixed_put(GTK_FIXED(grid), btn84,  xPos,                         yPos);
       gtk_fixed_put(GTK_FIXED(grid), lbl84L, xPos + KEY_WIDTH_2 + X_OFFSET_LETTER, yPos + Y_OFFSET_LETTER);
-      gtk_fixed_put(GTK_FIXED(grid), lbl84H, xPos + KEY_WIDTH_2 + X_OFFSET_LETTER, yPos -  1);
       gtk_fixed_put(GTK_FIXED(grid), btn84A, xPos,                         yPos);   //dr - new AIM
 
       xPos += DELTA_KEYS_X + LARGE_KEY_SPACING_2;
       gtk_fixed_put(GTK_FIXED(grid), btn85,  xPos,                         yPos);
       gtk_fixed_put(GTK_FIXED(grid), lbl85L, xPos + KEY_WIDTH_2 + X_OFFSET_LETTER, yPos + Y_OFFSET_LETTER);
-      gtk_fixed_put(GTK_FIXED(grid), lbl85H, xPos + KEY_WIDTH_2 + X_OFFSET_LETTER, yPos -  1);  //JM
       gtk_fixed_put(GTK_FIXED(grid), btn85A, xPos,                         yPos);   //dr - new AIM
 
 
