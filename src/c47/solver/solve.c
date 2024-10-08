@@ -251,9 +251,6 @@ void fnSolveVar(uint16_t unusedButMandatoryParameter) {
       fnToReal(0); // ensure the result is a plain real34
       real34Copy(REGISTER_REAL34_DATA(REGISTER_X), res);
     }
-    else if(getRegisterDataType(REGISTER_X) == dtLongInteger) {
-      convertLongIntegerRegisterToReal34(REGISTER_X, res);
-    }
     else if(getRegisterDataType(REGISTER_X) == dtComplex34 && real34IsZero(REGISTER_REAL34_DATA(REGISTER_X))) {
       real34Copy(REGISTER_IMAG34_DATA(REGISTER_X), res);
       real34ChangeSign(res);
