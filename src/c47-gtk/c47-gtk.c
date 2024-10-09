@@ -189,6 +189,10 @@
         testDeadKeys = true;
         printf("Activated: %s\n",argv[arg]);
       }
+      if(strcmp(argv[arg], "--swapctrlcode") == 0) {
+        swapCtrlCode = true;
+        printf("Activated: %s\n",argv[arg]);
+      }
     }
 
     if(strcmp(indexOfItems[LAST_ITEM].itemSoftmenuName, "Last item") != 0) {
