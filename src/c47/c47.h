@@ -54,6 +54,7 @@
     extern bool                 forceTamAlpha;
     extern uint32_t             deadKey;
     extern bool_t               testDeadKeys;
+    extern bool_t               swapCtrlCode;
   #endif // PC_BUILD || TESTSUITE_BUILD
 
   #if defined(PC_BUILD)
