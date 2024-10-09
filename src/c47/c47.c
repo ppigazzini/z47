@@ -38,6 +38,7 @@
   bool                forceTamAlpha;
   uint32_t            deadKey;
   bool_t              testDeadKeys = false;
+  bool_t              swapCtrlCode = false;
 #endif // PC_BUILD || TESTSUITE_BUILD
 
 const font_t          *fontForShortInteger;
