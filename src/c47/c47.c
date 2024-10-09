@@ -66,7 +66,9 @@ bool_t                 lastProgramListEnd;
 bool_t                 programListEnd;
 bool_t                 serialIOIconEnabled;
 bool_t                 pemCursorIsZerothStep;
-bool_t                 halfSecTick;
+bool_t                 halfSecTick1;
+bool_t                 halfSecTick2;
+bool_t                 halfSecTick3;
 bool_t                 skippedStackLines = false;
 
 

@@ -103,8 +103,11 @@
 
       while(lastErrorCode == ERROR_NONE) {
 
-        if(printHalfSecUpdate_Integer(timed, "Loop: ",loop--, halfSec_clearZ, halfSec_clearT, halfSec_disp)) {
-          _showProgress(resultLi);
+        loop--;
+        if(checkHalfSec()) {
+          if(progressHalfSecUpdate_Integer(timed, "Loop: ",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp)) {
+            _showProgress(resultLi);
+          }
         }
 
         finished = longIntegerCompare(iCounter, loopTo);            // 0 mean equal

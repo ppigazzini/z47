@@ -145,7 +145,9 @@
   extern bool_t                 programListEnd;
   extern bool_t                 serialIOIconEnabled;
   extern bool_t                 pemCursorIsZerothStep;
-  extern bool_t                 halfSecTick;
+  extern bool_t                 halfSecTick1;
+  extern bool_t                 halfSecTick2;
+  extern bool_t                 halfSecTick3;
   extern bool_t                 skippedStackLines;
 
 

@@ -779,16 +779,19 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
     while(longIntegerIsPositive(eval)) {
 
       #if !defined(TESTSUITE_BUILD)
-        if(printHalfSecUpdate_Integer(timed, "Tested n =",loop++, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
-          _showProgress(&lastAdded, nextPrime);
-          dumpExponents(&matrix, &faddr, 13);
-          force_refresh(force);
+        loop++;
+        if(checkHalfSec()) {
+          if(progressHalfSecUpdate_Integer(timed, "Tested n =",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
+            _showProgress(&lastAdded, nextPrime);
+            dumpExponents(&matrix, &faddr, 13);
+            force_refresh(force);
+          }
         }
-      if(exitKeyWaiting()) {
-        printHalfSecUpdate_Integer(force+1, "Interrupted: ",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
-        programRunStop = PGM_WAITING;
-        break;
-      }
+        if(exitKeyWaiting()) {
+          progressHalfSecUpdate_Integer(force+1, "Interrupted: ",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+          programRunStop = PGM_WAITING;
+          break;
+        }
       #endif //!TESTSUITE_BUILD
 
 

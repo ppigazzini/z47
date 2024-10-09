@@ -660,35 +660,38 @@ static void _integrate(calcRegister_t regist, const real_t *a, const real_t *b, 
       #if !defined(TESTSUITE_BUILD)
         char tmps[64];
         exitSignalled |= exitKeyWaiting();
-        sprintf(tmps,"Level:  %i Iter: ",(int16_t)realToInt32C47(&lvl));
-        if(printHalfSecUpdate_Integer(timed, tmps, loop++, halfSec_clearZ, halfSec_clearT, halfSec_disp)) {; //timed
-          #if defined(PC_BUILD)
-            printf("%s %i\n",tmps,loop);
-          #endif //PC_BUILD
-          #if ENABLE_SOLVER_PROGRESS == 1
-            //Error indication: incomplete, set to 0-0
-            _showProgress(&ss, &bma2, &h, const_0, const_0, const_pi, realContext);
-          #endif //ENABLE_SOLVER_PROGRESS
-          if(!interruptedLoop && exitSignalled) {  //First EXIT press
-            #if !defined(INTEGRATION_TWO_STAGE_EXIT)
-              displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-              return;
-            #endif //INTEGRATION_TWO_STAGE_EXIT
-            exitSignalled = false;
-            interruptedLoop = 1;
-          }
-          if(interruptedLoop) {
-            sprintf(tmps,"Level %i. %5.1fs or EXIT: Iter: ",(int16_t)k, (float)(40.0 - ((interruptedLoop++)/2.0)));
-            radixProcess(tmps,tmps);
-            printHalfSecUpdate_Integer(force+1, tmps, loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
-            if(exitSignalled || interruptedLoop >= 40) {      // Direct exit by exiting and simulating the end values
+        loop++;
+        if(checkHalfSec()) {
+          sprintf(tmps,"Level:  %i Iter: ",(int16_t)realToInt32C47(&lvl));
+          if(progressHalfSecUpdate_Integer(timed, tmps, loop, halfSec_clearZ, halfSec_clearT, halfSec_disp)) {; //timed
+            #if defined(PC_BUILD)
+              printf("%s %i\n",tmps,loop);
+            #endif //PC_BUILD
+            #if ENABLE_SOLVER_PROGRESS == 1
+              //Error indication: incomplete, set to 0-0
+              _showProgress(&ss, &bma2, &h, const_0, const_0, const_pi, realContext);
+            #endif //ENABLE_SOLVER_PROGRESS
+            if(!interruptedLoop && exitSignalled) {  //First EXIT press
+              #if !defined(INTEGRATION_TWO_STAGE_EXIT)
+                displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+                return;
+              #endif //INTEGRATION_TWO_STAGE_EXIT
               exitSignalled = false;
-              realMultiply(&sslast, &bma2, res, realContext);
-              realMultiply(res, &h, res, realContext); // load the integral result,
-              realMultiply(res, const_2, res, realContext);
-              realCopy(&errval, acc); // its error value,
-              displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-              return;
+              interruptedLoop = 1;
+            }
+            if(interruptedLoop) {
+              sprintf(tmps,"Level %i. %5.1fs or EXIT: Iter: ",(int16_t)k, (float)(40.0 - ((interruptedLoop++)/2.0)));
+              radixProcess(tmps,tmps);
+              progressHalfSecUpdate_Integer(force+1, tmps, loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+              if(exitSignalled || interruptedLoop >= 40) {      // Direct exit by exiting and simulating the end values
+                exitSignalled = false;
+                realMultiply(&sslast, &bma2, res, realContext);
+                realMultiply(res, &h, res, realContext); // load the integral result,
+                realMultiply(res, const_2, res, realContext);
+                realCopy(&errval, acc); // its error value,
+                displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+                return;
+              }
             }
           }
         }
@@ -1002,33 +1005,37 @@ static void _integrate_mm(calcRegister_t regist, const real_t *llim, const real_
       #if !defined(TESTSUITE_BUILD)
         char tmps[64];
         exitSignalled |= exitKeyWaiting();
-        sprintf(tmps,"Level: %i/%i Iter: ",(int16_t)k, (int16_t)maxlevel);
-        if(printHalfSecUpdate_Integer(timed, tmps, loop++, !interruptedLoop, !interruptedLoop, !interruptedLoop)) { ; //timed
-          #if defined(PC_BUILD)
-            printf("%s %i\n",tmps,loop);
-          #endif //PC_BUILD
-          #if ENABLE_SOLVER_PROGRESS == 1
-            _showProgress(&sslast, &bma2, &h, &errval, const_0, const_2, realContext);
-          #endif //ENABLE_SOLVER_PROGRESS
-          if(!interruptedLoop && exitSignalled) {  //First EXIT press
-            #if !defined(INTEGRATION_TWO_STAGE_EXIT)
-              displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-              return;
-            #endif //INTEGRATION_TWO_STAGE_EXIT
-            exitSignalled = false;
-            interruptedLoop = 1;
-          if(interruptedLoop) {
-            sprintf(tmps,"Level %i. %5.1fs or EXIT: Iter: ",(int16_t)k, (float)(40.0 - ((interruptedLoop++)/2.0)));
-            radixProcess(tmps,tmps);
-            printHalfSecUpdate_Integer(force+1, tmps, loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
-            if(exitSignalled || interruptedLoop >= 40) {      // Direct exit by exiting and simulating the end values
+        loop++;
+        if(checkHalfSec()) {
+          sprintf(tmps,"Level: %i/%i Iter: ",(int16_t)k, (int16_t)maxlevel);
+          if(progressHalfSecUpdate_Integer(timed, tmps, loop, !interruptedLoop, !interruptedLoop, !interruptedLoop)) { ; //timed
+            #if defined(PC_BUILD)
+              printf("%s %i\n",tmps,loop);
+            #endif //PC_BUILD
+            #if ENABLE_SOLVER_PROGRESS == 1
+              _showProgress(&sslast, &bma2, &h, &errval, const_0, const_2, realContext);
+            #endif //ENABLE_SOLVER_PROGRESS
+            if(!interruptedLoop && exitSignalled) {  //First EXIT press
+              #if !defined(INTEGRATION_TWO_STAGE_EXIT)
+                displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+                return;
+              #endif //INTEGRATION_TWO_STAGE_EXIT
               exitSignalled = false;
-              realMultiply(&sslast, &bma2, res, realContext);
-              realMultiply(res, &h, res, realContext); // load the integral result,
-              realMultiply(res, const_2, res, realContext);
-              realCopy(&errval, acc); // its error value,
-              displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-              return;
+              interruptedLoop = 1;
+            }
+            if(interruptedLoop) {
+              sprintf(tmps,"Level %i. %5.1fs or EXIT: Iter: ",(int16_t)k, (float)(40.0 - ((interruptedLoop++)/2.0)));
+              radixProcess(tmps,tmps);
+              progressHalfSecUpdate_Integer(force+1, tmps, loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+              if(exitSignalled || interruptedLoop >= 40) {      // Direct exit by exiting and simulating the end values
+                exitSignalled = false;
+                realMultiply(&sslast, &bma2, res, realContext);
+                realMultiply(res, &h, res, realContext); // load the integral result,
+                realMultiply(res, const_2, res, realContext);
+                realCopy(&errval, acc); // its error value,
+                displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+                return;
+              }
             }
           }
         }
@@ -1098,7 +1105,6 @@ static void _integrate_mm(calcRegister_t regist, const real_t *llim, const real_
   realCopy(&errval, acc); // its error value,
   //Result(3) = evals ' func evals
   //Result(4) = MicroTimer - Result(4) ' and the calculation time
-}
 #endif // USE_MICHALSKI_MOSIG_TANH_SINH == 1
 
 #endif // USE_NEW_DEI_INTEGRATION_CODE
@@ -1362,30 +1368,33 @@ static void dbl_exp_int_new(calcRegister_t regist, const real_t *a, const real_t
         #if !defined(TESTSUITE_BUILD)
           char tmps[64];
           exitSignalled |= exitKeyWaiting();
-          sprintf(tmps,"Level: %i/%i Iter: ",(int16_t)k, (int16_t)maxlevel);
-          if(printHalfSecUpdate_Integer(timed, tmps, loop++, !interruptedLoop, !interruptedLoop, !interruptedLoop)) { ; //timed
-          #if defined(PC_BUILD)
-            printf("%s %i\n",tmps,loop);
-          #endif //PC_BUILD
-            #if ENABLE_SOLVER_PROGRESS == 1
-            _showProgress(result, const_1, const_1, error, const_0, const_1, realContext);
-            #endif //ENABLE_SOLVER_PROGRESS
-          if(!interruptedLoop && exitSignalled) {  //First EXIT press
-              #if !defined(INTEGRATION_TWO_STAGE_EXIT)
-                displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-                return;
-              #endif //INTEGRATION_TWO_STAGE_EXIT
-              exitSignalled = false;
-              interruptedLoop = 1;
-            }
-            if(interruptedLoop) {
-              sprintf(tmps,"Level %i. %5.1fs or EXIT: Iter: ",(int16_t)k, (float)(40.0 - ((interruptedLoop++)/2.0)));
-              radixProcess(tmps,tmps);
-              printHalfSecUpdate_Integer(force+1, tmps, loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
-              if(exitSignalled || interruptedLoop >= 40) {      // Direct exit
+          loop++;
+          if(checkHalfSec()) {
+            sprintf(tmps,"Level: %i/%i Iter: ",(int16_t)k, (int16_t)maxlevel);
+            if(progressHalfSecUpdate_Integer(timed, tmps, loop, !interruptedLoop, !interruptedLoop, !interruptedLoop)) { ; //timed
+            #if defined(PC_BUILD)
+              printf("%s %i\n",tmps,loop);
+            #endif //PC_BUILD
+              #if ENABLE_SOLVER_PROGRESS == 1
+              _showProgress(result, const_1, const_1, error, const_0, const_1, realContext);
+              #endif //ENABLE_SOLVER_PROGRESS
+            if(!interruptedLoop && exitSignalled) {  //First EXIT press
+                #if !defined(INTEGRATION_TWO_STAGE_EXIT)
+                  displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+                  return;
+                #endif //INTEGRATION_TWO_STAGE_EXIT
                 exitSignalled = false;
-                displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-                return;
+                interruptedLoop = 1;
+              }
+              if(interruptedLoop) {
+                sprintf(tmps,"Level %i. %5.1fs or EXIT: Iter: ",(int16_t)k, (float)(40.0 - ((interruptedLoop++)/2.0)));
+                radixProcess(tmps,tmps);
+                progressHalfSecUpdate_Integer(force+1, tmps, loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+                if(exitSignalled || interruptedLoop >= 40) {      // Direct exit
+                  exitSignalled = false;
+                  displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+                  return;
+                }
               }
             }
           }
@@ -1438,30 +1447,33 @@ static void dbl_exp_int_new(calcRegister_t regist, const real_t *a, const real_t
         #if !defined(TESTSUITE_BUILD)
           char tmps[64];
           exitSignalled |= exitKeyWaiting();
-          sprintf(tmps,"Level: %i/%i Iter: ",(int16_t)k, (int16_t)maxlevel);
-          if(printHalfSecUpdate_Integer(timed, tmps, loop++, !interruptedLoop, !interruptedLoop, !interruptedLoop)) { ; //timed
-            #if defined(PC_BUILD)
-              printf("%s %i\n",tmps,loop);
-            #endif //PC_BUILD
-            #if ENABLE_SOLVER_PROGRESS == 1
-              _showProgress(result, const_1, const_1, error, const_0, const_1, realContext);
-            #endif //ENABLE_SOLVER_PROGRESS
-            if(!interruptedLoop && exitSignalled) {  //First EXIT press
-              #if !defined(INTEGRATION_TWO_STAGE_EXIT)
-                displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-                return;
-              #endif //INTEGRATION_TWO_STAGE_EXIT
-              exitSignalled = false;
-              interruptedLoop = 1;
-            }
-            if(interruptedLoop) {
-              sprintf(tmps,"Level %i. %5.1fs or EXIT: Iter: ",(int16_t)k, (float)(40.0 - ((interruptedLoop++)/2.0)));
-              radixProcess(tmps,tmps);
-              printHalfSecUpdate_Integer(force+1, tmps, loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
-              if(exitSignalled || interruptedLoop >= 40) {      // Direct exit
+          loop++;
+          if(checkHalfSec()) {
+            sprintf(tmps,"Level: %i/%i Iter: ",(int16_t)k, (int16_t)maxlevel);
+            if(progressHalfSecUpdate_Integer(timed, tmps, loop, !interruptedLoop, !interruptedLoop, !interruptedLoop)) { ; //timed
+              #if defined(PC_BUILD)
+                printf("%s %i\n",tmps,loop);
+              #endif //PC_BUILD
+              #if ENABLE_SOLVER_PROGRESS == 1
+                _showProgress(result, const_1, const_1, error, const_0, const_1, realContext);
+              #endif //ENABLE_SOLVER_PROGRESS
+              if(!interruptedLoop && exitSignalled) {  //First EXIT press
+                #if !defined(INTEGRATION_TWO_STAGE_EXIT)
+                  displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+                  return;
+                #endif //INTEGRATION_TWO_STAGE_EXIT
                 exitSignalled = false;
-                displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-                return;
+                interruptedLoop = 1;
+              }
+              if(interruptedLoop) {
+                sprintf(tmps,"Level %i. %5.1fs or EXIT: Iter: ",(int16_t)k, (float)(40.0 - ((interruptedLoop++)/2.0)));
+                radixProcess(tmps,tmps);
+                progressHalfSecUpdate_Integer(force+1, tmps, loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+                if(exitSignalled || interruptedLoop >= 40) {      // Direct exit
+                  exitSignalled = false;
+                  displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+                  return;
+                }
               }
             }
           }

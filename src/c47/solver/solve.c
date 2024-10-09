@@ -474,16 +474,19 @@ retryLevel:
 
 
 
-      if(printHalfSecUpdate_Integer(timed, "Iter: ",loop++, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
-        _showProgress(&a, &b, &fa, &fb);
+      loop++;
+      if(checkHalfSec()) {
+        if(progressHalfSecUpdate_Integer(timed, "Iter: ",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
+          _showProgress(&a, &b, &fa, &fb);
+        }
       }
 
-        if(exitKeyWaiting()) {
-            printHalfSecUpdate_Integer(force+1, "Interrupted Iter:",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
-            programRunStop = PGM_WAITING;
-            displayCalcErrorMessage(ERROR_SOLVER_ABORT, REGISTER_T, NIM_REGISTER_LINE);
-          break;
-        }
+      if(exitKeyWaiting()) {
+          progressHalfSecUpdate_Integer(force+1, "Interrupted Iter:",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+          programRunStop = PGM_WAITING;
+          displayCalcErrorMessage(ERROR_SOLVER_ABORT, REGISTER_T, NIM_REGISTER_LINE);
+        break;
+      }
 
       // pre-calculation
       if(realIsSpecial(&bb2)) {
