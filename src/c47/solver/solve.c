@@ -67,12 +67,9 @@ void fnPgmSlv(uint16_t label) {
 }
 
 static bool_t _realSolverFirstGuesses(calcRegister_t regist, real34_t *val) {
-  if(getRegisterDataType(regist) == dtReal34 && getRegisterAngularMode(regist) == amNone) {
+  if(getRegisterDataType(regist) == dtLongInteger || getRegisterDataType(regist) == dtReal34) {
+    fnToReal(0); // ensure the result is a plain real34
     real34Copy(REGISTER_REAL34_DATA(regist), val);
-    return true;
-  }
-  else if(getRegisterDataType(regist) == dtLongInteger) {
-    convertLongIntegerRegisterToReal34(regist, val);
     return true;
   }
   return false;
@@ -150,6 +147,11 @@ void fnSolve(uint16_t labelOrVariable) {
           displayCalcErrorMessage(ERROR_NO_ROOT_FOUND, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
           break;
         }
+        case SOLVER_RESULT_ABORTED: {
+          temporaryInformation = TI_SOLVER_FAILED;
+          displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+          break;
+        }
       }
       adjustResult(REGISTER_X, false, false, REGISTER_X, REGISTER_Y, -1);
 
@@ -218,6 +220,10 @@ void fnSolveVar(uint16_t unusedButMandatoryParameter) {
 
 #if !defined(TESTSUITE_BUILD)
   static void _solverIteration(real34_t *res) {
+    if(lastErrorCode == ERROR_SOLVER_ABORT) {
+      realToReal34(const_NaN, res);
+      return;
+    }
     if(currentSolverStatus & SOLVER_STATUS_TVM_APPLICATION) {
       tvmEquation();
     }
@@ -241,11 +247,9 @@ void fnSolveVar(uint16_t unusedButMandatoryParameter) {
     else if(lastErrorCode != ERROR_NONE) {
       realToReal34(const_NaN, res);
     }
-    else if(getRegisterDataType(REGISTER_X) == dtReal34 && getRegisterAngularMode(REGISTER_X) == amNone) {
+    else if(getRegisterDataType(REGISTER_X) == dtLongInteger || getRegisterDataType(REGISTER_X) == dtReal34) {
+      fnToReal(0); // ensure the result is a plain real34
       real34Copy(REGISTER_REAL34_DATA(REGISTER_X), res);
-    }
-    else if(getRegisterDataType(REGISTER_X) == dtLongInteger) {
-      convertLongIntegerRegisterToReal34(REGISTER_X, res);
     }
     else if(getRegisterDataType(REGISTER_X) == dtComplex34 && real34IsZero(REGISTER_REAL34_DATA(REGISTER_X))) {
       real34Copy(REGISTER_IMAG34_DATA(REGISTER_X), res);
@@ -470,16 +474,19 @@ retryLevel:
 
 
 
-      if(printHalfSecUpdate_Integer(timed, "Iter: ",loop++, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
-        _showProgress(&a, &b, &fa, &fb);
+      loop++;
+      if(checkHalfSec()) {
+        if(progressHalfSecUpdate_Integer(timed, "Iter: ",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
+          _showProgress(&a, &b, &fa, &fb);
+        }
       }
 
-        if(keyWaiting()) {
-            showString("key Waiting ...", &standardFont, 20, 40, vmNormal, false, false);
-            printHalfSecUpdate_Integer(force+1, "Interrupted Iter:",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
-            programRunStop = PGM_WAITING;
-          break;
-        }
+      if(exitKeyWaiting()) {
+          progressHalfSecUpdate_Integer(force+1, "Interrupted Iter:",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+          programRunStop = PGM_WAITING;
+          displayCalcErrorMessage(ERROR_SOLVER_ABORT, REGISTER_T, NIM_REGISTER_LINE);
+        break;
+      }
 
       // pre-calculation
       if(realIsSpecial(&bb2)) {
@@ -718,6 +725,10 @@ retryLevel:
 
     if(result == SOLVER_RESULT_NORMAL && real34IsInfinite(REGISTER_REAL34_DATA(variable)) && extendRange && real34IsZero(resZ)) {
       result = SOLVER_RESULT_CONSTANT;
+    }
+
+    if(lastErrorCode == ERROR_SOLVER_ABORT) {
+      result = SOLVER_RESULT_ABORTED;
     }
 
     return result;

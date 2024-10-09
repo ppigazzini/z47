@@ -30,7 +30,6 @@ All the below: because both Last x and savestack does not work due to multiple s
 */
 
 #include "c43Extensions/addons.h"
-
 #include "assign.h"
 #include "bufferize.h"
 #include "c43Extensions/keyboardTweak.h"
@@ -112,7 +111,7 @@ void fneRPN(uint16_t state) {
 #endif //DMCP_BUILD
 
 
-bool_t keyWaiting(void) {
+bool_t anyKeyWaiting(void) {
   #if defined(DMCP_BUILD)
     return key_empty() == 0 || key_tail() != -1;
   #elif defined(PC_BUILD) // !DMCP_BUILD
@@ -123,16 +122,55 @@ bool_t keyWaiting(void) {
 }
 
 
-int popKey(void) {
+
+bool_t exitKeyWaiting(void) {  
+  #if defined(DMCP_BUILD)
+    return C47PopKeyNoBuffer(DISPLAY_WAIT_FOR_RELEASE) == 32;
+  #elif defined(PC_BUILD) // !DMCP_BUILD
+    //printf("KeyWaiting keyCode=%u",currentKeyCode);
+    return currentKeyCode == 32; //EXIT1 / EXIT key //Do not us gtk_events_pending() as it triggers for timers too
+  #endif // PC_BUILD
+  return false;
+}
+
+
+int C47PopKeyNoBuffer(bool_t displayWaitForRelease) {
   int tmpf = -1;
   #if defined(DMCP_BUILD)
-    if(!keyWaiting()) return -1;
-    while(keyWaiting()) {
-      tmpf = key_pop();
+    if(!anyKeyWaiting()) return -1;
+    if(displayWaitForRelease) {
+      #if !defined(TESTSUITE_BUILD)
+        showString("Waiting for key release ...", &standardFont, 20, 40, vmNormal, false, false);
+      #endif //!TESTSUITE_BUILD
+      force_refresh(force);
+////Monitor key codes on screen
+//char sss[22];
+//sprintf(sss,"%i   AA ",sys_last_key());
+//print_linestr(sss,true);
     }
-    if(tmpf == 44) {
+    wait_for_key_release(0);
+    bool_t signalToDoScreenDump = false;
+    bool_t signalToDoEXIT       = false;
+    bool_t signalToDoRS         = false;
+    int tmpz = -1;
+    while(anyKeyWaiting()) {
+      tmpz = key_pop();
+      if(tmpz > 0) tmpf = tmpz;                     //use the last key in the buffer
+      if(tmpz == 44) signalToDoScreenDump = true;   //if any key in the buffer is 44
+      if(tmpz == 33) signalToDoEXIT = true;
+      if(tmpz == 36) signalToDoRS = true;
+    }
+
+    if(signalToDoScreenDump) {
       standardScreenDump();
+      tmpf = 0;
     }
+    if(signalToDoRS) {
+      tmpf = 36;
+    } 
+    if(signalToDoEXIT) {
+      tmpf = 33;
+    } 
     return tmpf - 1;        //EXIT = 33-1
   #else // !DMCP_BUILD
     tmpf = currentKeyCode;

@@ -3608,6 +3608,11 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
                       jm_show_calc_state("fnKeyExit");
                     #endif
 
+    if(getSystemFlag(FLAG_INTING) || getSystemFlag(FLAG_SOLVING)) {
+      displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE, REGISTER_X);
+      return; // Done elsewhere
+    }
+
     switch(calcMode) {                           //if in Catalog
         case CM_REGISTER_BROWSER:
         case CM_FLAG_BROWSER:

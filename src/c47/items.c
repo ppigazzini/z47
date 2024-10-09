@@ -189,7 +189,7 @@ bool_t itemNotAvail(int16_t itemNr) {
 
   void reallyRunFunction(int16_t func, uint16_t param) {
     #if defined(PC_BUILD) && defined(DEBUG_EXECUTE)
-      printf("   >>>  ReallyRunFunction: §%i§%s§%s§\n",func, indexOfItems[abs(func)].itemCatalogName, indexOfItems[abs(func)].itemSoftmenuName);
+      printf("   >>>  ReallyRunFunction: %5i%8s%8s\n",func, indexOfItems[abs(func)].itemCatalogName, indexOfItems[abs(func)].itemSoftmenuName);
     #endif // PC_BUILD
     lastFunc = func;
     lastParam = param;
@@ -244,6 +244,7 @@ bool_t itemNotAvail(int16_t itemNr) {
       if(func != ITM_SNAP) {
         hourGlassIconEnabled = true;
       }
+      screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
       showHideHourGlass();
 
       if(func == ITM_GTO || func == ITM_XEQ || func == ITM_GTOP) {
@@ -271,15 +272,16 @@ bool_t itemNotAvail(int16_t itemNr) {
       char ss1[30], ss2[30];
       stringToASCII(indexOfItems[abs(func)].itemCatalogName, ss1);
       stringToASCII(indexOfItems[abs(func)].itemSoftmenuName, ss2);
-      printf("   >>>   reallyRunFunction: § %i § %s § %s § %i\n",func, ss1, ss2, param);
+      printf("   >>>   reallyRunFunction: %5i%8s§%8s%  5i\n",func, ss1, ss2, param);
     #endif // PC_BUILD
 
 
-    if((programRunStop != PGM_RUNNING || timeLastOp0 == 0)) {               //The first manual command including XEQ (re)starts the timer by setting timeLastOp0
-      LastOpTimerReStart(func);
+
+    if((programRunStop != PGM_RUNNING && func != ITM_LASTT) || func == ITM_XEQ || timeLastOp0 == 0) {    //The first manual command and XEQ (re)starts the timer by setting timeLastOp0
+      LastOpTimerReStart(func);                                                                          //    You don't want the timer to always be read before every command when in a program. It would be wasteful. During program execution, LASTT? laps the counter.
     }
-    else if(func == ITM_LASTT) {                                            //If LASTT? is called in a program it laps the timer, but does not stop it. It is never stopped, only timeLastOp1 is set, and it is restarted only with a new command
-      LastOpTimerLap(func);                                                 //stores the last time to timeLastOp
+    else if(programRunStop == PGM_RUNNING && func == ITM_LASTT) {                                        //When running, the timing is provided from LASTT? to LASTT?
+      LastOpTimerLap(func);
     }
 
 
@@ -291,8 +293,11 @@ bool_t itemNotAvail(int16_t itemNr) {
       screenUpdatingMode = SCRUPD_AUTO;
     }
 
-    if(programRunStop != PGM_RUNNING || func == ITM_LASTT) {                //stores the last time to timeLastOp
+
+    if(programRunStop != PGM_RUNNING) {                                                                  //stores the last time to timeLastOp, if not running
       LastOpTimerLap(func);
+    } else {
+
     }
 
 
@@ -350,11 +355,10 @@ bool_t itemNotAvail(int16_t itemNr) {
     }
     else
     if(((FIRST_CONSTANT <= func && func <= LAST_CONSTANT) || func == ITM_CNST) && calcMode == CM_NORMAL) {   //including ITM_CNST inside the range (historically)
-
       temporaryInformation = TI_LAST_CONST_CATNAME;
     }
     else
-    if(calcMode == CM_NORMAL) {
+    if(calcMode == CM_NORMAL && !getSystemFlag(FLAG_INTING) && !getSystemFlag(FLAG_SOLVING)) {
       bool_t inMatrixMenu = (tam.mode == 0 ? softmenu[softmenuStack[0].softmenuId].menuItem : softmenu[softmenuStack[1].softmenuId].menuItem) == -MNU_MATX;
       bool_t inRegisterRange = (param <= LAST_LETTERED_REGISTER ||
                        (FIRST_STAT_REGISTER  <= param && param <= LAST_STAT_REGISTER) ||
@@ -386,48 +390,48 @@ bool_t itemNotAvail(int16_t itemNr) {
         case ITM_STOIJ       : if(inMatrixMenu) temporaryInformation = TI_IJ;    break;
         default:;
       }
-    }
 
-
-    //TI for conversion menus
-    if(lastErrorCode == ERROR_NONE && temporaryInformation == TI_NO_INFO) {
-      switch(softmenu[softmenuStack[0].softmenuId].menuItem) {
-        case -MNU_CONVE :
-        case -MNU_CONVP :
-        case -MNU_CONVFP:
-        case -MNU_CONVM :
-        case -MNU_CONVX :
-        case -MNU_CONVV :
-        case -MNU_CONVA :
-        case -MNU_CONVS :
-        case -MNU_CONVANG :
-        case -MNU_MISC :
-        case -MNU_CONVHUM :
-        case -MNU_CONVYMMV : {
-          errorMessage[0]=0;
-          strcat(errorMessage,indexOfItems[func].itemCatalogName);
-          temporaryInformation = TI_NO_INFO;
-          int16_t i = 0;
-          while(errorMessage[i+1] != 0) {
-            if(STD_RIGHT_ARROW[0] == errorMessage[i] && (STD_RIGHT_ARROW[1] == errorMessage[i+1] || STD_RIGHT_SHORT_ARROW[1] == errorMessage[i+1])) {
-              temporaryInformation = TI_CONV_MENU_STR;
-              errorMessage[i++] = 0;
-              errorMessage[i++] = 0;
-              break;
+      //TI for conversion menus
+      if(lastErrorCode == ERROR_NONE && temporaryInformation == TI_NO_INFO) {
+        switch(softmenu[softmenuStack[0].softmenuId].menuItem) {
+          case -MNU_CONVE :
+          case -MNU_CONVP :
+          case -MNU_CONVFP:
+          case -MNU_CONVM :
+          case -MNU_CONVX :
+          case -MNU_CONVV :
+          case -MNU_CONVA :
+          case -MNU_CONVS :
+          case -MNU_CONVANG :
+          case -MNU_MISC :
+          case -MNU_CONVHUM :
+          case -MNU_CONVYMMV : {
+            errorMessage[0]=0;
+            strcat(errorMessage,indexOfItems[func].itemCatalogName);
+            temporaryInformation = TI_NO_INFO;
+            int16_t i = 0;
+            while(errorMessage[i+1] != 0) {
+              if(STD_RIGHT_ARROW[0] == errorMessage[i] && (STD_RIGHT_ARROW[1] == errorMessage[i+1] || STD_RIGHT_SHORT_ARROW[1] == errorMessage[i+1])) {
+                temporaryInformation = TI_CONV_MENU_STR;
+                errorMessage[i++] = 0;
+                errorMessage[i++] = 0;
+                break;
+              }
+              i++;
             }
-            i++;
+            int16_t j = 0;
+            errorMessage[j] = 0;
+            while(errorMessage[i] != 0) {
+              errorMessage[j++] =  errorMessage[i++];
+            }
+            errorMessage[j] = 0;
+            expandConversionName(errorMessage);
+            break;
           }
-          int16_t j = 0;
-          errorMessage[j] = 0;
-          while(errorMessage[i] != 0) {
-            errorMessage[j++] =  errorMessage[i++];
-          }
-          errorMessage[j] = 0;
-          expandConversionName(errorMessage);
-          break;
+          default:break;
         }
-        default:break;
       }
+
     }
 
 
@@ -473,7 +477,7 @@ bool_t itemNotAvail(int16_t itemNr) {
 
   void runFunction(int16_t func) {
     #if defined(PC_BUILD) && defined(DEBUG_EXECUTE)
-      printf("   >>>RunFunction: §%i§%s§%s§\n",func, indexOfItems[abs(func)].itemCatalogName, indexOfItems[abs(func)].itemSoftmenuName);
+      printf("   >>>RunFunction: %5i%8s%8s\n",func, indexOfItems[abs(func)].itemCatalogName, indexOfItems[abs(func)].itemSoftmenuName);
     #endif // PC_BUILD
     funcOK = true;
     #if defined(RECORDLOG)                              //JMEXEC

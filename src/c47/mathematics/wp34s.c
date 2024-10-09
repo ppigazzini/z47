@@ -1372,6 +1372,9 @@ static void betacf(const real_t *a, const real_t *b, const real_t *x, real_t *r,
   real_t aa, c, d, apb, am1, ap1, m, m2, oldr;
   int i;
   real_t t, u, v, w;
+  #if !defined(TESTSUITE_BUILD)
+    int32_t loop = 0;
+  #endif //!TESTSUITE_BUILD
 
   realAdd(a, const_1, &ap1, realContext);        // ap1 = 1+a
   realSubtract(a, const_1, &am1, realContext);   // am1 = a-1
@@ -1413,6 +1416,11 @@ static void betacf(const real_t *a, const real_t *b, const real_t *x, real_t *r,
     if(realCompareEqual(&oldr, r)) {
       break;
     }
+    #if !defined(TESTSUITE_BUILD)
+      if(monitorExit(&loop, "Iter: ")) {
+        break;
+      }
+    #endif //!TESTSUITE_BUILD
   }
 }
 
@@ -1522,6 +1530,9 @@ void WP34S_Bernoulli(const real_t *x, real_t *res, bool_t bn_star, realContext_t
 
 static void zeta_calc(const real_t *x, real_t *reg1, real_t *reg7, real_t *res, realContext_t *realContext) {
   real_t p, q, r, s, reg0, reg3, reg4, reg5, reg6;
+  #if !defined(TESTSUITE_BUILD)
+    int32_t loop = 0;
+  #endif //!TESTSUITE_BUILD
 
   int32ToReal(60/*44*/, &reg0);
   int32ToReal(60/*44*/, &reg3);
@@ -1549,6 +1560,11 @@ static void zeta_calc(const real_t *x, real_t *reg1, real_t *reg7, real_t *res, 
     realCopy(&q, &reg4);
     realAdd(&q, &reg5, &reg5, realContext);
     realSubtract(&reg0, const_1, &reg0, realContext);
+    #if !defined(TESTSUITE_BUILD)
+      if(monitorExit(&loop, "Iter: ")) {
+        break;
+      }
+    #endif //!TESTSUITE_BUILD
   } while(realCompareGreaterThan(&reg0, const_0));
   realDivide(&p, &reg5, &p, realContext);
   realSubtract(const_1, reg1, &r, realContext);

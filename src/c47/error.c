@@ -97,30 +97,31 @@ TO_QSPI const char errorMessages[NUMBER_OF_ERROR_CODES][SIZE_OF_EACH_ERROR_MESSA
 /* 57 */  "Variable required, please select variable",
 /* 58 */  "HEX/DEC/OCT/BIN not usable with iCPX",
 /* 59 */  "Undefined menu name",
+/* 60 */  "Operation aborted",
 
 //Status output messages for time consuming tasks, to keep user informed
-/* 60 */  "  Loading state file ...",
-/* 61 */  "  Saving state file ...",
-/* 62 */  "  Loading stats ...",
-/* 63 */  "  Solving for real/complex root ...",
-/* 64 */  "  Calculating graph coordinates ...",
-/* 65 */  "  Re-calculating sums ... ",
-/* 66 */  "  Solving for real root ...",
+/* 61 */  "  Loading state file ...",
+/* 62 */  "  Saving state file ...",
+/* 63 */  "  Loading stats ...",
+/* 64 */  "  Solving for real/complex root ...",
+/* 65 */  "  Calculating graph coordinates ...",
+/* 66 */  "  Re-calculating sums ... ",
+/* 67 */  "  Solving for real root ...",
 
 //TI Messages (incomplete)
-/* 67 */  "Backup restored",
-/* 68 */  "State file loaded",
-/* 69 */  "Programs and equations loaded",
-/* 70 */  "appended",
-/* 71 */  "Global and local registers loaded",
-/* 72 */  "(w/ local flags)",
-/* 73 */  "System settings loaded",
-/* 74 */  "Statistical data loaded",
-/* 75 */  "User variables loaded",
-/* 76 */  "Program file loaded",
-/* 77 */  "Not enough memory for undo",
+/* 68 */  "Backup restored",
+/* 69 */  "State file loaded",
+/* 70 */  "Programs and equations loaded",
+/* 71 */  "appended",
+/* 72 */  "Global and local registers loaded",
+/* 73 */  "(w/ local flags)",
+/* 74 */  "System settings loaded",
+/* 75 */  "Statistical data loaded",
+/* 76 */  "User variables loaded",
+/* 77 */  "Program file loaded",
+/* 78 */  "Not enough memory for undo",
 
-/* 77 */
+/* 79 */
 
 };
 

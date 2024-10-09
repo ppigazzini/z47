@@ -32,6 +32,7 @@
 #include "store.h"
 #include "timer.h"
 #include "ui/tam.h"
+#include "c43Extensions/addons.h"
 
 #include "c47.h"
 
@@ -887,11 +888,15 @@ void runProgram(bool_t singleStep, uint16_t menuLabel) {
     }
     #if defined(DMCP_BUILD)
       if(!nestedEngine) {
-        int key = key_pop();
-        key = convertKeyCode(key);
+          int key = C47PopKeyNoBuffer(DISPLAY_WAIT_FOR_RELEASE) + 1;
+//        int key = key_pop();
+//        key = convertKeyCode(key);
         if(key == 36 || key == 33 ) {  //JM R/S or EXIT
           programRunStop = PGM_WAITING;
           screenUpdatingMode = SCRUPD_AUTO;
+          if(getSystemFlag(FLAG_INTING) || getSystemFlag(FLAG_SOLVING)) {
+            displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+          }
           refreshScreen(1);
           lcd_refresh();
           fnTimerStart(TO_KB_ACTV, TO_KB_ACTV, PROGRAM_KB_ACTV);

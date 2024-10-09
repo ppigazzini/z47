@@ -11,7 +11,7 @@
 // JM VARIOUS OPTIONS
 //*********************************
 
-#define VERSION1 "0.109.02.06b4"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
+#define VERSION1 "0.109.02.06b5"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
 
 //Version history
 //0.109.02.00
@@ -22,6 +22,7 @@
 //0.109.02.05
 //0.109.02.05B for bugfixes
 //0.109.02.06B2 for bugfixes
+//0.109.02.06B4 for bugfixes and sim key improvemts
 
 
 
@@ -100,8 +101,8 @@
 
 //THESE ARE DMCP COMPILE OPTIONS FOR TWO FILE QSPI
   #if defined(TWO_FILE_PGM) //---------THESE ARE THE EXCLUSIONS TO MAKE IT FIT INTO AVAILABLE FLASH EVEN WHILE USING QSPI
-    #define SAVE_SPACE_DM42_2        //  4152 bytes // Without XEQM
-    #define SAVE_SPACE_DM42_2LOAD    //   288 bytes // Without XEQM AUTOLOAD DEMOS
+  //  #define SAVE_SPACE_DM42_2        //  4152 bytes // Without XEQM
+  //  #define SAVE_SPACE_DM42_2LOAD    //   288 bytes // Without XEQM AUTOLOAD DEMOS
   //  #define SAVE_SPACE_DM42_6        //  1376 bytes // Without ELEC functions
   //  #define SAVE_SPACE_DM42_8        //  1856 bytes // Without Register Browser
   //  #define SAVE_SPACE_DM42_8FL      //  3280 bytes // Without Flag Browsers
@@ -112,16 +113,16 @@
   //  #define SAVE_SPACE_DM42_11       //   800 bytes // Without Matrix function on entry ...
   //  #define SAVE_SPACE_DM42_12       //  3288 bytes // Without SLVC, SLVQ, ELLIPTIC, ZETA, BETA
   //  #define SAVE_SPACE_DM42_12PRIME  // 27208 bytes // Without ISPRIME, NEXTPRIME, FACTORS, EULPHI, MATXFACTOR
-  //  #define SAVE_SPACE_DM42_12BESSEL //  5129 bytes // Without BESSEL
+    #define SAVE_SPACE_DM42_12BESSEL //  5129 bytes // Without BESSEL
   //  #define SAVE_SPACE_DM42_12ORTHO  //  0768 bytes // Without ORTHO MENU
   //  #define SAVE_SPACE_DM42_13GRF    // 17472 bytes // Without Solver & graphics & stat graphics
   //  #define SAVE_SPACE_DM42_13GRF_JM //  7520 bytes // Without More graphics
-    #define SAVE_SPACE_DM42_14       //   184 bytes // Without Load programming sample programs testPgms
-    #define SAVE_SPACE_DM42_15       // 10056 bytes // Without all distributions, i.e. , cauchy, chi, expo, f, logis, t, weibull
+  //  #define SAVE_SPACE_DM42_14       //   184 bytes // Without Load programming sample programs testPgms
+  //  #define SAVE_SPACE_DM42_15       // 10056 bytes // Without all distributions, i.e. , cauchy, chi, expo, f, logis, t, weibull
   //  #define SAVE_SPACE_DM42_16       //  2168 bytes // Without Norml distribution
     #define SAVE_SPACE_DM42_17       //  7448 bytes // Without Poisson/Hyper/Binomial/Geometrical distributions
   //  #define SAVE_SPACE_DM42_20_TIMER //  1232 bytes // Without STOPW
-    #define SAVE_SPACE_DM42_21_HP35  //   200 bytes // Without config file activations only. Not complete removal.
+  //  #define SAVE_SPACE_DM42_21_HP35  //   200 bytes // Without config file activations only. Not complete removal.
   #endif // TWO_FILE_PGM
 #endif // DMCP_BUILD
 
@@ -347,6 +348,9 @@
 #define USE_MICHALSKI_MOSIG_TANH_SINH    1 // Set to 1 to use Michalski & Mosig tanh-sinh integration
 #define USE_NEW_DEI_INTEGRATION_CODE     2 // 0 - use prior code. 1 - use new code. 2 - use new code with split point code.
 #define ENABLE_INTEGRATOR_FILE_OUTPUT    0 // Set for PRINTXY to be done after every evaluation of the formula
+#define INTEGRATION_TWO_STAGE_EXIT         // If set allows a level to complete before exiting the integrator
+#undef  INTEGRATION_TWO_STAGE_EXIT
+
 #define DECNUMDIGITS                    75 // Default number of digits used in the decNumber library
 
 #define BIG_SCREEN_COEF              1 // 2 = 2 times the standard screen, that is 800x480. Can be a decimal like 1.333
@@ -497,33 +501,34 @@
 #define ERROR_VARIABLE_NOT_SELECTED               57
 #define ERROR_IPX_INVALID_FOR_SI                  58
 #define ERROR_UNDEF_MENU                          59
+#define ERROR_SOLVER_ABORT                        60
 
 
 //Status output messages for time consuming tasks, to keep user informed
-#define LOADING_STATE_FILE                        60
-#define SAVING_STATE_FILE                         61
-#define RESTORING_STATS                           62
-#define COMPLEX_SOLVER                            63
-#define GRAPHING                                  64
-#define RECALC_SUMS                               65
-#define REAL_SOLVER                               66
+#define LOADING_STATE_FILE                        61
+#define SAVING_STATE_FILE                         62
+#define RESTORING_STATS                           63
+#define COMPLEX_SOLVER                            64
+#define GRAPHING                                  65
+#define RECALC_SUMS                               66
+#define REAL_SOLVER                               67
 
 //TI Messages (incomplete)
-#define TI_Backup_restored                        67
-#define TI_State_file_restored                    68
-#define TI_Saved_programs_and_equations           69
-#define TI_appended                               70
-#define TI_Saved_global_and_local_registers       71
-#define TI_w_local_flags_restored                 72
-#define TI_Saved_system_settings_restored         73
-#define TI_Saved_statistic_data_restored          74
-#define TI_Saved_user_variables_restored          75
-#define TI_Program_file_loaded                    76
-#define TI_Not_enough_memory_for_undo             77
+#define TI_Backup_restored                        68
+#define TI_State_file_restored                    69
+#define TI_Saved_programs_and_equations           70
+#define TI_appended                               71
+#define TI_Saved_global_and_local_registers       72
+#define TI_w_local_flags_restored                 73
+#define TI_Saved_system_settings_restored         74
+#define TI_Saved_statistic_data_restored          75
+#define TI_Saved_user_variables_restored          76
+#define TI_Program_file_loaded                    77
+#define TI_Not_enough_memory_for_undo             78
 
 
 
-#define NUMBER_OF_ERROR_CODES                     78
+#define NUMBER_OF_ERROR_CODES                     79
 #define SIZE_OF_EACH_ERROR_MESSAGE                48
 
 #define NUMBER_OF_BUG_SCREEN_MESSAGES             10
@@ -1259,7 +1264,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define AC_LOWER                                   1
 #define plainTextMode                              (bool_t)( calcMode == CM_AIM   || ((calcMode == CM_PEM  || calcMode == CM_ASSIGN) && getSystemFlag(FLAG_ALPHA)))
 #define labelText                                  (bool_t)((tam.mode == TM_LABEL || tam.mode == TM_STORCL || calcMode == CM_ASSIGN) && getSystemFlag(FLAG_ALPHA))
-//#define plainText                                  (bool_t)( calcMode == CM_AIM   || calcMode == CM_EIM    || (calcMode == CM_PEM    && getSystemFlag(FLAG_ALPHA) && !tam.mode))
+//#define plainText                                  (bool_t)( calcMode == CM_AIM   || calcMode == CM_EIM    || (calcMode == CM_PEM    && getSystemFlag(FLAG_ALPHA) && !tam.mode)) 
 #define noCapsLockSync                             0
 #define onlyCapsLockSync                           1
 #define allKeysCapsLockSync                        2
@@ -1700,6 +1705,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define SOLVER_RESULT_BAD_GUESS                    3
 #define SOLVER_RESULT_CONSTANT                     4
 #define SOLVER_RESULT_OTHER_FAILURE                5
+#define SOLVER_RESULT_ABORTED                      6
 
 #define ASSIGN_NAMED_VARIABLES                 10000
 #define ASSIGN_LABELS                          12000
