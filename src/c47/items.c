@@ -276,11 +276,12 @@ bool_t itemNotAvail(int16_t itemNr) {
     #endif // PC_BUILD
 
 
-    if((programRunStop != PGM_RUNNING || timeLastOp0 == 0)) {               //The first manual command including XEQ (re)starts the timer by setting timeLastOp0
-      LastOpTimerReStart(func);
+
+    if((programRunStop != PGM_RUNNING && func != ITM_LASTT) || func == ITM_XEQ || timeLastOp0 == 0) {    //The first manual command and XEQ (re)starts the timer by setting timeLastOp0
+      LastOpTimerReStart(func);                                                                          //    You don't want the timer to always be read before every command when in a program. It would be wasteful. During program execution, LASTT? laps the counter.
     }
-    else if(func == ITM_LASTT) {                                            //If LASTT? is called in a program it laps the timer, but does not stop it. It is never stopped, only timeLastOp1 is set, and it is restarted only with a new command
-      LastOpTimerLap(func);                                                 //stores the last time to timeLastOp
+    else if(programRunStop == PGM_RUNNING && func == ITM_LASTT) {                                        //When running, the timing is provided from LASTT? to LASTT?
+      LastOpTimerLap(func);
     }
 
 
@@ -292,8 +293,11 @@ bool_t itemNotAvail(int16_t itemNr) {
       screenUpdatingMode = SCRUPD_AUTO;
     }
 
-    if(programRunStop != PGM_RUNNING || func == ITM_LASTT) {                //stores the last time to timeLastOp
+
+    if(programRunStop != PGM_RUNNING) {                                                                  //stores the last time to timeLastOp, if not running
       LastOpTimerLap(func);
+    } else {
+
     }
 
 

@@ -141,8 +141,11 @@
 
       while(lastErrorCode == ERROR_NONE) {
 
-        if(printHalfSecUpdate_Integer(timed, "Loop: ",loop--, halfSec_clearZ, halfSec_clearT, halfSec_disp)) {
-          showProgressReal(&resultR, &resultRi, changedOverToComplex);
+        loop--;
+        if(checkHalfSec()) {
+          if(progressHalfSecUpdate_Integer(timed, "Loop: ",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp)) {
+            showProgressReal(&resultR, &resultRi, changedOverToComplex);
+          }
         }
 
         real34Compare(&counter, &loopTo, &compare);

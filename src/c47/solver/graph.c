@@ -515,10 +515,13 @@ void graph_eqn(uint16_t mode) {
                                     printf("dx0=%f dx=%f yAvg=%f count=%i discontinuityDetected:%u grad2IncreaseDetected:%u\n",dx0, dx, yAvg, count, discontinuityDetected, grad2IncreaseDetected);
                                   #endif // DEBUG_GR
 
-      printHalfSecUpdate_Integer(timed, "Iter: ",loop++, halfSec_clearZ, halfSec_clearT, halfSec_disp); //timed
+      loop++;
+      if(checkHalfSec()) {
+        progressHalfSecUpdate_Integer(timed, "Iter: ",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp); //timed
+      }
       #if defined(DMCP_BUILD)
         if(exitKeyWaiting()) {
-          printHalfSecUpdate_Integer(force+1, "Interrupted Iter:",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+          progressHalfSecUpdate_Integer(force+1, "Interrupted Iter:",loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
           fnClearStack(0);
           calcMode = CM_NORMAL;
           screenUpdatingMode = SCRUPD_AUTO;
@@ -1218,15 +1221,17 @@ void graph_stat(uint16_t unusedButMandatoryParameter) {
 
       copySourceRegisterToDestRegister(SREG_X2N,SREG_X2);  //new x2
 
-      if(printHalfSecUpdate_Integer(timed, "Iter: ",iterationCounter, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
-        real_t a, ai;
-        getRegisterAsComplex(SREG_X1, &a, &ai);
-        showProgressReal(&a, &ai, getRegisterDataType(SREG_X1) == dtComplex34);
+      if(checkHalfSec()) {
+        if(progressHalfSecUpdate_Integer(timed, "Iter: ",iterationCounter, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
+          real_t a, ai;
+          getRegisterAsComplex(SREG_X1, &a, &ai);
+          showProgressReal(&a, &ai, getRegisterDataType(SREG_X1) == dtComplex34);
+        }
       }
 
       if(exitKeyWaiting()) {
         showString("key Waiting ...", &standardFont, 20, 40, vmNormal, false, false);
-        printHalfSecUpdate_Integer(force+1, "Interrupted Iter:",iterationCounter, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+        progressHalfSecUpdate_Integer(force+1, "Interrupted Iter:",iterationCounter, halfSec_clearZ, halfSec_clearT, halfSec_disp);
         calcMode = CM_NORMAL;
         screenUpdatingMode = SCRUPD_AUTO;
         break;

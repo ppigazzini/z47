@@ -1708,8 +1708,8 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
     if(!getSystemFlag(FLAG_MONIT) && mode == timed) {
       return;
     }
-    if(mode == force || ((((uint16_t)(getUptimeMs()) >> 4) & 0x0020) == 0x0020) == halfSecTick) {  //Restrict refresh to once per half second. Use this minimally, due to extreme slow response.
-      halfSecTick = !halfSecTick;
+    if(mode == force || ((((uint16_t)(getUptimeMs()) >> 4) & 0x0020) == 0x0020) == halfSecTick1) {  //Restrict refresh to once per second. Use this minimally, due to extreme slow response.
+      halfSecTick1 = !halfSecTick1;
 
       #if defined(PC_BUILD)
         gtk_widget_queue_draw(screen);
@@ -1724,14 +1724,12 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
     }
   }
 
-  uint16_t old_time = 0;
   static bool_t _printHalfSecUpdate_Integer(uint8_t mode, char *txt, int32_t loop, bool_t clearZ, bool_t clearT, bool_t disp) {
     char tmps[100];
     bool_t ret_value = false;
-    uint16_t new_time = (uint16_t)(getUptimeMs());
 
-    if((mode != timed) || (((new_time - old_time) & 0xFE00) != 0 )) { //0x0200 || 0.512 second refresh interval
-      old_time = new_time;
+    if((mode != timed) || ((((uint16_t)(getUptimeMs()) >> 10) & 0x0001)) == halfSecTick3) { //1.024 second refresh interval
+      halfSecTick3 = !halfSecTick3;
       ret_value = true;
 
       //refreshScreen();   //to update stack
@@ -1763,7 +1761,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
     return ret_value;
   }
 
-  bool_t printHalfSecUpdate_Integer(uint8_t mode, char *txt, int32_t loop, bool_t clearZ, bool_t clearT, bool_t disp) {//further optimisation, not to even set up the 100 byte array or call getUptimeMs if progress monitor is not selected
+  bool_t progressHalfSecUpdate_Integer(uint8_t mode, char *txt, int32_t loop, bool_t clearZ, bool_t clearT, bool_t disp) {//further optimisation, not to even set up the 100 byte array or call getUptimeMs if progress monitor is not selected
     if(!getSystemFlag(FLAG_MONIT)) {
       return false;
     }
@@ -1771,13 +1769,28 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
   }
 
 
+  bool_t checkHalfSec(void) {
+    if(!getSystemFlag(FLAG_MONIT)) {
+      return false;
+    }
+    if(((((uint16_t)(getUptimeMs()) >> 10) & 0x0001)) == halfSecTick2) { //1.024 second refresh interval
+      halfSecTick2 = !halfSecTick2;
+      return true;
+    }
+    return false;
+  }
+
+
 
   bool_t monitorExit(int32_t *loop, char* str) {
-    if(printHalfSecUpdate_Integer(timed, str, (*loop)++, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
-      //no additional 1/2 sec monitoring here
+    (*loop)++;
+    if(checkHalfSec()) {
+      if(progressHalfSecUpdate_Integer(timed, str, *loop, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
+        //no additional 1 sec monitoring here
       }
+    }
     if(exitKeyWaiting()) {
-      printHalfSecUpdate_Integer(force+1, "Interrupted: ",*loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+      progressHalfSecUpdate_Integer(force+1, "Interrupted: ",*loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
       return true;
     }
     return false;

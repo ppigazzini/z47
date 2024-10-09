@@ -164,8 +164,9 @@ char       letteredRegisterName(calcRegister_t regist);
   void     underline_softkey                  (int16_t xSoftkey, int16_t ySoftKey, bool_t dontclear);
   void     refresh_gui                        (void);
   void     force_refresh                      (uint8_t mode);
-  bool_t   printHalfSecUpdate_Integer         (uint8_t mode, char *txt, int32_t loop, bool_t clearZ, bool_t clearT, bool_t disp);
+  bool_t   progressHalfSecUpdate_Integer      (uint8_t mode, char *txt, int32_t loop, bool_t clearZ, bool_t clearT, bool_t disp);
   bool_t   monitorExit                        (int32_t *loop, char* str);
+  bool_t   checkHalfSec                       (void);
   void     refreshScreen                      (uint8_t source);
 
   /**
