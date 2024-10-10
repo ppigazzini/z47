@@ -1002,7 +1002,7 @@ int16_t lastItem = 0;
         item = determineFunctionKeyItem_C47((char *)data, shiftF, shiftG); }
 
         // Update currentUserMenu for user defined menus selected in an existing function
-        if(currentMenu() == -MNU_DYNAMIC) {
+        if((currentMenu() == -MNU_DYNAMIC) || (currentMenu() == -MNU_HOME) || (currentMenu() == -MNU_PFN)) {
           setCurrentUserMenu(item, userMenus[currentUserMenu].menuItem[dynamicMenuItem].argumentName);
         }
 
