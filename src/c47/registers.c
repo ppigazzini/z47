@@ -1761,6 +1761,9 @@ int16_t indirectAddressing(calcRegister_t regist, uint16_t parameterType, int16_
   }
 
   if(minValue <= value && (value <= maxValue || isValidAlpha)) {
+      if(parameterType == INDPM_REGISTER) {
+        value = regKStoC(value);
+      }
       return value;
     }
     else {
