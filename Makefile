@@ -116,6 +116,7 @@ dist_linux: testPgms build.rel
 	cp build.rel/src/c47-gtk/c47 $(LINUX_DIST_DIR)/
 	cp res/dmcp/testPgms.bin $(LINUX_DIST_DIR)/res/dmcp/
 	cp res/c47_pre.css $(LINUX_DIST_DIR)/res/
+	cp res/c47.xpm $(LINUX_DIST_DIR)/res/
 	cp res/C47.png $(LINUX_DIST_DIR)/res/
 	cp res/C47short.png $(LINUX_DIST_DIR)/res/
 	cp res/R47.png $(LINUX_DIST_DIR)/res/
