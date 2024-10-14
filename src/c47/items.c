@@ -272,7 +272,7 @@ bool_t itemNotAvail(int16_t itemNr) {
       char ss1[30], ss2[30];
       stringToASCII(indexOfItems[abs(func)].itemCatalogName, ss1);
       stringToASCII(indexOfItems[abs(func)].itemSoftmenuName, ss2);
-      printf("   >>>   reallyRunFunction: %5i%8s§%8s%  5i\n",func, ss1, ss2, param);
+      printf("   >>>   reallyRunFunction: %5i%8s§%8s  %5i\n",func, ss1, ss2, param);
     #endif // PC_BUILD
 
 
