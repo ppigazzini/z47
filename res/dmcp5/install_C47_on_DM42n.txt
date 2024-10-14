@@ -1,50 +1,70 @@
 ------------------------------------
-Converting from working DM42n to C47 – we need a separate one for R47, not mix this in here
+Convert from DM42n to C47
 ------------------------------------
 
-In DM42n, go to SETUP
-6. Activate USB Disk
-Backup contents of FAT disk to your computer for when you want to go back to using DM42n. If you do not have a *DM42n*.bin or *DMM42n*.pg5 file, try find it on the SwissMicro’s web site. Without this this file you cannot return to DM42n from C47. As of 2024-09-28 the DM42n file was still not on the SwissMicros Technical portion of their web site.
-3. System
+In DM42n, go to [f] SETUP
+6. Activate USB Disk      | Note: Backup contents of original DM42n FAT disk to computer
+
+5. System
 2. Enter System Menu
-5. Format FAT Disk
-EXIT
 4. Reset to DMCP menu
-6. Activate USB Disk
-Observe the disk name is now DM42
+5. Format FAT Disk        | Note: Format not required, but does help for clean install 
+EXIT                      | ..
+4. Reset to DMCP menu
+6. Activate USB Disk      | Note: Observe the disk name is now DM42
 
-On DM42 drive:x
-Copy all files in c47-dmcp5 to the (empty) DM42 root risk
+Copy the C47 files to the DM42n drive. Decide what you need on your drive: Options a, b & c below:
+a. C47.pg5 and testPgms
+b. All files in c47-dmcp5
+c. Only the necessary files and directories in c47-dmcp5:
+   - Create a directory OFFIMG on the DM42 drive and copy the contents of the offimg folder to it
+   - Copy PROGRAMS to DM42
+   - Copy testPgms.bin from resources to DM42 (if you want the test programs)
+   - Copy C47.pg5  to DM42
+   - C47_qspi.bin is not needed and needs not be copied. It is there for completeness.
 
-As alternative, copy only the necessary, i.e. the following files and directories in c47-dmcp5 to the (empty) DM42 root risk:
-• Create a directory OFFIMG on the DM42 drive and copy the contents of the offimg folder to it (deselect those you don’t want or add your own)
-• Copy PROGRAMS to DM42
-• Copy testPgms.bin from resources to DM42 (if you want the test programs)
-• Copy C47.pg5  to DM42
-• Copy DM42_qspi_3.x.bin to DM42
-• C47_qspi.bin is not needed and needs not be copied. It is there for completeness.
+*** finish up, i.e. release/unmount the DM42 flash drive from Mac/PC
 
-*** finish up Release the drive from Mac/PC
-
-Press Option 4: Load QSPI ** may start automatically
-  Observe DM42_qspi_3.x.bin be installed
-  Press key to restart / Exit
-
-Press 3. DMCP Menu
-Press Option 3: Load Program
-  Choose C47.pg5 ** may start automatically or a message: “Start C47 Anyway (not safe)” may appear
-Choose the option to start C47 Anyway
-
- Press key to restart / Exit 
-
-Should the DMCP report a QSPI error, repeat the procedure to mount the DM42 and copy the file DM42_qspi_3.x.bin again and continue with *** finish up
+EXIT
+ENTER
+3. Load Program
+Choose C47.pg5
+ENTER
+ENTER
+ENTER
+EXIT
 
 C47 is loaded
 
 
+If C47 is not loaded:
+Should the DMCP report a QSPI error, copy the file DM42_qspi_3.x.bin to the flash drive
+Unmount the flash drive
+4. Load QSPI
+It may reboot. You may need to press the pinhole switch on the back of the calculator while holding F1.
+2. Load Program, select C47.pg5
+3. Run Program.
+
+If still not loaded, follow the procedure below to load DM42n, and then continue this procedure from step 1.
+
+
 ---------------------------
-Returning from C47 to DM42n
+Return from C47 to DM42n
 ---------------------------
 
-Until SwissMicros publishes a firmware update file for DM42n, you cannot return to DM42n operation. This is expected soon but as of 2024-09-28 this has not been available on the SwissMicros Technical section of their web site.
+ON
+[f] MODE
+[f] DMCP
+6 Activate USB Disk
+Download DMCP5_flash_3.50t40_DM42-3.23.bin from SwissMicros web site, Technical, DM42.
+Copy DMCP5_flash_3.50t40_DM42-3.23.bin to DM42n's flash USB disk
+Unmount flash Disk
+
+EXIT
+ENTER
+ENTER
+EXIT
+
+DM42 is loaded
+
 
