@@ -62,6 +62,8 @@
 
   #if defined(NEW_HW) // DMCP5
     #undef TWO_FILE_PGM
+    //#define HARDWARE_MODEL DM32
+    #define HARDWARE_MODEL DM42n
   #endif // NEW_HW
 
 //ONE FILE OPERATION needs the original CRC file - see src/c47-dmcp
@@ -1264,7 +1266,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define AC_LOWER                                   1
 #define plainTextMode                              (bool_t)( calcMode == CM_AIM   || ((calcMode == CM_PEM  || calcMode == CM_ASSIGN) && getSystemFlag(FLAG_ALPHA)))
 #define labelText                                  (bool_t)((tam.mode == TM_LABEL || tam.mode == TM_STORCL || calcMode == CM_ASSIGN) && getSystemFlag(FLAG_ALPHA))
-//#define plainText                                  (bool_t)( calcMode == CM_AIM   || calcMode == CM_EIM    || (calcMode == CM_PEM    && getSystemFlag(FLAG_ALPHA) && !tam.mode)) 
+//#define plainText                                  (bool_t)( calcMode == CM_AIM   || calcMode == CM_EIM    || (calcMode == CM_PEM    && getSystemFlag(FLAG_ALPHA) && !tam.mode))
 #define noCapsLockSync                             0
 #define onlyCapsLockSync                           1
 #define allKeysCapsLockSync                        2
