@@ -137,7 +137,7 @@ dist_dmcp: dmcp testPgms build.rel/wiki
 	cp -r res/offimg/HP\ related/ $(DMCP_DIST_DIR)/offimg
 	cp -r res/offimg/C47/ $(DMCP_DIST_DIR)/offimg
 	cp -r res/PROGRAMS $(DMCP_DIST_DIR)
-	cp res/dmcp/DM42_keymap.bin $(DMCP_DIST_DIR)
+	cp res/dmcp/DM42_keymap.bin $(DMCP_DIST_DIR)/resources
 	zip -r $(DMCP_DIST_DIR)/resources/C47.map.zip build.dmcp/src/c47-dmcp/C47.map
 	cp res/dmcp/testPgms.bin res/dmcp/testPgms.txt $(DMCP_DIST_DIR)/resources
 	cp build.rel/wiki/Installation-on-a-DM42.md $(DMCP_DIST_DIR)/install_C47_on_DM42_readme_on_wiki.txt
@@ -147,7 +147,7 @@ dist_dmcp: dmcp testPgms build.rel/wiki
 dist_dmcp5: dmcp5 testPgms build.rel/wiki
 	mkdir -p $(DMCP5_DIST_DIR)
 	mkdir -p $(DMCP5_DIST_DIR)/resources
-	cp build.dmcp5/src/c47-dmcp5/C47.pg5 build.dmcp5/src/c47-dmcp5/C47_qspi.bin $(DMCP5_DIST_DIR)
+	cp build.dmcp5/src/c47-dmcp5/C47.pg5 $(DMCP5_DIST_DIR)
 	cp -r res/offimg/Egypt/ $(DMCP5_DIST_DIR)/offimg
 	cp -r res/offimg/Norway/ $(DMCP5_DIST_DIR)/offimg
 	cp -r res/offimg/Netherlands/ $(DMCP5_DIST_DIR)/offimg
@@ -156,9 +156,8 @@ dist_dmcp5: dmcp5 testPgms build.rel/wiki
 	cp -r res/offimg/HP\ related/ $(DMCP5_DIST_DIR)/offimg
 	cp -r res/offimg/C47/ $(DMCP5_DIST_DIR)/offimg
 	cp -r res/PROGRAMS $(DMCP5_DIST_DIR)
-	cp res/dmcp5/DM42_keymap.bin $(DMCP5_DIST_DIR)
-	cp res/dmcp5/R47_keymap.bin $(DMCP5_DIST_DIR)
-	cp res/dmcp5/SwissMicros/DM42_qspi_3.x.bin $(DMCP5_DIST_DIR)
+	cp res/dmcp5/DM42_keymap.bin $(DMCP5_DIST_DIR)/resources
+	cp res/dmcp5/SwissMicros/DM42_qspi_3.x.bin $(DMCP5_DIST_DIR)/resources
 	zip -r $(DMCP5_DIST_DIR)/resources/C47.map.zip build.dmcp5/src/c47-dmcp5/C47.map
 	cp res/dmcp5/testPgms.bin res/dmcp5/testPgms.txt $(DMCP5_DIST_DIR)/resources
 	cp res/dmcp5/install_C47_on_DM42n.txt $(DMCP5_DIST_DIR)
