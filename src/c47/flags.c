@@ -91,7 +91,7 @@ static void systemFlagAction(uint16_t systemFlag, flagAction_t action) {
     case FLAG_NUMLOCK:
     case FLAG_CPXMULT:
     case FLAG_ERPN:
-    case FLAG_FRCYC: 
+    case FLAG_FRCYC:
     case FLAG_LARGELI:
     case FLAG_IRFRAC:
     case FLAG_IRF_ON:
@@ -245,7 +245,12 @@ bool_t getFlag(uint16_t flag) {
 
   #if defined(PC_BUILD)
   else {
-    moreInfoOnError("In function getFlag:", "there is no flag beyond FLAG_W", "", "");
+    if(flag < FLAG_M) {
+      sprintf(tmpString, "there is no local flag above .31 (%" PRIu16 ")", flag);
+    }
+    else {
+      sprintf(tmpString, "there is no flag beyond FLAG_W (%" PRIu16 ")", flag);
+    }
   }
   #endif // PC_BUILD
 
@@ -302,7 +307,7 @@ void fnSetFlag(uint16_t flag) {
     }
   }
 
-  else if(flag < FLAG_K) { // Global flag
+  else if(flag <= FLAG_K) { // Global flag
     switch(flag) {
       case FLAG_A: setSystemFlag(FLAG_ENGOVR);   break;
       case FLAG_B: setSystemFlag(FLAG_OVERFLOW); break;
@@ -341,7 +346,12 @@ void fnSetFlag(uint16_t flag) {
 
   #if defined(PC_BUILD)
   else {
-    sprintf(tmpString, "there is no flag beyond FLAG_W (%" PRIu16 ")", flag);
+    if(flag < FLAG_M) {
+      sprintf(tmpString, "there is no local flag above .31 (%" PRIu16 ")", flag);
+    }
+    else {
+      sprintf(tmpString, "there is no flag beyond FLAG_W (%" PRIu16 ")", flag);
+    }
     moreInfoOnError("In function fnSetFlag:", tmpString, "", "");
   }
   #endif // PC_BUILD
@@ -380,7 +390,7 @@ void fnClearFlag(uint16_t flag) {
     }
   }
 
-  else if(flag < FLAG_K) { // Global flag
+  else if(flag <= FLAG_K) { // Global flag
     switch(flag) {
       case FLAG_A: clearSystemFlag(FLAG_ENGOVR);   break;
       case FLAG_B: clearSystemFlag(FLAG_OVERFLOW); break;
@@ -420,7 +430,12 @@ void fnClearFlag(uint16_t flag) {
 
   #if defined(PC_BUILD)
   else {
-    sprintf(tmpString, "there is no flag beyond FLAG_W (%" PRIu16 ")", flag);
+    if(flag < FLAG_M) {
+      sprintf(tmpString, "there is no local flag above .31 (%" PRIu16 ")", flag);
+    }
+    else {
+      sprintf(tmpString, "there is no flag beyond FLAG_W (%" PRIu16 ")", flag);
+    }
     moreInfoOnError("In function fnClearFlag:", tmpString, "", "");
   }
   #endif // PC_BUILD
@@ -503,7 +518,12 @@ void fnFlipFlag(uint16_t flag) {
 
   #if defined(PC_BUILD)
   else {
-    sprintf(tmpString, "there is no flag beyond FLAG_W (%" PRIu16 ")", flag);
+    if(flag < FLAG_M) {
+      sprintf(tmpString, "there is no local flag above .31 (%" PRIu16 ")", flag);
+    }
+    else {
+      sprintf(tmpString, "there is no flag beyond FLAG_W (%" PRIu16 ")", flag);
+    }
     moreInfoOnError("In function fnFlipFlag:", tmpString, "", "");
   }
   #endif // PC_BUILD
@@ -631,7 +651,7 @@ void SetSetting(uint16_t jmConfig) {
     case ITM_PRTACT1:    fnSetFlag(FLAG_PRTACT);                                break;
     case ITM_PRTACT0:    fnClearFlag(FLAG_PRTACT);                              break;
     case JC_ERPN:        fnFlipFlag(FLAG_ERPN);                                 break; //
-    case ITM_FRCYC:      fnFlipFlag(FLAG_FRCYC);                                break; //  
+    case ITM_FRCYC:      fnFlipFlag(FLAG_FRCYC);                                break; //
     case JC_CPXMULT:     fnFlipFlag(FLAG_CPXMULT);                              break; //
     case JC_NL:          fnFlipFlag(FLAG_NUMLOCK); showAlphaModeonGui();        break; //
     case ITM_DREAL:
@@ -640,13 +660,13 @@ void SetSetting(uint16_t jmConfig) {
         clearSystemFlag(FLAG_LARGELI);
       }
       break;
-    case JC_LARGELI:  
+    case JC_LARGELI:
       fnFlipFlag(FLAG_LARGELI);
       if(getSystemFlag(FLAG_LARGELI)) {
         clearSystemFlag(FLAG_DREAL);
       }
       break;
-    case JC_IRFRAC:  
+    case JC_IRFRAC:
       fnFlipFlag(FLAG_IRFRAC);
       if(getSystemFlag(FLAG_IRFRAC)) {
         setSystemFlag(FLAG_IRF_ON);

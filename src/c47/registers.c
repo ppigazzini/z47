@@ -1641,7 +1641,10 @@ int16_t indirectAddressing(calcRegister_t regist, uint16_t parameterType, int16_
       break;
     }
     case INDPM_FLAG: {
-      maxValue = NUMBER_OF_GLOBAL_FLAGS + currentNumberOfLocalFlags - 1;
+    // Temorarily assign the maximum value to the last additional global flag
+    // We need to do better range checking later for the gap between the last local flag (143) and the first additional global flag (211)
+      //maxValue = NUMBER_OF_GLOBAL_FLAGS + currentNumberOfLocalFlags - 1;
+      maxValue = FLAG_W;
       break;
     }
     case INDPM_LABEL: {
@@ -1761,20 +1764,28 @@ int16_t indirectAddressing(calcRegister_t regist, uint16_t parameterType, int16_
   }
 
   if(minValue <= value && (value <= maxValue || isValidAlpha)) {
-      if(parameterType == INDPM_REGISTER) {
-        value = regKStoC(value);
-      }
-      return value;
+    if(parameterType == INDPM_REGISTER) {
+      value = regKStoC(value);
     }
-    else {
+    else if((parameterType == INDPM_FLAG) && (value > LAST_LOCAL_FLAG) && (value < FLAG_M)) {
       displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-    #if defined(PC_BUILD)
-        sprintf(errorMessage, "value = %d! Should be from %d to %d.", value, minValue, maxValue);
+      #if defined(PC_BUILD)
+        sprintf(errorMessage, "local flag value = %d! Should be from %d to %d", value, FIRST_LOCAL_FLAG, LAST_LOCAL_FLAG);
         moreInfoOnError("In function indirectAddressing:", errorMessage, NULL, NULL);
       #endif // PC_BUILD
-      return FAILED_INDIRECTION;
-    }
+      return FAILED_INDIRECTION; 
+    }      
+    return value;
   }
+  else {
+    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+    #if defined(PC_BUILD)
+      sprintf(errorMessage, "value = %d! Should be from %d to %d.", value, minValue, maxValue);
+      moreInfoOnError("In function indirectAddressing:", errorMessage, NULL, NULL);
+    #endif // PC_BUILD
+    return FAILED_INDIRECTION;
+  }
+}
 
 
 
