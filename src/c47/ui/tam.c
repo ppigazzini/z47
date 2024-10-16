@@ -299,7 +299,6 @@
     }
 
     min = (tam.dot ? 0 : tam.min);
-//    max = (tam.dot ? (calcMode == CM_PEM ? 98 : ((tam.mode == TM_FLAGR || tam.mode == TM_FLAGW) ? NUMBER_OF_LOCAL_FLAGS - 1 : currentNumberOfLocalRegisters)) : tam.max);
     max = (tam.dot ? ((tam.mode == TM_FLAGR || tam.mode == TM_FLAGW) ? NUMBER_OF_LOCAL_FLAGS - 1 : (calcMode == CM_PEM ? 98 : currentNumberOfLocalRegisters)) : tam.max);
     min2 = (tam.indirect ? 0 : min);
     max2 = (tam.indirect ? (tam.dot ? (calcMode == CM_PEM ? 98 : currentNumberOfLocalRegisters) : 99) : max);
