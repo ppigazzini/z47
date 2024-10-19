@@ -34,6 +34,45 @@
 #include "c47.h"
 
 
+      
+TO_QSPI const  letteredFlagDisplay_t letteredFlagDisplay[] = {
+// Flags X, Y, Z, T, A, B, C, D, L
+/* 100 - X */  {.txt = STD_SPACE_6_PER_EM "X", .position = 3        },
+/* 101 - Y */  {.txt = STD_SPACE_6_PER_EM "Y", .position = 3 +  1*12},
+/* 102 - Z */  {.txt = STD_SPACE_6_PER_EM "Z", .position = 3 +  2*12},
+/* 103 - T */  {.txt = STD_SPACE_6_PER_EM "T", .position = 3 +  3*12},
+/* 104 - A */  {.txt = STD_SPACE_6_PER_EM "A", .position = 3 +  4*12},
+/* 105 - B */  {.txt = STD_SPACE_6_PER_EM "B", .position = 3 +  5*12},
+/* 106 - C */  {.txt = STD_SPACE_6_PER_EM "C", .position = 3 +  6*12},
+/* 107 - D */  {.txt = STD_SPACE_6_PER_EM "D", .position = 3 +  7*12},
+/* 108 - L */  {.txt = STD_SPACE_6_PER_EM "L", .position = 3 +  8*12},
+
+// Flags I, J, K
+/* 109 - I */  {.txt = STD_SPACE_6_PER_EM "I", .position = 8 + 10*12},
+/* 110 - J */  {.txt = STD_SPACE_6_PER_EM "J", .position = 4 + 11*12},
+/* 111 - K */  {.txt = STD_SPACE_6_PER_EM "K", .position = 2 + 12*12},
+
+// Flags M, N, P, Q, R, S
+/* 211 - M */  {.txt = STD_SPACE_6_PER_EM "M", .position = 4 + 15*12},
+/* 212 - N */  {.txt = STD_SPACE_6_PER_EM "N", .position = 5 + 16*12},
+/* 213 - P */  {.txt = STD_SPACE_6_PER_EM "P", .position = 6 + 17*12},
+/* 214 - Q */  {.txt = STD_SPACE_6_PER_EM "Q", .position = 6 + 18*12},
+/* 215 - R */  {.txt = STD_SPACE_6_PER_EM "R", .position = 6 + 19*12},
+/* 216 - S */  {.txt = STD_SPACE_6_PER_EM "S", .position = 6 + 20*12},
+
+// Flags E, F, G, H
+/* 217 - E */  {.txt = STD_SPACE_6_PER_EM "E", .position = 9 + 22*12},
+/* 218 - F */  {.txt = STD_SPACE_6_PER_EM "F", .position = 9 + 23*12},
+/* 219 - G */  {.txt = STD_SPACE_6_PER_EM "G", .position = 8 + 24*12},
+/* 220 - H */  {.txt = STD_SPACE_6_PER_EM "H", .position = 8 + 25*12},
+
+// Flags O, U, V, W
+/* 221 - O */  {.txt = STD_SPACE_6_PER_EM "O", .position = 9 + 28*12},
+/* 222 - U */  {.txt = STD_SPACE_6_PER_EM "U", .position = 9 + 29*12},
+/* 223 - V */  {.txt = STD_SPACE_6_PER_EM "V", .position = 8 + 30*12},
+/* 224 - W */  {.txt = STD_SPACE_6_PER_EM "W", .position = 8 + 31*12},
+};
+
 
 #if !defined(TESTSUITE_BUILD)
 #if !defined(SAVE_SPACE_DM42_8FL)
@@ -65,7 +104,7 @@
   void flagBrowser(uint16_t init) {
   #if !defined(SAVE_SPACE_DM42_8FL)
     static int16_t line;
-    int16_t f;
+    int16_t f,i;
     bool_t firstFlag;
 
     hourGlassIconEnabled = false;
@@ -137,18 +176,11 @@
       }
 
       if(currentNumberOfLocalFlags == 0) {
-        sprintf(tmpString + CHARS_PER_LINE * ++line, "No local flags and registers are allocated.");
+        sprintf(tmpString + CHARS_PER_LINE * ++line, "No local flags or registers allocated.");
       }
       else {
-        if(currentNumberOfLocalRegisters == 0) {
-          sprintf(tmpString + CHARS_PER_LINE * ++line, "No local registers are allocated.");
-        }
-        else {
-          // Local registers
-          sprintf(tmpString + CHARS_PER_LINE * ++line, "%" PRIu8 " local register%s allocated.", currentNumberOfLocalRegisters, currentNumberOfLocalRegisters > 1 ? "s are": " is");
-        }
-
         // Local flags
+        sprintf(tmpString + CHARS_PER_LINE * ++line, "Local user flags set:");
         tmpString[CHARS_PER_LINE * ++line] = 0;
         firstFlag = true;
         for(f=0; f<NUMBER_OF_LOCAL_FLAGS; f++) {
@@ -334,90 +366,33 @@
       }
     }
 
-    if(currentFlgScr == 4) { // Flags from 100 to GLOBALFLAGS, local registers and local flags
+    if(currentFlgScr == 4) { // Flags from FLAG_X to FLAG_W, local registers and local flags
       //clearScreen(false, true, true);
 
       showString("Global flag status (continued):", &standardFont, 1, 22-1, vmNormal, true, true);
 
+      // Lettered flags
       for(f=FLAG_X; f<=FLAG_W; f++) {
-        if(FLAG_K < f && f < FLAG_M) {
-          continue;
-        }
-
-        int16_t g = f - 99*(f > FLAG_K);
-        if(getFlag(f)) {
-          if(f <= FLAG_I) {
-            lcd_fill_rect(80*(g%5)+1,          22*(g/5)-397,          75, 21, 0xFF);
-          }
-          else {
-            lcd_fill_rect(50*((g-FLAG_J)%8)+1, 22*((g-FLAG_J)/8)+87,  45, 21, 0xFF);
-          }
-        }
-
-        switch(f) {
-          case FLAG_X: strcpy(tmpString, "X:POLAR "); break;
-          case FLAG_Y: strcpy(tmpString, "Y:101   "); break;
-          case FLAG_Z: strcpy(tmpString, "Z:102   "); break;
-          case FLAG_T: strcpy(tmpString, "T:TRACE "); break;
-          case FLAG_A: strcpy(tmpString, "A:ENGOVR"); break;
-          case FLAG_B: strcpy(tmpString, "B:OVRFL "); break;
-          case FLAG_C: strcpy(tmpString, "C:CARRY "); break;
-          case FLAG_D: strcpy(tmpString, "D:SPCRES"); break;
-          case FLAG_L: strcpy(tmpString, "L:LEAD0 "); break;
-          case FLAG_I: strcpy(tmpString, "I:CPXRES"); break;
-          case FLAG_J: strcpy(tmpString, "J:110");    break;
-          case FLAG_K: strcpy(tmpString, "K:111");    break;
-          case FLAG_M: strcpy(tmpString, "M:211");    break;
-          case FLAG_N: strcpy(tmpString, "N:212");    break;
-          case FLAG_P: strcpy(tmpString, "P:213");    break;
-          case FLAG_Q: strcpy(tmpString, "Q:214");    break;
-          case FLAG_R: strcpy(tmpString, "R:215");    break;
-          case FLAG_S: strcpy(tmpString, "S:216");    break;
-          case FLAG_E: strcpy(tmpString, "E:217");    break;
-          case FLAG_F: strcpy(tmpString, "F:218");    break;
-          case FLAG_G: strcpy(tmpString, "G:229");    break;
-          case FLAG_H: strcpy(tmpString, "H:220");    break;
-          case FLAG_O: strcpy(tmpString, "O:221");    break;
-          case FLAG_U: strcpy(tmpString, "U:222");    break;
-          case FLAG_V: strcpy(tmpString, "V:223");    break;
-          case FLAG_W: strcpy(tmpString, "W:224");    break;
-          default:     sprintf(tmpString,"  %d", f);  break;
-        }
-
-        char ss[2];
-        int16_t i, shift;
-        i=0;
-        ss[1]=0;
-        while(tmpString[i] != 0){
-          ss[0]=tmpString[i];
-          if(f <= FLAG_I) {
-            showString(ss, &standardFont, 80*(g%5)+i*9+3,          22*(g/5)-397,         getFlag(f) ? vmReverse : vmNormal, true, true);  //JM-44
-          }
-          else {
-            shift = 3*(i==0) + 14*(i==1) + (8*i+5)*(i>=2);
-            showString(ss, &standardFont, 50*((g-FLAG_J)%8)+shift, 22*((g-FLAG_J)/8)+87, getFlag(f) ? vmReverse : vmNormal, true, true);  //JM-44
-          }
-          i++;
-        }
-        //showString(tmpString, &standardFont, max(0,16-1+2*40*(f%5) + 19 - stringWidth(tmpString, &standardFont, false, false)/2), 22*(f/5)-132-1-44-220, getFlag(f) ? vmReverse : vmNormal, true, true);  //JM-44
+        f = (f == FLAG_K + 1 ? FLAG_M : f);            // Skip from FLAG_K (111) to FLAG_M (211)
+        i = (f <= FLAG_K ? f-FLAG_X : f-FLAG_X - 99);  // Index in the flag display table        
+        showString(letteredFlagDisplay[i].txt, &standardFont, letteredFlagDisplay[i].position, 43, getFlag(f) ? vmReverse : vmNormal, true, true);
       }
+
+      showString("[" STD_SPACE_6_PER_EM "  100..108   " STD_SPACE_3_PER_EM STD_SPACE_6_PER_EM "109..111  " STD_SPACE_3_PER_EM "211..216  217..220" STD_SPACE_6_PER_EM " 221..224]"
+                 , &standardFont, 1, 44+66-1-44, vmNormal, true, true);
 
       if(currentNumberOfLocalFlags == 0) {
-        sprintf(tmpString, "No local flags and registers are allocated.");
-        showString(tmpString, &standardFont, 1, 131, vmNormal, true, true);
+        sprintf(tmpString, "No local flags or registers allocated.");
+        showString(tmpString, &standardFont, 1, 109, vmNormal, true, true);
       }
       else {
-        if(currentNumberOfLocalRegisters == 0) {
-          sprintf(tmpString, "No local registers are allocated.");
-          showString(tmpString, &standardFont, 1, 131, vmNormal, true, true);
-        }
-        else {
-          // Local registers
-          sprintf(tmpString, "%" PRIu8 " local register%s allocated.", currentNumberOfLocalRegisters, currentNumberOfLocalRegisters > 1 ? "s are": " is");
-          showString(tmpString, &standardFont, 1, 131, vmNormal, true, true);
-        }
+        // Local Registers
+        sprintf(tmpString, "%" PRIu8 " local register%s allocated.", currentNumberOfLocalRegisters, currentNumberOfLocalRegisters > 1 ? "s": "");
+        showString(tmpString, &standardFont, 1, 109, vmNormal, true, true);
         showString("Local flag status:", &standardFont, 1, 153, vmNormal, true, true);
 
+
+        // Local Flags
         for(f=0; f<NUMBER_OF_LOCAL_FLAGS; f++) {
           if(getFlag(FIRST_LOCAL_FLAG + f)) {
             lcd_fill_rect(25*(f%16)+1, 22*(f/16)+175, 22, 21,  0xFF);
