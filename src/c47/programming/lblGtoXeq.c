@@ -409,8 +409,8 @@ static void _executeOp(uint8_t *paramAddress, uint16_t op, uint16_t paramMode) {
       if(opParam <= LAST_LOCAL_FLAG) { // Global flag from 00 to 99, Lettered flag from X to K, or Local flag from .00 to .31
         reallyRunFunction(op, opParam);
       }
-      else if(FLAG_M <= opParam && opParam < FLAG_W) { // Lettered flag from M to W
-         reallyRunFunction(op, opParam);
+      else if(FIRST_LOCAL_FLAG + NUMBER_OF_LOCAL_FLAGS <= opParam && opParam < FIRST_LOCAL_FLAG + NUMBER_OF_LOCAL_FLAGS + NUMBER_OF_SYSTEM_FLAGS) { // Local register from .00 to .31
+        reallyRunFunction(op, opParam);
       }
       else if(opParam == SYSTEM_FLAG_NUMBER) {
         switch((uint16_t)(*paramAddress) | 0xc000) {

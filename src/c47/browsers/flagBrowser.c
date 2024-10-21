@@ -34,7 +34,7 @@
 #include "c47.h"
 
 
-
+      
 TO_QSPI const  letteredFlagDisplay_t letteredFlagDisplay[] = {
 // Flags X, Y, Z, T, A, B, C, D, L
 /* 100 - X */  {.txt = STD_SPACE_6_PER_EM "X", .position = 3        },
@@ -75,6 +75,24 @@ TO_QSPI const  letteredFlagDisplay_t letteredFlagDisplay[] = {
 
 
 #if !defined(TESTSUITE_BUILD)
+#if !defined(SAVE_SPACE_DM42_8FL)
+  static void oneSystemFlag(uint16_t systemFlag, const char *systemFlagNamename, int16_t *line, bool_t *firstSystemFlag) {
+    if(getSystemFlag(systemFlag)) {
+      if(stringWidth(tmpString + CHARS_PER_LINE * *line, &standardFont, true, true) + stringWidth(systemFlagNamename, &standardFont, true, false) <= SCREEN_WIDTH - 1 - 8) { // SPACE is 8 pixel wide
+        if(!*firstSystemFlag) {
+          strcat(tmpString + CHARS_PER_LINE * *line, " ");
+        }
+        else {
+          *firstSystemFlag = false;
+        }
+        strcat(tmpString + CHARS_PER_LINE * *line, systemFlagNamename);
+      }
+      else {
+        xcopy(tmpString + CHARS_PER_LINE * ++(*line), systemFlagNamename, strlen(systemFlagNamename) + 1);
+      }
+    }
+  }
+#endif // !SAVE_SPACE_DM42_8FL
 
 
   /********************************************//**
@@ -100,12 +118,13 @@ TO_QSPI const  letteredFlagDisplay_t letteredFlagDisplay[] = {
       previousCalcMode = calcMode;
       calcMode = CM_FLAG_BROWSER;
       clearSystemFlag(FLAG_ALPHA);
-      currentFlgScr = init;                      //1 for flag STATUS, 1 for FLGS
+      currentFlgScr = init;                      //5 in new style; 0 is old style
+      if(currentFlgScr == 0)  currentFlgScr = 3; // Init old style
       refreshScreen(190);                        //Restart once, clearing screen and all, restarting flag browser, now in the correct mode
     }
 
-    if(currentFlgScr == 0) currentFlgScr = 5;
-    if(currentFlgScr == 6) currentFlgScr = 1;
+    if(currentFlgScr == 0) currentFlgScr = 4;
+    if(currentFlgScr == 5) currentFlgScr = 1;
 
     if(currentFlgScr == 1) { // Init new style
       char flagNumber[4];
@@ -283,7 +302,34 @@ TO_QSPI const  letteredFlagDisplay_t letteredFlagDisplay[] = {
         default: {
         }
       }
+
+      // System flags
+      firstFlag = true;
       tmpString[CHARS_PER_LINE * ++line] = 0;
+      oneSystemFlag(FLAG_ENGOVR,  "ENGOVR",  &line, &firstFlag);
+      oneSystemFlag(FLAG_ALPIN,   "ALP.IN",  &line, &firstFlag);
+      oneSystemFlag(FLAG_AUTOFF,  "AUTOFF",  &line, &firstFlag);
+      oneSystemFlag(FLAG_AUTXEQ,  "AUTXEQ",  &line, &firstFlag);
+      oneSystemFlag(FLAG_CPXj,    "CPXj",    &line, &firstFlag);
+      oneSystemFlag(FLAG_CPXRES,  "CPXRES",  &line, &firstFlag);  //JM
+      oneSystemFlag(FLAG_ENDPMT,  "ENDPMT",  &line, &firstFlag);
+      oneSystemFlag(FLAG_FRACT,   "FRACT",   &line, &firstFlag);
+      oneSystemFlag(FLAG_GROW,    "GROW",    &line, &firstFlag);
+      oneSystemFlag(FLAG_IGN1ER,  "IGN1ER",  &line, &firstFlag);
+      oneSystemFlag(FLAG_INTING,  "INTING",  &line, &firstFlag);
+      oneSystemFlag(FLAG_LEAD0,   "LEAD.0",  &line, &firstFlag);
+      oneSystemFlag(FLAG_NUMIN,   "NUM.IN",  &line, &firstFlag);
+      oneSystemFlag(FLAG_POLAR,   "POLAR",   &line, &firstFlag);   //JM
+      oneSystemFlag(FLAG_PRTACT,  "PRTACT",  &line, &firstFlag);
+      oneSystemFlag(FLAG_QUIET,   "QUIET",   &line, &firstFlag);
+      oneSystemFlag(FLAG_SLOW,    "SLOW",    &line, &firstFlag);
+      oneSystemFlag(FLAG_SOLVING, "SOLVING", &line, &firstFlag);
+      oneSystemFlag(FLAG_SPCRES,  "SPCRES",  &line, &firstFlag);
+      oneSystemFlag(FLAG_SSIZE8,  "SSIZE8",  &line, &firstFlag);
+      oneSystemFlag(FLAG_TRACE,   "TRACE",   &line, &firstFlag);
+      oneSystemFlag(FLAG_USB,     "USB",     &line, &firstFlag);
+      oneSystemFlag(FLAG_VMDISP,  "VMDISP",  &line, &firstFlag);
+      line++;
     }
 
 
@@ -293,37 +339,22 @@ TO_QSPI const  letteredFlagDisplay_t letteredFlagDisplay[] = {
       }
     }
 
-    if(currentFlgScr == 2) {  // System Flags 00 to 59
-      extern int16_t menu_SYSFL[];
-      uint16_t systemFlag;
-      uint16_t param;
-      for(f=0; f<=59; f++) {
-        systemFlag = menu_SYSFL[f];
-        param = indexOfItems[systemFlag].param;
-        if(getSystemFlag(param)) {
-          lcd_fill_rect(66*(f%6)+1,22*(f/6)+66-1-44,  66*(f%6)+65-(66*(f%6)+1),22*(f/6)+66+20-1-44-(22*(f/6)+66-1-44)+1,0xFF);
+    if(currentFlgScr == 2) {
+      if(line > 9) {
+        for(f=9; f<line; f++) {
+          showString(tmpString + CHARS_PER_LINE * f, &standardFont, 1, 22*(f-9) + 43, vmNormal, true, false);
         }
-        sprintf(tmpString, "%s", indexOfItems[systemFlag].itemCatalogName);
-        showString(tmpString, &standardFont, 66*(f%6) + 34 - stringWidth(tmpString, &standardFont, false, false)/2, 22*(f/6)+66-1-44, getSystemFlag(param) ? vmReverse : vmNormal, true, true); //JM-44
+      }
+      else {
+        if(lastFlgScr == 1) {currentFlgScr++;}
+        else {
+          currentFlgScr--;
+        }
       }
     }
 
-    if(currentFlgScr == 3) {  // System Flags 60 to NUMBER_OF_SYSTEM_FLAGS-1
-      extern int16_t menu_SYSFL[];
-      uint16_t systemFlag;
-      uint16_t param;
-      for(f=0; f<=NUMBER_OF_SYSTEM_FLAGS - 1 - 60; f++) {
-        systemFlag = menu_SYSFL[f+60];
-        param = indexOfItems[systemFlag].param;
-        if(getSystemFlag(param)) {
-          lcd_fill_rect(66*(f%6)+1,22*(f/6)+66-1-44,  66*(f%6)+65-(66*(f%6)+1),22*(f/6)+66+20-1-44-(22*(f/6)+66-1-44)+1,0xFF);
-        }
-        sprintf(tmpString, "%s", indexOfItems[systemFlag].itemCatalogName);
-        showString(tmpString, &standardFont, 66*(f%6) + 34 - stringWidth(tmpString, &standardFont, false, false)/2, 22*(f/6)+66-1-44, getSystemFlag(param) ? vmReverse : vmNormal, true, true); //JM-44
-      }
-    }
 
-    if(currentFlgScr == 4) { // Global flags from 0 to 99
+    if(currentFlgScr == 3) { // flags from 0 to 99
       //clearScreen(false, true, true);
 
       for(f=0; f<=99/*79*/; f++) {                                          //JM 99
@@ -335,7 +366,7 @@ TO_QSPI const  letteredFlagDisplay_t letteredFlagDisplay[] = {
       }
     }
 
-    if(currentFlgScr == 5) { // Flags from FLAG_X to FLAG_W, local registers and local flags
+    if(currentFlgScr == 4) { // Flags from FLAG_X to FLAG_W, local registers and local flags
       //clearScreen(false, true, true);
 
       showString("Global flag status (continued):", &standardFont, 1, 22-1, vmNormal, true, true);
@@ -343,7 +374,7 @@ TO_QSPI const  letteredFlagDisplay_t letteredFlagDisplay[] = {
       // Lettered flags
       for(f=FLAG_X; f<=FLAG_W; f++) {
         f = (f == FLAG_K + 1 ? FLAG_M : f);            // Skip from FLAG_K (111) to FLAG_M (211)
-        i = (f <= FLAG_K ? f-FLAG_X : f-FLAG_X - 99);  // Index in the flag display table
+        i = (f <= FLAG_K ? f-FLAG_X : f-FLAG_X - 99);  // Index in the flag display table        
         showString(letteredFlagDisplay[i].txt, &standardFont, letteredFlagDisplay[i].position, 43, getFlag(f) ? vmReverse : vmNormal, true, true);
       }
 

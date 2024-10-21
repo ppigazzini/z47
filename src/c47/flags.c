@@ -251,7 +251,6 @@ void fnGetSystemFlag(uint16_t systemFlag) {
  * \return void
  ***********************************************/
 void fnSetFlag(uint16_t flag) {
-  printf("**[DL]** fnSetFlag flag %d\n",flag);fflush(stdout);
   if(flag & 0x8000) { // System flag
     if(isSystemFlagWriteProtected(flag)) {
       temporaryInformation = TI_NO_INFO;
