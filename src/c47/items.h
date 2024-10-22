@@ -1731,7 +1731,7 @@
 #define ITM_cn                      1683
 #define ITM_dn                      1684
 #define ITM_toHR                    1685
-#define ITM_toHMS                   1686
+#define ITM_HRtoTM                  1686
 #define ITM_toINT                   1687
 #define ITM_HMStoTM                 1688
 #define ITM_1689                    1689

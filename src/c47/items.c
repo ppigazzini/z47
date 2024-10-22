@@ -944,7 +944,7 @@ bool_t itemNotAvail(int16_t itemNr) {
   void fnDay                       (uint16_t unusedButMandatoryParameter) {}
   void fnWday                      (uint16_t unusedButMandatoryParameter) {}
   void fnToHr                      (uint16_t unusedButMandatoryParameter) {}
-  void fnToHms                     (uint16_t unusedButMandatoryParameter) {}
+  void fnHRtoTM                    (uint16_t unusedButMandatoryParameter) {}
   void fnToReal                    (uint16_t unusedButMandatoryParameter) {}
   void fnDec                       (uint16_t unusedButMandatoryParameter) {}
   void fnInc                       (uint16_t unusedButMandatoryParameter) {}
@@ -3141,7 +3141,7 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 1683 */  { fnJacobiCn,                   NOPARAM,                     "cn(u,m)",                                     "cn(u,m)",                                     (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /* 1684 */  { fnJacobiDn,                   NOPARAM,                     "dn(u,m)",                                     "dn(u,m)",                                     (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /* 1685 */  { fnOldItemError,               NOPARAM,                     ">" STD_RIGHT_ARROW "HR<",                     ">" STD_RIGHT_ARROW "HR<",                     (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
-/* 1686 */  { itemToBeCoded,                NOPARAM,                     "H" STD_RIGHT_ARROW TM,                        "H" STD_RIGHT_ARROW TM,                        (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },//JM mod
+/* 1686 */  { fnHRtoTM,                     NOPARAM,                     "H" STD_RIGHT_ARROW TM,                        "H" STD_RIGHT_ARROW TM,                        (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },//JM mod
 /* 1687 */  { fnChangeBase,                 TM_VALUE_CHB,                STD_RIGHT_ARROW "INT",                         "#",                                           (2 << TAM_MAX_BITS) |    16, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NUMBER_8     },
 /* 1688 */  { itemToBeCoded,                NOPARAM,                     "H.MS" STD_RIGHT_ARROW TM,                     "H.MS" STD_RIGHT_ARROW TM,                     (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /* 1689 */  { itemToBeCoded,                NOPARAM,                     "1689",                                        "1689",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },

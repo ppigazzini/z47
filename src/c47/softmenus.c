@@ -64,8 +64,8 @@ TO_QSPI const int16_t menu_BITS[]        = { ITM_LOGICALAND,                ITM_
 
 
 TO_QSPI const int16_t menu_CLK[]         = { ITM_DATE,                      ITM_TIME,                   ITM_DTtoJ,                ITM_JtoDT,             ITM_DtoJ,                    ITM_TIMER,
-                                             ITM_DATEto,                    ITM_TIMEto,                 ITM_dotD,                 ITM_msTo,              ITM_LEAP,                    ITM_XtoDATE,
-                                             ITM_toDATE,                    ITM_toTIME,                 ITM_toHMS,                ITM_HMStoTM,           ITM_NULL,                    ITM_NULL,
+                                             ITM_DATEto,                    ITM_TIMEto,                 ITM_msTo,                 ITM_dotD,              ITM_LEAP,                    ITM_XtoDATE,
+                                             ITM_toDATE,                    ITM_toTIME,                 ITM_HMStoTM,              ITM_HRtoTM,            ITM_NULL,                    ITM_NULL,
 
                                              ITM_DATE,                      ITM_TIME,                   ITM_TDISP,                ITM_DMY,               ITM_MDY,                     ITM_YMD,
                                              ITM_SETDAT,                    ITM_SETTIM,                 ITM_WDAY,                 ITM_DAY,               ITM_MONTH,                   ITM_YEAR,

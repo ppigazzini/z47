@@ -804,11 +804,11 @@ void fnToHr(uint16_t unusedButMandatoryParameter) {
 }
 }
 
-void fnToHms(uint16_t unusedButMandatoryParameter) {
+void fnHRtoTM(uint16_t unusedButMandatoryParameter) {
   switch(calcMode) {                     //JM vv
     case CM_NIM:
       #if !defined(TESTSUITE_BUILD)
-        addItemToNimBuffer(ITM_toHMS);
+        addItemToNimBuffer(ITM_HRtoTM);
       #endif // !TESTSUITE_BUILD
       break;
 
@@ -843,7 +843,7 @@ void fnToHms(uint16_t unusedButMandatoryParameter) {
           displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
           #if (EXTRA_INFO_ON_CALC_ERROR == 1)
             sprintf(errorMessage, "data type %s cannot be converted to time!", getRegisterDataTypeName(REGISTER_X, false, false));
-            moreInfoOnError("In function fnToHms:", errorMessage, NULL, NULL);
+            moreInfoOnError("In function fnHRToTM:", errorMessage, NULL, NULL);
           #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
           return;
           }
