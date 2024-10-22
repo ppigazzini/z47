@@ -1204,8 +1204,8 @@
 #define ITM_USB_SYMBOL              1170
 #define ITM_LEFT_RIGHT_DOUBLE_ARROW 1171
 #define ITM_CR                      1172
-#define VAR_1173                    1173
-#define VAR_1174                    1174
+#define ITM_TIME_T                  1173
+#define ITM_DATE_D                  1174
 
 
 // Reserved variables
