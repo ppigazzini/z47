@@ -654,6 +654,18 @@
 
 #define NUMBER_OF_SYSTEM_FLAGS                    75 // We can have a maximum of 128 system flags
 
+// FLGS and STATUS SCREENS
+#define NO_SCREEN                          0  // No screen selected
+#define FIRST_SCREEN                       1  
+#define STATUS_SCREEN                      1  // Flags Status summary screen
+#define SYSTEM_FLAGS_SCREEN_1              2  // System Flags 1st screen
+#define SYSTEM_FLAGS_SCREEN_2              3  // System Flags 2nd screen
+#define GLOBAL_FLAGS_SCREEN                4  // Global Flags 00-99 screen
+#define LETTERED_AND_LOCAL_FLAGS_SCREEN    5  // Global Lettered Flags and Local FLags screen
+#define LAST_SCREEN                        5 
+
+
+
 typedef enum {
   LI_ZERO     = 0, // Long integer sign 0
   LI_NEGATIVE = 1, // Long integer sign -

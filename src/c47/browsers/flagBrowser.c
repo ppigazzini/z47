@@ -100,14 +100,14 @@ TO_QSPI const  letteredFlagDisplay_t letteredFlagDisplay[] = {
       previousCalcMode = calcMode;
       calcMode = CM_FLAG_BROWSER;
       clearSystemFlag(FLAG_ALPHA);
-      currentFlgScr = init;                      //1 for flag STATUS, 1 for FLGS
+      currentFlgScr = init;                      //STATUS_SCREEN for flag STATUS, GLOBAL_FLAGS_SCREEN for FLGS
       refreshScreen(190);                        //Restart once, clearing screen and all, restarting flag browser, now in the correct mode
     }
 
-    if(currentFlgScr == 0) currentFlgScr = 5;
-    if(currentFlgScr == 6) currentFlgScr = 1;
+    if(currentFlgScr < FIRST_SCREEN) currentFlgScr = LAST_SCREEN;
+    if(currentFlgScr > LAST_SCREEN)  currentFlgScr = FIRST_SCREEN;
 
-    if(currentFlgScr == 1) { // Init new style
+    if(currentFlgScr == STATUS_SCREEN) { // Init new style
       char flagNumber[4];
 
       line = 0;
@@ -287,13 +287,13 @@ TO_QSPI const  letteredFlagDisplay_t letteredFlagDisplay[] = {
     }
 
 
-    if(currentFlgScr == 1) {
+    if(currentFlgScr == STATUS_SCREEN) {
       for(f=0; f<min(9, line); f++) {
         showString(tmpString + CHARS_PER_LINE * f, &standardFont, 1, 22*f + 43, vmNormal, true, false);
       }
     }
 
-    if(currentFlgScr == 2) {  // System Flags 00 to 59
+    if(currentFlgScr == SYSTEM_FLAGS_SCREEN_1) {  // System Flags 00 to 59
       extern int16_t menu_SYSFL[];
       uint16_t systemFlag;
       uint16_t param;
@@ -308,7 +308,7 @@ TO_QSPI const  letteredFlagDisplay_t letteredFlagDisplay[] = {
       }
     }
 
-    if(currentFlgScr == 3) {  // System Flags 60 to NUMBER_OF_SYSTEM_FLAGS-1
+    if(currentFlgScr == SYSTEM_FLAGS_SCREEN_2) {  // System Flags 60 to NUMBER_OF_SYSTEM_FLAGS-1
       extern int16_t menu_SYSFL[];
       uint16_t systemFlag;
       uint16_t param;
@@ -323,7 +323,7 @@ TO_QSPI const  letteredFlagDisplay_t letteredFlagDisplay[] = {
       }
     }
 
-    if(currentFlgScr == 4) { // Global flags from 0 to 99
+    if(currentFlgScr == GLOBAL_FLAGS_SCREEN) { // Global flags from 0 to 99
       //clearScreen(false, true, true);
 
       for(f=0; f<=99/*79*/; f++) {                                          //JM 99
@@ -335,7 +335,7 @@ TO_QSPI const  letteredFlagDisplay_t letteredFlagDisplay[] = {
       }
     }
 
-    if(currentFlgScr == 5) { // Flags from FLAG_X to FLAG_W, local registers and local flags
+    if(currentFlgScr == LETTERED_AND_LOCAL_FLAGS_SCREEN) { // Flags from FLAG_X to FLAG_W, local registers and local flags
       //clearScreen(false, true, true);
 
       showString("Global flag status (continued):", &standardFont, 1, 22-1, vmNormal, true, true);
@@ -371,25 +371,6 @@ TO_QSPI const  letteredFlagDisplay_t letteredFlagDisplay[] = {
           showString(tmpString, &standardFont, 25*(f%16)+5+4*(f<=9), 22*(f/16)+175, getFlag(FIRST_LOCAL_FLAG + f) ? vmReverse : vmNormal, true, true);     //JM-44
         }
       }
-
-  #if defined(OOO)
-      if(currentNumberOfLocalRegisters > 0) {
-        // Local registers
-        sprintf(tmpString, "%" PRIu16 " local register%s allocated.", currentNumberOfLocalRegisters, currentNumberOfLocalRegisters==1 ? " is" : "s are");
-        showString(tmpString, &standardFont, 1, 132-1, vmNormal, true, true);
-        showString("Local flag status:", &standardFont, 1, 154-1, vmNormal, true, true);
-
-        for(f=0; f<16; f++) {
-          if(getFlag(FIRST_LOCAL_FLAG + f)) {
-            lcd_fill_rect(40*(f%10)+1, 22*(f/10)+176-1-44, 40*(f%10)+39-(40*(f%10)+1), 22*(f/10)+176+20-1-44-(22*(f/10)+176-1-44)+1,  0xFF);
-          }
-
-          sprintf(tmpString, "%d", f);
-          showString(tmpString, &standardFont, f<=9 ? 40*(f%10) + 17 : 40*(f%10) + 12, 22*(f/10)+176-1-44, getFlag(FIRST_LOCAL_FLAG + f) ? vmReverse : vmNormal, true, true);     //JM-44
-        }
-      }
-  #endif // OOO
-
     }
     lastFlgScr = currentFlgScr;
   #endif // !SAVE_SPACE_DM42_8FL
