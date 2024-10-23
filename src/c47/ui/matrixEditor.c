@@ -1131,7 +1131,7 @@ int16_t getRealMatrixColumnWidths(const real34Matrix_t *matrix, int16_t prefixWi
   const uint16_t sRow = forEditor ? scrollRow : 0;
   const uint16_t sCol = forEditor ? scrollColumn : 0;
   const int16_t maxWidth = MATRIX_LINE_WIDTH - prefixWidth;
-  int16_t totalWidth = 0, width = 0;
+  int16_t totalWidth = 0;
   int16_t maxRightWidth[MATRIX_MAX_COLUMNS] = {};
   int16_t maxLeftWidth[MATRIX_MAX_COLUMNS] = {};
   const int16_t exponentOutOfRange = 0x4000;
@@ -1153,6 +1153,7 @@ int16_t getRealMatrixColumnWidths(const real34Matrix_t *matrix, int16_t prefixWi
     for(int i = 0; i < maxRows; i++) {
       for(int j = 0; j < maxCols; j++) {
         real34_t r34Val;
+        bool_t r34sign = real34IsNegative(&matrix->matrixElements[(i+sRow)*cols+j+sCol]);
         real34Copy(&matrix->matrixElements[(i+sRow)*cols+j+sCol], &r34Val);
         real34SetPositiveSign(&r34Val);
 
@@ -1173,12 +1174,13 @@ int16_t getRealMatrixColumnWidths(const real34Matrix_t *matrix, int16_t prefixWi
             }
           goto begin; // redo
         }
-        width = stringWidth(tmpString, font, true, true) + 1;
+
+        int16_t width = stringWidth(tmpString, font, true, true) + 1;
         rPadWidth[i * MATRIX_MAX_COLUMNS + j] = 0;
         if(strstr(tmpString, ".") || strstr(tmpString, ",")) {
           for(char *xStr = tmpString; *xStr != 0; xStr++) {
             if(((displayFormat != DF_ENG && (displayFormat != DF_ALL || !getSystemFlag(FLAG_ENGOVR))) && (*xStr == '.' || *xStr == ',')) ||
-               ((displayFormat == DF_ENG || (displayFormat == DF_ALL && getSystemFlag(FLAG_ENGOVR))) && xStr[0] == (char)0x80 && (xStr[1] == (char)0x87 || xStr[1] == (char)0xd7))) {
+               ((displayFormat == DF_ENG || (displayFormat == DF_ALL && getSystemFlag(FLAG_ENGOVR))) && xStr[0] == (char)0x80 && (xStr[1] == (char)0x87 || xStr[1] == (char)0xd7))) {  //STD_CROSS
               rPadWidth[i * MATRIX_MAX_COLUMNS + j] = stringWidth(xStr, font, true, true) + 1;
                 if(maxRightWidth[j] < rPadWidth[i * MATRIX_MAX_COLUMNS + j]) {
                   maxRightWidth[j] = rPadWidth[i * MATRIX_MAX_COLUMNS + j];
@@ -1191,6 +1193,9 @@ int16_t getRealMatrixColumnWidths(const real34Matrix_t *matrix, int16_t prefixWi
             }
         }
         else {
+          if(r34sign && strstr(tmpString, "/")) {
+            width += stringWidth("-", font, true, true);
+          }
           rPadWidth[i * MATRIX_MAX_COLUMNS + j] = width | exponentOutOfRange;
         }
       }
@@ -1468,7 +1473,7 @@ int16_t getComplexMatrixColumnWidths(const complex34Matrix_t *matrix, int16_t pr
   const uint16_t sRow = forEditor ? scrollRow : 0;
   const uint16_t sCol = forEditor ? scrollColumn : 0;
   const int16_t maxWidth = MATRIX_LINE_WIDTH - prefixWidth;
-  int16_t totalWidth = 0, width = 0;
+  int16_t totalWidth = 0;
   int16_t maxRightWidth_r[MATRIX_MAX_COLUMNS] = {};
   int16_t maxLeftWidth_r[MATRIX_MAX_COLUMNS] = {};
   int16_t maxRightWidth_i[MATRIX_MAX_COLUMNS] = {};
@@ -1506,8 +1511,9 @@ int16_t getComplexMatrixColumnWidths(const complex34Matrix_t *matrix, int16_t pr
 
         rPadWidth_r[i * MATRIX_MAX_COLUMNS + j] = 0;
         real34SetPositiveSign(VARIABLE_REAL34_DATA(&c34Val));
+        bool_t c34sign = real34IsNegative(&matrix->matrixElements[(i+sRow)*cols+j+sCol]);
         real34ToDisplayString(VARIABLE_REAL34_DATA(&c34Val), amNone, tmpString, font, maxWidth, displayFormat == DF_ALL ? k : 15, true, true);
-        width = stringWidth(tmpString, font, true, true) + 1;
+        int16_t width = stringWidth(tmpString, font, true, true) + 1;
         if(strstr(tmpString, ".") || strstr(tmpString, ",")) {
           for(char *xStr = tmpString; *xStr != 0; xStr++) {
             if(((displayFormat != DF_ENG && (displayFormat != DF_ALL || !getSystemFlag(FLAG_ENGOVR))) && (*xStr == '.' || *xStr == ',')) ||
@@ -1524,11 +1530,16 @@ int16_t getComplexMatrixColumnWidths(const complex34Matrix_t *matrix, int16_t pr
             }
         }
         else {
+          if(c34sign && strstr(tmpString, "/")) {
+            width += stringWidth("-", font, true, true);
+          }
           rPadWidth_r[i * MATRIX_MAX_COLUMNS + j] = width | exponentOutOfRange;
         }
 
         rPadWidth_i[i * MATRIX_MAX_COLUMNS + j] = 0;
+        c34sign = false;
         if(!polarMode) {
+          c34sign = real34IsNegative(&matrix->matrixElements[(i+sRow)*cols+j+sCol]);
           real34SetPositiveSign(VARIABLE_IMAG34_DATA(&c34Val));
         }
         real34ToDisplayString(VARIABLE_IMAG34_DATA(&c34Val), polarMode ? angleMode : amNone, tmpString, font, maxWidth, displayFormat == DF_ALL ? k : 15, true, false);
@@ -1549,6 +1560,9 @@ int16_t getComplexMatrixColumnWidths(const complex34Matrix_t *matrix, int16_t pr
             }
         }
         else {
+          if(c34sign && strstr(tmpString, "/")) {
+            width += stringWidth("-", font, true, true);
+          }
           rPadWidth_i[i * MATRIX_MAX_COLUMNS + j] = width | exponentOutOfRange;
         }
       }

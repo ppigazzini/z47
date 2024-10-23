@@ -546,6 +546,17 @@ typedef struct {
   bool_t     keyInputFinished;
 } tamState_t;
 
+
+/**
+ * \struct letteredFlagDisplay_t
+   * Structure keeping the informations to display the lettered flags status.
+   */
+typedef struct {
+  char      txt[4];              ///< lettered flag text to be displayed
+  uint32_t  position;            ///< X position of the text
+} letteredFlagDisplay_t;
+
+
   #if defined(PC_BUILD)
   /**
    * \struct calcKeyboard_t
