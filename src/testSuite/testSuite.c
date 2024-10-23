@@ -311,6 +311,7 @@ const funcTest_t funcTestNoParam[] = {
   {"fnTanh",                 fnTanh                },
   {"fnToDate",               fnToDate              },
   {"fnHRtoTM",               fnHRtoTM              },
+  {"fnHMStoTM",              fnHMStoTM             },
   {"fnToReal",               fnToReal              },
   {"fnToPolar2",             fnToPolar2            },
   {"fnToRect2",              fnToRect2             },

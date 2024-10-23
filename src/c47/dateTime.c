@@ -804,6 +804,49 @@ void fnToHr(uint16_t unusedButMandatoryParameter) {
 }
 }
 
+
+void fnHMStoTM(uint16_t unusedButMandatoryParameter) {
+  if(!saveLastX()) {
+      return;
+  }
+  
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
+      switch(getRegisterDataType(REGISTER_X)) {
+        case dtLongInteger: {
+          convertLongIntegerRegisterToReal34Register(REGISTER_X, REGISTER_X);
+          break;
+        }
+
+        case dtTime: {
+          /* already in hours: do nothing */
+            return;
+        }
+
+        case dtReal34: {
+          if(getRegisterAngularMode(REGISTER_X) == amNone) {
+            break;
+          }
+          /* fallthrough */
+        }
+
+        default: {
+          displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+          #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+            sprintf(errorMessage, "data type %s cannot be converted to time!", getRegisterDataTypeName(REGISTER_X, false, false));
+            moreInfoOnError("In function fnHMStoTM:", errorMessage, NULL, NULL);
+          #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+          return;
+          }
+      }
+  #pragma GCC diagnostic pop
+  hmmssInRegisterToSeconds(REGISTER_X);
+  if(lastErrorCode != 0) {
+    undo();
+  }
+}
+
+
 void fnHRtoTM(uint16_t unusedButMandatoryParameter) {
   switch(calcMode) {                     //JM vv
     case CM_NIM:

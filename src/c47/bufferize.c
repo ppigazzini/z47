@@ -1687,8 +1687,7 @@ typedef struct {
         break;
     }
 
-      case ITM_ms :                       //JM
-      case ITM_HRtoTM:{
+      case ITM_ms : {                      //JM
         if(nimNumberPart == NP_INT_10 || nimNumberPart == NP_REAL_FLOAT_PART || nimNumberPart == NP_REAL_EXPONENT) {
           done = true;
           setLastintegerBasetoZero();
