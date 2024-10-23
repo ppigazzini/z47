@@ -369,6 +369,8 @@
 `U+211d`,272,282,`DOUBLE-STRUCK CAPITAL R`,`Real R`,`ℝ`,`R`,`U+0052`
 `U+2124`,369,381,`DOUBLE-STRUCK CAPITAL Z`,`Integer Z`,`ℤ`,`Z`,`U+005a`
 `U+2125`,369,381,`DOUBLE-STRUCK CAPITAL Z SMALL`,`Integer Z Small`,`℥`,`Z`,`U+005a`
+`U+2138`,296,296,`not defined by unicode in this range`,`TIME`,`𝕋`,`T`,`U+0044`
+`U+2145`,109,109,`not defined by unicode in this range`,`DATE`,`𝔻`,`D`,`U+0054`
 `U+2160`,10,13,`ROMAN NUMERAL ONE`,`Superscript 0`,`Ⅰ`,``,`U+0030`
 `U+2161`,15,19,`ROMAN NUMERAL TWO`,`Superscript 1`,`Ⅱ`,`1`,`U+0031`
 `U+2162`,22,23,`ROMAN NUMERAL THREE`,`Superscript 2`,`Ⅲ`,`2`,`U+0032`
@@ -645,8 +647,8 @@
 `U+2149`,191,191,`Double-Struck Italic Small J`,`op-j`,`ⅉ`,`j`,`U+004a`
 `U+1E9D`,146,146,`longshighstroke`,`long f`,`ẝ`,`f`,`U+0046`
 `U+1E9F`,152,152,`delta`,`long g`,`ẟ`,`g`,`U+0047`
-`U+2024`,485,485,`Double Circled Digit 1`,`Full HP stop`,`․`,`.`,`U+002e`
-`U+2435`,591,593,`BATTERYHALF`,`BATTHALF`,`␵`,` `,`U+2435`
+`U+2024`,485,485,`not defined by unicode`,`Full HP stop`,`․`,`.`,`U+002e`
+`U+2435`,591,593,`not defined by unicode`,`BATTHALF`,`␵`,` `,`U+2435`
 `U+24EA`,10,10,`Circled Digit ZERO`,`Digit HP 0`,`⓪`,`0`,`U+0030`
 `U+24F5`,15,15,`Double Circled Digit ONE`,`Digit HP 1`,`⓵`,`1`,`U+0031`
 `U+24F6`,22,22,`Double Circled Digit TWO`,`Digit HP 2`,`⓶`,`2`,`U+0032`
@@ -661,10 +663,10 @@
 `U+24FF`,51,51,`Negative Circled Digit Zero`,`HP PLUS`,`+`,`+`,`U+002b`
 `U+25a2`,355,369,`whitesquarewithroundedcorners`,`box`,`▢`,`[`,`U+005b`
 `U+25a6`,355,369,`squarewithorthogonalcrosshatchfill`,`boxfilled`,`▦`,`[`,`U+005b`
-`U+29F0`,355,369,`yx`,`yx`,`⧰`,`yx`,`U+0059`
-`U+29F1`,146,150,`fg`,`fg`,`⧱`,`fg`,`U+0046`
-`U+2dea`,424,426,`Sub Pi`,`Sub pi`,`π`,`π`,`U+03a0`
-`U+2deb`,424,426,`Sup Pi`,`Sup pi`,`π`,`π`,`U+03a0`
-`U+2dec`,424,426,`pi radians`,`pi r`,`π`,`π`,`U+03a0`
+`U+29F0`,355,369,`not defined by unicode`,`yx`,`⧰`,`yx`,`U+0059`
+`U+29F1`,146,150,`not defined by unicode`,`fg`,`⧱`,`fg`,`U+0046`
+`U+2dea`,424,426,`not defined by unicode`,`Sub pi`,`π`,`π`,`U+03a0`
+`U+2deb`,424,426,`not defined by unicode`,`Sup pi`,`π`,`π`,`U+03a0`
+`U+2dec`,424,426,`not defined by unicode`,`pi r`,`π`,`π`,`U+03a0`
 `U+001D`,1,9,`INFORMATION SEPARATOR THREE`,,,,`U+0020`
 ,,,,,,,
