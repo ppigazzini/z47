@@ -14647,11 +14647,11 @@ int main(int argc, char* argv[]) {
     *(currentStep++) = (ITM_dn >> 8) | 0x80;
     *(currentStep++) =  ITM_dn       & 0xff;
 
-    *(currentStep++) = (ITM_toHR >> 8) | 0x80;
-    *(currentStep++) =  ITM_toHR       & 0xff;
+    *(currentStep++) = (ITM_HMStoTM >> 8) | 0x80;
+    *(currentStep++) =  ITM_HMStoTM       & 0xff;
 
-    *(currentStep++) = (ITM_toHMS >> 8) | 0x80;
-    *(currentStep++) =  ITM_toHMS       & 0xff;
+    *(currentStep++) = (ITM_HRtoTM >> 8) | 0x80;
+    *(currentStep++) =  ITM_HRtoTM       & 0xff;
 
     *(currentStep++) = (ITM_toINT >> 8) | 0x80;
     *(currentStep++) =  ITM_toINT       & 0xff;
