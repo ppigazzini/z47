@@ -4515,7 +4515,7 @@ void fnKeyUp(uint16_t unusedButMandatoryParameter) {
       }
 
       case CM_FLAG_BROWSER: {
-        currentFlgScr--;                          //JM removed the 3-x part
+        currentFlgScr++;                          //[DL] reverse order
         break;
       }
 
@@ -4733,12 +4733,12 @@ void fnKeyDown(uint16_t unusedButMandatoryParameter) {
         break;
       }
 
-    case CM_FLAG_BROWSER: {
-        currentFlgScr++;                          //JM removed the 3-x part
+      case CM_FLAG_BROWSER: {
+        currentFlgScr--;                          //[DL] reverse order
         break;
       }
 
-    case CM_ASN_BROWSER: {
+      case CM_ASN_BROWSER: {
         currentAsnScr--;
         if(currentAsnScr == 0 || currentAsnScr >= 7) {
           currentAsnScr = 6;
