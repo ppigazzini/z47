@@ -386,8 +386,8 @@
 #define ITM_BARRELtoM3               364
 #define ITM_0365                     365
 #define ITM_M3toBARREL               366
-#define ITM_0367                     367
-#define ITM_0368                     368
+#define ITM_HMStoHR                  367
+#define ITM_HRtoHMS                  368
 #define ITM_0369                     369
 #define ITM_HECTAREtoM2              370
 #define ITM_M2toHECTARE              371

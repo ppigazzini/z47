@@ -893,6 +893,7 @@ bool_t itemNotAvail(int16_t itemNr) {
   void fnCvtDmsToCurrentAngularMode(uint16_t unusedButMandatoryParameter) {}
   void fnCvtFathomM                (uint16_t unusedButMandatoryParameter) {}
   void fnCvtBarrelM3               (uint16_t unusedButMandatoryParameter) {}
+  void fnCvtHMSHR                  (uint16_t unusedButMandatoryParameter) {}
   void fnCvtHectareM2              (uint16_t unusedButMandatoryParameter) {}
   void fnCvtFt2Hectare             (uint16_t unusedButMandatoryParameter) {}
   void fnCvtFt2M2                  (uint16_t unusedButMandatoryParameter) {}
@@ -1796,8 +1797,10 @@ TO_QSPI const item_t indexOfItems[] = {
 /*  364 */  { fnCvtBarrelM3,                multiply,                    "barrel" STD_RIGHT_ARROW "m" STD_SUP_3,        "barrel" STD_RIGHT_ARROW,                      (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /*  365 */  { itemToBeCoded,                NOPARAM,                     "0365",                                        "0365",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /*  366 */  { fnCvtBarrelM3,                divide,                      "m" STD_SUP_3 STD_RIGHT_ARROW "barrel",        "m" STD_SUP_3 STD_RIGHT_ARROW,                 (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
-/*  367 */  { itemToBeCoded,                NOPARAM,                     "0367",                                        "0367",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
-/*  368 */  { itemToBeCoded,                NOPARAM,                     "0368",                                        "0368",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+
+/*  367 */  { fnCvtHMSHR,                   divide,                      "H.MS" STD_RIGHT_ARROW "HR",                    "H.MS" STD_RIGHT_ARROW "HR",                  (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
+/*  368 */  { fnCvtHMSHR,                   multiply,                    "HR" STD_RIGHT_ARROW "H.MS",                    "HR" STD_RIGHT_ARROW "H.MS",                  (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
+
 /*  369 */  { itemToBeCoded,                NOPARAM,                     "0369",                                        "0369",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /*  370 */  { fnCvtHectareM2,               multiply,                    "ha" STD_RIGHT_ARROW "m" STD_SUP_2,            "ha" STD_RIGHT_ARROW "m" STD_SUP_2,            (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /*  371 */  { fnCvtHectareM2,               divide,                      "m" STD_SUP_2 STD_RIGHT_ARROW "ha",            "m" STD_SUP_2 STD_RIGHT_ARROW "ha",            (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
