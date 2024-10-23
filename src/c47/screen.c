@@ -1705,22 +1705,32 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
 
 
   void force_refresh(uint8_t mode) {
-    if(!getSystemFlag(FLAG_MONIT) && mode == timed) {
-      return;
+//printf("#%i",mode == force);
+    if(mode != timed || getSystemFlag(FLAG_MONIT)) {
+//printf("+");
+      uint16_t now = (uint16_t)(getUptimeMs() >> 4);
+      if(mode != timed || ((now >> 6) & 0x0001) == halfSecTick1) {  //Restrict refresh to once per second. Use this minimally, due to extreme slow response.
+//printf("-\n");
+        halfSecTick1 = !halfSecTick1;
+
+        #if defined(PC_BUILD)
+          gtk_widget_queue_draw(screen);
+          #if defined(FULLUPDATE) // (UGLY)
+            refresh_gui();
+          #endif // FULLUPDATE (UGLY)
+        #endif // PC_BUILD
+
+        #if defined(DMCP_BUILD)
+          lcd_forced_refresh();
+        #endif // DMCP_BUILD
+      }
+      else {
+//printf("=%i %i\n", now, ((now >> 6) & 0x0001));
+      }
     }
-    if(mode == force || ((((uint16_t)(getUptimeMs()) >> 4) & 0x0020) == 0x0020) == halfSecTick1) {  //Restrict refresh to once per second. Use this minimally, due to extreme slow response.
-      halfSecTick1 = !halfSecTick1;
-
-      #if defined(PC_BUILD)
-        gtk_widget_queue_draw(screen);
-        #if defined(FULLUPDATE) // (UGLY)
-          refresh_gui();
-        #endif // FULLUPDATE (UGLY)
-      #endif // PC_BUILD
-
-      #if defined(DMCP_BUILD)
-        lcd_forced_refresh();
-      #endif // DMCP_BUILD
+    else {
+//printf(".\n");
+      return;
     }
   }
 
