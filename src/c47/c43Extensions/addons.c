@@ -217,7 +217,10 @@ void fnFrom_ms(uint16_t unusedButMandatoryParameter){
     if(getRegisterDataType(REGISTER_X) == dtTime) {
       temporaryInformation = TI_FROM_MS_TIME;
     }
-    else if(getRegisterDataType(REGISTER_X) == dtReal34 && getRegisterAngularMode(REGISTER_X) == amDMS) {
+    else if(getRegisterDataType(REGISTER_X) == dtReal34 && getRegisterAngularMode(REGISTER_X) != amNone) {
+      if(getRegisterAngularMode(REGISTER_X) != amDMS) {
+        fnAngularModeJM(amDMS);
+      }
       temporaryInformation = TI_FROM_MS_DEG;
     }
     else {
