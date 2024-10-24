@@ -181,10 +181,10 @@
   extern calcKey_t              kbd_usr[37];
   extern calcRegister_t         errorMessageRegisterLine;
   extern glyph_t                glyphNotFound;
-  extern freeMemoryRegion_t     freeMemoryRegions[MAX_FREE_REGION];
+  extern freeMemoryRegion_t     freeMemoryRegions[MAX_FREE_REGIONS];
 
   #if !defined(DMCP_BUILD)
-    extern freeMemoryRegion_t     allocatedMemoryRegions[MAX_FREE_REGION * 50];
+    extern freeMemoryRegion_t     allocatedMemoryRegions[MAX_ALLOCATED_REGIONS];
   #endif // !DMCP_BUILD
 
   extern pcg32_random_t         pcg32_global;

@@ -656,13 +656,13 @@
 
 // FLGS and STATUS SCREENS
 #define NO_SCREEN                          0  // No screen selected
-#define FIRST_SCREEN                       1  
+#define FIRST_SCREEN                       1
 #define STATUS_SCREEN                      1  // Flags Status summary screen
 #define SYSTEM_FLAGS_SCREEN_1              2  // System Flags 1st screen
 #define SYSTEM_FLAGS_SCREEN_2              3  // System Flags 2nd screen
 #define GLOBAL_FLAGS_SCREEN                4  // Global Flags 00-99 screen
 #define LETTERED_AND_LOCAL_FLAGS_SCREEN    5  // Global Lettered Flags and Local FLags screen
-#define LAST_SCREEN                        5 
+#define LAST_SCREEN                        5
 
 
 
@@ -1189,7 +1189,10 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define NUMBER_OF_DISPLAY_DIGITS                  16
 #define NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS     10
 
-#define MAX_FREE_REGION                           50 // Maximum number of free memory regions
+#define MAX_FREE_REGIONS                          50 // Maximum number of free memory regions
+#if !defined(DMCP_BUILD)
+  #define MAX_ALLOCATED_REGIONS                 5000 // Maximum number of allocated memory regions
+#endif // !DMCP_BUILD
 
 // On/Off 1 bit
 #define OFF                                        0

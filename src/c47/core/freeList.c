@@ -59,6 +59,9 @@ void *freeListAlloc(size_t sizeInBlocks) {
         //printf("Memory allocation: %5zd blocks at address %5u     (number of allocated regions = %4d)\n", sizeInBlocks, TO_C47MEMPTR(pcMemPtr), numberOfAllocatedMemoryRegions + 1);
         //fflush(stderr);
         numberOfAllocatedMemoryRegions++;
+        if(numberOfAllocatedMemoryRegions >= MAX_ALLOCATED_REGIONS) {
+          errorf("numberOfAllocatedMemoryRegions is >= MAX_ALLOCATED_REGIONS, increase MAX_ALLOCATED_REGIONS in defines.h (this affects only the PC simulator not the HW firmware)");
+        }
       #endif // !DMCP_BUILD
       return pcMemPtr;
     }
@@ -98,6 +101,9 @@ void *freeListAlloc(size_t sizeInBlocks) {
     //printf("Memory allocation: %5zd blocks at address %5u     (number of allocated regions = %4d)\n", sizeInBlocks, TO_C47MEMPTR(pcMemPtr), numberOfAllocatedMemoryRegions + 1);
     //fflush(stderr);
     numberOfAllocatedMemoryRegions++;
+    if(numberOfAllocatedMemoryRegions >= MAX_ALLOCATED_REGIONS) {
+      errorf("numberOfAllocatedMemoryRegions is >= MAX_ALLOCATED_REGIONS, increase MAX_ALLOCATED_REGIONS in defines.h (this affects only the PC simulator not the HW firmware)");
+    }
   #endif // !DMCP_BUILD
   return pcMemPtr;
 }
@@ -193,7 +199,7 @@ void freeListReduce(void *pcMemPtr, size_t oldSizeInBlocks, size_t newSizeInBloc
 
   // new free block
   if(!done) {
-    if(numberOfFreeMemoryRegions == MAX_FREE_REGION) {
+    if(numberOfFreeMemoryRegions == MAX_FREE_REGIONS) {
       #if defined(DMCP_BUILD)
         backToSystem(NOPARAM);
       #else // !DMCP_BUILD
@@ -307,7 +313,7 @@ void freeListFree(void *pcMemPtr, size_t sizeInBlocks) {
 
   // new free block
   if(!done) {
-    if(numberOfFreeMemoryRegions == MAX_FREE_REGION) {
+    if(numberOfFreeMemoryRegions == MAX_FREE_REGIONS) {
       #if defined(DMCP_BUILD)
         backToSystem(NOPARAM);
       #else // !DMCP_BUILD

@@ -101,10 +101,10 @@ programmableMenu_t     programmableMenu;
 calcKey_t              kbd_usr[37];
 calcRegister_t         errorMessageRegisterLine;
 glyph_t                glyphNotFound = {.charCode = 0x0000, .colsBeforeGlyph = 0, .colsGlyph = 13, .colsAfterGlyph = 0, .rowsGlyph = 19, .data = NULL};
-freeMemoryRegion_t     freeMemoryRegions[MAX_FREE_REGION];
+freeMemoryRegion_t     freeMemoryRegions[MAX_FREE_REGIONS];
 
 #if !defined(DMCP_BUILD)
-  freeMemoryRegion_t     allocatedMemoryRegions[MAX_FREE_REGION * 50];
+  freeMemoryRegion_t     allocatedMemoryRegions[MAX_ALLOCATED_REGIONS];
 #endif // !DMCP_BUILD
 
 pcg32_random_t         pcg32_global = PCG32_INITIALIZER;
@@ -366,34 +366,34 @@ char                   fileNameSelected[stateFileNameVarLength];
 #if CALCMODEL == USER_R47 // R47 alpha keyboard mapping
   //Alpha keyboard mapping for DMCP based on the DM41X example from David
   // includes keycodes remapping for the R47
-  // 
+  //
   const char alpha_upper_transl[] = "_" // code 0 unused
   //        +-------+-------+-------+-------+-------+-------+
   //  1- 6  |  x^2  |  SQRT |  1/x  |  y^x  |  LOG  |  LN   |
-               "A"     "B"     "C"     "D"     "E"     "F"  
+               "A"     "B"     "C"     "D"     "E"     "F"
   //        +-------+-------+-------+-------+-------+-------+
   //  7-12  |  STO  |  RCL  |  R↓   |  DRG  |   f   |   g   |
-               "G"     "H"     "I"     "J"     "@"     "@"  
+               "G"     "H"     "I"     "J"     "@"     "@"
   //        +-------+-------+-------+-------+-------+
   // 13-17  | ENTER | x<>y  |  +/-  |   E   |  <--  |
-               "@"     "K"     "M"     "L"     "@"  
+               "@"     "K"     "M"     "L"     "@"
   //        +-------+-------+-------+-------+-------+
   // 18-22  |  XEQ  |   7   |   8   |   9   |  DIV  |
-               "@"     "N"     "O"     "P"     "Q"  
+               "@"     "N"     "O"     "P"     "Q"
   //        +-------+-------+-------+-------+-------+
   // 23-27  |  UP   |   4   |   5   |   6   |  MUL  |
-               "@"     "R"     "S"     "T"     "U"  
+               "@"     "R"     "S"     "T"     "U"
   //        +-------+-------+-------+-------+-------+
   // 28-32  |  DOWN |   1   |   2   |   3   |  SUB  |
-               "@"     "V"     "W"     "X"     "Y"  
+               "@"     "V"     "W"     "X"     "Y"
   //        +-------+-------+-------+-------+-------+
   // 33-37  |  ON   |   0   |  DOT  |  R/S  |  ADD  |
                "@"     "Z"     ","     "?"     " "  ;
-  //The following lines from the DM41X are not included for the WP43 as 
+  //The following lines from the DM41X are not included for the WP43 as
   // there is no alpha character assigned to the function keys
   //        +-------+-------+-------+-------+-------+-------+
   // 38-43  |  Σ+   |  1/x  | SQRT  |  LOG  |  LN   |  PRG  |
-  //           "A"     "B"     "C"     "D"     "E"     "@"  ;  
+  //           "A"     "B"     "C"     "D"     "E"     "@"  ;
 #endif // CALCMODEL == USER_R47
 
 int convertKeyCode(int key) {
@@ -472,7 +472,7 @@ int convertKeyCode(int key) {
     //case 37: key = 37; break; // +
       default: {
       }
-    }                                                  
+    }
   #else // Default
                                                   if(wp43KbdLayout) {
                                                     /////////////////////////////////////////////////
@@ -576,12 +576,12 @@ int convertKeyCode(int key) {
     c47MemInBlocks = 0;
     gmpMemInBytes = 0;
     mp_set_memory_functions(allocGmp, reallocGmp, freeGmp);
-    
+
     #if CALCMODEL == USER_R47 // R47 meyboard mapping
       key_to_alpha_table = alpha_upper_transl; //Remap the alpha keyboard layout for DMCP dialogs
       //SET_ST(STAT_ALPHA_TAB_Fn);             // Alpha key table includes F keys - This doesn't apply to the R47
     #endif // CALCMODEL == USER_R47
-    
+
     lcd_clear_buf();
                                                 #if defined(NOKEYMAP)                                             //vv dr - no keymap is used
                                                     lcd_putsAt(t24, 4, "Press the bottom left key."); lcd_refresh();
