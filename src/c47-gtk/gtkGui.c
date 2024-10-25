@@ -271,7 +271,7 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
   //TO_QSPI const char asciikeysFrom0020[34] = " !\"#$%&\'()*+,-./:;<=>?@[\\]^_{|}~¡";
 
 
-//                                  w, event_keyval,  97,         shortcutProfile == USER_C47,  EXITIFNIM,          tam.mode ,      "f",        00",                    modes,                CM_NORMAL,                  ITM_SIGMAPLUS
+//                                  w, event_keyval,  97,         shortcutProfile == USER_C47,  EXITIFNIM,          tam.mode ,                   "f",         00",                       modes,         CM_NORMAL,                  ITM_SIGMAPLUS
   static bool_t shortCutCommand(GtkWidget *w, int key,      int keyCode, bool_t condition1,            bool_t exitIfInNIM, bool_t disable, char *shift, char *keyForBtnClicked, uint16_t modes, int16_t requiredCalcMode2, int16_t itemForRunFunction) {
     if(key == keyCode && condition1 && !disable) {
 //      #if defined(VERBOSEKEYS)
@@ -291,6 +291,15 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
       #endif //VERBOSEKEYS
       return false;      //exit directly, not allowing shortcuts during label entry, except to start text using "'"
     }
+    if( (shiftF || shiftG) &&
+        !(shift[0]==0 && keyForBtnClicked[0]!='-') &&
+        !(shiftF && shift[0]=='f' && keyForBtnClicked[0]!='-') &&
+        !(shiftG && shift[0]=='g' && keyForBtnClicked[0]!='-')) {
+      #if defined(VERBOSEKEYS)
+        printf("       shortCutCommand: Returning, shift pressed, but no direct key command programmed for shift\n");
+      #endif //VERBOSEKEYS
+      return false;
+    }
 
     if(key == keyCode && condition1) {
       printf("       shortCutCommand: \n");
@@ -299,7 +308,7 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
       //Handle clean NIM if needed and if allowed
         if(exitIfInNIM && (calcMode == CM_NIM) && (calcMode != requiredCalcMode2)) {   //if requiredCalcMode2 then no auto NIM clearing, and handle function below
         printf("       shortCutCommand: Reset mode to NORMAL\n");
-        btnClicked(w, "32");                  //EXIT if in NIM
+        closeNim(); // changed to direct closeNim to prevent a shift from operating fEXIT or gEXIT. //btnClicked(w, "32");                  //EXIT if in NIM
       }
 
       //Handle menus
