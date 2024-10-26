@@ -298,7 +298,9 @@ bool_t itemNotAvail(int16_t itemNr) {
 
     hourGlassIconEnabled = false;
     screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
-    showHideHourGlass();
+    if(programRunStop != PGM_RUNNING) {
+      showHideHourGlass();
+    }
 
 
     switch(func) {                              //functions to cause a graph redraw
