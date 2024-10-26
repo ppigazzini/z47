@@ -185,7 +185,6 @@ void rsdTime(uint16_t digits) {
   }
 
   realToReal34(&val, REGISTER_REAL34_DATA(REGISTER_X));
-
 }
 
 

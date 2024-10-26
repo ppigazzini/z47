@@ -39,16 +39,16 @@ static bool_t deltaPercentReal(real_t *xReal, real_t *yReal, real_t *rReal, real
    * Check x and y
    */
   if(realIsZero(xReal) && realCompareEqual(xReal, yReal)) {
-      if(getSystemFlag(FLAG_SPCRES)) {
-        realCopy(const_NaN, rReal);
-      }
-      else {
-        displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-          moreInfoOnError("In function fnDeltaPercent:", "cannot divide 0 by 0", NULL, NULL);
-        #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-        return false;
-      }
+    if(getSystemFlag(FLAG_SPCRES)) {
+      realCopy(const_NaN, rReal);
+    }
+    else {
+      displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        moreInfoOnError("In function fnDeltaPercent:", "cannot divide 0 by 0", NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+      return false;
+    }
   }
   else if(realIsZero(yReal)) {
     if(getSystemFlag(FLAG_SPCRES)) {
@@ -65,7 +65,7 @@ static bool_t deltaPercentReal(real_t *xReal, real_t *yReal, real_t *rReal, real
   else {
     realSubtract(xReal, yReal, rReal, realContext);     // r = x - y
     realDivide(rReal, yReal, rReal, realContext);       // r = (x - y)/y
-    realMultiply(rReal, const_100, rReal, realContext); // r = r * 100.0
+    rReal->exponent += 2;                               // r = r * 100
   }
 
   return true;
@@ -93,6 +93,7 @@ void fnDeltaPercent(uint16_t unusedButMandatoryParameter) {
   if(!saveLastX())
     return;
 
+  realZero(&rReal);
   deltaPercentReal(&xReal, &yReal, &rReal, &ctxtReal39);
 
   reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
