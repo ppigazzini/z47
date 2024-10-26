@@ -151,7 +151,8 @@
   void fnDateTo                (uint16_t unusedButMandatoryParameter);
   void fnToDate                (uint16_t unusedButMandatoryParameter);
   void fnToHr                  (uint16_t unusedButMandatoryParameter);
-  void fnToHms                 (uint16_t unusedButMandatoryParameter);
+  void fnHRtoTM                (uint16_t unusedButMandatoryParameter);
+  void fnHMStoTM               (uint16_t unusedButMandatoryParameter);
   void fnDate                  (uint16_t unusedButMandatoryParameter);
   void fnTime                  (uint16_t unusedButMandatoryParameter);
   void fnSetDate               (uint16_t unusedButMandatoryParameter);

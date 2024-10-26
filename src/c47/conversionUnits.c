@@ -22,6 +22,9 @@
 
 #include "browsers/fontBrowser.h"
 #include "constantPointers.h"
+#include "dateTime.h"
+#include "registers.h"
+#include "c43Extensions/addons.h"
 #include "debug.h"
 #include "error.h"
 #include "flags.h"
@@ -585,6 +588,17 @@ void fnK100Mtomik   (uint16_t multiplyDivide) {
   unitConversion(const_100, multiply, inverting);
 }
 
+
+void fnCvtHMSHR   (uint16_t multiplyDivide) {
+  if(multiplyDivide == divide) {
+    fnHMStoTM(0);
+    fnToReal(0);
+  }
+  else {
+    fnHRtoTM(0);
+    fnFrom_ms(0);
+  }
+}
 
 
 

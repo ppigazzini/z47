@@ -1303,7 +1303,7 @@ void insertStepInProgram(int16_t func) {
     aimBuffer[0] = 0;
     return;
   }
-  if(!tam.mode && !tam.alpha && aimBuffer[0] != 0 && func != ITM_toHMS) {
+  if(!tam.mode && !tam.alpha && aimBuffer[0] != 0) {
     if(func == ITM_dotD) {
       _pemCloseDateInput();
       if(aimBuffer[0] == '!') {
@@ -1454,7 +1454,7 @@ void insertStepInProgram(int16_t func) {
     }
 
     case PTP_NONE: {
-      if(func == ITM_toHMS && aimBuffer[0] != 0 && !getSystemFlag(FLAG_ALPHA)) {
+      if(func == ITM_HRtoTM && aimBuffer[0] != 0 && !getSystemFlag(FLAG_ALPHA)) {
         _pemCloseTimeInput();
         if(aimBuffer[0] != '!') {
           pemCloseNumberInput();

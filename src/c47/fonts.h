@@ -476,6 +476,8 @@
 #define STD_REAL_R                    "\xa1\x1d"
 #define STD_INTEGER_Z                 "\xa1\x24"
 #define STD_INTEGER_Z_SMALL           "\xa1\x25"
+#define STD_TIME_T                    "\xa1\x38"
+#define STD_DATE_D                    "\xa1\x45"
 #define STD_SUP_0                     "\xa1\x60"
 #define STD_SUP_1                     "\xa1\x61"
 #define STD_SUP_2                     "\xa1\x62"

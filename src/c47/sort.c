@@ -41,14 +41,15 @@ static TO_QSPI struct {
 #define UNSUBRANGE(a, b, c) { GLYPH_TO_CHAR_CODE(a), GLYPH_TO_CHAR_CODE(b) - GLYPH_TO_CHAR_CODE(a) + 1, c }
   UNSUBRANGE(STD_SUP_A, STD_SUP_Z, 'A'),
   UNSUBRANGE(STD_SUP_a, STD_SUP_z, 'a'),
-  UNSUBRANGE(STD_SUP_0, STD_SUP_9, '0'),
+  UNSUBRANGE(STD_SUP_0, STD_SUP_1, '0'),
+  UNSUBRANGE(STD_SUP_3, STD_SUP_9, '3'),  //exclude ^2 to prevent x2 to be misconstrued for x²
   UNSUBRANGE(STD_SUB_A, STD_SUB_Z, 'A'),
   UNSUBRANGE(STD_SUB_a, STD_SUB_z, 'a'),
   UNSUBRANGE(STD_SUB_0, STD_SUB_9, '0')
 #undef UNSUBRANGE
 };
 
-static TO_QSPI uint16_t unSupSubTable[] = {
+static TO_QSPI uint16_t unSupSubStruckTable[] = {
   GLYPH_TO_CHAR_CODE(STD_SUP_PLUS),     (uint16_t)'+',
   GLYPH_TO_CHAR_CODE(STD_SUP_MINUS),    (uint16_t)'-',
   GLYPH_TO_CHAR_CODE(STD_SUP_INFINITY), GLYPH_TO_CHAR_CODE(STD_INFINITY),
@@ -63,16 +64,20 @@ static TO_QSPI uint16_t unSupSubTable[] = {
   GLYPH_TO_CHAR_CODE(STD_SUB_delta),    GLYPH_TO_CHAR_CODE(STD_delta),
   GLYPH_TO_CHAR_CODE(STD_SUB_mu),       GLYPH_TO_CHAR_CODE(STD_mu),
   GLYPH_TO_CHAR_CODE(STD_SUB_SUN),      GLYPH_TO_CHAR_CODE(STD_SUN),
+
+  GLYPH_TO_CHAR_CODE(STD_TIME_T),      (uint16_t)'T',
+  GLYPH_TO_CHAR_CODE(STD_DATE_D),      (uint16_t)'D',
+  GLYPH_TO_CHAR_CODE(STD_RIGHT_ARROW), (uint16_t)'>',
 };
 
-static uint16_t _charCodeUnSupSub(uint16_t charCode) {
+static uint16_t _charCodeUnSupSubStruck(uint16_t charCode) {
   for(unsigned int i = 0; i < NELEM(unSupSubRanges); i++)
     if(charCode >= unSupSubRanges[i].low && charCode < unSupSubRanges[i].low + unSupSubRanges[i].num)
       return charCode - unSupSubRanges[i].low + unSupSubRanges[i].base;
 
-  for(unsigned int i = 0; i < NELEM(unSupSubTable); i += 2) {
-    if(charCode == unSupSubTable[i]) {
-      return unSupSubTable[i + 1];
+  for(unsigned int i = 0; i < NELEM(unSupSubStruckTable); i += 2) {
+    if(charCode == unSupSubStruckTable[i]) {
+      return unSupSubStruckTable[i + 1];
     }
   }
   return charCode;
@@ -97,7 +102,7 @@ int32_t compareString(const char *stra, const char *strb, int32_t comparisonType
         charCode = (charCode << 8) + (uint8_t)stra[posa + 1];
       }
       if(comparisonType == CMP_NAME) {
-        charCode = _charCodeUnSupSub(charCode);
+        charCode = _charCodeUnSupSubStruck(charCode);
       }
       ranka = charCode;
 
@@ -106,7 +111,7 @@ int32_t compareString(const char *stra, const char *strb, int32_t comparisonType
         charCode = (charCode << 8) + (uint8_t)strb[posb + 1];
       }
       if(comparisonType == CMP_NAME) {
-        charCode = _charCodeUnSupSub(charCode);
+        charCode = _charCodeUnSupSubStruck(charCode);
       }
       rankb = charCode;
 

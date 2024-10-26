@@ -296,7 +296,8 @@ dateTo
 toDate
 xToDate
 
-toHms
+HRtoTM
+HMStoTM
 toReal
 
 ;Distributions
