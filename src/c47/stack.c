@@ -311,7 +311,7 @@ void saveForUndo(void) {
     if(savedStatisticalSumsPointer == NULL) {
       savedStatisticalSumsPointer = allocC47Blocks(NUMBER_OF_STATISTICAL_SUMS * REAL_SIZE_IN_BLOCKS);
     }
-    xcopy(savedStatisticalSumsPointer, statisticalSumsPointer, NUMBER_OF_STATISTICAL_SUMS * TO_BYTES(REAL_SIZE_IN_BLOCKS));
+    xcopy(savedStatisticalSumsPointer, statisticalSumsPointer, NUMBER_OF_STATISTICAL_SUMS * REAL_SIZE_IN_BYTES);
   }
 
   thereIsSomethingToUndo = true;
@@ -390,7 +390,7 @@ void undo(void) {
     if(statisticalSumsPointer == NULL) {
       statisticalSumsPointer = allocC47Blocks(NUMBER_OF_STATISTICAL_SUMS * REAL_SIZE_IN_BLOCKS);
     }
-    xcopy(statisticalSumsPointer, savedStatisticalSumsPointer, NUMBER_OF_STATISTICAL_SUMS * TO_BYTES(REAL_SIZE_IN_BLOCKS));
+    xcopy(statisticalSumsPointer, savedStatisticalSumsPointer, NUMBER_OF_STATISTICAL_SUMS * REAL_SIZE_IN_BYTES);
   }
 
   SAVED_SIGMA_lastAddRem = SIGMA_NONE;
@@ -404,7 +404,7 @@ void undo(void) {
 
 
 void fillStackWithReal0(void) {
-  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+  reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
   int32ToReal34(0, REGISTER_REAL34_DATA(REGISTER_X));
   fnFillStack(0);
 }

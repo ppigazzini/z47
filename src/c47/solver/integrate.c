@@ -443,7 +443,7 @@ static void DEI_xeq_user(calcRegister_t regist, const real_t *x, real_t *res, re
   else if(!realIsSpecial(x)) { // abscissa is good?
     //bool_t d = getSystemFlag(FLAG_SPCRES);
     //clearSystemFlag(FLAG_SPCRES);
-    reallocateRegister(regist, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+    reallocateRegister(regist, dtReal34, 0, amNone);
     realToReal34(x, REGISTER_REAL34_DATA(regist));
     fnFillStack(NOPARAM);
     //printReal34ToConsole(REGISTER_REAL34_DATA(regist), "", " -> ");

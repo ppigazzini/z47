@@ -51,7 +51,7 @@ void fnBesselJ(uint16_t unusedButMandatoryParameter) {
  if(getRegisterAsReal(REGISTER_X, &x) && getRegisterAsReal(REGISTER_Y, &n)) {
     if(realIsAnInteger(&n) || (!realIsNegative(&x))) {
       WP34S_BesselJ(&n, &x, &r, &ctxtReal75);
-      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+      reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
       convertRealToReal34ResultRegister(&r, REGISTER_X);
     }
     else if(getSystemFlag(FLAG_CPXRES)) { // Real -> Complex
@@ -60,7 +60,7 @@ void fnBesselJ(uint16_t unusedButMandatoryParameter) {
       WP34S_Mod(&n, const_2, &a, &ctxtReal75);
       realMultiply(&a, const_pi, &a, &ctxtReal75);
       realPolarToRectangular(&r, &a, &r, &a, &ctxtReal75);
-      reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
+      reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
       convertComplexToResultRegister(&r, &a, REGISTER_X);
     }
     else {
@@ -86,7 +86,7 @@ void fnBesselY(uint16_t unusedButMandatoryParameter) {
   if(getRegisterAsReal(REGISTER_X, &x) && getRegisterAsReal(REGISTER_Y, &n)) {
     if(!realIsNegative(&x)) {
       WP34S_BesselY(&n, &x, &r, &ctxtReal75);
-      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+      reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
       convertRealToReal34ResultRegister(&r, REGISTER_X);
     }
     else if(getSystemFlag(FLAG_CPXRES)) { // Real -> Complex
@@ -103,7 +103,7 @@ void fnBesselY(uint16_t unusedButMandatoryParameter) {
       realAdd(&b, &b, &b, &ctxtReal75);
       realAdd(&a, &b, &a, &ctxtReal75);
 
-      reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
+      reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
       convertComplexToResultRegister(&r, &a, REGISTER_X);
     }
     else {

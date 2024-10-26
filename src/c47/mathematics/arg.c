@@ -86,7 +86,7 @@ static void argCplx(void) {
   realRectangularToPolar(&real, &imag, &real, &imag, &ctxtReal39);
   convertAngleFromTo(&imag, amRadian, currentAngularMode, &ctxtReal39);
 
-  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, currentAngularMode);
+  reallocateRegister(REGISTER_X, dtReal34, 0, currentAngularMode);
   convertRealToReal34ResultRegister(&imag, REGISTER_X);
 }
 

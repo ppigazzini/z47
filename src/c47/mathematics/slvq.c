@@ -77,10 +77,10 @@ void fnSlvq(uint16_t unusedButMandatoryParameter) {
   realRoots &= realIsZero(&x1Imag) && realIsZero(&x2Imag);
 
   if(realRoots) {
-    reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
-    reallocateRegister(REGISTER_Y, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+    reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+    reallocateRegister(REGISTER_Y, dtReal34, 0, amNone);
     #ifdef DISCRIMINANT
-      reallocateRegister(REGISTER_Z, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+      reallocateRegister(REGISTER_Z, dtReal34, 0, amNone);
     #endif //DISCRIMINANT
     convertRealToReal34ResultRegister(&x1Real, REGISTER_X);
     convertRealToReal34ResultRegister(&x2Real, REGISTER_Y);
@@ -90,30 +90,30 @@ void fnSlvq(uint16_t unusedButMandatoryParameter) {
   }
   else { // !realRoots
     if(realIsZero(&x1Imag)) { // x1 is real
-      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+      reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
       convertRealToReal34ResultRegister(&x1Real, REGISTER_X);
     }
     else {
-      reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
+      reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
       convertComplexToResultRegister(&x1Real, &x1Imag, REGISTER_X);
     }
 
     if(realIsZero(&x2Imag)) { // x2 is real
-      reallocateRegister(REGISTER_Y, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+      reallocateRegister(REGISTER_Y, dtReal34, 0, amNone);
       convertRealToReal34ResultRegister(&x2Real, REGISTER_Y);
     }
     else {
-      reallocateRegister(REGISTER_Y, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
+      reallocateRegister(REGISTER_Y, dtComplex34, 0, amNone);
       convertComplexToResultRegister(&x2Real, &x2Imag, REGISTER_Y);
     }
 
     #ifdef DISCRIMINANT
       if(realIsZero(&rImag)) { // r is real
-        reallocateRegister(REGISTER_Z, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+        reallocateRegister(REGISTER_Z, dtReal34, 0, amNone);
         convertRealToReal34ResultRegister(&rReal, REGISTER_Z);
       }
       else {
-        reallocateRegister(REGISTER_Z, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
+        reallocateRegister(REGISTER_Z, dtComplex34, 0, amNone);
         convertComplexToResultRegister(&rReal, &rImag, REGISTER_Z);
       }
     #endif //DISCRIMINANT

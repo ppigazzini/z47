@@ -173,7 +173,7 @@ uint8_t *countOpBytes(uint8_t *step, uint16_t paramMode) {
     case PARAM_SHUFFLE: {
       return step;
     }
-    
+
     case PARAM_MENU: {
       if(opParam == STRING_LABEL_VARIABLE || opParam == INDIRECT_VARIABLE) {
         return step + *step + 1;
@@ -210,7 +210,7 @@ uint8_t *countLiteralBytes(uint8_t *step) {
     //}
 
     case BINARY_REAL34: {
-      return step + TO_BYTES(REAL34_SIZE_IN_BLOCKS);
+      return step + REAL34_SIZE_IN_BYTES;
     }
 
     case BINARY_COMPLEX34: {

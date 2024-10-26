@@ -48,7 +48,7 @@ static void bn_common(bool_t bnstar) {
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
   else {
-    reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+    reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
     convertRealToReal34ResultRegister(&res, REGISTER_X);
   }
 

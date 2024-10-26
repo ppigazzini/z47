@@ -70,7 +70,7 @@ static void incDecAndCompare(uint16_t regist, uint16_t mode) {
   real34_t fp, step;
   int8_t compared;
 
-  reallocateRegister(TEMP_REGISTER_1, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+  reallocateRegister(TEMP_REGISTER_1, dtReal34, 0, amNone);
   getIterParam(regist, &fp, REGISTER_REAL34_DATA(TEMP_REGISTER_1), &step);
   switch(getRegisterDataType(regist)) {
     case dtLongInteger: {

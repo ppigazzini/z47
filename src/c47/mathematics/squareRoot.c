@@ -42,7 +42,7 @@ static void sqrtShoI(void) {
   if(signValue && getFlag(FLAG_CPXRES)) {
     real_t a;
     convertShortIntegerRegisterToReal(REGISTER_X, &a, &ctxtReal39);
-    reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
+    reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
     realSetPositiveSign(&a);
     realSquareRoot(&a, &a, &ctxtReal39);
     convertComplexToResultRegister(const_0, &a, REGISTER_X);

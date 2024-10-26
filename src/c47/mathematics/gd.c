@@ -117,7 +117,7 @@ void gdLonI(uint16_t gdOrInvGd) {
     gdError(gdOrInvGd, errorCode);
   }
   else {
-    reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+    reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
     convertRealToReal34ResultRegister(&x, REGISTER_X);
   }
 }
