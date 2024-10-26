@@ -194,8 +194,8 @@ void fnSolveVar(uint16_t unusedButMandatoryParameter) {
         temporaryInformation = TI_SOLVER_VARIABLE;
       }
       else { // MVAR menu key pressed without a a user entry: store the variable name in K and continue program execution
-        reallocateRegister(REGISTER_K, dtString, nameLength , amNone);
-        xcopy(REGISTER_STRING_DATA(REGISTER_K), var, nameLength );
+        reallocateRegister(REGISTER_K, dtString, TO_BLOCKS(nameLength) , amNone);
+        xcopy(REGISTER_STRING_DATA(REGISTER_K), var, nameLength);
         dynamicMenuItem = -1;
         runProgram(false, INVALID_VARIABLE);
       }
@@ -660,11 +660,11 @@ retryLevel:
       //          );
       //Rewrote the above while condition as more understandable discrete logic:
 
-      if( (!real34IsSpecial(&b2) && b1_b2_Equal ) && 
+      if( (!real34IsSpecial(&b2) && b1_b2_Equal ) &&
         ( (extendRange || bb_bb1_converged) || extremum )  ) {
         break;
       }
-      if( !originallyLevel && 
+      if( !originallyLevel &&
         ((!extendRange && bb_bb1_converged) || b_b1_Equal || real34IsZero(&fb) )  ) {
         break;
       }
