@@ -184,6 +184,8 @@ void powLonILonI(void) {
   else if(longIntegerIsNegative(exponent)) {
     convertLongIntegerRegisterToReal34Register(REGISTER_X, REGISTER_X);
     powLonIReal();
+    longIntegerFree(base);
+    longIntegerFree(exponent);
     return;
   }
 
