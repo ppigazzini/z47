@@ -41,11 +41,12 @@
 static void rmdLonI(void) {
   longInteger_t x, y, remainder;
 
-  if(!getRegisterAsLongInt(REGISTER_X, x, NULL)
-    || !getRegisterAsLongInt(REGISTER_Y, y, NULL))
-  return;
+  if(!getRegisterAsLongInt(REGISTER_X, x, NULL) || !getRegisterAsLongInt(REGISTER_Y, y, NULL)) {
+    return;
+  }
 
   if(longIntegerIsZero(x)) {
+    longIntegerFree(y);
     displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       moreInfoOnError("In function rmdLonI:", "cannot IDIVR a long integer by 0", NULL, NULL);
@@ -83,6 +84,7 @@ static void rmdShoI(void) {
   return;
 
   if(longIntegerIsZero(x)) {
+    longIntegerFree(y);
     displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       moreInfoOnError("In function rmdLonILonI:", "cannot IDIVR a short integer by 0", NULL, NULL);
