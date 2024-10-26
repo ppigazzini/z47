@@ -1704,23 +1704,49 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
   }
 
 
+#define ANALYSE_REFRESH
+#undef  ANALYSE_REFRESH
+
   void force_refresh(uint8_t mode) {
-    if(!getSystemFlag(FLAG_MONIT) && mode == timed) {
-      return;
+    #if defined(ANALYSE_REFRESH) && defined(PC_BUILD)
+      printf("#%i",mode == force);
+    #endif //ANALYSE_REFRESH
+ 
+    if(mode != timed || getSystemFlag(FLAG_MONIT)) {
+      #if defined(ANALYSE_REFRESH) && defined(PC_BUILD)
+        printf("+");
+      #endif //ANALYSE_REFRESH
+
+      uint16_t now = (uint16_t)(getUptimeMs() >> 4); 
+      if(mode != timed || ((now >> 6) & 0x0001) == halfSecTick1) {  //Restrict refresh to once per second. Use this minimally, due to extreme slow response.
+        #if defined(ANALYSE_REFRESH) && defined(PC_BUILD)
+          printf("-\n");
+        #endif //ANALYSE_REFRESH
+        halfSecTick1 = !halfSecTick1;
+
+        #if defined(PC_BUILD)
+          gtk_widget_queue_draw(screen);
+          #if defined(FULLUPDATE) // (UGLY)
+            refresh_gui();
+          #endif // FULLUPDATE (UGLY)
+        #endif // PC_BUILD
+
+        #if defined(DMCP_BUILD)
+          lcd_forced_refresh();
+        #endif // DMCP_BUILD
+      }
+
+      else {
+        #if defined(ANALYSE_REFRESH) && defined(PC_BUILD)
+          printf("=%i %i\n", now, ((now >> 6) & 0x0001));
+        #endif //ANALYSE_REFRESH
+      }
     }
-    if(mode == force || ((((uint16_t)(getUptimeMs()) >> 4) & 0x0020) == 0x0020) == halfSecTick1) {  //Restrict refresh to once per second. Use this minimally, due to extreme slow response.
-      halfSecTick1 = !halfSecTick1;
-
-      #if defined(PC_BUILD)
-        gtk_widget_queue_draw(screen);
-        #if defined(FULLUPDATE) // (UGLY)
-          refresh_gui();
-        #endif // FULLUPDATE (UGLY)
-      #endif // PC_BUILD
-
-      #if defined(DMCP_BUILD)
-        lcd_forced_refresh();
-      #endif // DMCP_BUILD
+    else {
+      #if defined(ANALYSE_REFRESH) && defined(PC_BUILD)
+        printf(".\n");
+      #endif //ANALYSE_REFRESH
+      return;
     }
   }
 

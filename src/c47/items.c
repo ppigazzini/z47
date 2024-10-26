@@ -264,11 +264,13 @@ bool_t itemNotAvail(int16_t itemNr) {
 
     screenUpdatingMode = SCRUPD_AUTO;
     }
-    else {
-      force_refresh(timed); //Added this to enable 0.5 second refresh during running
-    }
+    #if defined(PC_BUILD)
+      else {
+        force_refresh(timed); //Added this to enable 0.5 second refresh and break during running
+      }
+    #endif //PC_BUILD
 
-    #if defined(PC_BUILD) || defined(DEBUG_EXECUTE)
+    #if defined(PC_BUILD)// || defined(DEBUG_EXECUTE)
       char ss1[30], ss2[30];
       stringToASCII(indexOfItems[abs(func)].itemCatalogName, ss1);
       stringToASCII(indexOfItems[abs(func)].itemSoftmenuName, ss2);
@@ -303,7 +305,9 @@ bool_t itemNotAvail(int16_t itemNr) {
 
     hourGlassIconEnabled = false;
     screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
-    showHideHourGlass();
+    if(programRunStop != PGM_RUNNING) {
+      showHideHourGlass();
+    }
 
 
     switch(func) {                              //functions to cause a graph redraw
