@@ -1878,7 +1878,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
     }
   }
 
-#define DEBUG_SHOWNAME
+//#define DEBUG_SHOWNAME
   void showFunctionName(int16_t itm, int16_t delayInMs, const char *arg) {
     int16_t item = (int16_t)itm;
     //printf("---Function par:%4u %4u-- converted %4u--arg:|%s|-=-\n", itm, (int16_t)itm, item, arg );
@@ -3884,28 +3884,28 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
 
           else if(temporaryInformation == TI_FROM_DMS) {
             if(regist == REGISTER_X) {
-              strcpy(prefix, "decimal" STD_DEGREE STD_SPACE_FIGURE " :");
+              strcpy(prefix, "decimal" STD_DEGREE ":");
               prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
             }
           }
 
           else if(temporaryInformation == TI_FROM_HMS) {
             if(regist == REGISTER_X) {
-              strcpy(prefix, "decimal h" STD_SPACE_FIGURE " :");
+              strcpy(prefix, "decimal h:");
               prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
             }
           }
 
           else if(temporaryInformation == TI_FROM_MS_TIME) {
             if(regist == REGISTER_X) {
-              strcpy(prefix, "hh.mmss" STD_SPACE_FIGURE " :");
+              strcpy(prefix, "hh.mmss:");
               prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
             }
           }
 
           else if(temporaryInformation == TI_FROM_MS_DEG) {
             if(regist == REGISTER_X) {
-              strcpy(prefix, "dd.mmss" STD_SPACE_FIGURE " :");
+              strcpy(prefix, "dd.mmss:");
               prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
             }
           }
@@ -3923,13 +3923,13 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
           else if(temporaryInformation == TI_FROM_DATEX) {
             if(regist == REGISTER_X) {
               if(getSystemFlag(FLAG_DMY)) {
-                strcpy(prefix, "dd.mmyyyy" STD_SPACE_FIGURE " :");
+                strcpy(prefix, "dd.mmyyyy:");
               }
               else if(getSystemFlag(FLAG_MDY)) {
-                strcpy(prefix, "mm.ddyyyy" STD_SPACE_FIGURE " :");
+                strcpy(prefix, "mm.ddyyyy:");
               }
               else { // YMD
-                strcpy(prefix, "yyyy.mmdd" STD_SPACE_FIGURE " :");
+                strcpy(prefix, "yyyy.mmdd:");
               }
               prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
             }

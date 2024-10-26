@@ -1002,7 +1002,7 @@ int16_t lastItem = 0;
         item = determineFunctionKeyItem_C47((char *)data, shiftF, shiftG); }
 
         // Update currentUserMenu for user defined menus selected in an existing function
-        if(currentMenu() == -MNU_DYNAMIC) {
+        if((currentMenu() == -MNU_DYNAMIC) || (currentMenu() == -MNU_HOME) || (currentMenu() == -MNU_PFN)) {
           setCurrentUserMenu(item, userMenus[currentUserMenu].menuItem[dynamicMenuItem].argumentName);
         }
 
@@ -1243,7 +1243,7 @@ int16_t lastItem = 0;
               screenUpdatingMode &= ~SCRUPD_MANUAL_MENU;
               goto noMoreToDo;
             }
-            if(calcMode == CM_NIM && (item != ITM_CC && item != ITM_op_j && item != ITM_op_j_pol) && item!=ITM_HASH_JM && item!=ITM_toHMS && item!=ITM_ms) {  //JMNIM Allow NIM not closed, so that JMNIM can change the bases without ierrors thrown
+            if(calcMode == CM_NIM && (item != ITM_CC && item != ITM_op_j && item != ITM_op_j_pol) && item!=ITM_HASH_JM && item!=ITM_ms) {  //JMNIM Allow NIM not closed, so that JMNIM can change the bases without ierrors thrown
               closeNim();
               if(calcMode != CM_NIM) {
                 if(indexOfItems[item].func == fnConstant) {
@@ -4515,7 +4515,7 @@ void fnKeyUp(uint16_t unusedButMandatoryParameter) {
       }
 
       case CM_FLAG_BROWSER: {
-        currentFlgScr--;                          //JM removed the 3-x part
+        currentFlgScr++;                          //[DL] reverse order
         break;
       }
 
@@ -4733,12 +4733,12 @@ void fnKeyDown(uint16_t unusedButMandatoryParameter) {
         break;
       }
 
-    case CM_FLAG_BROWSER: {
-        currentFlgScr++;                          //JM removed the 3-x part
+      case CM_FLAG_BROWSER: {
+        currentFlgScr--;                          //[DL] reverse order
         break;
       }
 
-    case CM_ASN_BROWSER: {
+      case CM_ASN_BROWSER: {
         currentAsnScr--;
         if(currentAsnScr == 0 || currentAsnScr >= 7) {
           currentAsnScr = 6;

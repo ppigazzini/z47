@@ -64,8 +64,8 @@ TO_QSPI const int16_t menu_BITS[]        = { ITM_LOGICALAND,                ITM_
 
 
 TO_QSPI const int16_t menu_CLK[]         = { ITM_DATE,                      ITM_TIME,                   ITM_DTtoJ,                ITM_JtoDT,             ITM_DtoJ,                    ITM_TIMER,
-                                             ITM_DATEto,                    ITM_TIMEto,                 ITM_NULL,                 ITM_NULL,              ITM_LEAP,                    ITM_XtoDATE,
-                                             ITM_toDATE,                    ITM_toTIME,                 ITM_NULL,                 ITM_NULL,              ITM_toHMS,                   ITM_msTo,
+                                             ITM_DATEto,                    ITM_TIMEto,                 ITM_msTo,                 ITM_dotD,              ITM_LEAP,                    ITM_XtoDATE,
+                                             ITM_toDATE,                    ITM_toTIME,                 ITM_HMStoTM,              ITM_HRtoTM,            ITM_NULL,                    ITM_NULL,
 
                                              ITM_DATE,                      ITM_TIME,                   ITM_TDISP,                ITM_DMY,               ITM_MDY,                     ITM_YMD,
                                              ITM_SETDAT,                    ITM_SETTIM,                 ITM_WDAY,                 ITM_DAY,               ITM_MONTH,                   ITM_YEAR,
@@ -444,8 +444,8 @@ TO_QSPI const int16_t menu_ConvM[]        = {
                                                     ITM_NULL,                 ITM_NULL,                 ITM_NULL,                 ITM_NULL,                 ITM_NULL,                 ITM_NULL};
 TO_QSPI const int16_t menu_Misc[]        = {
                                                     ITM_YEARtoS,              ITM_StoYEAR,              ITM_CtoF,                 ITM_FtoC,                 ITM_FRtoDB,               ITM_DBtoFR,
-                                                    ITM_NULL,                 ITM_NULL,                 ITM_NULL,                 ITM_NULL,                 ITM_PRtoDB,               ITM_DBtoPR,
-                                                    ITM_NMtoLBFFT,            ITM_LBFFTtoNM,            ITM_NULL,                 ITM_NULL,                 ITM_NULL,                 ITM_NULL};
+                                                    ITM_HMStoHR,              ITM_HRtoHMS,              ITM_NMtoLBFFT,            ITM_LBFFTtoNM,            ITM_PRtoDB,               ITM_DBtoPR,
+                                                    ITM_NULL,                 ITM_NULL,                 ITM_NULL,                 ITM_NULL,                 ITM_NULL,                 ITM_NULL};
 TO_QSPI const int16_t menu_ConvP[]        = {
                                                     ITM_HPEtoW,               ITM_WtoHPE,               ITM_HPUKtoW,              ITM_WtoHPUK,              ITM_HPMtoW,               ITM_WtoHPM,
                                                     ITM_NULL,                 ITM_NULL,                 ITM_NULL,                 ITM_NULL,                 ITM_NULL,                 ITM_NULL,
@@ -533,14 +533,14 @@ TO_QSPI const int16_t menu_alphaMisc[]    ={ ITM_CR,                         ITM
 
                                              ITM_QUESTION_MARK,              ITM_UP_ARROW,                   ITM_DOWN_ARROW,                 ITM_SERIAL_IO,                  ITM_LEFT_RIGHT_ARROWS,          ITM_LEFT_ARROW,
                                              ITM_RIGHT_ARROW,                ITM_UP_DASHARROW,               ITM_DOWN_DASHARROW,             ITM_RIGHT_DOUBLE_ARROW,         ITM_LEFT_RIGHT_DOUBLE_ARROW,    ITM_LEFT_DASHARROW,
-                                             ITM_RIGHT_DASHARROW,            ITM_LEFT_DOUBLE_QUOTE,          ITM_RIGHT_DOUBLE_QUOTE,         ITM_RIGHT_SHORT_ARROW,          ITM_ex,                         ITM_LEFT_DOUBLE_ANGLE,
+                                             ITM_RIGHT_DASHARROW,            ITM_DATE_D,                     ITM_TIME_T,                     ITM_RIGHT_SHORT_ARROW,          ITM_ex,                         ITM_LEFT_DOUBLE_ANGLE,
 
                                              ITM_RIGHT_DOUBLE_ANGLE,         ITM_SECTION,                    ITM_CHECK_MARK,                 ITM_BULLET,                     ITM_ASTERISK,                   ITM_SUP_ASTERISK,
                                              ITM_TILDE,                      ITM_HOURGLASS,                  ITM_WATCH,                      ITM_TIMER_SYMBOL,               ITM_NEG_EXCLAMATION_MARK,       ITM_USER_MODE,
                                              ITM_BATTERY,                    ITM_PRINTER,                    ITM_HAMBURGER,                  ITM_BST_char,                   ITM_SST_char,                   ITM_CYCLIC,
 
                                              ITM_USB_SYMBOL,                 ITM_SUB_SUN,                    ITM_SUB_EARTH,                  ITM_US,                         ITM_UK,                         ITM_NULL,
-                                             ITM_NULL,                       ITM_NULL,                       ITM_NULL,                       ITM_NULL,                       ITM_NULL,                       ITM_NULL,
+                                             ITM_LEFT_DOUBLE_QUOTE,          ITM_RIGHT_DOUBLE_QUOTE,         ITM_NULL,                       ITM_NULL,                       ITM_NULL,                       ITM_NULL,
                                              ITM_NULL,                       ITM_NULL,                       ITM_NULL,                       ITM_NULL,                       ITM_NULL,                       ITM_NULL                        };
 
 

@@ -271,7 +271,7 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
   //TO_QSPI const char asciikeysFrom0020[34] = " !\"#$%&\'()*+,-./:;<=>?@[\\]^_{|}~¡";
 
 
-//                                  w, event_keyval,  97,         shortcutProfile == USER_C47,  EXITIFNIM,          tam.mode ,      "f",        00",                    modes,                CM_NORMAL,                  ITM_SIGMAPLUS
+//                                  w, event_keyval,  97,         shortcutProfile == USER_C47,  EXITIFNIM,          tam.mode ,                   "f",         00",                       modes,         CM_NORMAL,                  ITM_SIGMAPLUS
   static bool_t shortCutCommand(GtkWidget *w, int key,      int keyCode, bool_t condition1,            bool_t exitIfInNIM, bool_t disable, char *shift, char *keyForBtnClicked, uint16_t modes, int16_t requiredCalcMode2, int16_t itemForRunFunction) {
     if(key == keyCode && condition1 && !disable) {
 //      #if defined(VERBOSEKEYS)
@@ -291,6 +291,15 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
       #endif //VERBOSEKEYS
       return false;      //exit directly, not allowing shortcuts during label entry, except to start text using "'"
     }
+    if( (shiftF || shiftG) &&
+        !(shift[0]==0 && keyForBtnClicked[0]!='-') &&
+        !(shiftF && shift[0]=='f' && keyForBtnClicked[0]!='-') &&
+        !(shiftG && shift[0]=='g' && keyForBtnClicked[0]!='-')) {
+      #if defined(VERBOSEKEYS)
+        printf("       shortCutCommand: Returning, shift pressed, but no direct key command programmed for shift\n");
+      #endif //VERBOSEKEYS
+      return false;
+    }
 
     if(key == keyCode && condition1) {
       printf("       shortCutCommand: \n");
@@ -299,7 +308,7 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
       //Handle clean NIM if needed and if allowed
         if(exitIfInNIM && (calcMode == CM_NIM) && (calcMode != requiredCalcMode2)) {   //if requiredCalcMode2 then no auto NIM clearing, and handle function below
         printf("       shortCutCommand: Reset mode to NORMAL\n");
-        btnClicked(w, "32");                  //EXIT if in NIM
+        closeNim(); // changed to direct closeNim to prevent a shift from operating fEXIT or gEXIT. //btnClicked(w, "32");                  //EXIT if in NIM
       }
 
       //Handle menus
@@ -517,6 +526,16 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
    PC Key released: _keyval=   35 _state=   28 ------b2 b3 b4 ------ (SHIFT_State=    0)(F=0 G=0) AltGr_P=0 Ctrl_P=0 Valid_P=1 Ctrl_R=0 AltGr_R=0
    PC Key released: _keyval=65507 _state=    8 ---------b3 --------- (SHIFT_State=    0)(F=0 G=0) AltGr_P=0 Ctrl_P=0 Valid_P=1 Ctrl_R=0 AltGr_R=0
    PC Key released: _keyval=65514 _state=    0 --------------------- (SHIFT_State=    0)(F=0 G=0) AltGr_P=0 Ctrl_P=0 Valid_P=0 Ctrl_R=0 AltGr_R=0
+
+Didier problem: Control does not operate g
+   PC Key pressed:  _keyval=65507 _state=    4 ------b2 ------------ (SHIFT_State=    0)(F=0 G=0) labelText=0 plainTextMode=0 AltGr_P=0 Ctrl_P=1 Valid_P=0 Ctrl_R=0 AltGr_R=0
+   PC Key released: _keyval=65507 _state=    0 --------------------- (SHIFT_State=    0)(F=0 G=0) AltGr_P=0 Ctrl_P=0 Valid_P=0 Ctrl_R=0 AltGr_R=0
+
+Jacos Mac, Control works
+   PC Key pressed:  _keyval=65507 _state=    0 --------------------- (SHIFT_State=    0)(F=0 G=0) labelText=0 plainTextMode=0 AltGr_P=0 Ctrl_P=0 Valid_P=0 Ctrl_R=0 AltGr_R=0
+   PC Key released: _keyval=65507 _state=    4 ------b2 ------------ (SHIFT_State=    0)(F=0 G=0) AltGr_P=0 Ctrl_P=1 Valid_P=0 Ctrl_R=0 AltGr_R=0
+
+
 #endif //DONOTINCLUDE
 
 
@@ -526,7 +545,8 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
   uint32_t previousEventStateP = 0;
   uint32_t previousEventKeyP = 0;
   #define C47SpecialKey_AltGr_Pressed           (event->keyval == GDK_KEY_Alt_R     && event->state  & 0b10100)
-  #define C47SpecialKey_Ctrl_Pressed            (event->keyval == GDK_KEY_Control_L && event->state  & 0b00100)
+  #define C47SpecialKey_Ctrl_Pressed            (swapCtrlCode ? (event->keyval == GDK_KEY_Control_L && !(event->state  & 0b00100)) : (event->keyval == GDK_KEY_Control_L && event->state  & 0b00100))
+  //This swapctrlcode control code is used to test Didier's FR 
   #define C47SpecialKey_Valid_Pressed           (!C47SpecialKey_AltGr_Pressed && !C47SpecialKey_Ctrl_Pressed && event->state & 0b11100)
   //C47SpecialKey_Valid_Released not required as normal keys are not evaluated on release
   #define C47SpecialKey_Ctrl_Released          ((event->keyval == GDK_KEY_Control_L && event->state  & 0b00000) && (previousEventKeyP == GDK_KEY_Control_L && previousEventStateP == 0b00100)) 

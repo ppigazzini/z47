@@ -386,8 +386,8 @@
 #define ITM_BARRELtoM3               364
 #define ITM_0365                     365
 #define ITM_M3toBARREL               366
-#define ITM_0367                     367
-#define ITM_0368                     368
+#define ITM_HMStoHR                  367
+#define ITM_HRtoHMS                  368
 #define ITM_0369                     369
 #define ITM_HECTAREtoM2              370
 #define ITM_M2toHECTARE              371
@@ -1204,8 +1204,8 @@
 #define ITM_USB_SYMBOL              1170
 #define ITM_LEFT_RIGHT_DOUBLE_ARROW 1171
 #define ITM_CR                      1172
-#define VAR_1173                    1173
-#define VAR_1174                    1174
+#define ITM_TIME_T                  1173
+#define ITM_DATE_D                  1174
 
 
 // Reserved variables
@@ -1730,10 +1730,10 @@
 #define ITM_sn                      1682
 #define ITM_cn                      1683
 #define ITM_dn                      1684
-#define ITM_toHR                    1685
-#define ITM_toHMS                   1686
+#define ITM_toHR                    1685 //reserved, not used anymore, removed from testPgms
+#define ITM_HRtoTM                  1686
 #define ITM_toINT                   1687
-#define ITM_1688                    1688
+#define ITM_HMStoTM                 1688
 #define ITM_1689                    1689
 #define ITM_INTEGRAL_YX             1690   //INT
 #define ITM_toREAL                  1691

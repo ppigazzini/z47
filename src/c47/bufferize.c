@@ -830,7 +830,7 @@ typedef struct {
           case ITM_zetaX :
           case ITM_STDDEVPOP :
           case ITM_M1X :
-          case ITM_toHMS :
+          case ITM_HRtoTM :
           case ITM_toREAL :
           case ITM_Kk :
           case ITM_Ek:
@@ -1687,8 +1687,7 @@ typedef struct {
         break;
     }
 
-      case ITM_ms :                       //JM
-      case ITM_toHMS:{
+      case ITM_ms : {                      //JM
         if(nimNumberPart == NP_INT_10 || nimNumberPart == NP_REAL_FLOAT_PART || nimNumberPart == NP_REAL_EXPONENT) {
           done = true;
           setLastintegerBasetoZero();

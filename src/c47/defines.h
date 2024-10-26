@@ -62,6 +62,8 @@
 
   #if defined(NEW_HW) // DMCP5
     #undef TWO_FILE_PGM
+    //#define HARDWARE_MODEL DM32
+    #define HARDWARE_MODEL DM42n
   #endif // NEW_HW
 
 //ONE FILE OPERATION needs the original CRC file - see src/c47-dmcp
@@ -171,7 +173,7 @@
 
 //Verbose options
   #define    VERBOSEKEYS
-  //#undef     VERBOSEKEYS
+  #undef     VERBOSEKEYS
   #define    VERBOSEKEYS_AUTOCASE         //specifically visualizing the 1 second auto case indication in sim
   #undef     VERBOSEKEYS_AUTOCASE
   #define    MONITOR_CLRSCR
@@ -651,6 +653,18 @@
 #define FLAG_DREAL                            0x804A
 
 #define NUMBER_OF_SYSTEM_FLAGS                    75 // We can have a maximum of 128 system flags
+
+// FLGS and STATUS SCREENS
+#define NO_SCREEN                          0  // No screen selected
+#define FIRST_SCREEN                       1
+#define STATUS_SCREEN                      1  // Flags Status summary screen
+#define SYSTEM_FLAGS_SCREEN_1              2  // System Flags 1st screen
+#define SYSTEM_FLAGS_SCREEN_2              3  // System Flags 2nd screen
+#define GLOBAL_FLAGS_SCREEN                4  // Global Flags 00-99 screen
+#define LETTERED_AND_LOCAL_FLAGS_SCREEN    5  // Global Lettered Flags and Local FLags screen
+#define LAST_SCREEN                        5
+
+
 
 typedef enum {
   LI_ZERO     = 0, // Long integer sign 0
@@ -1175,7 +1189,10 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define NUMBER_OF_DISPLAY_DIGITS                  16
 #define NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS     10
 
-#define MAX_FREE_REGION                           50 // Maximum number of free memory regions
+#define MAX_FREE_REGIONS                          50 // Maximum number of free memory regions
+#if !defined(DMCP_BUILD)
+  #define MAX_ALLOCATED_REGIONS                 5000 // Maximum number of allocated memory regions
+#endif // !DMCP_BUILD
 
 // On/Off 1 bit
 #define OFF                                        0
@@ -1264,7 +1281,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define AC_LOWER                                   1
 #define plainTextMode                              (bool_t)( calcMode == CM_AIM   || ((calcMode == CM_PEM  || calcMode == CM_ASSIGN) && getSystemFlag(FLAG_ALPHA)))
 #define labelText                                  (bool_t)((tam.mode == TM_LABEL || tam.mode == TM_STORCL || calcMode == CM_ASSIGN) && getSystemFlag(FLAG_ALPHA))
-//#define plainText                                  (bool_t)( calcMode == CM_AIM   || calcMode == CM_EIM    || (calcMode == CM_PEM    && getSystemFlag(FLAG_ALPHA) && !tam.mode)) 
+//#define plainText                                  (bool_t)( calcMode == CM_AIM   || calcMode == CM_EIM    || (calcMode == CM_PEM    && getSystemFlag(FLAG_ALPHA) && !tam.mode))
 #define noCapsLockSync                             0
 #define onlyCapsLockSync                           1
 #define allKeysCapsLockSync                        2
