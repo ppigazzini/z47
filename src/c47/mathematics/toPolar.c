@@ -118,8 +118,8 @@ void fnToPolar(uint16_t unusedButMandatoryParameter) {
     realRectangularToPolar(&x, &y, &x, &y, &ctxtReal39);
     convertAngleFromTo(&y, amRadian, currentAngularMode, &ctxtReal39);
 
-    reallocateRegister(REG_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);              //original
-    reallocateRegister(REG_Y, dtReal34, REAL34_SIZE_IN_BLOCKS, currentAngularMode);
+    reallocateRegister(REG_X, dtReal34, 0, amNone);              //original
+    reallocateRegister(REG_Y, dtReal34, 0, currentAngularMode);
     convertRealToReal34ResultRegister(&x, REG_X);
     convertRealToReal34ResultRegister(&y, REG_Y);
 

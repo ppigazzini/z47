@@ -100,7 +100,7 @@ void parallelLonILonI(void) {
   // y || x = xy / (x+y)
   convertLongIntegerRegisterToReal(REGISTER_Y, &y, &ctxtReal39);
   convertLongIntegerRegisterToReal(REGISTER_X, &x, &ctxtReal39);
-  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+  reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
 
   if(!realIsZero(&x)) {
     realMultiply(&y, &x, &product, &ctxtReal39);
@@ -150,7 +150,7 @@ void parallelRealLonI(void) {
   // y || x = xy / (x+y)
   real34ToReal(REGISTER_REAL34_DATA(REGISTER_Y), &y);
   convertLongIntegerRegisterToReal(REGISTER_X, &x, &ctxtReal39);
-  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+  reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
 
   if(!realIsZero(&x)) {
     realMultiply(&y, &x, &product, &ctxtReal39);
@@ -208,7 +208,7 @@ void parallelCplxLonI(void) {
   real34ToReal(REGISTER_REAL34_DATA(REGISTER_Y), &yReal);
   real34ToReal(REGISTER_IMAG34_DATA(REGISTER_Y), &yImag);
   convertLongIntegerRegisterToReal(REGISTER_X, &x, &ctxtReal39);
-  reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
+  reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
 
   if(!realIsZero(&yReal) || !realIsZero(&yImag)) {
     realMultiply(&x, &yReal, &productReal, &ctxtReal39);
@@ -296,7 +296,7 @@ void parallelCplxReal(void) {
   real34ToReal(REGISTER_REAL34_DATA(REGISTER_Y), &yReal);
   real34ToReal(REGISTER_IMAG34_DATA(REGISTER_Y), &yImag);
   real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &x);
-  reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
+  reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
 
   if(!realIsZero(&yReal) || !realIsZero(&yImag)) {
     realMultiply(&x, &yReal, &productReal, &ctxtReal39);

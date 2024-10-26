@@ -1103,11 +1103,11 @@ void pemCloseNumberInput(void) {
       case NP_REAL_FLOAT_PART:
       case NP_REAL_EXPONENT:
       case NP_FRACTION_DENOMINATOR: {
-        if(inputLength >= TO_BYTES(REAL34_SIZE_IN_BLOCKS)) {
+        if(inputLength >= REAL34_SIZE_IN_BYTES) {
           real34_t val;
           *(tmpPtr++) = BINARY_REAL34;
           stringToReal34(numBuffer, &val);
-          for(unsigned int i = 0; i < TO_BYTES(REAL34_SIZE_IN_BLOCKS); ++i) {
+          for(unsigned int i = 0; i < REAL34_SIZE_IN_BYTES; ++i) {
             *(tmpPtr++) = ((uint8_t *)(&val))[i];
           }
           _insertInProgram((uint8_t *)tmpString, (int32_t)(tmpPtr - tmpString));
@@ -1148,10 +1148,10 @@ void pemCloseNumberInput(void) {
           *(tmpPtr++) = BINARY_COMPLEX34;
           stringToReal34(numBuffer, &re);
           stringToReal34(imag, &im);
-          for(unsigned int i = 0; i < TO_BYTES(REAL34_SIZE_IN_BLOCKS); ++i) {
+          for(unsigned int i = 0; i < REAL34_SIZE_IN_BYTES; ++i) {
             *(tmpPtr++) = ((uint8_t *)(&re))[i];
           }
-          for(unsigned int i = 0; i < TO_BYTES(REAL34_SIZE_IN_BLOCKS); ++i) {
+          for(unsigned int i = 0; i < REAL34_SIZE_IN_BYTES; ++i) {
             *(tmpPtr++) = ((uint8_t *)(&im))[i];
           }
           _insertInProgram((uint8_t *)tmpString, (int32_t)(tmpPtr - tmpString));
@@ -1213,7 +1213,7 @@ static void _pemCloseDateInput(void) {
       *(tmpPtr++) = ITM_LITERAL;
       *(tmpPtr++) = STRING_DATE;
 
-      reallocateRegister(TEMP_REGISTER_1, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+      reallocateRegister(TEMP_REGISTER_1, dtReal34, 0, amNone);
       stringToReal34(numBuffer, REGISTER_REAL34_DATA(TEMP_REGISTER_1));
       convertReal34RegisterToDateRegister(TEMP_REGISTER_1, TEMP_REGISTER_1);
       internalDateToJulianDay(REGISTER_REAL34_DATA(TEMP_REGISTER_1), REGISTER_REAL34_DATA(TEMP_REGISTER_1));
@@ -1256,9 +1256,9 @@ static void _pemCloseDmsInput(void) {
 void insertStepInProgram(int16_t func) {
   char buffer[16];
   uint32_t opBytes = (func >= 128) ? 2 : 1;
-  
+
   xcopy(buffer, tmpString, 16);    // Save tmpString content for dynamic menus
-  
+
   if(func == ITM_AIM || (!tam.mode && getSystemFlag(FLAG_ALPHA))) {
     if(aimBuffer[0] != 0 && !getSystemFlag(FLAG_ALPHA)) {
       pemCloseNumberInput();
@@ -1506,7 +1506,7 @@ void insertStepInProgram(int16_t func) {
           nameLength  = stringByteLength(buffer);
           tmpString[opBytes + 1] = nameLength;
           xcopy(tmpString + opBytes + 2, buffer, nameLength);
-          _insertInProgram((uint8_t *)tmpString, nameLength + opBytes + 2);            
+          _insertInProgram((uint8_t *)tmpString, nameLength + opBytes + 2);
         }
         else {
           nameLength  = stringByteLength(indexOfItems[tam.value].itemCatalogName);
@@ -1514,7 +1514,7 @@ void insertStepInProgram(int16_t func) {
           xcopy(tmpString + opBytes + 2, indexOfItems[tam.value].itemCatalogName, nameLength);
           _insertInProgram((uint8_t *)tmpString, nameLength + opBytes + 2);
         }
-      } 
+      }
       else if(tam.alpha) {
         uint16_t nameLength = stringByteLength(aimBuffer);
         tmpString[opBytes    ] = (char)(tam.indirect ? INDIRECT_VARIABLE : STRING_LABEL_VARIABLE);

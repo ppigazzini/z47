@@ -79,7 +79,7 @@ void fnOrthoPoly(uint16_t kind) {
       }
       else {
         WP34S_OrthoPoly(kind, &x, &y, &z, &ans, &ctxtReal39);
-        reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+        reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
         convertRealToReal34ResultRegister(&ans, REGISTER_X);
         if(kind == ORTHOPOLY_LAGUERRE_L_ALPHA) {
           fnDropY(NOPARAM);

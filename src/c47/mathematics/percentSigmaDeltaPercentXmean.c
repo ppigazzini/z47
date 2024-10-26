@@ -69,12 +69,12 @@ void fnPcSigmaDeltaPcXmean(uint16_t unusedButMandatoryParameter) {
   liftStack();
 
   if(percentSigma(&xReal, &rReal, &ctxtReal75)) {
-    reallocateRegister(REGISTER_Y, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+    reallocateRegister(REGISTER_Y, dtReal34, 0, amNone);
     convertRealToReal34ResultRegister(&rReal, REGISTER_Y);
   }
 
   if(deltaPercentXmeanReal(&xReal, &rReal, &ctxtReal75)) {
-    reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+    reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
     convertRealToReal34ResultRegister(&rReal, REGISTER_X);
   }
 

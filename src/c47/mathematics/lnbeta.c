@@ -115,7 +115,7 @@ static bool_t _checkLnGammaArgs(int8_t *resultType, real_t *xReal, realContext_t
         EXTRA_INFO_MESSAGE("_checkLnGammaArgs", "cannot use a negative integer as X input of lnbeta when flag D is not set");
       }
       else {
-        reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+        reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
         convertRealToReal34ResultRegister(const_NaN, REGISTER_X);
       }
 
@@ -245,11 +245,11 @@ static void _lnBeta(real_t *x, real_t *y, realContext_t *realContext) {
 
   if(_lnBetaReal(x, y, &rReal, &rImag, &ctxtReal39)) {
     if(realIsZero(&rImag)) {
-      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+      reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
       convertRealToReal34ResultRegister(&rReal, REGISTER_X);
     }
     else {
-      reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
+      reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
       convertComplexToResultRegister(&rReal, &rImag, REGISTER_X);
     }
   }
@@ -290,7 +290,7 @@ void lnbetaCplxLonI(void) {
 
   _lnBetaComplex(&xReal, &xImag, &yReal, &yImag, &rReal, &rImag, &ctxtReal39);
 
-  reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
+  reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
   convertComplexToResultRegister(&rReal, &rImag, REGISTER_X);
 }
 
@@ -329,7 +329,7 @@ void lnbetaCplxReal(void) {
 
   _lnBetaComplex(&xReal, &xImag, &yReal, &yImag, &rReal, &rImag, &ctxtReal39);
 
-  reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
+  reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
   convertComplexToResultRegister(&rReal, &rImag, REGISTER_X);
 }
 

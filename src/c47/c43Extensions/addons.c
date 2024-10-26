@@ -123,7 +123,7 @@ bool_t anyKeyWaiting(void) {
 
 
 
-bool_t exitKeyWaiting(void) {  
+bool_t exitKeyWaiting(void) {
   #if defined(DMCP_BUILD)
     return C47PopKeyNoBuffer(DISPLAY_WAIT_FOR_RELEASE) == 32;
   #elif defined(PC_BUILD) // !DMCP_BUILD
@@ -167,10 +167,10 @@ int C47PopKeyNoBuffer(bool_t displayWaitForRelease) {
     }
     if(signalToDoRS) {
       tmpf = 36;
-    } 
+    }
     if(signalToDoEXIT) {
       tmpf = 33;
-    } 
+    }
     return tmpf - 1;        //EXIT = 33-1
   #else // !DMCP_BUILD
     tmpf = currentKeyCode;
@@ -296,7 +296,7 @@ void fnFrom_ms(uint16_t unusedButMandatoryParameter){
       }
 
       if(tmpString100_OUT[0] != 0) {
-        reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+        reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
         stringToReal34(tmpString100_OUT, REGISTER_REAL34_DATA(REGISTER_X));
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           printf("\n ------- 003 >>>%s<<<\n",tmpString100_OUT);
@@ -487,7 +487,7 @@ void fnMultiplySI(uint16_t multiplier) {
 static void cpxToStk(const real_t *real1, const real_t *real2, const bool_t sl) {
   if(sl == forcedLiftTheStack) setSystemFlag(FLAG_ASLIFT);
   liftStack();
-//  reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
+//  reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
 //  realToReal34(real1, REGISTER_REAL34_DATA(REGISTER_X));
 //  realToReal34(real2, REGISTER_IMAG34_DATA(REGISTER_X));
 //  adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
@@ -541,7 +541,7 @@ void fn_cnst_1_cpx(uint16_t unusedButMandatoryParameter) {
 //Rounding
 void fnJM_2SI(uint16_t unusedButMandatoryParameter) { //Convert Real to Longint; Longint to shortint; shortint to longint
   if(calcMode == CM_NIM) {
-    if((   (nimNumberPart == NP_INT_BASE && aimBuffer[strlen(aimBuffer) - 1] == '#') 
+    if((   (nimNumberPart == NP_INT_BASE && aimBuffer[strlen(aimBuffer) - 1] == '#')
         || (nimNumberPart == NP_INT_10 && lastIntegerBase > 0)   )) {
       printf("Do not react when in NIM SI\n");
       return;
@@ -569,7 +569,7 @@ void fnJM_2SI(uint16_t unusedButMandatoryParameter) { //Convert Real to Longint;
 
       break;
     case dtReal34:
-      fnRoundi(0);                       
+      fnRoundi(0);
       break;
     case dtShortInteger:
       convertShortIntegerRegisterToLongIntegerRegister(REGISTER_X, REGISTER_X); //This shortint to longint!
@@ -1125,7 +1125,7 @@ void print_stck(void) {
 void doubleToXRegisterReal34(double x) { //Convert from double to X register REAL34
   setSystemFlag(FLAG_ASLIFT);
   liftStack();
-  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+  reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
   snprintf(tmpString, TMP_STR_LENGTH, "%.16e", x);
   stringToReal34(tmpString, REGISTER_REAL34_DATA(REGISTER_X));
   //adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
@@ -1148,7 +1148,7 @@ void fnStrInputReal34(char inp1[]) { // CONVERT STRING to REAL IN X      //DONE
   strcat(tmpString, inp1);
   setSystemFlag(FLAG_ASLIFT); // 5
   liftStack();
-  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+  reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
   stringToReal34(tmpString, REGISTER_REAL34_DATA(REGISTER_X));
   setSystemFlag(FLAG_ASLIFT);
 }
@@ -1234,7 +1234,7 @@ void timeToReal34(uint16_t hms) { //always 24 hour time;
 
   if(hms == 3) {
     //total seconds
-    reallocateRegister(regist, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+    reallocateRegister(regist, dtReal34, 0, amNone);
     real34Copy(&real34, REGISTER_REAL34_DATA(regist));
     return;
   }
@@ -1257,21 +1257,21 @@ void timeToReal34(uint16_t hms) { //always 24 hour time;
     case 0: //h
       int32ToReal34(sign ? -1 : +1, &value34);
       real34Multiply(&h34, &value34, &h34);
-      reallocateRegister(regist, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+      reallocateRegister(regist, dtReal34, 0, amNone);
       real34Copy(&h34, REGISTER_REAL34_DATA(regist));
       break;
 
     case 1: //m
       int32ToReal34(sign ? -1 : +1, &value34);
       real34Multiply(&m34, &value34, &m34);
-      reallocateRegister(regist, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+      reallocateRegister(regist, dtReal34, 0, amNone);
       real34Copy(&m34, REGISTER_REAL34_DATA(regist));
       break;
 
     case 2: //s
       int32ToReal34(sign ? -1 : +1, &value34);
       real34Multiply(&s34, &value34, &s34);
-      reallocateRegister(regist, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+      reallocateRegister(regist, dtReal34, 0, amNone);
       real34Copy(&s34, REGISTER_REAL34_DATA(regist));
       break;
 
@@ -1338,7 +1338,7 @@ void dms34ToReal34(uint16_t dms) {
       int32ToReal34(sign, &value34);
       realToReal34(&degrees, &d34);
       real34Multiply(&d34, &value34, &d34);
-      reallocateRegister(regist, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+      reallocateRegister(regist, dtReal34, 0, amNone);
       real34Copy(&d34, REGISTER_REAL34_DATA(regist));
       break;
 
@@ -1346,7 +1346,7 @@ void dms34ToReal34(uint16_t dms) {
       int32ToReal34(m, &m34);
       int32ToReal34(sign, &value34);
       real34Multiply(&m34, &value34, &m34);
-      reallocateRegister(regist, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+      reallocateRegister(regist, dtReal34, 0, amNone);
       real34Copy(&m34, REGISTER_REAL34_DATA(regist));
       break;
 
@@ -1360,7 +1360,7 @@ void dms34ToReal34(uint16_t dms) {
 
       int32ToReal34(sign, &value34);
       real34Multiply(&s34, &value34, &s34);
-      reallocateRegister(regist, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+      reallocateRegister(regist, dtReal34, 0, amNone);
       real34Copy(&s34, REGISTER_REAL34_DATA(regist));
       break;
 
@@ -1567,7 +1567,7 @@ void fnToTime(uint16_t unusedButMandatoryParameter) {
   real34Add(&hr, &m, &hr);
   real34Add(&hr, &s, &hr);
 
-  reallocateRegister(REGISTER_X, dtTime, REAL34_SIZE_IN_BLOCKS, amNone);
+  reallocateRegister(REGISTER_X, dtTime, 0, amNone);
   real34Copy(&hr, REGISTER_REAL34_DATA(REGISTER_X));
 }
 
@@ -1726,7 +1726,7 @@ bool_t checkForAndChange(char *displayString, const real34_t *value34, const rea
     //* This section uses the standard fraction() to calculate the denominator
     int16_t sign1, lessEqualGreater;
     uint64_t intPart, numer, denom;
-    reallocateRegister(TEMP_REGISTER_1, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+    reallocateRegister(TEMP_REGISTER_1, dtReal34, 0, amNone);
     realToReal34(&multConstant,REGISTER_REAL34_DATA(TEMP_REGISTER_1));
     fraction(TEMP_REGISTER_1, &sign1, &intPart, &numer, &denom, &lessEqualGreater);   //does not yet work in all the frac modes.
     //printf("aaaaaaa: %i%llu + %llu / %llu \n",sign1,intPart,numer,denom);
@@ -1794,7 +1794,7 @@ bool_t checkForAndChange(char *displayString, const real34_t *value34, const rea
 //                                printf("    §%s§   §%s§   §%s§\n", resultingIntStr, constantStr, denomStr);
 //                                printRealToConsole(&findingIrrationalTolerance1,"findingIrrationalTolerance1=","\n");
 //                                char displayString2[200];
-//                                stringToASCII(constantStr,displayString2); 
+//                                stringToASCII(constantStr,displayString2);
 //                                printf("constantStr:%s\n",displayString2);
 //                                printf("Numerator: multipleOfNewConstantInteger   %i\n",multipleOfNewConstantInteger);
 //                                printf("Denominator: smallestDenom                         /            %i\n",smallestDenom);
@@ -1805,7 +1805,7 @@ bool_t checkForAndChange(char *displayString, const real34_t *value34, const rea
     if(multipleOfNewConstantInteger >= 1 && realCompareAbsLessThan(&multipleOfNewConstant_fp,&findingIrrationalTolerance1)) {
 //                                printf("A whole multiple %i of the 'new' constant exists\n", multipleOfNewConstantInteger);
 
-      if(multipleOfNewConstantInteger > smallestDenom  &&  smallestDenom > 1  && multipleOfNewConstantInteger != 0 && useMixedNumbers) {   // Numer > Denom; 
+      if(multipleOfNewConstantInteger > smallestDenom  &&  smallestDenom > 1  && multipleOfNewConstantInteger != 0 && useMixedNumbers) {   // Numer > Denom;
         int32_t wholeInteger = multipleOfNewConstantInteger / smallestDenom;
         multipleOfNewConstantInteger = multipleOfNewConstantInteger - (wholeInteger * smallestDenom);
 //                                printf("B  wholeInteger %i, multipleOfNewConstantInteger %i of the 'new' constant exists\n", wholeInteger, multipleOfNewConstantInteger);
@@ -1814,7 +1814,7 @@ bool_t checkForAndChange(char *displayString, const real34_t *value34, const rea
           useMixedNumbersSep[0] = STD_SPACE_4_PER_EM[0];
           useMixedNumbersSep[1] = STD_SPACE_4_PER_EM[1];
           useMixedNumbersSep[2] = 0;
-          changeToWholeString(wholeInteger,wholePart,useMixedNumbersSep);  
+          changeToWholeString(wholeInteger,wholePart,useMixedNumbersSep);
           strcat(wholePart,useMixedNumbersSep);                                                                   // "1 "
         }
         else {                                                                                                    // constant with numbers
@@ -1942,16 +1942,16 @@ void fnConstantR(uint16_t constantAddr, uint16_t *constNr, real_t *rVal) {
   *constNr = constant;
   //printf(">>> %u\n",constant);
   if(constant < NUMBER_OF_CONSTANTS_39) { // 39 digit constants
-    realCopy((real_t *)(constants + constant * TO_BYTES(REAL39_SIZE_IN_BLOCKS)), rVal);
+    realCopy((real_t *)(constants + constant * REAL39_SIZE_IN_BYTES), rVal);
   }
   else if(constant < NUMBER_OF_CONSTANTS_39 + NUMBER_OF_CONSTANTS_51) { // 51 digit constants (gamma coefficients)
-    realCopy((real_t *)(constants + NUMBER_OF_CONSTANTS_39 * TO_BYTES(REAL39_SIZE_IN_BLOCKS) + (constant - NUMBER_OF_CONSTANTS_39) * TO_BYTES(REAL51_SIZE_IN_BLOCKS)), rVal);
+    realCopy((real_t *)(constants + NUMBER_OF_CONSTANTS_39 * REAL39_SIZE_IN_BYTES + (constant - NUMBER_OF_CONSTANTS_39) * REAL51_SIZE_IN_BYTES), rVal);
   }
   else if(constant < NUMBER_OF_CONSTANTS_39 + NUMBER_OF_CONSTANTS_51 + NUMBER_OF_CONSTANTS_1071) { // 1071 digit constant
-    realCopy((real_t *)(constants + NUMBER_OF_CONSTANTS_39 * TO_BYTES(REAL39_SIZE_IN_BLOCKS) + NUMBER_OF_CONSTANTS_51 * TO_BYTES(REAL51_SIZE_IN_BLOCKS) + (constant - NUMBER_OF_CONSTANTS_39 - NUMBER_OF_CONSTANTS_51) * TO_BYTES(REAL1071_SIZE_IN_BLOCKS)), rVal);
+    realCopy((real_t *)(constants + NUMBER_OF_CONSTANTS_39 * REAL39_SIZE_IN_BYTES + NUMBER_OF_CONSTANTS_51 * REAL51_SIZE_IN_BYTES + (constant - NUMBER_OF_CONSTANTS_39 - NUMBER_OF_CONSTANTS_51) * REAL1071_SIZE_IN_BYTES), rVal);
   }
   else { // 34 digit constants
-    real34ToReal((real_t *)(constants + NUMBER_OF_CONSTANTS_39 * TO_BYTES(REAL39_SIZE_IN_BLOCKS) + NUMBER_OF_CONSTANTS_51 * TO_BYTES(REAL51_SIZE_IN_BLOCKS) + NUMBER_OF_CONSTANTS_1071 * TO_BYTES(REAL1071_SIZE_IN_BLOCKS) + (constant - NUMBER_OF_CONSTANTS_39 - NUMBER_OF_CONSTANTS_51 - NUMBER_OF_CONSTANTS_1071) * TO_BYTES(REAL34_SIZE_IN_BLOCKS)), rVal);
+    real34ToReal((real_t *)(constants + NUMBER_OF_CONSTANTS_39 * REAL39_SIZE_IN_BYTES + NUMBER_OF_CONSTANTS_51 * REAL51_SIZE_IN_BYTES + NUMBER_OF_CONSTANTS_1071 * REAL1071_SIZE_IN_BYTES + (constant - NUMBER_OF_CONSTANTS_39 - NUMBER_OF_CONSTANTS_51 - NUMBER_OF_CONSTANTS_1071) * REAL34_SIZE_IN_BYTES), rVal);
   }
 }
 

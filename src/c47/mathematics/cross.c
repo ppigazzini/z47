@@ -130,7 +130,7 @@ void crossRealCplx(void) {
 
   crossCplx(&xReal, &xImag, &yReal, &yImag, &rReal, &ctxtReal39);
 
-  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+  reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
   convertRealToReal34ResultRegister(&rReal, REGISTER_X);
   setRegisterAngularMode(REGISTER_X, amNone);
 }
@@ -153,7 +153,7 @@ void crossLonICplx(void) {
 
   crossCplx(&xReal, &xImag, &yReal, &yImag, &rReal, &ctxtReal39);
 
-  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+  reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
   convertRealToReal34ResultRegister(&rReal, REGISTER_X);
   setRegisterAngularMode(REGISTER_X, amNone);
 }
@@ -176,7 +176,7 @@ void crossShoICplx(void) {
 
   crossCplx(&xReal, &xImag, &yReal, &yImag, &rReal, &ctxtReal39);
 
-  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+  reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
   convertRealToReal34ResultRegister(&rReal, REGISTER_X);
   setRegisterAngularMode(REGISTER_X, amNone);
 }
@@ -199,7 +199,7 @@ void crossCplxCplx(void) {
 
   crossCplx(&xReal, &xImag, &yReal, &yImag, &rReal, &ctxtReal39);
 
-  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+  reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
   convertRealToReal34ResultRegister(&rReal, REGISTER_X);
   setRegisterAngularMode(REGISTER_X, amNone);
 }
@@ -244,7 +244,7 @@ void crossCplxLonI(void) {
 
   crossCplx(&xReal, &xImag, &yReal, &yImag, &rReal, &ctxtReal39);
 
-  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+  reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
   convertRealToReal34ResultRegister(&rReal, REGISTER_X);
   setRegisterAngularMode(REGISTER_X, amNone);
 }
@@ -267,7 +267,7 @@ void crossCplxShoI(void) {
 
   crossCplx(&xReal, &xImag, &yReal, &yImag, &rReal, &ctxtReal39);
 
-  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+  reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
   convertRealToReal34ResultRegister(&rReal, REGISTER_X);
   setRegisterAngularMode(REGISTER_X, amNone);
 }

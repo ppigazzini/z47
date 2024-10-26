@@ -61,7 +61,7 @@ void fnPercent(uint16_t unusedButMandatoryParameter) {
 
   percentReal(&xReal, &yReal, &rReal, &ctxtReal34);
 
-  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+  reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
   convertRealToReal34ResultRegister(&rReal, REGISTER_X);
   adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
 }

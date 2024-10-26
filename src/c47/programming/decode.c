@@ -520,8 +520,8 @@ static void _decodeNumeral(char *startPtr, const char *srcStartPtr, bool_t isLon
 static void decodeLiteral(uint8_t *literalAddress) {
   switch(*(literalAddress++)) {
     case BINARY_SHORT_INTEGER: {
-      reallocateRegister(TEMP_REGISTER_1, dtShortInteger, SHORT_INTEGER_SIZE, *(uint8_t *)(literalAddress++));
-      xcopy(REGISTER_DATA(TEMP_REGISTER_1), literalAddress, TO_BYTES(SHORT_INTEGER_SIZE));
+      reallocateRegister(TEMP_REGISTER_1, dtShortInteger, 0, *(uint8_t *)(literalAddress++));
+      xcopy(REGISTER_DATA(TEMP_REGISTER_1), literalAddress, TO_BYTES(SHORT_INTEGER_SIZE_IN_BLOCKS));
       shortIntegerToDisplayString(TEMP_REGISTER_1, tmpString, false);
       break;
     }
@@ -532,15 +532,15 @@ static void decodeLiteral(uint8_t *literalAddress) {
 
     case BINARY_REAL34: {
       real34_t realLiteral;
-      xcopy(&realLiteral, literalAddress, TO_BYTES(REAL34_SIZE_IN_BLOCKS));
+      xcopy(&realLiteral, literalAddress, REAL34_SIZE_IN_BYTES);
       real34ToDisplayString(&realLiteral, amNone, tmpString, &standardFont, 9999, 34, false, false);
       break;
     }
 
     case BINARY_COMPLEX34: {
       complex34_t complexLiteral;
-      xcopy(VARIABLE_REAL34_DATA(&complexLiteral), literalAddress                                  , TO_BYTES(REAL34_SIZE_IN_BLOCKS));
-      xcopy(VARIABLE_IMAG34_DATA(&complexLiteral), literalAddress + TO_BYTES(REAL34_SIZE_IN_BLOCKS), TO_BYTES(REAL34_SIZE_IN_BLOCKS));
+      xcopy(VARIABLE_REAL34_DATA(&complexLiteral), literalAddress                       , REAL34_SIZE_IN_BYTES);
+      xcopy(VARIABLE_IMAG34_DATA(&complexLiteral), literalAddress + REAL34_SIZE_IN_BYTES, REAL34_SIZE_IN_BYTES);
       complex34ToDisplayString(&complexLiteral, tmpString, &standardFont, 9999, 34, false, false, currentAngularMode, getSystemFlag(FLAG_POLAR));
       break;
     }
@@ -661,7 +661,7 @@ static void decodeLiteral(uint8_t *literalAddress) {
 
     case STRING_DATE: {
       getStringLabelOrVariableName(literalAddress);
-      reallocateRegister(TEMP_REGISTER_1, dtDate, REAL34_SIZE_IN_BLOCKS, amNone);
+      reallocateRegister(TEMP_REGISTER_1, dtDate, 0, amNone);
       stringToReal34(tmpStringLabelOrVariableName, REGISTER_REAL34_DATA(TEMP_REGISTER_1));
       julianDayToInternalDate(REGISTER_REAL34_DATA(TEMP_REGISTER_1), REGISTER_REAL34_DATA(TEMP_REGISTER_1));
       dateToDisplayString(TEMP_REGISTER_1, tmpString);

@@ -720,10 +720,10 @@ static void _menuItem(int16_t item, char *bufPtr) {
 #define PARSER_OPERATOR_STACK_SIZE   10 /* (200 - 16) / 18 */
 #define PARSER_OPERATOR_STACK        ((uint16_t *)mvarBuffer)
 #define PARSER_NUMERIC_STACK_SIZE    PARSER_OPERATOR_STACK_SIZE
-#define PARSER_NUMERIC_STACK         ((real34_t *)(mvarBuffer + PARSER_OPERATOR_STACK_SIZE * 2 + sizeof(real34_t) * 2))
+#define PARSER_NUMERIC_STACK         ((real34_t *)(mvarBuffer + PARSER_OPERATOR_STACK_SIZE * 2 + REAL34_SIZE_IN_BYTES * 2))
 #define PARSER_LEFT_VALUE_REAL       ((real34_t *)(mvarBuffer + PARSER_OPERATOR_STACK_SIZE * 2))
-#define PARSER_LEFT_VALUE_IMAG       ((real34_t *)(mvarBuffer + PARSER_OPERATOR_STACK_SIZE * 2 + sizeof(real34_t)))
-#define PARSER_NUMERIC_STACK_POINTER ((uint8_t *)(mvarBuffer + PARSER_OPERATOR_STACK_SIZE * 2 + sizeof(real34_t) * (2 + 2 * PARSER_NUMERIC_STACK_SIZE)))
+#define PARSER_LEFT_VALUE_IMAG       ((real34_t *)(mvarBuffer + PARSER_OPERATOR_STACK_SIZE * 2 + REAL34_SIZE_IN_BYTES))
+#define PARSER_NUMERIC_STACK_POINTER ((uint8_t *)(mvarBuffer + PARSER_OPERATOR_STACK_SIZE * 2 + REAL34_SIZE_IN_BYTES * (2 + 2 * PARSER_NUMERIC_STACK_SIZE)))
 
 #define PARSER_OPERATOR_ITM_PARENTHESIS_LEFT   5000
 #define PARSER_OPERATOR_ITM_PARENTHESIS_RIGHT  5001
@@ -807,22 +807,22 @@ static void _runDyadicFunction(char *mvarBuffer, uint16_t item) {
 
   _popNumericStack(mvarBuffer, &re, &im);
   if(real34IsZero(&im) || real34IsNaN(&im)) {
-    reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+    reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
     real34Copy(&re, REGISTER_REAL34_DATA(REGISTER_X));
   }
   else {
-    reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
+    reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
     real34Copy(&re, REGISTER_REAL34_DATA(REGISTER_X));
     real34Copy(&im, REGISTER_IMAG34_DATA(REGISTER_X));
   }
 
   _popNumericStack(mvarBuffer, &re, &im);
   if(real34IsZero(&im) || real34IsNaN(&im)) {
-    reallocateRegister(REGISTER_Y, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+    reallocateRegister(REGISTER_Y, dtReal34, 0, amNone);
     real34Copy(&re, REGISTER_REAL34_DATA(REGISTER_Y));
   }
   else {
-    reallocateRegister(REGISTER_Y, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
+    reallocateRegister(REGISTER_Y, dtComplex34, 0, amNone);
     real34Copy(&re, REGISTER_REAL34_DATA(REGISTER_Y));
     real34Copy(&im, REGISTER_IMAG34_DATA(REGISTER_Y));
   }
@@ -846,11 +846,11 @@ static void _runMonadicFunction(char *mvarBuffer, uint16_t item) {
 
   _popNumericStack(mvarBuffer, &re, &im);
   if(real34IsZero(&im) || real34IsNaN(&im)) {
-    reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+    reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
     real34Copy(&re, REGISTER_REAL34_DATA(REGISTER_X));
   }
   else {
-    reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
+    reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
     real34Copy(&re, REGISTER_REAL34_DATA(REGISTER_X));
     real34Copy(&im, REGISTER_IMAG34_DATA(REGISTER_X));
   }
@@ -992,11 +992,11 @@ static void _processOperator(uint16_t func, char *mvarBuffer) {
           setSystemFlag(FLAG_ASLIFT);
           liftStack();
           if((real34IsZero(PARSER_LEFT_VALUE_IMAG) || real34IsNaN(PARSER_LEFT_VALUE_IMAG)) && (real34IsZero(&PARSER_NUMERIC_STACK[(*PARSER_NUMERIC_STACK_POINTER) * 2 - 1]) || real34IsNaN(&PARSER_NUMERIC_STACK[(*PARSER_NUMERIC_STACK_POINTER) * 2 - 1]))) {
-            reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+            reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
             real34Subtract(&PARSER_NUMERIC_STACK[(*PARSER_NUMERIC_STACK_POINTER) * 2 - 2], PARSER_LEFT_VALUE_REAL, REGISTER_REAL34_DATA(REGISTER_X));
           }
           else {
-            reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
+            reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
             real34Subtract(&PARSER_NUMERIC_STACK[(*PARSER_NUMERIC_STACK_POINTER) * 2 - 2], PARSER_LEFT_VALUE_REAL, REGISTER_REAL34_DATA(REGISTER_X));
             real34Subtract(&PARSER_NUMERIC_STACK[(*PARSER_NUMERIC_STACK_POINTER) * 2 - 1], PARSER_LEFT_VALUE_IMAG, REGISTER_IMAG34_DATA(REGISTER_X));
           }
