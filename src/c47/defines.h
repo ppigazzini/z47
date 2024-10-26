@@ -345,7 +345,8 @@
                                //15000  4515            1388!
                                //                       2122!          6140
 
-#define SHORT_INTEGER_SIZE               2 // 2 blocks = 8 bytes = 64 bits
+#define SHORT_INTEGER_SIZE_IN_BLOCKS     2 // 2 blocks = 8 bytes = 64 bits
+#define SHORT_INTEGER_SIZE_IN_BYTES      8 // 8 bytes = 64 bits
 #define ENABLE_SOLVER_PROGRESS           1 // Set to 1 to enable solver progress display (only if called in run mode)
 #define USE_MICHALSKI_MOSIG_TANH_SINH    1 // Set to 1 to use Michalski & Mosig tanh-sinh integration
 #define USE_NEW_DEI_INTEGRATION_CODE     2 // 0 - use prior code. 1 - use new code. 2 - use new code with split point code.
@@ -1610,7 +1611,8 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define RAM_SIZE_IN_BLOCKS                     16384 // 16384 blocks = 65536 bytes  MUST be a multiple of 4 and MUST be <= 262140 (not 262144)
 //#define RAM_SIZE_IN_BLOCKS                      3072 // 3072 blocks = 12288 bytes  MUST be a multiple of 4 and MUST be <= 262140 (not 262144)
 
-#define CONFIG_SIZE_IN_BLOCKS                 TO_BLOCKS(sizeof(dtConfigDescriptor_t))
+#define CONFIG_SIZE_IN_BLOCKS                  TO_BLOCKS(sizeof(dtConfigDescriptor_t))
+#define CONFIG_SIZE_IN_BYTES                   TO_BYTES(CONFIG_SIZE_IN_BLOCKS)
 
 #define FLASH_PGM_PAGE_SIZE                      512
 #define FLASH_PGM_NUMBER_OF_PAGES                 64

@@ -523,7 +523,7 @@ printf("fnRegAddTimerApp\n");
     real_t tmp;
     uInt32ToReal(_getTimerValue() / 100u, &tmp);
     tmp.exponent -= 1;
-    reallocateRegister(timerCraAndDeciseconds & 0x7fu, dtTime, REAL34_SIZE_IN_BLOCKS, amNone);
+    reallocateRegister(timerCraAndDeciseconds & 0x7fu, dtTime, 0, amNone);
     realToReal34(&tmp, REGISTER_REAL34_DATA(timerCraAndDeciseconds & 0x7fu));
     fnUpTimerApp();
   }
@@ -545,7 +545,7 @@ printf("fnRegAddLapTimerApp\n");
 
   uInt32ToReal(msec / 100u, &tmp);
   tmp.exponent -= 1;
-  reallocateRegister(timerCraAndDeciseconds & 0x7fu, dtTime, REAL34_SIZE_IN_BLOCKS, amNone);
+  reallocateRegister(timerCraAndDeciseconds & 0x7fu, dtTime, 0, amNone);
   realToReal34(&tmp, REGISTER_REAL34_DATA(timerCraAndDeciseconds & 0x7fu));
 
   fnUpTimerApp();
@@ -599,7 +599,7 @@ printf("fnAddLapTimerApp\n");
 
   uInt32ToReal(msec / 100u, &tmp);
   tmp.exponent -= 1;
-//  reallocateRegister(timerCraAndDeciseconds & 0x7fu, dtTime, REAL34_SIZE_IN_BLOCKS, amNone);
+//  reallocateRegister(timerCraAndDeciseconds & 0x7fu, dtTime, 0, amNone);
 //  realToReal34(&tmp, REGISTER_REAL34_DATA(timerCraAndDeciseconds & 0x7fu));
   realDivide(&tmp, const_3600, &tmp, &ctxtReal39);
 

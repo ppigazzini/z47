@@ -65,7 +65,7 @@ void conjCplx(void) {
   if(realIsZero(&i) && !getSystemFlag(FLAG_SPCRES)) {
     realSetPositiveSign(&i);
   }
-  reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
+  reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
   convertComplexToResultRegister(&r, &i, REGISTER_X);
 }
 

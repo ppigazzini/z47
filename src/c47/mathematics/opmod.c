@@ -156,7 +156,7 @@ static void toRealResult(longInteger_t longIntVal, int32_t exponent) {
 
   convertLongIntegerToReal(longIntVal, &r, &ctxtReal75);
   r.exponent -= exponent;
-  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+  reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
   convertRealToReal34ResultRegister(&r, REGISTER_X);
 
 }

@@ -1995,22 +1995,22 @@ double stringToDouble(const char *str) {
         tag = amNone;
       }
 
-      reallocateRegister(regist, dtReal34, REAL34_SIZE_IN_BLOCKS, tag);
+      reallocateRegister(regist, dtReal34, 0, tag);
       stringToReal34(value, REGISTER_REAL34_DATA(regist));
     }
 
     else if(strcmp(type, "Real") == 0) {
-      reallocateRegister(regist, dtReal34, REAL34_SIZE_IN_BLOCKS, tag);
+      reallocateRegister(regist, dtReal34, 0, tag);
       stringToReal34(value, REGISTER_REAL34_DATA(regist));
     }
 
     else if(strcmp(type, "Time") == 0) {
-      reallocateRegister(regist, dtTime, REAL34_SIZE_IN_BLOCKS, amNone);
+      reallocateRegister(regist, dtTime, 0, amNone);
       stringToReal34(value, REGISTER_REAL34_DATA(regist));
     }
 
     else if(strcmp(type, "Date") == 0) {
-      reallocateRegister(regist, dtDate, REAL34_SIZE_IN_BLOCKS, amNone);
+      reallocateRegister(regist, dtDate, 0, amNone);
       stringToReal34(value, REGISTER_REAL34_DATA(regist));
     }
 
@@ -2050,7 +2050,7 @@ double stringToDouble(const char *str) {
     else if(strcmp(type, "Cplx") == 0) {
       char *imaginaryPart;
 
-      reallocateRegister(regist, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
+      reallocateRegister(regist, dtComplex34, 0, amNone);
       imaginaryPart = value;
       while(*imaginaryPart != ' ') {
         imaginaryPart++;
@@ -2097,7 +2097,7 @@ double stringToDouble(const char *str) {
     else if(strcmp(type, "Conf") == 0) {
       char *cfg;
 
-      reallocateRegister(regist, dtConfig, CONFIG_SIZE_IN_BLOCKS, amNone);
+      reallocateRegister(regist, dtConfig, 0, amNone);
       for(cfg=(char *)REGISTER_CONFIG_DATA(regist), tag=0;  tag < (loadedVersion < 10000008 ? 896 : sizeof(dtConfigDescriptor_t)); tag++, value+=2, cfg++) {
         *cfg = ((*value >= 'A' ? *value - 'A' + 10 : *value - '0') << 4) | (*(value + 1) >= 'A' ? *(value + 1) - 'A' + 10 : *(value + 1) - '0');
       }

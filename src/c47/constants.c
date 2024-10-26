@@ -43,26 +43,26 @@ void fnConstant(const uint16_t constant) {
   liftStack();
   currentSolverStatus &= ~SOLVER_STATUS_READY_TO_EXECUTE;
 
-  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+  reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
 
   if(constant < NUMBER_OF_CONSTANTS_39) { // 39 digit constants
-    realToReal34((real_t *)(constants + constant * TO_BYTES(REAL39_SIZE_IN_BLOCKS)), REGISTER_REAL34_DATA(REGISTER_X));
+    realToReal34((real_t *)(constants + constant * REAL39_SIZE_IN_BYTES), REGISTER_REAL34_DATA(REGISTER_X));
 
   }
   else if(constant < NUMBER_OF_CONSTANTS_39 + NUMBER_OF_CONSTANTS_51) { // 51 digit constants (gamma coefficients)
-    realToReal34((real_t *)(constants + NUMBER_OF_CONSTANTS_39 * TO_BYTES(REAL39_SIZE_IN_BLOCKS)
-                                      + (constant - NUMBER_OF_CONSTANTS_39) * TO_BYTES(REAL51_SIZE_IN_BLOCKS)), REGISTER_REAL34_DATA(REGISTER_X));
+    realToReal34((real_t *)(constants + NUMBER_OF_CONSTANTS_39 * REAL39_SIZE_IN_BYTES
+                                      + (constant - NUMBER_OF_CONSTANTS_39) * REAL51_SIZE_IN_BYTES), REGISTER_REAL34_DATA(REGISTER_X));
   }
   else if(constant < NUMBER_OF_CONSTANTS_39 + NUMBER_OF_CONSTANTS_51 + NUMBER_OF_CONSTANTS_1071) { // 1071 digit constant
-    realToReal34((real_t *)(constants + NUMBER_OF_CONSTANTS_39 * TO_BYTES(REAL39_SIZE_IN_BLOCKS)
-                                      + NUMBER_OF_CONSTANTS_51 * TO_BYTES(REAL51_SIZE_IN_BLOCKS)
-                                      + (constant - NUMBER_OF_CONSTANTS_39 - NUMBER_OF_CONSTANTS_51) * TO_BYTES(REAL1071_SIZE_IN_BLOCKS)), REGISTER_REAL34_DATA(REGISTER_X));
+    realToReal34((real_t *)(constants + NUMBER_OF_CONSTANTS_39 * REAL39_SIZE_IN_BYTES
+                                      + NUMBER_OF_CONSTANTS_51 * REAL51_SIZE_IN_BYTES
+                                      + (constant - NUMBER_OF_CONSTANTS_39 - NUMBER_OF_CONSTANTS_51) * REAL1071_SIZE_IN_BYTES), REGISTER_REAL34_DATA(REGISTER_X));
   }
   else { // 34 digit constants
-    real34Copy((real34_t *)(constants + NUMBER_OF_CONSTANTS_39 * TO_BYTES(REAL39_SIZE_IN_BLOCKS)
-                                      + NUMBER_OF_CONSTANTS_51 * TO_BYTES(REAL51_SIZE_IN_BLOCKS)
-                                      + NUMBER_OF_CONSTANTS_1071 * TO_BYTES(REAL1071_SIZE_IN_BLOCKS)
-                                      + (constant - NUMBER_OF_CONSTANTS_39 - NUMBER_OF_CONSTANTS_51 - NUMBER_OF_CONSTANTS_1071) * TO_BYTES(REAL34_SIZE_IN_BLOCKS)), REGISTER_REAL34_DATA(REGISTER_X));
+    real34Copy((real34_t *)(constants + NUMBER_OF_CONSTANTS_39 * REAL39_SIZE_IN_BYTES
+                                      + NUMBER_OF_CONSTANTS_51 * REAL51_SIZE_IN_BYTES
+                                      + NUMBER_OF_CONSTANTS_1071 * REAL1071_SIZE_IN_BYTES
+                                      + (constant - NUMBER_OF_CONSTANTS_39 - NUMBER_OF_CONSTANTS_51 - NUMBER_OF_CONSTANTS_1071) * REAL34_SIZE_IN_BYTES), REGISTER_REAL34_DATA(REGISTER_X));
   }
 
   adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);

@@ -139,7 +139,7 @@ void fnTvmVar(uint16_t variable) {
             real34Copy(&y, &yy);
             #if defined(PC_BUILD)
               printReal34ToConsole(&x,"iter x:","\n");
-              printReal34ToConsole(&y,"iter y:","\n");            
+              printReal34ToConsole(&y,"iter y:","\n");
             #endif //PC_BUILD
             uint16_t solveResult = solver(variable, &y, &x, &resZ, &resY, &resX);
             #if defined(PC_BUILD)
@@ -151,7 +151,7 @@ void fnTvmVar(uint16_t variable) {
                 printReal34ToConsole(&resY,"solver results: resY:","\n");
                 printReal34ToConsole(&resX,"solver results: resX:","\n");
               #endif //PC_BUILD
-              reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+              reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
               real34Copy(&resX, REGISTER_REAL34_DATA(REGISTER_X));
               temporaryInformation = TI_SOLVER_VARIABLE;
               thereIsSomethingToUndo = false;
@@ -186,7 +186,7 @@ void fnTvmVar(uint16_t variable) {
               real34Multiply(&y, const34_2, &y);
             }
           }
-          
+
           if(iter == nIter) {
             if(lastErrorCode != ERROR_SOLVER_ABORT) {
               displayCalcErrorMessage(ERROR_NO_ROOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
@@ -236,7 +236,7 @@ void fnTvmEndMode(uint16_t unusedButMandatoryParameter) {
 void fnEff(uint16_t unusedButMandatoryParameter) {
   real_t iA, cperA, tmp;
   //no need to use tvmIKnown or tvmIChanges, as this is a simplistic output only, which takes the current cperA & iA and produces the effective rate. There is no situation where there is no values in these
-    //   EFF = 100({[iA / 100cperA] + 1} ^ cperA - 1) 
+    //   EFF = 100({[iA / 100cperA] + 1} ^ cperA - 1)
 
   if(getRegisterAsRealQuiet(RESERVED_VARIABLE_IPONA, &iA) &&
      getRegisterAsRealQuiet(RESERVED_VARIABLE_CPERONA, &cperA) &&
@@ -252,8 +252,8 @@ void fnEff(uint16_t unusedButMandatoryParameter) {
     realPower(&tmp, &cperA, &tmp, &ctxtReal39);
     realSubtract(&tmp, const_1, &tmp, &ctxtReal39);
     realMultiply(&tmp, const_100, &tmp, &ctxtReal39);
-    
-    reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+
+    reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
     convertRealToReal34ResultRegister(&tmp, REGISTER_X);
     temporaryInformation = TI_TVM_EFF;
   } else {
@@ -270,8 +270,8 @@ void fnEffToI(uint16_t unusedButMandatoryParameter) {
   //no need to use tvmIKnown or tvmIChanges, as this is a simplistic output only, which takes the current cperA & iA and produces the effective rate. There is no situation where there is no values in these
     // iA = {[(EFF / 100 + 1) ^ (1/cperA) ] - 1 } 100 * cperA
 
-  if(getRegisterAsRealQuiet(REGISTER_X, &iEFF) && 
-     getRegisterAsRealQuiet(RESERVED_VARIABLE_CPERONA, &cperA) && 
+  if(getRegisterAsRealQuiet(REGISTER_X, &iEFF) &&
+     getRegisterAsRealQuiet(RESERVED_VARIABLE_CPERONA, &cperA) &&
      !realIsZero(&cperA) &&
      realIsPositive(&iEFF)) {
 
@@ -288,7 +288,7 @@ void fnEffToI(uint16_t unusedButMandatoryParameter) {
     realMultiply(&tmp, &cperA, &tmp, &ctxtReal39);
 
     realToReal34(&tmp, REGISTER_REAL34_DATA(RESERVED_VARIABLE_IPONA));
-    reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+    reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
     convertRealToReal34ResultRegister(&tmp, REGISTER_X);
 
     temporaryInformation = TI_TVM_IA;
@@ -385,6 +385,6 @@ void tvmEquation(void) {
   realFMA(&pv, &i1nPer, &val, &val, &ctxtReal39);
   realSubtract(&val, &fv, &val, &ctxtReal39);
 
-  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+  reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
   convertRealToReal34ResultRegister(&val, REGISTER_X);
 }

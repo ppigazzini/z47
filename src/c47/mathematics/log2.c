@@ -78,7 +78,7 @@ void log2LonI(void) {
 
   if(longIntegerIsZero(lgInt)) {
     if(getSystemFlag(FLAG_SPCRES)) {
-      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+      reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
       convertRealToReal34ResultRegister(const_minusInfinity, REGISTER_X);
     }
     else {
@@ -96,7 +96,7 @@ void log2LonI(void) {
     if(longIntegerIsPositive(lgInt)) {
       WP34S_Ln(&x, &x, &ctxtReal39);
       realDivide(&x, const_ln2, &x, &ctxtReal39);
-      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+      reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
       convertRealToReal34ResultRegister(&x, REGISTER_X);
 
       {
@@ -119,12 +119,12 @@ void log2LonI(void) {
       realSetPositiveSign(&x);
       WP34S_Ln(&x, &x, &ctxtReal39);
       realDivide(&x, const_ln2, &x, &ctxtReal39);
-      reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
+      reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
       realDivide(const_pi, const_ln2, &y, &ctxtReal39);
       convertComplexToResultRegister(&x, &y, REGISTER_X);
     }
     else if(getSystemFlag(FLAG_SPCRES)) {
-      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+      reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
       convertRealToReal34ResultRegister(const_NaN, REGISTER_X);
     }
     else {
@@ -186,7 +186,7 @@ void log2Real(void) {
         convertRealToReal34ResultRegister(const_plusInfinity, REGISTER_X);
       }
       else {
-        reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
+        reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
         realDivide(const_pi, const_ln2, &a, &ctxtReal39);
         convertComplexToResultRegister(const_plusInfinity, &a, REGISTER_X);
       }
@@ -207,7 +207,7 @@ void log2Real(void) {
       realSetPositiveSign(&a);
       WP34S_Ln(&a, &a, &ctxtReal39);
       realDivide(&a, const_ln2, &a, &ctxtReal39);
-      reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
+      reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
       realDivide(const_pi, const_ln2, &b, &ctxtReal39);
       convertComplexToResultRegister(&a, &b, REGISTER_X);
     }
@@ -248,7 +248,7 @@ void log2Cplx(void) {
     realRectangularToPolar(&a, &b, &a, &b, &ctxtReal39);
     WP34S_Ln(&a, &a, &ctxtReal39);
     realDivide(&a, const_ln2, &a, &ctxtReal39);
-    reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
+    reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
     realDivide(&b, const_ln2, &b, &ctxtReal39);
     convertComplexToResultRegister(&a, &b, REGISTER_X);
   }

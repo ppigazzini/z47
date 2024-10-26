@@ -26,14 +26,13 @@
 TO_QSPI const char commonBugScreenMessages[NUMBER_OF_BUG_SCREEN_MESSAGES][SIZE_OF_EACH_BUG_SCREEN_MESSAGE] = {
 /*  0 */  "In function %s:%d is an unexpected value for %s!",
 /*  1 */  "In function %s: unexpected calcMode value (%" PRIu8 ") while processing key %s!",
-/*  2 */  "In function reallocateRegister: %" PRIu16 " is an unexpected numByte value for %s! It should be %s=%" PRIu16 "!",
-/*  3 */  "In function %s: no named variables defined!",
-/*  4 */  "In function %s: %d is an unexpected value returned by findGlyph!",
-/*  5 */  "In function %s: %" PRIu32 " is an unexpected %s value!",
-/*  6 */  "In function %s: data type %s is unknown!",
-/*  7 */  "In function %s: regist=%" PRId16 " must be less than %d!",
-/*  8 */  "In function %s: %s %" PRId16 " is not defined! Must be from 0 to %" PRIu16,
-/*  9 */  "In function %s: unexpected case while processing key %s! %" PRIu8 " is an unexpected value for rbrMode.",
+/*  2 */  "In function %s: no named variables defined!",
+/*  3 */  "In function %s: %d is an unexpected value returned by findGlyph!",
+/*  4 */  "In function %s: %" PRIu32 " is an unexpected %s value!",
+/*  5 */  "In function %s: data type %s is unknown!",
+/*  6 */  "In function %s: regist=%" PRId16 " must be less than %d!",
+/*  7 */  "In function %s: %s %" PRId16 " is not defined! Must be from 0 to %" PRIu16,
+/*  8 */  "In function %s: unexpected case while processing key %s! %" PRIu8 " is an unexpected value for rbrMode.",
 };
 
 TO_QSPI const char errorMessages[NUMBER_OF_ERROR_CODES][SIZE_OF_EACH_ERROR_MESSAGE] = {

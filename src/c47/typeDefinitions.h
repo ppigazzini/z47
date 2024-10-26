@@ -148,14 +148,13 @@ typedef enum {
 typedef enum {
   bugMsgValueFor                 = 0,
   bugMsgCalcModeWhileProcKey     = 1,
-  bugMsgNumByte                  = 2,
-  bugMsgNoNamedVariables         = 3,
-  bugMsgValueReturnedByFindGlyph = 4,
-  bugMsgUnexpectedSValue         = 5,
-  bugMsgDataTypeUnknown          = 6,
-  bugMsgRegistMustBeLessThan     = 7,
-  bugMsgNotDefinedMustBe         = 8,
-  bugMsgRbrMode                  = 9,
+  bugMsgNoNamedVariables         = 2,
+  bugMsgValueReturnedByFindGlyph = 3,
+  bugMsgUnexpectedSValue         = 4,
+  bugMsgDataTypeUnknown          = 5,
+  bugMsgRegistMustBeLessThan     = 6,
+  bugMsgNotDefinedMustBe         = 7,
+  bugMsgRbrMode                  = 8,
 } commonBugScreenMessageCode_t;
 
 
@@ -272,12 +271,12 @@ typedef union {
   uint32_t localFlags;
 
   struct {
-    uint16_t dataMaxLength;             ///< String max length (includind terminating \0) in blocks or Long integer max length in blocks
+    uint16_t dataMaxLengthInBlocks;     ///< String max length (includind terminating \0) in blocks or Long integer max length in blocks
     uint16_t dummy;                     ///< Dummy
   };
 
   struct {
-    uint16_t variableNameLen;           ///< Size of the name in blocs: 1 to 4, up to 15 bytes = 7 double byte glyphs + trailing 0
+    uint16_t variableNameLenInBlocks;   ///< Size of the name in blocs: 1 to 4, up to 15 bytes = 7 double byte glyphs + trailing 0
     uint16_t ptrToVariableName;         ///< Pointer to the name of the variable
   };
 

@@ -43,7 +43,7 @@
           real34ToDisplayString(REGISTER_REAL34_DATA(regist), getRegisterAngularMode(regist), tmpString, &standardFont, SCREEN_WIDTH - 1 - registerNameWidth, 34, false, false);
         }
         else {
-          sprintf(tmpString, "%d bytes", (int16_t)TO_BYTES(REAL34_SIZE_IN_BLOCKS));
+          sprintf(tmpString, "%d bytes", (int16_t)REAL34_SIZE_IN_BYTES);
         }
         break;
       }
@@ -53,7 +53,7 @@
           complex34ToDisplayString(REGISTER_COMPLEX34_DATA(regist), tmpString, &standardFont, SCREEN_WIDTH - 1 - registerNameWidth, 34, false, false, getComplexRegisterAngularMode(regist), getComplexRegisterPolarMode(regist));
         }
         else {
-          sprintf(tmpString, "%d bytes", (int16_t)TO_BYTES(COMPLEX34_SIZE_IN_BLOCKS));
+          sprintf(tmpString, "%d bytes", (int16_t)COMPLEX34_SIZE_IN_BYTES);
         }
         break;
       }
@@ -113,7 +113,7 @@
           timeToDisplayString(regist, tmpString, true);
         }
         else {
-          sprintf(tmpString, "%d bytes", (int16_t)TO_BYTES(REAL34_SIZE_IN_BLOCKS));
+          sprintf(tmpString, "%d bytes", (int16_t)REAL34_SIZE_IN_BYTES);
         }
         break;
       }
@@ -123,7 +123,7 @@
           dateToDisplayString(regist, tmpString);
         }
         else {
-          sprintf(tmpString, "%d bytes", (int16_t)TO_BYTES(REAL34_SIZE_IN_BLOCKS));
+          sprintf(tmpString, "%d bytes", (int16_t)REAL34_SIZE_IN_BYTES);
         }
         break;
       }
@@ -155,7 +155,7 @@
           strcpy(tmpString, "Configuration data");
         }
         else {
-          sprintf(tmpString, "%d bytes", (int16_t)TO_BYTES(CONFIG_SIZE_IN_BLOCKS));
+          sprintf(tmpString, "%d bytes", (int16_t)CONFIG_SIZE_IN_BYTES);
         }
         break;
       }

@@ -126,7 +126,7 @@ void gammaLonI(void) {
   real_t x;
 
   convertLongIntegerRegisterToReal(REGISTER_X, &x, &ctxtReal39);
-  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+  reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
 
   if(realIsInfinite(&x)) {
     if(!getSystemFlag(FLAG_SPCRES)) {
@@ -164,7 +164,7 @@ void lnGammaLonI(void) {
   real_t x;
 
   convertLongIntegerRegisterToReal(REGISTER_X, &x, &ctxtReal39);
-  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+  reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
 
   if(realIsInfinite(&x)) {
     if(!getSystemFlag(FLAG_SPCRES)) {
@@ -278,7 +278,7 @@ void lnGammaReal(void) {
       else { // the result is a complex
         if(getFlag(FLAG_CPXRES)) { // We can calculate a complex
           real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &xImag);
-          reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
+          reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
           WP34S_Gamma(&xReal, &xReal, &ctxtReal39);
           realSetPositiveSign(&xReal);
           WP34S_Ln(&xReal, &xReal, &ctxtReal39);

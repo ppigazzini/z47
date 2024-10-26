@@ -317,7 +317,7 @@ void Sett(int16_t grp) {
         case RESERVED_VARIABLE_PPERONA:
         case RESERVED_VARIABLE_CPERONA: {
             int32ToReal(Settings[ptr*(_numberOfGrps+2) + 1 + grp],&realt);
-            reallocateRegister(Settings[ptr*(_numberOfGrps+2) + 0], dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+            reallocateRegister(Settings[ptr*(_numberOfGrps+2) + 0], dtReal34, 0, amNone);
             realToReal34(&realt, REGISTER_REAL34_DATA(Settings[ptr*(_numberOfGrps+2) + 0]));
             #if defined(PC_BUILD) && (VERBOSE_LEVEL > -1)
               printf("Sett1A Register %d = ",Settings[ptr*(_numberOfGrps+2) + 0]);
@@ -1392,10 +1392,10 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     // initialize 1 long integer reserved variables: GRAMOD
     #if defined(OS64BIT)
       memPtr = allocC47Blocks(3);
-      ((dataBlock_t *)memPtr)->dataMaxLength = 2;
+      ((dataBlock_t *)memPtr)->dataMaxLengthInBlocks = 2;
     #else // !OS64BIT
       memPtr = allocC47Blocks(2);
-      ((dataBlock_t *)memPtr)->dataMaxLength = 1;
+      ((dataBlock_t *)memPtr)->dataMaxLengthInBlocks = 1;
     #endif // OS64BIT
 
     // initialize the global registers

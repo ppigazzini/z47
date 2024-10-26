@@ -2436,7 +2436,7 @@ typedef struct {
               return;
             }
 
-            reallocateRegister(REGISTER_X, dtShortInteger, SHORT_INTEGER_SIZE, base);
+            reallocateRegister(REGISTER_X, dtShortInteger, 0, base);
 
             char strValue[22];
             longIntegerToAllocatedString(value, strValue, sizeof(strValue));
@@ -2478,22 +2478,22 @@ typedef struct {
           else if(nimNumberPart == NP_REAL_FLOAT_PART || nimNumberPart == NP_REAL_EXPONENT) {
 
               if(lastIntegerBase == 0 && Input_Default == ID_CPXDP) {                                         //JM Input default type
-                reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone); //JM Input default type
+                reallocateRegister(REGISTER_X, dtComplex34, 0, amNone); //JM Input default type
                 stringToReal34(aimBuffer, REGISTER_REAL34_DATA(REGISTER_X));          //JM Input default type
                 stringToReal34("0", REGISTER_IMAG34_DATA(REGISTER_X));                //JM Input default type
               }                                                                       //JM Input default type
               else {                                                                  //JM Input default type
-              reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+              reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
               stringToReal34(aimBuffer, REGISTER_REAL34_DATA(REGISTER_X));
               }                                                                       //JM Input default type
 
           }
           else if(nimNumberPart == NP_FRACTION_DENOMINATOR) {
-            reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+            reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
             closeNimWithFraction(REGISTER_REAL34_DATA(REGISTER_X));
           }
           else if(nimNumberPart == NP_COMPLEX_INT_PART || nimNumberPart == NP_COMPLEX_FLOAT_PART || nimNumberPart == NP_COMPLEX_EXPONENT) {
-            reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
+            reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
             closeNimWithComplex(REGISTER_REAL34_DATA(REGISTER_X), REGISTER_IMAG34_DATA(REGISTER_X));
           }
           else {

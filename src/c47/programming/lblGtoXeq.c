@@ -511,12 +511,12 @@ static void _executeOp(uint8_t *paramAddress, uint16_t op, uint16_t paramMode) {
         }
       }
       else if(paramMode == PARAM_COMPARE && opParam == VALUE_0) {
-        reallocateRegister(TEMP_REGISTER_1, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+        reallocateRegister(TEMP_REGISTER_1, dtReal34, 0, amNone);
         real34Copy(const34_0, REGISTER_REAL34_DATA(TEMP_REGISTER_1));
         reallyRunFunction(op, TEMP_REGISTER_1);
       }
       else if(paramMode == PARAM_COMPARE && opParam == VALUE_1) {
-        reallocateRegister(TEMP_REGISTER_1, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+        reallocateRegister(TEMP_REGISTER_1, dtReal34, 0, amNone);
         real34Copy(const34_1, REGISTER_REAL34_DATA(TEMP_REGISTER_1));
         reallyRunFunction(op, TEMP_REGISTER_1);
       }
@@ -579,8 +579,8 @@ static void _putLiteral(uint8_t *literalAddress) {
       case BINARY_SHORT_INTEGER: {
       liftStack();
       setSystemFlag(FLAG_ASLIFT);
-      reallocateRegister(REGISTER_X, dtShortInteger, SHORT_INTEGER_SIZE, *(uint8_t *)(literalAddress++));
-      xcopy(REGISTER_DATA(REGISTER_X), literalAddress, TO_BYTES(SHORT_INTEGER_SIZE));
+      reallocateRegister(REGISTER_X, dtShortInteger, 0, *(uint8_t *)(literalAddress++));
+      xcopy(REGISTER_DATA(REGISTER_X), literalAddress, TO_BYTES(SHORT_INTEGER_SIZE_IN_BLOCKS));
       break;
       }
 
@@ -590,10 +590,10 @@ static void _putLiteral(uint8_t *literalAddress) {
 
       case BINARY_REAL34: {
       real34_t realLiteral;
-      xcopy(&realLiteral, literalAddress, TO_BYTES(REAL34_SIZE_IN_BLOCKS));
+      xcopy(&realLiteral, literalAddress, REAL34_SIZE_IN_BYTES);
       liftStack();
       setSystemFlag(FLAG_ASLIFT);
-      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+      reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
       real34Copy(&realLiteral, REGISTER_REAL34_DATA(REGISTER_X));
       break;
       }
@@ -602,9 +602,9 @@ static void _putLiteral(uint8_t *literalAddress) {
         complex34_t complexLiteral;
         liftStack();
         setSystemFlag(FLAG_ASLIFT);
-        reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
-        xcopy(VARIABLE_REAL34_DATA(&complexLiteral), literalAddress                                  , TO_BYTES(REAL34_SIZE_IN_BLOCKS));
-        xcopy(VARIABLE_IMAG34_DATA(&complexLiteral), literalAddress + TO_BYTES(REAL34_SIZE_IN_BLOCKS), TO_BYTES(REAL34_SIZE_IN_BLOCKS));
+        reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
+        xcopy(VARIABLE_REAL34_DATA(&complexLiteral), literalAddress                       , REAL34_SIZE_IN_BYTES);
+        xcopy(VARIABLE_IMAG34_DATA(&complexLiteral), literalAddress + REAL34_SIZE_IN_BYTES, REAL34_SIZE_IN_BYTES);
         complex34Copy(&complexLiteral, REGISTER_COMPLEX34_DATA(REGISTER_X));
         break;
       }
@@ -650,7 +650,7 @@ static void _putLiteral(uint8_t *literalAddress) {
       _getStringLabelOrVariableName(literalAddress);
       liftStack();
       setSystemFlag(FLAG_ASLIFT);
-      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+      reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
       stringToReal34(tmpStringLabelOrVariableName, REGISTER_REAL34_DATA(REGISTER_X));
       break;
       }
@@ -675,7 +675,7 @@ static void _putLiteral(uint8_t *literalAddress) {
         }
         liftStack();
         setSystemFlag(FLAG_ASLIFT);
-        reallocateRegister(REGISTER_X, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
+        reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
         stringToReal34(tmpStringLabelOrVariableName, REGISTER_REAL34_DATA(REGISTER_X));
         stringToReal34(imag,                         REGISTER_IMAG34_DATA(REGISTER_X));
         break;
@@ -694,7 +694,7 @@ static void _putLiteral(uint8_t *literalAddress) {
       _getStringLabelOrVariableName(literalAddress);
       liftStack();
       setSystemFlag(FLAG_ASLIFT);
-      reallocateRegister(REGISTER_X, dtDate, REAL34_SIZE_IN_BLOCKS, amNone);
+      reallocateRegister(REGISTER_X, dtDate, 0, amNone);
       stringToReal34(tmpStringLabelOrVariableName, REGISTER_REAL34_DATA(REGISTER_X));
       julianDayToInternalDate(REGISTER_REAL34_DATA(REGISTER_X), REGISTER_REAL34_DATA(REGISTER_X));
       break;
@@ -704,7 +704,7 @@ static void _putLiteral(uint8_t *literalAddress) {
       _getStringLabelOrVariableName(literalAddress);
       liftStack();
       setSystemFlag(FLAG_ASLIFT);
-      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+      reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
       stringToReal34(tmpStringLabelOrVariableName, REGISTER_REAL34_DATA(REGISTER_X));
       hmmssInRegisterToSeconds(REGISTER_X);
       break;
@@ -714,7 +714,7 @@ static void _putLiteral(uint8_t *literalAddress) {
       _getStringLabelOrVariableName(literalAddress);
       liftStack();
       setSystemFlag(FLAG_ASLIFT);
-      reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amDMS);
+      reallocateRegister(REGISTER_X, dtReal34, 0, amDMS);
       stringToReal34(tmpStringLabelOrVariableName, REGISTER_REAL34_DATA(REGISTER_X));
       real34FromDmsToDeg(REGISTER_REAL34_DATA(REGISTER_X), REGISTER_REAL34_DATA(REGISTER_X));
       break;

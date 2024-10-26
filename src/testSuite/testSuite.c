@@ -488,7 +488,7 @@ void strToShortInteger(char *nimBuffer, calcRegister_t regist) {
     abortTest();
   }
 
-  reallocateRegister(regist, dtShortInteger, SHORT_INTEGER_SIZE, base);
+  reallocateRegister(regist, dtShortInteger, 0, base);
 
   char strValue[22];
   longIntegerToAllocatedString(value, strValue, sizeof(strValue));
@@ -1055,7 +1055,7 @@ void setParameter(char *p) {
         }
       }
 
-      reallocateRegister(regist, dtReal34, REAL34_SIZE_IN_BLOCKS, am);
+      reallocateRegister(regist, dtReal34, 0, am);
       stringToReal34(r, REGISTER_REAL34_DATA(regist));
     }
     else if(strcmp(l, "STRI") == 0) {
@@ -1142,7 +1142,7 @@ void setParameter(char *p) {
         }
       }
 
-      reallocateRegister(regist, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
+      reallocateRegister(regist, dtComplex34, 0, amNone);
       stringToReal34(real, REGISTER_REAL34_DATA(regist));
       stringToReal34(imag, REGISTER_IMAG34_DATA(regist));
     }
@@ -1182,7 +1182,7 @@ void setParameter(char *p) {
         }
       }
 
-      reallocateRegister(regist, dtTime, REAL34_SIZE_IN_BLOCKS, amNone);
+      reallocateRegister(regist, dtTime, 0, amNone);
       stringToReal34(r, REGISTER_REAL34_DATA(regist));
       if(isHms) {
         hmmssInRegisterToSeconds(regist);
@@ -1203,7 +1203,7 @@ void setParameter(char *p) {
         }
       }
 
-      reallocateRegister(regist, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+      reallocateRegister(regist, dtReal34, 0, amNone);
       stringToReal34(r, REGISTER_REAL34_DATA(regist));
       convertReal34RegisterToDateRegister(regist, regist);
     }
@@ -2450,7 +2450,7 @@ void checkExpectedOutParameter(char *p) {
       }
 
       checkRegisterType(regist, letter, dtDate, amNone);
-      reallocateRegister(TEMP_REGISTER_1, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+      reallocateRegister(TEMP_REGISTER_1, dtReal34, 0, amNone);
       stringToReal34(r, REGISTER_REAL34_DATA(TEMP_REGISTER_1));
       convertReal34RegisterToDateRegister(TEMP_REGISTER_1, TEMP_REGISTER_1);
       real34Copy(REGISTER_REAL34_DATA(TEMP_REGISTER_1), &expectedReal34);
@@ -2501,7 +2501,7 @@ void checkExpectedOutParameter(char *p) {
             isCheckingEigenvectors = (funcType == FUNC_NOPARAM) && (funcNoParam == fnEigenvectors) && (regist == REGISTER_X) && (rows == cols);
             xcopy(r, r + i + 1, strlen(r + i + 1) + 1);
             if(isCheckingEigenvectors) {
-              x1 = malloc(sizeof(real34_t) * cols);
+              x1 = malloc(REAL34_SIZE_IN_BYTES * cols);
               for(int col = 0; col < cols; ++col) {
                 real34Zero(x1 + col);
               }
@@ -2623,8 +2623,8 @@ void checkExpectedOutParameter(char *p) {
             isCheckingEigenvectors = (funcType == FUNC_NOPARAM) && (funcNoParam == fnEigenvectors) && (regist == REGISTER_X) && (rows == cols);
             xcopy(r, r + i + 1, strlen(r + i + 1) + 1);
             if(isCheckingEigenvectors) {
-              xr1 = malloc(sizeof(real_t) * cols);
-              xi1 = malloc(sizeof(real_t) * cols);
+              xr1 = malloc(REAL_SIZE_IN_BYTES * cols);
+              xi1 = malloc(REAL_SIZE_IN_BYTES * cols);
               xf1 = malloc(sizeof(bool_t) * cols);
               for(int col = 0; col < cols; ++col) {
                 realZero(xr1 + col);

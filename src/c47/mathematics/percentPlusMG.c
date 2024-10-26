@@ -97,7 +97,7 @@ void fnPercentPlusMG(uint16_t unusedButMandatoryParameter) {
   if(!percentPlusMGReal(&xReal, &yReal, &rReal, &ctxtReal34))
     return;
 
-  reallocateRegister(REGISTER_X, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+  reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
   convertRealToReal34ResultRegister(&rReal, REGISTER_X);
   setRegisterAngularMode(REGISTER_X, amNone);
   adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
