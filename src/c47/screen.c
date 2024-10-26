@@ -1704,13 +1704,24 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
   }
 
 
+#define ANALYSE_REFRESH
+#undef  ANALYSE_REFRESH
+
   void force_refresh(uint8_t mode) {
-//printf("#%i",mode == force);
+    #if defined(ANALYSE_REFRESH) && defined(PC_BUILD)
+      printf("#%i",mode == force);
+    #endif //ANALYSE_REFRESH
+ 
     if(mode != timed || getSystemFlag(FLAG_MONIT)) {
-//printf("+");
-      uint16_t now = (uint16_t)(getUptimeMs() >> 4);
+      #if defined(ANALYSE_REFRESH) && defined(PC_BUILD)
+        printf("+");
+      #endif //ANALYSE_REFRESH
+
+      uint16_t now = (uint16_t)(getUptimeMs() >> 4); 
       if(mode != timed || ((now >> 6) & 0x0001) == halfSecTick1) {  //Restrict refresh to once per second. Use this minimally, due to extreme slow response.
-//printf("-\n");
+        #if defined(ANALYSE_REFRESH) && defined(PC_BUILD)
+          printf("-\n");
+        #endif //ANALYSE_REFRESH
         halfSecTick1 = !halfSecTick1;
 
         #if defined(PC_BUILD)
@@ -1724,12 +1735,17 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
           lcd_forced_refresh();
         #endif // DMCP_BUILD
       }
+
       else {
-//printf("=%i %i\n", now, ((now >> 6) & 0x0001));
+        #if defined(ANALYSE_REFRESH) && defined(PC_BUILD)
+          printf("=%i %i\n", now, ((now >> 6) & 0x0001));
+        #endif //ANALYSE_REFRESH
       }
     }
     else {
-//printf(".\n");
+      #if defined(ANALYSE_REFRESH) && defined(PC_BUILD)
+        printf(".\n");
+      #endif //ANALYSE_REFRESH
       return;
     }
   }
