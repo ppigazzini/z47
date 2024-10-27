@@ -815,6 +815,9 @@ void stringToASCII(const char *str, char *ascii) {
       //RANGE QUOTES
       if(a1==(uint8_t)(STD_LEFT_SINGLE_QUOTE[0]) && (a2>=(uint8_t)(STD_LEFT_SINGLE_QUOTE[1]) && a2<=(uint8_t)(STD_SINGLE_HIGH_QUOTE[1])) ) *ascii = '\''; else
       if(a1==(uint8_t)(STD_LEFT_DOUBLE_QUOTE[0]) && (a2>=(uint8_t)(STD_LEFT_DOUBLE_QUOTE[1]) && a2<=(uint8_t)(STD_DOUBLE_HIGH_QUOTE[1])) ) *ascii = '"'; else
+      //Types used in commands
+      if(a1==(uint8_t)(STD_TIME_T        [0]) && a2==(uint8_t)(STD_TIME_T        [1])) *ascii = 'T'; else
+      if(a1==(uint8_t)(STD_DATE_D        [0]) && a2==(uint8_t)(STD_DATE_D        [1])) *ascii = 'D'; else
       {
         #ifdef PC_BUILD
           printf("Not decoded, replace with _: --a1=%u--a2=%u\n",a1,a2);
