@@ -1302,17 +1302,17 @@ void dms34ToReal34(uint16_t dms) {
 
   // Get the minutes
   realSubtract(&temp, &degrees, &temp, &ctxtReal39);
-  realMultiply(&temp, const_100, &temp, &ctxtReal39);
+  temp.exponent += 2; // temp = temp * 100
   realToIntegralValue(&temp, &minutes, DEC_ROUND_DOWN, &ctxtReal39);
 
   // Get the seconds
   realSubtract(&temp, &minutes, &temp, &ctxtReal39);
-  realMultiply(&temp, const_100, &temp, &ctxtReal39);
+  temp.exponent += 2; // temp = temp * 100
   realToIntegralValue(&temp, &seconds, DEC_ROUND_DOWN, &ctxtReal39);
 
   // Get the fractional seconds
   realSubtract(&temp, &seconds, &temp, &ctxtReal39);
-  realMultiply(&temp, const_100, &temp, &ctxtReal39);
+  temp.exponent += 2; // temp = temp * 100
 
   fs = realToUint32C47(&temp);
   s  = realToUint32C47(&seconds);

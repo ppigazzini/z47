@@ -79,9 +79,9 @@ static void rmdShoI(void) {
   longInteger_t x, y, remainder;
     uint32_t baseY;
 
-  if(!getRegisterAsLongInt(REGISTER_X, x, NULL)
-    || !getRegisterAsLongInt(REGISTER_Y, y, NULL))
-  return;
+  if(!getRegisterAsLongInt(REGISTER_X, x, NULL) || !getRegisterAsLongInt(REGISTER_Y, y, NULL)) {
+    return;
+  }
 
   if(longIntegerIsZero(x)) {
     longIntegerFree(y);
@@ -103,7 +103,6 @@ static void rmdShoI(void) {
   }
 
   longIntegerFree(x);
-
 }
 
 /******************************************************************************************************************************************************************************************/
@@ -119,8 +118,9 @@ static void rmdShoI(void) {
 static void rmdReal(void) {
   real_t x, y;
 
-  if(!getRegisterAsReal(REGISTER_X, &x) || !getRegisterAsReal(REGISTER_Y, &y))
+  if(!getRegisterAsReal(REGISTER_X, &x) || !getRegisterAsReal(REGISTER_Y, &y)) {
     return;
+  }
 
   if(realIsZero(&x)) {
     displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);

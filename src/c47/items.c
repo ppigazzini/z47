@@ -1560,7 +1560,7 @@ TO_QSPI const item_t indexOfItems[] = {
 // Items from 128 to ... are 2 byte OP codes
 // Constants
 /*  128 */  { fnConstant,                   0,                           "a" STD_SUB_g,                                 "yr.gregor",                                   (0 << TAM_MAX_BITS) |     0, CAT_CNST | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
-/*  129 */  { fnConstant,                   1,                           "a" STD_SUB_0,                                 "rad.bohr",                                    (0 << TAM_MAX_BITS) |     0, CAT_CNST | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
+/*  129 */  { fnConstant,                   1,                           "r" STD_SUB_B STD_SUB_o STD_SUB_h STD_SUB_r,   "rad.bohr",                                    (0 << TAM_MAX_BITS) |     0, CAT_CNST | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /*  130 */  { fnConstant,                   2,                           "a" STD_SUB_M STD_SUB_o STD_SUB_o STD_SUB_n,   "orb.moon",                                    (0 << TAM_MAX_BITS) |     0, CAT_CNST | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /*  131 */  { fnConstant,                   3,                           "a" STD_SUB_EARTH,                             "orb.earth",                                   (0 << TAM_MAX_BITS) |     0, CAT_CNST | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /*  132 */  { fnConstant,                   4,                           "c",                                           "lightspeed",                                  (0 << TAM_MAX_BITS) |     0, CAT_CNST | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },

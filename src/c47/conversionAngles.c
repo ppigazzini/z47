@@ -507,7 +507,7 @@ void checkDms34(real34_t *angle34Dms) {
   realToIntegralValue(&angleDms, &degrees, DEC_ROUND_DOWN, &ctxtReal39);
   realSubtract(&angleDms, &degrees, &angleDms, &ctxtReal39);
 
-  realMultiply(&angleDms, const_100, &angleDms, &ctxtReal39);
+  angleDms.exponent += 2; // angleDms = angleDms * 100
   realToIntegralValue(&angleDms, &minutes, DEC_ROUND_DOWN, &ctxtReal39);
   realSubtract(&angleDms, &minutes, &angleDms, &ctxtReal39);
 
@@ -523,9 +523,9 @@ void checkDms34(real34_t *angle34Dms) {
     realAdd(&degrees, const_1, &degrees, &ctxtReal39);
   }
 
-  realDivide(&minutes, const_100, &minutes, &ctxtReal39);
+  minutes.exponent -= 2; // minutes = minutes / 100
   realAdd(&degrees, &minutes, &angleDms, &ctxtReal39);
-  realDivide(&seconds, const_10000, &seconds, &ctxtReal39);
+  seconds.exponent -= 4; // seconds = seconds / 10000
   realAdd(&angleDms, &seconds, &angleDms, &ctxtReal39);
 
   if(sign == -1) {
@@ -636,7 +636,7 @@ void real34FromDmsToDeg(const real34_t *angleDms, real34_t *angleDec) {
   realToIntegralValue(&angle, &degrees, DEC_ROUND_DOWN, &ctxtReal39);
 
   realSubtract(&angle, &degrees, &angle, &ctxtReal39);
-  realMultiply(&angle, const_100, &angle, &ctxtReal39);
+  angle.exponent += 2; // angle = angle * 100
 
   realToIntegralValue(&angle, &minutes, DEC_ROUND_DOWN, &ctxtReal39);
 
@@ -691,8 +691,8 @@ void real34FromDegToDms(const real34_t *angleDec, real34_t *angleDms) {
   realSubtract(&angle, &minutes, &angle, &ctxtReal39);
   realMultiply(&angle, const_60, &seconds, &ctxtReal39);
 
-  realDivide(&minutes, const_100,   &minutes, &ctxtReal39);
-  realDivide(&seconds, const_10000, &seconds, &ctxtReal39);
+  minutes.exponent -= 2; // minutes = minutes / 100
+  seconds.exponent -= 4; // seconds = seconds / 10000
 
   realAdd(&degrees, &minutes, &angle, &ctxtReal39);
   realAdd(&angle,   &seconds, &angle, &ctxtReal39);

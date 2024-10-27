@@ -723,7 +723,7 @@ void fnBatteryVoltage(uint16_t unusedButMandatoryParameter) {
   #endif // DMCP_BUILD
 
   temporaryInformation = TI_BATTV;
-  realDivide(&value, const_1000, &value, &ctxtReal39);
+  value.exponent -= 3; // value = value / 1000
   convertRealToResultRegister(&value, REGISTER_X, amNone);
 }
 

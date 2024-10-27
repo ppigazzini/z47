@@ -222,7 +222,7 @@
       int32ToReal(sys_free_mem(), &value);
     #endif // DMCP_BUILD
 
-    //realDivide(&value, const_1000, &value, &ctxtReal39);
+    //value.exponent -= 3; // value = value / 1000
     realToReal34(&value, REGISTER_REAL34_DATA(REGISTER_X));
   }
 

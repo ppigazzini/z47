@@ -34,7 +34,7 @@
 
 static void percentReal(real_t *xReal, real_t *yReal, real_t *rReal, realContext_t *realContext) {
   realMultiply(xReal, yReal, rReal, realContext);     // rReal = xReal * yReal
-  realDivide(rReal, const_100, rReal, realContext);   // rReal = rReal / 100.0
+  rReal->exponent -= 2;                               // rReal = rReal / 100.0
 }
 
 //=============================================================================

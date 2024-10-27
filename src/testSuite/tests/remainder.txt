@@ -767,3 +767,51 @@ Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RY=Real:"25" RX=Cplx:"7i1"
 
 In:  FL_ASLIFT=0 RY=Cplx:"25i1" RX=Cplx:"7i1"
 Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RY=Cplx:"25i1" RX=Cplx:"7i1"
+
+
+
+;=======================================
+; Long Integer Rmd String --> Error
+;=======================================
+In:  FL_ASLIFT=0 RY=LonI:"25" RX=Stri:"abc"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RY=LonI:"25" RX=Stri:"abc"
+
+
+
+;=======================================
+; String Rmd Long Integer --> Error
+;=======================================
+In:  FL_ASLIFT=0 RY=Stri:"abc" RX=LonI:"25"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RY=Stri:"abc" RX=LonI:"25"
+
+
+
+;=======================================
+; Short Integer Rmd String --> Error
+;=======================================
+In:  FL_ASLIFT=0 RY=ShoI:"25#10" RX=Stri:"abc"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RY=ShoI:"25#10" RX=Stri:"abc"
+
+
+
+;=======================================
+; String Rmd Short Integer --> Error
+;=======================================
+In:  FL_ASLIFT=0 RY=Stri:"abc" RX=ShoI:"25#7"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RY=Stri:"abc" RX=ShoI:"25#7"
+
+
+
+;=======================================
+; Real Rmd String --> Error
+;=======================================
+In:  FL_ASLIFT=0 RY=Real:"25" RX=Stri:"abc"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RY=Real:"25" RX=Stri:"abc"
+
+
+
+;=======================================
+; String Rmd Real --> Error
+;=======================================
+In:  FL_ASLIFT=0 RY=Stri:"abc" RX=Real:"25"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RY=Stri:"abc" RX=Real:"25"
