@@ -68,9 +68,9 @@ real_t yReal;
     }
   }
   else {
-    realSubtract(xReal, &yReal, rReal, realContext);     // r = x - y
-    realDivide(rReal, &yReal, rReal, realContext);       // r = (x - y)/y
-    realMultiply(rReal, const_100, rReal, realContext); // r = r * 100.0
+    realSubtract(xReal, &yReal, rReal, realContext); // r = x - y
+    realDivide(rReal, &yReal, rReal, realContext);   // r = (x - y)/y
+    rReal->exponent += 2;                            // r = r * 100.0
   }
   return true;
 }
@@ -100,6 +100,7 @@ void fnDeltaPercentXmean(uint16_t unusedButMandatoryParameter) {
     return;
   }
 
+  realZero(&rReal);
   if(deltaPercentXmeanReal(&xReal, &rReal, &ctxtReal75)) {
     reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
     convertRealToReal34ResultRegister(&rReal, REGISTER_X);

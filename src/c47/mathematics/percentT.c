@@ -62,8 +62,8 @@ static bool_t percentTReal(real_t *xReal, real_t *yReal, real_t *rReal, realCont
     }
   }
   else {
-    realMultiply(xReal, const_100, rReal, realContext); // rReal = xReal * 100.0
-    realDivide(rReal, yReal, rReal, realContext);       // rReal = xReal * 100.0 / yReal
+    xReal->exponent += 2;                         // xReal = xReal * 100.0
+    realDivide(xReal, yReal, rReal, realContext); // rReal = xReal * 100.0 / yReal
   }
 
   return true;

@@ -50,8 +50,8 @@ bool_t percentSigma(real_t *xReal, real_t *rReal, realContext_t *realContext) {
     }
   }
 
-  realDivide(xReal, rReal, rReal, realContext);       // r = x/Sum(x)
-  realMultiply(rReal, const_100, rReal, realContext); // r = 100*x/Sum(x)
+  realDivide(xReal, rReal, rReal, realContext); // r = x/Sum(x)
+  rReal->exponent += 2;                         // r = x/Sum(x) * 100
 
   return true;
 }

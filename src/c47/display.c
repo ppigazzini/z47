@@ -356,9 +356,9 @@ static void real34ToDisplayString2(const real34_t *real34, char *displayString, 
   real34_t real34bak;
   real34Copy(real34, &real34bak);
   if(flag2To10 && displayFormat == DF_UN) {
-    real_t x,xx;
+    real_t x, xx;
     real34ToReal(real34, &x);
-    int32ToReal(1024,&tmp4);
+    int32ToReal(1024, &tmp4);
 
     if(!realCompareAbsLessThan(&x, &tmp4)) {
 
@@ -373,8 +373,8 @@ static void real34ToDisplayString2(const real34_t *real34, char *displayString, 
 
       //get log base 1024 of real34
       WP34S_Ln(&x, &x, &ctxtReal39);                             //x = ln|real34|
-      realDivide(&x, const_ln2, &x, &ctxtReal39);                   //ln(1024)=ln( 2^10 )=10ln(2)
-      realDivide(&x, const_10, &x, &ctxtReal34);                    //ln(1024)=ln( 2^10 )=10ln(2)
+      realDivide(&x, const_ln2, &x, &ctxtReal39);                //ln(1024)=ln( 2^10 )=10ln(2)
+      x.exponent--; // x = x / 10
       //printRealToConsole(&x,"log base 1024 of real34 = lnx / ln1024 ","\n");             // x = ln|real34| / ln(1024) = log base 1024 of real34 = 1.00140
 
       //get IP and FP of this
@@ -383,11 +383,11 @@ static void real34ToDisplayString2(const real34_t *real34, char *displayString, 
       if(tmpx > exponentUNlimit1024max) {
         goto overRange;
       }
-      exponentUNlimit = min(exponentUNlimit1024max,tmpx);
-      int32ToReal(exponentUNlimit,&tmpIp);
+      exponentUNlimit = min(exponentUNlimit1024max, tmpx);
+      int32ToReal(exponentUNlimit, &tmpIp);
       realSubtract(&x, &tmpIp, &tmpFp, &ctxtReal34);                // tmpFp = Fractional part log base1024 of Real34    = 0.00140
-      //printRealToConsole(&tmpIp,"tmpIp Ip ","\n");
-      //printRealToConsole(&tmpFp,"Fp ","\n");
+      //printRealToConsole(&tmpIp, "tmpIp Ip ", "\n");
+      //printRealToConsole(&tmpFp, "Fp ", "\n");
 
       //   = 1000 ^ IP(log base1024 of Real34)
       //   = 1024 ^ IP(log base1024 of Real34)
@@ -397,15 +397,15 @@ static void real34ToDisplayString2(const real34_t *real34, char *displayString, 
       // new Real34 = Real34 fact
 
       real_t tmp3, fact;
-      int32ToReal(1000,&tmp3);
-      int32ToReal(1024,&tmp4);
-      realDivide(&tmp3,&tmp4,&fact,&ctxtReal39);
-      //printRealToConsole(&fact,"factor = ","\n");
+      int32ToReal(1000, &tmp3);
+      int32ToReal(1024, &tmp4);
+      realDivide(&tmp3, &tmp4, &fact, &ctxtReal39);
+      //printRealToConsole(&fact, "factor = ", "\n");
       realPower(&fact, &tmpIp, &tmp3, &ctxtReal39);
-      //printRealToConsole(&tmp3,"factor^IP = ","\n");
-      //printRealToConsole(&xx,"xx = ","\n");
+      //printRealToConsole(&tmp3, "factor^IP = ", "\n");
+      //printRealToConsole(&xx, "xx = ", "\n");
       realMultiply(&xx, &tmp3, &x, &ctxtReal34);
-      //printRealToConsole(&x,"x * fact = ","\n");
+      //printRealToConsole(&x, "x * fact = ", "\n");
 
       if(neg) {
         realSetNegativeSign(&x);
@@ -429,9 +429,9 @@ overRange:
   real_t value;
 
   //printf(">>>## flag_proper %u\n",getSystemFlag(FLAG_PROPFR));
-  if(getSystemFlag(FLAG_IRFRAC) && getSystemFlag(FLAG_IRF_ON) && 
-      !getSystemFlag(FLAG_FRACT) && 
-      IrFractionsCurrentStatus != CF_OFF && 
+  if(getSystemFlag(FLAG_IRFRAC) && getSystemFlag(FLAG_IRF_ON) &&
+      !getSystemFlag(FLAG_FRACT) &&
+      IrFractionsCurrentStatus != CF_OFF &&
       !real34CompareAbsLessThan(real34,const34_1e_24) && !real34IsAnInteger(real34)) {
     real_t toleranceIrrational;
     realCopy(const_1e_24, &toleranceIrrational);
@@ -1165,7 +1165,7 @@ if(displayFormat != DF_UN) {
       digitsToDisplay--;
     }
 
-//The digits are not in groups of three, as the underlying ENG display needs no more than 3 digits left of the radix. 
+//The digits are not in groups of three, as the underlying ENG display needs no more than 3 digits left of the radix.
 //Therefore 1024^ & UN scheme is limited to 1024^5 --> ^6, if larger numbers are required, separators must be added here.
 
     if(flag2To10 && displayFormat == DF_UN) {
@@ -1376,7 +1376,7 @@ static void complex34ToDisplayString2(const complex34_t *complex34, char *displa
     printStringToConsole(displayString,"Real$$$: ","\n");
   #endif //PC_BUILD_TELLTALE
 
-  
+
   if(!real34IsZero(&real34) && strncmp(displayString + imagOffset, STD_ALMOST_EQUAL, 2) == 0) { //if real is not zero, and almost equal char in front of IM part, transfer it to the Left (Real) side
     displayString[imagOffset] = STD_NOCHAR;    //0x01 is the new 'no char' character
     displayString[imagOffset + 1] = STD_NOCHAR;  //0x01 is the new 'no char' character
@@ -1427,7 +1427,7 @@ static void complex34ToDisplayString2(const complex34_t *complex34, char *displa
           stringToASCII(displayString,tmp_b);
           printf("AA1: %i/%i Real is non-zero: §%s§%s§ %c § %i §\n", ii, imagOffset + stringByteLength(displayString + imagOffset) - 1, tmp_b, tmp_a, (uint8_t)(displayString[ii]), (uint8_t)(displayString[ii]));
         #endif //PC_BUILD_TELLTALE
-        
+
         if((displayString[ii] & 0x80)) { // if any two-byte character is reached, it means negative is not in play
           break;
         }
@@ -1655,17 +1655,17 @@ void angle34ToDisplayString2(const real34_t *angle34, uint8_t mode, char *displa
 
     // Get the minutes
     realSubtract(&angleDms, &degrees, &angleDms, &ctxtReal39);
-    realMultiply(&angleDms, const_100, &angleDms, &ctxtReal39);
+    angleDms.exponent += 2; // angleDms = angleDms * 100
     realToIntegralValue(&angleDms, &minutes, DEC_ROUND_DOWN, &ctxtReal39);
 
     // Get the seconds
     realSubtract(&angleDms, &minutes, &angleDms, &ctxtReal39);
-    realMultiply(&angleDms, const_100, &angleDms, &ctxtReal39);
+    angleDms.exponent += 2; // angleDms = angleDms * 100
     realToIntegralValue(&angleDms, &seconds, DEC_ROUND_DOWN, &ctxtReal39);
 
     // Get the fractional seconds
     realSubtract(&angleDms, &seconds, &angleDms, &ctxtReal39);
-    realMultiply(&angleDms, const_100, &angleDms, &ctxtReal39);
+    angleDms.exponent += 2; // angleDms = angleDms * 100
 
     fs = realToUint32C47(&angleDms);
     s  = realToUint32C47(&seconds);
@@ -2651,7 +2651,7 @@ void timeToDisplayString(calcRegister_t regist, char *displayString, bool_t igno
       if((!ignoreTDisp) && ((++tDigits) > (isValid12hTime ? 16 : 18))) {
         break;
       }
-      realMultiply(&real, const_10, &real, &ctxtReal39);
+      real.exponent++; // real = real * 10
       realToIntegralValue(&real, &value, DEC_ROUND_DOWN, &ctxtReal39);
 
       if(digits == 0u) {
@@ -2805,7 +2805,7 @@ static void checkAndEat(int16_t *source, int16_t last, int16_t *dest) {
 
 static void printXSHOW(int16_t am, int16_t d, int16_t df, int16_t dfd, int16_t dt, bool_t tagPolar) {
   displayFormat = df;
-  displayFormatDigits = dfd;  
+  displayFormatDigits = dfd;
   int16_t last, source, dest, ww;
   RegName();
   ww = stringWidth(tmpString + 2100, &numericFont, true, true);
@@ -2885,7 +2885,7 @@ static void prepLongintIntoLines(int16_t *last, int16_t *source, int16_t *dest, 
   int16_t sourceReturn = 0;
   for(d=0; d <= (numberOfLines)*SHOWLineSize ; d+=SHOWLineSize) {   //0 to (n-1)+1 one more that the displayed strings, to detect run-over
     tmpString[d] = 0;
-  }  
+  }
   for(d = (*startingLine)*SHOWLineSize; d <= (*startingLine + (numberOfLines-1+1))*SHOWLineSize; d += SHOWLineSize) { //0 to (n-1)+1 one more that the displayed strings, to detect run-over
     int16_t dCounter = d - (*startingLine)*SHOWLineSize;
     //printf("dCounter=%i d=%i startingLine=%i last=%i source=%i dest=%i ...",dCounter,d,*startingLine,*last,*source,*dest);
@@ -2898,7 +2898,7 @@ static void prepLongintIntoLines(int16_t *last, int16_t *source, int16_t *dest, 
         tmpString[++*dest] = errorMessage[++*source];
       }
       tmpString[++*dest] = 0;
-      (*source)++;        
+      (*source)++;
     }
     uint8_t cnt = GROUPWIDTH_LEFT+1;
     while(cnt-- != 0 && *source < *last && !GROUPLEFT_DISABLED ) { //Eat away characters at the end to line, up to and excluding the last seperator.
@@ -2911,7 +2911,7 @@ static void prepLongintIntoLines(int16_t *last, int16_t *source, int16_t *dest, 
         (*dest)--; //line ends on a seperator so reduce only the target and let the next line begins onthe number, not separator
         (*source)--;
         if(SEPARATOR_LEFT[1] != 1) { //line ends on a double byte seperator
-          (*dest)--; 
+          (*dest)--;
           (*source)--;
         }
         break;
@@ -3022,7 +3022,7 @@ void fnC47Show(uint16_t fnShow_param) {
                  printf("R=%u TI=%u\n",showRegis, temporaryInformation);
                #endif // PC_BUILD && MONITOR_CLRSCR
                break;
-      
+
       case ITM_DOWN1: //was 2
                source = 0;
                startingLine = 0;
@@ -3115,7 +3115,7 @@ void fnC47Show(uint16_t fnShow_param) {
             source = 0;
             dest = 0;
             IntShowMode = SHOWTNY;
-          }            
+          }
         }
 
 
@@ -3134,7 +3134,7 @@ goBreak1:
             source = stringPrevNumberGlyph(errorMessage,source);                                                                    //source at this point, points to the start of the next full string. bring left one position
 
 
-            if(! ((48 >= tmpString[ii] || tmpString[ii] >= 57) && tmpString[ii-1] & 0x80) || 
+            if(! ((48 >= tmpString[ii] || tmpString[ii] >= 57) && tmpString[ii-1] & 0x80) ||
                  ((tmpString[ii] == 0x01 || tmpString[ii] & 0x80 || tmpString[ii] == 32) && !(tmpString[ii-1] & 0x80))) {      //  if last char is special char, then go one more back
               ii = stringPrevNumberGlyph(tmpString + (numberOfLines-1)*SHOWLineSize,ii);         //backspace
               source = stringPrevNumberGlyph(errorMessage,source);
@@ -3265,7 +3265,7 @@ goBreak1:
         int32_t strWidImag = stringWidth(tmpString + d, &numericFont, true, true);
         int32_t strWidCur = 0;
         bool_t changedOverToImag = false;
-        
+
         //printf("\ntmpString: %i %s %i %i %i\n",hadFirstRealDigit, tmpString + 2100, strWid, strWidReal, strWidImag);
         //printStringToConsole(tmpString + 2100,"tmpStr ","\n");
 
@@ -3290,7 +3290,7 @@ goBreak1:
             if( (strWidCur >= SCREEN_WIDTH-60 && strWidCur > strWidLim) && (uint8_t)tmpString[source-2] == 160 && (uint8_t)tmpString[source-1]==5) break;   // breaking on seps
             if(d == 0 && source - 2100 > hadFirstRealDigit && strWid > SCREEN_WIDTH && ( !(getComplexRegisterPolarMode(showRegis) == amPolar) && (tmpString[source]=='+' || tmpString[source]=='-'))) break;     // break before the + -)
             if( source - 2100 > hadFirstRealDigit && ((uint8_t)tmpString[source]=='+' || (uint8_t)tmpString[source+1]=='-')) changedOverToImag = true;
-            if(d>0 && 
+            if(d>0 &&
               (    ( !(getComplexRegisterPolarMode(showRegis) == amPolar) && (tmpString[source]=='+' || tmpString[source]=='-'))       //break before the + -
                    || (stringWidth(tmpString + d, &numericFont, true, true) >= (SCREEN_WIDTH*4)/5 && (uint8_t)tmpString[source]==RADIX34_MARK_STRING[0] && (uint8_t)tmpString[source+1]==RADIX34_MARK_STRING[1])  //break before the radix
                    || (getSystemFlag(FLAG_CPXMULT) && (uint8_t)tmpString[source]==COMPLEX_UNIT[0] && (uint8_t)tmpString[source+1]==COMPLEX_UNIT[1])  //break before the complex operator

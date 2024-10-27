@@ -86,7 +86,7 @@ static void percentMRR() {
   realDivide(const_1, &zReal, &zReal, &ctxtReal75);   // z = 1/z
   realPower(&q, &zReal, &q, &ctxtReal75);             // q = pow(x/y, 1/z)
   realSubtract(&q, const_1, &q, &ctxtReal75);         // q = pow(x/y, 1/z) - 1
-  realMultiply(&q, const_100, &q, &ctxtReal75);       // q = 100 * ( pow(x/y, 1/z) - 1 )
+  q.exponent += 2;                                    // q = 100 * ( pow(x/y, 1/z) - 1 )
 
   convertRealToResultRegister(&q, REGISTER_X, amNone);
 
