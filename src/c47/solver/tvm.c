@@ -246,12 +246,12 @@ void fnEff(uint16_t unusedButMandatoryParameter) {
     thereIsSomethingToUndo = true;
     liftStack();
 
-    realDivide(&iA, const_100, &tmp, &ctxtReal39);
-    realDivide(&tmp, &cperA, &tmp, &ctxtReal39);
+    iA.exponent -= 2; // iA = iA / 100
+    realDivide(&iA, &cperA, &tmp, &ctxtReal39);
     realAdd(&tmp, const_1, &tmp, &ctxtReal39);
     realPower(&tmp, &cperA, &tmp, &ctxtReal39);
     realSubtract(&tmp, const_1, &tmp, &ctxtReal39);
-    realMultiply(&tmp, const_100, &tmp, &ctxtReal39);
+    tmp.exponent += 2; // tmp = tmp * 100
 
     reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
     convertRealToReal34ResultRegister(&tmp, REGISTER_X);
@@ -278,13 +278,13 @@ void fnEffToI(uint16_t unusedButMandatoryParameter) {
     saveForUndo();
     thereIsSomethingToUndo = true;
 
-    realDivide(&iEFF, const_100, &tmp, &ctxtReal39);
-    realAdd(&tmp, const_1, &tmp, &ctxtReal39);
+    iEFF.exponent -= 2; // iEFF = iEFF / 100
+    realAdd(&iEFF, const_1, &tmp, &ctxtReal39);
 
     realDivide(const_1, &cperA, &cperAInv, &ctxtReal39);
     PowerReal(&tmp, &cperAInv, &tmp, &ctxtReal39);
     realSubtract(&tmp, const_1, &tmp, &ctxtReal39);
-    realMultiply(&tmp, const_100, &tmp, &ctxtReal39);
+    tmp.exponent += 2; // tmp = tmp * 100
     realMultiply(&tmp, &cperA, &tmp, &ctxtReal39);
 
     realToReal34(&tmp, REGISTER_REAL34_DATA(RESERVED_VARIABLE_IPONA));

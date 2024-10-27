@@ -369,7 +369,7 @@
       realChangeSign(&r);
       realSquareRoot(&r, &r, realContext);
       int32ToReal(264, &s);
-      realDivide(&s, const_1000, &s, realContext);
+      s.exponent -= 3; // s = s / 1000
       realDivide(&s, &q, &q, realContext);
       realAdd(&q, &r, &q, realContext);
     }
@@ -408,8 +408,8 @@
     roundToSignificantDigits(&q, &q, 3, realContext);
     if(realCompareEqual(&q, const_1)) {
       --loops;
-      realMultiply(&p, const_1e8, &q, realContext);
-      realMultiply(&q, const_1e8, &q, realContext);
+      realCopy(&p, &q);
+      q.exponent += 16; // q = q * 1e16
       if(realCompareGreaterThan(&q, const_1)) {
         goto qf_q_calc;
       }

@@ -297,7 +297,7 @@ void fnPercentileXY(uint16_t unusedButMandatoryParameter) {
     realZero(&p);
   }
   else if(realCompareLessThan(&p, const_100)) {
-    realDivide(&p, const_100, &p, &ctxtReal39);
+    p.exponent -= 2; // p = p / 100
   }
   else if(!realIsNaN(&p)) {
     realCopy(const_1, &p);
