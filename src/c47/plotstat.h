@@ -28,11 +28,8 @@
 extern  float    graph_dx;
 extern  float    graph_dy;
 extern  bool_t   roundedTicks;
-extern  bool_t   extentx;
-extern  bool_t   extenty;
 extern  bool_t   PLOT_VECT;
 extern  bool_t   PLOT_NVECT;
-extern  bool_t   PLOT_SCALE;
 extern  bool_t   Aspect_Square;
 extern  bool_t   PLOT_LINE;
 extern  bool_t   PLOT_CROSS;
@@ -43,10 +40,8 @@ extern  bool_t   PLOT_RMS;
 extern  bool_t   PLOT_SHADE;
 extern  bool_t   PLOT_CPXPLOT;
 extern  bool_t   PLOT_AXIS;
-extern  int8_t   PLOT_ZMX;
-extern  int8_t   PLOT_ZMY;
 extern  uint8_t  PLOT_ZOOM;
-  extern  uint8_t  drawHistogram;
+extern  uint8_t  drawHistogram;
 
 #define _VECT 0
 #define _SCAT 1
@@ -54,10 +49,6 @@ extern  uint8_t  PLOT_ZOOM;
 extern  int8_t   plotmode;    //VECTOR or SCATTER
 extern  float    tick_int_x;
 extern  float    tick_int_y;
-extern  float    x_min;
-extern  float    x_max;
-extern  float    y_min;
-extern  float    y_max;
 extern  uint32_t xzero;
 extern  uint32_t yzero;
 

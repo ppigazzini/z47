@@ -4,6 +4,7 @@
 #include "plotstat.h"
 
 #include "c43Extensions/addons.h"
+#include "c43Extensions/graphs.h"
 #include "charString.h"
 #include "constantPointers.h"
 #include "config.h"
@@ -50,11 +51,8 @@ void fnPlotRegressionLine(uint16_t plotMode);
 float     graph_dx;           // Many unused functions in WP43. Do not change the variables.
 float     graph_dy;
 bool_t    roundedTicks;
-bool_t    extentx;
-bool_t    extenty;
 bool_t    PLOT_VECT;
 bool_t    PLOT_NVECT;
-bool_t    PLOT_SCALE;
 bool_t    Aspect_Square;
 bool_t    PLOT_LINE;
 bool_t    PLOT_CROSS;
@@ -65,18 +63,12 @@ bool_t    PLOT_RMS;
 bool_t    PLOT_SHADE;
 bool_t    PLOT_CPXPLOT;
 bool_t    PLOT_AXIS;
-int8_t    PLOT_ZMX;
-int8_t    PLOT_ZMY;
 uint8_t   PLOT_ZOOM;
 uint8_t   drawHistogram;
 
 int8_t    plotmode;
 float     tick_int_x;
 float     tick_int_y;
-float     x_min = 0;
-float     x_max = 1;
-float     y_min = 0;
-float     y_max = 1;
 uint32_t  xzero;
 uint32_t  yzero;
 
@@ -84,34 +76,17 @@ uint32_t  yzero;
 
 
 void statGraphReset(void){
+  graphResetCommon();
   currentKeyCode = 255;
-  graph_dx      = 0;
-  graph_dy      = 0;
   roundedTicks  = true;
   extentx       = false;
-  extenty       = true;
-  PLOT_VECT     = false;
-  PLOT_NVECT    = false;
-  PLOT_SCALE    = false;
-  Aspect_Square = true;
   PLOT_LINE     = false;
-  PLOT_CROSS    = false;
   PLOT_BOX      = true;
-  PLOT_INTG     = false;
-  PLOT_DIFF     = false;
-  PLOT_RMS      = false;
-  PLOT_SHADE    = false;
   PLOT_AXIS     = false;
-  PLOT_ZMX      = 0;
-  PLOT_ZMY      = 0;
-  PLOT_ZOOM     = 0;
-
-  plotmode      = _SCAT;      //VECTOR or SCATTER
-  tick_int_x    = 0;          //to show axis: tick_in_x & y = 10, PLOT_AXIS = true
-  tick_int_y    = 0;
   y_min         = 0;
   y_max         = 1;
 }
+
 
 
 #if !defined(TESTSUITE_BUILD)
@@ -1032,112 +1007,10 @@ currentKeyCode = 255;
         goto scalePlusInfinity;
       }
 
-    //Check and correct if min and max is swapped
-    if(x_min>0.0f && x_min > x_max) {
-      x_min = x_min - (-x_max+x_min)* 1.1f;
-    }
-    if(x_min<0.0f && x_min > x_max) {
-      x_min = x_min + (-x_max+x_min)* 1.1f;
-    }
-    #if defined(STATDEBUG) && defined(PC_BUILD)
-      printf("Axis1b: x: %f -> %f y: %f -> %f   \n",x_min, x_max, y_min, y_max);
-    #endif // STATDEBUG && PC_BUILD
 
-    //Always include the 0 axis
-    if(!extentx) {
-      if(x_min>0.0f && x_max>0.0f) {
-        if(x_min<=x_max) {
-          x_min = -0.05f*x_max;
-        }
-        else {
-          x_min = 0.0f;
-        }
-      }
-      if(x_min<0.0f && x_max<0.0f) {
-        if(x_min>=x_max) {
-          x_min = -0.05f*x_max;
-        }
-        else {
-          x_max = 0.0f;
-        }
-      }
-    }
-    if(!extenty) {
-      if(y_min>0.0f && y_max>0.0f) {
-        if(y_min<=y_max) {
-          y_min = -0.05f*y_max;
-        }
-        else {
-          y_min = 0.0f;
-        }
-      }
-      if(y_min<0.0f && y_max<0.0f) {
-        if(y_min>=y_max) {
-          y_min = -0.05f*y_max;
-        }
-        else {
-          y_max = 0.0f;
-        }
-      }
-    }
+    graph_Include0(plotstat, statnum);
 
-    //Cause scales to be the same
-    if(PLOT_SCALE) {
-      x_min = min(x_min,y_min);
-      x_max = max(x_max,y_max);
-      y_min = x_min;
-      y_max = x_max;
-    }
 
-    //Calc zoom scales
-    if(PLOT_ZMX != 0) {
-      x_min = pow(2.0f,-PLOT_ZMX) * x_min;
-      x_max = pow(2.0f,-PLOT_ZMX) * x_max;
-    }
-    if(PLOT_ZMY != 0) {
-      y_min = pow(2.0f,-PLOT_ZMY) * y_min;
-      y_max = pow(2.0f,-PLOT_ZMY) * y_max;
-    }
-      #if defined(STATDEBUG) && defined(PC_BUILD)
-      printf("Axis2: x: %f -> %f y: %f -> %f   \n",x_min, x_max, y_min, y_max);
-      #endif // STATDEBUG && PC_BUILD
-
-    float dx = x_max-x_min;
-    float dy = y_max-y_min;
-
-    if(dy == 0.0f) {
-      dy = 1.0f;
-      y_max = y_min + dy/2.0f;
-      y_min = y_max - dy;
-    }
-    if(dx == 0.0f) {
-      dx = 1.0f;
-      x_max = x_min + dx/2.0f;
-      x_min = x_max - dx;
-    }
-
-      /*
-      (pow(4.5f, (int8_t)(PLOT_ZOOM & 0x03))) / 20
-      0 1/20      = 0.05  * 2 = 0.10    width: dx * 1.10       Reference 1
-      1 4,5/20    = 0.23  * 2 = 0.45    width: dx * 1.45       factor 1.32
-      2 20,25/20  = 1.01  * 2 = 2.03    width: dx * 2.03       factor 2.75
-      3 91,125/20 = 4.56  * 2 = 9.11    width: dx * 10.11      factor 9.19
-      ( (int8_t)(PLOT_ZOOM & 0x03) == 0 ? 1.0f : (int8_t)(PLOT_ZOOM & 0x03) == 1 ? 4.5f : (int8_t)(PLOT_ZOOM & 0x03) == 2 ? 20.25f : 91.125f )
-      */
-      float histofactor = drawHistogram == 0 ? 1 : 1/zoomfactor * (((float)statnum + 2.0f)  /  ((float)(statnum) - 1.0f) - 1)/2;     //Create space on the sides of the graph for the wider histogram columns
-      float plotzoomx = pow(4.5f, (int8_t)(PLOT_ZOOM & 0x03));
-      float plotzoomy = drawHistogram == 1 ? 1 : plotzoomx;
-
-      x_min = x_min - dx * histofactor * zoomfactor * plotzoomx;
-      y_min = y_min - dy * histofactor * zoomfactor * plotzoomy;
-      x_max = x_max + dx * histofactor * zoomfactor * plotzoomx;
-      y_max = y_max + dy * histofactor * zoomfactor * plotzoomy;
-      if(drawHistogram == 1) {
-        y_min = 0;
-      }
-      #if defined(STATDEBUG) && defined(PC_BUILD)
-      printf("Axis3a: x: %f -> %f y: %f -> %f   \n",x_min, x_max, y_min, y_max);
-      #endif // STATDEBUG && PC_BUILD
 
     //graphAxisDraw();
     if(calcMode == CM_GRAPH) {
@@ -1168,7 +1041,7 @@ currentKeyCode = 255;
       int16_t colw = (int16_t) (
                                  (  (screen_window_x(x_min,grf_x(1),x_max) - screen_window_x(x_min,grf_x(0),x_max))  / 2.0f  )
                                 ) - 1;
-      //#################################################### vvv MAIN GRAPH LOOP vvv
+        //#################################################### vvv MAIN GRAPH LOOP vvv #########################
       for(ix = 0; (ix < statnum); ++ix) {
         x = grf_x(ix);
         y = grf_y(ix);

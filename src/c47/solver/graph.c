@@ -1426,7 +1426,6 @@ void fnEqSolvGraph (uint16_t func) {
     case EQ_PLOT_LU:
     case EQ_PLOT: {
 
-      PLOT_ZMX = 0;
       PLOT_ZMY = 0;
       double higherXStartValue = convertRegisterToDouble(REGISTER_X);
       double lowerXStartValue = convertRegisterToDouble(REGISTER_Y);
