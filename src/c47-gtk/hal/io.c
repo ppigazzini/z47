@@ -38,7 +38,7 @@ static int create_dir(char * dir) {
 
 int file_selection_screen(const char * title, const char * base_dir, const char * ext, int disp_save, int overwrite_check, void * data) {
   GtkFileChooserNative *native;
-  static char untitled[16];
+  static char untitled[7*11+1];    //data gets copied into here, and data can be up to 7 two-byte characters, whci can be translated to max 11 ASCII chars per two-byte character (max=STD_GAUSS_BLACK_L).
   gint res;
 
 
