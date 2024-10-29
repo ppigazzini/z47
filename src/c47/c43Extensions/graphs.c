@@ -769,7 +769,7 @@ void graph_plotmem(void) {
       #endif //LOW_GRAPH_ACC
       regStatsXY = findNamedVariable(plotStatMx);
       uint16_t cnt, ix, statnum;
-      int16_t xo, xn, xN;
+      int16_t xo, xn, xN1;
       int16_t yo, yn;
       int16_t yN0 = 0, yN1 = 0;
       float x;
@@ -1051,13 +1051,13 @@ void graph_plotmem(void) {
         if(plotmode != _VECT) {
           yn = screen_window_y(y_min,grf_y(0),y_max);
           xn = screen_window_x(x_min,grf_x(0),x_max);
-          xN = xn;
+          xN1 = xn;
           yN1 = yn;
         }
         else {
           yn = screen_window_y(y_min,0,y_max);
           xn = screen_window_x(x_min,0,x_max);
-          xN = xn;
+          xN1 = xn;
           yN1 = yn;
         }
 
@@ -1120,20 +1120,18 @@ void graph_plotmem(void) {
             x = sx;
             y = sy;
           }
-          xo = xN;
+          xo = xN1;
           yo = yN1;
           yN0 = yN1;
 
-          xN = screen_window_x(x_min,x,x_max);
+          xN1 = screen_window_x(x_min,x,x_max);
           yN1 = screen_window_y_nolimit(y_min,y,y_max);
 
 
-plotbox(xN,100);
-
           #if defined(STATDEBUG)
-            printf("xN = %d : (x_min=%f,x=%f,x_max=%f) \n",xN, x_min,x,x_max);
+            printf("         xN1 = %d : (x_min=%f,x=%f,x_max=%f) \n", xN1, x_min,x,x_max);
             printf("yN0 = %d yN1 = %d : (y_min=%f,y=%f,y_max=%f) \n", yN0, yN1, y_min,y,y_max);
-            printf("plotting graph table[%d] = x:%f y:%f dydx:%f inty:%f xN:%d yN1:%d ", ix, x, y, dydx, inty, xN, yN1);
+            printf("plotting graph table[%d] = x:%f y:%f dydx:%f inty:%f xN1:%d yN1:%d ", ix, x, y, dydx, inty, xN1, yN1);
             printf(" ... x-ddx/2=%d dydx=%d inty=%d\n", screen_window_x(x_min, x-ddx/2, x_max), screen_window_y(y_min, dydx, y_max), screen_window_y(y_min, inty, y_max));
           #endif // STATDEBUG
 
@@ -1150,28 +1148,28 @@ plotbox(xN,100);
           bool_t bothOutOfScreen01 = ((yN1 >= SCREEN_HEIGHT_GRAPH) && (yN0 >= SCREEN_HEIGHT_GRAPH)) || ((yN1 < minN_y) && (yN0 < minN_y));
           bool_t outOfScreen1  = (yN1 >= SCREEN_HEIGHT_GRAPH || yN1 < minN_y);
           bool_t outOfScreen0  = (yN0 >= SCREEN_HEIGHT_GRAPH || yN0 < minN_y);
-printf("001 yN1=%i yN0=%i minN_y=%i\n", (int8_t)yN1, (int8_t)yN0, (int8_t)minN_y);
-printf("    xN =%i xo=%i minN_x=%i\n", (int16_t)xN, (int16_t)xo, (int16_t)minN_x);
+printf("001 yN1 =%i yN0=%i minN_y=%i\n", (int8_t)yN1,  (int8_t)yN0, (int8_t)minN_y);
+printf("    xN1 =%i  xo=%i minN_x=%i\n", (int16_t)xN1, (int16_t)xo, (int16_t)minN_x);
 
-          if(yN1 > yN0 && xN > xo && yN1 >= SCREEN_HEIGHT_GRAPH && !bothOutOfScreen01 && outOfScreen1 && !outOfScreen0) {
+          if(yN1 > yN0 && xN1 > xo && yN1 >= SCREEN_HEIGHT_GRAPH && !bothOutOfScreen01 && outOfScreen1 && !outOfScreen0) {
             int16_t dY = abs(SCREEN_HEIGHT_GRAPH - 1 - yN0);
-            float dxN = (fabs((float)dY))/(fabs((float)(yN1-yN0))*(float)(xN-xo));
-printf("Dx1=%f\n",dxN);
+            float dxN = (fabs((float)dY))/(fabs((float)(yN1-yN0))*(float)(xN1-xo));
+printf("DxLoScreen Max =%f\n",dxN);
 //            if(dxN > 25) dxN = 25;
-            xN = xo + dxN;
+            xN1 = xo + dxN;
             yN1 = SCREEN_HEIGHT_GRAPH - 1;
           }
-          else if(yN1 < yN0 && xN > xo && yN1 < minN_y && !bothOutOfScreen01 && outOfScreen1 && !outOfScreen0) {
+          else if(yN1 < yN0 && xN1 > xo && yN1 < minN_y && !bothOutOfScreen01 && outOfScreen1 && !outOfScreen0) {
             int16_t dY = yN0;
-            float dxN = (fabs((float)dY))/(fabs((float)(yN1-yN0))*(fabs)((float)(xN-xo)));
-printf("Dx2=%f\n",dxN);
+            float dxN = (fabs((float)dY))/(fabs((float)(yN1-yN0))*(fabs)((float)(xN1-xo)));
+printf("DxHiScreen 0 =%f\n",dxN);
 //            if(dxN > 25) dxN = 25;
-            xN = xo + dxN;
+            xN1 = xo + dxN;
             yN1 = minN_y;
           }
 
-printf("002 yN1=%i yN0=%i minN_y=%i\n", (int8_t)yN1, (int8_t)yN0, (int8_t)minN_y);
-printf("    xN =%i xo=%i minN_x=%i\n", (int16_t)xN, (int16_t)xo, (int16_t)minN_x);
+printf("002 yN1 =%i yN0=%i minN_y=%i\n", (int8_t)yN1, (int8_t)yN0, (int8_t)minN_y);
+printf("    xN1 =%i xo=%i minN_x=%i\n", (int16_t)xN1, (int16_t)xo, (int16_t)minN_x);
 
 
  //         // Changed to clean up plotting on the edge of the screen
@@ -1181,17 +1179,17 @@ printf("    xN =%i xo=%i minN_x=%i\n", (int16_t)xN, (int16_t)xo, (int16_t)minN_x
  //         else if(yN < minN_y) {
  //           yN = minN_y;
  //         }
- //         if(xN > SCREEN_WIDTH_GRAPH  - 1) {
- //           xN = SCREEN_WIDTH_GRAPH - 1;
+ //         if(xN1 > SCREEN_WIDTH_GRAPH  - 1) {
+ //           xN1 = SCREEN_WIDTH_GRAPH - 1;
  //         }
- //         if(xN < minN_x) {
- //           xN = minN_x;
+ //         if(xN1 < minN_x) {
+ //           xN1 = minN_x;
  //         }
 
 
-          if((xN < SCREEN_WIDTH_GRAPH && xN >= minN_x && yN1 < SCREEN_HEIGHT_GRAPH && yN1 >= minN_y))  {
+          if((xN1 < SCREEN_WIDTH_GRAPH && xN1 >= minN_x && yN1 < SCREEN_HEIGHT_GRAPH && yN1 >= minN_y))  {
             yn = yN1;
-            xn = xN;
+            xn = xN1;
 
             #if defined(STATDEBUG)
               printf("invalid_diff=%d invalid_intg=%d invalid_rms=%d \n", invalid_diff, invalid_intg, invalid_rms);
@@ -1240,9 +1238,9 @@ printf("    xN =%i xo=%i minN_x=%i\n", (int16_t)xN, (int16_t)xo, (int16_t)minN_x
                 uint16_t xN0   = screen_window_x(x_min, grf_x(ix-1), x_max);
                 //uint16_t xN1   = screen_window_x(x_min, grf_x(ix), x_max);
                 uint16_t yNintg= screen_window_y(y_min, inty, y_max);
-                uint16_t xAvg  = ((xN0+xN) >> 1);
+                uint16_t xAvg  = ((xN0+xN1) >> 1);
 
-                if(abs((int16_t)(xN-xN0)>=6)) {
+                if(abs((int16_t)(xN1-xN0)>=6)) {
                   plotint( xAvg, yNintg );
                 }
                 else {
@@ -1250,21 +1248,21 @@ printf("    xN =%i xo=%i minN_x=%i\n", (int16_t)xN, (int16_t)xo, (int16_t)minN_x
                   plotrect(xAvg-1, yNintg-1, xAvg+1, yNintg+1);
                 }
 
-                if(abs((int16_t)(xN-xN0) >= 6)) {
-                  plotline(xN,     yNintg, xAvg+2, yNintg);
+                if(abs((int16_t)(xN1-xN0) >= 6)) {
+                  plotline(xN1,    yNintg, xAvg+2, yNintg);
                   plotline(xAvg-2, yNintg, xN0,    yNintg);
                 }
-                else if(abs((int16_t)(xN-xN0) >= 4)) {
-                  plotline(xN,     yNintg, xAvg+2, yNintg);
+                else if(abs((int16_t)(xN1-xN0) >= 4)) {
+                  plotline(xN1,    yNintg, xAvg+2, yNintg);
                   plotline(xAvg-2, yNintg, xN0,    yNintg);
                 }
 
                 if(PLOT_SHADE) {
                   uint16_t yNoff = screen_window_y(y_min, 0, y_max);
-                  plotrect(xN0, yN0,   xN, yN1);
-                  plotrect(xN0, yNoff, xN, yN0);
-                  if(abs((int16_t)(xN-xN0) >= 6)) {
-                    plotline(xN0, yN0,   xN, yN1);
+                  plotrect(xN0, yN0,   xN1, yN1);
+                  plotrect(xN0, yNoff, xN1, yN0);
+                  if(abs((int16_t)(xN1-xN0) >= 6)) {
+                    plotline(xN0, yN0,   xN1, yN1);
                   }
                 }
               }
@@ -1286,11 +1284,11 @@ printf("    xN =%i xo=%i minN_x=%i\n", (int16_t)xN, (int16_t)xo, (int16_t)minN_x
           else {
             #if defined(PC_BUILD)
               printf("Not plotted: ");
-              if(!(xN < SCREEN_WIDTH_GRAPH)) {
-                printf("NOT xN<SCREEN_WIDTH_GRAPH; ");
+              if(!(xN1 < SCREEN_WIDTH_GRAPH)) {
+                printf("NOT xN1 < SCREEN_WIDTH_GRAPH; ");
               }
-              if(!(xN >= minN_x)) {
-                printf("NOT xN>=minN_x; ");
+              if(!(xN1 >= minN_x)) {
+                printf("NOT xN1 >= minN_x; ");
               }
               if(!(yN1 < SCREEN_HEIGHT_GRAPH)) {
                 printf("NOT yN1<SCREEN_HEIGHT_GRAPH");
@@ -1298,7 +1296,7 @@ printf("    xN =%i xo=%i minN_x=%i\n", (int16_t)xN, (int16_t)xo, (int16_t)minN_x
               if(!(yN1 >= minN_y)) {
                 printf("NOT yN1>=minN_y; ");
               }
-              printf("Not plotted: xN=%d<SCREEN_WIDTH_GRAPH=%d && xN=%d>=minN_x=%d && yN1=%d<SCREEN_HEIGHT_GRAPH=%d && yN1=%d>=minN_y=%d\n", xN, SCREEN_WIDTH_GRAPH, xN, minN_x, yN1, SCREEN_HEIGHT_GRAPH, yN1, minN_y);
+              printf("Not plotted: xN1=%d<SCREEN_WIDTH_GRAPH=%d && xN1=%d>=minN_x=%d && yN1=%d<SCREEN_HEIGHT_GRAPH=%d && yN1=%d>=minN_y=%d\n", xN1, SCREEN_WIDTH_GRAPH, xN1, minN_x, yN1, SCREEN_HEIGHT_GRAPH, yN1, minN_y);
             #endif // PC_BUILD
           }
           if(exitKeyWaiting()) {
