@@ -2085,7 +2085,7 @@
 #define CHR_numU                    2031
 #define ITM_EEXCHR                  2032
 #define ITM_CLGRF                   2033
-#define ITM_PZOOMX                  2034
+#define ITM_MZOOMY                  2034
 #define ITM_PZOOMY                  2035
 #define MNU_TRG                     2036
 #define MNU_PREF                    2037

@@ -324,7 +324,6 @@ bool_t itemNotAvail(int16_t itemNr) {
       case ITM_PCROS:
       case ITM_NVECT:
       case ITM_EXTY:
-      case ITM_PZOOMX:
       case ITM_SNAP:
       case ITM_NULL:
       case ITM_SCALE:
@@ -333,6 +332,7 @@ bool_t itemNotAvail(int16_t itemNr) {
       case ITM_PBOX:
       case ITM_VECT:
       case ITM_EXTX:
+      case ITM_MZOOMY:
       case ITM_PZOOMY:
       case ITM_LISTXY:
       case ITM_PLOTRST:
@@ -1328,7 +1328,7 @@ bool_t itemNotAvail(int16_t itemNr) {
   void fnPy                       (uint16_t unusedButMandatoryParameter) {}
   void fnPshade                   (uint16_t unusedButMandatoryParameter) {}
   void fnComplexPlot              (uint16_t unusedButMandatoryParameter) {}
-  void fnPzoom                    (uint16_t unusedButMandatoryParameter) {}
+  void fnPMzoom                   (uint16_t unusedButMandatoryParameter) {}
   void fnCla                      (uint16_t unusedButMandatoryParameter) {}
   void fnCln                      (uint16_t unusedButMandatoryParameter) {}
   void fnClGrf                    (uint16_t unusedButMandatoryParameter) {}
@@ -3501,8 +3501,8 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 2031 */  { itemToBeCoded,                NOPARAM,                     "",                                            "Nulock",                                      (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_NONE         },
 /* 2032 */  { addItemToBuffer,              ITM_EEXCHR,                  "",                                            STD_SUB_E_OUTLINE,                             (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2033 */  { fnClGrf,                      NOPARAM,                     "CLGRF",                                       "CLGRF",                                       (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_ENABLED   | EIM_DISABLED | PTP_DISABLED     },
-/* 2034 */  { fnPzoom,                      1,                           "ZOOMx",                                       "ZOOMx",                                       (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },//GRAPH
-/* 2035 */  { fnPzoom,                      2,                           "ZOOMy",                                       "ZOOMy",                                       (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },//GRAPH
+/* 2034 */  { fnPMzoom,                     1,                           "-ZOOM",                                       "-ZOOM",                                       (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },//GRAPH
+/* 2035 */  { fnPMzoom,                     2,                           "-ZOOM",                                       "+ZOOM",                                       (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },//GRAPH
 /* 2036 */  { itemToBeCoded,                NOPARAM,                     "TRG_D47",                                     "TRG",                                         (0 << TAM_MAX_BITS) |     0, CAT_MENU | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2037 */  { itemToBeCoded,                NOPARAM,                     "PREF",                                        "PREF",                                        (0 << TAM_MAX_BITS) |     0, CAT_MENU | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2038 */  { fnSafeReset,                  NOPARAM,                     "S.RESET",                                     "S.RESET",                                     (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_DISABLED     },

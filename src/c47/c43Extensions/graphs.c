@@ -150,14 +150,14 @@ void fnPrms (uint16_t unusedButMandatoryParameter) {
 }
 
 
-void fnPzoom (uint16_t param) {
-  if(param == 2) {
-    if(PLOT_ZMY < 6) {
-      PLOT_ZMY++;
-    }
-    else {
-      PLOT_ZMY = -5;
-    }
+void fnPMzoom (uint16_t param) {
+  int8_t increment = param == 2 ? +1 : param == 1 ? -1 : 0;
+  PLOT_ZMY += increment;
+  if(PLOT_ZMY > 6) {
+    PLOT_ZMY = -5;
+  }
+  else if(PLOT_ZMY < -5) {
+    PLOT_ZMY = 6;
   }
   fnRefreshState();
   fnPlotSQ(0);
