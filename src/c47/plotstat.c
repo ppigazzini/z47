@@ -704,12 +704,16 @@ char * radixProcess(char *output, const char * ss) {  //  .  HIERDIE WERK GLAD N
 }
 
 
-void nanCheck(char* s02) {
+void nanCheck(char* s02) { //eg. change (nanE-3 or ;nanE-3) to NaN
   if(stringByteLength(s02) > 2) {
     for(int ix = 2; s02[ix]!=0; ix++) {
-      if(s02[ix]=='n' && s02[ix-1]=='a' && s02[ix-2]=='n') {
-        s02[ix] = 'N';
-        s02[ix-2] = 'N';
+      if(s02[ix]=='n' && s02[ix-1]=='a' && s02[ix-2]=='n') { //check for nan
+        if(s02[0] == '(' && s02[ix+1] != 0) {
+          strcpy(s02,"(NaN");
+        }
+        else if(s02[0] == ';' && s02[stringByteLength(s02)-1] == ')' && s02[ix+1] != 0 && s02[ix+2] != 0) {
+          strcpy(s02,";NaN)");
+        }
       }
     }
   }
