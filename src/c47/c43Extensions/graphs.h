@@ -41,7 +41,7 @@ void    fnPNvect           (uint16_t unusedButMandatoryParameter);
 void    fnScale            (uint16_t unusedButMandatoryParameter);
 void    fnPshade           (uint16_t unusedButMandatoryParameter);
 void    fnComplexPlot      (uint16_t unusedButMandatoryParameter);
-void    fnPzoom            (uint16_t param);
+void    fnPMzoom           (uint16_t param);
 void    fnPx               (uint16_t unusedButMandatoryParameter);
 void    fnPy               (uint16_t unusedButMandatoryParameter);
 void    fnListXY           (uint16_t unusedButMandatoryParameter);

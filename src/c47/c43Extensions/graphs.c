@@ -137,27 +137,17 @@ void fnPrms (uint16_t unusedButMandatoryParameter) {
 }
 
 
-void fnPzoom (uint16_t param) {
-  if(param == 1) {
-    if(PLOT_ZMX < 0+3) {
-      PLOT_ZMX++;
-    }
-    else {
-      PLOT_ZMX = 0-1;
-    }
-    fnRefreshState();                //jm
-    fnPlotSQ(0);
+void fnPMzoom (uint16_t param) {
+  int8_t increment = param == 2 ? +1 : param == 1 ? -1 : 0;
+  PLOT_ZMY += increment;
+  if(PLOT_ZMY > 3) {
+    PLOT_ZMY = -1;
   }
-  else if(param == 2) {
-    if(PLOT_ZMY < 0+3) {
-      PLOT_ZMY++;
-    }
-    else {
-      PLOT_ZMY = 0-1;
-    }
-    fnRefreshState();
-    fnPlotSQ(0);
+  else if(PLOT_ZMY < -1) {
+    PLOT_ZMY = 3;
   }
+  fnRefreshState();
+  fnPlotSQ(0);
 }
 
 
