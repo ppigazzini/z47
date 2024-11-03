@@ -995,26 +995,27 @@ int16_t lastItem = 0;
 
     if(calcMode != CM_REGISTER_BROWSER && calcMode != CM_FLAG_BROWSER && calcMode != CM_ASN_BROWSER && calcMode != CM_FONT_BROWSER) {
 
-      if(data[0] == 0) { item = item_;
-
+      if(data[0] == 0) { 
+        item = item_;
       }
       else {
                     #if defined(VERBOSEKEYS)
                     printf(">>>> R000A >>determineFunctionKeyItem_C47 %d |%s| shiftF=%d, shiftG=%d tam.mode=%i\n",item, data, shiftF, shiftG, tam.mode);
                     #endif //VERBOSEKEYS
+        item = determineFunctionKeyItem_C47((char *)data, shiftF, shiftG); 
+      }
 
-        item = determineFunctionKeyItem_C47((char *)data, shiftF, shiftG); }
+      // in graph plot menu, wanting to change Normal Mode items, so open the correct menu first and return to Normal Mode, and stop the processing.
+      if(calcMode == CM_GRAPH && currentMenu() == -MNU_PLOT && (item == VAR_LX || item == VAR_UX)) {
+        calcMode = CM_NORMAL;
+        showSoftmenu(-MNU_GRAPHS);
+        item = 0;
+      }
 
-        // in graph plot menu, wanting to change Normal Mode items, so open the correct menu first
-        if(calcMode == CM_GRAPH && currentMenu() == -MNU_PLOT && (item == VAR_LX || item == VAR_UX)) {
-          calcMode = CM_NORMAL;
-          showSoftmenu(-MNU_GRAPHS);
-        }
-
-        // Update currentUserMenu for user defined menus selected in an existing function
-        if((currentMenu() == -MNU_DYNAMIC) || (currentMenu() == -MNU_HOME) || (currentMenu() == -MNU_PFN)) {
-          setCurrentUserMenu(item, userMenus[currentUserMenu].menuItem[dynamicMenuItem].argumentName);
-        }
+      // Update currentUserMenu for user defined menus selected in an existing function
+      if((currentMenu() == -MNU_DYNAMIC) || (currentMenu() == -MNU_HOME) || (currentMenu() == -MNU_PFN)) {
+        setCurrentUserMenu(item, userMenus[currentUserMenu].menuItem[dynamicMenuItem].argumentName);
+      }
 
                     #if defined(VERBOSEKEYS)
                     printf(">>>> R000B                                %d |%s| shiftF=%d, shiftG=%d tam.mode=%i\n",item, data, shiftF, shiftG, tam.mode);
@@ -1025,7 +1026,7 @@ int16_t lastItem = 0;
                       //if(item>=0) printf("    item=%d=%s f=%d g=%d\n",item,indexOfItems[item].itemCatalogName, shiftF, shiftG);
                     #endif //PC_BUILD
 
-        resetShiftState();                               //shift cancelling delayed to this point after state machine
+      resetShiftState();                               //shift cancelling delayed to this point after state machine
 
                     #if defined(VERBOSEKEYS)
                     printf(">>>> R000C                                %d |%s| shiftF=%d, shiftG=%d tam.mode=%i\n",item, data, shiftF, shiftG, tam.mode);
