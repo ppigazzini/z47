@@ -205,10 +205,6 @@ bool_t                ShiftTimoutMode;                         //JM SHIFT Create
 bool_t                BASE_HOME;                               //JM BASEHOME
 normKey_t             Norm_Key_00;                             //JM USER NORMAL
 uint8_t               Input_Default;                           //JM Input Default
-float                 graph_xmin;                              //JM Graph
-float                 graph_xmax;                              //JM Graph
-float                 graph_ymin;                              //JM Graph
-float                 graph_ymax;                              //JM Graph
 uint8_t               DRG_Cycling = 0;
 uint8_t               DM_Cycling = 0;
 #if defined(INLINE_TEST)                                             //vv dr

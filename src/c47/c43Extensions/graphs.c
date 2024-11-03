@@ -150,17 +150,28 @@ void fnPrms (uint16_t unusedButMandatoryParameter) {
 }
 
 
-void fnPMzoom (uint16_t param) {
+void fnPMzoom (uint16_t param) { //param = 2: positive
+  #define RangeHi +16
+  #define RangeLo -16
   int8_t increment = param == 2 ? +1 : param == 1 ? -1 : 0;
   PLOT_ZMY += increment;
-  if(PLOT_ZMY > 6) {
-    PLOT_ZMY = -5;
+  if(PLOT_ZMY > RangeHi) {
+    PLOT_ZMY = RangeLo;
   }
-  else if(PLOT_ZMY < -5) {
-    PLOT_ZMY = 6;
+  else if(PLOT_ZMY < RangeLo) {
+    PLOT_ZMY = RangeHi;
   }
   fnRefreshState();
   fnPlotSQ(0);
+}
+
+
+void calculateZoomFactor(int8_t factor, float *aa, float *bb) {
+  #define basefactor 4.5f
+  if(factor != 0) {
+    (*aa) *= pow(basefactor,-factor);
+    (*bb) *= pow(basefactor,-factor);
+  }
 }
 
 
@@ -592,7 +603,7 @@ void graph_Include0(bool_t mode, uint16_t statnum){
           x_min = x_min + (-x_max+x_min)* 1.1f;
         }
 
-        //Always include the 0 axis
+        //include the 0 axis
         if(!extentx) {
           if(x_min > 0.0f && x_max > 0.0f) {
             if(x_min <= x_max) {
@@ -665,11 +676,7 @@ void graph_Include0(bool_t mode, uint16_t statnum){
 
         //Calc zoom scales
         if(mode != plotstat) {
-          #define basefactor 2.0f
-          if(PLOT_ZMY != 0) {
-            y_min = pow(basefactor,-PLOT_ZMY) * y_min;  //factor 2^-3=1/8 2^-2=1/4 2^-1=0.5, 2^0=1, 2^2=2, 2^3=4
-            y_max = pow(basefactor,-PLOT_ZMY) * y_max;
-          }
+          calculateZoomFactor(PLOT_ZMY, &y_min, &y_max);
         }
 
         #if defined(STATDEBUG)
@@ -1114,7 +1121,7 @@ void graph_plotmem(void) {
               y = grf_y(ix);
             }
           }
-          else {
+          else { //_VECT
             sx = sx + (!PLOT_NVECT ? grf_x(ix) : grf_y(ix));
             sy = sy + (!PLOT_NVECT ? grf_y(ix) : grf_x(ix));
             x = sx;
@@ -1266,8 +1273,9 @@ printf("    xN1 =%i xo=%i minN_x=%i\n", (int16_t)xN1, (int16_t)xo, (int16_t)minN
                   }
                 }
               }
+
             }
-            else {
+            else { // _VECT
               #if defined(STATDEBUG)
                 printf("Plotting arrow\n");
               #endif // STATDEBUG
@@ -1280,6 +1288,7 @@ printf("    xN1 =%i xo=%i minN_x=%i\n", (int16_t)xN1, (int16_t)xo, (int16_t)minN
               #endif // STATDEBUG
               plotline2(xo, yo, xn, yn);
             }
+
           }
           else {
             #if defined(PC_BUILD)
