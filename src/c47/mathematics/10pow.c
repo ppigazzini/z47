@@ -120,7 +120,7 @@ void tenPowLonI(void) {
   longIntegerInit(power);
   uIntToLongInteger(1, power);
 
-  for(uint32_t i=0; !longIntegerIsZero(exponent) && lastErrorCode == 0; i++) {
+  while(!longIntegerIsZero(exponent) && lastErrorCode == 0) {
     if(longIntegerIsOdd(exponent)) {
      longIntegerMultiply(power, base, power);
     }
