@@ -1138,7 +1138,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define X_SHIFT_R                                (X_USER_MODE - 15)
 #define X_SHIFT                                  (getSystemFlag(FLAG_SBshfR) ? X_SHIFT_R : X_SHIFT_L)
 #define Y_SHIFT_LO                               (Y_POSITION_OF_REGISTER_T_LINE)
-#define Y_SHIFT                                  (((!SBARUPD_Date || !SBARUPD_Time) & !SBAR_SHIFT) ? 0 : (SBAR_SHIFT ? 0 : Y_SHIFT_LO ) )
+#define Y_SHIFT                                  (((!SBARUPD_Date || !SBARUPD_Time) && !SBAR_SHIFT) ? 0 : (SBAR_SHIFT ? 0 : Y_SHIFT_LO ))
 
 
 
