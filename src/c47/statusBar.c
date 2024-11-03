@@ -31,7 +31,7 @@ void drawBattery(uint16_t voltage);
 
 
   void showDateTime(void) {
-    if(!((SBARUPD_Date) | (SBARUPD_Time))) {
+    if(!((SBARUPD_Date) || (SBARUPD_Time))) {
       return;
     }
     lcd_fill_rect(0, 0, X_REAL_COMPLEX, 20, LCD_SET_VALUE);
