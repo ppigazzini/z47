@@ -773,13 +773,17 @@ TO_QSPI const int16_t menu_PREFIX[]      = { ITM_SI_k,                      ITM_
 
 
 
-TO_QSPI const int16_t menu_PLOT[]        = { -MNU_GRAPHS,                   ITM_PZOOMY,                 ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,                           //JM GRAPH
+TO_QSPI const int16_t menu_PLOT[]        = {  VAR_LX,                       VAR_UX,                     ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
+                                              ITM_SCALE,                    ITM_PLOTRST,                ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,                           //JM GRAPH
+                                              ITM_MZOOMY,                   ITM_PZOOMY,                 ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
+
                                               ITM_EXTY,                     ITM_EXTX,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,                           //JM GRAPH
-                                              ITM_SCALE,                    ITM_LISTXY,                 ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,                           //JM GRAPH
+                                              ITM_CPXPLOT,                  ITM_LISTXY,                 ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,                           //JM GRAPH
+                                             -MNU_GRAPHS,                   ITM_SNAP,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,                           //JM GRAPH
 
                                               ITM_PCROS,                    ITM_PBOX,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,                           //JM GRAPH
-                                              ITM_PLINE,                    ITM_PLOTRST,                ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,                           //JM GRAPH
-                                              ITM_CPXPLOT,                  ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,                           //JM GRAPH
+                                              ITM_PLINE,                    ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,                           //JM GRAPH
+                                              ITM_NULL,                     ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,                           //JM GRAPH
 
                                               ITM_DIFF,                     ITM_INTG,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
                                               ITM_RMS,                      ITM_SHADE,                  ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
@@ -2392,7 +2396,7 @@ bool_t BASE_OVERRIDEONCE = false;
   char tmp1[16];
   int16_t x, y, yDotted=0, currentFirstItem, item, numberOfItems, m = softmenuStack[0].softmenuId;
   bool_t dottedTopLine;
-  #if defined(PC_BUILD) && (VERBOSE_LEVEL > -1)
+  #if defined(PC_BUILD) && ((VERBOSE_LEVEL > -1) || defined(PC_BUILD_TELLTALE))
     char tmp[200]; sprintf(tmp,"^^^^showSoftmenuCurrentPart: Showing Softmenu id=%d item=%i %s\n",m, currentMenu(), indexOfItems[currentMenu() > 0 ? currentMenu() : -currentMenu()].itemSoftmenuName); jm_show_comment(tmp);
     printf("==>%s\n",tmp);
   #endif // PC_BUILD
@@ -2774,7 +2778,8 @@ bool_t BASE_OVERRIDEONCE = false;
         }
         showEquation(EQUATION_AIM_BUFFER, yCursor, xCursor, false, NULL, NULL);
       }
-      if((softmenu[m].menuItem == -MNU_Sfdx || softmenu[m].menuItem == -MNU_Solver_TOOL || softmenu[m].menuItem == -MNU_Sf_TOOL) && (currentSolverStatus & SOLVER_STATUS_USES_FORMULA) && (currentSolverStatus & SOLVER_STATUS_INTERACTIVE)) {
+      if( (softmenu[m].menuItem == -MNU_Sfdx || softmenu[m].menuItem == -MNU_Solver_TOOL || softmenu[m].menuItem == -MNU_Sf_TOOL || softmenu[m].menuItem == -MNU_GRAPHS) 
+       && (currentSolverStatus & SOLVER_STATUS_USES_FORMULA) && (currentSolverStatus & SOLVER_STATUS_INTERACTIVE)) {
         showEquation(currentFormula, 0, EQUATION_NO_CURSOR, false, NULL, NULL);
       }
     }
@@ -3171,12 +3176,12 @@ bool_t BASE_OVERRIDEONCE = false;
         currentMvarLabel = INVALID_VARIABLE;
       }
       switch(-id) {
-        case MNU_Solver_TOOL:
         case MNU_Grapher: {
           currentSolverStatus &= ~SOLVER_STATUS_EQUATION_MODE;
           currentSolverStatus |= SOLVER_STATUS_EQUATION_GRAPHER;
           break;
         }
+        case MNU_Solver_TOOL:
         case MNU_Solver: {
           currentSolverStatus &= ~SOLVER_STATUS_EQUATION_MODE;
           currentSolverStatus |= SOLVER_STATUS_EQUATION_SOLVER;
@@ -3253,10 +3258,15 @@ bool_t BASE_OVERRIDEONCE = false;
 
     }
     else if(id == -MNU_ADV || id == -MNU_EQN) {
-
       currentSolverStatus &= ~SOLVER_STATUS_INTERACTIVE;
       removeMenuFromStack(-MNU_MVAR);
     }
+
+    else if(id == -MNU_GRAPHS) {
+      currentSolverStatus &= ~SOLVER_STATUS_EQUATION_MODE;
+      currentSolverStatus |= SOLVER_STATUS_EQUATION_GRAPHER;
+    }
+
     else if(currentSolverVariable == INVALID_VARIABLE) {
       if(id == -MNU_Sf_TOOL    ||
          id == -MNU_Sf         ||
@@ -3265,7 +3275,6 @@ bool_t BASE_OVERRIDEONCE = false;
          id == -MNU_Solver_TOOL||
          id == -MNU_1STDERIV   ||
          id == -MNU_2NDDERIV     ) {
-
         id = -MNU_EQN;
         displayCalcErrorMessage(ERROR_VARIABLE_NOT_SELECTED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
