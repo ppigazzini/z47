@@ -21,6 +21,9 @@ build.sim:
 build.rel:
 	meson setup build.rel --buildtype=release -DCI_COMMIT_TAG=$(CI_COMMIT_TAG)
 
+build.rel.debug:
+	meson setup build.rel --buildtype=custom -DCI_COMMIT_TAG=$(CI_COMMIT_TAG)
+
 build.dmcp:
 	meson setup build.dmcp --cross-file=src/c47-dmcp/cross_arm_gcc.build -DDMCPVERSION=dmcp -DCI_COMMIT_TAG=$(CI_COMMIT_TAG)
 
@@ -110,9 +113,11 @@ dist_macos: testPgms build.rel
 	zip -r c47-macos.zip $(MAC_DIST_DIR)
 	rm -rf $(MAC_DIST_DIR)
 
-dist_linux: testPgms build.rel
+dist_linux: testPgms build.rel.debug
+    # debug setting (defined by custom meson buildtype) as workaround for issue #470
 	cd build.rel && ninja sim
 	mkdir -p $(LINUX_DIST_DIR)/res/dmcp
+	strip build.rel/src/c47-gtk/c47 # workaround #470
 	cp build.rel/src/c47-gtk/c47 $(LINUX_DIST_DIR)/
 	cp res/dmcp/testPgms.bin $(LINUX_DIST_DIR)/res/dmcp/
 	cp res/c47_pre.css $(LINUX_DIST_DIR)/res/
