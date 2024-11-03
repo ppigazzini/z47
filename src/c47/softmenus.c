@@ -303,9 +303,9 @@ TO_QSPI const int16_t menu_PLOTTING[]    = { ITM_SIGMAPLUS,                 ITM_
 
                                              ITM_SIGMAPLUS,                 ITM_SIGMAlnx,              ITM_SIGMAln2x,             ITM_SIGMAlny,          ITM_SIGMAln2y,               ITM_SIGMAx2y,
                                              ITM_SIGMAMINUS,                ITM_SIGMAylnx,             ITM_SIGMAlnxy,             ITM_SIGMAxlny,         ITM_SIGMAx2lny,              ITM_SIGMAx2ony,
-                                             ITM_NSIGMA,                    ITM_NULL,                  ITM_NULL,                  ITM_SIGMAlnyonx,       ITM_NULL,                    ITM_CLSIGMA                     };
+                                             ITM_NSIGMA,                    ITM_NULL,                  ITM_NULL,                  ITM_SIGMAlnyonx,       ITM_NULL,                    ITM_CLSIGMA                   };
 
-TO_QSPI const int16_t menu_GRAPHS[]      = { ITM_DRAW,                      ITM_NULL,                  ITM_NULL,                  ITM_DRAW_LU,           VAR_LX,                      VAR_UX                        };
+TO_QSPI const int16_t menu_GRAPHS[]      = { VAR_LX,                        VAR_UX,                    ITM_DRAW_LU,               ITM_NULL,              ITM_NULL,                    ITM_DRAW,                     };
 
 TO_QSPI const int16_t menu_PLOT_STAT[]   = {
                                              ITM_PLOT_CENTRL,               ITM_SMI,                    ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,

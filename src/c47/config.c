@@ -1594,12 +1594,6 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     showRegis = 9999;                                          //JMSHOW
     overrideShowBottomLine = 0;
 
-
-    graph_xmin = -3*3.14159265;                                //JM GRAPH
-    graph_xmax = -graph_xmin;                                  //JM GRAPH
-    graph_ymin = -2;                                           //JM GRAPH
-    graph_ymax = +2;                                           //JM GRAPH
-
     graph_reset();
 
     running_program_jm=false;                                  //JM program is running flag
