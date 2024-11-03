@@ -1150,7 +1150,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define X_SHIFT_R                                (X_USER_MODE - 15)
 #define X_SHIFT                                  (getSystemFlag(FLAG_SBshfR) ? X_SHIFT_R : X_SHIFT_L)
 #define Y_SHIFT_LO                               (Y_POSITION_OF_REGISTER_T_LINE)
-#define Y_SHIFT                                  (((!SBARUPD_Date || !SBARUPD_Time) & !SBAR_SHIFT) ? 0 : (SBAR_SHIFT ? 0 : Y_SHIFT_LO ) )
+#define Y_SHIFT                                  (((!SBARUPD_Date || !SBARUPD_Time) && !SBAR_SHIFT) ? 0 : (SBAR_SHIFT ? 0 : Y_SHIFT_LO ))
 
 
 
@@ -1611,11 +1611,11 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define TIMER_APP_PERIOD                         100 // in milliseconds
 
 #if defined(DMCP_BUILD) && defined(NEW_HW) // DMCP5
-  #define RAM_SIZE_IN_BLOCKS                   ((size_t)65534) // MUST be < 2^16 - 1   (65535 = 0xffff excluded because it's the value of the C47_NULL pointer)
+  #define RAM_SIZE_IN_BLOCKS                   (65534) // MUST be < 2^16 - 1   (65535 = 0xffff excluded because it's the value of the C47_NULL pointer)
 #elif defined(DMCP_BUILD) && !defined(NEW_HW) // DMCP
-  #define RAM_SIZE_IN_BLOCKS                   ((size_t)16384) // MUST be < 2^16 - 1   (65535 = 0xffff excluded because it's the value of the C47_NULL pointer)
+  #define RAM_SIZE_IN_BLOCKS                   (16384) // MUST be < 2^16 - 1   (65535 = 0xffff excluded because it's the value of the C47_NULL pointer)
 #else // !DMCP_BUILD
-  #define RAM_SIZE_IN_BLOCKS                   ((size_t)65534) // MUST be < 2^16 - 1   (65535 = 0xffff excluded because it's the value of the C47_NULL pointer)
+  #define RAM_SIZE_IN_BLOCKS                   (65534) // MUST be < 2^16 - 1   (65535 = 0xffff excluded because it's the value of the C47_NULL pointer)
 #endif // DMCP_BUILD
 
 #define CONFIG_SIZE_IN_BLOCKS                  TO_BLOCKS(sizeof(dtConfigDescriptor_t))
