@@ -31,7 +31,9 @@ void drawBattery(uint16_t voltage);
 
 
   void showDateTime(void) {
-    if(!((SBARUPD_Date) | (SBARUPD_Time))) return;
+    if(!((SBARUPD_Date) | (SBARUPD_Time))) {
+      return;
+    }
     lcd_fill_rect(0, 0, X_REAL_COMPLEX, 20, LCD_SET_VALUE);
 
     uint32_t x = X_DATE;
@@ -254,7 +256,7 @@ void showFracMode(void) {
           }
         }
 
-      if(fractionDigits == 0 || fractionDigits == 34) {        
+      if(fractionDigits == 0 || fractionDigits == 34) {
       }
       else if(getSystemFlag(FLAG_FRACT)) {                                                    // tags are evaluated
         compressString = 1;
@@ -348,7 +350,7 @@ void showFracMode(void) {
         if(alphaCase == AC_UPPER) {
           setSystemFlag(FLAG_alphaCAP);
         } else {
-          clearSystemFlag(FLAG_alphaCAP);          
+          clearSystemFlag(FLAG_alphaCAP);
         }
       }
 
@@ -398,7 +400,7 @@ void showFracMode(void) {
         case 16: showString(STD_SUB_a, &standardFont, X_ALPHA_MODE, -2, vmNormal, true, false); break; //sub
         case 17: showString(STD_SUB_a, &standardFont, X_ALPHA_MODE, -11, vmNormal, true, false); break; //sup    //not possible
         case 18: showString(STD_a    , &standardFont, X_ALPHA_MODE,  0, vmNormal, true, false); break; //normal
-        
+
         #if defined (PC_BUILD)
           case 20: showString(STD_BOX  , &standardFont, X_ALPHA_MODE,  0, vmNormal, true, false); break; //deadkey
         #endif
@@ -631,12 +633,12 @@ void showFracMode(void) {
 
     // Standard stack size, inversed if RPN. Note it moved 5 pixels left in X_SSIZE_BEGIN
     if(getSystemFlag(FLAG_ERPN)) {
-      x = showGlyph(STD_SPACE_6_PER_EM, &standardFont, X_SSIZE_BEGIN, 0, vmNormal, true, true, false); // is 0+6+2 pixel wide      
+      x = showGlyph(STD_SPACE_6_PER_EM, &standardFont, X_SSIZE_BEGIN, 0, vmNormal, true, true, false); // is 0+6+2 pixel wide
       x = showGlyph(getSystemFlag(FLAG_SSIZE8) ? STD_8 : STD_4, &standardFont, X_SSIZE_BEGIN, 0, vmNormal, true, true, false); // is 0+6+2 pixel wide
     }
     else {
-      x = showGlyph(STD_SPACE_6_PER_EM, &standardFont, X_SSIZE_BEGIN, 0, vmReverse, false, true, false); // is 0+6+2 pixel wide      
-      x = showGlyph(getSystemFlag(FLAG_SSIZE8) ? STD_8 : STD_4, &standardFont, x, 0, vmReverse, false, true, false); // is 0+6+2 pixel wide      
+      x = showGlyph(STD_SPACE_6_PER_EM, &standardFont, X_SSIZE_BEGIN, 0, vmReverse, false, true, false); // is 0+6+2 pixel wide
+      x = showGlyph(getSystemFlag(FLAG_SSIZE8) ? STD_8 : STD_4, &standardFont, x, 0, vmReverse, false, true, false); // is 0+6+2 pixel wide
     }
 
 // Standard stack size only
