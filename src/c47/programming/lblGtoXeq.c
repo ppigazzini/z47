@@ -37,6 +37,31 @@
 #include "c47.h"
 
 
+// This array is in order to check if given system flag is read-only.
+// Although the definitions of symbols come with information about
+// whether they are user-modifiable, it is not recorded in programs.
+// NOTE: subscript must match with LSB of each system flag.
+TO_QSPI const uint16_t systemFlagsDefinition[NUMBER_OF_SYSTEM_FLAGS] = {
+  /* 0x00 */ FLAG_TDM24,    FLAG_YMD,     FLAG_DMY,          FLAG_MDY,
+  /* 0x04 */ FLAG_CPXRES,   FLAG_CPXj,    FLAG_POLAR,        FLAG_FRACT,
+  /* 0x08 */ FLAG_PROPFR,   FLAG_DENANY,  FLAG_DENFIX,       FLAG_CARRY,
+  /* 0x0c */ FLAG_OVERFLOW, FLAG_LEAD0,   FLAG_ALPHA,        FLAG_alphaCAP,
+  /* 0x10 */ FLAG_RUNTIM,   FLAG_RUNIO,   FLAG_PRINTS,       FLAG_TRACE,
+  /* 0x14 */ FLAG_USER,     FLAG_LOWBAT,  FLAG_SLOW,         FLAG_SPCRES,
+  /* 0x18 */ FLAG_SSIZE8,   FLAG_QUIET,   FLAG_WRAPEND,      FLAG_MULTx,
+  /* 0x1c */ FLAG_ENGOVR,   FLAG_GROW,    FLAG_AUTOFF,       FLAG_AUTXEQ,
+  /* 0x20 */ FLAG_PRTACT,   FLAG_NUMIN,   FLAG_ALPIN,        FLAG_ASLIFT,
+  /* 0x24 */ FLAG_IGN1ER,   FLAG_INTING,  FLAG_SOLVING,      FLAG_VMDISP,
+  /* 0x28 */ FLAG_USB,      FLAG_ENDPMT,  FLAG_FRCSRN,       FLAG_HPRP,
+  /* 0x2c */ FLAG_SBdate,   FLAG_SBtime,  FLAG_SBcr,         FLAG_SBcpx,
+  /* 0x30 */ FLAG_SBang,    FLAG_SBfrac,  FLAG_SBint,        FLAG_SBmx,
+  /* 0x34 */ FLAG_SBtvm,    FLAG_SBoc,    FLAG_SBss,         FLAG_SBclk,
+  /* 0x38 */ FLAG_SBser,    FLAG_SBprn,   FLAG_SBbatV,       FLAG_SBshfR,
+  /* 0x3c */ FLAG_HPBASE,   FLAG_2TO10,   FLAG_SH_LONGPRESS, FLAG_WRAPEDG,
+  /* 0x40 */ FLAG_MONIT,    FLAG_FRCYC,   FLAG_HPCONV,       FLAG_NUMLOCK,
+  /* 0x44 */ FLAG_CPXMULT,  FLAG_ERPN,    FLAG_LARGELI,      FLAG_IRFRAC,
+  /* 0x48 */ FLAG_IRF_ON,   FLAG_PFX_ALL, FLAG_DREAL,
+};
 
 void fnGoto(uint16_t label) {
   if(tam.mode || calcMode != CM_PEM) {
@@ -413,27 +438,16 @@ static void _executeOp(uint8_t *paramAddress, uint16_t op, uint16_t paramMode) {
          reallyRunFunction(op, opParam);
       }
       else if(opParam == SYSTEM_FLAG_NUMBER) {
-        switch((uint16_t)(*paramAddress) | 0xc000) {
-          case FLAG_YMD:
-          case FLAG_DMY:
-          case FLAG_MDY:
-          case FLAG_alphaCAP:
-          case FLAG_RUNTIM:
-          case FLAG_RUNIO:
-          case FLAG_PRINTS:
-          case FLAG_LOWBAT:
-          case FLAG_ASLIFT:
-          case FLAG_INTING:
-          case FLAG_SOLVING:
-          case FLAG_VMDISP:
-          case FLAG_USB:
-          case FLAG_ENDPMT: {
-            reallyRunFunction(op, (uint16_t)(*paramAddress) | 0xc000);
-            break;
-          }
-          default: {
-            reallyRunFunction(op, (uint16_t)(*paramAddress) | 0x8000);
-          }
+        if(*paramAddress < NUMBER_OF_SYSTEM_FLAGS) {
+          #if !defined(DMCP_BUILD)
+            if(*paramAddress != (systemFlagsDefinition[*paramAddress] & 0xff)) { // systemFlagsDefinition[] order mismatch
+              sprintf(tmpString, "\nIn function _executeOp: case PARAM_FLAG, %s %u  %u: systemFlagsDefinition misordered! systemFlags[0x%02x] == 0x%04x", indexOfItems[op].itemCatalogName, opParam, *paramAddress, *paramAddress, systemFlagsDefinition[*paramAddress]);
+            }
+          #endif // !DMCP_BUILD
+          reallyRunFunction(op, systemFlagsDefinition[*paramAddress]);
+        }
+        else { // in case of corrupt program
+          sprintf(tmpString, "\nIn function _executeOp: case PARAM_FLAG, %s %u  %u is not a valid system flag!", indexOfItems[op].itemCatalogName, opParam, *paramAddress);
         }
       }
       else if(opParam == INDIRECT_REGISTER) {
