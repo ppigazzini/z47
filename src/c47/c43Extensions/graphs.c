@@ -48,8 +48,8 @@ int8_t    PLOT_ZMY = 0;
 void graphResetCommon() {
   graph_dx      = 0;
   graph_dy      = 0;
-  extenty       = true;
-  extentx       = true;
+  extenty       = false;
+  extentx       = false;
   PLOT_VECT     = false;
   PLOT_NVECT    = false;
   PLOT_SCALE    = false;
