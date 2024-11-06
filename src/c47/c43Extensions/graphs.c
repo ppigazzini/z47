@@ -49,10 +49,13 @@ void graphResetCommon() {
   graph_dx      = 0;
   graph_dy      = 0;
   extenty       = true;
+  extentx       = true;
   PLOT_VECT     = false;
   PLOT_NVECT    = false;
   PLOT_SCALE    = false;
   Aspect_Square = true;
+  PLOT_LINE     = true;
+  PLOT_BOX      = true;
   PLOT_CROSS    = false;
   PLOT_INTG     = false;
   PLOT_DIFF     = false;
@@ -64,15 +67,13 @@ void graphResetCommon() {
   tick_int_x    = 0;
   tick_int_y    = 0;
   PLOT_CPXPLOT  = false;
+  PLOT_AXIS     = false;
+
 }
 
 
 void graph_reset(void){
   graphResetCommon();
-  extentx       = true;
-  PLOT_LINE     = true;
-  PLOT_BOX      = false;
-  PLOT_AXIS     = true;
 }
 
 

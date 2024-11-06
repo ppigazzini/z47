@@ -2395,9 +2395,11 @@ RELEASE_END:
       screenUpdatingMode = SCRUPD_AUTO;    //cannot use MENU & STACK update due to being in NIM, and NIM prevents clearing individually
     }
 
-    if(calcMode == CM_GRAPH && currentMenu() == -MNU_PLOT && item >= ITM_0 && item <= ITM_9) { //incoming digit, change modes and go to GRAPHS input page
+    if(calcMode == CM_GRAPH && currentMenu() == -MNU_PLOT && ((item >= ITM_0 && item <= ITM_9) || item == ITM_PERIOD)) { //incoming digit, change modes and go to GRAPHS input page
       calcMode = CM_NORMAL;
       showSoftmenu(-MNU_GRAPHS);
+      screenUpdatingMode &= SCRUPD_MANUAL_MENU;
+      refreshScreen(125);
     } 
 
     if(programRunStop == PGM_WAITING) {
@@ -2431,7 +2433,7 @@ RELEASE_END:
     }
 
 
-    if(GRAPHMODE && item != ITM_BACKSPACE && item != ITM_EXIT1 && item != ITM_UP1 && item != ITM_DOWN1) {
+    if(GRAPHMODE && item != ITM_BACKSPACE && item != ITM_EXIT1 && item != ITM_UP1 && item != ITM_DOWN1 && item != ITM_SNAP ) {
       keyActionProcessed = true;
     }
     else if(calcMode == CM_ASN_BROWSER && item != ITM_PERIOD && item != ITM_USERMODE && item != ITM_BACKSPACE && item != ITM_EXIT1 && item != ITM_UP1 && item != ITM_DOWN1) {
