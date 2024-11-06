@@ -2102,9 +2102,11 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
                         //positive integer smaller than limit
                         sprintf(tmpS,"%i",(int)tmpF);
                       }
+                      else if(tmpF == (int)tmpF &&  tmpF < 0 && -tmpF < ((itemNr%10000 == VAR_NPPER || itemNr%10000 == VAR_PMT) ? 10000 : 100000)) {
+                        //negative integer smaller than limit
+                        sprintf(tmpS,"%i",(int)tmpF);
+                      }
                       else {
-                        //negative or large integer or float, all are considered float
-
                         //out of range for display
                         if(tmpF>0 && tmpF<1.0e-34) {
                           strcpy(tmpS,STD_GAUSS_WHITE_L STD_GAUSS_WHITE_L );//"1E-34");
