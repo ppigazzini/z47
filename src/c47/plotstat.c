@@ -81,8 +81,6 @@ void statGraphReset(void){
   roundedTicks  = true;
   extentx       = false;
   PLOT_LINE     = false;
-  PLOT_BOX      = true;
-  PLOT_AXIS     = false;
   y_min         = 0;
   y_max         = 1;
 }
