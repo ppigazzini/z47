@@ -131,9 +131,9 @@ TO_QSPI const reservedVariableHeader_t allReservedVariables[] = { // MUST be in 
 /*  VAR_NO_PMT     38 */  { .header = {.pointerToRegisterData = 28,         .dataType = dtReal34,      .tag = amNone,      .readOnly = 0, .notUsed = 0}, .reservedVariableName = {3, 'P', 'M', 'T',  0,   0,   0,   0} },
 /*  VAR_NO_PV      39 */  { .header = {.pointerToRegisterData = 32,         .dataType = dtReal34,      .tag = amNone,      .readOnly = 0, .notUsed = 0}, .reservedVariableName = {2, 'P', 'V',  0,   0,   0,   0,   0} },
 /*  VAR_NO_GRAMOD  40 */  { .header = {.pointerToRegisterData = 36,         .dataType = dtLongInteger, .tag = LI_POSITIVE, .readOnly = 0, .notUsed = 0}, .reservedVariableName = {6, 'G', 'R', 'A', 'M', 'O', 'D',  0} },
-/*  VAR_NO_UX      41 */  { .header = {.pointerToRegisterData = 44,         .dataType = dtReal34,      .tag = amNone,      .readOnly = 0, .notUsed = 0}, .reservedVariableName = {3, 161, 145, 'X',  0,   0,   0,   0} },
-/*  VAR_NO_LX      42 */  { .header = {.pointerToRegisterData = 48,         .dataType = dtReal34,      .tag = amNone,      .readOnly = 0, .notUsed = 0}, .reservedVariableName = {3, 161, 147, 'X',  0,   0,   0,   0} },
-/*  VAR_NO_CPERONA 43 */  { .header = {.pointerToRegisterData = 40,         .dataType = dtReal34,      .tag = amNone,      .readOnly = 0, .notUsed = 0}, .reservedVariableName = {6, 'C', 'P', 'E', 'R', '/', 'a',  0} },
+/*  VAR_NO_UX      41 */  { .header = {.pointerToRegisterData = 40,         .dataType = dtReal34,      .tag = amNone,      .readOnly = 0, .notUsed = 0}, .reservedVariableName = {3, 161, 145, 'X',  0,   0,   0,   0} },
+/*  VAR_NO_LX      42 */  { .header = {.pointerToRegisterData = 44,         .dataType = dtReal34,      .tag = amNone,      .readOnly = 0, .notUsed = 0}, .reservedVariableName = {3, 161, 147, 'X',  0,   0,   0,   0} },
+/*  VAR_NO_CPERONA 43 */  { .header = {.pointerToRegisterData = 48,         .dataType = dtReal34,      .tag = amNone,      .readOnly = 0, .notUsed = 0}, .reservedVariableName = {6, 'C', 'P', 'E', 'R', '/', 'a',  0} },
 };
 
 // REMEMBER: SET LAST_RESERVED_VARIABLE in defines.h
