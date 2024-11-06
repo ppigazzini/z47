@@ -577,7 +577,6 @@
 // System flags
 // Bit 15 (MSB) is always set for a system flag
 // If bit 14 is set the system flag is read only for the user
-// If any changes in this list, don't forget to update systemFlagsDefinition in programming/lblGtoXeq.c
 #define FLAG_TDM24                            0x8000 // The system flags
 #define FLAG_YMD                              0xc001 // MUST be in the same
 #define FLAG_DMY                              0xc002 // order as the items
