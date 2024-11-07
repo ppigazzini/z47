@@ -53,9 +53,9 @@ float     graph_dy;
 bool_t    roundedTicks;
 bool_t    PLOT_VECT;
 bool_t    PLOT_NVECT;
-bool_t    Aspect_Square;
 bool_t    PLOT_LINE;
 bool_t    PLOT_CROSS;
+bool_t    PLOT_PLUS;
 bool_t    PLOT_BOX;
 bool_t    PLOT_INTG;
 bool_t    PLOT_DIFF;
@@ -147,53 +147,25 @@ void statGraphReset(void){
   int16_t screen_window_x(float x_min, float x, float x_max) {
     int16_t temp; float tempr;
 
-    if(Aspect_Square) {
-      tempr = ((x - x_min) / (x_max - x_min) * (float)(SCREEN_HEIGHT_GRAPH - 1));
-      if(tempr > 32766) {
-        temp = 32767;
-      }
-      else {
-        if(tempr < -32766) {
-          temp = -32767;
-        }
-        else {
-          temp = (int16_t) tempr;
-        }
-      }
-      if(temp > SCREEN_HEIGHT_GRAPH-1) {
-        temp = SCREEN_HEIGHT_GRAPH-1;
-      }
-      else if(temp < 0) {
-        temp = 0;
-      }
-      return temp + SCREEN_WIDTH - SCREEN_HEIGHT_GRAPH;
+    tempr = ((x - x_min) / (x_max - x_min) * (float)(SCREEN_HEIGHT_GRAPH - 1));
+    if(tempr > 32766) {
+      temp = 32767;
     }
-    else {  //FULL SCREEN
-      tempr = ((x-x_min)/(x_max-x_min)*(float)(SCREEN_WIDTH_GRAPH-1));
-      if(tempr > 32766) {
-        temp = 32767;
-      }
-      else if(tempr < -32766) {
+    else {
+      if(tempr < -32766) {
         temp = -32767;
       }
       else {
         temp = (int16_t) tempr;
       }
-      //printf("--> %d (%f %f)  ",temp, x_min,x_max);
-      if(temp > SCREEN_WIDTH_GRAPH - 1) {
-        temp = SCREEN_WIDTH_GRAPH - 1;
-      }
-      else if(temp < 0) {
-        temp = 0;
-      }
-      //printf("--> %d \n",temp);
-      #if defined(PC_BUILD)
-        if(temp<0 || temp>399) {
-          printf("In function screen_window_x X EXCEEDED %d",temp);
-        }
-      #endif // PC_BUILD
-      return temp;
     }
+    if(temp > SCREEN_HEIGHT_GRAPH-1) {
+      temp = SCREEN_HEIGHT_GRAPH-1;
+    }
+    else if(temp < 0) {
+      temp = 0;
+    }
+    return temp + SCREEN_WIDTH - SCREEN_HEIGHT_GRAPH;
   }
 
 
@@ -202,12 +174,7 @@ void statGraphReset(void){
     int16_t temp, minn;
     float tempr;
 
-    if(!Aspect_Square) {
-      minn = SCREEN_NONSQ_HMIN;
-    }
-    else {
-      minn = 0;
-    }
+    minn = 0;
 
     tempr = ((y - y_min) / (y_max - y_min) * (float)(SCREEN_HEIGHT_GRAPH - 1 - minn));
     if(tempr > 32766) {
@@ -259,12 +226,7 @@ void placePixel(uint32_t x, uint32_t y) {
   #if !defined(TESTSUITE_BUILD)
   uint32_t minn;
 
-  if(!Aspect_Square) {
-    minn = SCREEN_NONSQ_HMIN;
-  }
-  else {
-    minn = 0;
-  }
+  minn = 0;
 
   if(x < SCREEN_WIDTH_GRAPH && y < SCREEN_HEIGHT_GRAPH && y >= 1 + minn) {
     setBlackPixel(x, y);
@@ -277,12 +239,7 @@ void removePixel(uint32_t x, uint32_t y) {
   #if !defined(TESTSUITE_BUILD)
   uint32_t minn;
 
-  if(!Aspect_Square) {
-    minn = SCREEN_NONSQ_HMIN;
-  }
-  else {
-    minn = 0;
-  }
+  minn = 0;
 
   if(x < SCREEN_WIDTH_GRAPH && y < SCREEN_HEIGHT_GRAPH && y >= 1 + minn) {
     setWhitePixel(x, y);
@@ -293,22 +250,23 @@ void removePixel(uint32_t x, uint32_t y) {
 
 void clearScreenPixels(void) {
   #if !defined(TESTSUITE_BUILD)
-  if(Aspect_Square) {
     lcd_fill_rect(SCREEN_WIDTH-SCREEN_HEIGHT_GRAPH, 0, SCREEN_HEIGHT_GRAPH, SCREEN_HEIGHT_GRAPH, 0);
     lcd_fill_rect(0, Y_POSITION_OF_REGISTER_T_LINE, SCREEN_WIDTH-SCREEN_HEIGHT_GRAPH, 171-5-Y_POSITION_OF_REGISTER_T_LINE+1, 0);
     lcd_fill_rect(19, 171-5, SCREEN_WIDTH-SCREEN_HEIGHT_GRAPH-19+1, 5, 0);
-  }
-  else {
-    lcd_fill_rect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT_GRAPH, 0);
-  }
-#endif //!TESTSUITE_BUILD
+  #endif //!TESTSUITE_BUILD
 }
 
 
 #if !defined(TESTSUITE_BUILD)
-void plotcross(uint16_t xn, uint8_t yn) {              // Plots line from xo,yo to xn,yn; uses temporary x1,y1
+void plotcross(uint16_t xn, uint8_t yn) {              // Plots cross at xn,yn
   plotline(max((int16_t)xn-2,0),max((int16_t)yn-2,0),xn+2,yn+2);                       //   PLOT a cross
   plotline(max((int16_t)xn-2,0),yn+2,xn+2,max((int16_t)yn-2,0));
+}
+
+
+void plotplus(uint16_t xn, uint8_t yn) {              // Plots plus xn,yn
+  plotline(max((int16_t)xn-3,0),yn,xn+3,yn);          // PLOT a plus
+  plotline(xn,yn+3,xn,max((int16_t)yn-3,0));
 }
 
 
@@ -409,23 +367,15 @@ void graphAxisDraw (void){
   xzero = screen_window_x(x_min,0,x_max);
 
   uint32_t minnx, minny;
-  if(!Aspect_Square) {
-    minny = SCREEN_NONSQ_HMIN;
-    minnx = 0;
-  }
-  else {
-    minny = 0;
-    minnx = SCREEN_WIDTH-SCREEN_HEIGHT_GRAPH;
-  }
+  minny = 0;
+  minnx = SCREEN_WIDTH-SCREEN_HEIGHT_GRAPH;
 
 
-  //SEPARATING LINE IF SQUARE
+  //SEPARATING LINE
   cnt = minny;
   while(cnt!=SCREEN_HEIGHT_GRAPH) {
-    if(Aspect_Square) {
-        setBlackPixel(minnx-1,cnt);
-        setBlackPixel(minnx-2,cnt);
-    }
+    setBlackPixel(minnx-1,cnt);
+    setBlackPixel(minnx-2,cnt);
     cnt++;
   }
 
@@ -438,12 +388,7 @@ void graphAxisDraw (void){
 
   if( PLOT_AXIS && !(yzero == SCREEN_HEIGHT_GRAPH-1 || yzero == minny)) {
     //DRAW XAXIS
-    if(Aspect_Square) {
-      cnt = minnx;
-    }
-    else {
-      cnt = 0;
-    }
+    cnt = 0;
 
     while(cnt != SCREEN_WIDTH_GRAPH - 1) {
       setBlackPixel(cnt,yzero);
@@ -915,6 +860,40 @@ void eformat_eng2 (char* s02, const char* s01, double inreal, int8_t digits, con
   }
 #endif // !TESTSUITE_BUILD
 
+void plotPointGeneric(int16_t xn, int16_t yn, int16_t xo, int16_t yo, bool_t PLOT_CROSS, bool_t PLOT_BOXFAT, bool_t PLOT_BOX, bool_t PLOT_PLUS, bool_t PLOT_LINE) {
+  if(PLOT_CROSS) {
+    #if defined(STATDEBUG) && defined(PC_BUILD)
+      printf("Plotting cross to x=%d y=%d\n",xn,yn);
+    #endif // STATDEBUG && PC_BUILD
+    plotcross(xn,yn);
+  }
+  else if(PLOT_BOXFAT) {
+    #if defined(STATDEBUG) && defined(PC_BUILD)
+      printf("Plotting box to x=%d y=%d\n",xn,yn);
+    #endif // STATDEBUG && PC_BUILD
+    plotbox_fat(xn,yn);
+  }
+  else if(PLOT_BOX) {
+    #if defined(STATDEBUG) && defined(PC_BUILD)
+      printf("Plotting box to x=%d y=%d\n",xn,yn);
+    #endif // STATDEBUG && PC_BUILD
+    plotbox(xn,yn);
+  }
+  else if(PLOT_PLUS) {
+    #if defined(STATDEBUG) && defined(PC_BUILD)
+      printf("Plotting plus to x=%d y=%d\n",xn,yn);
+    #endif // STATDEBUG && PC_BUILD
+    plotplus(xn,yn);
+  }
+
+  if(PLOT_LINE) {
+    #if defined(STATDEBUG) && defined(PC_BUILD)
+      printf("Plotting line to x=%d y=%d\n",xn,yn);
+    #endif // STATDEBUG && PC_BUILD
+    plotline(xo, yo, xn, yn);
+  }
+}
+
 
 void graphPlotstat(uint16_t selection){
 currentKeyCode = 255;
@@ -1057,14 +1036,9 @@ currentKeyCode = 255;
         #endif // STATDEBUG && PC_BUILD
 
         int16_t minN_y,minN_x;
-        if(!Aspect_Square) {
-          minN_y = SCREEN_NONSQ_HMIN;
-          minN_x = 0;
-        }
-        else {
-          minN_y = 0;
-          minN_x = SCREEN_WIDTH-SCREEN_HEIGHT_GRAPH;
-        }
+        minN_y = 0;
+        minN_x = SCREEN_WIDTH-SCREEN_HEIGHT_GRAPH;
+
         if(xN<SCREEN_WIDTH_GRAPH && xN>=minN_x && yN<SCREEN_HEIGHT_GRAPH && yN>=minN_y) {
           yn = yN;
           xn = xN;
@@ -1073,26 +1047,8 @@ currentKeyCode = 255;
             plotHisto_col(xN, yN, minN_y, SCREEN_HEIGHT_GRAPH - minN_y, colw);
           }
 
-        if(PLOT_CROSS) {
-            #if defined(STATDEBUG) && defined(PC_BUILD)
-            printf("Plotting cross to x=%d y=%d\n",xn,yn);
-            #endif // STATDEBUG && PC_BUILD
-          plotcross(xn,yn);
-        }
+        plotPointGeneric(xn, yn, xo, yo, PLOT_CROSS, PLOT_BOX/*fatbox*/, false/*normalbox*/, PLOT_PLUS, PLOT_LINE);
 
-        if(PLOT_BOX) {
-            #if defined(STATDEBUG) && defined(PC_BUILD)
-            printf("Plotting box to x=%d y=%d\n",xn,yn);
-            #endif // STATDEBUG && PC_BUILD
-          plotbox_fat(xn,yn);
-        }
-
-          if(PLOT_LINE) {
-              #if defined(STATDEBUG) && defined(PC_BUILD)
-              printf("Plotting line to x=%d y=%d\n",xn,yn);
-              #endif // STATDEBUG && PC_BUILD
-            plotline(xo, yo, xn, yn);
-          }
         }
         else {
             #if defined(PC_BUILD)
@@ -1350,14 +1306,8 @@ void graphDrawLRline(uint16_t selection) {
       double    intervalW = (double)(x_max-x_min)/(double)(Intervals);
 
       int16_t minN_y,minN_x;
-      if(!Aspect_Square) {
-        minN_y = SCREEN_NONSQ_HMIN;
-        minN_x = 0;
-      }
-      else {
-        minN_y = 0;
-        minN_x = SCREEN_WIDTH-SCREEN_HEIGHT_GRAPH;
-      }
+      minN_y = 0;
+      minN_x = SCREEN_WIDTH-SCREEN_HEIGHT_GRAPH;
       for(ix = (double)x_min-intervalW; iterations < 2000 && x < x_max+(x_max-x_min)*0.5 && xN < SCREEN_WIDTH-1; iterations++) {       //Variable accuracy line plot
         xo = xN;
         yo = yN;

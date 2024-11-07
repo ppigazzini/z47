@@ -30,9 +30,9 @@ extern  float    graph_dy;
 extern  bool_t   roundedTicks;
 extern  bool_t   PLOT_VECT;
 extern  bool_t   PLOT_NVECT;
-extern  bool_t   Aspect_Square;
 extern  bool_t   PLOT_LINE;
 extern  bool_t   PLOT_CROSS;
+extern  bool_t   PLOT_PLUS;
 extern  bool_t   PLOT_BOX;
 extern  bool_t   PLOT_INTG;
 extern  bool_t   PLOT_DIFF;
@@ -67,6 +67,7 @@ void    placePixel         (uint32_t x, uint32_t y);
 void    removePixel        (uint32_t x, uint32_t y);
 void    clearScreenPixels  ();
 void    plotcross          (uint16_t xn, uint8_t yn);                      // Plots line from xo,yo to xn,yn; uses temporary x1,y1
+void    plotplus           (uint16_t xn, uint8_t yn);                      // Plots line from xo,yo to xn,yn; uses temporary x1,y1
 void    plotbox            (uint16_t xn, uint8_t yn);                      // Plots line from xo,yo to xn,yn; uses temporary x1,y1
 void    plotrect           (uint16_t a, uint8_t b, uint16_t c, uint8_t d); // Plots rectangle from xo,yo to xn,yn; uses temporary x1,y1
 void    pixelline          (uint16_t xo, uint8_t yo, uint16_t xn, uint8_t yn, bool_t vmNormal);              // Plots line from xo,yo to xn,yn; uses temporary x1,y1
@@ -75,6 +76,7 @@ void    plotline2          (uint16_t xo, uint8_t yo, uint16_t xn, uint8_t yn);
 void    graphAxisDraw      (void);
 void    graph_axis         (void);
 float   auto_tick          (float tick_int_f);
+void    plotPointGeneric   (int16_t xn, int16_t yn, int16_t xo, int16_t yo, bool_t PLOT_CROSS, bool_t PLOT_BOXFAT, bool_t PLOT_BOX, bool_t PLOT_PLUS, bool_t PLOT_LINE);
 
 
 //graph functions

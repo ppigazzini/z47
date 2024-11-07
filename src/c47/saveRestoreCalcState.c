@@ -57,15 +57,16 @@
 
 // This is used for the backup.cfg simulator backup file
 // The variable backupVersion is used in the connection
-#define BACKUP_VERSION                     1005     // Remove superfluous reporting when old cfg file items are not found in new files
+#define BACKUP_VERSION                     1006     // Remove Aspect and add PLOT_PLUS
 /*
 1004     // Replace Norm_Key_00_VAR by the structure Norm_Key_00;
 1005     // 2024-09-06 Remove superfluous reporting when old cfg file items are not found in new files
+ 1006    // 2024-11-07 Remove Aspect and add PLOT_PLUS
 */
 
 
 // This is used for the state files
-#define configFileVersion                  10000013 // Replace Norm_Key_00_VAR by the structure Norm_Key_00; Arbitrary starting point version 10 000 001 of STATE files. Allowable values are 10000000 to 20000000
+#define configFileVersion                  10000014 // Remove Aspect and add PLOT_PLUS
 #define VersionAllowed                     10000005 // This code will not autoload versions earlier than this
 /*
 10000001 // arbitrary starting point version 10 000 001
@@ -77,6 +78,8 @@
 10000008 // 2023-09-12 version 108.13   Jaco added the missing STOCFG items, remove the unneccary STOCFG items, added the missing STATe file items.
 ...
 10000012 // 5 flags converted from C43
+10000013 // Replace Norm_Key_00_VAR by the structure Norm_Key_00; Arbitrary starting point version 10 000 001 of STATE files. Allowable values are 10000000 to 20000000
+10000014 // 2024-11-07 configFileVersion                  10000014 // Remove Aspect and add PLOT_PLUS
 
 Current version defaults all non-loaded settings from previous version files correctly
 */
@@ -461,9 +464,9 @@ uint8_t output = parameter;
     saveStateValue(&PLOT_VECT,                      sizeof(PLOT_VECT),                                           "PLOT_VECT",                      "bool");
     saveStateValue(&PLOT_NVECT,                     sizeof(PLOT_NVECT),                                          "PLOT_NVECT",                     "bool");
     saveStateValue(&PLOT_SCALE,                     sizeof(PLOT_SCALE),                                          "PLOT_SCALE",                     "bool");
-    saveStateValue(&Aspect_Square,                  sizeof(Aspect_Square),                                       "Aspect_Square",                  "bool");
     saveStateValue(&PLOT_LINE,                      sizeof(PLOT_LINE),                                           "PLOT_LINE",                      "bool");
     saveStateValue(&PLOT_CROSS,                     sizeof(PLOT_CROSS),                                          "PLOT_CROSS",                     "bool");
+    saveStateValue(&PLOT_PLUS,                      sizeof(PLOT_PLUS),                                           "PLOT_PLUS",                      "bool");
     saveStateValue(&PLOT_BOX,                       sizeof(PLOT_BOX),                                            "PLOT_BOX",                       "bool");
     saveStateValue(&PLOT_INTG,                      sizeof(PLOT_INTG),                                           "PLOT_INTG",                      "bool");
     saveStateValue(&PLOT_DIFF,                      sizeof(PLOT_DIFF),                                           "PLOT_DIFF",                      "bool");
@@ -1032,9 +1035,9 @@ uint8_t output = parameter;
     restoreStateValue(&PLOT_VECT,                      sizeof(PLOT_VECT),                                           "PLOT_VECT",                      "bool");
     restoreStateValue(&PLOT_NVECT,                     sizeof(PLOT_NVECT),                                          "PLOT_NVECT",                     "bool");
     restoreStateValue(&PLOT_SCALE,                     sizeof(PLOT_SCALE),                                          "PLOT_SCALE",                     "bool");
-    restoreStateValue(&Aspect_Square,                  sizeof(Aspect_Square),                                       "Aspect_Square",                  "bool");
     restoreStateValue(&PLOT_LINE,                      sizeof(PLOT_LINE),                                           "PLOT_LINE",                      "bool");
     restoreStateValue(&PLOT_CROSS,                     sizeof(PLOT_CROSS),                                          "PLOT_CROSS",                     "bool");
+    restoreStateValue(&PLOT_PLUS,                      sizeof(PLOT_PLUS),                                           "PLOT_PLUS",                      "bool");
     restoreStateValue(&PLOT_BOX,                       sizeof(PLOT_BOX),                                            "PLOT_BOX",                       "bool");
     restoreStateValue(&PLOT_INTG,                      sizeof(PLOT_INTG),                                           "PLOT_INTG",                      "bool");
     restoreStateValue(&PLOT_DIFF,                      sizeof(PLOT_DIFF),                                           "PLOT_DIFF",                      "bool");
@@ -1779,6 +1782,7 @@ void doSave(uint16_t saveType) {
         sprintf(tmpString, "PLOT_SCALE\n%"                 PRIu8  "\n",     (uint8_t)PLOT_SCALE);          save(tmpString, strlen(tmpString));
         sprintf(tmpString, "PLOT_LINE\n%"                  PRIu8  "\n",     (uint8_t)PLOT_LINE);           save(tmpString, strlen(tmpString));
         sprintf(tmpString, "PLOT_CROSS\n%"                 PRIu8  "\n",     (uint8_t)PLOT_CROSS);          save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "PLOT_PLUS\n%"                  PRIu8  "\n",     (uint8_t)PLOT_PLUS);           save(tmpString, strlen(tmpString));
         sprintf(tmpString, "PLOT_BOX\n%"                   PRIu8  "\n",     (uint8_t)PLOT_BOX);            save(tmpString, strlen(tmpString));
         sprintf(tmpString, "PLOT_INTG\n%"                  PRIu8  "\n",     (uint8_t)PLOT_INTG);           save(tmpString, strlen(tmpString));
         sprintf(tmpString, "PLOT_DIFF\n%"                  PRIu8  "\n",     (uint8_t)PLOT_DIFF);           save(tmpString, strlen(tmpString));
@@ -2940,6 +2944,7 @@ double stringToDouble(const char *str) {
           else if(strcmp(aimBuffer, "PLOT_SCALE"                  ) == 0) { PLOT_SCALE            = (bool_t)stringToUint8(tmpString) != 0; }
           else if(strcmp(aimBuffer, "PLOT_LINE"                   ) == 0) { PLOT_LINE             = (bool_t)stringToUint8(tmpString) != 0; }
           else if(strcmp(aimBuffer, "PLOT_CROSS"                  ) == 0) { PLOT_CROSS            = (bool_t)stringToUint8(tmpString) != 0; }
+          else if(strcmp(aimBuffer, "PLOT_PLUS"                   ) == 0) { PLOT_PLUS             = (bool_t)stringToUint8(tmpString) != 0; }
           else if(strcmp(aimBuffer, "PLOT_BOX"                    ) == 0) { PLOT_BOX              = (bool_t)stringToUint8(tmpString) != 0; }
           else if(strcmp(aimBuffer, "PLOT_INTG"                   ) == 0) { PLOT_INTG             = (bool_t)stringToUint8(tmpString) != 0; }
           else if(strcmp(aimBuffer, "PLOT_DIFF"                   ) == 0) { PLOT_DIFF             = (bool_t)stringToUint8(tmpString) != 0; }

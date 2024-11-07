@@ -53,10 +53,10 @@ void graphResetCommon() {
   PLOT_VECT     = false;
   PLOT_NVECT    = false;
   PLOT_SCALE    = false;
-  Aspect_Square = true;
   PLOT_LINE     = true;
   PLOT_BOX      = true;
   PLOT_CROSS    = false;
+  PLOT_PLUS     = false;
   PLOT_INTG     = false;
   PLOT_DIFF     = false;
   PLOT_RMS      = false;
@@ -87,7 +87,7 @@ void fnClGrf(uint16_t unusedButMandatoryParameter) {
 
 void fnPline(uint16_t unusedButMandatoryParameter) {
   PLOT_LINE = !PLOT_LINE;
-  if(!PLOT_LINE && !PLOT_CROSS && !PLOT_BOX) {
+  if(!PLOT_LINE && !PLOT_CROSS && !PLOT_BOX && !PLOT_PLUS) {
     PLOT_BOX = true;
   }
   fnRefreshState();                //jm
@@ -99,8 +99,23 @@ void fnPcros(uint16_t unusedButMandatoryParameter) {
   PLOT_CROSS = !PLOT_CROSS;
   if(PLOT_CROSS) {
     PLOT_BOX = false;
+    PLOT_PLUS = false;
   }
-  if(!PLOT_LINE && !PLOT_CROSS && !PLOT_BOX) {
+  if(!PLOT_CROSS && !PLOT_BOX && !PLOT_PLUS) {
+    PLOT_LINE = true;
+  }
+  fnRefreshState();                //jm
+  fnPlotSQ(0);
+}
+
+void fnPplus(uint16_t unusedButMandatoryParameter) {
+  PLOT_PLUS = !PLOT_PLUS;
+  if(PLOT_PLUS) {
+    printf("PLUS SET\n");
+    PLOT_BOX = false;
+    PLOT_CROSS = false;
+  }
+  if(!PLOT_CROSS && !PLOT_BOX && !PLOT_PLUS) {
     PLOT_LINE = true;
   }
   fnRefreshState();                //jm
@@ -112,8 +127,9 @@ void fnPbox (uint16_t unusedButMandatoryParameter) {
   PLOT_BOX = !PLOT_BOX;
   if(PLOT_BOX) {
     PLOT_CROSS = false;
+    PLOT_PLUS = false;
   }
-  if(!PLOT_LINE && !PLOT_CROSS && !PLOT_BOX) {
+  if(!PLOT_CROSS && !PLOT_BOX && !PLOT_PLUS) {
     PLOT_LINE = true;
   }
   fnRefreshState();                //jm
@@ -261,7 +277,6 @@ void fnPlotSQ(uint16_t unusedButMandatoryParameter) {
   #endif // DMCP_BUILD
 
   PLOT_AXIS = true;
-  Aspect_Square = true;
   if(!GRAPHMODE) {
     previousCalcMode = calcMode;
   }
@@ -517,14 +532,8 @@ void graph_text(void) {
 
 
     uint32_t minnx, minny;
-    if(!Aspect_Square) {
-      minny = SCREEN_NONSQ_HMIN;
-      minnx = 0;
-    }
-    else {
-      minny = 0;
-      minnx = SCREEN_WIDTH-SCREEN_HEIGHT_GRAPH;
-    }
+    minny = 0;
+    minnx = SCREEN_WIDTH-SCREEN_HEIGHT_GRAPH;
     tmpString[0] = 0;                                  //If the axis is on the edge supress it, and label accordingly
     uint8_t axisdisp =  (!(yzero == SCREEN_HEIGHT_GRAPH-1 || yzero == minny) ? 2 : 0)
                       + (!(xzero == SCREEN_WIDTH-1        || xzero == minnx) ? 1 : 0);
@@ -934,7 +943,7 @@ void graph_plotmem(void) {
 /**/      a7 = 0;
 /**/      a8 = 0;
 /**/
-/**/      if(PLOT_BOX || PLOT_LINE || PLOT_CROSS || !(PLOT_DIFF || PLOT_INTG)) {  //XXXX
+/**/      if(PLOT_BOX || PLOT_LINE || PLOT_CROSS || PLOT_PLUS || !(PLOT_DIFF || PLOT_INTG)) {  //XXXX
 /**/        for(cnt=0; (cnt < statnum); cnt++) {
 /**/          #if defined(STATDEBUG)
 /**/            printf("Axis0a: cnt/statnum: %i/%i  x: %f y: %f   \n", cnt, statnum, grf_x(cnt), grf_y(cnt));
@@ -1117,7 +1126,7 @@ void graph_plotmem(void) {
               }
             }
 
-            if(PLOT_BOX || PLOT_LINE || PLOT_CROSS) {
+            if(PLOT_BOX || PLOT_LINE || PLOT_CROSS || PLOT_PLUS) {
               x = grf_x(ix);
               y = grf_y(ix);
             }
@@ -1144,14 +1153,8 @@ void graph_plotmem(void) {
           #endif // STATDEBUG
 
           int16_t minN_y, minN_x;
-          if(!Aspect_Square) {
-            minN_y = SCREEN_NONSQ_HMIN;
-            minN_x = 0;
-          }
-          else {
-            minN_y = 0;
-            minN_x = SCREEN_WIDTH-SCREEN_HEIGHT_GRAPH;
-          }
+          minN_y = 0;
+          minN_x = SCREEN_WIDTH-SCREEN_HEIGHT_GRAPH;
 
           bool_t bothOutOfScreen01 = ((yN1 >= SCREEN_HEIGHT_GRAPH) && (yN0 >= SCREEN_HEIGHT_GRAPH)) || ((yN1 < minN_y) && (yN0 < minN_y));
           bool_t outOfScreen1  = (yN1 >= SCREEN_HEIGHT_GRAPH || yN1 < minN_y);
@@ -1208,20 +1211,8 @@ printf("    xN1 =%i xo=%i minN_x=%i\n", (int16_t)xN1, (int16_t)xo, (int16_t)minN
                 printf("Not _VECT\n");
               #endif // STATDEBUG
 
-              if(PLOT_CROSS) {
-                #if defined(STATDEBUG)
-                  printf("Plotting cross to x=%d y=%d\n", xn, yn);
-                #endif // STATDEBUG
-                plotcross(xn,yn);
-              }
+              plotPointGeneric(xn, yn, xo, yo, PLOT_CROSS, false /*fatbox*/, PLOT_BOX /*box*/, PLOT_PLUS, false /*line*/);
 
-              if(PLOT_BOX) {
-                #if defined(STATDEBUG)
-                  printf("Plotting box to x=%d y=%d\n", xn, yn);
-                #endif // STATDEBUG
-                plotbox(xn,yn);
-              }
-              //else placePixel(xn,yn);
 
               if(PLOT_DIFF && !invalid_diff && ix != 0) {
                 #if defined(STATDEBUG)
