@@ -322,6 +322,7 @@ bool_t itemNotAvail(int16_t itemNr) {
       case ITM_DIFF:
       case ITM_RMS:
       case ITM_PCROS:
+      case ITM_PPLUS:
       case ITM_NVECT:
       case ITM_EXTY:
       case ITM_SNAP:
@@ -1317,6 +1318,7 @@ bool_t itemNotAvail(int16_t itemNr) {
   void fnCFGsettings              (uint16_t unusedButMandatoryParameter) {}
   void fnPline                    (uint16_t unusedButMandatoryParameter) {}
   void fnPcros                    (uint16_t unusedButMandatoryParameter) {}
+  void fnPplus                    (uint16_t unusedButMandatoryParameter) {}
   void fnPbox                     (uint16_t unusedButMandatoryParameter) {}
   void fnPintg                    (uint16_t unusedButMandatoryParameter) {}
   void fnPdiff                    (uint16_t unusedButMandatoryParameter) {}
@@ -3629,7 +3631,7 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 2159 */  { fnMenuGapL,                   MNU_GAP_L,                   "IPART",                                       "IPART",                                       (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2160 */  { fnMenuGapRX,                  MNU_GAP_RX,                  "RADIX",                                       "RADIX",                                       (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2161 */  { fnMenuGapR,                   MNU_GAP_R,                   "FPART",                                       "FPART",                                       (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
-/* 2162 */  { itemToBeCoded,                NOPARAM,                     "2162",                                        "2162",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 2162 */  { fnPplus,                      NOPARAM,                     "PLUS",                                        "PLUS",                                        (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_NONE         },
 /* 2163 */  { fnKeysManagement,             USER_MFIN,                   "M.FIN",                                       "M.FIN",                                       (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2164 */  { fnKeysManagement,             USER_MCPX,                   "M.CPX",                                       "M.CPX",                                       (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2165 */  { addItemToBuffer,              ITM_op_j_SIGN,               "op_" STD_op_i,                                STD_op_i,                                      (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },

@@ -155,6 +155,7 @@ TO_QSPI const radiocb_t indexOfRadioCbEepromItems[] = {
   {ITM_TEST,             JC_ITM_TST,             CB_JC},  //fnSetInlineTest
   {ITM_PLINE,            JC_PLINE,               CB_JC},  //
   {ITM_PCROS,            JC_PCROS,               CB_JC},  //
+  {ITM_PPLUS,            JC_PPLUS,               CB_JC},  //
   {ITM_PBOX,             JC_PBOX,                CB_JC},  //
   {ITM_INTG,             JC_INTG,                CB_JC},  //
   {ITM_DIFF,             JC_DIFF,                CB_JC},  //
@@ -388,6 +389,7 @@ int8_t fnCbIsSet(int16_t item) {
             case JC_EXTENTY:             cb_param = !extenty;                                                         break;
             case JC_PLINE:               cb_param = PLOT_LINE;                                                        break;
             case JC_PCROS:               cb_param = PLOT_CROSS;                                                       break;
+            case JC_PPLUS:               cb_param = PLOT_PLUS;                                                        break;
             case JC_PBOX:                cb_param = PLOT_BOX;                                                         break;
             case JC_DIFF:                cb_param = PLOT_DIFF;                                                        break;
             case JC_INTG:                cb_param = PLOT_INTG;                                                        break;

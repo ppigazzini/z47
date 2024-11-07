@@ -33,6 +33,7 @@ void    graph_reset        (void);
 void    fnClGrf            (uint16_t unusedButMandatoryParameter);
 void    fnPline            (uint16_t unusedButMandatoryParameter);
 void    fnPcros            (uint16_t unusedButMandatoryParameter);
+void    fnPplus            (uint16_t unusedButMandatoryParameter);
 void    fnPbox             (uint16_t unusedButMandatoryParameter);
 void    fnPintg            (uint16_t unusedButMandatoryParameter);
 void    fnPdiff            (uint16_t unusedButMandatoryParameter);

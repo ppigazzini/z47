@@ -95,30 +95,30 @@ char*    figlabel              (const char* label, const char* showText, int16_t
 #define JC_EXTENTY             186    // graph setup
 #define JC_PLINE               187    // graph setup
 #define JC_PCROS               188    // graph setup
-#define JC_PBOX                189    // graph setup
-#define JC_INTG                190    // graph setup
-#define JC_DIFF                191    // graph setup
-#define JC_RMS                 192    // graph setup
-#define JC_SHADE               193    // graph setup
-#define JC_PZOOMX              194
-#define JC_PZOOMY              195
-#define JC_NL                  196
-#define JC_UC                  197
-#define JC_LINEAR_FITTING      198
-#define JC_EXPONENTIAL_FITTING 199
-#define JC_LOGARITHMIC_FITTING 200
-#define JC_POWER_FITTING       201
-#define JC_ROOT_FITTING        202
-#define JC_HYPERBOLIC_FITTING  203
-#define JC_PARABOLIC_FITTING   204
-#define JC_CAUCHY_FITTING      205
-#define JC_GAUSS_FITTING       206
-#define JC_ORTHOGONAL_FITTING  207
-#define JC_IRFRAC              208
-#define JC_UU                  209
-#define JC_BCD                 210
-#define JC_TOPHEX              211
-
+#define JC_PPLUS               189    // graph setup
+#define JC_PBOX                190    // graph setup
+#define JC_INTG                191    // graph setup
+#define JC_DIFF                192    // graph setup
+#define JC_RMS                 193    // graph setup
+#define JC_SHADE               194    // graph setup
+#define JC_PZOOMX              195
+#define JC_PZOOMY              196
+#define JC_NL                  197
+#define JC_UC                  198
+#define JC_LINEAR_FITTING      199
+#define JC_EXPONENTIAL_FITTING 200
+#define JC_LOGARITHMIC_FITTING 201
+#define JC_POWER_FITTING       202
+#define JC_ROOT_FITTING        203
+#define JC_HYPERBOLIC_FITTING  204
+#define JC_PARABOLIC_FITTING   205
+#define JC_CAUCHY_FITTING      206
+#define JC_GAUSS_FITTING       207
+#define JC_ORTHOGONAL_FITTING  208
+#define JC_IRFRAC              209
+#define JC_UU                  210
+#define JC_BCD                 211
+#define JC_TOPHEX              212
 #define JC_CPXMULT             213
 #define JC_SS                  214
 #define PR_HPBASE              215  // BASE CLASSIC MODE

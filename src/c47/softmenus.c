@@ -781,8 +781,8 @@ TO_QSPI const int16_t menu_PLOT[]        = {  VAR_LX,                       VAR_
                                               ITM_CPXPLOT,                  ITM_LISTXY,                 ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,                           //JM GRAPH
                                              -MNU_GRAPHS,                   ITM_SNAP,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,                           //JM GRAPH
 
-                                              ITM_PCROS,                    ITM_PBOX,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,                           //JM GRAPH
-                                              ITM_PLINE,                    ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,                           //JM GRAPH
+                                              ITM_PCROS,                    ITM_PPLUS,                  ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,                           //JM GRAPH
+                                              ITM_PLINE,                    ITM_PBOX,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,                           //JM GRAPH
                                               ITM_NULL,                     ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,                           //JM GRAPH
 
                                               ITM_DIFF,                     ITM_INTG,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
@@ -2098,12 +2098,11 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
                       realToFloat(&tmpR, &tmpF);
 
 //                      if(realIsAnInteger(&tmpR) && realCompareLessThan(&tmpR, (itemNr%10000 == VAR_NPPER || itemNr%10000 == VAR_PMT) ? const_1e5 : const_1e6) && realCompareGreaterEqual(&tmpR, const_0)) {
-                      if(tmpF == (int)tmpF &&  tmpF >= 0 && tmpF < ((itemNr%10000 == VAR_NPPER || itemNr%10000 == VAR_PMT) ? 100000 : 1000000)) {
-                        //positive integer smaller than limit
-                        sprintf(tmpS,"%i",(int)tmpF);
-                      }
-                      else if(tmpF == (int)tmpF &&  tmpF < 0 && -tmpF < ((itemNr%10000 == VAR_NPPER || itemNr%10000 == VAR_PMT) ? 10000 : 100000)) {
-                        //negative integer smaller than limit
+                      if(tmpF == (int)tmpF && (
+                         (tmpF >= 0 && tmpF < ((itemNr%10000 == VAR_NPPER || itemNr%10000 == VAR_PMT) ? 100000 : 1000000)) ||
+                         (tmpF < 0 && -tmpF < ((itemNr%10000 == VAR_NPPER || itemNr%10000 == VAR_PMT) ? 10000 : 100000))
+                         )) {
+                        //integer smaller than limit
                         sprintf(tmpS,"%i",(int)tmpF);
                       }
                       else {
