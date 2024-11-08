@@ -858,7 +858,6 @@ void eformat_eng2 (char* s02, const char* s01, double inreal, int8_t digits, con
       }
     }
   }
-#endif // !TESTSUITE_BUILD
 
 void plotPointGeneric(int16_t xn, int16_t yn, int16_t xo, int16_t yo, bool_t PLOT_CROSS, bool_t PLOT_BOXFAT, bool_t PLOT_BOX, bool_t PLOT_PLUS, bool_t PLOT_LINE) {
   if(PLOT_CROSS) {
@@ -893,6 +892,7 @@ void plotPointGeneric(int16_t xn, int16_t yn, int16_t xo, int16_t yo, bool_t PLO
     plotline(xo, yo, xn, yn);
   }
 }
+#endif // !TESTSUITE_BUILD
 
 
 void graphPlotstat(uint16_t selection){
