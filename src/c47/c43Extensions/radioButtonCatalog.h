@@ -71,7 +71,7 @@ char*    figlabel              (const char* label, const char* showText, int16_t
 #define JC_MYM_TRIPLE          162    // HOME.3
 #define JC_PROPER              165    // CB FractionType
 #define JC_IMPROPER            166    // CB FractionType
- #define JC_FRC                 171    // CB FRACTION MODE
+#define JC_FRC                 171    // CB FRACTION MODE
 #define PRTACT0                174    // PRTACT checkbox
 #define PRTACT1                175    // PRTACT checkbox
 #define JC_BASE_MYM            177    // screen setup

@@ -64,7 +64,19 @@ static void systemFlagAction(uint16_t systemFlag, flagAction_t action) {
     case FLAG_IRFRAC:
     case FLAG_IRF_ON:
     case FLAG_alphaCAP:
-    case FLAG_2TO10:  fnRefreshState(); break;
+    case FLAG_2TO10:
+    case FLAG_CPXPLOT:
+    case FLAG_EXTX   :
+    case FLAG_EXTY   :
+    case FLAG_PBOX   :
+    case FLAG_PCROS  :
+    case FLAG_PPLUS  :
+    case FLAG_PLINE  :
+    case FLAG_SCALE  :
+    case FLAG_VECT   :
+    case FLAG_NVECT  :
+              fnRefreshState(); 
+              break;
 
     case FLAG_SBdate:
     case FLAG_SBtime:
@@ -81,7 +93,10 @@ static void systemFlagAction(uint16_t systemFlag, flagAction_t action) {
     case FLAG_SBser :
     case FLAG_SBprn :
     case FLAG_SBbatV:
-    case FLAG_SBshfR: fnRefreshState(); screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR; break;
+    case FLAG_SBshfR: 
+              fnRefreshState(); 
+              screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR; 
+              break;
 
     default: break;
   }
@@ -564,34 +579,49 @@ void SetSetting(uint16_t jmConfig) {
     case CM_POLAR:       fnSetFlag(FLAG_POLAR);                                 break;
     case DO_SCI:         fnClearFlag(FLAG_ENGOVR);                              break;
     case DO_ENG:         fnSetFlag(FLAG_ENGOVR);                                break;
-    case FLAG_HPRP:      fnFlipFlag(FLAG_HPRP);                                 break;
-    case FLAG_HPBASE:    fnFlipFlag(FLAG_HPBASE);                               break;
-    case FLAG_2TO10:     fnFlipFlag(FLAG_2TO10);                                break;
+
+    case JC_NL:          fnFlipFlag(FLAG_NUMLOCK); showAlphaModeonGui();        break; //
+    case FLAG_HPRP:  
+    case FLAG_HPBASE:
+    case FLAG_2TO10: 
+    case FLAG_PROPFR:
+    case FLAG_PRTACT:
+    case FLAG_LEAD0: 
+    case FLAG_CPXRES:
+    case FLAG_SPCRES:
+    case FLAG_ERPN:  
+    case ITM_FRCYC:  
+    case FLAG_CPXMULT:   
+    case FLAG_CPXPLOT:
+    case FLAG_EXTX   :
+    case FLAG_EXTY   :
+    case FLAG_PBOX   :
+    case FLAG_PCROS  :
+    case FLAG_PPLUS  :
+    case FLAG_PLINE  :
+    case FLAG_SCALE  :
+    case FLAG_VECT   :
+    case FLAG_NVECT  :
+              fnFlipFlag(jmConfig);                                  break; //
     case FLAG_DENANY:    fnFlipFlag(FLAG_DENANY); clearSystemFlag(FLAG_DENFIX); break;
-    case FLAG_PROPFR:    fnFlipFlag(FLAG_PROPFR);                               break;
-    case FLAG_FRACT:     fnFlipFlag(FLAG_FRACT);
+    case FLAG_DENFIX:    fnFlipFlag(FLAG_DENFIX); clearSystemFlag(FLAG_DENANY); break;
+
+    case FLAG_FRACT:     
+      fnFlipFlag(FLAG_FRACT);
       if(getSystemFlag(FLAG_FRACT) && !getSystemFlag(FLAG_FRCYC)) {
         clearSystemFlag(FLAG_IRFRAC);
       }
       break;
-    case FLAG_DENFIX:    fnFlipFlag(FLAG_DENFIX); clearSystemFlag(FLAG_DENANY); break;
-    case FLAG_PRTACT:    fnFlipFlag(FLAG_PRTACT);                               break;
-    case FLAG_LEAD0:     fnFlipFlag(FLAG_LEAD0);                                break; //bit LeadingZeros
-    case FLAG_CPXRES:    fnFlipFlag(FLAG_CPXRES);                               break; //bit ComplexResult
-    case FLAG_SPCRES:    fnFlipFlag(FLAG_SPCRES);                               break; //bit SpecialResult
 
 //SUSPECT!! remove with XEQM
-    case ITM_CPXRES1:    fnSetFlag(FLAG_CPXRES);                                break; //bit ComplexResult
-    case ITM_CPXRES0:    fnClearFlag(FLAG_CPXRES);                              break; //bit ComplexResult
-    case ITM_SPCRES1:    fnSetFlag(FLAG_SPCRES);                                break; //bit SpecialResult
-    case ITM_SPCRES0:    fnClearFlag(FLAG_SPCRES);                              break; //bit SpecialResult
+    case ITM_CPXRES1:    fnSetFlag(FLAG_CPXRES);                                break;
+    case ITM_CPXRES0:    fnClearFlag(FLAG_CPXRES);                              break;
+    case ITM_SPCRES1:    fnSetFlag(FLAG_SPCRES);                                break;
+    case ITM_SPCRES0:    fnClearFlag(FLAG_SPCRES);                              break;
     case ITM_PRTACT1:    fnSetFlag(FLAG_PRTACT);                                break;
     case ITM_PRTACT0:    fnClearFlag(FLAG_PRTACT);                              break;
 
-    case FLAG_ERPN:      fnFlipFlag(FLAG_ERPN);                                 break; //
-    case ITM_FRCYC:      fnFlipFlag(FLAG_FRCYC);                                break; //
-    case FLAG_CPXMULT:   fnFlipFlag(FLAG_CPXMULT);                              break; //
-    case JC_NL:          fnFlipFlag(FLAG_NUMLOCK); showAlphaModeonGui();        break; //
+
     case ITM_DREAL:
       fnFlipFlag(FLAG_DREAL);
       if(getSystemFlag(FLAG_DREAL)) {

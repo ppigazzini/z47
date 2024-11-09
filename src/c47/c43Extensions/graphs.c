@@ -30,7 +30,7 @@
 
 #include "c47.h"
 
-#define STATDEBUG
+//#define STATDEBUG
 
 bool_t    invalid_intg = true;
 bool_t    invalid_diff = true;
@@ -268,32 +268,32 @@ void fnPlotReset(uint16_t unusedButMandatoryParameter) {
 
 void fnPlotSQ(uint16_t unusedButMandatoryParameter) {
   #if !defined(TESTSUITE_BUILD)
-  #if defined(DMCP_BUILD)
-    lcd_refresh();
-  #else // !DMCP_BUILD
-    refreshLcd(NULL);
-  #endif // DMCP_BUILD
+    #if defined(DMCP_BUILD)
+      lcd_refresh();
+    #else // !DMCP_BUILD
+      refreshLcd(NULL);
+    #endif // DMCP_BUILD
 
-  PLOT_AXIS = true;
-  if(!GRAPHMODE) {
-    previousCalcMode = calcMode;
-  }
-  if(previousCalcMode == CM_GRAPH || previousCalcMode == CM_PLOT_STAT) {
-    previousCalcMode = CM_NORMAL;
-  }
+    PLOT_AXIS = true;
 
-  if(!GRAPHMODE) { //Change over hourglass to the left side
-    clearScreenOld(clrStatusBar, !clrRegisterLines, !clrSoftkeys);
-  }
-  calcMode = CM_GRAPH;
-  hourGlassIconEnabled = true;       //clear the current portion of statusbar
-  showHideHourGlass();
-  refreshStatusBar();
+    if(GRAPHMODE) {
+      previousCalcMode = CM_NORMAL;
+    } else {
+      previousCalcMode = calcMode;
+      clearScreenOld(clrStatusBar, !clrRegisterLines, !clrSoftkeys); //Change over hourglass to the left side
+    }
 
-  if(softmenu[softmenuStack[0].softmenuId].menuItem != -MNU_PLOT) {
-    showSoftmenu(-MNU_PLOT);                         //JM MENU Prevent resetting the softmenu to the default no 1 page position
-  }
+    calcMode = CM_GRAPH;
+    hourGlassIconEnabled = true;       //clear the current portion of statusbar
+    showHideHourGlass();
+    refreshStatusBar();
 
+    if(menu(0) != -MNU_PLOTFUNC && plotStatMx[0] == 'D') {
+      showSoftmenu(-MNU_PLOTFUNC);
+    } 
+    else if(menu(0) != -MNU_PLOTSIGMA && plotStatMx[0] == 'S') {
+      showSoftmenu(-MNU_PLOTSIGMA);
+    } 
   #endif // !TESTSUITE_BUILD
 }
 
@@ -698,11 +698,13 @@ void graph_Include0(bool_t mode, uint16_t statnum) {
     dy = 1.0f;
     y_max = y_min + dy/2.0f;
     y_min = y_max - dy;
+    dy = y_max-y_min;
   }
   if(dx == 0.0f) {
     dx = 1.0f;
     x_max = x_min + dx/2.0f;
     x_min = x_max - dx;
+    dx = x_max-x_min;
   }
 
 
@@ -721,14 +723,15 @@ void graph_Include0(bool_t mode, uint16_t statnum) {
     }
   }
   else {
-    calculateZoomFactor(PLOT_ZMY, &y_min);
-    calculateZoomFactor(PLOT_ZMY, &y_max);
+    float plotzoomx = 1;
+    calculateZoomFactor(PLOT_ZMY, &plotzoomx);
+    float plotzoomy = plotzoomx;
     //  this was in the original file but seems to be interfering with PLOT_ZM*
     //  It may be required to again add the zoomfactor (5%) either side
-    //  x_min = x_min - dx * zoomfactor * (pow(4.5f, (int8_t)(PLOT_ZOOM & 0x03)));
-    //  y_min = y_min - dy * zoomfactor * (pow(4.5f, (int8_t)(PLOT_ZOOM & 0x03)));
-    //  x_max = x_max + dx * zoomfactor * (pow(4.5f, (int8_t)(PLOT_ZOOM & 0x03)));
-    //  y_max = y_max + dy * zoomfactor * (pow(4.5f, (int8_t)(PLOT_ZOOM & 0x03)));
+    x_min = (x_min - dx * zoomfactor) * plotzoomx;
+    y_min = (y_min - dy * zoomfactor) * plotzoomy;
+    x_max = (x_max + dx * zoomfactor) * plotzoomx;
+    y_max = (y_max + dy * zoomfactor) * plotzoomy;
   }
 
   #if defined(STATDEBUG) && defined(PC_BUILD)

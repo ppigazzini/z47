@@ -579,8 +579,12 @@ void graph_stat(uint16_t unusedButMandatoryParameter) {
       lastPlotMode = PLOT_NOTHING;
       calcMode = CM_GRAPH;
       reDraw = true;
-      setSystemFlag(FLAG_PLINE);
+//      setSystemFlag(FLAG_PLINE);
       PLOT_SHADE = true;
+
+      if(!getSystemFlag(FLAG_PLINE) && !getSystemFlag(FLAG_PCROS) && !getSystemFlag(FLAG_PBOX) && !getSystemFlag(FLAG_PPLUS)) {
+        fnPline(NOPARAM);
+      }
 
       fillStackWithReal0();
       fnPlotSQ(0);
