@@ -388,7 +388,7 @@ void graphAxisDraw (void){
 
   if( PLOT_AXIS && !(yzero == SCREEN_HEIGHT_GRAPH-1 || yzero == minny)) {
     //DRAW XAXIS
-    cnt = 0;
+    cnt = minnx;
 
     while(cnt != SCREEN_WIDTH_GRAPH - 1) {
       setBlackPixel(cnt,yzero);
