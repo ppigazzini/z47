@@ -167,7 +167,7 @@ void fnPrms (uint16_t unusedButMandatoryParameter) {
 }
 
 
-void fnPMzoom (uint16_t param) { //param = 2: positive
+void fnPMzoom (uint16_t param) { //param = 2: positive; param = 1: negative
   #define RangeHi +16
   #define RangeLo -16
   int8_t increment = param == 2 ? +1 : param == 1 ? -1 : 0;
@@ -183,11 +183,10 @@ void fnPMzoom (uint16_t param) { //param = 2: positive
 }
 
 
-void calculateZoomFactor(int8_t factor, float *aa, float *bb) {
+void calculateZoomFactor(int8_t factor, float *aa) {
   #define basefactor 4.5f
   if(factor != 0) {
     (*aa) *= pow(basefactor,-factor);
-    (*bb) *= pow(basefactor,-factor);
   }
 }
 
@@ -592,156 +591,150 @@ void graph_text(void) {
 }
 
 
+
 //####################################################
 //######### PLOT MEM #################################
 //####################################################
 
 
-void graph_Include0(bool_t mode, uint16_t statnum){ 
+void graph_Include0(bool_t mode, uint16_t statnum) {
   //using global: extentx, x_min, x_max, extenty, y_min, y_max, PLOT_SCALE, PLOT_ZMY, zoomfactor
 
-        #if defined(STATDEBUG) && defined(PC_BUILD)
-          printf("PLOT_ZMY=%i  PLOT_SCALE=%i mode=%i\n", PLOT_ZMY, PLOT_SCALE, mode);
-          printf("Axis1b: x: %f -> %f y: %f -> %f   \n",x_min, x_max, y_min, y_max);
-        #endif // STATDEBUG
+  #if defined(STATDEBUG) && defined(PC_BUILD)
+    printf("PLOT_ZMY=%i  PLOT_SCALE=%i mode=%i\n", PLOT_ZMY, PLOT_SCALE, mode);
+    printf("Axis1b: x: %f -> %f y: %f -> %f   \n",x_min, x_max, y_min, y_max);
+  #endif // STATDEBUG
 
-        //Check and correct if min and max is swapped
-        if(x_min>0.0f && x_min > x_max) {
-          x_min = x_min - (-x_max+x_min)* 1.1f;
+
+  //Check and correct if min and max is swapped
+  if(x_min>0.0f && x_min > x_max) {
+    x_min = x_min - (-x_max+x_min)* 1.1f;
+  }
+  if(x_min<0.0f && x_min > x_max) {
+    x_min = x_min + (-x_max+x_min)* 1.1f;
+  }
+
+
+  //include the 0 axis
+  if(!extentx) {
+    if(x_min > 0.0f && x_max > 0.0f) {
+      if(x_min <= x_max) {
+        x_min = -0.05f * x_max;
+      }
+      else {
+        x_min = 0.0f;
+      }
+    }
+    if(x_min < 0.0f && x_max < 0.0f) {
+      if(x_min >= x_max) {
+        x_min = -0.05f * x_max;
+      }
+      else {
+        x_max = 0.0f;
+      }
+    }
+  }
+  if(!extenty) {
+    if(y_min > 0.0f && y_max > 0.0f) {
+      if(y_min <= y_max) {
+        y_min = -0.05f * y_max;
+      }
+      else {
+        y_min = 0.0f;
+      }
+    }
+    if(y_min < 0.0f && y_max < 0.0f) {
+      if(y_min >= y_max) {
+        y_min = -0.05f * y_max;
+      }
+      else {
+        y_max = 0.0f;
+      }
+    }
+  }
+
+
+  //Cause scales to be the same
+  if(PLOT_SCALE) {
+    // if y >> x, then y simply takes on the X range and can be increased using ZMY
+    if(mode == PLOTSTAT) {
+      x_min = min(x_min,y_min);
+      x_max = max(x_max,y_max);
+      y_min = x_min;
+      y_max = x_max;
+    }
+    else {  //new equal scale calculation to keep the grpah centre of screen
+      float dx = fabs(x_max - x_min);
+      float dy = fabs(y_max - y_min);
+      //printf("dx=%f dy=%f\n",dx,dy);
+      if(dx > 1e-10 && dy/dx > 100000) {
+        y_min = x_min;
+        y_max = x_max;              
+        dx = fabs(x_max - x_min);
+        dy = fabs(y_max - y_min);
+      }
+      else {
+        if(dx > dy) {
+          dy = dx;
+        } else {
+          dx = dy;
         }
-        if(x_min<0.0f && x_min > x_max) {
-          x_min = x_min + (-x_max+x_min)* 1.1f;
-        }
-
-        //include the 0 axis
-        if(!extentx) {
-          if(x_min > 0.0f && x_max > 0.0f) {
-            if(x_min <= x_max) {
-              x_min = -0.05f * x_max;
-            }
-            else {
-              x_min = 0.0f;
-            }
-          }
-          if(x_min < 0.0f && x_max < 0.0f) {
-            if(x_min >= x_max) {
-              x_min = -0.05f * x_max;
-            }
-            else {
-              x_max = 0.0f;
-            }
-          }
-        }
-        if(!extenty) {
-          if(y_min > 0.0f && y_max > 0.0f) {
-            if(y_min <= y_max) {
-              y_min = -0.05f * y_max;
-            }
-            else {
-              y_min = 0.0f;
-            }
-          }
-          if(y_min < 0.0f && y_max < 0.0f) {
-            if(y_min >= y_max) {
-              y_min = -0.05f * y_max;
-            }
-            else {
-              y_max = 0.0f;
-            }
-          }
-        }
-
-        //Cause scales to be the same
-        if(PLOT_SCALE) {
-          // if y >> x, then y simply takes on the X range and can be increased using ZMY
-          if(mode == plotstat) {
-            x_min = min(x_min,y_min);
-            x_max = max(x_max,y_max);
-            y_min = x_min;
-            y_max = x_max;
-          }
-          else {  //new equal scale calculation to keep the grpah centre of screen
-            float dx = fabs(x_max - x_min);
-            float dy = fabs(y_max - y_min);
-            //printf("dx=%f dy=%f\n",dx,dy);
-            if(dx > 1e-10 && dy/dx > 100000) {
-              y_min = x_min;
-              y_max = x_max;              
-              dx = fabs(x_max - x_min);
-              dy = fabs(y_max - y_min);
-            }
-            else {
-              if(dx > dy) {
-                dy = dx;
-              } else {
-                dx = dy;
-              }
-            }
-            x_min = (x_min + x_max)/2 - dx/2;
-            x_max = x_min + dx;
-            y_min = (y_min + y_max)/2 - dy/2;
-            y_max = y_min + dy;
-          }
-        }
-
-        //Calc zoom scales
-        if(mode != plotstat) {
-          calculateZoomFactor(PLOT_ZMY, &y_min, &y_max);
-        }
-
-        #if defined(STATDEBUG)
-          printf("Axis2: x: %f -> %f y: %f -> %f   \n",x_min, x_max, y_min, y_max);
-        #endif // STATDEBUG
+      }
+      x_min = (x_min + x_max)/2 - dx/2;
+      x_max = x_min + dx;
+      y_min = (y_min + y_max)/2 - dy/2;
+      y_max = y_min + dy;
+    }
+  }
 
 
-        //modify the draw range if the min == max
-        float dx = x_max-x_min;
-        float dy = y_max-y_min;
-        if(dy == 0.0f) {
-          dy = 1.0f;
-          y_max = y_min + dy/2.0f;
-          y_min = y_max - dy;
-        }
-        if(dx == 0.0f) {
-          dx = 1.0f;
-          x_max = x_min + dx/2.0f;
-          x_min = x_max - dx;
-        }
+  #if defined(STATDEBUG)
+    printf("Axis2: x: %f -> %f y: %f -> %f   \n",x_min, x_max, y_min, y_max);
+  #endif // STATDEBUG
 
-        if(mode == plotstat) {
-          /*
-          (pow(4.5f, (int8_t)(PLOT_ZOOM & 0x03))) / 20
-          0 1/20      = 0.05  * 2 = 0.10    width: dx * 1.10       Reference 1
-          1 4,5/20    = 0.23  * 2 = 0.45    width: dx * 1.45       factor 1.32
-          2 20,25/20  = 1.01  * 2 = 2.03    width: dx * 2.03       factor 2.75
-          3 91,125/20 = 4.56  * 2 = 9.11    width: dx * 10.11      factor 9.19
-          ( (int8_t)(PLOT_ZOOM & 0x03) == 0 ? 1.0f : (int8_t)(PLOT_ZOOM & 0x03) == 1 ? 4.5f : (int8_t)(PLOT_ZOOM & 0x03) == 2 ? 20.25f : 91.125f )
-          */
-          float histofactor = drawHistogram == 0 ? 1 : 1/zoomfactor * (((float)statnum + 2.0f)  /  ((float)(statnum) - 1.0f) - 1)/2;     //Create space on the sides of the graph for the wider histogram columns
-          float plotzoomx = pow(4.5f, (int8_t)(PLOT_ZOOM & 0x03));
-          float plotzoomy = drawHistogram == 1 ? 1 : plotzoomx;
-          x_min = x_min - dx * zoomfactor * histofactor * plotzoomx;
-          y_min = y_min - dy * zoomfactor * histofactor * plotzoomy;
-          x_max = x_max + dx * zoomfactor * histofactor * plotzoomx;
-          y_max = y_max + dy * zoomfactor * histofactor * plotzoomy;
-          if(drawHistogram == 1) {
-            y_min = 0;
-          }
-        }
-//this was in the original file but seems to be interfering with PLOT_ZM*
-//        else {
-//          x_min = x_min - dx * zoomfactor * (pow(4.5f, (int8_t)(PLOT_ZOOM & 0x03)));
-//          y_min = y_min - dy * zoomfactor * (pow(4.5f, (int8_t)(PLOT_ZOOM & 0x03)));
-//          x_max = x_max + dx * zoomfactor * (pow(4.5f, (int8_t)(PLOT_ZOOM & 0x03)));
-//          y_max = y_max + dy * zoomfactor * (pow(4.5f, (int8_t)(PLOT_ZOOM & 0x03)));
-//        }
-
-        #if defined(STATDEBUG) && defined(PC_BUILD)
-          printf("Axis3a: x: %f -> %f y: %f -> %f   \n",x_min, x_max, y_min, y_max);
-        #endif // STATDEBUG
+  //modify the draw range if the min == max
+  float dx = x_max-x_min;
+  float dy = y_max-y_min;
+  if(dy == 0.0f) {
+    dy = 1.0f;
+    y_max = y_min + dy/2.0f;
+    y_min = y_max - dy;
+  }
+  if(dx == 0.0f) {
+    dx = 1.0f;
+    x_max = x_min + dx/2.0f;
+    x_min = x_max - dx;
+  }
 
 
+  //Calc zoom scales
+  if(mode == PLOTSTAT) {
+    float histofactor = drawHistogram == 0 ? 1 : 1/zoomfactor * (((float)statnum + 2.0f)  /  ((float)(statnum) - 1.0f) - 1)/2;     //Create space on the sides of the graph for the wider histogram columns
+    float plotzoomx = 1;
+    calculateZoomFactor(PLOT_ZOOM & 0x03, &plotzoomx);
+    float plotzoomy = drawHistogram == 1 ? 1 : plotzoomx;
+    x_min = x_min - dx * zoomfactor * histofactor * plotzoomx;
+    y_min = y_min - dy * zoomfactor * histofactor * plotzoomy;
+    x_max = x_max + dx * zoomfactor * histofactor * plotzoomx;
+    y_max = y_max + dy * zoomfactor * histofactor * plotzoomy;
+    if(drawHistogram == 1) {
+      y_min = 0;
+    }
+  }
+  else {
+    calculateZoomFactor(PLOT_ZMY, &y_min);
+    calculateZoomFactor(PLOT_ZMY, &y_max);
+    //  this was in the original file but seems to be interfering with PLOT_ZM*
+    //  It may be required to again add the zoomfactor (5%) either side
+    //  x_min = x_min - dx * zoomfactor * (pow(4.5f, (int8_t)(PLOT_ZOOM & 0x03)));
+    //  y_min = y_min - dy * zoomfactor * (pow(4.5f, (int8_t)(PLOT_ZOOM & 0x03)));
+    //  x_max = x_max + dx * zoomfactor * (pow(4.5f, (int8_t)(PLOT_ZOOM & 0x03)));
+    //  y_max = y_max + dy * zoomfactor * (pow(4.5f, (int8_t)(PLOT_ZOOM & 0x03)));
+  }
 
+  #if defined(STATDEBUG) && defined(PC_BUILD)
+    printf("Axis3a: x: %f -> %f y: %f -> %f   \n",x_min, x_max, y_min, y_max);
+  #endif // STATDEBUG
 }
 
 
@@ -1049,9 +1042,7 @@ void graph_plotmem(void) {
         #endif // STATDEBUG
 
 
-        graph_Include0(!plotstat, 0);
-
-
+        graph_Include0(!PLOTSTAT, 0);
 
 
         roundedTicks = true;

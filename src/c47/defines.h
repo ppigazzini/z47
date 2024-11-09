@@ -652,8 +652,16 @@
 #define FLAG_IRF_ON                           0x8048
 #define FLAG_PFX_ALL                          0x8049
 #define FLAG_DREAL                            0x804A
+#define FLAG_CPXPLOT                          0x804B
+#define FLAG_EXTX                             0x804C
+#define FLAG_EXTY                             0x804D
+#define FLAG_PBOX                             0x804E
+#define FLAG_PCROS                            0x804F
+#define FLAG_PPLUS                            0x8050
+#define FLAG_PLINE                            0x8051
+#define FLAG_SCALE                            0x8052
 
-#define NUMBER_OF_SYSTEM_FLAGS                    75 // We can have a maximum of 128 system flags
+#define NUMBER_OF_SYSTEM_FLAGS                    83 // We can have a maximum of 128 system flags
 
 // FLGS and STATUS SCREENS
 #define NO_SCREEN                          0  // No screen selected

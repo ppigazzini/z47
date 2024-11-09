@@ -53,7 +53,7 @@ void    fnPlotSQ           (uint16_t unusedButMandatoryParameter);
 void    fnPlotReset        (uint16_t unusedButMandatoryParameter);
 void    fnPlotStatAdv      (uint16_t unusedButMandatoryParameter);
 
-#define plotstat true
+#define PLOTSTAT true
 void graphResetCommon      (void);
 void graph_Include0        (bool_t mode,  uint16_t statnum); //using global: extentx, x_min, x_max, extenty, y_min, y_max
 extern  bool_t   extentx;

@@ -36,19 +36,13 @@
 void fnPlotRegressionLine(uint16_t plotMode);
 
 
-
-// This module originates and is part of the C43 fork, and is copied here.
-// Do not change the shared functions otherwise the C43 fork will break. JM 2021-03-20
-
 #if !defined(TESTSUITE_BUILD)
   static real_t RR,SMI,aa0,aa1,aa2,sa0, sa1; //L.R. variables
   static void drawline(uint16_t selection, real_t *RR, real_t *SMI, real_t *aa0, real_t *aa1, real_t *aa2, real_t *sa0, real_t *sa1);
 #endif // !TESTSUITE_BUILD
 
 
-
-
-float     graph_dx;           // Many unused functions in WP43. Do not change the variables.
+float     graph_dx;
 float     graph_dy;
 bool_t    roundedTicks;
 bool_t    PLOT_VECT;
@@ -989,7 +983,7 @@ currentKeyCode = 255;
       }
 
 
-    graph_Include0(plotstat, statnum);
+    graph_Include0(PLOTSTAT, statnum);
 
 
 
