@@ -773,13 +773,30 @@ TO_QSPI const int16_t menu_PREFIX[]      = { ITM_SI_k,                      ITM_
 
 
 
-TO_QSPI const int16_t menu_PLOT[]        = {  VAR_LX,                       VAR_UX,                     ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
+TO_QSPI const int16_t menu_PLOTFUNC[]    = {  VAR_LX,                       VAR_UX,                     ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
                                               ITM_SCALE,                    ITM_PLOTRST,                ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,                           //JM GRAPH
                                               ITM_MZOOMY,                   ITM_PZOOMY,                 ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
 
                                               ITM_EXTY,                     ITM_EXTX,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,                           //JM GRAPH
                                               ITM_CPXPLOT,                  ITM_LISTXY,                 ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,                           //JM GRAPH
                                              -MNU_GRAPHS,                   ITM_SNAP,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,                           //JM GRAPH
+
+                                              ITM_PCROS,                    ITM_PPLUS,                  ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,                           //JM GRAPH
+                                              ITM_PLINE,                    ITM_PBOX,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,                           //JM GRAPH
+                                              ITM_NULL,                     ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,                           //JM GRAPH
+
+                                              ITM_DIFF,                     ITM_INTG,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
+                                              ITM_RMS,                      ITM_SHADE,                  ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
+                                              ITM_NVECT,                    ITM_VECT,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL};
+
+
+TO_QSPI const int16_t menu_PLOTSIGMA[]   = {  ITM_NULL,                     ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
+                                              ITM_SCALE,                    ITM_PLOTRST,                ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,                           //JM GRAPH
+                                              ITM_MZOOMY,                   ITM_PZOOMY,                 ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
+
+                                              ITM_EXTY,                     ITM_EXTX,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,                           //JM GRAPH
+                                              /*ITM_CPXPLOT*/ITM_NULL,      /*ITM_LISTXY*/ITM_NULL,     ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,                           //JM GRAPH
+                                              /*-MNU_GRAPHS*/ITM_NULL,      ITM_SNAP,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,                           //JM GRAPH
 
                                               ITM_PCROS,                    ITM_PPLUS,                  ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,                           //JM GRAPH
                                               ITM_PLINE,                    ITM_PBOX,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,                           //JM GRAPH
@@ -936,7 +953,7 @@ TO_QSPI const softmenu_t softmenu[] = {
 /* 113 */  {.menuItem = -MNU_ASN_N,       .numItems = sizeof(menu_ASN_N         )/sizeof(int16_t), .softkeyItem = menu_ASN_N          },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
 /* 114 */  {.menuItem = -MNU_KEYS,        .numItems = sizeof(menu_KEYS          )/sizeof(int16_t), .softkeyItem = menu_KEYS           },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
 /* 115 */  {.menuItem = -MNU_XEQ,         .numItems = sizeof(menu_XEQ           )/sizeof(int16_t), .softkeyItem = menu_XEQ            },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
-/* 116 */  {.menuItem = -MNU_PLOT,        .numItems = sizeof(menu_PLOT          )/sizeof(int16_t), .softkeyItem = menu_PLOT           },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
+/* 116 */  {.menuItem = -MNU_PLOTFUNC,    .numItems = sizeof(menu_PLOTFUNC      )/sizeof(int16_t), .softkeyItem = menu_PLOTFUNC       },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
 /* 117 */  {.menuItem = -MNU_ALPHA,       .numItems = sizeof(menu_ALPHA         )/sizeof(int16_t), .softkeyItem = menu_ALPHA          },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
 /* 118 */  {.menuItem = -MNU_BASE,        .numItems = sizeof(menu_BASE          )/sizeof(int16_t), .softkeyItem = menu_BASE           },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
 /* 119 */  {.menuItem = -MNU_EE,          .numItems = sizeof(menu_EE            )/sizeof(int16_t), .softkeyItem = menu_EE             },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
@@ -976,7 +993,8 @@ TO_QSPI const softmenu_t softmenu[] = {
 /* 153 */  {.menuItem = -MNU_PFN_3,       .numItems = sizeof(menu_PFN_3         )/sizeof(int16_t), .softkeyItem = menu_PFN_3          },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
 /* 154 */  {.menuItem = -MNU_TAMMENU,     .numItems = sizeof(menu_TamMenu       )/sizeof(int16_t), .softkeyItem = menu_TamMenu        },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
 /* 155 */  {.menuItem = -MNU_E_SIGMA,     .numItems = sizeof(menu_EULERs        )/sizeof(int16_t), .softkeyItem = menu_EULERs         },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
-/* 156 */  {.menuItem =  0,               .numItems = 0,                                           .softkeyItem = NULL                }
+/* 156 */  {.menuItem = -MNU_PLOTSIGMA,   .numItems = sizeof(menu_PLOTSIGMA     )/sizeof(int16_t), .softkeyItem = menu_PLOTSIGMA      },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
+/* 157 */  {.menuItem =  0,               .numItems = 0,                                           .softkeyItem = NULL                }
 };
 
 
@@ -2788,7 +2806,7 @@ bool_t BASE_OVERRIDEONCE = false;
     if(0 <= yDotted && yDotted <= 2) {
       yDotted = 217 - SOFTMENU_HEIGHT * yDotted;
 
-      if(dottedTopLine && (!GRAPHMODE || softmenu[m].menuItem == -MNU_PLOT)) {
+      if(dottedTopLine && (!GRAPHMODE || softmenu[m].menuItem == -MNU_PLOTFUNC)) {
         for(x=0; x < (GRAPHMODE ? SCREEN_WIDTH / 3 : SCREEN_WIDTH); x++) {
           if(x%8 < 4) {
             setBlackPixel(x, yDotted);
@@ -2910,7 +2928,7 @@ bool_t BASE_OVERRIDEONCE = false;
       case MNU_MODE   :
       case MNU_PREF   :                    //(see "do not drop out of SYSFLG" in keyboard.c)
       case MNU_DISP   :
-      case MNU_PLOT   : break;
+      case MNU_PLOTFUNC   : break;
       default: {
         softmenuStack[0].firstItem = 0;
         break;
