@@ -150,8 +150,8 @@ TO_QSPI const radiocb_t indexOfRadioCbEepromItems[] = {
   {ITM_LARGELI,          FLAG_LARGELI,           CB_JC},  //SetSetting
   {ITM_IRFRAC,           FLAG_IRFRAC ,           CB_JC},  //SetSetting
   {ITM_CPXPLOT,          FLAG_CPXPLOT,           CB_JC},  // graph EQN & PLSTAT options
-  {ITM_EXTX,             FLAG_EXTX   ,           CB_JC},  // graph EQN & PLSTAT options
-  {ITM_EXTY,             FLAG_EXTY   ,           CB_JC},  // graph EQN & PLSTAT options
+  {ITM_SHOWX,            FLAG_SHOWX  ,           CB_JC},  // graph EQN & PLSTAT options
+  {ITM_SHOWY,            FLAG_SHOWY  ,           CB_JC},  // graph EQN & PLSTAT options
   {ITM_PBOX,             FLAG_PBOX   ,           CB_JC},  // graph EQN & PLSTAT options
   {ITM_PCROS,            FLAG_PCROS  ,           CB_JC},  // graph EQN & PLSTAT options
   {ITM_PPLUS,            FLAG_PPLUS  ,           CB_JC},  // graph EQN & PLSTAT options
@@ -371,9 +371,6 @@ int8_t fnCbIsSet(int16_t item) {
             case JC_RMS:                 cb_param = PLOT_RMS;                                                         break;
             case JC_SHADE:               cb_param = PLOT_SHADE;                                                       break;
 
-            case FLAG_EXTX :
-            case FLAG_EXTY :             cb_param = !getSystemFlag(indexOfRadioCbEepromItems[i].param);               break;
-
             case FLAG_CPXRES :
             case FLAG_SPCRES :
             case FLAG_LEAD0  :
@@ -390,8 +387,8 @@ int8_t fnCbIsSet(int16_t item) {
             case FLAG_LARGELI:
             case FLAG_IRFRAC :
             case FLAG_CPXPLOT:
-            //extx                inverted, see above
-            //exty                inverted, see above
+            case FLAG_SHOWX  :
+            case FLAG_SHOWY  :
             case FLAG_PBOX   :
             case FLAG_PCROS  :
             case FLAG_PPLUS  :

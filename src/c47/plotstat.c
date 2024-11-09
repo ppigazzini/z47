@@ -66,7 +66,7 @@ void statGraphReset(void){
   graphResetCommon();
   currentKeyCode = 255;
   roundedTicks  = true;
-  clearSystemFlag(FLAG_EXTX);
+  clearSystemFlag(FLAG_SHOWX);
   clearSystemFlag(FLAG_PLINE);
   y_min         = 0;
   y_max         = 1;

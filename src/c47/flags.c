@@ -66,8 +66,8 @@ static void systemFlagAction(uint16_t systemFlag, flagAction_t action) {
     case FLAG_alphaCAP:
     case FLAG_2TO10:
     case FLAG_CPXPLOT:
-    case FLAG_EXTX   :
-    case FLAG_EXTY   :
+    case FLAG_SHOWX   :
+    case FLAG_SHOWY   :
     case FLAG_PBOX   :
     case FLAG_PCROS  :
     case FLAG_PPLUS  :
@@ -593,8 +593,8 @@ void SetSetting(uint16_t jmConfig) {
     case ITM_FRCYC:  
     case FLAG_CPXMULT:   
     case FLAG_CPXPLOT:
-    case FLAG_EXTX   :
-    case FLAG_EXTY   :
+    case FLAG_SHOWX   :
+    case FLAG_SHOWY   :
     case FLAG_PBOX   :
     case FLAG_PCROS  :
     case FLAG_PPLUS  :

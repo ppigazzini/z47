@@ -48,8 +48,8 @@ void graphResetCommon() {
   graph_dy      = 0;
 
   clearSystemFlag(FLAG_CPXPLOT);
-  clearSystemFlag(FLAG_EXTY);
-  clearSystemFlag(FLAG_EXTX);
+  clearSystemFlag(FLAG_SHOWY);
+  clearSystemFlag(FLAG_SHOWX);
   clearSystemFlag(FLAG_VECT);
   clearSystemFlag(FLAG_NVECT);
   clearSystemFlag(FLAG_SCALE);
@@ -246,14 +246,14 @@ void fnComplexPlot (uint16_t unusedButMandatoryParameter) {
 
 
 void fnPx (uint16_t unusedButMandatoryParameter) {
-  flipSystemFlag(FLAG_EXTX);
+  flipSystemFlag(FLAG_SHOWX);
   fnRefreshState();                //jm
   fnPlotSQ(0);
 }
 
 
 void fnPy (uint16_t unusedButMandatoryParameter) {
-  flipSystemFlag(FLAG_EXTY);
+  flipSystemFlag(FLAG_SHOWY);
   fnRefreshState();                //jm
   fnPlotSQ(0);
 }
@@ -597,7 +597,7 @@ void graph_text(void) {
 
 
 void graph_Include0(bool_t mode, uint16_t statnum) {
-  //using global: FLAG_EXTX, x_min, x_max, FLAG_EXTY, y_min, y_max, FLAG_SCALE, PLOT_ZMY, zoomfactor
+  //using global: FLAG_SHOWX, x_min, x_max, FLAG_SHOWY, y_min, y_max, FLAG_SCALE, PLOT_ZMY, zoomfactor
 
   #if defined(STATDEBUG) && defined(PC_BUILD)
     printf("PLOT_ZMY=%i  FLAG_SCALE=%i mode=%i\n", PLOT_ZMY, getSystemFlag(FLAG_SCALE), mode);
@@ -615,7 +615,7 @@ void graph_Include0(bool_t mode, uint16_t statnum) {
 
 
   //include the 0 axis
-  if(!getSystemFlag(FLAG_EXTX)) {
+  if(getSystemFlag(FLAG_SHOWX)) {
     if(x_min > 0.0f && x_max > 0.0f) {
       if(x_min <= x_max) {
         x_min = -0.05f * x_max;
@@ -633,7 +633,7 @@ void graph_Include0(bool_t mode, uint16_t statnum) {
       }
     }
   }
-  if(!getSystemFlag(FLAG_EXTY)) {
+  if(getSystemFlag(FLAG_SHOWY)) {
     if(y_min > 0.0f && y_max > 0.0f) {
       if(y_min <= y_max) {
         y_min = -0.05f * y_max;

@@ -653,8 +653,8 @@
 #define FLAG_PFX_ALL                          0x8049
 #define FLAG_DREAL                            0x804A
 #define FLAG_CPXPLOT                          0x804B
-#define FLAG_EXTX                             0x804C
-#define FLAG_EXTY                             0x804D
+#define FLAG_SHOWX                            0x804C
+#define FLAG_SHOWY                            0x804D
 #define FLAG_PBOX                             0x804E
 #define FLAG_PCROS                            0x804F
 #define FLAG_PPLUS                            0x8050

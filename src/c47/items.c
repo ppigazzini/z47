@@ -324,7 +324,6 @@ bool_t itemNotAvail(int16_t itemNr) {
       case ITM_PCROS:
       case ITM_PPLUS:
       case ITM_NVECT:
-      case ITM_EXTY:
       case ITM_SNAP:
       case ITM_NULL:
       case ITM_SCALE:
@@ -332,7 +331,8 @@ bool_t itemNotAvail(int16_t itemNr) {
       case ITM_SHADE:
       case ITM_PBOX:
       case ITM_VECT:
-      case ITM_EXTX:
+      case ITM_SHOWX:
+      case ITM_SHOWY:
       case ITM_MZOOMY:
       case ITM_PZOOMY:
       case ITM_LISTXY:
@@ -3734,16 +3734,16 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 2259 */  { fnGetSystemFlag,              FLAG_IRF_ON,                 "IRFON",                                       "IRFON",                                       (0 << TAM_MAX_BITS) |     0, CAT_SYFL | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2260 */  { fnGetSystemFlag,              FLAG_PFX_ALL,                "PFX.All",                                     "PFX.All",                                     (0 << TAM_MAX_BITS) |     0, CAT_SYFL | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2261 */  { fnGetSystemFlag,              FLAG_DREAL,                  "d" STD_SPACE_3_PER_EM "REAL",                 "d" STD_SPACE_3_PER_EM "REAL",                 (0 << TAM_MAX_BITS) |     0, CAT_SYFL | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
-/* 2262 */  { fnGetSystemFlag,              FLAG_CPXPLOT,                "Gcxp",                                        "Gcxp",                                        (0 << TAM_MAX_BITS) |     0, CAT_SYFL | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
-/* 2263 */  { fnGetSystemFlag,              FLAG_EXTX,                   "Gxax",                                        "Gxax",                                        (0 << TAM_MAX_BITS) |     0, CAT_SYFL | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
-/* 2264 */  { fnGetSystemFlag,              FLAG_EXTY,                   "Gyax",                                        "Gyax",                                        (0 << TAM_MAX_BITS) |     0, CAT_SYFL | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
-/* 2265 */  { fnGetSystemFlag,              FLAG_PBOX,                   "Gbox",                                        "Gbox",                                        (0 << TAM_MAX_BITS) |     0, CAT_SYFL | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
-/* 2266 */  { fnGetSystemFlag,              FLAG_PCROS,                  "Gcross",                                      "Gcross",                                      (0 << TAM_MAX_BITS) |     0, CAT_SYFL | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
-/* 2267 */  { fnGetSystemFlag,              FLAG_PPLUS,                  "Gplus",                                       "Gplus",                                       (0 << TAM_MAX_BITS) |     0, CAT_SYFL | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
-/* 2268 */  { fnGetSystemFlag,              FLAG_PLINE,                  "Gline",                                       "Gline",                                       (0 << TAM_MAX_BITS) |     0, CAT_SYFL | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
-/* 2269 */  { fnGetSystemFlag,              FLAG_SCALE,                  "Gxy1",                                        "Gxy1",                                        (0 << TAM_MAX_BITS) |     0, CAT_SYFL | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
-/* 2270 */  { fnGetSystemFlag,              FLAG_VECT,                   "Gvect",                                       "Gvect",                                       (0 << TAM_MAX_BITS) |     0, CAT_SYFL | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
-/* 2271 */  { fnGetSystemFlag,              FLAG_NVECT,                  "Gnvect",                                      "Gnvect",                                      (0 << TAM_MAX_BITS) |     0, CAT_SYFL | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 2262 */  { fnGetSystemFlag,              FLAG_CPXPLOT,                "PLcxp",                                       "PLcxp",                                       (0 << TAM_MAX_BITS) |     0, CAT_SYFL | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 2263 */  { fnGetSystemFlag,              FLAG_SHOWX,                  "PLx.ax",                                      "PLx.ax",                                      (0 << TAM_MAX_BITS) |     0, CAT_SYFL | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 2264 */  { fnGetSystemFlag,              FLAG_SHOWY,                  "PLy.ax",                                      "PLy.ax",                                      (0 << TAM_MAX_BITS) |     0, CAT_SYFL | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 2265 */  { fnGetSystemFlag,              FLAG_PBOX,                   "PLbox",                                       "PLbox",                                       (0 << TAM_MAX_BITS) |     0, CAT_SYFL | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 2266 */  { fnGetSystemFlag,              FLAG_PCROS,                  "PLcros",                                      "PLcros",                                      (0 << TAM_MAX_BITS) |     0, CAT_SYFL | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 2267 */  { fnGetSystemFlag,              FLAG_PPLUS,                  "PLplus",                                      "PLplus",                                      (0 << TAM_MAX_BITS) |     0, CAT_SYFL | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 2268 */  { fnGetSystemFlag,              FLAG_PLINE,                  "PLline",                                      "PLline",                                      (0 << TAM_MAX_BITS) |     0, CAT_SYFL | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 2269 */  { fnGetSystemFlag,              FLAG_SCALE,                  "PLxy:1",                                      "PLxy:1",                                      (0 << TAM_MAX_BITS) |     0, CAT_SYFL | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 2270 */  { fnGetSystemFlag,              FLAG_VECT,                   "PLvec",                                       "PLvec",                                       (0 << TAM_MAX_BITS) |     0, CAT_SYFL | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 2271 */  { fnGetSystemFlag,              FLAG_NVECT,                  "PLnvec",                                      "PLnvec",                                      (0 << TAM_MAX_BITS) |     0, CAT_SYFL | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2272 */  { itemToBeCoded,                NOPARAM,                     "2272",                                        "2272",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2273 */  { itemToBeCoded,                NOPARAM,                     "2273",                                        "2273",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2274 */  { itemToBeCoded,                NOPARAM,                     "2274",                                        "2274",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },

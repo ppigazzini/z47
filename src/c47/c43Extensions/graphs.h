@@ -55,7 +55,7 @@ void    fnPlotStatAdv      (uint16_t unusedButMandatoryParameter);
 
 #define PLOTSTAT true
 void graphResetCommon      (void);
-void graph_Include0        (bool_t mode,  uint16_t statnum); //using global: FLAG_EXTX, x_min, x_max, FLAG_EXTY, y_min, y_max
+void graph_Include0        (bool_t mode,  uint16_t statnum); //using global: FLAG_SHOWX, x_min, x_max, FLAG_SHOWY, y_min, y_max
 extern  float    x_min;
 extern  float    x_max;
 extern  float    y_min;

@@ -2065,8 +2065,8 @@
 #define ITM_PBOX                    2011
 #define ITM_VECT                    2012
 #define ITM_NVECT                   2013
-#define ITM_EXTX                    2014
-#define ITM_EXTY                    2015
+#define ITM_SHOWX                   2014
+#define ITM_SHOWY                   2015
 #define ITM_DENMAX2_OLD             2016
 #define ITM_SETSIG2_OLD             2017
 #define ITM_AVIEW                   2018
@@ -2316,8 +2316,8 @@
 #define SFL_PFX_ALL                 2260
 #define SFL_DREAL                   2261
 #define SFL_CPXPLOT                 2262
-#define SFL_EXTX                    2263
-#define SFL_EXTY                    2264
+#define SFL_SHOWX                   2263
+#define SFL_SHOWY                   2264
 #define SFL_PBOX                    2265
 #define SFL_PCROS                   2266
 #define SFL_PPLUS                   2267
