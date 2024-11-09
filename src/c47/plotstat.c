@@ -896,13 +896,13 @@ currentKeyCode = 255;
     printf("#####>>> graphPlotstat: selection:%u:%s  lastplotmode:%u  lrSelection:%u lrChosen:%u\n",selection, getCurveFitModeName(selection), lastPlotMode, lrSelection, lrChosen);
   #endif // STATDEBUG && PC_BUILD
   #if !defined(TESTSUITE_BUILD)
-  uint16_t  cnt, ix, statnum;
+  uint16_t  cnt, ix, numberOfPlotPoints;
   uint16_t  xo, xn, xN;
   uint8_t   yo, yn, yN;
   float x;
   float y;
 
-  statnum = 0;
+  numberOfPlotPoints = 0;
   if(calcMode == CM_GRAPH) {
     roundedTicks = true;
    }
@@ -911,16 +911,16 @@ currentKeyCode = 255;
    }
 
   if((plotStatMx[0]=='S' && checkMinimumDataPoints(const_2)) ||
-    (plotStatMx[0]=='D' && drawMxN() >= 2) ||
-    (plotStatMx[0]=='H' && statMxN() >= 3)) {
+     (plotStatMx[0]=='D' && drawMxN() >= 2) ||
+     (plotStatMx[0]=='H' && statMxN() >= 3)) {
     switch(plotStatMx[0]) {
-      case 'S': statnum = realToInt32C47(SIGMA_N); break;
-      case 'D': statnum = drawMxN();               break;
-      case 'H': statnum = statMxN();               break;
+      case 'S': numberOfPlotPoints = realToInt32C47(SIGMA_N); break;
+      case 'D': numberOfPlotPoints = drawMxN();               break;
+      case 'H': numberOfPlotPoints = statMxN();               break;
       default: ;
     }
     #if defined(STATDEBUG) && defined(PC_BUILD)
-      printf("graphPlotstat: statnum n=%d\n",statnum);
+      printf("graphPlotstat: numberOfPlotPoints n=%d\n",numberOfPlotPoints);
     #endif // STATDEBUG && PC_BUILD
 
 
@@ -947,7 +947,7 @@ currentKeyCode = 255;
 
 
     //#################################################### vvv SCALING LOOP  vvv
-    for(cnt=0; (cnt < statnum); cnt++) {
+    for(cnt=0; (cnt < numberOfPlotPoints); cnt++) {
       #if defined(STATDEBUG) && defined(PC_BUILD)
         printf("Axis0a: x: %f y: %f   \n",grf_x(cnt), grf_y(cnt));
       #endif // STATDEBUG && PC_BUILD
@@ -983,7 +983,7 @@ currentKeyCode = 255;
       }
 
 
-    graph_Include0(PLOTSTAT, statnum);
+    graph_Include0(PLOTSTAT, numberOfPlotPoints);
 
 
 
@@ -1017,7 +1017,7 @@ currentKeyCode = 255;
                                  (  (screen_window_x(x_min,grf_x(1),x_max) - screen_window_x(x_min,grf_x(0),x_max))  / 2.0f  )
                                 ) - 1;
         //#################################################### vvv MAIN GRAPH LOOP vvv #########################
-      for(ix = 0; (ix < statnum); ++ix) {
+      for(ix = 0; (ix < numberOfPlotPoints); ++ix) {
         x = grf_x(ix);
         y = grf_y(ix);
         xo = xN;
@@ -1041,8 +1041,12 @@ currentKeyCode = 255;
             plotHisto_col(xN, yN, minN_y, SCREEN_HEIGHT_GRAPH - minN_y, colw);
           }
 
-        plotPointGeneric(xn, yn, xo, yo, PLOT_CROSS, PLOT_BOX/*fatbox*/, false/*normalbox*/, PLOT_PLUS, PLOT_LINE);
-
+          plotPointGeneric(xn, yn, xo, yo,
+                             PLOT_CROSS /*cross*/ ,
+                             PLOT_BOX   /*fatbox*/,
+                             false      /*box*/   ,
+                             PLOT_PLUS  /*plus*/  ,
+                             PLOT_LINE  /*line*/   );
         }
         else {
             #if defined(PC_BUILD)

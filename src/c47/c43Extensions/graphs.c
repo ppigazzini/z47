@@ -1202,7 +1202,12 @@ printf("    xN1 =%i xo=%i minN_x=%i\n", (int16_t)xN1, (int16_t)xo, (int16_t)minN
                 printf("Not _VECT\n");
               #endif // STATDEBUG
 
-              plotPointGeneric(xn, yn, xo, yo, PLOT_CROSS, false /*fatbox*/, PLOT_BOX /*box*/, PLOT_PLUS, false /*line*/);
+              plotPointGeneric(xn, yn, xo, yo,
+                                 PLOT_CROSS /*cross*/ ,
+                                 false      /*fatbox*/,
+                                 PLOT_BOX   /*box*/   ,
+                                 PLOT_PLUS  /*plus*/  ,
+                                 false      /*line*/   );
 
 
               if(PLOT_DIFF && !invalid_diff && ix != 0) {

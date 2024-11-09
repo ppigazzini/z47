@@ -660,8 +660,10 @@
 #define FLAG_PPLUS                            0x8050
 #define FLAG_PLINE                            0x8051
 #define FLAG_SCALE                            0x8052
+#define FLAG_VECT                             0x8053
+#define FLAG_NVECT                            0x8054
 
-#define NUMBER_OF_SYSTEM_FLAGS                    83 // We can have a maximum of 128 system flags
+#define NUMBER_OF_SYSTEM_FLAGS                    85 // We can have a maximum of 128 system flags
 
 // FLGS and STATUS SCREENS
 #define NO_SCREEN                          0  // No screen selected

@@ -2315,17 +2315,17 @@
 #define SFL_IRF_ON                  2259
 #define SFL_PFX_ALL                 2260
 #define SFL_DREAL                   2261
-#define SFL_Gcxp                    2262
-#define SFL_Gxax                    2263
-#define SFL_Gyax                    2264
-#define SFL_Gbox                    2265
-#define SFL_Gcross                  2266
-#define SFL_Gplus                   2267
-#define SFL_Gline                   2268
-#define SFL_Gxy1                    2269
+#define SFL_CPXPLOT                 2262
+#define SFL_EXTX                    2263
+#define SFL_EXTY                    2264
+#define SFL_PBOX                    2265
+#define SFL_PCROS                   2266
+#define SFL_PPLUS                   2267
+#define SFL_PLINE                   2268
+#define SFL_SCALE                   2269
+#define SFL_VECT                    2270
+#define SFL_NVECT                   2271
 
-#define SFL_2266                    2270
-#define SFL_2267                    2271
 #define SFL_2268                    2272
 #define SFL_2269                    2273
 #define SFL_2270                    2274
