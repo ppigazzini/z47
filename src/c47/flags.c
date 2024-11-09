@@ -564,30 +564,33 @@ void SetSetting(uint16_t jmConfig) {
     case CM_POLAR:       fnSetFlag(FLAG_POLAR);                                 break;
     case DO_SCI:         fnClearFlag(FLAG_ENGOVR);                              break;
     case DO_ENG:         fnSetFlag(FLAG_ENGOVR);                                break;
-    case PR_HPRP:        fnFlipFlag(FLAG_HPRP);                                 break;
-    case PR_HPBASE:      fnFlipFlag(FLAG_HPBASE);                               break;
-    case PR_2TO10:       fnFlipFlag(FLAG_2TO10);                                break;
-    case DM_ANY:         fnFlipFlag(FLAG_DENANY); clearSystemFlag(FLAG_DENFIX); break;
-    case DM_PROPFR:      fnFlipFlag(FLAG_PROPFR);                               break;
-    case DM_FRACT:       fnFlipFlag(FLAG_FRACT);
+    case FLAG_HPRP:      fnFlipFlag(FLAG_HPRP);                                 break;
+    case FLAG_HPBASE:    fnFlipFlag(FLAG_HPBASE);                               break;
+    case FLAG_2TO10:     fnFlipFlag(FLAG_2TO10);                                break;
+    case FLAG_DENANY:    fnFlipFlag(FLAG_DENANY); clearSystemFlag(FLAG_DENFIX); break;
+    case FLAG_PROPFR:    fnFlipFlag(FLAG_PROPFR);                               break;
+    case FLAG_FRACT:     fnFlipFlag(FLAG_FRACT);
       if(getSystemFlag(FLAG_FRACT) && !getSystemFlag(FLAG_FRCYC)) {
         clearSystemFlag(FLAG_IRFRAC);
       }
       break;
-    case DM_FIX:         fnFlipFlag(FLAG_DENFIX); clearSystemFlag(FLAG_DENANY); break;
-    case PRTACT:         fnFlipFlag(FLAG_PRTACT);                               break;
-    case JC_BLZ:         fnFlipFlag(FLAG_LEAD0);                                break; //bit LeadingZeros
-    case JC_BCR:         fnFlipFlag(FLAG_CPXRES);                               break; //bit ComplexResult
+    case FLAG_DENFIX:    fnFlipFlag(FLAG_DENFIX); clearSystemFlag(FLAG_DENANY); break;
+    case FLAG_PRTACT:    fnFlipFlag(FLAG_PRTACT);                               break;
+    case FLAG_LEAD0:     fnFlipFlag(FLAG_LEAD0);                                break; //bit LeadingZeros
+    case FLAG_CPXRES:    fnFlipFlag(FLAG_CPXRES);                               break; //bit ComplexResult
+    case FLAG_SPCRES:    fnFlipFlag(FLAG_SPCRES);                               break; //bit SpecialResult
+
+//SUSPECT!! remove with XEQM
     case ITM_CPXRES1:    fnSetFlag(FLAG_CPXRES);                                break; //bit ComplexResult
     case ITM_CPXRES0:    fnClearFlag(FLAG_CPXRES);                              break; //bit ComplexResult
-    case JC_BSR:         fnFlipFlag(FLAG_SPCRES);                               break; //bit SpecialResult
     case ITM_SPCRES1:    fnSetFlag(FLAG_SPCRES);                                break; //bit SpecialResult
     case ITM_SPCRES0:    fnClearFlag(FLAG_SPCRES);                              break; //bit SpecialResult
     case ITM_PRTACT1:    fnSetFlag(FLAG_PRTACT);                                break;
     case ITM_PRTACT0:    fnClearFlag(FLAG_PRTACT);                              break;
-    case JC_ERPN:        fnFlipFlag(FLAG_ERPN);                                 break; //
+
+    case FLAG_ERPN:      fnFlipFlag(FLAG_ERPN);                                 break; //
     case ITM_FRCYC:      fnFlipFlag(FLAG_FRCYC);                                break; //
-    case JC_CPXMULT:     fnFlipFlag(FLAG_CPXMULT);                              break; //
+    case FLAG_CPXMULT:   fnFlipFlag(FLAG_CPXMULT);                              break; //
     case JC_NL:          fnFlipFlag(FLAG_NUMLOCK); showAlphaModeonGui();        break; //
     case ITM_DREAL:
       fnFlipFlag(FLAG_DREAL);
@@ -595,13 +598,13 @@ void SetSetting(uint16_t jmConfig) {
         clearSystemFlag(FLAG_LARGELI);
       }
       break;
-    case JC_LARGELI:
+    case FLAG_LARGELI:
       fnFlipFlag(FLAG_LARGELI);
       if(getSystemFlag(FLAG_LARGELI)) {
         clearSystemFlag(FLAG_DREAL);
       }
       break;
-    case JC_IRFRAC:
+    case FLAG_IRFRAC:
       fnFlipFlag(FLAG_IRFRAC);
       if(getSystemFlag(FLAG_IRFRAC)) {
         setSystemFlag(FLAG_IRF_ON);

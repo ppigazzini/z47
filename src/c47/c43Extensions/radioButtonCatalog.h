@@ -8,6 +8,7 @@
 #if !defined(RADIOBUTTONCATALOG_H)
 #define RADIOBUTTONCATALOG_H
 
+#include "defines.h"
 #include <stdint.h>
 
 #define RB_FALSE    0
@@ -64,39 +65,18 @@ char*    figlabel              (const char* label, const char* showText, int16_t
 #define RB_KY                  157 // KEYS LAYOUT
 
 //Not strictly needed to follow on numerically from RB/CB types above, but why not
-#define JC_ERPN                158    // eRPN
 #define JC_HOME_TRIPLE         159    // HOME.3
 #define JC_SHFT_4s             160    // SH_4s
 #define JC_BASE_HOME           161    // HOME
 #define JC_MYM_TRIPLE          162    // HOME.3
-#define JC_BCR                 163    // CB ComplexResult
-#define JC_BLZ                 164    // CB LeadingZeros
 #define JC_PROPER              165    // CB FractionType
 #define JC_IMPROPER            166    // CB FractionType
-#define JC_BSR                 167    // CB SpecialResult
-#define DM_FRACT               168    // FRACT ON OFF
-#define DM_ANY                 169    // DENANY
-#define DM_FIX                 170    // DENFIX
-#define JC_FRC                 171    // CB FRACTION MODE
-#define PR_HPRP                172    // POLAR RECT CLASSIC MODE
-#define PRTACT                 173    // PRTACT checkbox
+ #define JC_FRC                 171    // CB FRACTION MODE
 #define PRTACT0                174    // PRTACT checkbox
 #define PRTACT1                175    // PRTACT checkbox
-#define DM_PROPFR              176
 #define JC_BASE_MYM            177    // screen setup
 #define JC_G_DOUBLETAP         178    // screen setup
-#define JC_LARGELI             179
 #define JC_ITM_TST             180    //dr
-#define JC_CPXPLOT   181 //  SFL_CPXPLOT    // graph EQN & PLSTAT options      181 
-#define JC_EXTENTX   185 //  SFL_EXTX       // graph EQN & PLSTAT options      185 
-#define JC_EXTENTY   186 //  SFL_EXTY       // graph EQN & PLSTAT options      186 
-#define JC_PBOX      190 //  SFL_PBOX       // graph EQN & PLSTAT options      190 
-#define JC_PCROS     188 //  SFL_PCROS      // graph EQN & PLSTAT options      188 
-#define JC_PPLUS     189 //  SFL_PPLUS      // graph EQN & PLSTAT options      189 
-#define JC_PLINE     187 //  SFL_PLINE      // graph EQN & PLSTAT options      187 
-#define JC_SCALE     184 //  SFL_SCALE      // graph EQN & PLSTAT options      184 
-#define JC_VECT      182 //  SFL_VECT       // graph EQN & PLSTAT options      182 
-#define JC_NVECT     183 //  SFL_NVECT      // graph EQN & PLSTAT options      183 
 #define JC_INTG                191    // graph setup
 #define JC_DIFF                192    // graph setup
 #define JC_RMS                 193    // graph setup
@@ -115,15 +95,9 @@ char*    figlabel              (const char* label, const char* showText, int16_t
 #define JC_CAUCHY_FITTING      206
 #define JC_GAUSS_FITTING       207
 #define JC_ORTHOGONAL_FITTING  208
-#define JC_IRFRAC              209
-#define JC_UU                  210
 #define JC_BCD                 211
 #define JC_TOPHEX              212
-#define JC_CPXMULT             213
 #define JC_SS                  214
-#define PR_HPBASE              215  // BASE CLASSIC MODE
-#define PR_2TO10               216  // 2^10 flag for UNIT
-#define JC_LPfg                217
 #define BCDu                   218  //BCD options
 #define BCD9c                  219
 #define BCD10c                 220
@@ -154,7 +128,7 @@ char*    figlabel              (const char* label, const char* showText, int16_t
 
 typedef struct {
   int16_t itemNr;              //<
-  int16_t param;               //< 1st parameter to the above function
+  uint16_t param;               //< 1st parameter to the above function
   uint8_t  radioButton;        //< Menu of RADIO in which the item is located: see #define RB_*
 } radiocb_t;
 
