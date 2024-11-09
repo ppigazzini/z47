@@ -144,24 +144,25 @@ TO_QSPI const radiocb_t indexOfRadioCbEepromItems[] = {
 
   {ITM_G_DOUBLETAP,      JC_G_DOUBLETAP,         CB_JC},  //SetSetting
   {ITM_SHTIM,            JC_SHFT_4s,             CB_JC},  //SetSetting
-  {ITM_VECT,             JC_VECT,                CB_JC},  //SetSetting
-  {ITM_NVECT,            JC_NVECT,               CB_JC},  //SetSetting
-  {ITM_SCALE,            JC_SCALE,               CB_JC},  //SetSetting
   {ITM_LARGELI,          JC_LARGELI,             CB_JC},  //SetSetting
   {ITM_IRFRAC,           JC_IRFRAC,              CB_JC},  //SetSetting
-  {ITM_EXTX,             JC_EXTENTX,             CB_JC},  //SetSetting
-  {ITM_EXTY,             JC_EXTENTY,             CB_JC},  //SetSetting
 
   {ITM_TEST,             JC_ITM_TST,             CB_JC},  //fnSetInlineTest
-  {ITM_PLINE,            JC_PLINE,               CB_JC},  //
-  {ITM_PCROS,            JC_PCROS,               CB_JC},  //
-  {ITM_PPLUS,            JC_PPLUS,               CB_JC},  //
-  {ITM_PBOX,             JC_PBOX,                CB_JC},  //
   {ITM_INTG,             JC_INTG,                CB_JC},  //
   {ITM_DIFF,             JC_DIFF,                CB_JC},  //
   {ITM_RMS,              JC_RMS,                 CB_JC},  //
   {ITM_SHADE,            JC_SHADE,               CB_JC},  //
-  {ITM_CPXPLOT,          JC_CPXPLOT,             CB_JC},
+
+  {ITM_CPXPLOT,          JC_CPXPLOT,             CB_JC},      //to remove JC_CPXPLOT,
+  {ITM_EXTX,             JC_EXTENTX,             CB_JC},      //to remove JC_EXTENTX,
+  {ITM_EXTY,             JC_EXTENTY,             CB_JC},      //to remove JC_EXTENTY,
+  {ITM_PBOX,             JC_PBOX,                CB_JC},      //to remove JC_PBOX,   
+  {ITM_PCROS,            JC_PCROS,               CB_JC},      //to remove JC_PCROS,  
+  {ITM_PPLUS,            JC_PPLUS,               CB_JC},      //to remove JC_PPLUS,  
+  {ITM_PLINE,            JC_PLINE,               CB_JC},      //to remove JC_PLINE,  
+  {ITM_SCALE,            JC_SCALE,               CB_JC},      //to remove JC_SCALE,  
+  {ITM_VECT,             JC_VECT,                CB_JC},      //to remove JC_VECT,   
+  {ITM_NVECT,            JC_NVECT,               CB_JC},      //to remove JC_NVECT,  
 
   {CHR_num,              JC_NL,                  CB_JC},  //
   {CHR_case,             JC_UC,                  CB_JC},  //
@@ -380,22 +381,24 @@ int8_t fnCbIsSet(int16_t item) {
             case ITM_FRCYC:              cb_param = getSystemFlag(FLAG_FRCYC);                                        break;
             case JC_G_DOUBLETAP:         cb_param = jm_G_DOUBLETAP;                                                   break;
             case JC_SHFT_4s:             cb_param = ShiftTimoutMode;                                                  break;
-            case JC_VECT:                cb_param = PLOT_VECT;                                                        break;
-            case JC_NVECT:               cb_param = PLOT_NVECT;                                                       break;
-            case JC_SCALE:               cb_param = PLOT_SCALE;                                                       break;
             case JC_LARGELI:             cb_param = getSystemFlag(FLAG_LARGELI);                                      break;
             case JC_IRFRAC:              cb_param = getSystemFlag(FLAG_IRFRAC);                                       break;
-            case JC_EXTENTX:             cb_param = !extentx;                                                         break;
-            case JC_EXTENTY:             cb_param = !extenty;                                                         break;
-            case JC_PLINE:               cb_param = PLOT_LINE;                                                        break;
-            case JC_PCROS:               cb_param = PLOT_CROSS;                                                       break;
-            case JC_PPLUS:               cb_param = PLOT_PLUS;                                                        break;
-            case JC_PBOX:                cb_param = PLOT_BOX;                                                         break;
             case JC_DIFF:                cb_param = PLOT_DIFF;                                                        break;
             case JC_INTG:                cb_param = PLOT_INTG;                                                        break;
             case JC_RMS:                 cb_param = PLOT_RMS;                                                         break;
             case JC_SHADE:               cb_param = PLOT_SHADE;                                                       break;
-            case JC_CPXPLOT:             cb_param = PLOT_CPXPLOT;                                                     break;
+
+            case JC_CPXPLOT:             cb_param = getSystemFlag(FLAG_CPXPLOT);                                      break;
+            case JC_EXTENTX:             cb_param = !getSystemFlag(FLAG_EXTX);                                        break;
+            case JC_EXTENTY:             cb_param = !getSystemFlag(FLAG_EXTY);                                        break;
+            case JC_PBOX:                cb_param = getSystemFlag(FLAG_PBOX);                                         break;
+            case JC_PCROS:               cb_param = getSystemFlag(FLAG_PCROS);                                        break;
+            case JC_PPLUS:               cb_param = getSystemFlag(FLAG_PPLUS);                                        break;
+            case JC_PLINE:               cb_param = getSystemFlag(FLAG_PLINE);                                        break;
+            case JC_SCALE:               cb_param = getSystemFlag(FLAG_SCALE);                                        break;
+            case JC_VECT:                cb_param = getSystemFlag(FLAG_VECT);                                         break;
+            case JC_NVECT:               cb_param = getSystemFlag(FLAG_NVECT);                                        break;
+
             case JC_NL:                  cb_param = getSystemFlag(FLAG_NUMLOCK);                                      break;
             case JC_UC:                  cb_param = !alphaCase;                                                       break;
             case JC_UU:                  cb_param = getSystemFlag(FLAG_USER);                                         break;

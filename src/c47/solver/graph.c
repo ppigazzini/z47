@@ -71,7 +71,7 @@ static void fnPlot(uint16_t unusedButMandatoryParameter) {
     //    fnPlotStat(PLOT_GRAPH);
     //  C43 advanced plot vv
     strcpy(plotStatMx, "DrwMX");
-    PLOT_LINE = true;
+    setSystemFlag(FLAG_PLINE);
     PLOT_SHADE = true;
     fnPlotSQ(0);
     //  C43 advanced plot ^^
@@ -388,7 +388,7 @@ void graph_eqn(uint16_t mode) {
       execute_rpn_function();
 
       //at this point Y could be complex!! If complex, then split Y in Re in X and Im in Y
-      if(PLOT_CPXPLOT) {
+      if(getSystemFlag(FLAG_CPXPLOT)) {
         fnRCL(REGISTER_Y);
         fnStore(TEMP_REGISTER_1);
         fnImaginaryPart(0);
@@ -579,7 +579,7 @@ void graph_stat(uint16_t unusedButMandatoryParameter) {
       lastPlotMode = PLOT_NOTHING;
       calcMode = CM_GRAPH;
       reDraw = true;
-      PLOT_LINE = true;
+      setSystemFlag(FLAG_PLINE);
       PLOT_SHADE = true;
 
       fillStackWithReal0();

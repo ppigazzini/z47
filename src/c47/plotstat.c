@@ -45,17 +45,10 @@ void fnPlotRegressionLine(uint16_t plotMode);
 float     graph_dx;
 float     graph_dy;
 bool_t    roundedTicks;
-bool_t    PLOT_VECT;
-bool_t    PLOT_NVECT;
-bool_t    PLOT_LINE;
-bool_t    PLOT_CROSS;
-bool_t    PLOT_PLUS;
-bool_t    PLOT_BOX;
 bool_t    PLOT_INTG;
 bool_t    PLOT_DIFF;
 bool_t    PLOT_RMS;
 bool_t    PLOT_SHADE;
-bool_t    PLOT_CPXPLOT;
 bool_t    PLOT_AXIS;
 uint8_t   PLOT_ZOOM;
 uint8_t   drawHistogram;
@@ -73,8 +66,8 @@ void statGraphReset(void){
   graphResetCommon();
   currentKeyCode = 255;
   roundedTicks  = true;
-  extentx       = false;
-  PLOT_LINE     = false;
+  clearSystemFlag(FLAG_EXTX);
+  clearSystemFlag(FLAG_PLINE);
   y_min         = 0;
   y_max         = 1;
 }
@@ -450,7 +443,7 @@ void graphAxisDraw (void){
 
   if( PLOT_AXIS && !(xzero == SCREEN_WIDTH-1 || xzero == minnx)) {
     //Write North arrow
-    if(PLOT_NVECT) {
+    if(getSystemFlag(FLAG_NVECT)) {
       char tmpString2[100];
       showString("N", &standardFont, xzero-4, minny+14, vmNormal, true, true);
       showString("x", &standardFont, xzero-4, minny+28, vmNormal, true, true);
@@ -1042,11 +1035,11 @@ currentKeyCode = 255;
           }
 
           plotPointGeneric(xn, yn, xo, yo,
-                             PLOT_CROSS /*cross*/ ,
-                             PLOT_BOX   /*fatbox*/,
-                             false      /*box*/   ,
-                             PLOT_PLUS  /*plus*/  ,
-                             PLOT_LINE  /*line*/   );
+                             getSystemFlag(FLAG_PCROS)  /*cross*/ ,
+                             getSystemFlag(FLAG_PBOX)   /*fatbox*/,
+                             false                      /*box*/   ,
+                             getSystemFlag(FLAG_PPLUS)  /*plus*/  ,
+                             getSystemFlag(FLAG_PLINE)  /*line*/   );
         }
         else {
             #if defined(PC_BUILD)
@@ -1599,7 +1592,7 @@ void fnPlotStat(uint16_t plotMode){
     if((plotStatMx[0]=='S' && checkMinimumDataPoints(const_2)) ||
        (plotStatMx[0]=='D' && drawMxN() >= 2) ||
        (plotStatMx[0]=='H' && statMxN() >= 3) ) {
-      PLOT_SCALE = false;
+      clearSystemFlag(FLAG_SCALE);
 
       #if !defined(TESTSUITE_BUILD)
       if(!(lastPlotMode == PLOT_NOTHING || lastPlotMode == PLOT_START)) {
@@ -1649,8 +1642,8 @@ void fnPlotStat(uint16_t plotMode){
           break;
         case PLOT_ORTHOF:
         case PLOT_START:
-          PLOT_SCALE = true;
-            showSoftmenu(-MNU_PLOT_STAT);
+          setSystemFlag(FLAG_SCALE);
+          showSoftmenu(-MNU_PLOT_STAT);
           break;
         case PLOT_NOTHING:
           break;

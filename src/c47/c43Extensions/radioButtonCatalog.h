@@ -87,16 +87,16 @@ char*    figlabel              (const char* label, const char* showText, int16_t
 #define JC_G_DOUBLETAP         178    // screen setup
 #define JC_LARGELI             179
 #define JC_ITM_TST             180    //dr
-#define JC_CPXPLOT             181
-#define JC_VECT                182    // graph setup
-#define JC_NVECT               183    // graph setup
-#define JC_SCALE               184    // graph setup
-#define JC_EXTENTX             185    // graph setup
-#define JC_EXTENTY             186    // graph setup
-#define JC_PLINE               187    // graph setup
-#define JC_PCROS               188    // graph setup
-#define JC_PPLUS               189    // graph setup
-#define JC_PBOX                190    // graph setup
+#define JC_CPXPLOT   181 //  SFL_CPXPLOT    // graph EQN & PLSTAT options      181 
+#define JC_EXTENTX   185 //  SFL_EXTX       // graph EQN & PLSTAT options      185 
+#define JC_EXTENTY   186 //  SFL_EXTY       // graph EQN & PLSTAT options      186 
+#define JC_PBOX      190 //  SFL_PBOX       // graph EQN & PLSTAT options      190 
+#define JC_PCROS     188 //  SFL_PCROS      // graph EQN & PLSTAT options      188 
+#define JC_PPLUS     189 //  SFL_PPLUS      // graph EQN & PLSTAT options      189 
+#define JC_PLINE     187 //  SFL_PLINE      // graph EQN & PLSTAT options      187 
+#define JC_SCALE     184 //  SFL_SCALE      // graph EQN & PLSTAT options      184 
+#define JC_VECT      182 //  SFL_VECT       // graph EQN & PLSTAT options      182 
+#define JC_NVECT     183 //  SFL_NVECT      // graph EQN & PLSTAT options      183 
 #define JC_INTG                191    // graph setup
 #define JC_DIFF                192    // graph setup
 #define JC_RMS                 193    // graph setup
