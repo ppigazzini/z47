@@ -465,8 +465,7 @@ int16_t fnItemShowValue(int16_t item) {
     case ITM_SCI:       if(displayFormat == DF_SCI) result = displayFormatDigits;   break; //  545
     case ITM_ALL:       if(displayFormat == DF_ALL) result = displayFormatDigits;   break; //   20
     case ITM_MZOOMY:
-    case ITM_PZOOMY:    result = PLOT_ZMY;                                          break;
-    case ITM_PLOTZOOM:  result = -PLOT_ZOOM;                                        break;
+    case ITM_PZOOMY:    result = calcMode == CM_PLOT_STAT ? PLOT_ZOOM : PLOT_ZMY;   break;
     case ITM_WSIZE:     result = shortIntegerWordSize;                              break; //  664
     case ITM_RNG:       result = exponentLimit;                                     break;
     case ITM_SETSIG2:   result = (significantDigits == 0 ? 34 : significantDigits); break;

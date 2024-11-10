@@ -50,7 +50,7 @@ bool_t    PLOT_DIFF;
 bool_t    PLOT_RMS;
 bool_t    PLOT_SHADE;
 bool_t    PLOT_AXIS;
-uint8_t   PLOT_ZOOM;
+int8_t    PLOT_ZOOM;
 uint8_t   drawHistogram;
 
 int8_t    plotmode;
@@ -1750,27 +1750,5 @@ void fnPlotRegressionLine(uint16_t plotMode){
 #endif // !SAVE_SPACE_DM42_13GRF
 }
 
-
-void fnPlotZoom(uint16_t unusedButMandatoryParameter){
-   PLOT_ZOOM = (PLOT_ZOOM + 1) & 0x03;
-   switch(calcMode) {
-    case CM_PLOT_STAT: {
-      if(PLOT_ZOOM != 0) {
-         PLOT_AXIS = true;
-      }
-      else {
-         PLOT_AXIS = false;
-      }
-       break;
-    }
-    case CM_GRAPH: {
-         PLOT_AXIS = true;
-         break;
-    }
-    default: {
-      break;
-    }
-  }
-}
 
 

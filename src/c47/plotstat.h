@@ -33,7 +33,7 @@ extern  bool_t   PLOT_DIFF;
 extern  bool_t   PLOT_RMS;
 extern  bool_t   PLOT_SHADE;
 extern  bool_t   PLOT_AXIS;
-extern  uint8_t  PLOT_ZOOM;
+extern  int8_t   PLOT_ZOOM;
 extern  uint8_t  drawHistogram;
 
 #define _VECT 0
@@ -95,5 +95,4 @@ void    graphDrawLRline    (uint16_t selection);
 //void    fnPlotClose        (uint16_t unusedButMandatoryParameter);
 void    fnPlotCloseSmi     (uint16_t unusedButMandatoryParameter);
 void    fnPlotStat         (uint16_t unusedButMandatoryParameter);
-void    fnPlotZoom         (uint16_t unusedButMandatoryParameter);
 #endif // !PLOTSTAT_H
