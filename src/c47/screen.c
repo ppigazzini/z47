@@ -4792,7 +4792,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
       #if defined(DMCP_BUILD)
         if(!getSystemFlag(FLAG_USB)) {
           // partial clearscreen, no menu update, no statusbar update on battery
-          if(doRefreshSoftMenu && !(screenUpdatingMode & (SCRUPD_MANUAL_MENU | SCRUPD_SKIP_MENU_ONE_TIME))) {  // battery powered
+          if(doRefreshSoftMenu || !(screenUpdatingMode & (SCRUPD_MANUAL_MENU | SCRUPD_SKIP_MENU_ONE_TIME))) {  // battery powered
             clearScreenOld(!clrStatusBar, !clrRegisterLines, clrSoftkeys);                // battery powered
             showSoftmenuCurrentPart();                                                    // battery powered
           }                                                                               // battery powered
@@ -4814,25 +4814,28 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
           refreshStatusBar();                                                             // USB powered
         }
       #elif defined(PC_BUILD)
-          //   clearScreen();                                                             // this tests the USB powered option on sim
-          //   showSoftmenuCurrentPart();                                                 // this tests the USB powered option on sim
-          //   fnPem(NOPARAM);                                                            // this tests the USB powered option on sim
-          //   displayShiftAndTamBuffer();                                                // this tests the USB powered option on sim
-          //   refreshStatusBar();                                                        // this tests the USB powered option on sim
+          #define TEST_BATTERY_POWERED_SIMULATION
+          #if defined (TEST_USB_POWERED_SIMULATION)
+            clearScreen();                                                                // this tests the USB powered option on sim
+            showSoftmenuCurrentPart();                                                    // this tests the USB powered option on sim
+            fnPem(NOPARAM);                                                               // this tests the USB powered option on sim
+            displayShiftAndTamBuffer();                                                   // this tests the USB powered option on sim
+            refreshStatusBar();                                                           // this tests the USB powered option on sim
 
-          if(doRefreshSoftMenu && !(screenUpdatingMode & (SCRUPD_MANUAL_MENU | SCRUPD_SKIP_MENU_ONE_TIME))) {  // this tests the battery powered option on sim
-            clearScreenOld(!clrStatusBar, !clrRegisterLines, clrSoftkeys);                // this tests the battery powered option on sim
-            showSoftmenuCurrentPart();                                                    // this tests the battery powered option on sim
-          }                                                                               // this tests the battery powered option on sim
+          #elif defined (TEST_BATTERY_POWERED_SIMULATION)
+            if(doRefreshSoftMenu || !(screenUpdatingMode & (SCRUPD_MANUAL_MENU | SCRUPD_SKIP_MENU_ONE_TIME))) {  // this tests the battery powered option on sim
+              clearScreenOld(!clrStatusBar, !clrRegisterLines, clrSoftkeys);              // this tests the battery powered option on sim
+              showSoftmenuCurrentPart();                                                  // this tests the battery powered option on sim
+            }                                                                             // this tests the battery powered option on sim
+            clearScreenOld(!clrStatusBar, clrRegisterLines, !clrSoftkeys);                // this tests the battery powered option on sim
+            fnPem(NOPARAM);                                                               // this tests the battery powered option on sim
+            displayShiftAndTamBuffer();                                                   // this tests the battery powered option on sim
+            if(!(screenUpdatingMode & SCRUPD_MANUAL_STATUSBAR)) {                         // this tests the battery powered option on sim
+              clearScreenOld(clrStatusBar, !clrRegisterLines, !clrSoftkeys);              // this tests the battery powered option on sim
+              refreshStatusBar();                                                         // this tests the battery powered option on sim
+            }                                                                             // this tests the battery powered option on sim
+          #endif //TEST_BATTERY_POWERED_SIMULATION
 
-          clearScreenOld(!clrStatusBar, clrRegisterLines, !clrSoftkeys);                  // this tests the battery powered option on sim
-          fnPem(NOPARAM);                                                                 // this tests the battery powered option on sim
-          displayShiftAndTamBuffer();                                                     // this tests the battery powered option on sim
-
-          if(!(screenUpdatingMode & SCRUPD_MANUAL_STATUSBAR)) {                           // this tests the battery powered option on sim
-            clearScreenOld(clrStatusBar, !clrRegisterLines, !clrSoftkeys);                // this tests the battery powered option on sim
-            refreshStatusBar();                                                           // this tests the battery powered option on sim
-          }                                                                               // this tests the battery powered option on sim
       #endif//!DMCP_BUILD PC_BUILD
     doRefreshSoftMenu = false;
   }
