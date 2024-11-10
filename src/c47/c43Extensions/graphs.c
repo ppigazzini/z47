@@ -182,11 +182,27 @@ void fnPMzoom (uint16_t param) { //param = 2: positive; param = 1: negative
 }
 
 
-void calculateZoomFactor(int8_t factor, float *aa) {
+static void calculateZoomFactor(float factor, float *aa) {
   #define basefactor 4.5f
   if(factor != 0) {
     (*aa) *= pow(basefactor,-factor);
   }
+}
+
+
+static void multiplyZoomFactors(float plotzoomx, float plotzoomy, float histofactor, float *x_min, float *x_max, float *y_min, float *y_max, float *dx, float *dy) {
+    *x_min = *x_min - *dx * zoomfactor;
+    *y_min = *y_min - *dy * zoomfactor;
+    *x_max = *x_max + *dx * zoomfactor;
+    *y_max = *y_max + *dy * zoomfactor;
+    *dx = *x_max - *x_min;
+    *dy = *y_max - *y_min;
+    float xavg = (*x_max + *x_min)/2;
+    float yavg = (*y_max + *y_min)/2;
+    *y_min = yavg - *dy/2 * plotzoomy * histofactor;
+    *y_max = yavg + *dy/2 * plotzoomy * histofactor;
+    *x_min = xavg - *dx/2 * plotzoomx * histofactor;
+    *x_max = xavg + *dx/2 * plotzoomx * histofactor;
 }
 
 
@@ -687,7 +703,8 @@ void graph_Include0(bool_t mode, uint16_t statnum) {
   }
 
 
-  #if defined(STATDEBUG)
+  #if defined(STATDEBUG) && defined(PC_BUILD)
+    printf("x_min=%f,y_min=%f,x_max=%f,y_max=%f, dx=%f, dy=%f, plotzoomx=%f\n", x_min,y_min,x_max,y_max, dx, dy, plotzoomx);
     printf("Axis2: x: %f -> %f y: %f -> %f   \n",x_min, x_max, y_min, y_max);
   #endif // STATDEBUG
 
@@ -707,35 +724,32 @@ void graph_Include0(bool_t mode, uint16_t statnum) {
     dx = x_max-x_min;
   }
 
+  #if defined(STATDEBUG) && defined(PC_BUILD)
+    printf("x_min=%f,y_min=%f,x_max=%f,y_max=%f, dx=%f, dy=%f, plotzoomx=%f\n", x_min,y_min,x_max,y_max, dx, dy, plotzoomx);
+    printf("Axis3a: x: %f -> %f y: %f -> %f   \n",x_min, x_max, y_min, y_max);
+  #endif // STATDEBUG
 
   //Calc zoom scales
   if(mode == PLOTSTAT) {
     float histofactor = drawHistogram == 0 ? 1 : 1/zoomfactor * (((float)statnum + 2.0f)  /  ((float)(statnum) - 1.0f) - 1)/2;     //Create space on the sides of the graph for the wider histogram columns
     float plotzoomx = 1;
-    calculateZoomFactor(PLOT_ZOOM & 0x03, &plotzoomx);
+    calculateZoomFactor(-0.75 * (PLOT_ZOOM & 0x03), &plotzoomx);
     float plotzoomy = drawHistogram == 1 ? 1 : plotzoomx;
-    x_min = x_min - dx * zoomfactor * histofactor * plotzoomx;
-    y_min = y_min - dy * zoomfactor * histofactor * plotzoomy;
-    x_max = x_max + dx * zoomfactor * histofactor * plotzoomx;
-    y_max = y_max + dy * zoomfactor * histofactor * plotzoomy;
+    multiplyZoomFactors(plotzoomx, plotzoomy, histofactor, &x_min, &x_max, &y_min, &y_max, &dx, &dy);
     if(drawHistogram == 1) {
       y_min = 0;
     }
   }
-  else {
-    float plotzoomx = 1;
-    calculateZoomFactor(PLOT_ZMY, &plotzoomx);
-    float plotzoomy = plotzoomx;
-    //  this was in the original file but seems to be interfering with PLOT_ZM*
-    //  It may be required to again add the zoomfactor (5%) either side
-    x_min = (x_min - dx * zoomfactor) * plotzoomx;
-    y_min = (y_min - dy * zoomfactor) * plotzoomy;
-    x_max = (x_max + dx * zoomfactor) * plotzoomx;
-    y_max = (y_max + dy * zoomfactor) * plotzoomy;
+  else { //mode != PLOTSTAT
+    float plotzoomy = 1;
+    calculateZoomFactor(PLOT_ZMY*0.55, &plotzoomy);
+    float plotzoomx = plotStatMx[0]=='D' ? 1 : plotzoomy;
+    multiplyZoomFactors(plotzoomx, plotzoomy, 1/*histofactor*/, &x_min, &x_max, &y_min, &y_max, &dx, &dy);
   }
 
   #if defined(STATDEBUG) && defined(PC_BUILD)
-    printf("Axis3a: x: %f -> %f y: %f -> %f   \n",x_min, x_max, y_min, y_max);
+    printf("x_min=%f,y_min=%f,x_max=%f,y_max=%f, dx=%f, dy=%f, plotzoomx=%f\n", x_min,y_min,x_max,y_max, dx, dy, plotzoomx);
+    printf("Axis3b: x: %f -> %f y: %f -> %f   \n",x_min, x_max, y_min, y_max);
   #endif // STATDEBUG
 }
 
