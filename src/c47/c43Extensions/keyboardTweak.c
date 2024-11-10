@@ -847,7 +847,10 @@ void resetKeytimers(void) {
         btnFnClicked(unused, charKey);                                             //Execute
       }
 
+      uint8_t screenUpdatingModeMeM = screenUpdatingMode;
       resetShiftState();
+      screenUpdatingMode = screenUpdatingModeMeM;      //clear skip that was set in resetShiftState()
+      screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
 
       if(!(calcMode == CM_REGISTER_BROWSER || calcMode == CM_FLAG_BROWSER || calcMode == CM_ASN_BROWSER || calcMode == CM_FONT_BROWSER || GRAPHMODE || calcMode == CM_LISTXY)) {
         if((calcMode == CM_ASSIGN && itemToBeAssigned == 0) || FN_timed_out_to_NOP) { //Clear any possible underline residues

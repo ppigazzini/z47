@@ -193,6 +193,8 @@ DenMaX,                              xxx,        64,                            
 TVMIKnown,                           xxx,        0,                              xxx,             xxx,                  xxx,                    xxx,             xxx,             0,                    // Clear flag TVMIKnown
 TVMIChanges,                         xxx,        0,                              xxx,             xxx,                  xxx,                    xxx,             xxx,             0,                    // Clear flag TVMIChanges
 //TVM,                               n/a,        Reset,                          HP35,            JM,                   RJ,                     C47,             DefltSB,         TVM,
+RESERVED_VARIABLE_LX,                xxx,        -10,                            xxx,             xxx,                  xxx,                    xxx,             xxx,             0,
+RESERVED_VARIABLE_UX,                xxx,        10,                             xxx,             xxx,                  xxx,                    xxx,             xxx,             0,
 RESERVED_VARIABLE_FV,                xxx,        0,                              xxx,             xxx,                  xxx,                    xxx,             xxx,             0,
 RESERVED_VARIABLE_IPONA,             xxx,        0,                              xxx,             xxx,                  xxx,                    xxx,             xxx,             0,
 RESERVED_VARIABLE_NPPER,             xxx,        0,                              xxx,             xxx,                  xxx,                    xxx,             xxx,             0,
@@ -309,6 +311,8 @@ void Sett(int16_t grp) {
         case TVMIKnown            : {tvmIKnown                  = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]) == 1 ? true : false;break;}   // TVMIKnown
         case TVMIChanges          : {tvmIChanges                = (Settings[ptr*(_numberOfGrps+2) + 1 + grp]) == 1 ? true : false;break;}   // TVMIChanges
 
+        case RESERVED_VARIABLE_LX     :
+        case RESERVED_VARIABLE_UX     :
         case RESERVED_VARIABLE_FV     :
         case RESERVED_VARIABLE_IPONA  :
         case RESERVED_VARIABLE_NPPER  :
@@ -1593,12 +1597,6 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
 
     showRegis = 9999;                                          //JMSHOW
     overrideShowBottomLine = 0;
-
-
-    graph_xmin = -3*3.14159265;                                //JM GRAPH
-    graph_xmax = -graph_xmin;                                  //JM GRAPH
-    graph_ymin = -2;                                           //JM GRAPH
-    graph_ymax = +2;                                           //JM GRAPH
 
     graph_reset();
 

@@ -75,11 +75,11 @@ TO_QSPI static const char bugScreenItemNotDetermined[] = "In function determineI
     int16_t firstItem = softmenuStack[0].firstItem;
 
                     #if defined(VERBOSEKEYS)
-                      printf(">>>>Z 0090 determineFunctionKeyItem       data=|%s| data[0]=%d fn=%d item=%d itemShift=%d (Global) FN_key_pressed=%d\n", data, data[0], fn, item, itemShift, FN_key_pressed);
+                      printf(">>>>Z 0090 determineFunctionKeyItem_C47(fn=%d):    data=|%s| data[0]=%d item=%d itemShift=%d (Global) FN_key_pressed=%d\n", fn, data, data[0], item, itemShift, FN_key_pressed);
                     #endif // VERBOSEKEYS
                     #if defined(PC_BUILD)
                       char tmp[200];
-                      sprintf(tmp,"^^^^determineFunctionKeyItem_C47(%d): itemShift=%d menuId=%d menuItem=%d", fn, itemShift, menuId, -softmenu[menuId].menuItem);
+                      sprintf(tmp,"^^^^determineFunctionKeyItem_C47(fn=%d): itemShift=%d menuId=%d menuItem=%d", fn, itemShift, menuId, -softmenu[menuId].menuItem);
                       jm_show_comment(tmp);
                     #endif // PC_BUILD
 
@@ -147,6 +147,10 @@ TO_QSPI static const char bugScreenItemNotDetermined[] = "In function determineI
         else if(currentMvarLabel != INVALID_VARIABLE) {
           item = (dynamicMenuItem >= dynamicSoftmenu[menuId].numItems ? ITM_NOP : ITM_SOLVE_VAR);
         }
+
+// These items below are all in the primary function key row, and should not be decoded from actual operating modes, but will be better to be decoded from the visible currentmenu, 
+//   It cannot be changed to menu lookups, because when the MVAR is open, we do not know anymore which menu or function actually opened the MVAR, hence the method of decoding from operating modes.
+//   This is not ideal. It probably would still work better if we check which menu called the MVAR, i.e. the menu in currentmenu() == MVAR && menu(1) == whatever.
 
 //Grapher
         else if((currentSolverStatus & SOLVER_STATUS_USES_FORMULA) && (currentSolverStatus & SOLVER_STATUS_INTERACTIVE) && ((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_GRAPHER) && dynamicMenuItem == 5) {
@@ -302,7 +306,7 @@ TO_QSPI static const char bugScreenItemNotDetermined[] = "In function determineI
           }
         }
       #if defined(VERBOSEKEYS)
-      printf(">>>>Z 0094 Fallthrough item=%d \n",item);
+        printf(">>>>Z 0094 Fallthrough item=%d \n",item);
       #endif //VERBOSEKEYS
       }
     }
@@ -991,20 +995,27 @@ int16_t lastItem = 0;
 
     if(calcMode != CM_REGISTER_BROWSER && calcMode != CM_FLAG_BROWSER && calcMode != CM_ASN_BROWSER && calcMode != CM_FONT_BROWSER) {
 
-      if(data[0] == 0) { item = item_;
-
+      if(data[0] == 0) { 
+        item = item_;
       }
       else {
                     #if defined(VERBOSEKEYS)
                     printf(">>>> R000A >>determineFunctionKeyItem_C47 %d |%s| shiftF=%d, shiftG=%d tam.mode=%i\n",item, data, shiftF, shiftG, tam.mode);
                     #endif //VERBOSEKEYS
+        item = determineFunctionKeyItem_C47((char *)data, shiftF, shiftG); 
+      }
 
-        item = determineFunctionKeyItem_C47((char *)data, shiftF, shiftG); }
+      // in graph plot menu, wanting to change Normal Mode items, so open the correct menu first and return to Normal Mode, and stop the processing.
+      if(calcMode == CM_GRAPH && currentMenu() == -MNU_PLOT && (item == VAR_LX || item == VAR_UX)) {
+        calcMode = CM_NORMAL;
+        showSoftmenu(-MNU_GRAPHS);
+        item = 0;
+      }
 
-        // Update currentUserMenu for user defined menus selected in an existing function
-        if((currentMenu() == -MNU_DYNAMIC) || (currentMenu() == -MNU_HOME) || (currentMenu() == -MNU_PFN)) {
-          setCurrentUserMenu(item, userMenus[currentUserMenu].menuItem[dynamicMenuItem].argumentName);
-        }
+      // Update currentUserMenu for user defined menus selected in an existing function
+      if((currentMenu() == -MNU_DYNAMIC) || (currentMenu() == -MNU_HOME) || (currentMenu() == -MNU_PFN)) {
+        setCurrentUserMenu(item, userMenus[currentUserMenu].menuItem[dynamicMenuItem].argumentName);
+      }
 
                     #if defined(VERBOSEKEYS)
                     printf(">>>> R000B                                %d |%s| shiftF=%d, shiftG=%d tam.mode=%i\n",item, data, shiftF, shiftG, tam.mode);
@@ -1015,7 +1026,7 @@ int16_t lastItem = 0;
                       //if(item>=0) printf("    item=%d=%s f=%d g=%d\n",item,indexOfItems[item].itemCatalogName, shiftF, shiftG);
                     #endif //PC_BUILD
 
-        resetShiftState();                               //shift cancelling delayed to this point after state machine
+      resetShiftState();                               //shift cancelling delayed to this point after state machine
 
                     #if defined(VERBOSEKEYS)
                     printf(">>>> R000C                                %d |%s| shiftF=%d, shiftG=%d tam.mode=%i\n",item, data, shiftF, shiftG, tam.mode);
@@ -1105,11 +1116,12 @@ int16_t lastItem = 0;
               }
 
               if((item == -MNU_Solver || item == -MNU_Grapher || item == -MNU_Sf || item == -MNU_1STDERIV || item == -MNU_2NDDERIV || item == -MNU_Sf_TOOL || item == -MNU_Solver_TOOL) && lastErrorCode != 0) {
-//                popSoftmenu(); removed, because in softmens.c a new menu is pushed and this just pops it off again
                 currentSolverStatus &= ~SOLVER_STATUS_INTERACTIVE;
                 currentSolverStatus &= ~SOLVER_STATUS_EQUATION_MODE;
               }
             }
+//temporary
+//screenUpdatingMode = SCRUPD_AUTO;
             refreshScreen(111);
             screenUpdatingMode &= ~SCRUPD_ONE_TIME_FLAGS;
             return;
@@ -2383,6 +2395,13 @@ RELEASE_END:
       screenUpdatingMode = SCRUPD_AUTO;    //cannot use MENU & STACK update due to being in NIM, and NIM prevents clearing individually
     }
 
+    if(calcMode == CM_GRAPH && currentMenu() == -MNU_PLOT && ((item >= ITM_0 && item <= ITM_9) || item == ITM_PERIOD)) { //incoming digit, change modes and go to GRAPHS input page
+      calcMode = CM_NORMAL;
+      showSoftmenu(-MNU_GRAPHS);
+      screenUpdatingMode &= SCRUPD_MANUAL_MENU;
+      refreshScreen(125);
+    } 
+
     if(programRunStop == PGM_WAITING) {
       programRunStop = PGM_STOPPED;
     }
@@ -2414,7 +2433,7 @@ RELEASE_END:
     }
 
 
-    if(GRAPHMODE && item != ITM_BACKSPACE && item != ITM_EXIT1 && item != ITM_UP1 && item != ITM_DOWN1) {
+    if(GRAPHMODE && item != ITM_BACKSPACE && item != ITM_EXIT1 && item != ITM_UP1 && item != ITM_DOWN1 && item != ITM_SNAP ) {
       keyActionProcessed = true;
     }
     else if(calcMode == CM_ASN_BROWSER && item != ITM_PERIOD && item != ITM_USERMODE && item != ITM_BACKSPACE && item != ITM_EXIT1 && item != ITM_UP1 && item != ITM_DOWN1) {

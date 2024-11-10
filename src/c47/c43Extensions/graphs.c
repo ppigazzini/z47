@@ -29,37 +29,51 @@
 
 #include "c47.h"
 
-//#define STATDEBUG
+#define STATDEBUG
 
 bool_t    invalid_intg = true;
 bool_t    invalid_diff = true;
 bool_t    invalid_rms  = true;
 
+bool_t    extentx = false;
+bool_t    extenty = false;
+float     x_min = 0;
+float     x_max = 1;
+float     y_min = 0;
+float     y_max = 1;
+bool_t    PLOT_SCALE = false;
+int8_t    PLOT_ZMY = 0;
 
-void graph_reset(void){
+
+void graphResetCommon() {
   graph_dx      = 0;
   graph_dy      = 0;
-  extentx       = true;
-  extenty       = true;
+  extenty       = false;
+  extentx       = false;
   PLOT_VECT     = false;
   PLOT_NVECT    = false;
   PLOT_SCALE    = false;
-  Aspect_Square = true;
   PLOT_LINE     = true;
+  PLOT_BOX      = true;
   PLOT_CROSS    = false;
-  PLOT_BOX      = false;
+  PLOT_PLUS     = false;
   PLOT_INTG     = false;
   PLOT_DIFF     = false;
   PLOT_RMS      = false;
   PLOT_SHADE    = false;
-  PLOT_CPXPLOT  = false;
-  PLOT_AXIS     = true;
-  PLOT_ZMX      = 0;
   PLOT_ZMY      = 0;
-  plotmode      = _SCAT;
   PLOT_ZOOM     = 0;
+  plotmode      = _SCAT;
   tick_int_x    = 0;
   tick_int_y    = 0;
+  PLOT_CPXPLOT  = false;
+  PLOT_AXIS     = false;
+
+}
+
+
+void graph_reset(void){
+  graphResetCommon();
 }
 
 
@@ -73,7 +87,7 @@ void fnClGrf(uint16_t unusedButMandatoryParameter) {
 
 void fnPline(uint16_t unusedButMandatoryParameter) {
   PLOT_LINE = !PLOT_LINE;
-  if(!PLOT_LINE && !PLOT_CROSS && !PLOT_BOX) {
+  if(!PLOT_LINE && !PLOT_CROSS && !PLOT_BOX && !PLOT_PLUS) {
     PLOT_BOX = true;
   }
   fnRefreshState();                //jm
@@ -85,8 +99,23 @@ void fnPcros(uint16_t unusedButMandatoryParameter) {
   PLOT_CROSS = !PLOT_CROSS;
   if(PLOT_CROSS) {
     PLOT_BOX = false;
+    PLOT_PLUS = false;
   }
-  if(!PLOT_LINE && !PLOT_CROSS && !PLOT_BOX) {
+  if(!PLOT_CROSS && !PLOT_BOX && !PLOT_PLUS) {
+    PLOT_LINE = true;
+  }
+  fnRefreshState();                //jm
+  fnPlotSQ(0);
+}
+
+void fnPplus(uint16_t unusedButMandatoryParameter) {
+  PLOT_PLUS = !PLOT_PLUS;
+  if(PLOT_PLUS) {
+    printf("PLUS SET\n");
+    PLOT_BOX = false;
+    PLOT_CROSS = false;
+  }
+  if(!PLOT_CROSS && !PLOT_BOX && !PLOT_PLUS) {
     PLOT_LINE = true;
   }
   fnRefreshState();                //jm
@@ -98,8 +127,9 @@ void fnPbox (uint16_t unusedButMandatoryParameter) {
   PLOT_BOX = !PLOT_BOX;
   if(PLOT_BOX) {
     PLOT_CROSS = false;
+    PLOT_PLUS = false;
   }
-  if(!PLOT_LINE && !PLOT_CROSS && !PLOT_BOX) {
+  if(!PLOT_CROSS && !PLOT_BOX && !PLOT_PLUS) {
     PLOT_LINE = true;
   }
   fnRefreshState();                //jm
@@ -137,26 +167,27 @@ void fnPrms (uint16_t unusedButMandatoryParameter) {
 }
 
 
-void fnPzoom (uint16_t param) {
-  if(param == 1) {
-    if(PLOT_ZMX < 0+3) {
-      PLOT_ZMX++;
-    }
-    else {
-      PLOT_ZMX = 0-1;
-    }
-    fnRefreshState();                //jm
-    fnPlotSQ(0);
+void fnPMzoom (uint16_t param) { //param = 2: positive
+  #define RangeHi +16
+  #define RangeLo -16
+  int8_t increment = param == 2 ? +1 : param == 1 ? -1 : 0;
+  PLOT_ZMY += increment;
+  if(PLOT_ZMY > RangeHi) {
+    PLOT_ZMY = RangeLo;
   }
-  else if(param == 2) {
-    if(PLOT_ZMY < 0+3) {
-      PLOT_ZMY++;
-    }
-    else {
-      PLOT_ZMY = 0-1;
-    }
-    fnRefreshState();
-    fnPlotSQ(0);
+  else if(PLOT_ZMY < RangeLo) {
+    PLOT_ZMY = RangeHi;
+  }
+  fnRefreshState();
+  fnPlotSQ(0);
+}
+
+
+void calculateZoomFactor(int8_t factor, float *aa, float *bb) {
+  #define basefactor 4.5f
+  if(factor != 0) {
+    (*aa) *= pow(basefactor,-factor);
+    (*bb) *= pow(basefactor,-factor);
   }
 }
 
@@ -246,7 +277,6 @@ void fnPlotSQ(uint16_t unusedButMandatoryParameter) {
   #endif // DMCP_BUILD
 
   PLOT_AXIS = true;
-  Aspect_Square = true;
   if(!GRAPHMODE) {
     previousCalcMode = calcMode;
   }
@@ -502,14 +532,8 @@ void graph_text(void) {
 
 
     uint32_t minnx, minny;
-    if(!Aspect_Square) {
-      minny = SCREEN_NONSQ_HMIN;
-      minnx = 0;
-    }
-    else {
-      minny = 0;
-      minnx = SCREEN_WIDTH-SCREEN_HEIGHT_GRAPH;
-    }
+    minny = 0;
+    minnx = SCREEN_WIDTH-SCREEN_HEIGHT_GRAPH;
     tmpString[0] = 0;                                  //If the axis is on the edge supress it, and label accordingly
     uint8_t axisdisp =  (!(yzero == SCREEN_HEIGHT_GRAPH-1 || yzero == minny) ? 2 : 0)
                       + (!(xzero == SCREEN_WIDTH-1        || xzero == minnx) ? 1 : 0);
@@ -571,6 +595,158 @@ void graph_text(void) {
 //####################################################
 //######### PLOT MEM #################################
 //####################################################
+
+
+void graph_Include0(bool_t mode, uint16_t statnum){ 
+  //using global: extentx, x_min, x_max, extenty, y_min, y_max, PLOT_SCALE, PLOT_ZMY, zoomfactor
+
+        #if defined(STATDEBUG) && defined(PC_BUILD)
+          printf("PLOT_ZMY=%i  PLOT_SCALE=%i mode=%i\n", PLOT_ZMY, PLOT_SCALE, mode);
+          printf("Axis1b: x: %f -> %f y: %f -> %f   \n",x_min, x_max, y_min, y_max);
+        #endif // STATDEBUG
+
+        //Check and correct if min and max is swapped
+        if(x_min>0.0f && x_min > x_max) {
+          x_min = x_min - (-x_max+x_min)* 1.1f;
+        }
+        if(x_min<0.0f && x_min > x_max) {
+          x_min = x_min + (-x_max+x_min)* 1.1f;
+        }
+
+        //include the 0 axis
+        if(!extentx) {
+          if(x_min > 0.0f && x_max > 0.0f) {
+            if(x_min <= x_max) {
+              x_min = -0.05f * x_max;
+            }
+            else {
+              x_min = 0.0f;
+            }
+          }
+          if(x_min < 0.0f && x_max < 0.0f) {
+            if(x_min >= x_max) {
+              x_min = -0.05f * x_max;
+            }
+            else {
+              x_max = 0.0f;
+            }
+          }
+        }
+        if(!extenty) {
+          if(y_min > 0.0f && y_max > 0.0f) {
+            if(y_min <= y_max) {
+              y_min = -0.05f * y_max;
+            }
+            else {
+              y_min = 0.0f;
+            }
+          }
+          if(y_min < 0.0f && y_max < 0.0f) {
+            if(y_min >= y_max) {
+              y_min = -0.05f * y_max;
+            }
+            else {
+              y_max = 0.0f;
+            }
+          }
+        }
+
+        //Cause scales to be the same
+        if(PLOT_SCALE) {
+          // if y >> x, then y simply takes on the X range and can be increased using ZMY
+          if(mode == plotstat) {
+            x_min = min(x_min,y_min);
+            x_max = max(x_max,y_max);
+            y_min = x_min;
+            y_max = x_max;
+          }
+          else {  //new equal scale calculation to keep the grpah centre of screen
+            float dx = fabs(x_max - x_min);
+            float dy = fabs(y_max - y_min);
+            //printf("dx=%f dy=%f\n",dx,dy);
+            if(dx > 1e-10 && dy/dx > 100000) {
+              y_min = x_min;
+              y_max = x_max;              
+              dx = fabs(x_max - x_min);
+              dy = fabs(y_max - y_min);
+            }
+            else {
+              if(dx > dy) {
+                dy = dx;
+              } else {
+                dx = dy;
+              }
+            }
+            x_min = (x_min + x_max)/2 - dx/2;
+            x_max = x_min + dx;
+            y_min = (y_min + y_max)/2 - dy/2;
+            y_max = y_min + dy;
+          }
+        }
+
+        //Calc zoom scales
+        if(mode != plotstat) {
+          calculateZoomFactor(PLOT_ZMY, &y_min, &y_max);
+        }
+
+        #if defined(STATDEBUG)
+          printf("Axis2: x: %f -> %f y: %f -> %f   \n",x_min, x_max, y_min, y_max);
+        #endif // STATDEBUG
+
+
+        //modify the draw range if the min == max
+        float dx = x_max-x_min;
+        float dy = y_max-y_min;
+        if(dy == 0.0f) {
+          dy = 1.0f;
+          y_max = y_min + dy/2.0f;
+          y_min = y_max - dy;
+        }
+        if(dx == 0.0f) {
+          dx = 1.0f;
+          x_max = x_min + dx/2.0f;
+          x_min = x_max - dx;
+        }
+
+        if(mode == plotstat) {
+          /*
+          (pow(4.5f, (int8_t)(PLOT_ZOOM & 0x03))) / 20
+          0 1/20      = 0.05  * 2 = 0.10    width: dx * 1.10       Reference 1
+          1 4,5/20    = 0.23  * 2 = 0.45    width: dx * 1.45       factor 1.32
+          2 20,25/20  = 1.01  * 2 = 2.03    width: dx * 2.03       factor 2.75
+          3 91,125/20 = 4.56  * 2 = 9.11    width: dx * 10.11      factor 9.19
+          ( (int8_t)(PLOT_ZOOM & 0x03) == 0 ? 1.0f : (int8_t)(PLOT_ZOOM & 0x03) == 1 ? 4.5f : (int8_t)(PLOT_ZOOM & 0x03) == 2 ? 20.25f : 91.125f )
+          */
+          float histofactor = drawHistogram == 0 ? 1 : 1/zoomfactor * (((float)statnum + 2.0f)  /  ((float)(statnum) - 1.0f) - 1)/2;     //Create space on the sides of the graph for the wider histogram columns
+          float plotzoomx = pow(4.5f, (int8_t)(PLOT_ZOOM & 0x03));
+          float plotzoomy = drawHistogram == 1 ? 1 : plotzoomx;
+          x_min = x_min - dx * zoomfactor * histofactor * plotzoomx;
+          y_min = y_min - dy * zoomfactor * histofactor * plotzoomy;
+          x_max = x_max + dx * zoomfactor * histofactor * plotzoomx;
+          y_max = y_max + dy * zoomfactor * histofactor * plotzoomy;
+          if(drawHistogram == 1) {
+            y_min = 0;
+          }
+        }
+//this was in the original file but seems to be interfering with PLOT_ZM*
+//        else {
+//          x_min = x_min - dx * zoomfactor * (pow(4.5f, (int8_t)(PLOT_ZOOM & 0x03)));
+//          y_min = y_min - dy * zoomfactor * (pow(4.5f, (int8_t)(PLOT_ZOOM & 0x03)));
+//          x_max = x_max + dx * zoomfactor * (pow(4.5f, (int8_t)(PLOT_ZOOM & 0x03)));
+//          y_max = y_max + dy * zoomfactor * (pow(4.5f, (int8_t)(PLOT_ZOOM & 0x03)));
+//        }
+
+        #if defined(STATDEBUG) && defined(PC_BUILD)
+          printf("Axis3a: x: %f -> %f y: %f -> %f   \n",x_min, x_max, y_min, y_max);
+        #endif // STATDEBUG
+
+
+
+}
+
+
+
+
 void graph_plotmem(void) {
   currentKeyCode = 255;
   #if !defined(SAVE_SPACE_DM42_13GRF_JM)
@@ -610,8 +786,8 @@ void graph_plotmem(void) {
       #endif //LOW_GRAPH_ACC
       regStatsXY = findNamedVariable(plotStatMx);
       uint16_t cnt, ix, statnum;
-      int16_t xo, xn, xN;
-      int16_t yo, yn, yN;
+      int16_t xo, xn, xN1;
+      int16_t yo, yn;
       int16_t yN0 = 0, yN1 = 0;
       float x;
       float y;
@@ -767,7 +943,7 @@ void graph_plotmem(void) {
 /**/      a7 = 0;
 /**/      a8 = 0;
 /**/
-/**/      if(PLOT_BOX || PLOT_LINE || PLOT_CROSS || !(PLOT_DIFF || PLOT_INTG)) {  //XXXX
+/**/      if(PLOT_BOX || PLOT_LINE || PLOT_CROSS || PLOT_PLUS || !(PLOT_DIFF || PLOT_INTG)) {  //XXXX
 /**/        for(cnt=0; (cnt < statnum); cnt++) {
 /**/          #if defined(STATDEBUG)
 /**/            printf("Axis0a: cnt/statnum: %i/%i  x: %f y: %f   \n", cnt, statnum, grf_x(cnt), grf_y(cnt));
@@ -872,110 +1048,10 @@ void graph_plotmem(void) {
           printf("Axis1a: x: %f -> %f y: %f -> %f   \n",x_min, x_max, y_min, y_max);
         #endif // STATDEBUG
 
-        //Check and correct if min and max is swapped
-        if(x_min>0.0f && x_min > x_max) {
-          x_min = x_min - (-x_max+x_min)* 1.1f;
-        }
-        if(x_min<0.0f && x_min > x_max) {
-          x_min = x_min + (-x_max+x_min)* 1.1f;
-        }
-        #if defined(STATDEBUG)
-          printf("Axis1b: x: %f -> %f y: %f -> %f   \n",x_min, x_max, y_min, y_max);
-        #endif // STATDEBUG
+
+        graph_Include0(!plotstat, 0);
 
 
-        //Always include the 0 axis
-        if(!extentx) {
-          if(x_min > 0.0f && x_max > 0.0f) {
-            if(x_min <= x_max) {
-              x_min = -0.05f * x_max;
-            }
-            else {
-              x_min = 0.0f;
-            }
-          }
-          if(x_min < 0.0f && x_max < 0.0f) {
-            if(x_min >= x_max) {
-              x_min = -0.05f * x_max;
-            }
-            else {
-              x_max = 0.0f;
-            }
-          }
-        }
-        if(!extenty) {
-          if(y_min > 0.0f && y_max > 0.0f) {
-            if(y_min <= y_max) {
-              y_min = -0.05f * y_max;
-            }
-            else {
-              y_min = 0.0f;
-            }
-          }
-          if(y_min < 0.0f && y_max < 0.0f) {
-            if(y_min >= y_max) {
-              y_min = -0.05f * y_max;
-            }
-            else {
-              y_max = 0.0f;
-            }
-          }
-        }
-
-        //Cause scales to be the same
-        if(PLOT_SCALE) {
-          float dx = fabs(x_max - x_min);
-          float dy = fabs(y_max - y_min);
-          if(dx > dy) {
-            dy = dx;
-          } else {
-            dx = dy;
-          }
-//          x_min = min(x_min,y_min);
-//          x_max = max(x_max,y_max);
-//          y_min = x_min;
-//          y_max = x_max;
-
-          x_min = (x_min + x_max)/2 - dx/2; //new equal scale calculation to keep the grpah centre of screen
-          x_max = x_min + dx;
-          y_min = (y_min + y_max)/2 - dy/2;
-          y_max = y_min + dy;
-        }
-
-        //Calc zoom scales
-        if(PLOT_ZMX != 0) {
-          x_min = pow(2.0f,-PLOT_ZMX) * x_min;
-          x_max = pow(2.0f,-PLOT_ZMX) * x_max;
-        }
-        if(PLOT_ZMY != 0) {
-          y_min = pow(2.0f,-PLOT_ZMY) * y_min;
-          y_max = pow(2.0f,-PLOT_ZMY) * y_max;
-        }
-        #if defined(STATDEBUG)
-          printf("Axis2: x: %f -> %f y: %f -> %f   \n",x_min, x_max, y_min, y_max);
-        #endif // STATDEBUG
-
-        float dx = x_max-x_min;
-        float dy = y_max-y_min;
-
-        if(dy == 0.0f) {
-          dy = 1.0f;
-          y_max = y_min + dy/2.0f;
-          y_min = y_max - dy;
-        }
-        if(dx == 0.0f) {
-          dx = 1.0f;
-          x_max = x_min + dx/2.0f;
-          x_min = x_max - dx;
-        }
-
-        x_min = x_min - dx * zoomfactor * (pow(4.5f, (int8_t)(PLOT_ZOOM & 0x03)));
-        y_min = y_min - dy * zoomfactor * (pow(4.5f, (int8_t)(PLOT_ZOOM & 0x03)));
-        x_max = x_max + dx * zoomfactor * (pow(4.5f, (int8_t)(PLOT_ZOOM & 0x03)));
-        y_max = y_max + dy * zoomfactor * (pow(4.5f, (int8_t)(PLOT_ZOOM & 0x03)));
-        #if defined(STATDEBUG) && defined(PC_BUILD)
-          printf("Axis3a: x: %f -> %f y: %f -> %f   \n",x_min, x_max, y_min, y_max);
-        #endif // STATDEBUG
 
 
         roundedTicks = true;
@@ -992,14 +1068,14 @@ void graph_plotmem(void) {
         if(plotmode != _VECT) {
           yn = screen_window_y(y_min,grf_y(0),y_max);
           xn = screen_window_x(x_min,grf_x(0),x_max);
-          xN = xn;
-          yN = yn;
+          xN1 = xn;
+          yN1 = yn;
         }
         else {
           yn = screen_window_y(y_min,0,y_max);
           xn = screen_window_x(x_min,0,x_max);
-          xN = xn;
-          yN = yn;
+          xN1 = xn;
+          yN1 = yn;
         }
 
         #if defined(STATDEBUG)
@@ -1050,64 +1126,81 @@ void graph_plotmem(void) {
               }
             }
 
-            if(PLOT_BOX || PLOT_LINE || PLOT_CROSS) {
+            if(PLOT_BOX || PLOT_LINE || PLOT_CROSS || PLOT_PLUS) {
               x = grf_x(ix);
               y = grf_y(ix);
             }
           }
-          else {
+          else { //_VECT
             sx = sx + (!PLOT_NVECT ? grf_x(ix) : grf_y(ix));
             sy = sy + (!PLOT_NVECT ? grf_y(ix) : grf_x(ix));
             x = sx;
             y = sy;
           }
-          xo = xN;
-          yo = yN;
-          xN = screen_window_x(x_min,x,x_max);
+          xo = xN1;
+          yo = yN1;
           yN0 = yN1;
+
+          xN1 = screen_window_x(x_min,x,x_max);
           yN1 = screen_window_y_nolimit(y_min,y,y_max);
-          yN = yN1;
 
 
           #if defined(STATDEBUG)
-            printf("xN = %d : (x_min=%f,x=%f,x_max=%f) \n",xN, x_min,x,x_max);
-            printf("yN = %d yN0 = %d yN1 = %d : (y_min=%f,y=%f,y_max=%f) \n",yN, yN0, yN1, y_min,y,y_max);
-            printf("plotting graph table[%d] = x:%f y:%f dydx:%f inty:%f xN:%d yN:%d ", ix, x, y, dydx, inty, xN, yN);
+            printf("         xN1 = %d : (x_min=%f,x=%f,x_max=%f) \n", xN1, x_min,x,x_max);
+            printf("yN0 = %d yN1 = %d : (y_min=%f,y=%f,y_max=%f) \n", yN0, yN1, y_min,y,y_max);
+            printf("plotting graph table[%d] = x:%f y:%f dydx:%f inty:%f xN1:%d yN1:%d ", ix, x, y, dydx, inty, xN1, yN1);
             printf(" ... x-ddx/2=%d dydx=%d inty=%d\n", screen_window_x(x_min, x-ddx/2, x_max), screen_window_y(y_min, dydx, y_max), screen_window_y(y_min, inty, y_max));
           #endif // STATDEBUG
 
           int16_t minN_y, minN_x;
-          if(!Aspect_Square) {
-            minN_y = SCREEN_NONSQ_HMIN;
-            minN_x = 0;
+          minN_y = 0;
+          minN_x = SCREEN_WIDTH-SCREEN_HEIGHT_GRAPH;
+
+          bool_t bothOutOfScreen01 = ((yN1 >= SCREEN_HEIGHT_GRAPH) && (yN0 >= SCREEN_HEIGHT_GRAPH)) || ((yN1 < minN_y) && (yN0 < minN_y));
+          bool_t outOfScreen1  = (yN1 >= SCREEN_HEIGHT_GRAPH || yN1 < minN_y);
+          bool_t outOfScreen0  = (yN0 >= SCREEN_HEIGHT_GRAPH || yN0 < minN_y);
+printf("001 yN1 =%i yN0=%i minN_y=%i\n", (int8_t)yN1,  (int8_t)yN0, (int8_t)minN_y);
+printf("    xN1 =%i  xo=%i minN_x=%i\n", (int16_t)xN1, (int16_t)xo, (int16_t)minN_x);
+
+          if(yN1 > yN0 && xN1 > xo && yN1 >= SCREEN_HEIGHT_GRAPH && !bothOutOfScreen01 && outOfScreen1 && !outOfScreen0) {
+            int16_t dY = abs(SCREEN_HEIGHT_GRAPH - 1 - yN0);
+            float dxN = (fabs((float)dY))/(fabs((float)(yN1-yN0))*(float)(xN1-xo));
+printf("DxLoScreen Max =%f\n",dxN);
+//            if(dxN > 25) dxN = 25;
+            xN1 = xo + dxN;
+            yN1 = SCREEN_HEIGHT_GRAPH - 1;
           }
-          else {
-            minN_y = 0;
-            minN_x = SCREEN_WIDTH-SCREEN_HEIGHT_GRAPH;
+          else if(yN1 < yN0 && xN1 > xo && yN1 < minN_y && !bothOutOfScreen01 && outOfScreen1 && !outOfScreen0) {
+            int16_t dY = yN0;
+            float dxN = (fabs((float)dY))/(fabs((float)(yN1-yN0))*(fabs)((float)(xN1-xo)));
+printf("DxHiScreen 0 =%f\n",dxN);
+//            if(dxN > 25) dxN = 25;
+            xN1 = xo + dxN;
+            yN1 = minN_y;
           }
 
-          bool_t bothOutOfScreen01 = ((yN1 > SCREEN_HEIGHT_GRAPH - 1) && (yN0 > SCREEN_HEIGHT_GRAPH - 1)) || ((yN1 < minN_y) && (yN0 < minN_y));
-          bool_t outOfScreen1  = (yN1 > SCREEN_HEIGHT_GRAPH - 1 || yN1 < minN_y);
-          bool_t outOfScreen0  = (yN0 > SCREEN_HEIGHT_GRAPH - 1 || yN0 < minN_y);
+printf("002 yN1 =%i yN0=%i minN_y=%i\n", (int8_t)yN1, (int8_t)yN0, (int8_t)minN_y);
+printf("    xN1 =%i xo=%i minN_x=%i\n", (int16_t)xN1, (int16_t)xo, (int16_t)minN_x);
 
-          if(yN1 != yN0 && !bothOutOfScreen01 && !outOfScreen1 && outOfScreen0) {
-            int16_t dY1 = yN0 > SCREEN_HEIGHT_GRAPH - 1 ? abs(SCREEN_HEIGHT_GRAPH - 1 - yN1) : abs(yN1);
-            float dxN = ((float)dY1)/(fabs((float)(yN1-yN0))*(float)(xN-xo));
-            if(dxN > 25) dxN = 25;
-            xo += (xN-xo)-dxN;
-            yo = yN0 > SCREEN_HEIGHT_GRAPH - 1 ? SCREEN_HEIGHT_GRAPH - 1 : 0;
-          }
 
-          // Changed to clean up plotting on the edge of the screen
-          if(xN > SCREEN_WIDTH_GRAPH  - 1) xN = SCREEN_WIDTH_GRAPH - 1;
-          if(yN > SCREEN_HEIGHT_GRAPH - 1) yN = SCREEN_HEIGHT_GRAPH - 1;
-          if(yN < minN_y) yN = minN_y;
+ //         // Changed to clean up plotting on the edge of the screen
+ //         if(yN1 >= SCREEN_HEIGHT_GRAPH) {
+ //           yN1 = SCREEN_HEIGHT_GRAPH - 1;
+ //         }
+ //         else if(yN < minN_y) {
+ //           yN = minN_y;
+ //         }
+ //         if(xN1 > SCREEN_WIDTH_GRAPH  - 1) {
+ //           xN1 = SCREEN_WIDTH_GRAPH - 1;
+ //         }
+ //         if(xN1 < minN_x) {
+ //           xN1 = minN_x;
+ //         }
 
-          if((xN < SCREEN_WIDTH_GRAPH && xN >= minN_x && yN < SCREEN_HEIGHT_GRAPH && yN >= minN_y) && !bothOutOfScreen01)  {
-            //yo = yn;                              //old , new, to be able to draw a line between samples
-            yn = yN;
-            //xo = xn;
-            xn = xN;
+
+          if((xN1 < SCREEN_WIDTH_GRAPH && xN1 >= minN_x && yN1 < SCREEN_HEIGHT_GRAPH && yN1 >= minN_y))  {
+            yn = yN1;
+            xn = xN1;
 
             #if defined(STATDEBUG)
               printf("invalid_diff=%d invalid_intg=%d invalid_rms=%d \n", invalid_diff, invalid_intg, invalid_rms);
@@ -1118,20 +1211,8 @@ void graph_plotmem(void) {
                 printf("Not _VECT\n");
               #endif // STATDEBUG
 
-              if(PLOT_CROSS) {
-                #if defined(STATDEBUG)
-                  printf("Plotting cross to x=%d y=%d\n", xn, yn);
-                #endif // STATDEBUG
-                plotcross(xn,yn);
-              }
+              plotPointGeneric(xn, yn, xo, yo, PLOT_CROSS, false /*fatbox*/, PLOT_BOX /*box*/, PLOT_PLUS, false /*line*/);
 
-              if(PLOT_BOX) {
-                #if defined(STATDEBUG)
-                  printf("Plotting box to x=%d y=%d\n", xn, yn);
-                #endif // STATDEBUG
-                plotbox(xn,yn);
-              }
-              //else placePixel(xn,yn);
 
               if(PLOT_DIFF && !invalid_diff && ix != 0) {
                 #if defined(STATDEBUG)
@@ -1156,9 +1237,9 @@ void graph_plotmem(void) {
                 uint16_t xN0   = screen_window_x(x_min, grf_x(ix-1), x_max);
                 //uint16_t xN1   = screen_window_x(x_min, grf_x(ix), x_max);
                 uint16_t yNintg= screen_window_y(y_min, inty, y_max);
-                uint16_t xAvg  = ((xN0+xN) >> 1);
+                uint16_t xAvg  = ((xN0+xN1) >> 1);
 
-                if(abs((int16_t)(xN-xN0)>=6)) {
+                if(abs((int16_t)(xN1-xN0)>=6)) {
                   plotint( xAvg, yNintg );
                 }
                 else {
@@ -1166,26 +1247,27 @@ void graph_plotmem(void) {
                   plotrect(xAvg-1, yNintg-1, xAvg+1, yNintg+1);
                 }
 
-                if(abs((int16_t)(xN-xN0) >= 6)) {
-                  plotline(xN,     yNintg, xAvg+2, yNintg);
+                if(abs((int16_t)(xN1-xN0) >= 6)) {
+                  plotline(xN1,    yNintg, xAvg+2, yNintg);
                   plotline(xAvg-2, yNintg, xN0,    yNintg);
                 }
-                else if(abs((int16_t)(xN-xN0) >= 4)) {
-                  plotline(xN,     yNintg, xAvg+2, yNintg);
+                else if(abs((int16_t)(xN1-xN0) >= 4)) {
+                  plotline(xN1,    yNintg, xAvg+2, yNintg);
                   plotline(xAvg-2, yNintg, xN0,    yNintg);
                 }
 
                 if(PLOT_SHADE) {
                   uint16_t yNoff = screen_window_y(y_min, 0, y_max);
-                  plotrect(xN0, yN0,   xN, yN1);
-                  plotrect(xN0, yNoff, xN, yN0);
-                  if(abs((int16_t)(xN-xN0) >= 6)) {
-                    plotline(xN0, yN0,   xN, yN1);
+                  plotrect(xN0, yN0,   xN1, yN1);
+                  plotrect(xN0, yNoff, xN1, yN0);
+                  if(abs((int16_t)(xN1-xN0) >= 6)) {
+                    plotline(xN0, yN0,   xN1, yN1);
                   }
                 }
               }
+
             }
-            else {
+            else { // _VECT
               #if defined(STATDEBUG)
                 printf("Plotting arrow\n");
               #endif // STATDEBUG
@@ -1198,23 +1280,24 @@ void graph_plotmem(void) {
               #endif // STATDEBUG
               plotline2(xo, yo, xn, yn);
             }
+
           }
           else {
             #if defined(PC_BUILD)
               printf("Not plotted: ");
-              if(!(xN < SCREEN_WIDTH_GRAPH)) {
-                printf("NOT xN<SCREEN_WIDTH_GRAPH; ");
+              if(!(xN1 < SCREEN_WIDTH_GRAPH)) {
+                printf("NOT xN1 < SCREEN_WIDTH_GRAPH; ");
               }
-              if(!(xN >= minN_x)) {
-                printf("NOT xN>=minN_x; ");
+              if(!(xN1 >= minN_x)) {
+                printf("NOT xN1 >= minN_x; ");
               }
-              if(!(yN < SCREEN_HEIGHT_GRAPH)) {
-                printf("NOT yN<SCREEN_HEIGHT_GRAPH");
+              if(!(yN1 < SCREEN_HEIGHT_GRAPH)) {
+                printf("NOT yN1<SCREEN_HEIGHT_GRAPH");
               }
-              if(!(yN >= minN_y)) {
-                printf("NOT yN>=minN_y; ");
+              if(!(yN1 >= minN_y)) {
+                printf("NOT yN1>=minN_y; ");
               }
-              printf("Not plotted: xN=%d<SCREEN_WIDTH_GRAPH=%d && xN=%d>=minN_x=%d && yN=%d<SCREEN_HEIGHT_GRAPH=%d && yN=%d>=minN_y=%d\n", xN, SCREEN_WIDTH_GRAPH, xN, minN_x, yN, SCREEN_HEIGHT_GRAPH, yN, minN_y);
+              printf("Not plotted: xN1=%d<SCREEN_WIDTH_GRAPH=%d && xN1=%d>=minN_x=%d && yN1=%d<SCREEN_HEIGHT_GRAPH=%d && yN1=%d>=minN_y=%d\n", xN1, SCREEN_WIDTH_GRAPH, xN1, minN_x, yN1, SCREEN_HEIGHT_GRAPH, yN1, minN_y);
             #endif // PC_BUILD
           }
           if(exitKeyWaiting()) {

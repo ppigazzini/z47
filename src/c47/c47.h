@@ -332,10 +332,6 @@
   extern uint8_t                Input_Default;                //JM Input Default
   extern bool_t                 BASE_MYM;                     //JM Screen / keyboard operation setup
   extern bool_t                 jm_G_DOUBLETAP;               //JM Screen / keyboard operation setup
-  extern float                  graph_xmin;                   //JM Graph
-  extern float                  graph_xmax;                   //JM Graph
-  extern float                  graph_ymin;                   //JM Graph
-  extern float                  graph_ymax;                   //JM Graph
   extern uint8_t                IrFractionsCurrentStatus;     //JM
   extern bool_t                 tvmIKnown;
   extern bool_t                 tvmIChanges;

@@ -25,6 +25,7 @@
 #if !defined(GRAPHS_H)
 #define GRAPHS_H
 
+#include "typeDefinitions.h"
 #include <stdint.h>
 
 //Graph functions
@@ -32,6 +33,7 @@ void    graph_reset        (void);
 void    fnClGrf            (uint16_t unusedButMandatoryParameter);
 void    fnPline            (uint16_t unusedButMandatoryParameter);
 void    fnPcros            (uint16_t unusedButMandatoryParameter);
+void    fnPplus            (uint16_t unusedButMandatoryParameter);
 void    fnPbox             (uint16_t unusedButMandatoryParameter);
 void    fnPintg            (uint16_t unusedButMandatoryParameter);
 void    fnPdiff            (uint16_t unusedButMandatoryParameter);
@@ -41,7 +43,7 @@ void    fnPNvect           (uint16_t unusedButMandatoryParameter);
 void    fnScale            (uint16_t unusedButMandatoryParameter);
 void    fnPshade           (uint16_t unusedButMandatoryParameter);
 void    fnComplexPlot      (uint16_t unusedButMandatoryParameter);
-void    fnPzoom            (uint16_t param);
+void    fnPMzoom           (uint16_t param);
 void    fnPx               (uint16_t unusedButMandatoryParameter);
 void    fnPy               (uint16_t unusedButMandatoryParameter);
 void    fnListXY           (uint16_t unusedButMandatoryParameter);
@@ -50,5 +52,18 @@ void    graph_plotmem      (void);
 void    fnPlotSQ           (uint16_t unusedButMandatoryParameter);
 void    fnPlotReset        (uint16_t unusedButMandatoryParameter);
 void    fnPlotStatAdv      (uint16_t unusedButMandatoryParameter);
+
+#define plotstat true
+void graphResetCommon      (void);
+void graph_Include0        (bool_t mode,  uint16_t statnum); //using global: extentx, x_min, x_max, extenty, y_min, y_max
+extern  bool_t   extentx;
+extern  bool_t   extenty;
+extern  float    x_min;
+extern  float    x_max;
+extern  float    y_min;
+extern  float    y_max;
+extern  bool_t   PLOT_SCALE;
+extern  int8_t   PLOT_ZMY;
+
 
 #endif // !GRAPHS_H
