@@ -952,6 +952,7 @@ bool_t itemNotAvail(int16_t itemNr) {
   void fnToHr                      (uint16_t unusedButMandatoryParameter) {}
   void fnHRtoTM                    (uint16_t unusedButMandatoryParameter) {}
   void fnHMStoTM                   (uint16_t unusedButMandatoryParameter) {}
+  void fnFrom_ymd                  (uint16_t unusedButMandatoryParameter) {}
   void fnToReal                    (uint16_t unusedButMandatoryParameter) {}
   void fnDec                       (uint16_t unusedButMandatoryParameter) {}
   void fnInc                       (uint16_t unusedButMandatoryParameter) {}
@@ -3381,7 +3382,7 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 1908 */  { fnSigmaAssign,                16384+ITM_SHIFTf,            "",                                            STD_RIGHT_DASHARROW STD_SPACE_4_PER_EM "f",                                 (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 1909 */  { fnTo_ms,                      NOPARAM,                     ".ms",                                         ".ms",                                         (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },//JM DMS HMS
 /* 1910 */  { fnFrom_ms,                    NOPARAM,                     ".ms" STD_SUP_MINUS STD_SUP_1,                 ".ms" STD_SUP_MINUS STD_SUP_1,                 (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },//JM DMS HMS
-/* 1911 */  { itemToBeCoded/*fnFrom_ymd*/,                   NOPARAM,                     DT STD_RIGHT_ARROW "x",                DT STD_RIGHT_ARROW "x",               (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },//JM DMS HMS
+/* 1911 */  { fnFrom_ymd,                   NOPARAM,                     DT STD_RIGHT_ARROW "x",                DT STD_RIGHT_ARROW "x",               (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },//JM DMS HMS
 /* 1912 */  { fnXEQMXXEQ,                   NOPARAM,                     "X.XEQ",                                       "X.XEQ",                                       (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_NONE         },
 /* 1913 */  { itemToBeCoded,                NOPARAM,                     "",                                            "TamAlpha",                                    (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 1914 */  { fnKeysManagement,             TO_USER,                     "N" STD_RIGHT_ARROW "U",                       "N" STD_RIGHT_ARROW "U",                       (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
