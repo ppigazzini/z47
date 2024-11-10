@@ -15,6 +15,7 @@
 #include "error.h"
 #include "c43Extensions/addons.h"
 #include "c43Extensions/graphText.h"
+#include "registerValueConversions.h"
 #include "flags.h"
 #include "items.h"
 #include "math.h"
@@ -166,20 +167,61 @@ void fnPrms (uint16_t unusedButMandatoryParameter) {
 }
 
 
-void fnPMzoom (uint16_t param) { //param = 2: positive
-  #define RangeHi +16
-  #define RangeLo -16
-  int8_t increment = param == 2 ? +1 : param == 1 ? -1 : 0;
-  PLOT_ZMY += increment;
-  if(PLOT_ZMY > RangeHi) {
-    PLOT_ZMY = RangeLo;
+  void fnPMzoom (uint16_t param) { //param = 2: positive; param = 1: negative
+    switch(calcMode){
+      case CM_PLOT_STAT: {
+        const int8_t RangeHi = 0;
+        const int8_t RangeLo = -3;
+        int8_t increment = param == 2 ? +1 : param == 1 ? -1 : 0;
+        PLOT_ZOOM += increment;
+        if(PLOT_ZOOM > RangeHi) {
+          PLOT_ZOOM = RangeLo;
+        }
+        else if(PLOT_ZOOM < RangeLo) {
+          PLOT_ZOOM = RangeHi;
+        }
+        if(PLOT_ZOOM != 0) {
+           PLOT_AXIS = true;
+        }
+        else {
+           PLOT_AXIS = false;
+        }
+        break;
+      }
+      case CM_GRAPH: {
+        const int8_t RangeHi = +16;
+        const int8_t RangeLo = -16;
+        PLOT_AXIS = true;
+        int8_t increment = param == 2 ? +1 : param == 1 ? -1 : 0;
+        PLOT_ZMY += increment;
+        if(PLOT_ZMY > RangeHi) {
+          PLOT_ZMY = RangeLo;
+        }
+        else if(PLOT_ZMY < RangeLo) {
+          PLOT_ZMY = RangeHi;
+        }
+        fnRefreshState();
+        fnPlotSQ(0);
+        break;
+      }
+      default:break;
+    }
   }
-  else if(PLOT_ZMY < RangeLo) {
-    PLOT_ZMY = RangeHi;
+
+
+void fnPlotZoom(uint16_t unusedButMandatoryParameter){
+    longInteger_t x;
+    int32_t ii;
+    if(!getRegisterAsLongInt(REGISTER_X, x, NULL))
+      return;
+    longIntegerToInt(x, ii);
+    longIntegerFree(x);
+    //the ZOOM command from outside the PLOT mode only works for PLSTAT
+    PLOT_ZMY = ii;
   }
-  fnRefreshState();
-  fnPlotSQ(0);
-}
+
+
+
 
 
 static void calculateZoomFactor(float factor, float *aa) {
@@ -284,11 +326,11 @@ void fnPlotReset(uint16_t unusedButMandatoryParameter) {
 
 void fnPlotSQ(uint16_t unusedButMandatoryParameter) {
   #if !defined(TESTSUITE_BUILD)
-  #if defined(DMCP_BUILD)
-    lcd_refresh();
-  #else // !DMCP_BUILD
-    refreshLcd(NULL);
-  #endif // DMCP_BUILD
+    #if defined(DMCP_BUILD)
+      lcd_refresh();
+    #else // !DMCP_BUILD
+      refreshLcd(NULL);
+    #endif // DMCP_BUILD
 
     PLOT_AXIS = true;
 
@@ -606,6 +648,7 @@ void graph_text(void) {
 }
 
 
+
 //####################################################
 //######### PLOT MEM #################################
 //####################################################
@@ -619,13 +662,14 @@ void graph_Include0(bool_t mode, uint16_t statnum) {
     printf("Axis1b: x: %f -> %f y: %f -> %f   \n",x_min, x_max, y_min, y_max);
   #endif // STATDEBUG
 
-        //Check and correct if min and max is swapped
-        if(x_min>0.0f && x_min > x_max) {
-          x_min = x_min - (-x_max+x_min)* 1.1f;
-        }
-        if(x_min<0.0f && x_min > x_max) {
-          x_min = x_min + (-x_max+x_min)* 1.1f;
-        }
+
+  //Check and correct if min and max is swapped
+  if(x_min>0.0f && x_min > x_max) {
+    x_min = x_min - (-x_max+x_min)* 1.1f;
+  }
+  if(x_min<0.0f && x_min > x_max) {
+    x_min = x_min + (-x_max+x_min)* 1.1f;
+  }
 
 
   //include the 0 axis
@@ -729,9 +773,18 @@ void graph_Include0(bool_t mode, uint16_t statnum) {
 
   //Calc zoom scales
   if(mode == PLOTSTAT) {
+    //the ZOOM command from outside the PLOT mode only works for PLSTAT
+//    const int8_t RangeHi = 0;
+//    const int8_t RangeLo = -3;
+//    if(PLOT_ZOOM > RangeHi) {
+//      PLOT_ZOOM = RangeHi;
+//    }
+//    else if(PLOT_ZOOM < RangeLo) {
+//      PLOT_ZOOM = RangeLo;
+//    }
     float histofactor = drawHistogram == 0 ? 1 : 1/zoomfactor * (((float)statnum + 2.0f)  /  ((float)(statnum) - 1.0f) - 1)/2;     //Create space on the sides of the graph for the wider histogram columns
     float plotzoomx = 1;
-    calculateZoomFactor(-0.75 * (PLOT_ZOOM & 0x03), &plotzoomx);
+    calculateZoomFactor(PLOT_ZOOM * 0.75, &plotzoomx);
     float plotzoomy = drawHistogram == 1 ? 1 : plotzoomx;
     multiplyZoomFactors(plotzoomx, plotzoomy, histofactor, &x_min, &x_max, &y_min, &y_max, &dx, &dy);
     if(drawHistogram == 1) {
@@ -739,8 +792,16 @@ void graph_Include0(bool_t mode, uint16_t statnum) {
     }
   }
   else { //mode != PLOTSTAT
+    const int8_t RangeHi = +16;
+    const int8_t RangeLo = -16;
+    if(PLOT_ZMY > RangeHi) {
+      PLOT_ZMY = RangeHi;
+    }
+    else if(PLOT_ZMY < RangeLo) {
+      PLOT_ZMY = RangeLo;
+    }
     float plotzoomy = 1;
-    calculateZoomFactor(PLOT_ZMY*0.55, &plotzoomy);
+    calculateZoomFactor(PLOT_ZMY * 0.55, &plotzoomy);
     float plotzoomx = plotStatMx[0]=='D' ? 1 : plotzoomy;
     multiplyZoomFactors(plotzoomx, plotzoomy, 1/*histofactor*/, &x_min, &x_max, &y_min, &y_max, &dx, &dy);
   }
@@ -1057,8 +1118,6 @@ void graph_plotmem(void) {
 
 
         graph_Include0(!PLOTSTAT, 0);
-
-
 
 
         roundedTicks = true;
