@@ -15,6 +15,7 @@
 #include "error.h"
 #include "c43Extensions/addons.h"
 #include "c43Extensions/graphText.h"
+#include "flags.h"
 #include "items.h"
 #include "math.h"
 #include "plotstat.h"
@@ -29,34 +30,34 @@
 
 #include "c47.h"
 
-#define STATDEBUG
+//#define STATDEBUG
 
 bool_t    invalid_intg = true;
 bool_t    invalid_diff = true;
 bool_t    invalid_rms  = true;
 
-bool_t    extentx = false;
-bool_t    extenty = false;
 float     x_min = 0;
 float     x_max = 1;
 float     y_min = 0;
 float     y_max = 1;
-bool_t    PLOT_SCALE = false;
 int8_t    PLOT_ZMY = 0;
 
 
 void graphResetCommon() {
   graph_dx      = 0;
   graph_dy      = 0;
-  extenty       = false;
-  extentx       = false;
-  PLOT_VECT     = false;
-  PLOT_NVECT    = false;
-  PLOT_SCALE    = false;
-  PLOT_LINE     = true;
-  PLOT_BOX      = true;
-  PLOT_CROSS    = false;
-  PLOT_PLUS     = false;
+
+  clearSystemFlag(FLAG_CPXPLOT);
+  clearSystemFlag(FLAG_SHOWY);
+  clearSystemFlag(FLAG_SHOWX);
+  clearSystemFlag(FLAG_VECT);
+  clearSystemFlag(FLAG_NVECT);
+  clearSystemFlag(FLAG_SCALE);
+  setSystemFlag(FLAG_PLINE);
+  setSystemFlag(FLAG_PBOX);
+  clearSystemFlag(FLAG_PCROS);
+  clearSystemFlag(FLAG_PPLUS);
+
   PLOT_INTG     = false;
   PLOT_DIFF     = false;
   PLOT_RMS      = false;
@@ -66,7 +67,6 @@ void graphResetCommon() {
   plotmode      = _SCAT;
   tick_int_x    = 0;
   tick_int_y    = 0;
-  PLOT_CPXPLOT  = false;
   PLOT_AXIS     = false;
 
 }
@@ -86,9 +86,9 @@ void fnClGrf(uint16_t unusedButMandatoryParameter) {
 
 
 void fnPline(uint16_t unusedButMandatoryParameter) {
-  PLOT_LINE = !PLOT_LINE;
-  if(!PLOT_LINE && !PLOT_CROSS && !PLOT_BOX && !PLOT_PLUS) {
-    PLOT_BOX = true;
+  flipSystemFlag(FLAG_PLINE);
+  if(!getSystemFlag(FLAG_PLINE) && !getSystemFlag(FLAG_PCROS) && !getSystemFlag(FLAG_PBOX) && !getSystemFlag(FLAG_PPLUS)) {
+    setSystemFlag(FLAG_PBOX);
   }
   fnRefreshState();                //jm
   fnPlotSQ(0);
@@ -96,27 +96,26 @@ void fnPline(uint16_t unusedButMandatoryParameter) {
 
 
 void fnPcros(uint16_t unusedButMandatoryParameter) {
-  PLOT_CROSS = !PLOT_CROSS;
-  if(PLOT_CROSS) {
-    PLOT_BOX = false;
-    PLOT_PLUS = false;
+  flipSystemFlag(FLAG_PCROS);
+  if(getSystemFlag(FLAG_PCROS)) {
+    clearSystemFlag(FLAG_PBOX);
+    clearSystemFlag(FLAG_PPLUS);
   }
-  if(!PLOT_CROSS && !PLOT_BOX && !PLOT_PLUS) {
-    PLOT_LINE = true;
+  if(!getSystemFlag(FLAG_PCROS) && !getSystemFlag(FLAG_PBOX) && !getSystemFlag(FLAG_PPLUS)) {
+    setSystemFlag(FLAG_PLINE);
   }
   fnRefreshState();                //jm
   fnPlotSQ(0);
 }
 
 void fnPplus(uint16_t unusedButMandatoryParameter) {
-  PLOT_PLUS = !PLOT_PLUS;
-  if(PLOT_PLUS) {
-    printf("PLUS SET\n");
-    PLOT_BOX = false;
-    PLOT_CROSS = false;
+  flipSystemFlag(FLAG_PPLUS);
+  if(getSystemFlag(FLAG_PPLUS)) {
+    clearSystemFlag(FLAG_PBOX);
+    clearSystemFlag(FLAG_PCROS);
   }
-  if(!PLOT_CROSS && !PLOT_BOX && !PLOT_PLUS) {
-    PLOT_LINE = true;
+  if(!getSystemFlag(FLAG_PCROS) && !getSystemFlag(FLAG_PBOX) && !getSystemFlag(FLAG_PPLUS)) {
+    setSystemFlag(FLAG_PLINE);
   }
   fnRefreshState();                //jm
   fnPlotSQ(0);
@@ -124,13 +123,13 @@ void fnPplus(uint16_t unusedButMandatoryParameter) {
 
 
 void fnPbox (uint16_t unusedButMandatoryParameter) {
-  PLOT_BOX = !PLOT_BOX;
-  if(PLOT_BOX) {
-    PLOT_CROSS = false;
-    PLOT_PLUS = false;
+  flipSystemFlag(FLAG_PBOX);
+  if(getSystemFlag(FLAG_PBOX)) {
+    clearSystemFlag(FLAG_PCROS);
+    clearSystemFlag(FLAG_PPLUS);
   }
-  if(!PLOT_CROSS && !PLOT_BOX && !PLOT_PLUS) {
-    PLOT_LINE = true;
+  if(!getSystemFlag(FLAG_PCROS) && !getSystemFlag(FLAG_PBOX) && !getSystemFlag(FLAG_PPLUS)) {
+    setSystemFlag(FLAG_PLINE);
   }
   fnRefreshState();                //jm
   fnPlotSQ(0);
@@ -142,8 +141,8 @@ void fnPintg (uint16_t unusedButMandatoryParameter) {
   if(!PLOT_INTG) {
     PLOT_SHADE = false;
   }
-  PLOT_VECT  = false;
-  PLOT_NVECT = false;
+  clearSystemFlag(FLAG_VECT);
+  clearSystemFlag(FLAG_NVECT);
   fnRefreshState();                //jm
   fnPlotSQ(0);
 }
@@ -151,8 +150,8 @@ void fnPintg (uint16_t unusedButMandatoryParameter) {
 
 void fnPdiff (uint16_t unusedButMandatoryParameter) {
   PLOT_DIFF  = !PLOT_DIFF;
-  PLOT_VECT  = false;
-  PLOT_NVECT = false;
+  clearSystemFlag(FLAG_VECT);
+  clearSystemFlag(FLAG_NVECT);
   fnRefreshState();                //jm
   fnPlotSQ(0);
 }
@@ -160,8 +159,8 @@ void fnPdiff (uint16_t unusedButMandatoryParameter) {
 
 void fnPrms (uint16_t unusedButMandatoryParameter) {
   PLOT_RMS   = !PLOT_RMS;
-  PLOT_VECT  = false;
-  PLOT_NVECT = false;
+  clearSystemFlag(FLAG_VECT);
+  clearSystemFlag(FLAG_NVECT);
   fnRefreshState();                //jm
   fnPlotSQ(0);
 }
@@ -183,19 +182,34 @@ void fnPMzoom (uint16_t param) { //param = 2: positive
 }
 
 
-void calculateZoomFactor(int8_t factor, float *aa, float *bb) {
+static void calculateZoomFactor(float factor, float *aa) {
   #define basefactor 4.5f
   if(factor != 0) {
     (*aa) *= pow(basefactor,-factor);
-    (*bb) *= pow(basefactor,-factor);
   }
 }
 
 
+static void multiplyZoomFactors(float plotzoomx, float plotzoomy, float histofactor, float *x_min, float *x_max, float *y_min, float *y_max, float *dx, float *dy) {
+    *x_min = *x_min - *dx * zoomfactor;
+    *y_min = *y_min - *dy * zoomfactor;
+    *x_max = *x_max + *dx * zoomfactor;
+    *y_max = *y_max + *dy * zoomfactor;
+    *dx = *x_max - *x_min;
+    *dy = *y_max - *y_min;
+    float xavg = (*x_max + *x_min)/2;
+    float yavg = (*y_max + *y_min)/2;
+    *y_min = yavg - *dy/2 * plotzoomy * histofactor;
+    *y_max = yavg + *dy/2 * plotzoomy * histofactor;
+    *x_min = xavg - *dx/2 * plotzoomx * histofactor;
+    *x_max = xavg + *dx/2 * plotzoomx * histofactor;
+}
+
+
 void fnPvect (uint16_t unusedButMandatoryParameter) {
-  PLOT_VECT = !PLOT_VECT;
-  if(PLOT_VECT) {
-    PLOT_NVECT = false;
+  flipSystemFlag(FLAG_VECT);
+  if(getSystemFlag(FLAG_VECT)) {
+    clearSystemFlag(FLAG_NVECT);
   }
   PLOT_INTG    = false;
   PLOT_DIFF    = false;
@@ -207,9 +221,9 @@ void fnPvect (uint16_t unusedButMandatoryParameter) {
 
 
 void fnPNvect (uint16_t unusedButMandatoryParameter) {
-  PLOT_NVECT = !PLOT_NVECT;
-  if(PLOT_NVECT) {
-    PLOT_VECT = false;
+  flipSystemFlag(FLAG_NVECT);
+  if(getSystemFlag(FLAG_NVECT)) {
+    clearSystemFlag(FLAG_VECT);
   }
   PLOT_INTG   = false;
   PLOT_DIFF   = false;
@@ -221,7 +235,7 @@ void fnPNvect (uint16_t unusedButMandatoryParameter) {
 
 
 void fnScale (uint16_t unusedButMandatoryParameter) {
-  PLOT_SCALE = !PLOT_SCALE;
+  flipSystemFlag(FLAG_SCALE);
   fnRefreshState();                //jm
   fnPlotSQ(0);
 }
@@ -232,15 +246,15 @@ void fnPshade (uint16_t unusedButMandatoryParameter) {
   if(PLOT_SHADE) {
     PLOT_INTG = true;
   }
-  PLOT_VECT   = false;
-  PLOT_NVECT  = false;
- fnRefreshState();                //jm
+  clearSystemFlag(FLAG_VECT);
+  clearSystemFlag(FLAG_NVECT);
+  fnRefreshState();                //jm
   fnPlotSQ(0);
 }
 
 
 void fnComplexPlot (uint16_t unusedButMandatoryParameter) {
-  PLOT_CPXPLOT = !PLOT_CPXPLOT;
+  flipSystemFlag(FLAG_CPXPLOT);
   fnRefreshState();                //jm
   fnEqSolvGraph(EQ_PLOT_LU);
   fnPlotSQ(0);
@@ -248,14 +262,14 @@ void fnComplexPlot (uint16_t unusedButMandatoryParameter) {
 
 
 void fnPx (uint16_t unusedButMandatoryParameter) {
-  extentx = !extentx;
+  flipSystemFlag(FLAG_SHOWX);
   fnRefreshState();                //jm
   fnPlotSQ(0);
 }
 
 
 void fnPy (uint16_t unusedButMandatoryParameter) {
-  extenty = !extenty;
+  flipSystemFlag(FLAG_SHOWY);
   fnRefreshState();                //jm
   fnPlotSQ(0);
 }
@@ -276,26 +290,26 @@ void fnPlotSQ(uint16_t unusedButMandatoryParameter) {
     refreshLcd(NULL);
   #endif // DMCP_BUILD
 
-  PLOT_AXIS = true;
-  if(!GRAPHMODE) {
-    previousCalcMode = calcMode;
-  }
-  if(previousCalcMode == CM_GRAPH || previousCalcMode == CM_PLOT_STAT) {
-    previousCalcMode = CM_NORMAL;
-  }
+    PLOT_AXIS = true;
 
-  if(!GRAPHMODE) { //Change over hourglass to the left side
-    clearScreenOld(clrStatusBar, !clrRegisterLines, !clrSoftkeys);
-  }
-  calcMode = CM_GRAPH;
-  hourGlassIconEnabled = true;       //clear the current portion of statusbar
-  showHideHourGlass();
-  refreshStatusBar();
+    if(GRAPHMODE) {
+      previousCalcMode = CM_NORMAL;
+    } else {
+      previousCalcMode = calcMode;
+      clearScreenOld(clrStatusBar, !clrRegisterLines, !clrSoftkeys); //Change over hourglass to the left side
+    }
 
-  if(softmenu[softmenuStack[0].softmenuId].menuItem != -MNU_PLOT) {
-    showSoftmenu(-MNU_PLOT);                         //JM MENU Prevent resetting the softmenu to the default no 1 page position
-  }
+    calcMode = CM_GRAPH;
+    hourGlassIconEnabled = true;       //clear the current portion of statusbar
+    showHideHourGlass();
+    refreshStatusBar();
 
+    if(menu(0) != -MNU_PLOTFUNC && plotStatMx[0] == 'D') {
+      showSoftmenu(-MNU_PLOTFUNC);
+    } 
+    else if(menu(0) != -MNU_PLOTSIGMA && plotStatMx[0] == 'S') {
+      showSoftmenu(-MNU_PLOTSIGMA);
+    } 
   #endif // !TESTSUITE_BUILD
 }
 
@@ -315,7 +329,7 @@ void fnListXY(uint16_t unusedButMandatoryParameter) {
   void fnPlotStatAdv(uint16_t unusedButMandatoryParameter) {
     lastPlotMode = PLOT_NOTHING;
     strcpy(plotStatMx, "STATS");
-    PLOT_LINE = true;
+    setSystemFlag(FLAG_PLINE);
     PLOT_SHADE = true;
     fnPlotSQ(0);
   }
@@ -597,13 +611,13 @@ void graph_text(void) {
 //####################################################
 
 
-void graph_Include0(bool_t mode, uint16_t statnum){ 
-  //using global: extentx, x_min, x_max, extenty, y_min, y_max, PLOT_SCALE, PLOT_ZMY, zoomfactor
+void graph_Include0(bool_t mode, uint16_t statnum) {
+  //using global: FLAG_SHOWX, x_min, x_max, FLAG_SHOWY, y_min, y_max, FLAG_SCALE, PLOT_ZMY, zoomfactor
 
-        #if defined(STATDEBUG) && defined(PC_BUILD)
-          printf("PLOT_ZMY=%i  PLOT_SCALE=%i mode=%i\n", PLOT_ZMY, PLOT_SCALE, mode);
-          printf("Axis1b: x: %f -> %f y: %f -> %f   \n",x_min, x_max, y_min, y_max);
-        #endif // STATDEBUG
+  #if defined(STATDEBUG) && defined(PC_BUILD)
+    printf("PLOT_ZMY=%i  FLAG_SCALE=%i mode=%i\n", PLOT_ZMY, getSystemFlag(FLAG_SCALE), mode);
+    printf("Axis1b: x: %f -> %f y: %f -> %f   \n",x_min, x_max, y_min, y_max);
+  #endif // STATDEBUG
 
         //Check and correct if min and max is swapped
         if(x_min>0.0f && x_min > x_max) {
@@ -613,135 +627,128 @@ void graph_Include0(bool_t mode, uint16_t statnum){
           x_min = x_min + (-x_max+x_min)* 1.1f;
         }
 
-        //Always include the 0 axis
-        if(!extentx) {
-          if(x_min > 0.0f && x_max > 0.0f) {
-            if(x_min <= x_max) {
-              x_min = -0.05f * x_max;
-            }
-            else {
-              x_min = 0.0f;
-            }
-          }
-          if(x_min < 0.0f && x_max < 0.0f) {
-            if(x_min >= x_max) {
-              x_min = -0.05f * x_max;
-            }
-            else {
-              x_max = 0.0f;
-            }
-          }
+
+  //include the 0 axis
+  if(getSystemFlag(FLAG_SHOWX)) {
+    if(x_min > 0.0f && x_max > 0.0f) {
+      if(x_min <= x_max) {
+        x_min = -0.05f * x_max;
+      }
+      else {
+        x_min = 0.0f;
+      }
+    }
+    if(x_min < 0.0f && x_max < 0.0f) {
+      if(x_min >= x_max) {
+        x_min = -0.05f * x_max;
+      }
+      else {
+        x_max = 0.0f;
+      }
+    }
+  }
+  if(getSystemFlag(FLAG_SHOWY)) {
+    if(y_min > 0.0f && y_max > 0.0f) {
+      if(y_min <= y_max) {
+        y_min = -0.05f * y_max;
+      }
+      else {
+        y_min = 0.0f;
+      }
+    }
+    if(y_min < 0.0f && y_max < 0.0f) {
+      if(y_min >= y_max) {
+        y_min = -0.05f * y_max;
+      }
+      else {
+        y_max = 0.0f;
+      }
+    }
+  }
+
+
+  //Cause scales to be the same
+  if(getSystemFlag(FLAG_SCALE)) {
+    // if y >> x, then y simply takes on the X range and can be increased using ZMY
+    if(mode == PLOTSTAT) {
+      x_min = min(x_min,y_min);
+      x_max = max(x_max,y_max);
+      y_min = x_min;
+      y_max = x_max;
+    }
+    else {  //new equal scale calculation to keep the grpah centre of screen
+      float dx = fabs(x_max - x_min);
+      float dy = fabs(y_max - y_min);
+      //printf("dx=%f dy=%f\n",dx,dy);
+      if(dx > 1e-10 && dy/dx > 100000) {
+        y_min = x_min;
+        y_max = x_max;              
+        dx = fabs(x_max - x_min);
+        dy = fabs(y_max - y_min);
+      }
+      else {
+        if(dx > dy) {
+          dy = dx;
+        } else {
+          dx = dy;
         }
-        if(!extenty) {
-          if(y_min > 0.0f && y_max > 0.0f) {
-            if(y_min <= y_max) {
-              y_min = -0.05f * y_max;
-            }
-            else {
-              y_min = 0.0f;
-            }
-          }
-          if(y_min < 0.0f && y_max < 0.0f) {
-            if(y_min >= y_max) {
-              y_min = -0.05f * y_max;
-            }
-            else {
-              y_max = 0.0f;
-            }
-          }
-        }
-
-        //Cause scales to be the same
-        if(PLOT_SCALE) {
-          // if y >> x, then y simply takes on the X range and can be increased using ZMY
-          if(mode == plotstat) {
-            x_min = min(x_min,y_min);
-            x_max = max(x_max,y_max);
-            y_min = x_min;
-            y_max = x_max;
-          }
-          else {  //new equal scale calculation to keep the grpah centre of screen
-            float dx = fabs(x_max - x_min);
-            float dy = fabs(y_max - y_min);
-            //printf("dx=%f dy=%f\n",dx,dy);
-            if(dx > 1e-10 && dy/dx > 100000) {
-              y_min = x_min;
-              y_max = x_max;              
-              dx = fabs(x_max - x_min);
-              dy = fabs(y_max - y_min);
-            }
-            else {
-              if(dx > dy) {
-                dy = dx;
-              } else {
-                dx = dy;
-              }
-            }
-            x_min = (x_min + x_max)/2 - dx/2;
-            x_max = x_min + dx;
-            y_min = (y_min + y_max)/2 - dy/2;
-            y_max = y_min + dy;
-          }
-        }
-
-        //Calc zoom scales
-        if(mode != plotstat) {
-          calculateZoomFactor(PLOT_ZMY, &y_min, &y_max);
-        }
-
-        #if defined(STATDEBUG)
-          printf("Axis2: x: %f -> %f y: %f -> %f   \n",x_min, x_max, y_min, y_max);
-        #endif // STATDEBUG
+      }
+      x_min = (x_min + x_max)/2 - dx/2;
+      x_max = x_min + dx;
+      y_min = (y_min + y_max)/2 - dy/2;
+      y_max = y_min + dy;
+    }
+  }
 
 
-        //modify the draw range if the min == max
-        float dx = x_max-x_min;
-        float dy = y_max-y_min;
-        if(dy == 0.0f) {
-          dy = 1.0f;
-          y_max = y_min + dy/2.0f;
-          y_min = y_max - dy;
-        }
-        if(dx == 0.0f) {
-          dx = 1.0f;
-          x_max = x_min + dx/2.0f;
-          x_min = x_max - dx;
-        }
+  #if defined(STATDEBUG) && defined(PC_BUILD)
+    printf("x_min=%f,y_min=%f,x_max=%f,y_max=%f, dx=%f, dy=%f, plotzoomx=%f\n", x_min,y_min,x_max,y_max, dx, dy, plotzoomx);
+    printf("Axis2: x: %f -> %f y: %f -> %f   \n",x_min, x_max, y_min, y_max);
+  #endif // STATDEBUG
 
-        if(mode == plotstat) {
-          /*
-          (pow(4.5f, (int8_t)(PLOT_ZOOM & 0x03))) / 20
-          0 1/20      = 0.05  * 2 = 0.10    width: dx * 1.10       Reference 1
-          1 4,5/20    = 0.23  * 2 = 0.45    width: dx * 1.45       factor 1.32
-          2 20,25/20  = 1.01  * 2 = 2.03    width: dx * 2.03       factor 2.75
-          3 91,125/20 = 4.56  * 2 = 9.11    width: dx * 10.11      factor 9.19
-          ( (int8_t)(PLOT_ZOOM & 0x03) == 0 ? 1.0f : (int8_t)(PLOT_ZOOM & 0x03) == 1 ? 4.5f : (int8_t)(PLOT_ZOOM & 0x03) == 2 ? 20.25f : 91.125f )
-          */
-          float histofactor = drawHistogram == 0 ? 1 : 1/zoomfactor * (((float)statnum + 2.0f)  /  ((float)(statnum) - 1.0f) - 1)/2;     //Create space on the sides of the graph for the wider histogram columns
-          float plotzoomx = pow(4.5f, (int8_t)(PLOT_ZOOM & 0x03));
-          float plotzoomy = drawHistogram == 1 ? 1 : plotzoomx;
-          x_min = x_min - dx * zoomfactor * histofactor * plotzoomx;
-          y_min = y_min - dy * zoomfactor * histofactor * plotzoomy;
-          x_max = x_max + dx * zoomfactor * histofactor * plotzoomx;
-          y_max = y_max + dy * zoomfactor * histofactor * plotzoomy;
-          if(drawHistogram == 1) {
-            y_min = 0;
-          }
-        }
-//this was in the original file but seems to be interfering with PLOT_ZM*
-//        else {
-//          x_min = x_min - dx * zoomfactor * (pow(4.5f, (int8_t)(PLOT_ZOOM & 0x03)));
-//          y_min = y_min - dy * zoomfactor * (pow(4.5f, (int8_t)(PLOT_ZOOM & 0x03)));
-//          x_max = x_max + dx * zoomfactor * (pow(4.5f, (int8_t)(PLOT_ZOOM & 0x03)));
-//          y_max = y_max + dy * zoomfactor * (pow(4.5f, (int8_t)(PLOT_ZOOM & 0x03)));
-//        }
+  //modify the draw range if the min == max
+  float dx = x_max-x_min;
+  float dy = y_max-y_min;
+  if(dy == 0.0f) {
+    dy = 1.0f;
+    y_max = y_min + dy/2.0f;
+    y_min = y_max - dy;
+    dy = y_max-y_min;
+  }
+  if(dx == 0.0f) {
+    dx = 1.0f;
+    x_max = x_min + dx/2.0f;
+    x_min = x_max - dx;
+    dx = x_max-x_min;
+  }
 
-        #if defined(STATDEBUG) && defined(PC_BUILD)
-          printf("Axis3a: x: %f -> %f y: %f -> %f   \n",x_min, x_max, y_min, y_max);
-        #endif // STATDEBUG
+  #if defined(STATDEBUG) && defined(PC_BUILD)
+    printf("x_min=%f,y_min=%f,x_max=%f,y_max=%f, dx=%f, dy=%f, plotzoomx=%f\n", x_min,y_min,x_max,y_max, dx, dy, plotzoomx);
+    printf("Axis3a: x: %f -> %f y: %f -> %f   \n",x_min, x_max, y_min, y_max);
+  #endif // STATDEBUG
 
+  //Calc zoom scales
+  if(mode == PLOTSTAT) {
+    float histofactor = drawHistogram == 0 ? 1 : 1/zoomfactor * (((float)statnum + 2.0f)  /  ((float)(statnum) - 1.0f) - 1)/2;     //Create space on the sides of the graph for the wider histogram columns
+    float plotzoomx = 1;
+    calculateZoomFactor(-0.75 * (PLOT_ZOOM & 0x03), &plotzoomx);
+    float plotzoomy = drawHistogram == 1 ? 1 : plotzoomx;
+    multiplyZoomFactors(plotzoomx, plotzoomy, histofactor, &x_min, &x_max, &y_min, &y_max, &dx, &dy);
+    if(drawHistogram == 1) {
+      y_min = 0;
+    }
+  }
+  else { //mode != PLOTSTAT
+    float plotzoomy = 1;
+    calculateZoomFactor(PLOT_ZMY*0.55, &plotzoomy);
+    float plotzoomx = plotStatMx[0]=='D' ? 1 : plotzoomy;
+    multiplyZoomFactors(plotzoomx, plotzoomy, 1/*histofactor*/, &x_min, &x_max, &y_min, &y_max, &dx, &dy);
+  }
 
-
+  #if defined(STATDEBUG) && defined(PC_BUILD)
+    printf("x_min=%f,y_min=%f,x_max=%f,y_max=%f, dx=%f, dy=%f, plotzoomx=%f\n", x_min,y_min,x_max,y_max, dx, dy, plotzoomx);
+    printf("Axis3b: x: %f -> %f y: %f -> %f   \n",x_min, x_max, y_min, y_max);
+  #endif // STATDEBUG
 }
 
 
@@ -821,7 +828,7 @@ void graph_plotmem(void) {
           graph_text();
         }
 
-      if(PLOT_VECT || PLOT_NVECT) {
+      if(getSystemFlag(FLAG_VECT) || getSystemFlag(FLAG_NVECT)) {
         plotmode = _VECT;
       }
       else {
@@ -943,7 +950,7 @@ void graph_plotmem(void) {
 /**/      a7 = 0;
 /**/      a8 = 0;
 /**/
-/**/      if(PLOT_BOX || PLOT_LINE || PLOT_CROSS || PLOT_PLUS || !(PLOT_DIFF || PLOT_INTG)) {  //XXXX
+/**/      if(getSystemFlag(FLAG_PBOX) || getSystemFlag(FLAG_PLINE) || getSystemFlag(FLAG_PCROS) || getSystemFlag(FLAG_PPLUS) || !(PLOT_DIFF || PLOT_INTG)) {  //XXXX
 /**/        for(cnt=0; (cnt < statnum); cnt++) {
 /**/          #if defined(STATDEBUG)
 /**/            printf("Axis0a: cnt/statnum: %i/%i  x: %f y: %f   \n", cnt, statnum, grf_x(cnt), grf_y(cnt));
@@ -1021,8 +1028,8 @@ void graph_plotmem(void) {
 /**/      sx =0;
 /**/      sy =0;
 /**/      for(cnt=0; (cnt < statnum); cnt++) {            //### Note XXX E- will stuff up statnum!
-/**/        sx = sx + (!PLOT_NVECT ? grf_x(cnt) : grf_y(cnt));
-/**/        sy = sy + (!PLOT_NVECT ? grf_y(cnt) : grf_x(cnt));
+/**/        sx = sx + (!getSystemFlag(FLAG_NVECT) ? grf_x(cnt) : grf_y(cnt));
+/**/        sy = sy + (!getSystemFlag(FLAG_NVECT) ? grf_y(cnt) : grf_x(cnt));
 /**/        if(sx < x_min) {
 /**/          x_min = sx;
 /**/        }
@@ -1049,7 +1056,7 @@ void graph_plotmem(void) {
         #endif // STATDEBUG
 
 
-        graph_Include0(!plotstat, 0);
+        graph_Include0(!PLOTSTAT, 0);
 
 
 
@@ -1126,14 +1133,14 @@ void graph_plotmem(void) {
               }
             }
 
-            if(PLOT_BOX || PLOT_LINE || PLOT_CROSS || PLOT_PLUS) {
+            if(getSystemFlag(FLAG_PBOX) || getSystemFlag(FLAG_PLINE) || getSystemFlag(FLAG_PCROS) || getSystemFlag(FLAG_PPLUS)) {
               x = grf_x(ix);
               y = grf_y(ix);
             }
           }
           else { //_VECT
-            sx = sx + (!PLOT_NVECT ? grf_x(ix) : grf_y(ix));
-            sy = sy + (!PLOT_NVECT ? grf_y(ix) : grf_x(ix));
+            sx = sx + (!getSystemFlag(FLAG_NVECT) ? grf_x(ix) : grf_y(ix));
+            sy = sy + (!getSystemFlag(FLAG_NVECT) ? grf_y(ix) : grf_x(ix));
             x = sx;
             y = sy;
           }
@@ -1211,7 +1218,12 @@ printf("    xN1 =%i xo=%i minN_x=%i\n", (int16_t)xN1, (int16_t)xo, (int16_t)minN
                 printf("Not _VECT\n");
               #endif // STATDEBUG
 
-              plotPointGeneric(xn, yn, xo, yo, PLOT_CROSS, false /*fatbox*/, PLOT_BOX /*box*/, PLOT_PLUS, false /*line*/);
+              plotPointGeneric(xn, yn, xo, yo,
+                                 getSystemFlag(FLAG_PCROS) /*cross*/ ,
+                                 false                     /*fatbox*/,
+                                 getSystemFlag(FLAG_PBOX)  /*box*/   ,
+                                 getSystemFlag(FLAG_PPLUS) /*plus*/  ,
+                                 false                     /*line*/   );
 
 
               if(PLOT_DIFF && !invalid_diff && ix != 0) {
@@ -1265,6 +1277,7 @@ printf("    xN1 =%i xo=%i minN_x=%i\n", (int16_t)xN1, (int16_t)xo, (int16_t)minN
                   }
                 }
               }
+
             }
             else { // _VECT
               #if defined(STATDEBUG)
@@ -1273,12 +1286,13 @@ printf("    xN1 =%i xo=%i minN_x=%i\n", (int16_t)xN1, (int16_t)xo, (int16_t)minN
               plotarrow(xo, yo, xn, yn);
             }
 
-            if(PLOT_LINE) {
+            if(getSystemFlag(FLAG_PLINE)) {
               #if defined(STATDEBUG)
                 printf("Plotting line from xo=%d yo=%d to x=%d y=%d\n", xo, yo, xn, yn);
               #endif // STATDEBUG
               plotline2(xo, yo, xn, yn);
             }
+
           }
           else {
             #if defined(PC_BUILD)
@@ -1333,7 +1347,7 @@ void fnStatList() {
     clearScreen();
     refreshStatusBar();
 
-    if(PLOT_VECT || PLOT_NVECT) {
+    if(getSystemFlag(FLAG_VECT) || getSystemFlag(FLAG_NVECT)) {
       plotmode = _VECT;
     }
     else {

@@ -2065,8 +2065,8 @@
 #define ITM_PBOX                    2011
 #define ITM_VECT                    2012
 #define ITM_NVECT                   2013
-#define ITM_EXTX                    2014
-#define ITM_EXTY                    2015
+#define ITM_SHOWX                   2014
+#define ITM_SHOWY                   2015
 #define ITM_DENMAX2_OLD             2016
 #define ITM_SETSIG2_OLD             2017
 #define ITM_AVIEW                   2018
@@ -2079,7 +2079,7 @@
 #define ITM_DIFF                    2025
 #define ITM_RMS                     2026
 #define ITM_SHADE                   2027
-#define MNU_PLOT                    2028
+#define MNU_PLOTFUNC                2028
 #define CHR_num                     2029
 #define CHR_numL                    2030
 #define CHR_numU                    2031
@@ -2090,7 +2090,7 @@
 #define MNU_TRG                     2036
 #define MNU_PREF                    2037
 #define ITM_SAFERESET               2038
-#define ITM_SH_LONGPRESS                   2039
+#define ITM_SH_LONGPRESS            2039
 #define ITM_PLOT_STAT               2040
 #define ITM_3x1TOSTK                2041
 #define ITM_PLOTRST                 2042
@@ -2105,8 +2105,8 @@
 #define ITM_PRTACT1                 2051
 #define ITM_PRTACT0                 2052
 #define ITM_2TO10                   2053
-#define ITM_USER_HRESET                    2054
-#define ITM_USER_PRESET                    2055
+#define ITM_USER_HRESET             2054
+#define ITM_USER_PRESET             2055
 #define ITM_IRFRAC                  2056
 #define ITM_FGLNOFF                 2057
 #define ITM_FGLNLIM                 2058
@@ -2287,7 +2287,7 @@
 #define MNU_LAYOUTS                 2233
 #define MNU_RESETS                  2234
 #define MNU_RIBBONS                 2235
-#define ITM_2236                    2236
+#define MNU_PLOTSIGMA               2236
 #define ITM_2237                    2237
 #define ITM_2238                    2238
 #define ITM_CLMALL                  2239
@@ -2315,16 +2315,17 @@
 #define SFL_IRF_ON                  2259
 #define SFL_PFX_ALL                 2260
 #define SFL_DREAL                   2261
-#define SFL_2258                    2262
-#define SFL_2259                    2263
-#define SFL_2260                    2264
-#define SFL_2261                    2265
-#define SFL_2262                    2266
-#define SFL_2263                    2267
-#define SFL_2264                    2268
-#define SFL_2265                    2269
-#define SFL_2266                    2270
-#define SFL_2267                    2271
+#define SFL_CPXPLOT                 2262
+#define SFL_SHOWX                   2263
+#define SFL_SHOWY                   2264
+#define SFL_PBOX                    2265
+#define SFL_PCROS                   2266
+#define SFL_PPLUS                   2267
+#define SFL_PLINE                   2268
+#define SFL_SCALE                   2269
+#define SFL_VECT                    2270
+#define SFL_NVECT                   2271
+
 #define SFL_2268                    2272
 #define SFL_2269                    2273
 #define SFL_2270                    2274

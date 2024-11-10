@@ -36,32 +36,19 @@
 void fnPlotRegressionLine(uint16_t plotMode);
 
 
-
-// This module originates and is part of the C43 fork, and is copied here.
-// Do not change the shared functions otherwise the C43 fork will break. JM 2021-03-20
-
 #if !defined(TESTSUITE_BUILD)
   static real_t RR,SMI,aa0,aa1,aa2,sa0, sa1; //L.R. variables
   static void drawline(uint16_t selection, real_t *RR, real_t *SMI, real_t *aa0, real_t *aa1, real_t *aa2, real_t *sa0, real_t *sa1);
 #endif // !TESTSUITE_BUILD
 
 
-
-
-float     graph_dx;           // Many unused functions in WP43. Do not change the variables.
+float     graph_dx;
 float     graph_dy;
 bool_t    roundedTicks;
-bool_t    PLOT_VECT;
-bool_t    PLOT_NVECT;
-bool_t    PLOT_LINE;
-bool_t    PLOT_CROSS;
-bool_t    PLOT_PLUS;
-bool_t    PLOT_BOX;
 bool_t    PLOT_INTG;
 bool_t    PLOT_DIFF;
 bool_t    PLOT_RMS;
 bool_t    PLOT_SHADE;
-bool_t    PLOT_CPXPLOT;
 bool_t    PLOT_AXIS;
 uint8_t   PLOT_ZOOM;
 uint8_t   drawHistogram;
@@ -79,8 +66,8 @@ void statGraphReset(void){
   graphResetCommon();
   currentKeyCode = 255;
   roundedTicks  = true;
-  extentx       = false;
-  PLOT_LINE     = false;
+  clearSystemFlag(FLAG_SHOWX);
+  clearSystemFlag(FLAG_PLINE);
   y_min         = 0;
   y_max         = 1;
 }
@@ -388,7 +375,7 @@ void graphAxisDraw (void){
 
   if( PLOT_AXIS && !(yzero == SCREEN_HEIGHT_GRAPH-1 || yzero == minny)) {
     //DRAW XAXIS
-    cnt = 0;
+    cnt = minnx;
 
     while(cnt != SCREEN_WIDTH_GRAPH - 1) {
       setBlackPixel(cnt,yzero);
@@ -456,7 +443,7 @@ void graphAxisDraw (void){
 
   if( PLOT_AXIS && !(xzero == SCREEN_WIDTH-1 || xzero == minnx)) {
     //Write North arrow
-    if(PLOT_NVECT) {
+    if(getSystemFlag(FLAG_NVECT)) {
       char tmpString2[100];
       showString("N", &standardFont, xzero-4, minny+14, vmNormal, true, true);
       showString("x", &standardFont, xzero-4, minny+28, vmNormal, true, true);
@@ -858,7 +845,6 @@ void eformat_eng2 (char* s02, const char* s01, double inreal, int8_t digits, con
       }
     }
   }
-#endif // !TESTSUITE_BUILD
 
 void plotPointGeneric(int16_t xn, int16_t yn, int16_t xo, int16_t yo, bool_t PLOT_CROSS, bool_t PLOT_BOXFAT, bool_t PLOT_BOX, bool_t PLOT_PLUS, bool_t PLOT_LINE) {
   if(PLOT_CROSS) {
@@ -893,6 +879,7 @@ void plotPointGeneric(int16_t xn, int16_t yn, int16_t xo, int16_t yo, bool_t PLO
     plotline(xo, yo, xn, yn);
   }
 }
+#endif // !TESTSUITE_BUILD
 
 
 void graphPlotstat(uint16_t selection){
@@ -902,13 +889,13 @@ currentKeyCode = 255;
     printf("#####>>> graphPlotstat: selection:%u:%s  lastplotmode:%u  lrSelection:%u lrChosen:%u\n",selection, getCurveFitModeName(selection), lastPlotMode, lrSelection, lrChosen);
   #endif // STATDEBUG && PC_BUILD
   #if !defined(TESTSUITE_BUILD)
-  uint16_t  cnt, ix, statnum;
+  uint16_t  cnt, ix, numberOfPlotPoints;
   uint16_t  xo, xn, xN;
   uint8_t   yo, yn, yN;
   float x;
   float y;
 
-  statnum = 0;
+  numberOfPlotPoints = 0;
   if(calcMode == CM_GRAPH) {
     roundedTicks = true;
    }
@@ -917,16 +904,16 @@ currentKeyCode = 255;
    }
 
   if((plotStatMx[0]=='S' && checkMinimumDataPoints(const_2)) ||
-    (plotStatMx[0]=='D' && drawMxN() >= 2) ||
-    (plotStatMx[0]=='H' && statMxN() >= 3)) {
+     (plotStatMx[0]=='D' && drawMxN() >= 2) ||
+     (plotStatMx[0]=='H' && statMxN() >= 3)) {
     switch(plotStatMx[0]) {
-      case 'S': statnum = realToInt32C47(SIGMA_N); break;
-      case 'D': statnum = drawMxN();               break;
-      case 'H': statnum = statMxN();               break;
+      case 'S': numberOfPlotPoints = realToInt32C47(SIGMA_N); break;
+      case 'D': numberOfPlotPoints = drawMxN();               break;
+      case 'H': numberOfPlotPoints = statMxN();               break;
       default: ;
     }
     #if defined(STATDEBUG) && defined(PC_BUILD)
-      printf("graphPlotstat: statnum n=%d\n",statnum);
+      printf("graphPlotstat: numberOfPlotPoints n=%d\n",numberOfPlotPoints);
     #endif // STATDEBUG && PC_BUILD
 
 
@@ -953,7 +940,7 @@ currentKeyCode = 255;
 
 
     //#################################################### vvv SCALING LOOP  vvv
-    for(cnt=0; (cnt < statnum); cnt++) {
+    for(cnt=0; (cnt < numberOfPlotPoints); cnt++) {
       #if defined(STATDEBUG) && defined(PC_BUILD)
         printf("Axis0a: x: %f y: %f   \n",grf_x(cnt), grf_y(cnt));
       #endif // STATDEBUG && PC_BUILD
@@ -989,7 +976,7 @@ currentKeyCode = 255;
       }
 
 
-    graph_Include0(plotstat, statnum);
+    graph_Include0(PLOTSTAT, numberOfPlotPoints);
 
 
 
@@ -1023,7 +1010,7 @@ currentKeyCode = 255;
                                  (  (screen_window_x(x_min,grf_x(1),x_max) - screen_window_x(x_min,grf_x(0),x_max))  / 2.0f  )
                                 ) - 1;
         //#################################################### vvv MAIN GRAPH LOOP vvv #########################
-      for(ix = 0; (ix < statnum); ++ix) {
+      for(ix = 0; (ix < numberOfPlotPoints); ++ix) {
         x = grf_x(ix);
         y = grf_y(ix);
         xo = xN;
@@ -1047,8 +1034,12 @@ currentKeyCode = 255;
             plotHisto_col(xN, yN, minN_y, SCREEN_HEIGHT_GRAPH - minN_y, colw);
           }
 
-        plotPointGeneric(xn, yn, xo, yo, PLOT_CROSS, PLOT_BOX/*fatbox*/, false/*normalbox*/, PLOT_PLUS, PLOT_LINE);
-
+          plotPointGeneric(xn, yn, xo, yo,
+                             getSystemFlag(FLAG_PCROS)  /*cross*/ ,
+                             getSystemFlag(FLAG_PBOX)   /*fatbox*/,
+                             false                      /*box*/   ,
+                             getSystemFlag(FLAG_PPLUS)  /*plus*/  ,
+                             getSystemFlag(FLAG_PLINE)  /*line*/   );
         }
         else {
             #if defined(PC_BUILD)
@@ -1601,7 +1592,7 @@ void fnPlotStat(uint16_t plotMode){
     if((plotStatMx[0]=='S' && checkMinimumDataPoints(const_2)) ||
        (plotStatMx[0]=='D' && drawMxN() >= 2) ||
        (plotStatMx[0]=='H' && statMxN() >= 3) ) {
-      PLOT_SCALE = false;
+      clearSystemFlag(FLAG_SCALE);
 
       #if !defined(TESTSUITE_BUILD)
       if(!(lastPlotMode == PLOT_NOTHING || lastPlotMode == PLOT_START)) {
@@ -1651,8 +1642,8 @@ void fnPlotStat(uint16_t plotMode){
           break;
         case PLOT_ORTHOF:
         case PLOT_START:
-          PLOT_SCALE = true;
-            showSoftmenu(-MNU_PLOT_STAT);
+          setSystemFlag(FLAG_SCALE);
+          showSoftmenu(-MNU_PLOT_STAT);
           break;
         case PLOT_NOTHING:
           break;

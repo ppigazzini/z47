@@ -2497,8 +2497,6 @@ void createSubstrings(uint8_t number) {
     }
   }
 
-  #define PROBMENU (-softmenu[softmenuStack[0].softmenuId].menuItem >= MNU_BINOM && -softmenu[softmenuStack[0].softmenuId].menuItem <= ITM_1296)
-
 
 static bool_t displayTrueFalse(calcRegister_t regist) {
       char sss[10];
@@ -2975,7 +2973,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
           calcRegister_t register_i = REGISTER_X, register_j = REGISTER_X, register_k = REGISTER_X;
 
 
-          switch(softmenu[softmenuStack[0].softmenuId].menuItem) {
+          switch(currentMenu()) {
             case -MNU_GEV:
               r_i = STD_mu;                 register_i = REGISTER_M;
               r_j = STD_sigma;              register_j = REGISTER_S;
@@ -4652,7 +4650,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
 
 
   void closeShowMenu(void) {
-    if(softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_SHOW) {
+    if(currentMenu() == -MNU_SHOW) {
       popSoftmenu();
     }
     showRegis = 9999;
@@ -4694,7 +4692,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
         #endif // PC_BUILD && MONITOR_CLRSCR
         lcd_fill_rect(0, 240 - SOFTMENU_HEIGHT * 3, SCREEN_WIDTH - 240 - 2, SOFTMENU_HEIGHT * 3, LCD_SET_VALUE);
         clear_ul(); //JMUL
-        if(!GRAPHMODE || softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_PLOT) { //not in GRAPHMODE, the triangle area indicating more menus 
+        if(!GRAPHMODE || menu(0) == -MNU_PLOTFUNC) { //not in GRAPHMODE, the triangle area indicating more menus 
           lcd_fill_rect(0, 240 - SOFTMENU_HEIGHT * 3 - 3, 20, 6, LCD_SET_VALUE);
         }
          if(!GRAPHMODE) { //in GRAPHMODE, protect the square graph area
@@ -4792,7 +4790,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
       #if defined(DMCP_BUILD)
         if(!getSystemFlag(FLAG_USB)) {
           // partial clearscreen, no menu update, no statusbar update on battery
-          if(doRefreshSoftMenu && !(screenUpdatingMode & (SCRUPD_MANUAL_MENU | SCRUPD_SKIP_MENU_ONE_TIME))) {  // battery powered
+          if(doRefreshSoftMenu || !(screenUpdatingMode & (SCRUPD_MANUAL_MENU | SCRUPD_SKIP_MENU_ONE_TIME))) {  // battery powered
             clearScreenOld(!clrStatusBar, !clrRegisterLines, clrSoftkeys);                // battery powered
             showSoftmenuCurrentPart();                                                    // battery powered
           }                                                                               // battery powered
@@ -4814,25 +4812,28 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
           refreshStatusBar();                                                             // USB powered
         }
       #elif defined(PC_BUILD)
-          //   clearScreen();                                                             // this tests the USB powered option on sim
-          //   showSoftmenuCurrentPart();                                                 // this tests the USB powered option on sim
-          //   fnPem(NOPARAM);                                                            // this tests the USB powered option on sim
-          //   displayShiftAndTamBuffer();                                                // this tests the USB powered option on sim
-          //   refreshStatusBar();                                                        // this tests the USB powered option on sim
+          #define TEST_BATTERY_POWERED_SIMULATION
+          #if defined (TEST_USB_POWERED_SIMULATION)
+            clearScreen();                                                                // this tests the USB powered option on sim
+            showSoftmenuCurrentPart();                                                    // this tests the USB powered option on sim
+            fnPem(NOPARAM);                                                               // this tests the USB powered option on sim
+            displayShiftAndTamBuffer();                                                   // this tests the USB powered option on sim
+            refreshStatusBar();                                                           // this tests the USB powered option on sim
 
-          if(doRefreshSoftMenu && !(screenUpdatingMode & (SCRUPD_MANUAL_MENU | SCRUPD_SKIP_MENU_ONE_TIME))) {  // this tests the battery powered option on sim
-            clearScreenOld(!clrStatusBar, !clrRegisterLines, clrSoftkeys);                // this tests the battery powered option on sim
-            showSoftmenuCurrentPart();                                                    // this tests the battery powered option on sim
-          }                                                                               // this tests the battery powered option on sim
+          #elif defined (TEST_BATTERY_POWERED_SIMULATION)
+            if(doRefreshSoftMenu || !(screenUpdatingMode & (SCRUPD_MANUAL_MENU | SCRUPD_SKIP_MENU_ONE_TIME))) {  // this tests the battery powered option on sim
+              clearScreenOld(!clrStatusBar, !clrRegisterLines, clrSoftkeys);              // this tests the battery powered option on sim
+              showSoftmenuCurrentPart();                                                  // this tests the battery powered option on sim
+            }                                                                             // this tests the battery powered option on sim
+            clearScreenOld(!clrStatusBar, clrRegisterLines, !clrSoftkeys);                // this tests the battery powered option on sim
+            fnPem(NOPARAM);                                                               // this tests the battery powered option on sim
+            displayShiftAndTamBuffer();                                                   // this tests the battery powered option on sim
+            if(!(screenUpdatingMode & SCRUPD_MANUAL_STATUSBAR)) {                         // this tests the battery powered option on sim
+              clearScreenOld(clrStatusBar, !clrRegisterLines, !clrSoftkeys);              // this tests the battery powered option on sim
+              refreshStatusBar();                                                         // this tests the battery powered option on sim
+            }                                                                             // this tests the battery powered option on sim
+          #endif //TEST_BATTERY_POWERED_SIMULATION
 
-          clearScreenOld(!clrStatusBar, clrRegisterLines, !clrSoftkeys);                  // this tests the battery powered option on sim
-          fnPem(NOPARAM);                                                                 // this tests the battery powered option on sim
-          displayShiftAndTamBuffer();                                                     // this tests the battery powered option on sim
-
-          if(!(screenUpdatingMode & SCRUPD_MANUAL_STATUSBAR)) {                           // this tests the battery powered option on sim
-            clearScreenOld(clrStatusBar, !clrRegisterLines, !clrSoftkeys);                // this tests the battery powered option on sim
-            refreshStatusBar();                                                           // this tests the battery powered option on sim
-          }                                                                               // this tests the battery powered option on sim
       #endif//!DMCP_BUILD PC_BUILD
     doRefreshSoftMenu = false;
   }
@@ -4953,7 +4954,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
         if(currentSolverStatus & SOLVER_STATUS_INTERACTIVE) {
           bool_t mvarMenu = false;
           for(int i = 0; i < SOFTMENU_STACK_SIZE; i++) {
-            if(softmenu[softmenuStack[i].softmenuId].menuItem == -MNU_MVAR) {
+            if(menu(i) == -MNU_MVAR) {
               mvarMenu = true;
               break;
             }
@@ -4976,7 +4977,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
         if(calcMode == CM_EIM) {
           bool_t mvarMenu = false;
           for(int i = 0; i < SOFTMENU_STACK_SIZE; i++) {
-            if(softmenu[softmenuStack[i].softmenuId].menuItem == -MNU_EQ_EDIT) {
+            if(menu(i) == -MNU_EQ_EDIT) {
               mvarMenu = true;
               break;
             }
@@ -5079,7 +5080,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
                              #endif // PC_BUILD
 
 
-    switch(softmenu[softmenuStack[0].softmenuId].menuItem) {
+    switch(currentMenu()) {
       case -MNU_GEV:
       case -MNU_BINOM:
       case -MNU_CAUCH:
@@ -5218,7 +5219,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
           refreshStatusBar();
           graphDrawLRline(plotSelection);
           if(lastErrorCode != ERROR_NONE) {
-            if(softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_HPLOT || softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_PLOT_LR || softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_HPLOT || softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_PLOT_STAT) {
+            if(currentMenu() == -MNU_HPLOT || currentMenu() == -MNU_PLOT_LR || currentMenu() == -MNU_HPLOT || currentMenu() == -MNU_PLOT_STAT) {
               popSoftmenu();
               calcMode = CM_NORMAL;
               refreshScreen(84);
