@@ -203,6 +203,18 @@ void fnCFGsettings(uint16_t unusedButMandatoryParameter) {
 }
 
 
+//=-=-=-=-=-=-==-=-
+//input is date
+//output is ymd coded decimal yyyy.mmdd in the form of a normal decimal
+void fnFrom_ymd(uint16_t unusedButMandatoryParameter){
+  #if !defined(TESTSUITE_BUILD)
+    if(getRegisterDataType(REGISTER_X) == dtDate) {
+      fnToReal(NOPARAM);
+    }
+  #endif // !TESTSUITE_BUILD
+}
+
+
 
 //=-=-=-=-=-=-==-=-
 //input is time or DMS
