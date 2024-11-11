@@ -711,6 +711,11 @@ TO_QSPI const function_t2 indexOfStrings2[] = {
   }
 
 
+void stringToRTF(const char *str, char *ascii) {
+add this
+}
+
+
 
 void stringToASCII(const char *str, char *ascii) {
   int16_t len;

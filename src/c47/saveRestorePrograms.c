@@ -180,7 +180,10 @@
 #endif //TESTSUITE_BUILD
 
 
-void fnPExport(uint16_t unusedButMandatoryParameter) {
+#define MODE_RTF 1
+#define MODE_TXT 0
+
+void fnPExport(uint16_t mode) {
 #if !defined(SAVE_SPACE_DM42_10)
   #if !defined(TESTSUITE_BUILD)
     ///////////////////////////////////////////////////////////////////////////////////////
@@ -201,6 +204,10 @@ void fnPExport(uint16_t unusedButMandatoryParameter) {
 
     if(firstDisplayedLocalStepNumber == 0) {
       sprintf(tmpString, "0000: { Prgm #%d: %" PRIu32 " bytes / %" PRIu16 " step%s }", currentProgramNumber, _getProgramSize(),                                                                               numberOfSteps, numberOfSteps == 1 ? "" : "s");
+
+if(mode == MODE_RTF) {
+  stringAppend(tmpString + stringByteLength(tmpString), "\\par");
+}
       stringAppend(tmpString + stringByteLength(tmpString), "\n");
       ioFileWrite(tmpString, strlen(tmpString));
       firstLine = 1;
@@ -218,10 +225,13 @@ void fnPExport(uint16_t unusedButMandatoryParameter) {
     for(line=firstLine; line<9999; line++) {
       nextStep = findNextStep(step);
 
+if(mode == MODE_RTF) {
+      decodeOneStep(step);
+} else {
       decodeOneStepXEQM(step);
+}
       indent = 2;
       newLine = false;
-
       if(addnextLineIndent == 0) {
         int16_t jj = 0;
         while((indents[jj].itemName[0]) != 0) {
@@ -239,7 +249,7 @@ void fnPExport(uint16_t unusedButMandatoryParameter) {
         addnextLineIndent = 0;
       }
 
-
+      //additional indents prepended
       if(indent > 0) {
         uint16_t ii = 0;
         stringAppend(asciiString, tmpString);
@@ -252,14 +262,29 @@ void fnPExport(uint16_t unusedButMandatoryParameter) {
       sprintf(asciiString, "%04d:  " , firstDisplayedLocalStepNumber + line - lineOffset + lineOffsetTam);
 
       if(newLine){                        // Newline before LBL
-        char endline[3];
+        char endline[16];
+if(mode == MODE_RTF) {
+  stringAppend(endline, "\\par\n");
+} else {
         sprintf(endline,"\n");
+}
         ioFileWrite(endline, strlen(endline));
       }
 
       stringAppend(asciiString + stringByteLength(asciiString), tmpString);    //add number + instruction: 0000:  1/X
+if(mode == MODE_RTF) {
+  stringAppend(asciiString + stringByteLength(asciiString), "\\par\n");
+} else {
       stringAppend(asciiString + stringByteLength(asciiString), "\n");         //add cr+lf
+}
+
+if(mode == MODE_RTF) {
+  stringAppend(tmpString, asciiString);
+add this in here: stringToRTF
+} else {
       stringToASCII(asciiString, tmpString);
+}
+
       ioFileWrite(tmpString, strlen(tmpString));
 
       if(isAtEndOfProgram(step)) {
@@ -336,6 +361,8 @@ void fnExportProgram(uint16_t label) {
     }
 
     path = ioPathExportProgram;
+path = ioPathExportRTFProgram;
+
     ret = ioFileOpen(path, ioModeWrite);
 
     if(ret != FILE_OK ) {
@@ -351,11 +378,23 @@ void fnExportProgram(uint16_t label) {
       }
     }
 
+
+
+stringAppend(tmpString, "{\\rtf1{\\fonttbl{\\f0\\fnil\\fcharset0 C47__StandardFont;}}\n");
+ioFileWrite(tmpString, strlen(tmpString));
+
     // PROGRAM file version
     sprintf(tmpString, "C47 Program file export: Export format version %" PRIu32 ", C47 program version %" PRIu32 ".\n", (uint32_t)exportVersion, (uint32_t)programVersion);
     ioFileWrite(tmpString, strlen(tmpString));
 
-    fnPExport(0);
+stringAppend(tmpString, "\\par\n");
+ioFileWrite(tmpString, strlen(tmpString));
+
+
+    fnPExport(MODE_RTF);
+
+stringAppend(tmpString, "}\n");
+ioFileWrite(tmpString, strlen(tmpString));
 
     ioFileClose();
 
