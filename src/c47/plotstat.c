@@ -1391,7 +1391,7 @@ void graphDrawLRline(uint16_t selection) {
     }
 
     if(isValidDraw) {
-      if(softmenu[softmenuStack[0].softmenuId].menuItem != -MNU_PLOT_STAT) {
+      if(softmenu[softmenuStack[0].softmenuId].menuItem != -MNU_PLOT_SCATR) {
         sprintf(ss, "%u",NN);
         showString(padEquals(tmpbuf, ss), &standardFont, horOffsetR - stringWidth(ss, &standardFont, false, false), Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index  -2 +autoshift, vmNormal, false, false);
         sprintf(ss, STD_SPACE_PUNCTUATION STD_SPACE_PUNCTUATION "n=");
@@ -1454,7 +1454,7 @@ void graphDrawLRline(uint16_t selection) {
         strcpy(ss, "    " STD_PLUS_MINUS);
         showString(padEquals(tmpbuf, ss), &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc*index++   -1 +autoshift, vmNormal, false, false);
 
-        if(softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_PLOT_STAT) {
+        if(softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_PLOT_SCATR) {
           if(n >= 30) {
             eformat_eng2(ss, "", smi, 3, "");
           }
@@ -1630,7 +1630,7 @@ void fnPlotStat(uint16_t plotMode){
             break;
           case PLOT_LR:
             if(drawHistogram == 0) {
-              showSoftmenu(-MNU_PLOT_LR);
+              showSoftmenu(-MNU_PLOT_ASSESS);
             }
             else {
               showSoftmenu(-MNU_HPLOT);
@@ -1638,12 +1638,12 @@ void fnPlotStat(uint16_t plotMode){
             break;
         case PLOT_NXT:
         case PLOT_REV:
-          showSoftmenu(-MNU_PLOT_LR);
+          showSoftmenu(-MNU_PLOT_ASSESS);
           break;
         case PLOT_ORTHOF:
         case PLOT_START:
           setSystemFlag(FLAG_SCALE);
-          showSoftmenu(-MNU_PLOT_STAT);
+          showSoftmenu(-MNU_PLOT_SCATR);
           break;
         case PLOT_NOTHING:
           break;

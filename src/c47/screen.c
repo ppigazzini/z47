@@ -4692,7 +4692,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
         #endif // PC_BUILD && MONITOR_CLRSCR
         lcd_fill_rect(0, 240 - SOFTMENU_HEIGHT * 3, SCREEN_WIDTH - 240 - 2, SOFTMENU_HEIGHT * 3, LCD_SET_VALUE);
         clear_ul(); //JMUL
-        if(!GRAPHMODE || menu(0) == -MNU_PLOTFUNC) { //not in GRAPHMODE, the triangle area indicating more menus 
+        if(!GRAPHMODE || menu(0) == -MNU_PLOT_FUNC) { //not in GRAPHMODE, the triangle area indicating more menus 
           lcd_fill_rect(0, 240 - SOFTMENU_HEIGHT * 3 - 3, 20, 6, LCD_SET_VALUE);
         }
          if(!GRAPHMODE) { //in GRAPHMODE, protect the square graph area
@@ -5219,7 +5219,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
           refreshStatusBar();
           graphDrawLRline(plotSelection);
           if(lastErrorCode != ERROR_NONE) {
-            if(currentMenu() == -MNU_HPLOT || currentMenu() == -MNU_PLOT_LR || currentMenu() == -MNU_HPLOT || currentMenu() == -MNU_PLOT_STAT) {
+            if(currentMenu() == -MNU_HPLOT || currentMenu() == -MNU_PLOT_ASSESS || currentMenu() == -MNU_HPLOT || currentMenu() == -MNU_PLOT_SCATR) {
               popSoftmenu();
               calcMode = CM_NORMAL;
               refreshScreen(84);

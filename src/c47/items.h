@@ -1438,8 +1438,8 @@
 #define MNU_PROG                    1392
 #define MNU_TAMLABEL                1393
 #define MNU_DYNAMIC                 1394
-#define MNU_PLOT_STAT               1395
-#define MNU_PLOT_LR                 1396
+#define MNU_PLOT_SCATR              1395
+#define MNU_PLOT_ASSESS             1396
 #define MNU_ELLIPT                  1397
 #define MNU_MVAR                    1398
 #define MNU_EQ_EDIT                 1399
@@ -1594,7 +1594,7 @@
 #define ITM_PGMINT                  1546
 #define ITM_PGMSLV                  1547
 #define ITM_PIXEL                   1548
-#define ITM_PLOT                    1549
+#define ITM_PLOT_SCATR              1549
 #define ITM_Pn                      1550
 #define ITM_POINT                   1551
 #define ITM_LOADV                   1552
@@ -1806,7 +1806,7 @@
 #define ITM_PLOT_CENTRL             1756
 #define ITM_HIDE_OLD                1757
 #define ITM_SMI                     1758
-#define ITM_PLOT_LR                 1759
+#define ITM_PLOT_ASSESS                 1759
 #define ITM_PLOT_NXT                1760
 #define ITM_PLOT_REV                1761
 #define ITM_PLOTZOOM                1762
@@ -2079,7 +2079,7 @@
 #define ITM_DIFF                    2025
 #define ITM_RMS                     2026
 #define ITM_SHADE                   2027
-#define MNU_PLOTFUNC                2028
+#define MNU_PLOT_FUNC               2028
 #define CHR_num                     2029
 #define CHR_numL                    2030
 #define CHR_numU                    2031
@@ -2287,7 +2287,7 @@
 #define MNU_LAYOUTS                 2233
 #define MNU_RESETS                  2234
 #define MNU_RIBBONS                 2235
-#define MNU_PLOTSIGMA               2236
+#define MNU_PLOT_STATS               2236
 #define ITM_2237                    2237
 #define ITM_2238                    2238
 #define ITM_CLMALL                  2239
