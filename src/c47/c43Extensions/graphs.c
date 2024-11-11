@@ -346,11 +346,11 @@ void fnPlotSQ(uint16_t unusedButMandatoryParameter) {
     showHideHourGlass();
     refreshStatusBar();
 
-    if(menu(0) != -MNU_PLOTFUNC && plotStatMx[0] == 'D') {
-      showSoftmenu(-MNU_PLOTFUNC);
+    if(menu(0) != -MNU_PLOT_FUNC && plotStatMx[0] == 'D') {
+      showSoftmenu(-MNU_PLOT_FUNC);
     } 
-    else if(menu(0) != -MNU_PLOTSIGMA && plotStatMx[0] == 'S') {
-      showSoftmenu(-MNU_PLOTSIGMA);
+    else if(menu(0) != -MNU_PLOT_STATS && plotStatMx[0] == 'S') {
+      showSoftmenu(-MNU_PLOT_STATS);
     } 
   #endif // !TESTSUITE_BUILD
 }
