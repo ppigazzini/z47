@@ -101,7 +101,7 @@
 
     typedef struct {
       char     *itemName;
-      uint8_t  _nextNewLine;
+      uint8_t  _previousNewLine;
       uint8_t  _indent;
       uint8_t  _addnextLineIndent;
     } indentType;
@@ -186,7 +186,7 @@ static int16_t findIndents(bool_t *newLine, int8_t *indent, int8_t *addnextLineI
         int16_t jj = 0;
         while((indents[jj].itemName[0]) != 0) {
           if(subStrWildCardCompare(tmpString, (char*)(indents[jj].itemName))) {
-            *newLine = (bool_t)(indents[jj]._nextNewLine);
+            *newLine = (bool_t)(indents[jj]._previousNewLine);
             *indent += indents[jj]._indent;
             *addnextLineIndent = indents[jj]._addnextLineIndent;
             break;
@@ -221,10 +221,9 @@ void fnPExport(uint16_t mode) {
 
     if(firstDisplayedLocalStepNumber == 0) {
       sprintf(tmpString, "0000: { Prgm #%d: %" PRIu32 " bytes / %" PRIu16 " step%s }", currentProgramNumber, _getProgramSize(),                                                                               numberOfSteps, numberOfSteps == 1 ? "" : "s");
-
-if(mode == MODE_RTF) {
-  stringAppend(tmpString + stringByteLength(tmpString), " \\par");
-}
+      if(mode == MODE_RTF) {
+        stringAppend(tmpString + stringByteLength(tmpString), " \\par");
+      }      
       stringAppend(tmpString + stringByteLength(tmpString), "\n");
       ioFileWrite(tmpString, strlen(tmpString));
       firstLine = 1;
@@ -243,12 +242,16 @@ if(mode == MODE_RTF) {
     for(line=firstLine; line<9999; line++) {
       nextStep = findNextStep(step);
 
-if(mode == MODE_RTF) {
-      decodeOneStep(step);
-//printf("§§=%s",tmpString);
-} else {
-      decodeOneStepXEQM(step);
-}
+
+      //Decode
+      if(mode == MODE_RTF) {
+        decodeOneStep(step);
+        //printf("§§=%s",tmpString);
+      } else {
+        decodeOneStepXEQM(step);
+      }
+
+
       indent = 2;
       newLine = false;
       if(addnextLineIndent == 0) {
@@ -275,45 +278,39 @@ if(mode == MODE_RTF) {
         }
       }
 
+
       //Line Number and base indent ==> asciiString
       sprintf(asciiString, "%04d:  " , firstDisplayedLocalStepNumber + line - lineOffset + lineOffsetTam);
 
-//mocved DOWN and changed the name of "_nextNewLine"
-//      // Newline before LBL, not relevant in RTF
-//      if(newLine){
-//        char endline[16];
-//        sprintf(endline,"\n");
-//        ioFileWrite(endline, strlen(endline));
-//      }
 
-      stringAppend(asciiString + stringByteLength(asciiString), tmpString);    //add number + instruction: 0000:  1/X
-
-
-//Extra line after LBL
-if(newLine){
-  if(mode == MODE_RTF) {
-    stringAppend(asciiString + stringByteLength(asciiString), "\\par\n");
-  } else {
-        stringAppend(asciiString + stringByteLength(asciiString), "\n");         //add cr+lf
-  }
-}
+      //Add extra blank line before LBL
+      if(newLine){
+        if(mode == MODE_RTF) {
+          stringAppend(asciiString + stringByteLength(asciiString), "\\par\n");
+        } else {
+          stringAppend(asciiString + stringByteLength(asciiString), "\n");         //add cr+lf
+        }
+      }
 
 
-
-if(mode == MODE_RTF) {
-  stringAppend(asciiString + stringByteLength(asciiString), "\\par\n");
-} else {
-      stringAppend(asciiString + stringByteLength(asciiString), "\n");         //add cr+lf
-}
+      //Add instruction
+      stringAppend(asciiString + stringByteLength(asciiString), tmpString);        //add number + instruction: 0000:  1/X
 
 
+      //Add end line 
+      if(mode == MODE_RTF) {
+        stringAppend(asciiString + stringByteLength(asciiString), "\\par\n");
+      } else {
+        stringAppend(asciiString + stringByteLength(asciiString), "\n");       //add cr+lf
+      }
 
-if(mode == MODE_RTF) {
-//  stringAppend(tmpString, asciiString);
-stringToRTF(asciiString, tmpString);
-} else {
-      stringToASCII(asciiString, tmpString);
-}
+
+      //Convert unprintable characters
+      if(mode == MODE_RTF) {
+        stringToRTF(asciiString, tmpString);
+      } else {
+        stringToASCII(asciiString, tmpString);
+      }
 
 
       ioFileWrite(tmpString, strlen(tmpString));
