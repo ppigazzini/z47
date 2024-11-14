@@ -177,8 +177,6 @@
     }
     return areEqual;
   }
-#endif //SAVE_SPACE_DM42_10
-#endif //TESTSUITE_BUILD
 
 
 //uses tmpString
@@ -195,6 +193,9 @@ static int16_t findIndents(bool_t *newLine, int8_t *indent, int8_t *addnextLineI
         }
         return jj;
       }
+
+#endif //SAVE_SPACE_DM42_10
+#endif //TESTSUITE_BUILD
 
 
 #define MODE_RTF 1
