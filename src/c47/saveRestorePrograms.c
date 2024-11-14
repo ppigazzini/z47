@@ -411,7 +411,8 @@ path = ioPathExportRTFProgram;
 
 
 
-stringAppend(tmpString, "{\\rtf1{\\fonttbl{\\f0\\fnil\\fcharset0 C47__StandardFont;}}\n");
+//stringAppend(tmpString, "{\\rtf1\\ansi\\ansicpg1252\\deff0\\nouicompat{\\fonttbl{\\f0\\fnil\\fcharset0 C47__StandardFont;}}{\\pard\\sl240\\sa0\\sa200\\slmult1\\f0\\fs24\\lang9\\f0\\loch\n");
+stringAppend(tmpString, "{\\rtf1\\ansi\\ansicpg1252\\deff0\\nouicompat{\\fonttbl{\\f0\\fnil\\fcharset0 C47__StandardFont;}}{\\pard\\sl240\\slmult1\\f0\\fs24\\lang9\\f0\\loch\n");
 ioFileWrite(tmpString, strlen(tmpString));
 
     // PROGRAM file version
@@ -424,7 +425,7 @@ ioFileWrite(tmpString, strlen(tmpString));
 
     fnPExport(MODE_RTF);
 
-stringAppend(tmpString, "}\n");
+stringAppend(tmpString, "}}\n");
 ioFileWrite(tmpString, strlen(tmpString));
 
     ioFileClose();

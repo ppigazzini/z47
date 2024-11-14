@@ -724,7 +724,8 @@ TO_QSPI const function_t2 indexOfStringsASCII[] = {
 
 TO_QSPI const function_t2 indexOfStringsRTF[] = {
               //number                  replacement string
-//              {STD_SIGMA,                     "TESTSIGMA"}
+              {STD_BINARY_ONE,                "1"},
+              {STD_BINARY_ZERO,               "0"}
 };
 
 
@@ -762,6 +763,7 @@ void stringToRTF(const char *str, char *ascii) {
   uint8_t a1, a2;
   char aa[32];
   char bb[2];
+  int8_t supsub = 0;
 
 
   len = stringGlyphLength(str);
@@ -793,20 +795,18 @@ void stringToRTF(const char *str, char *ascii) {
 
       else
       //RANGE SUP/SUB/BASE TO BE PLAINTEXT OUTPUT
-      if((a1==(uint8_t)(STD_SUP_0   [0]) && (a2>=(uint8_t)(STD_SUP_0   [1]) && a2<=(uint8_t)(STD_SUP_9  [1]))) ) {bb[0] = ('0'+a2)-(uint8_t)(STD_SUP_0 [1]);} else
-      if((a1==(uint8_t)(STD_SUP_a   [0]) && (a2>=(uint8_t)(STD_SUP_a   [1]) && a2<=(uint8_t)(STD_SUP_z  [1]))) ) {bb[0] = ('a'+a2)-(uint8_t)(STD_SUP_a [1]);} else
-      if((a1==(uint8_t)(STD_SUP_A   [0]) && (a2>=(uint8_t)(STD_SUP_A   [1]) && a2<=(uint8_t)(STD_SUP_Z  [1]))) ) {bb[0] = ('A'+a2)-(uint8_t)(STD_SUP_A [1]);} else
-      if((a1==(uint8_t)(STD_SUB_0   [0]) && (a2>=(uint8_t)(STD_SUB_0   [1]) && a2<=(uint8_t)(STD_SUB_9  [1]))) ) {bb[0] = ('0'+a2)-(uint8_t)(STD_SUB_0 [1]);} else
-      if((a1==(uint8_t)(STD_SUB_a   [0]) && (a2>=(uint8_t)(STD_SUB_a   [1]) && a2<=(uint8_t)(STD_SUB_z  [1]))) ) {bb[0] = ('a'+a2)-(uint8_t)(STD_SUB_a [1]);} else
-      if((a1==(uint8_t)(STD_SUB_A   [0]) && (a2>=(uint8_t)(STD_SUB_A   [1]) && a2<=(uint8_t)(STD_SUB_Z  [1]))) ) {bb[0] = ('A'+a2)-(uint8_t)(STD_SUB_A [1]);} else
+      if((a1==(uint8_t)(STD_SUP_0   [0]) && (a2>=(uint8_t)(STD_SUP_0   [1]) && a2<=(uint8_t)(STD_SUP_9  [1]))) ) {supsub = +1; bb[0] = ('0'+a2)-(uint8_t)(STD_SUP_0 [1]);} else
+      if((a1==(uint8_t)(STD_SUP_a   [0]) && (a2>=(uint8_t)(STD_SUP_a   [1]) && a2<=(uint8_t)(STD_SUP_z  [1]))) ) {supsub = +1; bb[0] = ('a'+a2)-(uint8_t)(STD_SUP_a [1]);} else
+      if((a1==(uint8_t)(STD_SUP_A   [0]) && (a2>=(uint8_t)(STD_SUP_A   [1]) && a2<=(uint8_t)(STD_SUP_Z  [1]))) ) {supsub = +1; bb[0] = ('A'+a2)-(uint8_t)(STD_SUP_A [1]);} else
+      if((a1==(uint8_t)(STD_SUB_0   [0]) && (a2>=(uint8_t)(STD_SUB_0   [1]) && a2<=(uint8_t)(STD_SUB_9  [1]))) ) {supsub = -1; bb[0] = ('0'+a2)-(uint8_t)(STD_SUB_0 [1]);} else
+      if((a1==(uint8_t)(STD_SUB_a   [0]) && (a2>=(uint8_t)(STD_SUB_a   [1]) && a2<=(uint8_t)(STD_SUB_z  [1]))) ) {supsub = -1; bb[0] = ('a'+a2)-(uint8_t)(STD_SUB_a [1]);} else
+      if((a1==(uint8_t)(STD_SUB_A   [0]) && (a2>=(uint8_t)(STD_SUB_A   [1]) && a2<=(uint8_t)(STD_SUB_Z  [1]))) ) {supsub = -1; bb[0] = ('A'+a2)-(uint8_t)(STD_SUB_A [1]);} else
 //  ssss    if((a1==(uint8_t)(STD_BASE_0  [0]) && (a2==(uint8_t)(STD_BASE_0  [1])                                 )) ) {                        *ascii = ('0');} else
 //      if((a1==(uint8_t)(STD_BASE_1  [0]) && (a2>=(uint8_t)(STD_BASE_1  [1]) && a2<=(uint8_t)(STD_BASE_9 [1]))) ) {*ascii = '#';  ascii++; *ascii = ('1'+a2)-(uint8_t)(STD_BASE_1[1]);} else
 //      if((a1==(uint8_t)(STD_BASE_10 [0]) && (a2>=(uint8_t)(STD_BASE_10 [1]) && a2<=(uint8_t)(STD_BASE_16[1]))) ) {*ascii = '#';  ascii++; *ascii =  '1'; ascii++; *ascii = ('0'+a2)-(uint8_t)(STD_BASE_10[1]);} else
-      {
-
-
-sprintf(aa,"\\u%i?",((a1 & 0x7F) << 8) | a2);
-//printf("§%s§\n",aa);
+      
+      { sprintf(aa,"\\u%i?",((a1 & 0x7F) << 8) | a2);
+        //printf("§%s§\n",aa);
 
         int16_t j = 0;
         while(aa[j] != 0) {
@@ -814,15 +814,15 @@ sprintf(aa,"\\u%i?",((a1 & 0x7F) << 8) | a2);
           ascii++;
         }
         ascii--;
-        
-   //     *ascii = a1;    // no change
-   //     ascii++;
-   //     *ascii = a2;
       }
+
+
       if(bb[0] != 0) {
-
-
-        strcpy(aa,"\\super ");
+        if(supsub == +1) {
+          strcpy(aa,"\\super ");
+        } else if(supsub == -1) {
+          strcpy(aa,"\\sub ");          
+        }
         int16_t j = 0;
         while(aa[j] != 0) {
           *ascii = aa[j++];
@@ -841,9 +841,9 @@ sprintf(aa,"\\u%i?",((a1 & 0x7F) << 8) | a2);
           ascii++;
         }
         ascii--;
-
-
       }
+
+
     }
     else {
       *ascii = *str;
