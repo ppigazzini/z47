@@ -101,7 +101,7 @@
 
     typedef struct {
       char     *itemName;
-      uint8_t  _previousnewLine;
+      uint8_t  _nextNewLine;
       uint8_t  _indent;
       uint8_t  _addnextLineIndent;
     } indentType;
@@ -157,6 +157,7 @@
     };
 
 
+
 #ifndef TESTSUITE_BUILD
 #if !defined(SAVE_SPACE_DM42_10)
   static bool_t subStrWildCardCompare(const char *in1, const char *in2) { //wild card is '*', active from the second character being compared
@@ -178,6 +179,22 @@
   }
 #endif //SAVE_SPACE_DM42_10
 #endif //TESTSUITE_BUILD
+
+
+//uses tmpString
+static int16_t findIndents(bool_t *newLine, int8_t *indent, int8_t *addnextLineIndent){
+        int16_t jj = 0;
+        while((indents[jj].itemName[0]) != 0) {
+          if(subStrWildCardCompare(tmpString, (char*)(indents[jj].itemName))) {
+            *newLine = (bool_t)(indents[jj]._nextNewLine);
+            *indent += indents[jj]._indent;
+            *addnextLineIndent = indents[jj]._addnextLineIndent;
+            break;
+          }
+          jj++;
+        }
+        return jj;
+      }
 
 
 #define MODE_RTF 1
@@ -219,7 +236,8 @@ if(mode == MODE_RTF) {
     int lineOffset = 0, lineOffsetTam = 0;
     int8_t  indent;;
     bool_t  newLine;
-    bool_t  addnextLineIndent = 0;
+    int8_t  addnextLineIndent = 0;
+    int16_t lastCommandFound = 0;
 
 
     for(line=firstLine; line<9999; line++) {
@@ -234,22 +252,19 @@ if(mode == MODE_RTF) {
       indent = 2;
       newLine = false;
       if(addnextLineIndent == 0) {
-        int16_t jj = 0;
-        while((indents[jj].itemName[0]) != 0) {
-          if(subStrWildCardCompare(tmpString, (char*)(indents[jj].itemName))) {
-            newLine = (bool_t)(indents[jj]._previousnewLine);
-            indent += indents[jj]._indent;
-            addnextLineIndent = indents[jj]._addnextLineIndent;
-            break;
-          }
-          jj++;
-        }
+        lastCommandFound = findIndents(&newLine, &indent, &addnextLineIndent); //uses tmpString as inpur
       }
       else {
-        indent += addnextLineIndent;
+        int8_t rubbish = 0;
+        bool_t rubbishb = false;
+        if(lastCommandFound != findIndents(&rubbishb, &rubbish, &rubbish)) { //only use the indents if the last two commands are not the same
+          indent += addnextLineIndent;
+        }
         addnextLineIndent = 0;
       }
 
+
+//MAKE THIS MORE EFFICIENT!
       //additional indents prepended
       if(indent > 0) {
         uint16_t ii = 0;
@@ -260,29 +275,37 @@ if(mode == MODE_RTF) {
         }
       }
 
+      //Line Number and base indent ==> asciiString
       sprintf(asciiString, "%04d:  " , firstDisplayedLocalStepNumber + line - lineOffset + lineOffsetTam);
 
-      if(newLine){                        // Newline before LBL
-        char endline[16];
-
-
-if(mode == MODE_RTF) {
-  stringAppend(endline, " \\par\n");
-} else {
-        sprintf(endline,"\n");
-}
-
-        ioFileWrite(endline, strlen(endline));
-      }
+//mocved DOWN and changed the name of "_nextNewLine"
+//      // Newline before LBL, not relevant in RTF
+//      if(newLine){
+//        char endline[16];
+//        sprintf(endline,"\n");
+//        ioFileWrite(endline, strlen(endline));
+//      }
 
       stringAppend(asciiString + stringByteLength(asciiString), tmpString);    //add number + instruction: 0000:  1/X
 
 
+//Extra line after LBL
+if(newLine){
+  if(mode == MODE_RTF) {
+    stringAppend(asciiString + stringByteLength(asciiString), "\\par\n");
+  } else {
+        stringAppend(asciiString + stringByteLength(asciiString), "\n");         //add cr+lf
+  }
+}
+
+
+
 if(mode == MODE_RTF) {
-  stringAppend(asciiString + stringByteLength(asciiString), " \\par\n");
+  stringAppend(asciiString + stringByteLength(asciiString), "\\par\n");
 } else {
       stringAppend(asciiString + stringByteLength(asciiString), "\n");         //add cr+lf
 }
+
 
 
 if(mode == MODE_RTF) {

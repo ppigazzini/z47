@@ -806,7 +806,7 @@ void stringToRTF(const char *str, char *ascii) {
 
 
 sprintf(aa,"\\u%i?",((a1 & 0x7F) << 8) | a2);
-printf("§%s§\n",aa);
+//printf("§%s§\n",aa);
 
         int16_t j = 0;
         while(aa[j] != 0) {
