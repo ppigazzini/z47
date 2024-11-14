@@ -39,7 +39,7 @@
 #include "c47.h"
 
 #define PROGRAM_VERSION                     01  // Original version
-#define EXPORT_VERSION                      02  // Modified export version to indent LBL
+#define EXPORT_VERSION                      03  // 02 Modified export version to indent LBL; 03 Add RTF method and revise fixed table
 #define OLDEST_COMPATIBLE_PROGRAM_VERSION   01  // Original version
 #define BACKUP_FORMAT                       00  // Same program format as in backup file
 #define TEXT_FORMAT                         01  // Text program format - for future use
@@ -206,7 +206,7 @@ void fnPExport(uint16_t mode) {
       sprintf(tmpString, "0000: { Prgm #%d: %" PRIu32 " bytes / %" PRIu16 " step%s }", currentProgramNumber, _getProgramSize(),                                                                               numberOfSteps, numberOfSteps == 1 ? "" : "s");
 
 if(mode == MODE_RTF) {
-  stringAppend(tmpString + stringByteLength(tmpString), "\\par");
+  stringAppend(tmpString + stringByteLength(tmpString), " \\par");
 }
       stringAppend(tmpString + stringByteLength(tmpString), "\n");
       ioFileWrite(tmpString, strlen(tmpString));
@@ -227,6 +227,7 @@ if(mode == MODE_RTF) {
 
 if(mode == MODE_RTF) {
       decodeOneStep(step);
+//printf("§§=%s",tmpString);
 } else {
       decodeOneStepXEQM(step);
 }
@@ -263,27 +264,34 @@ if(mode == MODE_RTF) {
 
       if(newLine){                        // Newline before LBL
         char endline[16];
+
+
 if(mode == MODE_RTF) {
-  stringAppend(endline, "\\par\n");
+  stringAppend(endline, " \\par\n");
 } else {
         sprintf(endline,"\n");
 }
+
         ioFileWrite(endline, strlen(endline));
       }
 
       stringAppend(asciiString + stringByteLength(asciiString), tmpString);    //add number + instruction: 0000:  1/X
+
+
 if(mode == MODE_RTF) {
-  stringAppend(asciiString + stringByteLength(asciiString), "\\par\n");
+  stringAppend(asciiString + stringByteLength(asciiString), " \\par\n");
 } else {
       stringAppend(asciiString + stringByteLength(asciiString), "\n");         //add cr+lf
 }
 
+
 if(mode == MODE_RTF) {
-  stringAppend(tmpString, asciiString);
-add this in here: stringToRTF
+//  stringAppend(tmpString, asciiString);
+stringToRTF(asciiString, tmpString);
 } else {
       stringToASCII(asciiString, tmpString);
 }
+
 
       ioFileWrite(tmpString, strlen(tmpString));
 
@@ -387,7 +395,7 @@ ioFileWrite(tmpString, strlen(tmpString));
     sprintf(tmpString, "C47 Program file export: Export format version %" PRIu32 ", C47 program version %" PRIu32 ".\n", (uint32_t)exportVersion, (uint32_t)programVersion);
     ioFileWrite(tmpString, strlen(tmpString));
 
-stringAppend(tmpString, "\\par\n");
+stringAppend(tmpString, " \\par\n");
 ioFileWrite(tmpString, strlen(tmpString));
 
 

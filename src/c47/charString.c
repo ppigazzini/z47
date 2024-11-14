@@ -603,7 +603,7 @@ typedef struct {
   char     *item_out;           ///<
 } function_t2;
 
-TO_QSPI const function_t2 indexOfStrings2[] = {
+TO_QSPI const function_t2 indexOfStringsASCII[] = {
               //number                  replacement string
 //XPORTP CODE 2023-07-15
               {STD_NOT,                       "<>"},
@@ -692,18 +692,64 @@ TO_QSPI const function_t2 indexOfStrings2[] = {
               {STD_GAUSS_BLACK_R,             "GAUSS_BL_R "},
               {STD_SUB_10,                    "10^"},
               {STD_EulerE,                    "e"},
-              {STD_RIGHT_OVER_LEFT_ARROW,     "<>"}
+              {STD_RIGHT_OVER_LEFT_ARROW,     "<>"},
+//diverse
+              {STD_RIGHT_SINGLE_QUOTE,        "\'"},
+              {STD_RIGHT_DOUBLE_QUOTE,        "\""},
+              {STD_op_i,                      "i"},
+              {STD_op_j,                      "j"},
+              {STD_BINARY_ONE,                "1"},
+              {STD_BINARY_ZERO,               "0"},
+              {STD_CR,                        "|"},
+//seps
+              {STD_RIGHT_TACK,                "\'"},
+              {STD_WDOT,                      "."},
+              {STD_DOT,                       "."},
+              {STD_WPERIOD,                   "."},
+              {STD_WCOMMA,                    ","},
+              {STD_NQUOTE,                    "\'"},
+              {STD_INV_BRIDGE,                ","},
+              {STD_SPACE_EM,                  " "},
+              {STD_SPACE_3_PER_EM,            " "},
+              {STD_SPACE_4_PER_EM,            " "},
+              {STD_SPACE_6_PER_EM,            " "},
+              {STD_SPACE_FIGURE,              " "},
+              {STD_SPACE_PUNCTUATION,         " "},
+              {STD_SPACE_HAIR,                " "},
+//Types used in commands
+              {STD_TIME_T,                    "T"},
+              {STD_DATE_D,                    "D"}
+};
+
+
+TO_QSPI const function_t2 indexOfStringsRTF[] = {
+              //number                  replacement string
+//              {STD_SIGMA,                     "TESTSIGMA"}
 };
 
 
   static bool_t _getText(uint8_t a1, uint8_t a2, char *str) {
     //printf("_getText %u %u : ",(uint8_t)a1,(uint8_t)a2);
     str[0] = 0;
-    uint_fast16_t n = nbrOfElements(indexOfStrings2);
+    uint_fast16_t n = nbrOfElements(indexOfStringsASCII);
     for(uint_fast16_t i=0; i<n; i++) {
-      if((uint8_t)a1 == (uint8_t)(indexOfStrings2[i].item_in[0]) && (uint8_t)a2 == (uint8_t)(indexOfStrings2[i].item_in[1])) {
-        //printf("(%u):%u %u %s\n", i,(uint8_t)(indexOfStrings2[i].item_in[0]), (uint8_t)(indexOfStrings2[i].item_in[1]),indexOfStrings2[i].item_out);
-        strcpy(str, indexOfStrings2[i].item_out);
+      if((uint8_t)a1 == (uint8_t)(indexOfStringsASCII[i].item_in[0]) && (uint8_t)a2 == (uint8_t)(indexOfStringsASCII[i].item_in[1])) {
+        //printf("(%u):%u %u %s\n", i,(uint8_t)(indexOfStringsASCII[i].item_in[0]), (uint8_t)(indexOfStringsASCII[i].item_in[1]),indexOfStringsASCII[i].item_out);
+        strcpy(str, indexOfStringsASCII[i].item_out);
+        break;
+      }
+    }
+    return str[0] != 0;
+  }
+
+  static bool_t _getTextRTF(uint8_t a1, uint8_t a2, char *str) {
+    //printf("_getText %u %u : ",(uint8_t)a1,(uint8_t)a2);
+    str[0] = 0;
+    uint_fast16_t n = nbrOfElements(indexOfStringsRTF);
+    for(uint_fast16_t i=0; i<n; i++) {
+      if((uint8_t)a1 == (uint8_t)(indexOfStringsRTF[i].item_in[0]) && (uint8_t)a2 == (uint8_t)(indexOfStringsRTF[i].item_in[1])) {
+        //printf("(%u):%u %u %s\n", i,(uint8_t)(indexOfStringsRTF[i].item_in[0]), (uint8_t)(indexOfStringsRTF[i].item_in[1]),indexOfStringsRTF[i].item_out);
+        strcpy(str, indexOfStringsRTF[i].item_out);
         break;
       }
     }
@@ -712,7 +758,100 @@ TO_QSPI const function_t2 indexOfStrings2[] = {
 
 
 void stringToRTF(const char *str, char *ascii) {
-add this
+  int16_t len;
+  uint8_t a1, a2;
+  char aa[32];
+  char bb[2];
+
+
+  len = stringGlyphLength(str);
+
+  if(len == 0) {
+    *ascii = 0;
+    return;
+  }
+
+  for(int16_t i=0; i<len; i++) {  // C47 supports only unicode code points from 0x0000 to 0x7FFF
+    if(*str & 0x80) {
+      bb[1] = 0;
+      bb[0] = 0;
+
+      a1=(uint8_t)*str;
+      str++;
+      a2=(uint8_t)*str;
+      str++;
+
+      //replacement table TO BE PLAINTEXT OUTPUT
+      if(_getTextRTF(a1, a2, aa)) {
+        int16_t j = 0;
+        while(aa[j] != 0) {
+          *ascii = aa[j++];
+          ascii++;
+        }
+        ascii--;
+      }
+
+      else
+      //RANGE SUP/SUB/BASE TO BE PLAINTEXT OUTPUT
+      if((a1==(uint8_t)(STD_SUP_0   [0]) && (a2>=(uint8_t)(STD_SUP_0   [1]) && a2<=(uint8_t)(STD_SUP_9  [1]))) ) {bb[0] = ('0'+a2)-(uint8_t)(STD_SUP_0 [1]);} else
+      if((a1==(uint8_t)(STD_SUP_a   [0]) && (a2>=(uint8_t)(STD_SUP_a   [1]) && a2<=(uint8_t)(STD_SUP_z  [1]))) ) {bb[0] = ('a'+a2)-(uint8_t)(STD_SUP_a [1]);} else
+      if((a1==(uint8_t)(STD_SUP_A   [0]) && (a2>=(uint8_t)(STD_SUP_A   [1]) && a2<=(uint8_t)(STD_SUP_Z  [1]))) ) {bb[0] = ('A'+a2)-(uint8_t)(STD_SUP_A [1]);} else
+      if((a1==(uint8_t)(STD_SUB_0   [0]) && (a2>=(uint8_t)(STD_SUB_0   [1]) && a2<=(uint8_t)(STD_SUB_9  [1]))) ) {bb[0] = ('0'+a2)-(uint8_t)(STD_SUB_0 [1]);} else
+      if((a1==(uint8_t)(STD_SUB_a   [0]) && (a2>=(uint8_t)(STD_SUB_a   [1]) && a2<=(uint8_t)(STD_SUB_z  [1]))) ) {bb[0] = ('a'+a2)-(uint8_t)(STD_SUB_a [1]);} else
+      if((a1==(uint8_t)(STD_SUB_A   [0]) && (a2>=(uint8_t)(STD_SUB_A   [1]) && a2<=(uint8_t)(STD_SUB_Z  [1]))) ) {bb[0] = ('A'+a2)-(uint8_t)(STD_SUB_A [1]);} else
+//  ssss    if((a1==(uint8_t)(STD_BASE_0  [0]) && (a2==(uint8_t)(STD_BASE_0  [1])                                 )) ) {                        *ascii = ('0');} else
+//      if((a1==(uint8_t)(STD_BASE_1  [0]) && (a2>=(uint8_t)(STD_BASE_1  [1]) && a2<=(uint8_t)(STD_BASE_9 [1]))) ) {*ascii = '#';  ascii++; *ascii = ('1'+a2)-(uint8_t)(STD_BASE_1[1]);} else
+//      if((a1==(uint8_t)(STD_BASE_10 [0]) && (a2>=(uint8_t)(STD_BASE_10 [1]) && a2<=(uint8_t)(STD_BASE_16[1]))) ) {*ascii = '#';  ascii++; *ascii =  '1'; ascii++; *ascii = ('0'+a2)-(uint8_t)(STD_BASE_10[1]);} else
+      {
+
+
+sprintf(aa,"\\u%i?",((a1 & 0x7F) << 8) | a2);
+printf("§%s§\n",aa);
+
+        int16_t j = 0;
+        while(aa[j] != 0) {
+          *ascii = aa[j++];
+          ascii++;
+        }
+        ascii--;
+        
+   //     *ascii = a1;    // no change
+   //     ascii++;
+   //     *ascii = a2;
+      }
+      if(bb[0] != 0) {
+
+
+        strcpy(aa,"\\super ");
+        int16_t j = 0;
+        while(aa[j] != 0) {
+          *ascii = aa[j++];
+          ascii++;
+        }
+
+
+        *ascii = bb[0];
+        ascii++;
+
+
+        strcpy(aa,"\\nosupersub ");
+        j = 0;
+        while(aa[j] != 0) {
+          *ascii = aa[j++];
+          ascii++;
+        }
+        ascii--;
+
+
+      }
+    }
+    else {
+      *ascii = *str;
+      str++;
+    }
+    ascii++;
+    *ascii = 0;
+  }
 }
 
 
@@ -783,29 +922,6 @@ void stringToASCII(const char *str, char *ascii) {
         *ascii = 'i'; //to change to ><
       }
       else
-      //diverse
-      if(a1==(uint8_t)(STD_RIGHT_SINGLE_QUOTE[0]) && a2==(uint8_t)(STD_RIGHT_SINGLE_QUOTE[1])) *ascii = '\''; else
-      if(a1==(uint8_t)(STD_RIGHT_DOUBLE_QUOTE[0]) && a2==(uint8_t)(STD_RIGHT_DOUBLE_QUOTE[1])) *ascii = '\"'; else
-      if(a1==(uint8_t)(STD_op_i              [0]) && a2==(uint8_t)(STD_op_i              [1])) *ascii = 'i'; else
-      if(a1==(uint8_t)(STD_op_j              [0]) && a2==(uint8_t)(STD_op_j              [1])) *ascii = 'j'; else
-      if(a1==(uint8_t)(STD_BINARY_ONE        [0]) && a2==(uint8_t)(STD_BINARY_ONE        [1])) *ascii = '1'; else
-      if(a1==(uint8_t)(STD_BINARY_ZERO       [0]) && a2==(uint8_t)(STD_BINARY_ZERO       [1])) *ascii = '0'; else
-      if(a1==(uint8_t)(STD_CR                [0]) && a2==(uint8_t)(STD_CR                [1])) *ascii = '|'; else
-      //seps
-      if(a1==(uint8_t)(STD_RIGHT_TACK        [0]) && a2==(uint8_t)(STD_RIGHT_TACK        [1])) *ascii = '\''; else
-      if(a1==(uint8_t)(STD_WDOT              [0]) && a2==(uint8_t)(STD_WDOT              [1])) *ascii = '.'; else
-      if(a1==(uint8_t)(STD_DOT               [0]) && a2==(uint8_t)(STD_DOT               [1])) *ascii = '.'; else
-      if(a1==(uint8_t)(STD_WPERIOD           [0]) && a2==(uint8_t)(STD_WPERIOD           [1])) *ascii = '.'; else
-      if(a1==(uint8_t)(STD_WCOMMA            [0]) && a2==(uint8_t)(STD_WCOMMA            [1])) *ascii = ','; else
-      if(a1==(uint8_t)(STD_NQUOTE            [0]) && a2==(uint8_t)(STD_NQUOTE            [1])) *ascii = '\''; else
-      if(a1==(uint8_t)(STD_INV_BRIDGE        [0]) && a2==(uint8_t)(STD_INV_BRIDGE        [1])) *ascii = ','; else
-      if(a1==(uint8_t)(STD_SPACE_EM          [0]) && a2==(uint8_t)(STD_SPACE_EM          [1])) *ascii = ' '; else
-      if(a1==(uint8_t)(STD_SPACE_3_PER_EM    [0]) && a2==(uint8_t)(STD_SPACE_3_PER_EM    [1])) *ascii = ' '; else
-      if(a1==(uint8_t)(STD_SPACE_4_PER_EM    [0]) && a2==(uint8_t)(STD_SPACE_4_PER_EM    [1])) *ascii = ' '; else
-      if(a1==(uint8_t)(STD_SPACE_6_PER_EM    [0]) && a2==(uint8_t)(STD_SPACE_6_PER_EM    [1])) *ascii = ' '; else
-      if(a1==(uint8_t)(STD_SPACE_FIGURE      [0]) && a2==(uint8_t)(STD_SPACE_FIGURE      [1])) *ascii = ' '; else
-      if(a1==(uint8_t)(STD_SPACE_PUNCTUATION [0]) && a2==(uint8_t)(STD_SPACE_PUNCTUATION [1])) *ascii = ' '; else
-      if(a1==(uint8_t)(STD_SPACE_HAIR        [0]) && a2==(uint8_t)(STD_SPACE_HAIR        [1])) *ascii = ' '; else
       //RANGE SUP/SUB/BASE
       if((a1==(uint8_t)(STD_SUP_0            [0]) && (a2>=(uint8_t)(STD_SUP_0            [1]) && a2<=(uint8_t)(STD_SUP_9  [1]))) ) {*ascii = ('0'+a2)-(uint8_t)(STD_SUP_0 [1]);} else
       if((a1==(uint8_t)(STD_SUP_a            [0]) && (a2>=(uint8_t)(STD_SUP_a            [1]) && a2<=(uint8_t)(STD_SUP_z  [1]))) ) {*ascii = ('a'+a2)-(uint8_t)(STD_SUP_a [1]);} else
@@ -820,9 +936,6 @@ void stringToASCII(const char *str, char *ascii) {
       //RANGE QUOTES
       if(a1==(uint8_t)(STD_LEFT_SINGLE_QUOTE[0]) && (a2>=(uint8_t)(STD_LEFT_SINGLE_QUOTE[1]) && a2<=(uint8_t)(STD_SINGLE_HIGH_QUOTE[1])) ) *ascii = '\''; else
       if(a1==(uint8_t)(STD_LEFT_DOUBLE_QUOTE[0]) && (a2>=(uint8_t)(STD_LEFT_DOUBLE_QUOTE[1]) && a2<=(uint8_t)(STD_DOUBLE_HIGH_QUOTE[1])) ) *ascii = '"'; else
-      //Types used in commands
-      if(a1==(uint8_t)(STD_TIME_T        [0]) && a2==(uint8_t)(STD_TIME_T        [1])) *ascii = 'T'; else
-      if(a1==(uint8_t)(STD_DATE_D        [0]) && a2==(uint8_t)(STD_DATE_D        [1])) *ascii = 'D'; else
       {
         #ifdef PC_BUILD
           printf("Not decoded, replace with _: --a1=%u--a2=%u\n",a1,a2);
