@@ -2235,9 +2235,9 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
                         }
                         break;
 
-      case ITM_YY_DFLT: *showValue = lastCenturyLoUsed & 0x3FFF;
+      case ITM_YY_DFLT: *showValue = lastCenturyHighUsed & 0x3FFF;
                         showText[0] = 0;
-                        if((lastCenturyLoUsed & 0x3FFF) < 100) {
+                        if(lastCenturyHighUsed & 0x8000) {
                           *showValue = NOVAL;
                           strcpy(showText,STD_SUB_o STD_SUB_f STD_SUB_f);
                         }

@@ -590,18 +590,21 @@ void fnGetFirstGregorianDay(uint16_t unusedButMandatoryParameter) {
 
 //return true if bit 14 (16384 0x4000) is set, meaning that the YY default is updated from the last used full YYYY used.
 bool_t followYY(void) {
-  return lastCenturyLoUsed & 0x4000;
+  return lastCenturyHighUsed & 0x4000;
 }
 
 void fnYYDflt(uint16_t tmp) {
   if(tmp == YY_TRACKING) {
-    lastCenturyLoUsed = 0x4000;
+    lastCenturyHighUsed = 0x4000;
+  }
+  else if(tmp == YY_OFF) {
+    lastCenturyHighUsed = 0x8000;
   }
   else if(tmp < 100) {                                //allow lowest range 0100 -> 0199
-    lastCenturyLoUsed = 0;
+    lastCenturyHighUsed = 0;
   }
   else {
-    lastCenturyLoUsed = tmp;    
+    lastCenturyHighUsed = tmp;    
   }
 }
 

@@ -1268,7 +1268,7 @@ void resetOtherConfigurationStuff(void) {
   roundingMode = RM_HALF_EVEN;
   pcg32_srandom(0x1963073019931121ULL, 0x1995062319981019ULL); // RNG initialisation
   exponentHideLimit = 0;
-  lastCenturyLoUsed = 0;
+  lastCenturyHighUsed = 0;
   lrSelection = CF_LINEAR_FITTING;
   lrSelectionUndo = lrSelection;                               //Not saved in file, but reset
 
