@@ -220,6 +220,7 @@
   extern uint16_t               gapItemLeft;
   extern uint16_t               gapItemRight;
   extern uint16_t               gapItemRadix;
+  extern uint16_t               lastCenturyLoUsed;
   extern uint8_t                numScreensStandardFont;
   extern uint8_t                numScreensNumericFont;
   extern uint8_t                numScreensTinyFont;

@@ -474,6 +474,82 @@ void convertReal34RegisterToDateRegister(calcRegister_t source, calcRegister_t d
     }
   }
 
+  //get the actual active YYYY value, ignoring the tracking flag
+  uint16_t lastCenturyLoUsedtmp = lastCenturyLoUsed & 0x3FFF;
+
+  // remember last used century if the century is not an abbreviation, i.e. if YYYY > 100, ignore neg value YYYY
+  if(getSystemFlag(FLAG_YMD)) {
+    if(real34CompareGreaterThan(&part1,const34_100)) {
+      lastCenturyLoUsedtmp = 100*(int16_t)(real34ToInt32(&part1) / 100) - 100 + 200;
+    }
+  }
+  else //FLAG_MDY //FLAG_DMY
+  if(real34CompareGreaterThan(&part3,const34_100)) {
+    lastCenturyLoUsedtmp = 100*(int16_t)(real34ToInt32(&part3) / 100) - 100 + 200;
+  }
+
+
+  //No YYYY digits, i.e. no year given at all, so we use the current year.
+  if(getSystemFlag(FLAG_YMD)) {
+    if(real34IsZero(&part1)) {
+      #if defined(DMCP_BUILD)
+        tm_t timeInfo;
+        dt_t dateInfo;
+        rtc_read(&timeInfo, &dateInfo);
+        uInt32ToReal34(dateInfo.year,&part1);
+      #else // !DMCP_BUILD
+        time_t epoch = time(NULL);
+        struct tm *timeInfo = localtime(&epoch);
+        uInt32ToReal34(timeInfo->tm_year + 1900,&part1);
+      #endif // DMCP_BUILD
+    }
+  }
+  else //FLAG_MDY //FLAG_DMY
+  if(real34IsZero(&part3)) {
+      #if defined(DMCP_BUILD)
+        tm_t timeInfo;
+        dt_t dateInfo;
+        rtc_read(&timeInfo, &dateInfo);
+        uInt32ToReal34(dateInfo.year,&part3);
+      #else // !DMCP_BUILD
+        time_t epoch = time(NULL);
+        struct tm *timeInfo = localtime(&epoch);
+        uInt32ToReal34(timeInfo->tm_year + 1900,&part3);
+      #endif // DMCP_BUILD
+  }
+  
+
+  //Only YY digits
+  //#define thresHoldLo 1950 //      Automatic, 2024 ==> 2000-2099. 29 ==> 2029, 59 ==> 2059
+                             //                          1950-2049. 29 ==> 2029, 59 ==> 1959
+                             //      if yy > 49, then yy += 1900 else yy += 2000  
+  int16_t thresHoldLo = max(0, (int16_t)(lastCenturyLoUsed & 0x3FFF) - 99);
+  if(getSystemFlag(FLAG_YMD)) {
+    if(real34CompareLessThan(&part1,const34_100)) {
+      int16_t yy = (int16_t)(real34ToInt32(&part1));
+      if(yy > (thresHoldLo+99) % 100) {
+        yy += (thresHoldLo - thresHoldLo % 100);
+      }
+      else {
+        yy += (thresHoldLo - thresHoldLo % 100) + 100;
+      }
+      int32ToReal34((int32_t)yy,&part1);
+    }
+  }
+  else //FLAG_MDY //FLAG_DMY
+    if(real34CompareLessThan(&part3,const34_100)) {
+      int16_t yy = (int16_t)(real34ToInt32(&part3));
+      if(yy > (thresHoldLo+99) % 100) {
+        yy += (thresHoldLo - thresHoldLo % 100);
+      }
+      else {
+        yy += (thresHoldLo - thresHoldLo % 100) + 100;
+      }
+      int32ToReal34((int32_t)yy,&part3);
+    }
+
+
+
   if((getSystemFlag(FLAG_YMD) && !isValidDay(&part1, &part2, &part3)) ||
     ( getSystemFlag(FLAG_MDY) && !isValidDay(&part3, &part1, &part2)) ||
     ( getSystemFlag(FLAG_DMY) && !isValidDay(&part3, &part2, &part1))) {
@@ -482,6 +558,11 @@ void convertReal34RegisterToDateRegister(calcRegister_t source, calcRegister_t d
         moreInfoOnError("In function convertReal34RegisterToDateRegister:", "Invalid date input like 30 Feb.", NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return;
+  }
+
+  //update stored YYYY and add the control bits again
+  if(followYY()) {
+    lastCenturyLoUsed = (lastCenturyLoUsed & ~0x3FFF) | (lastCenturyLoUsedtmp & 0x3FFF);
   }
 
   reallocateRegister(destination, dtDate, REAL34_SIZE_IN_BLOCKS, amNone);

@@ -1202,7 +1202,7 @@ int16_t lastItem = 0;
           if(tam.mode && catalog && (tam.digitsSoFar || tam.function == ITM_BESTF || tam.function == ITM_CNST || (!tam.indirect && (tam.mode == TM_VALUE || tam.mode == TM_VALUE_CHB)))) {
             // disabled
           }
-          else if(tam.mode && (!tam.alpha || isAlphabeticSoftmenu()) && !(tam.mode == TM_VALUE && item == ITM_TAMMAX)) {
+          else if(tam.mode && (!tam.alpha || isAlphabeticSoftmenu()) && !(tam.mode == TM_VALUE && (item == ITM_TAMMAX || item == ITM_YY_TRACK))) {
             bool_t isInConfig = tam.mode == TM_FLAGW && currentMenu() == -MNU_SYSFL;   //JM Do not drop out of SYSFLG
 
             //This section to auto-drop out of alpha submenu.
@@ -1274,7 +1274,7 @@ int16_t lastItem = 0;
                 tamLeaveMode();
               }
             }
-            else if(tam.mode == TM_VALUE && item == ITM_TAMMAX) {
+            else if(tam.mode == TM_VALUE && (item == ITM_TAMMAX || item == ITM_YY_TRACK)) {
               tamLeaveMode();
             }
 
