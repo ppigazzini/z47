@@ -474,18 +474,18 @@ void convertReal34RegisterToDateRegister(calcRegister_t source, calcRegister_t d
     }
   }
 
-  //get the actual active YYYY value, ignoring the tracking flag
+  //get the actual active YYYY value, excluding the tracking flag
   uint16_t lastCenturyLoUsedtmp = lastCenturyLoUsed & 0x3FFF;
 
   // remember last used century if the century is not an abbreviation, i.e. if YYYY > 100, ignore neg value YYYY
   if(getSystemFlag(FLAG_YMD)) {
-    if(real34CompareGreaterThan(&part1,const34_100)) {
-      lastCenturyLoUsedtmp = 100*(int16_t)(real34ToInt32(&part1) / 100) - 100 + 200;
+    if(real34CompareGreaterEqual(&part1,const34_100)) {
+      lastCenturyLoUsedtmp = 100*(int16_t)(real34ToInt32(&part1) / 100) - 100 + 200 - 1;
     }
   }
   else //FLAG_MDY //FLAG_DMY
-  if(real34CompareGreaterThan(&part3,const34_100)) {
-    lastCenturyLoUsedtmp = 100*(int16_t)(real34ToInt32(&part3) / 100) - 100 + 200;
+  if(real34CompareGreaterEqual(&part3,const34_100)) {
+    lastCenturyLoUsedtmp = 100*(int16_t)(real34ToInt32(&part3) / 100) - 100 + 200 - 1;
   }
 
 
@@ -527,7 +527,7 @@ void convertReal34RegisterToDateRegister(calcRegister_t source, calcRegister_t d
   if(getSystemFlag(FLAG_YMD)) {
     if(real34CompareLessThan(&part1,const34_100)) {
       int16_t yy = (int16_t)(real34ToInt32(&part1));
-      if(yy > (thresHoldLo+99) % 100) {
+      if(yy >= (thresHoldLo) % 100) {
         yy += (thresHoldLo - thresHoldLo % 100);
       }
       else {
@@ -539,7 +539,7 @@ void convertReal34RegisterToDateRegister(calcRegister_t source, calcRegister_t d
   else //FLAG_MDY //FLAG_DMY
     if(real34CompareLessThan(&part3,const34_100)) {
       int16_t yy = (int16_t)(real34ToInt32(&part3));
-      if(yy > (thresHoldLo+99) % 100) {
+      if(yy >= (thresHoldLo) % 100) {
         yy += (thresHoldLo - thresHoldLo % 100);
       }
       else {

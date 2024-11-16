@@ -594,14 +594,11 @@ bool_t followYY(void) {
 }
 
 void fnYYDflt(uint16_t tmp) {
-  if(tmp > 9000 && tmp < YY_TRACKING) {               //disallow YY greater than 9000
-    lastCenturyLoUsed = ((uint16_t)(tmp / 100))*100;
+  if(tmp == YY_TRACKING) {
+    lastCenturyLoUsed = 0x4000;
   }
   else if(tmp < 100) {                                //allow lowest range 0100 -> 0199
     lastCenturyLoUsed = 0;
-  }
-  else if(tmp == YY_TRACKING) {
-    lastCenturyLoUsed = 0x4000;
   }
   else {
     lastCenturyLoUsed = tmp;    

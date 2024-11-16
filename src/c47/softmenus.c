@@ -608,7 +608,8 @@ TO_QSPI const int16_t menu_TamFlag[]     = { ITM_INDIRECTION,               -MNU
                                              ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    -MNU_FLG                      };
 
 TO_QSPI const int16_t menu_TamNonRegMax[]= { ITM_INDIRECTION,               ITM_TAMMAX,                 ITM_INDIRECT_X,           ITM_INDIRECT_Y,        ITM_INDIRECT_Z,              ITM_INDIRECT_T                };
-TO_QSPI const int16_t menu_TamNonRegTrk[]= { ITM_INDIRECTION,               ITM_YY_TRACK,               ITM_INDIRECT_X,           ITM_INDIRECT_Y,        ITM_INDIRECT_Z,              ITM_INDIRECT_T                };
+TO_QSPI const int16_t menu_TamNonRegTrk[]= { ITM_INDIRECTION,               ITM_YY_TRACK,               ITM_INDIRECT_X,           ITM_INDIRECT_Y,        ITM_INDIRECT_Z,              ITM_INDIRECT_T,
+                                             ITM_NULL,                      ITM_YY_OFF,                 ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL                      };
 
 TO_QSPI const int16_t menu_TamNonReg[]   = { ITM_INDIRECTION,               ITM_NULL,                   ITM_INDIRECT_X,           ITM_INDIRECT_Y,        ITM_INDIRECT_Z,              ITM_INDIRECT_T                };
 TO_QSPI const int16_t menu_TamIndirect[] = { ITM_NULL,                      -MNU_VAR,                   ITM_REG_X,                ITM_REG_Y,             ITM_REG_Z,                   ITM_REG_T,
@@ -2235,8 +2236,13 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
                         break;
 
       case ITM_YY_DFLT: *showValue = lastCenturyLoUsed & 0x3FFF;
+                        showText[0] = 0;
+                        if((lastCenturyLoUsed & 0x3FFF) < 100) {
+                          *showValue = NOVAL;
+                          strcpy(showText,STD_SUB_o STD_SUB_f STD_SUB_f);
+                        }
                         if(followYY()) {
-                          strcpy(showText,STD_SUB_T);
+                          strcat(showText,STD_SPACE_3_PER_EM STD_SUB_T);
                         }
                         break;
 
