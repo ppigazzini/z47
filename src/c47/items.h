@@ -1958,7 +1958,7 @@
 #define ITM_N_KEY_USER              1904
 #define ITM_1905                    1905
 #define ITM_N_KEY_SIGMA             1906
-#define ITM_1907                    1907
+#define MNU_PLOT_STATS              1907
 #define ITM_N_KEY_FSH               1908
 #define ITM_ms                      1909
 #define ITM_msTo                    1910
@@ -1970,7 +1970,7 @@
 #define ITM_USER_DM42               1916
 #define ITM_HPRP                    1917
 #define ITM_N_KEY_FGSH              1918
-#define ITM_1919                    1919
+#define ITM_YY_OFF                  1919
 #define MNU_ASN_N                   1920
 #define MNU_HOME                    1921
 #define MNU_ALPHA                   1922
@@ -2090,7 +2090,7 @@
 #define MNU_TRG                     2036
 #define MNU_PREF                    2037
 #define ITM_SAFERESET               2038
-#define ITM_SH_LONGPRESS            2039
+#define ITM_SH_LONGPRESS                   2039
 #define ITM_PLOT_STAT               2040
 #define ITM_3x1TOSTK                2041
 #define ITM_PLOTRST                 2042
@@ -2105,8 +2105,8 @@
 #define ITM_PRTACT1                 2051
 #define ITM_PRTACT0                 2052
 #define ITM_2TO10                   2053
-#define ITM_USER_HRESET             2054
-#define ITM_USER_PRESET             2055
+#define ITM_USER_HRESET                    2054
+#define ITM_USER_PRESET                    2055
 #define ITM_IRFRAC                  2056
 #define ITM_FGLNOFF                 2057
 #define ITM_FGLNLIM                 2058
@@ -2287,9 +2287,9 @@
 #define MNU_LAYOUTS                 2233
 #define MNU_RESETS                  2234
 #define MNU_RIBBONS                 2235
-#define MNU_PLOT_STATS               2236
-#define ITM_2237                    2237
-#define ITM_2238                    2238
+#define ITM_YY_DFLT                 2236
+#define ITM_YY_TRACK                2237
+#define MNU_TAMNONREGTRK            2238
 #define ITM_CLMALL                  2239
 #define ITM_CLVALL                  2240
 #define ITM_DELMALL                 2241

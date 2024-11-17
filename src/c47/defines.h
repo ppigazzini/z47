@@ -1301,8 +1301,9 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define TM_INTEGRATE                           10013
 #define TM_DELITM                              10014
 #define TM_VALUE_MAX                           10015
-#define TM_MENU                                10016
-#define TM_CMP                                 10017 // TM_CMP must be the last in this list
+#define TM_VALUE_TRK                           10016
+#define TM_MENU                                10017
+#define TM_CMP                                 10018 // TM_CMP must be the last in this list
 
 // NIM number part
 #define NP_EMPTY                                   0
@@ -1587,6 +1588,8 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define MAX_NUMBER_OF_GLYPHS_IN_STRING           508 //WP=196: Change to 512 less 3, Also change error message 33, and AIM_BUFFER_LENGTH, and MAXLINES
 #define NUMBER_OF_GLYPH_ROWS                     261  //Used in the font browser application
 
+#define YY_OFF                                     2 // 2 is off and gets transferred to bit 15 (32768 + YY)
+#define YY_TRACKING                                1 // 1 gets transferred to bit 14 (16384 + YY) 
 #define MAX_DENMAX                              9999 // Biggest denominator in fraction display mode selector, and annunciator.
                                                      // The value 0 gets converted to MAX_INTERNAL_DENMAX
 #define MAX_INTERNAL_DENMAX                    32500 // Biggest denominator in fraction display mode
