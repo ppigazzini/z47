@@ -497,11 +497,11 @@ void convertReal34RegisterToDateRegister(calcRegister_t source, calcRegister_t d
         dt_t dateInfo;
         rtc_read(&timeInfo, &dateInfo);
         uInt32ToReal34(dateInfo.year,&part1);
-      #else // !DMCP_BUILD
+      #elif defined(PC_BUILD) // PC_BUILD
         time_t epoch = time(NULL);
         struct tm *timeInfo = localtime(&epoch);
         uInt32ToReal34(timeInfo->tm_year + 1900,&part1);
-      #endif // DMCP_BUILD
+      #endif // PC_BUILD
     }
   }
   else //FLAG_MDY //FLAG_DMY
@@ -511,11 +511,11 @@ void convertReal34RegisterToDateRegister(calcRegister_t source, calcRegister_t d
         dt_t dateInfo;
         rtc_read(&timeInfo, &dateInfo);
         uInt32ToReal34(dateInfo.year,&part3);
-      #else // !DMCP_BUILD
+      #elif defined(PC_BUILD) // PC_BUILD
         time_t epoch = time(NULL);
         struct tm *timeInfo = localtime(&epoch);
         uInt32ToReal34(timeInfo->tm_year + 1900,&part3);
-      #endif // DMCP_BUILD
+      #endif // PC_BUILD
   }
   
 
