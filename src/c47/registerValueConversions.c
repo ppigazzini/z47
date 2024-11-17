@@ -561,7 +561,7 @@ void convertReal34RegisterToDateRegister(calcRegister_t source, calcRegister_t d
   }
 
   //update stored YYYY and add the control bits again
-  if(followYY()) {
+  if(!(lastCenturyHighUsed & 0x8000) && followYY()) {
     lastCenturyHighUsed = (lastCenturyHighUsed & ~0x3FFF) | (lastCenturyHighUsedtmp & 0x3FFF);
   }
 
