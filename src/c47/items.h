@@ -2090,7 +2090,7 @@
 #define MNU_TRG                     2036
 #define MNU_PREF                    2037
 #define ITM_SAFERESET               2038
-#define ITM_SH_LONGPRESS                   2039
+#define ITM_SH_LONGPRESS            2039
 #define ITM_PLOT_STAT               2040
 #define ITM_3x1TOSTK                2041
 #define ITM_PLOTRST                 2042
@@ -2105,8 +2105,8 @@
 #define ITM_PRTACT1                 2051
 #define ITM_PRTACT0                 2052
 #define ITM_2TO10                   2053
-#define ITM_USER_HRESET                    2054
-#define ITM_USER_PRESET                    2055
+#define ITM_USER_HRESET             2054
+#define ITM_USER_PRESET             2055
 #define ITM_IRFRAC                  2056
 #define ITM_FGLNOFF                 2057
 #define ITM_FGLNLIM                 2058
