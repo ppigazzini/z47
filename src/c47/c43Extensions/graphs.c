@@ -211,9 +211,11 @@ void fnPrms (uint16_t unusedButMandatoryParameter) {
 
 void fnPlotZoom(uint16_t unusedButMandatoryParameter){
     longInteger_t x;
+    longIntegerInit(x);
     int32_t ii;
-    if(!getRegisterAsLongInt(REGISTER_X, x, NULL))
+    if(!getRegisterAsLongInt(REGISTER_X, x, NULL)) {
       return;
+    }
     longIntegerToInt(x, ii);
     longIntegerFree(x);
     //the ZOOM command from outside the PLOT mode only works for PLSTAT
@@ -319,8 +321,10 @@ void fnPy (uint16_t unusedButMandatoryParameter) {
 
 void fnPlotReset(uint16_t unusedButMandatoryParameter) {
   graph_reset();
-  fnRefreshState();                //jm
-  fnPlotSQ(0);
+  if(GRAPHMODE) {
+    fnRefreshState();                //jm
+    fnPlotSQ(0);
+  }
 }
 
 

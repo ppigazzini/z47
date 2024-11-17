@@ -1958,7 +1958,7 @@
 #define ITM_N_KEY_USER              1904
 #define ITM_1905                    1905
 #define ITM_N_KEY_SIGMA             1906
-#define ITM_1907                    1907
+#define MNU_PLOT_STATS              1907
 #define ITM_N_KEY_FSH               1908
 #define ITM_ms                      1909
 #define ITM_msTo                    1910
@@ -2287,7 +2287,7 @@
 #define MNU_LAYOUTS                 2233
 #define MNU_RESETS                  2234
 #define MNU_RIBBONS                 2235
-#define MNU_PLOT_STATS               2236
+#define ITM_2236                    2236
 #define ITM_2237                    2237
 #define ITM_2238                    2238
 #define ITM_CLMALL                  2239
