@@ -368,6 +368,23 @@ int16_t stringPrevGlyph(const char *str, int16_t pos) {
 }
 
 
+bool_t isValidNumber(const char *ss, const char *template){
+  if(stringByteLength(ss) != stringByteLength(template)) {
+    return false;
+  }
+  uint16_t nn = stringByteLength(ss);
+  while(nn != 0) {
+    if((template[nn-1] == '.' && !(ss[nn-1] == '.' || ss[nn-1] == ',')) ||
+       (template[nn-1] == 'd' && !(ss[nn-1] >= '0' && ss[nn-1] <= '9')) ||
+       (template[nn-1] == 's' && !(ss[nn-1] == '-' || ss[nn-1] == '+')) )  {
+      return false;
+    }
+    nn--;
+  }
+  return true;
+}
+
+
 int16_t stringPrevNumberGlyph(const char *str, int16_t pos) {
   int16_t pos2 = pos; 
 
