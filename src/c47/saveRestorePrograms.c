@@ -280,9 +280,8 @@ void fnPExport(uint16_t mode) {
       }
 
 
-      //Line Number and base indent ==> asciiString
-      sprintf(asciiString, "%04d:  " , firstDisplayedLocalStepNumber + line - lineOffset + lineOffsetTam);
-
+      char tmpp[30];
+      asciiString[0]=0;
 
       //Add extra blank line before LBL
       if(newLine){
@@ -293,6 +292,9 @@ void fnPExport(uint16_t mode) {
         }
       }
 
+      //Line Number and base indent ==> asciiString
+      sprintf(tmpp, "%04d:  " , firstDisplayedLocalStepNumber + line - lineOffset + lineOffsetTam);
+      stringAppend(asciiString + stringByteLength(asciiString), tmpp);
 
       //Add instruction
       stringAppend(asciiString + stringByteLength(asciiString), tmpString);        //add number + instruction: 0000:  1/X
