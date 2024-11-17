@@ -2242,7 +2242,7 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
                           strcpy(showText,STD_SUB_o STD_SUB_f STD_SUB_f);
                         }
                         if(followYY()) {
-                          strcat(showText,STD_SPACE_3_PER_EM STD_SUB_T);
+                          strcat(showText,STD_SPACE_3_PER_EM STD_SUB_t);
                         }
                         break;
 
