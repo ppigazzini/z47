@@ -43,7 +43,8 @@ void    fnPNvect           (uint16_t unusedButMandatoryParameter);
 void    fnScale            (uint16_t unusedButMandatoryParameter);
 void    fnPshade           (uint16_t unusedButMandatoryParameter);
 void    fnComplexPlot      (uint16_t unusedButMandatoryParameter);
-void    fnPMzoom           (uint16_t param);
+void    fnPMzoom           (uint16_t unusedButMandatoryParameter);
+void    fnPlotZoom         (uint16_t unusedButMandatoryParameter);
 void    fnPx               (uint16_t unusedButMandatoryParameter);
 void    fnPy               (uint16_t unusedButMandatoryParameter);
 void    fnListXY           (uint16_t unusedButMandatoryParameter);
@@ -53,17 +54,13 @@ void    fnPlotSQ           (uint16_t unusedButMandatoryParameter);
 void    fnPlotReset        (uint16_t unusedButMandatoryParameter);
 void    fnPlotStatAdv      (uint16_t unusedButMandatoryParameter);
 
-#define plotstat true
+#define PLOTSTAT true
 void graphResetCommon      (void);
-void graph_Include0        (bool_t mode,  uint16_t statnum); //using global: extentx, x_min, x_max, extenty, y_min, y_max
-extern  bool_t   extentx;
-extern  bool_t   extenty;
+void graph_Include0        (bool_t mode,  uint16_t statnum); //using global: FLAG_SHOWX, x_min, x_max, FLAG_SHOWY, y_min, y_max
 extern  float    x_min;
 extern  float    x_max;
 extern  float    y_min;
 extern  float    y_max;
-extern  bool_t   PLOT_SCALE;
 extern  int8_t   PLOT_ZMY;
-
 
 #endif // !GRAPHS_H

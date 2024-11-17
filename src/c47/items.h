@@ -1438,8 +1438,8 @@
 #define MNU_PROG                    1392
 #define MNU_TAMLABEL                1393
 #define MNU_DYNAMIC                 1394
-#define MNU_PLOT_STAT               1395
-#define MNU_PLOT_LR                 1396
+#define MNU_PLOT_SCATR              1395
+#define MNU_PLOT_ASSESS             1396
 #define MNU_ELLIPT                  1397
 #define MNU_MVAR                    1398
 #define MNU_EQ_EDIT                 1399
@@ -1594,7 +1594,7 @@
 #define ITM_PGMINT                  1546
 #define ITM_PGMSLV                  1547
 #define ITM_PIXEL                   1548
-#define ITM_PLOT                    1549
+#define ITM_PLOT_SCATR              1549
 #define ITM_Pn                      1550
 #define ITM_POINT                   1551
 #define ITM_LOADV                   1552
@@ -1806,7 +1806,7 @@
 #define ITM_PLOT_CENTRL             1756
 #define ITM_HIDE_OLD                1757
 #define ITM_SMI                     1758
-#define ITM_PLOT_LR                 1759
+#define ITM_PLOT_ASSESS                 1759
 #define ITM_PLOT_NXT                1760
 #define ITM_PLOT_REV                1761
 #define ITM_PLOTZOOM                1762
@@ -1958,7 +1958,7 @@
 #define ITM_N_KEY_USER              1904
 #define ITM_1905                    1905
 #define ITM_N_KEY_SIGMA             1906
-#define ITM_1907                    1907
+#define MNU_PLOT_STATS              1907
 #define ITM_N_KEY_FSH               1908
 #define ITM_ms                      1909
 #define ITM_msTo                    1910
@@ -2065,8 +2065,8 @@
 #define ITM_PBOX                    2011
 #define ITM_VECT                    2012
 #define ITM_NVECT                   2013
-#define ITM_EXTX                    2014
-#define ITM_EXTY                    2015
+#define ITM_SHOWX                   2014
+#define ITM_SHOWY                   2015
 #define ITM_DENMAX2_OLD             2016
 #define ITM_SETSIG2_OLD             2017
 #define ITM_AVIEW                   2018
@@ -2079,7 +2079,7 @@
 #define ITM_DIFF                    2025
 #define ITM_RMS                     2026
 #define ITM_SHADE                   2027
-#define MNU_PLOT                    2028
+#define MNU_PLOT_FUNC               2028
 #define CHR_num                     2029
 #define CHR_numL                    2030
 #define CHR_numU                    2031
@@ -2315,16 +2315,17 @@
 #define SFL_IRF_ON                  2259
 #define SFL_PFX_ALL                 2260
 #define SFL_DREAL                   2261
-#define SFL_2258                    2262
-#define SFL_2259                    2263
-#define SFL_2260                    2264
-#define SFL_2261                    2265
-#define SFL_2262                    2266
-#define SFL_2263                    2267
-#define SFL_2264                    2268
-#define SFL_2265                    2269
-#define SFL_2266                    2270
-#define SFL_2267                    2271
+#define SFL_CPXPLOT                 2262
+#define SFL_SHOWX                   2263
+#define SFL_SHOWY                   2264
+#define SFL_PBOX                    2265
+#define SFL_PCROS                   2266
+#define SFL_PPLUS                   2267
+#define SFL_PLINE                   2268
+#define SFL_SCALE                   2269
+#define SFL_VECT                    2270
+#define SFL_NVECT                   2271
+
 #define SFL_2268                    2272
 #define SFL_2269                    2273
 #define SFL_2270                    2274

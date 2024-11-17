@@ -11,19 +11,7 @@
 // JM VARIOUS OPTIONS
 //*********************************
 
-#define VERSION1 "0.109.02.06b5"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
-
-//Version history
-//0.109.02.00
-//0.109.02.01
-//0.109.02.02 this version.02 was tagged in GitLab as .03
-//0.109.02.03 this version skipped due to confusion.
-//0.109.02.04
-//0.109.02.05
-//0.109.02.05B for bugfixes
-//0.109.02.06B2 for bugfixes
-//0.109.02.06B4 for bugfixes and sim key improvemts
-
+#define VERSION1 "0.109.02.06b8"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
 
 
 #if !defined(CALCMODEL)
@@ -115,7 +103,7 @@
   //  #define SAVE_SPACE_DM42_11       //   800 bytes // Without Matrix function on entry ...
   //  #define SAVE_SPACE_DM42_12       //  3288 bytes // Without SLVC, SLVQ, ELLIPTIC, ZETA, BETA
   //  #define SAVE_SPACE_DM42_12PRIME  // 27208 bytes // Without ISPRIME, NEXTPRIME, FACTORS, EULPHI, MATXFACTOR
-    #define SAVE_SPACE_DM42_12BESSEL //  5129 bytes // Without BESSEL
+  //  #define SAVE_SPACE_DM42_12BESSEL //  5129 bytes // Without BESSEL
   //  #define SAVE_SPACE_DM42_12ORTHO  //  0768 bytes // Without ORTHO MENU
   //  #define SAVE_SPACE_DM42_13GRF    // 17472 bytes // Without Solver & graphics & stat graphics
   //  #define SAVE_SPACE_DM42_13GRF_JM //  7520 bytes // Without More graphics
@@ -123,7 +111,7 @@
   //  #define SAVE_SPACE_DM42_15       // 10056 bytes // Without all distributions, i.e. , cauchy, chi, expo, f, logis, t, weibull
   //  #define SAVE_SPACE_DM42_16       //  2168 bytes // Without Norml distribution
     #define SAVE_SPACE_DM42_17       //  7448 bytes // Without Poisson/Hyper/Binomial/Geometrical distributions
-  //  #define SAVE_SPACE_DM42_20_TIMER //  1232 bytes // Without STOPW
+    #define SAVE_SPACE_DM42_20_TIMER //  1232 bytes // Without STOPW
   //  #define SAVE_SPACE_DM42_21_HP35  //   200 bytes // Without config file activations only. Not complete removal.
   #endif // TWO_FILE_PGM
 #endif // DMCP_BUILD
@@ -147,15 +135,10 @@
   #undef     DM42_KEYCLICK
   #define    CLICK_REFRESHSCR           //Add a 5 ms click before refresh screen
   #undef     CLICK_REFRESHSCR
-
-
-
   #define    BATTERYTEST                //RNG nnnn is used to force the battery voltage in the simulator
   #undef     BATTERYTEST
-
   #define    MONITOR_VOLTAGE_INTEGRATOR
   #undef     MONITOR_VOLTAGE_INTEGRATOR
-
 
 
 //Debug showFunctionName
@@ -652,8 +635,18 @@
 #define FLAG_IRF_ON                           0x8048
 #define FLAG_PFX_ALL                          0x8049
 #define FLAG_DREAL                            0x804A
+#define FLAG_CPXPLOT                          0x804B
+#define FLAG_SHOWX                            0x804C
+#define FLAG_SHOWY                            0x804D
+#define FLAG_PBOX                             0x804E
+#define FLAG_PCROS                            0x804F
+#define FLAG_PPLUS                            0x8050
+#define FLAG_PLINE                            0x8051
+#define FLAG_SCALE                            0x8052
+#define FLAG_VECT                             0x8053
+#define FLAG_NVECT                            0x8054
 
-#define NUMBER_OF_SYSTEM_FLAGS                    75 // We can have a maximum of 128 system flags
+#define NUMBER_OF_SYSTEM_FLAGS                    85 // We can have a maximum of 128 system flags
 
 // FLGS and STATUS SCREENS
 #define NO_SCREEN                          0  // No screen selected
