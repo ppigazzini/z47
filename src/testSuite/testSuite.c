@@ -1205,7 +1205,7 @@ void setParameter(char *p) {
 
       reallocateRegister(regist, dtReal34, 0, amNone);
       stringToReal34(r, REGISTER_REAL34_DATA(regist));
-      convertReal34RegisterToDateRegister(regist, regist);
+      convertReal34RegisterToDateRegister(regist, regist, !YYSystem);
     }
     else if(strcmp(l, "REMA") == 0) {
       // remove beginning and ending " and removing leading spaces
@@ -2452,7 +2452,7 @@ void checkExpectedOutParameter(char *p) {
       checkRegisterType(regist, letter, dtDate, amNone);
       reallocateRegister(TEMP_REGISTER_1, dtReal34, 0, amNone);
       stringToReal34(r, REGISTER_REAL34_DATA(TEMP_REGISTER_1));
-      convertReal34RegisterToDateRegister(TEMP_REGISTER_1, TEMP_REGISTER_1);
+      convertReal34RegisterToDateRegister(TEMP_REGISTER_1, TEMP_REGISTER_1, !YYSystem);
       real34Copy(REGISTER_REAL34_DATA(TEMP_REGISTER_1), &expectedReal34);
       if(!real34AreEqual(REGISTER_REAL34_DATA(regist), &expectedReal34)) {
         expectedAndShouldBeValue(regist, letter, r, registerExpectedAndValue);
