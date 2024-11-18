@@ -89,7 +89,7 @@ bool_t checkDateArgument(calcRegister_t regist, real34_t *jd) {
     case dtReal34: {
       if(getRegisterAngularMode(regist) == amNone) {
         reallocateRegister(TEMP_REGISTER_1, dtReal34, 0, amNone); // make sure TEMP_REGISTER_1 is not of dtDate type here
-        convertReal34RegisterToDateRegister(regist, TEMP_REGISTER_1);
+        convertReal34RegisterToDateRegister(regist, TEMP_REGISTER_1, !YYSystem);
         if(getRegisterDataType(TEMP_REGISTER_1) != dtDate) {
           return false; // invalid date
         }
@@ -624,7 +624,7 @@ void fnXToDate(uint16_t unusedButMandatoryParameter) {
 
     case dtReal34: {
       if(getRegisterAngularMode(REGISTER_X) == amNone) {
-        convertReal34RegisterToDateRegister(REGISTER_X, REGISTER_X);
+        convertReal34RegisterToDateRegister(REGISTER_X, REGISTER_X, !YYSystem);
         checkDateRange(REGISTER_REAL34_DATA(REGISTER_X));
         temporaryInformation = TI_DAY_OF_WEEK;
         if(lastErrorCode != 0) {
