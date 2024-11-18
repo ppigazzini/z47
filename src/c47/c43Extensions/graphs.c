@@ -714,43 +714,8 @@ void graph_Include0(bool_t mode, uint16_t statnum) {
     }
   }
 
-
-  //Cause scales to be the same
-  if(getSystemFlag(FLAG_SCALE)) {
-    // if y >> x, then y simply takes on the X range and can be increased using ZMY
-    if(mode == PLOTSTAT) {
-      x_min = min(x_min,y_min);
-      x_max = max(x_max,y_max);
-      y_min = x_min;
-      y_max = x_max;
-    }
-    else {  //new equal scale calculation to keep the grpah centre of screen
-      float dx = fabs(x_max - x_min);
-      float dy = fabs(y_max - y_min);
-      //printf("dx=%f dy=%f\n",dx,dy);
-      if(dx > 1e-10 && dy/dx > 100000) {
-        y_min = x_min;
-        y_max = x_max;              
-        dx = fabs(x_max - x_min);
-        dy = fabs(y_max - y_min);
-      }
-      else {
-        if(dx > dy) {
-          dy = dx;
-        } else {
-          dx = dy;
-        }
-      }
-      x_min = (x_min + x_max)/2 - dx/2;
-      x_max = x_min + dx;
-      y_min = (y_min + y_max)/2 - dy/2;
-      y_max = y_min + dy;
-    }
-  }
-
-
   #if defined(STATDEBUG) && defined(PC_BUILD)
-    printf("x_min=%f,y_min=%f,x_max=%f,y_max=%f, dx=%f, dy=%f, plotzoomx=%f\n", x_min,y_min,x_max,y_max, dx, dy, plotzoomx);
+    printf("x_min=%f,y_min=%f,x_max=%f,y_max=%f\n", x_min,y_min,x_max,y_max);
     printf("Axis2: x: %f -> %f y: %f -> %f   \n",x_min, x_max, y_min, y_max);
   #endif // STATDEBUG
 
@@ -771,7 +736,7 @@ void graph_Include0(bool_t mode, uint16_t statnum) {
   }
 
   #if defined(STATDEBUG) && defined(PC_BUILD)
-    printf("x_min=%f,y_min=%f,x_max=%f,y_max=%f, dx=%f, dy=%f, plotzoomx=%f\n", x_min,y_min,x_max,y_max, dx, dy, plotzoomx);
+    printf("x_min=%f,y_min=%f,x_max=%f,y_max=%f, dx=%f, dy=%f, \n", x_min,y_min,x_max,y_max, dx, dy);
     printf("Axis3a: x: %f -> %f y: %f -> %f   \n",x_min, x_max, y_min, y_max);
   #endif // STATDEBUG
 
@@ -811,10 +776,53 @@ void graph_Include0(bool_t mode, uint16_t statnum) {
   }
 
   #if defined(STATDEBUG) && defined(PC_BUILD)
-    printf("x_min=%f,y_min=%f,x_max=%f,y_max=%f, dx=%f, dy=%f, plotzoomx=%f\n", x_min,y_min,x_max,y_max, dx, dy, plotzoomx);
+    printf("x_min=%f,y_min=%f,x_max=%f,y_max=%f, dx=%f, dy=%f \n", x_min,y_min,x_max,y_max, dx, dy);
     printf("Axis3b: x: %f -> %f y: %f -> %f   \n",x_min, x_max, y_min, y_max);
   #endif // STATDEBUG
+
+
+
+  //Cause scales to be the same
+  if(getSystemFlag(FLAG_SCALE)) {
+    // if y >> x, then y simply takes on the X range and can be increased using ZMY
+    if(mode == PLOTSTAT) {
+      x_min = min(x_min,y_min);
+      x_max = max(x_max,y_max);
+      y_min = x_min;
+      y_max = x_max;
+    }
+    else {  //new equal scale calculation to keep the grpah centre of screen
+      float dx = fabs(x_max - x_min);
+      float dy = fabs(y_max - y_min);
+      //printf("dx=%f dy=%f\n",dx,dy);
+      if(dx > 1e-10 && dy/dx > 100000) {
+        y_min = x_min;
+        y_max = x_max;              
+        dx = fabs(x_max - x_min);
+        dy = fabs(y_max - y_min);
+      }
+      else {
+        if(dx > dy) {
+          dy = dx;
+        } else {
+          dx = dy;
+        }
+      }
+      x_min = (x_min + x_max)/2 - dx/2;
+      x_max = x_min + dx;
+      y_min = (y_min + y_max)/2 - dy/2;
+      y_max = y_min + dy;
+    }
+  }
+
+  #if defined(STATDEBUG) && defined(PC_BUILD)
+    printf("x_min=%f,y_min=%f,x_max=%f,y_max=%f, dx=%f, dy=%f \n", x_min,y_min,x_max,y_max, dx, dy);
+    printf("Axis3c: x: %f -> %f y: %f -> %f   \n",x_min, x_max, y_min, y_max);
+  #endif // STATDEBUG
+
+
 }
+
 
 
 
@@ -1015,7 +1023,11 @@ void graph_plotmem(void) {
 /**/      a7 = 0;
 /**/      a8 = 0;
 /**/
+/**/      float scaleRmsy = 0;
+/**/
 /**/      if(getSystemFlag(FLAG_PBOX) || getSystemFlag(FLAG_PLINE) || getSystemFlag(FLAG_PCROS) || getSystemFlag(FLAG_PPLUS) || !(PLOT_DIFF || PLOT_INTG)) {  //XXXX
+/**/
+/**/        //pre-loop to cover trivial cases of symmetrical axis
 /**/        for(cnt=0; (cnt < statnum); cnt++) {
 /**/          #if defined(STATDEBUG)
 /**/            printf("Axis0a: cnt/statnum: %i/%i  x: %f y: %f   \n", cnt, statnum, grf_x(cnt), grf_y(cnt));
@@ -1026,64 +1038,86 @@ void graph_plotmem(void) {
 /**/          if(grf_x(cnt) > x_max) {
 /**/            x_max = grf_x(cnt);
 /**/          }
-/**/          a8 = a7;
-/**/          a7 = a6;
-/**/          a6 = a5;
-/**/          a5 = a4;
-/**/          a4 = a3;
-/**/          a3 = a2;
-/**/          a2 = a1;
-/**/          a1 = a0;
-/**/          a0 = grf_y(cnt);
-/**/          if(cnt < 8) {
-/**/            aa = a0;
+/**/          if(grf_y(cnt) < y_min) {
+/**/            y_min = grf_y(cnt);
 /**/          }
-/**/          else {
-/**/            aa = a8*0.2 + a7 *0.2 + a6*0.1 + a5*0.1 + a4*0.1 + a3*0.1 + a2*0.1 + a1*0.1;
+/**/          if(grf_y(cnt) > y_max) {
+/**/            y_max = grf_y(cnt);
 /**/          }
-/**/     //     if(aa != 0 && fabs(a0/aa) < 3 && a0 != 0) {
-/**/     //       aa = a0 * 1.1;
-/**/     //     }
-/**/          //printf("%f %f %f %f %f %f %f %f %f  %f\n", a8, a7, a6, a5, a4, a3, a2, a1, a0, aa);
-/**/          if(aa < y_min) {
-/**/            y_mincnt++;
-/**/            if(fabs(aa / y_min) < 4 ) {//|| aa == a0 * 1.1) {
-/**/              if(aa < y_min) {
-/**/               y_min = aa;
-/**/              }
-/**/              y_mincnt=0;
-/**/            }
-/**/            else if(y_mincnt==3) {
-/**/              y_min = aa;
-/**/              y_mincnt=0;
-/**/            }
-/**/          }
-/**/          else {
-/**/           y_mincnt=0;
-/**/          }
+/**/          scaleRmsy = sqrt((scaleRmsy * scaleRmsy * cnt + grf_y(cnt) * grf_y(cnt)) / (cnt+1.0));
+/**/        }
 /**/
-/**/          if(aa > y_max) {
-/**/            y_maxcnt++;
-/**/            if(fabs(aa / y_max) < 4 ) {//|| aa == a0 * 1.1) {
-/**/              if(aa>y_max) {
+/**/        //pre-loop to cover trivial quasi symmetrical axis
+/**/        if(y_max > 0 && y_min < 0 && (y_max > 4 * scaleRmsy)) {y_max = scaleRmsy;} else                      //force the RMS if large peaks occur
+/**/        if(y_max > 0 && y_min < 0 && (-y_min > 4 * scaleRmsy)) {y_min = -scaleRmsy;} else
+/**/        if(y_max > 0 && y_min < 0 && (y_max > -y_min) && (y_max / y_min < 1.2)) { y_min = -y_max; } else     //make x-axis sit in the middle if close enough
+/**/        if(y_max > 0 && y_min < 0 && (y_max < -y_min) && (y_min / y_max < 1.2)) { y_max = -y_min; } else
+/**/
+/**/
+/**/         {
+/**/          for(cnt=0; (cnt < statnum); cnt++) {
+/**/            #if defined(STATDEBUG)
+/**/              printf("Axis0a: cnt/statnum: %i/%i  x: %f y: %f   \n", cnt, statnum, grf_x(cnt), grf_y(cnt));
+/**/            #endif // STATDEBUG
+/**/            a8 = a7;
+/**/            a7 = a6;
+/**/            a6 = a5;
+/**/            a5 = a4;
+/**/            a4 = a3;
+/**/            a3 = a2;
+/**/            a2 = a1;
+/**/            a1 = a0;
+/**/            a0 = grf_y(cnt);
+/**/            if(cnt < 8) {
+/**/              aa = a0;
+/**/            }
+/**/            else {
+/**/              aa = a8*0.2 + a7 *0.2 + a6*0.1 + a5*0.1 + a4*0.1 + a3*0.1 + a2*0.1 + a1*0.1;
+/**/            }
+/**/       //     if(aa != 0 && fabs(a0/aa) < 3 && a0 != 0) {
+/**/       //       aa = a0 * 1.1;
+/**/       //     }
+/**/            //printf("%f %f %f %f %f %f %f %f %f  %f\n", a8, a7, a6, a5, a4, a3, a2, a1, a0, aa);
+/**/            if(aa < y_min) {
+/**/              y_mincnt++;
+/**/              if(fabs(aa / y_min) < 4 ) {//|| aa == a0 * 1.1) {
+/**/                if(aa < y_min) {
+/**/                 y_min = aa;
+/**/                }
+/**/                y_mincnt=0;
+/**/              }
+/**/              else if(y_mincnt==3) {
+/**/                y_min = aa;
+/**/                y_mincnt=0;
+/**/              }
+/**/            }
+/**/            else {
+/**/             y_mincnt=0;
+/**/            }
+/**/  
+/**/            if(aa > y_max) {
+/**/              y_maxcnt++;
+/**/              if(fabs(aa / y_max) < 4 ) {//|| aa == a0 * 1.1) {
+/**/                if(aa>y_max) {
+/**/                  y_max = aa;
+/**/                }
+/**/                y_maxcnt=0;
+/**/              }
+/**/              else if(y_maxcnt==3) {
 /**/                y_max = aa;
+/**/                y_maxcnt=0;
 /**/              }
+/**/            }
+/**/            else {
 /**/              y_maxcnt=0;
 /**/            }
-/**/            else if(y_maxcnt==3) {
-/**/              y_max = aa;
-/**/              y_maxcnt=0;
+/**/  
+/**/            #if defined(STATDEBUG)
+/**/              printf("Axis0b: x: %f -> %f y: %f -> %f   \n", x_min, x_max, y_min, y_max);
+/**/            #endif // STATDEBUG
+/**/            if(exitKeyWaiting()) {
+/**/              return;
 /**/            }
-/**/          }
-/**/          else {
-/**/            y_maxcnt=0;
-/**/          }
-/**/
-/**/          #if defined(STATDEBUG)
-/**/            printf("Axis0b: x: %f -> %f y: %f -> %f   \n", x_min, x_max, y_min, y_max);
-/**/          #endif // STATDEBUG
-/**/          if(exitKeyWaiting()) {
-/**/            return;
 /**/          }
 /**/        }
 /**/      }
@@ -1229,28 +1263,34 @@ void graph_plotmem(void) {
           bool_t bothOutOfScreen01 = ((yN1 >= SCREEN_HEIGHT_GRAPH) && (yN0 >= SCREEN_HEIGHT_GRAPH)) || ((yN1 < minN_y) && (yN0 < minN_y));
           bool_t outOfScreen1  = (yN1 >= SCREEN_HEIGHT_GRAPH || yN1 < minN_y);
           bool_t outOfScreen0  = (yN0 >= SCREEN_HEIGHT_GRAPH || yN0 < minN_y);
-printf("001 yN1 =%i yN0=%i minN_y=%i\n", (int8_t)yN1,  (int8_t)yN0, (int8_t)minN_y);
-printf("    xN1 =%i  xo=%i minN_x=%i\n", (int16_t)xN1, (int16_t)xo, (int16_t)minN_x);
 
-          if(yN1 > yN0 && xN1 > xo && yN1 >= SCREEN_HEIGHT_GRAPH && !bothOutOfScreen01 && outOfScreen1 && !outOfScreen0) {
+          #if defined(STATDEBUG)
+            printf("001 yN1 =%i yN0=%i minN_y=%i\n", (int8_t)yN1,  (int8_t)yN0, (int8_t)minN_y);
+            printf("    xN1 =%i  xo=%i minN_x=%i\n", (int16_t)xN1, (int16_t)xo, (int16_t)minN_x);
+          #endif // STATDEBUG
+
+          //exceeding the negative y-axis part or the bottom of the screen, use proportional triangle to determine the part of the line to be plotted to the edge of the plotting area
+          if((yN1 > yN0 && xN1 > xo && yN1 >= SCREEN_HEIGHT_GRAPH && !bothOutOfScreen01 && outOfScreen1 && !outOfScreen0) ||
+             (yN1 < yN0 && xN1 > xo && yN0 >= SCREEN_HEIGHT_GRAPH && !bothOutOfScreen01 && !outOfScreen1 && outOfScreen0)) {
             int16_t dY = abs(SCREEN_HEIGHT_GRAPH - 1 - yN0);
-            float dxN = (fabs((float)dY))/(fabs((float)(yN1-yN0))*(float)(xN1-xo));
-printf("DxLoScreen Max =%f\n",dxN);
-//            if(dxN > 25) dxN = 25;
+            float dxN = fabs(((float)dY)*((float)(xN1-xo))/((float)(yN1-yN0)));
             xN1 = xo + dxN;
             yN1 = SCREEN_HEIGHT_GRAPH - 1;
           }
-          else if(yN1 < yN0 && xN1 > xo && yN1 < minN_y && !bothOutOfScreen01 && outOfScreen1 && !outOfScreen0) {
-            int16_t dY = yN0;
-            float dxN = (fabs((float)dY))/(fabs((float)(yN1-yN0))*(fabs)((float)(xN1-xo)));
-printf("DxHiScreen 0 =%f\n",dxN);
-//            if(dxN > 25) dxN = 25;
+
+          //exceeding the positive y-axis part or the top of the screen, use proportional triangle to determine the part of the line to be plotted to the edge of the plotting area
+          else if((yN1 < yN0 && xN1 > xo && yN1 < minN_y && !bothOutOfScreen01 && outOfScreen1 && !outOfScreen0) ||
+                  (yN1 > yN0 && xN1 > xo && yN0 < minN_y && !bothOutOfScreen01 && !outOfScreen1 && outOfScreen0)) {
+            int16_t dY = abs(yN0 - minN_y);
+            float dxN = fabs(((float)dY)*((float)(xN1-xo))/((float)(yN1-yN0)));
             xN1 = xo + dxN;
             yN1 = minN_y;
           }
 
-printf("002 yN1 =%i yN0=%i minN_y=%i\n", (int8_t)yN1, (int8_t)yN0, (int8_t)minN_y);
-printf("    xN1 =%i xo=%i minN_x=%i\n", (int16_t)xN1, (int16_t)xo, (int16_t)minN_x);
+          #if defined(STATDEBUG)
+            printf("002 yN1 =%i yN0=%i minN_y=%i\n", (int8_t)yN1, (int8_t)yN0, (int8_t)minN_y);
+            printf("    xN1 =%i xo=%i minN_x=%i\n", (int16_t)xN1, (int16_t)xo, (int16_t)minN_x);
+          #endif // STATDEBUG
 
 
  //         // Changed to clean up plotting on the edge of the screen
@@ -1271,6 +1311,14 @@ printf("    xN1 =%i xo=%i minN_x=%i\n", (int16_t)xN1, (int16_t)xo, (int16_t)minN
           if((xN1 < SCREEN_WIDTH_GRAPH && xN1 >= minN_x && yN1 < SCREEN_HEIGHT_GRAPH && yN1 >= minN_y))  {
             yn = yN1;
             xn = xN1;
+
+
+          //ensure initial line is not present and also not coming into the graph area from outside
+          if(ix == 0 || outOfScreen0) {
+            yo = yn;
+            xo = xn;
+          }
+
 
             #if defined(STATDEBUG)
               printf("invalid_diff=%d invalid_intg=%d invalid_rms=%d \n", invalid_diff, invalid_intg, invalid_rms);
@@ -1378,6 +1426,9 @@ printf("    xN1 =%i xo=%i minN_x=%i\n", (int16_t)xN1, (int16_t)xo, (int16_t)minN
           if(exitKeyWaiting()) {
             return;
           }
+          #if defined(STATDEBUG) && defined(PC_BUILD)
+            fflush(stdout);
+          #endif // STATDEBUG
         }
         //#################################################### ^^^ MAIN GRAPH LOOP ^^^ #########################
       }
