@@ -773,6 +773,7 @@ void graph_Include0(bool_t mode, uint16_t statnum) {
     calculateZoomFactor(PLOT_ZMY * 0.55, &plotzoomy);
     float plotzoomx = plotStatMx[0]=='D' ? 1 : plotzoomy;
     multiplyZoomFactors(plotzoomx, plotzoomy, 1/*histofactor*/, &x_min, &x_max, &y_min, &y_max, &dx, &dy);
+    //printf("PLOT_ZMY=%i plotzoomx=%f, plotzoomy=%f\n",PLOT_ZMY, plotzoomx, plotzoomy);
   }
 
   #if defined(STATDEBUG) && defined(PC_BUILD)

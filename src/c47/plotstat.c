@@ -456,6 +456,9 @@ void graphAxisDraw (void){
     //DRAW YAXIS
     lcd_fill_rect(xzero,minny,1,SCREEN_HEIGHT_GRAPH-minny,0xFF);
 
+    //printf("PLOT_ZMY=%i tick_int_x=%f, tick_int_y=%f\n",PLOT_ZMY, tick_int_x, tick_int_y);
+
+
     force_refresh(timed);
     if(0<y_max && 0>y_min) {
       for(y=0; y<=y_max; y+=tick_int_y) {                     //draw y ticks
@@ -516,6 +519,7 @@ void graphAxisDraw (void){
       }
     }
   }
+  //printf("PLOT_ZMY=%i tick_int_x=%f, tick_int_y=%f\n",PLOT_ZMY, tick_int_x, tick_int_y);
   force_refresh(timed);
   #endif
 #endif //SAVE_SPACE_DM42_13GRF
@@ -523,62 +527,64 @@ void graphAxisDraw (void){
 
 
 float auto_tick(float tick_int_f) {
-#if !defined(SAVE_SPACE_DM42_13GRF)
-  char tmpString2[100];
+  #if !defined(SAVE_SPACE_DM42_13GRF)
+    char tmpString2[100];
 
-  if(!roundedTicks) {
-    return tick_int_f;
-  }
-  //Obtain scaling of ticks, to about 20 intervals left to right.
-  //graphtype tick_int_f = (x_max-x_min)/20;                                                 //printf("tick interval:%f ",tick_int_f);
-  snprintf(tmpString2, 100, "%.1e", tick_int_f);
-  char tx[4];
-  tx[0] = tmpString2[0]; //expecting the form 6.5e+01
-  tx[1] = tmpString2[1]; //the decimal radix is copied over, so region setting should not affect it
-  tx[2] = tmpString2[2]; //the exponent is stripped
-  tx[3] = 0;
-  //printf("tick0 %f orgstr %s tx %s \n",tick_int_f, tmpString2, tx);
-  tick_int_f = strtof (tx, NULL);
-  //tick_int_f = (float)(tx[0]-48) + (float)(tx[2]-48)/10.0f;
-  //printf("tick1 %f orgstr %s tx %s \n",tick_int_f, tmpString2, tx);
-
-  if(tick_int_f > 0   && tick_int_f <=  0.3) {
-    tmpString2[0] = '0';
-    tmpString2[2] = '2';
-  }
-  else if(tick_int_f > 0.3 && tick_int_f <=  0.6) {
-    tmpString2[0] = '0';
-    tmpString2[2] = '5';
-  }
-  else if(tick_int_f > 0.6 && tick_int_f <=  1.3) {
+    if(!roundedTicks) {
+      return tick_int_f;
+    }
+    //Obtain scaling of ticks, to about 20 intervals left to right.
+    //graphtype tick_int_f = (x_max-x_min)/20;                                                 //printf("tick interval:%f ",tick_int_f);
+    snprintf(tmpString2, 100, "%.1e", fabs(tick_int_f));
+    char tx[4];
+    //get mantissa
+    tx[0] = tmpString2[0]; //expecting the form "6.5e+01"
+    tx[1] = tmpString2[1]; //the decimal radix is copied over, so region setting should not affect it
+    tx[2] = tmpString2[2]; //the exponent is stripped
+    tx[3] = 0;
+    tick_int_f = strtof (tx, NULL);  //creating the form "6.5"
+    //printf("tick0 %f orgstr %s ==> tx %s \n",tick_int_f, tmpString2, tx);
+    //get exponent
     tmpString2[0] = '1';
-    tmpString2[2] = '0';
-  }
-  else if(tick_int_f > 1.3 && tick_int_f <=  1.7) {
-    tmpString2[0] = '1';
-    tmpString2[2] = '5';
-  }
-  else if(tick_int_f > 1.7 && tick_int_f <=  3.0) {
-    tmpString2[0] = '2';
-    tmpString2[2] = '0';
-  }
-  else if(tick_int_f > 3.0 && tick_int_f <=  6.5) {
-    tmpString2[0] = '5';
-    tmpString2[2] = '0';
-  }
-  else if(tick_int_f > 6.5 && tick_int_f <=  9.9) {
-    tmpString2[0] = '7';
-    tmpString2[2] = '5';
-  }
+    tmpString2[2] = '0';  //creating "1.0e+01"
+    float tick_int_f_mult = strtof (tmpString2, NULL);;
+    //tick_int_f = (float)(tx[0]-48) + (float)(tx[2]-48)/10.0f;
+    //printf("tick1 %f x %f, orgstr %s ==> tx %s \n",tick_int_f, tick_int_f_mult, tmpString2, tx);
 
-  tick_int_f = strtof (tmpString2, NULL);                                        //printf("string:%s converted:%f \n",tmpString2, tick_int_f);
-  if(tick_int_f == 0) {
-    tick_int_f = 1;
-  }
+    if(tick_int_f > 0) {
+      //if(tick_int_f <= 0.3) {
+      //  tick_int_f = 0.2f;
+      //}
+      //else if(tick_int_f <= 0.6) {
+      //  tick_int_f = 0.5f;
+      //}
+      //else 
+      if(tick_int_f <= 1.3) {
+        tick_int_f = 1.0f;
+      }
+      else if(tick_int_f <= 1.7) {
+        tick_int_f = 1.5f;
+      }
+      else if(tick_int_f <= 3.0) {
+        tick_int_f = 2.0f;
+      }
+      else if(tick_int_f <= 6.5) {
+        tick_int_f = 5.0f;
+      }
+      else if(tick_int_f <= 9.9) {
+        tick_int_f = 7.5f;
+      }
+      //no higher values than 9.9 possible
+    }
+    else { //tick_int_f == 0
+      tick_int_f = 1;
+    }
+    tick_int_f *= tick_int_f_mult;
 
-  //printf("tick2 %f str %s tx %s \n",tick_int_f, tmpString, tx);
-#endif // !SAVE_SPACE_DM42_13GRF
-  return tick_int_f;
+    //printf("tick2 %f\n",tick_int_f);
+  #endif // !SAVE_SPACE_DM42_13GRF
+    
+return tick_int_f;
 }
 
 

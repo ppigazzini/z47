@@ -68,10 +68,7 @@
 #if !defined(TESTSUITE_BUILD)
 static void fnPlot(uint16_t unusedButMandatoryParameter) {
     lastPlotMode = PLOT_NOTHING;
-    //    fnPlotStat(PLOT_GRAPH);
-    //  C43 advanced plot vv
     strcpy(plotStatMx, "DrwMX");
-    setSystemFlag(FLAG_PLINE);
     PLOT_SHADE = true;
     fnPlotSQ(0);
     //  C43 advanced plot ^^
@@ -579,7 +576,6 @@ void graph_stat(uint16_t unusedButMandatoryParameter) {
       lastPlotMode = PLOT_NOTHING;
       calcMode = CM_GRAPH;
       reDraw = true;
-//      setSystemFlag(FLAG_PLINE);
       PLOT_SHADE = true;
 
       if(!getSystemFlag(FLAG_PLINE) && !getSystemFlag(FLAG_PCROS) && !getSystemFlag(FLAG_PBOX) && !getSystemFlag(FLAG_PPLUS)) {
@@ -1439,7 +1435,6 @@ void fnEqSolvGraph (uint16_t func) {
 
       fnClDrawMx(5);
       strcpy(plotStatMx,"DrwMX");
-      //statGraphReset();    //C43 removed to allow changing of graph params
 
       if(higherXStartValue>lowerXStartValue + 0.0001 && higherXStartValue!=DOUBLE_NOT_INIT && lowerXStartValue!=DOUBLE_NOT_INIT) { //pre-condition the plotter
         x_min = lowerXStartValue;
