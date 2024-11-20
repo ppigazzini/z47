@@ -88,8 +88,8 @@ TO_QSPI const radiocb_t indexOfRadioCbEepromItems[] = {
   {ITM_PROPFR,           DM_PROPFR,              CB_JC},
   {ITM_FRACT,            DM_FRACT,               CB_JC},
 
-  {ITM_M_GROW,           ITM_M_GROW,             RB_GW},  // SFL_PRTACT
-  {ITM_M_WRAP,           ITM_M_WRAP,             RB_GW},  // SFL_PRTACT
+  {ITM_M_GROW,           ITM_M_GROW,             RB_GW},
+  {ITM_M_WRAP,           ITM_M_WRAP,             RB_GW},
 
   {ITM_PRTACT,           PRTACT,                 CB_JC},  // SFL_PRTACT
   {ITM_PRTACT0,          PRTACT0,                RB_PRN},  // SFL_PRTACT
@@ -483,6 +483,7 @@ int16_t fnItemShowValue(int16_t item) {
     case ITM_VOL:
     case ITM_VOLPLUS:
     case ITM_VOLMINUS:  result = getBeepVolume();                                   break; // DL
+    case ITM_YY_DFLT:   result = lastCenturyHighUsed & 0x3FFF;                        break;
     default:            if(indexOfItems[itemNr].func == itemToBeCoded) {
                          result = ITEM_NOT_CODED;
                         }
