@@ -774,6 +774,12 @@ typedef enum {
 #define INC_FLAG                                   0
 #define DEC_FLAG                                   1
 
+
+//Export type
+#define MODE_RTF 1
+#define MODE_TXT 0
+
+
 // List of constants
 #define FIRST_CONSTANT                        CST_01
 #define LAST_CONSTANT                         CST_84
