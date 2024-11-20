@@ -198,9 +198,6 @@ static int16_t findIndents(bool_t *newLine, int8_t *indent, int8_t *addnextLineI
 #endif //TESTSUITE_BUILD
 
 
-#define MODE_RTF 1
-#define MODE_TXT 0
-
 void fnPExport(uint16_t mode) {
 #if !defined(SAVE_SPACE_DM42_10)
   #if !defined(TESTSUITE_BUILD)
@@ -337,21 +334,66 @@ void fnPExport(uint16_t mode) {
 }
 
 
-
-
-
-
-void fnExportProgram(uint16_t label) {
-  #if !defined(TESTSUITE_BUILD)
+void _fnExportProgram(uint16_t mode) {
     uint32_t programVersion = PROGRAM_VERSION;
     uint32_t exportVersion = EXPORT_VERSION;
-    ioFilePath_t path;
     int ret;
+    ioFilePath_t path;
 
+
+    if(mode == MODE_RTF) {
+      path = ioPathExportRTFProgram;
+    }
+    else {
+      path = ioPathExportProgram;      
+    }
+
+    ret = ioFileOpen(path, ioModeWrite);
+
+    if(ret != FILE_OK ) {
+      if(ret == FILE_CANCEL ) {
+        return;
+      }
+      else {
+        #if !defined(DMCP_BUILD)
+          printf("Cannot export program!\n");
+        #endif
+        displayCalcErrorMessage(ERROR_CANNOT_WRITE_FILE, ERR_REGISTER_LINE, REGISTER_X);
+        return;
+      }
+    }
+
+
+    if(mode == MODE_RTF) {
+      //stringAppend(tmpString, "{\\rtf1\\ansi\\ansicpg1252\\deff0\\nouicompat{\\fonttbl{\\f0\\fnil\\fcharset0 C47__StandardFont;}}{\\pard\\sl240\\sa0\\sa200\\slmult1\\f0\\fs24\\lang9\\f0\\loch\n");
+      stringAppend(tmpString, "{\\rtf1\\ansi\\ansicpg1252\\deff0\\nouicompat{\\fonttbl{\\f0\\fnil\\fcharset0 C47__StandardFont;}}{\\pard\\sl240\\slmult1\\f0\\fs24\\lang9\\f0\\loch\n");
+      ioFileWrite(tmpString, strlen(tmpString));
+    }
+
+    // PROGRAM file version
+    sprintf(tmpString, "C47 Program file export: Export format version %" PRIu32 ", C47 program version %" PRIu32 ".\n", (uint32_t)exportVersion, (uint32_t)programVersion);
+    ioFileWrite(tmpString, strlen(tmpString));
+
+    if(mode == MODE_RTF) {
+      stringAppend(tmpString, " \\par\n");
+      ioFileWrite(tmpString, strlen(tmpString));
+    }
+
+    fnPExport(mode);
+
+    if(mode == MODE_RTF) {
+      stringAppend(tmpString, "}}\n");
+      ioFileWrite(tmpString, strlen(tmpString));
+    }
+
+    ioFileClose();
+
+}
+
+
+void _selectProgram(uint16_t label) {
+  #if !defined(TESTSUITE_BUILD)
     // Find program boundaries
-    const uint16_t savedCurrentLocalStepNumber = currentLocalStepNumber;
-    uint16_t savedCurrentProgramNumber = currentProgramNumber;
-
     // no argument – need to save current program
     if(label == 0 && !tam.alpha && tam.digitsSoFar == 0) {
         // find the first global label in the current program
@@ -386,55 +428,28 @@ void fnExportProgram(uint16_t label) {
       displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "label %" PRIu16 " is not a global label", label);
-        moreInfoOnError("In function fnSaveProgram:", errorMessage, NULL, NULL);
+        moreInfoOnError("In function fnSaveProgram/fnExportProgram:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return;
     }
-
-    path = ioPathExportProgram;
-path = ioPathExportRTFProgram;
-
-    ret = ioFileOpen(path, ioModeWrite);
-
-    if(ret != FILE_OK ) {
-      if(ret == FILE_CANCEL ) {
-        return;
-      }
-      else {
-        #if !defined(DMCP_BUILD)
-          printf("Cannot export program!\n");
-        #endif
-        displayCalcErrorMessage(ERROR_CANNOT_WRITE_FILE, ERR_REGISTER_LINE, REGISTER_X);
-        return;
-      }
-    }
+  #endif // !TESTSUITE_BUILD
+}
 
 
+void fnExportProgram(uint16_t label) {
+    const uint16_t savedCurrentLocalStepNumber = currentLocalStepNumber;
+    uint16_t savedCurrentProgramNumber = currentProgramNumber;
 
-//stringAppend(tmpString, "{\\rtf1\\ansi\\ansicpg1252\\deff0\\nouicompat{\\fonttbl{\\f0\\fnil\\fcharset0 C47__StandardFont;}}{\\pard\\sl240\\sa0\\sa200\\slmult1\\f0\\fs24\\lang9\\f0\\loch\n");
-stringAppend(tmpString, "{\\rtf1\\ansi\\ansicpg1252\\deff0\\nouicompat{\\fonttbl{\\f0\\fnil\\fcharset0 C47__StandardFont;}}{\\pard\\sl240\\slmult1\\f0\\fs24\\lang9\\f0\\loch\n");
-ioFileWrite(tmpString, strlen(tmpString));
+//    _selectProgram(label);
+//    _fnExportProgram(MODE_TXT);
 
-    // PROGRAM file version
-    sprintf(tmpString, "C47 Program file export: Export format version %" PRIu32 ", C47 program version %" PRIu32 ".\n", (uint32_t)exportVersion, (uint32_t)programVersion);
-    ioFileWrite(tmpString, strlen(tmpString));
-
-stringAppend(tmpString, " \\par\n");
-ioFileWrite(tmpString, strlen(tmpString));
-
-
-    fnPExport(MODE_RTF);
-
-stringAppend(tmpString, "}}\n");
-ioFileWrite(tmpString, strlen(tmpString));
-
-    ioFileClose();
+    _selectProgram(label);
+    _fnExportProgram(MODE_RTF);
 
     currentLocalStepNumber = savedCurrentLocalStepNumber;
     currentProgramNumber = savedCurrentProgramNumber;
 
     temporaryInformation = TI_SAVED;
-  #endif // !TESTSUITE_BUILD
 }
 
 
@@ -461,44 +476,7 @@ void fnSaveProgram(uint16_t label) {
     const uint16_t savedCurrentLocalStepNumber = currentLocalStepNumber;
     uint16_t savedCurrentProgramNumber = currentProgramNumber;
 
-    // no argument – need to save current program
-    if(label == 0 && !tam.alpha && tam.digitsSoFar == 0) {
-        // find the first global label in the current program
-        uint16_t currentLabel = 0;
-        strcpy(tmpStringLabelOrVariableName, "untitled");
-        while(currentLabel < numberOfLabels) {
-          if(labelList[currentLabel].program == currentProgramNumber) {
-            break;
-          }
-          currentLabel++;
-        }
-        // get the first global label name
-        while(currentLabel < numberOfLabels) {
-          if(labelList[currentLabel].step > 0) {  // global label
-            // get current label name (to be used as default file name)
-            xcopy(tmpStringLabelOrVariableName, labelList[currentLabel].labelPointer + 1, *(labelList[currentLabel].labelPointer));
-            tmpStringLabelOrVariableName[*(labelList[currentLabel].labelPointer)] = 0;
-            break;
-          }
-          currentLabel++;
-        }
-    }
-    // Existing global label
-    else if(label >= FIRST_LABEL && label <= LAST_LABEL) {
-      fnGoto(label);
-      // get current label name (to be used as default file name)
-      xcopy(tmpStringLabelOrVariableName, labelList[label - FIRST_LABEL].labelPointer + 1, *(labelList[label - FIRST_LABEL].labelPointer));
-      tmpStringLabelOrVariableName[*(labelList[label - FIRST_LABEL].labelPointer)] = 0;
-    }
-    // Invalid label
-    else {
-      displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-        sprintf(errorMessage, "label %" PRIu16 " is not a global label", label);
-        moreInfoOnError("In function fnSaveProgram:", errorMessage, NULL, NULL);
-      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-      return;
-    }
+    _selectProgram(label);
 
     path = ioPathSaveProgram;
     ret = ioFileOpen(path, ioModeWrite);

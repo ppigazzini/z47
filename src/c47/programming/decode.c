@@ -23,6 +23,7 @@
 #include "c43Extensions/xeqm.h"
 #include "charString.h"
 #include "dateTime.h"
+#include "defines.h"
 #include "display.h"
 #include "flags.h"
 #include "fonts.h"
@@ -790,7 +791,6 @@ static void decodeRem(uint8_t *literalAddress) {
 
 
 
-#define textOK true
 static void _decodeOneStep(uint8_t *step, bool_t textVersion) {
   uint16_t op = *(step++);
   if(op & 0x80) {
@@ -807,17 +807,15 @@ static void _decodeOneStep(uint8_t *step, bool_t textVersion) {
     nameOp[0]=0;
     switch(indexOfItems[op].status & PTP_STATUS) {
       case PTP_NONE: {
-        if(textVersion) {
-          if(FIRST_CONSTANT <= op && op <= LAST_CONSTANT) {
-            sprintf(nameOp, "%2i",op - FIRST_CONSTANT + 1);
-            strcat(nameOp," ");
-            strcat(nameOp,indexOfItems[op].itemCatalogName);
-            strcat(nameOp," ");
-            strcat(nameOp,indexOfItems[op].itemSoftmenuName);
-          }
-          else {
-            getXeqmText(op, nameOp);
-          }
+        if(FIRST_CONSTANT <= op && op <= LAST_CONSTANT) {
+          sprintf(nameOp, "%2i",op - FIRST_CONSTANT + 1);
+          strcat(nameOp," ");
+          strcat(nameOp,indexOfItems[op].itemCatalogName);
+          strcat(nameOp," ");
+          strcat(nameOp,indexOfItems[op].itemSoftmenuName);
+        }
+        else {
+          getXeqmText(op, nameOp);
         }
         if(op == ITM_op_j) sprintf(nameOp,"op_%s", COMPLEX_UNIT);
         else if(op == ITM_op_j_pol) sprintf(nameOp,"op_%s" STD_SUB_SUN, COMPLEX_UNIT);
@@ -851,7 +849,7 @@ static void _decodeOneStep(uint8_t *step, bool_t textVersion) {
           strcpy(nameOp,indexOfItems[op].itemCatalogName); //   STD_INTEGRAL "fyxd");
         }
         else {
-          if(textVersion) {
+          if(textVersion == MODE_TXT) {
             getXeqmText(op, nameOp);
           }
           if(nameOp[0] == 0) strcpy(nameOp,indexOfItems[op].itemCatalogName);
@@ -863,9 +861,9 @@ static void _decodeOneStep(uint8_t *step, bool_t textVersion) {
 }
 
 void decodeOneStep(uint8_t *step) {
-  _decodeOneStep(step, !textOK);
+  _decodeOneStep(step, MODE_RTF);
 }
 
 void decodeOneStepXEQM(uint8_t *step) {
-  _decodeOneStep(step, textOK);
+  _decodeOneStep(step, MODE_TXT);
 }
