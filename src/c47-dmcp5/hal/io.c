@@ -59,6 +59,10 @@ int _ioFileNameFromFilePath(ioFilePath_t path, char * filename) {
       check_create_dir(PROGRAMS_DIR);
       ret = file_selection_screen("Export Program", PROGRAMS_DIR, TXT_EXT, save_programfile, 1, 1, filename);
       return (ret == MRET_EXIT? FILE_CANCEL : FILE_OK);
+   case ioPathExportRTFProgram:
+      check_create_dir(PROGRAMS_DIR);
+      ret = file_selection_screen("Export Program RTF", PROGRAMS_DIR, RTF_EXT, save_programfile, 1, 1, filename);
+      return (ret == MRET_EXIT? FILE_CANCEL : FILE_OK);
    case ioPathLoadProgram:
       check_create_dir(PROGRAMS_DIR);
       ret = file_selection_screen("Load Program", PROGRAMS_DIR, PRGM_EXT, load_programfile, 0, 0, filename);
