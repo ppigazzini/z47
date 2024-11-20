@@ -50,6 +50,7 @@ int16_t  stringNextGlyph  (const char *str, int16_t pos);
  ***********************************************/
 int16_t  stringPrevGlyph  (const char *str, int16_t pos);     //JM
 int16_t  stringPrevNumberGlyph(const char *str, int16_t pos);
+bool_t   isValidNumber(const char *ss, const char *template);
 
 /********************************************//**
  * \brief Returns a string length in byte

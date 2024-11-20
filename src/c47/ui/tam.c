@@ -1057,9 +1057,15 @@
     tam.keyInputFinished = false;
 
     switch(tam.mode) {
-      case TM_VALUE_MAX:                                                 //TM_VALUE_MAX, MNU_TAMNONREGMAX: Changing over to TM_VALUE, only used to add the max button for 0
+      case TM_VALUE_MAX:                                                 //Changing over to TM_VALUE, only used to add the max button for 0
         if((func != ITM_VIEW && func != ITM_AVIEW) || !catalog || catalog != CATALOG_MVAR) {
           showSoftmenu(-MNU_TAMNONREGMAX);
+        }
+        tam.mode = TM_VALUE;
+        break;
+      case TM_VALUE_TRK:                                                 //Changing over to TM_VALUE, only used to add the track button for 9999
+        if((func != ITM_VIEW && func != ITM_AVIEW) || !catalog || catalog != CATALOG_MVAR) {
+          showSoftmenu(-MNU_TAMNONREGTRK);
         }
         tam.mode = TM_VALUE;
         break;
