@@ -2028,10 +2028,18 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
 
 
   static void viewRegName(char *prefix, int16_t *prefixWidth) { //using "=" for VIEW
-    //printf("========================== %i %s %s %i\n", lastFuncNo(), lastFuncCatalogName(), prefix, *prefixWidth);
+    //printf("========================== %i %s currentViewRegister=%i %s %i\n", lastFuncNo(), lastFuncCatalogName(), currentViewRegister, prefix, *prefixWidth);
     if(lastFuncNo() == ITM_AVIEW || lastFuncNo() == ITM_PROMPT) {
-      prefix[0] = 0;
-      *prefixWidth = 1;
+      if(SBARUPD_Time) {
+        prefix[0] = 32;
+        prefix[1] = 32;
+        prefix[2] = 0;
+        *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
+      }
+      else {
+        prefix[0] = 0;
+        *prefixWidth = 1;
+      }
       return;
     }
     if(currentViewRegister < REGISTER_X) {
