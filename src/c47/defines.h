@@ -48,10 +48,15 @@
 
   #define TWO_FILE_PGM                 //Normally TWO_FILE. TWO_FILE means that QSPI is used.
 
+  #define HWM_DM42        1
+  #define HWM_DM32        2
+  #define HWM_DM42n       3
+  #define HARDWARE_MODEL HWM_DM42
+
   #if defined(NEW_HW) // DMCP5
     #undef TWO_FILE_PGM
-    //#define HARDWARE_MODEL DM32
-    #define HARDWARE_MODEL DM42n
+    #undef HARDWARE_MODEL
+    #define HARDWARE_MODEL HWM_DM42n
   #endif // NEW_HW
 
 //ONE FILE OPERATION needs the original CRC file - see src/c47-dmcp
@@ -1595,7 +1600,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define NUMBER_OF_GLYPH_ROWS                     261  //Used in the font browser application
 
 #define YY_OFF                                     2 // 2 is off and gets transferred to bit 15 (32768 + YY)
-#define YY_TRACKING                                1 // 1 gets transferred to bit 14 (16384 + YY) 
+#define YY_TRACKING                                1 // 1 gets transferred to bit 14 (16384 + YY)
 #define MAX_DENMAX                              9999 // Biggest denominator in fraction display mode selector, and annunciator.
                                                      // The value 0 gets converted to MAX_INTERNAL_DENMAX
 #define MAX_INTERNAL_DENMAX                    32500 // Biggest denominator in fraction display mode
