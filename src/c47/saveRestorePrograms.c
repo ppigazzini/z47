@@ -340,14 +340,7 @@ void _fnExportProgram(uint16_t mode) {
     int ret;
     ioFilePath_t path;
 
-
-    if(mode == MODE_RTF) {
-      path = ioPathExportRTFProgram;
-    }
-    else {
-      path = ioPathExportProgram;      
-    }
-
+    path = (mode == MODE_RTF ? ioPathExportRTFProgram : ioPathExportProgram);
     ret = ioFileOpen(path, ioModeWrite);
 
     if(ret != FILE_OK ) {
@@ -440,6 +433,13 @@ void fnExportProgram(uint16_t label) {
     const uint16_t savedCurrentLocalStepNumber = currentLocalStepNumber;
     uint16_t savedCurrentProgramNumber = currentProgramNumber;
 
+    #if defined(DMCP_BUILD)
+      // Don't pass through if the power is insufficient
+      if(power_check_screen()) {
+        return;
+      }
+    #endif // DMCP_BUILD
+
 //    _selectProgram(label);
 //    _fnExportProgram(MODE_TXT);
 
@@ -472,7 +472,6 @@ void fnSaveProgram(uint16_t label) {
       }
     #endif // DMCP_BUILD
 
-    // Find program boundaries
     const uint16_t savedCurrentLocalStepNumber = currentLocalStepNumber;
     uint16_t savedCurrentProgramNumber = currentProgramNumber;
 
