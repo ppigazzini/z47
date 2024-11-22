@@ -555,21 +555,25 @@ void fnJM_2SI(uint16_t unusedButMandatoryParameter) { //Convert Real to Longint;
   if(calcMode == CM_NIM) {
     if((   (nimNumberPart == NP_INT_BASE && aimBuffer[strlen(aimBuffer) - 1] == '#')
         || (nimNumberPart == NP_INT_10 && lastIntegerBase > 0)   )) {
-      printf("Do not react when in NIM SI\n");
+      #if defined (PC_BUILD)
+        printf("Do not react when in NIM SI\n");
+      #endif //PC_BUILD
       return;
     }
   }
   longInteger_t tmp1, tmp3;
-  uint16_t tmp2sign;
   switch(getRegisterDataType(REGISTER_X)) {
     case dtLongInteger:
       convertLongIntegerRegisterToLongInteger(REGISTER_X, tmp3);
-      tmp2sign = longIntegerIsNegative(tmp3) ? 1:0;
-      if(shortIntegerMode == SIM_UNSIGN && tmp2sign) {
+      if(shortIntegerMode == SIM_UNSIGN && longIntegerIsNegative(tmp3)) {
         temporaryInformation = TI_DATA_NEG_OVRFL;
       }
-      fnChangeBase((lastIntegerBase >= 2 && lastIntegerBase <= 16) ? lastIntegerBase : 10);
+      convertLongIntegerRegisterToShortIntegerRegister(REGISTER_X, REGISTER_X); //default to 10
+      if(lastIntegerBase >= 2 && lastIntegerBase <= 16 && lastIntegerBase != 10) {
+        fnChangeBase(lastIntegerBase);
+      }
       convertShortIntegerRegisterToLongInteger(REGISTER_X, tmp1);
+
       if(longIntegerCompare(tmp1,tmp3) != 0) {
         if(temporaryInformation != TI_DATA_NEG_OVRFL) {
           temporaryInformation = TI_DATA_LOSS;             // I cannot think of which condition will reach here, without other overflows overriding, but leaving it in
