@@ -17,6 +17,7 @@
 #define PROGRAMS_DIR   "PROGRAMS"
 #define PRGM_EXT       ".p47"
 #define TXT_EXT        ".txt"
+#define RTF_EXT        ".rtf"
 
 #define SAVE_DIR       "SAVFILES"
 #define SAVE_FILE      "C47.sav"
@@ -41,17 +42,18 @@
    * appropriate location dependent on the platform.
    */
   typedef enum {
-    ioPathManualSave    = 0, ///< save file used in SAVE and LOAD functions
-    ioPathAutoSave      = 1, ///< save file used in SAVE and LOAD functions
-    ioPathPgmFile       = 2, ///< program file
-    ioPathTestPgms      = 3, ///< test programs
-    ioPathBackup        = 4, ///< backup file for full state used in simulators
-    ioPathRegDump       = 5, ///< register dump file which enables to view the full digits of long integers
-    ioPathSaveStateFile = 6, ///< state file used in SAVEST function
-    ioPathLoadStateFile = 7, ///< state file used in LOADST function
-    ioPathSaveProgram   = 8, ///< program file used in WRITEP function
-    ioPathExportProgram = 9, ///< program file used in EXPORTP function
-    ioPathLoadProgram   =10, ///< program file used in READP function
+    ioPathManualSave       = 0,  ///< save file used in SAVE and LOAD functions
+    ioPathAutoSave         = 1,  ///< save file used in SAVE and LOAD functions
+    ioPathPgmFile          = 2,  ///< program file
+    ioPathTestPgms         = 3,  ///< test programs
+    ioPathBackup           = 4,  ///< backup file for full state used in simulators
+    ioPathRegDump          = 5,  ///< register dump file which enables to view the full digits of long integers
+    ioPathSaveStateFile    = 6,  ///< state file used in SAVEST function
+    ioPathLoadStateFile    = 7,  ///< state file used in LOADST function
+    ioPathSaveProgram      = 8,  ///< program file used in WRITEP function
+    ioPathExportProgram    = 9,  ///< program file used in EXPORTP function, target TXT
+    ioPathExportRTFProgram = 10, ///< program file used in EXPORTP function, target RTF
+    ioPathLoadProgram      = 11, ///< program file used in READP function
   } ioFilePath_t;
 
   /**
