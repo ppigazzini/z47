@@ -57,6 +57,7 @@ TO_QSPI static const char bugScreenNoParam[] = "In function addItemToBuffer:item
       T_cursorPos = 0;
       aimBuffer[0] = 0;
     }
+    setLastintegerBasetoZero();
     calcModeAim(NOPARAM); // Alpha Input Mode
     if(programRunStop != PGM_RUNNING) {
       entryStatus |= 0x01;
