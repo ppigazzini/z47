@@ -321,12 +321,16 @@ void resetKeytimers(void) {
       }
       case CM_NORMAL : {                                         //longpress special keys
         switch(*result) {
+          case ITM_A:
+          case ITM_B:
+          case ITM_C:
+          case ITM_D:
+          case ITM_E:
           case ITM_F:
-            //printf("DDD\n");
             if(lastIntegerBase >= 2 && topHex) {
-              //printf("EEE\n");
-              longpressDelayedkey1 = ITM_XEQ;
-              longpressDelayedkey3 = ITM_GTO;
+              longpressDelayedkey1 = getSystemFlag(FLAG_USER) ? kbd_usr[*result - ITM_A].primary  : kbd_std[*result - ITM_A].primary;
+              longpressDelayedkey2 = getSystemFlag(FLAG_USER) ? kbd_usr[*result - ITM_A].fShifted : kbd_std[*result - ITM_A].fShifted;
+              longpressDelayedkey3 = getSystemFlag(FLAG_USER) ? kbd_usr[*result - ITM_A].gShifted : kbd_std[*result - ITM_A].gShifted;
             }
             break;
 
