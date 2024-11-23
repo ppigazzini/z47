@@ -1591,7 +1591,6 @@ int16_t lastItem = 0;
                shiftG ? key->gShifted :
                         key->primaryAim;
       switch(result){
-        case ITM_AIM:
         case ITM_SHIFTf:
         case ITM_SHIFTg:
         case KEY_fg:
