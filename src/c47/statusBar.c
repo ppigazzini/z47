@@ -412,7 +412,10 @@ void showFracMode(void) {
 
 
   void showHideHourGlass(void) {
-    if(!(SBARUPD_HourGlass)) return;
+    const int indicatorWidth = 13; //indicatorWidth
+    if(!(SBARUPD_HourGlass)) {
+      return;
+    }
 
     if(screenUpdatingMode & SCRUPD_MANUAL_STATUSBAR) {
       switch(calcMode) {
@@ -435,23 +438,32 @@ void showFracMode(void) {
         }
       }
     }
+
     switch(programRunStop) {
       case PGM_WAITING: {
         showGlyph(STD_NEG_EXCLAMATION_MARK, &standardFont, (GRAPHMODE ? X_HOURGLASS_GRAPHS : X_HOURGLASS) - 1, 0, vmNormal, true, false, false);
         break;
       }
       case PGM_RUNNING: {
-        lcd_fill_rect((GRAPHMODE ? X_HOURGLASS_GRAPHS : X_HOURGLASS) - 1, 0, stringWidth(STD_NEG_EXCLAMATION_MARK, &standardFont, true, false), 20, LCD_SET_VALUE);
+        if(lastProgramRunStop != PGM_RUNNING) {
+          lcd_fill_rect((GRAPHMODE ? X_HOURGLASS_GRAPHS : X_HOURGLASS) - 1, 0, indicatorWidth, 20, LCD_SET_VALUE);
+        }
         showGlyph(STD_P, &standardFont, (GRAPHMODE ? X_HOURGLASS_GRAPHS : X_HOURGLASS) + 1, 0, vmNormal, true, false, false);
         break;
       }
       default: {
-        lcd_fill_rect((GRAPHMODE ? X_HOURGLASS_GRAPHS : X_HOURGLASS) - 1, 0, stringWidth(STD_NEG_EXCLAMATION_MARK, &standardFont, true, false), 20, LCD_SET_VALUE);
         if(hourGlassIconEnabled) {
+          if(lastProgramRunStop == PGM_RUNNING && lastProgramRunStop == PGM_WAITING) {
+            lcd_fill_rect((GRAPHMODE ? X_HOURGLASS_GRAPHS : X_HOURGLASS) - 1, 0, indicatorWidth, 20, LCD_SET_VALUE);
+          }
           showGlyph(STD_HOURGLASS, &standardFont, GRAPHMODE ? X_HOURGLASS_GRAPHS : X_HOURGLASS, 0, vmNormal, true, false, false); // is 0+11+3 pixel wide //Shift the hourglass to a visible part of the status bar
+        }
+        else {
+          lcd_fill_rect((GRAPHMODE ? X_HOURGLASS_GRAPHS : X_HOURGLASS) - 1, 0, indicatorWidth, 20, LCD_SET_VALUE);
         }
       }
     }
+    lastProgramRunStop = programRunStop;
     force_refresh(force);
   }
 

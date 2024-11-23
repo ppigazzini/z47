@@ -302,13 +302,9 @@ bool_t itemNotAvail(int16_t itemNr) {
 
     }
 
-
     hourGlassIconEnabled = false;
     screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
-    if(programRunStop != PGM_RUNNING) {
-      showHideHourGlass();
-    }
-
+    showHideHourGlass();
 
     switch(func) {                              //functions to cause a graph redraw
       case ITM_DRAW:       //EQN Draw
