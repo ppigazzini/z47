@@ -572,7 +572,7 @@ Jacos Mac, Control works
                   C47SpecialKey_AltGr_Pressed, C47SpecialKey_Ctrl_Pressed, C47SpecialKey_Valid_Pressed, C47SpecialKey_Ctrl_Released, C47SpecialKey_AltGr_Released);
     //#endif //VERBOSEKEYS
 
-    if(C47SpecialKey_Ctrl_Released) goto returnKeyReleasedFalse;
+    if(C47SpecialKey_Ctrl_Released) goto continueWithOldDetections;
 
     if(C47SpecialKey_AltGr_Released) { //clear any valid or invalid prior control key activation
       SHIFT_State = 0;
