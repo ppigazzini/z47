@@ -2177,16 +2177,16 @@ int main(int argc, char* argv[]) {
 
     *(currentStep++) = (ITM_T_LINF >> 8)      | 0x80;
     *(currentStep++) =  ITM_T_LINF            & 0xff;
-    *(currentStep++) = (ITM_PLOT_LR >> 8)   | 0x80;
-    *(currentStep++) =  ITM_PLOT_LR         & 0xff;
+    *(currentStep++) = (ITM_PLOT_ASSESS >> 8)   | 0x80;
+    *(currentStep++) =  ITM_PLOT_ASSESS         & 0xff;
     *(currentStep++) = (ITM_PLOT_NXT >> 8)  | 0x80;
     *(currentStep++) =  ITM_PLOT_NXT        & 0xff;
     *(currentStep++) = ITM_STOP;
 
     *(currentStep++) = (ITM_T_PARABF >> 8)    | 0x80;
     *(currentStep++) =  ITM_T_PARABF          & 0xff;
-    *(currentStep++) = (ITM_PLOT_LR >> 8)   | 0x80;
-    *(currentStep++) =  ITM_PLOT_LR         & 0xff;
+    *(currentStep++) = (ITM_PLOT_ASSESS >> 8)   | 0x80;
+    *(currentStep++) =  ITM_PLOT_ASSESS         & 0xff;
     *(currentStep++) = ITM_STOP;
 
 
@@ -12831,8 +12831,8 @@ int main(int argc, char* argv[]) {
     *(currentStep++) = (ITM_PIXEL >> 8) | 0x80;
     *(currentStep++) =  ITM_PIXEL       & 0xff;
 
-    *(currentStep++) = (ITM_PLOT >> 8) | 0x80;
-    *(currentStep++) =  ITM_PLOT       & 0xff;
+    *(currentStep++) = (ITM_PLOT_SCATR >> 8) | 0x80;
+    *(currentStep++) =  ITM_PLOT_SCATR       & 0xff;
 
     *(currentStep++) = (ITM_Pn >> 8) | 0x80;
     *(currentStep++) =  ITM_Pn       & 0xff;
@@ -15195,8 +15195,8 @@ int main(int argc, char* argv[]) {
     *(currentStep++) = (ITM_LR >> 8) | 0x80;
     *(currentStep++) =  ITM_LR       & 0xff;
 
-    *(currentStep++) = (ITM_PLOT_LR >> 8) | 0x80;
-    *(currentStep++) =  ITM_PLOT_LR       & 0xff;
+    *(currentStep++) = (ITM_PLOT_ASSESS >> 8) | 0x80;
+    *(currentStep++) =  ITM_PLOT_ASSESS       & 0xff;
 
     *(currentStep++) = (ITM_END >> 8) | 0x80;
     *(currentStep++) =  ITM_END       & 0xff;
@@ -15396,8 +15396,8 @@ int main(int argc, char* argv[]) {
     *(currentStep++) = (ITM_LR >> 8) | 0x80;
     *(currentStep++) =  ITM_LR       & 0xff;
 
-    *(currentStep++) = (ITM_PLOT_LR >> 8) | 0x80;
-    *(currentStep++) =  ITM_PLOT_LR       & 0xff;
+    *(currentStep++) = (ITM_PLOT_ASSESS >> 8) | 0x80;
+    *(currentStep++) =  ITM_PLOT_ASSESS       & 0xff;
 
     *(currentStep++) = (ITM_END >> 8) | 0x80;
     *(currentStep++) =  ITM_END       & 0xff;
@@ -15513,8 +15513,8 @@ int main(int argc, char* argv[]) {
     *(currentStep++) = (ITM_LR >> 8) | 0x80;
     *(currentStep++) =  ITM_LR       & 0xff;
 
-    *(currentStep++) = (ITM_PLOT_LR >> 8) | 0x80;
-    *(currentStep++) =  ITM_PLOT_LR       & 0xff;
+    *(currentStep++) = (ITM_PLOT_ASSESS >> 8) | 0x80;
+    *(currentStep++) =  ITM_PLOT_ASSESS       & 0xff;
 
     *(currentStep++) = (ITM_END >> 8) | 0x80;
     *(currentStep++) =  ITM_END       & 0xff;
@@ -19048,8 +19048,8 @@ int main(int argc, char* argv[]) {
     *(currentStep++) = (ITM_LR >> 8) | 0x80;
     *(currentStep++) =  ITM_LR       & 0xff;
 
-    *(currentStep++) = (ITM_PLOT_LR >> 8) | 0x80;
-    *(currentStep++) =  ITM_PLOT_LR       & 0xff;
+    *(currentStep++) = (ITM_PLOT_ASSESS >> 8) | 0x80;
+    *(currentStep++) =  ITM_PLOT_ASSESS       & 0xff;
 
     *(currentStep++) = (ITM_END >> 8) | 0x80;
     *(currentStep++) =  ITM_END       & 0xff;
@@ -19158,8 +19158,8 @@ int main(int argc, char* argv[]) {
     *(currentStep++) = (ITM_LR >> 8) | 0x80;
     *(currentStep++) =  ITM_LR       & 0xff;
 
-    *(currentStep++) = (ITM_PLOT_LR >> 8) | 0x80;
-    *(currentStep++) =  ITM_PLOT_LR       & 0xff;
+    *(currentStep++) = (ITM_PLOT_ASSESS >> 8) | 0x80;
+    *(currentStep++) =  ITM_PLOT_ASSESS       & 0xff;
 
     *(currentStep++) = (ITM_END >> 8) | 0x80;
     *(currentStep++) =  ITM_END       & 0xff;
@@ -19266,8 +19266,8 @@ int main(int argc, char* argv[]) {
     *(currentStep++) = '1';
     *(currentStep++) = 'a';
 
-    *(currentStep++) = (ITM_PLOT >> 8) | 0x80;
-    *(currentStep++) =  ITM_PLOT       & 0xff;
+    *(currentStep++) = (ITM_PLOT_SCATR >> 8) | 0x80;
+    *(currentStep++) =  ITM_PLOT_SCATR       & 0xff;
 
     *(currentStep++) = (ITM_PLOT_CENTRL >> 8) | 0x80;
     *(currentStep++) =  ITM_PLOT_CENTRL       & 0xff;

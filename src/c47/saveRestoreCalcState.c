@@ -57,17 +57,18 @@
 
 // This is used for the backup.cfg simulator backup file
 // The variable backupVersion is used in the connection
-#define BACKUP_VERSION                     1007     // Add lastCenturyHighUsed
+#define BACKUP_VERSION                     1008     // Add lastCenturyHighUsed
 /*
 1004     // Replace Norm_Key_00_VAR by the structure Norm_Key_00;
 1005     // 2024-09-06 Remove superfluous reporting when old cfg file items are not found in new files
 1006     // 2024-11-07 Remove Aspect and add PLOT_PLUS
-1007     // 2024-11018 Add lastCenturyHighUsed
+1007     // Remove all PLSTAT flags incl. PLOT_PLUS...
+1008     // 2024-11018 Add lastCenturyHighUsed
 */
 
 
 // This is used for the state files
-#define configFileVersion                  10000015 // Add lastCenturyHighUsed
+#define configFileVersion                  10000016 // Add lastCenturyHighUsed
 #define VersionAllowed                     10000005 // This code will not autoload versions earlier than this
 /*
 10000001 // arbitrary starting point version 10 000 001
@@ -81,7 +82,8 @@
 10000012 // 5 flags converted from C43
 10000013 // Replace Norm_Key_00_VAR by the structure Norm_Key_00; Arbitrary starting point version 10 000 001 of STATE files. Allowable values are 10000000 to 20000000
 10000014 // 2024-11-07 configFileVersion                  10000014 // Remove Aspect and add PLOT_PLUS
-10000015 // 2024-11-18 configFileVersion                  10000015 // Add lastCenturyHighUsed
+10000015 // 2024-11    configFileVersion                  10000015 // Remove all PLSTAT flags incl. PLOT_PLUS...
+10000016 // 2024-11-18 configFileVersion                  10000016 // Add lastCenturyHighUsed
 
 Current version defaults all non-loaded settings from previous version files correctly
 */
@@ -461,20 +463,10 @@ uint8_t output = parameter;
     saveStateValue(&graph_dx,                       sizeof(graph_dx),                                            "graph_dx",                       "float");
     saveStateValue(&graph_dy,                       sizeof(graph_dy),                                            "graph_dy",                       "float");
     saveStateValue(&roundedTicks,                   sizeof(roundedTicks),                                        "roundedTicks",                   "bool");
-    saveStateValue(&extentx,                        sizeof(extentx),                                             "extentx",                        "bool");
-    saveStateValue(&extenty,                        sizeof(extenty),                                             "extenty",                        "bool");
-    saveStateValue(&PLOT_VECT,                      sizeof(PLOT_VECT),                                           "PLOT_VECT",                      "bool");
-    saveStateValue(&PLOT_NVECT,                     sizeof(PLOT_NVECT),                                          "PLOT_NVECT",                     "bool");
-    saveStateValue(&PLOT_SCALE,                     sizeof(PLOT_SCALE),                                          "PLOT_SCALE",                     "bool");
-    saveStateValue(&PLOT_LINE,                      sizeof(PLOT_LINE),                                           "PLOT_LINE",                      "bool");
-    saveStateValue(&PLOT_CROSS,                     sizeof(PLOT_CROSS),                                          "PLOT_CROSS",                     "bool");
-    saveStateValue(&PLOT_PLUS,                      sizeof(PLOT_PLUS),                                           "PLOT_PLUS",                      "bool");
-    saveStateValue(&PLOT_BOX,                       sizeof(PLOT_BOX),                                            "PLOT_BOX",                       "bool");
     saveStateValue(&PLOT_INTG,                      sizeof(PLOT_INTG),                                           "PLOT_INTG",                      "bool");
     saveStateValue(&PLOT_DIFF,                      sizeof(PLOT_DIFF),                                           "PLOT_DIFF",                      "bool");
     saveStateValue(&PLOT_RMS,                       sizeof(PLOT_RMS),                                            "PLOT_RMS",                       "bool");
     saveStateValue(&PLOT_SHADE,                     sizeof(PLOT_SHADE),                                          "PLOT_SHADE",                     "bool");
-    saveStateValue(&PLOT_CPXPLOT,                   sizeof(PLOT_CPXPLOT),                                        "PLOT_CPXPLOT",                   "bool");
     saveStateValue(&PLOT_AXIS,                      sizeof(PLOT_AXIS),                                           "PLOT_AXIS",                      "bool");
     saveStateValue(&PLOT_ZMY,                       sizeof(PLOT_ZMY),                                            "PLOT_ZMY",                       "int8");
     saveStateValue(&PLOT_ZOOM,                      sizeof(PLOT_ZOOM),                                           "PLOT_ZOOM",                      "uint8");
@@ -1033,21 +1025,10 @@ uint8_t output = parameter;
     restoreStateValue(&graph_dx,                       sizeof(graph_dx),                                            "graph_dx",                       "float");
     restoreStateValue(&graph_dy,                       sizeof(graph_dy),                                            "graph_dy",                       "float");
     restoreStateValue(&roundedTicks,                   sizeof(roundedTicks),                                        "roundedTicks",                   "bool");
-    restoreStateValue(&extentx,                        sizeof(extentx),                                             "extentx",                        "bool");
-    restoreStateValue(&extenty,                        sizeof(extenty),                                             "extenty",                        "bool");
-    restoreStateValue(&PLOT_VECT,                      sizeof(PLOT_VECT),                                           "PLOT_VECT",                      "bool");
-    restoreStateValue(&PLOT_NVECT,                     sizeof(PLOT_NVECT),                                          "PLOT_NVECT",                     "bool");
-    restoreStateValue(&PLOT_SCALE,                     sizeof(PLOT_SCALE),                                          "PLOT_SCALE",                     "bool");
-    restoreStateValue(&PLOT_LINE,                      sizeof(PLOT_LINE),                                           "PLOT_LINE",                      "bool");
-    restoreStateValue(&PLOT_CROSS,                     sizeof(PLOT_CROSS),                                          "PLOT_CROSS",                     "bool");
-    restoreStateValue(&PLOT_PLUS,                      sizeof(PLOT_PLUS),                                           "PLOT_PLUS",                      "bool");
-    restoreStateValue(&PLOT_BOX,                       sizeof(PLOT_BOX),                                            "PLOT_BOX",                       "bool");
     restoreStateValue(&PLOT_INTG,                      sizeof(PLOT_INTG),                                           "PLOT_INTG",                      "bool");
     restoreStateValue(&PLOT_DIFF,                      sizeof(PLOT_DIFF),                                           "PLOT_DIFF",                      "bool");
     restoreStateValue(&PLOT_RMS,                       sizeof(PLOT_RMS),                                            "PLOT_RMS",                       "bool");
     restoreStateValue(&PLOT_SHADE,                     sizeof(PLOT_SHADE),                                          "PLOT_SHADE",                     "bool");
-    PLOT_CPXPLOT = false;
-    restoreStateValue(&PLOT_CPXPLOT,                   sizeof(PLOT_CPXPLOT),                                        "PLOT_CPXPLOT",                   "bool");
     restoreStateValue(&PLOT_AXIS,                      sizeof(PLOT_AXIS),                                           "PLOT_AXIS",                      "bool");
     restoreStateValue(&PLOT_ZMY,                       sizeof(PLOT_ZMY),                                            "PLOT_ZMY",                       "int8");
     restoreStateValue(&PLOT_ZOOM,                      sizeof(PLOT_ZOOM),                                           "PLOT_ZOOM",                      "uint8");
@@ -1780,22 +1761,12 @@ void doSave(uint16_t saveType) {
         sprintf(tmpString, "graph_dx\n"                    "%f"   "\n",     graph_dx);                     save(tmpString, strlen(tmpString));
         sprintf(tmpString, "graph_dy\n"                    "%f"   "\n",     graph_dy);                     save(tmpString, strlen(tmpString));
         sprintf(tmpString, "roundedTicks\n%"               PRIu8  "\n",     (uint8_t)roundedTicks);        save(tmpString, strlen(tmpString));
-        sprintf(tmpString, "extentx\n%"                    PRIu8  "\n",     (uint8_t)extentx);             save(tmpString, strlen(tmpString));
-        sprintf(tmpString, "extenty\n%"                    PRIu8  "\n",     (uint8_t)extenty);             save(tmpString, strlen(tmpString));
-        sprintf(tmpString, "PLOT_VECT\n%"                  PRIu8  "\n",     (uint8_t)PLOT_VECT);           save(tmpString, strlen(tmpString));
-        sprintf(tmpString, "PLOT_NVECT\n%"                 PRIu8  "\n",     (uint8_t)PLOT_NVECT);          save(tmpString, strlen(tmpString));
-        sprintf(tmpString, "PLOT_SCALE\n%"                 PRIu8  "\n",     (uint8_t)PLOT_SCALE);          save(tmpString, strlen(tmpString));
-        sprintf(tmpString, "PLOT_LINE\n%"                  PRIu8  "\n",     (uint8_t)PLOT_LINE);           save(tmpString, strlen(tmpString));
-        sprintf(tmpString, "PLOT_CROSS\n%"                 PRIu8  "\n",     (uint8_t)PLOT_CROSS);          save(tmpString, strlen(tmpString));
-        sprintf(tmpString, "PLOT_PLUS\n%"                  PRIu8  "\n",     (uint8_t)PLOT_PLUS);           save(tmpString, strlen(tmpString));
-        sprintf(tmpString, "PLOT_BOX\n%"                   PRIu8  "\n",     (uint8_t)PLOT_BOX);            save(tmpString, strlen(tmpString));
         sprintf(tmpString, "PLOT_INTG\n%"                  PRIu8  "\n",     (uint8_t)PLOT_INTG);           save(tmpString, strlen(tmpString));
         sprintf(tmpString, "PLOT_DIFF\n%"                  PRIu8  "\n",     (uint8_t)PLOT_DIFF);           save(tmpString, strlen(tmpString));
         sprintf(tmpString, "PLOT_RMS\n%"                   PRIu8  "\n",     (uint8_t)PLOT_RMS);            save(tmpString, strlen(tmpString));
         sprintf(tmpString, "PLOT_SHADE\n%"                 PRIu8  "\n",     (uint8_t)PLOT_SHADE);          save(tmpString, strlen(tmpString));
         sprintf(tmpString, "PLOT_AXIS\n%"                  PRIu8  "\n",     (uint8_t)PLOT_AXIS);           save(tmpString, strlen(tmpString));
         sprintf(tmpString, "PLOT_ZMY\n%"                   PRIu8  "\n",     PLOT_ZMY);                     save(tmpString, strlen(tmpString));
-        sprintf(tmpString, "PLOT_CPXPLOT\n%"               PRIu8  "\n",     (uint8_t)PLOT_CPXPLOT);        save(tmpString, strlen(tmpString));
         sprintf(tmpString, "END_OTHER_PARAM\n");                                                           save(tmpString, strlen(tmpString));
 
   ioFileClose();
@@ -2943,22 +2914,12 @@ double stringToDouble(const char *str) {
           else if(strcmp(aimBuffer, "graph_dx"                    ) == 0) { graph_dx              = stringToFloat(tmpString); }
           else if(strcmp(aimBuffer, "graph_dy"                    ) == 0) { graph_dy              = stringToFloat(tmpString); }
           else if(strcmp(aimBuffer, "roundedTicks"                ) == 0) { roundedTicks          = (bool_t)stringToUint8(tmpString) != 0; }
-          else if(strcmp(aimBuffer, "extentx"                     ) == 0) { extentx               = (bool_t)stringToUint8(tmpString) != 0; }
-          else if(strcmp(aimBuffer, "extenty"                     ) == 0) { extenty               = (bool_t)stringToUint8(tmpString) != 0; }
-          else if(strcmp(aimBuffer, "PLOT_VECT"                   ) == 0) { PLOT_VECT             = (bool_t)stringToUint8(tmpString) != 0; }
-          else if(strcmp(aimBuffer, "PLOT_NVECT"                  ) == 0) { PLOT_NVECT            = (bool_t)stringToUint8(tmpString) != 0; }
-          else if(strcmp(aimBuffer, "PLOT_SCALE"                  ) == 0) { PLOT_SCALE            = (bool_t)stringToUint8(tmpString) != 0; }
-          else if(strcmp(aimBuffer, "PLOT_LINE"                   ) == 0) { PLOT_LINE             = (bool_t)stringToUint8(tmpString) != 0; }
-          else if(strcmp(aimBuffer, "PLOT_CROSS"                  ) == 0) { PLOT_CROSS            = (bool_t)stringToUint8(tmpString) != 0; }
-          else if(strcmp(aimBuffer, "PLOT_PLUS"                   ) == 0) { PLOT_PLUS             = (bool_t)stringToUint8(tmpString) != 0; }
-          else if(strcmp(aimBuffer, "PLOT_BOX"                    ) == 0) { PLOT_BOX              = (bool_t)stringToUint8(tmpString) != 0; }
           else if(strcmp(aimBuffer, "PLOT_INTG"                   ) == 0) { PLOT_INTG             = (bool_t)stringToUint8(tmpString) != 0; }
           else if(strcmp(aimBuffer, "PLOT_DIFF"                   ) == 0) { PLOT_DIFF             = (bool_t)stringToUint8(tmpString) != 0; }
           else if(strcmp(aimBuffer, "PLOT_RMS"                    ) == 0) { PLOT_RMS              = (bool_t)stringToUint8(tmpString) != 0; }
           else if(strcmp(aimBuffer, "PLOT_SHADE"                  ) == 0) { PLOT_SHADE            = (bool_t)stringToUint8(tmpString) != 0; }
           else if(strcmp(aimBuffer, "PLOT_AXIS"                   ) == 0) { PLOT_AXIS             = (bool_t)stringToUint8(tmpString) != 0; }
           else if(strcmp(aimBuffer, "PLOT_ZMY"                    ) == 0) { PLOT_ZMY              = stringToUint8(tmpString); }
-          else if(strcmp(aimBuffer, "PLOT_CPXPLOT"                ) == 0) { PLOT_CPXPLOT          = (bool_t)stringToUint8(tmpString) != 0; }
           else if(strcmp(aimBuffer, "jm_LARGELI"                  ) == 0) {
             if(loadedVersion < 10000012) {
               if((bool_t)stringToUint8(tmpString) != 0) {

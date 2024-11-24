@@ -2505,8 +2505,6 @@ void createSubstrings(uint8_t number) {
     }
   }
 
-  #define PROBMENU (-softmenu[softmenuStack[0].softmenuId].menuItem >= MNU_BINOM && -softmenu[softmenuStack[0].softmenuId].menuItem <= ITM_1296)
-
 
 static bool_t displayTrueFalse(calcRegister_t regist) {
       char sss[10];
@@ -2983,7 +2981,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
           calcRegister_t register_i = REGISTER_X, register_j = REGISTER_X, register_k = REGISTER_X;
 
 
-          switch(softmenu[softmenuStack[0].softmenuId].menuItem) {
+          switch(currentMenu()) {
             case -MNU_GEV:
               r_i = STD_mu;                 register_i = REGISTER_M;
               r_j = STD_sigma;              register_j = REGISTER_S;
@@ -4660,7 +4658,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
 
 
   void closeShowMenu(void) {
-    if(softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_SHOW) {
+    if(currentMenu() == -MNU_SHOW) {
       popSoftmenu();
     }
     showRegis = 9999;
@@ -4703,7 +4701,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
         #endif // PC_BUILD && MONITOR_CLRSCR
         lcd_fill_rect(0, 240 - SOFTMENU_HEIGHT * 3, SCREEN_WIDTH - 240 - 2, SOFTMENU_HEIGHT * 3, LCD_SET_VALUE);
         clear_ul(); //JMUL
-        if(!GRAPHMODE || softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_PLOT) { //not in GRAPHMODE, the triangle area indicating more menus 
+        if(!GRAPHMODE || menu(0) == -MNU_PLOT_FUNC) { //not in GRAPHMODE, the triangle area indicating more menus 
           lcd_fill_rect(0, 240 - SOFTMENU_HEIGHT * 3 - 3, 20, 6, LCD_SET_VALUE);
         }
          if(!GRAPHMODE) { //in GRAPHMODE, protect the square graph area
@@ -4965,7 +4963,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
         if(currentSolverStatus & SOLVER_STATUS_INTERACTIVE) {
           bool_t mvarMenu = false;
           for(int i = 0; i < SOFTMENU_STACK_SIZE; i++) {
-            if(softmenu[softmenuStack[i].softmenuId].menuItem == -MNU_MVAR) {
+            if(menu(i) == -MNU_MVAR) {
               mvarMenu = true;
               break;
             }
@@ -4988,7 +4986,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
         if(calcMode == CM_EIM) {
           bool_t mvarMenu = false;
           for(int i = 0; i < SOFTMENU_STACK_SIZE; i++) {
-            if(softmenu[softmenuStack[i].softmenuId].menuItem == -MNU_EQ_EDIT) {
+            if(menu(i) == -MNU_EQ_EDIT) {
               mvarMenu = true;
               break;
             }
@@ -5091,7 +5089,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
                              #endif // PC_BUILD
 
 
-    switch(softmenu[softmenuStack[0].softmenuId].menuItem) {
+    switch(currentMenu()) {
       case -MNU_GEV:
       case -MNU_BINOM:
       case -MNU_CAUCH:
@@ -5230,7 +5228,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
           refreshStatusBar();
           graphDrawLRline(plotSelection);
           if(lastErrorCode != ERROR_NONE) {
-            if(softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_HPLOT || softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_PLOT_LR || softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_HPLOT || softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_PLOT_STAT) {
+            if(currentMenu() == -MNU_HPLOT || currentMenu() == -MNU_PLOT_ASSESS || currentMenu() == -MNU_HPLOT || currentMenu() == -MNU_PLOT_SCATR) {
               popSoftmenu();
               calcMode = CM_NORMAL;
               refreshScreen(84);

@@ -68,10 +68,7 @@
 #if !defined(TESTSUITE_BUILD)
 static void fnPlot(uint16_t unusedButMandatoryParameter) {
     lastPlotMode = PLOT_NOTHING;
-    //    fnPlotStat(PLOT_GRAPH);
-    //  C43 advanced plot vv
     strcpy(plotStatMx, "DrwMX");
-    PLOT_LINE = true;
     PLOT_SHADE = true;
     fnPlotSQ(0);
     //  C43 advanced plot ^^
@@ -388,7 +385,7 @@ void graph_eqn(uint16_t mode) {
       execute_rpn_function();
 
       //at this point Y could be complex!! If complex, then split Y in Re in X and Im in Y
-      if(PLOT_CPXPLOT) {
+      if(getSystemFlag(FLAG_CPXPLOT)) {
         fnRCL(REGISTER_Y);
         fnStore(TEMP_REGISTER_1);
         fnImaginaryPart(0);
@@ -579,8 +576,11 @@ void graph_stat(uint16_t unusedButMandatoryParameter) {
       lastPlotMode = PLOT_NOTHING;
       calcMode = CM_GRAPH;
       reDraw = true;
-      PLOT_LINE = true;
       PLOT_SHADE = true;
+
+      if(!getSystemFlag(FLAG_PLINE) && !getSystemFlag(FLAG_PCROS) && !getSystemFlag(FLAG_PBOX) && !getSystemFlag(FLAG_PPLUS)) {
+        fnPline(NOPARAM);
+      }
 
       fillStackWithReal0();
       fnPlotSQ(0);
@@ -1435,7 +1435,6 @@ void fnEqSolvGraph (uint16_t func) {
 
       fnClDrawMx(5);
       strcpy(plotStatMx,"DrwMX");
-      //statGraphReset();    //C43 removed to allow changing of graph params
 
       if(higherXStartValue>lowerXStartValue + 0.0001 && higherXStartValue!=DOUBLE_NOT_INIT && lowerXStartValue!=DOUBLE_NOT_INIT) { //pre-condition the plotter
         x_min = lowerXStartValue;

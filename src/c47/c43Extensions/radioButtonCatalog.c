@@ -11,6 +11,7 @@
 #include "c43Extensions/graphs.h"
 #include "charString.h"
 #include "curveFitting.h"
+#include "defines.h"
 #include "flags.h"
 #include "fonts.h"
 #include "hal/audio.h"
@@ -46,8 +47,6 @@ TO_QSPI const radiocb_t indexOfRadioCbEepromItems[] = {
   {ITM_INP_DEF_DP,       ID_DP,                  RB_ID},  //fnInDefault
   {ITM_INP_DEF_LI,       ID_LI,                  RB_ID},  //fnInDefault
 
-  {ITM_DREAL,            ITM_DREAL,              CB_JC},
-
   {ITM_1COMPL,           SIM_1COMPL,             RB_IM},  //fnIntegerMode
   {ITM_2COMPL,           SIM_2COMPL,             RB_IM},  //fnIntegerMode
   {ITM_SIGNMT,           SIM_SIGNMT,             RB_IM},  //fnIntegerMode
@@ -80,18 +79,9 @@ TO_QSPI const radiocb_t indexOfRadioCbEepromItems[] = {
   {ITM_BCD9,             BCD9c,                  RB_BCD}, //
   {ITM_BCD10,            BCD10c,                 RB_BCD}, //
 
-  {ITM_HPRP,             PR_HPRP,                CB_JC},
-  {ITM_HPBASE,           PR_HPBASE,              CB_JC},
-  {ITM_2TO10,            PR_2TO10,               CB_JC},
-  {ITM_DENANY,           DM_ANY,                 CB_JC},
-  {ITM_DENFIX,           DM_FIX,                 CB_JC},
-  {ITM_PROPFR,           DM_PROPFR,              CB_JC},
-  {ITM_FRACT,            DM_FRACT,               CB_JC},
+  {ITM_M_GROW,           ITM_M_GROW,             RB_GW},  // SFL_PRTACT
+  {ITM_M_WRAP,           ITM_M_WRAP,             RB_GW},  // SFL_PRTACT
 
-  {ITM_M_GROW,           ITM_M_GROW,             RB_GW},
-  {ITM_M_WRAP,           ITM_M_WRAP,             RB_GW},
-
-  {ITM_PRTACT,           PRTACT,                 CB_JC},  // SFL_PRTACT
   {ITM_PRTACT0,          PRTACT0,                RB_PRN},  // SFL_PRTACT
   {ITM_PRTACT1,          PRTACT1,                RB_PRN},  // SFL_PRTACT
 
@@ -135,43 +125,51 @@ TO_QSPI const radiocb_t indexOfRadioCbEepromItems[] = {
   {ITM_USER_R47fg_bk,    USER_R47fg_bk,          CB_JC},  //SetSetting
   {ITM_USER_R47fg_g,     USER_R47fg_g,           CB_JC},  //SetSetting
 
-
-  {ITM_CB_CPXRES,        JC_BCR,                 CB_JC},  //SetSetting
-  {ITM_CB_SPCRES,        JC_BSR,                 CB_JC},  //SetSetting
-  {ITM_CB_LEADING_ZERO,  JC_BLZ,                 CB_JC},  //SetSetting
-  {ITM_ERPN,             JC_ERPN,                CB_JC},  //SetSetting
-  {ITM_FRCYC,            ITM_FRCYC,              CB_JC},
-
   {ITM_G_DOUBLETAP,      JC_G_DOUBLETAP,         CB_JC},  //SetSetting
   {ITM_SHTIM,            JC_SHFT_4s,             CB_JC},  //SetSetting
-  {ITM_VECT,             JC_VECT,                CB_JC},  //SetSetting
-  {ITM_NVECT,            JC_NVECT,               CB_JC},  //SetSetting
-  {ITM_SCALE,            JC_SCALE,               CB_JC},  //SetSetting
-  {ITM_LARGELI,          JC_LARGELI,             CB_JC},  //SetSetting
-  {ITM_IRFRAC,           JC_IRFRAC,              CB_JC},  //SetSetting
-  {ITM_EXTX,             JC_EXTENTX,             CB_JC},  //SetSetting
-  {ITM_EXTY,             JC_EXTENTY,             CB_JC},  //SetSetting
 
   {ITM_TEST,             JC_ITM_TST,             CB_JC},  //fnSetInlineTest
-  {ITM_PLINE,            JC_PLINE,               CB_JC},  //
-  {ITM_PCROS,            JC_PCROS,               CB_JC},  //
-  {ITM_PPLUS,            JC_PPLUS,               CB_JC},  //
-  {ITM_PBOX,             JC_PBOX,                CB_JC},  //
   {ITM_INTG,             JC_INTG,                CB_JC},  //
   {ITM_DIFF,             JC_DIFF,                CB_JC},  //
   {ITM_RMS,              JC_RMS,                 CB_JC},  //
   {ITM_SHADE,            JC_SHADE,               CB_JC},  //
-  {ITM_CPXPLOT,          JC_CPXPLOT,             CB_JC},
 
-  {CHR_num,              JC_NL,                  CB_JC},  //
+  {ITM_CB_CPXRES,        FLAG_CPXRES ,           CB_JC},  //SetSetting
+  {ITM_CB_SPCRES,        FLAG_SPCRES ,           CB_JC},  //SetSetting
+  {ITM_CB_LEADING_ZERO,  FLAG_LEAD0  ,           CB_JC},  //SetSetting
+  {ITM_HPRP,             FLAG_HPRP   ,           CB_JC},
+  {ITM_HPBASE,           FLAG_HPBASE ,           CB_JC},
+  {ITM_2TO10,            FLAG_2TO10  ,           CB_JC},
+  {ITM_DENANY,           FLAG_DENANY ,           CB_JC},
+  {ITM_DENFIX,           FLAG_DENFIX ,           CB_JC},
+  {ITM_PROPFR,           FLAG_PROPFR ,           CB_JC},
+  {ITM_FRACT,            FLAG_FRACT  ,           CB_JC},
+  {ITM_PRTACT,           FLAG_PRTACT ,           CB_JC},  // SFL_PRTACT
+  {ITM_ERPN,             FLAG_ERPN   ,           CB_JC},  //SetSetting
+  {ITM_FRCYC,            FLAG_FRCYC  ,           CB_JC},
+  {ITM_LARGELI,          FLAG_LARGELI,           CB_JC},  //SetSetting
+  {ITM_IRFRAC,           FLAG_IRFRAC ,           CB_JC},  //SetSetting
+  {ITM_CPXPLOT,          FLAG_CPXPLOT,           CB_JC},  // graph EQN & PLSTAT options
+  {ITM_SHOWX,            FLAG_SHOWX  ,           CB_JC},  // graph EQN & PLSTAT options
+  {ITM_SHOWY,            FLAG_SHOWY  ,           CB_JC},  // graph EQN & PLSTAT options
+  {ITM_PBOX,             FLAG_PBOX   ,           CB_JC},  // graph EQN & PLSTAT options
+  {ITM_PCROS,            FLAG_PCROS  ,           CB_JC},  // graph EQN & PLSTAT options
+  {ITM_PPLUS,            FLAG_PPLUS  ,           CB_JC},  // graph EQN & PLSTAT options
+  {ITM_PLINE,            FLAG_PLINE  ,           CB_JC},  // graph EQN & PLSTAT options
+  {ITM_SCALE,            FLAG_SCALE  ,           CB_JC},  // graph EQN & PLSTAT options
+  {ITM_VECT,             FLAG_VECT   ,           CB_JC},  // graph EQN & PLSTAT options
+  {ITM_NVECT,            FLAG_NVECT  ,           CB_JC},  // graph EQN & PLSTAT options
+  {CHR_num,              FLAG_NUMLOCK     ,      CB_JC},  //
+  {ITM_USERMODE,         FLAG_USER        ,      CB_JC},  //
+  {ITM_SH_LONGPRESS,     FLAG_SH_LONGPRESS,      CB_JC},  //
+  {ITM_DREAL,            FLAG_DREAL       ,      CB_JC},  //
+  {ITM_CPXMULT,          FLAG_CPXMULT,           CB_JC},  //
+
+
   {CHR_case,             JC_UC,                  CB_JC},  //
-  {ITM_USERMODE,         JC_UU,                  CB_JC},  //
   {ITM_SCR,              JC_SS,                  CB_JC},  //
-  {ITM_SH_LONGPRESS,     JC_LPfg,                CB_JC},  //
-
   {ITM_BCD,              JC_BCD,                 CB_JC},  //
   {ITM_TOPHEX,           JC_TOPHEX,              CB_JC},  //
-  {ITM_CPXMULT,          JC_CPXMULT,             CB_JC},  //
 
   {ITM_2BIN,             2,                      RB_HX},  //fnChangeBaseJM
   {ITM_2OCT,             8,                      RB_HX},  //fnChangeBaseJM
@@ -365,46 +363,50 @@ int8_t fnCbIsSet(int16_t item) {
             case JC_CAUCHY_FITTING:      cb_param = ((lrSelection & CF_CAUCHY_FITTING)      == CF_CAUCHY_FITTING     ); break;
             case JC_GAUSS_FITTING:       cb_param = ((lrSelection & CF_GAUSS_FITTING)       == CF_GAUSS_FITTING      ); break;
             case JC_ORTHOGONAL_FITTING:  cb_param = (orOrtho(lrSelection)                   == CF_ORTHOGONAL_FITTING ); break;
-            case JC_BCR:                 cb_param = getSystemFlag(FLAG_CPXRES);                                       break;
-            case JC_BSR:                 cb_param = getSystemFlag(FLAG_SPCRES);                                       break;
-            case JC_BLZ:                 cb_param = getSystemFlag(FLAG_LEAD0);                                        break;
-            case PR_HPRP:                cb_param = getSystemFlag(FLAG_HPRP);                                         break;
-            case PR_HPBASE:              cb_param = getSystemFlag(FLAG_HPBASE);                                       break;
-            case PR_2TO10:               cb_param = getSystemFlag(FLAG_2TO10);                                        break;
-            case DM_ANY:                 cb_param = getSystemFlag(FLAG_DENANY);                                       break;
-            case DM_FIX:                 cb_param = getSystemFlag(FLAG_DENFIX);                                       break;
-            case DM_PROPFR:              cb_param = getSystemFlag(FLAG_PROPFR);                                       break;
-            case DM_FRACT:               cb_param = getSystemFlag(FLAG_FRACT);                                        break;
-            case PRTACT:                 cb_param = getSystemFlag(FLAG_PRTACT);                                       break;
-            case JC_ERPN:                cb_param = getSystemFlag(FLAG_ERPN);                                         break;
-            case ITM_FRCYC:              cb_param = getSystemFlag(FLAG_FRCYC);                                        break;
+
             case JC_G_DOUBLETAP:         cb_param = jm_G_DOUBLETAP;                                                   break;
             case JC_SHFT_4s:             cb_param = ShiftTimoutMode;                                                  break;
-            case JC_VECT:                cb_param = PLOT_VECT;                                                        break;
-            case JC_NVECT:               cb_param = PLOT_NVECT;                                                       break;
-            case JC_SCALE:               cb_param = PLOT_SCALE;                                                       break;
-            case JC_LARGELI:             cb_param = getSystemFlag(FLAG_LARGELI);                                      break;
-            case JC_IRFRAC:              cb_param = getSystemFlag(FLAG_IRFRAC);                                       break;
-            case JC_EXTENTX:             cb_param = !extentx;                                                         break;
-            case JC_EXTENTY:             cb_param = !extenty;                                                         break;
-            case JC_PLINE:               cb_param = PLOT_LINE;                                                        break;
-            case JC_PCROS:               cb_param = PLOT_CROSS;                                                       break;
-            case JC_PPLUS:               cb_param = PLOT_PLUS;                                                        break;
-            case JC_PBOX:                cb_param = PLOT_BOX;                                                         break;
             case JC_DIFF:                cb_param = PLOT_DIFF;                                                        break;
             case JC_INTG:                cb_param = PLOT_INTG;                                                        break;
             case JC_RMS:                 cb_param = PLOT_RMS;                                                         break;
             case JC_SHADE:               cb_param = PLOT_SHADE;                                                       break;
-            case JC_CPXPLOT:             cb_param = PLOT_CPXPLOT;                                                     break;
-            case JC_NL:                  cb_param = getSystemFlag(FLAG_NUMLOCK);                                      break;
+
+            case FLAG_CPXRES :
+            case FLAG_SPCRES :
+            case FLAG_LEAD0  :
+            case FLAG_HPRP   :
+            case FLAG_HPBASE :
+            case FLAG_2TO10  :
+            case FLAG_DENANY :
+            case FLAG_DENFIX :
+            case FLAG_PROPFR :
+            case FLAG_FRACT  :
+            case FLAG_PRTACT :
+            case FLAG_ERPN   :
+            case FLAG_FRCYC  :
+            case FLAG_LARGELI:
+            case FLAG_IRFRAC :
+            case FLAG_CPXPLOT:
+            case FLAG_SHOWX  :
+            case FLAG_SHOWY  :
+            case FLAG_PBOX   :
+            case FLAG_PCROS  :
+            case FLAG_PPLUS  :
+            case FLAG_PLINE  :
+            case FLAG_SCALE  :
+            case FLAG_VECT   :
+            case FLAG_NVECT  :
+            case FLAG_NUMLOCK     :
+            case FLAG_USER        :
+            case FLAG_SH_LONGPRESS:
+            case FLAG_DREAL       :
+            case FLAG_CPXMULT     :
+                       cb_param = getSystemFlag(indexOfRadioCbEepromItems[i].param);                break;
+
             case JC_UC:                  cb_param = !alphaCase;                                                       break;
-            case JC_UU:                  cb_param = getSystemFlag(FLAG_USER);                                         break;
-            case JC_LPfg:                cb_param = getSystemFlag(FLAG_SH_LONGPRESS);                                 break;
             case JC_SS:                  cb_param = scrLock != NC_NORMAL;                                             break;
             case JC_BCD:                 cb_param = bcdDisplay;                                                       break;
             case JC_TOPHEX:              cb_param = topHex;                                                           break;
-            case ITM_DREAL:              cb_param = getSystemFlag(FLAG_DREAL);                                        break;
-            case JC_CPXMULT:             cb_param = getSystemFlag(FLAG_CPXMULT);                                      break;
             case JC_MYM_TRIPLE:          cb_param = MYM3;
                                          if(MYM3 && HOME3) MYM3 = false;
                                          break;
@@ -463,8 +465,7 @@ int16_t fnItemShowValue(int16_t item) {
     case ITM_SCI:       if(displayFormat == DF_SCI) result = displayFormatDigits;   break; //  545
     case ITM_ALL:       if(displayFormat == DF_ALL) result = displayFormatDigits;   break; //   20
     case ITM_MZOOMY:
-    case ITM_PZOOMY:    result = PLOT_ZMY;                                          break;
-    case ITM_PLOTZOOM:  result = -PLOT_ZOOM;                                        break;
+    case ITM_PZOOMY:    result = calcMode == CM_PLOT_STAT ? PLOT_ZOOM : PLOT_ZMY;   break;
     case ITM_WSIZE:     result = shortIntegerWordSize;                              break; //  664
     case ITM_RNG:       result = exponentLimit;                                     break;
     case ITM_SETSIG2:   result = (significantDigits == 0 ? 34 : significantDigits); break;

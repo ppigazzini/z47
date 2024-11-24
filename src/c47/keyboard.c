@@ -1006,7 +1006,7 @@ int16_t lastItem = 0;
       }
 
       // in graph plot menu, wanting to change Normal Mode items, so open the correct menu first and return to Normal Mode, and stop the processing.
-      if(calcMode == CM_GRAPH && currentMenu() == -MNU_PLOT && (item == VAR_LX || item == VAR_UX)) {
+      if(calcMode == CM_GRAPH && currentMenu() == -MNU_PLOT_FUNC && (item == VAR_LX || item == VAR_UX)) {
         calcMode = CM_NORMAL;
         showSoftmenu(-MNU_GRAPHS);
         item = 0;
@@ -2205,7 +2205,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
           if(item != ITM_NOP && tam.alpha && indexOfItems[item].func != addItemToBuffer && aimBuffer[0] == 0) {
             // We are in TAM mode so need to cancel first (equivalent to EXIT)
             if(item == ITM_EXIT1) {
-              if(menu(0) == -MNU_TAMALPHA){
+              if(currentMenu() == -MNU_TAMALPHA){
                 popSoftmenu();
                 numberOfTamMenusToPop--;
                 tam.alpha = false;
@@ -2216,7 +2216,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
             }
           }
           if(item == ITM_EXIT1 && tam.alpha && aimBuffer[0] != 0)  {
-            if(menu(0) == -MNU_TAMALPHA){
+            if(currentMenu() == -MNU_TAMALPHA){
               popSoftmenu();
               numberOfTamMenusToPop--;
               aimBuffer[0] = 0;
@@ -2394,7 +2394,7 @@ RELEASE_END:
       screenUpdatingMode = SCRUPD_AUTO;    //cannot use MENU & STACK update due to being in NIM, and NIM prevents clearing individually
     }
 
-    if(calcMode == CM_GRAPH && currentMenu() == -MNU_PLOT && ((item >= ITM_0 && item <= ITM_9) || item == ITM_PERIOD)) { //incoming digit, change modes and go to GRAPHS input page
+    if(calcMode == CM_GRAPH && currentMenu() == -MNU_PLOT_FUNC && ((item >= ITM_0 && item <= ITM_9) || item == ITM_PERIOD)) { //incoming digit, change modes and go to GRAPHS input page
       calcMode = CM_NORMAL;
       showSoftmenu(-MNU_GRAPHS);
       screenUpdatingMode &= SCRUPD_MANUAL_MENU;
@@ -3685,7 +3685,7 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
           return;
           }*/
 
-      if((numberOfTamMenusToPop > 1) && (menu(0) != -MNU_TAMALPHA)) {
+      if((numberOfTamMenusToPop > 1) && (currentMenu() != -MNU_TAMALPHA)) {
         popSoftmenu();
         numberOfTamMenusToPop--;
       }
@@ -3739,7 +3739,7 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
           lastErrorCode = 0;
         }
         else {
-          if(currentMenu() == -MNU_GRAPHS && menu(1) == -MNU_PLOT) {
+          if(currentMenu() == -MNU_GRAPHS && menu(1) == -MNU_PLOT_FUNC) {
             calcMode = CM_GRAPH;
             fnEqSolvGraph(EQ_PLOT_LU);
             screenUpdatingMode = SCRUPD_AUTO;
@@ -3857,11 +3857,11 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
           fnBst(NOPARAM); // Set the PGM pointer to the original position
           break;
         }
-        if(softmenuStack[0].softmenuId > 1 && menu(0) != -MNU_PFN) { // not MyMenu and not MyAlpha
+        if(softmenuStack[0].softmenuId > 1 && currentMenu() != -MNU_PFN) { // not MyMenu and not MyAlpha
           popSoftmenu();
           break;
         }
-        else if(menu(0) == -MNU_PFN){
+        else if(currentMenu() == -MNU_PFN){
           //exit menus immediately when coming out of PEM
           extractPFNMenus();
         }
@@ -3946,7 +3946,7 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
           }
         }
         else {
-          if(currentMenu() == -MNU_PLOT && menu(1) == -MNU_GRAPHS) {
+          if(currentMenu() == -MNU_PLOT_FUNC && menu(1) == -MNU_GRAPHS) {
             popSoftmenu();
           }
           popSoftmenu();
@@ -3967,7 +3967,11 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
                       printf(">>> Undo from fnKeyExit\n");
                     #endif // DEBUGUNDO
         SAVED_SIGMA_lastAddRem = SIGMA_NONE;
+        uint64_t sf0 = systemFlags0;
+        uint64_t sf1 = systemFlags1;
         fnUndo(NOPARAM);
+        systemFlags0 = sf0;
+        systemFlags1 = sf1;
         fnClDrawMx(1);
         if(statMx[0]!='S') {
           printStatus(0, errorMessages[RESTORING_STATS],force);
@@ -4493,7 +4497,7 @@ void fnKeyUp(uint16_t unusedButMandatoryParameter) {
             refreshLcd(NULL);
           #endif // DMCP_BUILD
         }
-        if(currentMenu() == -MNU_PLOT_LR){
+        if(currentMenu() == -MNU_PLOT_ASSESS){
           strcpy(plotStatMx, "STATS");
           fnPlotStat(PLOT_NXT);
         }
@@ -4712,7 +4716,7 @@ void fnKeyDown(uint16_t unusedButMandatoryParameter) {
             refreshLcd(NULL);
           #endif // DMCP_BUILD
         }
-        if(currentMenu() == -MNU_PLOT_LR){
+        if(currentMenu() == -MNU_PLOT_ASSESS){
           strcpy(plotStatMx, "STATS");
           fnPlotStat(PLOT_REV); //REVERSE
         }

@@ -354,7 +354,7 @@ TO_QSPI const function_t indexOfFunctions[] = {
               {ITM_MULPI,                     "MULPI"},
               {ITM_SUM,                       "SUM"},
               {ITM_sincpi,                    "SINCPI"},
-              {ITM_PLOT,                      "@"},
+              {ITM_PLOT_SCATR,                "@"},
               {ITM_RAD,                       "@"},
               {ITM_RAN,                       "@"},
               {ITM_RCLEL,                     "@"},

@@ -28,19 +28,12 @@
 extern  float    graph_dx;
 extern  float    graph_dy;
 extern  bool_t   roundedTicks;
-extern  bool_t   PLOT_VECT;
-extern  bool_t   PLOT_NVECT;
-extern  bool_t   PLOT_LINE;
-extern  bool_t   PLOT_CROSS;
-extern  bool_t   PLOT_PLUS;
-extern  bool_t   PLOT_BOX;
 extern  bool_t   PLOT_INTG;
 extern  bool_t   PLOT_DIFF;
 extern  bool_t   PLOT_RMS;
 extern  bool_t   PLOT_SHADE;
-extern  bool_t   PLOT_CPXPLOT;
 extern  bool_t   PLOT_AXIS;
-extern  uint8_t  PLOT_ZOOM;
+extern  int8_t   PLOT_ZOOM;
 extern  uint8_t  drawHistogram;
 
 #define _VECT 0
@@ -102,5 +95,4 @@ void    graphDrawLRline    (uint16_t selection);
 //void    fnPlotClose        (uint16_t unusedButMandatoryParameter);
 void    fnPlotCloseSmi     (uint16_t unusedButMandatoryParameter);
 void    fnPlotStat         (uint16_t unusedButMandatoryParameter);
-void    fnPlotZoom         (uint16_t unusedButMandatoryParameter);
 #endif // !PLOTSTAT_H
