@@ -3967,8 +3967,8 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
                       printf(">>> Undo from fnKeyExit\n");
                     #endif // DEBUGUNDO
         SAVED_SIGMA_lastAddRem = SIGMA_NONE;
-        uint32_t sf0 = systemFlags0;
-        uint32_t sf1 = systemFlags1;
+        uint64_t sf0 = systemFlags0;
+        uint64_t sf1 = systemFlags1;
         fnUndo(NOPARAM);
         systemFlags0 = sf0;
         systemFlags1 = sf1;
