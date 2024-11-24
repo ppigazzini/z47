@@ -39,7 +39,7 @@
 #include "c47.h"
 
 #define PROGRAM_VERSION                     01  // Original version
-#define EXPORT_VERSION                      02  // Modified export version to indent LBL
+#define EXPORT_VERSION                      03  // 02 Modified export version to indent LBL; 03 Add RTF method and revise fixed table
 #define OLDEST_COMPATIBLE_PROGRAM_VERSION   01  // Original version
 #define BACKUP_FORMAT                       00  // Same program format as in backup file
 #define TEXT_FORMAT                         01  // Text program format - for future use
@@ -101,7 +101,7 @@
 
     typedef struct {
       char     *itemName;
-      uint8_t  _previousnewLine;
+      uint8_t  _previousNewLine;
       uint8_t  _indent;
       uint8_t  _addnextLineIndent;
     } indentType;
@@ -157,6 +157,7 @@
     };
 
 
+
 #ifndef TESTSUITE_BUILD
 #if !defined(SAVE_SPACE_DM42_10)
   static bool_t subStrWildCardCompare(const char *in1, const char *in2) { //wild card is '*', active from the second character being compared
@@ -176,11 +177,28 @@
     }
     return areEqual;
   }
+
+
+//uses tmpString
+static int16_t findIndents(bool_t *newLine, int8_t *indent, int8_t *addnextLineIndent){
+        int16_t jj = 0;
+        while((indents[jj].itemName[0]) != 0) {
+          if(subStrWildCardCompare(tmpString, (char*)(indents[jj].itemName))) {
+            *newLine = (bool_t)(indents[jj]._previousNewLine);
+            *indent += indents[jj]._indent;
+            *addnextLineIndent = indents[jj]._addnextLineIndent;
+            break;
+          }
+          jj++;
+        }
+        return jj;
+      }
+
 #endif //SAVE_SPACE_DM42_10
 #endif //TESTSUITE_BUILD
 
 
-void fnPExport(uint16_t unusedButMandatoryParameter) {
+void fnPExport(uint16_t mode) {
 #if !defined(SAVE_SPACE_DM42_10)
   #if !defined(TESTSUITE_BUILD)
     ///////////////////////////////////////////////////////////////////////////////////////
@@ -201,6 +219,9 @@ void fnPExport(uint16_t unusedButMandatoryParameter) {
 
     if(firstDisplayedLocalStepNumber == 0) {
       sprintf(tmpString, "0000: { Prgm #%d: %" PRIu32 " bytes / %" PRIu16 " step%s }", currentProgramNumber, _getProgramSize(),                                                                               numberOfSteps, numberOfSteps == 1 ? "" : "s");
+      if(mode == MODE_RTF) {
+        stringAppend(tmpString + stringByteLength(tmpString), " \\par");
+      }      
       stringAppend(tmpString + stringByteLength(tmpString), "\n");
       ioFileWrite(tmpString, strlen(tmpString));
       firstLine = 1;
@@ -212,34 +233,40 @@ void fnPExport(uint16_t unusedButMandatoryParameter) {
     int lineOffset = 0, lineOffsetTam = 0;
     int8_t  indent;;
     bool_t  newLine;
-    bool_t  addnextLineIndent = 0;
+    int8_t  addnextLineIndent = 0;
+    int16_t lastCommandFound = 0;
 
 
     for(line=firstLine; line<9999; line++) {
       nextStep = findNextStep(step);
 
-      decodeOneStepXEQM(step);
+
+      //Decode
+      if(mode == MODE_RTF) {
+        decodeOneStep(step);
+        //printf("§§=%s",tmpString);
+      } else {
+        decodeOneStepXEQM(step);
+      }
+
+
       indent = 2;
       newLine = false;
-
       if(addnextLineIndent == 0) {
-        int16_t jj = 0;
-        while((indents[jj].itemName[0]) != 0) {
-          if(subStrWildCardCompare(tmpString, (char*)(indents[jj].itemName))) {
-            newLine = (bool_t)(indents[jj]._previousnewLine);
-            indent += indents[jj]._indent;
-            addnextLineIndent = indents[jj]._addnextLineIndent;
-            break;
-          }
-          jj++;
-        }
+        lastCommandFound = findIndents(&newLine, &indent, &addnextLineIndent); //uses tmpString as inpur
       }
       else {
-        indent += addnextLineIndent;
+        int8_t rubbish = 0;
+        bool_t rubbishb = false;
+        if(lastCommandFound != findIndents(&rubbishb, &rubbish, &rubbish)) { //only use the indents if the last two commands are not the same
+          indent += addnextLineIndent;
+        }
         addnextLineIndent = 0;
       }
 
 
+//MAKE THIS MORE EFFICIENT!
+      //additional indents prepended
       if(indent > 0) {
         uint16_t ii = 0;
         stringAppend(asciiString, tmpString);
@@ -249,17 +276,43 @@ void fnPExport(uint16_t unusedButMandatoryParameter) {
         }
       }
 
-      sprintf(asciiString, "%04d:  " , firstDisplayedLocalStepNumber + line - lineOffset + lineOffsetTam);
 
-      if(newLine){                        // Newline before LBL
-        char endline[3];
-        sprintf(endline,"\n");
-        ioFileWrite(endline, strlen(endline));
+      char tmpp[30];
+      asciiString[0]=0;
+
+      //Add extra blank line before LBL
+      if(newLine){
+        if(mode == MODE_RTF) {
+          stringAppend(asciiString + stringByteLength(asciiString), "\\par\n");
+        } else {
+          stringAppend(asciiString + stringByteLength(asciiString), "\n");         //add cr+lf
+        }
       }
 
-      stringAppend(asciiString + stringByteLength(asciiString), tmpString);    //add number + instruction: 0000:  1/X
-      stringAppend(asciiString + stringByteLength(asciiString), "\n");         //add cr+lf
-      stringToASCII(asciiString, tmpString);
+      //Line Number and base indent ==> asciiString
+      sprintf(tmpp, "%04d:  " , firstDisplayedLocalStepNumber + line - lineOffset + lineOffsetTam);
+      stringAppend(asciiString + stringByteLength(asciiString), tmpp);
+
+      //Add instruction
+      stringAppend(asciiString + stringByteLength(asciiString), tmpString);        //add number + instruction: 0000:  1/X
+
+
+      //Add end line 
+      if(mode == MODE_RTF) {
+        stringAppend(asciiString + stringByteLength(asciiString), "\\par\n");
+      } else {
+        stringAppend(asciiString + stringByteLength(asciiString), "\n");       //add cr+lf
+      }
+
+
+      //Convert unprintable characters
+      if(mode == MODE_RTF) {
+        stringToRTF(asciiString, tmpString);
+      } else {
+        stringToASCII(asciiString, tmpString);
+      }
+
+
       ioFileWrite(tmpString, strlen(tmpString));
 
       if(isAtEndOfProgram(step)) {
@@ -281,21 +334,59 @@ void fnPExport(uint16_t unusedButMandatoryParameter) {
 }
 
 
-
-
-
-
-void fnExportProgram(uint16_t label) {
-  #if !defined(TESTSUITE_BUILD)
+void _fnExportProgram(uint16_t mode) {
     uint32_t programVersion = PROGRAM_VERSION;
     uint32_t exportVersion = EXPORT_VERSION;
-    ioFilePath_t path;
     int ret;
+    ioFilePath_t path;
 
+    path = (mode == MODE_RTF ? ioPathExportRTFProgram : ioPathExportProgram);
+    ret = ioFileOpen(path, ioModeWrite);
+
+    if(ret != FILE_OK ) {
+      if(ret == FILE_CANCEL ) {
+        return;
+      }
+      else {
+        #if !defined(DMCP_BUILD)
+          printf("Cannot export program!\n");
+        #endif
+        displayCalcErrorMessage(ERROR_CANNOT_WRITE_FILE, ERR_REGISTER_LINE, REGISTER_X);
+        return;
+      }
+    }
+
+
+    if(mode == MODE_RTF) {
+      //stringAppend(tmpString, "{\\rtf1\\ansi\\ansicpg1252\\deff0\\nouicompat{\\fonttbl{\\f0\\fnil\\fcharset0 C47__StandardFont;}}{\\pard\\sl240\\sa0\\sa200\\slmult1\\f0\\fs24\\lang9\\f0\\loch\n");
+      stringAppend(tmpString, "{\\rtf1\\ansi\\ansicpg1252\\deff0\\nouicompat{\\fonttbl{\\f0\\fnil\\fcharset0 C47__StandardFont;}}{\\pard\\sl240\\slmult1\\f0\\fs24\\lang9\\f0\\loch\n");
+      ioFileWrite(tmpString, strlen(tmpString));
+    }
+
+    // PROGRAM file version
+    sprintf(tmpString, "C47 Program file export: Export format version %" PRIu32 ", C47 program version %" PRIu32 ".\n", (uint32_t)exportVersion, (uint32_t)programVersion);
+    ioFileWrite(tmpString, strlen(tmpString));
+
+    if(mode == MODE_RTF) {
+      stringAppend(tmpString, " \\par\n");
+      ioFileWrite(tmpString, strlen(tmpString));
+    }
+
+    fnPExport(mode);
+
+    if(mode == MODE_RTF) {
+      stringAppend(tmpString, "}}\n");
+      ioFileWrite(tmpString, strlen(tmpString));
+    }
+
+    ioFileClose();
+
+}
+
+
+void _selectProgram(uint16_t label) {
+  #if !defined(TESTSUITE_BUILD)
     // Find program boundaries
-    const uint16_t savedCurrentLocalStepNumber = currentLocalStepNumber;
-    uint16_t savedCurrentProgramNumber = currentProgramNumber;
-
     // no argument – need to save current program
     if(label == 0 && !tam.alpha && tam.digitsSoFar == 0) {
         // find the first global label in the current program
@@ -330,40 +421,35 @@ void fnExportProgram(uint16_t label) {
       displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "label %" PRIu16 " is not a global label", label);
-        moreInfoOnError("In function fnSaveProgram:", errorMessage, NULL, NULL);
+        moreInfoOnError("In function fnSaveProgram/fnExportProgram:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return;
     }
+  #endif // !TESTSUITE_BUILD
+}
 
-    path = ioPathExportProgram;
-    ret = ioFileOpen(path, ioModeWrite);
 
-    if(ret != FILE_OK ) {
-      if(ret == FILE_CANCEL ) {
+void fnExportProgram(uint16_t label) {
+    const uint16_t savedCurrentLocalStepNumber = currentLocalStepNumber;
+    uint16_t savedCurrentProgramNumber = currentProgramNumber;
+
+    #if defined(DMCP_BUILD)
+      // Don't pass through if the power is insufficient
+      if(power_check_screen()) {
         return;
       }
-      else {
-        #if !defined(DMCP_BUILD)
-          printf("Cannot export program!\n");
-        #endif
-        displayCalcErrorMessage(ERROR_CANNOT_WRITE_FILE, ERR_REGISTER_LINE, REGISTER_X);
-        return;
-      }
-    }
+    #endif // DMCP_BUILD
 
-    // PROGRAM file version
-    sprintf(tmpString, "C47 Program file export: Export format version %" PRIu32 ", C47 program version %" PRIu32 ".\n", (uint32_t)exportVersion, (uint32_t)programVersion);
-    ioFileWrite(tmpString, strlen(tmpString));
+//    _selectProgram(label);
+//    _fnExportProgram(MODE_TXT);
 
-    fnPExport(0);
-
-    ioFileClose();
+    _selectProgram(label);
+    _fnExportProgram(MODE_RTF);
 
     currentLocalStepNumber = savedCurrentLocalStepNumber;
     currentProgramNumber = savedCurrentProgramNumber;
 
     temporaryInformation = TI_SAVED;
-  #endif // !TESTSUITE_BUILD
 }
 
 
@@ -386,48 +472,10 @@ void fnSaveProgram(uint16_t label) {
       }
     #endif // DMCP_BUILD
 
-    // Find program boundaries
     const uint16_t savedCurrentLocalStepNumber = currentLocalStepNumber;
     uint16_t savedCurrentProgramNumber = currentProgramNumber;
 
-    // no argument – need to save current program
-    if(label == 0 && !tam.alpha && tam.digitsSoFar == 0) {
-        // find the first global label in the current program
-        uint16_t currentLabel = 0;
-        strcpy(tmpStringLabelOrVariableName, "untitled");
-        while(currentLabel < numberOfLabels) {
-          if(labelList[currentLabel].program == currentProgramNumber) {
-            break;
-          }
-          currentLabel++;
-        }
-        // get the first global label name
-        while(currentLabel < numberOfLabels) {
-          if(labelList[currentLabel].step > 0) {  // global label
-            // get current label name (to be used as default file name)
-            xcopy(tmpStringLabelOrVariableName, labelList[currentLabel].labelPointer + 1, *(labelList[currentLabel].labelPointer));
-            tmpStringLabelOrVariableName[*(labelList[currentLabel].labelPointer)] = 0;
-            break;
-          }
-          currentLabel++;
-        }
-    }
-    // Existing global label
-    else if(label >= FIRST_LABEL && label <= LAST_LABEL) {
-      fnGoto(label);
-      // get current label name (to be used as default file name)
-      xcopy(tmpStringLabelOrVariableName, labelList[label - FIRST_LABEL].labelPointer + 1, *(labelList[label - FIRST_LABEL].labelPointer));
-      tmpStringLabelOrVariableName[*(labelList[label - FIRST_LABEL].labelPointer)] = 0;
-    }
-    // Invalid label
-    else {
-      displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-        sprintf(errorMessage, "label %" PRIu16 " is not a global label", label);
-        moreInfoOnError("In function fnSaveProgram:", errorMessage, NULL, NULL);
-      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-      return;
-    }
+    _selectProgram(label);
 
     path = ioPathSaveProgram;
     ret = ioFileOpen(path, ioModeWrite);

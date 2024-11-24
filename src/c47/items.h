@@ -1970,7 +1970,7 @@
 #define ITM_USER_DM42               1916
 #define ITM_HPRP                    1917
 #define ITM_N_KEY_FGSH              1918
-#define ITM_1919                    1919
+#define ITM_YY_OFF                  1919
 #define MNU_ASN_N                   1920
 #define MNU_HOME                    1921
 #define MNU_ALPHA                   1922
@@ -2287,9 +2287,9 @@
 #define MNU_LAYOUTS                 2233
 #define MNU_RESETS                  2234
 #define MNU_RIBBONS                 2235
-#define ITM_2236                    2236
-#define ITM_2237                    2237
-#define ITM_2238                    2238
+#define ITM_YY_DFLT                 2236
+#define ITM_YY_TRACK                2237
+#define MNU_TAMNONREGTRK            2238
 #define ITM_CLMALL                  2239
 #define ITM_CLVALL                  2240
 #define ITM_DELMALL                 2241

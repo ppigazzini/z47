@@ -1268,6 +1268,7 @@ void resetOtherConfigurationStuff(void) {
   roundingMode = RM_HALF_EVEN;
   pcg32_srandom(0x1963073019931121ULL, 0x1995062319981019ULL); // RNG initialisation
   exponentHideLimit = 0;
+  lastCenturyHighUsed = 0;
   lrSelection = CF_LINEAR_FITTING;
   lrSelectionUndo = lrSelection;                               //Not saved in file, but reset
 
@@ -1530,6 +1531,8 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     halfSecTick2 = false;
     halfSecTick3 = false;
     skippedStackLines = false;
+    programRunStop = PGM_STOPPED;
+    lastProgramRunStop = PGM_STOPPED;
 
 
     ctxtReal34.round = DEC_ROUND_HALF_EVEN;

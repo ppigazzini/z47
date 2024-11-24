@@ -57,6 +57,7 @@ TO_QSPI static const char bugScreenNoParam[] = "In function addItemToBuffer:item
       T_cursorPos = 0;
       aimBuffer[0] = 0;
     }
+    setLastintegerBasetoZero();
     calcModeAim(NOPARAM); // Alpha Input Mode
     if(programRunStop != PGM_RUNNING) {
       entryStatus |= 0x01;
@@ -1663,9 +1664,21 @@ typedef struct {
           done = true;
 
           screenUpdatingMode &= ~SCRUPD_SKIP_STACK_ONE_TIME;
+
+          //Accommodate 2-digit xx.xxYY, and change to xx.xx00YY
+          int16_t tmplen = stringByteLength(aimBuffer);
+          if(!(lastCenturyHighUsed & 0x8000) && !getSystemFlag(FLAG_YMD) && (
+               (tmplen == 8 && (isValidNumber(aimBuffer, "sdd.dddd")))                                //+11.1123
+            || (tmplen == 7 && (isValidNumber(aimBuffer, "sd.dddd")))                                 // +1.1123  +1.1120 
+             )) {
+            stringAppend(aimBuffer + stringByteLength(aimBuffer), aimBuffer + tmplen - 2);            // ==> +11.110023
+            aimBuffer[tmplen - 2] = '0';
+            aimBuffer[tmplen - 1] = '0';
+          }
+
           closeNim();
           if(calcMode != CM_NIM && lastErrorCode == 0) {
-            convertReal34RegisterToDateRegister(REGISTER_X, REGISTER_X);
+            convertReal34RegisterToDateRegister(REGISTER_X, REGISTER_X, YYSystem);
             checkDateRange(REGISTER_REAL34_DATA(REGISTER_X));
 
             if(lastErrorCode == 0) {

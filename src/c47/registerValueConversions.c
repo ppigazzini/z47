@@ -449,7 +449,7 @@ void convertDateRegisterToReal34Register(calcRegister_t source, calcRegister_t d
 
 
 
-void convertReal34RegisterToDateRegister(calcRegister_t source, calcRegister_t destination) {
+void convertReal34RegisterToDateRegister(calcRegister_t source, calcRegister_t destination, bool_t handleYY) {
   real34_t part1, part2, part3, val;
   bool_t isNegative;
 
@@ -474,6 +474,89 @@ void convertReal34RegisterToDateRegister(calcRegister_t source, calcRegister_t d
     }
   }
 
+
+  uint16_t lastCenturyHighUsedtmp;
+  if(handleYY) {
+    //get the actual active YYYY value, excluding the tracking flag
+    lastCenturyHighUsedtmp = lastCenturyHighUsed & 0x3FFF;
+
+    // remember last used century if the century is not an abbreviation, i.e. if YYYY > 100, ignore neg value YYYY
+    if(getSystemFlag(FLAG_YMD)) {
+      if(real34CompareGreaterEqual(&part1,const34_100)) {
+        lastCenturyHighUsedtmp = 100*(int16_t)(real34ToInt32(&part1) / 100) + 99;
+      }
+    }
+    else //FLAG_MDY //FLAG_DMY
+    if(real34CompareGreaterEqual(&part3,const34_100)) {
+      lastCenturyHighUsedtmp = 100*(int16_t)(real34ToInt32(&part3) / 100) + 99;
+    }
+
+
+
+    //No YYYY digits, i.e. no year given at all, so we use the current year.
+    if(!(lastCenturyHighUsed & 0x8000)) {
+      #if defined(DMCP_BUILD)
+        tm_t timeInfo;
+        dt_t dateInfo;
+        rtc_read(&timeInfo, &dateInfo);
+      #elif defined(PC_BUILD) // PC_BUILD
+        time_t epoch = time(NULL);
+        struct tm *timeInfo = localtime(&epoch);
+      #endif // PC_BUILD
+
+      if(getSystemFlag(FLAG_YMD)) {
+        if(real34IsZero(&part1)) {
+          #if defined(DMCP_BUILD)
+            uInt32ToReal34(dateInfo.year,&part1);
+          #elif defined(PC_BUILD) // PC_BUILD
+            uInt32ToReal34(timeInfo->tm_year + 1900,&part1);
+          #endif // PC_BUILD
+        }
+      }
+      //FLAG_MDY //FLAG_DMY
+      else if(real34IsZero(&part3)) {
+        #if defined(DMCP_BUILD)
+          uInt32ToReal34(dateInfo.year,&part3);
+        #elif defined(PC_BUILD) // PC_BUILD
+          uInt32ToReal34(timeInfo->tm_year + 1900,&part3);
+        #endif // PC_BUILD
+      }
+    }
+
+    
+
+    //Only YY digits
+    // thresholdYYHigh = 1950 :     Automatic, 2024 ==> 2000-2099. 29 ==> 2029, 59 ==> 2059
+    //                              1950-2049. 29 ==> 2029, 59 ==> 1959
+    //                              if yy > 49, then yy += 1900 else yy += 2000  
+    int16_t thresholdYYHigh = max(0, (int16_t)(lastCenturyHighUsed & 0x3FFF) - 99);
+    if(getSystemFlag(FLAG_YMD)) {
+      if(!(lastCenturyHighUsed & 0x8000) && real34CompareLessThan(&part1,const34_100)) {
+        int16_t yy = (int16_t)(real34ToInt32(&part1));
+        if(yy >= (thresholdYYHigh) % 100) {
+          yy += (thresholdYYHigh - thresholdYYHigh % 100);
+        }
+        else {
+          yy += (thresholdYYHigh - thresholdYYHigh % 100) + 100;
+        }
+        int32ToReal34((int32_t)yy,&part1);
+      }
+    }
+    //FLAG_MDY //FLAG_DMY
+    else if(!(lastCenturyHighUsed & 0x8000) && real34CompareLessThan(&part3,const34_100)) {
+      int16_t yy = (int16_t)(real34ToInt32(&part3));
+      if(yy >= (thresholdYYHigh) % 100) {
+        yy += (thresholdYYHigh - thresholdYYHigh % 100);
+      }
+      else {
+        yy += (thresholdYYHigh - thresholdYYHigh % 100) + 100;
+      }
+      int32ToReal34((int32_t)yy,&part3);
+    }
+  }
+
+
+
   if((getSystemFlag(FLAG_YMD) && !isValidDay(&part1, &part2, &part3)) ||
     ( getSystemFlag(FLAG_MDY) && !isValidDay(&part3, &part1, &part2)) ||
     ( getSystemFlag(FLAG_DMY) && !isValidDay(&part3, &part2, &part1))) {
@@ -482,6 +565,12 @@ void convertReal34RegisterToDateRegister(calcRegister_t source, calcRegister_t d
         moreInfoOnError("In function convertReal34RegisterToDateRegister:", "Invalid date input like 30 Feb.", NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return;
+  }
+
+
+  //update stored YYYY and add the control bits again
+  if(handleYY && !(lastCenturyHighUsed & 0x8000) && followYY()) {
+    lastCenturyHighUsed = (lastCenturyHighUsed & ~0x3FFF) | (lastCenturyHighUsedtmp & 0x3FFF);
   }
 
   reallocateRegister(destination, dtDate, REAL34_SIZE_IN_BLOCKS, amNone);
