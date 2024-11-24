@@ -57,16 +57,18 @@
 
 // This is used for the backup.cfg simulator backup file
 // The variable backupVersion is used in the connection
-#define BACKUP_VERSION                     1007     // Remove all PLSTAT flags incl. PLOT_PLUS...
+#define BACKUP_VERSION                     1008     // Add lastCenturyHighUsed
 /*
 1004     // Replace Norm_Key_00_VAR by the structure Norm_Key_00;
 1005     // 2024-09-06 Remove superfluous reporting when old cfg file items are not found in new files
- 1006    // 2024-11-07 Remove Aspect and add PLOT_PLUS
+1006     // 2024-11-07 Remove Aspect and add PLOT_PLUS
+1007     // Remove all PLSTAT flags incl. PLOT_PLUS...
+1008     // 2024-11018 Add lastCenturyHighUsed
 */
 
 
 // This is used for the state files
-#define configFileVersion                  10000015 // Remove all PLSTAT flags incl. PLOT_PLUS...
+#define configFileVersion                  10000016 // Add lastCenturyHighUsed
 #define VersionAllowed                     10000005 // This code will not autoload versions earlier than this
 /*
 10000001 // arbitrary starting point version 10 000 001
@@ -80,6 +82,8 @@
 10000012 // 5 flags converted from C43
 10000013 // Replace Norm_Key_00_VAR by the structure Norm_Key_00; Arbitrary starting point version 10 000 001 of STATE files. Allowable values are 10000000 to 20000000
 10000014 // 2024-11-07 configFileVersion                  10000014 // Remove Aspect and add PLOT_PLUS
+10000015 // 2024-11    configFileVersion                  10000015 // Remove all PLSTAT flags incl. PLOT_PLUS...
+10000016 // 2024-11-18 configFileVersion                  10000016 // Add lastCenturyHighUsed
 
 Current version defaults all non-loaded settings from previous version files correctly
 */
@@ -539,6 +543,7 @@ uint8_t output = parameter;
     saveStateValue(&gapItemLeft,                    sizeof(gapItemLeft),                                         "gapItemLeft",                    "uint16");  //JM
     saveStateValue(&gapItemRight,                   sizeof(gapItemRight),                                        "gapItemRight",                   "uint16");  //JM
     saveStateValue(&gapItemRadix,                   sizeof(gapItemRadix),                                        "gapItemRadix",                   "uint16");  //JM
+    saveStateValue(&lastCenturyHighUsed,            sizeof(lastCenturyHighUsed),                                 "lastCenturyHighUsed",            "uint16");  //JM
     saveStateValue(&grpGroupingLeft,                sizeof(grpGroupingLeft),                                     "grpGroupingLeft",                "uint8");   //JM
     saveStateValue(&grpGroupingGr1LeftOverflow,     sizeof(grpGroupingGr1LeftOverflow),                          "grpGroupingGr1LeftOverflow",     "uint8");   //JM
     saveStateValue(&grpGroupingGr1Left,             sizeof(grpGroupingGr1Left),                                  "grpGroupingGr1Left",             "uint8");   //JM
@@ -1115,6 +1120,7 @@ uint8_t output = parameter;
     restoreStateValue(&gapItemLeft,                    sizeof(gapItemLeft),                                         "gapItemLeft",                    "uint16");  //JM
     restoreStateValue(&gapItemRight,                   sizeof(gapItemRight),                                        "gapItemRight",                   "uint16");  //JM
     restoreStateValue(&gapItemRadix,                   sizeof(gapItemRadix),                                        "gapItemRadix",                   "uint16");  //JM
+    restoreStateValue(&lastCenturyHighUsed,            sizeof(lastCenturyHighUsed),                                 "lastCenturyHighUsed",            "uint16");  //JM
     restoreStateValue(&grpGroupingLeft,                sizeof(grpGroupingLeft),                                     "grpGroupingLeft",                "uint8");   //JM
     restoreStateValue(&grpGroupingGr1LeftOverflow,     sizeof(grpGroupingGr1LeftOverflow),                          "grpGroupingGr1LeftOverflow",     "uint8");   //JM
     restoreStateValue(&grpGroupingGr1Left,             sizeof(grpGroupingGr1Left),                                  "grpGroupingGr1Left",             "uint8");   //JM
@@ -1718,6 +1724,7 @@ void doSave(uint16_t saveType) {
         sprintf(tmpString, "gapItemLeft\n%"                PRIu16 "\n",     gapItemLeft);                  save(tmpString, strlen(tmpString));
         sprintf(tmpString, "gapItemRight\n%"               PRIu16 "\n",     gapItemRight);                 save(tmpString, strlen(tmpString));
         sprintf(tmpString, "gapItemRadix\n%"               PRIu16 "\n",     gapItemRadix);                 save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "lastCenturyHighUsed\n%"        PRIu16 "\n",     lastCenturyHighUsed);          save(tmpString, strlen(tmpString));
         sprintf(tmpString, "grpGroupingLeft\n%"            PRIu8  "\n",     grpGroupingLeft);              save(tmpString, strlen(tmpString));
         sprintf(tmpString, "grpGroupingGr1LeftOverflow\n%" PRIu8  "\n",     grpGroupingGr1LeftOverflow);   save(tmpString, strlen(tmpString));
         sprintf(tmpString, "grpGroupingGr1Left\n%"         PRIu8  "\n",     grpGroupingGr1Left);           save(tmpString, strlen(tmpString));
@@ -2849,6 +2856,7 @@ double stringToDouble(const char *str) {
           else if(strcmp2(aimBuffer, "gapItemLeft"                ) == 0) { gapItemLeft          = stringToUint16(tmpString); }            //This is to correct a bug in version 00000005-6, to be compatible to the old files
           else if(strcmp2(aimBuffer, "gapItemRight"               ) == 0) { gapItemRight         = stringToUint16(tmpString); }            //This is to correct a bug in version 00000005-6, to be compatible to the old files
           else if(strcmp2(aimBuffer, "gapItemRadix"               ) == 0) { gapItemRadix         = stringToUint16(tmpString); }            //This is to correct a bug in version 00000005-6, to be compatible to the old files
+          else if(strcmp2(aimBuffer, "lastCenturyHighUsed"        ) == 0) { lastCenturyHighUsed  = stringToUint16(tmpString); }            //This is to correct a bug in version 00000005-6, to be compatible to the old files
           else if(strcmp2(aimBuffer, "grpGroupingLeft"            ) == 0) { grpGroupingLeft      = stringToUint8(tmpString);  }            //This is to correct a bug in version 00000005-6, to be compatible to the old files
           else if(strcmp2(aimBuffer, "grpGroupingGr1LeftOverflow" ) == 0) { grpGroupingGr1LeftOverflow = stringToUint8(tmpString);  }      //This is to correct a bug in version 00000005-6, to be compatible to the old files
           else if(strcmp2(aimBuffer, "grpGroupingGr1Left"         ) == 0) { grpGroupingGr1Left   = stringToUint8(tmpString);  }            //This is to correct a bug in version 00000005-6, to be compatible to the old files

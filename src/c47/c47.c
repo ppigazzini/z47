@@ -135,6 +135,7 @@ char                   displayValueX[DISPLAY_VALUE_LEN];
 uint16_t               gapItemLeft;
 uint16_t               gapItemRight;
 uint16_t               gapItemRadix;
+uint16_t               lastCenturyHighUsed = 0;
 
 uint8_t                numScreensStandardFont;
 uint8_t                numScreensNumericFont;
@@ -172,6 +173,7 @@ uint8_t                temporaryInformation;
 uint8_t                rbrMode;
 uint8_t                timerCraAndDeciseconds = 128u;
 uint8_t                programRunStop;
+uint8_t                lastProgramRunStop;
 uint8_t                currentKeyCode;
 uint8_t                lastKeyCode;
 uint8_t                keyStateCode;

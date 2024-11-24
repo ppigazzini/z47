@@ -220,6 +220,7 @@
   extern uint16_t               gapItemLeft;
   extern uint16_t               gapItemRight;
   extern uint16_t               gapItemRadix;
+  extern uint16_t               lastCenturyHighUsed;
   extern uint8_t                numScreensStandardFont;
   extern uint8_t                numScreensNumericFont;
   extern uint8_t                numScreensTinyFont;
@@ -258,6 +259,7 @@
   extern uint8_t                rbrMode;
   extern uint8_t                timerCraAndDeciseconds;
   extern uint8_t                programRunStop;
+  extern uint8_t                lastProgramRunStop;
   extern uint8_t                currentKeyCode;
   extern uint8_t                lastKeyCode;
   extern uint8_t                keyStateCode;

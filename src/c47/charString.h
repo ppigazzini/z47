@@ -50,6 +50,7 @@ int16_t  stringNextGlyph  (const char *str, int16_t pos);
  ***********************************************/
 int16_t  stringPrevGlyph  (const char *str, int16_t pos);     //JM
 int16_t  stringPrevNumberGlyph(const char *str, int16_t pos);
+bool_t   isValidNumber(const char *ss, const char *template);
 
 /********************************************//**
  * \brief Returns a string length in byte
@@ -126,6 +127,7 @@ void     compressConversionName(char *msg1);
 void     stringToUtf8     (const char *str, uint8_t *utf8);
 void     utf8ToString     (const uint8_t *utf8, char *str);
 void     stringToASCII    (const char *str, char *ascii);
+void     stringToRTF    (const char *str, char *ascii);
 void stringToFileNameChars(const char *str, char *ascii);
 void    *xcopy            (void *dest, const void *source, int n);
   #if !defined(DMCP_BUILD)

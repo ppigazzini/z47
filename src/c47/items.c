@@ -302,13 +302,9 @@ bool_t itemNotAvail(int16_t itemNr) {
 
     }
 
-
     hourGlassIconEnabled = false;
     screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
-    if(programRunStop != PGM_RUNNING) {
-      showHideHourGlass();
-    }
-
+    showHideHourGlass();
 
     switch(func) {                              //functions to cause a graph redraw
       case ITM_DRAW:       //EQN Draw
@@ -943,6 +939,7 @@ bool_t itemNotAvail(int16_t itemNr) {
   void fnPyx                       (uint16_t unusedButMandatoryParameter) {}
   void fnDateToJulian              (uint16_t unusedButMandatoryParameter) {}
   void fnToDate                    (uint16_t unusedButMandatoryParameter) {}
+  void fnYYDflt                    (uint16_t unusedButMandatoryParameter) {}
   void fnDateTo                    (uint16_t unusedButMandatoryParameter) {}
   void fnXToDate                   (uint16_t unusedButMandatoryParameter) {}
   void fnYear                      (uint16_t unusedButMandatoryParameter) {}
@@ -3108,7 +3105,7 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 1641 */  { fnGeometricMeanXY,            NOPARAM,                     STD_x_BAR STD_SUB_G,                           STD_x_BAR STD_SUB_G,                           (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /* 1642 */  { fnWeightedMeanX,              NOPARAM,                     STD_x_BAR STD_SUB_w,                           STD_x_BAR STD_SUB_w,                           (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /* 1643 */  { fnXIsFny,                     NOPARAM,                     STD_x_CIRC,                                    STD_x_CIRC,                                    (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
-/* 1644 */  { fnXToDate,                    NOPARAM,                     "x" STD_RIGHT_ARROW DT,                        "x" STD_RIGHT_ARROW DT,                     (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
+/* 1644 */  { fnXToDate,                    NOPARAM,                     "x" STD_RIGHT_ARROW DT,                        "x" STD_RIGHT_ARROW DT,                        (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /* 1645 */  { fnXToAlpha,                   NOPARAM,                     "x" STD_RIGHT_ARROW STD_alpha,                 "x" STD_RIGHT_ARROW STD_alpha,                 (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /* 1646 */  { fnQrDecomposition,            NOPARAM,                     "M.QR",                                        "M.QR",                                        (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /* 1647 */  { fnYear,                       NOPARAM,                     "YEAR",                                        "YEAR",                                        (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
@@ -3390,7 +3387,7 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 1916 */  { fnKeysManagement,             USER_DM42,                   "DM42",                                        "DM42",                                        (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },//J=V43
 /* 1917 */  { SetSetting,                   FLAG_HPRP,                   "RP" STD_SUB_H STD_SUB_P,                      "RP" STD_SUB_H STD_SUB_P,                      (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 1918 */  { fnSigmaAssign,                16384+KEY_fg,                "",                                            STD_RIGHT_DASHARROW STD_SPACE_4_PER_EM "f/g",  (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
-/* 1919 */  { itemToBeCoded,                NOPARAM,                     "1919",                                        "1919",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 1919 */  { fnYYDflt,                     YY_OFF,                      "YYoff",                                       "YYoff",                                       (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_NONE         },
 /* 1920 */  { itemToBeCoded,                NOPARAM,                     STD_BOX STD_SIGMA "+KEY",                      STD_BOX STD_SIGMA "+KEY",                      (0 << TAM_MAX_BITS) |     0, CAT_MENU | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 1921 */  { itemToBeCoded,                NOPARAM,                     "HOME" STD_SPACE_HAIR,                         "HOME" STD_SPACE_HAIR,                         (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },//JM HOME
 /* 1922 */  { itemToBeCoded,                NOPARAM,                     "ALPHA",                                       "ALPHA",                                       (0 << TAM_MAX_BITS) |     0, CAT_MENU | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },//JM ALPHA
@@ -3707,9 +3704,10 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 2233 */  { itemToBeCoded,                NOPARAM,                     "LAYOUTS",                                     "LAYOUTS",                                     (0 << TAM_MAX_BITS) |     0, CAT_MENU | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2234 */  { itemToBeCoded,                NOPARAM,                     "RESETS",                                      "RESETS",                                      (0 << TAM_MAX_BITS) |     0, CAT_MENU | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2235 */  { itemToBeCoded,                NOPARAM,                     "RIBBONS",                                     "RIBBONS",                                     (0 << TAM_MAX_BITS) |     0, CAT_MENU | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
-/* 2236 */  { itemToBeCoded,                NOPARAM,                     "2236",                                        "2236",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
-/* 2237 */  { itemToBeCoded,                NOPARAM,                     "2237",                                        "2237",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
-/* 2238 */  { itemToBeCoded,                NOPARAM,                     "2238",                                        "2238",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+
+/* 2236 */  { fnYYDflt,                     TM_VALUE_TRK,                "YY",                                          "YY",                                          (0 << TAM_MAX_BITS) |  9999, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NUMBER_16    },
+/* 2237 */  { fnYYDflt,                     YY_TRACKING,                 "YYtrack",                                     "YYtrack",                                     (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_NONE         },
+/* 2238 */  { itemToBeCoded,                NOPARAM,                     "",                                            "TamNoRegTrk",                                 (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_NONE         },
 /* 2239 */  { fnClearUserMenus,             NOT_CONFIRMED,               "CLMall",                                      "CLMall",                                      (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABL_XEQ | EIM_DISABLED | PTP_NONE         },
 /* 2240 */  { fnClearAllVariables,          NOT_CONFIRMED,               "CLVall",                                      "CLVall",                                      (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABL_XEQ | EIM_DISABLED | PTP_NONE         },
 /* 2241 */  { fnDeleteUserMenus,            NOT_CONFIRMED,               "DELMall",                                     "DELMall",                                     (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABL_XEQ | EIM_DISABLED | PTP_NONE         },

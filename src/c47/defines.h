@@ -11,19 +11,7 @@
 // JM VARIOUS OPTIONS
 //*********************************
 
-#define VERSION1 "0.109.02.06b5"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
-
-//Version history
-//0.109.02.00
-//0.109.02.01
-//0.109.02.02 this version.02 was tagged in GitLab as .03
-//0.109.02.03 this version skipped due to confusion.
-//0.109.02.04
-//0.109.02.05
-//0.109.02.05B for bugfixes
-//0.109.02.06B2 for bugfixes
-//0.109.02.06B4 for bugfixes and sim key improvemts
-
+#define VERSION1 "0.109.02.06b9"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
 
 
 #if !defined(CALCMODEL)
@@ -60,10 +48,15 @@
 
   #define TWO_FILE_PGM                 //Normally TWO_FILE. TWO_FILE means that QSPI is used.
 
+  #define HWM_DM42        1
+  #define HWM_DM32        2
+  #define HWM_DM42n       3
+  #define HARDWARE_MODEL HWM_DM42
+
   #if defined(NEW_HW) // DMCP5
     #undef TWO_FILE_PGM
-    //#define HARDWARE_MODEL DM32
-    #define HARDWARE_MODEL DM42n
+    #undef HARDWARE_MODEL
+    #define HARDWARE_MODEL HWM_DM42n
   #endif // NEW_HW
 
 //ONE FILE OPERATION needs the original CRC file - see src/c47-dmcp
@@ -779,6 +772,12 @@ typedef enum {
 #define INC_FLAG                                   0
 #define DEC_FLAG                                   1
 
+
+//Export type
+#define MODE_RTF 1
+#define MODE_TXT 0
+
+
 // List of constants
 #define FIRST_CONSTANT                        CST_01
 #define LAST_CONSTANT                         CST_84
@@ -1313,8 +1312,9 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define TM_INTEGRATE                           10013
 #define TM_DELITM                              10014
 #define TM_VALUE_MAX                           10015
-#define TM_MENU                                10016
-#define TM_CMP                                 10017 // TM_CMP must be the last in this list
+#define TM_VALUE_TRK                           10016
+#define TM_MENU                                10017
+#define TM_CMP                                 10018 // TM_CMP must be the last in this list
 
 // NIM number part
 #define NP_EMPTY                                   0
@@ -1599,6 +1599,8 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define MAX_NUMBER_OF_GLYPHS_IN_STRING           508 //WP=196: Change to 512 less 3, Also change error message 33, and AIM_BUFFER_LENGTH, and MAXLINES
 #define NUMBER_OF_GLYPH_ROWS                     261  //Used in the font browser application
 
+#define YY_OFF                                     2 // 2 is off and gets transferred to bit 15 (32768 + YY)
+#define YY_TRACKING                                1 // 1 gets transferred to bit 14 (16384 + YY)
 #define MAX_DENMAX                              9999 // Biggest denominator in fraction display mode selector, and annunciator.
                                                      // The value 0 gets converted to MAX_INTERNAL_DENMAX
 #define MAX_INTERNAL_DENMAX                    32500 // Biggest denominator in fraction display mode

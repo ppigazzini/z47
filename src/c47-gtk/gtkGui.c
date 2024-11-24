@@ -732,7 +732,7 @@ returnKeyReleasedFalse:
     //(event->keyval == GDK_KEY_at) ? "+@" : (event->keyval == GDK_KEY_numbersign) ? "+#" : (event->keyval == GDK_KEY_bar) ? "+|" : "",
     //(uint16_t)event->keyval, (uint16_t)event->state, (uint16_t)event_key_strip_capslock);
 
-    if(C47SpecialKey_Ctrl_Pressed) goto returnKeyPressedFalse;
+    if(C47SpecialKey_Ctrl_Pressed) goto continueWithOldDetections;
 
     if(C47SpecialKey_AltGr_Pressed) { //clear any valid or invalid prior control key activation
       SHIFT_State = 0;
