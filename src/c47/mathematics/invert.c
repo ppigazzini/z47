@@ -91,10 +91,16 @@ void invertLonI(void) {
   convertLongIntegerRegisterToLongInteger(REGISTER_X, a);
 
   if(longIntegerIsZero(a)) {
-    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-      moreInfoOnError("In function invertLonI:", "cannot divide a long integer by 0", NULL, NULL);
-    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+      if(getSystemFlag(FLAG_SPCRES)) {
+        reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+        convertRealToReal34ResultRegister(const_plusInfinity, REGISTER_X);
+      }
+      else {
+      displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        moreInfoOnError("In function invertLonI:", "cannot divide a long integer by 0", NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+    }
   }
   else {
     longInteger_t quotient, remainder, one;
