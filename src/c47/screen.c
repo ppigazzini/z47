@@ -1712,13 +1712,13 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
       printf("#%i",mode == force);
     #endif //ANALYSE_REFRESH
  
-    if(mode != timed || getSystemFlag(FLAG_MONIT)) {
+    if(mode == force || getSystemFlag(FLAG_MONIT)) {
       #if defined(ANALYSE_REFRESH) && defined(PC_BUILD)
         printf("+");
       #endif //ANALYSE_REFRESH
 
       uint16_t now = (uint16_t)(getUptimeMs() >> 4); 
-      if(mode != timed || ((now >> 6) & 0x0001) == halfSecTick1) {  //Restrict refresh to once per second. Use this minimally, due to extreme slow response.
+      if(mode == force || ((now >> 6) & 0x0001) == halfSecTick1) {  //Restrict refresh to once per second. Use this minimally, due to extreme slow response.
         #if defined(ANALYSE_REFRESH) && defined(PC_BUILD)
           printf("-\n");
         #endif //ANALYSE_REFRESH
@@ -4685,6 +4685,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
           printf("   >>> lcd_fill_rect SCRUPD_MANUAL_STATUSBAR\n");
         #endif // PC_BUILD &&MONITOR_CLRSCR
         lcd_fill_rect(0, 0, (GRAPHMODE ? SCREEN_WIDTH / 3 : SCREEN_WIDTH), Y_POSITION_OF_REGISTER_T_LINE, LCD_SET_VALUE);
+        lastProgramRunStop = 255;
       }
       if(!(screenUpdatingMode & (SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME))) {
         #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
