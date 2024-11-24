@@ -1895,7 +1895,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 
 #define IS_BASEBLANK_(menuId)                (menuId==0 && !BASE_MYM && !BASE_HOME)
 
-#define clearScreen()                        do { lcd_fill_rect(0, 0, SCREEN_WIDTH, 240, LCD_SET_VALUE); clear_ul(); } while(0)
+#define clearScreen()                        do { lcd_fill_rect(0, 0, SCREEN_WIDTH, 240, LCD_SET_VALUE); clear_ul(); lastProgramRunStop = 255;} while(0)
 #define currentReturnProgramNumber           (currentSubroutineLevelData[0].returnProgramNumber)
 #define currentReturnLocalStep               (currentSubroutineLevelData[0].returnLocalStep)
 #define currentNumberOfLocalFlags            (currentSubroutineLevelData[1].numberOfLocalFlags)
