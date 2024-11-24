@@ -453,7 +453,7 @@ void showFracMode(void) {
       }
       default: {
         if(hourGlassIconEnabled) {
-          if(lastProgramRunStop == PGM_RUNNING && lastProgramRunStop == PGM_WAITING) {
+          if(lastProgramRunStop == PGM_RUNNING || lastProgramRunStop == PGM_WAITING) {
             lcd_fill_rect((GRAPHMODE ? X_HOURGLASS_GRAPHS : X_HOURGLASS) - 1, 0, indicatorWidth, 20, LCD_SET_VALUE);
           }
           showGlyph(STD_HOURGLASS, &standardFont, GRAPHMODE ? X_HOURGLASS_GRAPHS : X_HOURGLASS, 0, vmNormal, true, false, false); // is 0+11+3 pixel wide //Shift the hourglass to a visible part of the status bar
@@ -463,8 +463,11 @@ void showFracMode(void) {
         }
       }
     }
+    force_refresh((lastProgramRunStop != programRunStop) ? force : timed);
+    #if defined (PC_BUILD)
+      if(lastProgramRunStop != programRunStop) printf("###### force_refresh(force) active: lastProgramRunStop != programRunStop:%i ########\n",lastProgramRunStop != programRunStop);
+    #endif //PC_BUILD
     lastProgramRunStop = programRunStop;
-    force_refresh(force);
   }
 
 
