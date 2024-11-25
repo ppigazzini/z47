@@ -464,9 +464,9 @@ void showFracMode(void) {
       }
     }
     force_refresh((lastProgramRunStop != programRunStop) ? force : timed);
-    #if defined (PC_BUILD)
-      if(lastProgramRunStop != programRunStop) printf("###### force_refresh(force) active: lastProgramRunStop != programRunStop:%i ########\n",lastProgramRunStop != programRunStop);
-    #endif //PC_BUILD
+    //#if defined (PC_BUILD)
+    //  if(lastProgramRunStop != programRunStop) printf("###### force_refresh(force) active: lastProgramRunStop != programRunStop:%i ########\n",lastProgramRunStop != programRunStop);
+    //#endif //PC_BUILD
     lastProgramRunStop = programRunStop;
   }
 

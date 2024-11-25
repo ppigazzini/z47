@@ -791,7 +791,7 @@ static void decodeRem(uint8_t *literalAddress) {
 
 
 
-static void _decodeOneStep(uint8_t *step, bool_t textVersion) {
+static void _decodeOneStep(uint8_t *step, uint16_t textVersion) {
   uint16_t op = *(step++);
   if(op & 0x80) {
     op &= 0x7f;
@@ -815,7 +815,9 @@ static void _decodeOneStep(uint8_t *step, bool_t textVersion) {
           strcat(nameOp,indexOfItems[op].itemSoftmenuName);
         }
         else {
-          getXeqmText(op, nameOp);
+          if(textVersion == MODE_TXT) {
+            getXeqmText(op, nameOp);
+          }
         }
         if(op == ITM_op_j) sprintf(nameOp,"op_%s", COMPLEX_UNIT);
         else if(op == ITM_op_j_pol) sprintf(nameOp,"op_%s" STD_SUB_SUN, COMPLEX_UNIT);
@@ -861,9 +863,13 @@ static void _decodeOneStep(uint8_t *step, bool_t textVersion) {
 }
 
 void decodeOneStep(uint8_t *step) {
+  _decodeOneStep(step, MODE_NRM);
+}
+
+void decodeOneStep_XPORT(uint8_t *step) {
   _decodeOneStep(step, MODE_RTF);
 }
 
-void decodeOneStepXEQM(uint8_t *step) {
+void decodeOneStepXEQM_XPORT(uint8_t *step) {
   _decodeOneStep(step, MODE_TXT);
 }
