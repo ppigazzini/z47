@@ -631,7 +631,7 @@ In:  FL_ASLIFT=0 RY=Real:"-99" RX=LonI:"0"
 Out: EC=0 FL_ASLIFT=1 RL=LonI:"0" RX=Real:"-inf"
 
 In:  FL_ASLIFT=0 RY=LonI:"-99" RX=LonI:"0"
-Out: EC=0 FL_ASLIFT=1 RX=Real:"inf"
+Out: EC=0 FL_ASLIFT=1 RX=Real:"-inf"
 
 In:  FL_ASLIFT=0 RY=Real:"inf" RX=Real:"inf"
 Out: EC=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"NaN"
@@ -655,7 +655,7 @@ In:  FL_ASLIFT=0 RY=Real:"0" RX=LonI:"0"
 Out: EC=0 FL_ASLIFT=1 RL=LonI:"0" RX=Real:"NaN"
 
 In:  FL_ASLIFT=0 RY=LonI:"0" RX=LonI:"0"
-Out: EC=0 FL_ASLIFT=1 RX=Real:"inf"
+Out: EC=0 FL_ASLIFT=1 RX=Real:"NaN"
 
 Func: fnXthRoot                     ;; F I =109=CPXRES=0    F D =104=DANGER=SPCRES=1
 In:  FL_ASLIFT=0 RY=Real:"0" RX=Real:"-501"   ;1
@@ -1589,7 +1589,7 @@ Out: EC=1 FL_ASLIFT=0
 
 Func: fnXthRoot                     ;; F I =109=CPXRES=0    F D =104=DANGER=SPCRES=0
 In:  FL_ASLIFT=0 RY=Real:"-inf" RX=Real:"-inf"
-Out: EC=1 FL_ASLIFT=0 RL=Real:"-inf" RX=Real:"-inf"
+Out: EC=1 FL_ASLIFT=0 RX=Real:"-inf"
 
 In:  FL_ASLIFT=0 RY=Real:"0" RX=Real:"0"
 Out: EC=1 FL_ASLIFT=0 RX=Real:"0"
