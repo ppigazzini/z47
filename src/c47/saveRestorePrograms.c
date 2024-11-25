@@ -221,7 +221,7 @@ void fnPExport(uint16_t mode) {
       sprintf(tmpString, "0000: { Prgm #%d: %" PRIu32 " bytes / %" PRIu16 " step%s }", currentProgramNumber, _getProgramSize(),                                                                               numberOfSteps, numberOfSteps == 1 ? "" : "s");
       if(mode == MODE_RTF) {
         stringAppend(tmpString + stringByteLength(tmpString), " \\par");
-      }      
+      }
       stringAppend(tmpString + stringByteLength(tmpString), "\n");
       ioFileWrite(tmpString, strlen(tmpString));
       firstLine = 1;
@@ -297,7 +297,7 @@ void fnPExport(uint16_t mode) {
       stringAppend(asciiString + stringByteLength(asciiString), tmpString);        //add number + instruction: 0000:  1/X
 
 
-      //Add end line 
+      //Add end line
       if(mode == MODE_RTF) {
         stringAppend(asciiString + stringByteLength(asciiString), "\\par\n");
       } else {
@@ -619,6 +619,8 @@ void fnLoadProgram(uint16_t unusedButMandatoryParameter) {
     *(firstFreeProgramByte    ) = 0xffu;
     *(firstFreeProgramByte + 1) = 0xffu;
     scanLabelsAndPrograms();
+
+    goToGlobalStep(programList[numberOfPrograms - 1].step);   // Set active program to the loaded program and display the first step
 
     ioFileClose();
 
