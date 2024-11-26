@@ -40,12 +40,12 @@
   void fnPoissonL                (uint16_t unusedButMandatoryParameter){}
   void fnPoissonR                (uint16_t unusedButMandatoryParameter){}
   void fnPoissonI                (uint16_t unusedButMandatoryParameter){}
-  void WP34S_normal_moment_approx(const real_t *prob, const real_t *var, const real_t *mean, real_t *res, realContext_t *realContext){}
-  void WP34S_Pdf_Poisson         (const real_t *x, const real_t *lambda, real_t *res, realContext_t *realContext){}
-  void WP34S_Cdfu_Poisson        (const real_t *x, const real_t *lambda, real_t *res, realContext_t *realContext){}
-  void WP34S_Cdf_Poisson         (const real_t *x, const real_t *lambda, real_t *res, realContext_t *realContext){}
-  void WP34S_Cdf_Poisson2        (const real_t *x, const real_t *lambda, real_t *res, realContext_t *realContext){}
-  void WP34S_Qf_Poisson          (const real_t *x, const real_t *lambda, real_t *res, realContext_t *realContext){}
+  //void WP34S_normal_moment_approx(const real_t *prob, const real_t *var, const real_t *mean, real_t *res, realContext_t *realContext){}
+  //void WP34S_Pdf_Poisson         (const real_t *x, const real_t *lambda, real_t *res, realContext_t *realContext){}
+  //void WP34S_Cdfu_Poisson        (const real_t *x, const real_t *lambda, real_t *res, realContext_t *realContext){}
+  //void WP34S_Cdf_Poisson         (const real_t *x, const real_t *lambda, real_t *res, realContext_t *realContext){}
+  //void WP34S_Cdf_Poisson2        (const real_t *x, const real_t *lambda, real_t *res, realContext_t *realContext){}
+  //void WP34S_Qf_Poisson          (const real_t *x, const real_t *lambda, real_t *res, realContext_t *realContext){}
 
 #else
   static bool_t checkParamPoisson(real_t *x, real_t *i) {
