@@ -207,31 +207,13 @@ bool_t itemNotAvail(int16_t itemNr) {
       DRG_Cycling = 0;  //JM
     }
 
-
     if((indexOfItems[func].status & US_STATUS) == US_ENABLED || (indexOfItems[func].status & US_STATUS) == US_ENABL_XEQ) {
-      if((programRunStop != PGM_RUNNING || getSystemFlag(FLAG_IGN1ER))  && calcMode != CM_GRAPH && calcMode != CM_NO_UNDO && !getSystemFlag(FLAG_SOLVING)
-           && !getSystemFlag(FLAG_INTING)
-
-//Undo works correctly if this is removed.
-//        && !(currentSolverStatus & SOLVER_STATUS_USES_FORMULA)
-
-           ) {
+      if((programRunStop != PGM_RUNNING || getSystemFlag(FLAG_IGN1ER))  && calcMode != CM_GRAPH && calcMode != CM_NO_UNDO && !getSystemFlag(FLAG_SOLVING) && !getSystemFlag(FLAG_INTING)) {
         #if defined(DEBUGUNDO)
           printf(">>> saveForUndo from reallyRunFunction: %i, %s, calcMode = %i ",func, indexOfItems[func].itemCatalogName, calcMode);
         #endif // DEBUGUNDO
         saveForUndo();
       }
-
-//check when saveforUndo is not called
-else {
-printf("saveForUndo not executed due to these items that are 0: %i %i %i %i %i \n", 
-(programRunStop != PGM_RUNNING || getSystemFlag(FLAG_IGN1ER)),
-calcMode != CM_NO_UNDO,
-!getSystemFlag(FLAG_SOLVING),
- !getSystemFlag(FLAG_INTING),
- !(currentSolverStatus & SOLVER_STATUS_USES_FORMULA)
- );
-}
 
       if(lastErrorCode == ERROR_RAM_FULL) {
         if((indexOfItems[func].status & US_STATUS) == US_ENABLED || calcMode == CM_CONFIRMATION) {
