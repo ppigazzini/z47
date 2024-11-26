@@ -1787,6 +1787,7 @@ void WP34S_InverseComplexW(const real_t *xReal, const real_t *xImag, real_t *res
 
 // Orthogonal Polynomials, common function
 void WP34S_OrthoPoly(uint16_t kind, const real_t *rX, const real_t *rN, const real_t *rParam, real_t *res, realContext_t *realContext) {
+#if !defined(SAVE_SPACE_DM42_12ORTHO)
   real_t a, b, c, d, i;
   real_t rT0, rT1, incB;
   real_t p, q;
@@ -1900,4 +1901,5 @@ void WP34S_OrthoPoly(uint16_t kind, const real_t *rX, const real_t *rN, const re
     realAdd(&i, const_1, &i, realContext);
   }
   realCopy(&rT1, res);
+#endif //!defined(SAVE_SPACE_DM42_12ORTHO)
 }

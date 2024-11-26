@@ -42,11 +42,11 @@
   void fnGeometricL           (uint16_t unusedButMandatoryParameter){}
   void fnGeometricR           (uint16_t unusedButMandatoryParameter){}
   void fnGeometricI           (uint16_t unusedButMandatoryParameter){}
-  void WP34S_Pdf_Geom         (const real_t *x, const real_t *p0, real_t *res, realContext_t *realContext){}
-  void WP34S_Cdfu_Geom        (const real_t *x, const real_t *p0, real_t *res, realContext_t *realContext){}
-  void WP34S_Cdf_Geom         (const real_t *x, const real_t *p0, real_t *res, realContext_t *realContext){}
-  void WP34S_Qf_Geom          (const real_t *x, const real_t *p0, real_t *res, realContext_t *realContext){}
-  void WP34S_qf_discrete_final(uint16_t dist, const real_t *r, const real_t *p, const real_t *i, const real_t *j, const real_t *k, real_t *res, realContext_t *realContext){}
+  //void WP34S_Pdf_Geom         (const real_t *x, const real_t *p0, real_t *res, realContext_t *realContext){}
+  //void WP34S_Cdfu_Geom        (const real_t *x, const real_t *p0, real_t *res, realContext_t *realContext){}
+  //void WP34S_Cdf_Geom         (const real_t *x, const real_t *p0, real_t *res, realContext_t *realContext){}
+  //void WP34S_Qf_Geom          (const real_t *x, const real_t *p0, real_t *res, realContext_t *realContext){}
+  //void WP34S_qf_discrete_final(uint16_t dist, const real_t *r, const real_t *p, const real_t *i, const real_t *j, const real_t *k, real_t *res, realContext_t *realContext){}
 
 #else
   static bool_t checkParamGeometric(real_t *x, real_t *i) {

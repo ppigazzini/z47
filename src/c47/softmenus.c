@@ -2316,6 +2316,7 @@ bool_t savedspace(int16_t itemNr) {  //strike out all SAVED_SPACE items
   switch (itemNr) {
 
     #ifdef SAVE_SPACE_DM42_12ORTHO
+      case -MNU_ORTHOG:
       case ITM_HN     :
       case ITM_Lm     :
       case ITM_LmALPHA:
@@ -2335,11 +2336,14 @@ bool_t savedspace(int16_t itemNr) {  //strike out all SAVED_SPACE items
     #endif //SAVE_SPACE_DM42_12BESSEL
 
     #ifdef SAVE_SPACE_DM42_16
+      case -MNU_NORML :
       case ITM_NORMLP :      case ITM_NORML  :      case ITM_NORMLU :      case ITM_NORMLM1:
       case ITM_LGNRMP :      case ITM_LGNRM  :      case ITM_LGNRMU :      case ITM_LGNRMM1:
     #endif //SAVE_SPACE_DM42_16
 
     #ifdef SAVE_SPACE_DM42_17
+      case -MNU_F: case -MNU_BINOM: case -MNU_HYPER: case -MNU_POISS: case -MNU_GEOM:
+      case ITM_FPX   :     case ITM_FX   :      case ITM_FUX   :     case ITM_FM1P: 
       case ITM_BINOMP:     case ITM_BINOM:      case ITM_BINOMU:     case ITM_BINOMM1:
       case ITM_NBINP :     case ITM_NBIN :      case ITM_NBINU :     case ITM_NBINM1 :
       case ITM_HYPERP:     case ITM_HYPER:      case ITM_HYPERU:     case ITM_HYPERM1:
@@ -2370,7 +2374,7 @@ void fnStrikeOutIfNotCoded(int16_t itemNr, int16_t x, int16_t y) {
       }
       m++;
     }
-    if(softmenu[m].numItems == 0 && m >= NUMBER_OF_DYNAMIC_SOFTMENUS) {
+    if((softmenu[m].numItems == 0 || savedspace(itemNr)) && m >= NUMBER_OF_DYNAMIC_SOFTMENUS) {
       strike = -1;
     }
   }
