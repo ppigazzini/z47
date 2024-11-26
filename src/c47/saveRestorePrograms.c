@@ -243,10 +243,10 @@ void fnPExport(uint16_t mode) {
 
       //Decode
       if(mode == MODE_RTF) {
-        decodeOneStep(step);
+        decodeOneStep_XPORT(step);
         //printf("§§=%s",tmpString);
       } else {
-        decodeOneStepXEQM(step);
+        decodeOneStepXEQM_XPORT(step);
       }
 
 
