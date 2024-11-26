@@ -208,12 +208,13 @@ bool_t itemNotAvail(int16_t itemNr) {
     }
 
     if((indexOfItems[func].status & US_STATUS) == US_ENABLED || (indexOfItems[func].status & US_STATUS) == US_ENABL_XEQ) {
-      if((programRunStop != PGM_RUNNING || getSystemFlag(FLAG_IGN1ER))  && calcMode != CM_NO_UNDO && !getSystemFlag(FLAG_SOLVING) && !getSystemFlag(FLAG_INTING) && !(currentSolverStatus & SOLVER_STATUS_USES_FORMULA)) {
+      if((programRunStop != PGM_RUNNING || getSystemFlag(FLAG_IGN1ER))  && calcMode != CM_GRAPH && calcMode != CM_NO_UNDO && !getSystemFlag(FLAG_SOLVING) && !getSystemFlag(FLAG_INTING)) {
         #if defined(DEBUGUNDO)
           printf(">>> saveForUndo from reallyRunFunction: %i, %s, calcMode = %i ",func, indexOfItems[func].itemCatalogName, calcMode);
         #endif // DEBUGUNDO
         saveForUndo();
       }
+
       if(lastErrorCode == ERROR_RAM_FULL) {
         if((indexOfItems[func].status & US_STATUS) == US_ENABLED || calcMode == CM_CONFIRMATION) {
           displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
