@@ -4683,7 +4683,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
           printf("   >>> lcd_fill_rect SCRUPD_MANUAL_STATUSBAR\n");
         #endif // PC_BUILD &&MONITOR_CLRSCR
         lcd_fill_rect(0, 0, (GRAPHMODE ? SCREEN_WIDTH / 3 : SCREEN_WIDTH), Y_POSITION_OF_REGISTER_T_LINE, LCD_SET_VALUE);
-        lastProgramRunStop = 255;
+        lastProgramRunStop = PGM_UNDEFINED;
       }
       if(!(screenUpdatingMode & (SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME))) {
         #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)

@@ -3656,7 +3656,7 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
                     }                                                                              //JM
                     leaveAsmMode();
                     popSoftmenu();
-                    if(tam.mode) {
+                    if(tam.mode ) {
                         numberOfTamMenusToPop--;
                     }
                 }
