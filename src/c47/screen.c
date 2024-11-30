@@ -1624,42 +1624,25 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
       printf("#%i",mode == force);
     #endif //ANALYSE_REFRESH
  
-    if(mode == force || getSystemFlag(FLAG_MONIT)) {
+    uint16_t now = (uint16_t)(getUptimeMs() >> 4);           // ms/16
+    bool_t itIsTime = ((now >> 6) & 0x0001) == secTick1; // ms/1024, that is every second, flips secTick1
+    if(itIsTime) {
+      secTick1 = !secTick1;
+    }
+
+    if((mode == force || itIsTime) && getSystemFlag(FLAG_MONIT)) {  //Restrict refresh to once per period. Use this minimally, due to extreme slow response.
       #if defined(ANALYSE_REFRESH) && defined(PC_BUILD)
-        printf("+");
+        printf("-\n");
       #endif //ANALYSE_REFRESH
 
-      uint16_t now = (uint16_t)(getUptimeMs() >> 4); 
-      if(mode == force || ((now >> 6) & 0x0001) == halfSecTick1) {  //Restrict refresh to once per second. Use this minimally, due to extreme slow response.
-        #if defined(ANALYSE_REFRESH) && defined(PC_BUILD)
-          printf("-\n");
-        #endif //ANALYSE_REFRESH
-        halfSecTick1 = !halfSecTick1;
-
-        #if defined(PC_BUILD)
-          gtk_widget_queue_draw(screen);
-          #if defined(FULLUPDATE) // (UGLY)
-            refresh_gui();
-          #endif // FULLUPDATE (UGLY)
-        #endif // PC_BUILD
-
-        #if defined(DMCP_BUILD)
-          lcd_forced_refresh();
-        #endif // DMCP_BUILD
-      }
-
-      else {
-        #if defined(ANALYSE_REFRESH) && defined(PC_BUILD)
-          printf("=%i %i\n", now, ((now >> 6) & 0x0001));
-        #endif //ANALYSE_REFRESH
-      }
+      _lcdRefresh();
     }
+
     else {
       #if defined(ANALYSE_REFRESH) && defined(PC_BUILD)
-        printf(".\n");
+        printf("not updated =%i %i\n", now, itIsTime);
       #endif //ANALYSE_REFRESH
-      return;
-    }
+    }      
   }
 
   static bool_t _printHalfSecUpdate_Integer(uint8_t mode, char *txt, int32_t loop, bool_t clearZ, bool_t clearT, bool_t disp) {
@@ -1685,16 +1668,8 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
         showString(tmps, &standardFont, 20, /*145-7*/ Y_POSITION_OF_REGISTER_T_LINE + mode * 20, vmNormal, false, false);  //note: displays info 1 line down, if "force" parameter is set
       }
 
-      #if defined(PC_BUILD)
-        gtk_widget_queue_draw(screen);
-        #if defined(FULLUPDATE) // (UGLY)
-          refresh_gui();
-        #endif // FULLUPDATE (UGLY)
-      #endif // PC_BUILD
+      _lcdRefresh();
 
-      #if defined(DMCP_BUILD)
-        lcd_forced_refresh();
-      #endif // DMCP_BUILD
     }
     return ret_value;
   }

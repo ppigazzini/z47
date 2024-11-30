@@ -1532,7 +1532,7 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     fnKeyInCatalog = false;
     shiftF = false;
     shiftG = false;
-    halfSecTick1 = false;
+    secTick1 = false;
     halfSecTick2 = false;
     halfSecTick3 = false;
     skippedStackLines = false;
