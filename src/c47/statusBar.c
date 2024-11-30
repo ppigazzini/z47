@@ -464,7 +464,7 @@ void showFracMode(void) {
       }
     }
     uint8_t tmpb = (programRunStop & PGM_DEFINED_MASK) | (hourGlassIconEnabled ? !PGM_DEFINED_MASK : 0); //force undefined bit, which forces the hourglass/P indicator update
-    force_refresh((lastProgramRunStop != tmpb) ? force : timed);
+    force_refresh((lastProgramRunStop != tmpb || lastProgramRunStop == PGM_UNDEFINED) ? force : timed);
     //#if defined (PC_BUILD)
     //  if(lastProgramRunStop != programRunStop) printf("###### force_refresh(force) active: lastProgramRunStop != programRunStop:%i ########\n",lastProgramRunStop != programRunStop);
     //#endif //PC_BUILD

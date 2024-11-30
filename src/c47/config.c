@@ -1769,7 +1769,7 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
 
   void dmcpResetAutoOff(void) {
     // Key is ready -> clear auto off timer
-    if(!key_empty() || !getSystemFlag(FLAG_AUTOFF) || getSystemFlag(FLAG_RUNTIM) || programRunStop == PGM_RUNNING || (nextTimerRefresh != 0)) {
+    if(!key_empty() || !emptyKeyBuffer() || ((calcMode == CM_TIMER) && timerStartTime != TIMER_APP_STOPPED) || !getSystemFlag(FLAG_AUTOFF) || getSystemFlag(FLAG_RUNTIM) || programRunStop == PGM_RUNNING || (nextTimerRefresh != 0)) {
       reset_auto_off();
     }
   }
