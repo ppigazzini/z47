@@ -11,6 +11,7 @@
 #include "fonts.h"
 #include "items.h"
 #include "hal/gui.h"
+#include "hal/lcd.h"
 #include "c43Extensions/addons.h"
 #include "c43Extensions/jm.h"
 #include "c43Extensions/keyboardTweak.h"

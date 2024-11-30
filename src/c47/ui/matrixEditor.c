@@ -32,6 +32,7 @@
 #include "flags.h"
 #include "fonts.h"
 #include "hal/gui.h"
+#include "hal/lcd.h"
 #include "longIntegerType.h"
 #include "items.h"
 #include "mathematics/comparisonReals.h"
