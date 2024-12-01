@@ -1,0 +1,73 @@
+------------------------------------
+Convert from DM42n to C47
+------------------------------------
+
+Recommended: Activate USB Disk (items 5, 2, 6) and backup contents of your work and original DM42n FAT disk to computer. 
+Exit when finished backing up.
+
+
+[f] SETUP (a.k.a. [f] 0)
+5. System
+2. Enter System Menu
+4. Reset to DMCP menu
+
+Optional: Format by going 7, 5. Not required, but does help for clean install. EXIT
+
+6. Activate USB Disk (Observe the disk name is now DM42)
+
+Copy the C47 files to the DM42n drive. Decide what you need on your drive: Options a, b & c below:
+a. All files in c47-dmcp5 (if you don't know, choose this option)
+b. C47.pg5 and testPgms.bin
+c. Only the necessary files and directories in c47-dmcp5:
+   - Create a directory OFFIMG on the DM42 drive and copy the contents of the offimg folder to it
+   - Copy PROGRAMS to DM42
+   - Copy testPgms.bin from resources to DM42 (if you want the test programs)
+   - Copy C47.pg5  to DM42
+
+
+*** finish up, 
+
+Release the DM42 flash drive on Linux/Mac/Windows: 'Eject'
+
+3. Load Program
+Choose C47.pg5 and validate with ENTER
+ENTER (Press ENTER to confirm)
+ENTER (Press any key to start)
+EXIT  (Press EXIT to continue)
+
+C47 is loaded
+1. Start C47 Anyway (not safe). This message may or may not appear; if it appears, press 1.
+
+---
+
+
+If C47 is not loaded at this point:
+Should the DMCP report a QSPI error, copy the file DM42_qspi_3.x.bin (which is in the distro, in the folder Resources) to the flash drive.
+Unmount the flash drive
+4. Load QSPI
+It may reboot. You may need to press the pinhole switch on the back of the calculator while holding F1.
+2. Load Program, select C47.pg5 and press ENTER to validate
+3. Run Program if not automatically starting.
+
+If still not loaded, follow the procedure below to load the full DM42n, and then repeat this procedure from step 1.
+
+
+---------------------------
+Return from C47 to DM42n
+---------------------------
+
+ON
+[f] MODE
+[f] DMCP
+6 Activate USB Disk
+Download DMCP5_flash_3.50t40_DM42-3.23.bin from SwissMicros web site, Technical, DM42.
+Copy DMCP5_flash_3.50t40_DM42-3.23.bin to DM42n's flash USB disk
+Unmount flash Disk
+
+EXIT
+ENTER
+ENTER
+EXIT
+
+DM42 is loaded
+

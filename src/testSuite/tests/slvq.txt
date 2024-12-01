@@ -5,7 +5,7 @@
 ;**                                                         **
 ;*************************************************************
 ;*************************************************************
-In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RM=0 IM=2compl SS=4 WS=64
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
 Func: fnSlvq
 
 ;=======================================================================================================================
@@ -38,76 +38,76 @@ Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RZ=Stri:"This is a string" RY=LonI:"1" RX=Lon
 ; 4*x^2 = 0
 ;-----------
 In:  FL_ASLIFT=0 FL_CPXRES=0 RL=Real:"3.5" RZ=LonI:"4"   RY=LonI:"0"   RX=LonI:"0"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1    RL=LonI:"0"   RZ=Real:"0.0" RY=Real:"0.0" RX=Real:"0.0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1    RL=LonI:"0"   RY=Real:"0.0" RX=Real:"0.0"
 
 ; 4*x^2 = 0
 ; With different types
 ;----------------------
 In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"7"   RZ=LonI:"4"   RY=LonI:"0"   RX=Real:"0.0"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1    RL=Real:"0.0" RZ=Real:"0.0" RY=Real:"0.0" RX=Real:"0.0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1    RL=Real:"0.0" RY=Real:"0.0" RX=Real:"0.0"
 
 ; 4*x^2 = 0
 ; With different types
 ;----------------------
 In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"-5"  RZ=LonI:"4"   RY=Real:"0.0" RX=Real:"0.0"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1    RL=Real:"0.0" RZ=Real:"0.0" RY=Real:"0.0" RX=Real:"0.0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1    RL=Real:"0.0" RY=Real:"0.0" RX=Real:"0.0"
 
 ; 4*x^2 = 0
 ; With different types
 ;----------------------
 In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"2"   RZ=Real:"4.0" RY=Real:"0.0" RX=Real:"0.0"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1    RL=Real:"0.0" RZ=Real:"0.0" RY=Real:"0.0" RX=Real:"0.0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1    RL=Real:"0.0" RY=Real:"0.0" RX=Real:"0.0"
 
 ; 4*x^2 -1 = 0
 ;--------------
 In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"0"  RZ=Real:"4.0"  RY=LonI:"0"   RX=LonI:"-1"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1    RL=LonI:"-1" RZ=Real:"16.0" RY=Real:"0.5" RX=Real:"-0.5"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1    RL=LonI:"-1" RY=Real:"0.5" RX=Real:"-0.5"
 
 ; 4*x^2 +1 = 0
 ;--------------
 In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"0" RZ=LonI:"4"   RY=LonI:"0"       RX=LonI:"1"
-Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1    RL=LonI:"1" RZ=Real:"-16" RY=Cplx:"0 i 0.5" RX=Cplx:"0 i -0.5"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1    RL=LonI:"1" RY=Cplx:"0 i 0.5" RX=Cplx:"0 i -0.5"
 
 ; 44*x^2 -1 = 0
 ;---------------
 In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"0"  RZ=LonI:"44" RY=Real:"0" RX=LonI:"-1"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1    RL=LonI:"-1" RZ=Real:"176.0" ...
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1    RL=LonI:"-1"  ...
                                     RY=Real:"0.15075567228888181132340603348503121290577675207224334532084919" ...
                                     RX=Real:"-0.15075567228888181132340603348503121290577675207224334532084919"
 
 ; 44.11*x^2 - 11.38 = 0
 ; ----------------------
 In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"0" RZ=Real:"44.11" RY=LonI:"0" RX=Real:"-11.38"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1    RL=Real:"-11.38" RZ=Real:"2007.8872" ...
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1    RL=Real:"-11.38"  ...
                                         RY=Real:"0.50792852368559698875245740831562781671110369203892431229416952" ...
                                         RX=Real:"-0.50792852368559698875245740831562781671110369203892431229416952"
 
 ; 4*x^2 + 1 = 0
 ;---------------
 In:  FL_ASLIFT=0 FL_CPXRES=1 RL=LonI:"0"  RZ=LonI:"4"     RY=LonI:"0"       RX=LonI:"1"
-Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1    RL=LonI:"1"  RZ=Real:"-16.0" RY=Cplx:"0 i 0.5" RX=Cplx:"0 i -0.5"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1    RL=LonI:"1"  RY=Cplx:"0 i 0.5" RX=Cplx:"0 i -0.5"
 
 ; x^2 - 2*x + 1 = 0
 ;-------------------
 In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"0" RZ=LonI:"1"   RY=LonI:"-2"  RX=LonI:"1"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1    RL=LonI:"1" RZ=Real:"0.0" RY=Real:"1.0" RX=Real:"1.0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1    RL=LonI:"1" RY=Real:"1.0" RX=Real:"1.0"
 
 ; x^2 + 2*x - 3 = 0
 ;-------------------
 In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"0"  RZ=LonI:"1"     RY=LonI:"2"   RX=LonI:"-3"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1    RL=LonI:"-3" RZ=Real:"16.0"  RY=Real:"1.0" RX=Real:"-3.0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1    RL=LonI:"-3" RY=Real:"1.0" RX=Real:"-3.0"
 
 ; x^2 - 1.786737601482363*x + 2.054360090947453E-8 = 0
 ;------------------------------------------------------
 In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"0" RZ=Real:"1.0" RY=Real:"-1.786737601482363" RX=Real:"2.054360090947453e-8"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1    RL=Real:"2.054360090947453E-8" RZ=Real:"3.192431174376543782196880063769" ...
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1    RL=Real:"2.054360090947453E-8"  ...
                                                       RY=Real:"1.1497827674657217103857607276987129075472135015105120096e-8" ...
                                                       RX=Real:"1.7867375899845353253427828961423927230128709245278649848948799"
 
 ; x^2 + (1.0e+20 + 1)*x + 1.0e+20 = 0
 ;-------------------------------------------------
 In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"0"    RZ=Real:"1.0" RY=Real:"100000000000000000001.0" RX=Real:"1e20"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1    RL=Real:"1e20" RZ=Real:"9999999999999999999800000000000000000001" ...
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1    RL=Real:"1e20"  ...
                                       RY=Real:"-1.0" ...
                                       RX=Real:"-1.0e20"
 
@@ -116,7 +116,7 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1    RL=Real:"1e20" RZ=Real:"9999999999999999999
 In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"0" RZ=Real:"1111222233334444555566667777888886" ...
                                    RY=Real:"1111222233334444555566667777888885" ...
                                    RX=Real:"277805558333611138891666944472221"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"277805558333611138891666944472221" RZ=Real:"1" ...
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"277805558333611138891666944472221" ...
                                                                 RY=Real:"-0.499999999999999999999999999999999100089999999999999999999999999989" ...
                                                                 RX=Real:"-0.5"
 
@@ -125,7 +125,7 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"277805558333611138891666944472221" RZ
 In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"0" RZ=LonI:"1111222233334444555566667777888886" ...
                                    RY=LonI:"1111222233334444555566667777888885" ...
                                    RX=LonI:"277805558333611138891666944472221"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1    RL=LonI:"277805558333611138891666944472221" RZ=Real:"1" ...
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1    RL=LonI:"277805558333611138891666944472221" ...
                                                                    RY=Real:"-0.499999999999999999999999999999999100089999999999999999999999999989" ...
                                                                    RX=Real:"-0.5"
 
@@ -134,7 +134,7 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1    RL=LonI:"277805558333611138891666944472221"
 In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"0" RZ=Real:"1" ...
                                    RY=Real:"1e50" ...
                                    RX=Real:"1"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1    RL=Real:"1" RZ=Real:"9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999996" ...
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1    RL=Real:"1" ...
                                    RY=Real:"-1e-50" ...
                                    RX=Real:"-99999999999999999999999999999999999999999999999999.99999999999999999999999999999999999999999999999999"
 
@@ -143,7 +143,7 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1    RL=Real:"1" RZ=Real:"9999999999999999999999
 In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"0" RZ=LonI:"1" ...
                                    RY=LonI:"100000000000000000000000000000000000000000000000000" ...
                                    RX=LonI:"1"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"1" RZ=Real:"9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999996" ...
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"1" ...
                                 RY=Real:"-1e-50" ...
                                 RX=Real:"-99999999999999999999999999999999999999999999999999.99999999999999999999999999999999999999999999999999"
 
@@ -152,8 +152,8 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"1" RZ=Real:"9999999999999999999999999
 In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"0" RZ=LonI:"0" ...
                                    RY=LonI:"1" ...
                                    RX=LonI:"6"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"6" RZ=Real:"1" ...
-                                RY=Real:"-6" ...
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"6" ...
+                                RY=Real:"NaN" ...
                                 RX=Real:"-6"
 
 
@@ -165,34 +165,34 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"6" RZ=Real:"1" ...
 ; x^2 - i = 0
 ;-------------
 In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"0" RZ=LonI:"1" RY=LonI:"0" RX=Cplx:"0.0 i -1.0"
-Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1    RL=Cplx:"0.0 i -1.0" RZ=Cplx:"0 i 4.0" ...
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1    RL=Cplx:"0.0 i -1.0"  ...
                                             RY=Cplx:"-0.70710678118654752440084436210484903928483593768847403658833987 i -0.70710678118654752440084436210484903928483593768847403658833987" ...
                                             RX=Cplx:"0.70710678118654752440084436210484903928483593768847403658833987 i 0.70710678118654752440084436210484903928483593768847403658833987"
 
 ; x^2 + i = 0
 ;-------------
 In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"0" RZ=LonI:"1" RY=LonI:"0" RX=Cplx:"0.0 i 1.0"
-Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1    RL=Cplx:"0.0 i 1.0" RZ=Cplx:"0 i -4.0" ...
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1    RL=Cplx:"0.0 i 1.0"  ...
                                            RY=Cplx:"-0.70710678118654752440084436210484903928483593768847403658833987 i 0.70710678118654752440084436210484903928483593768847403658833987" ...
                                            RX=Cplx:"0.70710678118654752440084436210484903928483593768847403658833987 i -0.70710678118654752440084436210484903928483593768847403658833987"
 
 ; i*x^2 - i*x -5 = 0
 ;----------------------------------------
 In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"0" RZ=Cplx:"0.0 i 1.0" RY=Cplx:"0.0 i -1.0" RX=Real:"-5.0"
-Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1    RL=Real:"-5.0" RZ=Cplx:"-1.0 i 20.0" ...
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1    RL=Real:"-5.0"  ...
                                       RY=Cplx:"-1.1211486820500450988121171623125716198421592468400838370181835 i 1.5421164188583812027171262595825062643873443448213840162089221" ...
                                       RX=Cplx:"2.1211486820500450988121171623125716198421592468400838370181835 i -1.5421164188583812027171262595825062643873443448213840162089221"
 
 ; i*x^2 - i*x = 0
 ;------------------------------------
 In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"5"   RZ=Cplx:"0.0 i 1.0" RY=Cplx:"0.0 i -1.0" RX=Real:"0.0"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1    RL=Real:"0.0" RZ=Real:"-1.0"      RY=Real:"1.0"        RX=Real:"0.0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1    RL=Real:"0.0"      RY=Real:"1.0"        RX=Real:"0.0"
 
 ; x + 6 = 0
 ;-------------------------------------------------
 In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"0" RZ=Cplx:"0.0 i 0.0" ...
                                    RY=Cplx:"1.0 i 0.0" ...
                                    RX=Cplx:"0.0 i 1.0"
-Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"0.0 i 1.0" RZ=Real:"1.0" ...
-                                RY=Cplx:"0.0 i -1.0" ...
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"0.0 i 1.0"  ...
+                                RY=Cplx:"NaN i NaN" ...
                                 RX=Cplx:"0.0 i -1.0"

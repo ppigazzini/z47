@@ -251,3 +251,25 @@ PLUS                      "\xa4\xff"
 2023-09-24 Numeric font - fixed spacing of the subscript 0 glyph
 
 2023-11-04 Adding the tiny font
+
+2024-03-02 Adding integration limits y->x
+    $29F0 yx              "\xa9\xf0"     // Integration limits
+
+
+2924096023 Add two boxes
+    $25A2 box        "\xa5\xa2"     // Box with rounded corners
+    $25A6 boxfilled  "\xa5\xa6"     // Box with hatched fill
+
+2024-07-07 Adding fg glyph
+    $29F1 fg         "\xa9\xf1"     // R47 variant name
+
+2024-07-18 Adding small double struck Z, and crossed zero
+    $007F doublezero            "\x7f"            STD_DOUBLEZERO
+    $2125 double struck Z small "\xa1\x25"        STD_INTEGER_Z_SMALL
+
+2024-09-08 Add CR glyph
+    $21B5 Downwards Arrow with Corner Leftwards used for CR  STD_CR
+
+2024-10-22 Add Time and Date type glyphs
+    $2138  double struck T     "\xa1\x38"         STD_TIME_T
+    $2145  double struck D     "\xa1\x45"         STD_DATE_D

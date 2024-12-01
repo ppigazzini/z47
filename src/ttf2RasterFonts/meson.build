@@ -20,6 +20,6 @@ testTtf2RasterFonts = executable(
   'testTtf2RasterFonts',
   build_by_default    : false,
   sources             : files('testTtf2RasterFonts.c') + [rasterFontsData_c],
-  include_directories : [decNumber_inc, wp43_inc],
+  include_directories : [decNumber_inc, c47_inc],
   dependencies        : [gtk_dep],
   native              : true)

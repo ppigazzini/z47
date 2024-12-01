@@ -1,0 +1,377 @@
+/* This file is part of 43S.
+ *
+ * 43S is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * 43S is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with 43S.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*****************************************************/
+/* Replacement of following strings made in gtkGui.c */
+/*****************************************************/
+/* Replace $fGold                with #E5AE5A */
+/* Replace $fHoverGold           with #ffff00 */
+/* Replace $gBlue                with #7EB6BA */
+/* Replace $gHoverBlue           with #00ffff */
+/* Replace $letterGrey           with #a5a5a5 */
+/* Replace $keyBorder            with #25292F */
+/* Replace $keyBackground        with #212121 */
+/* Replace $keyLabelColor        with #ffffff */
+/* Replace $bezelBackground      with #2B2A29 */
+/* Replace $funcKeyBackground    with #808080 */
+/* Replace $keyHover             with #744a2e */
+/* Replace $screenColor          with #222222 */
+/* Replace $behindScreen         with #413D38 */
+/* Replace $numericKeyBorder     with #25292F */
+/* Replace $numericKeyBackground with #212121 */
+/* Replace $numericKeyLabelColor with #ffffff */
+/* Replace $radius               with 3px     */
+/* Replace $AlphaGold            with #e36c50 */
+/* Replace $AlphaHoverGold       with #FF8669 */
+/* Replace $menubackground       with #181818 */
+/* Replace $fgGold               with #f1b053 */
+/* Replace $fgHoverGold          with #E7D7A0 */
+/**********************************************/
+
+#mainWindow {
+  background:  $bezelBackground;
+}
+
+#AlphaKey {
+  background:    $AlphaGold;
+  color:         black;
+  font-family:   C47__StandardFont;
+  font-style:    normal;
+  font-weight:   normal;
+  font-size:     22px;
+  border-radius: $radius;
+  padding:       0px;
+  padding-left:  2px;
+  padding-top:   5px;
+  padding-bottom:5px;
+  border-color:  $keyBorder;
+  border-width:  2px;
+}
+
+#AlphaKey:hover {background-color: $AlphaHoverGold;}
+
+#fSoftkeyArea {
+  background: $fGold;
+  font-size:  1px;
+}
+
+#gSoftkeyArea {
+  background: $gBlue;
+  font-size:  1px;
+}
+
+#eSoftkeyArea {
+  background: $keyLabelColor;
+  font-size:  1px;
+}
+
+#softkeyArea {
+  background: $screenColor;
+}
+
+#behindScreen {
+  background: $behindScreen;
+}
+
+#funcKeyArea {
+  background: $funcKeyBackground;
+}
+
+#calcKey {
+  background:    $keyBackground;
+  color:         $keyLabelColor;
+  font-family:   C47__StandardFont;
+  font-style:    normal;
+  font-weight:   normal;
+  font-size:     22px;
+  border-radius: $radius;
+  padding:       0px;
+  padding-left:  2px;
+  padding-top:   5px;
+  padding-bottom:5px;
+  border-color:  $keyBorder;
+  border-width:  2px;
+}
+
+#calcKey:hover {background-color: $keyHover;}
+
+#calcNumericKey {
+  background:    $numericKeyBackground;
+  color:         $numericKeyLabelColor;
+  font-family:   C47__StandardFont;
+  font-style:    normal;
+  font-weight:   normal;
+  font-size:     33px;
+  border-radius: $radius;
+  padding:       0px;
+  padding-left:  4px;
+  padding-top:   0px;
+  padding-bottom:0px;
+  border-color:  $numericKeyBorder;
+  border-width:  2px;
+}
+
+#calcNumericKey:hover {background-color: $keyHover;}
+
+#calcKeyGoldenBorder {
+  background:    $keyBackground;
+  color:         $keyLabelColor;
+  font-family:   C47__StandardFont;
+  font-style:    normal;
+  font-weight:   normal;
+  font-size:     22px;
+  border-radius: $radius;
+  padding:       0px;
+  padding-left:  2px;
+  padding-top:   5px;
+  padding-bottom:5px;
+  border-color:  $fGold;
+  border-width:  2px;
+}
+#calcKeyGoldenBorder:hover {background-color: $keyHover;}
+
+#calcKeyF {
+  background:    $fGold;
+  color:         black;
+  font-family:   C47__StandardFont;
+  font-style:    normal;
+  font-weight:   normal;
+  font-size:     27px;
+  border-radius: $radius;
+  padding:       0px;
+  padding-left:  2px;
+  padding-top:   2px;
+  padding-bottom:2px;
+  border-width:  2px;
+}
+
+#calcKeyF:hover {background-color: $fHoverGold;}
+
+#calcKeyG {
+  background:    $gBlue;
+  color:         black;
+  font-family:   C47__StandardFont;
+  font-style:    normal;
+  font-weight:   normal;
+  font-size:     27px;
+  border-radius: $radius;
+  padding:       0px;
+  padding-left:  2px;
+  padding-top:   2px;
+  padding-bottom:2px;
+  border-width:  2px;
+}
+
+#calcKeyG:hover {background-color: $gHoverBlue;}
+
+#calcKeyFG {
+  background:    $fgGold;
+  color:         black;
+  font-family:   C47__StandardFont;
+  font-style:    normal;
+  font-weight:   normal;
+  font-size:     27px;
+  border-radius: $radius;
+  padding:       0px;
+  padding-left:  2px;
+  padding-top:   2px;
+  padding-bottom:2px;
+  border-width:  2px;
+}
+
+#calcKeyFG:hover {background-color: $fgHoverGold;}
+
+#fShifted {
+  background:  $bezelBackground;
+  color:       $fGold;
+  font-family: C47__StandardFont;
+  font-style:  normal;
+  font-weight: normal;
+  font-size:   16px;
+  padding:     0px;
+}
+
+#fShiftedUnderline {
+  background:  $menubackground;
+  color:       $fGold;
+  font-family: C47__StandardFont;
+  font-style:  normal;
+  font-weight: normal;
+  font-size:   16px;
+  padding:     0px;
+  /* JM removed "text-decoration: underline;" and changed from "background:  $bezelBackground;" */
+}
+
+#AimfShiftedUnderline {
+  background:  $menubackground;
+  text-decoration: underline;
+  color:       $fGold;
+  font-family: C47__StandardFont;
+  font-style:  normal;
+  font-weight: normal;
+  font-size:   16px;
+  padding:     0px;
+  /* JM added label; changed from "background:  $bezelBackground;" */
+}
+
+#gShifted {
+  background:  $bezelBackground;
+  color:       $gBlue;
+  font-family: C47__StandardFont;
+  font-style:  normal;
+  font-weight: normal;
+  font-size:   16px;
+  padding:     0px;
+}
+
+#gShiftedUnderline {
+  background:  $menubackground;
+  color:       $gBlue;
+  font-family: C47__StandardFont;
+  font-style:  normal;
+  font-weight: normal;
+  font-size:   16px;
+  padding:     0px;
+  /* JM removed "text-decoration: underline;" and changed from "background:  $bezelBackground;" */
+}
+
+#greek {
+  background:  $bezelBackground;
+  color:       $gBlue;
+  font-family: C47__StandardFont;
+  font-style:  normal;
+  font-weight: normal;
+  font-size:   16px;
+  padding:     0px;
+}
+
+#greekUnderline {
+  background:  $bezelBackground;
+  color:       $gBlue;
+  font-family: C47__StandardFont;
+  font-style:  normal;
+  font-weight: normal;
+  font-size:   16px;
+  padding:     0px;
+  /* JM changed "font size" from 20 to 18; removed "text-decoration: underline;" and changed from "background:  $bezelBackground;" */
+}
+
+#On {
+  background:  $bezelBackground;
+  color:       $letterGrey;
+  font-family: C47__StandardFont;
+  font-style:  normal;
+  font-weight: normal;
+  font-size:   16px;
+  padding:     0px;
+  text-shadow: 0px 0px $keyLabelColor;
+  /* JM changed colour from lettergrey to keyLabelColor; Added emphasis (shadow) */
+}
+
+#letter {
+  background:  $bezelBackground;
+  color:       $letterGrey;
+  font-family: C47__StandardFont;
+  font-style:  normal;
+  font-weight: normal;
+  font-size:   18px;
+  padding:     0px;
+  /* JM To make the alpha letters red, change the letter font-size from 19 to 21 and change the lettergrey colour code (above, from grey a5a5a5 to red cb1201 */
+}
+
+#fColor {
+  background: $fGold;
+  padding:    0px;
+}
+
+#gColor {
+  background: $gBlue;
+  padding:    0px;
+}
+
+#debugC47 {
+  font-family: C47__StandardFont;
+  font-style:  normal;
+  font-weight: normal;
+  font-size:   14px;
+  padding:     0px;
+  color:       white;
+}
+
+#registerL {
+  font-family: C47__StandardFont;
+  font-style:  normal;
+  font-weight: normal;
+  font-size:   14px;
+  padding:     0px;
+  color:       white;
+}
+
+#memoryStatus {
+  font-family: C47__StandardFont;
+  font-style:  normal;
+  font-weight: normal;
+  font-size:   13px;
+  padding:     0px;
+  color:       white;
+}
+
+#debugDejaVu {
+  font-family: DejaVu sans mono;
+  font-style:  normal;
+  font-weight: normal;
+  font-size:   10px;
+  padding:     0px;
+  color:       white;
+}
+
+#debugButton {
+  border-radius: $radius;
+  padding:       2px;
+  padding-left:  2px;
+  padding-top:   0px;
+  padding-bottom:0px;
+}
+
+#debugCheckbox {
+  border-radius: $radius;
+  padding:       2px;
+  padding-left:  2px;
+  padding-top:   0px;
+  padding-bottom:0px;
+  color:         white;
+}
+
+#errorBox {
+  font-family:   C47__StandardFont;
+  font-style:    normal;
+  font-weight:   normal;
+  font-size:     18px;
+}
+
+tooltip {
+  font-family:      C47__StandardFont;
+  font-size:        20px;
+  background-color: #808080;
+  color:            black;
+  font-weight:      normal;
+  padding:          0px 0px 0px 0px;
+  margin:           0px 0px 0px 0px;
+  border-width:     0px;
+  border-style:     solid;
+  border-color:     #808080;
+  /* text-shadow: 5px 5px 3px #bbbbbb, 7px 7px 3px #ccccFF; */
+}

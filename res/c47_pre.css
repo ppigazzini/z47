@@ -14,9 +14,9 @@
  * along with 43S.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/****************************************************/
-/* Replacement of following strings made in WP34S.c */
-/****************************************************/
+/*****************************************************/
+/* Replacement of following strings made in gtkGui.c */
+/*****************************************************/
 /* Replace $fGold                with #E5AE5A */
 /* Replace $fHoverGold           with #ffff00 */
 /* Replace $gBlue                with #7EB6BA */
@@ -242,7 +242,7 @@
   /* JM removed "text-decoration: underline;" and changed from "background:  $bezelBackground;" */
 }
 
-#greek {
+#AimfShifted {
   background:  $bezelBackground;
   color:       $gBlue;
   font-family: C47__StandardFont;
@@ -252,7 +252,7 @@
   padding:     0px;
 }
 
-#greekUnderline {
+#AimfShiftedUnderline {
   background:  $bezelBackground;
   color:       $gBlue;
   font-family: C47__StandardFont;
@@ -272,18 +272,6 @@
   font-size:   18px;
   padding:     0px;
   text-shadow: 0px 0px $keyLabelColor;
-  /* JM changed colour from lettergrey to keyLabelColor; Added emphasis (shadow) */
-}
-
-#YN {
-  background:  $bezelBackground;
-  color:       $keyLabelColor;
-  font-family: C47__StandardFont;
-  font-style:  normal;
-  font-weight: normal;
-  font-size:   18px;
-  padding:     0px;
-  text-shadow: 1px 0px $keyLabelColor;
   /* JM changed colour from lettergrey to keyLabelColor; Added emphasis (shadow) */
 }
 

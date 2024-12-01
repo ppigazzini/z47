@@ -5,7 +5,7 @@
 ;**                                                         **
 ;*************************************************************
 ;*************************************************************
-In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RM=0 IM=2compl SS=4 WS=64
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
 Func: fnInvert
 
 
@@ -48,7 +48,16 @@ Out: EC=24 FL_ASLIFT=0 RX=Stri:"String test"
 ; 1 / Real Matrix
 ;=======================================
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=ReMa:"M2,3[0.5,1,2,4,5,10]"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M2,3[0.5,1,2,4,5,10]" RX=ReMa:"M2,3[2,1,0.5,0.25,0.2,0.1]"
+Out: EC=21 FL_CPXRES=0 FL_ASLIFT=0 RX=ReMa:"M2,3[0.5,1,2,4,5,10]"
+
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=ReMa:"M2,2[1,2,3,4]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M2,2[1,2,3,4]" RX=ReMa:"M2,2[-2,1,1.5,-0.5]"
+
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=ReMa:"M2,2[1,2,2,4]"
+Out: EC=22 FL_CPXRES=0 FL_ASLIFT=0 RX=ReMa:"M2,2[1,2,2,4]"
+
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=ReMa:"M3,2[1,2,3,4,5,6]"
+Out: EC=21 FL_CPXRES=0 FL_ASLIFT=0 RX=ReMa:"M3,2[1,2,3,4,5,6]"
 
 
 
@@ -56,7 +65,16 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M2,3[0.5,1,2,4,5,10]" RX=ReMa:"M2,3[2
 ; 1 / Complex Matrix
 ;=======================================
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=CxMa:"M2,3[0.5,1,2,4,5,10]"
-Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=CxMa:"M2,3[0.5,1,2,4,5,10]" RX=CxMa:"M2,3[2,1,0.5,0.25,0.2,0.1]"
+Out: EC=21 FL_CPXRES=0 FL_ASLIFT=0 RX=CxMa:"M2,3[0.5,1,2,4,5,10]"
+
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=CxMa:"M2,2[1i2,3i4,5i6,7i8]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=CxMa:"M2,2[1i2,3i4,5i6,7i8]" RX=CxMa:"M2,2[-0.5i0.4375,0.25i-0.1875,0.375i-0.3125,-0.125i0.0625]"
+
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=CxMa:"M2,2[1i0,0i1,-1i0,0i-1]"
+Out: EC=22 FL_CPXRES=0 FL_ASLIFT=0 RX=CxMa:"M2,2[1i0,0i1,-1i0,0i-1]"
+
+In: FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RX=CxMa:"M3,2[1i2,3i4,5i6,7i8,9i10,11i12]"
+Out: EC=21 FL_CPXRES=0 FL_ASLIFT=0 RX=CxMa:"M3,2[1i2,3i4,5i6,7i8,9i10,11i12]"
 
 
 

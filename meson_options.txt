@@ -6,3 +6,7 @@ option('RASPBERRY',
   type        : 'boolean',
   value       : false,
   description : 'Set if running on a RaspberryPi for a better layout')
+option('DMCPVERSION',
+  type        : 'string',
+  value       : '',
+  description : 'dmcp or dmcp5')

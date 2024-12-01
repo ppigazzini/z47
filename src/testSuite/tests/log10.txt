@@ -5,8 +5,18 @@
 ;**                                                         **
 ;*************************************************************
 ;*************************************************************
-In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RM=0 IM=2compl SS=4 WS=64
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
 Func: fnLog10
+
+
+;=======================================
+; log2(Long Integer) --> Long integer
+;=======================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"100"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"100" RX=Loni:"2"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"1000000"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"1000000" RX=Loni:"6"
 
 
 

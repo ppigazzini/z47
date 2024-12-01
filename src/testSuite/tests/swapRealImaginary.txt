@@ -5,7 +5,7 @@
 ;**                                                         **
 ;*************************************************************
 ;*************************************************************
-In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RM=0 IM=2compl SS=4 WS=64
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
 Func: fnSwapRealImaginary
 
 ;JM changed to include the use of the function on a real, assuming 0 imag value
@@ -40,8 +40,10 @@ Out: EC=24 FL_ASLIFT=0 RX=Stri:"String test"
 
 
 ;=======================================
-; swapRealImaginary(Real Matrix)
+; swapRealImaginary(Real Matrix) --> Complex
 ;=======================================
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=ReMa:"M2,3[1,3,5,7,9,11]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M2,3[1,3,5,7,9,11]" RX=CxMa:"M2,3[0i1,0i3,0i5,0i7,0i9,0i11]"
 
 
 
@@ -54,10 +56,10 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=CxMa:"M2,3[1i2,3i4,5i6,7i8,9i10,11i12]" RX=
 
 
 ;=======================================
-; swapRealImaginary(Short Integer) --> Error24
+; swapRealImaginary(Short Integer) --> Complex
 ;=======================================
 In:  FL_ASLIFT=0 FL_CPXRES=0 RX=ShoI:"5#7"
-Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=ShoI:"5#7"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Cplx:"0 i 5"
 
 
 

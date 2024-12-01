@@ -25,8 +25,8 @@ void audioTone(uint32_t frequency) {
 void fnSetVolume(uint16_t volume) {
 }
 
-uint16_t getBeepVolume() {
-    return NOVAL;
+uint16_t getBeepVolume(void) {
+  return NOVAL;
 }
 
 void fnGetVolume(uint16_t unusedButMandatoryParameter) {

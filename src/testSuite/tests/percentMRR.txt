@@ -5,7 +5,7 @@
 ;**                                                         **
 ;*************************************************************
 ;*************************************************************
-In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RM=0 IM=2compl SS=4 WS=64
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
 Func: fnPercentMRR
 
 ;=======================================
@@ -60,11 +60,20 @@ In:  FL_ASLIFT=1 FL_CPXRES=1 RZ=LonI:"10" RY=Real:"2.0" RX=Real:"3.0"
 Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Real:"3.0" RX=Real:"4.137974399241058684619101023111534"
 
 ;=======================================
-; Error case: ERROR_INVALID_DATA_INPUT_FOR_OP
+; %MRR(Short Integer, Long Intger, Long Intger) --> Real
 ;=======================================
 In:  FL_ASLIFT=1  FL_CPXRES=1      RZ=ShoI:"10#10" RY=LonI:"2" RX=LonI:"3"
-Out: EC=24 FL_CPXRES=1 FL_ASLIFT=1 RZ=ShoI:"10#10" RY=LonI:"2" RX=LonI:"3"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=LonI:"3" RX=Real:"4.137974399241058684619101023111534"
 
+In:  FL_ASLIFT=1  FL_CPXRES=1      RZ=LonI:"10" RY=LonI:"2" RX=ShoI:"3#10"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=ShoI:"3#10" RX=Real:"4.137974399241058684619101023111534"
+
+In:  FL_ASLIFT=1  FL_CPXRES=1      RZ=LonI:"10" RY=ShoI:"2#10" RX=LonI:"3"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=LonI:"3" RX=Real:"4.137974399241058684619101023111534"
+
+;=======================================
+; Error case: ERROR_INVALID_DATA_INPUT_FOR_OP
+;=======================================
 In:  FL_ASLIFT=1  FL_CPXRES=1      RZ=Stri:"ABC" RY=LonI:"2" RX=LonI:"3"
 Out: EC=24 FL_CPXRES=1 FL_ASLIFT=1 RZ=Stri:"ABC" RY=LonI:"2" RX=LonI:"3"
 
@@ -73,12 +82,6 @@ Out: EC=24 FL_CPXRES=1 FL_ASLIFT=1 RZ=LonI:"10" RY=Stri:"ABC" RX=LonI:"3"
 
 In:  FL_ASLIFT=1  FL_CPXRES=1      RZ=LonI:"10" RY=LonI:"2" RX=Stri:"ABC"
 Out: EC=24 FL_CPXRES=1 FL_ASLIFT=1 RZ=LonI:"10" RY=LonI:"2" RX=Stri:"ABC"
-
-In:  FL_ASLIFT=1  FL_CPXRES=1      RZ=LonI:"10" RY=LonI:"2" RX=ShoI:"10#10"
-Out: EC=24 FL_CPXRES=1 FL_ASLIFT=1 RZ=LonI:"10" RY=LonI:"2" RX=ShoI:"10#10"
-
-In:  FL_ASLIFT=1  FL_CPXRES=1      RZ=LonI:"10" RY=ShoI:"10#10" RX=LonI:"3"
-Out: EC=24 FL_CPXRES=1 FL_ASLIFT=1 RZ=LonI:"10" RY=ShoI:"10#10" RX=LonI:"3"
 
 ;=======================================
 ; Error case: ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN

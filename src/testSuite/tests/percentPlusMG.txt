@@ -5,7 +5,7 @@
 ;**                                                         **
 ;*************************************************************
 ;*************************************************************
-In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RM=0 IM=2compl SS=4 WS=64
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
 Func: fnPercentPlusMG
 
 ;=======================================
@@ -34,14 +34,6 @@ Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=LonI:"456" RX=Real:"-34.6786516853932584269
 ;=======================================
 ; Error case: ERROR_INVALID_DATA_INPUT_FOR_OP
 ;=======================================
-In:  FL_ASLIFT=0  RY=ShoI:"10#10" RX=LonI:"450"
-Out: EC=24 FL_ASLIFT=0 RY=ShoI:"10#10" RX=LonI:"450"
-
-In:  FL_ASLIFT=0  RY=LonI:"10" RX=ShoI:"20#10"
-Out: EC=24 FL_ASLIFT=0 RY=LonI:"10" RX=ShoI:"20#10"
-
-In:  FL_ASLIFT=0  RY=ShoI:"10#10" RX=ShoI:"20#10"
-Out: EC=24 FL_ASLIFT=0 RY=ShoI:"10#10" RX=ShoI:"20#10"
 
 In:  FL_ASLIFT=0  RY=ShoI:"10#10" RX=Stri:"ABC"
 Out: EC=24 FL_ASLIFT=0 RY=ShoI:"10#10" RX=Stri:"ABC"
@@ -49,32 +41,45 @@ Out: EC=24 FL_ASLIFT=0 RY=ShoI:"10#10" RX=Stri:"ABC"
 In:  FL_ASLIFT=0  RY=Real:"10.0" RX=Stri:"ABC"
 Out: EC=24 FL_ASLIFT=0 RY=Real:"10.0" RX=Stri:"ABC"
 
-In:  FL_ASLIFT=0  RY=Real:"10.0" RX=ShoI:"100#10"
-Out: EC=24 FL_ASLIFT=0 RY=Real:"10.0" RX=ShoI:"100#10"
+;=======================================
+; %+MG Short Integer --> Real
+;=======================================
+In:  FL_ASLIFT=0  RY=ShoI:"10#10" RX=LonI:"450"
+Out: EC=0 FL_ASLIFT=1 RL=LonI:"450" RY=ShoI:"10#10" RX=Real:"-2.857142857142857142857142857142857"
 
-In:  FL_ASLIFT=0  RY=ShoI:"10#10" RX=Real:"100.0"
-Out: EC=24 FL_ASLIFT=0 RY=ShoI:"10#10" RX=Real:"100.0"
+In:  FL_ASLIFT=0  RY=LonI:"10" RX=ShoI:"20#10"
+Out: EC=0 FL_ASLIFT=1 RL=ShoI:"20#10" RY=LonI:"10" RX=Real:"12.5"
+
+In:  FL_ASLIFT=0  RY=ShoI:"10#10" RX=ShoI:"20#10"
+Out: EC=0 FL_ASLIFT=1 RL=ShoI:"20#10" RY=ShoI:"10#10" RX=Real:"12.5"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 RY=Real:"10.0" RX=ShoI:"100#10"
+Out: EC=0 FL_ASLIFT=1 RL=ShoI:"100#10" RY=Real:"10.0" RX=Real:"inf"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 RY=ShoI:"0#10" RX=Real:"100.0"
+Out: EC=0  FL_ASLIFT=1 RL=Real:"100.0" RY=ShoI:"0#10" RX=Real:"NaN"
+
 
 ;=======================================
 ; Error case: ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN
 ;=======================================
-In:  FL_ASLIFT=0 FL_SPCRES=1 RY=Real:"0.0" RX=Real:"100.0"
+In:  FL_ASLIFT=0 RY=Real:"10.0" RX=Real:"100.0"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"100.0" RY=Real:"10.0" RX=Real:"inf"
+
+In:  FL_ASLIFT=0 RY=LonI:"10" RX=Real:"100.0"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"100.0" RY=LonI:"10" RX=Real:"inf"
+
+In:  FL_ASLIFT=0 RY=Real:"0.0" RX=Real:"100.0"
 Out: EC=0 FL_ASLIFT=1 RL=Real:"100.0" RX=Real:"NaN"
 
-In:  FL_ASLIFT=0  RY=Real:"10.0" RX=Real:"100.0"
+In:  FL_ASLIFT=0 RY=Real:"10.0" RX=Real:"100.0"
 Out: EC=0 FL_ASLIFT=1 RL=Real:"100.0" RX=Real:"inf"
 
-In:  FL_ASLIFT=0  RY=Real:"-10.0" RX=Real:"100.0"
+In:  FL_ASLIFT=0 RY=Real:"-10.0" RX=Real:"100.0"
 Out: EC=0 FL_ASLIFT=1 RL=Real:"100.0" RX=Real:"-inf"
 
-In:  FL_ASLIFT=0 FL_SPCRES=0 RY=Real:"0.0" RX=Real:"100.0"
-Out: EC=1 FL_ASLIFT=0 RY=Real:"0.0" RX=Real:"100.0"
+In:  FL_ASLIFT=0 RY=Real:"0.0" RX=Real:"100.0"
+Out: EC=0 FL_ASLIFT=1 RY=Real:"0.0" RX=Real:"NaN"
 
-In:  FL_ASLIFT=0  RY=LonI:"0" RX=Real:"100.0"
-Out: EC=1 FL_ASLIFT=0 RY=LonI:"0" RX=Real:"100.0"
-
-In:  FL_ASLIFT=0  RY=Real:"10.0" RX=Real:"100.0"
-Out: EC=1 FL_ASLIFT=0 RY=Real:"10.0" RX=Real:"100.0"
-
-In:  FL_ASLIFT=0  RY=LonI:"10" RX=Real:"100.0"
-Out: EC=1 FL_ASLIFT=0 RY=LonI:"10" RX=Real:"100.0"
+In:  FL_ASLIFT=0 FL_SPCRES=1 RY=LonI:"0" RX=Real:"100.0"
+Out: EC=0 FL_ASLIFT=1 RY=LonI:"0" RX=Real:"Nan"

@@ -36,7 +36,7 @@ char whiteSpace[50], temp[10000];
 char defines[1000000], externalDeclarations[1000000]; // .h file
 char realArray[1000000], realPointerDeclarations[1000000], real34PointerDeclarations[1000000], real51PointerDeclarations[1000000], real75PointerDeclarations[1000000], real1071PointerDeclarations[1000000]; // .c file
 FILE *constantsC, *constantsH;
-int  idx, c;
+int  idx, cc;
 
 
 void *xcopy(void *dest, const void *source, int n) {
@@ -67,7 +67,7 @@ void generateConstantArray(char *name, char *value) {
     printf("generateConstantArray: %-10.10s = %s\n", name, value);
   #endif // DEBUG
 
-  memset(&real39, 0, sizeof(real39_t));
+  memset(&real39, 0, REAL39_SIZE_IN_BYTES);
   stringToReal(value, (real_t *)&real39, &ctxtReal39);
 
   strcpy(whiteSpace, "                                        ");
@@ -77,8 +77,8 @@ void generateConstantArray(char *name, char *value) {
   strcat(externalDeclarations, name);
   strcat(externalDeclarations, ";\n");
 
-  if(c <= NUMBER_OF_CONSTANTS_IN_CNST_CATALOG) {
-    sprintf(temp, "  #define CONST_%02d %4d\n", c, idx);
+  if(cc <= NUMBER_OF_CONSTANTS_IN_CNST_CATALOG) {
+    sprintf(temp, "  #define CONST_%02d %4d\n", cc, idx);
     strcat(defines, temp);
   }
 
@@ -87,12 +87,12 @@ void generateConstantArray(char *name, char *value) {
   strcat(realPointerDeclarations, whiteSpace);
   strcat(realPointerDeclarations, " = (real_t *)(constants + ");
   sprintf(temp, "%5d)", idx);
-  idx += sizeof(real39_t);
+  idx += REAL39_SIZE_IN_BYTES;
   strcat(realPointerDeclarations, temp);
   strcat(realPointerDeclarations, ";\n");
 
   strcat(realArray, "  ");
-  for(uint32_t i=0; i<sizeof(real39_t); i++) {
+  for(uint32_t i=0; i<REAL39_SIZE_IN_BYTES; i++) {
     sprintf(temp, "0x%02x,", *(((uint8_t *)(&real39)) + i));
     strcat(realArray, temp);
   }
@@ -111,7 +111,7 @@ void generateConstantArray34(char *name, char *value) {
     printf("generateConstantArray34: %-10.10s = %s\n", name, value);
   #endif // DEBUG
 
-  memset(&real34, 0, sizeof(real34_t));
+  memset(&real34, 0, REAL34_SIZE_IN_BYTES);
   stringToReal34(value, &real34);
 
   strcpy(whiteSpace, "                                        ");
@@ -126,12 +126,12 @@ void generateConstantArray34(char *name, char *value) {
   strcat(real34PointerDeclarations, whiteSpace);
   strcat(real34PointerDeclarations, " = (real34_t *)(constants + ");
   sprintf(temp, "%5d)", idx);
-  idx += sizeof(real34_t);
+  idx += REAL34_SIZE_IN_BYTES;
   strcat(real34PointerDeclarations, temp);
   strcat(real34PointerDeclarations, ";\n");
 
   strcat(realArray, "  ");
-  for(uint32_t i=0; i<sizeof(real34_t); i++) {
+  for(uint32_t i=0; i<REAL34_SIZE_IN_BYTES; i++) {
     sprintf(temp, "0x%02x,", *(((uint8_t *)(&real34)) + i));
     strcat(realArray, temp);
   }
@@ -150,7 +150,7 @@ void generateConstantArray51(char *name, char *value) {
     printf("generateConstantArray51: %-10.10s = %s\n", name, value);
   #endif // DEBUG
 
-  memset(&real51, 0, sizeof(real51_t));
+  memset(&real51, 0, REAL51_SIZE_IN_BYTES);
   stringToReal(value, (real_t *)&real51, &ctxtReal51);
 
   strcpy(whiteSpace, "                                        ");
@@ -165,12 +165,12 @@ void generateConstantArray51(char *name, char *value) {
   strcat(real51PointerDeclarations, whiteSpace);
   strcat(real51PointerDeclarations, " = (real_t *)(constants + ");
   sprintf(temp, "%5d)", idx);
-  idx += sizeof(real51_t);
+  idx += REAL51_SIZE_IN_BYTES;
   strcat(real51PointerDeclarations, temp);
   strcat(real51PointerDeclarations, ";\n");
 
   strcat(realArray, "  ");
-  for(uint32_t i=0; i<sizeof(real51_t); i++) {
+  for(uint32_t i=0; i<REAL51_SIZE_IN_BYTES; i++) {
     sprintf(temp, "0x%02x,", *(((uint8_t *)(&real51)) + i));
     strcat(realArray, temp);
   }
@@ -189,7 +189,7 @@ void generateConstantArray75(char *name, char *value) {
     printf("generateConstantArray75: %-10.10s = %s\n", name, value);
   #endif // DEBUG
 
-  memset(&real75, 0, sizeof(real_t));
+  memset(&real75, 0, REAL_SIZE_IN_BYTES);
   stringToReal(value, (real_t *)&real75, &ctxtReal75);
 
   strcpy(whiteSpace, "                                        ");
@@ -204,12 +204,12 @@ void generateConstantArray75(char *name, char *value) {
   strcat(real75PointerDeclarations, whiteSpace);
   strcat(real75PointerDeclarations, " = (real_t *)(constants + ");
   sprintf(temp, "%5d)", idx);
-  idx += sizeof(real_t);
+  idx += REAL_SIZE_IN_BYTES;
   strcat(real75PointerDeclarations, temp);
   strcat(real75PointerDeclarations, ";\n");
 
   strcat(realArray, "  ");
-  for(uint32_t i=0; i<sizeof(real_t); i++) {
+  for(uint32_t i=0; i<REAL_SIZE_IN_BYTES; i++) {
     sprintf(temp, "0x%02x,", *(((uint8_t *)(&real75)) + i));
     strcat(realArray, temp);
   }
@@ -228,7 +228,7 @@ void generateConstantArray1071(char *name, char *value) {
     printf("generateConstantArray1071: %-9.9s = %s\n", name, value);
   #endif // DEBUG
 
-  memset(&real1071, 0, sizeof(real1071_t));
+  memset(&real1071, 0, REAL1071_SIZE_IN_BYTES);
   stringToReal(value, (real_t *)&real1071, &ctxtReal1071);
 
   strcpy(whiteSpace, "                                        ");
@@ -243,12 +243,12 @@ void generateConstantArray1071(char *name, char *value) {
   strcat(real1071PointerDeclarations, whiteSpace);
   strcat(real1071PointerDeclarations, " = (real_t *)(constants + ");
   sprintf(temp, "%5d)", idx);
-  idx += sizeof(real1071_t);
+  idx += REAL1071_SIZE_IN_BYTES;
   strcat(real1071PointerDeclarations, temp);
   strcat(real1071PointerDeclarations, ";\n");
 
   strcat(realArray, "  ");
-  for(uint32_t i=0; i<sizeof(real1071_t); i++) {
+  for(uint32_t i=0; i<REAL1071_SIZE_IN_BYTES; i++) {
     sprintf(temp, "0x%02x,", *(((uint8_t *)(&real1071)) + i));
     strcat(realArray, temp);
   }
@@ -268,108 +268,100 @@ void generateAllConstants(void) {
 
   // Physical and mathematical constants
   // each constant has 55 significant digits
-  c = 0;
-  generateConstantArray("a",             "+3.652425000000000000000000000000000000000000000000000000e+02"); c++; // per definition
-  generateConstantArray("a0",            "+5.291772109030000000000000000000000000000000000000000000e-11"); c++;
-  generateConstantArray("aMoon",         "+3.844000000000000000000000000000000000000000000000000000e+08"); c++;
-  generateConstantArray("aEarth",        "+1.495979000000000000000000000000000000000000000000000000e+11"); c++;
-  generateConstantArray("c",             "+2.997924580000000000000000000000000000000000000000000000e+08"); c++; // per definition
-  generateConstantArray("c1",            "+3.741771852192758011367155555929985138219953097124061418e-16"); c++;
-
-  generateConstantArray("c2",            "+1.438776877503933802146671601543911595199069423148099191e-02"); c++;
-  generateConstantArray("e",             "+1.602176634000000000000000000000000000000000000000000000e-19"); c++; // per definition
-  generateConstantArray("eE",            "+2.718281828459045235360287471352662497757247093699959575e+00"); c++; // math constant e
-  generateConstantArray("F",             "+9.648533212331001840000000000000000000000000000000000000e+04"); c++;
-  generateConstantArray("Falpha",        "+2.502907875095892822283902873218215786381271376727149977e+00"); c++; // math constant Falpha
-  generateConstantArray("Fdelta",        "+4.669201609102990671853203820466201617258185577475768633e+00"); c++; // math constant Fdelta
-
-  generateConstantArray("G",             "+6.674300000000000000000000000000000000000000000000000000e-11"); c++;
-  generateConstantArray("G0",            "+7.748091729863650646680823323308763943587286047673370920e-05"); c++;
-  generateConstantArray("GC",            "+9.159655941772190150546035149323841107741493742816721343e-01"); c++; // math constant Catalan
-  generateConstantArray("ge",            "-2.002319304362560000000000000000000000000000000000000000e+00"); c++;
-  generateConstantArray("GM",            "+3.986004418000000000000000000000000000000000000000000000e+14"); c++;
-  generateConstantArray("gEarth",        "+9.806650000000000000000000000000000000000000000000000000e+00"); c++; // per definition
-
-
-  generateConstantArray("Planck",        "+6.626070150000000000000000000000000000000000000000000000e-34"); c++;
-  generateConstantArray("PlanckOn2pi",   "+1.054571817646156391262428003302280744722826330020413122e-34"); c++;
-  generateConstantArray("k",             "+1.380649000000000000000000000000000000000000000000000000e-23"); c++; // per definition
-  generateConstantArray("KJ",            "+4.835978484169836324476582850545281353533511866004014461e+14"); c++;
-  generateConstantArray("lPL",           "+1.616255000000000000000000000000000000000000000000000000e-35"); c++;
-  generateConstantArray("me",            "+9.109383701500000000000000000000000000000000000000000000e-31"); c++;
-
-  generateConstantArray("MMoon",         "+7.349000000000000000000000000000000000000000000000000000e+22"); c++;
-  generateConstantArray("mn",            "+1.674927498040000000000000000000000000000000000000000000e-27"); c++;
-  generateConstantArray("mnOnmp",        "+1.001378418980000000000000000000000000000000000000000000e+00"); c++;
-  generateConstantArray("mp",            "+1.672621923690000000000000000000000000000000000000000000e-27"); c++;
-  generateConstantArray("mPL",           "+2.176435000000000000000000000000000000000000000000000000e-08"); c++;
-  generateConstantArray("mpOnme",        "+1.836152673430000000000000000000000000000000000000000000e+03"); c++;
-
-  generateConstantArray("mu",            "+1.660539066600000000000000000000000000000000000000000000e-27"); c++;
-  generateConstantArray("muc2",          "+1.492418085600000000000000000000000000000000000000000000e-10"); c++;
-  generateConstantArray("mmu",           "+1.883531627000000000000000000000000000000000000000000000e-28"); c++;
-  generateConstantArray("mSun",          "+1.989100000000000000000000000000000000000000000000000000e+30"); c++;
-  generateConstantArray("mEarth",        "+5.973600000000000000000000000000000000000000000000000000e+24"); c++;
-  generateConstantArray("NA",            "+6.022140760000000000000000000000000000000000000000000000e+23"); c++; // per definition
-
-
-  generateConstantArray("NaN",           "Not a number"                                                 ); c++;
-  generateConstantArray("p0",            "+1.013250000000000000000000000000000000000000000000000000e+05"); c++; // per definition
-  generateConstantArray("R",             "+8.314462618153240000000000000000000000000000000000000000e+00"); c++;
-  generateConstantArray("re",            "+2.817940326200000000000000000000000000000000000000000000e-15"); c++;
-  generateConstantArray("RK",            "+2.581280745930450666004551670608744304245727322140342177e+04"); c++;
-  generateConstantArray("RMoon",         "+1.737530000000000000000000000000000000000000000000000000e+06"); c++;
-
-  generateConstantArray("RInfinity",     "+1.097373156816000000000000000000000000000000000000000000e+07"); c++;
-  generateConstantArray("RSun",          "+6.960000000000000000000000000000000000000000000000000000e+08"); c++;
-  generateConstantArray("REarth",        "+6.371010000000000000000000000000000000000000000000000000e+06"); c++;
-  generateConstantArray("Sa",            "+6.378137000000000000000000000000000000000000000000000000e+06"); c++; // per definition
-  generateConstantArray("Sb",            "+6.356752314200000000000000000000000000000000000000000000e+06"); c++;
-  generateConstantArray("Se2",           "+6.694379990140000000000000000000000000000000000000000000e-03"); c++;
-
-
-  generateConstantArray("Sep2",          "+6.739496742280000000000000000000000000000000000000000000e-03"); c++;
-  generateConstantArray("Sfm1",          "+2.982572235630000000000000000000000000000000000000000000e+02"); c++; // per definition
-  generateConstantArray("T0",            "+2.731500000000000000000000000000000000000000000000000000e+02"); c++; // per definition
-  generateConstantArray("TP",            "+1.416785000000000000000000000000000000000000000000000000e+32"); c++;
-  generateConstantArray("tPL",           "+5.391245000000000000000000000000000000000000000000000000e-44"); c++;
-  generateConstantArray("Vm",            "+2.241396954501413773501110288675055514433752775721687639e-02"); c++;
-
-  generateConstantArray("Z0",            "+3.767303134617706554681984004203193082686235083524186552e+02"); c++; // mu0 * c
-  generateConstantArray("alpha",         "+7.297352569300000000000000000000000000000000000000000000e-03"); c++;
-  generateConstantArray("gamma",         "+6.674300000000000000000000000000000000000000000000000000e-11"); c++; // gamma = gEarth --> is this duplicate constant needed?
-  generateConstantArray("gammaEM",       "+5.772156649015328606065120900824024310421593359399235988e-01"); c++; // math constant Euler-Mascheroni
-  generateConstantArray("gammap",        "+2.675221874400000000000000000000000000000000000000000000e+08"); c++;
-  generateConstantArray("DELTAvcs",      "+9.192631770000000000000000000000000000000000000000000000e+09"); c++; // per definition
-
-  generateConstantArray("epsilon0",      "+8.854187812800000000000000000000000000000000000000000000e-12"); c++;
-  generateConstantArray("lambdaC",       "+2.426310238670000000000000000000000000000000000000000000e-12"); c++;
-  generateConstantArray("lambdaCn",      "+1.319590905810000000000000000000000000000000000000000000e-15"); c++;
-  generateConstantArray("lambdaCp",      "+1.321409855390000000000000000000000000000000000000000000e-15"); c++;
-  generateConstantArray("mu0",           "+1.256637062120000000000000000000000000000000000000000000e-06"); c++;
-  generateConstantArray("muB",           "+9.274010078000000000000000000000000000000000000000000000e-24"); c++;
-
-  generateConstantArray("mue",           "-9.284764704300000000000000000000000000000000000000000000e-24"); c++;
-  generateConstantArray("mueOnmuB",      "-1.001159652181280000000000000000000000000000000000000000e+00"); c++;
-  generateConstantArray("mun",           "-9.662365000000000000000000000000000000000000000000000000e-27"); c++;
-  generateConstantArray("mup",           "+1.410606797360000000000000000000000000000000000000000000e-26"); c++;
-  generateConstantArray("muu",           "+5.050783746100000000000000000000000000000000000000000000e-27"); c++;
-  generateConstantArray("mumu",          "-4.490448300000000000000000000000000000000000000000000000e-26"); c++;
+  cc = 0;
+/*000*/  generateConstantArray("a",             "+3.652425000000000000000000000000000000000000000000000000e+02"); cc++; // per definition
+/*001*/  generateConstantArray("a0",            "+5.291772109030000000000000000000000000000000000000000000e-11"); cc++;
+/*002*/  generateConstantArray("aMoon",         "+3.844000000000000000000000000000000000000000000000000000e+08"); cc++;
+/*003*/  generateConstantArray("aEarth",        "+1.495979000000000000000000000000000000000000000000000000e+11"); cc++;
+/*004*/  generateConstantArray("c",             "+2.997924580000000000000000000000000000000000000000000000e+08"); cc++; // per definition
+/*005*/  generateConstantArray("c1",            "+3.741771852192758011367155555929985138219953097124061418e-16"); cc++;
+/*006*/  generateConstantArray("c2",            "+1.438776877503933802146671601543911595199069423148099191e-02"); cc++;
+/*007*/  generateConstantArray("e",             "+1.602176634000000000000000000000000000000000000000000000e-19"); cc++; // per definition
+/*008*/  generateConstantArray("eE",            "+2.718281828459045235360287471352662497757247093699959575e+00"); cc++; // math constant e
+/*009*/  generateConstantArray("F",             "+9.648533212331001840000000000000000000000000000000000000e+04"); cc++;
+/*010*/  generateConstantArray("Falpha",        "+2.502907875095892822283902873218215786381271376727149977e+00"); cc++; // math constant Falpha
+/*011*/  generateConstantArray("Fdelta",        "+4.669201609102990671853203820466201617258185577475768633e+00"); cc++; // math constant Fdelta
+/*012*/  generateConstantArray("G",             "+6.674300000000000000000000000000000000000000000000000000e-11"); cc++;
+/*013*/  generateConstantArray("G0",            "+7.748091729863650646680823323308763943587286047673370920e-05"); cc++;
+/*014*/  generateConstantArray("GC",            "+9.159655941772190150546035149323841107741493742816721343e-01"); cc++; // math constant Catalan
+/*015*/  generateConstantArray("ge",            "-2.002319304362560000000000000000000000000000000000000000e+00"); cc++;
+/*016*/  generateConstantArray("GM",            "+3.986004418000000000000000000000000000000000000000000000e+14"); cc++;
+/*017*/  generateConstantArray("gEarth",        "+9.806650000000000000000000000000000000000000000000000000e+00"); cc++; // per definition
+/*018*/  generateConstantArray("Planck",        "+6.626070150000000000000000000000000000000000000000000000e-34"); cc++;
+/*019*/  generateConstantArray("PlanckOn2pi",   "+1.054571817646156391262428003302280744722826330020413122e-34"); cc++;
+/*020*/  generateConstantArray("k",             "+1.380649000000000000000000000000000000000000000000000000e-23"); cc++; // per definition
+/*021*/  generateConstantArray("KJ",            "+4.835978484169836324476582850545281353533511866004014461e+14"); cc++;
+/*022*/  generateConstantArray("lPL",           "+1.616255000000000000000000000000000000000000000000000000e-35"); cc++;
+/*023*/  generateConstantArray("me",            "+9.109383701500000000000000000000000000000000000000000000e-31"); cc++;
+/*024*/  generateConstantArray("MMoon",         "+7.349000000000000000000000000000000000000000000000000000e+22"); cc++;
+/*025*/  generateConstantArray("mn",            "+1.674927498040000000000000000000000000000000000000000000e-27"); cc++;
+/*026*/  generateConstantArray("mnOnmp",        "+1.001378418980000000000000000000000000000000000000000000e+00"); cc++;
+/*027*/  generateConstantArray("mp",            "+1.672621923690000000000000000000000000000000000000000000e-27"); cc++;
+/*028*/  generateConstantArray("mPL",           "+2.176435000000000000000000000000000000000000000000000000e-08"); cc++;
+/*029*/  generateConstantArray("mpOnme",        "+1.836152673430000000000000000000000000000000000000000000e+03"); cc++;
+/*030*/  generateConstantArray("mu",            "+1.660539066600000000000000000000000000000000000000000000e-27"); cc++;
+/*031*/  generateConstantArray("muc2",          "+1.492418085600000000000000000000000000000000000000000000e-10"); cc++;
+/*032*/  generateConstantArray("mmu",           "+1.883531627000000000000000000000000000000000000000000000e-28"); cc++;
+/*033*/  generateConstantArray("mSun",          "+1.989100000000000000000000000000000000000000000000000000e+30"); cc++;
+/*034*/  generateConstantArray("mEarth",        "+5.973600000000000000000000000000000000000000000000000000e+24"); cc++;
+/*035*/  generateConstantArray("NA",            "+6.022140760000000000000000000000000000000000000000000000e+23"); cc++; // per definition
+/*036*/  generateConstantArray("NaN",           "Not a number"                                                 ); cc++;
+/*037*/  generateConstantArray("p0",            "+1.013250000000000000000000000000000000000000000000000000e+05"); cc++; // per definition
+/*038*/  generateConstantArray("R",             "+8.314462618153240000000000000000000000000000000000000000e+00"); cc++;
+/*039*/  generateConstantArray("re",            "+2.817940326200000000000000000000000000000000000000000000e-15"); cc++;
+/*040*/  generateConstantArray("RK",            "+2.581280745930450666004551670608744304245727322140342177e+04"); cc++;
+/*041*/  generateConstantArray("RMoon",         "+1.737530000000000000000000000000000000000000000000000000e+06"); cc++;
+/*042*/  generateConstantArray("RInfinity",     "+1.097373156816000000000000000000000000000000000000000000e+07"); cc++;
+/*043*/  generateConstantArray("RSun",          "+6.960000000000000000000000000000000000000000000000000000e+08"); cc++;
+/*044*/  generateConstantArray("REarth",        "+6.371010000000000000000000000000000000000000000000000000e+06"); cc++;
+/*045*/  generateConstantArray("Sa",            "+6.378137000000000000000000000000000000000000000000000000e+06"); cc++; // per definition
+/*046*/  generateConstantArray("Sb",            "+6.356752314200000000000000000000000000000000000000000000e+06"); cc++;
+/*047*/  generateConstantArray("Se2",           "+6.694379990140000000000000000000000000000000000000000000e-03"); cc++;
+/*048*/  generateConstantArray("Sep2",          "+6.739496742280000000000000000000000000000000000000000000e-03"); cc++;
+/*049*/  generateConstantArray("Sfm1",          "+2.982572235630000000000000000000000000000000000000000000e+02"); cc++; // per definition
+/*050*/  generateConstantArray("T0",            "+2.731500000000000000000000000000000000000000000000000000e+02"); cc++; // per definition
+/*051*/  generateConstantArray("TP",            "+1.416785000000000000000000000000000000000000000000000000e+32"); cc++;
+/*052*/  generateConstantArray("tPL",           "+5.391245000000000000000000000000000000000000000000000000e-44"); cc++;
+/*053*/  generateConstantArray("Vm",            "+2.241396954501413773501110288675055514433752775721687639e-02"); cc++;
+/*054*/  generateConstantArray("Z0",            "+3.767303134617706554681984004203193082686235083524186552e+02"); cc++; // mu0 * c
+/*055*/  generateConstantArray("alpha",         "+7.297352569300000000000000000000000000000000000000000000e-03"); cc++;
+/*056*/  generateConstantArray("K0",            "+2.685452001065306445309714835481795693820382293994462953e+00"); cc++; // math constant Khinchin
+/*057*/  generateConstantArray("gammaEM",       "+5.772156649015328606065120900824024310421593359399235988e-01"); cc++; // math constant Euler-Mascheroni
+/*058*/  generateConstantArray("gammap",        "+2.675221874400000000000000000000000000000000000000000000e+08"); cc++;
+/*059*/  generateConstantArray("DELTAvcs",      "+9.192631770000000000000000000000000000000000000000000000e+09"); cc++; // per definition
+/*060*/  generateConstantArray("epsilon0",      "+8.854187812800000000000000000000000000000000000000000000e-12"); cc++;
+/*061*/  generateConstantArray("lambdaC",       "+2.426310238670000000000000000000000000000000000000000000e-12"); cc++;
+/*062*/  generateConstantArray("lambdaCn",      "+1.319590905810000000000000000000000000000000000000000000e-15"); cc++;
+/*063*/  generateConstantArray("lambdaCp",      "+1.321409855390000000000000000000000000000000000000000000e-15"); cc++;
+/*064*/  generateConstantArray("mu0",           "+1.256637062120000000000000000000000000000000000000000000e-06"); cc++;
+/*065*/  generateConstantArray("muB",           "+9.274010078000000000000000000000000000000000000000000000e-24"); cc++;
+/*066*/  generateConstantArray("mue",           "-9.284764704300000000000000000000000000000000000000000000e-24"); cc++;
+/*067*/  generateConstantArray("mueOnmuB",      "-1.001159652181280000000000000000000000000000000000000000e+00"); cc++;
+/*068*/  generateConstantArray("mun",           "-9.662365000000000000000000000000000000000000000000000000e-27"); cc++;
+/*069*/  generateConstantArray("mup",           "+1.410606797360000000000000000000000000000000000000000000e-26"); cc++;
+/*070*/  generateConstantArray("muu",           "+5.050783746100000000000000000000000000000000000000000000e-27"); cc++;
+/*071*/  generateConstantArray("mumu",          "-4.490448300000000000000000000000000000000000000000000000e-26"); cc++;
+/*072*/  generateConstantArray("sigmaB",        "+5.670374419184429453970996731889230875840122970291303682e-08"); cc++;
+/*073*/  generateConstantArray("PHI",           "+1.618033988749894848204586834365638117720309179805762862e+00"); cc++; // math constant phi = (1 + sqrt(5)) / 2
+/*074*/  generateConstantArray("PHI0",          "+2.067833848461929323081115412147497340171545654934323552e-15"); cc++;
+/*075*/  generateConstantArray("omega",         "+7.292115000000000000000000000000000000000000000000000000e-05"); cc++;
+/*076*/  generateConstantArray("minusInfinity", "-9.999999999999999999999999999999999999999999999999999999e+9999"); cc++; // math "constant"
+/*077*/  generateConstantArray("plusInfinity",  "+9.999999999999999999999999999999999999999999999999999999e+9999"); cc++; // math "constant"
+/*078*/  generateConstantArray("0",             "0"); cc++;
+/*079*/  generateConstantArray("BB",            "+3.566668367128895828373073810012662699038701534076244140e-01"); cc++;   //  solution to equation 1.2 in https://arxiv.org/pdf/2309.05050.pdf : sqrt(36x+3) / 4 + sin(2 pi sqrt(12x+1) / 3) = 0
+/*080*/  generateConstantArray("DeltaS",        "+2.414213562373095048801688724209698078569671875376948073e+00"); cc++;   //  1+√2
+/*081*/  generateConstantArray("movSofa",       "+2.219531668871970000000000000000000000000000000000000000e+00"); cc++;   //  https://mathworld.wolfram.com/MovingSofaProblem.html. The moving sofa number is the result of a lot of equation solving
+/*082*/  generateConstantArray("tau",           "+6.283185307179586476925286766559005768394338798750211642e+00"); cc++;   //  circle constant
+/*083*/  generateConstantArray("pi",            "+3.141592653589793238462643383279502884197169399375105821e+00"); cc++;
 
 
-  generateConstantArray("sigmaB",        "+5.670374419184429453970996731889230875840122970291303682e-08"); c++;
-  generateConstantArray("PHI",           "+1.618033988749894848204586834365638117720309179805762862e+00"); c++; // math constant phi = (1 + sqrt(5)) / 2
-  generateConstantArray("PHI0",          "+2.067833848461929323081115412147497340171545654934323552e-15"); c++;
-  generateConstantArray("omega",         "+7.292115000000000000000000000000000000000000000000000000e-05"); c++;
-  generateConstantArray("minusInfinity", "-9.999999999999999999999999999999999999999999999999999999e+9999"); c++; // math "constant"
-  generateConstantArray("plusInfinity",  "+9.999999999999999999999999999999999999999999999999999999e+9999"); c++; // math "constant"
-
-  generateConstantArray("0",             "0"); c++;
 
   // All the formulas are 100% exact conversion formulas
   generateConstantArray("PointToMm",     "+3.527777777777777777777777777777777777777777777777777778e-01"); // mm     = pt × 0.0254 / 72 × 1000
   generateConstantArray("InchToMm",      "+2.540000000000000000000000000000000000000000000000000000e+01"); // mm     = inch × 0.0254 × 1000
   generateConstantArray("FtToM",         "+3.048000000000000000000000000000000000000000000000000000e-01"); // m      = ft × 12 × 0.0254
+  generateConstantArray("Ft2ToHa",       "+9.290304000000000000000000000000000000000000000000000000e-06"); // Ha     = ft2 × (12 × 0.0254)^2 / 10000
+  generateConstantArray("Ft2ToM2",       "+9.290304000000000000000000000000000000000000000000000000e-02"); // m2     = ft2 × (12 × 0.0254)^2
   generateConstantArray("SfeetToM",      "+3.048006096012192024384048768097536195072390144780289561e-01"); // m      = sfeetus × (1200 / 3937)
   generateConstantArray("YardToM",       "+9.144000000000000000000000000000000000000000000000000000e-01"); // m      = yard × 3 × 12 × 0.0254
   generateConstantArray("FathomToM",     "+1.828800000000000000000000000000000000000000000000000000e+00"); // m      = fathom × 6 × 12 × 0.0254
@@ -424,7 +416,7 @@ void generateAllConstants(void) {
   generateConstantArray("LbfToN",        "+4.448221615260500000000000000000000000000000000000000000e+00"); // newton = lbf × 9.80665 × 0.45359237
 
   generateConstantArray("TorrToPa",      "+1.333223684210526315789473684210526315789473684210526316e+02"); // pascal = torr × 101325 / 760
-  #if(MMHG_PA_133_3224 == 1)
+  #if (MMHG_PA_133_3224 == 1)
     generateConstantArray("MmhgToPa",    "+1.333224000000000000000000000000000000000000000000000000e+02"); // pascal = mm.Hg × 133.3224
     generateConstantArray("InhgToPa",    "+3.386388960000000000000000000000000000000000000000000000e+03"); // pascal = in.Hg × 133.3224 × 25.4
   #else // (MMHG_PA_133_3224 == 0)
@@ -458,6 +450,7 @@ void generateAllConstants(void) {
 
 
   generateConstantArray("_108",          "-1.080000000000000000000000000000000000000000000000000000e+02");
+  generateConstantArray("_90",           "-9.000000000000000000000000000000000000000000000000000000e+01");
   generateConstantArray("_4",            "-4.000000000000000000000000000000000000000000000000000000e+00");
   generateConstantArray("_1",            "-1.000000000000000000000000000000000000000000000000000000e+00");
   generateConstantArray("_1oneE",        "-3.678794411714423215955237701614608674458111310317678345e-01");
@@ -473,6 +466,7 @@ void generateAllConstants(void) {
   generateConstantArray("1on2",          "+5.000000000000000000000000000000000000000000000000000000e-01");
   generateConstantArray("egamma",        "+5.772156649015328606065120900824024310421593359399235988e-01");
   generateConstantArray("ln2",           "+6.931471805599453094172321214581765680755001343602552541e-01");
+  generateConstantArray("root2",         "+1.414213562373095048801688724209698078569671875376948073e+00");
   generateConstantArray("root2on2",      "+7.071067811865475244008443621048490392848359376884740366e-01");
   generateConstantArray("piOn4",         "+7.853981633974483096156608458198757210492923498437764552e-01");
   generateConstantArray("root3on2",      "+8.660254037844386467637231707529361834714026269051903140e-01");
@@ -486,8 +480,6 @@ void generateAllConstants(void) {
   generateConstantArray("ln10",          "+2.302585092994045684017991454684364207601101488628772976e+00");
   generateConstantArray("3piOn4",        "+2.356194490192344928846982537459627163147877049531329366e+00");
   generateConstantArray("3",             "+3.000000000000000000000000000000000000000000000000000000e+00");
-  generateConstantArray("pi",            "+3.141592653589793238462643383279502884197169399375105821e+00");
-
   generateConstantArray("4",             "+4.000000000000000000000000000000000000000000000000000000e+00");
   generateConstantArray("3piOn2",        "+4.712388980384689857693965074919254326295754099062658731e+00");
   generateConstantArray("5",             "+5.000000000000000000000000000000000000000000000000000000e+00");
@@ -510,6 +502,7 @@ void generateAllConstants(void) {
   generateConstantArray("32",            "+3.200000000000000000000000000000000000000000000000000000e+01");
   generateConstantArray("36",            "+3.600000000000000000000000000000000000000000000000000000e+01");
   generateConstantArray("47",            "+4.700000000000000000000000000000000000000000000000000000e+01");
+  generateConstantArray("54",            "+5.400000000000000000000000000000000000000000000000000000e+01");
   generateConstantArray("180onPi",       "+5.729577951308232087679815481410517033240547246656432155e+01");
   generateConstantArray("60",            "+6.000000000000000000000000000000000000000000000000000000e+01");
   generateConstantArray("200onPi",       "+6.366197723675813430755350534900574481378385829618257950e+01");
@@ -524,6 +517,7 @@ void generateAllConstants(void) {
   generateConstantArray("1680",          "+1.680000000000000000000000000000000000000000000000000000e+03");
   generateConstantArray("2100",          "+2.100000000000000000000000000000000000000000000000000000e+03");
   generateConstantArray("2520",          "+2.520000000000000000000000000000000000000000000000000000e+03");
+  generateConstantArray("2916",          "+2.916000000000000000000000000000000000000000000000000000e+03");
   generateConstantArray("3600",          "+3.600000000000000000000000000000000000000000000000000000e+03");
   generateConstantArray("6000",          "+6.000000000000000000000000000000000000000000000000000000e+03");
   generateConstantArray("9999",          "+9.999000000000000000000000000000000000000000000000000000e+03");
@@ -532,16 +526,25 @@ void generateAllConstants(void) {
   generateConstantArray("42000",         "+4.200000000000000000000000000000000000000000000000000000e+04");
   generateConstantArray("73766",         "+7.376600000000000000000000000000000000000000000000000000e+04");
   generateConstantArray("1e6",           "+1.000000000000000000000000000000000000000000000000000000e+06");
+  generateConstantArray("2e6",           "+2.000000000000000000000000000000000000000000000000000000e+06");
   generateConstantArray("1e8",           "+1.000000000000000000000000000000000000000000000000000000e+08");
   generateConstantArray("1e9",           "+1.000000000000000000000000000000000000000000000000000000e+09");
   generateConstantArray("2p32",          "+4.294967296000000000000000000000000000000000000000000000e+09");
   generateConstantArray("1e32",          "+1.000000000000000000000000000000000000000000000000000000e+32");
+  generateConstantArray("2p31__1",       "+2147483647");
+  generateConstantArray("10p9__1",       "+999999999");
+  generateConstantArray("2p63",          "+9223372036854775808");
+  generateConstantArray("2p64",          "+18446744073709551616");
   generateConstantArray("1e_10000",      "+1.000000000000000000000000000000000000000000000000000000e-10000");
   generateConstantArray("995on1000",     "+9.950000000000000000000000000000000000000000000000000000e-01");
   generateConstantArray("1e_32",         "+1.000000000000000000000000000000000000000000000000000000e-32");
   generateConstantArray("rt3",           "+1.732050807568877293527446341505872366942805253810380628e+00");
+  generateConstantArray("rt5",           "+2.236067977499789696409173668731276235440618359611525724e+00");
+  generateConstantArray("rt7",           "+2.645751311064590590501615753639260425710259183082450180e+00");
   generateConstantArray("GaluseqE",      "+3.370000000000000000000000000000000000000000000000000000e+01");
   generateConstantArray("1e_6143",       "+1.000000000000000000000000000000000000000000000000000000e-6143");
+  generateConstantArray("rtpi",          "+1.772453850905516027298167483341145182797549456122387128e+00");
+  generateConstantArray("1onpi",         "+3.183098861837906715377675267450287240689192914809128975e-01");
 
 
   // Lanczos's coefficients calculated for N=22 and G=22.61891 using Toth's program: https://www.vttoth.com/CMS/projects/41
@@ -827,8 +830,10 @@ void generateAllConstants(void) {
   generateConstantArray34("_4712",       "-4.712000000000000000000000000000000000000000000000000000e+03");
   generateConstantArray34("0",           "+0.000000000000000000000000000000000000000000000000000000e+00");
   generateConstantArray34("1e_32",       "+1.000000000000000000000000000000000000000000000000000000e-32");
+  generateConstantArray34("1e_24",       "+1.000000000000000000000000000000000000000000000000000000e-24");
   generateConstantArray34("1e_6",        "+1.000000000000000000000000000000000000000000000000000000e-06");
   generateConstantArray34("1e_4",        "+1.000000000000000000000000000000000000000000000000000000e-04");
+  generateConstantArray34("1on10",       "+1.000000000000000000000000000000000000000000000000000000e-01");
   generateConstantArray34("1on2",        "+5.000000000000000000000000000000000000000000000000000000e-01");
   generateConstantArray34("1",           "+1.000000000000000000000000000000000000000000000000000000e+00");
   generateConstantArray34("2",           "+2.000000000000000000000000000000000000000000000000000000e+00");
@@ -912,7 +917,7 @@ int main(int argc, char* argv[]) {
   }
 
   fprintf(constantsH, "// SPDX-License-Identifier: GPL-3.0-only\n");
-  fprintf(constantsH, "// SPDX-FileCopyrightText: Copyright The WP43 Authors\n\n");
+  fprintf(constantsH, "// SPDX-FileCopyrightText: Copyright The C47 Authors\n\n");
 
   fprintf(constantsH, "/*************************************************************************************************\n");
   fprintf(constantsH, " * Do not edit this file manually! It's automagically generated by the program generateConstants *\n");
@@ -950,14 +955,14 @@ int main(int argc, char* argv[]) {
   }
 
   fprintf(constantsC, "// SPDX-License-Identifier: GPL-3.0-only\n");
-  fprintf(constantsC, "// SPDX-FileCopyrightText: Copyright The WP43 Authors\n\n");
+  fprintf(constantsC, "// SPDX-FileCopyrightText: Copyright The C47 Authors\n\n");
 
   fprintf(constantsC, "/*************************************************************************************************\n");
   fprintf(constantsC, " * Do not edit this file manually! It's automagically generated by the program generateConstants *\n");
   fprintf(constantsC, " *************************************************************************************************/\n\n");
 
   fprintf(constantsC, "#include \"constantPointers.h\"\n\n");
-  fprintf(constantsC, "#include \"wp43.h\"\n\n");
+  fprintf(constantsC, "#include \"c47.h\"\n\n");
 
   fprintf(constantsC, "%s", realArray);
   fprintf(constantsC, "\n");

@@ -1,12 +1,14 @@
 # C47 project specific files
 /build
 /build.sim
-/dep/gmp-6.2.0
+/dep/gmp-6.2.1
 /wp43
+/c47
 /testSuite
 /generate*
 /ttf2RasterFonts
 /wp43.exe
+/c47.exe
 /testSuite.exe
 /generate*.exe
 /ttf2RasterFonts.exe
@@ -19,6 +21,7 @@ c47.dat
 *.s47
 tags
 /PROGRAMS
+/src/generated
 
 # Created by https://www.toptal.com/developers/gitignore/api/macos,windows,linux,codeblocks,valgrind,vscode
 # Edit at https://www.toptal.com/developers/gitignore?templates=macos,windows,linux,codeblocks,valgrind,vscode

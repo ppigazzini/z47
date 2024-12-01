@@ -1,0 +1,83 @@
+-----------------------------------
+Converting from working DM32 to R47
+-----------------------------------
+
+Go to SETUP using keys f C
+3. System
+2. Enter System Menu
+5. Format FAT Disk
+2. Format FAT disk
+EXIT
+4. Reset to DMCP menu
+6. Activate USB Disk
+Observe the disk name is now DM32
+
+On DM32 drive:
+Copy all files in r47-dmcp5 to (empty) DM32 root risk
+Rename the file R47-keymap.bin to keymap.bin
+Release the drive from Mac/PC
+
+Observe Keymap is installed: "New KEYMAP installed"
+  "R47"
+  Press any key to continue
+
+Press Option 4: Load QSPI ** may start automatically
+  Observe DM42_qspi_3.x.bin be installed
+  Press key to restart / Exit
+
+Press 3. DMCP Menu
+Press Option 3: Load Program
+  Choose R47.pg5 (DM32 blue shift is Down, yellow shift is Up)
+  Press key to restart / Exit
+
+
+R47 is loaded
+
+
+--------------------------
+Returning from R47 to DM32
+--------------------------
+
+Go to PREFS using keys g 1
+7. System Menu
+5. Format
+2. Format FAT Disk
+EXIT
+4. Reset to DMCP menu
+6. Activate USB Disk
+Observe the disk name is now DMCP
+
+Copy the file DMCP5_flash_3.50t38_DM32-2.09.bin from SwissMicros Site to the Disk
+Copy the file DM42-keymap.bin from the r47-dmcp5 folder to the Disk.
+Rename the DM42-keymap.bin file to keymap.bin.
+Release the drive from Mac/PC
+
+Observe Keymap is installed: "New KEYMAP installed"
+  "EMPTY"
+  Press any key to continue
+
+Observe the "Load Flash From FAT" message, etc. 
+  Press ENTER to Continue
+  Observe DMCP5_flash_3.50t38_DM32-2.09.bin being installed and observe verification
+  Reboot automatic
+  Press EXIT to continue
+
+1. Start DM32 Anyway (not safe) (not sure why it says not safe!)
+  Observe complaint that there is an error loading the state file, which is normal if you have no state file loaded!
+  Press any key to continue
+
+DM32 running
+
+
+
+
+----------------------------------------------
+Notes
+----------------------------------------------
+
+
+
+
+
+
+

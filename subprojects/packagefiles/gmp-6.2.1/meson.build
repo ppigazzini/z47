@@ -9,7 +9,7 @@ env.append('CFLAGS',
   '-Os',
   separator : ' ')
 
-mod = import('unstable_external_project')
+mod = import('unstable-external_project')
 
 p = mod.add_project(
   'configure',

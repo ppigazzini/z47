@@ -5,7 +5,7 @@
 ;**                                                         **
 ;*************************************************************
 ;*************************************************************
-In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RM=0 IM=2compl SS=4 WS=64
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
 Func: fnIp
 
 
@@ -14,10 +14,10 @@ Func: fnIp
 ; ip(Long Integer) --> Long Integer
 ;=======================================
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"5"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"5" RX=Real:"5"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"5" RX=LonI:"5"
 
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"-5"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"-5" RX=Real:"-5"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"-5" RX=LonI:"-5"
 
 
 
@@ -59,7 +59,7 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M2,3[1.1,-2.3,3.5,-5.7,7.8,-8.9]" RX=
 ; ip(Short Integer) --> Short Integer
 ;=======================================
 In:  FL_ASLIFT=0 FL_CPXRES=0 RX=ShoI:"5#7"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"5"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=ShoI:"5#7"
 
 
 

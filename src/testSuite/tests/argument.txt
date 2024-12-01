@@ -5,8 +5,8 @@
 ;**                                                         **
 ;*************************************************************
 ;*************************************************************
-In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RM=0 IM=2compl SS=4 WS=64
-Func: fnArg_all
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+Func: fnArg
 
 
 
@@ -58,10 +58,10 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=CxMa:"M2,3[0,0i-1,2i-1,-3i2,4i3,-5i-4]" RX=
 
 
 ;=======================================
-; arg(Short Integer) --> Error24
+; arg(Short Integer) --> Real
 ;=======================================
-In:  FL_ASLIFT=0 FL_CPXRES=0 RX=ShoI:"5#7"
-Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=ShoI:"5#7"
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=ShoI:"5#7"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"0":DEG
 
 
 
@@ -100,7 +100,15 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-5.32564":GRAD RX=Real:"180.0":DEG
 
 ; NaN
 In:  AM=RAD FL_ASLIFT=1 FL_CPXRES=0 RX=Real:"NaN":RAD
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"NaN":RAD RX=Real:"NaN":RAD
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"NaN":RAD RX=Real:"NaN"
+
+; 0
+In:  AM=DEG FL_ASLIFT=1 FL_CPXRES=0 FL_SPCRES=1 RX=Real:"0":DEG
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0":DEG RX=Real:"0.0":DEG
+
+; -0
+In:  AM=DEG FL_ASLIFT=1 FL_CPXRES=0 FL_SPCRES=1 RX=Real:"-0":DEG
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-0":DEG RX=Real:"0.0":DEG
 
 ; Infinity
 In:  AM=DEG FL_ASLIFT=1 FL_CPXRES=0 FL_SPCRES=1 RX=Real:"inf":DEG

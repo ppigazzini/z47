@@ -5,7 +5,7 @@
 ;**                                                         **
 ;*************************************************************
 ;*************************************************************
-In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RM=0 IM=2compl SS=4 WS=64
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
 Func: fnPercent
 
 ;=======================================
@@ -33,25 +33,44 @@ In:  FL_ASLIFT=1 FL_CPXRES=1 RY=Real:"123.456" RX=LonI:"456"
 Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=LonI:"456" RY=Real:"123.456" RX=Real:"562.95936"
 
 ;=======================================
-; Error case: ERROR_INVALID_DATA_INPUT_FOR_OP
+; Short integer --> Real
 ;=======================================
 In:  FL_ASLIFT=0  RY=ShoI:"10#10" RX=LonI:"450"
-Out: EC=24 FL_ASLIFT=0 RY=ShoI:"10#10" RX=LonI:"450"
+Out: EC=0 FL_ASLIFT=1 RY=ShoI:"10#10" RX=Real:"45"
 
 In:  FL_ASLIFT=0  RY=LonI:"10" RX=ShoI:"20#10"
-Out: EC=24 FL_ASLIFT=0 RY=LonI:"10" RX=ShoI:"20#10"
+Out: EC=0 FL_ASLIFT=1 RY=LonI:"10" RX=Real:"2"
 
 In:  FL_ASLIFT=0  RY=ShoI:"10#10" RX=ShoI:"20#10"
-Out: EC=24 FL_ASLIFT=0 RY=ShoI:"10#10" RX=ShoI:"20#10"
+Out: EC=0 FL_ASLIFT=1 RY=ShoI:"10#10" RX=Real:"2.0"
 
+In:  FL_ASLIFT=0  RY=Real:"10.0" RX=ShoI:"100#10"
+Out: EC=0 FL_ASLIFT=1 RY=Real:"10.0" RX=Real:"10.0"
+
+In:  FL_ASLIFT=0  RY=ShoI:"10#10" RX=Real:"100.0"
+Out: EC=0 FL_ASLIFT=1 RY=ShoI:"10#10" RX=Real:"10.0"
+
+;=======================================
+; Complex --> Real
+;=======================================
+In:  FL_ASLIFT=0  RY=Cplx:"10 i 0" RX=Real:"450"
+Out: EC=0 FL_ASLIFT=1 RY=Cplx:"10 i 0" RX=Real:"45"
+
+In:  FL_ASLIFT=0  RY=Real:"10" RX=Cplx:"450 i 0"
+Out: EC=0 FL_ASLIFT=1 RY=Real:"10" RX=Real:"45"
+
+;=======================================
+; Error case: ERROR_INVALID_DATA_INPUT_FOR_OP
+;=======================================
 In:  FL_ASLIFT=0  RY=ShoI:"10#10" RX=Stri:"ABC"
 Out: EC=24 FL_ASLIFT=0 RY=ShoI:"10#10" RX=Stri:"ABC"
 
 In:  FL_ASLIFT=0  RY=Real:"10.0" RX=Stri:"ABC"
 Out: EC=24 FL_ASLIFT=0 RY=Real:"10.0" RX=Stri:"ABC"
 
-In:  FL_ASLIFT=0  RY=Real:"10.0" RX=ShoI:"100#10"
-Out: EC=24 FL_ASLIFT=0 RY=Real:"10.0" RX=ShoI:"100#10"
+In:  FL_ASLIFT=0  RY=Cplx:"1 i 1" RX=Real:"10.0"
+Out: EC=24 FL_ASLIFT=0 RY=Cplx:"1 i 1" RX=Real:"10.0"
 
-In:  FL_ASLIFT=0  RY=ShoI:"10#10" RX=Real:"100.0"
-Out: EC=24 FL_ASLIFT=0 RY=ShoI:"10#10" RX=Real:"100.0"
+In:  FL_ASLIFT=0  RY=Real:"10.0" Rx=Cplx:"1 i 1"
+Out: EC=24 FL_ASLIFT=0 RY=Real:"10.0" Rx=Cplx:"1 i 1"
+
