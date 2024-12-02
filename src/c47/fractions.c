@@ -1,18 +1,5 @@
-/* This file is part of 43S.
- *
- * 43S is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * 43S is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with 43S.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: GPL-3.0-only
+// SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
 #include <math.h>
 
@@ -208,14 +195,14 @@ bool_t fraction(calcRegister_t regist, int16_t *sign, uint64_t *intPart, uint64_
   if(!validResult) {
     //check if fraction is a simple integer/DMX, fast track, only integer GCD needed, not Farey fractions which run to n = DMX loops if the fraction is low
     realDivide (const_1,&factorOfOneOnDenMax,&factorOfOneOnDenMax,&ctxtReal51);
-    realDivide ( &temp0,&factorOfOneOnDenMax,&factorOfOneOnDenMax,&ctxtReal51);             // printRealToConsole(&factorOfOneOnDenMax,"factorOfOneOnDenMax=","\n");                                           
+    realDivide ( &temp0,&factorOfOneOnDenMax,&factorOfOneOnDenMax,&ctxtReal51);             // printRealToConsole(&factorOfOneOnDenMax,"factorOfOneOnDenMax=","\n");
     real34_t factorOfOneOnDenMax34;
     realToReal34(&factorOfOneOnDenMax,&factorOfOneOnDenMax34);                              // printReal34ToConsole(&factorOfOneOnDenMax34,"factorOfOneOnDenMax34=","\n");
     uint32_t tt = 0;
     if(real34IsAnInteger(&factorOfOneOnDenMax34)) {
       tt = real34ToInt32(&factorOfOneOnDenMax34);
       uint32_t gcd = WP34S_int_gcd(tt, (uint32_t)denMax);
-  
+
       if(getSystemFlag(FLAG_DENANY)) {
         if(gcd != 0) {
           *numer = tt / gcd;
@@ -617,7 +604,7 @@ bool_t fraction(calcRegister_t regist, int16_t *sign, uint64_t *intPart, uint64_
   real_t roundingTolerance;
   fractionTolerence(&roundingTolerance);                              //Arrive here if a tolerance for lying is set
 
-  
+
   if( ((fractionDigits == 0 || fractionDigits == 34) && realIsZero(&f)) ||
       ((fractionDigits >= 1 && fractionDigits <= 33) && realCompareAbsLessThan(&f,&roundingTolerance)) ) { //broaden the range for it to be deemed zero
 

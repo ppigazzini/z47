@@ -100,7 +100,7 @@ uint16_t current_cursor_y = 0;
                                        "RJvM" spc "NL," spc1
                                        "Walter" spc "DE.";
 
-   
+
 
    TO_QSPI static const char disclaimerStr[]     = "  " MODELTEXT " firmware is free, open source and \n  neither provided nor supported by \n  SwissMicros. Press a key to continue.";
 
@@ -1625,7 +1625,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
     #endif //ANALYSE_REFRESH
  
     uint16_t now = (uint16_t)(getUptimeMs() >> 4);           // ms/16
-    bool_t itIsTime = ((now >> 6) & 0x0001) == secTick1; // ms/1024, that is every second, flips secTick1
+    bool_t itIsTime = ((now >> 6) & 0x0001) == secTick1;     // ms/1024, that is every second, flips secTick1
     if(itIsTime) {
       secTick1 = !secTick1;
     }
@@ -1708,7 +1708,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
     }
     return false;
   }
-  
+
 
   void hideCursor(void) {
     if(cursorEnabled) {
@@ -1773,7 +1773,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
       if ((indexOfItems[abs(item)].itemSoftmenuName)[0] == 0) {
         takeCat = true;
       }
-    }    
+    }
     if (takeCat) {
       return indexOfItems[abs(item)].itemCatalogName;
     } else {
@@ -1846,10 +1846,10 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
 
     if(functionName[0] != 0)
     {
-      bool_t overLapPossible = (calcMode == CM_PEM); 
+      bool_t overLapPossible = (calcMode == CM_PEM);
       padding[0] = 0;
       if(overLapPossible) {
-        stringAppend(padding," "); 
+        stringAppend(padding," ");
       }
       stringAppend(padding + stringByteLength(padding),functionName);
       stringAppend(padding + stringByteLength(padding),"     ");
@@ -2031,7 +2031,7 @@ void createSubstrings(uint8_t number) {
 }
 
 
- 
+
 
   static void userTI(int16_t viewRegister, int16_t refreshRegist, char *prefix, int16_t *prefixWidth) {
     if(!(lastFuncNo() == ITM_AVIEW || lastFuncNo() == ITM_PROMPT)) {
@@ -2494,7 +2494,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
     skippedStackLines = false;
     #ifdef DMCP_BUILD
       keyBuffer_pop();                                            // This causes key updates while the longer time processing register updates happen
-      if( (calcMode == CM_NORMAL || calcMode == CM_MIM) && 
+      if( (calcMode == CM_NORMAL || calcMode == CM_MIM) &&
           !(regist == REGISTER_X || regist == REGISTER_Y) &&
           !getSystemFlag(FLAG_USB) &&                             // Automatically, when on battery (hence low processor), change to skip long processing register printing, recovering the fragmented screen here: See timer.c fnTimerEndOfActivity()
           !emptyKeyBuffer() &&
@@ -2694,7 +2694,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
         showString(errorMessage, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
       }
 
-      else if(regist == TRUE_FALSE_REGISTER_LINE && displayTrueFalse(regist)) {        
+      else if(regist == TRUE_FALSE_REGISTER_LINE && displayTrueFalse(regist)) {
       }
 
       else if(temporaryInformation == TI_RESET && regist == REGISTER_X) {
@@ -2824,7 +2824,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
               while (nn<=SCREEN_HEIGHT/line_tiny && nn<SHOWLineMax) {
                 showDispSmall( nn * SHOWLineSize, nn);          // L1
                 nn++;
-              } 
+              }
               showBottomLine();
               break;
             }
@@ -3093,7 +3093,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
         else if(getSystemFlag(FLAG_FRACT)
                     && (    getRegisterDataType(regist) == dtReal34
                          && (
-                                real34CompareAbsLessThan(REGISTER_REAL34_DATA(regist), const34_1e6) 
+                                real34CompareAbsLessThan(REGISTER_REAL34_DATA(regist), const34_1e6)
                              || real34IsZero(REGISTER_REAL34_DATA(regist))
                             )
                        )
@@ -4201,15 +4201,15 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
             int16_t tlen =stringByteLength(tmpString);
             longIntegerRegisterToRealDisplayString(regist, tmpString+tlen, TMP_STR_LENGTH-tlen, SCREEN_WIDTH - prefixWidth - w, 0, toRemoveTrailingRadix);
           }
-                     
+
         //for the 2^10 UNIT diplay, display long integers in real string, with the Ti suffic
           else if(getSystemFlag(FLAG_2TO10) && displayFormat == DF_UN) {
             strcpy(tmpString,STD_INTEGER_Z_SMALL ": ");// STD_SPACE_4_PER_EM);
             w = stringWidth(tmpString, &standardFont, false, true);
             int16_t tlen =stringByteLength(tmpString);
             longIntegerRegisterToRealDisplayString(regist, tmpString+tlen, TMP_STR_LENGTH-tlen, SCREEN_WIDTH - prefixWidth - w, 1024, !toRemoveTrailingRadix);
-          } 
-          
+          }
+
         //normal longinteger handling
           else {
             longIntegerRegisterToDisplayString(regist, tmpString, TMP_STR_LENGTH, SCREEN_WIDTH - prefixWidth, 50, toRemoveTrailingRadix);
@@ -4588,7 +4588,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
         #endif // PC_BUILD && MONITOR_CLRSCR
         lcd_fill_rect(0, 240 - SOFTMENU_HEIGHT * 3, SCREEN_WIDTH - 240 - 2, SOFTMENU_HEIGHT * 3, LCD_SET_VALUE);
         clear_ul(); //JMUL
-        if(!GRAPHMODE || menu(0) == -MNU_PLOT_FUNC) { //not in GRAPHMODE, the triangle area indicating more menus 
+        if(!GRAPHMODE || menu(0) == -MNU_PLOT_FUNC) { //not in GRAPHMODE, the triangle area indicating more menus
           lcd_fill_rect(0, 240 - SOFTMENU_HEIGHT * 3 - 3, 20, 6, LCD_SET_VALUE);
         }
          if(!GRAPHMODE) { //in GRAPHMODE, protect the square graph area
@@ -4693,7 +4693,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
 
           clearScreenOld(!clrStatusBar, clrRegisterLines, !clrSoftkeys);                  // battery powered
           fnPem(NOPARAM);                                                                 // battery powered
-          displayShiftAndTamBuffer();                                                    
+          displayShiftAndTamBuffer();                                                     // battery powered
 
           if(!(screenUpdatingMode & SCRUPD_MANUAL_STATUSBAR)) {                           // battery powered
             clearScreenOld(clrStatusBar, !clrRegisterLines, !clrSoftkeys);                // battery powered
@@ -4758,7 +4758,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
 
         if(BASEMODEACTIVE) {
           showFracMode();
-//          screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;          
+//          screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
         }
         if(calcMode == CM_CONFIRMATION) {
           screenUpdatingMode = SCRUPD_AUTO;
@@ -4952,24 +4952,24 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
                                stringToASCII(ttt,sss);
                                strcpy(ttt,"");
                                if(screenUpdatingMode == 0) strcat(ttt,"AUTO "); else {
-                                 if((screenUpdatingMode & 0x40)) strcat(ttt,"SkpMEN ");      
-                                 if((screenUpdatingMode & 0x20)) strcat(ttt,"SkpSTK ");      
+                                 if((screenUpdatingMode & 0x40)) strcat(ttt,"SkpMEN ");
+                                 if((screenUpdatingMode & 0x20)) strcat(ttt,"SkpSTK ");
 
-                                 if(!(screenUpdatingMode & 0x08)) strcat(ttt,"SHFT ");      
-                                 if(!(screenUpdatingMode & 0x04)) strcat(ttt,"MENU ");      
-                                 if(!(screenUpdatingMode & 0x02)) strcat(ttt, "STK ");      
+                                 if(!(screenUpdatingMode & 0x08)) strcat(ttt,"SHFT ");
+                                 if(!(screenUpdatingMode & 0x04)) strcat(ttt,"MENU ");
+                                 if(!(screenUpdatingMode & 0x02)) strcat(ttt, "STK ");
                                  if(!(screenUpdatingMode & 0x01)) strcat(ttt, "STS ");
                                }
                                int16_t m = softmenuStack[0].softmenuId;
                                char uuu[100];
                                stringToASCII(indexOfItems[currentMenu() > 0 ? currentMenu() : -currentMenu()].itemSoftmenuName, uuu);
 
-                               printf("   refrsh(%3u): Cnt=%3d %s CM=%2d scr..upd:%3d=%12s=>%26s TI=%4u CL=%s tam:%5i MENUid=%2d:%4i:%s\n", 
+                               printf("   refrsh(%3u): Cnt=%3d %s CM=%2d scr..upd:%3d=%12s=>%26s TI=%4u CL=%s tam:%5i MENUid=%2d:%4i:%s\n",
                                   source, refreshScreenCounter++,
                                   (last_CM != calcMode) ? "OVR" : "   ",
-                                  calcMode, 
-                                  screenUpdatingMode, sss, ttt, 
-                                  temporaryInformation, 
+                                  calcMode,
+                                  screenUpdatingMode, sss, ttt,
+                                  temporaryInformation,
                                   (alphaCase == AC_LOWER)?"LO":"UP",
                                   tam.mode,
                                   m, currentMenu(), uuu);
@@ -5144,7 +5144,7 @@ void fnSNAP(uint16_t unusedButMandatoryParameter) {
   #endif
   resetShiftState();                  //JM To avoid f or g top left of the screen, clear to make sure
   refreshScreen(80);
-  
+
   #if defined(PC_BUILD)  //added the xcopy commands needed for hardware, to better duplicate the hardware standardScreenDump
     xcopy(tmpString, aimBuffer, ERROR_MESSAGE_LENGTH + AIM_BUFFER_LENGTH + NIM_BUFFER_LENGTH);       //backup portion of the "message buffer" area in DMCP used by ERROR..AIM..NIM buffers, to the tmpstring area in DMCP. DMCP uses this area during create_screenshot.
     fnScreenDump(0);
@@ -5152,7 +5152,7 @@ void fnSNAP(uint16_t unusedButMandatoryParameter) {
   #elif defined(DMCP_BUILD)
     standardScreenDump();
   #endif
-  
+
   if(calcMode == CM_AIM) {
     fnP_Alpha();     //print alpha
   }

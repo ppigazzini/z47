@@ -795,16 +795,16 @@ TO_QSPI const int16_t menu_PLOTFUNC[]    = {  VAR_LX,                       VAR_
 
 
 TO_QSPI const int16_t menu_PLOT_STATS[]   = {
-                                             ITM_SHOWX,                 ITM_SHOWY,                 ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  
-                                             ITM_SCALE,                 ITM_PLOTRST,               ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  
-                                             ITM_MZOOMY,                ITM_PZOOMY,                ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  
+                                             ITM_SHOWX,                 ITM_SHOWY,                 ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,
+                                             ITM_SCALE,                 ITM_PLOTRST,               ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,
+                                             ITM_MZOOMY,                ITM_PZOOMY,                ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,
 
-                                             ITM_PCROS,                 ITM_PPLUS,                 ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  
-                                             ITM_PLINE,                 ITM_PBOX,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  
-                                             ITM_NULL,                  ITM_SNAP,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  
+                                             ITM_PCROS,                 ITM_PPLUS,                 ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,
+                                             ITM_PLINE,                 ITM_PBOX,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,
+                                             ITM_NULL,                  ITM_SNAP,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,
 
-                                             ITM_DIFF,                  ITM_INTG,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  
-                                             ITM_RMS,                   ITM_SHADE,                 ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  
+                                             ITM_DIFF,                  ITM_INTG,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,
+                                             ITM_RMS,                   ITM_SHADE,                 ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,
                                              ITM_NVECT,                 ITM_VECT,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL                  };
 
 
@@ -2344,7 +2344,7 @@ bool_t savedspace(int16_t itemNr) {  //strike out all SAVED_SPACE items
 
     #ifdef SAVE_SPACE_DM42_17
       case -MNU_F: case -MNU_BINOM: case -MNU_HYPER: case -MNU_POISS: case -MNU_GEOM:
-      case ITM_FPX   :     case ITM_FX   :      case ITM_FUX   :     case ITM_FM1P: 
+      case ITM_FPX   :     case ITM_FX   :      case ITM_FUX   :     case ITM_FM1P:
       case ITM_BINOMP:     case ITM_BINOM:      case ITM_BINOMU:     case ITM_BINOMM1:
       case ITM_NBINP :     case ITM_NBIN :      case ITM_NBINU :     case ITM_NBINM1 :
       case ITM_HYPERP:     case ITM_HYPER:      case ITM_HYPERU:     case ITM_HYPERM1:
@@ -2814,7 +2814,7 @@ bool_t BASE_OVERRIDEONCE = false;
         }
         showEquation(EQUATION_AIM_BUFFER, yCursor, xCursor, false, NULL, NULL);
       }
-      if( (softmenu[m].menuItem == -MNU_Sfdx || softmenu[m].menuItem == -MNU_Solver_TOOL || softmenu[m].menuItem == -MNU_Sf_TOOL || softmenu[m].menuItem == -MNU_GRAPHS) 
+      if( (softmenu[m].menuItem == -MNU_Sfdx || softmenu[m].menuItem == -MNU_Solver_TOOL || softmenu[m].menuItem == -MNU_Sf_TOOL || softmenu[m].menuItem == -MNU_GRAPHS)
        && (currentSolverStatus & SOLVER_STATUS_USES_FORMULA) && (currentSolverStatus & SOLVER_STATUS_INTERACTIVE)) {
         showEquation(currentFormula, 0, EQUATION_NO_CURSOR, false, NULL, NULL);
       }

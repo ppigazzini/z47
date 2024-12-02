@@ -1380,7 +1380,7 @@ void fnXSWAP (uint16_t mode) {
         int16_t len = stringByteLength(aimBuffer) + 1;
         reallocateRegister(TEMP_REGISTER_1, dtString, TO_BLOCKS(len), amNone);
         xcopy(REGISTER_STRING_DATA(TEMP_REGISTER_1), aimBuffer, len);
-      } 
+      }
       //In essence, after conversions,
       //If X is string shorter than buffer max, copy X to aimbuffer
       //If X is no string, ignore, then aimbuffer remains unchanged.

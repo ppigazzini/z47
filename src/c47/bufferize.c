@@ -1669,7 +1669,7 @@ typedef struct {
           int16_t tmplen = stringByteLength(aimBuffer);
           if(!(lastCenturyHighUsed & 0x8000) && !getSystemFlag(FLAG_YMD) && (
                (tmplen == 8 && (isValidNumber(aimBuffer, "sdd.dddd")))                                //+11.1123
-            || (tmplen == 7 && (isValidNumber(aimBuffer, "sd.dddd")))                                 // +1.1123  +1.1120 
+            || (tmplen == 7 && (isValidNumber(aimBuffer, "sd.dddd")))                                 // +1.1123  +1.1120
              )) {
             stringAppend(aimBuffer + stringByteLength(aimBuffer), aimBuffer + tmplen - 2);            // ==> +11.110023
             aimBuffer[tmplen - 2] = '0';

@@ -1,18 +1,5 @@
-/* This file is part of 43S.
- *
- * 43S is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * 43S is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with 43S.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: GPL-3.0-only
+// SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
 /********************************************//**
  * \file charString.c
@@ -386,13 +373,13 @@ bool_t isValidNumber(const char *ss, const char *template){
 
 
 int16_t stringPrevNumberGlyph(const char *str, int16_t pos) {
-  int16_t pos2 = pos; 
+  int16_t pos2 = pos;
 
   do {
     pos2 = stringPrevGlyph(str,pos2);
-    
+
     if(('0' <= str[pos2] && str[pos2] <= '9') || str[pos] == '.' || str[pos] == ',') {
-      return pos2; 
+      return pos2;
     }
   } while (pos2 != 0);
   return 0;
@@ -821,7 +808,7 @@ void stringToRTF(const char *str, char *ascii) {
 //  ssss    if((a1==(uint8_t)(STD_BASE_0  [0]) && (a2==(uint8_t)(STD_BASE_0  [1])                                 )) ) {                        *ascii = ('0');} else
 //      if((a1==(uint8_t)(STD_BASE_1  [0]) && (a2>=(uint8_t)(STD_BASE_1  [1]) && a2<=(uint8_t)(STD_BASE_9 [1]))) ) {*ascii = '#';  ascii++; *ascii = ('1'+a2)-(uint8_t)(STD_BASE_1[1]);} else
 //      if((a1==(uint8_t)(STD_BASE_10 [0]) && (a2>=(uint8_t)(STD_BASE_10 [1]) && a2<=(uint8_t)(STD_BASE_16[1]))) ) {*ascii = '#';  ascii++; *ascii =  '1'; ascii++; *ascii = ('0'+a2)-(uint8_t)(STD_BASE_10[1]);} else
-      
+
       { sprintf(aa,"\\u%i?",((a1 & 0x7F) << 8) | a2);
         //printf("§%s§\n",aa);
 
@@ -838,7 +825,7 @@ void stringToRTF(const char *str, char *ascii) {
         if(supsub == +1) {
           strcpy(aa,"\\super ");
         } else if(supsub == -1) {
-          strcpy(aa,"\\sub ");          
+          strcpy(aa,"\\sub ");
         }
         int16_t j = 0;
         while(aa[j] != 0) {

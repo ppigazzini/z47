@@ -559,7 +559,7 @@ float auto_tick(float tick_int_f) {
       //else if(tick_int_f <= 0.6) {
       //  tick_int_f = 0.5f;
       //}
-      //else 
+      //else
       if(tick_int_f <= 1.3) {
         tick_int_f = 1.0f;
       }
@@ -584,7 +584,7 @@ float auto_tick(float tick_int_f) {
 
     //printf("tick2 %f\n",tick_int_f);
   #endif // !SAVE_SPACE_DM42_13GRF
-    
+
 return tick_int_f;
 }
 

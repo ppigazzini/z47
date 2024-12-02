@@ -148,7 +148,7 @@ TO_QSPI static const char bugScreenItemNotDetermined[] = "In function determineI
           item = (dynamicMenuItem >= dynamicSoftmenu[menuId].numItems ? ITM_NOP : ITM_SOLVE_VAR);
         }
 
-// These items below are all in the primary function key row, and should not be decoded from actual operating modes, but will be better to be decoded from the visible currentmenu, 
+// These items below are all in the primary function key row, and should not be decoded from actual operating modes, but will be better to be decoded from the visible currentmenu,
 //   It cannot be changed to menu lookups, because when the MVAR is open, we do not know anymore which menu or function actually opened the MVAR, hence the method of decoding from operating modes.
 //   This is not ideal. It probably would still work better if we check which menu called the MVAR, i.e. the menu in currentmenu() == MVAR && menu(1) == whatever.
 
@@ -995,14 +995,14 @@ int16_t lastItem = 0;
 
     if(calcMode != CM_REGISTER_BROWSER && calcMode != CM_FLAG_BROWSER && calcMode != CM_ASN_BROWSER && calcMode != CM_FONT_BROWSER) {
 
-      if(data[0] == 0) { 
+      if(data[0] == 0) {
         item = item_;
       }
       else {
                     #if defined(VERBOSEKEYS)
                     printf(">>>> R000A >>determineFunctionKeyItem_C47 %d |%s| shiftF=%d, shiftG=%d tam.mode=%i\n",item, data, shiftF, shiftG, tam.mode);
                     #endif //VERBOSEKEYS
-        item = determineFunctionKeyItem_C47((char *)data, shiftF, shiftG); 
+        item = determineFunctionKeyItem_C47((char *)data, shiftF, shiftG);
       }
 
       // in graph plot menu, wanting to change Normal Mode items, so open the correct menu first and return to Normal Mode, and stop the processing.
@@ -2399,7 +2399,7 @@ RELEASE_END:
       showSoftmenu(-MNU_GRAPHS);
       screenUpdatingMode &= SCRUPD_MANUAL_MENU;
       refreshScreen(125);
-    } 
+    }
 
     if(programRunStop == PGM_WAITING) {
       programRunStop = PGM_STOPPED;
