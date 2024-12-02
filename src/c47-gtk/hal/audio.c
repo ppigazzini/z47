@@ -3,7 +3,7 @@
 
 #include "error.h"
 #include "flags.h"
-#include "c43Extensions/radioButtonCatalog.h"
+#include "c47Extensions/radioButtonCatalog.h"
 #include "screen.h"
 #include "hal/audio.h"
 

@@ -18,7 +18,7 @@
 #include "mathematics/matrix.h"
 #include "mathematics/toRect.h"
 #include "mathematics/wp34s.h"
-#include "c43Extensions/radioButtonCatalog.h"
+#include "c47Extensions/radioButtonCatalog.h"
 #include "registers.h"
 #include "registerValueConversions.h"
 #include "stack.h"

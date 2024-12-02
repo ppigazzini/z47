@@ -20,9 +20,9 @@
 #include "realType.h"
 #include "registers.h"
 #include "registerValueConversions.h"
-#include "c43Extensions/graphText.h"
+#include "c47Extensions/graphText.h"
 #include "screen.h"
-#include "c43Extensions/addons.h"
+#include "c47Extensions/addons.h"
 
 #include "c47.h"
 

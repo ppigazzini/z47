@@ -4,7 +4,7 @@
 
 #include "items.h"
 
-#include "c43Extensions/addons.h"
+#include "c47Extensions/addons.h"
 #include "assign.h"
 #include "browsers/browsers.h"
 #include "bufferize.h"
@@ -24,12 +24,12 @@
 #include "fractions.h"
 #include "hal/audio.h"
 #include "hal/io.h"
-#include "c43Extensions/graphs.h"
-#include "c43Extensions/inlineTest.h"
+#include "c47Extensions/graphs.h"
+#include "c47Extensions/inlineTest.h"
 #include "integers.h"
-#include "c43Extensions/jm.h"
+#include "c47Extensions/jm.h"
 #include "keyboard.h"
-#include "c43Extensions/keyboardTweak.h"
+#include "c47Extensions/keyboardTweak.h"
 #include "logicalOps/logicalOps.h"
 #include "mathematics/linpol.h"
 #include "mathematics/mathematics.h"
@@ -38,7 +38,7 @@
 #include "plotstat.h"
 #include "programming/decode.h"
 #include "programming/programming.h"
-#include "c43Extensions/radioButtonCatalog.h"
+#include "c47Extensions/radioButtonCatalog.h"
 #include "recall.h"
 #include "registers.h"
 #include "saveRestoreCalcState.h"
@@ -56,7 +56,7 @@
 #include "ui/matrixEditor.h"
 #include "ui/tam.h"
 #include "ui/tone.h"
-#include "c43Extensions/xeqm.h"
+#include "c47Extensions/xeqm.h"
 
 #include <string.h>
 
@@ -3262,7 +3262,7 @@ TO_QSPI const item_t indexOfItems[] = {
 
 
 
-//Jaymos C43 extensions
+//Jaymos C47 extensions
 /* 1795 */  { fn_cnst_op_j_pol,             NOPARAM,                     "op_" STD_op_i STD_SUB_SUN,                    STD_op_i STD_SUB_SUN,                          (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },//JM Operator j
 /* 1796 */  { SetSetting,                   JC_BASE_MYM,                 "MyMb",                                        "MyMb",                                        (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },//JM NOBASE MENU SETTING
 /* 1797 */  { SetSetting,                   JC_G_DOUBLETAP,              "g.2Tp",                                       "g.2Tp",                                       (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },//JM KEY TAP DOUBLE SETTING

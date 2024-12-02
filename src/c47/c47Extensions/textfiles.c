@@ -3,10 +3,10 @@
 
 //#define DISPLOADING
 
-#include "c43Extensions/textfiles.h"
+#include "c47Extensions/textfiles.h"
 
 #include "charString.h"
-#include "c43Extensions/graphText.h"
+#include "c47Extensions/graphText.h"
 #include "registers.h"
 #include "screen.h"
 #include <string.h>
@@ -25,7 +25,7 @@ typedef struct {
   /*1*/  { " too large for transfer" },
   /*2*/  { "Complex matrix " },
   /*3*/  { "res/PROGRAMS" },
-  /*4*/  { "C43_LOG.TXT" },
+  /*4*/  { "C47_LOG.TXT" },
   /*5*/  { "Alpha buffer: " },
   };
 #endif //TESTSUITE_BUILD
@@ -187,7 +187,7 @@ void aimBuffer_csv_out(void) {
 //**********************************************************************************************************
 #if !defined(TESTSUITE_BUILD)
   int16_t export_string_to_file(const char line1[TMP_STR_LENGTH]) {
-    return export_string_to_filename(line1, APPEND, ClipBoardMsg[3].itemName, ClipBoardMsg[4].itemName);  //"res/PROGRAMS", "C43_LOG.TXT"
+    return export_string_to_filename(line1, APPEND, ClipBoardMsg[3].itemName, ClipBoardMsg[4].itemName);  //"res/PROGRAMS", "C47_LOG.TXT"
   }
 #endif // !TESTSUITE_BUILD
 

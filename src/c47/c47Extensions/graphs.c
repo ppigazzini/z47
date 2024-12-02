@@ -6,21 +6,19 @@
  * \file graphs.c Graphing module
  ***********************************************/
 
-/* C43 functions and routines written by JM, adapted from C43 to WP43 by JM */
-
-#include "c43Extensions/graphs.h"
+#include "c47Extensions/graphs.h"
 
 #include "charString.h"
 #include "constantPointers.h"
 #include "error.h"
-#include "c43Extensions/addons.h"
-#include "c43Extensions/graphText.h"
+#include "c47Extensions/addons.h"
+#include "c47Extensions/graphText.h"
 #include "registerValueConversions.h"
 #include "flags.h"
 #include "items.h"
 #include "math.h"
 #include "plotstat.h"
-#include "c43Extensions/radioButtonCatalog.h"
+#include "c47Extensions/radioButtonCatalog.h"
 #include "registers.h"
 #include "screen.h"
 #include "softmenus.h"
@@ -626,7 +624,7 @@ void graph_text(void) {
 
     if(PLOT_INTG && !invalid_intg) {
       snprintf(tmpString, bufLen, "  Trapezoid integral");
-      showStringC43(tmpString, numSmall, nocompress, 1, ypos, vmNormal, true, true);  //JM
+      showStringC47(tmpString, numSmall, nocompress, 1, ypos, vmNormal, true, true);  //JM
       plotintbig(5, ypos+4+4-2);
       plotrect(5+4-1, (ypos+4+4-2+2)-1, 5+4+2, (ypos+4+4-2+2)+2);
       ypos += 20;
@@ -634,14 +632,14 @@ void graph_text(void) {
 
     if(PLOT_DIFF && !invalid_diff) {
       snprintf(tmpString, bufLen, "  Num. differential");
-      showStringC43(tmpString, numSmall, nocompress, 1, ypos, vmNormal, true, true);  //JM
+      showStringC47(tmpString, numSmall, nocompress, 1, ypos, vmNormal, true, true);  //JM
       plotdeltabig(6, ypos+4+4-2);
       ypos += 20;
     }
 
     if(PLOT_RMS && !invalid_rms) {
       snprintf(tmpString, bufLen, "  RMSy");
-      showStringC43(tmpString, numSmall, nocompress, 1, ypos, vmNormal, true, true);  //JM
+      showStringC47(tmpString, numSmall, nocompress, 1, ypos, vmNormal, true, true);  //JM
       plotrms(6, ypos+4+4-2);
       plotrect(6-1, (ypos+4+4-2)-1, 6+2, (ypos+4+4-2)+2);
       ypos += 20;

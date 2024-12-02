@@ -10,7 +10,7 @@
 #include "flags.h"
 #include "fonts.h"
 #include "mathematics/wp34s.h"
-#include "c43Extensions/radioButtonCatalog.h"
+#include "c47Extensions/radioButtonCatalog.h"
 #include "registers.h"
 #include "registerValueConversions.h"
 

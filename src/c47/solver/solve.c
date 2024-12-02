@@ -8,15 +8,15 @@
 
 #include "solver/solve.h"
 
-#include "c43Extensions/addons.h"
-#include "c43Extensions/graphText.h"
+#include "c47Extensions/addons.h"
+#include "c47Extensions/graphText.h"
 #include "charString.h"
 #include "constantPointers.h"
 #include "defines.h"
 #include "display.h"
 #include "error.h"
 #include "flags.h"
-#include "c43Extensions/addons.h"
+#include "c47Extensions/addons.h"
 #include "items.h"
 #include "longIntegerType.h"
 #include "mathematics/comparisonReals.h"

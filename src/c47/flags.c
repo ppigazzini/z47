@@ -14,9 +14,9 @@
 #include "registers.h"
 #include "softmenus.h"
 #include "solver/equation.h"
-#include "c43Extensions/jm.h"
-#include "c43Extensions/keyboardTweak.h"
-#include "c43Extensions/radioButtonCatalog.h"
+#include "c47Extensions/jm.h"
+#include "c47Extensions/keyboardTweak.h"
+#include "c47Extensions/radioButtonCatalog.h"
 #include "ui/tam.h"
 #include <string.h>
 

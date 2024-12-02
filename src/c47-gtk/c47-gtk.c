@@ -12,7 +12,7 @@
 #include "keyboard.h"
 #include "hal/gui.h"
 #include "calcMode.h"
-#include "c43Extensions/keyboardTweak.h"
+#include "c47Extensions/keyboardTweak.h"
 #include "longIntegerType.h"
 #include "memory.h"
 #include "saveRestoreCalcState.h"

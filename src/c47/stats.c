@@ -5,7 +5,7 @@
 #include "stats.h"
 
 #include "constantPointers.h"
-#include "c43Extensions/graphText.h"
+#include "c47Extensions/graphText.h"
 #include "debug.h"
 #include "error.h"
 #include "flags.h"

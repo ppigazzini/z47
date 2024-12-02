@@ -32,7 +32,7 @@
 #include "store.h"
 #include "timer.h"
 #include "ui/tam.h"
-#include "c43Extensions/addons.h"
+#include "c47Extensions/addons.h"
 
 #include "c47.h"
 

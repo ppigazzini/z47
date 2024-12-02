@@ -234,7 +234,7 @@
 #define NOMATRIXCURSORS             //JM allow matrix editing to be navigated by up down keys
 #undef NOMATRIXCURSORS
 
-//This is to allow the cursors to change the case. Normal on 43S. Off on C43
+//This is to allow the cursors to change the case. Normal on 43S. Off on C47
 #define arrowCasechange    false
 
 //This is to allow the creation of a logfile while you type

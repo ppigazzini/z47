@@ -5,12 +5,12 @@
  * \file inlineTest.c
  ***********************************************/
 
-#include "c43Extensions/inlineTest.h"
+#include "c47Extensions/inlineTest.h"
 
 #include "display.h"
 #include "fonts.h"
-#include "c43Extensions/jm.h"
-#include "c43Extensions/radioButtonCatalog.h"
+#include "c47Extensions/jm.h"
+#include "c47Extensions/radioButtonCatalog.h"
 #include "registers.h"
 #include "registerValueConversions.h"
 #include "screen.h"

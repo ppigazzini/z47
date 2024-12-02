@@ -11,7 +11,7 @@
 #include "error.h"
 #include "registers.h"
 #include "registerValueConversions.h"
-#include "c43Extensions/xeqm.h"
+#include "c47Extensions/xeqm.h"
 
 #include "c47.h"
 

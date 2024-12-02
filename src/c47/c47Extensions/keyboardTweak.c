@@ -6,7 +6,7 @@
  * \file keyboardTweak.c
  ***********************************************/
 
-#include "c43Extensions/keyboardTweak.h"
+#include "c47Extensions/keyboardTweak.h"
 
 #include "bufferize.h"
 #include "calcMode.h"
@@ -15,8 +15,8 @@
 #include "fonts.h"
 #include "hal/gui.h"
 #include "items.h"
-#include "c43Extensions/jm.h"
-#include "c43Extensions/radioButtonCatalog.h"
+#include "c47Extensions/jm.h"
+#include "c47Extensions/radioButtonCatalog.h"
 #include "keyboard.h"
 #include "screen.h"
 #include "stack.h"
@@ -533,7 +533,7 @@ void resetKeytimers(void) {
           |t=0      |t=75 ms
   --------E______   |             Showing release and immediate execution at "E" (previous system, no LONGPRESS no DOUBLE click)
   --------x_________E_____        Showing release at x and delayed execution "E" (if double click is to be detected)
-          #########              ## shows DEAD TIME where C43 does not react to the key release that already happened
+          #########              ## shows DEAD TIME where C47 does not react to the key release that already happened
                     ^             ^ shows the point where the x command is executed if no double press recognised.
 
   --------x_______G-|-----        Starting with key already pressed, release at x, re-press shown at 60 ms, double click registered, g-shift activated, COMMAND displayed, timing started to NOP if not released.
@@ -1287,7 +1287,7 @@ void fnT_ARROW(uint16_t command) {
           fnT_ARROW(ITM_T_RIGHT_ARROW);
           while(ixx < 75 && (current_cursor_x >= current_cursor_x_old+5 || current_cursor_y == current_cursor_y_old)) {
             fnT_ARROW(ITM_T_LEFT_ARROW);
-            showStringEdC43(multiEdLines ,displayAIMbufferoffset, T_cursorPos, aimBuffer, 1, -100, vmNormal, true, true, true);  //display up to the cursor
+            showStringEdC47(multiEdLines ,displayAIMbufferoffset, T_cursorPos, aimBuffer, 1, -100, vmNormal, true, true, true);  //display up to the cursor
             ixx++;
           }
           break;
@@ -1299,7 +1299,7 @@ void fnT_ARROW(uint16_t command) {
           fnT_ARROW(ITM_T_LEFT_ARROW);
           while(ixx < 75 && (current_cursor_x+5 <= current_cursor_x_old || current_cursor_y == current_cursor_y_old)) {
             fnT_ARROW(ITM_T_RIGHT_ARROW);
-            showStringEdC43(multiEdLines ,displayAIMbufferoffset, T_cursorPos, aimBuffer, 1, -100, vmNormal, true, true, true);  //display up to the cursor
+            showStringEdC47(multiEdLines ,displayAIMbufferoffset, T_cursorPos, aimBuffer, 1, -100, vmNormal, true, true, true);  //display up to the cursor
             ixx++;
 
             //printf("###^^^ %d %d %d %d %d\n",ixx,current_cursor_x, current_cursor_x_old, current_cursor_y, current_cursor_y_old);

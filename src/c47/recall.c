@@ -10,7 +10,7 @@
 #include "error.h"
 #include "flags.h"
 #include "items.h"
-#include "c43Extensions/jm.h"
+#include "c47Extensions/jm.h"
 #include "mathematics/compare.h"
 #include "mathematics/matrix.h"
 #include "memory.h"

@@ -4,7 +4,7 @@
 #include "display.h"
 
 #include "saveRestoreCalcState.h"
-#include "c43Extensions/addons.h"
+#include "c47Extensions/addons.h"
 #include "charString.h"
 #include "constantPointers.h"
 #include "conversionAngles.h"
@@ -15,7 +15,7 @@
 #include "fonts.h"
 #include "fractions.h"
 #include "items.h"
-#include "c43Extensions/jm.h"
+#include "c47Extensions/jm.h"
 #include "mathematics/comparisonReals.h"
 #include "mathematics/matrix.h"
 #include "mathematics/toPolar.h"
@@ -26,7 +26,7 @@
 #include "mathematics/2pow.h"
 #include "mathematics/rsd.h"
 #include "programming/lblGtoXeq.h"
-#include "c43Extensions/radioButtonCatalog.h"
+#include "c47Extensions/radioButtonCatalog.h"
 #include "registers.h"
 #include "registerValueConversions.h"
 #include "screen.h"
@@ -3497,19 +3497,19 @@ goBreak1:
         #if defined(VERBOSE_SCREEN) && defined(PC_BUILD)
           uint32_t tmp = 0;
           printf("^^^0 %4u", tmp);
-          printf("^^^^$$ %s %d\n", tmpString + 2100, stringWidthC43(tmpString + 2100, stdnumEnlarge, nocompress, false, true));
+          printf("^^^^$$ %s %d\n", tmpString + 2100, stringWidthC47(tmpString + 2100, stdnumEnlarge, nocompress, false, true));
         #endif // VERBOSE_SCREEN && PC_BUILD
         while(thereIsANextLine) {
           char *strw;
           xcopy(tmpString + offset, tmpString + bytesProcessed, stringByteLength(tmpString + bytesProcessed) + 1);
           thereIsANextLine = false;
-          strw = stringAfterPixelsC43(tmpString + offset, stdnumEnlarge, nocompress, SCREEN_WIDTH - 1, false, true);
+          strw = stringAfterPixelsC47(tmpString + offset, stdnumEnlarge, nocompress, SCREEN_WIDTH - 1, false, true);
           if(*strw != 0) {
             *strw = 0;
             thereIsANextLine = true;
             #if defined(VERBOSE_SCREEN) && defined(PC_BUILD)
               printf("^^^A %4u",tmp++);
-              printf("^^^^$$ %s %d\n",tmpString + offset,stringWidthC43(tmpString + offset, stdnumEnlarge, nocompress, false, true));
+              printf("^^^^$$ %s %d\n",tmpString + offset,stringWidthC47(tmpString + offset, stdnumEnlarge, nocompress, false, true));
             #endif // VERBOSE_SCREEN && PC_BUILD
           }
           bytesProcessed += stringByteLength(tmpString + offset);
