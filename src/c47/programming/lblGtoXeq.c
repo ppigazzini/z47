@@ -218,6 +218,7 @@ void fnExecute(uint16_t label) {
     }
   }
   else {
+    lastProgramRunStop = PGM_UNDEFINED;
     fnGoto(label);
     dynamicMenuItem = -1;
     if(lastErrorCode == ERROR_NONE) {

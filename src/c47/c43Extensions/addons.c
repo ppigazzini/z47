@@ -49,6 +49,7 @@ All the below: because both Last x and savestack does not work due to multiple s
 #include "c43Extensions/graphText.h"
 #include "hal/audio.h"
 #include "hal/gui.h"
+#include "hal/lcd.h"
 #include "integers.h"
 #include "items.h"
 #include "c43Extensions/jm.h"
