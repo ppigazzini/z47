@@ -4,15 +4,15 @@
 
 //#define DISPLOADING
 
-#include "c43Extensions/graphText.h"
+#include "c47Extensions/graphText.h"
 
 #include "charString.h"
 #include "math.h"
 #include "screen.h"
 #include "time.h"
 #include "timer.h"
-#include "c43Extensions/textfiles.h"
-#include "c43Extensions/xeqm.h"
+#include "c47Extensions/textfiles.h"
+#include "c47Extensions/xeqm.h"
 #include <string.h>
 
 #include "c47.h"
@@ -816,7 +816,7 @@ bool_t   cancelFilename = false;
   int16_t export_append_line(const char *inputstring) {
     FILE *outfile;
 
-    //strcpy(dirfile, "PROGRAMS/C43_LOG.TXT");
+    //strcpy(dirfile, "PROGRAMS/C47_LOG.TXT");
     outfile = fopen(filename_csv, "ab");
     if(outfile == NULL) {
       printf("Cannot open to append ID011: %s %s\n", filename_csv, inputstring);

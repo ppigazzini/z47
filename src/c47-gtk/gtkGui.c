@@ -9,11 +9,11 @@
 #include "error.h"
 #include "flags.h"
 #include "items.h"
-#include "c43Extensions/jm.h"
-#include "c43Extensions/xeqm.h"
+#include "c47Extensions/jm.h"
+#include "c47Extensions/xeqm.h"
 #include "fonts.h"
 #include "keyboard.h"
-#include "c43Extensions/keyboardTweak.h"
+#include "c47Extensions/keyboardTweak.h"
 #include "mathematics/matrix.h"
 #include "programming/manage.h"
 #include "registers.h"
@@ -167,7 +167,7 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
 //  }
 
 
-//  //JM ALPHA SECTION FOR ALPHAMODE -  UPPER CASE PC LETTER INPUT. INVERT C43 CASE. USE LETTER.
+//  //JM ALPHA SECTION FOR ALPHAMODE -  UPPER CASE PC LETTER INPUT. INVERT C47 CASE. USE LETTER.
 //  void btnClicked_UC(GtkWidget *w, gpointer data) {
 //    uint8_t alphaCase_MEM;
 //    bool_t numLock_MEM;
@@ -3533,9 +3533,7 @@ char sstmp[16];
       //JM7 gtk_widget_show(lblConfirmY);  //JM Y/N
       //JM7 gtk_widget_show(lblConfirmN);  //JM Y/N
 
-      //gtk_widget_show(lbl31G);   //JM Remnanty from WP43. Not sure why. Removed.
       moveLabels();
-      //gtk_widget_hide(lbl31G);   //JM Remnanty from WP43. Not sure why. Removed.
     }
 
     void calcModeTamGui(void) {

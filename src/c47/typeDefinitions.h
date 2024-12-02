@@ -135,7 +135,7 @@ typedef enum {
   amMultPi    =  4,
   amNone      =  5,
   amSecond    =  6, // not an angular but a time unit: for the routine unified with the real type
-  TM_HMS      =  7, // JM not an angular but a time unit: for the C43 usage
+  TM_HMS      =  7, // JM not an angular but a time unit: for the C47 usage
   amAngleMask = 15,
   amPolar     = 16  // JM bit 4 of the 5 bits is used for Polar
 } angularMode_t;

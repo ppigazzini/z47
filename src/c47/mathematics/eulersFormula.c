@@ -20,7 +20,7 @@
 #include "registerValueConversions.h"
 #include "mathematics/multiplication.h"
 #include "mathematics/exp.h"
-#include "c43Extensions/radioButtonCatalog.h"
+#include "c47Extensions/radioButtonCatalog.h"
 
 #include "c47.h"
 

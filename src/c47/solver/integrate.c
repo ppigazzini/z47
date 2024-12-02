@@ -7,14 +7,14 @@
 
 #include "solver/integrate.h"
 
-#include "c43Extensions/addons.h"
+#include "c47Extensions/addons.h"
 #include "charString.h"
 #include "constantPointers.h"
 #include "defines.h"
 #include "display.h"
 #include "error.h"
 #include "flags.h"
-#include "c43Extensions/addons.h"
+#include "c47Extensions/addons.h"
 #include "items.h"
 #include "mathematics/comparisonReals.h"
 #include "mathematics/exp.h"
@@ -342,7 +342,7 @@ static void _integratorIteration(void) {
 
 
 // The following routine is ported from WP34s.
-// The description below is as is. May not applicable for WP43.
+// The description below is as is.
 
 
 // Double Exponential Integration for the wp34s calculator
@@ -855,7 +855,7 @@ static void _integrate(calcRegister_t regist, const real_t *a, const real_t *b, 
 // Copyright © 2010, 2020  Graeme Dennes
 // Licensed under GPL v3 or any later versions
 // Originally written in Excel VBA; translated into C by MihailJP
-// The description below is as is. May not applicable for WP43.
+// The description below is as is.
 
 //    QUAD_TANH_SINH for finite intervals.
 //    This is the fastest and simplest high-performance T-S program I have found.

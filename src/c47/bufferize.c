@@ -3,7 +3,7 @@
 
 #include "bufferize.h"
 
-#include "c43Extensions/addons.h"
+#include "c47Extensions/addons.h"
 #include "calcMode.h"
 #include "charString.h"
 #include "constantPointers.h"
@@ -16,15 +16,15 @@
 #include "flags.h"
 #include "fonts.h"
 #include "items.h"
-#include "c43Extensions/jm.h"
-#include "c43Extensions/keyboardTweak.h"
+#include "c47Extensions/jm.h"
+#include "c47Extensions/keyboardTweak.h"
 #include "mathematics/comparisonReals.h"
 #include "mathematics/matrix.h"
 #include "mathematics/toRect.h"
 #include "mathematics/toPolar.h"
 #include "mathematics/wp34s.h"
 #include "programming/manage.h"
-#include "c43Extensions/radioButtonCatalog.h"
+#include "c47Extensions/radioButtonCatalog.h"
 #include "registers.h"
 #include "registerValueConversions.h"
 #include "saveRestoreCalcState.h"
@@ -318,7 +318,7 @@ typedef struct {
           }
         }
         else if(stringByteLength(aimBuffer) <= AIM_BUFFER_LENGTH-1 &&
-                 stringWidthWithLimitC43(aimBuffer, stdNoEnlarge, nocompress, SCREEN_WIDTH * MAXLINES - 16, true, true) < SCREEN_WIDTH * MAXLINES - 16 //0 means small standard font
+                 stringWidthWithLimitC47(aimBuffer, stdNoEnlarge, nocompress, SCREEN_WIDTH * MAXLINES - 16, true, true) < SCREEN_WIDTH * MAXLINES - 16 //0 means small standard font
                ) {    //JM
           #if defined(TEXT_MULTILINE_EDIT)
             //JMCURSOR vv ADD THE CHARACTER MID-STRING =======================================================
@@ -350,14 +350,14 @@ typedef struct {
             //JMCURSOR ^^ REPLACES THE FOLLOWING XCOPY, WHICH NORMALLY JUST ADDS A CHARACTER TO THE END OF THE STRING
             // xcopy(aimBuffer + stringNextGlyph(aimBuffer, stringLastGlyph(aimBuffer)), indexOfItems[item].itemSoftmenuName, stringByteLength(indexOfItems[item].itemSoftmenuName) + 1);
             switch(item) { // NOTE:cursor must jump on 3 places for the new COS_SIGN etc.
-              case ITM_LG_SIGN :   //JM C43
-              case ITM_SIN_SIGN :  //JM C43
-              case ITM_COS_SIGN :  //JM C43
-              case ITM_TAN_SIGN :  //JM C43
+              case ITM_LG_SIGN :   //JM C47
+              case ITM_SIN_SIGN :  //JM C47
+              case ITM_COS_SIGN :  //JM C47
+              case ITM_TAN_SIGN :  //JM C47
               case ITM_ROOT_SIGN:
                 T_cursorPos += 2;
                 break;
-              case ITM_LN_SIGN :  //JM C43
+              case ITM_LN_SIGN :  //JM C47
                 T_cursorPos += 1;
                 break;
               case ITM_PAIR_OF_PARENTHESES:
@@ -837,9 +837,9 @@ typedef struct {
           case ITM_Ek:
           case ITM_ARG:
 #endif // SAVE_SPACE_DM42_11
-          case ITM_op_a :                //C43
-          case ITM_op_a2:                //C43
-          case ITM_EE_EXP_TH: {           //C43
+          case ITM_op_a :                //C47
+          case ITM_op_a2:                //C47
+          case ITM_EE_EXP_TH: {          //C47
             mimRunFunction(item, indexOfItems[item].param);
             break;
           }

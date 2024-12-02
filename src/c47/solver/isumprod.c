@@ -7,7 +7,7 @@
 
 #include "solver/isumprod.h"
 
-#include "c43Extensions/addons.h"
+#include "c47Extensions/addons.h"
 #include "constantPointers.h"
 #include "defines.h"
 #include "display.h"

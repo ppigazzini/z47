@@ -5,7 +5,7 @@
  * \file graph.c Graphing module
  ***********************************************/
 
-/* ADDITIONAL C43 functions and routines */
+/* ADDITIONAL C47 functions and routines */
 
 //graphs.h
 

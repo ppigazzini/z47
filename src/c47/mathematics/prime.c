@@ -7,7 +7,7 @@
 
 #include "mathematics/prime.h"
 
-#include "c43Extensions/addons.h"
+#include "c47Extensions/addons.h"
 #include "constantPointers.h"
 #include "debug.h"
 #include "display.h"

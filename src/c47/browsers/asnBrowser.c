@@ -10,7 +10,7 @@
 #include "items.h"
 #include "flags.h"
 #include "fonts.h"
-#include "c43Extensions/radioButtonCatalog.h"
+#include "c47Extensions/radioButtonCatalog.h"
 #include "charString.h"
 #include "screen.h"
 #include "softmenus.h"
