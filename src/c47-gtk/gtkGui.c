@@ -1,18 +1,5 @@
-/* This file is part of C43.
- *
- * C43 is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * C43 is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with C43.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: GPL-3.0-only
+// SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
 #include "gtkGui.h"
 
@@ -278,7 +265,7 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
         printf("\n       shortCutCommand: Disable=%i, Key detected %5i=%5i: exitIfInNIM=%i keyForBtnClicked:%s, calcMode=%i, tam.mode=%i\n",disable, key, keyCode, exitIfInNIM, keyForBtnClicked, calcMode, tam.mode);
 //        #endif //VERBOSEKEYS
     }
- 
+
     if(disable) {
       #if defined(VERBOSEKEYS)
         printf("       shortCutCommand: Returning, shortcut disabled\n");
@@ -324,7 +311,7 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
       }
 
       //Handle functions
-      if(((1 << calcMode) & modes) || calcMode == requiredCalcMode2) {        
+      if(((1 << calcMode) & modes) || calcMode == requiredCalcMode2) {
         #if defined(VERBOSEKEYS)
         //printf("\n       shortCutCommand: Disable=%i, Key detected %5i=%5i: exitIfInNIM=%i keyForBtnClicked:%s, calcMode=%i, tam.mode=%i\n",disable, key, keyCode, exitIfInNIM, keyForBtnClicked, calcMode, tam.mode);
           printf("       shortCutCommand: Handle functions: key:%i: showSoftmenu %i\n",keyCode, itemForRunFunction);
@@ -375,7 +362,7 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
         printf("\n       shortCutFNCommand: Disable=%i, Key detected %5i=%5i: keyForBtnClicked:%s, calcMode=%i, tam.mode=%i\n",disable, key, keyCode, keyForBtnClicked, calcMode, tam.mode);
 //    #endif //VERBOSEKEYS
     }
- 
+
     if(disable) return false;                                  //exit directly for disallowed input condition
     if(tam.mode == TM_LABEL) return false;                     //exit directly, not allowing label entry
 
@@ -396,7 +383,7 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
 //      }
 
       //Handle functions
-      if(((1 << calcMode) & modes) || calcMode == requiredCalcMode2) {        
+      if(((1 << calcMode) & modes) || calcMode == requiredCalcMode2) {
         #if defined(VERBOSEKEYS)
           //printf("\n       shortCutFNCommand: Disable=%i, Key detected %5i=%5i: keyForBtnClicked:%s, calcMode=%i, tam.mode=%i\n",disable, key, keyCode, keyForBtnClicked, calcMode, tam.mode);
           printf("       shortCutFNCommand: Handle functions: key:%i: showSoftmenu %i\n",keyCode, itemForRunFunction);
@@ -467,7 +454,7 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
 
 
   static bool_t checkNormal(int16_t keyNr, int16_t item) {
-    int16_t result = Norm_Key_00_item_in_layout; 
+    int16_t result = Norm_Key_00_item_in_layout;
     int16_t ss = Check_SigmaPlus_Assigned(&result, keyNr);
     //printf("aaaaa ss=%i result=%i  ss==item=%i\n",ss, result, ss==item);
     return (ss == item);
@@ -488,11 +475,11 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
    For control:
    PC Key pressed:  _keyval=65507 _state=    4 ---Ctr--------------- (SHIFT_State=    0)(F=0 G=0) labelText=0 plainTextMode=0  0100  GDK_KEY_Control_L
    PC Key released: _keyval=65507 _state=    0 --------------------- (SHIFT_State=    0)(F=0 G=0)                              0000
-   
-   
+
+
    Dani experiment on CH/FR/DE
-   PC Key pressed:  _keyval=65507 _state=    4 ---Ctr-------------- (SHIFT_State=    0)(F=0 G=0) labelText=0 plainTextMode=0   
-   PC Key pressed:  _keyval=65514 _state=   20 ---Ctr---Num-------- (SHIFT_State=    0)(F=0 G=0) labelText=0 plainTextMode=0 
+   PC Key pressed:  _keyval=65507 _state=    4 ---Ctr-------------- (SHIFT_State=    0)(F=0 G=0) labelText=0 plainTextMode=0
+   PC Key pressed:  _keyval=65514 _state=   20 ---Ctr---Num-------- (SHIFT_State=    0)(F=0 G=0) labelText=0 plainTextMode=0
    PC Key released: _keyval=65507 _state=    8 ------Alt----------- (SHIFT_State=    0)(F=0 G=0)`
    PC Key released: _keyval=65514 _state=    0 -------------------- (SHIFT_State=    0)(F=0 G=0)`
    PC Key pressed:  _keyval=65505 _state=    1 Shf----------------- (SHIFT_State=    0)(F=0 G=0) labelText=0 plainTextMode=0`
@@ -501,7 +488,7 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
    PC Key released: _keyval=65507 _state=    0 -------------------- (SHIFT_State=    0)(F=0 G=0)`
    PC Key pressed:  _keyval=65513 _state=    0 -------------------- (SHIFT_State=    0)(F=0 G=0) labelText=0 plainTextMode=0`        GDK_KEY_Alt_L
    PC Key released: _keyval=65513 _state=    0 -------------------- (SHIFT_State=    0)(F=0 G=0)`
-  
+
 
    Didier 4
    PC Key pressed:  _keyval=65507 _state=    4 ------b2 ------------ (SHIFT_State=    0)(F=0 G=0) labelText=0 plainTextMode=0 AltGr_P=0 Ctrl_P=1 Valid_P=0 Ctrl_R=0 AltGr_R=0
@@ -511,7 +498,7 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
       ### Command key: CTRL_State=0 SHFT_State=0 tam.mode=0 event_keyval=35 => event_key_command=35 calcMode=0 catalog=0 getSystemFlag(FLAG_ALPHA)=0
           shortCutCommand: No action found
           ...
-          shortCutCommand: No action found   
+          shortCutCommand: No action found
           shortCutCommand: Disable=0, Key detected    35=   35: exitIfInNIM=0 keyForBtnClicked:01, calcMode=0, tam.mode=0
           shortCutCommand:
           shortCutCommand: Handle functions: key:35: showSoftmenu 1872
@@ -546,11 +533,11 @@ Jacos Mac, Control works
   uint32_t previousEventKeyP = 0;
   #define C47SpecialKey_AltGr_Pressed           (event->keyval == GDK_KEY_Alt_R     && event->state  & 0b10100)
   #define C47SpecialKey_Ctrl_Pressed            (swapCtrlCode ? (event->keyval == GDK_KEY_Control_L && !(event->state  & 0b00100)) : (event->keyval == GDK_KEY_Control_L && event->state  & 0b00100))
-  //This swapctrlcode control code is used to test Didier's FR 
+  //This swapctrlcode control code is used to test Didier's FR
   #define C47SpecialKey_Valid_Pressed           (!C47SpecialKey_AltGr_Pressed && !C47SpecialKey_Ctrl_Pressed && event->state & 0b11100)
   //C47SpecialKey_Valid_Released not required as normal keys are not evaluated on release
-  #define C47SpecialKey_Ctrl_Released          ((event->keyval == GDK_KEY_Control_L && event->state  & 0b00000) && (previousEventKeyP == GDK_KEY_Control_L && previousEventStateP == 0b00100)) 
-  #define C47SpecialKey_AltGr_Released          (event->keyval == GDK_KEY_Alt_R     && event->state  & 0b00000  &&  previousEventKeyR == GDK_KEY_Control_L && previousEventStateR == 0b1000) 
+  #define C47SpecialKey_Ctrl_Released          ((event->keyval == GDK_KEY_Control_L && event->state  & 0b00000) && (previousEventKeyP == GDK_KEY_Control_L && previousEventStateP == 0b00100))
+  #define C47SpecialKey_AltGr_Released          (event->keyval == GDK_KEY_Alt_R     && event->state  & 0b00000  &&  previousEventKeyR == GDK_KEY_Control_L && previousEventStateR == 0b1000)
 
 
 
@@ -798,29 +785,29 @@ returnKeyReleasedFalse:
         default:break;
       }
     }
-          
+
 //#define VERBOSEKEYS
 
 //Bits for modes
-//  0 CM_NORMAL          
-//  1 CM_AIM             
-//  2 CM_NIM             
-//  3 CM_PEM             
-//  4 CM_ASSIGN          
+//  0 CM_NORMAL
+//  1 CM_AIM
+//  2 CM_NIM
+//  3 CM_PEM
+//  4 CM_ASSIGN
 //  5 CM_REGISTER_BROWSER
-//  6 CM_FLAG_BROWSER    
-//  7 CM_FONT_BROWSER    
-//  8 CM_PLOT_STAT       
-//  9 CM_ERROR_MESSAGE   
-// 10 CM_BUG_ON_SCREEN   
-// 11 CM_CONFIRMATION    
-// 12 CM_MIM             
-// 13 CM_EIM             
-// 14 CM_TIMER           
-// 15 CM_GRAPH           
-// 16 CM_NO_UNDO         
-// 17 CM_ASN_BROWSER     
-// 18 CM_LISTXY    
+//  6 CM_FLAG_BROWSER
+//  7 CM_FONT_BROWSER
+//  8 CM_PLOT_STAT
+//  9 CM_ERROR_MESSAGE
+// 10 CM_BUG_ON_SCREEN
+// 11 CM_CONFIRMATION
+// 12 CM_MIM
+// 13 CM_EIM
+// 14 CM_TIMER
+// 15 CM_GRAPH
+// 16 CM_NO_UNDO
+// 17 CM_ASN_BROWSER
+// 18 CM_LISTXY
 
 //#if defined(VERBOSEKEYS)
   printf("   Sim key processing: CTRL_State=%i tam.mode=%i event_keyval=%5i calcMode=%i catalog=%i getSystemFlag(FLAG_ALPHA)=%i\n", CTRL_State, tam.mode, event_keyval, calcMode, catalog, getSystemFlag(FLAG_ALPHA));
@@ -836,8 +823,8 @@ returnKeyReleasedFalse:
 if(     (CTRL_State != 65536 || allowAltGrKey)
      && (!catalog || (catalog && currentMenu() == -MNU_MVAR))
      && (!(tam.mode == TM_LABEL || tam.mode == TM_STORCL) || (uint8_t)(event->keyval) == GDK_KEY_apostrophe)
-     && (    calcMode == CM_NORMAL 
-         ||  calcMode == CM_NIM 
+     && (    calcMode == CM_NORMAL
+         ||  calcMode == CM_NIM
          ||  calcMode == CM_PEM
          || (calcMode == CM_ASSIGN && itemToBeAssigned == 0)//do not include ASN TO here, as you need to assign to a KEY or a SOFTKEY using the MOUSE
         )
@@ -875,7 +862,7 @@ if(     (CTRL_State != 65536 || allowAltGrKey)
   if(shortCutCommand(w, event_key_command, GDK_KEY_Tab         /* tab 65289   */,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !EXITIFNIM,          tam.mode,    "",   "13",                   0b01101,         -1,             ITM_XexY ))        {goto returnKeyPressedFalse;} else        //                        s[w]ap
   if(shortCutCommand(w, event_key_command, GDK_KEY_w           /* w 119   */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !EXITIFNIM,          tam.mode,    "",   "13",                   0b01101,         -1,             ITM_XexY ))        {goto returnKeyPressedFalse;} else        //                        s[w]ap
   if(shortCutCommand(w, event_key_command, GDK_KEY_n           /* n 110   */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !EXITIFNIM,          tam.mode,    "",   "14",                   0b01101,         -1,              ITM_CHS ))        {goto returnKeyPressedFalse;} else        //                CHS [n]egative
-  if(shortCutCommand(w, event_key_command, GDK_KEY_e           /* e 101   */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !EXITIFNIM,          tam.mode,    "",   "15",                   0b01101,         -1,         ITM_EXPONENT ))        {goto returnKeyPressedFalse;} else        //                    [e]xponent  
+  if(shortCutCommand(w, event_key_command, GDK_KEY_e           /* e 101   */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !EXITIFNIM,          tam.mode,    "",   "15",                   0b01101,         -1,         ITM_EXPONENT ))        {goto returnKeyPressedFalse;} else        //                    [e]xponent
   if(shortCutCommand(w, event_key_command, GDK_KEY_greater     /* > 62    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,              ITM_DRG ))        {goto returnKeyPressedFalse;} else        //                     [=]>D,R,G
   if(shortCutCommand(w, event_key_command, GDK_KEY_Y           /* Y 89    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,               ITM_YX ))        {goto returnKeyPressedFalse;} else        //                         [y]^x
   if(shortCutCommand(w, event_key_command, GDK_KEY_X           /* X 88    */    ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47,  EXITIFNIM,          tam.mode,    "",  "-01",                   0b01101,         -1,          KEY_COMPLEX ))        {goto returnKeyPressedFalse;} else        //                     comple[X]
@@ -977,14 +964,14 @@ if(     (CTRL_State != 65536 || allowAltGrKey)
 
 
 #if defined(VERBOSEKEYS)
-  printf("------------------------ Checked commands, skipping to rest of key detections\n");        
+  printf("------------------------ Checked commands, skipping to rest of key detections\n");
 #else
   {}
 #endif
 
 }
 else if(     (CTRL_State != 65536 || allowAltGrKey)
-     && (    calcMode == CM_NORMAL 
+     && (    calcMode == CM_NORMAL
          ||  calcMode == CM_PEM
         )
      && !getSystemFlag(FLAG_ALPHA)
@@ -992,7 +979,7 @@ else if(     (CTRL_State != 65536 || allowAltGrKey)
 
     if(tam.mode == TM_STORCL) {
       #if defined(VERBOSEKEYS)
-        printf("------------------------ Checking STO/RCL ancillary functions event->keyval=%i, GDK_KEY_Up=%i\n",event->keyval, GDK_KEY_Up);        
+        printf("------------------------ Checking STO/RCL ancillary functions event->keyval=%i, GDK_KEY_Up=%i\n",event->keyval, GDK_KEY_Up);
       #endif
       if(shortCutCommand(w, event->keyval, GDK_KEY_Up         ,   shortcutProfile == USER_C47                               , !EXITIFNIM, !DISABLED,    "",   "17", 0b01001, -1, 0))        {return false;} else        //                         [x]eq
       if(shortCutCommand(w, event->keyval, GDK_KEY_Down       ,   shortcutProfile == USER_C47                               , !EXITIFNIM, !DISABLED,    "",   "22", 0b01001, -1, 0))        {return false;} else        //                         [x]eq
@@ -1004,36 +991,36 @@ else if(     (CTRL_State != 65536 || allowAltGrKey)
       if(shortCutCommand(w, event->keyval, '-'                ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !EXITIFNIM, !DISABLED,    "",   "31", 0b01001, -1, 0))        {return false;} else        //                         [x]eq
       if(shortCutCommand(w, event->keyval, '+'                ,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, !EXITIFNIM, !DISABLED,    "",   "36", 0b01001, -1, 0))        {return false;} else        //                         [x]eq
       #if defined(VERBOSEKEYS)
-        printf("------------------------ Checked STO/RCL arrow +-*/, skipping to rest of key detections\n");        
+        printf("------------------------ Checked STO/RCL arrow +-*/, skipping to rest of key detections\n");
       #else
         {}
       #endif
     }
-    else if(tam.mode == TM_LABEL && !getSystemFlag(FLAG_ALPHA)) { 
+    else if(tam.mode == TM_LABEL && !getSystemFlag(FLAG_ALPHA)) {
       #if defined(VERBOSEKEYS)
-        printf("------------------------ Checking GTO Up Dn ancillary functions event->keyval=%i, GDK_KEY_Up=%i\n",event->keyval, GDK_KEY_Up);        
+        printf("------------------------ Checking GTO Up Dn ancillary functions event->keyval=%i, GDK_KEY_Up=%i\n",event->keyval, GDK_KEY_Up);
       #endif
       if(shortCutCommand(w, event->keyval, GDK_KEY_Up         ,   shortcutProfile == USER_C47                               , !EXITIFNIM, !DISABLED,    "",   "17", 0b01001, -1, 0))        {return false;} else        //                         [x]eq
       if(shortCutCommand(w, event->keyval, GDK_KEY_Down       ,   shortcutProfile == USER_C47                               , !EXITIFNIM, !DISABLED,    "",   "22", 0b01001, -1, 0))        {return false;} else        //                         [x]eq
       if(shortCutCommand(w, event->keyval, GDK_KEY_Up         ,                                  shortcutProfile == USER_R47, !EXITIFNIM, !DISABLED,    "",   "22", 0b01001, -1, 0))        {return false;} else        //                         [x]eq
       if(shortCutCommand(w, event->keyval, GDK_KEY_Down       ,                                  shortcutProfile == USER_R47, !EXITIFNIM, !DISABLED,    "",   "27", 0b01001, -1, 0))        {return false;} else        //                         [x]eq
       #if defined(VERBOSEKEYS)
-        printf("------------------------ Checked GTO Up Dn, skipping to rest of key detections\n");        
+        printf("------------------------ Checked GTO Up Dn, skipping to rest of key detections\n");
       #else
         {}
       #endif
     }
   }
 
- 
+
 
 //New Matrix arrows
 if(   (CTRL_State != 65536 || allowAltGrKey)
    && !catalog
-   && calcMode == CM_NORMAL 
+   && calcMode == CM_NORMAL
   ) {
   #if defined(VERBOSEKEYS)
-      printf("------------------------ Checking Matric arrows functions\n");        
+      printf("------------------------ Checking Matric arrows functions\n");
   #endif
 
   //                  *w, int key     ,keyCode,   condition1,                                                         disable,  *shift, *keyForBtnClicked,      modes,  requiredCalcMode2,     itemForRunFunction
@@ -1042,7 +1029,7 @@ if(   (CTRL_State != 65536 || allowAltGrKey)
   if(shortCutFNCommand(w, event_keyval, GDK_KEY_Left  /* F5 */,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, FALSE  ,    "",  "5",         1 << 12,         -1,          0    ))        {goto returnKeyPressedFalse;} else        //  F5 Lt
   if(shortCutFNCommand(w, event_keyval, GDK_KEY_Right /* F6 */,   shortcutProfile == USER_C47 || shortcutProfile == USER_R47, FALSE  ,    "",  "6",         1 << 12,         -1,          0    ))        {goto returnKeyPressedFalse;} else        //  F6 Rt
   #if defined(VERBOSEKEYS)
-    printf("------------------------ Checked matrix arrows detection, skipping to rest of key detections\n");        
+    printf("------------------------ Checked matrix arrows detection, skipping to rest of key detections\n");
   #else
     {}
   #endif
@@ -1053,12 +1040,12 @@ int32_t ll;
 
 if(   (CTRL_State != 65536 || allowAltGrKey)
    && (   (catalog && currentMenu() != -MNU_MVAR)
-        || calcMode == CM_AIM 
-        || calcMode == CM_EIM 
-        ||(calcMode == CM_PEM    && getSystemFlag(FLAG_ALPHA)) 
+        || calcMode == CM_AIM
+        || calcMode == CM_EIM
+        ||(calcMode == CM_PEM    && getSystemFlag(FLAG_ALPHA))
         ||(calcMode == CM_ASSIGN && getSystemFlag(FLAG_ALPHA))
         ||((tam.mode == TM_LABEL || tam.mode == TM_STORCL) )
-      )  
+      )
   ) {
 
 //if((event->keyval == 65514) || ((event->state & 16) == 16)) { //AltGr Dani & Didier 0x14 for AltGr, and 0x1C for \#
@@ -1086,7 +1073,7 @@ if(   (CTRL_State != 65536 || allowAltGrKey)
 
     //Deadkey ^ simulation
     //if(ll=='a') ll = 65106;
-  
+
     if('A' <= ll && ll <= 'Z' && alphaCase == AC_UPPER) {         //A-Z is shifted on PC, and flips
       ll += ('a' - 'A');
       alphaCase = AC_LOWER;
@@ -1124,7 +1111,7 @@ if(   (CTRL_State != 65536 || allowAltGrKey)
     alphaCase = alphaCase_MEM;
 
     #if defined(VERBOSEKEYS)
-      printf("------------------------ Done new alpha detection, skipping to rest of key detections\n");        
+      printf("------------------------ Done new alpha detection, skipping to rest of key detections\n");
     #endif
   }
 
@@ -1173,7 +1160,7 @@ continueWithOldDetections:
         printf("key pressed: CTRL+d Copy All registers to clipboard\n");
         copyAllRegistersToClipboard();
         break;
-    
+
       default:;
     }
 
@@ -1183,10 +1170,10 @@ continueWithOldDetections:
     if(calcMode == CM_AIM || calcMode == CM_EIM || tam.mode || (calcMode == CM_PEM && getSystemFlag(FLAG_ALPHA)) || (calcMode == CM_ASSIGN && getSystemFlag(FLAG_ALPHA))) {
       //printf(">>>>> ALPHA SECTION Keyboard Key Code = %d\n", event_keyval);
       switch(event_keyval) {
- 
+
         //ROW 0
         case GDK_KEY_Up:                                               //JM     // CursorUp //JM
-          if(AlphaArrowsOffAndUpDn) {            
+          if(AlphaArrowsOffAndUpDn) {
             btnClicked(w,  isR47FAM?"22":"17");   //Up
           }
           else if(calcMode == CM_EIM) {
@@ -1823,7 +1810,7 @@ returnKeyPressedFalse:
     }
 
 
-    
+
     typedef struct {              //JM VALUES DEMO
       char     C47 [16];
       char     C47A[16];
@@ -2749,7 +2736,7 @@ char sstmp[16];
   if(strcmp((char *)lbl, "CAT") == 0 && key->keyId != 85) {   //JM was 85  //JM Changed CATALOG to CAT
     lbl[3] = 0;
   }
-  
+
   if(key->primary == ITM_SHIFTg && key->keyId == 71) {
     strcpy((char *)lbl,"      "); //blank the dots above the shift g key, if it is shift g specifically instead of shift f/g
   }
@@ -2761,7 +2748,7 @@ char sstmp[16];
     gtk_widget_set_name(lblF, "letter");
   }
   else if(key->fShifted < 0) {
-    gtk_widget_set_name(lblF, "fShiftedUnderline"); 
+    gtk_widget_set_name(lblF, "fShiftedUnderline");
   }
   else {
     gtk_widget_set_name(lblF, "fShifted");
@@ -4399,7 +4386,7 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkK) {
     uint32_t gdkKey = gdkK;
     int16_t item;
 //  printf("**[DL]** _keyCodeFromGdkKey gdkKey %x capslock state %d\n", gdkKey, gdk_keymap_get_caps_lock_state(gdk_keymap_get_for_display(gdk_display_get_default())));
-    
+
     if(testDeadKeys) {
       switch(gdkKey) {
         case '^' :
@@ -4470,7 +4457,7 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkK) {
         cancelledDeadkey:
 
         switch(gdkKey) {
-          case GDK_KEY_Tab: 
+          case GDK_KEY_Tab:
                     item = ITM_CR; break;
           case '`': item = ITM_NQUOTE; break;
           case '*': item = ITM_PROD_SIGN; break;
@@ -4580,15 +4567,15 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkK) {
       gtk_container_add(GTK_CONTAINER(frmCalc), grid);
 
 
-      
+
       if(modelString[0] == 0) {
         strcpy(modelString,"res/");
         strcat(modelString, isR47FAM?"R47":"C47");
         if(calcLandscape) {
           strcat(modelString,"short.png");
-        } 
+        }
         else {
-          strcat(modelString,".png");        
+          strcat(modelString,".png");
         }
       }
       else {
@@ -5126,9 +5113,9 @@ int keyCntA = 0;
       gtk_widget_set_tooltip_text(GTK_WIDGET(btn42A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCnt].C47A); keyCntA++;              //    "M");
       gtk_widget_set_tooltip_text(GTK_WIDGET(btn43A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCnt].C47A); keyCntA++;              //    "N");
       gtk_widget_set_tooltip_text(GTK_WIDGET(btn44A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCnt].C47A); keyCntA++;keyCntA++;    //    "O"); //^^
-      lbl41F  = gtk_label_new(""); 
-      lbl42F  = gtk_label_new(""); 
-      lbl43F  = gtk_label_new(""); 
+      lbl41F  = gtk_label_new("");
+      lbl42F  = gtk_label_new("");
+      lbl43F  = gtk_label_new("");
       lbl44F  = gtk_label_new("");
       lbl45F  = gtk_label_new("");
       lbl41Fa = gtk_label_new("");  //JM
@@ -5620,7 +5607,7 @@ int keyCntA = 0;
       btn82A  = gtk_button_new();                           //vv dr - new AIM
       btn83A  = gtk_button_new();
       btn84A  = gtk_button_new();
-      btn85A  = gtk_button_new();                                             keyCntA++;              //      
+      btn85A  = gtk_button_new();                                             keyCntA++;              //
       gtk_widget_set_tooltip_text(GTK_WIDGET(btn82A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCnt].C47A); keyCntA++;              //       ":");
       gtk_widget_set_tooltip_text(GTK_WIDGET(btn83A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCnt].C47A); keyCntA++;              //       ".");
       gtk_widget_set_tooltip_text(GTK_WIDGET(btn84A), isR47FAM?shortCutString[keyCntA].R47A : shortCutString[keyCnt].C47A); keyCntA++;              //       "?");

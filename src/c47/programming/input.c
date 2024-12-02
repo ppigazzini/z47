@@ -55,7 +55,7 @@ void fnVarMnu(uint16_t label) {
 
 
 #if defined(PC_BUILD)
-  int32_t gTime = 0; 
+  int32_t gTime = 0;
   bool_t  gRemoveTimer = false;
   static gboolean gTimer(gpointer user_data) {
     gTime++;

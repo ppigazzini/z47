@@ -1143,12 +1143,12 @@ void assignLeaveAlpha(void) {
     clearSystemFlag(FLAG_ALPHA);
     while(numberOfTamMenusToPop--) {
       if(currentMenu() == -MNU_ALPHA) {
-        popSoftmenu();      
+        popSoftmenu();
       }
       popSoftmenu();
     }
     if(currentMenu() == -MNU_ALPHA) {
-      popSoftmenu();      
+      popSoftmenu();
     }
     if(softmenuStack[0].softmenuId == 1) { // MyAlpha
       softmenuStack[0].softmenuId = 0; // MyMenu
