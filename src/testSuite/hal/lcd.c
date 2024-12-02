@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
-// SPDX-FileCopyrightText: Copyright The C47 Authors
+// SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
+
 
 #include "hal/lcd.h"
 
