@@ -10,7 +10,7 @@
 #include "assign.h"
 #include "bufferize.h"
 #include "calcMode.h"
-#include "c43Extensions/keyboardTweak.h"
+#include "c47Extensions/keyboardTweak.h"
 #include "charString.h"
 #include "calcMode.h"
 #include "config.h"

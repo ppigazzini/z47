@@ -8,7 +8,7 @@
 
 #include "solver/graph.h"
 
-#include "c43Extensions/addons.h"
+#include "c47Extensions/addons.h"
 #include "defines.h"
 #include "mathematics/comparisonReals.h"
 #include "charString.h"
@@ -17,9 +17,9 @@
 #include "error.h"
 #include "flags.h"
 #include "fonts.h"
-#include "c43Extensions/addons.h"
-#include "c43Extensions/graphs.h"
-#include "c43Extensions/graphText.h"
+#include "c47Extensions/addons.h"
+#include "c47Extensions/graphs.h"
+#include "c47Extensions/graphText.h"
 #include "items.h"
 #include "mathematics/imaginaryPart.h"
 #include "mathematics/invert.h"
@@ -71,7 +71,7 @@ static void fnPlot(uint16_t unusedButMandatoryParameter) {
     strcpy(plotStatMx, "DrwMX");
     PLOT_SHADE = true;
     fnPlotSQ(0);
-    //  C43 advanced plot ^^
+    //  C47 advanced plot ^^
 }
 
 

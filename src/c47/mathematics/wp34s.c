@@ -206,7 +206,7 @@ void WP34S_SinCosTanTaylor(const real_t *a, bool_t swap, real_t *sinOut, real_t 
   uInt32ToReal(1, &sin);
   uInt32ToReal(1, &cos);
 
-  for(i=1; !(endSin && endCos) && i<1000; i++) { // i goes up to 31 max in the test suite
+  for(i=1; !(endSin && endCos) && i<1000; i++) { // it goes up to 31 max in the test suite
     realAdd(&j, const_1, &j, realContext);
     realDivide(&a2, &j, &z, realContext);
     realMultiply(&t, &z, &t, realContext);

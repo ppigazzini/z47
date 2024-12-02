@@ -29,10 +29,10 @@ All the below: because both Last x and savestack does not work due to multiple s
  Check for savestack in jm.c
 */
 
-#include "c43Extensions/addons.h"
+#include "c47Extensions/addons.h"
 #include "assign.h"
 #include "bufferize.h"
-#include "c43Extensions/keyboardTweak.h"
+#include "c47Extensions/keyboardTweak.h"
 #include "calcMode.h"
 #include "charString.h"
 #include "config.h"
@@ -46,13 +46,13 @@ All the below: because both Last x and savestack does not work due to multiple s
 #include "flags.h"
 #include "fonts.h"
 #include "fractions.h"
-#include "c43Extensions/graphText.h"
+#include "c47Extensions/graphText.h"
 #include "hal/audio.h"
 #include "hal/gui.h"
 #include "hal/lcd.h"
 #include "integers.h"
 #include "items.h"
-#include "c43Extensions/jm.h"
+#include "c47Extensions/jm.h"
 #include "keyboard.h"
 #include "mathematics/arg.h"
 #include "mathematics/changeSign.h"
@@ -64,8 +64,8 @@ All the below: because both Last x and savestack does not work due to multiple s
 #include "mathematics/roundi.h"
 #include "mathematics/toPolar.h"
 #include "plotstat.h"
-#include "c43Extensions/radioButtonCatalog.h"
-#include "c43Extensions/keyboardTweak.h"
+#include "c47Extensions/radioButtonCatalog.h"
+#include "c47Extensions/keyboardTweak.h"
 #include "realType.h"
 #include "recall.h"
 #include "registers.h"
@@ -75,7 +75,7 @@ All the below: because both Last x and savestack does not work due to multiple s
 #include "softmenus.h"
 #include "stack.h"
 #include "statusBar.h"
-#include "c43Extensions/textfiles.h"
+#include "c47Extensions/textfiles.h"
 #include <string.h>
 
   #ifdef DMCP_BUILD

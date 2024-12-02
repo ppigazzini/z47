@@ -14,7 +14,7 @@
 #include "fonts.h"
 #include "integers.h"
 #include "items.h"
-#include "c43Extensions/xeqm.h"
+#include "c47Extensions/xeqm.h"
 #include "mathematics/addition.h"
 #include "mathematics/matrix.h"
 #include "registers.h"

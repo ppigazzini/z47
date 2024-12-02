@@ -3,8 +3,8 @@
 
 #include "plotstat.h"
 
-#include "c43Extensions/addons.h"
-#include "c43Extensions/graphs.h"
+#include "c47Extensions/addons.h"
+#include "c47Extensions/graphs.h"
 #include "charString.h"
 #include "constantPointers.h"
 #include "config.h"

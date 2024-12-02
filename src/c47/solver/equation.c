@@ -190,7 +190,7 @@ void fnEqEdit(uint16_t unusedButMandatoryParameter) {
         }
       calcMode = CM_EIM;
       alphaCase = CAPS_EQN_DEFAULT;
-      nextChar = NC_NORMAL;//JM C43
+      nextChar = NC_NORMAL;//JM C47
       clearSystemFlag(FLAG_NUMLOCK);
       scrLock = NC_NORMAL;
       setSystemFlag(FLAG_ALPHA);

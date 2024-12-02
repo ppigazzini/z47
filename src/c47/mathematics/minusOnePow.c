@@ -23,7 +23,7 @@
 #include "mathematics/wp34s.h"
 #include "registers.h"
 #include "registerValueConversions.h"
-#include "c43Extensions/radioButtonCatalog.h"
+#include "c47Extensions/radioButtonCatalog.h"
 
 #include "c47.h"
 

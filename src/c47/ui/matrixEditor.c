@@ -8,8 +8,8 @@
 #include "ui/matrixEditor.h"
 
 #include "bufferize.h"
-#include "c43Extensions/jm.h"
-#include "c43Extensions/addons.h"
+#include "c47Extensions/jm.h"
+#include "c47Extensions/addons.h"
 #include "calcMode.h"
 #include "charString.h"
 #include "constantPointers.h"

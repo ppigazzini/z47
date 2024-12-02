@@ -7,7 +7,7 @@
 
 #include "programming/decode.h"
 
-#include "c43Extensions/xeqm.h"
+#include "c47Extensions/xeqm.h"
 #include "charString.h"
 #include "dateTime.h"
 #include "defines.h"

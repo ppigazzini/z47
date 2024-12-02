@@ -18,9 +18,9 @@
 #include "fonts.h"
 #include "hal/gui.h"
 #include "items.h"
-#include "c43Extensions/jm.h"
-#include "c43Extensions/keyboardTweak.h"
-#include "c43Extensions/radioButtonCatalog.h"
+#include "c47Extensions/jm.h"
+#include "c47Extensions/keyboardTweak.h"
+#include "c47Extensions/radioButtonCatalog.h"
 #include "mathematics/matrix.h"
 #include "mathematics/cxToRe.h"
 #include "mathematics/reToCx.h"
@@ -44,13 +44,13 @@
 #include "store.h"
 #include "timer.h"
 #include "ui/tam.h"
-#include "c43Extensions/xeqm.h"
-#include "c43Extensions/addons.h"
+#include "c47Extensions/xeqm.h"
+#include "c47Extensions/addons.h"
 
-#include "c43Extensions/textfiles.h"
-#include "c43Extensions/keyboardTweak.h"
-#include "c43Extensions/graphText.h"
-#include "c43Extensions/xeqm.h"
+#include "c47Extensions/textfiles.h"
+#include "c47Extensions/keyboardTweak.h"
+#include "c47Extensions/graphText.h"
+#include "c47Extensions/xeqm.h"
 
 #if (REAL34_WIDTH_TEST == 1)
   #include "registerValueConversions.h"
@@ -1033,9 +1033,6 @@ int16_t lastItem = 0;
                     #endif //VERBOSEKEYS
 
 
-//TOCHECK: JM Changed showFunctionNameItem to item below, due to something 43S did to the showfunction sequencing
-//Problem below: Execution of softkeys does not work when this WP43 change (showFunctionNameItem) is done. Commented out.
-
       if(/*showFunctionNameItem*/item != 0) {
 /* //JM vv Rmove the possibility for error by removing code that may conflict with the state machine
         item = showFunctionNameItem;
@@ -1491,11 +1488,11 @@ int16_t lastItem = 0;
       lastErrorCode = 0;
 
       shiftF = !shiftF;
-      shiftG = false;                                         //JM no shifted menu on g-shift-key as in WP43S
+      shiftG = false;
       lastshiftF = shiftF;
       lastshiftG = shiftG;
       showShiftState();
-      refreshModeGui();                                       //JM refreshModeGui
+      refreshModeGui();
 
       screenUpdatingMode &= ~SCRUPD_MANUAL_SHIFT_STATUS;
       return ITM_NOP;
@@ -1522,11 +1519,10 @@ int16_t lastItem = 0;
       lastErrorCode = 0;
 
       shiftG = !shiftG;
-      shiftF = false;                                         //JM no shifted menu on g-shift-key as in WP43S
       lastshiftF = shiftF;
       lastshiftG = shiftG;
       showShiftState();
-      refreshModeGui();                                       //JM refreshModeGui
+      refreshModeGui();
 
 
       screenUpdatingMode &= ~SCRUPD_MANUAL_SHIFT_STATUS;
