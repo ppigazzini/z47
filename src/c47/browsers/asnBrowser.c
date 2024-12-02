@@ -1,18 +1,5 @@
-  /* This file is part of 43S.
- *
- * 43S is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * 43S is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with 43S.  If not, see <http://www.gnu.org/licenses/>.
- */
+  // SPDX-License-Identifier: GPL-3.0-only
+// SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
 /********************************************//**
  * \file asnBrowser.c The assign browser application
@@ -107,7 +94,7 @@
       if (Norm_Key_00_used) {
          if((Norm_Key_00.funcParam[0] != 0) && ((Norm_Key_00.func == -MNU_DYNAMIC)|| (Norm_Key_00.func == ITM_XEQ) || (Norm_Key_00.func == ITM_RCL)))  {
           strcpy(Name, (char *)&Norm_Key_00.funcParam);       // name of a user menu, program or variable assigned to the Norm key
-        }         
+        }
       }
       else {
         char *funcParam = (char *)getNthString((uint8_t *)userKeyLabel, key * 6 + (page-1));
@@ -127,7 +114,9 @@
         stringAppend(Name + stringByteLength(Name), tmp3);
       }
 
-      showKey(Name, xx*pixelsPerSoftKey, xx*pixelsPerSoftKey+pixelsPerSoftKey, YOFF+yy*SOFTMENU_HEIGHT, YOFF+(yy+1)*SOFTMENU_HEIGHT, xx == 5, !Norm_Key_00_used ? vmNormal : vmReverse, true, true, NOVAL, NOVAL, NOTEXT);
+      showKey(Name, xx*pixelsPerSoftKey, xx*pixelsPerSoftKey+pixelsPerSoftKey, YOFF+yy*SOFTMENU_HEIGHT, YOFF+(yy+1)*SOFTMENU_HEIGHT, xx == 5,
+          !Norm_Key_00_used ? (((kk > 0 || Name[0] == 0) && tmp3[0]==0) ? vmNormal : vmReverse) : vmReverse,
+          true, true, NOVAL, NOVAL, NOTEXT);
 
       if(fnAsnDisplayUSER &&
           ( ((page == 1) && (kbd_std[key].primary == kbd_usr[key].primary)  )       ||

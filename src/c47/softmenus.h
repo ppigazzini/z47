@@ -21,7 +21,7 @@ uint8_t *getNthString           (uint8_t *ptr, int16_t n); // Starting with stri
 void     fnDynamicMenu          (uint16_t unusedButMandatoryParameter);
 
 void     fnExitAllMenus         (uint16_t unusedButMandatoryParameter);
-void     fnOpenMenu             (uint16_t menu);  
+void     fnOpenMenu             (uint16_t menu);
 int16_t  findMenu               (char *buffer);
 void     fnGetMenu              (uint16_t unusedButMandatoryParameter);
 #if !defined(TESTSUITE_BUILD)
