@@ -473,6 +473,16 @@ bool_t itemNotAvail(int16_t itemNr) {
         refreshLcd(NULL);
       #endif // PC_BUILD
     }
+
+    #if defined(PC_BUILD)
+      if(gmpMemInBytes != 0) {
+        char str[30];
+        stringToASCII(indexOfItems[abs(func)].itemSoftmenuName, str);
+        errorf("gmpMemInBytes should be 0 but it is not! Check to ensure allocated long integers have been freed.");
+        fprintf(stderr, "This happened after %s\n", str);
+        fflush(stderr);
+      }
+    #endif // PC_BUILD
   }
 
 

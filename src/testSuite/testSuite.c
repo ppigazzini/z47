@@ -3219,7 +3219,7 @@ int processTests(const char *listPath) {
 
   free(listPathDup);
 
-  return failedTests > 0;
+  return failedTests > 0 || gmpMemInBytes != 0;
 }
 
 int main(int argc, char* argv[]) {
