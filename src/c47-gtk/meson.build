@@ -3,6 +3,7 @@ c47_gtk_src = files(
   'gtkGui.c',
   'hal/audio.c',
   'hal/gui.c',
+  'hal/lcd.c',
   'hal/io.c')
 
 override_opts = ['b_coverage=false']

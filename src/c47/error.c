@@ -13,6 +13,7 @@
 #include "debug.h"
 #include "flags.h"
 #include "fonts.h"
+#include "hal/lcd.h"
 #include "mathematics/comparisonReals.h"
 #include "realType.h"
 #include "registers.h"

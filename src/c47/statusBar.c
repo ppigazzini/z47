@@ -11,6 +11,7 @@
 #include "fonts.h"
 #include "items.h"
 #include "hal/gui.h"
+#include "hal/lcd.h"
 #include "c43Extensions/addons.h"
 #include "c43Extensions/jm.h"
 #include "c43Extensions/keyboardTweak.h"
@@ -445,7 +446,7 @@ void showFracMode(void) {
         break;
       }
       case PGM_RUNNING: {
-        if(lastProgramRunStop != PGM_RUNNING) {
+        if((lastProgramRunStop & PGM_DEFINED_MASK) != PGM_RUNNING) {
           lcd_fill_rect((GRAPHMODE ? X_HOURGLASS_GRAPHS : X_HOURGLASS) - 1, 0, indicatorWidth, 20, LCD_SET_VALUE);
         }
         showGlyph(STD_P, &standardFont, (GRAPHMODE ? X_HOURGLASS_GRAPHS : X_HOURGLASS) + 1, 0, vmNormal, true, false, false);
@@ -453,7 +454,7 @@ void showFracMode(void) {
       }
       default: {
         if(hourGlassIconEnabled) {
-          if(lastProgramRunStop == PGM_RUNNING || lastProgramRunStop == PGM_WAITING) {
+          if((lastProgramRunStop  & PGM_DEFINED_MASK) == PGM_RUNNING || (lastProgramRunStop & PGM_DEFINED_MASK) == PGM_WAITING) {
             lcd_fill_rect((GRAPHMODE ? X_HOURGLASS_GRAPHS : X_HOURGLASS) - 1, 0, indicatorWidth, 20, LCD_SET_VALUE);
           }
           showGlyph(STD_HOURGLASS, &standardFont, GRAPHMODE ? X_HOURGLASS_GRAPHS : X_HOURGLASS, 0, vmNormal, true, false, false); // is 0+11+3 pixel wide //Shift the hourglass to a visible part of the status bar
@@ -463,11 +464,12 @@ void showFracMode(void) {
         }
       }
     }
-    force_refresh((lastProgramRunStop != programRunStop) ? force : timed);
+    uint8_t tmpb = (programRunStop & PGM_DEFINED_MASK) | (hourGlassIconEnabled ? !PGM_DEFINED_MASK : 0); //force undefined bit, which forces the hourglass/P indicator update
+    force_refresh((lastProgramRunStop != tmpb || lastProgramRunStop == PGM_UNDEFINED) ? force : timed);
     //#if defined (PC_BUILD)
     //  if(lastProgramRunStop != programRunStop) printf("###### force_refresh(force) active: lastProgramRunStop != programRunStop:%i ########\n",lastProgramRunStop != programRunStop);
     //#endif //PC_BUILD
-    lastProgramRunStop = programRunStop;
+    lastProgramRunStop = tmpb;
   }
 
 

@@ -12,6 +12,7 @@
 #include "display.h"
 #include "flags.h"
 #include "fonts.h"
+#include "hal/lcd.h"
 #include "items.h"
 #include "memory.h"
 #include "registers.h"

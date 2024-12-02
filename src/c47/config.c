@@ -471,6 +471,10 @@ void fnClrMod(uint16_t unusedButMandatoryParameter) {        //clear input buffe
   #if !defined(TESTSUITE_BUILD)
     resetKeytimers();  //JM
     clearSystemFlag(FLAG_IRF_ON);
+    clearSystemFlag(FLAG_INTING);
+    clearSystemFlag(FLAG_SOLVING);
+    programRunStop = PGM_STOPPED;
+    lastProgramRunStop = PGM_RUNNING;  //set last to running to force first refresh condition to be true
 
     if(calcMode == CM_NIM) {
       strcpy(aimBuffer, "+");
@@ -1528,12 +1532,12 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     fnKeyInCatalog = false;
     shiftF = false;
     shiftG = false;
-    halfSecTick1 = false;
+    secTick1 = false;
     halfSecTick2 = false;
     halfSecTick3 = false;
     skippedStackLines = false;
     programRunStop = PGM_STOPPED;
-    lastProgramRunStop = PGM_RUNNING;  //set last to running to force first refresh condition to be true
+    lastProgramRunStop = PGM_UNDEFINED;  //set last to undefined to force first refresh condition to be true
 
 
     ctxtReal34.round = DEC_ROUND_HALF_EVEN;
@@ -1765,7 +1769,7 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
 
   void dmcpResetAutoOff(void) {
     // Key is ready -> clear auto off timer
-    if(!key_empty() || !getSystemFlag(FLAG_AUTOFF) || getSystemFlag(FLAG_RUNTIM) || programRunStop == PGM_RUNNING || (nextTimerRefresh != 0)) {
+    if(!key_empty() || !emptyKeyBuffer() || ((calcMode == CM_TIMER) && timerStartTime != TIMER_APP_STOPPED) || !getSystemFlag(FLAG_AUTOFF) || getSystemFlag(FLAG_RUNTIM) || programRunStop == PGM_RUNNING || (nextTimerRefresh != 0)) {
       reset_auto_off();
     }
   }

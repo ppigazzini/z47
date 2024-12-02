@@ -14,6 +14,7 @@
 #include "flags.h"
 #include "fonts.h"
 #include "fractions.h"
+#include "hal/lcd.h"
 #include "items.h"
 #include "c43Extensions/jm.h"
 #include "mathematics/comparisonReals.h"
