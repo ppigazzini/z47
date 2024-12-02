@@ -272,7 +272,7 @@ void resetKeytimers(void) {
          || (/*(key_no >= 0 && key_no < 15) && (LongPressM == RBX_M14) && */(tmpp_ == ITM_DRG && tmpf_ == ITM_USERMODE ) ) //DRG anywhere mathkeys
          || (tmpp_ == ITM_XEQ && tmpf_ == ITM_AIM)                                               //anywhere
         ) {
-        if(!shiftF && !shiftG && !(lastIntegerBase >= 2 && topHex && key_no >= 0 && key_no <= 5)) { //accept NIM but do not react, stay on default 0 0 0 
+        if(!shiftF && !shiftG && !(lastIntegerBase >= 2 && topHex && key_no >= 0 && key_no <= 5)) { //accept NIM but do not react, stay on default 0 0 0
           longpressDelayedkey1 = tmpf_;
           tmpf = tmpf_;
           if(LongPressM == RBX_M1234) {
@@ -377,7 +377,7 @@ void resetKeytimers(void) {
     else if(calcMode == CM_NIM && *result == ITM_BACKSPACE && tam.mode == 0) {
       longpressDelayedkey1 = ITM_CLN;      //BACKSPACE longpress clears input buffer
     }
-    
+
 
     if(calcMode == CM_NIM) {
       if( (*result == ITM_ms       || longpressDelayedkey1 == ITM_ms       || longpressDelayedkey2 == ITM_ms       || longpressDelayedkey3 == ITM_ms   )   || //.ms needs NIM mode to be open if the user intends it to be open.
