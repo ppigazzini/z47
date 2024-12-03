@@ -79,6 +79,9 @@
   void fnCvtFlozusMl  (uint16_t multiplyDivide);
   void fnCvtQuartL    (uint16_t multiplyDivide);
   void fnCvtBarrelM3  (uint16_t multiplyDivide);
+  void fnCvtFlozukIn3 (uint16_t multiplyDivide);
+  void fnCvtFlozusIn3 (uint16_t multiplyDivide);
+  void fnCvtFt3toGalUS(uint16_t multiplyDivide);
 
   // Area
   void fnCvtAcreHa    (uint16_t multiplyDivide);
