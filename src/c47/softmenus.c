@@ -462,7 +462,7 @@ TO_QSPI const int16_t menu_ConvX[]        = {
                                                     ITM_NMItoM,               ITM_MtoNMI,               ITM_FATHOMtoM,            ITM_MtoFATHOM,            ITM_NULL,                 ITM_NULL,
                                                     ITM_NULL,                 ITM_NULL,                 ITM_NULL,                 ITM_NULL,                 ITM_NULL,                 ITM_NULL};
 TO_QSPI const int16_t menu_ConvV[]        = {
-                                                    ITM_GLUKtoL,              ITM_LtoGLUK,              ITM_GLUStoL,              ITM_LtoGLUS,              ITM_FT3toGalUS,           ITM_GalUStoFT3,
+                                                    ITM_GLUKtoL,              ITM_LtoGLUK,              ITM_GLUStoL,              ITM_LtoGLUS,              ITM_GalUStoFT3,           ITM_FT3toGalUS,
                                                     ITM_FZUKtoML,             ITM_MLtoFZUK,             ITM_FZUStoML,             ITM_MLtoFZUS,             ITM_BARRELtoM3,           ITM_M3toBARREL,
                                                     ITM_FZUKtoIN3,            ITM_IN3toFZUK,            ITM_FZUStoIN3,            ITM_IN3toFZUS,            ITM_QTtoL,                ITM_LtoQT};
 TO_QSPI const int16_t menu_ConvS[]        = {
