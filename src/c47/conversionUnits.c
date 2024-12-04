@@ -362,6 +362,21 @@ void fnCvtFlozusMl(uint16_t multiplyDivide) {
 }
 
 
+void fnCvtFlozukIn3 (uint16_t multiplyDivide) {
+  unitConversion(const_FlozukToIn3, multiplyDivide, noninverting);  
+}
+
+
+void fnCvtFlozusIn3 (uint16_t multiplyDivide) {
+  unitConversion(const_FlozusToIn3, multiplyDivide, noninverting);
+}
+
+
+void fnCvtFt3toGalUS(uint16_t multiplyDivide) {
+  unitConversion(const_Ft3ToGalUS, multiplyDivide, noninverting);
+}
+
+
 void fnCvtBarrelM3(uint16_t multiplyDivide) {
   unitConversion(const_BarrelToM3, multiplyDivide, noninverting);
 }
