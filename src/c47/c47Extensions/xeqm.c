@@ -13,6 +13,7 @@
 #include "charString.h"
 #include "flags.h"
 #include "hal/gui.h"
+#include "hal/lcd.h"
 #include "c47Extensions/addons.h"
 #include "c47Extensions/graphText.h"
 #include "items.h"

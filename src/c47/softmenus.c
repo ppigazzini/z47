@@ -13,6 +13,7 @@
 #include "error.h"
 #include "fonts.h"
 #include "flags.h"
+#include "hal/lcd.h"
 #include "items.h"
 #include "mathematics/comparisonReals.h"
 #include "memory.h"
