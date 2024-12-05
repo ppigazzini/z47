@@ -326,50 +326,6 @@ const funcTest_t funcTestNoParam[] = {
   {"",                       NULL                  }
 };
 
-const funcTest_t funcTestCvt[] = {
-  {"fnCvtAcreHa",     fnCvtAcreHa    },
-  {"fnCvtAcreusHa",   fnCvtAcreusHa  },
-  {"fnCvtAtmPa",      fnCvtAtmPa     },
-  {"fnCvtAuM",        fnCvtAuM       },
-  {"fnCvtBarPa",      fnCvtBarPa     },
-  {"fnCvtBtuJ",       fnCvtBtuJ      },
-  {"fnCvtCalJ",       fnCvtCalJ      },
-  {"fnCvtCwtKg",      fnCvtCwtKg     },
-  {"fnCvtFlozukMl",   fnCvtFlozukMl  },
-  {"fnCvtFlozusMl",   fnCvtFlozusMl  },
-  {"fnCvtFtM",        fnCvtFtM       },
-  {"fnCvtGalukL",     fnCvtGalukL    },
-  {"fnCvtGalusL",     fnCvtGalusL    },
-  {"fnCvtHpeW",       fnCvtHpeW      },
-  {"fnCvtHpmW",       fnCvtHpmW      },
-  {"fnCvtHpukW",      fnCvtHpukW     },
-  {"fnCvtInchMm",     fnCvtInchMm    },
-  {"fnCvtInhgPa",     fnCvtInhgPa    },
-  {"fnCvtLbfN",       fnCvtLbfN      },
-  {"fnCvtLbfftNm",    fnCvtLbfftNm   },
-  {"fnCvtLbKg",       fnCvtLbKg      },
-  {"fnCvtLyM",        fnCvtLyM       },
-  {"fnCvtMiKm",       fnCvtMiKm      },
-  {"fnCvtNmiKm",      fnCvtNmiKm     },
-  {"fnCvtOzG",        fnCvtOzG       },
-  {"fnCvtPcM",        fnCvtPcM       },
-  {"fnCvtPointMm",    fnCvtPointMm   },
-  {"fnCvtPsiPa",      fnCvtPsiPa     },
-  {"fnCvtQuartL",     fnCvtQuartL    },
-  {"fnCvtSfeetM",     fnCvtSfeetM    },
-  {"fnCvtShortcwtKg", fnCvtShortcwtKg},
-  {"fnCvtShorttonKg", fnCvtShorttonKg},
-  {"fnCvtStoneKg",    fnCvtStoneKg   },
-  {"fnCvtTonKg",      fnCvtTonKg     },
-  {"fnCvtTorrPa",     fnCvtTorrPa    },
-  {"fnCvtTrozG",      fnCvtTrozG     },
-  {"fnCvtWhJ",        fnCvtWhJ       },
-  {"fnCvtYardM",      fnCvtYardM     },
-  {"fnCvtYearS",      fnCvtYearS     },
-  {"",                NULL           }
-};
-
-
 
 char *endOfString(char *string) { // string must point on the 1st "
   string++;
@@ -2920,32 +2876,6 @@ void functionToCall(char *functionName) {
 
     //printf("%s=%d\n", functionName, functionIndex);
     return;
-  }
-
-  else {
-    function = 0;
-    while(funcTestCvt[function].name[0] != 0 && strcmp(funcTestCvt[function].name, functionName) != 0) {
-      function++;
-    }
-    if(funcTestCvt[function].name[0] != 0) {
-      //ici il faut tester la présence de fromUnitToISO ou fromISOtoUnit
-
-      funcCvt = funcTestCvt[function].func;
-      funcType = FUNC_CVT;
-
-      for(functionIndex=1; functionIndex<=LAST_ITEM; functionIndex++) {
-        if(indexOfItems[functionIndex].func == funcCvt) {
-          break;
-        }
-      }
-
-      if(functionIndex >= LAST_ITEM) {
-        printf("\nThe function %s must be somewhere in the indexOfItems array!\n", functionName);
-        abortTest();
-      }
-
-      return;
-    }
   }
 
   printf("\nCannot find the function to test: check spelling of the function name and remember the name is case sensitive\n");
