@@ -3,7 +3,7 @@
 
 #include "softmenus.h"
 
-#include "c43Extensions/addons.h"
+#include "c47Extensions/addons.h"
 #include "assign.h"
 #include "calcMode.h"
 #include "charString.h"
@@ -17,11 +17,11 @@
 #include "mathematics/comparisonReals.h"
 #include "memory.h"
 #include "programming/manage.h"
-#include "c43Extensions/jm.h"
-#include "c43Extensions/keyboardTweak.h"
+#include "c47Extensions/jm.h"
+#include "c47Extensions/keyboardTweak.h"
 #include "plotstat.h"
 #include "programming/nextStep.h"
-#include "c43Extensions/radioButtonCatalog.h"
+#include "c47Extensions/radioButtonCatalog.h"
 #include "registers.h"
 #include "registerValueConversions.h"
 #include "screen.h"
@@ -29,7 +29,7 @@
 #include "solver/equation.h"
 #include "sort.h"
 #include "stack.h"
-#include "c43Extensions/xeqm.h"
+#include "c47Extensions/xeqm.h"
 #include <string.h>
 #include <stdlib.h>
 #include <math.h>
@@ -462,9 +462,9 @@ TO_QSPI const int16_t menu_ConvX[]        = {
                                                     ITM_NMItoM,               ITM_MtoNMI,               ITM_FATHOMtoM,            ITM_MtoFATHOM,            ITM_NULL,                 ITM_NULL,
                                                     ITM_NULL,                 ITM_NULL,                 ITM_NULL,                 ITM_NULL,                 ITM_NULL,                 ITM_NULL};
 TO_QSPI const int16_t menu_ConvV[]        = {
-                                                    ITM_GLUKtoL,              ITM_LtoGLUK,              ITM_GLUStoL,              ITM_LtoGLUS,              ITM_QTtoL,                ITM_LtoQT,
+                                                    ITM_GLUKtoL,              ITM_LtoGLUK,              ITM_GLUStoL,              ITM_LtoGLUS,              ITM_GalUStoFT3,           ITM_FT3toGalUS,
                                                     ITM_FZUKtoML,             ITM_MLtoFZUK,             ITM_FZUStoML,             ITM_MLtoFZUS,             ITM_BARRELtoM3,           ITM_M3toBARREL,
-                                                    ITM_NULL,                 ITM_NULL,                 ITM_NULL,                 ITM_NULL,                 ITM_NULL,                 ITM_NULL};
+                                                    ITM_FZUKtoIN3,            ITM_IN3toFZUK,            ITM_FZUStoIN3,            ITM_IN3toFZUS,            ITM_QTtoL,                ITM_LtoQT};
 TO_QSPI const int16_t menu_ConvS[]        = {
                                                     ITM_KNOTtoKMH,            ITM_KMHtoKNOT,            ITM_KMHtoMPS,             ITM_MPStoKMH,             ITM_RPMtoDEGPS,           ITM_DEGPStoRPM,
                                                     ITM_MPHtoKMH,             ITM_KMHtoMPH,             ITM_MPHtoMPS,             ITM_MPStoMPH,             ITM_RPMtoRADPS,           ITM_RADPStoRPM,
@@ -794,16 +794,16 @@ TO_QSPI const int16_t menu_PLOTFUNC[]    = {  VAR_LX,                       VAR_
 
 
 TO_QSPI const int16_t menu_PLOT_STATS[]   = {
-                                             ITM_SHOWX,                 ITM_SHOWY,                 ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  
-                                             ITM_SCALE,                 ITM_PLOTRST,               ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  
-                                             ITM_MZOOMY,                ITM_PZOOMY,                ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  
+                                             ITM_SHOWX,                 ITM_SHOWY,                 ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,
+                                             ITM_SCALE,                 ITM_PLOTRST,               ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,
+                                             ITM_MZOOMY,                ITM_PZOOMY,                ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,
 
-                                             ITM_PCROS,                 ITM_PPLUS,                 ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  
-                                             ITM_PLINE,                 ITM_PBOX,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  
-                                             ITM_NULL,                  ITM_SNAP,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  
+                                             ITM_PCROS,                 ITM_PPLUS,                 ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,
+                                             ITM_PLINE,                 ITM_PBOX,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,
+                                             ITM_NULL,                  ITM_SNAP,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,
 
-                                             ITM_DIFF,                  ITM_INTG,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  
-                                             ITM_RMS,                   ITM_SHADE,                 ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  
+                                             ITM_DIFF,                  ITM_INTG,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,
+                                             ITM_RMS,                   ITM_SHADE,                 ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,
                                              ITM_NVECT,                 ITM_VECT,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL                  };
 
 
@@ -1932,11 +1932,11 @@ void showKey(const char *label, int16_t x1, int16_t x2, int16_t y1, int16_t y2, 
     //    char *lw = stringAfterPixels(l, &standardFont, (rightMostSlot ? 65 : 66), false, false);
     //    *lw = 0;
     //continue with trimmed label
-    w = stringWidthC43(figlabel(l, showText, showValue), stdNoEnlarge, 0, false, false);
+    w = stringWidthC47(figlabel(l, showText, showValue), stdNoEnlarge, 0, false, false);
     if((showCb >= 0) || (w >= ((min(x2, SCREEN_WIDTH) - max(0, x1))*3)/4 )) {
-      w = stringWidthC43(figlabel(l, showText, showValue), stdNoEnlarge, 1, false, false);
+      w = stringWidthC47(figlabel(l, showText, showValue), stdNoEnlarge, 1, false, false);
       if(showCb >= 0) { w = w + 8; }
-      //    char *lw = stringAfterPixelsC43(l, stdNoEnlarge, compressString, rightMostSlot ? 65 : 66, false, false);
+      //    char *lw = stringAfterPixelsC47(l, stdNoEnlarge, compressString, rightMostSlot ? 65 : 66, false, false);
       //    *lw = 0;
     compressString = 1;       //JM compressString
     showString(figlabel(l, showText, showValue), &standardFont, x1 + (rightMostSlot ? 33 : 34) - w/2, y1 + 2, videoMode, false, false);
@@ -2343,7 +2343,7 @@ bool_t savedspace(int16_t itemNr) {  //strike out all SAVED_SPACE items
 
     #ifdef SAVE_SPACE_DM42_17
       case -MNU_F: case -MNU_BINOM: case -MNU_HYPER: case -MNU_POISS: case -MNU_GEOM:
-      case ITM_FPX   :     case ITM_FX   :      case ITM_FUX   :     case ITM_FM1P: 
+      case ITM_FPX   :     case ITM_FX   :      case ITM_FUX   :     case ITM_FM1P:
       case ITM_BINOMP:     case ITM_BINOM:      case ITM_BINOMU:     case ITM_BINOMM1:
       case ITM_NBINP :     case ITM_NBIN :      case ITM_NBINU :     case ITM_NBINM1 :
       case ITM_HYPERP:     case ITM_HYPER:      case ITM_HYPERU:     case ITM_HYPERM1:
@@ -2813,7 +2813,7 @@ bool_t BASE_OVERRIDEONCE = false;
         }
         showEquation(EQUATION_AIM_BUFFER, yCursor, xCursor, false, NULL, NULL);
       }
-      if( (softmenu[m].menuItem == -MNU_Sfdx || softmenu[m].menuItem == -MNU_Solver_TOOL || softmenu[m].menuItem == -MNU_Sf_TOOL || softmenu[m].menuItem == -MNU_GRAPHS) 
+      if( (softmenu[m].menuItem == -MNU_Sfdx || softmenu[m].menuItem == -MNU_Solver_TOOL || softmenu[m].menuItem == -MNU_Sf_TOOL || softmenu[m].menuItem == -MNU_GRAPHS)
        && (currentSolverStatus & SOLVER_STATUS_USES_FORMULA) && (currentSolverStatus & SOLVER_STATUS_INTERACTIVE)) {
         showEquation(currentFormula, 0, EQUATION_NO_CURSOR, false, NULL, NULL);
       }

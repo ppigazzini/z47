@@ -1,18 +1,5 @@
-/* This file is part of 43S.
- *
- * 43S is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * 43S is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with 43S.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: GPL-3.0-only
+// SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
 /********************************************//**
  * \file generateCatalogs.c
@@ -108,21 +95,8 @@ int main(int argc, char* argv[]) {
     exit(1);
   }
 
-  fprintf(catalogFile, "/* This file is part of 43S.\n");
-  fprintf(catalogFile, " *\n");
-  fprintf(catalogFile, " * 43S is free software: you can redistribute it and/or modify\n");
-  fprintf(catalogFile, " * it under the terms of the GNU General Public License as published by\n");
-  fprintf(catalogFile, " * the Free Software Foundation, either version 3 of the License, or\n");
-  fprintf(catalogFile, " * (at your option) any later version.\n");
-  fprintf(catalogFile, " *\n");
-  fprintf(catalogFile, " * 43S is distributed in the hope that it will be useful,\n");
-  fprintf(catalogFile, " * but WITHOUT ANY WARRANTY; without even the implied warranty of\n");
-  fprintf(catalogFile, " * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n");
-  fprintf(catalogFile, " * GNU General Public License for more details.\n");
-  fprintf(catalogFile, " *\n");
-  fprintf(catalogFile, " * You should have received a copy of the GNU General Public License\n");
-  fprintf(catalogFile, " * along with 43S.  If not, see <http://www.gnu.org/licenses/>.\n");
-  fprintf(catalogFile, " */\n\n");
+  fprintf(catalogFile, "// SPDX-License-Identifier: GPL-3.0-only\n");
+  fprintf(catalogFile, "// SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors\n\n");
 
   fprintf(catalogFile, "/********************************************//**\n");
   fprintf(catalogFile, "* \\file softmenuCatalogs.h\n");

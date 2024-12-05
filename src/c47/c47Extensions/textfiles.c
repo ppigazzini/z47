@@ -1,27 +1,12 @@
-/* This file is part of C47.
- *
- * C47 is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * C47 is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with C47.  If not, see <http://www.gnu.org/licenses/>.
- */
-
-
+// SPDX-License-Identifier: GPL-3.0-only
+// SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
 //#define DISPLOADING
 
-#include "c43Extensions/textfiles.h"
+#include "c47Extensions/textfiles.h"
 
 #include "charString.h"
-#include "c43Extensions/graphText.h"
+#include "c47Extensions/graphText.h"
 #include "registers.h"
 #include "screen.h"
 #include <string.h>
@@ -40,7 +25,7 @@ typedef struct {
   /*1*/  { " too large for transfer" },
   /*2*/  { "Complex matrix " },
   /*3*/  { "res/PROGRAMS" },
-  /*4*/  { "C43_LOG.TXT" },
+  /*4*/  { "C47_LOG.TXT" },
   /*5*/  { "Alpha buffer: " },
   };
 #endif //TESTSUITE_BUILD
@@ -202,7 +187,7 @@ void aimBuffer_csv_out(void) {
 //**********************************************************************************************************
 #if !defined(TESTSUITE_BUILD)
   int16_t export_string_to_file(const char line1[TMP_STR_LENGTH]) {
-    return export_string_to_filename(line1, APPEND, ClipBoardMsg[3].itemName, ClipBoardMsg[4].itemName);  //"res/PROGRAMS", "C43_LOG.TXT"
+    return export_string_to_filename(line1, APPEND, ClipBoardMsg[3].itemName, ClipBoardMsg[4].itemName);  //"res/PROGRAMS", "C47_LOG.TXT"
   }
 #endif // !TESTSUITE_BUILD
 

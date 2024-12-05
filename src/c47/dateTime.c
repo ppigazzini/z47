@@ -1,18 +1,5 @@
-/* This file is part of 43S.
- *
- * 43S is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * 43S is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with 43S.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: GPL-3.0-only
+// SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
 /********************************************//**
  * \file dateTime.c
@@ -24,8 +11,8 @@
 #include "constantPointers.h"
 #include "debug.h"
 #include "error.h"
-#include "c43Extensions/addons.h"
-#include "c43Extensions/graphText.h"
+#include "c47Extensions/addons.h"
+#include "c47Extensions/graphText.h"
 #include "flags.h"
 #include "items.h"
 #include "mathematics/comparisonReals.h"
@@ -604,7 +591,7 @@ void fnYYDflt(uint16_t tmp) {
     lastCenturyHighUsed = 0;
   }
   else {
-    lastCenturyHighUsed = tmp;    
+    lastCenturyHighUsed = tmp;
   }
 }
 
@@ -831,7 +818,7 @@ void fnHMStoTM(uint16_t unusedButMandatoryParameter) {
   if(!saveLastX()) {
       return;
   }
-  
+
   #pragma GCC diagnostic push
   #pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
       switch(getRegisterDataType(REGISTER_X)) {

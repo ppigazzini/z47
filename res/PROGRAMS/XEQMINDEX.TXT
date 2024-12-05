@@ -17,7 +17,7 @@ XEQM17:Plot random deviations from linear;
 XEQM18:CalculatorTest;
 
 
-// C43 XEQM softkey index file
+// C47 XEQM softkey index file
 // This file to allocate XEQM softkeys to text files in the PROGRAMS directory
 // nnnnn:mmmmmmmm; nnnnn=button; mmmmmmmm=file name; Colon and semicolon important.
 // .TXT is automatically appended.

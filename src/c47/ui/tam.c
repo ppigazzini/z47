@@ -12,7 +12,7 @@
 #include "fonts.h"
 #include "hal/gui.h"
 #include "items.h"
-#include "c43Extensions/addons.h"
+#include "c47Extensions/addons.h"
 #include "mathematics/integerPart.h"
 #include "mathematics/integerPartLonginteger.h"
 #include "mathematics/fractionalPart.h"

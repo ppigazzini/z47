@@ -18,17 +18,17 @@
 #include "error.h"
 #include "flags.h"
 #include "fonts.h"
-#include "c43Extensions/addons.h"
-#include "c43Extensions/graphs.h"
-#include "c43Extensions/graphText.h"
-#include "c43Extensions/inlineTest.h"
-#include "c43Extensions/radioButtonCatalog.h"
+#include "c47Extensions/addons.h"
+#include "c47Extensions/graphs.h"
+#include "c47Extensions/graphText.h"
+#include "c47Extensions/inlineTest.h"
+#include "c47Extensions/radioButtonCatalog.h"
 #include "items.h"
-#include "c43Extensions/jm.h"
-#include "c43Extensions/xeqm.h"
+#include "c47Extensions/jm.h"
+#include "c47Extensions/xeqm.h"
 #include "keyboard.h"
 #include "longIntegerType.h"
-#include "c43Extensions/keyboardTweak.h"
+#include "c47Extensions/keyboardTweak.h"
 #include "mathematics/comparisonReals.h"
 #include "mathematics/incDec.h"
 #include "memory.h"
@@ -99,7 +99,7 @@ uint16_t current_cursor_y = 0;
                                        "RJvM" spc "NL," spc1
                                        "Walter" spc "DE.";
 
-   
+
 
    TO_QSPI static const char disclaimerStr[]     = "  " MODELTEXT " firmware is free, open source and \n  neither provided nor supported by \n  SwissMicros. Press a key to continue.";
 
@@ -1277,7 +1277,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
       }
 
       x = showGlyphCode(charCodeFromString(string, &ch), font, x, y - raiseString, videoMode, slc, sec, false) - compressString;
-      if(resStr) { // for stringAfterPixelsC43
+      if(resStr) { // for stringAfterPixelsC47
         if(x > width) {
           if(!showEndingCols) {
             uint32_t tmpX = x;
@@ -1362,7 +1362,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
   }
 
 
-  uint32_t showStringC43(const char *string, int mode, int comp, uint32_t x, uint32_t y, videoMode_t videoMode, bool_t showLeadingCols, bool_t showEndingCols ) {
+  uint32_t showStringC47(const char *string, int mode, int comp, uint32_t x, uint32_t y, videoMode_t videoMode, bool_t showLeadingCols, bool_t showEndingCols ) {
     int combinationFontsM = combinationFonts;
     if(combinationFontsDefault == 0) {
       mode = stdNoEnlarge;
@@ -1381,7 +1381,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
     return x;
   }
 
-  char *stringAfterPixelsC43(const char *string, int mode, int comp, uint32_t width, bool_t withLeadingEmptyRows, bool_t withEndingEmptyRows) {
+  char *stringAfterPixelsC47(const char *string, int mode, int comp, uint32_t width, bool_t withLeadingEmptyRows, bool_t withEndingEmptyRows) {
     int combinationFontsM = combinationFonts;
     char *resStr = (char *)string;
     if(combinationFontsDefault == 0) {
@@ -1402,7 +1402,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
     return resStr;
   }
 
-  uint32_t stringWidthWithLimitC43(const char *string, int mode, int comp, uint32_t limitWidth, bool_t withLeadingEmptyRows, bool_t withEndingEmptyRows) {
+  uint32_t stringWidthWithLimitC47(const char *string, int mode, int comp, uint32_t limitWidth, bool_t withLeadingEmptyRows, bool_t withEndingEmptyRows) {
     int combinationFontsM = combinationFonts;
     uint32_t x = 0;
     if(combinationFontsDefault == 0) {
@@ -1424,9 +1424,9 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
   }
 
 
-  uint32_t  stringWidthC43(const char *str, int mode, int comp, bool_t withLeadingEmptyRows, bool_t withEndingEmptyRows){
+  uint32_t  stringWidthC47(const char *str, int mode, int comp, bool_t withLeadingEmptyRows, bool_t withEndingEmptyRows){
      noShow = true;
-     return showStringC43(str, mode, comp, 0, 0, vmNormal, withLeadingEmptyRows, withEndingEmptyRows );
+     return showStringC47(str, mode, comp, 0, 0, vmNormal, withLeadingEmptyRows, withEndingEmptyRows );
      //noShow = false; //no need to redo
   }
 
@@ -1474,33 +1474,33 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
     #define line_h1 37
     const uint32_t line_hMultiLineEdOffset = Y_POSITION_OF_REGISTER_T_LINE - 3;
 
-    uint32_t w = stringWidthWithLimitC43(tmpString + offset, stdnumEnlarge, nocompress, SCREEN_WIDTH, true, true);
+    uint32_t w = stringWidthWithLimitC47(tmpString + offset, stdnumEnlarge, nocompress, SCREEN_WIDTH, true, true);
     if(w < SCREEN_WIDTH) {
-      showStringC43(tmpString + offset, stdnumEnlarge, nocompress,  SCREEN_WIDTH - w, line_hMultiLineEdOffset + line_h1 * _h1, vmNormal, true, true);
+      showStringC47(tmpString + offset, stdnumEnlarge, nocompress,  SCREEN_WIDTH - w, line_hMultiLineEdOffset + line_h1 * _h1, vmNormal, true, true);
       return;
     }
 
-    w = stringWidthWithLimitC43(tmpString + offset, stdEnlarge, nocompress, SCREEN_WIDTH, true, true);
+    w = stringWidthWithLimitC47(tmpString + offset, stdEnlarge, nocompress, SCREEN_WIDTH, true, true);
     if(w < SCREEN_WIDTH) {
-      showStringC43(tmpString + offset, stdEnlarge, nocompress,  SCREEN_WIDTH - w, line_hMultiLineEdOffset + line_h1 * _h1, vmNormal, true, true);
+      showStringC47(tmpString + offset, stdEnlarge, nocompress,  SCREEN_WIDTH - w, line_hMultiLineEdOffset + line_h1 * _h1, vmNormal, true, true);
       return;
     }
 
-    w = stringWidthWithLimitC43(tmpString + offset, stdNoEnlarge, nocompress, SCREEN_WIDTH, true, true);
+    w = stringWidthWithLimitC47(tmpString + offset, stdNoEnlarge, nocompress, SCREEN_WIDTH, true, true);
     if(w < SCREEN_WIDTH) {
-      showStringC43(tmpString + offset, stdNoEnlarge, nocompress,  SCREEN_WIDTH - w, line_hMultiLineEdOffset + line_h1 * _h1, vmNormal, true, true);
+      showStringC47(tmpString + offset, stdNoEnlarge, nocompress,  SCREEN_WIDTH - w, line_hMultiLineEdOffset + line_h1 * _h1, vmNormal, true, true);
       return;
     }
 
-    w = stringWidthWithLimitC43(tmpString + offset, numSmall, nocompress, SCREEN_WIDTH, true, true);
+    w = stringWidthWithLimitC47(tmpString + offset, numSmall, nocompress, SCREEN_WIDTH, true, true);
     if(w < SCREEN_WIDTH) {
-      showStringC43(tmpString + offset, numSmall, nocompress,  SCREEN_WIDTH - w, line_hMultiLineEdOffset + line_h1 * _h1, vmNormal, true, true);
+      showStringC47(tmpString + offset, numSmall, nocompress,  SCREEN_WIDTH - w, line_hMultiLineEdOffset + line_h1 * _h1, vmNormal, true, true);
       return;
     }
 
-    w = stringWidthWithLimitC43(tmpString + offset, numSmall, DO_compress, SCREEN_WIDTH, true, true);
+    w = stringWidthWithLimitC47(tmpString + offset, numSmall, DO_compress, SCREEN_WIDTH, true, true);
     if(w < SCREEN_WIDTH) {
-      showStringC43(tmpString + offset, numSmall, DO_compress,  SCREEN_WIDTH - w, line_hMultiLineEdOffset + line_h1 * _h1, vmNormal, true, true);
+      showStringC47(tmpString + offset, numSmall, DO_compress,  SCREEN_WIDTH - w, line_hMultiLineEdOffset + line_h1 * _h1, vmNormal, true, true);
       return;
     }
 
@@ -1513,7 +1513,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
 
 
   #if defined(TEXT_MULTILINE_EDIT)
-    uint32_t showStringEdC43(uint32_t lastline, int16_t offset, int16_t edcursor, const char *string, uint32_t x, uint32_t y, videoMode_t videoMode, bool_t showLeadingCols, bool_t showEndingCols, bool_t noshow1) {
+    uint32_t showStringEdC47(uint32_t lastline, int16_t offset, int16_t edcursor, const char *string, uint32_t x, uint32_t y, videoMode_t videoMode, bool_t showLeadingCols, bool_t showEndingCols, bool_t noshow1) {
       uint16_t ch, charCode, lg;
       int16_t  glyphId;
       bool_t   slc, sec;
@@ -1673,21 +1673,21 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
                                                           //JMCURSOR ^^
 
 
-  void findOffset(void) {             //C43 JM
-    int32_t strWidth = (int32_t)stringWidthC43(aimBuffer, combinationFonts, nocompress, true, true);
+  void findOffset(void) {             //C47 JM
+    int32_t strWidth = (int32_t)stringWidthC47(aimBuffer, combinationFonts, nocompress, true, true);
     strWidth -= SCREEN_WIDTH * multiEdLines - 45;
     if(strWidth < 0) {
       strWidth = 0;
     }
-    char *offset = stringAfterPixelsC43(aimBuffer, combinationFonts, nocompress, strWidth, true, true);
+    char *offset = stringAfterPixelsC47(aimBuffer, combinationFonts, nocompress, strWidth, true, true);
     displayAIMbufferoffset = offset - aimBuffer;
     incOffset();
   }
 
 
-  void incOffset(void) {             //C43 JM
-    if( (int32_t)stringWidthC43(aimBuffer + displayAIMbufferoffset, combinationFonts ,nocompress, true, true) -
-        (int32_t)stringWidthC43(aimBuffer + T_cursorPos, combinationFonts ,nocompress, true, true)
+  void incOffset(void) {             //C47 JM
+    if( (int32_t)stringWidthC47(aimBuffer + displayAIMbufferoffset, combinationFonts ,nocompress, true, true) -
+        (int32_t)stringWidthC47(aimBuffer + T_cursorPos, combinationFonts ,nocompress, true, true)
         > SCREEN_WIDTH * multiEdLines - 45
         ) {
       displayAIMbufferoffset = stringNextGlyph(aimBuffer, displayAIMbufferoffset);
@@ -1711,13 +1711,13 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
     #if defined(ANALYSE_REFRESH) && defined(PC_BUILD)
       printf("#%i",mode == force);
     #endif //ANALYSE_REFRESH
- 
+
     if(mode == force || getSystemFlag(FLAG_MONIT)) {
       #if defined(ANALYSE_REFRESH) && defined(PC_BUILD)
         printf("+");
       #endif //ANALYSE_REFRESH
 
-      uint16_t now = (uint16_t)(getUptimeMs() >> 4); 
+      uint16_t now = (uint16_t)(getUptimeMs() >> 4);
       if(mode == force || ((now >> 6) & 0x0001) == halfSecTick1) {  //Restrict refresh to once per second. Use this minimally, due to extreme slow response.
         #if defined(ANALYSE_REFRESH) && defined(PC_BUILD)
           printf("-\n");
@@ -1821,7 +1821,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
     }
     return false;
   }
-  
+
 
   void hideCursor(void) {
     if(cursorEnabled) {
@@ -1886,7 +1886,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
       if ((indexOfItems[abs(item)].itemSoftmenuName)[0] == 0) {
         takeCat = true;
       }
-    }    
+    }
     if (takeCat) {
       return indexOfItems[abs(item)].itemCatalogName;
     } else {
@@ -1959,10 +1959,10 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
 
     if(functionName[0] != 0)
     {
-      bool_t overLapPossible = (calcMode == CM_PEM); 
+      bool_t overLapPossible = (calcMode == CM_PEM);
       padding[0] = 0;
       if(overLapPossible) {
-        stringAppend(padding," "); 
+        stringAppend(padding," ");
       }
       stringAppend(padding + stringByteLength(padding),functionName);
       stringAppend(padding + stringByteLength(padding),"     ");
@@ -2144,7 +2144,7 @@ void createSubstrings(uint8_t number) {
 }
 
 
- 
+
 
   static void userTI(int16_t viewRegister, int16_t refreshRegist, char *prefix, int16_t *prefixWidth) {
     if(!(lastFuncNo() == ITM_AVIEW || lastFuncNo() == ITM_PROMPT)) {
@@ -2607,7 +2607,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
     skippedStackLines = false;
     #ifdef DMCP_BUILD
       keyBuffer_pop();                                            // This causes key updates while the longer time processing register updates happen
-      if( (calcMode == CM_NORMAL || calcMode == CM_MIM) && 
+      if( (calcMode == CM_NORMAL || calcMode == CM_MIM) &&
           !(regist == REGISTER_X || regist == REGISTER_Y) &&
           !getSystemFlag(FLAG_USB) &&                             // Automatically, when on battery (hence low processor), change to skip long processing register printing, recovering the fragmented screen here: See timer.c fnTimerEndOfActivity()
           !emptyKeyBuffer() &&
@@ -2722,7 +2722,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
         #if (SHOW_MEMORY_STATUS == 1)
           char string[1000];
 
-          sprintf(string, "%" PRId32 " bytes free (%" PRId32 " region%s), C43 %" PRIu32 " bytes, GMP %" PRIu32 " bytes -> should always be 0", getFreeRamMemory(), numberOfFreeMemoryRegions, numberOfFreeMemoryRegions==1 ? "" : "s", (uint32_t)TO_BYTES((uint64_t)c47MemInBlocks), (uint32_t)gmpMemInBytes);
+          sprintf(string, "%" PRId32 " bytes free (%" PRId32 " region%s), C47 %" PRIu32 " bytes, GMP %" PRIu32 " bytes -> should always be 0", getFreeRamMemory(), numberOfFreeMemoryRegions, numberOfFreeMemoryRegions==1 ? "" : "s", (uint32_t)TO_BYTES((uint64_t)c47MemInBlocks), (uint32_t)gmpMemInBytes);
           stringToUtf8(string, (uint8_t *)tmpStr);
           gtk_label_set_label(GTK_LABEL(lblMemoryStatus), tmpStr);
           gtk_widget_show(lblMemoryStatus);
@@ -2807,7 +2807,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
         showString(errorMessage, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
       }
 
-      else if(regist == TRUE_FALSE_REGISTER_LINE && displayTrueFalse(regist)) {        
+      else if(regist == TRUE_FALSE_REGISTER_LINE && displayTrueFalse(regist)) {
       }
 
       else if(temporaryInformation == TI_RESET && regist == REGISTER_X) {
@@ -2937,7 +2937,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
               while (nn<=SCREEN_HEIGHT/line_tiny && nn<SHOWLineMax) {
                 showDispSmall( nn * SHOWLineSize, nn);          // L1
                 nn++;
-              } 
+              }
               showBottomLine();
               break;
             }
@@ -3152,7 +3152,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
             int16_t tmplen = stringByteLength(aimBuffer);
             if(T_cursorPos > tmplen) {T_cursorPos = tmplen;}     //Do range checking in case the cursor starts off outside of range
             if(T_cursorPos < 0)      {T_cursorPos = tmplen;}     //Do range checking in case the cursor starts off outside of range
-            showStringEdC43(multiEdLines ,displayAIMbufferoffset, T_cursorPos, aimBuffer, 1, Y_POSITION_OF_NIM_LINE - 3 - checkHPoffset, vmNormal, true, true, false);  //display up to the cursor
+            showStringEdC47(multiEdLines ,displayAIMbufferoffset, T_cursorPos, aimBuffer, 1, Y_POSITION_OF_NIM_LINE - 3 - checkHPoffset, vmNormal, true, true, false);  //display up to the cursor
 
             if(T_cursorPos == tmplen) {
               cursorEnabled = true;
@@ -3206,7 +3206,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
         else if(getSystemFlag(FLAG_FRACT)
                     && (    getRegisterDataType(regist) == dtReal34
                          && (
-                                real34CompareAbsLessThan(REGISTER_REAL34_DATA(regist), const34_1e6) 
+                                real34CompareAbsLessThan(REGISTER_REAL34_DATA(regist), const34_1e6)
                              || real34IsZero(REGISTER_REAL34_DATA(regist))
                             )
                        )
@@ -4126,28 +4126,28 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
           //JM REGISTER STRING LARGE FONTS
           #if defined(STACK_X_STR_LRG_FONT)
             //This is for X
-            w = stringWidthWithLimitC43(REGISTER_STRING_DATA(regist), stdnumEnlarge, nocompress, SCREEN_WIDTH, false, true);
+            w = stringWidthWithLimitC47(REGISTER_STRING_DATA(regist), stdnumEnlarge, nocompress, SCREEN_WIDTH, false, true);
             if(temporaryInformation != TI_VIEW_REGISTER && regist == REGISTER_X && w < SCREEN_WIDTH) {
               lineWidth = w; //slighly incorrect if special characters are there as well.
-              showStringC43(REGISTER_STRING_DATA(regist), stdnumEnlarge, nocompress, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_X_LINE + 6 - checkHPoffset, vmNormal, false, true);
+              showStringC47(REGISTER_STRING_DATA(regist), stdnumEnlarge, nocompress, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_X_LINE + 6 - checkHPoffset, vmNormal, false, true);
             }
             else                                                                   //JM
           #endif // STACK_X_STR_LRG_FONT
 
           #if defined(STACK_X_STR_MED_FONT)
             //This is for X
-            if(temporaryInformation != TI_VIEW_REGISTER && regist == REGISTER_X && (w = stringWidthWithLimitC43(REGISTER_STRING_DATA(regist), numHalf, nocompress, SCREEN_WIDTH, false, true)) < SCREEN_WIDTH) {
+            if(temporaryInformation != TI_VIEW_REGISTER && regist == REGISTER_X && (w = stringWidthWithLimitC47(REGISTER_STRING_DATA(regist), numHalf, nocompress, SCREEN_WIDTH, false, true)) < SCREEN_WIDTH) {
               lineWidth = w;
-              showStringC43(REGISTER_STRING_DATA(regist), numHalf, nocompress, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_X_LINE + 6 - checkHPoffset, vmNormal, false, true);
+              showStringC47(REGISTER_STRING_DATA(regist), numHalf, nocompress, SCREEN_WIDTH - w, Y_POSITION_OF_REGISTER_X_LINE + 6 - checkHPoffset, vmNormal, false, true);
             }
             else                                                                   //JM
           #endif //STACK_X_STR_MED_FONT
 
           #if defined(STACK_STR_MED_FONT)
             //This is for Y, Z & T
-            if(regist >= REGISTER_Y && regist <= REGISTER_T && (w = stringWidthWithLimitC43(REGISTER_STRING_DATA(regist), numHalf, nocompress, SCREEN_WIDTH, false, true)) < SCREEN_WIDTH) {
+            if(regist >= REGISTER_Y && regist <= REGISTER_T && (w = stringWidthWithLimitC47(REGISTER_STRING_DATA(regist), numHalf, nocompress, SCREEN_WIDTH, false, true)) < SCREEN_WIDTH) {
               lineWidth = w;
-              showStringC43(REGISTER_STRING_DATA(regist), numHalf, nocompress, SCREEN_WIDTH - w, baseY + 6 - checkHPoffset, vmNormal, false, true);
+              showStringC47(REGISTER_STRING_DATA(regist), numHalf, nocompress, SCREEN_WIDTH - w, baseY + 6 - checkHPoffset, vmNormal, false, true);
             }
             else                                                                   //JM
           #endif // STACK_STR_MED_FONT
@@ -4314,15 +4314,15 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
             int16_t tlen =stringByteLength(tmpString);
             longIntegerRegisterToRealDisplayString(regist, tmpString+tlen, TMP_STR_LENGTH-tlen, SCREEN_WIDTH - prefixWidth - w, 0, toRemoveTrailingRadix);
           }
-                     
+
         //for the 2^10 UNIT diplay, display long integers in real string, with the Ti suffic
           else if(getSystemFlag(FLAG_2TO10) && displayFormat == DF_UN) {
             strcpy(tmpString,STD_INTEGER_Z_SMALL ": ");// STD_SPACE_4_PER_EM);
             w = stringWidth(tmpString, &standardFont, false, true);
             int16_t tlen =stringByteLength(tmpString);
             longIntegerRegisterToRealDisplayString(regist, tmpString+tlen, TMP_STR_LENGTH-tlen, SCREEN_WIDTH - prefixWidth - w, 1024, !toRemoveTrailingRadix);
-          } 
-          
+          }
+
         //normal longinteger handling
           else {
             longIntegerRegisterToDisplayString(regist, tmpString, TMP_STR_LENGTH, SCREEN_WIDTH - prefixWidth, 50, toRemoveTrailingRadix);
@@ -4701,7 +4701,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
         #endif // PC_BUILD && MONITOR_CLRSCR
         lcd_fill_rect(0, 240 - SOFTMENU_HEIGHT * 3, SCREEN_WIDTH - 240 - 2, SOFTMENU_HEIGHT * 3, LCD_SET_VALUE);
         clear_ul(); //JMUL
-        if(!GRAPHMODE || menu(0) == -MNU_PLOT_FUNC) { //not in GRAPHMODE, the triangle area indicating more menus 
+        if(!GRAPHMODE || menu(0) == -MNU_PLOT_FUNC) { //not in GRAPHMODE, the triangle area indicating more menus
           lcd_fill_rect(0, 240 - SOFTMENU_HEIGHT * 3 - 3, 20, 6, LCD_SET_VALUE);
         }
          if(!GRAPHMODE) { //in GRAPHMODE, protect the square graph area
@@ -4806,7 +4806,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
 
           clearScreenOld(!clrStatusBar, clrRegisterLines, !clrSoftkeys);                  // battery powered
           fnPem(NOPARAM);                                                                 // battery powered
-          displayShiftAndTamBuffer();                                                    
+          displayShiftAndTamBuffer();
 
           if(!(screenUpdatingMode & SCRUPD_MANUAL_STATUSBAR)) {                           // battery powered
             clearScreenOld(clrStatusBar, !clrRegisterLines, !clrSoftkeys);                // battery powered
@@ -4871,7 +4871,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
 
         if(BASEMODEACTIVE) {
           showFracMode();
-//          screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;          
+//          screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
         }
         if(calcMode == CM_CONFIRMATION) {
           screenUpdatingMode = SCRUPD_AUTO;
@@ -5065,24 +5065,24 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
                                stringToASCII(ttt,sss);
                                strcpy(ttt,"");
                                if(screenUpdatingMode == 0) strcat(ttt,"AUTO "); else {
-                                 if((screenUpdatingMode & 0x40)) strcat(ttt,"SkpMEN ");      
-                                 if((screenUpdatingMode & 0x20)) strcat(ttt,"SkpSTK ");      
+                                 if((screenUpdatingMode & 0x40)) strcat(ttt,"SkpMEN ");
+                                 if((screenUpdatingMode & 0x20)) strcat(ttt,"SkpSTK ");
 
-                                 if(!(screenUpdatingMode & 0x08)) strcat(ttt,"SHFT ");      
-                                 if(!(screenUpdatingMode & 0x04)) strcat(ttt,"MENU ");      
-                                 if(!(screenUpdatingMode & 0x02)) strcat(ttt, "STK ");      
+                                 if(!(screenUpdatingMode & 0x08)) strcat(ttt,"SHFT ");
+                                 if(!(screenUpdatingMode & 0x04)) strcat(ttt,"MENU ");
+                                 if(!(screenUpdatingMode & 0x02)) strcat(ttt, "STK ");
                                  if(!(screenUpdatingMode & 0x01)) strcat(ttt, "STS ");
                                }
                                int16_t m = softmenuStack[0].softmenuId;
                                char uuu[100];
                                stringToASCII(indexOfItems[currentMenu() > 0 ? currentMenu() : -currentMenu()].itemSoftmenuName, uuu);
 
-                               printf("   refrsh(%3u): Cnt=%3d %s CM=%2d scr..upd:%3d=%12s=>%26s TI=%4u CL=%s tam:%5i MENUid=%2d:%4i:%s\n", 
+                               printf("   refrsh(%3u): Cnt=%3d %s CM=%2d scr..upd:%3d=%12s=>%26s TI=%4u CL=%s tam:%5i MENUid=%2d:%4i:%s\n",
                                   source, refreshScreenCounter++,
                                   (last_CM != calcMode) ? "OVR" : "   ",
-                                  calcMode, 
-                                  screenUpdatingMode, sss, ttt, 
-                                  temporaryInformation, 
+                                  calcMode,
+                                  screenUpdatingMode, sss, ttt,
+                                  temporaryInformation,
                                   (alphaCase == AC_LOWER)?"LO":"UP",
                                   tam.mode,
                                   m, currentMenu(), uuu);
@@ -5257,7 +5257,7 @@ void fnSNAP(uint16_t unusedButMandatoryParameter) {
   #endif
   resetShiftState();                  //JM To avoid f or g top left of the screen, clear to make sure
   refreshScreen(80);
-  
+
   #if defined(PC_BUILD)  //added the xcopy commands needed for hardware, to better duplicate the hardware standardScreenDump
     xcopy(tmpString, aimBuffer, ERROR_MESSAGE_LENGTH + AIM_BUFFER_LENGTH + NIM_BUFFER_LENGTH);       //backup portion of the "message buffer" area in DMCP used by ERROR..AIM..NIM buffers, to the tmpstring area in DMCP. DMCP uses this area during create_screenshot.
     fnScreenDump(0);
@@ -5265,7 +5265,7 @@ void fnSNAP(uint16_t unusedButMandatoryParameter) {
   #elif defined(DMCP_BUILD)
     standardScreenDump();
   #endif
-  
+
   if(calcMode == CM_AIM) {
     fnP_Alpha();     //print alpha
   }

@@ -3,7 +3,7 @@
 
 #include "c47.h"
 
-#include "c43Extensions/addons.h"
+#include "c47Extensions/addons.h"
 #include "charString.h"
 #include "config.h"
 #include "flags.h"
@@ -23,9 +23,9 @@
 //#define BUFFER_CLICK_DETECTION
 
 #if defined(DMCP_BUILD)
-  #include "c43Extensions/inlineTest.h"
-  #include "c43Extensions/jm.h"
-  #include "c43Extensions/keyboardTweak.h"
+  #include "c47Extensions/inlineTest.h"
+  #include "c47Extensions/jm.h"
+  #include "c47Extensions/keyboardTweak.h"
 #endif
 
 #if !defined(TESTSUITE_BUILD) && !defined(GENERATE_CATALOGS)
@@ -971,7 +971,7 @@ int convertKeyCode(int key) {
       }                                                     //^^
 
 
-                                                  #if defined(AUTOREPEAT_C43)
+                                                  #if defined(AUTOREPEAT_C47)
                                                   if(key == 18 || key == 23) {
                                                     //if(!shiftF || calcMode == CM_PEM) && !shiftG && (currentSoftmenuScrolls() || (calcMode != CM_NORMAL && calcMode != CM_NIM && calcMode != CM_AIM)) {
                                                     if(fnTimerGetStatus(TO_AUTO_REPEAT) != TMR_RUNNING) {
@@ -982,7 +982,7 @@ int convertKeyCode(int key) {
                                                     else if(key == 0) {
                                                       fnTimerStop(TO_AUTO_REPEAT);
                                                     }
-                                                  #endif // AUTOREPEAT_C43
+                                                  #endif // AUTOREPEAT_C47
 
       if(key == 44) { //DISP for special SCREEN DUMP key code. To be 16 but shift decoding already done to 44 in DMCP
         standardScreenDump();
@@ -1038,7 +1038,7 @@ int convertKeyCode(int key) {
                                                           else { // Last key pressed was not one of the 6 function keys
                                                             //beep(440, 50);
                                                             btnReleased(charKey);
-                                                            if(calcMode == CM_PEM && shiftF && ((charKey[0] == '1' && charKey[1] == '7') || (charKey[0] == '2' && charKey[1] == '2'))) {    //JM C43
+                                                            if(calcMode == CM_PEM && shiftF && ((charKey[0] == '1' && charKey[1] == '7') || (charKey[0] == '2' && charKey[1] == '2'))) {    //JM C47
                                                               shiftF = false;
                                                               refreshScreen(73);
                                                             }

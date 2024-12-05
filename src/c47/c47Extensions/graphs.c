@@ -6,21 +6,19 @@
  * \file graphs.c Graphing module
  ***********************************************/
 
-/* C43 functions and routines written by JM, adapted from C43 to WP43 by JM */
-
-#include "c43Extensions/graphs.h"
+#include "c47Extensions/graphs.h"
 
 #include "charString.h"
 #include "constantPointers.h"
 #include "error.h"
-#include "c43Extensions/addons.h"
-#include "c43Extensions/graphText.h"
+#include "c47Extensions/addons.h"
+#include "c47Extensions/graphText.h"
 #include "registerValueConversions.h"
 #include "flags.h"
 #include "items.h"
 #include "math.h"
 #include "plotstat.h"
-#include "c43Extensions/radioButtonCatalog.h"
+#include "c47Extensions/radioButtonCatalog.h"
 #include "registers.h"
 #include "screen.h"
 #include "softmenus.h"
@@ -352,10 +350,10 @@ void fnPlotSQ(uint16_t unusedButMandatoryParameter) {
 
     if(menu(0) != -MNU_PLOT_FUNC && plotStatMx[0] == 'D') {
       showSoftmenu(-MNU_PLOT_FUNC);
-    } 
+    }
     else if(menu(0) != -MNU_PLOT_STATS && plotStatMx[0] == 'S') {
       showSoftmenu(-MNU_PLOT_STATS);
-    } 
+    }
   #endif // !TESTSUITE_BUILD
 }
 
@@ -626,7 +624,7 @@ void graph_text(void) {
 
     if(PLOT_INTG && !invalid_intg) {
       snprintf(tmpString, bufLen, "  Trapezoid integral");
-      showStringC43(tmpString, numSmall, nocompress, 1, ypos, vmNormal, true, true);  //JM
+      showStringC47(tmpString, numSmall, nocompress, 1, ypos, vmNormal, true, true);  //JM
       plotintbig(5, ypos+4+4-2);
       plotrect(5+4-1, (ypos+4+4-2+2)-1, 5+4+2, (ypos+4+4-2+2)+2);
       ypos += 20;
@@ -634,14 +632,14 @@ void graph_text(void) {
 
     if(PLOT_DIFF && !invalid_diff) {
       snprintf(tmpString, bufLen, "  Num. differential");
-      showStringC43(tmpString, numSmall, nocompress, 1, ypos, vmNormal, true, true);  //JM
+      showStringC47(tmpString, numSmall, nocompress, 1, ypos, vmNormal, true, true);  //JM
       plotdeltabig(6, ypos+4+4-2);
       ypos += 20;
     }
 
     if(PLOT_RMS && !invalid_rms) {
       snprintf(tmpString, bufLen, "  RMSy");
-      showStringC43(tmpString, numSmall, nocompress, 1, ypos, vmNormal, true, true);  //JM
+      showStringC47(tmpString, numSmall, nocompress, 1, ypos, vmNormal, true, true);  //JM
       plotrms(6, ypos+4+4-2);
       plotrect(6-1, (ypos+4+4-2)-1, 6+2, (ypos+4+4-2)+2);
       ypos += 20;
@@ -798,7 +796,7 @@ void graph_Include0(bool_t mode, uint16_t statnum) {
       //printf("dx=%f dy=%f\n",dx,dy);
       if(dx > 1e-10 && dy/dx > 100000) {
         y_min = x_min;
-        y_max = x_max;              
+        y_max = x_max;
         dx = fabs(x_max - x_min);
         dy = fabs(y_max - y_min);
       }
@@ -1095,7 +1093,7 @@ void graph_plotmem(void) {
 /**/            else {
 /**/             y_mincnt=0;
 /**/            }
-/**/  
+/**/
 /**/            if(aa > y_max) {
 /**/              y_maxcnt++;
 /**/              if(fabs(aa / y_max) < 4 ) {//|| aa == a0 * 1.1) {
@@ -1112,7 +1110,7 @@ void graph_plotmem(void) {
 /**/            else {
 /**/              y_maxcnt=0;
 /**/            }
-/**/  
+/**/
 /**/            #if defined(STATDEBUG)
 /**/              printf("Axis0b: x: %f -> %f y: %f -> %f   \n", x_min, x_max, y_min, y_max);
 /**/            #endif // STATDEBUG

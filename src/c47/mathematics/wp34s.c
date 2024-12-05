@@ -1,18 +1,5 @@
-/* This file is part of 43S.
- *
- * 43S is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * 43S is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with 43S.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: GPL-3.0-only
+// SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
 /********************************************//**
  * \file wp34s.c
@@ -219,7 +206,7 @@ void WP34S_SinCosTanTaylor(const real_t *a, bool_t swap, real_t *sinOut, real_t 
   uInt32ToReal(1, &sin);
   uInt32ToReal(1, &cos);
 
-  for(i=1; !(endSin && endCos) && i<1000; i++) { // i goes up to 31 max in the test suite
+  for(i=1; !(endSin && endCos) && i<1000; i++) { // it goes up to 31 max in the test suite
     realAdd(&j, const_1, &j, realContext);
     realDivide(&a2, &j, &z, realContext);
     realMultiply(&t, &z, &t, realContext);

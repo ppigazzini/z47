@@ -9,7 +9,7 @@
 #include "flags.h"
 #include "hal/gui.h"
 #include "items.h"
-#include "c43Extensions/jm.h"
+#include "c47Extensions/jm.h"
 #include "keyboard.h"
 #include "mathematics/matrix.h"
 #include "registers.h"

@@ -1,18 +1,5 @@
-/* This file is part of 43S.
- *
- * 43S is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * 43S is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with 43S.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: GPL-3.0-only
+// SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
 /********************************************//**
  * \file invert.c
@@ -36,7 +23,7 @@
 
 
 
-TO_QSPI void (* const invert[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])(void) = {
+TO_QSPI void (* const invert_dispatch[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])(void) = {
 // regX ==> 1            2           3            4            5            6            7           8           9             10
 //          Long integer Real34      complex34    Time         Date         String       Real34 mat  Complex34 m Short integer Config data
             invertLonI,  invertReal, invertCplx,  invertError, invertError, invertError, invertRema, invertCxma, invertError,  invertError
@@ -72,7 +59,7 @@ void fnInvert(uint16_t unusedButMandatoryParameter) {
     return;
   }
 
-  invert[getRegisterDataType(REGISTER_X)]();
+  invert_dispatch[getRegisterDataType(REGISTER_X)]();
 
   adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
 }

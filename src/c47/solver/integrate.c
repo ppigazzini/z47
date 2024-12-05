@@ -1,18 +1,5 @@
-/* This file is part of 43S.
- *
- * 43S is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * 43S is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with 43S.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: GPL-3.0-only
+// SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
 /********************************************//**
  * \file integrate.c
@@ -20,14 +7,14 @@
 
 #include "solver/integrate.h"
 
-#include "c43Extensions/addons.h"
+#include "c47Extensions/addons.h"
 #include "charString.h"
 #include "constantPointers.h"
 #include "defines.h"
 #include "display.h"
 #include "error.h"
 #include "flags.h"
-#include "c43Extensions/addons.h"
+#include "c47Extensions/addons.h"
 #include "items.h"
 #include "mathematics/comparisonReals.h"
 #include "mathematics/exp.h"
@@ -355,7 +342,7 @@ static void _integratorIteration(void) {
 
 
 // The following routine is ported from WP34s.
-// The description below is as is. May not applicable for WP43.
+// The description below is as is.
 
 
 // Double Exponential Integration for the wp34s calculator
@@ -868,7 +855,7 @@ static void _integrate(calcRegister_t regist, const real_t *a, const real_t *b, 
 // Copyright © 2010, 2020  Graeme Dennes
 // Licensed under GPL v3 or any later versions
 // Originally written in Excel VBA; translated into C by MihailJP
-// The description below is as is. May not applicable for WP43.
+// The description below is as is.
 
 //    QUAD_TANH_SINH for finite intervals.
 //    This is the fastest and simplest high-performance T-S program I have found.

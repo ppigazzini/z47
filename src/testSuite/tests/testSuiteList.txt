@@ -146,7 +146,6 @@ polarToRectangularB
 ceil
 floor
 
-;round never worked from WP43
 roundB
 roundiB
 

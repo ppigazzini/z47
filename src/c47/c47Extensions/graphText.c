@@ -1,31 +1,18 @@
-/* This file is part of C47.
- *
- * C47 is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * C47 is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with C47.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: GPL-3.0-only
+// SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
 
 //#define DISPLOADING
 
-#include "c43Extensions/graphText.h"
+#include "c47Extensions/graphText.h"
 
 #include "charString.h"
 #include "math.h"
 #include "screen.h"
 #include "time.h"
 #include "timer.h"
-#include "c43Extensions/textfiles.h"
-#include "c43Extensions/xeqm.h"
+#include "c47Extensions/textfiles.h"
+#include "c47Extensions/xeqm.h"
 #include <string.h>
 
 #include "c47.h"
@@ -829,7 +816,7 @@ bool_t   cancelFilename = false;
   int16_t export_append_line(const char *inputstring) {
     FILE *outfile;
 
-    //strcpy(dirfile, "PROGRAMS/C43_LOG.TXT");
+    //strcpy(dirfile, "PROGRAMS/C47_LOG.TXT");
     outfile = fopen(filename_csv, "ab");
     if(outfile == NULL) {
       printf("Cannot open to append ID011: %s %s\n", filename_csv, inputstring);

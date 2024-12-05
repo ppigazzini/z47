@@ -1,18 +1,5 @@
-/* This file is part of 43S.
- *
- * 43S is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * 43S is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with 43S.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: GPL-3.0-only
+// SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
 /********************************************//**
  * \file flags.c
@@ -27,9 +14,9 @@
 #include "registers.h"
 #include "softmenus.h"
 #include "solver/equation.h"
-#include "c43Extensions/jm.h"
-#include "c43Extensions/keyboardTweak.h"
-#include "c43Extensions/radioButtonCatalog.h"
+#include "c47Extensions/jm.h"
+#include "c47Extensions/keyboardTweak.h"
+#include "c47Extensions/radioButtonCatalog.h"
 #include "ui/tam.h"
 #include <string.h>
 
@@ -75,7 +62,7 @@ static void systemFlagAction(uint16_t systemFlag, flagAction_t action) {
     case FLAG_SCALE  :
     case FLAG_VECT   :
     case FLAG_NVECT  :
-              fnRefreshState(); 
+              fnRefreshState();
               break;
 
     case FLAG_SBdate:
@@ -93,9 +80,9 @@ static void systemFlagAction(uint16_t systemFlag, flagAction_t action) {
     case FLAG_SBser :
     case FLAG_SBprn :
     case FLAG_SBbatV:
-    case FLAG_SBshfR: 
-              fnRefreshState(); 
-              screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR; 
+    case FLAG_SBshfR:
+              fnRefreshState();
+              screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
               break;
 
     default: break;
@@ -581,17 +568,17 @@ void SetSetting(uint16_t jmConfig) {
     case DO_ENG:         fnSetFlag(FLAG_ENGOVR);                                break;
 
     case JC_NL:          fnFlipFlag(FLAG_NUMLOCK); showAlphaModeonGui();        break; //
-    case FLAG_HPRP:  
+    case FLAG_HPRP:
     case FLAG_HPBASE:
-    case FLAG_2TO10: 
+    case FLAG_2TO10:
     case FLAG_PROPFR:
     case FLAG_PRTACT:
-    case FLAG_LEAD0: 
+    case FLAG_LEAD0:
     case FLAG_CPXRES:
     case FLAG_SPCRES:
-    case FLAG_ERPN:  
-    case ITM_FRCYC:  
-    case FLAG_CPXMULT:   
+    case FLAG_ERPN:
+    case ITM_FRCYC:
+    case FLAG_CPXMULT:
     case FLAG_CPXPLOT:
     case FLAG_SHOWX   :
     case FLAG_SHOWY   :
@@ -606,7 +593,7 @@ void SetSetting(uint16_t jmConfig) {
     case FLAG_DENANY:    fnFlipFlag(FLAG_DENANY); clearSystemFlag(FLAG_DENFIX); break;
     case FLAG_DENFIX:    fnFlipFlag(FLAG_DENFIX); clearSystemFlag(FLAG_DENANY); break;
 
-    case FLAG_FRACT:     
+    case FLAG_FRACT:
       fnFlipFlag(FLAG_FRACT);
       if(getSystemFlag(FLAG_FRACT) && !getSystemFlag(FLAG_FRCYC)) {
         clearSystemFlag(FLAG_IRFRAC);

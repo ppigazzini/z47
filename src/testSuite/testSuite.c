@@ -1,18 +1,5 @@
-/* This file is part of 43S.
- *
- * 43S is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * 43S is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with 43S.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: GPL-3.0-only
+// SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
 /********************************************//**
  * \file testSuite.c
@@ -20,7 +7,7 @@
 
 #include "testSuite.h"
 
-#include "c43Extensions/addons.h"
+#include "c47Extensions/addons.h"
 #include "bufferize.h"
 #include "charString.h"
 #include "config.h"
@@ -338,50 +325,6 @@ const funcTest_t funcTestNoParam[] = {
   {"fnZeta",                 fnZeta                },
   {"",                       NULL                  }
 };
-
-const funcTest_t funcTestCvt[] = {
-  {"fnCvtAcreHa",     fnCvtAcreHa    },
-  {"fnCvtAcreusHa",   fnCvtAcreusHa  },
-  {"fnCvtAtmPa",      fnCvtAtmPa     },
-  {"fnCvtAuM",        fnCvtAuM       },
-  {"fnCvtBarPa",      fnCvtBarPa     },
-  {"fnCvtBtuJ",       fnCvtBtuJ      },
-  {"fnCvtCalJ",       fnCvtCalJ      },
-  {"fnCvtCwtKg",      fnCvtCwtKg     },
-  {"fnCvtFlozukMl",   fnCvtFlozukMl  },
-  {"fnCvtFlozusMl",   fnCvtFlozusMl  },
-  {"fnCvtFtM",        fnCvtFtM       },
-  {"fnCvtGalukL",     fnCvtGalukL    },
-  {"fnCvtGalusL",     fnCvtGalusL    },
-  {"fnCvtHpeW",       fnCvtHpeW      },
-  {"fnCvtHpmW",       fnCvtHpmW      },
-  {"fnCvtHpukW",      fnCvtHpukW     },
-  {"fnCvtInchMm",     fnCvtInchMm    },
-  {"fnCvtInhgPa",     fnCvtInhgPa    },
-  {"fnCvtLbfN",       fnCvtLbfN      },
-  {"fnCvtLbfftNm",    fnCvtLbfftNm   },
-  {"fnCvtLbKg",       fnCvtLbKg      },
-  {"fnCvtLyM",        fnCvtLyM       },
-  {"fnCvtMiKm",       fnCvtMiKm      },
-  {"fnCvtNmiKm",      fnCvtNmiKm     },
-  {"fnCvtOzG",        fnCvtOzG       },
-  {"fnCvtPcM",        fnCvtPcM       },
-  {"fnCvtPointMm",    fnCvtPointMm   },
-  {"fnCvtPsiPa",      fnCvtPsiPa     },
-  {"fnCvtQuartL",     fnCvtQuartL    },
-  {"fnCvtSfeetM",     fnCvtSfeetM    },
-  {"fnCvtShortcwtKg", fnCvtShortcwtKg},
-  {"fnCvtShorttonKg", fnCvtShorttonKg},
-  {"fnCvtStoneKg",    fnCvtStoneKg   },
-  {"fnCvtTonKg",      fnCvtTonKg     },
-  {"fnCvtTorrPa",     fnCvtTorrPa    },
-  {"fnCvtTrozG",      fnCvtTrozG     },
-  {"fnCvtWhJ",        fnCvtWhJ       },
-  {"fnCvtYardM",      fnCvtYardM     },
-  {"fnCvtYearS",      fnCvtYearS     },
-  {"",                NULL           }
-};
-
 
 
 char *endOfString(char *string) { // string must point on the 1st "
@@ -2935,32 +2878,6 @@ void functionToCall(char *functionName) {
     return;
   }
 
-  else {
-    function = 0;
-    while(funcTestCvt[function].name[0] != 0 && strcmp(funcTestCvt[function].name, functionName) != 0) {
-      function++;
-    }
-    if(funcTestCvt[function].name[0] != 0) {
-      //ici il faut tester la présence de fromUnitToISO ou fromISOtoUnit
-
-      funcCvt = funcTestCvt[function].func;
-      funcType = FUNC_CVT;
-
-      for(functionIndex=1; functionIndex<=LAST_ITEM; functionIndex++) {
-        if(indexOfItems[functionIndex].func == funcCvt) {
-          break;
-        }
-      }
-
-      if(functionIndex >= LAST_ITEM) {
-        printf("\nThe function %s must be somewhere in the indexOfItems array!\n", functionName);
-        abortTest();
-      }
-
-      return;
-    }
-  }
-
   printf("\nCannot find the function to test: check spelling of the function name and remember the name is case sensitive\n");
   abortTest();
 }
@@ -3232,7 +3149,7 @@ int processTests(const char *listPath) {
 
   free(listPathDup);
 
-  return failedTests > 0;
+  return failedTests > 0 || gmpMemInBytes != 0;
 }
 
 int main(int argc, char* argv[]) {

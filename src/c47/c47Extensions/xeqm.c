@@ -6,26 +6,26 @@
  * \file xeqm.c
  ***********************************************/
 
-#include "c43Extensions/xeqm.h"
+#include "c47Extensions/xeqm.h"
 
 #include "bufferize.h"
 #include "calcMode.h"
 #include "charString.h"
 #include "flags.h"
 #include "hal/gui.h"
-#include "c43Extensions/addons.h"
-#include "c43Extensions/graphText.h"
+#include "c47Extensions/addons.h"
+#include "c47Extensions/graphText.h"
 #include "items.h"
-#include "c43Extensions/jm.h"
+#include "c47Extensions/jm.h"
 #include "keyboard.h"
-#include "c43Extensions/keyboardTweak.h"
+#include "c47Extensions/keyboardTweak.h"
 #include "registers.h"
 #include "screen.h"
 #include "softmenus.h"
 #include "stack.h"
 #include "statusBar.h"
 #include "timer.h"
-#include "c43Extensions/textfiles.h"
+#include "c47Extensions/textfiles.h"
 #include <string.h>
 
 #include "c47.h"
@@ -1379,7 +1379,7 @@ void fnXSWAP (uint16_t mode) {
         int16_t len = stringByteLength(aimBuffer) + 1;
         reallocateRegister(TEMP_REGISTER_1, dtString, TO_BLOCKS(len), amNone);
         xcopy(REGISTER_STRING_DATA(TEMP_REGISTER_1), aimBuffer, len);
-      } 
+      }
       //In essence, after conversions,
       //If X is string shorter than buffer max, copy X to aimbuffer
       //If X is no string, ignore, then aimbuffer remains unchanged.

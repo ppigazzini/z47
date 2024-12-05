@@ -1,18 +1,5 @@
-/* This file is part of 43S.
- *
- * 43S is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * 43S is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with 43S.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: GPL-3.0-only
+// SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
 /********************************************//**
  * \file decomp.c
@@ -98,7 +85,6 @@ void decompReal(void) {
     convertRealToLongIntegerRegister(real34IsNegative(&x) ? const__1 : const_1, REGISTER_Y, DEC_ROUND_HALF_DOWN); // Numerator = +/- 1
   }
   else {
-//    uint32_t savedDenMax = denMax;        // *** Remove previous C47 characteristic, which fixed DECOMP to 9999. Now adheres to DMX. As per WP43 as well.
     uint64_t ssf0 = systemFlags0;
     uint64_t ssf1 = systemFlags1;
     int16_t sign, lessEqualGreater;

@@ -1,18 +1,5 @@
-/* This file is part of 43S.
- *
- * 43S is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * 43S is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with 43S.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-License-Identifier: GPL-3.0-only
+// SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
 /********************************************//**
  * \file generateConstants.c
@@ -394,6 +381,11 @@ void generateAllConstants(void) {
   generateConstantArray("MuToM2",        "+1.500000000000000000000000000000000000000000000000000000e-03"); // m²     = mǔ / 0.0015
   generateConstantArray("FlozukToMl",    "+2.841306250000000000000000000000000000000000000000000000e+01"); // ml     = flozuk × 4.54609e-3 / 160 × 1000000
   generateConstantArray("FlozusToMl",    "+2.957352956250000000000000000000000000000000000000000000e+01"); // ml     = flozus × 231 × 0.0254³ / 128 × 1000000
+
+  generateConstantArray("FlozukToIn3",   "+1.733871454947634304717428332494460000000000000000000000e+00"); // in³    = flozuk × 4.54609e-3 / 160 × 1000000     / 2.54³
+  generateConstantArray("FlozusToIn3",   "+1.804687500000000000000000000000000000000000000000000000e+00"); // in³    = flozus × 231 × 0.0254³ / 128 × 1000000  / 2.54³
+  generateConstantArray("Ft3ToGalUS",    "+7.480519480519480519480519480519480000000000000000000000e+00"); // galus  = feet3 * (1/(231 × 0.0254³ × 1000)) * (12*0.254)³
+
   generateConstantArray("GalusToL",      "+3.785411784000000000000000000000000000000000000000000000e+00"); // l      = galus × 231 × 0.0254³ × 1000
   generateConstantArray("GalukToL",      "+4.546090000000000000000000000000000000000000000000000000e+00"); // l      = galuk × 4.54609e-3 × 1000
   generateConstantArray("QuartToL",      "+1.136522500000000000000000000000000000000000000000000000e+00"); // l      = quart × 4.54609e-3 / 4 × 1000

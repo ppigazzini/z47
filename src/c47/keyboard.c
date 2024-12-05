@@ -18,9 +18,9 @@
 #include "fonts.h"
 #include "hal/gui.h"
 #include "items.h"
-#include "c43Extensions/jm.h"
-#include "c43Extensions/keyboardTweak.h"
-#include "c43Extensions/radioButtonCatalog.h"
+#include "c47Extensions/jm.h"
+#include "c47Extensions/keyboardTweak.h"
+#include "c47Extensions/radioButtonCatalog.h"
 #include "mathematics/matrix.h"
 #include "mathematics/cxToRe.h"
 #include "mathematics/reToCx.h"
@@ -44,13 +44,13 @@
 #include "store.h"
 #include "timer.h"
 #include "ui/tam.h"
-#include "c43Extensions/xeqm.h"
-#include "c43Extensions/addons.h"
+#include "c47Extensions/xeqm.h"
+#include "c47Extensions/addons.h"
 
-#include "c43Extensions/textfiles.h"
-#include "c43Extensions/keyboardTweak.h"
-#include "c43Extensions/graphText.h"
-#include "c43Extensions/xeqm.h"
+#include "c47Extensions/textfiles.h"
+#include "c47Extensions/keyboardTweak.h"
+#include "c47Extensions/graphText.h"
+#include "c47Extensions/xeqm.h"
 
 #if (REAL34_WIDTH_TEST == 1)
   #include "registerValueConversions.h"
@@ -148,7 +148,7 @@ TO_QSPI static const char bugScreenItemNotDetermined[] = "In function determineI
           item = (dynamicMenuItem >= dynamicSoftmenu[menuId].numItems ? ITM_NOP : ITM_SOLVE_VAR);
         }
 
-// These items below are all in the primary function key row, and should not be decoded from actual operating modes, but will be better to be decoded from the visible currentmenu, 
+// These items below are all in the primary function key row, and should not be decoded from actual operating modes, but will be better to be decoded from the visible currentmenu,
 //   It cannot be changed to menu lookups, because when the MVAR is open, we do not know anymore which menu or function actually opened the MVAR, hence the method of decoding from operating modes.
 //   This is not ideal. It probably would still work better if we check which menu called the MVAR, i.e. the menu in currentmenu() == MVAR && menu(1) == whatever.
 
@@ -995,14 +995,14 @@ int16_t lastItem = 0;
 
     if(calcMode != CM_REGISTER_BROWSER && calcMode != CM_FLAG_BROWSER && calcMode != CM_ASN_BROWSER && calcMode != CM_FONT_BROWSER) {
 
-      if(data[0] == 0) { 
+      if(data[0] == 0) {
         item = item_;
       }
       else {
                     #if defined(VERBOSEKEYS)
                     printf(">>>> R000A >>determineFunctionKeyItem_C47 %d |%s| shiftF=%d, shiftG=%d tam.mode=%i\n",item, data, shiftF, shiftG, tam.mode);
                     #endif //VERBOSEKEYS
-        item = determineFunctionKeyItem_C47((char *)data, shiftF, shiftG); 
+        item = determineFunctionKeyItem_C47((char *)data, shiftF, shiftG);
       }
 
       // in graph plot menu, wanting to change Normal Mode items, so open the correct menu first and return to Normal Mode, and stop the processing.
@@ -1032,9 +1032,6 @@ int16_t lastItem = 0;
                     printf(">>>> R000C                                %d |%s| shiftF=%d, shiftG=%d tam.mode=%i\n",item, data, shiftF, shiftG, tam.mode);
                     #endif //VERBOSEKEYS
 
-
-//TOCHECK: JM Changed showFunctionNameItem to item below, due to something 43S did to the showfunction sequencing
-//Problem below: Execution of softkeys does not work when this WP43 change (showFunctionNameItem) is done. Commented out.
 
       if(/*showFunctionNameItem*/item != 0) {
 /* //JM vv Rmove the possibility for error by removing code that may conflict with the state machine
@@ -1491,11 +1488,11 @@ int16_t lastItem = 0;
       lastErrorCode = 0;
 
       shiftF = !shiftF;
-      shiftG = false;                                         //JM no shifted menu on g-shift-key as in WP43S
+      shiftG = false;
       lastshiftF = shiftF;
       lastshiftG = shiftG;
       showShiftState();
-      refreshModeGui();                                       //JM refreshModeGui
+      refreshModeGui();
 
       screenUpdatingMode &= ~SCRUPD_MANUAL_SHIFT_STATUS;
       return ITM_NOP;
@@ -1522,11 +1519,10 @@ int16_t lastItem = 0;
       lastErrorCode = 0;
 
       shiftG = !shiftG;
-      shiftF = false;                                         //JM no shifted menu on g-shift-key as in WP43S
       lastshiftF = shiftF;
       lastshiftG = shiftG;
       showShiftState();
-      refreshModeGui();                                       //JM refreshModeGui
+      refreshModeGui();
 
 
       screenUpdatingMode &= ~SCRUPD_MANUAL_SHIFT_STATUS;
@@ -2399,7 +2395,7 @@ RELEASE_END:
       showSoftmenu(-MNU_GRAPHS);
       screenUpdatingMode &= SCRUPD_MANUAL_MENU;
       refreshScreen(125);
-    } 
+    }
 
     if(programRunStop == PGM_WAITING) {
       programRunStop = PGM_STOPPED;
