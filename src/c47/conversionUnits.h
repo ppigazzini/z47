@@ -29,8 +29,8 @@ enum {
     constFactorFlozusIn3,
     constFactorFlozusMl,
     constFactorFt3toGalUS,
-    constFactorGalukL,          /*  20 */
-    constFactorGalusL,
+    constFactorGalukL,
+    constFactorGalusL,          /*  20 */
     constFactorHpeW,
     constFactorHpmW,
     constFactorHpukW,
@@ -39,8 +39,8 @@ enum {
     constFactorWhJ,
     constFactorLbKg,
     constFactorOzG,
-    constFactorShortcwtKg,      /*  30 */
-    constFactorStoneKg,
+    constFactorShortcwtKg,
+    constFactorStoneKg,         /*  30 */
     constFactorShorttonKg,
     constFactorTonKg,
     constFactorLiangKg,
@@ -49,8 +49,8 @@ enum {
     constFactorLyM,
     constFactorMmhgPa,
     constFactorMiKm,
-    constFactorNmiKm,           /*  40 */
-    constFactorPcM,
+    constFactorNmiKm,
+    constFactorPcM,             /*  40 */
     constFactorPointMm,
     constFactorMileM,
     constFactorYardM,
@@ -59,8 +59,8 @@ enum {
     constFactorYearS,
     constFactorCaratG,
     constFactorJinKg,
-    constFactorQuartL,          /*  50 */
-    constFactorFathomM,
+    constFactorQuartL,
+    constFactorFathomM,         /*  50 */
     constFactorNMiM,
     constFactorBarrelM3,
     constFactorHectareM2,
@@ -69,8 +69,8 @@ enum {
     constFactorChiM,
     constFactorYinM,
     constFactorCunM,
-    constFactorZhangM,          /*  60 */
-    constFactorFenM,
+    constFactorZhangM,
+    constFactorFenM,            /*  60 */
     constFactorMi2Km2,
     constFactorNmi2Km2,
     constFactorKmphmps,
@@ -79,8 +79,8 @@ enum {
     constFactorRpmRadps,
     constFactorNmiMi,
     constFactorFurtom,
-    constFactorFtntos,          /*  70 */
-    constFactorFpftomps,
+    constFactorFtntos,
+    constFactorFpftomps,        /*  70 */
     constFactorBrdstom,
     constFactorFirtokg,
     constFactorFpftokph,
@@ -89,8 +89,8 @@ enum {
     constFactorFpftomph,
     constFactorFpstokph,
     constFactorFpstomps,
-    constFactorL100Tokml,       /*  80 */
-    constFactorKmletok100K,
+    constFactorL100Tokml,
+    constFactorKmletok100K,     /*  80 */
     constFactorK100Ktokmk,
     constFactorL100Tomgus,
     constFactorMgeustok100M,
