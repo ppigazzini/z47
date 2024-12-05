@@ -15,12 +15,9 @@
 
 #define XEDIT 1
 #define XSWAP 0
-extern bool_t running_program_jm;
 
 bool_t strcompare            (const char *in1, const char *in2);
 bool_t getXeqmText           (int16_t com, char *str);
-void capture_sequence        (char *origin, uint16_t item);
-void XEQMENU_loadAllfromdisk (void);
 void fnXSWAP                 (uint16_t unusedButMandatoryParameter);
 
 #endif // !XEQM_H

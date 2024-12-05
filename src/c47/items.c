@@ -492,11 +492,6 @@ bool_t itemNotAvail(int16_t itemNr) {
       printf("   >>>RunFunction: %5i%8s%8s\n",func, indexOfItems[abs(func)].itemCatalogName, indexOfItems[abs(func)].itemSoftmenuName);
     #endif // PC_BUILD
     funcOK = true;
-    #if defined(RECORDLOG)                              //JMEXEC
-      #if defined(PC_BUILD)
-        capture_sequence("runFunction:", func);        //JMEXEC
-      #endif // PC_BUILD
-    #endif // RECORDLOG                                        //JMEXEC
 
     #if defined(PC_BUILD)
       if(func >= LAST_ITEM) {

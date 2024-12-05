@@ -10,7 +10,6 @@
 #include "flags.h"
 #include "items.h"
 #include "c47Extensions/jm.h"
-#include "c47Extensions/xeqm.h"
 #include "fonts.h"
 #include "keyboard.h"
 #include "c47Extensions/keyboardTweak.h"
@@ -3009,10 +3008,6 @@ char sstmp[16];
 
       const calcKey_t *keys;
 
-      if(running_program_jm) {
-        return;                        //JM faster during program excution
-      }
-
       keys = getSystemFlag(FLAG_USER) ? kbd_usr : kbd_std;
 
       hideAllWidgets();
@@ -3250,10 +3245,6 @@ char sstmp[16];
 
 
       const calcKey_t *keys;
-
-      if(running_program_jm) {
-        return;                        //JM faster during program excution
-      }
 
       keys = getSystemFlag(FLAG_USER) ? kbd_usr : kbd_std;
 
@@ -3542,10 +3533,6 @@ char sstmp[16];
       #endif // DEBUGMODES && PC_BUILD
 
       const calcKey_t *keys;
-
-      if(running_program_jm) {
-        return;                        //JM faster during program excution
-      }
 
       keys = getSystemFlag(FLAG_USER) ? kbd_usr : kbd_std;
 

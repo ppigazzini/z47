@@ -44,13 +44,11 @@
 #include "store.h"
 #include "timer.h"
 #include "ui/tam.h"
-#include "c47Extensions/xeqm.h"
 #include "c47Extensions/addons.h"
 
 #include "c47Extensions/textfiles.h"
 #include "c47Extensions/keyboardTweak.h"
 #include "c47Extensions/graphText.h"
-#include "c47Extensions/xeqm.h"
 
 #if (REAL34_WIDTH_TEST == 1)
   #include "registerValueConversions.h"
@@ -1038,7 +1036,7 @@ int16_t lastItem = 0;
         item = showFunctionNameItem;
 */
         showFunctionNameItem = 0;
-        if(calcMode != CM_CONFIRMATION && data[0] != 0 && !running_program_jm) { //JM data is used if operation is from the real keyboard. item is used directly if called from XEQM
+        if(calcMode != CM_CONFIRMATION && data[0] != 0) { //JM data is used if operation is from the real keyboard. item is used directly if called from XEQM
           lastErrorCode = 0;
 
           if(calcMode != CM_PEM && item == -MNU_Sfdx) {
@@ -3293,13 +3291,6 @@ RELEASE_END:
                 displayBugScreen(errorMessage);
               }
             }
-            #if defined(RECORDLOG)
-              #if defined(PC_BUILD)
-                if(keyActionProcessed) {                         //JMEXEC
-                  capture_sequence("keyActionProcessed:", item);  //JMEXEC
-                }                                                //JMEXEC
-              #endif
-            #endif // RECORDLOG
           }
         }
       }
@@ -3776,7 +3767,7 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
           softmenuStack[0].softmenuId = 1;                                  //JM
         }                                                                   //JM
 
-        if(running_program_jm || (softmenuStack[0].softmenuId <= 1 && menu(1) != -MNU_ALPHA)) { // MyMenu or MyAlpha is displayed
+        if(softmenuStack[0].softmenuId <= 1 && menu(1) != -MNU_ALPHA) { // MyMenu or MyAlpha is displayed
           closeAim();
                     #if defined(DEBUGUNDO)
                       printf(">>> saveForUndo from fnKeyExitA\n");

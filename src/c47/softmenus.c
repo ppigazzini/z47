@@ -29,7 +29,6 @@
 #include "solver/equation.h"
 #include "sort.h"
 #include "stack.h"
-#include "c47Extensions/xeqm.h"
 #include <string.h>
 #include <stdlib.h>
 #include <math.h>
@@ -2861,7 +2860,6 @@ bool_t BASE_OVERRIDEONCE = false;
   static void pushSoftmenu(int16_t softmenuId) {
     int i;
     int16_t userMenuId;
-    //if(running_program_jm) return;                             //JM
 
     #if defined(PC_BUILD)
       char tmp[300]; sprintf(tmp,">>> ...... pushing id:%d name:%s\n",softmenuId, indexOfItems[-softmenu[softmenuId].menuItem].itemSoftmenuName); jm_show_comment(tmp);
@@ -2899,7 +2897,6 @@ bool_t BASE_OVERRIDEONCE = false;
 
 
   void popSoftmenu(void) {
-//    if(running_program_jm) return;                             //JM
     screenUpdatingMode &= ~(SCRUPD_MANUAL_MENU | SCRUPD_SKIP_MENU_ONE_TIME);
 
     xcopy(softmenuStack, softmenuStack + 1, (SOFTMENU_STACK_SIZE - 1) * sizeof(softmenuStack_t)); // shifting the entire stack
@@ -3128,7 +3125,6 @@ bool_t BASE_OVERRIDEONCE = false;
   }
 
   void showSoftmenu(int16_t id) {
-//    if(running_program_jm) return;
     int16_t m;
     #if defined(PC_BUILD)
       char tmp[200]; sprintf(tmp,"ShowSoftmenu: opening Softmenu, item=%i %s\n", currentMenu(), indexOfItems[currentMenu() > 0 ? currentMenu() : -currentMenu()].itemSoftmenuName);

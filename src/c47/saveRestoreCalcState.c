@@ -16,7 +16,6 @@
 #include "c47Extensions/addons.h"
 #include "c47Extensions/graphs.h"
 #include "c47Extensions/graphText.h"
-#include "c47Extensions/xeqm.h"
 #include "c47Extensions/jm.h"
 #include "c47Extensions/radioButtonCatalog.h"
 #include "curveFitting.h"
@@ -522,7 +521,6 @@ uint8_t output = parameter;
     saveStateValue(&Input_Default,                  sizeof(Input_Default),                                       "Input_Default",                  "uint8");
     saveStateValue(&BASE_MYM,                       sizeof(BASE_MYM),                                            "BASE_MYM",                       "bool");
     saveStateValue(&jm_G_DOUBLETAP,                 sizeof(jm_G_DOUBLETAP),                                      "jm_G_DOUBLETAP",                 "bool");
-    saveStateValue(&running_program_jm,             sizeof(running_program_jm),                                  "running_program_jm",             "bool");
     saveStateValue(&T_cursorPos,                    sizeof(T_cursorPos),                                         "T_cursorPos",                    "int16");   //JM ^^
     saveStateValue(&showRegis,                      sizeof(showRegis),                                           "showRegis",                      "int16");   //JM ^^
     saveStateValue(&overrideShowBottomLine,         sizeof(overrideShowBottomLine),                              "overrideShowBottomLine",         "uint8");   //JM ^^
@@ -1094,7 +1092,6 @@ uint8_t output = parameter;
     restoreStateValue(&BASE_MYM,                       sizeof(BASE_MYM),                                            "BASE_MYM",                       "bool");
     restoreStateValue(&jm_G_DOUBLETAP,                 sizeof(jm_G_DOUBLETAP),                                      "jm_G_DOUBLETAP",                 "bool");
     IrFractionsCurrentStatus = CF_NORMAL;
-    restoreStateValue(&running_program_jm,             sizeof(running_program_jm),                                  "running_program_jm",             "bool");
     restoreStateValue(&T_cursorPos,                    sizeof(T_cursorPos),                                         "T_cursorPos",                    "int16");   //JM ^^
     restoreStateValue(&showRegis,                      sizeof(showRegis),                                           "showRegis",                      "int16");   //JM ^^
     restoreStateValue(&overrideShowBottomLine,         sizeof(overrideShowBottomLine),                              "overrideShowBottomLine",         "uint8");   //JM ^^

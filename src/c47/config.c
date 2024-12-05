@@ -32,7 +32,6 @@
 #include "programming/programmableMenu.h"
 #include "c47Extensions/graphs.h"
 #include "c47Extensions/radioButtonCatalog.h"
-#include "c47Extensions/xeqm.h"
 #include "recall.h"
 #include "registers.h"
 #include "registerValueConversions.h"
@@ -1604,15 +1603,9 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
 
     graph_reset();
 
-    running_program_jm=false;                                  //JM program is running flag
-
     ListXYposition = 0;
 
     fnClrMod(0);
-
-    #if !defined(SAVE_SPACE_DM42_2LOAD)
-      XEQMENU_loadAllfromdisk();
-    #endif //SAVE_SPACE_DM42_2LOAD
 
 
     displayAIMbufferoffset = 0;

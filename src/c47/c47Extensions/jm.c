@@ -23,7 +23,6 @@
 #include "screen.h"
 #include "stack.h"
 #include "stats.h"
-#include "c47Extensions/xeqm.h"
 #include <string.h>
 
 #include "c47.h"
