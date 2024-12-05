@@ -56,53 +56,6 @@ TO_QSPI const nstr1 helpMsg[] = {
       { "XEQLBL 01 HELP ALPHA \"I\" CASE \"n directory \" CASE \"PROGRAMS\" CASEDN \" create \" CASEUP \"XEQM\" CASEDN \"NN\" CASEUP \".TXT\" EXIT "} };
 
 
-
-//Inline XEQC code used in ELEC, in jm.c
-typedef struct {
-  char itemName[130];
-} nstr2;
-
-TO_QSPI const nstr2 xeqTexts[] = {
-   //Create a 3x3 A-matrix
-      { "XEQC47 ERPN RECT 3 ENTER 3 MNEW STO 99 DROPX INDEX 99 1 ENTER 1 STOIJ DROPX DROPX" },
-      { " 1 STOEL J+ STOEL J+ STOEL" },
-      { " J+ STOEL DROPX 0.5 ENTER CHS 3 ENTER SQRT 2 / CHS COMPLEX J+ STOEL COMPLEX CHS COMPLEX J+ STOEL" },
-      { " 1 J+ STOEL DROPX J+ STOEL X^2 J+ STOEL DROPX" },
-      { " RCL 99 " },
-   //Create a 3x1 matrix from Z Y X
-      { "XEQC47 ERPN 3 ENTER 1 MNEW STO 99 DROPX INDEX 99 3 ENTER 1 STOIJ DROPX DROPX STOEL DROPX  I- STOEL DROPX  I-  STOEL DROPX RCL 99 " },
-   //Create a ZYX form a 3x1 matrix
-      { "XEQC47 ERPN STO 99 INDEX 99 DROPX 1 ENTER 1 STOIJ DROPX DROPX RCLEL I+ RCLEL I+ RCLEL " }
-    };
-
-
-void fnXeqmExecuteText(uint16_t command){
-    char line1[700];
-    if(command == 45) {
-      //Create a 3x3 A-matrix
-      strcpy(line1, xeqTexts[0].itemName);
-      strcat(line1, xeqTexts[1].itemName);
-      strcat(line1, xeqTexts[2].itemName);
-      strcat(line1, xeqTexts[3].itemName);
-      strcat(line1, xeqTexts[4].itemName);
-      fnXEQMexecute(line1);
-      }
-
-    else if(command == 46) {
-      //Create a 3x1 matrix from Z Y X
-      strcpy(line1, xeqTexts[5].itemName);
-      fnXEQMexecute(line1);
-    }
-
-    else if(command == 47) {
-      //Create a ZYX form a 3x1 matrix
-      strcpy(line1, xeqTexts[6].itemName);
-      fnXEQMexecute(line1);
-    }
-}
-
-
-
 void press_key(void) {
   #if defined(DMCP_BUILD)
     print_inlinestr(XeqmMsgs[3].itemName, true);  //Press a key
