@@ -320,8 +320,6 @@
   extern uint8_t                LongPressM;
   extern uint8_t                LongPressF;
   extern uint8_t                fgLN;
-  extern char                   indexOfItemsXEQM[18*8];       //JMXEQ
-  extern int16_t                fnXEQMENUpos;                 //JMXEQ
   extern uint8_t                last_CM;                      //Do extern !!
   extern uint8_t                FN_state; // = ST_0_INIT;
 

@@ -858,7 +858,7 @@ void execute_string(const char *inputstring, bool_t exec1, bool_t namescan) {
                                 tmpp[8-1] = 0;         //Limit to length of indexOfItemsXEQM
                                 //printf(">>> Exec:%d no:%d ComndNo:%s tmpp:%s>>XEQM:%s\n",exec, no,commandnumber, tmpp,indexOfItemsXEQM + (no-1)*8);
                                 if(!exec) {
-                                  strcpy(indexOfItemsXEQM + (no-1)*8, tmpp);        // At Exec time, the XEQM label is changed to the command number. So the re-allocation of the name can only happen in the !exec state
+//                                  strcpy(indexOfItemsXEQM + (no-1)*8, tmpp);        // At Exec time, the XEQM label is changed to the command number. So the re-allocation of the name can only happen in the !exec state
                                   if(namescan) {
                                     //printf("\n### Namescan end %s\n",tmpp);
                                     goto exec_exit; //If in name scan mode, only need to process string up to here
@@ -1143,24 +1143,6 @@ void XEQMENU_Selection(uint16_t selection, char *line1, bool_t exec, bool_t scan
 
 
 
-void fnXEQMENU(uint16_t XEQM_no) {
-  #if !defined(TESTSUITE_BUILD)
-//    clearScreenOld(false, true, true);
-//    print_linestr("Loading XEQM program file:", true);
-
-    printStatus(0, XeqmMsgs[0].itemName,force);
-
-    char line[XEQ_STR_LENGTH_LONG];
-    XEQMENU_Selection( XEQM_no, line, EXEC, !SCAN);
-
-    refreshScreen(0);
-
-    //calcMode = CM_BUG_ON_SCREEN;
-    //temporaryInformation = TI_NO_INFO;
-  #endif // !TESTSUITE_BUILD
-}                                               // DOES NOT RETURN TO ##C in items.
-
-
 void XEQMENU_loadAllfromdisk(void) {
   #if !defined(SAVE_SPACE_DM42_2LOAD)
     #if !defined(TESTSUITE_BUILD)
@@ -1182,116 +1164,6 @@ void XEQMENU_loadAllfromdisk(void) {
       }
     #endif // !TESTSUITE_BUILD
   #endif // !SAVE_SPACE_DM42_2LOAD
-}
-
-
-/*
-//Fixed test program, dispatching commands
-void testprogram_12(uint16_t unusedButMandatoryParameter) {
-  runkey(ITM_TICKS); //622
-  runkey(684);       //X<>Y
-  sendkeys("2"); runkey(ITM_EXIT1); //EXIT
-  runkey(684);   //X<>Y
-  runkey(698);   //Y^X
-  sendkeys("1"); runkey(ITM_EXIT1); //EXIT
-  runkey(780);   //-
-  runkey(589);   sendkeys("00"); //STO 00
-  runkey(469);   //PRIME?
-  runkey(684);   //X<>Y
-  runkey(ITM_TICKS);
-  runkey(684);   //X<>Y
-  runkey(ITM_SUB);
-}
-
-
-//Fixed test program, dispatching commands from text string
-void testprogram_1(uint16_t unusedButMandatoryParameter) {
-char line1[TMP_STR_LENGTH];
-  strcpy(line1,
-    "TICKS //RPN Program to demostrate PRIME// "
-    "\"2\" EXIT "
-    "\"2203\" "
-    "Y^X "
-    "\"1\" - "
-    "PRIME?  "
-    "X<>Y "
-    "TICKS "
-    "X<>Y - "
-    "\"10.0\" / "
-    "RETURN "
-    "ABCDEFGHIJKLMNOPQ!@#$%^&*()\n"
-  );
-  displaywords(line1);
-  execute_string(line1,true);
-}
-*/
-
-
-void fnXEQMSAVE (uint16_t XEQM_no) {                                  //X-REGISTER TO DISK
-  #if !defined(SAVE_SPACE_DM42_2)
-    char tt[40];
-    if(getRegisterDataType(REGISTER_X) == dtString) {
-      xcopy(tmpString + TMP_STR_LENGTH/2, REGISTER_STRING_DATA(REGISTER_X), stringByteLength(REGISTER_STRING_DATA(REGISTER_X)) + 1);
-      tt[0] = 0;
-
-      sprintf(tt, "XEQM%02u.TXT", XEQM_no);
-
-      #if defined(PC_BUILD)
-        printf(">>> string ready  ## %s:%s\n", tt, tmpString + TMP_STR_LENGTH/2);
-        //uint16_t ix = 0;
-        //while(ix!=20) {
-        //  printf("%d:%d=\n", ix, tmpString[ix]);
-        //  ix++;
-        //}
-        stringToUtf8(tmpString + TMP_STR_LENGTH/2, (uint8_t *)tmpString);
-        printf(">>> string in utf ## %s:%s\n", tt, tmpString);
-        //ix = 0;
-        //while(ix!=20) {
-        //  printf("%d:%d=\n", ix, ll[ix]);
-        //  ix++;
-        //}
-      #endif // PC_BUILD
-
-      #if !defined(TESTSUITE_BUILD)
-        stringToUtf8(tmpString + TMP_STR_LENGTH/2, (uint8_t *)tmpString);
-        if(tt[0] != 0) {
-          export_string_to_filename(tmpString, OVERWRITE, pgmpath, tt);  //"res/PROGRAMS"
-        }
-      #endif // !TESTSUITE_BUILD
-    }
-  #endif // !SAVE_SPACE_DM42_2
-}
-
-
-void fnXEQMLOAD (uint16_t XEQM_no) {                                  //DISK to X-REGISTER
-  #if !defined(SAVE_SPACE_DM42_2)
-    #if defined(PC_BUILD)
-      printf("LOAD %d\n", XEQM_no);
-    #endif // PC_BUILD
-
-    char line1[XEQ_STR_LENGTH_LONG];
-    line1[0] = 0;
-    XEQMENU_Selection(XEQM_no, line1, !EXEC, !SCAN);
-    uint16_t ix = 0;
-    while(ix!=20) {
-      #if defined(PC_BUILD)
-        printf("%d ", line1[ix]);
-      #endif // PC_BUILD
-      ix++;
-    }
-    //printf(">>> loaded: utf:%s\n", line1);
-    utf8ToString((uint8_t *)line1, line1 + TMP_STR_LENGTH/2);
-    //ix = 0;
-    //while(ix!=20) {
-    //  printf("%d ", line1[ix]);
-    //  ix++;
-    //}
-    //printf(">>> loaded: str:%s\n", line1 + TMP_STR_LENGTH/2);
-    int16_t len = stringByteLength(line1 + TMP_STR_LENGTH/2);
-    liftStack();
-    reallocateRegister(REGISTER_X, dtString, TO_BLOCKS(len), amNone);
-    strcpy(REGISTER_STRING_DATA(REGISTER_X), line1 + TMP_STR_LENGTH/2);
-  #endif // !SAVE_SPACE_DM42_2
 }
 
 
@@ -1399,34 +1271,4 @@ void fnXSWAP (uint16_t mode) {
 }
 
 
-void fnXEQMexecute(char *line1) {
-  #if defined(PC_BUILD)
-    printf("Execute: %s\n",line1);
-  #endif
-  displaywords(line1);
-  execute_string(line1, !EXEC, !SCAN); //Run to catch all label names
-  execute_string(line1,  EXEC, !SCAN); //Run to execute
-}
 
-
-void fnXEQMXXEQ (uint16_t unusedButMandatoryParameter) {
-  #if !defined(SAVE_SPACE_DM42_2)
-    char line1[XEQ_STR_LENGTH_LONG];
-    if(getRegisterDataType(REGISTER_X) == dtString) {
-      xcopy(line1, REGISTER_STRING_DATA(REGISTER_X), stringByteLength(REGISTER_STRING_DATA(REGISTER_X)) + 1);
-      fnDrop(NOPARAM);
-      fnXEQMexecute(line1);
-    }
-  #endif // !SAVE_SPACE_DM42_2
-}
-
-
-void fnXEQNEW (uint16_t unusedButMandatoryParameter) {
-  #if !defined(SAVE_SPACE_DM42_2)
-    setSystemFlag(FLAG_ASLIFT);
-    liftStack();
-    fnStrtoX(XeqmMsgs[2].itemName);  // "XEQC47 XEQLBL 01 XXXXXX "
-    fnXSWAP(0);
-    fnDrop(NOPARAM);
-  #endif // !SAVE_SPACE_DM42_2
-}

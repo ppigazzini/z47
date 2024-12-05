@@ -1916,10 +1916,6 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
         stringAppend(functionName + stringByteLength(functionName), arg);
         stringAppend(functionName + stringByteLength(functionName), ":");
       }
-      if(item >= ITM_X_P1 && item <= ITM_X_g6) {
-        stringAppend(functionName, indexOfItemsXEQM + 8*(item-fnXEQMENUpos));
-        stringAppend(functionName + stringByteLength(functionName), ":");
-      }
       if(dynamicMenuItem > -1) {
         stringAppend(functionName + stringByteLength(functionName),dynmenuGetLabel(dynamicMenuItem));
       }
@@ -1935,9 +1931,6 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
       else if(item == -MNU_DYNAMIC) {
         if(arg != NULL) stringAppend(functionName,arg);
         showFunctionNameArg = (char *)arg;                        // Needed when executing a user menu from a long pressed key
-      }
-      else if(item >= ITM_X_P1 && item <= ITM_X_g6) {
-        stringAppend(functionName, indexOfItemsXEQM + 8*(item-fnXEQMENUpos));
       }
       else if(item >= FIRST_CONSTANT && item <= LAST_CONSTANT) {
         stringAppend(functionName,pickValidItemFromItems(item, PRIORITY_itemSoftmenuName));

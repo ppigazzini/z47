@@ -1607,19 +1607,6 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     running_program_jm=false;                                  //JM program is running flag
 
     ListXYposition = 0;
-                                                               //Find fnXEQMENU in the indexOfItems array
-    fnXEQMENUpos = 0;
-    while(indexOfItems[fnXEQMENUpos].func != fnXEQMENU) {
-       fnXEQMENUpos++;
-    }
-                                                               //Reset XEQM
-    uint16_t ix;
-    ix = 0;
-    while(ix<18) {
-      indexOfItemsXEQM[+8*ix]=0;
-      strcpy(indexOfItemsXEQM +8*ix, indexOfItems[fnXEQMENUpos+ix].itemSoftmenuName);
-      ix++;
-    }
 
     fnClrMod(0);
 
