@@ -26,8 +26,9 @@ typedef bool bool_t;
    * Used for unit conversions.
    */
 typedef enum {
-  multiply,
-  divide
+  multiply = 0,
+  divide = 0x8000,
+  invert = 0x4000
 } multiplyDivide_t;
 
 
