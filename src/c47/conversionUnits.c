@@ -65,7 +65,99 @@ static void unitConversion(const real_t * const coefficient, uint16_t multiplyDi
   adjustResult(REGISTER_X, false, false, -1, -1, -1);
 }
 
+TO_QSPI static const real_t *const *conversionFactors[constFactorEND] = {
+    [constFactorFt2Hectare] = &const_Ft2ToHa,    /*   0 */
+    [constFactorFt2M2] = &const_Ft2ToM2,
+    [constFactorHectareKm2] = &const_100,
+    [constFactorAcreHa] = &const_AccreToHa,
+    [constFactorAcreusHa] = &const_AccreusToHa,
+    [constFactorAtmPa] = &const_AtmToPa,
+    [constFactorAuM] = &const_AuToM,
+    [constFactorBarPa] = &const_BarToPa,
+    [constFactorBtuJ] = &const_BtuToJ,
+    [constFactorCalJ] = &const_CalToJ,
+    [constFactorLbfftNm] = &const_LbfftToNm,         /*  10 */
+    [constFactorCwtKg] = &const_CwtToKg,
+    [constFactorFtM] = &const_FtToM,
+    [constFactorSfeetM] = &const_SfeetToM,
+    [constFactorFlozukIn3] = &const_FlozukToIn3,
+    [constFactorFlozukMl] = &const_FlozukToMl,
+    [constFactorFlozusIn3] = &const_FlozusToIn3,
+    [constFactorFlozusMl] = &const_FlozusToMl,
+    [constFactorFt3toGalUS] = &const_Ft3ToGalUS,
+    [constFactorGalukL] = &const_GalukToL,          /*  20 */
+    [constFactorGalusL] = &const_GalusToL,
+    [constFactorHpeW] = &const_HpeToW,
+    [constFactorHpmW] = &const_HpmToW,
+    [constFactorHpukW] = &const_HpukToW,
+    [constFactorInhgPa] = &const_InhgToPa,
+    [constFactorInchMm] = &const_InchToMm,
+    [constFactorWhJ] = &const_WhToJ,
+    [constFactorLbKg] = &const_LbToKg,
+    [constFactorOzG] = &const_OzToG,
+    [constFactorShortcwtKg] = &const_ShortcwtToKg,      /*  30 */
+    [constFactorStoneKg] = &const_StoneToKg,
+    [constFactorShorttonKg] = &const_ShorttonToKg,
+    [constFactorTonKg] = &const_TonToKg,
+    [constFactorLiangKg] = &const_20,
+    [constFactorTrozG] = &const_TrozToG,
+    [constFactorLbfN] = &const_LbfToN,
+    [constFactorLyM] = &const_LyToM,
+    [constFactorMmhgPa] = &const_MmhgToPa,
+    [constFactorMiKm] = &const_MiToKm,
+    [constFactorNmiKm] = &const_NmiToKm,           /*  40 */
+    [constFactorPcM] = &const_PcToM,
+    [constFactorPointMm] = &const_PointToMm,
+    [constFactorMileM] = &const_MiToM,
+    [constFactorYardM] = &const_YardToM,
+    [constFactorPsiPa] = &const_PsiToPa,
+    [constFactorTorrPa] = &const_TorrToPa,
+    [constFactorYearS] = &const_YearToS,
+    [constFactorCaratG] = &const_CaratToG,
+    [constFactorJinKg] = &const_2,
+    [constFactorQuartL] = &const_QuartToL,          /*  50 */
+    [constFactorFathomM] = &const_FathomToM,
+    [constFactorNMiM] = &const_NmiToM,
+    [constFactorBarrelM3] = &const_BarrelToM3,
+    [constFactorHectareM2] = &const_10000,
+    [constFactorMuM2] = &const_MuToM2,
+    [constFactorLiM] = &const_LiToM,
+    [constFactorChiM] = &const_3,
+    [constFactorYinM] = &const_YinToM,
+    [constFactorCunM] = &const_CunToM,
+    [constFactorZhangM] = &const_ZhangToM,          /*  60 */
+    [constFactorFenM] = &const_FenToM,
+    [constFactorMi2Km2] = &const_MiSqToKmSq,
+    [constFactorNmi2Km2] = &const_NmiSqToKmSq,
+    [constFactorKmphmps] = &const_Kmphmps,
+    [constFactorRpmDegps] = &const_RpmDegps,
+    [constFactorMphmps] = &const_Mphmps,
+    [constFactorRpmRadps] = &const_RpmRadps,
+    [constFactorNmiMi] = &const_NmiToMi,
+    [constFactorFurtom] = &const_furToM,
+    [constFactorFtntos] = &const_ftnToS,         /*  70 */
+    [constFactorFpftomps] = &const_fpfToMps,
+    [constFactorBrdstom] = &const_brdsTom,
+    [constFactorFirtokg] = &const_firToKg,
+    [constFactorFpftokph] = &const_fpfToKph,
+    [constFactorBrdstoin] = &const_brdsToIn,
+    [constFactorFirtolb] = &const_firToLb,
+    [constFactorFpftomph] = &const_fpfToMph,
+    [constFactorFpstokph] = &const_fpsToKph,
+    [constFactorFpstomps] = &const_fpsToMps,
+    [constFactorL100Tokml] = &const_100,        /*  80 */
+    [constFactorK100Ktokmk] = &const_100,
+    [constFactorK100Ktok100M] = &const_MiToKm,
+    [constFactorK100Mtomik] = &const_100,
+};
 
+void fnUnitConvert(uint16_t arg) {
+    const uint16_t multiply = arg & 0x8000;
+    const bool_t invert = (arg & 0x4000) != 0;
+    const uint16_t idx = arg & 0x3fff;
+
+    unitConversion(*conversionFactors[idx], multiply, invert);
+}
 
 /********************************************//**
  * \brief Converts °Celcius to °Fahrenheit: (°Celcius * 1,8) + 32.
@@ -119,339 +211,6 @@ void fnCvtFToC(uint16_t unusedButMandatoryParameter) {
 }
 
 
-void fnCvtYearS(uint16_t multiplyDivide) {
-  unitConversion(const_YearToS, multiplyDivide, noninverting);
-}
-
-
-void fnCvtCalJ(uint16_t multiplyDivide) {
-  unitConversion(const_CalToJ, multiplyDivide, noninverting);
-}
-
-
-void fnCvtBtuJ(uint16_t multiplyDivide) {
-  unitConversion(const_BtuToJ, multiplyDivide, noninverting);
-}
-
-
-void fnCvtWhJ(uint16_t multiplyDivide) {
-  unitConversion(const_WhToJ, multiplyDivide, noninverting);
-}
-
-
-void fnCvtHpeW(uint16_t multiplyDivide) {
-  unitConversion(const_HpeToW, multiplyDivide, noninverting);
-}
-
-
-void fnCvtHpmW(uint16_t multiplyDivide) {
-  unitConversion(const_HpmToW, multiplyDivide, noninverting);
-}
-
-
-void fnCvtHpukW(uint16_t multiplyDivide) {
-  unitConversion(const_HpukToW, multiplyDivide, noninverting);
-}
-
-
-void fnCvtLbfN(uint16_t multiplyDivide) {
-  unitConversion(const_LbfToN, multiplyDivide, noninverting);
-}
-
-
-void fnCvtBarPa(uint16_t multiplyDivide) {
-  unitConversion(const_BarToPa, multiplyDivide, noninverting);
-}
-
-
-void fnCvtPsiPa(uint16_t multiplyDivide) {
-  unitConversion(const_PsiToPa, multiplyDivide, noninverting);
-}
-
-
-void fnCvtInhgPa(uint16_t multiplyDivide) {
-  unitConversion(const_InhgToPa, multiplyDivide, noninverting);
-}
-
-
-void fnCvtMmhgPa(uint16_t multiplyDivide) {
-  unitConversion(const_MmhgToPa, multiplyDivide, noninverting);
-}
-
-
-void fnCvtTorrPa(uint16_t multiplyDivide) {
-  unitConversion(const_TorrToPa, multiplyDivide, noninverting);
-}
-
-
-void fnCvtAtmPa(uint16_t multiplyDivide) {
-  unitConversion(const_AtmToPa, multiplyDivide, noninverting);
-}
-
-
-void fnCvtLbKg(uint16_t multiplyDivide) {
-  unitConversion(const_LbToKg, multiplyDivide, noninverting);
-}
-
-
-void fnCvtCwtKg(uint16_t multiplyDivide) {
-  unitConversion(const_CwtToKg, multiplyDivide, noninverting);
-}
-
-
-void fnCvtOzG(uint16_t multiplyDivide) {
-  unitConversion(const_OzToG, multiplyDivide, noninverting);
-}
-
-
-void fnCvtStoneKg(uint16_t multiplyDivide) {
-  unitConversion(const_StoneToKg, multiplyDivide, noninverting);
-}
-
-
-void fnCvtShortcwtKg(uint16_t multiplyDivide) {
-  unitConversion(const_ShortcwtToKg, multiplyDivide, noninverting);
-}
-
-
-void fnCvtTrozG(uint16_t multiplyDivide) {
-  unitConversion(const_TrozToG, multiplyDivide, noninverting);
-}
-
-
-void fnCvtTonKg(uint16_t multiplyDivide) {
-  unitConversion(const_TonToKg, multiplyDivide, noninverting);
-}
-
-
-void fnCvtShorttonKg(uint16_t multiplyDivide) {
-  unitConversion(const_ShorttonToKg, multiplyDivide, noninverting);
-}
-
-
-void fnCvtCaratG(uint16_t multiplyDivide) {
-  unitConversion(const_CaratToG, multiplyDivide, noninverting);
-}
-
-
-void fnCvtLiangKg(uint16_t multiplyDivide) {
-  unitConversion(const_20, multiplyDivide, noninverting);
-}
-
-
-void fnCvtJinKg(uint16_t multiplyDivide) {
-  unitConversion(const_2, multiplyDivide, noninverting);
-}
-
-
-void fnCvtAuM(uint16_t multiplyDivide) {
-  unitConversion(const_AuToM, multiplyDivide, noninverting);
-}
-
-
-void fnCvtMiKm(uint16_t multiplyDivide) {
-  unitConversion(const_MiToKm, multiplyDivide, noninverting);
-}
-
-
-void fnCvtLyM(uint16_t multiplyDivide) {
-  unitConversion(const_LyToM, multiplyDivide, noninverting);
-}
-
-
-void fnCvtNmiKm(uint16_t multiplyDivide) {
-  unitConversion(const_NmiToKm, multiplyDivide, noninverting);
-}
-
-void fnCvtNmiMi(uint16_t multiplyDivide) {
-  unitConversion(const_NmiToMi, multiplyDivide, noninverting);
-}
-
-void fnCvtFtM(uint16_t multiplyDivide) {
-  unitConversion(const_FtToM, multiplyDivide, noninverting);
-}
-
-
-void fnCvtPcM(uint16_t multiplyDivide) {
-  unitConversion(const_PcToM, multiplyDivide, noninverting);
-}
-
-
-void fnCvtInchMm(uint16_t multiplyDivide) {
-  unitConversion(const_InchToMm, multiplyDivide, noninverting);
-}
-
-
-void fnCvtSfeetM(uint16_t multiplyDivide) {
-  unitConversion(const_SfeetToM, multiplyDivide, noninverting);
-}
-
-
-void fnCvtYardM(uint16_t multiplyDivide) {
-  unitConversion(const_YardToM, multiplyDivide, noninverting);
-}
-
-
-void fnCvtPointMm(uint16_t multiplyDivide) {
-  unitConversion(const_PointToMm, multiplyDivide, noninverting);
-}
-
-
-void fnCvtFathomM(uint16_t multiplyDivide) {
-  unitConversion(const_FathomToM, multiplyDivide, noninverting);
-}
-
-
-void fnCvtLiM(uint16_t multiplyDivide) {
-  unitConversion(const_LiToM, multiplyDivide, noninverting);
-}
-
-
-void fnCvtChiM(uint16_t multiplyDivide) {
-  unitConversion(const_3, multiplyDivide, noninverting);
-}
-
-
-void fnCvtYinM(uint16_t multiplyDivide) {
-  unitConversion(const_YinToM, multiplyDivide, noninverting);
-}
-
-
-void fnCvtCunM(uint16_t multiplyDivide) {
-  unitConversion(const_CunToM, multiplyDivide, noninverting);
-}
-
-
-void fnCvtZhangM(uint16_t multiplyDivide) {
-  unitConversion(const_ZhangToM, multiplyDivide, noninverting);
-}
-
-
-void fnCvtFenM(uint16_t multiplyDivide) {
-  unitConversion(const_FenToM, multiplyDivide, noninverting);
-}
-
-
-void fnCvtMileM(uint16_t multiplyDivide) {
-  unitConversion(const_MiToM, multiplyDivide, noninverting);
-}
-
-
-void fnCvtNMiM(uint16_t multiplyDivide) {
-  unitConversion(const_NmiToM, multiplyDivide, noninverting);
-}
-
-
-void fnCvtGalukL(uint16_t multiplyDivide) {
-  unitConversion(const_GalukToL, multiplyDivide, noninverting);
-}
-
-
-void fnCvtGalusL(uint16_t multiplyDivide) {
-  unitConversion(const_GalusToL, multiplyDivide, noninverting);
-}
-
-
-void fnCvtFlozukMl(uint16_t multiplyDivide) {
-  unitConversion(const_FlozukToMl, multiplyDivide, noninverting);
-}
-
-
-void fnCvtFlozusMl(uint16_t multiplyDivide) {
-  unitConversion(const_FlozusToMl, multiplyDivide, noninverting);
-}
-
-
-void fnCvtFlozukIn3 (uint16_t multiplyDivide) {
-  unitConversion(const_FlozukToIn3, multiplyDivide, noninverting);  
-}
-
-
-void fnCvtFlozusIn3 (uint16_t multiplyDivide) {
-  unitConversion(const_FlozusToIn3, multiplyDivide, noninverting);
-}
-
-
-void fnCvtFt3toGalUS(uint16_t multiplyDivide) {
-  unitConversion(const_Ft3ToGalUS, multiplyDivide, noninverting);
-}
-
-
-void fnCvtBarrelM3(uint16_t multiplyDivide) {
-  unitConversion(const_BarrelToM3, multiplyDivide, noninverting);
-}
-
-
-void fnCvtQuartL(uint16_t multiplyDivide) {
-  unitConversion(const_QuartToL, multiplyDivide, noninverting);
-}
-
-
-void fnCvtAcreHa(uint16_t multiplyDivide) {
-  unitConversion(const_AccreToHa, multiplyDivide, noninverting);
-}
-
-
-void fnCvtAcreusHa(uint16_t multiplyDivide) {
-  unitConversion(const_AccreusToHa, multiplyDivide, noninverting);
-}
-
-
-void fnCvtHectareM2(uint16_t multiplyDivide) {
-  unitConversion(const_10000, multiplyDivide, noninverting);
-}
-
-
-void fnCvtFt2Hectare(uint16_t multiplyDivide) {
-  unitConversion(const_Ft2ToHa, multiplyDivide, noninverting);
-}
-
-
-void fnCvtFt2M2(uint16_t multiplyDivide) {
-  unitConversion(const_Ft2ToM2, multiplyDivide, noninverting);
-}
-
-
-void fnCvtHectareKm2(uint16_t multiplyDivide) {
-  real_t mm;
-  int32ToReal(100,&mm);
-  unitConversion(&mm, multiplyDivide == multiply ? divide : multiply, noninverting);
-}
-
-
-void fnCvtMuM2(uint16_t multiplyDivide) {
-  unitConversion(const_MuToM2, multiplyDivide, noninverting);
-}
-
-
-void fnCvtLbfftNm(uint16_t multiplyDivide) {
-  unitConversion(const_LbfftToNm, multiplyDivide, noninverting);
-}
-
-void fnCvtMi2Km2 (uint16_t multiplyDivide) {
-  unitConversion(const_MiSqToKmSq, multiplyDivide, noninverting);
-}
-
-void fnCvtNmi2Km2(uint16_t multiplyDivide) {
-  unitConversion(const_NmiSqToKmSq, multiplyDivide, noninverting);
-}
-
-void fnCvtKmphmps(uint16_t multiplyDivide) {
-  unitConversion(const_Kmphmps, multiplyDivide, noninverting);
-}
-
-void fnCvtRpmDegps(uint16_t multiplyDivide) {
-  unitConversion(const_RpmDegps, multiplyDivide, noninverting);
-}
-
-void fnCvtMphmps(uint16_t multiplyDivide) {
-  unitConversion(const_Mphmps, multiplyDivide, noninverting);
-}
-
-void fnCvtRpmRadps(uint16_t multiplyDivide) {
-  unitConversion(const_RpmRadps, multiplyDivide, noninverting);
-}
-
 void fnCvtDegRad(uint16_t multiplyDivide) {
   if(getRegisterDataType(REGISTER_X) == dtReal34 && (
     ((getRegisterAngularMode(REGISTER_X) == amDegree) && multiplyDivide == multiply) || ((getRegisterAngularMode(REGISTER_X) == amRadian) && multiplyDivide == divide) )) {
@@ -476,58 +235,6 @@ void fnCvtGradRad(uint16_t multiplyDivide) {
   unitConversion(const_GradRad, multiplyDivide, noninverting);
 }
 
-
-void fnCvtFurtom    (uint16_t multiplyDivide) {
-  unitConversion(const_furToM,   multiplyDivide, noninverting);
-}
-
-void fnCvtFtntos    (uint16_t multiplyDivide) {
-  unitConversion(const_ftnToS,   multiplyDivide, noninverting);
-}
-
-void fnCvtFpftomps  (uint16_t multiplyDivide) {
-  unitConversion(const_fpfToMps, multiplyDivide, noninverting);
-}
-
-void fnCvtBrdstom   (uint16_t multiplyDivide) {
-  unitConversion(const_brdsTom,  multiplyDivide, noninverting);
-}
-
-void fnCvtFirtokg   (uint16_t multiplyDivide) {
-  unitConversion(const_firToKg,  multiplyDivide, noninverting);
-}
-
-void fnCvtFpftokph  (uint16_t multiplyDivide) {
-  unitConversion(const_fpfToKph, multiplyDivide, noninverting);
-}
-
-void fnCvtBrdstoin  (uint16_t multiplyDivide) {
-  unitConversion(const_brdsToIn, multiplyDivide, noninverting);
-}
-
-void fnCvtFirtolb   (uint16_t multiplyDivide) {
-  unitConversion(const_firToLb,  multiplyDivide, noninverting);
-}
-
-void fnCvtFpftomph  (uint16_t multiplyDivide) {
-  unitConversion(const_fpfToMph, multiplyDivide, noninverting);
-}
-
-void fnCvtFpstokph  (uint16_t multiplyDivide) {
-  unitConversion(const_fpsToKph, multiplyDivide, noninverting);
-}
-
-void fnCvtFpstomps  (uint16_t multiplyDivide) {
-  unitConversion(const_fpsToMps, multiplyDivide, noninverting);
-}
-
-void fnL100Tokml   (uint16_t multiplyDivide) {
-  //note multiplyDivide is not used, as the formula is biderectional!
-  //100 / value, both ways
-  // 5 l/100km = 1/5 * 100 = 20 km/l and conversely 20 l/100km = 1/20 * 100 = 5 km/l
-  unitConversion(const_100, multiply, inverting);
-}
-
 void fnKmletok100K   (uint16_t multiplyDivide) {
   //note multiplyDivide is not used, as the formula is biderectional!
   //100*liter_equivalent  / (value), both ways
@@ -535,12 +242,6 @@ void fnKmletok100K   (uint16_t multiplyDivide) {
   realMultiply(const_GaluseqE, const_100, &factor, &ctxtReal39);
   realDivide(&factor, const_GalusToL, &factor, &ctxtReal39);
   unitConversion(&factor, multiply, inverting);
-}
-
-void fnK100Ktokmk   (uint16_t multiplyDivide) {
-  //note multiplyDivide is not used, as the formula is biderectional!
-  //100 / value, both ways
-  unitConversion(const_100, multiply, inverting);
 }
 
 void fnL100Tomgus   (uint16_t multiplyDivide) {
@@ -558,10 +259,6 @@ void fnMgeustok100M   (uint16_t multiplyDivide) {
   real_t factor;
   realMultiply(const_GaluseqE, const_100, &factor, &ctxtReal39);
   unitConversion(&factor, multiply, inverting);
-}
-
-void fnK100Ktok100M   (uint16_t multiplyDivide) {
-  unitConversion(const_MiToKm, multiplyDivide, noninverting);
 }
 
 void fnL100Tomguk   (uint16_t multiplyDivide) {
@@ -582,12 +279,6 @@ void fnMgeuktok100M   (uint16_t multiplyDivide) {
   realMultiply(&factor, const_GalukToL, &factor, &ctxtReal39);
   realDivide(&factor, const_GalusToL, &factor, &ctxtReal39);
   unitConversion(&factor, multiply, inverting);
-}
-
-void fnK100Mtomik   (uint16_t multiplyDivide) {
-  //note multiplyDivide is not used, as the formula is biderectional!
-  //100 / value, both ways
-  unitConversion(const_100, multiply, inverting);
 }
 
 
