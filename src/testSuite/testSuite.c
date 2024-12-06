@@ -3137,11 +3137,11 @@ int main(int argc, char* argv[]) {
   /*
   longInteger_t li;
   longIntegerInit(li);
-  uIntToLongInteger(1, li);
+  uInt32ToLongInteger(1u, li);
   convertLongIntegerToLongIntegerRegister(li, REGISTER_Z);
-  uIntToLongInteger(2, li);
+  uInt32ToLongInteger(2u, li);
   convertLongIntegerToLongIntegerRegister(li, REGISTER_Y);
-  uIntToLongInteger(2203, li);
+  uInt32ToLongInteger(2203u, li);
   convertLongIntegerToLongIntegerRegister(li, REGISTER_X);
   fnPower(NOPARAM);
   fnSwapXY(NOPARAM);

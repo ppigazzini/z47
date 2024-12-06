@@ -54,7 +54,7 @@ void fnDenMax(uint16_t D) {
       longInteger_t lgInt;
 
       longIntegerInit(lgInt);
-      uIntToLongInteger(denMax, lgInt);
+      uInt32ToLongInteger(denMax, lgInt);
       convertLongIntegerToLongIntegerRegister(lgInt, REGISTER_X);
       longIntegerFree(lgInt);
     }

@@ -77,7 +77,7 @@ void invertLonI(void) {
     longInteger_t quotient, remainder, one;
 
     longIntegerInit(one);
-    intToLongInteger(1, one);
+    uInt32ToLongInteger(1u, one);
 
     longIntegerInit(quotient);
     longIntegerInit(remainder);

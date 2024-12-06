@@ -62,7 +62,7 @@ void tenPowLonI(void) {
   longInteger_t base, exponent;
 
   longIntegerInit(base);
-  intToLongInteger(10, base);
+  uInt32ToLongInteger(10u, base);
   convertLongIntegerRegisterToLongInteger(REGISTER_X, exponent);
 
   longIntegerSetPositiveSign(base);
@@ -71,7 +71,7 @@ void tenPowLonI(void) {
   longIntegerSetPositiveSign(exponent);
 
   if(longIntegerIsZero(exponent)) {
-    uIntToLongInteger(1, base);
+    uInt32ToLongInteger(1u, base);
     convertLongIntegerToLongIntegerRegister(base, REGISTER_X);
     longIntegerFree(base);
     longIntegerFree(exponent);
@@ -88,7 +88,7 @@ void tenPowLonI(void) {
   longInteger_t power;
 
   longIntegerInit(power);
-  uIntToLongInteger(1, power);
+  uInt32ToLongInteger(1u, power);
 
   while(!longIntegerIsZero(exponent) && lastErrorCode == 0) {
     if(longIntegerIsOdd(exponent)) {

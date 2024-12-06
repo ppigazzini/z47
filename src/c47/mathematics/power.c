@@ -90,19 +90,19 @@ void fnPower(uint16_t unusedButMandatoryParameter) {
 
 void longIntegerPower(longInteger_t base, longInteger_t exponent, longInteger_t result) {
   if(longIntegerIsZero(exponent)) {
-    uIntToLongInteger(1, result);
+    uInt32ToLongInteger(1u, result);
   }
   else if(longIntegerIsZero(base)) {
-    uIntToLongInteger(0, result);
+    uInt32ToLongInteger(0u, result);
   }
   else if((longIntegerCompareInt(base, 1) == 0 || longIntegerCompareInt(base, -1) == 0) && longIntegerCompareInt(exponent, -1) == 0) {
     longIntegerCopy(base, result);
   }
   else if(longIntegerIsNegative(exponent)) {
-    uIntToLongInteger(0, result);
+    uInt32ToLongInteger(0u, result);
   }
   else {
-    uIntToLongInteger(1, result);
+    uInt32ToLongInteger(1u, result);
 
     while(!longIntegerIsZero(exponent)) {
       if(longIntegerIsOdd(exponent)) {

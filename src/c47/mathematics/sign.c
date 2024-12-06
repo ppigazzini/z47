@@ -57,12 +57,12 @@ void signLonI(void) {
 
   switch(getRegisterLongIntegerSign(REGISTER_X)) {
     case LI_POSITIVE: {
-      intToLongInteger(1, lgInt);
+      uInt32ToLongInteger(1u, lgInt);
       break;
     }
 
     case LI_NEGATIVE: {
-      intToLongInteger(-1, lgInt);
+      int32ToLongInteger(-1, lgInt);
       break;
     }
 
@@ -89,23 +89,23 @@ void signShoI(void) {
 
   switch(WP34S_intSign(*(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)))) {
     case -1: {
-      uIntToLongInteger(1, lgInt);
+      uInt32ToLongInteger(1u, lgInt);
       longIntegerSetNegativeSign(lgInt);
       break;
     }
 
     case 0: {
-      uIntToLongInteger(0, lgInt);
+      uInt32ToLongInteger(0u, lgInt);
       break;
     }
 
     case 1: {
-      uIntToLongInteger(1, lgInt);
+      uInt32ToLongInteger(1u, lgInt);
       break;
     }
 
     default: {
-      uIntToLongInteger(0, lgInt);
+      uInt32ToLongInteger(0u, lgInt);
       //sprintf(errorMessage, "In function signShoI: %" PRIu64 " is an unexpected value returned by WP34S_intSign!", WP34S_intSign(*(REGISTER_SHORT_INTEGER_DATA(REGISTER_X))));
       sprintf(errorMessage, "In function signShoI: unexpected value returned by WP34S_intSign!");
       displayBugScreen(errorMessage);
@@ -133,14 +133,14 @@ void signReal(void) {
   longIntegerInit(lgInt);
   if(!real34IsZero(REGISTER_REAL34_DATA(REGISTER_X))) {
     if(real34IsNegative(REGISTER_REAL34_DATA(REGISTER_X))) {
-      intToLongInteger(-1, lgInt);
+      int32ToLongInteger(-1, lgInt);
     }
     else {
-      intToLongInteger(1, lgInt);
+      uInt32ToLongInteger(1u, lgInt);
     }
   }
   else {
-    intToLongInteger(0, lgInt);
+    uInt32ToLongInteger(0u, lgInt);
   }
 
   convertLongIntegerToLongIntegerRegister(lgInt, REGISTER_X);

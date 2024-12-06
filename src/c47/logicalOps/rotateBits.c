@@ -303,7 +303,7 @@ void fnRrc(uint16_t numberOfShifts) {
  * \return void
  ***********************************************/
 void fnLj(uint16_t numberOfShifts) {
-  int32_t count;
+  uint32_t count;
   longInteger_t regX;
 
   if(getRegisterDataType(REGISTER_X) == dtShortInteger) {
@@ -318,7 +318,7 @@ void fnLj(uint16_t numberOfShifts) {
     }
 
     longIntegerInit(regX);
-    intToLongInteger(count, regX);
+    uInt32ToLongInteger(count, regX);
 
     setSystemFlag(FLAG_ASLIFT);
     liftStack();
@@ -344,7 +344,7 @@ void fnLj(uint16_t numberOfShifts) {
  * \return void
  ***********************************************/
 void fnRj(uint16_t numberOfShifts) {
-  int32_t count;
+  uint32_t count;
   longInteger_t regX;
 
   if(getRegisterDataType(REGISTER_X) == dtShortInteger) {
@@ -359,7 +359,7 @@ void fnRj(uint16_t numberOfShifts) {
     }
 
     longIntegerInit(regX);
-    intToLongInteger(count, regX);
+    uInt32ToLongInteger(count, regX);
 
     setSystemFlag(FLAG_ASLIFT);
     liftStack();
