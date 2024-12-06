@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
-#include "c47Extensions/radioButtonCatalog.h"
-#include "hal/audio.h"
+#include "c47.h"
 
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 

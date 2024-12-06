@@ -5,19 +5,7 @@
  * \file swapRealImaginary.c
  ***********************************************/
 
-#include "mathematics/swapRealImaginary.h"
-
-#include "constantPointers.h"
-#include "debug.h"
-#include "error.h"
-#include "fonts.h"
-#include "items.h"
-#include "mathematics/matrix.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-
 #include "c47.h"
-
 
 static void swapReImCxma(void) {
   complex34Matrix_t cMat;

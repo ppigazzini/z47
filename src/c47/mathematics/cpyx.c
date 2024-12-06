@@ -5,19 +5,6 @@
  * \file cpyx.c
  ***********************************************/
 
-#include "mathematics/cpyx.h"
-
-#include "constantPointers.h"
-#include "debug.h"
-#include "error.h"
-#include "flags.h"
-#include "integers.h"
-#include "mathematics/comparisonReals.h"
-#include "mathematics/exp.h"
-#include "mathematics/wp34s.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-
 #include "c47.h"
 
 //=============================================================================

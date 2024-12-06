@@ -7,10 +7,6 @@
 #if !defined(COMPARISONREALS_H)
 #define COMPARISONREALS_H
 
-#include "realType.h"
-#include "typeDefinitions.h"
-#include <stdint.h>
-
 // Return a convergence tolerance based on the current display setting
 void convergenceTolerence(real_t *tol);
 void fractionTolerence(real_t *tol);

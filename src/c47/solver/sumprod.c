@@ -5,36 +5,7 @@
  * \file sumprod.c
  ***********************************************/
 
-#include "solver/sumprod.h"
-
-#include "c47Extensions/addons.h"
-#include "constantPointers.h"
-#include "defines.h"
-#include "display.h"
-#include "error.h"
-#include "flags.h"
-#include "fonts.h"
-#include "integers.h"
-#include "items.h"
-#include "mathematics/comparisonReals.h"
-#include "mathematics/integerPart.h"
-#include "mathematics/iteration.h"
-#include "mathematics/multiplication.h"
-#include "programming/lblGtoXeq.h"
-#include "programming/manage.h"
-#include "programming/nextStep.h"
-#include "realType.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-#include "screen.h"
-#include "solver/solve.h"
-#include "statusBar.h"
-#include "stack.h"
-#include "timer.h"
 #include "c47.h"
-
-#include <string.h>
-
 
 //Complex operation:
 //  The counter is always Real34.

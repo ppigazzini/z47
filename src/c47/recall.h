@@ -7,8 +7,6 @@
 #if !defined(RECALL_H)
   #define RECALL_H
 
-  #include <stdint.h>
-
   /**
    * Recalls a register in X.
    *

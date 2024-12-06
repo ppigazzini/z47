@@ -5,10 +5,6 @@
  * \file testSuite.h
  ***********************************************/
 
-#include "realType.h"
-#include "typeDefinitions.h"
-#include <stdint.h>
-
 #define FUNC_NOPARAM  0
 #define FUNC_CVT      1
 

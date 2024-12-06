@@ -7,13 +7,6 @@
 #if !defined(TIMER_H)
 #define TIMER_H
 
-#include <stdint.h>
-  #if defined(PC_BUILD)
-  #include <gtk/gtk.h>
-  #include <gdk/gdk.h>
-  #endif // PC_BUILD
-
-
 uint32_t getUptimeMs          (void);
 void     fnTicks              (uint16_t unusedButMandatoryParameter);
 void     fnLastT              (uint16_t unusedButMandatoryParameter);

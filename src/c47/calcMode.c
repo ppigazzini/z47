@@ -1,26 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
-#include "calcMode.h"
-
-#include "bufferize.h"
-#include "debug.h"
-#include "error.h"
-#include "flags.h"
-#include "hal/gui.h"
-#include "items.h"
-#include "c47Extensions/jm.h"
-#include "keyboard.h"
-#include "mathematics/matrix.h"
-#include "registers.h"
-#include "saveRestoreCalcState.h"
-#include "screen.h"
-#include "softmenus.h"
-#include "stack.h"
-#include "timer.h"
-#include <string.h>
-#include <unistd.h>
-
 #include "c47.h"
 
 #if !defined(TESTSUITE_BUILD)

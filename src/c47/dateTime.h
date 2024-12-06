@@ -7,10 +7,6 @@
 #if !defined(DATETIME_H)
   #define DATETIME_H
 
-  #include "realType.h"
-  #include "typeDefinitions.h"
-  #include <stdint.h>
-
   void fnSetDateFormat         (uint16_t dateFormat);
 
   /********************************************//**

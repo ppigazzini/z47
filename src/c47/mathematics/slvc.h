@@ -7,8 +7,6 @@
 #if !defined(SLVC_H)
   #define SLVC_H
 
-  #include "realType.h"
-
   void fnSlvc(uint16_t unusedButMandatoryParameter);
 
   /**

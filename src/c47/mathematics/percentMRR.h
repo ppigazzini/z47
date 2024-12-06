@@ -7,7 +7,5 @@
 #if !defined(PERCENTMRR_H)
   #define PERCENTMRR_H
 
-  #include <stdint.h>
-
   void fnPercentMRR(uint16_t unusedButMandatoryParameter);
 #endif // !PERCENTMRR_H

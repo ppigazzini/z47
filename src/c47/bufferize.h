@@ -7,10 +7,6 @@
 #if !defined(BUFFERIZE_H)
 #define BUFFERIZE_H
 
-#include "typeDefinitions.h"
-#include <stdint.h>
-#include "realType.h"
-
   extern bool_t delayCloseNim;
   extern bool_t changeFractionModeOnENTER;
 

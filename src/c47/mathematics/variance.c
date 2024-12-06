@@ -5,19 +5,6 @@
  * \file variance.c
  ***********************************************/
 
-#include "mathematics/variance.h"
-
-#include "constantPointers.h"
-#include "curveFitting.h"
-#include "debug.h"
-#include "error.h"
-#include "flags.h"
-#include "mathematics/exp.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-#include "stack.h"
-#include "stats.h"
-
 #include "c47.h"
 
 /* Standard deviations and standard errors.

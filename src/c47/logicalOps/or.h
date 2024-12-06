@@ -7,9 +7,6 @@
 #if !defined(OR_H)
   #define OR_H
 
-  #include "defines.h"
-  #include <stdint.h>
-
   void fnLogicalOr(uint16_t unusedButMandatoryParameter);
 
   #if (EXTRA_INFO_ON_CALC_ERROR == 1)

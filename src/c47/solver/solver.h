@@ -9,9 +9,10 @@
 
   #include "differentiate.h"
   #include "equation.h"
+  #include "graph.h"
   #include "integrate.h"
+  #include "isumprod.h"
   #include "solve.h"
   #include "sumprod.h"
-  #include "isumprod.h"
   #include "tvm.h"
 #endif // !SOLVER_H

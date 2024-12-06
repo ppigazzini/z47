@@ -5,20 +5,7 @@
  * \file beta.c
  ***********************************************/
 
-#include "mathematics/beta.h"
-
-#include "constantPointers.h"
-#include "debug.h"
-#include "error.h"
-#include "mathematics/comparisonReals.h"
-#include "mathematics/division.h"
-#include "mathematics/multiplication.h"
-#include "mathematics/wp34s.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-
 #include "c47.h"
-
 
 #if !defined(SAVE_SPACE_DM42_12)
 static bool_t complexBeta(real_t *xReal, real_t *xImag, real_t *yReal, real_t *yImag, real_t *rReal, real_t *rImag, realContext_t *realContext) {

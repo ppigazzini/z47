@@ -1,25 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
-
-//#define DISPLOADING
-
-#include "c47Extensions/graphText.h"
-
-#include "charString.h"
-#include "math.h"
-#include "screen.h"
-#include "time.h"
-#include "timer.h"
-#include "c47Extensions/textfiles.h"
-#include "c47Extensions/xeqm.h"
-#include <string.h>
-
 #include "c47.h"
 
-char     filename_csv[40];
-uint32_t mem__32;
-bool_t   cancelFilename = false;
+//#define DISPLOADING
 
 #if defined(DMCP_BUILD)
   /*-DMCP-*/     typedef struct {              //JM VALUES DEMO
@@ -851,7 +835,7 @@ bool_t   cancelFilename = false;
         //Create file name
         time(&rawTime);
         timeInfo = localtime(&rawTime);
-        strftime(filename_csv, filenamelen, "%Y%m%d-%H%M%S00", timeInfo);
+        strftime(filename_csv, FILENAMELEN, "%Y%m%d-%H%M%S00", timeInfo);
         strcat(filename_csv, fn);
       }
       mem__32 = tmp__32;

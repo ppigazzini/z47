@@ -5,24 +5,7 @@
  * \file hyper.c
  ***********************************************/
 
-#include "distributions/hyper.h"
-
-#include "constantPointers.h"
-#include "distributions/chi2.h"
-#include "distributions/f.h"
-#include "distributions/poisson.h"
-#include "error.h"
-#include "flags.h"
-#include "fonts.h"
-#include "mathematics/comparisonReals.h"
-#include "mathematics/cpyx.h"
-#include "mathematics/exp.h"
-#include "mathematics/wp34s.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-
 #include "c47.h"
-
 
 #if defined(SAVE_SPACE_DM42_17)
   void fnHypergeometricP  (uint16_t unusedButMandatoryParameter){}

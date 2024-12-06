@@ -1,29 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
-#include "store.h"
-
-#include "charString.h"
-#include "debug.h"
-#include "defines.h"
-#include "error.h"
-#include "flags.h"
-#include "items.h"
-#include "c47Extensions/jm.h"
-#include "mathematics/compare.h"
-#include "mathematics/integerPartLonginteger.h"
-#include "mathematics/matrix.h"
-#include "plotstat.h"
-#include "registerValueConversions.h"
-#include "registers.h"
-#include "stack.h"
-#include "stats.h"
-#include "typeDefinitions.h"
-#include "ui/matrixEditor.h"
-
 #include "c47.h"
-
-
 
 bool_t regInRange(uint16_t regist) {
   bool_t inRange = (

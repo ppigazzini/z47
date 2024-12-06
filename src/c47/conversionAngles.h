@@ -7,10 +7,6 @@
 #if !defined(CONVERSIONANGLES_H)
 #define CONVERSIONANGLES_H
 
-#include "realType.h"
-#include "typeDefinitions.h"
-#include <stdint.h>
-
 void     fnCvtToCurrentAngularMode   (uint16_t fromAngularMode);
 void     fnCvtFromCurrentAngularModeRegister(calcRegister_t regist1, uint16_t toAngularMode); //JM
 void     fnCvtFromCurrentAngularMode (uint16_t toAngularMode);

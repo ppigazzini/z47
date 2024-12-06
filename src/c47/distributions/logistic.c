@@ -5,19 +5,7 @@
  * \file logistic.c
  ***********************************************/
 
-#include "distributions/logistic.h"
-
-#include "constantPointers.h"
-#include "error.h"
-#include "flags.h"
-#include "fonts.h"
-#include "mathematics/comparisonReals.h"
-#include "mathematics/wp34s.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-
 #include "c47.h"
-
 
 #if defined(SAVE_SPACE_DM42_15)
   void fnLogisticP     (uint16_t unusedButMandatoryParameter){}

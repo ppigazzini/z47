@@ -1,26 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
-#include "assign.h"
-#include "bufferize.h"
-#include "calcMode.h"
-#include "charString.h"
-#include "config.h"
-#include "defines.h"
-#include "error.h"
-#include "flags.h"
-#include "fonts.h"
-#include "hal/gui.h"
-#include "items.h"
-#include "memory.h"
-#include "programming/manage.h"
-#include "registers.h"
-#include "screen.h"
-#include "softmenus.h"
-#include "sort.h"
 #include "c47.h"
-#include <string.h>
-
 
 // C47 Layout from Layout_template_automation template: Do not change manually
 //This variable is to store in flash memory

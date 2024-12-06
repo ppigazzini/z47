@@ -7,9 +7,6 @@
 #if !defined(CPYX_H)
   #define CPYX_H
 
-  #include "realType.h"
-  #include <stdint.h>
-
   void fnCyx(uint16_t unusedButMandatoryParameter);
   void fnPyx(uint16_t unusedButMandatoryParameter);
 

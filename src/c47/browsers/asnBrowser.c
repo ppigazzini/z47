@@ -4,21 +4,8 @@
 /********************************************//**
  * \file asnBrowser.c The assign browser application
  ***********************************************/
-#include "browsers/asnBrowser.h"
-#include "typeDefinitions.h"
-
-#include "items.h"
-#include "flags.h"
-#include "fonts.h"
-#include "c47Extensions/radioButtonCatalog.h"
-#include "charString.h"
-#include "screen.h"
-#include "softmenus.h"
-#include <string.h>
 
 #include "c47.h"
-
-
 
 #if !defined(TESTSUITE_BUILD)
   #if !defined(SAVE_SPACE_DM42_8ASN)

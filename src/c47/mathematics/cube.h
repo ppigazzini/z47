@@ -7,8 +7,5 @@
 #if !defined(CUBE_H)
   #define CUBE_H
 
-  #include "defines.h"
-  #include <stdint.h>
-
   void fnCube   (uint16_t unusedButMandatoryParameter);
 #endif // !CUBE_H

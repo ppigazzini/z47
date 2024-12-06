@@ -11,10 +11,6 @@
 #if !defined(TEXTFILES_H)
 #define TEXTFILES_H
 
-#include "defines.h"
-#include "typeDefinitions.h"
-#include <stdint.h>
-
 #define ONELINE true
 
 void         print_inlinestr(const char *line1, bool_t endline);

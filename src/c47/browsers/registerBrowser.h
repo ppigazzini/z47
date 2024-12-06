@@ -7,8 +7,6 @@
 #if !defined(REGISTERBROWSER_H)
   #define REGISTERBROWSER_H
 
-  #include <stdint.h>
-
   #if !defined(TESTSUITE_BUILD)
     /********************************************//**
      * \brief The register browser

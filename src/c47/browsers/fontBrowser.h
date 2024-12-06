@@ -3,8 +3,6 @@
 #if !defined(FONTBROWSER_H)
   #define FONTBROWSER_H
 
-  #include <stdint.h>
-
   #if !defined(TESTSUITE_BUILD)
     void initFontBrowser(void);
     void fontBrowser    (uint16_t unusedButMandatoryParameter);

@@ -5,15 +5,7 @@
  * \file setClearFlipBits.c
  ***********************************************/
 
-#include "logicalOps/setClearFlipBits.h"
-
-#include "debug.h"
-#include "error.h"
-#include "registers.h"
-
 #include "c47.h"
-
-
 
 /********************************************//**
  * \brief regX ==> regL and CB(regX) ==> regX

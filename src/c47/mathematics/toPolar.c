@@ -5,19 +5,7 @@
  * \file toPolar.c
  ***********************************************/
 
-#include "mathematics/toPolar.h"
-
-#include "constantPointers.h"
-#include "conversionAngles.h"
-#include "debug.h"
-#include "error.h"
-#include "flags.h"
-#include "mathematics/wp34s.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-
 #include "c47.h"
-
 
 void fnToPolar2(uint16_t unusedButMandatoryParameter) {
   uint32_t dataTypeX, dataTypeY, dataAtagX, dataAtagY;

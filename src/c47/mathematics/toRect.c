@@ -5,17 +5,6 @@
  * \file toRect.c
  ***********************************************/
 
-#include "mathematics/toRect.h"
-
-#include "constantPointers.h"
-#include "conversionAngles.h"
-#include "debug.h"
-#include "error.h"
-#include "flags.h"
-#include "mathematics/wp34s.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-
 #include "c47.h"
 
 static void fnToRect(int8_t angleInY);

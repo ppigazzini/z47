@@ -5,23 +5,6 @@
  * \file eulersFormula.c
  ***********************************************/
 
-#include "mathematics/eulersFormula.h"
-
-#include "constantPointers.h"
-#include "conversionAngles.h"
-#include "debug.h"
-#include "error.h"
-#include "flags.h"
-#include "fonts.h"
-#include "items.h"
-#include "matrix.h"
-#include "registers.h"
-#include "realType.h"
-#include "registerValueConversions.h"
-#include "mathematics/multiplication.h"
-#include "mathematics/exp.h"
-#include "c47Extensions/radioButtonCatalog.h"
-
 #include "c47.h"
 
 void eulersFormula(const real_t *inReal, const real_t *inImag, real_t *outReal, real_t *outImag, realContext_t *ctxt) {

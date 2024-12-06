@@ -5,19 +5,7 @@
  * \file rotateBits.c
  ***********************************************/
 
-#include "logicalOps/rotateBits.h"
-
-#include "config.h"
-#include "debug.h"
-#include "error.h"
-#include "flags.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-#include "stack.h"
-
 #include "c47.h"
-
-
 
 /********************************************//**
  * \brief regX ==> regL and ASR(regX) ==> regX

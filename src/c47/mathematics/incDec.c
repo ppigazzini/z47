@@ -5,17 +5,7 @@
  * \file incDec.c
  ***********************************************/
 
-#include "mathematics/incDec.h"
-
-#include "constantPointers.h"
-#include "error.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-#include "c47Extensions/xeqm.h"
-
 #include "c47.h"
-
-
 
 TO_QSPI void (* const incDec[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])(uint16_t, uint8_t) = {
 // reg ==>   1            2           3           4            5            6            7            8            9              10

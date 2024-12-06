@@ -5,28 +5,7 @@
  * \file wp34s.c
  ***********************************************/
 
-#include "mathematics/wp34s.h"
-
-#include "constantPointers.h"
-#include "conversionAngles.h"
-#include "distributions/normal.h"
-#include "mathematics/10pow.h"
-#include "mathematics/comparisonReals.h"
-#include "mathematics/division.h"
-#include "mathematics/exp.h"
-#include "mathematics/ln.h"
-#include "mathematics/lnbeta.h"
-#include "mathematics/magnitude.h"
-#include "mathematics/multiplication.h"
-#include "mathematics/sin.h"
-#include "mathematics/toPolar.h"
-#include "realType.h"
-#include "screen.h"
-#include "statusBar.h"
-#include "registers.h"
-
 #include "c47.h"
-
 
 /******************************************************
  * This functions are borrowed from the WP34S project

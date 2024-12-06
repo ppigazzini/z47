@@ -4,10 +4,6 @@
 #if !defined(JM_H)
 #define JM_H
 
-#include "longIntegerType.h"
-#include "typeDefinitions.h"
-#include <stdint.h>
-
 void jm_show_calc_state(char comment[]);
 void jm_show_comment   (char comment[]);
 

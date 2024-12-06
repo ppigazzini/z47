@@ -51,7 +51,7 @@ dmcp5: build.dmcp5
 
 dmcp5r47: build.dmcp5
 	cd build.dmcp5 && ninja dmcp5_r47
-    
+
 docs: build.sim
 	cd build.sim && ninja docs
 

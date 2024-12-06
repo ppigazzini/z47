@@ -7,9 +7,6 @@
 #if !defined(PERCENTSIGMA_H)
   #define PERCENTSIGMA_H
 
-  #include <stdint.h>
-  #include "typeDefinitions.h"
-
   void fnPercentSigma(uint16_t unusedButMandatoryParameter);
 
   bool_t percentSigma(real_t *xReal, real_t *rReal, realContext_t *realContext);

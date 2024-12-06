@@ -7,11 +7,6 @@
 #if !defined(TAN_H)
   #define TAN_H
 
-  #include "defines.h"
-  #include "realType.h"
-  #include "typeDefinitions.h"
-  #include <stdint.h>
-
   void fnTan                    (uint16_t unusedButMandatoryParameter);
 
   uint8_t TanComplex(const real_t *xReal, const real_t *xImag, real_t *rReal, real_t *rImag, realContext_t *realContext);

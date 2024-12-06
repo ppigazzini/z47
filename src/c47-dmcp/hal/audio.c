@@ -1,21 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
-
-#include "typeDefinitions.h"
-#include "defines.h"
-#include "error.h"
-#include "flags.h"
-#include "hal/audio.h"
-#include "keyboard.h"
-#include "mathematics/matrix.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-#include "stack.h"
-
-#include <stdio.h>
-#include <dmcp.h>
-
 #include "c47.h"
 
 static uint32_t _getValueFromRegister(calcRegister_t regist);

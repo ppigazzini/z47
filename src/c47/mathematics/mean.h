@@ -7,8 +7,6 @@
 #if !defined(MEAN_H)
   #define MEAN_H
 
-  #include <stdint.h>
-
   void fnMeanXY             (uint16_t unusedButMandatoryParameter);
   void fnGeometricMeanXY    (uint16_t unusedButMandatoryParameter);
   void fnWeightedMeanX      (uint16_t unusedButMandatoryParameter);

@@ -7,10 +7,6 @@
 #if !defined(MEMORY_H)
   #define MEMORY_H
 
-  #include <stdint.h>
-  #include <stddef.h>
-  #include "typeDefinitions.h"
-
   // The 6 followoing functions are only there to know who allocates and frees memory
   void    *allocC47Blocks       (size_t sizeInBlocks);
   void    *reallocC47Blocks     (void *pcMemPtr, size_t oldSizeInBlocks, size_t newSizeInBlocks);

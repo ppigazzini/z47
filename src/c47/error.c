@@ -1,27 +1,11 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
-
 /********************************************//**
  * \file error.c
  ***********************************************/
 
-#include "error.h"
-
-#include "charString.h"
-#include "constantPointers.h"
-#include "debug.h"
-#include "flags.h"
-#include "fonts.h"
-#include "mathematics/comparisonReals.h"
-#include "realType.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-#include "screen.h"
-#include <string.h>
-
 #include "c47.h"
-
 
 TO_QSPI const char commonBugScreenMessages[NUMBER_OF_BUG_SCREEN_MESSAGES][SIZE_OF_EACH_BUG_SCREEN_MESSAGE] = {
 /*  0 */  "In function %s:%d is an unexpected value for %s!",

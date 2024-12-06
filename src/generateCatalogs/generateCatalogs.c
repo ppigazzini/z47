@@ -5,11 +5,6 @@
  * \file generateCatalogs.c
  ***********************************************/
 
-#include "items.h"
-#include "sort.h"
-#include <stdlib.h>
-#include <unistd.h>
-
 #include "c47.h"
 
 bool_t  funcOK;

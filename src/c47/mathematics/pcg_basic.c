@@ -28,8 +28,6 @@
  * your project.
  */
 
-#include "mathematics/pcg_basic.h"
-
 #include "c47.h" // This line was added by the C47 team
 
 // state for global RNGs

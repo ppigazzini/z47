@@ -1,11 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
-
 #if !defined(DEFINES_H)
 #define DEFINES_H
-
-#include <stdint.h>
 
 //*********************************
 // JM VARIOUS OPTIONS
@@ -1985,6 +1982,8 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define ERROR_MESSAGE_LENGTH    512 //JMMAX(325) 512          //JMMAX Temporarily reduced - ORG:512.
 #define DISPLAY_VALUE_LEN        80
 
+#define FILENAMELEN              40
+
 //************************
 //* Macros for debugging *
 //************************
@@ -1998,7 +1997,6 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define abortf(a) do { fprintf(stderr, "%sabort: %s(%s %s:%d)%s\n",      COLOR_RED,                      COLOR_CYAN, __FUNCTION__, __FILE__, __LINE__, COLOR_DEFAULT);perror(a);fflush(stderr);abort(); } while(0)
 
 // To time a piece of code (not on DM42 hardware), you can use the following code snippet:
-// #include <time.h>
 // struct timespec stopwatch_start, stopwatch_stop;
 // clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &stopwatch_start);
 // : piece of code

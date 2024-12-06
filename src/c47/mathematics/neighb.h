@@ -7,7 +7,5 @@
 #if !defined(NEIGHB_H)
   #define NEIGHB_H
 
-  #include <stdint.h>
-
   void fnNeighb(uint16_t unusedButMandatoryParameter);
 #endif // !NEIGHB_H

@@ -1,22 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // SPDX-FileCopyrightText: Copyright The C47 Authors
 
-#include "mathematics/cubeRoot.h"
-
-#include "constantPointers.h"
-#include "debug.h"
-#include "error.h"
-#include "flags.h"
-#include "fonts.h"
-#include "integers.h"
-#include "items.h"
-#include "mathematics/matrix.h"
-#include "mathematics/power.h"
-#include "mathematics/toPolar.h"
-#include "mathematics/toRect.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-
 #include "c47.h"
 
 static void curtShoI(void) {

@@ -7,10 +7,6 @@
 #if !defined(CHI2_H)
   #define CHI2_H
 
-  #include "realType.h"
-  #include "typeDefinitions.h"
-  #include <stdint.h>
-
   bool_t checkRegisterNoFP(const real_t *reg);
 
   void fnChi2P        (uint16_t unusedButMandatoryParameter);

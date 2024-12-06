@@ -1,19 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
-#include "stack.h"
-
-#include "charString.h"
-#include "constantPointers.h"
-#include "mathematics/comparisonReals.h"
-#include "error.h"
-#include "flags.h"
-#include "mathematics/matrix.h"
-#include "memory.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-#include "stats.h"
-
 #include "c47.h"
 
 void fnClX(uint16_t unusedButMandatoryParameter) {

@@ -1,15 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
-#include "memory.h"
-
-#include "charString.h"
-#include "config.h"
-#include "core/freeList.h"
-#include "debug.h"
-#include "items.h"
-#include "registers.h"
-
 #include "c47.h"
 
 int32_t getFreeRamMemory(void) {

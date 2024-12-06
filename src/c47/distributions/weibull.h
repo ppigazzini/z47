@@ -7,9 +7,6 @@
 #if !defined(WEIBULL_H)
   #define WEIBULL_H
 
-  #include "realType.h"
-  #include <stdint.h>
-
   void fnWeibullP     (uint16_t unusedButMandatoryParameter);
   void fnWeibullL     (uint16_t unusedButMandatoryParameter);
   void fnWeibullR     (uint16_t unusedButMandatoryParameter);

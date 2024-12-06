@@ -7,10 +7,6 @@
 #if !defined(XTHROOT_H)
   #define XTHROOT_H
 
-  #include "defines.h"
-  #include <stdint.h>
-  #include "typeDefinitions.h"
-
   void fnXthRoot      (uint16_t unusedButMandatoryParameter);
 
   void xthRootReal(real_t *yy, real_t *xx, realContext_t *realContext);

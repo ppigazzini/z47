@@ -5,26 +5,7 @@
  * \file clcvar.c
  ***********************************************/
 
-#include "programming/clcvar.h"
-
-#include "charString.h"
-#include "constantPointers.h"
-#include "defines.h"
-#include "dateTime.h"
-#include "error.h"
-#include "fonts.h"
-#include "items.h"
-#include "longIntegerType.h"
-#include "mathematics/matrix.h"
-#include "programming/nextStep.h"
-#include "realType.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-#include <stdio.h>
-
 #include "c47.h"
-
-
 
 #if !defined(TESTSUITE_BUILD)
   static void _clearVar(calcRegister_t regist) {

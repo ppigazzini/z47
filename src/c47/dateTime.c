@@ -5,24 +5,6 @@
  * \file dateTime.c
  ***********************************************/
 
-#include "dateTime.h"
-
-#include "bufferize.h"
-#include "constantPointers.h"
-#include "debug.h"
-#include "error.h"
-#include "c47Extensions/addons.h"
-#include "c47Extensions/graphText.h"
-#include "flags.h"
-#include "items.h"
-#include "mathematics/comparisonReals.h"
-#include "mathematics/division.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-#include "stack.h"
-#include <string.h>
-#include <time.h>
-
 #include "c47.h"
 
 void fnSetDateFormat(uint16_t dateFormat) {

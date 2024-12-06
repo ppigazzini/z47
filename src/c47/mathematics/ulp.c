@@ -5,15 +5,7 @@
  * \file ulp.c
  ***********************************************/
 
-#include "mathematics/ulp.h"
-
-#include "debug.h"
-#include "error.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-
 #include "c47.h"
-
 
 void fnUlp(uint16_t unusedButMandatoryParameter) {
   real34_t x34;

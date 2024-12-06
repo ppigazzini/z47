@@ -7,9 +7,6 @@
 #if !defined(NOR_H)
   #define NOR_H
 
-  #include "defines.h"
-  #include <stdint.h>
-
   void fnLogicalNor(uint16_t unusedButMandatoryParameter);
 
   #if (EXTRA_INFO_ON_CALC_ERROR == 1)

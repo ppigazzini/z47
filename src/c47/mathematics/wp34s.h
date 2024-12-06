@@ -7,10 +7,6 @@
 #if !defined(WP34S_H)
   #define WP34S_H
 
-  #include "realType.h"
-  #include "typeDefinitions.h"
-  #include <stdint.h>
-
   /******************************************************
    * This functions are borrowed from the WP34S project
    ******************************************************/

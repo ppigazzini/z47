@@ -7,9 +7,6 @@
 #if !defined(REMAINDER_H)
   #define REMAINDER_H
 
-  #include "defines.h"
-  #include <stdint.h>
-
   void fnRmd(uint16_t unusedButMandatoryParameter);
 
 #endif // !REMAINDER_H

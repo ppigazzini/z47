@@ -5,40 +5,6 @@
  * \file matrix.c
  ***********************************************/
 
-#include "mathematics/matrix.h"
-
-#include "charString.h"
-#include "constantPointers.h"
-#include "conversionAngles.h"
-#include "c47Extensions/jm.h"
-#include "debug.h"
-#include "display.h"
-#include "error.h"
-#include "flags.h"
-#include "fonts.h"
-#include "items.h"
-#include "longIntegerType.h"
-#include "mathematics/comparisonReals.h"
-#include "mathematics/division.h"
-#include "mathematics/dot.h"
-#include "mathematics/magnitude.h"
-#include "mathematics/multiplication.h"
-#include "mathematics/slvc.h"
-#include "mathematics/slvq.h"
-#include "mathematics/toPolar.h"
-#include "mathematics/toRect.h"
-#include "mathematics/wp34s.h"
-#include "memory.h"
-#include "realType.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-#include "screen.h"
-#include "softmenus.h"
-#include "stack.h"
-#include "store.h"
-#include "ui/matrixEditor.h"
-#include "ui/tam.h"
-
 #include "c47.h"
 
 #if !defined(TESTSUITE_BUILD)

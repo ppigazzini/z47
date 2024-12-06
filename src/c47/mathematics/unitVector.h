@@ -7,9 +7,6 @@
 #if !defined(UNITVECTOR_H)
   #define UNITVECTOR_H
 
-  #include "defines.h"
-  #include <stdint.h>
-
   void fnUnitVector   (uint16_t unusedButMandatoryParameter);
 
   #if (EXTRA_INFO_ON_CALC_ERROR == 1)

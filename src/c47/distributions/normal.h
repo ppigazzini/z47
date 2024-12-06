@@ -7,9 +7,6 @@
 #if !defined(NORMAL_H)
   #define NORMAL_H
 
-  #include "realType.h"
-  #include <stdint.h>
-
   void fnStdNormalP  (uint16_t unusedButMandatoryParameter);
   void fnStdNormalL  (uint16_t unusedButMandatoryParameter);
   void fnStdNormalR  (uint16_t unusedButMandatoryParameter);

@@ -7,10 +7,6 @@
 #if !defined(REGISTERVALUECONVERSIONS_H)
   #define REGISTERVALUECONVERSIONS_H
 
-  #include "longIntegerType.h"
-  #include "realType.h"
-  #include "typeDefinitions.h"
-
   void convertLongIntegerRegisterToReal34Register            (calcRegister_t source, calcRegister_t destination);
   void convertLongIntegerRegisterToShortIntegerRegister      (calcRegister_t source, calcRegister_t destination);
   void convertLongIntegerRegisterToReal34                    (calcRegister_t source, real34_t *destination);

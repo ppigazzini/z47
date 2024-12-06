@@ -5,17 +5,6 @@
  * \file percentSigma.c
  ***********************************************/
 
-#include "mathematics/percentSigma.h"
-
-#include "constantPointers.h"
-#include "debug.h"
-#include "error.h"
-#include "flags.h"
-#include "mathematics/matrix.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-#include "stats.h"
-
 #include "c47.h"
 
 //=============================================================================

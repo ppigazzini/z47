@@ -5,11 +5,6 @@
  * \file min.c
  ***********************************************/
 
-#include "mathematics/min.h"
-
-#include "mathematics/compare.h"
-#include "registers.h"
-
 #include "c47.h"
 
 void fnMin(uint16_t unusedButMandatoryParameter) {

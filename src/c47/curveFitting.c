@@ -6,28 +6,7 @@
  * \file curveFitting.c
  ***********************************************/
 
-#include "curveFitting.h"
-
-#include "constantPointers.h"
-#include "debug.h"
-#include "error.h"
-#include "flags.h"
-#include "items.h"
-#include "longIntegerType.h"
-#include "mathematics/comparisonReals.h"
-#include "mathematics/exp.h"
-#include "mathematics/variance.h"
-#include "mathematics/xthRoot.h"
-#include "mathematics/wp34s.h"
-#include "plotstat.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-#include "stack.h"
-#include "stats.h"
-#include <math.h>
-
 #include "c47.h"
-
 
 //#define STAT_DISPLAY_ABCDEFG                       //to display helper functions A-H
 

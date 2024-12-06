@@ -9,10 +9,6 @@
 #if !defined(STATS_H)
   #define STATS_H
 
-  #include "realType.h"
-  #include "typeDefinitions.h"
-  #include <stdint.h>
-
   #define SIGMA_PLUS  1
   #define SIGMA_MINUS 2
   #define SIGMA_NONE  0

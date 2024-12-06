@@ -7,10 +7,6 @@
 #if !defined(ARCTAN_H)
   #define ARCTAN_H
 
-  #include "defines.h"
-  #include "realType.h"
-  #include <stdint.h>
-
   void fnArctan   (uint16_t unusedButMandatoryParameter);
 
   uint8_t ArctanComplex(real_t *xReal, real_t *xImag, real_t *rReal, real_t *rImag, realContext_t *realContext);

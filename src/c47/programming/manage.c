@@ -5,39 +5,6 @@
  * \file manage.c
  ***********************************************/
 
-#include "programming/manage.h"
-
-#include "assign.h"
-#include "bufferize.h"
-#include "calcMode.h"
-#include "c47Extensions/keyboardTweak.h"
-#include "charString.h"
-#include "calcMode.h"
-#include "config.h"
-#include "dateTime.h"
-#include "defines.h"
-#include "error.h"
-#include "flags.h"
-#include "fonts.h"
-#include "hal/gui.h"
-#include "items.h"
-#include "memory.h"
-#include "programming/decode.h"
-#include "programming/lblGtoXeq.h"
-#include "programming/nextStep.h"
-#include "realType.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-#include "screen.h"
-#include "softmenus.h"
-#include "sort.h"
-#include <stdlib.h>
-#include <string.h>
-#include "ui/tam.h"
-#if defined(PC_BUILD)
-  #include "gtkGui.h"
-#endif
-
 #include "c47.h"
 
 // Structure of the program memory.

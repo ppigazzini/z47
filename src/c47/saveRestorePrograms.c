@@ -1,41 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // SPDX-FileCopyrightText: Copyright The C47 Authors
 
-#include "saveRestoreCalcState.h"
-#include "saveRestorePrograms.h"
-
-#include "assign.h"
-#include "calcMode.h"
-#include "charString.h"
-#include "config.h"
-#include "display.h"
-#include "error.h"
-#include "flags.h"
-#include "fonts.h"
-#include "hal/gui.h"
-#include "hal/io.h"
-#include "items.h"
-#include "mathematics/matrix.h"
-#include "memory.h"
-#include "plotstat.h"
-#include "programming/lblGtoXeq.h"
-#include "programming/manage.h"
-#include "programming/nextStep.h"
-#include "programming/decode.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-#include "solver/equation.h"
-#include "solver/graph.h"
-#include "sort.h"
-#include "stats.h"
-#include "ui/tam.h"
-#if defined(DMCP_BUILD)
-  #include <dmcp.h>
-//  #include <c47-dmcp.h>
-#endif // DMCP_BUILD
-#include <stdbool.h>
-#include <string.h>
-
 #include "c47.h"
 
 #define PROGRAM_VERSION                     01  // Original version

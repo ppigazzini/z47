@@ -1,39 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
-#include "softmenus.h"
-
-#include "c47Extensions/addons.h"
-#include "assign.h"
-#include "calcMode.h"
-#include "charString.h"
-#include "constantPointers.h"
-#include "dateTime.h"
-#include "debug.h"
-#include "error.h"
-#include "fonts.h"
-#include "flags.h"
-#include "items.h"
-#include "mathematics/comparisonReals.h"
-#include "memory.h"
-#include "programming/manage.h"
-#include "c47Extensions/jm.h"
-#include "c47Extensions/keyboardTweak.h"
-#include "plotstat.h"
-#include "programming/nextStep.h"
-#include "c47Extensions/radioButtonCatalog.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-#include "screen.h"
-#include "solver/differentiate.h"
-#include "solver/equation.h"
-#include "sort.h"
-#include "stack.h"
-#include "c47Extensions/xeqm.h"
-#include <string.h>
-#include <stdlib.h>
-#include <math.h>
-
 #include "c47.h"
 
 #if !defined(TESTSUITE_BUILD)

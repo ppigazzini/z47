@@ -7,8 +7,6 @@
 #if !defined(SETCLEARFLIPBITS_H)
   #define SETCLEARFLIPBITS_H
 
-  #include <stdint.h>
-
   void fnCb(uint16_t bit);
   void fnSb(uint16_t bit);
   void fnFb(uint16_t bit);

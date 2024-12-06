@@ -5,20 +5,7 @@
  * \file debug.c
  ***********************************************/
 
-#include "debug.h"
-
-#include "charString.h"
-#include "defines.h"
-#include "display.h"
-#include "flags.h"
-#include "fonts.h"
-#include "items.h"
-#include "registers.h"
-#include <string.h>
-
 #include "c47.h"
-
-
 
 TO_QSPI const char typeName[6][10 + 1][24 /* 21 characters + 1 sentinel + 2 padding */] = {
   {

@@ -5,19 +5,7 @@
  * \file conjugate.c
  ***********************************************/
 
-#include "mathematics/conjugate.h"
-
-#include "debug.h"
-#include "error.h"
-#include "flags.h"
-#include "items.h"
-#include "mathematics/matrix.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-
 #include "c47.h"
-
-
 
 static void conjRema(void) {
   complex34Matrix_t cMat;

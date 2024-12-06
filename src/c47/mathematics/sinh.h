@@ -7,9 +7,6 @@
 #if !defined(SINH_H)
   #define SINH_H
 
-  #include "defines.h"
-  #include <stdint.h>
-
   void fnSinh   (uint16_t unusedButMandatoryParameter);
 
 #endif // !SINH_H

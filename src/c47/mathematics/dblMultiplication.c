@@ -5,18 +5,7 @@
  * \file dblMultiplication.c
  ***********************************************/
 
-#include "mathematics/dblMultiplication.h"
-
-#include "debug.h"
-#include "error.h"
-#include "flags.h"
-#include "fonts.h"
-#include "integers.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-
 #include "c47.h"
-
 
 void fnDblMultiply(uint16_t unusedButMandatoryParameter) {
   longInteger_t y, x, ans, wd;

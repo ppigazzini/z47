@@ -1,10 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
-
 #include "c47.h"
 
 void showOneChar(const font_t *font, uint16_t charCode) {

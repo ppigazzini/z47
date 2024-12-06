@@ -7,9 +7,6 @@
 #if !defined(T_H)
   #define T_H
 
-  #include "realType.h"
-  #include <stdint.h>
-
   void fnT_P       (uint16_t unusedButMandatoryParameter);
   void fnT_L       (uint16_t unusedButMandatoryParameter);
   void fnT_R       (uint16_t unusedButMandatoryParameter);
