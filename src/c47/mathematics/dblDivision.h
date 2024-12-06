@@ -7,8 +7,6 @@
 #if !defined(DBLDIVISION_H)
   #define DBLDIVISION_H
 
-  #include <stdint.h>
-
   void fnDblDivide         (uint16_t unusedButMandatoryParameter);
   void fnDblDivideRemainder(uint16_t unusedButMandatoryParameter);
 #endif // !DBLDIVISION_H

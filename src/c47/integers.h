@@ -7,9 +7,6 @@
 #if !defined(INTEGERS_H)
   #define INTEGERS_H
 
-  #include "longIntegerType.h"
-  #include <stdint.h>
-
   void     fnChangeBase                (uint16_t base);
   void     longIntegerMultiply         (longInteger_t opY, longInteger_t opX, longInteger_t result);
   void     longIntegerSquare           (longInteger_t op,  longInteger_t result);

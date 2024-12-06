@@ -84,6 +84,7 @@
   #include "matrix.h"
   #include "max.h"
   #include "mean.h"
+  #include "median.h"
   #include "min.h"
   #include "minusOnePow.h"
   #include "modulo.h"

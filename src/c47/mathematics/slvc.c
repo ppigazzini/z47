@@ -5,27 +5,6 @@
  * \file slvc.c
  ***********************************************/
 
-#include "mathematics/slvc.h"
-
-#include "constantPointers.h"
-#include "debug.h"
-#include "defines.h"
-#include "error.h"
-#include "mathematics/addition.h"
-#include "mathematics/changeSign.h"
-#include "mathematics/comparisonReals.h"
-#include "mathematics/cubeRoot.h"
-#include "mathematics/division.h"
-#include "mathematics/magnitude.h"
-#include "mathematics/multiplication.h"
-#include "mathematics/squareRoot.h"
-#include "mathematics/slvq.h"
-#include "mathematics/subtraction.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-#include "stack.h"
-#include "typeDefinitions.h"
-
 #include "c47.h"
 
 #undef DISCRIMINANT //Note the testSuite tests were revised to remove the discriminant

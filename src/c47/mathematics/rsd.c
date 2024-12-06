@@ -5,26 +5,7 @@
  * \file rsd.c
  ***********************************************/
 
-#include "mathematics/rsd.h"
-
-#include "constantPointers.h"
-#include "debug.h"
-#include "error.h"
-#include "config.h"
-#include "conversionAngles.h"
-#include "flags.h"
-#include "items.h"
-#include "mathematics/comparisonReals.h"
-#include "mathematics/matrix.h"
-#include "mathematics/toPolar.h"
-#include "mathematics/toRect.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-#include "screen.h"
-
 #include "c47.h"
-
-
 
 TO_QSPI void (* const Rsd[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])(uint16_t) = {
 // regX ==> 1            2        3         4        5         6         7          8           9             10

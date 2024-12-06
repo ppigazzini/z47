@@ -7,9 +7,6 @@
 #if !defined(GEV_H)
   #define GEV_H
 
-  #include "realType.h"
-  #include <stdint.h>
-
   void fnGEVP                      (uint16_t unusedButMandatoryParameter);
   void fnGEVL                      (uint16_t unusedButMandatoryParameter);
   void fnGEVR                      (uint16_t unusedButMandatoryParameter);

@@ -7,8 +7,6 @@
 #if !defined(CHECKVALUE_H)
   #define CHECKVALUE_H
 
-  #include <stdint.h>
-
   void fnCheckValue   (uint16_t mode);
   void checkValueError(uint16_t unusedButMandatoryParameter);
   void checkValueLonI (uint16_t mode);

@@ -5,33 +5,6 @@
  * \file elliptic.c
  ***********************************************/
 
-#include "elliptic.h"
-
-#include "constantPointers.h"
-#include "conversionAngles.h"
-#include "debug.h"
-#include "error.h"
-#include "flags.h"
-#include "mathematics/agm.h"
-#include "mathematics/arcsin.h"
-#include "mathematics/arctan.h"
-#include "mathematics/comparisonReals.h"
-#include "mathematics/cos.h"
-#include "mathematics/division.h"
-#include "mathematics/gd.h"
-#include "mathematics/ln.h"
-#include "mathematics/magnitude.h"
-#include "mathematics/multiplication.h"
-#include "mathematics/sin.h"
-#include "mathematics/squareRoot.h"
-#include "mathematics/tan.h"
-#include "mathematics/tanh.h"
-#include "mathematics/wp34s.h"
-#include "memory.h"
-#include "realType.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-
 #include "c47.h"
 
 #define ELLIPTIC_N 16

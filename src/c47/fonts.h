@@ -7,9 +7,6 @@
 #if !defined(FONTS_H)
 #define FONTS_H
 
-#include "typeDefinitions.h"
-#include <stdint.h>
-
   /**
    * Finds a glyph in a font
    *

@@ -5,21 +5,7 @@
  * \file opmod.c
  ***********************************************/
 
-#include "mathematics/opmod.h"
-
-#include "constantPointers.h"
-#include "debug.h"
-#include "error.h"
-#include "integers.h"
-#include "items.h"
-#include "mathematics/comparisonReals.h"
-#include "mathematics/wp34s.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-#include "stack.h"
-
 #include "c47.h"
-
 
 TO_QSPI void (* const opModL[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS][NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])(uint16_t) = {
 // regX |    regY ==>   1                  2                  3           4           5           6           7           8           9                  10

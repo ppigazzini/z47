@@ -5,32 +5,7 @@
  * \file ui/matrixEditor.c
  ***********************************************/
 
-#include "ui/matrixEditor.h"
-
-#include "bufferize.h"
-#include "c47Extensions/jm.h"
-#include "c47Extensions/addons.h"
-#include "calcMode.h"
-#include "charString.h"
-#include "constantPointers.h"
-#include "conversionAngles.h"
-#include "display.h"
-#include "error.h"
-#include "flags.h"
-#include "fonts.h"
-#include "hal/gui.h"
-#include "hal/lcd.h"
-#include "longIntegerType.h"
-#include "items.h"
-#include "mathematics/comparisonReals.h"
-#include "mathematics/matrix.h"
-#include "mathematics/toPolar.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-#include "screen.h"
-#include "softmenus.h"
 #include "c47.h"
-#include <string.h>
 
 #define addFlag true
 

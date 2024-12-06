@@ -4,14 +4,6 @@
 #if !defined(SCREEN_H)
 #define SCREEN_H
 
-#include "typeDefinitions.h"
-#include "hal/lcd.h"
-#include <stdint.h>
-  #if defined(PC_BUILD)
-  #include <gtk/gtk.h>
-  #include <gdk/gdk.h>
-  #endif // PC_BUILD
-
   void     setLastintegerBasetoZero           (void);
   extern bool_t   doRefreshSoftMenu;                                                                              //dr
   void     FN_handler();                                                                                          //JM LONGPRESS

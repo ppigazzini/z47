@@ -5,21 +5,7 @@
  * \file and.c
  ***********************************************/
 
-#include "logicalOps/and.h"
-
-#include "debug.h"
-#include "error.h"
-#include "items.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-#include "stack.h"
-
 #include "c47.h"
-
-
-
-
-
 
 TO_QSPI void (* const logicalAnd[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS][NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])(void) = {
 // regX |    regY ==>   1            2            3           4           5           6           7           8            9             10

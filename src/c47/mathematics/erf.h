@@ -7,9 +7,6 @@
 #if !defined(ERF_H)
   #define ERF_H
 
-  #include "defines.h"
-  #include <stdint.h>
-
   void fnErf   (uint16_t unusedButMandatoryParameter);
 
 #endif // !ERF_H

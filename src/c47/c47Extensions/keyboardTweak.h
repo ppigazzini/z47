@@ -3,21 +3,12 @@
 
 /* ADDITIONAL C47 functions and routines */
 
-
 /********************************************//**
  * \file keyboardTweak.h
  ***********************************************/
 
 #if !defined(KEYBOARDTWEAK_H)
 #define KEYBOARDTWEAK_H
-
-#include "defines.h"
-#include "typeDefinitions.h"
-#include <stdint.h>
-#if defined(PC_BUILD)
-  #include <gtk/gtk.h>
-  #include <gdk/gdk.h>
-#endif // PC_BUILD
 
 //#if defined(DMCP_BUILD)
 //extern uint32_t nextTimerRefresh;

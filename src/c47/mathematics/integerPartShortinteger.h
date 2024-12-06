@@ -7,9 +7,6 @@
 #if !defined(INTEGERPARTSHORT_H)
   #define INTEGERPARTSHORT_H
 
-  #include "defines.h"
-  #include <stdint.h>
-
   void fnSint   (uint16_t unusedButMandatoryParameter);
 
   #if (EXTRA_INFO_ON_CALC_ERROR == 1)

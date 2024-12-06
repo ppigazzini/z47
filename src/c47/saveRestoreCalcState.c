@@ -1,58 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
-
-#include "saveRestoreCalcState.h"
-
-#include "assign.h"
-#include "charString.h"
-#include "config.h"
-#include "display.h"
-#include "error.h"
-#include "flags.h"
-#include "hal/gui.h"
-#include "hal/io.h"
-#include "items.h"
-#include "c47Extensions/addons.h"
-#include "c47Extensions/graphs.h"
-#include "c47Extensions/graphText.h"
-#include "c47Extensions/xeqm.h"
-#include "c47Extensions/jm.h"
-#include "c47Extensions/radioButtonCatalog.h"
-#include "curveFitting.h"
-#include "dateTime.h"
-#include "mathematics/matrix.h"
-#include "memory.h"
-#include "plotstat.h"
-#include "programming/lblGtoXeq.h"
-#include "programming/manage.h"
-#include "programming/nextStep.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-#include "screen.h"
-#include "softmenus.h"
-#include "solver/equation.h"
-#include "solver/graph.h"
-#include "statusBar.h"
-#include "stack.h"
-#include "sort.h"
-#include "stats.h"
-#include "timer.h"
-#include <string.h>
-
-#if defined(PC_BUILD)
-#include <gtk/gtk.h>
-#include <stdbool.h>
-#include <stdio.h>
-#include <errno.h>
-#include <string.h>
-#include <sys/stat.h>
-#endif //PC_BUILD
-
-#if defined(DMCP_BUILD)
-#include <dmcp.h>
-#endif
-
 #include "c47.h"
 
 // This is used for the backup.cfg simulator backup file

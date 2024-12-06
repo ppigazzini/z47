@@ -5,29 +5,6 @@
  * \file isumprod.c
  ***********************************************/
 
-#include "solver/isumprod.h"
-
-#include "c47Extensions/addons.h"
-#include "constantPointers.h"
-#include "defines.h"
-#include "display.h"
-#include "error.h"
-#include "flags.h"
-#include "integers.h"
-#include "items.h"
-#include "mathematics/integerPart.h"
-#include "mathematics/iteration.h"
-#include "programming/lblGtoXeq.h"
-#include "programming/manage.h"
-#include "programming/nextStep.h"
-#include "realType.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-#include "screen.h"
-#include "solver/solve.h"
-#include "statusBar.h"
-#include "stack.h"
-#include "timer.h"
 #include "c47.h"
 
 #if !defined(TESTSUITE_BUILD)

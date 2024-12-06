@@ -7,9 +7,6 @@
 #if !defined(HYPER_H)
   #define HYPER_H
 
-  #include "realType.h"
-  #include <stdint.h>
-
   void fnHypergeometricP  (uint16_t unusedButMandatoryParameter);
   void fnHypergeometricL  (uint16_t unusedButMandatoryParameter);
   void fnHypergeometricR  (uint16_t unusedButMandatoryParameter);

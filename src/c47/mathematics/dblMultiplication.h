@@ -7,7 +7,5 @@
 #if !defined(DBLMULTIPLICATION_H)
   #define DBLMULTIPLICATION_H
 
-  #include <stdint.h>
-
   void fnDblMultiply(uint16_t unusedButMandatoryParameter);
 #endif // !DBLMULTIPLICATION_H

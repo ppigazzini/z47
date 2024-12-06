@@ -5,17 +5,7 @@
  * \file checkValue.c
  *******************************************************/
 
-#include "mathematics/checkValue.h"
-
-#include "debug.h"
-#include "error.h"
-#include "flags.h"
-#include "items.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-
 #include "c47.h"
-
 
 TO_QSPI void (* const CheckValue[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])(uint16_t) = {
 // regX ==> 1               2               3               4                5                6                7               8               9               10

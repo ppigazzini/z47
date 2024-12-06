@@ -8,10 +8,6 @@
   #define SINC_H
   // Coded by JM, based on sin.h
 
-  #include "defines.h"
-  #include "realType.h"
-  #include <stdint.h>
-
   void fnSinc  (uint16_t unusedButMandatoryParameter);
 
   void sincComplex(const real_t *real, const real_t *imag, real_t *resReal, real_t *resImag, realContext_t *realContext);

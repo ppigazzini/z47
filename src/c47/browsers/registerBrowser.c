@@ -1,22 +1,9 @@
-// SPDX-License-Identifier: GPL-3.0-only
+  // SPDX-License-Identifier: GPL-3.0-only
 // SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
 /********************************************//**
  * \file registerBrowser.c The register browser application
  ***********************************************/
-
-#include "browsers/registerBrowser.h"
-
-#include "charString.h"
-#include "debug.h"
-#include "display.h"
-#include "flags.h"
-#include "fonts.h"
-#include "hal/lcd.h"
-#include "items.h"
-#include "registers.h"
-#include "screen.h"
-#include <string.h>
 
 #include "c47.h"
 

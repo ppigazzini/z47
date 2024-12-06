@@ -5,20 +5,7 @@
  * \file inlineTest.c
  ***********************************************/
 
-#include "c47Extensions/inlineTest.h"
-
-#include "display.h"
-#include "fonts.h"
-#include "c47Extensions/jm.h"
-#include "c47Extensions/radioButtonCatalog.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-#include "screen.h"
-#include "stack.h"
-#include <string.h>
-
 #include "c47.h"
-
 
 #if !defined(INLINE_TEST)
   //extern bool_t   testEnabled;

@@ -7,14 +7,6 @@
 #if !defined(KEYBOARD_H)
 #define KEYBOARD_H
 
-#include <stdint.h>
-#if defined(PC_BUILD)
-  #include <gtk/gtk.h>
-  #include <gdk/gdk.h>
-#endif // PC_BUILD
-#include "typeDefinitions.h"
-
-
 #if !defined(TESTSUITE_BUILD)
   int16_t determineFunctionKeyItem_C47(const char *data, bool_t shiftF, bool_t shiftG);
 #endif // !TESTSUITE_BUILD

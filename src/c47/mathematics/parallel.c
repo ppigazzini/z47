@@ -5,18 +5,7 @@
  * \file parallel.c
  ***********************************************/
 
-#include "mathematics/parallel.h"
-
-#include "debug.h"
-#include "error.h"
-#include "mathematics/division.h"
-#include "mathematics/multiplication.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-
 #include "c47.h"
-
-
 
 TO_QSPI void (* const parallel[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS][NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])(void) = {
 // regX |    regY ==>   1                 2                 3                 4              5              6              7              8              9              10

@@ -7,10 +7,6 @@
 #if !defined(FILE_2POW_H)
   #define FILE_2POW_H
 
-  #include "defines.h"
-  #include "realType.h"
-  #include <stdint.h>
-
   void fn2Pow     (uint16_t unusedButMandatoryParameter);
 
   #if (EXTRA_INFO_ON_CALC_ERROR == 1)

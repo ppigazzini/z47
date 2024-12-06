@@ -1,41 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
-#include "display.h"
-
-#include "saveRestoreCalcState.h"
-#include "c47Extensions/addons.h"
-#include "charString.h"
-#include "constantPointers.h"
-#include "conversionAngles.h"
-#include "dateTime.h"
-#include "debug.h"
-#include "error.h"
-#include "flags.h"
-#include "fonts.h"
-#include "fractions.h"
-#include "hal/lcd.h"
-#include "items.h"
-#include "c47Extensions/jm.h"
-#include "mathematics/comparisonReals.h"
-#include "mathematics/matrix.h"
-#include "mathematics/toPolar.h"
-#include "mathematics/exp.h"
-#include "programming/input.h"
-#include "mathematics/wp34s.h"
-#include "mathematics/10pow.h"
-#include "mathematics/2pow.h"
-#include "mathematics/rsd.h"
-#include "programming/lblGtoXeq.h"
-#include "c47Extensions/radioButtonCatalog.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-#include "screen.h"
-#include "softmenus.h"
-#include "store.h"
-#include "ui/matrixEditor.h"
-#include <string.h>
-
 #include "c47.h"
 
 #define isComplex true

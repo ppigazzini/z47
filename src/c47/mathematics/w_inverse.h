@@ -7,8 +7,5 @@
 #if !defined(W_INVERSE_H)
   #define W_INVERSE_H
 
-  #include "defines.h"
-  #include <stdint.h>
-
   void fnWinverse(uint16_t unusedButMandatoryParameter);
 #endif // !W_INVERSE_H

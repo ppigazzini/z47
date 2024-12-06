@@ -7,8 +7,6 @@
 #if !defined(MATRIX_H)
   #define MATRIX_H
 
-  #include "typeDefinitions.h"
-
   /**
    * Creates new Matrix of size y->m x x ->n.
    *

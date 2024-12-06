@@ -2,12 +2,6 @@
 // SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
 
-#include "hal/lcd.h"
-
-#include "screen.h"
-#include "defines.h"
-#include "c47-gtk.h"
-
 #include "c47.h"
 
     void setBlackPixel(uint32_t x, uint32_t y) {

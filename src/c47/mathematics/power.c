@@ -5,26 +5,7 @@
  * \file power.c
  ***********************************************/
 
-#include "mathematics/power.h"
-
-#include "constantPointers.h"
-#include "debug.h"
-#include "error.h"
-#include "flags.h"
-#include "integers.h"
-#include "items.h"
-#include "mathematics/comparisonReals.h"
-#include "mathematics/exp.h"
-#include "mathematics/matrix.h"
-#include "mathematics/toPolar.h"
-#include "mathematics/toRect.h"
-#include "mathematics/wp34s.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-
 #include "c47.h"
-
-
 
 TO_QSPI void (* const power[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS][NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])(void) = {
 // regX |    regY ==>   1            2            3            4         5         6         7            8            9             10

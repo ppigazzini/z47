@@ -7,8 +7,5 @@
 #if !defined(ARCTANH_H)
   #define ARCTANH_H
 
-  #include "defines.h"
-  #include <stdint.h>
-
   void fnArctanh   (uint16_t unusedButMandatoryParameter);
 #endif // !ARCTANH_H

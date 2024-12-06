@@ -1,21 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
-#include <math.h>
-
-#include "constantPointers.h"
-#include "debug.h"
-#include "error.h"
-#include "flags.h"
-#include "fractions.h"
-#include "mathematics/comparisonReals.h"
-#include "integers.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-
 #include "c47.h"
-
-#include <time.h>
 
 void fnDenMax(uint16_t D) {
   denMax = D;

@@ -5,17 +5,9 @@
  * \file charString.c
  ***********************************************/
 
-#include "charString.h"
-
-#include <stdlib.h>
-#include <string.h>
-#include "error.h"
-#include "fonts.h"
-
 #include "c47.h"
 
-
-  #if !defined(TESTSUITE_BUILD)
+#if !defined(TESTSUITE_BUILD)
   /* Returns the character code from the first glyph of a string.
    *
    * \param[in]     ch     String whose first glyph is to extract
@@ -35,7 +27,7 @@
     }
     return charCode;
   }
-  #endif //TESTSUITE_BUILD
+#endif //TESTSUITE_BUILD
 
 
 

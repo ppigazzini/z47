@@ -7,10 +7,6 @@
 #if !defined(MAGNITUDE_H)
   #define MAGNITUDE_H
 
-  #include "defines.h"
-  #include "realType.h"
-  #include <stdint.h>
-
   void fnMagnitude   (uint16_t unusedButMandatoryParameter);
 
   #if (EXTRA_INFO_ON_CALC_ERROR == 1)

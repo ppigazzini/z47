@@ -1,13 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
-
-
 #if !defined(ADDONS_H)
 #define ADDONS_H
-
-#include "typeDefinitions.h"
-#include <stdint.h>
 
 bool_t  exitKeyWaiting(void);
 #define DISPLAY_WAIT_FOR_RELEASE true

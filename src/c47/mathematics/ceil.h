@@ -7,9 +7,6 @@
 #if !defined(CEIL_H)
   #define CEIL_H
 
-  #include "defines.h"
-  #include <stdint.h>
-
   void fnCeil   (uint16_t unusedButMandatoryParameter);
 
   #if (EXTRA_INFO_ON_CALC_ERROR == 1)

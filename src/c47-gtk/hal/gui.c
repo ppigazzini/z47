@@ -1,11 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
-#include "hal/gui.h"
-
-#include "gtkGui.h"
-#include "items.h"
 #include "c47.h"
+
 /*
 #if (SIMULATOR_ON_SCREEN_KEYBOARD == 1)
   void calcModeNormalGui(void) {

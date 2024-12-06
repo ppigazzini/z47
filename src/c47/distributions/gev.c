@@ -5,18 +5,6 @@
  * \file gev.c
  ***********************************************/
 
-#include "distributions/gev.h"
-
-#include "constantPointers.h"
-#include "error.h"
-#include "flags.h"
-#include "mathematics/comparisonReals.h"
-#include "mathematics/exp.h"
-#include "mathematics/expMOne.h"
-#include "mathematics/power.h"
-#include "mathematics/wp34s.h"
-#include "registers.h"
-#include "registerValueConversions.h"
 #include "c47.h"
 
 static bool_t checkParamGEV(real_t *x, real_t *mu, real_t *sigma, real_t *xi, bool_t qf) {

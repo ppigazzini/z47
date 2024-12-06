@@ -7,9 +7,6 @@
 #if !defined(SWAPREALIMAGINARY_H)
 #define SWAPREALIMAGINARY_H
 
-#include "defines.h"
-#include <stdint.h>
-
 void fnSwapRealImaginary(uint16_t unusedButMandatoryParameter);
 
 #endif // !SWAPREALIMAGINARY_H

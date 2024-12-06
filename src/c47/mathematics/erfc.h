@@ -7,9 +7,6 @@
 #if !defined(ERFC_H)
   #define ERFC_H
 
-  #include "defines.h"
-  #include <stdint.h>
-
   void fnErfc   (uint16_t unusedButMandatoryParameter);
 
 #endif // !ERFC_H

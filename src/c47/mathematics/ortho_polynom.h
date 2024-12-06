@@ -7,8 +7,6 @@
 #if !defined(ORTHO_POLYNOM_H)
   #define ORTHO_POLYNOM_H
 
-  #include <stdint.h>
-
   void fnOrthoPoly    (uint16_t kind);
   void fnHermite      (uint16_t unusedButMandatoryParameter);
   void fnHermiteP     (uint16_t unusedButMandatoryParameter);

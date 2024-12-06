@@ -7,7 +7,5 @@
 #if !defined(INT_H)
   #define INT_H
 
-  #include <stdint.h>
-
   void fnCheckInteger(uint16_t mode);
 #endif // !INT_H

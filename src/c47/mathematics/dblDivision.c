@@ -5,20 +5,7 @@
  * \file dblDivision.c
  ***********************************************/
 
-#include "mathematics/dblDivision.h"
-
-#include "debug.h"
-#include "error.h"
-#include "flags.h"
-#include "fonts.h"
-#include "integers.h"
-#include "items.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-#include "stack.h"
-
 #include "c47.h"
-
 
 void dblDivide(bool_t remainder_mode) {
   longInteger_t dividend, x, y, z, wd;

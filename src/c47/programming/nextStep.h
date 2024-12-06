@@ -7,9 +7,6 @@
 #if !defined(NEXTSTEP_H)
   #define NEXTSTEP_H
 
-  #include "typeDefinitions.h"
-  #include <stdint.h>
-
   uint8_t *findNextStep            (uint8_t *step);
   uint8_t *findKey2ndParam         (uint8_t *step);
   uint8_t *findPreviousStep        (uint8_t *step);

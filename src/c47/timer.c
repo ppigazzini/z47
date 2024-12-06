@@ -1,32 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
-#include "timer.h"
-
-#include "charString.h"
-#include "constantPointers.h"
-#include "debug.h"
-#include "error.h"
-#include "flags.h"
-#include "fonts.h"
-#include "hal/gui.h"
-#include "items.h"
-#include "realType.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-#include "stack.h"
-#include "screen.h"
-#include "softmenus.h"
-#include "stats.h"
-#include "typeDefinitions.h"
-#include <inttypes.h>
-#include <stdio.h>
-#if defined(PC_BUILD)
-  #include <glib.h>
-#endif // PC_BUILD
-
 #include "c47.h"
-
 
 kb_timer_t  timer[TMR_NUMBER];
 #if defined(PC_BUILD)

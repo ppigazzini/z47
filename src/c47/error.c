@@ -6,21 +6,6 @@
  * \file error.c
  ***********************************************/
 
-#include "error.h"
-
-#include "charString.h"
-#include "constantPointers.h"
-#include "debug.h"
-#include "flags.h"
-#include "fonts.h"
-#include "hal/lcd.h"
-#include "mathematics/comparisonReals.h"
-#include "realType.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-#include "screen.h"
-#include <string.h>
-
 #include "c47.h"
 
 

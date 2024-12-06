@@ -5,23 +5,6 @@
  * \file programmableMenu.c
  ***********************************************/
 
-#include "programming/programmableMenu.h"
-
-#include "charString.h"
-#include "debug.h"
-#include "defines.h"
-#include "display.h"
-#include "error.h"
-#include "flags.h"
-#include "fonts.h"
-#include "items.h"
-#include "programming/lblGtoXeq.h"
-#include "programming/manage.h"
-#include "programming/nextStep.h"
-#include "registers.h"
-#include "stack.h"
-#include "softmenus.h"
-#include "typeDefinitions.h"
 #include "c47.h"
 
 #if defined(TESTSUITE_BUILD)

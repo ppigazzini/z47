@@ -5,17 +5,7 @@
  * \file mant.c
  ***********************************************/
 
-#include "mathematics/mant.h"
-
-#include "debug.h"
-#include "error.h"
-#include "mathematics/matrix.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-
 #include "c47.h"
-
-
 
 TO_QSPI void (* const mant[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])(void) = {
 // regX ==> 1            2         3          4          5          6          7          8           9             10

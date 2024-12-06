@@ -7,8 +7,6 @@
 #if !defined(PROGRAMMABLEMENU_H)
   #define PROGRAMMABLEMENU_H
 
-  #include <stdint.h>
-
   void fnKeyGtoXeq       (uint16_t keyNum);
   void fnKeyGto          (uint16_t unusedButMandatoryParameter);
   void fnKeyXeq          (uint16_t unusedButMandatoryParameter);

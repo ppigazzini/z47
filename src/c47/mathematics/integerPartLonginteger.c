@@ -5,22 +5,7 @@
  * \file integerPartLonginteger.c
  ***********************************************/
 
-#include "mathematics/integerPartLonginteger.h"
-
-#include "constantPointers.h"
-#include "comparisonReals.h"
-#include "debug.h"
-#include "display.h"
-#include "error.h"
-#include "items.h"
-#include "mathematics/matrix.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-#include "screen.h"
-
 #include "c47.h"
-
-
 
 TO_QSPI void (* const lint[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])(void) = {
 // regX ==> 1            2       3         4        5        6        7          8           9             10

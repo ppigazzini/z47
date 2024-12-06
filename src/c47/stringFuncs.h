@@ -7,8 +7,6 @@
 #if !defined(STRINGFUNCS_H)
   #define STRINGFUNCS_H
 
-  #include <stdint.h>
-
   void fnAlphaLeng(uint16_t regist);
   void fnAlphaToX (uint16_t regist);
   void fnAlphaRR  (uint16_t regist);

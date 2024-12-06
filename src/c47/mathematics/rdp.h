@@ -7,9 +7,6 @@
 #if !defined(RDP_H)
   #define RDP_H
 
-  #include "realType.h"
-  #include <stdint.h>
-
   void roundToDecimalPlace(const real_t *source, real_t *destination, uint16_t digits, realContext_t *realContext);
   void fnRdp              (uint16_t digits);
   void rdpError           (uint16_t unusedButMandatoryParameter);

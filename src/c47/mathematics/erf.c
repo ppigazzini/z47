@@ -5,15 +5,6 @@
  * \file erf.c
  ***********************************************/
 
-#include "mathematics/erf.h"
-
-#include "debug.h"
-#include "error.h"
-#include "mathematics/matrix.h"
-#include "mathematics/wp34s.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-
 #include "c47.h"
 
 static void erfReal(void) {

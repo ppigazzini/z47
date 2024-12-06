@@ -1,58 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
-
-#include "config.h"
-
-#include "assign.h"
-#include "browsers/fontBrowser.h"
-#include "bufferize.h"
-#include "calcMode.h"
-#include "charString.h"
-#include "constantPointers.h"
-#include "constants.h"
-#include "dateTime.h"
-#include "debug.h"
-#include "display.h"
-#include "error.h"
-#include "fonts.h"
-#include "flags.h"
-#include "fractions.h"
-#include "items.h"
-#include "c47Extensions/jm.h"
-#include "c47Extensions/addons.h"
-#include "c47Extensions/graphText.h"
-#include "c47Extensions/keyboardTweak.h"
-#include "keyboard.h"
-#include "mathematics/matrix.h"
-#include "mathematics/square.h"
-#include "memory.h"
-#include "plotstat.h"
-#include "programming/manage.h"
-#include "programming/programmableMenu.h"
-#include "c47Extensions/graphs.h"
-#include "c47Extensions/radioButtonCatalog.h"
-#include "c47Extensions/xeqm.h"
-#include "recall.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-#include "saveRestoreCalcState.h"
-#include "screen.h"
-#include "softmenus.h"
-#include "solver/equation.h"
-#include "stack.h"
-#include "stats.h"
-#include "statusBar.h"
-#include "store.h"
-#include "recall.h"
-#include <stdlib.h>
-#include <string.h>
-
 #include "c47.h"
-
-#include <hal/io.h>
-
-
 
 //C47 defaults (used in both settings arrays)
 #define _gapl   ITM_SPACE_PUNCTUATION

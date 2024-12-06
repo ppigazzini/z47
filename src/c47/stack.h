@@ -8,8 +8,6 @@
 #if !defined(STACK_H)
 #define STACK_H
 
-#include <stdint.h>
-
 /**
  * Clears X and refreshes the stack.
  *

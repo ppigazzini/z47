@@ -4,20 +4,9 @@
 #include "c47.h"
 
 #include "c47Extensions/addons.h"
-#include "charString.h"
-#include "config.h"
-#include "flags.h"
-#include "items.h"
-#include "keyboard.h"
 #include "longIntegerType.h"
-#include "memory.h"
 #include "saveRestoreCalcState.h"
-#include "screen.h"
-#include "softmenus.h"
-#include "stack.h"
 #include "statusBar.h"
-#include "timer.h"
-#include <string.h>
 
 //#define JMSHOWCODES
 //#define BUFFER_CLICK_DETECTION
@@ -343,6 +332,10 @@ uint32_t               timeLastOp0 = 0;
 uint32_t               timeLastOp1 = 0;
 char                   lastStateFileOpened[stateFileNameVarLength+12];
 char                   fileNameSelected[stateFileNameVarLength];
+
+char                   filename_csv[FILENAMELEN]; //JMMAX   //JM_CSV
+uint32_t               mem__32;                             //JM_CSV
+bool_t                 cancelFilename;
 
 
 #if defined(DMCP_BUILD)

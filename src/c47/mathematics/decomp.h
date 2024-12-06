@@ -7,9 +7,6 @@
 #if !defined(DECOMP_H)
   #define DECOMP_H
 
-  #include "defines.h"
-  #include <stdint.h>
-
   void fnDecomp(uint16_t unusedButMandatoryParameter);
 
   #if (EXTRA_INFO_ON_CALC_ERROR == 1)

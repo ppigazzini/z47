@@ -7,8 +7,5 @@
 #if !defined(W_POSITIVE_H)
   #define W_POSITIVE_H
 
-  #include "defines.h"
-  #include <stdint.h>
-
   void fnWpositive(uint16_t unusedButMandatoryParameter);
 #endif // !W_POSITIVE_H
