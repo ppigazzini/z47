@@ -66,32 +66,6 @@ char       letteredRegisterName(calcRegister_t regist);
   void     copyRegisterToClipboardString      (calcRegister_t regist, char *clipboardString);                   //JMCSV Added for textfiles
   void     refreshLcd                         (void);
 #else // !DMCP_BUILD
-    void     lcd_fill_rect                      (uint32_t x, uint32_t y, uint32_t dx, uint32_t dy, int val); // clone from the DMCP function
-
-    /**
-     * Sets a black pixel on the screen.
-     *
-     * \param[in] x x coordinate from 0 (left) to 399 (right)
-     * \param[in] y y coordinate from 0 (top) to 239 (bottom)
-     * \return void
-     */
-  void     setBlackPixel                      (uint32_t x, uint32_t y);
-
-    /**
-     * Sets a white pixel on the screen.
-     *
-     * \param[in] x x coordinate from 0 (left) to 399 (right)
-     * \param[in] y y coordinate from 0 (top) to 239 (bottom)
-     */
-  void     setWhitePixel                      (uint32_t x, uint32_t y);
-
-    /**
-     * Turns a black pixel to a white pixel or vice versa on the screen.
-     *
-     * \param[in] x x coordinate from 0 (left) to 399 (right)
-     * \param[in] y y coordinate from 0 (top) to 239 (bottom)
-     */
-  void     flipPixel                          (uint32_t x, uint32_t y);
 #endif // DMCP_BUILD
 
   void     execTimerApp                         (uint16_t timerType);
@@ -102,6 +76,8 @@ char       letteredRegisterName(calcRegister_t regist);
   #define  halfSec_clearT true
   #define  halfSec_disp true
 
+
+  #define clearScreen()                        do { lcd_fill_rect(0, 0, SCREEN_WIDTH, 240, LCD_SET_VALUE); clear_ul(); lastProgramRunStop = PGM_UNDEFINED;} while(0)
 
   #if !defined(TESTSUITE_BUILD)
 
@@ -155,7 +131,6 @@ char       letteredRegisterName(calcRegister_t regist);
   void     show_g_jm                          (void);
   void     clear_fg_jm                        (void);
   void     underline_softkey                  (int16_t xSoftkey, int16_t ySoftKey, bool_t dontclear);
-  void     refresh_gui                        (void);
   void     force_refresh                      (uint8_t mode);
   bool_t   progressHalfSecUpdate_Integer      (uint8_t mode, char *txt, int32_t loop, bool_t clearZ, bool_t clearT, bool_t disp);
   bool_t   monitorExit                        (int32_t *loop, char* str);
