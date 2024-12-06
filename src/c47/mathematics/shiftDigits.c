@@ -37,7 +37,7 @@ void fnSdl(uint16_t numberOfShifts) {
   }
       convertLongIntegerRegisterToLongInteger(REGISTER_X, x);
       longIntegerInit(y);
-      uIntToLongInteger(10, y);
+      uInt32ToLongInteger(10u, y);
 
       for(exponent = numberOfShifts; exponent > 0; exponent--) {
         longIntegerMultiply(y, x, x);
@@ -89,7 +89,7 @@ void fnSdr(uint16_t numberOfShifts) {
   }
       convertLongIntegerRegisterToLongInteger(REGISTER_X, x);
       longIntegerInit(y);
-      uIntToLongInteger(10, y);
+      uInt32ToLongInteger(10u, y);
 
       for(exponent = numberOfShifts; exponent > 0; exponent--) {
         longIntegerDivide(x, y, x);

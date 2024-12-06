@@ -207,7 +207,7 @@ void fnGetStackSize(uint16_t unusedButMandatoryParameter) {
   liftStack();
 
   longIntegerInit(stack);
-  uIntToLongInteger(getSystemFlag(FLAG_SSIZE8) ? 8 : 4, stack);
+  uInt32ToLongInteger(getSystemFlag(FLAG_SSIZE8) ? 8 : 4, stack);
   convertLongIntegerToLongIntegerRegister(stack, REGISTER_X);
   longIntegerFree(stack);
 }

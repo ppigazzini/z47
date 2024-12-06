@@ -513,14 +513,14 @@ static bool_t initLocalRegisters(calcRegister_t r) {
   else if(lastIntegerBase == 0 && Input_Default == ID_LI) {                   //JM defaults vv
     longInteger_t lgInt;
     longIntegerInit(lgInt);
-    uIntToLongInteger(0, lgInt);
+    uInt32ToLongInteger(0u, lgInt);
     convertLongIntegerToLongIntegerRegister(lgInt, r);
     longIntegerFree(lgInt);
   }                                                   //JM defaults ^^
   else if(lastIntegerBase !=0) {                   //JM defaults vv
     longInteger_t lgInt;
     longIntegerInit(lgInt);
-    uIntToLongInteger(0, lgInt);
+    uInt32ToLongInteger(0u, lgInt);
     convertLongIntegerToShortIntegerRegister(lgInt, lastIntegerBase == 0 ? 10 : lastIntegerBase, r);
     longIntegerFree(lgInt);
   }                                                   //JM defaults ^^
@@ -1230,7 +1230,7 @@ void clearRegister(calcRegister_t regist) {
     longInteger_t lgInt;
     longIntegerInit(lgInt);
     uint16_t val =0;
-    uIntToLongInteger(val,lgInt);
+    uInt32ToLongInteger(val, lgInt);
     convertLongIntegerToLongIntegerRegister(lgInt, regist);
     longIntegerFree(lgInt);
   }                                                                             //JM defaults ^^
@@ -1239,7 +1239,7 @@ void clearRegister(calcRegister_t regist) {
     longInteger_t lgInt;
     longIntegerInit(lgInt);
     uint16_t val =0;
-    uIntToLongInteger(val,lgInt);
+    uInt32ToLongInteger(val, lgInt);
     convertLongIntegerToShortIntegerRegister(lgInt, lastIntegerBase == 0 ? 10:lastIntegerBase, regist);
     longIntegerFree(lgInt);
   }                                                                             //JM defaults ^^
@@ -1282,7 +1282,7 @@ void fnGetLocR(uint16_t unusedButMandatoryParameter) {
   liftStack();
 
   longIntegerInit(locR);
-  uIntToLongInteger(currentNumberOfLocalRegisters, locR);
+  uInt32ToLongInteger(currentNumberOfLocalRegisters, locR);
   convertLongIntegerToLongIntegerRegister(locR, REGISTER_X);
   longIntegerFree(locR);
 }
@@ -1451,23 +1451,23 @@ void copySourceRegisterToDestRegister(calcRegister_t sourceRegister, calcRegiste
     longIntegerInit(longIntVar);
     switch(currentAngularMode) {
       case amDMS: {
-        intToLongInteger(1, longIntVar);
+        uInt32ToLongInteger(1u, longIntVar);
         break;
       }
       case amRadian: {
-        intToLongInteger(2, longIntVar);
+        uInt32ToLongInteger(2u, longIntVar);
         break;
       }
       case amMultPi: {
-        intToLongInteger(3, longIntVar);
+        uInt32ToLongInteger(3u, longIntVar);
         break;
       }
       case amGrad: {
-        intToLongInteger(4, longIntVar);
+        uInt32ToLongInteger(4u, longIntVar);
         break;
       }
       default: {
-        intToLongInteger(0, longIntVar);
+        uInt32ToLongInteger(0u, longIntVar);
         break;
       }
     }
@@ -1478,7 +1478,7 @@ void copySourceRegisterToDestRegister(calcRegister_t sourceRegister, calcRegiste
   else if(sourceRegister == RESERVED_VARIABLE_DENMAX) {
     longInteger_t longIntVar;
     longIntegerInit(longIntVar);
-    uIntToLongInteger(denMax, longIntVar);
+    uInt32ToLongInteger(denMax, longIntVar);
     convertLongIntegerToLongIntegerRegister(longIntVar, destRegister);
     longIntegerFree(longIntVar);
     return;
@@ -1486,7 +1486,7 @@ void copySourceRegisterToDestRegister(calcRegister_t sourceRegister, calcRegiste
   else if(sourceRegister == RESERVED_VARIABLE_ISM) {
     longInteger_t longIntVar;
     longIntegerInit(longIntVar);
-    uIntToLongInteger((shortIntegerMode==SIM_2COMPL ? 2 : (shortIntegerMode==SIM_1COMPL ? 1 : (shortIntegerMode==SIM_UNSIGN ? 0 : -1))), longIntVar);
+    uInt32ToLongInteger((shortIntegerMode==SIM_2COMPL ? 2 : (shortIntegerMode==SIM_1COMPL ? 1 : (shortIntegerMode==SIM_UNSIGN ? 0 : -1))), longIntVar);
     convertLongIntegerToLongIntegerRegister(longIntVar, destRegister);
     longIntegerFree(longIntVar);
     return;
@@ -1494,7 +1494,7 @@ void copySourceRegisterToDestRegister(calcRegister_t sourceRegister, calcRegiste
   else if(sourceRegister == RESERVED_VARIABLE_REALDF) {
     longInteger_t longIntVar;
     longIntegerInit(longIntVar);
-    uIntToLongInteger(displayFormat, longIntVar);
+    uInt32ToLongInteger(displayFormat, longIntVar);
     convertLongIntegerToLongIntegerRegister(longIntVar, destRegister);
     longIntegerFree(longIntVar);
     return;
@@ -1502,7 +1502,7 @@ void copySourceRegisterToDestRegister(calcRegister_t sourceRegister, calcRegiste
   else if(sourceRegister == RESERVED_VARIABLE_NDEC) {
     longInteger_t longIntVar;
     longIntegerInit(longIntVar);
-    uIntToLongInteger(displayFormatDigits, longIntVar);
+    uInt32ToLongInteger(displayFormatDigits, longIntVar);
     convertLongIntegerToLongIntegerRegister(longIntVar, destRegister);
     longIntegerFree(longIntVar);
     return;
@@ -1629,7 +1629,7 @@ int16_t indirectAddressing(calcRegister_t regist, uint16_t parameterType, int16_
       longIntegerFree(lgInt);
       return FAILED_INDIRECTION;
     }
-    longIntegerToUInt(lgInt, value);
+    longIntegerToUInt32(lgInt, value);
     longIntegerFree(lgInt);
   }
 

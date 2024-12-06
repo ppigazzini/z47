@@ -2409,7 +2409,7 @@ RELEASE_END:
               if(++largeur > SCREEN_WIDTH) {
                 largeur--;
               }
-              uIntToLongInteger(largeur, lgInt);
+              uInt32ToLongInteger(largeur, lgInt);
               convertLongIntegerToLongIntegerRegister(lgInt, REGISTER_Z);
             #endif // (REAL34_WIDTH_TEST == 1)
           }
@@ -2434,7 +2434,7 @@ RELEASE_END:
               if(--largeur < 20) {
                 largeur++;
               }
-              uIntToLongInteger(largeur, lgInt);
+              uInt32ToLongInteger(largeur, lgInt);
               convertLongIntegerToLongIntegerRegister(lgInt, REGISTER_Z);
             #endif // (REAL34_WIDTH_TEST == 1)
           }

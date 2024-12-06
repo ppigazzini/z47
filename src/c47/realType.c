@@ -5,9 +5,7 @@
  * \file realType.c
  ***********************************************/
 
-
 #include "c47.h"
-#include "registerValueConversions.h"
 
 static void roundToIntAndNormalise(const real_t *r, real_t *i) {
   realToIntegralValue(r, i, DEC_ROUND_DOWN, &ctxtReal39);

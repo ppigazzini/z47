@@ -39,13 +39,13 @@ void fnNeighb(uint16_t unusedButMandatoryParameter) {
       switch(dataTypeY) {
         case dtLongInteger: {
           convertLongIntegerRegisterToLongInteger(REGISTER_Y, lgIntY);
-          intToLongInteger(longIntegerCompare(lgIntY, lgIntX) == 0 ? 0 : (longIntegerCompare(lgIntY, lgIntX) > 0 ? 1 : -1), lgIntY);
+          int32ToLongInteger(longIntegerCompare(lgIntY, lgIntX) == 0 ? 0 : (longIntegerCompare(lgIntY, lgIntX) > 0 ? 1 : -1), lgIntY);
           break;
         }
 
         case dtShortInteger: {
           convertShortIntegerRegisterToLongInteger(REGISTER_Y, lgIntY);
-          intToLongInteger(longIntegerCompare(lgIntY, lgIntX) == 0 ? 0 : (longIntegerCompare(lgIntY, lgIntX) > 0 ? 1 : -1), lgIntY);
+          int32ToLongInteger(longIntegerCompare(lgIntY, lgIntX) == 0 ? 0 : (longIntegerCompare(lgIntY, lgIntX) > 0 ? 1 : -1), lgIntY);
           break;
         }
 
@@ -53,7 +53,7 @@ void fnNeighb(uint16_t unusedButMandatoryParameter) {
           convertLongIntegerRegisterToReal(REGISTER_X, &x, &ctxtReal75);
           real34ToReal(REGISTER_REAL34_DATA(REGISTER_Y), &y);
           longIntegerInit(lgIntY);
-          intToLongInteger(realCompareEqual(&y, &x) ? 0 : (realCompareGreaterThan(&y, &x) ? 1 : -1), lgIntY);
+          int32ToLongInteger(realCompareEqual(&y, &x) ? 0 : (realCompareGreaterThan(&y, &x) ? 1 : -1), lgIntY);
           break;
         }
 
@@ -74,13 +74,13 @@ void fnNeighb(uint16_t unusedButMandatoryParameter) {
       switch(dataTypeY) {
         case dtLongInteger: {
           convertLongIntegerRegisterToLongInteger(REGISTER_Y, lgIntY);
-          intToLongInteger(longIntegerCompare(lgIntY, lgIntX) == 0 ? 0 : (longIntegerCompare(lgIntY, lgIntX) > 0 ? 1 : -1), lgIntY);
+          int32ToLongInteger(longIntegerCompare(lgIntY, lgIntX) == 0 ? 0 : (longIntegerCompare(lgIntY, lgIntX) > 0 ? 1 : -1), lgIntY);
           break;
         }
 
         case dtShortInteger: {
           convertShortIntegerRegisterToLongInteger(REGISTER_Y, lgIntY);
-          intToLongInteger(longIntegerCompare(lgIntY, lgIntX) == 0 ? 0 : (longIntegerCompare(lgIntY, lgIntX) > 0 ? 1 : -1), lgIntY);
+          int32ToLongInteger(longIntegerCompare(lgIntY, lgIntX) == 0 ? 0 : (longIntegerCompare(lgIntY, lgIntX) > 0 ? 1 : -1), lgIntY);
           break;
         }
 
@@ -88,7 +88,7 @@ void fnNeighb(uint16_t unusedButMandatoryParameter) {
           convertShortIntegerRegisterToReal(REGISTER_X, &x, &ctxtReal39);
           real34ToReal(REGISTER_REAL34_DATA(REGISTER_Y), &y);
           longIntegerInit(lgIntY);
-          intToLongInteger(realCompareEqual(&y, &x) ? 0 : (realCompareGreaterThan(&y, &x) ? 1 : -1), lgIntY);
+          int32ToLongInteger(realCompareEqual(&y, &x) ? 0 : (realCompareGreaterThan(&y, &x) ? 1 : -1), lgIntY);
           break;
         }
 

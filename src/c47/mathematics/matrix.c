@@ -65,7 +65,7 @@ static bool_t getDimensionArg(uint32_t *rows, uint32_t *cols) {
     #endif // !TESTSUITE_BUILD
     return false;
   }
-  longIntegerToUInt(tmp_lgInt, *cols);
+  longIntegerToUInt32(tmp_lgInt, *cols);
 
   if(getRegisterDataType(REGISTER_Y) == dtLongInteger) {
     convertLongIntegerRegisterToLongInteger(REGISTER_Y, tmp_lgInt);
@@ -86,7 +86,7 @@ static bool_t getDimensionArg(uint32_t *rows, uint32_t *cols) {
     #endif // !TESTSUITE_BUILD
     return false;
   }
-  longIntegerToUInt(tmp_lgInt, *rows);
+  longIntegerToUInt32(tmp_lgInt, *rows);
 
   longIntegerFree(tmp_lgInt);
   return true;
@@ -509,9 +509,9 @@ void fnGetMatrixDimensions(uint16_t unusedButMandatoryParameter) {
     reallocateRegister(REGISTER_Y, dtReal34, 0, amNone);
 
     longIntegerInit(li);
-    uIntToLongInteger(rows, li);
+    uInt32ToLongInteger(rows, li);
     convertLongIntegerToLongIntegerRegister(li, REGISTER_Y);
-    uIntToLongInteger(cols, li);
+    uInt32ToLongInteger(cols, li);
     convertLongIntegerToLongIntegerRegister(li, REGISTER_X);
     longIntegerFree(li);
   }
