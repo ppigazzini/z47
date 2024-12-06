@@ -7,8 +7,6 @@
 #if !defined(RANDOM_H)
   #define RANDOM_H
 
-  #include <stdint.h>
-
   uint32_t boundedRand(uint32_t s);
   void     fnRandom   (uint16_t unusedButMandatoryParameter);
   void     fnRandomI  (uint16_t unusedButMandatoryParameter);

@@ -7,10 +7,6 @@
 #if !defined(GAMMA_H)
   #define GAMMA_H
 
-  #include "defines.h"
-  #include "realType.h"
-  #include <stdint.h>
-
   void fnGamma     (uint16_t unusedButMandatoryParameter);
   void fnLnGamma   (uint16_t unusedButMandatoryParameter);
 

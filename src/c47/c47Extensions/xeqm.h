@@ -9,10 +9,6 @@
 #if !defined(XEQM_H)
 #define XEQM_H
 
-#include "typeDefinitions.h"
-#include <stdint.h>
-
-
 #define XEDIT 1
 #define XSWAP 0
 

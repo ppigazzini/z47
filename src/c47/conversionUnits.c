@@ -5,23 +5,7 @@
  * \file conversionUnits.c
  ***********************************************/
 
-#include "conversionUnits.h"
-
-#include "browsers/fontBrowser.h"
-#include "constantPointers.h"
-#include "dateTime.h"
-#include "registers.h"
-#include "c47Extensions/addons.h"
-#include "debug.h"
-#include "error.h"
-#include "flags.h"
-#include "mathematics/10pow.h"
-#include "mathematics/wp34s.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-
 #include "c47.h"
-
 
 #define inverting true
 #define noninverting false

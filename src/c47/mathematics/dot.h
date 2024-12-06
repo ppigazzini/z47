@@ -7,9 +7,6 @@
 #if !defined(DOT_H)
   #define DOT_H
 
-  #include "realType.h"
-  #include <stdint.h>
-
   void fnDot(uint16_t unusedButMandatoryParameter);
 
   void dotRealCplx(void);

@@ -5,23 +5,7 @@
  * \file exp.c
  ***********************************************/
 
-#include "mathematics/exp.h"
-
-#include "constantPointers.h"
-#include "debug.h"
-#include "error.h"
-#include "flags.h"
-#include "fonts.h"
-#include "items.h"
-#include "mathematics/comparisonReals.h"
-#include "mathematics/matrix.h"
-#include "mathematics/wp34s.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-
 #include "c47.h"
-
-
 
 TO_QSPI void (* const Exp[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])(void) = {
 // regX ==> 1            2        3         4         5         6         7          8           9             10

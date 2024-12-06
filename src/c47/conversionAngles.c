@@ -5,19 +5,7 @@
  * \file conversionAngles.c
  ***********************************************/
 
-#include "conversionAngles.h"
-
-#include "constantPointers.h"
-#include "debug.h"
-#include "error.h"
-#include "fonts.h"
-#include "mathematics/comparisonReals.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-
 #include "c47.h"
-
-
 
 void fnCvtToCurrentAngularMode(uint16_t fromAngularMode) {
   if(!saveLastX()) {

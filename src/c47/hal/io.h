@@ -7,9 +7,6 @@
 #if !defined(IO_H)
   #define IO_H
 
-  //#include <stdbool.h>
-  #include <stdint.h>
-
 // Directories and files
 #define STATE_DIR      "STATE"
 #define STATE_EXT      ".s47"

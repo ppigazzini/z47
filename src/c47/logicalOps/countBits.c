@@ -5,15 +5,7 @@
  * \file countBits.c
  ***********************************************/
 
-#include "logicalOps/countBits.h"
-
-#include "debug.h"
-#include "error.h"
-#include "registers.h"
-
 #include "c47.h"
-
-
 
 /********************************************//**
  * \brief regX ==> regL and countBits(regX) ==> regX

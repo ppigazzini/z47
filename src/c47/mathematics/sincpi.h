@@ -8,10 +8,6 @@
   #define SINCPI_H
   // Coded by JM, based on sinc.h
 
-  #include "defines.h"
-  #include "realType.h"
-  #include <stdint.h>
-
   void fnSincpi(uint16_t unusedButMandatoryParameter);
 
   void sincpiComplex(const real_t *real, const real_t *imag, real_t *resReal, real_t *resImag, realContext_t *realContext);

@@ -1,14 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
-#include "sort.h"
-
-#include "charString.h"
-#include "fonts.h"
-
 #include "c47.h"
-
-
 
 int32_t compareChar(const char *char1, const char *char2) {
   int16_t code1 = (char1[0] & 0x80) ? ((((uint16_t)(char1[0] & 0x7f)) << 8) | (uint16_t)((uint8_t)(char1)[1])) : char1[0];

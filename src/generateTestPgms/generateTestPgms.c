@@ -1,15 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
-
-#include "defines.h"
-
-#include "fonts.h"
-#include "items.h"
-#include <stdlib.h>
-
 #include "c47.h"
-
 
 int main(int argc, char* argv[]) {
   uint8_t memory[65536], *currentStep;

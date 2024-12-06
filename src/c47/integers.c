@@ -1,19 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
-#include "integers.h"
-
-#include "constantPointers.h"
-#include "debug.h"
-#include "display.h"
-#include "error.h"
-#include "flags.h"
-#include "fonts.h"
-#include "mathematics/wp34s.h"
-#include "c47Extensions/radioButtonCatalog.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-
 #include "c47.h"
 
 void fnChangeBase(uint16_t base) {

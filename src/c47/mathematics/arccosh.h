@@ -7,10 +7,6 @@
 #if !defined(ARCCOSH_H)
   #define ARCCOSH_H
 
-  #include "defines.h"
-  #include "realType.h"
-  #include <stdint.h>
-
   void fnArccosh   (uint16_t unusedButMandatoryParameter);
 
   void realArcosh  (const real_t *x, real_t *res, realContext_t *realContext);

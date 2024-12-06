@@ -7,10 +7,6 @@
 #if !defined(MANAGE_H)
   #define MANAGE_H
 
-  #include "items.h"
-  #include "typeDefinitions.h"
-  #include <stdint.h>
-
   uint32_t _getProgramSize                     (void);
   void scanLabelsAndPrograms                   (void);
   void defineCurrentProgramFromGlobalStepNumber(int16_t globalStepNumber);

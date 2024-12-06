@@ -1,47 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
-#include "bufferize.h"
-
-#include "c47Extensions/addons.h"
-#include "calcMode.h"
-#include "charString.h"
-#include "constantPointers.h"
-#include "constants.h"
-#include "conversionAngles.h"
-#include "dateTime.h"
-#include "debug.h"
-#include "display.h"
-#include "error.h"
-#include "flags.h"
-#include "fonts.h"
-#include "items.h"
-#include "c47Extensions/jm.h"
-#include "c47Extensions/keyboardTweak.h"
-#include "mathematics/comparisonReals.h"
-#include "mathematics/matrix.h"
-#include "mathematics/toRect.h"
-#include "mathematics/toPolar.h"
-#include "mathematics/wp34s.h"
-#include "programming/manage.h"
-#include "c47Extensions/radioButtonCatalog.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-#include "saveRestoreCalcState.h"
-#include "screen.h"
-#include "softmenus.h"
-#include "sort.h"
-#include "stack.h"
-#include "statusBar.h"
-#include "timer.h"
-#include "ui/matrixEditor.h"
-#include "ui/tam.h"
-#include <string.h>
-#if defined(PC_BUILD)
-  #include "gtkGui.h"
-#endif
-
-
 #include "c47.h"
 
 bool_t delayCloseNim = false;

@@ -6,22 +6,6 @@
  ***********************************************/
 // Coded by JM, based on exp.c
 
-#include "mathematics/expMOne.h"
-
-#include "constantPointers.h"
-#include "debug.h"
-#include "error.h"
-#include "flags.h"
-#include "fonts.h"
-#include "items.h"
-#include "mathematics/exp.h"
-#include "mathematics/matrix.h"
-#include "mathematics/multiplication.h"
-#include "mathematics/sin.h"
-#include "mathematics/wp34s.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-
 #include "c47.h"
 
 void expM1Complex(const real_t *real, const real_t *imag, real_t *resReal, real_t *resImag, realContext_t *realContext) {

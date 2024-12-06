@@ -7,8 +7,6 @@
 #if !defined(SHIFTDIGITS_H)
   #define SHIFTDIGITS_H
 
-  #include <stdint.h>
-
   void fnSdr(uint16_t numberOfShifts);
   void fnSdl(uint16_t numberOfShifts);
 #endif // !SHIFTDIGITS_H

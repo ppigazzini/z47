@@ -7,8 +7,6 @@
 #if !defined(AUDIO_H)
   #define AUDIO_H
 
-  #include <stdint.h>
-
   /**
    * Plays a tone.
    * Each hardware platform that supports playing audio should implement

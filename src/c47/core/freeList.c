@@ -1,15 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
-#include "core/freeList.h"
-
-#include <stdint.h>
-#include <stdlib.h>
-#include "charString.h"
-#include "config.h"
-#include "debug.h"
-#include "items.h"
-
 #include "c47.h"
 
 void *freeListAlloc(size_t sizeInBlocks) {

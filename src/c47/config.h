@@ -7,11 +7,6 @@
 #if !defined(CONFIG_H)
 #define CONFIG_H
 
-#include "decContext.h"
-#include "defines.h"
-#include <stdint.h>
-#include "typeDefinitions.h"
-
 enum {
     CFG_DFLT,
     CFG_CHINA, CFG_EUROPE, CFG_INDIA, CFG_JAPAN, CFG_UK, CFG_USA

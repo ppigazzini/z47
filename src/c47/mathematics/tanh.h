@@ -7,10 +7,6 @@
 #if !defined(TANH_H)
   #define TANH_H
 
-  #include "defines.h"
-  #include "realType.h"
-  #include <stdint.h>
-
   void fnTanh   (uint16_t unusedButMandatoryParameter);
 
   uint8_t TanhComplex(const real_t *xReal, const real_t *xImag, real_t *rReal, real_t *rImag, realContext_t *realContext);

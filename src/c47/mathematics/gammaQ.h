@@ -7,9 +7,6 @@
 #if !defined(GAMMAQ_H)
   #define GAMMAQ_H
 
-  #include "defines.h"
-  #include <stdint.h>
-
   void fnGammaQ      (uint16_t unusedButMandatoryParameter);
 
   #if (EXTRA_INFO_ON_CALC_ERROR == 1)

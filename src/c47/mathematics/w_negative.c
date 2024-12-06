@@ -5,17 +5,6 @@
  * \file w_negative.c
  ***********************************************/
 
-#include "mathematics/w_negative.h"
-
-#include "constantPointers.h"
-#include "debug.h"
-#include "error.h"
-#include "mathematics/comparisonReals.h"
-#include "mathematics/matrix.h"
-#include "mathematics/wp34s.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-
 #include "c47.h"
 
 static void wNegReal(void) {

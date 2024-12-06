@@ -7,9 +7,6 @@
 #if !defined(TAM_H)
   #define TAM_H
 
-  #include "defines.h"
-  #include <stdint.h>
-
   #if !defined(TESTSUITE_BUILD)
     /**
      * Enters TAM mode.

@@ -7,11 +7,6 @@
 #if !defined(POWER_H)
   #define POWER_H
 
-  #include "defines.h"
-  #include "longIntegerType.h"
-  #include "realType.h"
-  #include <stdint.h>
-
   void fnPower    (uint16_t unusedButMandatoryParameter);
 
   #if (EXTRA_INFO_ON_CALC_ERROR == 1)

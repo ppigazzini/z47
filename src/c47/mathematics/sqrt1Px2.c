@@ -5,20 +5,6 @@
  * \file sqrt1Px2.c
  ***********************************************/
 
-#include "mathematics/sqrt1Px2.h"
-
-#include "constantPointers.h"
-#include "debug.h"
-#include "error.h"
-#include "flags.h"
-#include "fonts.h"
-#include "items.h"
-#include "mathematics/matrix.h"
-#include "mathematics/squareRoot.h"
-#include "mathematics/wp34s.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-
 #include "c47.h"
 
 void sqrt1Px2Complex(const real_t *real, const real_t *imag, real_t *resReal, real_t *resImag, realContext_t *realContext) {

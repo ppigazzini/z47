@@ -5,32 +5,6 @@
  * \file integrate.c
  ***********************************************/
 
-#include "solver/integrate.h"
-
-#include "c47Extensions/addons.h"
-#include "charString.h"
-#include "constantPointers.h"
-#include "defines.h"
-#include "display.h"
-#include "error.h"
-#include "flags.h"
-#include "c47Extensions/addons.h"
-#include "items.h"
-#include "mathematics/comparisonReals.h"
-#include "mathematics/exp.h"
-#include "mathematics/wp34s.h"
-#include "plotstat.h"
-#include "programming/lblGtoXeq.h"
-#include "programming/manage.h"
-#include "realType.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-#include "screen.h"
-#include "softmenus.h"
-#include "solver/equation.h"
-#include "stack.h"
-#include "store.h"
-#include "recall.h"
 #include "c47.h"
 
 void fnPgmInt(uint16_t label) {

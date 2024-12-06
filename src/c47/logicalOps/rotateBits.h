@@ -7,8 +7,6 @@
 #if !defined(ROTATEBITS_H)
 #define ROTATEBITS_H
 
-#include <stdint.h>
-
 void fnAsr   (uint16_t numberOfShifts);
 void fnSl    (uint16_t numberOfShifts);
 void fnSr    (uint16_t numberOfShifts);

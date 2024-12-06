@@ -6,28 +6,6 @@
  * \file xeqm.c
  ***********************************************/
 
-#include "c47Extensions/xeqm.h"
-
-#include "bufferize.h"
-#include "calcMode.h"
-#include "charString.h"
-#include "flags.h"
-#include "hal/gui.h"
-#include "c47Extensions/addons.h"
-#include "c47Extensions/graphText.h"
-#include "items.h"
-#include "c47Extensions/jm.h"
-#include "keyboard.h"
-#include "c47Extensions/keyboardTweak.h"
-#include "registers.h"
-#include "screen.h"
-#include "softmenus.h"
-#include "stack.h"
-#include "statusBar.h"
-#include "timer.h"
-#include "c47Extensions/textfiles.h"
-#include <string.h>
-
 #include "c47.h"
 
 #define XEQ_STR_LENGTH_LONG  TMP_STR_LENGTH // 3000 // note the limit is the tmpString limit

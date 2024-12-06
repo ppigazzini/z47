@@ -1,20 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
-
-#include "browsers/fontBrowser.h"
-
-#include <stdlib.h>
-
-#include "charString.h"
-#include "error.h"
-#include "flags.h"
-#include "fonts.h"
-#include "screen.h"
-
 #include "c47.h"
-#include <stdlib.h>
-
 
 #if !defined(TESTSUITE_BUILD)
   //TO_QSPI static const char bugScreenShowFonts[] = "In function showFonts: This should never happen!";

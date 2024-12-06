@@ -5,22 +5,6 @@
  * \file subtraction.c
  ***********************************************/
 
-#include "mathematics/subtraction.h"
-
-#include "conversionAngles.h"
-#include "constantPointers.h"
-#include "debug.h"
-#include "error.h"
-#include "fonts.h"
-#include "integers.h"
-#include "items.h"
-#include "mathematics/addition.h"
-#include "mathematics/matrix.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-#include "rsd.h"
-#include "stack.h"
-
 #include "c47.h"
 
 

@@ -7,7 +7,6 @@
 #if !defined(CONSTANTS_H)
   #define CONSTANTS_H
 
-  #include <stdint.h>
 
   void fnConstant(const uint16_t constant);
   void fnPi      (uint16_t unusedButMandatoryParameter);

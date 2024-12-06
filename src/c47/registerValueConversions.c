@@ -1,28 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
-#include "registerValueConversions.h"
-
-#include "charString.h"
-#include "constantPointers.h"
-#include "dateTime.h"
-#include "debug.h"
-#include "display.h"
-#include "error.h"
-#include "flags.h"
-#include "integers.h"
-#include "mathematics/comparisonReals.h"
-#include "mathematics/matrix.h"
-#include "mathematics/rsd.h"
-#include "mathematics/tan.h"
-#include "memory.h"
-#include "registers.h"
-#include "stack.h"
-#include <string.h>
-
 #include "c47.h"
-
-
 
 void convertLongIntegerToLongIntegerRegister(const longInteger_t lgInt, calcRegister_t regist) {
   uint16_t sizeInBytes = longIntegerSizeInBytes(lgInt);

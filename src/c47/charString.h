@@ -7,9 +7,6 @@
 #if !defined(CHARSTRING_H)
 #define CHARSTRING_H
 
-#include "typeDefinitions.h"
-#include <stdint.h>
-
 /********************************************//**
  * \brief Returns a pointer to the last glyph of a string
  *

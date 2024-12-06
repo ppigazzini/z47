@@ -5,22 +5,7 @@
  * \file flagBrowser.c
  ***********************************************/
 
-#include "browsers/flagBrowser.h"
-
-#include "charString.h"
-#include "config.h"
-#include "display.h"
-#include "flags.h"
-#include "fonts.h"
-#include "items.h"
-#include "memory.h"
-#include "registers.h"
-#include "screen.h"
-#include <string.h>
-
 #include "c47.h"
-
-
 
 TO_QSPI const  letteredFlagDisplay_t letteredFlagDisplay[] = {
 // Flags X, Y, Z, T, A, B, C, D, L

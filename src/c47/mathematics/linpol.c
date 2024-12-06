@@ -5,18 +5,6 @@
  * \file linpol.c
  ***********************************************/
 
-#include "mathematics/linpol.h"
-
-#include "constantPointers.h"
-#include "debug.h"
-#include "error.h"
-#include "flags.h"
-#include "items.h"
-#include "mathematics/comparisonReals.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-#include "stack.h"
-
 #include "c47.h"
 
 /*

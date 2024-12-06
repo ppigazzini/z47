@@ -8,10 +8,6 @@
   #define LNPONE_H
   // Coded by JM, based on ln.h
 
-  #include "defines.h"
-  #include "realType.h"
-  #include <stdint.h>
-
   void fnLnP1   (uint16_t unusedButMandatoryParameter);
 
   #if (EXTRA_INFO_ON_CALC_ERROR == 1)

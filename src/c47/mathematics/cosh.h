@@ -7,8 +7,5 @@
 #if !defined(COSH_H)
   #define COSH_H
 
-  #include "defines.h"
-  #include <stdint.h>
-
   void fnCosh   (uint16_t unusedButMandatoryParameter);
 #endif // !COSH_H

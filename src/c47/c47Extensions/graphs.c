@@ -1,31 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
-
 /********************************************//** //JM
  * \file graphs.c Graphing module
  ***********************************************/
-
-#include "c47Extensions/graphs.h"
-
-#include "charString.h"
-#include "constantPointers.h"
-#include "error.h"
-#include "c47Extensions/addons.h"
-#include "c47Extensions/graphText.h"
-#include "registerValueConversions.h"
-#include "flags.h"
-#include "items.h"
-#include "math.h"
-#include "plotstat.h"
-#include "c47Extensions/radioButtonCatalog.h"
-#include "registers.h"
-#include "screen.h"
-#include "softmenus.h"
-#include "solver/graph.h"
-#include "stats.h"
-#include "statusBar.h"
-#include <string.h>
 
 #include "c47.h"
 

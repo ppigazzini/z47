@@ -5,22 +5,6 @@
  * \file tvm.c
  ***********************************************/
 
-#include "solver/tvm.h"
-
-#include "c47Extensions/addons.h"
-#include "constantPointers.h"
-#include "defines.h"
-#include "error.h"
-#include "flags.h"
-#include "items.h"
-#include "mathematics/comparisonReals.h"
-#include "mathematics/power.h"
-#include "realType.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-#include "screen.h"
-#include "solver/solve.h"
-#include "stack.h"
 #include "c47.h"
 
 #if !defined(TESTSUITE_BUILD)

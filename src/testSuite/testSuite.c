@@ -5,38 +5,6 @@
  * \file testSuite.c
  ***********************************************/
 
-#include "testSuite.h"
-
-#include "c47Extensions/addons.h"
-#include "bufferize.h"
-#include "charString.h"
-#include "config.h"
-#include "constantPointers.h"
-#include "constants.h"
-#include "conversionAngles.h"
-#include "conversionUnits.h"
-#include "dateTime.h"
-#include "debug.h"
-#include "display.h"
-#include "distributions/distributions.h"
-#include "flags.h"
-#include "fractions.h"
-#include "items.h"
-#include "logicalOps/logicalOps.h"
-#include "mathematics/mathematics.h"
-#include "memory.h"
-#include "recall.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-#include "sort.h"
-#include "stack.h"
-#include "stats.h"
-#include "store.h"
-#include <stdlib.h>
-#include <string.h>
-#include <libgen.h>
-#include <ctype.h>
-
 #include "c47.h"
 
 #define NUMBER_OF_CORRECT_SIGNIFICANT_DIGITS_EXPECTED 34

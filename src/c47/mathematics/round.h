@@ -7,9 +7,6 @@
 #if !defined(ROUND_H)
   #define ROUND_H
 
-  #include "defines.h"
-  #include <stdint.h>
-
   void fnRound   (uint16_t unusedButMandatoryParameter);
 
   #if (EXTRA_INFO_ON_CALC_ERROR == 1)

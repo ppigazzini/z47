@@ -5,20 +5,6 @@
  * \file percentSigmaDeltaPercentXmean.c
  ***********************************************/
 
-#include "mathematics/percentSigmaDeltaPercentXmean.h"
-
-#include "constantPointers.h"
-#include "debug.h"
-#include "error.h"
-#include "flags.h"
-#include "mathematics/comparisonReals.h"
-#include "mathematics/percentSigma.h"
-#include "mathematics/deltaPercentXmean.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-#include "stack.h"
-#include "stats.h"
-
 #include "c47.h"
 
 //=============================================================================

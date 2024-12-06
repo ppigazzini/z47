@@ -5,8 +5,6 @@
  * \file fonts.c
  ***********************************************/
 
-#include "fonts.h"
-
 #include "c47.h"
 
 // Little hexadecimal font for generating a not found glyph

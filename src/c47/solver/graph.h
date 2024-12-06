@@ -9,9 +9,6 @@
 #if !defined(GRAPH_H)
 #define GRAPH_H
 
-#include "typeDefinitions.h"
-#include <stdint.h>
-
 extern char plotStatMx[8];
 
 #define EQ_CPXSOLVE       0   //fnEqSolvGraph

@@ -7,11 +7,6 @@
 #if !defined(REGISTERS_H)
   #define REGISTERS_H
 
-  #include "longIntegerType.h"
-  #include "realType.h"
-  #include "typeDefinitions.h"
-  #include <stdint.h>
-
   /**
    * Returns the data type of a register.
    *

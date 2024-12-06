@@ -5,26 +5,7 @@
  * \file reToCx.c
  ***********************************************/
 
-#include "mathematics/reToCx.h"
-
-#include "constantPointers.h"
-#include "conversionAngles.h"
-#include "debug.h"
-#include "error.h"
-#include "flags.h"
-#include "fonts.h"
-#include "items.h"
-#include "mathematics/comparisonReals.h"
-#include "mathematics/matrix.h"
-#include "mathematics/toRect.h"
-#include "mathematics/wp34s.h"
-#include "c47Extensions/radioButtonCatalog.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-#include "stack.h"
-
 #include "c47.h"
-
 
 /********************************************//**
  * \brief regX ==> regL and regY+i*regX ==> regX

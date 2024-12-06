@@ -3,8 +3,6 @@
 #if !defined(FLAGBROWSER_H)
 #define FLAGBROWSER_H
 
-#include <stdint.h>
-
   #if !defined(TESTSUITE_BUILD)
     void flagBrowser(uint16_t init); //JM
   #endif // !TESTSUITE_BUILD

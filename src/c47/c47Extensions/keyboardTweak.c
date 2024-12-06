@@ -1,31 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
-
 /********************************************//**
  * \file keyboardTweak.c
  ***********************************************/
 
-#include "c47Extensions/keyboardTweak.h"
-
-#include "bufferize.h"
-#include "calcMode.h"
-#include "charString.h"
-#include "flags.h"
-#include "fonts.h"
-#include "hal/gui.h"
-#include "items.h"
-#include "c47Extensions/jm.h"
-#include "c47Extensions/radioButtonCatalog.h"
-#include "keyboard.h"
-#include "screen.h"
-#include "stack.h"
-#include "statusBar.h"
-#include "softmenus.h"
-#include "solver/equation.h"
-#include "timer.h"
-
-#include <string.h>
 #include "c47.h"
 
 void fnSHIFTf(uint16_t unusedButMandatoryParameter) {

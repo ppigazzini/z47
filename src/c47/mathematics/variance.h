@@ -7,10 +7,6 @@
 #if !defined(VARIANCE_H)
   #define VARIANCE_H
 
-  #include "realType.h"
-  #include "typeDefinitions.h"
-  #include <stdint.h>
-
   void fnWeightedSampleStdDev     (uint16_t unusedButMandatoryParameter);
   void fnWeightedPopulationStdDev (uint16_t unusedButMandatoryParameter);
   void fnWeightedStandardError    (uint16_t unusedButMandatoryParameter);

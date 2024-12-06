@@ -8,8 +8,6 @@
 #if !defined(MATRIXEDITOR_H)
   #define MATRIXEDITOR_H
 
-  #include "typeDefinitions.h"
-
   #if !defined(TESTSUITE_BUILD)
     #define MATRIX_LINE_WIDTH            380
     //#define MATRIX_LINE_WIDTH_LARGE      120

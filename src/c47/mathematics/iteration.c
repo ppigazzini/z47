@@ -5,18 +5,7 @@
  * \file iteration.c
  ***********************************************/
 
-#include "mathematics/iteration.h"
-
-#include "constantPointers.h"
-#include "error.h"
-#include "mathematics/compare.h"
-#include "mathematics/comparisonReals.h"
-#include "mathematics/incDec.h"
-#include "registers.h"
-
 #include "c47.h"
-
-
 
 #define ITER_ISE ((INC_FLAG << 2) | 0)
 #define ITER_ISG ((INC_FLAG << 2) | 1)

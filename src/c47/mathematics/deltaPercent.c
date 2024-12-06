@@ -5,16 +5,6 @@
  * \file deltaPercent.c
  ***********************************************/
 
-#include "mathematics/deltaPercent.h"
-
-#include "constantPointers.h"
-#include "debug.h"
-#include "flags.h"
-#include "error.h"
-#include "mathematics/comparisonReals.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-
 #include "c47.h"
 
 //=============================================================================

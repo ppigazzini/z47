@@ -1,25 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
-
-#include "statusBar.h"
-
-#include "bufferize.h"
-#include "charString.h"
-#include "dateTime.h"
-#include "flags.h"
-#include "fonts.h"
-#include "items.h"
-#include "hal/gui.h"
-#include "c47Extensions/addons.h"
-#include "c47Extensions/jm.h"
-#include "c47Extensions/keyboardTweak.h"
-#include "plotstat.h"
-#include "screen.h"
-#include "softmenus.h"
-#include "timer.h"
-#include <string.h>
-
 #include "c47.h"
 
 void drawBattery(uint16_t voltage);

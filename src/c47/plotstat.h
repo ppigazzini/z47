@@ -7,10 +7,6 @@
 #if !defined(PLOTSTAT_H)
 #define PLOTSTAT_H
 
-#include "realType.h"
-#include "typeDefinitions.h"
-#include <stdint.h>
-
 #define   useFLOAT           0
 #define   useREAL4           4
 #define   useREAL39         39

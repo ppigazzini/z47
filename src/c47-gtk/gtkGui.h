@@ -4,13 +4,9 @@
 /**
  * \file gtkGui.h
  */
+
 #if !defined(GTKGUI_H)
   #define GTKGUI_H
-
-#include "defines.h"
-#include "typeDefinitions.h"
-#include <stdint.h>
-
 
 #if !defined(TESTSUITE_BUILD)
   void btn_Clicked_Gen(bool_t shF, bool_t shG, char *st);

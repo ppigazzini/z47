@@ -7,7 +7,5 @@
 #if !defined(PCSIGMADPCMEAN_H)
   #define PCSIGMADPCMEAN_H
 
-  #include <stdint.h>
-
   void fnPcSigmaDeltaPcXmean(uint16_t unusedButMandatoryParameter);
 #endif // !PCSIGMADPCMEAN_H

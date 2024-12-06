@@ -7,8 +7,5 @@
 #if !defined(BETA_H)
   #define BETA_H
 
-  #include "defines.h"
-  #include <stdint.h>
-
   void fnBeta      (uint16_t unusedButMandatoryParameter);
 #endif // !BETA_H

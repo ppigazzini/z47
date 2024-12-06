@@ -7,10 +7,6 @@
 #if !defined(ERROR_H)
   #define ERROR_H
 
-  #include "defines.h"
-  #include "typeDefinitions.h"
-  #include <stdint.h>
-
   void fnRaiseError             (uint16_t errorCode);
   void fnErrorMessage           (uint16_t unusedButMandatoryParameter);
 

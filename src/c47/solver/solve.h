@@ -7,10 +7,6 @@
 #if !defined(SOLVE_H)
   #define SOLVE_H
 
-  #include "realType.h"
-  #include "typeDefinitions.h"
-  #include <stdint.h>
-
   void fnPgmSlv          (uint16_t label);
   void fnSolve           (uint16_t labelOrVariable);
   void fnSolveVar        (uint16_t unusedButMandatoryParameter);

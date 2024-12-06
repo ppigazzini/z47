@@ -7,9 +7,6 @@
 #if !defined(ARCCOS_H)
   #define ARCCOS_H
 
-  #include "defines.h"
-  #include <stdint.h>
-
   void fnArccos   (uint16_t unusedButMandatoryParameter);
 
 #endif // !ARCCOS_H

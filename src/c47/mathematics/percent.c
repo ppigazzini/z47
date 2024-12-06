@@ -5,14 +5,6 @@
  * \file percent.c
  ***********************************************/
 
-#include "mathematics/percent.h"
-
-#include "constantPointers.h"
-#include "debug.h"
-#include "error.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-
 #include "c47.h"
 
 //=============================================================================

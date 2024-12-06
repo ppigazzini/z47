@@ -7,7 +7,5 @@
 #if !defined(PERCENT_H)
   #define PERCENT_H
 
-  #include <stdint.h>
-
   void fnPercent(uint16_t unusedButMandatoryParameter);
 #endif // !PERCENT_H

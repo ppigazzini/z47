@@ -1,29 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
-
-#include "stats.h"
-
-#include "constantPointers.h"
-#include "c47Extensions/graphText.h"
-#include "debug.h"
-#include "error.h"
-#include "flags.h"
-#include "fonts.h"
-#include "items.h"
-#include "mathematics/comparisonReals.h"
-#include "mathematics/matrix.h"
-#include "mathematics/wp34s.h"
-#include "memory.h"
-#include "plotstat.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-#include "screen.h"
-#include "stack.h"
-#include <string.h>
-
 #include "c47.h"
-
 
 #if !defined(TESTSUITE_BUILD) //TESTSUITE_BUILD
   static void calcMax(uint16_t maxOffset);

@@ -7,9 +7,6 @@
 #if !defined(ARG_H)
   #define ARG_H
 
-  #include "defines.h"
-  #include <stdint.h>
-
   void fnArg      (uint16_t unusedButMandatoryParameter);
 
 #endif // !ARG_H

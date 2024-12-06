@@ -5,17 +5,6 @@
  * \file cross.c
  ***********************************************/
 
-#include "mathematics/cross.h"
-
-#include "constantPointers.h"
-#include "debug.h"
-#include "error.h"
-#include "fonts.h"
-#include "items.h"
-#include "mathematics/matrix.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-
 #include "c47.h"
 
 static void crossDataTypeError(void);

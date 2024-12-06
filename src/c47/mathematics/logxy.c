@@ -5,28 +5,7 @@
  * \file logxy.c
  ***********************************************/
 
-#include "mathematics/logxy.h"
-
-#include "constantPointers.h"
-#include "debug.h"
-#include "error.h"
-#include "flags.h"
-#include "integers.h"
-#include "items.h"
-#include "longIntegerType.h"
-#include "mathematics/comparisonReals.h"
-#include "mathematics/division.h"
-#include "mathematics/integerPartLonginteger.h"
-#include "mathematics/ln.h"
-#include "mathematics/matrix.h"
-#include "mathematics/power.h"
-#include "mathematics/wp34s.h"
-#include "realType.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-
 #include "c47.h"
-
 
 TO_QSPI void (* const logBaseX[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS][NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])() = {
 // regX |    regY ==>    1              2              3              4           5           6           7              8              9              10

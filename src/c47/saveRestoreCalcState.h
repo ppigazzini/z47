@@ -7,7 +7,6 @@
 #if !defined(SAVERESTORECALCSTATE_H)
   #define SAVERESTORECALCSTATE_H
 
-  #include <stdint.h>
 
   #define autoLoad   0
   #define manualLoad 1

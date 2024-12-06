@@ -7,9 +7,6 @@
 #if !defined(OPMOD_H)
   #define OPMOD_H
 
-  #include "longIntegerType.h"
-  #include <stdint.h>
-
   void fnMulMod          (uint16_t unusedButMandatoryParameter);
   void fnExpMod          (uint16_t unusedButMandatoryParameter);
   void fnOpMod           (uint16_t mode);

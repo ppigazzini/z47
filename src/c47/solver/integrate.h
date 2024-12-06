@@ -7,9 +7,6 @@
 #if !defined(INTEGRATE_H)
   #define INTEGRATE_H
 
-  #include "typeDefinitions.h"
-  #include <stdint.h>
-
   void fnPgmInt     (uint16_t label);
   void fnIntegrate  (uint16_t labelOrVariable);
   void fnIntegrateYX(uint16_t labelOrVariable);

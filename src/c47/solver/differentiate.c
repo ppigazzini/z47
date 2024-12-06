@@ -5,21 +5,6 @@
  * \file differentiate.c
  ***********************************************/
 
-#include "solver/differentiate.h"
-#include "constantPointers.h"
-#include "debug.h"
-#include "error.h"
-#include "flags.h"
-#include "fonts.h"
-#include "items.h"
-#include "programming/lblGtoXeq.h"
-#include "programming/manage.h"
-#include "realType.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-#include "solver/equation.h"
-#include "screen.h"
-#include "stack.h"
 #include "c47.h"
 
 void fn1stDeriv(uint16_t label) {

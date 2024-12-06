@@ -7,9 +7,6 @@
  */
 #if !defined(STATUSBAR_H)
 
-#include "c47.h"
-
-
 #define STATUSBAR_H
 
   #if !defined(TESTSUITE_BUILD)

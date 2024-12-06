@@ -1,60 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
-#include "keyboard.h"
-
-#include "assign.h"
-#include "bufferize.h"
-#include "browsers/asnBrowser.h"
-#include "calcMode.h"
-#include "charString.h"
-#include "config.h"
-#include "constants.h"
-#include "constantPointers.h"
-#include "debug.h"
-#include "display.h"
-#include "error.h"
-#include "flags.h"
-#include "fonts.h"
-#include "hal/gui.h"
-#include "items.h"
-#include "c47Extensions/jm.h"
-#include "c47Extensions/keyboardTweak.h"
-#include "c47Extensions/radioButtonCatalog.h"
-#include "mathematics/matrix.h"
-#include "mathematics/cxToRe.h"
-#include "mathematics/reToCx.h"
-#include "memory.h"
-#include "plotstat.h"
-#include "programming/lblGtoXeq.h"
-#include "programming/manage.h"
-#include "programming/nextStep.h"
-#include "programming/programmableMenu.h"
-#include "recall.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-#include "screen.h"
-#include "softmenus.h"
-#include "statusBar.h"
-#include "solver/equation.h"
-#include "solver/graph.h"
-#include "sort.h"
-#include "stack.h"
-#include "stats.h"
-#include "store.h"
-#include "timer.h"
-#include "ui/tam.h"
-#include "c47Extensions/addons.h"
-
-#include "c47Extensions/textfiles.h"
-#include "c47Extensions/keyboardTweak.h"
-#include "c47Extensions/graphText.h"
-
-#if (REAL34_WIDTH_TEST == 1)
-  #include "registerValueConversions.h"
-#endif // (REAL34_WIDTH_TEST == 1)
-#include <string.h>
-
 #include "c47.h"
 
 

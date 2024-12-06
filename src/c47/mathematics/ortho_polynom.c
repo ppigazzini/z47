@@ -5,19 +5,7 @@
  * \file ortho_polynom.c
  ***********************************************/
 
-#include "mathematics/ortho_polynom.h"
-
-#include "constantPointers.h"
-#include "error.h"
-#include "items.h"
-#include "mathematics/comparisonReals.h"
-#include "mathematics/wp34s.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-#include "stack.h"
-
 #include "c47.h"
-
 
 #if !defined(SAVE_SPACE_DM42_12ORTHO)
 static bool_t getOrthoPolyParam(calcRegister_t regist, real_t *val, realContext_t *realContext) {

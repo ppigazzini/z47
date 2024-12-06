@@ -7,10 +7,6 @@
 #if !defined(CHANGESIGN_H)
   #define CHANGESIGN_H
 
-  #include "defines.h"
-  #include "realType.h"
-  #include <stdint.h>
-
   void fnChangeSign(uint16_t unusedButMandatoryParameter);
 
   static inline void chsComplex(real_t *aReal, real_t *aImag) {

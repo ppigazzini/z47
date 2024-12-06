@@ -2,37 +2,40 @@ dmcp_cargs = [
   '-D__weak="__attribute__((weak))"',
   '-D__packed="__attribute__((__packed__))"',
   '-DNEW_HW',
-  '-Wno-unused-parameter']
+  '-Wno-unused-parameter'
+]
+
 dmcp_linkargs = [
   '--specs=nosys.specs',
   '-Wl,--gc-sections',
   '-Wl,--wrap=_malloc_r',
   '-Wl,-Map=' + meson.current_build_dir() + '/C47.map,--cref',
-  '-T' + meson.current_source_dir() + '/stm32_program.ld']
+  '-T' + meson.current_source_dir() + '/stm32_program.ld'
+]
 
 
 #
-# C47 Build : standard build for the DM32 board with the C47 bezel and DM42 keys
+# C47 Build : standard build for the DM32 board with the C47 bezel and DM42 keys or the DM42n
 #
 
 c47_dmcp_src = files(
   'hal/audio.c',
-  'hal/io.c')
+  'hal/io.c'
+)
+
 c47_lib = static_library(
   'libc47',
   build_by_default    : false,
-  sources             : decNumber_src + c47_src + c47_dmcp_src +
-                        [rasterFontsData_c, softmenuCatalogs_h,
-                          constantPointers_ch, vcs_h, version_h],
+  sources             : decNumber_src + c47_src + c47_dmcp_src + [rasterFontsData_c, softmenuCatalogs_h, constantPointers_ch, vcs_h, version_h],
   c_args              : dmcp_cargs,
   include_directories : [decNumber_inc, c47_inc, dmcp_inc],
   dependencies        : arm_gmp_dep,
   pic                 : false,
-  override_options    : ['debug=false', 'optimization=s'])
+  override_options    : ['debug=false', 'optimization=s']
+)
 
 # First pass building the ELF to get the size of the QSPI
-c47_pre_elf = executable(
-  'C47_pre.elf',
+c47_pre_elf = executable('C47_pre.elf',
   build_by_default    : false,
   sources             : dmcp_src + [vcs_h, version_h],
   c_args              : dmcp_cargs,
@@ -40,29 +43,35 @@ c47_pre_elf = executable(
   link_with           : c47_lib,
   include_directories : [c47_inc, dmcp_inc],
   pie                 : false,
-  override_options    : ['debug=false', 'optimization=s'])
+  override_options    : ['debug=false', 'optimization=s']
+)
+
 c47_pre_qspi_incorrect_crc = custom_target(
   'C47_pre_qspi_incorrect_crc.bin',
   build_by_default : false,
   input            : [c47_pre_elf],
   output           : 'C47_pre_qspi_incorrect_crc.bin',
-  command          : [arm_objcopy, '--only-section', '.qspi', '-O', 'binary', '@INPUT@', '@OUTPUT@'])
+  command          : [arm_objcopy, '--only-section', '.qspi', '-O', 'binary', '@INPUT@', '@OUTPUT@']
+)
+
 c47_pre_qspi = custom_target(
   'C47_pre_qspi.bin',
   build_by_default : false,
   input            : [c47_pre_qspi_incorrect_crc],
   output           : 'C47_pre_qspi.bin',
-  command          : [bash, modify_crc, forcecrc32, '@INPUT@', '@OUTPUT@'])
+  command          : [bash, modify_crc, forcecrc32, '@INPUT@', '@OUTPUT@']
+)
+
 generated_qspi_crc_h = custom_target(
   'generated_qspi_crc.h',
   build_by_default : false,
   input            : [c47_pre_qspi],
   output           : 'generated_qspi_crc.h',
-  command          : [bash, gen_qspi_crc, '@INPUT@', '@OUTPUT@'])
+  command          : [bash, gen_qspi_crc, '@INPUT@', '@OUTPUT@']
+)
 
 # Second pass building the ELF including the correct qspi_crc.h
-c47_elf = executable(
-  'C47.elf',
+c47_elf = executable('C47.elf',
   build_by_default    : false,
   sources             : dmcp_src + [vcs_h, version_h, generated_qspi_crc_h],
   c_args              : dmcp_cargs + ['-DUSE_GEN_QSPI_CRC'],
@@ -70,31 +79,40 @@ c47_elf = executable(
   link_with           : c47_lib,
   include_directories : [c47_inc, dmcp_inc],
   pie                 : false,
-  override_options    : ['debug=false', 'optimization=s'])
+  override_options    : ['debug=false', 'optimization=s']
+)
+
 c47_flash = custom_target(
   'C47_flash.bin',
   build_by_default : false,
   input            : [c47_elf],
   output           : 'C47_flash.bin',
-  command          : [arm_objcopy, '--remove-section', '.qspi', '-O', 'binary', '@INPUT@', '@OUTPUT@'])
+  command          : [arm_objcopy, '--remove-section', '.qspi', '-O', 'binary', '@INPUT@', '@OUTPUT@']
+)
+
 c47_pg5 = custom_target(
   'C47.pg5',
   build_by_default : false,
   input            : [c47_flash],
   output           : 'C47.pg5',
-  command          : [bash, add_pgm_chsum, '@INPUT@', '@OUTPUT@'])
+  command          : [bash, add_pgm_chsum, '@INPUT@', '@OUTPUT@']
+)
+
 c47_qspi_incorrect_crc = custom_target(
   'C47_qspi_incorrect_crc.bin',
   build_by_default : false,
   input            : [c47_elf],
   output           : 'C47_qspi_incorrect_crc.bin',
-  command          : [arm_objcopy, '--only-section', '.qspi', '-O', 'binary', '@INPUT@', '@OUTPUT@'])
+  command          : [arm_objcopy, '--only-section', '.qspi', '-O', 'binary', '@INPUT@', '@OUTPUT@']
+)
+
 c47_qspi = custom_target(
   'C47_qspi.bin',
   build_by_default : false,
   input            : [c47_qspi_incorrect_crc],
   output           : 'C47_qspi.bin',
-  command          : [bash, modify_crc, forcecrc32, '@INPUT@', '@OUTPUT@'])
+  command          : [bash, modify_crc, forcecrc32, '@INPUT@', '@OUTPUT@']
+)
 
 alias_target('dmcp5', c47_pg5, c47_qspi)
 
@@ -105,22 +123,22 @@ alias_target('dmcp5', c47_pg5, c47_qspi)
 
 r47_dmcp_src = files(
   'hal/audio.c',
-  'hal/io.c')
+  'hal/io.c'
+)
+
 r47_lib = static_library(
   'libr47',
   build_by_default    : false,
-  sources             : decNumber_src + c47_src + c47_dmcp_src +
-                        [rasterFontsData_c, softmenuCatalogs_h,
-                          constantPointers_ch, vcs_h, version_h],
+  sources             : decNumber_src + c47_src + c47_dmcp_src + [rasterFontsData_c, softmenuCatalogs_h, constantPointers_ch, vcs_h, version_h],
   c_args              : dmcp_cargs + ['-DCALCMODEL=USER_R47'],
   include_directories : [decNumber_inc, c47_inc, dmcp_inc],
   dependencies        : arm_gmp_dep,
   pic                 : false,
-  override_options    : ['debug=false', 'optimization=s'])
+  override_options    : ['debug=false', 'optimization=s']
+)
 
 # First pass building the ELF to get the size of the QSPI
-r47_pre_elf = executable(
-  'R47_pre.elf',
+r47_pre_elf = executable('R47_pre.elf',
   build_by_default    : false,
   sources             : dmcp_src + [vcs_h, version_h],
   c_args              : dmcp_cargs + ['-DCALCMODEL=USER_R47'],
@@ -128,29 +146,35 @@ r47_pre_elf = executable(
   link_with           : r47_lib,
   include_directories : [c47_inc, dmcp_inc],
   pie                 : false,
-  override_options    : ['debug=false', 'optimization=s'])
+  override_options    : ['debug=false', 'optimization=s']
+)
+
 r47_pre_qspi_incorrect_crc = custom_target(
   'R47_pre_qspi_incorrect_crc.bin',
   build_by_default : false,
   input            : [r47_pre_elf],
   output           : 'R47_pre_qspi_incorrect_crc.bin',
-  command          : [arm_objcopy, '--only-section', '.qspi', '-O', 'binary', '@INPUT@', '@OUTPUT@'])
+  command          : [arm_objcopy, '--only-section', '.qspi', '-O', 'binary', '@INPUT@', '@OUTPUT@']
+)
+
 r47_pre_qspi = custom_target(
   'R47_pre_qspi.bin',
   build_by_default : false,
   input            : [r47_pre_qspi_incorrect_crc],
   output           : 'R47_pre_qspi.bin',
-  command          : [bash, modify_crc, forcecrc32, '@INPUT@', '@OUTPUT@'])
+  command          : [bash, modify_crc, forcecrc32, '@INPUT@', '@OUTPUT@']
+)
+
 generated_r47_qspi_crc_h = custom_target(
   'generated_r47_qspi_crc.h',
   build_by_default : false,
   input            : [r47_pre_qspi],
   output           : 'generated_r47_qspi_crc.h',
-  command          : [bash, gen_qspi_crc, '@INPUT@', '@OUTPUT@'])
+  command          : [bash, gen_qspi_crc, '@INPUT@', '@OUTPUT@']
+)
 
 # Second pass building the ELF including the correct qspi_crc.h
-r47_elf = executable(
-  'R47.elf',
+r47_elf = executable('R47.elf',
   build_by_default    : false,
   sources             : dmcp_src + [vcs_h, version_h, generated_qspi_crc_h],
   c_args              : dmcp_cargs + ['-DUSE_GEN_QSPI_CRC'] + ['-DCALCMODEL=USER_R47'],
@@ -158,30 +182,39 @@ r47_elf = executable(
   link_with           : r47_lib,
   include_directories : [c47_inc, dmcp_inc],
   pie                 : false,
-  override_options    : ['debug=false', 'optimization=s'])
+  override_options    : ['debug=false', 'optimization=s']
+)
+
 r47_flash = custom_target(
   'R47_flash.bin',
   build_by_default : false,
   input            : [r47_elf],
   output           : 'R47_flash.bin',
-  command          : [arm_objcopy, '--remove-section', '.qspi', '-O', 'binary', '@INPUT@', '@OUTPUT@'])
+  command          : [arm_objcopy, '--remove-section', '.qspi', '-O', 'binary', '@INPUT@', '@OUTPUT@']
+)
+
 r47_pg5 = custom_target(
   'R47.pg5',
   build_by_default : false,
   input            : [r47_flash],
   output           : 'R47.pg5',
-  command          : [bash, add_pgm_chsum, '@INPUT@', '@OUTPUT@'])
+  command          : [bash, add_pgm_chsum, '@INPUT@', '@OUTPUT@']
+)
+
 r47_qspi_incorrect_crc = custom_target(
   'R47_qspi_incorrect_crc.bin',
   build_by_default : false,
   input            : [r47_elf],
   output           : 'R47_qspi_incorrect_crc.bin',
-  command          : [arm_objcopy, '--only-section', '.qspi', '-O', 'binary', '@INPUT@', '@OUTPUT@'])
+  command          : [arm_objcopy, '--only-section', '.qspi', '-O', 'binary', '@INPUT@', '@OUTPUT@']
+)
+
 r47_qspi = custom_target(
   'R47_qspi.bin',
   build_by_default : false,
   input            : [r47_qspi_incorrect_crc],
   output           : 'R47_qspi.bin',
-  command          : [bash, modify_crc, forcecrc32, '@INPUT@', '@OUTPUT@'])
+  command          : [bash, modify_crc, forcecrc32, '@INPUT@', '@OUTPUT@']
+)
 
 alias_target('dmcp5_r47', r47_pg5, r47_qspi)

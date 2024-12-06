@@ -8,9 +8,6 @@
 #if !defined(LINPOL_H)
   #define LINPOL_H
 
-  #include <stdint.h>
-  #include "realType.h"
-
   void linpol(const real_t *a, const real_t *b, const real_t *p, real_t *res);
 
   void fnLINPOL             (uint16_t unusedButMandatoryParameter);

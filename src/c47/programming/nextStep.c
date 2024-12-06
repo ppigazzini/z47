@@ -6,31 +6,7 @@
  * \file nextStep.c
  ***********************************************/
 
-#include "programming/nextStep.h"
-
-#include "charString.h"
-#include "constantPointers.h"
-#include "debug.h"
-#include "defines.h"
-#include "error.h"
-#include "flags.h"
-#include "fonts.h"
-#include "items.h"
-#include "longIntegerType.h"
-#include "mathematics/comparisonReals.h"
-#include "programming/decode.h"
-#include "programming/manage.h"
-#include "programming/lblGtoXeq.h"
-#include "realType.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-#include "screen.h"
-#include "stack.h"
-#include "store.h"
-#include <stdint.h>
-
 #include "c47.h"
-
 
 uint8_t *countOpBytes(uint8_t *step, uint16_t paramMode) {
   uint8_t opParam = *(uint8_t *)(step++);

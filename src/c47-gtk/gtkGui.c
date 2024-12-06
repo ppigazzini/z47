@@ -1,29 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
-#include "gtkGui.h"
-
-#include "bufferize.h"
-#include "charString.h"
-#include "debug.h"
-#include "error.h"
-#include "flags.h"
-#include "items.h"
-#include "c47Extensions/jm.h"
-#include "fonts.h"
-#include "keyboard.h"
-#include "c47Extensions/keyboardTweak.h"
-#include "mathematics/matrix.h"
-#include "programming/manage.h"
-#include "registers.h"
-#include "saveRestoreCalcState.h"
-#include "screen.h"
-#include "stack.h"
-#include "timer.h"
-#include "statusBar.h"
-#include "softmenus.h"
-#include <string.h>
-
 #include "c47.h"
 
 
@@ -34,6 +11,11 @@ static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
 
 
 #if defined(PC_BUILD)
+  #include <gtk/gtk.h>
+  #include <gdk/gdk.h>
+
+  #include "gtkGui.h"
+
   GtkWidget *grid;
   #if (SIMULATOR_ON_SCREEN_KEYBOARD == 1)
     GtkWidget *backgroundImage;

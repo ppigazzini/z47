@@ -5,15 +5,6 @@
  * \file integerPart.c
  ***********************************************/
 
-#include "mathematics/integerPart.h"
-
-#include "debug.h"
-#include "error.h"
-#include "items.h"
-#include "mathematics/matrix.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-
 #include "c47.h"
 
 static void ipNoOp(void);

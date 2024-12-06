@@ -7,9 +7,6 @@
 #if !defined(PARALLEL_H)
   #define PARALLEL_H
 
-  #include "defines.h"
-  #include <stdint.h>
-
   void fnParallel      (uint16_t unusedButMandatoryParameter);
 
   #if (EXTRA_INFO_ON_CALC_ERROR == 1)

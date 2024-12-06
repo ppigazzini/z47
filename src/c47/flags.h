@@ -7,9 +7,6 @@
 #if !defined(FLAGS_H)
   #define FLAGS_H
 
-  #include "typeDefinitions.h"
-  #include <stdint.h>
-
   bool_t getFlag                 (uint16_t flag);
   void   fnGetSystemFlag         (uint16_t systemFlag);
   void   fnSetFlag               (uint16_t flag);

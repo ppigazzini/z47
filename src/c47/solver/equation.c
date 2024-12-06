@@ -5,28 +5,7 @@
  * \file equation.c
  ***********************************************/
 
-#include "solver/equation.h"
-
-#include "constantPointers.h"
-#include "charString.h"
-#include "defines.h"
-#include "error.h"
-#include "flags.h"
-#include "fonts.h"
-#include "hal/gui.h"
-#include "items.h"
-#include "memory.h"
-#include "realType.h"
-#include "registers.h"
-#include "screen.h"
-#include "stack.h"
-#include "sort.h"
 #include "c47.h"
-#include <string.h>
-
-#include <string.h>
-
-
 
 #if !defined(TESTSUITE_BUILD)
 

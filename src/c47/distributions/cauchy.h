@@ -7,10 +7,6 @@
 #if !defined(CAUCHY_H)
   #define CAUCHY_H
 
-  #include "realType.h"
-  #include "typeDefinitions.h"
-  #include <stdint.h>
-
   void fnCauchyP              (uint16_t unusedButMandatoryParameter);
   void fnCauchyL              (uint16_t unusedButMandatoryParameter);
   void fnCauchyR              (uint16_t unusedButMandatoryParameter);

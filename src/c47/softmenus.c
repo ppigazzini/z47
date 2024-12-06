@@ -1,38 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
-#include "softmenus.h"
-
-#include "c47Extensions/addons.h"
-#include "assign.h"
-#include "calcMode.h"
-#include "charString.h"
-#include "constantPointers.h"
-#include "dateTime.h"
-#include "debug.h"
-#include "error.h"
-#include "fonts.h"
-#include "flags.h"
-#include "items.h"
-#include "mathematics/comparisonReals.h"
-#include "memory.h"
-#include "programming/manage.h"
-#include "c47Extensions/jm.h"
-#include "c47Extensions/keyboardTweak.h"
-#include "plotstat.h"
-#include "programming/nextStep.h"
-#include "c47Extensions/radioButtonCatalog.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-#include "screen.h"
-#include "solver/differentiate.h"
-#include "solver/equation.h"
-#include "sort.h"
-#include "stack.h"
-#include <string.h>
-#include <stdlib.h>
-#include <math.h>
-
 #include "c47.h"
 
 #if !defined(TESTSUITE_BUILD)
@@ -896,9 +864,9 @@ TO_QSPI const softmenu_t softmenu[] = {
 /* 066 */  {.menuItem = -MNU_PFN_2,       .numItems = sizeof(menu_PFN_2         )/sizeof(int16_t), .softkeyItem = menu_PFN_2          },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
 /* 067 */  {.menuItem = -MNU_STAT,        .numItems = sizeof(menu_STAT          )/sizeof(int16_t), .softkeyItem = menu_STAT           },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
 /* 068 */  {.menuItem = -MNU_PLOTTING,    .numItems = sizeof(menu_PLOTTING      )/sizeof(int16_t), .softkeyItem = menu_PLOTTING       },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
-/* 069 */  {.menuItem = -MNU_GRAPHS,      .numItems = sizeof(menu_GRAPHS        )/sizeof(int16_t), .softkeyItem = menu_GRAPHS         },       //Changed!
-/* 070 */  {.menuItem = -MNU_PLOT_SCATR,  .numItems = sizeof(menu_PLOT_STAT     )/sizeof(int16_t), .softkeyItem = menu_PLOT_STAT      },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
-/* 071 */  {.menuItem = -MNU_PLOT_ASSESS, .numItems = sizeof(menu_PLOT_LR       )/sizeof(int16_t), .softkeyItem = menu_PLOT_LR        },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
+/* 069 */  {.menuItem = -MNU_GRAPHS,      .numItems = sizeof(menu_GRAPHS        )/sizeof(int16_t), .softkeyItem = menu_GRAPHS         },   //Changed!
+/* 070 */  {.menuItem = -MNU_PLOT_SCATR,   .numItems = sizeof(menu_PLOT_STAT     )/sizeof(int16_t), .softkeyItem = menu_PLOT_STAT      },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
+/* 071 */  {.menuItem = -MNU_PLOT_ASSESS,     .numItems = sizeof(menu_PLOT_LR       )/sizeof(int16_t), .softkeyItem = menu_PLOT_LR        },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
 /* 072 */  {.menuItem = -MNU_HPLOT,       .numItems = sizeof(menu_HPLOT         )/sizeof(int16_t), .softkeyItem = menu_HPLOT          },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
 /* 073 */  {.menuItem = -MNU_HIST,        .numItems = sizeof(menu_HIST          )/sizeof(int16_t), .softkeyItem = menu_HIST           },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
 /* 074 */  {.menuItem = -MNU_STK,         .numItems = sizeof(menu_STK           )/sizeof(int16_t), .softkeyItem = menu_STK            },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm

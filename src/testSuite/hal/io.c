@@ -1,12 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // SPDX-FileCopyrightText: Copyright The C47 Authors
 
-#include "hal/io.h"
-
-#include <assert.h>
-#include <errno.h>
-#include <stdbool.h>
-#include <stdio.h>
+#include "c47.h"
 
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 

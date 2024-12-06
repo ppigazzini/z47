@@ -6,42 +6,7 @@
  * \file graph.c Graphing module
  ***********************************************/
 
-#include "solver/graph.h"
-
-#include "c47Extensions/addons.h"
-#include "defines.h"
-#include "mathematics/comparisonReals.h"
-#include "charString.h"
-#include "constantPointers.h"
-#include "display.h"
-#include "error.h"
-#include "flags.h"
-#include "fonts.h"
-#include "c47Extensions/addons.h"
-#include "c47Extensions/graphs.h"
-#include "c47Extensions/graphText.h"
-#include "items.h"
-#include "mathematics/imaginaryPart.h"
-#include "mathematics/invert.h"
-#include "mathematics/matrix.h"
-#include "mathematics/realPart.h"
-#include "plotstat.h"
-#include "recall.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-#include "screen.h"
-#include "softmenus.h"
-#include "solver/solve.h"
-#include "solver/equation.h"
-#include "solver/sumprod.h"
-#include "statusBar.h"
-#include "stack.h"
-#include "stats.h"
-#include "store.h"
 #include "c47.h"
-#include <math.h>
-#include <string.h>
-
 
 #if defined(PC_BUILD)
   //Verbose directives can be simulataneously selected

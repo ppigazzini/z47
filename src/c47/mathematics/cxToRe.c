@@ -5,20 +5,7 @@
  * \file cxToRe.c
  ***********************************************/
 
-#include "mathematics/cxToRe.h"
-
-#include "debug.h"
-#include "error.h"
-#include "conversionAngles.h"
-#include "flags.h"
-#include "mathematics/matrix.h"
-#include "mathematics/toPolar.h"
-#include "registerValueConversions.h"
-#include "registers.h"
-#include "stack.h"
-
 #include "c47.h"
-
 
 /********************************************//**
  * \brief regX ==> regL and re(regX) ==> regY, im(regX) ==> regX or magnitude(regX) ==> regY, angle(regX) ==> regX

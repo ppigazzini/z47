@@ -7,9 +7,6 @@
 #if !defined(XNOR_H)
   #define XNOR_H
 
-  #include "defines.h"
-  #include <stdint.h>
-
   void fnLogicalXnor(uint16_t unusedButMandatoryParameter);
 
   #if (EXTRA_INFO_ON_CALC_ERROR == 1)

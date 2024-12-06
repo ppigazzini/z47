@@ -1,13 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
-#include "error.h"
-#include "flags.h"
-#include "c47Extensions/radioButtonCatalog.h"
-#include "screen.h"
-#include "hal/audio.h"
+#include "c47.h"
 
-#include <stdio.h>
 #if defined(__MINGW64__)
   #define NOMINMAX
   #include <windows.h>
