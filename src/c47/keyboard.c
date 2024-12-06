@@ -3829,8 +3829,8 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
           break;
         }
         if(getSystemFlag(FLAG_ALPHA) && !tam.mode) {
-          if(isAlphaSubmenu(1)) {
-            popSoftmenu();
+          if(isAlphaSubmenu(0)) {
+            popSoftmenu();           // Current menu is an Alpha sub-menu: just pop it
             break;
           }
         }
