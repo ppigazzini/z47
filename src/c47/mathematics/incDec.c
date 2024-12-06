@@ -7,6 +7,8 @@
 
 #include "c47.h"
 
+
+
 TO_QSPI void (* const incDec[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])(uint16_t, uint8_t) = {
 // reg ==>   1            2           3           4            5            6            7            8            9              10
 //           Long integer Real34      Complex34   Time         Date         String       Real34 mat   Complex34 m  Short integer  Config data
@@ -75,11 +77,6 @@ void incDecLonI(uint16_t regist, uint8_t flag) {
 
   (flag == INC_FLAG) ? longIntegerAddUInt(r, 1, r) : longIntegerSubtractUInt(r, 1, r);
 
-  //JM Temporary hack to do DSZ
-  if(running_program_jm) {
-    SET_TI_TRUE_FALSE(longIntegerIsZero(r));
-  }
-
   convertLongIntegerToLongIntegerRegister(r, regist);
 
   longIntegerFree(r);
@@ -93,11 +90,6 @@ void incDecReal(uint16_t regist, uint8_t flag) {
   real34ToReal(REGISTER_REAL34_DATA(regist), &r);
   (flag == INC_FLAG) ? realAdd(&r, const_1, &r, &ctxtReal39) : realSubtract(&r, const_1, &r, &ctxtReal39);
 
-  //JM Temporary hack to do DSZ
-  if(running_program_jm) {
-    SET_TI_TRUE_FALSE(real34IsZero(&r));
-  }
-
   realToReal34(&r, REGISTER_REAL34_DATA(regist));
 }
 
@@ -109,11 +101,6 @@ void incDecCplx(uint16_t regist, uint8_t flag) {
   real34ToReal(REGISTER_REAL34_DATA(regist), &r_real);
 
   (flag == INC_FLAG) ? realAdd(&r_real, const_1, &r_real, &ctxtReal39) : realSubtract(&r_real, const_1, &r_real, &ctxtReal39);
-
-  //JM Temporary hack to do DSZ
-  if(running_program_jm)  {
-    SET_TI_TRUE_FALSE(real34IsZero(&r_real) && real34IsZero(REGISTER_REAL34_DATA(regist)));
-  }
 
   realToReal34(&r_real, REGISTER_REAL34_DATA(regist));
 }
@@ -131,11 +118,6 @@ void incDecShoI(uint16_t regist, uint8_t flag) {
   }
   else { // register regist positive
     (flag == INC_FLAG) ? r_value++ : r_value--;
-  }
-
-  //JM Temporary hack to do DSZ
-  if(running_program_jm) {
-    SET_TI_TRUE_FALSE(r_value == 0);
   }
 
   convertUInt64ToShortIntegerRegister(r_sign, r_value, getRegisterTag(regist), regist);

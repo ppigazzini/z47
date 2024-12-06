@@ -1870,10 +1870,6 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
         stringAppend(functionName + stringByteLength(functionName), arg);
         stringAppend(functionName + stringByteLength(functionName), ":");
       }
-      if(item >= ITM_X_P1 && item <= ITM_X_g6) {
-        stringAppend(functionName, indexOfItemsXEQM + 8*(item-fnXEQMENUpos));
-        stringAppend(functionName + stringByteLength(functionName), ":");
-      }
       if(dynamicMenuItem > -1) {
         stringAppend(functionName + stringByteLength(functionName),dynmenuGetLabel(dynamicMenuItem));
       }
@@ -1890,9 +1886,6 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
         if(arg != NULL) stringAppend(functionName,arg);
         showFunctionNameArg = (char *)arg;                        // Needed when executing a user menu from a long pressed key
       }
-      else if(item >= ITM_X_P1 && item <= ITM_X_g6) {
-        stringAppend(functionName, indexOfItemsXEQM + 8*(item-fnXEQMENUpos));
-      }
       else if(item >= FIRST_CONSTANT && item <= LAST_CONSTANT) {
         stringAppend(functionName,pickValidItemFromItems(item, PRIORITY_itemSoftmenuName));
       }
@@ -1906,9 +1899,6 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
       //printf("---|%s|---\n", functionName);
 
     showFunctionNameItem = item;
-    if(running_program_jm) {
-      return;
-    }
     showFunctionNameCounter = delayInMs;
 
     if(functionName[0] != 0)
@@ -1939,7 +1929,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
 
 
   void hideFunctionName(void) {
-    if(!running_program_jm && (tmpString[0] != 0 || calcMode!=CM_AIM)) {
+    if(tmpString[0] != 0 || calcMode!=CM_AIM) {
       if(calcMode != CM_PEM) {
         refreshRegisterLine(REGISTER_T);                                                //JM DO NOT CHANGE BACK TO CLEARING ONLY A SHORT PIECE. CHANGED IN TWEAKED AS WELL>
       }
@@ -4988,10 +4978,6 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
   int16_t refreshScreenCounter = 0;        //JM
 
   void refreshScreen(uint8_t source) {
-    if(running_program_jm) { //JM TEST PROGRAM!
-      return;
-    }
-
     //Special test function to click every time refresh screen is called
     #if defined(DMCP_BUILD) && defined(CLICK_REFRESHSCR)
       start_buzzer_freq(100000);

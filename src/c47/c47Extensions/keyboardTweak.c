@@ -303,22 +303,22 @@ void resetKeytimers(void) {
           if(LongPressM == RBX_M14) {
             longpressDelayedkey1 = ITM_AIM;
             longpressDelayedkey2 = 0;
-            longpressDelayedkey3 = -MNU_XXEQ;
+            longpressDelayedkey3 = 0;
           }
           else if(LongPressM == RBX_M124) {
             longpressDelayedkey1 = ITM_AIM;
             longpressDelayedkey2 = 0;
-            longpressDelayedkey3 = -MNU_XXEQ;
+            longpressDelayedkey3 = 0;
           }
           else if(LongPressM == RBX_M1234) {
             longpressDelayedkey1 = ITM_AIM;
-            longpressDelayedkey2 = -MNU_XXEQ;
+            longpressDelayedkey2 = 0;
             longpressDelayedkey3 = tmpg;
           }
         }
         else {
-          longpressDelayedkey1 = -MNU_XXEQ;
-          longpressDelayedkey2 = tmpf_;
+          longpressDelayedkey1 = tmpf_;
+          longpressDelayedkey2 = 0;
           longpressDelayedkey3 = tmpg_;
         }
       }
