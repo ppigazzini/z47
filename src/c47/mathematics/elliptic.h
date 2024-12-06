@@ -7,9 +7,6 @@
 #if !defined(ELLIPTIC_H)
   #define ELLIPTIC_H
 
-  #include "realType.h"
-  #include <stdint.h>
-
   void fnJacobiSn       (uint16_t unusedButMandatoryParameter);
   void fnJacobiCn       (uint16_t unusedButMandatoryParameter);
   void fnJacobiDn       (uint16_t unusedButMandatoryParameter);

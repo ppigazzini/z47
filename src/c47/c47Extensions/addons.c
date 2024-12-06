@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
+#include "c47.h"
 
 /*
 Math changes:
@@ -28,61 +29,6 @@ All the below: because both Last x and savestack does not work due to multiple s
 
  Check for savestack in jm.c
 */
-
-#include "c47Extensions/addons.h"
-#include "assign.h"
-#include "bufferize.h"
-#include "c47Extensions/keyboardTweak.h"
-#include "calcMode.h"
-#include "charString.h"
-#include "config.h"
-#include "constantPointers.h"
-#include "conversionAngles.h"
-#include "curveFitting.h"
-#include "dateTime.h"
-#include "debug.h"
-#include "display.h"
-#include "error.h"
-#include "flags.h"
-#include "fonts.h"
-#include "fractions.h"
-#include "c47Extensions/graphText.h"
-#include "hal/audio.h"
-#include "hal/gui.h"
-#include "integers.h"
-#include "items.h"
-#include "c47Extensions/jm.h"
-#include "keyboard.h"
-#include "mathematics/arg.h"
-#include "mathematics/changeSign.h"
-#include "mathematics/comparisonReals.h"
-#include "mathematics/conjugate.h"
-#include "mathematics/division.h"
-#include "mathematics/multiplication.h"
-#include "mathematics/round.h"
-#include "mathematics/roundi.h"
-#include "mathematics/toPolar.h"
-#include "plotstat.h"
-#include "c47Extensions/radioButtonCatalog.h"
-#include "c47Extensions/keyboardTweak.h"
-#include "realType.h"
-#include "recall.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-#include "logicalOps/rotateBits.h"
-#include "screen.h"
-#include "softmenus.h"
-#include "stack.h"
-#include "statusBar.h"
-#include "c47Extensions/textfiles.h"
-#include <string.h>
-
-  #ifdef DMCP_BUILD
-    #include <dmcp.h>
-  #endif // DMCP_BUILD
-
-#include "c47.h"
-
 
 void fneRPN(uint16_t state) {
   if(state == 1) {

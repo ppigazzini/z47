@@ -1,54 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
-#include "screen.h"
-
-#include "assign.h"
-#include "browsers/browsers.h"
-#include "bufferize.h"
-#include "calcMode.h"
-#include "charString.h"
-#include "config.h"
-#include "constantPointers.h"
-#include "curveFitting.h"
-#include "dateTime.h"
-#include "debug.h"
-#include "defines.h"
-#include "display.h"
-#include "error.h"
-#include "flags.h"
-#include "fonts.h"
-#include "c47Extensions/addons.h"
-#include "c47Extensions/graphs.h"
-#include "c47Extensions/graphText.h"
-#include "c47Extensions/inlineTest.h"
-#include "c47Extensions/radioButtonCatalog.h"
-#include "items.h"
-#include "c47Extensions/jm.h"
-#include "c47Extensions/xeqm.h"
-#include "keyboard.h"
-#include "longIntegerType.h"
-#include "c47Extensions/keyboardTweak.h"
-#include "mathematics/comparisonReals.h"
-#include "mathematics/incDec.h"
-#include "memory.h"
-#include "mathematics/matrix.h"
-#include "plotstat.h"
-#include "programming/manage.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-#include "softmenus.h"
-#include "stack.h"
-#include "sort.h"
-#include "statusBar.h"
-#include "timer.h"
-#include "ui/matrixEditor.h"
-#include "version.h"
-#include <string.h>
-#include <math.h>
-
 #include "c47.h"
-
+#include "version.h"
 
 //#define DEBUGCLEARS
 

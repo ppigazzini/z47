@@ -1,33 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
-#include "ui/tam.h"
-
-#include "bufferize.h"
-#include "calcMode.h"
-#include "charString.h"
-#include "constantPointers.h"
-#include "error.h"
-#include "flags.h"
-#include "fonts.h"
-#include "hal/gui.h"
-#include "items.h"
-#include "c47Extensions/addons.h"
-#include "mathematics/integerPart.h"
-#include "mathematics/integerPartLonginteger.h"
-#include "mathematics/fractionalPart.h"
-#include "mathematics/integerPart.h"
-#include "mathematics/matrix.h"
-#include "programming/lblGtoXeq.h"
-#include "programming/manage.h"
-#include "programming/nextStep.h"
-#include "registers.h"
-#include "screen.h"
-#include "softmenus.h"
-#include "sort.h"
-#include "stack.h"
-#include <string.h>
-
 #include "c47.h"
 
 #if !defined(TESTSUITE_BUILD)

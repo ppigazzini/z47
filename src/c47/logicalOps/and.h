@@ -7,9 +7,6 @@
 #if !defined(AND_H)
   #define AND_H
 
-  #include "defines.h"
-  #include <stdint.h>
-
   void fnLogicalAnd(uint16_t unusedButMandatoryParameter);
 
   #if (EXTRA_INFO_ON_CALC_ERROR == 1)

@@ -7,9 +7,6 @@
 #if !defined(AGM_H)
   #define AGM_H
 
-  #include "realType.h"
-  #include <stdint.h>
-
   void   fnAgm         (uint16_t unusedButMandatoryParameter);
 
   size_t realAgm       (const real_t *a, const real_t *b, real_t *res, realContext_t *realContext);

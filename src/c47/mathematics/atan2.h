@@ -7,9 +7,6 @@
 #if !defined(ATAN2_H)
   #define ATAN2_H
 
-  #include "defines.h"
-  #include <stdint.h>
-
   void fnAtan2      (uint16_t unusedButMandatoryParameter);
 
   #if (EXTRA_INFO_ON_CALC_ERROR == 1)

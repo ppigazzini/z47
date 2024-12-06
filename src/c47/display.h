@@ -4,11 +4,6 @@
 #if !defined(DISPLAY_H)
 #define DISPLAY_H
 
-#include "longIntegerType.h"
-#include "realType.h"
-#include "typeDefinitions.h"
-#include <stdint.h>
-
 // The maximum argument to FIX, SCI, ...
 #define DSP_MAX     19
 #define DSP_MAX_SIG 17 //max 17 bearing in minf dREAL, overridden if DSP_MAX < DSP_MAX_SIG

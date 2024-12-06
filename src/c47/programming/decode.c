@@ -5,21 +5,6 @@
  * \file decode.c
  ***********************************************/
 
-#include "programming/decode.h"
-
-#include "c47Extensions/xeqm.h"
-#include "charString.h"
-#include "dateTime.h"
-#include "defines.h"
-#include "display.h"
-#include "flags.h"
-#include "fonts.h"
-#include "items.h"
-#include "programming/manage.h"
-#include "programming/nextStep.h"
-#include "registers.h"
-#include <string.h>
-
 #include "c47.h"
 
 TO_QSPI const char shuffleReg[4] = {'x', 'y', 'z', 't'};

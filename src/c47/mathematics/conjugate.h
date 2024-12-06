@@ -7,9 +7,6 @@
 #if !defined(CONJUGATE_H)
   #define CONJUGATE_H
 
-  #include "defines.h"
-  #include <stdint.h>
-
   void conjCplx(void);
   void fnConjugate(uint16_t unusedButMandatoryParameter);
 

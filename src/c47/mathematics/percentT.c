@@ -5,15 +5,6 @@
  * \file percentT.c
  ***********************************************/
 
-#include "mathematics/percentT.h"
-
-#include "constantPointers.h"
-#include "debug.h"
-#include "error.h"
-#include "flags.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-
 #include "c47.h"
 
 //=============================================================================

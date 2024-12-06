@@ -6,37 +6,7 @@
  * \file lblGtoXeq.c
  ***********************************************/
 
-#include "programming/lblGtoXeq.h"
-
-#include "charString.h"
-#include "constantPointers.h"
-#include "conversionAngles.h"
-#include "dateTime.h"
-#include "defines.h"
-#include "error.h"
-#include "flags.h"
-#include "fonts.h"
-#include "items.h"
-#include "keyboard.h"
-#include "longIntegerType.h"
-#include "memory.h"
-#include "programming/manage.h"
-#include "programming/nextStep.h"
-#include "realType.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-#include "screen.h"
-#include "softmenus.h"
-#include "statusBar.h"
-#include "stack.h"
-#include "store.h"
-#include "timer.h"
-#include "ui/tam.h"
-#include "c47Extensions/addons.h"
-
 #include "c47.h"
-
-
 
 void fnGoto(uint16_t label) {
   if(tam.mode || calcMode != CM_PEM) {

@@ -7,8 +7,6 @@
 #if !defined(GUI_H)
   #define GUI_H
 
-  #include "defines.h"
-
   #if defined(DMCP_BUILD) || (SIMULATOR_ON_SCREEN_KEYBOARD == 0)
     #define calcModeNormalGui()
     #define calcModeAimGui()

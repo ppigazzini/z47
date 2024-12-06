@@ -4,15 +4,6 @@
 #if !defined(DEBUG_H)
 #define DEBUG_H
 
-#include "defines.h"
-#include "realType.h"
-#include "typeDefinitions.h"
-#include <stdint.h>
-  #if defined(PC_BUILD)
-  #include <gtk/gtk.h>
-  #include <gdk/gdk.h>
-  #endif // PC_BUILD
-
 #if (DEBUG_PANEL == 1)
   extern GtkWidget *lbl1[DEBUG_LINES], *lbl2[DEBUG_LINES];
   extern GtkWidget *btnBitFields, *btnFlags, *btnRegisters, *btnLocalRegisters, *btnTmpAndSavedStackRegisters;

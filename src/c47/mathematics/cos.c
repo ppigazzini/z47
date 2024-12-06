@@ -5,20 +5,7 @@
  * \file cos.c
  ***********************************************/
 
-#include "mathematics/cos.h"
-
-#include "constantPointers.h"
-#include "debug.h"
-#include "error.h"
-#include "items.h"
-#include "mathematics/matrix.h"
-#include "mathematics/wp34s.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-
 #include "c47.h"
-
-
 
 void cosComplex(const real_t *real, const real_t *imag, real_t *resReal, real_t *resImag, realContext_t *realContext) {
   // cos(a + i b) = cos(a)*cosh(b) - i*sin(a)*sinh(b)

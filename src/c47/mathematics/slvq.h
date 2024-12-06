@@ -7,9 +7,6 @@
 #if !defined(SLVQ_H)
   #define SLVQ_H
 
-  #include "realType.h"
-  #include <stdint.h>
-
   void fnSlvq                (uint16_t unusedButMandatoryParameter);
 
   /**

@@ -7,9 +7,6 @@
 #if !defined(REALPART_H)
   #define REALPART_H
 
-  #include "defines.h"
-  #include <stdint.h>
-
   void fnRealPart   (uint16_t unusedButMandatoryParameter);
 
   #if (EXTRA_INFO_ON_CALC_ERROR == 1)

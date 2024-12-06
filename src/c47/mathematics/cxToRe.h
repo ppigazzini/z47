@@ -7,7 +7,5 @@
 #if !defined(CXTORE_H)
   #define CXTORE_H
 
-  #include <stdint.h>
-
   void fnCxToRe(uint16_t unusedButMandatoryParameter);
 #endif // !CXTORE_H

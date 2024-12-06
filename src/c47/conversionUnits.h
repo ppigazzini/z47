@@ -7,9 +7,7 @@
 #if !defined(CONVERSIONUNITS_H)
   #define CONVERSIONUNITS_H
 
-  #include <stdint.h>
-
-enum {
+  enum {
     constFactorFt2Hectare,      /*   0 */
     constFactorFt2M2,
     constFactorHectareKm2,
@@ -99,7 +97,7 @@ enum {
     constFactorMgeuktok100M,
     constFactorK100Mtomik,
     constFactorEND              /* MUST be last */
-};
+  };
 
   void fnUnitConvert  (uint16_t multiplyDivide);
 

@@ -5,26 +5,7 @@
  * \file arccos.c
  ***********************************************/
 
-#include "mathematics/arccos.h"
-
-#include "constantPointers.h"
-#include "conversionAngles.h"
-#include "debug.h"
-#include "error.h"
-#include "flags.h"
-#include "items.h"
-#include "mathematics/comparisonReals.h"
-#include "mathematics/ln.h"
-#include "mathematics/matrix.h"
-#include "mathematics/multiplication.h"
-#include "mathematics/sqrt1Px2.h"
-#include "mathematics/wp34s.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-
 #include "c47.h"
-
-
 
 static void arccosCplx(void) {
   real_t a, b, real, imag;

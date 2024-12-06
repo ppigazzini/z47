@@ -7,10 +7,6 @@
 #if !defined(DELTAPERCENT_H)
   #define DELTAPERCENT_H
 
-  #include <stdint.h>
-  #include "typeDefinitions.h"
-  #include "realType.h"
-
   void fnDeltaPercent(uint16_t unusedButMandatoryParameter);
   bool_t deltaPercentXmeanReal(real_t *xReal, real_t *rReal, realContext_t *realContext);
 #endif // !DELTAPERCENT_H

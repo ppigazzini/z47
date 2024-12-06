@@ -31,8 +31,6 @@
 #if !defined(PCG_BASIC_H_INCLUDED)
   #define PCG_BASIC_H_INCLUDED 1
 
-  #include <inttypes.h>
-
   #if __cplusplus
     extern "C" {
   #endif // __cplusplus

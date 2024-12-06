@@ -1,14 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
-
-
 #if !defined(GRAPHTEXT_H)
 #define GRAPHTEXT_H
-
-#include "defines.h"
-#include "typeDefinitions.h"
-#include <stdint.h>
 
 #define      CSV_NEWLINE "\n"
 #define      CSV_TAB     "\t"
@@ -33,10 +27,6 @@ int16_t      export_string_to_filename(const char line1[TMP_STR_LENGTH], uint8_t
   int16_t save_text(const char *line1, uint8_t mode1, uint8_t mode2, uint8_t mode3, int16_t  nn, const char *dirfile);
 #endif // DMCP_BUILD
 
-#define      filenamelen 40
-extern char         filename_csv[filenamelen]; //JMMAX                //JM_CSV
-extern uint32_t     mem__32;                                          //JM_CSV
-extern bool_t       cancelFilename;
 void         printStatus    (uint8_t row, const char *line1, uint8_t forced);
 void         print_numberstr(const char *line1, bool_t line_init);
 void         print_linestr  (const char *line1, bool_t line_init);

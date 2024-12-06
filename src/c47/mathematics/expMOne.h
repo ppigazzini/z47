@@ -8,10 +8,6 @@
   #define EXPMONE_H
   // Coded by JM, based on exp.h
 
-  #include "defines.h"
-  #include "realType.h"
-  #include <stdint.h>
-
   void fnExpM1   (uint16_t unusedButMandatoryParameter);
 
   void expM1Complex(const real_t *real, const real_t *imag, real_t *resReal, real_t *resImag, realContext_t *realContext);

@@ -5,11 +5,6 @@
  * \file max.c
  ***********************************************/
 
-#include "mathematics/max.h"
-
-#include "mathematics/compare.h"
-#include "registers.h"
-
 #include "c47.h"
 
 void fnMax(uint16_t unusedButMandatoryParameter) {

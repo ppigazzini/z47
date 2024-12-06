@@ -7,9 +7,6 @@
 #if !defined(TOPOLAR_H)
   #define TOPOLAR_H
 
-  #include "realType.h"
-  #include <stdint.h>
-
   void fnToPolar2              (uint16_t unusedButMandatoryParameter);
   void fnToPolar               (uint16_t unusedButMandatoryParameter);
   void real34RectangularToPolar(const real34_t *real34, const real34_t *imag34, real34_t *magnitude34, real34_t *theta34);

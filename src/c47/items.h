@@ -5,9 +5,6 @@
 #if !defined(ITEMS_H)
 #define ITEMS_H
 
-#include "typeDefinitions.h"
-#include <stdint.h>
-
 //This list is generated (manually) from items3.xlsx, EXPORT.H
 
 #define ITM_NULL                       0

@@ -7,9 +7,5 @@
 #if !defined(FIB_H)
   #define FIB_H
 
-  #include "defines.h"
-  #include "realType.h"
-  #include <stdint.h>
-
   void fnFib   (uint16_t unusedButMandatoryParameter);
 #endif // !FIB_H

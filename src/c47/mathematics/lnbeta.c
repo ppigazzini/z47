@@ -5,20 +5,6 @@
  * \file lnbeta.c
  ***********************************************/
 
-#include "mathematics/lnbeta.h"
-
-#include "constantPointers.h"
-#include "debug.h"
-#include "error.h"
-#include "flags.h"
-#include "fonts.h"
-#include "mathematics/comparisonReals.h"
-#include "mathematics/gamma.h"
-#include "mathematics/ln.h"
-#include "mathematics/wp34s.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-
 #include "c47.h"
 
 TO_QSPI void (* const lnBeta[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS][NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])() = {

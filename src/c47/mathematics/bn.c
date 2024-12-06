@@ -5,18 +5,7 @@
  * \file bn.c
  ***********************************************/
 
-#include "mathematics/bn.h"
-
-#include "debug.h"
-#include "error.h"
-#include "items.h"
-#include "mathematics/wp34s.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-
 #include "c47.h"
-
-
 
 static void bn_common(bool_t bnstar) {
   real_t x, res;

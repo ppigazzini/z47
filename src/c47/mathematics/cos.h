@@ -7,10 +7,6 @@
 #if !defined(COS_H)
   #define COS_H
 
-  #include "defines.h"
-  #include "realType.h"
-  #include <stdint.h>
-
   void fnCos   (uint16_t unusedButMandatoryParameter);
 
   void cosComplex(const real_t *real, const real_t *imag, real_t *resReal, real_t *resImag, realContext_t *realContext);

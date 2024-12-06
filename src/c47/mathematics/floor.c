@@ -5,16 +5,6 @@
  * \file floor.c
  ***********************************************/
 
-#include "mathematics/floor.h"
-
-#include "debug.h"
-#include "error.h"
-#include "fonts.h"
-#include "items.h"
-#include "mathematics/matrix.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-
 #include "c47.h"
 
 static void floorNoOp(void);

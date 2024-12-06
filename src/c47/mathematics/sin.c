@@ -5,20 +5,7 @@
  * \file sin.c
  ***********************************************/
 
-#include "mathematics/sin.h"
-
-#include "constantPointers.h"
-#include "debug.h"
-#include "error.h"
-#include "items.h"
-#include "mathematics/matrix.h"
-#include "mathematics/wp34s.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-
 #include "c47.h"
-
-
 
 void sinComplex(const real_t *real, const real_t *imag, real_t *resReal, real_t *resImag, realContext_t *realContext) {
   // sin(a + ib) = sin(a)*cosh(b) + i*cos(a)*sinh(b)

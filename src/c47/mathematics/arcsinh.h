@@ -7,10 +7,6 @@
 #if !defined(ARCSINH_H)
   #define ARCSINH_H
 
-  #include "defines.h"
-  #include "realType.h"
-  #include <stdint.h>
-
   void fnArcsinh   (uint16_t unusedButMandatoryParameter);
 
   uint8_t ArcsinhReal(const real_t *x, real_t *res, realContext_t *realContext);

@@ -3,15 +3,6 @@
 
 //#define DISPLOADING
 
-#include "c47Extensions/textfiles.h"
-
-#include "charString.h"
-#include "c47Extensions/graphText.h"
-#include "registers.h"
-#include "screen.h"
-#include <string.h>
-#include "typeDefinitions.h"
-
 #include "c47.h"
 
 typedef struct {

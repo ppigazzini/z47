@@ -7,9 +7,6 @@
 #if !defined(SAVERESTOREPROGRAMS_H)
   #define SAVERESTOREPROGRAMS_H
 
-  #include "typeDefinitions.h"
-  #include <stdint.h>
-
   void fnSaveProgram   (uint16_t label);
   void fnExportProgram (uint16_t label);
   void fnLoadProgram   (uint16_t unusedButMandatoryParameter);

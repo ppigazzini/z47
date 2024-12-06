@@ -5,17 +5,6 @@
  * \file decomp.c
  ***********************************************/
 
-#include "mathematics/decomp.h"
-
-#include "constantPointers.h"
-#include "debug.h"
-#include "error.h"
-#include "flags.h"
-#include "fractions.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-#include "stack.h"
-
 #include "c47.h"
 
 TO_QSPI void (*const Decomp[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])(void) = {

@@ -7,9 +7,6 @@
 #if !defined(ASSIGN_H)
   #define ASSIGN_H
 
-  #include <stdint.h>
-  #include "typeDefinitions.h"
-
   void fnAssign                   (uint16_t mode);
 
   void fnDeleteMenu               (uint16_t id);

@@ -7,9 +7,6 @@
 #if !defined(EQUATION_H)
   #define EQUATION_H
 
-  #include "typeDefinitions.h"
-  #include <stdint.h>
-
   #define EQUATION_AIM_BUFFER  0xffff
 
   #define EQUATION_NO_CURSOR   0xffff

@@ -7,8 +7,6 @@
 #if !defined(TONE_H)
   #define TONE_H
 
-  #include <stdint.h>
-
   void fnTone(uint16_t toneNum);
   void fnBeep(uint16_t unusedButMandatoryParameter);
 #endif // .TONE_H

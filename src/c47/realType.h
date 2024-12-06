@@ -4,16 +4,9 @@
 /**
  * \file realType.h
  */
+
 #if !defined(REALTYPE_H)
   #define REALTYPE_H
-
-  #include "defines.h"
-
-  #include "decimal128.h"
-  #include "decimal64.h"
-  #include "decDouble.h"
-  #include "decQuad.h"
-  #include "realType.h"
 
   typedef struct {
     int32_t digits;      // Count of digits in the coefficient; >0

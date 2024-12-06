@@ -7,10 +7,6 @@
 #if !defined(ADDITION_H)
 #define ADDITION_H
 
-#include "defines.h"
-#include "realType.h"
-#include <stdint.h>
-
 void fnAdd      (uint16_t unusedButMandatoryParameter);
 void addComplex(const real_t *aReal, const real_t *aImag, const real_t *bReal, const real_t *bImag, real_t *resReal, real_t *resImag, realContext_t *realContext);
 

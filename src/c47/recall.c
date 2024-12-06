@@ -1,30 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
-
-#include "recall.h"
-
-#include "charString.h"
-#include "debug.h"
-#include "defines.h"
-#include "error.h"
-#include "flags.h"
-#include "items.h"
-#include "c47Extensions/jm.h"
-#include "mathematics/compare.h"
-#include "mathematics/matrix.h"
-#include "memory.h"
-#include "plotstat.h"
-#include "registerValueConversions.h"
-#include "registers.h"
-#include "stack.h"
-#include "store.h"
-#include "typeDefinitions.h"
-#include "ui/matrixEditor.h"
-
 #include "c47.h"
-
-
 
 #if !defined(TESTSUITE_BUILD)
   static bool_t recallElementReal(real34Matrix_t *matrix) {

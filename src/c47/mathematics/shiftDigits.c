@@ -5,16 +5,7 @@
  * \file shiftDigits.c
  ***********************************************/
 
-#include "mathematics/shiftDigits.h"
-
-#include "debug.h"
-#include "error.h"
-#include "integers.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-
 #include "c47.h"
-
 
 /********************************************//**
  * \brief regX ==> regL and SDL(regX) ==> regX

@@ -5,19 +5,6 @@
  * \file cube.c
  ***********************************************/
 
-#include "mathematics/cube.h"
-
-#include "debug.h"
-#include "error.h"
-#include "flags.h"
-#include "fonts.h"
-#include "integers.h"
-#include "items.h"
-#include "mathematics/matrix.h"
-#include "mathematics/multiplication.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-
 #include "c47.h"
 
 static void cubeLonI(void) {

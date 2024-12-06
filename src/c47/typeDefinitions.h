@@ -1,19 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
-
 #if !defined(TYPEDEFINITIONS_H)
 #define TYPEDEFINITIONS_H
-
-#include "realType.h"
-#include "mathematics/pcg_basic.h"
-#include <stdint.h>
-#include <stdbool.h>
-
-  #if defined(PC_BUILD)
-  #include <gtk/gtk.h>
-  #include <gdk/gdk.h>
-  #endif // PC_BUILD
 
 /**
  * Boolean type.
@@ -574,4 +563,4 @@ typedef struct {
   };
   typedef struct cfgFileParam cfgFileParam_t;
   #endif // PC_BUILD
-#endif // .TYPEDEFINITIONS_H
+#endif // TYPEDEFINITIONS_H

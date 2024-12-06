@@ -7,12 +7,11 @@
 #if !defined(ASNBROWSER_H)
   #define ASNBROWSER_H
 
-  #include <stdint.h>
-    /********************************************//**
-     * \brief The assigned key browser
-     *
-     * \param[in] unusedButMandatoryParameter uint16_t
-     * \return void
-     ***********************************************/
-    void fnAsnViewer(uint16_t unusedButMandatoryParameter);
+  /********************************************//**
+   * \brief The assigned key browser
+   *
+   * \param[in] unusedButMandatoryParameter uint16_t
+   * \return void
+   ***********************************************/
+  void fnAsnViewer(uint16_t unusedButMandatoryParameter);
 #endif // !REGISTERBROWSER_H

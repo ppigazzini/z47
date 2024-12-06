@@ -7,7 +7,5 @@
 #if !defined(RETOCX_H)
   #define RETOCX_H
 
-  #include <stdint.h>
-
   void fnReToCx(uint16_t unusedButMandatoryParameter);
 #endif // !RETOCX_H

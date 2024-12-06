@@ -7,7 +7,5 @@
 #if !defined(CLCVAR_H)
   #define CLCVAR_H
 
-  #include <stdint.h>
-
   void fnClCVar(uint16_t unusedButMandatoryParameter);
 #endif // !CLCVAR_H

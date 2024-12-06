@@ -1,37 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
-#include "plotstat.h"
-
-#include "c47Extensions/addons.h"
-#include "c47Extensions/graphs.h"
-#include "charString.h"
-#include "constantPointers.h"
-#include "config.h"
-#include "curveFitting.h"
-#include "debug.h"
-#include "error.h"
-#include "flags.h"
-#include "fonts.h"
-#include "items.h"
-#include "keyboard.h"
-#include "mathematics/comparisonReals.h"
-#include "mathematics/matrix.h"
-#include "mathematics/variance.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-#include "screen.h"
-#include "softmenus.h"
-#include "solver/graph.h"
-#include "stack.h"
-#include "stats.h"
-#include "statusBar.h"
-#include <math.h>
-#include <string.h>
-#include <time.h>
-
 #include "c47.h"
-
 
 void fnPlotRegressionLine(uint16_t plotMode);
 

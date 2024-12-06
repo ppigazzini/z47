@@ -5,23 +5,11 @@
  * \file c47-gtk.c
  ***********************************************/
 
-#include "config.h"
-#include "flags.h"
-#include "gtkGui.h"
-#include "items.h"
-#include "keyboard.h"
-#include "hal/gui.h"
-#include "calcMode.h"
-#include "c47Extensions/keyboardTweak.h"
-#include "longIntegerType.h"
-#include "memory.h"
-#include "saveRestoreCalcState.h"
-#include "screen.h"
-#include "timer.h"
-
 #include "c47.h"
 
 #if defined(PC_BUILD)
+  #include "gtkGui.h"
+
   char modelString[50];
   uint8_t             config = 0;
   bool_t enableFunctionKeysDisplay;

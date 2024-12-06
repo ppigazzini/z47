@@ -221,19 +221,26 @@ c47_src = files(
   'ui/matrixEditor.c',
   'ui/tam.c',
   'ui/tone.c',
-  'c47.c')
+  'c47.c'
+)
+
 generateCatalogs_src = files(
   'charString.c',
   'fonts.c',
   'items.c',
-  'sort.c')
-c47_inc = include_directories('.')
+  'sort.c'
+)
+
+c47_inc = include_directories('.', '../generated')
 
 vcs_h = vcs_tag(
   command        : ['git', 'describe', '--match=NeVeRmAtCh', '--always', '--abbrev=8', '--dirty=-mod'],
   input          : 'vcs.h.in',
-  output         : 'vcs.h')
+  output         : 'vcs.h'
+)
+
 version_h = configure_file(
   input         : 'version.h.in',
   output        : 'version.h',
-  configuration : conf_data)
+  configuration : conf_data
+)

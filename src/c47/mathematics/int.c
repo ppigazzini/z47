@@ -5,16 +5,7 @@
  * \file int.c
  ***********************************************/
 
-#include "mathematics/int.h"
-
-#include "debug.h"
-#include "error.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-#include "screen.h"
-
 #include "c47.h"
-
 
 void fnCheckInteger(uint16_t mode) {
   longInteger_t x, x2;

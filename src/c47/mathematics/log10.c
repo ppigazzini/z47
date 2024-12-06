@@ -1,25 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
-#include "mathematics/log10.h"
-
-#include "constantPointers.h"
-#include "debug.h"
-#include "error.h"
-#include "flags.h"
-#include "fonts.h"
-#include "integers.h"
-#include "items.h"
-#include "mathematics/integerPart.h"
-#include "mathematics/integerPartLonginteger.h"
-#include "mathematics/ln.h"
-#include "mathematics/matrix.h"
-#include "mathematics/power.h"
-#include "mathematics/toPolar.h"
-#include "mathematics/wp34s.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-
 #include "c47.h"
 
 TO_QSPI void (* const logBase10[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])(void) = {

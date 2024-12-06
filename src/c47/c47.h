@@ -1,47 +1,186 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
-
 #if !defined(C47_H)
   #define C47_H
 
   #pragma GCC diagnostic ignored "-Wunused-parameter"
 
+  #include <assert.h>
+  #include <ctype.h>
+  #include <errno.h>
+  #include <inttypes.h>
+  #include <libgen.h>
+  #include <math.h>
+  #include <stdbool.h>
+  #include <stddef.h>
+  #include <stdlib.h>
+  #include <stdio.h>
+  #include <string.h>
+  #include <sys/stat.h>
+  #include <time.h>
+  #include <unistd.h>
 
-  #if defined(LINUX)
-    #include <math.h>
-  #endif // LINUX
+  #if !defined(GENERATE_CATALOGS) && !defined(GENERATE_CONSTANTS) && !defined(GENERATE_TESTPGMS)
+    #include <gmp.h>
 
-  #if defined(OSX)
-    // needed by chdir
-    #include <unistd.h>
-  #endif // OSX
+    #if defined(PC_BUILD)
+      #include <gtk/gtk.h>
+      #include <gdk/gdk.h>
+    #endif // PC_BUILD
 
-  #if defined(PC_BUILD)
-    #include <glib.h>
+    #if defined(WIN32)
+      #include <locale.h>
+    #endif // WIN32
+
+    #if defined(DMCP_BUILD)
+      #define DBG_PRINT
+
+      #if !defined(DBG_PRINT)
+        #define printf(...)
+      #endif
+
+      #include <dmcp.h>
+    #endif // DMCP_BUILD
+
+    #include "defines.h"
+
+    #include "decContext.h"
+    #include "decNumber.h"
+    #include "decQuad.h"
+    #include "decimal128.h"
+
+    #include "mathematics/pcg_basic.h"
+
+    #include "realType.h"
+    #include "typeDefinitions.h"
+    #include "longIntegerType.h"
+
+    #include "assign.h"
+    #include "browsers/browsers.h"
+    #include "bufferize.h"
+    #include "c47Extensions/c47Extensions.h"
+    #include "calcMode.h"
+    #include "charString.h"
+    #include "config.h"
+    #include "constantPointers.h"
+    #include "constants.h"
+    #include "conversionAngles.h"
+    #include "conversionUnits.h"
+    #include "core/freeList.h"
+    #include "curveFitting.h"
+    #include "dateTime.h"
+    #include "debug.h"
+    #include "display.h"
+    #include "distributions/distributions.h"
+    #include "error.h"
+    #include "flags.h"
+    #include "fonts.h"
+    #include "fractions.h"
+    #include "hal/audio.h"
+    #include "hal/gui.h"
+    #include "hal/io.h"
+    #include "integers.h"
+    #include "items.h"
+    #include "keyboard.h"
+    #include "logicalOps/logicalOps.h"
+    #include "mathematics/mathematics.h"
+    #include "memory.h"
+    #include "plotstat.h"
+    #include "programming/programming.h"
+    #include "recall.h"
+    #include "registers.h"
+    #include "registerValueConversions.h"
+    #include "saveRestoreCalcState.h"
+    #include "saveRestorePrograms.h"
+    #include "screen.h"
+    #include "softmenus.h"
+    #include "solver/solver.h"
+    #include "sort.h"
+    #include "stack.h"
+    #include "stats.h"
+    #include "statusBar.h"
+    #include "store.h"
+    #include "stringFuncs.h"
+    #include "timer.h"
+    #include "ui/matrixEditor.h"
+    #include "ui/tam.h"
+    #include "ui/tone.h"
+
+    #if defined(TESTSUITE_BUILD)
+      #include "testSuite.h"
+    #endif //TESTSUITE_BUILD
+  #endif // PC_BUILD || DMCP_BUILD || TESTSUITE_BUILD
+
+  #if defined(GENERATE_CATALOGS)
+    #include <gmp.h>
+
     #include <gtk/gtk.h>
     #include <gdk/gdk.h>
-  #endif // PC_BUILD
 
-  #if defined(WIN32)
-    #include <locale.h>
-  #endif // WIN32
+    #include "defines.h"
 
-  #if defined(DMCP_BUILD)
-    #define DBG_PRINT
+    #include "decContext.h"
+    #include "decNumber.h"
+    #include "decQuad.h"
+    #include "decimal128.h"
 
-    #if defined(DBG_PRINT)
-      #include <stdio.h>
-    #else
-      #define printf(...)
-    #endif
+    #include "mathematics/pcg_basic.h"
 
-    #include <dmcp.h>
-  #endif // DMCP_BUILD
+    #include "realType.h"
+    #include "typeDefinitions.h"
+    #include "longIntegerType.h"
 
-  #include "mathematics/pcg_basic.h"
-  #include "realType.h"
-  #include "typeDefinitions.h"
+    #include "c47Extensions/c47Extensions.h"
+    #include "charString.h"
+    #include "config.h"
+    #include "conversionUnits.h"
+    #include "display.h"
+    #include "fonts.h"
+    #include "items.h"
+    #include "mathematics/mathematics.h"
+    #include "solver/solver.h"
+    #include "sort.h"
+    #include "stats.h"
+  #endif // GENERATE_CATALOGS
+
+  #if defined(GENERATE_CONSTANTS)
+    #include <gtk/gtk.h>
+    #include <gdk/gdk.h>
+
+    #include "defines.h"
+
+    #include "decContext.h"
+    #include "decNumber.h"
+    #include "decQuad.h"
+    #include "decimal128.h"
+
+    #include "mathematics/pcg_basic.h"
+
+    #include "realType.h"
+    #include "typeDefinitions.h"
+
+  #endif // GENERATE_CONSTANTS
+
+  #if defined(GENERATE_TESTPGMS)
+    #include <gtk/gtk.h>
+    #include <gdk/gdk.h>
+
+    #include "defines.h"
+
+    #include "decContext.h"
+    #include "decNumber.h"
+    #include "decQuad.h"
+    #include "decimal128.h"
+
+    #include "mathematics/pcg_basic.h"
+
+    #include "realType.h"
+    #include "typeDefinitions.h"
+
+    #include "fonts.h"
+    #include "items.h"
+  #endif // GENERATE_TESTPGMS
 
   // Variables for the simulator
   #if !defined(TESTSUITE_BUILD) && !defined(GENERATE_CATALOGS)
@@ -49,6 +188,7 @@
     extern int16_t lastParam;
     extern char    lastTemp[16];
   #endif // !TESTSUITE_BUILD && !GENERATE_CATALOGS
+
   #if defined(PC_BUILD) || defined(TESTSUITE_BUILD)
     extern bool_t               debugMemAllocation;
     extern bool                 forceTamAlpha;
@@ -89,20 +229,20 @@
   extern const reservedVariableDescStr_t varDescr[];
   extern const char                      commonBugScreenMessages[NUMBER_OF_BUG_SCREEN_MESSAGES][SIZE_OF_EACH_BUG_SCREEN_MESSAGE];
   extern const char                      errorMessages[NUMBER_OF_ERROR_CODES][SIZE_OF_EACH_ERROR_MESSAGE];
-    extern const calcKey_t                 kbd_std_C47[37];
-    extern const calcKey_t                 kbd_std_DM42[37];
-    extern const calcKey_t                 kbd_std_R47[37];
-    extern const calcKey_t                 kbd_std_R47f_g[37];
-    extern const calcKey_t                 kbd_std_R47bk_fg[37];
-    extern const calcKey_t                 kbd_std_R47fg_bk[37];
-    extern const calcKey_t                 kbd_std_R47fg_g[37];
+  extern const calcKey_t                 kbd_std_C47[37];
+  extern const calcKey_t                 kbd_std_DM42[37];
+  extern const calcKey_t                 kbd_std_R47[37];
+  extern const calcKey_t                 kbd_std_R47f_g[37];
+  extern const calcKey_t                 kbd_std_R47bk_fg[37];
+  extern const calcKey_t                 kbd_std_R47fg_bk[37];
+  extern const calcKey_t                 kbd_std_R47fg_g[37];
 
-    #if defined(PC_BUILD)
-      #define kbd_std                      (calcModel == USER_C47 ? kbd_std_C47 : calcModel == USER_DM42 ? kbd_std_DM42 : calcModel == USER_R47f_g ? kbd_std_R47f_g : calcModel == USER_R47bk_fg ? kbd_std_R47bk_fg : calcModel == USER_R47fg_bk ? kbd_std_R47fg_bk : calcModel == USER_R47fg_g ? kbd_std_R47fg_g : \
-                                            calcModel == USER_E47 ? kbd_std_E47 : calcModel == USER_D47 ?  kbd_std_D47 :  calcModel == USER_V47 ? kbd_std_V47 : calcModel == USER_N47 ?     kbd_std_N47 : calcModel == USER_DM42 ?     kbd_std_DM42 :    kbd_std_C47)
-    #else //!PC_BUILD
-      #define kbd_std                      (calcModel == USER_C47 ? kbd_std_C47 : calcModel == USER_DM42 ? kbd_std_DM42 : calcModel == USER_R47f_g ? kbd_std_R47f_g : calcModel == USER_R47bk_fg ? kbd_std_R47bk_fg : calcModel == USER_R47fg_bk ? kbd_std_R47fg_bk : calcModel == USER_R47fg_g ? kbd_std_R47fg_g : kbd_std_C47)
-    #endif //!PC_BUILD
+  #if defined(PC_BUILD)
+    #define kbd_std                      (calcModel == USER_C47 ? kbd_std_C47 : calcModel == USER_DM42 ? kbd_std_DM42 : calcModel == USER_R47f_g ? kbd_std_R47f_g : calcModel == USER_R47bk_fg ? kbd_std_R47bk_fg : calcModel == USER_R47fg_bk ? kbd_std_R47fg_bk : calcModel == USER_R47fg_g ? kbd_std_R47fg_g : \
+                                          calcModel == USER_E47 ? kbd_std_E47 : calcModel == USER_D47 ?  kbd_std_D47 :  calcModel == USER_V47 ? kbd_std_V47 : calcModel == USER_N47 ?     kbd_std_N47 : calcModel == USER_DM42 ?     kbd_std_DM42 :    kbd_std_C47)
+  #else //!PC_BUILD
+    #define kbd_std                      (calcModel == USER_C47 ? kbd_std_C47 : calcModel == USER_DM42 ? kbd_std_DM42 : calcModel == USER_R47f_g ? kbd_std_R47f_g : calcModel == USER_R47bk_fg ? kbd_std_R47bk_fg : calcModel == USER_R47fg_bk ? kbd_std_R47fg_bk : calcModel == USER_R47fg_g ? kbd_std_R47fg_g : kbd_std_C47)
+  #endif //!PC_BUILD
 
   #if defined(PC_BUILD)
     extern const calcKey_t                 kbd_std_WP43[37];
@@ -428,16 +568,19 @@
   extern  char                  lastStateFileOpened[stateFileNameVarLength+12];
   extern  char                  fileNameSelected[stateFileNameVarLength];
 
+  extern char         filename_csv[FILENAMELEN]; //JMMAX                //JM_CSV
+  extern uint32_t     mem__32;                                          //JM_CSV
+  extern bool_t       cancelFilename;
 
   #if defined(DMCP_BUILD)
     extern bool_t              backToDMCP;
   #if defined(BUFFER_CLICK_DETECTION)
     extern uint32_t            timeStampKey;                                      //dr - internal keyBuffer POC
   #endif // BUFFER_CLICK_DETECTION
-//  extern int                  keyAutoRepeat; // Key repetition
-//  extern int16_t              previousItem;
-    extern uint32_t             nextTimerRefresh;
+  //extern int                  keyAutoRepeat; // Key repetition
+  //extern int16_t              previousItem;
+  extern uint32_t             nextTimerRefresh;
 
-    int                         convertKeyCode(int key);
+  int                         convertKeyCode(int key);
   #endif // DMCP_BUILD
 #endif // !C47_H

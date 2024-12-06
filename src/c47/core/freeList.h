@@ -7,8 +7,6 @@
 #if !defined(FREELIST_H)
   #define FREELIST_H
 
-  #include <stddef.h>
-
   /**
    * Allocate memory.
    * Allocates a given amount of memory and returns a pointer to the start of

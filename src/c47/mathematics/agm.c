@@ -5,24 +5,6 @@
  * \file agm.c
  ***********************************************/
 
-#include "mathematics/agm.h"
-
-#include "constantPointers.h"
-#include "debug.h"
-#include "error.h"
-#include "flags.h"
-#include "mathematics/arctan.h"
-#include "mathematics/comparisonReals.h"
-#include "mathematics/division.h"
-#include "mathematics/multiplication.h"
-#include "mathematics/sin.h"
-#include "mathematics/squareRoot.h"
-#include "mathematics/tan.h"
-#include "mathematics/toPolar.h"
-#include "mathematics/wp34s.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-
 #include "c47.h"
 
 typedef enum {

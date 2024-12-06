@@ -5,13 +5,7 @@
  * \file comparisonReals.c
  ***********************************************/
 
-#include "mathematics/comparisonReals.h"
-
-#include "constantPointers.h"
-#include "registerValueConversions.h"
-
 #include "c47.h"
-
 
 void convergenceTolerence(real_t *tol)
 {

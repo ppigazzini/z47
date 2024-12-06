@@ -5,20 +5,7 @@
  * \file magnitude.c
  ***********************************************/
 
-#include "mathematics/magnitude.h"
-
-#include "debug.h"
-#include "error.h"
-#include "integers.h"
-#include "items.h"
-#include "mathematics/matrix.h"
-#include "registerValueConversions.h"
-#include "registers.h"
-#include "toPolar.h"
-
 #include "c47.h"
-
-
 
 TO_QSPI void (* const magnitude[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])(void) = {
 // regX ==> 1              2              3              4               5               6               7              8              9              10

@@ -7,10 +7,6 @@
 #if !defined(DIVISION_H)
   #define DIVISION_H
 
-  #include "defines.h"
-  #include "realType.h"
-  #include <stdint.h>
-
   void fnDivide(uint16_t unusedButMandatoryParameter);
 
   #if (EXTRA_INFO_ON_CALC_ERROR == 1)

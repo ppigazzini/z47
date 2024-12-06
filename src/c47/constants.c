@@ -6,18 +6,7 @@
  * see: https://physics.nist.gov/cuu/index.html
  ***********************************************/
 
-#include "constants.h"
-
-#include "constantPointers.h"
-#include "c47Extensions/radioButtonCatalog.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-#include "screen.h"
-#include "stack.h"
-
 #include "c47.h"
-
-
 
 /********************************************//**
  * \brief Replaces the X content with the selected

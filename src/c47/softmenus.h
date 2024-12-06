@@ -8,10 +8,6 @@
 #if !defined(SOFTMENUS_H)
 #define SOFTMENUS_H
 
-#include "defines.h"
-#include "typeDefinitions.h"
-#include <stdint.h>
-
 int16_t currentMenu(void);
 bool_t  isAlphaSubmenu(uint8_t n);
 

@@ -5,19 +5,6 @@
  * \file round.c
  ***********************************************/
 
-#include "mathematics/round.h"
-
-#include "debug.h"
-#include "error.h"
-#include "flags.h"
-#include "items.h"
-#include "mathematics/matrix.h"
-#include "mathematics/toRect.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-#include "saveRestoreCalcState.h"
-#include "screen.h"
-
 #include "c47.h"
 
 static void roundNoOp (void);

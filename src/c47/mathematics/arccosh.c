@@ -5,23 +5,7 @@
  * \file arccosh.c
  ***********************************************/
 
-#include "mathematics/arccosh.h"
-
-#include "constantPointers.h"
-#include "debug.h"
-#include "error.h"
-#include "flags.h"
-#include "items.h"
-#include "mathematics/comparisonReals.h"
-#include "mathematics/matrix.h"
-#include "mathematics/toRect.h"
-#include "mathematics/toPolar.h"
-#include "mathematics/wp34s.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-
 #include "c47.h"
-
 
 static void arccoshCplx(void) {
   real_t a, b, real, imag;

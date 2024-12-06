@@ -7,10 +7,6 @@
 #if !defined(SIN_H)
   #define SIN_H
 
-  #include "defines.h"
-  #include "realType.h"
-  #include <stdint.h>
-
   void fnSin   (uint16_t unusedButMandatoryParameter);
 
   void sinComplex(const real_t *real, const real_t *imag, real_t *resReal, real_t *resImag, realContext_t *realContext);

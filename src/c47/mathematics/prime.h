@@ -7,8 +7,6 @@
 #if !defined(PRIME_H)
   #define PRIME_H
 
-  #include <stdint.h>
-
   void fnIsPrime      (uint16_t unusedButMandatoryParameter);
   void fnNextPrime    (uint16_t unusedButMandatoryParameter);
   void fnPrimeFactors (uint16_t unusedButMandatoryParameter);

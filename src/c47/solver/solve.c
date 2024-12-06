@@ -6,35 +6,7 @@
  * \file solve.c
  ***********************************************/
 
-#include "solver/solve.h"
-
-#include "c47Extensions/addons.h"
-#include "c47Extensions/graphText.h"
-#include "charString.h"
-#include "constantPointers.h"
-#include "defines.h"
-#include "display.h"
-#include "error.h"
-#include "flags.h"
-#include "c47Extensions/addons.h"
-#include "items.h"
-#include "longIntegerType.h"
-#include "mathematics/comparisonReals.h"
-#include "mathematics/wp34s.h"
-#include "plotstat.h"
-#include "programming/lblGtoXeq.h"
-#include "programming/manage.h"
-#include "programming/nextStep.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-#include "screen.h"
-#include "softmenus.h"
-#include "solver/equation.h"
-#include "solver/graph.h"
-#include "solver/tvm.h"
-#include "stack.h"
 #include "c47.h"
-#include <math.h>
 
 void fnPgmSlv(uint16_t label) {
   if(FIRST_LABEL <= label && label <= LAST_LABEL) {

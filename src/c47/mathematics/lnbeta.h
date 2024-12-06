@@ -7,10 +7,6 @@
 #if !defined(LNBETA_H)
   #define LNBETA_H
 
-  #include "defines.h"
-  #include "realType.h"
-  #include <stdint.h>
-
   void fnLnBeta      (uint16_t unusedButMandatoryParameter);
 
   #if (EXTRA_INFO_ON_CALC_ERROR == 1)

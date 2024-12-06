@@ -5,23 +5,7 @@
  * \file invert.c
  ***********************************************/
 
-#include "mathematics/invert.h"
-
-#include "constantPointers.h"
-#include "debug.h"
-#include "display.h"
-#include "error.h"
-#include "flags.h"
-#include "fonts.h"
-#include "items.h"
-#include "mathematics/division.h"
-#include "mathematics/matrix.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-
 #include "c47.h"
-
-
 
 TO_QSPI void (* const invert_dispatch[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])(void) = {
 // regX ==> 1            2           3            4            5            6            7           8           9             10

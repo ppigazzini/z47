@@ -1,41 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
-
-
-#include "registers.h"
-
-#include "assign.h"
-#include "charString.h"
-#include "config.h"
-#include "constantPointers.h"
-#include "dateTime.h"
-#include "debug.h"
-#include "display.h"
-#include "error.h"
-#include "flags.h"
-#include "fonts.h"
-#include "items.h"
-#include "c47Extensions/jm.h"
-#include "c47Extensions/graphText.h"
-#include "mathematics/compare.h"
-#include "mathematics/comparisonReals.h"
-#include "mathematics/matrix.h"
-#include "mathematics/rsd.h"
-#include "memory.h"
-#include "programming/manage.h"
-#include "c47Extensions/radioButtonCatalog.h"
-#include "registerValueConversions.h"
-#include "saveRestoreCalcState.h"
-#include "sort.h"
-#include "stack.h"
-#include "screen.h"
-#include "softmenus.h"
-#include "stats.h"
-#include <string.h>
-
 #include "c47.h"
-
 
 #if !defined(TESTSUITE_BUILD)
   TO_QSPI const reservedVariableDescStr_t varDescr[] = {

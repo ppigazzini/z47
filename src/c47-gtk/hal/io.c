@@ -1,19 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // SPDX-FileCopyrightText: Copyright The C47 Authors
 
-#include "hal/io.h"
-
-#include "charString.h"
-#include "dateTime.h"
-#include "defines.h"
-#include "c47-gtk.h"
-#include <assert.h>
-#include <errno.h>
-#include <stdio.h>
-#include <string.h>
-#include <sys/stat.h>
-
 #include "c47.h"
+#include "c47-gtk.h"
 
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 

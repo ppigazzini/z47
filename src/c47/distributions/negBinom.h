@@ -7,9 +7,6 @@
 #if !defined(NEGBINOM_H)
   #define NEGBINOM_H
 
-  #include "realType.h"
-  #include <stdint.h>
-
   void fnNegBinomialP  (uint16_t unusedButMandatoryParameter);
   void fnNegBinomialL  (uint16_t unusedButMandatoryParameter);
   void fnNegBinomialR  (uint16_t unusedButMandatoryParameter);

@@ -7,8 +7,6 @@
 #if !defined(ISUMPROD_H)
   #define ISUMPROD_H
 
-  #include <stdint.h>
-
 //====================================
 // Triadic function integer only sum and product functions
 // Z : Longinteger counter step increment

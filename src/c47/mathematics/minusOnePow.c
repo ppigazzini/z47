@@ -5,29 +5,7 @@
  * \file minusOnePow.c
  ***********************************************/
 
-#include "mathematics/minusOnePow.h"
-
-#include "conversionAngles.h"
-#include "constantPointers.h"
-#include "debug.h"
-#include "error.h"
-#include "flags.h"
-#include "fonts.h"
-#include "integers.h"
-#include "items.h"
-#include "mathematics/comparisonReals.h"
-#include "mathematics/eulersFormula.h"
-#include "mathematics/magnitude.h"
-#include "mathematics/multiplication.h"
-#include "mathematics/matrix.h"
-#include "mathematics/wp34s.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-#include "c47Extensions/radioButtonCatalog.h"
-
 #include "c47.h"
-
-
 
 TO_QSPI void (* const m1Pow[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])(void) = {
 // regX ==> 1            2          3          4           5           6           7          8           9             10

@@ -7,8 +7,6 @@
 #if !defined(BN_H)
   #define BN_H
 
-  #include <stdint.h>
-
   void fnBn    (uint16_t unusedButMandatoryParameter);
   void fnBnStar(uint16_t unusedButMandatoryParameter);
 #endif // !BN_H

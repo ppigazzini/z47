@@ -7,8 +7,6 @@
 #if !defined(INCDEC_H)
   #define INCDEC_H
 
-  #include <stdint.h>
-
   void incDecError(uint16_t regist, uint8_t flag);
   void fnDec      (uint16_t regist);
   void fnInc      (uint16_t regist);

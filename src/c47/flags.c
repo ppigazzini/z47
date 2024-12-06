@@ -5,21 +5,6 @@
  * \file flags.c
  ***********************************************/
 
-#include "flags.h"
-
-#include "calcMode.h"
-#include "config.h"
-#include "error.h"
-#include "items.h"
-#include "registers.h"
-#include "softmenus.h"
-#include "solver/equation.h"
-#include "c47Extensions/jm.h"
-#include "c47Extensions/keyboardTweak.h"
-#include "c47Extensions/radioButtonCatalog.h"
-#include "ui/tam.h"
-#include <string.h>
-
 #include "c47.h"
 
 typedef enum { FLAG_CLEAR=0, FLAG_SET=1, FLAG_FLIP=2 } flagAction_t;

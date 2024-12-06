@@ -7,10 +7,6 @@
 #if !defined(ARCSIN_H)
   #define ARCSIN_H
 
-  #include "defines.h"
-  #include "realType.h"
-  #include <stdint.h>
-
   void fnArcsin   (uint16_t unusedButMandatoryParameter);
 
   uint8_t ArcsinComplex(const real_t *xReal, const real_t *xImag, real_t *rReal, real_t *rImag, realContext_t *realContext);

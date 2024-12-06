@@ -5,14 +5,6 @@
  * \file remainder.c
  ***********************************************/
 
-#include "mathematics/remainder.h"
-
-#include "debug.h"
-#include "error.h"
-#include "mathematics/wp34s.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-
 #include "c47.h"
 
 /******************************************************************************************************************************************************************************************/

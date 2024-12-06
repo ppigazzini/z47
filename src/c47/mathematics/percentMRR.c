@@ -5,17 +5,6 @@
  * \file percentMRR.c
  ***********************************************/
 
-#include "mathematics/percentMRR.h"
-
-#include "constantPointers.h"
-#include "debug.h"
-#include "error.h"
-#include "flags.h"
-#include "items.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-#include "stack.h"
-
 #include "c47.h"
 
 static void percentMRR() {

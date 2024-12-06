@@ -7,9 +7,6 @@
 #if !defined(DECODE_H)
   #define DECODE_H
 
-  #include "typeDefinitions.h"
-  #include <stdint.h>
-
   void decodeOneStep                (uint8_t *step);
   void decodeOneStep_XPORT          (uint8_t *step);
   void decodeOneStepXEQM_XPORT      (uint8_t *step);

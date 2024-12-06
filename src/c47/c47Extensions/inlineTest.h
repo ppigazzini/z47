@@ -8,10 +8,6 @@
 #if !defined(INLINETEST_H)
 #define INLINETEST_H
 
-#include "longIntegerType.h"
-#include "typeDefinitions.h"
-#include <stdint.h>
-
 //#if defined(INLINE_TEST)
 extern bool_t   testEnabled;
 extern uint16_t testBitset;

@@ -5,31 +5,6 @@
  * \file prime.c
  ***********************************************/
 
-#include "mathematics/prime.h"
-
-#include "c47Extensions/addons.h"
-#include "constantPointers.h"
-#include "debug.h"
-#include "display.h"
-#include "error.h"
-#include "flags.h"
-#include "fonts.h"
-#include "integers.h"
-#include "items.h"
-#include "matrix.h"
-#include "mathematics/comparisonReals.h"
-#include "mathematics/multiplication.h"
-#include "mathematics/power.h"
-#include "mathematics/subtraction.h"
-#include "registers.h"
-#include "registerValueConversions.h"
-#include "store.h"
-#include "display.h"
-#include "screen.h"
-#include "stack.h"
-#include "statusBar.h"
-#include <string.h>
-
 #include "c47.h"
 
 #define maximumPrime 308   //10^308

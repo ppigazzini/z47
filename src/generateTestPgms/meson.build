@@ -1,13 +1,16 @@
-generateTestPgms = executable(
-  'generateTestPgms',
+generateTestPgms = executable('generateTestPgms',
   build_by_default    : false,
   sources             : files('generateTestPgms.c'),
+  c_args              : '-DGENERATE_TESTPGMS',
   include_directories : [decNumber_inc, c47_inc],
   dependencies        : gtk_dep,
-  native              : true)
-testPgms_bin = custom_target(
-  'testPgms.bin',
+  native              : true
+)
+
+testPgms_bin = custom_target('testPgms.bin',
   build_by_default : false,
   output           : 'testPgms.bin',
-  command          : [generateTestPgms, '@OUTPUT@'])
+  command          : [generateTestPgms, '@OUTPUT@']
+)
+
 alias_target('testPgms', testPgms_bin)
