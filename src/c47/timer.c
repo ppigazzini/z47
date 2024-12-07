@@ -33,7 +33,7 @@ void fnTicks(uint16_t unusedButMandatoryParameter) {
 
   liftStack();
   longIntegerInit(lgInt);
-  uIntToLongInteger(tim, lgInt);
+  uInt32ToLongInteger(tim, lgInt);
   convertLongIntegerToLongIntegerRegister(lgInt, REGISTER_X);
   longIntegerFree(lgInt);
 }
@@ -64,7 +64,7 @@ void fnLastT (uint16_t unusedButMandatoryParameter) {
   longInteger_t lgInt;
   liftStack();
   longIntegerInit(lgInt);
-  uIntToLongInteger(timeLastOp, lgInt);
+  uInt32ToLongInteger(timeLastOp, lgInt);
   convertLongIntegerToLongIntegerRegister(lgInt, REGISTER_X);
   longIntegerFree(lgInt);
 }
@@ -658,7 +658,7 @@ static void _realToUInt32(const real_t *re, enum rounding mode, uint32_t *value3
   realGetCoefficient(&real, bcd);
 
   longIntegerInit(lgInt);
-  uIntToLongInteger(bcd[0], lgInt);
+  uInt32ToLongInteger(bcd[0], lgInt);
 
   for(int i=1; i<real.digits; i++) {
     longIntegerMultiplyUInt(lgInt, 10, lgInt);

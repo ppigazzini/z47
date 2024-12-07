@@ -226,14 +226,14 @@ void checkValueReal(uint16_t mode) {
         if(getSystemFlag(FLAG_SPCRES) && real34IsInfinite(REGISTER_REAL34_DATA(REGISTER_X))) {
           temporaryInformation = TI_TRUE;
           longIntegerInit(val);
-          intToLongInteger(real34IsPositive(REGISTER_REAL34_DATA(REGISTER_X)) ? 1 : -1, val);
+          int32ToLongInteger(real34IsPositive(REGISTER_REAL34_DATA(REGISTER_X)) ? 1 : -1, val);
           convertLongIntegerToLongIntegerRegister(val, REGISTER_X);
           longIntegerFree(val);
         }
         else {
           temporaryInformation = TI_FALSE;
           longIntegerInit(val);
-          intToLongInteger(0, val);
+          uInt32ToLongInteger(0u, val);
           convertLongIntegerToLongIntegerRegister(val, REGISTER_X);
           longIntegerFree(val);
         }

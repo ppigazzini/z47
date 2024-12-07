@@ -52,7 +52,7 @@ void decompLonI(void) {
 
   liftStack();
   longIntegerInit(lgInt);
-  uIntToLongInteger(1, lgInt);
+  uInt32ToLongInteger(1u, lgInt);
   convertLongIntegerToLongIntegerRegister(lgInt, REGISTER_X);
   longIntegerFree(lgInt);
 }
@@ -96,13 +96,13 @@ void decompReal(void) {
 
     longIntegerInit(lgInt);
 
-    uIntToLongInteger(numer, lgInt);
+    uInt32ToLongInteger((uint32_t)numer, lgInt);
     if(sign == -1) {
       longIntegerSetNegativeSign(lgInt);
     }
     convertLongIntegerToLongIntegerRegister(lgInt, REGISTER_Y);
 
-    uIntToLongInteger(denom, lgInt);
+    uInt32ToLongInteger((uint32_t)denom, lgInt);
     convertLongIntegerToLongIntegerRegister(lgInt, REGISTER_X);
 
     longIntegerFree(lgInt);

@@ -56,7 +56,7 @@ void exptLonI(void) {
 
   convertLongIntegerRegisterToReal(REGISTER_X, &x, &ctxtReal39);
   longIntegerInit(lgInt);
-  intToLongInteger((realIsZero(&x) ? 0 : x.exponent + x.digits - 1), lgInt);
+  int32ToLongInteger((realIsZero(&x) ? 0 : x.exponent + x.digits - 1), lgInt);
   convertLongIntegerToLongIntegerRegister(lgInt, REGISTER_X);
   longIntegerFree(lgInt);
 }
@@ -85,7 +85,7 @@ void exptReal(void) {
 
   real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &x);
   longIntegerInit(lgInt);
-  intToLongInteger((realIsZero(&x) ? 0 : x.exponent + x.digits - 1), lgInt);
+  int32ToLongInteger((realIsZero(&x) ? 0 : x.exponent + x.digits - 1), lgInt);
   convertLongIntegerToLongIntegerRegister(lgInt, REGISTER_X);
   longIntegerFree(lgInt);
 }

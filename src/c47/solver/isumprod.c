@@ -42,7 +42,7 @@
     convertLongIntegerRegisterToLongInteger(REGISTER_Y, loopTo);
     convertLongIntegerRegisterToLongInteger(REGISTER_X, loopStep);
     convertLongIntegerRegisterToLongInteger(REGISTER_Z, iCounter); //Loopfrom counter initial value = From
-    uIntToLongInteger(prod ? 1 : 0, resultLi);                     //Initialize long integer accumulator
+    uInt32ToLongInteger(prod ? 1u : 0u, resultLi);                     //Initialize long integer accumulator
 
     longIntegerSubtract(loopTo, iCounter, iLoop);                  //calculate the remaining iteration counter
     if(!longIntegerIsZero(loopStep)) {

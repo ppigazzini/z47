@@ -1637,7 +1637,7 @@ void changeToWholeString(int32_t intt, char *str, char *str1) {
   str[0]=0;
   longInteger_t lgInt;
   longIntegerInit(lgInt);
-  intToLongInteger((signed long int)intt, lgInt);
+  int32ToLongInteger(intt, lgInt);
   longIntegerToDisplayString(lgInt, str, 30, SCREEN_WIDTH, 20, true);
   strcat(str,str1);
   longIntegerFree(lgInt);

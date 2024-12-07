@@ -2410,7 +2410,7 @@ RELEASE_END:
               if(++largeur > SCREEN_WIDTH) {
                 largeur--;
               }
-              uIntToLongInteger(largeur, lgInt);
+              uInt32ToLongInteger(largeur, lgInt);
               convertLongIntegerToLongIntegerRegister(lgInt, REGISTER_Z);
             #endif // (REAL34_WIDTH_TEST == 1)
           }
@@ -2435,7 +2435,7 @@ RELEASE_END:
               if(--largeur < 20) {
                 largeur++;
               }
-              uIntToLongInteger(largeur, lgInt);
+              uInt32ToLongInteger(largeur, lgInt);
               convertLongIntegerToLongIntegerRegister(lgInt, REGISTER_Z);
             #endif // (REAL34_WIDTH_TEST == 1)
           }
@@ -3766,8 +3766,8 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
           break;
         }
         if(getSystemFlag(FLAG_ALPHA) && !tam.mode) {
-          if(isAlphaSubmenu(1)) {
-            popSoftmenu();
+          if(isAlphaSubmenu(0)) {
+            popSoftmenu();           // Current menu is an Alpha sub-menu: just pop it
             break;
           }
         }

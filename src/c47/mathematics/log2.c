@@ -85,7 +85,7 @@ void log2LonI(void) {
         longIntegerInit(xx);
         longIntegerInit(rr);
         longIntegerInit(yy);
-        intToLongInteger(2, xx);
+        uInt32ToLongInteger(2u, xx);
         convertReal34ToLongInteger(REGISTER_REAL34_DATA(REGISTER_X), rr, DEC_ROUND_HALF_EVEN);
         longIntegerPower(xx, rr, yy);
         if(longIntegerCompare(lgInt, yy) == 0) {

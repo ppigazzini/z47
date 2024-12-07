@@ -2552,7 +2552,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
         #if (SHOW_MEMORY_STATUS == 1)
           char string[1000];
 
-          sprintf(string, "%" PRId32 " bytes free (%" PRId32 " region%s), C47 %" PRIu32 " bytes, GMP %" PRIu32 " bytes -> should always be 0", getFreeRamMemory(), numberOfFreeMemoryRegions, numberOfFreeMemoryRegions==1 ? "" : "s", (uint32_t)TO_BYTES((uint64_t)c47MemInBlocks), (uint32_t)gmpMemInBytes);
+          sprintf(string, "%" PRIu32 " bytes free (%" PRId32 " region%s), C47 %" PRIu32 " bytes, GMP %" PRIu32 " bytes -> should always be 0", getFreeRamMemory(), numberOfFreeMemoryRegions, numberOfFreeMemoryRegions==1 ? "" : "s", (uint32_t)TO_BYTES((uint64_t)c47MemInBlocks), (uint32_t)gmpMemInBytes);
           stringToUtf8(string, (uint8_t *)tmpStr);
           gtk_label_set_label(GTK_LABEL(lblMemoryStatus), tmpStr);
           gtk_widget_show(lblMemoryStatus);
@@ -5255,7 +5255,7 @@ void fnScreenDump(uint16_t unusedButMandatoryParameter) {
         longIntegerFree(lgInt);
         return -1;
       }
-      longIntegerToUInt(lgInt, value);
+      longIntegerToUInt32(lgInt, value);
       longIntegerFree(lgInt);
     }
 
@@ -5324,7 +5324,7 @@ void fnAGraph(uint16_t regist) {
     longInteger_t liGramod;
     getPixelPos(&x, &y);
     convertLongIntegerRegisterToLongInteger(RESERVED_VARIABLE_GRAMOD, liGramod);
-    longIntegerToUInt(liGramod, gramod);
+    longIntegerToUInt32(liGramod, gramod);
     longIntegerFree(liGramod);
     if(lastErrorCode == ERROR_NONE) {
       if(getRegisterDataType(regist) == dtShortInteger) {

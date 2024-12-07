@@ -3,8 +3,9 @@
 
 #include "c47.h"
 
-int32_t getFreeRamMemory(void) {
-  int32_t freeMem, i;
+uint32_t getFreeRamMemory(void) {
+  uint32_t freeMem;
+  int32_t i;
 
   freeMem = 0;
   for(i=0; i<numberOfFreeMemoryRegions; i++) {

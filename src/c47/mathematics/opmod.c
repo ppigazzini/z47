@@ -189,7 +189,7 @@ void longInteger_expmod(const longInteger_t a, const longInteger_t b, const long
   longIntegerInit(y);
   longIntegerInit(bb);
 
-  intToLongInteger(1, x);
+  uInt32ToLongInteger(1u, x);
   longIntegerModulo(a, c, y);
   longIntegerCopy(b, bb);
 

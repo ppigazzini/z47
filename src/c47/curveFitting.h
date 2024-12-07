@@ -7,7 +7,6 @@
 #if !defined(CURVEFITTING_H)
 #define CURVEFITTING_H
 
-  extern    realContext_t         *realContext;
   void      fnCurveFittingReset        (uint16_t control);
   void      fnCurveFitting_T           (uint16_t curveFitting);
   void      fnCurveFitting             (uint16_t curveFitting);

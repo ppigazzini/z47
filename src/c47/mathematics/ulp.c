@@ -18,7 +18,7 @@ void fnUlp(uint16_t unusedButMandatoryParameter) {
   switch(getRegisterDataType(REGISTER_X)) {
     case dtLongInteger: {
       longIntegerInit(lgInt);
-      intToLongInteger(1, lgInt);
+      uInt32ToLongInteger(1u, lgInt);
       convertLongIntegerToLongIntegerRegister(lgInt, REGISTER_X);
       longIntegerFree(lgInt);
       break;
@@ -26,7 +26,7 @@ void fnUlp(uint16_t unusedButMandatoryParameter) {
 
     case dtShortInteger: {
       longIntegerInit(lgInt);
-      intToLongInteger(1, lgInt);
+      uInt32ToLongInteger(1u, lgInt);
       convertLongIntegerToShortIntegerRegister(lgInt, getRegisterShortIntegerBase(REGISTER_X), REGISTER_X);
       longIntegerFree(lgInt);
       break;
