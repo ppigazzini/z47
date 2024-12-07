@@ -346,7 +346,7 @@ static int16_t getRegisterAsInt(bool_t asArrayPointer, calcRegister_t reg) {
   else {
     longIntegerInit(tmp_lgInt);
   }
-  longIntegerToInt(tmp_lgInt, ret);
+  longIntegerToInt32(tmp_lgInt, ret);
 
   longIntegerFree(tmp_lgInt);
 
@@ -364,7 +364,7 @@ static void setRegisterAsInt(bool_t asArrayPointer, int16_t toStore, calcRegiste
   longInteger_t tmp_lgInt;
   longIntegerInit(tmp_lgInt);
 
-  intToLongInteger(toStore, tmp_lgInt);
+  int32ToLongInteger(toStore, tmp_lgInt);
   convertLongIntegerToLongIntegerRegister(tmp_lgInt, reg);
 
   longIntegerFree(tmp_lgInt);

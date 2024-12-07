@@ -7,8 +7,7 @@
 #if !defined(CALCMODE_H)
   #define CALCMODE_H
 
-#if !defined(TESTSUITE_BUILD)
-  void btn_Clicked_Gen(bool_t shF, bool_t shG, char *st);
+  void btn_Clicked_Gen             (bool_t shF, bool_t shG, char *st);
   void fnOff                       (uint16_t unsuedParamButMandatory);
 
   /**
@@ -39,5 +38,4 @@
    * Leaves the alpha selection mode.
    */
   void leaveAsmMode                (void);
-  #endif // !TESTSUITE_BUILD
 #endif // !CALCMODE_H

@@ -84,7 +84,7 @@
 
   int32_t  realToInt32C47 (const real_t *r);
   uint32_t realToUint32C47(const real_t *r);
-  int64_t  realToInt64C47 (const real_t *r);
+  //int64_t  realToInt64C47 (const real_t *r);
   uint64_t realToUint64C47(const real_t *r);
 
   #define complex34ChangeSign(operand)                           do {real34ChangeSign((real34_t *)(operand));                                       \

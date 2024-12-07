@@ -7,9 +7,8 @@
 #if !defined(KEYBOARD_H)
 #define KEYBOARD_H
 
-#if !defined(TESTSUITE_BUILD)
-  int16_t determineFunctionKeyItem_C47(const char *data, bool_t shiftF, bool_t shiftG);
-#endif // !TESTSUITE_BUILD
+int16_t determineFunctionKeyItem_C47(const char *data, bool_t shiftF, bool_t shiftG);
+void    setLastKeyCode              (int key);
 
 
 void leavePem        (void);
@@ -152,5 +151,4 @@ void execAutoRepeat(uint16_t key);
   void btnReleased  (void *data);
   #endif // DMCP_BUILD
 
-void setLastKeyCode  (int key);
 #endif // !KEYBOARD_H

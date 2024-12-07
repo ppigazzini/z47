@@ -16,7 +16,7 @@
 #define   USEFLOATING useFLOAT     // USEFLOATING can be used to change the STATS graphing to work using different number types.
                                    //   Note that limited precision is required as only the pixels on screen need to be considered
                                    //   useFLOAT is much faster plotting STATS graphs on the real hardware than useREAL4 and useREAL39
-#define   FLoatingMax    1e38f     //convenient round figures used for maxima and minima determination
+#define   FLoatingMax    1e38f     // convenient round figures used for maxima and minima determination
 #define   FLoatingMin    -1e38f
 
 
@@ -69,21 +69,19 @@ void    plotPointGeneric   (int16_t xn, int16_t yn, int16_t xo, int16_t yo, bool
 
 
 //graph functions
-float grf_x(int i);
-float grf_y(int i);
+float   grf_x(int i);
+float   grf_y(int i);
 
 #define PLOT_TMP_BUF_SIZE   30
-char * radixProcess(char *output, const char * ss);
-void eformat_eng2 (char* s02, const char* s01, double inreal, int8_t digits, const char* s05);
-char * padEquals(char *output, const char * ss);
+char   *radixProcess(char *output, const char * ss);
+void    eformat_eng2 (char* s02, const char* s01, double inreal, int8_t digits, const char* s05);
+char   *padEquals(char *output, const char * ss);
 
 
-  #if !defined(TESTSUITE_BUILD)
 int16_t screen_window_x(float x_min, float x, float x_max);
 int16_t screen_window_y(float y_min, float y, float y_max);
 int16_t screen_window_y_nolimit(float y_min, float y, float y_max);
 int32_t statMxN(void);
-  #endif // !TESTSUITE_BUILD
 
 void    statGraphReset     (void);
 void    graphPlotstat      (uint16_t selection);

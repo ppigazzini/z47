@@ -75,7 +75,7 @@ static bool_t longIntegerIsPrime1(longInteger_t primeCandidate) {
   for(i=0; i<NUMBER_OF_SMALL_PRIMES; i++) {
     longIntegerCopy(s, temp);
 
-    uIntToLongInteger(smallPrimes[i], smallPrime);
+    uInt32ToLongInteger(smallPrimes[i], smallPrime);
     longIntegerPowerModulo(smallPrime, temp, primeCandidate, mod);
     while(longIntegerCompare(temp, primeCandidateMinus1) != 0 && longIntegerCompareUInt(mod, 1) != 0 && longIntegerCompare(mod, primeCandidateMinus1) != 0) {
       longIntegerPowerUIntModulo(mod, 2, primeCandidate, mod);
@@ -172,7 +172,7 @@ void fnNextPrime(uint16_t unusedButMandatoryParameter) {
     }
 
     if(!longIntegerIsPositive(currentNumber)) {
-      uIntToLongInteger(1,currentNumber);
+      uInt32ToLongInteger(1u, currentNumber);
     }
 
     //longIntegerNextPrime(currentNumber, nextPrime);
@@ -210,7 +210,7 @@ bool_t isStrongProbablePrime(longInteger_t primeCandidate) {
   }
 
   longIntegerInit(two);
-  uIntToLongInteger(2, two);                           // two = 2
+  uInt32ToLongInteger(2u, two);                           // two = 2
   longIntegerInit(x);
   longIntegerPowerModulo(two, d, primeCandidate, x);   // x = pow(2, d, primeCandidate);
   longIntegerFree(two);
@@ -248,7 +248,7 @@ bool_t isLucasProbablePrime(longInteger_t primeCandidate, longInteger_t D) {
   uint32_t r = 0;
 
   longIntegerInit(Q);                             // Q = 0;
-  uIntToLongInteger(1, Q);                        // Q = 1;
+  uInt32ToLongInteger(1u, Q);                     // Q = 1;
   longIntegerSubtract(Q, D, Q);                   // Q = 1 - D;
   longIntegerDivideUInt(Q, 4, Q);                 // Q = (1 - D) >> 2
 
@@ -279,9 +279,9 @@ bool_t isLucasProbablePrime(longInteger_t primeCandidate, longInteger_t D) {
   // keep track of q = Q**primeCandidate as we go
   longIntegerInit(U);                             // U = 0;
   longIntegerInit(V);                             // V = 0;
-  uIntToLongInteger(2, V);                        // V = 2;
+  uInt32ToLongInteger(2u, V);                     // V = 2;
   longIntegerInit(q);                             // q = 0;
-  uIntToLongInteger(1, q);                        // q = 1;
+  uInt32ToLongInteger(1u, q);                     // q = 1;
   // mod_inv(2, primeCandidate)
   longIntegerDivide2(primeCandidatePlus1, inv2);  //inv2 = primeCandidatePlus1 >> 1;
   while(longIntegerIsPositive(t)) {
@@ -346,7 +346,7 @@ bool_t longIntegerIsPrime2(longInteger_t primeCandidate) {
   uint32_t i, j, pc;
 
   if(longIntegerCompareUInt(primeCandidate, 212) <= 0) {
-    longIntegerToUInt(primeCandidate, pc);
+    longIntegerToUInt32(primeCandidate, pc);
     for(i=0; i<sizeof(smallPrimes)/sizeof(smallPrimes[0]); i++) {
       if(smallPrimes[i] == pc) {
         return true;
@@ -364,7 +364,7 @@ bool_t longIntegerIsPrime2(longInteger_t primeCandidate) {
   // if primeCandidate is a 32-bit integer, perform full trial division
   if(longIntegerCompareUInt(primeCandidate, 0xffffffff) <= 0) {
     i = 211;
-    longIntegerToUInt(primeCandidate, pc);
+    longIntegerToUInt32(primeCandidate, pc);
     while(i*i < pc) {
       for(j=0; j<sizeof(offsets)/sizeof(offsets[0]); j++) {
         i += offsets[j];
@@ -384,8 +384,8 @@ bool_t longIntegerIsPrime2(longInteger_t primeCandidate) {
 
   longIntegerSubtractUInt(primeCandidate, 1, primeCandidateMinus1); // primeCandidateMinus1 = primeCandidate - 1;
   longIntegerDivide2(primeCandidate, primeCandidateMinus1on2);      // primeCandidateMinus1on2 = (primeCandidate - 1) >> 1
-  uIntToLongInteger(2, s);
-  uIntToLongInteger(5, a);
+  uInt32ToLongInteger(2u, s);
+  uInt32ToLongInteger(5u, a);
   longIntegerPowerModulo(a, primeCandidateMinus1on2, primeCandidate, temp); // temp = Legendre symbol resulting in primeCandidate-1 if a is a non-residue, instead of -1
   while(longIntegerCompare(temp, primeCandidateMinus1) != 0) {
     longIntegerChangeSign(s);     // s = -s;
@@ -406,7 +406,7 @@ void calculateNextPrime(longInteger_t currentNumber, longInteger_t nextPrime) {
 
 
   if(longIntegerCompareUInt(currentNumber, 2) < 0) {
-    uIntToLongInteger(2, nextPrime);
+    uInt32ToLongInteger(2u, nextPrime);
     return;
   }
 
@@ -418,10 +418,10 @@ void calculateNextPrime(longInteger_t currentNumber, longInteger_t nextPrime) {
 
   if(longIntegerCompareUInt(currentNumber, 212) < 0) {
     while(true) {
-      longIntegerToUInt(currentNumber, cn);
+      longIntegerToUInt32(currentNumber, cn);
       for(i=0; i<sizeof(smallPrimes)/sizeof(smallPrimes[0]); i++) {
         if(smallPrimes[i] == cn) {
-          uIntToLongInteger(cn, nextPrime);
+          uInt32ToLongInteger(cn, nextPrime);
           return;
         }
       }
@@ -580,7 +580,7 @@ typedef struct FactorAdder
       #ifdef WGR
         printf("wgr:  zeroing lastFactor\n");
       #endif //WGR
-      uIntToLongInteger(0,lastFactor);
+      uInt32ToLongInteger(0u, lastFactor);
     }
     linkToRealMatrixRegister(REGISTER_X,  matrix);
     #ifdef WGR
@@ -713,9 +713,9 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
     }
 
     longIntegerSetPositiveSign(currentNumber);
-    uIntToLongInteger(2,nextPrime);
-    uIntToLongInteger(1,remainder);
-    uIntToLongInteger(1,eval);
+    uInt32ToLongInteger(2u, nextPrime);
+    uInt32ToLongInteger(1u, remainder);
+    uInt32ToLongInteger(1u, eval);
     int32ToReal34(0,&lastAdded);
 
     FactorAdder_t faddr;
@@ -726,7 +726,7 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
          longIntegerCopy(currentNumber, nextPrime);
        }
        else {
-         intToLongInteger(initialFactorAdded,nextPrime);
+         int32ToLongInteger(initialFactorAdded, nextPrime);
        }
        if(!addFactor(lastFactor, nextPrime, &matrix, &lastAdded, &faddr)) {
          goto abort;
@@ -734,7 +734,7 @@ void fnPrimeFactors (uint16_t unusedButMandatoryParameter) {
        if(initialFactorAdded == 0 || initialFactorAdded == 1 || initialFactorAdded == INITIALISPRIME) {
         goto endandclose;
        }
-       uIntToLongInteger(2,nextPrime);
+       uInt32ToLongInteger(2u, nextPrime);
      }
 
 
@@ -818,13 +818,13 @@ void longIntegerSumPowers(longInteger_t base, longInteger_t exponent, uint32_t k
   longIntegerInit(pwr);
   longIntegerInit(tmp);
   longIntegerInit(tmpbase);
-  uIntToLongInteger(0, sum);
+  uInt32ToLongInteger(0u, sum);
   longIntegerCopy(exponent, count);
 
   while(!longIntegerIsNegative(count)) {
     //printLongIntegerToConsole(count,"  count:"," \n");
     if(k == 0) {                                    // Divisor Count is the generalized sigma function, with k = 0
-      uIntToLongInteger(0, tmp);
+      uInt32ToLongInteger(0u, tmp);
     }
     else {                                          // Euler's sigma function is the generalized sigma function, with k = 1
       longIntegerCopy(count, tmp);
@@ -878,7 +878,7 @@ void _fnEvPFacts     (uint16_t param) {
         if(!getIntArg(currentNumber)) {
           goto abort;
         }
-        longIntegerToInt(currentNumber, pwr);
+        longIntegerToInt32(currentNumber, pwr);
         if(pwr > 3321 || pwr < 0) {
           goto abort;
         }
@@ -903,7 +903,7 @@ void _fnEvPFacts     (uint16_t param) {
         longIntegerInit(p_li);
         longIntegerInit(k_li);
         longIntegerInit(tmp_prod);
-        uIntToLongInteger(1, prod);
+        uInt32ToLongInteger(1u, prod);
         realCopy(const_1,&prodR);
         #define sumTypeInteger 0
         #define sumTypeReal    1
@@ -1026,7 +1026,7 @@ void fnEvPFacts (uint16_t param) {
     if(!getIntArg(xx)) {
       return;
     }
-    longIntegerToInt(xx, k);
+    longIntegerToInt32(xx, k);
     longIntegerFree(xx);
     fnSwapXY(NOPARAM);
   }
@@ -1038,7 +1038,7 @@ void fnEvPFacts (uint16_t param) {
     //printLongIntegerToConsole(y,"Y:","\n");
     longIntegerInit(z);
     longIntegerInit(tmp);
-    uIntToLongInteger(k, z);
+    int32ToLongInteger(k, z);
     longIntegerPower(y, z, tmp);
     longIntegerCopy(tmp,y);                                      //y is the number to be subtracted
     //printLongIntegerToConsole(y,"Y:","\n");
@@ -1137,7 +1137,7 @@ void fnEulPhi     (uint16_t unusedButMandatoryParameter) {
             convertReal34ToLongInteger(&p, p_li, RM_HALF_UP);
             longIntegerSubtractUInt(p_li, 1, p_li_less_1);
             if(j == 0 && !longIntegerIsPositive(p_li_less_1)) {   //ensure 0 is returned is the first factor <= 1. This is achieved above, see (*), (**), (***)
-              uIntToLongInteger(0,phi_x);
+              uInt32ToLongInteger(0u, phi_x);
               break;
             }
             longIntegerCopy(phi_x, phi_x_tmp);

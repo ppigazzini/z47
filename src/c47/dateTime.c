@@ -666,7 +666,7 @@ void fnWday(uint16_t unusedButMandatoryParameter) {
 
   if(dayOfWeek != 0) {
     longIntegerInit(result);
-    uIntToLongInteger(dayOfWeek, result);
+    uInt32ToLongInteger(dayOfWeek, result);
     convertLongIntegerToLongIntegerRegister(result, REGISTER_X);
     longIntegerFree(result);
     temporaryInformation = TI_DAY_OF_WEEK;

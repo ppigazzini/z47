@@ -168,7 +168,7 @@
     if(getRegisterDataType(REGISTER_X) == dtLongInteger) {
       convertLongIntegerRegisterToLongInteger(REGISTER_X, lgInt);
       longIntegerToAllocatedString(lgInt, tmpString, TMP_STR_LENGTH);
-      longIntegerToInt(lgInt, X_REG);
+      longIntegerToInt32(lgInt, X_REG);
       longIntegerFree(lgInt);
       testBitset = mod(X_REG, 0x10000);
     }

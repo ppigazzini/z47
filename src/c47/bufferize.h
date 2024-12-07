@@ -10,7 +10,6 @@
   extern bool_t delayCloseNim;
   extern bool_t changeFractionModeOnENTER;
 
-  #if !defined(TESTSUITE_BUILD)
   void     fnAim                    (uint16_t unusedButMandatoryParameter);
   void     resetAlphaSelectionBuffer(void);
   uint16_t convertItemToSubOrSup    (uint16_t item, int16_t subOrSup);
@@ -30,5 +29,4 @@
   void    closeNim                 (void);
   void    closeAim                 (void);
   void    nimBufferToDisplayBuffer (const char *buffer, char *displayBuffer);
-  #endif // !TESTSUITE_BUILD
 #endif // !BUFFERIZE_H

@@ -226,32 +226,30 @@
   void           reallocateRegister              (calcRegister_t regist, uint32_t dataType, uint16_t dataSizeWithoutDataLenBlocks, uint32_t tag);
   void           fnToReal                        (uint16_t unusedButMandatoryParameter);
 
-  #if !defined(DMCP_BUILD)
-    void         printStringToConsole            (const char *str, const char *before, const char *after);
-    void         printReal34ToConsole            (const real34_t *value, const char *before, const char *after);
-    void         printRealToConsole              (const real_t *value, const char *before, const char *after);
-    void         printComplex34ToConsole         (const complex34_t *value, const char *before, const char *after);
+  void           printStringToConsole            (const char *str, const char *before, const char *after);
+  void           printReal34ToConsole            (const real34_t *value, const char *before, const char *after);
+  void           printRealToConsole              (const real_t *value, const char *before, const char *after);
+  void           printComplex34ToConsole         (const complex34_t *value, const char *before, const char *after);
 
-    /**
-     * Prints the content of a long integer to the console.
-     *
-     * \param[in] value  long integer value to print
-     * \param[in] before text to display before the value
-     * \param[in] after  text to display after the value
-     */
-    void         printLongIntegerToConsole       (const longInteger_t value, const char *before, const char *after);
+  /**
+   * Prints the content of a long integer to the console.
+   *
+   * \param[in] value  long integer value to print
+   * \param[in] before text to display before the value
+   * \param[in] after  text to display after the value
+   */
+  void           printLongIntegerToConsole       (const longInteger_t value, const char *before, const char *after);
 
-    /**
-     * Prints the content of a register to the console.
-     *
-     * \param[in] regist register number
-     * \param[in] before text to display before the register value
-     * \param[in] after  text to display after the register value
-     */
-    void         printRegisterToConsole          (calcRegister_t regist, const char *before, const char *after);
+  /**
+   * Prints the content of a register to the console.
+   *
+   * \param[in] regist register number
+   * \param[in] before text to display before the register value
+   * \param[in] after  text to display after the register value
+   */
+  void           printRegisterToConsole          (calcRegister_t regist, const char *before, const char *after);
 
-    void         printRegisterDescriptorToConsole(calcRegister_t regist);
-  #endif // !DMCP_BUILD
+  void           printRegisterDescriptorToConsole(calcRegister_t regist);
 
 
   #define getRegisterAngularMode(reg)            getRegisterTag(reg)
@@ -273,18 +271,18 @@
    * \param r calcRegister_t Register number
    * \return void
    ***********************************************/
-  void    printRegisterToString           (calcRegister_t regist, char *registerContent);
+  void           printRegisterToString           (calcRegister_t regist, char *registerContent);
 
   /********************************************//**
    * \brief Save register X to register X
    *
    * \return true if succeeded
    ***********************************************/
-  bool_t  saveLastX                       (void);
+  bool_t         saveLastX                       (void);
 
-  void      fnRegClr                        (uint16_t unusedButMandatoryParameter);
-  void      fnRegCopy                       (uint16_t unusedButMandatoryParameter);
-  void      fnRegSort                       (uint16_t unusedButMandatoryParameter);
-  void      fnRegSwap                       (uint16_t unusedButMandatoryParameter);
-  bool_t    isFunctionAllowingNewVariable   (uint16_t op);
+  void           fnRegClr                        (uint16_t unusedButMandatoryParameter);
+  void           fnRegCopy                       (uint16_t unusedButMandatoryParameter);
+  void           fnRegSort                       (uint16_t unusedButMandatoryParameter);
+  void           fnRegSwap                       (uint16_t unusedButMandatoryParameter);
+  bool_t         isFunctionAllowingNewVariable   (uint16_t op);
 #endif // !REGISTERS_H

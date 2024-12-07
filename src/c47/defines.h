@@ -2020,7 +2020,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
     else if((lint)->_mp_size < 0) printf(" lint=-");       \
     else printf(" lint=+");                                \
     for(i=0; i<abs((lint)->_mp_size); i++) {               \
-      printf("%lu ", (unsigned long)((lint)->_mp_d[i]));   \
+      printf("%" PRIu64, (uint64)((lint)->_mp_d[i]));      \
     }                                                      \
     printf("  _mp_alloc=%dlimbs=", (lint)->_mp_alloc);     \
     printf("%lubytes", LIMB_SIZE * (lint)->_mp_alloc);     \
