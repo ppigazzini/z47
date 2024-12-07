@@ -10,8 +10,6 @@
   void decodeOneStep                (uint8_t *step);
   void decodeOneStep_XPORT          (uint8_t *step);
   void decodeOneStepXEQM_XPORT      (uint8_t *step);
-  #if !defined(DMCP_BUILD)
-    void listPrograms         (void);
-    void listLabelsAndPrograms(void);
-  #endif // !DMCP_BUILD
+  void listPrograms         (void);
+  void listLabelsAndPrograms(void);
 #endif // !DECODE_H
