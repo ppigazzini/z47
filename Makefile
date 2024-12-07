@@ -14,6 +14,7 @@ clean:
 	rm -rf wp43-windows* wp43-macos* wp43-linux* wp43-dm42*
 	rm -rf c47-windows* c47-macos* c47-linux* c47-dmcp* r47-dmcp*
 	rm -rf build build.sim build.dmcp build.dmcp5 build.rel
+	rm -f  src/generated/*.c src/generated/constantPointers.h src/generated/softmenuCatalogs.h
 
 build.sim:
 	meson setup build.sim --buildtype=custom -DRASPBERRY=`tools/onARaspberry`
