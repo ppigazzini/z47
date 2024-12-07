@@ -23,7 +23,6 @@ void     fnSHIFTf(uint16_t unusedButMandatoryParameter);
 void     fnSHIFTg(uint16_t unusedButMandatoryParameter);
 void     fnSHIFTfg(uint16_t unusedButMandatoryParameter);
 
-#if !defined(TESTSUITE_BUILD)
 #define  keypress_fff true
 #define  keypress_long_f false
 void     openHOMEorMyM(bool_t situation);
