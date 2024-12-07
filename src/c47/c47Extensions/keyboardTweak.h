@@ -23,6 +23,9 @@ void     fnSHIFTf(uint16_t unusedButMandatoryParameter);
 void     fnSHIFTg(uint16_t unusedButMandatoryParameter);
 void     fnSHIFTfg(uint16_t unusedButMandatoryParameter);
 
+#define  keypress_fff true
+#define  keypress_long_f false
+void     openHOMEorMyM(bool_t situation);
 void     fg_processing_jm    (void);
 int16_t  Check_SigmaPlus_Assigned(int16_t  * result, int16_t tempkey);
 
