@@ -74,10 +74,10 @@ void xnorLonILonI(void) {
   convertLongIntegerRegisterToLongInteger(REGISTER_Y, res);
 
   if((longIntegerIsZero(x) && longIntegerIsZero(res)) || (!longIntegerIsZero(x) && !longIntegerIsZero(res))) {
-    uIntToLongInteger(1, res);
+    uInt32ToLongInteger(1u, res);
   }
   else {
-    uIntToLongInteger(0, res);
+    uInt32ToLongInteger(0u, res);
   }
 
   convertLongIntegerToLongIntegerRegister(res, REGISTER_X);
@@ -94,10 +94,10 @@ void xnorLonIReal(void) {
   convertLongIntegerRegisterToLongInteger(REGISTER_Y, res);
 
   if((real34IsZero(REGISTER_REAL34_DATA(REGISTER_X)) && longIntegerIsZero(res)) || (!real34IsZero(REGISTER_REAL34_DATA(REGISTER_X)) && !longIntegerIsZero(res))) {
-    uIntToLongInteger(1, res);
+    uInt32ToLongInteger(1u, res);
   }
   else {
-    uIntToLongInteger(0, res);
+    uInt32ToLongInteger(0u, res);
   }
 
   convertLongIntegerToLongIntegerRegister(res, REGISTER_X);
@@ -113,10 +113,10 @@ void xnorRealLonI(void) {
   convertLongIntegerRegisterToLongInteger(REGISTER_X, res);
 
   if((real34IsZero(REGISTER_REAL34_DATA(REGISTER_Y)) && longIntegerIsZero(res)) || (!real34IsZero(REGISTER_REAL34_DATA(REGISTER_Y)) && !longIntegerIsZero(res))) {
-    uIntToLongInteger(1, res);
+    uInt32ToLongInteger(1u, res);
   }
   else {
-    uIntToLongInteger(0, res);
+    uInt32ToLongInteger(0u, res);
   }
 
   convertLongIntegerToLongIntegerRegister(res, REGISTER_X);
@@ -131,10 +131,10 @@ void xnorRealReal(void) {
 
   longIntegerInit(res);
   if((real34IsZero(REGISTER_REAL34_DATA(REGISTER_X)) && real34IsZero(REGISTER_REAL34_DATA(REGISTER_Y))) || (!real34IsZero(REGISTER_REAL34_DATA(REGISTER_X)) && !real34IsZero(REGISTER_REAL34_DATA(REGISTER_Y)))) {
-    uIntToLongInteger(1, res);
+    uInt32ToLongInteger(1u, res);
   }
   else {
-    uIntToLongInteger(0, res);
+    uInt32ToLongInteger(0u, res);
   }
 
   convertLongIntegerToLongIntegerRegister(res, REGISTER_X);

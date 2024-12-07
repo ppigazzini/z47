@@ -76,11 +76,11 @@ void factLonI(void) {
 
 
   uint32_t n;
-  longIntegerToUInt(x, n);
+  longIntegerToUInt32(x, n);
   #if defined(LINUX)
     //The more precise formula below is: (n*ln(n) - n + (ln(8n� + 4n� + n + 1/30))/6 + ln(pi)/2) / ln(2)
     longIntegerInitSizeInBits(f, 1 + (uint32_t)((n * log(n) - n) / log(2)));
-    uIntToLongInteger(1, f);
+    uInt32ToLongInteger(1u, f);
     for(uint32_t i=2; i<=n; i++) {
       longIntegerMultiplyUInt(f, i, f);
     }

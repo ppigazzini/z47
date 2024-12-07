@@ -40,12 +40,12 @@ static void cyxReal(real_t *y, real_t *x, real_t *result, realContext_t *realCon
 
 static void cyxLong(longInteger_t y, longInteger_t x, longInteger_t result) {
   if(longIntegerCompareInt(x, 0) == 0) {
-    intToLongInteger(1, result);
+    uInt32ToLongInteger(1u, result);
   }
   else if(longIntegerCompareInt(x, 400) <= 0) {
     uint32_t loops, counter;
 
-    longIntegerToUInt(x, loops);
+    longIntegerToUInt32(x, loops);
     longIntegerSubtractUInt(y, --loops, result);
     longIntegerCopy(result, y);
     counter = 1;
@@ -124,12 +124,12 @@ static void pyxReal(real_t *y, real_t *x, real_t *result, realContext_t *realCon
 
 static void pyxLong(longInteger_t y, longInteger_t x, longInteger_t result) {
   if(longIntegerCompareInt(x, 0) == 0) {
-    intToLongInteger(1, result);
+    uInt32ToLongInteger(1u, result);
   }
   else if(longIntegerCompareInt(x, 400) <= 0) {
     uint32_t loops;
 
-    longIntegerToUInt(x, loops);
+    longIntegerToUInt32(x, loops);
     longIntegerSubtractUInt(y, --loops, result);
     longIntegerCopy(result, y);
     while(loops-- > 0) {

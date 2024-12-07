@@ -16,7 +16,7 @@ void fnAlphaLeng(uint16_t regist) {
   }
 
   longIntegerInit(stringSize);
-  uIntToLongInteger(stringGlyphLength(REGISTER_STRING_DATA(regist)), stringSize);
+  int32ToLongInteger(stringGlyphLength(REGISTER_STRING_DATA(regist)), stringSize);
 
   liftStack();
 
@@ -56,7 +56,7 @@ void fnAlphaToX(uint16_t regist) {
   liftStack();
 
   longIntegerInit(lgInt);
-  intToLongInteger(char1 & 0x7f, lgInt);
+  uInt32ToLongInteger(char1 & 0x7f, lgInt);
   if(char1 & 0x80) {
     longIntegerMultiplyUInt(lgInt, 256, lgInt);
     longIntegerAddUInt(lgInt, char2, lgInt);
@@ -88,7 +88,7 @@ void fnXToAlpha(uint16_t unusedButMandatoryParameter) {
 
     case dtReal34: {
       if(real34CompareAbsGreaterThan(REGISTER_REAL34_DATA(REGISTER_X), const34_1e6)) {
-        uIntToLongInteger(1000000, lgInt);
+        uInt32ToLongInteger(1000000u, lgInt);
       }
       else {
         convertReal34ToLongInteger(REGISTER_REAL34_DATA(REGISTER_X), lgInt, DEC_ROUND_DOWN);
@@ -190,7 +190,7 @@ void fnAlphaPos(uint16_t regist) {
   lgTarget = stringByteLength(ptrTarget);
   lgRegist = stringByteLength(ptrRegist);
 
-  intToLongInteger(-1, lgInt);
+  int32ToLongInteger(-1, lgInt);
   for(i=0; i<=lgRegist-lgTarget; i++) {
     found = true;
     for(j=0; j<lgTarget; j++) {
@@ -200,7 +200,7 @@ void fnAlphaPos(uint16_t regist) {
       }
     }
     if(found) {
-      intToLongInteger(i, lgInt);
+      int32ToLongInteger(i, lgInt);
       break;
     }
   }
@@ -414,7 +414,7 @@ void fnAlphaSR(uint16_t regist) {
 
     case dtReal34: {
       if(real34CompareAbsGreaterThan(REGISTER_REAL34_DATA(REGISTER_X), const34_1e6)) {
-        uIntToLongInteger(1000000, lgInt);
+        uInt32ToLongInteger(1000000u, lgInt);
       }
       else {
         convertReal34ToLongInteger(REGISTER_REAL34_DATA(REGISTER_X), lgInt, DEC_ROUND_DOWN);
@@ -439,10 +439,10 @@ void fnAlphaSR(uint16_t regist) {
 
   longIntegerSetPositiveSign(lgInt);
   if(longIntegerCompareInt(lgInt, stringGlyphLen) >= 0) {
-    intToLongInteger(stringGlyphLen, lgInt);
+    int32ToLongInteger(stringGlyphLen, lgInt);
   }
 
-  longIntegerToInt(lgInt, steps);
+  longIntegerToInt32(lgInt, steps);
   longIntegerFree(lgInt);
 
   if(!saveLastX()) {
@@ -494,7 +494,7 @@ void fnAlphaSL(uint16_t regist) {
 
     case dtReal34: {
       if(real34CompareAbsGreaterThan(REGISTER_REAL34_DATA(REGISTER_X), const34_1e6)) {
-        uIntToLongInteger(1000000, lgInt);
+        uInt32ToLongInteger(1000000u, lgInt);
       }
       else {
         convertReal34ToLongInteger(REGISTER_REAL34_DATA(REGISTER_X), lgInt, DEC_ROUND_DOWN);
@@ -519,10 +519,10 @@ void fnAlphaSL(uint16_t regist) {
 
   longIntegerSetPositiveSign(lgInt);
   if(longIntegerCompareInt(lgInt, stringGlyphLen) >= 0) {
-    intToLongInteger(stringGlyphLen, lgInt);
+    int32ToLongInteger(stringGlyphLen, lgInt);
   }
 
-  longIntegerToInt(lgInt, steps);
+  longIntegerToInt32(lgInt, steps);
   longIntegerFree(lgInt);
 
   if(!saveLastX()) {

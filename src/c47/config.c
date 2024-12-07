@@ -545,7 +545,7 @@ void fnFreeMemory(uint16_t unusedButMandatoryParameter) {
   liftStack();
 
   longIntegerInit(mem);
-  uIntToLongInteger(getFreeRamMemory(), mem);
+  uInt32ToLongInteger(getFreeRamMemory(), mem);
   convertLongIntegerToLongIntegerRegister(mem, REGISTER_X);
   longIntegerFree(mem);
   temporaryInformation = TI_BYTES;
@@ -558,7 +558,7 @@ void fnGetDmx(uint16_t unusedButMandatoryParameter) {
   liftStack();
 
   longIntegerInit(dmx);
-  uIntToLongInteger(denMax, dmx);
+  uInt32ToLongInteger(denMax, dmx);
   convertLongIntegerToLongIntegerRegister(dmx, REGISTER_X);
   longIntegerFree(dmx);
 }
@@ -570,7 +570,7 @@ void fnGetRoundingMode(uint16_t unusedButMandatoryParameter) {
   liftStack();
 
   longIntegerInit(rounding);
-  uIntToLongInteger(roundingMode, rounding);
+  uInt32ToLongInteger(roundingMode, rounding);
   convertLongIntegerToLongIntegerRegister(rounding, REGISTER_X);
   longIntegerFree(rounding);
 }
@@ -603,7 +603,7 @@ void fnGetWordSize(uint16_t unusedButMandatoryParameter) {
   liftStack();
 
   longIntegerInit(wordSize);
-  uIntToLongInteger(shortIntegerWordSize, wordSize);
+  uInt32ToLongInteger(shortIntegerWordSize, wordSize);
   convertLongIntegerToLongIntegerRegister(wordSize, REGISTER_X);
   longIntegerFree(wordSize);
   temporaryInformation = TI_BITS;
@@ -658,7 +658,7 @@ void fnFreeFlashMemory(uint16_t unusedButMandatoryParameter) {
   liftStack();
 
   longIntegerInit(flashMem);
-  uIntToLongInteger(getFreeFlash(), flashMem);
+  uInt32ToLongInteger(getFreeFlash(), flashMem);
   convertLongIntegerToLongIntegerRegister(flashMem, REGISTER_X);
   longIntegerFree(flashMem);
 }
@@ -688,7 +688,7 @@ void fnBatteryVoltage(uint16_t unusedButMandatoryParameter) {
 
 
 uint32_t getFreeFlash(void) {
-  return 0;
+  return 123456789u;
 }
 
 
@@ -699,7 +699,7 @@ void fnGetSignificantDigits(uint16_t unusedButMandatoryParameter) {
   liftStack();
 
   longIntegerInit(sigDigits);
-  uIntToLongInteger(significantDigits == 0 ? 34 : significantDigits, sigDigits);
+  uInt32ToLongInteger(significantDigits == 0 ? 34 : significantDigits, sigDigits);
   convertLongIntegerToLongIntegerRegister(sigDigits, REGISTER_X);
   longIntegerFree(sigDigits);
 }
@@ -720,7 +720,7 @@ void fnGetFractionDigits(uint16_t unusedButMandatoryParameter) {
   liftStack();
 
   longIntegerInit(sigDigits);
-  uIntToLongInteger(fractionDigits == 0 ? 34 : fractionDigits, sigDigits);
+  uInt32ToLongInteger(fractionDigits == 0 ? 34 : fractionDigits, sigDigits);
   convertLongIntegerToLongIntegerRegister(sigDigits, REGISTER_X);
   longIntegerFree(sigDigits);
 }
@@ -899,7 +899,7 @@ void fnGetRange(uint16_t unusedButMandatoryParameter) {
   liftStack();
 
   longIntegerInit(range);
-  uIntToLongInteger(exponentLimit, range);
+  uInt32ToLongInteger(exponentLimit, range);
   convertLongIntegerToLongIntegerRegister(range, REGISTER_X);
   longIntegerFree(range);
 }
@@ -921,7 +921,7 @@ void fnGetHide(uint16_t unusedButMandatoryParameter) {
   liftStack();
 
   longIntegerInit(range);
-  uIntToLongInteger(exponentHideLimit, range);
+  uInt32ToLongInteger(exponentHideLimit, range);
   convertLongIntegerToLongIntegerRegister(range, REGISTER_X);
   longIntegerFree(range);
 }

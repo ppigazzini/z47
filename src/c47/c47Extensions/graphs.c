@@ -192,7 +192,7 @@ void fnPlotZoom(uint16_t unusedButMandatoryParameter){
     if(!getRegisterAsLongInt(REGISTER_X, x, NULL)) {
       return;
     }
-    longIntegerToInt(x, ii);
+    longIntegerToInt32(x, ii);
     longIntegerFree(x);
     //the ZOOM command from outside the PLOT mode only works for PLSTAT
     PLOT_ZMY = ii;

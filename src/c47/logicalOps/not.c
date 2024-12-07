@@ -53,10 +53,10 @@ void notLonI(void) {
   convertLongIntegerRegisterToLongInteger(REGISTER_X, res);
 
   if(longIntegerIsZero(res)) {
-    uIntToLongInteger(1, res);
+    uInt32ToLongInteger(1u, res);
   }
   else {
-    uIntToLongInteger(0, res);
+    uInt32ToLongInteger(0u, res);
   }
 
   convertLongIntegerToLongIntegerRegister(res, REGISTER_X);
@@ -77,7 +77,7 @@ void notReal(void) {
 
   longIntegerInit(res);
   if(real34IsZero(REGISTER_REAL34_DATA(REGISTER_X))) {
-    uIntToLongInteger(1, res);
+    uInt32ToLongInteger(1u, res);
   }
 
   convertLongIntegerToLongIntegerRegister(res, REGISTER_X);
