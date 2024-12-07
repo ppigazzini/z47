@@ -228,8 +228,6 @@ uint8_t                bcdDisplaySign = 0;
 uint8_t                LongPressM = 0;
 uint8_t                LongPressF = 0;
 uint8_t                fgLN = 0;
-char                   indexOfItemsXEQM[18*8];       //JMXEQ
-int16_t                fnXEQMENUpos;                 //JMXEQ
 uint8_t                last_CM = 255;                //Do extern !!
 uint8_t                FN_state; // = ST_0_INIT;
 
