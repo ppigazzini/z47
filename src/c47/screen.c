@@ -818,27 +818,7 @@ void execTimerApp(uint16_t timerType) {
         else if((!shiftF && shiftG) || (shiftF && shiftG)) {
           Shft_timeouts = false;
           resetShiftState();                                       //force into no shift state, i.e. to wait
-          if(HOME3 || MYM3) {
-            #if defined(PC_BUILD)
-              jm_show_calc_state("screen.c: Shft_handler: HOME3");
-            #endif //PC_BUILD
-            if(HOME3 && currentMenu() == -MNU_HOME) {
-                                                                   //removed popping after fff:              popSoftmenu();
-            }
-            else {
-              if(calcMode == CM_AIM) {
-              }
-              else {
-                if(HOME3) {
-                  showSoftmenu(-MNU_HOME);
-                }
-                else if(MYM3) {
-                  showSoftmenu(-MNU_MyMenu);
-                }
-              }
-            }
-            showSoftmenuCurrentPart();
-          }
+          openHOMEorMyM(keypress_long_f);
         }
       }
     }
