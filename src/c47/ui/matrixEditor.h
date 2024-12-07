@@ -8,14 +8,12 @@
 #if !defined(MATRIXEDITOR_H)
   #define MATRIXEDITOR_H
 
-  #if !defined(TESTSUITE_BUILD)
-    #define MATRIX_LINE_WIDTH            380
-    //#define MATRIX_LINE_WIDTH_LARGE      120
-    //#define MATRIX_LINE_WIDTH_SMALL      93
-    //#define MATRIX_CHAR_LEN              30
-    #define MATRIX_MAX_ROWS              5
-    #define MATRIX_MAX_COLUMNS           11
-  #endif // TESTSUITE_BUILD
+  #define MATRIX_LINE_WIDTH            380
+  //#define MATRIX_LINE_WIDTH_LARGE      120
+  //#define MATRIX_LINE_WIDTH_SMALL      93
+  //#define MATRIX_CHAR_LEN              30
+  #define MATRIX_MAX_ROWS              5
+  #define MATRIX_MAX_COLUMNS           11
 
   /**
    * Opens the Matrix Editor.
@@ -80,13 +78,11 @@
   void       fnDelRow                       (uint16_t unusedParamButMandatory);
   void       fnDelCol                       (uint16_t unusedParamButMandatory);
 
-  #if !defined(TESTSUITE_BUILD)
-    int16_t  getIRegisterAsInt              (bool_t asArrayPointer);
-    int16_t  getJRegisterAsInt              (bool_t asArrayPointer);
-    void     setIRegisterAsInt              (bool_t asArrayPointer, int16_t toStore);
-    void     setJRegisterAsInt              (bool_t asArrayPointer, int16_t toStore);
+  int16_t  getIRegisterAsInt              (bool_t asArrayPointer);
+  int16_t  getJRegisterAsInt              (bool_t asArrayPointer);
+  void     setIRegisterAsInt              (bool_t asArrayPointer, int16_t toStore);
+  void     setJRegisterAsInt              (bool_t asArrayPointer, int16_t toStore);
 
-    bool_t   wrapIJ                         (uint16_t rows, uint16_t cols);
-  #endif // TESTSUITE_BUILD
+  bool_t   wrapIJ                         (uint16_t rows, uint16_t cols);
 
 #endif // !MATRIXEDITOR_H

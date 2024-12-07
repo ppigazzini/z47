@@ -3,7 +3,5 @@
 #if !defined(FLAGBROWSER_H)
 #define FLAGBROWSER_H
 
-  #if !defined(TESTSUITE_BUILD)
-    void flagBrowser(uint16_t init); //JM
-  #endif // !TESTSUITE_BUILD
+  void flagBrowser(uint16_t init); //JM
 #endif // !FLAGBROWSER_H

@@ -9,9 +9,7 @@ bool_t  exitKeyWaiting(void);
 int     C47PopKeyNoBuffer(bool_t displayWaitForRelease);
 
 
-#ifdef DMCP_BUILD
-  void standardScreenDump(void);
-#endif //DMCP_BUILD
+void standardScreenDump(void);
 
 void fneRPN         (uint16_t unusedButMandatoryParameter);
 void fnCFGsettings  (uint16_t unusedButMandatoryParameter);
