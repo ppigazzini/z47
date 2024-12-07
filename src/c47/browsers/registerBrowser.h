@@ -7,13 +7,11 @@
 #if !defined(REGISTERBROWSER_H)
   #define REGISTERBROWSER_H
 
-  #if !defined(TESTSUITE_BUILD)
-    /********************************************//**
-     * \brief The register browser
-     *
-     * \param[in] unusedButMandatoryParameter uint16_t
-     * \return void
-     ***********************************************/
-    void registerBrowser(uint16_t unusedButMandatoryParameter);
-  #endif // !TESTSUITE_BUILD
+  /********************************************//**
+   * \brief The register browser
+   *
+   * \param[in] unusedButMandatoryParameter uint16_t
+   * \return void
+   ***********************************************/
+  void registerBrowser(uint16_t unusedButMandatoryParameter);
 #endif // !REGISTERBROWSER_H

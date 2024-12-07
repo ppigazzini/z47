@@ -13,8 +13,6 @@
   void fnProgrammableMenu(uint16_t unusedButMandatoryParameter);
   void fnClearMenu       (uint16_t unusedButMandatoryParameter);
 
-  #if !defined(TESTSUITE_BUILD)
-    void keyGto            (uint16_t keyNum, uint16_t label);
-    void keyXeq            (uint16_t keyNum, uint16_t label);
-  #endif // !TESTSUITE_BUILD
+  void keyGto            (uint16_t keyNum, uint16_t label);
+  void keyXeq            (uint16_t keyNum, uint16_t label);
 #endif // !PROGRAMMABLEMENU_H

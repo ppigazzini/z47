@@ -20,35 +20,33 @@
   void   chkHexaStringClicked         (GtkWidget* w ,gpointer data);
   void   refreshDebugPanel            (void);
 
-  char * getDisplayFormatName               (uint16_t df);
-  char * getTimeFormatName                  (bool_t tf);
-  char * getDateFormatName                  (uint16_t df);
-  char * getBooleanName                     (bool_t b);
-  char * getRbrModeName                     (uint16_t mode);
-  char * getRoundingModeName                (uint16_t rm);
-  char * getCalcModeName                    (uint16_t cm);
-  char * getNextCharName                    (uint16_t nc);
-  char * getComplexUnitName                 (bool_t cu);
-  char * getProductSignName                 (bool_t ps);
-  char * getFractionTypeName                (bool_t ft);
-  char * getFractionDenom1ModeName          (bool_t ft);
-  char * getFractionDenom2ModeName          (bool_t ft);
-  char * getRadixMarkName                   (bool_t rm);
-  char * getDisplayOvrName                  (bool_t dio);
-  char * getStackSizeName                   (bool_t ss);
-  char * getComplexModeName                 (bool_t cm);
-  char * getAlphaCaseName                   (uint16_t ac);
-  char * getAlphaSelectionMenuName          (uint16_t alsm);
-  char * getCursorFontName                  (uint16_t cf);
-  char * getSystemFlagName                  (uint16_t sf);
+  char  *getDisplayFormatName               (uint16_t df);
+  char  *getTimeFormatName                  (bool_t tf);
+  char  *getDateFormatName                  (uint16_t df);
+  char  *getBooleanName                     (bool_t b);
+  char  *getRbrModeName                     (uint16_t mode);
+  char  *getRoundingModeName                (uint16_t rm);
+  char  *getCalcModeName                    (uint16_t cm);
+  char  *getNextCharName                    (uint16_t nc);
+  char  *getComplexUnitName                 (bool_t cu);
+  char  *getProductSignName                 (bool_t ps);
+  char  *getFractionTypeName                (bool_t ft);
+  char  *getFractionDenom1ModeName          (bool_t ft);
+  char  *getFractionDenom2ModeName          (bool_t ft);
+  char  *getRadixMarkName                   (bool_t rm);
+  char  *getDisplayOvrName                  (bool_t dio);
+  char  *getStackSizeName                   (bool_t ss);
+  char  *getComplexModeName                 (bool_t cm);
+  char  *getAlphaCaseName                   (uint16_t ac);
+  char  *getAlphaSelectionMenuName          (uint16_t alsm);
+  char  *getCursorFontName                  (uint16_t cf);
+  char  *getSystemFlagName                  (uint16_t sf);
   void   memoryDump                         (bool_t bitFields, bool_t globalFlags, bool_t globalRegisters, bool_t localFlags, bool_t FIRSTLOCALREGISTERs, bool_t otherVars);
 #endif // (DEBUG_PANEL == 1)
 
-#if (DEBUG_PANEL == 1) || (DEBUG_REGISTER_L == 1) || (DEBUG_STAT >= 1)
-  void   formatReal34Debug                  (char *str, real34_t *real34);
-  void   formatRealDebug                    (char *str, real_t *real);
-  void   formatComplex34Debug               (char *str, void *addr);
-#endif // (DEBUG_PANEL == 1) || (DEBUG_REGISTER_L == 1)  || (DEBUG_STAT >= 1)
+void   formatReal34Debug                  (char *str, real34_t *real34);
+void   formatRealDebug                    (char *str, real_t *real);
+void   formatComplex34Debug               (char *str, void *addr);
 
 const char *getDataTypeName               (uint16_t dt, bool_t article, bool_t padWithBlanks);
 const char *getRegisterDataTypeName       (calcRegister_t regist, bool_t article, bool_t padWithBlanks);
@@ -62,17 +60,12 @@ char *eatSpacesEnd                        (const char * ss);
 char *eatSpacesMid                        (const char * ss);
 
 //void  debugNIM                            (void); Never used
+void dumpScreenToConsole                  (void);
 
-  #if defined(PC_BUILD)
-  void dumpScreenToConsole(void);
-  #endif // PC_BUILD
-
-#if defined(PC_BUILD) || defined(TESTSUITE_BUILD)
-  void dumpSubroutineLevelData(void);
-  void testRegisters          (const char *text);
-  void memoryDump2            (const char *text);
-  void stackCheck             (const unsigned char *begin, const unsigned char *end, int size, const char *where);
-  void initStackCheck         (unsigned char *begin, unsigned char *end, int size);
-  void stackSmashingTest      (void);
-#endif // PC_BUILD || TESTSUITE_BUILD
+void dumpSubroutineLevelData              (void);
+void testRegisters                        (const char *text);
+void memoryDump2                          (const char *text);
+void stackCheck                           (const unsigned char *begin, const unsigned char *end, int size, const char *where);
+void initStackCheck                       (unsigned char *begin, unsigned char *end, int size);
+void stackSmashingTest                    (void);
 #endif // !DEBUG_H

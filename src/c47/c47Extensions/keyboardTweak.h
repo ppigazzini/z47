@@ -37,7 +37,6 @@ void     Check_MultiPresses  (int16_t  * result, int8_t key_no);
 void     Setup_MultiPresses  (int16_t  result                 );
 int16_t  nameFunction        (int16_t fn, bool_t shiftF, bool_t shiftG);   //JM LONGPRESS FN
 void     resetKeytimers      (void);
-#endif // !TESTSUITE_BUILD
 
 uint16_t numlockReplacements(uint16_t id, int16_t item, bool_t NL, bool_t SHFT, bool_t GSHFT);
 bool_t caseReplacements(uint8_t id, bool_t lowerCaseSelected, int16_t item, int16_t *itemOut);
