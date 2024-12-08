@@ -151,7 +151,7 @@ void fnCurveFittingLR(uint16_t unusedButMandatoryParameter) {
   longInteger_t lr;
   liftStack();
   longIntegerInit(lr);
-  uIntToLongInteger(lrSelection & 0x01FF, lr);           // Input mask 01 1111 1111 EXCLUDES 10 0000 0000, which is ORTHOF, as it is not in the OM
+  uInt32ToLongInteger(lrSelection & 0x01FF, lr);           // Input mask 01 1111 1111 EXCLUDES 10 0000 0000, which is ORTHOF, as it is not in the OM
   convertLongIntegerToLongIntegerRegister(lr, REGISTER_X);
   longIntegerFree(lr);
 }

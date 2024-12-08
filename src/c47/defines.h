@@ -17,8 +17,6 @@
 
 #undef SAVE_SPACE_DM42_0
 #undef SAVE_SPACE_DM42_1
-#undef SAVE_SPACE_DM42_2
-#undef SAVE_SPACE_DM42_2LOAD
 #undef SAVE_SPACE_DM42_3
 #undef SAVE_SPACE_DM42_4
 #undef SAVE_SPACE_DM42_6
@@ -68,8 +66,6 @@
 
 //THESE ARE DMCP COMPILE OPTIONS FOR SINGLE FILE NO QSPI (NOT POSSIBLE ANYMORE ON DM42 OLD HARDWARE)
   #if !defined(TWO_FILE_PGM) && !defined(NEW_HW) //---------THESE ARE THE EXCLUSIONS TO MAKE IT FIT WHILE NOT USING QSPI ON OLD HARDWARE
-      #define SAVE_SPACE_DM42_2        //  4152 bytes // XEQM
-      #define SAVE_SPACE_DM42_2LOAD    //   288 bytes // XEQM AUTOLOAD DEMOS
       #define SAVE_SPACE_DM42_6        //  1376 bytes // ELEC functions
       #define SAVE_SPACE_DM42_8        //  1856 bytes // Register Browser
       #define SAVE_SPACE_DM42_8FL      //  3280 bytes // Flag Browsers
@@ -93,8 +89,6 @@
 
 //THESE ARE DMCP COMPILE OPTIONS FOR TWO FILE QSPI
   #if defined(TWO_FILE_PGM) //---------THESE ARE THE EXCLUSIONS TO MAKE IT FIT INTO AVAILABLE FLASH EVEN WHILE USING QSPI
-  //  #define SAVE_SPACE_DM42_2        //  4152 bytes // Without XEQM
-  //  #define SAVE_SPACE_DM42_2LOAD    //   288 bytes // Without XEQM AUTOLOAD DEMOS
   //  #define SAVE_SPACE_DM42_6        //  1376 bytes // Without ELEC functions
   //  #define SAVE_SPACE_DM42_8        //  1856 bytes // Without Register Browser
   //  #define SAVE_SPACE_DM42_8FL      //  3280 bytes // Without Flag Browsers
@@ -105,14 +99,14 @@
   //  #define SAVE_SPACE_DM42_11       //   800 bytes // Without Matrix function on entry ...
   //  #define SAVE_SPACE_DM42_12       //  3288 bytes // Without SLVC, SLVQ, ELLIPTIC, ZETA, BETA
   //  #define SAVE_SPACE_DM42_12PRIME  // 27208 bytes // Without ISPRIME, NEXTPRIME, FACTORS, EULPHI, MATXFACTOR
-  //  #define SAVE_SPACE_DM42_12BESSEL //  5168 bytes // Without BESSEL
-    #define SAVE_SPACE_DM42_12ORTHO  //  0744 bytes // Without ORTHO MENU
+    #define SAVE_SPACE_DM42_12BESSEL //  5168 bytes // Without BESSEL
+  //  #define SAVE_SPACE_DM42_12ORTHO  //  0744 bytes // Without ORTHO MENU
   //  #define SAVE_SPACE_DM42_13GRF    // 17472 bytes // Without Solver & graphics & stat graphics
   //  #define SAVE_SPACE_DM42_13GRF_JM //  7520 bytes // Without More graphics
   //  #define SAVE_SPACE_DM42_14       //   184 bytes // Without Load programming sample programs testPgms
   //  #define SAVE_SPACE_DM42_15       // 10056 bytes // Without all distributions, i.e. , cauchy, chi, expo, logis, t, weibull
   //  #define SAVE_SPACE_DM42_16       //  2168 bytes // Without Norml distribution
-    #define SAVE_SPACE_DM42_17       //  9840 bytes // Without Poisson/Hyper/Binomial/Geometrical/f distributions
+  //  #define SAVE_SPACE_DM42_17       //  9840 bytes // Without Poisson/Hyper/Binomial/Geometrical/f distributions
   //  #define SAVE_SPACE_DM42_20_TIMER //  1232 bytes // Without STOPW
   //  #define SAVE_SPACE_DM42_21_HP35  //   200 bytes // Without config file activations only. Not complete removal.
   #endif // TWO_FILE_PGM
@@ -2022,7 +2016,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
     else if((lint)->_mp_size < 0) printf(" lint=-");       \
     else printf(" lint=+");                                \
     for(i=0; i<abs((lint)->_mp_size); i++) {               \
-      printf("%lu ", (unsigned long)((lint)->_mp_d[i]));   \
+      printf("%" PRIu64, (uint64)((lint)->_mp_d[i]));      \
     }                                                      \
     printf("  _mp_alloc=%dlimbs=", (lint)->_mp_alloc);     \
     printf("%lubytes", LIMB_SIZE * (lint)->_mp_alloc);     \

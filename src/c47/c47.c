@@ -228,8 +228,6 @@ uint8_t                bcdDisplaySign = 0;
 uint8_t                LongPressM = 0;
 uint8_t                LongPressF = 0;
 uint8_t                fgLN = 0;
-char                   indexOfItemsXEQM[18*8];       //JMXEQ
-int16_t                fnXEQMENUpos;                 //JMXEQ
 uint8_t                last_CM = 255;                //Do extern !!
 uint8_t                FN_state; // = ST_0_INIT;
 
@@ -618,71 +616,95 @@ int convertKeyCode(int key) {
                                                     xcopy(&addr, &ptr, 4);
                                                     free(ptr);
                                                     longIntegerInit(li);
-                                                    uIntToLongInteger(addr, li);
+                                                    uInt32ToLongInteger(addr, li);
                                                     convertLongIntegerToShortIntegerRegister(li, 16, 50);
 
-                                                    uIntToLongInteger(min, li);
+                                                    uInt32ToLongInteger(min, li);
                                                     convertLongIntegerToShortIntegerRegister(li, 10, 51);
 
                                                     ptr = (uint32_t *)qspi_user_addr();
                                                     xcopy(&addr, &ptr, 4);
-                                                    uIntToLongInteger(addr, li);
+                                                    uInt32ToLongInteger(addr, li);
                                                     convertLongIntegerToShortIntegerRegister(li, 16, 52);
 
                                                     addr = (uint32_t)qspi_user_size(); // QSPI user size in bytes
-                                                    uIntToLongInteger(addr, li);
+                                                    uInt32ToLongInteger(addr, li);
                                                     convertLongIntegerToShortIntegerRegister(li, 10, 53);
 
                                                     ptr = (uint32_t *)&ram;
                                                     xcopy(&addr, &ptr, 4);
-                                                    uIntToLongInteger(addr, li);
+                                                    uInt32ToLongInteger(addr, li);
                                                     convertLongIntegerToShortIntegerRegister(li, 16, 54);
 
                                                     ptr = (uint32_t *)&indexOfItems;
                                                     xcopy(&addr, &ptr, 4);
-                                                    uIntToLongInteger(addr, li);
+                                                    uInt32ToLongInteger(addr, li);
                                                     convertLongIntegerToShortIntegerRegister(li, 16, 55);
 
                                                     ptr = (uint32_t *)ppgm_fp;
                                                     xcopy(&addr, &ptr, 4);
-                                                    uIntToLongInteger(addr, li);
+                                                    uInt32ToLongInteger(addr, li);
                                                     convertLongIntegerToShortIntegerRegister(li, 16, 56);
 
                                                     ptr = (uint32_t *)get_reset_state_file();
                                                     xcopy(&addr, &ptr, 4);
-                                                    uIntToLongInteger(addr, li);
+                                                    uInt32ToLongInteger(addr, li);
                                                     convertLongIntegerToShortIntegerRegister(li, 16, 57);
 
                                                     addr = 0x38; // RESET_STATE_FILE_SIZE;
-                                                    uIntToLongInteger(addr, li);
+                                                    uInt32ToLongInteger(addr, li);
                                                     convertLongIntegerToShortIntegerRegister(li, 10, 58);
 
                                                     ptr = (uint32_t *)aux_buf_ptr();
                                                     xcopy(&addr, &ptr, 4);
-                                                    uIntToLongInteger(addr, li);
+                                                    uInt32ToLongInteger(addr, li);
                                                     convertLongIntegerToShortIntegerRegister(li, 16, 59);
 
                                                     addr = AUX_BUF_SIZE;
-                                                    uIntToLongInteger(addr, li);
+                                                    uInt32ToLongInteger(addr, li);
                                                     convertLongIntegerToShortIntegerRegister(li, 10, 60);
 
                                                     ptr = (uint32_t *)write_buf_ptr();
                                                     xcopy(&addr, &ptr, 4);
-                                                    uIntToLongInteger(addr, li);
+                                                    uInt32ToLongInteger(addr, li);
                                                     convertLongIntegerToShortIntegerRegister(li, 16, 61);
 
                                                     addr = (uint32_t)write_buf_size();
-                                                    uIntToLongInteger(addr, li);
+                                                    uInt32ToLongInteger(addr, li);
                                                     convertLongIntegerToShortIntegerRegister(li, 10, 62);
 
                                                     addr = (uint32_t)get_hw_id();
-                                                    uIntToLongInteger(addr, li);
+                                                    uInt32ToLongInteger(addr, li);
                                                     convertLongIntegerToShortIntegerRegister(li, 10, 63);
 
                                                     ptr = (uint32_t *)resizeProgramMemory;
                                                     xcopy(&addr, &ptr, 4);
-                                                    uIntToLongInteger(addr, li);
+                                                    uInt32ToLongInteger(addr, li);
                                                     convertLongIntegerToShortIntegerRegister(li, 16, 64);
+
+                                                    addr = (uint32_t)sizeof(char);
+                                                    uInt32ToLongInteger(addr, li);
+                                                    convertLongIntegerToShortIntegerRegister(li, 10, 65);
+
+                                                    addr = (uint32_t)sizeof(short);
+                                                    uInt32ToLongInteger(addr, li);
+                                                    convertLongIntegerToShortIntegerRegister(li, 10, 66);
+
+                                                    addr = (uint32_t)sizeof(int);
+                                                    uInt32ToLongInteger(addr, li);
+                                                    convertLongIntegerToShortIntegerRegister(li, 10, 67);
+
+                                                    addr = (uint32_t)sizeof(long);
+                                                    uInt32ToLongInteger(addr, li);
+                                                    convertLongIntegerToShortIntegerRegister(li, 10, 68);
+
+                                                    addr = (uint32_t)sizeof(long long);
+                                                    uInt32ToLongInteger(addr, li);
+                                                    convertLongIntegerToShortIntegerRegister(li, 10, 69);
+
+                                                    addr = (uint32_t)sizeof(void *);
+                                                    uInt32ToLongInteger(addr, li);
+                                                    convertLongIntegerToShortIntegerRegister(li, 10, 70);
 
                                                     longIntegerFree(li);
                                                   #endif // 1

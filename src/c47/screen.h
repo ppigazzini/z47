@@ -60,13 +60,12 @@ char       letteredRegisterName(calcRegister_t regist);
    *   - false = timer stops calling this function
    */
   gboolean refreshLcd                         (gpointer unusedData);
-#endif // PC_BUILD
+  #endif // PC_BUILD
 
   #if defined(DMCP_BUILD)
-  void     copyRegisterToClipboardString      (calcRegister_t regist, char *clipboardString);                   //JMCSV Added for textfiles
-  void     refreshLcd                         (void);
-#else // !DMCP_BUILD
-#endif // DMCP_BUILD
+    void     copyRegisterToClipboardString      (calcRegister_t regist, char *clipboardString);                   //JMCSV Added for textfiles
+    void     refreshLcd                         (void);
+  #endif // DMCP_BUILD
 
   void     execTimerApp                         (uint16_t timerType);
 
@@ -121,11 +120,9 @@ char       letteredRegisterName(calcRegister_t regist);
   char *stringAfterPixelsC47                  (const char *str,    int mode, int comp, uint32_t width,                                bool_t withLeadingEmptyRows, bool_t withEndingEmptyRows);
   uint32_t stringWidthWithLimitC47            (const char *str,    int mode, int comp, uint32_t limitWidth,                           bool_t withLeadingEmptyRows, bool_t withEndingEmptyRows); // like stringWidthC47 but don't check anymore after once exceeded limitWidth
 
-  #if defined(TEXT_MULTILINE_EDIT)
-    uint32_t showStringEdC47                    (uint32_t lastline, int16_t offset, int16_t edcursor, const char *string, uint32_t x, uint32_t y, videoMode_t videoMode, bool_t showLeadingCols, bool_t showEndingCols, bool_t noshow1);
-    void findOffset(void);
-    void incOffset(void);
-  #endif // TEXT_MULTILINE_EDIT
+  uint32_t showStringEdC47                    (uint32_t lastline, int16_t offset, int16_t edcursor, const char *string, uint32_t x, uint32_t y, videoMode_t videoMode, bool_t showLeadingCols, bool_t showEndingCols, bool_t noshow1);
+  void findOffset(void);
+  void incOffset(void);
 
   void     show_f_jm                          (void);
   void     show_g_jm                          (void);

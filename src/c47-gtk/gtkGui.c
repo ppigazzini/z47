@@ -3,9 +3,12 @@
 
 #include "c47.h"
 
+
 //#define DEBUGMODES
 
+
 static int16_t _keyCodeFromGdkKey(uint32_t gdkKey);
+
 
 #if defined(PC_BUILD)
   #include <gtk/gtk.h>
@@ -2987,10 +2990,6 @@ char sstmp[16];
 
       const calcKey_t *keys;
 
-      if(running_program_jm) {
-        return;                        //JM faster during program excution
-      }
-
       keys = getSystemFlag(FLAG_USER) ? kbd_usr : kbd_std;
 
       hideAllWidgets();
@@ -3228,10 +3227,6 @@ char sstmp[16];
 
 
       const calcKey_t *keys;
-
-      if(running_program_jm) {
-        return;                        //JM faster during program excution
-      }
 
       keys = getSystemFlag(FLAG_USER) ? kbd_usr : kbd_std;
 
@@ -3520,10 +3515,6 @@ char sstmp[16];
       #endif // DEBUGMODES && PC_BUILD
 
       const calcKey_t *keys;
-
-      if(running_program_jm) {
-        return;                        //JM faster during program excution
-      }
 
       keys = getSystemFlag(FLAG_USER) ? kbd_usr : kbd_std;
 

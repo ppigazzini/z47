@@ -60,7 +60,7 @@ void m1PowLonI(void) {
   longInteger_t lgInt, exponent;
 
   longIntegerInit(lgInt);
-  uIntToLongInteger(1, lgInt);
+  uInt32ToLongInteger(1u, lgInt);
 
   convertLongIntegerRegisterToLongInteger(REGISTER_X, exponent);
   if(longIntegerIsOdd(exponent)) {

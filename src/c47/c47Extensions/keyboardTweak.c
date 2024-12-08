@@ -139,6 +139,44 @@ void resetKeytimers(void) {
   * \return void
   ***********************************************/
 
+  #define keypress_fff true
+  #define keypress_long_f false
+  void openHOMEorMyM(bool_t situation){
+    if(HOME3 || MYM3) {
+      #if defined(PC_BUILD)
+      if(situation == keypress_fff) {
+        jm_show_calc_state("keyboardtweak.c: fg_processing_jm: HOME3");
+      } else if(situation == keypress_long_f) {
+        jm_show_calc_state("screen.c: Shft_handler: HOME3");
+      }
+      #endif // PC_BUILD
+
+      if(HOME3 && currentMenu() == -MNU_HOME) {                    //JM shifts
+        if(situation == keypress_fff) {
+          //printf("popping\n");
+          popSoftmenu();                                                    //JM shifts
+        }
+      }
+      else {
+        if(/*calcMode == CM_AIM || calcMode == CM_EIM*/getSystemFlag(FLAG_ALPHA)) {                    //JM shifts
+          showSoftmenu(-MNU_MyAlpha);
+        }
+        else {                                                            //JM SHIFTS
+          if(HOME3) {
+            showSoftmenu(-MNU_HOME);
+          }
+          else if(MYM3) {
+            if(situation == keypress_fff) {
+              BASE_OVERRIDEONCE = true;
+            }
+            showSoftmenu(-MNU_MyMenu);
+          }                             //If none selected, do not display any menu, keep the screen blank
+        }                                                                 //JM shifts
+      }                                                                   //JM shifts
+      showSoftmenuCurrentPart();
+    }                                                                     //JM shifts
+  }
+
   void fg_processing_jm(void) {
     if(ShiftTimoutMode || HOME3 || MYM3) {
       if(HOME3 || MYM3) {
@@ -149,30 +187,7 @@ void resetKeytimers(void) {
             fnTimerStop(TO_3S_CTFF);
             shiftF = false;               // Set it up, for flags to be cleared below.
             shiftG = true;
-            if(HOME3 || MYM3) {
-              #if defined(PC_BUILD)
-                jm_show_calc_state("keyboardtweak.c: fg_processing_jm: HOME3");
-              #endif // PC_BUILD
-              if(HOME3 && currentMenu() == -MNU_HOME) {                    //JM shifts
-              //printf("popping\n");
-                popSoftmenu();                                                    //JM shifts
-              }
-              else {
-                if(calcMode == CM_AIM || calcMode == CM_EIM) {                    //JM shifts
-                  showSoftmenu(-MNU_MyAlpha);
-                }
-                else {                                                            //JM SHIFTS
-                  if(HOME3) {
-                    showSoftmenu(-MNU_HOME);
-                  }
-                  else if(MYM3) {
-                    BASE_OVERRIDEONCE = true;
-                    showSoftmenu(-MNU_MyMenu);
-                  }                             //If none selected, do not display any menu, keep the screen blank
-                }                                                                 //JM shifts
-              }                                                                   //JM shifts
-              showSoftmenuCurrentPart();
-            }                                                                     //JM shifts
+            openHOMEorMyM(keypress_fff);
           }
         }
         if(fnTimerGetStatus(TO_3S_CTFF) == TMR_STOPPED) {
@@ -303,22 +318,22 @@ void resetKeytimers(void) {
           if(LongPressM == RBX_M14) {
             longpressDelayedkey1 = ITM_AIM;
             longpressDelayedkey2 = 0;
-            longpressDelayedkey3 = -MNU_XXEQ;
+            longpressDelayedkey3 = 0;
           }
           else if(LongPressM == RBX_M124) {
             longpressDelayedkey1 = ITM_AIM;
             longpressDelayedkey2 = 0;
-            longpressDelayedkey3 = -MNU_XXEQ;
+            longpressDelayedkey3 = 0;
           }
           else if(LongPressM == RBX_M1234) {
             longpressDelayedkey1 = ITM_AIM;
-            longpressDelayedkey2 = -MNU_XXEQ;
+            longpressDelayedkey2 = 0;
             longpressDelayedkey3 = tmpg;
           }
         }
         else {
-          longpressDelayedkey1 = -MNU_XXEQ;
-          longpressDelayedkey2 = tmpf_;
+          longpressDelayedkey1 = tmpf_;
+          longpressDelayedkey2 = 0;
           longpressDelayedkey3 = tmpg_;
         }
       }

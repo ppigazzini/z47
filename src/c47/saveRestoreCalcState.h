@@ -15,10 +15,8 @@
   #define manualSave 4
   #define stateSave  5
 
-  #if defined(PC_BUILD) || defined(DMCP_BUILD)
-    void   saveCalc      (void);
-    void   restoreCalc   (void);
-  #endif // PC_BUILD || DMCP_BUILD
+  void     saveCalc      (void);
+  void     restoreCalc   (void);
 
   void     fnSave        (uint16_t unusedButMandatoryParameter);
   void     fnLoad        (uint16_t loadMode);

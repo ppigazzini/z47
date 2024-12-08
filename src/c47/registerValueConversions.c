@@ -194,7 +194,7 @@ void convertShortIntegerRegisterToLongInteger(calcRegister_t source, longInteger
   convertShortIntegerRegisterToUInt64(source, &sign, &value);
 
   longIntegerInit(lgInt);
-  uIntToLongInteger(value >> 32, lgInt);
+  uInt32ToLongInteger((uint32_t)(value >> 32), lgInt);
   longIntegerLeftShift(lgInt, 32, lgInt);
   longIntegerAddUInt(lgInt, value & 0x00000000ffffffff, lgInt);
 
@@ -250,7 +250,7 @@ void convertReal34ToLongInteger(const real34_t *re34, longInteger_t lgInt, enum 
   exponent = real34GetExponent(&real34);
 
   longIntegerInit(lgInt);
-  uIntToLongInteger(bcd[0], lgInt);
+  uInt32ToLongInteger(bcd[0], lgInt);
 
   for(int i=1; i<DECQUAD_Pmax; i++) {
     longIntegerMultiplyUInt(lgInt, 10, lgInt);
@@ -290,7 +290,7 @@ void convertRealToLongInteger(const real_t *re, longInteger_t lgInt, enum roundi
   sign = (realIsNegative(&real) ? 1 : 0);
   exponent = real.exponent;
 
-  uIntToLongInteger(bcd[0], lgInt);
+  uInt32ToLongInteger(bcd[0], lgInt);
 
   for(int i=1; i<real.digits; i++) {
     longIntegerMultiplyUInt(lgInt, 10, lgInt);

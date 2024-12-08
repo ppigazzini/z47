@@ -46,7 +46,7 @@ void fnGetVolume(uint16_t unusedButMandatoryParameter) {
   liftStack();
 
   longIntegerInit(volume);
-  uIntToLongInteger(get_beep_volume(), volume);
+  int32ToLongInteger(get_beep_volume(), volume);
   convertLongIntegerToLongIntegerRegister(volume, REGISTER_X);
   longIntegerFree(volume);
 }
@@ -71,7 +71,7 @@ static uint32_t _getValueFromRegister(calcRegister_t regist) {
   else if(getRegisterDataType(regist) == dtLongInteger) {
     longInteger_t lgInt;
     convertLongIntegerRegisterToLongInteger(regist, lgInt);
-    longIntegerToUInt(lgInt, value);
+    longIntegerToUInt32(lgInt, value);
     longIntegerFree(lgInt);
   }
 

@@ -92,7 +92,7 @@ void log10LonI(void) {
         longIntegerInit(xx);
         longIntegerInit(rr);
         longIntegerInit(yy);
-        intToLongInteger(10, xx);
+        uInt32ToLongInteger(10u, xx);
         convertReal34ToLongInteger(REGISTER_REAL34_DATA(REGISTER_X), rr, DEC_ROUND_HALF_EVEN);
         longIntegerPower(xx, rr, yy);
         if(longIntegerCompare(lgInt, yy) == 0) {

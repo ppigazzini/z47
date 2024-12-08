@@ -2,7 +2,7 @@
 // SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
 
-#include "hal/lcd.h"
+#include "c47.h"
 
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 

@@ -818,27 +818,7 @@ void execTimerApp(uint16_t timerType) {
         else if((!shiftF && shiftG) || (shiftF && shiftG)) {
           Shft_timeouts = false;
           resetShiftState();                                       //force into no shift state, i.e. to wait
-          if(HOME3 || MYM3) {
-            #if defined(PC_BUILD)
-              jm_show_calc_state("screen.c: Shft_handler: HOME3");
-            #endif //PC_BUILD
-            if(HOME3 && currentMenu() == -MNU_HOME) {
-                                                                   //removed popping after fff:              popSoftmenu();
-            }
-            else {
-              if(calcMode == CM_AIM) {
-              }
-              else {
-                if(HOME3) {
-                  showSoftmenu(-MNU_HOME);
-                }
-                else if(MYM3) {
-                  showSoftmenu(-MNU_MyMenu);
-                }
-              }
-            }
-            showSoftmenuCurrentPart();
-          }
+          openHOMEorMyM(keypress_long_f);
         }
       }
     }
@@ -1756,10 +1736,6 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
         stringAppend(functionName + stringByteLength(functionName), arg);
         stringAppend(functionName + stringByteLength(functionName), ":");
       }
-      if(item >= ITM_X_P1 && item <= ITM_X_g6) {
-        stringAppend(functionName, indexOfItemsXEQM + 8*(item-fnXEQMENUpos));
-        stringAppend(functionName + stringByteLength(functionName), ":");
-      }
       if(dynamicMenuItem > -1) {
         stringAppend(functionName + stringByteLength(functionName),dynmenuGetLabel(dynamicMenuItem));
       }
@@ -1776,9 +1752,6 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
         if(arg != NULL) stringAppend(functionName,arg);
         showFunctionNameArg = (char *)arg;                        // Needed when executing a user menu from a long pressed key
       }
-      else if(item >= ITM_X_P1 && item <= ITM_X_g6) {
-        stringAppend(functionName, indexOfItemsXEQM + 8*(item-fnXEQMENUpos));
-      }
       else if(item >= FIRST_CONSTANT && item <= LAST_CONSTANT) {
         stringAppend(functionName,pickValidItemFromItems(item, PRIORITY_itemSoftmenuName));
       }
@@ -1792,9 +1765,6 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
       //printf("---|%s|---\n", functionName);
 
     showFunctionNameItem = item;
-    if(running_program_jm) {
-      return;
-    }
     showFunctionNameCounter = delayInMs;
 
     if(functionName[0] != 0)
@@ -1825,7 +1795,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
 
 
   void hideFunctionName(void) {
-    if(!running_program_jm && (tmpString[0] != 0 || calcMode!=CM_AIM)) {
+    if(tmpString[0] != 0 || calcMode!=CM_AIM) {
       if(calcMode != CM_PEM) {
         refreshRegisterLine(REGISTER_T);                                                //JM DO NOT CHANGE BACK TO CLEARING ONLY A SHORT PIECE. CHANGED IN TWEAKED AS WELL>
       }
@@ -2562,7 +2532,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
         #if (SHOW_MEMORY_STATUS == 1)
           char string[1000];
 
-          sprintf(string, "%" PRId32 " bytes free (%" PRId32 " region%s), C47 %" PRIu32 " bytes, GMP %" PRIu32 " bytes -> should always be 0", getFreeRamMemory(), numberOfFreeMemoryRegions, numberOfFreeMemoryRegions==1 ? "" : "s", (uint32_t)TO_BYTES((uint64_t)c47MemInBlocks), (uint32_t)gmpMemInBytes);
+          sprintf(string, "%" PRIu32 " bytes free (%" PRId32 " region%s), C47 %" PRIu32 " bytes, GMP %" PRIu32 " bytes -> should always be 0", getFreeRamMemory(), numberOfFreeMemoryRegions, numberOfFreeMemoryRegions==1 ? "" : "s", (uint32_t)TO_BYTES((uint64_t)c47MemInBlocks), (uint32_t)gmpMemInBytes);
           stringToUtf8(string, (uint8_t *)tmpStr);
           gtk_label_set_label(GTK_LABEL(lblMemoryStatus), tmpStr);
           gtk_widget_show(lblMemoryStatus);
@@ -4874,10 +4844,6 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
   int16_t refreshScreenCounter = 0;        //JM
 
   void refreshScreen(uint8_t source) {
-    if(running_program_jm) { //JM TEST PROGRAM!
-      return;
-    }
-
     //Special test function to click every time refresh screen is called
     #if defined(DMCP_BUILD) && defined(CLICK_REFRESHSCR)
       start_buzzer_freq(100000);
@@ -5269,7 +5235,7 @@ void fnScreenDump(uint16_t unusedButMandatoryParameter) {
         longIntegerFree(lgInt);
         return -1;
       }
-      longIntegerToUInt(lgInt, value);
+      longIntegerToUInt32(lgInt, value);
       longIntegerFree(lgInt);
     }
 
@@ -5338,7 +5304,7 @@ void fnAGraph(uint16_t regist) {
     longInteger_t liGramod;
     getPixelPos(&x, &y);
     convertLongIntegerRegisterToLongInteger(RESERVED_VARIABLE_GRAMOD, liGramod);
-    longIntegerToUInt(liGramod, gramod);
+    longIntegerToUInt32(liGramod, gramod);
     longIntegerFree(liGramod);
     if(lastErrorCode == ERROR_NONE) {
       if(getRegisterDataType(regist) == dtShortInteger) {

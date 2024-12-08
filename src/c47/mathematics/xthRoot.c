@@ -224,7 +224,7 @@ static void doXthRootLonI(void) {
   }
 
   if(longIntegerIsZero(base)) {          //base=0 -->  0
-    uIntToLongInteger(0, base);
+    uInt32ToLongInteger(0u, base);
     convertLongIntegerToLongIntegerRegister(base, REGISTER_X);
     longIntegerFree(base);
     longIntegerFree(exponent);
@@ -232,7 +232,7 @@ static void doXthRootLonI(void) {
   }
 
   if(longIntegerCompareUInt(base, 2147483640) == -1) {
-    longIntegerToInt(exponent, exp);
+    longIntegerToInt32(exponent, exp);
     if(longIntegerIsPositive(base)) {                                 // pos base
       longIntegerInit(l);
       if(longIntegerRoot(base, exp, l)) {                             // if integer xthRoot found, return

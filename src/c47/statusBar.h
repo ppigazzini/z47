@@ -2,12 +2,12 @@
 // SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
 /**
- * \file statusBar.h
- * Status bar management.
- */
-#if !defined(STATUSBAR_H)
+   * \file statusBar.h
+   * Status bar management.
+   */
 
-#define STATUSBAR_H
+#if !defined(STATUSBAR_H)
+  #define STATUSBAR_H
 
   #if !defined(TESTSUITE_BUILD)
   /**
@@ -100,19 +100,17 @@
    */
   void showHideUserMode       (void);
 
-  #if defined(DMCP_BUILD)
-    /**
-     * Shows or hides the USB or low battery icon in the status bar.
-     */
-    void showHideUsbLowBattery(void);
-  #else // !DMCP_BUILD
-    /**
-     * Shows or hides the USB icon in the status bar.
-     */
-    void showHideStackLift    (void);
-  #endif // DMCP_BUILD
+  /**
+   * Shows or hides the USB or low battery icon in the status bar.
+   */
+  void showHideUsbLowBattery  (void);
+
+  /**
+   * Shows or hides the USB icon in the status bar.
+   */
+  void showHideStackLift      (void);
 
   void showHideASB            (void);       //JM
 
-#endif // !TESTSUITE_BUILD
+  #endif // !TESTSUITE_BUILD
 #endif // !STATUSBAR_H

@@ -85,7 +85,7 @@ void fnRandomI(uint16_t unusedButMandatoryParameter) {
     return;
   }
 
-  longIntegerToUInt(regX, maxRand);
+  longIntegerToUInt32(regX, maxRand);
   longIntegerAddUInt(mini, boundedRand(maxRand), maxi);
 
   setSystemFlag(FLAG_ASLIFT);
