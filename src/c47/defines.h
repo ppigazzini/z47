@@ -1187,7 +1187,12 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define NUMBER_OF_DISPLAY_DIGITS                  16
 #define NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS     10
 
-#define MAX_FREE_REGIONS                          50 // Maximum number of free memory regions
+#if defined(DMCP_BUILD) && defined(OLD_HW) // The old HW has about 64Kb for user usable RAM
+  #define MAX_FREE_REGIONS                        50 // Maximum number of free memory regions
+#else // The new HW has about 512 KB for user usable RAM, 8 times more.
+  #define MAX_FREE_REGIONS                       200 // Maximum number of free memory regions
+#endif // DMCP_BUILD && OLD_HW
+
 #if !defined(DMCP_BUILD)
   #define MAX_ALLOCATED_REGIONS                 5000 // Maximum number of allocated memory regions
 #endif // !DMCP_BUILD
@@ -1780,13 +1785,16 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define freeRegisterData(regist)             freeC47Blocks((void *)getRegisterDataPointer(regist), getRegisterFullSizeInBlocks(regist))
 #define storeToDtConfigDescriptor(config)    (configToStore->config = config)
 #define recallFromDtConfigDescriptor(config) (config = configToRecall->config)
+
 #define BPB                                  2 // 2^BPB = number of bytes per block
 #define BYTES_PER_BLOCK                      (1 << BPB)
-#define TO_BLOCKS(n)                         (((n) + (BYTES_PER_BLOCK - 1)) >> BPB)
-#define TO_BYTES(n)                          ((n) << BPB)
+#define TO_BLOCKS(n)                         ((((uint32_t)n) + (BYTES_PER_BLOCK - 1)) >> BPB)
+#define TO_BYTES(n)                          (((uint32_t)n) << BPB)
+
 #define C47_NULL                             65535 // NULL pointer
 #define TO_PCMEMPTR(p)                       ((void *)((p) == C47_NULL ? NULL : ram + (p)))
 #define TO_C47MEMPTR(p)                      ((p) == NULL ? C47_NULL : (uint16_t)((dataBlock_t *)(p) - ram))
+
 #define min(a,b)                             ((a)<(b)?(a):(b))
 #define max(a,b)                             ((a)>(b)?(a):(b))
 #define rmd(n, d)                            ((n)%(d))                                                       // rmd(n,d) = n - d*idiv(n,d)   where idiv is the division with decimal part truncature
