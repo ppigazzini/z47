@@ -1286,11 +1286,18 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
       ram = (dataBlock_t *)malloc(TO_BYTES(RAM_SIZE_IN_BLOCKS));
     }
     memset(ram, 0, TO_BYTES(RAM_SIZE_IN_BLOCKS));
-    numberOfFreeMemoryRegions = 1;
 
-    // for reserved variables (for Martin: you moron, think twice when you change something around here!) ... you are funny ...
-    freeMemoryRegions[0].blockAddress = allReservedVariables[LAST_RESERVED_VARIABLE - FIRST_RESERVED_VARIABLE].header.pointerToRegisterData + REAL34_SIZE_IN_BLOCKS; // + REAL34_SIZE_IN_BLOCKS is wrong because GRAMOD is a dtLongInteger, but it works
+    #if !defined(DMCP_BUILD) || !defined(OLD_HW)
+      if(globalRegister == NULL) {
+        globalRegister = malloc(sizeof(registerHeader_t) * NUMBER_OF_GLOBAL_REGISTERS);
+        freeMemoryRegions = malloc(sizeof(freeMemoryRegion_t) * MAX_FREE_REGIONS);
+      }
+    #endif // DMCP_BUILD && OLD_HW
+
+    freeMemoryRegions[0].blockAddress = TO_C47MEMPTR(ram + allReservedVariables[LAST_RESERVED_VARIABLE - FIRST_RESERVED_VARIABLE].header.pointerToRegisterData + REAL34_SIZE_IN_BLOCKS);
     freeMemoryRegions[0].sizeInBlocks = RAM_SIZE_IN_BLOCKS - freeMemoryRegions[0].blockAddress - 1; // - 1: one block for an empty program
+
+    numberOfFreeMemoryRegions = 1;
 
     #if !defined(DMCP_BUILD)
       numberOfAllocatedMemoryRegions = 0;
@@ -1358,7 +1365,9 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     #endif // OS64BIT
 
     // initialize the global registers
-    memset(globalRegister, 0, sizeof(globalRegister));
+    #if defined(DMCP_BUILD) && defined(OLD_HW)
+      memset(globalRegister, 0, sizeof(globalRegister));
+    #endif // DMCP_BUILD && OLD_HW
     for(calcRegister_t regist=FIRST_GLOBAL_REGISTER; regist<=LAST_GLOBAL_REGISTER; regist++) {
       setRegisterDataType(regist, dtReal34, amNone);
       memPtr = allocC47Blocks(REAL34_SIZE_IN_BLOCKS);

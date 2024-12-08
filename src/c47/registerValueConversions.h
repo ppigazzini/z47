@@ -84,13 +84,11 @@
   void convertReal34MatrixRegisterToComplex34MatrixRegister  (calcRegister_t source, calcRegister_t destination);
 
 
-  #if !defined(TESTSUITE_BUILD)
-    //Section to convert doubles and floats
-    void    convertDoubleToString                            (double x, int16_t n, char *buff);  //Reformatting double/float strings that are formatted according to different locale settings
-    void    convertDoubleToReal                              (double x, real_t *destination, realContext_t *ctxt);
-    void    convertDoubleToReal34Register                    (double x, calcRegister_t destination);
-    void    convertDoubleToReal34RegisterPush                (double x, calcRegister_t destination);
-  #endif // !TESTSUITE_BUILD
+  //Section to convert doubles and floats
+  void    convertDoubleToString                              (double x, int16_t n, char *buff);  //Reformatting double/float strings that are formatted according to different locale settings
+  void    convertDoubleToReal                                (double x, real_t *destination, realContext_t *ctxt);
+  void    convertDoubleToReal34Register                      (double x, calcRegister_t destination);
+  void    convertDoubleToReal34RegisterPush                  (double x, calcRegister_t destination);
 
   void    realToFloat                                        (const real_t *vv, float *v);
   void    realToDouble  /*float used (not double)*/          (const real_t *vv, double *v);

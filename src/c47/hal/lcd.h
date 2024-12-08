@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
-
 /**
  * \file hal/lcd.h
  * LCD related functions.
@@ -9,11 +8,7 @@
 #if !defined(LCD_H)
   #define LCD_H
 
-  #include <stdint.h>
-
   #if defined(DMCP_BUILD)
-    #include <dmcp.h>
-
     // lcd_fill_rect from dmcp.h
     // lcd_refresh   from dmcp.h
     static inline void setBlackPixel(uint32_t x, uint32_t y) {

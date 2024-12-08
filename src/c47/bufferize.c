@@ -1633,6 +1633,7 @@ typedef struct {
             stringAppend(aimBuffer + stringByteLength(aimBuffer), aimBuffer + tmplen - 2);            // ==> +11.110023
             aimBuffer[tmplen - 2] = '0';
             aimBuffer[tmplen - 1] = '0';
+            aimBuffer[tmplen + 2] = 0;
           }
 
           closeNim();
