@@ -7,6 +7,8 @@
 
 #include "c47.h"
 
+
+
 #if !defined(TESTSUITE_BUILD)
 #if !defined(SAVE_SPACE_DM42_8)
   static void _showRegisterInRbr(calcRegister_t regist, int16_t registerNameWidth) {

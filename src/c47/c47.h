@@ -80,6 +80,7 @@
     #include "hal/audio.h"
     #include "hal/gui.h"
     #include "hal/io.h"
+    #include "hal/lcd.h"
     #include "integers.h"
     #include "items.h"
     #include "keyboard.h"
@@ -286,7 +287,7 @@
   extern bool_t                 programListEnd;
   extern bool_t                 serialIOIconEnabled;
   extern bool_t                 pemCursorIsZerothStep;
-  extern bool_t                 halfSecTick1;
+  extern bool_t                 secTick1;
   extern bool_t                 halfSecTick2;
   extern bool_t                 halfSecTick3;
   extern bool_t                 skippedStackLines;

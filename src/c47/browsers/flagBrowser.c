@@ -7,6 +7,8 @@
 
 #include "c47.h"
 
+
+
 TO_QSPI const  letteredFlagDisplay_t letteredFlagDisplay[] = {
 // Flags X, Y, Z, T, A, B, C, D, L
 /* 100 - X */  {.txt = STD_SPACE_6_PER_EM "X", .position = 3        },

@@ -8,7 +8,7 @@
 // JM VARIOUS OPTIONS
 //*********************************
 
-#define VERSION1 "0.109.02.06"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
+#define VERSION1 "0.109.02.07b1"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
 
 
 #if !defined(CALCMODEL)
@@ -1508,6 +1508,8 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define PGM_KEY_PRESSED_WHILE_PAUSED               4
 #define PGM_RESUMING                               5
 #define PGM_SINGLE_STEP                            6
+#define PGM_UNDEFINED                            255
+#define PGM_DEFINED_MASK                        0x7f
 
 // Save mode
 #define SM_MANUAL_SAVE                             0
@@ -1746,13 +1748,8 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define TIMER_APP_STOPPED                          0xFFFFFFFFu
 
 #if !defined(DMCP_BUILD)
-  #define LCD_SET_VALUE                            0 // Black pixel
-  #define LCD_EMPTY_VALUE                        255 // White (or empty) pixel
   #define TO_QSPI
 #else // DMCP_BUILD
-  #define setBlackPixel(x, y)                bitblt24(x, 1, y, 1, BLT_OR,   BLT_NONE)
-  #define setWhitePixel(x, y)                bitblt24(x, 1, y, 1, BLT_ANDN, BLT_NONE)
-  #define flipPixel(x, y)                    bitblt24(x, 1, y, 1, BLT_XOR,  BLT_NONE)
   #define beep(frequence, length)            do { while(get_beep_volume() < 11) beep_volume_up(); start_buzzer_freq(frequence * 1000); sys_delay(length); stop_buzzer(); } while(0)
   #undef TO_QSPI
   #if defined(TWO_FILE_PGM)
@@ -1896,7 +1893,6 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 
 #define IS_BASEBLANK_(menuId)                (menuId==0 && !BASE_MYM && !BASE_HOME)
 
-#define clearScreen()                        do { lcd_fill_rect(0, 0, SCREEN_WIDTH, 240, LCD_SET_VALUE); clear_ul(); lastProgramRunStop = 255;} while(0)
 #define currentReturnProgramNumber           (currentSubroutineLevelData[0].returnProgramNumber)
 #define currentReturnLocalStep               (currentSubroutineLevelData[0].returnLocalStep)
 #define currentNumberOfLocalFlags            (currentSubroutineLevelData[1].numberOfLocalFlags)

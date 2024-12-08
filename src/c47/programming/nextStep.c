@@ -8,6 +8,7 @@
 
 #include "c47.h"
 
+
 uint8_t *countOpBytes(uint8_t *step, uint16_t paramMode) {
   uint8_t opParam = *(uint8_t *)(step++);
 
