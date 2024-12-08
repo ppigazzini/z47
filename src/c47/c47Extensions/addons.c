@@ -495,6 +495,16 @@ void fn_cnst_1_cpx(uint16_t unusedButMandatoryParameter) {
   cpxToStk(const_1, const_0, !forcedLiftTheStack);
 }
 
+void fn_cnst_op_A(uint16_t unusedButMandatoryParameter) {
+
+}
+void fnConvertStkToMx(uint16_t unusedButMandatoryParameter) {
+
+}
+void fnConvertMxToStk(uint16_t unusedButMandatoryParameter) {
+
+}
+
 
 //Rounding
 void fnJM_2SI(uint16_t unusedButMandatoryParameter) { //Convert Real to Longint; Longint to shortint; shortint to longint
