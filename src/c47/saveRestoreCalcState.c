@@ -840,7 +840,7 @@ uint8_t output = parameter;
     restoreStateValue(oldTime,                         sizeof(oldTime),                                             "oldTime",                        "hexDump");
     restoreStateValue(dateTimeString,                  sizeof(dateTimeString),                                      "dateTimeString",                 "hexDump");
     restoreStateValue(softmenuStack,                   sizeof(softmenuStack),                                       "softmenuStack",                  "hexDump");
-    restoreStateValue(globalRegister,                  sizeof(sizeof(registerHeader_t)*NUMBER_OF_GLOBAL_REGISTERS), "globalRegister",                 "hexDump");
+    restoreStateValue(globalRegister,                  sizeof(registerHeader_t) * NUMBER_OF_GLOBAL_REGISTERS,       "globalRegister",                 "hexDump");
     restoreStateValue(kbd_usr,                         sizeof(kbd_usr),                                             "kbd_usr",                        "hexDump");
     restoreStateValue(userMenuItems,                   sizeof(userMenuItems),                                       "userMenuItems",                  "hexDump");
     restoreStateValue(userAlphaItems,                  sizeof(userAlphaItems),                                      "userAlphaItems",                 "hexDump");
