@@ -291,7 +291,7 @@ uint8_t output = parameter;
     saveStateValue(oldTime,                         sizeof(oldTime),                                             "oldTime",                        "hexDump");
     saveStateValue(dateTimeString,                  sizeof(dateTimeString),                                      "dateTimeString",                 "hexDump");
     saveStateValue(softmenuStack,                   sizeof(softmenuStack),                                       "softmenuStack",                  "hexDump");
-    saveStateValue(globalRegister,                  sizeof(sizeof(registerHeader_t)*NUMBER_OF_GLOBAL_REGISTERS), "globalRegister",                 "hexDump");
+    saveStateValue(globalRegister,                  sizeof(registerHeader_t) * NUMBER_OF_GLOBAL_REGISTERS,       "globalRegister",                 "hexDump");
     saveStateValue(kbd_usr,                         sizeof(kbd_usr),                                             "kbd_usr",                        "hexDump");
     saveStateValue(userMenuItems,                   sizeof(userMenuItems),                                       "userMenuItems",                  "hexDump");
     saveStateValue(userAlphaItems,                  sizeof(userAlphaItems),                                      "userAlphaItems",                 "hexDump");
