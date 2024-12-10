@@ -214,7 +214,7 @@ void exportCStructure(const char *fontsPath, const char *ttfName) {
 
       FT_Get_Glyph_Name(face, glyphIndex, glyphName, 100);
       #if defined(DEBUG)
-        printf("glyphIndex=%4d   charCode=0x%04x   %s\n", glyphIndex, (unsigned int)(charCodes[cc]>=0x0080 ? charCodes[cc]|0x8000 : charCodes[cc]), glyphName);
+        printf("font=%s glyphIndex=%4d   charCode=0x%04x   %s\n", fontName, glyphIndex, (unsigned int)(charCodes[cc]>=0x0080 ? charCodes[cc]|0x8000 : charCodes[cc]), glyphName);
       #endif // DEBUG
 
       if((error = FT_Load_Glyph(face, glyphIndex, FT_LOAD_RENDER)) != FT_Err_Ok) {
@@ -259,7 +259,7 @@ void exportCStructure(const char *fontsPath, const char *ttfName) {
         colsBeforeGlyph = 0;
       }
       #if defined(DEBUG)
-        printf("Columns: %2d %2d %2d\n", colsBeforeGlyph, colsGlyph, colsAfterGlyph);
+        printf("Columns: Bef=%2d Col=%2d Aft=%2d\n", colsBeforeGlyph, colsGlyph, colsAfterGlyph);
       #endif // DEBUG
 
       ///////////////////////
