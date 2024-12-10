@@ -133,7 +133,40 @@ TO_QSPI static const real_t *const *conversionFactors[constFactorEND] = {
     [constFactorK100Ktokmk] = &const_100,           /*  80 */
     [constFactorK100Ktok100M] = &const_MiToKm,
     [constFactorK100Mtomik] = &const_100,
-};
+
+    [constFactorCupcFzus] = &const_CupcFzus,
+    [constFactorCupcMl] = &const_CupcMl,
+    [constFactorCupukFzuk] = &const_CupukFzuk,
+    [constFactorCupukMl] = &const_CupukMl,
+    [constFactorFzukCupuk] = &const_CupukFzuk,
+    [constFactorFzukTbspuk] = &const_FzukTbspuk,
+    [constFactorFzukTspuk] = &const_FzukTspuk,
+    [constFactorFzusCupc] = &const_CupcFzus,
+    [constFactorFzusTbspc] = &const_FzusTbspc,
+    [constFactorFzusTspc] = &const_FzusTspc,
+    [constFactorMlCupc] = &const_CupcMl,
+    [constFactorMlCupuk] = &const_CupukMl,
+    [constFactorMlPintlq] = &const_PintlqMl,
+    [constFactorMlPintuk] = &const_PintukMl,
+    [constFactorMlQt] = &const_QtMl,
+    [constFactorMlQtus] = &const_QtusMl,
+    [constFactorMlTbspc] = &const_TbspcMl,
+    [constFactorMlTbspuk] = &const_TbspukMl,
+    [constFactorMlTspc] = &const_TspcMl,
+    [constFactorMlTspuk] = &const_TspukMl,
+    [constFactorPintlqMl] = &const_PintlqMl,
+    [constFactorPintukMl] = &const_PintukMl,
+    [constFactorQtMl] = &const_QtMl,
+    [constFactorQtusMl] = &const_QtusMl,
+    [constFactorTbspcFzus] = &const_FzusTbspc,
+    [constFactorTbspcMl] = &const_TbspcMl,
+    [constFactorTbspukFzuk] = &const_FzukTbspuk,
+    [constFactorTbspukMl] = &const_TbspukMl,
+    [constFactorTspcFzus] = &const_FzusTspc,
+    [constFactorTspcMl] = &const_TspcMl,
+    [constFactorTspukFzuk] = &const_FzukTspuk,
+    [constFactorTspukMl] = &const_TspukMl,
+  };
 
 void fnUnitConvert(uint16_t arg) {
     const uint16_t multiply = arg & 0x8000;

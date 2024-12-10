@@ -408,10 +408,6 @@
 #define ITM_KM2toMI2                 389
 #define ITM_NMI2toKM2                390
 #define ITM_KM2toNMI2                391
-#define ITM_0392                     392
-#define ITM_0393                     393
-#define ITM_0394                     394
-#define ITM_0395                     395
 
 
 // Flag, bit, rotation, and logical OPs
@@ -1949,7 +1945,7 @@
 #define ITM_N_KEY_ALPHA             1898
 #define ITM_DREAL                   1899
 #define ITM_N_KEY_GSH               1900
-#define ITM_N_KEY_MM                1901
+#define MNU_CONVCHEF                1901
 #define ITM_1902                    1902
 #define ITM_1903                    1903
 #define ITM_N_KEY_USER              1904
@@ -2482,7 +2478,40 @@
 #define ITM_XSWAP                   2419
 #define ITM_XEDIT                   2420
 
-#define LAST_ITEM                   2421
+#define ITM_CUPCtoFZUS              2421
+#define ITM_CUPCtoML                2422
+#define ITM_CUPUKtoFZUK             2423
+#define ITM_CUPUKtoML               2424
+#define ITM_FZUKtoCUPUK             2425
+#define ITM_FZUKtoTBSPUK            2426
+#define ITM_FZUKtoTSPUK             2427
+#define ITM_FZUStoCUPC              2428
+#define ITM_FZUStoTBSPC             2429
+#define ITM_FZUStoTSPC              2430
+#define ITM_MLtoCUPC                2431
+#define ITM_MLtoCUPUK               2432
+#define ITM_MLtoPINTLQ              2433
+#define ITM_MLtoPINTUK              2434
+#define ITM_MLtoQT                  2435
+#define ITM_MLtoQTUS                2436
+#define ITM_MLtoTBSPC               2437
+#define ITM_MLtoTBSPUK              2438
+#define ITM_MLtoTSPC                2439
+#define ITM_MLtoTSPUK               2440
+#define ITM_PINTLQtoML              2441
+#define ITM_PINTUKtoML              2442
+#define ITM_QTtoML                  2443
+#define ITM_QTUStoML                2444
+#define ITM_TBSPCtoFZUS             2445
+#define ITM_TBSPCtoML               2446
+#define ITM_TBSPUKtoFZUK            2447
+#define ITM_TBSPUKtoML              2448
+#define ITM_TSPCtoFZUS              2449
+#define ITM_TSPCtoML                2450
+#define ITM_TSPUKtoFZUK             2451
+#define ITM_TSPUKtoML               2452
+
+#define LAST_ITEM                   2453
 
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL

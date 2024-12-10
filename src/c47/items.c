@@ -348,7 +348,8 @@ bool_t itemNotAvail(int16_t itemNr) {
           case -MNU_CONVANG :
           case -MNU_MISC :
           case -MNU_CONVHUM :
-          case -MNU_CONVYMMV : {
+          case -MNU_CONVYMMV :
+          case -MNU_CONVCHEF : {
             errorMessage[0]=0;
             strcat(errorMessage,indexOfItems[func].itemCatalogName);
             temporaryInformation = TI_NO_INFO;
@@ -3238,7 +3239,7 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 1898 */  { fnSigmaAssign,                16384+ITM_AIM,               "",                                            STD_RIGHT_DASHARROW STD_SPACE_4_PER_EM STD_alpha,                           (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 1899 */  { SetSetting,                   ITM_DREAL,                   "d" STD_SPACE_3_PER_EM "REAL",                 "d" STD_SPACE_3_PER_EM "REAL",                 (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },//JM INPUT DEFAULT
 /* 1900 */  { fnSigmaAssign,                16384+ITM_SHIFTg,            "",                                            STD_RIGHT_DASHARROW STD_SPACE_4_PER_EM "g",                                 (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
-/* 1901 */  { itemToBeCoded,                NOPARAM,                     "1901",                                        "1901",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 1901 */  { itemToBeCoded,                NOPARAM,                     "Chef:",                                       "Chef:",                                       (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 1902 */  { itemToBeCoded,                NOPARAM,                     "1902",                                        "1902",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 1903 */  { itemToBeCoded,                NOPARAM,                     "1903",                                        "1903",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 1904 */  { fnSigmaAssign,                16384+ITM_USERMODE,          "",                                            STD_RIGHT_DASHARROW STD_SPACE_4_PER_EM "USER",                              (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
@@ -3764,6 +3765,43 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 2419 */  { fnXSWAP,                      XSWAP,                       "X.SWAP",                                      "X.SWAP",                                      (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2420 */  { fnXSWAP,                      XEDIT,                       "X.EDIT",                                      "X.EDIT",                                      (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 
-/* 2421 */  { itemToBeCoded,                NOPARAM,                     "",                                            "Last item",                                   (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED},
+/* NNNN */  UNIT_CONV(constFactorCupcFzus,      multiply,      "cup" STD_US STD_SUB_c STD_RIGHT_ARROW "floz" STD_US,        "cup" STD_US STD_SUB_c STD_RIGHT_ARROW                      ),
+/* NNNN */  UNIT_CONV(constFactorCupcMl,        multiply,      "cup" STD_US STD_SUB_c STD_RIGHT_ARROW "ml",                 "cup" STD_US STD_SUB_c STD_RIGHT_ARROW                      ),
+/* NNNN */  UNIT_CONV(constFactorCupukFzuk,     multiply,      "cup" STD_UK STD_RIGHT_ARROW "floz" STD_UK,                  "cup" STD_UK STD_RIGHT_ARROW                                ),
+/* NNNN */  UNIT_CONV(constFactorCupukMl,       multiply,      "cup" STD_UK STD_RIGHT_ARROW "ml",                           "cup" STD_UK STD_RIGHT_ARROW                                ),
+/* NNNN */  UNIT_CONV(constFactorFzukCupuk,       divide,      "floz" STD_UK STD_RIGHT_ARROW "cup" STD_UK,                  "floz" STD_UK STD_RIGHT_ARROW                               ),
+/* NNNN */  UNIT_CONV(constFactorFzukTbspuk,    multiply,      "floz" STD_UK STD_RIGHT_ARROW "Tbsp" STD_UK,                 "floz" STD_UK STD_RIGHT_ARROW                               ),
+/* NNNN */  UNIT_CONV(constFactorFzukTspuk,     multiply,      "floz" STD_UK STD_RIGHT_ARROW "tsp" STD_UK,                  "floz" STD_UK STD_RIGHT_ARROW                               ),
+/* NNNN */  UNIT_CONV(constFactorFzusCupc,        divide,      "floz" STD_US STD_RIGHT_ARROW "cup" STD_US STD_SUB_c,        "floz" STD_US STD_RIGHT_ARROW                               ),
+/* NNNN */  UNIT_CONV(constFactorFzusTbspc,     multiply,      "floz" STD_US STD_RIGHT_ARROW "Tbsp" STD_US STD_SUB_c,       "floz" STD_US STD_RIGHT_ARROW                               ),
+/* NNNN */  UNIT_CONV(constFactorFzusTspc,      multiply,      "floz" STD_US STD_RIGHT_ARROW "tsp" STD_US STD_SUB_c,        "floz" STD_US STD_RIGHT_ARROW                               ),
+/* NNNN */  UNIT_CONV(constFactorMlCupc,          divide,      "ml" STD_RIGHT_ARROW "cup" STD_US STD_SUB_c,                 "ml" STD_RIGHT_ARROW                                        ),
+/* NNNN */  UNIT_CONV(constFactorMlCupuk,         divide,      "ml" STD_RIGHT_ARROW "cup" STD_UK,                           "ml" STD_RIGHT_ARROW                                        ),
+/* NNNN */  UNIT_CONV(constFactorMlPintlq,        divide,      "ml" STD_RIGHT_ARROW "pint" STD_SUB_l STD_SUB_i STD_SUB_q,   "ml" STD_RIGHT_ARROW                                        ),
+/* NNNN */  UNIT_CONV(constFactorMlPintuk,        divide,      "ml" STD_RIGHT_ARROW "pint" STD_UK,                          "ml" STD_RIGHT_ARROW                                        ),
+/* NNNN */  UNIT_CONV(constFactorMlQt,            divide,      "ml" STD_RIGHT_ARROW "qt." STD_UK,                           "ml" STD_RIGHT_ARROW                                        ),
+/* NNNN */  UNIT_CONV(constFactorMlQtus,          divide,      "ml" STD_RIGHT_ARROW "qt." STD_US,                           "ml" STD_RIGHT_ARROW                                        ),
+/* NNNN */  UNIT_CONV(constFactorMlTbspc,         divide,      "ml" STD_RIGHT_ARROW "Tbsp" STD_US STD_SUB_c,                "ml" STD_RIGHT_ARROW                                        ),
+/* NNNN */  UNIT_CONV(constFactorMlTbspuk,        divide,      "ml" STD_RIGHT_ARROW "Tbsp" STD_UK,                          "ml" STD_RIGHT_ARROW                                        ),
+/* NNNN */  UNIT_CONV(constFactorMlTspc,          divide,      "ml" STD_RIGHT_ARROW "tsp" STD_US STD_SUB_c,                 "ml" STD_RIGHT_ARROW                                        ),
+/* NNNN */  UNIT_CONV(constFactorMlTspuk,         divide,      "ml" STD_RIGHT_ARROW "tsp" STD_UK,                           "ml" STD_RIGHT_ARROW                                        ),
+/* NNNN */  UNIT_CONV(constFactorPintlqMl,      multiply,      "pint" STD_SUB_l STD_SUB_i STD_SUB_q STD_RIGHT_ARROW "ml",   "pint" STD_SUB_l STD_SUB_i STD_SUB_q STD_RIGHT_ARROW        ),
+/* NNNN */  UNIT_CONV(constFactorPintukMl,      multiply,      "pint" STD_UK STD_RIGHT_ARROW "ml",                          "pint" STD_UK STD_RIGHT_ARROW                               ),
+/* NNNN */  UNIT_CONV(constFactorQtMl,          multiply,      "qt." STD_UK STD_RIGHT_ARROW "ml",                           "qt." STD_UK STD_RIGHT_ARROW                                ),
+/* NNNN */  UNIT_CONV(constFactorQtusMl,        multiply,      "qt." STD_US STD_RIGHT_ARROW "ml",                           "qt." STD_US STD_RIGHT_ARROW                                ),
+/* NNNN */  UNIT_CONV(constFactorTbspcFzus,       divide,      "Tbsp" STD_US STD_SUB_c STD_RIGHT_ARROW "floz" STD_US,       "Tbsp" STD_US STD_SUB_c STD_RIGHT_ARROW                     ),
+/* NNNN */  UNIT_CONV(constFactorTbspcMl,       multiply,      "Tbsp" STD_US STD_SUB_c STD_RIGHT_ARROW "ml",                "Tbsp" STD_US STD_SUB_c STD_RIGHT_ARROW                     ),
+/* NNNN */  UNIT_CONV(constFactorTbspukFzuk,      divide,      "Tbsp" STD_UK STD_RIGHT_ARROW "floz" STD_UK,                 "Tbsp" STD_UK STD_RIGHT_ARROW                               ),
+/* NNNN */  UNIT_CONV(constFactorTbspukMl,      multiply,      "Tbsp" STD_UK STD_RIGHT_ARROW "ml",                          "Tbsp" STD_UK STD_RIGHT_ARROW                               ),
+/* NNNN */  UNIT_CONV(constFactorTspcFzus,        divide,      "tsp" STD_US STD_SUB_c STD_RIGHT_ARROW "floz" STD_US,        "tsp" STD_US STD_SUB_c STD_RIGHT_ARROW                      ),
+/* NNNN */  UNIT_CONV(constFactorTspcMl,        multiply,      "tsp" STD_US STD_SUB_c STD_RIGHT_ARROW "ml",                 "tsp" STD_US STD_SUB_c STD_RIGHT_ARROW                      ),
+/* NNNN */  UNIT_CONV(constFactorTspukFzuk,       divide,      "tsp" STD_UK STD_RIGHT_ARROW "floz" STD_UK,                  "tsp" STD_UK STD_RIGHT_ARROW                                ),
+/* NNNN */  UNIT_CONV(constFactorTspukMl,       multiply,      "tsp" STD_UK STD_RIGHT_ARROW "ml",                           "tsp" STD_UK STD_RIGHT_ARROW                                ),
+
+
+/* 2421 */  { itemToBeCoded,                NOPARAM,                     "",                                            "Last item",                                   (0 << TAM_MAX_BITS)
+
+
+ |     0, CAT_NONE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED},
 
 };
