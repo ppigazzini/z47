@@ -276,3 +276,7 @@ PLUS                      "\xa4\xff"
 
 2024-12-09 Add litre ℓ
     $2113  Script Small L      "\xa1\x13"         STD_litre
+
+2024-12-10 Add USc
+    $2436  USc                 "\xa4\x36"         STD_USc"
+    

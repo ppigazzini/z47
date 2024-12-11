@@ -516,7 +516,7 @@ TO_QSPI const int16_t menu_alphaMisc[]    ={ ITM_CR,                         ITM
                                              ITM_TILDE,                      ITM_HOURGLASS,                  ITM_WATCH,                      ITM_TIMER_SYMBOL,               ITM_NEG_EXCLAMATION_MARK,       ITM_USER_MODE,
                                              ITM_BATTERY,                    ITM_PRINTER,                    ITM_HAMBURGER,                  ITM_BST_char,                   ITM_SST_char,                   ITM_CYCLIC,
 
-                                             ITM_USB_SYMBOL,                 ITM_SUB_SUN,                    ITM_SUB_EARTH,                  ITM_US,                         ITM_UK,                         ITM_NULL,
+                                             ITM_USB_SYMBOL,                 ITM_SUB_SUN,                    ITM_SUB_EARTH,                  ITM_US,                         ITM_UK,                         ITM_litre,
                                              ITM_LEFT_DOUBLE_QUOTE,          ITM_RIGHT_DOUBLE_QUOTE,         ITM_NULL,                       ITM_NULL,                       ITM_NULL,                       ITM_NULL,
                                              ITM_NULL,                       ITM_NULL,                       ITM_NULL,                       ITM_NULL,                       ITM_NULL,                       ITM_NULL                        };
 
