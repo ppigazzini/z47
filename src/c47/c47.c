@@ -71,8 +71,8 @@ realContext_t          ctxtReal1071; // 1071 digits: used in radian angle reduct
 realContext_t          ctxtReal2139; // 2139 digits: used for really big modulo
 
 dataBlock_t            allSubroutineLevels;
-dataBlock_t           *statisticalSumsPointer;
-dataBlock_t           *savedStatisticalSumsPointer;
+real_t                *statisticalSumsPointer;
+real_t                *savedStatisticalSumsPointer;
 dataBlock_t           *ram = NULL;
 dataBlock_t           *currentLocalFlags;
 dataBlock_t           *currentSubroutineLevelData;

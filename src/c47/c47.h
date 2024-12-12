@@ -304,8 +304,8 @@
   extern dynamicSoftmenu_t      dynamicSoftmenu[NUMBER_OF_DYNAMIC_SOFTMENUS];
 
   extern dataBlock_t            allSubroutineLevels;
-  extern dataBlock_t           *statisticalSumsPointer;
-  extern dataBlock_t           *savedStatisticalSumsPointer;
+  extern real_t                *statisticalSumsPointer;
+  extern real_t                *savedStatisticalSumsPointer;
   extern dataBlock_t           *ram;
   extern dataBlock_t           *currentLocalFlags;
   extern dataBlock_t           *currentSubroutineLevelData;
