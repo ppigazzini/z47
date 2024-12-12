@@ -50,7 +50,7 @@ void _Drop(calcRegister_t reg) {
   void *dataPtr = allocC47Blocks(sizeInBlocks);
   if(dataPtr) {
     setRegisterDataPointer(getStackTop() - 1, dataPtr);
-    xcopy(REGISTER_DATA(getStackTop() - 1), REGISTER_DATA(getStackTop()), TO_BYTES(sizeInBlocks));
+    xcopy(getRegisterDataPointer(getStackTop() - 1), getRegisterDataPointer(getStackTop()), TO_BYTES(sizeInBlocks));
   }
   else {
     lastErrorCode = ERROR_RAM_FULL;
@@ -190,7 +190,7 @@ void fnFillStack(uint16_t unusedButMandatoryParameter) {
     void *newDataPointer = allocC47Blocks(dataSizeXinBlocks);
     if(newDataPointer) {
       setRegisterDataPointer(i, newDataPointer);
-      xcopy(newDataPointer, REGISTER_DATA(REGISTER_X), TO_BYTES(dataSizeXinBlocks));
+      xcopy(newDataPointer, getRegisterDataPointer(REGISTER_X), TO_BYTES(dataSizeXinBlocks));
     }
     else {
       lastErrorCode = ERROR_RAM_FULL;

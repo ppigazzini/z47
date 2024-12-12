@@ -70,12 +70,12 @@ realContext_t          ctxtReal75;   //   75 digits: used in SLVQ
 realContext_t          ctxtReal1071; // 1071 digits: used in radian angle reduction
 realContext_t          ctxtReal2139; // 2139 digits: used for really big modulo
 
-dataBlock_t            allSubroutineLevels;
-real_t                *statisticalSumsPointer;
-real_t                *savedStatisticalSumsPointer;
-dataBlock_t           *ram = NULL;
-dataBlock_t           *currentLocalFlags;
-dataBlock_t           *currentSubroutineLevelData;
+subroutineLevels_t       allSubroutineLevels;
+subroutineLevelHeader_t *currentSubroutineLevelData;
+real_t                  *statisticalSumsPointer;
+real_t                  *savedStatisticalSumsPointer;
+uint32_t                *ram = NULL;
+localFlags_t            *currentLocalFlags;
 
 namedVariableHeader_t *allNamedVariables;
 softmenuStack_t        softmenuStack[SOFTMENU_STACK_SIZE];

@@ -1283,7 +1283,7 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     void *memPtr;
 
     if(ram == NULL) {
-      ram = (dataBlock_t *)malloc(TO_BYTES(RAM_SIZE_IN_BLOCKS));
+      ram = (uint32_t *)malloc(TO_BYTES(RAM_SIZE_IN_BLOCKS));
     }
     memset(ram, 0, TO_BYTES(RAM_SIZE_IN_BLOCKS));
 
@@ -1383,7 +1383,7 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     // allocate space for the local register list
     allSubroutineLevels.numberOfSubroutineLevels = 1;
     currentSubroutineLevelData = allocC47Blocks(3);
-    allSubroutineLevels.ptrToSubroutineLevel0Data = TO_C47MEMPTR(currentSubroutineLevelData);
+    allSubroutineLevels.ptrToSubroutineLevel0Header = TO_C47MEMPTR(currentSubroutineLevelData);
     currentReturnProgramNumber = 0;
     currentReturnLocalStep = 0;
     currentNumberOfLocalRegisters = 0; // No local register

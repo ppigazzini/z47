@@ -1790,7 +1790,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 
 #define C47_NULL                             65535 // NULL pointer
 #define TO_PCMEMPTR(p)                       ((void *)((p) == C47_NULL ? NULL : ram + (p)))
-#define TO_C47MEMPTR(p)                      ((p) == NULL ? C47_NULL : (uint16_t)((dataBlock_t *)(p) - ram))
+#define TO_C47MEMPTR(p)                      ((p) == NULL ? C47_NULL : (uint16_t)((uint32_t *)(p) - ram))
 
 #define min(a,b)                             ((a)<(b)?(a):(b))
 #define max(a,b)                             ((a)>(b)?(a):(b))
@@ -1893,18 +1893,18 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 
 #define IS_BASEBLANK_(menuId)                (menuId==0 && !BASE_MYM && !BASE_HOME)
 
-#define currentReturnProgramNumber           (currentSubroutineLevelData[0].returnProgramNumber)
-#define currentReturnLocalStep               (currentSubroutineLevelData[0].returnLocalStep)
-#define currentNumberOfLocalFlags            (currentSubroutineLevelData[1].numberOfLocalFlags)
-#define currentNumberOfLocalRegisters        (currentSubroutineLevelData[1].numberOfLocalRegisters)
-#define currentSubroutineLevel               (currentSubroutineLevelData[1].subroutineLevel)
-#define currentPtrToNextLevel                (currentSubroutineLevelData[2].ptrToNextLevel)
-#define currentPtrToPreviousLevel            (currentSubroutineLevelData[2].ptrToPreviousLevel)
+#define currentReturnProgramNumber           (currentSubroutineLevelData->returnProgramNumber   )
+#define currentReturnLocalStep               (currentSubroutineLevelData->returnLocalStep       )
+#define currentNumberOfLocalFlags            (currentSubroutineLevelData->numberOfLocalFlags    )
+#define currentNumberOfLocalRegisters        (currentSubroutineLevelData->numberOfLocalRegisters)
+#define currentSubroutineLevel               (currentSubroutineLevelData->subroutineLevel       )
+#define currentPtrToNextLevel                (currentSubroutineLevelData->ptrToNextLevel        )
+#define currentPtrToPreviousLevel            (currentSubroutineLevelData->ptrToPreviousLevel    )
 
-//#define LOCAL_FLAGS_AFTER_SUBROUTINE_LEVEL_HEADER(ptr)     ((localFlags_t *)(((subroutineLevelHeader_t *)ptr) + 1))
-//#define REGISTER_HEADER_AFTER_LOCAL_FLAGS(ptr)             ((registerHeader_t *)(((localFlags_t *)ptr) + 1))
-#define REAL34_MATRIX_ELEMENTS_AFTER_MATRIX_HEADER(ptr)    ((real34_t *)((matrixHeader_t *)ptr + 1))
-#define COMPLEX34_MATRIX_ELEMENTS_AFTER_MATRIX_HEADER(ptr) ((real34_t *)((matrixHeader_t *)ptr + 1))
+#define LOCAL_FLAGS_AFTER_SUBROUTINE_LEVEL_HEADER(ptr)     ((localFlags_t     *)((subroutineLevelHeader_t  *)ptr + 1))
+#define LOCAL_REGISTER_HEADERS_AFTER_LOCAL_FLAGS(ptr)      ((registerHeader_t *)((localFlags_t             *)ptr + 1))
+#define REAL34_MATRIX_ELEMENTS_AFTER_MATRIX_HEADER(ptr)    ((real34_t         *)((matrixHeader_t           *)ptr + 1))
+#define COMPLEX34_MATRIX_ELEMENTS_AFTER_MATRIX_HEADER(ptr) ((real34_t         *)((matrixHeader_t           *)ptr + 1))
 
 
 

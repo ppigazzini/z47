@@ -519,9 +519,9 @@ typedef struct FactorAdder
     uint16_t n2 = faddr->nExpons;
     #ifdef WGR
       printf("wgr:  fill expons:  *nExpons==%u, n2==%u dump=%u\n", faddr->nExpons, n2, dumpForFewerThan);
-      uint16_t cols = REGISTER_DATA(REGISTER_X)->matrixColumns;
-      uint16_t rows = REGISTER_DATA(REGISTER_X)->matrixRows;
-      printf("wgr:  rows==%u, cols==%u\n", (uint16_t)rows, (uint16_t)cols);
+      uint16_t cols = REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns;
+      uint16_t rows = REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows;
+      printf("wgr:  rows==%" PRIu16 ", cols==%" PRIu16 "\n", rows, cols);
     #endif
     linkToRealMatrixRegister(REGISTER_X,  matrix);
     for( uint16_t i = 0;  i < min(n2,dumpForFewerThan);  ++i ) {
