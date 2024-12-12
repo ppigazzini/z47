@@ -2093,7 +2093,7 @@ void debugNIM(void) {
    ***********************************************/
   void formatComplex34Debug(char *str, void *addr) {
     formatReal34Debug(str     , addr             );
-    formatReal34Debug(str + 64, (real34_t *)((dataBlock_t *)addr + REAL34_SIZE_IN_BLOCKS));
+    formatReal34Debug(str + 64, (real34_t *)((void *)addr + REAL34_SIZE_IN_BYTES));
 
     strcat(str, " ");
     xcopy(strchr(str, '\0'), str + 64, strlen(str + 64) + 1);
@@ -2123,23 +2123,23 @@ void debugNIM(void) {
 
 #if defined(PC_BUILD ) || defined(TESTSUITE_BUILD)
   void dumpSubroutineLevelData(void) {
-    dataBlock_t *current = TO_PCMEMPTR(allSubroutineLevels.ptrToSubroutineLevel0Data);
+    subroutineLevelHeader_t *current = TO_PCMEMPTR(allSubroutineLevels.ptrToSubroutineLevel0Header);
 
-    printf("allSuballSubroutineLevels.numberOfSubroutineLevels  = %u\n", allSubroutineLevels.numberOfSubroutineLevels);
-    printf("allSuballSubroutineLevels.ptrToSubroutineLevel0Data = %u\n", allSubroutineLevels.ptrToSubroutineLevel0Data);
-    printf("currentSubroutineLevelData                          = %u\n", TO_C47MEMPTR(currentSubroutineLevelData));
+    printf("allSuballSubroutineLevels.numberOfSubroutineLevels    = %" PRIu16 "\n", allSubroutineLevels.numberOfSubroutineLevels);
+    printf("allSuballSubroutineLevels.ptrToSubroutineLevel0Header = %" PRIu16 "\n", allSubroutineLevels.ptrToSubroutineLevel0Header);
+    printf("currentSubroutineLevelData                            = %" PRIu16 "\n", TO_C47MEMPTR(currentSubroutineLevelData));
 
     for(int i=1; i<=allSubroutineLevels.numberOfSubroutineLevels; i++) {
       printf("  Level %d at %u\n", i, TO_C47MEMPTR(current));
-      printf("    returnProgramNumber    = %d\n", current[0].returnProgramNumber);
-      printf("    returnLocalStep        = %u\n", current[0].returnLocalStep);
-      printf("    numberOfLocalFlags     = %u\n", current[1].numberOfLocalFlags);
-      printf("    numberOfLocalRegisters = %u\n", current[1].numberOfLocalRegisters);
-      printf("    subroutineLevel        = %u\n", current[1].subroutineLevel);
-      printf("    ptrToNextLevel         = %u\n", current[2].ptrToNextLevel);
-      printf("    ptrToPreviousLevel     = %u\n", current[2].ptrToPreviousLevel);
+      printf("    returnProgramNumber    = %d\n", current->returnProgramNumber);
+      printf("    returnLocalStep        = %u\n", current->returnLocalStep);
+      printf("    numberOfLocalFlags     = %u\n", current->numberOfLocalFlags);
+      printf("    numberOfLocalRegisters = %u\n", current->numberOfLocalRegisters);
+      printf("    subroutineLevel        = %u\n", current->subroutineLevel);
+      printf("    ptrToNextLevel         = %u\n", current->ptrToNextLevel);
+      printf("    ptrToPreviousLevel     = %u\n", current->ptrToPreviousLevel);
 
-      current = TO_PCMEMPTR(current[2].ptrToNextLevel);
+      current = TO_PCMEMPTR(current->ptrToNextLevel);
     }
 
     printf("\n\n");

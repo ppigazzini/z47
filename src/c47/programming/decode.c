@@ -494,7 +494,7 @@ static void decodeLiteral(uint8_t *literalAddress) {
   switch(*(literalAddress++)) {
     case BINARY_SHORT_INTEGER: {
       reallocateRegister(TEMP_REGISTER_1, dtShortInteger, 0, *(uint8_t *)(literalAddress++));
-      xcopy(REGISTER_DATA(TEMP_REGISTER_1), literalAddress, TO_BYTES(SHORT_INTEGER_SIZE_IN_BLOCKS));
+      xcopy(getRegisterDataPointer(TEMP_REGISTER_1), literalAddress, TO_BYTES(SHORT_INTEGER_SIZE_IN_BLOCKS));
       shortIntegerToDisplayString(TEMP_REGISTER_1, tmpString, false);
       break;
     }

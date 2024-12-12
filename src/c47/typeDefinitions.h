@@ -267,40 +267,37 @@ typedef struct {
  * Header for string and long integer data
  */
 typedef struct {
-  uint16_t dataMaxLengthInBlocks; ///< Max size in blocks of the string including trailing 0
+  uint16_t dataMaxLengthInBlocks; ///< Max size in blocks of the long integer or the string including trailing 0
   uint16_t unused;                ///< Unused
 } strLgIntHeader_t;
 
 
+typedef uint32_t localFlags_t;
+
+
 /**
- * \union dataBlock_t
- * Header for datatypes: string, long integer, and matrix.
+ * \struct subroutineLevels_t
+ * allSubroutineLevels data structure
  */
-typedef union {
-  uint32_t data;
-  uint32_t localFlags;
+typedef struct {
+  uint16_t numberOfSubroutineLevels;    ///< Number of subroutine levels
+  uint16_t ptrToSubroutineLevel0Header; ///< Pointer to subroutine level 0 data
+} subroutineLevels_t;
 
-  struct {
-    uint16_t numberOfSubroutineLevels;  ///< Number of subroutine levels
-    uint16_t ptrToSubroutineLevel0Data; ///< Pointer to subroutine level 0 data
-  };
 
-  struct {
-    int16_t  returnProgramNumber;       ///< return program number >0 if in RAM and <0 if in FLASH
-    uint16_t returnLocalStep;           ///< Return local step number in program number
-  };
-
-  struct {
-    uint8_t  numberOfLocalFlags;        ///< Number of allocated local flags
-    uint8_t  numberOfLocalRegisters;    ///< Number of allocated local registers
-    uint16_t subroutineLevel;           ///< Subroutine level
-  };
-
-  struct {
-    uint16_t ptrToNextLevel;            ///< Pointer to next level of subroutine data
-    uint16_t ptrToPreviousLevel;        ///< Pointer to previous level of subroutine data
-  };
-} dataBlock_t;
+/**
+ * \union subroutineLevelHeader_t
+ * Header for a subroutine level
+ */
+typedef struct {
+  int16_t  returnProgramNumber;       ///< return program number >0 if in RAM and <0 if in FLASH
+  uint16_t returnLocalStep;           ///< Return local step number in program number
+  uint8_t  numberOfLocalFlags;        ///< Number of allocated local flags
+  uint8_t  numberOfLocalRegisters;    ///< Number of allocated local registers
+  uint16_t subroutineLevel;           ///< Subroutine level
+  uint16_t ptrToNextLevel;            ///< Pointer to next level of subroutine data
+  uint16_t ptrToPreviousLevel;        ///< Pointer to previous level of subroutine data
+} subroutineLevelHeader_t;
 
 
 /**

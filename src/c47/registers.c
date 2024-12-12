@@ -531,7 +531,7 @@ static bool_t initLocalRegisters(calcRegister_t r) {
 
 
 void allocateLocalRegisters(uint16_t numberOfRegistersToAllocate) {
-  dataBlock_t *oldSubroutineLevelData = currentSubroutineLevelData;
+  subroutineLevelHeader_t *oldSubroutineLevelData = currentSubroutineLevelData;
 
   if(numberOfRegistersToAllocate > 99) {
     displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
@@ -547,11 +547,13 @@ void allocateLocalRegisters(uint16_t numberOfRegistersToAllocate) {
     // 1st allocation of local registers in this level of subroutine
 
     //TOCHECK XXXX JM (old)
-    if((currentSubroutineLevelData = reallocC47Blocks(currentSubroutineLevelData, 3, 4 + numberOfRegistersToAllocate))) {
-      currentLocalFlags = currentSubroutineLevelData + 3;
-      currentLocalFlags->localFlags = 0;
-      currentLocalRegisters = (registerHeader_t *)(currentSubroutineLevelData + 4);
+    if((currentSubroutineLevelData = reallocC47Blocks(currentSubroutineLevelData,
+                                                      TO_BLOCKS(sizeof(subroutineLevelHeader_t)),
+                                                      TO_BLOCKS(sizeof(subroutineLevelHeader_t) + sizeof(localFlags_t) + numberOfRegistersToAllocate*sizeof(registerHeader_t))))) {
+      currentLocalFlags = LOCAL_FLAGS_AFTER_SUBROUTINE_LEVEL_HEADER(currentSubroutineLevelData);
       currentNumberOfLocalFlags = NUMBER_OF_LOCAL_FLAGS;
+      *currentLocalFlags = 0;
+      currentLocalRegisters = (numberOfRegistersToAllocate == 0 ? NULL : LOCAL_REGISTER_HEADERS_AFTER_LOCAL_FLAGS(currentLocalFlags));
       currentNumberOfLocalRegisters = numberOfRegistersToAllocate;
 
       #if defined VERBOSE_REGISTERS
@@ -560,24 +562,25 @@ void allocateLocalRegisters(uint16_t numberOfRegistersToAllocate) {
 
       // All the new local registers are real34s initialized to 0.0
       for(r=FIRST_LOCAL_REGISTER; r<FIRST_LOCAL_REGISTER+numberOfRegistersToAllocate; r++) {
-
         if(initLocalRegisters(r)) {
-          // Not enough memory (!)
+          // Not enough memory!
           for(uint16_t rr = FIRST_LOCAL_REGISTER; rr < r; rr++) {
             freeRegisterData(FIRST_LOCAL_REGISTER + rr);
           }
-          reduceC47Blocks(currentSubroutineLevelData, 4 + numberOfRegistersToAllocate, 3);
+          reduceC47Blocks(currentSubroutineLevelData,
+                          TO_BLOCKS(sizeof(subroutineLevelHeader_t) + sizeof(localFlags_t) + numberOfRegistersToAllocate*sizeof(registerHeader_t)),
+                          TO_BLOCKS(sizeof(subroutineLevelHeader_t)));
           currentLocalFlags = NULL;
+          currentNumberOfLocalFlags = 0;
           currentLocalRegisters = NULL;
           currentNumberOfLocalRegisters = 0;
-          currentNumberOfLocalFlags = NUMBER_OF_LOCAL_FLAGS;
           displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
           return;
         }
       }                                                   //JM defaults ^^
 
     #if defined VERBOSE_REGISTERS
-      printStatus(0, " ",force);
+      printStatus(0, " ", force);
     #endif //VERBOSE_REGISTERS
 
     }
@@ -589,30 +592,34 @@ void allocateLocalRegisters(uint16_t numberOfRegistersToAllocate) {
   }
   else if(numberOfRegistersToAllocate != currentNumberOfLocalRegisters) {
     // The number of allocated local registers changes
-    if(numberOfRegistersToAllocate > currentNumberOfLocalRegisters) {
+    if(numberOfRegistersToAllocate > currentNumberOfLocalRegisters) { // The number of local registers increases
       uint8_t oldNumberOfLocalRegisters = currentNumberOfLocalRegisters;
-      if((currentSubroutineLevelData = reallocC47Blocks(currentSubroutineLevelData, 4 + oldNumberOfLocalRegisters, 4 + numberOfRegistersToAllocate))) {
-        currentLocalFlags = currentSubroutineLevelData + 3;
-        currentLocalRegisters = (registerHeader_t *)(currentSubroutineLevelData + 4);
+      if((currentSubroutineLevelData = reallocC47Blocks(currentSubroutineLevelData,
+                                                        TO_BLOCKS(sizeof(subroutineLevelHeader_t) + sizeof(localFlags_t) + oldNumberOfLocalRegisters*sizeof(registerHeader_t)),
+                                                        TO_BLOCKS(sizeof(subroutineLevelHeader_t) + sizeof(localFlags_t) + numberOfRegistersToAllocate*sizeof(registerHeader_t))))) {
+        currentLocalFlags = LOCAL_FLAGS_AFTER_SUBROUTINE_LEVEL_HEADER(currentSubroutineLevelData);
+        currentLocalRegisters = LOCAL_REGISTER_HEADERS_AFTER_LOCAL_FLAGS(currentLocalFlags);
         currentNumberOfLocalRegisters = numberOfRegistersToAllocate;
 
         // All the new local registers are real34s initialized to 0.0
         for(r=FIRST_LOCAL_REGISTER+oldNumberOfLocalRegisters; r<FIRST_LOCAL_REGISTER+numberOfRegistersToAllocate; r++) {
           if(initLocalRegisters(r)) {
-            // Not enough memory (!)
+            // Not enough memory!
             for(uint16_t rr = FIRST_LOCAL_REGISTER + oldNumberOfLocalRegisters; rr < r; rr++) {
               freeRegisterData(FIRST_LOCAL_REGISTER + rr);
             }
-            reduceC47Blocks(currentSubroutineLevelData, 4 + numberOfRegistersToAllocate, 4 + oldNumberOfLocalRegisters);
-            currentLocalFlags = currentSubroutineLevelData + 3;
-            currentLocalRegisters = (registerHeader_t *)(currentSubroutineLevelData + 4);
-            currentNumberOfLocalRegisters = numberOfRegistersToAllocate;
+            reduceC47Blocks(currentSubroutineLevelData,
+                            TO_BLOCKS(sizeof(subroutineLevelHeader_t) + sizeof(localFlags_t) + numberOfRegistersToAllocate*sizeof(registerHeader_t)),
+                            TO_BLOCKS(sizeof(subroutineLevelHeader_t) + sizeof(localFlags_t) + oldNumberOfLocalRegisters*sizeof(registerHeader_t)));
+            currentLocalFlags = LOCAL_FLAGS_AFTER_SUBROUTINE_LEVEL_HEADER(currentSubroutineLevelData);
+            currentLocalRegisters = (oldNumberOfLocalRegisters == 0 ? NULL : LOCAL_REGISTER_HEADERS_AFTER_LOCAL_FLAGS(currentLocalFlags));
+            currentNumberOfLocalRegisters = oldNumberOfLocalRegisters;
             displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
             return;
           }
         }
         #if defined VERBOSE_REGISTERS
-          printStatus(0, " ",force);
+          printStatus(0, " ", force);
         #endif //VERBOSE_REGISTERS
       }
       else {
@@ -621,7 +628,7 @@ void allocateLocalRegisters(uint16_t numberOfRegistersToAllocate) {
         return;
       }
     }
-    else {
+    else { // Ther number of local register decreases
       #if defined VERBOSE_REGISTERS
        printStatus(0, "allocateLocalRegisters3",force);
       #endif //VERBOSE_REGISTERS
@@ -629,12 +636,14 @@ void allocateLocalRegisters(uint16_t numberOfRegistersToAllocate) {
       for(r=numberOfRegistersToAllocate; r<currentNumberOfLocalRegisters; r++) {
         freeRegisterData(FIRST_LOCAL_REGISTER + r);
       }
-      reduceC47Blocks(currentSubroutineLevelData, 4 + currentNumberOfLocalRegisters, 4 + numberOfRegistersToAllocate);
-      currentLocalFlags = currentSubroutineLevelData + 3;
-      currentLocalRegisters = (numberOfRegistersToAllocate == 0 ? NULL : (registerHeader_t *)(currentSubroutineLevelData + 4));
+      reduceC47Blocks(currentSubroutineLevelData,
+                      TO_BLOCKS(sizeof(subroutineLevelHeader_t) + sizeof(localFlags_t) + currentNumberOfLocalRegisters*sizeof(registerHeader_t)),
+                      TO_BLOCKS(sizeof(subroutineLevelHeader_t) + sizeof(localFlags_t) + numberOfRegistersToAllocate*sizeof(registerHeader_t)));
+      currentLocalFlags = LOCAL_FLAGS_AFTER_SUBROUTINE_LEVEL_HEADER(currentSubroutineLevelData);
+      currentLocalRegisters = (numberOfRegistersToAllocate == 0 ? NULL : LOCAL_REGISTER_HEADERS_AFTER_LOCAL_FLAGS(currentLocalFlags));
       currentNumberOfLocalRegisters = numberOfRegistersToAllocate;
       #if defined VERBOSE_REGISTERS
-        printStatus(0, "",force);
+        printStatus(0, "", force);
       #endif //VERBOSE_REGISTERS
       return;
     }
@@ -644,10 +653,10 @@ void allocateLocalRegisters(uint16_t numberOfRegistersToAllocate) {
   }
 
   if(currentSubroutineLevel == 0) {
-    allSubroutineLevels.ptrToSubroutineLevel0Data = TO_C47MEMPTR(currentSubroutineLevelData);
+    allSubroutineLevels.ptrToSubroutineLevel0Header = TO_C47MEMPTR(currentSubroutineLevelData);
   }
   else {
-    ((dataBlock_t *)(TO_PCMEMPTR(currentPtrToPreviousLevel)))[2].ptrToNextLevel = TO_C47MEMPTR(currentSubroutineLevelData);
+    ((subroutineLevelHeader_t *)(TO_PCMEMPTR(currentPtrToPreviousLevel)))->ptrToNextLevel = TO_C47MEMPTR(currentSubroutineLevelData);
   }
 }
 
@@ -1153,7 +1162,7 @@ uint16_t getRegisterMaxDataLengthInBlocks(calcRegister_t regist) {
 uint16_t getRegisterFullSizeInBlocks(calcRegister_t regist) {
   switch(getRegisterDataType(regist)) {
     case dtLongInteger: {
-      return REGISTER_STRING_HEADER(regist)->dataMaxLengthInBlocks + TO_BLOCKS(sizeof(dataBlock_t));
+      return REGISTER_STRING_HEADER(regist)->dataMaxLengthInBlocks + TO_BLOCKS(sizeof(strLgIntHeader_t));
     }
     case dtTime: {
       return REAL34_SIZE_IN_BLOCKS;
@@ -1162,7 +1171,7 @@ uint16_t getRegisterFullSizeInBlocks(calcRegister_t regist) {
       return REAL34_SIZE_IN_BLOCKS;
     }
     case dtString: {
-      return REGISTER_LONG_INTEGER_HEADER(regist)->dataMaxLengthInBlocks + TO_BLOCKS(sizeof(dataBlock_t));
+      return REGISTER_LONG_INTEGER_HEADER(regist)->dataMaxLengthInBlocks + TO_BLOCKS(sizeof(strLgIntHeader_t));
     }
     case dtReal34Matrix: {
       return TO_BLOCKS((REGISTER_MATRIX_HEADER(regist)->matrixRows * REGISTER_MATRIX_HEADER(regist)->matrixColumns) * REAL34_SIZE_IN_BYTES + sizeof(matrixHeader_t)); break;
@@ -1552,8 +1561,8 @@ void copySourceRegisterToDestRegister(calcRegister_t sourceRegister, calcRegiste
       break;
     }
     default: {
-      xcopy(REGISTER_DATA(destRegister),
-            REGISTER_DATA(sourceRegister),
+      xcopy(getRegisterDataPointer(destRegister),
+            getRegisterDataPointer(sourceRegister),
             TO_BYTES(getRegisterFullSizeInBlocks(sourceRegister)));
   }
   }
@@ -1818,7 +1827,7 @@ int16_t indirectAddressing(calcRegister_t regist, uint16_t parameterType, int16_
 
     else if(getRegisterDataType(regist) == dtString) {
       stringToUtf8(REGISTER_STRING_DATA(regist), (uint8_t *)str);
-      printf("string (%" PRIu64 " + %" PRIu32 " bytes) |%s|", (uint64_t)sizeof(dataBlock_t), TO_BYTES(getRegisterMaxDataLengthInBlocks(regist)), str);
+      printf("string (%" PRIu32 " + %" PRIu32 " bytes) |%s|", (uint32_t)sizeof(strLgIntHeader_t), TO_BYTES(getRegisterMaxDataLengthInBlocks(regist)), str);
     }
 
     else if(getRegisterDataType(regist) == dtShortInteger) {
@@ -1836,7 +1845,7 @@ int16_t indirectAddressing(calcRegister_t regist, uint16_t parameterType, int16_
       convertLongIntegerRegisterToLongInteger(regist, lgInt);
       longIntegerToAllocatedString(lgInt, str, sizeof(str));
       longIntegerFree(lgInt);
-      printf("long integer (%" PRIu64 " + %" PRIu32 " bytes) %s", (uint64_t)sizeof(dataBlock_t), TO_BYTES(getRegisterMaxDataLengthInBlocks(regist)), str);
+      printf("long integer (%" PRIu32 " + %" PRIu32 " bytes) %s", (uint32_t)sizeof(strLgIntHeader_t), TO_BYTES(getRegisterMaxDataLengthInBlocks(regist)), str);
     }
 
     else if(getRegisterDataType(regist) == dtTime) {
@@ -2065,7 +2074,7 @@ void reallocateRegister(calcRegister_t regist, uint32_t dataType, uint16_t dataS
     setRegisterDataPointer(regist, allocC47Blocks(dataSizeWithDataLenBlocks));
     setRegisterDataType(regist, dataType, tag);
 
-    // After reallocating a register to a matrix, you MUST set 
+    // After reallocating a register to a matrix, you MUST set
     if(dataType == dtReal34Matrix || dataType == dtComplex34Matrix) {
       REGISTER_MATRIX_HEADER(regist)->matrixRows = 1;
       REGISTER_MATRIX_HEADER(regist)->matrixColumns = 1;

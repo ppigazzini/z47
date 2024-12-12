@@ -1501,7 +1501,7 @@ void doSave(uint16_t saveType) {
 
   // Local flags
   if(currentLocalRegisters) {
-    sprintf(tmpString, "LOCAL_FLAGS\n%" PRIu32 "\n", currentLocalFlags->localFlags);
+    sprintf(tmpString, "LOCAL_FLAGS\n%" PRIu32 "\n", *currentLocalFlags);
     save(tmpString, strlen(tmpString));
   }
 
@@ -2276,7 +2276,7 @@ double stringToDouble(const char *str) {
           sprintf(line,", loadMode:%d, %s\n",loadMode,tmpString);
           debugPrintf(4, "B", tmpString);
         #endif //LOADDEBUG
-        currentLocalFlags->localFlags = stringToUint32(tmpString);
+        *currentLocalFlags = stringToUint32(tmpString);
       }
     }
 
