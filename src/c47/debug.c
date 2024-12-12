@@ -1118,13 +1118,13 @@ void debugNIM(void) {
     }
 
     else if(getRegisterDataType(regist) == dtReal34Matrix) {
-      dataBlock_t* dblock = REGISTER_MATRIX_HEADER(regist);
-      sprintf(string + n, "Real Matrix of Size [%" PRIu16" x %" PRIu16" Matrix]", dblock->matrixRows, dblock->matrixColumns);
+      matrixHeader_t *matrixHeader = REGISTER_MATRIX_HEADER(regist);
+      sprintf(string + n, "Real Matrix of Size [%" PRIu16 " x %" PRIu16 " Matrix]", matrixHeader->matrixRows, matrixHeader->matrixColumns);
     }
 
     else if(getRegisterDataType(regist) == dtComplex34Matrix) {
-      dataBlock_t* dblock = REGISTER_MATRIX_HEADER(regist);
-      sprintf(string + n, "Complex Matrix of Size [%" PRIu16" x %" PRIu16" Matrix]", dblock->matrixRows, dblock->matrixColumns);
+      matrixHeader_t* matrixHeader = REGISTER_MATRIX_HEADER(regist);
+      sprintf(string + n, "Complex Matrix of Size [%" PRIu16 " x %" PRIu16 " Matrix]", matrixHeader->matrixRows, matrixHeader->matrixColumns);
     }
 
     else {
@@ -1160,7 +1160,7 @@ void debugNIM(void) {
       row = 0;
 
       if(row < DEBUG_LINES) {
-        sprintf(string, "TO_C47MEMPTR(statisticalSumsPointer)    = %6d",         TO_C47MEMPTR(statisticalSumsPointer));
+        sprintf(string, "TO_C47MEMPTR(statisticalSumsPointer)    = %6d",           TO_C47MEMPTR(statisticalSumsPointer));
         gtk_label_set_label(GTK_LABEL(lbl1[row]), string);
         gtk_widget_show(lbl1[row++]);
       }

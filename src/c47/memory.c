@@ -485,7 +485,7 @@ void resizeProgramMemory(uint16_t newSizeInBlocks) {
     }
 
     if(savedStatisticalSumsPointer != NULL) {
-      int32_t shift = (savedStatisticalSumsPointer - statisticalSumsPointer);
+      int32_t shift = TO_BLOCKS((savedStatisticalSumsPointer - statisticalSumsPointer) * sizeof(real_t));
       if(TO_C47MEMPTR(SIGMA_N) + shift == block) {
         sprintf(tmpString, "real75 saved for undo n data");
         return;

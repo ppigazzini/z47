@@ -424,7 +424,7 @@ char letteredRegisterName(calcRegister_t regist) {
         ptr += strlen(ptr);
         strcpy(ptr, " = ");
         ptr += strlen(ptr);
-        realToString(statisticalSumsPointer + REAL_SIZE_IN_BLOCKS * sum, tmpString);
+        realToString(statisticalSumsPointer + sum, tmpString);
         if(strchr(tmpString, '.') == NULL && strchr(tmpString, 'E') == NULL) {
           strcat(tmpString, ".");
         }

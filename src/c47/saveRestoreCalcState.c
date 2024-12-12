@@ -1520,7 +1520,7 @@ void doSave(uint16_t saveType) {
   sprintf(tmpString, "STATISTICAL_SUMS\n%" PRIu16 "\n", (uint16_t)(statisticalSumsPointer ? NUMBER_OF_STATISTICAL_SUMS : 0));
   save(tmpString, strlen(tmpString));
   for(i=0; i<(statisticalSumsPointer ? NUMBER_OF_STATISTICAL_SUMS : 0); i++) {
-    realToString(statisticalSumsPointer + REAL_SIZE_IN_BLOCKS * i , tmpRegisterString);
+    realToString(statisticalSumsPointer + i , tmpRegisterString);
     sprintf(tmpString, "%s\n", tmpRegisterString);
     save(tmpString, strlen(tmpString));
   }
@@ -2334,7 +2334,7 @@ double stringToDouble(const char *str) {
                 sprintf(line,", loadMode:%d, %s\n",loadMode,tmpString);
                 debugPrintf(6, "B", tmpString);
               #endif //LOADDEBUG
-              stringToReal(tmpString, (real_t *)(statisticalSumsPointer + REAL_SIZE_IN_BLOCKS * i), &ctxtReal75);
+              stringToReal(tmpString, statisticalSumsPointer + i, &ctxtReal75);
             }
           }
         }
