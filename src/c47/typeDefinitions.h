@@ -263,6 +263,16 @@ typedef struct {
 
 
 /**
+ * \struct strLgIntHeader_t
+ * Header for string and long integer data
+ */
+typedef struct {
+  uint16_t dataMaxLengthInBlocks; ///< Max size in blocks of the string including trailing 0
+  uint16_t unused;                ///< Unused
+} strLgIntHeader_t;
+
+
+/**
  * \union dataBlock_t
  * Header for datatypes: string, long integer, and matrix.
  */
@@ -271,23 +281,8 @@ typedef union {
   uint32_t localFlags;
 
   struct {
-    uint16_t dataMaxLengthInBlocks;     ///< String max length (includind terminating \0) in blocks or Long integer max length in blocks
-    uint16_t dummy;                     ///< Dummy
-  };
-
-  struct {
-    uint16_t variableNameLenInBlocks;   ///< Size of the name in blocs: 1 to 4, up to 15 bytes = 7 double byte glyphs + trailing 0
-    uint16_t ptrToVariableName;         ///< Pointer to the name of the variable
-  };
-
-  struct {
     uint16_t numberOfSubroutineLevels;  ///< Number of subroutine levels
     uint16_t ptrToSubroutineLevel0Data; ///< Pointer to subroutine level 0 data
-  };
-
-  struct {
-    uint16_t numberOfNamedVariables;    ///< Number of named variables
-    uint16_t ptrToNamedVariablesList;   ///< Pointer to the named variable list
   };
 
   struct {

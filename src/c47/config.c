@@ -1351,18 +1351,20 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     xcopy(kbd_usr, kbd_std, sizeof(kbd_std));
 
     // initialize 9 real34 reserved variables: ACC, ↑Lim, ↓Lim, FV, i%/a, NPPER, PPER/a, PMT, and PV
-    for(int i=0; i<9; i++) {
-      real34Zero(allocC47Blocks(REAL34_SIZE_IN_BLOCKS));
+    for(int i=VAR_NO_ACC; i<=VAR_NO_CPERONA; i++) {
+      real34Zero((real34_t *)TO_PCMEMPTR(allReservedVariables[i].header.pointerToRegisterData));
     }
 
     // initialize 1 long integer reserved variables: GRAMOD
+    strLgIntHeader_t *ptr = TO_PCMEMPTR(allReservedVariables[VAR_NO_GRAMOD].header.pointerToRegisterData);
     #if defined(OS64BIT)
-      memPtr = allocC47Blocks(3);
-      ((dataBlock_t *)memPtr)->dataMaxLengthInBlocks = 2;
+      (ptr++)->dataMaxLengthInBlocks = TO_BLOCKS(8);
+      *(int64_t *)ptr = 0;
     #else // !OS64BIT
-      memPtr = allocC47Blocks(2);
-      ((dataBlock_t *)memPtr)->dataMaxLengthInBlocks = 1;
+      (ptr++)->dataMaxLengthInBlocks = TO_BLOCKS(4);
+      *(int32_t *)ptr = 0;
     #endif // OS64BIT
+
 
     // initialize the global registers
     #if defined(DMCP_BUILD) && defined(OLD_HW)
