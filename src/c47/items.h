@@ -2511,7 +2511,17 @@
 #define ITM_TSPUKtoFZUK             2451
 #define ITM_TSPUKtoML               2452
 
-#define LAST_ITEM                   2453
+#define ITM_MLtoIN3                 2453
+#define ITM_IN3toML                 2454
+#define ITM_FT3toGLUK               2455
+#define ITM_GLUKtoFT3               2456
+#define ITM_LtoFT3                  2457
+#define ITM_FT3toL                  2458
+#define ITM_LtoQTUS                 2459
+#define ITM_QTUStoL                 2460
+
+
+#define LAST_ITEM                   2461
 
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL

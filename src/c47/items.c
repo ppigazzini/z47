@@ -3798,6 +3798,15 @@ TO_QSPI const item_t indexOfItems[] = {
 /* NNNN */  UNIT_CONV(constFactorTspukFzuk,       divide,      "tsp" STD_UK STD_RIGHT_ARROW "floz" STD_UK,                           "tsp" STD_UK STD_RIGHT_ARROW                               ),
 /* NNNN */  UNIT_CONV(constFactorTspukMl,       multiply,      "tsp" STD_UK STD_RIGHT_ARROW "m" STD_litre,                           "tsp" STD_UK STD_RIGHT_ARROW                               ),
 
+/* NNNN */  UNIT_CONV(constFactorMlIn3,           divide,      "m" STD_litre STD_RIGHT_ARROW "in" STD_SUP_3,                         "m" STD_litre STD_RIGHT_ARROW                               ),
+/* NNNN */  UNIT_CONV(constFactorIn3Ml,         multiply,      "in" STD_SUP_3 STD_RIGHT_ARROW "m" STD_litre,                         "in" STD_SUP_3 STD_RIGHT_ARROW                             ),
+/* NNNN */  UNIT_CONV(constFactorFt3Gluk,       multiply,      "ft" STD_SUP_3 STD_RIGHT_ARROW "GL" STD_UK,                           "ft" STD_SUP_3 STD_RIGHT_ARROW                              ),
+/* NNNN */  UNIT_CONV(constFactorGlukFt3,         divide,      "GL" STD_UK STD_RIGHT_ARROW "ft" STD_SUP_3,                           "GL" STD_UK STD_RIGHT_ARROW                                 ),
+/* NNNN */  UNIT_CONV(constFactorLFt3,            divide,      STD_litre STD_RIGHT_ARROW "ft" STD_SUP_3,                             STD_litre STD_RIGHT_ARROW                                   ),
+/* NNNN */  UNIT_CONV(constFactorFt3L,          multiply,      "ft" STD_SUP_3 STD_RIGHT_ARROW STD_litre,                             "ft" STD_SUP_3 STD_RIGHT_ARROW                              ),
+/* NNNN */  UNIT_CONV(constFactorLQtus,         multiply,      STD_litre STD_RIGHT_ARROW "qt" STD_US,                                STD_litre STD_RIGHT_ARROW                                   ),
+/* NNNN */  UNIT_CONV(constFactorQtusL,           divide,      "qt" STD_US STD_RIGHT_ARROW STD_litre,                                "qt" STD_US STD_RIGHT_ARROW                                 ),
+
 
 /* 2421 */  { itemToBeCoded,                NOPARAM,                     "",                                            "Last item",                                   (0 << TAM_MAX_BITS)
 

@@ -130,6 +130,15 @@
     constFactorTspukFzuk,
     constFactorTspukMl,
 
+    constFactorMlIn3,
+    constFactorIn3Ml,
+    constFactorFt3Gluk,
+    constFactorGlukFt3,
+    constFactorLFt3,
+    constFactorFt3L,
+    constFactorLQtus,
+    constFactorQtusL,
+
     constFactorEND              /* MUST be last */
   };
 
