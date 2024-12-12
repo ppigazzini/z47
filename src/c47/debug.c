@@ -2127,7 +2127,7 @@ void debugNIM(void) {
 
     printf("allSuballSubroutineLevels.numberOfSubroutineLevels    = %" PRIu16 "\n", allSubroutineLevels.numberOfSubroutineLevels);
     printf("allSuballSubroutineLevels.ptrToSubroutineLevel0Header = %" PRIu16 "\n", allSubroutineLevels.ptrToSubroutineLevel0Header);
-    printf("currentSubroutineLevelData                            = %" PRIu16 "\n", TO_C47MEMPTR(currentSubroutineLevelData));
+    printf("currentSubroutineLevelData                            = %" PRIu16 "\n", (uint16_t)TO_C47MEMPTR(currentSubroutineLevelData));
 
     for(int i=1; i<=allSubroutineLevels.numberOfSubroutineLevels; i++) {
       printf("  Level %d at %u\n", i, TO_C47MEMPTR(current));
