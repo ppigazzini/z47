@@ -2651,14 +2651,14 @@ void timeToDisplayString(calcRegister_t regist, char *displayString, bool_t igno
 
 
 void real34MatrixToDisplayString(calcRegister_t regist, char *displayString) {
-  dataBlock_t* dblock = REGISTER_REAL34_MATRIX_DBLOCK(regist);
-  sprintf(displayString, "[%" PRIu16 STD_CROSS "%" PRIu16" Matrix]", dblock->matrixRows, dblock->matrixColumns);
+  matrixHeader_t *matrixHeader = REGISTER_MATRIX_HEADER(regist);
+  sprintf(displayString, "[%" PRIu16 STD_CROSS "%" PRIu16" Matrix]", matrixHeader->matrixRows, matrixHeader->matrixColumns);
 }
 
 
 void complex34MatrixToDisplayString(calcRegister_t regist, char *displayString) {
-  dataBlock_t* dblock = REGISTER_REAL34_MATRIX_DBLOCK(regist);
-  sprintf(displayString, "[%" PRIu16 STD_CROSS "%" PRIu16 " " STD_COMPLEX_C " Matrix]", dblock->matrixRows, dblock->matrixColumns);
+  matrixHeader_t* matrixHeader = REGISTER_MATRIX_HEADER(regist);
+  sprintf(displayString, "[%" PRIu16 STD_CROSS "%" PRIu16 " " STD_COMPLEX_C " Matrix]", matrixHeader->matrixRows, matrixHeader->matrixColumns);
 }
 
 #if !defined(TESTSUITE_BUILD)

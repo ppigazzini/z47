@@ -928,25 +928,25 @@ void fnGetHide(uint16_t unusedButMandatoryParameter) {
 
 
 void initSimEqMatABX(void) {
-  void *memPtr;
+  matrixHeader_t *matrixHeader;
 
   allocateNamedVariable("Mat_A", dtReal34Matrix, REAL34_SIZE_IN_BLOCKS + 1);
-  memPtr = getRegisterDataPointer(FIRST_NAMED_VARIABLE);
-  ((dataBlock_t *)memPtr)->matrixRows = 1;
-  ((dataBlock_t *)memPtr)->matrixColumns = 1;
-  real34Zero(memPtr + 4);
+  matrixHeader = getRegisterDataPointer(FIRST_NAMED_VARIABLE);
+  matrixHeader->matrixRows = 1;
+  matrixHeader->matrixColumns = 1;
+  real34Zero(REAL34_MATRIX_ELEMENTS_AFTER_MATRIX_HEADER(matrixHeader));
 
   allocateNamedVariable("Mat_B", dtReal34Matrix, REAL34_SIZE_IN_BLOCKS + 1);
-  memPtr = getRegisterDataPointer(FIRST_NAMED_VARIABLE + 1);
-  ((dataBlock_t *)memPtr)->matrixRows = 1;
-  ((dataBlock_t *)memPtr)->matrixColumns = 1;
-  real34Zero(memPtr + 4);
+  matrixHeader = getRegisterDataPointer(FIRST_NAMED_VARIABLE + 1);
+  matrixHeader->matrixRows = 1;
+  matrixHeader->matrixColumns = 1;
+  real34Zero(REAL34_MATRIX_ELEMENTS_AFTER_MATRIX_HEADER(matrixHeader));
 
   allocateNamedVariable("Mat_X", dtReal34Matrix, REAL34_SIZE_IN_BLOCKS + 1);
-  memPtr = getRegisterDataPointer(FIRST_NAMED_VARIABLE + 2);
-  ((dataBlock_t *)memPtr)->matrixRows = 1;
-  ((dataBlock_t *)memPtr)->matrixColumns = 1;
-  real34Zero(memPtr + 4);
+  matrixHeader = getRegisterDataPointer(FIRST_NAMED_VARIABLE + 2);
+  matrixHeader->matrixRows = 1;
+  matrixHeader->matrixColumns = 1;
+  real34Zero(REAL34_MATRIX_ELEMENTS_AFTER_MATRIX_HEADER(matrixHeader));
 }
 
 
@@ -1663,12 +1663,12 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
                                      printf("Populate test data\n");
                                    #endif
     //JM TEMPORARY TEST DATA IN REGISTERS
-    uint_fast16_t n = nbrOfElements(indexOfStrings);
-    for(uint_fast16_t i=0; i<n; i++) {
-      if( indexOfStrings[i].itemType== 0) {
+    uint16_t n = nbrOfElements(indexOfStrings);
+    for(uint16_t i=0; i<n; i++) {
+      if(indexOfStrings[i].itemType == 0) {
         fnStrtoX(indexOfStrings[i].itemName);
       }
-      else if( indexOfStrings[i].itemType== 1) {
+      else if(indexOfStrings[i].itemType == 1) {
         fnStrInputLongint(indexOfStrings[i].itemName);
       }
       fnStore(indexOfStrings[i].count);

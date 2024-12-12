@@ -177,7 +177,7 @@ uint32_t getRegisterDataType(calcRegister_t regist) {
 
 
 
-dataBlock_t *getRegisterDataPointer(calcRegister_t regist) {
+void *getRegisterDataPointer(calcRegister_t regist) {
   if(regist <= LAST_GLOBAL_REGISTER) { // Global register
     return TO_PCMEMPTR(globalRegister[regist].pointerToRegisterData);
   }
@@ -1035,7 +1035,7 @@ void setRegisterMaxDataLengthInBlocks(calcRegister_t regist, uint16_t maxDataLen
   else if(regist <= LAST_NAMED_VARIABLE) { // Named variable
     if(numberOfNamedVariables > 0) {
       if(regist - FIRST_NAMED_VARIABLE < numberOfNamedVariables) {
-        getRegisterDataPointer(regist)->dataMaxLengthInBlocks = maxDataLen;
+        ((dataBlock_t *)getRegisterDataPointer(regist))->dataMaxLengthInBlocks = maxDataLen;
       }
       else {
         sprintf(errorMessage, commonBugScreenMessages[bugMsgNotDefinedMustBe], "setRegisterMaxDataLengthInBlocks", "named variable", (uint16_t)(regist - FIRST_NAMED_VARIABLE), (uint16_t)(numberOfNamedVariables - 1));
@@ -1051,13 +1051,13 @@ void setRegisterMaxDataLengthInBlocks(calcRegister_t regist, uint16_t maxDataLen
 
   else if(regist <= LAST_RESERVED_VARIABLE) { // System named variable
     regist -= FIRST_RESERVED_VARIABLE;
-    getRegisterDataPointer(regist)->dataMaxLengthInBlocks = maxDataLen;
+    ((dataBlock_t *)getRegisterDataPointer(regist))->dataMaxLengthInBlocks = maxDataLen;
   }
 
   else if(regist <= LAST_LOCAL_REGISTER) { // Local register
     if(currentLocalRegisters != NULL) {
       if(regist-FIRST_LOCAL_REGISTER < currentNumberOfLocalRegisters) {
-        getRegisterDataPointer(regist)->dataMaxLengthInBlocks = maxDataLen;
+        ((dataBlock_t *)getRegisterDataPointer(regist))->dataMaxLengthInBlocks = maxDataLen;
       }
       #if defined(PC_BUILD)
         else {
@@ -1136,10 +1136,10 @@ uint16_t getRegisterMaxDataLengthInBlocks(calcRegister_t regist) {
 
   if(db) {
     if(getRegisterDataType(regist) == dtReal34Matrix) {
-      return db->matrixRows * db->matrixColumns * REAL34_SIZE_IN_BLOCKS;
+      return ((matrixHeader_t *)db)->matrixRows * ((matrixHeader_t *)db)->matrixColumns * REAL34_SIZE_IN_BLOCKS;
     }
     else if(getRegisterDataType(regist) == dtComplex34Matrix) {
-      return db->matrixRows * db->matrixColumns * COMPLEX34_SIZE_IN_BLOCKS;
+      return ((matrixHeader_t *)db)->matrixRows * ((matrixHeader_t *)db)->matrixColumns * COMPLEX34_SIZE_IN_BLOCKS;
     }
     else {
       return db->dataMaxLengthInBlocks;
@@ -1153,7 +1153,7 @@ uint16_t getRegisterMaxDataLengthInBlocks(calcRegister_t regist) {
 uint16_t getRegisterFullSizeInBlocks(calcRegister_t regist) {
   switch(getRegisterDataType(regist)) {
     case dtLongInteger: {
-      return getRegisterDataPointer(regist)->dataMaxLengthInBlocks + 1;
+      return ((dataBlock_t *)getRegisterDataPointer(regist))->dataMaxLengthInBlocks + TO_BLOCKS(sizeof(dataBlock_t));
     }
     case dtTime: {
       return REAL34_SIZE_IN_BLOCKS;
@@ -1162,13 +1162,13 @@ uint16_t getRegisterFullSizeInBlocks(calcRegister_t regist) {
       return REAL34_SIZE_IN_BLOCKS;
     }
     case dtString: {
-      return getRegisterDataPointer(regist)->dataMaxLengthInBlocks + 1;
+      return ((dataBlock_t *)getRegisterDataPointer(regist))->dataMaxLengthInBlocks + TO_BLOCKS(sizeof(dataBlock_t));
     }
     case dtReal34Matrix: {
-      return TO_BLOCKS((getRegisterDataPointer(regist)->matrixRows * getRegisterDataPointer(regist)->matrixColumns) * REAL34_SIZE_IN_BYTES) + 1; break;
+      return TO_BLOCKS((REGISTER_MATRIX_HEADER(regist)->matrixRows * REGISTER_MATRIX_HEADER(regist)->matrixColumns) * REAL34_SIZE_IN_BYTES + sizeof(matrixHeader_t)); break;
     }
     case dtComplex34Matrix: {
-      return TO_BLOCKS((getRegisterDataPointer(regist)->matrixRows * getRegisterDataPointer(regist)->matrixColumns) * COMPLEX34_SIZE_IN_BYTES) + 1; break;
+      return TO_BLOCKS((REGISTER_MATRIX_HEADER(regist)->matrixRows * REGISTER_MATRIX_HEADER(regist)->matrixColumns) * COMPLEX34_SIZE_IN_BYTES + sizeof(matrixHeader_t)); break;
     }
     case dtShortInteger: {
       return SHORT_INTEGER_SIZE_IN_BLOCKS;
@@ -1186,8 +1186,8 @@ uint16_t getRegisterFullSizeInBlocks(calcRegister_t regist) {
       sprintf(errorMessage, commonBugScreenMessages[bugMsgDataTypeUnknown], "getRegisterFullSizeInBlocks", getDataTypeName(getRegisterDataType(regist), false, false));
       displayBugScreen(errorMessage);
       return 0;
+    }
   }
-}
 }
 
 
@@ -1513,10 +1513,10 @@ void copySourceRegisterToDestRegister(calcRegister_t sourceRegister, calcRegiste
     uint32_t sizeInBlocks;
 
     switch(getRegisterDataType(sourceRegister)) {
-      case dtLongInteger:     sizeInBlocks = getRegisterDataPointer(sourceRegister)->dataMaxLengthInBlocks;                                                                                     break;
-      case dtString:          sizeInBlocks = getRegisterDataPointer(sourceRegister)->dataMaxLengthInBlocks;                                                                                     break;
-      case dtReal34Matrix:    sizeInBlocks = TO_BLOCKS((getRegisterDataPointer(sourceRegister)->matrixRows * getRegisterDataPointer(sourceRegister)->matrixColumns) * REAL34_SIZE_IN_BYTES);    break;
-      case dtComplex34Matrix: sizeInBlocks = TO_BLOCKS((getRegisterDataPointer(sourceRegister)->matrixRows * getRegisterDataPointer(sourceRegister)->matrixColumns) * COMPLEX34_SIZE_IN_BYTES); break;
+      case dtLongInteger:     sizeInBlocks = ((dataBlock_t *)getRegisterDataPointer(sourceRegister))->dataMaxLengthInBlocks;                                                                    break;
+      case dtString:          sizeInBlocks = ((dataBlock_t *)getRegisterDataPointer(sourceRegister))->dataMaxLengthInBlocks;                                                                    break;
+      case dtReal34Matrix:    sizeInBlocks = TO_BLOCKS((REGISTER_MATRIX_HEADER(sourceRegister)->matrixRows * REGISTER_MATRIX_HEADER(sourceRegister)->matrixColumns) * REAL34_SIZE_IN_BYTES);    break;
+      case dtComplex34Matrix: sizeInBlocks = TO_BLOCKS((REGISTER_MATRIX_HEADER(sourceRegister)->matrixRows * REGISTER_MATRIX_HEADER(sourceRegister)->matrixColumns) * COMPLEX34_SIZE_IN_BYTES); break;
 
       case dtTime:
       case dtDate:
@@ -1531,7 +1531,7 @@ void copySourceRegisterToDestRegister(calcRegister_t sourceRegister, calcRegiste
     }
     reallocateRegister(destRegister, getRegisterDataType(sourceRegister), sizeInBlocks, amNone);
 
-//busy checking all re-allocate to see if we can do a bit of fuzzy logic determination of POLAR/RECR
+    //busy checking all re-allocate to see if we can do a bit of fuzzy logic determination of POLAR/RECR
 
     if(lastErrorCode == ERROR_RAM_FULL) {
       return;
@@ -1540,19 +1540,21 @@ void copySourceRegisterToDestRegister(calcRegister_t sourceRegister, calcRegiste
 
   switch(getRegisterDataType(sourceRegister)) {
     case dtReal34Matrix: {
-      xcopy(REGISTER_REAL34_MATRIX_DBLOCK(destRegister), REGISTER_REAL34_MATRIX_DBLOCK(sourceRegister), sizeof(dataBlock_t));
-      xcopy(REGISTER_REAL34_MATRIX_M_ELEMENTS(destRegister), REGISTER_REAL34_MATRIX_M_ELEMENTS(sourceRegister),
-        getRegisterDataPointer(sourceRegister)->matrixRows * getRegisterDataPointer(sourceRegister)->matrixColumns * REAL34_SIZE_IN_BYTES);
+      xcopy(REGISTER_MATRIX_HEADER(destRegister),
+            REGISTER_MATRIX_HEADER(sourceRegister),
+            sizeof(matrixHeader_t) + (REGISTER_MATRIX_HEADER(sourceRegister)->matrixRows * REGISTER_MATRIX_HEADER(sourceRegister)->matrixColumns) * REAL34_SIZE_IN_BYTES);
       break;
     }
     case dtComplex34Matrix: {
-      xcopy(REGISTER_COMPLEX34_MATRIX_DBLOCK(destRegister), REGISTER_COMPLEX34_MATRIX_DBLOCK(sourceRegister), sizeof(dataBlock_t));
-      xcopy(REGISTER_COMPLEX34_MATRIX_M_ELEMENTS(destRegister), REGISTER_COMPLEX34_MATRIX_M_ELEMENTS(sourceRegister),
-        getRegisterDataPointer(sourceRegister)->matrixRows * getRegisterDataPointer(sourceRegister)->matrixColumns * COMPLEX34_SIZE_IN_BYTES);
+      xcopy(REGISTER_MATRIX_HEADER(destRegister),
+            REGISTER_MATRIX_HEADER(sourceRegister),
+            sizeof(matrixHeader_t) + (REGISTER_MATRIX_HEADER(sourceRegister)->matrixRows * REGISTER_MATRIX_HEADER(sourceRegister)->matrixColumns) * COMPLEX34_SIZE_IN_BYTES);
       break;
     }
     default: {
-      xcopy(REGISTER_DATA(destRegister), REGISTER_DATA(sourceRegister), TO_BYTES(getRegisterFullSizeInBlocks(sourceRegister)));
+      xcopy(REGISTER_DATA(destRegister),
+            REGISTER_DATA(sourceRegister),
+            TO_BYTES(getRegisterFullSizeInBlocks(sourceRegister)));
   }
   }
   setRegisterTag(destRegister, getRegisterTag(sourceRegister));
@@ -2004,7 +2006,7 @@ int16_t indirectAddressing(calcRegister_t regist, uint16_t parameterType, int16_
     printf("    data type = %u = %s\n", registerHeader.dataType, getDataTypeName(registerHeader.dataType, false, false));
     if(registerHeader.dataType == dtLongInteger || registerHeader.dataType == dtString) {
       printf("    data ptr  = %u\n", registerHeader.pointerToRegisterData + 1);
-      printf("    data size = %" PRIu32 "\n", *(uint32_t *)TO_PCMEMPTR(globalRegister[regist].pointerToRegisterData));
+      printf("    data size = %" PRIu16 "\n", *(uint16_t *)TO_PCMEMPTR(globalRegister[regist].pointerToRegisterData));
     }
     printf("    tag       = %u\n", registerHeader.tag);
   }
@@ -2062,12 +2064,12 @@ void reallocateRegister(calcRegister_t regist, uint32_t dataType, uint16_t dataS
 
     // After reallocating a register to a matrix, you MUST
     if(dataType == dtReal34Matrix) {
-      REGISTER_REAL34_MATRIX_DBLOCK(regist)->matrixRows = 1;
-      REGISTER_REAL34_MATRIX_DBLOCK(regist)->matrixColumns = 1;
+      REGISTER_MATRIX_HEADER(regist)->matrixRows = 1;
+      REGISTER_MATRIX_HEADER(regist)->matrixColumns = 1;
     }
     else if(dataType == dtComplex34Matrix) {
-      REGISTER_COMPLEX34_MATRIX_DBLOCK(regist)->matrixRows = 1;
-      REGISTER_COMPLEX34_MATRIX_DBLOCK(regist)->matrixColumns = 1;
+      REGISTER_MATRIX_HEADER(regist)->matrixRows = 1;
+      REGISTER_MATRIX_HEADER(regist)->matrixColumns = 1;
     }
     else {
       setRegisterMaxDataLengthInBlocks(regist, dataSizeWithoutDataLenBlocks);
