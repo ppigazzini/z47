@@ -453,11 +453,11 @@ TO_QSPI const int16_t menu_ConvYmmv[]       = {
 TO_QSPI const int16_t menu_ConvChef[]       = {
                                                     ITM_MLtoTSPC,             ITM_TSPCtoML,             ITM_MLtoTBSPC,            ITM_TBSPCtoML,            ITM_MLtoCUPC,             ITM_CUPCtoML,              
                                                     ITM_FZUStoTSPC,           ITM_TSPCtoFZUS,           ITM_FZUStoTBSPC,          ITM_TBSPCtoFZUS,          ITM_FZUStoCUPC,           ITM_CUPCtoFZUS,            
-                                                    ITM_QTUStoML,             ITM_MLtoQTUS,             ITM_FZUStoML,             ITM_MLtoFZUS,             ITM_PINTLQtoML,           ITM_MLtoPINTLQ,            
+                                                    ITM_FZUStoML,             ITM_MLtoFZUS,             ITM_PINTLQtoML,           ITM_MLtoPINTLQ,           ITM_QTUStoML,             ITM_MLtoQTUS,              
    
                                                     ITM_MLtoTSPUK,            ITM_TSPUKtoML,            ITM_MLtoTBSPUK,           ITM_TBSPUKtoML,           ITM_MLtoCUPUK,            ITM_CUPUKtoML,             
                                                     ITM_FZUKtoTSPUK,          ITM_TSPUKtoFZUK,          ITM_FZUKtoTBSPUK,         ITM_TBSPUKtoFZUK,         ITM_FZUKtoCUPUK,          ITM_CUPUKtoFZUK,           
-                                                    ITM_QTtoML,               ITM_MLtoQT,               ITM_FZUKtoML,             ITM_MLtoFZUK,             ITM_PINTUKtoML,           ITM_MLtoPINTUK};
+                                                    ITM_FZUKtoML,             ITM_MLtoFZUK,             ITM_PINTUKtoML,           ITM_MLtoPINTUK,           ITM_QTtoML,               ITM_MLtoQT                    };
 
 
 //---------//---------//---------//---------//---------

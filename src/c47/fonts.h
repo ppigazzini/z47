@@ -599,7 +599,6 @@
 #define STD_GAUSS_BLACK_R             "\xa4\x33"
 #define STD_USB_SYMBOL                "\xa4\x34"
 #define STD_BATTERYHALF               "\xa4\x35" //2435
-#define STD_USc                       "\xa4\x36" //2436
 #define STD_BASE_1                    "\xa4\x60"
 #define STD_BASE_2                    "\xa4\x61"
 #define STD_BASE_3                    "\xa4\x62"
