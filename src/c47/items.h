@@ -1015,7 +1015,7 @@
 #define ITM_0P                       988
 #define ITM_1P                       989
 #define ITM_EXPONENT                 990
-#define ITM_0991                     991
+#define ITM_litre                    991
 #define ITM_M_GOTO_ROW               992
 #define ITM_M_GOTO_COLUMN            993
 #define ITM_SOLVE_VAR                994

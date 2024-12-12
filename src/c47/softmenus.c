@@ -453,11 +453,11 @@ TO_QSPI const int16_t menu_ConvYmmv[]       = {
 TO_QSPI const int16_t menu_ConvChef[]       = {
                                                     ITM_MLtoTSPC,             ITM_TSPCtoML,             ITM_MLtoTBSPC,            ITM_TBSPCtoML,            ITM_MLtoCUPC,             ITM_CUPCtoML,              
                                                     ITM_FZUStoTSPC,           ITM_TSPCtoFZUS,           ITM_FZUStoTBSPC,          ITM_TBSPCtoFZUS,          ITM_FZUStoCUPC,           ITM_CUPCtoFZUS,            
-                                                    ITM_QTUStoML,             ITM_MLtoQTUS,             ITM_FZUStoML,             ITM_MLtoFZUS,             ITM_PINTLQtoML,           ITM_MLtoPINTLQ,            
+                                                    ITM_FZUStoML,             ITM_MLtoFZUS,             ITM_PINTLQtoML,           ITM_MLtoPINTLQ,           ITM_QTUStoML,             ITM_MLtoQTUS,              
    
                                                     ITM_MLtoTSPUK,            ITM_TSPUKtoML,            ITM_MLtoTBSPUK,           ITM_TBSPUKtoML,           ITM_MLtoCUPUK,            ITM_CUPUKtoML,             
                                                     ITM_FZUKtoTSPUK,          ITM_TSPUKtoFZUK,          ITM_FZUKtoTBSPUK,         ITM_TBSPUKtoFZUK,         ITM_FZUKtoCUPUK,          ITM_CUPUKtoFZUK,           
-                                                    ITM_QTtoML,               ITM_MLtoQT,               ITM_FZUKtoML,             ITM_MLtoFZUK,             ITM_PINTUKtoML,           ITM_MLtoPINTUK};
+                                                    ITM_FZUKtoML,             ITM_MLtoFZUK,             ITM_PINTUKtoML,           ITM_MLtoPINTUK,           ITM_QTtoML,               ITM_MLtoQT                    };
 
 
 //---------//---------//---------//---------//---------
@@ -516,7 +516,7 @@ TO_QSPI const int16_t menu_alphaMisc[]    ={ ITM_CR,                         ITM
                                              ITM_TILDE,                      ITM_HOURGLASS,                  ITM_WATCH,                      ITM_TIMER_SYMBOL,               ITM_NEG_EXCLAMATION_MARK,       ITM_USER_MODE,
                                              ITM_BATTERY,                    ITM_PRINTER,                    ITM_HAMBURGER,                  ITM_BST_char,                   ITM_SST_char,                   ITM_CYCLIC,
 
-                                             ITM_USB_SYMBOL,                 ITM_SUB_SUN,                    ITM_SUB_EARTH,                  ITM_US,                         ITM_UK,                         ITM_NULL,
+                                             ITM_USB_SYMBOL,                 ITM_SUB_SUN,                    ITM_SUB_EARTH,                  ITM_US,                         ITM_UK,                         ITM_litre,
                                              ITM_LEFT_DOUBLE_QUOTE,          ITM_RIGHT_DOUBLE_QUOTE,         ITM_NULL,                       ITM_NULL,                       ITM_NULL,                       ITM_NULL,
                                              ITM_NULL,                       ITM_NULL,                       ITM_NULL,                       ITM_NULL,                       ITM_NULL,                       ITM_NULL                        };
 
