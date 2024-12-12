@@ -558,15 +558,10 @@ void convertReal34RegisterToDateRegister(calcRegister_t source, calcRegister_t d
 
 void convertReal34MatrixRegisterToReal34Matrix(calcRegister_t regist, real34Matrix_t *matrix) {
   matrixHeader_t *matrixHeader = REGISTER_MATRIX_HEADER(regist);
-  //real34_t       *matrixElem   = REGISTER_REAL34_MATRIX_ELEMENTS(regist);
 
   if(realMatrixInit(matrix, matrixHeader->matrixRows, matrixHeader->matrixColumns)) {
     if(matrix->matrixElements) {
       xcopy(matrix->matrixElements, REGISTER_REAL34_MATRIX_ELEMENTS(regist), (matrix->header.matrixColumns * matrix->header.matrixRows) * REAL34_SIZE_IN_BYTES);
-
-      //for(int i = 0; i < matrix->header.matrixColumns * matrix->header.matrixRows; i++) {
-      //  real34Copy(&matrixElem[i], &matrix->matrixElements[i]);
-      //}
     }
   }
   else {
@@ -575,37 +570,33 @@ void convertReal34MatrixRegisterToReal34Matrix(calcRegister_t regist, real34Matr
 }
 
 void convertReal34MatrixToReal34MatrixRegister(const real34Matrix_t *matrix, calcRegister_t regist) {
-  const size_t neededSize = (matrix->header.matrixColumns * matrix->header.matrixRows) * REAL34_SIZE_IN_BYTES;
-  reallocateRegister(regist, dtReal34Matrix, TO_BLOCKS(neededSize), amNone);
+  const uint32_t neededSizeInBytes = (matrix->header.matrixColumns * matrix->header.matrixRows) * REAL34_SIZE_IN_BYTES;
+  reallocateRegister(regist, dtReal34Matrix, TO_BLOCKS(neededSizeInBytes), amNone);
   if(lastErrorCode != ERROR_RAM_FULL) {
     xcopy(REGISTER_MATRIX_HEADER(regist), matrix, sizeof(matrixHeader_t));
-    xcopy(REGISTER_REAL34_MATRIX_ELEMENTS(regist), matrix->matrixElements, neededSize);
+    xcopy(REGISTER_REAL34_MATRIX_ELEMENTS(regist), matrix->matrixElements, neededSizeInBytes);
   }
 }
 
 void convertComplex34MatrixRegisterToComplex34Matrix(calcRegister_t regist, complex34Matrix_t *matrix) {
   matrixHeader_t *matrixHeader = REGISTER_MATRIX_HEADER(regist);
-  //complex34_t *matrixElem      = REGISTER_COMPLEX34_MATRIX_ELEMENTS(regist);
 
   if(complexMatrixInit(matrix, matrixHeader->matrixRows, matrixHeader->matrixColumns)) {
     if(matrix->matrixElements) {
       xcopy(matrix->matrixElements, REGISTER_COMPLEX34_MATRIX_ELEMENTS(regist), (matrix->header.matrixColumns * matrix->header.matrixRows) * COMPLEX34_SIZE_IN_BYTES);
-
-        //for(int i = 0; i < matrix->header.matrixColumns * matrix->header.matrixRows; i++) {
-        //  complex34Copy(&matrixElem[i], &matrix->matrixElements[i]);
-        //}
-      }
-    }
-    else {
-      displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
     }
   }
+  else {
+    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+  }
+}
 
 void convertComplex34MatrixToComplex34MatrixRegister(const complex34Matrix_t *matrix, calcRegister_t regist) {
-  reallocateRegister(regist, dtComplex34Matrix, TO_BLOCKS((matrix->header.matrixColumns * matrix->header.matrixRows) * COMPLEX34_SIZE_IN_BYTES), amNone);
+  const uint32_t neededSizeInBytes = (matrix->header.matrixColumns * matrix->header.matrixRows) * COMPLEX34_SIZE_IN_BYTES;
+  reallocateRegister(regist, dtComplex34Matrix, TO_BLOCKS(neededSizeInBytes), amNone);
   if(lastErrorCode != ERROR_RAM_FULL) {
     xcopy(REGISTER_MATRIX_HEADER(regist), matrix, sizeof(matrixHeader_t));
-    xcopy(REGISTER_COMPLEX34_MATRIX_ELEMENTS(regist), matrix->matrixElements, (matrix->header.matrixColumns * matrix->header.matrixRows) * COMPLEX34_SIZE_IN_BYTES);
+    xcopy(REGISTER_COMPLEX34_MATRIX_ELEMENTS(regist), matrix->matrixElements, neededSizeInBytes);
   }
 }
 
