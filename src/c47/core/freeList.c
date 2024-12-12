@@ -166,10 +166,10 @@ void freeListReduce(void *pcMemPtr, size_t oldSizeInBlocks, size_t newSizeInBloc
       if((freeMemoryRegions[i-1].blockAddress + freeMemoryRegions[i-1].sizeInBlocks) >= freeMemoryRegions[i].blockAddress) {
         printf("\n*** Free memory regions overlap discovered in freeListReduce()!\n");
         printf("*** This suggests there was double-free!\n");
-        printf("Free blocks (%" PRId32 "):\n", numberOfFreeMemoryRegions);
-        for(int32_t j=0; j<numberOfFreeMemoryRegions; j++) {
-          printf("  %2" PRId32 " starting at %5" PRIu16 ": %5" PRIu16 " blocks = %6" PRIu32 " bytes\n", j, freeMemoryRegions[j].blockAddress, freeMemoryRegions[j].sizeInBlocks, TO_BYTES((uint32_t)freeMemoryRegions[j].sizeInBlocks));
-        }
+        //printf("Free blocks (%" PRId32 "):\n", numberOfFreeMemoryRegions);
+        //for(int32_t j=0; j<numberOfFreeMemoryRegions; j++) {
+        //  printf("  %2" PRId32 " starting at %5" PRIu16 ": %5" PRIu16 " blocks = %6" PRIu32 " bytes\n", j, freeMemoryRegions[j].blockAddress, freeMemoryRegions[j].sizeInBlocks, TO_BYTES((uint32_t)freeMemoryRegions[j].sizeInBlocks));
+        //}
         break;
       }
     }
@@ -280,10 +280,10 @@ void freeListFree(void *pcMemPtr, size_t sizeInBlocks) {
       if((freeMemoryRegions[i-1].blockAddress + freeMemoryRegions[i-1].sizeInBlocks) >= freeMemoryRegions[i].blockAddress) {
         printf("\n*** Free memory regions overlap discovered in freeListFree()!\n");
         printf("*** This suggests there was double-free!\n");
-        printf("Free blocks (%" PRId32 "):\n", numberOfFreeMemoryRegions);
-        for(j=0; j<numberOfFreeMemoryRegions; j++) {
-          printf("  %2" PRId32 " starting at %5" PRIu16 ": %5" PRIu16 " blocks = %6" PRIu32 " bytes\n", j, freeMemoryRegions[j].blockAddress, freeMemoryRegions[j].sizeInBlocks, TO_BYTES((uint32_t)freeMemoryRegions[j].sizeInBlocks));
-        }
+        //printf("Free blocks (%" PRId32 "):\n", numberOfFreeMemoryRegions);
+        //for(j=0; j<numberOfFreeMemoryRegions; j++) {
+        //  printf("  %2" PRId32 " starting at %5" PRIu16 ": %5" PRIu16 " blocks = %6" PRIu32 " bytes\n", j, freeMemoryRegions[j].blockAddress, freeMemoryRegions[j].sizeInBlocks, TO_BYTES((uint32_t)freeMemoryRegions[j].sizeInBlocks));
+        //}
         break;
       }
     }

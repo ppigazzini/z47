@@ -554,8 +554,8 @@ typedef struct FactorAdder
       adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
     }
 
-    uint16_t rows = REGISTER_DATA(REGISTER_X)->matrixRows;
-    uint16_t cols = REGISTER_DATA(REGISTER_X)->matrixColumns;
+    uint16_t rows = REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows;
+    uint16_t cols = REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns;
     if( faddr->nExpons == 0 ) {
       faddr->nExpons = 1;  // has to be 1 now, as we have this factor
       faddr->expons[(faddr->nExpons)-1] = 1;
@@ -893,8 +893,8 @@ void _fnEvPFacts     (uint16_t param) {
       real34Matrix_t matrix;
 
       linkToRealMatrixRegister(REGISTER_X, &matrix);
-      uint16_t rows = REGISTER_DATA(REGISTER_X)->matrixRows;
-      uint16_t cols = REGISTER_DATA(REGISTER_X)->matrixColumns;
+      uint16_t rows = REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows;
+      uint16_t cols = REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns;
       if ( rows == 2 && cols >= 1 ) {
         // Only operate if factorisation matrix has two rows and at least one column
         longInteger_t prod, factor, tmp_prod, p_li, k_li;
@@ -1127,8 +1127,8 @@ void fnEulPhi     (uint16_t unusedButMandatoryParameter) {
       if(getRegisterDataType(REGISTER_X) == dtReal34Matrix) {
         // Only operate if we got back a Real 34 Matrix from fnPrimeFactors
         linkToRealMatrixRegister(REGISTER_X, &matrix);
-        uint16_t rows = REGISTER_DATA(REGISTER_X)->matrixRows;
-        uint16_t cols = REGISTER_DATA(REGISTER_X)->matrixColumns;
+        uint16_t rows = REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows;
+        uint16_t cols = REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns;
         if (rows == 2 && cols >= 1) {
           // Only operate if factorisation matrix has two rows and at least one column
           longIntegerCopy(x, phi_x);

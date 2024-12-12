@@ -1078,7 +1078,7 @@ void debugNIM(void) {
     }
 
     else if(getRegisterDataType(regist) == dtComplex34) {
-      formatComplex34Debug(string + n, (void *)getRegisterDataPointer(regist));
+      formatComplex34Debug(string + n, getRegisterDataPointer(regist));
     }
 
     else if(getRegisterDataType(regist) == dtString) {
@@ -1118,12 +1118,12 @@ void debugNIM(void) {
     }
 
     else if(getRegisterDataType(regist) == dtReal34Matrix) {
-      dataBlock_t* dblock = REGISTER_REAL34_MATRIX_DBLOCK(regist);
+      dataBlock_t* dblock = REGISTER_MATRIX_HEADER(regist);
       sprintf(string + n, "Real Matrix of Size [%" PRIu16" x %" PRIu16" Matrix]", dblock->matrixRows, dblock->matrixColumns);
     }
 
     else if(getRegisterDataType(regist) == dtComplex34Matrix) {
-      dataBlock_t* dblock = REGISTER_COMPLEX34_MATRIX_DBLOCK(regist);
+      dataBlock_t* dblock = REGISTER_MATRIX_HEADER(regist);
       sprintf(string + n, "Complex Matrix of Size [%" PRIu16" x %" PRIu16" Matrix]", dblock->matrixRows, dblock->matrixColumns);
     }
 

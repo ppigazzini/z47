@@ -253,6 +253,16 @@ typedef union {
 
 
 /**
+ * \typedef matrixHeader_t
+ * Header for matrix datatype.
+ */
+typedef struct {
+  uint16_t matrixRows;                ///< Number of rows in the matrix
+  uint16_t matrixColumns;             ///< Number of columns in the matrix
+} matrixHeader_t;
+
+
+/**
  * \union dataBlock_t
  * Header for datatypes: string, long integer, and matrix.
  */
@@ -268,11 +278,6 @@ typedef union {
   struct {
     uint16_t variableNameLenInBlocks;   ///< Size of the name in blocs: 1 to 4, up to 15 bytes = 7 double byte glyphs + trailing 0
     uint16_t ptrToVariableName;         ///< Pointer to the name of the variable
-  };
-
-  struct {
-    uint16_t matrixRows;                ///< Number of rows in the matrix
-    uint16_t matrixColumns;             ///< Number of columns in the matrix
   };
 
   struct {
@@ -393,8 +398,8 @@ typedef int16_t calcRegister_t;
  * A type for real34Matrix.
  */
 typedef struct {
-   dataBlock_t header;
-   real34_t    *matrixElements;
+   matrixHeader_t  header;
+   real34_t       *matrixElements;
 } real34Matrix_t;
 
 /**
@@ -402,8 +407,8 @@ typedef struct {
  * A type for complex34Matrix.
  */
 typedef struct {
-   dataBlock_t header;
-   complex34_t *matrixElements;
+   matrixHeader_t  header;
+   complex34_t    *matrixElements;
 } complex34Matrix_t;
 
 /**
@@ -411,7 +416,7 @@ typedef struct {
  * Stores either real34Matrix_t or complex34Matrix_t.
  */
 typedef union {
-   dataBlock_t       header;
+   matrixHeader_t    header;
    real34Matrix_t    realMatrix;
    complex34Matrix_t complexMatrix;
 } any34Matrix_t;

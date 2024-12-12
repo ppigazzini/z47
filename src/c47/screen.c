@@ -165,16 +165,16 @@ typedef struct {
         break;
 
       case dtReal34Matrix: {
-        dataBlock_t* dblock = REGISTER_REAL34_MATRIX_DBLOCK(regist);
-        real34_t *real34 = REGISTER_REAL34_MATRIX_M_ELEMENTS(regist);
+        matrixHeader_t *matrixHeader = REGISTER_MATRIX_HEADER(regist);
+        real34_t *real34 = REGISTER_REAL34_MATRIX_ELEMENTS(regist);
         real34_t reduced;
-        int rows, columns, len;
+        uint32_t rows, columns, len;
 
-        rows = dblock->matrixRows;
-        columns = dblock->matrixColumns;
-        sprintf(string, "%dx%d", rows, columns);
+        rows = matrixHeader->matrixRows;
+        columns = matrixHeader->matrixColumns;
+        sprintf(string, "%" PRIu32 "x%" PRIu32, rows, columns);
 
-        for(int i=0; i<rows*columns; i++) {
+        for(uint32_t i=0; i<rows*columns; i++) {
           strcat(string, LINEBREAK);
           len = strlen(string);
 
@@ -189,16 +189,16 @@ typedef struct {
       }
 
       case dtComplex34Matrix: {
-        dataBlock_t* dblock = REGISTER_COMPLEX34_MATRIX_DBLOCK(regist);
-        complex34_t *complex34 = REGISTER_COMPLEX34_MATRIX_M_ELEMENTS(regist);
+        matrixHeader_t *matrixHeader = REGISTER_MATRIX_HEADER(regist);
+        complex34_t *complex34 = REGISTER_COMPLEX34_MATRIX_ELEMENTS(regist);
         real34_t reduced;
-        int rows, columns, len;
+        uint32_t rows, columns, len;
 
-        rows = dblock->matrixRows;
-        columns = dblock->matrixColumns;
-        sprintf(string, "%dx%d", rows, columns);
+        rows = matrixHeader->matrixRows;
+        columns = matrixHeader->matrixColumns;
+        sprintf(string, "%" PRIu32 "x%" PRIu32, rows, columns);
 
-        for(int i=0; i<rows*columns; i++, complex34++) {
+        for(uint32_t i=0; i<rows*columns; i++, complex34++) {
           strcat(string, LINEBREAK);
           len = strlen(string);
 
@@ -1556,7 +1556,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
     #if defined(ANALYSE_REFRESH) && defined(PC_BUILD)
       printf("#%i",mode == force);
     #endif //ANALYSE_REFRESH
- 
+
     uint16_t now = (uint16_t)(getUptimeMs() >> 4);           // ms/16
     bool_t itIsTime = ((now >> 6) & 0x0001) == secTick1;     // ms/1024, that is every second, flips secTick1
     if(itIsTime) {
@@ -1575,7 +1575,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
       #if defined(ANALYSE_REFRESH) && defined(PC_BUILD)
         printf("not updated =%i %i\n", now, itIsTime);
       #endif //ANALYSE_REFRESH
-    }      
+    }
   }
 
   static bool_t _printHalfSecUpdate_Integer(uint8_t mode, char *txt, int32_t loop, bool_t clearZ, bool_t clearT, bool_t disp) {
@@ -2470,7 +2470,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
 
           else if(getRegisterDataType(REGISTER_L) == dtComplex34) {
             strcat(string1, "complex34 = ");
-            formatComplex34Debug(string2, (void *)getRegisterDataPointer(REGISTER_L));
+            formatComplex34Debug(string2, getRegisterDataPointer(REGISTER_L));
           }
 
           else if(getRegisterDataType(REGISTER_L) == dtString) {
@@ -2503,13 +2503,13 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
           }
 
           else if(getRegisterDataType(REGISTER_L) == dtReal34Matrix) {
-            sprintf(&string1[strlen(string1)], "real34 %" PRIu16 STD_CROSS "%" PRIu16 " matrix = ", REGISTER_REAL34_MATRIX_DBLOCK(REGISTER_L)->matrixRows, REGISTER_REAL34_MATRIX_DBLOCK(REGISTER_L)->matrixColumns);
-            formatReal34Debug(string2, REGISTER_REAL34_MATRIX_M_ELEMENTS(REGISTER_L));
+            sprintf(&string1[strlen(string1)], "real34 %" PRIu16 STD_CROSS "%" PRIu16 " matrix = ", REGISTER_MATRIX_HEADER(REGISTER_L)->matrixRows, REGISTER_MATRIX_HEADER(REGISTER_L)->matrixColumns);
+            formatReal34Debug(string2, REGISTER_REAL34_MATRIX_ELEMENTS(REGISTER_L));
           }
 
           else if(getRegisterDataType(REGISTER_L) == dtComplex34Matrix) {
-            sprintf(&string1[strlen(string1)], "complex34 %" PRIu16 STD_CROSS "%" PRIu16 " matrix = ", REGISTER_COMPLEX34_MATRIX_DBLOCK(REGISTER_L)->matrixRows, REGISTER_COMPLEX34_MATRIX_DBLOCK(REGISTER_L)->matrixColumns);
-            formatComplex34Debug(string2, REGISTER_COMPLEX34_MATRIX_M_ELEMENTS(REGISTER_L));
+            sprintf(&string1[strlen(string1)], "complex34 %" PRIu16 STD_CROSS "%" PRIu16 " matrix = ", REGISTER_MATRIX_HEADER(REGISTER_L)->matrixRows, REGISTER_MATRIX_HEADER(REGISTER_L)->matrixColumns);
+            formatComplex34Debug(string2, REGISTER_COMPLEX34_MATRIX_ELEMENTS(REGISTER_L));
           }
 
           else if(getRegisterDataType(REGISTER_L) == dtConfig) {

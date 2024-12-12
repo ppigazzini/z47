@@ -55,31 +55,31 @@ void copyRegisterToClipboardString2(calcRegister_t regist, char *clipboardString
         break;
 
       case dtReal34Matrix: {
-        dataBlock_t *dblock = REGISTER_REAL34_MATRIX_DBLOCK(regist);
-        int rows, columns;
-        rows = dblock->matrixRows;
-        columns = dblock->matrixColumns;
+        matrixHeader_t *matrixHeader = REGISTER_MATRIX_HEADER(regist);
+        uint16_t rows, columns;
+        rows = matrixHeader->matrixRows;
+        columns = matrixHeader->matrixColumns;
         if(rows*columns*46 < TMP_STR_LENGTH) {
           copyRegisterToClipboardString(regist, clipboardString);
-          //printf(">>>:: %u ?? %u\n",rows*columns*46,stringByteLength(clipboardString));
+          //printf(">>>:: %u ?? %u\n", rows*columns*46, stringByteLength(clipboardString));
         }
         else {
-          sprintf(clipboardString, "%s%dx%d%s", ClipBoardMsg[0].itemName, rows, columns, ClipBoardMsg[1].itemName);  //Real matrix   too large for transfer
+          sprintf(clipboardString, "%s%" PRIu16 "x%" PRIu16 "%s", ClipBoardMsg[0].itemName, rows, columns, ClipBoardMsg[1].itemName);  //Real matrix   too large for transfer
         }
         break;
       }
 
       case dtComplex34Matrix: {
-        dataBlock_t *dblock = REGISTER_REAL34_MATRIX_DBLOCK(regist);
-        int rows, columns;
-        rows = dblock->matrixRows;
-        columns = dblock->matrixColumns;
+        matrixHeader_t *matrixHeader = REGISTER_MATRIX_HEADER(regist);
+        uint16_t rows, columns;
+        rows = matrixHeader->matrixRows;
+        columns = matrixHeader->matrixColumns;
         if(rows*columns*92 < TMP_STR_LENGTH) {
           copyRegisterToClipboardString(regist, clipboardString);
           //printf(">>>:: %u ?? %u\n", rows*columns*92, stringByteLength(clipboardString));
         }
         else {
-          sprintf(clipboardString, "%s%dx%d%s", ClipBoardMsg[2].itemName, rows, columns, ClipBoardMsg[1].itemName);  //Complex matrix   too large for transfer
+          sprintf(clipboardString, "%s%" PRIu16 "x%" PRIu16 "%s", ClipBoardMsg[2].itemName, rows, columns, ClipBoardMsg[1].itemName);  //Complex matrix   too large for transfer
         }
         break;
       }

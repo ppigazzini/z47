@@ -1779,7 +1779,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define isSystemFlagWriteProtected(sf)       ((sf & 0x4000) != 0)
 #define shortIntegerIsZero(op)               (((*(uint64_t *)(op)) == 0) || (shortIntegerMode == SIM_SIGNMT && (((*(uint64_t *)(op)) == 1u<<((uint64_t)shortIntegerWordSize-1)))))
 #define getStackTop()                        (getSystemFlag(FLAG_SSIZE8) ? REGISTER_D : REGISTER_T)
-#define freeRegisterData(regist)             freeC47Blocks((void *)getRegisterDataPointer(regist), getRegisterFullSizeInBlocks(regist))
+#define freeRegisterData(regist)             freeC47Blocks(getRegisterDataPointer(regist), getRegisterFullSizeInBlocks(regist))
 #define storeToDtConfigDescriptor(config)    (configToStore->config = config)
 #define recallFromDtConfigDescriptor(config) (config = configToRecall->config)
 
@@ -1900,6 +1900,11 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define currentSubroutineLevel               (currentSubroutineLevelData[1].subroutineLevel)
 #define currentPtrToNextLevel                (currentSubroutineLevelData[2].ptrToNextLevel)
 #define currentPtrToPreviousLevel            (currentSubroutineLevelData[2].ptrToPreviousLevel)
+
+//#define LOCAL_FLAGS_AFTER_SUBROUTINE_LEVEL_HEADER(ptr)     ((localFlags_t *)(((subroutineLevelHeader_t *)ptr) + 1))
+//#define REGISTER_HEADER_AFTER_LOCAL_FLAGS(ptr)             ((registerHeader_t *)(((localFlags_t *)ptr) + 1))
+#define REAL34_MATRIX_ELEMENTS_AFTER_MATRIX_HEADER(ptr)    ((real34_t *)((matrixHeader_t *)ptr + 1))
+#define COMPLEX34_MATRIX_ELEMENTS_AFTER_MATRIX_HEADER(ptr) ((real34_t *)((matrixHeader_t *)ptr + 1))
 
 
 
