@@ -25,18 +25,19 @@ TO_QSPI static const struct {
     unsigned gprr : 4;
     unsigned gapr : 16;
     unsigned gaprx : 16;
+    unsigned us   : 1;
 
 
 } configSettings[] = {
                 /*                         gapl                     gprl  gpr1x  gpr1  gprr     gapr                                   */
                 /*   24  D M Y  Gregorian  GAP char                 GRP   GRPx   GRP1  FP.GRP   FP.GAP char               New Radix    */
-    [CFG_DFLT  ] = {  1, 0,0,1, 2361222,   _gapl                , _gprl, _gpr1x, _gpr1, _gprr, _gapr                 ,   _gaprx    },    /* 14 Sep 1752 */
-    [CFG_CHINA ] = {  1, 0,0,1, 2433191,   ITM_COMMA            ,    4,    0,    0,    4,      ITM_COMMA             ,   ITM_PERIOD},    /*  1 Oct 1949 */
-    [CFG_EUROPE] = {  1, 1,0,0, 2299161,   ITM_SPACE_PUNCTUATION,    3,    0,    0,    3,      ITM_SPACE_PUNCTUATION ,   ITM_COMMA },    /* 15 Oct 1582 */
-    [CFG_INDIA ] = {  1, 1,0,0, 2361222,   ITM_COMMA            ,    2,    0,    3,    2,      ITM_COMMA             ,   ITM_PERIOD},    /* 14 Sep 1752 */
-    [CFG_JAPAN ] = {  1, 0,0,1, 2405160,   ITM_SPACE_PUNCTUATION,    3,    0,    0,    3,      ITM_SPACE_PUNCTUATION ,   ITM_PERIOD},    /*  1 Jan 1873 */
-    [CFG_UK    ] = {  0, 1,0,0, 2361222,   ITM_SPACE_PUNCTUATION,    3,    0,    0,    3,      ITM_SPACE_PUNCTUATION ,   ITM_PERIOD},    /* 14 Sep 1752 */
-    [CFG_USA   ] = {  0, 0,1,0, 2361222,   ITM_COMMA            ,    3,    9,    0,    3,      ITM_NULL              ,   ITM_PERIOD},    /* 14 Sep 1752 */
+    [CFG_DFLT  ] = {  1, 0,0,1, 2361222,   _gapl                , _gprl, _gpr1x, _gpr1, _gprr, _gapr                 ,   _gaprx    , 0},    /* 14 Sep 1752 */
+    [CFG_CHINA ] = {  1, 0,0,1, 2433191,   ITM_COMMA            ,    4,    0,    0,    4,      ITM_COMMA             ,   ITM_PERIOD, 0},    /*  1 Oct 1949 */
+    [CFG_EUROPE] = {  1, 1,0,0, 2299161,   ITM_SPACE_PUNCTUATION,    3,    0,    0,    3,      ITM_SPACE_PUNCTUATION ,   ITM_COMMA , 0},    /* 15 Oct 1582 */
+    [CFG_INDIA ] = {  1, 1,0,0, 2361222,   ITM_COMMA            ,    2,    0,    3,    2,      ITM_COMMA             ,   ITM_PERIOD, 0},    /* 14 Sep 1752 */
+    [CFG_JAPAN ] = {  1, 0,0,1, 2405160,   ITM_SPACE_PUNCTUATION,    3,    0,    0,    3,      ITM_SPACE_PUNCTUATION ,   ITM_PERIOD, 0},    /*  1 Jan 1873 */
+    [CFG_UK    ] = {  0, 1,0,0, 2361222,   ITM_SPACE_PUNCTUATION,    3,    0,    0,    3,      ITM_SPACE_PUNCTUATION ,   ITM_PERIOD, 0},    /* 14 Sep 1752 */
+    [CFG_USA   ] = {  0, 0,1,0, 2361222,   ITM_COMMA            ,    3,    9,    0,    3,      ITM_NULL              ,   ITM_PERIOD, 1},    /* 14 Sep 1752 */
 };
 
 void configCommon(uint16_t idx) {
@@ -60,6 +61,7 @@ void configCommon(uint16_t idx) {
   grpGroupingRight           = configSettings[idx].gprr ;
   fnSetGapChar (32768+configSettings[idx].gapr);
   fnSetGapChar (49152+configSettings[idx].gaprx);
+  forceSystemFlag(FLAG_US, configSettings[idx].us);
 }
 
 

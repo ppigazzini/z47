@@ -642,6 +642,7 @@
 #define FLAG_SCALE                            0x8052
 #define FLAG_VECT                             0x8053
 #define FLAG_NVECT                            0x8054
+#define FLAG_US                               0x8055
 
 #define NUMBER_OF_SYSTEM_FLAGS                    85 // We can have a maximum of 128 system flags
 
