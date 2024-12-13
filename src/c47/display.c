@@ -2843,7 +2843,7 @@ static void dispM(uint16_t regist, char * prefix) {
 
 
 
-#define MONITOR_SHOW
+#undef MONITOR_SHOW
 
 static void prepLongintIntoLines(int16_t *last, int16_t *source, int16_t *dest, const font_t *fontToUse, int16_t maxWidth, int16_t Width_0, int16_t numberOfLines, int16_t *startingLine) {
   int16_t d;
