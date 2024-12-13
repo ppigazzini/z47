@@ -433,46 +433,28 @@ void generateAllConstants(void) {
   generateConstantArray("fpsToKph",      "+1.097280000000000000000000000000000000000000000000000000e+00"); // foot per second to kilometer per hour
   generateConstantArray("fpsToMps",      "+3.048000000000000000000000000000000000000000000000000000e-01"); // foot per second to meter per second
 
-////
-  generateConstantArray("CupcFzus",      "+8.000007997024360000000000000000000000000000000000000000e+00");
-  generateConstantArray("CupcMl",        "+2.365882365000000000000000000000000000000000000000000000e+02");
-  generateConstantArray("CupukFzuk",     "+9.999986801862520000000000000000000000000000000000000000e+00");
-  generateConstantArray("CupukMl",       "+2.841306250000000000000000000000000000000000000000000000e+02");
 
-  generateConstantArray("FzukTbspuk",    "+1.600002111704780000000000000000000000000000000000000000e+00");
-  generateConstantArray("FzukTspuk",     "+4.800006335114380000000000000000000000000000000000000000e+00");
-
-  generateConstantArray("FzusTbspc",     "+1.999998000745910000000000000000000000000000000000000000e+00");
-  generateConstantArray("FzusTspc",      "+5.999994002237720000000000000000000000000000000000000000e+00");
-
-
-
-
-
-
-
-
-
-
-  generateConstantArray("PintlqMl",      "+4.731764730000000000000000000000000000000000000000000000e+02");
-  generateConstantArray("PintukMl",      "+5.682612500000000000000000000000000000000000000000000000e+02");
-  generateConstantArray("QtMl",          "+1.136522500000000000000000000000000000000000000000000000e+03");
-  generateConstantArray("QtusMl",        "+9.463529460000000000000000000000000000000000000000000000e+02");
-
-  generateConstantArray("TbspcMl",       "+1.478676478125000000000000000000000000000000000000000000e+01");
-
-  generateConstantArray("TbspukMl",      "+1.775816406250000000000000000000000000000000000000000000e+01");
-
-  generateConstantArray("TspcMl",        "+4.928921593750000000000000000000000000000000000000000000e+00");
-
-  generateConstantArray("TspukMl",       "+5.919388020833300000000000000000000000000000000000000000e+00");
-////
-  generateConstantArray("In3Ml",         "+1.638706400000000000000000000000000000000000000000000000e+01");
-  generateConstantArray("Ft3Gluk",       "+6.230205912754200000000000000000000000000000000000000000e+00");
-
-
-  generateConstantArray("Ft3L",          "+2.831684659200000000000000000000000000000000000000000000e+01");
-  generateConstantArray("LQtus",         "+1.056688209432590000000000000000000000000000000000000000e+00");
+//// Chef menu
+  generateConstantArray("CupcFzus",      "+8.000000000000000000000000000000000000000000000000000000e+00"); // ratio us c       : 8     x
+  generateConstantArray("CupcMl",        "+2.365882365000000000000000000000000000000000000000000000e+02"); // defined us c     : GallonUS / 768 x 48 
+  generateConstantArray("CupukFzuk",     "+1.000000000000000000000000000000000000000000000000000000e+01"); // ratio uk         : 10    x
+  generateConstantArray("CupukMl",       "+2.841306250000000000000000000000000000000000000000000000e+02"); // defined uk       : GallonUK / 768 x 48
+  generateConstantArray("FzukTbspuk",    "+1.600000000000000000000000000000000000000000000000000000e+00"); // ratio uk         : 4.8/3 x
+  generateConstantArray("FzukTspuk",     "+4.800000000000000000000000000000000000000000000000000000e+00"); // ratio uk         : 4.8   x
+  generateConstantArray("FzusTbspc",     "+2.000000000000000000000000000000000000000000000000000000e+00"); // ratio us         : 6 / 3 x
+  generateConstantArray("FzusTspc",      "+6.000000000000000000000000000000000000000000000000000000e+00"); // ratio us         : 6     x
+  generateConstantArray("PintlqMl",      "+4.731764730000000000000000000000000000000000000000000000e+02"); // defined us c     : GallonUS / 768 x 96   x
+  generateConstantArray("PintukMl",      "+5.682612500000000000000000000000000000000000000000000000e+02"); // defined uk       : GallonUK / 768 x 96   x
+  generateConstantArray("QtMl",          "+1.136522500000000000000000000000000000000000000000000000e+03"); // defined uk       : GallonUK / 768 x 192   x
+  generateConstantArray("QtusMl",        "+9.463529460000000000000000000000000000000000000000000000e+02"); // defined us       : GallonUS / 768 x 192   x
+  generateConstantArray("TbspcMl",       "+1.478676478125000000000000000000000000000000000000000000e+01"); // defined us       : GallonUS / 768 x 3   x
+  generateConstantArray("TbspukMl",      "+1.775816406250000000000000000000000000000000000000000000e+01"); // defined uk       : GallonUK / 768 x 3   x
+  generateConstantArray("TspcMl",        "+4.928921593750000000000000000000000000000000000000000000e+00"); // defined us       : GallonUS / 768       x
+  generateConstantArray("TspukMl",       "+5.919388020833333333333333333333333333333333333333333333e+00"); // defined uk       : GallonUK / 768        x
+  generateConstantArray("In3Ml",         "+1.638706400000000000000000000000000000000000000000000000e+01"); // defined          : (in x 2.54) ^ 3       x
+   generateConstantArray("Ft3Gluk",       "+6.228835459042830000000000000000000000000000000000000000e+00"); // defined uk       : (ft × 12 × 2.54)^3 / (4.54609e-3 × 1000000, definition UK) x
+  generateConstantArray("Ft3L",          "+2.831684659200000000000000000000000000000000000000000000e+01"); // defined          : (ft × 12 × 2.54)^3 x
+  generateConstantArray("LQtus",         "+1.056688209432590000000000000000000000000000000000000000e+00"); // defined us       : 1000 / (GallonUK / 768 x 192) x
 ////
 
 
