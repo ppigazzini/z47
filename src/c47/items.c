@@ -3613,7 +3613,7 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 2269 */  { fnGetSystemFlag,              FLAG_SCALE,                  "PLxy:1",                                      "PLxy:1",                                      (0 << TAM_MAX_BITS) |     0, CAT_SYFL | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2270 */  { fnGetSystemFlag,              FLAG_VECT,                   "PLvec",                                       "PLvec",                                       (0 << TAM_MAX_BITS) |     0, CAT_SYFL | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2271 */  { fnGetSystemFlag,              FLAG_NVECT,                  "PLnvec",                                      "PLnvec",                                      (0 << TAM_MAX_BITS) |     0, CAT_SYFL | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
-/* 2272 */  { itemToBeCoded,                NOPARAM,                     "2272",                                        "2272",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 2272 */  { fnGetSystemFlag,              FLAG_US,                     "US",                                          "US",                                          (0 << TAM_MAX_BITS) |     0, CAT_SYFL | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2273 */  { itemToBeCoded,                NOPARAM,                     "2273",                                        "2273",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2274 */  { itemToBeCoded,                NOPARAM,                     "2274",                                        "2274",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2275 */  { itemToBeCoded,                NOPARAM,                     "2275",                                        "2275",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
@@ -3799,14 +3799,13 @@ TO_QSPI const item_t indexOfItems[] = {
 /* NNNN */  UNIT_CONV(constFactorTspukMl,       multiply,      "tsp" STD_UK STD_RIGHT_ARROW "m" STD_litre,                           "tsp" STD_UK STD_RIGHT_ARROW                               ),
 
 /* NNNN */  UNIT_CONV(constFactorMlIn3,           divide,      "m" STD_litre STD_RIGHT_ARROW "in" STD_SUP_3,                         "m" STD_litre STD_RIGHT_ARROW                               ),
-/* NNNN */  UNIT_CONV(constFactorIn3Ml,         multiply,      "in" STD_SUP_3 STD_RIGHT_ARROW "m" STD_litre,                         "in" STD_SUP_3 STD_RIGHT_ARROW                             ),
-/* NNNN */  UNIT_CONV(constFactorFt3Gluk,       multiply,      "ft" STD_SUP_3 STD_RIGHT_ARROW "GL" STD_UK,                           "ft" STD_SUP_3 STD_RIGHT_ARROW                              ),
-/* NNNN */  UNIT_CONV(constFactorGlukFt3,         divide,      "GL" STD_UK STD_RIGHT_ARROW "ft" STD_SUP_3,                           "GL" STD_UK STD_RIGHT_ARROW                                 ),
+/* NNNN */  UNIT_CONV(constFactorIn3Ml,         multiply,      "in" STD_SUP_3 STD_RIGHT_ARROW "m" STD_litre,                         "in" STD_SUP_3 STD_RIGHT_ARROW                              ),
+/* NNNN */  UNIT_CONV(constFactorFt3Gluk,       multiply,      "ft" STD_SUP_3 STD_RIGHT_ARROW "gal" STD_UK,                          "ft" STD_SUP_3 STD_RIGHT_ARROW                              ),
+/* NNNN */  UNIT_CONV(constFactorGlukFt3,         divide,      "gal" STD_UK STD_RIGHT_ARROW "ft" STD_SUP_3,                          "gal" STD_UK STD_RIGHT_ARROW                                ),
 /* NNNN */  UNIT_CONV(constFactorLFt3,            divide,      STD_litre STD_RIGHT_ARROW "ft" STD_SUP_3,                             STD_litre STD_RIGHT_ARROW                                   ),
 /* NNNN */  UNIT_CONV(constFactorFt3L,          multiply,      "ft" STD_SUP_3 STD_RIGHT_ARROW STD_litre,                             "ft" STD_SUP_3 STD_RIGHT_ARROW                              ),
 /* NNNN */  UNIT_CONV(constFactorLQtus,         multiply,      STD_litre STD_RIGHT_ARROW "qt" STD_US,                                STD_litre STD_RIGHT_ARROW                                   ),
 /* NNNN */  UNIT_CONV(constFactorQtusL,           divide,      "qt" STD_US STD_RIGHT_ARROW STD_litre,                                "qt" STD_US STD_RIGHT_ARROW                                 ),
-
 
 /* 2421 */  { itemToBeCoded,                NOPARAM,                     "",                                            "Last item",                                   (0 << TAM_MAX_BITS)
 

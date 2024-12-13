@@ -553,7 +553,8 @@ void SetSetting(uint16_t jmConfig) {
     case DO_ENG:         fnSetFlag(FLAG_ENGOVR);                                break;
 
     case JC_NL:          fnFlipFlag(FLAG_NUMLOCK); showAlphaModeonGui();        break; //
-    case FLAG_HPRP:
+
+    case FLAG_HPRP:      //this list is for flags that have HP42 compatible menu set buttons operating the underlying flags
     case FLAG_HPBASE:
     case FLAG_2TO10:
     case FLAG_PROPFR:
