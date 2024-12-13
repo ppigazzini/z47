@@ -1788,7 +1788,7 @@ if(getSystemFlag(FLAG_HPCONV)) {
   w2 = showStringEnhanced(STD_LEFT_ARROW,  &standardFont, 0, y1+YY, videoMode, false, false, DO_compress, NO_raise, NO_Show, NO_LF);
   w3 = showStringEnhanced(STD_RIGHT_ARROW, &standardFont, 0, y1+YY, videoMode, false, false, DO_compress, NO_raise, NO_Show, NO_LF);
   w4 = showStringEnhanced(label0,          &standardFont, 0, y1+YY, videoMode, false, false, DO_compress, NO_raise, NO_Show, NO_LF);
-  arrowSpace = 1;
+  arrowSpace = 2;
 }
 else {
   w1 = showStringEnhanced(label0,          &standardFont, 0, y1+YY, videoMode, false, false, DO_compress, NO_raise, NO_Show, NO_LF);
