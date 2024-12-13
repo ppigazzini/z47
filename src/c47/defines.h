@@ -8,7 +8,7 @@
 // JM VARIOUS OPTIONS
 //*********************************
 
-#define VERSION1 "0.109.02.07b1"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
+#define VERSION1 "0.109.02.07b3"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
 
 
 #if !defined(CALCMODEL)
