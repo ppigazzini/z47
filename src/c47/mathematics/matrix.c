@@ -31,7 +31,8 @@
 #endif // !TESTSUITE_BUILD
 
 static bool_t getDimensionArg(uint32_t *rows, uint32_t *cols) {
-  longInteger_t tmp_lgInt;
+  longInteger_t tmp_lgInt1;
+  longInteger_t tmp_lgInt2;
 
   //Get Size from REGISTER_X and REGISTER_Y
   if(   ((getRegisterDataType(REGISTER_X) != dtLongInteger) && (getRegisterDataType(REGISTER_X) != dtReal34))
@@ -43,53 +44,59 @@ static bool_t getDimensionArg(uint32_t *rows, uint32_t *cols) {
           moreInfoOnError("In function getDimensionArg:", errorMessage, NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       #endif // !TESTSUITE_BUILD
-      return false;
+    goto returnDone;
   }
 
   if(getRegisterDataType(REGISTER_X) == dtLongInteger) {
-    convertLongIntegerRegisterToLongInteger(REGISTER_X, tmp_lgInt);
+    convertLongIntegerRegisterToLongInteger(REGISTER_X, tmp_lgInt1);
   }
   else { // dtReal34
-    convertReal34ToLongInteger(REGISTER_REAL34_DATA(REGISTER_X), tmp_lgInt, DEC_ROUND_DOWN);
+    convertReal34ToLongInteger(REGISTER_REAL34_DATA(REGISTER_X), tmp_lgInt1, DEC_ROUND_DOWN);
   }
 
-  if(longIntegerIsNegativeOrZero(tmp_lgInt)) {
+  if(longIntegerIsNegativeOrZero(tmp_lgInt1)) {
     #if !defined(TESTSUITE_BUILD)
       displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         char strbuf[32];
-        longIntegerToAllocatedString(tmp_lgInt, strbuf, 32);
+        longIntegerToAllocatedString(tmp_lgInt1, strbuf, 32);
         sprintf(errorMessage, "invalid number of columns");
         moreInfoOnError("In function getDimensionArg:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     #endif // !TESTSUITE_BUILD
-    return false;
+    goto returnDone;
   }
-  longIntegerToUInt32(tmp_lgInt, *cols);
+  longIntegerToUInt32(tmp_lgInt1, *cols);
 
   if(getRegisterDataType(REGISTER_Y) == dtLongInteger) {
-    convertLongIntegerRegisterToLongInteger(REGISTER_Y, tmp_lgInt);
+    convertLongIntegerRegisterToLongInteger(REGISTER_Y, tmp_lgInt2);
   }
   else { // dtReal34
-    convertReal34ToLongInteger(REGISTER_REAL34_DATA(REGISTER_Y), tmp_lgInt, DEC_ROUND_DOWN);
+    convertReal34ToLongInteger(REGISTER_REAL34_DATA(REGISTER_Y), tmp_lgInt2, DEC_ROUND_DOWN);
   }
 
-  if(longIntegerIsNegativeOrZero(tmp_lgInt)) {
+  if(longIntegerIsNegativeOrZero(tmp_lgInt2)) {
     #if !defined(TESTSUITE_BUILD)
       displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         char strbuf[32];
-        longIntegerToAllocatedString(tmp_lgInt, strbuf, 32);
+        longIntegerToAllocatedString(tmp_lgInt2, strbuf, 32);
         sprintf(errorMessage, "invalid number of rows");
         moreInfoOnError("In function getDimensionArg:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     #endif // !TESTSUITE_BUILD
-    return false;
+    goto returnDone;
   }
-  longIntegerToUInt32(tmp_lgInt, *rows);
+  longIntegerToUInt32(tmp_lgInt2, *rows);
 
-  longIntegerFree(tmp_lgInt);
+  longIntegerFree(tmp_lgInt1);
+  longIntegerFree(tmp_lgInt2);
   return true;
+
+returnDone:
+  longIntegerFree(tmp_lgInt1);
+  longIntegerFree(tmp_lgInt2);
+  return false;
 }
 
 
