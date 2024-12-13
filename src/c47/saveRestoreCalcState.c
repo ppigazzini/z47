@@ -1344,13 +1344,13 @@ char aimBuffer1[400];             //The concurrent use of the global aimBuffer
       }
 
       case dtReal34Matrix: {
-        sprintf(tmpRegisterString, "%" PRIu16 " %" PRIu16, REGISTER_REAL34_MATRIX_DBLOCK(regist)->matrixRows, REGISTER_REAL34_MATRIX_DBLOCK(regist)->matrixColumns);
+        sprintf(tmpRegisterString, "%" PRIu16 " %" PRIu16, REGISTER_MATRIX_HEADER(regist)->matrixRows, REGISTER_MATRIX_HEADER(regist)->matrixColumns);
         strcpy(aimBuffer1, "Rema");
         break;
       }
 
       case dtComplex34Matrix: {
-        sprintf(tmpRegisterString, "%" PRIu16 " %" PRIu16, REGISTER_COMPLEX34_MATRIX_DBLOCK(regist)->matrixRows, REGISTER_COMPLEX34_MATRIX_DBLOCK(regist)->matrixColumns);
+        sprintf(tmpRegisterString, "%" PRIu16 " %" PRIu16, REGISTER_MATRIX_HEADER(regist)->matrixRows, REGISTER_MATRIX_HEADER(regist)->matrixColumns);
         strcpy(aimBuffer1, "Cxma");
         break;
       }
@@ -1373,17 +1373,17 @@ char aimBuffer1[400];             //The concurrent use of the global aimBuffer
 
   static void saveMatrixElements(calcRegister_t regist) {
     if(getRegisterDataType(regist) == dtReal34Matrix) {
-      for(uint32_t element = 0; element < REGISTER_REAL34_MATRIX_DBLOCK(regist)->matrixRows * REGISTER_REAL34_MATRIX_DBLOCK(regist)->matrixColumns; ++element) {
-        real34ToString(REGISTER_REAL34_MATRIX_M_ELEMENTS(regist) + element, tmpString);
+      for(uint32_t element = 0; element < REGISTER_MATRIX_HEADER(regist)->matrixRows * REGISTER_MATRIX_HEADER(regist)->matrixColumns; ++element) {
+        real34ToString(REGISTER_REAL34_MATRIX_ELEMENTS(regist) + element, tmpString);
         strcat(tmpString, "\n");
         save(tmpString, strlen(tmpString));
       }
     }
     else if(getRegisterDataType(regist) == dtComplex34Matrix) {
-      for(uint32_t element = 0; element < REGISTER_COMPLEX34_MATRIX_DBLOCK(regist)->matrixRows * REGISTER_COMPLEX34_MATRIX_DBLOCK(regist)->matrixColumns; ++element) {
-        real34ToString(VARIABLE_REAL34_DATA(REGISTER_COMPLEX34_MATRIX_M_ELEMENTS(regist) + element), tmpString);
+      for(uint32_t element = 0; element < REGISTER_MATRIX_HEADER(regist)->matrixRows * REGISTER_MATRIX_HEADER(regist)->matrixColumns; ++element) {
+        real34ToString(VARIABLE_REAL34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(regist) + element), tmpString);
         strcat(tmpString, " ");
-        real34ToString(VARIABLE_IMAG34_DATA(REGISTER_COMPLEX34_MATRIX_M_ELEMENTS(regist) + element), tmpString + strlen(tmpString));
+        real34ToString(VARIABLE_IMAG34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(regist) + element), tmpString + strlen(tmpString));
         strcat(tmpString, "\n");
         save(tmpString, strlen(tmpString));
       }
@@ -1501,7 +1501,7 @@ void doSave(uint16_t saveType) {
 
   // Local flags
   if(currentLocalRegisters) {
-    sprintf(tmpString, "LOCAL_FLAGS\n%" PRIu32 "\n", currentLocalFlags->localFlags);
+    sprintf(tmpString, "LOCAL_FLAGS\n%" PRIu32 "\n", *currentLocalFlags);
     save(tmpString, strlen(tmpString));
   }
 
@@ -1520,7 +1520,7 @@ void doSave(uint16_t saveType) {
   sprintf(tmpString, "STATISTICAL_SUMS\n%" PRIu16 "\n", (uint16_t)(statisticalSumsPointer ? NUMBER_OF_STATISTICAL_SUMS : 0));
   save(tmpString, strlen(tmpString));
   for(i=0; i<(statisticalSumsPointer ? NUMBER_OF_STATISTICAL_SUMS : 0); i++) {
-    realToString(statisticalSumsPointer + REAL_SIZE_IN_BLOCKS * i , tmpRegisterString);
+    realToString(statisticalSumsPointer + i , tmpRegisterString);
     sprintf(tmpString, "%s\n", tmpRegisterString);
     save(tmpString, strlen(tmpString));
   }
@@ -1981,8 +1981,8 @@ double stringToDouble(const char *str) {
       rows = stringToUint16(value);
       cols = stringToUint16(numOfCols);
       reallocateRegister(regist, dtReal34Matrix, REAL34_SIZE_IN_BLOCKS * rows * cols, amNone);
-      REGISTER_REAL34_MATRIX_DBLOCK(regist)->matrixRows = rows;
-      REGISTER_REAL34_MATRIX_DBLOCK(regist)->matrixColumns = cols;
+      REGISTER_MATRIX_HEADER(regist)->matrixRows = rows;
+      REGISTER_MATRIX_HEADER(regist)->matrixColumns = cols;
     }
 
     else if(strcmp(type, "Cxma") == 0) {
@@ -1997,8 +1997,8 @@ double stringToDouble(const char *str) {
       rows = stringToUint16(value);
       cols = stringToUint16(numOfCols);
       reallocateRegister(regist, dtComplex34Matrix, COMPLEX34_SIZE_IN_BLOCKS * rows * cols, amNone);
-      REGISTER_COMPLEX34_MATRIX_DBLOCK(regist)->matrixRows = rows;
-      REGISTER_COMPLEX34_MATRIX_DBLOCK(regist)->matrixColumns = cols;
+      REGISTER_MATRIX_HEADER(regist)->matrixRows = rows;
+      REGISTER_MATRIX_HEADER(regist)->matrixColumns = cols;
     }
   #endif // TESTSUITE_BUILD
 
@@ -2034,18 +2034,18 @@ double stringToDouble(const char *str) {
     uint32_t i;
 
     if(getRegisterDataType(regist) == dtReal34Matrix) {
-      rows = REGISTER_REAL34_MATRIX_DBLOCK(regist)->matrixRows;
-      cols = REGISTER_REAL34_MATRIX_DBLOCK(regist)->matrixColumns;
+      rows = REGISTER_MATRIX_HEADER(regist)->matrixRows;
+      cols = REGISTER_MATRIX_HEADER(regist)->matrixColumns;
 
       for(i = 0; i < rows * cols; ++i) {
         readLine(tmpString);
-        stringToReal34(tmpString, REGISTER_REAL34_MATRIX_M_ELEMENTS(regist) + i);
+        stringToReal34(tmpString, REGISTER_REAL34_MATRIX_ELEMENTS(regist) + i);
       }
     }
 
     if(getRegisterDataType(regist) == dtComplex34Matrix) {
-      rows = REGISTER_COMPLEX34_MATRIX_DBLOCK(regist)->matrixRows;
-      cols = REGISTER_COMPLEX34_MATRIX_DBLOCK(regist)->matrixColumns;
+      rows = REGISTER_MATRIX_HEADER(regist)->matrixRows;
+      cols = REGISTER_MATRIX_HEADER(regist)->matrixColumns;
 
       for(i = 0; i < rows * cols; ++i) {
         char *imaginaryPart;
@@ -2056,8 +2056,8 @@ double stringToDouble(const char *str) {
             imaginaryPart++;
           }
         *(imaginaryPart++) = 0;
-        stringToReal34(tmpString,     VARIABLE_REAL34_DATA(REGISTER_COMPLEX34_MATRIX_M_ELEMENTS(regist) + i));
-        stringToReal34(imaginaryPart, VARIABLE_IMAG34_DATA(REGISTER_COMPLEX34_MATRIX_M_ELEMENTS(regist) + i));
+        stringToReal34(tmpString,     VARIABLE_REAL34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(regist) + i));
+        stringToReal34(imaginaryPart, VARIABLE_IMAG34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(regist) + i));
       }
     }
     #endif // !TESTSUITE_BUILD
@@ -2276,7 +2276,7 @@ double stringToDouble(const char *str) {
           sprintf(line,", loadMode:%d, %s\n",loadMode,tmpString);
           debugPrintf(4, "B", tmpString);
         #endif //LOADDEBUG
-        currentLocalFlags->localFlags = stringToUint32(tmpString);
+        *currentLocalFlags = stringToUint32(tmpString);
       }
     }
 
@@ -2334,7 +2334,7 @@ double stringToDouble(const char *str) {
                 sprintf(line,", loadMode:%d, %s\n",loadMode,tmpString);
                 debugPrintf(6, "B", tmpString);
               #endif //LOADDEBUG
-              stringToReal(tmpString, (real_t *)(statisticalSumsPointer + REAL_SIZE_IN_BLOCKS * i), &ctxtReal75);
+              stringToReal(tmpString, statisticalSumsPointer + i, &ctxtReal75);
             }
           }
         }

@@ -928,25 +928,25 @@ void fnGetHide(uint16_t unusedButMandatoryParameter) {
 
 
 void initSimEqMatABX(void) {
-  void *memPtr;
+  matrixHeader_t *matrixHeader;
 
   allocateNamedVariable("Mat_A", dtReal34Matrix, REAL34_SIZE_IN_BLOCKS + 1);
-  memPtr = getRegisterDataPointer(FIRST_NAMED_VARIABLE);
-  ((dataBlock_t *)memPtr)->matrixRows = 1;
-  ((dataBlock_t *)memPtr)->matrixColumns = 1;
-  real34Zero(memPtr + 4);
+  matrixHeader = getRegisterDataPointer(FIRST_NAMED_VARIABLE);
+  matrixHeader->matrixRows = 1;
+  matrixHeader->matrixColumns = 1;
+  real34Zero(REAL34_MATRIX_ELEMENTS_AFTER_MATRIX_HEADER(matrixHeader));
 
   allocateNamedVariable("Mat_B", dtReal34Matrix, REAL34_SIZE_IN_BLOCKS + 1);
-  memPtr = getRegisterDataPointer(FIRST_NAMED_VARIABLE + 1);
-  ((dataBlock_t *)memPtr)->matrixRows = 1;
-  ((dataBlock_t *)memPtr)->matrixColumns = 1;
-  real34Zero(memPtr + 4);
+  matrixHeader = getRegisterDataPointer(FIRST_NAMED_VARIABLE + 1);
+  matrixHeader->matrixRows = 1;
+  matrixHeader->matrixColumns = 1;
+  real34Zero(REAL34_MATRIX_ELEMENTS_AFTER_MATRIX_HEADER(matrixHeader));
 
   allocateNamedVariable("Mat_X", dtReal34Matrix, REAL34_SIZE_IN_BLOCKS + 1);
-  memPtr = getRegisterDataPointer(FIRST_NAMED_VARIABLE + 2);
-  ((dataBlock_t *)memPtr)->matrixRows = 1;
-  ((dataBlock_t *)memPtr)->matrixColumns = 1;
-  real34Zero(memPtr + 4);
+  matrixHeader = getRegisterDataPointer(FIRST_NAMED_VARIABLE + 2);
+  matrixHeader->matrixRows = 1;
+  matrixHeader->matrixColumns = 1;
+  real34Zero(REAL34_MATRIX_ELEMENTS_AFTER_MATRIX_HEADER(matrixHeader));
 }
 
 
@@ -1283,7 +1283,7 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     void *memPtr;
 
     if(ram == NULL) {
-      ram = (dataBlock_t *)malloc(TO_BYTES(RAM_SIZE_IN_BLOCKS));
+      ram = (uint32_t *)malloc(TO_BYTES(RAM_SIZE_IN_BLOCKS));
     }
     memset(ram, 0, TO_BYTES(RAM_SIZE_IN_BLOCKS));
 
@@ -1351,18 +1351,20 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     xcopy(kbd_usr, kbd_std, sizeof(kbd_std));
 
     // initialize 9 real34 reserved variables: ACC, ↑Lim, ↓Lim, FV, i%/a, NPPER, PPER/a, PMT, and PV
-    for(int i=0; i<9; i++) {
-      real34Zero(allocC47Blocks(REAL34_SIZE_IN_BLOCKS));
+    for(int i=VAR_NO_ACC; i<=VAR_NO_CPERONA; i++) {
+      real34Zero((real34_t *)TO_PCMEMPTR(allReservedVariables[i].header.pointerToRegisterData));
     }
 
     // initialize 1 long integer reserved variables: GRAMOD
+    strLgIntHeader_t *ptr = TO_PCMEMPTR(allReservedVariables[VAR_NO_GRAMOD].header.pointerToRegisterData);
     #if defined(OS64BIT)
-      memPtr = allocC47Blocks(3);
-      ((dataBlock_t *)memPtr)->dataMaxLengthInBlocks = 2;
+      (ptr++)->dataMaxLengthInBlocks = TO_BLOCKS(8);
+      *(int64_t *)ptr = 0;
     #else // !OS64BIT
-      memPtr = allocC47Blocks(2);
-      ((dataBlock_t *)memPtr)->dataMaxLengthInBlocks = 1;
+      (ptr++)->dataMaxLengthInBlocks = TO_BLOCKS(4);
+      *(int32_t *)ptr = 0;
     #endif // OS64BIT
+
 
     // initialize the global registers
     #if defined(DMCP_BUILD) && defined(OLD_HW)
@@ -1381,7 +1383,7 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     // allocate space for the local register list
     allSubroutineLevels.numberOfSubroutineLevels = 1;
     currentSubroutineLevelData = allocC47Blocks(3);
-    allSubroutineLevels.ptrToSubroutineLevel0Data = TO_C47MEMPTR(currentSubroutineLevelData);
+    allSubroutineLevels.ptrToSubroutineLevel0Header = TO_C47MEMPTR(currentSubroutineLevelData);
     currentReturnProgramNumber = 0;
     currentReturnLocalStep = 0;
     currentNumberOfLocalRegisters = 0; // No local register
@@ -1663,12 +1665,12 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
                                      printf("Populate test data\n");
                                    #endif
     //JM TEMPORARY TEST DATA IN REGISTERS
-    uint_fast16_t n = nbrOfElements(indexOfStrings);
-    for(uint_fast16_t i=0; i<n; i++) {
-      if( indexOfStrings[i].itemType== 0) {
+    uint16_t n = nbrOfElements(indexOfStrings);
+    for(uint16_t i=0; i<n; i++) {
+      if(indexOfStrings[i].itemType == 0) {
         fnStrtoX(indexOfStrings[i].itemName);
       }
-      else if( indexOfStrings[i].itemType== 1) {
+      else if(indexOfStrings[i].itemType == 1) {
         fnStrInputLongint(indexOfStrings[i].itemName);
       }
       fnStore(indexOfStrings[i].count);

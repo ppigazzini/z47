@@ -292,8 +292,8 @@ void resizeProgramMemory(uint16_t newSizeInBlocks) {
       }
     }
 
-    dataBlock_t *savedCurrerntSubroutineLevelData = currentSubroutineLevelData;
-    currentSubroutineLevelData = TO_PCMEMPTR(allSubroutineLevels.ptrToSubroutineLevel0Data);
+    subroutineLevelHeader_t *savedCurrerntSubroutineLevelData = currentSubroutineLevelData;
+    currentSubroutineLevelData = TO_PCMEMPTR(allSubroutineLevels.ptrToSubroutineLevel0Header);
 
     while(currentSubroutineLevelData) {
       if(TO_C47MEMPTR(currentSubroutineLevelData) == block) {
@@ -485,7 +485,7 @@ void resizeProgramMemory(uint16_t newSizeInBlocks) {
     }
 
     if(savedStatisticalSumsPointer != NULL) {
-      int32_t shift = (savedStatisticalSumsPointer - statisticalSumsPointer);
+      int32_t shift = TO_BLOCKS((savedStatisticalSumsPointer - statisticalSumsPointer) * sizeof(real_t));
       if(TO_C47MEMPTR(SIGMA_N) + shift == block) {
         sprintf(tmpString, "real75 saved for undo n data");
         return;
@@ -660,11 +660,11 @@ void resizeProgramMemory(uint16_t newSizeInBlocks) {
                                                                                                 getRegisterTagName(regist, true));
     }
 
-    printf("\nallSubroutineLevels: numberOfSubroutineLevels=%u  ptrToSubroutineLevel0Data=%u\n", allSubroutineLevels.numberOfSubroutineLevels, allSubroutineLevels.ptrToSubroutineLevel0Data);
+    printf("\nallSubroutineLevels: numberOfSubroutineLevels=%u  ptrToSubroutineLevel0Header=%u\n", allSubroutineLevels.numberOfSubroutineLevels, allSubroutineLevels.ptrToSubroutineLevel0Header);
     printf("  Level rtnPgm rtnStep nbrLocalFlags nbrLocRegs level     next previous\n");
-    currentSubroutineLevelData = TO_PCMEMPTR(allSubroutineLevels.ptrToSubroutineLevel0Data);
-    currentLocalFlags = (currentNumberOfLocalFlags == 0 ? NULL : currentSubroutineLevelData + 3);
-    currentLocalRegisters = (registerHeader_t *)(currentNumberOfLocalRegisters == 0 ? NULL : currentSubroutineLevelData + (currentLocalFlags == NULL ? 3 : 4));
+    currentSubroutineLevelData = TO_PCMEMPTR(allSubroutineLevels.ptrToSubroutineLevel0Header);
+    currentLocalFlags = (currentNumberOfLocalFlags == 0 ? NULL : LOCAL_FLAGS_AFTER_SUBROUTINE_LEVEL_HEADER(currentSubroutineLevelData));
+    currentLocalRegisters = (currentNumberOfLocalRegisters == 0 ? NULL : LOCAL_REGISTER_HEADERS_AFTER_LOCAL_FLAGS(currentLocalFlags));
     for(int level=0; level<allSubroutineLevels.numberOfSubroutineLevels; level++) {
       printf("  %5d %6d %7u %13u %10u %5u %8u %8u\n",
                 level,
@@ -688,8 +688,8 @@ void resizeProgramMemory(uint16_t newSizeInBlocks) {
 
       if(currentPtrToNextLevel != C47_NULL) {
         currentSubroutineLevelData = TO_PCMEMPTR(currentPtrToNextLevel);
-        currentLocalFlags = (currentNumberOfLocalFlags == 0 ? NULL : currentSubroutineLevelData + 3);
-        currentLocalRegisters = (registerHeader_t *)(currentNumberOfLocalRegisters == 0 ? NULL : currentSubroutineLevelData + (currentLocalFlags == NULL ? 3 : 4));
+        currentLocalFlags = (currentNumberOfLocalFlags == 0 ? NULL : LOCAL_FLAGS_AFTER_SUBROUTINE_LEVEL_HEADER(currentSubroutineLevelData));
+        currentLocalRegisters = (currentNumberOfLocalRegisters == 0 ? NULL : LOCAL_REGISTER_HEADERS_AFTER_LOCAL_FLAGS(currentLocalFlags));
       }
     }
 

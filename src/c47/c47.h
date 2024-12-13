@@ -303,12 +303,12 @@
 
   extern dynamicSoftmenu_t      dynamicSoftmenu[NUMBER_OF_DYNAMIC_SOFTMENUS];
 
-  extern dataBlock_t            allSubroutineLevels;
-  extern dataBlock_t           *statisticalSumsPointer;
-  extern dataBlock_t           *savedStatisticalSumsPointer;
-  extern dataBlock_t           *ram;
-  extern dataBlock_t           *currentLocalFlags;
-  extern dataBlock_t           *currentSubroutineLevelData;
+  extern subroutineLevels_t       allSubroutineLevels;
+  extern subroutineLevelHeader_t *currentSubroutineLevelData;
+  extern real_t                  *statisticalSumsPointer;
+  extern real_t                  *savedStatisticalSumsPointer;
+  extern uint32_t                *ram;
+  extern localFlags_t            *currentLocalFlags;
 
   extern namedVariableHeader_t *allNamedVariables;
   extern softmenuStack_t        softmenuStack[SOFTMENU_STACK_SIZE];
