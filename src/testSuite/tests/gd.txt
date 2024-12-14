@@ -63,11 +63,14 @@ In:  AM=DEG FL_ASLIFT=1 FL_CPXRES=1 RX=Cplx:"12.12 i +2.12"
 Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"12.12 i +2.12" RX=Cplx:"-4.7123832910932760648398455880162103272549515895136 i +0.000009296074638373011846298231169602567"
 
 ;=======================================
-; Errors
+; Short Int --> Real
 ;=======================================
 In:  AM=DEG FL_ASLIFT=1 FL_CPXRES=0 RX=ShoI:"5#10"
-Out: EC=24 FL_CPXRES=0 FL_ASLIFT=1 RX=ShoI:"5#10"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ShoI:"5#10" RX=Real:"1.5573206367260510221824217984759955188613216868781"
 
+;=======================================
+; Errors
+;=======================================
 In:  AM=DEG FL_ASLIFT=1 FL_CPXRES=0 RX=Stri:"Hello"
 Out: EC=24 FL_CPXRES=0 FL_ASLIFT=1 RX=Stri:"Hello"
 
