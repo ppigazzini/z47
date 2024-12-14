@@ -70,16 +70,16 @@ Out: EC=24 FL_ASLIFT=0 RX=LonI:"-1234"
 
 
 ;=======================================
-; Long Integer || Short Integer --> Error 24
+; Long Integer || Short Integer
 ;=======================================
 In:  FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=LonI:"123456" RX=ShoI:"45247#8"
-Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RY=LonI:"123456" RX=ShoI:"45247#8"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"16549.1847061381666163979041433150" RL=ShoI:"45247#8"
 
 ;=======================================
-; Short Integer || Long Integer --> Error 24
+; Short Integer || Long Integer
 ;=======================================
 In:  FL_ASLIFT=0 FL_CPXRES=0 IM=2COMPL RY=ShoI:"45247#8" RX=LonI:"123456"
-Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RY=ShoI:"45247#8" RX=LonI:"123456"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"16549.1847061381666163979041433150" RL=LonI:"123456"
 
 
 
