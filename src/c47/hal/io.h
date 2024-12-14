@@ -48,7 +48,6 @@
     ioPathSaveStateFile    = 6,  ///< state file used in SAVEST function
     ioPathLoadStateFile    = 7,  ///< state file used in LOADST function
     ioPathSaveProgram      = 8,  ///< program file used in WRITEP function
-    ioPathExportProgram    = 9,  ///< program file used in EXPORTP function, target TXT
     ioPathExportRTFProgram = 10, ///< program file used in EXPORTP function, target RTF
     ioPathLoadProgram      = 11, ///< program file used in READP function
   } ioFilePath_t;

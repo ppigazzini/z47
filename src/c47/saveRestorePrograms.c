@@ -163,7 +163,7 @@ static int16_t findIndents(bool_t *newLine, int8_t *indent, int8_t *addnextLineI
 #endif //TESTSUITE_BUILD
 
 
-void fnPExport(uint16_t mode) {
+void fnPExport(void) {
 #if !defined(SAVE_SPACE_DM42_10)
   #if !defined(TESTSUITE_BUILD)
     ///////////////////////////////////////////////////////////////////////////////////////
@@ -184,9 +184,7 @@ void fnPExport(uint16_t mode) {
 
     if(firstDisplayedLocalStepNumber == 0) {
       sprintf(tmpString, "0000: { Prgm #%d: %" PRIu32 " bytes / %" PRIu16 " step%s }", currentProgramNumber, _getProgramSize(),                                                                               numberOfSteps, numberOfSteps == 1 ? "" : "s");
-      if(mode == MODE_RTF) {
-        stringAppend(tmpString + stringByteLength(tmpString), " \\par");
-      }
+      stringAppend(tmpString + stringByteLength(tmpString), " \\par");
       stringAppend(tmpString + stringByteLength(tmpString), "\n");
       ioFileWrite(tmpString, strlen(tmpString));
       firstLine = 1;
@@ -207,13 +205,8 @@ void fnPExport(uint16_t mode) {
 
 
       //Decode
-      if(mode == MODE_RTF) {
-        decodeOneStep_XPORT(step);
-        //printf("§§=%s",tmpString);
-      } else {
-        decodeOneStepXEQM_XPORT(step);
-      }
-
+      decodeOneStep_XPORT(step);
+      //printf("§§=%s",tmpString);
 
       indent = 2;
       newLine = false;
@@ -247,11 +240,7 @@ void fnPExport(uint16_t mode) {
 
       //Add extra blank line before LBL
       if(newLine){
-        if(mode == MODE_RTF) {
-          stringAppend(asciiString + stringByteLength(asciiString), "\\par\n");
-        } else {
-          stringAppend(asciiString + stringByteLength(asciiString), "\n");         //add cr+lf
-        }
+        stringAppend(asciiString + stringByteLength(asciiString), "\\par\n");
       }
 
       //Line Number and base indent ==> asciiString
@@ -261,22 +250,11 @@ void fnPExport(uint16_t mode) {
       //Add instruction
       stringAppend(asciiString + stringByteLength(asciiString), tmpString);        //add number + instruction: 0000:  1/X
 
-
       //Add end line
-      if(mode == MODE_RTF) {
-        stringAppend(asciiString + stringByteLength(asciiString), "\\par\n");
-      } else {
-        stringAppend(asciiString + stringByteLength(asciiString), "\n");       //add cr+lf
-      }
-
+      stringAppend(asciiString + stringByteLength(asciiString), "\\par\n");
 
       //Convert unprintable characters
-      if(mode == MODE_RTF) {
-        stringToRTF(asciiString, tmpString);
-      } else {
-        stringToASCII(asciiString, tmpString);
-      }
-
+      stringToRTF(asciiString, tmpString);
 
       ioFileWrite(tmpString, strlen(tmpString));
 
@@ -299,13 +277,13 @@ void fnPExport(uint16_t mode) {
 }
 
 
-void _fnExportProgram(uint16_t mode) {
+void _fnExportProgram(void) {
     uint32_t programVersion = PROGRAM_VERSION;
     uint32_t exportVersion = EXPORT_VERSION;
     int ret;
     ioFilePath_t path;
 
-    path = (mode == MODE_RTF ? ioPathExportRTFProgram : ioPathExportProgram);
+    path = ioPathExportRTFProgram;
     ret = ioFileOpen(path, ioModeWrite);
 
     if(ret != FILE_OK ) {
@@ -322,27 +300,21 @@ void _fnExportProgram(uint16_t mode) {
     }
 
 
-    if(mode == MODE_RTF) {
-      //stringAppend(tmpString, "{\\rtf1\\ansi\\ansicpg1252\\deff0\\nouicompat{\\fonttbl{\\f0\\fnil\\fcharset0 C47__StandardFont;}}{\\pard\\sl240\\sa0\\sa200\\slmult1\\f0\\fs24\\lang9\\f0\\loch\n");
-      stringAppend(tmpString, "{\\rtf1\\ansi\\ansicpg1252\\deff0\\nouicompat{\\fonttbl{\\f0\\fnil\\fcharset0 C47__StandardFont;}}{\\pard\\sl240\\slmult1\\f0\\fs24\\lang9\\f0\\loch\n");
-      ioFileWrite(tmpString, strlen(tmpString));
-    }
+    //stringAppend(tmpString, "{\\rtf1\\ansi\\ansicpg1252\\deff0\\nouicompat{\\fonttbl{\\f0\\fnil\\fcharset0 C47__StandardFont;}}{\\pard\\sl240\\sa0\\sa200\\slmult1\\f0\\fs24\\lang9\\f0\\loch\n");
+    stringAppend(tmpString, "{\\rtf1\\ansi\\ansicpg1252\\deff0\\nouicompat{\\fonttbl{\\f0\\fnil\\fcharset0 C47__StandardFont;}}{\\pard\\sl240\\slmult1\\f0\\fs24\\lang9\\f0\\loch\n");
+    ioFileWrite(tmpString, strlen(tmpString));
 
     // PROGRAM file version
     sprintf(tmpString, "C47 Program file export: Export format version %" PRIu32 ", C47 program version %" PRIu32 ".\n", (uint32_t)exportVersion, (uint32_t)programVersion);
     ioFileWrite(tmpString, strlen(tmpString));
 
-    if(mode == MODE_RTF) {
-      stringAppend(tmpString, " \\par\n");
-      ioFileWrite(tmpString, strlen(tmpString));
-    }
+    stringAppend(tmpString, " \\par\n");
+    ioFileWrite(tmpString, strlen(tmpString));
 
-    fnPExport(mode);
+    fnPExport();
 
-    if(mode == MODE_RTF) {
-      stringAppend(tmpString, "}}\n");
-      ioFileWrite(tmpString, strlen(tmpString));
-    }
+    stringAppend(tmpString, "}}\n");
+    ioFileWrite(tmpString, strlen(tmpString));
 
     ioFileClose();
 
@@ -405,11 +377,8 @@ void fnExportProgram(uint16_t label) {
       }
     #endif // DMCP_BUILD
 
-//    _selectProgram(label);
-//    _fnExportProgram(MODE_TXT);
-
     _selectProgram(label);
-    _fnExportProgram(MODE_RTF);
+    _fnExportProgram();
 
     currentLocalStepNumber = savedCurrentLocalStepNumber;
     currentProgramNumber = savedCurrentProgramNumber;
