@@ -597,16 +597,31 @@ typedef struct {
           case CST_82 :
           case CST_83 :
           case CST_84 :
+
+
+//All conversions 2024/12/14
           case ITM_CtoF :
           case ITM_FtoC :
           case ITM_DBtoPR :
+          case ITM_FT2toHA :
+          case ITM_HAtoFT2 :
           case ITM_DBtoFR :
+          case ITM_FT2toM2 :
+          case ITM_M2toFT2 :
           case ITM_PRtoDB :
+          case ITM_HAtoKM2 :
+          case ITM_KM2toHA :
           case ITM_FRtoDB :
+          case ITM_GLUKtoFZUK :
+          case ITM_FZUKtoGLUK :
           case ITM_ACtoHA :
+          case ITM_MLtoIN3 :
           case ITM_HAtoAC :
+          case ITM_IN3toML :
           case ITM_ACUStoHA :
+          case ITM_FT3toGLUK :
           case ITM_HAtoACUS :
+          case ITM_GLUKtoFT3 :
           case ITM_PAtoATM :
           case ITM_ATMtoPA :
           case ITM_AUtoM :
@@ -618,17 +633,27 @@ typedef struct {
           case ITM_CALtoJ :
           case ITM_JtoCAL :
           case ITM_LBFFTtoNM :
+          case ITM_LtoFT3 :
           case ITM_NMtoLBFFT :
+          case ITM_FT3toL :
           case ITM_CWTtoKG :
           case ITM_KGtoCWT :
           case ITM_FTtoM :
           case ITM_MtoFT :
           case ITM_FTUStoM :
+          case ITM_LtoQTUS :
+          case ITM_QTUStoL :
           case ITM_MtoFTUS :
+          case ITM_IN3toFZUK :
+          case ITM_FZUKtoIN3 :
           case ITM_FZUKtoML :
+          case ITM_IN3toFZUS :
           case ITM_MLtoFZUK :
+          case ITM_FZUStoIN3 :
           case ITM_FZUStoML :
+          case ITM_FT3toGalUS :
           case ITM_MLtoFZUS :
+          case ITM_GalUStoFT3 :
           case ITM_GLUKtoL :
           case ITM_LtoGLUK :
           case ITM_GLUStoL :
@@ -640,7 +665,9 @@ typedef struct {
           case ITM_HPUKtoW :
           case ITM_WtoHPUK :
           case ITM_INCHHGtoPA :
+          case ITM_CUPCtoFZUS :
           case ITM_PAtoINCHHG :
+          case ITM_CUPCtoML :
           case ITM_INCHtoMM :
           case ITM_MMtoINCH :
           case ITM_WHtoJ :
@@ -650,23 +677,37 @@ typedef struct {
           case ITM_GtoOZ :
           case ITM_OZtoG :
           case ITM_KGtoSCW :
+          case ITM_CUPUKtoFZUK :
           case ITM_SCWtoKG :
+          case ITM_CUPUKtoML :
           case ITM_KGtoSTO :
+          case ITM_FZUKtoCUPUK :
           case ITM_STOtoKG :
+          case ITM_FZUKtoTBSPUK :
           case ITM_KGtoST :
+          case ITM_FZUKtoTSPUK :
+          case ITM_FZUStoCUPC :
           case ITM_STtoKG :
+          case ITM_FZUStoTBSPC :
+          case ITM_FZUStoTSPC :
           case ITM_KGtoTON :
           case ITM_KGtoLIANG :
+          case ITM_MLtoCUPC :
           case ITM_TONtoKG :
           case ITM_LIANGtoKG :
+          case ITM_MLtoCUPUK :
           case ITM_GtoTRZ :
+          case ITM_MLtoPINTLQ :
           case ITM_TRZtoG :
+          case ITM_MLtoPINTUK :
           case ITM_LBFtoN :
           case ITM_NtoLBF :
           case ITM_LYtoM :
           case ITM_MtoLY :
           case ITM_MMHGtoPA :
+          case ITM_MLtoQT :
           case ITM_PAtoMMHG :
+          case ITM_MLtoQTUS :
           case ITM_MItoKM :
           case ITM_KMtoMI :
           case ITM_KMtoNMI :
@@ -674,25 +715,41 @@ typedef struct {
           case ITM_MtoPC :
           case ITM_PCtoM :
           case ITM_MMtoPOINT :
+          case ITM_MLtoTBSPC :
+          case ITM_MILEtoM :
           case ITM_POINTtoMM :
+          case ITM_MLtoTBSPUK :
+          case ITM_MtoMILE :
           case ITM_MtoYD :
           case ITM_YDtoM :
           case ITM_PSItoPA :
           case ITM_PAtoPSI :
           case ITM_PAtoTOR :
+          case ITM_MLtoTSPC :
           case ITM_TORtoPA :
+          case ITM_MLtoTSPUK :
           case ITM_StoYEAR :
           case ITM_YEARtoS :
           case ITM_CARATtoG :
+          case ITM_PINTLQtoML :
           case ITM_JINtoKG :
           case ITM_GtoCARAT :
+          case ITM_PINTUKtoML :
           case ITM_KGtoJIN :
           case ITM_QTtoL :
           case ITM_LtoQT :
           case ITM_FATHOMtoM :
+          case ITM_QTtoML :
+          case ITM_NMItoM :
           case ITM_MtoFATHOM :
+          case ITM_QTUStoML :
+          case ITM_MtoNMI :
           case ITM_BARRELtoM3 :
+          case ITM_TBSPCtoFZUS :
           case ITM_M3toBARREL :
+          case ITM_HMStoHR :
+          case ITM_HRtoHMS :
+          case ITM_TBSPCtoML :
           case ITM_HECTAREtoM2 :
           case ITM_M2toHECTARE :
           case ITM_MUtoM2 :
@@ -706,13 +763,82 @@ typedef struct {
           case ITM_CUNtoM :
           case ITM_MtoCUN :
           case ITM_ZHANGtoM :
+          case ITM_TBSPUKtoFZUK :
           case ITM_MtoZHANG :
+          case ITM_TBSPUKtoML :
           case ITM_FENtoM :
           case ITM_MtoFEN :
-          case ITM_MILEtoM :
-          case ITM_MtoMILE :
-          case ITM_NMItoM :
-          case ITM_MtoNMI :
+          case ITM_MI2toKM2 :
+          case ITM_KM2toMI2 :
+          case ITM_NMI2toKM2 :
+          case ITM_KM2toNMI2 :
+          case ITM_TSPCtoFZUS :
+          case ITM_TSPCtoML :
+          case ITM_TSPUKtoFZUK :
+          case ITM_TSPUKtoML :
+          case ITM_GLUStoFZUS :
+          case ITM_FZUStoGLUS :
+          case ITM_KNOTtoKMH :
+          case ITM_KMHtoKNOT :
+          case ITM_KMHtoMPS :
+          case ITM_MPStoKMH :
+          case ITM_RPMtoDEGPS :
+          case ITM_DEGPStoRPM :
+          case ITM_MPHtoKMH :
+          case ITM_KMHtoMPH :
+          case ITM_MPHtoMPS :
+          case ITM_MPStoMPH :
+          case ITM_RPMtoRADPS :
+          case ITM_RADPStoRPM :
+          case ITM_DEGtoRAD :
+          case ITM_RADtoDEG :
+          case ITM_DEGtoGRAD :
+          case ITM_GRADtoDEG :
+          case ITM_GRADtoRAD :
+          case ITM_RADtoGRAD :
+          case ITM_NMItoMI :
+          case ITM_MItoNMI :
+          case ITM_FURtoM :
+          case ITM_MtoFUR :
+          case ITM_FTNtoS :
+          case ITM_StoFTN :
+          case ITM_FPFtoMPS :
+          case ITM_MPStoFPF :
+          case ITM_BRDStoM :
+          case ITM_MtoBRDS :
+          case ITM_FIRtoKG :
+          case ITM_KGtoFIR :
+          case ITM_FPFtoKPH :
+          case ITM_KPHtoFPF :
+          case ITM_BRDStoIN :
+          case ITM_INtoBRDS :
+          case ITM_FIRtoLB :
+          case ITM_LBtoFIR :
+          case ITM_FPFtoMPH :
+          case ITM_MPHtoFPF :
+          case ITM_FPStoKMH :
+          case ITM_KMHtoFPS :
+          case ITM_FPStoMPS :
+          case ITM_MPStoFPS :
+          case ITM_L100toKML :
+          case ITM_KMLtoL100 :
+          case ITM_KMLEtoK100K :
+          case ITM_K100KtoKMLE :
+          case ITM_K100KtoKMK :
+          case ITM_KMKtoK100K :
+          case ITM_L100toMGUS :
+          case ITM_MGUStoL100 :
+          case ITM_MGEUStoK100M :
+          case ITM_K100MtoMGEUS :
+          case ITM_K100KtoK100M :
+          case ITM_K100MtoK100K :
+          case ITM_L100toMGUK :
+          case ITM_MGUKtoL100 :
+          case ITM_MGEUKtoK100M :
+          case ITM_K100MtoMGEUK :
+          case ITM_K100MtoMIK :
+          case ITM_MIKtoK100M :
+
           case ITM_NSIGMA :
           case ITM_SIGMAx :
           case ITM_SIGMAy :
