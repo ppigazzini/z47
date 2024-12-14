@@ -768,7 +768,6 @@ typedef enum {
 //Export type
 #define MODE_NRM 2
 #define MODE_RTF 1
-#define MODE_TXT 0
 
 
 // List of constants

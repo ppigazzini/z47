@@ -13,7 +13,6 @@
 #define XSWAP 0
 
 bool_t strcompare            (const char *in1, const char *in2);
-bool_t getXeqmText           (int16_t com, char *str);
 void fnXSWAP                 (uint16_t unusedButMandatoryParameter);
 
 #endif // !XEQM_H
