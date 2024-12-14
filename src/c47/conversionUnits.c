@@ -175,6 +175,12 @@ TO_QSPI static const real_t *const *conversionFactors[constFactorEND] = {
     [constFactorFt3L] = &const_Ft3L,
     [constFactorLQtus] = &const_LQtus,
     [constFactorQtusL] = &const_LQtus,
+
+    [constFactorGlukFzuk] = &const_GlukFzuk,
+    [constFactorFzukGluk] = &const_GlukFzuk,
+    [constFactorGlusFzus] = &const_GlusFzus,
+    [constFactorFzusGlus] = &const_GlusFzus,
+
   };
 
 void fnUnitConvert(uint16_t arg) {

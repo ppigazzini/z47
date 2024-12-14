@@ -139,6 +139,11 @@
     constFactorLQtus,
     constFactorQtusL,
 
+    constFactorGlukFzuk,
+    constFactorFzukGluk,
+    constFactorGlusFzus,
+    constFactorFzusGlus,
+
     constFactorEND              /* MUST be last */
   };
 

@@ -455,6 +455,8 @@ void generateAllConstants(void) {
   generateConstantArray("Ft3Gluk",       "+6.228835459042825812951349401353691000000000000000000000e+00"); // defined uk       : ((ft × 12 × 2.54)^3 / 1000) / (4.54609e-3 × 1000, definition UK) x
   generateConstantArray("Ft3L",          "+2.831684659200000000000000000000000000000000000000000000e+01"); // defined          :  (ft × 12 × 2.54)^3 / 1000
   generateConstantArray("LQtus",         "+1.056688209432590000000000000000000000000000000000000000e+00"); // defined us       : 1000 / (GallonUK / 768 x 192) x
+  generateConstantArray("GlukFzuk",      "+1.600000000000000000000000000000000000000000000000000000e+02"); // defined uk       : 1600 x
+  generateConstantArray("GlusFzus",      "+1.280000000000000000000000000000000000000000000000000000e+02"); // defined uz       : 1200 x
 ////
 
 
