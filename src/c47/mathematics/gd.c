@@ -7,36 +7,10 @@
 
 #include "c47.h"
 
-TO_QSPI void (* const gd[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])(uint16_t) = {
-// regX ==> 1            2       3         4            5            6            7            8            9             10
-//          Long integer Real34  Complex34 Time         Date         String       Real34 mat   Complex34 m  Short integer Config data
-            gdLonI,      gdReal, gdCplx,   gdTypeError, gdTypeError, gdTypeError, gdTypeError, gdTypeError, gdTypeError,  gdTypeError
-};
-
-/********************************************//**
- * \brief Data type error in gd
- *
- * \param void
- * \return void
- ***********************************************/
-void gdTypeError(uint16_t gdOrInvGd) {
-  displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-  #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-    if(gdOrInvGd==GD_DIRECT_FUNCTION) {
-      sprintf(errorMessage, "cannot calculate gd(%s)", getRegisterDataTypeName(REGISTER_X, false, false));
-      moreInfoOnError("In function fnGd:", errorMessage, NULL, NULL);
-    }
-    else {
-      sprintf(errorMessage, "cannot calculate invGd(%s)", getRegisterDataTypeName(REGISTER_X, false, false));
-      moreInfoOnError("In function fnInvGd:", errorMessage, NULL, NULL);
-    }
-  #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-}
-
-static void gdError(uint16_t gdOrInvGd, uint8_t errorCode) {
+static void gdError(bool_t gd, uint8_t errorCode) {
   displayCalcErrorMessage(errorCode, ERR_REGISTER_LINE, REGISTER_X);
   #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-    if(gdOrInvGd==GD_DIRECT_FUNCTION) {
+    if(gd) {
       sprintf(errorMessage, "cannot calculate gd(%s)", getRegisterDataTypeName(REGISTER_X, false, false));
       moreInfoOnError("In function fnGd:", errorMessage, NULL, NULL);
     }
@@ -47,89 +21,36 @@ static void gdError(uint16_t gdOrInvGd, uint8_t errorCode) {
   #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
 }
 
-
-/********************************************//**
- * \brief regX ==> regL and gd(regX) ==> regX
- * enables stack lift and refreshes the stack
- *
- * \param[in] unusedButMandatoryParameter uint16_t
- * \return void
- ***********************************************/
-void fnGd(uint16_t unusedButMandatoryParameter) {
-  if(!saveLastX()) {
-    return;
-  }
-  gd[getRegisterDataType(REGISTER_X)](GD_DIRECT_FUNCTION);
-  adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
-}
-
-/********************************************//**
- * \brief regX ==> regL and invGd(regX) ==> regX
- * enables stack lift and refreshes the stack
- *
- * \param[in] unusedButMandatoryParameter uint16_t
- * \return void
- ***********************************************/
-void fnInvGd(uint16_t unusedButMandatoryParameter) {
-  if(!saveLastX()) {
-    return;
-  }
-  gd[getRegisterDataType(REGISTER_X)](GD_INVERSE_FUNCTION);
-  adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
-}
-
-void gdLonI(uint16_t gdOrInvGd) {
+static void gdReal(bool_t gd) {
   real_t x;
-
-  convertLongIntegerRegisterToReal(REGISTER_X, &x, &ctxtReal39);
-
-  uint8_t errorCode = (gdOrInvGd == GD_DIRECT_FUNCTION) ? GudermannianReal(&x, &x, &ctxtReal39)
-                                                        : InverseGudermannianReal(&x, &x, &ctxtReal39);
-
-  if(errorCode != ERROR_NONE) {
-    gdError(gdOrInvGd, errorCode);
-  }
-  else {
-    reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
-    convertRealToReal34ResultRegister(&x, REGISTER_X);
-  }
-}
-
-void gdReal(uint16_t gdOrInvGd) {
-  real_t x;
-
-  real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &x);
-
-  uint8_t errorCode = (gdOrInvGd == GD_DIRECT_FUNCTION) ? GudermannianReal(&x, &x, &ctxtReal39)
-                                                        : InverseGudermannianReal(&x, &x, &ctxtReal39);
-
-  if(errorCode != ERROR_NONE) {
-    gdError(gdOrInvGd, errorCode);
-  }
-  else {
-    convertRealToReal34ResultRegister(&x, REGISTER_X);
-  }
-}
-
-void gdCplx(uint16_t gdOrInvGd) {
-  real_t xReal, xImag;
-
-  real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &xReal);
-  real34ToReal(REGISTER_IMAG34_DATA(REGISTER_X), &xImag);
-
   uint8_t errorCode;
 
-  if(realIsZero(&xImag)) {
-    errorCode = (gdOrInvGd == GD_DIRECT_FUNCTION) ? GudermannianReal(&xReal, &xReal, &ctxtReal39)
-                                                  : InverseGudermannianReal(&xReal, &xReal, &ctxtReal39);
-  }
-  else {
-    errorCode = (gdOrInvGd == GD_DIRECT_FUNCTION) ? GudermannianComplex(&xReal, &xImag, &xReal, &xImag, &ctxtReal39)
-                                                  : InverseGudermannianComplex(&xReal, &xImag, &xReal, &xImag, &ctxtReal39);
-  }
+  if(!getRegisterAsReal(REGISTER_X, &x))
+    return;
+
+  errorCode = gd ? GudermannianReal(&x, &x, &ctxtReal39)
+                 : InverseGudermannianReal(&x, &x, &ctxtReal39);
 
   if(errorCode != ERROR_NONE) {
-    gdError(gdOrInvGd, errorCode);
+    gdError(gd, errorCode);
+  }
+  else {
+    convertRealToResultRegister(&x, REGISTER_X, amNone);
+  }
+}
+
+static void gdCplx(bool_t gd) {
+  real_t xReal, xImag;
+  uint8_t errorCode;
+
+  if(!getRegisterAsComplex(REGISTER_X, &xReal, &xImag))
+    return;
+
+  errorCode = gd ? GudermannianComplex(&xReal, &xImag, &xReal, &xImag, &ctxtReal39)
+                 : InverseGudermannianComplex(&xReal, &xImag, &xReal, &xImag, &ctxtReal39);
+
+  if(errorCode != ERROR_NONE) {
+    gdError(gd, errorCode);
   }
   else {
     convertComplexToResultRegister(&xReal, &xImag, REGISTER_X);
@@ -245,4 +166,42 @@ uint8_t InverseGudermannianComplex(const real_t *xReal, const real_t *xImag, rea
   //ArcsinhComplex(&tReal, &tImag, resReal, resImag, realContext);
 
   return ERROR_NONE;
+}
+
+static void doGdReal(void) {
+  gdReal(true);
+}
+
+static void doInvGdReal(void) {
+  gdReal(false);
+}
+
+static void doGdCplx(void) {
+  gdCplx(true);
+}
+
+static void doInvGdCplx(void) {
+  gdCplx(false);
+}
+
+/********************************************//**
+ * \brief regX ==> regL and gd(regX) ==> regX
+ * enables stack lift and refreshes the stack
+ *
+ * \param[in] unusedButMandatoryParameter uint16_t
+ * \return void
+ ***********************************************/
+void fnGd(uint16_t unusedButMandatoryParameter) {
+  processRealComplexMonadicFunction(&doGdReal, &doGdCplx);
+}
+
+/********************************************//**
+ * \brief regX ==> regL and invGd(regX) ==> regX
+ * enables stack lift and refreshes the stack
+ *
+ * \param[in] unusedButMandatoryParameter uint16_t
+ * \return void
+ ***********************************************/
+void fnInvGd(uint16_t unusedButMandatoryParameter) {
+  processRealComplexMonadicFunction(&doInvGdReal, &doInvGdCplx);
 }
