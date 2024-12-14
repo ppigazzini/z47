@@ -80,6 +80,7 @@
     #include "hal/audio.h"
     #include "hal/gui.h"
     #include "hal/io.h"
+    #include "hal/lcd.h"
     #include "integers.h"
     #include "items.h"
     #include "keyboard.h"
@@ -286,7 +287,7 @@
   extern bool_t                 programListEnd;
   extern bool_t                 serialIOIconEnabled;
   extern bool_t                 pemCursorIsZerothStep;
-  extern bool_t                 halfSecTick1;
+  extern bool_t                 secTick1;
   extern bool_t                 halfSecTick2;
   extern bool_t                 halfSecTick3;
   extern bool_t                 skippedStackLines;
@@ -300,16 +301,14 @@
   extern realContext_t          ctxtReal1071; // 1071 digits: used in radian angle reduction
   extern realContext_t          ctxtReal2139; // 2139 digits: used for really big modulo
 
-  extern registerHeader_t       globalRegister[NUMBER_OF_GLOBAL_REGISTERS];
-  extern registerHeader_t      *currentLocalRegisters;
   extern dynamicSoftmenu_t      dynamicSoftmenu[NUMBER_OF_DYNAMIC_SOFTMENUS];
 
-  extern dataBlock_t            allSubroutineLevels;
-  extern dataBlock_t           *statisticalSumsPointer;
-  extern dataBlock_t           *savedStatisticalSumsPointer;
-  extern dataBlock_t           *ram;
-  extern dataBlock_t           *currentLocalFlags;
-  extern dataBlock_t           *currentSubroutineLevelData;
+  extern subroutineLevels_t       allSubroutineLevels;
+  extern subroutineLevelHeader_t *currentSubroutineLevelData;
+  extern real_t                  *statisticalSumsPointer;
+  extern real_t                  *savedStatisticalSumsPointer;
+  extern uint32_t                *ram;
+  extern localFlags_t            *currentLocalFlags;
 
   extern namedVariableHeader_t *allNamedVariables;
   extern softmenuStack_t        softmenuStack[SOFTMENU_STACK_SIZE];
@@ -321,7 +320,16 @@
   extern calcKey_t              kbd_usr[37];
   extern calcRegister_t         errorMessageRegisterLine;
   extern glyph_t                glyphNotFound;
-  extern freeMemoryRegion_t     freeMemoryRegions[MAX_FREE_REGIONS];
+
+  extern registerHeader_t      *currentLocalRegisters;
+
+  #if defined(DMCP_BUILD) && defined(OLD_HW) // The old HW has 32Kb for global variables
+    extern registerHeader_t       globalRegister[NUMBER_OF_GLOBAL_REGISTERS];
+    extern freeMemoryRegion_t     freeMemoryRegions[MAX_FREE_REGIONS];
+  #else // The new HW has only 16 KB for global variables, so some of them have to be moved elsewhere.
+    extern registerHeader_t      *globalRegister;
+    extern freeMemoryRegion_t    *freeMemoryRegions;
+  #endif // DMCP_BUILD && OLD_HW
 
   #if !defined(DMCP_BUILD)
     extern freeMemoryRegion_t     allocatedMemoryRegions[MAX_ALLOCATED_REGIONS];

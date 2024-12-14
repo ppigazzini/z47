@@ -80,15 +80,15 @@
   #define COMPLEX34_SIZE_IN_BYTES  TO_BYTES(COMPLEX34_SIZE_IN_BLOCKS)
 
   #define VARIABLE_REAL34_DATA(a)                                ((real34_t    *)(a))
-  #define VARIABLE_IMAG34_DATA(a)                                ((real34_t    *)((dataBlock_t *)(a) + REAL34_SIZE_IN_BLOCKS))
+  #define VARIABLE_IMAG34_DATA(a)                                ((real34_t    *)((void *)(a) + REAL34_SIZE_IN_BYTES))
 
   int32_t  realToInt32C47 (const real_t *r);
   uint32_t realToUint32C47(const real_t *r);
   //int64_t  realToInt64C47 (const real_t *r);
   uint64_t realToUint64C47(const real_t *r);
 
-  #define complex34ChangeSign(operand)                           do {real34ChangeSign((real34_t *)(operand));                                       \
-                                                                  real34ChangeSign((real34_t *)((dataBlock_t *)(operand) + REAL34_SIZE_IN_BLOCKS)); \
+  #define complex34ChangeSign(operand)                           do {real34ChangeSign((real34_t *)(operand));                               \
+                                                                  real34ChangeSign((real34_t *)((void *)(operand) + REAL34_SIZE_IN_BYTES)); \
                                                                  } while(0)
   #define complex34Copy(source, destination)                     do {  *(uint64_t *)(destination)   =   *(uint64_t *)(source);       \
                                                                      *(((uint64_t *)(destination))+1) = *(((uint64_t *)(source))+1); \

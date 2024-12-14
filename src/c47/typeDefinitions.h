@@ -253,54 +253,51 @@ typedef union {
 
 
 /**
- * \union dataBlock_t
- * Header for datatypes: string, long integer, and matrix.
+ * \typedef matrixHeader_t
+ * Header for matrix datatype.
  */
-typedef union {
-  uint32_t data;
-  uint32_t localFlags;
+typedef struct {
+  uint16_t matrixRows;                ///< Number of rows in the matrix
+  uint16_t matrixColumns;             ///< Number of columns in the matrix
+} matrixHeader_t;
 
-  struct {
-    uint16_t dataMaxLengthInBlocks;     ///< String max length (includind terminating \0) in blocks or Long integer max length in blocks
-    uint16_t dummy;                     ///< Dummy
-  };
 
-  struct {
-    uint16_t variableNameLenInBlocks;   ///< Size of the name in blocs: 1 to 4, up to 15 bytes = 7 double byte glyphs + trailing 0
-    uint16_t ptrToVariableName;         ///< Pointer to the name of the variable
-  };
+/**
+ * \struct strLgIntHeader_t
+ * Header for string and long integer data
+ */
+typedef struct {
+  uint16_t dataMaxLengthInBlocks; ///< Max size in blocks of the long integer or the string including trailing 0
+  uint16_t unused;                ///< Unused
+} strLgIntHeader_t;
 
-  struct {
-    uint16_t matrixRows;                ///< Number of rows in the matrix
-    uint16_t matrixColumns;             ///< Number of columns in the matrix
-  };
 
-  struct {
-    uint16_t numberOfSubroutineLevels;  ///< Number of subroutine levels
-    uint16_t ptrToSubroutineLevel0Data; ///< Pointer to subroutine level 0 data
-  };
+typedef uint32_t localFlags_t;
 
-  struct {
-    uint16_t numberOfNamedVariables;    ///< Number of named variables
-    uint16_t ptrToNamedVariablesList;   ///< Pointer to the named variable list
-  };
 
-  struct {
-    int16_t  returnProgramNumber;       ///< return program number >0 if in RAM and <0 if in FLASH
-    uint16_t returnLocalStep;           ///< Return local step number in program number
-  };
+/**
+ * \struct subroutineLevels_t
+ * allSubroutineLevels data structure
+ */
+typedef struct {
+  uint16_t numberOfSubroutineLevels;    ///< Number of subroutine levels
+  uint16_t ptrToSubroutineLevel0Header; ///< Pointer to subroutine level 0 data
+} subroutineLevels_t;
 
-  struct {
-    uint8_t  numberOfLocalFlags;        ///< Number of allocated local flags
-    uint8_t  numberOfLocalRegisters;    ///< Number of allocated local registers
-    uint16_t subroutineLevel;           ///< Subroutine level
-  };
 
-  struct {
-    uint16_t ptrToNextLevel;            ///< Pointer to next level of subroutine data
-    uint16_t ptrToPreviousLevel;        ///< Pointer to previous level of subroutine data
-  };
-} dataBlock_t;
+/**
+ * \union subroutineLevelHeader_t
+ * Header for a subroutine level
+ */
+typedef struct {
+  int16_t  returnProgramNumber;       ///< return program number >0 if in RAM and <0 if in FLASH
+  uint16_t returnLocalStep;           ///< Return local step number in program number
+  uint8_t  numberOfLocalFlags;        ///< Number of allocated local flags
+  uint8_t  numberOfLocalRegisters;    ///< Number of allocated local registers
+  uint16_t subroutineLevel;           ///< Subroutine level
+  uint16_t ptrToNextLevel;            ///< Pointer to next level of subroutine data
+  uint16_t ptrToPreviousLevel;        ///< Pointer to previous level of subroutine data
+} subroutineLevelHeader_t;
 
 
 /**
@@ -393,8 +390,8 @@ typedef int16_t calcRegister_t;
  * A type for real34Matrix.
  */
 typedef struct {
-   dataBlock_t header;
-   real34_t    *matrixElements;
+   matrixHeader_t  header;
+   real34_t       *matrixElements;
 } real34Matrix_t;
 
 /**
@@ -402,8 +399,8 @@ typedef struct {
  * A type for complex34Matrix.
  */
 typedef struct {
-   dataBlock_t header;
-   complex34_t *matrixElements;
+   matrixHeader_t  header;
+   complex34_t    *matrixElements;
 } complex34Matrix_t;
 
 /**
@@ -411,7 +408,7 @@ typedef struct {
  * Stores either real34Matrix_t or complex34Matrix_t.
  */
 typedef union {
-   dataBlock_t       header;
+   matrixHeader_t    header;
    real34Matrix_t    realMatrix;
    complex34Matrix_t complexMatrix;
 } any34Matrix_t;

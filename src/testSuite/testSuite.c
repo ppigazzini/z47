@@ -1167,7 +1167,7 @@ void setParameter(char *p) {
               }
               bool_t lastElement = (r[i] != ',');
               r[i] = 0;
-              stringToReal34(r, REGISTER_REAL34_MATRIX_M_ELEMENTS(regist) + element);
+              stringToReal34(r, REGISTER_REAL34_MATRIX_ELEMENTS(regist) + element);
               if(lastElement) {
                 if(element < (rows * cols - 1)) {
                   printf("\nmissformed register value. Not enough elements\n");
@@ -1253,7 +1253,7 @@ void setParameter(char *p) {
               bool_t imagFollows = (r[i] == 'i');
               lastElement = (r[i] != 'i' && r[i] != ',');
               r[i] = 0;
-              stringToReal34(r, VARIABLE_REAL34_DATA(REGISTER_COMPLEX34_MATRIX_M_ELEMENTS(regist) + element));
+              stringToReal34(r, VARIABLE_REAL34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(regist) + element));
               // imaginary part
               if(imagFollows) {
                 xcopy(r, r + i + 1, strlen(r + i + 1) + 1);
@@ -1266,7 +1266,7 @@ void setParameter(char *p) {
                 }
                 lastElement = (r[i] != ',');
                 r[i] = 0;
-                stringToReal34(r, VARIABLE_IMAG34_DATA(REGISTER_COMPLEX34_MATRIX_M_ELEMENTS(regist) + element));
+                stringToReal34(r, VARIABLE_IMAG34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(regist) + element));
               }
               if(lastElement) {
                 if(element < (rows * cols - 1)) {
@@ -1477,8 +1477,8 @@ void wrongElementValue(calcRegister_t regist, char letter, int row, int col, cha
     case dtReal34Matrix:
       if(row > 0 && col > 0) {
         char str[300];
-        int cols = REGISTER_REAL34_MATRIX_DBLOCK(regist)->matrixColumns;
-        real34ToString(REGISTER_REAL34_MATRIX_M_ELEMENTS(regist) + (row - 1) * cols + (col - 1), str);
+        int cols = REGISTER_MATRIX_HEADER(regist)->matrixColumns;
+        real34ToString(REGISTER_REAL34_MATRIX_ELEMENTS(regist) + (row - 1) * cols + (col - 1), str);
         printf("%s\n", str);
       }
       else {
@@ -1489,10 +1489,10 @@ void wrongElementValue(calcRegister_t regist, char letter, int row, int col, cha
     case dtComplex34Matrix:
       if(row > 0 && col > 0) {
         char str[300];
-        int cols = REGISTER_COMPLEX34_MATRIX_DBLOCK(regist)->matrixColumns;
-        real34ToString(VARIABLE_REAL34_DATA(REGISTER_COMPLEX34_MATRIX_M_ELEMENTS(regist) + (row - 1) * cols + (col - 1)), str);
+        int cols = REGISTER_MATRIX_HEADER(regist)->matrixColumns;
+        real34ToString(VARIABLE_REAL34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(regist) + (row - 1) * cols + (col - 1)), str);
         printf("%s", str);
-        real34ToString(VARIABLE_IMAG34_DATA(REGISTER_COMPLEX34_MATRIX_M_ELEMENTS(regist) + (row - 1) * cols + (col - 1)), str);
+        real34ToString(VARIABLE_IMAG34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(regist) + (row - 1) * cols + (col - 1)), str);
         printf(" %c ix %s\n", str[0] == '-' ? '-' : '+', str + (str[0] == '-' ? 1 : 0));
       }
       else {
@@ -1522,7 +1522,7 @@ void wrongRegisterMatrixSize(calcRegister_t regist, char letter, int expectedRow
     printf("\nRegister %c value should be of ", letter);
   }
   printf("%dx%d size\nbut it is of ", expectedRows, expectedCols);
-  printf("%dx%d", REGISTER_REAL34_MATRIX_DBLOCK(regist)->matrixRows, REGISTER_REAL34_MATRIX_DBLOCK(regist)->matrixColumns);
+  printf("%dx%d", REGISTER_MATRIX_HEADER(regist)->matrixRows, REGISTER_MATRIX_HEADER(regist)->matrixColumns);
   printf("\nwrong size of matrix\n");
   abortTest();
 }
@@ -1546,8 +1546,8 @@ void expectedAndShouldBeValueForElement(calcRegister_t regist, char letter, int 
   switch(getRegisterDataType(regist)) {
     case dtReal34Matrix:
       if(row > 0 && col > 0) {
-        int cols = REGISTER_REAL34_MATRIX_DBLOCK(regist)->matrixColumns;
-        real34ToString(REGISTER_REAL34_MATRIX_M_ELEMENTS(regist) + (row - 1) * cols + (col - 1), str);
+        int cols = REGISTER_MATRIX_HEADER(regist)->matrixColumns;
+        real34ToString(REGISTER_REAL34_MATRIX_ELEMENTS(regist) + (row - 1) * cols + (col - 1), str);
       }
       else {
         strcpy(str, "a real matrix");
@@ -1556,9 +1556,9 @@ void expectedAndShouldBeValueForElement(calcRegister_t regist, char letter, int 
 
     case dtComplex34Matrix:
       if(row > 0 && col > 0) {
-        int cols = REGISTER_COMPLEX34_MATRIX_DBLOCK(regist)->matrixColumns;
-        const real34_t *re34 = VARIABLE_REAL34_DATA(REGISTER_COMPLEX34_MATRIX_M_ELEMENTS(regist) + (row - 1) * cols + (col - 1));
-        const real34_t *im34 = VARIABLE_IMAG34_DATA(REGISTER_COMPLEX34_MATRIX_M_ELEMENTS(regist) + (row - 1) * cols + (col - 1));
+        int cols = REGISTER_MATRIX_HEADER(regist)->matrixColumns;
+        const real34_t *re34 = VARIABLE_REAL34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(regist) + (row - 1) * cols + (col - 1));
+        const real34_t *im34 = VARIABLE_IMAG34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(regist) + (row - 1) * cols + (col - 1));
         real34ToString(re34, str);
         strcat(expectedAndValue, str);
         if(real34IsNegative(im34)) {
@@ -2424,7 +2424,7 @@ void checkExpectedOutParameter(char *p) {
             if(getRegisterDataType(regist) != dtReal34Matrix) {
               // nothing to do
             }
-            else if((REGISTER_REAL34_MATRIX_DBLOCK(regist)->matrixRows != rows) || (REGISTER_REAL34_MATRIX_DBLOCK(regist)->matrixColumns != cols)) {
+            else if((REGISTER_MATRIX_HEADER(regist)->matrixRows != rows) || (REGISTER_MATRIX_HEADER(regist)->matrixColumns != cols)) {
               wrongRegisterMatrixSize(regist, letter, rows, cols);
             }
             else {
@@ -2440,7 +2440,7 @@ void checkExpectedOutParameter(char *p) {
                 if(isCheckingEigenvectors && real34IsZero(x1 + element % cols)) {
                   stringToReal34(r, &expectedReal34);
                   if(!real34IsZero(&expectedReal34)) {
-                    real34Divide(&expectedReal34, REGISTER_REAL34_MATRIX_M_ELEMENTS(regist) + element, x1 + element % cols);
+                    real34Divide(&expectedReal34, REGISTER_REAL34_MATRIX_ELEMENTS(regist) + element, x1 + element % cols);
                   }
                 }
                 else if(strcmp(r, "any") != 0 && strcmp(r, "?") != 0) {
@@ -2449,9 +2449,9 @@ void checkExpectedOutParameter(char *p) {
                     real34Multiply(&expectedReal34, x1 + element % cols, &expectedReal34);
                     real34ToString(&expectedReal34, valTxt);
                   }
-                  if(!real34AreEqual(REGISTER_REAL34_MATRIX_M_ELEMENTS(regist) + element, &expectedReal34)) {
+                  if(!real34AreEqual(REGISTER_REAL34_MATRIX_ELEMENTS(regist) + element, &expectedReal34)) {
                     expectedAndShouldBeValueForElement(regist, letter, element / cols + 1, element % cols + 1, isCheckingEigenvectors ? valTxt : r, registerExpectedAndValue);
-                    if(relativeErrorReal34(&expectedReal34, REGISTER_REAL34_MATRIX_M_ELEMENTS(regist) + element, "real", regist, letter) == RE_INACCURATE) {
+                    if(relativeErrorReal34(&expectedReal34, REGISTER_REAL34_MATRIX_ELEMENTS(regist) + element, "real", regist, letter) == RE_INACCURATE) {
                       wrongElementValue(regist, letter, element / cols + 1, element % cols + 1, isCheckingEigenvectors ? valTxt : r);
                     }
                   }
@@ -2550,7 +2550,7 @@ void checkExpectedOutParameter(char *p) {
             if(getRegisterDataType(regist) != dtComplex34Matrix) {
               // nothing to do
             }
-            else if((REGISTER_COMPLEX34_MATRIX_DBLOCK(regist)->matrixRows != rows) || (REGISTER_COMPLEX34_MATRIX_DBLOCK(regist)->matrixColumns != cols)) {
+            else if((REGISTER_MATRIX_HEADER(regist)->matrixRows != rows) || (REGISTER_MATRIX_HEADER(regist)->matrixColumns != cols)) {
               wrongRegisterMatrixSize(regist, letter, rows, cols);
             }
             else {
@@ -2560,8 +2560,8 @@ void checkExpectedOutParameter(char *p) {
                 if(isCheckingEigenvectors && element < cols) {
                   real_t xr, xi;
                   for(int row = 0; row < rows; ++row) {
-                    real34ToReal(VARIABLE_REAL34_DATA(REGISTER_COMPLEX34_MATRIX_M_ELEMENTS(regist) + element + row * cols), &xr);
-                    real34ToReal(VARIABLE_IMAG34_DATA(REGISTER_COMPLEX34_MATRIX_M_ELEMENTS(regist) + element + row * cols), &xi);
+                    real34ToReal(VARIABLE_REAL34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(regist) + element + row * cols), &xr);
+                    real34ToReal(VARIABLE_IMAG34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(regist) + element + row * cols), &xi);
                     mulComplexComplex(&xr, &xi, &xr, &xi, &xr, &xi, &ctxtReal39);
                     realAdd(&xr, xr1 + element % cols, xr1 + element % cols, &ctxtReal39);
                     realAdd(&xi, xi1 + element % cols, xi1 + element % cols, &ctxtReal39);
@@ -2619,8 +2619,8 @@ void checkExpectedOutParameter(char *p) {
                     real_t er, ei, tmpe, tol;
                     real34ToReal(const34_1e_32, &tol);
 
-                    real34ToReal(VARIABLE_REAL34_DATA(REGISTER_COMPLEX34_MATRIX_M_ELEMENTS(regist) + element), &er);
-                    real34ToReal(VARIABLE_IMAG34_DATA(REGISTER_COMPLEX34_MATRIX_M_ELEMENTS(regist) + element), &ei);
+                    real34ToReal(VARIABLE_REAL34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(regist) + element), &er);
+                    real34ToReal(VARIABLE_IMAG34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(regist) + element), &ei);
 
                     // check for possible real or pure imaginary
                     WP34S_Atan2(&ei, &er, &tmpe, &ctxtReal39); // arctangent: check for possible pure imaginary
@@ -2634,8 +2634,8 @@ void checkExpectedOutParameter(char *p) {
                       realZero(&ei); // possible real
                     }
 
-                    realToReal34(&er, VARIABLE_REAL34_DATA(REGISTER_COMPLEX34_MATRIX_M_ELEMENTS(regist) + element));
-                    realToReal34(&ei, VARIABLE_IMAG34_DATA(REGISTER_COMPLEX34_MATRIX_M_ELEMENTS(regist) + element));
+                    realToReal34(&er, VARIABLE_REAL34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(regist) + element));
+                    realToReal34(&ei, VARIABLE_IMAG34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(regist) + element));
 
                     realCopy(&expectedReal, &er);
                     realCopy(&expectedImag, &ei);
@@ -2654,8 +2654,8 @@ void checkExpectedOutParameter(char *p) {
                     }
 
                     if(!(xf1[element % cols])) {
-                      const real34_t *rr = VARIABLE_REAL34_DATA(REGISTER_COMPLEX34_MATRIX_M_ELEMENTS(regist) + element);
-                      const real34_t *ii = VARIABLE_IMAG34_DATA(REGISTER_COMPLEX34_MATRIX_M_ELEMENTS(regist) + element);
+                      const real34_t *rr = VARIABLE_REAL34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(regist) + element);
+                      const real34_t *ii = VARIABLE_IMAG34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(regist) + element);
                       if(!real34IsZero(rr)) {
                         if((real34IsPositive(rr) && realIsNegative(&er)) || (real34IsNegative(rr) && realIsPositive(&er))) {
                           realChangeSign(xr1 + element % cols);
@@ -2680,19 +2680,19 @@ void checkExpectedOutParameter(char *p) {
                     realToString(&ei, imag);
                   }
 
-                  if(!real34AreEqual(VARIABLE_REAL34_DATA(REGISTER_COMPLEX34_MATRIX_M_ELEMENTS(regist) + element), &expectedReal34)) {
+                  if(!real34AreEqual(VARIABLE_REAL34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(regist) + element), &expectedReal34)) {
                     char str[404];
                     sprintf(str, "%s %cix %s", real, imag[0] == '-' ? '-' : '+', imag + (imag[0] == '-' ? 1 : 0));
                     expectedAndShouldBeValueForElement(regist, letter, element / cols + 1, element % cols + 1, str, registerExpectedAndValue);
-                    if(relativeErrorReal34(&expectedReal34, VARIABLE_REAL34_DATA(REGISTER_COMPLEX34_MATRIX_M_ELEMENTS(regist) + element), "real", regist, letter) == RE_INACCURATE) {
+                    if(relativeErrorReal34(&expectedReal34, VARIABLE_REAL34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(regist) + element), "real", regist, letter) == RE_INACCURATE) {
                       wrongElementValue(regist, letter, element / cols + 1, element % cols + 1, str);
                     }
                   }
-                  else if(!real34AreEqual(VARIABLE_IMAG34_DATA(REGISTER_COMPLEX34_MATRIX_M_ELEMENTS(regist) + element), &expectedImag34)) {
+                  else if(!real34AreEqual(VARIABLE_IMAG34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(regist) + element), &expectedImag34)) {
                     char str[404];
                     sprintf(str, "%s %cix %s", real, imag[0] == '-' ? '-' : '+', imag + (imag[0] == '-' ? 1 : 0));
                     expectedAndShouldBeValueForElement(regist, letter, element / cols + 1, element % cols + 1, str, registerExpectedAndValue);
-                    if(relativeErrorReal34(&expectedImag34, VARIABLE_IMAG34_DATA(REGISTER_COMPLEX34_MATRIX_M_ELEMENTS(regist) + element), "imaginary", regist, letter) == RE_INACCURATE) {
+                    if(relativeErrorReal34(&expectedImag34, VARIABLE_IMAG34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(regist) + element), "imaginary", regist, letter) == RE_INACCURATE) {
                       wrongElementValue(regist, letter, element / cols + 1, element % cols + 1, str);
                     }
                   }

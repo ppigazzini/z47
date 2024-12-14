@@ -56,7 +56,7 @@ bool_t                 lastProgramListEnd;
 bool_t                 programListEnd;
 bool_t                 serialIOIconEnabled;
 bool_t                 pemCursorIsZerothStep;
-bool_t                 halfSecTick1;
+bool_t                 secTick1;
 bool_t                 halfSecTick2;
 bool_t                 halfSecTick3;
 bool_t                 skippedStackLines = false;
@@ -70,15 +70,12 @@ realContext_t          ctxtReal75;   //   75 digits: used in SLVQ
 realContext_t          ctxtReal1071; // 1071 digits: used in radian angle reduction
 realContext_t          ctxtReal2139; // 2139 digits: used for really big modulo
 
-registerHeader_t       globalRegister[NUMBER_OF_GLOBAL_REGISTERS];
-registerHeader_t      *currentLocalRegisters;
-
-dataBlock_t            allSubroutineLevels;
-dataBlock_t           *statisticalSumsPointer;
-dataBlock_t           *savedStatisticalSumsPointer;
-dataBlock_t           *ram = NULL;
-dataBlock_t           *currentLocalFlags;
-dataBlock_t           *currentSubroutineLevelData;
+subroutineLevels_t       allSubroutineLevels;
+subroutineLevelHeader_t *currentSubroutineLevelData;
+real_t                  *statisticalSumsPointer;
+real_t                  *savedStatisticalSumsPointer;
+uint32_t                *ram = NULL;
+localFlags_t            *currentLocalFlags;
 
 namedVariableHeader_t *allNamedVariables;
 softmenuStack_t        softmenuStack[SOFTMENU_STACK_SIZE];
@@ -90,7 +87,16 @@ programmableMenu_t     programmableMenu;
 calcKey_t              kbd_usr[37];
 calcRegister_t         errorMessageRegisterLine;
 glyph_t                glyphNotFound = {.charCode = 0x0000, .colsBeforeGlyph = 0, .colsGlyph = 13, .colsAfterGlyph = 0, .rowsGlyph = 19, .data = NULL};
-freeMemoryRegion_t     freeMemoryRegions[MAX_FREE_REGIONS];
+
+registerHeader_t      *currentLocalRegisters;
+
+#if defined(DMCP_BUILD) && defined(OLD_HW) // The old HW has 32Kb for global variables
+  registerHeader_t       globalRegister[NUMBER_OF_GLOBAL_REGISTERS];
+  freeMemoryRegion_t     freeMemoryRegions[MAX_FREE_REGIONS];
+#else // The new HW has only 16 KB for global variables, so some of them have to be moved elsewhere.
+  registerHeader_t      *globalRegister = NULL;
+  freeMemoryRegion_t    *freeMemoryRegions = NULL;
+#endif // DMCP_BUILD && OLD_HW
 
 #if !defined(DMCP_BUILD)
   freeMemoryRegion_t     allocatedMemoryRegions[MAX_ALLOCATED_REGIONS];

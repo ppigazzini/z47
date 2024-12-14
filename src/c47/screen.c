@@ -165,16 +165,16 @@ typedef struct {
         break;
 
       case dtReal34Matrix: {
-        dataBlock_t* dblock = REGISTER_REAL34_MATRIX_DBLOCK(regist);
-        real34_t *real34 = REGISTER_REAL34_MATRIX_M_ELEMENTS(regist);
+        matrixHeader_t *matrixHeader = REGISTER_MATRIX_HEADER(regist);
+        real34_t *real34 = REGISTER_REAL34_MATRIX_ELEMENTS(regist);
         real34_t reduced;
-        int rows, columns, len;
+        uint32_t rows, columns, len;
 
-        rows = dblock->matrixRows;
-        columns = dblock->matrixColumns;
-        sprintf(string, "%dx%d", rows, columns);
+        rows = matrixHeader->matrixRows;
+        columns = matrixHeader->matrixColumns;
+        sprintf(string, "%" PRIu32 "x%" PRIu32, rows, columns);
 
-        for(int i=0; i<rows*columns; i++) {
+        for(uint32_t i=0; i<rows*columns; i++) {
           strcat(string, LINEBREAK);
           len = strlen(string);
 
@@ -189,16 +189,16 @@ typedef struct {
       }
 
       case dtComplex34Matrix: {
-        dataBlock_t* dblock = REGISTER_COMPLEX34_MATRIX_DBLOCK(regist);
-        complex34_t *complex34 = REGISTER_COMPLEX34_MATRIX_M_ELEMENTS(regist);
+        matrixHeader_t *matrixHeader = REGISTER_MATRIX_HEADER(regist);
+        complex34_t *complex34 = REGISTER_COMPLEX34_MATRIX_ELEMENTS(regist);
         real34_t reduced;
-        int rows, columns, len;
+        uint32_t rows, columns, len;
 
-        rows = dblock->matrixRows;
-        columns = dblock->matrixColumns;
-        sprintf(string, "%dx%d", rows, columns);
+        rows = matrixHeader->matrixRows;
+        columns = matrixHeader->matrixColumns;
+        sprintf(string, "%" PRIu32 "x%" PRIu32, rows, columns);
 
-        for(int i=0; i<rows*columns; i++, complex34++) {
+        for(uint32_t i=0; i<rows*columns; i++, complex34++) {
           strcat(string, LINEBREAK);
           len = strlen(string);
 
@@ -424,7 +424,7 @@ char letteredRegisterName(calcRegister_t regist) {
         ptr += strlen(ptr);
         strcpy(ptr, " = ");
         ptr += strlen(ptr);
-        realToString(statisticalSumsPointer + REAL_SIZE_IN_BLOCKS * sum, tmpString);
+        realToString(statisticalSumsPointer + sum, tmpString);
         if(strchr(tmpString, '.') == NULL && strchr(tmpString, 'E') == NULL) {
           strcat(tmpString, ".");
         }
@@ -863,87 +863,6 @@ void execTimerApp(uint16_t timerType) {
     Shft_timeouts = false;
     resetShiftState();                        //force into no shift state, i.e. to wait
   }
-
-
-  #if !defined(DMCP_BUILD)
-    void setBlackPixel(uint32_t x, uint32_t y) {
-      //if(y >= (uint32_t)(-6)) return;  //JM allowing allowing -1..-5 for top row text
-
-      if(x >= SCREEN_WIDTH || y >= SCREEN_HEIGHT) {
-        printf("In function setBlackPixel: x=%u or %d, y=%u or %d outside the screen!\n", x, (int32_t)(x), y, (int32_t)(y) );
-        return;
-      }
-
-      *(screenData + y*screenStride + x) = ON_PIXEL;
-      screenChange = true;
-    }
-
-
-    void setWhitePixel(uint32_t x, uint32_t y) {
-      //if(y >= (uint32_t)(-6)) return;  //JM allowing allowing -1..-5 for top row text
-
-      if(x>=SCREEN_WIDTH || y>=SCREEN_HEIGHT) {
-        printf("In function setWhitePixel: x=%u or %d, y=%u or %d outside the screen!\n", x, (int32_t)x, y, (int32_t)y);
-        return;
-      }
-
-      *(screenData + y*screenStride + x) = OFF_PIXEL;
-      screenChange = true;
-    }
-
-
-    void flipPixel(uint32_t x, uint32_t y) {
-      if(x >= SCREEN_WIDTH || y >= SCREEN_HEIGHT) {
-        printf("In function flipPixel: x=%u, y=%u outside the screen!\n", x, y);
-        return;
-      }
-
-      if(*(screenData + y*screenStride + x) == OFF_PIXEL) {
-        *(screenData + y*screenStride + x) = ON_PIXEL;
-      }
-      else {
-        *(screenData + y*screenStride + x) = OFF_PIXEL;
-      }
-      screenChange = true;
-    }
-
-
-    int16_t clearScreenCounter = 0;                       //JM ClearScreen Test
-    void lcd_fill_rect(uint32_t x, uint32_t y, uint32_t dx, uint32_t dy, int val) {
-      uint32_t line, col, pixelColor, *pixel, endX = x + dx, endY = y + dy;
-
-      //if(y >= (uint32_t)(-100)) { //JM allowing -100 to measure the size in pixels; allowing -1..-5 for top row text
-      //  return;
-      //}
-
-      if(x == 0 && y == 0 && dx == SCREEN_WIDTH && dy == SCREEN_HEIGHT) {  //JMTOCHECK is this needed?
-        #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
-          printf("   >>> screen.c: clearScreen: calcmode=%u clearScreenCounter=%d\n",calcMode, clearScreenCounter++);    //JMYY ClearScreen Test  #endif
-        #endif
-        clear_ul(); //JMUL
-      }
-
-      if(endX > SCREEN_WIDTH || endY > SCREEN_HEIGHT) {
-        #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
-          printf("In function lcd_fill_rect: x=%u, y=%u, dx=%u, dy=%u, val=%d outside the screen!\n", x, y, dx, dy, val);
-        #endif
-        return;
-      }
-
-      pixelColor = (val == LCD_SET_VALUE ? OFF_PIXEL : ON_PIXEL);
-      for(line=y; line<endY; line++) {
-        for(col=x, pixel=screenData + line*screenStride + x; col<endX; col++, pixel++) {
-          *pixel = pixelColor;
-        }
-      }
-
-      #if defined(DEBUGCLEARS)
-        plotrect(x, y, x+dx, y+dy);
-      #endif // DEBUGCLEARS
-
-      screenChange = true;
-    }
-  #endif // !DMCP_BUILD
 
 
   //JM: If maxiC is set, then, if a glyph is not found in numericfont, it will be fetched and enlarged from standardfont
@@ -1629,14 +1548,6 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
   }
 
 
-  void refresh_gui(void) {
-    #if defined(PC_BUILD)
-      while(gtk_events_pending()) {
-        gtk_main_iteration();
-      }
-    #endif // PC_BUILD
-  }
-
 
 #define ANALYSE_REFRESH
 #undef  ANALYSE_REFRESH
@@ -1646,41 +1557,24 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
       printf("#%i",mode == force);
     #endif //ANALYSE_REFRESH
 
-    if(mode == force || getSystemFlag(FLAG_MONIT)) {
+    uint16_t now = (uint16_t)(getUptimeMs() >> 4);           // ms/16
+    bool_t itIsTime = ((now >> 6) & 0x0001) == secTick1;     // ms/1024, that is every second, flips secTick1
+    if(itIsTime) {
+      secTick1 = !secTick1;
+    }
+
+    if((mode == force || itIsTime) && getSystemFlag(FLAG_MONIT)) {  //Restrict refresh to once per period. Use this minimally, due to extreme slow response.
       #if defined(ANALYSE_REFRESH) && defined(PC_BUILD)
-        printf("+");
+        printf("-\n");
       #endif //ANALYSE_REFRESH
 
-      uint16_t now = (uint16_t)(getUptimeMs() >> 4);
-      if(mode == force || ((now >> 6) & 0x0001) == halfSecTick1) {  //Restrict refresh to once per second. Use this minimally, due to extreme slow response.
-        #if defined(ANALYSE_REFRESH) && defined(PC_BUILD)
-          printf("-\n");
-        #endif //ANALYSE_REFRESH
-        halfSecTick1 = !halfSecTick1;
-
-        #if defined(PC_BUILD)
-          gtk_widget_queue_draw(screen);
-          #if defined(FULLUPDATE) // (UGLY)
-            refresh_gui();
-          #endif // FULLUPDATE (UGLY)
-        #endif // PC_BUILD
-
-        #if defined(DMCP_BUILD)
-          lcd_forced_refresh();
-        #endif // DMCP_BUILD
-      }
-
-      else {
-        #if defined(ANALYSE_REFRESH) && defined(PC_BUILD)
-          printf("=%i %i\n", now, ((now >> 6) & 0x0001));
-        #endif //ANALYSE_REFRESH
-      }
+      _lcdRefresh();
     }
+
     else {
       #if defined(ANALYSE_REFRESH) && defined(PC_BUILD)
-        printf(".\n");
+        printf("not updated =%i %i\n", now, itIsTime);
       #endif //ANALYSE_REFRESH
-      return;
     }
   }
 
@@ -1707,16 +1601,8 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
         showString(tmps, &standardFont, 20, /*145-7*/ Y_POSITION_OF_REGISTER_T_LINE + mode * 20, vmNormal, false, false);  //note: displays info 1 line down, if "force" parameter is set
       }
 
-      #if defined(PC_BUILD)
-        gtk_widget_queue_draw(screen);
-        #if defined(FULLUPDATE) // (UGLY)
-          refresh_gui();
-        #endif // FULLUPDATE (UGLY)
-      #endif // PC_BUILD
+      _lcdRefresh();
 
-      #if defined(DMCP_BUILD)
-        lcd_forced_refresh();
-      #endif // DMCP_BUILD
     }
     return ret_value;
   }
@@ -2584,7 +2470,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
 
           else if(getRegisterDataType(REGISTER_L) == dtComplex34) {
             strcat(string1, "complex34 = ");
-            formatComplex34Debug(string2, (void *)getRegisterDataPointer(REGISTER_L));
+            formatComplex34Debug(string2, getRegisterDataPointer(REGISTER_L));
           }
 
           else if(getRegisterDataType(REGISTER_L) == dtString) {
@@ -2617,13 +2503,13 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
           }
 
           else if(getRegisterDataType(REGISTER_L) == dtReal34Matrix) {
-            sprintf(&string1[strlen(string1)], "real34 %" PRIu16 STD_CROSS "%" PRIu16 " matrix = ", REGISTER_REAL34_MATRIX_DBLOCK(REGISTER_L)->matrixRows, REGISTER_REAL34_MATRIX_DBLOCK(REGISTER_L)->matrixColumns);
-            formatReal34Debug(string2, REGISTER_REAL34_MATRIX_M_ELEMENTS(REGISTER_L));
+            sprintf(&string1[strlen(string1)], "real34 %" PRIu16 STD_CROSS "%" PRIu16 " matrix = ", REGISTER_MATRIX_HEADER(REGISTER_L)->matrixRows, REGISTER_MATRIX_HEADER(REGISTER_L)->matrixColumns);
+            formatReal34Debug(string2, REGISTER_REAL34_MATRIX_ELEMENTS(REGISTER_L));
           }
 
           else if(getRegisterDataType(REGISTER_L) == dtComplex34Matrix) {
-            sprintf(&string1[strlen(string1)], "complex34 %" PRIu16 STD_CROSS "%" PRIu16 " matrix = ", REGISTER_COMPLEX34_MATRIX_DBLOCK(REGISTER_L)->matrixRows, REGISTER_COMPLEX34_MATRIX_DBLOCK(REGISTER_L)->matrixColumns);
-            formatComplex34Debug(string2, REGISTER_COMPLEX34_MATRIX_M_ELEMENTS(REGISTER_L));
+            sprintf(&string1[strlen(string1)], "complex34 %" PRIu16 STD_CROSS "%" PRIu16 " matrix = ", REGISTER_MATRIX_HEADER(REGISTER_L)->matrixRows, REGISTER_MATRIX_HEADER(REGISTER_L)->matrixColumns);
+            formatComplex34Debug(string2, REGISTER_COMPLEX34_MATRIX_ELEMENTS(REGISTER_L));
           }
 
           else if(getRegisterDataType(REGISTER_L) == dtConfig) {
@@ -4607,7 +4493,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
           printf("   >>> lcd_fill_rect SCRUPD_MANUAL_STATUSBAR\n");
         #endif // PC_BUILD &&MONITOR_CLRSCR
         lcd_fill_rect(0, 0, (GRAPHMODE ? SCREEN_WIDTH / 3 : SCREEN_WIDTH), Y_POSITION_OF_REGISTER_T_LINE, LCD_SET_VALUE);
-        lastProgramRunStop = 255;
+        lastProgramRunStop = PGM_UNDEFINED;
       }
       if(!(screenUpdatingMode & (SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME))) {
         #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
@@ -4730,7 +4616,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
 
           clearScreenOld(!clrStatusBar, clrRegisterLines, !clrSoftkeys);                  // battery powered
           fnPem(NOPARAM);                                                                 // battery powered
-          displayShiftAndTamBuffer();
+          displayShiftAndTamBuffer();                                                     // battery powered
 
           if(!(screenUpdatingMode & SCRUPD_MANUAL_STATUSBAR)) {                           // battery powered
             clearScreenOld(clrStatusBar, !clrRegisterLines, !clrSoftkeys);                // battery powered

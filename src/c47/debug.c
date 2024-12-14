@@ -1078,7 +1078,7 @@ void debugNIM(void) {
     }
 
     else if(getRegisterDataType(regist) == dtComplex34) {
-      formatComplex34Debug(string + n, (void *)getRegisterDataPointer(regist));
+      formatComplex34Debug(string + n, getRegisterDataPointer(regist));
     }
 
     else if(getRegisterDataType(regist) == dtString) {
@@ -1118,13 +1118,13 @@ void debugNIM(void) {
     }
 
     else if(getRegisterDataType(regist) == dtReal34Matrix) {
-      dataBlock_t* dblock = REGISTER_REAL34_MATRIX_DBLOCK(regist);
-      sprintf(string + n, "Real Matrix of Size [%" PRIu16" x %" PRIu16" Matrix]", dblock->matrixRows, dblock->matrixColumns);
+      matrixHeader_t *matrixHeader = REGISTER_MATRIX_HEADER(regist);
+      sprintf(string + n, "Real Matrix of Size [%" PRIu16 " x %" PRIu16 " Matrix]", matrixHeader->matrixRows, matrixHeader->matrixColumns);
     }
 
     else if(getRegisterDataType(regist) == dtComplex34Matrix) {
-      dataBlock_t* dblock = REGISTER_COMPLEX34_MATRIX_DBLOCK(regist);
-      sprintf(string + n, "Complex Matrix of Size [%" PRIu16" x %" PRIu16" Matrix]", dblock->matrixRows, dblock->matrixColumns);
+      matrixHeader_t* matrixHeader = REGISTER_MATRIX_HEADER(regist);
+      sprintf(string + n, "Complex Matrix of Size [%" PRIu16 " x %" PRIu16 " Matrix]", matrixHeader->matrixRows, matrixHeader->matrixColumns);
     }
 
     else {
@@ -1160,7 +1160,7 @@ void debugNIM(void) {
       row = 0;
 
       if(row < DEBUG_LINES) {
-        sprintf(string, "TO_C47MEMPTR(statisticalSumsPointer)    = %6d",         TO_C47MEMPTR(statisticalSumsPointer));
+        sprintf(string, "TO_C47MEMPTR(statisticalSumsPointer)    = %6d",           TO_C47MEMPTR(statisticalSumsPointer));
         gtk_label_set_label(GTK_LABEL(lbl1[row]), string);
         gtk_widget_show(lbl1[row++]);
       }
@@ -2093,7 +2093,7 @@ void debugNIM(void) {
    ***********************************************/
   void formatComplex34Debug(char *str, void *addr) {
     formatReal34Debug(str     , addr             );
-    formatReal34Debug(str + 64, (real34_t *)((dataBlock_t *)addr + REAL34_SIZE_IN_BLOCKS));
+    formatReal34Debug(str + 64, (real34_t *)((void *)addr + REAL34_SIZE_IN_BYTES));
 
     strcat(str, " ");
     xcopy(strchr(str, '\0'), str + 64, strlen(str + 64) + 1);
@@ -2123,23 +2123,23 @@ void debugNIM(void) {
 
 #if defined(PC_BUILD ) || defined(TESTSUITE_BUILD)
   void dumpSubroutineLevelData(void) {
-    dataBlock_t *current = TO_PCMEMPTR(allSubroutineLevels.ptrToSubroutineLevel0Data);
+    subroutineLevelHeader_t *current = TO_PCMEMPTR(allSubroutineLevels.ptrToSubroutineLevel0Header);
 
-    printf("allSuballSubroutineLevels.numberOfSubroutineLevels  = %u\n", allSubroutineLevels.numberOfSubroutineLevels);
-    printf("allSuballSubroutineLevels.ptrToSubroutineLevel0Data = %u\n", allSubroutineLevels.ptrToSubroutineLevel0Data);
-    printf("currentSubroutineLevelData                          = %u\n", TO_C47MEMPTR(currentSubroutineLevelData));
+    printf("allSuballSubroutineLevels.numberOfSubroutineLevels    = %" PRIu16 "\n", allSubroutineLevels.numberOfSubroutineLevels);
+    printf("allSuballSubroutineLevels.ptrToSubroutineLevel0Header = %" PRIu16 "\n", allSubroutineLevels.ptrToSubroutineLevel0Header);
+    printf("currentSubroutineLevelData                            = %" PRIu16 "\n", (uint16_t)TO_C47MEMPTR(currentSubroutineLevelData));
 
     for(int i=1; i<=allSubroutineLevels.numberOfSubroutineLevels; i++) {
       printf("  Level %d at %u\n", i, TO_C47MEMPTR(current));
-      printf("    returnProgramNumber    = %d\n", current[0].returnProgramNumber);
-      printf("    returnLocalStep        = %u\n", current[0].returnLocalStep);
-      printf("    numberOfLocalFlags     = %u\n", current[1].numberOfLocalFlags);
-      printf("    numberOfLocalRegisters = %u\n", current[1].numberOfLocalRegisters);
-      printf("    subroutineLevel        = %u\n", current[1].subroutineLevel);
-      printf("    ptrToNextLevel         = %u\n", current[2].ptrToNextLevel);
-      printf("    ptrToPreviousLevel     = %u\n", current[2].ptrToPreviousLevel);
+      printf("    returnProgramNumber    = %d\n", current->returnProgramNumber);
+      printf("    returnLocalStep        = %u\n", current->returnLocalStep);
+      printf("    numberOfLocalFlags     = %u\n", current->numberOfLocalFlags);
+      printf("    numberOfLocalRegisters = %u\n", current->numberOfLocalRegisters);
+      printf("    subroutineLevel        = %u\n", current->subroutineLevel);
+      printf("    ptrToNextLevel         = %u\n", current->ptrToNextLevel);
+      printf("    ptrToPreviousLevel     = %u\n", current->ptrToPreviousLevel);
 
-      current = TO_PCMEMPTR(current[2].ptrToNextLevel);
+      current = TO_PCMEMPTR(current->ptrToNextLevel);
     }
 
     printf("\n\n");

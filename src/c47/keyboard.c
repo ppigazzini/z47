@@ -47,10 +47,8 @@ TO_QSPI static const char bugScreenItemNotDetermined[] = "In function determineI
       }
 
       case MNU_MyAlpha: {
-        if(calcMode != CM_EIM) {
-          dynamicMenuItem = firstItem + itemShift + fn;
-          item = userAlphaItems[dynamicMenuItem].item;
-        }
+        dynamicMenuItem = firstItem + itemShift + fn;
+        item = userAlphaItems[dynamicMenuItem].item;
                     #if defined(VERBOSEKEYS)
                     printf(">>>>Z 0091   case MNU_MyAlpha             data=|%s| data[0]=%d item=%d itemShift=%d (Global) FN_key_pressed=%d\n",data,data[0],item,itemShift, FN_key_pressed);
                     printf(">>>>  0092     dynamicMenuItem=%d\n",dynamicMenuItem);
@@ -3589,7 +3587,7 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
                     }                                                                              //JM
                     leaveAsmMode();
                     popSoftmenu();
-                    if(tam.mode) {
+                    if(tam.mode ) {
                         numberOfTamMenusToPop--;
                     }
                 }

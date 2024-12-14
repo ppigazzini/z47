@@ -7,183 +7,21 @@
 
 #include "c47.h"
 
-TO_QSPI void (* const Gamma[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])(void) = {
-// regX ==> 1            2          3          4           5           6           7           8           9             10
-//          Long integer Real34     Complex34  Time        Date        String      Real34 mat  Complex34 m Short integer Config data
-            gammaLonI,   gammaReal, gammaCplx, gammaError, gammaError, gammaError, gammaError, gammaError, gammaError,   gammaError
-};
-
-TO_QSPI void (* const lnGamma[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])(void) = {
-// regX ==> 1            2            3            4             5             6             7             8             9             10
-//          Long integer Real34       Complex34    Time          Date          String        Real34 mat    Complex34 m   Short integer Config data
-            lnGammaLonI, lnGammaReal, lnGammaCplx, lnGammaError, lnGammaError, lnGammaError, lnGammaError, lnGammaError, lnGammaError, lnGammaError
-};
-
-
-
-/********************************************//**
- * \brief Data type error in gamma
- *
- * \param void
- * \return void
- ***********************************************/
-#if (EXTRA_INFO_ON_CALC_ERROR == 1)
-  void gammaError(void) {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-    sprintf(errorMessage, "cannot calculate gamma(%s)", getRegisterDataTypeName(REGISTER_X, false, false));
-    moreInfoOnError("In function fnGamma:", errorMessage, NULL, NULL);
-  }
-#endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-
-
-
-/********************************************//**
- * \brief Data type error in lnGamma
- *
- * \param void
- * \return void
- ***********************************************/
-void lnGammaError(void) {
-  displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-  #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-    sprintf(errorMessage, "cannot calculate lnGamma(%s)", getRegisterDataTypeName(REGISTER_X, false, false));
-    moreInfoOnError("In function fnLnGamma:", errorMessage, NULL, NULL);
-  #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-}
-
-
-
-/********************************************//**
- * \brief regX ==> regL and gamma(regX) ==> regX
- * enables stack lift and refreshes the stack
- *
- * \param[in] unusedButMandatoryParameter uint16_t
- * \return void
- ***********************************************/
-void fnGamma(uint16_t unusedButMandatoryParameter) {
-  if(!saveLastX()) {
-    return;
-  }
-
-  Gamma[getRegisterDataType(REGISTER_X)]();
-
-  adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
-}
-
-
-
-/********************************************//**
- * \brief regX ==> regL and lnGamma(regX) ==> regX
- * enables stack lift and refreshes the stack
- *
- * \param[in] unusedButMandatoryParameter uint16_t
- * \return void
- ***********************************************/
-void fnLnGamma(uint16_t unusedButMandatoryParameter) {
-  if(!saveLastX()) {
-    return;
-  }
-
-  lnGamma[getRegisterDataType(REGISTER_X)]();
-
-  adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
-}
-
-
-
-void gammaLonI(void) {
-  real_t x;
-
-  convertLongIntegerRegisterToReal(REGISTER_X, &x, &ctxtReal39);
-  reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
-
-  if(realIsInfinite(&x)) {
-    if(!getSystemFlag(FLAG_SPCRES)) {
-      displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-        moreInfoOnError("In function gammaLonI:", "cannot use " STD_PLUS_MINUS STD_INFINITY " as X input of gamma when flag D is not set", NULL, NULL);
-      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-    }
-    else {
-      realToReal34((realIsPositive(&x) ? const_plusInfinity : const_NaN), REGISTER_REAL34_DATA(REGISTER_X));
-    }
-    return;
-  }
-
-  if(realCompareLessEqual(&x, const_0)) { // x <= 0 and is an integer
-    if(!getSystemFlag(FLAG_SPCRES)) {
-      displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-        moreInfoOnError("In function gammaLonI:", "cannot use a negative integer as X input of gamma when flag D is not set", NULL, NULL);
-      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-    }
-    else {
-      convertRealToReal34ResultRegister(const_NaN, REGISTER_X);
-    }
-    return;
-  }
-
-  WP34S_Gamma(&x, &x, &ctxtReal39);
-  convertRealToReal34ResultRegister(&x, REGISTER_X);
-}
-
-
-
-void lnGammaLonI(void) {
-  real_t x;
-
-  convertLongIntegerRegisterToReal(REGISTER_X, &x, &ctxtReal39);
-  reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
-
-  if(realIsInfinite(&x)) {
-    if(!getSystemFlag(FLAG_SPCRES)) {
-      displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-        moreInfoOnError("In function lnGammaLonI:", "cannot use " STD_PLUS_MINUS STD_INFINITY " as X input of gamma when flag D is not set", NULL, NULL);
-      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-    }
-    else {
-      realToReal34((realIsPositive(&x) ? const_plusInfinity : const_NaN), REGISTER_REAL34_DATA(REGISTER_X));
-    }
-    return;
-  }
-
-  if(realCompareLessEqual(&x, const_0)) { // x <= 0 and is an integer
-    if(!getSystemFlag(FLAG_SPCRES)) {
-      displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-        moreInfoOnError("In function lnGammaLonI:", "cannot use a negative integer as X input of gamma when flag D is not set", NULL, NULL);
-      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-    }
-    else {
-      convertRealToReal34ResultRegister(const_NaN, REGISTER_X);
-    }
-    return;
-  }
-
-  WP34S_LnGamma(&x, &x, &ctxtReal39);
-  convertRealToReal34ResultRegister(&x, REGISTER_X);
-}
-
-
-
-void gammaReal(void) {
-  setRegisterAngularMode(REGISTER_X, amNone);
-
-  if(real34IsInfinite(REGISTER_REAL34_DATA(REGISTER_X))) {
-    if(!getSystemFlag(FLAG_SPCRES)) {
+static int checkGammaDomain(const real_t *xReal, real_t *out) {
+  if(realIsSpecial(xReal)) {
+    if (realIsNaN(xReal))
+      realCopy(const_NaN, out);
+    else if(!getSystemFlag(FLAG_SPCRES)) {
       displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         moreInfoOnError("In function gammaReal:", "cannot use " STD_PLUS_MINUS STD_INFINITY " as X input of gamma when flag D is not set", NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
-    else {
-      realToReal34((real34IsPositive(REGISTER_REAL34_DATA(REGISTER_X)) ? const_plusInfinity : const_NaN), REGISTER_REAL34_DATA(REGISTER_X));
-    }
-    return;
+    else
+      realCopy(realIsPositive(xReal) ? const_plusInfinity : const_NaN, out);
+    return 0;
   }
-
-  if(real34CompareLessEqual(REGISTER_REAL34_DATA(REGISTER_X), const34_0) && real34IsAnInteger(REGISTER_REAL34_DATA(REGISTER_X))) {
+  if(realCompareLessEqual(xReal, const_0) && realIsAnInteger(xReal)) {
     if(!getSystemFlag(FLAG_SPCRES)) {
       displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -191,95 +29,78 @@ void gammaReal(void) {
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
     else {
-      convertRealToReal34ResultRegister(const_NaN, REGISTER_X);
+      realCopy(const_NaN, out);
     }
-    return;
+    return 0;
   }
+  return 1;
+}
 
+static void gammaReal(void) {
   real_t x;
 
-  real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &x);
-  WP34S_Gamma(&x, &x, &ctxtReal39);
-  convertRealToReal34ResultRegister(&x, REGISTER_X);
+  if(!getRegisterAsReal(REGISTER_X, &x))
+    return;
+
+  if (checkGammaDomain(&x, &x))
+    WP34S_Gamma(&x, &x, &ctxtReal39);
+  convertRealToResultRegister(&x, REGISTER_X, amNone);
 }
 
 
 
-void lnGammaReal(void) {
+static void lnGammaReal(void) {
   real_t xReal, xImag;
 
-  real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &xReal);
+  if(!getRegisterAsReal(REGISTER_X, &xReal))
+    return;
   setRegisterAngularMode(REGISTER_X, amNone);
 
-  if(realIsInfinite(&xReal)) {
-    if(!getSystemFlag(FLAG_SPCRES)) {
-      displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-        moreInfoOnError("In function lngammaReal:", "cannot use " STD_PLUS_MINUS STD_INFINITY " as X input of lngamma when flag D is not set", NULL, NULL);
-      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-    }
-    else {
-      realToReal34((realIsPositive(&xReal) ? const_plusInfinity : const_NaN), REGISTER_REAL34_DATA(REGISTER_X));
-    }
-    return;
-  }
+  if (!checkGammaDomain(&xReal, &xReal))
+    goto end;
 
   if(realCompareLessEqual(&xReal, const_0)) { // x <= 0
-    if(realIsAnInteger(&xReal)) {
-      if(!getSystemFlag(FLAG_SPCRES)) {
+    // x is negative and not an integer
+    realMinus(&xReal, &xImag, &ctxtReal39); // x.imag is used as a temp variable here
+    WP34S_Mod(&xImag, const_2, &xImag, &ctxtReal39);
+    if(realCompareGreaterThan(&xImag, const_1)) { // the result is a real
+      WP34S_LnGamma(&xReal, &xReal, &ctxtReal39);
+      convertRealToReal34ResultRegister(&xReal, REGISTER_X);
+    }
+    else { // the result is a complex
+      if(getFlag(FLAG_CPXRES)) { // We can calculate a complex
+        real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &xImag);
+        reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
+        WP34S_Gamma(&xReal, &xReal, &ctxtReal39);
+        realSetPositiveSign(&xReal);
+        WP34S_Ln(&xReal, &xReal, &ctxtReal39);
+        realToIntegralValue(&xImag, &xImag, DEC_ROUND_FLOOR, &ctxtReal39);
+        realMultiply(&xImag, const_pi, &xImag, &ctxtReal39);
+        convertComplexToResultRegister(&xReal, &xImag, REGISTER_X);
+      }
+      else { // Domain error
         displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-          moreInfoOnError("In function lngammaReal:", "cannot use a negative integer as X input of lngamma when flag D is not set", NULL, NULL);
+          moreInfoOnError("In function lngammaReal:", "cannot use a as X input of lngamma if gamma(X)<0 when flag I is not set", NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-      }
-      else {
-        convertRealToReal34ResultRegister(const_NaN, REGISTER_X);
-      }
-      return;
-    }
-    else { // x is negative and not an integer
-      realMinus(&xReal, &xImag, &ctxtReal39); // x.imag is used as a temp variable here
-      WP34S_Mod(&xImag, const_2, &xImag, &ctxtReal39);
-      if(realCompareGreaterThan(&xImag, const_1)) { // the result is a real
-        WP34S_LnGamma(&xReal, &xReal, &ctxtReal39);
-        convertRealToReal34ResultRegister(&xReal, REGISTER_X);
-      }
-      else { // the result is a complex
-        if(getFlag(FLAG_CPXRES)) { // We can calculate a complex
-          real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &xImag);
-          reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
-          WP34S_Gamma(&xReal, &xReal, &ctxtReal39);
-          realSetPositiveSign(&xReal);
-          WP34S_Ln(&xReal, &xReal, &ctxtReal39);
-          realToIntegralValue(&xImag, &xImag, DEC_ROUND_FLOOR, &ctxtReal39);
-          realMultiply(&xImag, const_pi, &xImag, &ctxtReal39);
-          convertComplexToResultRegister(&xReal, &xImag, REGISTER_X);
-        }
-        else { // Domain error
-          displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-          #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-            moreInfoOnError("In function lngammaReal:", "cannot use a as X input of lngamma if gamma(X)<0 when flag I is not set", NULL, NULL);
-          #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-        }
       }
     }
     return;
   }
 
   WP34S_LnGamma(&xReal, &xReal, &ctxtReal39);
-  convertRealToReal34ResultRegister(&xReal, REGISTER_X);
+end:
+  convertRealToResultRegister(&xReal, REGISTER_X, amNone);
 }
 
 
 
-void gammaCplx(void) {
+static void gammaCplx(void) {
   real_t zReal, zImag;
 
-  real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &zReal);
-  real34ToReal(REGISTER_IMAG34_DATA(REGISTER_X), &zImag);
-
+  if(!getRegisterAsComplex(REGISTER_X, &zReal, &zImag))
+    return;
   WP34S_ComplexGamma(&zReal, &zImag, &zReal, &zImag, &ctxtReal39);
-
   convertComplexToResultRegister(&zReal, &zImag, REGISTER_X);
 }
 
@@ -341,13 +162,34 @@ void complexLnGamma(const real_t *xReal, const real_t *xImag, real_t *rReal, rea
 
 
 
-void lnGammaCplx(void) {
+static void lnGammaCplx(void) {
   real_t zReal, zImag, rReal, rImag;
 
-  real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &zReal);
-  real34ToReal(REGISTER_IMAG34_DATA(REGISTER_X), &zImag);
-
+  if(!getRegisterAsComplex(REGISTER_X, &zReal, &zImag))
+    return;
   complexLnGamma(&zReal, &zImag, &rReal, &rImag, &ctxtReal39);
-
   convertComplexToResultRegister(&rReal, &rImag, REGISTER_X);
+}
+
+
+/********************************************//**
+ * \brief regX ==> regL and Gamma(regX) ==> regX
+ * enables stack lift and refreshes the stack
+ *
+ * \param[in] unusedButMandatoryParameter uint16_t
+ * \return void
+ ***********************************************/
+void fnGamma(uint16_t unusedButMandatoryParameter) {
+  processRealComplexMonadicFunction(&gammaReal, &gammaCplx);
+}
+
+/********************************************//**
+ * \brief regX ==> regL and lnGamma(regX) ==> regX
+ * enables stack lift and refreshes the stack
+ *
+ * \param[in] unusedButMandatoryParameter uint16_t
+ * \return void
+ ***********************************************/
+void fnLnGamma(uint16_t unusedButMandatoryParameter) {
+  processRealComplexMonadicFunction(&lnGammaReal, &lnGammaCplx);
 }

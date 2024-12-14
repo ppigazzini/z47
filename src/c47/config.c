@@ -420,6 +420,10 @@ void fnClrMod(uint16_t unusedButMandatoryParameter) {        //clear input buffe
   #if !defined(TESTSUITE_BUILD)
     resetKeytimers();  //JM
     clearSystemFlag(FLAG_IRF_ON);
+    clearSystemFlag(FLAG_INTING);
+    clearSystemFlag(FLAG_SOLVING);
+    programRunStop = PGM_STOPPED;
+    lastProgramRunStop = PGM_RUNNING;  //set last to running to force first refresh condition to be true
 
     if(calcMode == CM_NIM) {
       strcpy(aimBuffer, "+");
@@ -924,25 +928,25 @@ void fnGetHide(uint16_t unusedButMandatoryParameter) {
 
 
 void initSimEqMatABX(void) {
-  void *memPtr;
+  matrixHeader_t *matrixHeader;
 
   allocateNamedVariable("Mat_A", dtReal34Matrix, REAL34_SIZE_IN_BLOCKS + 1);
-  memPtr = getRegisterDataPointer(FIRST_NAMED_VARIABLE);
-  ((dataBlock_t *)memPtr)->matrixRows = 1;
-  ((dataBlock_t *)memPtr)->matrixColumns = 1;
-  real34Zero(memPtr + 4);
+  matrixHeader = getRegisterDataPointer(FIRST_NAMED_VARIABLE);
+  matrixHeader->matrixRows = 1;
+  matrixHeader->matrixColumns = 1;
+  real34Zero(REAL34_MATRIX_ELEMENTS_AFTER_MATRIX_HEADER(matrixHeader));
 
   allocateNamedVariable("Mat_B", dtReal34Matrix, REAL34_SIZE_IN_BLOCKS + 1);
-  memPtr = getRegisterDataPointer(FIRST_NAMED_VARIABLE + 1);
-  ((dataBlock_t *)memPtr)->matrixRows = 1;
-  ((dataBlock_t *)memPtr)->matrixColumns = 1;
-  real34Zero(memPtr + 4);
+  matrixHeader = getRegisterDataPointer(FIRST_NAMED_VARIABLE + 1);
+  matrixHeader->matrixRows = 1;
+  matrixHeader->matrixColumns = 1;
+  real34Zero(REAL34_MATRIX_ELEMENTS_AFTER_MATRIX_HEADER(matrixHeader));
 
   allocateNamedVariable("Mat_X", dtReal34Matrix, REAL34_SIZE_IN_BLOCKS + 1);
-  memPtr = getRegisterDataPointer(FIRST_NAMED_VARIABLE + 2);
-  ((dataBlock_t *)memPtr)->matrixRows = 1;
-  ((dataBlock_t *)memPtr)->matrixColumns = 1;
-  real34Zero(memPtr + 4);
+  matrixHeader = getRegisterDataPointer(FIRST_NAMED_VARIABLE + 2);
+  matrixHeader->matrixRows = 1;
+  matrixHeader->matrixColumns = 1;
+  real34Zero(REAL34_MATRIX_ELEMENTS_AFTER_MATRIX_HEADER(matrixHeader));
 }
 
 
@@ -1279,14 +1283,21 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     void *memPtr;
 
     if(ram == NULL) {
-      ram = (dataBlock_t *)malloc(TO_BYTES(RAM_SIZE_IN_BLOCKS));
+      ram = (uint32_t *)malloc(TO_BYTES(RAM_SIZE_IN_BLOCKS));
     }
     memset(ram, 0, TO_BYTES(RAM_SIZE_IN_BLOCKS));
-    numberOfFreeMemoryRegions = 1;
 
-    // for reserved variables (for Martin: you moron, think twice when you change something around here!) ... you are funny ...
-    freeMemoryRegions[0].blockAddress = allReservedVariables[LAST_RESERVED_VARIABLE - FIRST_RESERVED_VARIABLE].header.pointerToRegisterData + REAL34_SIZE_IN_BLOCKS; // + REAL34_SIZE_IN_BLOCKS is wrong because GRAMOD is a dtLongInteger, but it works
+    #if !defined(DMCP_BUILD) || !defined(OLD_HW)
+      if(globalRegister == NULL) {
+        globalRegister = malloc(sizeof(registerHeader_t) * NUMBER_OF_GLOBAL_REGISTERS);
+        freeMemoryRegions = malloc(sizeof(freeMemoryRegion_t) * MAX_FREE_REGIONS);
+      }
+    #endif // DMCP_BUILD && OLD_HW
+
+    freeMemoryRegions[0].blockAddress = TO_C47MEMPTR(ram + allReservedVariables[LAST_RESERVED_VARIABLE - FIRST_RESERVED_VARIABLE].header.pointerToRegisterData + REAL34_SIZE_IN_BLOCKS);
     freeMemoryRegions[0].sizeInBlocks = RAM_SIZE_IN_BLOCKS - freeMemoryRegions[0].blockAddress - 1; // - 1: one block for an empty program
+
+    numberOfFreeMemoryRegions = 1;
 
     #if !defined(DMCP_BUILD)
       numberOfAllocatedMemoryRegions = 0;
@@ -1340,21 +1351,25 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     xcopy(kbd_usr, kbd_std, sizeof(kbd_std));
 
     // initialize 9 real34 reserved variables: ACC, ↑Lim, ↓Lim, FV, i%/a, NPPER, PPER/a, PMT, and PV
-    for(int i=0; i<9; i++) {
-      real34Zero(allocC47Blocks(REAL34_SIZE_IN_BLOCKS));
+    for(int i=VAR_NO_ACC; i<=VAR_NO_CPERONA; i++) {
+      real34Zero((real34_t *)TO_PCMEMPTR(allReservedVariables[i].header.pointerToRegisterData));
     }
 
     // initialize 1 long integer reserved variables: GRAMOD
+    strLgIntHeader_t *ptr = TO_PCMEMPTR(allReservedVariables[VAR_NO_GRAMOD].header.pointerToRegisterData);
     #if defined(OS64BIT)
-      memPtr = allocC47Blocks(3);
-      ((dataBlock_t *)memPtr)->dataMaxLengthInBlocks = 2;
+      (ptr++)->dataMaxLengthInBlocks = TO_BLOCKS(8);
+      *(int64_t *)ptr = 0;
     #else // !OS64BIT
-      memPtr = allocC47Blocks(2);
-      ((dataBlock_t *)memPtr)->dataMaxLengthInBlocks = 1;
+      (ptr++)->dataMaxLengthInBlocks = TO_BLOCKS(4);
+      *(int32_t *)ptr = 0;
     #endif // OS64BIT
 
+
     // initialize the global registers
-    memset(globalRegister, 0, sizeof(globalRegister));
+    #if defined(DMCP_BUILD) && defined(OLD_HW)
+      memset(globalRegister, 0, sizeof(globalRegister));
+    #endif // DMCP_BUILD && OLD_HW
     for(calcRegister_t regist=FIRST_GLOBAL_REGISTER; regist<=LAST_GLOBAL_REGISTER; regist++) {
       setRegisterDataType(regist, dtReal34, amNone);
       memPtr = allocC47Blocks(REAL34_SIZE_IN_BLOCKS);
@@ -1368,7 +1383,7 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     // allocate space for the local register list
     allSubroutineLevels.numberOfSubroutineLevels = 1;
     currentSubroutineLevelData = allocC47Blocks(3);
-    allSubroutineLevels.ptrToSubroutineLevel0Data = TO_C47MEMPTR(currentSubroutineLevelData);
+    allSubroutineLevels.ptrToSubroutineLevel0Header = TO_C47MEMPTR(currentSubroutineLevelData);
     currentReturnProgramNumber = 0;
     currentReturnLocalStep = 0;
     currentNumberOfLocalRegisters = 0; // No local register
@@ -1477,12 +1492,12 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     fnKeyInCatalog = false;
     shiftF = false;
     shiftG = false;
-    halfSecTick1 = false;
+    secTick1 = false;
     halfSecTick2 = false;
     halfSecTick3 = false;
     skippedStackLines = false;
     programRunStop = PGM_STOPPED;
-    lastProgramRunStop = PGM_RUNNING;  //set last to running to force first refresh condition to be true
+    lastProgramRunStop = PGM_UNDEFINED;  //set last to undefined to force first refresh condition to be true
 
 
     ctxtReal34.round = DEC_ROUND_HALF_EVEN;
@@ -1650,12 +1665,12 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
                                      printf("Populate test data\n");
                                    #endif
     //JM TEMPORARY TEST DATA IN REGISTERS
-    uint_fast16_t n = nbrOfElements(indexOfStrings);
-    for(uint_fast16_t i=0; i<n; i++) {
-      if( indexOfStrings[i].itemType== 0) {
+    uint16_t n = nbrOfElements(indexOfStrings);
+    for(uint16_t i=0; i<n; i++) {
+      if(indexOfStrings[i].itemType == 0) {
         fnStrtoX(indexOfStrings[i].itemName);
       }
-      else if( indexOfStrings[i].itemType== 1) {
+      else if(indexOfStrings[i].itemType == 1) {
         fnStrInputLongint(indexOfStrings[i].itemName);
       }
       fnStore(indexOfStrings[i].count);
@@ -1695,7 +1710,7 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
 
   void dmcpResetAutoOff(void) {
     // Key is ready -> clear auto off timer
-    if(!key_empty() || !getSystemFlag(FLAG_AUTOFF) || getSystemFlag(FLAG_RUNTIM) || programRunStop == PGM_RUNNING || (nextTimerRefresh != 0)) {
+    if(!key_empty() || !emptyKeyBuffer() || ((calcMode == CM_TIMER) && timerStartTime != TIMER_APP_STOPPED) || !getSystemFlag(FLAG_AUTOFF) || getSystemFlag(FLAG_RUNTIM) || programRunStop == PGM_RUNNING || (nextTimerRefresh != 0)) {
       reset_auto_off();
     }
   }

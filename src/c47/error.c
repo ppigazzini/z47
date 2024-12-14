@@ -1,11 +1,13 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
+
 /********************************************//**
  * \file error.c
  ***********************************************/
 
 #include "c47.h"
+
 
 TO_QSPI const char commonBugScreenMessages[NUMBER_OF_BUG_SCREEN_MESSAGES][SIZE_OF_EACH_BUG_SCREEN_MESSAGE] = {
 /*  0 */  "In function %s:%d is an unexpected value for %s!",
