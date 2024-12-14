@@ -273,3 +273,7 @@ PLUS                      "\xa4\xff"
 2024-10-22 Add Time and Date type glyphs
     $2138  double struck T     "\xa1\x38"         STD_TIME_T
     $2145  double struck D     "\xa1\x45"         STD_DATE_D
+
+2024-12-09 Add litre ℓ
+    $2113  Script Small L      "\xa1\x13"         STD_litre
+ 

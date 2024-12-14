@@ -403,7 +403,6 @@
 #define STD_SUP_pi                    "\xad\xeb" //2DEB
 #define STD_SUP_pir                   "\xad\xec" //2DEC
 
-#define STD_BATTERYHALF               "\xa4\x35" //2435
 
 #define STD_BOX                       "\xa5\xa2"     // Box with rounded corners 25A2
 #define STD_BOXFILLED                 "\xa5\xa6"     // Box with hatched fill    25A6
@@ -467,6 +466,7 @@
 #define STD_COMPLEX_C                 "\xa1\x02"
 #define STD_PLANCK                    "\xa1\x0e"
 #define STD_PLANCK_2PI                "\xa1\x0f"
+#define STD_litre                     "\xa1\x13"
 #define STD_NATURAL_N                 "\xa1\x15"
 #define STD_RATIONAL_Q                "\xa1\x1a"
 #define STD_IRRATIONAL_I              "\xa1\x10"
@@ -598,6 +598,7 @@
 #define STD_GAUSS_WHITE_L             "\xa4\x32"
 #define STD_GAUSS_BLACK_R             "\xa4\x33"
 #define STD_USB_SYMBOL                "\xa4\x34"
+#define STD_BATTERYHALF               "\xa4\x35" //2435
 #define STD_BASE_1                    "\xa4\x60"
 #define STD_BASE_2                    "\xa4\x61"
 #define STD_BASE_3                    "\xa4\x62"

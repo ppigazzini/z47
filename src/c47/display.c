@@ -2843,9 +2843,9 @@ static void dispM(uint16_t regist, char * prefix) {
 
 
 
+#undef MONITOR_SHOW
 
-
-static void prepLongintIntoLines(int16_t *last, int16_t *source, int16_t *dest, const font_t *fontToUse, int16_t maxWidth, int16_t WidthException, int16_t numberOfLines, int16_t *startingLine) {
+static void prepLongintIntoLines(int16_t *last, int16_t *source, int16_t *dest, const font_t *fontToUse, int16_t maxWidth, int16_t Width_0, int16_t numberOfLines, int16_t *startingLine) {
   int16_t d;
   *dest = 0;
   int16_t sourceReturn = 0;
@@ -2856,11 +2856,23 @@ static void prepLongintIntoLines(int16_t *last, int16_t *source, int16_t *dest, 
     int16_t dCounter = d - (*startingLine)*SHOWLineSize;
     //printf("dCounter=%i d=%i startingLine=%i last=%i source=%i dest=%i ...",dCounter,d,*startingLine,*last,*source,*dest);
     *dest = dCounter;
-    while((*source < *last) && ( (int16_t)(stringWidth(tmpString + dCounter, fontToUse, true, true)) <=  maxWidth - (d == (*startingLine)*SHOWLineSize ? WidthException : 0) ) && (*dest < TMP_STR_LENGTH - 6)) {
+    while((*source < *last) && 
+          ( (int16_t)(stringWidth(tmpString + dCounter, fontToUse, true, true)) <=  maxWidth - (dCounter == 0 ? 0 : Width_0) ) && 
+          (*dest < TMP_STR_LENGTH - 6)
+         ) {
+      #if defined(MONITOR_SHOW)
+        printf("02--->d=%i startingLine=%i last=%i source=%i dest=%i wid=%i??maxwid=%i <<:%u ",d,*startingLine,*last,*source,*dest,(int16_t)(stringWidth(tmpString + dCounter, fontToUse, true, true)), (int16_t)(maxWidth),*dest < TMP_STR_LENGTH - 6);
+      #endif
       tmpString[*dest] = errorMessage[*source];
-      //printf("02--->d=%i startingLine=%i last=%i source=%i dest=%i wid=%i??maxwid=%i <<:%u ==>%c \n",d,*startingLine,*last,*source,*dest,(int16_t)(stringWidth(tmpString + dCounter, fontToUse, true, true)), (int16_t)(maxWidth),*dest < TMP_STR_LENGTH - 6, ((tmpString + (*dest))[0]));
+      #if defined(MONITOR_SHOW)
+        printf("03    ==>%c (%u)",((tmpString + (*dest))[0]), (uint8_t)((tmpString + (*dest))[0]));
+        if(((uint8_t)((tmpString + (*dest))[0]) & 0x80) == 0) {printf("\n");}
+      #endif 
       if(tmpString[*dest] & 0x80) {
         tmpString[++*dest] = errorMessage[++*source];
+        #if defined(MONITOR_SHOW)
+          printf("(%u)\n",(uint8_t)((tmpString + (*dest))[0]));
+        #endif
       }
       tmpString[++*dest] = 0;
       (*source)++;
@@ -3054,7 +3066,7 @@ void fnC47Show(uint16_t fnShow_param) {
             startingLine = 0;
             int16_t sourcemem = source;
             int16_t destmem = dest;
-            prepLongintIntoLines(&last, &source, &dest, &numericFont, SCREEN_WIDTH, stringWidth("0", &numericFont, true, true), numberOfLines, &startingLine);
+            prepLongintIntoLines(&last, &source, &dest, &numericFont, SCREEN_WIDTH, stringWidth(gapChar1Left, &numericFont, true, true), numberOfLines, &startingLine);
             //printf("001 ll=%i source=%i last=%i\n",glyphNumber, source, last);
             if(tmpString[numberOfLines*SHOWLineSize] == 0) {
               break;
@@ -3074,7 +3086,7 @@ void fnC47Show(uint16_t fnShow_param) {
           SHOW_reset();
           temporaryInformation = TI_SHOW_REGISTER_SMALL;
           numberOfLines = 10;
-          prepLongintIntoLines(&last, &source, &dest, &standardFont, SCREEN_WIDTH, stringWidth("0", &standardFont, true, true), numberOfLines, &startingLine);
+          prepLongintIntoLines(&last, &source, &dest, &standardFont, SCREEN_WIDTH, stringWidth(gapChar1Left, &standardFont, true, true), numberOfLines, &startingLine);
           if(tmpString[0] != 0) {
             goto goBreak1; //break if first line first character is non-terminator and display
           }
@@ -3093,7 +3105,7 @@ void fnC47Show(uint16_t fnShow_param) {
           temporaryInformation = TI_SHOW_REGISTER_TINY;
           numberOfLines = min(21,SHOWLineMax);
           startingLine = 0;
-          prepLongintIntoLines(&last, &source, &dest, &tinyFont, SCREEN_WIDTH, stringWidth("0", &tinyFont, true, true), numberOfLines, &startingLine);
+          prepLongintIntoLines(&last, &source, &dest, &tinyFont, SCREEN_WIDTH, stringWidth(gapChar1Left, &tinyFont, true, true), numberOfLines, &startingLine);
 
 goBreak1:
 
