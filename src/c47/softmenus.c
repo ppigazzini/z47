@@ -431,10 +431,10 @@ TO_QSPI const int16_t menu_ConvX[]        = {
 TO_QSPI const int16_t menu_ConvV[]        = {
                                                    ITM_IN3toML,               ITM_MLtoIN3,              ITM_FZUKtoIN3,            ITM_IN3toFZUK,            ITM_FT3toL,               ITM_LtoFT3,                
                                                    ITM_FZUKtoML,              ITM_MLtoFZUK,             ITM_GLUKtoFT3,            ITM_FT3toGLUK,            ITM_GLUKtoL,              ITM_LtoGLUK,               
-                                                   ITM_NULL,                  ITM_NULL,                 ITM_BARRELtoM3,           ITM_M3toBARREL,           ITM_QTtoL,                ITM_LtoQT,                 
+                                                   ITM_FZUKtoGLUK,            ITM_GLUKtoFZUK,           ITM_BARRELtoM3,           ITM_M3toBARREL,           ITM_QTtoL,                ITM_LtoQT,                 
                                                    ITM_IN3toML,               ITM_MLtoIN3,              ITM_FZUStoIN3,            ITM_IN3toFZUS,            ITM_FT3toL,               ITM_LtoFT3,                
                                                    ITM_FZUStoML,              ITM_MLtoFZUS,             ITM_GalUStoFT3,           ITM_FT3toGalUS,           ITM_GLUStoL,              ITM_LtoGLUS,               
-                                                   ITM_NULL,                  ITM_NULL,                 ITM_BARRELtoM3,           ITM_M3toBARREL,           ITM_QTUStoL,              ITM_LtoQTUS               };
+                                                   ITM_FZUStoGLUS,            ITM_GLUStoFZUS,           ITM_BARRELtoM3,           ITM_M3toBARREL,           ITM_QTUStoL,              ITM_LtoQTUS               };
 
 TO_QSPI const int16_t menu_ConvS[]        = {
                                                     ITM_KNOTtoKMH,            ITM_KMHtoKNOT,            ITM_KMHtoMPS,             ITM_MPStoKMH,             ITM_RPMtoDEGPS,           ITM_DEGPStoRPM,

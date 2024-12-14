@@ -248,8 +248,8 @@
 #define ITM_HAtoKM2                  229
 #define ITM_KM2toHA                  230
 #define ITM_FRtoDB                   231
-#define ITM_0232                     232
-#define ITM_0233                     233
+#define ITM_GLUKtoFZUK               232
+#define ITM_FZUKtoGLUK               233
 #define ITM_ACtoHA                   234
 #define ITM_MLtoIN3                  235
 #define ITM_HAtoAC                   236
@@ -1950,8 +1950,8 @@
 #define ITM_DREAL                   1899
 #define ITM_N_KEY_GSH               1900
 #define MNU_CONVCHEF                1901
-#define ITM_1902                    1902
-#define ITM_1903                    1903
+#define ITM_GLUStoFZUS              1902
+#define ITM_FZUStoGLUS              1903
 #define ITM_N_KEY_USER              1904
 #define ITM_1905                    1905
 #define ITM_N_KEY_SIGMA             1906
