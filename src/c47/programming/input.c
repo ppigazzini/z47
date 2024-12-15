@@ -144,46 +144,42 @@ void fnPause(uint16_t dur) {
 
 
 static uint16_t _getKeyArg(uint16_t regist) {
-  #if defined(TESTSUITE_BUILD)
-    return 0;
-  #else // TESTSUITE_BUILD
-    real34_t arg;
+  real34_t arg;
 
-    #pragma GCC diagnostic push
-    #pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
-    switch(getRegisterDataType(regist)) {
-      case dtLongInteger: {
-        convertLongIntegerRegisterToReal34(regist, &arg);
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
+  switch(getRegisterDataType(regist)) {
+    case dtLongInteger: {
+      convertLongIntegerRegisterToReal34(regist, &arg);
+      break;
+    }
+    case dtReal34: {
+      if(getRegisterAngularMode(regist) == amNone) {
+        real34ToIntegralValue(REGISTER_REAL34_DATA(regist), &arg, DEC_ROUND_DOWN);
         break;
       }
-      case dtReal34: {
-        if(getRegisterAngularMode(regist) == amNone) {
-          real34ToIntegralValue(REGISTER_REAL34_DATA(regist), &arg, DEC_ROUND_DOWN);
-          break;
-        }
-        /* fallthrough */
-      }
-      default: {
-        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-          sprintf(errorMessage, "cannot use %s for the parameter of CASE", getRegisterDataTypeName(REGISTER_X, true, false));
-          moreInfoOnError("In function fnCase:", errorMessage, NULL, NULL);
-        #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-        return 0;
-      }
+      /* fallthrough */
     }
-  #pragma GCC diagnostic pop
-
-    if(real34CompareLessThan(&arg, const34_1)) {
+    default: {
+      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        sprintf(errorMessage, "cannot use %s for the parameter of CASE", getRegisterDataTypeName(REGISTER_X, true, false));
+        moreInfoOnError("In function fnCase:", errorMessage, NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return 0;
     }
-    else if(real34CompareGreaterEqual(&arg, const34_65535)) {
-      return 65534u;
-    }
-    else {
-      return real34ToUInt32(&arg);
-    }
-  #endif // !TESTSUITE_BUILD
+  }
+  #pragma GCC diagnostic pop
+
+  if(real34CompareLessThan(&arg, const34_1)) {
+    return 0;
+  }
+  else if(real34CompareGreaterEqual(&arg, const34_65535)) {
+    return 65534u;
+  }
+  else {
+    return real34ToUInt32(&arg);
+  }
 }
 
 

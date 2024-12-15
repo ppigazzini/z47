@@ -34,3 +34,5 @@ int  processTests             (const char *listPath);
 int  relativeErrorReal34      (real34_t *expectedValue34, real34_t *value34, char *numberPart, calcRegister_t regist, char letter);
 void wrongRegisterValue       (calcRegister_t regist, char letter, char *expectedValue);
 void expectedAndShouldBeValue (calcRegister_t regist, char letter, char *expectedValue, char *expectedAndValue);
+void updateMatrixHeightCache  (void);
+void tamEnterMode             (int16_t func);

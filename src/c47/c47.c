@@ -17,11 +17,11 @@
   #include "c47Extensions/keyboardTweak.h"
 #endif
 
-#if !defined(TESTSUITE_BUILD) && !defined(GENERATE_CATALOGS)
+#if !defined(GENERATE_CATALOGS)
   int16_t lastFunc = 0;
   int16_t lastParam = 0;
   char    lastTemp[16];
-#endif // !TESTSUITE_BUILD && !GENERATE_CATALOGS
+#endif // !GENERATE_CATALOGS
 #if defined(PC_BUILD) || defined(TESTSUITE_BUILD)
   bool_t              debugMemAllocation;
   bool                forceTamAlpha;
@@ -60,6 +60,9 @@ bool_t                 secTick1;
 bool_t                 halfSecTick2;
 bool_t                 halfSecTick3;
 bool_t                 skippedStackLines = false;
+
+bool_t                 reDraw = true;
+bool_t                 refreshNIMdone = false;
 
 
 realContext_t          ctxtReal4;    //   limited digits: used for higher speed internal real calcs

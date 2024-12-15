@@ -6,9 +6,6 @@
 
 //#define DEBUGCLEARS
 
-bool_t reDraw = true;
-bool_t refreshNIMdone = false;
-
 void setLastintegerBasetoZero(void) {
   if(lastIntegerBase != 0) {
     lastIntegerBase = 0;

@@ -18,6 +18,7 @@
 ;   CM   Complex Mode: RECT or POLAR
 ;   GAP  gap setting
 ;   JG   The day Gregorian calendar was introduced: in JDN (2299161 in Europe)
+;   PGM  RPN programm to run
 ;   Rn   Register n from 0 to 211
 ;   Rx   Register x in A,B,C,D,I,J,K,L,T,X,Y,Z
 ;      type after equal sign: LonI is a  Long Integer
@@ -389,3 +390,5 @@ ellipticEphi
 jacobi_zeta
 
 LINPOL
+
+programs

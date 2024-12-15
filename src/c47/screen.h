@@ -86,7 +86,6 @@ char       letteredRegisterName(calcRegister_t regist);
   extern uint8_t  multiEdLines;
   extern uint16_t current_cursor_x;
   extern uint16_t current_cursor_y;
-  extern bool_t   reDraw;
 
 
   //Stack string large font display

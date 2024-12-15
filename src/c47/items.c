@@ -60,8 +60,7 @@ bool_t itemNotAvail(int16_t itemNr) {
 }
 
 
-#if !defined(TESTSUITE_BUILD) && !defined(GENERATE_CATALOGS)
-
+#if !defined(GENERATE_CATALOGS)
   uint16_t indirectionType(uint16_t func) {
     switch(indexOfItems[func].param) {
       case TM_FLAGR   :
@@ -427,8 +426,6 @@ bool_t itemNotAvail(int16_t itemNr) {
     #endif // PC_BUILD
   }
 
-
-
   void runFunction(int16_t func) {
     #if defined(PC_BUILD) && defined(DEBUG_EXECUTE)
       printf("   >>>RunFunction: %5i%8s%8s\n",func, indexOfItems[abs(func)].itemCatalogName, indexOfItems[abs(func)].itemSoftmenuName);
@@ -551,7 +548,7 @@ bool_t itemNotAvail(int16_t itemNr) {
       #endif // PC_BUILD
     }
   }
-#endif // !TESTSUITE_BUILD && !GENERATE_CATALOGS
+#endif // !GENERATE_CATALOGS
 
 #if defined(GENERATE_CATALOGS)
   void fnAsnViewer                 (uint16_t unusedButMandatoryParameter) {}

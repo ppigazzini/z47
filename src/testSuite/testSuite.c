@@ -22,8 +22,12 @@ char line[100000], lastInParameters[10000], fileName[1000], *filePath, filePathN
 char testCaseName[1000], testCasePrefix[1000], testCaseSuffix[1000];
 int32_t lineNumber, numTestsFile, numTestsTotal, failedTests;
 int32_t functionIndex, funcType, correctSignificantDigits;
+
+uint16_t label;
+
 void (*funcNoParam)(uint16_t);
 void (*funcCvt)(uint16_t);
+void runPgm(uint16_t unusedButMandatoryParameter);
 
 static const char regNames[] = "XYZTABCDLIJKMNPQRSEFGHOUVW";
 
@@ -291,8 +295,91 @@ const funcTest_t funcTestNoParam[] = {
   {"fnXToDate",              fnXToDate             },
   {"fnYear",                 fnYear                },
   {"fnZeta",                 fnZeta                },
+
+  {"fnExecute",              runPgm                },
   {"",                       NULL                  }
 };
+
+
+
+void fnKeyGtoXeq             (uint16_t unusedButMandatoryParameter) {}
+void fnKeyGto                (uint16_t unusedButMandatoryParameter) {}
+void fnKeyXeq                (uint16_t unusedButMandatoryParameter) {}
+void fnProgrammableMenu      (uint16_t unusedButMandatoryParameter) {}
+void fnClearMenu             (uint16_t unusedButMandatoryParameter) {}
+void updateMatrixHeightCache (void) {}
+void tamEnterMode            (int16_t func) {}
+
+
+
+void printRegisterToString(calcRegister_t regist, char *registerContent) {
+  char str[1000];
+
+  if(getRegisterDataType(regist) == dtReal34) {
+    real34ToString(REGISTER_REAL34_DATA(regist), str);
+    sprintf(registerContent, "real34 %s %s", str, getAngularModeName(getRegisterAngularMode(regist)));
+  }
+
+  else if(getRegisterDataType(regist) == dtComplex34) {    //This needs to change to use the standard complex to string function
+    real34ToString(REGISTER_REAL34_DATA(regist), str);
+    sprintf(registerContent, "complex34 %s ", str);
+
+    real34ToString(REGISTER_IMAG34_DATA(regist), str);
+    if(real34IsNegative(REGISTER_IMAG34_DATA(regist))) {
+      strcat(registerContent, "- ix");
+      strcat(registerContent, str + 1);
+    }
+    else {
+      strcat(registerContent, "+ ix");
+      strcat(registerContent, str);
+    }
+  }
+
+  else if(getRegisterDataType(regist) == dtString) {
+    stringToUtf8(REGISTER_STRING_DATA(regist), (uint8_t *)str);
+    sprintf(registerContent, "string (%" PRIu32 " bytes) |%s|", TO_BYTES(getRegisterMaxDataLengthInBlocks(regist)), str);
+  }
+
+  else if(getRegisterDataType(regist) == dtShortInteger) {
+    uint64_t value = *(REGISTER_SHORT_INTEGER_DATA(regist));
+    sprintf(registerContent, "short integer %08x-%08x (base %u)", (unsigned int)(value>>32), (unsigned int)(value&0xffffffff), getRegisterTag(regist));
+  }
+
+  else if(getRegisterDataType(regist) == dtConfig) {
+    strcpy(registerContent, "Configuration data");
+  }
+
+  else if(getRegisterDataType(regist) == dtLongInteger) {
+    longInteger_t lgInt;
+    char lgIntStr[3000];
+
+    convertLongIntegerRegisterToLongInteger(regist, lgInt);
+    longIntegerToAllocatedString(lgInt, lgIntStr, sizeof(lgIntStr));
+    longIntegerFree(lgInt);
+    sprintf(registerContent, "long integer (%" PRIu32 " bytes) %s", TO_BYTES(getRegisterMaxDataLengthInBlocks(regist)), lgIntStr);
+  }
+
+  else if(getRegisterDataType(regist) == dtTime) {
+    real34ToString(REGISTER_REAL34_DATA(regist), str);
+    sprintf(registerContent, "time %s", str);
+  }
+
+  else if(getRegisterDataType(regist) == dtDate) {
+    real34ToString(REGISTER_REAL34_DATA(regist), str);
+    sprintf(registerContent, "date %s", str);
+  }
+
+  else {
+    sprintf(registerContent, "In printRegisterToString: data type %s not supported", getRegisterDataTypeName(regist ,false, false));
+  }
+}
+
+
+
+void runPgm(uint16_t unusedButMandatoryParameter) {
+  reallyRunFunction(ITM_XEQ, label);
+}
+
 
 
 char *endOfString(char *string) { // string must point on the 1st "
@@ -659,6 +746,7 @@ void setParameter(char *p) {
       }
     }
   }
+
   //Setting integer mode
   else if(strcmp(l, "IM") == 0) {
     if(strcmp(r, "1COMPL") == 0) {
@@ -1315,6 +1403,12 @@ void setParameter(char *p) {
 
     //printRegisterToConsole(regist, 0);
     //printf("\n");
+  }
+
+  //Setting a program to run
+  else if(strcmp(l, "PGM") == 0) {
+    r[strlen(r) - 1] = 0;
+    label = findNamedLabel(r + 1);
   }
 
   else {
@@ -2827,13 +2921,19 @@ void functionToCall(char *functionName) {
   while(funcTestNoParam[function].name[0] != 0 && strcmp(funcTestNoParam[function].name, functionName) != 0) {
     function++;
   }
+
   if(funcTestNoParam[function].name[0] != 0) {
     funcNoParam = funcTestNoParam[function].func;
     funcType = FUNC_NOPARAM;
 
-    for(functionIndex=1; functionIndex<=LAST_ITEM; functionIndex++) {
-      if(indexOfItems[functionIndex].func == funcNoParam) {
-        break;
+    if(funcNoParam == runPgm) {
+      functionIndex = ITM_XEQ;
+    }
+    else {
+      for(functionIndex=1; functionIndex<=LAST_ITEM; functionIndex++) {
+        if(indexOfItems[functionIndex].func == funcNoParam) {
+          break;
+        }
       }
     }
 
