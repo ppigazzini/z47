@@ -131,7 +131,6 @@ int _ioFileNameFromFilePath(ioFilePath_t path, char * filename) {
       g_free(current_dir);
       return ret;
 
-    case ioPathExportProgram:
     case ioPathExportRTFProgram:
     case ioPathSaveProgram:
     case ioPathLoadProgram:
@@ -146,12 +145,6 @@ int _ioFileNameFromFilePath(ioFilePath_t path, char * filename) {
         stringToASCII(tmpStringLabelOrVariableName, filename);
         //strcpy(filename, tmpStringLabelOrVariableName);
         ret = file_selection_screen("Save Program File", base_dir, "*"PRGM_EXT, 1, 1, filename);
-      }
-      else if(path == ioPathExportProgram) {
-        // set current label name as default file name
-        stringToASCII(tmpStringLabelOrVariableName, filename);
-        //strcpy(filename, tmpStringLabelOrVariableName);
-        ret = file_selection_screen("Export Program File", base_dir, "*"TXT_EXT, 1, 1, filename);
       }
       else if(path == ioPathExportRTFProgram) {
         // set current label name as default file name
