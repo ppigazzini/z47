@@ -184,11 +184,11 @@
   #endif // GENERATE_TESTPGMS
 
   // Variables for the simulator
-  #if !defined(TESTSUITE_BUILD) && !defined(GENERATE_CATALOGS)
+  #if !defined(GENERATE_CATALOGS)
     extern int16_t lastFunc;
     extern int16_t lastParam;
     extern char    lastTemp[16];
-  #endif // !TESTSUITE_BUILD && !GENERATE_CATALOGS
+  #endif // !GENERATE_CATALOGS
 
   #if defined(PC_BUILD) || defined(TESTSUITE_BUILD)
     extern bool_t               debugMemAllocation;
@@ -291,6 +291,9 @@
   extern bool_t                 halfSecTick2;
   extern bool_t                 halfSecTick3;
   extern bool_t                 skippedStackLines;
+
+  extern bool_t                 reDraw;
+  extern bool_t                 refreshNIMdone;
 
 
   extern realContext_t          ctxtReal4;    //   Limited digits: used for high speed internal calcs

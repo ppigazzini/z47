@@ -267,14 +267,6 @@
 
 
   /********************************************//**
-   * \brief Prints the content of a register to a string
-   *
-   * \param r calcRegister_t Register number
-   * \return void
-   ***********************************************/
-  void           printRegisterToString           (calcRegister_t regist, char *registerContent);
-
-  /********************************************//**
    * \brief Save register X to register X
    *
    * \return true if succeeded

@@ -7,13 +7,7 @@
 
 #include "c47.h"
 
-#if defined(TESTSUITE_BUILD)
-void fnKeyGtoXeq       (uint16_t unusedButMandatoryParameter) {}
-void fnKeyGto          (uint16_t unusedButMandatoryParameter) {}
-void fnKeyXeq          (uint16_t unusedButMandatoryParameter) {}
-void fnProgrammableMenu(uint16_t unusedButMandatoryParameter) {}
-void fnClearMenu       (uint16_t unusedButMandatoryParameter) {}
-#else // !TESTSUITE_BUILD
+#if !defined(TESTSUITE_BUILD)
 static void _getStringLabelOrVariableName(uint8_t *stringAddress) {
   uint8_t stringLength = *(uint8_t *)(stringAddress++);
   xcopy(tmpStringLabelOrVariableName, stringAddress, stringLength);
@@ -236,4 +230,4 @@ void keyXeq(uint16_t keyNum, uint16_t label) {
   _setCaption(keyNum);
   programmableMenu.itemParam[keyNum - 1] = label | 0x8000;
 }
-#endif // TESTSUITE_BUILD
+#endif // !TESTSUITE_BUILD
