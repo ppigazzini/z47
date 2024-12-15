@@ -1955,7 +1955,7 @@
 #define ITM_N_KEY_USER              1904
 #define ITM_1905                    1905
 #define ITM_N_KEY_SIGMA             1906
-#define MNU_PLOT_STATS              1907
+#define MNU_PLOT_STAT               1907
 #define ITM_N_KEY_FSH               1908
 #define ITM_ms                      1909
 #define ITM_msTo                    1910
@@ -2382,7 +2382,7 @@
 #define ITM_STO_M_u                 2326
 #define ITM_STO_S_si                2327
 #define ITM_STO_S_s                 2328
-#define ITM_STO_M_l                 2329
+#define ITM_2329                    2329
 #define ITM_STO_Q_xi                2330
 #define ITM_STO_Q_k                 2331
 #define ITM_STO_S_l                 2332
