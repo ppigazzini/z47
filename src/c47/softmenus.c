@@ -275,7 +275,7 @@ TO_QSPI const int16_t menu_PLOTTING[]    = { ITM_SIGMAPLUS,                 ITM_
 
 TO_QSPI const int16_t menu_GRAPHS[]      = { VAR_LX,                        VAR_UX,                    ITM_DRAW_LU,               ITM_NULL,              ITM_NULL,                    ITM_DRAW,                     };
 
-TO_QSPI const int16_t menu_PLOT_STAT[]   = {
+TO_QSPI const int16_t menu_PLOT_SCATR[]  = {
                                              ITM_PLOT_CENTRL,               ITM_SMI,                    ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
                                              ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
                                              ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL                      };
@@ -767,7 +767,7 @@ TO_QSPI const int16_t menu_PLOTFUNC[]    = {  VAR_LX,                       VAR_
                                               ITM_NVECT,                    ITM_VECT,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL};
 
 
-TO_QSPI const int16_t menu_PLOT_STATS[]   = {
+TO_QSPI const int16_t menu_PLOT_STAT[]    = {
                                              ITM_SHOWX,                 ITM_SHOWY,                 ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,
                                              ITM_SCALE,                 ITM_PLOTRST,               ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,
                                              ITM_MZOOMY,                ITM_PZOOMY,                ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,
@@ -878,7 +878,7 @@ TO_QSPI const softmenu_t softmenu[] = {
 /* 067 */  {.menuItem = -MNU_STAT,        .numItems = sizeof(menu_STAT          )/sizeof(int16_t), .softkeyItem = menu_STAT           },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
 /* 068 */  {.menuItem = -MNU_PLOTTING,    .numItems = sizeof(menu_PLOTTING      )/sizeof(int16_t), .softkeyItem = menu_PLOTTING       },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
 /* 069 */  {.menuItem = -MNU_GRAPHS,      .numItems = sizeof(menu_GRAPHS        )/sizeof(int16_t), .softkeyItem = menu_GRAPHS         },       //Changed!
-/* 070 */  {.menuItem = -MNU_PLOT_SCATR,  .numItems = sizeof(menu_PLOT_STAT     )/sizeof(int16_t), .softkeyItem = menu_PLOT_STAT      },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
+/* 070 */  {.menuItem = -MNU_PLOT_SCATR,  .numItems = sizeof(menu_PLOT_SCATR    )/sizeof(int16_t), .softkeyItem = menu_PLOT_SCATR     },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
 /* 071 */  {.menuItem = -MNU_PLOT_ASSESS, .numItems = sizeof(menu_PLOT_LR       )/sizeof(int16_t), .softkeyItem = menu_PLOT_LR        },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
 /* 072 */  {.menuItem = -MNU_HPLOT,       .numItems = sizeof(menu_HPLOT         )/sizeof(int16_t), .softkeyItem = menu_HPLOT          },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
 /* 073 */  {.menuItem = -MNU_HIST,        .numItems = sizeof(menu_HIST          )/sizeof(int16_t), .softkeyItem = menu_HIST           },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
@@ -964,7 +964,7 @@ TO_QSPI const softmenu_t softmenu[] = {
 /* 153 */  {.menuItem = -MNU_PFN_3,       .numItems = sizeof(menu_PFN_3         )/sizeof(int16_t), .softkeyItem = menu_PFN_3          },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
 /* 154 */  {.menuItem = -MNU_TAMMENU,     .numItems = sizeof(menu_TamMenu       )/sizeof(int16_t), .softkeyItem = menu_TamMenu        },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
 /* 155 */  {.menuItem = -MNU_E_SIGMA,     .numItems = sizeof(menu_EULERs        )/sizeof(int16_t), .softkeyItem = menu_EULERs         },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
-/* 156 */  {.menuItem = -MNU_PLOT_STATS,  .numItems = sizeof(menu_PLOT_STATS    )/sizeof(int16_t), .softkeyItem = menu_PLOT_STATS     },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
+/* 156 */  {.menuItem = -MNU_PLOT_STAT,   .numItems = sizeof(menu_PLOT_STAT     )/sizeof(int16_t), .softkeyItem = menu_PLOT_STAT      },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
 /* 157 */  {.menuItem = -MNU_TAMNONREGTRK,.numItems = sizeof(menu_TamNonRegTrk  )/sizeof(int16_t), .softkeyItem = menu_TamNonRegTrk   },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
 /* 158 */  {.menuItem =  0,               .numItems = 0,                                           .softkeyItem = NULL                }
 };
