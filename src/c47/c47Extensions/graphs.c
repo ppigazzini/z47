@@ -329,8 +329,8 @@ void fnPlotSQ(uint16_t unusedButMandatoryParameter) {
     if(menu(0) != -MNU_PLOT_FUNC && plotStatMx[0] == 'D') {
       showSoftmenu(-MNU_PLOT_FUNC);
     }
-    else if(menu(0) != -MNU_PLOT_STATS && plotStatMx[0] == 'S') {
-      showSoftmenu(-MNU_PLOT_STATS);
+    else if(menu(0) != -MNU_PLOT_STAT && plotStatMx[0] == 'S') {
+      showSoftmenu(-MNU_PLOT_STAT);
     }
   #endif // !TESTSUITE_BUILD
 }

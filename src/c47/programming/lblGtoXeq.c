@@ -297,7 +297,6 @@ void fnStopProgram(uint16_t unusedButMandatoryParameter) {
 
 
 
-#if !defined(TESTSUITE_BUILD)
 static void _getStringLabelOrVariableName(uint8_t *stringAddress) {
   uint8_t stringLength = *(uint8_t *)(stringAddress++);
   xcopy(tmpStringLabelOrVariableName, stringAddress, stringLength);
@@ -685,14 +684,10 @@ static void _putLiteral(uint8_t *literalAddress) {
     }
   }
 }
-#endif // !TESTSUITE_BUILD
 
 
 
 int16_t executeOneStep(uint8_t *step) {
-  #if defined(TESTSUITE_BUILD)
-    return 0;
-  #else // TESTSUITE_BUILD
   uint16_t op;
 
   op = *(step++);
@@ -782,13 +777,11 @@ int16_t executeOneStep(uint8_t *step) {
       return temporaryInformation == TI_FALSE ? 2 : 1;
     }
   }
-  #endif // !TESTSUITE_BUILD
 }
 
 
 
 void runProgram(bool_t singleStep, uint16_t menuLabel) {
-  #if !defined(TESTSUITE_BUILD)
   bool_t nestedEngine = (programRunStop == PGM_RUNNING);
   uint16_t startingSubLevel = (nestedEngine && menuLabel == INVALID_VARIABLE) ? currentSubroutineLevel : 0;
   lastErrorCode = ERROR_NONE;
@@ -892,7 +885,6 @@ stopProgram:
     }
   }
   return;
-  #endif // !TESTSUITE_BUILD
 }
 
 

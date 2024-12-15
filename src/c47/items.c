@@ -60,8 +60,7 @@ bool_t itemNotAvail(int16_t itemNr) {
 }
 
 
-#if !defined(TESTSUITE_BUILD) && !defined(GENERATE_CATALOGS)
-
+#if !defined(GENERATE_CATALOGS)
   uint16_t indirectionType(uint16_t func) {
     switch(indexOfItems[func].param) {
       case TM_FLAGR   :
@@ -427,8 +426,6 @@ bool_t itemNotAvail(int16_t itemNr) {
     #endif // PC_BUILD
   }
 
-
-
   void runFunction(int16_t func) {
     #if defined(PC_BUILD) && defined(DEBUG_EXECUTE)
       printf("   >>>RunFunction: %5i%8s%8s\n",func, indexOfItems[abs(func)].itemCatalogName, indexOfItems[abs(func)].itemSoftmenuName);
@@ -551,7 +548,7 @@ bool_t itemNotAvail(int16_t itemNr) {
       #endif // PC_BUILD
     }
   }
-#endif // !TESTSUITE_BUILD && !GENERATE_CATALOGS
+#endif // !GENERATE_CATALOGS
 
 #if defined(GENERATE_CATALOGS)
   void fnAsnViewer                 (uint16_t unusedButMandatoryParameter) {}
@@ -1621,7 +1618,7 @@ TO_QSPI const item_t indexOfItems[] = {
 /*  314 */  UNIT_CONV(constFactorLiangKg,     divide,   "li" STD_a_BREVE "ng" STD_RIGHT_ARROW "kg",         "li" STD_a_BREVE "ng" STD_RIGHT_ARROW),
 /* 0315 */  UNIT_CONV(constFactorMlCupuk,     divide,   "m" STD_litre STD_RIGHT_ARROW "cup" STD_UK,         "m" STD_litre STD_RIGHT_ARROW                              ),
 /*  316 */  UNIT_CONV(constFactorTrozG,       divide,   "g" STD_RIGHT_ARROW "tr.oz",                        "g" STD_RIGHT_ARROW),
-/* 0317 */  UNIT_CONV(constFactorMlPintlq,    divide,   "m" STD_litre STD_RIGHT_ARROW "pint" STD_SUB_l STD_SUB_i STD_SUB_q,   "m" STD_litre STD_RIGHT_ARROW                              ),
+/* 0317 */  UNIT_CONV(constFactorMlPintlq,    divide,   "m" STD_litre STD_RIGHT_ARROW "pint" STD_US,        "m" STD_litre STD_RIGHT_ARROW                              ),
 /*  318 */  UNIT_CONV(constFactorTrozG,     multiply,   "tr.oz" STD_RIGHT_ARROW "g",                        "tr.oz" STD_RIGHT_ARROW),
 /* 0319 */  UNIT_CONV(constFactorMlPintuk,    divide,   "m" STD_litre STD_RIGHT_ARROW "pint" STD_UK,        "m" STD_litre STD_RIGHT_ARROW                              ),
 /*  320 */  UNIT_CONV(constFactorLbfN,      multiply,   "lbf" STD_RIGHT_ARROW "N",                          "lbf" STD_RIGHT_ARROW "N"),
@@ -1655,7 +1652,7 @@ TO_QSPI const item_t indexOfItems[] = {
 /*  348 */  UNIT_CONV(constFactorYearS,       divide,   "s" STD_RIGHT_ARROW "year",                         "s" STD_RIGHT_ARROW "year"),
 /*  349 */  UNIT_CONV(constFactorYearS,     multiply,   "year" STD_RIGHT_ARROW "s",                         "year" STD_RIGHT_ARROW "s"),
 /*  350 */  UNIT_CONV(constFactorCaratG,    multiply,   "carat" STD_RIGHT_ARROW "g",                        "carat" STD_RIGHT_ARROW),
-/* 0351 */  UNIT_CONV(constFactorPintlqMl,  multiply,   "pint" STD_SUB_l STD_SUB_i STD_SUB_q STD_RIGHT_ARROW "m" STD_litre,   "pint" STD_SUB_l STD_SUB_i STD_SUB_q STD_RIGHT_ARROW       ),
+/* 0351 */  UNIT_CONV(constFactorPintlqMl,  multiply,   "pint" STD_US STD_RIGHT_ARROW "m" STD_litre,        "pint" STD_US STD_RIGHT_ARROW                          ),
 /*  352 */  UNIT_CONV(constFactorJinKg,       divide,   "j" STD_i_MACRON "n" STD_RIGHT_ARROW "kg",          "j" STD_i_MACRON "n" STD_RIGHT_ARROW "kg"),
 /*  353 */  UNIT_CONV(constFactorCaratG,      divide,   "g" STD_RIGHT_ARROW "carat",                        "g" STD_RIGHT_ARROW),
 /* 0354 */  UNIT_CONV(constFactorPintukMl,  multiply,   "pint" STD_UK STD_RIGHT_ARROW "m" STD_litre,        "pint" STD_UK STD_RIGHT_ARROW                              ),
@@ -3668,7 +3665,7 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 2326 */  { fnStore,                      REGISTER_M,                  "STO" STD_SUB_M " " STD_mu,                    "STO" STD_SUB_M " " STD_mu,                    (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /* 2327 */  { fnStore,                      REGISTER_S,                  "STO" STD_SUB_S " " STD_sigma,                 "STO" STD_SUB_S " " STD_sigma,                 (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /* 2328 */  { fnStore,                      REGISTER_S,                  "STO" STD_SUB_S " s",                          "STO" STD_SUB_S " s",                          (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
-/* 2329 */  { fnStore,                      REGISTER_M,                  "STO" STD_SUB_M " " STD_lambda,                "STO" STD_SUB_M " " STD_lambda,                (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
+/* 2329 */  { itemToBeCoded,                NOPARAM,                     "2329",                                        "2329",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2330 */  { fnStore,                      REGISTER_Q,                  "STO" STD_SUB_Q " " STD_xi,                    "STO" STD_SUB_Q " " STD_xi,                    (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /* 2331 */  { fnStore,                      REGISTER_Q,                  "STO" STD_SUB_Q " " STD_k,                     "STO" STD_SUB_Q " " STD_k,                     (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /* 2332 */  { fnStore,                      REGISTER_S,                  "STO" STD_SUB_S " " STD_lambda,                "STO" STD_SUB_S " " STD_lambda,                (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
