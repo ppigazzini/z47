@@ -2322,8 +2322,7 @@
 #define SFL_SCALE                   2269
 #define SFL_VECT                    2270
 #define SFL_NVECT                   2271
-
-#define SFL_2268                    2272
+#define SFL_US                      2272
 #define SFL_2269                    2273
 #define SFL_2270                    2274
 #define SFL_2271                    2275
