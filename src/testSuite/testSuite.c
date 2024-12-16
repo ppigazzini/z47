@@ -377,7 +377,9 @@ void printRegisterToString(calcRegister_t regist, char *registerContent) {
 
 
 void runPgm(uint16_t unusedButMandatoryParameter) {
-  reallyRunFunction(ITM_XEQ, label);
+  if(label != INVALID_VARIABLE) {
+    reallyRunFunction(ITM_XEQ, label);
+  }
 }
 
 
@@ -1409,6 +1411,10 @@ void setParameter(char *p) {
   else if(strcmp(l, "PGM") == 0) {
     r[strlen(r) - 1] = 0;
     label = findNamedLabel(r + 1);
+    if(label == INVALID_VARIABLE) {
+      printf("\nUnknown global label: %s\n", r+1);
+      abortTest();
+    }
   }
 
   else {
