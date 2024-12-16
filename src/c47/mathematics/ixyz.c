@@ -7,24 +7,6 @@
 
 #include "c47.h"
 
-static bool_t ixyzConvert(calcRegister_t reg, real_t *val) {
-  switch(getRegisterDataType(reg)) {
-    case dtLongInteger: {
-      convertLongIntegerRegisterToReal(reg, val, &ctxtReal39);
-      return true;
-    }
-    case dtReal34: {
-      real34ToReal(REGISTER_REAL34_DATA(reg), val);
-      return true;
-    }
-    default: {
-      return false;
-    }
-  }
-}
-
-
-
 void fnIxyz(uint16_t unusedButMandatoryParameter) {
   real_t x, a, b, val;
 
@@ -32,7 +14,7 @@ void fnIxyz(uint16_t unusedButMandatoryParameter) {
     return;
   }
 
-  if(ixyzConvert(REGISTER_X, &x) && ixyzConvert(REGISTER_Y, &a) && ixyzConvert(REGISTER_Z, &b)) {
+  if(getRegisterAsReal(REGISTER_X, &x) && getRegisterAsReal(REGISTER_Y, &a) && getRegisterAsReal(REGISTER_Z, &b)) {
     if(realCompareGreaterEqual(&x, const_0) && realCompareLessEqual(&x, const_1) && realCompareGreaterThan(&a, const_0) && realCompareGreaterThan(&b, const_0)) {
       WP34S_betai(&b, &a, &x, &val, &ctxtReal39);
       reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
