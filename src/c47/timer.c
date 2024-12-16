@@ -525,7 +525,7 @@ void fnShowTimerApp(void) {
 
     int64_t remainingMsec = 0;
     if(remainingMsecCountdown > 0) {
-      remainingMsec = (int64_t)remainingMsecCountdown - (int64_t)msec;
+      remainingMsec = (int64_t)remainingMsecCountdown - (int64_t)msec; //allow it to run negative, hence the i64
       clearRegisterLine(REGISTER_Z, true, true);
     }
 
