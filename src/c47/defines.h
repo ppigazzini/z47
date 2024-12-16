@@ -8,7 +8,7 @@
 // JM VARIOUS OPTIONS
 //*********************************
 
-#define VERSION1 "0.109.02.07b3"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
+#define VERSION1 "0.109.02.07b4"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
 
 
 #if !defined(CALCMODEL)
@@ -105,7 +105,7 @@
   //  #define SAVE_SPACE_DM42_15       // 10056 bytes // Without all distributions, i.e. , cauchy, chi, expo, logis, t, weibull
   //  #define SAVE_SPACE_DM42_16       //  2168 bytes // Without Norml distribution
   //  #define SAVE_SPACE_DM42_17       //  9840 bytes // Without Poisson/Hyper/Binomial/Geometrical/f distributions
-    #define SAVE_SPACE_DM42_20_TIMER //  1232 bytes // Without STOPW
+  //  #define SAVE_SPACE_DM42_20_TIMER //  1232 bytes // Without STOPW
   //  #define SAVE_SPACE_DM42_21_HP35  //   200 bytes // Without config file activations only. Not complete removal.
   #endif // TWO_FILE_PGM
 #endif // DMCP_BUILD
