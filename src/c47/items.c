@@ -1264,6 +1264,8 @@ bool_t itemNotAvail(int16_t itemNr) {
   void pemAlphaEdit               (uint16_t unusedButMandatoryParameter) {}
   void fnOpenMenu                 (uint16_t unusedButMandatoryParameter) {}   //DL
   void fnGetMenu                  (uint16_t unusedButMandatoryParameter) {}   //DL
+  void fnSetCountDownTimerApp     (uint16_t unusedButMandatoryParameter) {}
+
 
 
 #endif // GENERATE_CATALOGS
@@ -3176,7 +3178,7 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 1841 */  { fnSecond,                     NOPARAM,                     "SEC",                                         "SEC",                                         (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /* 1842 */  { fnToTime,                     NOPARAM,                     "zyx" STD_RIGHT_ARROW TM,                      "zyx" STD_RIGHT_ARROW TM,                      (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /* 1843 */  { fnTimeTo,                     NOPARAM,                     TM STD_RIGHT_ARROW "zyx",                      TM STD_RIGHT_ARROW "zyx",                      (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
-/* 1844 */  { itemToBeCoded,                NOPARAM,                     "1844",                                        "1844",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 1844 */  { fnSetCountDownTimerApp,       NOPARAM,                     "X" STD_RIGHT_ARROW "T" STD_SUP_x,             "X" STD_RIGHT_ARROW "T" STD_SUP_x,             (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 1845 */  { addItemToBuffer,              ITM_qoppa,                   "",                                            STD_qoppa,                                     (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },//JM GREEK
 /* 1846 */  { addItemToBuffer,              ITM_digamma,                 "",                                            STD_digamma,                                   (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },//JM GREEK
 /* 1847 */  { addItemToBuffer,              ITM_sampi,                   "",                                            STD_sampi,                                     (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },//JM GREEK

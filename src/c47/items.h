@@ -1892,7 +1892,7 @@
 #define ITM_SECOND                  1841
 #define ITM_toTIME                  1842
 #define ITM_TIMEto                  1843
-#define ITM_1844                    1844
+#define ITM_COUNTDN                 1844
 #define ITM_qoppa                   1845
 #define ITM_digamma                 1846
 #define ITM_sampi                   1847

@@ -656,7 +656,7 @@ TO_QSPI const int16_t menu_Eim[]         = {
 
 
 TO_QSPI const int16_t menu_Timer[]       = { ITM_TIMER_SIGMA_T,             ITM_TIMER_SIGMA_L,          ITM_TIMER_R_T,            ITM_TIMER_R_L,         ITM_TIMER_R_S,               ITM_TIMER_RESET,
-                                             ITM_PLOT_STAT,                 ITM_RBR,                    ITM_NULL,                 ITM_NULL,              ITM_TIMER_0_1S,              ITM_CLSIGMA };
+                                             ITM_PLOT_STAT,                 ITM_RBR,                    ITM_RCL,                  ITM_COUNTDN,           ITM_TIMER_0_1S,              ITM_CLSIGMA };
 
 
 

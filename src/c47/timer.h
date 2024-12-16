@@ -33,6 +33,7 @@ void     fnRegAddLapTimerApp  (uint16_t unusedButMandatoryParameter);
 void     fnBackspaceTimerApp  (void);
 void     fnLeaveTimerApp      (void);
 void     fnPollTimerApp       (void);
+void     fnSetCountDownTimerApp(uint16_t unusedButMandatoryParameter);
 
 
 #if defined(PC_BUILD)
