@@ -8,18 +8,4 @@
   #define LOG2_H
 
   void  fnLog2   (uint16_t unusedButMandatoryParameter);
-
-  #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-    void  log2Error(void);
-  #else // (EXTRA_INFO_ON_CALC_ERROR != 1)
-    #define log2Error typeError
-  #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-
-  void  log2LonI (void);
-  void  log2Rema (void);
-  void  log2Cxma (void);
-  void  log2ShoI (void);
-  void  log2Real (void);
-  void  log2Cplx (void);
-
 #endif // !LOG2_H
