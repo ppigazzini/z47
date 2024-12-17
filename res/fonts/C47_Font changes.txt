@@ -276,4 +276,6 @@ PLUS                      "\xa4\xff"
 
 2024-12-09 Add litre ℓ
     $2113  Script Small L      "\xa1\x13"         STD_litre
+
+2024-12-17 Add all Num font sup/sub a-z, A-Z
  
