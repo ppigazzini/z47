@@ -467,6 +467,7 @@ void fnSetCountDownTimerApp(uint16_t unusedButMandatoryParameter) {
     if(overflow){
       remainingMsecCountdown = 0;
     }
+    fnStopTimerApp();
   #endif // !TESTSUITE_BUILD
 }
 
@@ -569,10 +570,10 @@ void fnShowTimerApp(void) {
       if(remainingMsec > 0) {
         tmpString[0] = 0;
         if(timerCraAndDeciseconds & 0x80u) {
-          sprintf(tmpString, "%2" PRIu32 ":%02" PRIu32 ":%02" PRIu32 ".%" PRIu32 STD_SUP_x "  ", (uint32_t)remainingMsec / 3600000u, (uint32_t)remainingMsec % 3600000u / 60000u, (uint32_t)remainingMsec % 60000u / 1000u, (uint32_t)remainingMsec % 1000u / 100u);
+          sprintf(tmpString, "%2" PRIu32 ":%02" PRIu32 ":%02" PRIu32 ".%" PRIu32 STD_HOURGLASS_WH "  ", (uint32_t)remainingMsec / 3600000u, (uint32_t)remainingMsec % 3600000u / 60000u, (uint32_t)remainingMsec % 60000u / 1000u, (uint32_t)remainingMsec % 1000u / 100u);
         }
         else {
-          sprintf(tmpString, "%2" PRIu32 ":%02" PRIu32 ":%02" PRIu32 STD_SUP_x STD_SPACE_PUNCTUATION STD_SPACE_FIGURE "  ", (uint32_t)remainingMsec / 3600000u, (uint32_t)remainingMsec % 3600000u / 60000u, (uint32_t)remainingMsec % 60000u / 1000u);
+          sprintf(tmpString, "%2" PRIu32 ":%02" PRIu32 ":%02" PRIu32 STD_HOURGLASS_WH STD_SPACE_PUNCTUATION STD_SPACE_FIGURE "  ", (uint32_t)remainingMsec / 3600000u, (uint32_t)remainingMsec % 3600000u / 60000u, (uint32_t)remainingMsec % 60000u / 1000u);
         }
         showString(tmpString, &numericFont, 1, Y_POSITION_OF_REGISTER_Z_LINE, vmNormal, true, true);
       }
