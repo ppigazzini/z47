@@ -571,6 +571,7 @@
 #define STD_RIGHT_FLOOR               "\xa3\x0b"
 #define STD_WATCH                     "\xa3\x1a"
 #define STD_HOURGLASS                 "\xa3\x1b"
+#define STD_HOURGLASS_WH              "\xa9\xd6"
 #define STD_PRINTER                   "\xa3\x99"
 #define STD_MAT_TL                    "\xa3\xa1"
 #define STD_MAT_ML                    "\xa3\xa2"
