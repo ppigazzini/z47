@@ -143,6 +143,528 @@ uint16_t convertItemToSubOrSup(uint16_t item, int16_t subOrSup) {
     #endif // TESTSUITE_BUILD                       //JM^^
   }
 
+
+
+
+typedef struct {
+  uint16_t itemNr;
+} fInMim_t;
+
+
+TO_QSPI const fInMim_t MimFunctionsType0[] = 
+  {   //function
+    {ITM_EXPONENT },
+    {ITM_PERIOD   },
+    {ITM_0        },
+    {ITM_1        },
+    {ITM_2        },
+    {ITM_3        },
+    {ITM_4        },
+    {ITM_5        },
+    {ITM_6        },
+    {ITM_7        },
+    {ITM_8        },
+    {ITM_9        },
+    {ITM_CHS      },
+    {ITM_CONSTpi  }, // do mimAddNumber(item);
+  };
+
+
+TO_QSPI const fInMim_t MimFunctionsType1[] = 
+  {   //function
+    {ITM_STO         },
+    {ITM_STOADD      },
+    {ITM_STOSUB      },
+    {ITM_STOMULT     },
+    {ITM_STODIV      },
+    {ITM_STOMAX      },
+    {ITM_STOMIN      },
+    {ITM_RCL         },
+    {ITM_RCLADD      },
+    {ITM_RCLSUB      },
+    {ITM_RCLMULT     },
+    {ITM_RCLDIV      },
+    {ITM_RCLMAX      },
+    {ITM_RCLMIN      },
+    {ITM_CF          },
+    {ITM_SF          },
+    {ITM_FF          },
+    {ITM_CNST        },
+    {ITM_ALL         },
+    {ITM_ENG         },
+    {ITM_FIX         },
+    {ITM_DSP         },
+    {ITM_SCI         },
+    {ITM_SDL         },
+    {ITM_SDR         },
+    {ITM_RDP         },
+    {ITM_RMODE       },
+    {ITM_RSD         },
+    {ITM_DEG         },
+    {ITM_GRAD        },
+    {ITM_MULPI       },
+    {ITM_RAD         }, // do lastErrorCode = ERROR_NONE; mimEnter(true); runFunction(item);
+  };
+
+TO_QSPI const fInMim_t MimFunctionsType2[] = 
+  {   //function
+    {ITM_SQUARE      },
+    {ITM_CUBE        },
+    {ITM_SQUAREROOTX },
+    {ITM_CUBEROOT    },
+    {ITM_2X          },
+    {ITM_EXP         },
+    {ITM_ROUND2      },
+    {ITM_10x         },
+    {ITM_LOG2        },
+    {ITM_LN          },
+    {ITM_LOG10       },
+    {ITM_1ONX        },
+    {ITM_cos         },
+    {ITM_cosh        },
+    {ITM_sin         },
+    {ITM_sinh        },
+    {ITM_tan         },
+    {ITM_tanh        },
+    {ITM_arccos      },
+    {ITM_arcosh      },
+    {ITM_arcsin      },
+    {ITM_arsinh      },
+    {ITM_arctan      },
+    {ITM_artanh      },
+    {ITM_CEIL        },
+    {ITM_FLOOR       },
+    {ITM_DEC         },
+    {ITM_INC         },
+    {ITM_IP          },
+    {ITM_FP          },
+    {ITM_MAGNITUDE   },
+    {ITM_NEXTP       },
+    {ITM_XFACT       },
+    {ITM_LOGICALNOT  },
+    {CST_01          },
+    {CST_02          },
+    {CST_03          },
+    {CST_04          },
+    {CST_05          },
+    {CST_06          },
+    {CST_07          },
+    {CST_08          },
+    {CST_09          },
+    {CST_10          },
+    {CST_11          },
+    {CST_12          },
+    {CST_13          },
+    {CST_14          },
+    {CST_15          },
+    {CST_16          },
+    {CST_17          },
+    {CST_18          },
+    {CST_19          },
+    {CST_20          },
+    {CST_21          },
+    {CST_22          },
+    {CST_23          },
+    {CST_24          },
+    {CST_25          },
+    {CST_26          },
+    {CST_27          },
+    {CST_28          },
+    {CST_29          },
+    {CST_30          },
+    {CST_31          },
+    {CST_32          },
+    {CST_33          },
+    {CST_34          },
+    {CST_35          },
+    {CST_36          },
+    {CST_37          },
+    {CST_38          },
+    {CST_39          },
+    {CST_40          },
+    {CST_41          },
+    {CST_42          },
+    {CST_43          },
+    {CST_44          },
+    {CST_45          },
+    {CST_46          },
+    {CST_47          },
+    {CST_48          },
+    {CST_49          },
+    {CST_50          },
+    {CST_51          },
+    {CST_52          },
+    {CST_53          },
+    {CST_54          },
+    {CST_55          },
+    {CST_56          },
+    {CST_57          },
+    {CST_58          },
+    {CST_59          },
+    {CST_60          },
+    {CST_61          },
+    {CST_62          },
+    {CST_63          },
+    {CST_64          },
+    {CST_65          },
+    {CST_66          },
+    {CST_67          },
+    {CST_68          },
+    {CST_69          },
+    {CST_70          },
+    {CST_71          },
+    {CST_72          },
+    {CST_73          },
+    {CST_74          },
+    {CST_75          },
+    {CST_76          },
+    {CST_77          },
+    {CST_78          },
+    {CST_79          },
+    {CST_80          },
+    {CST_81          },
+    {CST_82          },
+    {CST_83          },
+    {CST_84          },
+    {ITM_CtoF        },
+    {ITM_FtoC        },
+    {ITM_DBtoPR      },
+    {ITM_FT2toHA     },
+    {ITM_HAtoFT2     },
+    {ITM_DBtoFR      },
+    {ITM_FT2toM2     },
+    {ITM_M2toFT2     },
+    {ITM_PRtoDB      },
+    {ITM_HAtoKM2     },
+    {ITM_KM2toHA     },
+    {ITM_FRtoDB      },
+    {ITM_GLUKtoFZUK  },
+    {ITM_FZUKtoGLUK  },
+    {ITM_ACtoHA      },
+    {ITM_MLtoIN3     },
+    {ITM_HAtoAC      },
+    {ITM_IN3toML     },
+    {ITM_ACUStoHA    },
+    {ITM_FT3toGLUK   },
+    {ITM_HAtoACUS    },
+    {ITM_GLUKtoFT3   },
+    {ITM_PAtoATM     },
+    {ITM_ATMtoPA     },
+    {ITM_AUtoM       },
+    {ITM_MtoAU       },
+    {ITM_BARtoPA     },
+    {ITM_PAtoBAR     },
+    {ITM_BTUtoJ      },
+    {ITM_JtoBTU      },
+    {ITM_CALtoJ      },
+    {ITM_JtoCAL      },
+    {ITM_LBFFTtoNM   },
+    {ITM_LtoFT3      },
+    {ITM_NMtoLBFFT   },
+    {ITM_FT3toL      },
+    {ITM_CWTtoKG     },
+    {ITM_KGtoCWT     },
+    {ITM_FTtoM       },
+    {ITM_MtoFT       },
+    {ITM_FTUStoM     },
+    {ITM_LtoQTUS     },
+    {ITM_QTUStoL     },
+    {ITM_MtoFTUS     },
+    {ITM_IN3toFZUK   },
+    {ITM_FZUKtoIN3   },
+    {ITM_FZUKtoML    },
+    {ITM_IN3toFZUS   },
+    {ITM_MLtoFZUK    },
+    {ITM_FZUStoIN3   },
+    {ITM_FZUStoML    },
+    {ITM_FT3toGalUS  },
+    {ITM_MLtoFZUS    },
+    {ITM_GalUStoFT3  },
+    {ITM_GLUKtoL     },
+    {ITM_LtoGLUK     },
+    {ITM_GLUStoL     },
+    {ITM_LtoGLUS     },
+    {ITM_HPEtoW      },
+    {ITM_WtoHPE      },
+    {ITM_HPMtoW      },
+    {ITM_WtoHPM      },
+    {ITM_HPUKtoW     },
+    {ITM_WtoHPUK     },
+    {ITM_INCHHGtoPA  },
+    {ITM_CUPCtoFZUS  },
+    {ITM_PAtoINCHHG  },
+    {ITM_CUPCtoML    },
+    {ITM_INCHtoMM    },
+    {ITM_MMtoINCH    },
+    {ITM_WHtoJ       },
+    {ITM_JtoWH       },
+    {ITM_KGtoLBS     },
+    {ITM_LBStoKG     },
+    {ITM_GtoOZ       },
+    {ITM_OZtoG       },
+    {ITM_KGtoSCW     },
+    {ITM_CUPUKtoFZUK },
+    {ITM_SCWtoKG     },
+    {ITM_CUPUKtoML   },
+    {ITM_KGtoSTO     },
+    {ITM_FZUKtoCUPUK },
+    {ITM_STOtoKG     },
+    {ITM_FZUKtoTBSPUK},
+    {ITM_KGtoST      },
+    {ITM_FZUKtoTSPUK },
+    {ITM_FZUStoCUPC  },
+    {ITM_STtoKG      },
+    {ITM_FZUStoTBSPC },
+    {ITM_FZUStoTSPC  },
+    {ITM_KGtoTON     },
+    {ITM_KGtoLIANG   },
+    {ITM_MLtoCUPC    },
+    {ITM_TONtoKG     },
+    {ITM_LIANGtoKG   },
+    {ITM_MLtoCUPUK   },
+    {ITM_GtoTRZ      },
+    {ITM_MLtoPINTLQ  },
+    {ITM_TRZtoG      },
+    {ITM_MLtoPINTUK  },
+    {ITM_LBFtoN      },
+    {ITM_NtoLBF      },
+    {ITM_LYtoM       },
+    {ITM_MtoLY       },
+    {ITM_MMHGtoPA    },
+    {ITM_MLtoQT      },
+    {ITM_PAtoMMHG    },
+    {ITM_MLtoQTUS    },
+    {ITM_MItoKM      },
+    {ITM_KMtoMI      },
+    {ITM_KMtoNMI     },
+    {ITM_NMItoKM     },
+    {ITM_MtoPC       },
+    {ITM_PCtoM       },
+    {ITM_MMtoPOINT   },
+    {ITM_MLtoTBSPC   },
+    {ITM_MILEtoM     },
+    {ITM_POINTtoMM   },
+    {ITM_MLtoTBSPUK  },
+    {ITM_MtoMILE     },
+    {ITM_MtoYD       },
+    {ITM_YDtoM       },
+    {ITM_PSItoPA     },
+    {ITM_PAtoPSI     },
+    {ITM_PAtoTOR     },
+    {ITM_MLtoTSPC    },
+    {ITM_TORtoPA     },
+    {ITM_MLtoTSPUK   },
+    {ITM_StoYEAR     },
+    {ITM_YEARtoS     },
+    {ITM_CARATtoG    },
+    {ITM_PINTLQtoML  },
+    {ITM_JINtoKG     },
+    {ITM_GtoCARAT    },
+    {ITM_PINTUKtoML  },
+    {ITM_KGtoJIN     },
+    {ITM_QTtoL       },
+    {ITM_LtoQT       },
+    {ITM_FATHOMtoM   },
+    {ITM_QTtoML      },
+    {ITM_NMItoM      },
+    {ITM_MtoFATHOM   },
+    {ITM_QTUStoML    },
+    {ITM_MtoNMI      },
+    {ITM_BARRELtoM3  },
+    {ITM_TBSPCtoFZUS },
+    {ITM_M3toBARREL  },
+    {ITM_HMStoHR     },
+    {ITM_HRtoHMS     },
+    {ITM_TBSPCtoML   },
+    {ITM_HECTAREtoM2 },
+    {ITM_M2toHECTARE },
+    {ITM_MUtoM2      },
+    {ITM_M2toMU      },
+    {ITM_LItoM       },
+    {ITM_MtoLI       },
+    {ITM_CHItoM      },
+    {ITM_MtoCHI      },
+    {ITM_YINtoM      },
+    {ITM_MtoYIN      },
+    {ITM_CUNtoM      },
+    {ITM_MtoCUN      },
+    {ITM_ZHANGtoM    },
+    {ITM_TBSPUKtoFZUK},
+    {ITM_MtoZHANG    },
+    {ITM_TBSPUKtoML  },
+    {ITM_FENtoM      },
+    {ITM_MtoFEN      },
+    {ITM_MI2toKM2    },
+    {ITM_KM2toMI2    },
+    {ITM_NMI2toKM2   },
+    {ITM_KM2toNMI2   },
+    {ITM_TSPCtoFZUS  },
+    {ITM_TSPCtoML    },
+    {ITM_TSPUKtoFZUK },
+    {ITM_TSPUKtoML   },
+    {ITM_GLUStoFZUS  },
+    {ITM_FZUStoGLUS  },
+    {ITM_KNOTtoKMH   },
+    {ITM_KMHtoKNOT   },
+    {ITM_KMHtoMPS    },
+    {ITM_MPStoKMH    },
+    {ITM_RPMtoDEGPS  },
+    {ITM_DEGPStoRPM  },
+    {ITM_MPHtoKMH    },
+    {ITM_KMHtoMPH    },
+    {ITM_MPHtoMPS    },
+    {ITM_MPStoMPH    },
+    {ITM_RPMtoRADPS  },
+    {ITM_RADPStoRPM  },
+    {ITM_DEGtoRAD    },
+    {ITM_RADtoDEG    },
+    {ITM_DEGtoGRAD   },
+    {ITM_GRADtoDEG   },
+    {ITM_GRADtoRAD   },
+    {ITM_RADtoGRAD   },
+    {ITM_NMItoMI     },
+    {ITM_MItoNMI     },
+    {ITM_FURtoM      },
+    {ITM_MtoFUR      },
+    {ITM_FTNtoS      },
+    {ITM_StoFTN      },
+    {ITM_FPFtoMPS    },
+    {ITM_MPStoFPF    },
+    {ITM_BRDStoM     },
+    {ITM_MtoBRDS     },
+    {ITM_FIRtoKG     },
+    {ITM_KGtoFIR     },
+    {ITM_FPFtoKPH    },
+    {ITM_KPHtoFPF    },
+    {ITM_BRDStoIN    },
+    {ITM_INtoBRDS    },
+    {ITM_FIRtoLB     },
+    {ITM_LBtoFIR     },
+    {ITM_FPFtoMPH    },
+    {ITM_MPHtoFPF    },
+    {ITM_FPStoKMH    },
+    {ITM_KMHtoFPS    },
+    {ITM_FPStoMPS    },
+    {ITM_MPStoFPS    },
+    {ITM_L100toKML   },
+    {ITM_KMLtoL100   },
+    {ITM_KMLEtoK100K },
+    {ITM_K100KtoKMLE },
+    {ITM_K100KtoKMK  },
+    {ITM_KMKtoK100K  },
+    {ITM_L100toMGUS  },
+    {ITM_MGUStoL100  },
+    {ITM_MGEUStoK100M},
+    {ITM_K100MtoMGEUS},
+    {ITM_K100KtoK100M},
+    {ITM_K100MtoK100K},
+    {ITM_L100toMGUK  },
+    {ITM_MGUKtoL100  },
+    {ITM_MGEUKtoK100M},
+    {ITM_K100MtoMGEUK},
+    {ITM_K100MtoMIK  },
+    {ITM_MIKtoK100M  },
+    {ITM_NSIGMA      },
+    {ITM_SIGMAx      },
+    {ITM_SIGMAy      },
+    {ITM_SIGMAx2     },
+    {ITM_SIGMAx2y    },
+    {ITM_SIGMAy2     },
+    {ITM_SIGMAxy     },
+    {ITM_SIGMAlnxy   },
+    {ITM_SIGMAlnx    },
+    {ITM_SIGMAln2x   },
+    {ITM_SIGMAylnx   },
+    {ITM_SIGMAlny    },
+    {ITM_SIGMAln2y   },
+    {ITM_SIGMAxlny   },
+    {ITM_SIGMAx2lny  },
+    {ITM_SIGMAlnyonx },
+    {ITM_SIGMAx2ony  },
+    {ITM_SIGMA1onx   },
+    {ITM_SIGMA1onx2  },
+    {ITM_SIGMAxony   },
+    {ITM_SIGMA1ony   },
+    {ITM_SIGMA1ony2  },
+    {ITM_SIGMAx3     },
+    {ITM_SIGMAx4     },
+    {ITM_ABS         },
+    {ITM_BATT        },
+    {ITM_BN          },
+    {ITM_BNS         },
+    {ITM_CONJ        },
+    {ITM_CORR        },
+    {ITM_COV         },
+    {ITM_BESTFQ      },
+    {ITM_DAY         },
+    {ITM_DtoJ        },
+    {ITM_DTtoJ       },
+    {ITM_ERF         },
+    {ITM_ERFC        },
+    {ITM_EXPT        },
+    {ITM_FIB         },
+    {ITM_DISK        },
+    {ITM_GD          },
+    {ITM_GDM1        },
+    {ITM_IM          },
+    {ITM_JtoDT       },
+    {ITM_LASTX       },
+    {ITM_LNGAMMA     },
+    {ITM_LocRQ       },
+    {ITM_MANT        },
+    {ITM_MEM         },
+    {ITM_MONTH       },
+    {ITM_sincpi      },
+    {ITM_RAN         },
+    {ITM_RE          },
+    {ITM_REexIM      },
+    {ITM_RMODEQ      },
+    {ITM_EX1         },
+    {ITM_ROUNDI2     },
+    {ITM_SETSIG2     },
+    {ITM_SIGN        },
+    {ITM_ISM         },
+    {ITM_SMW         },
+    {ITM_SSIZE       },
+    {ITM_LN1X        },
+    {ITM_SW          },
+    {ITM_SXY         },
+    {ITM_TICKS       },
+    {ITM_UNITV       },
+    {ITM_WDAY        },
+    {ITM_WM          },
+    {ITM_WP          },
+    {ITM_WM1         },
+    {ITM_XW          },
+    {ITM_YEAR        },
+    {ITM_GAMMAX      },
+    {ITM_zetaX       },
+    {ITM_STDDEVPOP   },
+    {ITM_M1X         },
+    {ITM_HRtoTM      },
+    {ITM_toREAL      },
+    {ITM_Kk          },
+    {ITM_Ek          },
+    {ITM_ARG         },
+    {ITM_op_a        },
+    {ITM_op_a2       },
+    {ITM_EE_EXP_TH   }, // do mimRunFunction(item, indexOfItems[item].param);
+   };
+
+  static bool_t isFunctionInMim(int16_t com, uint8_t fType) {
+    uint_fast16_t n = fType == 0 ? nbrOfElements(MimFunctionsType0) : \
+                      fType == 1 ? nbrOfElements(MimFunctionsType1) : \
+                                   nbrOfElements(MimFunctionsType2);
+    for(uint_fast16_t i=0; i<n; i++) {
+      if(fType == 0 ? com == MimFunctionsType0[i].itemNr : fType == 1 ? com == MimFunctionsType1[i].itemNr : com == MimFunctionsType2[i].itemNr) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+
+
 typedef struct {
   char     noStr[3];
 } numStr;
@@ -415,393 +937,6 @@ typedef struct {
         }
 
         switch(item) {
-          case ITM_EXPONENT :
-          case ITM_PERIOD :
-          case ITM_0 :
-          case ITM_1 :
-          case ITM_2 :
-          case ITM_3 :
-          case ITM_4 :
-          case ITM_5 :
-          case ITM_6 :
-          case ITM_7 :
-          case ITM_8 :
-          case ITM_9 :
-          case ITM_CHS :// +/-
-          case ITM_CONSTpi: {
-            mimAddNumber(item);
-            break;
-          }
-
-#if defined(SAVE_SPACE_DM42_11)
-          case ITM_STO ://JM optimized, to be grouped, so that a single SAVE_SPACE can be used
-          case ITM_RCL ://JM optimized
-              lastErrorCode = ERROR_NONE;
-              mimEnter(true);
-              runFunction(item);
-              break;
-#else // !SAVE_SPACE_DM42_11
-          case ITM_STO :
-          case ITM_STOADD :
-          case ITM_STOSUB :
-          case ITM_STOMULT :
-          case ITM_STODIV :
-          case ITM_STOMAX :
-          case ITM_STOMIN :
-          case ITM_RCL :
-          case ITM_RCLADD :
-          case ITM_RCLSUB :
-          case ITM_RCLMULT :
-          case ITM_RCLDIV :
-          case ITM_RCLMAX :
-          case ITM_RCLMIN :
-          case ITM_CF :
-          case ITM_SF :
-          case ITM_FF :
-          case ITM_CNST :
-          case ITM_ALL :
-          case ITM_ENG :
-          case ITM_FIX :
-          case ITM_DSP :
-          case ITM_SCI :
-          case ITM_SDL :
-          case ITM_SDR :
-          case ITM_RDP :
-          case ITM_RMODE :
-          case ITM_RSD :
-          case ITM_DEG :
-          case ITM_GRAD :
-          case ITM_MULPI :
-          case ITM_RAD: {
-              lastErrorCode = ERROR_NONE;
-              mimEnter(true);
-              runFunction(item);
-              break;
-          }
-
-          case ITM_SQUARE :
-          case ITM_CUBE :
-          case ITM_SQUAREROOTX :
-          case ITM_CUBEROOT :
-          case ITM_2X :
-          case ITM_EXP :
-          case ITM_ROUND2 :
-          case ITM_10x :
-          case ITM_LOG2 :
-          case ITM_LN :
-          case ITM_LOG10 :
-          case ITM_1ONX :
-          case ITM_cos :
-          case ITM_cosh :
-          case ITM_sin :
-          case ITM_sinh :
-          case ITM_tan :
-          case ITM_tanh :
-          case ITM_arccos :
-          case ITM_arcosh :
-          case ITM_arcsin :
-          case ITM_arsinh :
-          case ITM_arctan :
-          case ITM_artanh :
-          case ITM_CEIL :
-          case ITM_FLOOR :
-          case ITM_DEC :
-          case ITM_INC :
-          case ITM_IP :
-          case ITM_FP :
-          case ITM_MAGNITUDE :
-          case ITM_NEXTP :
-          case ITM_XFACT :
-          case ITM_LOGICALNOT :
-          case CST_01 :
-          case CST_02 :
-          case CST_03 :
-          case CST_04 :
-          case CST_05 :
-          case CST_06 :
-          case CST_07 :
-          case CST_08 :
-          case CST_09 :
-          case CST_10 :
-          case CST_11 :
-          case CST_12 :
-          case CST_13 :
-          case CST_14 :
-          case CST_15 :
-          case CST_16 :
-          case CST_17 :
-          case CST_18 :
-          case CST_19 :
-          case CST_20 :
-          case CST_21 :
-          case CST_22 :
-          case CST_23 :
-          case CST_24 :
-          case CST_25 :
-          case CST_26 :
-          case CST_27 :
-          case CST_28 :
-          case CST_29 :
-          case CST_30 :
-          case CST_31 :
-          case CST_32 :
-          case CST_33 :
-          case CST_34 :
-          case CST_35 :
-          case CST_36 :
-          case CST_37 :
-          case CST_38 :
-          case CST_39 :
-          case CST_40 :
-          case CST_41 :
-          case CST_42 :
-          case CST_43 :
-          case CST_44 :
-          case CST_45 :
-          case CST_46 :
-          case CST_47 :
-          case CST_48 :
-          case CST_49 :
-          case CST_50 :
-          case CST_51 :
-          case CST_52 :
-          case CST_53 :
-          case CST_54 :
-          case CST_55 :
-          case CST_56 :
-          case CST_57 :
-          case CST_58 :
-          case CST_59 :
-          case CST_60 :
-          case CST_61 :
-          case CST_62 :
-          case CST_63 :
-          case CST_64 :
-          case CST_65 :
-          case CST_66 :
-          case CST_67 :
-          case CST_68 :
-          case CST_69 :
-          case CST_70 :
-          case CST_71 :
-          case CST_72 :
-          case CST_73 :
-          case CST_74 :
-          case CST_75 :
-          case CST_76 :
-          case CST_77 :
-          case CST_78 :
-          case CST_79 :
-          case CST_80 :
-          case CST_81 :
-          case CST_82 :
-          case CST_83 :
-          case CST_84 :
-          case ITM_CtoF :
-          case ITM_FtoC :
-          case ITM_DBtoPR :
-          case ITM_DBtoFR :
-          case ITM_PRtoDB :
-          case ITM_FRtoDB :
-          case ITM_ACtoHA :
-          case ITM_HAtoAC :
-          case ITM_ACUStoHA :
-          case ITM_HAtoACUS :
-          case ITM_PAtoATM :
-          case ITM_ATMtoPA :
-          case ITM_AUtoM :
-          case ITM_MtoAU :
-          case ITM_BARtoPA :
-          case ITM_PAtoBAR :
-          case ITM_BTUtoJ :
-          case ITM_JtoBTU :
-          case ITM_CALtoJ :
-          case ITM_JtoCAL :
-          case ITM_LBFFTtoNM :
-          case ITM_NMtoLBFFT :
-          case ITM_CWTtoKG :
-          case ITM_KGtoCWT :
-          case ITM_FTtoM :
-          case ITM_MtoFT :
-          case ITM_FTUStoM :
-          case ITM_MtoFTUS :
-          case ITM_FZUKtoML :
-          case ITM_MLtoFZUK :
-          case ITM_FZUStoML :
-          case ITM_MLtoFZUS :
-          case ITM_GLUKtoL :
-          case ITM_LtoGLUK :
-          case ITM_GLUStoL :
-          case ITM_LtoGLUS :
-          case ITM_HPEtoW :
-          case ITM_WtoHPE :
-          case ITM_HPMtoW :
-          case ITM_WtoHPM :
-          case ITM_HPUKtoW :
-          case ITM_WtoHPUK :
-          case ITM_INCHHGtoPA :
-          case ITM_PAtoINCHHG :
-          case ITM_INCHtoMM :
-          case ITM_MMtoINCH :
-          case ITM_WHtoJ :
-          case ITM_JtoWH :
-          case ITM_KGtoLBS :
-          case ITM_LBStoKG :
-          case ITM_GtoOZ :
-          case ITM_OZtoG :
-          case ITM_KGtoSCW :
-          case ITM_SCWtoKG :
-          case ITM_KGtoSTO :
-          case ITM_STOtoKG :
-          case ITM_KGtoST :
-          case ITM_STtoKG :
-          case ITM_KGtoTON :
-          case ITM_KGtoLIANG :
-          case ITM_TONtoKG :
-          case ITM_LIANGtoKG :
-          case ITM_GtoTRZ :
-          case ITM_TRZtoG :
-          case ITM_LBFtoN :
-          case ITM_NtoLBF :
-          case ITM_LYtoM :
-          case ITM_MtoLY :
-          case ITM_MMHGtoPA :
-          case ITM_PAtoMMHG :
-          case ITM_MItoKM :
-          case ITM_KMtoMI :
-          case ITM_KMtoNMI :
-          case ITM_NMItoKM :
-          case ITM_MtoPC :
-          case ITM_PCtoM :
-          case ITM_MMtoPOINT :
-          case ITM_POINTtoMM :
-          case ITM_MtoYD :
-          case ITM_YDtoM :
-          case ITM_PSItoPA :
-          case ITM_PAtoPSI :
-          case ITM_PAtoTOR :
-          case ITM_TORtoPA :
-          case ITM_StoYEAR :
-          case ITM_YEARtoS :
-          case ITM_CARATtoG :
-          case ITM_JINtoKG :
-          case ITM_GtoCARAT :
-          case ITM_KGtoJIN :
-          case ITM_QTtoL :
-          case ITM_LtoQT :
-          case ITM_FATHOMtoM :
-          case ITM_MtoFATHOM :
-          case ITM_BARRELtoM3 :
-          case ITM_M3toBARREL :
-          case ITM_HECTAREtoM2 :
-          case ITM_M2toHECTARE :
-          case ITM_MUtoM2 :
-          case ITM_M2toMU :
-          case ITM_LItoM :
-          case ITM_MtoLI :
-          case ITM_CHItoM :
-          case ITM_MtoCHI :
-          case ITM_YINtoM :
-          case ITM_MtoYIN :
-          case ITM_CUNtoM :
-          case ITM_MtoCUN :
-          case ITM_ZHANGtoM :
-          case ITM_MtoZHANG :
-          case ITM_FENtoM :
-          case ITM_MtoFEN :
-          case ITM_MILEtoM :
-          case ITM_MtoMILE :
-          case ITM_NMItoM :
-          case ITM_MtoNMI :
-          case ITM_NSIGMA :
-          case ITM_SIGMAx :
-          case ITM_SIGMAy :
-          case ITM_SIGMAx2 :
-          case ITM_SIGMAx2y :
-          case ITM_SIGMAy2 :
-          case ITM_SIGMAxy :
-          case ITM_SIGMAlnxy :
-          case ITM_SIGMAlnx :
-          case ITM_SIGMAln2x :
-          case ITM_SIGMAylnx :
-          case ITM_SIGMAlny :
-          case ITM_SIGMAln2y :
-          case ITM_SIGMAxlny :
-          case ITM_SIGMAx2lny :
-          case ITM_SIGMAlnyonx :
-          case ITM_SIGMAx2ony :
-          case ITM_SIGMA1onx :
-          case ITM_SIGMA1onx2 :
-          case ITM_SIGMAxony :
-          case ITM_SIGMA1ony :
-          case ITM_SIGMA1ony2 :
-          case ITM_SIGMAx3 :
-          case ITM_SIGMAx4 :
-          case ITM_ABS :
-          case ITM_BATT :
-          case ITM_BN :
-          case ITM_BNS :
-          case ITM_CONJ :
-          case ITM_CORR :
-          case ITM_COV :
-          case ITM_BESTFQ :
-          case ITM_DAY :
-          case ITM_DtoJ :
-          case ITM_DTtoJ :
-          case ITM_ERF :
-          case ITM_ERFC :
-          case ITM_EXPT :
-          case ITM_FIB :
-          case ITM_DISK :
-          case ITM_GD :
-          case ITM_GDM1 :
-          case ITM_IM :
-          case ITM_JtoDT :
-          case ITM_LASTX :
-          case ITM_LNGAMMA :
-          case ITM_LocRQ :
-          case ITM_MANT :
-          case ITM_MEM :
-          case ITM_MONTH :
-          case ITM_sincpi :
-          case ITM_RAN :
-          case ITM_RE :
-          case ITM_REexIM :
-          case ITM_RMODEQ :
-          case ITM_EX1 :
-          case ITM_ROUNDI2 :
-          case ITM_SETSIG2 :
-          case ITM_SIGN :
-          case ITM_ISM :
-          case ITM_SMW :
-          case ITM_SSIZE :
-          case ITM_LN1X :
-          case ITM_SW :
-          case ITM_SXY :
-          case ITM_TICKS :
-          case ITM_UNITV :
-          case ITM_WDAY :
-          case ITM_WM :
-          case ITM_WP :
-          case ITM_WM1 :
-          case ITM_XW :
-          case ITM_YEAR :
-          case ITM_GAMMAX :
-          case ITM_zetaX :
-          case ITM_STDDEVPOP :
-          case ITM_M1X :
-          case ITM_HRtoTM :
-          case ITM_toREAL :
-          case ITM_Kk :
-          case ITM_Ek:
-          case ITM_ARG:
-#endif // SAVE_SPACE_DM42_11
-          case ITM_op_a :                //C47
-          case ITM_op_a2:                //C47
-          case ITM_EE_EXP_TH: {          //C47
-            mimRunFunction(item, indexOfItems[item].param);
-            break;
-          }
 
           case ITM_SHOW: {
             mimEnter(true);
@@ -813,6 +948,22 @@ typedef struct {
             runFunction(ITM_OFF);
             break;
           }
+
+          default: {
+            if(isFunctionInMim(item,0)) {
+                mimAddNumber(item);
+                break;
+            }
+            else if(isFunctionInMim(item,1)) {
+                lastErrorCode = ERROR_NONE;
+                mimEnter(true);
+                runFunction(item);
+                break;
+            } else if(isFunctionInMim(item,2)) {
+                mimRunFunction(item, indexOfItems[item].param);
+                break;
+            }
+          }            
         }
       }
 

@@ -419,7 +419,7 @@ bool_t checkMinimumDataPoints(const real_t *n) {
 static void clearStatisticalSums(void) {
   if(statisticalSumsPointer) {
     for(int32_t sum=0; sum<NUMBER_OF_STATISTICAL_SUMS - 4; sum++) {
-      realZero((real_t *)(statisticalSumsPointer + REAL_SIZE_IN_BLOCKS * sum));
+      realZero(statisticalSumsPointer + sum);
     }
     realCopy(const_plusInfinity,  SIGMA_XMIN);
     realCopy(const_plusInfinity,  SIGMA_YMIN);
@@ -820,7 +820,7 @@ void fnSigmaAddRem(uint16_t plusMinusSelection) {
 void fnStatSum(uint16_t sum) {
   if(checkMinimumDataPoints(const_1)) {
     liftStack();
-    convertRealToResultRegister((real_t *)(statisticalSumsPointer + REAL_SIZE_IN_BLOCKS * sum), REGISTER_X, amNone);
+    convertRealToResultRegister(statisticalSumsPointer + sum, REGISTER_X, amNone);
   }
 }
 

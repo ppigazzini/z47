@@ -63,7 +63,7 @@ Out: EC=24 FL_ASLIFT=0 RX=Stri:"String test"
 ; lnGamma(Short Integer) --> Error24
 ;=======================================
 In:  FL_ASLIFT=0 FL_CPXRES=0 RX=ShoI:"5#8"
-Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=ShoI:"5#8"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"3.178053830347945619646941601297055"
 
 
 

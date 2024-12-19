@@ -179,7 +179,7 @@ bool_t getFlag(uint16_t flag) {
     if(currentLocalFlags != NULL) {
       flag -= NUMBER_OF_GLOBAL_FLAGS;
       if(flag < NUMBER_OF_LOCAL_FLAGS) {
-        return (currentLocalFlags->localFlags & (1u << (uint32_t)flag)) != 0;
+        return (*currentLocalFlags & (1u << (uint32_t)flag)) != 0;
       }
       else {
         sprintf(errorMessage, commonBugScreenMessages[bugMsgNotDefinedMustBe], "getFlag", "local flag", flag, NUMBER_OF_LOCAL_FLAGS - 1);
@@ -270,7 +270,7 @@ void fnSetFlag(uint16_t flag) {
     if(currentLocalFlags != NULL) {
       flag -= NUMBER_OF_GLOBAL_FLAGS;
       if(flag < NUMBER_OF_LOCAL_FLAGS) {
-        currentLocalFlags->localFlags |=  (1u << (uint32_t)flag);
+        *currentLocalFlags |=  (1u << (uint32_t)flag);
       }
       else {
         sprintf(errorMessage, commonBugScreenMessages[bugMsgNotDefinedMustBe], "fnSetFlag", "local flag", flag, NUMBER_OF_LOCAL_FLAGS - 1);
@@ -343,7 +343,7 @@ void fnClearFlag(uint16_t flag) {
     if(currentLocalFlags != NULL) {
       flag -= NUMBER_OF_GLOBAL_FLAGS;
       if(flag < NUMBER_OF_LOCAL_FLAGS) {
-        currentLocalFlags->localFlags &= ~(1u << (uint32_t)flag);
+        *currentLocalFlags &= ~(1u << (uint32_t)flag);
       }
       else {
         sprintf(errorMessage, commonBugScreenMessages[bugMsgNotDefinedMustBe], "fnClearFlag", "local flag", flag, NUMBER_OF_LOCAL_FLAGS - 1);
@@ -422,7 +422,7 @@ void fnFlipFlag(uint16_t flag) {
     if(currentLocalFlags != NULL) {
       flag -= NUMBER_OF_GLOBAL_FLAGS;
       if(flag < NUMBER_OF_LOCAL_FLAGS) {
-        currentLocalFlags->localFlags ^=  (1u << (uint32_t)flag);
+        *currentLocalFlags ^=  (1u << (uint32_t)flag);
       }
       else {
         sprintf(errorMessage, commonBugScreenMessages[bugMsgNotDefinedMustBe], "fnFlipFlag", "local flag", flag, NUMBER_OF_LOCAL_FLAGS - 1);
@@ -470,7 +470,7 @@ void fnClFAll(uint16_t confirmation) {
     memset(globalFlags, 0, sizeof(globalFlags)); // Clear global flags from 00 to 99 and X to W
 
     if(currentLocalFlags != NULL) {
-      currentLocalFlags->localFlags = 0;         // Clear local flags
+      *currentLocalFlags = 0; // Clear local flags
     }
   }
 }
@@ -553,7 +553,8 @@ void SetSetting(uint16_t jmConfig) {
     case DO_ENG:         fnSetFlag(FLAG_ENGOVR);                                break;
 
     case JC_NL:          fnFlipFlag(FLAG_NUMLOCK); showAlphaModeonGui();        break; //
-    case FLAG_HPRP:
+
+    case FLAG_HPRP:      //this list is for flags that have HP42 compatible menu set buttons operating the underlying flags
     case FLAG_HPBASE:
     case FLAG_2TO10:
     case FLAG_PROPFR:

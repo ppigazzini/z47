@@ -158,11 +158,11 @@ void fnGotoDot(uint16_t globalStepNumber) {
 
 void fnExecute(uint16_t label) {
   if(programRunStop == PGM_RUNNING) {
-    dataBlock_t *oldCurrentSubroutineLevelData = currentSubroutineLevelData;
+    subroutineLevelHeader_t *oldCurrentSubroutineLevelData = currentSubroutineLevelData;
     allSubroutineLevels.numberOfSubroutineLevels += 1;
     currentSubroutineLevelData = allocC47Blocks(3);
     if(currentSubroutineLevelData) {
-      oldCurrentSubroutineLevelData[2].ptrToNextLevel = TO_C47MEMPTR(currentSubroutineLevelData);
+      oldCurrentSubroutineLevelData->ptrToNextLevel = TO_C47MEMPTR(currentSubroutineLevelData);
       currentReturnProgramNumber = currentProgramNumber;
       currentReturnLocalStep = currentLocalStepNumber;
       currentNumberOfLocalRegisters = 0; // No local register
@@ -212,7 +212,7 @@ void fnExecutePlusSkip(uint16_t label) {
 
 
 void fnReturn(uint16_t skip) {
-  dataBlock_t *oldCurrentSubroutineLevelData = currentSubroutineLevelData;
+  subroutineLevelHeader_t *oldCurrentSubroutineLevelData = currentSubroutineLevelData;
   uint16_t sizeToBeFreedInBlocks;
 
   /* Cancel INPUT */
@@ -247,14 +247,14 @@ void fnReturn(uint16_t skip) {
       allocateLocalRegisters(0);
       oldCurrentSubroutineLevelData = currentSubroutineLevelData;
     }
-    sizeToBeFreedInBlocks = 3 + (currentNumberOfLocalFlags > 0);
+    sizeToBeFreedInBlocks = TO_BLOCKS(sizeof(subroutineLevelHeader_t) + sizeof(localFlags_t)*(currentNumberOfLocalFlags > 0));
     currentSubroutineLevelData = TO_PCMEMPTR(currentPtrToPreviousLevel);
     freeC47Blocks(oldCurrentSubroutineLevelData, sizeToBeFreedInBlocks);
     currentPtrToNextLevel = C47_NULL;
     allSubroutineLevels.numberOfSubroutineLevels -= 1;
 
-    currentLocalFlags = (currentNumberOfLocalFlags == 0 ? NULL : currentSubroutineLevelData + 3);
-    currentLocalRegisters = (registerHeader_t *)(currentNumberOfLocalRegisters == 0 ? NULL : currentSubroutineLevelData + (currentLocalFlags == NULL ? 3 : 4));
+    currentLocalFlags = (currentNumberOfLocalFlags == 0 ? NULL : LOCAL_FLAGS_AFTER_SUBROUTINE_LEVEL_HEADER(currentSubroutineLevelData));
+    currentLocalRegisters = (currentNumberOfLocalRegisters == 0 || currentNumberOfLocalFlags == 0 ? NULL : LOCAL_REGISTER_HEADERS_AFTER_LOCAL_FLAGS(currentLocalFlags));
   }
 
   /* Not in a subroutine */
@@ -264,7 +264,9 @@ void fnReturn(uint16_t skip) {
       allocateLocalRegisters(0);
     }
     if(currentNumberOfLocalFlags > 0) {
-      reduceC47Blocks(currentSubroutineLevelData, 4, 3);
+      reduceC47Blocks(currentSubroutineLevelData,
+                      TO_BLOCKS(sizeof(subroutineLevelHeader_t) + sizeof(localFlags_t)),
+                      TO_BLOCKS(sizeof(subroutineLevelHeader_t)));
       currentNumberOfLocalFlags = 0;
     }
     currentLocalFlags = NULL;
@@ -295,7 +297,6 @@ void fnStopProgram(uint16_t unusedButMandatoryParameter) {
 
 
 
-#if !defined(TESTSUITE_BUILD)
 static void _getStringLabelOrVariableName(uint8_t *stringAddress) {
   uint8_t stringLength = *(uint8_t *)(stringAddress++);
   xcopy(tmpStringLabelOrVariableName, stringAddress, stringLength);
@@ -535,7 +536,7 @@ static void _putLiteral(uint8_t *literalAddress) {
       liftStack();
       setSystemFlag(FLAG_ASLIFT);
       reallocateRegister(REGISTER_X, dtShortInteger, 0, *(uint8_t *)(literalAddress++));
-      xcopy(REGISTER_DATA(REGISTER_X), literalAddress, TO_BYTES(SHORT_INTEGER_SIZE_IN_BLOCKS));
+      xcopy(getRegisterDataPointer(REGISTER_X), literalAddress, TO_BYTES(SHORT_INTEGER_SIZE_IN_BLOCKS));
       break;
       }
 
@@ -683,14 +684,10 @@ static void _putLiteral(uint8_t *literalAddress) {
     }
   }
 }
-#endif // !TESTSUITE_BUILD
 
 
 
 int16_t executeOneStep(uint8_t *step) {
-  #if defined(TESTSUITE_BUILD)
-    return 0;
-  #else // TESTSUITE_BUILD
   uint16_t op;
 
   op = *(step++);
@@ -780,13 +777,11 @@ int16_t executeOneStep(uint8_t *step) {
       return temporaryInformation == TI_FALSE ? 2 : 1;
     }
   }
-  #endif // !TESTSUITE_BUILD
 }
 
 
 
 void runProgram(bool_t singleStep, uint16_t menuLabel) {
-  #if !defined(TESTSUITE_BUILD)
   bool_t nestedEngine = (programRunStop == PGM_RUNNING);
   uint16_t startingSubLevel = (nestedEngine && menuLabel == INVALID_VARIABLE) ? currentSubroutineLevel : 0;
   lastErrorCode = ERROR_NONE;
@@ -890,7 +885,6 @@ stopProgram:
     }
   }
   return;
-  #endif // !TESTSUITE_BUILD
 }
 
 

@@ -323,7 +323,7 @@ Out: EC=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"90":DEG
 
 Func: fnLn
 In:  FL_ASLIFT=0 RX=Real:"inf"
-Out: EC=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"NaN"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"inf"
 
 Func: fnLnP1
 In:  FL_ASLIFT=0 RX=Real:"inf"

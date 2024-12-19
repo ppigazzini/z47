@@ -17,11 +17,11 @@
   #include "c47Extensions/keyboardTweak.h"
 #endif
 
-#if !defined(TESTSUITE_BUILD) && !defined(GENERATE_CATALOGS)
+#if !defined(GENERATE_CATALOGS)
   int16_t lastFunc = 0;
   int16_t lastParam = 0;
   char    lastTemp[16];
-#endif // !TESTSUITE_BUILD && !GENERATE_CATALOGS
+#endif // !GENERATE_CATALOGS
 #if defined(PC_BUILD) || defined(TESTSUITE_BUILD)
   bool_t              debugMemAllocation;
   bool                forceTamAlpha;
@@ -61,6 +61,9 @@ bool_t                 halfSecTick2;
 bool_t                 halfSecTick3;
 bool_t                 skippedStackLines = false;
 
+bool_t                 reDraw = true;
+bool_t                 refreshNIMdone = false;
+
 
 realContext_t          ctxtReal4;    //   limited digits: used for higher speed internal real calcs
 realContext_t          ctxtReal34;   //   34 digits
@@ -70,12 +73,12 @@ realContext_t          ctxtReal75;   //   75 digits: used in SLVQ
 realContext_t          ctxtReal1071; // 1071 digits: used in radian angle reduction
 realContext_t          ctxtReal2139; // 2139 digits: used for really big modulo
 
-dataBlock_t            allSubroutineLevels;
-dataBlock_t           *statisticalSumsPointer;
-dataBlock_t           *savedStatisticalSumsPointer;
-dataBlock_t           *ram = NULL;
-dataBlock_t           *currentLocalFlags;
-dataBlock_t           *currentSubroutineLevelData;
+subroutineLevels_t       allSubroutineLevels;
+subroutineLevelHeader_t *currentSubroutineLevelData;
+real_t                  *statisticalSumsPointer;
+real_t                  *savedStatisticalSumsPointer;
+uint32_t                *ram = NULL;
+localFlags_t            *currentLocalFlags;
 
 namedVariableHeader_t *allNamedVariables;
 softmenuStack_t        softmenuStack[SOFTMENU_STACK_SIZE];

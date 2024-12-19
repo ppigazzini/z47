@@ -8,7 +8,7 @@
 // JM VARIOUS OPTIONS
 //*********************************
 
-#define VERSION1 "0.109.02.07b1"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
+#define VERSION1 "0.109.02.07b4"       // major release . minor release . tracked build . internal OR un/tracked OR subrelease : Alpha / Beta / RC1
 
 
 #if !defined(CALCMODEL)
@@ -73,7 +73,6 @@
       #define SAVE_SPACE_DM42_8F       //  1216 bytes // Font Browsers
       #define SAVE_SPACE_DM42_9        //  6712 bytes // SHOW (use either old SHOW or VIEW, change in code)
       #define SAVE_SPACE_DM42_10       //  3136 bytes // C47 programming ... (not complete removal but disables it anyway)
-      #define SAVE_SPACE_DM42_11       //   800 bytes // Matrix function on entry ...
       #define SAVE_SPACE_DM42_12       //  3288 bytes // SLVC, SLVQ, ELLIPTIC, ZETA, BETA
       #define SAVE_SPACE_DM42_12PRIME  // 27208 bytes // ISPRIME, NEXTPRIME, FACTORS, EULPHI, MATXFACTOR
       #define SAVE_SPACE_DM42_12BESSEL //  5129 bytes // Without BESSEL
@@ -96,10 +95,9 @@
   //  #define SAVE_SPACE_DM42_8F       //  1216 bytes // Without Font Browsers
   //  #define SAVE_SPACE_DM42_9        //  6712 bytes // Without SHOW (use either old SHOW or VIEW, change in code)
   //  #define SAVE_SPACE_DM42_10       //  3136 bytes // Without C47 programming ... (not complete removal but disables it anyway)
-  //  #define SAVE_SPACE_DM42_11       //   800 bytes // Without Matrix function on entry ...
   //  #define SAVE_SPACE_DM42_12       //  3288 bytes // Without SLVC, SLVQ, ELLIPTIC, ZETA, BETA
   //  #define SAVE_SPACE_DM42_12PRIME  // 27208 bytes // Without ISPRIME, NEXTPRIME, FACTORS, EULPHI, MATXFACTOR
-    #define SAVE_SPACE_DM42_12BESSEL //  5168 bytes // Without BESSEL
+  //  #define SAVE_SPACE_DM42_12BESSEL //  5168 bytes // Without BESSEL
   //  #define SAVE_SPACE_DM42_12ORTHO  //  0744 bytes // Without ORTHO MENU
   //  #define SAVE_SPACE_DM42_13GRF    // 17472 bytes // Without Solver & graphics & stat graphics
   //  #define SAVE_SPACE_DM42_13GRF_JM //  7520 bytes // Without More graphics
@@ -642,6 +640,7 @@
 #define FLAG_SCALE                            0x8052
 #define FLAG_VECT                             0x8053
 #define FLAG_NVECT                            0x8054
+#define FLAG_US                               0x8055
 
 #define NUMBER_OF_SYSTEM_FLAGS                    85 // We can have a maximum of 128 system flags
 
@@ -768,7 +767,6 @@ typedef enum {
 //Export type
 #define MODE_NRM 2
 #define MODE_RTF 1
-#define MODE_TXT 0
 
 
 // List of constants
@@ -1283,7 +1281,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define AC_UPPER                                   0
 #define AC_LOWER                                   1
 #define plainTextMode                              (bool_t)( calcMode == CM_AIM   || ((calcMode == CM_PEM  || calcMode == CM_ASSIGN) && getSystemFlag(FLAG_ALPHA)))
-#define labelText                                  (bool_t)((tam.mode == TM_LABEL || tam.mode == TM_STORCL || calcMode == CM_ASSIGN) && getSystemFlag(FLAG_ALPHA))
+#define labelText                                  (bool_t)((tam.mode == TM_MENU || tam.mode == TM_LABEL || tam.mode == TM_STORCL || calcMode == CM_ASSIGN) && getSystemFlag(FLAG_ALPHA))
 //#define plainText                                  (bool_t)( calcMode == CM_AIM   || calcMode == CM_EIM    || (calcMode == CM_PEM    && getSystemFlag(FLAG_ALPHA) && !tam.mode))
 #define noCapsLockSync                             0
 #define onlyCapsLockSync                           1
@@ -1567,34 +1565,34 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define SUM_YMAX                                  27
 
 #define NUMBER_OF_STATISTICAL_SUMS                28
-#define SIGMA_N      ((real_t *)(statisticalSumsPointer)) // could be a 32 bit unsigned integer
-#define SIGMA_X      ((real_t *)(statisticalSumsPointer + REAL_SIZE_IN_BLOCKS * SUM_X     )) // could be a real34
-#define SIGMA_Y      ((real_t *)(statisticalSumsPointer + REAL_SIZE_IN_BLOCKS * SUM_Y     )) // could be a real34
-#define SIGMA_X2     ((real_t *)(statisticalSumsPointer + REAL_SIZE_IN_BLOCKS * SUM_X2    ))
-#define SIGMA_X2Y    ((real_t *)(statisticalSumsPointer + REAL_SIZE_IN_BLOCKS * SUM_X2Y   ))
-#define SIGMA_Y2     ((real_t *)(statisticalSumsPointer + REAL_SIZE_IN_BLOCKS * SUM_Y2    ))
-#define SIGMA_XY     ((real_t *)(statisticalSumsPointer + REAL_SIZE_IN_BLOCKS * SUM_XY    ))
-#define SIGMA_lnXlnY ((real_t *)(statisticalSumsPointer + REAL_SIZE_IN_BLOCKS * SUM_lnXlnY))
-#define SIGMA_lnX    ((real_t *)(statisticalSumsPointer + REAL_SIZE_IN_BLOCKS * SUM_lnX   ))
-#define SIGMA_ln2X   ((real_t *)(statisticalSumsPointer + REAL_SIZE_IN_BLOCKS * SUM_ln2X  ))
-#define SIGMA_YlnX   ((real_t *)(statisticalSumsPointer + REAL_SIZE_IN_BLOCKS * SUM_YlnX  ))
-#define SIGMA_lnY    ((real_t *)(statisticalSumsPointer + REAL_SIZE_IN_BLOCKS * SUM_lnY   ))
-#define SIGMA_ln2Y   ((real_t *)(statisticalSumsPointer + REAL_SIZE_IN_BLOCKS * SUM_ln2Y  ))
-#define SIGMA_XlnY   ((real_t *)(statisticalSumsPointer + REAL_SIZE_IN_BLOCKS * SUM_XlnY  ))
-#define SIGMA_X2lnY  ((real_t *)(statisticalSumsPointer + REAL_SIZE_IN_BLOCKS * SUM_X2lnY ))
-#define SIGMA_lnYonX ((real_t *)(statisticalSumsPointer + REAL_SIZE_IN_BLOCKS * SUM_lnYonX))
-#define SIGMA_X2onY  ((real_t *)(statisticalSumsPointer + REAL_SIZE_IN_BLOCKS * SUM_X2onY ))
-#define SIGMA_1onX   ((real_t *)(statisticalSumsPointer + REAL_SIZE_IN_BLOCKS * SUM_1onX  ))
-#define SIGMA_1onX2  ((real_t *)(statisticalSumsPointer + REAL_SIZE_IN_BLOCKS * SUM_1onX2 ))
-#define SIGMA_XonY   ((real_t *)(statisticalSumsPointer + REAL_SIZE_IN_BLOCKS * SUM_XonY  ))
-#define SIGMA_1onY   ((real_t *)(statisticalSumsPointer + REAL_SIZE_IN_BLOCKS * SUM_1onY  ))
-#define SIGMA_1onY2  ((real_t *)(statisticalSumsPointer + REAL_SIZE_IN_BLOCKS * SUM_1onY2 ))
-#define SIGMA_X3     ((real_t *)(statisticalSumsPointer + REAL_SIZE_IN_BLOCKS * SUM_X3    ))
-#define SIGMA_X4     ((real_t *)(statisticalSumsPointer + REAL_SIZE_IN_BLOCKS * SUM_X4    ))
-#define SIGMA_XMIN   ((real_t *)(statisticalSumsPointer + REAL_SIZE_IN_BLOCKS * SUM_XMIN  )) // could be a real34
-#define SIGMA_XMAX   ((real_t *)(statisticalSumsPointer + REAL_SIZE_IN_BLOCKS * SUM_XMAX  )) // could be a real34
-#define SIGMA_YMIN   ((real_t *)(statisticalSumsPointer + REAL_SIZE_IN_BLOCKS * SUM_YMIN  )) // could be a real34
-#define SIGMA_YMAX   ((real_t *)(statisticalSumsPointer + REAL_SIZE_IN_BLOCKS * SUM_YMAX  )) // could be a real34
+#define SIGMA_N      (statisticalSumsPointer             ) // could be a 32 bit unsigned integer
+#define SIGMA_X      (statisticalSumsPointer + SUM_X     ) // could be a real34
+#define SIGMA_Y      (statisticalSumsPointer + SUM_Y     ) // could be a real34
+#define SIGMA_X2     (statisticalSumsPointer + SUM_X2    )
+#define SIGMA_X2Y    (statisticalSumsPointer + SUM_X2Y   )
+#define SIGMA_Y2     (statisticalSumsPointer + SUM_Y2    )
+#define SIGMA_XY     (statisticalSumsPointer + SUM_XY    )
+#define SIGMA_lnXlnY (statisticalSumsPointer + SUM_lnXlnY)
+#define SIGMA_lnX    (statisticalSumsPointer + SUM_lnX   )
+#define SIGMA_ln2X   (statisticalSumsPointer + SUM_ln2X  )
+#define SIGMA_YlnX   (statisticalSumsPointer + SUM_YlnX  )
+#define SIGMA_lnY    (statisticalSumsPointer + SUM_lnY   )
+#define SIGMA_ln2Y   (statisticalSumsPointer + SUM_ln2Y  )
+#define SIGMA_XlnY   (statisticalSumsPointer + SUM_XlnY  )
+#define SIGMA_X2lnY  (statisticalSumsPointer + SUM_X2lnY )
+#define SIGMA_lnYonX (statisticalSumsPointer + SUM_lnYonX)
+#define SIGMA_X2onY  (statisticalSumsPointer + SUM_X2onY )
+#define SIGMA_1onX   (statisticalSumsPointer + SUM_1onX  )
+#define SIGMA_1onX2  (statisticalSumsPointer + SUM_1onX2 )
+#define SIGMA_XonY   (statisticalSumsPointer + SUM_XonY  )
+#define SIGMA_1onY   (statisticalSumsPointer + SUM_1onY  )
+#define SIGMA_1onY2  (statisticalSumsPointer + SUM_1onY2 )
+#define SIGMA_X3     (statisticalSumsPointer + SUM_X3    )
+#define SIGMA_X4     (statisticalSumsPointer + SUM_X4    )
+#define SIGMA_XMIN   (statisticalSumsPointer + SUM_XMIN  ) // could be a real34
+#define SIGMA_XMAX   (statisticalSumsPointer + SUM_XMAX  ) // could be a real34
+#define SIGMA_YMIN   (statisticalSumsPointer + SUM_YMIN  ) // could be a real34
+#define SIGMA_YMAX   (statisticalSumsPointer + SUM_YMAX  ) // could be a real34
 
 #define MAX_NUMBER_OF_GLYPHS_IN_STRING           508 //WP=196: Change to 512 less 3, Also change error message 33, and AIM_BUFFER_LENGTH, and MAXLINES
 #define NUMBER_OF_GLYPH_ROWS                     261  //Used in the font browser application
@@ -1779,7 +1777,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define isSystemFlagWriteProtected(sf)       ((sf & 0x4000) != 0)
 #define shortIntegerIsZero(op)               (((*(uint64_t *)(op)) == 0) || (shortIntegerMode == SIM_SIGNMT && (((*(uint64_t *)(op)) == 1u<<((uint64_t)shortIntegerWordSize-1)))))
 #define getStackTop()                        (getSystemFlag(FLAG_SSIZE8) ? REGISTER_D : REGISTER_T)
-#define freeRegisterData(regist)             freeC47Blocks((void *)getRegisterDataPointer(regist), getRegisterFullSizeInBlocks(regist))
+#define freeRegisterData(regist)             freeC47Blocks(getRegisterDataPointer(regist), getRegisterFullSizeInBlocks(regist))
 #define storeToDtConfigDescriptor(config)    (configToStore->config = config)
 #define recallFromDtConfigDescriptor(config) (config = configToRecall->config)
 
@@ -1790,7 +1788,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 
 #define C47_NULL                             65535 // NULL pointer
 #define TO_PCMEMPTR(p)                       ((void *)((p) == C47_NULL ? NULL : ram + (p)))
-#define TO_C47MEMPTR(p)                      ((p) == NULL ? C47_NULL : (uint16_t)((dataBlock_t *)(p) - ram))
+#define TO_C47MEMPTR(p)                      ((p) == NULL ? C47_NULL : (uint16_t)((uint32_t *)(p) - ram))
 
 #define min(a,b)                             ((a)<(b)?(a):(b))
 #define max(a,b)                             ((a)>(b)?(a):(b))
@@ -1891,15 +1889,27 @@ static inline uint8_t regCtoKS(const int16_t regC) {
                                                (softmenu[menu].menuItem == -MNU_EQ_EDIT  && y == 0 && (x == 4 || x == 5)) \
                                              )
 
+
+#define IS_SIM_ARROW_ALLOWED_IN_MENU(menu, key) ( \
+                                               (softmenu[menu].menuItem == -MNU_ALPHA   && (key == GDK_KEY_Up || key == GDK_KEY_Down || key == GDK_KEY_Left || key == GDK_KEY_Right) ) || \
+                                               (softmenu[menu].menuItem == -MNU_M_EDIT  && (key == GDK_KEY_Up || key == GDK_KEY_Down || key == GDK_KEY_Left || key == GDK_KEY_Right) ) || \
+                                               (softmenu[menu].menuItem == -MNU_EQ_EDIT && (                                            key == GDK_KEY_Left || key == GDK_KEY_Right) ) \
+                                             )
+
 #define IS_BASEBLANK_(menuId)                (menuId==0 && !BASE_MYM && !BASE_HOME)
 
-#define currentReturnProgramNumber           (currentSubroutineLevelData[0].returnProgramNumber)
-#define currentReturnLocalStep               (currentSubroutineLevelData[0].returnLocalStep)
-#define currentNumberOfLocalFlags            (currentSubroutineLevelData[1].numberOfLocalFlags)
-#define currentNumberOfLocalRegisters        (currentSubroutineLevelData[1].numberOfLocalRegisters)
-#define currentSubroutineLevel               (currentSubroutineLevelData[1].subroutineLevel)
-#define currentPtrToNextLevel                (currentSubroutineLevelData[2].ptrToNextLevel)
-#define currentPtrToPreviousLevel            (currentSubroutineLevelData[2].ptrToPreviousLevel)
+#define currentReturnProgramNumber           (currentSubroutineLevelData->returnProgramNumber   )
+#define currentReturnLocalStep               (currentSubroutineLevelData->returnLocalStep       )
+#define currentNumberOfLocalFlags            (currentSubroutineLevelData->numberOfLocalFlags    )
+#define currentNumberOfLocalRegisters        (currentSubroutineLevelData->numberOfLocalRegisters)
+#define currentSubroutineLevel               (currentSubroutineLevelData->subroutineLevel       )
+#define currentPtrToNextLevel                (currentSubroutineLevelData->ptrToNextLevel        )
+#define currentPtrToPreviousLevel            (currentSubroutineLevelData->ptrToPreviousLevel    )
+
+#define LOCAL_FLAGS_AFTER_SUBROUTINE_LEVEL_HEADER(ptr)     ((localFlags_t     *)((subroutineLevelHeader_t  *)ptr + 1))
+#define LOCAL_REGISTER_HEADERS_AFTER_LOCAL_FLAGS(ptr)      ((registerHeader_t *)((localFlags_t             *)ptr + 1))
+#define REAL34_MATRIX_ELEMENTS_AFTER_MATRIX_HEADER(ptr)    ((real34_t         *)((matrixHeader_t           *)ptr + 1))
+#define COMPLEX34_MATRIX_ELEMENTS_AFTER_MATRIX_HEADER(ptr) ((real34_t         *)((matrixHeader_t           *)ptr + 1))
 
 
 

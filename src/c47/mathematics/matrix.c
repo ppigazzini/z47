@@ -31,7 +31,8 @@
 #endif // !TESTSUITE_BUILD
 
 static bool_t getDimensionArg(uint32_t *rows, uint32_t *cols) {
-  longInteger_t tmp_lgInt;
+  longInteger_t tmp_lgInt1;
+  longInteger_t tmp_lgInt2;
 
   //Get Size from REGISTER_X and REGISTER_Y
   if(   ((getRegisterDataType(REGISTER_X) != dtLongInteger) && (getRegisterDataType(REGISTER_X) != dtReal34))
@@ -43,53 +44,59 @@ static bool_t getDimensionArg(uint32_t *rows, uint32_t *cols) {
           moreInfoOnError("In function getDimensionArg:", errorMessage, NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       #endif // !TESTSUITE_BUILD
-      return false;
+    goto returnDone;
   }
 
   if(getRegisterDataType(REGISTER_X) == dtLongInteger) {
-    convertLongIntegerRegisterToLongInteger(REGISTER_X, tmp_lgInt);
+    convertLongIntegerRegisterToLongInteger(REGISTER_X, tmp_lgInt1);
   }
   else { // dtReal34
-    convertReal34ToLongInteger(REGISTER_REAL34_DATA(REGISTER_X), tmp_lgInt, DEC_ROUND_DOWN);
+    convertReal34ToLongInteger(REGISTER_REAL34_DATA(REGISTER_X), tmp_lgInt1, DEC_ROUND_DOWN);
   }
 
-  if(longIntegerIsNegativeOrZero(tmp_lgInt)) {
+  if(longIntegerIsNegativeOrZero(tmp_lgInt1)) {
     #if !defined(TESTSUITE_BUILD)
       displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         char strbuf[32];
-        longIntegerToAllocatedString(tmp_lgInt, strbuf, 32);
+        longIntegerToAllocatedString(tmp_lgInt1, strbuf, 32);
         sprintf(errorMessage, "invalid number of columns");
         moreInfoOnError("In function getDimensionArg:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     #endif // !TESTSUITE_BUILD
-    return false;
+    goto returnDone;
   }
-  longIntegerToUInt32(tmp_lgInt, *cols);
+  longIntegerToUInt32(tmp_lgInt1, *cols);
 
   if(getRegisterDataType(REGISTER_Y) == dtLongInteger) {
-    convertLongIntegerRegisterToLongInteger(REGISTER_Y, tmp_lgInt);
+    convertLongIntegerRegisterToLongInteger(REGISTER_Y, tmp_lgInt2);
   }
   else { // dtReal34
-    convertReal34ToLongInteger(REGISTER_REAL34_DATA(REGISTER_Y), tmp_lgInt, DEC_ROUND_DOWN);
+    convertReal34ToLongInteger(REGISTER_REAL34_DATA(REGISTER_Y), tmp_lgInt2, DEC_ROUND_DOWN);
   }
 
-  if(longIntegerIsNegativeOrZero(tmp_lgInt)) {
+  if(longIntegerIsNegativeOrZero(tmp_lgInt2)) {
     #if !defined(TESTSUITE_BUILD)
       displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         char strbuf[32];
-        longIntegerToAllocatedString(tmp_lgInt, strbuf, 32);
+        longIntegerToAllocatedString(tmp_lgInt2, strbuf, 32);
         sprintf(errorMessage, "invalid number of rows");
         moreInfoOnError("In function getDimensionArg:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     #endif // !TESTSUITE_BUILD
-    return false;
+    goto returnDone;
   }
-  longIntegerToUInt32(tmp_lgInt, *rows);
+  longIntegerToUInt32(tmp_lgInt2, *rows);
 
-  longIntegerFree(tmp_lgInt);
+  longIntegerFree(tmp_lgInt1);
+  longIntegerFree(tmp_lgInt2);
   return true;
+
+returnDone:
+  longIntegerFree(tmp_lgInt1);
+  longIntegerFree(tmp_lgInt2);
+  return false;
 }
 
 
@@ -383,8 +390,8 @@ bool_t saveStatsMatrix(void) {
 
   if(regStats != INVALID_VARIABLE) {
     if(getRegisterDataType(regStats) == dtReal34Matrix) {
-      rows = REGISTER_DATA(regStats)->matrixRows;
-      cols = REGISTER_DATA(regStats)->matrixColumns;
+      rows = REGISTER_MATRIX_HEADER(regStats)->matrixRows;
+      cols = REGISTER_MATRIX_HEADER(regStats)->matrixColumns;
 
       //Initialize Memory for Matrix
       if(initMatrixRegister(TEMP_REGISTER_2_SAVED_STATS, rows, cols, false)) {
@@ -430,8 +437,8 @@ bool_t recallStatsMatrix(void) {
   calcRegister_t regStats = TEMP_REGISTER_2_SAVED_STATS;
 
   if(getRegisterDataType(regStats) == dtReal34Matrix) {
-    rows = REGISTER_DATA(regStats)->matrixRows;
-    cols = REGISTER_DATA(regStats)->matrixColumns;
+    rows = REGISTER_MATRIX_HEADER(regStats)->matrixRows;
+    cols = REGISTER_MATRIX_HEADER(regStats)->matrixColumns;
     if(cols == 2 && rows >= 1) {
       regStats = findNamedVariable("STATS");
       if(regStats == INVALID_VARIABLE) {
@@ -500,8 +507,8 @@ void fnGetMatrixDimensions(uint16_t unusedButMandatoryParameter) {
   }
 
   if(getRegisterDataType(REGISTER_X) == dtReal34Matrix || getRegisterDataType(REGISTER_X) == dtComplex34Matrix) {
-    const uint16_t rows = REGISTER_DATA(REGISTER_X)->matrixRows;
-    const uint16_t cols = REGISTER_DATA(REGISTER_X)->matrixColumns;
+    const uint16_t rows = REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows;
+    const uint16_t cols = REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns;
     longInteger_t li;
 
     reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
@@ -539,16 +546,16 @@ void fnTranspose(uint16_t unusedButMandatoryParameter) {
 
     linkToRealMatrixRegister(REGISTER_X, &x);
     transposeRealMatrix(&x, &x);
-    REGISTER_REAL34_MATRIX_DBLOCK(REGISTER_X)->matrixRows    = x.header.matrixRows;
-    REGISTER_REAL34_MATRIX_DBLOCK(REGISTER_X)->matrixColumns = x.header.matrixColumns;
+    REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows    = x.header.matrixRows;
+    REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns = x.header.matrixColumns;
   }
   else if(getRegisterDataType(REGISTER_X) == dtComplex34Matrix) {
     complex34Matrix_t x;
 
     linkToComplexMatrixRegister(REGISTER_X, &x);
     transposeComplexMatrix(&x, &x);
-    REGISTER_REAL34_MATRIX_DBLOCK(REGISTER_X)->matrixRows    = x.header.matrixRows;
-    REGISTER_REAL34_MATRIX_DBLOCK(REGISTER_X)->matrixColumns = x.header.matrixColumns;
+    REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows    = x.header.matrixRows;
+    REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns = x.header.matrixColumns;
   }
   else {
     displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
@@ -1599,18 +1606,17 @@ bool_t initMatrixRegister(calcRegister_t regist, uint16_t rows, uint16_t cols, b
     return false;
   }
   else if(lastErrorCode == ERROR_NONE) {
-    // REGISTER_COMPLEX34_MATRIX_DBLOCK is same as REGISTER_REAL34_MATRIX_DBLOCK
-    REGISTER_REAL34_MATRIX_DBLOCK(regist)->matrixRows    = rows;
-    REGISTER_REAL34_MATRIX_DBLOCK(regist)->matrixColumns = cols;
+    REGISTER_MATRIX_HEADER(regist)->matrixRows    = rows;
+    REGISTER_MATRIX_HEADER(regist)->matrixColumns = cols;
     if(complex) {
       for(uint16_t i = 0; i < rows * cols; ++i) {
-        real34Zero(VARIABLE_REAL34_DATA(REGISTER_COMPLEX34_MATRIX_M_ELEMENTS(regist) + i));
-        real34Zero(VARIABLE_IMAG34_DATA(REGISTER_COMPLEX34_MATRIX_M_ELEMENTS(regist) + i));
+        real34Zero(VARIABLE_REAL34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(regist) + i));
+        real34Zero(VARIABLE_IMAG34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(regist) + i));
       }
     }
     else {
       for(uint16_t i = 0; i < rows * cols; ++i) {
-        real34Zero(REGISTER_REAL34_MATRIX_M_ELEMENTS(regist) + i);
+        real34Zero(REGISTER_REAL34_MATRIX_ELEMENTS(regist) + i);
       }
     }
     return true;
@@ -1622,7 +1628,7 @@ bool_t initMatrixRegister(calcRegister_t regist, uint16_t rows, uint16_t cols, b
 
 
 bool_t redimMatrixRegister(calcRegister_t regist, uint16_t rows, uint16_t cols) {
-  const uint16_t origRows = REGISTER_REAL34_MATRIX_DBLOCK(regist)->matrixRows, origCols = REGISTER_REAL34_MATRIX_DBLOCK(regist)->matrixColumns;
+  const uint16_t origRows = REGISTER_MATRIX_HEADER(regist)->matrixRows, origCols = REGISTER_MATRIX_HEADER(regist)->matrixColumns;
   if(regist == INVALID_VARIABLE) {
     return false;
   }
@@ -1631,10 +1637,10 @@ bool_t redimMatrixRegister(calcRegister_t regist, uint16_t rows, uint16_t cols) 
     const size_t newSize = (rows     * cols    ) * REAL34_SIZE_IN_BLOCKS;
     if(newSize <= oldSize) {
       if(newSize < oldSize) {
-        freeC47Blocks(REGISTER_REAL34_MATRIX_M_ELEMENTS(regist) + rows * cols, oldSize - newSize);
+        freeC47Blocks(REGISTER_REAL34_MATRIX_ELEMENTS(regist) + rows * cols, oldSize - newSize);
       }
-      REGISTER_REAL34_MATRIX_DBLOCK(regist)->matrixRows    = rows;
-      REGISTER_REAL34_MATRIX_DBLOCK(regist)->matrixColumns = cols;
+      REGISTER_MATRIX_HEADER(regist)->matrixRows    = rows;
+      REGISTER_MATRIX_HEADER(regist)->matrixColumns = cols;
       return true;
     }
     else {
@@ -1643,13 +1649,13 @@ bool_t redimMatrixRegister(calcRegister_t regist, uint16_t rows, uint16_t cols) 
       if(lastErrorCode == ERROR_NONE) {
         reallocateRegister(regist, dtReal34Matrix, newSize, amNone);
         if(lastErrorCode == ERROR_NONE) {
-          REGISTER_REAL34_MATRIX_DBLOCK(regist)->matrixRows    = rows;
-          REGISTER_REAL34_MATRIX_DBLOCK(regist)->matrixColumns = cols;
+          REGISTER_MATRIX_HEADER(regist)->matrixRows    = rows;
+          REGISTER_MATRIX_HEADER(regist)->matrixColumns = cols;
           for(uint16_t i = 0; i < origRows * origCols; ++i) {
-            real34Copy(newMatrix.matrixElements + i, REGISTER_REAL34_MATRIX_M_ELEMENTS(regist) + i);
+            real34Copy(newMatrix.matrixElements + i, REGISTER_REAL34_MATRIX_ELEMENTS(regist) + i);
           }
           for(uint16_t i = origRows * origCols; i < rows * cols; ++i) {
-            real34Zero(REGISTER_REAL34_MATRIX_M_ELEMENTS(regist) + i);
+            real34Zero(REGISTER_REAL34_MATRIX_ELEMENTS(regist) + i);
           }
           realMatrixFree(&newMatrix);
           return true;
@@ -1669,10 +1675,10 @@ bool_t redimMatrixRegister(calcRegister_t regist, uint16_t rows, uint16_t cols) 
     const size_t newSize = (rows     * cols    ) * COMPLEX34_SIZE_IN_BLOCKS;
     if(newSize <= oldSize) {
       if(newSize < oldSize) {
-        freeC47Blocks(REGISTER_COMPLEX34_MATRIX_M_ELEMENTS(regist) + rows * cols, oldSize - newSize);
+        freeC47Blocks(REGISTER_COMPLEX34_MATRIX_ELEMENTS(regist) + rows * cols, oldSize - newSize);
       }
-      REGISTER_COMPLEX34_MATRIX_DBLOCK(regist)->matrixRows    = rows;
-      REGISTER_COMPLEX34_MATRIX_DBLOCK(regist)->matrixColumns = cols;
+      REGISTER_MATRIX_HEADER(regist)->matrixRows    = rows;
+      REGISTER_MATRIX_HEADER(regist)->matrixColumns = cols;
       return true;
     }
     else {
@@ -1681,14 +1687,14 @@ bool_t redimMatrixRegister(calcRegister_t regist, uint16_t rows, uint16_t cols) 
       if(lastErrorCode == ERROR_NONE) {
         reallocateRegister(regist, dtComplex34Matrix, newSize, amNone);
         if(lastErrorCode == ERROR_NONE) {
-          REGISTER_COMPLEX34_MATRIX_DBLOCK(regist)->matrixRows    = rows;
-          REGISTER_COMPLEX34_MATRIX_DBLOCK(regist)->matrixColumns = cols;
+          REGISTER_MATRIX_HEADER(regist)->matrixRows    = rows;
+          REGISTER_MATRIX_HEADER(regist)->matrixColumns = cols;
           for(uint16_t i = 0; i < origRows * origCols; ++i) {
-            complex34Copy(newMatrix.matrixElements + i, REGISTER_COMPLEX34_MATRIX_M_ELEMENTS(regist) + i);
+            complex34Copy(newMatrix.matrixElements + i, REGISTER_COMPLEX34_MATRIX_ELEMENTS(regist) + i);
           }
           for(uint16_t i = origRows * origCols; i < rows * cols; ++i) {
-            real34Zero(VARIABLE_REAL34_DATA(REGISTER_REAL34_MATRIX_M_ELEMENTS(regist) + i));
-            real34Zero(VARIABLE_IMAG34_DATA(REGISTER_REAL34_MATRIX_M_ELEMENTS(regist) + i));
+            real34Zero(VARIABLE_REAL34_DATA(REGISTER_REAL34_MATRIX_ELEMENTS(regist) + i));
+            real34Zero(VARIABLE_IMAG34_DATA(REGISTER_REAL34_MATRIX_ELEMENTS(regist) + i));
           }
           complexMatrixFree(&newMatrix);
           return true;
@@ -1724,7 +1730,7 @@ calcRegister_t allocateNamedMatrix(const char *name, uint16_t rows, uint16_t col
 }
 
 bool_t appendRowAtMatrixRegister(calcRegister_t regist) {
-  const uint16_t rows = REGISTER_REAL34_MATRIX_DBLOCK(regist)->matrixRows, cols = REGISTER_REAL34_MATRIX_DBLOCK(regist)->matrixColumns;
+  const uint16_t rows = REGISTER_MATRIX_HEADER(regist)->matrixRows, cols = REGISTER_MATRIX_HEADER(regist)->matrixColumns;
   if(regist == INVALID_VARIABLE) {
     return false;
   }
@@ -1773,17 +1779,17 @@ void copyComplexMatrix(const complex34Matrix_t *matrix, complex34Matrix_t *res) 
 
 /* Link to real matrix register (data not copied) */
 void linkToRealMatrixRegister(calcRegister_t regist, real34Matrix_t *linkedMatrix) {
-  linkedMatrix->header.matrixRows    = REGISTER_REAL34_MATRIX_DBLOCK(regist)->matrixRows;
-  linkedMatrix->header.matrixColumns = REGISTER_REAL34_MATRIX_DBLOCK(regist)->matrixColumns;
-  linkedMatrix->matrixElements       = REGISTER_REAL34_MATRIX_M_ELEMENTS(regist);
+  linkedMatrix->header.matrixRows    = REGISTER_MATRIX_HEADER(regist)->matrixRows;
+  linkedMatrix->header.matrixColumns = REGISTER_MATRIX_HEADER(regist)->matrixColumns;
+  linkedMatrix->matrixElements       = REGISTER_REAL34_MATRIX_ELEMENTS(regist);
 }
 
 
 /* Link to complex matrix register (data not copied) */
 void linkToComplexMatrixRegister(calcRegister_t regist, complex34Matrix_t *linkedMatrix) {
-  linkedMatrix->header.matrixRows    = REGISTER_COMPLEX34_MATRIX_DBLOCK(regist)->matrixRows;
-  linkedMatrix->header.matrixColumns = REGISTER_COMPLEX34_MATRIX_DBLOCK(regist)->matrixColumns;
-  linkedMatrix->matrixElements       = REGISTER_COMPLEX34_MATRIX_M_ELEMENTS(regist);
+  linkedMatrix->header.matrixRows    = REGISTER_MATRIX_HEADER(regist)->matrixRows;
+  linkedMatrix->header.matrixColumns = REGISTER_MATRIX_HEADER(regist)->matrixColumns;
+  linkedMatrix->matrixElements       = REGISTER_COMPLEX34_MATRIX_ELEMENTS(regist);
 }
 
 

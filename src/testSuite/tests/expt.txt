@@ -45,22 +45,22 @@ Out: EC=24 FL_ASLIFT=0 RX=Stri:"String test"
 
 
 ;=======================================
-; expt(Real Matrix) --> Error24
+; expt(Real Matrix) --> Real Matrix
 ;=======================================
 
 
 
 ;=======================================
-; expt(Complex Matrix) --> Error24
+; expt(Complex Matrix) --> Complex Matrix (should be real matrix)
 ;=======================================
 
 
 
 ;=======================================
-; expt(Short Integer) --> Error24
+; expt(Short Integer) --> Long Integer
 ;=======================================
 In:  FL_ASLIFT=0 FL_CPXRES=0 RX=ShoI:"5#7"
-Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=ShoI:"5#7"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=LonI:"0"
 
 
 
@@ -68,25 +68,25 @@ Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RX=ShoI:"5#7"
 ; expt(Real) --> Real
 ;=======================================
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"0.0001"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.0001" RX=LonI:"-4"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.0001" RX=Real:"-4"
 
 In:  AM=GRAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"50"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"50" RX=LonI:"1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"50" RX=Real:"1"
 
 In:  AM=MULTPI FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"5.6789101112131415161718e234"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"5.6789101112131415161718e234" RX=LonI:"234"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"5.6789101112131415161718e234" RX=Real:"234"
 
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"89.999999999"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"89.999999999" RX=LonI:"1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"89.999999999" RX=Real:"1"
 
 ;In:  FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"5.32564":DMS
-;Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"5.32564":DMS RX=LonI:"0"
+;Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"5.32564":DMS RX=Real:"0"
 
 In:  FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"-5.32564":GRAD
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-5.32564":GRAD RX=LonI:"0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-5.32564":GRAD RX=Real:"0"
 
 In:  FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"45":DEG
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"45":DEG RX=LonI:"1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"45":DEG RX=Real:"1"
 
 ; NaN
 In:  FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"NaN":RAD

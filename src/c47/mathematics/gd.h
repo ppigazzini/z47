@@ -10,11 +10,6 @@
   void fnGd   (uint16_t unusedButMandatoryParameter);
   void fnInvGd(uint16_t unusedButMandatoryParameter);
 
-  void gdTypeError(uint16_t gdOrInvGd);
-  void gdLonI (uint16_t gdOrInvGd);
-  void gdReal (uint16_t gdOrInvGd);
-  void gdCplx (uint16_t gdOrInvGd);
-
   uint8_t GudermannianReal(const real_t *x, real_t *res, realContext_t *realContext);
   uint8_t GudermannianComplex(const real_t *xReal, const real_t *xImag, real_t *resReal, real_t *resImag, realContext_t *realContext);
 

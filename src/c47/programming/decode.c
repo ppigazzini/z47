@@ -494,7 +494,7 @@ static void decodeLiteral(uint8_t *literalAddress) {
   switch(*(literalAddress++)) {
     case BINARY_SHORT_INTEGER: {
       reallocateRegister(TEMP_REGISTER_1, dtShortInteger, 0, *(uint8_t *)(literalAddress++));
-      xcopy(REGISTER_DATA(TEMP_REGISTER_1), literalAddress, TO_BYTES(SHORT_INTEGER_SIZE_IN_BLOCKS));
+      xcopy(getRegisterDataPointer(TEMP_REGISTER_1), literalAddress, TO_BYTES(SHORT_INTEGER_SIZE_IN_BLOCKS));
       shortIntegerToDisplayString(TEMP_REGISTER_1, tmpString, false);
       break;
     }
@@ -786,11 +786,6 @@ static void _decodeOneStep(uint8_t *step, uint16_t textVersion) {
           strcat(nameOp," ");
           strcat(nameOp,indexOfItems[op].itemSoftmenuName);
         }
-        else {
-          if(textVersion == MODE_TXT) {
-            getXeqmText(op, nameOp);
-          }
-        }
         if(op == ITM_op_j) sprintf(nameOp,"op_%s", COMPLEX_UNIT);
         else if(op == ITM_op_j_pol) sprintf(nameOp,"op_%s" STD_SUB_SUN, COMPLEX_UNIT);
         if(nameOp[0] == 0) strcpy(nameOp,indexOfItems[op].itemCatalogName);
@@ -823,9 +818,6 @@ static void _decodeOneStep(uint8_t *step, uint16_t textVersion) {
           strcpy(nameOp,indexOfItems[op].itemCatalogName); //   STD_INTEGRAL "fyxd");
         }
         else {
-          if(textVersion == MODE_TXT) {
-            getXeqmText(op, nameOp);
-          }
           if(nameOp[0] == 0) strcpy(nameOp,indexOfItems[op].itemCatalogName);
         }
         decodeOp(step, nameOp, (indexOfItems[op].status & PTP_STATUS) >> 9, indexOfItems[op].tamMinMax & TAM_MAX_MASK);
@@ -840,8 +832,4 @@ void decodeOneStep(uint8_t *step) {
 
 void decodeOneStep_XPORT(uint8_t *step) {
   _decodeOneStep(step, MODE_RTF);
-}
-
-void decodeOneStepXEQM_XPORT(uint8_t *step) {
-  _decodeOneStep(step, MODE_TXT);
 }

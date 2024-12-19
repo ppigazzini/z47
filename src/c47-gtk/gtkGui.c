@@ -803,7 +803,7 @@ returnKeyReleasedFalse:
 
 if(     (CTRL_State != 65536 || allowAltGrKey)
      && (!catalog || (catalog && currentMenu() == -MNU_MVAR))
-     && (!(tam.mode == TM_LABEL || tam.mode == TM_STORCL) || (uint8_t)(event->keyval) == GDK_KEY_apostrophe)
+     && (!(tam.mode == TM_LABEL || tam.mode == TM_STORCL || tam.mode == TM_MENU) || (uint8_t)(event->keyval) == GDK_KEY_apostrophe)
      && (    calcMode == CM_NORMAL
          ||  calcMode == CM_NIM
          ||  calcMode == CM_PEM
@@ -999,6 +999,7 @@ else if(     (CTRL_State != 65536 || allowAltGrKey)
 if(   (CTRL_State != 65536 || allowAltGrKey)
    && !catalog
    && calcMode == CM_NORMAL
+   && IS_SIM_ARROW_ALLOWED_IN_MENU(currentMenu(), event_keyval)
   ) {
   #if defined(VERBOSEKEYS)
       printf("------------------------ Checking Matric arrows functions\n");
@@ -1025,7 +1026,8 @@ if(   (CTRL_State != 65536 || allowAltGrKey)
         || calcMode == CM_EIM
         ||(calcMode == CM_PEM    && getSystemFlag(FLAG_ALPHA))
         ||(calcMode == CM_ASSIGN && getSystemFlag(FLAG_ALPHA))
-        ||((tam.mode == TM_LABEL || tam.mode == TM_STORCL) )
+//        ||((tam.mode == TM_LABEL || tam.mode == TM_STORCL) ) //replaced with labelText - see if if covers all options
+        ||(labelText )
       )
   ) {
 

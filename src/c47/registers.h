@@ -21,27 +21,28 @@
    * \param[in] regist Register number
    * \return Data pointer
    */
-  dataBlock_t *  getRegisterDataPointer          (calcRegister_t regist);
+  void          *getRegisterDataPointer          (calcRegister_t regist);
 
   // Helper macros to get register data in the appropriate format
-  #define REGISTER_DATA(a)                                       ((dataBlock_t *)(getRegisterDataPointer(a)))
-  #define REGISTER_REAL34_DATA(a)                                ((real34_t    *)(getRegisterDataPointer(a)))
-  #define REGISTER_IMAG34_DATA(a)                                ((real34_t    *)(getRegisterDataPointer(a) + REAL34_SIZE_IN_BLOCKS))
-  #define REGISTER_COMPLEX34_DATA(a)                             ((complex34_t *)(getRegisterDataPointer(a)))
+  #define REGISTER_REAL34_DATA(a)                                ((real34_t             *)(getRegisterDataPointer(a)))
+  #define REGISTER_IMAG34_DATA(a)                                ((real34_t             *)(getRegisterDataPointer(a) + REAL34_SIZE_IN_BYTES))
+  #define REGISTER_COMPLEX34_DATA(a)                             ((complex34_t          *)(getRegisterDataPointer(a)))
 
-  #define REGISTER_STRING_DATA(a)                                ((char        *)(getRegisterDataPointer(a) + 1)) // Memory pointer to the string of a register
+  #define REGISTER_STRING_HEADER(a)                              ((strLgIntHeader_t     *)(getRegisterDataPointer(a)))
+  #define REGISTER_STRING_DATA(a)                                ((char                 *)(getRegisterDataPointer(a) + sizeof(strLgIntHeader_t)))
 
   #define REGISTER_CONFIG_DATA(a)                                ((dtConfigDescriptor_t *)(getRegisterDataPointer(a)))
 
-  #define REGISTER_REAL34_MATRIX_DBLOCK(a)                       ((dataBlock_t *)(getRegisterDataPointer(a)))
-  #define REGISTER_REAL34_MATRIX_M_ELEMENTS(a)                   ((real34_t *)((void *)getRegisterDataPointer(a) + sizeof(dataBlock_t)))
-  #define REGISTER_REAL34_MATRIX(a)                              ((real34Matrix_t *)(getRegisterDataPointer(a)))
+  #define REGISTER_MATRIX_HEADER(a)                              ((matrixHeader_t       *)(getRegisterDataPointer(a)))
+  #define REGISTER_REAL34_MATRIX_ELEMENTS(a)                     ((real34_t             *)(getRegisterDataPointer(a) + sizeof(matrixHeader_t)))
+  #define REGISTER_REAL34_MATRIX(a)                              ((real34Matrix_t       *)(getRegisterDataPointer(a)))
+  #define REGISTER_COMPLEX34_MATRIX_ELEMENTS(a)                  ((complex34_t          *)(getRegisterDataPointer(a) + sizeof(matrixHeader_t)))
+  #define REGISTER_COMPLEX34_MATRIX(a)                           ((complex34Matrix_t    *)(getRegisterDataPointer(a)))
 
-  #define REGISTER_COMPLEX34_MATRIX_DBLOCK(a)                    ((dataBlock_t *)(getRegisterDataPointer(a)))
-  #define REGISTER_COMPLEX34_MATRIX_M_ELEMENTS(a)                ((complex34_t *)((void *)getRegisterDataPointer(a) + sizeof(dataBlock_t)))
-  #define REGISTER_COMPLEX34_MATRIX(a)                           ((complex34Matrix_t *)(getRegisterDataPointer(a)))
+  #define REGISTER_SHORT_INTEGER_DATA(a)                         ((uint64_t             *)(getRegisterDataPointer(a)))
 
-  #define REGISTER_SHORT_INTEGER_DATA(a)                         ((uint64_t    *)(getRegisterDataPointer(a)))
+  #define REGISTER_LONG_INTEGER_HEADER(a)                        ((strLgIntHeader_t     *)(getRegisterDataPointer(a)))
+  #define REGISTER_LONG_INTEGER_DATA(a)                          ((uint8_t              *)(getRegisterDataPointer(a) + sizeof(strLgIntHeader_t)))
 
   /**
    * Returns the data information of a register.
@@ -264,14 +265,6 @@
   #define getComplexRegisterPolarMode(reg)       (getRegisterTag(reg) & amPolar)
   #define setComplexRegisterPolarMode(reg, am)   setRegisterTag(reg, (getRegisterTag(reg) & amAngleMask) | (am & amPolar))
 
-
-  /********************************************//**
-   * \brief Prints the content of a register to a string
-   *
-   * \param r calcRegister_t Register number
-   * \return void
-   ***********************************************/
-  void           printRegisterToString           (calcRegister_t regist, char *registerContent);
 
   /********************************************//**
    * \brief Save register X to register X

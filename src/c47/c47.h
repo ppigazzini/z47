@@ -184,11 +184,11 @@
   #endif // GENERATE_TESTPGMS
 
   // Variables for the simulator
-  #if !defined(TESTSUITE_BUILD) && !defined(GENERATE_CATALOGS)
+  #if !defined(GENERATE_CATALOGS)
     extern int16_t lastFunc;
     extern int16_t lastParam;
     extern char    lastTemp[16];
-  #endif // !TESTSUITE_BUILD && !GENERATE_CATALOGS
+  #endif // !GENERATE_CATALOGS
 
   #if defined(PC_BUILD) || defined(TESTSUITE_BUILD)
     extern bool_t               debugMemAllocation;
@@ -292,6 +292,9 @@
   extern bool_t                 halfSecTick3;
   extern bool_t                 skippedStackLines;
 
+  extern bool_t                 reDraw;
+  extern bool_t                 refreshNIMdone;
+
 
   extern realContext_t          ctxtReal4;    //   Limited digits: used for high speed internal calcs
   extern realContext_t          ctxtReal34;   //   34 digits
@@ -303,12 +306,12 @@
 
   extern dynamicSoftmenu_t      dynamicSoftmenu[NUMBER_OF_DYNAMIC_SOFTMENUS];
 
-  extern dataBlock_t            allSubroutineLevels;
-  extern dataBlock_t           *statisticalSumsPointer;
-  extern dataBlock_t           *savedStatisticalSumsPointer;
-  extern dataBlock_t           *ram;
-  extern dataBlock_t           *currentLocalFlags;
-  extern dataBlock_t           *currentSubroutineLevelData;
+  extern subroutineLevels_t       allSubroutineLevels;
+  extern subroutineLevelHeader_t *currentSubroutineLevelData;
+  extern real_t                  *statisticalSumsPointer;
+  extern real_t                  *savedStatisticalSumsPointer;
+  extern uint32_t                *ram;
+  extern localFlags_t            *currentLocalFlags;
 
   extern namedVariableHeader_t *allNamedVariables;
   extern softmenuStack_t        softmenuStack[SOFTMENU_STACK_SIZE];
