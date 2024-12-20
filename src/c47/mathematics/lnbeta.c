@@ -7,55 +7,6 @@
 
 #include "c47.h"
 
-TO_QSPI void (* const lnBeta[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS][NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])() = {
-// regX |    regY ==>    1               2               3               4            5            6            7            8             9             10
-//      V                Long integer    Real34          Complex34       Time         Date         String       Real34 mat   Complex34 mat Short integer Config data
-/*  1 Long integer  */ { lnbetaLonILonI, lnbetaRealLonI, lnbetaCplxLonI, lnbetaError, lnbetaError, lnbetaError, lnbetaError, lnbetaError,  lnbetaError,  lnbetaError },
-/*  2 Real34        */ { lnbetaLonIReal, lnbetaRealReal, lnbetaCplxReal, lnbetaError, lnbetaError, lnbetaError, lnbetaError, lnbetaError,  lnbetaError,  lnbetaError },
-/*  3 Complex34     */ { lnbetaLonICplx, lnbetaRealCplx, lnbetaCplxCplx, lnbetaError, lnbetaError, lnbetaError, lnbetaError, lnbetaError,  lnbetaError,  lnbetaError },
-/*  4 Time          */ { lnbetaError,    lnbetaError,    lnbetaError,    lnbetaError, lnbetaError, lnbetaError, lnbetaError, lnbetaError,  lnbetaError,  lnbetaError },
-/*  5 Date          */ { lnbetaError,    lnbetaError,    lnbetaError,    lnbetaError, lnbetaError, lnbetaError, lnbetaError, lnbetaError,  lnbetaError,  lnbetaError },
-/*  6 String        */ { lnbetaError,    lnbetaError,    lnbetaError,    lnbetaError, lnbetaError, lnbetaError, lnbetaError, lnbetaError,  lnbetaError,  lnbetaError },
-/*  7 Real34 mat    */ { lnbetaError,    lnbetaError,    lnbetaError,    lnbetaError, lnbetaError, lnbetaError, lnbetaError, lnbetaError,  lnbetaError,  lnbetaError },
-/*  8 Complex34 mat */ { lnbetaError,    lnbetaError,    lnbetaError,    lnbetaError, lnbetaError, lnbetaError, lnbetaError, lnbetaError,  lnbetaError,  lnbetaError },
-/*  9 Short integer */ { lnbetaError,    lnbetaError,    lnbetaError,    lnbetaError, lnbetaError, lnbetaError, lnbetaError, lnbetaError,  lnbetaError,  lnbetaError },
-/* 10 Config data   */ { lnbetaError,    lnbetaError,    lnbetaError,    lnbetaError, lnbetaError, lnbetaError, lnbetaError, lnbetaError,  lnbetaError,  lnbetaError }
-};
-
-/********************************************//**
- * \brief Data type error in lnbeta
- *
- * \param void
- * \return void
- ***********************************************/
-#if (EXTRA_INFO_ON_CALC_ERROR == 1)
-  void lnbetaError(void) {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-    sprintf(errorMessage, "cannot calculate lnBeta of %s with base %s", getRegisterDataTypeName(REGISTER_Y, true, false), getRegisterDataTypeName(REGISTER_X, true, false));
-    moreInfoOnError("In function fnLnBeta:", errorMessage, NULL, NULL);
-  }
-#endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-
-
-
-/********************************************//**
- * \brief regX ==> regL and lnBeta(regX, RegY) ==> regX
- * enables stack lift and refreshes the stack
- *
- * \param[in] unusedButMandatoryParameter uint16_t
- * \return void
- ***********************************************/
-void fnLnBeta(uint16_t unusedButMandatoryParameter) {
-  if(!saveLastX()) {
-    return;
-  }
-
-  lnBeta[getRegisterDataType(REGISTER_X)][getRegisterDataType(REGISTER_Y)]();
-
-  adjustResult(REGISTER_X, true, true, REGISTER_X, -1, -1);
-}
-
-
 
 /*
  * This function checks argument for LnGamma function.
@@ -212,150 +163,6 @@ static bool_t _lnBetaReal(real_t *xReal, real_t *yReal, real_t *rReal, real_t *r
 }
 
 
-
-static void _lnBeta(real_t *x, real_t *y, realContext_t *realContext) {
-  real_t rReal, rImag;
-
-  if(_lnBetaReal(x, y, &rReal, &rImag, &ctxtReal39)) {
-    if(realIsZero(&rImag)) {
-      reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
-      convertRealToReal34ResultRegister(&rReal, REGISTER_X);
-    }
-    else {
-      reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
-      convertComplexToResultRegister(&rReal, &rImag, REGISTER_X);
-    }
-  }
-}
-
-
-
-void lnbetaLonILonI(void) {
-  real_t x, y;
-
-  convertLongIntegerRegisterToReal(REGISTER_Y, &y, &ctxtReal39);
-  convertLongIntegerRegisterToReal(REGISTER_X, &x, &ctxtReal39);
-
-  _lnBeta(&x, &y, &ctxtReal39);
-}
-
-
-
-void lnbetaRealLonI(void) {
-  real_t x, y;
-
-  real34ToReal(REGISTER_REAL34_DATA(REGISTER_Y), &y);
-  convertLongIntegerRegisterToReal(REGISTER_X, &x, &ctxtReal39);
-
-  _lnBeta(&x, &y, &ctxtReal39);
-}
-
-
-
-void lnbetaCplxLonI(void) {
-  real_t xReal, xImag, yReal, yImag, rReal, rImag;
-
-  real34ToReal(REGISTER_REAL34_DATA(REGISTER_Y), &yReal);
-  real34ToReal(REGISTER_IMAG34_DATA(REGISTER_Y), &yImag);
-
-  convertLongIntegerRegisterToReal(REGISTER_X, &xReal, &ctxtReal39);
-  realZero(&xImag);
-
-  _lnBetaComplex(&xReal, &xImag, &yReal, &yImag, &rReal, &rImag, &ctxtReal39);
-
-  reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
-  convertComplexToResultRegister(&rReal, &rImag, REGISTER_X);
-}
-
-
-
-void lnbetaLonIReal(void) {
-  real_t x, y;
-
-  convertLongIntegerRegisterToReal(REGISTER_Y, &y, &ctxtReal39);
-  real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &x);
-
-  _lnBeta(&x, &y, &ctxtReal39);
-}
-
-
-
-void lnbetaRealReal(void) {
-  real_t x, y;
-
-  real34ToReal(REGISTER_REAL34_DATA(REGISTER_Y), &y);
-  real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &x);
-
-  _lnBeta(&x, &y, &ctxtReal39);
-}
-
-
-
-void lnbetaCplxReal(void) {
-  real_t xReal, xImag, yReal, yImag, rReal, rImag;
-
-  real34ToReal(REGISTER_REAL34_DATA(REGISTER_Y), &yReal);
-  real34ToReal(REGISTER_IMAG34_DATA(REGISTER_Y), &yImag);
-
-  real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &xReal);
-  realZero(&xImag);
-
-  _lnBetaComplex(&xReal, &xImag, &yReal, &yImag, &rReal, &rImag, &ctxtReal39);
-
-  reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
-  convertComplexToResultRegister(&rReal, &rImag, REGISTER_X);
-}
-
-
-
-void lnbetaLonICplx(void) {
-  real_t xReal, xImag, yReal, yImag, rReal, rImag;
-
-  convertLongIntegerRegisterToReal(REGISTER_Y, &yReal, &ctxtReal39);
-  realZero(&yImag);
-
-  real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &xReal);
-  real34ToReal(REGISTER_IMAG34_DATA(REGISTER_X), &xImag);
-
-  _lnBetaComplex(&xReal, &xImag, &yReal, &yImag, &rReal, &rImag, &ctxtReal39);
-
-  convertComplexToResultRegister(&rReal, &rImag, REGISTER_X);
-}
-
-
-
-void lnbetaRealCplx(void)  {
-  real_t xReal, xImag, yReal, yImag, rReal, rImag;
-
-  real34ToReal(REGISTER_REAL34_DATA(REGISTER_Y), &yReal);
-  realZero(&yImag);
-
-  real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &xReal);
-  real34ToReal(REGISTER_IMAG34_DATA(REGISTER_X), &xImag);
-
-  _lnBetaComplex(&xReal, &xImag, &yReal, &yImag, &rReal, &rImag, &ctxtReal39);
-
-  convertComplexToResultRegister(&rReal, &rImag, REGISTER_X);
-}
-
-
-
-void lnbetaCplxCplx(void)  {
-  real_t xReal, xImag, yReal, yImag, rReal, rImag;
-
-  real34ToReal(REGISTER_REAL34_DATA(REGISTER_Y), &yReal);
-  real34ToReal(REGISTER_IMAG34_DATA(REGISTER_Y), &yImag);
-
-  real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), &xReal);
-  real34ToReal(REGISTER_IMAG34_DATA(REGISTER_X), &xImag);
-
-  _lnBetaComplex(&xReal, &xImag, &yReal, &yImag, &rReal, &rImag, &ctxtReal39);
-
-  convertComplexToResultRegister(&rReal, &rImag, REGISTER_X);
-}
-
-
-
 void LnBeta(const real_t *x, const real_t *y, real_t *res, realContext_t *realContext) {
   real_t rReal, rImag;
   real_t xx, yy;
@@ -367,4 +174,38 @@ void LnBeta(const real_t *x, const real_t *y, real_t *res, realContext_t *realCo
   else {
     realCopy(const_NaN, res);
   }
+}
+
+
+static void lnbetaReal(void) {
+  real_t x, y, rReal, rImag;
+
+  if (getRegisterAsReal(REGISTER_X, &x) && getRegisterAsReal(REGISTER_Y, &y))
+    if(_lnBetaReal(&x, &y, &rReal, &rImag, &ctxtReal39)) {
+      if(realIsZero(&rImag))
+        convertRealToResultRegister(&rReal, REGISTER_X, amNone);
+      else
+        convertComplexToResultRegister(&rReal, &rImag, REGISTER_X);
+    }
+}
+
+static void lnbetaCplx(void)  {
+  real_t xReal, xImag, yReal, yImag, rReal, rImag;
+
+  if (getRegisterAsComplex(REGISTER_X, &xReal, &xImag)
+          && getRegisterAsComplex(REGISTER_Y, &yReal, &yImag)) {
+    _lnBetaComplex(&xReal, &xImag, &yReal, &yImag, &rReal, &rImag, &ctxtReal39);
+    convertComplexToResultRegister(&rReal, &rImag, REGISTER_X);
+  }
+}
+
+/********************************************//**
+ * \brief regX ==> regL and lnBeta(regX, RegY) ==> regX
+ * enables stack lift and refreshes the stack
+ *
+ * \param[in] unusedButMandatoryParameter uint16_t
+ * \return void
+ ***********************************************/
+void fnLnBeta(uint16_t unusedButMandatoryParameter) {
+    processRealComplexDyadicFunction(&lnbetaReal, &lnbetaCplx);
 }
