@@ -7,9 +7,6 @@
 
 #include "c47.h"
 
-static void ipNoOp(void) {
-}
-
 static void doIP(real_t *x) {
   realToIntegralValue(x, x, DEC_ROUND_DOWN, &ctxtReal39);
 }
@@ -42,5 +39,5 @@ static void ipCplx(void) {
  * \return void
  ***********************************************/
 void fnIp(uint16_t unusedButMandatoryParameter) {
-  processIntRealComplexMonadicFunction(&ipReal, &ipCplx, &ipNoOp, &ipNoOp);
+  processIntRealComplexMonadicFunction(&ipReal, &ipCplx, &doNothing, &doNothing);
 }

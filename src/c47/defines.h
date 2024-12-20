@@ -1312,6 +1312,13 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define TM_MENU                                10017
 #define TM_CMP                                 10018 // TM_CMP must be the last in this list
 
+// gamma function type
+#define GAMMA_XYLOWER                              0
+#define GAMMA_P                                    1
+#define GAMMA_XYUPPER                              2
+#define GAMMA_Q                                    3
+
+
 // NIM number part
 #define NP_EMPTY                                   0
 #define NP_INT_10                                  1 // Integer base 10

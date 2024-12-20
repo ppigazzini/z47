@@ -2,10 +2,10 @@
 // SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
 /********************************************//**
- * \file gammaQ.h
+ * \file gammaX.h
  ***********************************************/
-#if !defined(GAMMAQ_H)
-  #define GAMMAQ_H
+#if !defined(GAMMAP_X)
+  #define GAMMAP_X
 
-  void fnGammaQ      (uint16_t unusedButMandatoryParameter);
-#endif // !GAMMAQ_H
+  void fnGammaX      (uint16_t gammaType);
+#endif // !GAMMAP_X

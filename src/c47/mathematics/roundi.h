@@ -14,4 +14,8 @@
   #else // (EXTRA_INFO_ON_CALC_ERROR != 1)
     #define roundiError typeError
   #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+
+  void roundiRema (void);
+  void roundiReal (void);
+
 #endif // !ROUNDI_H
