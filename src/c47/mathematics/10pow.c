@@ -89,7 +89,7 @@ void intPowReal(void (*powf)(const real_t *x, real_t *res, realContext_t *realCo
   }
 
   (*powf)(&x, &x, &ctxtReal39);
-   convertRealToResultRegister(&x, REGISTER_X, amNone);
+  convertRealToResultRegister(&x, REGISTER_X, amNone);
 }
 
 static void tenPowReal(void) {
