@@ -495,6 +495,160 @@ void fn_cnst_1_cpx(uint16_t unusedButMandatoryParameter) {
   cpxToStk(const_1, const_0, !forcedLiftTheStack);
 }
 
+struct cmplxPair {
+  real_t r, i;
+};
+
+void fn_cnst_op_A(uint16_t unusedButMandatoryParameter) {
+  complex34Matrix_t matrixC;
+
+  if(!saveLastX()) {
+    return;
+  }
+
+  setSystemFlag(FLAG_ASLIFT);
+  liftStack();
+  convertRealToResultRegister(const_0, REGISTER_X,amNone);
+
+  //Initialize Memory for Matrix
+  if(initMatrixRegister(REGISTER_X, 3, 3, true)) {
+  }
+  else {
+    displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "Not enough memory for a %" PRIu32 STD_CROSS "%" PRIu32 " matrix", 1, 1);
+      moreInfoOnError("In function fn_cnst_op_A:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+    return;
+  }
+  adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
+
+  linkToComplexMatrixRegister(REGISTER_X,  &matrixC);
+
+  real_t const__rt3on2, const_rt3on2, const__1on2;
+  realDivide(const_rt3,const_2,&const_rt3on2,&ctxtReal39);
+  realDivide(const_rt3,const_2,&const__rt3on2,&ctxtReal39);
+  realSetNegativeSign(&const__rt3on2);
+  realCopy(const_1on2,&const__1on2);
+  realSetNegativeSign(&const__1on2);
+
+  realToReal34(&const__1on2, VARIABLE_REAL34_DATA(&matrixC.matrixElements[4]));
+  realToReal34(&const__rt3on2, VARIABLE_IMAG34_DATA(&matrixC.matrixElements[4]));
+  realToReal34(&const__1on2, VARIABLE_REAL34_DATA(&matrixC.matrixElements[5]));
+  realToReal34(&const_rt3on2, VARIABLE_IMAG34_DATA(&matrixC.matrixElements[5]));
+  realToReal34(&const__1on2, VARIABLE_REAL34_DATA(&matrixC.matrixElements[7]));
+  realToReal34(&const_rt3on2, VARIABLE_IMAG34_DATA(&matrixC.matrixElements[7]));
+  realToReal34(&const__1on2, VARIABLE_REAL34_DATA(&matrixC.matrixElements[8]));
+  realToReal34(&const__rt3on2, VARIABLE_IMAG34_DATA(&matrixC.matrixElements[8]));
+
+  for (int i = 0; i < 3; i++) {
+    realToReal34(const_1, VARIABLE_REAL34_DATA(&matrixC.matrixElements[i]));
+    realToReal34(const_0, VARIABLE_IMAG34_DATA(&matrixC.matrixElements[i]));
+    if(i != 0) {
+      realToReal34(const_1, VARIABLE_REAL34_DATA(&matrixC.matrixElements[i*3]));
+      realToReal34(const_0, VARIABLE_IMAG34_DATA(&matrixC.matrixElements[i*3]));
+    }
+  }
+  adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
+}
+
+
+void fnConvertStkToMx(uint16_t unusedButMandatoryParameter) {
+  bool_t complexCoefs = false;
+  struct cmplxPair x[3];
+  real34Matrix_t matrix;
+  complex34Matrix_t matrixC;
+
+  if(!(getRegisterAsComplexOrReal(REGISTER_X, &x[0].r, &x[0].i, &complexCoefs) &&
+       getRegisterAsComplexOrReal(REGISTER_Y, &x[1].r, &x[1].i, &complexCoefs) &&
+       getRegisterAsComplexOrReal(REGISTER_Z, &x[2].r, &x[2].i, &complexCoefs))) {
+    return;
+  }
+
+  if(!saveLastX()) {
+    return;
+  }
+
+  fnDrop(NOPARAM);
+  fnDrop(NOPARAM);
+
+
+  if(getRegisterDataType(REGISTER_X) != dtReal34Matrix && getRegisterDataType(REGISTER_X) != dtComplex34Matrix) {
+    //Initialize Memory for Matrix
+    if(initMatrixRegister(REGISTER_X, 3, 1, complexCoefs)) {
+    }
+    else {
+      displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        sprintf(errorMessage, "Not enough memory for a %" PRIu32 STD_CROSS "%" PRIu32 " matrix", 1, 1);
+        moreInfoOnError("In function fnConvertStkToMx:", errorMessage, NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+      return;
+    }
+    adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
+  }
+
+
+  if(complexCoefs) {
+    linkToComplexMatrixRegister(REGISTER_X,  &matrixC);
+  } else {
+    linkToRealMatrixRegister(REGISTER_X,  &matrix);
+  }
+
+
+  for (int i = 0; i < 3; i++) {
+    if(complexCoefs) {
+      realToReal34(&x[2-i].r, VARIABLE_REAL34_DATA(&matrixC.matrixElements[i]));
+      realToReal34(&x[2-i].i, VARIABLE_IMAG34_DATA(&matrixC.matrixElements[i]));
+    }
+    else {
+      realToReal34(&x[2-i].r, &matrix.matrixElements[i]);
+    }
+  }
+  adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
+
+}
+
+void fnConvertMxToStk(uint16_t unusedButMandatoryParameter) {
+  real34Matrix_t matrix;
+  complex34Matrix_t matrixC;
+
+  if(!(getRegisterDataType(REGISTER_X) == dtReal34Matrix || getRegisterDataType(REGISTER_X) == dtComplex34Matrix)) {
+    return;
+  }
+
+  if(!saveLastX()) {
+    return;
+  }
+
+  copySourceRegisterToDestRegister(REGISTER_X,TEMP_REGISTER_1);
+  setSystemFlag(FLAG_ASLIFT);
+  liftStack();
+  setSystemFlag(FLAG_ASLIFT);
+  liftStack();
+  convertRealToResultRegister(const_0, REGISTER_X,amNone);
+  convertRealToResultRegister(const_0, REGISTER_Y,amNone);
+  convertRealToResultRegister(const_0, REGISTER_Z,amNone);
+
+  if(getRegisterDataType(TEMP_REGISTER_1) == dtComplex34Matrix) {
+    linkToComplexMatrixRegister(TEMP_REGISTER_1,  &matrixC);
+  } else {
+    linkToRealMatrixRegister(TEMP_REGISTER_1,  &matrix);
+  }
+
+
+  for (int i = 0; i < 3; i++) {
+    if(getRegisterDataType(TEMP_REGISTER_1) == dtComplex34Matrix) {
+      real34Copy(VARIABLE_REAL34_DATA(&matrixC.matrixElements[i]),REGISTER_REAL34_DATA(REGISTER_X+(2-i)));
+      real34Copy(VARIABLE_REAL34_DATA(&matrixC.matrixElements[i]),REGISTER_IMAG34_DATA(REGISTER_X+(2-i)));
+    }
+    else {
+      real34Copy(&matrix.matrixElements[i],REGISTER_REAL34_DATA(REGISTER_X+(2-i)));
+    }
+    adjustResult(REGISTER_X+(2-i), false, false, REGISTER_X+(2-i), -1, -1);
+  }
+}
+
 
 //Rounding
 void fnJM_2SI(uint16_t unusedButMandatoryParameter) { //Convert Real to Longint; Longint to shortint; shortint to longint
