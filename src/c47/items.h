@@ -2527,4 +2527,9 @@ void itemToBeCoded    (uint16_t unusedButMandatoryParameter);
  * \param[in] unusedButMandatoryParameter
  */
 void fnNop            (uint16_t unusedButMandatoryParameter);
+
+/**
+ * Do nothing!
+ */
+void doNothing        (void);
 #endif // !ITEMS_H

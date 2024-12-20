@@ -7,12 +7,10 @@
 
 #include "c47.h"
 
-static void floorNoOp(void);
-
 TO_QSPI void (* const Floor[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])(void) = {
 // regX ==> 1            2          3           4           5           6           7          8           9             10
 //          Long integer Real34     Complex34   Time        Date        String      Real34 mat Complex34 m Short integer Config data
-            floorNoOp,   floorReal, floorError, floorError, floorError, floorError, floorRema, floorError, floorNoOp,    floorError
+            doNothing,   floorReal, floorError, floorError, floorError, floorError, floorRema, floorError, doNothing,    floorError
 };
 
 
@@ -48,11 +46,6 @@ void fnFloor(uint16_t unusedButMandatoryParameter) {
   Floor[getRegisterDataType(REGISTER_X)]();
 
   adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
-}
-
-
-
-static void floorNoOp(void) {
 }
 
 

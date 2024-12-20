@@ -23,9 +23,9 @@ char testCaseName[1000], testCasePrefix[1000], testCaseSuffix[1000];
 int32_t lineNumber, numTestsFile, numTestsTotal, failedTests;
 int32_t functionIndex, funcType, correctSignificantDigits;
 
-uint16_t label;
+uint16_t label, functionParameter;
 
-void (*funcNoParam)(uint16_t);
+void (*funcToTest)(uint16_t);
 void (*funcCvt)(uint16_t);
 void runPgm(uint16_t unusedButMandatoryParameter);
 
@@ -132,10 +132,7 @@ const funcTest_t funcTestNoParam[] = {
   {"fnF_P",                  fnF_P                 },
   {"fnF_R",                  fnF_R                 },
   {"fnGamma",                fnGamma               },
-  {"fnGammaP",               fnGammaP              },
-  {"fnGammaQ",               fnGammaQ              },
-  {"fnGammaXyLower",         fnGammaXyLower        },
-  {"fnGammaXyUpper",         fnGammaXyUpper        },
+  {"fnGammaX",               fnGammaX              },
   {"fnGcd",                  fnGcd                 },
   {"fnGd",                   fnGd                  },
   {"fnGeometricI",           fnGeometricI          },
@@ -2509,7 +2506,7 @@ void checkExpectedOutParameter(char *p) {
             bool_t isCheckingEigenvectors;
             r[i] = 0;
             cols = atoi(r);
-            isCheckingEigenvectors = (funcType == FUNC_NOPARAM) && (funcNoParam == fnEigenvectors) && (regist == REGISTER_X) && (rows == cols);
+            isCheckingEigenvectors = (funcType == FUNC_NOPARAM) && (funcToTest == fnEigenvectors) && (regist == REGISTER_X) && (rows == cols);
             xcopy(r, r + i + 1, strlen(r + i + 1) + 1);
             if(isCheckingEigenvectors) {
               x1 = malloc(REAL34_SIZE_IN_BYTES * cols);
@@ -2631,7 +2628,7 @@ void checkExpectedOutParameter(char *p) {
             bool_t *xf1 = NULL;
             r[i] = 0;
             cols = atoi(r);
-            isCheckingEigenvectors = (funcType == FUNC_NOPARAM) && (funcNoParam == fnEigenvectors) && (regist == REGISTER_X) && (rows == cols);
+            isCheckingEigenvectors = (funcType == FUNC_NOPARAM) && (funcToTest == fnEigenvectors) && (regist == REGISTER_X) && (rows == cols);
             xcopy(r, r + i + 1, strlen(r + i + 1) + 1);
             if(isCheckingEigenvectors) {
               xr1 = malloc(REAL_SIZE_IN_BYTES * cols);
@@ -2896,7 +2893,7 @@ void callFunction(void) {
         thereIsSomethingToUndo = false;
       }
 
-      funcNoParam(NOPARAM);
+      funcToTest(functionParameter);
       break;
 
     case FUNC_CVT:
@@ -2923,21 +2920,34 @@ void callFunction(void) {
 void functionToCall(char *functionName) {
   int32_t function;
 
+  functionParameter = NOPARAM;
+  char *openParenthesis = strchr(functionName, '(');
+  char *closeParenthesis = strchr(functionName, ')');
+  if((openParenthesis && !closeParenthesis) || (!openParenthesis && closeParenthesis)) {
+    printf("\nParameter arenthesis do not match!\n");
+    abortTest();
+  }
+  else if(openParenthesis && closeParenthesis) {
+    *closeParenthesis = 0;
+    *(openParenthesis++) = 0;
+    functionParameter = atoi(openParenthesis);
+  }
+
   function = 0;
   while(funcTestNoParam[function].name[0] != 0 && strcmp(funcTestNoParam[function].name, functionName) != 0) {
     function++;
   }
 
   if(funcTestNoParam[function].name[0] != 0) {
-    funcNoParam = funcTestNoParam[function].func;
+    funcToTest = funcTestNoParam[function].func;
     funcType = FUNC_NOPARAM;
 
-    if(funcNoParam == runPgm) {
+    if(funcToTest == runPgm) {
       functionIndex = ITM_XEQ;
     }
     else {
       for(functionIndex=1; functionIndex<=LAST_ITEM; functionIndex++) {
-        if(indexOfItems[functionIndex].func == funcNoParam) {
+        if(indexOfItems[functionIndex].func == funcToTest) {
           break;
         }
       }
@@ -3118,7 +3128,7 @@ void processOneFile(void) {
 
   // Default function to call
   functionIndex = ITM_NOP;
-  funcNoParam = fnNop;
+  funcToTest = fnNop;
   funcType = FUNC_NOPARAM;
 
   ignoreReturnedValue(fgets(line, 9999, testSuite));
@@ -3203,7 +3213,7 @@ int processTests(const char *listPath) {
 
   setSystemFlag(FLAG_DENANY);                              //JM Default
   setSystemFlag(FLAG_DENFIX);                              //JM default
-  denMax = 9999;                                               //JM default
+  denMax = 9999;                                           //JM default
 
   fgets(line, 9999, fileList);
   while(!feof(fileList)) {
