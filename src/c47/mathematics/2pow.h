@@ -8,19 +8,5 @@
   #define FILE_2POW_H
 
   void fn2Pow     (uint16_t unusedButMandatoryParameter);
-
-  #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-    void twoPowError(void);
-  #else // (EXTRA_INFO_ON_CALC_ERROR == 1)
-    #define twoPowError typeError
-  #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-
-  void twoPowLonI (void);
-  void twoPowRema (void);
-  void twoPowCxma (void);
-  void twoPowShoI (void);
-  void twoPowReal (void);
-  void twoPowCplx (void);
-
   void realPower2 (const real_t *x, real_t *res, realContext_t *realContext);
 #endif // !FILE_2POW_H
