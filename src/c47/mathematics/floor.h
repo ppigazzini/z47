@@ -8,13 +8,4 @@
   #define FLOOR_H
 
   void fnFloor   (uint16_t unusedButMandatoryParameter);
-
-  #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-    void floorError(void);
-  #else // (EXTRA_INFO_ON_CALC_ERROR != 1)
-    #define floorError typeError
-  #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-
-  void floorRema (void);
-  void floorReal (void);
 #endif // !FLOOR_H
