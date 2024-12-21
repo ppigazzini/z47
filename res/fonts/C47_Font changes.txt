@@ -283,4 +283,7 @@ PLUS                      "\xa4\xff"
     $29d6  U+29D6 White Hourglass "\xa9\xd6"      STD_HOURGLASS_WH
 
 2024-12-18 Add U+23F1 Stopwatch to NUM font, in SUP
+
+2024-12-21 Add double struck D in Num font $2145
+
  
