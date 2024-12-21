@@ -8,4 +8,9 @@
   #define INTEGERPART_H
 
   void fnIp   (uint16_t unusedButMandatoryParameter);
+
+  /* Helpers for ceil, floor and here */
+  void integerPartNoOp(void);
+  void integerPartReal(enum rounding mode);
+  void integerPartCplx(enum rounding mode);
 #endif // !INTEGERPART_H
