@@ -268,6 +268,14 @@ Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"0.5"
 In:  AM=DEG FL_CPXRES=1 FL_ASLIFT=0 FL_SPCRES=0 RY=Real:"-1" RX=Real:"0.5"
 Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Real:"0.5" RX=Cplx:"0 i 1"
 
+In:  AM=DEG FL_CPXRES=1 FL_ASLIFT=0 FL_SPCRES=0 RY=Real:"-2" RX=Real:"-2"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Real:"-2" RX=Real:"0.25"
+
+In:  AM=DEG FL_CPXRES=1 FL_ASLIFT=0 FL_SPCRES=0 RY=Real:"-2" RX=Real:"-3"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Real:"-3" RX=Real:"-0.125"
+
+In:  AM=DEG FL_CPXRES=1 FL_ASLIFT=0 FL_SPCRES=0 RY=Real:"-2" RX=Real:"-4"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Real:"-4" RX=Real:"0.0625"
 
 
 ;=======================================
