@@ -1,0 +1,47 @@
+;*************************************************************
+;*************************************************************
+;**                                                         **
+;**                         nand                            **
+;**                                                         **
+;*************************************************************
+;*************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+Func: fnLogicalNand
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"0" RY=LonI:"0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"0" RX=LonI:"1"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"2" RY=LonI:"0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"2" RX=LonI:"1"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"0" RY=LonI:"3"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"0" RX=LonI:"1"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"2" RY=LonI:"-2"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"2" RX=LonI:"0"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"0" RY=LonI:"0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0" RX=Real:"1"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"2" RY=Real:"0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"2" RX=Real:"1"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"0" RY=Real:"3.14"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0" RX=Real:"1"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"21.2" RY=Real:"-2.5"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"21.2" RX=Real:"0"
+
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"0 i 0" RY=LonI:"0"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"0 i 0" RX=Cplx:"1 i 0"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"0 i 2" RY=Real:"0"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"0 i 2" RX=Cplx:"1 i 0"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"0 i 0" RY=Cplx:"3.14 i 0"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"0 i 0" RX=Cplx:"1 i 0"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"21.2" RY=Cplx:"1.1 i 0"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Real:"21.2" RX=Cplx:"0 i 0"
+

@@ -9,16 +9,6 @@
 
   void fnLogicalAnd(uint16_t unusedButMandatoryParameter);
 
-  #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-    void andError24  (void);
-  #else // (EXTRA_INFO_ON_CALC_ERROR == 1)
-    #define andError24 typeError
-  #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-
-  void andError31  (void);
-  void andLonILonI (void);
-  void andLonIReal (void);
-  void andRealLonI (void);
-  void andRealReal (void);
-  void andShoIShoI (void);
+  void dyadicLogicalOp(const unsigned char table[4]);
+  void logicalOpResult(bool_t res, uint32_t xtype, uint32_t ytype);
 #endif // !AND_H
