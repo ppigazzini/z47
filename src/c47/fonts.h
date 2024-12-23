@@ -399,6 +399,13 @@
 #define STD_NOT_SUBSET_OF             "\xA2\x84" //2284
 
 
+#define STD_SUP_BOLD_T                "\xa4\xc9"
+#define STD_SUP_BOLD_f                "\xa4\x87"
+#define STD_SUP_BOLD_g                "\xa4\x88"
+#define STD_SUP_BOLD_h                "\xa4\x89"
+#define STD_SUP_BOLD_r                "\xa4\x93"
+#define STD_SUP_BOLD_x                "\xa4\x99"
+
 #define STD_SUB_pi                    "\xad\xea" //2DEA
 #define STD_SUP_pi                    "\xad\xeb" //2DEB
 #define STD_SUP_pir                   "\xad\xec" //2DEC
@@ -622,9 +629,9 @@
 #define STD_SUP_c                     "\xa4\x84"
 #define STD_SUP_d                     "\xa4\x85"
 #define STD_SUP_e                     "\xa4\x86"
-#define STD_SUP_f                     "\xa4\x87"
-#define STD_SUP_g                     "\xa4\x88"
-#define STD_SUP_h                     "\xa4\x89"
+//#define STD_SUP_f                     "\xa4\x87"
+//#define STD_SUP_g                     "\xa4\x88"
+//#define STD_SUP_h                     "\xa4\x89"
 #define STD_SUP_i                     "\xa4\x8a"
 #define STD_SUP_j                     "\xa4\x8b"
 #define STD_SUP_k                     "\xa4\x8c"
@@ -634,13 +641,13 @@
 #define STD_SUP_o                     "\xa4\x90"
 #define STD_SUP_p                     "\xa4\x91"
 #define STD_SUP_q                     "\xa4\x92"
-#define STD_SUP_r                     "\xa4\x93"
+//#define STD_SUP_r                     "\xa4\x93"
 #define STD_SUP_s                     "\xa4\x94"
 #define STD_SUP_t                     "\xa4\x95"
 #define STD_SUP_u                     "\xa4\x96"
 #define STD_SUP_v                     "\xa4\x97"
 #define STD_SUP_w                     "\xa4\x98"
-#define STD_SUP_x                     "\xa4\x99"
+//#define STD_SUP_x                     "\xa4\x99"
 #define STD_SUP_y                     "\xa4\x9a"
 #define STD_SUP_z                     "\xa4\x9b"
 #define STD_SUB_a                     "\xa4\x9c"
@@ -688,7 +695,7 @@
 #define STD_SUP_Q                     "\xa4\xc6"
 #define STD_SUP_R                     "\xa4\xc7"
 #define STD_SUP_S                     "\xa4\xc8"
-#define STD_SUP_T                     "\xa4\xc9"
+//#define STD_SUP_T                     "\xa4\xc9"
 #define STD_SUP_U                     "\xa4\xca"
 #define STD_SUP_V                     "\xa4\xcb"
 #define STD_SUP_W                     "\xa4\xcc"
