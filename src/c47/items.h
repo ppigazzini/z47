@@ -2481,7 +2481,34 @@
 #define ITM_XSWAP                   2419
 #define ITM_XEDIT                   2420
 
-#define LAST_ITEM                   2421
+//more bufferized
+#define ITM_SUP_BOLD_T              2421
+#define ITM_SUP_BOLD_f              2422
+#define ITM_SUP_BOLD_g              2423
+#define ITM_SUP_BOLD_h              2424
+#define ITM_SUP_BOLD_r              2425
+#define ITM_SUP_BOLD_x              2426
+#define ITM_2427                    2427
+#define ITM_2428                    2428
+#define ITM_2429                    2429
+#define ITM_2430                    2430
+#define ITM_2431                    2431
+#define ITM_2432                    2432
+#define ITM_2433                    2433
+#define ITM_2434                    2434
+#define ITM_2435                    2435
+#define ITM_2436                    2436
+#define ITM_2437                    2437
+#define ITM_2438                    2438
+#define ITM_2439                    2439
+#define ITM_2440                    2440
+#define ITM_2441                    2441
+#define ITM_2442                    2442
+#define ITM_2443                    2443
+
+
+
+#define LAST_ITEM                   2444
 
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL
