@@ -990,16 +990,16 @@ bool_t getRegisterAsShortInt(calcRegister_t reg, bool_t *sign, uint64_t *val, bo
         if(!of)
           switch (shortIntegerMode) {
             case SIM_UNSIGN:
-              of = realCompareLessThan(&rval, const_2p64);
+              of = realCompareGreaterEqual(&rval, const_2p64);
               break;
             case SIM_2COMPL:
               if(*sign)
-                of = realCompareLessEqual(&rval, const_2p63);
+                of = realCompareGreaterThan(&rval, const_2p63);
               else
                 /* fall through */
             case SIM_1COMPL:
             case SIM_SIGNMT:
-              of = realCompareLessThan(&rval, const_2p63);
+              of = realCompareGreaterEqual(&rval, const_2p63);
               break;
           }
         *val = u64;
