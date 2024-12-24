@@ -15,25 +15,20 @@
  * \return void
  ***********************************************/
 void fnCountBits(uint16_t unusedButMandatoryParameter) {
-  if(getRegisterDataType(REGISTER_X) != dtShortInteger) {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-      sprintf(errorMessage, "cannot calculate countBits(%s)", getRegisterDataTypeName(REGISTER_X, false, false));
-      moreInfoOnError("In function fnCountBits:", errorMessage, NULL, NULL);
-    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-  }
-  else {
-    uint64_t w;
+  uint64_t w;
+  uint32_t base;
 
-    if(!saveLastX()) {
-      return;
-    }
+  if (!getRegisterAsRawShortInt(REGISTER_X, &w, &base) || !saveLastX())
+    return;
 
-    // https://en.wikipedia.org/wiki/Hamming_weight
-    w = *(REGISTER_SHORT_INTEGER_DATA(REGISTER_X));
-    w -= (w >> 1) & 0x5555555555555555;
-    w = (w & 0x3333333333333333) + ((w >> 2) & 0x3333333333333333);
-    w = (w + (w >> 4)) & 0x0f0f0f0f0f0f0f0f;
-    *(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)) = (w * 0x0101010101010101) >> 56;
-  }
+#if 0
+  // https://en.wikipedia.org/wiki/Hamming_weight
+  w -= (w >> 1) & 0x5555555555555555;
+  w = (w & 0x3333333333333333) + ((w >> 2) & 0x3333333333333333);
+  w = (w + (w >> 4)) & 0x0f0f0f0f0f0f0f0f;
+  w = (w * 0x0101010101010101) >> 56;
+#else
+  w = __builtin_popcountll(w);
+#endif
+  convertUInt64ToShortIntegerRegister(0, w, base, REGISTER_X);
 }

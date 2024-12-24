@@ -275,10 +275,8 @@ void saveForUndo(void) {
 
   lrSelectionUndo = lrSelection;
   if(statisticalSumsPointer == NULL) { // There are no statistical sums to save for undo
-    if(savedStatisticalSumsPointer != NULL) {
-      freeC47Blocks(savedStatisticalSumsPointer, NUMBER_OF_STATISTICAL_SUMS * REAL_SIZE_IN_BLOCKS);
-      savedStatisticalSumsPointer = NULL;
-    }
+    freeC47Blocks(savedStatisticalSumsPointer, NUMBER_OF_STATISTICAL_SUMS * REAL_SIZE_IN_BLOCKS);
+    savedStatisticalSumsPointer = NULL;
   }
   else { // There are statistical sums to save for undo
     lrChosenUndo = lrChosen;
@@ -353,11 +351,9 @@ void undo(void) {
 
   lrSelection = lrSelectionUndo;
   if(savedStatisticalSumsPointer == NULL) { // There are no statistical sums to restore
-    if(statisticalSumsPointer != NULL) {
-      freeC47Blocks(statisticalSumsPointer, NUMBER_OF_STATISTICAL_SUMS * REAL_SIZE_IN_BLOCKS);
-      statisticalSumsPointer = NULL;
-      lrChosen = 0;
-    }
+    freeC47Blocks(statisticalSumsPointer, NUMBER_OF_STATISTICAL_SUMS * REAL_SIZE_IN_BLOCKS);
+    statisticalSumsPointer = NULL;
+    lrChosen = 0;
   }
   else { // There are statistical sums to restore
     lrChosen = lrChosenUndo;

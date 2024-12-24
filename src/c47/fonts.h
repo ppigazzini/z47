@@ -398,6 +398,12 @@
 #define STD_SUBSET_OF                 "\xA2\x82" //2282
 #define STD_NOT_SUBSET_OF             "\xA2\x84" //2284
 
+#define STD_SUP_BOLD_T                "\x9D\x40"
+#define STD_SUP_BOLD_f                "\x9D\xA0"
+#define STD_SUP_BOLD_g                "\x9D\x4D"
+#define STD_SUP_BOLD_h                "\x82\xB0"
+#define STD_SUP_BOLD_r                "\x82\xB3"
+#define STD_SUP_BOLD_x                "\x82\xE3"
 
 #define STD_SUB_pi                    "\xad\xea" //2DEA
 #define STD_SUP_pi                    "\xad\xeb" //2DEB
@@ -565,10 +571,6 @@
 #define STD_XOR                       "\xa2\xbb"
 #define STD_NAND                      "\xa2\xbc"
 #define STD_NOR                       "\xa2\xbd"
-#define STD_LEFT_CEILING              "\xa3\x08"
-#define STD_RIGHT_CEILING             "\xa3\x09"
-#define STD_LEFT_FLOOR                "\xa3\x0a"
-#define STD_RIGHT_FLOOR               "\xa3\x0b"
 #define STD_WATCH                     "\xa3\x1a"
 #define STD_HOURGLASS                 "\xa3\x1b"
 #define STD_HOURGLASS_WH              "\xa9\xd6"

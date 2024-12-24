@@ -912,11 +912,11 @@ Out: EC=0 FL_ASLIFT=1 RL=Real:"6" RX=Real:"inf"
 In:  FL_ASLIFT=0 RY=Real:"inf" RX=LonI:"6"
 Out: EC=0 FL_ASLIFT=1 RL=LonI:"6" RX=Real:"inf"
 
-In:  FL_ASLIFT=0 RY=Real:"inf" RX=Real:"inf"
-Out: EC=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"inf"
+In:  FL_ASLIFT=0 FL_SPCRES=0 RY=Real:"inf" RX=Real:"inf"
+Out: EC=5 FL_ASLIFT=0 RY=Real:"inf" RX=Real:"inf"
 
 
-In:  FL_ASLIFT=0 RY=Real:"5.6" RX=Real:"-inf"
+In:  FL_ASLIFT=0 FL_SPCRES=1 RY=Real:"5.6" RX=Real:"-inf"
 Out: EC=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"0"
 
 In:  FL_ASLIFT=0 RY=Real:"7" RX=Real:"-inf"
@@ -1667,8 +1667,8 @@ Out: EC=4 FL_ASLIFT=0 RX=Real:"6"
 In:  FL_ASLIFT=0 RY=Real:"inf" RX=LonI:"6"
 Out: EC=4 FL_ASLIFT=0 RX=LonI:"6"
 
-In:  FL_ASLIFT=0 RY=Real:"inf" RX=Real:"inf"
-Out: EC=4 FL_ASLIFT=0 RX=Real:"inf"
+In:  FL_ASLIFT=0 FL_SPCRES=0 RY=Real:"inf" RX=Real:"inf"
+Out: EC=5 FL_ASLIFT=0 RY=Real:"inf" RX=Real:"inf"
 
 
 In:  FL_ASLIFT=0 RY=Real:"5.6" RX=Real:"-inf"

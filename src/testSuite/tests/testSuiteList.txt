@@ -72,6 +72,12 @@ changeSign
 sign
 
 not
+and
+nand
+nor
+or
+xnor
+xor
 mirror
 
 addition_longInteger

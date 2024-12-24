@@ -40,6 +40,10 @@ void fnToTime       (uint16_t unusedButMandatoryParameter);
 void fnSafeReset    (uint16_t unusedButMandatoryParameter);
 void timeToReal34   (uint16_t hms);
 void fnFrom_ymd     (uint16_t unusedButMandatoryParameter);
+void fn_cnst_op_A    (uint16_t unusedButMandatoryParameter);
+void fnConvertStkToMx(uint16_t unusedButMandatoryParameter);
+void fnConvertMxToStk(uint16_t unusedButMandatoryParameter);
+
 
 void fnRESET_MyM(uint8_t param);
 void fnRESET_Mya(void);

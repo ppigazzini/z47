@@ -2,10 +2,10 @@
 // SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
 /********************************************//**
- * \file realPart.h
+ * \file gammaX.h
  ***********************************************/
-#if !defined(REALPART_H)
-  #define REALPART_H
+#if !defined(GAMMAP_X)
+  #define GAMMAP_X
 
-  void fnRealPart   (uint16_t unusedButMandatoryParameter);
-#endif // !REALPART_H
+  void fnGammaX      (uint16_t gammaType);
+#endif // !GAMMAP_X

@@ -877,17 +877,17 @@ uint16_t str2dec(char* ch) {
 return res;
 }
 
-bool_t ratherUseEnlargement(uint16_t charCode) {
-  return ((bool_t) (
-    ((charCode >= str2dec(STD_SUP_f)) && (charCode <= str2dec(STD_SUP_h))) ||
-    ( charCode == str2dec(STD_SUP_r)) ||
-    ( charCode == str2dec(STD_SUP_x)) ||
-
-    ((charCode >= str2dec(STD_SUB_f)) && (charCode <= str2dec(STD_SUB_h))) ||
-    ( charCode == str2dec(STD_SUB_r)) ||
-    ( charCode == str2dec(STD_SUB_t))
-    ));
-}
+//bool_t ratherUseEnlargement(uint16_t charCode) {
+//  return ((bool_t) (
+//    ((charCode >= str2dec(STD_SUP_BOLD_f)) && (charCode <= str2dec(STD_SUP_BOLD_h))) ||
+//    ( charCode == str2dec(STD_SUP_BOLD_r)) ||
+//    ( charCode == str2dec(STD_SUP_BOLD_x)) ||
+//
+//    ((charCode >= str2dec(STD_SUB_f)) && (charCode <= str2dec(STD_SUB_h))) ||
+//    ( charCode == str2dec(STD_SUB_r)) ||
+//    ( charCode == str2dec(STD_SUB_t))
+//    ));
+//}
 
   uint32_t showGlyphCode(uint16_t charCode, const font_t *font, uint32_t x, uint32_t y, videoMode_t videoMode, bool_t showLeadingCols, bool_t showEndingCols, bool_t noPreClear) {
     uint32_t col, row, xGlyph, endingCols;
@@ -904,7 +904,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
       if(maxiC == 1 && font == &numericFont) {                //JM allow enlargements
         glyphId = findGlyph(font, charCode);
         //printf("DDDDDD %d %d --- %u\n",glyphId, charCode, ratherUseEnlargement(charCode));
-        if(glyphId < 0 || ratherUseEnlargement(charCode)) {           //JM if there is not a large glyph, enlarge the small letter
+        if(glyphId < 0) {// || ratherUseEnlargement(charCode)) {           //JM if there is not a large glyph, enlarge the small letter
           enlarge = true;
           font = &standardFont;
         }
