@@ -1019,6 +1019,31 @@ bool_t getRegisterAsShortInt(calcRegister_t reg, bool_t *sign, uint64_t *val, bo
   return true;
 }
 
+bool_t getRegisterAsRawShortInt(calcRegister_t reg, uint64_t *val, uint32_t *base) {
+  bool_t sign, overflow, fractional;
+  uint64_t v;
+  uint32_t b;
+
+  if (getRegisterDataType(reg) == dtShortInteger) {
+    v = *REGISTER_SHORT_INTEGER_DATA(reg);
+    b = getRegisterShortIntegerBase(reg);
+    goto finish;
+  }
+  if (!getRegisterAsShortInt(reg, &sign, &v, &overflow, &fractional))
+    return false;
+  if (overflow || fractional) {
+    badDomainError(reg);
+    return false;
+  }
+  v = (uint64_t)WP34S_build_value(v, sign);
+  b = lastIntegerBase != 0 ? lastIntegerBase : 10;
+finish:
+  if (base != NULL)
+    *base = b;
+  *val = v;
+  return true;
+}
+
 bool_t getRegisterAsLongInt(calcRegister_t reg, longInteger_t val, bool_t *fractional) {
   real_t rval;
   bool_t frac = false;
