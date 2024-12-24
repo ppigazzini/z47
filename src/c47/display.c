@@ -1679,10 +1679,10 @@ void angle34ToDisplayString2(const real34_t *angle34, uint8_t mode, char *displa
     real34ToDisplayString2(angle34, displayString, displayHasNDigits, limitExponent, mode == amSecond, frontSpace, isReal);
 
     if(mode == amRadian) {
-      strcat(displayString, STD_SUP_r);
+      strcat(displayString, STD_SUP_BOLD_r);
     }
     else if(mode == amGrad) {
-      strcat(displayString, STD_SUP_g);
+      strcat(displayString, STD_SUP_BOLD_g);
     }
     else if(mode == amDegree) {
       strcat(displayString, STD_DEGREE);

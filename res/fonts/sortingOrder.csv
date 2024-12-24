@@ -260,6 +260,9 @@
 `U+017e`,369,380,`LATIN SMALL LETTER Z WITH CARON`,`z caron`,`ž`,`Z`,`U+005a`
 `U+0232`,355,368,`LATIN CAPITAL LETTER Y WITH MACRON`,`y under root`,`Ȳ`,`Y`,`U+0059`
 `U+0233`,355,367,`LATIN SMALL LETTER Y WITH MACRON`,`y macron`,`ȳ`,`Y`,`U+0059`
+`U+02B0`,160,165,`Superscript h`,`Superscript h`,`ʰ`,`h`,`U+0048`
+`U+02B3`,272,276,`Superscript r`,`Superscript r`,`ʳ`,`r`,`U+0052`
+`U+02E3`,345,349,`Superscript x`,`Superscript x`,`ˣ`,`x`,`U+0058`
 `U+0378`,345,352,`not defined by unicode`,`x macron`,`͸`,`X`,`U+0058`
 `U+0379`,345,351,`not defined by unicode`,`x circumflex`,`͹`,`X`,`U+0058`
 `U+037f`,345,353,`GREEK CAPITAL LETTER YOT `,`x under root`,`Ϳ`,`X`,`U+0058`
@@ -325,6 +328,9 @@
 `U+03cc`,421,423,`GREEK SMALL LETTER OMICRON WITH TONOS`,`omicron tonos`,`ό`,`Ο`,`U+039f`
 `U+03cd`,434,436,`GREEK SMALL LETTER UPSILON WITH TONOS`,`upsilon tonos`,`ύ`,`Υ`,`U+03a5`
 `U+03ce`,446,448,`GREEK SMALL LETTER OMEGA WITH TONOS`,`omega tonos`,`ώ`,`Ω`,`U+03a9`
+`U+1D40`,296,298,`Superscript T`,`Superscript T`,`ᵀ`,`T`,`U+0054`
+`U+1DA0`,296,298,`Superscript f`,`Superscript f`,`ᶠ`,`f`,`U+0046`
+`U+1D4D`,296,298,`Superscript g`,`Superscript g`,`ᵍ`,`g`,`U+0047`
 `U+2003`,1,2,`EM SPACE`,`EM space`,` `,` `,`U+0020`
 `U+2004`,1,3,`THREE-PER-EM SPACE`,`3 per EM space`,` `,` `,`U+0020`
 `U+2005`,1,4,`FOUR-PER-EM SPACE`,`4 per EM space`,` `,` `,`U+0020`
@@ -468,12 +474,9 @@
 `U+22bb`,527,529,`XOR`,`Xor`,`⊻`,`∧`,`U+2227`
 `U+22bc`,527,530,`NAND`,`Nand`,`⊼`,`∧`,`U+2227`
 `U+22bd`,527,531,`NOR`,`Nor`,`⊽`,`∧`,`U+2227`
-`U+2308`,578,578,`LEFT CEILING`,`Left ceiling`,`⌈`,`⌈`,`U+2308`
-`U+2309`,578,579,`RIGHT CEILING`,`Right ceiling`,`⌉`,`⌈`,`U+2308`
-`U+230a`,580,580,`LEFT FLOOR`,`Left floor`,`⌊`,`⌊`,`U+230a`
-`U+230b`,580,581,`RIGHT FLOOR`,`Right floor`,`⌋`,`⌊`,`U+230a`
 `U+231a`,582,584,`WATCH`,`Watch`,`⌚`,`⎙`,`U+2399`
 `U+231b`,582,583,`HOURGLASS`,`Hourglass`,`⌛`,`⎙`,`U+2399`
+`U+29d6`,582,583,`HOURGLASS WHITE`,`Hourglass`,`⧖`,`⎙`,`U+2399`
 `U+2393`,582,590,`DIRECT CURRENT FORM 2`,`d.c. current`,`⎓`,`⎓`,`U+002d`
 `U+2399`,582,582,`PRINT SCREEN SYMBOL`,`Printer`,`⎙`,`⎙`,`U+2399`
 `U+23a1`,451,452,`LEFT SQUARE BRACKET UPPER CORNER`,`Matrix upper left`,`⎡`,`[`,`U+005b`

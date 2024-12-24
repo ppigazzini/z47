@@ -788,10 +788,10 @@ void updateAssignTamBuffer(void) {
     }
   }
   else if(itemToBeAssigned != 0 && shiftF) {
-    tbPtr = stringAppend(tbPtr, STD_SUP_f STD_CURSOR);
+    tbPtr = stringAppend(tbPtr, STD_SUP_BOLD_f STD_CURSOR);
   }
   else if(itemToBeAssigned != 0 && shiftG) {
-    tbPtr = stringAppend(tbPtr, STD_SUP_g STD_CURSOR);
+    tbPtr = stringAppend(tbPtr, STD_SUP_BOLD_g STD_CURSOR);
   }
   else {
     tbPtr = stringAppend(tbPtr, "_");

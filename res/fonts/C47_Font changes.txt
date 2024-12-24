@@ -276,4 +276,20 @@ PLUS                      "\xa4\xff"
 
 2024-12-09 Add litre ℓ
     $2113  Script Small L      "\xa1\x13"         STD_litre
- 
+
+2024-12-17 Add all Num font sup/sub a-z, A-Z
+
+2024-12-18 Add hourglass triangle sign to both fonts
+    $29d6  U+29D6 White Hourglass "\xa9\xd6"      STD_HOURGLASS_WH
+
+2024-12-18 Add U+23F1 Stopwatch to NUM font, in SUP
+
+2024-12-21 Add double struck D in Num font $2145
+
+
+2024-12-24 Remove from Std font and remove STD_codes
+    U+2308 LEFT CEILING
+    U+2309 RIGHT CEILING
+    U+230a LEFT FLOOR
+    U+230b RIGHT FLOOR
+
