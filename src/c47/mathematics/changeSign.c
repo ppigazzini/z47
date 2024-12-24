@@ -10,8 +10,9 @@
 static void chsLonI(void) {
   longInteger_t x;
 
-  if(!getRegisterAsLongInt(REGISTER_X, x, NULL))
+  if(!getRegisterAsLongInt(REGISTER_X, x, NULL)) {
     return;
+  }
 
   longIntegerChangeSign(x);
   convertLongIntegerToLongIntegerRegister(x, REGISTER_X);
@@ -24,19 +25,22 @@ static void chsShoI(void) {
 
 static void chsZeroCheck(real_t *a) {
   realChangeSign(a);
-  if(realIsZero(a) && !getSystemFlag(FLAG_SPCRES))
+  if(realIsZero(a) && !getSystemFlag(FLAG_SPCRES)) {
     realSetPositiveSign(a);
+  }
 }
 
 void chsReal(void) {
   real_t x;
   angularMode_t mode = amNone;
 
-  if(!getRegisterAsReal(REGISTER_X, &x))
+  if(!getRegisterAsReal(REGISTER_X, &x)) {
     return;
+  }
 
-  if(getRegisterDataType(REGISTER_X) == dtReal34)
+  if(getRegisterDataType(REGISTER_X) == dtReal34) {
     mode = getRegisterAngularMode(REGISTER_X);
+  }
 
   chsZeroCheck(&x);
   convertRealToResultRegister(&x, REGISTER_X, mode);
@@ -60,5 +64,14 @@ void chsCplx(void) {
  * \return void
  ***********************************************/
 void fnChangeSign(uint16_t unusedButMandatoryParameter) {
+  if(getRegisterDataType(REGISTER_X) == dtTime) {
+    real34_t *x = REGISTER_REAL34_DATA(REGISTER_X);
+    real34ChangeSign(x);
+    if(real34IsZero(x) && !getSystemFlag(FLAG_SPCRES)) {
+      real34SetPositiveSign(x);
+    }
+    return;
+  }
+
   processIntRealComplexMonadicFunction(&chsReal, &chsCplx, &chsShoI, &chsLonI);
 }

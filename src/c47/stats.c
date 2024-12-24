@@ -643,12 +643,10 @@ static calcRegister_t fnClHisto(bool_t deleteVariable) {
 void setStatisticalSumsUpdate(bool_t para) {
   //if going off auto, or confirming it is still on auto off, clear sums
   if(!para) {
-    if(statisticalSumsPointer != NULL) {
-      freeC47Blocks(statisticalSumsPointer, NUMBER_OF_STATISTICAL_SUMS * REAL_SIZE_IN_BLOCKS);
-      statisticalSumsPointer = NULL;
-      if(lastErrorCode != ERROR_NONE) {
-        return;
-      }
+    freeC47Blocks(statisticalSumsPointer, NUMBER_OF_STATISTICAL_SUMS * REAL_SIZE_IN_BLOCKS);
+    statisticalSumsPointer = NULL;
+    if(lastErrorCode != ERROR_NONE) {
+      return;
     }
   }
   if(statisticalSumsUpdate && !para) {
@@ -692,10 +690,8 @@ void fnClSigma(uint16_t unusedButMandatoryParameter) {
   histElementXorY = 0;
 
 
-  if(statisticalSumsPointer != NULL) {
-    freeC47Blocks(statisticalSumsPointer, NUMBER_OF_STATISTICAL_SUMS * REAL_SIZE_IN_BLOCKS);
-    statisticalSumsPointer = NULL;
-  }
+  freeC47Blocks(statisticalSumsPointer, NUMBER_OF_STATISTICAL_SUMS * REAL_SIZE_IN_BLOCKS);
+  statisticalSumsPointer = NULL;
 }
 
 

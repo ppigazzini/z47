@@ -11,7 +11,7 @@ Func: fnLogicalNot
 
 
 ;=======================================
-; not(Long Integer) --> Long Integer
+; not(Long Integer) --> Real
 ;=======================================
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"-5"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"-5" RX=LonI:"0"
@@ -45,13 +45,13 @@ Out: EC=24 FL_ASLIFT=0 RX=Stri:"String test"
 
 
 ;=======================================
-; not(Real Matrix) --> Error24
+; not(Real Matrix) --> Real Matrix
 ;=======================================
 
 
 
 ;=======================================
-; not(Complex Matrix) --> Error24
+; not(Complex Matrix) --> Complex Matrix
 ;=======================================
 
 
@@ -80,50 +80,54 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ShoI:"5#7" RX=ShoI:"-2234101061124505205226
 
 
 ;=======================================
-; not(Real) --> Long Integer
+; not(Real) --> Real
 ;=======================================
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"0.0001"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.0001" RX=LonI:"0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.0001" RX=Real:"0"
 
 In:  AM=GRAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"55.5"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"55.5" RX=LonI:"0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"55.5" RX=Real:"0"
 
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"0"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0" RX=LonI:"1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0" RX=Real:"1"
 
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"0.0001":RAD
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.0001":RAD RX=LonI:"0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0.0001":RAD RX=Real:"0"
 
 In:  AM=GRAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"55.5":MULTPI
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"55.5":MULTPI RX=LonI:"0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"55.5":MULTPI RX=Real:"0"
 
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"0":GRAD
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0":GRAD RX=LonI:"1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"0":GRAD RX=Real:"1"
 
 ; NaN
 In:  FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"NaN":RAD
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"NaN":RAD RX=LonI:"0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"NaN":RAD RX=Real:"0"
 
 In:  FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"NaN"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"NaN" RX=LonI:"0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"NaN" RX=Real:"0"
 
 ; Infinity
 In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RX=Real:"inf"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"inf" RX=LonI:"0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"0"
 
 In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RX=Real:"-inf"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-inf" RX=LonI:"0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"0"
 
 In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RX=Real:"inf":DEG
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"inf":DEG RX=LonI:"0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"inf":DEG RX=Real:"0"
 
 In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RX=Real:"-inf":MULTPI
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-inf":MULTPI RX=LonI:"0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-inf":MULTPI RX=Real:"0"
 
 
 
 ;=======================================
-; not(Complex) --> Error24
+; not(Complex) --> Real
 ;=======================================
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"6.2 i -7.6"
-Out: EC=24 FL_ASLIFT=0 RX=Cplx:"6.2 i -7.6"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"6.2 i -7.6" RX=Cplx:"0 i 0"
+
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"0 i 0"
+Out: EC=0 FL_ASLIFT=1 RL=Cplx:"0 i 0" RX=Cplx:"1 i 0"
+
