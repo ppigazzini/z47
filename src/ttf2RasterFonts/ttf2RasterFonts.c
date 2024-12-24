@@ -171,6 +171,9 @@ void exportCStructure(const char *fontsPath, const char *ttfName) {
 
   while(glyphIndex) {
     if(charCode) {
+      #if defined(DEBUG)
+        printf("%u %04X \n",glyphIndex, (uint16_t)charCode);
+      #endif
       charCodes[numberOfGlyphs++] = charCode;
     }
 

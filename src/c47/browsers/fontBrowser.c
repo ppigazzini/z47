@@ -21,6 +21,7 @@
       while(g<numericFont.numberOfGlyphs && ((numericFont.glyphs[g].charCode&0xfff0) == glyphRow[numLinesNumericFont])) {
         g++;
       }
+        printf("%u %04X \n",numLinesNumericFont, (uint16_t)(glyphRow[numLinesNumericFont]));
       numLinesNumericFont++;
     }
 
