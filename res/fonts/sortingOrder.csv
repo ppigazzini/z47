@@ -474,10 +474,6 @@
 `U+22bb`,527,529,`XOR`,`Xor`,`⊻`,`∧`,`U+2227`
 `U+22bc`,527,530,`NAND`,`Nand`,`⊼`,`∧`,`U+2227`
 `U+22bd`,527,531,`NOR`,`Nor`,`⊽`,`∧`,`U+2227`
-`U+2308`,578,578,`LEFT CEILING`,`Left ceiling`,`⌈`,`⌈`,`U+2308`
-`U+2309`,578,579,`RIGHT CEILING`,`Right ceiling`,`⌉`,`⌈`,`U+2308`
-`U+230a`,580,580,`LEFT FLOOR`,`Left floor`,`⌊`,`⌊`,`U+230a`
-`U+230b`,580,581,`RIGHT FLOOR`,`Right floor`,`⌋`,`⌊`,`U+230a`
 `U+231a`,582,584,`WATCH`,`Watch`,`⌚`,`⎙`,`U+2399`
 `U+231b`,582,583,`HOURGLASS`,`Hourglass`,`⌛`,`⎙`,`U+2399`
 `U+29d6`,582,583,`HOURGLASS WHITE`,`Hourglass`,`⧖`,`⎙`,`U+2399`

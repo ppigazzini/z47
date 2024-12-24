@@ -2488,11 +2488,11 @@
 #define ITM_SUP_BOLD_h              2424
 #define ITM_SUP_BOLD_r              2425
 #define ITM_SUP_BOLD_x              2426
-#define ITM_2427                    2427
-#define ITM_2428                    2428
-#define ITM_2429                    2429
-#define ITM_2430                    2430
-#define ITM_2431                    2431
+#define ITM_HOLLOW_UP_ARROW         2427
+#define ITM_HOLLOW_DOWN_ARROW       2428
+#define ITM_SPHERICAL_ANGLE         2429
+#define ITM_TRIPLE_INTEGRAL         2430
+#define ITM_VOLUME_INTEGRAL         2431
 #define ITM_2432                    2432
 #define ITM_2433                    2433
 #define ITM_2434                    2434

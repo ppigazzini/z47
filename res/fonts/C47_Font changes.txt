@@ -286,4 +286,10 @@ PLUS                      "\xa4\xff"
 
 2024-12-21 Add double struck D in Num font $2145
 
- 
+
+2024-12-24 Remove from Std font and remove STD_codes
+    U+2308 LEFT CEILING
+    U+2309 RIGHT CEILING
+    U+230a LEFT FLOOR
+    U+230b RIGHT FLOOR
+
