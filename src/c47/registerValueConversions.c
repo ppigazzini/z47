@@ -990,16 +990,16 @@ bool_t getRegisterAsShortInt(calcRegister_t reg, bool_t *sign, uint64_t *val, bo
         if(!of)
           switch (shortIntegerMode) {
             case SIM_UNSIGN:
-              of = realCompareLessThan(&rval, const_2p64);
+              of = realCompareGreaterEqual(&rval, const_2p64);
               break;
             case SIM_2COMPL:
               if(*sign)
-                of = realCompareLessEqual(&rval, const_2p63);
+                of = realCompareGreaterThan(&rval, const_2p63);
               else
                 /* fall through */
             case SIM_1COMPL:
             case SIM_SIGNMT:
-              of = realCompareLessThan(&rval, const_2p63);
+              of = realCompareGreaterEqual(&rval, const_2p63);
               break;
           }
         *val = u64;
@@ -1016,6 +1016,31 @@ bool_t getRegisterAsShortInt(calcRegister_t reg, bool_t *sign, uint64_t *val, bo
     *overflow = of;
   if(fractional != NULL)
     *fractional = frac;
+  return true;
+}
+
+bool_t getRegisterAsRawShortInt(calcRegister_t reg, uint64_t *val, uint32_t *base) {
+  bool_t sign, overflow, fractional;
+  uint64_t v;
+  uint32_t b;
+
+  if (getRegisterDataType(reg) == dtShortInteger) {
+    v = *REGISTER_SHORT_INTEGER_DATA(reg);
+    b = getRegisterShortIntegerBase(reg);
+    goto finish;
+  }
+  if (!getRegisterAsShortInt(reg, &sign, &v, &overflow, &fractional))
+    return false;
+  if (overflow || fractional) {
+    badDomainError(reg);
+    return false;
+  }
+  v = (uint64_t)WP34S_build_value(v, sign);
+  b = lastIntegerBase != 0 ? lastIntegerBase : 10;
+finish:
+  if (base != NULL)
+    *base = b;
+  *val = v;
   return true;
 }
 
