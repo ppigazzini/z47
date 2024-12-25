@@ -158,12 +158,16 @@ void fnCurveFittingLR(uint16_t unusedButMandatoryParameter) {
 
 
 uint16_t lrCountOnes(uint16_t curveFitting) { // count the number of allowed methods
+#if 0
   uint16_t numberOfOnes;
   numberOfOnes = curveFitting - ((curveFitting >> 1) & 0x5555);
   numberOfOnes = (numberOfOnes & 0x3333) + ((numberOfOnes >> 2) & 0x3333);
   numberOfOnes = (numberOfOnes + (numberOfOnes >> 4)) & 0x0f0f;
   numberOfOnes = (uint16_t)(numberOfOnes * 0x0101) >> 8;
   return numberOfOnes;
+#else
+    return __builtin_popcount(curveFitting);
+#endif
 }
 
 
