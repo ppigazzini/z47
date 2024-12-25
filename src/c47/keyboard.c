@@ -4357,6 +4357,7 @@ void fnKeyBackspace(uint16_t unusedButMandatoryParameter) {
 
 void fnKeyUp(uint16_t unusedButMandatoryParameter) {
   #if !defined(TESTSUITE_BUILD)
+    printf("**[DL]** fnKeyUp\n");fflush(stdout);
     int16_t menuId = softmenuStack[0].softmenuId; //JM
 
     if(tam.mode == TM_KEY && !tam.keyInputFinished) {
@@ -4402,6 +4403,7 @@ void fnKeyUp(uint16_t unusedButMandatoryParameter) {
 
         //JM Arrow up and down if no menu other than AHOME of MyA       //JMvv
         if(!arrowCasechange && calcMode == CM_AIM && isJMAlphaSoftmenu(menuId)) {
+          screenUpdatingMode = SCRUPD_AUTO;
           fnT_ARROW(ITM_UP1);
         }
 
@@ -4621,6 +4623,7 @@ void fnKeyDown(uint16_t unusedButMandatoryParameter) {
 
         //JM Arrow up and down if AHOME of MyA       //JMvv
         if(!arrowCasechange && calcMode == CM_AIM && isJMAlphaSoftmenu(menuId)) {
+          screenUpdatingMode = SCRUPD_AUTO;
           fnT_ARROW(ITM_DOWN1);
         }
 

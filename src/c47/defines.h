@@ -4,6 +4,8 @@
 #if !defined(DEFINES_H)
 #define DEFINES_H
 
+#define ALTERNATE_ALPHA_MENU
+
 //*********************************
 // JM VARIOUS OPTIONS
 //*********************************
@@ -1890,11 +1892,19 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define IS_SEPARATOR_(digitCount)            (   (digitCount+1 == GROUPWIDTH_LEFT1) \
                                               || ((digitCount+1  > GROUPWIDTH_LEFT1 || digitCount < 0) \
                                                   && (modulo(digitCountNEW(digitCount), (uint16_t)GROUPWIDTH_(digitCount)) == (uint16_t)GROUPWIDTH_(digitCount) - 1)) )
-#define BLOCK_DOUBLEPRESS_MENU(menu, x, y)   ( \
+#if !defined(ALTERNATE_ALPHA_MENU)
+  #define BLOCK_DOUBLEPRESS_MENU(menu, x, y)   ( \
                                                (softmenu[menu].menuItem == -MNU_ALPHA    && y == 0) || \
                                                (softmenu[menu].menuItem == -MNU_M_EDIT   && y == 0 && (x == 0 || x == 1 || x == 4 || x == 5)) || \
                                                (softmenu[menu].menuItem == -MNU_EQ_EDIT  && y == 0 && (x == 4 || x == 5)) \
                                              )
+#else
+  #define BLOCK_DOUBLEPRESS_MENU(menu, x, y)   ( \
+                                               (softmenu[menu].menuItem == -MNU_ALPHA    && y == 0 && (x == 0 || x == 5)) || \
+                                               (softmenu[menu].menuItem == -MNU_M_EDIT   && y == 0 && (x == 0 || x == 1 || x == 4 || x == 5)) || \
+                                               (softmenu[menu].menuItem == -MNU_EQ_EDIT  && y == 0 && (x == 4 || x == 5)) \
+                                             )
+#endif //!ALTERNATE_ALPHA_MENU
 
 
 #define IS_SIM_ARROW_ALLOWED_IN_MENU(menu, key) ( \
