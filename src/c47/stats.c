@@ -60,7 +60,7 @@ bool_t isStatsMatrix(uint16_t *rows, char *mx) {
 
 
 #if !defined(TESTSUITE_BUILD)
-  static void addMax(real_t *x, real_t *y) {
+  static void addMax(const real_t *x, const real_t *y) {
     // xmax
     if(realCompareGreaterThan(x, SIGMA_XMAX)) {
       realCopy(x, SIGMA_XMAX);
@@ -73,7 +73,7 @@ bool_t isStatsMatrix(uint16_t *rows, char *mx) {
   }
 
 
-  static void addMin(real_t *x, real_t *y) {
+  static void addMin(const real_t *x, const real_t *y) {
     // xmin
     if(realCompareLessThan(x, SIGMA_XMIN)) {
       realCopy(x, SIGMA_XMIN);
@@ -86,7 +86,7 @@ bool_t isStatsMatrix(uint16_t *rows, char *mx) {
   }
 
 
-  static void addSigma(real_t *x, real_t *y) {
+  static void addSigma(const real_t *x, const real_t *y) {
     real_t tmpReal1, tmpReal2, tmpReal3;
     realContext_t *realContext = &ctxtReal75; // Summation data with 75 digits
 
@@ -189,7 +189,7 @@ bool_t isStatsMatrix(uint16_t *rows, char *mx) {
   }
 
 
-  static bool_t ignoreMaxIfValid(real_t *r1, real_t *r2){
+  static bool_t ignoreMaxIfValid(const real_t *r1, const real_t *r2){
     if(realIsNaN (r1) || realIsNaN (r2) || realIsInfinite(r1) || realIsInfinite(r2) || realCompareEqual(r1, r2)) {
       calcMax(1);
       return false;
@@ -197,7 +197,7 @@ bool_t isStatsMatrix(uint16_t *rows, char *mx) {
     return true;
   }
 
-  static bool_t ignoreMinIfValid(real_t *r1, real_t *r2){
+  static bool_t ignoreMinIfValid(const real_t *r1, const real_t *r2){
     if(realIsNaN (r1) || realIsNaN (r2) || realIsInfinite(r1) || realIsInfinite(r2) || realCompareEqual(r1, r2)) {
       calcMin(1);
       return false;
@@ -206,7 +206,7 @@ bool_t isStatsMatrix(uint16_t *rows, char *mx) {
   }
 
 
-  static bool_t realSubtractIfValid(real_t *r1, real_t *r2, real_t *r3, realContext_t *ct){
+  static bool_t realSubtractIfValid(const real_t *r1, const real_t *r2, real_t *r3, realContext_t *ct){
     if(realIsNaN (r1) || realIsNaN (r2) || realIsInfinite(r1) || realIsInfinite(r2)) {
       calcSigma(1);
       return false;
@@ -216,7 +216,7 @@ bool_t isStatsMatrix(uint16_t *rows, char *mx) {
   }
 
 
-  static void subSigma(real_t *x, real_t *y) {
+  static void subSigma(const real_t *x, const real_t *y) {
     real_t tmpReal1, tmpReal2, tmpReal3;
     realContext_t *realContext = &ctxtReal75; // Summation data with 75 digits
    // SIGMA-
