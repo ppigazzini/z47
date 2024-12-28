@@ -1190,7 +1190,7 @@
 #define ITM_op_i_char               1159
 #define ITM_op_j_char               1160
 #define ITM_POLAR_char              1161
-#define ITM_PRODUCT_char            1162
+#define ITM_1162                    1162
 #define ITM_RIGHT_DASHARROW         1163
 #define ITM_RIGHT_DOUBLE_ARROW      1164
 #define ITM_RIGHT_TACK              1165
