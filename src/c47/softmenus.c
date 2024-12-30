@@ -522,7 +522,7 @@ TO_QSPI const int16_t menu_alphaMisc[]    ={ ITM_CR,                       ITM_N
                                              ITM_BULLET,                   ITM_ASTERISK,                 ITM_SUP_ASTERISK,             ITM_TILDE,                    ITM_HOURGLASS,                ITM_WATCH,                    
                                              ITM_TIMER_SYMBOL,             ITM_NEG_EXCLAMATION_MARK,     ITM_USER_MODE,                ITM_BATTERY,                  ITM_PRINTER,                  ITM_HAMBURGER,                
 
-                                             ITM_BST_char,                 ITM_SST_char,                 ITM_CYCLIC,                   ITM_USB_SYMBOL,               ITM_SUB_SUN,                  ITM_SUB_EARTH,                
+                                             ITM_BST_SIGN,                 ITM_SST_SIGN,                 ITM_CYCLIC,                   ITM_USB_SYMBOL,               ITM_SUB_SUN,                  ITM_SUB_EARTH,                
                                              ITM_US,                       ITM_UK,                       ITM_litre,                    ITM_LEFT_DOUBLE_QUOTE,        ITM_RIGHT_DOUBLE_QUOTE,       ITM_DIRECT_CURRENT,           
                                              ITM_ALTERN_CURRENT,           ITM_NULL,                     ITM_NULL,                     ITM_NULL,                     ITM_NULL,                     ITM_NULL   };
 

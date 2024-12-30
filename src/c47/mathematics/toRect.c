@@ -68,7 +68,6 @@ void fnToRect(int8_t angleInY) {
     REG_Y = REGISTER_Y;
   }
   else {
-printf("swapped\n");
     REG_X = REGISTER_Y;
     REG_Y = REGISTER_X;
   }
