@@ -833,7 +833,6 @@ void fnAngularModeJM(uint16_t AMODE) { //Setting to HMS does not change AM
       setComplexRegisterAngularMode(REGISTER_X, AMODE);
       setComplexRegisterPolarMode(REGISTER_X, amPolar);
       //printf("###CC fnAngularModeJM (%i)=> %i\n",REGISTER_X, getRegisterTag(REGISTER_X));
-
     }
     else {
       if((getRegisterDataType(REGISTER_X) != dtReal34) || ((getRegisterDataType(REGISTER_X) == dtReal34) && getRegisterAngularMode(REGISTER_X) == amNone)) {
@@ -848,19 +847,13 @@ void fnAngularModeJM(uint16_t AMODE) { //Setting to HMS does not change AM
         uint16_t currentAngularModeOld = currentAngularMode;
         fnAngularMode(AMODE);
         fnCvtFromCurrentAngularMode(currentAngularMode);
-        currentAngularMode = currentAngularModeOld;       //Remove updating of ADM to the same mode
+        currentAngularMode = currentAngularModeOld;       //Remove updating of ADM to the same mode (set in fnCvtFromCurrentAngularMode())
       }
-      else { //convert existing tagged angle, and set the ADM
+      else { //convert existing tagged angle
         fnCvtFromCurrentAngularMode(AMODE);
-        //fnAngularMode(AMODE);                             Remove updating of ADM to the same mode
       }
     }
   }
-
-  #if !defined(TESTSUITE_BUILD)
-    fnRefreshState();
-    refreshStatusBar();
-  #endif // !TESTSUITE_BUILD
 
   to_return:
   copySourceRegisterToDestRegister(TEMP_REGISTER_1, REGISTER_L);
