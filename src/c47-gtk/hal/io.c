@@ -80,7 +80,7 @@ int file_selection_screen(const char * title, const char * base_dir, const char 
 
 
 int _ioFileNameFromFilePath(ioFilePath_t path, char * filename) {
-  static char base_dir[200];
+  static char base_dir[300]; // at least exceed the 256 limit
   char * current_dir;
   int ret = 0;
 
@@ -157,6 +157,26 @@ int _ioFileNameFromFilePath(ioFilePath_t path, char * filename) {
       }
       g_free(current_dir);
       return ret;
+
+
+    case ioPathSaveAllPrograms:
+    case ioPathExportRTFAllPrograms:
+      if(create_dir("./" ALLPROGRAMS_DIR) != 0) {
+        return FILE_ERROR;
+      }
+      // set current label name as default file name
+      stringToASCII(tmpStringLabelOrVariableName, filename);
+      //strcpy(filename, tmpStringLabelOrVariableName);
+
+      char filename1[300];
+      filename1[0] = 0;
+      stringAppend(filename1, ALLPROGRAMS_DIR "/");
+      stringAppend(filename1 + stringByteLength(filename1), filename);
+      filename[0] = 0;
+      stringAppend(filename, filename1);
+      stringAppend(filename + stringByteLength(filename), (path == ioPathSaveAllPrograms) ? PRGM_EXT : (path == ioPathExportRTFAllPrograms) ? RTF_EXT : "ERR");
+      //printf("#### Filename:%s\n",filename);
+      return FILE_OK;
 
     default:
       return FILE_ERROR;

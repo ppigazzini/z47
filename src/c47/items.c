@@ -922,6 +922,7 @@ bool_t itemNotAvail(int16_t itemNr) {
   void fnSaveAuto                  (uint16_t unusedButMandatoryParameter) {}
   void fnLoad                      (uint16_t unusedButMandatoryParameter) {}
   void fnSaveProgram               (uint16_t unusedButMandatoryParameter) {}
+  void fnSaveAllPrograms           (uint16_t unusedButMandatoryParameter) {}
   void fnExportProgram             (uint16_t unusedButMandatoryParameter) {}
   void fnLoadProgram               (uint16_t unusedButMandatoryParameter) {}
   void fnDeleteBackup              (uint16_t unusedButMandatoryParameter) {}
@@ -3270,7 +3271,7 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 1930 */  { fnT_ARROW,                    ITM_T_END,                   "",                                            "END",                                         (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 1931 */  { fnConvertStkToMx,             NOPARAM,                     "zyx" STD_RIGHT_ARROW "M",                     "zyx" STD_RIGHT_ARROW "M",                     (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_NONE         },
 /* 1932 */  { itemToBeCoded,                NOPARAM,                     STD_alpha "PARSE",                             STD_alpha "PARSE",                             (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
-/* 1933 */  { itemToBeCoded,                NOPARAM,                     "1933",                                        "1933",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 1933 */  { fnSaveAllPrograms,            NOPARAM,                     "WRXPall",                                     "WRXPall",                                     (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_CANCEL    | EIM_DISABLED | PTP_DISABLED     },
 /* 1934 */  { fnRange,                      TM_VALUE,                    "RNG",                                         "RNG",                                         (0 << TAM_MAX_BITS) |  6145, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NUMBER_16    },
 /* 1935 */  { flagBrowser,                  GLOBAL_FLAGS_SCREEN,      "FLGS",                                        "FLGS",                                        (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_NONE         },//JM Changed STATUS
 /* 1936 */  { SetSetting,                   CU_I,                        "CPX" STD_op_i,                                "CPX" STD_op_i,                                (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_NONE         },
