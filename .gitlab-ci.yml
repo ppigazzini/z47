@@ -34,6 +34,7 @@ macOS:
   - apt-get install -qq -y git zip
   - apt-get install -qq -y pkgconf build-essential ninja-build meson
   - apt-get install -qq -y cmake libgmp-dev libgtk-3-dev
+  - apt-get install -qq -y xvfb
 
 linux:
   stage: build
@@ -41,7 +42,7 @@ linux:
     - *linux-script-before
     - apt-get install -qq -y libpulse-dev
   script:
-    - make dist_linux
+    - make XVFB=xvfb-run dist_linux
   artifacts:
     expire_in: 1 day
     paths:
@@ -66,7 +67,7 @@ dmcp:
     - *linux-script-before
     - apt-get install -qq -y gcc-arm-none-eabi
   script:
-    - make dist_dmcp
+    - make XVFB=xvfb-run dist_dmcp
   artifacts:
     expire_in: 1 day
     paths:
@@ -80,7 +81,7 @@ dmcp5:
     - *linux-script-before
     - apt-get install -qq -y gcc-arm-none-eabi
   script:
-    - make dist_dmcp5
+    - make XVFB=xvfb-run dist_dmcp5
   artifacts:
     expire_in: 1 day
     paths:
@@ -94,7 +95,7 @@ dmcp5r47:
     - *linux-script-before
     - apt-get install -qq -y gcc-arm-none-eabi
   script:
-    - make dist_dmcp5r47
+    - make XVFB=xvfb-run dist_dmcp5r47
   artifacts:
     expire_in: 1 day
     paths:

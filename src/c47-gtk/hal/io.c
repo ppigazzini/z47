@@ -100,7 +100,7 @@ int _ioFileNameFromFilePath(ioFilePath_t path, char * filename) {
       return FILE_OK;
 
     case ioPathTestPgms:
-      strcpy(filename, BASEPATH "res/dmcp/testPgms.bin");
+      strcpy(filename, BASEPATH "res/testPgms/testPgms.bin");
       return FILE_OK;
 
     case ioPathBackup:
