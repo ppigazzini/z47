@@ -59,6 +59,7 @@ docs: build.sim
 testPgms: build.sim
 	cd build.sim && ninja testPgms
 	cp build.sim/src/generateTestPgms/testPgms.bin res/dmcp/
+	cp build.sim/src/generateTestPgms/testPgms.bin res/dmcp5/
 
 build.rel/wiki: build.rel
 	git clone https://gitlab.com/rpncalculators/c43.wiki.git build.rel/wiki
@@ -97,6 +98,14 @@ dist_windows: testPgms build.rel/wiki
 	cp res/R47short.png $(WIN_DIST_DIR)/res/
 	cp res/fonts/C47__StandardFont.ttf $(WIN_DIST_DIR)/
 	cp build.rel/wiki/Installation-on-Windows.md $(WIN_DIST_DIR)/readme.txt
+	#create standalone test program collection
+	mkdir -p $(WIN_DIST_DIR)/PROGRAMS
+	cd $(WIN_DIST_DIR) &&	./c47$(EXE) --writeexportall
+	zip -r $(WIN_DIST_DIR)/res/testPgms.zip $(WIN_DIST_DIR)/PROGRAMS/ALLPGMS
+	cp $(WIN_DIST_DIR)/res/testPgms.zip res/dmcp/
+	cp $(WIN_DIST_DIR)/res/testPgms.zip res/dmcp5/
+	rm -rf $(WIN_DIST_DIR)/PROGRAMS
+	#zip the package
 	zip -r c47-windows.zip $(WIN_DIST_DIR)
 	rm -rf $(WIN_DIST_DIR)
 
@@ -111,6 +120,14 @@ dist_macos: testPgms build.rel
 	cp res/R47.png $(MAC_DIST_DIR)/res/
 	cp res/R47short.png $(MAC_DIST_DIR)/res/
 	cp res/fonts/C47__StandardFont.ttf $(MAC_DIST_DIR)/
+	#create standalone test program collection
+	mkdir -p $(MAC_DIST_DIR)/PROGRAMS
+	cd $(MAC_DIST_DIR) &&	./c47$(EXE) --writeexportall
+	zip -r $(MAC_DIST_DIR)/res/testPgms.zip $(MAC_DIST_DIR)/PROGRAMS/ALLPGMS
+	cp $(MAC_DIST_DIR)/res/testPgms.zip res/dmcp/
+	cp $(MAC_DIST_DIR)/res/testPgms.zip res/dmcp5/
+	rm -rf $(MAC_DIST_DIR)/PROGRAMS
+	#zip the package
 	zip -r c47-macos.zip $(MAC_DIST_DIR)
 	rm -rf $(MAC_DIST_DIR)
 
@@ -128,6 +145,14 @@ dist_linux: testPgms build.rel.debug
 	cp res/R47.png $(LINUX_DIST_DIR)/res/
 	cp res/R47short.png $(LINUX_DIST_DIR)/res/
 	cp res/fonts/C47__StandardFont.ttf $(LINUX_DIST_DIR)/
+	#create standalone test program collection
+	mkdir -p $(LINUX_DIST_DIR)/PROGRAMS
+	cd $(LINUX_DIST_DIR) &&	./c47$(EXE) --writeexportall
+	zip -r $(LINUX_DIST_DIR)/res/testPgms.zip $(LINUX_DIST_DIR)/PROGRAMS/ALLPGMS
+	cp $(LINUX_DIST_DIR)/res/testPgms.zip res/dmcp/
+	cp $(LINUX_DIST_DIR)/res/testPgms.zip res/dmcp5/
+	rm -rf $(LINUX_DIST_DIR)/PROGRAMS
+	#zip the package
 	zip -r c47-linux.zip $(LINUX_DIST_DIR)
 	rm -rf $(LINUX_DIST_DIR)
 
@@ -145,7 +170,7 @@ dist_dmcp: dmcp testPgms build.rel/wiki
 	cp -r res/PROGRAMS $(DMCP_DIST_DIR)
 	cp res/dmcp/DM42_keymap.bin $(DMCP_DIST_DIR)/resources
 	zip -r $(DMCP_DIST_DIR)/resources/C47.map.zip build.dmcp/src/c47-dmcp/C47.map
-	cp res/dmcp/testPgms.bin res/dmcp/testPgms.txt $(DMCP_DIST_DIR)/resources
+	cp res/dmcp/testPgms.bin res/dmcp/testPgms.txt res/dmcp/testPgms.zip $(DMCP_DIST_DIR)/resources
 	cp build.rel/wiki/Installation-on-a-DM42.md $(DMCP_DIST_DIR)/install_C47_on_DM42_readme_on_wiki.txt
 	zip -r c47-dmcp.zip $(DMCP_DIST_DIR)
 	rm -rf $(DMCP_DIST_DIR)
@@ -165,7 +190,7 @@ dist_dmcp5: dmcp5 testPgms build.rel/wiki
 	cp res/dmcp5/DM42_keymap.bin $(DMCP5_DIST_DIR)/resources
 	cp res/dmcp5/SwissMicros/DM42_qspi_3.x.bin $(DMCP5_DIST_DIR)/resources
 	zip -r $(DMCP5_DIST_DIR)/resources/C47.map.zip build.dmcp5/src/c47-dmcp5/C47.map
-	cp res/dmcp5/testPgms.bin res/dmcp5/testPgms.txt $(DMCP5_DIST_DIR)/resources
+	cp res/dmcp5/testPgms.bin res/dmcp5/testPgms.txt res/dmcp5/testPgms.zip $(DMCP5_DIST_DIR)/resources
 	cp res/dmcp5/install_C47_on_DM42n.txt $(DMCP5_DIST_DIR)
 	zip -r c47-dmcp5.zip $(DMCP5_DIST_DIR)
 	rm -rf $(DMCP5_DIST_DIR)
@@ -185,7 +210,7 @@ dist_dmcpr47: dmcpr47 testPgms build.rel/wiki
 	cp res/dmcp/DM42_keymap.bin $(DMCPR47_DIST_DIR)
 	cp res/dmcp/R47_keymap.bin $(DMCPR47_DIST_DIR)
 	zip -r $(DMCPR47_DIST_DIR)/resources/R47.map.zip build.dmcp/src/c47-dmcp/C47.map
-	cp res/dmcp/testPgms.bin res/dmcp/testPgms.txt $(DMCPR47_DIST_DIR)/resources
+	cp res/dmcp/testPgms.bin res/dmcp/testPgms.txt res/dmcp/testPgms.zip $(DMCPR47_DIST_DIR)/resources
 	cp build.rel/wiki/Installation-on-a-DM42.md $(DMCPR47_DIST_DIR)/install_C47_on_DM42_readme_on_wiki.txt
 	zip -r r47-dmcp.zip $(DMCPR47_DIST_DIR)
 	rm -rf $(DMCPR47_DIST_DIR)
@@ -207,7 +232,7 @@ dist_dmcp5r47: dmcp5r47 testPgms build.rel/wiki
 	cp res/dmcp5/R47_keymap.bin $(DMCP5R47_DIST_DIR)
 	cp res/dmcp5/SwissMicros/DM42_qspi_3.x.bin $(DMCP5R47_DIST_DIR)
 	zip -r $(DMCP5R47_DIST_DIR)/resources/R47.map.zip build.dmcp5/src/c47-dmcp5/C47.map
-	cp res/dmcp5/testPgms.bin res/dmcp5/testPgms.txt $(DMCP5R47_DIST_DIR)/resources
+	cp res/dmcp5/testPgms.bin res/dmcp5/testPgms.txt res/dmcp5/testPgms.zip $(DMCP5R47_DIST_DIR)/resources
 	cp res/dmcp5/install_R47_on_DM32.txt $(DMCP5R47_DIST_DIR)
 	zip -r r47-dmcp5.zip $(DMCP5R47_DIST_DIR)
 	rm -rf $(DMCP5R47_DIST_DIR)
