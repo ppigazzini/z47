@@ -4694,9 +4694,6 @@ int main(int argc, char* argv[]) {
     *(currentStep++) = ITM_STO;
     *(currentStep++) = REGISTER_J_IN_KS_CODE;
 
-    *(currentStep++) = (ITM_RAD >> 8) | 0x80;
-    *(currentStep++) =  ITM_RAD       & 0xff;
-
     *(currentStep++) = (ITM_LocR >> 8) | 0x80;
     *(currentStep++) =  ITM_LocR       & 0xff;
     *(currentStep++) = 4;
@@ -4740,6 +4737,8 @@ int main(int argc, char* argv[]) {
 
     *(currentStep++) = ITM_ENTER;
 
+    *(currentStep++) = ITM_RAD2;
+
     *(currentStep++) = ITM_sin;
 
     *(currentStep++) = ITM_XexY;
@@ -4762,6 +4761,8 @@ int main(int argc, char* argv[]) {
 
     *(currentStep++) = ITM_ENTER;
 
+    *(currentStep++) = ITM_RAD2;
+
     *(currentStep++) = ITM_cos;
 
     *(currentStep++) = ITM_XexY;
@@ -4779,9 +4780,17 @@ int main(int argc, char* argv[]) {
     *(currentStep++) = ITM_STO;
     *(currentStep++) = FIRST_LOCAL_REGISTER_IN_KS_CODE + 2;
 
+
+
     // 40
     *(currentStep++) = (ITM_toPOL2 >> 8) | 0x80;
     *(currentStep++) =  ITM_toPOL2       & 0xff;
+
+    *(currentStep++) = ITM_FC;
+    *(currentStep++) = SYSTEM_FLAG_NUMBER;
+    *(currentStep++) = FLAG_HPRP & 0xff;
+    *(currentStep++) = ITM_XexY;
+
 
     *(currentStep++) = ITM_STO;
     *(currentStep++) = FIRST_LOCAL_REGISTER_IN_KS_CODE + 3;

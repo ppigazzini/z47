@@ -477,54 +477,54 @@ TO_QSPI const int16_t menu_alphaFN[]     = { ITM_XtoALPHA,                  ITM_
 /*                                          <---------------------------------------------------------------------- 6 g shifted functions ------------------------------------------------------------------------->  */
 
 
-TO_QSPI const int16_t menu_alphaMATH[]   = { ITM_LESS_THAN,             ITM_LESS_EQUAL,            ITM_EQUAL,                 ITM_NOT_EQUAL,             ITM_GREATER_EQUAL,         ITM_GREATER_THAN,          
-                                             ITM_LEFT_CURLY_BRACKET,    ITM_LEFT_SQUARE_BRACKET,   ITM_LEFT_PARENTHESIS,      ITM_RIGHT_PARENTHESIS,     ITM_RIGHT_SQUARE_BRACKET,  ITM_RIGHT_CURLY_BRACKET,   
-                                             ITM_BACK_SLASH,            ITM_SLASH,                 ITM_OBELUS,                ITM_CROSS,                 ITM_MINUS,                 ITM_PLUS,                  
+TO_QSPI const int16_t menu_alphaMATH[]   = { ITM_LESS_THAN,                ITM_LESS_EQUAL,               ITM_EQUAL,                    ITM_NOT_EQUAL,                ITM_GREATER_EQUAL,            ITM_GREATER_THAN,             
+                                             ITM_LEFT_CURLY_BRACKET,       ITM_LEFT_SQUARE_BRACKET,      ITM_LEFT_PARENTHESIS,         ITM_RIGHT_PARENTHESIS,        ITM_RIGHT_SQUARE_BRACKET,     ITM_RIGHT_CURLY_BRACKET,      
+                                             ITM_BACK_SLASH,               ITM_SLASH,                    ITM_OBELUS,                   ITM_CROSS,                    ITM_MINUS,                    ITM_PLUS,                     
 
-                                             ITM_CIRCUMFLEX,            ITM_SQUARE_ROOT,           ITM_CUBEROOT_SIGN,         ITM_xTH_ROOT,              ITM_x_UNDER_ROOT,          ITM_y_UNDER_ROOT,          
-                                             ITM_NOT,                   ITM_AND,                   ITM_OR,                    ITM_XOR,                   ITM_NAND,                  ITM_NOR,                   
-                                             ITM_TILDE,                 ITM_ALMOST_EQUAL,          ITM_ASYMPOTICALLY_EQUAL,   ITM_IDENTICAL_TO,          ITM_COLON_EQUALS,          ITM_PLUS_MINUS,            
+                                             ITM_CIRCUMFLEX,               ITM_SQUARE_ROOT,              ITM_CUBEROOT_SIGN,            ITM_xTH_ROOT,                 ITM_x_UNDER_ROOT,             ITM_y_UNDER_ROOT,             
+                                             ITM_NOT,                      ITM_AND,                      ITM_OR,                       ITM_XOR,                      ITM_NAND,                     ITM_NOR,                      
+                                             ITM_TILDE,                    ITM_ALMOST_EQUAL,             ITM_ASYMPOTICALLY_EQUAL,      ITM_IDENTICAL_TO,             ITM_COLON_EQUALS,             ITM_PLUS_MINUS,               
 
-                                             ITM_POLAR_char,            ITM_RIGHT_ANGLE,           ITM_ANGLE,                 ITM_MEASURED_ANGLE,        ITM_SPHERICAL_ANGLE,       ITM_AMPERSAND,             
-                                             ITM_PIPE,                  ITM_DEGREE,                ITM_RIGHT_SINGLE_QUOTE,    ITM_RIGHT_DOUBLE_QUOTE,    ITM_RIGHT_TACK,            ITM_PERPENDICULAR,         
-                                             ITM_PARALLEL,              ITM_x_BAR,                 ITM_y_BAR,                 ITM_x_CIRC,                ITM_y_CIRC,                ITM_BULLET,                
+                                             ITM_POLAR_char,               ITM_RIGHT_ANGLE,              ITM_ANGLE,                    ITM_MEASURED_ANGLE,           ITM_SPHERICAL_ANGLE,          ITM_AMPERSAND,                
+                                             ITM_PIPE,                     ITM_DEGREE,                   ITM_RIGHT_SINGLE_QUOTE,       ITM_RIGHT_DOUBLE_QUOTE,       ITM_RIGHT_TACK,               ITM_PERPENDICULAR,            
+                                             ITM_PARALLEL,                 ITM_x_BAR,                    ITM_y_BAR,                    ITM_x_CIRC,                   ITM_y_CIRC,                   ITM_BULLET,                   
 
-                                             ITM_RING,                  ITM_EulerE,                ITM_pi,                    ITM_op_i_char,             ITM_op_j_char,             ITM_PLANCK_2PI,            
-                                             ITM_EEXCHR,                ITM_SUM_char,              ITM_PRODUCT_char,          ITM_MICRO,                 ITM_OMEGA,                 ITM_INTEGRAL_SIGN,         
-                                             ITM_DOUBLE_INTEGRAL,       ITM_TRIPLE_INTEGRAL,       ITM_VOLUME_INTEGRAL,       ITM_PARTIAL_DIFF,          ITM_INCREMENT,             ITM_NABLA,                 
+                                             ITM_RING,                     ITM_EulerE,                   ITM_pi,                       ITM_op_i_char,                ITM_op_j_char,                ITM_PLANCK_2PI,               
+                                             ITM_EEXCHR,                   ITM_SUM_char,                 ITM_PRODUCT,                  ITM_MICRO,                    ITM_OMEGA,                    ITM_INTEGRAL_SIGN,            
+                                             ITM_CONTOUR_INTEGRAL,         ITM_DOUBLE_INTEGRAL,          ITM_SURFACE_INTEGRAL,         ITM_TRIPLE_INTEGRAL,          ITM_VOLUME_INTEGRAL,          ITM_PARTIAL_DIFF,             
 
-                                             ITM_GAMMA,                 ITM_FOR_ALL,               ITM_THERE_EXISTS,          ITM_THERE_DOES_NOT_EXIST,  ITM_ELEMENT_OF,            ITM_NOT_ELEMENT_OF,        
-                                             ITM_CONTAINS,              ITM_EMPTY_SET,             ITM_UNION,                 ITM_INTERSECTION,          ITM_SUBSET_OF,             ITM_NOT_SUBSET_OF,         
-                                             ITM_COMPLEMENT,            ITM_COMPLEX_C,             ITM_IRRATIONAL_I,          ITM_NATURAL_N,             ITM_RATIONAL_Q,            ITM_REAL_R,                
+                                             ITM_INCREMENT,                ITM_NABLA,                    ITM_GAMMA,                    ITM_FOR_ALL,                  ITM_THERE_EXISTS,             ITM_THERE_DOES_NOT_EXIST,     
+                                             ITM_ELEMENT_OF,               ITM_NOT_ELEMENT_OF,           ITM_CONTAINS,                 ITM_DOES_NOT_CONTAIN,         ITM_EMPTY_SET,                ITM_UNION,                    
+                                             ITM_INTERSECTION,             ITM_SUBSET_OF,                ITM_NOT_SUBSET_OF,            ITM_COMPLEMENT,               ITM_COMPLEX_C,                ITM_IRRATIONAL_I,             
 
-                                             ITM_INTEGER_Z,             ITM_MAT_BL,                ITM_MAT_BR,                ITM_ONE_QUARTER,           ITM_ONE_HALF,              ITM_PROPORTIONAL,          
-                                             ITM_INFINITY,              ITM_MAT_ML,                ITM_MAT_MR,                ITM_SUP_BOLD_T,            ITM_SUB_MINUS,             ITM_SUB_PLUS,              
-                                             ITM_SUB_INFINITY,          ITM_MAT_TL,                ITM_MAT_TR,                ITM_SUP_MINUS_1,           ITM_SUP_MINUS,             ITM_SUP_PLUS,              
+                                             ITM_NATURAL_N,                ITM_RATIONAL_Q,               ITM_REAL_R,                   ITM_INTEGER_Z,                ITM_MAT_BL,                   ITM_MAT_BR,                   
+                                             ITM_ONE_QUARTER,              ITM_ONE_HALF,                 ITM_PROPORTIONAL,             ITM_INFINITY,                 ITM_MAT_ML,                   ITM_MAT_MR,                   
+                                             ITM_SUP_BOLD_T,               ITM_SUB_MINUS,                ITM_SUB_PLUS,                 ITM_SUB_INFINITY,             ITM_MAT_TL,                   ITM_MAT_TR,                   
 
-                                             ITM_SUP_INFINITY,          ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  
-                                             ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  
-                                             ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  };
+                                             ITM_SUP_MINUS_1,              ITM_SUP_MINUS,                ITM_SUP_PLUS,                 ITM_SUP_INFINITY,             ITM_NULL,                     ITM_NULL,                     
+                                             ITM_NULL,                     ITM_NULL,                     ITM_NULL,                     ITM_NULL,                     ITM_NULL,                     ITM_NULL,                     
+                                             ITM_NULL,                     ITM_NULL,                     ITM_NULL,                     ITM_NULL,                     ITM_NULL,                     ITM_NULL           };
 
 
 /*      Menu name                           <----------------------------------------------------------------------------- 6 functions ---------------------------------------------------------------------------->  */
 /*                                          <---------------------------------------------------------------------- 6 f shifted functions ------------------------------------------------------------------------->  */
 /*                                          <---------------------------------------------------------------------- 6 g shifted functions ------------------------------------------------------------------------->  */
 
-TO_QSPI const int16_t menu_alphaMisc[]    ={ ITM_CR,                    ITM_NUMBER_SIGN,           ITM_AT,                    ITM_AMPERSAND,             ITM_PERCENT,               ITM_QUOTE,                 
-                                             ITM_DOUBLE_QUOTE,          ITM_DOLLAR,                ITM_EURO,                  ITM_POUND,                 ITM_YEN,                   ITM_INVERTED_EXCLAMATION_MARK,       
-                                             ITM_INVERTED_QUESTION_MARK,ITM_PERIOD,                ITM_COMMA,                 ITM_SEMICOLON,             ITM_COLON,                 ITM_EXCLAMATION_MARK,      
+TO_QSPI const int16_t menu_alphaMisc[]    ={ ITM_CR,                       ITM_NUMBER_SIGN,              ITM_AT,                       ITM_AMPERSAND,                ITM_PERCENT,                  ITM_QUOTE,                    
+                                             ITM_DOUBLE_QUOTE,             ITM_DOLLAR,                   ITM_CENT,                     ITM_EURO,                     ITM_POUND,                    ITM_YEN,                      
+                                             ITM_INVERTED_EXCLAMATION_MARK,ITM_INVERTED_QUESTION_MARK,   ITM_PERIOD,                   ITM_COMMA,                    ITM_SEMICOLON,                ITM_COLON,                    
 
-                                             ITM_QUESTION_MARK,         ITM_UP_ARROW,              ITM_DOWN_ARROW,            ITM_SERIAL_IO,             ITM_LEFT_RIGHT_ARROWS,     ITM_LEFT_ARROW,            
-                                             ITM_RIGHT_ARROW,           ITM_UP_DASHARROW,          ITM_DOWN_DASHARROW,        ITM_HOLLOW_UP_ARROW,       ITM_HOLLOW_DOWN_ARROW,     ITM_RIGHT_DOUBLE_ARROW,    
-                                             ITM_LEFT_RIGHT_DOUBLE_ARROW,ITM_LEFT_DASHARROW,       ITM_RIGHT_DASHARROW,       ITM_DATE_D,                ITM_TIME_T,                ITM_RIGHT_SHORT_ARROW,     
+                                             ITM_EXCLAMATION_MARK,         ITM_QUESTION_MARK,            ITM_UP_ARROW,                 ITM_DOWN_ARROW,               ITM_SERIAL_IO,                ITM_LEFT_RIGHT_ARROWS,        
+                                             ITM_LEFT_ARROW,               ITM_RIGHT_ARROW,              ITM_UP_DASHARROW,             ITM_DOWN_DASHARROW,           ITM_HOLLOW_UP_ARROW,          ITM_HOLLOW_DOWN_ARROW,        
+                                             ITM_RIGHT_DOUBLE_ARROW,       ITM_LEFT_RIGHT_DOUBLE_ARROW,  ITM_LEFT_DASHARROW,           ITM_RIGHT_DASHARROW,          ITM_DATE_D,                   ITM_TIME_T,                   
 
-                                             ITM_ex,                    ITM_LEFT_DOUBLE_ANGLE,     ITM_RIGHT_DOUBLE_ANGLE,    ITM_SECTION,               ITM_CHECK_MARK,            ITM_BULLET,                
-                                             ITM_ASTERISK,              ITM_SUP_ASTERISK,          ITM_TILDE,                 ITM_HOURGLASS,             ITM_WATCH,                 ITM_TIMER_SYMBOL,          
-                                             ITM_NEG_EXCLAMATION_MARK,  ITM_USER_MODE,             ITM_BATTERY,               ITM_PRINTER,               ITM_HAMBURGER,             ITM_BST_char,              
+                                             ITM_RIGHT_SHORT_ARROW,        ITM_ex,                       ITM_LEFT_DOUBLE_ANGLE,        ITM_RIGHT_DOUBLE_ANGLE,       ITM_SECTION,                  ITM_CHECK_MARK,               
+                                             ITM_BULLET,                   ITM_ASTERISK,                 ITM_SUP_ASTERISK,             ITM_TILDE,                    ITM_HOURGLASS,                ITM_WATCH,                    
+                                             ITM_TIMER_SYMBOL,             ITM_NEG_EXCLAMATION_MARK,     ITM_USER_MODE,                ITM_BATTERY,                  ITM_PRINTER,                  ITM_HAMBURGER,                
 
-                                             ITM_SST_char,              ITM_CYCLIC,                ITM_USB_SYMBOL,            ITM_SUB_SUN,               ITM_SUB_EARTH,             ITM_US,                    
-                                             ITM_UK,                    ITM_litre,                 ITM_LEFT_DOUBLE_QUOTE,     ITM_RIGHT_DOUBLE_QUOTE,    ITM_DIRECT_CURRENT,        ITM_ALTERN_CURRENT,        
-                                             ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                 };
+                                             ITM_BST_SIGN,                 ITM_SST_SIGN,                 ITM_CYCLIC,                   ITM_USB_SYMBOL,               ITM_SUB_SUN,                  ITM_SUB_EARTH,                
+                                             ITM_US,                       ITM_UK,                       ITM_litre,                    ITM_LEFT_DOUBLE_QUOTE,        ITM_RIGHT_DOUBLE_QUOTE,       ITM_DIRECT_CURRENT,           
+                                             ITM_ALTERN_CURRENT,           ITM_NULL,                     ITM_NULL,                     ITM_NULL,                     ITM_NULL,                     ITM_NULL   };
 
 
 TO_QSPI const int16_t menu_EQN[]         = { ITM_EQ_NEW,                ITM_EQ_EDI,                 -MNU_2NDDERIV,            -MNU_1STDERIV,            -MNU_Sf,                    -MNU_Solver,

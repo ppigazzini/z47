@@ -1205,7 +1205,6 @@ uint8_t outKeyBufferDoubleClick(void) {
     else {
       strcat(line2, " ");
       showString(line2, &standardFont, SCREEN_WIDTH-11, 0, vmNormal, true, true);
-      //refreshStatusBar();
     }
   #endif // JMSHOWCODES_KB3
 
