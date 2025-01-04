@@ -102,9 +102,8 @@ dist_install_PC: sim
 dist_testPgms_PC: testPgms dist_install_PC
 	mkdir -p $(DIST_DIR_PC)/res/testPgms/
 	cp res/testPgms/testPgms.bin res/testPgms/testPgms.txt $(DIST_DIR_PC)/res/testPgms/
-	mkdir -p $(DIST_DIR_PC)/PROGRAMS
 	cd $(DIST_DIR_PC) && $(XVFB) ./c47$(EXE) --writeexportall
-	zip -r $(DIST_DIR_PC)/res/testPgms/testPgms.zip $(DIST_DIR_PC)/PROGRAMS/ALLPGMS
+	cd $(DIST_DIR_PC)/PROGRAMS/ && zip -r ../res/testPgms/testPgms.zip ALLPGMS
 
 dist_windows: BUILD_PC = build.rel
 dist_windows: DIST_DIR_PC = $(WIN_DIST_DIR)
@@ -150,7 +149,7 @@ dist_install_DM: build.rel/wiki
 	cp -r res/offimg/HP\ related/ $(DIST_DIR_DM)/offimg
 	cp -r res/offimg/C47/ $(DIST_DIR_DM)/offimg
 	cp -r res/PROGRAMS $(DIST_DIR_DM)
-	cp res/dmcp/DM42_keymap.bin $(DIST_DIR_DM)/resources
+	cp res/keymaps/DM42_keymap.bin $(DIST_DIR_DM)/resources
 
 dist_testPgms_DM: dist_testPgms_PC dist_install_DM
 	mkdir -p $(DIST_DIR_DM)
@@ -177,17 +176,16 @@ dist_dmcp5: dmcp5 dist_testPgms_DM
 dist_dmcpr47: DIST_DIR_DM = $(DMCPR47_DIST_DIR)
 dist_dmcpr47: dmcpr47 dist_testPgms_DM
 	cp build.dmcp/src/c47-dmcp/R47.pgm build.dmcp/src/c47-dmcp/R47_qspi.bin $(DMCPR47_DIST_DIR)
-	cp res/dmcp/R47_keymap.bin $(DMCPR47_DIST_DIR)
+	cp res/keymaps/R47_keymap.bin $(DMCPR47_DIST_DIR)
 	zip -r $(DMCPR47_DIST_DIR)/resources/R47.map.zip build.dmcp/src/c47-dmcp/C47.map
 	cp $(BUILD_PC)/wiki/Installation-on-a-DM42.md $(DMCPR47_DIST_DIR)/install_C47_on_DM42_readme_on_wiki.txt
 	zip -r r47-dmcp.zip $(DMCPR47_DIST_DIR)
 	rm -rf $(DMCPR47_DIST_DIR)
 
-
 dist_dmcp5r47: DIST_DIR_DM = $(DMCP5R47_DIST_DIR)
 dist_dmcp5r47: dmcp5r47 dist_testPgms_DM
 	cp build.dmcp5/src/c47-dmcp5/R47.pg5 $(DMCP5R47_DIST_DIR)
-	cp res/dmcp5/R47_keymap.bin $(DMCP5R47_DIST_DIR)
+	cp res/keymaps/R47_keymap.bin $(DMCP5R47_DIST_DIR)
 	cp res/dmcp5/SwissMicros/DM42_qspi_3.x.bin $(DMCP5R47_DIST_DIR)
 	zip -r $(DMCP5R47_DIST_DIR)/resources/R47.map.zip build.dmcp5/src/c47-dmcp5/C47.map
 	cp res/dmcp5/install_R47_on_DM32.txt $(DMCP5R47_DIST_DIR)
