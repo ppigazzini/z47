@@ -11,8 +11,8 @@
 #define STATE_DIR      "STATE"
 #define STATE_EXT      ".s47"
 
-#define PROGRAMS_DIR    "PROGRAMS"
-#define ALLPROGRAMS_DIR "PROGRAMS/ALLPGMS"
+#define PROGRAMS_DIR       "PROGRAMS"
+#define ALLPROGRAMS_SUBDIR "ALLPGMS"
 
 #define PRGM_EXT       ".p47"
 #define TXT_EXT        ".txt"

@@ -150,7 +150,6 @@ dist_install_DM: build.rel/wiki
 	cp -r res/offimg/HP\ related/ $(DIST_DIR_DM)/offimg
 	cp -r res/offimg/C47/ $(DIST_DIR_DM)/offimg
 	cp -r res/PROGRAMS $(DIST_DIR_DM)
-	# Is it necessary to have DM42_keymap.bin twice?
 	cp res/dmcp/DM42_keymap.bin $(DIST_DIR_DM)/resources
 
 dist_testPgms_DM: dist_testPgms_PC dist_install_DM

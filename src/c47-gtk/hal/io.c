@@ -161,7 +161,10 @@ int _ioFileNameFromFilePath(ioFilePath_t path, char * filename) {
 
     case ioPathSaveAllPrograms:
     case ioPathExportRTFAllPrograms:
-      if(create_dir("./" ALLPROGRAMS_DIR) != 0) {
+      if(create_dir("./" PROGRAMS_DIR) != 0) {
+        return FILE_ERROR;
+      }
+      if(create_dir("./" PROGRAMS_DIR "/" ALLPROGRAMS_SUBDIR) != 0) {
         return FILE_ERROR;
       }
       // set current label name as default file name
@@ -170,7 +173,7 @@ int _ioFileNameFromFilePath(ioFilePath_t path, char * filename) {
 
       char filename1[300];
       filename1[0] = 0;
-      stringAppend(filename1, ALLPROGRAMS_DIR "/");
+      stringAppend(filename1, PROGRAMS_DIR "/" ALLPROGRAMS_SUBDIR "/");
       stringAppend(filename1 + stringByteLength(filename1), filename);
       filename[0] = 0;
       stringAppend(filename, filename1);
