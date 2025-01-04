@@ -104,6 +104,7 @@ dist_testPgms_PC: testPgms dist_install_PC
 	cp res/testPgms/testPgms.bin res/testPgms/testPgms.txt $(DIST_DIR_PC)/res/testPgms/
 	cd $(DIST_DIR_PC) && $(XVFB) ./c47$(EXE) --writeexportall
 	cd $(DIST_DIR_PC)/PROGRAMS/ && zip -r ../res/testPgms/testPgms.zip ALLPGMS
+	cp $(DIST_DIR_PC)/res/testPgms/testPgms.zip res/testPgms/
 
 dist_windows: BUILD_PC = build.rel
 dist_windows: DIST_DIR_PC = $(WIN_DIST_DIR)
@@ -151,10 +152,13 @@ dist_install_DM: build.rel/wiki
 	cp -r res/PROGRAMS $(DIST_DIR_DM)
 	cp res/keymaps/DM42_keymap.bin $(DIST_DIR_DM)/resources
 
-dist_testPgms_DM: dist_testPgms_PC dist_install_DM
+#dist_testPgms_DM: dist_testPgms_PC
+#  commented to prevent sim compile for every dist_dmcp compile locally. On Gitlab it is done sequencially, so the sim compile will create the testPgms.zip which will be used by the dmcp instructions.
+#  remove comment to force auto testPgms.zip creation
+dist_testPgms_DM: dist_install_DM
 	mkdir -p $(DIST_DIR_DM)
 	mkdir -p $(DIST_DIR_DM)/resources
-	cp $(BUILD_PC)/res/testPgms/testPgms.bin $(BUILD_PC)/res/testPgms/testPgms.txt $(BUILD_PC)/res/testPgms/testPgms.zip $(DIST_DIR_DM)/resources
+	cp res/testPgms/testPgms.bin res/testPgms/testPgms.txt res/testPgms/testPgms.zip $(DIST_DIR_DM)/resources
 
 dist_dmcp: DIST_DIR_DM = $(DMCP_DIST_DIR)
 dist_dmcp: dmcp dist_testPgms_DM
