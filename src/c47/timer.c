@@ -381,7 +381,6 @@ void fnDecisecondTimerApp(uint16_t unusedButMandatoryParameter) {
 uint32_t remainingMsecCountdown = 0;
 
 
-#if !defined(TESTSUITE_BUILD)
 static void _realToUInt32(const real_t *re, enum rounding mode, uint32_t *value32, bool_t *overflow) {
   uint8_t bcd[76], sign;
   real_t real;
@@ -420,7 +419,6 @@ static void _realToUInt32(const real_t *re, enum rounding mode, uint32_t *value3
 
   longIntegerFree(lgInt);
 }
-#endif // !TESTSUITE_BUILD
 
 
 bool_t inputHelper(uint16_t regist, uint32_t *val, bool_t *overflow) {
