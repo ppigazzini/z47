@@ -10,6 +10,7 @@ endif
 BUILD_PC = build.sim
 DIST_DIR_PC = build.sim
 XVFB =
+FORCENEW_TESTPGMS = 
 
 clean:
 	rm -f wp43$(EXE)
@@ -86,6 +87,8 @@ else
   DMCPR47_DIST_DIR = r47-dmcp-$(CI_COMMIT_TAG)
   DMCP5_DIST_DIR = c47-dmcp5-$(CI_COMMIT_TAG)
   DMCP5R47_DIST_DIR = r47-dmcp5-$(CI_COMMIT_TAG)
+  #
+  FORCENEW_TESTPGMS = 1
 endif
 
 dist_install_PC: sim
@@ -152,16 +155,24 @@ dist_install_DM: build.rel/wiki
 	cp -r res/PROGRAMS $(DIST_DIR_DM)
 	cp res/keymaps/DM42_keymap.bin $(DIST_DIR_DM)/resources
 
-#dist_testPgms_DM: dist_testPgms_PC
-#  commented to prevent sim compile for every dist_dmcp compile locally. On Gitlab it is done sequencially, so the sim compile will create the testPgms.zip which will be used by the dmcp instructions.
-#  remove comment to force auto testPgms.zip creation
+ifeq ($(FORCENEW_TESTPGMS),)
+  DIST_TESTPGMS_DM = dist_testPgms_DM
+else
+  DIST_TESTPGMS_DM = dist_testPgms_forcenew_DM
+endif
+
 dist_testPgms_DM: dist_install_DM
 	mkdir -p $(DIST_DIR_DM)
 	mkdir -p $(DIST_DIR_DM)/resources
 	cp res/testPgms/testPgms.bin res/testPgms/testPgms.txt res/testPgms/testPgms.zip $(DIST_DIR_DM)/resources
 
+dist_testPgms_forcenew_DM: dist_testPgms_PC dist_install_DM
+	mkdir -p $(DIST_DIR_DM)
+	mkdir -p $(DIST_DIR_DM)/resources
+	cp $(BUILD_PC)/res/testPgms/testPgms.bin $(BUILD_PC)/res/testPgms/testPgms.txt $(BUILD_PC)/res/testPgms/testPgms.zip $(DIST_DIR_DM)/resources
+
 dist_dmcp: DIST_DIR_DM = $(DMCP_DIST_DIR)
-dist_dmcp: dmcp dist_testPgms_DM
+dist_dmcp: dmcp $(DIST_TESTPGMS_DM)
 	cp build.dmcp/src/c47-dmcp/C47.pgm build.dmcp/src/c47-dmcp/C47_qspi.bin $(DIST_DIR_DM)
 	zip -r $(DIST_DIR_DM)/resources/C47.map.zip build.dmcp/src/c47-dmcp/C47.map
 	cp $(BUILD_PC)/wiki/Installation-on-a-DM42.md $(DIST_DIR_DM)/install_C47_on_DM42_readme_on_wiki.txt
@@ -169,7 +180,7 @@ dist_dmcp: dmcp dist_testPgms_DM
 	rm -rf $(DIST_DIR_DM)
 
 dist_dmcp5: DIST_DIR_DM = $(DMCP5_DIST_DIR)
-dist_dmcp5: dmcp5 dist_testPgms_DM
+dist_dmcp5: dmcp5 $(DIST_TESTPGMS_DM)
 	cp build.dmcp5/src/c47-dmcp5/C47.pg5 $(DIST_DIR_DM)
 	cp res/dmcp5/SwissMicros/DM42_qspi_3.x.bin $(DIST_DIR_DM)/resources
 	zip -r $(DIST_DIR_DM)/resources/C47.map.zip build.dmcp5/src/c47-dmcp5/C47.map
@@ -178,7 +189,7 @@ dist_dmcp5: dmcp5 dist_testPgms_DM
 	rm -rf $(DIST_DIR_DM)
 
 dist_dmcpr47: DIST_DIR_DM = $(DMCPR47_DIST_DIR)
-dist_dmcpr47: dmcpr47 dist_testPgms_DM
+dist_dmcpr47: dmcpr47 $(DIST_TESTPGMS_DM)
 	cp build.dmcp/src/c47-dmcp/R47.pgm build.dmcp/src/c47-dmcp/R47_qspi.bin $(DMCPR47_DIST_DIR)
 	cp res/keymaps/R47_keymap.bin $(DMCPR47_DIST_DIR)
 	zip -r $(DMCPR47_DIST_DIR)/resources/R47.map.zip build.dmcp/src/c47-dmcp/C47.map
@@ -187,7 +198,7 @@ dist_dmcpr47: dmcpr47 dist_testPgms_DM
 	rm -rf $(DMCPR47_DIST_DIR)
 
 dist_dmcp5r47: DIST_DIR_DM = $(DMCP5R47_DIST_DIR)
-dist_dmcp5r47: dmcp5r47 dist_testPgms_DM
+dist_dmcp5r47: dmcp5r47 $(DIST_TESTPGMS_DM)
 	cp build.dmcp5/src/c47-dmcp5/R47.pg5 $(DMCP5R47_DIST_DIR)
 	cp res/keymaps/R47_keymap.bin $(DMCP5R47_DIST_DIR)
 	cp res/dmcp5/SwissMicros/DM42_qspi_3.x.bin $(DMCP5R47_DIST_DIR)
