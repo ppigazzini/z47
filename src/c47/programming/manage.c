@@ -1429,7 +1429,6 @@ void insertStepInProgram(int16_t func) {
       }
       else {
         _insertInProgram((uint8_t *)tmpString, (func >= 128) ? 2 : 1);
-printStringToConsole(tmpString,"aaaaa ","\n");
       }
       break;
     }
