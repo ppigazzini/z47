@@ -1059,7 +1059,12 @@ void fnOpenMenu(uint16_t menu) {
       }
     }
     enterAsmModeIfMenuIsACatalog(-menu);                             // Set catalog
-    lastCatalogPosition[catalog] = 18 * (menuPageNumber-1);          // To open the menu at the right page
+    if(menu == MNU_CONVCHEF || menu == MNU_CONVV) {
+      lastCatalogPosition[catalog] = getSystemFlag(FLAG_US) ? 18 : 0;
+    }
+    else {
+      lastCatalogPosition[catalog] = 18 * (menuPageNumber-1);          // To open the menu at the right page
+    }
     showSoftmenu(-menu);
     lastCatalogPosition[CATALOG_NONE] = 0;                           // Return to default page for non catalog menus
   }
@@ -2874,7 +2879,10 @@ bool_t BASE_OVERRIDEONCE = false;
     softmenuStack[0].calcMode = calcMode;
 
 
-    if((softmenu[softmenuId].menuItem == -MNU_CONVCHEF || softmenu[softmenuId].menuItem == -MNU_CONVV) && menu(1) == -MNU_UNITCONV) {
+    if((softmenu[softmenuId].menuItem == -MNU_CONVCHEF || softmenu[softmenuId].menuItem == -MNU_CONVV) && 
+      ((menu(1) == -MNU_UNITCONV) || 
+       (menu(1) == -MNU_MENUS && menu(2) == -MNU_CATALOG) )
+      ) {
       softmenuStack[0].firstItem = getSystemFlag(FLAG_US) ? 18 : 0;
     }
 
