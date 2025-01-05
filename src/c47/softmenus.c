@@ -569,7 +569,7 @@ TO_QSPI const int16_t menu_AUDIO[]       = { ITM_BEEP,                      ITM_
 
 TO_QSPI const int16_t menu_IO[]          = { ITM_WRITEP,                    ITM_SAVEST,                 ITM_SAVE,                 ITM_LOADP,             ITM_LOADR,                   ITM_LOADV,
                                              ITM_READP,                     ITM_LOADST,                 ITM_LOAD,                 ITM_LOADSIGMA,         ITM_LOADSS,                  -MNU_PRINT,
-                                             ITM_EXPORTP,                   ITM_SAVEAUT,                ITM_NULL,                 ITM_NULL,              ITM_SNAP,                    -MNU_AUDIO                    };
+                                             ITM_EXPORTP,                   ITM_WRXPALL,                ITM_SAVEAUT,              ITM_NULL,              ITM_SNAP,                    -MNU_AUDIO                    };
 
 TO_QSPI const int16_t menu_PRINT[]       = { ITM_PRINTERX,                  ITM_PRINTERXY,              ITM_PRINTERSTK,           ITM_P_ALLREGS,         ITM_PRINTERR,                ITM_PRINTERPROG,
                                             ITM_PRINTERCHAR,                ITM_PRINTERHASH,            ITM_PRINTERLCD,           ITM_PRINTERREGS,       ITM_PRINTERSIGMA,            ITM_PRINTERUSER,
@@ -2323,6 +2323,26 @@ bool_t savedspace(int16_t itemNr) {  //strike out all SAVED_SPACE items
   }
 }
 
+
+#define typeStrikeOut 1 
+#define typeStrikeThrough 2
+static void strokeStrike(uint8_t type_, bool_t condition, int16_t *xStroke, int16_t *yStroke, int16_t x, int16_t y) {
+  for(*xStroke = x*67 + 1 +9; *xStroke < x*67 + 66 -10; (*xStroke)++) {
+    if(type_ == typeStrikeOut) { //cause diagonal
+      if(*xStroke%3 == 0) {
+        (*yStroke)--;
+      }    
+    }
+    if(condition) {
+      setBlackPixel(*xStroke, *yStroke -3);
+    }
+    else {
+      setWhitePixel(*xStroke, *yStroke -3);
+    }
+  }
+}
+
+
 void fnStrikeOutIfNotCoded(int16_t itemNr, int16_t x, int16_t y) {
   if(itemNr == -MNU_HOME || itemNr == -MNU_PFN) {
     return;
@@ -2345,39 +2365,21 @@ void fnStrikeOutIfNotCoded(int16_t itemNr, int16_t x, int16_t y) {
       strike = -1;
     }
   }
+
   if(strike != 0) {
     // Strike out non coded functions
-    int16_t yStroke = SCREEN_HEIGHT - y*23 - 1;
-    for(int16_t xStroke=x*67 + 1 +9 ; xStroke<x*67 + 66 -10; xStroke++) {      //JM mod stroke slash cross out
-      if(xStroke%3 == 0) {
-        yStroke--;
-      }
-      if(strike == 1) {
-        setBlackPixel(xStroke, yStroke -3);                                      //JM mod
-      }
-      else {
-        setWhitePixel(xStroke, yStroke -3);                                      //JM mod
-      }
-    }
+    int16_t xStroke, yStroke = SCREEN_HEIGHT - y*23 - 1;
+    strokeStrike(typeStrikeOut, strike == 1, &xStroke, &yStroke, x, y);
   }
 }
 
 
-#ifdef PC_BUILD
-  void fnStrikeThroughIfNotOnSim(int16_t itemNr, int16_t x, int16_t y) {
-    int16_t xStroke, yStroke = SCREEN_HEIGHT - y*23 - 9;
-    if(itemNotAvail(itemNr)) {
-      for(xStroke=x*67 + 1 +9 ; xStroke<x*67 + 66 -10; xStroke++) {      //JM mod stroke slash cross out
-        if(itemNr > 0) {
-          setBlackPixel(xStroke, yStroke -3);                                      //JM mod
-        }
-        else {
-          setWhitePixel(xStroke, yStroke -3);                                      //JM mod
-        }
-      }
-    }
+void fnStrikeThroughIfNA(int16_t itemNr, int16_t x, int16_t y) {
+  int16_t xStroke, yStroke = SCREEN_HEIGHT - y*23 - 9;
+  if(itemNotAvail(itemNr)) {
+    strokeStrike(typeStrikeThrough, itemNr > 0, &xStroke, &yStroke, x, y);
   }
-#endif //PC_BUILD
+}
 
 
 bool_t BASE_OVERRIDEONCE = false;
@@ -2597,9 +2599,7 @@ bool_t BASE_OVERRIDEONCE = false;
                 }
                 showSoftkey(itemName, x, y, vm, true, true, showCb, showValue, showText, !greyout);
                 fnStrikeOutIfNotCoded(itemNr, x, y);
-                #ifdef PC_BUILD
-                  fnStrikeThroughIfNotOnSim(itemNr, x, y-currentFirstItem/6);
-                #endif //PC_BUILD
+                fnStrikeThroughIfNA(itemNr, x, y-currentFirstItem/6);
               }
               ptr += stringByteLength((char *)ptr) + 1;
             }
@@ -2741,9 +2741,7 @@ bool_t BASE_OVERRIDEONCE = false;
           }
 
           fnStrikeOutIfNotCoded(item%10000, x, y-currentFirstItem/6);
-          #ifdef PC_BUILD
-            fnStrikeThroughIfNotOnSim(item%10000, x, y-currentFirstItem/6);
-          #endif //PC_BUILD
+          fnStrikeThroughIfNA(item%10000, x, y-currentFirstItem/6);
         }
       }
 

@@ -11,6 +11,7 @@
   #include "gtkGui.h"
 
   char modelString[50];
+  bool_t              writeExportAll = false;
   uint8_t             config = 0;
   bool_t enableFunctionKeysDisplay;
   bool_t              calcLandscape;
@@ -168,6 +169,37 @@
         swapCtrlCode = true;
         printf("Activated: %s\n",argv[arg]);
       }
+      if(strcmp(argv[arg], "--writeexportall") == 0) {
+        printf("Activated: %s\n",argv[arg]);
+        writeExportAll = true;
+      }
+      if(strcmp(argv[arg], "--help") == 0 || strcmp(argv[arg], "--h") == 0) {
+        printf("Activated: %s\n\n",argv[arg]);
+        printf("c47 --background \n");
+        printf("c47 --functionkeys \n");
+        printf("c47 --landscape \n");
+        printf("c47 --portrait \n");
+        printf("c47 --auto \n");
+        printf("c47 --r47 \n");
+        printf("c47 --r47v0 \n");
+        printf("c47 --r47v1 \n");
+        printf("c47 --r47v2 \n");
+        printf("c47 --r47v3 \n");
+        printf("c47 --e47 \n");
+        printf("c47 --n47 \n");
+        printf("c47 --v47 \n");
+        printf("c47 --d47 \n");
+        printf("c47 --dm42 \n");
+        printf("c47 --jm \n");
+        printf("c47 --rj \n");
+        printf("c47 --hp35 \n");
+        printf("c47 --deadkeys \n");
+        printf("c47 --swapctrlcode \n");
+        printf("c47 --writeexportall \n");
+        printf("c47 --help \n");
+        printf("c47 --h \n");
+        return 0;
+      }
     }
 
     if(strcmp(indexOfItems[LAST_ITEM].itemSoftmenuName, "Last item") != 0) {
@@ -216,6 +248,11 @@
       case 2: fnSetRJ(0);   break;
       case 3: fnSetHP35(0); break;
       default:;
+    }
+
+    if(writeExportAll) {
+      fnSaveAllPrograms(NOPARAM);
+      return 0;
     }
 
     //ramDump();
