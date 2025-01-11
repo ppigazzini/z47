@@ -293,3 +293,4 @@ PLUS                      "\xa4\xff"
     U+230a LEFT FLOOR
     U+230b RIGHT FLOOR
 
+2025-01-11 Reworked the 3 fonts to reduce drastically in each glyph the number of polygons
