@@ -293,3 +293,10 @@ PLUS                      "\xa4\xff"
     U+230a LEFT FLOOR
     U+230b RIGHT FLOOR
 
+2025-01-11 Add Block arrows to Std font
+    U+2B60 LEFT_BLOCKARROW
+    U+2B61 UP_BLOCKARROW
+    U+2B62 RIGHT_BLOCKARROW
+    U+2B63 DOWN_BLOCKARROW
+    U+23FB POWER_SYMBOL
+
