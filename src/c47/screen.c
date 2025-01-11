@@ -5359,8 +5359,8 @@ void insertAlphaCursor(uint16_t startAt) {
     char       *bufPtr = tmpString + startAt;
     const char *strPtr = aimBuffer;
     uint16_t    strLength = 0;
-    int16_t     strWidth = 0;
-    int16_t     glyphWidth = 0;
+//    int16_t     strWidth = 0;
+//    int16_t     glyphWidth = 0;
 
     printf("**[DL]** insertAlphaCursor startAt %d alphaCursor %d\n",startAt,alphaCursor);fflush(stdout);
 
@@ -5370,8 +5370,8 @@ void insertAlphaCursor(uint16_t startAt) {
       *bufPtr       = STD_CURSOR[0];
       *(bufPtr + 1) = STD_CURSOR[1];
       *(bufPtr + 2) = 0;
-      glyphWidth = stringWidth(bufPtr, &standardFont, true, true);
-      strWidth += glyphWidth;
+//      glyphWidth = stringWidth(bufPtr, &standardFont, true, true);
+//      strWidth += glyphWidth;
       bufPtr += 2;
     }
 
@@ -5394,11 +5394,11 @@ void insertAlphaCursor(uint16_t startAt) {
 
       /* Cursor */
       if(strLength == alphaCursor) {
-         *bufPtr       = STD_CURSOR[0];
+        *bufPtr       = STD_CURSOR[0];
         *(bufPtr + 1) = STD_CURSOR[1];
         *(bufPtr + 2) = 0;
-        glyphWidth = stringWidth(bufPtr, &standardFont, true, true);
-        strWidth += glyphWidth;
+//        glyphWidth = stringWidth(bufPtr, &standardFont, true, true);
+//        strWidth += glyphWidth;
         bufPtr += 2;
       }
 
