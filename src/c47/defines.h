@@ -4,7 +4,32 @@
 #if !defined(DEFINES_H)
 #define DEFINES_H
 
-#define ALTERNATE_ALPHA_MENU
+//*********************************
+// DL ALPHA MENUS OPTIONS
+//*********************************
+
+// Uncomment ALTERNATE_ALPHA_F1 to get new alpha menus with left arrow on F1
+// Uncomment ALTERNATE_ALPHA_F5 to get new alpha menus with left arrow on F5
+// Comment both to use original menus and code
+
+//#define ALTERNATE_ALPHA_F1     // New Menus with left arrow on F1
+#define ALTERNATE_ALPHA_F5     // New Menus with left arrow on F5
+
+#if defined(ALTERNATE_ALPHA_F1)
+  #define ALTERNATE_TAM_MENU1    // TAM menu with left arrow on F1
+  #define ALTERNATE_ALPHA_MENU1  // Alpha menu with left arrow on F1
+#elif defined(ALTERNATE_ALPHA_F5)
+  #define ALTERNATE_TAM_MENU2    // TAM menu with left arrow on F5
+  #define ALTERNATE_ALPHA_MENU2  // Alpha menu with left arrow on F5
+#endif
+
+#if defined(ALTERNATE_TAM_MENU1) || defined(ALTERNATE_TAM_MENU2)
+  #define ALTERNATE_TAM_MENU
+#endif // ALTERNATE_TAM_MENU1 || ALTERNATE_TAM_MENU2
+
+#if defined(ALTERNATE_ALPHA_MENU1) || defined(ALTERNATE_ALPHA_MENU2)
+  #define ALTERNATE_ALPHA_MENU
+#endif // ALTERNATE_ALPHA_MENU1 || ALTERNATE_ALPHA_MENU2
 
 //*********************************
 // JM VARIOUS OPTIONS
@@ -1892,17 +1917,25 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define IS_SEPARATOR_(digitCount)            (   (digitCount+1 == GROUPWIDTH_LEFT1) \
                                               || ((digitCount+1  > GROUPWIDTH_LEFT1 || digitCount < 0) \
                                                   && (modulo(digitCountNEW(digitCount), (uint16_t)GROUPWIDTH_(digitCount)) == (uint16_t)GROUPWIDTH_(digitCount) - 1)) )
-#if !defined(ALTERNATE_ALPHA_MENU)
+#if defined(ALTERNATE_ALPHA_F1)
   #define BLOCK_DOUBLEPRESS_MENU(menu, x, y)   ( \
-                                               (softmenu[menu].menuItem == -MNU_ALPHA    && y == 0) || \
-                                               (softmenu[menu].menuItem == -MNU_M_EDIT   && y == 0 && (x == 0 || x == 1 || x == 4 || x == 5)) || \
-                                               (softmenu[menu].menuItem == -MNU_EQ_EDIT  && y == 0 && (x == 4 || x == 5)) \
+                                               (softmenu[menu].menuItem == -MNU_ALPHA     && y == 0 && (x == 0 || x == 5)) || \
+                                               (softmenu[menu].menuItem == -MNU_M_EDIT    && y == 0 && (x == 0 || x == 5)) || \
+                                               (softmenu[menu].menuItem == -MNU_EQ_EDIT   && y == 0 && (x == 0 || x == 5)) || \
+                                               (softmenu[menu].menuItem == -MNU_TAMALPHA  && y == 0 && (x == 0 || x == 5)) \
+                                             )
+#elif defined(ALTERNATE_ALPHA_F5)
+  #define BLOCK_DOUBLEPRESS_MENU(menu, x, y)   ( \
+                                               (softmenu[menu].menuItem == -MNU_ALPHA     && y == 0 && (x == 4 || x == 5)) || \
+                                               (softmenu[menu].menuItem == -MNU_M_EDIT    && y == 0 && (x == 4 || x == 5)) || \
+                                               (softmenu[menu].menuItem == -MNU_EQ_EDIT   && y == 0 && (x == 0 || x == 5)) || \
+                                               (softmenu[menu].menuItem == -MNU_TAMALPHA  && y == 0 && (x == 4 || x == 5)) \
                                              )
 #else
   #define BLOCK_DOUBLEPRESS_MENU(menu, x, y)   ( \
-                                               (softmenu[menu].menuItem == -MNU_ALPHA    && y == 0 && (x == 0 || x == 5)) || \
-                                               (softmenu[menu].menuItem == -MNU_M_EDIT   && y == 0 && (x == 0 || x == 1 || x == 4 || x == 5)) || \
-                                               (softmenu[menu].menuItem == -MNU_EQ_EDIT  && y == 0 && (x == 4 || x == 5)) \
+                                               (softmenu[menu].menuItem == -MNU_ALPHA     && y == 0) || \
+                                               (softmenu[menu].menuItem == -MNU_M_EDIT    && y == 0 && (x == 0 || x == 1 || x == 4 || x == 5)) || \
+                                               (softmenu[menu].menuItem == -MNU_EQ_EDIT   && y == 0 && (x == 4 || x == 5)) \
                                              )
 #endif //!ALTERNATE_ALPHA_MENU
 

@@ -456,6 +456,7 @@ char letteredRegisterName(calcRegister_t regist) {
     if(showFunctionNameCounter > 0) {
       showFunctionNameCounter -= SCREEN_REFRESH_PERIOD;
       if(showFunctionNameCounter <= 0) {
+        printf("**[DL]** hideFunctionName¨1\n");fflush(stdout);
         hideFunctionName();
         tmpString[0] = 0;
         showFunctionName(ITM_NOP, 0, "SF:R");
@@ -514,6 +515,7 @@ char letteredRegisterName(calcRegister_t regist) {
     if(showFunctionNameCounter>0) {
       showFunctionNameCounter -= FAST_SCREEN_REFRESH_PERIOD;
       if(showFunctionNameCounter <= 0) {
+        printf("**[DL]** hideFunctionName¨2\n");fflush(stdout);
         hideFunctionName();
         tmpString[0] = 0;
         showFunctionName(ITM_NOP, 0, "SF:R");
@@ -1720,6 +1722,8 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
     functionName[0] = 0;
     showFunctionNameArg = NULL;
 
+    printf("**[DL]** showFunctionName item %d\n",item);fflush(stdout);
+    
     #if defined(DEBUG_SHOWNAME)
       if(item < LAST_ITEM && (item == ITM_XEQ || item != ITM_RCL)) {
         stringAppend(functionName + stringByteLength(functionName), pickValidItemFromItems(item, PRIORITY_itemCatalogName));
@@ -1764,6 +1768,13 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
     showFunctionNameItem = item;
     showFunctionNameCounter = delayInMs;
 
+
+    #if defined(ALTERNATE_TAM_MENU)
+      if(tam.alpha && ((item == ITM_T_LEFT_ARROW) || (item == ITM_T_RIGHT_ARROW))) {
+        return;
+      }
+    #endif //ALTERNATE_TAM_MENU
+    
     if(functionName[0] != 0)
     {
       bool_t overLapPossible = (calcMode == CM_PEM);
@@ -4807,6 +4818,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
           if(screenUpdatingMode & (SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME)) {
             clearShiftState();
           }
+          printf("**[DL]** displayShiftAndTamBuffer\n");fflush(stdout);
           displayShiftAndTamBuffer();
         }
         if(!(screenUpdatingMode & (SCRUPD_MANUAL_MENU | SCRUPD_SKIP_MENU_ONE_TIME))) {
@@ -5339,3 +5351,60 @@ void fnAGraph(uint16_t regist) {
     }
   #endif // !TESTSUITE_BUILD
 }
+
+
+#if defined(ALTERNATE_TAM_MENU)
+void insertAlphaCursor(uint16_t startAt) {
+  #if !defined(TESTSUITE_BUILD)
+    char       *bufPtr = tmpString + startAt;
+    const char *strPtr = aimBuffer;
+    uint16_t    strLength = 0;
+    int16_t     strWidth = 0;
+    int16_t     glyphWidth = 0;
+
+    printf("**[DL]** insertAlphaCursor startAt %d alphaCursor %d\n",startAt,alphaCursor);fflush(stdout);
+
+    *bufPtr       = 0;
+
+    if(alphaCursor == 0) {
+      *bufPtr       = STD_CURSOR[0];
+      *(bufPtr + 1) = STD_CURSOR[1];
+      *(bufPtr + 2) = 0;
+      glyphWidth = stringWidth(bufPtr, &standardFont, true, true);
+      strWidth += glyphWidth;
+      bufPtr += 2;
+    }
+
+    while((*strPtr) != 0) {
+      ++strLength;
+      *bufPtr = *strPtr;
+
+      /* Double-byte characters */
+      if((*strPtr) & 0x80) {
+        *(bufPtr + 1) = *(strPtr + 1);
+        *(bufPtr + 2) = 0;
+        bufPtr += 2;
+      }
+
+      /* Single-byte characters */
+      else {
+      *(bufPtr + 1) = 0;
+      bufPtr += 1;
+      }
+
+      /* Cursor */
+      if(strLength == alphaCursor) {
+         *bufPtr       = STD_CURSOR[0];
+        *(bufPtr + 1) = STD_CURSOR[1];
+        *(bufPtr + 2) = 0;
+        glyphWidth = stringWidth(bufPtr, &standardFont, true, true);
+        strWidth += glyphWidth;
+        bufPtr += 2;
+      }
+
+      /* Next character */
+      strPtr += ((*strPtr) & 0x80) ? 2 : 1;
+    }
+  #endif // !TESTSUITE_BUILD
+}
+#endif //ALTERNATE_TAM_MENU

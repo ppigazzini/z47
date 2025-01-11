@@ -947,6 +947,7 @@ int16_t lastItem = 0;
         item = determineFunctionKeyItem_C47((char *)data, shiftF, shiftG);
       }
 
+      printf("**[DL]** executeFunction item %d\n",item);fflush(stdout);
       // in graph plot menu, wanting to change Normal Mode items, so open the correct menu first and return to Normal Mode, and stop the processing.
       if(calcMode == CM_GRAPH && currentMenu() == -MNU_PLOT_FUNC && (item == VAR_LX || item == VAR_UX)) {
         calcMode = CM_NORMAL;
@@ -1089,6 +1090,7 @@ int16_t lastItem = 0;
             else  if(indexOfItems[item].func == addItemToBuffer) {   //this section is added, it was commented out in btnFnPressed line 760, it is moved here, as longpress works on release.
               //Here we deal with PEM TAM mode menu entry, i.e. item's sent to buffer. See issue #454 context.
               if(getSystemFlag(FLAG_ALPHA)) {
+                printf("**[DL]** executeFunction processAimInput item %d\n",item);fflush(stdout);
                 processAimInput(item);
               }
               else {
@@ -1159,7 +1161,7 @@ int16_t lastItem = 0;
   //            if(calcMode == CM_NORMAL) {
   //              fnAim(NOPARAM);
   //            }
-  //            addItemToBuffer(item);
+  //                          fnAim(NOPARAM);(item);
   //JM this is handled later
   //          }
 
@@ -1185,6 +1187,7 @@ int16_t lastItem = 0;
             addItemToBuffer(item);
           }
           else if(item > 0) { // function
+            printf("**[DL]** executeFunction 2 item %d\n",item);fflush(stdout);
             if(calcMode == CM_NORMAL && (                          //switch off BASE mode using the HEX/DEC... buttons
                 (lastIntegerBase ==  2 && item == ITM_2BIN) ||
                 (lastIntegerBase ==  8 && item == ITM_2OCT) ||
@@ -1205,11 +1208,32 @@ int16_t lastItem = 0;
             if(calcMode == CM_AIM && !(isAlphabeticSoftmenu() || isJMAlphaOnlySoftmenu())) {
               closeAim();
             }
+            #if defined(ALTERNATE_TAM_MENU)
+              printf("**[DL]** tam.mode %d tam.alpha %d\n",tam.mode,tam.alpha);fflush(stdout);
+              if(tam.mode && tam.alpha) {
+                printf("**[DL]** tam.mode && tam.alpha\n");fflush(stdout);
+                if(item == ITM_T_LEFT_ARROW) {
+                  fnAlphaCursorLeft(NOPARAM);
+                  tamProcessInput(ITM_T_LEFT_ARROW);      // To update the tam buffer
+                  goto noMoreToDo;
+                }
+                else if(item == ITM_T_RIGHT_ARROW) {
+                  fnAlphaCursorRight(NOPARAM);
+                  tamProcessInput(ITM_NOP);      // To update the tam buffer
+                  goto noMoreToDo;
+                }
+                else if(item == ITM_NOP) {
+                  tamProcessInput(ITM_NOP);      // To update the tam buffer
+                  goto noMoreToDo;
+                }
+              }
+            #endif //ALTERNATE_TAM_MENU
             if(tam.alpha && calcMode != CM_ASSIGN && tam.mode != TM_NEWMENU &&
               !( (tam.mode==TM_STORCL || tam.mode==TM_LABEL || tam.mode == TM_M_DIM || tam.mode == TM_REGISTER || tam.mode == TM_CMP)
-                  && (item == CHR_num || item == CHR_case || item == ITM_SCR) )
+                  && (item == CHR_num || item == CHR_case || item == ITM_SCR || item == ITM_USERMODE) )
               ) {
               if(calcMode != CM_PEM || item != ITM_NOP) { // Here we left TAM in the context of issue #454
+                printf("**[DL]** tamLeaveMode\n");fflush(stdout);
                 tamLeaveMode();
               }
             }
@@ -1240,6 +1264,7 @@ int16_t lastItem = 0;
                   SetSetting(JC_NL);
                 }
                 else if(tam.alpha) {
+                  printf("**[DL]** processAimInput 1\n");fflush(stdout);
                   processAimInput(item);
                   if(stringGlyphLength(aimBuffer) > 6) {
                     assignLeaveAlpha();
@@ -1292,6 +1317,7 @@ int16_t lastItem = 0;
                 }
               }
               else if(calcMode == CM_ASSIGN && tam.alpha && tam.mode != TM_NEWMENU && item != ITM_NOP) {
+                printf("**[DL]** processAimInput 2\n");fflush(stdout);
                 processAimInput(item);
                 if(stringGlyphLength(aimBuffer) > 6) {
                   assignLeaveAlpha();
@@ -2111,6 +2137,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
         }
 
         fnTimerStop(TO_3S_CTFF);
+        printf("**[DL]** hideFunctionName¨3\n");fflush(stdout);
         hideFunctionName();
 
         int keyCode = (*((char *)data) - '0')*10 + *(((char *)data) + 1) - '0';
@@ -2377,6 +2404,7 @@ RELEASE_END:
       keyActionProcessed = true;
     }
     else {
+      printf("**[DL]** processKeyAction item %d\n",item);fflush(stdout);
       switch(item) {
         case ITM_BACKSPACE: {
           if(calcMode == CM_NIM || calcMode == CM_AIM || calcMode == CM_EIM) {
@@ -2662,7 +2690,9 @@ RELEASE_END:
           }
           else if(tam.mode) {
             if(tam.alpha) {
+              //printf("**[DL]** tam.alpha item %d\n",item);fflush(stdout);
               if(indexOfItems[item].func == addItemToBuffer || item < 0) {
+                printf("**[DL]** processAimInput 3\n");fflush(stdout);
                 processAimInput(item);
               }
               else {
@@ -2744,6 +2774,7 @@ RELEASE_END:
 //See ALL_AIM_LP_CYCLE
                 else {
                   screenUpdatingMode &= ~(SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME);
+                  printf("**[DL]** processAimInput 4\n");fflush(stdout);
                   processAimInput(item);
                 }
                 break;
@@ -2755,6 +2786,8 @@ RELEASE_END:
                          printf("^^^^^ screenUpdatingMode=%u\n",screenUpdatingMode); //####
                        #endif
                     #endif
+
+                printf("**[DL]** processAimInput 5\n");fflush(stdout);
                 processAimInput(item);
                 screenUpdatingMode &= ~(SCRUPD_MANUAL_MENU | SCRUPD_SKIP_MENU_ONE_TIME);
                 refreshRegisterLine(AIM_REGISTER_LINE);   //JM  No if needed, it does nothing if not in NIM. TO DISPLAY NUMBER KEYPRESS DIRECTLY AFTER PRESS, NOT ONLY UPON RELEASE          break;
@@ -3091,6 +3124,7 @@ RELEASE_END:
               case CM_ASSIGN: {
                 if(item > 0 && itemToBeAssigned == 0) {
                   if(tam.alpha) {
+                    printf("**[DL]** processAimInput 6\n");fflush(stdout);
                     processAimInput(item);
                     if(stringGlyphLength(aimBuffer) > 6) {
                       assignLeaveAlpha();
@@ -3144,6 +3178,7 @@ RELEASE_END:
                 else if(item != 0 && itemToBeAssigned != 0) {
                   if(tam.alpha && tam.mode != TM_NEWMENU) {
                     if(item > 0) {
+                      printf("**[DL]** processAimInput 7\n");fflush(stdout);
                       processAimInput(item);
                       if(stringGlyphLength(aimBuffer) > 6) {
                         assignLeaveAlpha();
@@ -4193,17 +4228,22 @@ void fnKeyBackspace(uint16_t unusedButMandatoryParameter) {
 
       case CM_EIM: {
         if(xCursor > 0) {
-          char *srcPos = aimBuffer;
-          char *dstPos = aimBuffer;
-          char *lstPos = aimBuffer + stringNextGlyph(aimBuffer, stringLastGlyph(aimBuffer));
-          --xCursor;
-          for(uint32_t i = 0; i < xCursor; ++i) {
-            dstPos += (*dstPos & 0x80) ? 2 : 1;
-          }
-          srcPos = dstPos + ((*dstPos & 0x80) ? 2 : 1);
-          for(; srcPos <= lstPos;) {
-            *(dstPos++) = *(srcPos++);
-          }
+          #if !defined(ALTERNATE_TAM_MENU)
+            char *srcPos = aimBuffer;
+            char *dstPos = aimBuffer;
+            char *lstPos = aimBuffer + stringNextGlyph(aimBuffer, stringLastGlyph(aimBuffer));
+            --xCursor;
+            for(uint32_t i = 0; i < xCursor; ++i) {
+              dstPos += (*dstPos & 0x80) ? 2 : 1;
+            }
+            srcPos = dstPos + ((*dstPos & 0x80) ? 2 : 1);
+            for(; srcPos <= lstPos;) {
+              *(dstPos++) = *(srcPos++);
+            }
+          #else
+            int16_t currentCursor = (int16_t)xCursor;
+            deleteAlphaCharacter(&currentCursor);
+          #endif //!ALTERNATE_TAM_MENU
         }
         break;
       }
@@ -4299,9 +4339,16 @@ void fnKeyBackspace(uint16_t unusedButMandatoryParameter) {
             calcMode = previousCalcMode;
           }
           else if(stringByteLength(aimBuffer) != 0) {
-            // Delete the last character
-            int16_t lg = stringLastGlyph(aimBuffer);
-            aimBuffer[lg] = 0;
+            #if !defined(ALTERNATE_TAM_MENU)
+              // Delete the last character
+              int16_t lg = stringLastGlyph(aimBuffer);
+              aimBuffer[lg] = 0;
+            #else
+              // Delete the character before the cursor
+              if(T_cursorPos > 0) {
+                deleteAlphaCharacter(&T_cursorPos);
+              }
+            #endif //!ALTERNATE_TAM_MENU
           }
           else {
             assignLeaveAlpha();
@@ -4313,9 +4360,16 @@ void fnKeyBackspace(uint16_t unusedButMandatoryParameter) {
             itemToBeAssigned = 0;
           }
           else if(stringByteLength(aimBuffer) != 0) {
-            // Delete the last character
-            int16_t lg = stringLastGlyph(aimBuffer);
-            aimBuffer[lg] = 0;
+            #if !defined(ALTERNATE_TAM_MENU)
+              // Delete the last character
+              int16_t lg = stringLastGlyph(aimBuffer);
+              aimBuffer[lg] = 0;
+            #else
+              // Delete the character before the cursor
+              if(T_cursorPos > 0) {
+                deleteAlphaCharacter(&T_cursorPos);
+              }
+            #endif //!ALTERNATE_TAM_MENU
           }
           else {
             assignLeaveAlpha();
@@ -4357,9 +4411,17 @@ void fnKeyBackspace(uint16_t unusedButMandatoryParameter) {
 
 void fnKeyUp(uint16_t unusedButMandatoryParameter) {
   #if !defined(TESTSUITE_BUILD)
-    printf("**[DL]** fnKeyUp\n");fflush(stdout);
     int16_t menuId = softmenuStack[0].softmenuId; //JM
 
+
+    #if defined(ALTERNATE_TAM_MENU)
+      if(tam.mode && tam.alpha) {
+        printf("**[DL]** fnAlphaCursorHome\n");fflush(stdout);
+        fnAlphaCursorHome(NOPARAM);
+        tamProcessInput(ITM_NOP);      // To update the tam buffer
+        return;
+      }
+    #endif //ALTERNATE_TAM_MENU
     if(tam.mode == TM_KEY && !tam.keyInputFinished) {
       if(tam.digitsSoFar == 0) {
         tamProcessInput(ITM_1);
@@ -4580,6 +4642,14 @@ void fnKeyDown(uint16_t unusedButMandatoryParameter) {
 //--       return;
 //--     }                             //JMSHOW ^^
 
+    #if defined(ALTERNATE_TAM_MENU)
+      if(tam.mode && tam.alpha) {
+        printf("**[DL]** fnAlphaCursorEnd\n");fflush(stdout);
+        fnAlphaCursorEnd(NOPARAM);
+        tamProcessInput(ITM_NOP);      // To update the tam buffer
+        return;
+      }
+    #endif //ALTERNATE_TAM_MENU
     if(tam.mode == TM_KEY && !tam.keyInputFinished) {
       if(tam.digitsSoFar == 0) {
         tamProcessInput(ITM_2);

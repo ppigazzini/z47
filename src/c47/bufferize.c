@@ -151,7 +151,7 @@ typedef struct {
 } fInMim_t;
 
 
-TO_QSPI const fInMim_t MimFunctionsType0[] = 
+TO_QSPI const fInMim_t MimFunctionsType0[] =
   {   //function
     {ITM_EXPONENT },
     {ITM_PERIOD   },
@@ -170,7 +170,7 @@ TO_QSPI const fInMim_t MimFunctionsType0[] =
   };
 
 
-TO_QSPI const fInMim_t MimFunctionsType1[] = 
+TO_QSPI const fInMim_t MimFunctionsType1[] =
   {   //function
     {ITM_STO         },
     {ITM_STOADD      },
@@ -206,7 +206,7 @@ TO_QSPI const fInMim_t MimFunctionsType1[] =
     {ITM_RAD         }, // do lastErrorCode = ERROR_NONE; mimEnter(true); runFunction(item);
   };
 
-TO_QSPI const fInMim_t MimFunctionsType2[] = 
+TO_QSPI const fInMim_t MimFunctionsType2[] =
   {   //function
     {ITM_SQUARE      },
     {ITM_CUBE        },
@@ -691,6 +691,7 @@ typedef struct {
     #endif // PC_BUILD
     //resetKeytimers();  //JM
 
+    printf("**[DL]** addItemToBuffer item %d\n",item);fflush(stdout);
     if(item == NOPARAM) {
       displayBugScreen(bugScreenNoParam);
     }
@@ -700,8 +701,14 @@ typedef struct {
       if(calcMode == CM_NORMAL && fnKeyInCatalog && (isAlphabeticSoftmenu() || isJMAlphaOnlySoftmenu()) && !tam.mode) {
         fnAim(NOPARAM);
       }
-      if((fnKeyInCatalog || !catalog || catalog == CATALOG_MVAR) && (((calcMode == CM_AIM || calcMode == CM_EIM) && !tam.mode) || tam.alpha)) {
+      else if((fnKeyInCatalog || !catalog || catalog == CATALOG_MVAR) && (((calcMode == CM_AIM || calcMode == CM_EIM) && !tam.mode) || tam.alpha)) {
         item = convertItemToSubOrSup(item, nextChar);
+        #if defined(ALTERNATE_TAM_MENU)
+          if(tam.alpha){
+            insertAlphaCharacter(item, &alphaCursor);
+          }
+          else
+      #endif //ALTERNATE_TAM_MENU
         if(stringByteLength(aimBuffer) + (item == ITM_poly_SIGN ? 24 : stringByteLength(indexOfItems[item].itemSoftmenuName)) >= AIM_BUFFER_LENGTH) { /// TODO this error should never happen but who knows!
           sprintf(errorMessage, "In function addItemToBuffer:the AIM input buffer is full! %d bytes for now", AIM_BUFFER_LENGTH);
           displayBugScreen(errorMessage);
@@ -963,7 +970,7 @@ typedef struct {
                 mimRunFunction(item, indexOfItems[item].param);
                 break;
             }
-          }            
+          }
         }
       }
 
@@ -2651,4 +2658,83 @@ typedef struct {
       setSystemFlag(FLAG_ASLIFT);
     }
   }
+
+
+#if defined(ALTERNATE_TAM_MENU)
+  void insertAlphaCharacter(uint16_t item, int16_t *currentCursor) {
+    const char *addChar = item == ITM_PAIR_OF_PARENTHESES ? "()" :
+                          item == ITM_VERTICAL_BAR        ? "||" :
+                          item == ITM_ROOT_SIGN           ? STD_SQUARE_ROOT "()" :
+      #if USE_ITALIC_CONSTANT != 0
+                          item == ITM_ALOG_SYMBOL         ? STD_EULER_e "^()" :
+      #endif /* USE_ITALIC_CONSTANT != 0 */
+                          indexOfItems[item].itemSoftmenuName;
+    char *aimCursorPos = aimBuffer;
+    char *aimBottomPos = aimBuffer + stringByteLength(aimBuffer);
+    uint32_t itemLen = stringByteLength(addChar);
+    for(int32_t i = 0; i < *currentCursor; ++i) {
+      aimCursorPos += (*aimCursorPos & 0x80) ? 2 : 1;
+    }
+    for(; aimBottomPos >= aimCursorPos; --aimBottomPos) {
+      *(aimBottomPos + itemLen) = *aimBottomPos;
+    }
+    xcopy(aimCursorPos, addChar, itemLen);
+    switch(item) {
+      case ITM_ROOT_SIGN: {
+        *currentCursor += 2;
+        break;
+      }
+      case ITM_PAIR_OF_PARENTHESES:
+      case ITM_VERTICAL_BAR: {
+        *currentCursor += 1;
+        break;
+      }
+      default: {
+        *currentCursor += stringGlyphLength(indexOfItems[item].itemSoftmenuName);
+      }
+    }
+  }
+
+
+  void deleteAlphaCharacter(int16_t *currentCursor) {
+    char *srcPos = aimBuffer;
+    char *dstPos = aimBuffer;
+    char *lstPos = aimBuffer + stringNextGlyph(aimBuffer, stringLastGlyph(aimBuffer));
+    printf("**[DL]** deleteAlphaCharacter currentCursor %d\n",*currentCursor);fflush(stdout);
+    --*currentCursor;
+    for(int16_t i = 0; i < *currentCursor; ++i) {
+      dstPos += (*dstPos & 0x80) ? 2 : 1;
+    }
+    srcPos = dstPos + ((*dstPos & 0x80) ? 2 : 1);
+    for(; srcPos <= lstPos;) {
+      *(dstPos++) = *(srcPos++);
+    }
+  }
+
+
+  void fnAlphaCursorLeft(uint16_t unusedButMandatoryParameter) {
+    if(alphaCursor > 0) {
+      --alphaCursor;
+    }
+  }
+
+
+  void fnAlphaCursorRight(uint16_t unusedButMandatoryParameter) {
+    if(alphaCursor < (uint16_t)stringGlyphLength(aimBuffer)) {
+      ++alphaCursor;
+    }
+  }
+
+
+  void fnAlphaCursorHome(uint16_t unusedButMandatoryParameter) {
+    alphaCursor = 0;
+  }
+
+
+  void fnAlphaCursorEnd(uint16_t unusedButMandatoryParameter) {
+    alphaCursor = (uint16_t)stringGlyphLength(aimBuffer);
+  }
+
+#endif //ALTERNATE_TAM_MENU
+
 #endif // !TESTSUITE_BUILD
