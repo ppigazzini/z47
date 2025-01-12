@@ -1919,31 +1919,31 @@ static inline uint8_t regCtoKS(const int16_t regC) {
                                                   && (modulo(digitCountNEW(digitCount), (uint16_t)GROUPWIDTH_(digitCount)) == (uint16_t)GROUPWIDTH_(digitCount) - 1)) )
 #if defined(ALTERNATE_ALPHA_F1)
   #define BLOCK_DOUBLEPRESS_MENU(menu, x, y)   ( \
-                                               (softmenu[menu].menuItem == -MNU_ALPHA     && y == 0 && (x == 0 || x == 5)) || \
-                                               (softmenu[menu].menuItem == -MNU_M_EDIT    && y == 0 && (x == 0 || x == 5)) || \
-                                               (softmenu[menu].menuItem == -MNU_EQ_EDIT   && y == 0 && (x == 0 || x == 5)) || \
-                                               (softmenu[menu].menuItem == -MNU_TAMALPHA  && y == 0 && (x == 0 || x == 5)) \
+                                               (menu == -MNU_ALPHA     && y == 0 && (x == 0 || x == 5)) || \
+                                               (menu == -MNU_M_EDIT    && y == 0 && (x == 0 || x == 5)) || \
+                                               (menu == -MNU_EQ_EDIT   && y == 0 && (x == 0 || x == 5)) || \
+                                               (menu == -MNU_TAMALPHA  && y == 0 && (x == 0 || x == 5)) \
                                              )
 #elif defined(ALTERNATE_ALPHA_F5)
   #define BLOCK_DOUBLEPRESS_MENU(menu, x, y)   ( \
-                                               (softmenu[menu].menuItem == -MNU_ALPHA     && y == 0 && (x == 4 || x == 5)) || \
-                                               (softmenu[menu].menuItem == -MNU_M_EDIT    && y == 0 && (x == 4 || x == 5)) || \
-                                               (softmenu[menu].menuItem == -MNU_EQ_EDIT   && y == 0 && (x == 0 || x == 5)) || \
-                                               (softmenu[menu].menuItem == -MNU_TAMALPHA  && y == 0 && (x == 4 || x == 5)) \
+                                               (menu == -MNU_ALPHA     && y == 0 && (x == 4 || x == 5)) || \
+                                               (menu == -MNU_M_EDIT    && y == 0 && (x == 4 || x == 5)) || \
+                                               (menu == -MNU_EQ_EDIT   && y == 0 && (x == 4 || x == 5)) || \
+                                               (menu == -MNU_TAMALPHA  && y == 0 && (x == 4 || x == 5)) \
                                              )
 #else
   #define BLOCK_DOUBLEPRESS_MENU(menu, x, y)   ( \
-                                               (softmenu[menu].menuItem == -MNU_ALPHA     && y == 0) || \
-                                               (softmenu[menu].menuItem == -MNU_M_EDIT    && y == 0 && (x == 0 || x == 1 || x == 4 || x == 5)) || \
-                                               (softmenu[menu].menuItem == -MNU_EQ_EDIT   && y == 0 && (x == 4 || x == 5)) \
+                                               (menu == -MNU_ALPHA     && y == 0) || \
+                                               (menu == -MNU_M_EDIT    && y == 0 && (x == 0 || x == 1 || x == 4 || x == 5)) || \
+                                               (menu == -MNU_EQ_EDIT   && y == 0 && (x == 4 || x == 5)) \
                                              )
 #endif //!ALTERNATE_ALPHA_MENU
 
 
 #define IS_SIM_ARROW_ALLOWED_IN_MENU(menu, key) ( \
-                                               (softmenu[menu].menuItem == -MNU_ALPHA   && (key == GDK_KEY_Up || key == GDK_KEY_Down || key == GDK_KEY_Left || key == GDK_KEY_Right) ) || \
-                                               (softmenu[menu].menuItem == -MNU_M_EDIT  && (key == GDK_KEY_Up || key == GDK_KEY_Down || key == GDK_KEY_Left || key == GDK_KEY_Right) ) || \
-                                               (softmenu[menu].menuItem == -MNU_EQ_EDIT && (                                            key == GDK_KEY_Left || key == GDK_KEY_Right) ) \
+                                               (menu == -MNU_ALPHA   && (key == GDK_KEY_Up || key == GDK_KEY_Down || key == GDK_KEY_Left || key == GDK_KEY_Right) ) || \
+                                               (menu == -MNU_M_EDIT  && (key == GDK_KEY_Up || key == GDK_KEY_Down || key == GDK_KEY_Left || key == GDK_KEY_Right) ) || \
+                                               (menu == -MNU_EQ_EDIT && (                                            key == GDK_KEY_Left || key == GDK_KEY_Right) ) \
                                              )
 
 #define IS_BASEBLANK_(menuId)                (menuId==0 && !BASE_MYM && !BASE_HOME)

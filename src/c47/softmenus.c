@@ -133,14 +133,14 @@ TO_QSPI const int16_t menu_M_SIM_Q[]     = { VAR_MATA,                      VAR_
 
 #if defined(ALTERNATE_ALPHA_F1)
 TO_QSPI const int16_t menu_M_EDIT[]      = { ITM_LEFT_ARROW,                ITM_M_ADDR,                 ITM_M_ADDC,               ITM_op_j,              ITM_M_GOTO,                  ITM_RIGHT_ARROW,                  //DL
-                                             ITM_UP_ARROW,                  ITM_M_INSR,                 ITM_M_INSC,               ITM_NULL,              ITM_M_OLD,                   ITM_DOWN_ARROW,
+                                             ITM_UP_ARROW,                  ITM_M_INSR,                 ITM_M_INSC,               ITM_op_j_pol,          ITM_M_OLD,                   ITM_DOWN_ARROW,
                                              ITM_M_WRAP,                    ITM_M_DELR,                 ITM_M_DELC,               ITM_NULL,              ITM_NULL,                    ITM_M_GROW,                   };
 #elif defined(ALTERNATE_ALPHA_F5)
 TO_QSPI const int16_t menu_M_EDIT[]      = { ITM_M_ADDR,                    ITM_M_ADDC,                 ITM_op_j,                 ITM_M_GOTO,            ITM_LEFT_ARROW,              ITM_RIGHT_ARROW,                  //DL
-                                             ITM_M_INSR,                    ITM_M_INSC,                 ITM_NULL,                 ITM_M_OLD,             ITM_UP_ARROW,                ITM_DOWN_ARROW,
+                                             ITM_M_INSR,                    ITM_M_INSC,                 ITM_op_j_pol,             ITM_M_OLD,             ITM_UP_ARROW,                ITM_DOWN_ARROW,
                                              ITM_M_DELR,                    ITM_M_DELC,                 ITM_NULL,                 ITM_NULL,              ITM_M_WRAP,                  ITM_M_GROW                    };
 #else
-TO_QSPI const int16_t menu_M_EDIT[]      = { ITM_UP_ARROW,                  ITM_DOWN_ARROW,             TM_op_j,                  ITM_M_GOTO,            ITM_LEFT_ARROW,              IITM_RIGHT_ARROW,                 //JM
+TO_QSPI const int16_t menu_M_EDIT[]      = { ITM_UP_ARROW,                  ITM_DOWN_ARROW,             ITM_op_j,                 ITM_M_GOTO,            ITM_LEFT_ARROW,              ITM_RIGHT_ARROW,                 //JM
                                              ITM_M_INSR,                    ITM_M_INSC,                 ITM_M_ADDR,               ITM_M_OLD,             ITM_M_WRAP,                  ITM_M_GROW,
                                              ITM_M_DELR,                    ITM_M_DELC,                 ITM_M_ADDC,               ITM_NULL,              ITM_NULL,                    ITM_NULL                      };
 #endif //ALTERNATE_ALPHA
@@ -2754,7 +2754,7 @@ bool_t BASE_OVERRIDEONCE = false;
 
             //softkey modifications
 
-            if((jm_G_DOUBLETAP && ( BLOCK_DOUBLEPRESS_MENU(m, x, y))) ||           // Indicate disabled double tap
+            if((jm_G_DOUBLETAP && ( BLOCK_DOUBLEPRESS_MENU(softmenu[m].menuItem, x, y))) ||           // Indicate disabled double tap
                (softmenu[m].menuItem == -MNU_TIMERF && y == 0)) {                           // If stopwatch is open
               int16_t yStrokeA = SCREEN_HEIGHT - (y-currentFirstItem/6)*23 - 1;
               int16_t xStrokeA=x*67 + 66 -12;
