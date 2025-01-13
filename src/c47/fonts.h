@@ -414,25 +414,30 @@
 #define STD_BOXFILLED                 "\xa5\xa6"     // Box with hatched fill    25A6
 
 
-#define STD_HP_PERIOD                    "\xa0\x24"     // 2024
-#define STD_HP_0                         "\xa4\xea"     // 24ea
-#define STD_HP_1                         "\xa4\xf5"     // 24f5
-#define STD_HP_2                         "\xa4\xf6"
-#define STD_HP_3                         "\xa4\xf7"
-#define STD_HP_4                         "\xa4\xf8"
-#define STD_HP_5                         "\xa4\xf9"
-#define STD_HP_6                         "\xa4\xfa"
-#define STD_HP_7                         "\xa4\xfb"
-#define STD_HP_8                         "\xa4\xfc"
-#define STD_HP_9                         "\xa4\xfd"
-#define STD_HP_MINUS                     "\xa4\xfe"
-#define STD_HP_PLUS                      "\xa4\xff"
+#define STD_HP_PERIOD                 "\xa0\x24"     // 2024
+#define STD_HP_0                      "\xa4\xea"     // 24ea
+#define STD_HP_1                      "\xa4\xf5"     // 24f5
+#define STD_HP_2                      "\xa4\xf6"
+#define STD_HP_3                      "\xa4\xf7"
+#define STD_HP_4                      "\xa4\xf8"
+#define STD_HP_5                      "\xa4\xf9"
+#define STD_HP_6                      "\xa4\xfa"
+#define STD_HP_7                      "\xa4\xfb"
+#define STD_HP_8                      "\xa4\xfc"
+#define STD_HP_9                      "\xa4\xfd"
+#define STD_HP_MINUS                  "\xa4\xfe"
+#define STD_HP_PLUS                   "\xa4\xff"
 
 
 #define STD_LEFT_DASHARROW            "\xa1\xe0"
 #define STD_UP_DASHARROW              "\xa1\xe1"
 #define STD_RIGHT_DASHARROW           "\xa1\xe2"
 #define STD_DOWN_DASHARROW            "\xa1\xe3"
+#define STD_LEFT_BLOCKARROW           "\xab\x60"
+#define STD_UP_BLOCKARROW             "\xab\x61"
+#define STD_RIGHT_BLOCKARROW          "\xab\x62"
+#define STD_DOWN_BLOCKARROW           "\xab\x63"
+#define STD_POWER_SYMBOL              "\xa3\xfb"
 
 #define STD_SPACE_EM                  "\xa0\x03"
 #define STD_SPACE_3_PER_EM            "\xa0\x04"

@@ -514,17 +514,17 @@ TO_QSPI const int16_t menu_alphaMisc[]    ={ ITM_CR,                       ITM_N
                                              ITM_DOUBLE_QUOTE,             ITM_DOLLAR,                   ITM_CENT,                     ITM_EURO,                     ITM_POUND,                    ITM_YEN,                      
                                              ITM_INVERTED_EXCLAMATION_MARK,ITM_INVERTED_QUESTION_MARK,   ITM_PERIOD,                   ITM_COMMA,                    ITM_SEMICOLON,                ITM_COLON,                    
 
-                                             ITM_EXCLAMATION_MARK,         ITM_QUESTION_MARK,            ITM_UP_ARROW,                 ITM_DOWN_ARROW,               ITM_SERIAL_IO,                ITM_LEFT_RIGHT_ARROWS,        
-                                             ITM_LEFT_ARROW,               ITM_RIGHT_ARROW,              ITM_UP_DASHARROW,             ITM_DOWN_DASHARROW,           ITM_HOLLOW_UP_ARROW,          ITM_HOLLOW_DOWN_ARROW,        
-                                             ITM_RIGHT_DOUBLE_ARROW,       ITM_LEFT_RIGHT_DOUBLE_ARROW,  ITM_LEFT_DASHARROW,           ITM_RIGHT_DASHARROW,          ITM_DATE_D,                   ITM_TIME_T,                   
+                                             ITM_EXCLAMATION_MARK,         ITM_QUESTION_MARK,            ITM_UP_ARROW,                 ITM_DOWN_ARROW,               ITM_LEFT_ARROW,               ITM_RIGHT_ARROW,              
+                                             ITM_RIGHT_SHORT_ARROW,        ITM_RIGHT_DOUBLE_ARROW,       ITM_UP_BLOCKARROW,            ITM_DOWN_BLOCKARROW,          ITM_LEFT_BLOCKARROW,          ITM_RIGHT_BLOCKARROW,         
+                                             ITM_LEFT_RIGHT_ARROWS,        ITM_LEFT_RIGHT_DOUBLE_ARROW,  ITM_UP_DASHARROW,             ITM_DOWN_DASHARROW,           ITM_LEFT_DASHARROW,           ITM_RIGHT_DASHARROW,          
 
-                                             ITM_RIGHT_SHORT_ARROW,        ITM_ex,                       ITM_LEFT_DOUBLE_ANGLE,        ITM_RIGHT_DOUBLE_ANGLE,       ITM_SECTION,                  ITM_CHECK_MARK,               
-                                             ITM_BULLET,                   ITM_ASTERISK,                 ITM_SUP_ASTERISK,             ITM_TILDE,                    ITM_HOURGLASS,                ITM_WATCH,                    
-                                             ITM_TIMER_SYMBOL,             ITM_NEG_EXCLAMATION_MARK,     ITM_USER_MODE,                ITM_BATTERY,                  ITM_PRINTER,                  ITM_HAMBURGER,                
+                                             ITM_ex,                       ITM_SERIAL_IO,                ITM_HOLLOW_UP_ARROW,          ITM_HOLLOW_DOWN_ARROW,        ITM_LEFT_DOUBLE_ANGLE,        ITM_RIGHT_DOUBLE_ANGLE,       
+                                             ITM_DATE_D,                   ITM_TIME_T,                   ITM_SECTION,                  ITM_CHECK_MARK,               ITM_BULLET,                   ITM_ASTERISK,                 
+                                             ITM_SUP_ASTERISK,             ITM_TILDE,                    ITM_HOURGLASS,                ITM_WATCH,                    ITM_TIMER_SYMBOL,             ITM_NEG_EXCLAMATION_MARK,     
 
-                                             ITM_BST_SIGN,                 ITM_SST_SIGN,                 ITM_CYCLIC,                   ITM_USB_SYMBOL,               ITM_SUB_SUN,                  ITM_SUB_EARTH,                
-                                             ITM_US,                       ITM_UK,                       ITM_litre,                    ITM_LEFT_DOUBLE_QUOTE,        ITM_RIGHT_DOUBLE_QUOTE,       ITM_DIRECT_CURRENT,           
-                                             ITM_ALTERN_CURRENT,           ITM_NULL,                     ITM_NULL,                     ITM_NULL,                     ITM_NULL,                     ITM_NULL   };
+                                             ITM_USER_MODE,                ITM_BATTERY,                  ITM_PRINTER,                  ITM_HAMBURGER,                ITM_BST_SIGN,                 ITM_SST_SIGN,                 
+                                             ITM_CYCLIC,                   ITM_USB_SYMBOL,               ITM_SUB_SUN,                  ITM_SUB_EARTH,                ITM_US,                       ITM_UK,                       
+                                             ITM_litre,                    ITM_LEFT_DOUBLE_QUOTE,        ITM_RIGHT_DOUBLE_QUOTE,       ITM_DIRECT_CURRENT,           ITM_ALTERN_CURRENT,           ITM_POWER_SYMBOL             };
 
 
 TO_QSPI const int16_t menu_EQN[]         = { ITM_EQ_NEW,                ITM_EQ_EDI,                 -MNU_2NDDERIV,            -MNU_1STDERIV,            -MNU_Sf,                    -MNU_Solver,

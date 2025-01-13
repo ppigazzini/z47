@@ -394,12 +394,17 @@
 `U+2192`,512,512,`RIGHTWARDS ARROW`,`Right arrow`,`→`,`→`,`U+2192`
 `U+2193`,520,520,`DOWNWARDS ARROW`,`Down arrow`,`↓`,`↓`,`U+2193`
 `U+2194`,520,520,`LEFT RIGHT ARROW`,`Left right arrow`,`↔`,`↔`,`U+2194`
+`U+2195`,520,524,`UP DOWN ARROW`,`Up-down arrow`,`↕`,`↕`,`U+2195`
 `U+21B5`,514,514,`Downwards Arrow with Corner Leftwards`,`Carriage Return`,`↵`,`↵`,`U+21E0`
-`U+21E0`,514,514,`LEFTWARDS ARROW`,`Left arrow`,`⇠`,`⇠`,`U+21E0`
-`U+21E1`,516,516,`UPWARDS ARROW`,`Up arrow`,`⇡`,`⇡`,`U+21E1`
-`U+21E2`,512,512,`RIGHTWARDS ARROW`,`Right arrow`,`⇢`,`⇢`,`U+21E2`
-`U+21E3`,515,520,`DOWNWARDS ARROW`,`Down arrow`,`⇣`,`⇣`,`U+21E3`
-`U+2195`,520,524,`UP DOWN ARROW`,`Up-down arrof`,`↕`,`↕`,`U+2195`
+`U+21E0`,514,514,`LEFTWARDS ARROW`,`Left arrow`,`⇠`,`⇠`,`U+2190`
+`U+21E1`,516,516,`UPWARDS ARROW`,`Up arrow`,`⇡`,`⇡`,`U+2191`
+`U+21E2`,512,512,`RIGHTWARDS ARROW`,`Right arrow`,`⇢`,`⇢`,`U+2192`
+`U+21E3`,515,520,`DOWNWARDS ARROW`,`Down arrow`,`⇣`,`⇣`,`U+2193`
+`U+2B60`,516,516,`Leftwards Triangle-Headed Arrow`,`Left block arrow`,`⭠`,`⭠`,`U+2190`
+`U+2B61`,512,512,`Upwards Triangle-Headed Arrow`,`Up block arrow`,`⭡`,`⭡`,`U+2191`
+`U+2B62`,515,520,`Rightwards Triangle-Headed Arrow`,`Right block arrow`,`⭢`,`⭢`,`U+2192`
+`U+2B63`,520,524,`Downwards Triangle-Headed Arrow`,`Down block arrow`,`⭣`,`⭣`,`U+2193`
+`U+23FB`,520,524,`Power Symbol`,`Power Symbol`,`⏻`,`⏻`,`U+23FB`
 `U+21c0`,512,513,`RIGHTWARDS HARPOON WITH BARB UPWARDS`,`Short right arrow`,`⇀`,`→`,`U+2192`
 `U+21c4`,520,523,`RIGHTWARDS ARROW OVER LEFTWARDS ARROW`,`Left-right arrow`,`⇄`,`⇄`,`U+21c4`
 `U+21c9`,516,518,`RIGHTWARDS PAIRED ARROWS `,`BST`,`⇉`,`↑`,`U+2191`
