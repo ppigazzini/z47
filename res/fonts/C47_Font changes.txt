@@ -348,9 +348,9 @@ Added QRNZ to NUM font
     U+2B63 DOWN_BLOCKARROW
     U+23FB POWER_SYMBOL
 
-2025-01-11 Reworked the 3 fonts to reduce drastically in each glyph the number of polygons
+2025-01-13 Reworked the 3 fonts to reduce drastically in each glyph the number of polygons thus reducing the size of the ttf files
 
-2025-01-12 Rework:
+2025-01-13 Rework:
 
     Merged above two commits from 2025-01-11 into the Std font using FontCreator 15 Home
 
@@ -363,6 +363,8 @@ Added QRNZ to NUM font
       U+2B61 UP_BLOCKARROW
       U+2B62 RIGHT_BLOCKARROW
       U+2B63 DOWN_BLOCKARROW
+
+    Modify the shapes of the standard arrows and block arrows
 
 2025-01-12 Use FontCreator to process all font files. Copyright message removed. Additional glyphs are 'Joined Union' to be similar as the FontForge effort.
     FontCreator 15 

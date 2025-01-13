@@ -2493,11 +2493,11 @@
 #define ITM_SPHERICAL_ANGLE         2429
 #define ITM_TRIPLE_INTEGRAL         2430
 #define ITM_VOLUME_INTEGRAL         2431
-#define ITM_2432                    2432
-#define ITM_2433                    2433
-#define ITM_2434                    2434
-#define ITM_2435                    2435
-#define ITM_2436                    2436
+#define ITM_LEFT_BLOCKARROW         2432
+#define ITM_UP_BLOCKARROW           2433
+#define ITM_RIGHT_BLOCKARROW        2434
+#define ITM_DOWN_BLOCKARROW         2435
+#define ITM_POWER_SYMBOL            2436
 #define ITM_2437                    2437
 #define ITM_2438                    2438
 #define ITM_2439                    2439
@@ -2505,10 +2505,29 @@
 #define ITM_2441                    2441
 #define ITM_2442                    2442
 #define ITM_2443                    2443
+#define ITM_2444                    2444
+#define ITM_2445                    2445
+#define ITM_2446                    2446
+#define ITM_2447                    2447
+#define ITM_2448                    2448
+#define ITM_2449                    2449
+#define ITM_2450                    2450
+#define ITM_2451                    2451
+#define ITM_2452                    2452
+#define ITM_2453                    2453
+#define ITM_2454                    2454
+#define ITM_2455                    2455
+#define ITM_2456                    2456
+#define ITM_2457                    2457
+#define ITM_2458                    2458
+#define ITM_2459                    2459
+#define ITM_2460                    2460
+#define ITM_2461                    2461
+#define ITM_2462                    2462
+#define ITM_2463                    2463
+//continue after this block
 
-
-
-#define LAST_ITEM                   2444
+#define LAST_ITEM                   2464
 
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL
