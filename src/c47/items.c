@@ -33,7 +33,12 @@ void doNothing(void) {
 //Items in here are both struck through in the softmenu, and are prevented from running, including TAM if in use, and TI_NOT_AVAILABE.
 bool_t itemNotAvail(int16_t itemNr) {
 #ifdef DMCP_BUILD
-  return false;
+  switch(max(itemNr,-itemNr)) {
+      case ITM_WRXPALL   :
+             return true;
+      default:
+             return false;
+  }
 #elif PC_BUILD
   switch(max(itemNr,-itemNr)) {
       case ITM_ACTUSB   :
@@ -52,10 +57,8 @@ bool_t itemNotAvail(int16_t itemNr) {
                printf("Item %i Softkey item not available, not executing and/or struck through.\n",itemNr);
              #endif
              return true;
-             break;
       default:
              return false;
-             break;
   }
 #else //!DMCP_BUILD && !PC_BUILD
   return false;
@@ -922,6 +925,7 @@ bool_t itemNotAvail(int16_t itemNr) {
   void fnSaveAuto                  (uint16_t unusedButMandatoryParameter) {}
   void fnLoad                      (uint16_t unusedButMandatoryParameter) {}
   void fnSaveProgram               (uint16_t unusedButMandatoryParameter) {}
+  void fnSaveAllPrograms           (uint16_t unusedButMandatoryParameter) {}
   void fnExportProgram             (uint16_t unusedButMandatoryParameter) {}
   void fnLoadProgram               (uint16_t unusedButMandatoryParameter) {}
   void fnDeleteBackup              (uint16_t unusedButMandatoryParameter) {}
@@ -3274,9 +3278,9 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 1930 */  { fnT_ARROW,                    ITM_T_END,                   "",                                            "END",                                         (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 1931 */  { fnConvertStkToMx,             NOPARAM,                     "zyx" STD_RIGHT_ARROW "M",                     "zyx" STD_RIGHT_ARROW "M",                     (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_NONE         },
 /* 1932 */  { itemToBeCoded,                NOPARAM,                     STD_alpha "PARSE",                             STD_alpha "PARSE",                             (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
-/* 1933 */  { itemToBeCoded,                NOPARAM,                     "1933",                                        "1933",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 1933 */  { fnSaveAllPrograms,            NOPARAM,                     "WRXPall",                                     "WRXPall",                                     (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_CANCEL    | EIM_DISABLED | PTP_DISABLED     },
 /* 1934 */  { fnRange,                      TM_VALUE,                    "RNG",                                         "RNG",                                         (0 << TAM_MAX_BITS) |  6145, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NUMBER_16    },
-/* 1935 */  { flagBrowser,                  GLOBAL_FLAGS_SCREEN,      "FLGS",                                        "FLGS",                                        (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_NONE         },//JM Changed STATUS
+/* 1935 */  { flagBrowser,                  GLOBAL_FLAGS_SCREEN,         "FLGS",                                        "FLGS",                                        (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_NONE         },//JM Changed STATUS
 /* 1936 */  { SetSetting,                   CU_I,                        "CPX" STD_op_i,                                "CPX" STD_op_i,                                (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_NONE         },
 /* 1937 */  { SetSetting,                   CU_J,                        "CPX" STD_op_j,                                "CPX" STD_op_j,                                (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_NONE         },
 /* 1938 */  { SetSetting,                   SS_4,                        "SSIZE4",                                      "SSIZE4",                                      (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_NONE         },
@@ -3778,11 +3782,11 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 2429 */  { addItemToBuffer,              ITM_SPHERICAL_ANGLE  ,       "",                                            STD_SPHERICAL_ANGLE  ,                         (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2430 */  { addItemToBuffer,              ITM_TRIPLE_INTEGRAL  ,       "",                                            STD_TRIPLE_INTEGRAL  ,                         (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2431 */  { addItemToBuffer,              ITM_VOLUME_INTEGRAL  ,       "",                                            STD_VOLUME_INTEGRAL  ,                         (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
-/* 2432 */  { itemToBeCoded,                NOPARAM,                     "2432",                                        "2432",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
-/* 2433 */  { itemToBeCoded,                NOPARAM,                     "2433",                                        "2433",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
-/* 2434 */  { itemToBeCoded,                NOPARAM,                     "2434",                                        "2434",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
-/* 2435 */  { itemToBeCoded,                NOPARAM,                     "2435",                                        "2435",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
-/* 2436 */  { itemToBeCoded,                NOPARAM,                     "2436",                                        "2436",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 2432 */  { addItemToBuffer,              ITM_LEFT_BLOCKARROW  ,       "",                                            STD_LEFT_BLOCKARROW  ,                         (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 2433 */  { addItemToBuffer,              ITM_UP_BLOCKARROW    ,       "",                                            STD_UP_BLOCKARROW    ,                         (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 2434 */  { addItemToBuffer,              ITM_RIGHT_BLOCKARROW ,       "",                                            STD_RIGHT_BLOCKARROW ,                         (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 2435 */  { addItemToBuffer,              ITM_DOWN_BLOCKARROW  ,       "",                                            STD_DOWN_BLOCKARROW  ,                         (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 2436 */  { addItemToBuffer,              ITM_POWER_SYMBOL     ,       "",                                            STD_POWER_SYMBOL     ,                         (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2437 */  { itemToBeCoded,                NOPARAM,                     "2437",                                        "2437",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2438 */  { itemToBeCoded,                NOPARAM,                     "2438",                                        "2438",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2439 */  { itemToBeCoded,                NOPARAM,                     "2439",                                        "2439",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
@@ -3790,6 +3794,27 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 2441 */  { itemToBeCoded,                NOPARAM,                     "2441",                                        "2441",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2442 */  { itemToBeCoded,                NOPARAM,                     "2442",                                        "2442",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2443 */  { itemToBeCoded,                NOPARAM,                     "2443",                                        "2443",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+
+/* 2444 */  { itemToBeCoded,                NOPARAM,                     "2443",                                        "2443",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 2445 */  { itemToBeCoded,                NOPARAM,                     "2443",                                        "2443",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 2446 */  { itemToBeCoded,                NOPARAM,                     "2443",                                        "2443",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 2447 */  { itemToBeCoded,                NOPARAM,                     "2443",                                        "2443",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 2448 */  { itemToBeCoded,                NOPARAM,                     "2443",                                        "2443",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 2449 */  { itemToBeCoded,                NOPARAM,                     "2443",                                        "2443",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 2450 */  { itemToBeCoded,                NOPARAM,                     "2443",                                        "2443",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 2451 */  { itemToBeCoded,                NOPARAM,                     "2443",                                        "2443",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 2452 */  { itemToBeCoded,                NOPARAM,                     "2443",                                        "2443",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 2453 */  { itemToBeCoded,                NOPARAM,                     "2443",                                        "2443",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 2454 */  { itemToBeCoded,                NOPARAM,                     "2443",                                        "2443",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 2455 */  { itemToBeCoded,                NOPARAM,                     "2443",                                        "2443",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 2456 */  { itemToBeCoded,                NOPARAM,                     "2443",                                        "2443",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 2457 */  { itemToBeCoded,                NOPARAM,                     "2443",                                        "2443",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 2458 */  { itemToBeCoded,                NOPARAM,                     "2443",                                        "2443",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 2459 */  { itemToBeCoded,                NOPARAM,                     "2443",                                        "2443",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 2460 */  { itemToBeCoded,                NOPARAM,                     "2443",                                        "2443",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 2461 */  { itemToBeCoded,                NOPARAM,                     "2443",                                        "2443",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 2462 */  { itemToBeCoded,                NOPARAM,                     "2443",                                        "2443",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 2463 */  { itemToBeCoded,                NOPARAM,                     "2443",                                        "2443",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 
 
 /* 2444 */  { itemToBeCoded,                NOPARAM,                     "",                                            "Last item",                                   (0 << TAM_MAX_BITS)

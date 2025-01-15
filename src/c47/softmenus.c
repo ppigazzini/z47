@@ -514,17 +514,17 @@ TO_QSPI const int16_t menu_alphaMisc[]    ={ ITM_CR,                       ITM_N
                                              ITM_DOUBLE_QUOTE,             ITM_DOLLAR,                   ITM_CENT,                     ITM_EURO,                     ITM_POUND,                    ITM_YEN,                      
                                              ITM_INVERTED_EXCLAMATION_MARK,ITM_INVERTED_QUESTION_MARK,   ITM_PERIOD,                   ITM_COMMA,                    ITM_SEMICOLON,                ITM_COLON,                    
 
-                                             ITM_EXCLAMATION_MARK,         ITM_QUESTION_MARK,            ITM_UP_ARROW,                 ITM_DOWN_ARROW,               ITM_SERIAL_IO,                ITM_LEFT_RIGHT_ARROWS,        
-                                             ITM_LEFT_ARROW,               ITM_RIGHT_ARROW,              ITM_UP_DASHARROW,             ITM_DOWN_DASHARROW,           ITM_HOLLOW_UP_ARROW,          ITM_HOLLOW_DOWN_ARROW,        
-                                             ITM_RIGHT_DOUBLE_ARROW,       ITM_LEFT_RIGHT_DOUBLE_ARROW,  ITM_LEFT_DASHARROW,           ITM_RIGHT_DASHARROW,          ITM_DATE_D,                   ITM_TIME_T,                   
+                                             ITM_EXCLAMATION_MARK,         ITM_QUESTION_MARK,            ITM_UP_ARROW,                 ITM_DOWN_ARROW,               ITM_LEFT_ARROW,               ITM_RIGHT_ARROW,              
+                                             ITM_RIGHT_SHORT_ARROW,        ITM_RIGHT_DOUBLE_ARROW,       ITM_UP_BLOCKARROW,            ITM_DOWN_BLOCKARROW,          ITM_LEFT_BLOCKARROW,          ITM_RIGHT_BLOCKARROW,         
+                                             ITM_LEFT_RIGHT_ARROWS,        ITM_LEFT_RIGHT_DOUBLE_ARROW,  ITM_UP_DASHARROW,             ITM_DOWN_DASHARROW,           ITM_LEFT_DASHARROW,           ITM_RIGHT_DASHARROW,          
 
-                                             ITM_RIGHT_SHORT_ARROW,        ITM_ex,                       ITM_LEFT_DOUBLE_ANGLE,        ITM_RIGHT_DOUBLE_ANGLE,       ITM_SECTION,                  ITM_CHECK_MARK,               
-                                             ITM_BULLET,                   ITM_ASTERISK,                 ITM_SUP_ASTERISK,             ITM_TILDE,                    ITM_HOURGLASS,                ITM_WATCH,                    
-                                             ITM_TIMER_SYMBOL,             ITM_NEG_EXCLAMATION_MARK,     ITM_USER_MODE,                ITM_BATTERY,                  ITM_PRINTER,                  ITM_HAMBURGER,                
+                                             ITM_ex,                       ITM_SERIAL_IO,                ITM_HOLLOW_UP_ARROW,          ITM_HOLLOW_DOWN_ARROW,        ITM_LEFT_DOUBLE_ANGLE,        ITM_RIGHT_DOUBLE_ANGLE,       
+                                             ITM_DATE_D,                   ITM_TIME_T,                   ITM_SECTION,                  ITM_CHECK_MARK,               ITM_BULLET,                   ITM_ASTERISK,                 
+                                             ITM_SUP_ASTERISK,             ITM_TILDE,                    ITM_HOURGLASS,                ITM_WATCH,                    ITM_TIMER_SYMBOL,             ITM_NEG_EXCLAMATION_MARK,     
 
-                                             ITM_BST_SIGN,                 ITM_SST_SIGN,                 ITM_CYCLIC,                   ITM_USB_SYMBOL,               ITM_SUB_SUN,                  ITM_SUB_EARTH,                
-                                             ITM_US,                       ITM_UK,                       ITM_litre,                    ITM_LEFT_DOUBLE_QUOTE,        ITM_RIGHT_DOUBLE_QUOTE,       ITM_DIRECT_CURRENT,           
-                                             ITM_ALTERN_CURRENT,           ITM_NULL,                     ITM_NULL,                     ITM_NULL,                     ITM_NULL,                     ITM_NULL   };
+                                             ITM_USER_MODE,                ITM_BATTERY,                  ITM_PRINTER,                  ITM_HAMBURGER,                ITM_BST_SIGN,                 ITM_SST_SIGN,                 
+                                             ITM_CYCLIC,                   ITM_USB_SYMBOL,               ITM_SUB_SUN,                  ITM_SUB_EARTH,                ITM_US,                       ITM_UK,                       
+                                             ITM_litre,                    ITM_LEFT_DOUBLE_QUOTE,        ITM_RIGHT_DOUBLE_QUOTE,       ITM_DIRECT_CURRENT,           ITM_ALTERN_CURRENT,           ITM_POWER_SYMBOL             };
 
 
 TO_QSPI const int16_t menu_EQN[]         = { ITM_EQ_NEW,                ITM_EQ_EDI,                 -MNU_2NDDERIV,            -MNU_1STDERIV,            -MNU_Sf,                    -MNU_Solver,
@@ -569,7 +569,7 @@ TO_QSPI const int16_t menu_AUDIO[]       = { ITM_BEEP,                      ITM_
 
 TO_QSPI const int16_t menu_IO[]          = { ITM_WRITEP,                    ITM_SAVEST,                 ITM_SAVE,                 ITM_LOADP,             ITM_LOADR,                   ITM_LOADV,
                                              ITM_READP,                     ITM_LOADST,                 ITM_LOAD,                 ITM_LOADSIGMA,         ITM_LOADSS,                  -MNU_PRINT,
-                                             ITM_EXPORTP,                   ITM_SAVEAUT,                ITM_NULL,                 ITM_NULL,              ITM_SNAP,                    -MNU_AUDIO                    };
+                                             ITM_EXPORTP,                   ITM_WRXPALL,                ITM_SAVEAUT,              ITM_NULL,              ITM_SNAP,                    -MNU_AUDIO                    };
 
 TO_QSPI const int16_t menu_PRINT[]       = { ITM_PRINTERX,                  ITM_PRINTERXY,              ITM_PRINTERSTK,           ITM_P_ALLREGS,         ITM_PRINTERR,                ITM_PRINTERPROG,
                                             ITM_PRINTERCHAR,                ITM_PRINTERHASH,            ITM_PRINTERLCD,           ITM_PRINTERREGS,       ITM_PRINTERSIGMA,            ITM_PRINTERUSER,
@@ -1059,7 +1059,12 @@ void fnOpenMenu(uint16_t menu) {
       }
     }
     enterAsmModeIfMenuIsACatalog(-menu);                             // Set catalog
-    lastCatalogPosition[catalog] = 18 * (menuPageNumber-1);          // To open the menu at the right page
+    if(menu == MNU_CONVCHEF || menu == MNU_CONVV) {
+      lastCatalogPosition[catalog] = getSystemFlag(FLAG_US) ? 18 : 0;
+    }
+    else {
+      lastCatalogPosition[catalog] = 18 * (menuPageNumber-1);          // To open the menu at the right page
+    }
     showSoftmenu(-menu);
     lastCatalogPosition[CATALOG_NONE] = 0;                           // Return to default page for non catalog menus
   }
@@ -2323,6 +2328,26 @@ bool_t savedspace(int16_t itemNr) {  //strike out all SAVED_SPACE items
   }
 }
 
+
+#define typeStrikeOut 1 
+#define typeStrikeThrough 2
+static void strokeStrike(uint8_t type_, bool_t condition, int16_t *xStroke, int16_t *yStroke, int16_t x, int16_t y) {
+  for(*xStroke = x*67 + 1 +9; *xStroke < x*67 + 66 -10; (*xStroke)++) {
+    if(type_ == typeStrikeOut) { //cause diagonal
+      if(*xStroke%3 == 0) {
+        (*yStroke)--;
+      }    
+    }
+    if(condition) {
+      setBlackPixel(*xStroke, *yStroke -3);
+    }
+    else {
+      setWhitePixel(*xStroke, *yStroke -3);
+    }
+  }
+}
+
+
 void fnStrikeOutIfNotCoded(int16_t itemNr, int16_t x, int16_t y) {
   if(itemNr == -MNU_HOME || itemNr == -MNU_PFN) {
     return;
@@ -2345,39 +2370,21 @@ void fnStrikeOutIfNotCoded(int16_t itemNr, int16_t x, int16_t y) {
       strike = -1;
     }
   }
+
   if(strike != 0) {
     // Strike out non coded functions
-    int16_t yStroke = SCREEN_HEIGHT - y*23 - 1;
-    for(int16_t xStroke=x*67 + 1 +9 ; xStroke<x*67 + 66 -10; xStroke++) {      //JM mod stroke slash cross out
-      if(xStroke%3 == 0) {
-        yStroke--;
-      }
-      if(strike == 1) {
-        setBlackPixel(xStroke, yStroke -3);                                      //JM mod
-      }
-      else {
-        setWhitePixel(xStroke, yStroke -3);                                      //JM mod
-      }
-    }
+    int16_t xStroke, yStroke = SCREEN_HEIGHT - y*23 - 1;
+    strokeStrike(typeStrikeOut, strike == 1, &xStroke, &yStroke, x, y);
   }
 }
 
 
-#ifdef PC_BUILD
-  void fnStrikeThroughIfNotOnSim(int16_t itemNr, int16_t x, int16_t y) {
-    int16_t xStroke, yStroke = SCREEN_HEIGHT - y*23 - 9;
-    if(itemNotAvail(itemNr)) {
-      for(xStroke=x*67 + 1 +9 ; xStroke<x*67 + 66 -10; xStroke++) {      //JM mod stroke slash cross out
-        if(itemNr > 0) {
-          setBlackPixel(xStroke, yStroke -3);                                      //JM mod
-        }
-        else {
-          setWhitePixel(xStroke, yStroke -3);                                      //JM mod
-        }
-      }
-    }
+void fnStrikeThroughIfNA(int16_t itemNr, int16_t x, int16_t y) {
+  int16_t xStroke, yStroke = SCREEN_HEIGHT - y*23 - 9;
+  if(itemNotAvail(itemNr)) {
+    strokeStrike(typeStrikeThrough, itemNr > 0, &xStroke, &yStroke, x, y);
   }
-#endif //PC_BUILD
+}
 
 
 bool_t BASE_OVERRIDEONCE = false;
@@ -2597,9 +2604,7 @@ bool_t BASE_OVERRIDEONCE = false;
                 }
                 showSoftkey(itemName, x, y, vm, true, true, showCb, showValue, showText, !greyout);
                 fnStrikeOutIfNotCoded(itemNr, x, y);
-                #ifdef PC_BUILD
-                  fnStrikeThroughIfNotOnSim(itemNr, x, y-currentFirstItem/6);
-                #endif //PC_BUILD
+                fnStrikeThroughIfNA(itemNr, x, y-currentFirstItem/6);
               }
               ptr += stringByteLength((char *)ptr) + 1;
             }
@@ -2741,9 +2746,7 @@ bool_t BASE_OVERRIDEONCE = false;
           }
 
           fnStrikeOutIfNotCoded(item%10000, x, y-currentFirstItem/6);
-          #ifdef PC_BUILD
-            fnStrikeThroughIfNotOnSim(item%10000, x, y-currentFirstItem/6);
-          #endif //PC_BUILD
+          fnStrikeThroughIfNA(item%10000, x, y-currentFirstItem/6);
         }
       }
 
@@ -2874,7 +2877,10 @@ bool_t BASE_OVERRIDEONCE = false;
     softmenuStack[0].calcMode = calcMode;
 
 
-    if((softmenu[softmenuId].menuItem == -MNU_CONVCHEF || softmenu[softmenuId].menuItem == -MNU_CONVV) && menu(1) == -MNU_UNITCONV) {
+    if((softmenu[softmenuId].menuItem == -MNU_CONVCHEF || softmenu[softmenuId].menuItem == -MNU_CONVV) && 
+      ((menu(1) == -MNU_UNITCONV) || 
+       (menu(1) == -MNU_MENUS && menu(2) == -MNU_CATALOG) )
+      ) {
       softmenuStack[0].firstItem = getSystemFlag(FLAG_US) ? 18 : 0;
     }
 

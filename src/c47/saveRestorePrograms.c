@@ -277,13 +277,11 @@ void fnPExport(void) {
 }
 
 
-void _fnExportProgram(void) {
+void _fnExportProgram(ioFilePath_t path) {
     uint32_t programVersion = PROGRAM_VERSION;
     uint32_t exportVersion = EXPORT_VERSION;
     int ret;
-    ioFilePath_t path;
 
-    path = ioPathExportRTFProgram;
     ret = ioFileOpen(path, ioModeWrite);
 
     if(ret != FILE_OK ) {
@@ -358,7 +356,7 @@ void _selectProgram(uint16_t label) {
       displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "label %" PRIu16 " is not a global label", label);
-        moreInfoOnError("In function fnSaveProgram/fnExportProgram:", errorMessage, NULL, NULL);
+        moreInfoOnError("In function fnSaveProgram/fnExportProgram (_selectProgram):", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       return;
     }
@@ -366,7 +364,7 @@ void _selectProgram(uint16_t label) {
 }
 
 
-void fnExportProgram(uint16_t label) {
+void _exportProgram(uint16_t label, ioFilePath_t path) {
     const uint16_t savedCurrentLocalStepNumber = currentLocalStepNumber;
     uint16_t savedCurrentProgramNumber = currentProgramNumber;
 
@@ -378,7 +376,8 @@ void fnExportProgram(uint16_t label) {
     #endif // DMCP_BUILD
 
     _selectProgram(label);
-    _fnExportProgram();
+
+    _fnExportProgram(path);
 
     currentLocalStepNumber = savedCurrentLocalStepNumber;
     currentProgramNumber = savedCurrentProgramNumber;
@@ -387,11 +386,17 @@ void fnExportProgram(uint16_t label) {
 }
 
 
+void fnExportProgram(uint16_t label) {
+  #if !defined(TESTSUITE_BUILD)
+    _exportProgram(label, ioPathExportRTFProgram);
+  #endif // !TESTSUITE_BUILD
+}
 
-void fnSaveProgram(uint16_t label) {
+
+
+void _saveProgram(uint16_t label, ioFilePath_t path) {
   #if !defined(TESTSUITE_BUILD)
     uint32_t programVersion = PROGRAM_VERSION;
-    ioFilePath_t path;
     //char tmpString[3000];           //The concurrent use of the global tmpString
     //                                //as target does not work while the source is at
     //                                //tmpRegisterString = tmpString + START_REGISTER_VALUE;
@@ -411,7 +416,6 @@ void fnSaveProgram(uint16_t label) {
 
     _selectProgram(label);
 
-    path = ioPathSaveProgram;
     ret = ioFileOpen(path, ioModeWrite);
 
     if(ret != FILE_OK ) {
@@ -456,6 +460,32 @@ void fnSaveProgram(uint16_t label) {
 
     temporaryInformation = TI_SAVED;
   #endif // !TESTSUITE_BUILD
+}
+
+
+void fnSaveProgram(uint16_t label) {
+  #if !defined(TESTSUITE_BUILD)
+    _saveProgram(label, ioPathSaveProgram);
+  #endif // !TESTSUITE_BUILD
+}
+
+
+void fnSaveAllPrograms(uint16_t unusedButMandatoryParameter) {
+  #if defined(PC_BUILD)
+    uint16_t label;
+    char labelName[16];
+        for(int i=0; i<numberOfLabels; i++) {
+          if(labelList[i].step > 0) { // Global label
+            xcopy(labelName, labelList[i].labelPointer + 1, labelList[i].labelPointer[0]);
+            labelName[labelList[i].labelPointer[0]]=0;
+            label = findNamedLabel(labelName);
+            //printf("#### labelnumber=%i, labelname=%s\n",label, labelName);
+
+             _saveProgram  (label, ioPathSaveAllPrograms);
+             _exportProgram(label, ioPathExportRTFAllPrograms);
+          }
+        }
+  #endif //PC_BUILD
 }
 
 
