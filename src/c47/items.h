@@ -2029,10 +2029,10 @@
 #define ITM_1978                    1978
 #define ITM_1979                    1979
 #define ITM_1980                    1980
-#define ITM_1981                    1981
-#define ITM_1982                    1982
-#define ITM_1983                    1983
-#define ITM_1984                    1984
+#define ITM_toPOL_HP                1981
+#define ITM_toREC_HP                1982
+#define ITM_toPOL_CX                1983
+#define ITM_toREC_CX                1984
 #define ITM_BCD                     1985
 #define ITM_BCD9                    1986
 #define ITM_BCD10                   1987

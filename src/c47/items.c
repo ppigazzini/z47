@@ -1156,6 +1156,10 @@ bool_t itemNotAvail(int16_t itemNr) {
   void fnP_Regs                   (uint16_t unusedButMandatoryParameter) {}
   void fnToPolar2                 (uint16_t unusedButMandatoryParameter) {}
   void fnToRect2                  (uint16_t unusedButMandatoryParameter) {}
+  void fnToPolar_HP               (uint16_t unusedButMandatoryParameter) {}
+  void fnToRect_HP                (uint16_t unusedButMandatoryParameter) {}
+  void fnToPolar_CX               (uint16_t unusedButMandatoryParameter) {}
+  void fnToRect_CX                (uint16_t unusedButMandatoryParameter) {}
   void fnMultiplySI               (uint16_t unusedButMandatoryParameter) {}
   void fn_cnst_op_j               (uint16_t unusedButMandatoryParameter) {}
   void fn_cnst_op_j_pol           (uint16_t unusedButMandatoryParameter) {}
@@ -3322,10 +3326,10 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 1978 */  { itemToBeCoded,                NOPARAM,                     "1978",                                        "1978",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 1979 */  { itemToBeCoded,                NOPARAM,                     "1979",                                        "1979",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 1980 */  { itemToBeCoded,                NOPARAM,                     "1980",                                        "1980",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
-/* 1981 */  { itemToBeCoded,                NOPARAM,                     "1981",                                        "1981",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
-/* 1982 */  { itemToBeCoded,                NOPARAM,                     "1982",                                        "1982",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
-/* 1983 */  { itemToBeCoded,                NOPARAM,                     "1983",                                        "1983",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
-/* 1984 */  { itemToBeCoded,                NOPARAM,                     "1984",                                        "1984",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 1981 */  { fnToPolar_HP,                 NOPARAM,                     STD_RIGHT_ARROW "POL"  STD_SUB_h STD_SUB_p,    STD_RIGHT_ARROW "POL"  STD_SUB_h STD_SUB_p,    (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
+/* 1982 */  { fnToRect_HP,                  NOPARAM,                     STD_RIGHT_ARROW "RECT" STD_SUB_h STD_SUB_p,    STD_RIGHT_ARROW "RECT" STD_SUB_h STD_SUB_p,    (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
+/* 1983 */  { fnToPolar_CX,                 NOPARAM,                     STD_RIGHT_ARROW "POL"  STD_SUB_c STD_SUB_x,    STD_RIGHT_ARROW "POL"  STD_SUB_c STD_SUB_x,    (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
+/* 1984 */  { fnToRect_CX,                  NOPARAM,                     STD_RIGHT_ARROW "RECT" STD_SUB_c STD_SUB_x,    STD_RIGHT_ARROW "RECT" STD_SUB_c STD_SUB_x,    (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /* 1985 */  { fnSetBCD,                     JC_BCD,                      "BCD",                                         "BCD",                                         (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 1986 */  { fnSetBCD,                     BCD9c ,                      "9CMPL",                                       "9CMPL",                                       (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_NONE         },
 /* 1987 */  { fnSetBCD,                     BCD10c,                      "10CMPL",                                      "10CMPL",                                      (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_NONE         },
