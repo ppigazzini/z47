@@ -2084,7 +2084,7 @@
 #define ITM_CLGRF                   2033
 #define ITM_MZOOMY                  2034
 #define ITM_PZOOMY                  2035
-#define MNU_TRG                     2036
+#define MNU_TRG_R47                 2036
 #define MNU_PREF                    2037
 #define ITM_SAFERESET               2038
 #define ITM_SH_LONGPRESS            2039
