@@ -151,30 +151,32 @@ void resetKeytimers(void) {
       }
       #endif // PC_BUILD
 
-      if(HOME3 && currentMenu() == -MNU_HOME) {                    //JM shifts
+      int16_t target_HOME = (calcMode == CM_PEM ? -MNU_PFN : -MNU_HOME); 
+      int16_t target_MYM  = (calcMode == CM_PEM ? -MNU_PFN : -MNU_MyMenu); 
+
+      if(HOME3 && currentMenu() == target_HOME) {
         if(situation == keypress_fff) {
-          //printf("popping\n");
-          popSoftmenu();                                                    //JM shifts
+          popSoftmenu();
         }
       }
       else {
-        if(/*calcMode == CM_AIM || calcMode == CM_EIM*/getSystemFlag(FLAG_ALPHA)) {                    //JM shifts
+        if(getSystemFlag(FLAG_ALPHA)) {
           showSoftmenu(-MNU_MyAlpha);
         }
-        else {                                                            //JM SHIFTS
+        else {
           if(HOME3) {
-            showSoftmenu(-MNU_HOME);
+            showSoftmenu(target_HOME);
           }
           else if(MYM3) {
             if(situation == keypress_fff) {
               BASE_OVERRIDEONCE = true;
             }
-            showSoftmenu(-MNU_MyMenu);
-          }                             //If none selected, do not display any menu, keep the screen blank
-        }                                                                 //JM shifts
-      }                                                                   //JM shifts
+            showSoftmenu(target_MYM);
+          } //If none selected, do not display any menu, keep the screen blank
+        }
+      }
       showSoftmenuCurrentPart();
-    }                                                                     //JM shifts
+    }
   }
 
   void fg_processing_jm(void) {
