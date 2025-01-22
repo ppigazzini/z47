@@ -18,7 +18,9 @@ void fnChangeBase(uint16_t base) {
   if (!getRegisterAsShortInt(REGISTER_X, &sign, &val, NULL, NULL))
     return;
   convertUInt64ToShortIntegerRegister(sign, val, base, REGISTER_X);
-  lastIntegerBase = base;                //JMNIM
+  if(programRunStop != PGM_RUNNING) {
+    lastIntegerBase = base;                //JMNIM
+  }
   fnRefreshState();             //JM
 }
 

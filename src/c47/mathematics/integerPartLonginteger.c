@@ -54,7 +54,10 @@ void lintLonI(void) {
 
 void lintShoI(void) {
   convertShortIntegerRegisterToLongIntegerRegister(REGISTER_X, REGISTER_X);
-  setLastintegerBasetoZero();
+  if(programRunStop != PGM_RUNNING) {
+    printf("JJJJJJJJJJJ\n");
+    setLastintegerBasetoZero();
+  }  
 }
 
 
