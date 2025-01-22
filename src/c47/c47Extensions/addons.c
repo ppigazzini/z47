@@ -669,7 +669,7 @@ void fnJM_2SI(uint16_t unusedButMandatoryParameter) { //Convert Real to Longint;
         temporaryInformation = TI_DATA_NEG_OVRFL;
       }
       convertLongIntegerRegisterToShortIntegerRegister(REGISTER_X, REGISTER_X); //default to 10
-      if(lastIntegerBase >= 2 && lastIntegerBase <= 16 && lastIntegerBase != 10 && programRunStop != PGM_RUNNING) {
+      if(lastIntegerBase >= 2 && lastIntegerBase <= 16 && lastIntegerBase != 10) {
         fnChangeBase(lastIntegerBase);
       }
       convertShortIntegerRegisterToLongInteger(REGISTER_X, tmp1);
@@ -689,9 +689,7 @@ void fnJM_2SI(uint16_t unusedButMandatoryParameter) { //Convert Real to Longint;
       break;
     case dtShortInteger:
       convertShortIntegerRegisterToLongIntegerRegister(REGISTER_X, REGISTER_X); //This shortint to longint!
-      if(programRunStop != PGM_RUNNING) {
-        lastIntegerBase = 0;                                                      //JMNIM clear lastintegerbase, to switch off hex mode
-      }
+      lastIntegerBase = 0;                                                      //JMNIM clear lastintegerbase, to switch off hex mode
       fnRefreshState();                                                         //JMNIM
       break;
     default:
