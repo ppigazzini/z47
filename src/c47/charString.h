@@ -104,8 +104,7 @@ uint32_t utf8ToCodePoint  (const uint8_t *utf8, uint32_t *codePoint);
  * \param[in] source
  * \return a pointer to the end (i.e. terminating null byte) of the resulting string dest
  */
-//char    *stringAppend          (char *dest, const char *source);
-#define stringAppend(dest, source) strcat(dest, source) // This works only when there is no glyph with a code point ending with 00
+char    *stringCopy            (char *dest, const char *source);
 
 void     expandConversionName  (char *msg1);
 void     compressConversionName(char *msg1);

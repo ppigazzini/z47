@@ -1002,10 +1002,10 @@ void *xcopy(void *dest, const void *source, int n) {
 }
 
 
-//char *stringAppend(char *dest, const char *source) {
-//  const size_t l = stringByteLength(source);
-//  return (char *)memcpy(dest, source, l + 1) + l;
-//}
+char *stringCopy(char *dest, const char *source) {
+  const uint32_t l = stringByteLength(source);
+  return (char *)xcopy(dest, source, l + 1) + l;
+}
 
 
 #if !defined(DMCP_BUILD)
