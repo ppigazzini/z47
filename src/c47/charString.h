@@ -107,7 +107,7 @@ uint32_t utf8ToCodePoint  (const uint8_t *utf8, uint32_t *codePoint);
    */
   char    *stringCopy            (char *dest, const char *source);
 #else
-  #define stringCopy(dest, source) stpcpy(dest, source);
+  #define stringCopy(dest, source) stpcpy(dest, source)
 #endif // __MINGW64__
 
 void     expandConversionName  (char *msg1);
