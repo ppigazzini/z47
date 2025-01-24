@@ -97,14 +97,18 @@ void     codePointToUtf8  (uint32_t codePoint, uint8_t *utf8);
  ***********************************************/
 uint32_t utf8ToCodePoint  (const uint8_t *utf8, uint32_t *codePoint);
 
-/**
- * Copies the string including the terminating null byte
- *
- * \param[out] dest
- * \param[in] source
- * \return a pointer to the end (i.e. terminating null byte) of the resulting string dest
- */
-char    *stringCopy            (char *dest, const char *source);
+#if defined(__MINGW64__)
+  /**
+   * Copies the string including the terminating null byte
+   *
+   * \param[out] dest
+   * \param[in] source
+   * \return a pointer to the end (i.e. terminating null byte) of the resulting string dest
+   */
+  char    *stringCopy            (char *dest, const char *source);
+#else
+  #define stringCopy(dest, source) stpcpy(dest, source);
+#endif // __MINGW64__
 
 void     expandConversionName  (char *msg1);
 void     compressConversionName(char *msg1);

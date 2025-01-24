@@ -1002,10 +1002,12 @@ void *xcopy(void *dest, const void *source, int n) {
 }
 
 
-char *stringCopy(char *dest, const char *source) {
-  const uint32_t l = stringByteLength(source);
-  return (char *)xcopy(dest, source, l + 1) + l;
-}
+#if defined(__MINGW64__)
+  char *stringCopy(char *dest, const char *source) {
+    const uint32_t l = stringByteLength(source);
+    return (char *)xcopy(dest, source, l + 1) + l;
+  }
+#endif // __MINGW64__
 
 
 #if !defined(DMCP_BUILD)
