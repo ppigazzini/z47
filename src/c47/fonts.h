@@ -218,7 +218,6 @@
 #define STD_u_DIARESIS                "\x80\xfc"
 #define STD_y_ACUTE                   "\x80\xfd"
 #define STD_y_DIARESIS                "\x80\xff"
-#define STD_A_MACRON                  "\x81\x00"
 #define STD_a_MACRON                  "\x81\x01"
 #define STD_A_BREVE                   "\x81\x02"
 #define STD_a_BREVE                   "\x81\x03"
@@ -304,6 +303,7 @@
 #define STD_z_DOT                     "\x81\x7c"
 #define STD_Z_CARON                   "\x81\x7d"
 #define STD_z_CARON                   "\x81\x7e"
+#define STD_A_MACRON                  "\x81\x7f" // was U+0100
 #define STD_y_UNDER_ROOT              "\x82\x32"
 #define STD_y_BAR                     "\x82\x33"
 #define STD_x_BAR                     "\x83\x78"
@@ -405,9 +405,9 @@
 #define STD_SUP_BOLD_r                "\x82\xB3"
 #define STD_SUP_BOLD_x                "\x82\xE3"
 
-#define STD_SUB_pi                    "\xad\xea" //2DEA
-#define STD_SUP_pi                    "\xad\xeb" //2DEB
-#define STD_SUP_pir                   "\xad\xec" //2DEC
+#define STD_SUB_pi                    "\xac\x64" //2C64
+#define STD_SUP_pi                    "\xac\x65" //2C65
+#define STD_SUP_pir                   "\xac\x66" //2C66
 
 
 #define STD_BOX                       "\xa5\xa2"     // Box with rounded corners 25A2
@@ -512,7 +512,6 @@
 #define STD_UNDO                      "\xa1\xcd"
 #define STD_HOLLOW_UP_ARROW           "\xa1\xe7"
 #define STD_HOLLOW_DOWN_ARROW         "\xa1\xe9"
-#define STD_FOR_ALL                   "\xa2\x00"
 #define STD_COMPLEMENT                "\xa2\x01"
 #define STD_PARTIAL_DIFF              "\xa2\x02"
 #define STD_THERE_EXISTS              "\xa2\x03"
@@ -731,6 +730,7 @@
 #define STD_CHECK_MARK                "\xa7\x13"
 #define STD_YX                        "\xa9\xf0"
 #define STD_fg                        "\xa9\xf1"
+#define STD_FOR_ALL                   "\xac\x6f" // was U+2200
 #define STD_RIGHT_DOUBLE_ARROW        "\xa1\xD2"    //JM
 #define STD_LEFT_RIGHT_DOUBLE_ARROW   "\xa1\xD4"    //JM
 #endif // !FONTS_H
