@@ -288,7 +288,7 @@ char *stringAfterPixels(const char *str, const font_t *font, int16_t width, bool
 
 
 int16_t stringNextGlyphNoEndCheck_JM(const char *str, int16_t pos) {    //Not checking for beyond terminator. Use only if no risk for pos > length(str)
-int16_t posinc = 0;
+  int16_t posinc = 0;
   if(str[pos] == 0) return pos;
 
   if(str[pos] & 0x80) {
@@ -410,21 +410,21 @@ int16_t stringLastGlyph(const char *str) {
 }
 
 
-int32_t stringByteLength(const char *str) {
-  int32_t len = 0;
-
-  while(*str != 0) {
-    if(*str & 0x80) {
-      str += 2;
-      len += 2;
-    }
-    else {
-      str++;
-      len++;
-    }
-  }
-  return len;
-}
+//int32_t stringByteLength(const char *str) {
+//  int32_t len = 0;
+//
+//  while(*str != 0) {
+//    if(*str & 0x80) {
+//      str += 2;
+//      len += 2;
+//    }
+//    else {
+//      str++;
+//      len++;
+//    }
+//  }
+//  return len;
+//}
 
 
 int32_t stringGlyphLength(const char *str) {
@@ -613,6 +613,8 @@ TO_QSPI const function_t2 indexOfStringsASCII[] = {
               {STD_u_GRAVE,                   "`u"},
               {STD_A_BREVE,                   "`A"},
               {STD_a_BREVE,                   "`a"},
+              {STD_A_MACRON,                  "`A"},
+              {STD_a_MACRON,                  "`a"},
               {STD_E_MACRON,                  "`E"},
               {STD_e_MACRON,                  "`e"},
               {STD_I_MACRON,                  "`I"},
@@ -1000,10 +1002,10 @@ void *xcopy(void *dest, const void *source, int n) {
 }
 
 
-char *stringAppend(char *dest, const char *source) {
-  const size_t l = stringByteLength(source);
-  return (char *)memcpy(dest, source, l + 1) + l;
-}
+//char *stringAppend(char *dest, const char *source) {
+//  const size_t l = stringByteLength(source);
+//  return (char *)memcpy(dest, source, l + 1) + l;
+//}
 
 
 #if !defined(DMCP_BUILD)
