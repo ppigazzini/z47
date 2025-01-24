@@ -104,7 +104,8 @@ uint32_t utf8ToCodePoint  (const uint8_t *utf8, uint32_t *codePoint);
  * \param[in] source
  * \return a pointer to the end (i.e. terminating null byte) of the resulting string dest
  */
-char    *stringCopy            (char *dest, const char *source);
+//char    *stringCopy            (char *dest, const char *source);
+#define stringCopy(dest, source) stpcpy(dest, source)
 
 void     expandConversionName  (char *msg1);
 void     compressConversionName(char *msg1);
