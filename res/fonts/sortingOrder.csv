@@ -647,7 +647,7 @@
 `U+2788`,9,512,`fullwidth comma`,`wide comma`,`，`,`，`,`U+2788`
 `U+22c5`,531,512,`dot operator`,`wide dot`,`⋅`,`⋅`,`U+22c5`
 `U+2789`,9,512,`fullwidth full stop`,`wide period`,`．`,`．`,`U+2789`
-`U+033a`,367,512,`inverted bridge`,`narrow space`,`．`,`．`,`U+033a`
+`U+23b5`,367,512,`bottom square bracket`,`narrow space`,`．`,`．`,`U+23b5`
 `U+22A2`,571,512,`right tack`,`right tack`,`⊢`,`⊢`,`U+22A2`
 `U+267b`,95,512,`Custom C`,`Caps Lock`,`C`,`C`,`U+0043`
 `U+267e`,221,512,`Custom N`,`Num Lock`,`N`,`N`,`U+004e`

@@ -383,7 +383,7 @@
 #define STD_WPERIOD                   "\xa7\x89"  //JM  ff0e  Changed from FF0E to 2789
 #define STD_WCOMMA                    "\xa7\x88"  //JM  ff0c  Changed from FF0C to 2788
 #define STD_NQUOTE                    "\x82\xbc"  //JM  02bc
-#define STD_INV_BRIDGE                "\x83\x3a"  //JM  033a
+#define STD_INV_BRIDGE                "\xa3\xb5"  //JM  23b5  Changed from 033A to 23B5
 #define STD_EulerE                    "\xa1\x47"  //JM
 #define STD_op_i                      "\xa1\x48"  //JM
 #define STD_op_j                      "\xa1\x49"  //JM
