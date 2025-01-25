@@ -382,3 +382,5 @@ Added QRNZ to NUM font
     U+2dea moved to U+2c64 sub π
     U+2deb moved to U+2c65 sup π
     U+2dec moved to U+2c66 sup πr
+
+2025-01-25 Moved U+033A to U+23B5
