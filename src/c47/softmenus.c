@@ -2001,7 +2001,6 @@ bool_t isFunctionItemAMenu(int16_t item) { //masquarading
 
 static  char FF[16];
 static char *changeItoJ(int16_t item) {
-  stringAppend(FF,indexOfItems[item%10000].itemSoftmenuName);
   //printf(">>>> changeItoJ: %i %u %u %u %u %u %s %u %u\n", item, (uint8_t)(FF[0]), (uint8_t)(FF[1]), (uint8_t)(FF[2]), (uint8_t)(FF[3]), (uint8_t)(FF[4]), FF , (uint8_t)(STD_SUP_i[0]), (uint8_t)(STD_SUP_i[1]));
   if(getSystemFlag(FLAG_CPXj)) {
     if((item == ITM_op_j || item == ITM_op_j_pol || item == ITM_op_j_SIGN) && FF[1] == STD_op_i[1]) {
@@ -2012,6 +2011,31 @@ static char *changeItoJ(int16_t item) {
       FF[3]++;
     }
   }
+  return FF;
+}
+
+static char *changeDotInDreal(int16_t item) {
+  //printf(">>>> changeDreal: %i %u %u %u %u %u %s %u %u\n", item, (uint8_t)(FF[0]), (uint8_t)(FF[1]), (uint8_t)(FF[2]), (uint8_t)(FF[3]), (uint8_t)(FF[4]), FF , (uint8_t)(STD_SUP_i[0]), (uint8_t)(STD_SUP_i[1]));
+  if(item != ITM_DREAL) {
+    return FF;
+  }
+  uint16_t ii;
+  for(ii = 0; FF[ii] != '.' && FF[ii] != ','; ii++) {
+    if(FF[ii] == 0) {
+      return FF;
+    }
+  }
+  FF[ii] = 0; //clear string from dot onward and replace with below
+  strcat(FF,RADIX34_MARK_STRING);
+  strcat(FF,STD_SPACE_3_PER_EM "0");
+  return FF;
+}
+
+//using static char FF
+static char *changeDynamicName(int16_t item) {
+  stringAppend(FF,indexOfItems[item%10000].itemSoftmenuName);
+  changeItoJ(item);
+  changeDotInDreal(item);
   return FF;
 }
 
@@ -2270,7 +2294,7 @@ void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t 
       stringAppend(itemName, indexOfItems[itemNr%10000].itemCatalogName);
     }
     else {
-      stringAppend(itemName, changeItoJ(itemNr));
+      stringAppend(itemName, changeDynamicName(itemNr));
       //printf("WWW2: itemName=%s, ItemNr=%i \n",itemName,itemNr);
       return;
     }
