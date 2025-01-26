@@ -1825,7 +1825,6 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define RADIX34_MARK_STRING                  (gapChar1Radix)
 #define RADIX34_MARK_DEC_ITM                 (RADIX34_MARK_CHAR == '.' ? ITM_PERIOD : ITM_COMMA)
 #define RADIX34_MARK_NOT_DEC_ITM             (RADIX34_MARK_CHAR == '.' ? ITM_COMMA : ITM_PERIOD)
-#define Z_LI_STRING                          (STD_INTEGER_Z_SMALL)
 
 #define groupingGap                          ((uint8_t)(grpGroupingLeft)) //ADD HERE THE CONDITIONS FOR NIL SEPS
 
