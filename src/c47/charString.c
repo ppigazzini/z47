@@ -613,8 +613,6 @@ TO_QSPI const function_t2 indexOfStringsASCII[] = {
               {STD_u_GRAVE,                   "`u"},
               {STD_A_BREVE,                   "`A"},
               {STD_a_BREVE,                   "`a"},
-              {STD_A_MACRON,                  "`A"},
-              {STD_a_MACRON,                  "`a"},
               {STD_E_MACRON,                  "`E"},
               {STD_e_MACRON,                  "`e"},
               {STD_I_MACRON,                  "`I"},
@@ -720,12 +718,18 @@ TO_QSPI const function_t2 indexOfStringsASCII[] = {
 };
 
 
-TO_QSPI const function_t2 indexOfStringsRTF[] = {
+TO_QSPI const function_t2 indexOfStringsRTF[] = {              //Only STD codes 2 bytes, i.e. ASCII > 128 will arrive here
               //number                  replacement string
               {STD_BINARY_ONE,                "1"},
-              {STD_BINARY_ZERO,               "0"}
+              {STD_BINARY_ZERO,               "0"},
+           //   {STD_A_MACRON,                  "\x81\x00"},
+           //   {STD_FOR_ALL,                   "\xa2\x00"}
 };
 
+  static char *stringAppend(char *dest, const char *source) {  //functio0n re-instated only for the export, where 0x00 is possible
+    const size_t l = stringByteLength(source);
+    return (char *)memcpy(dest, source, l + 1) + l;
+  }
 
   static bool_t _getText(uint8_t a1, uint8_t a2, char *str) {
     //printf("_getText %u %u : ",(uint8_t)a1,(uint8_t)a2);
@@ -734,7 +738,7 @@ TO_QSPI const function_t2 indexOfStringsRTF[] = {
     for(uint_fast16_t i=0; i<n; i++) {
       if((uint8_t)a1 == (uint8_t)(indexOfStringsASCII[i].item_in[0]) && (uint8_t)a2 == (uint8_t)(indexOfStringsASCII[i].item_in[1])) {
         //printf("(%u):%u %u %s\n", i,(uint8_t)(indexOfStringsASCII[i].item_in[0]), (uint8_t)(indexOfStringsASCII[i].item_in[1]),indexOfStringsASCII[i].item_out);
-        strcpy(str, indexOfStringsASCII[i].item_out);
+        stringAppend(str,indexOfStringsASCII[i].item_out);
         break;
       }
     }
@@ -742,13 +746,13 @@ TO_QSPI const function_t2 indexOfStringsRTF[] = {
   }
 
   static bool_t _getTextRTF(uint8_t a1, uint8_t a2, char *str) {
-    //printf("_getText %u %u : ",(uint8_t)a1,(uint8_t)a2);
+    //printf("_getTextRTF %u %u : ",(uint8_t)a1,(uint8_t)a2);
     str[0] = 0;
     uint_fast16_t n = nbrOfElements(indexOfStringsRTF);
     for(uint_fast16_t i=0; i<n; i++) {
       if((uint8_t)a1 == (uint8_t)(indexOfStringsRTF[i].item_in[0]) && (uint8_t)a2 == (uint8_t)(indexOfStringsRTF[i].item_in[1])) {
         //printf("(%u):%u %u %s\n", i,(uint8_t)(indexOfStringsRTF[i].item_in[0]), (uint8_t)(indexOfStringsRTF[i].item_in[1]),indexOfStringsRTF[i].item_out);
-        strcpy(str, indexOfStringsRTF[i].item_out);
+        stringAppend(str,indexOfStringsRTF[i].item_out);
         break;
       }
     }
