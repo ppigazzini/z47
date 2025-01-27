@@ -348,7 +348,6 @@
 `U+201f`,501,505,`DOUBLE HIGH-REVERSED-9 QUOTATION MARK`,`Double high-reversed-9 quotation mark`,`‟`,,`U+0022`
 `U+2026`,485,487,`HORIZONTAL ELLIPSIS`,`Ellipsis`,`…`,`.`,`U+002e`
 `U+2027`,15,16,`HYPHENATION POINT `,`Binary 1`,`‧`,`1`,`U+0031`
-`U+2072`,469,471,`<reserved> (superscript 2 - 00B2)`,`Superscript -1`,`⁲`,`-`,`U+002d`
 `U+2073`,121,145,`<reserved> (superscript 3 - 00B3)`,`Subscript E`,`⁳`,`E`,`U+0045`
 `U+2080`,10,14,`SUBSCRIPT ZERO`,`Subscript 0`,`₀`,``,`U+0030`
 `U+2081`,15,20,`SUBSCRIPT ONE`,`Subscript 1`,`₁`,`1`,`U+0031`
