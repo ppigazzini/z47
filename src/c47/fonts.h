@@ -456,7 +456,6 @@
 #define STD_DOUBLE_HIGH_QUOTE         "\xa0\x1f"
 #define STD_ELLIPSIS                  "\xa0\x26"
 #define STD_BINARY_ONE                "\xa0\x27"
-#define STD_SUP_MINUS_1               "\xa0\x72"
 #define STD_SUB_E_OUTLINE             "\xa0\x73"
 #define STD_SUB_0                     "\xa0\x80"
 #define STD_SUB_1                     "\xa0\x81"
