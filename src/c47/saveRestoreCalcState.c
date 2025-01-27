@@ -3075,19 +3075,19 @@ void doLoad(uint16_t loadMode, uint16_t s, uint16_t n, uint16_t d, uint16_t load
       temporaryInformation = TI_BACKUP_RESTORED;
       getDateString(lastStateFileOpened);
       strcat(lastStateFileOpened,": ");
-      stringAppend(lastStateFileOpened + stringByteLength(lastStateFileOpened), fileNameSelected);
+      stringCopy(lastStateFileOpened + stringByteLength(lastStateFileOpened), fileNameSelected);
     }
     else if((loadType == autoLoad) && (loadedVersion >= VersionAllowed) && (loadedVersion <= configFileVersion) && (loadMode == LM_ALL)) {
       temporaryInformation = TI_BACKUP_RESTORED;
       getDateString(lastStateFileOpened);
       strcat(lastStateFileOpened,": ");
-      stringAppend(lastStateFileOpened + stringByteLength(lastStateFileOpened), fileNameSelected);
+      stringCopy(lastStateFileOpened + stringByteLength(lastStateFileOpened), fileNameSelected);
     }
     else if(loadType == stateLoad) {
       temporaryInformation = TI_STATEFILE_RESTORED;
       getDateString(lastStateFileOpened);
       strcat(lastStateFileOpened,": ");
-      stringAppend(lastStateFileOpened + stringByteLength(lastStateFileOpened), fileNameSelected);
+      stringCopy(lastStateFileOpened + stringByteLength(lastStateFileOpened), fileNameSelected);
     }
     else if(loadMode == LM_PROGRAMS) {
       temporaryInformation = TI_PROGRAMS_RESTORED;

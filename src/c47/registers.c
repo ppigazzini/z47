@@ -677,9 +677,6 @@ bool_t validateName(const char *name) {
   if(compareChar(name, STD_Z          ) > 0 && compareChar(name, STD_a                   ) < 0) {
     return false;
   }
-  if(compareChar(name, STD_Z          ) > 0 && compareChar(name, STD_a                   ) < 0) {
-    return false;
-  }
   if(compareChar(name, STD_z          ) > 0 && compareChar(name, STD_A_GRAVE             ) < 0) {
     return false;
   }
@@ -692,19 +689,10 @@ bool_t validateName(const char *name) {
   if(compareChar(name, STD_z_CARON    ) > 0 && compareChar(name, STD_iota_DIALYTIKA_TONOS) < 0) {
     return false;
   }
-  if(compareChar(name, STD_omega_TONOS) > 0 && compareChar(name, STD_SUP_x               ) < 0) {
+  if(compareChar(name, STD_sampi      ) > 0 && compareChar(name, STD_SUB_alpha           ) < 0) {
     return false;
   }
-  if(compareChar(name, STD_SUP_x      ) > 0 && compareChar(name, STD_SUB_alpha           ) < 0) {
-    return false;
-  }
-  if(compareChar(name, STD_SUB_mu     ) > 0 && compareChar(name, STD_SUB_h               ) < 0) {
-    return false;
-  }
-  if(compareChar(name, STD_SUB_h      ) > 0 && compareChar(name, STD_SUB_t               ) < 0) {
-    return false;
-  }
-  if(compareChar(name, STD_SUB_t      ) > 0 && compareChar(name, STD_SUB_a               ) < 0) {
+  if(compareChar(name, STD_SUB_mu     ) > 0 && compareChar(name, STD_SUP_a               ) < 0) {
     return false;
   }
   if(compareChar(name, STD_SUB_Z      ) > 0                                                   ) {

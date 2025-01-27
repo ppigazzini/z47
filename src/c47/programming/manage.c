@@ -608,9 +608,19 @@ static void _insertInProgram(const uint8_t *dat, uint16_t size) {
   for(uint8_t *pos = firstFreeProgramByte + 1 + size; pos > currentStep; --pos) {
     *pos = *(pos - size);
   }
-  for(uint16_t i = 0; i < size; ++i) {
-    *(currentStep++) = *(dat++);
+
+  #define tmpA (dat[1]+((dat[0] & 0x7F) << 8))    //convert codes for >RECT and >POLAR to the relevant ones, respecting RP_HP
+  if(size == 2 && (tmpA == ITM_toPOL2 || tmpA == ITM_toREC2)) {
+    uint16_t tmpB = ITM_toPOL_HP + (tmpA - ITM_toPOL2) + (getSystemFlag(FLAG_HPRP) ? 0 : 2);
+    *(currentStep++) = (tmpB >> 8) | 0x80;
+    *(currentStep++) = tmpB & 0x00FF;
   }
+  else {    //otherwise use the input data to add a step
+    for(uint16_t i = 0; i < size; ++i) {
+      *(currentStep++) = *(dat++);
+    }
+  }
+
   firstFreeProgramByte    += size;
   freeProgramBytes        -= size;
   currentLocalStepNumber  += 1;

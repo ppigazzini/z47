@@ -172,7 +172,6 @@
 `U+00fc`,307,320,`LATIN SMALL LETTER U WITH DIAERESIS`,`u diaresis`,`ü`,`U`,`U+0055`
 `U+00fd`,355,362,`LATIN SMALL LETTER Y WITH ACUTE`,`y accute`,`ý`,`Y`,`U+0059`
 `U+00ff`,355,366,`LATIN SMALL LETTER Y WITH DIAERESIS`,`y diaresis`,`ÿ`,`Y`,`U+0059`
-`U+0100`,63,83,`LATIN CAPITAL LETTER A WITH MACRON`,`A macron`,`Ā`,`A`,`U+0041`
 `U+0101`,63,84,`LATIN SMALL LETTER A WITH MACRON`,`a macron`,`ā`,`A`,`U+0041`
 `U+0102`,63,85,`LATIN CAPITAL LETTER A WITH BREVE`,`A breve`,`Ă`,`A`,`U+0041`
 `U+0103`,63,86,`LATIN SMALL LETTER A WITH BREVE`,`a breve`,`ă`,`A`,`U+0041`
@@ -257,9 +256,13 @@
 `U+017b`,369,377,`LATIN CAPITAL LETTER Z WITH DOT ABOVE`,`Z dot`,`Ż`,`Z`,`U+005a`
 `U+017c`,369,378,`LATIN SMALL LETTER Z WITH DOT ABOVE`,`z dot`,`ż`,`Z`,`U+005a`
 `U+017d`,369,379,`LATIN CAPITAL LETTER Z WITH CARON`,`Zcaron`,`Ž`,`Z`,`U+005a`
+`U+017f`,63,83,`LATIN CAPITAL LETTER A WITH MACRON`,`A macron`,`Ā`,`A`,`U+0041`
 `U+017e`,369,380,`LATIN SMALL LETTER Z WITH CARON`,`z caron`,`ž`,`Z`,`U+005a`
 `U+0232`,355,368,`LATIN CAPITAL LETTER Y WITH MACRON`,`y under root`,`Ȳ`,`Y`,`U+0059`
 `U+0233`,355,367,`LATIN SMALL LETTER Y WITH MACRON`,`y macron`,`ȳ`,`Y`,`U+0059`
+`U+02B0`,160,165,`Superscript h`,`Superscript h`,`ʰ`,`h`,`U+0048`
+`U+02B3`,272,276,`Superscript r`,`Superscript r`,`ʳ`,`r`,`U+0052`
+`U+02E3`,345,349,`Superscript x`,`Superscript x`,`ˣ`,`x`,`U+0058`
 `U+0378`,345,352,`not defined by unicode`,`x macron`,`͸`,`X`,`U+0058`
 `U+0379`,345,351,`not defined by unicode`,`x circumflex`,`͹`,`X`,`U+0058`
 `U+037f`,345,353,`GREEK CAPITAL LETTER YOT `,`x under root`,`Ϳ`,`X`,`U+0058`
@@ -325,6 +328,9 @@
 `U+03cc`,421,423,`GREEK SMALL LETTER OMICRON WITH TONOS`,`omicron tonos`,`ό`,`Ο`,`U+039f`
 `U+03cd`,434,436,`GREEK SMALL LETTER UPSILON WITH TONOS`,`upsilon tonos`,`ύ`,`Υ`,`U+03a5`
 `U+03ce`,446,448,`GREEK SMALL LETTER OMEGA WITH TONOS`,`omega tonos`,`ώ`,`Ω`,`U+03a9`
+`U+1D40`,296,298,`Superscript T`,`Superscript T`,`ᵀ`,`T`,`U+0054`
+`U+1DA0`,296,298,`Superscript f`,`Superscript f`,`ᶠ`,`f`,`U+0046`
+`U+1D4D`,296,298,`Superscript g`,`Superscript g`,`ᵍ`,`g`,`U+0047`
 `U+2003`,1,2,`EM SPACE`,`EM space`,` `,` `,`U+0020`
 `U+2004`,1,3,`THREE-PER-EM SPACE`,`3 per EM space`,` `,` `,`U+0020`
 `U+2005`,1,4,`FOUR-PER-EM SPACE`,`4 per EM space`,` `,` `,`U+0020`
@@ -342,7 +348,6 @@
 `U+201f`,501,505,`DOUBLE HIGH-REVERSED-9 QUOTATION MARK`,`Double high-reversed-9 quotation mark`,`‟`,,`U+0022`
 `U+2026`,485,487,`HORIZONTAL ELLIPSIS`,`Ellipsis`,`…`,`.`,`U+002e`
 `U+2027`,15,16,`HYPHENATION POINT `,`Binary 1`,`‧`,`1`,`U+0031`
-`U+2072`,469,471,`<reserved> (superscript 2 - 00B2)`,`Superscript -1`,`⁲`,`-`,`U+002d`
 `U+2073`,121,145,`<reserved> (superscript 3 - 00B3)`,`Subscript E`,`⁳`,`E`,`U+0045`
 `U+2080`,10,14,`SUBSCRIPT ZERO`,`Subscript 0`,`₀`,``,`U+0030`
 `U+2081`,15,20,`SUBSCRIPT ONE`,`Subscript 1`,`₁`,`1`,`U+0031`
@@ -388,12 +393,17 @@
 `U+2192`,512,512,`RIGHTWARDS ARROW`,`Right arrow`,`→`,`→`,`U+2192`
 `U+2193`,520,520,`DOWNWARDS ARROW`,`Down arrow`,`↓`,`↓`,`U+2193`
 `U+2194`,520,520,`LEFT RIGHT ARROW`,`Left right arrow`,`↔`,`↔`,`U+2194`
+`U+2195`,520,524,`UP DOWN ARROW`,`Up-down arrow`,`↕`,`↕`,`U+2195`
 `U+21B5`,514,514,`Downwards Arrow with Corner Leftwards`,`Carriage Return`,`↵`,`↵`,`U+21E0`
-`U+21E0`,514,514,`LEFTWARDS ARROW`,`Left arrow`,`⇠`,`⇠`,`U+21E0`
-`U+21E1`,516,516,`UPWARDS ARROW`,`Up arrow`,`⇡`,`⇡`,`U+21E1`
-`U+21E2`,512,512,`RIGHTWARDS ARROW`,`Right arrow`,`⇢`,`⇢`,`U+21E2`
-`U+21E3`,515,520,`DOWNWARDS ARROW`,`Down arrow`,`⇣`,`⇣`,`U+21E3`
-`U+2195`,520,524,`UP DOWN ARROW`,`Up-down arrof`,`↕`,`↕`,`U+2195`
+`U+21E0`,514,514,`LEFTWARDS ARROW`,`Left arrow`,`⇠`,`⇠`,`U+2190`
+`U+21E1`,516,516,`UPWARDS ARROW`,`Up arrow`,`⇡`,`⇡`,`U+2191`
+`U+21E2`,512,512,`RIGHTWARDS ARROW`,`Right arrow`,`⇢`,`⇢`,`U+2192`
+`U+21E3`,515,520,`DOWNWARDS ARROW`,`Down arrow`,`⇣`,`⇣`,`U+2193`
+`U+2B60`,516,516,`Leftwards Triangle-Headed Arrow`,`Left block arrow`,`⭠`,`⭠`,`U+2190`
+`U+2B61`,512,512,`Upwards Triangle-Headed Arrow`,`Up block arrow`,`⭡`,`⭡`,`U+2191`
+`U+2B62`,515,520,`Rightwards Triangle-Headed Arrow`,`Right block arrow`,`⭢`,`⭢`,`U+2192`
+`U+2B63`,520,524,`Downwards Triangle-Headed Arrow`,`Down block arrow`,`⭣`,`⭣`,`U+2193`
+`U+23FB`,520,524,`Power Symbol`,`Power Symbol`,`⏻`,`⏻`,`U+23FB`
 `U+21c0`,512,513,`RIGHTWARDS HARPOON WITH BARB UPWARDS`,`Short right arrow`,`⇀`,`→`,`U+2192`
 `U+21c4`,520,523,`RIGHTWARDS ARROW OVER LEFTWARDS ARROW`,`Left-right arrow`,`⇄`,`⇄`,`U+21c4`
 `U+21c9`,516,518,`RIGHTWARDS PAIRED ARROWS `,`BST`,`⇉`,`↑`,`U+2191`
@@ -402,7 +412,6 @@
 `U+21cd`,514,515,`LEFTWARDS DOUBLE ARROW WITH STROKE `,`Undo`,`⇍`,`←`,`U+2190`
 `U+21e7`,516,517,`UP_HOLLOW_ARROW`,`Up hollow arrow`,`⇧`,`↑`,`U+2191`
 `U+21e9`,520,521,`DOWN_HOLLOW_ARROW`,`Down hollow arrow`,`⇩`,`↓`,`U+2193`
-`U+2200`,593,593,`FOR ALL`,`For all`,`∀`,`∀`,`U+2200`
 `U+2201`,95,108,`COMPLEMENT`,`Complement`,`∁`,`C`,`U+0043`
 `U+2202`,593,594,`PARTIAL DIFFERENTIAL`,`Partial differential`,`∂`,`∀`,`U+2200`
 `U+2203`,593,595,`THERE EXISTS`,`There exists`,`∃`,`∀`,`U+2200`
@@ -468,12 +477,9 @@
 `U+22bb`,527,529,`XOR`,`Xor`,`⊻`,`∧`,`U+2227`
 `U+22bc`,527,530,`NAND`,`Nand`,`⊼`,`∧`,`U+2227`
 `U+22bd`,527,531,`NOR`,`Nor`,`⊽`,`∧`,`U+2227`
-`U+2308`,578,578,`LEFT CEILING`,`Left ceiling`,`⌈`,`⌈`,`U+2308`
-`U+2309`,578,579,`RIGHT CEILING`,`Right ceiling`,`⌉`,`⌈`,`U+2308`
-`U+230a`,580,580,`LEFT FLOOR`,`Left floor`,`⌊`,`⌊`,`U+230a`
-`U+230b`,580,581,`RIGHT FLOOR`,`Right floor`,`⌋`,`⌊`,`U+230a`
 `U+231a`,582,584,`WATCH`,`Watch`,`⌚`,`⎙`,`U+2399`
 `U+231b`,582,583,`HOURGLASS`,`Hourglass`,`⌛`,`⎙`,`U+2399`
+`U+29d6`,582,583,`HOURGLASS WHITE`,`Hourglass`,`⧖`,`⎙`,`U+2399`
 `U+2393`,582,590,`DIRECT CURRENT FORM 2`,`d.c. current`,`⎓`,`⎓`,`U+002d`
 `U+2399`,582,582,`PRINT SCREEN SYMBOL`,`Printer`,`⎙`,`⎙`,`U+2399`
 `U+23a1`,451,452,`LEFT SQUARE BRACKET UPPER CORNER`,`Matrix upper left`,`⎡`,`[`,`U+005b`
@@ -640,7 +646,7 @@
 `U+2788`,9,512,`fullwidth comma`,`wide comma`,`，`,`，`,`U+2788`
 `U+22c5`,531,512,`dot operator`,`wide dot`,`⋅`,`⋅`,`U+22c5`
 `U+2789`,9,512,`fullwidth full stop`,`wide period`,`．`,`．`,`U+2789`
-`U+033a`,367,512,`inverted bridge`,`narrow space`,`．`,`．`,`U+033a`
+`U+23b5`,367,512,`bottom square bracket`,`narrow space`,`．`,`．`,`U+23b5`
 `U+22A2`,571,512,`right tack`,`right tack`,`⊢`,`⊢`,`U+22A2`
 `U+267b`,95,512,`Custom C`,`Caps Lock`,`C`,`C`,`U+0043`
 `U+267e`,221,512,`Custom N`,`Num Lock`,`N`,`N`,`U+004e`
@@ -666,8 +672,8 @@
 `U+25a6`,355,369,`squarewithorthogonalcrosshatchfill`,`boxfilled`,`▦`,`[`,`U+005b`
 `U+29F0`,355,369,`not defined by unicode`,`yx`,`⧰`,`yx`,`U+0059`
 `U+29F1`,146,150,`not defined by unicode`,`fg`,`⧱`,`fg`,`U+0046`
-`U+2dea`,424,426,`not defined by unicode`,`Sub pi`,`π`,`π`,`U+03a0`
-`U+2deb`,424,426,`not defined by unicode`,`Sup pi`,`π`,`π`,`U+03a0`
-`U+2dec`,424,426,`not defined by unicode`,`pi r`,`π`,`π`,`U+03a0`
-`U+001D`,1,9,`INFORMATION SEPARATOR THREE`,,,,`U+0020`
+`U+2c64`,424,426,`not defined by unicode`,`Sub pi`,`π`,`π`,`U+03a0`
+`U+2c65`,424,426,`not defined by unicode`,`Sup pi`,`π`,`π`,`U+03a0`
+`U+2c66`,424,426,`not defined by unicode`,`pi r`,`π`,`π`,`U+03a0`
+`U+2c6f`,593,593,`FOR ALL`,`For all`,`Ɐ`,`Ɐ`,`U+2c6f`
 ,,,,,,,

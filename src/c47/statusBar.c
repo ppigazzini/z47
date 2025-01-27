@@ -72,7 +72,7 @@ void drawBattery(uint16_t voltage);
 
     switch(currentAngularMode) {
       case amRadian: {
-        showGlyph(STD_SUP_r,              &standardFont, x, 0, vmNormal, true, false, false); // r  is 0+6 pixel wide
+        showGlyph(STD_SUP_BOLD_r,              &standardFont, x, 0, vmNormal, true, false, false); // r  is 0+6 pixel wide
         break;
       }
 
@@ -82,7 +82,7 @@ void drawBattery(uint16_t voltage);
       }
 
       case amGrad: {
-        showGlyph(STD_SUP_g,              &standardFont, x, 0, vmNormal, true, false, false); // g  is 0+6 pixel wide
+        showGlyph(STD_SUP_BOLD_g,              &standardFont, x, 0, vmNormal, true, false, false); // g  is 0+6 pixel wide
         break;
       }
 
@@ -642,7 +642,7 @@ void showFracMode(void) {
 //    showGlyph(getSystemFlag(FLAG_SSIZE8) ? STD_8 : STD_4, &standardFont, X_SSIZE_BEGIN, 0, vmNormal, true, false, false); // is 0+6+2 pixel wide
 
 // eRPN above, with the stack siza underneath it
-//    showGlyph(getSystemFlag(FLAG_ERPN)   ? STD_SUP_e : STD_SUP_r, &standardFont, X_SSIZE_BEGIN, -2, vmNormal, true, false, false); // is 0+6+2 pixel wide
+//    showGlyph(getSystemFlag(FLAG_ERPN)   ? STD_SUP_e : STD_SUP_BOLD_r, &standardFont, X_SSIZE_BEGIN, -2, vmNormal, true, false, false); // is 0+6+2 pixel wide
 //    showGlyph(getSystemFlag(FLAG_SSIZE8) ? STD_SUB_8 : STD_SUB_4, &standardFont, X_SSIZE_BEGIN, -2, vmNormal, true, false, true); // is 0+6+2 pixel wide
   }
 

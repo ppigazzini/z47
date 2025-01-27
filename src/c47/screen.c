@@ -879,17 +879,17 @@ uint16_t str2dec(char* ch) {
 return res;
 }
 
-bool_t ratherUseEnlargement(uint16_t charCode) {
-  return ((bool_t) (
-    ((charCode >= str2dec(STD_SUP_f)) && (charCode <= str2dec(STD_SUP_h))) ||
-    ( charCode == str2dec(STD_SUP_r)) ||
-    ( charCode == str2dec(STD_SUP_x)) ||
-
-    ((charCode >= str2dec(STD_SUB_f)) && (charCode <= str2dec(STD_SUB_h))) ||
-    ( charCode == str2dec(STD_SUB_r)) ||
-    ( charCode == str2dec(STD_SUB_t))
-    ));
-}
+//bool_t ratherUseEnlargement(uint16_t charCode) {
+//  return ((bool_t) (
+//    ((charCode >= str2dec(STD_SUP_BOLD_f)) && (charCode <= str2dec(STD_SUP_BOLD_h))) ||
+//    ( charCode == str2dec(STD_SUP_BOLD_r)) ||
+//    ( charCode == str2dec(STD_SUP_BOLD_x)) ||
+//
+//    ((charCode >= str2dec(STD_SUB_f)) && (charCode <= str2dec(STD_SUB_h))) ||
+//    ( charCode == str2dec(STD_SUB_r)) ||
+//    ( charCode == str2dec(STD_SUB_t))
+//    ));
+//}
 
   uint32_t showGlyphCode(uint16_t charCode, const font_t *font, uint32_t x, uint32_t y, videoMode_t videoMode, bool_t showLeadingCols, bool_t showEndingCols, bool_t noPreClear) {
     uint32_t col, row, xGlyph, endingCols;
@@ -906,7 +906,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
       if(maxiC == 1 && font == &numericFont) {                //JM allow enlargements
         glyphId = findGlyph(font, charCode);
         //printf("DDDDDD %d %d --- %u\n",glyphId, charCode, ratherUseEnlargement(charCode));
-        if(glyphId < 0 || ratherUseEnlargement(charCode)) {           //JM if there is not a large glyph, enlarge the small letter
+        if(glyphId < 0) {// || ratherUseEnlargement(charCode)) {           //JM if there is not a large glyph, enlarge the small letter
           enlarge = true;
           font = &standardFont;
         }
@@ -1726,41 +1726,41 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
     
     #if defined(DEBUG_SHOWNAME)
       if(item < LAST_ITEM && (item == ITM_XEQ || item != ITM_RCL)) {
-        stringAppend(functionName + stringByteLength(functionName), pickValidItemFromItems(item, PRIORITY_itemCatalogName));
-        stringAppend(functionName + stringByteLength(functionName), ":");
+        stringCopy(functionName + stringByteLength(functionName), pickValidItemFromItems(item, PRIORITY_itemCatalogName));
+        stringCopy(functionName + stringByteLength(functionName), ":");
       }
       if(item < LAST_ITEM && (item == ITM_RCL || item != ITM_XEQ)) {
-        stringAppend(functionName + stringByteLength(functionName), pickValidItemFromItems(item, PRIORITY_itemSoftmenuName));
-        stringAppend(functionName + stringByteLength(functionName), ":");
+        stringCopy(functionName + stringByteLength(functionName), pickValidItemFromItems(item, PRIORITY_itemSoftmenuName));
+        stringCopy(functionName + stringByteLength(functionName), ":");
       }
       if(arg != NULL) {
-        stringAppend(functionName + stringByteLength(functionName), arg);
-        stringAppend(functionName + stringByteLength(functionName), ":");
+        stringCopy(functionName + stringByteLength(functionName), arg);
+        stringCopy(functionName + stringByteLength(functionName), ":");
       }
       if(dynamicMenuItem > -1) {
-        stringAppend(functionName + stringByteLength(functionName),dynmenuGetLabel(dynamicMenuItem));
+        stringCopy(functionName + stringByteLength(functionName), dynmenuGetLabel(dynamicMenuItem));
       }
 
     #else //DEBUG_SHOWNAME
       if((item == ITM_XEQ) || (item == ITM_RCL)) {
-        if(arg != NULL) stringAppend(functionName,arg);
+        if(arg != NULL) stringCopy(functionName, arg);
         showFunctionNameArg = (char *)arg;                          // Needed when executing a program or a variable from a long pressed key
         if(functionName[0]==0) {
-          stringAppend(functionName,indexOfItems[abs(item)].itemCatalogName);
+          stringCopy(functionName, indexOfItems[abs(item)].itemCatalogName);
         }
       }
       else if(item == -MNU_DYNAMIC) {
-        if(arg != NULL) stringAppend(functionName,arg);
+        if(arg != NULL) stringCopy(functionName, arg);
         showFunctionNameArg = (char *)arg;                        // Needed when executing a user menu from a long pressed key
       }
       else if(item >= FIRST_CONSTANT && item <= LAST_CONSTANT) {
-        stringAppend(functionName,pickValidItemFromItems(item, PRIORITY_itemSoftmenuName));
+        stringCopy(functionName, pickValidItemFromItems(item, PRIORITY_itemSoftmenuName));
       }
       else if(item < LAST_ITEM && item != MNU_DYNAMIC) {
-        stringAppend(functionName,pickValidItemFromItems(item, PRIORITY_itemCatalogName));
+        stringCopy(functionName, pickValidItemFromItems(item, PRIORITY_itemCatalogName));
       }
       else if(dynamicMenuItem > -1) {
-        stringAppend(functionName,dynmenuGetLabel(dynamicMenuItem));
+        stringCopy(functionName, dynmenuGetLabel(dynamicMenuItem));
       }
     #endif //DEBUG_SHOWNAME
       //printf("---|%s|---\n", functionName);
@@ -1780,10 +1780,10 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
       bool_t overLapPossible = (calcMode == CM_PEM);
       padding[0] = 0;
       if(overLapPossible) {
-        stringAppend(padding," ");
+        stringCopy(padding, " ");
       }
-      stringAppend(padding + stringByteLength(padding),functionName);
-      stringAppend(padding + stringByteLength(padding),"     ");
+      stringCopy(padding + stringByteLength(padding), functionName);
+      stringCopy(padding + stringByteLength(padding), "     ");
       if(calcMode == CM_ASSIGN || ((PROBMENU || stringWidth(padding, &standardFont, true, true) + 1 /*JM 20*/ + lineTWidth > SCREEN_WIDTH) && calcMode != CM_PEM)) {
         clearRegisterLine(REGISTER_T, true, false);
       }
@@ -1791,7 +1791,7 @@ bool_t ratherUseEnlargement(uint16_t charCode) {
       clearShiftState();
       int xx = showString(padding, &standardFont, 18, Y_POSITION_OF_REGISTER_T_LINE + 6, vmNormal, true, true);      //JM
       if(overLapPossible) {
-        plotrect(18,Y_POSITION_OF_REGISTER_T_LINE + 6,xx,Y_POSITION_OF_REGISTER_T_LINE + 6 + STANDARD_FONT_HEIGHT - 1);
+        plotrect(18, Y_POSITION_OF_REGISTER_T_LINE + 6, xx, Y_POSITION_OF_REGISTER_T_LINE + 6 + STANDARD_FONT_HEIGHT - 1);
       }
     }
     if(temporaryInformation != TI_NO_INFO) {
@@ -2316,7 +2316,7 @@ void createSubstrings(uint8_t number) {
     if(regist == REGISTER_X) {
       sprintf(prefix, "%03" PRId32 " data point", w);
       if(w > 1) {
-        stringAppend(prefix + stringByteLength(prefix), "s");
+        stringCopy(prefix + stringByteLength(prefix), "s");
       }
       *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
       lcd_fill_rect(0, Y_POSITION_OF_REGISTER_Y_LINE - 2, SCREEN_WIDTH, 1, LCD_EMPTY_VALUE);

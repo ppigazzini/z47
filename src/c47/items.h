@@ -1033,7 +1033,7 @@
 #define ITM_Sfdx_VAR                1002
 #define ITM_SUP_PLUS                1003
 #define ITM_SUP_MINUS               1004
-#define ITM_SUP_MINUS_1             1005
+#define ITM_1005                    1005
 #define ITM_SUP_INFINITY            1006
 #define ITM_SUP_ASTERISK            1007
 #define ITM_SUP_0                   1008
@@ -1172,14 +1172,14 @@
 #define ITM_SUB_z                   1141
 #define ITM_SUB_pi                  1142
 #define ITM_SUP_pi                  1143
-#define ITM_LEFT_DARROW             1144
-#define ITM_UP_DARROW               1145
-#define ITM_RIGHT_DARROW            1146
-#define ITM_DOWN_DARROW             1147
+#define ITM_1144                    1144
+#define ITM_1145                    1145
+#define ITM_1146                    1146
+#define ITM_1147                    1147
 #define ITM_ALTERN_CURRENT          1148
 #define ITM_ANGLE                   1149
 #define ITM_BATTERYHALF             1150
-#define ITM_BST_char                1151
+#define ITM_1151                    1151
 #define ITM_CYCLIC                  1152
 #define ITM_DIRECT_CURRENT          1153
 #define ITM_DOWN_DASHARROW          1154
@@ -1190,11 +1190,11 @@
 #define ITM_op_i_char               1159
 #define ITM_op_j_char               1160
 #define ITM_POLAR_char              1161
-#define ITM_PRODUCT_char            1162
+#define ITM_1162                    1162
 #define ITM_RIGHT_DASHARROW         1163
 #define ITM_RIGHT_DOUBLE_ARROW      1164
 #define ITM_RIGHT_TACK              1165
-#define ITM_SST_char                1166
+#define ITM_1166                    1166
 #define ITM_SUBSET_OF               1167
 #define ITM_SUM_char                1168
 #define ITM_UP_DASHARROW            1169
@@ -1981,7 +1981,7 @@
 #define ITM_T_END                   1930
 #define ITM_STKTO3x1                1931
 #define ITM_XPARSE                  1932
-#define ITM_1933                    1933
+#define ITM_WRXPALL                 1933
 #define ITM_RNG                     1934
 #define ITM_FLGSV                   1935
 #define ITM_CPXI                    1936
@@ -2029,10 +2029,10 @@
 #define ITM_1978                    1978
 #define ITM_1979                    1979
 #define ITM_1980                    1980
-#define ITM_1981                    1981
-#define ITM_1982                    1982
-#define ITM_1983                    1983
-#define ITM_1984                    1984
+#define ITM_toPOL_HP                1981
+#define ITM_toREC_HP                1982
+#define ITM_toPOL_CX                1983
+#define ITM_toREC_CX                1984
 #define ITM_BCD                     1985
 #define ITM_BCD9                    1986
 #define ITM_BCD10                   1987
@@ -2084,7 +2084,7 @@
 #define ITM_CLGRF                   2033
 #define ITM_MZOOMY                  2034
 #define ITM_PZOOMY                  2035
-#define MNU_TRG                     2036
+#define MNU_TRG_R47                 2036
 #define MNU_PREF                    2037
 #define ITM_SAFERESET               2038
 #define ITM_SH_LONGPRESS            2039
@@ -2481,7 +2481,53 @@
 #define ITM_XSWAP                   2419
 #define ITM_XEDIT                   2420
 
-#define LAST_ITEM                   2421
+//more bufferized
+#define ITM_SUP_BOLD_T              2421
+#define ITM_SUP_BOLD_f              2422
+#define ITM_SUP_BOLD_g              2423
+#define ITM_SUP_BOLD_h              2424
+#define ITM_SUP_BOLD_r              2425
+#define ITM_SUP_BOLD_x              2426
+#define ITM_HOLLOW_UP_ARROW         2427
+#define ITM_HOLLOW_DOWN_ARROW       2428
+#define ITM_SPHERICAL_ANGLE         2429
+#define ITM_TRIPLE_INTEGRAL         2430
+#define ITM_VOLUME_INTEGRAL         2431
+#define ITM_LEFT_BLOCKARROW         2432
+#define ITM_UP_BLOCKARROW           2433
+#define ITM_RIGHT_BLOCKARROW        2434
+#define ITM_DOWN_BLOCKARROW         2435
+#define ITM_POWER_SYMBOL            2436
+#define ITM_2437                    2437
+#define ITM_2438                    2438
+#define ITM_2439                    2439
+#define ITM_2440                    2440
+#define ITM_2441                    2441
+#define ITM_2442                    2442
+#define ITM_2443                    2443
+#define ITM_2444                    2444
+#define ITM_2445                    2445
+#define ITM_2446                    2446
+#define ITM_2447                    2447
+#define ITM_2448                    2448
+#define ITM_2449                    2449
+#define ITM_2450                    2450
+#define ITM_2451                    2451
+#define ITM_2452                    2452
+#define ITM_2453                    2453
+#define ITM_2454                    2454
+#define ITM_2455                    2455
+#define ITM_2456                    2456
+#define ITM_2457                    2457
+#define ITM_2458                    2458
+#define ITM_2459                    2459
+#define ITM_2460                    2460
+#define ITM_2461                    2461
+#define ITM_2462                    2462
+#define ITM_2463                    2463
+//continue after this block
+
+#define LAST_ITEM                   2464
 
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL

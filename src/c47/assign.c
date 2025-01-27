@@ -246,7 +246,7 @@ TO_QSPI const calcKey_t kbd_std_D47[37] = {
   {36,                  ITM_SHIFTg,           ITM_NULL,             ITM_NULL,             ITM_SHIFTg,           ITM_SHIFTg,           ITM_NULL,             ITM_NULL,             ITM_SHIFTg          },
   {41,                  ITM_ENTER,            KEY_COMPLEX,          -MNU_CPX,             ITM_ENTER,            ITM_ENTER,            ITM_XEDIT,            ITM_CR,               ITM_ENTER           },
   {42,                  ITM_XexY,             ITM_LASTX,            -MNU_STK,             ITM_ex,               ITM_K,                ITM_k,                ITM_ex,               ITM_REG_K           },
-  {43,                  ITM_CHS,              ITM_DRG,              -MNU_TRG,             ITM_PLUS_MINUS,       ITM_L,                ITM_l,                ITM_PLUS_MINUS,       ITM_REG_L           },
+  {43,                  ITM_CHS,              ITM_DRG,              -MNU_TRG_R47,         ITM_PLUS_MINUS,       ITM_L,                ITM_l,                ITM_PLUS_MINUS,       ITM_REG_L           },
   {44,                  ITM_EXPONENT,         -MNU_EXP,             -MNU_DISP,            ITM_NULL,             ITM_M,                ITM_m,                ITM_EEXCHR,           ITM_NULL            },
   {45,                  ITM_BACKSPACE,        ITM_UNDO,             -MNU_CLR,             ITM_BACKSPACE,        ITM_BACKSPACE,        ITM_CLA,              ITM_CLA,              ITM_BACKSPACE       },
   {51,                  ITM_XEQ,              ITM_AIM,              ITM_USERMODE,         ITM_NULL,             ITM_NULL,             ITM_NULL,             ITM_alpha,            ITM_alpha           },
@@ -381,7 +381,7 @@ TO_QSPI const calcKey_t kbd_std_R47f_g[37] = {
   {36,                  ITM_SHIFTg,           ITM_NULL,             ITM_NULL,             ITM_SHIFTg,           ITM_SHIFTg,           ITM_NULL,             ITM_NULL,             ITM_SHIFTg          },
   {41,                  ITM_ENTER,            KEY_COMPLEX,          -MNU_CPX,             ITM_ENTER,            ITM_ENTER,            ITM_XEDIT,            ITM_CR,               ITM_ENTER           },
   {42,                  ITM_XexY,             ITM_LASTX,            -MNU_STK,             ITM_ex,               ITM_K,                ITM_k,                ITM_ex,               ITM_REG_K           },
-  {43,                  ITM_CHS,              -MNU_DISP,            -MNU_TRG,             ITM_PLUS_MINUS,       ITM_L,                ITM_l,                ITM_PLUS_MINUS,       ITM_REG_L           },
+  {43,                  ITM_CHS,              -MNU_DISP,            -MNU_TRG_R47,         ITM_PLUS_MINUS,       ITM_L,                ITM_l,                ITM_PLUS_MINUS,       ITM_REG_L           },
   {44,                  ITM_EXPONENT,         -MNU_PREFIX,          -MNU_EXP,             ITM_NULL,             ITM_M,                ITM_m,                ITM_EEXCHR,           ITM_REG_M           },
   {45,                  ITM_BACKSPACE,        ITM_UNDO,             -MNU_CLR,             ITM_BACKSPACE,        ITM_BACKSPACE,        ITM_CLA,              ITM_CLA,              ITM_BACKSPACE       },
   {51,                  ITM_XEQ,              ITM_AIM,              ITM_GTO,              ITM_NULL,             ITM_UNDERSCORE,       ITM_omega,            ITM_alpha,            ITM_alpha           },
@@ -426,7 +426,7 @@ TO_QSPI const calcKey_t kbd_std_R47bk_fg[37] = {
   {36,                  KEY_fg,               KEY_fg,               KEY_fg,               KEY_fg,               KEY_fg,               KEY_fg,               KEY_fg,               KEY_fg              },
   {41,                  ITM_ENTER,            KEY_COMPLEX,          -MNU_CPX,             ITM_ENTER,            ITM_ENTER,            ITM_XEDIT,            ITM_CR,               ITM_ENTER           },
   {42,                  ITM_XexY,             ITM_LASTX,            -MNU_STK,             ITM_ex,               ITM_K,                ITM_k,                ITM_ex,               ITM_REG_K           },
-  {43,                  ITM_CHS,              -MNU_DISP,            -MNU_TRG,             ITM_PLUS_MINUS,       ITM_L,                ITM_l,                ITM_PLUS_MINUS,       ITM_REG_L           },
+  {43,                  ITM_CHS,              -MNU_DISP,            -MNU_TRG_R47,         ITM_PLUS_MINUS,       ITM_L,                ITM_l,                ITM_PLUS_MINUS,       ITM_REG_L           },
   {44,                  ITM_EXPONENT,         -MNU_PREFIX,          -MNU_EXP,             ITM_NULL,             ITM_M,                ITM_m,                ITM_EEXCHR,           ITM_REG_M           },
   {45,                  ITM_BACKSPACE,        ITM_UNDO,             -MNU_CLR,             ITM_BACKSPACE,        ITM_BACKSPACE,        ITM_CLA,              ITM_CLA,              ITM_BACKSPACE       },
   {51,                  ITM_XEQ,              ITM_AIM,              ITM_GTO,              ITM_NULL,             ITM_UNDERSCORE,       ITM_omega,            ITM_alpha,            ITM_alpha           },
@@ -473,7 +473,7 @@ TO_QSPI const calcKey_t kbd_std_R47fg_bk[37] = {
   {36,                  ITM_NULL,             ITM_NULL,             ITM_NULL,             ITM_NULL,             ITM_NULL,             ITM_NULL,             ITM_NULL,             ITM_NULL            },
   {41,                  ITM_ENTER,            KEY_COMPLEX,          -MNU_CPX,             ITM_ENTER,            ITM_ENTER,            ITM_XEDIT,            ITM_CR,               ITM_ENTER           },
   {42,                  ITM_XexY,             ITM_LASTX,            -MNU_STK,             ITM_ex,               ITM_K,                ITM_k,                ITM_ex,               ITM_REG_K           },
-  {43,                  ITM_CHS,              -MNU_DISP,            -MNU_TRG,             ITM_PLUS_MINUS,       ITM_L,                ITM_l,                ITM_PLUS_MINUS,       ITM_REG_L           },
+  {43,                  ITM_CHS,              -MNU_DISP,            -MNU_TRG_R47,         ITM_PLUS_MINUS,       ITM_L,                ITM_l,                ITM_PLUS_MINUS,       ITM_REG_L           },
   {44,                  ITM_EXPONENT,         -MNU_PREFIX,          -MNU_EXP,             ITM_NULL,             ITM_M,                ITM_m,                ITM_EEXCHR,           ITM_REG_M           },
   {45,                  ITM_BACKSPACE,        ITM_UNDO,             -MNU_CLR,             ITM_BACKSPACE,        ITM_BACKSPACE,        ITM_CLA,              ITM_CLA,              ITM_BACKSPACE       },
   {51,                  ITM_XEQ,              ITM_AIM,              ITM_GTO,              ITM_NULL,             ITM_UNDERSCORE,       ITM_omega,            ITM_alpha,            ITM_alpha           },
@@ -520,7 +520,7 @@ TO_QSPI const calcKey_t kbd_std_R47fg_g[37] = {
   {36,                  ITM_SHIFTg,           ITM_NULL,             ITM_NULL,             ITM_SHIFTg,           ITM_SHIFTg,           ITM_NULL,             ITM_NULL,             ITM_SHIFTg          },
   {41,                  ITM_ENTER,            KEY_COMPLEX,          -MNU_CPX,             ITM_ENTER,            ITM_ENTER,            ITM_XEDIT,            ITM_CR,               ITM_ENTER           },
   {42,                  ITM_XexY,             ITM_LASTX,            -MNU_STK,             ITM_ex,               ITM_K,                ITM_k,                ITM_ex,               ITM_REG_K           },
-  {43,                  ITM_CHS,              -MNU_DISP,            -MNU_TRG,             ITM_PLUS_MINUS,       ITM_L,                ITM_l,                ITM_PLUS_MINUS,       ITM_REG_L           },
+  {43,                  ITM_CHS,              -MNU_DISP,            -MNU_TRG_R47,         ITM_PLUS_MINUS,       ITM_L,                ITM_l,                ITM_PLUS_MINUS,       ITM_REG_L           },
   {44,                  ITM_EXPONENT,         -MNU_PREFIX,          -MNU_EXP,             ITM_NULL,             ITM_M,                ITM_m,                ITM_EEXCHR,           ITM_REG_M           },
   {45,                  ITM_BACKSPACE,        ITM_UNDO,             -MNU_CLR,             ITM_BACKSPACE,        ITM_BACKSPACE,        ITM_CLA,              ITM_CLA,              ITM_BACKSPACE       },
   {51,                  ITM_XEQ,              ITM_AIM,              ITM_GTO,              ITM_NULL,             ITM_UNDERSCORE,       ITM_omega,            ITM_alpha,            ITM_alpha           },
@@ -730,25 +730,25 @@ void fnClearUserMenus(uint16_t confirmation) {
 
 void updateAssignTamBuffer(void) {
   char *tbPtr = tamBuffer;
-  tbPtr = stringAppend(tbPtr, "ASSIGN ");
+  tbPtr = stringCopy(tbPtr, "ASSIGN ");
 
   if(itemToBeAssigned == 0) {
     if(tam.alpha) {
-      tbPtr = stringAppend(tbPtr, STD_LEFT_SINGLE_QUOTE);
+      tbPtr = stringCopy(tbPtr, STD_LEFT_SINGLE_QUOTE);
       if(aimBuffer[0] == 0) {
-        tbPtr = stringAppend(tbPtr, "_");
+        tbPtr = stringCopy(tbPtr, "_");
       }
       else {
-        tbPtr = stringAppend(tbPtr, aimBuffer);
-        tbPtr = stringAppend(tbPtr, STD_RIGHT_SINGLE_QUOTE);
+        tbPtr = stringCopy(tbPtr, aimBuffer);
+        tbPtr = stringCopy(tbPtr, STD_RIGHT_SINGLE_QUOTE);
       }
     }
     else {
-      tbPtr = stringAppend(tbPtr, "_");
+      tbPtr = stringCopy(tbPtr, "_");
     }
   }
   else if(itemToBeAssigned == ASSIGN_CLEAR) {
-    tbPtr = stringAppend(tbPtr, "NULL");
+    tbPtr = stringCopy(tbPtr, "NULL");
   }
   else if(itemToBeAssigned >= ASSIGN_LABELS) {
     uint8_t *lblPtr = labelList[itemToBeAssigned - ASSIGN_LABELS].labelPointer;
@@ -758,43 +758,43 @@ void updateAssignTamBuffer(void) {
     }
   }
   else if(itemToBeAssigned >= ASSIGN_RESERVED_VARIABLES) {
-    tbPtr = stringAppend(tbPtr, (char *)allReservedVariables[itemToBeAssigned - ASSIGN_RESERVED_VARIABLES].reservedVariableName + 1);
+    tbPtr = stringCopy(tbPtr, (char *)allReservedVariables[itemToBeAssigned - ASSIGN_RESERVED_VARIABLES].reservedVariableName + 1);
   }
   else if(itemToBeAssigned >= ASSIGN_NAMED_VARIABLES) {
-    tbPtr = stringAppend(tbPtr, (char *)allNamedVariables[itemToBeAssigned - ASSIGN_NAMED_VARIABLES].variableName + 1);
+    tbPtr = stringCopy(tbPtr, (char *)allNamedVariables[itemToBeAssigned - ASSIGN_NAMED_VARIABLES].variableName + 1);
   }
   else if(itemToBeAssigned <= ASSIGN_USER_MENU) {
-    tbPtr = stringAppend(tbPtr, userMenus[-(itemToBeAssigned - ASSIGN_USER_MENU)].menuName);
+    tbPtr = stringCopy(tbPtr, userMenus[-(itemToBeAssigned - ASSIGN_USER_MENU)].menuName);
   }
   else if(itemToBeAssigned < 0) {
-    tbPtr = stringAppend(tbPtr, indexOfItems[-itemToBeAssigned].itemCatalogName);
+    tbPtr = stringCopy(tbPtr, indexOfItems[-itemToBeAssigned].itemCatalogName);
   }
   else if(indexOfItems[itemToBeAssigned].itemCatalogName[0] == 0) {
-    tbPtr = stringAppend(tbPtr, indexOfItems[itemToBeAssigned].itemSoftmenuName);
+    tbPtr = stringCopy(tbPtr, indexOfItems[itemToBeAssigned].itemSoftmenuName);
   }
   else {
-    tbPtr = stringAppend(tbPtr, indexOfItems[itemToBeAssigned].itemCatalogName);
+    tbPtr = stringCopy(tbPtr, indexOfItems[itemToBeAssigned].itemCatalogName);
   }
 
-  tbPtr = stringAppend(tbPtr, " ");
+  tbPtr = stringCopy(tbPtr, " ");
   if(itemToBeAssigned != 0 && tam.alpha) {
-    tbPtr = stringAppend(tbPtr, STD_LEFT_SINGLE_QUOTE);
+    tbPtr = stringCopy(tbPtr, STD_LEFT_SINGLE_QUOTE);
     if(aimBuffer[0] == 0) {
-      tbPtr = stringAppend(tbPtr, "_");
+      tbPtr = stringCopy(tbPtr, "_");
     }
     else {
-      tbPtr = stringAppend(tbPtr, aimBuffer);
-      tbPtr = stringAppend(tbPtr, STD_RIGHT_SINGLE_QUOTE);
+      tbPtr = stringCopy(tbPtr, aimBuffer);
+      tbPtr = stringCopy(tbPtr, STD_RIGHT_SINGLE_QUOTE);
     }
   }
   else if(itemToBeAssigned != 0 && shiftF) {
-    tbPtr = stringAppend(tbPtr, STD_SUP_f STD_CURSOR);
+    tbPtr = stringCopy(tbPtr, STD_SUP_BOLD_f STD_CURSOR);
   }
   else if(itemToBeAssigned != 0 && shiftG) {
-    tbPtr = stringAppend(tbPtr, STD_SUP_g STD_CURSOR);
+    tbPtr = stringCopy(tbPtr, STD_SUP_BOLD_g STD_CURSOR);
   }
   else {
-    tbPtr = stringAppend(tbPtr, "_");
+    tbPtr = stringCopy(tbPtr, "_");
   }
 }
 
