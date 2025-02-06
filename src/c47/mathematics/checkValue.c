@@ -8,9 +8,9 @@
 #include "c47.h"
 
 TO_QSPI void (* const CheckValue[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])(uint16_t) = {
-// regX ==> 1               2               3               4                5                6                7               8               9               10
-//          Long integer    Real34          Complex34       Time             Date             String           Real34 matrix   Complex34 mat   Short integer   Config data
-            checkValueLonI, checkValueReal, checkValueCplx, checkValueError, checkValueError, checkValueError, checkValueRema, checkValueCxma, checkValueShoI, checkValueError
+// regX ==> 1               2               3               4                   5                  6                7               8               9               10
+//          Long integer    Real34          Complex34       Time                Date               String           Real34 matrix   Complex34 mat   Short integer   Config data
+            checkValueLonI, checkValueReal, checkValueCplx, checkValueDT,       checkValueDT,      checkValueError, checkValueRema, checkValueCxma, checkValueDT,  checkValueError
 };
 
 
@@ -47,6 +47,28 @@ void fnCheckValue(uint16_t mode) {
 }
 
 
+void fnCheckType(uint16_t unusedButMandatoryParameter) {
+  longInteger_t lgInt;
+  longIntegerInit(lgInt);
+  uInt32ToLongInteger(getRegisterDataType(REGISTER_X), lgInt);
+  setSystemFlag(FLAG_ASLIFT); // 5
+  liftStack();
+  convertLongIntegerToLongIntegerRegister(lgInt, REGISTER_X);
+  longIntegerFree(lgInt);
+  setSystemFlag(FLAG_ASLIFT);
+}
+
+
+void checkValueDT(uint16_t mode) {
+  if(   (mode == CHECK_VALUE_DATE && getRegisterDataType(REGISTER_X) == dtDate)
+     || (mode == CHECK_VALUE_TIME && getRegisterDataType(REGISTER_X) == dtTime)
+     || ((mode == CHECK_VALUE_SINT || mode == CHECK_VALUE_NUMBER) && getRegisterDataType(REGISTER_X) == dtShortInteger)) {
+    temporaryInformation = TI_TRUE;
+    return;
+  }
+  temporaryInformation = TI_FALSE;
+}
+
 
 void checkValueLonI(uint16_t mode) {
   longInteger_t val;
@@ -60,6 +82,10 @@ void checkValueLonI(uint16_t mode) {
       SET_TI_TRUE_FALSE(getSystemFlag(FLAG_SPCRES) && longIntegerIsZero(val) && longIntegerIsNegative(val));
     }
     longIntegerFree(val);
+    return;
+  }
+  if(mode == CHECK_VALUE_LINT || mode == CHECK_VALUE_NUMBER) {
+    temporaryInformation = TI_TRUE;
     return;
   }
   checkReal(mode);
@@ -211,6 +237,16 @@ void checkValueReal(uint16_t mode) {
       SET_TI_TRUE_FALSE(getSystemFlag(FLAG_SPCRES) && real34IsNaN(REGISTER_REAL34_DATA(REGISTER_X)));
       return;
     }
+    case CHECK_VALUE_ANGLE: {
+      if(getRegisterAngularMode(REGISTER_X) != amNone) {
+        temporaryInformation = TI_TRUE;
+      }
+      return;
+    }
+    case CHECK_VALUE_NUMBER: {
+      temporaryInformation = TI_TRUE;
+      return;
+    }
   }
   if(getRegisterAngularMode(REGISTER_X) == amNone) {
     switch(mode) {
@@ -266,6 +302,10 @@ void checkValueCplx(uint16_t mode) {
     }
     case CHECK_VALUE_MATRIX: {
       temporaryInformation = TI_FALSE;
+      return;
+    }
+    case CHECK_VALUE_NUMBER: {
+      temporaryInformation = TI_TRUE;
       return;
     }
     default: {
