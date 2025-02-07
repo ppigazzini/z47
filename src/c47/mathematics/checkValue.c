@@ -47,15 +47,70 @@ void fnCheckValue(uint16_t mode) {
 }
 
 
+
+
+// LongInteger       0
+// Real              1.0 (1.0 for no angle; 1.1-1.5 for angle)
+// Complex           2.0 (2.0 for RECT, 2.1-2.5 for POLAR)
+// Time              3
+// Date              4
+// String            5
+// RealMatrix        6
+// ComplexMatrix     7.0 (7.0 for RECT, 7.1-7.5 for POLAR)
+// ShortInteger      8.bb (8.02 for binary, 8.16 for Hex)
+// Config            9
+//   
+//   
+// For Real, Complex and ComplexMatrix, if it is an angle, add the following:
+// No angle or RECT   0
+// MultPi      0.1
+// DMS         0.2
+// Degree      0.3
+// Grad        0.4
+// Radian      0.5
+
 void fnCheckType(uint16_t unusedButMandatoryParameter) {
-  longInteger_t lgInt;
-  longIntegerInit(lgInt);
-  uInt32ToLongInteger(getRegisterDataType(REGISTER_X), lgInt);
-  setSystemFlag(FLAG_ASLIFT); // 5
-  liftStack();
-  convertLongIntegerToLongIntegerRegister(lgInt, REGISTER_X);
-  longIntegerFree(lgInt);
-  setSystemFlag(FLAG_ASLIFT);
+  int dtp = getRegisterDataType(REGISTER_X);
+  int dam = getRegisterAngularMode(REGISTER_X);
+  if(dtp == dtComplex34Matrix && !(dam & 0x10)) {
+    dam = amNone; //pre-set dam, to cause no angle display if RECT
+  }
+  switch(getRegisterDataType(REGISTER_X)) {
+    case dtLongInteger    :
+    case dtTime           :
+    case dtDate           :
+    case dtString         :
+    case dtReal34Matrix   :
+    case dtConfig         : {
+      longInteger_t lgInt;
+      longIntegerInit(lgInt);
+      uInt32ToLongInteger(dtp, lgInt);
+      setSystemFlag(FLAG_ASLIFT); // 5
+      liftStack();
+      convertLongIntegerToLongIntegerRegister(lgInt, REGISTER_X);
+      longIntegerFree(lgInt);
+      setSystemFlag(FLAG_ASLIFT);
+      break;
+    }
+    case dtShortInteger   :
+    case dtComplex34Matrix:
+    case dtReal34         :
+    case dtComplex34      : {
+      real34_t rr;
+      int exportValue = (dtp == dtShortInteger) ? dtp*100 + (dam & 0x1F) : dtp*10 + 5 - (dam & 0x07); // BASE 8.16 for HEX; Angle: 1.3 for Degrees
+      uInt32ToReal34(exportValue,&rr);
+      setSystemFlag(FLAG_ASLIFT); // 5
+      liftStack();
+      reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+      if(dtp == dtShortInteger) {
+        real34Multiply(&rr,const34_1on10,&rr);
+      }
+      real34Multiply(&rr,const34_1on10,REGISTER_REAL34_DATA(REGISTER_X));
+      setSystemFlag(FLAG_ASLIFT);
+      break;
+    }
+    default:; //impossible to not be one of the defines
+  }
 }
 
 
