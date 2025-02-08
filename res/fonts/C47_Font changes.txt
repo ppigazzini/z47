@@ -241,7 +241,7 @@ Approximate time for the following edits:
     Added $201D quotedblright (copied and edited)
     Added $220F naryproduct. Drew fresh.
 
-Both fonts: 
+Both fonts:
     Added $2211 narysummation. Drew it fresh.
 
 STD only:
@@ -354,7 +354,7 @@ Added QRNZ to NUM font
 
     Martin merged above two commits from 2025-01-11 into the Std font.
 
-    Changed ttf2RasterFonts.c to ignore all code points below 32. 
+    Changed ttf2RasterFonts.c to ignore all code points below 32.
       This improves the compatibility problem of different softwares saving the the initial empty and control glyphs differently.
 
     Add Arrows to NUM fonts
@@ -371,7 +371,29 @@ Added QRNZ to NUM font
 
     Modify the shapes of the standard font arrows and block arrows
 
-2025-01-13 Use FontCreator to process all font files. 
+2025-01-13 Use FontCreator to process all font files.
     Removed the FontCreator license text from the ttf files, as FontCreator 15 now does not prohibit commercial use (already from 2022) when using the latest version. It could be possible that the license condition change from High-Logic could be retrospective, but is not necessary as Jaco bought Version 15 Home.
     Copyright message removed. Additional glyphs are 'Joined Union' to be similar as the FontForge effort.
-    FontCreator 15 
+    FontCreator 15
+
+2025-01-23 Moved 5 glyphs
+    U+0100 moved to U+017F Ā
+    U+2200 moved to U+2C6F ∀
+    U+2dea moved to U+2c64 sub π
+    U+2deb moved to U+2c65 sup π
+    U+2dec moved to U+2c66 sup πr
+
+2025-01-25 Moved U+033A to U+23B5
+
+2025-01-27 In numeric font:
+              - removed U+2072 ^-1
+              - moved _π, ^π and ^πr
+              - changed vertical alignment for some
+                sub and super script glyphs
+           In standard font:
+              - removed U+2072 ^-1
+              - changed vertical alignment for some
+                sub and super script glyphs
+           In tiny font:
+              - removed U+2072 ^-1
+

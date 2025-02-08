@@ -184,8 +184,8 @@ void fnPExport(void) {
 
     if(firstDisplayedLocalStepNumber == 0) {
       sprintf(tmpString, "0000: { Prgm #%d: %" PRIu32 " bytes / %" PRIu16 " step%s }", currentProgramNumber, _getProgramSize(),                                                                               numberOfSteps, numberOfSteps == 1 ? "" : "s");
-      stringAppend(tmpString + stringByteLength(tmpString), " \\par");
-      stringAppend(tmpString + stringByteLength(tmpString), "\n");
+      stringCopy(tmpString + stringByteLength(tmpString), " \\par");
+      stringCopy(tmpString + stringByteLength(tmpString), "\n");
       ioFileWrite(tmpString, strlen(tmpString));
       firstLine = 1;
     }
@@ -227,8 +227,8 @@ void fnPExport(void) {
       //additional indents prepended
       if(indent > 0) {
         uint16_t ii = 0;
-        stringAppend(asciiString, tmpString);
-        stringAppend(tmpString + indent, asciiString);
+        stringCopy(asciiString, tmpString);
+        stringCopy(tmpString + indent, asciiString);
         while(ii < indent) {
           tmpString[ii++]= ' ';
         }
@@ -240,18 +240,18 @@ void fnPExport(void) {
 
       //Add extra blank line before LBL
       if(newLine){
-        stringAppend(asciiString + stringByteLength(asciiString), "\\par\n");
+        stringCopy(asciiString + stringByteLength(asciiString), "\\par\n");
       }
 
       //Line Number and base indent ==> asciiString
       sprintf(tmpp, "%04d:  " , firstDisplayedLocalStepNumber + line - lineOffset + lineOffsetTam);
-      stringAppend(asciiString + stringByteLength(asciiString), tmpp);
+      stringCopy(asciiString + stringByteLength(asciiString), tmpp);
 
       //Add instruction
-      stringAppend(asciiString + stringByteLength(asciiString), tmpString);        //add number + instruction: 0000:  1/X
+      stringCopy(asciiString + stringByteLength(asciiString), tmpString);        //add number + instruction: 0000:  1/X
 
       //Add end line
-      stringAppend(asciiString + stringByteLength(asciiString), "\\par\n");
+      stringCopy(asciiString + stringByteLength(asciiString), "\\par\n");
 
       //Convert unprintable characters
       stringToRTF(asciiString, tmpString);
@@ -298,20 +298,20 @@ void _fnExportProgram(ioFilePath_t path) {
     }
 
 
-    //stringAppend(tmpString, "{\\rtf1\\ansi\\ansicpg1252\\deff0\\nouicompat{\\fonttbl{\\f0\\fnil\\fcharset0 C47__StandardFont;}}{\\pard\\sl240\\sa0\\sa200\\slmult1\\f0\\fs24\\lang9\\f0\\loch\n");
-    stringAppend(tmpString, "{\\rtf1\\ansi\\ansicpg1252\\deff0\\nouicompat{\\fonttbl{\\f0\\fnil\\fcharset0 C47__StandardFont;}}{\\pard\\sl240\\slmult1\\f0\\fs24\\lang9\\f0\\loch\n");
+    //stringCopy(tmpString, "{\\rtf1\\ansi\\ansicpg1252\\deff0\\nouicompat{\\fonttbl{\\f0\\fnil\\fcharset0 C47__StandardFont;}}{\\pard\\sl240\\sa0\\sa200\\slmult1\\f0\\fs24\\lang9\\f0\\loch\n");
+    stringCopy(tmpString, "{\\rtf1\\ansi\\ansicpg1252\\deff0\\nouicompat{\\fonttbl{\\f0\\fnil\\fcharset0 C47__StandardFont;}}{\\pard\\sl240\\slmult1\\f0\\fs24\\lang9\\f0\\loch\n");
     ioFileWrite(tmpString, strlen(tmpString));
 
     // PROGRAM file version
     sprintf(tmpString, "C47 Program file export: Export format version %" PRIu32 ", C47 program version %" PRIu32 ".\n", (uint32_t)exportVersion, (uint32_t)programVersion);
     ioFileWrite(tmpString, strlen(tmpString));
 
-    stringAppend(tmpString, " \\par\n");
+    stringCopy(tmpString, " \\par\n");
     ioFileWrite(tmpString, strlen(tmpString));
 
     fnPExport();
 
-    stringAppend(tmpString, "}}\n");
+    stringCopy(tmpString, "}}\n");
     ioFileWrite(tmpString, strlen(tmpString));
 
     ioFileClose();

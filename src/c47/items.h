@@ -1033,7 +1033,7 @@
 #define ITM_Sfdx_VAR                1002
 #define ITM_SUP_PLUS                1003
 #define ITM_SUP_MINUS               1004
-#define ITM_SUP_MINUS_1             1005
+#define ITM_1005                    1005
 #define ITM_SUP_INFINITY            1006
 #define ITM_SUP_ASTERISK            1007
 #define ITM_SUP_0                   1008
