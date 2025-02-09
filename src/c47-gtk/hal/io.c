@@ -173,11 +173,11 @@ int _ioFileNameFromFilePath(ioFilePath_t path, char * filename) {
 
       char filename1[300];
       filename1[0] = 0;
-      stringAppend(filename1, PROGRAMS_DIR "/" ALLPROGRAMS_SUBDIR "/");
-      stringAppend(filename1 + stringByteLength(filename1), filename);
+      stringCopy(filename1, PROGRAMS_DIR "/" ALLPROGRAMS_SUBDIR "/");
+      stringCopy(filename1 + stringByteLength(filename1), filename);
       filename[0] = 0;
-      stringAppend(filename, filename1);
-      stringAppend(filename + stringByteLength(filename), (path == ioPathSaveAllPrograms) ? PRGM_EXT : (path == ioPathExportRTFAllPrograms) ? RTF_EXT : "ERR");
+      stringCopy(filename, filename1);
+      stringCopy(filename + stringByteLength(filename), (path == ioPathSaveAllPrograms) ? PRGM_EXT : (path == ioPathExportRTFAllPrograms) ? RTF_EXT : "ERR");
       //printf("#### Filename:%s\n",filename);
       return FILE_OK;
 
@@ -216,7 +216,7 @@ int ioFileOpen(ioFilePath_t path, ioFileMode_t mode) {
           break;
         }
       }
-      stringAppend(fileNameSelected, filename + jj);
+      stringCopy(fileNameSelected, filename + jj);
     }
     return FILE_OK;
   }

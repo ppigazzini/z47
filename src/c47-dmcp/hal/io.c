@@ -109,7 +109,7 @@ int ioFileOpen(ioFilePath_t path, ioFileMode_t mode) {
           break;
         }
       }
-      stringAppend(fileNameSelected, filename + jj);
+      stringCopy(fileNameSelected, filename + jj);
     }
     return FILE_OK;
   }

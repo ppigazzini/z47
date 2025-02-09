@@ -1033,7 +1033,7 @@
 #define ITM_Sfdx_VAR                1002
 #define ITM_SUP_PLUS                1003
 #define ITM_SUP_MINUS               1004
-#define ITM_SUP_MINUS_1             1005
+#define ITM_1005                    1005
 #define ITM_SUP_INFINITY            1006
 #define ITM_SUP_ASTERISK            1007
 #define ITM_SUP_0                   1008
@@ -2029,10 +2029,10 @@
 #define ITM_1978                    1978
 #define ITM_1979                    1979
 #define ITM_1980                    1980
-#define ITM_1981                    1981
-#define ITM_1982                    1982
-#define ITM_1983                    1983
-#define ITM_1984                    1984
+#define ITM_toPOL_HP                1981
+#define ITM_toREC_HP                1982
+#define ITM_toPOL_CX                1983
+#define ITM_toREC_CX                1984
 #define ITM_BCD                     1985
 #define ITM_BCD9                    1986
 #define ITM_BCD10                   1987
@@ -2084,7 +2084,7 @@
 #define ITM_CLGRF                   2033
 #define ITM_MZOOMY                  2034
 #define ITM_PZOOMY                  2035
-#define MNU_TRG                     2036
+#define MNU_TRG_R47                 2036
 #define MNU_PREF                    2037
 #define ITM_SAFERESET               2038
 #define ITM_SH_LONGPRESS            2039
