@@ -2790,6 +2790,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
 
           switch(currentMenu()) {
             case -MNU_GEV:
+            case -MNU_PARETO:
               r_i = STD_mu;                 register_i = REGISTER_M;
               r_j = STD_sigma;              register_j = REGISTER_S;
               r_k = STD_xi;                 register_k = REGISTER_Q;
