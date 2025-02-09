@@ -10,6 +10,9 @@
 static bool_t checkParamGEV(real_t *x, real_t *mu, real_t *sigma, real_t *xi, bool_t qf) {
   real_t t;
 
+  if(!saveLastX())
+    return false;
+
   if(!getRegisterAsReal(REGISTER_X, x)
       || !getRegisterAsReal(REGISTER_M, mu)
       || !getRegisterAsReal(REGISTER_S, sigma)
