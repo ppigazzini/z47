@@ -80,7 +80,7 @@ int file_selection_screen(const char * title, const char * base_dir, const char 
 
 
 int _ioFileNameFromFilePath(ioFilePath_t path, char * filename) {
-  static char base_dir[200];
+  static char base_dir[300]; // at least exceed the 256 limit
   char * current_dir;
   int ret = 0;
 
@@ -100,7 +100,7 @@ int _ioFileNameFromFilePath(ioFilePath_t path, char * filename) {
       return FILE_OK;
 
     case ioPathTestPgms:
-      strcpy(filename, BASEPATH "res/dmcp/testPgms.bin");
+      strcpy(filename, BASEPATH "res/testPgms/testPgms.bin");
       return FILE_OK;
 
     case ioPathBackup:
@@ -158,6 +158,29 @@ int _ioFileNameFromFilePath(ioFilePath_t path, char * filename) {
       g_free(current_dir);
       return ret;
 
+
+    case ioPathSaveAllPrograms:
+    case ioPathExportRTFAllPrograms:
+      if(create_dir("./" PROGRAMS_DIR) != 0) {
+        return FILE_ERROR;
+      }
+      if(create_dir("./" PROGRAMS_DIR "/" ALLPROGRAMS_SUBDIR) != 0) {
+        return FILE_ERROR;
+      }
+      // set current label name as default file name
+      stringToASCII(tmpStringLabelOrVariableName, filename);
+      //strcpy(filename, tmpStringLabelOrVariableName);
+
+      char filename1[300];
+      filename1[0] = 0;
+      stringCopy(filename1, PROGRAMS_DIR "/" ALLPROGRAMS_SUBDIR "/");
+      stringCopy(filename1 + stringByteLength(filename1), filename);
+      filename[0] = 0;
+      stringCopy(filename, filename1);
+      stringCopy(filename + stringByteLength(filename), (path == ioPathSaveAllPrograms) ? PRGM_EXT : (path == ioPathExportRTFAllPrograms) ? RTF_EXT : "ERR");
+      //printf("#### Filename:%s\n",filename);
+      return FILE_OK;
+
     default:
       return FILE_ERROR;
   }
@@ -193,7 +216,7 @@ int ioFileOpen(ioFilePath_t path, ioFileMode_t mode) {
           break;
         }
       }
-      stringAppend(fileNameSelected, filename + jj);
+      stringCopy(fileNameSelected, filename + jj);
     }
     return FILE_OK;
   }

@@ -151,7 +151,7 @@ typedef struct {
 } fInMim_t;
 
 
-TO_QSPI const fInMim_t MimFunctionsType0[] = 
+TO_QSPI const fInMim_t MimFunctionsType0[] =
   {   //function
     {ITM_EXPONENT },
     {ITM_PERIOD   },
@@ -170,7 +170,7 @@ TO_QSPI const fInMim_t MimFunctionsType0[] =
   };
 
 
-TO_QSPI const fInMim_t MimFunctionsType1[] = 
+TO_QSPI const fInMim_t MimFunctionsType1[] =
   {   //function
     {ITM_STO         },
     {ITM_STOADD      },
@@ -206,7 +206,7 @@ TO_QSPI const fInMim_t MimFunctionsType1[] =
     {ITM_RAD         }, // do lastErrorCode = ERROR_NONE; mimEnter(true); runFunction(item);
   };
 
-TO_QSPI const fInMim_t MimFunctionsType2[] = 
+TO_QSPI const fInMim_t MimFunctionsType2[] =
   {   //function
     {ITM_SQUARE      },
     {ITM_CUBE        },
@@ -730,18 +730,18 @@ typedef struct {
 
           char addChar[100];
           int16_t jj = 0;
-          addChar[0]=0;
+          addChar[0] = 0;
           if(addChar0[0] == 0) {
             if(item != ITM_EQUAL) {       //block the entry of "="
-              stringAppend(addChar,indexOfItems[item].itemSoftmenuName);
+              stringCopy(addChar, indexOfItems[item].itemSoftmenuName);
               if((indexOfItems[item].itemSoftmenuName[0]!=0) && (indexOfItems[item].status & EIM_STATUS) == EIM_ENABLED) {
-                stringAppend(addChar + stringByteLength(addChar), "()");
+                stringCopy(addChar + stringByteLength(addChar), "()");
                 jj = 1;
               }
             }
           }
           else {
-            stringAppend(addChar,addChar0);
+            stringCopy(addChar, addChar0);
             if(addChar0[0] == '^') {
               if(scrLock == NC_SUPERSCRIPT) {
                 scrLock = NC_NORMAL;
@@ -963,7 +963,7 @@ typedef struct {
                 mimRunFunction(item, indexOfItems[item].param);
                 break;
             }
-          }            
+          }
         }
       }
 
@@ -1781,7 +1781,7 @@ typedef struct {
                (tmplen == 8 && (isValidNumber(aimBuffer, "sdd.dddd")))                                //+11.1123
             || (tmplen == 7 && (isValidNumber(aimBuffer, "sd.dddd")))                                 // +1.1123  +1.1120
              )) {
-            stringAppend(aimBuffer + stringByteLength(aimBuffer), aimBuffer + tmplen - 2);            // ==> +11.110023
+            stringCopy(aimBuffer + stringByteLength(aimBuffer), aimBuffer + tmplen - 2);            // ==> +11.110023
             aimBuffer[tmplen - 2] = '0';
             aimBuffer[tmplen - 1] = '0';
             aimBuffer[tmplen + 2] = 0;
@@ -1791,6 +1791,7 @@ typedef struct {
           if(calcMode != CM_NIM && lastErrorCode == 0) {
             convertReal34RegisterToDateRegister(REGISTER_X, REGISTER_X, YYSystem);
             checkDateRange(REGISTER_REAL34_DATA(REGISTER_X));
+            temporaryInformation = TI_DAY_OF_WEEK;
 
             if(lastErrorCode == 0) {
               setSystemFlag(FLAG_ASLIFT);

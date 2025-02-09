@@ -480,9 +480,9 @@ char tmp[16];
 void add_digitglyph_to_tmp2(char* tmp2, int16_t xx) {
   tmp2[0] = 0;
 
-  stringAppend(tmp2, STD_SUB_0);
-  if(xx >= 1 && xx <= 16) {
-    stringAppend(tmp2, STD_BASE_1);
+  stringCopy(tmp2, STD_SUB_0);
+  if(1 <= xx && xx <= 16) {
+    stringCopy(tmp2, STD_BASE_1);
     tmp2[1] += (xx-1);
   }
 }
@@ -493,22 +493,22 @@ void use_base_glyphs(char* tmp1, int16_t xx) {              // Needs non-local v
   tmp1[0] = 0;
 
   if(xx <= 16) {
-    add_digitglyph_to_tmp2(tmp2, xx); stringAppend(tmp1 + stringByteLength(tmp1), tmp2);
+    add_digitglyph_to_tmp2(tmp2, xx); stringCopy(tmp1, tmp2);
   }
   else if(xx <= 99) {
-    add_digitglyph_to_tmp2(tmp2, xx / 10); stringAppend(tmp1 + stringByteLength(tmp1), tmp2);
-    add_digitglyph_to_tmp2(tmp2, xx % 10); stringAppend(tmp1 + stringByteLength(tmp1), tmp2);
+    add_digitglyph_to_tmp2(tmp2, xx / 10); stringCopy(tmp1,                          tmp2);
+    add_digitglyph_to_tmp2(tmp2, xx % 10); stringCopy(tmp1 + stringByteLength(tmp1), tmp2);
   }
   else if(xx <= 999) {
-    add_digitglyph_to_tmp2(tmp2,  xx / 100);         stringAppend(tmp1 + stringByteLength(tmp1), tmp2);
-    add_digitglyph_to_tmp2(tmp2, (xx % 100) / 10);   stringAppend(tmp1 + stringByteLength(tmp1), tmp2);
-    add_digitglyph_to_tmp2(tmp2, (xx % 100) % 10);   stringAppend(tmp1 + stringByteLength(tmp1), tmp2);
+    add_digitglyph_to_tmp2(tmp2,  xx / 100);         stringCopy(tmp1,                          tmp2);
+    add_digitglyph_to_tmp2(tmp2, (xx % 100) / 10);   stringCopy(tmp1 + stringByteLength(tmp1), tmp2);
+    add_digitglyph_to_tmp2(tmp2, (xx % 100) % 10);   stringCopy(tmp1 + stringByteLength(tmp1), tmp2);
   }
   else if(xx <= 9999) {
-    add_digitglyph_to_tmp2(tmp2,   xx / 1000);                stringAppend(tmp1 + stringByteLength(tmp1), tmp2);     //9876 > 9
-    add_digitglyph_to_tmp2(tmp2,  (xx % 1000) / 100);         stringAppend(tmp1 + stringByteLength(tmp1), tmp2);     //876  > 8
-    add_digitglyph_to_tmp2(tmp2, ((xx % 1000) % 100) / 10);   stringAppend(tmp1 + stringByteLength(tmp1), tmp2);     //76   > 7
-    add_digitglyph_to_tmp2(tmp2, ((xx % 1000) % 100) % 10);   stringAppend(tmp1 + stringByteLength(tmp1), tmp2);     //6
+    add_digitglyph_to_tmp2(tmp2,   xx / 1000);                stringCopy(tmp1,                          tmp2);     //9876 > 9
+    add_digitglyph_to_tmp2(tmp2,  (xx % 1000) / 100);         stringCopy(tmp1 + stringByteLength(tmp1), tmp2);     //876  > 8
+    add_digitglyph_to_tmp2(tmp2, ((xx % 1000) % 100) / 10);   stringCopy(tmp1 + stringByteLength(tmp1), tmp2);     //76   > 7
+    add_digitglyph_to_tmp2(tmp2, ((xx % 1000) % 100) % 10);   stringCopy(tmp1 + stringByteLength(tmp1), tmp2);     //6
   }
   else {
     snprintf(tmp1, 12, "%d", xx);
@@ -529,44 +529,44 @@ char *figlabel(const char *label, const char* showText, int16_t showValue) {    
   tmp[0] = 0;
 
   if(stringByteLength(label) <= 15) {
-    stringAppend(tmp, label);
+    stringCopy(tmp, label);
   }
 
   if(showValue != NOVAL && showValue != ITEM_NOT_CODED && showValue < 0) {
-    stringAppend(tmp + stringByteLength(tmp), STD_SUB_MINUS);
+    stringCopy(tmp + stringByteLength(tmp), STD_SUB_MINUS);
   }
 
   if(showValue != NOVAL && showValue != ITEM_NOT_CODED && stringByteLength(label) <= 8) {
     showValue = max(showValue, -showValue);
     use_base_glyphs(tmp1, showValue);
-    stringAppend(tmp + stringByteLength(tmp), tmp1);
+    stringCopy(tmp + stringByteLength(tmp), tmp1);
   }
 
   if(showText[0] != 0 && stringByteLength(tmp)+stringByteLength(showText) + 1 <= 15) {
-    //stringAppend(tmp + stringByteLength(tmp), showText);
+    //stringCopy(tmp + stringByteLength(tmp), showText);
     uint16_t ii = 0;
     while(showText[ii] != 0) {
       if(showText[ii]>='A' && showText[ii]<='Z') {
-        stringAppend(tmp + stringByteLength(tmp), STD_SUB_A);
+        stringCopy(tmp + stringByteLength(tmp), STD_SUB_A);
         tmp[stringByteLength(tmp)-1] += showText[ii]-'A';
       }
       else if(showText[ii]>='0' && showText[ii]<='9') {
-        stringAppend(tmp + stringByteLength(tmp), STD_SUB_0);
+        stringCopy(tmp + stringByteLength(tmp), STD_SUB_0);
         tmp[stringByteLength(tmp)-1] += showText[ii]-'0';
       }
       else {
         switch(showText[ii]) {
-          case '+':  stringAppend(tmp + stringByteLength(tmp), STD_SUB_PLUS);   break;
-          case ',':  stringAppend(tmp + stringByteLength(tmp), STD_COMMA);      break;
-          case '-':  stringAppend(tmp + stringByteLength(tmp), STD_SUB_MINUS);  break;
-          case '.':  stringAppend(tmp + stringByteLength(tmp), STD_PERIOD);     break;
-          case '_':  stringAppend(tmp + stringByteLength(tmp), STD_UNDERSCORE); break;
-          case ' ':  stringAppend(tmp + stringByteLength(tmp), STD_OPEN_BOX);   break;
-          case '\'': stringAppend(tmp + stringByteLength(tmp), STD_QUOTE);      break;
+          case '+':  stringCopy(tmp + stringByteLength(tmp), STD_SUB_PLUS);   break;
+          case ',':  stringCopy(tmp + stringByteLength(tmp), STD_COMMA);      break;
+          case '-':  stringCopy(tmp + stringByteLength(tmp), STD_SUB_MINUS);  break;
+          case '.':  stringCopy(tmp + stringByteLength(tmp), STD_PERIOD);     break;
+          case '_':  stringCopy(tmp + stringByteLength(tmp), STD_UNDERSCORE); break;
+          case ' ':  stringCopy(tmp + stringByteLength(tmp), STD_OPEN_BOX);   break;
+          case '\'': stringCopy(tmp + stringByteLength(tmp), STD_QUOTE);      break;
           default: {
             uint16_t tmpi = (uint16_t)((((uint8_t)(showText[ii]) & 0x00FF)) << 8) + (uint16_t)((uint8_t)(showText[ii+1]));
             if(0x0101 == tmpi) {
-              stringAppend(tmp + stringByteLength(tmp), STD_o_STROKE);
+              stringCopy(tmp + stringByteLength(tmp), STD_o_STROKE);
               ii++;
             }
 
@@ -579,17 +579,17 @@ char *figlabel(const char *label, const char* showText, int16_t showValue) {    
               tt[2] = 0;
 
               if(((uint16_t)(STD_SPACE_PUNCTUATION[0] & 0x00FF) << 8) + (STD_SPACE_PUNCTUATION[1] & 0x00FF) == tmpi) {
-                stringAppend(tmp + stringByteLength(tmp), STD_OPEN_BOX);
+                stringCopy(tmp + stringByteLength(tmp), STD_OPEN_BOX);
                 ii++;
               }
 
               else if(((uint16_t)(STD_SPACE_4_PER_EM[0] & 0x00FF) << 8) + (STD_SPACE_4_PER_EM[1] & 0x00FF) == tmpi) {
-                stringAppend(tmp + stringByteLength(tmp), STD_INV_BRIDGE);
+                stringCopy(tmp + stringByteLength(tmp), STD_INV_BRIDGE);
                 ii++;
               }
 
               else if(((uint16_t)(STD_SPACE_EM[0] & 0x00FF) << 8) + (STD_SPACE_EM[1] & 0x00FF) == tmpi) {
-                stringAppend(tmp + stringByteLength(tmp), STD_OPEN_BOX STD_OPEN_BOX);
+                stringCopy(tmp + stringByteLength(tmp), STD_OPEN_BOX STD_OPEN_BOX);
                 ii++;
               }
 
@@ -597,7 +597,7 @@ char *figlabel(const char *label, const char* showText, int16_t showValue) {    
                 //printf(">>>> Double byte in RB\n");
                 tt[0] = showText[ii++];
                 tt[1] = showText[ii];
-                stringAppend(tmp + stringByteLength(tmp), tt);
+                stringCopy(tmp + stringByteLength(tmp), tt);
               }
             }
 
@@ -606,7 +606,7 @@ char *figlabel(const char *label, const char* showText, int16_t showValue) {    
               char tt[2];
               tt[0] = showText[ii];
               tt[1] = 0;
-              stringAppend(tmp + stringByteLength(tmp), tt);
+              stringCopy(tmp + stringByteLength(tmp), tt);
             }
           }
         }
