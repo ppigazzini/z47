@@ -384,3 +384,16 @@ Added QRNZ to NUM font
     U+2dec moved to U+2c66 sup πr
 
 2025-01-25 Moved U+033A to U+23B5
+
+2025-01-27 In numeric font:
+              - removed U+2072 ^-1
+              - moved _π, ^π and ^πr
+              - changed vertical alignment for some
+                sub and super script glyphs
+           In standard font:
+              - removed U+2072 ^-1
+              - changed vertical alignment for some
+                sub and super script glyphs
+           In tiny font:
+              - removed U+2072 ^-1
+

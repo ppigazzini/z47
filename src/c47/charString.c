@@ -655,7 +655,6 @@ TO_QSPI const function_t2 indexOfStringsASCII[] = {
               {STD_omega,                     "omega"},
               {STD_ELLIPSIS,                  "…"},
               {STD_BINARY_ONE,                "1"},
-              {STD_SUP_MINUS_1,               "`-1"},
               {STD_SUB_E_OUTLINE,             "`E"},
               {STD_SUB_PLUS,                  "`+"},
               {STD_SUB_MINUS,                 "`-"},
