@@ -1798,6 +1798,7 @@ typedef struct {
           if(calcMode != CM_NIM && lastErrorCode == 0) {
             convertReal34RegisterToDateRegister(REGISTER_X, REGISTER_X, YYSystem);
             checkDateRange(REGISTER_REAL34_DATA(REGISTER_X));
+            temporaryInformation = TI_DAY_OF_WEEK;
 
             if(lastErrorCode == 0) {
               setSystemFlag(FLAG_ASLIFT);
