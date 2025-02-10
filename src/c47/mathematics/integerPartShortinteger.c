@@ -49,6 +49,7 @@ void fnSint(uint16_t unusedButMandatoryParameter) {
 
 void sintLonI(void) {
   convertLongIntegerRegisterToShortIntegerRegister(REGISTER_X, REGISTER_X);
+  lastIntegerBase = 10;
 }
 
 
@@ -68,6 +69,7 @@ void sintReal(void) {
   if(real34IsPositive(&tmpR)) {
     convertReal34ToLongIntegerRegister(REGISTER_REAL34_DATA(REGISTER_X), REGISTER_X, DEC_ROUND_DOWN);
     convertLongIntegerRegisterToShortIntegerRegister(REGISTER_X, REGISTER_X);
+    lastIntegerBase = 10;
   }
   else {
 

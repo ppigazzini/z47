@@ -750,7 +750,7 @@ int16_t executeOneStep(uint8_t *step) {
         case PTP_DISABLED: {
           displayCalcErrorMessage(ERROR_NON_PROGRAMMABLE_COMMAND, ERR_REGISTER_LINE, REGISTER_X);
           #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-            moreInfoOnError("In function decodeOneStep:", "non-programmable function", indexOfItems[op].itemCatalogName, "appeared in the program!");
+            moreInfoOnError("In function executeOneStep:", "non-programmable function", indexOfItems[op].itemCatalogName, "appeared in the program!");
           #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
           return 0;
         }
