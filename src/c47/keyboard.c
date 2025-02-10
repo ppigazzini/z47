@@ -1181,7 +1181,9 @@ int16_t lastItem = 0;
             }
           }
           else if((calcMode == CM_NORMAL || calcMode == CM_NIM) && (ITM_0<=item && item<=ITM_F) && (!catalog || catalog == CATALOG_MVAR)) {
-            if(lastIntegerBase == 0) lastIntegerBase = 16;
+            if(lastIntegerBase == 0) {
+              lastIntegerBase = 16;
+            }
             addItemToNimBuffer(item);
           }
           else if((calcMode == CM_NIM) && ((/*item==ITM_DRG ||*/ item == ITM_DMS2 || item == ITM_dotD) && !catalog)) {   //JM Remove DRG from here, there seems to be no need to send DRG to the buffer
