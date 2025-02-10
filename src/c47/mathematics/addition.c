@@ -540,7 +540,7 @@ void addStriCxma(void) {
  * \return void
  ***********************************************/
 void addStriShoI(void) {
-  shortIntegerToDisplayString(REGISTER_X, tmpString, false);
+  shortIntegerToDisplayString(REGISTER_X, tmpString, false, noBaseOverride);
   _addString(tmpString);
 }
 

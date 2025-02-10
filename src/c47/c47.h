@@ -256,6 +256,7 @@
   extern const font_t                   *fontForShortInteger;
   extern const font_t                   *cursorFont;
   extern const char                      hexadecimalDigits[17];
+  extern const char                      baseDigits[63];
   extern const char                      registerFlagLetters[27];
   extern any34Matrix_t                   openMatrixMIMPointer;
   extern uint16_t                        matrixIndex;

@@ -182,7 +182,7 @@ static void _setCaption(uint16_t keyNum) {
       }
 
       case dtShortInteger: {
-        shortIntegerToDisplayString(REGISTER_X, tmpString, false);
+        shortIntegerToDisplayString(REGISTER_X, tmpString, false, noBaseOverride);
         break;
       }
 

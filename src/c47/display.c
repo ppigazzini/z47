@@ -1699,7 +1699,23 @@ void angle34ToDisplayString2(const real34_t *angle34, uint8_t mode, char *displa
 }
 
 
-void shortIntegerToDisplayString(calcRegister_t regist, char *displayString, bool_t determineFont) {
+
+void addBaseNumber(char *displayString, int16_t base) {
+  if(base <= 16) {
+    strcat(displayString, STD_BASE_2);
+    displayString[strlen(displayString) - 1] += base - 2;
+  }
+  else {
+    strcat(displayString, STD_SUB_0);
+    displayString[strlen(displayString) - 1] += (base / 10);
+    strcat(displayString, STD_SUB_0);
+    displayString[strlen(displayString) - 1] += (base % 10);
+  }
+}
+
+
+
+void shortIntegerToDisplayString(calcRegister_t regist, char *displayString, bool_t determineFont, uint8_t baseOverride) {
   int16_t i, j, k, unit, gap, digit, bitsPerDigit, maxDigits, base;
   uint64_t orgnumber, number, sign;
 
@@ -1710,21 +1726,26 @@ str3[j] = displayString[j]; j++;
 str3[j] = displayString[j]; j++;
 str3[j] = displayString[j];
 
-  base    = getRegisterTag(regist);
   number  = *(REGISTER_SHORT_INTEGER_DATA(regist));
   orgnumber = number;
 
-  bool_t bcdFlag = false;   //JM BCDvv Base 17 is reserved for BCD
-  if(base == 17) {
+  bool_t bcdFlag = false;   //JM BCDvv Base 1 is reserved for BCD, 10
+  if(baseOverride == 1) {
     base = 10;
     bcdFlag = true;
-  }                         ////JMBCD ^^ Base 17 is reserved for BCD
-
-  if(base <= 1 || base >= 17) {
-    sprintf(errorMessage, commonBugScreenMessages[bugMsgValueFor], "shortIntegerToDisplayString", base, "base");
-    displayBugScreen(errorMessage);
-    base = 10;
+  }                         ////JMBCD ^^ Base 1 is reserved for BCD, 10
+  else if(baseOverride == 0) {
+    base = getRegisterTag(regist);
+    if(base <= 1 || base >= 17) {
+      sprintf(errorMessage, commonBugScreenMessages[bugMsgValueFor], "shortIntegerToDisplayString", base, "base");
+      displayBugScreen(errorMessage);
+      base = 10;
+    }
   }
+  else {
+    base = baseOverride;
+  }
+
 
   //number &= shortIntegerMask;
 
@@ -1793,17 +1814,20 @@ str3[j] = displayString[j];
     if(base == 2) {
       gap = 4;
     }
-    else if(base == 4 || base == 16) { //JMGAP vv
+    else if(base == 4 || base == 16) {
       gap = 2;
     }
     else if(base == 8) {
-      gap = 3;                         //  keeping base == 8 separate as opposed to just dropping it from base == 4 and base == 16  allows it to be changed back to 2 easily.
-    }                                  //JMGAP ^^
-    else if(base == 10 && bcdFlag) {   //JM BCD
+      gap = 3;
+    }
+    else if(base == 10 && bcdFlag) {
       gap = 1;
     }
-    else {
+    else if(base <= 16) {
       gap = 3;
+    }
+    else { //for large base display, use 0-9, a-z, A-Z.
+      gap = 4;
     }
   }
 
@@ -1818,7 +1842,7 @@ str3[j] = displayString[j];
     number /= base;
     if(unit != 0) {firstNonZero++;}
 
-    if(bcdFlag && base == 10) {                //JM BCDVV conversion - Note base 17 is code for BCD display od base 10
+    if(bcdFlag && base == 10) {                //JM BCDVV conversion - Note base 17 is code for BCD display of base 10
       if(bcdDisplaySign == BCD9c) {
         unit = 9 - unit;
       }
@@ -1837,19 +1861,6 @@ str3[j] = displayString[j];
           firstNonZero++;
         }
       }
-//      switch(unit){
-//        case 0:  displayString[i++] = '0'; displayString[i++] = '0'; displayString[i++] = '0'; displayString[i++] = '0'; break;
-//        case 1:  displayString[i++] = '1'; displayString[i++] = '0'; displayString[i++] = '0'; displayString[i++] = '0'; break;
-//        case 2:  displayString[i++] = '0'; displayString[i++] = '1'; displayString[i++] = '0'; displayString[i++] = '0'; break;
-//        case 3:  displayString[i++] = '1'; displayString[i++] = '1'; displayString[i++] = '0'; displayString[i++] = '0'; break;
-//        case 4:  displayString[i++] = '0'; displayString[i++] = '0'; displayString[i++] = '1'; displayString[i++] = '0'; break;
-//        case 5:  displayString[i++] = '1'; displayString[i++] = '0'; displayString[i++] = '1'; displayString[i++] = '0'; break;
-//        case 6:  displayString[i++] = '0'; displayString[i++] = '1'; displayString[i++] = '1'; displayString[i++] = '0'; break;
-//        case 7:  displayString[i++] = '1'; displayString[i++] = '1'; displayString[i++] = '1'; displayString[i++] = '0'; break;
-//        case 8:  displayString[i++] = '0'; displayString[i++] = '0'; displayString[i++] = '0'; displayString[i++] = '1'; break;
-//        case 9:  displayString[i++] = '1'; displayString[i++] = '0'; displayString[i++] = '0'; displayString[i++] = '1'; break;
-//        default: break;
-//      }
 
       displayString[i++] = '0' + ((unit & 0x0001) );
       displayString[i++] = '0' + ((unit & 0x0002) >> 1);
@@ -1871,7 +1882,7 @@ str3[j] = displayString[j];
       }
     }
     else {                                   //JM BCD^^
-      displayString[i++] = hexadecimalDigits[unit];
+      displayString[i++] = (base > 16) ? baseDigits[unit] : hexadecimalDigits[unit];
     }                                          //JM
 
   }
@@ -1947,10 +1958,7 @@ if( str3[1] >= '0' && str3[1] <= '9' && str3[2] >= '0' && str3[2] <= '9' && str3
     if(bcdFlag && base == 10) {                              //JM BCD id display instead of base 10
       strcat(displayString, STD_SUB_b STD_SUB_c STD_SUB_d);
     }
-    else {
-      strcat(displayString, STD_BASE_2);
-      displayString[strlen(displayString) - 1] += base - 2;
-    }
+    else addBaseNumber(displayString, base);
 
     if(stringWidth(displayString, fontForShortInteger, false, false) < SCREEN_WIDTH) {
       return;
@@ -1975,10 +1983,8 @@ if( str3[1] >= '0' && str3[1] <= '9' && str3[2] >= '0' && str3[2] <= '9' && str3
     if(bcdFlag && base == 10) {                             //JM BCD id display instead of base 10
       strcat(displayString, STD_SUB_b STD_SUB_c STD_SUB_d);
     }
-    else {
-      strcat(displayString, STD_BASE_2);
-      displayString[strlen(displayString) - 1] += base - 2;
-    }
+    else addBaseNumber(displayString, base);
+
 
     if(stringWidth(displayString, fontForShortInteger, false, false) < SCREEN_WIDTH) {
       return;
@@ -2001,10 +2007,7 @@ if( str3[1] >= '0' && str3[1] <= '9' && str3[2] >= '0' && str3[2] <= '9' && str3
     if(bcdFlag && base == 10) {                             //JM BCD id display instead of base 10
       strcat(displayString, STD_SUB_b STD_SUB_c STD_SUB_d);
     }
-    else {
-      strcat(displayString, STD_BASE_2);
-      displayString[strlen(displayString) - 1] += base - 2;
-    }
+    else addBaseNumber(displayString, base);
 
     if(/*temporaryInformation == TI_SHOW_REGISTER_BIG ||*/ stringWidth(displayString, fontForShortInteger, false, false) < SCREEN_WIDTH) {     //JMSHOW
       return;
@@ -2033,10 +2036,7 @@ if( str3[1] >= '0' && str3[1] <= '9' && str3[2] >= '0' && str3[2] <= '9' && str3
     if(bcdFlag && base == 10) {                             //JM BCD id display instead of base 10
       strcat(displayString, STD_SUB_b STD_SUB_c STD_SUB_d);
     }
-    else {
-      strcat(displayString, STD_BASE_2);
-      displayString[strlen(displayString) - 1] += base - 2;
-    }
+    else addBaseNumber(displayString, base);
 
     if(stringWidth(displayString, fontForShortInteger, false, false) < SCREEN_WIDTH) {
       return;
@@ -2067,10 +2067,7 @@ if( str3[1] >= '0' && str3[1] <= '9' && str3[2] >= '0' && str3[2] <= '9' && str3
     if(bcdFlag && base == 10) {                             //JM BCD id display instead of base 10
       strcat(displayString, STD_SUB_b STD_SUB_c STD_SUB_d);
     }
-    else {
-      strcat(displayString, STD_BASE_2);
-      displayString[strlen(displayString) - 1] += base - 2;
-    }
+    else addBaseNumber(displayString, base);
 
     if(stringWidth(displayString, fontForShortInteger, false, false) < SCREEN_WIDTH) {
       return;
@@ -2099,10 +2096,7 @@ if( str3[1] >= '0' && str3[1] <= '9' && str3[2] >= '0' && str3[2] <= '9' && str3
     if(bcdFlag && base == 10) {                             //JM BCD id display instead of base 10
       strcat(displayString, STD_SUB_b STD_SUB_c STD_SUB_d);
     }
-    else {
-      strcat(displayString, STD_BASE_2);
-      displayString[strlen(displayString) - 1] += base - 2;
-    }
+    else addBaseNumber(displayString, base);
 
     if(stringWidth(displayString, fontForShortInteger, false, false) < SCREEN_WIDTH) {
       return;
@@ -3307,7 +3301,7 @@ goBreak1:
         #endif // VERBOSE_SCREEN && PC_BUILD
         temporaryInformation = TI_SHOW_REGISTER_BIG;
 
-        shortIntegerToDisplayString(showRegis, tmpString + 2100, true); //jm include X:
+        shortIntegerToDisplayString(showRegis, tmpString + 2100, true, noBaseOverride); //jm include X:
   /*
         if(getRegisterTag(showRegis) == 2) {
           source = 2100;
@@ -3377,7 +3371,7 @@ goBreak1:
         if(aa2){
           setRegisterTag(showRegis,aa2);
           RegName();
-          shortIntegerToDisplayString(showRegis, tmpString + 2100, true);
+          shortIntegerToDisplayString(showRegis, tmpString + 2100, true, noBaseOverride);
           strcpy(tmpString + 2400,tmpString + 2100);
           last = 2400 + stringByteLength(tmpString + 2400);
           source = 2400;
@@ -3400,7 +3394,7 @@ goBreak1:
         if(aa3){
           RegName();
           setRegisterTag(showRegis,aa3);
-          shortIntegerToDisplayString(showRegis, tmpString + 2100, true);
+          shortIntegerToDisplayString(showRegis, tmpString + 2100, true, noBaseOverride);
           strcpy(tmpString + 2400,tmpString + 2100);
           last = 2400 + stringByteLength(tmpString + 2400);
           source = 2400;
@@ -3423,7 +3417,7 @@ goBreak1:
         if(aa4){
           RegName();
           setRegisterTag(showRegis,aa4);
-          shortIntegerToDisplayString(showRegis, tmpString + 2100, true);
+          shortIntegerToDisplayString(showRegis, tmpString + 2100, true, noBaseOverride);
           strcpy(tmpString + 2400,tmpString + 2100);
           last = 2400 + stringByteLength(tmpString + 2400);
           source = 2400;
