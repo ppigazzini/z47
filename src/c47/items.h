@@ -1731,7 +1731,7 @@
 #define ITM_HRtoTM                  1686
 #define ITM_toINT                   1687
 #define ITM_HMStoTM                 1688
-#define ITM_1689                    1689
+#define ITM_BASENR                  1689
 #define ITM_INTEGRAL_YX             1690   //INT
 #define ITM_toREAL                  1691
 #define ITM_PCSGM_DPCMN             1692

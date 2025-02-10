@@ -785,6 +785,7 @@ bool_t itemNotAvail(int16_t itemNr) {
   void fnWho                       (uint16_t unusedButMandatoryParameter) {}
   void fnGetSignificantDigits      (uint16_t unusedButMandatoryParameter) {}
   void fnSetSignificantDigits      (uint16_t unusedButMandatoryParameter) {}
+  void fnSetBaseNr                 (uint16_t unusedButMandatoryParameter) {}
   void fnGetFractionDigits         (uint16_t unusedButMandatoryParameter) {}
   void fnSetFractionDigits         (uint16_t unusedButMandatoryParameter) {}
   void fnSdl                       (uint16_t unusedButMandatoryParameter) {}
@@ -3030,7 +3031,7 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 1686 */  { fnHRtoTM,                     NOPARAM,                     "H" STD_RIGHT_ARROW TM,                        "H" STD_RIGHT_ARROW TM,                        (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },//JM mod
 /* 1687 */  { fnChangeBase,                 TM_VALUE_CHB,                STD_RIGHT_ARROW "INT",                         "#",                                           (2 << TAM_MAX_BITS) |    16, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NUMBER_8     },
 /* 1688 */  { fnHMStoTM,                    NOPARAM,                     "H.MS" STD_RIGHT_ARROW TM,                     "H.MS" STD_RIGHT_ARROW TM,                     (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
-/* 1689 */  { itemToBeCoded,                NOPARAM,                     "1689",                                        "1689",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 1689 */  { fnSetBaseNr,                  TM_VALUE,                    "dBASE",                                       "dBASE",                                       (0 << TAM_MAX_BITS) |    62, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NUMBER_8     },
 /* 1690 */  { fnIntegrateYX,                TM_REGISTER,                 STD_INTEGRAL STD_YX, /*A*/                     STD_INTEGRAL STD_YX, /*B*/                     (0 << TAM_MAX_BITS) |    99, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_REGISTER     },
 /* 1691 */  { fnToReal,                     NOPARAM,                     STD_RIGHT_ARROW "REAL",                        ".d",                                          (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /* 1692 */  { fnPcSigmaDeltaPcXmean,        NOPARAM,                     "%" STD_SIGMA "," STD_DELTA "%" STD_x_BAR,     "%" STD_SIGMA "," STD_DELTA "%" STD_x_BAR,     (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },

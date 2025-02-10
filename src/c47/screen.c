@@ -2350,8 +2350,6 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
   }
 
 
-  const uint8_t dispBase = 24;
-
   void displayBaseMode(calcRegister_t regist) {
      #define BASEMODE_OFFSET_X 2
      #define BASEMODE_OFFSET_Y 2
@@ -2363,48 +2361,55 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
      //DISP_TI=1                    Z=10
      if(BASEMODEREGISTERX && regist == REGISTER_X && lastErrorCode == 0) {
 
-       //handle Reg Pos Y
-       if(displayStack == 1 && calcMode != CM_NIM) {
-//copySourceRegisterToDestRegister(REGISTER_Y, TEMP_REGISTER_1);
-//copySourceRegisterToDestRegister(Register_X, REGISTER_Y);
-//         setRegisterTag(REGISTER_Y, 10);
-//shortIntegerToDisplayString(REGISTER_Y, tmpString, true, noBaseOverride);
-shortIntegerToDisplayString(Register_X, tmpString, true, dispBase == 0 ? 10 : 16);
-         if(lastErrorCode == 0 && stringWidth(tmpString, fontForShortInteger, false, true) + stringWidth("  X: ", &standardFont, false, true) <= SCREEN_WIDTH) {
-           showString("  X: ", &standardFont, 0, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(REGISTER_Y - REGISTER_X) + (fontForShortInteger == &standardFont ? 6 : 0), vmNormal, false, true);
-         }
-         showString(tmpString, fontForShortInteger, SCREEN_WIDTH - stringWidth(tmpString, fontForShortInteger, false, true), Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(REGISTER_Y - REGISTER_X) + (fontForShortInteger == &standardFont ? 6 : 0), vmNormal, false, true);
-//copySourceRegisterToDestRegister(TEMP_REGISTER_1,REGISTER_Y);
-       }
 
-       //handle reg pos Z
-       if((displayStack == 1 && calcMode != CM_NIM) || displayStack == 2){
-//copySourceRegisterToDestRegister(REGISTER_Z, TEMP_REGISTER_1);
-//copySourceRegisterToDestRegister(Register_X, REGISTER_Z);
-//         setRegisterTag(REGISTER_Z, displayStack == 1 ? 2 : 10);
-//shortIntegerToDisplayString(REGISTER_Z, tmpString, true, noBaseOverride);
-shortIntegerToDisplayString(Register_X, tmpString, true, displayStack == 1 ? 2 : (dispBase == 0 ? 10 : 16));
-         if(lastErrorCode == 0 && stringWidth(tmpString, fontForShortInteger, false, true) + stringWidth("  X: ", &standardFont, false, true) <= SCREEN_WIDTH) {
-           showString("  X: ", &standardFont, 0, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(REGISTER_Z - REGISTER_X) + (fontForShortInteger == &standardFont ? 6 : 0), vmNormal, false, true);
-         }
-         showString(tmpString, fontForShortInteger, SCREEN_WIDTH - stringWidth(tmpString, fontForShortInteger, false, true), Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(REGISTER_Z - REGISTER_X) + (fontForShortInteger == &standardFont ? 6 : 0), vmNormal, false, true);
-//copySourceRegisterToDestRegister(TEMP_REGISTER_1,REGISTER_Z);
-       }
+       if(getRegisterDataType(REGISTER_X) == dtShortInteger) {
 
-       //handle reg pos T
-       if((displayStack == 1 && calcMode != CM_NIM) || displayStack == 2 || displayStack == 3) {
-//copySourceRegisterToDestRegister(REGISTER_T, TEMP_REGISTER_1);
-//copySourceRegisterToDestRegister(Register_X, REGISTER_T);
-//         setRegisterTag(REGISTER_T, !bcdDisplay ? 16 : 17);
-//shortIntegerToDisplayString(REGISTER_T, tmpString, true, 60);
-shortIntegerToDisplayString(Register_X, tmpString, true,  dispBase == 0 ? (!bcdDisplay ? 16 : 1) : dispBase); // base 1 is BCD, #10
-         if(lastErrorCode == 0 && stringWidth(tmpString, fontForShortInteger, false, true) + stringWidth("  X: ", &standardFont, false, true) <= SCREEN_WIDTH) {
-           showString("  X: ", &standardFont, 0 + BASEMODE_OFFSET_X, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(REGISTER_T - REGISTER_X) + (fontForShortInteger == &standardFont ? 6 : 0) + BASEMODE_OFFSET_Y, vmNormal, false, true);
+         //handle Reg Pos Y
+         if(displayStack == 1 && calcMode != CM_NIM) {
+           shortIntegerToDisplayString(Register_X, tmpString, true, dispBase == 0 ? 10 : 16);
+           if(lastErrorCode == 0 && stringWidth(tmpString, fontForShortInteger, false, true) + stringWidth("  X: ", &standardFont, false, true) <= SCREEN_WIDTH) {
+             showString("  X: ", &standardFont, 0, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(REGISTER_Y - REGISTER_X) + (fontForShortInteger == &standardFont ? 6 : 0), vmNormal, false, true);
+           }
+           showString(tmpString, fontForShortInteger, SCREEN_WIDTH - stringWidth(tmpString, fontForShortInteger, false, true), Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(REGISTER_Y - REGISTER_X) + (fontForShortInteger == &standardFont ? 6 : 0), vmNormal, false, true);
          }
-         showString(tmpString, fontForShortInteger, SCREEN_WIDTH - stringWidth(tmpString, fontForShortInteger, false, true), Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(REGISTER_T - REGISTER_X) + (fontForShortInteger == &standardFont ? 6 : 0), vmNormal, false, true);
-//copySourceRegisterToDestRegister(TEMP_REGISTER_1,REGISTER_T);
-       }
 
+
+         //handle reg pos Z
+         if((displayStack == 1 && calcMode != CM_NIM) || displayStack == 2){
+           shortIntegerToDisplayString(Register_X, tmpString, true, displayStack == 1 ? 2 : (dispBase == 0 ? 10 : 16));
+           if(lastErrorCode == 0 && stringWidth(tmpString, fontForShortInteger, false, true) + stringWidth("  X: ", &standardFont, false, true) <= SCREEN_WIDTH) {
+             showString("  X: ", &standardFont, 0, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(REGISTER_Z - REGISTER_X) + (fontForShortInteger == &standardFont ? 6 : 0), vmNormal, false, true);
+           }
+           showString(tmpString, fontForShortInteger, SCREEN_WIDTH - stringWidth(tmpString, fontForShortInteger, false, true), Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(REGISTER_Z - REGISTER_X) + (fontForShortInteger == &standardFont ? 6 : 0), vmNormal, false, true);
+         }
+
+
+         //handle reg pos T
+         if((displayStack == 1 && calcMode != CM_NIM) || displayStack == 2 || displayStack == 3) {
+           shortIntegerToDisplayString(Register_X, tmpString, true,  dispBase == 0 ? (!bcdDisplay ? 16 : 1) : dispBase); // base 1 is BCD, #10
+           if(lastErrorCode == 0 && stringWidth(tmpString, fontForShortInteger, false, true) + stringWidth("  X: ", &standardFont, false, true) <= SCREEN_WIDTH) {
+             showString("  X: ", &standardFont, 0 + BASEMODE_OFFSET_X, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(REGISTER_T - REGISTER_X) + (fontForShortInteger == &standardFont ? 6 : 0) + BASEMODE_OFFSET_Y, vmNormal, false, true);
+           }
+           showString(tmpString, fontForShortInteger, SCREEN_WIDTH - stringWidth(tmpString, fontForShortInteger, false, true), Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(REGISTER_T - REGISTER_X) + (fontForShortInteger == &standardFont ? 6 : 0), vmNormal, false, true);
+         }
+
+       }
+       else if(getRegisterDataType(REGISTER_X) == dtLongInteger) {
+         //handle reg pos T
+         if((displayStack == 1 && calcMode != CM_NIM) || displayStack == 2 || displayStack == 3) {
+           convertLongIntegerRegisterToShortIntegerRegister(REGISTER_X, TEMP_REGISTER_1);
+
+
+    //handle long integer
+-consider having the base hex conversion in LongIntegerToDisplayString
+           convertLongIntegerRegisterToShortIntegerRegister(REGISTER_X, TEMP_REGISTER_1);
+           shortIntegerToDisplayString(TEMP_REGISTER_1, tmpString, true,  dispBase == 0 ? (!bcdDisplay ? 16 : 1) : dispBase); // base 1 is BCD, #10
+           if(lastErrorCode == 0 && stringWidth(tmpString, fontForShortInteger, false, true) + stringWidth("  X: ", &standardFont, false, true) <= SCREEN_WIDTH) {
+             showString("  X:" STD_INTEGER_Z_SMALL ": ", &standardFont, 0 + BASEMODE_OFFSET_X, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(REGISTER_T - REGISTER_X) + (fontForShortInteger == &standardFont ? 6 : 0) + BASEMODE_OFFSET_Y, vmNormal, false, true);
+           }
+           showString(tmpString, fontForShortInteger, SCREEN_WIDTH - stringWidth(tmpString, fontForShortInteger, false, true), Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(REGISTER_T - REGISTER_X) + (fontForShortInteger == &standardFont ? 6 : 0), vmNormal, false, true);
+         } 
+       }
 
        if(displayStack == 3) {
          lcd_fill_rect(0, Y_POSITION_OF_REGISTER_Z_LINE - 2, SCREEN_WIDTH, 1, 0xFF);
@@ -2415,6 +2420,7 @@ shortIntegerToDisplayString(Register_X, tmpString, true,  dispBase == 0 ? (!bcdD
        else if(displayStack == 1) {
          lcd_fill_rect(0, Y_POSITION_OF_REGISTER_X_LINE - 2, SCREEN_WIDTH, 1, 0xFF);
        }
+
      }                                                                 //JM ^^
   }
 
@@ -2448,7 +2454,12 @@ shortIntegerToDisplayString(Register_X, tmpString, true,  dispBase == 0 ? (!bcdD
     #endif // PC_BUILD &&MONITOR_CLRSCR
 
     if(BASEMODEREGISTERX && !SHOWMODE && displayStack != 4-displayStackSHOIDISP) { //JMSHOI
-      fnDisplayStack(4-displayStackSHOIDISP);
+      if(getRegisterDataType(REGISTER_X) == dtShortInteger) {
+        fnDisplayStack(4-displayStackSHOIDISP);
+      }
+      else {
+        fnDisplayStack(3);
+      }
     }
 
     #if (DEBUG_PANEL == 1)
@@ -4105,6 +4116,7 @@ shortIntegerToDisplayString(Register_X, tmpString, true,  dispBase == 0 ? (!bcdD
 
 /*Main type dtLongInteger*/
         else if(getRegisterDataType(regist) == dtLongInteger) {
+displayBaseMode(regist);
           if(temporaryInformation == TI_COPY_FROM_SHOW && regist == REGISTER_X) {
             _fnShowRecallTI(prefix, &prefixWidth);
           }
