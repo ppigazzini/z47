@@ -602,22 +602,22 @@ void graph_text(void) {
 
     if(PLOT_INTG && !invalid_intg) {
       snprintf(tmpString, bufLen, "  Trapezoid integral");
-      showStringC47(tmpString, numSmall, nocompress, 1, ypos, vmNormal, true, true);  //JM
+      showString(tmpString, &tinyFont, 1, ypos, vmNormal, false, false);
       plotintbig(5, ypos+4+4-2);
       plotrect(5+4-1, (ypos+4+4-2+2)-1, 5+4+2, (ypos+4+4-2+2)+2);
       ypos += 20;
     }
 
     if(PLOT_DIFF && !invalid_diff) {
-      snprintf(tmpString, bufLen, "  Num. differential");
-      showStringC47(tmpString, numSmall, nocompress, 1, ypos, vmNormal, true, true);  //JM
+      snprintf(tmpString, bufLen, "  Numerical differential");
+      showString(tmpString, &tinyFont, 1, ypos, vmNormal, false, false);
       plotdeltabig(6, ypos+4+4-2);
       ypos += 20;
     }
 
     if(PLOT_RMS && !invalid_rms) {
-      snprintf(tmpString, bufLen, "  RMSy");
-      showStringC47(tmpString, numSmall, nocompress, 1, ypos, vmNormal, true, true);  //JM
+      snprintf(tmpString, bufLen, "  Root Mean Square RMSy");
+      showString(tmpString, &tinyFont, 1, ypos, vmNormal, false, false);
       plotrms(6, ypos+4+4-2);
       plotrect(6-1, (ypos+4+4-2)-1, 6+2, (ypos+4+4-2)+2);
       ypos += 20;
