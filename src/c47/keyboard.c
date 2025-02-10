@@ -1078,7 +1078,11 @@ int16_t lastItem = 0;
             screenUpdatingMode &= ~SCRUPD_ONE_TIME_FLAGS;
             return;
           }
-          else if(calcMode == CM_PEM && catalog && catalog != CATALOG_MVAR && (!tam.mode || tam.function != ITM_DELP)) { // TODO: is that correct
+
+          else if((tam.mode || indexOfItems[item].func != addItemToBuffer)               //skip if not label name (TAM) AND a bufferized letter
+                   && calcMode == CM_PEM && catalog && catalog != CATALOG_MVAR &&        //allow only in case of PEM, and a CAT
+                   !(tam.mode && tam.function == ITM_DELP)) { // TODO: is that correct   //don't allow DELP
+
             fnKeyInCatalog = 1;
             if(indexOfItems[item].func == fnGetSystemFlag && (tam.mode == TM_FLAGR || tam.mode == TM_FLAGW) && !tam.indirect) {
               tam.value = (indexOfItems[item].param & 0xff);
@@ -1086,19 +1090,21 @@ int16_t lastItem = 0;
               addStepInProgram(tamOperation());
               tamLeaveMode();
             }
-
             else  if(indexOfItems[item].func == addItemToBuffer) {   //this section is added, it was commented out in btnFnPressed line 760, it is moved here, as longpress works on release.
               //Here we deal with PEM TAM mode menu entry, i.e. item's sent to buffer. See issue #454 context.
               if(getSystemFlag(FLAG_ALPHA)) {
                 printf("**[DL]** executeFunction processAimInput item %d\n",item);fflush(stdout);
                 processAimInput(item);
+                if(tam.mode) {
+                  //printf("cccc tam.mode=%i tam.f=%i Popping menu\n",tam.mode, tam.function);
+                  popSoftmenu();
+                }
               }
               else {
                 addStepInProgram(item);    // I am not sure if this can actually be needed: It was in the btnFnPressed section in line 760
               }
               hourGlassIconEnabled = false;
             }
-
             else if(tam.mode) {
               const char *itmLabel = dynmenuGetLabel(dynamicMenuItem);
               uint16_t nameLength = stringByteLength(itmLabel);
@@ -1147,9 +1153,9 @@ int16_t lastItem = 0;
             bool_t isInConfig = tam.mode == TM_FLAGW && currentMenu() == -MNU_SYSFL;   //JM Do not drop out of SYSFLG
 
             //This section to auto-drop out of alpha submenu.
-            //      if(menu(1) == -MNU_TAMALPHA && isAlphaSubmenu(0)) {
-            //        popSoftmenu();
-            //      }
+             if(menu(1) == -MNU_TAMALPHA && isAlphaSubmenu(0)) {
+               popSoftmenu();
+             }
 
             addItemToBuffer(item);
 
@@ -1177,7 +1183,9 @@ int16_t lastItem = 0;
             }
           }
           else if((calcMode == CM_NORMAL || calcMode == CM_NIM) && (ITM_0<=item && item<=ITM_F) && (!catalog || catalog == CATALOG_MVAR)) {
-            if(lastIntegerBase == 0) lastIntegerBase = 16;
+            if(lastIntegerBase == 0) {
+              lastIntegerBase = 16;
+            }
             addItemToNimBuffer(item);
           }
           else if((calcMode == CM_NIM) && ((/*item==ITM_DRG ||*/ item == ITM_DMS2 || item == ITM_dotD) && !catalog)) {   //JM Remove DRG from here, there seems to be no need to send DRG to the buffer
@@ -1253,6 +1261,7 @@ int16_t lastItem = 0;
               else {
                 temporaryInformation = TI_NO_INFO;
               }
+
               if(programRunStop == PGM_WAITING) {
                 programRunStop = PGM_STOPPED;
               }
@@ -1337,6 +1346,9 @@ int16_t lastItem = 0;
                         popSoftmenu();
                       }
                   }
+                }
+                else if((calcMode == CM_PEM || calcMode == CM_AIM) && indexOfItems[item].func == addItemToBuffer) {
+                  popSoftmenu();
                 }
                     #if defined(VERBOSEKEYS)
                       printf("keyboard.c: executeFunction calcmode=%u %i (after runfunction): %i, %s tam.mode=%i\n", calcMode, item, currentMenu(), indexOfItems[-currentMenu()].itemSoftmenuName, tam.mode);

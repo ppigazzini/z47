@@ -99,10 +99,10 @@ char       letteredRegisterName(calcRegister_t regist);
 
   //mode
   #define stdNoEnlarge     0                                                                                    //JM vv compress, enlarge, small fonts
-  #define stdEnlarge       1
+  #define stdEnlarge       1  //used in screen.c only
   #define stdnumEnlarge    2
-  #define numSmall         3
-  #define numHalf          4
+  #define numSmall         3  //used in screen.c only
+  #define numHalf          4  //used in screen.c only
 
   //showStringEnhanced, showStringC47
   #define DO_LF            true

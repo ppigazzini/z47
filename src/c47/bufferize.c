@@ -996,9 +996,16 @@ typedef struct {
     uint8_t savedNimNumberPart;
     bool_t done;
     char *strBase;
+
+    if((calcMode == CM_NIM || calcMode == CM_NORMAL) && Input_Default == ID_LI && item == ITM_PERIOD) {
+      return;
+    }  
+
     changeFractionModeOnENTER = false;
 
-    if(item >= ITM_A && item <= ITM_F && lastIntegerBase == 0) lastIntegerBase = 16;
+    if(item >= ITM_A && item <= ITM_F && lastIntegerBase == 0) {
+      lastIntegerBase = 16;
+    }
 //    if(item != ITM_EXIT1) resetKeytimers();  //JM
 
     screenUpdatingMode &= ~(SCRUPD_MANUAL_STACK | SCRUPD_MANUAL_SHIFT_STATUS);

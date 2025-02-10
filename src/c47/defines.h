@@ -1714,6 +1714,12 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define CHECK_VALUE_INFINITY                       6
 #define CHECK_VALUE_MATRIX                         7
 #define CHECK_VALUE_MATRIX_SQUARE                  8
+#define CHECK_VALUE_DATE                           9
+#define CHECK_VALUE_TIME                          10
+#define CHECK_VALUE_SINT                          11
+#define CHECK_VALUE_LINT                          12
+#define CHECK_VALUE_ANGLE                         13
+#define CHECK_VALUE_NUMBER                        14
 
 #define OPMOD_MULTIPLY                             0
 #define OPMOD_POWER                                1
@@ -1852,7 +1858,6 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define RADIX34_MARK_STRING                  (gapChar1Radix)
 #define RADIX34_MARK_DEC_ITM                 (RADIX34_MARK_CHAR == '.' ? ITM_PERIOD : ITM_COMMA)
 #define RADIX34_MARK_NOT_DEC_ITM             (RADIX34_MARK_CHAR == '.' ? ITM_COMMA : ITM_PERIOD)
-#define Z_LI_STRING                          (STD_INTEGER_Z_SMALL)
 
 #define groupingGap                          ((uint8_t)(grpGroupingLeft)) //ADD HERE THE CONDITIONS FOR NIL SEPS
 
