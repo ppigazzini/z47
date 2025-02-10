@@ -529,9 +529,9 @@ void graph_text(void) {
     char tmpbuf[PLOT_TMP_BUF_SIZE];
     int32_t n;
     eformat_eng2(ss, "(", x_max, 2, "");
-    uint16_t ssw = showStringEnhanced(padEquals(tmpbuf, ss), &standardFont, 0, 0,vmNormal, false, false, NO_compress, NO_raise, NO_Show, NO_LF);
+    uint16_t ssw = showStringEnhanced(padEquals(tmpbuf, ss), &standardFont, 0, 0,vmNormal, false, false, NO_compress, NO_raise, NO_Show, NO_Bold, NO_LF);
     eformat_eng2(tt, radixProcess(tmpbuf, "#"), y_max, 2, ")");
-    uint16_t ttw = showStringEnhanced(padEquals(tmpbuf, tt), &standardFont, 0, 0,vmNormal, false, false, NO_compress, NO_raise, NO_Show, NO_LF);
+    uint16_t ttw = showStringEnhanced(padEquals(tmpbuf, tt), &standardFont, 0, 0,vmNormal, false, false, NO_compress, NO_raise, NO_Show, NO_Bold, NO_LF);
     ypos += 38;
     n = showString(padEquals(tmpbuf, ss), &standardFont, 160-3-2-ssw-ttw, ypos, vmNormal, false, false);
     showString(padEquals(tmpbuf, tt), &standardFont, n+3, ypos, vmNormal, false, false);
@@ -602,24 +602,25 @@ void graph_text(void) {
 
     if(PLOT_INTG && !invalid_intg) {
       snprintf(tmpString, bufLen, "  Trapezoid integral");
-      showString(tmpString, &tinyFont, 1, ypos, vmNormal, false, false);
-      plotintbig(5, ypos+4+4-2);
-      plotrect(5+4-1, (ypos+4+4-2+2)-1, 5+4+2, (ypos+4+4-2+2)+2);
+      showStringEnhanced(tmpString, &tinyFont, 1, ypos, vmNormal, false, false, NO_compress, NO_raise, DO_Show, DO_Bold, DO_LF);
+
+      plotintbig(5, ypos+4+4-2-4);
+      plotrect(5+4-1, (ypos+4+4-2+2)-1-4, 5+4+2, (ypos+4+4-2+2)+2-4);
       ypos += 20;
     }
 
     if(PLOT_DIFF && !invalid_diff) {
-      snprintf(tmpString, bufLen, "  Numerical differential");
-      showString(tmpString, &tinyFont, 1, ypos, vmNormal, false, false);
-      plotdeltabig(6, ypos+4+4-2);
+      snprintf(tmpString, bufLen, "  Numerical slope");
+      showStringEnhanced(tmpString, &tinyFont, 1, ypos, vmNormal, false, false, NO_compress, NO_raise, DO_Show, DO_Bold, DO_LF);
+      plotdeltabig(6, ypos+4+4-2-4);
       ypos += 20;
     }
 
     if(PLOT_RMS && !invalid_rms) {
-      snprintf(tmpString, bufLen, "  Root Mean Square RMSy");
-      showString(tmpString, &tinyFont, 1, ypos, vmNormal, false, false);
-      plotrms(6, ypos+4+4-2);
-      plotrect(6-1, (ypos+4+4-2)-1, 6+2, (ypos+4+4-2)+2);
+      snprintf(tmpString, bufLen, "  Root Mean Square RMS");
+      showStringEnhanced(tmpString, &tinyFont, 1, ypos, vmNormal, false, false, NO_compress, NO_raise, DO_Show, DO_Bold, DO_LF);
+      plotrms(6, ypos+4+4-2-3);
+      plotrect(6-1, (ypos+4+4-2)-1-3, 6+2, (ypos+4+4-2)+2-3);
       ypos += 20;
     }
 
