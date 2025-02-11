@@ -185,7 +185,7 @@ typedef struct {
   bool_t compatibility_bool0;               //Spare Byte
   int16_t compatibility_int1;               //Spare Word
   uint8_t Input_Default;
-  bool_t compatibility_bool00;              //Spare Byte
+  bool_t dispBase;
   bool_t BASE_MYM;
   bool_t jm_G_DOUBLETAP;
   float  compatibility_float1;              //Spare float

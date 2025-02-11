@@ -347,7 +347,6 @@ void fnStoreMax(uint16_t regist) {
 void fnStoreConfig(uint16_t regist) {
     //uint8_t  compatibility_u8 = 0;             //defaults to use when settings are removed
   int16_t compatibility_int1  = 0;               //defaults to use when settings are removed
-  bool_t compatibility_bool00 = false;           //defaults to use when settings are removed
   bool_t compatibility_bool0  = false;           //defaults to use when settings are removed
   bool_t compatibility_bool2  = false;           //defaults to use when settings are removed
   bool_t compatibility_bool3  = false;           //defaults to use when settings are removed
@@ -403,7 +402,7 @@ void fnStoreConfig(uint16_t regist) {
   storeToDtConfigDescriptor(ShiftTimoutMode);
   storeToDtConfigDescriptor(compatibility_bool21);
   storeToDtConfigDescriptor(BASE_HOME);
-  storeToDtConfigDescriptor(compatibility_bool00);   //added
+  storeToDtConfigDescriptor(dispBase);
   storeToDtConfigDescriptor(compatibility_int1);    //added
   storeToDtConfigDescriptor(Input_Default);
   storeToDtConfigDescriptor(compatibility_bool0);    //added

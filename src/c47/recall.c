@@ -228,8 +228,7 @@ void fnRecallMax(uint16_t regist) {
 //}
 
 void fnRecallConfig(uint16_t regist) {
-    __attribute__((unused)) int16_t compatibility_int1;     //for use in spare slots below
-    __attribute__((unused)) bool_t compatibility_bool00;    //for use in spare slots below
+    __attribute__((unused)) int16_t compatibility_int1;     //for use in spare slots below //note bool_t is 1 byte, (sizeof(_Bool))
     __attribute__((unused)) bool_t compatibility_bool0 ;    //for use in spare slots below
     __attribute__((unused)) bool_t compatibility_bool2 ;    //for use in spare slots below
     __attribute__((unused)) bool_t compatibility_bool3 ;    //for use in spare slots below
@@ -285,7 +284,7 @@ void fnRecallConfig(uint16_t regist) {
     recallFromDtConfigDescriptor(ShiftTimoutMode);
     recallFromDtConfigDescriptor(compatibility_bool21);
     recallFromDtConfigDescriptor(compatibility_bool18);
-    recallFromDtConfigDescriptor(compatibility_bool00);   //spare
+    recallFromDtConfigDescriptor(dispBase);    
     recallFromDtConfigDescriptor(compatibility_int1);     //spare
     recallFromDtConfigDescriptor(Input_Default);
     recallFromDtConfigDescriptor(compatibility_bool0);    //spare
