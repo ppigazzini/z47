@@ -1960,7 +1960,7 @@
 #define ITM_ms                      1909
 #define ITM_msTo                    1910
 #define ITM_ymdTo                   1911
-#define ITM_1912                    1912
+#define ITM_CLKp2                   1912
 #define MNU_TAMALPHA                1913
 #define ITM_TO_USER                 1914
 #define ITM_N_KEY_NIL               1915

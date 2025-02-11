@@ -75,6 +75,9 @@ bool_t isAlphabeticSoftmenu    (void);
 bool_t isJMAlphaSoftmenu       (int16_t menuId);             //JM
 bool_t isJMAlphaOnlySoftmenu   (void);                       //JM
 
+void fnPseudoMenu              (uint16_t target);
+
+
 int16_t mm(int16_t id);                                     //JM
 extern TO_QSPI const int16_t menu_HOME[];                //JM
 

@@ -1277,6 +1277,7 @@ bool_t itemNotAvail(int16_t itemNr) {
   void fnConvertStkToMx           (uint16_t unusedButMandatoryParameter) {}
   void fnConvertMxToStk           (uint16_t unusedButMandatoryParameter) {}
   void fnCheckType                (uint16_t unusedButMandatoryParameter) {}
+  void fnPseudoMenu               (uint16_t unusedButMandatoryParameter) {}
 
 
 
@@ -3259,7 +3260,7 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 1909 */  { fnTo_ms,                      NOPARAM,                     ".ms",                                         ".ms",                                         (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },//JM DMS HMS
 /* 1910 */  { fnFrom_ms,                    NOPARAM,                     ".ms" STD_SUP_MINUS STD_SUP_1,                 ".ms" STD_SUP_MINUS STD_SUP_1,                 (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },//JM DMS HMS
 /* 1911 */  { fnFrom_ymd,                   NOPARAM,                     DT STD_RIGHT_ARROW "x",                        DT STD_RIGHT_ARROW "x",                        (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },//JM DMS HMS
-/* 1912 */  { itemToBeCoded,                NOPARAM,                     "1912",                                        "1912",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 1912 */  { fnPseudoMenu,                 (2<<14) + MNU_CLK,           "CLK" STD_CR "2",                              "CLK" STD_CR "2",                              (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 1913 */  { itemToBeCoded,                NOPARAM,                     "",                                            "TamAlpha",                                    (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 1914 */  { fnKeysManagement,             TO_USER,                     "N" STD_RIGHT_ARROW "U",                       "N" STD_RIGHT_ARROW "U",                       (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 1915 */  { fnSigmaAssign,                16384+ITM_NULL,              "",                                            STD_RIGHT_DASHARROW STD_SPACE_4_PER_EM "nil",  (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
