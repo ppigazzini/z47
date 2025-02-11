@@ -1714,6 +1714,11 @@ void addBaseNumber(char *displayString, int16_t base) {
 }
 
 
+void longIntegerToHexDisplayString(calcRegister_t regist, char *displayString, bool_t determineFont, uint8_t baseOverride) {
+  convertLongIntegerRegisterToShortIntegerRegister(regist, TEMP_REGISTER_1);  
+  shortIntegerToDisplayString(TEMP_REGISTER_1, displayString, determineFont, baseOverride);
+}
+
 
 void shortIntegerToDisplayString(calcRegister_t regist, char *displayString, bool_t determineFont, uint8_t baseOverride) {
   int16_t i, j, k, unit, gap, digit, bitsPerDigit, maxDigits, base;
