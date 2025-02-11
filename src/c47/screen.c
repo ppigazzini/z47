@@ -1130,7 +1130,7 @@ return res;
         if(x + showGlyphCode(charCodeFromString(string, &tmp), font, 0, 0, videoMode, slc, sec, false) - compressString > SCREEN_WIDTH) {
           x = orgX;
           prevX = x;
-          y += 20;
+          y += (font == &tinyFont ? 8 : 20);
         }
         noShow = false;
       }
@@ -1159,7 +1159,7 @@ return res;
         charCodeFromString(string, &ch);                       //increment character pointer to skip 0x0A
         x = orgX;
         prevX = x;
-        y += 20;
+        y += (font == &tinyFont ? 8 : 20);
       }
     }
     compressString = 0;        //JM compressString
@@ -2398,11 +2398,14 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
          //handle longinteger in pos T
          if((displayStack == 1 && calcMode != CM_NIM) || displayStack == 2 || displayStack == 3) {
            longIntegerToHexDisplayString(REGISTER_X, tmpString, true,  dispBase == 0 ? (!bcdDisplay ? 16 : 1) : dispBase); // base 1 is BCD, #10
-           if(lastErrorCode == 0 && stringWidth(tmpString, fontForShortInteger, false, true) + stringWidth("  X: " STD_INTEGER_Z_SMALL ": ", &standardFont, false, true) <= SCREEN_WIDTH) {
+           bool_t   printFirstCol = fontForShortInteger == &tinyFont;
+           bool_t   printWillFit = stringWidth(tmpString, fontForShortInteger, printFirstCol, true) + stringWidth("  X:" STD_INTEGER_Z_SMALL ": ", &standardFont, false, true) <= SCREEN_WIDTH;
+           uint32_t xoff = printWillFit ? SCREEN_WIDTH - stringWidth(tmpString, fontForShortInteger, printFirstCol, true) : 0;
+           if(lastErrorCode == 0 && printWillFit) {
              showString("  X:" STD_INTEGER_Z_SMALL ": ", &standardFont, 0 + BASEMODE_OFFSET_X, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(REGISTER_T - REGISTER_X) + (fontForShortInteger == &standardFont ? 6 : 0) + BASEMODE_OFFSET_Y, vmNormal, false, true);
            }
-           showString(tmpString, fontForShortInteger, SCREEN_WIDTH - stringWidth(tmpString, fontForShortInteger, false, true), Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(REGISTER_T - REGISTER_X) + (fontForShortInteger == &standardFont ? 6 : 0), vmNormal, false, true);
-         } 
+           showStringEnhanced(tmpString, fontForShortInteger, xoff, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(REGISTER_T - REGISTER_X) + (fontForShortInteger == &standardFont ? 6 : 0), vmNormal, printFirstCol, true, NO_compress, NO_raise, DO_Show, NO_Bold, DO_LF);
+         }
        }
 
        if(displayStack == 3) {

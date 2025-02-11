@@ -1715,8 +1715,73 @@ void addBaseNumber(char *displayString, int16_t base) {
 
 
 void longIntegerToHexDisplayString(calcRegister_t regist, char *displayString, bool_t determineFont, uint8_t baseOverride) {
-  convertLongIntegerRegisterToShortIntegerRegister(regist, TEMP_REGISTER_1);  
-  shortIntegerToDisplayString(TEMP_REGISTER_1, displayString, determineFont, baseOverride);
+  uint16_t i = TMP_STR_LENGTH / 2;
+  displayString[0] = 0;
+  if(dispBase < 2) {
+    return;
+  }
+
+  longInteger_t lgInt;
+  bool_t sign;
+  int32_t digit;
+
+  convertLongIntegerRegisterToLongInteger(regist, lgInt);
+
+  if(longIntegerIsZero(lgInt)) {
+    displayString[0] = '0';
+    displayString[1] = 0;
+    addBaseNumber(displayString, dispBase);
+    longIntegerFree(lgInt);
+    fontForShortInteger = &numericFont;
+    return;
+  }
+
+  sign = (lgInt->_mp_size < 0);
+
+  while (!longIntegerIsZero(lgInt)) {
+    digit = (int32_t)longIntegerModuloUInt(lgInt, (int32_t)(dispBase));
+    longIntegerDivideUInt(lgInt, (int32_t)(dispBase), lgInt);
+    displayString[i++] = baseDigits[digit];
+  }
+
+  longIntegerFree(lgInt);
+
+  if(sign){
+    displayString[i++] = '-';
+  }
+
+  for(uint16_t k = i-1, j = 0; k >= TMP_STR_LENGTH / 2; k--, j++) {
+    displayString[j] = displayString[k];
+    displayString[j+1] = 0;
+  }
+
+  if( stringWidth(displayString, &numericFont, false, true) + 
+      stringWidth(STD_SUB_0 STD_SUB_0, &numericFont, false, true) +
+      stringWidth("  X:" STD_INTEGER_Z_SMALL ": ", &standardFont, false, true)
+      <= SCREEN_WIDTH) {
+    fontForShortInteger = &numericFont;
+    addBaseNumber(displayString, dispBase);
+  }
+  else
+  if( stringWidth(displayString, &standardFont, false, true) + 
+      stringWidth(STD_SUB_0 STD_SUB_0, &standardFont, false, true) +
+      stringWidth("  X:" STD_INTEGER_Z_SMALL ": ", &standardFont, false, true)
+      <= SCREEN_WIDTH) {
+    fontForShortInteger = &standardFont;
+    addBaseNumber(displayString, dispBase);
+  }
+  else {
+    fontForShortInteger = &tinyFont;
+    if( stringWidth(displayString, &tinyFont, true, true) + 
+        stringWidth(STD_SUB_0 STD_SUB_0, &tinyFont, true, true) +
+        stringWidth("  X:" STD_INTEGER_Z_SMALL ": ", &tinyFont, false, true)
+        >= SCREEN_WIDTH * 4) {
+      displayString[256+5] = STD_ELLIPSIS[0];
+      displayString[257+5] = STD_ELLIPSIS[1];
+      displayString[258+5] = 0;
+    }
+    addBaseNumber(displayString, dispBase);
+  }
 }
 
 
