@@ -2400,7 +2400,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
            longIntegerToHexDisplayString(REGISTER_X, tmpString, true,  dispBase == 0 ? (!bcdDisplay ? 16 : 1) : dispBase); // base 1 is BCD, #10
            bool_t   printFirstCol = fontForShortInteger == &tinyFont;
            bool_t   printWillFit = stringWidth(tmpString, fontForShortInteger, printFirstCol, true) + stringWidth("  X:" STD_INTEGER_Z_SMALL ": ", &standardFont, false, true) <= SCREEN_WIDTH;
-           uint32_t xoff = printWillFit ? SCREEN_WIDTH - stringWidth(tmpString, fontForShortInteger, printFirstCol, true) : 0;
+           uint32_t xoff = printWillFit ? SCREEN_WIDTH - stringWidth(tmpString, fontForShortInteger, printFirstCol, true) - 3 : 0;
            if(lastErrorCode == 0 && printWillFit) {
              showString("  X:" STD_INTEGER_Z_SMALL ": ", &standardFont, 0 + BASEMODE_OFFSET_X, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(REGISTER_T - REGISTER_X) + (fontForShortInteger == &standardFont ? 6 : 0) + BASEMODE_OFFSET_Y, vmNormal, false, true);
            }
