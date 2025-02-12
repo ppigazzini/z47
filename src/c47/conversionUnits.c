@@ -181,6 +181,9 @@ TO_QSPI static const real_t *const *conversionFactors[constFactorEND] = {
     [constFactorGlusFzus] = &const_GlusFzus,
     [constFactorFzusGlus] = &const_GlusFzus,
 
+    [constFactoreVJ] = &const_e,
+    [constFactorJeV] = &const_e,
+
   };
 
 void fnUnitConvert(uint16_t arg) {

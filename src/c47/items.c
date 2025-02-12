@@ -3817,10 +3817,9 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 2462 */  { itemToBeCoded,                NOPARAM,                     "2443",                                        "2443",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2463 */  { itemToBeCoded,                NOPARAM,                     "2443",                                        "2443",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 
+/* 2464 */  UNIT_CONV(constFactoreVJ,        divide,                     "eV" STD_RIGHT_ARROW "J" ,                     "eV"  STD_RIGHT_ARROW                   ),
+/* 2465 */  UNIT_CONV(constFactorJeV,      multiply,                     "J"  STD_RIGHT_ARROW "eV",                     "J" STD_RIGHT_ARROW                   ),
 
-/* 2444 */  { itemToBeCoded,                NOPARAM,                     "",                                            "Last item",                                   (0 << TAM_MAX_BITS)
-
-
- |     0, CAT_NONE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED},
+/* 2444 */  { itemToBeCoded,                NOPARAM,                     "",                                            "Last item",                                   (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 
 };

@@ -144,6 +144,9 @@
     constFactorGlusFzus,
     constFactorFzusGlus,
 
+    constFactoreVJ,
+    constFactorJeV,
+
     constFactorEND              /* MUST be last */
   };
 
