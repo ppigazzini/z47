@@ -1979,13 +1979,6 @@ void showKey(const char *label, int16_t x1, int16_t x2, int16_t y1, int16_t y2, 
 }
 
 
-
-void fnPseudoMenu(uint16_t target) {
-  menuPageNumber = target >> 14;
-  fnOpenMenu(((int16_t)(target & 0x3fff)));
-}
-
-
 bool_t isFunctionItemAMenu(int16_t item) { //masquarading pseudo menus
   return item == ITM_PLOT_SCATR||
          item == ITM_PLOT_ASSESS||
@@ -2053,17 +2046,15 @@ typedef struct {
 } mstr;
 
 
-#if !defined(TESTSUITE_BUILD)
-  TO_QSPI static const mstr modeNames[] = {
-  /*0*/  { "ALL" },
-  /*1*/  { "FIX" },
-  /*2*/  { "SCI" },
-  /*3*/  { "ENG" },
-  /*4*/  { "SIG" },
-  /*5*/  { "UNIT"},
-  };
-#endif //TESTSUITE_BUILD
 
+TO_QSPI static const mstr modeNames[] = {
+/*0*/  { "ALL" },
+/*1*/  { "FIX" },
+/*2*/  { "SCI" },
+/*3*/  { "ENG" },
+/*4*/  { "SIG" },
+/*5*/  { "UNIT"},
+};
 
 
 void changeSoftKey(int16_t menuNr, int16_t itemNr, char * itemName, videoMode_t * vm, int8_t * showCb, int16_t * showValue, char * showText) {
@@ -3396,6 +3387,13 @@ bool_t BASE_OVERRIDEONCE = false;
 
 
 #endif // !TESTSUITE_BUILD
+
+
+// input param is (PageNumber << 14) +MenuNumber
+void fnPseudoMenu(uint16_t target) {
+  menuPageNumber = target >> 14;
+  fnOpenMenu(((int16_t)(target & 0x3fff)));
+}
 
 
 char *dynmenuGetLabel(int16_t menuitem) {
