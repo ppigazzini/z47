@@ -1952,7 +1952,7 @@ str3[j] = displayString[j];
       }
     }
     else {                                   //JM BCD^^
-      displayString[i++] = (base > 16) ? baseDigits[unit] : hexadecimalDigits[unit];
+      displayString[i++] = baseDigits[unit];
     }                                          //JM
 
   }

@@ -32,8 +32,7 @@
 
 const font_t          *fontForShortInteger;
 const font_t          *cursorFont;
-TO_QSPI const char     hexadecimalDigits[17] = "0123456789ABCDEF";
-TO_QSPI const char     baseDigits[63] = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+TO_QSPI const char     baseDigits[63] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 TO_QSPI const char     registerFlagLetters[27] = "XYZTABCDLIJKMNPQRSEFGHOUVW";
 void                   (*confirmedFunction)(uint16_t);
 
