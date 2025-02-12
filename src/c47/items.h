@@ -2527,7 +2527,10 @@
 #define ITM_2463                    2463
 //continue after this block
 
-#define LAST_ITEM                   2464
+#define ITM_EVtoJ                   2464                    
+#define ITM_JtoEV                   2465                    
+
+#define LAST_ITEM                   2466
 
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL
