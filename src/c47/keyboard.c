@@ -2262,6 +2262,11 @@ RELEASE_END:
 
       //printf("BB allowShiftsToClearError=%u !checkShifts=%u screenUpdatingMode=%u\n",allowShiftsToClearError, !checkShifts((char *)data), screenUpdatingMode);
 
+      if(PROBMENU) {
+        screenUpdatingMode &= ~(SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME);
+      }
+
+
       if(allowShiftsToClearError || !checkShifts((char *)data)) {
                     #if defined(PC_BUILD)
                       char tmp[200]; sprintf(tmp,">>> btnReleased (%s):   refreshScreen from keyboard.c  which is the main normal place for it.", (char *)data); jm_show_comment(tmp);
