@@ -19,6 +19,9 @@
 
 #else
   static bool_t checkParamExponential(real_t *x, real_t *i) {
+    if(!saveLastX())
+      return false;
+
     if(!getRegisterAsReal(REGISTER_X, x)
         || !getRegisterAsReal(REGISTER_R, i))
       goto err;
@@ -50,10 +53,6 @@
   void fnExponentialP(uint16_t unusedButMandatoryParameter) {
     real_t val, ans, dof;
 
-    if(!saveLastX()) {
-      return;
-    }
-
     if(checkParamExponential(&val, &dof)) {
       WP34S_Pdf_Expon(&val, &dof, &ans, &ctxtReal39);
       convertRealToResultRegister(&ans, REGISTER_X, amNone);
@@ -64,10 +63,6 @@
 
   void fnExponentialL(uint16_t unusedButMandatoryParameter) {
     real_t val, ans, dof;
-
-    if(!saveLastX()) {
-      return;
-    }
 
     if(checkParamExponential(&val, &dof)) {
       WP34S_Cdf_Expon(&val, &dof, &ans, &ctxtReal39);
@@ -80,10 +75,6 @@
   void fnExponentialR(uint16_t unusedButMandatoryParameter) {
     real_t val, ans, dof;
 
-    if(!saveLastX()) {
-      return;
-    }
-
     if(checkParamExponential(&val, &dof)) {
       WP34S_Cdfu_Expon(&val, &dof, &ans, &ctxtReal39);
       convertRealToResultRegister(&ans, REGISTER_X, amNone);
@@ -94,10 +85,6 @@
 
   void fnExponentialI(uint16_t unusedButMandatoryParameter) {
     real_t val, ans, dof;
-
-    if(!saveLastX()) {
-      return;
-    }
 
     if(checkParamExponential(&val, &dof)) {
       if(realCompareLessEqual(&val, const_0) || realCompareGreaterEqual(&val, const_1)) {

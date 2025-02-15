@@ -1320,15 +1320,15 @@
 #define ITM_GEV                     1283
 #define ITM_GEVU                    1284
 #define ITM_GEVM1                   1285
-#define ITM_1286                    1286
-#define ITM_1287                    1287
-#define ITM_1288                    1288
-#define ITM_1289                    1289
-#define ITM_1290                    1290
-#define ITM_1291                    1291
-#define ITM_1292                    1292
-#define ITM_1293                    1293
-#define ITM_1294                    1294
+#define MNU_PARETO                  1286    // Pareto distributions
+#define ITM_PARETOP                 1287
+#define ITM_PARETOL                 1288
+#define ITM_PARETOU                 1289
+#define ITM_PARETOM1                1290
+#define ITM_PARETO2P                1291
+#define ITM_PARETO2L                1292
+#define ITM_PARETO2U                1293
+#define ITM_PARETO2M1               1294
 #define ITM_1295                    1295
 #define ITM_1296                    1296 //this ITM_1296 is marked and used as the end of this section. If this is used, go change the reference in the code
 
@@ -2381,7 +2381,7 @@
 #define ITM_STO_M_u                 2326
 #define ITM_STO_S_si                2327
 #define ITM_STO_S_s                 2328
-#define ITM_2329                    2329
+#define ITM_STO_Q_alpha             2329
 #define ITM_STO_Q_xi                2330
 #define ITM_STO_Q_k                 2331
 #define ITM_STO_S_l                 2332

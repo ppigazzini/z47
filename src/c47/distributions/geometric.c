@@ -20,6 +20,9 @@
 
 #else
   static bool_t checkParamGeometric(real_t *x, real_t *i) {
+    if(!saveLastX())
+      return false;
+
     if(!getRegisterAsReal(REGISTER_X, x) || !getRegisterAsReal(REGISTER_P, i))
       goto err;
 
@@ -50,57 +53,38 @@
   void fnGeometricP(uint16_t unusedButMandatoryParameter) {
     real_t val, ans, prob;
 
-    if(!saveLastX()) {
-      return;
-    }
-
     if(checkParamGeometric(&val, &prob)) {
       WP34S_Pdf_Geom(&val, &prob, &ans, &ctxtReal39);
       convertRealToResultRegister(&ans, REGISTER_X, amNone);
+      adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
     }
-
-    adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
   }
 
 
   void fnGeometricL(uint16_t unusedButMandatoryParameter) {
     real_t val, ans, prob;
 
-    if(!saveLastX()) {
-      return;
-    }
-
     if(checkParamGeometric(&val, &prob)) {
       WP34S_Cdf_Geom(&val, &prob, &ans, &ctxtReal39);
       convertRealToResultRegister(&ans, REGISTER_X, amNone);
+      adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
     }
-
-    adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
   }
 
 
   void fnGeometricR(uint16_t unusedButMandatoryParameter) {
     real_t val, ans, prob;
 
-    if(!saveLastX()) {
-      return;
-    }
-
     if(checkParamGeometric(&val, &prob)) {
       WP34S_Cdfu_Geom(&val, &prob, &ans, &ctxtReal39);
       convertRealToResultRegister(&ans, REGISTER_X, amNone);
+      adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
     }
-
-    adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
   }
 
 
   void fnGeometricI(uint16_t unusedButMandatoryParameter) {
     real_t val, ans, prob;
-
-    if(!saveLastX()) {
-      return;
-    }
 
     if(checkParamGeometric(&val, &prob)) {
       if(realCompareLessEqual(&val, const_0) || realCompareGreaterEqual(&val, const_1)) {
@@ -115,9 +99,8 @@
       }
       WP34S_Qf_Geom(&val, &prob, &ans, &ctxtReal39);
       convertRealToResultRegister(&ans, REGISTER_X, amNone);
+      adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
     }
-
-    adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
   }
 
 
