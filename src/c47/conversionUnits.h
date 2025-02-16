@@ -147,6 +147,11 @@
     constFactoreVJ,
     constFactorJeV,
 
+    constFactormmBanana,
+    constFactorBananamm,
+    constFactorInchBanana,
+    constFactorBananaInch,
+
     constFactorEND              /* MUST be last */
   };
 
