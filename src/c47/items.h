@@ -1332,6 +1332,9 @@
 #define ITM_1295                    1295
 #define ITM_1296                    1296 //this ITM_1296 is marked and used as the end of this section. If this is used, go change the reference in the code
 
+#define PROBMENUSTART MNU_BINOM
+#define PROBMENUEND   ITM_1296
+
 
 // Curve fitting
 #define ITM_BESTF                   1297
