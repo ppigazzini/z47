@@ -427,8 +427,8 @@ TO_QSPI const int16_t menu_ConvX[]        = {
                                                     ITM_NULL,                 ITM_NULL,                 ITM_ZHANGtoM,             ITM_MtoZHANG,             ITM_CUNtoM,               ITM_MtoCUN,
                                                     ITM_NULL,                 ITM_NULL,                 ITM_CHItoM,               ITM_MtoCHI,               ITM_FENtoM,               ITM_MtoFEN,
                                                     ITM_MILEtoM,              ITM_MtoMILE,              ITM_FTUStoM,              ITM_MtoFTUS,              ITM_POINTtoMM,            ITM_MMtoPOINT,
-                                                    ITM_NMItoM,               ITM_MtoNMI,               ITM_FATHOMtoM,            ITM_MtoFATHOM,            ITM_NULL,                 ITM_NULL,
-                                                    ITM_NULL,                 ITM_NULL,                 ITM_NULL,                 ITM_NULL,                 ITM_NULL,                 ITM_NULL};
+                                                    ITM_NMItoM,               ITM_MtoNMI,               ITM_FATHOMtoM,            ITM_MtoFATHOM,            ITM_BANANAtoINCH,         ITM_INCHtoBANANA,
+                                                    ITM_NULL,                 ITM_NULL,                 ITM_NULL,                 ITM_NULL,                 ITM_BANANAtoMM,           ITM_MMtoBANANA};
 TO_QSPI const int16_t menu_ConvV[]        = {
                                                    ITM_IN3toML,               ITM_MLtoIN3,              ITM_FZUKtoIN3,            ITM_IN3toFZUK,            ITM_FT3toL,               ITM_LtoFT3,                
                                                    ITM_FZUKtoML,              ITM_MLtoFZUK,             ITM_GLUKtoFT3,            ITM_FT3toGLUK,            ITM_GLUKtoL,              ITM_LtoGLUK,               
