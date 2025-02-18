@@ -1201,7 +1201,7 @@ void graph_plotmem(void) {
                 rmsy = sqrt ( (rmsy * rmsy * ix + grf_y(ix) * grf_y(ix)) / (ix+1.0) );      // Changed rmsy to use the standard RMS calc, and not shoft it to the trapezium x-centre
               }
               if(PLOT_INTG) {
-                y = inty;                 //y is the default graph
+                inty = inty + (grf_y(ix) + grf_y(ix-1)) / 2 * ddx;
               }
             }
 
