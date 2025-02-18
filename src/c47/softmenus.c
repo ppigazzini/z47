@@ -211,21 +211,21 @@ DISTNMENU(menu_t,           ITM_TPX,        ITM_TX,         ITM_TUX,        ITM_
 DISTNMENU(menu_F,           ITM_FPX,        ITM_FX,         ITM_FUX,        ITM_FM1P,           ITM_STO_M_d1,    ITM_STO_N_d2,    ITM_NULL);
 DISTNMENU(menu_chi2,        ITM_chi2Px,     ITM_chi2x,      ITM_chi2ux,     ITM_chi2M1,         ITM_STO_M_nu,    ITM_NULL,        ITM_NULL);
 DISTNMENU(menu_StdNorml,    ITM_STDNORMLP,  ITM_STDNORML,   ITM_STDNORMLU,  ITM_STDNORMLM1,     ITM_NULL,        ITM_NULL,        ITM_NULL);
-DISTNMENU(menu_Cauch,       ITM_CAUCHP,     ITM_CAUCH,      ITM_CAUCHU,     ITM_CAUCHM1,        ITM_STO_M_x0,    ITM_STO_S_g,     ITM_NULL);
-DISTNMENU(menu_Expon,       ITM_EXPONP,     ITM_EXPON,      ITM_EXPONU,     ITM_EXPONM1,        ITM_STO_R_l,     ITM_NULL,        ITM_NULL);
-DISTNMENU(menu_Logis,       ITM_LOGISP,     ITM_LOGIS,      ITM_LOGISU,     ITM_LOGISM1,        ITM_STO_M_u,     ITM_STO_S_s,     ITM_NULL);
-DISTNMENU(menu_Weibl,       ITM_WEIBLP,     ITM_WEIBL,      ITM_WEIBLU,     ITM_WEIBLM1,        ITM_STO_Q_k,     ITM_STO_S_l,     ITM_NULL);
+DISTNMENU(menu_Cauch,       ITM_CAUCHP,     ITM_CAUCH,      ITM_CAUCHU,     ITM_CAUCHM1,        ITM_STO_M_x0,    ITM_STO_S_gamma, ITM_NULL);
+DISTNMENU(menu_Expon,       ITM_EXPONP,     ITM_EXPON,      ITM_EXPONU,     ITM_EXPONM1,        ITM_STO_R_lambda,ITM_NULL,        ITM_NULL);
+DISTNMENU(menu_Logis,       ITM_LOGISP,     ITM_LOGIS,      ITM_LOGISU,     ITM_LOGISM1,        ITM_STO_M_mu,    ITM_STO_S_s,     ITM_NULL);
+DISTNMENU(menu_Weibl,       ITM_WEIBLP,     ITM_WEIBL,      ITM_WEIBLU,     ITM_WEIBLM1,        ITM_STO_Q_k,     ITM_STO_S_lambda,ITM_NULL);
 DISTNMENU(menu_Geom,        ITM_GEOMP,      ITM_GEOM,       ITM_GEOMU,      ITM_GEOMM1,         ITM_STO_P_p,     ITM_NULL,        ITM_NULL);
 DISTNMENU(menu_Hyper,       ITM_HYPERP,     ITM_HYPER,      ITM_HYPERU,     ITM_HYPERM1,        ITM_STO_M_N,     ITM_STO_N1,      ITM_STO_Q_K);
-DISTNMENU(menu_Poiss,       ITM_POISSP,     ITM_POISS,      ITM_POISSU,     ITM_POISSM1,        ITM_STO_R_l,     ITM_NULL,        ITM_NULL);
-DISTNMENU(menu_GEV,         ITM_GEVP,       ITM_GEV,        ITM_GEVU,       ITM_GEVM1,          ITM_STO_M_u,     ITM_STO_S_si,    ITM_STO_Q_xi);
+DISTNMENU(menu_Poiss,       ITM_POISSP,     ITM_POISS,      ITM_POISSU,     ITM_POISSM1,        ITM_STO_R_lambda,ITM_NULL,        ITM_NULL);
+DISTNMENU(menu_GEV,         ITM_GEVP,       ITM_GEV,        ITM_GEVU,       ITM_GEVM1,          ITM_STO_M_mu,    ITM_STO_S_sigma, ITM_STO_Q_xi);
 
 DISTNMENU2(menu_Pareto,     ITM_PARETOP,    ITM_PARETOL,    ITM_PARETOU,    ITM_PARETOM1,
-                            ITM_PARETO2P,   ITM_PARETO2L,   ITM_PARETO2U,   ITM_PARETO2M1,       ITM_STO_M_u,     ITM_STO_S_si,    ITM_STO_Q_alpha);
+                            ITM_PARETO2P,   ITM_PARETO2L,   ITM_PARETO2U,   ITM_PARETO2M1,      ITM_STO_M_mu,    ITM_STO_S_sigma, ITM_STO_Q_alpha);
 DISTNMENU2(menu_Binom,      ITM_BINOMP,     ITM_BINOM,      ITM_BINOMU,     ITM_BINOMM1,
                             ITM_NBINP,      ITM_NBIN,       ITM_NBINU,      ITM_NBINM1,         ITM_STO_P_p,     ITM_STO_N1,      ITM_NULL);
 DISTNMENU2(menu_Norml,      ITM_NORMLP,     ITM_NORML,      ITM_NORMLU,     ITM_NORMLM1,
-                            ITM_LGNRMP,     ITM_LGNRM,      ITM_LGNRMU,     ITM_LGNRMM1,        ITM_STO_M_u,     ITM_STO_S_si,    ITM_NULL);
+                            ITM_LGNRMP,     ITM_LGNRM,      ITM_LGNRMU,     ITM_LGNRMM1,        ITM_STO_M_mu,    ITM_STO_S_sigma, ITM_NULL);
 
 /*      Menu name                  <----------------------------------------------------------------------------- 6 functions ---------------------------------------------------------------------------->  */
 /*                                 <---------------------------------------------------------------------- 6 f shifted functions ------------------------------------------------------------------------->  */
