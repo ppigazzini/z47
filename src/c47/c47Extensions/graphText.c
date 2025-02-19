@@ -913,7 +913,9 @@ void print_linestr(const char *line1, bool_t line_init) {
     if(g_line_y < SCREEN_HEIGHT) {
       ixx = showString(l1, &standardFont, (uint32_t) g_line_x, (uint32_t) g_line_y, vmNormal, true, true);
     }
-    g_line_y += 20;
+    if(!line_init) {
+      g_line_y += 20;
+    }
     if(g_line_y > SCREEN_HEIGHT - 20) {
       g_line_y = 40;
       g_line_x += 4;
