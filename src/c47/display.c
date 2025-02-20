@@ -2661,6 +2661,23 @@ void complex34MatrixToDisplayString(calcRegister_t regist, char *displayString) 
   sprintf(displayString, "[%" PRIu16 STD_CROSS "%" PRIu16 " " STD_COMPLEX_C " Matrix]", matrixHeader->matrixRows, matrixHeader->matrixColumns);
 }
 
+
+bool_t vectorToDisplayString(calcRegister_t regist, char *displayString) {
+  if(getRegisterDataType(regist) == dtReal34Matrix) {
+    matrixHeader_t *matrixHeader = REGISTER_MATRIX_HEADER(regist);
+    if ((matrixHeader->matrixRows == 1 &&  matrixHeader->matrixColumns != 1) || (matrixHeader->matrixRows != 1 &&  matrixHeader->matrixColumns == 1)) {
+      real34Matrix_t matrix;
+      int16_t ww= 0;
+      linkToRealMatrixRegister(regist, &matrix);
+      showRealMatrix(&matrix, ww,!toDisplayVectorMatrix);
+      sprintf(displayString, "%s", errorMessage);
+      return true;
+    }
+  }
+  return false;
+}
+
+
 #if !defined(TESTSUITE_BUILD)
 static void _complex34ToShowTmpString(const real34_t *r, const real34_t *i) {
   int16_t last;
@@ -2811,7 +2828,7 @@ static void dispM(uint16_t regist, char * prefix) {
   if(getRegisterDataType(regist) == dtReal34Matrix) {
     real34Matrix_t matrix;
     linkToRealMatrixRegister(regist, &matrix);
-    showRealMatrix(&matrix, prefixWidth);
+    showRealMatrix(&matrix, prefixWidth,toDisplayVectorMatrix);
     //printf("#### tmpString=%s prefix=%s prefixWidth=%u lastErrorCode=%u temporaryInformation=%u\n",tmpString,prefix,prefixWidth,lastErrorCode, temporaryInformation);
     if(lastErrorCode != 0) {
       refreshRegisterLine(errorMessageRegisterLine);

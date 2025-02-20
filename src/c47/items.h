@@ -2537,7 +2537,18 @@
 #define ITM_BANANAtoMM              2468           
 #define ITM_MMtoBANANA              2469
 
-#define LAST_ITEM                   2470
+#define ITM_V3TOCYL                 2470
+#define ITM_V3TOSPH                 2471
+#define ITM_VVDIST                  2472
+#define ITM_UNTAG                   2473
+#define ITM_STKTO1x3                2474
+#define ITM_1x3TOSTK                2475
+#define ITM_V100                    2476
+#define ITM_V010                    2477
+#define ITM_V001                    2478
+
+
+#define LAST_ITEM                   2479
 
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL

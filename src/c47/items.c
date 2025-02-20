@@ -3827,10 +3827,21 @@ TO_QSPI const item_t indexOfItems[] = {
 
 /* 2464 */  UNIT_CONV(constFactoreVJ,        divide,                     "eV" STD_RIGHT_ARROW "J" ,                     "eV"  STD_RIGHT_ARROW                   ),
 /* 2465 */  UNIT_CONV(constFactorJeV,      multiply,                     "J"  STD_RIGHT_ARROW "eV",                     "J" STD_RIGHT_ARROW                     ),
-/* 2466 */  UNIT_CONV(constFactorBananamm, multiply,                     "Banana"  STD_RIGHT_ARROW "mm",                "Banana" STD_RIGHT_ARROW                    ),
-/* 2467 */  UNIT_CONV(constFactormmBanana,  divide,                      "mm"  STD_RIGHT_ARROW "Banana",                "mm" STD_RIGHT_ARROW                ),
-/* 2468 */  UNIT_CONV(constFactorBananaInch,multiply,                    "Banana"  STD_RIGHT_ARROW "inch",              "Banana" STD_RIGHT_ARROW                  ),
-/* 2469 */  UNIT_CONV(constFactorInchBanana,divide,                      "inch"  STD_RIGHT_ARROW "Banana",              "inch" STD_RIGHT_ARROW                ),
+/* 2466 */  UNIT_CONV(constFactorBananamm, multiply,                     "Banana"  STD_RIGHT_ARROW "mm",                "Banana" STD_RIGHT_ARROW                ),
+/* 2467 */  UNIT_CONV(constFactormmBanana,  divide,                      "mm"  STD_RIGHT_ARROW "Banana",                "mm" STD_RIGHT_ARROW                    ),
+/* 2468 */  UNIT_CONV(constFactorBananaInch,multiply,                    "Banana"  STD_RIGHT_ARROW "inch",              "Banana" STD_RIGHT_ARROW                ),
+/* 2469 */  UNIT_CONV(constFactorInchBanana,divide,                      "inch"  STD_RIGHT_ARROW "Banana",              "inch" STD_RIGHT_ARROW                  ),
+
+/* 2470 */  { itemToBeCoded,                NOPARAM,                     "V" STD_SUB_3 STD_RIGHT_ARROW "CYL",           "V" STD_SUB_3 STD_RIGHT_ARROW "CYL",           (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
+/* 2471 */  { itemToBeCoded,                NOPARAM,                     "V" STD_SUB_3 STD_RIGHT_ARROW "SPH",           "V" STD_SUB_3 STD_RIGHT_ARROW "SPH",           (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
+/* 2472 */  { itemToBeCoded,                NOPARAM,                     "VVDIST",                                      "VVDIST",                                      (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
+/* 2473 */  { itemToBeCoded,                NOPARAM,                     "UNTAG",                                       "UNTAG",                                       (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
+/* 2474 */  { itemToBeCoded,                NOPARAM,                     "zyx" STD_RIGHT_ARROW "V" STD_SUB_3,           "zyx" STD_RIGHT_ARROW "V" STD_SUB_3,           (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
+/* 2475 */  { itemToBeCoded,                NOPARAM,                     "V" STD_SUB_3 STD_RIGHT_ARROW "zyx",           "V" STD_SUB_3 STD_RIGHT_ARROW "zyx",           (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
+/* 2476 */  { itemToBeCoded,                NOPARAM,                     "V" STD_SUB_3 "[100]",                         "V" STD_SUB_3 "[100]",                         (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
+/* 2477 */  { itemToBeCoded,                NOPARAM,                     "V" STD_SUB_3 "[010]",                         "V" STD_SUB_3 "[010]",                         (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
+/* 2478 */  { itemToBeCoded,                NOPARAM,                     "V" STD_SUB_3 "[001]",                         "V" STD_SUB_3 "[001]",                         (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
+
 
 /* 2470 */  { itemToBeCoded,                NOPARAM,                     "",                                            "Last item",                                   (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 
