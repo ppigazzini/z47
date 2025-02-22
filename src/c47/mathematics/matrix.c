@@ -1278,12 +1278,15 @@ void fnEigenvalues(uint16_t unusedParamButMandatory) {
 
     linkToRealMatrixRegister(REGISTER_X, &x);
 
-    if(x.header.matrixRows != x.header.matrixColumns && x.header.matrixRows >= 2) {
+    if(x.header.matrixRows != x.header.matrixColumns) {
       displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "rectangular or single-element matrix or (%d" STD_CROSS "%d)", x.header.matrixRows, x.header.matrixColumns);
         moreInfoOnError("In function fnEigenvalues:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+    }
+    else if(x.header.matrixRows == 1 && x.header.matrixColumns == 1) {
+      fnRecallVElement(1);
     }
     else {
       setSystemFlag(FLAG_ASLIFT);
@@ -1320,12 +1323,15 @@ void fnEigenvalues(uint16_t unusedParamButMandatory) {
 
     linkToComplexMatrixRegister(REGISTER_X, &x);
 
-    if(x.header.matrixRows != x.header.matrixColumns && x.header.matrixRows >= 2) {
+    if(x.header.matrixRows != x.header.matrixColumns) {
       displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "rectangular or single-element matrix or (%d" STD_CROSS "%d)", x.header.matrixRows, x.header.matrixColumns);
         moreInfoOnError("In function fnEigenvalues:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+    }
+    else if(x.header.matrixRows == 1 && x.header.matrixColumns == 1) {
+      fnRecallVElement(1);
     }
     else {
       setSystemFlag(FLAG_ASLIFT);
@@ -1347,19 +1353,45 @@ void fnEigenvalues(uint16_t unusedParamButMandatory) {
 }
 
 
+
+
+void createEigenVector1(void){
+  real34Matrix_t matrix;
+    if(initMatrixRegister(REGISTER_X, 1, 1, false)) {
+    }
+    else {
+      displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        sprintf(errorMessage, "Not enough memory for a %" PRIu32 STD_CROSS "%" PRIu32 " matrix", 1, 1);
+        moreInfoOnError("In function createEigenVector1:", errorMessage, NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+      return;
+    }
+  linkToRealMatrixRegister(REGISTER_X,  &matrix);
+  realToReal34(const_1, &matrix.matrixElements[0]);
+  adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
+}
+
+
+
 void fnEigenvectors(uint16_t unusedParamButMandatory) {
   if(getRegisterDataType(REGISTER_X) == dtReal34Matrix) {
     real34Matrix_t x, res, ires;
 
     linkToRealMatrixRegister(REGISTER_X, &x);
 
-    if(x.header.matrixRows != x.header.matrixColumns && x.header.matrixRows >= 2) {
+    if(x.header.matrixRows != x.header.matrixColumns) {
       displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "rectangular or single-element matrix or (%d" STD_CROSS "%d)",
                 x.header.matrixRows, x.header.matrixColumns);
         moreInfoOnError("In function fnEigenvectors:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+    }
+    else if(x.header.matrixRows == 1 && x.header.matrixColumns == 1) {
+      setSystemFlag(FLAG_ASLIFT);
+      liftStack();
+      createEigenVector1();
     }
     else {
       setSystemFlag(FLAG_ASLIFT);
@@ -1393,12 +1425,17 @@ void fnEigenvectors(uint16_t unusedParamButMandatory) {
 
     linkToComplexMatrixRegister(REGISTER_X, &x);
 
-    if(x.header.matrixRows != x.header.matrixColumns && x.header.matrixRows >= 2) {
+    if(x.header.matrixRows != x.header.matrixColumns) {
       displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "rectangular or single-element matrix or (%d" STD_CROSS "%d)", x.header.matrixRows, x.header.matrixColumns);
         moreInfoOnError("In function fnEigenvectors:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+    }
+    else if(x.header.matrixRows == 1 && x.header.matrixColumns == 1) {
+      setSystemFlag(FLAG_ASLIFT);
+      liftStack();
+      createEigenVector1();
     }
     else {
       setSystemFlag(FLAG_ASLIFT);
