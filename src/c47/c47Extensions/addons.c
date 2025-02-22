@@ -553,15 +553,41 @@ void fn_cnst_op_A(uint16_t unusedButMandatoryParameter) {
 }
 
 
-void fnConvertStkToMx(uint16_t unusedButMandatoryParameter) {
+
+TO_QSPI static const struct {
+    unsigned rows  : 2;
+    unsigned cols  : 2;
+    unsigned x     : 2;
+    unsigned y     : 2;
+    unsigned z     : 2;
+    unsigned xdef  : 2;
+    unsigned ydef  : 2;
+    unsigned zdef  : 2;
+} vecCreate[] = {
+//           r  c   x    y    z   xdef ydef zdef // x=2 means that REG_X is copied to matrix element 2
+    [ 1] = { 3, 1,  2 ,  1,   0,   2,   2,   2 },
+    [ 2] = { 1, 3,  0 ,  1,   2,   2,   2,   2 },
+    [ 3] = { 1, 3,  0 ,  1,   2,   0,   0,   1 },
+    [ 4] = { 1, 3,  0 ,  1,   2,   0,   1,   0 },
+    [ 5] = { 1, 3,  0 ,  1,   2,   1,   0,   0 }
+  };
+
+
+void fnConvertStkToMx(uint16_t param) {
   bool_t complexCoefs = false;
   struct cmplxPair x[3];
   real34Matrix_t matrix;
   complex34Matrix_t matrixC;
 
-  if(!(getRegisterAsComplexOrReal(REGISTER_X, &x[0].r, &x[0].i, &complexCoefs) &&
-       getRegisterAsComplexOrReal(REGISTER_Y, &x[1].r, &x[1].i, &complexCoefs) &&
-       getRegisterAsComplexOrReal(REGISTER_Z, &x[2].r, &x[2].i, &complexCoefs))) {
+  const bool_t setDefaults = vecCreate[param].xdef != 2 || vecCreate[param].ydef != 2 || vecCreate[param].zdef != 2;
+  if(setDefaults) {
+    realCopy(vecCreate[param].xdef == 1 ? const_1 : const_0, &x[vecCreate[param].x].r);
+    realCopy(vecCreate[param].ydef == 1 ? const_1 : const_0, &x[vecCreate[param].y].r);
+    realCopy(vecCreate[param].zdef == 1 ? const_1 : const_0, &x[vecCreate[param].z].r);
+  }
+  else if(!(getRegisterAsComplexOrReal(REGISTER_X, &x[vecCreate[param].x].r, &x[vecCreate[param].x].i, &complexCoefs) &&
+            getRegisterAsComplexOrReal(REGISTER_Y, &x[vecCreate[param].y].r, &x[vecCreate[param].y].i, &complexCoefs) &&
+            getRegisterAsComplexOrReal(REGISTER_Z, &x[vecCreate[param].z].r, &x[vecCreate[param].z].i, &complexCoefs))) {
     return;
   }
 
@@ -569,13 +595,18 @@ void fnConvertStkToMx(uint16_t unusedButMandatoryParameter) {
     return;
   }
 
-  fnDrop(NOPARAM);
-  fnDrop(NOPARAM);
+  if(setDefaults) {
+    setSystemFlag(FLAG_ASLIFT);
+    liftStack();
+  } else {
+    fnDrop(NOPARAM);
+    fnDrop(NOPARAM);
+  }
 
 
   if(getRegisterDataType(REGISTER_X) != dtReal34Matrix && getRegisterDataType(REGISTER_X) != dtComplex34Matrix) {
     //Initialize Memory for Matrix
-    if(initMatrixRegister(REGISTER_X, 3, 1, complexCoefs)) {
+    if(initMatrixRegister(REGISTER_X, vecCreate[param].rows, vecCreate[param].cols, complexCoefs)) {
     }
     else {
       displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
@@ -605,11 +636,12 @@ void fnConvertStkToMx(uint16_t unusedButMandatoryParameter) {
       realToReal34(&x[2-i].r, &matrix.matrixElements[i]);
     }
   }
+
   adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
 
 }
 
-void fnConvertMxToStk(uint16_t unusedButMandatoryParameter) {
+void fnConvertMxToStk(uint16_t param) {
   real34Matrix_t matrix;
   complex34Matrix_t matrixC;
 
@@ -638,14 +670,15 @@ void fnConvertMxToStk(uint16_t unusedButMandatoryParameter) {
 
 
   for (int i = 0; i < 3; i++) {
+    uint16_t rg = vecCreate[param].x == 2-i ? REGISTER_X : vecCreate[param].y == 2-i ? REGISTER_Y : vecCreate[param].z == 2-i ? REGISTER_Z : 0;
     if(getRegisterDataType(TEMP_REGISTER_1) == dtComplex34Matrix) {
-      real34Copy(VARIABLE_REAL34_DATA(&matrixC.matrixElements[i]),REGISTER_REAL34_DATA(REGISTER_X+(2-i)));
-      real34Copy(VARIABLE_REAL34_DATA(&matrixC.matrixElements[i]),REGISTER_IMAG34_DATA(REGISTER_X+(2-i)));
+      real34Copy(VARIABLE_REAL34_DATA(&matrixC.matrixElements[i]),REGISTER_REAL34_DATA(rg));
+      real34Copy(VARIABLE_REAL34_DATA(&matrixC.matrixElements[i]),REGISTER_IMAG34_DATA(rg));
     }
     else {
-      real34Copy(&matrix.matrixElements[i],REGISTER_REAL34_DATA(REGISTER_X+(2-i)));
+      real34Copy(&matrix.matrixElements[i],REGISTER_REAL34_DATA(rg));
     }
-    adjustResult(REGISTER_X+(2-i), false, false, REGISTER_X+(2-i), -1, -1);
+    adjustResult(rg, false, false, rg, -1, -1);
   }
 }
 
