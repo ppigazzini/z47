@@ -340,7 +340,7 @@
           showSoftmenu(-MNU_TAMFLAG);
         }
         else if(tam.mode == TM_STORCL) {
-          showSoftmenu(-MNU_TAMSTORCL);
+          showSoftmenu(item == ITM_STO ? -MNU_TAMSTO : -MNU_TAMRCL); // -MNU_TAMSTORCL);
         }
         else if(tam.mode == TM_LABEL || (tam.mode == TM_KEY && tam.keyInputFinished)) {
           showSoftmenu(-MNU_TAMLABEL);
@@ -429,7 +429,8 @@
           case -MNU_TAMCMP      :
           case -MNU_TAMLABEL    :
           case -MNU_TAM         :
-          case -MNU_TAMSTORCL   :
+          case -MNU_TAMSTO      :
+          case -MNU_TAMRCL      :
           case -MNU_TAMMENU     :
           case -MNU_TAMINDIRECT :
             showSoftmenu(-MNU_TAMALPHA);
@@ -440,7 +441,7 @@
       }
       return;
     }
-    else if(item==ITM_Max || item==ITM_Min || item==ITM_ADD || item==ITM_SUB || item==ITM_MULT || item==ITM_DIV || item==ITM_Config || item==ITM_Stack || item==ITM_dddEL || item==ITM_dddIJ) { // Operation
+    else if(item==ITM_Max || item==ITM_Min || item==ITM_ADD || item==ITM_SUB || item==ITM_MULT || item==ITM_DIV || item==ITM_Config || item==ITM_Stack || item==ITM_dddEL || item==ITM_dddIJ || (item >= ITM_STOVEL1 && item <= ITM_STOVEL3)|| (item >= ITM_RCLVEL1 && item <= ITM_RCLVEL3)) { // Operation
       if(!tam.digitsSoFar && !tam.indirect) {
         if(tam.function == ITM_GTO) {
           if(item == ITM_Max) { // UP
@@ -483,6 +484,30 @@
           if(item == tam.currentOperation) {
             tam.currentOperation = tam.function;
           }
+
+          else if((item >= ITM_STOVEL1 && item <= ITM_STOVEL3) || (item >= ITM_RCLVEL1 && item <= ITM_RCLVEL3)) {
+            tam.currentOperation = item;
+            switch(calcMode) {
+              case CM_MIM: {
+                break;
+              }
+              case CM_PEM: {
+                addStepInProgram(item);
+                break;
+              }
+              default: {
+                runFunction(item);
+              }
+            }
+            if(tam.mode) {
+              tamLeaveMode();
+            }
+            hourGlassIconEnabled = false;
+            return;
+          }
+
+
+
           else {
             tam.currentOperation = item;
             if(item == ITM_dddEL || item == ITM_dddIJ) {
@@ -675,6 +700,33 @@
       }
       return;
     }
+
+
+    else if(item == ITM_RCLVEL) {
+      if(calcMode != CM_MIM && !tam.alpha && !tam.digitsSoFar && !tam.dot && !valueParameter && (indexOfItems[tam.function].status & PTP_STATUS) != PTP_SKIP_BACK && (indexOfItems[tam.function].status & PTP_STATUS) != PTP_DECLARE_LABEL) {
+         tamLeaveMode();
+         runFunction(item);
+      }
+      return;
+    }
+
+//else if(item >= ITM_RCLVEL1 && item <= ITM_RCLVEL3) {
+//  if(!tam.alpha && !tam.digitsSoFar && !tam.dot && !valueParameter && (indexOfItems[tam.function].status & PTP_STATUS) != PTP_SKIP_BACK && (indexOfItems[tam.function].status & PTP_STATUS) != PTP_DECLARE_LABEL) {
+//     tamLeaveMode();
+//     reallyRunFunction(item, item - ITM_RCLVEL1 + 1);
+//  }
+//  return;
+//}
+//else if(item >= ITM_STOVEL1 && item <= ITM_STOVEL3) {
+//  if(!tam.alpha && !tam.digitsSoFar && !tam.dot && !valueParameter && (indexOfItems[tam.function].status & PTP_STATUS) != PTP_SKIP_BACK && (indexOfItems[tam.function].status & PTP_STATUS) != PTP_DECLARE_LABEL) {
+//     tamLeaveMode();
+//     reallyRunFunction(item, item - ITM_STOVEL1 + 1);
+//  }
+//  return;
+//}
+
+
+
     else if(item == ITM_INDIRECTION) {
       if(!tam.alpha && !tam.digitsSoFar && !tam.dot && !valueParameter && (indexOfItems[tam.function].status & PTP_STATUS) != PTP_SKIP_BACK && (indexOfItems[tam.function].status & PTP_STATUS) != PTP_DECLARE_LABEL) {
         if(!tam.indirect) {
@@ -1070,7 +1122,7 @@
 
       case TM_STORCL: {
         if(!catalog || catalog != CATALOG_MVAR) {
-          showSoftmenu(-MNU_TAMSTORCL);
+          showSoftmenu(func == ITM_STO ? -MNU_TAMSTO : -MNU_TAMRCL); // -MNU_TAMSTORCL);
         }
         break;
       }
