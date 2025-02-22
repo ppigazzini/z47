@@ -38,6 +38,9 @@
           case ITM_dddIJ: {
            return ITM_STOIJ;
           }
+          case ITM_dddVEL: {
+            return ITM_STOVEL;
+          }
           default: {
             return ITM_STO;
           }
@@ -75,6 +78,9 @@
           }
           case ITM_dddIJ: {
             return ITM_RCLIJ;
+          }
+          case ITM_dddVEL: {
+            return ITM_RCLVEL;
           }
           default: {
             return ITM_RCL;
@@ -441,7 +447,7 @@
       }
       return;
     }
-    else if(item==ITM_Max || item==ITM_Min || item==ITM_ADD || item==ITM_SUB || item==ITM_MULT || item==ITM_DIV || item==ITM_Config || item==ITM_Stack || item==ITM_dddEL || item==ITM_dddIJ || (item >= ITM_STOVEL1 && item <= ITM_STOVEL3)|| (item >= ITM_RCLVEL1 && item <= ITM_RCLVEL3)) { // Operation
+    else if(item==ITM_Max || item==ITM_Min || item==ITM_ADD || item==ITM_SUB || item==ITM_MULT || item==ITM_DIV || item==ITM_Config || item==ITM_Stack || item==ITM_dddEL || item==ITM_dddIJ || item == ITM_dddVEL || (item >= ITM_STOVEL1 && item <= ITM_STOVEL3)|| (item >= ITM_RCLVEL1 && item <= ITM_RCLVEL3)) { // Operation
       if(!tam.digitsSoFar && !tam.indirect) {
         if(tam.function == ITM_GTO) {
           if(item == ITM_Max) { // UP
@@ -506,6 +512,18 @@
             return;
           }
 
+
+          else if(item == ITM_dddVEL) {
+            tam.currentOperation = item;
+            if(calcMode != CM_MIM 
+//                && !tam.alpha && !tam.dot
+//                && (indexOfItems[tam.function].status & PTP_STATUS) != PTP_SKIP_BACK && (indexOfItems[tam.function].status & PTP_STATUS) != PTP_DECLARE_LABEL
+              ) {
+             tamLeaveMode();
+             runFunction(tamOperation());
+            }
+            return;
+          }
 
 
           else {
@@ -700,19 +718,6 @@
       }
       return;
     }
-
-
-    else if(item == ITM_RCLVEL || item == ITM_STOVEL) {
-      if(calcMode != CM_MIM && !tam.alpha && !tam.digitsSoFar && !tam.dot && !valueParameter && 
-          (indexOfItems[tam.function].status & PTP_STATUS) != PTP_SKIP_BACK && 
-          (indexOfItems[tam.function].status & PTP_STATUS) != PTP_DECLARE_LABEL) {
-         tamLeaveMode();
-         runFunction(item);
-      }
-      return;
-    }
-
-
     else if(item == ITM_INDIRECTION) {
       if(!tam.alpha && !tam.digitsSoFar && !tam.dot && !valueParameter && (indexOfItems[tam.function].status & PTP_STATUS) != PTP_SKIP_BACK && (indexOfItems[tam.function].status & PTP_STATUS) != PTP_DECLARE_LABEL) {
         if(!tam.indirect) {

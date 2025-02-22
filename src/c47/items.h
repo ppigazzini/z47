@@ -2553,8 +2553,9 @@
 #define ITM_STOVEL1                 2482
 #define ITM_STOVEL2                 2483
 #define ITM_STOVEL3                 2484
+#define ITM_dddVEL                  2485
 
-#define LAST_ITEM                   2485
+#define LAST_ITEM                   2486
 
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL
