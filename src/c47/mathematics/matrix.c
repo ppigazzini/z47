@@ -918,6 +918,14 @@ void fnEuclideanNorm(uint16_t unusedParamButMandatory) {
 }
 
 
+void fnVectorDist(uint16_t unusedParamButMandatory) {
+  fnSubtract(NOPARAM);
+  fnEuclideanNorm(NOPARAM);
+}
+
+
+
+
 void fnRowSum(uint16_t unusedParamButMandatory) {
   if(!saveLastX()) {
     return;
