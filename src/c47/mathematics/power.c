@@ -228,18 +228,18 @@ uint8_t PowerComplex(const real_t *yReal, const real_t *yImag, const real_t *xRe
       real_t theta;
       real_t tmp;
 
-      realRectangularToPolar(yReal, yImag, rReal, &theta, realContext);
+      realRectangularToPolar(yReal, yImag, rReal, &theta, &ctxtReal75);
       WP34S_Ln(rReal, rReal, realContext);
 
       realMultiply(rReal, xImag, rImag, realContext);
-      realFMA(&theta, xReal, rImag, rImag, realContext);
+      realFMA(&theta, xReal, rImag, rImag, &ctxtReal75);
       realChangeSign(&theta);
 
       realMultiply(rReal, xReal, rReal, realContext);
       realFMA(&theta, xImag, rReal, rReal, realContext);
 
       realExp(rReal, &tmp, realContext);
-      realPolarToRectangular(const_1, rImag, rReal, rImag, realContext);
+      realPolarToRectangular(const_1, rImag, rReal, rImag, &ctxtReal75);
       realMultiply(&tmp, rImag, rImag, realContext);
       realMultiply(&tmp, rReal, rReal, realContext);
   }
