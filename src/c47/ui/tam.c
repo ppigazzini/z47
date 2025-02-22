@@ -702,29 +702,15 @@
     }
 
 
-    else if(item == ITM_RCLVEL) {
-      if(calcMode != CM_MIM && !tam.alpha && !tam.digitsSoFar && !tam.dot && !valueParameter && (indexOfItems[tam.function].status & PTP_STATUS) != PTP_SKIP_BACK && (indexOfItems[tam.function].status & PTP_STATUS) != PTP_DECLARE_LABEL) {
+    else if(item == ITM_RCLVEL || item == ITM_STOVEL) {
+      if(calcMode != CM_MIM && !tam.alpha && !tam.digitsSoFar && !tam.dot && !valueParameter && 
+          (indexOfItems[tam.function].status & PTP_STATUS) != PTP_SKIP_BACK && 
+          (indexOfItems[tam.function].status & PTP_STATUS) != PTP_DECLARE_LABEL) {
          tamLeaveMode();
          runFunction(item);
       }
       return;
     }
-
-//else if(item >= ITM_RCLVEL1 && item <= ITM_RCLVEL3) {
-//  if(!tam.alpha && !tam.digitsSoFar && !tam.dot && !valueParameter && (indexOfItems[tam.function].status & PTP_STATUS) != PTP_SKIP_BACK && (indexOfItems[tam.function].status & PTP_STATUS) != PTP_DECLARE_LABEL) {
-//     tamLeaveMode();
-//     reallyRunFunction(item, item - ITM_RCLVEL1 + 1);
-//  }
-//  return;
-//}
-//else if(item >= ITM_STOVEL1 && item <= ITM_STOVEL3) {
-//  if(!tam.alpha && !tam.digitsSoFar && !tam.dot && !valueParameter && (indexOfItems[tam.function].status & PTP_STATUS) != PTP_SKIP_BACK && (indexOfItems[tam.function].status & PTP_STATUS) != PTP_DECLARE_LABEL) {
-//     tamLeaveMode();
-//     reallyRunFunction(item, item - ITM_STOVEL1 + 1);
-//  }
-//  return;
-//}
-
 
 
     else if(item == ITM_INDIRECTION) {
