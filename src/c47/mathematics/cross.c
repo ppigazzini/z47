@@ -131,20 +131,30 @@ void fnCross(uint16_t unusedButMandatoryParameter) {
 
   if (tx == dtComplex34Matrix) {
     if (ty == dtComplex34Matrix) {
-      if (saveLastX())
+      if (saveLastX()) {
         crossCpmaCpma();
+        adjustResult(REGISTER_X, true, true, REGISTER_X, -1, -1);
+      }
     } else if (ty == dtReal34Matrix) {
-      if (saveLastX())
+      if (saveLastX()) {
         crossRemaCpma();
+        adjustResult(REGISTER_X, true, true, REGISTER_X, -1, -1);
+      }
     } else
       goto type_err;
-  } else if (tx == dtReal34Matrix) {
+  }
+
+  else if (tx == dtReal34Matrix) {
     if (ty == dtComplex34Matrix) {
-      if (saveLastX())
+      if (saveLastX()) {
         crossCpmaRema();
+        adjustResult(REGISTER_X, true, true, REGISTER_X, -1, -1);
+      }
     } else if (ty == dtReal34Matrix) {
-      if (saveLastX())
+      if (saveLastX()) {
         crossRemaRema();
+        adjustResult(REGISTER_X, true, true, REGISTER_X, -1, -1);
+      }
     } else
       goto type_err;
   } else if (ty == dtComplex34Matrix || ty == dtReal34Matrix) {
