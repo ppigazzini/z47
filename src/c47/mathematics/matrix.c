@@ -1354,22 +1354,27 @@ void fnEigenvalues(uint16_t unusedParamButMandatory) {
 
 
 
-
-void createEigenVector1(void){
+static uint8_t createEigenVectorIf1x1(uint16_t Rows, uint16_t Columns){
   real34Matrix_t matrix;
-    if(initMatrixRegister(REGISTER_X, 1, 1, false)) {
-    }
-    else {
+  if(Rows == 1 && Columns == 1) {
+    setSystemFlag(FLAG_ASLIFT);
+    liftStack();
+    if(!initMatrixRegister(REGISTER_X, 1, 1, false)) {
+      fnDrop(NOPARAM);
       displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         sprintf(errorMessage, "Not enough memory for a %" PRIu32 STD_CROSS "%" PRIu32 " matrix", 1, 1);
         moreInfoOnError("In function createEigenVector1:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-      return;
+      return 255;
     }
-  linkToRealMatrixRegister(REGISTER_X,  &matrix);
-  realToReal34(const_1, &matrix.matrixElements[0]);
-  adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
+    linkToRealMatrixRegister(REGISTER_X,  &matrix);
+    realToReal34(const_1, &matrix.matrixElements[0]);
+    adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
+    return 1;
+  } else {
+    return 0;
+  }
 }
 
 
@@ -1388,12 +1393,10 @@ void fnEigenvectors(uint16_t unusedParamButMandatory) {
         moreInfoOnError("In function fnEigenvectors:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
-    else if(x.header.matrixRows == 1 && x.header.matrixColumns == 1) {
-      setSystemFlag(FLAG_ASLIFT);
-      liftStack();
-      createEigenVector1();
-    }
-    else {
+    else switch(createEigenVectorIf1x1(x.header.matrixRows, x.header.matrixColumns)) {
+      case 1  : break;
+      case 255: return;
+      default :
       setSystemFlag(FLAG_ASLIFT);
       liftStack();
       ires.header.matrixRows = ires.header.matrixColumns = 0;
@@ -1432,12 +1435,10 @@ void fnEigenvectors(uint16_t unusedParamButMandatory) {
         moreInfoOnError("In function fnEigenvectors:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
-    else if(x.header.matrixRows == 1 && x.header.matrixColumns == 1) {
-      setSystemFlag(FLAG_ASLIFT);
-      liftStack();
-      createEigenVector1();
-    }
-    else {
+    else switch(createEigenVectorIf1x1(x.header.matrixRows, x.header.matrixColumns)) {
+      case 1  : break;
+      case 255: return;
+      default :
       setSystemFlag(FLAG_ASLIFT);
       liftStack();
       complexEigenvectors(&x, &res);
