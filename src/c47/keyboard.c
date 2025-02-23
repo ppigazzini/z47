@@ -1640,17 +1640,50 @@ int16_t lastItem = 0;
           break;
         }
         default: {
-          switch(key->primaryAim) {
-            case ITM_A:
-            case ITM_B:
-            case ITM_C:
-            case ITM_D:
-            case ITM_L:
-            case ITM_I:
-            case ITM_J:
-            case ITM_K: {
-              result = key->primaryAim;
+          if(calcModel == USER_C47) {
+            switch(key->primaryAim) {
+              case ITM_A:
+              case ITM_B:
+              case ITM_C:
+              case ITM_D:
+              case ITM_E:
+              case ITM_F:
+              case ITM_G:
+              case ITM_I:
+              case ITM_J:
+              case ITM_K: 
+              case ITM_L:
+              case ITM_M:
+              case ITM_N:
+              case ITM_O:
+              case ITM_W:
+              case ITM_S:
+              {
+                result = key->primaryAim;
+              }
             }
+          } 
+          else if(isR47FAM) {
+            switch(key->primaryAim) {
+              case ITM_A:
+              case ITM_B:
+              case ITM_C:
+              case ITM_D:
+              case ITM_E:
+              case ITM_F:
+              case ITM_G:
+              case ITM_I:
+              case ITM_J:
+              case ITM_K: 
+              case ITM_L:
+              case ITM_M:
+              case ITM_Q:
+              case ITM_U:
+              case ITM_Y:
+              {
+                result = key->primaryAim;
+              }
+            }            
           }
         }
       }
@@ -3019,6 +3052,11 @@ RELEASE_END:
                   rbrMode = RBR_GLOBAL;
                   rbr1stDigit = true;
                   currentRegisterBrowserScreen = REGISTER_W;
+                }
+                else if(item == ITM_Y) {
+                  rbrMode = RBR_GLOBAL;
+                  rbr1stDigit = true;
+                  currentRegisterBrowserScreen = REGISTER_Y;
                 }
 
                 keyActionProcessed = true;
@@ -4469,7 +4507,13 @@ void fnKeyUp(uint16_t unusedButMandatoryParameter) {
       case CM_REGISTER_BROWSER: {
         rbr1stDigit = true;
         if(rbrMode == RBR_GLOBAL) {
-          currentRegisterBrowserScreen = modulo(currentRegisterBrowserScreen + RBR_INCDEC1, FIRST_LOCAL_REGISTER);
+          if(currentRegisterBrowserScreen + RBR_INCDEC1 > LAST_SPARE_REGISTER) {
+            currentRegisterBrowserScreen = 0;
+          } else if(currentRegisterBrowserScreen%RBR_INCDEC1 > 0) {         //13:  3>0
+            currentRegisterBrowserScreen = ((int16_t)(currentRegisterBrowserScreen / RBR_INCDEC1)+1) * RBR_INCDEC1;   //  :  (13/10)10 = 10
+          } else {
+            currentRegisterBrowserScreen = modulo(currentRegisterBrowserScreen + RBR_INCDEC1, LAST_SPARE_REGISTER);
+          }
         }
         else if(rbrMode == RBR_LOCAL) {
           currentRegisterBrowserScreen = modulo(currentRegisterBrowserScreen - FIRST_LOCAL_REGISTER + 1, currentNumberOfLocalRegisters) + FIRST_LOCAL_REGISTER;
@@ -4688,7 +4732,16 @@ void fnKeyDown(uint16_t unusedButMandatoryParameter) {
       case CM_REGISTER_BROWSER: {
         rbr1stDigit = true;
         if(rbrMode == RBR_GLOBAL) {
-          currentRegisterBrowserScreen = modulo(currentRegisterBrowserScreen - RBR_INCDEC1, FIRST_LOCAL_REGISTER);
+          if(currentRegisterBrowserScreen + RBR_INCDEC1 > LAST_SPARE_REGISTER + 1) {
+            currentRegisterBrowserScreen = LAST_SPARE_REGISTER - RBR_INCDEC1 + 1;
+          } else if(currentRegisterBrowserScreen%RBR_INCDEC1 > 0) {         //13:  3>0
+            currentRegisterBrowserScreen = ((int16_t)(currentRegisterBrowserScreen / RBR_INCDEC1)) * RBR_INCDEC1;   //  :  (13/10)10 = 10
+          } else {
+            currentRegisterBrowserScreen -= RBR_INCDEC1;
+            if(currentRegisterBrowserScreen < 0) {
+              currentRegisterBrowserScreen = LAST_SPARE_REGISTER - RBR_INCDEC1 + 1; 
+            }
+          }
         }
         else if(rbrMode == RBR_LOCAL) {
           currentRegisterBrowserScreen = modulo(currentRegisterBrowserScreen - FIRST_LOCAL_REGISTER - 1, currentNumberOfLocalRegisters) + FIRST_LOCAL_REGISTER;
