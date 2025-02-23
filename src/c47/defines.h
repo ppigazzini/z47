@@ -642,7 +642,7 @@
 #define FLAG_NVECT                            0x8054
 #define FLAG_US                               0x8055
 
-#define NUMBER_OF_SYSTEM_FLAGS                    85 // We can have a maximum of 128 system flags
+#define NUMBER_OF_SYSTEM_FLAGS                 64+22 // We can have a maximum of 128 system flags
 
 // FLGS and STATUS SCREENS
 #define NO_SCREEN                          0  // No screen selected
@@ -1121,6 +1121,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define X_DATE                                   (SBARUPD_Time ? 1 : 25)
 #define X_TIME                                    45  // note: this is used only if DATE is not displayed, otherwise TIME is printed directly next to date's end
 #define X_REAL_COMPLEX                           136
+#define X_HOURGLASS_GRAPHS                       140
 #define X_COMPLEX_MODE                           146
 #define X_COMPLEX_MODE_ADJ                        -8  // note: auto moved left if REAL_COMPLEX is not present
 #define X_ANGULAR_MODE                           160
@@ -1128,10 +1129,9 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define X_INTEGER_MODE                           262
 #define X_OVERFLOW_CARRY                         292
 #define X_ALPHA_MODE                             300
-#define X_SSIZE_BEGIN                            327 -5
 #define X_HOURGLASS                              312
-#define X_ASM                                    (X_ALPHA_MODE + 34)
-#define X_HOURGLASS_GRAPHS                       140
+#define X_SSIZE_BEGIN                            327 - 5 + 3
+#define X_ASM                                    (X_ALPHA_MODE + 34) //334
 #define X_WATCH                                  337
 #define X_SERIAL_IO                              353
 #define X_PRINTER                                362
