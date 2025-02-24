@@ -630,8 +630,8 @@ TO_QSPI const int16_t menu_Flg[]         = { ITM_REG_M,                     ITM_
 
 
 TO_QSPI const int16_t menu_TamSto[]      = { ITM_INDIRECTION,               -MNU_VAR,                   ITM_REG_X,                ITM_REG_Y,             ITM_REG_Z,                   ITM_REG_T,
-                                             ITM_Config,                    ITM_Stack,                  ITM_NULL,                 ITM_Max,               ITM_Min,                     -MNU_REG,
-                                             ITM_dddEL,                     ITM_dddIJ,                  ITM_STOVEL1,              ITM_STOVEL2,           ITM_STOVEL3,                 ITM_STOVEL                    };
+                                             ITM_Config,                    ITM_Stack,                  ITM_dddIX,                ITM_Max,               ITM_Min,                     -MNU_REG,
+                                             ITM_dddEL,                     ITM_dddIJ,                  ITM_STOVEL1,              ITM_STOVEL2,           ITM_STOVEL3,                 ITM_dddVEL                    };
 
 TO_QSPI const int16_t menu_TamRcl[]      = { ITM_INDIRECTION,               -MNU_VAR,                   ITM_REG_X,                ITM_REG_Y,             ITM_REG_Z,                   ITM_REG_T,
                                              ITM_Config,                    ITM_Stack,                  ITM_NULL,                 ITM_Max,               ITM_Min,                     -MNU_REG,

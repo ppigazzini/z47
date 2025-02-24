@@ -307,13 +307,14 @@ bool_t itemNotAvail(int16_t itemNr) {
     }
     else
     if(calcMode == CM_NORMAL && !getSystemFlag(FLAG_INTING) && !getSystemFlag(FLAG_SOLVING)) {
-      bool_t inMatrixMenu = (tam.mode == 0 ? softmenu[softmenuStack[0].softmenuId].menuItem : softmenu[softmenuStack[1].softmenuId].menuItem) == -MNU_MATX;
+      //bool_t inMatrixMenu = (tam.mode == 0 ? softmenu[softmenuStack[0].softmenuId].menuItem : softmenu[softmenuStack[1].softmenuId].menuItem) == -MNU_MATX;
       bool_t inRegisterRange = (param <= LAST_LETTERED_REGISTER ||
                        (FIRST_STAT_REGISTER  <= param && param <= LAST_STAT_REGISTER) ||
                        (FIRST_SPARE_REGISTER <= param && param <= LAST_SPARE_REGISTER));
       bool_t inReservedRange =  (FIRST_NAMED_RESERVED_VARIABLE <= param && param <= LAST_RESERVED_VARIABLE);
       bool_t inNameRegisterRange =  (FIRST_NAMED_VARIABLE <= param && param <= LAST_NAMED_VARIABLE);
       bool_t isMatrix = inRegisterRange ? (getRegisterDataType(param) != dtReal34Matrix && getRegisterDataType(param) != dtComplex34Matrix) : false;
+      bool_t matrixIndexed = !(matrixIndex == INVALID_VARIABLE || !regInRange(matrixIndex));
       switch(func) {
         case ITM_RCL_FV      :
         case ITM_RCL_IPonA   :
@@ -323,19 +324,20 @@ bool_t itemNotAvail(int16_t itemNr) {
         case ITM_RCL_PMT     :
         case ITM_RCL_PV      : temporaryInformation = TI_STORCL; break;
         case ITM_STO         :
-        case ITM_RCL         : temporaryInformation = ((param == REGISTER_I || param == REGISTER_J) && inMatrixMenu) ? TI_IJ : \
+        case ITM_RCL         : temporaryInformation = (param == REGISTER_I && matrixIndexed) ? TI_I : \
+                               (param == REGISTER_J) && matrixIndexed ? TI_J : \
                                (isMatrix) ? TI_STORCL : \
                                (inReservedRange || inRegisterRange || inNameRegisterRange) ? TI_STORCL : TI_NO_INFO ; break;
         case ITM_RCLELPLUS   :
         case ITM_RCLEL       :
         case ITM_STOELPLUS   :
-        case ITM_STOEL       : if(inMatrixMenu) temporaryInformation = TI_MIJ;   break;
-        case ITM_IPLUS       :
-        case ITM_IMINUS      :
+        case ITM_STOEL       : if(matrixIndexed) temporaryInformation = TI_MIJ;   break;
+        case ITM_IPLUS       : 
+        case ITM_IMINUS      : if(matrixIndexed) temporaryInformation = TI_I;   break;
         case ITM_JPLUS       :
-        case ITM_JMINUS      :
+        case ITM_JMINUS      : if(matrixIndexed) temporaryInformation = TI_J;   break;
         case ITM_RCLIJ       :
-        case ITM_STOIJ       : if(inMatrixMenu) temporaryInformation = TI_IJ;    break;
+        case ITM_STOIJ       : if(matrixIndexed) temporaryInformation = TI_IJ;    break;
         default:;
       }
 
@@ -3849,8 +3851,9 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 2483 */  { fnStoreVElement,              2,                           "STOVEL2",                                     STD_ELLIPSIS "VEL" STD_SPACE_4_PER_EM "2",     (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /* 2484 */  { fnStoreVElement,              3,                           "STOVEL3",                                     STD_ELLIPSIS "VEL" STD_SPACE_4_PER_EM "3",     (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /* 2485 */  { addItemToBuffer,              ITM_dddVEL,                  "",                                            STD_ELLIPSIS "VELnn",                          (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 2486 */  { addItemToBuffer,              ITM_dddIX,                   "",                                            STD_ELLIPSIS "INDEX",                          (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 
 
-/* 2482 */  { itemToBeCoded,                NOPARAM,                     "",                                            "Last item",                                   (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 2487 */  { itemToBeCoded,                NOPARAM,                     "",                                            "Last item",                                   (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 
 };

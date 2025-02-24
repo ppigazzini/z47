@@ -564,12 +564,17 @@ TO_QSPI static const struct {
     unsigned ydef  : 2;
     unsigned zdef  : 2;
 } vecCreate[] = {
-//           r  c   x    y    z   xdef ydef zdef // x=2 means that REG_X is copied to matrix element 2
+//           r  c   x    y    z   xdef ydef zdef
     [ 1] = { 3, 1,  2 ,  1,   0,   2,   2,   2 },
     [ 2] = { 1, 3,  0 ,  1,   2,   2,   2,   2 },
     [ 3] = { 1, 3,  0 ,  1,   2,   0,   0,   1 },
     [ 4] = { 1, 3,  0 ,  1,   2,   0,   1,   0 },
     [ 5] = { 1, 3,  0 ,  1,   2,   1,   0,   0 }
+// r c is the size of the matrix to be created
+// x y z are the matrix element number mapping to the register name
+// xdef/ydef/zdef
+//   = 1/0 is the value to be pre-loaded into the matrix structure
+//   = 2 means the pre-loaded value is copied from X/Y/Z to the matrix element
   };
 
 

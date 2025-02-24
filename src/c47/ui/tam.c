@@ -41,6 +41,9 @@
           case ITM_dddVEL: {
             return ITM_STOVEL;
           }
+          case ITM_dddIX: {
+            return ITM_INDEX;
+          }
           default: {
             return ITM_STO;
           }
@@ -447,7 +450,7 @@
       }
       return;
     }
-    else if(item==ITM_Max || item==ITM_Min || item==ITM_ADD || item==ITM_SUB || item==ITM_MULT || item==ITM_DIV || item==ITM_Config || item==ITM_Stack || item==ITM_dddEL || item==ITM_dddIJ || item == ITM_dddVEL || (item >= ITM_STOVEL1 && item <= ITM_STOVEL3)|| (item >= ITM_RCLVEL1 && item <= ITM_RCLVEL3)) { // Operation
+    else if(item==ITM_Max || item==ITM_Min || item==ITM_ADD || item==ITM_SUB || item==ITM_MULT || item==ITM_DIV || item==ITM_Config || item==ITM_Stack || item==ITM_dddEL || item==ITM_dddIJ || item == ITM_dddVEL || item == ITM_dddIX || (item >= ITM_STOVEL1 && item <= ITM_STOVEL3)|| (item >= ITM_RCLVEL1 && item <= ITM_RCLVEL3)) { // Operation
       if(!tam.digitsSoFar && !tam.indirect) {
         if(tam.function == ITM_GTO) {
           if(item == ITM_Max) { // UP
@@ -513,7 +516,7 @@
           }
 
 
-          else if(item == ITM_dddVEL) {
+          else if(item == ITM_dddVEL || item == ITM_dddIX) {
             tam.currentOperation = item;
             if(calcMode != CM_MIM 
 //                && !tam.alpha && !tam.dot

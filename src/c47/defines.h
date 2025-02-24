@@ -1434,17 +1434,19 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define TI_ROOTS2                                 99
 #define TI_ROOTS3                                100
 #define TI_IJ                                    101
-#define TI_MIJ                                   102
-#define TI_BYTES                                 103
-#define TI_BITS                                  104
-#define TI_SOLVER_VARIABLE_RESULT                105
-#define TI_DATA_NEG_OVRFL                        106
-#define TI_LASTSTATEFILE                         107
-#define TI_FUNCTION                              108
-#define TI_STORCL                                109
-#define TI_TVM_EFF                               110
-#define TI_TVM_IA                                111
-#define TI_NOT_AVAILABLE                         112
+#define TI_I                                     102
+#define TI_J                                     103
+#define TI_MIJ                                   104
+#define TI_BYTES                                 105
+#define TI_BITS                                  106
+#define TI_SOLVER_VARIABLE_RESULT                107
+#define TI_DATA_NEG_OVRFL                        108
+#define TI_LASTSTATEFILE                         109
+#define TI_FUNCTION                              110
+#define TI_STORCL                                111
+#define TI_TVM_EFF                               112
+#define TI_TVM_IA                                113
+#define TI_NOT_AVAILABLE                         114
 
 #define SET_TI_TRUE_FALSE(condition)               do { temporaryInformation = TI_FALSE + (condition); } while(0) // TI_TRUE must be TI_FALSE + 1
 
