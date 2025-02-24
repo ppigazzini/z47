@@ -3607,7 +3607,7 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 2249 */  { fnRecallElementPlus,          NOPARAM,                     "RCLSEQ",                                      "RCLSEQ",                                      (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /* 2250 */  { fnStoreElementPlus,           NOPARAM,                     "STOSEQ",                                      "STOSEQ",                                      (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 
-// 64 more system flags
+// 64 more system flags //!!!!!!! Remember to set NUMBER_OF_SYSTEM_FLAGS !
 /* 2251 */  { fnGetSystemFlag,              FLAG_MONIT,                  "MONIT",                                       "MONIT",                                       (0 << TAM_MAX_BITS) |     0, CAT_SYFL | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2252 */  { fnGetSystemFlag,              FLAG_FRCYC,                  "FRCYC",                                       "FRCYC",                                       (0 << TAM_MAX_BITS) |     0, CAT_SYFL | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2253 */  { fnGetSystemFlag,              FLAG_HPCONV,                 "CONV" STD_SUB_H STD_SUB_P,                    "CONV" STD_SUB_H STD_SUB_P,                    (0 << TAM_MAX_BITS) |     0, CAT_SYFL | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
