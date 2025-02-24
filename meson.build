@@ -32,6 +32,10 @@ if get_option('RASPBERRY')
   add_project_arguments('-DRASPBERRY',  native : true, language : 'c')
 endif
 
+if get_option('DECNUMBER_FASTMUL')
+  add_project_arguments('-DDECNUMBER_FASTMUL=1',  native : false, language : 'c')
+endif
+
 # DMCP arguments
 add_project_arguments('-DDMCP_BUILD', native : false, language : 'c')
 add_project_arguments('-DOS32BIT',    native : false, language : 'c')
