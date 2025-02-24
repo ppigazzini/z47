@@ -36,7 +36,7 @@ build.rel.debug:
 
 build.dmcp:
 	meson setup build.dmcp --cross-file=src/c47-dmcp/cross_arm_gcc.build -DDMCPVERSION=dmcp -DCI_COMMIT_TAG=$(CI_COMMIT_TAG) \
-	-DDECNUMBER_FASTMUL=false
+	-DDECNUMBER_FASTMUL=true
 
 build.dmcp5:
 	meson setup build.dmcp5 --cross-file=src/c47-dmcp5/cross_arm_gcc.build -DDMCPVERSION=dmcp5 -DCI_COMMIT_TAG=$(CI_COMMIT_TAG) \
