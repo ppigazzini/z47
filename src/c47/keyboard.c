@@ -431,7 +431,8 @@ TO_QSPI static const char bugScreenItemNotDetermined[] = "In function determineI
           case MNU_TAM:
           case MNU_TAMNONREG:
           case MNU_TAMCMP:
-          case MNU_TAMSTORCL:
+          case MNU_TAMSTO:
+          case MNU_TAMRCL:
           case MNU_TAMFLAG:
           case MNU_TAMSHUFFLE:
           case MNU_TAMLABEL:
@@ -4575,7 +4576,7 @@ void fnKeyUp(uint16_t unusedButMandatoryParameter) {
 
       case CM_MIM: {
         #if defined(NOMATRIXCURSORS)
-          if(currentSoftmenuScrolls() && currentMenu() != -MNU_TAMSTORCL) {   //JM remove to allow normal arrows to work as cursors
+          if(currentSoftmenuScrolls() && currentMenu() != -MNU_TAMSTO && currentMenu() != -MNU_TAMRCL) {   //JM remove to allow normal arrows to work as cursors
             menuUp();
           }
         #else  // !NOMATRIXCURSORS
@@ -4804,7 +4805,7 @@ void fnKeyDown(uint16_t unusedButMandatoryParameter) {
 
       case CM_MIM: {
         #if defined(NOMATRIXCURSORS)
-          if(currentSoftmenuScrolls() && currentMenu() != -MNU_TAMSTORCL) {   //JM remove to allow normal arrows to work as cursors
+          if(currentSoftmenuScrolls() && currentMenu() != -MNU_TAMSTO && currentMenu() != -MNU_TAMRCL) {   //JM remove to allow normal arrows to work as cursors
             menuDown();
           }
         #else  // !NOMATRIXCURSORS

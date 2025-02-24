@@ -62,6 +62,7 @@
    * \param[in] unusedParamButMandatory
    */
   void       fnEuclideanNorm                (uint16_t unusedParamButMandatory);
+  void       fnVectorDist                   (uint16_t unusedParamButMandatory);
 
   /**
    * Row sum of matrix X.
