@@ -235,22 +235,21 @@ uint8_t PowerComplex(const real_t *yReal, const real_t *yImag, const real_t *xRe
       // EXP [ (Xr.LN r) * (-theta Xi)  +   i.(Xi.LN r + (theta . Xr)) ]  [5]
 
 
-      realRectangularToPolar(yReal, yImag, rReal, &theta, realContext);//&ctxtReal75);
+      realRectangularToPolar(yReal, yImag, rReal, &theta, realContext);
       WP34S_Ln(rReal, rReal, realContext);
 
       realMultiply(rReal, xImag, rImag, realContext);                 //rImag = Xi.LN r
 
-      real_t xR, yR;
-      realMultiply(yReal, const__1, &yR, realContext);
-      if(realCompareEqual(yReal,yImag) || realCompareEqual(&yR,yImag)) {
-        realDivideRemainder(xReal, const_8, &xR, realContext);        // {See [5], if yR=yI then we have theta = pi/2 exact, then we can do a Xr remainder by 8}
+      real_t xR;
+      if(realCompareAbsEqual(yReal,yImag)) {
+        realDivideRemainder(xReal, const_8, &xR, realContext);        // {See [5], if yR=yI then we have theta = pi/4 exact, then we can do a Xr remainder by 8}
       } else if(realIsZero(yReal)) {
-        realDivideRemainder(xReal, const_4, &xR, realContext);        // {See [5], if yR=0 then we have theta = pi exact, then we can do a Xr remainder by 4}
+        realDivideRemainder(xReal, const_4, &xR, realContext);        // {See [5], if yR=0 then we have theta = pi/2 exact, then we can do a Xr remainder by 4}
       } else {
         realCopy(xReal, &xR);
       }
 
-      realFMA(&theta, &xR, rImag, rImag, realContext);//&ctxtReal75); //rImag = Xi.LN r  +  theta . Xr  ===> this theta.Xt is the coefficient of r.e^i.COEF, hence the angle and therefore we can get the remainder after dividing by nuber of revolutions. 
+      realFMA(&theta, &xR, rImag, rImag, realContext);                //rImag = Xi.LN r  +  theta . Xr  ===> this theta.Xt is the coefficient of r.e^i.COEF, hence the angle and therefore we can get the remainder after dividing by nuber of revolutions. 
       realChangeSign(&theta);
 
       realMultiply(rReal, xReal, rReal, realContext);                 //rReal = Xr.LN r
@@ -258,7 +257,7 @@ uint8_t PowerComplex(const real_t *yReal, const real_t *yImag, const real_t *xRe
  
 
       realExp(rReal, &tmp, realContext);
-      realPolarToRectangular(const_1, rImag, rReal, rImag, realContext);//&ctxtReal75);
+      realPolarToRectangular(const_1, rImag, rReal, rImag, realContext);
       realMultiply(&tmp, rImag, rImag, realContext);
       realMultiply(&tmp, rReal, rReal, realContext);
   }
