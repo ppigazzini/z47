@@ -124,16 +124,16 @@ TO_QSPI const int16_t menu_LOOP[]        = { ITM_DSE,                       ITM_
 /*                                          <---------------------------------------------------------------------- 6 g shifted functions ------------------------------------------------------------------------->  */
 TO_QSPI const int16_t menu_MATX[]        = { 
                                              ITM_M_NEW,                     ITM_M_INV,                  ITM_M_DET,                ITM_M_TRANSP,          ITM_SIM_EQ,                  ITM_M_EDI,
-                                             ITM_DOT_PROD,                  ITM_CROSS_PROD,             ITM_ENORM,                ITM_UNITV,             ITM_RSUM,                    ITM_RNORM,                  
+                                             ITM_DOT_PROD,                  ITM_CROSS_PROD,             ITM_UNITV,                ITM_ENORM,             ITM_RSUM,                    ITM_RNORM,                  
                                              ITM_EIGVAL,                    ITM_EIGVEC,                 ITM_STOVEL,               ITM_RCLVEL,            ITM_M_LU,                    ITM_M_QR,
 
                                              ITM_IPLUS,                     ITM_IMINUS,                 ITM_STOIJ,                ITM_RCLIJ,             ITM_JMINUS,                  ITM_JPLUS,
-                                             ITM_NULL,                      ITM_M_RR,                   ITM_M_DIM,                ITM_M_DIMQ,            ITM_INDEX,                   ITM_M_EDIN,
+                                             ITM_CONCAT,                    ITM_M_RR,                   ITM_M_DIM,                ITM_M_DIMQ,            ITM_INDEX,                   ITM_M_EDIN,
                                              ITM_M_PUT,                     ITM_M_GET,                  ITM_STOEL,                ITM_RCLEL,             ITM_STOELPLUS,               ITM_RCLELPLUS,              
 
-                                             ITM_STKTO1x3,                  ITM_1x3TOSTK,               ITM_V3TOCYL,              ITM_V3TOSPH,           ITM_toREC2,                  ITM_DRG,
-                                             ITM_DOT_PROD,                  ITM_CROSS_PROD,             ITM_VANGLE,               ITM_VVDIST,            ITM_UNITV,                   ITM_RAD2,
-                                             ITM_V100,                      ITM_V010,                   ITM_V001,                 ITM_ENORM,             ITM_DEG2,                    ITM_MULPI2};
+                                             ITM_DRG,                       ITM_MULPI2,                 ITM_STKTO1x3,             ITM_1x3TOSTK,          ITM_V3TOCYL,                 ITM_V3TOSPH,
+                                             ITM_DOT_PROD,                  ITM_CROSS_PROD,             ITM_UNITV,                ITM_ENORM,             ITM_VVDIST,                  ITM_VANGLE,
+                                             ITM_V100,                      ITM_V010,                   ITM_V001,                 ITM_NULL,              ITM_toPOL2,                  ITM_toREC2};
 
 //new 3D: ITM_V3TOCYL, ITM_V3TOSPH, ITM_STKTO1x3, ITM_1x3TOSTK
 //new 2D 3D: ITM_VVDIST, ITM_VVANG
