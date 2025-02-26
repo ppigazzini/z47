@@ -307,6 +307,8 @@ bool_t itemNotAvail(int16_t itemNr) {
     }
     else
     if(calcMode == CM_NORMAL && !getSystemFlag(FLAG_INTING) && !getSystemFlag(FLAG_SOLVING)) {
+#if !defined(TESTSUITE_BUILD)
+
       //bool_t inMatrixMenu = (tam.mode == 0 ? softmenu[softmenuStack[0].softmenuId].menuItem : softmenu[softmenuStack[1].softmenuId].menuItem) == -MNU_MATX;
       bool_t inRegisterRange = (param <= LAST_LETTERED_REGISTER ||
                        (FIRST_STAT_REGISTER  <= param && param <= LAST_STAT_REGISTER) ||
@@ -382,7 +384,7 @@ bool_t itemNotAvail(int16_t itemNr) {
           default:break;
         }
       }
-
+#endif //TESTSUITE_BUILD
     }
 
 

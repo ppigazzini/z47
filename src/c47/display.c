@@ -2662,6 +2662,7 @@ void complex34MatrixToDisplayString(calcRegister_t regist, char *displayString) 
 }
 
 
+#if !defined(TESTSUITE_BUILD)
 bool_t vectorToDisplayString(calcRegister_t regist, char *displayString) {
   if(getRegisterDataType(regist) == dtReal34Matrix) {
     matrixHeader_t *matrixHeader = REGISTER_MATRIX_HEADER(regist);
@@ -2678,7 +2679,6 @@ bool_t vectorToDisplayString(calcRegister_t regist, char *displayString) {
 }
 
 
-#if !defined(TESTSUITE_BUILD)
 static void _complex34ToShowTmpString(const real34_t *r, const real34_t *i) {
   int16_t last;
   real34_t real34;
