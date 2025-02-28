@@ -1284,8 +1284,14 @@ void fnEigenvalues(uint16_t unusedParamButMandatory) {
         sprintf(errorMessage, "rectangular or single-element matrix or (%d" STD_CROSS "%d)", x.header.matrixRows, x.header.matrixColumns);
         moreInfoOnError("In function fnEigenvalues:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+      goto ErrorExit;
     }
-    else if(x.header.matrixRows == 1 && x.header.matrixColumns == 1) {
+    
+    if(!saveLastX()) {
+      goto ErrorExit;
+    }
+
+    if(x.header.matrixRows == 1 && x.header.matrixColumns == 1) {
       fnRecallVElement(1);
     }
     else {
@@ -1317,6 +1323,7 @@ void fnEigenvalues(uint16_t unusedParamButMandatory) {
         realMatrixFree(&res);
       }
     }
+    goto Success;
   }
   else if(getRegisterDataType(REGISTER_X) == dtComplex34Matrix) {
     complex34Matrix_t x, res;
@@ -1329,8 +1336,14 @@ void fnEigenvalues(uint16_t unusedParamButMandatory) {
         sprintf(errorMessage, "rectangular or single-element matrix or (%d" STD_CROSS "%d)", x.header.matrixRows, x.header.matrixColumns);
         moreInfoOnError("In function fnEigenvalues:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+      goto ErrorExit;
     }
-    else if(x.header.matrixRows == 1 && x.header.matrixColumns == 1) {
+
+    if(!saveLastX()) {
+      goto ErrorExit;
+    }
+
+    if(x.header.matrixRows == 1 && x.header.matrixColumns == 1) {
       fnRecallVElement(1);
     }
     else {
@@ -1340,6 +1353,7 @@ void fnEigenvalues(uint16_t unusedParamButMandatory) {
       convertComplex34MatrixToComplex34MatrixRegister(&res, REGISTER_X);
       complexMatrixFree(&res);
     }
+    goto Success;
   }
   else {
     displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
@@ -1349,7 +1363,14 @@ void fnEigenvalues(uint16_t unusedParamButMandatory) {
     #endif // PC_BUILD
   }
 
-  adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
+ErrorExit:
+return;
+
+Success:
+adjustResult(REGISTER_X, true, true, REGISTER_X, -1, -1);
+return;
+
+
 }
 
 
@@ -1392,8 +1413,14 @@ void fnEigenvectors(uint16_t unusedParamButMandatory) {
                 x.header.matrixRows, x.header.matrixColumns);
         moreInfoOnError("In function fnEigenvectors:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+      goto ErrorExit;
     }
-    else switch(createEigenVectorIf1x1(x.header.matrixRows, x.header.matrixColumns)) {
+    
+    if(!saveLastX()) {
+      goto ErrorExit;
+    }
+
+    switch(createEigenVectorIf1x1(x.header.matrixRows, x.header.matrixColumns)) {
       case 1  : break;
       case 255: return;
       default :
@@ -1422,6 +1449,7 @@ void fnEigenvectors(uint16_t unusedParamButMandatory) {
       }
       realMatrixFree(&res);
     }
+    goto Success;
   }
   else if(getRegisterDataType(REGISTER_X) == dtComplex34Matrix) {
     complex34Matrix_t x, res;
@@ -1434,8 +1462,14 @@ void fnEigenvectors(uint16_t unusedParamButMandatory) {
         sprintf(errorMessage, "rectangular or single-element matrix or (%d" STD_CROSS "%d)", x.header.matrixRows, x.header.matrixColumns);
         moreInfoOnError("In function fnEigenvectors:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+      goto ErrorExit;
     }
-    else switch(createEigenVectorIf1x1(x.header.matrixRows, x.header.matrixColumns)) {
+
+    if(!saveLastX()) {
+      goto ErrorExit;
+    }
+
+    switch(createEigenVectorIf1x1(x.header.matrixRows, x.header.matrixColumns)) {
       case 1  : break;
       case 255: return;
       default :
@@ -1445,6 +1479,7 @@ void fnEigenvectors(uint16_t unusedParamButMandatory) {
       convertComplex34MatrixToComplex34MatrixRegister(&res, REGISTER_X);
       complexMatrixFree(&res);
     }
+    goto Success;
   }
   else {
     displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
@@ -1454,7 +1489,13 @@ void fnEigenvectors(uint16_t unusedParamButMandatory) {
     #endif // PC_BUILD
   }
 
-  adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
+ErrorExit:
+return;
+
+Success:
+adjustResult(REGISTER_X, true, true, REGISTER_X, -1, -1);
+return;
+
 }
 
 
