@@ -1666,6 +1666,18 @@ bool_t initMatrixRegister(calcRegister_t regist, uint16_t rows, uint16_t cols, b
       }
     }
     else {
+
+//temporary setting of new vector matrix register to 
+if(isMatrixVector(rows,cols)) {
+  setVectorRegisterPolarMode(regist,getSystemFlag(FLAG_POLAR) ? amPolarSPH : amNone);//amPolarCYL);
+  setVectorRegisterAngularMode(regist, getSystemFlag(FLAG_POLAR) ? currentAngularMode : amNone);//amDegree); 
+
+//real34Matrix_t matrix;
+//linkToRealMatrixRegister(regist, &matrix);
+//printf("020 Register %i is %i, rows=%i matrix tag is %i\n",regist, (uint8_t) globalRegister[regist].tag, (uint8_t) (matrix.header.matrixColumns), (uint8_t) (matrix.header.tag));
+
+
+      }
       for(uint16_t i = 0; i < rows * cols; ++i) {
         real34Zero(REGISTER_REAL34_MATRIX_ELEMENTS(regist) + i);
       }
@@ -1832,6 +1844,9 @@ void copyComplexMatrix(const complex34Matrix_t *matrix, complex34Matrix_t *res) 
 void linkToRealMatrixRegister(calcRegister_t regist, real34Matrix_t *linkedMatrix) {
   linkedMatrix->header.matrixRows    = REGISTER_MATRIX_HEADER(regist)->matrixRows;
   linkedMatrix->header.matrixColumns = REGISTER_MATRIX_HEADER(regist)->matrixColumns;
+  if(REGISTER_X <= regist && regist <= REGISTER_T && isMatrixVector(linkedMatrix->header.matrixRows,linkedMatrix->header.matrixColumns)) {
+    linkedMatrix->header.tag         = globalRegister[regist].tag;  // Get directly from register; this is only used for display of X-T registers, so it is hard coded to globalregisters
+  }
   linkedMatrix->matrixElements       = REGISTER_REAL34_MATRIX_ELEMENTS(regist);
 }
 

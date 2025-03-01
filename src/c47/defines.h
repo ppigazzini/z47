@@ -1926,6 +1926,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define COMPLEX34_MATRIX_ELEMENTS_AFTER_MATRIX_HEADER(ptr) ((real34_t         *)((matrixHeader_t           *)ptr + 1))
 
 
+#define isMatrixVector(rows,cols)   ((bool_t)((rows == 1 && cols == 3) || (rows == 3 && cols == 1) || (rows == 1 && cols == 2) || (rows == 2 && cols == 1)))
 
 #if !defined(PC_BUILD) && !defined(DMCP_BUILD)
   #error One of PC_BUILD and DMCP_BUILD must be defined
