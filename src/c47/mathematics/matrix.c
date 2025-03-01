@@ -4427,6 +4427,8 @@ static void calculateEigenvectors(const any34Matrix_t *matrix, bool_t isComplex,
           }
         }
       }
+      freeC47Blocks(unknownsToFill, size * 2 * REAL_SIZE_IN_BLOCKS * 2);
+      unknownsToFill = NULL;
     }
     else {
       displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
