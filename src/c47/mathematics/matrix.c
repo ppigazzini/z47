@@ -916,10 +916,8 @@ static void _fnEuclideanNorm(uint16_t unusedParamButMandatory) {
 
 
 void fnEuclideanNorm(uint16_t unusedParamButMandatory) {
-  if(!saveLastX()) {
-    return;
-  }
-  _fnEuclideanNorm(NOPARAM);
+  if(saveLastX())
+    _fnEuclideanNorm(NOPARAM);
 }
 
 
