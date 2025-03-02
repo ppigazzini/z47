@@ -84,6 +84,7 @@
       #define SAVE_SPACE_DM42_16       //  2168 bytes // Without Norml distribution
       #define SAVE_SPACE_DM42_20_TIMER //  1232 bytes // Without STOPW
       #define SAVE_SPACE_DM42_21_HP35  //   200 bytes // Without config file activations only. Not complete removal.
+           // DECNUMBER_FASTMUL        // manually include or exclude this option in the Makefile, DECNUMBER_FASTMUL         
   #endif // !TWO_FILE_PGM && !NEW_HW
 
 //THESE ARE DMCP COMPILE OPTIONS FOR TWO FILE QSPI
@@ -107,6 +108,7 @@
   //  #define SAVE_SPACE_DM42_17       //  9840 bytes // Without Poisson/Hyper/Binomial/Geometrical/f distributions
   //  #define SAVE_SPACE_DM42_20_TIMER //  1232 bytes // Without STOPW
   //  #define SAVE_SPACE_DM42_21_HP35  //   200 bytes // Without config file activations only. Not complete removal.
+           // DECNUMBER_FASTMUL        // manually include or exclude this option in the Makefile, DECNUMBER_FASTMUL         
   #endif // TWO_FILE_PGM
 #endif // DMCP_BUILD
 
