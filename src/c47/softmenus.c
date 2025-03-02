@@ -49,9 +49,9 @@ TO_QSPI const int16_t menu_CLR[]         = { ITM_CF,                        ITM_
 /*      Menu name                           <----------------------------------------------------------------------------- 6 functions ---------------------------------------------------------------------------->  */
 /*                                          <---------------------------------------------------------------------- 6 f shifted functions ------------------------------------------------------------------------->  */
 /*                                          <---------------------------------------------------------------------- 6 g shifted functions ------------------------------------------------------------------------->  */
-TO_QSPI const int16_t menu_CPX[]         = { ITM_RE,                        ITM_IM,                     ITM_MAGNITUDE,            ITM_ARG,               ITM_REexIM,                  ITM_UNITV,                      //JM re-arranged menu. CPX menu
-                                             KEY_COMPLEX,                   ITM_CONJ,                   ITM_DOT_PROD,             ITM_CROSS_PROD,        ITM_op_j,                    ITM_op_j_pol,                   //JM re-arranged menu. CPX menu
-                                             ITM_CPXI,                      ITM_CPXJ,                   ITM_CXtoRE,               ITM_REtoCX,            ITM_RECT,                    ITM_POLAR                     };    //JM re-arranged menu
+TO_QSPI const int16_t menu_CPX[]         = { ITM_RE,                        ITM_IM,                     ITM_CONJ,                 ITM_REexIM,            ITM_op_j,                    ITM_op_j_pol,                       //JM re-arranged menu. CPX menu
+                                             KEY_COMPLEX,                   ITM_UNITV,                  ITM_MAGNITUDE,            ITM_ARG,               ITM_DOT_PROD,                ITM_CROSS_PROD,                     //JM re-arranged menu. CPX menu
+                                             ITM_toREC2,                    ITM_toPOL2,                 ITM_CXtoRE,               ITM_REtoCX,            ITM_RECT,                    ITM_POLAR                     };    //JM re-arranged menu
 
 TO_QSPI const int16_t menu_DISP[]        = { ITM_FIX,                       ITM_SCI,                    ITM_ENG,                  ITM_UNIT,              ITM_SIGFIG,                  ITM_ALL,
                                              ITM_FRACT,                     ITM_IRFRAC,                 ITM_PROPFR,               ITM_DENMAX2,           ITM_DENANY,                  ITM_DENFIX,
@@ -131,9 +131,9 @@ TO_QSPI const int16_t menu_MATX[]        = {
                                              ITM_CONCAT,                    ITM_M_RR,                   ITM_M_DIM,                ITM_M_DIMQ,            ITM_INDEX,                   ITM_M_EDIN,
                                              ITM_M_PUT,                     ITM_M_GET,                  ITM_STOEL,                ITM_RCLEL,             ITM_STOELPLUS,               ITM_RCLELPLUS,              
 
-                                             ITM_DRG,                       ITM_MULPI2,                 ITM_STKTO1x3,             ITM_1x3TOSTK,          ITM_V3TOCYL,                 ITM_V3TOSPH,
-                                             ITM_DOT_PROD,                  ITM_CROSS_PROD,             ITM_UNITV,                ITM_ENORM,             ITM_VVDIST,                  ITM_VANGLE,
-                                             ITM_V100,                      ITM_V010,                   ITM_V001,                 ITM_NULL,              ITM_toPOL2,                  ITM_toREC2};
+                                             ITM_DRG,                       ITM_MULPI2,                 ITM_V3TOSPH,              ITM_V3TOCYL,           ITM_STKTO1x3,                ITM_1x3TOSTK,
+                                             ITM_VVDIST,                    ITM_UNITV,                  ITM_ENORM,                ITM_VANGLE,            ITM_DOT_PROD,                ITM_CROSS_PROD,
+                                             ITM_toREC2,                    ITM_toPOL2,                 ITM_NULL,                 ITM_V100,              ITM_V010,                    ITM_V001};
 
 //new 3D: ITM_V3TOCYL, ITM_V3TOSPH, ITM_STKTO1x3, ITM_1x3TOSTK
 //new 2D 3D: ITM_VVDIST, ITM_VVANG
