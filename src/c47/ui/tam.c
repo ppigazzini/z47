@@ -522,8 +522,8 @@
 //                && !tam.alpha && !tam.dot
 //                && (indexOfItems[tam.function].status & PTP_STATUS) != PTP_SKIP_BACK && (indexOfItems[tam.function].status & PTP_STATUS) != PTP_DECLARE_LABEL
               ) {
-             tamLeaveMode();
-             runFunction(tamOperation());
+              tamLeaveMode();
+              runFunction(tamOperation());
             }
             return;
           }
