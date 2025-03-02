@@ -877,11 +877,8 @@ void fnInvertMatrix(uint16_t unusedParamButMandatory) {
 }
 
 
-void fnEuclideanNorm(uint16_t unusedParamButMandatory) {
-  if(!saveLastX()) {
-    return;
-  }
 
+static void _fnEuclideanNorm(uint16_t unusedParamButMandatory) {
   if(getRegisterDataType(REGISTER_X) == dtReal34Matrix) {
     real34Matrix_t matrix;
     real34_t sum;
@@ -916,6 +913,20 @@ void fnEuclideanNorm(uint16_t unusedParamButMandatory) {
 
   adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
 }
+
+
+void fnEuclideanNorm(uint16_t unusedParamButMandatory) {
+  if(saveLastX())
+    _fnEuclideanNorm(NOPARAM);
+}
+
+
+void fnVectorDist(uint16_t unusedParamButMandatory) {
+  fnSubtract(NOPARAM);
+  _fnEuclideanNorm(NOPARAM);
+}
+
+
 
 
 void fnRowSum(uint16_t unusedParamButMandatory) {

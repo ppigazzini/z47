@@ -1430,7 +1430,7 @@
 #define MNU_ALPHAintl               1384
 #define MNU_TAM                     1385
 #define MNU_TAMCMP                  1386
-#define MNU_TAMSTORCL               1387
+#define MNU_TAMSTO                  1387
 #define MNU_Grapher                 1388
 #define MNU_VAR                     1389
 #define MNU_TAMFLAG                 1390
@@ -1963,7 +1963,7 @@
 #define ITM_ms                      1909
 #define ITM_msTo                    1910
 #define ITM_ymdTo                   1911
-#define ITM_1912                    1912
+#define MNU_TAMRCL                  1912
 #define MNU_TAMALPHA                1913
 #define ITM_TO_USER                 1914
 #define ITM_N_KEY_NIL               1915
@@ -2537,7 +2537,26 @@
 #define ITM_BANANAtoMM              2468           
 #define ITM_MMtoBANANA              2469
 
-#define LAST_ITEM                   2470
+#define ITM_V3TOCYL                 2470
+#define ITM_V3TOSPH                 2471
+#define ITM_VVDIST                  2472
+#define ITM_CONCAT                  2473
+#define ITM_STKTO1x3                2474
+#define ITM_1x3TOSTK                2475
+#define ITM_V100                    2476
+#define ITM_V010                    2477
+#define ITM_V001                    2478
+
+#define ITM_RCLVEL1                 2479
+#define ITM_RCLVEL2                 2480
+#define ITM_RCLVEL3                 2481
+#define ITM_STOVEL1                 2482
+#define ITM_STOVEL2                 2483
+#define ITM_STOVEL3                 2484
+#define ITM_dddVEL                  2485
+#define ITM_dddIX                   2486
+
+#define LAST_ITEM                   2487
 
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL
