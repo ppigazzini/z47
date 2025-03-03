@@ -2,15 +2,22 @@ dmcp_cargs = [
   '-D__weak="__attribute__((weak))"',
   '-D__packed="__attribute__((__packed__))"',
   '-DOLD_HW',
-  '-Wno-unused-parameter'
+  '-Wno-unused-parameter',
+#  '--specs=nano.specs',              # Add this line, try to reduce target size, more options to try later
+#  '-fno-exceptions',                # Add this line, try to reduce target size, more options to try later
+#  '-fno-unwind-tables',             # Add this line, try to reduce target size, more options to try later
+#  '-fno-asynchronous-unwind-tables', # Add this line, try to reduce target size, more options to try later
+#  '-fshort-enums'                   # Add this line, try to reduce target size, more options to try later
 ]
 
 dmcp_linkargs = [
+  '--specs=nano.specs',              # Reduces target size
   '--specs=nosys.specs',
   '-Wl,--gc-sections',
   '-Wl,--wrap=_malloc_r',
   '-Wl,-Map=' + meson.current_build_dir() + '/C47.map,--cref',
-  '-T' + meson.current_source_dir() + '/stm32_program.ld'
+  '-T' + meson.current_source_dir() + '/stm32_program.ld',
+#  '-Wl,--strip-all',                # Add this line, try to reduce target size, more options to try later
 ]
 
 
