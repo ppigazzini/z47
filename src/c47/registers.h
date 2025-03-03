@@ -273,13 +273,15 @@
 
   #define amPolarCYL 64  //to restore these bits, change in typeDefinitions.h
   #define amPolarSPH 128
+  //note a problem for changing back to bits, is that the matrix variable header has 5 bits only.
 
-  #define getVectorRegisterAngularMode(reg)     ((getRegisterDataType(regist) == dtReal34Matrix) ? getRegisterTag(reg) & amAngleMask : amNone) //maybe conditional on 2D 3D????
+  #define getVectorRegisterAngularMode(reg)     ((getRegisterDataType(reg) == dtReal34Matrix) ? getTagAngularMode(getRegisterTag(reg)) : amNone) //maybe conditional on 2D 3D????
   #define setVectorRegisterAngularMode(reg, am) setRegisterTag(reg, (am & amAngleMask) | (getRegisterTag(reg) & amPolar))                      //note maybe conditional on Mx???
-  #define getVectorRegisterPolarMode(reg)       (  ((getRegisterDataType(regist) == dtReal34Matrix) && ((getRegisterTag(reg) & amAngleMask) != amNone)) ? (\
+  #define getVectorRegisterPolarMode(reg)       (  ((getRegisterDataType(reg) == dtReal34Matrix) && ((getRegisterTag(reg) & amAngleMask) != amNone)) ? (\
                                                   (((getRegisterTag(reg) & amPolar) == amPolar)) ? amPolarSPH : amPolarCYL) \
                                                    : amNone)
-  #define setVectorRegisterPolarMode(reg, pm)   setRegisterTag(reg, ((   (getRegisterTag(reg) & (amAngleMask | amPolar)) | (pm == amPolarSPH ? amPolar : 0)) & (pm == amPolarCYL ? ((~amPolar) & (amAngleMask | amPolar)) : 255)))
+  #define setVectorRegisterPolarMode(reg, pm)   setRegisterTag(reg, (  ((getRegisterTag(reg) & (amAngleMask | amPolar)) | ((pm == amPolarSPH || pm == amPolar) ? amPolar : 0)) \
+                                                                       & (pm == amPolarCYL ? ((~amPolar) & (amAngleMask | amPolar)) : 255)))
 
 
   /********************************************//**

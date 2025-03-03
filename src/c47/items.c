@@ -1289,6 +1289,8 @@ bool_t itemNotAvail(int16_t itemNr) {
   void fnConvertMxToStk           (uint16_t unusedButMandatoryParameter) {}
   void fnCheckType                (uint16_t unusedButMandatoryParameter) {}
   void fnVectorDist               (uint16_t unusedButMandatoryParameter) {}
+  void V3RectoToSph               (uint16_t unusedButMandatoryParameter) {}
+  void V3RectoToCyl               (uint16_t unusedButMandatoryParameter) {}
 
 
 
@@ -3837,8 +3839,8 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 2468 */  UNIT_CONV(constFactorBananaInch,multiply,                    "Banana"  STD_RIGHT_ARROW "inch",              "Banana" STD_RIGHT_ARROW                ),
 /* 2469 */  UNIT_CONV(constFactorInchBanana,divide,                      "inch"  STD_RIGHT_ARROW "Banana",              "inch" STD_RIGHT_ARROW                  ),
 
-/* 2470 */  { itemToBeCoded,                NOPARAM,                     STD_RIGHT_ARROW "CYL",                         STD_RIGHT_ARROW "CYL",                         (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
-/* 2471 */  { itemToBeCoded,                NOPARAM,                     STD_RIGHT_ARROW "SPH",                         STD_RIGHT_ARROW "SPH",                         (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
+/* 2470 */  { V3RectoToCyl,                 NOPARAM,                     STD_RIGHT_ARROW "CYL",                         STD_RIGHT_ARROW "CYL",                         (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
+/* 2471 */  { V3RectoToSph,                 NOPARAM,                     STD_RIGHT_ARROW "SPH",                         STD_RIGHT_ARROW "SPH",                         (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /* 2472 */  { fnVectorDist,                 NOPARAM,                     "VDIST",                                       "VDIST",                                       (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /* 2473 */  { itemToBeCoded,                NOPARAM,                     "M.CONCT",                                     "CONCAT",                                      (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /* 2474 */  { fnConvertStkToMx,                   2,                     "zyx" STD_RIGHT_ARROW "V" STD_SUB_3,           "zyx" STD_RIGHT_ARROW "V" STD_SUB_3,           (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },

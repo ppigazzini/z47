@@ -427,4 +427,7 @@
   void       elementwiseCplxRema            (void (*f)(void));
   void       elementwiseRemaCplx            (void (*f)(void));
 
+  void       V3RectoToSph                   (uint16_t unusedParamButMandatory);
+  void       V3RectoToCyl                   (uint16_t unusedParamButMandatory);
+
 #endif // !MATRIX_H

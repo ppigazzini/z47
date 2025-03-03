@@ -1072,9 +1072,25 @@ int16_t colX = 0;
         vm = vmNormal;
       }
       else {
-        real34ToDisplayString(&matrix->matrixElements[(i+sRow)*cols+j+sCol], 
-          isMatrixVector(rows,cols) ? (amAngleMask & (uint8_t)(matrix->header.tag)) : amNone,
-          tmpString, font, colWidth[j], displayFormat == DF_ALL ? digits : 15, true, true);
+
+        uint8_t toBeAngle = amNone;
+        if((getTagAngularMode(matrix->header.tag)) != amNone) {
+          if(isMatrix3dVector(rows,cols)) {
+            if((is3dVectorPolarSPH(matrix->header.tag)) && (j == 1 || j ==2)) {
+              toBeAngle = getTagAngularMode(matrix->header.tag);
+            }
+            else if((is3dVectorPolarCYL(matrix->header.tag)) && (j == 1)) {
+              toBeAngle = getTagAngularMode(matrix->header.tag);
+            }
+          }
+          else if(isMatrix2dVector(rows,cols)) {
+            if((is2dVectorPolar(matrix->header.tag)) && (j == 1)) {
+              toBeAngle = getTagAngularMode(matrix->header.tag);
+            }
+          }
+        }
+
+        real34ToDisplayString(&matrix->matrixElements[(i+sRow)*cols+j+sCol], toBeAngle, tmpString, font, colWidth[j], displayFormat == DF_ALL ? digits : 15, true, true);
         if(toDisplay) {
           if(forEditor && matSelRow == (i + sRow) && matSelCol == (j + sCol)) {
             lcd_fill_rect(X_POS + colX, Y_POS - (maxRows -1 -i) * fontHeight, colWidth[j], font == &numericFont ? 32 : 20, 0xFF);
@@ -1166,9 +1182,24 @@ int16_t getRealMatrixColumnWidths(const real34Matrix_t *matrix, int16_t prefixWi
           displayFormatDigits = displayFormatDigits1;
         }
 
-        real34ToDisplayString(&r34Val, 
-          isMatrixVector(rows,cols) ? (amAngleMask & (uint8_t)(matrix->header.tag)) : amNone,
-          tmpString, font, maxWidth, displayFormat == DF_ALL ? k : 15, true, true);
+        uint8_t toBeAngle = amNone;
+        if((getTagAngularMode(matrix->header.tag)) != amNone) {
+          if(isMatrix3dVector(rows,cols)) {
+            if((is3dVectorPolarSPH(matrix->header.tag)) && (j == 1 || j ==2)) {
+              toBeAngle = getTagAngularMode(matrix->header.tag);
+            }
+            else if((is3dVectorPolarCYL(matrix->header.tag)) && (j == 1)) {
+              toBeAngle = getTagAngularMode(matrix->header.tag);
+            }
+          }
+          else if(isMatrix2dVector(rows,cols)) {
+            if((is2dVectorPolar(matrix->header.tag)) && (j == 1)) {
+              toBeAngle = getTagAngularMode(matrix->header.tag);
+            }
+          }
+        }
+        
+        real34ToDisplayString(&r34Val, toBeAngle, tmpString, font, maxWidth, displayFormat == DF_ALL ? k : 15, true, true);
         if(displayFormat == DF_ALL && !noFix && strstr(tmpString, STD_SUB_10)) { // something like SCI
           noFix = true;
           totalWidth = 0;

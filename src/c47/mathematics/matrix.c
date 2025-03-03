@@ -1705,18 +1705,6 @@ bool_t initMatrixRegister(calcRegister_t regist, uint16_t rows, uint16_t cols, b
       }
     }
     else {
-
-//temporary setting of new vector matrix register to 
-if(isMatrixVector(rows,cols)) {
-  setVectorRegisterPolarMode(regist,getSystemFlag(FLAG_POLAR) ? amPolarSPH : amNone);//amPolarCYL);
-  setVectorRegisterAngularMode(regist, getSystemFlag(FLAG_POLAR) ? currentAngularMode : amNone);//amDegree); 
-
-//real34Matrix_t matrix;
-//linkToRealMatrixRegister(regist, &matrix);
-//printf("020 Register %i is %i, rows=%i matrix tag is %i\n",regist, (uint8_t) globalRegister[regist].tag, (uint8_t) (matrix.header.matrixColumns), (uint8_t) (matrix.header.tag));
-
-
-      }
       for(uint16_t i = 0; i < rows * cols; ++i) {
         real34Zero(REGISTER_REAL34_MATRIX_ELEMENTS(regist) + i);
       }
@@ -5430,4 +5418,34 @@ void callByIndexedMatrix(bool_t (*real_f)(real34Matrix_t *), bool_t (*complex_f)
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 }
+
+
+void V3err(void) {
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "2D or 3D Vector required, not %s, %ix%i", getRegisterDataTypeName(REGISTER_X, true, false), REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows,REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns);
+      moreInfoOnError("In function V3RectoToSph/V3RectoToCyl:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+  }
+
+void V3RectoToSph(uint16_t unusedParamButMandatory) {
+  if(getRegisterDataType(REGISTER_X) == dtReal34Matrix) {
+    if(isMatrix3dVector(REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows,REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns)) {
+      setVectorRegisterPolarMode(REGISTER_X, amPolarSPH);
+      setVectorRegisterAngularMode(REGISTER_X, currentAngularMode);
+    } else V3err();
+  } else V3err();
+}
+
+void V3RectoToCyl(uint16_t unusedParamButMandatory) {
+  if(getRegisterDataType(REGISTER_X) == dtReal34Matrix) {
+    if(isMatrix3dVector(REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows,REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns)) {
+      setVectorRegisterPolarMode(REGISTER_X, amPolarCYL);
+      setVectorRegisterAngularMode(REGISTER_X, currentAngularMode);
+    } else V3err();
+  } else V3err();
+}
+
+
+
 #endif // !TESTSUITE_BUILD
