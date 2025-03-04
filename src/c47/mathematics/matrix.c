@@ -5419,6 +5419,7 @@ void callByIndexedMatrix(bool_t (*real_f)(real34Matrix_t *), bool_t (*complex_f)
   }
 }
 
+#endif // !TESTSUITE_BUILD
 
 void V3err(void) {
     displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
@@ -5445,7 +5446,3 @@ void V3RectoToCyl(uint16_t unusedParamButMandatory) {
     } else V3err();
   } else V3err();
 }
-
-
-
-#endif // !TESTSUITE_BUILD
