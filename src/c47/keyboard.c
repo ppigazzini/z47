@@ -1371,7 +1371,7 @@ int16_t lastItem = 0;
   #define stringToKeyNumber(data)         ((*((char *)data) - '0')*10 + *(((char *)data)+1) - '0')    // input string = "28", keynumber = 28  (keys 00-36)
 
 
-  int16_t determineItem(const char *data) {
+  static int16_t determineItem(const char *data) {
     delayCloseNim = false;
     int16_t result;
     const calcKey_t *key;
@@ -1871,7 +1871,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
   #if defined(DMCP_BUILD)
     void btnPressed(void *data) {
   #endif //DMCP_BUILD
-
+      cleanupAfterShift = false;
 
       reDraw = false;
       nimWhenButtonPressed = (calcMode == CM_NIM);                  //PHM eRPN 2021-07
@@ -1989,6 +1989,12 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
           showFunctionName(item, 1000, funcParam);// "SF:B"); // 1000ms = 1s
         }
       }
+      else if(calcMode == CM_REGISTER_BROWSER && cleanupAfterShift){
+        screenUpdatingMode = SCRUPD_AUTO;
+        refreshScreen(126);
+      }
+
+
       if(calcMode == CM_ASSIGN && itemToBeAssigned != 0 && tamBuffer[0] == 0) {
         shiftF = f;
         shiftG = g;
