@@ -5421,6 +5421,59 @@ void callByIndexedMatrix(bool_t (*real_f)(real34Matrix_t *), bool_t (*complex_f)
 
 #endif // !TESTSUITE_BUILD
 
+
+
+
+
+//   Conversion from [x, y, z] to Spherical:
+//     Radius          : r = √(x² + y² + z²)
+//     Azimuthal angle : θ = tan⁻¹(y/x) (measured from the positive x-axis in the xy-plane)
+//     Polar angle     : φ = cos⁻¹(z/r) (measured from the positive z-axis)
+//
+//   Conversion from [x, y, z] to Cylindrical:
+//     Radius          : r = √(x² + y²)
+//     Azimuthal angle : θ = tan⁻¹(y/x) (measured from the positive x-axis in the xy-plane)
+//     Height          : z = z (remains the same)
+
+void convert3DtoSPH(const real34Matrix_t *matrix, real_t *r, real_t *th1, real_t *th2, uint8_t am) {
+    real_t x, y, z;
+    _euclideanNormRealMatrix(matrix, r, &ctxtReal39);
+
+    real34ToReal(&matrix->matrixElements[0], &x);
+    real34ToReal(&matrix->matrixElements[1], &y);
+    real34ToReal(&matrix->matrixElements[2], &z);
+
+    realDivide(&y, &x, &x, &ctxtReal39);
+    WP34S_Atan(&x, th1, &ctxtReal39);
+    convertAngleFromTo(th1, amRadian, am, &ctxtReal39);
+    if(realIsZero(th1)) {realZero(th1);}
+
+    realDivide(&z, r, &z, &ctxtReal39);
+    WP34S_Acos(&z, th2, &ctxtReal39);
+    convertAngleFromTo(th2, amRadian, am, &ctxtReal39);
+    if(realIsZero(th2)) {realZero(th2);}
+}
+
+
+void convert3DtoCYL(const real34Matrix_t *matrix, real_t *r, real_t *th1, real_t *z, uint8_t am) {
+    real_t x, y, t;
+    real34ToReal(&matrix->matrixElements[0], &x);
+    real34ToReal(&matrix->matrixElements[1], &y);
+    real34ToReal(&matrix->matrixElements[2], z);
+
+    realMultiply(&x, &x, r, &ctxtReal39);
+    realMultiply(&y, &y, &t, &ctxtReal39);
+    realAdd(&t, r, r, &ctxtReal39);
+    realSquareRoot(r, r, &ctxtReal39);
+
+    realDivide(&y, &x, &x, &ctxtReal39);
+    WP34S_Atan(&x, th1, &ctxtReal39);
+
+    convertAngleFromTo(th1, amRadian, am, &ctxtReal39);
+    if(realIsZero(th1)) {realZero(th1);}
+}
+
+
 void V3err(void) {
     displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
