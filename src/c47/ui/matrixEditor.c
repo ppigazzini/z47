@@ -887,7 +887,7 @@ void mimRestore(void) {
 }
 
 
-void convertTo3DAngle(const real34Matrix_t *matrix, int j, int rows, int cols, uint8_t *toBeAngle){
+static void displayVectorAngle(const real34Matrix_t *matrix, int j, int rows, int cols, uint8_t *toBeAngle){
   if((getTagAngularMode(matrix->header.tag)) != amNone) {
     if(isMatrix3dVector(rows,cols)) {
       if((is3dVectorPolarSPH(matrix->header.tag)) && (j == 1 || j ==2)) {
@@ -907,7 +907,7 @@ void convertTo3DAngle(const real34Matrix_t *matrix, int j, int rows, int cols, u
 
 
 
-void convertTo3DElement(const real34Matrix_t *matrix, int j, int ii, int rows, int cols, real34_t *element, uint8_t *toBeAngle) {
+static void displayVectorElement(const real34Matrix_t *matrix, int j, int ii, int rows, int cols, real34_t *element, uint8_t *toBeAngle) {
   real_t aa,bb,cc;
   if((isMatrix3dVectorSPH(rows, cols, matrix->header.tag))) {
     convert3DtoSPH(matrix, &aa,&bb,&cc, *toBeAngle);
@@ -931,8 +931,16 @@ void convertTo3DElement(const real34Matrix_t *matrix, int j, int ii, int rows, i
     //printRealToConsole(&aa,"CYL aa=","\n");
     //printRealToConsole(&bb,"CYL bb=","\n");
     //printRealToConsole(&cc,"CYL cc=","\n");
-  }
-  else {
+  } else if((isMatrix2dVectorPOL(rows, cols, matrix->header.tag))) {
+    convert2DtoPOL(matrix, &aa,&bb, *toBeAngle);
+    switch(j) {
+      case 0: realToReal34(&aa,element); break;
+      case 1: realToReal34(&bb,element); break;
+      default:;    
+    } 
+    //printRealToConsole(&aa,"POL aa=","\n");
+    //printRealToConsole(&bb,"POL bb=","\n");
+  } else {
     real34Copy(&matrix->matrixElements[ii],element);
     //printReal34ToConsole(element," RECT =","\n");
   }
@@ -1140,9 +1148,9 @@ int16_t colX = 0;
       else {
 
         uint8_t toBeAngle = amNone;
-        convertTo3DAngle(matrix, j, rows, cols, &toBeAngle);
+        displayVectorAngle(matrix, j, rows, cols, &toBeAngle);
         real34_t element;
-        convertTo3DElement(matrix, j, (i+sRow)*cols+j+sCol, rows, cols, &element, &toBeAngle);
+        displayVectorElement(matrix, j, (i+sRow)*cols+j+sCol, rows, cols, &element, &toBeAngle);
 
         real34ToDisplayString(&element, toBeAngle, tmpString, font, colWidth[j], displayFormat == DF_ALL ? digits : 15, true, true);
         if(toDisplay) {
@@ -1228,8 +1236,8 @@ int16_t getRealMatrixColumnWidths(const real34Matrix_t *matrix, int16_t prefixWi
 //      real34Copy(&matrix->matrixElements[(i+sRow)*cols+j+sCol], &r34Val);
 
         uint8_t toBeAngle = amNone;
-        convertTo3DAngle(matrix, j, rows, cols, &toBeAngle);
-        convertTo3DElement(matrix, j, (i+sRow)*cols+j+sCol, rows, cols, &r34Val, &toBeAngle);
+        displayVectorAngle(matrix, j, rows, cols, &toBeAngle);
+        displayVectorElement(matrix, j, (i+sRow)*cols+j+sCol, rows, cols, &r34Val, &toBeAngle);
 
         bool_t r34sign = real34IsNegative(&r34Val);
         real34SetPositiveSign(&r34Val);

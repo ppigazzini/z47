@@ -5474,6 +5474,20 @@ void convert3DtoCYL(const real34Matrix_t *matrix, real_t *r, real_t *th1, real_t
 }
 
 
+void convert2DtoPOL(const real34Matrix_t *matrix, real_t *r, real_t *th1, uint8_t am) {
+    real_t x, y;
+    _euclideanNormRealMatrix(matrix, r, &ctxtReal39);
+
+    real34ToReal(&matrix->matrixElements[0], &x);
+    real34ToReal(&matrix->matrixElements[1], &y);
+
+    realDivide(&y, &x, &x, &ctxtReal39);
+    WP34S_Atan(&x, th1, &ctxtReal39);
+    convertAngleFromTo(th1, amRadian, am, &ctxtReal39);
+    if(realIsZero(th1)) {realZero(th1);}
+}
+
+
 void V3err(void) {
     displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
