@@ -1825,7 +1825,7 @@ static unsigned int getDigit(const char *str) {
                                                   \
     for(;;) {                                     \
       digit = getDigit(str++);                    \
-      if(digit > base)                            \
+      if(digit >= base)                           \
         break;                                    \
       value = value*base + digit;                 \
     }                                             \
@@ -1853,7 +1853,7 @@ stringToUintFunc(stringToUint64, uint64_t)
                                                   \
     for(;;) {                                     \
       digit = getDigit(str++);                    \
-      if(digit > base)                            \
+      if(digit >= base)                           \
         break;                                    \
       value = value*base + digit;                 \
     }                                             \
