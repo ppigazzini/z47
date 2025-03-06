@@ -55,7 +55,6 @@ static void systemFlagAction(uint16_t systemFlag, flagAction_t action) {
     case FLAG_SBcr  :
     case FLAG_SBcpx :
     case FLAG_SBang :
-    case FLAG_SBfrac:
     case FLAG_SBint :
     case FLAG_SBmx  :
     case FLAG_SBtvm :
@@ -67,6 +66,12 @@ static void systemFlagAction(uint16_t systemFlag, flagAction_t action) {
     case FLAG_SBbatV:
     case FLAG_SBshfR:
               fnRefreshState();
+              screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
+              break;
+
+    case FLAG_SBfrac:
+              fnRefreshState();
+              lastIntegerBase = 0; //needed to reset the annunciator
               screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
               break;
 
