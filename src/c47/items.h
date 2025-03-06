@@ -543,7 +543,7 @@
 #define SFL_SBtvm                    515
 #define SFL_SBoc                     516
 #define SFL_SBss                     517
-#define SFL_SBclk                    518
+#define SFL_SBstpw                   518
 #define SFL_SBser                    519
 #define SFL_SBprn                    520
 #define SFL_SBbatV                   521
