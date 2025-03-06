@@ -592,7 +592,7 @@ void showFracMode(void) {
 
       showGlyph(getSystemFlag(FLAG_SSIZE8) ? STD_8 : STD_4, &standardFont, X_SSIZE_BEGIN, 0, vmNormal, true, false, false); // is 0+6+2 pixel wide
 
-      showGlyph(STD_TIMER, &standardFont, X_WATCH, 0, vmNormal, true, false, false); // is 0+13+1 pixel wide
+      showGlyph(STD_TIMER, &standardFont, X_STOPWATCH, 0, vmNormal, true, false, false); // is 0+13+1 pixel wide
 
       showGlyph(STD_SERIAL_IO, &standardFont, X_SERIAL_IO, 0, vmNormal, true, false, false); // is 0+8+3 pixel wide
 
@@ -648,9 +648,9 @@ void showFracMode(void) {
 
 
   void showHideWatch(void) {
-    if(!(SBARUPD_Watch)) return;
+    if(!(SBARUPD_StopWatch)) return;
     if(watchIconEnabled) {
-      showGlyph(STD_TIMER, &standardFont, X_WATCH, 0, vmNormal, true, false, false); // is 0+13+1 pixel wide
+      showGlyph(STD_TIMER, &standardFont, X_STOPWATCH, 0, vmNormal, true, false, false); // is 0+13+1 pixel wide
     }
   }
 
