@@ -1685,7 +1685,8 @@ void doSave(uint16_t saveType) {
         sprintf(tmpString, "ShiftTimoutMode\n%"            PRIu8  "\n",     (uint8_t)ShiftTimoutMode);     save(tmpString, strlen(tmpString));
         sprintf(tmpString, "BASE_HOME\n%"                  PRIu8  "\n",     (uint8_t)BASE_HOME);           save(tmpString, strlen(tmpString));
         sprintf(tmpString, "Norm_Key_00.func\n%"           PRId16 "\n",     Norm_Key_00.func);             save(tmpString, strlen(tmpString));
-        sprintf(tmpString, "Norm_Key_00.funcParam\n"       "%s"   "\n",     Norm_Key_00.funcParam);        save(tmpString, strlen(tmpString));
+        //prevent empty string from being written to config file.
+        sprintf(tmpString, "Norm_Key_00.funcParam\n"       "%s"   "\n",     (Norm_Key_00.funcParam[0]==0) ? "NoNormKeyParamDef" : Norm_Key_00.funcParam); save(tmpString, strlen(tmpString));
         sprintf(tmpString, "Norm_Key_00.used\n%"           PRIu8  "\n",     (uint8_t)Norm_Key_00.used);    save(tmpString, strlen(tmpString));
         sprintf(tmpString, "Input_Default\n%"              PRIu8  "\n",     Input_Default);                save(tmpString, strlen(tmpString));
         sprintf(tmpString, "BASE_MYM\n%"                   PRIu8  "\n",     (uint8_t)BASE_MYM);            save(tmpString, strlen(tmpString));
@@ -1818,20 +1819,22 @@ int64_t stringToInt64(const char *str) {
 }
 
 
+#if !defined(TESTSUITE_BUILD)
+
 // Forced base-10 conversion functions
 static int16_t toInt16(const char *str) {
   return (int16_t)strtol(str, NULL, 10);
 }
 
-static int8_t toUint8(const char *str) {
+static uint8_t toUint8(const char *str) {
   return (uint8_t)strtoul(str, NULL, 10);
 }
 
-static int16_t toUint16(const char *str) {
+static uint16_t toUint16(const char *str) {
   return (uint16_t)strtoul(str, NULL, 10);
 }
 
-static int32_t toUint32(const char *str) {
+static uint32_t toUint32(const char *str) {
   return strtoul(str, NULL, 10);
 }
 
@@ -1841,7 +1844,6 @@ float stringToFloat(const char *str) {
 }
 
 
-#if !defined(TESTSUITE_BUILD)
   static void restoreRegister(calcRegister_t regist, char *type, char *value) {
     uint32_t tag = amNone;
 
@@ -2098,7 +2100,7 @@ float stringToFloat(const char *str) {
     readLine(tmpString);
     #if defined(LOADDEBUG)
       sprintf(line,", loadMode:%d, %s\n",loadMode,tmpString);
-      debugPrintf(0, "-", tmpString);
+      debugPrintf(0, "-", line);
     #endif //LOADDEBUG
 
     if(strcmp(tmpString, "GLOBAL_REGISTERS") == 0) {
@@ -2111,8 +2113,8 @@ float stringToFloat(const char *str) {
 
         if(loadMode == LM_ALL || (loadMode == LM_REGISTERS && regist < REGISTER_X) || (loadMode == LM_REGISTERS_PARTIAL && regist >= s && regist < (s + n))) {
           #if defined(LOADDEBUG)
-            sprintf(line,", loadMode:%d, %s\n",loadMode,tmpString);
-            debugPrintf(1, "-", tmpString);
+            sprintf(line,", register=%i loadMode:%d, ['%s'] = %s", regist - s + d, loadMode, aimBuffer, tmpString);
+            debugPrintf(1, "-", line);
           #endif //LOADDEBUG
           restoreRegister(loadMode == LM_REGISTERS_PARTIAL ? (regist - s + d) : regist, aimBuffer, tmpString);
           restoreMatrixData(loadMode == LM_REGISTERS_PARTIAL ? (regist - s + d) : regist);
@@ -2752,7 +2754,17 @@ float stringToFloat(const char *str) {
             }
           }
           else if(strcmp(aimBuffer, "Norm_Key_00.func"            ) == 0) { Norm_Key_00.func      = toUint16(tmpString); }
-          else if(strcmp(aimBuffer, "Norm_Key_00.funcParam"       ) == 0) { strcpy(Norm_Key_00.funcParam,tmpString); }
+          else if(strcmp(aimBuffer, "Norm_Key_00.funcParam"       ) == 0) {      //  Workaround keeping old state files and new state files working, due to a blank string possibility which breaks the loading (on Mac sim at least).
+              if(strcmp(tmpString, "Norm_Key_00.used") == 0) {                     //check if the next setting is erroneously read as data for the text data string 'funcParam'. In the old state file, a blank string was saved as param, which causes the single line read to fail, and the next setting name read as data.
+                  Norm_Key_00.funcParam[0]=0;                                      //  - old file compatibility: If next setting name is found as data, clear it.
+                  Norm_Key_00.used = 0;                                            //  - populate the the next setting to default 0,  as the read has already currupted the sequence
+                  readLine(tmpString);                                             //  - read the next data line as a dummy and throw away, as it also has corrupted the sequence
+              } else if(strcmp(tmpString, "NoNormKeyParamDef") == 0) {             //if no data sequence corrution, check for the new keyword for a blank stirng. Note the keyword is longer than the 16 chars max of param strings. Hence the 'NoNormKeyParamDef' is unique and cannot be data.
+                  Norm_Key_00.funcParam[0]=0;                                      //  - if the code word for a blank string, blank the string.
+              } else {                                                             //  - New state files will have 'NoNormKeyParamDef' if no NRM+ XEQ paramater is present.
+                  strcpy(Norm_Key_00.funcParam,tmpString);                         //Otherwise proceed and use the data as normal
+              }
+          }
           else if(strcmp(aimBuffer, "Norm_Key_00.used"            ) == 0) { Norm_Key_00.used      = toUint8(tmpString) != 0; }
           else if(strcmp(aimBuffer, "Input_Default"               ) == 0) { Input_Default         = toUint8(tmpString); }
           else if(strcmp(aimBuffer, "jm_BASE_SCREEN"              ) == 0) { BASE_MYM              = toUint8(tmpString) != 0; }        //Keep compatible by repeating
