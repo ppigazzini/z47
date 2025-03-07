@@ -2902,13 +2902,18 @@ bool_t BASE_OVERRIDEONCE = false;
     else {
       userMenuId = 0;
     }
-    if((softmenuStack[0].softmenuId == softmenuId) && (softmenuStack[0].userMenuId == userMenuId)) { // The menu to push on the stack is already displayed
+    if((softmenuStack[0].softmenuId == softmenuId) && (softmenuStack[0].userMenuId == userMenuId)) {   // The menu to push on the stack is already displayed
       return;
     }
 
     for(i=0; i<SOFTMENU_STACK_SIZE; i++) { // Searching the stack for the menu to push on the stack
-      if((softmenuStack[i].softmenuId == softmenuId) && (softmenuStack[i].userMenuId == userMenuId)) { // if found, remove it
-        xcopy(softmenuStack + 1, softmenuStack, i * sizeof(softmenuStack_t));
+      if((softmenuStack[i].softmenuId == softmenuId) && (softmenuStack[i].userMenuId == userMenuId)) { // if found, remove it 
+
+        if(!catalog) {                                                                                 //remember the page number if the menu you are opening was already open and in the stack
+          lastCatalogPosition[catalog] = softmenuStack[i].firstItem;
+          calcMode = softmenuStack[i].calcMode;
+        }
+        xcopy(softmenuStack + 1, softmenuStack, i * sizeof(softmenuStack_t));                          // Remove it by lifting the stack to cover the existing entry i
         break;
       }
     }
@@ -2963,17 +2968,18 @@ bool_t BASE_OVERRIDEONCE = false;
 
     softmenuStack[0].calcMode = calcMode;
 
-                                                              //JM ^^
-    switch(-currentMenu()) {               //reset menu base point only if not MODE & DISP & Graphs menus, otherwise all menues reset to p1
-      case MNU_MODE   :
-      case MNU_PREF   :                    //(see "do not drop out of SYSFLG" in keyboard.c)
-      case MNU_DISP   :
-      case MNU_PLOT_FUNC   : break;
-      default: {
-        softmenuStack[0].firstItem = 0;
-        break;
-      }
-    }
+
+//Completely remove the resetting of menu page numbers when menu items are POPPED. When new menu pages are opened, it still always defaults to p1 though.
+//    switch(-currentMenu()) {               //reset menu base point only if not MODE & DISP & Graphs menus, otherwise all menues reset to p1
+//      case MNU_MODE   :
+//      case MNU_PREF   :                    //(see "do not drop out of SYSFLG" in keyboard.c)
+//      case MNU_DISP   :
+//      case MNU_PLOT_FUNC   : break;
+//      default: {
+//        softmenuStack[0].firstItem = 0; 
+//        break;
+//      }
+//    }
 
     enterAsmModeIfMenuIsACatalog(softmenu[softmenuStack[0].softmenuId].menuItem);
 
@@ -3345,7 +3351,8 @@ bool_t BASE_OVERRIDEONCE = false;
     while(softmenu[m].menuItem != 0) {
       if(softmenu[m].menuItem == id) {
         if(!tam.mode) {
-          softmenuStack[0].firstItem = lastCatalogPosition[catalog];
+//Removed, as it it is clearly seems a relic of a previous incarnation! JM 2025-03-07. Originates from Martin in 2020, clearly prior to many many other changes
+//          softmenuStack[0].firstItem = lastCatalogPosition[catalog];    
         }
         break;
       }
