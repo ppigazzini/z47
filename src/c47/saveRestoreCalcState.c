@@ -1819,20 +1819,22 @@ int64_t stringToInt64(const char *str) {
 }
 
 
+#if !defined(TESTSUITE_BUILD)
+
 // Forced base-10 conversion functions
-static int16_t __attribute__((unused)) toInt16(const char *str) {
+static int16_t toInt16(const char *str) {
   return (int16_t)strtol(str, NULL, 10);
 }
 
-static uint8_t __attribute__((unused)) toUint8(const char *str) {
+static uint8_t toUint8(const char *str) {
   return (uint8_t)strtoul(str, NULL, 10);
 }
 
-static uint16_t __attribute__((unused)) toUint16(const char *str) {
+static uint16_t toUint16(const char *str) {
   return (uint16_t)strtoul(str, NULL, 10);
 }
 
-static uint32_t __attribute__((unused)) toUint32(const char *str) {
+static uint32_t toUint32(const char *str) {
   return strtoul(str, NULL, 10);
 }
 
@@ -1842,7 +1844,6 @@ float stringToFloat(const char *str) {
 }
 
 
-#if !defined(TESTSUITE_BUILD)
   static void restoreRegister(calcRegister_t regist, char *type, char *value) {
     uint32_t tag = amNone;
 
