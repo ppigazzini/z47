@@ -612,7 +612,7 @@
 #define FLAG_SBtvm                            0x8034
 #define FLAG_SBoc                             0x8035
 #define FLAG_SBss                             0x8036
-#define FLAG_SBclk                            0x8037
+#define FLAG_SBstpw                           0x8037
 #define FLAG_SBser                            0x8038
 #define FLAG_SBprn                            0x8039
 #define FLAG_SBbatV                           0x803A
@@ -1108,7 +1108,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define SBARUPD_AlphaMode                       ( 1                         )
 #define SBARUPD_HourGlass                       ( 1                         )
 #define SBARUPD_StackSize                       (getSystemFlag(FLAG_SBss   ))
-#define SBARUPD_Watch                           (getSystemFlag(FLAG_SBclk  ))
+#define SBARUPD_StopWatch                       (getSystemFlag(FLAG_SBstpw ))
 #define SBARUPD_SerialIO                        (getSystemFlag(FLAG_SBser  ))
 #define SBARUPD_Printer                         (getSystemFlag(FLAG_SBprn  ))
 #define SBARUPD_UserMode                        ( 1                         )
@@ -1134,7 +1134,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define X_HOURGLASS                              312
 #define X_SSIZE_BEGIN                            327 - 5 + 3
 #define X_ASM                                    (X_ALPHA_MODE + 34) //334
-#define X_WATCH                                  337
+#define X_STOPWATCH                              337
 #define X_SERIAL_IO                              353
 #define X_PRINTER                                362
 #define X_USER_MODE                              375
