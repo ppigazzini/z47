@@ -5496,20 +5496,37 @@ void V3err(void) {
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 
-void V3RectoToSph(uint16_t unusedParamButMandatory) {
+
+bool_t VtoAngleMode(angularMode_t angleMode) {
+  if(getRegisterDataType(REGISTER_X) == dtReal34Matrix) {
+    if(isMatrix3dVector(REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows,REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns)) {
+      if(getVectorRegisterAngularMode(REGISTER_X) == amNone) { //means it is not in any polar mode
+        V3RectoToSph(angleMode);
+      } else {
+        setVectorRegisterAngularMode(REGISTER_X, (angularMode_t)angleMode);
+      }
+    } else return false;
+  } else return false;
+  return true;
+}
+
+void V3RectoToSph(uint16_t am) {
+  angularMode_t angleMode = (am == 255 ? currentAngularMode : am);
   if(getRegisterDataType(REGISTER_X) == dtReal34Matrix) {
     if(isMatrix3dVector(REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows,REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns)) {
       setVectorRegisterPolarMode(REGISTER_X, amPolarSPH);
-      setVectorRegisterAngularMode(REGISTER_X, currentAngularMode);
+      setVectorRegisterAngularMode(REGISTER_X, angleMode);
     } else V3err();
   } else V3err();
 }
 
-void V3RectoToCyl(uint16_t unusedParamButMandatory) {
+void V3RectoToCyl(uint16_t am) {
+  angularMode_t angleMode = (am == 255 ? currentAngularMode : am);
   if(getRegisterDataType(REGISTER_X) == dtReal34Matrix) {
     if(isMatrix3dVector(REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows,REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns)) {
       setVectorRegisterPolarMode(REGISTER_X, amPolarCYL);
-      setVectorRegisterAngularMode(REGISTER_X, currentAngularMode);
+      setVectorRegisterAngularMode(REGISTER_X, angleMode);
     } else V3err();
   } else V3err();
 }
+

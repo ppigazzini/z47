@@ -430,7 +430,9 @@
   void       elementwiseCplxRema            (void (*f)(void));
   void       elementwiseRemaCplx            (void (*f)(void));
 
-  void       V3RectoToSph                   (uint16_t unusedParamButMandatory);
-  void       V3RectoToCyl                   (uint16_t unusedParamButMandatory);
+  void       V3RectoToSph                   (uint16_t am);
+  void       V3RectoToCyl                   (uint16_t am);
+  bool_t     VtoAngleMode                   (angularMode_t angleMode);
+
 
 #endif // !MATRIX_H

@@ -906,6 +906,14 @@ void fnAngularModeJM(uint16_t AMODE) { //Setting to HMS does not change AM
       setComplexRegisterPolarMode(REGISTER_X, amPolar);
       //printf("###CC fnAngularModeJM (%i)=> %i\n",REGISTER_X, getRegisterTag(REGISTER_X));
     }
+    else if(getRegisterDataType(REGISTER_X) == dtReal34Matrix) {
+      printf("###AA fnAngularModeJM (%i)<= %i\n",REGISTER_X, AMODE);
+      printf("###BB fnAngularModeJM (%i)=> %i\n",REGISTER_X, getRegisterTag(REGISTER_X));
+      VtoAngleMode(AMODE);
+      //printf("###CC fnAngularModeJM (%i)=> %i\n",REGISTER_X, getRegisterTag(REGISTER_X));
+    }
+
+
     else {
       if((getRegisterDataType(REGISTER_X) != dtReal34) || ((getRegisterDataType(REGISTER_X) == dtReal34) && getRegisterAngularMode(REGISTER_X) == amNone)) {
 
@@ -953,7 +961,6 @@ void fnDRG(uint16_t unusedButMandatoryParameter) {
     case dtTime:
     case dtDate:
     case dtString:
-    case dtReal34Matrix:
     case dtConfig:
       goto to_return_noLastX;
       break;
@@ -979,7 +986,7 @@ void fnDRG(uint16_t unusedButMandatoryParameter) {
     setRegisterAngularMode(REGISTER_X, amNone);                          //is probably none already
   }
 
-  if(getRegisterDataType(REGISTER_X) == dtReal34) {                      // if real
+  else if(getRegisterDataType(REGISTER_X) == dtReal34) {                      // if real
     dest = getRegisterAngularMode(REGISTER_X);
 
     if(dest != amNone && dest != currentAngularMode && DRG_Cycling != 1) {   //first step: convert tagged angle to ADM
@@ -991,6 +998,12 @@ void fnDRG(uint16_t unusedButMandatoryParameter) {
     fnCvtFromCurrentAngularMode(dest);
     //currentAngularMode = dest;          //remove setting of ADM!
   }
+  else if(getRegisterDataType(REGISTER_X) == dtReal34Matrix) {
+    dest = getVectorRegisterAngularMode(REGISTER_X);
+    DRG_cyc(&dest);
+    VtoAngleMode(dest);
+  }
+  
 
   to_return:
   copySourceRegisterToDestRegister(TEMP_REGISTER_1, REGISTER_L);
