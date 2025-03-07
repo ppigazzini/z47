@@ -1820,19 +1820,19 @@ int64_t stringToInt64(const char *str) {
 
 
 // Forced base-10 conversion functions
-static int16_t toInt16(const char *str) {
+static int16_t __attribute__((unused)) toInt16(const char *str) {
   return (int16_t)strtol(str, NULL, 10);
 }
 
-static int8_t toUint8(const char *str) {
+static uint8_t __attribute__((unused)) toUint8(const char *str) {
   return (uint8_t)strtoul(str, NULL, 10);
 }
 
-static int16_t toUint16(const char *str) {
+static uint16_t __attribute__((unused)) toUint16(const char *str) {
   return (uint16_t)strtoul(str, NULL, 10);
 }
 
-static int32_t toUint32(const char *str) {
+static uint32_t __attribute__((unused)) toUint32(const char *str) {
   return strtoul(str, NULL, 10);
 }
 
@@ -1899,8 +1899,6 @@ float stringToFloat(const char *str) {
 
       utf8ToString((uint8_t *)value, errorMessage);
       len = stringByteLength(errorMessage) + 1;
-      //printStringToConsole(errorMessage,"Stri:","\n");
-      //printf("%i %i %i len=%i\n", errorMessage[0], errorMessage[1], errorMessage[2], len);
       reallocateRegister(regist, dtString, TO_BLOCKS(len), amNone);
       xcopy(REGISTER_STRING_DATA(regist), errorMessage, len);
     }
@@ -2087,7 +2085,7 @@ float stringToFloat(const char *str) {
   }
 
 
-  static bool_t restoreOneSection(uint16_t loadMode, uint16_t s, uint16_t n, uint16_t d) {  //i assume (s)tart ((n)umber (d)estination
+  static bool_t restoreOneSection(uint16_t loadMode, uint16_t s, uint16_t n, uint16_t d) {
     int16_t i, numberOfRegs;
     calcRegister_t regist;
     char *str;
@@ -2755,17 +2753,15 @@ float stringToFloat(const char *str) {
             }
           }
           else if(strcmp(aimBuffer, "Norm_Key_00.func"            ) == 0) { Norm_Key_00.func      = toUint16(tmpString); }
-          else if(strcmp(aimBuffer, "Norm_Key_00.funcParam"       ) == 0) {
-              if(strcmp(tmpString, "Norm_Key_00.used") == 0) { //when the paramater in old files are not selected, i.e. a blank string, the single line non-register read fails, and the next type is read as data.
-                  //old file compatibility
-                  Norm_Key_00.funcParam[0]=0;
-                  Norm_Key_00.used = 0; //populate the the next setting to default as the read has currupted sequence now
-                  readLine(tmpString);  //read the next data line as a dummy as it also has corrupted sequence
-              } else if(strcmp(tmpString, "NoNormKeyParamDef") == 0) {
-                  Norm_Key_00.funcParam[0]=0;
-                  //new files will have 'NoNormKeyParamDef' if no paramater is present
-              } else {
-                  strcpy(Norm_Key_00.funcParam,tmpString);
+          else if(strcmp(aimBuffer, "Norm_Key_00.funcParam"       ) == 0) {      //  Workaround keeping old state files and new state files working, due to a blank string possibility which breaks the loading (on Mac sim at least).
+              if(strcmp(tmpString, "Norm_Key_00.used") == 0) {                     //check if the next setting is erroneously read as data for the text data string 'funcParam'. In the old state file, a blank string was saved as param, which causes the single line read to fail, and the next setting name read as data.
+                  Norm_Key_00.funcParam[0]=0;                                      //  - old file compatibility: If next setting name is found as data, clear it.
+                  Norm_Key_00.used = 0;                                            //  - populate the the next setting to default 0,  as the read has already currupted the sequence
+                  readLine(tmpString);                                             //  - read the next data line as a dummy and throw away, as it also has corrupted the sequence
+              } else if(strcmp(tmpString, "NoNormKeyParamDef") == 0) {             //if no data sequence corrution, check for the new keyword for a blank stirng. Note the keyword is longer than the 16 chars max of param strings. Hence the 'NoNormKeyParamDef' is unique and cannot be data.
+                  Norm_Key_00.funcParam[0]=0;                                      //  - if the code word for a blank string, blank the string.
+              } else {                                                             //  - New state files will have 'NoNormKeyParamDef' if no NRM+ XEQ paramater is present.
+                  strcpy(Norm_Key_00.funcParam,tmpString);                         //Otherwise proceed and use the data as normal
               }
           }
           else if(strcmp(aimBuffer, "Norm_Key_00.used"            ) == 0) { Norm_Key_00.used      = toUint8(tmpString) != 0; }
