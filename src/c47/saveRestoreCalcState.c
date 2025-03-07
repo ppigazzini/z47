@@ -1685,7 +1685,8 @@ void doSave(uint16_t saveType) {
         sprintf(tmpString, "ShiftTimoutMode\n%"            PRIu8  "\n",     (uint8_t)ShiftTimoutMode);     save(tmpString, strlen(tmpString));
         sprintf(tmpString, "BASE_HOME\n%"                  PRIu8  "\n",     (uint8_t)BASE_HOME);           save(tmpString, strlen(tmpString));
         sprintf(tmpString, "Norm_Key_00.func\n%"           PRId16 "\n",     Norm_Key_00.func);             save(tmpString, strlen(tmpString));
-        sprintf(tmpString, "Norm_Key_00.funcParam\n"       "%s"   "\n",     Norm_Key_00.funcParam);        save(tmpString, strlen(tmpString));
+        //prevent empty string from being written to config file.
+        sprintf(tmpString, "Norm_Key_00.funcParam\n"       "%s"   "\n",     (Norm_Key_00.funcParam[0]==0) ? "NoNormKeyParamDef" : Norm_Key_00.funcParam); save(tmpString, strlen(tmpString));
         sprintf(tmpString, "Norm_Key_00.used\n%"           PRIu8  "\n",     (uint8_t)Norm_Key_00.used);    save(tmpString, strlen(tmpString));
         sprintf(tmpString, "Input_Default\n%"              PRIu8  "\n",     Input_Default);                save(tmpString, strlen(tmpString));
         sprintf(tmpString, "BASE_MYM\n%"                   PRIu8  "\n",     (uint8_t)BASE_MYM);            save(tmpString, strlen(tmpString));
@@ -1898,6 +1899,8 @@ float stringToFloat(const char *str) {
 
       utf8ToString((uint8_t *)value, errorMessage);
       len = stringByteLength(errorMessage) + 1;
+      //printStringToConsole(errorMessage,"Stri:","\n");
+      //printf("%i %i %i len=%i\n", errorMessage[0], errorMessage[1], errorMessage[2], len);
       reallocateRegister(regist, dtString, TO_BLOCKS(len), amNone);
       xcopy(REGISTER_STRING_DATA(regist), errorMessage, len);
     }
@@ -2084,7 +2087,7 @@ float stringToFloat(const char *str) {
   }
 
 
-  static bool_t restoreOneSection(uint16_t loadMode, uint16_t s, uint16_t n, uint16_t d) {
+  static bool_t restoreOneSection(uint16_t loadMode, uint16_t s, uint16_t n, uint16_t d) {  //i assume (s)tart ((n)umber (d)estination
     int16_t i, numberOfRegs;
     calcRegister_t regist;
     char *str;
@@ -2098,7 +2101,7 @@ float stringToFloat(const char *str) {
     readLine(tmpString);
     #if defined(LOADDEBUG)
       sprintf(line,", loadMode:%d, %s\n",loadMode,tmpString);
-      debugPrintf(0, "-", tmpString);
+      debugPrintf(0, "-", line);
     #endif //LOADDEBUG
 
     if(strcmp(tmpString, "GLOBAL_REGISTERS") == 0) {
@@ -2111,8 +2114,8 @@ float stringToFloat(const char *str) {
 
         if(loadMode == LM_ALL || (loadMode == LM_REGISTERS && regist < REGISTER_X) || (loadMode == LM_REGISTERS_PARTIAL && regist >= s && regist < (s + n))) {
           #if defined(LOADDEBUG)
-            sprintf(line,", loadMode:%d, %s\n",loadMode,tmpString);
-            debugPrintf(1, "-", tmpString);
+            sprintf(line,", register=%i loadMode:%d, ['%s'] = %s", regist - s + d, loadMode, aimBuffer, tmpString);
+            debugPrintf(1, "-", line);
           #endif //LOADDEBUG
           restoreRegister(loadMode == LM_REGISTERS_PARTIAL ? (regist - s + d) : regist, aimBuffer, tmpString);
           restoreMatrixData(loadMode == LM_REGISTERS_PARTIAL ? (regist - s + d) : regist);
@@ -2752,7 +2755,19 @@ float stringToFloat(const char *str) {
             }
           }
           else if(strcmp(aimBuffer, "Norm_Key_00.func"            ) == 0) { Norm_Key_00.func      = toUint16(tmpString); }
-          else if(strcmp(aimBuffer, "Norm_Key_00.funcParam"       ) == 0) { strcpy(Norm_Key_00.funcParam,tmpString); }
+          else if(strcmp(aimBuffer, "Norm_Key_00.funcParam"       ) == 0) {
+              if(strcmp(tmpString, "Norm_Key_00.used") == 0) { //when the paramater in old files are not selected, i.e. a blank string, the single line non-register read fails, and the next type is read as data.
+                  //old file compatibility
+                  Norm_Key_00.funcParam[0]=0;
+                  Norm_Key_00.used = 0; //populate the the next setting to default as the read has currupted sequence now
+                  readLine(tmpString);  //read the next data line as a dummy as it also has corrupted sequence
+              } else if(strcmp(tmpString, "NoNormKeyParamDef") == 0) {
+                  Norm_Key_00.funcParam[0]=0;
+                  //new files will have 'NoNormKeyParamDef' if no paramater is present
+              } else {
+                  strcpy(Norm_Key_00.funcParam,tmpString);
+              }
+          }
           else if(strcmp(aimBuffer, "Norm_Key_00.used"            ) == 0) { Norm_Key_00.used      = toUint8(tmpString) != 0; }
           else if(strcmp(aimBuffer, "Input_Default"               ) == 0) { Input_Default         = toUint8(tmpString); }
           else if(strcmp(aimBuffer, "jm_BASE_SCREEN"              ) == 0) { BASE_MYM              = toUint8(tmpString) != 0; }        //Keep compatible by repeating
