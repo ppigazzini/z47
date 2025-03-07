@@ -2891,25 +2891,20 @@ RELEASE_END:
                 }
                 else if(item == ITM_RCL) {
                   rbr1stDigit = true;
+                  calcMode = previousCalcMode;
                   if(rbrMode == RBR_GLOBAL || rbrMode == RBR_LOCAL) {
-                    calcMode = previousCalcMode;
-                    if(rbrMode == RBR_GLOBAL) {
-                      fnRecall((currentRegisterBrowserScreen) % (REGISTER_W + 1));
-                    }
-                    else if(rbrMode == RBR_LOCAL) {
-                      fnRecall(currentRegisterBrowserScreen);
-                    }
-                    setSystemFlag(FLAG_ASLIFT);
+                    fnRecall(currentRegisterBrowserScreen);
                   }
                   else if(rbrMode == RBR_NAMED) {
-                    calcMode = previousCalcMode;
                     if(currentRegisterBrowserScreen >= FIRST_NAMED_VARIABLE + numberOfNamedVariables) { // Reserved variables
                       currentRegisterBrowserScreen -= FIRST_NAMED_VARIABLE + numberOfNamedVariables;
                       currentRegisterBrowserScreen += FIRST_RESERVED_VARIABLE + NUMBER_OF_LETTERED_VARIABLES;
                     }
                     fnRecall(currentRegisterBrowserScreen);
-                    setSystemFlag(FLAG_ASLIFT);
                   }
+                  setSystemFlag(FLAG_ASLIFT);
+                  temporaryInformation = TI_STORCL;
+                  lastParam = currentRegisterBrowserScreen;
                 }
                 else if(ITM_0 <= item && item <= ITM_9) {
                   if(rbr1stDigit) {
