@@ -4338,7 +4338,6 @@ void fnKeyBackspace(uint16_t unusedButMandatoryParameter) {
 
 
 
-#define RBR_INCDEC1 10
 
 void fnKeyUp(uint16_t unusedButMandatoryParameter) {
   #if !defined(TESTSUITE_BUILD)
@@ -4437,13 +4436,7 @@ void fnKeyUp(uint16_t unusedButMandatoryParameter) {
       case CM_REGISTER_BROWSER: {
         rbr1stDigit = true;
         if(rbrMode == RBR_GLOBAL) {
-          if(currentRegisterBrowserScreen + RBR_INCDEC1 > LAST_SPARE_REGISTER) {
-            currentRegisterBrowserScreen = 0;
-          } else if(currentRegisterBrowserScreen%RBR_INCDEC1 > 0) {         //13:  3>0
-            currentRegisterBrowserScreen = ((int16_t)(currentRegisterBrowserScreen / RBR_INCDEC1)+1) * RBR_INCDEC1;   //  :  (13/10)10 = 10
-          } else {
-            currentRegisterBrowserScreen = modulo(currentRegisterBrowserScreen + RBR_INCDEC1, LAST_SPARE_REGISTER);
-          }
+          currentRegisterBrowserScreen = modulo(currentRegisterBrowserScreen + RBR_INCDEC1, LAST_GLOBAL_REGISTER_SCREEN + RBR_INCDEC1);
         }
         else if(rbrMode == RBR_LOCAL) {
           currentRegisterBrowserScreen = modulo(currentRegisterBrowserScreen - FIRST_LOCAL_REGISTER + 1, currentNumberOfLocalRegisters) + FIRST_LOCAL_REGISTER;
@@ -4662,16 +4655,7 @@ void fnKeyDown(uint16_t unusedButMandatoryParameter) {
       case CM_REGISTER_BROWSER: {
         rbr1stDigit = true;
         if(rbrMode == RBR_GLOBAL) {
-          if(currentRegisterBrowserScreen + RBR_INCDEC1 > LAST_SPARE_REGISTER + 1) {
-            currentRegisterBrowserScreen = LAST_SPARE_REGISTER - RBR_INCDEC1 + 1;
-          } else if(currentRegisterBrowserScreen%RBR_INCDEC1 > 0) {         //13:  3>0
-            currentRegisterBrowserScreen = ((int16_t)(currentRegisterBrowserScreen / RBR_INCDEC1)) * RBR_INCDEC1;   //  :  (13/10)10 = 10
-          } else {
-            currentRegisterBrowserScreen -= RBR_INCDEC1;
-            if(currentRegisterBrowserScreen < 0) {
-              currentRegisterBrowserScreen = LAST_SPARE_REGISTER - RBR_INCDEC1 + 1; 
-            }
-          }
+          currentRegisterBrowserScreen = modulo(currentRegisterBrowserScreen - RBR_INCDEC1, LAST_GLOBAL_REGISTER_SCREEN + RBR_INCDEC1);
         }
         else if(rbrMode == RBR_LOCAL) {
           currentRegisterBrowserScreen = modulo(currentRegisterBrowserScreen - FIRST_LOCAL_REGISTER - 1, currentNumberOfLocalRegisters) + FIRST_LOCAL_REGISTER;
