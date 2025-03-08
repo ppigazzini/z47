@@ -27,6 +27,7 @@ c47_src = files(
   'distributions/logistic.c',
   'distributions/negBinom.c',
   'distributions/normal.c',
+  'distributions/pareto.c',
   'distributions/poisson.c',
   'distributions/t.c',
   'distributions/weibull.c',

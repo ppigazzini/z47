@@ -4903,7 +4903,7 @@ static decNumber * decDivideOp(decNumber *res,
 /* Static buffers are larger than needed just for multiply, to allow  */
 /* for calls from other operations (notably exp).                     */
 /* ------------------------------------------------------------------ */
-//#define FASTMUL (DECUSE64 && DECDPUN<5)
+#define FASTMUL (DECNUMBER_FASTMUL && DECUSE64 && DECDPUN<5)
 static decNumber * decMultiplyOp(decNumber *res, const decNumber *lhs,
                                  const decNumber *rhs, decContext *set,
                                  uInt *status) {

@@ -458,7 +458,9 @@ void generateAllConstants(void) {
   generateConstantArray("GlukFzuk",      "+1.600000000000000000000000000000000000000000000000000000e+02"); // defined uk       : 1600 x
   generateConstantArray("GlusFzus",      "+1.280000000000000000000000000000000000000000000000000000e+02"); // defined uz       : 1200 x
 ////
-
+  generateConstantArray("bananamm",      "+178.0");
+  generateConstantArray("bananaInch",    "+7.007874015748031496062992125984251968503937007874015748");
+////
 
   generateConstantArray("_108",          "-1.080000000000000000000000000000000000000000000000000000e+02");
   generateConstantArray("_90",           "-9.000000000000000000000000000000000000000000000000000000e+01");

@@ -69,22 +69,22 @@ Out: EC=21 FL_CPXRES=0 FL_ASLIFT=0 RY=ReMa:"M2,3[1,2,3,4,5,6]" RX=ReMa:"M2,3[1,2
 ; Cross(Real Matrix, Complex Matrix) --> Complex Matrix
 ;=======================================
 In:  FL_ASLIFT=0 FL_CPXRES=0 RY=ReMa:"M3,1[1,5,9]" RX=CxMa:"M1,3[3i4,7i8,11i12]"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=CxMa:"M1,3[3i4,7i8,11i12]" RX=CxMa:"M1,3[-8i-12,16i24,-8i-12]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=CxMa:"M1,3[3i4,7i8,11i12]" RX=CxMa:"M1,3[-8i-12,16i24,-8i-12]"
 
 ;=======================================
 ; Cross(Complex Matrix, Real Matrix) --> Complex Matrix
 ;=======================================
 In:  FL_ASLIFT=0 FL_CPXRES=0 RY=CxMa:"M3,1[1i2,5i6,9i10]" RX=ReMa:"M1,3[3,7,11]"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M1,3[3,7,11]" RX=CxMa:"M1,3[-8i-4,16i8,-8i-4]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=ReMa:"M1,3[3,7,11]" RX=CxMa:"M1,3[-8i-4,16i8,-8i-4]"
 
 ;=======================================
 ; Cross(Complex Matrix, Complex Matrix) --> Complex Matrix
 ;=======================================
 In:  FL_ASLIFT=0 FL_CPXRES=0 RY=CxMa:"M1,2[1i2,5i6]" RX=CxMa:"M2,1[3i4,7i8]"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=CxMa:"M2,1[3i4,7i8]" RX=CxMa:"M1,3[0,0,0i-16]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=CxMa:"M2,1[3i4,7i8]" RX=CxMa:"M1,3[0,0,0i-16]"
 
 In:  FL_ASLIFT=0 FL_CPXRES=0 RY=CxMa:"M3,1[1i2,5i6,9i10]" RX=CxMa:"M1,3[3i4,7i8,11i12]"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=CxMa:"M1,3[3i4,7i8,11i12]" RX=CxMa:"M1,3[0i-16,0i32,0i-16]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=CxMa:"M1,3[3i4,7i8,11i12]" RX=CxMa:"M1,3[0i-16,0i32,0i-16]"
 
 In:  FL_ASLIFT=0 FL_CPXRES=0 RY=CxMa:"M4,1[1i2,5i6,9i10,13i14]" RX=CxMa:"M4,1[3i4,7i8,11i12,15i16]"
 Out: EC=21 FL_CPXRES=0 FL_ASLIFT=0 RY=CxMa:"M4,1[1i2,5i6,9i10,13i14]" RX=CxMa:"M4,1[3i4,7i8,11i12,15i16]"
