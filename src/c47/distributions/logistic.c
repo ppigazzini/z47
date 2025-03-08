@@ -19,6 +19,9 @@
 
 #else
   static bool_t checkParamLogistic(real_t *x, real_t *i, real_t *j) {
+    if(!saveLastX())
+      return false;
+
     if(!getRegisterAsReal(REGISTER_X, x)
         || !getRegisterAsReal(REGISTER_M, i)
         || !getRegisterAsReal(REGISTER_S, j))
@@ -44,54 +47,35 @@
   void fnLogisticP(uint16_t unusedButMandatoryParameter) {
     real_t val, mu, s, ans;
 
-    if(!saveLastX()) {
-      return;
-    }
-
     if(checkParamLogistic(&val, &mu, &s)) {
       WP34S_Pdf_Logit(&val, &mu, &s, &ans, &ctxtReal39);
       convertRealToResultRegister(&ans, REGISTER_X, amNone);
+      adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
     }
-
-    adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
   }
 
   void fnLogisticL(uint16_t unusedButMandatoryParameter) {
     real_t val, mu, s, ans;
 
-    if(!saveLastX()) {
-      return;
-    }
-
     if(checkParamLogistic(&val, &mu, &s)) {
       WP34S_Cdf_Logit(&val, &mu, &s, &ans, &ctxtReal39);
       convertRealToResultRegister(&ans, REGISTER_X, amNone);
+      adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
     }
-
-    adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
   }
 
   void fnLogisticR(uint16_t unusedButMandatoryParameter) {
     real_t val, mu, s, ans;
 
-    if(!saveLastX()) {
-      return;
-    }
-
     if(checkParamLogistic(&val, &mu, &s)) {
       WP34S_Cdfu_Logit(&val, &mu, &s, &ans, &ctxtReal39);
       convertRealToResultRegister(&ans, REGISTER_X, amNone);
+      adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
     }
-
-    adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
   }
 
   void fnLogisticI(uint16_t unusedButMandatoryParameter) {
     real_t val, mu, s, ans;
-
-    if(!saveLastX()) {
-      return;
-    }
 
     if(checkParamLogistic(&val, &mu, &s)) {
       if(realCompareLessEqual(&val, const_0) || realCompareGreaterEqual(&val, const_1)) {
@@ -106,9 +90,8 @@
       }
       WP34S_Qf_Logit(&val, &mu, &s, &ans, &ctxtReal39);
       convertRealToResultRegister(&ans, REGISTER_X, amNone);
+      adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
     }
-
-    adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
   }
 
 

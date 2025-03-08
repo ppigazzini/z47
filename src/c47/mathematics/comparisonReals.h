@@ -25,6 +25,7 @@ bool_t  realCompareAbsGreaterThan   (const real_t *number1, const real_t *number
 //bool_t  realCompareAbsGreaterEqual  (const real_t *number1, const real_t *number2); never used
 bool_t  realCompareAbsLessThan      (const real_t *number1, const real_t *number2);
 bool_t  realCompareEqual            (const real_t *number1, const real_t *number2);
+bool_t  realCompareAbsEqual         (const real_t *number1, const real_t *number2);
 bool_t  realCompareGreaterEqual     (const real_t *number1, const real_t *number2);
 bool_t  realCompareGreaterThan      (const real_t *number1, const real_t *number2);
 bool_t  realCompareLessEqual        (const real_t *number1, const real_t *number2);

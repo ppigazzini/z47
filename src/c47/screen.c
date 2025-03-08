@@ -889,6 +889,11 @@ return res;
 //    ));
 //}
 
+
+  uint8_t  boldString = 0;
+  uint8_t  compressString = 0;
+  uint8_t  raiseString = 0;
+
   uint32_t showGlyphCode(uint16_t charCode, const font_t *font, uint32_t x, uint32_t y, videoMode_t videoMode, bool_t showLeadingCols, bool_t showEndingCols, bool_t noPreClear) {
     uint32_t col, row, xGlyph, endingCols;
     int32_t  glyphId;
@@ -993,6 +998,9 @@ return res;
           }
           if(videoMode == vmNormal) { // Black pixel for white background
             setBlackPixel(x1,y1);
+            if(boldString == 1) {
+              setBlackPixel(x1+1,y1);
+            }
             if(numDouble) {
               setBlackPixel(x2,y1);
             }
@@ -1005,6 +1013,9 @@ return res;
           }
           else { // White pixel for black background
             setWhitePixel(x1,y1);
+            if(boldString == 1) {
+              setWhitePixel(x1+1,y1);
+            }
             if(numDouble) {
               setWhitePixel(x2,y1);
             }
@@ -1027,7 +1038,7 @@ return res;
         y++; //JM ENLARGE vv do not advance the row counter for four rows, to match the row height of the enlarge font
       }
     }
-    return x + (((doubling * (xGlyph + glyph->colsGlyph + endingCols)) >> miniC) >> 3);        //JMmini
+    return x + boldString + (((doubling * (xGlyph + glyph->colsGlyph + endingCols)) >> miniC) >> 3);        //JMmini
   }
 
 
@@ -1086,8 +1097,6 @@ return res;
 
 
 
-  uint8_t  compressString = 0;                                                              //JM compressString
-  uint8_t  raiseString = 0;                                                                 //JM compressString
   static uint32_t _doShowString(const char *string, const font_t *font, uint32_t x, uint32_t y, char **resStr, uint32_t width, videoMode_t videoMode, bool_t showLeadingCols, bool_t showEndingCols, bool_t LF) {
     uint16_t ch, lg;
     bool_t   slc, sec;
@@ -1159,11 +1168,13 @@ return res;
   }
 
 
-  uint32_t showStringEnhanced(const char *string, const font_t *font, uint32_t x, uint32_t y, videoMode_t videoMode, bool_t showLeadingCols, bool_t showEndingCols, uint8_t compress1, uint8_t raise1, uint8_t noShow1, bool_t lf) {
+  uint32_t showStringEnhanced(const char *string, const font_t *font, uint32_t x, uint32_t y, videoMode_t videoMode, bool_t showLeadingCols, bool_t showEndingCols, uint8_t compress1, uint8_t raise1, uint8_t noShow1, uint8_t boldString1, bool_t lf) {
+    boldString = boldString1;
     compressString = compress1;
     raiseString = raise1;
     noShow = noShow1;
     uint32_t tmp = _doShowString(string, font, x, y, NULL, 0, videoMode, showLeadingCols, showEndingCols, lf);
+    boldString = 0;
     compressString = 0;
     raiseString = 0;
     noShow = 0;
@@ -1911,6 +1922,23 @@ return res;
   }
 
 
+  static void nameRegis(calcRegister_t regist, char *prefix) {
+    uint16_t currentViewRegisterStored = currentViewRegister;
+    int16_t prefixWidth;
+    currentViewRegister = regist;
+    viewRegName(prefix, &prefixWidth);
+    uint16_t nn = stringByteLength(prefix)-1;
+    while(prefix[nn] != 0) {
+      if(prefix[nn] == '=') {
+        prefix[nn] = 0;
+        //prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
+      }
+      nn--;
+    }
+    currentViewRegister = currentViewRegisterStored;
+  }
+
+
 
 //create substrings in tmpString by replacing the separator character with a [0]
 void createSubstrings(uint8_t number) {
@@ -2237,7 +2265,7 @@ void createSubstrings(uint8_t number) {
   }
 
 
-  void _displayIJ(char *prefix, int16_t *prefixWidth) {
+  void _displayIJ(calcRegister_t regist, char *prefix, int16_t *prefixWidth) {
     if(lastErrorCode != 0) {
       return;
     }
@@ -2250,11 +2278,24 @@ void createSubstrings(uint8_t number) {
       if(0 <= iii && iii < 200 && 0 <= jji && jji < 200) {
         prefix[0] = 0;
         *prefixWidth = 0;
-        if(temporaryInformation == TI_MIJ) {
-          sprintf(prefix,STD_MU "[I" STD_SUB_r STD_SPACE_4_PER_EM "J" STD_SUB_c "]=" STD_MU "[%u" STD_SPACE_3_PER_EM "%u]=",(uint8_t)iii,(uint8_t)jji);
+        char tmp[16];
+        nameRegis(matrixIndex, tmp);
+
+        if(regist == REGISTER_X && temporaryInformation == TI_MIJ) {
+          sprintf(prefix,STD_MU "[I" STD_SUB_r STD_SPACE_4_PER_EM "J" STD_SUB_c "]=%s[%u" STD_SPACE_3_PER_EM "%u]=",tmp, (uint8_t)iii,(uint8_t)jji);
         }
-        else {
-          sprintf(prefix,"[I" STD_SUB_r STD_SPACE_4_PER_EM "J" STD_SUB_c "]=[%u" STD_SPACE_3_PER_EM "%u]",(uint8_t)iii,(uint8_t)jji);
+
+//R00 [Ir=1 Jc=1]: Jc=
+        else if(regist == REGISTER_X && ((iii != 0 && temporaryInformation == TI_I) || (jji != 0 && temporaryInformation == TI_J))) {
+         sprintf(prefix,"%s[I" STD_SUB_r "=%u" STD_SPACE_4_PER_EM "J" STD_SUB_c "=%u]%s",tmp, (uint8_t)iii,(uint8_t)jji, temporaryInformation == TI_I ? ": I" STD_SUB_r "=" : ": J" STD_SUB_c "=");
+        }
+//R00: Ir=
+        else if(iii != 0 && jji != 0) {
+          if(regist == REGISTER_Y) {
+            sprintf(prefix,"%s:I" STD_SUB_r "=",tmp);
+          } else if(regist == REGISTER_X) {
+            sprintf(prefix,"%s:J" STD_SUB_c "=",tmp);
+          }
         }
         *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
       }
@@ -2585,7 +2626,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
 
       else if(temporaryInformation == TI_WHO) {
         if(regist == REGISTER_Z || regist == REGISTER_Y || regist == REGISTER_X) { //Force repainting it 3 times to get it painted properly over three lines
-          showStringEnhanced(whoStr1, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*2 + 6, vmNormal, true, true, NO_compress, NO_raise, DO_Show, DO_LF);
+          showStringEnhanced(whoStr1, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*2 + 6, vmNormal, true, true, NO_compress, NO_raise, DO_Show, NO_Bold, DO_LF);
         }
       }
 
@@ -2594,9 +2635,9 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
         clearRegisterLine(REGISTER_Z, true, true);
         clearRegisterLine(REGISTER_Y, true, true);
         clearRegisterLine(REGISTER_X, true, true);
-        showStringEnhanced(versionStr2,    &standardFont, 1, Y_POSITION_OF_REGISTER_T_LINE + 6, vmNormal, true, true, NO_compress, NO_raise, DO_Show, DO_LF);
-        showStringEnhanced(versionStr,     &standardFont, 1, Y_POSITION_OF_REGISTER_Z_LINE + 6, vmNormal, true, true, NO_compress, NO_raise, DO_Show, DO_LF);
-        showStringEnhanced(disclaimerStr,  &standardFont, 1, Y_POSITION_OF_REGISTER_Y_LINE + 6, vmNormal, true, true, NO_compress, NO_raise, DO_Show, DO_LF);
+        showStringEnhanced(versionStr2,    &standardFont, 1, Y_POSITION_OF_REGISTER_T_LINE + 6, vmNormal, true, true, NO_compress, NO_raise, DO_Show, NO_Bold, DO_LF);
+        showStringEnhanced(versionStr,     &standardFont, 1, Y_POSITION_OF_REGISTER_Z_LINE + 6, vmNormal, true, true, NO_compress, NO_raise, DO_Show, NO_Bold, DO_LF);
+        showStringEnhanced(disclaimerStr,  &standardFont, 1, Y_POSITION_OF_REGISTER_Y_LINE + 6, vmNormal, true, true, NO_compress, NO_raise, DO_Show, NO_Bold, DO_LF);
       }
 
       else if(temporaryInformation == TI_DISP_JULIAN) {
@@ -2665,8 +2706,8 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
         clearRegisterLine(REGISTER_Z, true, true);
         clearRegisterLine(REGISTER_T, true, true);
         showString(errorMessages[TI_Backup_restored], &standardFont, 1, Y_POSITION_OF_REGISTER_Z_LINE + 6, vmNormal, true, true);
-        showStringEnhanced(versionStr,  &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true, NO_compress, NO_raise, DO_Show, DO_LF);
-        showStringEnhanced(versionStr2, &standardFont, 1, Y_POSITION_OF_REGISTER_Y_LINE + 6, vmNormal, true, true, NO_compress, NO_raise, DO_Show, DO_LF);
+        showStringEnhanced(versionStr,  &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true, NO_compress, NO_raise, DO_Show, NO_Bold, DO_LF);
+        showStringEnhanced(versionStr2, &standardFont, 1, Y_POSITION_OF_REGISTER_Y_LINE + 6, vmNormal, true, true, NO_compress, NO_raise, DO_Show, NO_Bold, DO_LF);
       }
 
       else if(temporaryInformation == TI_STATEFILE_RESTORED && regist == REGISTER_X) {
@@ -2789,6 +2830,11 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
 
 
           switch(currentMenu()) {
+            case -MNU_PARETO:
+              r_i = STD_mu;                 register_i = REGISTER_M;
+              r_j = STD_sigma;              register_j = REGISTER_S;
+              r_k = STD_alpha;              register_k = REGISTER_Q;
+              break;
             case -MNU_GEV:
               r_i = STD_mu;                 register_i = REGISTER_M;
               r_j = STD_sigma;              register_j = REGISTER_S;
@@ -3784,8 +3830,8 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
               }
             }
           }
-          else if(regist == REGISTER_X && (temporaryInformation == TI_IJ || temporaryInformation == TI_MIJ)) {
-            _displayIJ(prefix, &prefixWidth);
+          else if((regist == REGISTER_X && temporaryInformation == TI_MIJ) || ((regist == REGISTER_X || regist == REGISTER_Y) && temporaryInformation == TI_IJ) || (regist == REGISTER_X && (temporaryInformation == TI_I || temporaryInformation == TI_J))) {
+            _displayIJ(regist, prefix, &prefixWidth);
           }
           else if(temporaryInformation == TI_STORCL && regist == REGISTER_X) {
             viewStoRcl(prefix, &prefixWidth);
@@ -3870,8 +3916,8 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
             }
             #endif //DISCRIMINANT
           }
-          else if(regist == REGISTER_X && (temporaryInformation == TI_IJ || temporaryInformation == TI_MIJ)) {
-            _displayIJ(prefix, &prefixWidth);
+          else if((regist == REGISTER_X && temporaryInformation == TI_MIJ) || ((regist == REGISTER_X || regist == REGISTER_Y) && temporaryInformation == TI_IJ) || (regist == REGISTER_X && (temporaryInformation == TI_I || temporaryInformation == TI_J))) {
+            _displayIJ(regist, prefix, &prefixWidth);
           }
           else if(temporaryInformation == TI_STORCL && regist == REGISTER_X) {
             viewStoRcl(prefix, &prefixWidth);
@@ -4094,8 +4140,8 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
           else if(temporaryInformation == TI_SOLVER_VARIABLE) {
             _displaySolverInput(regist, prefix, &prefixWidth);
           }
-          else if(regist == REGISTER_X && (temporaryInformation == TI_IJ || temporaryInformation == TI_MIJ)) {
-            _displayIJ(prefix, &prefixWidth);
+          else if((regist == REGISTER_X && temporaryInformation == TI_MIJ) || ((regist == REGISTER_X || regist == REGISTER_Y) && temporaryInformation == TI_IJ) || (regist == REGISTER_X && (temporaryInformation == TI_I || temporaryInformation == TI_J))) {
+            _displayIJ(regist, prefix, &prefixWidth);
           }
           else if(temporaryInformation == TI_STORCL && regist == REGISTER_X) {
             viewStoRcl(prefix, &prefixWidth);
@@ -4247,12 +4293,12 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
             if(temporaryInformation == TI_VIEW_REGISTER && origRegist == REGISTER_T) {
               viewRegName(prefix, &prefixWidth);
             }
-            showRealMatrix(&matrix, prefixWidth);
+            showRealMatrix(&matrix, prefixWidth, toDisplayVectorMatrix);
             if(lastErrorCode != 0) {
               refreshRegisterLine(errorMessageRegisterLine);
             }
-            else if(regist == REGISTER_X && (temporaryInformation == TI_IJ || temporaryInformation == TI_MIJ)) {
-              _displayIJ(prefix, &prefixWidth);
+            else if((regist == REGISTER_X && temporaryInformation == TI_MIJ) || ((regist == REGISTER_X || regist == REGISTER_Y) && temporaryInformation == TI_IJ) || (regist == REGISTER_X && (temporaryInformation == TI_I || temporaryInformation == TI_J))) {
+              _displayIJ(regist, prefix, &prefixWidth);
             }
             else if(temporaryInformation == TI_STORCL && regist == REGISTER_X) {
               viewStoRcl(prefix, &prefixWidth);
@@ -4276,7 +4322,11 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
             if(prefixWidth > 0) {
               showString(prefix, &standardFont, 1, baseY + TEMPORARY_INFO_OFFSET, vmNormal, prefixPre, prefixPost);
             }
-            real34MatrixToDisplayString(regist, tmpString);
+
+            if(!vectorToDisplayString(regist, tmpString)) {
+              real34MatrixToDisplayString(regist, tmpString);
+            }
+
             w = stringWidth(tmpString, &numericFont, false, true);
             lineWidth = w;
             showString(tmpString, &numericFont, SCREEN_WIDTH - w - 2, baseY, vmNormal, false, true);
@@ -4300,8 +4350,8 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
             if(lastErrorCode != 0) {
               refreshRegisterLine(errorMessageRegisterLine);
             }
-            else if(regist == REGISTER_X && (temporaryInformation == TI_IJ || temporaryInformation == TI_MIJ)) {
-              _displayIJ(prefix, &prefixWidth);
+            else if((regist == REGISTER_X && temporaryInformation == TI_MIJ) || ((regist == REGISTER_X || regist == REGISTER_Y) && temporaryInformation == TI_IJ) || (regist == REGISTER_X && (temporaryInformation == TI_I || temporaryInformation == TI_J))) {
+              _displayIJ(regist, prefix, &prefixWidth);
             }
             else if(temporaryInformation == TI_STORCL && regist == REGISTER_X) {
               viewStoRcl(prefix, &prefixWidth);

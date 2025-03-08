@@ -80,6 +80,7 @@ void showShiftState(void) {
         clearShiftState();
         clear_fg_jm();
         showHideAlphaMode();
+        cleanupAfterShift = true;
       }
     }
   #endif // !TESTSUITE_BUILD

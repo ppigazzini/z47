@@ -18,6 +18,7 @@
   #include "logistic.h"
   #include "negBinom.h"
   #include "normal.h"
+  #include "pareto.h"
   #include "poisson.h"
   #include "t.h"
   #include "weibull.h"
