@@ -326,7 +326,8 @@ typedef union {
 typedef struct {
   uint16_t matrixRows;                ///< Number of rows in the matrix
   uint16_t matrixColumns;             ///< Number of columns in the matrix
-  angularMode_t tag;
+//  angularMode_t tag;
+uint32_t tag;
 } matrixHeader_t;
 
 
