@@ -1584,6 +1584,11 @@ int16_t lastItem = 0;
       result = shiftF ? key->fShifted :
                shiftG ? key->gShifted :
                         key->primary;
+      if(calcMode == CM_REGISTER_BROWSER) {
+        if (shiftF && key->primaryAim >= ITM_A && key->primaryAim <= ITM_Z) {
+          result = key->primaryAim;
+        }
+      }
     }
     else {
       displayBugScreen(bugScreenItemNotDetermined);
@@ -1641,50 +1646,8 @@ int16_t lastItem = 0;
           break;
         }
         default: {
-          if(calcModel == USER_C47) {
-            switch(key->primaryAim) {
-              case ITM_A:
-              case ITM_B:
-              case ITM_C:
-              case ITM_D:
-              case ITM_E:
-              case ITM_F:
-              case ITM_G:
-              case ITM_I:
-              case ITM_J:
-              case ITM_K: 
-              case ITM_L:
-              case ITM_M:
-              case ITM_N:
-              case ITM_O:
-              case ITM_W:
-              case ITM_S:
-              {
-                result = key->primaryAim;
-              }
-            }
-          } 
-          else if(isR47FAM) {
-            switch(key->primaryAim) {
-              case ITM_A:
-              case ITM_B:
-              case ITM_C:
-              case ITM_D:
-              case ITM_E:
-              case ITM_F:
-              case ITM_G:
-              case ITM_I:
-              case ITM_J:
-              case ITM_K: 
-              case ITM_L:
-              case ITM_M:
-              case ITM_Q:
-              case ITM_U:
-              case ITM_Y:
-              {
-                result = key->primaryAim;
-              }
-            }            
+          if (key->primaryAim >= ITM_A && key->primaryAim <= ITM_Z) {
+            result = key->primaryAim;
           }
         }
       }
@@ -2928,25 +2891,20 @@ RELEASE_END:
                 }
                 else if(item == ITM_RCL) {
                   rbr1stDigit = true;
+                  calcMode = previousCalcMode;
                   if(rbrMode == RBR_GLOBAL || rbrMode == RBR_LOCAL) {
-                    calcMode = previousCalcMode;
-                    if(rbrMode == RBR_GLOBAL) {
-                      fnRecall((currentRegisterBrowserScreen) % (REGISTER_W + 1));
-                    }
-                    else if(rbrMode == RBR_LOCAL) {
-                      fnRecall(currentRegisterBrowserScreen);
-                    }
-                    setSystemFlag(FLAG_ASLIFT);
+                    fnRecall(currentRegisterBrowserScreen);
                   }
                   else if(rbrMode == RBR_NAMED) {
-                    calcMode = previousCalcMode;
                     if(currentRegisterBrowserScreen >= FIRST_NAMED_VARIABLE + numberOfNamedVariables) { // Reserved variables
                       currentRegisterBrowserScreen -= FIRST_NAMED_VARIABLE + numberOfNamedVariables;
                       currentRegisterBrowserScreen += FIRST_RESERVED_VARIABLE + NUMBER_OF_LETTERED_VARIABLES;
                     }
                     fnRecall(currentRegisterBrowserScreen);
-                    setSystemFlag(FLAG_ASLIFT);
                   }
+                  setSystemFlag(FLAG_ASLIFT);
+                  temporaryInformation = TI_STORCL;
+                  lastParam = currentRegisterBrowserScreen;
                 }
                 else if(ITM_0 <= item && item <= ITM_9) {
                   if(rbr1stDigit) {
@@ -2975,20 +2933,30 @@ RELEASE_END:
                     }
                   }
                 }
+                else if(ITM_X <= item && item <= ITM_Z) {
+                  rbrMode = RBR_GLOBAL;
+                  rbr1stDigit = true;
+                  currentRegisterBrowserScreen = item - ITM_X + REGISTER_X;
+                }
+                else if(item == ITM_T) {
+                  rbrMode = RBR_GLOBAL;
+                  rbr1stDigit = true;
+                  currentRegisterBrowserScreen = REGISTER_T;
+                }
                 else if(ITM_A <= item && item <= ITM_D) {
                   rbrMode = RBR_GLOBAL;
                   rbr1stDigit = true;
                   currentRegisterBrowserScreen = item - ITM_A + REGISTER_A;
                 }
-                else if(ITM_I <= item && item <= ITM_K) {
-                  rbrMode = RBR_GLOBAL;
-                  rbr1stDigit = true;
-                  currentRegisterBrowserScreen = item - ITM_I + REGISTER_I;
-                }
                 else if(item == ITM_L) {
                   rbrMode = RBR_GLOBAL;
                   rbr1stDigit = true;
                   currentRegisterBrowserScreen = REGISTER_L;
+                }
+                else if(ITM_I <= item && item <= ITM_K) {
+                  rbrMode = RBR_GLOBAL;
+                  rbr1stDigit = true;
+                  currentRegisterBrowserScreen = item - ITM_I + REGISTER_I;
                 }
                 else if(item == ITM_M) {
                   rbrMode = RBR_GLOBAL;
@@ -3000,70 +2968,25 @@ RELEASE_END:
                   rbr1stDigit = true;
                   currentRegisterBrowserScreen = REGISTER_N;
                 }
-                else if(item == ITM_P) {
+                else if(ITM_P <= item && item <= ITM_S) {
                   rbrMode = RBR_GLOBAL;
                   rbr1stDigit = true;
-                  currentRegisterBrowserScreen = REGISTER_P;
+                  currentRegisterBrowserScreen = item - ITM_P + REGISTER_P;
                 }
-                else if(item == ITM_Q) {
+                else if(ITM_E <= item && item <= ITM_H) {
                   rbrMode = RBR_GLOBAL;
                   rbr1stDigit = true;
-                  currentRegisterBrowserScreen = REGISTER_Q;
-                }
-                else if(item == ITM_R) {
-                  rbrMode = RBR_GLOBAL;
-                  rbr1stDigit = true;
-                  currentRegisterBrowserScreen = REGISTER_R;
-                }
-                else if(item == ITM_S) {
-                  rbrMode = RBR_GLOBAL;
-                  rbr1stDigit = true;
-                  currentRegisterBrowserScreen = REGISTER_S;
-                }
-                else if(item == ITM_E) {
-                  rbrMode = RBR_GLOBAL;
-                  rbr1stDigit = true;
-                  currentRegisterBrowserScreen = REGISTER_E;
-                }
-                else if(item == ITM_F) {
-                  rbrMode = RBR_GLOBAL;
-                  rbr1stDigit = true;
-                  currentRegisterBrowserScreen = REGISTER_F;
-                }
-                else if(item == ITM_G) {
-                  rbrMode = RBR_GLOBAL;
-                  rbr1stDigit = true;
-                  currentRegisterBrowserScreen = REGISTER_G;
-                }
-                else if(item == ITM_H) {
-                  rbrMode = RBR_GLOBAL;
-                  rbr1stDigit = true;
-                  currentRegisterBrowserScreen = REGISTER_H;
+                  currentRegisterBrowserScreen = item - ITM_E + REGISTER_E;
                 }
                 else if(item == ITM_O) {
                   rbrMode = RBR_GLOBAL;
                   rbr1stDigit = true;
                   currentRegisterBrowserScreen = REGISTER_O;
                 }
-                else if(item == ITM_U) {
+                else if(ITM_U <= item && item <= ITM_W) {
                   rbrMode = RBR_GLOBAL;
                   rbr1stDigit = true;
-                  currentRegisterBrowserScreen = REGISTER_U;
-                }
-                else if(item == ITM_V) {
-                  rbrMode = RBR_GLOBAL;
-                  rbr1stDigit = true;
-                  currentRegisterBrowserScreen = REGISTER_V;
-                }
-                else if(item == ITM_W) {
-                  rbrMode = RBR_GLOBAL;
-                  rbr1stDigit = true;
-                  currentRegisterBrowserScreen = REGISTER_W;
-                }
-                else if(item == ITM_Y) {
-                  rbrMode = RBR_GLOBAL;
-                  rbr1stDigit = true;
-                  currentRegisterBrowserScreen = REGISTER_Y;
+                  currentRegisterBrowserScreen = item - ITM_U + REGISTER_U;
                 }
 
                 keyActionProcessed = true;
@@ -4415,7 +4338,6 @@ void fnKeyBackspace(uint16_t unusedButMandatoryParameter) {
 
 
 
-#define RBR_INCDEC1 10
 
 void fnKeyUp(uint16_t unusedButMandatoryParameter) {
   #if !defined(TESTSUITE_BUILD)
@@ -4514,13 +4436,7 @@ void fnKeyUp(uint16_t unusedButMandatoryParameter) {
       case CM_REGISTER_BROWSER: {
         rbr1stDigit = true;
         if(rbrMode == RBR_GLOBAL) {
-          if(currentRegisterBrowserScreen + RBR_INCDEC1 > LAST_SPARE_REGISTER) {
-            currentRegisterBrowserScreen = 0;
-          } else if(currentRegisterBrowserScreen%RBR_INCDEC1 > 0) {         //13:  3>0
-            currentRegisterBrowserScreen = ((int16_t)(currentRegisterBrowserScreen / RBR_INCDEC1)+1) * RBR_INCDEC1;   //  :  (13/10)10 = 10
-          } else {
-            currentRegisterBrowserScreen = modulo(currentRegisterBrowserScreen + RBR_INCDEC1, LAST_SPARE_REGISTER);
-          }
+          currentRegisterBrowserScreen = modulo(currentRegisterBrowserScreen + RBR_INCDEC1, LAST_GLOBAL_REGISTER_SCREEN + RBR_INCDEC1);
         }
         else if(rbrMode == RBR_LOCAL) {
           currentRegisterBrowserScreen = modulo(currentRegisterBrowserScreen - FIRST_LOCAL_REGISTER + 1, currentNumberOfLocalRegisters) + FIRST_LOCAL_REGISTER;
@@ -4739,16 +4655,7 @@ void fnKeyDown(uint16_t unusedButMandatoryParameter) {
       case CM_REGISTER_BROWSER: {
         rbr1stDigit = true;
         if(rbrMode == RBR_GLOBAL) {
-          if(currentRegisterBrowserScreen + RBR_INCDEC1 > LAST_SPARE_REGISTER + 1) {
-            currentRegisterBrowserScreen = LAST_SPARE_REGISTER - RBR_INCDEC1 + 1;
-          } else if(currentRegisterBrowserScreen%RBR_INCDEC1 > 0) {         //13:  3>0
-            currentRegisterBrowserScreen = ((int16_t)(currentRegisterBrowserScreen / RBR_INCDEC1)) * RBR_INCDEC1;   //  :  (13/10)10 = 10
-          } else {
-            currentRegisterBrowserScreen -= RBR_INCDEC1;
-            if(currentRegisterBrowserScreen < 0) {
-              currentRegisterBrowserScreen = LAST_SPARE_REGISTER - RBR_INCDEC1 + 1; 
-            }
-          }
+          currentRegisterBrowserScreen = modulo(currentRegisterBrowserScreen - RBR_INCDEC1, LAST_GLOBAL_REGISTER_SCREEN + RBR_INCDEC1);
         }
         else if(rbrMode == RBR_LOCAL) {
           currentRegisterBrowserScreen = modulo(currentRegisterBrowserScreen - FIRST_LOCAL_REGISTER - 1, currentNumberOfLocalRegisters) + FIRST_LOCAL_REGISTER;
