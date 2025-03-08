@@ -907,8 +907,8 @@ void fnAngularModeJM(uint16_t AMODE) { //Setting to HMS does not change AM
       //printf("###CC fnAngularModeJM (%i)=> %i\n",REGISTER_X, getRegisterTag(REGISTER_X));
     }
     else if(getRegisterDataType(REGISTER_X) == dtReal34Matrix) {
-      printf("###AA fnAngularModeJM (%i)<= %i\n",REGISTER_X, AMODE);
-      printf("###BB fnAngularModeJM (%i)=> %i\n",REGISTER_X, getRegisterTag(REGISTER_X));
+      //printf("###AA fnAngularModeJM (%i)<= %i\n",REGISTER_X, AMODE);
+      //printf("###BB fnAngularModeJM (%i)=> %i\n",REGISTER_X, getRegisterTag(REGISTER_X));
       VtoAngleMode(AMODE);
       //printf("###CC fnAngularModeJM (%i)=> %i\n",REGISTER_X, getRegisterTag(REGISTER_X));
     }
