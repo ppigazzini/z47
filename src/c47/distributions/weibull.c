@@ -19,6 +19,9 @@
 
 #else
   static bool_t checkParamWeibull(real_t *x, real_t *shape, real_t *scale) {
+    if(!saveLastX())
+      return false;
+
     if(!getRegisterAsReal(REGISTER_X, x)
         || !getRegisterAsReal(REGISTER_Q, shape)
         || !getRegisterAsReal(REGISTER_S, scale))
@@ -52,54 +55,35 @@
   void fnWeibullP(uint16_t unusedButMandatoryParameter) {
     real_t val, shape, lifetime, ans;
 
-    if(!saveLastX()) {
-      return;
-    }
-
     if(checkParamWeibull(&val, &shape, &lifetime)) {
       WP34S_Pdf_Weib(&val, &lifetime, &shape, &ans, &ctxtReal39);
       convertRealToResultRegister(&ans, REGISTER_X, amNone);
+      adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
     }
-
-    adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
   }
 
   void fnWeibullL(uint16_t unusedButMandatoryParameter) {
     real_t val, shape, lifetime, ans;
 
-    if(!saveLastX()) {
-      return;
-    }
-
     if(checkParamWeibull(&val, &shape, &lifetime)) {
       WP34S_Cdf_Weib(&val, &lifetime, &shape, &ans, &ctxtReal39);
       convertRealToResultRegister(&ans, REGISTER_X, amNone);
+      adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
     }
-
-    adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
   }
 
   void fnWeibullR(uint16_t unusedButMandatoryParameter) {
     real_t val, shape, lifetime, ans;
 
-    if(!saveLastX()) {
-      return;
-    }
-
     if(checkParamWeibull(&val, &shape, &lifetime)) {
       WP34S_Cdfu_Weib(&val, &lifetime, &shape, &ans, &ctxtReal39);
       convertRealToResultRegister(&ans, REGISTER_X, amNone);
+      adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
     }
-
-    adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
   }
 
   void fnWeibullI(uint16_t unusedButMandatoryParameter) {
     real_t val, shape, lifetime, ans;
-
-    if(!saveLastX()) {
-      return;
-    }
 
     if(checkParamWeibull(&val, &shape, &lifetime)) {
       if(realCompareLessEqual(&val, const_0) || realCompareGreaterEqual(&val, const_1)) {
@@ -114,9 +98,8 @@
       }
       WP34S_Qf_Weib(&val, &lifetime, &shape, &ans, &ctxtReal39);
       convertRealToResultRegister(&ans, REGISTER_X, amNone);
+      adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
     }
-
-    adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
   }
 
 

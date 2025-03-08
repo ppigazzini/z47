@@ -431,7 +431,8 @@ TO_QSPI static const char bugScreenItemNotDetermined[] = "In function determineI
           case MNU_TAM:
           case MNU_TAMNONREG:
           case MNU_TAMCMP:
-          case MNU_TAMSTORCL:
+          case MNU_TAMSTO:
+          case MNU_TAMRCL:
           case MNU_TAMFLAG:
           case MNU_TAMSHUFFLE:
           case MNU_TAMLABEL:
@@ -1370,7 +1371,7 @@ int16_t lastItem = 0;
   #define stringToKeyNumber(data)         ((*((char *)data) - '0')*10 + *(((char *)data)+1) - '0')    // input string = "28", keynumber = 28  (keys 00-36)
 
 
-  int16_t determineItem(const char *data) {
+  static int16_t determineItem(const char *data) {
     delayCloseNim = false;
     int16_t result;
     const calcKey_t *key;
@@ -1640,17 +1641,50 @@ int16_t lastItem = 0;
           break;
         }
         default: {
-          switch(key->primaryAim) {
-            case ITM_A:
-            case ITM_B:
-            case ITM_C:
-            case ITM_D:
-            case ITM_L:
-            case ITM_I:
-            case ITM_J:
-            case ITM_K: {
-              result = key->primaryAim;
+          if(calcModel == USER_C47) {
+            switch(key->primaryAim) {
+              case ITM_A:
+              case ITM_B:
+              case ITM_C:
+              case ITM_D:
+              case ITM_E:
+              case ITM_F:
+              case ITM_G:
+              case ITM_I:
+              case ITM_J:
+              case ITM_K: 
+              case ITM_L:
+              case ITM_M:
+              case ITM_N:
+              case ITM_O:
+              case ITM_W:
+              case ITM_S:
+              {
+                result = key->primaryAim;
+              }
             }
+          } 
+          else if(isR47FAM) {
+            switch(key->primaryAim) {
+              case ITM_A:
+              case ITM_B:
+              case ITM_C:
+              case ITM_D:
+              case ITM_E:
+              case ITM_F:
+              case ITM_G:
+              case ITM_I:
+              case ITM_J:
+              case ITM_K: 
+              case ITM_L:
+              case ITM_M:
+              case ITM_Q:
+              case ITM_U:
+              case ITM_Y:
+              {
+                result = key->primaryAim;
+              }
+            }            
           }
         }
       }
@@ -1837,7 +1871,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
   #if defined(DMCP_BUILD)
     void btnPressed(void *data) {
   #endif //DMCP_BUILD
-
+      cleanupAfterShift = false;
 
       reDraw = false;
       nimWhenButtonPressed = (calcMode == CM_NIM);                  //PHM eRPN 2021-07
@@ -1955,6 +1989,12 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
           showFunctionName(item, 1000, funcParam);// "SF:B"); // 1000ms = 1s
         }
       }
+      else if(calcMode == CM_REGISTER_BROWSER && cleanupAfterShift){
+        screenUpdatingMode = SCRUPD_AUTO;
+        refreshScreen(126);
+      }
+
+
       if(calcMode == CM_ASSIGN && itemToBeAssigned != 0 && tamBuffer[0] == 0) {
         shiftF = f;
         shiftG = g;
@@ -2261,6 +2301,11 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
 RELEASE_END:
 
       //printf("BB allowShiftsToClearError=%u !checkShifts=%u screenUpdatingMode=%u\n",allowShiftsToClearError, !checkShifts((char *)data), screenUpdatingMode);
+
+      if(PROBMENU) {
+        screenUpdatingMode &= ~(SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME);
+      }
+
 
       if(allowShiftsToClearError || !checkShifts((char *)data)) {
                     #if defined(PC_BUILD)
@@ -3014,6 +3059,11 @@ RELEASE_END:
                   rbrMode = RBR_GLOBAL;
                   rbr1stDigit = true;
                   currentRegisterBrowserScreen = REGISTER_W;
+                }
+                else if(item == ITM_Y) {
+                  rbrMode = RBR_GLOBAL;
+                  rbr1stDigit = true;
+                  currentRegisterBrowserScreen = REGISTER_Y;
                 }
 
                 keyActionProcessed = true;
@@ -4464,7 +4514,13 @@ void fnKeyUp(uint16_t unusedButMandatoryParameter) {
       case CM_REGISTER_BROWSER: {
         rbr1stDigit = true;
         if(rbrMode == RBR_GLOBAL) {
-          currentRegisterBrowserScreen = modulo(currentRegisterBrowserScreen + RBR_INCDEC1, FIRST_LOCAL_REGISTER);
+          if(currentRegisterBrowserScreen + RBR_INCDEC1 > LAST_SPARE_REGISTER) {
+            currentRegisterBrowserScreen = 0;
+          } else if(currentRegisterBrowserScreen%RBR_INCDEC1 > 0) {         //13:  3>0
+            currentRegisterBrowserScreen = ((int16_t)(currentRegisterBrowserScreen / RBR_INCDEC1)+1) * RBR_INCDEC1;   //  :  (13/10)10 = 10
+          } else {
+            currentRegisterBrowserScreen = modulo(currentRegisterBrowserScreen + RBR_INCDEC1, LAST_SPARE_REGISTER);
+          }
         }
         else if(rbrMode == RBR_LOCAL) {
           currentRegisterBrowserScreen = modulo(currentRegisterBrowserScreen - FIRST_LOCAL_REGISTER + 1, currentNumberOfLocalRegisters) + FIRST_LOCAL_REGISTER;
@@ -4526,7 +4582,7 @@ void fnKeyUp(uint16_t unusedButMandatoryParameter) {
 
       case CM_MIM: {
         #if defined(NOMATRIXCURSORS)
-          if(currentSoftmenuScrolls() && currentMenu() != -MNU_TAMSTORCL) {   //JM remove to allow normal arrows to work as cursors
+          if(currentSoftmenuScrolls() && currentMenu() != -MNU_TAMSTO && currentMenu() != -MNU_TAMRCL) {   //JM remove to allow normal arrows to work as cursors
             menuUp();
           }
         #else  // !NOMATRIXCURSORS
@@ -4683,7 +4739,16 @@ void fnKeyDown(uint16_t unusedButMandatoryParameter) {
       case CM_REGISTER_BROWSER: {
         rbr1stDigit = true;
         if(rbrMode == RBR_GLOBAL) {
-          currentRegisterBrowserScreen = modulo(currentRegisterBrowserScreen - RBR_INCDEC1, FIRST_LOCAL_REGISTER);
+          if(currentRegisterBrowserScreen + RBR_INCDEC1 > LAST_SPARE_REGISTER + 1) {
+            currentRegisterBrowserScreen = LAST_SPARE_REGISTER - RBR_INCDEC1 + 1;
+          } else if(currentRegisterBrowserScreen%RBR_INCDEC1 > 0) {         //13:  3>0
+            currentRegisterBrowserScreen = ((int16_t)(currentRegisterBrowserScreen / RBR_INCDEC1)) * RBR_INCDEC1;   //  :  (13/10)10 = 10
+          } else {
+            currentRegisterBrowserScreen -= RBR_INCDEC1;
+            if(currentRegisterBrowserScreen < 0) {
+              currentRegisterBrowserScreen = LAST_SPARE_REGISTER - RBR_INCDEC1 + 1; 
+            }
+          }
         }
         else if(rbrMode == RBR_LOCAL) {
           currentRegisterBrowserScreen = modulo(currentRegisterBrowserScreen - FIRST_LOCAL_REGISTER - 1, currentNumberOfLocalRegisters) + FIRST_LOCAL_REGISTER;
@@ -4746,7 +4811,7 @@ void fnKeyDown(uint16_t unusedButMandatoryParameter) {
 
       case CM_MIM: {
         #if defined(NOMATRIXCURSORS)
-          if(currentSoftmenuScrolls() && currentMenu() != -MNU_TAMSTORCL) {   //JM remove to allow normal arrows to work as cursors
+          if(currentSoftmenuScrolls() && currentMenu() != -MNU_TAMSTO && currentMenu() != -MNU_TAMRCL) {   //JM remove to allow normal arrows to work as cursors
             menuDown();
           }
         #else  // !NOMATRIXCURSORS

@@ -63,6 +63,7 @@ bool_t                 skippedStackLines = false;
 
 bool_t                 reDraw = true;
 bool_t                 refreshNIMdone = false;
+bool_t                 cleanupAfterShift = false;
 
 
 realContext_t          ctxtReal4;    //   limited digits: used for higher speed internal real calcs

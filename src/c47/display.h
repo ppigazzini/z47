@@ -40,6 +40,7 @@ void longIntegerRegisterToDisplayString(calcRegister_t regist, char *displayStri
 void dateToDisplayString               (calcRegister_t regist, char *displayString);
 void timeToDisplayString               (calcRegister_t regist, char *displayString, bool_t ignoreTDisp);
 void real34MatrixToDisplayString       (calcRegister_t regist, char *displayString);
+bool_t vectorToDisplayString           (calcRegister_t regist, char *displayString);
 void complex34MatrixToDisplayString    (calcRegister_t regist, char *displayString);
 void exponentToDisplayString           (int32_t exponent, char *displayString, char *displayValueString, bool_t nimMode);
 void supNumberToDisplayString          (int32_t supNumber, char *displayString, char *displayValueString, bool_t insertGap);

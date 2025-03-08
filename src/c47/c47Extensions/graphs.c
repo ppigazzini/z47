@@ -851,6 +851,7 @@ void graph_plotmem(void) {
       float y;
       float sx, sy;
       float ddx = FLoatingMax;
+      float dxx = FLoatingMax;
       float dydx = FLoatingMax;
       float inty = 0;
       float inty_off = 0;
@@ -1183,35 +1184,30 @@ void graph_plotmem(void) {
             if(ix !=0 && ( (PLOT_DIFF && !invalid_diff) || (PLOT_INTG && !invalid_intg) || (PLOT_RMS && !invalid_rms) )) {
               ddx = grf_x(ix) - grf_x(ix-1);
               if(PLOT_DIFF && ddx != 0) {
-                if(ix == 1) {                               // only two samples available
+                if(ix == 1 || ( fabs( ((grf_x(ix) - grf_x(ix-1)) / (grf_x(ix-1) - grf_x(ix-2))) - 1) > 0.0001 )) {                               // only two samples available
                   dydx = (grf_y(ix) - grf_y(ix-1)) / ddx;   // Differential
+                  dxx = (grf_x(ix) + grf_x(ix-1) )/2;
                 }
                 else { //if(ix >= 2)                        // ix >= 2 three samples available 0 1 2
                   dydx = ( grf_y(ix-2) - 4.0 * grf_y(ix-1) + 3.0 * grf_y(ix) ) / 2.0 / ddx; //ChE 205 — Formulas for Numerical Differentiation, formule 32
+                  dxx = (grf_x(ix));
                 }
               }
               else {
                 dydx = FLoatingMax;
               }
 
-              x = (grf_x(ix) + grf_x(ix-1))/2;
-              if(PLOT_DIFF) {
-                y = dydx;                 //y is the default graph
-              }
               if(PLOT_RMS)  {
                 rmsy = sqrt ( (rmsy * rmsy * ix + grf_y(ix) * grf_y(ix)) / (ix+1.0) );      // Changed rmsy to use the standard RMS calc, and not shoft it to the trapezium x-centre
-                y = rmsy;                 //y is the default graph
               }
               if(PLOT_INTG) {
                 inty = inty + (grf_y(ix) + grf_y(ix-1)) / 2 * ddx;
-                y = inty;                 //y is the default graph
               }
             }
 
-            if(getSystemFlag(FLAG_PBOX) || getSystemFlag(FLAG_PLINE) || getSystemFlag(FLAG_PCROS) || getSystemFlag(FLAG_PPLUS)) {
-              x = grf_x(ix);
-              y = grf_y(ix);
-            }
+            x = grf_x(ix);
+            y = grf_y(ix);
+ 
           }
           else { //_VECT
             sx = sx + (!getSystemFlag(FLAG_NVECT) ? grf_x(ix) : grf_y(ix));
@@ -1230,7 +1226,7 @@ void graph_plotmem(void) {
           #if defined(STATDEBUG)
             printf("         xN1 = %d : (x_min=%f,x=%f,x_max=%f) \n", xN1, x_min,x,x_max);
             printf("yN0 = %d yN1 = %d : (y_min=%f,y=%f,y_max=%f) \n", yN0, yN1, y_min,y,y_max);
-            printf("plotting graph table[%d] = x:%f y:%f dydx:%f inty:%f xN1:%d yN1:%d ", ix, x, y, dydx, inty, xN1, yN1);
+            printf("plotting graph table[%d] = x:%f y:%f (dxx:%f dydx:%f) inty:%f xN1:%d yN1:%d ", ix, x, y, dxx, dydx, inty, xN1, yN1);
             printf(" ... x-ddx/2=%d dydx=%d inty=%d\n", screen_window_x(x_min, x-ddx/2, x_max), screen_window_y(y_min, dydx, y_max), screen_window_y(y_min, inty, y_max));
           #endif // STATDEBUG
 
@@ -1317,9 +1313,9 @@ void graph_plotmem(void) {
 
               if(PLOT_DIFF && !invalid_diff && ix != 0) {
                 #if defined(STATDEBUG)
-                  printf("Plotting Delta x=%f dy=%f \n", x - ddx/2, dydx);
+                  printf("Plotting Delta x=%f dy=%f \n", dxx, dydx);
                 #endif // STATDEBUG
-                plotdelta(screen_window_x( x_min, x - ddx/2, x_max), screen_window_y(y_min, dydx, y_max));
+                plotdelta(screen_window_x( x_min, dxx, x_max), screen_window_y(y_min, dydx, y_max));
               }
 
 

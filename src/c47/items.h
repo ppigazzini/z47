@@ -543,7 +543,7 @@
 #define SFL_SBtvm                    515
 #define SFL_SBoc                     516
 #define SFL_SBss                     517
-#define SFL_SBclk                    518
+#define SFL_SBstpw                   518
 #define SFL_SBser                    519
 #define SFL_SBprn                    520
 #define SFL_SBbatV                   521
@@ -1320,17 +1320,20 @@
 #define ITM_GEV                     1283
 #define ITM_GEVU                    1284
 #define ITM_GEVM1                   1285
-#define ITM_1286                    1286
-#define ITM_1287                    1287
-#define ITM_1288                    1288
-#define ITM_1289                    1289
-#define ITM_1290                    1290
-#define ITM_1291                    1291
-#define ITM_1292                    1292
-#define ITM_1293                    1293
-#define ITM_1294                    1294
+#define MNU_PARETO                  1286    // Pareto distributions
+#define ITM_PARETOP                 1287
+#define ITM_PARETOL                 1288
+#define ITM_PARETOU                 1289
+#define ITM_PARETOM1                1290
+#define ITM_PARETO2P                1291
+#define ITM_PARETO2L                1292
+#define ITM_PARETO2U                1293
+#define ITM_PARETO2M1               1294
 #define ITM_1295                    1295
 #define ITM_1296                    1296 //this ITM_1296 is marked and used as the end of this section. If this is used, go change the reference in the code
+
+#define PROBMENUSTART MNU_BINOM
+#define PROBMENUEND   ITM_1296
 
 
 // Curve fitting
@@ -1427,7 +1430,7 @@
 #define MNU_ALPHAintl               1384
 #define MNU_TAM                     1385
 #define MNU_TAMCMP                  1386
-#define MNU_TAMSTORCL               1387
+#define MNU_TAMSTO                  1387
 #define MNU_Grapher                 1388
 #define MNU_VAR                     1389
 #define MNU_TAMFLAG                 1390
@@ -1960,7 +1963,7 @@
 #define ITM_ms                      1909
 #define ITM_msTo                    1910
 #define ITM_ymdTo                   1911
-#define ITM_CLKp2                   1912
+#define MNU_TAMRCL                  1912
 #define MNU_TAMALPHA                1913
 #define ITM_TO_USER                 1914
 #define ITM_N_KEY_NIL               1915
@@ -2371,20 +2374,20 @@
 #define ITM_STO_P_p                 2316
 #define ITM_STO_N1                  2317
 #define ITM_STO_M_x0                2318
-#define ITM_STO_S_g                 2319
+#define ITM_STO_S_gamma             2319
 #define ITM_STO_M_nu                2320
-#define ITM_STO_R_l                 2321
+#define ITM_STO_R_lambda            2321
 #define ITM_STO_M_d1                2322
 #define ITM_STO_N_d2                2323
 #define ITM_STO_M_N                 2324
 #define ITM_STO_Q_K                 2325
-#define ITM_STO_M_u                 2326
-#define ITM_STO_S_si                2327
+#define ITM_STO_M_mu                2326
+#define ITM_STO_S_sigma             2327
 #define ITM_STO_S_s                 2328
-#define ITM_2329                    2329
+#define ITM_STO_Q_alpha             2329
 #define ITM_STO_Q_xi                2330
 #define ITM_STO_Q_k                 2331
-#define ITM_STO_S_l                 2332
+#define ITM_STO_S_lambda            2332
 #define ITM_2333                    2333
 #define ITM_2334                    2334
 #define ITM_2335                    2335
@@ -2527,7 +2530,35 @@
 #define ITM_2463                    2463
 //continue after this block
 
-#define LAST_ITEM                   2464
+#define ITM_EVtoJ                   2464
+#define ITM_JtoEV                   2465
+#define ITM_BANANAtoINCH            2466
+#define ITM_INCHtoBANANA            2467
+#define ITM_BANANAtoMM              2468           
+#define ITM_MMtoBANANA              2469
+
+#define ITM_V3TOCYL                 2470
+#define ITM_V3TOSPH                 2471
+#define ITM_VVDIST                  2472
+#define ITM_CONCAT                  2473
+#define ITM_STKTO1x3                2474
+#define ITM_1x3TOSTK                2475
+#define ITM_V100                    2476
+#define ITM_V010                    2477
+#define ITM_V001                    2478
+
+#define ITM_RCLVEL1                 2479
+#define ITM_RCLVEL2                 2480
+#define ITM_RCLVEL3                 2481
+#define ITM_STOVEL1                 2482
+#define ITM_STOVEL2                 2483
+#define ITM_STOVEL3                 2484
+#define ITM_dddVEL                  2485
+#define ITM_dddIX                   2486
+
+#define ITM_CLKp2                   2487
+
+#define LAST_ITEM                   2488
 
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL
