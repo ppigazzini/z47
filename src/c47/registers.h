@@ -263,7 +263,25 @@
   #define getComplexRegisterAngularMode(reg)     (getRegisterTag(reg) & amAngleMask)
   #define setComplexRegisterAngularMode(reg, am) setRegisterTag(reg, (am & amAngleMask) | (getRegisterTag(reg) & amPolar))
   #define getComplexRegisterPolarMode(reg)       (getRegisterTag(reg) & amPolar)
-  #define setComplexRegisterPolarMode(reg, am)   setRegisterTag(reg, (getRegisterTag(reg) & amAngleMask) | (am & amPolar))
+  #define setComplexRegisterPolarMode(reg, pm)   setRegisterTag(reg, (getRegisterTag(reg) & amAngleMask) | (pm & amPolar))
+
+// Original bit control for amPolarCYL & amPolarSPH. Not testes. Check carefully when used.
+//  #define getVectorRegisterAngularMode(reg)     (getRegisterTag(reg) & amAngleMask)
+//  #define setVectorRegisterAngularMode(reg, am) setRegisterTag(reg, (am & amAngleMask) | ((getRegisterTag(reg) & (amPolarCYL | amPolarSPH)) & (am == amNone ? 0 : 255) ))
+//  #define getVectorRegisterPolarMode(reg)       (getRegisterTag(reg) & (amPolarCYL | amPolarSPH))
+//  #define setVectorRegisterPolarMode(reg, pm)   setRegisterTag(reg, (getRegisterTag(reg) & amAngleMask) | (pm & (amPolarCYL | amPolarSPH)))
+
+  #define amPolarCYL 64  //to restore these bits, change in typeDefinitions.h
+  #define amPolarSPH 128
+  //note a problem for changing back to bits, is that the matrix variable header has 5 bits only.
+
+  #define getVectorRegisterAngularMode(reg)     ((getRegisterDataType(reg) == dtReal34Matrix) ? getTagAngularMode(getRegisterTag(reg)) : amNone) //maybe conditional on 2D 3D????
+  #define setVectorRegisterAngularMode(reg, am) setRegisterTag(reg, (am & amAngleMask) | (getRegisterTag(reg) & amPolar))                      //note maybe conditional on Mx???
+  #define getVectorRegisterPolarMode(reg)       (  ((getRegisterDataType(reg) == dtReal34Matrix) && ((getRegisterTag(reg) & amAngleMask) != amNone)) ? (\
+                                                  (((getRegisterTag(reg) & amPolar) == amPolar)) ? amPolarSPH : amPolarCYL) \
+                                                   : amNone)
+  #define setVectorRegisterPolarMode(reg, pm)   setRegisterTag(reg, (  ((getRegisterTag(reg) & (amAngleMask | amPolar)) | ((pm == amPolarSPH || pm == amPolar) ? amPolar : 0)) \
+                                                                       & (pm == amPolarCYL ? ((~amPolar) & (amAngleMask | amPolar)) : 255)))
 
 
   /********************************************//**

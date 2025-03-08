@@ -886,6 +886,70 @@ void mimRestore(void) {
   }
 }
 
+
+static void displayVectorAngle(const real34Matrix_t *matrix, int j, int rows, int cols, uint8_t *toBeAngle){
+  if((getTagAngularMode(matrix->header.tag)) != amNone) {
+    if(isMatrix3dVector(rows,cols)) {
+      if((is3dVectorPolarSPH(matrix->header.tag)) && (j == 1 || j ==2)) {
+        *toBeAngle = getTagAngularMode(matrix->header.tag);
+      }
+      else if((is3dVectorPolarCYL(matrix->header.tag)) && (j == 1)) {
+        *toBeAngle = getTagAngularMode(matrix->header.tag);
+      }
+    }
+    else if(isMatrix2dVector(rows,cols)) {
+      if((is2dVectorPolar(matrix->header.tag)) && (j == 1)) {
+        *toBeAngle = getTagAngularMode(matrix->header.tag);
+      }
+    }
+  }
+}
+
+
+
+static void displayVectorElement(const real34Matrix_t *matrix, int j, int ii, int rows, int cols, real34_t *element, uint8_t *toBeAngle) {
+  real_t aa,bb,cc;
+  if((isMatrix3dVectorSPH(rows, cols, matrix->header.tag))) {
+    convert3DtoSPH(matrix, &aa,&bb,&cc, *toBeAngle);
+    switch(j) {
+      case 0: realToReal34(&aa,element); break;
+      case 1: realToReal34(&bb,element); break;
+      case 2: realToReal34(&cc,element); break;
+      default:;    
+    }
+    //printRealToConsole(&aa,"SPH aa=","\n");
+    //printRealToConsole(&bb,"SPH bb=","\n");
+    //printRealToConsole(&cc,"SPH cc=","\n");
+  } else if((isMatrix3dVectorCYL(rows, cols, matrix->header.tag))) {
+    convert3DtoCYL(matrix, &aa,&bb,&cc, *toBeAngle);
+    switch(j) {
+      case 0: realToReal34(&aa,element); break;
+      case 1: realToReal34(&bb,element); break;
+      case 2: realToReal34(&cc,element); break;
+      default:;    
+    }
+    //printRealToConsole(&aa,"CYL aa=","\n");
+    //printRealToConsole(&bb,"CYL bb=","\n");
+    //printRealToConsole(&cc,"CYL cc=","\n");
+  } else if((isMatrix2dVectorPOL(rows, cols, matrix->header.tag))) {
+    convert2DtoPOL(matrix, &aa,&bb, *toBeAngle);
+    switch(j) {
+      case 0: realToReal34(&aa,element); break;
+      case 1: realToReal34(&bb,element); break;
+      default:;    
+    } 
+    //printRealToConsole(&aa,"POL aa=","\n");
+    //printRealToConsole(&bb,"POL bb=","\n");
+  } else {
+    real34Copy(&matrix->matrixElements[ii],element);
+    //printReal34ToConsole(element," RECT =","\n");
+  }
+}
+
+
+
+
+
 #define NUMERIC_FONT_HEIGHT_ (NUMERIC_FONT_HEIGHT - 4)        // reduce font spacing to easily bind the matrix lines without any complicated pixel manipulation
 #define STANDARD_FONT_HEIGHT_ (STANDARD_FONT_HEIGHT - 2)      // reduce font spacing to easily bind the matrix lines without any complicated pixel manipulation
 
@@ -955,7 +1019,7 @@ smallFont:
   for(int j = 0; j < maxCols; j++) {
     allElementsInColAreIntegers[j]=true;
     for(int i = 0; i < maxRows; i++) {
-      if(!real34IsAnInteger(&matrix->matrixElements[i*cols+j])) {
+      if(!real34IsAnInteger(&matrix->matrixElements[i*cols+j]) || isMatrix3dVectorSPH(rows, cols, matrix->header.tag) || isMatrix3dVectorCYL(rows, cols, matrix->header.tag) ) {
         allElementsInColAreIntegers[j]=false;
         break;
       }
@@ -1010,11 +1074,21 @@ smallFont:
   }
   baseWidth -= stringWidth(STD_SPACE_FIGURE, font, true, true);
 
+  char endChar[6];
+  strcpy(endChar, (isMatrix3dVectorCYL(rows, cols, matrix->header.tag)) ? \
+                    "]" STD_SPACE_HAIR STD_SUP_c : \
+                  (isMatrix3dVectorSPH(rows, cols, matrix->header.tag)) ? \
+                    "]" STD_SPACE_HAIR STD_SUP_s : \
+                  (isMatrix2dVectorPOL(rows, cols, matrix->header.tag)) ? \
+                    "]" STD_SPACE_HAIR STD_SUP_p : \
+                    "]");
+//printf("BBBB: CYL:%i SPH:%i string:%s\n",is3dVectorPolarCYL(matrix->header.tag), is3dVectorPolarSPH(matrix->header.tag), endChar);
+
   if(prefixWidth > 0) {
     X_POS = prefixWidth;
   }
   else if(!forEditor) {
-    X_POS = SCREEN_WIDTH - ((colVector ? stringWidth("[]" STD_SUP_BOLD_T, font, true, true) : stringWidth("[]", font, true, true)) + baseWidth) - (font == &standardFont ? 0 : 1);
+    X_POS = SCREEN_WIDTH - ((colVector ? stringWidth("[" STD_SUP_BOLD_T, font, true, true) + stringWidth(endChar, font, true, true) + stringWidth(STD_SUP_BOLD_T, font, true, true) : stringWidth("[", font, true, true) + stringWidth(endChar, font, true, true)) + baseWidth) - (font == &standardFont ? 0 : 1);
   }
 
 if(toDisplay) {
@@ -1072,7 +1146,13 @@ int16_t colX = 0;
         vm = vmNormal;
       }
       else {
-        real34ToDisplayString(&matrix->matrixElements[(i+sRow)*cols+j+sCol], amNone, tmpString, font, colWidth[j], displayFormat == DF_ALL ? digits : 15, true, true);
+
+        uint8_t toBeAngle = amNone;
+        displayVectorAngle(matrix, j, rows, cols, &toBeAngle);
+        real34_t element;
+        displayVectorElement(matrix, j, (i+sRow)*cols+j+sCol, rows, cols, &element, &toBeAngle);
+
+        real34ToDisplayString(&element, toBeAngle, tmpString, font, colWidth[j], displayFormat == DF_ALL ? digits : 15, true, true);
         if(toDisplay) {
           if(forEditor && matSelRow == (i + sRow) && matSelCol == (j + sCol)) {
             lcd_fill_rect(X_POS + colX, Y_POS - (maxRows -1 -i) * fontHeight, colWidth[j], font == &numericFont ? 32 : 20, 0xFF);
@@ -1096,13 +1176,14 @@ int16_t colX = 0;
     }
 //end string creation
 
+//printf("AAAA: CYL:%i SPH:%i string:%s\n",is3dVectorPolarCYL(matrix->header.tag), is3dVectorPolarSPH(matrix->header.tag), endChar);
     if(toDisplay) {
-      showString((maxRows == 1) ? "]" : (i == 0) ? STD_MAT_TR : (i + 1 == maxRows) ? STD_MAT_BR : STD_MAT_MR, font, X_POS + stringWidth("[", font, true, true) + baseWidth, Y_POS - (maxRows -1 -i) * fontHeight, vmNormal, true, false);
+      showString((maxRows == 1) ? endChar : (i == 0) ? STD_MAT_TR : (i + 1 == maxRows) ? STD_MAT_BR : STD_MAT_MR, font, X_POS + stringWidth("[", font, true, true) + baseWidth, Y_POS - (maxRows -1 -i) * fontHeight, vmNormal, true, false);
       if(colVector == true) {
-        showString(STD_SUP_BOLD_T, font, X_POS + stringWidth("[]", font, true, true) + baseWidth, Y_POS - (maxRows -1 -i) * fontHeight, vmNormal, true, false);
+        showString(STD_SUP_BOLD_T, font, X_POS + stringWidth("[", font, true, true) + stringWidth(endChar, font, true, true) + baseWidth, Y_POS - (maxRows -1 -i) * fontHeight, vmNormal, true, false);
       }
     } else {
-      strcat(errorMessage,"]");
+      strcat(errorMessage,endChar);
       if(colVector == true) {
         strcat(errorMessage, STD_SUP_BOLD_T);
       }
@@ -1152,8 +1233,13 @@ int16_t getRealMatrixColumnWidths(const real34Matrix_t *matrix, int16_t prefixWi
     for(int i = 0; i < maxRows; i++) {
       for(int j = 0; j < maxCols; j++) {
         real34_t r34Val;
-        bool_t r34sign = real34IsNegative(&matrix->matrixElements[(i+sRow)*cols+j+sCol]);
-        real34Copy(&matrix->matrixElements[(i+sRow)*cols+j+sCol], &r34Val);
+//      real34Copy(&matrix->matrixElements[(i+sRow)*cols+j+sCol], &r34Val);
+
+        uint8_t toBeAngle = amNone;
+        displayVectorAngle(matrix, j, rows, cols, &toBeAngle);
+        displayVectorElement(matrix, j, (i+sRow)*cols+j+sCol, rows, cols, &r34Val, &toBeAngle);
+
+        bool_t r34sign = real34IsNegative(&r34Val);
         real34SetPositiveSign(&r34Val);
 
         if(allElementsInColAreIntegers[j]) {
@@ -1164,7 +1250,8 @@ int16_t getRealMatrixColumnWidths(const real34Matrix_t *matrix, int16_t prefixWi
           displayFormatDigits = displayFormatDigits1;
         }
 
-        real34ToDisplayString(&r34Val, amNone, tmpString, font, maxWidth, displayFormat == DF_ALL ? k : 15, true, true);
+        
+        real34ToDisplayString(&r34Val, toBeAngle, tmpString, font, maxWidth, displayFormat == DF_ALL ? k : 15, true, true);
         if(displayFormat == DF_ALL && !noFix && strstr(tmpString, STD_SUB_10)) { // something like SCI
           noFix = true;
           totalWidth = 0;

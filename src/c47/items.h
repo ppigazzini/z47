@@ -2541,22 +2541,26 @@
 #define ITM_V3TOSPH                 2471
 #define ITM_VVDIST                  2472
 #define ITM_CONCAT                  2473
+
 #define ITM_STKTO1x3                2474
-#define ITM_1x3TOSTK                2475
-#define ITM_V100                    2476
-#define ITM_V010                    2477
-#define ITM_V001                    2478
+#define ITM_STKTO1x2                2475
+#define ITM_1x3TOSTK                2476
+#define ITM_1x2TOSTK                2477
+#define ITM_VECTOSTK                2478
+#define ITM_V100                    2479
+#define ITM_V010                    2480
+#define ITM_V001                    2481
 
-#define ITM_RCLVEL1                 2479
-#define ITM_RCLVEL2                 2480
-#define ITM_RCLVEL3                 2481
-#define ITM_STOVEL1                 2482
-#define ITM_STOVEL2                 2483
-#define ITM_STOVEL3                 2484
-#define ITM_dddVEL                  2485
-#define ITM_dddIX                   2486
+#define ITM_RCLVEL1                 2482
+#define ITM_RCLVEL2                 2483
+#define ITM_RCLVEL3                 2484
+#define ITM_STOVEL1                 2485
+#define ITM_STOVEL2                 2486
+#define ITM_STOVEL3                 2487
+#define ITM_dddVEL                  2488
+#define ITM_dddIX                   2489
 
-#define LAST_ITEM                   2487
+#define LAST_ITEM                   2490
 
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL

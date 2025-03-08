@@ -43,7 +43,22 @@ void fnToPolar2(uint16_t unusedButMandatoryParameter) {
       setComplexRegisterAngularMode(REGISTER_X, currentAngularMode);
     }
     return;
-  }
+  } else if(getRegisterDataType(REGISTER_X) == dtReal34Matrix){
+    if(isMatrix3dVector(REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows,REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns)) {
+      setVectorRegisterPolarMode(REGISTER_X, 
+        ((getVectorRegisterPolarMode(REGISTER_X) == amNone) ? amPolarSPH : (getVectorRegisterPolarMode(REGISTER_X) == amPolarSPH) ? amPolarCYL : amPolarSPH));
+      setVectorRegisterAngularMode(REGISTER_X, currentAngularMode);
+      return;
+    }
+    else if(isMatrix2dVector(REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows,REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns)) {
+      setVectorRegisterPolarMode(REGISTER_X, amPolar);
+      setVectorRegisterAngularMode(REGISTER_X, currentAngularMode);
+      return;
+    }
+  } 
+
+
+
   //X and Y are both only checked for REAL - symmetrical. Therefore clasRP does not play a role in the type checking even when swapped
   dataTypeX = getRegisterDataType(REGISTER_X);
   dataAtagX  = getRegisterAngularMode(REGISTER_X);

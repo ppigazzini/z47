@@ -1602,7 +1602,8 @@ void fractionToDisplayString(calcRegister_t regist, char *displayString) {
 }
 
 
-void angle34ToDisplayString2(const real34_t *angle34, uint8_t mode, char *displayString, int16_t displayHasNDigits, bool_t limitExponent, bool_t frontSpace) {
+void angle34ToDisplayString2(const real34_t *angle34, uint8_t modeIn, char *displayString, int16_t displayHasNDigits, bool_t limitExponent, bool_t frontSpace) {
+  const uint8_t mode = (modeIn & amAngleMask);
   if(mode == amDMS) {
     char degStr[27];
     uint32_t m, s, fs;

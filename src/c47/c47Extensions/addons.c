@@ -565,53 +565,67 @@ TO_QSPI static const struct {
     unsigned zdef  : 2;
 } vecCreate[] = {
 //           r  c   x    y    z   xdef ydef zdef
-    [ 1] = { 3, 1,  2 ,  1,   0,   2,   2,   2 },
-    [ 2] = { 1, 3,  0 ,  1,   2,   2,   2,   2 },
-    [ 3] = { 1, 3,  0 ,  1,   2,   0,   0,   1 },
-    [ 4] = { 1, 3,  0 ,  1,   2,   0,   1,   0 },
-    [ 5] = { 1, 3,  0 ,  1,   2,   1,   0,   0 }
-// r c is the size of the matrix to be created
-// x y z are the matrix element number mapping to the register name
-// xdef/ydef/zdef
-//   = 1/0 is the value to be pre-loaded into the matrix structure
-//   = 2 means the pre-loaded value is copied from X/Y/Z to the matrix element
+    [ 1] = { 3, 1,  2 ,  1,   0,   2,   2,   2 },     // 3x1 vector created from xyz FOR ELEC menu
+    [ 2] = { 1, 3,  0 ,  1,   2,   2,   2,   2 },     // 1x3 vector created from zyx FOR MATX menu
+    [ 3] = { 1, 3,  0 ,  1,   2,   0,   0,   1 },     // 1x3 unity vectors
+    [ 4] = { 1, 3,  0 ,  1,   2,   0,   1,   0 },     // 1x3 unity vectors
+    [ 5] = { 1, 3,  0 ,  1,   2,   1,   0,   0 },     // 1x3 unity vectors
+    [ 6] = { 1, 2,  0 ,  1,   3,   2,   2,   3 }      // 1x2 vector created from yx
+
+    // r c is the size of the matrix to be created, eg. 1x3 or 2x1 etc.
+    // x y z are the matrix element number mapping to the register name, eg. x=2 means x register goes to internal matrix element 2; 3 means not copied
+    // xdef/ydef/zdef
+    //   = 1/0 : the value to be pre-loaded into the matrix element
+    //   = 2   : the value is copied from register X, Y or Z to the specified matrix element
+    //   = 3   : not copied
   };
 
 
-void fnConvertStkToMx(uint16_t param) {
+static bool_t processDefaultVector(calcRegister_t regist, uint8_t p, uint8_t d, struct cmplxPair *x, bool_t *complexCoefs) {
+  if(d == 2) {
+    if(!getRegisterAsComplexOrReal(regist, &x[p].r, &x[p].i, complexCoefs)) {
+      return false;
+    }
+  } 
+  else if(d < 2) {
+    realCopy(d == 1 ? const_1 : const_0, &x[p].r);
+  }
+  return true;
+}
+
+
+void fnConvertStkToMx(uint16_t constVector) {
   bool_t complexCoefs = false;
   struct cmplxPair x[3];
   real34Matrix_t matrix;
   complex34Matrix_t matrixC;
+  uint16_t elements;
 
-  const bool_t setDefaults = vecCreate[param].xdef != 2 || vecCreate[param].ydef != 2 || vecCreate[param].zdef != 2;
-  if(setDefaults) {
-    realCopy(vecCreate[param].xdef == 1 ? const_1 : const_0, &x[vecCreate[param].x].r);
-    realCopy(vecCreate[param].ydef == 1 ? const_1 : const_0, &x[vecCreate[param].y].r);
-    realCopy(vecCreate[param].zdef == 1 ? const_1 : const_0, &x[vecCreate[param].z].r);
-  }
-  else if(!(getRegisterAsComplexOrReal(REGISTER_X, &x[vecCreate[param].x].r, &x[vecCreate[param].x].i, &complexCoefs) &&
-            getRegisterAsComplexOrReal(REGISTER_Y, &x[vecCreate[param].y].r, &x[vecCreate[param].y].i, &complexCoefs) &&
-            getRegisterAsComplexOrReal(REGISTER_Z, &x[vecCreate[param].z].r, &x[vecCreate[param].z].i, &complexCoefs))) {
-    return;
-  }
+  elements = vecCreate[constVector].rows * vecCreate[constVector].cols;
+
+  if(!processDefaultVector(REGISTER_X, vecCreate[constVector].x, vecCreate[constVector].xdef, x, &complexCoefs)) return;
+  if(!processDefaultVector(REGISTER_Y, vecCreate[constVector].y, vecCreate[constVector].ydef, x, &complexCoefs)) return;
+  if(max(vecCreate[constVector].z, vecCreate[constVector].zdef) != 3 && 
+     !processDefaultVector(REGISTER_Z, vecCreate[constVector].z, vecCreate[constVector].zdef, x, &complexCoefs)) return;
 
   if(!saveLastX()) {
     return;
   }
 
-  if(setDefaults) {
+  if(vecCreate[constVector].xdef < 2 || vecCreate[constVector].ydef < 2 || vecCreate[constVector].zdef < 2) {
     setSystemFlag(FLAG_ASLIFT);
     liftStack();
   } else {
     fnDrop(NOPARAM);
-    fnDrop(NOPARAM);
+    if(elements > 2) {
+      fnDrop(NOPARAM);
+    }
   }
 
 
   if(getRegisterDataType(REGISTER_X) != dtReal34Matrix && getRegisterDataType(REGISTER_X) != dtComplex34Matrix) {
     //Initialize Memory for Matrix
-    if(initMatrixRegister(REGISTER_X, vecCreate[param].rows, vecCreate[param].cols, complexCoefs)) {
+    if(initMatrixRegister(REGISTER_X, vecCreate[constVector].rows, vecCreate[constVector].cols, complexCoefs)) {
     }
     else {
       displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
@@ -632,13 +646,13 @@ void fnConvertStkToMx(uint16_t param) {
   }
 
 
-  for (int i = 0; i < 3; i++) {
+  for (int i = 0; i < elements; i++) {
     if(complexCoefs) {
-      realToReal34(&x[2-i].r, VARIABLE_REAL34_DATA(&matrixC.matrixElements[i]));
-      realToReal34(&x[2-i].i, VARIABLE_IMAG34_DATA(&matrixC.matrixElements[i]));
+      realToReal34(&x[elements-1-i].r, VARIABLE_REAL34_DATA(&matrixC.matrixElements[i]));
+      realToReal34(&x[elements-1-i].i, VARIABLE_IMAG34_DATA(&matrixC.matrixElements[i]));
     }
     else {
-      realToReal34(&x[2-i].r, &matrix.matrixElements[i]);
+      realToReal34(&x[elements-1-i].r, &matrix.matrixElements[i]);
     }
   }
 
@@ -646,36 +660,56 @@ void fnConvertStkToMx(uint16_t param) {
 
 }
 
-void fnConvertMxToStk(uint16_t param) {
+void fnConvertMxToStk(uint16_t param) { //first try the vector type in lower nibble, then try the vector type in higher nibble unless high nibble = 0
   real34Matrix_t matrix;
   complex34Matrix_t matrixC;
+  uint16_t Xrows, Xcols;
 
   if(!(getRegisterDataType(REGISTER_X) == dtReal34Matrix || getRegisterDataType(REGISTER_X) == dtComplex34Matrix)) {
     return;
   }
 
+  copySourceRegisterToDestRegister(REGISTER_X,TEMP_REGISTER_1);
+  if(getRegisterDataType(TEMP_REGISTER_1) == dtComplex34Matrix) {
+    linkToComplexMatrixRegister(TEMP_REGISTER_1,  &matrixC);
+    Xrows = matrixC.header.matrixRows;
+    Xcols = matrixC.header.matrixColumns;
+  } else {
+    linkToRealMatrixRegister(TEMP_REGISTER_1,  &matrix);
+    Xrows = matrix.header.matrixRows;
+    Xcols = matrix.header.matrixColumns;
+  }
+
+  uint16_t constVector = param & 0x0F;
+  if(!((Xrows == vecCreate[constVector].rows && Xcols == vecCreate[constVector].cols) || (Xrows == vecCreate[constVector].cols && Xcols == vecCreate[constVector].rows))) {
+    constVector = (param & 0xF0) >> 4;
+    if(constVector == 0 || !((Xrows == vecCreate[constVector].rows && Xcols == vecCreate[constVector].cols) || (Xrows == vecCreate[constVector].cols && Xcols == vecCreate[constVector].rows))) {
+      return;
+    }
+  }
+
+  uint16_t elements = Xrows * Xcols;
+
   if(!saveLastX()) {
     return;
   }
 
-  copySourceRegisterToDestRegister(REGISTER_X,TEMP_REGISTER_1);
-  setSystemFlag(FLAG_ASLIFT);
-  liftStack();
+  //assuming 2 elements, clearing X and preparing Y
+  convertRealToResultRegister(const_0, REGISTER_X,amNone);
   setSystemFlag(FLAG_ASLIFT);
   liftStack();
   convertRealToResultRegister(const_0, REGISTER_X,amNone);
-  convertRealToResultRegister(const_0, REGISTER_Y,amNone);
-  convertRealToResultRegister(const_0, REGISTER_Z,amNone);
-
-  if(getRegisterDataType(TEMP_REGISTER_1) == dtComplex34Matrix) {
-    linkToComplexMatrixRegister(TEMP_REGISTER_1,  &matrixC);
-  } else {
-    linkToRealMatrixRegister(TEMP_REGISTER_1,  &matrix);
+  if(elements > 2) {
+    setSystemFlag(FLAG_ASLIFT);
+    liftStack();
+    convertRealToResultRegister(const_0, REGISTER_X,amNone);
   }
 
 
-  for (int i = 0; i < 3; i++) {
-    uint16_t rg = vecCreate[param].x == 2-i ? REGISTER_X : vecCreate[param].y == 2-i ? REGISTER_Y : vecCreate[param].z == 2-i ? REGISTER_Z : 0;
+  for (int i = 0; i < elements; i++) {
+    uint16_t rg = vecCreate[constVector].x == elements-1-i ? REGISTER_X : \
+                  vecCreate[constVector].y == elements-1-i ? REGISTER_Y : \
+                  vecCreate[constVector].z == elements-1-i ? REGISTER_Z : 0;
     if(getRegisterDataType(TEMP_REGISTER_1) == dtComplex34Matrix) {
       real34Copy(VARIABLE_REAL34_DATA(&matrixC.matrixElements[i]),REGISTER_REAL34_DATA(rg));
       real34Copy(VARIABLE_REAL34_DATA(&matrixC.matrixElements[i]),REGISTER_IMAG34_DATA(rg));
@@ -872,6 +906,14 @@ void fnAngularModeJM(uint16_t AMODE) { //Setting to HMS does not change AM
       setComplexRegisterPolarMode(REGISTER_X, amPolar);
       //printf("###CC fnAngularModeJM (%i)=> %i\n",REGISTER_X, getRegisterTag(REGISTER_X));
     }
+    else if(getRegisterDataType(REGISTER_X) == dtReal34Matrix) {
+      //printf("###AA fnAngularModeJM (%i)<= %i\n",REGISTER_X, AMODE);
+      //printf("###BB fnAngularModeJM (%i)=> %i\n",REGISTER_X, getRegisterTag(REGISTER_X));
+      VtoAngleMode(AMODE);
+      //printf("###CC fnAngularModeJM (%i)=> %i\n",REGISTER_X, getRegisterTag(REGISTER_X));
+    }
+
+
     else {
       if((getRegisterDataType(REGISTER_X) != dtReal34) || ((getRegisterDataType(REGISTER_X) == dtReal34) && getRegisterAngularMode(REGISTER_X) == amNone)) {
 
@@ -919,7 +961,6 @@ void fnDRG(uint16_t unusedButMandatoryParameter) {
     case dtTime:
     case dtDate:
     case dtString:
-    case dtReal34Matrix:
     case dtConfig:
       goto to_return_noLastX;
       break;
@@ -945,7 +986,7 @@ void fnDRG(uint16_t unusedButMandatoryParameter) {
     setRegisterAngularMode(REGISTER_X, amNone);                          //is probably none already
   }
 
-  if(getRegisterDataType(REGISTER_X) == dtReal34) {                      // if real
+  else if(getRegisterDataType(REGISTER_X) == dtReal34) {                      // if real
     dest = getRegisterAngularMode(REGISTER_X);
 
     if(dest != amNone && dest != currentAngularMode && DRG_Cycling != 1) {   //first step: convert tagged angle to ADM
@@ -957,6 +998,12 @@ void fnDRG(uint16_t unusedButMandatoryParameter) {
     fnCvtFromCurrentAngularMode(dest);
     //currentAngularMode = dest;          //remove setting of ADM!
   }
+  else if(getRegisterDataType(REGISTER_X) == dtReal34Matrix) {
+    dest = getVectorRegisterAngularMode(REGISTER_X);
+    DRG_cyc(&dest);
+    VtoAngleMode(dest);
+  }
+  
 
   to_return:
   copySourceRegisterToDestRegister(TEMP_REGISTER_1, REGISTER_L);
