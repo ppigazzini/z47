@@ -1975,7 +1975,7 @@
 #define MNU_HOME                    1921
 #define MNU_ALPHA                   1922
 #define MNU_BASE                    1923
-#define ITM_1924                    1924
+#define ITM_MNUp1                   1924
 #define MNU_EE                      1925
 #define ITM_T_UP_ARROW              1926
 #define MNU_KEYS                    1927
@@ -2326,7 +2326,7 @@
 #define SFL_VECT                    2270
 #define SFL_NVECT                   2271
 #define SFL_US                      2272
-#define SFL_2269                    2273
+#define SFL_MNUp1                   2273
 #define SFL_2270                    2274
 #define SFL_2271                    2275
 #define SFL_2272                    2276

@@ -643,8 +643,9 @@
 #define FLAG_VECT                             0x8053
 #define FLAG_NVECT                            0x8054
 #define FLAG_US                               0x8055
+#define FLAG_MNUp1                            0x8056
 
-#define NUMBER_OF_SYSTEM_FLAGS                 64+22 // We can have a maximum of 128 system flags
+#define NUMBER_OF_SYSTEM_FLAGS                 64+23 // We can have a maximum of 128 system flags
 
 // FLGS and STATUS SCREENS
 #define NO_SCREEN                          0  // No screen selected
