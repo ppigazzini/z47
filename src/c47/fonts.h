@@ -398,6 +398,14 @@
 #define STD_SUBSET_OF                 "\xA2\x82" //2282
 #define STD_NOT_SUBSET_OF             "\xA2\x84" //2284
 
+#define STD_u_BAR                     "\x83\x80"
+#define STD_v_BAR                     "\x83\x81"
+#define STD_w_BAR                     "\x83\x82"
+#define STD_z_BAR                     "\x83\x83"
+#define STD_v_CIRC                    "\x83\x8B"
+#define STD_z_CIRC                    "\x83\x8D"
+#define STD_u_CIRC2                   "\x83\xA2"
+
 #define STD_SUP_BOLD_T                "\x9D\x40"
 #define STD_SUP_BOLD_f                "\x9D\xA0"
 #define STD_SUP_BOLD_g                "\x9D\x4D"
