@@ -165,7 +165,7 @@ TO_QSPI const int16_t menu_MODE[]        = { ITM_DEG,                       ITM_
                                              ITM_NULL,                      ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_NULL,
 
                                              ITM_FGLNOFF,                   ITM_FGLNLIM,                ITM_FGLNFUL,              ITM_G_DOUBLETAP,       ITM_SHTIM,                   ITM_SAFERESET,
-                                             ITM_M14,                       ITM_M124,                   ITM_M1234,                ITM_NULL,              ITM_BASE_MYM,                ITM_BASE_HOME,
+                                             ITM_M14,                       ITM_M124,                   ITM_M1234,                ITM_MNUp1,             ITM_BASE_MYM,                ITM_BASE_HOME,
                                              ITM_F14,                       ITM_F124,                   ITM_F1234,                ITM_SH_LONGPRESS,      ITM_MYMx3,                   ITM_HOMEx3         };
 
 // D47 vv
@@ -185,7 +185,7 @@ TO_QSPI const int16_t menu_PREF[]       = {  ITM_SYSTEM2,                   ITM_
 
 
                                              ITM_FGLNOFF,                   ITM_FGLNLIM,                ITM_FGLNFUL,              ITM_G_DOUBLETAP,       ITM_SHTIM,                   ITM_SAFERESET,
-                                             ITM_M14,                       ITM_M124,                   ITM_M1234,                ITM_NULL,              ITM_BASE_MYM,                ITM_BASE_HOME,
+                                             ITM_M14,                       ITM_M124,                   ITM_M1234,                ITM_MNUp1,             ITM_BASE_MYM,                ITM_BASE_HOME,
                                              ITM_F14,                       ITM_F124,                   ITM_F1234,                ITM_SH_LONGPRESS,      ITM_MYMx3,                   ITM_HOMEx3         };
 // D47 ^^
 
@@ -505,7 +505,7 @@ TO_QSPI const int16_t menu_alphaMATH[]   = { ITM_LESS_THAN,                ITM_L
 
                                              ITM_POLAR_char,               ITM_RIGHT_ANGLE,              ITM_ANGLE,                    ITM_MEASURED_ANGLE,           ITM_SPHERICAL_ANGLE,          ITM_AMPERSAND,                
                                              ITM_PIPE,                     ITM_DEGREE,                   ITM_RIGHT_SINGLE_QUOTE,       ITM_RIGHT_DOUBLE_QUOTE,       ITM_RIGHT_TACK,               ITM_PERPENDICULAR,            
-                                             ITM_PARALLEL,                 ITM_x_BAR,                    ITM_y_BAR,                    ITM_x_CIRC,                   ITM_y_CIRC,                   ITM_BULLET,                   
+                                             ITM_PARALLEL,                 ITM_NULL,                     ITM_NULL,                     ITM_NULL,                     ITM_NULL,                     ITM_BULLET,                   
 
                                              ITM_RING,                     ITM_EulerE,                   ITM_pi,                       ITM_op_i_char,                ITM_op_j_char,                ITM_PLANCK_2PI,               
                                              ITM_EEXCHR,                   ITM_SUM_char,                 ITM_PRODUCT,                  ITM_MICRO,                    ITM_OMEGA,                    ITM_INTEGRAL_SIGN,            
@@ -519,10 +519,8 @@ TO_QSPI const int16_t menu_alphaMATH[]   = { ITM_LESS_THAN,                ITM_L
                                              ITM_ONE_QUARTER,              ITM_ONE_HALF,                 ITM_PROPORTIONAL,             ITM_INFINITY,                 ITM_MAT_ML,                   ITM_MAT_MR,                   
                                              ITM_SUP_BOLD_T,               ITM_SUB_MINUS,                ITM_SUB_PLUS,                 ITM_SUB_INFINITY,             ITM_MAT_TL,                   ITM_MAT_TR,                   
 
-                                             ITM_NULL,                     ITM_SUP_MINUS,                ITM_SUP_PLUS,                 ITM_SUP_INFINITY,             ITM_NULL,                     ITM_NULL,
-                                             ITM_NULL,                     ITM_NULL,                     ITM_NULL,                     ITM_NULL,                     ITM_NULL,                     ITM_NULL,
-                                             ITM_NULL,                     ITM_NULL,                     ITM_NULL,                     ITM_NULL,                     ITM_NULL,                     ITM_NULL           };
-
+                                             ITM_u_BAR,                    ITM_v_BAR,                    ITM_w_BAR,                    ITM_x_BAR,                    ITM_y_BAR,                    ITM_z_BAR,
+                                             ITM_u_CIRC2,                  ITM_v_CIRC,                   ITM_w_CIRC,                   ITM_x_CIRC,                   ITM_y_CIRC,                   ITM_z_CIRC           };
 
 /*      Menu name                           <----------------------------------------------------------------------------- 6 functions ---------------------------------------------------------------------------->  */
 /*                                          <---------------------------------------------------------------------- 6 f shifted functions ------------------------------------------------------------------------->  */
@@ -2910,8 +2908,12 @@ bool_t BASE_OVERRIDEONCE = false;
       if((softmenuStack[i].softmenuId == softmenuId) && (softmenuStack[i].userMenuId == userMenuId)) { // if found, remove it 
 
         if(!catalog) {                                                                                 //remember the page number if the menu you are opening was already open and in the stack
-          lastCatalogPosition[catalog] = softmenuStack[i].firstItem;
-          calcMode = softmenuStack[i].calcMode;
+          if(!getSystemFlag(FLAG_MNUp1)) {
+            lastCatalogPosition[catalog] = softmenuStack[i].firstItem;
+            calcMode = softmenuStack[i].calcMode;
+          } else {
+            lastCatalogPosition[catalog] = 0;
+          }
         }
         xcopy(softmenuStack + 1, softmenuStack, i * sizeof(softmenuStack_t));                          // Remove it by lifting the stack to cover the existing entry i
         break;

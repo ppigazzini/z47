@@ -397,3 +397,12 @@ Added QRNZ to NUM font
            In tiny font:
               - removed U+2072 ^-1
 
+
+2025-03-09 In both Number and Standard Fonts, add:
+    U+0380 STD_u_BAR                   
+    U+0381 STD_v_BAR                   
+    U+0382 STD_w_BAR                   
+    U+0383 STD_z_BAR                   
+    U+038B STD_v_CIRC                  
+    U+038D STD_z_CIRC                  
+    U+03A2 STD_u_CIRC2                 
