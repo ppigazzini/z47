@@ -505,7 +505,7 @@ TO_QSPI const int16_t menu_alphaMATH[]   = { ITM_LESS_THAN,                ITM_L
 
                                              ITM_POLAR_char,               ITM_RIGHT_ANGLE,              ITM_ANGLE,                    ITM_MEASURED_ANGLE,           ITM_SPHERICAL_ANGLE,          ITM_AMPERSAND,                
                                              ITM_PIPE,                     ITM_DEGREE,                   ITM_RIGHT_SINGLE_QUOTE,       ITM_RIGHT_DOUBLE_QUOTE,       ITM_RIGHT_TACK,               ITM_PERPENDICULAR,            
-                                             ITM_PARALLEL,                 ITM_x_BAR,                    ITM_y_BAR,                    ITM_x_CIRC,                   ITM_y_CIRC,                   ITM_BULLET,                   
+                                             ITM_PARALLEL,                 ITM_NULL,                     ITM_NULL,                     ITM_NULL,                     ITM_NULL,                     ITM_BULLET,                   
 
                                              ITM_RING,                     ITM_EulerE,                   ITM_pi,                       ITM_op_i_char,                ITM_op_j_char,                ITM_PLANCK_2PI,               
                                              ITM_EEXCHR,                   ITM_SUM_char,                 ITM_PRODUCT,                  ITM_MICRO,                    ITM_OMEGA,                    ITM_INTEGRAL_SIGN,            
@@ -519,10 +519,8 @@ TO_QSPI const int16_t menu_alphaMATH[]   = { ITM_LESS_THAN,                ITM_L
                                              ITM_ONE_QUARTER,              ITM_ONE_HALF,                 ITM_PROPORTIONAL,             ITM_INFINITY,                 ITM_MAT_ML,                   ITM_MAT_MR,                   
                                              ITM_SUP_BOLD_T,               ITM_SUB_MINUS,                ITM_SUB_PLUS,                 ITM_SUB_INFINITY,             ITM_MAT_TL,                   ITM_MAT_TR,                   
 
-                                             ITM_NULL,                     ITM_SUP_MINUS,                ITM_SUP_PLUS,                 ITM_SUP_INFINITY,             ITM_NULL,                     ITM_NULL,
-                                             ITM_NULL,                     ITM_NULL,                     ITM_NULL,                     ITM_NULL,                     ITM_NULL,                     ITM_NULL,
-                                             ITM_NULL,                     ITM_NULL,                     ITM_NULL,                     ITM_NULL,                     ITM_NULL,                     ITM_NULL           };
-
+                                             ITM_u_BAR,                    ITM_v_BAR,                    ITM_w_BAR,                    ITM_x_BAR,                    ITM_y_BAR,                    ITM_z_BAR,
+                                             ITM_u_CIRC2,                  ITM_v_CIRC,                   ITM_w_CIRC,                   ITM_x_CIRC,                   ITM_y_CIRC,                   ITM_z_CIRC           };
 
 /*      Menu name                           <----------------------------------------------------------------------------- 6 functions ---------------------------------------------------------------------------->  */
 /*                                          <---------------------------------------------------------------------- 6 f shifted functions ------------------------------------------------------------------------->  */
