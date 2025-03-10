@@ -5499,12 +5499,8 @@ void V3err(void) {
 
 bool_t VtoAngleMode(angularMode_t angleMode) {
   if(getRegisterDataType(REGISTER_X) == dtReal34Matrix) {
-    if(isMatrix3dVector(REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows,REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns)) {
-      if(getVectorRegisterAngularMode(REGISTER_X) == amNone) { //means it is not in any polar mode
-        V3RectoToSph(angleMode);
-      } else {
-        setVectorRegisterAngularMode(REGISTER_X, (angularMode_t)angleMode);
-      }
+    if(isMatrixVector(REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows,REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns)) {
+      setVectorRegisterAngularMode(REGISTER_X, (angularMode_t)angleMode);
     } else return false;
   } else return false;
   return true;

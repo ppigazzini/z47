@@ -121,18 +121,22 @@ typedef enum {
   amRadian    =  0, // radian
   amGrad      =  1, // grad
   amDegree    =  2, // degree
-  amDMS       =  3,
-  amMultPi    =  4,
+  amDMS       =  3, // degrees in dd mm ss.sss...
+  amMultPi    =  4, // multiples of pi
   amNone      =  5, // RECT in complex, real, vector
   amSecond    =  6, // not an angular but a time unit: for the routine unified with the real type
-  TM_HMS      =  7, // JM not an angular but a time unit: for the C47 usage
+  TM_HMS      =  7, // not an angular but a time unit
   amAngleMask = 15,
   amPolar     = 16, // JM bit 4 of the 5 bits is used for Polar in Complex Case
 
-  //removed the idea of adding bits
+  //removed the idea of adding bits: See registers.h 
   //  amPolarCYL  =  64, // 3D Vector: Polar cylindrical. 
   //  amPolarSPH  = 128  // 3D Vector: Polar cylindrical. 
   //----
+  // Replaced with the logic table below, in essence, if a real matrix, and if the matrix is 1x2, 2x1, 1x3 or 3x1 then it is a vector, for which: 
+  //   - A 2D vector is in Rect, if the angleMode == amNone. The amPolar flag, bit 4, also is clear
+  //   - A 3D vector is in Rect, if the angleMode == amNone. The amPolar flag set is Spherical Polar, and reset is Cylindrical.
+  //   There are macros for this in defines.h (for matrix type) and registers.h (for registers)
 
   //using logic to store in a real matrix register, the states: CYL, SPH or RECT. RECT being amNone set and no Polar mode set. This can be reworked into storing the bits. Search for amPolarCYL & amPolarSPH to change.
   //5-bits stored in register header
