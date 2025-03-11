@@ -986,7 +986,7 @@ void fnDRG(uint16_t unusedButMandatoryParameter) {
     setRegisterAngularMode(REGISTER_X, amNone);                          //is probably none already
   }
 
-  else if(getRegisterDataType(REGISTER_X) == dtReal34) {                      // if real
+  if(getRegisterDataType(REGISTER_X) == dtReal34) {                      // if real
     dest = getRegisterAngularMode(REGISTER_X);
 
     if(dest != amNone && dest != currentAngularMode && DRG_Cycling != 1) {   //first step: convert tagged angle to ADM
