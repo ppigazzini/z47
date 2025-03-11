@@ -228,6 +228,9 @@ void subNumberToDisplayString(int32_t subNumber, char *displayString, char *disp
 
 void real34ToDisplayString(const real34_t *real34, uint32_t tag, char *displayString, const font_t *font, int16_t maxWidth, int16_t displayHasNDigits, bool_t limitExponent, bool_t frontSpace) {
   uint8_t savedDisplayFormatDigits = displayFormatDigits;
+  if (!(displayFormat >= DF_FIX && displayFormat <= DF_ENG) && displayFormatDigits >= displayHasNDigits) {
+    displayFormatDigits = displayHasNDigits - 1;
+  }
 
   #if (REAL34_WIDTH_TEST == 1)
     maxWidth = largeur;
