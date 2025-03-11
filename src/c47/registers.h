@@ -284,11 +284,14 @@
                                                         ? /*3D*/ ((((getRegisterTag(reg) & amPolar) == amPolar)) ? amPolarSPH : amPolarCYL)\
                                                         : (isRegisterMatrix2dVector(reg)) \
                                                            ? /*2D*/ (getRegisterTag(reg) & amPolar) \
-                                                           : amNone \
-                                                     : amNone )
-  #define setVectorRegisterPolarMode(reg, pm)   setRegisterTag(reg, ( ((getRegisterTag(reg) & (amAngleMask | amPolar)) | ((pm == amPolarSPH || pm == amPolar) ? amPolar : 0)) \
-                                                                      & (pm == amPolarCYL ? ((~amPolar) & (amAngleMask | amPolar)) : 255)  ))
-  
+                                                           : 0 \
+                                                     : 0 )
+  #define setVectorRegisterPolarMode(reg, pm)   setRegisterTag(reg, ((pm == 0) ? ((getRegisterTag(reg) & ~(amAngleMask | amPolar)) + amNone) : \
+                                                                      ((getRegisterTag(reg) & (amAngleMask | amPolar)) | ((pm == amPolarSPH || pm == amPolar) ? amPolar : 0)) \
+                                                                      & ((pm == amPolarCYL) ? ((~amPolar) & (amAngleMask | amPolar)) : 255) \
+                                                                        ))           /*if Polar is cleared, also clear angle */
+                                                                                     /*existing status, with polar bit ORred for 2DPolar or SPH*/
+                                                                                     /*   ANDed to force Polar 0 for CYL */
 
   /********************************************//**
    * \brief Save register X to register X

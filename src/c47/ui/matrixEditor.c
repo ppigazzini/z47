@@ -887,7 +887,7 @@ void mimRestore(void) {
 }
 
 
-static void displayVectorAngle(const real34Matrix_t *matrix, int j, int rows, int cols, uint8_t *toBeAngle){
+void displayVectorAngle(const real34Matrix_t *matrix, int j, int rows, int cols, uint8_t *toBeAngle){
   if((getTagAngularMode(matrix->header.tag)) != amNone) {
     if(isMatrix3dVector(rows,cols)) {
       if((is3dVectorPolarSPH(matrix->header.tag)) && (j == 1 || j ==2)) {
@@ -907,7 +907,7 @@ static void displayVectorAngle(const real34Matrix_t *matrix, int j, int rows, in
 
 
 
-static void displayVectorElement(const real34Matrix_t *matrix, int j, int ii, int rows, int cols, real34_t *element, uint8_t *toBeAngle) {
+void displayVectorElement(const real34Matrix_t *matrix, int j, int ii, int rows, int cols, real34_t *element, uint8_t *toBeAngle) {
   real_t aa,bb,cc;
   if((isMatrix3dVectorSPH(rows, cols, matrix->header.tag))) {
     convert3DtoSPH(matrix, &aa,&bb,&cc, *toBeAngle);

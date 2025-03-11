@@ -24,6 +24,7 @@ void fn_cnst_op_a   (uint16_t unusedButMandatoryParameter);
 void fn_cnst_0_cpx  (uint16_t unusedButMandatoryParameter);
 void fn_cnst_1_cpx  (uint16_t unusedButMandatoryParameter);
 void fnJM_2SI       (uint16_t unusedButMandatoryParameter);
+void _fnAngularMode (calcRegister_t regist, uint16_t AMODE);
 void fnAngularModeJM(uint16_t unusedButMandatoryParameter);
 void fnDRG          (uint16_t unusedButMandatoryParameter);
 void fnChangeBaseJM (uint16_t unusedButMandatoryParameter);
