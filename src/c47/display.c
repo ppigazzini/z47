@@ -484,11 +484,13 @@ overRange:
   //printRealToConsole(&value," ------- 006 >>>>>"," <<<<<\n\n");   //JM
 
 
-  ctxtReal39.digits =  ((displayFormat == DF_FIX || displayFormat == DF_SF) ? 24 : displayHasNDigits); // This line is for FIX n displaying more than 16 digits. e.g. in FIX 15: 123 456.789 123 456 789 123
-  //ctxtReal39.digits =  displayHasNDigits; // This line is for fixed number of displayed digits, e.g. in FIX 15: 123 456.789 123 456 8
-  if(checkHP) ctxtReal39.digits = min(10,displayHasNDigits);
-  realPlus(&value, &value, &ctxtReal39);
-  ctxtReal39.digits = 39;
+  if (!(displayFormat >= DF_FIX && displayFormat <= DF_ENG)) {
+    ctxtReal39.digits =  ((displayFormat == DF_FIX || displayFormat == DF_SF) ? 24 : displayHasNDigits); // This line is for FIX n displaying more than 16 digits. e.g. in FIX 15: 123 456.789 123 456 789 123
+    //ctxtReal39.digits =  displayHasNDigits; // This line is for fixed number of displayed digits, e.g. in FIX 15: 123 456.789 123 456 8
+    if(checkHP) ctxtReal39.digits = min(10,displayHasNDigits);
+    realPlus(&value, &value, &ctxtReal39);
+    ctxtReal39.digits = 39;
+  }
   realToReal34(&value, &value34);
   if(displayFormat == DF_SF) {
     real34Reduce(&value34, &value34);  //JM NEW SIG 2023-03-18
