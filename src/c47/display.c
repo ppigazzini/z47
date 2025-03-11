@@ -228,9 +228,6 @@ void subNumberToDisplayString(int32_t subNumber, char *displayString, char *disp
 
 void real34ToDisplayString(const real34_t *real34, uint32_t tag, char *displayString, const font_t *font, int16_t maxWidth, int16_t displayHasNDigits, bool_t limitExponent, bool_t frontSpace) {
   uint8_t savedDisplayFormatDigits = displayFormatDigits;
-  if (!((displayFormat >= DF_FIX && displayFormat <= DF_ENG) || displayFormat == DF_UN) && displayFormatDigits >= displayHasNDigits) {
-    displayFormatDigits = displayHasNDigits - 1;
-  }
 
   #if (REAL34_WIDTH_TEST == 1)
     maxWidth = largeur;
@@ -240,29 +237,30 @@ void real34ToDisplayString(const real34_t *real34, uint32_t tag, char *displaySt
     displayValueX[0] = 0;
   }
 
-  if(displayFormat == DF_SF) {        //This portion limits the SIGFIG digits to really n digits, even in the case of SIG3 12345000000000 to be displayed as 1.2340 x 10^5
-      uint8_t digits = checkHP ? 10 : displayHasNDigits;
-      if(tag == amNone) {
-        real34ToDisplayString2(real34, displayString, digits, limitExponent, false, frontSpace, isReal);
-        if(stringWidth(displayString, font, true, true) > maxWidth) {
-          real34ToDisplayString2(real34, displayString, digits, limitExponent, true, frontSpace, isReal);
+  do {
+    if(displayFormat == DF_SF) {        //This portion limits the SIGFIG digits to really n digits, even in the case of SIG3 12345000000000 to be displayed as 1.2340 x 10^5
+        uint8_t digits = checkHP ? 10 : displayHasNDigits;
+        if(tag == amNone) {
+          real34ToDisplayString2(real34, displayString, digits, limitExponent, false, frontSpace, isReal);
+          if(stringWidth(displayString, font, true, true) > maxWidth) {
+            real34ToDisplayString2(real34, displayString, digits, limitExponent, true, frontSpace, isReal);
+          }
         }
+        else {
+          angle34ToDisplayString2(real34, tag, displayString, digits, limitExponent, frontSpace);
+        }
+
+    }
+    else { // not DF_SF
+      if(tag == amNone) {
+        real34ToDisplayString2(real34, displayString, displayHasNDigits, limitExponent, false, frontSpace, isReal);
       }
       else {
-        angle34ToDisplayString2(real34, tag, displayString, digits, limitExponent, frontSpace);
+        angle34ToDisplayString2(real34, tag, displayString, displayHasNDigits, limitExponent, frontSpace);
       }
-
-  }
-  else { // not DF_SF
-    if(tag == amNone) {
-      real34ToDisplayString2(real34, displayString, displayHasNDigits, limitExponent, false, frontSpace, isReal);
-    }
-    else {
-      angle34ToDisplayString2(real34, tag, displayString, displayHasNDigits, limitExponent, frontSpace);
     }
 
-  while(stringWidth(displayString, font, true, true) > maxWidth) {
-    if(displayFormat == DF_ALL) {
+    if(displayFormat == DF_ALL || displayFormat == DF_SF) {
       if(displayHasNDigits == 2) {
         break;
       }
@@ -278,15 +276,8 @@ void real34ToDisplayString(const real34_t *real34, uint32_t tag, char *displaySt
     if(updateDisplayValueX) {
       displayValueX[0] = 0;
     }
-
-      if(tag == amNone) {
-        real34ToDisplayString2(real34, displayString, displayHasNDigits, limitExponent, false, frontSpace, isReal);
-      }
-      else {
-        angle34ToDisplayString2(real34, tag, displayString, displayHasNDigits, limitExponent, frontSpace);
-      }
-    }
   }
+  while(stringWidth(displayString, font, true, true) > maxWidth);
 
   displayFormatDigits = savedDisplayFormatDigits;
 }
@@ -425,61 +416,67 @@ overRange:
   //sigfig
   //printReal34ToConsole(real34," ------- 001 >>>>>"," <<<<<\n");   //JM
   if(displayFormat == DF_SF) {                                 //convert real34 to string, eat away all zeroes from the right and give back to FIX as a real
-    char tmpString100[100];                           //cleaning up the REAL
-    real34_t reduced;
-    real_t tmp1;
-    //printReal34ToConsole(real34," ------- 002a >>>>>"," <<<<<\n");   //JM
-    real34ToReal(real34, &tmp1);
-    roundToSignificantDigits(&tmp1, &tmp1, displayFormatDigits+1, &ctxtReal75);
-    realToReal34(&tmp1, &reduced);
-    //printReal34ToConsole(&reduced," ------- 002b >>>>>"," <<<<<\n");   //JM
-    real34Reduce(&reduced, &reduced);
-    //printReal34ToConsole(&reduced," ------- 002c >>>>>"," <<<<<\n");   //JM
-    real34ToString(&reduced, tmpString100);
-    //printf("------- 003 displayFormatDigits=%u >>>>>%s\n",displayFormatDigits, tmpString100);
-    int8_t ii=0;
-    while(tmpString100[ii]!=0) {                       //skip all zeroes
-      while(tmpString100[ii] == '0') {
-        if(tmpString100[ii] == 0) break;
-        ii++;
-      }                                                //counter at first non-'0' or at end
-      if(tmpString100[ii] == '.') {
-      //printf("------- 004 >>>>%s|, %i\n",tmpString100, ii);
+    exponent = real34GetExponent(real34) + real34Digits(real34) - 1;
+    if (abs(exponent) <= displayHasNDigits) {
+      char tmpString100[100];                           //cleaning up the REAL
+      real34_t reduced;
+      real_t tmp1;
+      // printReal34ToConsole(real34," ------- 002a >>>>>"," <<<<<\n");   //JM
+      real34ToReal(real34, &tmp1);
+      roundToSignificantDigits(&tmp1, &tmp1, displayFormatDigits+1, &ctxtReal75);
+      realToReal34(&tmp1, &reduced);
+      // printReal34ToConsole(&reduced," ------- 002b >>>>>"," <<<<<\n");   //JM
+      real34Reduce(&reduced, &reduced);
+      // printReal34ToConsole(&reduced," ------- 002c >>>>>"," <<<<<\n");   //JM
+      real34ToString(&reduced, tmpString100);
+      // printf("------- 003 displayFormatDigits=%u >>>>>%s\n",displayFormatDigits, tmpString100);
+      int8_t ii=0;
+      while(tmpString100[ii]!=0) {                       //skip all zeroes
+        while(tmpString100[ii] == '0') {
+          if(tmpString100[ii] == 0) break;
+          ii++;
+        }                                                //counter at first non-'0' or at end
+        if(tmpString100[ii] == '.') {
+        // printf("------- 004 >>>>%s|, %i\n",tmpString100, ii);
 
-          ii++;                                        //move to first non-'.' and skip all zeroes
-          while(tmpString100[ii] == '0') {
-            if(tmpString100[ii] == 0) break;
-            ii++;
-          }                                            //counter at first non-'0' or end, eg. 3.14159265358979E+15
-          //printf("------- 004a >>>>%s|, %i, displayFormatDigits=%i\n",tmpString100, ii, displayFormatDigits);
+            ii++;                                        //move to first non-'.' and skip all zeroes
+            while(tmpString100[ii] == '0') {
+              if(tmpString100[ii] == 0) break;
+              ii++;
+            }                                            //counter at first non-'0' or end, eg. 3.14159265358979E+15
+            // printf("------- 004a >>>>%s|, %i, displayFormatDigits=%i\n",tmpString100, ii, displayFormatDigits);
 
-          if(tmpString100[ii] != 0) {
-            ii = ii + displayFormatDigits+1;           //2023-06-01 added 1 digit, giving FIX one extra digit for rounding. If it does not work properly, to do rounding here.
-            int8_t jj = ii;
-            //round here
+            if(tmpString100[ii] != 0) {
+              ii = ii + displayFormatDigits+1;           //2023-06-01 added 1 digit, giving FIX one extra digit for rounding. If it does not work properly, to do rounding here.
+              int8_t jj = ii;
+              //round here
 
-            while(tmpString100[jj] != 0 && tmpString100[jj] != 'E') {   //find E or first non-zero
-              jj++;
-            }
-            if(tmpString100[jj] == 'E') {              //If E, then move over the exponent to have only the specified significant digts, eg. 3.141E+15
-              while(tmpString100[jj] != 0) {
-                tmpString100[ii] = tmpString100[jj];
-                jj++; ii++;
+              while(tmpString100[jj] != 0 && tmpString100[jj] != 'E') {   //find E or first non-zero
+                jj++;
               }
-              tmpString100[ii] = 0;
+              if(tmpString100[jj] == 'E') {              //If E, then move over the exponent to have only the specified significant digts, eg. 3.141E+15
+                while(tmpString100[jj] != 0) {
+                  tmpString100[ii] = tmpString100[jj];
+                  jj++; ii++;
+                }
+                tmpString100[ii] = 0;
+              }
             }
-          }
-        //printf("------- 005 >>>>%s|\n",tmpString100);
-        break;
-      }
-      else {
-        ii++;
+          // printf("------- 005 >>>>%s|\n",tmpString100);
+          break;
+        }
+        else {
+          ii++;
+        }
+
       }
 
+      stringToReal(tmpString100,&value,&ctxtReal39);
+      // printRealToConsole(&value," ------- 006 >>>>>"," <<<<<\n\n");   //JM
     }
-
-    stringToReal(tmpString100,&value,&ctxtReal39);
-    //printRealToConsole(&value," ------- 006 >>>>>"," <<<<<\n\n");   //JM
+    else {
+      real34ToReal(real34, &value);
+    }
   }
   else {
     real34ToReal(real34, &value);
@@ -487,13 +484,6 @@ overRange:
   //printRealToConsole(&value," ------- 006 >>>>>"," <<<<<\n\n");   //JM
 
 
-  if (!((displayFormat >= DF_FIX && displayFormat <= DF_ENG) || displayFormat == DF_UN)) {
-    ctxtReal39.digits =  ((displayFormat == DF_FIX || displayFormat == DF_SF) ? 24 : displayHasNDigits); // This line is for FIX n displaying more than 16 digits. e.g. in FIX 15: 123 456.789 123 456 789 123
-    //ctxtReal39.digits =  displayHasNDigits; // This line is for fixed number of displayed digits, e.g. in FIX 15: 123 456.789 123 456 8
-    if(checkHP) ctxtReal39.digits = min(10,displayHasNDigits);
-    realPlus(&value, &value, &ctxtReal39);
-    ctxtReal39.digits = 39;
-  }
   realToReal34(&value, &value34);
   if(displayFormat == DF_SF) {
     real34Reduce(&value34, &value34);  //JM NEW SIG 2023-03-18
@@ -633,8 +623,8 @@ overRange:
   //////////////
   if(displayFormat == DF_ALL) {
     if(noFix || exponent >= displayHasNDigits || (displayFormatDigits != 0 && exponent < -(int32_t)displayFormatDigits) || (displayFormatDigits == 0 && exponent < numDigits - displayHasNDigits)) { // Display in SCI or ENG format
-      digitsToDisplay = numDigits - 1;
-      digitToRound    = firstDigit + digitsToDisplay;
+      digitsToDisplay = min(displayHasNDigits, numDigits - 1);
+      digitToRound    = min(firstDigit + digitsToDisplay, lastDigit);
       ovrSCI = !getSystemFlag(FLAG_ENGOVR);
       ovrENG = getSystemFlag(FLAG_ENGOVR);
     }
@@ -779,7 +769,7 @@ overRange:
          ( displayFormat == DF_SF && exponent -(int32_t)displayFormatDigits < -(checkHP ? 10+1 : displayHasNDigits)) ||
          ( displayFormat == DF_SF && !checkHP && exponent -(int32_t)displayFormatDigits > GROUPWIDTH_LEFT1)
       ) { // Display in SCI or ENG format
-      digitsToDisplay = displayFormatDigits;
+      digitsToDisplay = min(displayFormatDigits, displayHasNDigits - 1);
       digitToRound    = min(firstDigit + digitsToDisplay, lastDigit);
       ovrSCI = !getSystemFlag(FLAG_ENGOVR);
       ovrENG = getSystemFlag(FLAG_ENGOVR);
