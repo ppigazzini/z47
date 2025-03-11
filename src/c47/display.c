@@ -228,7 +228,7 @@ void subNumberToDisplayString(int32_t subNumber, char *displayString, char *disp
 
 void real34ToDisplayString(const real34_t *real34, uint32_t tag, char *displayString, const font_t *font, int16_t maxWidth, int16_t displayHasNDigits, bool_t limitExponent, bool_t frontSpace) {
   uint8_t savedDisplayFormatDigits = displayFormatDigits;
-  if (!(displayFormat >= DF_FIX && displayFormat <= DF_ENG) && displayFormatDigits >= displayHasNDigits) {
+  if (!((displayFormat >= DF_FIX && displayFormat <= DF_ENG) || displayFormat == DF_UN) && displayFormatDigits >= displayHasNDigits) {
     displayFormatDigits = displayHasNDigits - 1;
   }
 
@@ -487,7 +487,7 @@ overRange:
   //printRealToConsole(&value," ------- 006 >>>>>"," <<<<<\n\n");   //JM
 
 
-  if (!(displayFormat >= DF_FIX && displayFormat <= DF_ENG)) {
+  if (!((displayFormat >= DF_FIX && displayFormat <= DF_ENG) || displayFormat == DF_UN)) {
     ctxtReal39.digits =  ((displayFormat == DF_FIX || displayFormat == DF_SF) ? 24 : displayHasNDigits); // This line is for FIX n displaying more than 16 digits. e.g. in FIX 15: 123 456.789 123 456 789 123
     //ctxtReal39.digits =  displayHasNDigits; // This line is for fixed number of displayed digits, e.g. in FIX 15: 123 456.789 123 456 8
     if(checkHP) ctxtReal39.digits = min(10,displayHasNDigits);
@@ -1095,14 +1095,12 @@ overRange:
       bcd[digitToRound]++;
     }
 
-if(displayFormat != DF_UN) {
     // Case when 9.9999 rounds to 10.0000
     if(digitToRound < firstDigit) {
       firstDigit--;
       numDigits = 1;
       exponent++;
     }
-  }
 
     // The sign
     if(sign) {
