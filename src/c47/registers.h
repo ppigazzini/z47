@@ -272,17 +272,23 @@
 //  #define setVectorRegisterPolarMode(reg, pm)   setRegisterTag(reg, (getRegisterTag(reg) & amAngleMask) | (pm & (amPolarCYL | amPolarSPH)))
 
   #define amPolarCYL 64  //to restore these bits, change in typeDefinitions.h
-  #define amPolarSPH 128
-  //note a problem for changing back to bits, is that the matrix variable header has 5 bits only.
+  #define amPolarSPH 128 //  note a problem for changing back to bits, is that the matrix variable header has 5 bits only.
 
-  #define getVectorRegisterAngularMode(reg)     ((getRegisterDataType(reg) == dtReal34Matrix) ? getTagAngularMode(getRegisterTag(reg)) : amNone) //maybe conditional on 2D 3D????
-  #define setVectorRegisterAngularMode(reg, am) setRegisterTag(reg, (am & amAngleMask) | (getRegisterTag(reg) & amPolar))                      //note maybe conditional on Mx???
-  #define getVectorRegisterPolarMode(reg)       (  ((getRegisterDataType(reg) == dtReal34Matrix) && ((getRegisterTag(reg) & amAngleMask) != amNone)) ? (\
-                                                  (((getRegisterTag(reg) & amPolar) == amPolar)) ? amPolarSPH : amPolarCYL) \
-                                                   : amNone)
-  #define setVectorRegisterPolarMode(reg, pm)   setRegisterTag(reg, (  ((getRegisterTag(reg) & (amAngleMask | amPolar)) | ((pm == amPolarSPH || pm == amPolar) ? amPolar : 0)) \
-                                                                       & (pm == amPolarCYL ? ((~amPolar) & (amAngleMask | amPolar)) : 255)))
-
+  #define isRegisterMatrix3dVector(reg)          (isMatrix3dVector(REGISTER_MATRIX_HEADER(reg)->matrixRows,REGISTER_MATRIX_HEADER(reg)->matrixColumns))
+  #define isRegisterMatrix2dVector(reg)          (isMatrix2dVector(REGISTER_MATRIX_HEADER(reg)->matrixRows,REGISTER_MATRIX_HEADER(reg)->matrixColumns))
+  #define isRegisterMatrixVector(reg)            (isRegisterMatrix3dVector(reg) || isRegisterMatrix2dVector(reg))
+  #define getVectorRegisterAngularMode(reg)      ((getRegisterDataType(reg) == dtReal34Matrix) ? (getTagAngularMode(getRegisterTag(reg)) & amAngleMask) : amNone) //maybe conditional on 2D 3D????
+  #define setVectorRegisterAngularMode(reg, am)  (setRegisterTag(reg, (am & amAngleMask) | (getRegisterTag(reg) & amPolar)))                                      //note maybe conditional on Mx???
+  #define getVectorRegisterPolarMode(reg)        ( ((getRegisterDataType(reg) == dtReal34Matrix) && ((getRegisterTag(reg) & amAngleMask) != amNone)) \
+                                                     ? (isRegisterMatrix3dVector(reg)) \
+                                                        ? /*3D*/ ((((getRegisterTag(reg) & amPolar) == amPolar)) ? amPolarSPH : amPolarCYL)\
+                                                        : (isRegisterMatrix2dVector(reg)) \
+                                                           ? /*2D*/ (getRegisterTag(reg) & amPolar) \
+                                                           : amNone \
+                                                     : amNone )
+  #define setVectorRegisterPolarMode(reg, pm)   setRegisterTag(reg, ( ((getRegisterTag(reg) & (amAngleMask | amPolar)) | ((pm == amPolarSPH || pm == amPolar) ? amPolar : 0)) \
+                                                                      & (pm == amPolarCYL ? ((~amPolar) & (amAngleMask | amPolar)) : 255)  ))
+  
 
   /********************************************//**
    * \brief Save register X to register X

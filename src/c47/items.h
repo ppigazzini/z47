@@ -2561,8 +2561,9 @@
 #define ITM_dddIX                   2489
 #define ITM_V10                     2490
 #define ITM_V01                     2491
+#define ITM_CPXexV                  2492
 
-#define LAST_ITEM                   2492
+#define LAST_ITEM                   2493
 
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL

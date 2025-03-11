@@ -131,11 +131,11 @@ TO_QSPI const int16_t menu_MATX[]        = {
                                              ITM_CONCAT,                    ITM_M_RR,                   ITM_M_DIM,                ITM_M_DIMQ,            ITM_INDEX,                   ITM_M_EDIN,
                                              ITM_M_PUT,                     ITM_M_GET,                  ITM_STOEL,                ITM_RCLEL,             ITM_STOELPLUS,               ITM_RCLELPLUS,              
 
-                                             ITM_toREC2,                    ITM_toPOL2,                 ITM_NULL,                 ITM_NULL,              ITM_VECTOSTK,                ITM_STKTO1x2,
+                                             ITM_toREC2,                    ITM_toPOL2,                 ITM_CPXexV,               ITM_VECTOSTK,          ITM_STKTO1x2,                ITM_CLSTK,
                                              ITM_ENORM,                     ITM_UNITV,                  ITM_VVDIST,               ITM_VANGLE,            ITM_DOT_PROD,                ITM_CROSS_PROD,
                                              ITM_DEG2,                      ITM_RAD2,                   ITM_MULPI2,               ITM_NULL,              ITM_V10,                     ITM_V01,
 
-                                             ITM_toREC2,                    ITM_V3TOSPH,                ITM_V3TOCYL,              ITM_NULL,              ITM_VECTOSTK,                ITM_STKTO1x3,
+                                             ITM_toREC2,                    ITM_V3TOSPH,                ITM_V3TOCYL,              ITM_VECTOSTK,          ITM_STKTO1x3,                ITM_CLSTK,
                                              ITM_ENORM,                     ITM_UNITV,                  ITM_VVDIST,               ITM_VANGLE,            ITM_DOT_PROD,                ITM_CROSS_PROD,
                                              ITM_DEG2,                      ITM_RAD2,                   ITM_MULPI2,               ITM_V100,              ITM_V010,                    ITM_V001};
 

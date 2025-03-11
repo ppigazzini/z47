@@ -5499,7 +5499,7 @@ void V3err(void) {
 
 bool_t VtoAngleMode(angularMode_t angleMode) {
   if(getRegisterDataType(REGISTER_X) == dtReal34Matrix) {
-    if(isMatrixVector(REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows,REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns)) {
+    if(isRegisterMatrixVector(REGISTER_X)) {
       setVectorRegisterAngularMode(REGISTER_X, (angularMode_t)angleMode);
     } else return false;
   } else return false;
@@ -5509,7 +5509,7 @@ bool_t VtoAngleMode(angularMode_t angleMode) {
 void V3RectoToSph(uint16_t am) {
   angularMode_t angleMode = (am == 255 ? currentAngularMode : am);
   if(getRegisterDataType(REGISTER_X) == dtReal34Matrix) {
-    if(isMatrix3dVector(REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows,REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns)) {
+    if(isRegisterMatrix3dVector(REGISTER_X)) {
       setVectorRegisterPolarMode(REGISTER_X, amPolarSPH);
       setVectorRegisterAngularMode(REGISTER_X, angleMode);
     } else V3err();
@@ -5519,10 +5519,52 @@ void V3RectoToSph(uint16_t am) {
 void V3RectoToCyl(uint16_t am) {
   angularMode_t angleMode = (am == 255 ? currentAngularMode : am);
   if(getRegisterDataType(REGISTER_X) == dtReal34Matrix) {
-    if(isMatrix3dVector(REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows,REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns)) {
+    if(isRegisterMatrix3dVector(REGISTER_X)) {
       setVectorRegisterPolarMode(REGISTER_X, amPolarCYL);
       setVectorRegisterAngularMode(REGISTER_X, angleMode);
     } else V3err();
   } else V3err();
+}
+
+void fnComplexToVector (uint16_t unusedButMandatoryParameter) {
+  real34Matrix_t matrix;
+  if(getRegisterDataType(REGISTER_X) == dtReal34Matrix) {
+    //MatrixVector2D ==> Complex
+    if(isRegisterMatrix2dVector(REGISTER_X)) {
+    copySourceRegisterToDestRegister(REGISTER_X, TEMP_REGISTER_1);
+    reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
+    linkToRealMatrixRegister(TEMP_REGISTER_1,  &matrix);
+    real34Copy(&matrix.matrixElements[0], REGISTER_REAL34_DATA(REGISTER_X));
+    real34Copy(&matrix.matrixElements[1], REGISTER_IMAG34_DATA(REGISTER_X));
+    adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
+    setComplexRegisterAngularMode(REGISTER_X, getVectorRegisterAngularMode(TEMP_REGISTER_1));
+    setComplexRegisterPolarMode(REGISTER_X, (getVectorRegisterPolarMode(TEMP_REGISTER_1) != amNone) ? amPolar : amNone);
+    clearRegister(TEMP_REGISTER_1);
+    }
+  }
+  else if(getRegisterDataType(REGISTER_X) == dtComplex34) {
+    //Complex ==> MatrixVector2D
+    copySourceRegisterToDestRegister(REGISTER_X, TEMP_REGISTER_1);
+    //Initialize Memory for Matrix
+    if(initMatrixRegister(REGISTER_X, 1, 2, false)) {
+    }
+    else {
+// ignore error condition, because no extra bytes are needed converting from complex34 to Real matrix 2D vector
+//      displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);       
+//      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+//        sprintf(errorMessage, "Not enough memory for a %" PRIu32 STD_CROSS "%" PRIu32 " matrix", 1, 1);
+//        moreInfoOnError("In function fnConvertStkToMx:", errorMessage, NULL, NULL);
+//      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+      return;
+    }
+    adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
+    linkToRealMatrixRegister(REGISTER_X,  &matrix);
+    real34Copy(REGISTER_REAL34_DATA(TEMP_REGISTER_1), &matrix.matrixElements[0]);
+    real34Copy(REGISTER_IMAG34_DATA(TEMP_REGISTER_1), &matrix.matrixElements[1]);
+    adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
+    setVectorRegisterAngularMode(REGISTER_X, getComplexRegisterAngularMode(TEMP_REGISTER_1));
+    setVectorRegisterPolarMode(REGISTER_X,   getComplexRegisterPolarMode(TEMP_REGISTER_1));
+    clearRegister(TEMP_REGISTER_1);
+  }
 }
 

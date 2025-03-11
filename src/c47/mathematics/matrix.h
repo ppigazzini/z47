@@ -433,6 +433,7 @@
   void       V3RectoToSph                   (uint16_t am);
   void       V3RectoToCyl                   (uint16_t am);
   bool_t     VtoAngleMode                   (angularMode_t angleMode);
+  void       fnComplexToVector              (uint16_t unusedButMandatoryParameter);
 
 
 #endif // !MATRIX_H
