@@ -61,6 +61,28 @@ uint8_t convert001090400T001090500(uint8_t parameter, uint8_t offset) { //Exampl
 }
 
 #if !defined(TESTSUITE_BUILD)
+// Forced base-10 conversion functions
+static int16_t toInt16(const char *str) {
+  return (int16_t)strtol(str, NULL, 10);
+}
+
+static uint8_t toUint8(const char *str) {
+  return (uint8_t)strtoul(str, NULL, 10);
+}
+
+static uint16_t toUint16(const char *str) {
+  return (uint16_t)strtoul(str, NULL, 10);
+}
+
+static uint32_t toUint32(const char *str) {
+  return strtoul(str, NULL, 10);
+}
+
+// Floating point conversion functions
+float stringToFloat(const char *str) {
+  return strtof(str, NULL);
+}
+
 // Utility routines to skip stuff
 static char *skip_word(const char *str) {
   while(*str != ' ')
@@ -82,6 +104,11 @@ static char *skip_to_space_newline(const char *str) {
   while(*str != ' ' && *str != '\n' && *str != 0)
     str++;
   return (char *)str;
+}
+
+static char *toInt16_next_word(const char *str, int16_t *val) {
+    *val = toInt16(str);
+    return next_word(str);
 }
 #endif
 
@@ -1842,30 +1869,6 @@ int64_t stringToInt64(const char *str) {
 
 
 #if !defined(TESTSUITE_BUILD)
-
-// Forced base-10 conversion functions
-static int16_t toInt16(const char *str) {
-  return (int16_t)strtol(str, NULL, 10);
-}
-
-static uint8_t toUint8(const char *str) {
-  return (uint8_t)strtoul(str, NULL, 10);
-}
-
-static uint16_t toUint16(const char *str) {
-  return (uint16_t)strtoul(str, NULL, 10);
-}
-
-static uint32_t toUint32(const char *str) {
-  return strtoul(str, NULL, 10);
-}
-
-// Floating point conversion functions
-float stringToFloat(const char *str) {
-  return strtof(str, NULL);
-}
-
-
   static void restoreRegister(calcRegister_t regist, char *type, char *value) {
     uint32_t tag = amNone;
 
@@ -2136,10 +2139,10 @@ float stringToFloat(const char *str) {
         #endif //LOADDEBUG
         str = tmpString;
         for (i = 0; i < 7; i++) {
-          globalFlags[i] = toInt16(str);
+          globalFlags[i] = toUint16(str);
           str = next_word(str);
         }
-        globalFlags[i] = toInt16(str);
+        globalFlags[i] = toUint16(str);
       }
     }
 
@@ -2304,32 +2307,15 @@ float stringToFloat(const char *str) {
             sprintf(line,", loadMode:%d, %s\n",loadMode,tmpString);
             debugPrintf(8, "-", tmpString);
           #endif //LOADDEBUG
-          str = tmpString;
-          kbd_usr[i].keyId = toInt16(str);
-
-          str = next_word(str);
-          kbd_usr[i].primary = toInt16(str);
-
-          str = next_word(str);
-          kbd_usr[i].fShifted = toInt16(str);
-
-          str = next_word(str);
-          kbd_usr[i].gShifted = toInt16(str);
-
-          str = next_word(str);
-          kbd_usr[i].keyLblAim = toInt16(str);
-
-          str = next_word(str);
-          kbd_usr[i].primaryAim = toInt16(str);
-
-          str = next_word(str);
-          kbd_usr[i].fShiftedAim = toInt16(str);
-
-          str = next_word(str);
-          kbd_usr[i].gShiftedAim = toInt16(str);
-
-          str = next_word(str);
-          kbd_usr[i].primaryTam = toInt16(str);
+          str = toInt16_next_word(tmpString, &kbd_usr[i].keyId);
+          str = toInt16_next_word(str, &kbd_usr[i].primary);
+          str = toInt16_next_word(str, &kbd_usr[i].fShifted);
+          str = toInt16_next_word(str, &kbd_usr[i].gShifted);
+          str = toInt16_next_word(str, &kbd_usr[i].keyLblAim);
+          str = toInt16_next_word(str, &kbd_usr[i].primaryAim);
+          str = toInt16_next_word(str, &kbd_usr[i].fShiftedAim);
+          str = toInt16_next_word(str, &kbd_usr[i].gShiftedAim);
+          str = toInt16_next_word(str, &kbd_usr[i].primaryTam);
         }
       }
     }
