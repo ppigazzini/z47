@@ -54,7 +54,12 @@ used = {
 for i in range(len(sizes)):
     if sects[i] == ".rodata" or sects[i] == ".text":
         used["flash"] += sizes[i]
-    elif sects[i] == ".data" or sects[i] == ".bss":
+    elif sects[i] == ".data":
+        # The initialisation for the data is in flash
+        # The data itself is in RAM
+        used["flash"] += sizes[i]
+        used["ram"] += sizes[i]
+    elif sects[i] == ".bss":
         used["ram"] += sizes[i]
     elif sects[i] == ".qspi":
         used["qspi"] += sizes[i]
