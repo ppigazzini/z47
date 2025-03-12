@@ -483,6 +483,12 @@ overRange:
   }
   //printRealToConsole(&value," ------- 006 >>>>>"," <<<<<\n\n");   //JM
 
+  if(checkHP) {
+    // Forced rounding at 10 digits when HP35 selected, to not risk any guard digits or digit noise in the last digits, see 'decNumberPlus'
+    ctxtReal39.digits = min(10,displayHasNDigits);
+    realPlus(&value, &value, &ctxtReal39);
+    ctxtReal39.digits = 39;
+  }
 
   realToReal34(&value, &value34);
   if(displayFormat == DF_SF) {
