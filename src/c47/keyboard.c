@@ -1636,12 +1636,12 @@ int16_t lastItem = 0;
         case ITM_7:
         case ITM_8:
         case ITM_9:
-        case ITM_PERIOD:
-        case ITM_RS:
-        case ITM_UP1:
-        case ITM_DOWN1:
-        case ITM_EXIT1:
-        case ITM_ENTER:
+        // case ITM_PERIOD:  // None of these keys correspond to letters
+        // case ITM_RS:
+        // case ITM_UP1:
+        // case ITM_DOWN1:
+        // case ITM_EXIT1:
+        // case ITM_ENTER:
         case ITM_RCL: {
           break;
         }
