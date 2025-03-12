@@ -543,7 +543,7 @@
 #define SFL_SBtvm                    515
 #define SFL_SBoc                     516
 #define SFL_SBss                     517
-#define SFL_SBclk                    518
+#define SFL_SBstpw                   518
 #define SFL_SBser                    519
 #define SFL_SBprn                    520
 #define SFL_SBbatV                   521
@@ -1430,7 +1430,7 @@
 #define MNU_ALPHAintl               1384
 #define MNU_TAM                     1385
 #define MNU_TAMCMP                  1386
-#define MNU_TAMSTORCL               1387
+#define MNU_TAMSTO                  1387
 #define MNU_Grapher                 1388
 #define MNU_VAR                     1389
 #define MNU_TAMFLAG                 1390
@@ -1963,7 +1963,7 @@
 #define ITM_ms                      1909
 #define ITM_msTo                    1910
 #define ITM_ymdTo                   1911
-#define ITM_1912                    1912
+#define MNU_TAMRCL                  1912
 #define MNU_TAMALPHA                1913
 #define ITM_TO_USER                 1914
 #define ITM_N_KEY_NIL               1915
@@ -1975,7 +1975,7 @@
 #define MNU_HOME                    1921
 #define MNU_ALPHA                   1922
 #define MNU_BASE                    1923
-#define ITM_1924                    1924
+#define ITM_MNUp1                   1924
 #define MNU_EE                      1925
 #define ITM_T_UP_ARROW              1926
 #define MNU_KEYS                    1927
@@ -2326,7 +2326,7 @@
 #define SFL_VECT                    2270
 #define SFL_NVECT                   2271
 #define SFL_US                      2272
-#define SFL_2269                    2273
+#define SFL_MNUp1                   2273
 #define SFL_2270                    2274
 #define SFL_2271                    2275
 #define SFL_2272                    2276
@@ -2501,13 +2501,13 @@
 #define ITM_RIGHT_BLOCKARROW        2434
 #define ITM_DOWN_BLOCKARROW         2435
 #define ITM_POWER_SYMBOL            2436
-#define ITM_2437                    2437
-#define ITM_2438                    2438
-#define ITM_2439                    2439
-#define ITM_2440                    2440
-#define ITM_2441                    2441
-#define ITM_2442                    2442
-#define ITM_2443                    2443
+#define ITM_u_BAR                   2437
+#define ITM_v_BAR                   2438
+#define ITM_w_BAR                   2439
+#define ITM_z_BAR                   2440
+#define ITM_v_CIRC                  2441
+#define ITM_z_CIRC                  2442
+#define ITM_u_CIRC2                 2443
 #define ITM_2444                    2444
 #define ITM_2445                    2445
 #define ITM_2446                    2446
@@ -2537,7 +2537,26 @@
 #define ITM_BANANAtoMM              2468           
 #define ITM_MMtoBANANA              2469
 
-#define LAST_ITEM                   2470
+#define ITM_V3TOCYL                 2470
+#define ITM_V3TOSPH                 2471
+#define ITM_VVDIST                  2472
+#define ITM_CONCAT                  2473
+#define ITM_STKTO1x3                2474
+#define ITM_1x3TOSTK                2475
+#define ITM_V100                    2476
+#define ITM_V010                    2477
+#define ITM_V001                    2478
+
+#define ITM_RCLVEL1                 2479
+#define ITM_RCLVEL2                 2480
+#define ITM_RCLVEL3                 2481
+#define ITM_STOVEL1                 2482
+#define ITM_STOVEL2                 2483
+#define ITM_STOVEL3                 2484
+#define ITM_dddVEL                  2485
+#define ITM_dddIX                   2486
+
+#define LAST_ITEM                   2487
 
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL

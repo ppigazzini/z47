@@ -27,6 +27,7 @@ static void systemFlagAction(uint16_t systemFlag, flagAction_t action) {
     case FLAG_ENGOVR:
     case FLAG_ENDPMT:
     case FLAG_HPRP:
+    case FLAG_MNUp1:
     case FLAG_HPBASE:
     case FLAG_NUMLOCK:
     case FLAG_CPXMULT:
@@ -55,18 +56,23 @@ static void systemFlagAction(uint16_t systemFlag, flagAction_t action) {
     case FLAG_SBcr  :
     case FLAG_SBcpx :
     case FLAG_SBang :
-    case FLAG_SBfrac:
     case FLAG_SBint :
     case FLAG_SBmx  :
     case FLAG_SBtvm :
     case FLAG_SBoc  :
     case FLAG_SBss  :
-    case FLAG_SBclk :
+    case FLAG_SBstpw:
     case FLAG_SBser :
     case FLAG_SBprn :
     case FLAG_SBbatV:
     case FLAG_SBshfR:
               fnRefreshState();
+              screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
+              break;
+
+    case FLAG_SBfrac:
+              fnRefreshState();
+              lastIntegerBase = 0; //needed to reset the annunciator
               screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
               break;
 
@@ -555,6 +561,7 @@ void SetSetting(uint16_t jmConfig) {
     case JC_NL:          fnFlipFlag(FLAG_NUMLOCK); showAlphaModeonGui();        break; //
 
     case FLAG_HPRP:      //this list is for flags that have HP42 compatible menu set buttons operating the underlying flags
+    case FLAG_MNUp1:
     case FLAG_HPBASE:
     case FLAG_2TO10:
     case FLAG_PROPFR:

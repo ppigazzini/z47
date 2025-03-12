@@ -612,7 +612,7 @@
 #define FLAG_SBtvm                            0x8034
 #define FLAG_SBoc                             0x8035
 #define FLAG_SBss                             0x8036
-#define FLAG_SBclk                            0x8037
+#define FLAG_SBstpw                           0x8037
 #define FLAG_SBser                            0x8038
 #define FLAG_SBprn                            0x8039
 #define FLAG_SBbatV                           0x803A
@@ -643,8 +643,9 @@
 #define FLAG_VECT                             0x8053
 #define FLAG_NVECT                            0x8054
 #define FLAG_US                               0x8055
+#define FLAG_MNUp1                            0x8056
 
-#define NUMBER_OF_SYSTEM_FLAGS                 64+22 // We can have a maximum of 128 system flags
+#define NUMBER_OF_SYSTEM_FLAGS                 64+23 // We can have a maximum of 128 system flags
 
 // FLGS and STATUS SCREENS
 #define NO_SCREEN                          0  // No screen selected
@@ -1042,6 +1043,9 @@ enum REG_NUMBERS_IN_KS_CODE { // Key Stroke register codes
 #define NUMBER_OF_RESERVED_VARIABLES    (LAST_RESERVED_VARIABLE        - FIRST_RESERVED_VARIABLE        + 1) // 41
 #define NUMBER_OF_LETTERED_VARIABLES    (FIRST_NAMED_RESERVED_VARIABLE - FIRST_RESERVED_VARIABLE)            // 26
 
+#define RBR_INCDEC1 10
+#define LAST_GLOBAL_REGISTER_SCREEN LAST_SPARE_REGISTER - modulo(LAST_SPARE_REGISTER, RBR_INCDEC1)
+
 #define FAILED_INDIRECTION                      9999
 
 /* Convertion from a key stroke program register code to a C register number
@@ -1108,7 +1112,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define SBARUPD_AlphaMode                       ( 1                         )
 #define SBARUPD_HourGlass                       ( 1                         )
 #define SBARUPD_StackSize                       (getSystemFlag(FLAG_SBss   ))
-#define SBARUPD_Watch                           (getSystemFlag(FLAG_SBclk  ))
+#define SBARUPD_StopWatch                       (getSystemFlag(FLAG_SBstpw ))
 #define SBARUPD_SerialIO                        (getSystemFlag(FLAG_SBser  ))
 #define SBARUPD_Printer                         (getSystemFlag(FLAG_SBprn  ))
 #define SBARUPD_UserMode                        ( 1                         )
@@ -1134,7 +1138,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define X_HOURGLASS                              312
 #define X_SSIZE_BEGIN                            327 - 5 + 3
 #define X_ASM                                    (X_ALPHA_MODE + 34) //334
-#define X_WATCH                                  337
+#define X_STOPWATCH                              337
 #define X_SERIAL_IO                              353
 #define X_PRINTER                                362
 #define X_USER_MODE                              375
@@ -1436,17 +1440,19 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define TI_ROOTS2                                 99
 #define TI_ROOTS3                                100
 #define TI_IJ                                    101
-#define TI_MIJ                                   102
-#define TI_BYTES                                 103
-#define TI_BITS                                  104
-#define TI_SOLVER_VARIABLE_RESULT                105
-#define TI_DATA_NEG_OVRFL                        106
-#define TI_LASTSTATEFILE                         107
-#define TI_FUNCTION                              108
-#define TI_STORCL                                109
-#define TI_TVM_EFF                               110
-#define TI_TVM_IA                                111
-#define TI_NOT_AVAILABLE                         112
+#define TI_I                                     102
+#define TI_J                                     103
+#define TI_MIJ                                   104
+#define TI_BYTES                                 105
+#define TI_BITS                                  106
+#define TI_SOLVER_VARIABLE_RESULT                107
+#define TI_DATA_NEG_OVRFL                        108
+#define TI_LASTSTATEFILE                         109
+#define TI_FUNCTION                              110
+#define TI_STORCL                                111
+#define TI_TVM_EFF                               112
+#define TI_TVM_IA                                113
+#define TI_NOT_AVAILABLE                         114
 
 #define SET_TI_TRUE_FALSE(condition)               do { temporaryInformation = TI_FALSE + (condition); } while(0) // TI_TRUE must be TI_FALSE + 1
 
@@ -1604,7 +1610,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define SIGMA_YMAX   (statisticalSumsPointer + SUM_YMAX  ) // could be a real34
 
 #define MAX_NUMBER_OF_GLYPHS_IN_STRING           508 //WP=196: Change to 512 less 3, Also change error message 33, and AIM_BUFFER_LENGTH, and MAXLINES
-#define NUMBER_OF_GLYPH_ROWS                     230 //Used in the font browser application
+#define NUMBER_OF_GLYPH_ROWS                     232 //Used in the font browser application
 
 #define YY_OFF                                     2 // 2 is off and gets transferred to bit 15 (32768 + YY)
 #define YY_TRACKING                                1 // 1 gets transferred to bit 14 (16384 + YY)

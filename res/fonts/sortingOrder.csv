@@ -676,4 +676,13 @@
 `U+2c65`,424,426,`not defined by unicode`,`Sup pi`,`π`,`π`,`U+03a0`
 `U+2c66`,424,426,`not defined by unicode`,`pi r`,`π`,`π`,`U+03a0`
 `U+2c6f`,593,593,`FOR ALL`,`For all`,`Ɐ`,`Ɐ`,`U+2c6f`
+
+`U+0380`,345,351,`not defined by unicode`,`u macron`,`u`,`U`,`U+0055`
+`U+0381`,345,351,`not defined by unicode`,`v macron`,`v`,`V`,`U+0056`
+`U+0382`,345,351,`not defined by unicode`,`w macron`,`w`,`W`,`U+0057`
+`U+0383`,345,351,`not defined by unicode`,`z macron`,`z`,`Z`,`U+005a`
+`U+038B`,345,352,`not defined by unicode`,`x circumflex`,`v`,`V`,`U+0056`
+`U+038D`,345,352,`not defined by unicode`,`x circumflex`,`z`,`Z`,`U+005a`
+`U+03A2`,345,352,`not defined by unicode`,`x circumflex`,`u`,`U`,`U+0055`
+
 ,,,,,,,
