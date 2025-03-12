@@ -1,9 +1,7 @@
-#!/usr/env python3
-
 import sys
 
 def usage():
-    printf("Usage: %s [dmcp5] elf-symbol-filename\n", sys.argv[0])
+    print("Usage: %s [dmcp5] elf-symbol-filename" % sys.argv[0])
     sys.exit(1)
 
 # Check command line
