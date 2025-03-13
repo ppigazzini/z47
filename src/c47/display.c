@@ -628,22 +628,14 @@ overRange:
   // ALL mode //
   //////////////
   if(displayFormat == DF_ALL) {
-    if(noFix || exponent >= displayHasNDigits || (displayFormatDigits != 0 && exponent < -(int32_t)displayFormatDigits) || (displayFormatDigits == 0 && exponent < numDigits - displayHasNDigits)) { // Display in SCI or ENG format
-      digitsToDisplay = min(displayHasNDigits, numDigits - 1);
-      digitToRound    = min(firstDigit + digitsToDisplay, lastDigit);
-      ovrSCI = !getSystemFlag(FLAG_ENGOVR);
-      ovrENG = getSystemFlag(FLAG_ENGOVR);
-    }
-    else { // display all digits without ten exponent factor
-      // Number of digits to truncate
-      digitsToTruncate = max(numDigits - exponent, displayHasNDigits) - displayHasNDigits;
-      numDigits -= digitsToTruncate;
-      lastDigit -= digitsToTruncate;
+    // Number of digits to truncate
+    digitsToTruncate = max(numDigits - displayHasNDigits, 0);
+    numDigits -= digitsToTruncate;
+    lastDigit -= digitsToTruncate;
 
-      // Round the displayed number
-      if(bcd[lastDigit+1] >= 5) {
-        bcd[lastDigit]++;
-      }
+    // Round the final 9s
+    if(bcd[lastDigit+1] == 9) {
+      bcd[lastDigit]++;
 
       // Transfert the carry
       while(bcd[lastDigit] == 10) {
@@ -658,6 +650,19 @@ overRange:
         lastDigit = firstDigit;
         numDigits = 1;
         exponent++;
+      }
+    }
+
+    if(noFix || exponent >= displayHasNDigits || (displayFormatDigits != 0 && exponent < -(int32_t)displayFormatDigits) || (displayFormatDigits == 0 && exponent < numDigits - displayHasNDigits)) { // Display in SCI or ENG format
+      digitsToDisplay = min(displayHasNDigits, numDigits - 1);
+      digitToRound    = min(firstDigit + digitsToDisplay, lastDigit);
+      ovrSCI = !getSystemFlag(FLAG_ENGOVR);
+      ovrENG = getSystemFlag(FLAG_ENGOVR);
+    }
+    else { // display all digits without ten exponent factor
+      // Round the displayed number
+      if(bcd[lastDigit+1] >= 5) {
+        bcd[lastDigit]++;
       }
 
       // The sign
@@ -1081,6 +1086,7 @@ overRange:
       bcd[digitToRound]++;
     }
 
+    // Ensure rounding before the radix mark for DSP 0 & DSP 1
     bcd[digitToRound + 1] = 0;
     bcd[digitToRound + 2] = 0;
 
