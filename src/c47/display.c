@@ -653,7 +653,10 @@ overRange:
       }
     }
 
-    if(noFix || exponent >= displayHasNDigits || (displayFormatDigits != 0 && exponent < -(int32_t)displayFormatDigits) || (displayFormatDigits == 0 && exponent < numDigits - displayHasNDigits)) { // Display in SCI or ENG format
+    if(noFix || exponent >= displayHasNDigits ||
+        exponent <= -displayHasNDigits ||
+        (displayFormatDigits != 0 && exponent < -(int32_t)displayFormatDigits) || 
+        (displayFormatDigits == 0 && exponent < numDigits - displayHasNDigits)) { // Display in SCI or ENG format
       digitsToDisplay = min(displayHasNDigits, numDigits - 1);
       digitToRound    = min(firstDigit + digitsToDisplay, lastDigit);
       ovrSCI = !getSystemFlag(FLAG_ENGOVR);
