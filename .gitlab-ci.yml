@@ -36,11 +36,10 @@ macOS:
   - apt-get install -qq -y cmake libgmp-dev libgtk-3-dev
   - apt-get install -qq -y xvfb libminizip-dev
   - git clone https://github.com/brechtsanders/xlsxio.git # Compilation and installation of xlsxio
-  - cd xlsxio
-  - cd build
+  - cd xlsxio/build
   - cmake ..
-  - make
-  - make install
+  - make && make install
+  - cd ../..
 
 linux:
   stage: build
