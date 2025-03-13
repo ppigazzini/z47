@@ -665,6 +665,21 @@ overRange:
         bcd[lastDigit]++;
       }
 
+      // Transfert the carry
+      while(bcd[lastDigit] == 10) {
+        bcd[lastDigit--] = 0;
+        numDigits--;
+        bcd[lastDigit]++;
+      }
+
+      // Case when 9.9999 rounds to 10.0000
+      if(lastDigit < firstDigit) {
+        firstDigit--;
+        lastDigit = firstDigit;
+        numDigits = 1;
+        exponent++;
+      }
+
       // The sign
       if(sign) {
         displayString[charIndex++] = '-';
