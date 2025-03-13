@@ -18,7 +18,7 @@ void         print_Register_line(calcRegister_t regist, char *before, char *afte
 void         displaywords(char *line1);
 int16_t      export_string_to_file(const char line1[TMP_STR_LENGTH]);
 void         stackregister_csv_out(int16_t reg_b, int16_t reg_e, bool_t oneLine);
-void         aimBuffer_csv_out(void);
+void         tmpString_csv_out(uint8_t nn);
 void         copyRegisterToClipboardString2(calcRegister_t regist, char *clipboardString);
 
 #endif // !TEXTFILES_H
