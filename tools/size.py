@@ -40,9 +40,12 @@ for line in f:
         continue
     f = line.split()
     if mode == 1:
+        # Line is formatted as: "Type Offset VirtAddr PhysAddr FileSiz MemSiz Flg Align"
+        # and we want the MemSiz.
         if f[0] != 'Type':
             sizes.append(int(f[5], 0))
     elif mode == 2:
+        # Line is formatted as: "Segment# Sections" and we want the first section.
         sects[int(f[0])] = f[1]
 
 # Compute section totals
