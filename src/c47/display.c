@@ -237,27 +237,16 @@ void real34ToDisplayString(const real34_t *real34, uint32_t tag, char *displaySt
     displayValueX[0] = 0;
   }
 
-  do {
-    if(displayFormat == DF_SF) {        //This portion limits the SIGFIG digits to really n digits, even in the case of SIG3 12345000000000 to be displayed as 1.2340 x 10^5
-        uint8_t digits = checkHP ? 10 : displayHasNDigits;
-        if(tag == amNone) {
-          real34ToDisplayString2(real34, displayString, digits, limitExponent, false, frontSpace, isReal);
-          if(stringWidth(displayString, font, true, true) > maxWidth) {
-            real34ToDisplayString2(real34, displayString, digits, limitExponent, true, frontSpace, isReal);
-          }
-        }
-        else {
-          angle34ToDisplayString2(real34, tag, displayString, digits, limitExponent, frontSpace);
-        }
+  if(displayFormat == DF_SF && checkHP) {        //This portion limits the SIGFIG digits to really n digits, even in the case of SIG3 12345000000000 to be displayed as 1.2340 x 10^5
+    displayHasNDigits =  10;
+  }
 
+  do {
+    if(tag == amNone) {
+      real34ToDisplayString2(real34, displayString, displayHasNDigits, limitExponent, false, frontSpace, isReal);
     }
-    else { // not DF_SF
-      if(tag == amNone) {
-        real34ToDisplayString2(real34, displayString, displayHasNDigits, limitExponent, false, frontSpace, isReal);
-      }
-      else {
-        angle34ToDisplayString2(real34, tag, displayString, displayHasNDigits, limitExponent, frontSpace);
-      }
+    else {
+      angle34ToDisplayString2(real34, tag, displayString, displayHasNDigits, limitExponent, frontSpace);
     }
 
     if(displayFormat == DF_ALL || displayFormat == DF_SF) {
