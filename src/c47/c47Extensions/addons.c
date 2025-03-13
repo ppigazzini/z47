@@ -744,51 +744,31 @@ void fnJM_2SI(uint16_t unusedButMandatoryParameter) { //Convert Real to Longint;
  * \return void                                                                                           JM UNIT
  ***********************************************                                                          JM UNIT */
 void exponentToUnitDisplayString(int32_t exponent, bool_t flag2To10, char *displayString, char *displayValueString, bool_t nimMode) {               //JM UNIT
+
+TO_QSPI static const char SIprefixes[64]  = "q  r  y  z  a  f  p  n  u  m     k  M  G  T  P  E  Z  Y  R  Q  ";
+TO_QSPI static const char ITSIprefixes[16] = "K  M  G  T  P  ";
+
   displayString[0] = ' ';
   displayString[1] = 0;
   displayString[2] = 0;
   displayString[3] = 0;
 
   if(!flag2To10 && !getSystemFlag(FLAG_2TO10)) {
-    if(getSystemFlag(FLAG_PFX_ALL)) {
-      switch(exponent) {
-        case -30 : displayString[1] = 'q'; break;
-        case -27 : displayString[1] = 'r'; break;
-        case -24 : displayString[1] = 'y'; break;
-        case -21 : displayString[1] = 'z'; break;
-        case -18 : displayString[1] = 'a'; break;
-        case  18 : displayString[1] = 'E'; break;
-        case  21 : displayString[1] = 'Z'; break;
-        case  24 : displayString[1] = 'Y'; break;
-        case  27 : displayString[1] = 'R'; break;
-        case  30 : displayString[1] = 'Q'; break;
-        default:                           break;
+      if((-15 <= exponent && exponent <= 15) ||
+        (-30 <= exponent && exponent <= 30 && getSystemFlag(FLAG_PFX_ALL))) {
+        displayString[1] = SIprefixes[exponent + 30];
+        if(displayString[1] == 'u') {
+          displayString[1] = STD_mu[0]; displayString[2] = STD_mu[1];
+        }
+      }
+  }
+  else if(flag2To10) {                            //exponent of 2^(10/3)
+
+      if((3 <= exponent && exponent <= 15)) {
+        displayString[1] = ITSIprefixes[exponent - 3];
+        displayString[2] = 'i';
       }
     }
-    switch(exponent) {
-      case -15 : displayString[1] = 'f'; break;
-      case -12 : displayString[1] = 'p'; break;
-      case -9  : displayString[1] = 'n'; break;
-      case -6  : displayString[1] = STD_mu[0]; displayString[2] = STD_mu[1]; break;   //JM UNIT
-      case -3  : displayString[1] = 'm'; break;
-      case  3  : displayString[1] = 'k'; break;
-      case  6  : displayString[1] = 'M'; break;
-      case  9  : displayString[1] = 'G'; break;
-      case 12  : displayString[1] = 'T'; break;
-      case 15  : displayString[1] = 'P'; break;
-      default:                           break;
-    }
-  }
-  else if(flag2To10) {
-    switch(exponent) {                             //exponent of 2^(10/3)
-      case  3  : displayString[1] = 'K'; displayString[2] = 'i'; break;
-      case  6  : displayString[1] = 'M'; displayString[2] = 'i'; break;
-      case  9  : displayString[1] = 'G'; displayString[2] = 'i'; break;
-      case 12  : displayString[1] = 'T'; displayString[2] = 'i'; break;
-      case 15  : displayString[1] = 'P'; displayString[2] = 'i'; break;
-      default: break;
-    }
-  }
 
   if(displayString[1] == 0) {
     strcpy(displayString, PRODUCT_SIGN);                                                                //JM UNIT Below, copy of

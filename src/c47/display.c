@@ -321,8 +321,9 @@ static void real34ToDisplayString2(const real34_t *real34, char *displayString, 
       realCopy(&x,&xx);
 
       //get log base 1024 of real34
-      WP34S_Ln(&x, &x, &ctxtReal39);                             //x = ln|real34|
-      realDivide(&x, const_ln2, &x, &ctxtReal39);                //ln(1024)=ln( 2^10 )=10ln(2)
+      WP34S_Ln(&x, &x, &ctxtReal39);                              // x = ln|real34|
+      realDivide(&x, const_ln2, &x, &ctxtReal39);                 // ln(1024)=ln( 2^10 )=10ln(2)
+      realAdd(&x, const_1e_24, &x, &ctxtReal39);                  // add 1E-24 to make sure any bit noise does not influence it
       x.exponent--; // x = x / 10
       //printRealToConsole(&x,"log base 1024 of real34 = lnx / ln1024 ","\n");             // x = ln|real34| / ln(1024) = log base 1024 of real34 = 1.00140
 
@@ -547,8 +548,10 @@ overRange:
       exponent   = 0;
     }
   }*/
+  
+  // printf("value34 (INT)=%i exponent=%i limitExponent=%i (exponentLimit=%i) (exponentHideLimit=%i) \n", real34ToUInt32(&value34),  exponent,limitExponent, exponentLimit, exponentHideLimit);
 
-  if(limitExponent && (abs(exponent) > exponentLimit || (exponentHideLimit != 0 && exponent < exponentHideLimit))) {
+  if(limitExponent) {
     if(exponent > exponentLimit) {
       if(real34IsPositive(&value34)) {
         if(frontSpace) {
