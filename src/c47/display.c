@@ -1251,23 +1251,39 @@ void complex34ToDisplayString(const complex34_t *complex34, char *displayString,
   }
 
   complex34ToDisplayString2(complex34, displayString, displayHasNDigits, limitExponent, frontSpace, tagAngle, tagPolar);
+  bool noFix = false;
   while(stringWidth(displayString, font, true, true) > maxWidth) {
 
     //complex34ToDisplayString2(complex34, displayString, displayHasNDigits, limitExponent, frontSpace, tagAngle, tagPolar);
     //printf("#### Xw=%i displayHasNDigits=%u  displayFormatDigits=%u str:%s\n",stringWidth(displayString, font, true, true),displayHasNDigits,displayFormatDigits,displayString);
 
+    if(displayHasNDigits == 2) {
+      break;
+    }
+
     if(displayFormat == DF_ALL) {
-      if(displayHasNDigits == 2) {
-        break;
-      }
       displayHasNDigits--;
     }
     else {
-      if(displayFormatDigits == 0) {
-        break;
+      if (displayFormat == DF_FIX) {
+        if(displayFormatDigits == 0 || noFix) {
+          noFix = true;
+          displayHasNDigits--;
+          displayFormatDigits = min(displayHasNDigits - 1, savedDisplayFormatDigits);
+        }
+        else {
+          displayFormatDigits--;
+        }
       }
-      displayFormatDigits--;
-      if(displayFormatDigits == 3) displayFormat = DF_ALL;
+      else {
+        if(displayFormatDigits == 0) {
+          break;
+        }
+        displayFormatDigits--;
+        if(displayFormatDigits == 3) {
+          displayFormat = DF_ALL;
+        }
+      }
     }
 
     if(updateDisplayValueX) {
