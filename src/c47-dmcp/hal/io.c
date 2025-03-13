@@ -5,6 +5,8 @@
 
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 
+#define FILENAME_BUFFER_LENGTH 50
+
 static bool_t _ioWriteEnabled = false;
 static bool_t _ioReadEnabled  = false;
 

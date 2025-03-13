@@ -1,9 +1,7 @@
-#!/usr/env python3
-
 import sys
 
 def usage():
-    printf("Usage: %s [dmcp5] elf-symbol-filename\n", sys.argv[0])
+    print("Usage: %s [dmcp5] elf-symbol-filename" % sys.argv[0])
     sys.exit(1)
 
 # Check command line
@@ -42,9 +40,12 @@ for line in f:
         continue
     f = line.split()
     if mode == 1:
+        # Line is formatted as: "Type Offset VirtAddr PhysAddr FileSiz MemSiz Flg Align"
+        # and we want the MemSiz.
         if f[0] != 'Type':
             sizes.append(int(f[5], 0))
     elif mode == 2:
+        # Line is formatted as: "Segment# Sections" and we want the first section.
         sects[int(f[0])] = f[1]
 
 # Compute section totals
@@ -56,7 +57,12 @@ used = {
 for i in range(len(sizes)):
     if sects[i] == ".rodata" or sects[i] == ".text":
         used["flash"] += sizes[i]
-    elif sects[i] == ".data" or sects[i] == ".bss":
+    elif sects[i] == ".data":
+        # The initialisation for the data is in flash
+        # The data itself is in RAM
+        used["flash"] += sizes[i]
+        used["ram"] += sizes[i]
+    elif sects[i] == ".bss":
         used["ram"] += sizes[i]
     elif sects[i] == ".qspi":
         used["qspi"] += sizes[i]
