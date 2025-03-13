@@ -34,7 +34,14 @@ macOS:
   - apt-get install -qq -y git zip
   - apt-get install -qq -y pkgconf build-essential ninja-build meson
   - apt-get install -qq -y cmake libgmp-dev libgtk-3-dev
-  - apt-get install -qq -y xvfb xlsxio
+  - apt-get install -qq -y xvfb
+  - git clone https://github.com/brechtsanders/xlsxio.git # Compilation and installation of xlsxio
+  - cd xlsxio
+  - mkdir build
+  - cd build
+  - cmake ..
+  - make
+  - make install
 
 linux:
   stage: build
