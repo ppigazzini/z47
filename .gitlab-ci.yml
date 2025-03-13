@@ -37,6 +37,7 @@ macOS:
   - apt-get install -qq -y xvfb libminizip-dev
   - git clone https://github.com/brechtsanders/xlsxio.git           # Compilation and installation of xlsxio
   - cd xlsxio/build && cmake .. && make && make install && cd ../.. # needed to convert sortingOrder.xlsx to csv
+  - ldconfig
 
 linux:
   stage: build
