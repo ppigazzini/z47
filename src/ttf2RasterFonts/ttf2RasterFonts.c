@@ -323,8 +323,12 @@ void processFiles(const char *fontsPath, const char *outputFile) {
   ////////////////
   // Open files //
   ////////////////
-  char sortingOrderPath[200];
-  sprintf(sortingOrderPath, "%s/%s", fontsPath, "sortingOrder.csv");
+  char sortingOrderPath[300];
+
+  sprintf(sortingOrderPath, "xlsxio_xlsx2csv -b %s/sortingOrder.xlsx", fontsPath);
+  system(sortingOrderPath);
+
+  sprintf(sortingOrderPath, "%s/sortingOrder.xlsx.sortingOrder.csv", fontsPath);
   sortingOrder = fopen(sortingOrderPath, "rb");
   cFile        = fopen(outputFile, "wb");
 
@@ -340,29 +344,22 @@ void processFiles(const char *fontsPath, const char *outputFile) {
   ignoreReturnedValue(fgets(line, 500, sortingOrder)); // Header
   ignoreReturnedValue(fgets(line, 500, sortingOrder));
   while(!feof(sortingOrder)) {
-    pos = strlen(line) - 1;
+    glyphRank[nbGlyphRanks].codePoint = hexToUint(line + 2);
 
-    if(line[pos] == '\n' || line[pos] == '\r') {
-      line[pos--] = 0;
-    }
-
-    if(line[pos] == '\n' || line[pos] == '\r') {
-      line[pos--] = 0;
-    }
-
-    glyphRank[nbGlyphRanks].codePoint = hexToUint(line + 3);
-
-    pos = 9;
+    pos = 7;
     glyphRank[nbGlyphRanks].rank1 = atoi(line + pos);
 
-    while(line[pos++] != ',') {
-    }
+    while(line[pos++] != ',') ;
     glyphRank[nbGlyphRanks].rank2 = atoi(line + pos);
 
     nbGlyphRanks++;
 
     ignoreReturnedValue(fgets(line, 500, sortingOrder));
   }
+
+  fclose(sortingOrder);
+  sprintf(sortingOrderPath, "rm -rf %s/sortingOrder.xlsx.sortingOrder.csv", fontsPath);
+  system(sortingOrderPath);
 
   /////////////////////////////////////
   // Initialize the freetype library //

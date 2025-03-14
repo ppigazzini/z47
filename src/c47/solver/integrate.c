@@ -308,7 +308,7 @@ static void _integratorIteration(void) {
   }
   #if ENABLE_INTEGRATOR_FILE_OUTPUT == 1
     copySourceRegisterToDestRegister(TEMP_REGISTER_1,REGISTER_Y);
-    fnP_All_Regs(6);
+    fnP_All_Regs(PRN_XYr);
   #endif //ENABLE_INTEGRATOR_FILE_OUTPUT == 1
 
 }
