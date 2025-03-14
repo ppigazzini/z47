@@ -125,7 +125,7 @@ typedef enum {
   amMultPi    =  4, // multiples of pi
   amNone      =  5, // RECT in complex, real, vector
   amSecond    =  6, // not an angular but a time unit: for the routine unified with the real type
-  TM_HMS      =  7, // JM not an angular but a time unit: for the C47 usage
+  TM_HMS      =  7, // not an angular but a time unit
   amAngleMask = 15,
   amPolar     = 16, // JM bit 4 of the 5 bits is used for Polar in Complex Case
 
@@ -330,7 +330,7 @@ typedef union {
 typedef struct {
   unsigned matrixRows    : 12;   ///< uint32_t      Number of rows in the matrix
   unsigned matrixColumns : 12;   ///< uint32_t      Number of columns in the matrix
-  unsigned tag           :  6;   ///< angularMode_t tag;
+  unsigned mtag          :  6;   ///< angularMode_t tag;
   unsigned notUsed       :  2;   ///< uint32_t      2 bits free
 } matrixHeader_t;
 
