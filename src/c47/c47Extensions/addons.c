@@ -1174,7 +1174,7 @@ void fnP_Alpha(void) {
       print_linestr(filename_csv, false);
     #endif // VERBOSE_LEVEL >= 1
 
-    aimBuffer_csv_out();          //aimBuffer now already copied to tmpString
+    tmpString_csv_out(5);          //aimBuffer now already copied to tmpString
     xcopy(aimBuffer,tmpString, ERROR_MESSAGE_LENGTH + AIM_BUFFER_LENGTH + NIM_BUFFER_LENGTH);        //   This total area must be less than the tmpString storage area, which it is.
     //print_linestr(aimBuffer,false);
   #endif
@@ -1228,7 +1228,7 @@ void fnP_All_Regs(uint16_t option) {
     #endif // VERBOSE_LEVEL >= 1
 
     switch(option) {
-      case 0:                    //PRN_ALLr   :   All registers
+      case PRN_ALL:
         stackregister_csv_out(REGISTER_X, REGISTER_W, !ONELINE);
         stackregister_csv_out(0, 99, !ONELINE);
         if(currentNumberOfLocalRegisters > 0) stackregister_csv_out(FIRST_LOCAL_REGISTER, FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters - 1, !ONELINE);
@@ -1238,7 +1238,7 @@ void fnP_All_Regs(uint16_t option) {
         //stackregister_csv_out(FIRST_LOCAL_REGISTER, FIRST_LOCAL_REGISTER+100, !ONELINE);
         break;
 
-      case 1:                    //PRN_STK   :   Stack only
+      case PRN_STK:
         if(getSystemFlag(FLAG_SSIZE8)) {
           stackregister_csv_out(REGISTER_X, REGISTER_D, !ONELINE);
         }
@@ -1247,75 +1247,29 @@ void fnP_All_Regs(uint16_t option) {
         }
         break;
 
-      case 2:                    //Global Registers
+      case PRN_GLOBALr:
         stackregister_csv_out(0, 99, !ONELINE);
         break;
 
-      case 3:                    //LOCAL Registers
+      case PRN_LOCALr:
         if(currentNumberOfLocalRegisters > 0) stackregister_csv_out(FIRST_LOCAL_REGISTER, FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters - 1, !ONELINE);
         break;
 
-      case 4:                    //NAMED Registers
+      case PRN_NAMEDr:
         if(numberOfNamedVariables > 0) stackregister_csv_out(FIRST_NAMED_VARIABLE, FIRST_NAMED_VARIABLE + numberOfNamedVariables - 1, !ONELINE);
         break;
 
-      case 5:                    //PRN_X   :   X only
+      case PRN_Xr:
         stackregister_csv_out(REGISTER_X, REGISTER_X, !ONELINE);
         break;
 
-      case 6:                    //PRN_XY   :   XY
+      case PRN_XYr:
         stackregister_csv_out(REGISTER_X, REGISTER_Y, ONELINE);
         break;
-
-
 
       default: ;
     }
   #endif // !TESTSUITE_BUILD
-}
-
-
-void printf_cpx(calcRegister_t regist) {
-  #if defined(PC_BUILD)
-    if(getRegisterDataType(regist) == dtReal34 || getRegisterDataType(regist) == dtComplex34) {
-      real34ToString(REGISTER_REAL34_DATA(regist), tmpString);
-      if(strchr(tmpString, '.') == NULL && strchr(tmpString, 'E') == NULL) {
-        strcat(tmpString, ".");
-      }
-      printf("Reg(%d) REAL = %s ", regist, tmpString);
-    }
-
-    if(getRegisterDataType(regist) == dtComplex34) {
-      real34ToString(REGISTER_IMAG34_DATA(regist), tmpString);
-      if(strchr(tmpString, '.') == NULL && strchr(tmpString, 'E') == NULL) {
-        strcat(tmpString, ".");
-      }
-      printf("IMAG = %s ", tmpString);
-    }
-
-    if(getRegisterDataType(regist) != dtReal34 && getRegisterDataType(regist) != dtComplex34) {
-      printf("Neither real nor complex");
-    }
-  #endif // PC_BUILD
-}
-
-
-void print_stck(void) {
-  #if defined(PC_BUILD)
-    printf("Lasterrorcode=%d\n", lastErrorCode);
-    printf("REGISTER T: ");
-    printf_cpx(REGISTER_T);
-    printf("\n");
-    printf("REGISTER Z: ");
-    printf_cpx(REGISTER_Z);
-    printf("\n");
-    printf("REGISTER Y: ");
-    printf_cpx(REGISTER_Y);
-    printf("\n");
-    printf("REGISTER X: ");
-    printf_cpx(REGISTER_X);
-    printf("\n");
-  #endif // PC_BUILD
 }
 
 
