@@ -5,7 +5,7 @@
 
 // This is used for the backup.cfg simulator backup file
 // The variable backupVersion is used in the connection
-#define BACKUP_VERSION                     1008     // Add lastCenturyHighUsed
+#define BACKUP_VERSION                     1009     // Change matrix headers, add tag
 /*
 1004     // Replace Norm_Key_00_VAR by the structure Norm_Key_00;
 1005     // 2024-09-06 Remove superfluous reporting when old cfg file items are not found in new files
@@ -16,7 +16,7 @@
 
 
 // This is used for the state files
-#define configFileVersion                  10000016 // Add lastCenturyHighUsed
+#define configFileVersion                  10000017 // Change matrix headers, add tag
 #define VersionAllowed                     10000005 // This code will not autoload versions earlier than this
 /*
 10000001 // arbitrary starting point version 10 000 001
@@ -1196,7 +1196,31 @@ static char *toInt16_next_word(const char *str, int16_t *val) {
       }
     }
 
+#define REGISTER_MATRIX_HEADER_OLD(a) ((matrixHeader_old_t *)(getRegisterDataPointer(a)))
+typedef struct {
+  uint16_t matrixRows;                ///< Number of rows in the matrix
+  uint16_t matrixColumns;             ///< Number of columns in the matrix
+} matrixHeader_old_t;
 
+
+    if(loadedVersion < 10000017) {
+      int qq = 0;
+      while (qq <= LAST_GLOBAL_REGISTER) {
+        if(getRegisterDataType(qq) == dtReal34Matrix) {
+          uint32_t row = (REGISTER_MATRIX_HEADER_OLD(qq)->matrixRows) & 0x0FFF;
+          uint32_t col = ((REGISTER_MATRIX_HEADER_OLD(qq)->matrixColumns) << 4) & 0x0FFF;
+printf("----------------1 r=%i c=%i \n",row, col);
+          REGISTER_MATRIX_HEADER(qq)->matrixRows = row;
+          REGISTER_MATRIX_HEADER(qq)->matrixColumns = col;
+          setRegisterTag(qq, amNone);
+          //REGISTER_MATRIX_HEADER(qq)->mtag = amNone;
+           row = (REGISTER_MATRIX_HEADER(qq)->matrixRows);
+           col = ((REGISTER_MATRIX_HEADER(qq)->matrixColumns));
+printf("----------------2 r=%i c=%i \n",row, col);
+        }
+        qq++;
+      }
+    }
 
     // Freeing the space occupied by all the configuration parameters
     paramCurrent = paramHead;
@@ -1393,7 +1417,7 @@ char aimBuffer1[400];             //The concurrent use of the global aimBuffer
       }
 
       case dtReal34Matrix: {
-        sprintf(tmpRegisterString, "%" PRIu16 " %" PRIu16, REGISTER_MATRIX_HEADER(regist)->matrixRows, REGISTER_MATRIX_HEADER(regist)->matrixColumns);
+        sprintf(tmpRegisterString, "%" PRIu16 " %" PRIu16 " %" PRIu16 " %" PRIu16, (REGISTER_MATRIX_HEADER(regist)->matrixRows) & 0x0FFF, (REGISTER_MATRIX_HEADER(regist)->matrixColumns) & 0x0FFF, (REGISTER_MATRIX_HEADER(regist)->mtag), getRegisterTag(regist));
         strcpy(aimBuffer1, "Rema");
         break;
       }
@@ -1952,15 +1976,27 @@ int64_t stringToInt64(const char *str) {
   #if !defined(TESTSUITE_BUILD)
     else if(strcmp(type, "Rema") == 0) {
       char *numOfCols;
-      uint16_t rows, cols;
+      uint16_t rows, cols, tag = amNone;
 
       numOfCols = skip_word(value);
       *(numOfCols++) = 0;
       rows = toUint16(value);
       cols = toUint16(numOfCols);
+      if(loadedVersion >= 10000017) {
+        while(*numOfCols != ' ') {
+          numOfCols++;
+        }
+        *(numOfCols++) = 0;
+        tag = toUint16(numOfCols);
+      }
+printf("AAAA %i %i %i\n",rows, cols, tag);
       reallocateRegister(regist, dtReal34Matrix, REAL34_SIZE_IN_BLOCKS * rows * cols, amNone);
       REGISTER_MATRIX_HEADER(regist)->matrixRows = rows;
       REGISTER_MATRIX_HEADER(regist)->matrixColumns = cols;
+      if(loadedVersion >= 10000017) {
+        setRegisterTag(regist, tag);
+        //REGISTER_MATRIX_HEADER(regist)->tag = tag;
+      }
     }
 
     else if(strcmp(type, "Cxma") == 0) {
