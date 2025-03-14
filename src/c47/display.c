@@ -1238,13 +1238,19 @@ void complex34ToDisplayString(const complex34_t *complex34, char *displayString,
   uint8_t savedDisplayFormatDigits = displayFormatDigits;
   uint8_t saveddisplayFormat       = displayFormat;
 
+  int16_t digitWidth = stringWidth("0", font, false, false);
+
   if(updateDisplayValueX) {
     displayValueX[0] = 0;
   }
 
   complex34ToDisplayString2(complex34, displayString, displayHasNDigits, limitExponent, frontSpace, tagAngle, tagPolar);
   bool noFix = false;
-  while(stringWidth(displayString, font, true, true) > maxWidth) {
+  // bool overflown = false;
+  int16_t overflow = stringWidth(displayString, font, true, true) - maxWidth;
+  while(overflow > 0) {
+    // overflown = true;
+    int16_t overflowDigits = max(overflow / digitWidth / 4, 1);
 
     //complex34ToDisplayString2(complex34, displayString, displayHasNDigits, limitExponent, frontSpace, tagAngle, tagPolar);
     //printf("#### Xw=%i displayHasNDigits=%u  displayFormatDigits=%u str:%s\n",stringWidth(displayString, font, true, true),displayHasNDigits,displayFormatDigits,displayString);
@@ -1254,24 +1260,21 @@ void complex34ToDisplayString(const complex34_t *complex34, char *displayString,
     }
 
     if(displayFormat == DF_ALL) {
-      displayHasNDigits--;
+      displayHasNDigits = max(displayHasNDigits - overflowDigits, 2);
     }
     else {
       if (displayFormat == DF_FIX) {
         if(displayFormatDigits == 0 || noFix) {
           noFix = true;
-          displayHasNDigits--;
+          displayHasNDigits = max(displayHasNDigits - overflowDigits, 2);
           displayFormatDigits = min(displayHasNDigits - 1, savedDisplayFormatDigits);
         }
         else {
-          displayFormatDigits--;
+          displayFormatDigits = max(displayFormatDigits - overflowDigits, 0);
         }
       }
       else {
-        if(displayFormatDigits == 0) {
-          break;
-        }
-        displayFormatDigits--;
+        displayFormatDigits = max(displayFormatDigits - overflowDigits, 3);
         if(displayFormatDigits == 3) {
           displayFormat = DF_ALL;
         }
@@ -1283,7 +1286,12 @@ void complex34ToDisplayString(const complex34_t *complex34, char *displayString,
     }
 
     complex34ToDisplayString2(complex34, displayString, displayHasNDigits, limitExponent, frontSpace, tagAngle, tagPolar);
+    overflow = stringWidth(displayString, font, true, true) - maxWidth;
   }
+  // if (overflown && overflow < -3 * digitWidth) {
+  //   printf("oops: %d\n", overflow);
+  // }
+
   displayFormatDigits = savedDisplayFormatDigits;
   displayFormat       = saveddisplayFormat;
 }
