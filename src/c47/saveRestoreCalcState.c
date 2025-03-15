@@ -150,6 +150,23 @@ static char *toInt16_next_word(const char *str, int16_t *val) {
 }
 #endif
 
+static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
+  if(getRegisterDataType(regist) == dtReal34Matrix || getRegisterDataType(regist) == dtComplex34Matrix) {
+    #if defined PC_BUILD
+      printf("----------------R%2u Old matrix header: r=%i c=%i \n",regist, (REGISTER_MATRIX_HEADER    (regist)->matrixRows), (REGISTER_MATRIX_HEADER    (regist)->matrixColumns));
+    #endif //PC_BUILD
+    uint32_t row = (REGISTER_MATRIX_HEADER(regist)->matrixRows) & 0x0FFF;
+    uint32_t col = ((REGISTER_MATRIX_HEADER(regist)->matrixColumns) >> 4) & 0x0FFF;
+    #if defined PC_BUILD
+      printf("----------------R%2u New matrix header: r=%i c=%i \n",regist, row, col);
+    #endif //PC_BUILD
+    REGISTER_MATRIX_HEADER(regist)->matrixRows = row;
+    REGISTER_MATRIX_HEADER(regist)->matrixColumns = col;
+    setRegisterTag(regist, amNone);
+  }
+}
+
+
 #if defined(PC_BUILD)
   cfgFileParam_t *paramHead=NULL, *paramCurrent;
 
@@ -790,22 +807,6 @@ static char *toInt16_next_word(const char *str, int16_t *val) {
 
     else {
       printf("ERROR: valueType %s unknown in function restoreStateValue!" LINEBREAK, valueType);
-    }
-  }
-
-  void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
-    if(getRegisterDataType(regist) == dtReal34Matrix || getRegisterDataType(regist) == dtComplex34Matrix) {
-      #if defined PC_BUILD
-        printf("----------------R%2u Old matrix header: r=%i c=%i \n",regist, (REGISTER_MATRIX_HEADER    (regist)->matrixRows), (REGISTER_MATRIX_HEADER    (regist)->matrixColumns));
-      #endif //PC_BUILD
-      uint32_t row = (REGISTER_MATRIX_HEADER(regist)->matrixRows) & 0x0FFF;
-      uint32_t col = ((REGISTER_MATRIX_HEADER(regist)->matrixColumns) >> 4) & 0x0FFF;
-      #if defined PC_BUILD
-        printf("----------------R%2u New matrix header: r=%i c=%i \n",regist, row, col);
-      #endif //PC_BUILD
-      REGISTER_MATRIX_HEADER(regist)->matrixRows = row;
-      REGISTER_MATRIX_HEADER(regist)->matrixColumns = col;
-      setRegisterTag(regist, amNone);
     }
   }
 
