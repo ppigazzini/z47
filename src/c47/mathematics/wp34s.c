@@ -252,6 +252,11 @@ void WP34S_Atan(const real_t *x, real_t *angle, realContext_t *realContext) {
   int n;
   int neg = realIsNegative(x);
 
+  if(realIsNaN(x)) {
+    realCopy(const_NaN, angle);
+    return;
+  }
+
   realCopy(x, &a);
 
   // arrange for a >= 0
