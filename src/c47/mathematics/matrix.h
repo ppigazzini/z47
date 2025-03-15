@@ -238,8 +238,9 @@
    * \param[in] matrix
    * \param[in] prefixWidth
    */
+  #define regXp true
   #define toDisplayVectorMatrix true
-  void     showRealMatrix                 (const real34Matrix_t *matrix, int16_t prefixWidth, bool_t toDisplay);
+  void     showRealMatrix                 (const real34Matrix_t *matrix, int16_t prefixWidth, bool_t toDisplay, bool_t regXposition);
 
   /**
    * Calculates width of columns of a real matrix.
@@ -261,7 +262,7 @@
    * \param[in] matrix
    * \param[in] prefixWidth
    */
-  void     showComplexMatrix              (const complex34Matrix_t *matrix, int16_t prefixWidth, angularMode_t angleMode, bool_t polarMode);
+  void     showComplexMatrix              (const complex34Matrix_t *matrix, int16_t prefixWidth, angularMode_t angleMode, bool_t polarMode, bool_t regXposition);
 
   /**
    * Calculates width of columns of a complex matrix.

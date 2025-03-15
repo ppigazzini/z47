@@ -2669,9 +2669,8 @@ bool_t vectorToDisplayString(calcRegister_t regist, char *displayString) {
     matrixHeader_t *matrixHeader = REGISTER_MATRIX_HEADER(regist);
     if(isMatrixVector(matrixHeader->matrixRows, matrixHeader->matrixColumns)) {
       real34Matrix_t matrix;
-      int16_t ww= 0;
       linkToRealMatrixRegister(regist, &matrix);
-      showRealMatrix(&matrix, ww,!toDisplayVectorMatrix);
+      showRealMatrix(&matrix, 0, !toDisplayVectorMatrix, regXp);
       sprintf(displayString, "%s", errorMessage);
       return true;
     }
@@ -2829,7 +2828,7 @@ static void dispM(uint16_t regist, char * prefix) {
   if(getRegisterDataType(regist) == dtReal34Matrix) {
     real34Matrix_t matrix;
     linkToRealMatrixRegister(regist, &matrix);
-    showRealMatrix(&matrix, prefixWidth,toDisplayVectorMatrix);
+    showRealMatrix(&matrix, prefixWidth, toDisplayVectorMatrix, !regXp);
     //printf("#### tmpString=%s prefix=%s prefixWidth=%u lastErrorCode=%u temporaryInformation=%u\n",tmpString,prefix,prefixWidth,lastErrorCode, temporaryInformation);
     if(lastErrorCode != 0) {
       refreshRegisterLine(errorMessageRegisterLine);
@@ -2844,7 +2843,7 @@ static void dispM(uint16_t regist, char * prefix) {
   else if(getRegisterDataType(regist) == dtComplex34Matrix) {
     complex34Matrix_t matrix;
     linkToComplexMatrixRegister(regist, &matrix);
-    showComplexMatrix(&matrix, prefixWidth, getComplexRegisterAngularMode(regist), getComplexRegisterPolarMode(regist) == amPolar);
+    showComplexMatrix(&matrix, prefixWidth, getComplexRegisterAngularMode(regist), getComplexRegisterPolarMode(regist) == amPolar, !regXp);
     //printf("#### tmpString=%s prefix=%s prefixWidth=%u lastErrorCode=%u temporaryInformation=%u\n",tmpString,prefix,prefixWidth,lastErrorCode, temporaryInformation);
     if(lastErrorCode != 0) {
       refreshRegisterLine(errorMessageRegisterLine);

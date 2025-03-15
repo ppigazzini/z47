@@ -5423,17 +5423,44 @@ void callByIndexedMatrix(bool_t (*real_f)(real34Matrix_t *), bool_t (*complex_f)
 
 
 
-
-
-//   Conversion from [x, y, z] to Spherical:
+//   Conversion from [x, y, z] to Spherical [r, θ, φ]:
 //     Radius          : r = √(x² + y² + z²)
 //     Azimuthal angle : θ = tan⁻¹(y/x) (measured from the positive x-axis in the xy-plane)
 //     Polar angle     : φ = cos⁻¹(z/r) (measured from the positive z-axis)
+//     r: Distance from origin
+//     θ: Angle from positive x-axis toward positive y-axis (counterclockwise in xy-plane)
+//     φ: Angle from positive z-axis toward xy-plane
 //
-//   Conversion from [x, y, z] to Cylindrical:
+//   Conversion from [x, y, z] to Cylindrical [r, θ, z]:
 //     Radius          : r = √(x² + y²)
 //     Azimuthal angle : θ = tan⁻¹(y/x) (measured from the positive x-axis in the xy-plane)
 //     Height          : z = z (remains the same)
+//     r: Distance from z-axis
+//     θ: Angle from positive x-axis toward positive y-axis (counterclockwise in xy-plane)
+//     z: Height along z-axis
+//     
+
+//   Special Cases in Coordinate Conversions Rectangular to Cylindrical [r, θ, z]
+//     Origin: [0, 0, 0] → [0, undefined°, 0]
+//     Z-axis points: [0, 0, z] → [0, undefined°, z]
+//     Positive x-axis: [x, 0, z] → [x, 0°, z]
+//     Negative x-axis: [-x, 0, z] → [x, 180°, z]
+//     Positive y-axis: [0, y, z] → [y, 90°, z]
+//     Negative y-axis: [0, -y, z] → [y, 270°, z]
+//   
+//   Special Cases in Coordinate Conversions Rectangular to Spherical [r, θ, φ]
+//     Origin: [0, 0, 0] → [0, undefined°, undefined°]
+//     Positive z-axis: [0, 0, z] → [z, 0°, undefined°]
+//     Negative z-axis: [0, 0, -z] → [z, 180°, undefined°]
+//     Positive x-axis: [x, 0, 0] → [x, 90°, 0°]
+//     Negative x-axis: [-x, 0, 0] → [x, 90°, 180°]
+//     Positive y-axis: [0, y, 0] → [y, 90°, 90°]
+//     Negative y-axis: [0, -y, 0] → [y, 90°, 270°]
+//     XY-plane points: [x, y, 0] → [√(x²+y²), 90°, arctan(y/x)°]
+//   
+//   Note: "undefined°" indicates angles that are mathematically indeterminate but can be set to any value by convention (chosen to be 0°)
+
+
 
 void convert3DtoSPH(const real34Matrix_t *matrix, real_t *r, real_t *th1, real_t *th2, uint8_t am) {
     real_t x, y, z;
@@ -5443,15 +5470,26 @@ void convert3DtoSPH(const real34Matrix_t *matrix, real_t *r, real_t *th1, real_t
     real34ToReal(&matrix->matrixElements[1], &y);
     real34ToReal(&matrix->matrixElements[2], &z);
 
-    realDivide(&y, &x, &x, &ctxtReal39);
-    WP34S_Atan(&x, th1, &ctxtReal39);
-    convertAngleFromTo(th1, amRadian, am, &ctxtReal39);
-    if(realIsZero(th1)) {realZero(th1);}
+    if(realIsZero(&x) && realIsZero(&y) && realIsZero(&z)) { //by convention [0 0 0] ==> Both angles (θ and φ) are undefined since there's no direction from the origin. By convention, both angles can be set to 0, but any values could be used
+      realCopy(const_0,r);
+      realCopy(const_0,th1);
+      realCopy(const_0,th2);
+      goto SPH_ret1;
+    }
 
+    WP34S_Atan2(&y, &x, th1, &ctxtReal39);
     realDivide(&z, r, &z, &ctxtReal39);
     WP34S_Acos(&z, th2, &ctxtReal39);
+
+SPH_ret1:
+    convertAngleFromTo(th1, amRadian, am, &ctxtReal39);
+    if(realIsZero(th1)) {
+      realZero(th1);
+    }
     convertAngleFromTo(th2, amRadian, am, &ctxtReal39);
-    if(realIsZero(th2)) {realZero(th2);}
+    if(realIsZero(th2)) {
+      realZero(th2);
+    }
 }
 
 
@@ -5466,8 +5504,7 @@ void convert3DtoCYL(const real34Matrix_t *matrix, real_t *r, real_t *th1, real_t
     realAdd(&t, r, r, &ctxtReal39);
     realSquareRoot(r, r, &ctxtReal39);
 
-    realDivide(&y, &x, &x, &ctxtReal39);
-    WP34S_Atan(&x, th1, &ctxtReal39);
+    WP34S_Atan2(&y, &x, th1, &ctxtReal39);
 
     convertAngleFromTo(th1, amRadian, am, &ctxtReal39);
     if(realIsZero(th1)) {realZero(th1);}

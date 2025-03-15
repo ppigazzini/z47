@@ -494,10 +494,10 @@ void showMatrixEditor() {
   if(aimBuffer[0] == 0) {
     clearRegisterLine(NIM_REGISTER_LINE, true, true);
     if(getRegisterDataType(matrixIndex) == dtReal34Matrix) {
-      showRealMatrix(&openMatrixMIMPointer.realMatrix, 0, toDisplayVectorMatrix);
+      showRealMatrix(&openMatrixMIMPointer.realMatrix, 0, toDisplayVectorMatrix, !regXp);
     }
     else {
-      showComplexMatrix(&openMatrixMIMPointer.complexMatrix, 0, currentAngularMode, getSystemFlag(FLAG_POLAR));
+      showComplexMatrix(&openMatrixMIMPointer.complexMatrix, 0, currentAngularMode, getSystemFlag(FLAG_POLAR), !regXp);
     }
   }
   else {
@@ -914,9 +914,9 @@ static void displayVectorElement(const real34Matrix_t *matrix, int j, int ii, in
     convert3DtoSPH(matrix, &aa,&bb,&cc, *toBeAngle);
     switch(j) {
       case 0: realToReal34(&aa,element); break;
-      case 1: realToReal34(&bb,element); break;
-      case 2: realToReal34(&cc,element); break;
-      default:;    
+      case 1: realToReal34(&cc,element); break;
+      case 2: realToReal34(&bb,element); break;
+      default:;
     }
     //printRealToConsole(&aa,"SPH aa=","\n");
     //printRealToConsole(&bb,"SPH bb=","\n");
@@ -927,7 +927,7 @@ static void displayVectorElement(const real34Matrix_t *matrix, int j, int ii, in
       case 0: realToReal34(&aa,element); break;
       case 1: realToReal34(&bb,element); break;
       case 2: realToReal34(&cc,element); break;
-      default:;    
+      default:;
     }
     //printRealToConsole(&aa,"CYL aa=","\n");
     //printRealToConsole(&bb,"CYL bb=","\n");
@@ -937,7 +937,7 @@ static void displayVectorElement(const real34Matrix_t *matrix, int j, int ii, in
     switch(j) {
       case 0: realToReal34(&aa,element); break;
       case 1: realToReal34(&bb,element); break;
-      default:;    
+      default:;
     } 
     //printRealToConsole(&aa,"POL aa=","\n");
     //printRealToConsole(&bb,"POL bb=","\n");
@@ -954,7 +954,7 @@ static void displayVectorElement(const real34Matrix_t *matrix, int j, int ii, in
 #define NUMERIC_FONT_HEIGHT_ (NUMERIC_FONT_HEIGHT - 4)        // reduce font spacing to easily bind the matrix lines without any complicated pixel manipulation
 #define STANDARD_FONT_HEIGHT_ (STANDARD_FONT_HEIGHT - 2)      // reduce font spacing to easily bind the matrix lines without any complicated pixel manipulation
 
-void showRealMatrix(const real34Matrix_t *matrix, int16_t prefixWidth, bool_t toDisplay) {
+void showRealMatrix(const real34Matrix_t *matrix, int16_t prefixWidth, bool_t toDisplay, bool_t regXposition) {
   int rows = matrix->header.matrixRows;
   int cols = matrix->header.matrixColumns;
   int16_t Y_POS = Y_POSITION_OF_REGISTER_X_LINE;
@@ -1010,10 +1010,10 @@ smallFont:
   const bool_t leftEllipsis = (sCol > 0);
   int16_t digits;
 
-  if(prefixWidth > 0) {
+  if(!regXposition && prefixWidth > 0) {
     Y_POS = Y_POSITION_OF_REGISTER_T_LINE - REGISTER_LINE_HEIGHT + 1 + maxRows * fontHeight;
   }
-  if(prefixWidth > 0 && font == &standardFont) {
+  if(!regXposition && prefixWidth > 0 && font == &standardFont) {
     Y_POS += (maxRows == 1 ? STANDARD_FONT_HEIGHT_ : REGISTER_LINE_HEIGHT - STANDARD_FONT_HEIGHT_);
   }
 
@@ -1085,7 +1085,7 @@ smallFont:
                     "]");
 //printf("BBBB: CYL:%i SPH:%i string:%s\n",is3dVectorPolarCYL(matrix->header.tag), is3dVectorPolarSPH(matrix->header.tag), endChar);
 
-  if(prefixWidth > 0) {
+  if(!regXposition && prefixWidth > 0) {
     X_POS = prefixWidth;
   }
   else if(!forEditor) {
@@ -1103,7 +1103,7 @@ if(toDisplay) {
         clearRegisterLine(REGISTER_T, true, true);
       }
   }
-  else if(prefixWidth > 0) {
+  else if(!regXposition && prefixWidth > 0) {
     clearRegisterLine(REGISTER_T, true, true);
       if(rows >= 2) {
         clearRegisterLine(REGISTER_Z, true, true);
@@ -1340,7 +1340,7 @@ int16_t getRealMatrixColumnWidths(const real34Matrix_t *matrix, int16_t prefixWi
 }
 
 
-void showComplexMatrix(const complex34Matrix_t *matrix, int16_t prefixWidth, angularMode_t angleMode, bool_t polarMode) {
+void showComplexMatrix(const complex34Matrix_t *matrix, int16_t prefixWidth, angularMode_t angleMode, bool_t polarMode, bool_t regXposition) {
   int rows = matrix->header.matrixRows;
   int cols = matrix->header.matrixColumns;
   int16_t Y_POS = Y_POSITION_OF_REGISTER_X_LINE;
@@ -1395,10 +1395,10 @@ smallFont:
   bool_t leftEllipsis = (sCol > 0);
   int16_t digits;
 
-    if(prefixWidth > 0) {
+    if(!regXposition && prefixWidth > 0) {
       Y_POS = Y_POSITION_OF_REGISTER_T_LINE - REGISTER_LINE_HEIGHT + 1 + maxRows * fontHeight;
     }
-    if(prefixWidth > 0 && font == &standardFont) {
+    if(!regXposition && prefixWidth > 0 && font == &standardFont) {
       Y_POS += (maxRows == 1 ? STANDARD_FONT_HEIGHT_ : REGISTER_LINE_HEIGHT - STANDARD_FONT_HEIGHT_);
     }
 
@@ -1440,7 +1440,7 @@ smallFont:
     }
   baseWidth -= stringWidth(STD_SPACE_FIGURE, font, true, true);
 
-    if(prefixWidth > 0) {
+    if(!regXposition && prefixWidth > 0) {
       X_POS = prefixWidth;
     }
     else if(!forEditor) {
@@ -1457,7 +1457,7 @@ smallFont:
         clearRegisterLine(REGISTER_T, true, true);
       }
   }
-  else if(prefixWidth > 0) {
+  else if(!regXposition && prefixWidth > 0) {
     clearRegisterLine(REGISTER_T, true, true);
       if(rows >= 2) {
         clearRegisterLine(REGISTER_Z, true, true);
