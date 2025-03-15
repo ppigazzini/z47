@@ -263,7 +263,7 @@
   #define getComplexRegisterAngularMode(reg)     (getRegisterTag(reg) & amAngleMask)
   #define setComplexRegisterAngularMode(reg, am) setRegisterTag(reg, (am & amAngleMask) | (getRegisterTag(reg) & amPolar))
   #define getComplexRegisterPolarMode(reg)       (getRegisterTag(reg) & amPolar)
-  #define setComplexRegisterPolarMode(reg, pm)   setRegisterTag(reg, (getRegisterTag(reg) & amAngleMask) | (pm & amPolar))
+  #define setComplexRegisterPolarMode(reg, am)   setRegisterTag(reg, (getRegisterTag(reg) & amAngleMask) | (am & amPolar))
 
 // Original bit control for amPolarCYL & amPolarSPH. Not testes. Check carefully when used.
 //  #define getVectorRegisterAngularMode(reg)     (getRegisterTag(reg) & amAngleMask)

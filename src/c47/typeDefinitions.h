@@ -314,11 +314,11 @@ typedef struct {
 typedef union {
   uint32_t descriptor;
   struct {
-    uint32_t pointerToRegisterData : 16; ///< Memory block number
-    uint32_t dataType              :  4; ///< dtLongInteger, dtReal34, ...
-    uint32_t tag                   :  5; ///< Short integer base, real34 angular mode, or long integer sign; complex34 angle mode + Polar
-    uint32_t readOnly              :  1; ///< The register or variable is readOnly if this field is 1 (used for system named variables)
-    uint32_t notUsed               :  6; ///< 6 bits free
+    unsigned pointerToRegisterData : 16; ///< uint32_t      Memory block number
+    unsigned dataType              :  4; ///< uint32_t      dtLongInteger, dtReal34, ...
+    unsigned tag                   :  5; ///< angularMode_t Short integer base, real34 angular mode, or long integer sign; complex34 angle mode + Polar
+    unsigned readOnly              :  1; ///< uint32_t      The register or variable is readOnly if this field is 1 (used for system named variables)
+    unsigned notUsed               :  6; ///< uint32_t      6 bits free
   };
 } registerHeader_t;
 
@@ -328,10 +328,10 @@ typedef union {
  * Header for matrix datatype.
  */
 typedef struct {
-  uint16_t matrixRows;                ///< Number of rows in the matrix
-  uint16_t matrixColumns;             ///< Number of columns in the matrix
-//  angularMode_t tag;
-uint32_t tag;
+  unsigned matrixRows    : 12;   ///< uint32_t      Number of rows in the matrix
+  unsigned matrixColumns : 12;   ///< uint32_t      Number of columns in the matrix
+  unsigned mtag          :  6;   ///< angularMode_t tag;
+  unsigned notUsed       :  2;   ///< uint32_t      2 bits free
 } matrixHeader_t;
 
 

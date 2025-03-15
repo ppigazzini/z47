@@ -5,7 +5,7 @@
 
 // This is used for the backup.cfg simulator backup file
 // The variable backupVersion is used in the connection
-#define BACKUP_VERSION                     1008     // Add lastCenturyHighUsed
+#define BACKUP_VERSION                     1009     // Change matrix headers, add tag
 /*
 1004     // Replace Norm_Key_00_VAR by the structure Norm_Key_00;
 1005     // 2024-09-06 Remove superfluous reporting when old cfg file items are not found in new files
@@ -16,7 +16,7 @@
 
 
 // This is used for the state files
-#define configFileVersion                  10000016 // Add lastCenturyHighUsed
+#define configFileVersion                  10000017 // Change matrix headers, add tag
 #define VersionAllowed                     10000005 // This code will not autoload versions earlier than this
 /*
 10000001 // arbitrary starting point version 10 000 001
@@ -53,14 +53,118 @@ uint16_t flushBufferCnt = 0;
 
 
 uint8_t convert001090400T001090500(uint8_t parameter, uint8_t offset) { //Example: read from file: RB_F14 (which was 0) and and report RBX_F14 (which is 221) to the program.
-uint8_t output = parameter;
+  uint8_t output = parameter;
   if(parameter < 20) {
     output = parameter + offset;
   }
   return output;
 }
 
+#if !defined(TESTSUITE_BUILD)
+// Forced base-10 conversion functions
+static int16_t toInt16(const char *str) {
+  return (int16_t)strtol(str, NULL, 10);
+}
 
+static uint8_t toUint8(const char *str) {
+  return (uint8_t)strtoul(str, NULL, 10);
+}
+
+static uint16_t toUint16(const char *str) {
+  return (uint16_t)strtoul(str, NULL, 10);
+}
+
+static uint32_t toUint32(const char *str) {
+  return strtoul(str, NULL, 10);
+}
+
+// Floating point conversion functions
+float stringToFloat(const char *str) {
+  return strtof(str, NULL);
+}
+
+//Utility to add angle and polar markers
+static void textTag(char *str, const uint8_t angle, const uint8_t polmode) {
+  if(angle != amNone) {
+    switch(getTagAngularMode(angle)) {
+      case amDegree: {
+        strcat(str, ":DEG");
+        break;
+      }
+      case amDMS: {
+        strcat(str, ":DMS");
+        break;
+      }
+      case amRadian: {
+        strcat(str, ":RAD");
+        break;
+      }
+      case amMultPi: {
+        strcat(str, ":MULTPI");
+        break;
+      }
+      case amGrad: {
+        strcat(str, ":GRAD");
+        break;
+      }
+      case amNone: {
+        break;
+      }
+      default: {
+        strcpy(str, ":???");
+        break;
+      }
+    }
+  }
+  if((polmode & amPolar) == amPolar) {
+    strcat(str, "p");
+  }
+}
+
+// Utility routines to skip stuff
+static char *skip_word(const char *str) {
+  while(*str != ' ')
+    str++;
+  return (char *)str;
+}
+
+static char *skip_space(const char *str) {
+  while(*str == ' ')
+    str++;
+  return (char *)str;
+}
+
+static char *next_word(const char *str) {
+  return skip_word(skip_space(str));
+}
+
+static char *skip_to_space_newline(const char *str) {
+  while(*str != ' ' && *str != '\n' && *str != 0)
+    str++;
+  return (char *)str;
+}
+
+static char *toInt16_next_word(const char *str, int16_t *val) {
+    *val = toInt16(str);
+    return next_word(str);
+}
+#endif
+
+static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
+  if(getRegisterDataType(regist) == dtReal34Matrix || getRegisterDataType(regist) == dtComplex34Matrix) {
+    #if defined PC_BUILD
+      printf("----------------R%2u Old matrix header: r=%i c=%i \n",regist, (REGISTER_MATRIX_HEADER    (regist)->matrixRows), (REGISTER_MATRIX_HEADER    (regist)->matrixColumns));
+    #endif //PC_BUILD
+    uint32_t row = (REGISTER_MATRIX_HEADER(regist)->matrixRows) & 0x0FFF;
+    uint32_t col = ((REGISTER_MATRIX_HEADER(regist)->matrixColumns) >> 4) & 0x0FFF;
+    #if defined PC_BUILD
+      printf("----------------R%2u New matrix header: r=%i c=%i \n",regist, row, col);
+    #endif //PC_BUILD
+    REGISTER_MATRIX_HEADER(regist)->matrixRows = row;
+    REGISTER_MATRIX_HEADER(regist)->matrixColumns = col;
+    setRegisterTag(regist, amNone);
+  }
+}
 
 
 #if defined(PC_BUILD)
@@ -1149,6 +1253,14 @@ uint8_t output = parameter;
 
 
 
+    if(backupVersion < 1009) {                           //register header is already loaded with 32 bits, 0xrrrrcccc
+      int qq = 0;
+      while (qq <= LAST_GLOBAL_REGISTER) {
+        convertOldMatrixHeaderToNewMatrixHeader(qq);
+        qq++;
+      }
+    }
+
     // Freeing the space occupied by all the configuration parameters
     paramCurrent = paramHead;
     while(paramHead) {
@@ -1284,42 +1396,8 @@ char aimBuffer1[400];             //The concurrent use of the global aimBuffer
 
       case dtReal34: {
         real34ToString(REGISTER_REAL34_DATA(regist), tmpRegisterString);
-        switch(getRegisterAngularMode(regist)) {
-          case amDegree: {
-            strcpy(aimBuffer1, "Real:DEG");
-            break;
-          }
-
-          case amDMS: {
-            strcpy(aimBuffer1, "Real:DMS");
-            break;
-          }
-
-          case amRadian: {
-            strcpy(aimBuffer1, "Real:RAD");
-            break;
-          }
-
-          case amMultPi: {
-            strcpy(aimBuffer1, "Real:MULTPI");
-            break;
-          }
-
-          case amGrad: {
-            strcpy(aimBuffer1, "Real:GRAD");
-            break;
-          }
-
-          case amNone: {
-            strcpy(aimBuffer1, "Real");
-            break;
-          }
-
-          default: {
-            strcpy(aimBuffer1, "Real:???");
-            break;
-          }
-        }
+        strcpy(aimBuffer1, "Real");
+        textTag(aimBuffer1, getRegisterAngularMode(regist), 0);
         break;
       }
 
@@ -1328,6 +1406,7 @@ char aimBuffer1[400];             //The concurrent use of the global aimBuffer
         strcat(tmpRegisterString, " ");
         real34ToString(REGISTER_IMAG34_DATA(regist), tmpRegisterString + strlen(tmpRegisterString));
         strcpy(aimBuffer1, "Cplx");
+        textTag(aimBuffer1, getRegisterAngularMode(regist), getComplexRegisterPolarMode(regist));
         break;
       }
 
@@ -1346,12 +1425,14 @@ char aimBuffer1[400];             //The concurrent use of the global aimBuffer
       case dtReal34Matrix: {
         sprintf(tmpRegisterString, "%" PRIu16 " %" PRIu16, REGISTER_MATRIX_HEADER(regist)->matrixRows, REGISTER_MATRIX_HEADER(regist)->matrixColumns);
         strcpy(aimBuffer1, "Rema");
+        textTag(aimBuffer1, isRegisterMatrixVector(regist) ? getVectorRegisterAngularMode(regist) : amNone, isRegisterMatrixVector(regist) ? getVectorRegisterPolarMode(regist) : 0);
         break;
       }
 
       case dtComplex34Matrix: {
         sprintf(tmpRegisterString, "%" PRIu16 " %" PRIu16, REGISTER_MATRIX_HEADER(regist)->matrixRows, REGISTER_MATRIX_HEADER(regist)->matrixColumns);
         strcpy(aimBuffer1, "Cxma");
+        textTag(aimBuffer1, (getRegisterTag(regist) & amPolar) == 0 ? amNone : getRegisterAngularMode(regist), getRegisterTag(regist) & amPolar);
         break;
       }
 
@@ -1820,32 +1901,10 @@ int64_t stringToInt64(const char *str) {
 
 
 #if !defined(TESTSUITE_BUILD)
-
-// Forced base-10 conversion functions
-static int16_t toInt16(const char *str) {
-  return (int16_t)strtol(str, NULL, 10);
-}
-
-static uint8_t toUint8(const char *str) {
-  return (uint8_t)strtoul(str, NULL, 10);
-}
-
-static uint16_t toUint16(const char *str) {
-  return (uint16_t)strtoul(str, NULL, 10);
-}
-
-static uint32_t toUint32(const char *str) {
-  return strtoul(str, NULL, 10);
-}
-
-// Floating point conversion functions
-float stringToFloat(const char *str) {
-  return strtof(str, NULL);
-}
-
-
   static void restoreRegister(calcRegister_t regist, char *type, char *value) {
     uint32_t tag = amNone;
+
+    //printf("restoreRegister:%i %s %s\n",regist, type, value);
 
     if(type[4] == ':') {
       if(type[5] == 'R') {
@@ -1867,11 +1926,15 @@ float stringToFloat(const char *str) {
         tag = amNone;
       }
 
-      reallocateRegister(regist, dtReal34, 0, tag);
-      stringToReal34(value, REGISTER_REAL34_DATA(regist));
+      if(type[stringByteLength(type)-1] == 'p') {
+        tag |= amPolar;
+      }
+      type[4] = 0;
+      //printf("               :%i %s %s\n",regist, type, value);
     }
 
-    else if(strcmp(type, "Real") == 0) {
+
+    if(strcmp(type, "Real") == 0) {
       reallocateRegister(regist, dtReal34, 0, tag);
       stringToReal34(value, REGISTER_REAL34_DATA(regist));
     }
@@ -1908,12 +1971,7 @@ float stringToFloat(const char *str) {
       uint16_t sign = (value[0] == '-' ? 1 : 0);
       uint64_t val  = stringToUint64(value + 1);
 
-      while(*value != ' ') {
-        value++;
-      }
-      while(*value == ' ') {
-        value++;
-      }
+      value = next_word(value);
       uint32_t base = toUint32(value);
 
       convertUInt64ToShortIntegerRegister(sign, val, base, regist);
@@ -1922,11 +1980,8 @@ float stringToFloat(const char *str) {
     else if(strcmp(type, "Cplx") == 0) {
       char *imaginaryPart;
 
-      reallocateRegister(regist, dtComplex34, 0, amNone);
-      imaginaryPart = value;
-      while(*imaginaryPart != ' ') {
-        imaginaryPart++;
-      }
+      reallocateRegister(regist, dtComplex34, 0, tag);
+      imaginaryPart = skip_word(value);
       *(imaginaryPart++) = 0;
       stringToReal34(value, REGISTER_REAL34_DATA(regist));
       stringToReal34(imaginaryPart, REGISTER_IMAG34_DATA(regist));
@@ -1937,30 +1992,25 @@ float stringToFloat(const char *str) {
       char *numOfCols;
       uint16_t rows, cols;
 
-      numOfCols = value;
-      while(*numOfCols != ' ') {
-        numOfCols++;
-      }
+      numOfCols = skip_word(value);
       *(numOfCols++) = 0;
       rows = toUint16(value);
       cols = toUint16(numOfCols);
-      reallocateRegister(regist, dtReal34Matrix, REAL34_SIZE_IN_BLOCKS * rows * cols, amNone);
+      reallocateRegister(regist, dtReal34Matrix, REAL34_SIZE_IN_BLOCKS * rows * cols, tag);
       REGISTER_MATRIX_HEADER(regist)->matrixRows = rows;
       REGISTER_MATRIX_HEADER(regist)->matrixColumns = cols;
+      //printf("     %i %i %i\n",rows, cols, tag);
     }
 
     else if(strcmp(type, "Cxma") == 0) {
       char *numOfCols;
       uint16_t rows, cols;
 
-      numOfCols = value;
-      while(*numOfCols != ' ') {
-        numOfCols++;
-      }
+      numOfCols = skip_word(value);
       *(numOfCols++) = 0;
       rows = toUint16(value);
       cols = toUint16(numOfCols);
-      reallocateRegister(regist, dtComplex34Matrix, COMPLEX34_SIZE_IN_BLOCKS * rows * cols, amNone);
+      reallocateRegister(regist, dtComplex34Matrix, COMPLEX34_SIZE_IN_BLOCKS * rows * cols, tag);
       REGISTER_MATRIX_HEADER(regist)->matrixRows = rows;
       REGISTER_MATRIX_HEADER(regist)->matrixColumns = cols;
     }
@@ -1998,6 +2048,9 @@ float stringToFloat(const char *str) {
     uint32_t i;
 
     if(getRegisterDataType(regist) == dtReal34Matrix) {
+      if(loadedVersion < 10000017) {
+        convertOldMatrixHeaderToNewMatrixHeader(regist);
+      }
       rows = REGISTER_MATRIX_HEADER(regist)->matrixRows;
       cols = REGISTER_MATRIX_HEADER(regist)->matrixColumns;
 
@@ -2008,6 +2061,9 @@ float stringToFloat(const char *str) {
     }
 
     if(getRegisterDataType(regist) == dtComplex34Matrix) {
+      if(loadedVersion < 10000017) {
+        convertOldMatrixHeaderToNewMatrixHeader(regist);
+      }
       rows = REGISTER_MATRIX_HEADER(regist)->matrixRows;
       cols = REGISTER_MATRIX_HEADER(regist)->matrixColumns;
 
@@ -2015,10 +2071,7 @@ float stringToFloat(const char *str) {
         char *imaginaryPart;
 
         readLine(tmpString);
-        imaginaryPart = tmpString;
-          while(*imaginaryPart != ' ') {
-            imaginaryPart++;
-          }
+        imaginaryPart = skip_word(tmpString);
         *(imaginaryPart++) = 0;
         stringToReal34(tmpString,     VARIABLE_REAL34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(regist) + i));
         stringToReal34(imaginaryPart, VARIABLE_IMAG34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(regist) + i));
@@ -2035,10 +2088,7 @@ float stringToFloat(const char *str) {
     char *numOfCols;
 
     if(strcmp(type, "Rema") == 0 || strcmp(type, "Cxma") == 0) {
-      numOfCols = value;
-        while(*numOfCols != ' ') {
-          numOfCols++;
-        }
+      numOfCols = skip_word(value);
       *(numOfCols++) = 0;
       rows = toUint16(value);
       cols = toUint16(numOfCols);
@@ -2134,15 +2184,10 @@ float stringToFloat(const char *str) {
         #endif //LOADDEBUG
         str = tmpString;
         for (i = 0; i < 7; i++) {
-          globalFlags[i] = toInt16(str);
-          while(*str != ' ') {
-            str++;
-          }
-          while(*str == ' ') {
-            str++;
-          }
+          globalFlags[i] = toUint16(str);
+          str = next_word(str);
         }
-        globalFlags[i] = toInt16(str);
+        globalFlags[i] = toUint16(str);
       }
     }
 
@@ -2307,72 +2352,15 @@ float stringToFloat(const char *str) {
             sprintf(line,", loadMode:%d, %s\n",loadMode,tmpString);
             debugPrintf(8, "-", tmpString);
           #endif //LOADDEBUG
-          str = tmpString;
-          kbd_usr[i].keyId = toInt16(str);
-
-          while(*str != ' ') {
-            str++;
-          }
-          while(*str == ' ') {
-            str++;
-          }
-          kbd_usr[i].primary = toInt16(str);
-
-          while(*str != ' ') {
-            str++;
-          }
-          while(*str == ' ') {
-            str++;
-          }
-          kbd_usr[i].fShifted = toInt16(str);
-
-          while(*str != ' ') {
-            str++;
-          }
-          while(*str == ' ') {
-            str++;
-          }
-          kbd_usr[i].gShifted = toInt16(str);
-
-          while(*str != ' ') {
-            str++;
-          }
-          while(*str == ' ') {
-            str++;
-          }
-          kbd_usr[i].keyLblAim = toInt16(str);
-
-          while(*str != ' ') {
-            str++;
-          }
-          while(*str == ' ') {
-            str++;
-          }
-          kbd_usr[i].primaryAim = toInt16(str);
-
-          while(*str != ' ') {
-            str++;
-          }
-          while(*str == ' ') {
-            str++;
-          }
-          kbd_usr[i].fShiftedAim = toInt16(str);
-
-          while(*str != ' ') {
-            str++;
-          }
-          while(*str == ' ') {
-            str++;
-          }
-          kbd_usr[i].gShiftedAim = toInt16(str);
-
-          while(*str != ' ') {
-            str++;
-          }
-          while(*str == ' ') {
-            str++;
-          }
-          kbd_usr[i].primaryTam = toInt16(str);
+          str = toInt16_next_word(tmpString, &kbd_usr[i].keyId);
+          str = toInt16_next_word(str, &kbd_usr[i].primary);
+          str = toInt16_next_word(str, &kbd_usr[i].fShifted);
+          str = toInt16_next_word(str, &kbd_usr[i].gShifted);
+          str = toInt16_next_word(str, &kbd_usr[i].keyLblAim);
+          str = toInt16_next_word(str, &kbd_usr[i].primaryAim);
+          str = toInt16_next_word(str, &kbd_usr[i].fShiftedAim);
+          str = toInt16_next_word(str, &kbd_usr[i].gShiftedAim);
+          str = toInt16_next_word(str, &kbd_usr[i].primaryTam);
         }
       }
     }
@@ -2401,13 +2389,9 @@ float stringToFloat(const char *str) {
           uint16_t key = toUint16(str);
           userMenuItems[i].argumentName[0] = 0;
 
-          while((*str != ' ') && (*str != '\n') && (*str != 0)) {
-            str++;
-          }
+          str = skip_to_space_newline(str);
           if(*str == ' ') {
-            while(*str == ' ') {
-              str++;
-            }
+            str = skip_space(str);
             if((*str != '\n') && (*str != 0)) {
               utf8ToString((uint8_t *)str, tmpString + TMP_STR_LENGTH / 2);
               setUserKeyArgument(key, tmpString + TMP_STR_LENGTH / 2);
@@ -2431,13 +2415,9 @@ float stringToFloat(const char *str) {
           userMenuItems[i].item            = toInt16(str);
           userMenuItems[i].argumentName[0] = 0;
 
-          while((*str != ' ') && (*str != '\n') && (*str != 0)) {
-            str++;
-          }
+          str = skip_to_space_newline(str);
           if(*str == ' ') {
-            while(*str == ' ') {
-              str++;
-            }
+            str = skip_space(str);
             if((*str != '\n') && (*str != 0)) {
               utf8ToString((uint8_t *)str, userMenuItems[i].argumentName);
             }
@@ -2460,13 +2440,9 @@ float stringToFloat(const char *str) {
           userAlphaItems[i].item            = toInt16(str);
           userAlphaItems[i].argumentName[0] = 0;
 
-          while((*str != ' ') && (*str != '\n') && (*str != 0)) {
-            str++;
-          }
+          str = skip_to_space_newline(str);
           if(*str == ' ') {
-            while(*str == ' ') {
-              str++;
-            }
+            str = skip_space(str);
             if((*str != '\n') && (*str != 0)) {
               utf8ToString((uint8_t *)str, userAlphaItems[i].argumentName);
             }
@@ -2511,13 +2487,9 @@ float stringToFloat(const char *str) {
             userMenus[target].menuItem[i].item            = toInt16(str);
             userMenus[target].menuItem[i].argumentName[0] = 0;
 
-            while((*str != ' ') && (*str != '\n') && (*str != 0)) {
-              str++;
-            }
+            str = skip_to_space_newline(str);
             if(*str == ' ') {
-              while(*str == ' ') {
-                str++;
-              }
+              str = skip_space(str);
               if((*str != '\n') && (*str != 0)) {
                 utf8ToString((uint8_t *)str, userMenus[target].menuItem[i].argumentName);
               }
@@ -2724,13 +2696,7 @@ float stringToFloat(const char *str) {
           else if(strcmp(aimBuffer, "displayStack"                ) == 0) { displayStack         = toUint8(tmpString);  }
           else if(strcmp(aimBuffer, "rngState"                    ) == 0) {
             pcg32_global.state = stringToUint64(tmpString);
-            str = tmpString;
-            while(*str != ' ') {
-              str++;
-            }
-            while(*str == ' ') {
-              str++;
-            }
+            str = next_word(tmpString);
             pcg32_global.inc = stringToUint64(str);
           }
           else if(strcmp(aimBuffer, "exponentLimit"               ) == 0) { exponentLimit         = toInt16(tmpString); }

@@ -154,20 +154,28 @@ void fnDot(uint16_t unusedButMandatoryParameter) {
 
   if (tx == dtComplex34Matrix) {
     if (ty == dtComplex34Matrix) {
-      if (saveLastX())
+      if (saveLastX()) {
         dotCpmaCpma();
+        adjustResult(REGISTER_X, true, true, REGISTER_X, -1, -1);
+      }
     } else if (ty == dtReal34Matrix) {
-      if (saveLastX())
+      if (saveLastX()) {
         dotRemaCpma();
+        adjustResult(REGISTER_X, true, true, REGISTER_X, -1, -1);
+      }
     } else
       goto type_err;
   } else if (tx == dtReal34Matrix) {
     if (ty == dtComplex34Matrix) {
-      if (saveLastX())
+      if (saveLastX()) {
         dotCpmaRema();
+        adjustResult(REGISTER_X, true, true, REGISTER_X, -1, -1);
+      }
     } else if (ty == dtReal34Matrix) {
-      if (saveLastX())
+      if (saveLastX()) {
         dotRemaRema();
+        adjustResult(REGISTER_X, true, true, REGISTER_X, -1, -1);
+      }
     } else
       goto type_err;
   } else if (ty == dtComplex34Matrix || ty == dtReal34Matrix) {
