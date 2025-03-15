@@ -16,7 +16,7 @@
 
 
 // This is used for the state files
-#define configFileVersion                  10000017 // Change matrix headers, add tag
+#define configFileVersion                  10000018 // Change matrix headers, add tag
 #define VersionAllowed                     10000005 // This code will not autoload versions earlier than this
 /*
 10000001 // arbitrary starting point version 10 000 001
@@ -2048,7 +2048,7 @@ int64_t stringToInt64(const char *str) {
     uint32_t i;
 
     if(getRegisterDataType(regist) == dtReal34Matrix) {
-      if(loadedVersion < 10000017) {
+      if(loadedVersion < 10000018) {
         convertOldMatrixHeaderToNewMatrixHeader(regist);
       }
       rows = REGISTER_MATRIX_HEADER(regist)->matrixRows;
@@ -2061,7 +2061,7 @@ int64_t stringToInt64(const char *str) {
     }
 
     if(getRegisterDataType(regist) == dtComplex34Matrix) {
-      if(loadedVersion < 10000017) {
+      if(loadedVersion < 10000018) {
         convertOldMatrixHeaderToNewMatrixHeader(regist);
       }
       rows = REGISTER_MATRIX_HEADER(regist)->matrixRows;
