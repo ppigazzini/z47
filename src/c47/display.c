@@ -2666,7 +2666,7 @@ void complex34MatrixToDisplayString(calcRegister_t regist, char *displayString) 
 bool_t vectorToDisplayString(calcRegister_t regist, char *displayString) {
   if(getRegisterDataType(regist) == dtReal34Matrix) {
     matrixHeader_t *matrixHeader = REGISTER_MATRIX_HEADER(regist);
-    if ((matrixHeader->matrixRows == 1 &&  matrixHeader->matrixColumns != 1) || (matrixHeader->matrixRows != 1 &&  matrixHeader->matrixColumns == 1)) {
+    if(isMatrixVector(matrixHeader->matrixRows, matrixHeader->matrixColumns)) {
       real34Matrix_t matrix;
       int16_t ww= 0;
       linkToRealMatrixRegister(regist, &matrix);
