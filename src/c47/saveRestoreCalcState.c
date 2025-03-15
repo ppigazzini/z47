@@ -83,6 +83,44 @@ float stringToFloat(const char *str) {
   return strtof(str, NULL);
 }
 
+//Utility to add angle and polar markers
+static void textTag(char *str, const uint8_t angle, const uint8_t polmode) {
+  if(angle != amNone) {
+    switch(getTagAngularMode(angle)) {
+      case amDegree: {
+        strcat(str, ":DEG");
+        break;
+      }
+      case amDMS: {
+        strcat(str, ":DMS");
+        break;
+      }
+      case amRadian: {
+        strcat(str, ":RAD");
+        break;
+      }
+      case amMultPi: {
+        strcat(str, ":MULTPI");
+        break;
+      }
+      case amGrad: {
+        strcat(str, ":GRAD");
+        break;
+      }
+      case amNone: {
+        break;
+      }
+      default: {
+        strcpy(str, ":???");
+        break;
+      }
+    }
+  }
+  if((polmode & amPolar) == amPolar) {
+    strcat(str, "p");
+  }
+}
+
 // Utility routines to skip stuff
 static char *skip_word(const char *str) {
   while(*str != ' ')
@@ -755,6 +793,22 @@ static char *toInt16_next_word(const char *str, int16_t *val) {
     }
   }
 
+  void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
+    if(getRegisterDataType(regist) == dtReal34Matrix || getRegisterDataType(regist) == dtComplex34Matrix) {
+      #if defined PC_BUILD
+        printf("----------------R%2u Old matrix header: r=%i c=%i \n",regist, (REGISTER_MATRIX_HEADER    (regist)->matrixRows), (REGISTER_MATRIX_HEADER    (regist)->matrixColumns));
+      #endif //PC_BUILD
+      uint32_t row = (REGISTER_MATRIX_HEADER(regist)->matrixRows) & 0x0FFF;
+      uint32_t col = ((REGISTER_MATRIX_HEADER(regist)->matrixColumns) >> 4) & 0x0FFF;
+      #if defined PC_BUILD
+        printf("----------------R%2u New matrix header: r=%i c=%i \n",regist, row, col);
+      #endif //PC_BUILD
+      REGISTER_MATRIX_HEADER(regist)->matrixRows = row;
+      REGISTER_MATRIX_HEADER(regist)->matrixColumns = col;
+      setRegisterTag(regist, amNone);
+    }
+  }
+
   void restoreCalc(void) {
     printf("RestoreCalc\n");
     uint32_t ramSizeInBlocks = 0, ramPtr = 0, backupVersion = 0;
@@ -1196,28 +1250,12 @@ static char *toInt16_next_word(const char *str, int16_t *val) {
       }
     }
 
-#define REGISTER_MATRIX_HEADER_OLD(a) ((matrixHeader_old_t *)(getRegisterDataPointer(a)))
-typedef struct {
-  uint16_t matrixRows;                ///< Number of rows in the matrix
-  uint16_t matrixColumns;             ///< Number of columns in the matrix
-} matrixHeader_old_t;
 
 
-    if(loadedVersion < 10000017) {
+    if(backupVersion < 1009) {                           //register header is already loaded with 32 bits, 0xrrrrcccc
       int qq = 0;
       while (qq <= LAST_GLOBAL_REGISTER) {
-        if(getRegisterDataType(qq) == dtReal34Matrix) {
-          uint32_t row = (REGISTER_MATRIX_HEADER_OLD(qq)->matrixRows) & 0x0FFF;
-          uint32_t col = ((REGISTER_MATRIX_HEADER_OLD(qq)->matrixColumns) << 4) & 0x0FFF;
-printf("----------------1 r=%i c=%i \n",row, col);
-          REGISTER_MATRIX_HEADER(qq)->matrixRows = row;
-          REGISTER_MATRIX_HEADER(qq)->matrixColumns = col;
-          setRegisterTag(qq, amNone);
-          //REGISTER_MATRIX_HEADER(qq)->mtag = amNone;
-           row = (REGISTER_MATRIX_HEADER(qq)->matrixRows);
-           col = ((REGISTER_MATRIX_HEADER(qq)->matrixColumns));
-printf("----------------2 r=%i c=%i \n",row, col);
-        }
+        convertOldMatrixHeaderToNewMatrixHeader(qq);
         qq++;
       }
     }
@@ -1357,42 +1395,8 @@ char aimBuffer1[400];             //The concurrent use of the global aimBuffer
 
       case dtReal34: {
         real34ToString(REGISTER_REAL34_DATA(regist), tmpRegisterString);
-        switch(getRegisterAngularMode(regist)) {
-          case amDegree: {
-            strcpy(aimBuffer1, "Real:DEG");
-            break;
-          }
-
-          case amDMS: {
-            strcpy(aimBuffer1, "Real:DMS");
-            break;
-          }
-
-          case amRadian: {
-            strcpy(aimBuffer1, "Real:RAD");
-            break;
-          }
-
-          case amMultPi: {
-            strcpy(aimBuffer1, "Real:MULTPI");
-            break;
-          }
-
-          case amGrad: {
-            strcpy(aimBuffer1, "Real:GRAD");
-            break;
-          }
-
-          case amNone: {
-            strcpy(aimBuffer1, "Real");
-            break;
-          }
-
-          default: {
-            strcpy(aimBuffer1, "Real:???");
-            break;
-          }
-        }
+        strcpy(aimBuffer1, "Real");
+        textTag(aimBuffer1, getRegisterAngularMode(regist), 0);
         break;
       }
 
@@ -1401,6 +1405,7 @@ char aimBuffer1[400];             //The concurrent use of the global aimBuffer
         strcat(tmpRegisterString, " ");
         real34ToString(REGISTER_IMAG34_DATA(regist), tmpRegisterString + strlen(tmpRegisterString));
         strcpy(aimBuffer1, "Cplx");
+        textTag(aimBuffer1, getRegisterAngularMode(regist), getComplexRegisterPolarMode(regist));
         break;
       }
 
@@ -1417,14 +1422,16 @@ char aimBuffer1[400];             //The concurrent use of the global aimBuffer
       }
 
       case dtReal34Matrix: {
-        sprintf(tmpRegisterString, "%" PRIu16 " %" PRIu16 " %" PRIu16 " %" PRIu16, (REGISTER_MATRIX_HEADER(regist)->matrixRows) & 0x0FFF, (REGISTER_MATRIX_HEADER(regist)->matrixColumns) & 0x0FFF, (REGISTER_MATRIX_HEADER(regist)->mtag), getRegisterTag(regist));
+        sprintf(tmpRegisterString, "%" PRIu16 " %" PRIu16, REGISTER_MATRIX_HEADER(regist)->matrixRows, REGISTER_MATRIX_HEADER(regist)->matrixColumns);
         strcpy(aimBuffer1, "Rema");
+        textTag(aimBuffer1, isRegisterMatrixVector(regist) ? getVectorRegisterAngularMode(regist) : amNone, isRegisterMatrixVector(regist) ? getVectorRegisterPolarMode(regist) : 0);
         break;
       }
 
       case dtComplex34Matrix: {
         sprintf(tmpRegisterString, "%" PRIu16 " %" PRIu16, REGISTER_MATRIX_HEADER(regist)->matrixRows, REGISTER_MATRIX_HEADER(regist)->matrixColumns);
         strcpy(aimBuffer1, "Cxma");
+        textTag(aimBuffer1, (getRegisterTag(regist) & amPolar) == 0 ? amNone : getRegisterAngularMode(regist), getRegisterTag(regist) & amPolar);
         break;
       }
 
@@ -1896,6 +1903,8 @@ int64_t stringToInt64(const char *str) {
   static void restoreRegister(calcRegister_t regist, char *type, char *value) {
     uint32_t tag = amNone;
 
+    //printf("restoreRegister:%i %s %s\n",regist, type, value);
+
     if(type[4] == ':') {
       if(type[5] == 'R') {
         tag = amRadian;
@@ -1916,11 +1925,15 @@ int64_t stringToInt64(const char *str) {
         tag = amNone;
       }
 
-      reallocateRegister(regist, dtReal34, 0, tag);
-      stringToReal34(value, REGISTER_REAL34_DATA(regist));
+      if(type[stringByteLength(type)-1] == 'p') {
+        tag |= amPolar;
+      }
+      type[4] = 0;
+      //printf("               :%i %s %s\n",regist, type, value);
     }
 
-    else if(strcmp(type, "Real") == 0) {
+
+    if(strcmp(type, "Real") == 0) {
       reallocateRegister(regist, dtReal34, 0, tag);
       stringToReal34(value, REGISTER_REAL34_DATA(regist));
     }
@@ -1966,7 +1979,7 @@ int64_t stringToInt64(const char *str) {
     else if(strcmp(type, "Cplx") == 0) {
       char *imaginaryPart;
 
-      reallocateRegister(regist, dtComplex34, 0, amNone);
+      reallocateRegister(regist, dtComplex34, 0, tag);
       imaginaryPart = skip_word(value);
       *(imaginaryPart++) = 0;
       stringToReal34(value, REGISTER_REAL34_DATA(regist));
@@ -1976,27 +1989,16 @@ int64_t stringToInt64(const char *str) {
   #if !defined(TESTSUITE_BUILD)
     else if(strcmp(type, "Rema") == 0) {
       char *numOfCols;
-      uint16_t rows, cols, tag = amNone;
+      uint16_t rows, cols;
 
       numOfCols = skip_word(value);
       *(numOfCols++) = 0;
       rows = toUint16(value);
       cols = toUint16(numOfCols);
-      if(loadedVersion >= 10000017) {
-        while(*numOfCols != ' ') {
-          numOfCols++;
-        }
-        *(numOfCols++) = 0;
-        tag = toUint16(numOfCols);
-      }
-printf("AAAA %i %i %i\n",rows, cols, tag);
-      reallocateRegister(regist, dtReal34Matrix, REAL34_SIZE_IN_BLOCKS * rows * cols, amNone);
+      reallocateRegister(regist, dtReal34Matrix, REAL34_SIZE_IN_BLOCKS * rows * cols, tag);
       REGISTER_MATRIX_HEADER(regist)->matrixRows = rows;
       REGISTER_MATRIX_HEADER(regist)->matrixColumns = cols;
-      if(loadedVersion >= 10000017) {
-        setRegisterTag(regist, tag);
-        //REGISTER_MATRIX_HEADER(regist)->tag = tag;
-      }
+      //printf("     %i %i %i\n",rows, cols, tag);
     }
 
     else if(strcmp(type, "Cxma") == 0) {
@@ -2007,7 +2009,7 @@ printf("AAAA %i %i %i\n",rows, cols, tag);
       *(numOfCols++) = 0;
       rows = toUint16(value);
       cols = toUint16(numOfCols);
-      reallocateRegister(regist, dtComplex34Matrix, COMPLEX34_SIZE_IN_BLOCKS * rows * cols, amNone);
+      reallocateRegister(regist, dtComplex34Matrix, COMPLEX34_SIZE_IN_BLOCKS * rows * cols, tag);
       REGISTER_MATRIX_HEADER(regist)->matrixRows = rows;
       REGISTER_MATRIX_HEADER(regist)->matrixColumns = cols;
     }
@@ -2045,6 +2047,9 @@ printf("AAAA %i %i %i\n",rows, cols, tag);
     uint32_t i;
 
     if(getRegisterDataType(regist) == dtReal34Matrix) {
+      if(loadedVersion < 10000017) {
+        convertOldMatrixHeaderToNewMatrixHeader(regist);
+      }
       rows = REGISTER_MATRIX_HEADER(regist)->matrixRows;
       cols = REGISTER_MATRIX_HEADER(regist)->matrixColumns;
 
@@ -2055,6 +2060,9 @@ printf("AAAA %i %i %i\n",rows, cols, tag);
     }
 
     if(getRegisterDataType(regist) == dtComplex34Matrix) {
+      if(loadedVersion < 10000017) {
+        convertOldMatrixHeaderToNewMatrixHeader(regist);
+      }
       rows = REGISTER_MATRIX_HEADER(regist)->matrixRows;
       cols = REGISTER_MATRIX_HEADER(regist)->matrixColumns;
 
