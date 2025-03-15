@@ -907,7 +907,7 @@ void displayVectorAngle(const real34Matrix_t *matrix, int j, int rows, int cols,
 
 
 
-void displayVectorElement(const real34Matrix_t *matrix, int j, int ii, int rows, int cols, real34_t *element, uint8_t *toBeAngle) {
+static void displayVectorElement(const real34Matrix_t *matrix, int j, int ii, int rows, int cols, real34_t *element, uint8_t *toBeAngle) {
   real_t aa,bb,cc;
   if((isMatrix3dVectorSPH(rows, cols, matrix->header.tag))) {
     convert3DtoSPH(matrix, &aa,&bb,&cc, *toBeAngle);
