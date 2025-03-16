@@ -1268,12 +1268,12 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
         convertOldMatrixHeaderToNewMatrixHeader(qq);
         qq++;
       }
-      int qq = FIRST_NAMED_VARIABLE;
+      qq = FIRST_NAMED_VARIABLE;
       while (qq <= LAST_NAMED_VARIABLE) {
         convertOldMatrixHeaderToNewMatrixHeader(qq);
         qq++;
       }
-      int qq = FIRST_LOCAL_REGISTER;
+      qq = FIRST_LOCAL_REGISTER;
       while (qq <= LAST_LOCAL_REGISTER) {
         convertOldMatrixHeaderToNewMatrixHeader(qq);
         qq++;
