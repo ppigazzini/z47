@@ -1265,20 +1265,17 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
       printf("Version number of configfile < 1009: chacking all registers for matrix conversion from old 32-bit header to new 32-bit header.");
       int qq = FIRST_GLOBAL_REGISTER;
       while (qq <= LAST_GLOBAL_REGISTER) {
-        if(convertOldMatrixHeaderToNewMatrixHeader(qq)) {
-        }
+        convertOldMatrixHeaderToNewMatrixHeader(qq);
         qq++;
       }
       int qq = FIRST_NAMED_VARIABLE;
       while (qq <= LAST_NAMED_VARIABLE) {
-        if(convertOldMatrixHeaderToNewMatrixHeader(qq)) {
-        }
+        convertOldMatrixHeaderToNewMatrixHeader(qq);
         qq++;
       }
       int qq = FIRST_LOCAL_REGISTER;
       while (qq <= LAST_LOCAL_REGISTER) {
-        if(convertOldMatrixHeaderToNewMatrixHeader(qq)) {
-        }
+        convertOldMatrixHeaderToNewMatrixHeader(qq);
         qq++;
       }
     }
