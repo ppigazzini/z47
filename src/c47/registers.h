@@ -265,15 +265,8 @@
   #define getComplexRegisterPolarMode(reg)       (getRegisterTag(reg) & amPolar)
   #define setComplexRegisterPolarMode(reg, am)   setRegisterTag(reg, (getRegisterTag(reg) & amAngleMask) | (am & amPolar))
 
-// Original bit control for amPolarCYL & amPolarSPH. Not testes. Check carefully when used.
-//  #define getVectorRegisterAngularMode(reg)     (getRegisterTag(reg) & amAngleMask)
-//  #define setVectorRegisterAngularMode(reg, am) setRegisterTag(reg, (am & amAngleMask) | ((getRegisterTag(reg) & (amPolarCYL | amPolarSPH)) & (am == amNone ? 0 : 255) ))
-//  #define getVectorRegisterPolarMode(reg)       (getRegisterTag(reg) & (amPolarCYL | amPolarSPH))
-//  #define setVectorRegisterPolarMode(reg, pm)   setRegisterTag(reg, (getRegisterTag(reg) & amAngleMask) | (pm & (amPolarCYL | amPolarSPH)))
-
-  #define amPolarCYL 64  //to restore these bits, change in typeDefinitions.h
-  #define amPolarSPH 128 //  note a problem for changing back to bits, is that the matrix variable header has 5 bits only.
-
+  #define amPolarCYL 64  //  virtual bit, working in addition to the tag bit 4 = amPolar = 16; bit 5 usid by 32-bit pointer changes; real bits 6 & 7 spare. Real bits not used, in favour of these virtual logic bits,  as the register header also only has bits 0-4.
+  #define amPolarSPH 128 //  virtual bit, see typeDefinitions.h, amPolar
   #define isRegisterMatrix3dVector(reg)          (isMatrix3dVector(REGISTER_MATRIX_HEADER(reg)->matrixRows,REGISTER_MATRIX_HEADER(reg)->matrixColumns))
   #define isRegisterMatrix2dVector(reg)          (isMatrix2dVector(REGISTER_MATRIX_HEADER(reg)->matrixRows,REGISTER_MATRIX_HEADER(reg)->matrixColumns))
   #define isRegisterMatrixVector(reg)            (isRegisterMatrix3dVector(reg) || isRegisterMatrix2dVector(reg))
