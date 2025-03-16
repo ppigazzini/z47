@@ -151,9 +151,17 @@ static char *toInt16_next_word(const char *str, int16_t *val) {
 #endif
 
 static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
+  //converting old matrix register headers in the form 0xrrrrcccc to 0xttrrrccc including the tag.
+  //input expects the old matrix dimensions read into the new header as follows:
+  //  memory block contains 0xrrrrcccc and is read into cols=0x0ccc and rows=0x0rrr
+  //  this is rewritten to  0x00rrrccc and a amNone tag is applied with Polar off.
+  //  resulting in          0x05rrrccc
+  //this MUST only be called for version numbers indicating an old backup file, and an old state file.
+  //it CANNOT be run on a new matrix header, as the cols read in form 0x0FFF will be shifted by 4 bits to align and will break if already shifted meaning if it already is new format.
+  //Old matrixes with rows or cols > 12 bits 0x0FFF will fail. It is however unreasonable to expect such large matrix dimensions of 2^12-1 = 4095.
   if(getRegisterDataType(regist) == dtReal34Matrix || getRegisterDataType(regist) == dtComplex34Matrix) {
     #if defined PC_BUILD
-      printf("----------------R%2u Old matrix header: r=%i c=%i \n",regist, (REGISTER_MATRIX_HEADER    (regist)->matrixRows), (REGISTER_MATRIX_HEADER    (regist)->matrixColumns));
+      printf("----------------R%2u Old matrix header: r=%i c=%i \n",regist, (REGISTER_MATRIX_HEADER (regist)->matrixRows), (REGISTER_MATRIX_HEADER (regist)->matrixColumns));
     #endif //PC_BUILD
     uint32_t row = (REGISTER_MATRIX_HEADER(regist)->matrixRows) & 0x0FFF;
     uint32_t col = ((REGISTER_MATRIX_HEADER(regist)->matrixColumns) >> 4) & 0x0FFF;
@@ -1253,10 +1261,24 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
 
 
 
-    if(backupVersion < 1009) {                           //register header is already loaded with 32 bits, 0xrrrrcccc
-      int qq = 0;
+    if(backupVersion < 1009) {                           //register header is already loaded with 32 bits
+      printf("Version number of configfile < 1009: chacking all registers for matrix conversion from old 32-bit header to new 32-bit header.");
+      int qq = FIRST_GLOBAL_REGISTER;
       while (qq <= LAST_GLOBAL_REGISTER) {
-        convertOldMatrixHeaderToNewMatrixHeader(qq);
+        if(convertOldMatrixHeaderToNewMatrixHeader(qq)) {
+        }
+        qq++;
+      }
+      int qq = FIRST_NAMED_VARIABLE;
+      while (qq <= LAST_NAMED_VARIABLE) {
+        if(convertOldMatrixHeaderToNewMatrixHeader(qq)) {
+        }
+        qq++;
+      }
+      int qq = FIRST_LOCAL_REGISTER;
+      while (qq <= LAST_LOCAL_REGISTER) {
+        if(convertOldMatrixHeaderToNewMatrixHeader(qq)) {
+        }
         qq++;
       }
     }
