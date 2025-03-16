@@ -131,20 +131,13 @@ TO_QSPI const int16_t menu_MATX[]        = {
                                              ITM_CONCAT,                    ITM_M_RR,                   ITM_M_DIM,                ITM_M_DIMQ,            ITM_INDEX,                   ITM_M_EDIN,
                                              ITM_M_PUT,                     ITM_M_GET,                  ITM_STOEL,                ITM_RCLEL,             ITM_STOELPLUS,               ITM_RCLELPLUS,              
 
-                                             ITM_toREC2,                    ITM_toPOL2,                 ITM_NULL,                 ITM_NULL,              ITM_VECTOSTK,                ITM_STKTO1x2,
+                                             ITM_toREC2,                    ITM_toPOL2,                 ITM_CPXexV,               ITM_VECTOSTK,          ITM_STKTO1x2,                ITM_CLSTK,
                                              ITM_ENORM,                     ITM_UNITV,                  ITM_VVDIST,               ITM_VANGLE,            ITM_DOT_PROD,                ITM_CROSS_PROD,
                                              ITM_DEG2,                      ITM_RAD2,                   ITM_MULPI2,               ITM_NULL,              ITM_V10,                     ITM_V01,
 
-                                             ITM_toREC2,                    ITM_V3TOSPH,                ITM_V3TOCYL,              ITM_NULL,              ITM_VECTOSTK,                ITM_STKTO1x3,
+                                             ITM_toREC2,                    ITM_V3TOSPH,                ITM_V3TOCYL,              ITM_VECTOSTK,          ITM_STKTO1x3,                ITM_CLSTK,
                                              ITM_ENORM,                     ITM_UNITV,                  ITM_VVDIST,               ITM_VANGLE,            ITM_DOT_PROD,                ITM_CROSS_PROD,
                                              ITM_DEG2,                      ITM_RAD2,                   ITM_MULPI2,               ITM_V100,              ITM_V010,                    ITM_V001};
-
-
-//new 3D: ITM_V3TOCYL, ITM_V3TOSPH, ITM_STKTO1x3, ITM_1x3TOSTK
-//new 2D 3D: ITM_VVDIST, ITM_VVANG
-//add 3D: ITM_UNITV
-
-
 
 TO_QSPI const int16_t menu_M_SIM_Q[]     = { VAR_MATA,                      VAR_MATB,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_MATX                      }; // Should VAR_MATA and VAR_MATB be reclaced by ITM_MATA (to be created) and ITM_MATB (to be created) here?
 
@@ -634,12 +627,13 @@ TO_QSPI const int16_t menu_Flg[]         = { ITM_REG_M,                     ITM_
 
 
 TO_QSPI const int16_t menu_TamSto[]      = { ITM_INDIRECTION,               -MNU_VAR,                   ITM_REG_X,                ITM_REG_Y,             ITM_REG_Z,                   ITM_REG_T,
-                                             ITM_Config,                    ITM_Stack,                  ITM_dddIX,                ITM_Max,               ITM_Min,                     -MNU_REG,
-                                             ITM_dddEL,                     ITM_dddIJ,                  ITM_STOVEL1,              ITM_STOVEL2,           ITM_STOVEL3,                 ITM_dddVEL                    };
+                                             ITM_Config,                    ITM_Stack,                  ITM_dddVEL,               ITM_dddIX,             ITM_Min,                     ITM_Max,
+                                             ITM_dddEL,                     ITM_dddIJ,                  ITM_STOVEL1,              ITM_STOVEL2,           ITM_STOVEL3,                 -MNU_REG                      };
 
 TO_QSPI const int16_t menu_TamRcl[]      = { ITM_INDIRECTION,               -MNU_VAR,                   ITM_REG_X,                ITM_REG_Y,             ITM_REG_Z,                   ITM_REG_T,
-                                             ITM_Config,                    ITM_Stack,                  ITM_NULL,                 ITM_Max,               ITM_Min,                     -MNU_REG,
-                                             ITM_dddEL,                     ITM_dddIJ,                  ITM_RCLVEL1,              ITM_RCLVEL2,           ITM_RCLVEL3,                 ITM_dddVEL                   };
+                                             ITM_Config,                    ITM_Stack,                  ITM_dddVEL,               ITM_NULL,              ITM_Min,                     ITM_Max,
+                                             ITM_dddEL,                     ITM_dddIJ,                  ITM_STOVEL1,              ITM_STOVEL2,           ITM_STOVEL3,                 -MNU_REG                     };
+
 
 TO_QSPI const int16_t menu_TamShuffle[]  = { ITM_NULL,                      ITM_NULL,                   ITM_REG_X,                ITM_REG_Y,             ITM_REG_Z,                   ITM_REG_T                     };
 
