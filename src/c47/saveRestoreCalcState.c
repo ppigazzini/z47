@@ -2067,9 +2067,9 @@ int64_t stringToInt64(const char *str) {
     uint32_t i;
 
     if(getRegisterDataType(regist) == dtReal34Matrix) {
-      if(loadedVersion < 10000018) {
-        convertOldMatrixHeaderToNewMatrixHeader(regist);
-      }
+//      if(loadedVersion < 10000018) {
+//        convertOldMatrixHeaderToNewMatrixHeader(regist);
+//      }
       rows = REGISTER_MATRIX_HEADER(regist)->matrixRows;
       cols = REGISTER_MATRIX_HEADER(regist)->matrixColumns;
 
@@ -2080,9 +2080,9 @@ int64_t stringToInt64(const char *str) {
     }
 
     if(getRegisterDataType(regist) == dtComplex34Matrix) {
-      if(loadedVersion < 10000018) {
-        convertOldMatrixHeaderToNewMatrixHeader(regist);
-      }
+//      if(loadedVersion < 10000018) {
+//        convertOldMatrixHeaderToNewMatrixHeader(regist);
+//      }
       rows = REGISTER_MATRIX_HEADER(regist)->matrixRows;
       cols = REGISTER_MATRIX_HEADER(regist)->matrixColumns;
 
