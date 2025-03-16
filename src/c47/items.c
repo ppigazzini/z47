@@ -3863,7 +3863,6 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 2491 */  { fnConvertStkToMx,                   8,                     STD_v_BAR STD_SUB_2 "[01]",                    STD_v_BAR STD_SUB_2 "[01]",                    (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /* 2492 */  { fnComplexToVector,            NOPARAM,                     STD_COMPLEX_C STD_LEFT_RIGHT_ARROWS STD_SPACE_6_PER_EM STD_v_BAR STD_SUB_2, STD_COMPLEX_C STD_LEFT_RIGHT_ARROWS STD_SPACE_6_PER_EM STD_v_BAR STD_SUB_2, (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 
-
-/* 2490 */  { itemToBeCoded,                NOPARAM,                     "",                                            "Last item",                                   (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 2493 */  { itemToBeCoded,                NOPARAM,                     "",                                            "Last item",                                   (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 
 };
