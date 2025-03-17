@@ -2304,22 +2304,30 @@ void createSubstrings(uint8_t number) {
 
 
   void tiVector(calcRegister_t regist, char *prefix, int16_t *prefixWidth) {
+    #define e0  "i"            // "x"
+    #define e1  "j"            // "y"
+    #define e2  "k"            // "z"
+    #define er  "r"            // "r"
+    #define _e0 STD_SUB_i      // STD_SUB_x
+    #define _e1 STD_SUB_j      // STD_SUB_y
+    #define _e2 STD_SUB_k      // STD_SUB_z
+
     prefix[0] = 0;
     *prefixWidth = 0;
     if(isRegisterMatrix3dVector(regist)) {
       if(getVectorRegisterPolarMode(regist) == amPolarSPH) {
-        strcpy(prefix, "[r" STD_SPACE_4_PER_EM STD_THETA STD_SUB_x STD_SUB_y STD_SPACE_4_PER_EM STD_phi STD_SUB_z "]");
+        strcpy(prefix, "[" er STD_SPACE_4_PER_EM STD_THETA _e0 _e1 STD_SPACE_4_PER_EM STD_phi _e2 "]");   //[r th_xy z]
       } else if(getVectorRegisterPolarMode(regist) == amPolarCYL) {
-        strcpy(prefix, "[r" STD_SPACE_4_PER_EM STD_THETA STD_SUB_x STD_SUB_y  STD_SPACE_4_PER_EM "z" "]");
+        strcpy(prefix, "[" er STD_SPACE_4_PER_EM STD_THETA _e0 _e1 STD_SPACE_4_PER_EM e2 "]");      //[r th_xy phi_z]
       } else {
-        strcpy(prefix, "[x" STD_SPACE_4_PER_EM "y" STD_SPACE_4_PER_EM "z" "]");
+        strcpy(prefix, "[" e0 STD_SPACE_4_PER_EM e1 STD_SPACE_4_PER_EM e2 "]");                           //[x y z]
       }
     } 
     else if(isRegisterMatrix2dVector(regist)) {
       if(getVectorRegisterPolarMode(regist) != amPolar) {
-        strcpy(prefix, "[x" STD_SPACE_4_PER_EM "y" "]");
+        strcpy(prefix, "[" e0 STD_SPACE_4_PER_EM e1 "]");
       } else {
-        strcpy(prefix, "[r" STD_SPACE_4_PER_EM STD_THETA STD_SUB_x STD_SUB_y  "]");
+        strcpy(prefix, "[" er STD_SPACE_4_PER_EM STD_THETA _e0 _e1  "]");
       }
     }
     *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
