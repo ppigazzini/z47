@@ -1128,7 +1128,8 @@ typedef struct {
             }
             break;
           }
-
+          
+          case NP_HP32SII_DENOMINATOR:
           case NP_FRACTION_DENOMINATOR: {
             if(item == ITM_0) {
               strcat(aimBuffer, "0");
@@ -1136,13 +1137,13 @@ typedef struct {
               if(aimBuffer[denominatorLocation] == '0') {
                 aimBuffer[denominatorLocation] = 0;
               }
-              if(stringToInt32(aimBuffer + denominatorLocation) < 0 || stringToInt32(aimBuffer + denominatorLocation) > 999999999) {  // 999999999 is the largest clean decimal number lower than < 2147483647 being the 2^31-1 limit, enlarged beyond the DENMAX as it has nothing to do with that, it is a fraction input limit
+              if(toInt32(aimBuffer + denominatorLocation) < 0 || toInt32(aimBuffer + denominatorLocation) > 999999999) {  // 999999999 is the largest clean decimal number lower than < 2147483647 being the 2^31-1 limit, enlarged beyond the DENMAX as it has nothing to do with that, it is a fraction input limit
                 aimBuffer[strlen(aimBuffer) - 1] = 0;
               }
             }
             else {
               strcat(aimBuffer, indexOfItems[item].itemSoftmenuName);
-              if(stringToInt32(aimBuffer + denominatorLocation) < 0 || stringToInt32(aimBuffer + denominatorLocation) > 999999999) {
+              if(toInt32(aimBuffer + denominatorLocation) < 0 || toInt32(aimBuffer + denominatorLocation) > 999999999) {
                 aimBuffer[strlen(aimBuffer) - 1] = 0;
               }
             }
@@ -1260,42 +1261,27 @@ typedef struct {
           case NP_REAL_FLOAT_PART: {
             bool_t HP32SII = false;
             if(aimBuffer[strlen(aimBuffer) - 1] == '.') {
-              strcat(aimBuffer, "0");
               HP32SII = true; //This is the 123 .. 4 meaning 123/4 shortcut
             }
 
+            int16_t numeratorLocation = HP32SII ? 1 : strchr(aimBuffer, '.') - aimBuffer + 1;
+            int32_t numerator = toInt32(aimBuffer + numeratorLocation);
+            if (numerator < 0 || numerator > 999999999) {
+              break;
+            }
 
             if(HP32SII) {     //Changed the part below for 123..4 to mean 0 123/4
-              uint16_t i;
-              //printf("%s: %u %u %u %u %u\n",aimBuffer, aimBuffer[0], aimBuffer[1], aimBuffer[2], aimBuffer[3], aimBuffer[4] );
-              for(i=0; i<strlen(aimBuffer); i++) {
-                if(aimBuffer[i] == '.') {
-                  aimBuffer[i] = 0;
-                  break;
-                }
-              }
-              if(aimBuffer[i]==0) { //this is therefore part of the "123.." and is changed to "+0 123/"
-                for(uint16_t i=strlen(aimBuffer); i>0; i--) {
-                  aimBuffer[i+2] = aimBuffer[i];
-                }
-                aimBuffer[1] = '0';
-                aimBuffer[2] = ' ';
-              }
+              aimBuffer[strlen(aimBuffer) - 1] = 0;
             }
 
             else { //!HP32SII .. situation (standard code)
-              for(uint16_t i=0; i<strlen(aimBuffer); i++) {
-                if(aimBuffer[i] == '.') {
-                  aimBuffer[i] = ' ';
-                  break;
-                }
-              }
+              aimBuffer[numeratorLocation - 1] = ' ';
             }
 
             strcat(aimBuffer, "/");
 
             denominatorLocation = strlen(aimBuffer);
-            nimNumberPart = NP_FRACTION_DENOMINATOR;
+            nimNumberPart = HP32SII ? NP_HP32SII_DENOMINATOR : NP_FRACTION_DENOMINATOR;
             //debugNIM();
             break;
           }
@@ -1386,6 +1372,7 @@ typedef struct {
           case NP_INT_16 :
           case NP_INT_BASE :
           case NP_REAL_FLOAT_PART :
+          case NP_HP32SII_DENOMINATOR:
           case NP_FRACTION_DENOMINATOR: {
             if(aimBuffer[0] == '+') {
               aimBuffer[0] = '-';
@@ -1557,6 +1544,15 @@ typedef struct {
                   break;
                 }
               }
+              //debugNIM();
+            }
+            break;
+          }
+
+          case NP_HP32SII_DENOMINATOR: {
+            if(aimBuffer[lastChar] == '/') {
+              nimNumberPart = NP_REAL_FLOAT_PART;
+              aimBuffer[lastChar++] = '.';
               //debugNIM();
             }
             break;
@@ -1923,20 +1919,30 @@ typedef struct {
           break;
         }
 
+        case NP_HP32SII_DENOMINATOR:
         case NP_FRACTION_DENOMINATOR: { // +123 12/7
-          nimBufferToDisplayBuffer(aimBuffer, nimBufferDisplay + 2);
-          strcat(nimBufferDisplay, STD_SPACE_4_PER_EM);
-
-          for(index=2; aimBuffer[index]!=' '; index++) {
+          if (nimNumberPart == NP_FRACTION_DENOMINATOR) {
+            nimBufferToDisplayBuffer(aimBuffer, nimBufferDisplay + 2);
+            strcat(nimBufferDisplay, STD_SPACE_4_PER_EM);
+            
+            for(index=2; aimBuffer[index]!=' '; index++) {
+            }
           }
-          supNumberToDisplayString(stringToInt32(aimBuffer + index + 1), nimBufferDisplay + stringByteLength(nimBufferDisplay), NULL, true);
+          else {
+            if (aimBuffer[0] == '-') {
+              strcat(nimBufferDisplay, "-");
+            }
+            index = 0;
+          }
+
+          supNumberToDisplayString(toInt32(aimBuffer + index + 1), nimBufferDisplay + stringByteLength(nimBufferDisplay), NULL, true);
 
           strcat(nimBufferDisplay, "/");
 
           for(; aimBuffer[index]!='/'; index++) {
           }
           if(aimBuffer[++index] != 0) {
-            subNumberToDisplayString(stringToInt32(aimBuffer + index), nimBufferDisplay + stringByteLength(nimBufferDisplay), NULL);
+            subNumberToDisplayString(toInt32(aimBuffer + index), nimBufferDisplay + stringByteLength(nimBufferDisplay), NULL);
           }
           break;
         }
@@ -2305,15 +2311,20 @@ typedef struct {
       }
     }
 
-    aimBuffer[posSpace] = 0;
+    if (posSpace != 0) {
+      aimBuffer[posSpace] = 0;
+      integer = toInt32(aimBuffer + 1);
+    }
+    else {
+      integer = 0;
+    }
     aimBuffer[posSlash] = 0;
-    integer = stringToInt32(aimBuffer + 1);
-    numer   = stringToInt32(aimBuffer + posSpace + 1);
+    numer   = toInt32(aimBuffer + posSpace + 1);
     if(aimBuffer[posSlash + 1] == 0) {
       denom = lastDenominator;
     }
     else {
-      denom = stringToInt32(aimBuffer + posSlash + 1);
+      denom = toInt32(aimBuffer + posSlash + 1);
       if(denom != 0) {
         lastDenominator = denom;
       }
@@ -2620,7 +2631,7 @@ typedef struct {
               }                                                                       //JM Input default type
 
           }
-          else if(nimNumberPart == NP_FRACTION_DENOMINATOR) {
+          else if(nimNumberPart == NP_FRACTION_DENOMINATOR || nimNumberPart == NP_HP32SII_DENOMINATOR) {
             reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
             closeNimWithFraction(REGISTER_REAL34_DATA(REGISTER_X));
           }
