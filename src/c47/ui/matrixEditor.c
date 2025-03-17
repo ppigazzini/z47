@@ -566,7 +566,7 @@ void mimEnter(bool_t commit) {
     if(getRegisterDataType(matrixIndex) == dtReal34Matrix) {
       real34_t *real34Ptr = &openMatrixMIMPointer.realMatrix.matrixElements[row * cols + col];
 
-      if(nimNumberPart == NP_FRACTION_DENOMINATOR) {
+      if(nimNumberPart == NP_FRACTION_DENOMINATOR || nimNumberPart == NP_HP32SII_DENOMINATOR) {
         closeNimWithFraction(real34Ptr);
       }
       else if(nimNumberPart == NP_COMPLEX_INT_PART || nimNumberPart == NP_COMPLEX_FLOAT_PART || nimNumberPart == NP_COMPLEX_EXPONENT) {
@@ -588,7 +588,7 @@ void mimEnter(bool_t commit) {
     else {
       complex34_t *complex34Ptr = &openMatrixMIMPointer.complexMatrix.matrixElements[row * cols + col];
 
-      if(nimNumberPart == NP_FRACTION_DENOMINATOR) {
+      if(nimNumberPart == NP_FRACTION_DENOMINATOR || nimNumberPart == NP_HP32SII_DENOMINATOR) {
         closeNimWithFraction(VARIABLE_REAL34_DATA(complex34Ptr));
         real34Zero(VARIABLE_IMAG34_DATA(complex34Ptr));
       }
