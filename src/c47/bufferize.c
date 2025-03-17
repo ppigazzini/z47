@@ -1128,7 +1128,8 @@ typedef struct {
             }
             break;
           }
-
+          
+          case NP_HP32SII_DENOMINATOR:
           case NP_FRACTION_DENOMINATOR: {
             if(item == ITM_0) {
               strcat(aimBuffer, "0");
@@ -1299,7 +1300,7 @@ typedef struct {
             strcat(aimBuffer, "/");
 
             denominatorLocation = strlen(aimBuffer);
-            nimNumberPart = NP_FRACTION_DENOMINATOR;
+            nimNumberPart = HP32SII ? NP_HP32SII_DENOMINATOR : NP_FRACTION_DENOMINATOR;
             //debugNIM();
             break;
           }
@@ -1390,6 +1391,7 @@ typedef struct {
           case NP_INT_16 :
           case NP_INT_BASE :
           case NP_REAL_FLOAT_PART :
+          case NP_HP32SII_DENOMINATOR:
           case NP_FRACTION_DENOMINATOR: {
             if(aimBuffer[0] == '+') {
               aimBuffer[0] = '-';
@@ -1561,6 +1563,19 @@ typedef struct {
                   break;
                 }
               }
+              //debugNIM();
+            }
+            break;
+          }
+
+          case NP_HP32SII_DENOMINATOR: {
+            if(aimBuffer[lastChar] == '/') {
+              nimNumberPart = NP_REAL_FLOAT_PART;
+              for(int16_t i=1; i<lastChar; i++) {
+                aimBuffer[i] = aimBuffer[i+2];
+              }
+              lastChar -= 2;
+              aimBuffer[lastChar++] = '.';
               //debugNIM();
             }
             break;
@@ -1927,6 +1942,7 @@ typedef struct {
           break;
         }
 
+        case NP_HP32SII_DENOMINATOR:
         case NP_FRACTION_DENOMINATOR: { // +123 12/7
           nimBufferToDisplayBuffer(aimBuffer, nimBufferDisplay + 2);
           strcat(nimBufferDisplay, STD_SPACE_4_PER_EM);
@@ -2624,7 +2640,7 @@ typedef struct {
               }                                                                       //JM Input default type
 
           }
-          else if(nimNumberPart == NP_FRACTION_DENOMINATOR) {
+          else if(nimNumberPart == NP_FRACTION_DENOMINATOR || nimNumberPart == NP_HP32SII_DENOMINATOR) {
             reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
             closeNimWithFraction(REGISTER_REAL34_DATA(REGISTER_X));
           }
