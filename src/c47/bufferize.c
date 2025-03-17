@@ -1260,10 +1260,14 @@ typedef struct {
           case NP_REAL_FLOAT_PART: {
             bool_t HP32SII = false;
             if(aimBuffer[strlen(aimBuffer) - 1] == '.') {
-              strcat(aimBuffer, "0");
               HP32SII = true; //This is the 123 .. 4 meaning 123/4 shortcut
             }
 
+            int16_t numeratorLocation = HP32SII ? 1 : strchr(aimBuffer, '.') - aimBuffer + 1;
+            int32_t numerator = stringToInt32(aimBuffer + numeratorLocation);
+            if (numerator < 0 || numerator > 999999999) {
+              break;
+            }
 
             if(HP32SII) {     //Changed the part below for 123..4 to mean 0 123/4
               uint16_t i;
