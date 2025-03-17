@@ -66,6 +66,10 @@ static int16_t toInt16(const char *str) {
   return (int16_t)strtol(str, NULL, 10);
 }
 
+int32_t toInt32(const char *str) {
+  return strtol(str, NULL, 10);
+}
+
 static uint8_t toUint8(const char *str) {
   return (uint8_t)strtoul(str, NULL, 10);
 }
