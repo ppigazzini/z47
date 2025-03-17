@@ -1137,13 +1137,13 @@ typedef struct {
               if(aimBuffer[denominatorLocation] == '0') {
                 aimBuffer[denominatorLocation] = 0;
               }
-              if(stringToInt32(aimBuffer + denominatorLocation) < 0 || stringToInt32(aimBuffer + denominatorLocation) > 999999999) {  // 999999999 is the largest clean decimal number lower than < 2147483647 being the 2^31-1 limit, enlarged beyond the DENMAX as it has nothing to do with that, it is a fraction input limit
+              if(toInt32(aimBuffer + denominatorLocation) < 0 || toInt32(aimBuffer + denominatorLocation) > 999999999) {  // 999999999 is the largest clean decimal number lower than < 2147483647 being the 2^31-1 limit, enlarged beyond the DENMAX as it has nothing to do with that, it is a fraction input limit
                 aimBuffer[strlen(aimBuffer) - 1] = 0;
               }
             }
             else {
               strcat(aimBuffer, indexOfItems[item].itemSoftmenuName);
-              if(stringToInt32(aimBuffer + denominatorLocation) < 0 || stringToInt32(aimBuffer + denominatorLocation) > 999999999) {
+              if(toInt32(aimBuffer + denominatorLocation) < 0 || toInt32(aimBuffer + denominatorLocation) > 999999999) {
                 aimBuffer[strlen(aimBuffer) - 1] = 0;
               }
             }
@@ -1265,7 +1265,7 @@ typedef struct {
             }
 
             int16_t numeratorLocation = HP32SII ? 1 : strchr(aimBuffer, '.') - aimBuffer + 1;
-            int32_t numerator = stringToInt32(aimBuffer + numeratorLocation);
+            int32_t numerator = toInt32(aimBuffer + numeratorLocation);
             if (numerator < 0 || numerator > 999999999) {
               break;
             }
@@ -1935,14 +1935,14 @@ typedef struct {
 
           for(index=2; aimBuffer[index]!=' '; index++) {
           }
-          supNumberToDisplayString(stringToInt32(aimBuffer + index + 1), nimBufferDisplay + stringByteLength(nimBufferDisplay), NULL, true);
+          supNumberToDisplayString(toInt32(aimBuffer + index + 1), nimBufferDisplay + stringByteLength(nimBufferDisplay), NULL, true);
 
           strcat(nimBufferDisplay, "/");
 
           for(; aimBuffer[index]!='/'; index++) {
           }
           if(aimBuffer[++index] != 0) {
-            subNumberToDisplayString(stringToInt32(aimBuffer + index), nimBufferDisplay + stringByteLength(nimBufferDisplay), NULL);
+            subNumberToDisplayString(toInt32(aimBuffer + index), nimBufferDisplay + stringByteLength(nimBufferDisplay), NULL);
           }
           break;
         }
@@ -2313,13 +2313,13 @@ typedef struct {
 
     aimBuffer[posSpace] = 0;
     aimBuffer[posSlash] = 0;
-    integer = stringToInt32(aimBuffer + 1);
-    numer   = stringToInt32(aimBuffer + posSpace + 1);
+    integer = toInt32(aimBuffer + 1);
+    numer   = toInt32(aimBuffer + posSpace + 1);
     if(aimBuffer[posSlash + 1] == 0) {
       denom = lastDenominator;
     }
     else {
-      denom = stringToInt32(aimBuffer + posSlash + 1);
+      denom = toInt32(aimBuffer + posSlash + 1);
       if(denom != 0) {
         lastDenominator = denom;
       }
