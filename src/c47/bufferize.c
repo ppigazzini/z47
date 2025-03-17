@@ -1272,11 +1272,6 @@ typedef struct {
 
             if(HP32SII) {     //Changed the part below for 123..4 to mean 0 123/4
               aimBuffer[strlen(aimBuffer) - 1] = 0;
-              for(uint16_t i=strlen(aimBuffer); i>0; i--) {
-                aimBuffer[i+2] = aimBuffer[i];
-              }
-              aimBuffer[1] = '0';
-              aimBuffer[2] = ' ';
             }
 
             else { //!HP32SII .. situation (standard code)
@@ -1557,10 +1552,6 @@ typedef struct {
           case NP_HP32SII_DENOMINATOR: {
             if(aimBuffer[lastChar] == '/') {
               nimNumberPart = NP_REAL_FLOAT_PART;
-              for(int16_t i=1; i<lastChar; i++) {
-                aimBuffer[i] = aimBuffer[i+2];
-              }
-              lastChar -= 2;
               aimBuffer[lastChar++] = '.';
               //debugNIM();
             }
@@ -1930,11 +1921,20 @@ typedef struct {
 
         case NP_HP32SII_DENOMINATOR:
         case NP_FRACTION_DENOMINATOR: { // +123 12/7
-          nimBufferToDisplayBuffer(aimBuffer, nimBufferDisplay + 2);
-          strcat(nimBufferDisplay, STD_SPACE_4_PER_EM);
-
-          for(index=2; aimBuffer[index]!=' '; index++) {
+          if (nimNumberPart == NP_FRACTION_DENOMINATOR) {
+            nimBufferToDisplayBuffer(aimBuffer, nimBufferDisplay + 2);
+            strcat(nimBufferDisplay, STD_SPACE_4_PER_EM);
+            
+            for(index=2; aimBuffer[index]!=' '; index++) {
+            }
           }
+          else {
+            if (aimBuffer[0] == '-') {
+              strcat(nimBufferDisplay, "-");
+            }
+            index = 0;
+          }
+
           supNumberToDisplayString(toInt32(aimBuffer + index + 1), nimBufferDisplay + stringByteLength(nimBufferDisplay), NULL, true);
 
           strcat(nimBufferDisplay, "/");
@@ -2311,9 +2311,14 @@ typedef struct {
       }
     }
 
-    aimBuffer[posSpace] = 0;
+    if (posSpace != 0) {
+      aimBuffer[posSpace] = 0;
+      integer = toInt32(aimBuffer + 1);
+    }
+    else {
+      integer = 0;
+    }
     aimBuffer[posSlash] = 0;
-    integer = toInt32(aimBuffer + 1);
     numer   = toInt32(aimBuffer + posSpace + 1);
     if(aimBuffer[posSlash + 1] == 0) {
       denom = lastDenominator;
