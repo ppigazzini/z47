@@ -21,6 +21,11 @@
   #include <time.h>
   #include <unistd.h>
 
+  #if defined(DMCP_BUILD) && defined(OLD_HW)
+    #undef PRIu8
+    #define PRIu8 "u"
+  #endif // DMCP_BUILD && OLD_HW
+
   #if !defined(GENERATE_CATALOGS) && !defined(GENERATE_CONSTANTS) && !defined(GENERATE_TESTPGMS)
     #include <gmp.h>
 
