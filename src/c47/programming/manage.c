@@ -980,7 +980,8 @@ void pemAddNumber(int16_t item) {
           //}
         case NP_REAL_FLOAT_PART:
         case NP_REAL_EXPONENT:
-          case NP_FRACTION_DENOMINATOR: {
+        case NP_HP32SII_DENOMINATOR:
+        case NP_FRACTION_DENOMINATOR: {
           tmpString[1] = STRING_REAL34;
           break;
           }
@@ -1064,6 +1065,7 @@ void pemCloseNumberInput(void) {
       }
       case NP_REAL_FLOAT_PART:
       case NP_REAL_EXPONENT:
+      case NP_HP32SII_DENOMINATOR:
       case NP_FRACTION_DENOMINATOR: {
         if(inputLength >= REAL34_SIZE_IN_BYTES) {
           real34_t val;
