@@ -1271,30 +1271,16 @@ typedef struct {
             }
 
             if(HP32SII) {     //Changed the part below for 123..4 to mean 0 123/4
-              uint16_t i;
-              //printf("%s: %u %u %u %u %u\n",aimBuffer, aimBuffer[0], aimBuffer[1], aimBuffer[2], aimBuffer[3], aimBuffer[4] );
-              for(i=0; i<strlen(aimBuffer); i++) {
-                if(aimBuffer[i] == '.') {
-                  aimBuffer[i] = 0;
-                  break;
-                }
+              aimBuffer[strlen(aimBuffer) - 1] = 0;
+              for(uint16_t i=strlen(aimBuffer); i>0; i--) {
+                aimBuffer[i+2] = aimBuffer[i];
               }
-              if(aimBuffer[i]==0) { //this is therefore part of the "123.." and is changed to "+0 123/"
-                for(uint16_t i=strlen(aimBuffer); i>0; i--) {
-                  aimBuffer[i+2] = aimBuffer[i];
-                }
-                aimBuffer[1] = '0';
-                aimBuffer[2] = ' ';
-              }
+              aimBuffer[1] = '0';
+              aimBuffer[2] = ' ';
             }
 
             else { //!HP32SII .. situation (standard code)
-              for(uint16_t i=0; i<strlen(aimBuffer); i++) {
-                if(aimBuffer[i] == '.') {
-                  aimBuffer[i] = ' ';
-                  break;
-                }
-              }
+              aimBuffer[numeratorLocation - 1] = ' ';
             }
 
             strcat(aimBuffer, "/");
