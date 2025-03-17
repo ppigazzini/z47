@@ -2375,13 +2375,15 @@ typedef struct {
         real_t magnitude, theta;
         real34ToReal(dest_r, &magnitude);
         real34ToReal(dest_i, &theta);
-        convertAngleFromTo(&theta, currentAngularMode, amRadian, &ctxtReal39);
+        decContext c = ctxtReal39;
+        c.digits = NUMBER_OF_DISPLAY_REAL_CONTEXT_DIGITS;
+        convertAngleFromTo(&theta, currentAngularMode, amRadian, &c);
         if(realCompareLessThan(&magnitude, const_0)) {
           realSetPositiveSign(&magnitude);
-          realAdd(&theta, const_pi, &theta, &ctxtReal39);
-          WP34S_Mod(&theta, const1071_2pi, &theta, &ctxtReal39);
+          realAdd(&theta, const_pi, &theta, &c);
+          //WP34S_Mod(&theta, const1071_2pi, &theta, &c);   // this is not needed here, it is done in realPolarToRectangular() below
         }
-        realPolarToRectangular(&magnitude, &theta, &magnitude, &theta, &ctxtReal39); // theta in radian
+        realPolarToRectangular(&magnitude, &theta, &magnitude, &theta, &c); // theta in radian
         realToReal34(&magnitude, dest_r);
         realToReal34(&theta,     dest_i);
       }
