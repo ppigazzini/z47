@@ -412,9 +412,12 @@ overRange:
       char tmpString100[100];                           //cleaning up the REAL
       real34_t reduced;
       real_t tmp1;
+
       // printReal34ToConsole(real34," ------- 002a >>>>>"," <<<<<\n");   //JM
       real34ToReal(real34, &tmp1);
-      roundToSignificantDigits(&tmp1, &tmp1, displayFormatDigits+1, &ctxtReal75);
+      decContext c = ctxtReal39;
+      c.digits = NUMBER_OF_DISPLAY_REAL_CONTEXT_DIGITS;
+      roundToSignificantDigits(&tmp1, &tmp1, displayFormatDigits+1, &c); //  &ctxtReal75);
       realToReal34(&tmp1, &reduced);
       // printReal34ToConsole(&reduced," ------- 002b >>>>>"," <<<<<\n");   //JM
       real34Reduce(&reduced, &reduced);
