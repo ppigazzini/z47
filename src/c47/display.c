@@ -237,20 +237,11 @@ void real34ToDisplayString(const real34_t *real34, uint32_t tag, char *displaySt
     displayValueX[0] = 0;
   }
 
-  if(displayFormat == DF_SF) {        //This portion limits the SIGFIG digits to really n digits, even in the case of SIG3 12345000000000 to be displayed as 1.2340 x 10^5
-      uint8_t digits = checkHP ? 10 : displayHasNDigits;
-      if(tag == amNone) {
-        real34ToDisplayString2(real34, displayString, digits, limitExponent, false, frontSpace, isReal);
-        if(stringWidth(displayString, font, true, true) > maxWidth) {
-          real34ToDisplayString2(real34, displayString, digits, limitExponent, true, frontSpace, isReal);
-        }
-      }
-      else {
-        angle34ToDisplayString2(real34, tag, displayString, digits, limitExponent, frontSpace);
-      }
-
+  if(displayFormat == DF_SF && checkHP) {        //This portion limits the SIGFIG digits to really n digits, even in the case of SIG3 12345000000000 to be displayed as 1.2340 x 10^5
+    displayHasNDigits =  10;
   }
-  else { // not DF_SF
+
+  do {
     if(tag == amNone) {
       real34ToDisplayString2(real34, displayString, displayHasNDigits, limitExponent, false, frontSpace, isReal);
     }
@@ -258,8 +249,7 @@ void real34ToDisplayString(const real34_t *real34, uint32_t tag, char *displaySt
       angle34ToDisplayString2(real34, tag, displayString, displayHasNDigits, limitExponent, frontSpace);
     }
 
-  while(stringWidth(displayString, font, true, true) > maxWidth) {
-    if(displayFormat == DF_ALL) {
+    if(displayFormat == DF_ALL || displayFormat == DF_SF) {
       if(displayHasNDigits == 2) {
         break;
       }
@@ -275,15 +265,8 @@ void real34ToDisplayString(const real34_t *real34, uint32_t tag, char *displaySt
     if(updateDisplayValueX) {
       displayValueX[0] = 0;
     }
-
-      if(tag == amNone) {
-        real34ToDisplayString2(real34, displayString, displayHasNDigits, limitExponent, false, frontSpace, isReal);
-      }
-      else {
-        angle34ToDisplayString2(real34, tag, displayString, displayHasNDigits, limitExponent, frontSpace);
-      }
-    }
   }
+  while(stringWidth(displayString, font, true, true) > maxWidth);
 
   displayFormatDigits = savedDisplayFormatDigits;
 }
@@ -338,20 +321,22 @@ static void real34ToDisplayString2(const real34_t *real34, char *displayString, 
       realCopy(&x,&xx);
 
       //get log base 1024 of real34
-      WP34S_Ln(&x, &x, &ctxtReal39);                             //x = ln|real34|
-      realDivide(&x, const_ln2, &x, &ctxtReal39);                //ln(1024)=ln( 2^10 )=10ln(2)
+      decContext c = ctxtReal39;
+      c.digits = NUMBER_OF_DISPLAY_REAL_CONTEXT_DIGITS;
+      WP34S_Ln(&x, &x, &c);                             //x = ln|real34|
+      realDivide(&x, const_ln2, &x, &c);                //ln(1024)=ln( 2^10 )=10ln(2)
       x.exponent--; // x = x / 10
       //printRealToConsole(&x,"log base 1024 of real34 = lnx / ln1024 ","\n");             // x = ln|real34| / ln(1024) = log base 1024 of real34 = 1.00140
 
       //get IP and FP of this
-      realToIntegralValue(&x, &tmpIp, DEC_ROUND_DOWN, &ctxtReal34); // tmpIp = Integer Part log base1024 of Real34    = 1
+      realToIntegralValue(&x, &tmpIp, DEC_ROUND_DOWN, &c); // tmpIp = Integer Part log base1024 of Real34    = 1
       int tmpx = realToInt32C47(&tmpIp);
       if(tmpx > exponentUNlimit1024max) {
         goto overRange;
       }
       exponentUNlimit = min(exponentUNlimit1024max, tmpx);
       int32ToReal(exponentUNlimit, &tmpIp);
-      realSubtract(&x, &tmpIp, &tmpFp, &ctxtReal34);                // tmpFp = Fractional part log base1024 of Real34    = 0.00140
+      realSubtract(&x, &tmpIp, &tmpFp, &c);                // tmpFp = Fractional part log base1024 of Real34    = 0.00140
       //printRealToConsole(&tmpIp, "tmpIp Ip ", "\n");
       //printRealToConsole(&tmpFp, "Fp ", "\n");
 
@@ -365,12 +350,12 @@ static void real34ToDisplayString2(const real34_t *real34, char *displayString, 
       real_t tmp3, fact;
       int32ToReal(1000, &tmp3);
       int32ToReal(1024, &tmp4);
-      realDivide(&tmp3, &tmp4, &fact, &ctxtReal39);
+      realDivide(&tmp3, &tmp4, &fact, &c);
       //printRealToConsole(&fact, "factor = ", "\n");
-      realPower(&fact, &tmpIp, &tmp3, &ctxtReal39);
+      realPower(&fact, &tmpIp, &tmp3, &c);
       //printRealToConsole(&tmp3, "factor^IP = ", "\n");
       //printRealToConsole(&xx, "xx = ", "\n");
-      realMultiply(&xx, &tmp3, &x, &ctxtReal34);
+      realMultiply(&xx, &tmp3, &x, &c);
       //printRealToConsole(&x, "x * fact = ", "\n");
 
       if(neg) {
@@ -422,73 +407,80 @@ overRange:
   //sigfig
   //printReal34ToConsole(real34," ------- 001 >>>>>"," <<<<<\n");   //JM
   if(displayFormat == DF_SF) {                                 //convert real34 to string, eat away all zeroes from the right and give back to FIX as a real
-    char tmpString100[100];                           //cleaning up the REAL
-    real34_t reduced;
-    real_t tmp1;
-    //printReal34ToConsole(real34," ------- 002a >>>>>"," <<<<<\n");   //JM
-    real34ToReal(real34, &tmp1);
-    roundToSignificantDigits(&tmp1, &tmp1, displayFormatDigits+1, &ctxtReal75);
-    realToReal34(&tmp1, &reduced);
-    //printReal34ToConsole(&reduced," ------- 002b >>>>>"," <<<<<\n");   //JM
-    real34Reduce(&reduced, &reduced);
-    //printReal34ToConsole(&reduced," ------- 002c >>>>>"," <<<<<\n");   //JM
-    real34ToString(&reduced, tmpString100);
-    //printf("------- 003 displayFormatDigits=%u >>>>>%s\n",displayFormatDigits, tmpString100);
-    int8_t ii=0;
-    while(tmpString100[ii]!=0) {                       //skip all zeroes
-      while(tmpString100[ii] == '0') {
-        if(tmpString100[ii] == 0) break;
-        ii++;
-      }                                                //counter at first non-'0' or at end
-      if(tmpString100[ii] == '.') {
-      //printf("------- 004 >>>>%s|, %i\n",tmpString100, ii);
+    exponent = real34GetExponent(real34) + real34Digits(real34) - 1;
+    if (abs(exponent) <= displayHasNDigits) {
+      char tmpString100[100];                           //cleaning up the REAL
+      real34_t reduced;
+      real_t tmp1;
+      // printReal34ToConsole(real34," ------- 002a >>>>>"," <<<<<\n");   //JM
+      real34ToReal(real34, &tmp1);
+      roundToSignificantDigits(&tmp1, &tmp1, displayFormatDigits+1, &ctxtReal75);
+      realToReal34(&tmp1, &reduced);
+      // printReal34ToConsole(&reduced," ------- 002b >>>>>"," <<<<<\n");   //JM
+      real34Reduce(&reduced, &reduced);
+      // printReal34ToConsole(&reduced," ------- 002c >>>>>"," <<<<<\n");   //JM
+      real34ToString(&reduced, tmpString100);
+      // printf("------- 003 displayFormatDigits=%u >>>>>%s\n",displayFormatDigits, tmpString100);
+      int8_t ii=0;
+      while(tmpString100[ii]!=0) {                       //skip all zeroes
+        while(tmpString100[ii] == '0') {
+          if(tmpString100[ii] == 0) break;
+          ii++;
+        }                                                //counter at first non-'0' or at end
+        if(tmpString100[ii] == '.') {
+        // printf("------- 004 >>>>%s|, %i\n",tmpString100, ii);
 
-          ii++;                                        //move to first non-'.' and skip all zeroes
-          while(tmpString100[ii] == '0') {
-            if(tmpString100[ii] == 0) break;
-            ii++;
-          }                                            //counter at first non-'0' or end, eg. 3.14159265358979E+15
-          //printf("------- 004a >>>>%s|, %i, displayFormatDigits=%i\n",tmpString100, ii, displayFormatDigits);
+            ii++;                                        //move to first non-'.' and skip all zeroes
+            while(tmpString100[ii] == '0') {
+              if(tmpString100[ii] == 0) break;
+              ii++;
+            }                                            //counter at first non-'0' or end, eg. 3.14159265358979E+15
+            // printf("------- 004a >>>>%s|, %i, displayFormatDigits=%i\n",tmpString100, ii, displayFormatDigits);
 
-          if(tmpString100[ii] != 0) {
-            ii = ii + displayFormatDigits+1;           //2023-06-01 added 1 digit, giving FIX one extra digit for rounding. If it does not work properly, to do rounding here.
-            int8_t jj = ii;
-            //round here
+            if(tmpString100[ii] != 0) {
+              ii = ii + displayFormatDigits+1;           //2023-06-01 added 1 digit, giving FIX one extra digit for rounding. If it does not work properly, to do rounding here.
+              int8_t jj = ii;
+              //round here
 
-            while(tmpString100[jj] != 0 && tmpString100[jj] != 'E') {   //find E or first non-zero
-              jj++;
-            }
-            if(tmpString100[jj] == 'E') {              //If E, then move over the exponent to have only the specified significant digts, eg. 3.141E+15
-              while(tmpString100[jj] != 0) {
-                tmpString100[ii] = tmpString100[jj];
-                jj++; ii++;
+              while(tmpString100[jj] != 0 && tmpString100[jj] != 'E') {   //find E or first non-zero
+                jj++;
               }
-              tmpString100[ii] = 0;
+              if(tmpString100[jj] == 'E') {              //If E, then move over the exponent to have only the specified significant digts, eg. 3.141E+15
+                while(tmpString100[jj] != 0) {
+                  tmpString100[ii] = tmpString100[jj];
+                  jj++; ii++;
+                }
+                tmpString100[ii] = 0;
+              }
             }
-          }
-        //printf("------- 005 >>>>%s|\n",tmpString100);
-        break;
-      }
-      else {
-        ii++;
+          // printf("------- 005 >>>>%s|\n",tmpString100);
+          break;
+        }
+        else {
+          ii++;
+        }
+
       }
 
+      stringToReal(tmpString100,&value,&ctxtReal39);
+      // printRealToConsole(&value," ------- 006 >>>>>"," <<<<<\n\n");   //JM
     }
-
-    stringToReal(tmpString100,&value,&ctxtReal39);
-    //printRealToConsole(&value," ------- 006 >>>>>"," <<<<<\n\n");   //JM
+    else {
+      real34ToReal(real34, &value);
+    }
   }
   else {
     real34ToReal(real34, &value);
   }
   //printRealToConsole(&value," ------- 006 >>>>>"," <<<<<\n\n");   //JM
 
+  if(checkHP) {
+    // Forced rounding at 10 digits when HP35 selected, to not risk any guard digits or digit noise in the last digits, see 'decNumberPlus'
+    ctxtReal39.digits = min(10,displayHasNDigits);
+    realPlus(&value, &value, &ctxtReal39);
+    ctxtReal39.digits = 39;
+  }
 
-  ctxtReal39.digits =  ((displayFormat == DF_FIX || displayFormat == DF_SF) ? 24 : displayHasNDigits); // This line is for FIX n displaying more than 16 digits. e.g. in FIX 15: 123 456.789 123 456 789 123
-  //ctxtReal39.digits =  displayHasNDigits; // This line is for fixed number of displayed digits, e.g. in FIX 15: 123 456.789 123 456 8
-  if(checkHP) ctxtReal39.digits = min(10,displayHasNDigits);
-  realPlus(&value, &value, &ctxtReal39);
-  ctxtReal39.digits = 39;
   realToReal34(&value, &value34);
   if(displayFormat == DF_SF) {
     real34Reduce(&value34, &value34);  //JM NEW SIG 2023-03-18
@@ -557,8 +549,10 @@ overRange:
       exponent   = 0;
     }
   }*/
+  
+  // printf("value34 (INT)=%i exponent=%i limitExponent=%i (exponentLimit=%i) (exponentHideLimit=%i) \n", real34ToUInt32(&value34),  exponent,limitExponent, exponentLimit, exponentHideLimit);
 
-  if(limitExponent && (abs(exponent) > exponentLimit || (exponentHideLimit != 0 && exponent < exponentHideLimit))) {
+  if(limitExponent) {
     if(exponent > exponentLimit) {
       if(real34IsPositive(&value34)) {
         if(frontSpace) {
@@ -627,18 +621,41 @@ overRange:
   // ALL mode //
   //////////////
   if(displayFormat == DF_ALL) {
-    if(noFix || exponent >= displayHasNDigits || (displayFormatDigits != 0 && exponent < -(int32_t)displayFormatDigits) || (displayFormatDigits == 0 && exponent < numDigits - displayHasNDigits)) { // Display in SCI or ENG format
-      digitsToDisplay = numDigits - 1;
-      digitToRound    = firstDigit + digitsToDisplay;
+    // Number of digits to truncate
+    digitsToTruncate = max(numDigits - displayHasNDigits, 0);
+    numDigits -= digitsToTruncate;
+    lastDigit -= digitsToTruncate;
+
+    // Round the final 9s
+    if(bcd[lastDigit+1] == 9) {
+      bcd[lastDigit]++;
+
+      // Transfert the carry
+      while(bcd[lastDigit] == 10) {
+        bcd[lastDigit--] = 0;
+        numDigits--;
+        bcd[lastDigit]++;
+      }
+
+      // Case when 9.9999 rounds to 10.0000
+      if(lastDigit < firstDigit) {
+        firstDigit--;
+        lastDigit = firstDigit;
+        numDigits = 1;
+        exponent++;
+      }
+    }
+
+    if(noFix || exponent >= displayHasNDigits ||
+        exponent <= -displayHasNDigits ||
+        (displayFormatDigits != 0 && exponent < -(int32_t)displayFormatDigits) || 
+        (displayFormatDigits == 0 && exponent < numDigits - displayHasNDigits)) { // Display in SCI or ENG format
+      digitsToDisplay = min(displayHasNDigits, numDigits - 1);
+      digitToRound    = min(firstDigit + digitsToDisplay, lastDigit);
       ovrSCI = !getSystemFlag(FLAG_ENGOVR);
       ovrENG = getSystemFlag(FLAG_ENGOVR);
     }
     else { // display all digits without ten exponent factor
-      // Number of digits to truncate
-      digitsToTruncate = max(numDigits - exponent, displayHasNDigits) - displayHasNDigits;
-      numDigits -= digitsToTruncate;
-      lastDigit -= digitsToTruncate;
-
       // Round the displayed number
       if(bcd[lastDigit+1] >= 5) {
         bcd[lastDigit]++;
@@ -774,7 +791,7 @@ overRange:
          ( displayFormat == DF_SF && exponent -(int32_t)displayFormatDigits < -(checkHP ? 10+1 : displayHasNDigits)) ||
          ( displayFormat == DF_SF && !checkHP && exponent -(int32_t)displayFormatDigits > GROUPWIDTH_LEFT1)
       ) { // Display in SCI or ENG format
-      digitsToDisplay = displayFormatDigits;
+      digitsToDisplay = min(displayFormatDigits, displayHasNDigits - 1);
       digitToRound    = min(firstDigit + digitsToDisplay, lastDigit);
       ovrSCI = !getSystemFlag(FLAG_ENGOVR);
       ovrENG = getSystemFlag(FLAG_ENGOVR);
@@ -1080,6 +1097,7 @@ overRange:
       bcd[digitToRound]++;
     }
 
+    // Ensure rounding before the radix mark for DSP 0 & DSP 1
     bcd[digitToRound + 1] = 0;
     bcd[digitToRound + 2] = 0;
 
@@ -1090,14 +1108,12 @@ overRange:
       bcd[digitToRound]++;
     }
 
-if(displayFormat != DF_UN) {
     // Case when 9.9999 rounds to 10.0000
     if(digitToRound < firstDigit) {
       firstDigit--;
       numDigits = 1;
       exponent++;
     }
-  }
 
     // The sign
     if(sign) {
@@ -1223,28 +1239,47 @@ void complex34ToDisplayString(const complex34_t *complex34, char *displayString,
   uint8_t savedDisplayFormatDigits = displayFormatDigits;
   uint8_t saveddisplayFormat       = displayFormat;
 
+  int16_t digitWidth = stringWidth("0", font, false, false);
+
   if(updateDisplayValueX) {
     displayValueX[0] = 0;
   }
 
   complex34ToDisplayString2(complex34, displayString, displayHasNDigits, limitExponent, frontSpace, tagAngle, tagPolar);
-  while(stringWidth(displayString, font, true, true) > maxWidth) {
+  bool noFix = false;
+  // bool overflown = false;
+  int16_t overflow = stringWidth(displayString, font, true, true) - maxWidth;
+  while(overflow > 0) {
+    // overflown = true;
+    int16_t overflowDigits = max(overflow / digitWidth / 4, 1);
 
     //complex34ToDisplayString2(complex34, displayString, displayHasNDigits, limitExponent, frontSpace, tagAngle, tagPolar);
     //printf("#### Xw=%i displayHasNDigits=%u  displayFormatDigits=%u str:%s\n",stringWidth(displayString, font, true, true),displayHasNDigits,displayFormatDigits,displayString);
 
+    if(displayHasNDigits == 2) {
+      break;
+    }
+
     if(displayFormat == DF_ALL) {
-      if(displayHasNDigits == 2) {
-        break;
-      }
-      displayHasNDigits--;
+      displayHasNDigits = max(displayHasNDigits - overflowDigits, 2);
     }
     else {
-      if(displayFormatDigits == 0) {
-        break;
+      if (displayFormat == DF_FIX) {
+        if(displayFormatDigits == 0 || noFix) {
+          noFix = true;
+          displayHasNDigits = max(displayHasNDigits - overflowDigits, 2);
+          displayFormatDigits = min(displayHasNDigits - 1, savedDisplayFormatDigits);
+        }
+        else {
+          displayFormatDigits = max(displayFormatDigits - overflowDigits, 0);
+        }
       }
-      displayFormatDigits--;
-      if(displayFormatDigits == 3) displayFormat = DF_ALL;
+      else {
+        displayFormatDigits = max(displayFormatDigits - overflowDigits, 3);
+        if(displayFormatDigits == 3) {
+          displayFormat = DF_ALL;
+        }
+      }
     }
 
     if(updateDisplayValueX) {
@@ -1252,7 +1287,12 @@ void complex34ToDisplayString(const complex34_t *complex34, char *displayString,
     }
 
     complex34ToDisplayString2(complex34, displayString, displayHasNDigits, limitExponent, frontSpace, tagAngle, tagPolar);
+    overflow = stringWidth(displayString, font, true, true) - maxWidth;
   }
+  // if (overflown && overflow < -3 * digitWidth) {
+  //   printf("oops: %d\n", overflow);
+  // }
+
   displayFormatDigits = savedDisplayFormatDigits;
   displayFormat       = saveddisplayFormat;
 }
@@ -1312,7 +1352,7 @@ static void complex34ToDisplayString2(const complex34_t *complex34, char *displa
     real34ToReal(VARIABLE_IMAG34_DATA(complex34), &imagIc);
 
     decContext c = ctxtReal39;
-    if(temporaryInformation == TI_NO_INFO) c.digits = 21; //speedup for display purposes (FIX max 19)
+    c.digits = NUMBER_OF_DISPLAY_REAL_CONTEXT_DIGITS;
     realRectangularToPolar(&real, &imagIc, &real, &imagIc, &c); // imagIc in radian
     convertAngleFromTo(&imagIc, amRadian, tagAngle == amNone ? currentAngularMode : tagAngle, &c);
 
