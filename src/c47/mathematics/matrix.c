@@ -5462,7 +5462,7 @@ void callByIndexedMatrix(bool_t (*real_f)(real34Matrix_t *), bool_t (*complex_f)
 
 
 
-void convert3DtoSPH(const real34Matrix_t *matrix, real_t *r, real_t *th1, real_t *th2, uint8_t am) {
+void convert3DtoSPH(const real34Matrix_t *matrix, real_t *r, real_t *th1, real_t *th2, uint8_t am, decContext *ctxtRealDisplay) {
     real_t x, y, z;
     _euclideanNormRealMatrix(matrix, r, &ctxtReal39);
 
@@ -5477,50 +5477,49 @@ void convert3DtoSPH(const real34Matrix_t *matrix, real_t *r, real_t *th1, real_t
       goto SPH_ret1;
     }
 
-    WP34S_Atan2(&y, &x, th1, &ctxtReal39);
-    realDivide(&z, r, &z, &ctxtReal39);
-    WP34S_Acos(&z, th2, &ctxtReal39);
+    WP34S_Atan2(&y, &x, th1, ctxtRealDisplay);
+    realDivide(&z, r, &z, ctxtRealDisplay);
+    WP34S_Acos(&z, th2, ctxtRealDisplay);
 
 SPH_ret1:
-    convertAngleFromTo(th1, amRadian, am, &ctxtReal39);
+    convertAngleFromTo(th1, amRadian, am, ctxtRealDisplay);
     if(realIsZero(th1)) {
       realZero(th1);
     }
-    convertAngleFromTo(th2, amRadian, am, &ctxtReal39);
+    convertAngleFromTo(th2, amRadian, am, ctxtRealDisplay);
     if(realIsZero(th2)) {
       realZero(th2);
     }
 }
 
 
-void convert3DtoCYL(const real34Matrix_t *matrix, real_t *r, real_t *th1, real_t *z, uint8_t am) {
+void convert3DtoCYL(const real34Matrix_t *matrix, real_t *r, real_t *th1, real_t *z, uint8_t am, decContext *ctxtRealDisplay) {
     real_t x, y, t;
     real34ToReal(&matrix->matrixElements[0], &x);
     real34ToReal(&matrix->matrixElements[1], &y);
     real34ToReal(&matrix->matrixElements[2], z);
 
-    realMultiply(&x, &x, r, &ctxtReal39);
-    realMultiply(&y, &y, &t, &ctxtReal39);
-    realAdd(&t, r, r, &ctxtReal39);
-    realSquareRoot(r, r, &ctxtReal39);
+    realMultiply(&x, &x, r, ctxtRealDisplay);
+    realMultiply(&y, &y, &t, ctxtRealDisplay);
+    realAdd(&t, r, r, ctxtRealDisplay);
+    realSquareRoot(r, r, ctxtRealDisplay);
 
-    WP34S_Atan2(&y, &x, th1, &ctxtReal39);
+    WP34S_Atan2(&y, &x, th1, ctxtRealDisplay);
 
-    convertAngleFromTo(th1, amRadian, am, &ctxtReal39);
+    convertAngleFromTo(th1, amRadian, am, ctxtRealDisplay);
     if(realIsZero(th1)) {realZero(th1);}
 }
 
 
-void convert2DtoPOL(const real34Matrix_t *matrix, real_t *r, real_t *th1, uint8_t am) {
+void convert2DtoPOL(const real34Matrix_t *matrix, real_t *r, real_t *th1, uint8_t am, decContext *ctxtRealDisplay) {
     real_t x, y;
-    _euclideanNormRealMatrix(matrix, r, &ctxtReal39);
+    _euclideanNormRealMatrix(matrix, r, ctxtRealDisplay);
 
     real34ToReal(&matrix->matrixElements[0], &x);
     real34ToReal(&matrix->matrixElements[1], &y);
 
-    realDivide(&y, &x, &x, &ctxtReal39);
-    WP34S_Atan(&x, th1, &ctxtReal39);
-    convertAngleFromTo(th1, amRadian, am, &ctxtReal39);
+    WP34S_Atan2(&y, &x, th1, ctxtRealDisplay);
+    convertAngleFromTo(th1, amRadian, am, ctxtRealDisplay);
     if(realIsZero(th1)) {realZero(th1);}
 }
 

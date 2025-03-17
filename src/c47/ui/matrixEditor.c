@@ -910,8 +910,11 @@ static void displayVectorAngle(const real34Matrix_t *matrix, int j, int rows, in
 
 static void displayVectorElement(const real34Matrix_t *matrix, int j, int ii, int rows, int cols, real34_t *element, uint8_t *toBeAngle) {
   real_t aa,bb,cc;
+  decContext c = ctxtReal39;
+  c.digits = NUMBER_OF_DISPLAY_REAL_CONTEXT_DIGITS; //speedup for display purposes (FIX max 19)
+
   if((isMatrix3dVectorSPH(rows, cols, matrix->header.mtag))) {
-    convert3DtoSPH(matrix, &aa,&bb,&cc, *toBeAngle);
+    convert3DtoSPH(matrix, &aa,&bb,&cc, *toBeAngle, &c);
     switch(j) {
       case 0: realToReal34(&aa,element); break;
       case 1: realToReal34(&cc,element); break;
@@ -922,7 +925,7 @@ static void displayVectorElement(const real34Matrix_t *matrix, int j, int ii, in
     //printRealToConsole(&bb,"SPH bb=","\n");
     //printRealToConsole(&cc,"SPH cc=","\n");
   } else if((isMatrix3dVectorCYL(rows, cols, matrix->header.mtag))) {
-    convert3DtoCYL(matrix, &aa,&bb,&cc, *toBeAngle);
+    convert3DtoCYL(matrix, &aa,&bb,&cc, *toBeAngle, &c);
     switch(j) {
       case 0: realToReal34(&aa,element); break;
       case 1: realToReal34(&bb,element); break;
@@ -933,7 +936,7 @@ static void displayVectorElement(const real34Matrix_t *matrix, int j, int ii, in
     //printRealToConsole(&bb,"CYL bb=","\n");
     //printRealToConsole(&cc,"CYL cc=","\n");
   } else if((isMatrix2dVectorPOL(rows, cols, matrix->header.mtag))) {
-    convert2DtoPOL(matrix, &aa,&bb, *toBeAngle);
+    convert2DtoPOL(matrix, &aa,&bb, *toBeAngle, &c);
     switch(j) {
       case 0: realToReal34(&aa,element); break;
       case 1: realToReal34(&bb,element); break;
