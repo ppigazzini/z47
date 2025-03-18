@@ -166,6 +166,7 @@ uint8_t                numLinesStandardFont;
 uint8_t                numLinesTinyFont;
 uint8_t                cursorEnabled;
 uint8_t                nimNumberPart;
+uint8_t                nimRealPart;
 uint8_t                hexDigits;
 uint8_t                lastErrorCode;
 uint8_t                temporaryInformation;

@@ -1440,7 +1440,7 @@ typedef struct {
         setLastintegerBasetoZero();
 
         switch(nimNumberPart) {
-         case NP_REAL_EXPONENT: {
+          case NP_REAL_EXPONENT: {
             if((aimBuffer[lastChar] == '+' || aimBuffer[lastChar] == '-') && aimBuffer[lastChar - 1] == 'e') {
               aimBuffer[lastChar - 1] = 0;
             }
@@ -1451,11 +1451,12 @@ typedef struct {
               imaginaryMantissaSignLocation = strlen(aimBuffer);
               strcat(aimBuffer, "+i");
 
+              nimRealPart = nimNumberPart;
               nimNumberPart = NP_COMPLEX_INT_PART;
               //debugNIM();
             }
             break;
-         }
+          }
 
           case NP_INT_10: {
             strcat(aimBuffer, "."); // no break here
@@ -1468,6 +1469,7 @@ typedef struct {
             imaginaryMantissaSignLocation = strlen(aimBuffer);
             strcat(aimBuffer, "+i");
 
+            nimRealPart = nimNumberPart;
             nimNumberPart = NP_COMPLEX_INT_PART;
             //debugNIM();
             break;
@@ -1538,7 +1540,7 @@ typedef struct {
 
             if(aimBuffer[lastChar] == 'e') {
               nimNumberPart = NP_INT_10;
-              for(int16_t i=0; i<lastChar; i++) {
+              for(int16_t i=1; i<lastChar; i++) {
                 if(aimBuffer[i] == '.') {
                   nimNumberPart = NP_REAL_FLOAT_PART;
                   break;
@@ -1561,7 +1563,7 @@ typedef struct {
           case NP_FRACTION_DENOMINATOR: {
             if(aimBuffer[lastChar] == '/') {
               nimNumberPart = NP_REAL_FLOAT_PART;
-              for(int16_t i=0; i<lastChar; i++) {
+              for(int16_t i=1; i<lastChar; i++) {
                 if(aimBuffer[i] == ' ') {
                   aimBuffer[i] = '.';
                   break;
@@ -1574,16 +1576,7 @@ typedef struct {
 
           case NP_COMPLEX_INT_PART: {
             if(aimBuffer[lastChar] == 'i') {
-              nimNumberPart = NP_INT_10;
-              for(int16_t i=0; i<lastChar; i++) {
-                if(aimBuffer[i] == 'e') {
-                  nimNumberPart = NP_REAL_EXPONENT;
-                  break;
-                }
-                if(aimBuffer[i] == '.') {
-                  nimNumberPart = NP_REAL_FLOAT_PART;
-                }
-              }
+              nimNumberPart = nimRealPart;
               //debugNIM();
               lastChar--;
             }
@@ -1952,18 +1945,7 @@ typedef struct {
         case NP_COMPLEX_EXPONENT: { // +1.2+i15.69e2
           // Real part
           savedNimNumberPart = nimNumberPart;
-
-          for(index=2; index<imaginaryMantissaSignLocation && aimBuffer[index] != '.'; index++) {
-          }
-          if(index < imaginaryMantissaSignLocation) { // There is a decimal part in the real part
-            nimNumberPart = NP_REAL_FLOAT_PART;
-          }
-
-          for(index=2; index<imaginaryMantissaSignLocation && aimBuffer[index] != 'e'; index++) {
-          }
-          if(index < imaginaryMantissaSignLocation) { // There is an exposant in the real part
-            nimNumberPart = NP_REAL_EXPONENT;
-          }
+          nimNumberPart = nimRealPart;
 
           nimBufferToDisplayBuffer(aimBuffer, nimBufferDisplay + 2);
 
@@ -2003,22 +1985,10 @@ typedef struct {
           // Imaginary part
           if(aimBuffer[imaginaryMantissaSignLocation+2] != 0) {
             savedNimNumberPart = nimNumberPart;
-
-            for(index=imaginaryMantissaSignLocation+1; index<(int16_t)strlen(aimBuffer) && aimBuffer[index] != '.'; index++) {
-            }
-            if(index < (int16_t)strlen(aimBuffer)) { // There is a decimal part in the real part
-              nimNumberPart = NP_REAL_FLOAT_PART;
-            }
-
-            for(index=imaginaryMantissaSignLocation+1; index<(int16_t)strlen(aimBuffer) && aimBuffer[index] != 'e'; index++) {
-            }
-            if(index < (int16_t)strlen(aimBuffer)) { // There is an exposant in the real part
-              nimNumberPart = NP_REAL_EXPONENT;
-            }
-
+  
             nimBufferToDisplayBuffer(aimBuffer + imaginaryMantissaSignLocation + 1, nimBufferDisplay + stringByteLength(nimBufferDisplay));
 
-            if(nimNumberPart == NP_REAL_EXPONENT) {
+            if(nimNumberPart == NP_COMPLEX_EXPONENT) {
               exponentToDisplayString(stringToInt32(aimBuffer + imaginaryExponentSignLocation), nimBufferDisplay + stringByteLength(nimBufferDisplay), NULL, true);
               if(aimBuffer[imaginaryExponentSignLocation + 1] == 0 && aimBuffer[imaginaryExponentSignLocation] == '-') {
                 strcat(nimBufferDisplay, STD_SUP_MINUS);
@@ -2221,7 +2191,7 @@ typedef struct {
     GROUPWIDTH_LEFT = GROUPWIDTH_LEFTM;                               //JMGAP
     displayBuffer[dest] = 0;
 
-    if(nimNumberPart == NP_REAL_FLOAT_PART || nimNumberPart == NP_REAL_EXPONENT) {
+    if(nimNumberPart == NP_REAL_FLOAT_PART || nimNumberPart == NP_REAL_EXPONENT || nimNumberPart == NP_COMPLEX_FLOAT_PART || nimNumberPart == NP_COMPLEX_EXPONENT) {
       displayBuffer[dest++] = '.';
 
       buffer += source + 1;

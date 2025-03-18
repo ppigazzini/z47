@@ -413,6 +413,7 @@
   extern uint8_t                numLinesTinyFont;
   extern uint8_t                cursorEnabled;
   extern uint8_t                nimNumberPart;
+  extern uint8_t                nimRealPart;
   extern uint8_t                hexDigits;
   extern uint8_t                lastErrorCode;
   extern uint8_t                temporaryInformation;
