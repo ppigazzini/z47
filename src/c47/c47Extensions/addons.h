@@ -57,7 +57,6 @@ void fnRESET_Mya(void);
 
 void fnByteShortcutsS   (uint16_t size);                    //JM POC BASE2 vv
 void fnByteShortcutsU   (uint16_t size);
-void fnByte             (uint16_t command);                 //JM POC BASE2 ^^
 
 
 //for display.c

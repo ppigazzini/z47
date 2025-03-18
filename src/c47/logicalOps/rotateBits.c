@@ -7,11 +7,27 @@
 
 #include "c47.h"
 
+void fnSl_1(uint16_t unusedButMandatoryParameter) {
+    fnSl(1);
+}
+
+void fnSr_1(uint16_t unusedButMandatoryParameter) {
+    fnSr(1);
+}
+
+void fnRl_1(uint16_t unusedButMandatoryParameter) {
+    fnRl(1);
+}
+
+void fnRr_1(uint16_t unusedButMandatoryParameter) {
+    fnRr(1);
+}
+
 /********************************************//**
  * \brief regX ==> regL and ASR(regX) ==> regX
  * enables stack lift and refreshes the stack
  *
- * \param[in] unusedButMandatoryParameter uint16_t
+ * \param[in] numberOfShifts uint16_t
  * \return void
  ***********************************************/
 void fnAsr(uint16_t numberOfShifts) {
@@ -53,7 +69,7 @@ void fnAsr(uint16_t numberOfShifts) {
  * \brief regX ==> regL and SL(regX) ==> regX
  * enables stack lift and refreshes the stack
  *
- * \param[in] unusedButMandatoryParameter uint16_t
+ * \param[in] numberOfShifts uint16_t
  * \return void
  ***********************************************/
 void fnSl(uint16_t numberOfShifts) {
@@ -85,7 +101,7 @@ void fnSl(uint16_t numberOfShifts) {
  * \brief regX ==> regL and SR(regX) ==> regX
  * enables stack lift and refreshes the stack
  *
- * \param[in] unusedButMandatoryParameter uint16_t
+ * \param[in] numberOfShifts uint16_t
  * \return void
  ***********************************************/
 void fnSr(uint16_t numberOfShifts) {
@@ -118,7 +134,7 @@ void fnSr(uint16_t numberOfShifts) {
  * \brief regX ==> regL and RL(regX) ==> regX
  * enables stack lift and refreshes the stack
  *
- * \param[in] unusedButMandatoryParameter uint16_t
+ * \param[in] numberOfShifts uint16_t
  * \return void
  ***********************************************/
 void fnRl(uint16_t numberOfShifts) {
@@ -153,7 +169,7 @@ void fnRl(uint16_t numberOfShifts) {
  * \brief regX ==> regL and RR(regX) ==> regX
  * enables stack lift and refreshes the stack
  *
- * \param[in] unusedButMandatoryParameter uint16_t
+ * \param[in] numberOfShifts uint16_t
  * \return void
  ***********************************************/
 void fnRr(uint16_t numberOfShifts) {
@@ -186,7 +202,7 @@ void fnRr(uint16_t numberOfShifts) {
  * \brief regX ==> regL and RLC(regX) ==> regX
  * enables stack lift and refreshes the stack
  *
- * \param[in] unusedButMandatoryParameter uint16_t
+ * \param[in] numberOfShifts uint16_t
  * \return void
  ***********************************************/
 void fnRlc(uint16_t numberOfShifts) {
@@ -221,7 +237,7 @@ void fnRlc(uint16_t numberOfShifts) {
  * \brief regX ==> regL and RRC(regX) ==> regX
  * enables stack lift and refreshes the stack
  *
- * \param[in] unusedButMandatoryParameter uint16_t
+ * \param[in] numberOfShifts uint16_t
  * \return void
  ***********************************************/
 void fnRrc(uint16_t numberOfShifts) {
@@ -330,7 +346,7 @@ void fnMirror(uint16_t unusedButMandatoryParameter) {
  * \param[in] unusedButMandatoryParameter uint16_t
  * \return void
  ***********************************************/
-void fnSwapEndian(uint8_t bitWidth) {
+void fnSwapEndian(uint16_t bitWidth) {
   uint64_t b7,b6,b5,b4,b3,b2,b1,b0;
   uint64_t x;
   uint32_t base;
