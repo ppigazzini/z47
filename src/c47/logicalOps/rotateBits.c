@@ -259,7 +259,7 @@ void fnRrc(uint16_t numberOfShifts) {
  * \param[in] unusedButMandatoryParameter uint16_t
  * \return void
  ***********************************************/
-void fnLj(uint16_t numberOfShifts) {
+void fnLj(uint16_t unusedButMandatoryParameter) {
   uint32_t count;
   longInteger_t regX;
   uint64_t w;
@@ -267,11 +267,10 @@ void fnLj(uint16_t numberOfShifts) {
   if (!getRegisterAsRawShortInt(REGISTER_X, &w, NULL) || !saveLastX())
     return;
 
-  count = 0;
-  while((w & shortIntegerSignBit) == 0) {
-    count++;
-    w <<= 1;
-  }
+  if (w == 0)
+    count = shortIntegerWordSize;
+  else
+    count = __builtin_clzll(w) - (64 - shortIntegerWordSize);
 
   longIntegerInit(regX);
   uInt32ToLongInteger(count, regX);
@@ -291,19 +290,14 @@ void fnLj(uint16_t numberOfShifts) {
  * \param[in] unusedButMandatoryParameter uint16_t
  * \return void
  ***********************************************/
-void fnRj(uint16_t numberOfShifts) {
+void fnRj(uint16_t unusedButMandatoryParameter) {
   uint32_t count;
   longInteger_t regX;
   uint64_t w;
 
   if (!getRegisterAsRawShortInt(REGISTER_X, &w, NULL) || !saveLastX())
     return;
-
-  count = 0;
-  while((w & 1) == 0) {
-    count++;
-    w >>= 1;
-  }
+  count = __builtin_ctzll(w | ~shortIntegerMask);
 
   longIntegerInit(regX);
   uInt32ToLongInteger(count, regX);
