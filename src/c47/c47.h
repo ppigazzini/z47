@@ -445,6 +445,7 @@
   extern int16_t                denominatorLocation;
   extern int16_t                imaginaryExponentSignLocation;
   extern int16_t                imaginaryMantissaSignLocation;
+  extern int16_t                imaginaryDenominatorLocation;
   extern int16_t                exponentLimit;
   extern int16_t                exponentHideLimit;
   extern int16_t                showFunctionNameCounter;

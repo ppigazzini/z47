@@ -1337,6 +1337,8 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define NP_COMPLEX_FLOAT_PART                      8 // Decimal part of the complex imaginary part
 #define NP_COMPLEX_EXPONENT                        9 // Ten exponent of the complex imaginary part
 #define NP_HP32SII_DENOMINATOR                    10 // Denominator of the fraction (HP32SII mode)
+#define NP_COMPLEX_FRACTION_DENOMINATOR           11 // Denominator of the complex imaginary part fraction
+#define NP_COMPLEX_HP32SII_DENOMINATOR            12 // Denominator of the complex imaginary part fraction (HP32SII mode)
 
 // Temporary information
 #define TI_NO_INFO                                 0

@@ -246,6 +246,7 @@ int16_t                exponentSignLocation;
 int16_t                denominatorLocation;
 int16_t                imaginaryExponentSignLocation;
 int16_t                imaginaryMantissaSignLocation;
+int16_t                imaginaryDenominatorLocation;
 int16_t                exponentLimit;
 int16_t                exponentHideLimit;
 int16_t                showFunctionNameCounter;

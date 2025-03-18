@@ -1193,6 +1193,27 @@ typedef struct {
             }
             break;
           }
+          
+          case NP_COMPLEX_HP32SII_DENOMINATOR:
+          case NP_COMPLEX_FRACTION_DENOMINATOR: {
+            if(item == ITM_0) {
+              strcat(aimBuffer, "0");
+
+              if(aimBuffer[imaginaryDenominatorLocation] == '0') {
+                aimBuffer[imaginaryDenominatorLocation] = 0;
+              }
+              if(toInt32(aimBuffer + imaginaryDenominatorLocation) < 0 || toInt32(aimBuffer + imaginaryDenominatorLocation) > 999999999) {  // 999999999 is the largest clean decimal number lower than < 2147483647 being the 2^31-1 limit, enlarged beyond the DENMAX as it has nothing to do with that, it is a fraction input limit
+                aimBuffer[strlen(aimBuffer) - 1] = 0;
+              }
+            }
+            else {
+              strcat(aimBuffer, indexOfItems[item].itemSoftmenuName);
+              if(toInt32(aimBuffer + imaginaryDenominatorLocation) < 0 || toInt32(aimBuffer + imaginaryDenominatorLocation) > 999999999) {
+                aimBuffer[strlen(aimBuffer) - 1] = 0;
+              }
+            }
+            break;
+          }
 
           case NP_INT_BASE: {
             strcat(aimBuffer, indexOfItems[item].itemSoftmenuName);
@@ -1290,6 +1311,34 @@ typedef struct {
             strcat(aimBuffer, ".");
 
             nimNumberPart = NP_COMPLEX_FLOAT_PART;
+            //debugNIM();
+            break;
+          }
+
+          case NP_COMPLEX_FLOAT_PART: {
+            bool_t HP32SII = false;
+            if(aimBuffer[strlen(aimBuffer) - 1] == '.') {
+              HP32SII = true; //This is the 123 .. 4 meaning 123/4 shortcut
+            }
+
+            int16_t numeratorLocation = HP32SII ? imaginaryMantissaSignLocation + 2 : strchr(aimBuffer + imaginaryMantissaSignLocation + 2, '.') - aimBuffer + 1;
+            int32_t numerator = toInt32(aimBuffer + numeratorLocation);
+            if (numerator < 0 || numerator > 999999999) {
+              break;
+            }
+
+            if(HP32SII) {     //Changed the part below for 123..4 to mean 0 123/4
+              aimBuffer[strlen(aimBuffer) - 1] = 0;
+            }
+
+            else { //!HP32SII .. situation (standard code)
+              aimBuffer[numeratorLocation - 1] = ' ';
+            }
+
+            strcat(aimBuffer, "/");
+
+            imaginaryDenominatorLocation = strlen(aimBuffer);
+            nimNumberPart = HP32SII ? NP_COMPLEX_HP32SII_DENOMINATOR : NP_COMPLEX_FRACTION_DENOMINATOR;
             //debugNIM();
             break;
           }
@@ -1397,7 +1446,9 @@ typedef struct {
           }
 
           case NP_COMPLEX_INT_PART :
-          case NP_COMPLEX_FLOAT_PART: {
+          case NP_COMPLEX_FLOAT_PART:
+          case NP_COMPLEX_HP32SII_DENOMINATOR:
+          case NP_COMPLEX_FRACTION_DENOMINATOR: {
             if(aimBuffer[imaginaryMantissaSignLocation] == '+') {
               aimBuffer[imaginaryMantissaSignLocation] = '-';
             }
@@ -1603,6 +1654,29 @@ typedef struct {
               for(int16_t i=imaginaryMantissaSignLocation+2; i<lastChar; i++) {
                 if(aimBuffer[i] == '.') {
                   nimNumberPart = NP_COMPLEX_FLOAT_PART;
+                  break;
+                }
+              }
+              //debugNIM();
+            }
+            break;
+          }
+
+          case NP_COMPLEX_HP32SII_DENOMINATOR: {
+            if(aimBuffer[lastChar] == '/') {
+              nimNumberPart = NP_COMPLEX_FLOAT_PART;
+              aimBuffer[lastChar++] = '.';
+              //debugNIM();
+            }
+            break;
+          }
+
+          case NP_COMPLEX_FRACTION_DENOMINATOR: {
+            if(aimBuffer[lastChar] == '/') {
+              nimNumberPart = NP_COMPLEX_FLOAT_PART;
+              for(int16_t i=imaginaryMantissaSignLocation+2; i<lastChar; i++) {
+                if(aimBuffer[i] == ' ') {
+                  aimBuffer[i] = '.';
                   break;
                 }
               }
@@ -1944,8 +2018,10 @@ typedef struct {
 
         case NP_COMPLEX_INT_PART :  // +1.2+i15
         case NP_COMPLEX_FLOAT_PART :// +1.2+i15.69
-        case NP_COMPLEX_EXPONENT: { // +1.2+i15.69e2
-          // Real part
+        case NP_COMPLEX_EXPONENT:   // +1.2+i15.69e2
+        case NP_COMPLEX_HP32SII_DENOMINATOR:    // +1.2+i123/7
+        case NP_COMPLEX_FRACTION_DENOMINATOR: { // +1.2+i123 12/7
+            // Real part
           savedNimNumberPart = nimNumberPart;
           nimNumberPart = nimRealPart;
 
@@ -2015,15 +2091,39 @@ typedef struct {
           if(aimBuffer[imaginaryMantissaSignLocation+2] != 0) {
             savedNimNumberPart = nimNumberPart;
   
-            nimBufferToDisplayBuffer(aimBuffer + imaginaryMantissaSignLocation + 1, nimBufferDisplay + stringByteLength(nimBufferDisplay));
-
-            if(nimNumberPart == NP_COMPLEX_EXPONENT) {
-              exponentToDisplayString(stringToInt32(aimBuffer + imaginaryExponentSignLocation), nimBufferDisplay + stringByteLength(nimBufferDisplay), NULL, true);
-              if(aimBuffer[imaginaryExponentSignLocation + 1] == 0 && aimBuffer[imaginaryExponentSignLocation] == '-') {
-                strcat(nimBufferDisplay, STD_SUP_MINUS);
+            if (nimNumberPart == NP_COMPLEX_FRACTION_DENOMINATOR || nimNumberPart == NP_COMPLEX_HP32SII_DENOMINATOR) {
+              if (nimNumberPart == NP_COMPLEX_FRACTION_DENOMINATOR) {
+                nimBufferToDisplayBuffer(aimBuffer + imaginaryMantissaSignLocation + 2, nimBufferDisplay + stringByteLength(nimBufferDisplay));
+                strcat(nimBufferDisplay, STD_SPACE_4_PER_EM);
+                
+                for(index=imaginaryMantissaSignLocation + 2; aimBuffer[index]!=' '; index++) {
+                }
               }
-              else if(aimBuffer[imaginaryExponentSignLocation + 1] == '0' && aimBuffer[imaginaryExponentSignLocation] == '+') {
-                strcat(nimBufferDisplay, STD_SUP_0);
+              else {
+                index = imaginaryMantissaSignLocation + 1;
+              }
+    
+              supNumberToDisplayString(toInt32(aimBuffer + index + 1), nimBufferDisplay + stringByteLength(nimBufferDisplay), NULL, true);
+    
+              strcat(nimBufferDisplay, "/");
+    
+              for(; aimBuffer[index]!='/'; index++) {
+              }
+              if(aimBuffer[++index] != 0) {
+                subNumberToDisplayString(toInt32(aimBuffer + index), nimBufferDisplay + stringByteLength(nimBufferDisplay), NULL);
+              }
+            }
+            else {
+              nimBufferToDisplayBuffer(aimBuffer + imaginaryMantissaSignLocation + 1, nimBufferDisplay + stringByteLength(nimBufferDisplay));
+
+              if(nimNumberPart == NP_COMPLEX_EXPONENT) {
+                exponentToDisplayString(stringToInt32(aimBuffer + imaginaryExponentSignLocation), nimBufferDisplay + stringByteLength(nimBufferDisplay), NULL, true);
+                if(aimBuffer[imaginaryExponentSignLocation + 1] == 0 && aimBuffer[imaginaryExponentSignLocation] == '-') {
+                  strcat(nimBufferDisplay, STD_SUP_MINUS);
+                }
+                else if(aimBuffer[imaginaryExponentSignLocation + 1] == '0' && aimBuffer[imaginaryExponentSignLocation] == '+') {
+                  strcat(nimBufferDisplay, STD_SUP_0);
+                }
               }
             }
 
@@ -2241,37 +2341,23 @@ typedef struct {
     }
   }
 
-
-  bool_t changeFractionModeOnENTER = false;
-  void closeNimWithFraction(real34_t *dest) {
+  void nimFractionToReal34(char* source, real34_t *dest) {
     int16_t i, posSpace, posSlash, lg;
     int32_t integer, numer, denom;
     real34_t temp;
 
-    // Set Fraction mode
-    if(!getSystemFlag(FLAG_FRACT) && !getSystemFlag(FLAG_IRFRAC)) {
-      setSystemFlag(FLAG_FRACT);          //1     //NOTE CHANGE HERE TO SWITCH OFF AUTO FRAC MODE AFTER FRACTION INPUT
-      //changeFractionModeOnENTER = true; //2     //USE either //1 or //2
-    }
-    else if(getSystemFlag(FLAG_IRFRAC)) {
-      setSystemFlag(FLAG_IRF_ON);
-    }
-    else {
-      changeFractionModeOnENTER = false;
-    }
-
-    lg = strlen(aimBuffer);
+    lg = strlen(source);
 
     posSpace = 0;
     for(i=2; i<lg; i++) {
-      if(aimBuffer[i] == ' ') {
+      if(source[i] == ' ') {
         posSpace = i;
         break;
       }
     }
 
     for(i=1; i<posSpace; i++) {
-      if(aimBuffer[i]<'0' || aimBuffer[i]>'9') { // This should never happen
+      if(source[i]<'0' || source[i]>'9') { // This should never happen
         displayCalcErrorMessage(ERROR_BAD_INPUT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)
           moreInfoOnError("In function parseNimString:", "there is a non numeric character in the integer part of the fraction!", NULL, NULL);
@@ -2282,14 +2368,14 @@ typedef struct {
 
     posSlash = 0;
     for(i=posSpace+2; i<lg; i++) {
-      if(aimBuffer[i] == '/') {
+      if(source[i] == '/') {
         posSlash = i;
         break;
       }
     }
 
     for(i=posSpace+1; i<posSlash; i++) {
-      if(aimBuffer[i]<'0' || aimBuffer[i]>'9') { // This should never happen
+      if(source[i]<'0' || source[i]>'9') { // This should never happen
        displayCalcErrorMessage(ERROR_BAD_INPUT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
          moreInfoOnError("In function parseNimString:", "there is a non numeric character in the numerator part of the fraction!", NULL, NULL);
@@ -2298,9 +2384,9 @@ typedef struct {
       }
     }
 
-    if(aimBuffer[posSlash + 1] != 0) {
+    if(source[posSlash + 1] != 0) {
       for(i=posSlash+1; i<lg; i++) {
-        if(aimBuffer[i]<'0' || aimBuffer[i]>'9') {
+        if(source[i]<'0' || source[i]>'9') {
           displayCalcErrorMessage(ERROR_BAD_INPUT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
           #if (EXTRA_INFO_ON_CALC_ERROR == 1)
             moreInfoOnError("In function parseNimString:", "there is a non numeric character in the denominator part of the fraction!", NULL, NULL);
@@ -2311,19 +2397,19 @@ typedef struct {
     }
 
     if (posSpace != 0) {
-      aimBuffer[posSpace] = 0;
-      integer = toInt32(aimBuffer + 1);
+      source[posSpace] = 0;
+      integer = toInt32(source + 1);
     }
     else {
       integer = 0;
     }
-    aimBuffer[posSlash] = 0;
-    numer   = toInt32(aimBuffer + posSpace + 1);
-    if(aimBuffer[posSlash + 1] == 0) {
+    source[posSlash] = 0;
+    numer   = toInt32(source + posSpace + 1);
+    if(source[posSlash + 1] == 0) {
       denom = lastDenominator;
     }
     else {
-      denom = toInt32(aimBuffer + posSlash + 1);
+      denom = toInt32(source + posSlash + 1);
       if(denom != 0) {
         lastDenominator = denom;
       }
@@ -2342,9 +2428,26 @@ typedef struct {
     real34Divide(dest, &temp, dest);
     int32ToReal34(integer, &temp);
     real34Add(dest, &temp, dest);
-    if(aimBuffer[0] == '-') {
+    if(source[0] == '-') {
       real34SetNegativeSign(dest);
     }
+  }
+
+  bool_t changeFractionModeOnENTER = false;
+  void closeNimWithFraction(real34_t *dest) {
+    // Set Fraction mode
+    if(!getSystemFlag(FLAG_FRACT) && !getSystemFlag(FLAG_IRFRAC)) {
+      setSystemFlag(FLAG_FRACT);          //1     //NOTE CHANGE HERE TO SWITCH OFF AUTO FRAC MODE AFTER FRACTION INPUT
+      //changeFractionModeOnENTER = true; //2     //USE either //1 or //2
+    }
+    else if(getSystemFlag(FLAG_IRFRAC)) {
+      setSystemFlag(FLAG_IRF_ON);
+    }
+    else {
+      changeFractionModeOnENTER = false;
+    }
+
+    nimFractionToReal34(aimBuffer, dest);
   }
 
 
@@ -2359,7 +2462,12 @@ typedef struct {
       stringToReal34(aimBuffer, dest_r);
     }
 
-    stringToReal34(aimBuffer + imaginaryMantissaSignLocation + 1, dest_i);
+    if (nimNumberPart == NP_COMPLEX_FRACTION_DENOMINATOR || nimNumberPart == NP_COMPLEX_HP32SII_DENOMINATOR) {
+      nimFractionToReal34(aimBuffer + imaginaryMantissaSignLocation + 1, dest_i);
+    }
+    else {
+      stringToReal34(aimBuffer + imaginaryMantissaSignLocation + 1, dest_i);
+    }
 
     if((getSystemFlag(FLAG_POLAR) && !temporaryFlagRect) || temporaryFlagPolar) { // polar mode
       if(real34CompareEqual(dest_r, const34_0)) {
@@ -2629,7 +2737,7 @@ typedef struct {
             reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
             closeNimWithFraction(REGISTER_REAL34_DATA(REGISTER_X));
           }
-          else if(nimNumberPart == NP_COMPLEX_INT_PART || nimNumberPart == NP_COMPLEX_FLOAT_PART || nimNumberPart == NP_COMPLEX_EXPONENT) {
+          else if(nimNumberPart == NP_COMPLEX_INT_PART || nimNumberPart == NP_COMPLEX_FLOAT_PART || nimNumberPart == NP_COMPLEX_EXPONENT || nimNumberPart == NP_COMPLEX_FRACTION_DENOMINATOR || nimNumberPart == NP_COMPLEX_HP32SII_DENOMINATOR) {
             reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
             closeNimWithComplex(REGISTER_REAL34_DATA(REGISTER_X), REGISTER_IMAG34_DATA(REGISTER_X));
           }
