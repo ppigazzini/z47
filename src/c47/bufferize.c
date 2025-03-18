@@ -1465,7 +1465,9 @@ typedef struct {
             #endif // !OSX
           }
 
-          case NP_REAL_FLOAT_PART: {
+          case NP_REAL_FLOAT_PART:
+          case NP_FRACTION_DENOMINATOR:
+          case NP_HP32SII_DENOMINATOR: {
             imaginaryMantissaSignLocation = strlen(aimBuffer);
             strcat(aimBuffer, "+i");
 
@@ -1947,15 +1949,42 @@ typedef struct {
           savedNimNumberPart = nimNumberPart;
           nimNumberPart = nimRealPart;
 
-          nimBufferToDisplayBuffer(aimBuffer, nimBufferDisplay + 2);
-
-          if(nimNumberPart == NP_REAL_EXPONENT) {
-            exponentToDisplayString(stringToInt32(aimBuffer + exponentSignLocation), nimBufferDisplay + stringByteLength(nimBufferDisplay), NULL, true);
-            if(aimBuffer[exponentSignLocation + 1] == 0 && aimBuffer[exponentSignLocation] == '-') {
-              strcat(nimBufferDisplay, STD_SUP_MINUS);
+          if (nimNumberPart == NP_FRACTION_DENOMINATOR || nimNumberPart == NP_HP32SII_DENOMINATOR) {
+            if (nimNumberPart == NP_FRACTION_DENOMINATOR) {
+              nimBufferToDisplayBuffer(aimBuffer, nimBufferDisplay + 2);
+              strcat(nimBufferDisplay, STD_SPACE_4_PER_EM);
+              
+              for(index=2; aimBuffer[index]!=' '; index++) {
+              }
             }
-            else if(aimBuffer[exponentSignLocation + 1] == '0' && aimBuffer[exponentSignLocation] == '+') {
-              strcat(nimBufferDisplay, STD_SUP_0);
+            else {
+              if (aimBuffer[0] == '-') {
+                strcat(nimBufferDisplay, "-");
+              }
+              index = 0;
+            }
+  
+            supNumberToDisplayString(toInt32(aimBuffer + index + 1), nimBufferDisplay + stringByteLength(nimBufferDisplay), NULL, true);
+  
+            strcat(nimBufferDisplay, "/");
+  
+            for(; aimBuffer[index]!='/'; index++) {
+            }
+            if(aimBuffer[++index] != 0) {
+              subNumberToDisplayString(toInt32(aimBuffer + index), nimBufferDisplay + stringByteLength(nimBufferDisplay), NULL);
+            }
+          }
+          else {
+            nimBufferToDisplayBuffer(aimBuffer, nimBufferDisplay + 2);
+
+            if(nimNumberPart == NP_REAL_EXPONENT) {
+              exponentToDisplayString(stringToInt32(aimBuffer + exponentSignLocation), nimBufferDisplay + stringByteLength(nimBufferDisplay), NULL, true);
+              if(aimBuffer[exponentSignLocation + 1] == 0 && aimBuffer[exponentSignLocation] == '-') {
+                strcat(nimBufferDisplay, STD_SUP_MINUS);
+              }
+              else if(aimBuffer[exponentSignLocation + 1] == '0' && aimBuffer[exponentSignLocation] == '+') {
+                strcat(nimBufferDisplay, STD_SUP_0);
+              }
             }
           }
 
@@ -2320,22 +2349,17 @@ typedef struct {
 
 
   void closeNimWithComplex(real34_t *dest_r, real34_t *dest_i) {
-    int16_t imaginarySign;
-
-    if(aimBuffer[imaginaryMantissaSignLocation] == '+') {
-      imaginarySign = 1;
-    }
-    else {
-      imaginarySign = -1;
-    }
+    aimBuffer[imaginaryMantissaSignLocation+1] = aimBuffer[imaginaryMantissaSignLocation];
     aimBuffer[imaginaryMantissaSignLocation] = 0;
 
-    stringToReal34(aimBuffer, dest_r);
-
-    stringToReal34(aimBuffer + imaginaryMantissaSignLocation + 2, dest_i);
-    if(imaginarySign == -1) {
-      real34SetNegativeSign(dest_i);
+    if (nimRealPart == NP_FRACTION_DENOMINATOR || nimRealPart == NP_HP32SII_DENOMINATOR) {
+      nimFractionToReal34(aimBuffer, dest_r);
     }
+    else {
+      stringToReal34(aimBuffer, dest_r);
+    }
+
+    stringToReal34(aimBuffer + imaginaryMantissaSignLocation + 1, dest_i);
 
     if((getSystemFlag(FLAG_POLAR) && !temporaryFlagRect) || temporaryFlagPolar) { // polar mode
       if(real34CompareEqual(dest_r, const34_0)) {
@@ -2596,8 +2620,8 @@ typedef struct {
                 stringToReal34("0", REGISTER_IMAG34_DATA(REGISTER_X));                //JM Input default type
               }                                                                       //JM Input default type
               else {                                                                  //JM Input default type
-              reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
-              stringToReal34(aimBuffer, REGISTER_REAL34_DATA(REGISTER_X));
+                reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+                stringToReal34(aimBuffer, REGISTER_REAL34_DATA(REGISTER_X));
               }                                                                       //JM Input default type
 
           }
