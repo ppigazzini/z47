@@ -252,6 +252,18 @@ void fnRrc(uint16_t numberOfShifts) {
 
 
 
+static void uint32toResultRegisterX(uint32_t val) {
+  longInteger_t ireg;
+
+  longIntegerInit(ireg);
+  uInt32ToLongInteger(val, ireg);
+
+  setSystemFlag(FLAG_ASLIFT);
+  liftStack();
+  convertLongIntegerToLongIntegerRegister(ireg, REGISTER_X);
+  longIntegerFree(ireg);
+}
+
 /********************************************//**
  * \brief regX ==> regL and LJ(regX) ==> regX
  * enables stack lift and refreshes the stack
@@ -261,24 +273,13 @@ void fnRrc(uint16_t numberOfShifts) {
  ***********************************************/
 void fnLj(uint16_t unusedButMandatoryParameter) {
   uint32_t count;
-  longInteger_t regX;
   uint64_t w;
 
   if (!getRegisterAsRawShortInt(REGISTER_X, &w, NULL) || !saveLastX())
     return;
 
-  if (w == 0)
-    count = shortIntegerWordSize;
-  else
-    count = __builtin_clzll(w) - (64 - shortIntegerWordSize);
-
-  longIntegerInit(regX);
-  uInt32ToLongInteger(count, regX);
-
-  setSystemFlag(FLAG_ASLIFT);
-  liftStack();
-  convertLongIntegerToLongIntegerRegister(regX, REGISTER_X);
-  longIntegerFree(regX);
+  count = w != 0 ? __builtin_clzll(w) - (64 - shortIntegerWordSize) : shortIntegerWordSize;
+  uint32toResultRegisterX(count);
 }
 
 
@@ -292,20 +293,13 @@ void fnLj(uint16_t unusedButMandatoryParameter) {
  ***********************************************/
 void fnRj(uint16_t unusedButMandatoryParameter) {
   uint32_t count;
-  longInteger_t regX;
   uint64_t w;
 
   if (!getRegisterAsRawShortInt(REGISTER_X, &w, NULL) || !saveLastX())
     return;
+
   count = __builtin_ctzll(w | ~shortIntegerMask);
-
-  longIntegerInit(regX);
-  uInt32ToLongInteger(count, regX);
-
-  setSystemFlag(FLAG_ASLIFT);
-  liftStack();
-  convertLongIntegerToLongIntegerRegister(regX, REGISTER_X);
-  longIntegerFree(regX);
+  uint32toResultRegisterX(count);
 }
 
 
