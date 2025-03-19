@@ -3120,7 +3120,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
               prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
             }
             else if(regist == REGISTER_X) {
-              strcpy(prefix, STD_theta " =");
+              strcpy(prefix, STD_theta_m " =");
               prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
             }
           }
@@ -3131,7 +3131,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
               prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
             }
             else if(regist == REGISTER_Y) {
-              strcpy(prefix, STD_theta " =");
+              strcpy(prefix, STD_theta_m " =");
               prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
             }
           }
@@ -3142,7 +3142,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
               prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
             }
             else if(regist == REGISTER_X) {
-              strcpy(prefix, STD_theta " =");
+              strcpy(prefix, STD_theta_m " =");
               prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
             }
           }
