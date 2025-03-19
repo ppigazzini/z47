@@ -14,6 +14,7 @@
   #include <math.h>
   #include <stdbool.h>
   #include <stddef.h>
+  #include <stdint.h>
   #include <stdlib.h>
   #include <stdio.h>
   #include <string.h>
@@ -21,9 +22,11 @@
   #include <time.h>
   #include <unistd.h>
 
-  #if defined(DMCP_BUILD) && defined(OLD_HW)
+  #if defined(DMCP_BUILD) && defined(OLD_HW) // this is due to the libc_nano added in 999acb23 which does not have hh support.
     #undef PRIu8
     #define PRIu8 "u"
+    #undef PRIi8
+    #define PRIi8 "i"
   #endif // DMCP_BUILD && OLD_HW
 
   #if !defined(GENERATE_CATALOGS) && !defined(GENERATE_CONSTANTS) && !defined(GENERATE_TESTPGMS)
