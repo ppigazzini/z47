@@ -1122,19 +1122,6 @@ void fnByteShortcutsU(uint16_t size) {
 }
 
 
-void fnByte(uint16_t command) {
-  switch(command) {
-    case 1: fnSl(1);          break;
-    case 2: fnSr(1);          break;
-    case 3: fnRl(1);          break;
-    case 4: fnRr(1);          break;
-    case 5: fnSwapEndian(16); break; //FWORD
-    case 6: fnSwapEndian(8);  break; //FBYTE
-    default: ;
-  }
-} //JM POC BASE2 ^^
-
-
 void fnP_Alpha(void) {
   #if !defined(TESTSUITE_BUILD)
     if(calcMode != CM_AIM) {

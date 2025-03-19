@@ -1,0 +1,95 @@
+;*************************************************************
+;*************************************************************
+;**                                                         **
+;**                     shift & rotate                      **
+;**                                                         **
+;*************************************************************
+;*************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+
+Func: fnCountBits
+
+In: AM=DEG FL_ASLIFT=0 FL_CPXRES=0 WS=4 RX=ShoI:"1111#2"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ShoI:"1111#2" RX=ShoI:"100#2"
+
+In: AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=ShoI:"0#2"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ShoI:"0#2" RX=ShoI:"0#2"
+
+In: AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=ShoI:"1#2"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ShoI:"1#2" RX=ShoI:"1#2"
+
+In: AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=ShoI:"1110#2"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ShoI:"1110#2" RX=ShoI:"11#2"
+
+
+Func: fnMaskr(5)
+
+In: AM=DEG FL_ASLIFT=0 FL_CPXRES=0 WS=5
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=ShoI:"11111#2"
+
+In: AM=DEG FL_ASLIFT=0 FL_CPXRES=0 WS=8
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=ShoI:"11111#2"
+
+In: AM=DEG FL_ASLIFT=0 FL_CPXRES=0 WS=9
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=ShoI:"11111#2"
+
+
+Func: fnMaskl(5)
+
+In: AM=DEG FL_ASLIFT=0 FL_CPXRES=0 WS=5
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=ShoI:"11111#2"
+
+In: AM=DEG FL_ASLIFT=0 FL_CPXRES=0 WS=8
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=ShoI:"11111000#2"
+
+In: AM=DEG FL_ASLIFT=0 FL_CPXRES=0 WS=9
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=ShoI:"111110000#2"
+
+
+Func: fnRj
+
+In: AM=DEG FL_ASLIFT=0 FL_CPXRES=0 WS=5 RX=ShoI:"1#2" RY=Real:"0.1234321"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ShoI:"1#2" RX=LonI:"0" RY=ShoI:"1#2" RZ=Real:"0.1234321"
+
+In: AM=DEG FL_ASLIFT=0 FL_CPXRES=0 WS=5 RX=ShoI:"0#2" RY=Real:"0.123321"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ShoI:"0#2" RX=LonI:"5" RY=ShoI:"0#2" RZ=Real:"0.123321"
+
+In: AM=DEG FL_ASLIFT=0 FL_CPXRES=0 WS=64 RX=ShoI:"0#2" RY=Real:"0.1234321"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ShoI:"0#2" RX=LonI:"64" RY=ShoI:"0#2" RZ=Real:"0.1234321"
+
+In: AM=DEG FL_ASLIFT=0 FL_CPXRES=0 WS=5 RX=ShoI:"100#2" RY=Real:"0.123321"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ShoI:"100#2" RX=LonI:"2" RY=ShoI:"1#2" RZ=Real:"0.123321"
+
+In: AM=DEG FL_ASLIFT=0 FL_CPXRES=0 WS=5 RX=ShoI:"10000#2" RY=Real:"0.1234321"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ShoI:"10000#2" RX=LonI:"4" RY=ShoI:"1#2" RZ=Real:"0.1234321"
+
+
+Func: fnLj
+
+In: AM=DEG FL_ASLIFT=0 FL_CPXRES=0 WS=64 RX=ShoI:"0#2" RY=Real:"0.987789"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ShoI:"0#2" RX=LonI:"64" RY=ShoI:"0#2" RZ=Real:"0.987789"
+
+In: AM=DEG FL_ASLIFT=0 FL_CPXRES=0 WS=5 RX=ShoI:"0#2" RY=Real:"0.9876789"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ShoI:"0#2" RX=LonI:"5"  RY=ShoI:"0#2" RZ=Real:"0.9876789"
+
+In: AM=DEG FL_ASLIFT=0 FL_CPXRES=0 WS=5 RX=ShoI:"1#2" RY=Real:"0.987789"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ShoI:"1#2" RX=LonI:"4" RY=ShoI:"10000#2" RZ=Real:"0.987789"
+
+In: AM=DEG FL_ASLIFT=0 FL_CPXRES=0 WS=5 RX=ShoI:"100#2" RY=Real:"0.9876789"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ShoI:"100#2" RX=LonI:"2" RY=ShoI:"10000#2" RZ=Real:"0.9876789"
+
+In: AM=DEG FL_ASLIFT=0 FL_CPXRES=0 WS=5 RX=ShoI:"10000#2" RY=Real:"0.987789"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ShoI:"10000#2" RX=LonI:"0" RY=ShoI:"10000#2" RZ=Real:"0.987789"
+
+In: AM=DEG FL_ASLIFT=0 FL_CPXRES=0 WS=64 RX=ShoI:"1#16" RY=Real:"0.9876789"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ShoI:"1#16" RX=LonI:"63" RY=ShoI:"8000000000000000#16" RZ=Real:"0.9876789"
+
+
+;Func: fnAsr()
+;Func: fnSr()
+;Func: fnSl()
+;Func: fnRrc()
+;Func: fnRr()
+;Func: fnRlc()
+;Func: fnRl()
+

@@ -406,3 +406,12 @@ Added QRNZ to NUM font
     U+038B STD_v_CIRC                  
     U+038D STD_z_CIRC                  
     U+03A2 STD_u_CIRC2                 
+
+
+2025-03-19 In both Number and Standard Fonts, add:
+    U+0135 STD_j_CIRC 
+    U+0137 STD_k_CIRC 
+    U+03b8 STD_theta_m
+    Change existing STD_theta from U+03b8 to U+03d1 (theta-script) and populate the proper U+03b8 (theta) as STD_theta_m
+
+

@@ -882,13 +882,18 @@ bool_t itemNotAvail(int16_t itemNr) {
   void fnBc                        (uint16_t unusedButMandatoryParameter) {}
   void fnSl                        (uint16_t unusedButMandatoryParameter) {}
   void fnRl                        (uint16_t unusedButMandatoryParameter) {}
+  void fnSl_1                      (uint16_t unusedButMandatoryParameter) {}
+  void fnRl_1                      (uint16_t unusedButMandatoryParameter) {}
   void fnRlc                       (uint16_t unusedButMandatoryParameter) {}
   void fnSr                        (uint16_t unusedButMandatoryParameter) {}
   void fnRr                        (uint16_t unusedButMandatoryParameter) {}
+  void fnSr_1                      (uint16_t unusedButMandatoryParameter) {}
+  void fnRr_1                      (uint16_t unusedButMandatoryParameter) {}
   void fnRrc                       (uint16_t unusedButMandatoryParameter) {}
   void fnLj                        (uint16_t unusedButMandatoryParameter) {}
   void fnRj                        (uint16_t unusedButMandatoryParameter) {}
   void fnCountBits                 (uint16_t unusedButMandatoryParameter) {}
+  void fnSwapEndian                (uint16_t unusedButMandatoryParameter) {}
   void fnNextPrime                 (uint16_t unusedButMandatoryParameter) {}
   void fnPrimeFactors              (uint16_t unusedButMandatoryParameter) {}
   void fnEvPFacts                  (uint16_t unusedButMandatoryParameter) {}
@@ -1193,7 +1198,6 @@ bool_t itemNotAvail(int16_t itemNr) {
   void fnChangeBaseMNU            (uint16_t unusedButMandatoryParameter) {}
   void fnByteShortcutsS           (uint16_t unusedButMandatoryParameter) {}  //JM POC BASE2
   void fnByteShortcutsU           (uint16_t unusedButMandatoryParameter) {}  //JM POC BASE2
-  void fnByte                     (uint16_t unusedButMandatoryParameter) {}  //JM POC BASE2
   void fnClrMod                   (uint16_t unusedButMandatoryParameter) {}  //JM POC BASE2
   void fnShoiXRepeats             (uint16_t unusedButMandatoryParameter) {}  //JM SHOIDISP
   void fnDumpMenus                (uint16_t unusedButMandatoryParameter) {}  //JM
@@ -3360,12 +3364,12 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 1996 */  { fnByteShortcutsU,             16,                          "U16",                                         "U16",                                         (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },//JM SHOI
 /* 1997 */  { fnByteShortcutsU,             32,                          "U32",                                         "U32",                                         (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },//JM SHOI
 /* 1998 */  { fnByteShortcutsU,             64,                          "U64",                                         "U64",                                         (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },//JM SHOI
-/* 1999 */  { fnByte,                       1,                           "SL1",                                         "SL1",                                         (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },//JM SHOI
-/* 2000 */  { fnByte,                       2,                           "SR1",                                         "SR1",                                         (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },//JM SHOI
-/* 2001 */  { fnByte,                       3,                           "RL1",                                         "RL1",                                         (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },//JM SHOI
-/* 2002 */  { fnByte,                       4,                           "RR1",                                         "RR1",                                         (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },//JM SHOI
-/* 2003 */  { fnByte,                       5,                           "W.SWP",                                       "W.SWP",                                       (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_ENABLED   | EIM_DISABLED | PTP_NONE         },//JM SHOI
-/* 2004 */  { fnByte,                       6,                           "B.SWP",                                       "B.SWP",                                       (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_ENABLED   | EIM_DISABLED | PTP_NONE         },//JM SHOI
+/* 1999 */  { fnSl_1,                       NOPARAM,                     "SL1",                                         "SL1",                                         (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },//JM SHOI
+/* 2000 */  { fnSr_1,                       NOPARAM,                     "SR1",                                         "SR1",                                         (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },//JM SHOI
+/* 2001 */  { fnRl_1,                       NOPARAM,                     "RL1",                                         "RL1",                                         (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },//JM SHOI
+/* 2002 */  { fnRr_1,                       NOPARAM,                     "RR1",                                         "RR1",                                         (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },//JM SHOI
+/* 2003 */  { fnSwapEndian,                 16,                          "W.SWP",                                       "W.SWP",                                       (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_ENABLED   | EIM_DISABLED | PTP_NONE         },//JM SHOI
+/* 2004 */  { fnSwapEndian,                 8,                           "B.SWP",                                       "B.SWP",                                       (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_ENABLED   | EIM_DISABLED | PTP_NONE         },//JM SHOI
 /* 2005 */  { fnClrMod,                     NOPARAM,                     "CLRMOD",                                      "CLRMOD",                                      (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_ENABLED   | EIM_DISABLED | PTP_NONE         },//clear HEX mode
 /* 2006 */  { fnShoiXRepeats,               TM_VALUE,                    "DISP_SI",                                     "DISP_SI",                                     (0 << TAM_MAX_BITS) |     3, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_NUMBER_8     },//JM SHOI
 /* 2007 */  { fnScale,                      NOPARAM,                     "X:Y=1",                                       "X:Y=1",                                       (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_NONE         },//JM GRAPHING
@@ -3810,10 +3814,10 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 2441 */  { addItemToBuffer,              ITM_v_CIRC ,                 "",                                            STD_v_CIRC ,                                   (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2442 */  { addItemToBuffer,              ITM_z_CIRC ,                 "",                                            STD_z_CIRC ,                                   (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2443 */  { addItemToBuffer,              ITM_u_CIRC2,                 "",                                            STD_u_CIRC2,                                   (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 2444 */  { addItemToBuffer,              ITM_theta_m,                 "",                                            STD_theta_m,                                   (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 2445 */  { addItemToBuffer,              ITM_j_CIRC,                  "",                                            STD_j_CIRC,                                    (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 2446 */  { addItemToBuffer,              ITM_k_CIRC,                  "",                                            STD_k_CIRC,                                    (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 
-/* 2444 */  { itemToBeCoded,                NOPARAM,                     "2443",                                        "2443",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
-/* 2445 */  { itemToBeCoded,                NOPARAM,                     "2443",                                        "2443",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
-/* 2446 */  { itemToBeCoded,                NOPARAM,                     "2443",                                        "2443",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2447 */  { itemToBeCoded,                NOPARAM,                     "2443",                                        "2443",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2448 */  { itemToBeCoded,                NOPARAM,                     "2443",                                        "2443",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2449 */  { itemToBeCoded,                NOPARAM,                     "2443",                                        "2443",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
