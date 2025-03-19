@@ -2508,9 +2508,9 @@
 #define ITM_v_CIRC                  2441
 #define ITM_z_CIRC                  2442
 #define ITM_u_CIRC2                 2443
-#define ITM_2444                    2444
-#define ITM_2445                    2445
-#define ITM_2446                    2446
+#define ITM_theta_m                 2444
+#define ITM_j_CIRC                  2445
+#define ITM_k_CIRC                  2446
 #define ITM_2447                    2447
 #define ITM_2448                    2448
 #define ITM_2449                    2449
