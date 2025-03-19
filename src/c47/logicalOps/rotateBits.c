@@ -23,6 +23,25 @@ void fnRr_1(uint16_t unusedButMandatoryParameter) {
     fnRr(1);
 }
 
+static bool_t getShiftInput(uint64_t *w, uint32_t *base) {
+  if (!getRegisterAsRawShortInt(REGISTER_X, w, base)) {
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "cannot shift/rotate %s", getRegisterDataTypeName(REGISTER_X, true, false));
+      moreInfoOnError("In function fnAsr:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+    return false;
+  }
+  if (!saveLastX())
+    return false;
+  return true;
+}
+
+static void setShiftResult(uint64_t w, uint32_t base) {
+  reallocateRegister(REGISTER_X, dtShortInteger, SHORT_INTEGER_SIZE_IN_BLOCKS, base);
+  *(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)) = w & shortIntegerMask;
+}
+
 /********************************************//**
  * \brief regX ==> regL and ASR(regX) ==> regX
  * enables stack lift and refreshes the stack
@@ -32,35 +51,21 @@ void fnRr_1(uint16_t unusedButMandatoryParameter) {
  ***********************************************/
 void fnAsr(uint16_t numberOfShifts) {
   int32_t i;
-  uint64_t sign;
+  uint32_t base;
+  uint64_t w, sign;
 
-  if(getRegisterDataType(REGISTER_X) == dtShortInteger) {
-    if(!saveLastX()) {
-      return;
+  if (!getShiftInput(&w, &base))
+    return;
+
+  sign = w & shortIntegerSignBit;
+  for(i=1; i<=numberOfShifts; i++) {
+    if(i == numberOfShifts) {
+      forceSystemFlag(FLAG_CARRY, w & 1);
     }
 
-    sign = *(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)) & shortIntegerSignBit;
-    for(i=1; i<=numberOfShifts; i++) {
-      if(i == numberOfShifts) {
-        if(*(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)) & 1) {
-          setSystemFlag(FLAG_CARRY);
-        }
-        else {
-          clearSystemFlag(FLAG_CARRY);
-        }
-      }
-
-      *(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)) = (*(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)) >> 1) | sign;
-    }
-    *(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)) &= shortIntegerMask;
+    w = (w >> 1) | sign;
   }
-  else {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-      sprintf(errorMessage, "cannot ASR %s", getRegisterDataTypeName(REGISTER_X, true, false));
-      moreInfoOnError("In function fnAsr:", errorMessage, NULL, NULL);
-    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-  }
+  setShiftResult(w, base);
 }
 
 
@@ -77,22 +82,16 @@ void fnSl(uint16_t numberOfShifts) {
   uint32_t base;
   int32_t i;
 
-  if (!getRegisterAsRawShortInt(REGISTER_X, &w, &base) || !saveLastX())
+  if (!getShiftInput(&w, &base))
     return;
 
   for(i=1; i<=numberOfShifts; i++) {
     if(i == numberOfShifts) {
-      if(*(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)) & shortIntegerSignBit) {
-        setSystemFlag(FLAG_CARRY);
-      }
-      else {
-        clearSystemFlag(FLAG_CARRY);
-      }
+      forceSystemFlag(FLAG_CARRY, (w & shortIntegerSignBit) != 0);
     }
     w <<= 1;
   }
-  reallocateRegister(REGISTER_X, dtShortInteger, SHORT_INTEGER_SIZE_IN_BLOCKS, base);
-  *(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)) = w & shortIntegerMask;
+  setShiftResult(w, base);
 }
 
 
@@ -109,23 +108,17 @@ void fnSr(uint16_t numberOfShifts) {
   uint32_t base;
   int32_t i;
 
-  if (!getRegisterAsRawShortInt(REGISTER_X, &w, &base) || !saveLastX())
+  if (!getShiftInput(&w, &base))
     return;
 
   for(i=1; i<=numberOfShifts; i++) {
     if(i == numberOfShifts) {
-      if(*(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)) & 1) {
-        setSystemFlag(FLAG_CARRY);
-      }
-      else {
-        clearSystemFlag(FLAG_CARRY);
-      }
+      forceSystemFlag(FLAG_CARRY, w & 1);
     }
 
     w >>= 1;
   }
-  reallocateRegister(REGISTER_X, dtShortInteger, SHORT_INTEGER_SIZE_IN_BLOCKS, base);
-  *(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)) = w & shortIntegerMask;
+  setShiftResult(w, base);
 }
 
 
@@ -139,28 +132,22 @@ void fnSr(uint16_t numberOfShifts) {
  ***********************************************/
 void fnRl(uint16_t numberOfShifts) {
   int32_t i;
-  uint64_t sign;
+  unsigned int sign;
   uint64_t w;
   uint32_t base;
 
-  if (!getRegisterAsRawShortInt(REGISTER_X, &w, &base) || !saveLastX())
+  if (!getShiftInput(&w, &base))
     return;
 
   for(i=1; i<=numberOfShifts; i++) {
     sign = (w & shortIntegerSignBit) != 0;
     if(i == numberOfShifts) {
-      if(sign) {
-        setSystemFlag(FLAG_CARRY);
-      }
-      else {
-        clearSystemFlag(FLAG_CARRY);
-      }
+      forceSystemFlag(FLAG_CARRY, sign);
     }
 
     w = (w << 1) | sign;
   }
-  reallocateRegister(REGISTER_X, dtShortInteger, SHORT_INTEGER_SIZE_IN_BLOCKS, base);
-  *(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)) = w & shortIntegerMask;
+  setShiftResult(w, base);
 }
 
 
@@ -177,23 +164,17 @@ void fnRr(uint16_t numberOfShifts) {
   uint64_t w;
   uint32_t base;
 
-  if (!getRegisterAsRawShortInt(REGISTER_X, &w, &base) || !saveLastX())
+  if (!getShiftInput(&w, &base))
     return;
 
   for(i=1; i<=numberOfShifts; i++) {
     if(i == numberOfShifts) {
-      if(w & 1) {
-        setSystemFlag(FLAG_CARRY);
-      }
-      else {
-        clearSystemFlag(FLAG_CARRY);
-      }
+      forceSystemFlag(FLAG_CARRY, w & 1);
     }
 
     w = (w >> 1) | ((w & 1) << (shortIntegerWordSize - 1));
   }
-  reallocateRegister(REGISTER_X, dtShortInteger, SHORT_INTEGER_SIZE_IN_BLOCKS, base);
-  *(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)) = w & shortIntegerMask;
+  setShiftResult(w, base);
 }
 
 
@@ -207,28 +188,22 @@ void fnRr(uint16_t numberOfShifts) {
  ***********************************************/
 void fnRlc(uint16_t numberOfShifts) {
   int32_t i;
-  uint64_t sign, carry;
+  unsigned int sign, carry;
   uint64_t w;
   uint32_t base;
 
-  if (!getRegisterAsRawShortInt(REGISTER_X, &w, &base) || !saveLastX())
+  if (!getShiftInput(&w, &base))
     return;
 
   carry = getSystemFlag(FLAG_CARRY);
   for(i=1; i<=numberOfShifts; i++) {
-    sign = (w & shortIntegerSignBit) >> (shortIntegerWordSize - 1);
+    sign = (w & shortIntegerSignBit) != 0;
     w = (w << 1) | carry;
     carry = sign;
   }
 
-  if(carry) {
-    setSystemFlag(FLAG_CARRY);
-  }
-  else {
-    clearSystemFlag(FLAG_CARRY);
-  }
-  reallocateRegister(REGISTER_X, dtShortInteger, SHORT_INTEGER_SIZE_IN_BLOCKS, base);
-  *(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)) = w & shortIntegerMask;
+  forceSystemFlag(FLAG_CARRY, carry);
+  setShiftResult(w, base);
 }
 
 
@@ -242,40 +217,36 @@ void fnRlc(uint16_t numberOfShifts) {
  ***********************************************/
 void fnRrc(uint16_t numberOfShifts) {
   int32_t i;
-  uint64_t lsb, carry;
+  unsigned int lsb, carry;
   uint64_t w;
   uint32_t base;
 
-  if (!getRegisterAsRawShortInt(REGISTER_X, &w, &base) || !saveLastX())
+  if (!getShiftInput(&w, &base))
     return;
 
   carry = getSystemFlag(FLAG_CARRY);
   for(i=1; i<=numberOfShifts; i++) {
     lsb = w & 1;
-    w = (w >> 1) | (carry << (shortIntegerWordSize - 1));
+    w = (w >> 1) | ((uint64_t)carry << (shortIntegerWordSize - 1));
     carry = lsb;
   }
 
-  if(carry) {
-    setSystemFlag(FLAG_CARRY);
-  }
-  else {
-    clearSystemFlag(FLAG_CARRY);
-  }
-  reallocateRegister(REGISTER_X, dtShortInteger, SHORT_INTEGER_SIZE_IN_BLOCKS, base);
-  *(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)) = w & shortIntegerMask;
+  forceSystemFlag(FLAG_CARRY, carry);
+  setShiftResult(w, base);
 }
 
 
 
-static void uint32toResultRegisterX(uint32_t val) {
+static void justifyResulttoRegisters(uint32_t count, uint32_t base, uint64_t val) {
   longInteger_t ireg;
 
-  longIntegerInit(ireg);
-  uInt32ToLongInteger(val, ireg);
-
+  reallocateRegister(REGISTER_X, dtShortInteger, SHORT_INTEGER_SIZE_IN_BLOCKS, base);
+  *(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)) = val & shortIntegerMask;
   setSystemFlag(FLAG_ASLIFT);
   liftStack();
+
+  longIntegerInit(ireg);
+  uInt32ToLongInteger(count, ireg);
   convertLongIntegerToLongIntegerRegister(ireg, REGISTER_X);
   longIntegerFree(ireg);
 }
@@ -288,14 +259,19 @@ static void uint32toResultRegisterX(uint32_t val) {
  * \return void
  ***********************************************/
 void fnLj(uint16_t unusedButMandatoryParameter) {
-  uint32_t count;
+  uint32_t count, base;
   uint64_t w;
 
-  if (!getRegisterAsRawShortInt(REGISTER_X, &w, NULL) || !saveLastX())
+  if (!getShiftInput(&w, &base))
     return;
 
-  count = w != 0 ? __builtin_clzll(w) - (64 - shortIntegerWordSize) : shortIntegerWordSize;
-  uint32toResultRegisterX(count);
+  if (w == 0)
+    count = shortIntegerWordSize;
+  else {
+    count = __builtin_clzll(w) - (64 - shortIntegerWordSize);
+    w <<= count;
+  }
+  justifyResulttoRegisters(count, base, w);
 }
 
 
@@ -308,14 +284,19 @@ void fnLj(uint16_t unusedButMandatoryParameter) {
  * \return void
  ***********************************************/
 void fnRj(uint16_t unusedButMandatoryParameter) {
-  uint32_t count;
+  uint32_t count, base;
   uint64_t w;
 
-  if (!getRegisterAsRawShortInt(REGISTER_X, &w, NULL) || !saveLastX())
+  if (!getShiftInput(&w, &base))
     return;
 
-  count = __builtin_ctzll(w | ~shortIntegerMask);
-  uint32toResultRegisterX(count);
+  if (w == 0)
+    count = shortIntegerWordSize;
+  else {
+    count = __builtin_ctzll(w | ~shortIntegerMask);
+    w >>= count;
+  }
+  justifyResulttoRegisters(count, base, w);
 }
 
 
@@ -324,19 +305,16 @@ void fnMirror(uint16_t unusedButMandatoryParameter) {
   uint64_t x, r=0;
   uint32_t base;
 
-  if (!getRegisterAsRawShortInt(REGISTER_X, &x, &base) || !saveLastX())
+  if (!getShiftInput(&x, &base))
     return;
 
-  if(x != 0) {
-    for(uint32_t i=0; i<shortIntegerWordSize; i++) {
-      if(x & (1LL << i)) {
-        r |= 1LL << (shortIntegerWordSize-i-1);
-      }
+  for(uint32_t i=0; i<shortIntegerWordSize; i++) {
+    if(x & (1LL << i)) {
+      r |= 1LL << (shortIntegerWordSize-i-1);
     }
   }
 
-  reallocateRegister(REGISTER_X, dtShortInteger, SHORT_INTEGER_SIZE_IN_BLOCKS, base);
-  *(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)) = r;
+  setShiftResult(r, base);
 }
 
 /********************************************//**                    //JM vv
@@ -351,7 +329,7 @@ void fnSwapEndian(uint16_t bitWidth) {
   uint64_t x;
   uint32_t base;
 
-  if (!getRegisterAsRawShortInt(REGISTER_X, &x, &base) || !saveLastX())
+  if (!getShiftInput(&x, &base))
     return;
 
   //printf("### %d %d",(shortIntegerWordSize & (bitWidth-1)), (shortIntegerWordSize |  (bitWidth-1) ) + 1 );
@@ -392,8 +370,7 @@ void fnSwapEndian(uint16_t bitWidth) {
       default:break;
     }
   }
-  reallocateRegister(REGISTER_X, dtShortInteger, SHORT_INTEGER_SIZE_IN_BLOCKS, base);
-  *(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)) = x;
+  setShiftResult(x, base);
 }                                                              //JM ^^
 
 
