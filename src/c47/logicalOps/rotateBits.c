@@ -237,7 +237,7 @@ void fnRrc(uint16_t numberOfShifts) {
 
 
 
-static void justifyResulttoRegisters(uint32_t count, uint32_t base, uint64_t val) {
+static void justifyResultToRegisters(uint32_t count, uint32_t base, uint64_t val) {
   longInteger_t ireg;
 
   reallocateRegister(REGISTER_X, dtShortInteger, SHORT_INTEGER_SIZE_IN_BLOCKS, base);
@@ -271,7 +271,7 @@ void fnLj(uint16_t unusedButMandatoryParameter) {
     count = __builtin_clzll(w) - (64 - shortIntegerWordSize);
     w <<= count;
   }
-  justifyResulttoRegisters(count, base, w);
+  justifyResultToRegisters(count, base, w);
 }
 
 
@@ -296,7 +296,7 @@ void fnRj(uint16_t unusedButMandatoryParameter) {
     count = __builtin_ctzll(w | ~shortIntegerMask);
     w >>= count;
   }
-  justifyResulttoRegisters(count, base, w);
+  justifyResultToRegisters(count, base, w);
 }
 
 
