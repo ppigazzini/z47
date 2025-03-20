@@ -684,6 +684,7 @@ typedef struct {
   };
 #endif //TESTSUITE_BUILD
 
+  void nimFractionToDisplayBuffer(const char *buffer, char *displayBuffer);
 
   void addItemToBuffer(uint16_t item) {
     #if defined(PC_BUILD)
@@ -1990,29 +1991,7 @@ typedef struct {
 
         case NP_HP32SII_DENOMINATOR:
         case NP_FRACTION_DENOMINATOR: { // +123 12/7
-          if (nimNumberPart == NP_FRACTION_DENOMINATOR) {
-            nimBufferToDisplayBuffer(aimBuffer, nimBufferDisplay + 2);
-            strcat(nimBufferDisplay, STD_SPACE_4_PER_EM);
-            
-            for(index=2; aimBuffer[index]!=' '; index++) {
-            }
-          }
-          else {
-            if (aimBuffer[0] == '-') {
-              strcat(nimBufferDisplay, "-");
-            }
-            index = 0;
-          }
-
-          supNumberToDisplayString(toInt32(aimBuffer + index + 1), nimBufferDisplay + stringByteLength(nimBufferDisplay), NULL, true);
-
-          strcat(nimBufferDisplay, "/");
-
-          for(; aimBuffer[index]!='/'; index++) {
-          }
-          if(aimBuffer[++index] != 0) {
-            subNumberToDisplayString(toInt32(aimBuffer + index), nimBufferDisplay + stringByteLength(nimBufferDisplay), NULL);
-          }
+          nimFractionToDisplayBuffer(aimBuffer, nimBufferDisplay + 2);
           break;
         }
 
@@ -2026,29 +2005,7 @@ typedef struct {
           nimNumberPart = nimRealPart;
 
           if (nimNumberPart == NP_FRACTION_DENOMINATOR || nimNumberPart == NP_HP32SII_DENOMINATOR) {
-            if (nimNumberPart == NP_FRACTION_DENOMINATOR) {
-              nimBufferToDisplayBuffer(aimBuffer, nimBufferDisplay + 2);
-              strcat(nimBufferDisplay, STD_SPACE_4_PER_EM);
-              
-              for(index=2; aimBuffer[index]!=' '; index++) {
-              }
-            }
-            else {
-              if (aimBuffer[0] == '-') {
-                strcat(nimBufferDisplay, "-");
-              }
-              index = 0;
-            }
-  
-            supNumberToDisplayString(toInt32(aimBuffer + index + 1), nimBufferDisplay + stringByteLength(nimBufferDisplay), NULL, true);
-  
-            strcat(nimBufferDisplay, "/");
-  
-            for(; aimBuffer[index]!='/'; index++) {
-            }
-            if(aimBuffer[++index] != 0) {
-              subNumberToDisplayString(toInt32(aimBuffer + index), nimBufferDisplay + stringByteLength(nimBufferDisplay), NULL);
-            }
+            nimFractionToDisplayBuffer(aimBuffer, nimBufferDisplay + 2);
           }
           else {
             nimBufferToDisplayBuffer(aimBuffer, nimBufferDisplay + 2);
@@ -2089,29 +2046,8 @@ typedef struct {
 
           // Imaginary part
           if(aimBuffer[imaginaryMantissaSignLocation+2] != 0) {
-            savedNimNumberPart = nimNumberPart;
-  
             if (nimNumberPart == NP_COMPLEX_FRACTION_DENOMINATOR || nimNumberPart == NP_COMPLEX_HP32SII_DENOMINATOR) {
-              if (nimNumberPart == NP_COMPLEX_FRACTION_DENOMINATOR) {
-                nimBufferToDisplayBuffer(aimBuffer + imaginaryMantissaSignLocation + 2, nimBufferDisplay + stringByteLength(nimBufferDisplay));
-                strcat(nimBufferDisplay, STD_SPACE_4_PER_EM);
-                
-                for(index=imaginaryMantissaSignLocation + 2; aimBuffer[index]!=' '; index++) {
-                }
-              }
-              else {
-                index = imaginaryMantissaSignLocation + 1;
-              }
-    
-              supNumberToDisplayString(toInt32(aimBuffer + index + 1), nimBufferDisplay + stringByteLength(nimBufferDisplay), NULL, true);
-    
-              strcat(nimBufferDisplay, "/");
-    
-              for(; aimBuffer[index]!='/'; index++) {
-              }
-              if(aimBuffer[++index] != 0) {
-                subNumberToDisplayString(toInt32(aimBuffer + index), nimBufferDisplay + stringByteLength(nimBufferDisplay), NULL);
-              }
+              nimFractionToDisplayBuffer(aimBuffer + imaginaryMantissaSignLocation + 1, nimBufferDisplay + stringByteLength(nimBufferDisplay));
             }
             else {
               nimBufferToDisplayBuffer(aimBuffer + imaginaryMantissaSignLocation + 1, nimBufferDisplay + stringByteLength(nimBufferDisplay));
@@ -2126,8 +2062,6 @@ typedef struct {
                 }
               }
             }
-
-            nimNumberPart = savedNimNumberPart;
           }
           break;
         }
@@ -2338,6 +2272,34 @@ typedef struct {
 
     else if(nimNumberPart == NP_INT_BASE) {
       strcpy(displayBuffer + dest, buffer + numDigits);
+    }
+  }
+
+  void nimFractionToDisplayBuffer(const char *buffer, char *displayBuffer) {
+    int16_t index;
+
+    if (nimNumberPart == NP_FRACTION_DENOMINATOR || nimNumberPart == NP_COMPLEX_FRACTION_DENOMINATOR) {
+      nimBufferToDisplayBuffer(buffer, displayBuffer);
+      strcat(displayBuffer, STD_SPACE_4_PER_EM);
+      
+      for(index=2; buffer[index]!=' '; index++) {
+      }
+    }
+    else {
+      if (buffer[0] == '-') {
+        strcat(displayBuffer, "-");
+      }
+      index = 0;
+    }
+
+    supNumberToDisplayString(toInt32(buffer + index + 1), displayBuffer + stringByteLength(displayBuffer), NULL, true);
+
+    strcat(displayBuffer, "/");
+
+    for(; buffer[index]!='/'; index++) {
+    }
+    if(buffer[++index] != 0) {
+      subNumberToDisplayString(toInt32(buffer + index), displayBuffer + stringByteLength(displayBuffer), NULL);
     }
   }
 
