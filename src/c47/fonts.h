@@ -374,7 +374,7 @@
 #define STD_omicron_TONOS             "\x83\xcc"
 #define STD_upsilon_TONOS             "\x83\xcd"
 #define STD_omega_TONOS               "\x83\xce"
-
+#define STD_phi_m                     "\x83\xd5"
 #define STD_QOPPA                     "\x83\xd8"  //JM GREEK
 #define STD_qoppa                     "\x83\xd9"  //JM GREEK
 #define STD_DIGAMMA                   "\x83\xdc"  //JM GREEK
