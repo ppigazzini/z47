@@ -997,8 +997,6 @@ typedef struct {
       return;
     }  
 
-    changeFractionModeOnENTER = false;
-
     if(item >= ITM_A && item <= ITM_F && lastIntegerBase == 0) {
       lastIntegerBase = 16;
     }
@@ -1706,15 +1704,6 @@ typedef struct {
       }
 
       case ITM_EXIT1: {
-        if(changeFractionModeOnENTER) {
-          if(!getSystemFlag(FLAG_FRACT) && !getSystemFlag(FLAG_IRFRAC)) {
-            setSystemFlag(FLAG_FRACT);
-          }
-          else if(getSystemFlag(FLAG_IRFRAC)) {
-            setSystemFlag(FLAG_IRF_ON);
-          }
-          changeFractionModeOnENTER = false;
-        }
         addItemToNimBuffer_exit:
         done = true;
         screenUpdatingMode &= ~SCRUPD_SKIP_STACK_ONE_TIME;
@@ -2293,13 +2282,9 @@ typedef struct {
 
     if(!getSystemFlag(FLAG_FRACT) && !getSystemFlag(FLAG_IRFRAC)) {
       setSystemFlag(FLAG_FRACT);          //1     //NOTE CHANGE HERE TO SWITCH OFF AUTO FRAC MODE AFTER FRACTION INPUT
-      //changeFractionModeOnENTER = true; //2     //USE either //1 or //2
     }
     else if(getSystemFlag(FLAG_IRFRAC)) {
       setSystemFlag(FLAG_IRF_ON);
-    }
-    else {
-      changeFractionModeOnENTER = false;
     }
 
     lg = strlen(source);
@@ -2403,7 +2388,6 @@ typedef struct {
     }
   }
 
-  bool_t changeFractionModeOnENTER = false;
   void closeNimWithFraction(real34_t *dest) {
     // Set Fraction mode
     nimFractionToReal34(aimBuffer, dest);
