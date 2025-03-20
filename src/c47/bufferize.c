@@ -686,6 +686,8 @@ typedef struct {
 
   void nimFractionToDisplayBuffer(const char *buffer, char *displayBuffer);
 
+  void nimRealToDisplayBuffer(const char *buffer, int16_t exponentLocation, char *displayBuffer);
+
   void addItemToBuffer(uint16_t item) {
     #if defined(PC_BUILD)
       char tmp[200]; sprintf(tmp,"bufferize.c:addItemToBuffer item=%d tam.mode=%d\n",item,tam.mode); jm_show_calc_state(tmp);
@@ -1977,15 +1979,7 @@ typedef struct {
         }
 
         case NP_REAL_EXPONENT: { // +12345.678e+3
-          nimBufferToDisplayBuffer(aimBuffer, nimBufferDisplay + 2);
-
-          exponentToDisplayString(stringToInt32(aimBuffer + exponentSignLocation), nimBufferDisplay + stringByteLength(nimBufferDisplay), NULL, true);
-          if(aimBuffer[exponentSignLocation + 1] == 0 && aimBuffer[exponentSignLocation] == '-') {
-            strcat(nimBufferDisplay, STD_SUP_MINUS);
-          }
-          else if(aimBuffer[exponentSignLocation + 1] == '0' && aimBuffer[exponentSignLocation] == '+') {
-            strcat(nimBufferDisplay, STD_SUP_0);
-          }
+          nimRealToDisplayBuffer(aimBuffer, exponentSignLocation, nimBufferDisplay + 2);
           break;
         }
 
@@ -2008,17 +2002,7 @@ typedef struct {
             nimFractionToDisplayBuffer(aimBuffer, nimBufferDisplay + 2);
           }
           else {
-            nimBufferToDisplayBuffer(aimBuffer, nimBufferDisplay + 2);
-
-            if(nimNumberPart == NP_REAL_EXPONENT) {
-              exponentToDisplayString(stringToInt32(aimBuffer + exponentSignLocation), nimBufferDisplay + stringByteLength(nimBufferDisplay), NULL, true);
-              if(aimBuffer[exponentSignLocation + 1] == 0 && aimBuffer[exponentSignLocation] == '-') {
-                strcat(nimBufferDisplay, STD_SUP_MINUS);
-              }
-              else if(aimBuffer[exponentSignLocation + 1] == '0' && aimBuffer[exponentSignLocation] == '+') {
-                strcat(nimBufferDisplay, STD_SUP_0);
-              }
-            }
+            nimRealToDisplayBuffer(aimBuffer, exponentSignLocation, nimBufferDisplay + 2);
           }
 
           nimNumberPart = savedNimNumberPart;
@@ -2050,17 +2034,7 @@ typedef struct {
               nimFractionToDisplayBuffer(aimBuffer + imaginaryMantissaSignLocation + 1, nimBufferDisplay + stringByteLength(nimBufferDisplay));
             }
             else {
-              nimBufferToDisplayBuffer(aimBuffer + imaginaryMantissaSignLocation + 1, nimBufferDisplay + stringByteLength(nimBufferDisplay));
-
-              if(nimNumberPart == NP_COMPLEX_EXPONENT) {
-                exponentToDisplayString(stringToInt32(aimBuffer + imaginaryExponentSignLocation), nimBufferDisplay + stringByteLength(nimBufferDisplay), NULL, true);
-                if(aimBuffer[imaginaryExponentSignLocation + 1] == 0 && aimBuffer[imaginaryExponentSignLocation] == '-') {
-                  strcat(nimBufferDisplay, STD_SUP_MINUS);
-                }
-                else if(aimBuffer[imaginaryExponentSignLocation + 1] == '0' && aimBuffer[imaginaryExponentSignLocation] == '+') {
-                  strcat(nimBufferDisplay, STD_SUP_0);
-                }
-              }
+              nimRealToDisplayBuffer(aimBuffer + imaginaryMantissaSignLocation + 1, imaginaryExponentSignLocation - imaginaryMantissaSignLocation - 1, nimBufferDisplay + stringByteLength(nimBufferDisplay));
             }
           }
           break;
@@ -2392,6 +2366,20 @@ typedef struct {
     real34Add(dest, &temp, dest);
     if(source[0] == '-') {
       real34SetNegativeSign(dest);
+    }
+  }
+
+  void nimRealToDisplayBuffer(const char *buffer, int16_t exponentLocation, char *displayBuffer) {
+    nimBufferToDisplayBuffer(buffer, displayBuffer);
+
+    if (nimNumberPart == NP_REAL_EXPONENT || nimNumberPart == NP_COMPLEX_EXPONENT) {
+      exponentToDisplayString(stringToInt32(buffer + exponentLocation), displayBuffer + stringByteLength(displayBuffer), NULL, true);
+      if(buffer[exponentLocation + 1] == 0 && buffer[exponentLocation] == '-') {
+        strcat(displayBuffer, STD_SUP_MINUS);
+      }
+      else if(buffer[exponentLocation + 1] == '0' && buffer[exponentLocation] == '+') {
+        strcat(displayBuffer, STD_SUP_0);
+      }
     }
   }
 
