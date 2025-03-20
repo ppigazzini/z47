@@ -509,7 +509,7 @@ TO_QSPI const int16_t menu_alphaMATH[]   = { ITM_LESS_THAN,             ITM_LESS
 
                                              ITM_op_j_char,             ITM_PLANCK_2PI,            ITM_EEXCHR,                ITM_SUM_char,              ITM_PRODUCT,               ITM_MICRO,                 
                                              ITM_INTEGRAL_SIGN,         ITM_CONTOUR_INTEGRAL,      ITM_DOUBLE_INTEGRAL,       ITM_SURFACE_INTEGRAL,      ITM_TRIPLE_INTEGRAL,       ITM_VOLUME_INTEGRAL,       
-                                             ITM_OMEGA,                 ITM_PARTIAL_DIFF,          ITM_INCREMENT,             ITM_NABLA,                 ITM_GAMMA,                 ITM_theta_m,               
+                                             ITM_OMEGA,                 ITM_PARTIAL_DIFF,          ITM_INCREMENT,             ITM_NABLA,                 ITM_phi_m,                 ITM_theta_m,               
                                              
                                              ITM_THERE_EXISTS,          ITM_THERE_DOES_NOT_EXIST,  ITM_ELEMENT_OF,            ITM_NOT_ELEMENT_OF,        ITM_CONTAINS,              ITM_DOES_NOT_CONTAIN,
                                              ITM_EMPTY_SET,             ITM_UNION,                 ITM_INTERSECTION,          ITM_SUBSET_OF,             ITM_NOT_SUBSET_OF,         ITM_COMPLEMENT,

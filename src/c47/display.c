@@ -390,7 +390,7 @@ overRange:
     if(checkForAndChange(displayString, real34, const_pi,    &toleranceIrrational, STD_pi,                             frontSpace, complex)) return_fr;
     if(checkForAndChange(displayString, real34, const_eE,    &toleranceIrrational, STD_EulerE,                         frontSpace, complex)) return_fr;
     if(checkForAndChange(displayString, real34, const_root2, &toleranceIrrational, STD_SQUARE_ROOT STD_SUB_2,          frontSpace, complex)) return_fr;
-    if(checkForAndChange(displayString, real34, const_PHI,   &toleranceIrrational, STD_phi,                            frontSpace, complex)) return_fr;
+    if(checkForAndChange(displayString, real34, const_PHI,   &toleranceIrrational, STD_phi_m,                          frontSpace, complex)) return_fr;
     if(checkForAndChange(displayString, real34, const_rt5,   &toleranceIrrational, STD_SQUARE_ROOT STD_SUB_5,          frontSpace, complex)) return_fr;
     if(checkForAndChange(displayString, real34, const_rt7,   &toleranceIrrational, STD_SQUARE_ROOT STD_SUB_7,          frontSpace, complex)) return_fr;
     if(checkForAndChange(displayString, real34, const_rtpi,  &toleranceIrrational, STD_SQUARE_ROOT STD_pi,             frontSpace, complex)) return_fr;
