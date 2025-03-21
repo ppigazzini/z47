@@ -356,6 +356,13 @@ void convertComplexToResultRegister(const real_t *real, const real_t *imag, calc
   convertRealToImag34ResultRegister(imag, dest);
 }
 
+void convertComplexToResultRegisterRPangle(const real_t *real, const real_t *imag, calcRegister_t dest, angularMode_t angl, uint8_t polarTag) {
+  reallocateRegister(dest, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, angl);
+  convertRealToReal34ResultRegister(real, dest);
+  convertRealToImag34ResultRegister(imag, dest);
+  setComplexRegisterPolarMode(dest, polarTag);
+}
+
 void convertTimeRegisterToReal34Register(calcRegister_t source, calcRegister_t destination) {
   real34_t real34, value34;
   real34Copy(REGISTER_REAL34_DATA(source), &real34);
