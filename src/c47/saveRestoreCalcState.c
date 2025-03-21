@@ -53,15 +53,68 @@ uint16_t flushBufferCnt = 0;
 
 
 uint8_t convert001090400T001090500(uint8_t parameter, uint8_t offset) { //Example: read from file: RB_F14 (which was 0) and and report RBX_F14 (which is 221) to the program.
-uint8_t output = parameter;
+  uint8_t output = parameter;
   if(parameter < 20) {
     output = parameter + offset;
   }
   return output;
 }
 
+#if !defined(TESTSUITE_BUILD)
+// Forced base-10 conversion functions
+static int16_t toInt16(const char *str) {
+  return (int16_t)strtol(str, NULL, 10);
+}
 
+int32_t toInt32(const char *str) {
+  return strtol(str, NULL, 10);
+}
 
+static uint8_t toUint8(const char *str) {
+  return (uint8_t)strtoul(str, NULL, 10);
+}
+
+static uint16_t toUint16(const char *str) {
+  return (uint16_t)strtoul(str, NULL, 10);
+}
+
+static uint32_t toUint32(const char *str) {
+  return strtoul(str, NULL, 10);
+}
+
+// Floating point conversion functions
+float stringToFloat(const char *str) {
+  return strtof(str, NULL);
+}
+
+// Utility routines to skip stuff
+static char *skip_word(const char *str) {
+  while(*str != ' ')
+    str++;
+  return (char *)str;
+}
+
+static char *skip_space(const char *str) {
+  while(*str == ' ')
+    str++;
+  return (char *)str;
+}
+
+static char *next_word(const char *str) {
+  return skip_word(skip_space(str));
+}
+
+static char *skip_to_space_newline(const char *str) {
+  while(*str != ' ' && *str != '\n' && *str != 0)
+    str++;
+  return (char *)str;
+}
+
+static char *toInt16_next_word(const char *str, int16_t *val) {
+    *val = toInt16(str);
+    return next_word(str);
+}
+#endif
 
 #if defined(PC_BUILD)
   cfgFileParam_t *paramHead=NULL, *paramCurrent;
@@ -1820,30 +1873,6 @@ int64_t stringToInt64(const char *str) {
 
 
 #if !defined(TESTSUITE_BUILD)
-
-// Forced base-10 conversion functions
-static int16_t toInt16(const char *str) {
-  return (int16_t)strtol(str, NULL, 10);
-}
-
-static uint8_t toUint8(const char *str) {
-  return (uint8_t)strtoul(str, NULL, 10);
-}
-
-static uint16_t toUint16(const char *str) {
-  return (uint16_t)strtoul(str, NULL, 10);
-}
-
-static uint32_t toUint32(const char *str) {
-  return strtoul(str, NULL, 10);
-}
-
-// Floating point conversion functions
-float stringToFloat(const char *str) {
-  return strtof(str, NULL);
-}
-
-
   static void restoreRegister(calcRegister_t regist, char *type, char *value) {
     uint32_t tag = amNone;
 
@@ -1908,12 +1937,7 @@ float stringToFloat(const char *str) {
       uint16_t sign = (value[0] == '-' ? 1 : 0);
       uint64_t val  = stringToUint64(value + 1);
 
-      while(*value != ' ') {
-        value++;
-      }
-      while(*value == ' ') {
-        value++;
-      }
+      value = next_word(value);
       uint32_t base = toUint32(value);
 
       convertUInt64ToShortIntegerRegister(sign, val, base, regist);
@@ -1923,10 +1947,7 @@ float stringToFloat(const char *str) {
       char *imaginaryPart;
 
       reallocateRegister(regist, dtComplex34, 0, amNone);
-      imaginaryPart = value;
-      while(*imaginaryPart != ' ') {
-        imaginaryPart++;
-      }
+      imaginaryPart = skip_word(value);
       *(imaginaryPart++) = 0;
       stringToReal34(value, REGISTER_REAL34_DATA(regist));
       stringToReal34(imaginaryPart, REGISTER_IMAG34_DATA(regist));
@@ -1937,10 +1958,7 @@ float stringToFloat(const char *str) {
       char *numOfCols;
       uint16_t rows, cols;
 
-      numOfCols = value;
-      while(*numOfCols != ' ') {
-        numOfCols++;
-      }
+      numOfCols = skip_word(value);
       *(numOfCols++) = 0;
       rows = toUint16(value);
       cols = toUint16(numOfCols);
@@ -1953,10 +1971,7 @@ float stringToFloat(const char *str) {
       char *numOfCols;
       uint16_t rows, cols;
 
-      numOfCols = value;
-      while(*numOfCols != ' ') {
-        numOfCols++;
-      }
+      numOfCols = skip_word(value);
       *(numOfCols++) = 0;
       rows = toUint16(value);
       cols = toUint16(numOfCols);
@@ -2015,10 +2030,7 @@ float stringToFloat(const char *str) {
         char *imaginaryPart;
 
         readLine(tmpString);
-        imaginaryPart = tmpString;
-          while(*imaginaryPart != ' ') {
-            imaginaryPart++;
-          }
+        imaginaryPart = skip_word(tmpString);
         *(imaginaryPart++) = 0;
         stringToReal34(tmpString,     VARIABLE_REAL34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(regist) + i));
         stringToReal34(imaginaryPart, VARIABLE_IMAG34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(regist) + i));
@@ -2035,10 +2047,7 @@ float stringToFloat(const char *str) {
     char *numOfCols;
 
     if(strcmp(type, "Rema") == 0 || strcmp(type, "Cxma") == 0) {
-      numOfCols = value;
-        while(*numOfCols != ' ') {
-          numOfCols++;
-        }
+      numOfCols = skip_word(value);
       *(numOfCols++) = 0;
       rows = toUint16(value);
       cols = toUint16(numOfCols);
@@ -2134,15 +2143,10 @@ float stringToFloat(const char *str) {
         #endif //LOADDEBUG
         str = tmpString;
         for (i = 0; i < 7; i++) {
-          globalFlags[i] = toInt16(str);
-          while(*str != ' ') {
-            str++;
-          }
-          while(*str == ' ') {
-            str++;
-          }
+          globalFlags[i] = toUint16(str);
+          str = next_word(str);
         }
-        globalFlags[i] = toInt16(str);
+        globalFlags[i] = toUint16(str);
       }
     }
 
@@ -2307,72 +2311,15 @@ float stringToFloat(const char *str) {
             sprintf(line,", loadMode:%d, %s\n",loadMode,tmpString);
             debugPrintf(8, "-", tmpString);
           #endif //LOADDEBUG
-          str = tmpString;
-          kbd_usr[i].keyId = toInt16(str);
-
-          while(*str != ' ') {
-            str++;
-          }
-          while(*str == ' ') {
-            str++;
-          }
-          kbd_usr[i].primary = toInt16(str);
-
-          while(*str != ' ') {
-            str++;
-          }
-          while(*str == ' ') {
-            str++;
-          }
-          kbd_usr[i].fShifted = toInt16(str);
-
-          while(*str != ' ') {
-            str++;
-          }
-          while(*str == ' ') {
-            str++;
-          }
-          kbd_usr[i].gShifted = toInt16(str);
-
-          while(*str != ' ') {
-            str++;
-          }
-          while(*str == ' ') {
-            str++;
-          }
-          kbd_usr[i].keyLblAim = toInt16(str);
-
-          while(*str != ' ') {
-            str++;
-          }
-          while(*str == ' ') {
-            str++;
-          }
-          kbd_usr[i].primaryAim = toInt16(str);
-
-          while(*str != ' ') {
-            str++;
-          }
-          while(*str == ' ') {
-            str++;
-          }
-          kbd_usr[i].fShiftedAim = toInt16(str);
-
-          while(*str != ' ') {
-            str++;
-          }
-          while(*str == ' ') {
-            str++;
-          }
-          kbd_usr[i].gShiftedAim = toInt16(str);
-
-          while(*str != ' ') {
-            str++;
-          }
-          while(*str == ' ') {
-            str++;
-          }
-          kbd_usr[i].primaryTam = toInt16(str);
+          str = toInt16_next_word(tmpString, &kbd_usr[i].keyId);
+          str = toInt16_next_word(str, &kbd_usr[i].primary);
+          str = toInt16_next_word(str, &kbd_usr[i].fShifted);
+          str = toInt16_next_word(str, &kbd_usr[i].gShifted);
+          str = toInt16_next_word(str, &kbd_usr[i].keyLblAim);
+          str = toInt16_next_word(str, &kbd_usr[i].primaryAim);
+          str = toInt16_next_word(str, &kbd_usr[i].fShiftedAim);
+          str = toInt16_next_word(str, &kbd_usr[i].gShiftedAim);
+          str = toInt16_next_word(str, &kbd_usr[i].primaryTam);
         }
       }
     }
@@ -2401,13 +2348,9 @@ float stringToFloat(const char *str) {
           uint16_t key = toUint16(str);
           userMenuItems[i].argumentName[0] = 0;
 
-          while((*str != ' ') && (*str != '\n') && (*str != 0)) {
-            str++;
-          }
+          str = skip_to_space_newline(str);
           if(*str == ' ') {
-            while(*str == ' ') {
-              str++;
-            }
+            str = skip_space(str);
             if((*str != '\n') && (*str != 0)) {
               utf8ToString((uint8_t *)str, tmpString + TMP_STR_LENGTH / 2);
               setUserKeyArgument(key, tmpString + TMP_STR_LENGTH / 2);
@@ -2431,13 +2374,9 @@ float stringToFloat(const char *str) {
           userMenuItems[i].item            = toInt16(str);
           userMenuItems[i].argumentName[0] = 0;
 
-          while((*str != ' ') && (*str != '\n') && (*str != 0)) {
-            str++;
-          }
+          str = skip_to_space_newline(str);
           if(*str == ' ') {
-            while(*str == ' ') {
-              str++;
-            }
+            str = skip_space(str);
             if((*str != '\n') && (*str != 0)) {
               utf8ToString((uint8_t *)str, userMenuItems[i].argumentName);
             }
@@ -2460,13 +2399,9 @@ float stringToFloat(const char *str) {
           userAlphaItems[i].item            = toInt16(str);
           userAlphaItems[i].argumentName[0] = 0;
 
-          while((*str != ' ') && (*str != '\n') && (*str != 0)) {
-            str++;
-          }
+          str = skip_to_space_newline(str);
           if(*str == ' ') {
-            while(*str == ' ') {
-              str++;
-            }
+            str = skip_space(str);
             if((*str != '\n') && (*str != 0)) {
               utf8ToString((uint8_t *)str, userAlphaItems[i].argumentName);
             }
@@ -2511,13 +2446,9 @@ float stringToFloat(const char *str) {
             userMenus[target].menuItem[i].item            = toInt16(str);
             userMenus[target].menuItem[i].argumentName[0] = 0;
 
-            while((*str != ' ') && (*str != '\n') && (*str != 0)) {
-              str++;
-            }
+            str = skip_to_space_newline(str);
             if(*str == ' ') {
-              while(*str == ' ') {
-                str++;
-              }
+              str = skip_space(str);
               if((*str != '\n') && (*str != 0)) {
                 utf8ToString((uint8_t *)str, userMenus[target].menuItem[i].argumentName);
               }
@@ -2724,13 +2655,7 @@ float stringToFloat(const char *str) {
           else if(strcmp(aimBuffer, "displayStack"                ) == 0) { displayStack         = toUint8(tmpString);  }
           else if(strcmp(aimBuffer, "rngState"                    ) == 0) {
             pcg32_global.state = stringToUint64(tmpString);
-            str = tmpString;
-            while(*str != ' ') {
-              str++;
-            }
-            while(*str == ' ') {
-              str++;
-            }
+            str = next_word(tmpString);
             pcg32_global.inc = stringToUint64(str);
           }
           else if(strcmp(aimBuffer, "exponentLimit"               ) == 0) { exponentLimit         = toInt16(tmpString); }

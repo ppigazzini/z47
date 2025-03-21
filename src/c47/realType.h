@@ -105,6 +105,7 @@
                                                                     *(((uint64_t *)(destination))+1) = *(((uint64_t *)(source))+1); \
                                                                  } while(0)
   #define real34CopyAbs(source, destination)                     decQuadCopyAbs           (destination, source)
+  #define real34Digits(source)                                   decQuadDigits            ((real34_t *)(source))
   #define real34Divide(operand1, operand2, res)                  decQuadDivide            ((real34_t *)(res), (real34_t *)(operand1), (real34_t *)(operand2), &ctxtReal34)
   #define real34DivideRemainder(operand1, operand2, res)         decQuadRemainder         ((real34_t *)(res), (real34_t *)(operand1), (real34_t *)(operand2), &ctxtReal34)
   #define real34FMA(factor1, factor2, term, res)                 decQuadFMA               ((real34_t *)(res), (real34_t *)(factor1),  (real34_t *)(factor2),  (real34_t *)(term), &ctxtReal34)

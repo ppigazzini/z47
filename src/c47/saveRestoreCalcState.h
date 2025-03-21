@@ -33,6 +33,8 @@
   int64_t  stringToInt64 (const char *str);
   float    stringToFloat (const char *str);
 
+  int32_t  toInt32 (const char *str);
+
   void     readLine      (char *line);
   void     read2Lines    (char *line1, char *line2);
 

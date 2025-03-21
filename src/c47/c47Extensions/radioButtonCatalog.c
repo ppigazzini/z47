@@ -121,6 +121,7 @@ TO_QSPI const radiocb_t indexOfRadioCbEepromItems[] = {
   {ITM_CB_SPCRES,        FLAG_SPCRES ,           CB_JC},  //SetSetting
   {ITM_CB_LEADING_ZERO,  FLAG_LEAD0  ,           CB_JC},  //SetSetting
   {ITM_HPRP,             FLAG_HPRP   ,           CB_JC},
+  {ITM_MNUp1 ,           FLAG_MNUp1  ,           CB_JC},
   {ITM_HPBASE,           FLAG_HPBASE ,           CB_JC},
   {ITM_2TO10,            FLAG_2TO10  ,           CB_JC},
   {ITM_DENANY,           FLAG_DENANY ,           CB_JC},
@@ -358,6 +359,7 @@ int8_t fnCbIsSet(int16_t item) {
             case FLAG_SPCRES :
             case FLAG_LEAD0  :
             case FLAG_HPRP   :
+            case FLAG_MNUp1  :
             case FLAG_HPBASE :
             case FLAG_2TO10  :
             case FLAG_DENANY :
