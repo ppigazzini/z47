@@ -64,6 +64,7 @@
 
   void convertRealToResultRegister                           (const real_t *x, calcRegister_t dest, angularMode_t angle);
   void convertComplexToResultRegister                        (const real_t *real, const real_t *imag, calcRegister_t dest);
+  void convertComplexToResultRegisterRPangle                 (const real_t *real, const real_t *imag, calcRegister_t dest, angularMode_t angl, uint8_t polarTag);
 
   void convertTimeRegisterToReal34Register                   (calcRegister_t source, calcRegister_t destination);
   void convertReal34RegisterToTimeRegister                   (calcRegister_t source, calcRegister_t destination);
