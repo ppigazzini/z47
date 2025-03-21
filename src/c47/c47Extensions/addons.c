@@ -712,14 +712,14 @@ void fnConvertMxToStk(uint16_t param) { //first try the vector type in lower nib
     convertComplexToResultRegisterRPangle(const_0, const_0, REGISTER_X, amNone, !amPolar);
   }
   if(elements > 2) {
-    if(getRegisterDataType(TEMP_REGISTER_1) == dtComplex34Matrix) {
+    if(getRegisterDataType(TEMP_REGISTER_1) == dtReal34Matrix) {
       setSystemFlag(FLAG_ASLIFT);
       liftStack();
       convertRealToResultRegister(const_0, REGISTER_X,amNone);
     } else {
       setSystemFlag(FLAG_ASLIFT);
       liftStack();
-    convertComplexToResultRegisterRPangle(const_0, const_0, REGISTER_X, amNone, !amPolar);
+      convertComplexToResultRegisterRPangle(const_0, const_0, REGISTER_X, amNone, !amPolar);
     }
   }
 
