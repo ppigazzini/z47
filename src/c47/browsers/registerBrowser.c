@@ -185,20 +185,22 @@
 
     if(rbrMode == RBR_GLOBAL) { // Global registers
       for(int16_t row=0; row<10; row++) {
-        calcRegister_t regist = (currentRegisterBrowserScreen + row) % (REGISTER_W + 1);
-        registerName(tmpString, regist);
+        calcRegister_t regist = modulo(currentRegisterBrowserScreen + row, LAST_GLOBAL_REGISTER_SCREEN + RBR_INCDEC1);
+        if (regist <= LAST_SPARE_REGISTER){
+          registerName(tmpString, regist);
 
-        // register name or number
-        registerNameWidth = showString(tmpString, &standardFont, 1, 219 - 22 * row, vmNormal, false, true);
+          // register name or number
+          registerNameWidth = showString(tmpString, &standardFont, 1, 219 - 22 * row, vmNormal, false, true);
 
-        if(   (regist <  REGISTER_X && regist % 5 == 4)
-           || (regist >= REGISTER_X && regist % 4 == 3)) {
-          lcd_fill_rect(0, 218 - 22 * row, SCREEN_WIDTH, 1, LCD_EMPTY_VALUE);
+          if(   (regist <  REGISTER_X && regist % 5 == 4)
+            || (regist >= REGISTER_X && regist % 4 == 3)) {
+            lcd_fill_rect(0, 218 - 22 * row, SCREEN_WIDTH, 1, LCD_EMPTY_VALUE);
+          }
+
+          _showRegisterInRbr(regist, registerNameWidth);
+
+          showString(tmpString, &standardFont, SCREEN_WIDTH - stringWidth(tmpString, &standardFont, false, true) - 1, 219-22*row, vmNormal, false, true);
         }
-
-        _showRegisterInRbr(regist, registerNameWidth);
-
-        showString(tmpString, &standardFont, SCREEN_WIDTH - stringWidth(tmpString, &standardFont, false, true) - 1, 219-22*row, vmNormal, false, true);
       }
     }
 

@@ -114,7 +114,21 @@ c47_qspi = custom_target(
   command          : [bash, modify_crc, forcecrc32, '@INPUT@', '@OUTPUT@']
 )
 
-alias_target('dmcp5', c47_pg5, c47_qspi)
+c47_section_sizes = custom_target(
+  'C47_section_sizes.txt',
+  build_by_default : false,
+  capture          : true,
+  input            : [c47_elf],
+  output           : 'C47_section_sizes.txt',
+  command          : [arm_readelf, '-l', '@INPUT@']
+)
+
+c47_sizes = run_target(
+  'c47_sizes',
+  command          : [py3, calc_sizes, 'dmcp5', c47_section_sizes]
+)
+
+alias_target('dmcp5', c47_pg5, c47_qspi, c47_sizes)
 
 
 #
@@ -217,4 +231,18 @@ r47_qspi = custom_target(
   command          : [bash, modify_crc, forcecrc32, '@INPUT@', '@OUTPUT@']
 )
 
-alias_target('dmcp5_r47', r47_pg5, r47_qspi)
+r47_section_sizes = custom_target(
+  'r47_section_sizes.txt',
+  build_by_default : false,
+  capture          : true,
+  input            : [r47_elf],
+  output           : 'r47_section_sizes.txt',
+  command          : [arm_readelf, '-l', '@INPUT@']
+)
+
+r47_sizes = run_target(
+  'r47_sizes',
+  command          : [py3, calc_sizes, 'dmcp5', r47_section_sizes]
+)
+
+alias_target('dmcp5_r47', r47_pg5, r47_qspi, r47_sizes)

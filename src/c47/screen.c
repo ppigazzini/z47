@@ -3135,7 +3135,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
               prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
             }
             else if(regist == REGISTER_X) {
-              strcpy(prefix, STD_theta " =");
+              strcpy(prefix, STD_theta_m " =");
               prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
             }
           }
@@ -3146,7 +3146,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
               prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
             }
             else if(regist == REGISTER_Y) {
-              strcpy(prefix, STD_theta " =");
+              strcpy(prefix, STD_theta_m " =");
               prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
             }
           }
@@ -3157,7 +3157,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
               prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
             }
             else if(regist == REGISTER_X) {
-              strcpy(prefix, STD_theta " =");
+              strcpy(prefix, STD_theta_m " =");
               prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
             }
           }
@@ -5139,7 +5139,7 @@ void fnSNAP(uint16_t unusedButMandatoryParameter) {
     fnP_Alpha();     //print alpha
   }
   else {
-    fnP_All_Regs(1); //print stack
+    fnP_All_Regs(PRN_STK); //print stack
   }
 
   screenUpdatingMode |= SCRUPD_SKIP_STACK_ONE_TIME | SCRUPD_SKIP_MENU_ONE_TIME;

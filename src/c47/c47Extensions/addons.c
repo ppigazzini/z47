@@ -744,51 +744,31 @@ void fnJM_2SI(uint16_t unusedButMandatoryParameter) { //Convert Real to Longint;
  * \return void                                                                                           JM UNIT
  ***********************************************                                                          JM UNIT */
 void exponentToUnitDisplayString(int32_t exponent, bool_t flag2To10, char *displayString, char *displayValueString, bool_t nimMode) {               //JM UNIT
+
+TO_QSPI static const char SIprefixes[64]  = "q  r  y  z  a  f  p  n  u  m     k  M  G  T  P  E  Z  Y  R  Q  ";
+TO_QSPI static const char ITSIprefixes[16] = "K  M  G  T  P  ";
+
   displayString[0] = ' ';
   displayString[1] = 0;
   displayString[2] = 0;
   displayString[3] = 0;
 
   if(!flag2To10 && !getSystemFlag(FLAG_2TO10)) {
-    if(getSystemFlag(FLAG_PFX_ALL)) {
-      switch(exponent) {
-        case -30 : displayString[1] = 'q'; break;
-        case -27 : displayString[1] = 'r'; break;
-        case -24 : displayString[1] = 'y'; break;
-        case -21 : displayString[1] = 'z'; break;
-        case -18 : displayString[1] = 'a'; break;
-        case  18 : displayString[1] = 'E'; break;
-        case  21 : displayString[1] = 'Z'; break;
-        case  24 : displayString[1] = 'Y'; break;
-        case  27 : displayString[1] = 'R'; break;
-        case  30 : displayString[1] = 'Q'; break;
-        default:                           break;
+      if((-15 <= exponent && exponent <= 15) ||
+        (-30 <= exponent && exponent <= 30 && getSystemFlag(FLAG_PFX_ALL))) {
+        displayString[1] = SIprefixes[exponent + 30];
+        if(displayString[1] == 'u') {
+          displayString[1] = STD_mu[0]; displayString[2] = STD_mu[1];
+        }
+      }
+  }
+  else if(flag2To10) {                            //exponent of 2^(10/3)
+
+      if((3 <= exponent && exponent <= 15)) {
+        displayString[1] = ITSIprefixes[exponent - 3];
+        displayString[2] = 'i';
       }
     }
-    switch(exponent) {
-      case -15 : displayString[1] = 'f'; break;
-      case -12 : displayString[1] = 'p'; break;
-      case -9  : displayString[1] = 'n'; break;
-      case -6  : displayString[1] = STD_mu[0]; displayString[2] = STD_mu[1]; break;   //JM UNIT
-      case -3  : displayString[1] = 'm'; break;
-      case  3  : displayString[1] = 'k'; break;
-      case  6  : displayString[1] = 'M'; break;
-      case  9  : displayString[1] = 'G'; break;
-      case 12  : displayString[1] = 'T'; break;
-      case 15  : displayString[1] = 'P'; break;
-      default:                           break;
-    }
-  }
-  else if(flag2To10) {
-    switch(exponent) {                             //exponent of 2^(10/3)
-      case  3  : displayString[1] = 'K'; displayString[2] = 'i'; break;
-      case  6  : displayString[1] = 'M'; displayString[2] = 'i'; break;
-      case  9  : displayString[1] = 'G'; displayString[2] = 'i'; break;
-      case 12  : displayString[1] = 'T'; displayString[2] = 'i'; break;
-      case 15  : displayString[1] = 'P'; displayString[2] = 'i'; break;
-      default: break;
-    }
-  }
 
   if(displayString[1] == 0) {
     strcpy(displayString, PRODUCT_SIGN);                                                                //JM UNIT Below, copy of
@@ -1092,19 +1072,6 @@ void fnByteShortcutsU(uint16_t size) {
 }
 
 
-void fnByte(uint16_t command) {
-  switch(command) {
-    case 1: fnSl(1);          break;
-    case 2: fnSr(1);          break;
-    case 3: fnRl(1);          break;
-    case 4: fnRr(1);          break;
-    case 5: fnSwapEndian(16); break; //FWORD
-    case 6: fnSwapEndian(8);  break; //FBYTE
-    default: ;
-  }
-} //JM POC BASE2 ^^
-
-
 void fnP_Alpha(void) {
   #if !defined(TESTSUITE_BUILD)
     if(calcMode != CM_AIM) {
@@ -1124,7 +1091,7 @@ void fnP_Alpha(void) {
       print_linestr(filename_csv, false);
     #endif // VERBOSE_LEVEL >= 1
 
-    aimBuffer_csv_out();          //aimBuffer now already copied to tmpString
+    tmpString_csv_out(5);          //aimBuffer now already copied to tmpString
     xcopy(aimBuffer,tmpString, ERROR_MESSAGE_LENGTH + AIM_BUFFER_LENGTH + NIM_BUFFER_LENGTH);        //   This total area must be less than the tmpString storage area, which it is.
     //print_linestr(aimBuffer,false);
   #endif
@@ -1178,7 +1145,7 @@ void fnP_All_Regs(uint16_t option) {
     #endif // VERBOSE_LEVEL >= 1
 
     switch(option) {
-      case 0:                    //PRN_ALLr   :   All registers
+      case PRN_ALL:
         stackregister_csv_out(REGISTER_X, REGISTER_W, !ONELINE);
         stackregister_csv_out(0, 99, !ONELINE);
         if(currentNumberOfLocalRegisters > 0) stackregister_csv_out(FIRST_LOCAL_REGISTER, FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters - 1, !ONELINE);
@@ -1188,7 +1155,7 @@ void fnP_All_Regs(uint16_t option) {
         //stackregister_csv_out(FIRST_LOCAL_REGISTER, FIRST_LOCAL_REGISTER+100, !ONELINE);
         break;
 
-      case 1:                    //PRN_STK   :   Stack only
+      case PRN_STK:
         if(getSystemFlag(FLAG_SSIZE8)) {
           stackregister_csv_out(REGISTER_X, REGISTER_D, !ONELINE);
         }
@@ -1197,75 +1164,29 @@ void fnP_All_Regs(uint16_t option) {
         }
         break;
 
-      case 2:                    //Global Registers
+      case PRN_GLOBALr:
         stackregister_csv_out(0, 99, !ONELINE);
         break;
 
-      case 3:                    //LOCAL Registers
+      case PRN_LOCALr:
         if(currentNumberOfLocalRegisters > 0) stackregister_csv_out(FIRST_LOCAL_REGISTER, FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters - 1, !ONELINE);
         break;
 
-      case 4:                    //NAMED Registers
+      case PRN_NAMEDr:
         if(numberOfNamedVariables > 0) stackregister_csv_out(FIRST_NAMED_VARIABLE, FIRST_NAMED_VARIABLE + numberOfNamedVariables - 1, !ONELINE);
         break;
 
-      case 5:                    //PRN_X   :   X only
+      case PRN_Xr:
         stackregister_csv_out(REGISTER_X, REGISTER_X, !ONELINE);
         break;
 
-      case 6:                    //PRN_XY   :   XY
+      case PRN_XYr:
         stackregister_csv_out(REGISTER_X, REGISTER_Y, ONELINE);
         break;
-
-
 
       default: ;
     }
   #endif // !TESTSUITE_BUILD
-}
-
-
-void printf_cpx(calcRegister_t regist) {
-  #if defined(PC_BUILD)
-    if(getRegisterDataType(regist) == dtReal34 || getRegisterDataType(regist) == dtComplex34) {
-      real34ToString(REGISTER_REAL34_DATA(regist), tmpString);
-      if(strchr(tmpString, '.') == NULL && strchr(tmpString, 'E') == NULL) {
-        strcat(tmpString, ".");
-      }
-      printf("Reg(%d) REAL = %s ", regist, tmpString);
-    }
-
-    if(getRegisterDataType(regist) == dtComplex34) {
-      real34ToString(REGISTER_IMAG34_DATA(regist), tmpString);
-      if(strchr(tmpString, '.') == NULL && strchr(tmpString, 'E') == NULL) {
-        strcat(tmpString, ".");
-      }
-      printf("IMAG = %s ", tmpString);
-    }
-
-    if(getRegisterDataType(regist) != dtReal34 && getRegisterDataType(regist) != dtComplex34) {
-      printf("Neither real nor complex");
-    }
-  #endif // PC_BUILD
-}
-
-
-void print_stck(void) {
-  #if defined(PC_BUILD)
-    printf("Lasterrorcode=%d\n", lastErrorCode);
-    printf("REGISTER T: ");
-    printf_cpx(REGISTER_T);
-    printf("\n");
-    printf("REGISTER Z: ");
-    printf_cpx(REGISTER_Z);
-    printf("\n");
-    printf("REGISTER Y: ");
-    printf_cpx(REGISTER_Y);
-    printf("\n");
-    printf("REGISTER X: ");
-    printf_cpx(REGISTER_X);
-    printf("\n");
-  #endif // PC_BUILD
 }
 
 
