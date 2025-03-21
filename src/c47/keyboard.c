@@ -3315,15 +3315,6 @@ RELEASE_END:
 void fnKeyEnter(uint16_t unusedButMandatoryParameter) {
   doRefreshSoftMenu = true;     //dr
   #if !defined(TESTSUITE_BUILD)
-    if(changeFractionModeOnENTER) {
-      if(!getSystemFlag(FLAG_FRACT) && !getSystemFlag(FLAG_IRFRAC)) {
-        setSystemFlag(FLAG_FRACT);
-      }
-      else if(getSystemFlag(FLAG_IRFRAC)) {
-        setSystemFlag(FLAG_IRF_ON);
-      }
-      changeFractionModeOnENTER = false;
-    }
     switch(calcMode) {
       case CM_NORMAL: {
 
