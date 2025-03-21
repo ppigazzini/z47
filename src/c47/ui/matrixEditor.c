@@ -1077,6 +1077,7 @@ smallFont:
     baseWidth += colWidth[j] + stringWidth(STD_SPACE_FIGURE, font, true, true);
   }
   baseWidth -= stringWidth(STD_SPACE_FIGURE, font, true, true);
+  baseWidth += 3;
 
   char endChar[6];
   strcpy(endChar, (isMatrix3dVectorCYL(rows, cols, matrix->header.mtag)) ? \
@@ -1092,7 +1093,7 @@ smallFont:
     X_POS = prefixWidth;
   }
   else if(!forEditor) {
-    X_POS = SCREEN_WIDTH - 1 - ((colVector ? stringWidth("[" STD_SUP_BOLD_T, font, true, true) + stringWidth(endChar, font, true, true) + stringWidth(STD_SUP_BOLD_T, font, true, true) : stringWidth("[", font, true, true) + stringWidth(endChar, font, true, true)) + baseWidth) - (font == &standardFont ? 0 : 1);
+    X_POS = SCREEN_WIDTH - 1 - ((colVector ? stringWidth("[", font, true, true) + stringWidth(endChar, font, true, true) + stringWidth(STD_SUP_BOLD_T, font, true, true) : stringWidth("[", font, true, true) + stringWidth(endChar, font, true, true)) + baseWidth) - (font == &standardFont ? 0 : 1);
   }
 
 if(toDisplay) {
@@ -1540,7 +1541,7 @@ smallFont:
       }
       colX += colWidth[j] + stringWidth(STD_SPACE_FIGURE, font, true, true);
     }
-    showString((maxRows == 1) ? "]" : (i == 0) ? STD_MAT_TR : (i + 1 == maxRows) ? STD_MAT_BR : STD_MAT_MR, font, X_POS + stringWidth("[", font, true, true) + baseWidth, Y_POS - (maxRows -1 -i) * fontHeight, vmNormal, true, false);
+    showString((maxRows == 1) ? "]" : (i == 0) ? STD_MAT_TR : (i + 1 == maxRows) ? STD_MAT_BR : STD_MAT_MR, font, X_POS + stringWidth("[", font, true, true) + baseWidth - 1, Y_POS - (maxRows -1 -i) * fontHeight, vmNormal, true, false);
     if(colVector == true) {
       showString(STD_SUP_BOLD_T, font, X_POS + stringWidth("[]", font, true, true) + baseWidth, Y_POS - (maxRows -1 -i) * fontHeight, vmNormal, true, false);
     }
