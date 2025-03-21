@@ -14,12 +14,20 @@
   #include <math.h>
   #include <stdbool.h>
   #include <stddef.h>
+  #include <stdint.h>
   #include <stdlib.h>
   #include <stdio.h>
   #include <string.h>
   #include <sys/stat.h>
   #include <time.h>
   #include <unistd.h>
+
+  #if defined(DMCP_BUILD) && defined(OLD_HW) // this is due to the libc_nano added in 999acb23 which does not have hh support.
+    #undef PRIu8
+    #define PRIu8 "u"
+    #undef PRIi8
+    #define PRIi8 "i"
+  #endif // DMCP_BUILD && OLD_HW
 
   #if !defined(GENERATE_CATALOGS) && !defined(GENERATE_CONSTANTS) && !defined(GENERATE_TESTPGMS)
     #include <gmp.h>
@@ -405,6 +413,7 @@
   extern uint8_t                numLinesTinyFont;
   extern uint8_t                cursorEnabled;
   extern uint8_t                nimNumberPart;
+  extern uint8_t                nimRealPart;
   extern uint8_t                hexDigits;
   extern uint8_t                lastErrorCode;
   extern uint8_t                temporaryInformation;
@@ -436,6 +445,7 @@
   extern int16_t                denominatorLocation;
   extern int16_t                imaginaryExponentSignLocation;
   extern int16_t                imaginaryMantissaSignLocation;
+  extern int16_t                imaginaryDenominatorLocation;
   extern int16_t                exponentLimit;
   extern int16_t                exponentHideLimit;
   extern int16_t                showFunctionNameCounter;

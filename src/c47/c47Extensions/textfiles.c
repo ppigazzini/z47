@@ -161,10 +161,10 @@ void stackregister_csv_out(int16_t reg_b, int16_t reg_e, bool_t oneLine) {
   #endif // !TESTSUITE_BUILD
 }
 
-void aimBuffer_csv_out(void) {
+void tmpString_csv_out(uint8_t nn) {
   #if !defined(TESTSUITE_BUILD)
     export_append_line(CSV_STR);                    //Output append to CSV file
-    export_append_line(ClipBoardMsg[5].itemName);  //"Alpha buffer: " //Output append to CSV file
+    export_append_line(ClipBoardMsg[nn].itemName);  //"Alpha buffer: " //Output append to CSV file
     export_append_line(CSV_STR);                    //Output append to CSV file
     export_append_line(CSV_TAB);                    //Output append to CSV file
     export_append_line(CSV_STR);                    //Output append to CSV file

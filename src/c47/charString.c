@@ -650,6 +650,9 @@ TO_QSPI const function_t2 indexOfStringsASCII[] = {
               {STD_SUP_pi,                    "pi"},
               {STD_sigma,                     "sigma"},
               {STD_phi,                       "phi"},
+              {STD_phi_m,                     "phi"},
+              {STD_theta,                     "theta"},
+              {STD_theta_m,                   "theta"},
               {STD_chi,                       "chi"},
               {STD_psi,                       "psi"},
               {STD_omega,                     "omega"},
@@ -688,6 +691,7 @@ TO_QSPI const function_t2 indexOfStringsASCII[] = {
               {STD_SUB_10,                    "10^"},
               {STD_EulerE,                    "e"},
               {STD_RIGHT_OVER_LEFT_ARROW,     "<>"},
+              {STD_SQUARE_ROOT,               "root"},
 //diverse
               {STD_RIGHT_SINGLE_QUOTE,        "\'"},
               {STD_RIGHT_DOUBLE_QUOTE,        "\""},
@@ -713,7 +717,14 @@ TO_QSPI const function_t2 indexOfStringsASCII[] = {
               {STD_SPACE_HAIR,                " "},
 //Types used in commands
               {STD_TIME_T,                    "T"},
-              {STD_DATE_D,                    "D"}
+              {STD_DATE_D,                    "D"},
+              {STD_COMPLEX_C,                 "C"},
+              {STD_INTEGER_Z,                 "Z"},
+              {STD_INTEGER_Z_SMALL,           "Z"},
+              {STD_NATURAL_N,                 "N"},
+              {STD_RATIONAL_Q,                "Q"},
+              {STD_IRRATIONAL_I,              "I"},
+              {STD_REAL_R,                    "R"}
 };
 
 

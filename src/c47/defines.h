@@ -643,8 +643,9 @@
 #define FLAG_VECT                             0x8053
 #define FLAG_NVECT                            0x8054
 #define FLAG_US                               0x8055
+#define FLAG_MNUp1                            0x8056
 
-#define NUMBER_OF_SYSTEM_FLAGS                 64+22 // We can have a maximum of 128 system flags
+#define NUMBER_OF_SYSTEM_FLAGS                 64+23 // We can have a maximum of 128 system flags
 
 // FLGS and STATUS SCREENS
 #define NO_SCREEN                          0  // No screen selected
@@ -1042,6 +1043,9 @@ enum REG_NUMBERS_IN_KS_CODE { // Key Stroke register codes
 #define NUMBER_OF_RESERVED_VARIABLES    (LAST_RESERVED_VARIABLE        - FIRST_RESERVED_VARIABLE        + 1) // 41
 #define NUMBER_OF_LETTERED_VARIABLES    (FIRST_NAMED_RESERVED_VARIABLE - FIRST_RESERVED_VARIABLE)            // 26
 
+#define RBR_INCDEC1 10
+#define LAST_GLOBAL_REGISTER_SCREEN LAST_SPARE_REGISTER - modulo(LAST_SPARE_REGISTER, RBR_INCDEC1)
+
 #define FAILED_INDIRECTION                      9999
 
 /* Convertion from a key stroke program register code to a C register number
@@ -1184,7 +1188,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
   #define LINEBREAK                           "\n\r"                       //JM
 #endif // PC_BUILD
 
-#define NUMBER_OF_DISPLAY_DIGITS                  16
+#define NUMBER_OF_DISPLAY_DIGITS                  20
 #define NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS     10
 
 #if defined(DMCP_BUILD) && defined(OLD_HW) // The old HW has about 64Kb for user usable RAM
@@ -1332,6 +1336,9 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define NP_COMPLEX_INT_PART                        7 // Integer part of the complex imaginary part
 #define NP_COMPLEX_FLOAT_PART                      8 // Decimal part of the complex imaginary part
 #define NP_COMPLEX_EXPONENT                        9 // Ten exponent of the complex imaginary part
+#define NP_HP32SII_DENOMINATOR                    10 // Denominator of the fraction (HP32SII mode)
+#define NP_COMPLEX_FRACTION_DENOMINATOR           11 // Denominator of the complex imaginary part fraction
+#define NP_COMPLEX_HP32SII_DENOMINATOR            12 // Denominator of the complex imaginary part fraction (HP32SII mode)
 
 // Temporary information
 #define TI_NO_INFO                                 0
@@ -1606,7 +1613,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define SIGMA_YMAX   (statisticalSumsPointer + SUM_YMAX  ) // could be a real34
 
 #define MAX_NUMBER_OF_GLYPHS_IN_STRING           508 //WP=196: Change to 512 less 3, Also change error message 33, and AIM_BUFFER_LENGTH, and MAXLINES
-#define NUMBER_OF_GLYPH_ROWS                     230 //Used in the font browser application
+#define NUMBER_OF_GLYPH_ROWS                     234 //Used in the font browser application
 
 #define YY_OFF                                     2 // 2 is off and gets transferred to bit 15 (32768 + YY)
 #define YY_TRACKING                                1 // 1 gets transferred to bit 14 (16384 + YY)
