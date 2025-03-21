@@ -413,6 +413,7 @@
   extern uint8_t                numLinesTinyFont;
   extern uint8_t                cursorEnabled;
   extern uint8_t                nimNumberPart;
+  extern uint8_t                nimRealPart;
   extern uint8_t                hexDigits;
   extern uint8_t                lastErrorCode;
   extern uint8_t                temporaryInformation;
@@ -444,6 +445,7 @@
   extern int16_t                denominatorLocation;
   extern int16_t                imaginaryExponentSignLocation;
   extern int16_t                imaginaryMantissaSignLocation;
+  extern int16_t                imaginaryDenominatorLocation;
   extern int16_t                exponentLimit;
   extern int16_t                exponentHideLimit;
   extern int16_t                showFunctionNameCounter;

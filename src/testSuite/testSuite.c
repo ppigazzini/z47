@@ -754,6 +754,10 @@ void setParameter(char *p) {
     }
   }
 
+  else if (strcmp(l, "FARG") == 0) {
+    functionParameter = atoi(r);
+  }
+
   //Setting integer mode
   else if(strcmp(l, "IM") == 0) {
     if(strcmp(r, "1COMPL") == 0) {
