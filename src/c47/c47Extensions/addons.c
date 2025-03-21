@@ -564,7 +564,7 @@ TO_QSPI static const struct {
     unsigned ydef  : 2;
     unsigned zdef  : 2;
 } vecCreate[] = {
-//           r  c   x    y    z   xdef ydef zdef
+//  type     r  c   x    y    z   xdef ydef zdef
     [ 1] = { 3, 1,  2 ,  1,   0,   2,   2,   2 },     // 3x1 vector created from xyz FOR ELEC menu
     [ 2] = { 1, 3,  0 ,  1,   2,   2,   2,   2 },     // 1x3 vector created from zyx FOR MATX menu
     [ 3] = { 1, 3,  0 ,  1,   2,   0,   0,   1 },     // 1x3 unity vectors 100
@@ -697,15 +697,30 @@ void fnConvertMxToStk(uint16_t param) { //first try the vector type in lower nib
     return;
   }
 
+  //can only be 2 or 3 elements
   //assuming 2 elements, clearing X and preparing Y
-  convertRealToResultRegister(const_0, REGISTER_X,amNone);
-  setSystemFlag(FLAG_ASLIFT);
-  liftStack();
-  convertRealToResultRegister(const_0, REGISTER_X,amNone);
-  if(elements > 2) {
+
+  if(getRegisterDataType(TEMP_REGISTER_1) == dtReal34Matrix) {
+    convertRealToResultRegister(const_0, REGISTER_X,amNone);
     setSystemFlag(FLAG_ASLIFT);
     liftStack();
     convertRealToResultRegister(const_0, REGISTER_X,amNone);
+  } else {
+    convertComplexToResultRegisterRPangle(const_0, const_0, REGISTER_X, amNone, !amPolar);
+    setSystemFlag(FLAG_ASLIFT);
+    liftStack();
+    convertComplexToResultRegisterRPangle(const_0, const_0, REGISTER_X, amNone, !amPolar);
+  }
+  if(elements > 2) {
+    if(getRegisterDataType(TEMP_REGISTER_1) == dtComplex34Matrix) {
+      setSystemFlag(FLAG_ASLIFT);
+      liftStack();
+      convertRealToResultRegister(const_0, REGISTER_X,amNone);
+    } else {
+      setSystemFlag(FLAG_ASLIFT);
+      liftStack();
+    convertComplexToResultRegisterRPangle(const_0, const_0, REGISTER_X, amNone, !amPolar);
+    }
   }
 
 
@@ -715,7 +730,8 @@ void fnConvertMxToStk(uint16_t param) { //first try the vector type in lower nib
                   vecCreate[constVector].z == elements-1-i ? REGISTER_Z : 0;
     if(getRegisterDataType(TEMP_REGISTER_1) == dtComplex34Matrix) {
       real34Copy(VARIABLE_REAL34_DATA(&matrixC.matrixElements[i]),REGISTER_REAL34_DATA(rg));
-      real34Copy(VARIABLE_REAL34_DATA(&matrixC.matrixElements[i]),REGISTER_IMAG34_DATA(rg));
+      real34Copy(VARIABLE_IMAG34_DATA(&matrixC.matrixElements[i]),REGISTER_IMAG34_DATA(rg));
+      setRegisterAngularMode(rg, getComplexRegisterAngularMode(TEMP_REGISTER_1) | getComplexRegisterPolarMode(TEMP_REGISTER_1));
     }
     else {
       real34Copy(&matrix.matrixElements[i],REGISTER_REAL34_DATA(rg));
