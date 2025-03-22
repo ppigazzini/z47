@@ -124,22 +124,20 @@ TO_QSPI const int16_t menu_LOOP[]        = { ITM_DSE,                       ITM_
 /*                                          <---------------------------------------------------------------------- 6 g shifted functions ------------------------------------------------------------------------->  */
 TO_QSPI const int16_t menu_MATX[]        = { 
                                              ITM_M_NEW,                     ITM_M_INV,                  ITM_M_DET,                ITM_M_TRANSP,          ITM_SIM_EQ,                  ITM_M_EDI,
-                                             ITM_DOT_PROD,                  ITM_CROSS_PROD,             ITM_UNITV,                ITM_ENORM,             ITM_RSUM,                    ITM_RNORM,                  
+                                             ITM_ENORM,                     ITM_UNITV,                  ITM_RSUM,                 ITM_RNORM,             ITM_DOT_PROD,                ITM_CROSS_PROD,
                                              ITM_EIGVAL,                    ITM_EIGVEC,                 ITM_STOVEL,               ITM_RCLVEL,            ITM_M_LU,                    ITM_M_QR,
 
                                              ITM_IPLUS,                     ITM_IMINUS,                 ITM_STOIJ,                ITM_RCLIJ,             ITM_JMINUS,                  ITM_JPLUS,
                                              ITM_CONCAT,                    ITM_M_RR,                   ITM_M_DIM,                ITM_M_DIMQ,            ITM_INDEX,                   ITM_M_EDIN,
                                              ITM_M_PUT,                     ITM_M_GET,                  ITM_STOEL,                ITM_RCLEL,             ITM_STOELPLUS,               ITM_RCLELPLUS,              
 
-                                             ITM_DRG,                       ITM_MULPI2,                 ITM_V3TOSPH,              ITM_V3TOCYL,           ITM_STKTO1x3,                ITM_1x3TOSTK,
-                                             ITM_VVDIST,                    ITM_UNITV,                  ITM_ENORM,                ITM_VANGLE,            ITM_DOT_PROD,                ITM_CROSS_PROD,
-                                             ITM_toREC2,                    ITM_toPOL2,                 ITM_NULL,                 ITM_V100,              ITM_V010,                    ITM_V001};
+                                             ITM_toREC2,                    ITM_toPOL2,                 ITM_CPXexV,               ITM_VECTOSTK,          ITM_STKTO1x2,                ITM_CLSTK,
+                                             ITM_ENORM,                     ITM_UNITV,                  ITM_VVDIST,               ITM_VANGLE,            ITM_DOT_PROD,                ITM_CROSS_PROD,
+                                             ITM_DEG2,                      ITM_RAD2,                   ITM_MULPI2,               ITM_NULL,              ITM_V10,                     ITM_V01,
 
-//new 3D: ITM_V3TOCYL, ITM_V3TOSPH, ITM_STKTO1x3, ITM_1x3TOSTK
-//new 2D 3D: ITM_VVDIST, ITM_VVANG
-//add 3D: ITM_UNITV
-
-
+                                             ITM_toREC2,                    ITM_V3TOSPH,                ITM_V3TOCYL,              ITM_VECTOSTK,          ITM_STKTO1x3,                ITM_CLSTK,
+                                             ITM_ENORM,                     ITM_UNITV,                  ITM_VVDIST,               ITM_VANGLE,            ITM_DOT_PROD,                ITM_CROSS_PROD,
+                                             ITM_DEG2,                      ITM_RAD2,                   ITM_MULPI2,               ITM_V100,              ITM_V010,                    ITM_V001};
 
 TO_QSPI const int16_t menu_M_SIM_Q[]     = { VAR_MATA,                      VAR_MATB,                   ITM_NULL,                 ITM_NULL,              ITM_NULL,                    ITM_MATX                      }; // Should VAR_MATA and VAR_MATB be reclaced by ITM_MATA (to be created) and ITM_MATB (to be created) here?
 
