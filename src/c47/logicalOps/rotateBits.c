@@ -40,6 +40,7 @@ static bool_t getShiftInput(uint64_t *w, uint32_t *base) {
 static void setShiftResult(uint64_t w, uint32_t base) {
   reallocateRegister(REGISTER_X, dtShortInteger, SHORT_INTEGER_SIZE_IN_BLOCKS, base);
   *(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)) = w & shortIntegerMask;
+  //adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
 }
 
 /********************************************//**
@@ -373,4 +374,49 @@ void fnSwapEndian(uint16_t bitWidth) {
   setShiftResult(x, base);
 }                                                              //JM ^^
 
+
+void fnZip(uint16_t unusedButMandatoryParameter) {
+  uint64_t x, y, r = 0, mask = 1;
+  uint32_t base;
+  unsigned int i, j;
+
+  if (!getRegisterAsRawShortInt(REGISTER_Y, &y, &base)) {
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_Y);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "cannot shift/rotate %s", getRegisterDataTypeName(REGISTER_Y, true, false));
+      moreInfoOnError("In function fnAsr:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+    return;
+  }
+  if (!getShiftInput(&x, &base))
+    return;
+
+  for (i = j = 0; i < shortIntegerWordSize / 2; i++) {
+      r |= (x & mask) << j++;
+      r |= (y & mask) << j;
+      mask += mask;
+  }
+  setShiftResult(r, base);
+  adjustResult(REGISTER_X, true, true, REGISTER_X, REGISTER_Y, -1);
+}
+
+void fnUnzip(uint16_t unusedButMandatoryParameter) {
+  uint64_t a, x = 0, y = 0, mask = 1;
+  uint32_t base;
+  unsigned int i, j;
+
+  if (!getShiftInput(&a, &base))
+    return;
+  setSystemFlag(FLAG_ASLIFT);
+  liftStack();
+  for (j = i = 0; i < shortIntegerWordSize / 2; i++) {
+      x |= (a & mask) >> j++;
+      mask += mask;
+      y |= (a & mask) >> j;
+      mask += mask;
+  }
+  reallocateRegister(REGISTER_Y, dtShortInteger, SHORT_INTEGER_SIZE_IN_BLOCKS, base);
+  *(REGISTER_SHORT_INTEGER_DATA(REGISTER_Y)) = y & shortIntegerMask;
+  setShiftResult(x, base);
+}
 

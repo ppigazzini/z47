@@ -444,8 +444,8 @@
 #define ITM_NUMB                     422
 #define ITM_SDL                      423
 #define ITM_SDR                      424
-#define ITM_0425                     425
-#define ITM_0426                     426
+#define ITM_ZIP                      425
+#define ITM_UNZIP                    426
 #define ITM_0427                     427
 #define ITM_0428                     428
 #define ITM_0429                     429
