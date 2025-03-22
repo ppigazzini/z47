@@ -193,6 +193,7 @@ const funcTest_t funcTestNoParam[] = {
   {"fnLogXY",                fnLogXY               },
   {"fnLnBeta",               fnLnBeta              },
   {"fnBeta",                 fnBeta                },
+  {"fnLj",                   fnLj                  },
   {"fnLogicalAnd",           fnLogicalAnd          },
   {"fnLogicalNand",          fnLogicalNand         },
   {"fnLogicalNor",           fnLogicalNor          },
@@ -240,6 +241,9 @@ const funcTest_t funcTestNoParam[] = {
   {"fnRealPart",             fnRealPart            },
   {"fnRecallIJ",             fnRecallIJ            },
   {"fnReToCx",               fnReToCx              },
+  {"fnRj",                   fnRj                  },
+  {"fnRL",                   fnRl                  },
+  {"fnRLC",                  fnRlc                 },
   {"fnRmd",                  fnRmd                 },
   {"fnRollDown",             fnRollDown            },
   {"fnRollUp",               fnRollUp              },
@@ -247,15 +251,19 @@ const funcTest_t funcTestNoParam[] = {
   {"fnRoundi",               fnRoundi              },
   {"fnRowSum",               fnRowSum              },
   {"fnRowNorm",              fnRowNorm             },
+  {"fnRR",                   fnRr                  },
+  {"fnRRC",                  fnRrc                  },
 
   {"fnSign",                 fnSign                },
   {"fnSin",                  fnSin                 },
   {"fnSinc",                 fnSinc                },
   {"fnSincpi",               fnSincpi              },
   {"fnSinh",                 fnSinh                },
+  {"fnSl",                   fnSl                  },
   {"fnSlvc",                 fnSlvc                },
   {"fnSlvq",                 fnSlvq                },
   {"fnSquare",               fnSquare              },
+  {"fnSr",                   fnSr                  },
   {"fnStoreIJ",              fnStoreIJ             },
   {"fnSqrt1Px2",             fnSqrt1Px2            },
   {"fnSquareRoot",           fnSquareRoot          },
@@ -744,6 +752,10 @@ void setParameter(char *p) {
         abortTest();
       }
     }
+  }
+
+  else if (strcmp(l, "FARG") == 0) {
+    functionParameter = atoi(r);
   }
 
   //Setting integer mode

@@ -96,7 +96,10 @@ if meson.is_cross_build()
   add_pgm_chsum = files('tools/add_pgm_chsum')[0]
   modify_crc    = files('tools/modify_crc')[0]
   gen_qspi_crc  = files('tools/gen_qspi_crc')[0]
+  calc_sizes    = files('tools/size.py')[0]
+  py3           = find_program('python3')
   arm_objcopy   = find_program('arm-none-eabi-objcopy')
+  arm_readelf   = find_program('arm-none-eabi-readelf')
   bash          = find_program('bash')
   subproject('gmp-6.2.1')
   arm_gmp_dep   = dependency('arm-gmp-6.2.1', native : false)

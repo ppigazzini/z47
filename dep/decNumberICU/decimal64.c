@@ -25,6 +25,7 @@
 /* Error handling is the same as decNumber (qv.).                     */
 /* ------------------------------------------------------------------ */
 #pragma GCC diagnostic ignored "-Wunused-value"
+#pragma GCC diagnostic ignored "-Wunused-but-set-variable"
 
 #include <string.h>           // [for memset/memcpy]
 #include <stdio.h>            // [for printf]

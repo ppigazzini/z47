@@ -1188,7 +1188,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
   #define LINEBREAK                           "\n\r"                       //JM
 #endif // PC_BUILD
 
-#define NUMBER_OF_DISPLAY_DIGITS                  16
+#define NUMBER_OF_DISPLAY_DIGITS                  20
 #define NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS     10
 
 #if defined(DMCP_BUILD) && defined(OLD_HW) // The old HW has about 64Kb for user usable RAM
@@ -1336,6 +1336,9 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define NP_COMPLEX_INT_PART                        7 // Integer part of the complex imaginary part
 #define NP_COMPLEX_FLOAT_PART                      8 // Decimal part of the complex imaginary part
 #define NP_COMPLEX_EXPONENT                        9 // Ten exponent of the complex imaginary part
+#define NP_HP32SII_DENOMINATOR                    10 // Denominator of the fraction (HP32SII mode)
+#define NP_COMPLEX_FRACTION_DENOMINATOR           11 // Denominator of the complex imaginary part fraction
+#define NP_COMPLEX_HP32SII_DENOMINATOR            12 // Denominator of the complex imaginary part fraction (HP32SII mode)
 
 // Temporary information
 #define TI_NO_INFO                                 0
@@ -1610,7 +1613,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define SIGMA_YMAX   (statisticalSumsPointer + SUM_YMAX  ) // could be a real34
 
 #define MAX_NUMBER_OF_GLYPHS_IN_STRING           508 //WP=196: Change to 512 less 3, Also change error message 33, and AIM_BUFFER_LENGTH, and MAXLINES
-#define NUMBER_OF_GLYPH_ROWS                     232 //Used in the font browser application
+#define NUMBER_OF_GLYPH_ROWS                     234 //Used in the font browser application
 
 #define YY_OFF                                     2 // 2 is off and gets transferred to bit 15 (32768 + YY)
 #define YY_TRACKING                                1 // 1 gets transferred to bit 14 (16384 + YY)

@@ -29,6 +29,13 @@ void fnDRG          (uint16_t unusedButMandatoryParameter);
 void fnChangeBaseJM (uint16_t unusedButMandatoryParameter);
 void fnChangeBaseMNU(uint16_t unusedButMandatoryParameter);
 void fnInDefault    (uint16_t inputDefault);
+#define PRN_ALL     0
+#define PRN_STK     1
+#define PRN_GLOBALr 2
+#define PRN_LOCALr  3
+#define PRN_NAMEDr  4
+#define PRN_Xr      5
+#define PRN_XYr     6
 void fnP_All_Regs   (uint16_t option);
 void fnP_Regs       (uint16_t registerNo);
 void fnP_Alpha      (void);
@@ -50,7 +57,6 @@ void fnRESET_Mya(void);
 
 void fnByteShortcutsS   (uint16_t size);                    //JM POC BASE2 vv
 void fnByteShortcutsU   (uint16_t size);
-void fnByte             (uint16_t command);                 //JM POC BASE2 ^^
 
 
 //for display.c
@@ -58,8 +64,6 @@ void exponentToUnitDisplayString(int32_t exponent, bool_t flag2To10, char *displ
 
 
 
-void   printf_cpx               (calcRegister_t regist);
-void   print_stck               ();
 void   doubleToXRegisterReal34  (double x);                 //Convert from double to X register REAL34
 double convert_to_double        (calcRegister_t regist);    //Convert from X register to double
 

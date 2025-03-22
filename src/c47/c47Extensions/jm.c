@@ -7,7 +7,7 @@
 
 #if defined(PC_BUILD)
   #if defined(PC_BUILD_TELLTALE)
-    static char * getCalcModeName(uint16_t cm) {
+    static char * getCalcModeName1(uint16_t cm) {
       if(cm == CM_NORMAL)                return "normal ";
       if(cm == CM_AIM)                   return "aim    ";
       if(cm == CM_EIM)                   return "eim    ";
@@ -30,7 +30,7 @@
       return "???    ";
     }
 
-    static char * getAlphaCaseName(uint16_t ac) {
+  static  char * getAlphaCaseName1(uint16_t ac) {
       if(ac == AC_LOWER) return "lower";
       if(ac == AC_UPPER) return "upper";
       return "???  ";
@@ -41,7 +41,7 @@
   void jm_show_calc_state(char comment[]) {
     #if defined(PC_BUILD_TELLTALE)
       printf("\n%s--------------------------------------------------------------------------------\n",comment);
-      printf(".  calcMode: %s   last_CM=%s  AlphaCase=%s  doRefreshSoftMenu=%d    lastErrorCode=%d fnAsnDisplayUSER=%d TI=%u\n",getCalcModeName(calcMode), getCalcModeName(last_CM), getAlphaCaseName(alphaCase), doRefreshSoftMenu,lastErrorCode, fnAsnDisplayUSER, temporaryInformation);
+      printf(".  calcMode: %s   last_CM=%s  AlphaCase=%s  doRefreshSoftMenu=%d    lastErrorCode=%d fnAsnDisplayUSER=%d TI=%u\n",getCalcModeName1(calcMode), getCalcModeName1(last_CM), getAlphaCaseName1(alphaCase), doRefreshSoftMenu,lastErrorCode, fnAsnDisplayUSER, temporaryInformation);
       printf(".  softmenuStack[0].softmenuId=%d      softmenu[softmenuStack[0].softmenuId].menuItem=%d -MNU_ALPHA=%d temporaryInformation=%d currentSolverStatus=%d\n",
                  softmenuStack[0].softmenuId,        softmenu[softmenuStack[0].softmenuId].menuItem,   -MNU_ALPHA,   temporaryInformation, currentSolverStatus);
 
@@ -63,7 +63,7 @@
       printf(".  ");
       ix=0;
       while(ix < SOFTMENU_STACK_SIZE) {
-        printf("%9s ", getCalcModeName(softmenuStack[ix].calcMode));
+        printf("%9s ", getCalcModeName1(softmenuStack[ix].calcMode));
         ix++;
       }
       printf("\n");
