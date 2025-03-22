@@ -4323,9 +4323,11 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
               showString(prefix, &standardFont, 1, baseY + TEMPORARY_INFO_OFFSET, vmNormal, prefixPre, prefixPost);
             }
 
+            stringCopy(tmpString + (TMP_STR_LENGTH - ERROR_MESSAGE_LENGTH - 1), errorMessage);  // No other way I know of to maintain the errormessage string, which is used for TI's earlier.
             if(!vectorToDisplayString(regist, tmpString)) {
               real34MatrixToDisplayString(regist, tmpString);
             }
+            stringCopy(errorMessage, tmpString + (TMP_STR_LENGTH - ERROR_MESSAGE_LENGTH - 1));
 
             w = stringWidth(tmpString, &numericFont, false, true);
             lineWidth = w;
