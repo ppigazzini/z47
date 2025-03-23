@@ -21,5 +21,7 @@ void fnRrc   (uint16_t numberOfShifts);
 void fnLj    (uint16_t unusedButMandatoryParameter);
 void fnRj    (uint16_t unusedButMandatoryParameter);
 void fnMirror(uint16_t unusedButMandatoryParameter);
+void fnZip   (uint16_t unusedButMandatoryParameter);
+void fnUnzip (uint16_t unusedButMandatoryParameter);
 void fnSwapEndian(uint16_t bitWidth);                  //JM
 #endif // !ROTATEBITS_H
