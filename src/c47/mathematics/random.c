@@ -8,23 +8,67 @@
 #include "c47.h"
 
 //////////////////////////////////////////////////////////
-// Fast Random Integer Generation in an Interval
-// DANIEL LEMIRE, Université du Québec (TELUQ), Canada
-// https://arxiv.org/abs/1805.10941
+// Implementation an optimal random integer in a range function.
+//
+// Essentially it boils down to incrementally generating a fixed point
+// number on the interval [0, 1) and multiplying this number by the upper
+// range limit.  Once it is certain what the fractional part contributes to
+// the integral part of the product, the algorithm has produced a definitive
+// result.
+//
+// Refer: https://github.com/apple/swift/pull/39143 for a fuller description
+// of the algorithm.
 uint32_t boundedRand(uint32_t s) { // random integer in [0 , s)
-  uint32_t x = pcg32_random_r(&pcg32_global);
-  uint64_t m = (uint64_t)x * (uint64_t)s;
-  uint32_t l = (uint32_t) m;
+    uint32_t i, f;      // integer and fractional parts
+    uint32_t f2, rand;  // extra fractional part and random material
+    uint64_t prod;      // temporary holding double width product
 
-  if(l < s) {
-    uint32_t t = (-s) % s;
-    while(l < t) {
-      x = pcg32_random_r(&pcg32_global);
-      m = (uint64_t) x *(uint64_t)s;
-      l = (uint32_t)m;
+    rand = pcg32_random_r(&pcg32_global);
+
+    // We are generating a fixed point number on the interval [0, 1).
+    // Multiplying this by the range gives us a number on [0, upper).
+    // The high word of the multiplication result represents the integral
+    // part we want.  The lower word is the fractional part.  We can early exit if
+    // if the fractional part is small enough that no carry from the next lower
+    // word can cause an overflow and carry into the integer part.  This
+    // happens when the fractional part is bounded by 2^32 - upper which
+    // can be simplified to just -upper (as an unsigned integer).
+    prod = (uint64_t)s * rand;
+    i = prod >> 32;
+    f = prod & 0xffffffff;
+    if (f <= 1 + ~s)    // 1+~s == -s but compilers whine
+        return i;
+
+    // We're in the position where the carry from the next word *might* cause
+    // a carry to the integral part.  The process here is to generate the next
+    // word, multiply it by the range and add that to the current word.  If
+    // it overflows, the carry propagates to the integer part (return i+1).
+    // If it can no longer overflow regardless of further lower order bits,
+    // we are done (return i).  If there is still a chance of overflow, we
+    // repeat the process with the next lower word.
+    //
+    // Each *bit* of randomness has a probability of one half of terminating
+    // this process, so each each word beyond the first has a probability
+    // of 2^-32 of not terminating the process.  That is, we're extremely
+    // likely to stop very rapidly.
+    for (int j = 0; j < 10; j++) {
+        rand = pcg32_random_r(&pcg32_global);
+        prod = (uint64_t)s * rand;
+        f2 = prod >> 32;
+        f += f2;
+        // On overflow, add the carry to our result
+        if (f < f2)
+            return i + 1;
+        // For not all 1 bits, there is no carry so return the result
+        if (f != 0xffffffff)
+            return i;
+        // setup for the next word of randomness
+        f = prod & 0xffffffff;
     }
-  }
-  return m >> 32;
+    // If we get here, we've consumed 32 * 10 + 32 bits
+    // with no firm decision, this gives a bias with probability < 2^-(320),
+    // which is likely acceptable.
+    return i;
 }
 
 
@@ -33,27 +77,12 @@ void fnRandomI(uint16_t unusedButMandatoryParameter) {
   longInteger_t regX, regY, mini, maxi;
   uint32_t maxRand;
   int32_t cmp;
+  bool_t frac;
 
-  if(getRegisterDataType(REGISTER_X) != dtLongInteger) {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-      sprintf(errorMessage, "cannot RANI# with %s in X", getRegisterDataTypeName(REGISTER_X, true, false));
-      moreInfoOnError("In function fnRandomI:", errorMessage, NULL, NULL);
-    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+  if (!getRegisterAsLongInt(REGISTER_X, regX, &frac) || frac)
     return;
-  }
-
-  if(getRegisterDataType(REGISTER_Y) != dtLongInteger) {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_Y);
-    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-      sprintf(errorMessage, "cannot RANI# with %s in Y", getRegisterDataTypeName(REGISTER_Y, true, false));
-      moreInfoOnError("In function fnRandomI:", errorMessage, NULL, NULL);
-    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-    return;
-  }
-
-  convertLongIntegerRegisterToLongInteger(REGISTER_X, regX);
-  convertLongIntegerRegisterToLongInteger(REGISTER_Y, regY);
+  if (!getRegisterAsLongInt(REGISTER_Y, regY, &frac) || frac)
+    goto end1;
 
   cmp = longIntegerCompare(regX, regY);
   if(cmp == 0) {
@@ -61,7 +90,7 @@ void fnRandomI(uint16_t unusedButMandatoryParameter) {
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       moreInfoOnError("In function fnRandomI:", "cannot RANI# with X = Y", NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-    return;
+    goto end2;
   }
 
   longIntegerInit(mini);
@@ -75,26 +104,30 @@ void fnRandomI(uint16_t unusedButMandatoryParameter) {
     longIntegerCopy(regY, mini);
   }
 
-  longIntegerSubtract(maxi, mini, regX);
-  longIntegerAddUInt(regX, 1, regX);
+  longIntegerSubtract(maxi, mini, regY);
+  longIntegerAddUInt(regY, 1, regX);
   if(longIntegerCompareUInt(regX, 0xFFFFFFFF) >= 0) { // 2^32 - 1
     displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       moreInfoOnError("In function fnRandomI:", "cannot RANI# with |X - Y| >= 2^32", NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-    return;
+    goto end3;
   }
 
   longIntegerToUInt32(regX, maxRand);
-  longIntegerAddUInt(mini, boundedRand(maxRand), maxi);
+  maxRand = boundedRand(maxRand);
+  longIntegerAddUInt(mini, maxRand, regX);
 
   convertLongIntegerToLongIntegerRegister(maxi, REGISTER_X);
   adjustResult(REGISTER_X, true, false, REGISTER_X, -1, -1);
 
-  longIntegerFree(regX);
-  longIntegerFree(regY);
+end3:
   longIntegerFree(maxi);
   longIntegerFree(mini);
+end2:
+  longIntegerFree(regY);
+end1:
+  longIntegerFree(regX);
 }
 
 
