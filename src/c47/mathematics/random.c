@@ -18,7 +18,7 @@
 //
 // Refer: https://github.com/apple/swift/pull/39143 for a fuller description
 // of the algorithm.
-uint32_t boundedRand(uint32_t s) { // random integer in [0 , s)
+static uint32_t boundedRand(uint32_t s) { // random integer in [0 , s)
     uint32_t i, f;      // integer and fractional parts
     uint32_t f2, rand;  // extra fractional part and random material
     uint64_t prod;      // temporary holding double width product
@@ -72,27 +72,22 @@ uint32_t boundedRand(uint32_t s) { // random integer in [0 , s)
 }
 
 
-
 void fnRandomI(uint16_t unusedButMandatoryParameter) {
   longInteger_t regX, regY, mini, maxi;
   uint32_t maxRand;
   int32_t cmp;
-  bool_t frac;
+  bool_t frac, init_minmax = false;
 
   if (!getRegisterAsLongInt(REGISTER_X, regX, &frac) || frac)
     return;
   if (!getRegisterAsLongInt(REGISTER_Y, regY, &frac) || frac)
-    goto end1;
+    goto err1;
 
   cmp = longIntegerCompare(regX, regY);
-  if(cmp == 0) {
-    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-      moreInfoOnError("In function fnRandomI:", "cannot RANI# with X = Y", NULL, NULL);
-    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-    goto end2;
-  }
+  if(cmp == 0)
+    goto end;
 
+  init_minmax = true;
   longIntegerInit(mini);
   longIntegerInit(maxi);
   if(cmp < 0) {
@@ -111,22 +106,24 @@ void fnRandomI(uint16_t unusedButMandatoryParameter) {
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       moreInfoOnError("In function fnRandomI:", "cannot RANI# with |X - Y| >= 2^32", NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-    goto end3;
+    goto err2;
   }
 
   longIntegerToUInt32(regX, maxRand);
   maxRand = boundedRand(maxRand);
   longIntegerAddUInt(mini, maxRand, regX);
 
-  convertLongIntegerToLongIntegerRegister(maxi, REGISTER_X);
+end:
+  convertLongIntegerToLongIntegerRegister(regX, REGISTER_X);
   adjustResult(REGISTER_X, true, false, REGISTER_X, -1, -1);
 
-end3:
-  longIntegerFree(maxi);
-  longIntegerFree(mini);
-end2:
+err2:
+  if (init_minmax) {
+    longIntegerFree(maxi);
+    longIntegerFree(mini);
+  }
   longIntegerFree(regY);
-end1:
+err1:
   longIntegerFree(regX);
 }
 
