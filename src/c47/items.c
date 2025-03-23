@@ -725,6 +725,8 @@ bool_t itemNotAvail(int16_t itemNr) {
   void fnIDiv                      (uint16_t unusedButMandatoryParameter) {}
   void fnIDivR                     (uint16_t unusedButMandatoryParameter) {}
   void fnMirror                    (uint16_t unusedButMandatoryParameter) {}
+  void fnZip                       (uint16_t unusedButMandatoryParameter) {}
+  void fnUnzip                     (uint16_t unusedButMandatoryParameter) {}
   void fnMod                       (uint16_t unusedButMandatoryParameter) {}
   void fnMulMod                    (uint16_t unusedButMandatoryParameter) {}
   void fnExpMod                    (uint16_t unusedButMandatoryParameter) {}
@@ -1761,8 +1763,8 @@ TO_QSPI const item_t indexOfItems[] = {
 /*  422 */  { fnCountBits,                  NOPARAM,                     "#B",                                          "#B",                                          (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /*  423 */  { fnSdl,                        TM_VALUE,                    "SDL",                                         "SDL",                                         (0 << TAM_MAX_BITS) |    99, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NUMBER_8     },
 /*  424 */  { fnSdr,                        TM_VALUE,                    "SDR",                                         "SDR",                                         (0 << TAM_MAX_BITS) |    99, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NUMBER_8     },
-/*  425 */  { itemToBeCoded,                NOPARAM,                     "0425",                                        "0425",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
-/*  426 */  { itemToBeCoded,                NOPARAM,                     "0426",                                        "0426",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/*  425 */  { fnZip,                        NOPARAM,                     "ZIP",                                         "ZIP",                                         (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
+/*  426 */  { fnUnzip,                      NOPARAM,                     "UNZIP",                                       "UNZIP",                                       (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /*  427 */  { itemToBeCoded,                NOPARAM,                     "0427",                                        "0427",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /*  428 */  { itemToBeCoded,                NOPARAM,                     "0428",                                        "0428",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /*  429 */  { itemToBeCoded,                NOPARAM,                     "0429",                                        "0429",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },

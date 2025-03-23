@@ -88,9 +88,8 @@ void fnRandomI(uint16_t unusedButMandatoryParameter) {
   longIntegerToUInt32(regX, maxRand);
   longIntegerAddUInt(mini, boundedRand(maxRand), maxi);
 
-  setSystemFlag(FLAG_ASLIFT);
-  liftStack();
   convertLongIntegerToLongIntegerRegister(maxi, REGISTER_X);
+  adjustResult(REGISTER_X, true, false, REGISTER_X, -1, -1);
 
   longIntegerFree(regX);
   longIntegerFree(regY);
