@@ -72,7 +72,21 @@ static uint32_t boundedRand(uint32_t s) { // random integer in [0 , s)
 }
 
 
-void fnRandomI(uint16_t unusedButMandatoryParameter) {
+static void realRandomU01(real_t *res) {
+  real_t t;
+
+  uInt32ToReal(boundedRand(100000000),  res);
+  uInt32ToReal(boundedRand(100000000),  &t);
+  realFMA(const_1e8, res, &t, res, &ctxtReal39);
+  uInt32ToReal(boundedRand(1000000000), &t);
+  realFMA(const_1e9, res, &t, res, &ctxtReal39);
+  uInt32ToReal(boundedRand(1000000000), &t);
+  realFMA(const_1e9, res, &t, res, &ctxtReal39);
+  res->exponent -= 34;
+}
+
+
+static void doIntRandomI(void) {
   longInteger_t regX, regY, mini, maxi;
   uint32_t maxRand;
   int32_t cmp;
@@ -99,9 +113,8 @@ void fnRandomI(uint16_t unusedButMandatoryParameter) {
     longIntegerCopy(regY, mini);
   }
 
-  longIntegerSubtract(maxi, mini, regY);
-  longIntegerAddUInt(regY, 1, regX);
-  if(longIntegerCompareUInt(regX, 0xFFFFFFFF) >= 0) { // 2^32 - 1
+  longIntegerSubtract(maxi, mini, regX);
+  if(longIntegerCompareUInt(regX, 0xFFFFFFFE) >= 0) { // 2^32 - 2
     displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       moreInfoOnError("In function fnRandomI:", "cannot RANI# with |X - Y| >= 2^32", NULL, NULL);
@@ -110,12 +123,12 @@ void fnRandomI(uint16_t unusedButMandatoryParameter) {
   }
 
   longIntegerToUInt32(regX, maxRand);
-  maxRand = boundedRand(maxRand);
+  maxRand = boundedRand(maxRand + 1);
   longIntegerAddUInt(mini, maxRand, regX);
 
 end:
   convertLongIntegerToLongIntegerRegister(regX, REGISTER_X);
-  adjustResult(REGISTER_X, true, false, REGISTER_X, -1, -1);
+  adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
 
 err2:
   if (init_minmax) {
@@ -127,31 +140,47 @@ err1:
   longIntegerFree(regX);
 }
 
+static void doRealRandomI(void) {
+  real_t regX, regY, t, u, *lower;
+
+  if (!getRegisterAsReal(REGISTER_X, &regX) || !getRegisterAsReal(REGISTER_Y, &regY))
+    return;
+
+  realSubtract(&regX, &regY, &t, &ctxtReal39);
+  if(realIsZero(&t))
+    goto end;
+
+  if(realIsNegative(&t)) {
+    realChangeSign(&t);
+    lower = &regX;
+  }
+  else {
+    lower = &regY;
+  }
+
+  realRandomU01(&u);
+  realFMA(&u, &t, lower, &regX, &ctxtReal39);
+end:
+  convertRealToResultRegister(&regX, REGISTER_X, amNone);
+}
+
+void fnRandomI(uint16_t unusedButMandatoryParameter) {
+  processIntRealComplexDyadicFunction(&doRealRandomI, NULL, NULL, &doIntRandomI);
+}
 
 
 /////////////////////////////////////////////////////////////////////////////
 // Method for pseudo random number generation: http://www.pcg-random.org/
 
 void fnRandom(uint16_t unusedButMandatoryParameter) {
-  real_t x1, x2;
+  real_t r;
 
-  uInt32ToReal(boundedRand(100000000),  &x1);
-  uInt32ToReal(boundedRand(100000000),  &x2);
-  realFMA(const_1e8, &x1, &x2, &x1, &ctxtReal39);
-  uInt32ToReal(boundedRand(1000000000), &x2);
-  realFMA(const_1e9, &x1, &x2, &x1, &ctxtReal39);
-  uInt32ToReal(boundedRand(1000000000), &x2);
-  realFMA(const_1e9, &x1, &x2, &x1, &ctxtReal39);
-  x1.exponent -= 34;
-
+  realRandomU01(&r);
   liftStack();
   reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
-  convertRealToReal34ResultRegister(&x1, REGISTER_X);
-
+  convertRealToReal34ResultRegister(&r, REGISTER_X);
   adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
 }
-
-
 
 void fnSeed(uint16_t unusedButMandatoryParameter) {
   uint64_t seed=0, sequ=0;
