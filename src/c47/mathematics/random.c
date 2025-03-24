@@ -184,27 +184,19 @@ void fnRandom(uint16_t unusedButMandatoryParameter) {
 
 void fnSeed(uint16_t unusedButMandatoryParameter) {
   uint64_t seed=0, sequ=0;
+  real_t regX;
+  unsigned char *p = (unsigned char *)regX.lsu;
 
-  if(getRegisterDataType(REGISTER_X) == dtReal34) {
-    if(!real34IsZero(REGISTER_REAL34_DATA(REGISTER_X))) {
-      seed = *(uint64_t *)getRegisterDataPointer(REGISTER_X);          // First 64 bits of the real34_t
-      sequ = *(((uint64_t *)getRegisterDataPointer(REGISTER_X)) + 1);  // Last  64 bits of the real34_t
-    }
-  }
-  else if(getRegisterDataType(REGISTER_X) == dtLongInteger) {
-    if(getRegisterLongIntegerSign(REGISTER_X) != LI_ZERO) {
-      seed = *(uint64_t *)getRegisterDataPointer(REGISTER_X);          // First 64 bits of the long integer
-      sequ = *(((uint64_t *)getRegisterDataPointer(REGISTER_X)) + 1);  // Second 64 bits of the long integer
-    }
-  }
-  else {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-      sprintf(errorMessage, "cannot use %s as a seed for the RNG!\n it must be a SP or DP real or a long integer", getDataTypeName(getRegisterDataType(REGISTER_X), true, false));
-      moreInfoOnError("In function fnSeed:", errorMessage, NULL, NULL);
-    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+  if (!saveLastX())
     return;
-  }
+
+  memset(&regX, 0, sizeof(regX));
+  if (!getRegisterAsReal(REGISTER_X, &regX))
+    return;
+  fnDrop(NOPARAM);
+
+  memcpy(&seed, p, sizeof(seed));
+  memcpy(&sequ, p + sizeof(seed), sizeof(sequ));
 
   if(seed == 0 && sequ == 0) {
     #if defined(TESTSUITE_BUILD)
