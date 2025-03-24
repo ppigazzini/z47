@@ -2922,7 +2922,7 @@ void doLoad(uint16_t loadMode, uint16_t s, uint16_t n, uint16_t d, uint16_t load
       readLine(aimBuffer); // internal rev number (ignore now)
       readLine(aimBuffer); // param
       readLine(tmpString); // value
-      if(strcmp(aimBuffer, "C47_save_file_00") == 0) {
+      if(strcmp(aimBuffer, "C47_save_file_00") == 0 || strcmp(aimBuffer, "C43_save_file_00") == 0) {
         loadedVersion = toUint32(tmpString);
         if(loadedVersion < 10000000 || loadedVersion > 20000000) {
           loadedVersion = 0;
