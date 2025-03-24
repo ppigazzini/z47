@@ -287,6 +287,7 @@ const funcTest_t funcTestNoParam[] = {
   {"fnT_R",                  fnT_R                 },
   {"fnUlp",                  fnUlp                 },
   {"fnUnitVector",           fnUnitVector          },
+  {"fnUnzip",                fnUnzip               },
   {"fnVectorAngle",          fnVectorAngle         },
   {"fnWday",                 fnWday                },
   {"fnWeibullI",             fnWeibullI            },
@@ -300,6 +301,7 @@ const funcTest_t funcTestNoParam[] = {
   {"fnXToDate",              fnXToDate             },
   {"fnYear",                 fnYear                },
   {"fnZeta",                 fnZeta                },
+  {"fnZip",                  fnZip                 },
 
   {"fnExecute",              runPgm                },
   {"",                       NULL                  }
