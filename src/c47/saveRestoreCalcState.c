@@ -159,6 +159,8 @@ static char *toInt16_next_word(const char *str, int16_t *val) {
 }
 #endif
 
+
+#if defined(PC_BUILD)
 static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
   //converting old matrix register headers in the form 0xrrrrcccc to 0xttrrrccc including the tag.
   //input expects the old matrix dimensions read into the new header as follows:
@@ -185,7 +187,6 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
 }
 
 
-#if defined(PC_BUILD)
   cfgFileParam_t *paramHead=NULL, *paramCurrent;
 
   static void changeCommaToPeriod(char *str) {

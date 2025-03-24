@@ -9,6 +9,8 @@
 TO_QSPI static const char bugScreenNonexistentMenu[] = "In function determineFunctionKeyItem: nonexistent menu specified!";
 TO_QSPI static const char bugScreenItemNotDetermined[] = "In function determineItem: item was not determined!";
 
+static void executeFunction(const char *data, int16_t item_);
+
   int16_t determineFunctionKeyItem_C47(const char *data, bool_t shiftF, bool_t shiftG) { //Added itemshift param JM
     int16_t item = ITM_NOP;
     dynamicMenuItem = -1;
@@ -929,7 +931,7 @@ int16_t lastItem = 0;
    * \brief Executes one function from a softmenu
    * \return void
    ***********************************************/
-  void executeFunction(const char *data, int16_t item_) {
+  static void executeFunction(const char *data, int16_t item_) {
     int16_t item = ITM_NOP;
 
                     #if defined(VERBOSEKEYS)
@@ -1473,6 +1475,7 @@ int16_t lastItem = 0;
       }
       lastErrorCode = 0;
 
+      shiftF = false;
       shiftG = !shiftG;
       lastshiftF = shiftF;
       lastshiftG = shiftG;

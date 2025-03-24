@@ -888,7 +888,7 @@ void printStatus(uint8_t row, const char *line1, uint8_t forced) {
 
 int16_t g_line_x, g_line_y;
 
-void print_linestr(const char *line1, bool_t line_init) {
+void print_linestr(const char *line1, bool_t line_init) {        //prints one line at a time, filled with dots on remaining line
   #if !defined(TESTSUITE_BUILD)
     char l1[200];
     l1[0] = 0;
@@ -921,6 +921,9 @@ void print_linestr(const char *line1, bool_t line_init) {
       g_line_x += 4;
     }
     force_refresh(timed);
+    #if defined(DMCP_BUILD)
+      lcd_refresh_wait();
+    #endif //DMCP_BUILD
   #endif // !TESTSUITE_BUILD
 }
 
@@ -942,5 +945,52 @@ void print_numberstr(const char *line1, bool_t line_init) {     //ONLY N=ASCII N
     }
     g_line_x = 0;
     force_refresh(timed);
+    #if defined(DMCP_BUILD)
+      lcd_refresh_wait();
+    #endif //DMCP_BUILD
+
+  #endif // !TESTSUITE_BUILD
+}
+
+
+
+uint32_t t_line_x, t_line_y;
+
+void print_inlinestr(const char *line1, bool_t endline) {  //prints with or without newline at the end of the line
+    #if !defined(TESTSUITE_BUILD)
+
+    char l1[100];    //Clip the string at 40
+    l1[0] = 0;
+    int16_t ix = 0;
+    int16_t ixx;
+    ixx = stringByteLength(line1);
+    while(ix < ixx && ix < 98 && t_line_x + stringWidth(l1, &standardFont, true, true) < SCREEN_WIDTH-12) {
+      xcopy(l1, line1, ix+1);
+      l1[ix+1] = 0;
+      ix = stringNextGlyph(line1, ix);
+    }
+    if(t_line_y < SCREEN_HEIGHT) {
+      t_line_x = showString(l1, &standardFont, t_line_x, t_line_y, vmNormal, true, true);
+    }
+    if(endline) {
+      t_line_y += 20;
+      t_line_x = 0;
+    }
+    force_refresh(force);
+    #if defined(DMCP_BUILD)
+      lcd_refresh_wait();
+    #endif //DMCP_BUILD
+  #endif // !TESTSUITE_BUILD
+}
+
+
+void print_Register_line(calcRegister_t regist, char *before, char *after, bool_t line_init) {
+  #if !defined(TESTSUITE_BUILD)
+    char str[TMP_STR_LENGTH];
+
+    copyRegisterToClipboardString2(regist, str);
+    addStrBothSides(str, before, after);
+
+    print_numberstr(str, line_init);
   #endif // !TESTSUITE_BUILD
 }
