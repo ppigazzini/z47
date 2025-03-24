@@ -3,6 +3,8 @@
 
 #include "c47.h"
 
+static float fnRealToFloat(const real_t *r);
+
 void convertLongIntegerToLongIntegerRegister(const longInteger_t lgInt, calcRegister_t regist) {
   uint16_t sizeInBytes = longIntegerSizeInBytes(lgInt);
 
@@ -730,29 +732,9 @@ void convertReal34MatrixRegisterToComplex34MatrixRegister(calcRegister_t source,
 
 
 double convertRegisterToDouble(calcRegister_t regist) {
-  double y;
-  real_t tmpy;
+  real_t regReal, regImag;
 
-  switch(getRegisterDataType(regist)) {
-    case dtLongInteger: {
-      convertLongIntegerRegisterToReal(regist, &tmpy, &ctxtReal39);
-      break;
-    }
-    case dtReal34:
-    case dtComplex34: {
-      real34ToReal(REGISTER_REAL34_DATA(regist), &tmpy);
-      break;
-    }
-    default: {
-      #if defined(PC_BUILD)
-        printf("ERROR IN convertRegisterToDouble\n");
-      #endif
-      return DOUBLE_NOT_INIT;
-      break;
-    }
-  }
-  realToDouble(&tmpy, &y);
-  return y;
+  return getRegisterAsComplex(regist, &regReal, &regImag) ? fnRealToFloat(&regReal) : DOUBLE_NOT_INIT;
 }
 
 

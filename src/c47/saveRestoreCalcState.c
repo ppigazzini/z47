@@ -36,6 +36,11 @@
 Current version defaults all non-loaded settings from previous version files correctly
 */
 
+
+#define LOADDEBUG
+#undef LOADDEBUG
+
+
 uint16_t flushBufferCnt = 0;
 #if !defined(TESTSUITE_BUILD)
   #define START_REGISTER_VALUE 1000  // was 1522, why?
@@ -2119,8 +2124,6 @@ int64_t stringToInt64(const char *str) {
   }
 
 
-#define LOADDEBUG
-#undef LOADDEBUG
 #if defined(LOADDEBUG)
   static void debugPrintf(int s1, const char * s2, const char * s3) {
     #if defined(PC_BUILD)
@@ -2271,8 +2274,12 @@ int64_t stringToInt64(const char *str) {
         readLine(errorMessage); // Variable name
         read2Lines(aimBuffer,tmpString); // Variable data type & Variable value
 
-        if(loadMode == LM_ALL || loadMode == LM_NAMED_VARIABLES ||
-          (loadMode == LM_SUMS && ((strcmp(errorMessage, "STATS") == 0) || (strcmp(errorMessage, "HISTO") == 0)))) {
+        if(( loadMode == LM_ALL || 
+             loadMode == LM_NAMED_VARIABLES ||
+            (loadMode == LM_SUMS && ((strcmp(errorMessage, "STATS") == 0) || (strcmp(errorMessage, "HISTO") == 0))) ) &&
+
+           !(loadMode == LM_NAMED_VARIABLES && ((strcmp(errorMessage, "STATS") == 0) || (strcmp(errorMessage, "HISTO") == 0)))
+          ) {
 
           #if defined(LOADDEBUG)
             sprintf(line,", loadMode:%d, %s\n",loadMode,tmpString);
@@ -2594,7 +2601,23 @@ int64_t stringToInt64(const char *str) {
         }
       }
 
+      #if defined(LOADDEBUG)
+        if(loadMode == LM_ALL || loadMode == LM_PROGRAMS) {
+          printf("Before loading programs:\n");
+          printf("  beginOfProgramMemory    = *8b %4u %16p\n",*beginOfProgramMemory,    (void*)(((uint32_t *)(beginOfProgramMemory)) ));
+          printf("  firstFreeProgramByte    = *8b %4u %16p\n",*firstFreeProgramByte,    (void*)(((uint32_t *)(firstFreeProgramByte)) ));
+          printf("  oldFirstFreeProgramByte = *8b %4u %16p\n",*oldFirstFreeProgramByte, (void*)(((uint32_t *)(oldFirstFreeProgramByte)) ));
+          printf("\n  freeProgramBytes        = 16b %u\n", freeProgramBytes);
+          printf("  numberOfBlocks          = 16b %u, on dot per block: ", numberOfBlocks);
+        }
+      #endif // LOADDEBUG
+
       for(i=0; i<numberOfBlocks; i++) {
+
+        #if defined(LOADDEBUG)
+          printf(".");
+        #endif // LOADDEBUG
+
         readLine(tmpString); // One block
         if(loadMode == LM_ALL) {
           *(((uint32_t *)(beginOfProgramMemory)) + i) = toUint32(tmpString);
@@ -2604,8 +2627,20 @@ int64_t stringToInt64(const char *str) {
           xcopy(oldFirstFreeProgramByte + TO_BYTES(i), (uint8_t *)(&tmpBlock), 4);
         }
       }
+ 
+      #if defined(LOADDEBUG)
+        if(loadMode == LM_ALL || loadMode == LM_PROGRAMS) {
+          printf("\n");
+          printf("After loading programs:\n");
+          printf("  beginOfProgramMemory    = *8b %4u %16p\n",*beginOfProgramMemory,    (void*)(((uint32_t *)(beginOfProgramMemory)) ));
+          printf("  firstFreeProgramByte    = *8b %4u %16p\n",*firstFreeProgramByte,    (void*)(((uint32_t *)(firstFreeProgramByte)) ));
+          printf("  oldFirstFreeProgramByte = *8b %4u %16p\n",*oldFirstFreeProgramByte, (void*)(((uint32_t *)(oldFirstFreeProgramByte)) ));
+        }
+      #endif // LOADDEBUG
 
-      scanLabelsAndPrograms();
+      if(loadMode == LM_ALL || loadMode == LM_PROGRAMS) {
+        scanLabelsAndPrograms();
+      }
     }
 
     else if(strcmp(tmpString, "EQUATIONS") == 0) {
@@ -2832,11 +2867,11 @@ void doLoad(uint16_t loadMode, uint16_t s, uint16_t n, uint16_t d, uint16_t load
   #if !defined(TESTSUITE_BUILD)
   ioFilePath_t path;
   int ret;
-    #if defined(LOADDEBUG)
-      char yy[10];
-      sprintf(yy, "%d",loadMode);
-      debugPrintf(-1, "LoadMode", yy);
-    #endif // LOADDEBUG
+  #if defined(LOADDEBUG)
+    char yy[1000];
+    sprintf(yy, "%d",loadMode);
+    debugPrintf(-1, "LoadMode", yy);
+  #endif // LOADDEBUG
 
   if(loadType == autoLoad) {
     path = ioPathAutoSave;
@@ -2847,6 +2882,12 @@ void doLoad(uint16_t loadMode, uint16_t s, uint16_t n, uint16_t d, uint16_t load
   else {
     path = ioPathLoadStateFile;
   }
+
+  #if defined(LOADDEBUG)
+    sprintf(yy, "%u",path);
+    debugPrintf(-1, "Path:", yy);
+  #endif // LOADDEBUG
+
 
   ret = ioFileOpen(path, ioModeRead);
 
@@ -2881,7 +2922,7 @@ void doLoad(uint16_t loadMode, uint16_t s, uint16_t n, uint16_t d, uint16_t load
       readLine(aimBuffer); // internal rev number (ignore now)
       readLine(aimBuffer); // param
       readLine(tmpString); // value
-      if(strcmp(aimBuffer, "C47_save_file_00") == 0) {
+      if(strcmp(aimBuffer, "C47_save_file_00") == 0 || strcmp(aimBuffer, "C43_save_file_00") == 0) {
         loadedVersion = toUint32(tmpString);
         if(loadedVersion < 10000000 || loadedVersion > 20000000) {
           loadedVersion = 0;
@@ -2890,12 +2931,44 @@ void doLoad(uint16_t loadMode, uint16_t s, uint16_t n, uint16_t d, uint16_t load
     }
   }
 
-  if((((loadType == manualLoad) || (loadType == stateLoad)) && loadMode == LM_ALL) ||
-    ((loadType == autoLoad) && (loadedVersion >= VersionAllowed) && (loadedVersion <= configFileVersion) && (loadMode == LM_ALL) )) {
+  bool_t enableLoad = false;
+  switch(loadType) {
+    case manualLoad: {
+      switch(loadMode) {
+        case LM_ALL: {
+          enableLoad = true;
+        }
+        break;
+        case LM_PROGRAMS:
+        case LM_REGISTERS:
+        case LM_SYSTEM_STATE:
+        case LM_SUMS:
+        case LM_NAMED_VARIABLES: {
+          enableLoad = true;
+        }
+        break;
+        default:break;
+      }
+    }
+    break;
+    case stateLoad: {
+      if (loadMode == LM_ALL) {
+        enableLoad = true;
+      }
+    }
+    break;
+    case autoLoad: {
+      if (((loadMode == LM_ALL) && (loadedVersion >= VersionAllowed) && (loadedVersion <= configFileVersion)) ){
+        enableLoad = true;
+      }
+    }
+    break;
+    default:break;
+  }
+  if(enableLoad) {
     while(restoreOneSection(loadMode, s, n, d)) {
     }
   }
-
 
   lastErrorCode = ERROR_NONE;
 
