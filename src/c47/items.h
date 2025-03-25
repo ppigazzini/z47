@@ -2537,16 +2537,16 @@
 #define ITM_BANANAtoMM              2468           
 #define ITM_MMtoBANANA              2469
 
-#define ITM_V3TOCYL                 2470
-#define ITM_V3TOSPH                 2471
+#define ITM_V3toCYL                 2470
+#define ITM_V3toSPH                 2471
 #define ITM_VVDIST                  2472
 #define ITM_CONCAT                  2473
 
-#define ITM_STKTO1x3                2474
-#define ITM_STKTO1x2                2475
-#define ITM_1x3TOSTK                2476
-#define ITM_1x2TOSTK                2477
-#define ITM_VECTOSTK                2478
+#define ITM_STKtoV3                 2474
+#define ITM_STKtoV2                 2475
+#define ITM_V3toSTK                 2476
+#define ITM_V2toSTK                 2477
+#define ITM_VECtoSTK                2478
 #define ITM_V100                    2479
 #define ITM_V010                    2480
 #define ITM_V001                    2481
@@ -2563,7 +2563,14 @@
 #define ITM_V01                     2491
 #define ITM_CPXexV                  2492
 
-#define LAST_ITEM                   2493
+#define ITM_CPXtoV                  2493
+#define ITM_VtoCPX                  2494
+#define ITM_stkexV2                 2495
+#define ITM_stkexV3                 2496
+#define ITM_STKtoVEC                2497
+#define MNU_VECCONV                 2498
+
+#define LAST_ITEM                   2499
 
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL
