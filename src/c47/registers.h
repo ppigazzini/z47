@@ -282,7 +282,7 @@
   #define setVectorRegisterPolarMode(reg, pm)   setRegisterTag(reg, ((pm == 0) ? ((getRegisterTag(reg) & ~(amAngleMask | amPolar)) + amNone) : \
                                                                       ((getRegisterTag(reg) & (amAngleMask | amPolar)) | ((pm == amPolarSPH || pm == amPolar) ? amPolar : 0)) \
                                                                       & ((pm == amPolarCYL) ? ((~amPolar) & (amAngleMask | amPolar)) : 255) \
-                                                                        ))           /*if Polar is cleared, also clear angle */
+                                                                        ))           /*if Polar is cleared (pm=0), also clear angle */
                                                                                      /*existing status, with polar bit ORred for 2DPolar or SPH*/
                                                                                      /*   ANDed to force Polar 0 for CYL */
 
