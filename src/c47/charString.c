@@ -1016,6 +1016,23 @@ void *xcopy(void *dest, const void *source, int n) {
 }
 
 
+void addChrBothSides(uint8_t t, char * str) {
+  char tt[4];
+  tt[0] = t;
+  tt[1] = 0;
+  xcopy(str + 1, str, stringByteLength(str) + 1);
+  str[0] = t;
+  strcat(str, tt);
+}
+
+
+void addStrBothSides(char * str, char * str_b, char * str_e) {
+  xcopy(str + stringByteLength(str_b), str, stringByteLength(str) + 1);
+  xcopy(str, str_b, stringByteLength(str_b));
+  xcopy(str + stringByteLength(str), str_e, stringByteLength(str_e) + 1);
+}
+
+
 #if defined(__MINGW64__)
   char *stringCopy(char *dest, const char *source) {
     const uint32_t l = stringByteLength(source);

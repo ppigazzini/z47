@@ -120,4 +120,6 @@ void     stringToRTF           (const char *str, char *ascii);
 void     stringToFileNameChars (const char *str, char *ascii);
 void    *xcopy                 (void *dest, const void *source, int n);
 void     strReplace            (char *haystack, const char *needle, const char *newNeedle);
+void     addChrBothSides       (uint8_t t, char * str);
+void     addStrBothSides       (char * str, char * str_b, char * str_e);
 #endif // !CHARSTRING_H
