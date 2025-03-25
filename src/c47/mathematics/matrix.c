@@ -44,7 +44,7 @@ static bool_t getDimensionArg(uint32_t *rows, uint32_t *cols) {
           moreInfoOnError("In function getDimensionArg:", errorMessage, NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       #endif // !TESTSUITE_BUILD
-    goto returnDone;
+    return false;
   }
 
   if(getRegisterDataType(REGISTER_X) == dtLongInteger) {
@@ -64,9 +64,11 @@ static bool_t getDimensionArg(uint32_t *rows, uint32_t *cols) {
         moreInfoOnError("In function getDimensionArg:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     #endif // !TESTSUITE_BUILD
-    goto returnDone;
+    longIntegerFree(tmp_lgInt1);
+    return false;
   }
   longIntegerToUInt32(tmp_lgInt1, *cols);
+  longIntegerFree(tmp_lgInt1);
 
   if(getRegisterDataType(REGISTER_Y) == dtLongInteger) {
     convertLongIntegerRegisterToLongInteger(REGISTER_Y, tmp_lgInt2);
@@ -85,18 +87,13 @@ static bool_t getDimensionArg(uint32_t *rows, uint32_t *cols) {
         moreInfoOnError("In function getDimensionArg:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     #endif // !TESTSUITE_BUILD
-    goto returnDone;
+    longIntegerFree(tmp_lgInt2);
+    return false;
   }
   longIntegerToUInt32(tmp_lgInt2, *rows);
-
-  longIntegerFree(tmp_lgInt1);
   longIntegerFree(tmp_lgInt2);
+
   return true;
-
-returnDone:
-  longIntegerFree(tmp_lgInt1);
-  longIntegerFree(tmp_lgInt2);
-  return false;
 }
 
 
