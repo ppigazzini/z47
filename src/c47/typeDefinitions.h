@@ -121,13 +121,84 @@ typedef enum {
   amRadian    =  0, // radian
   amGrad      =  1, // grad
   amDegree    =  2, // degree
-  amDMS       =  3,
-  amMultPi    =  4,
-  amNone      =  5,
+  amDMS       =  3, // degrees in dd mm ss.sss...
+  amMultPi    =  4, // multiples of pi
+  amNone      =  5, // RECT in complex, real, vector
   amSecond    =  6, // not an angular but a time unit: for the routine unified with the real type
-  TM_HMS      =  7, // JM not an angular but a time unit: for the C47 usage
+  TM_HMS      =  7, // not an angular but a time unit
   amAngleMask = 15,
-  amPolar     = 16  // JM bit 4 of the 5 bits is used for Polar
+  amPolar     = 16, // JM bit 4 of the 5 bits is used for Polar in Complex Case
+
+  //removed the idea of adding bits: See registers.h 
+  //  amPolarCYL  =  64, // 3D Vector: Polar cylindrical. 
+  //  amPolarSPH  = 128  // 3D Vector: Polar cylindrical. 
+  //----
+  // Replaced with the logic table below, in essence, if a real matrix, and if the matrix is 1x2, 2x1, 1x3 or 3x1 then it is a vector, for which: 
+  //   - A 2D vector is in Rect, if the angleMode == amNone. The amPolar flag, bit 4, also is clear
+  //   - A 3D vector is in Rect, if the angleMode == amNone. The amPolar flag set is Spherical Polar, and reset is Cylindrical.
+  //   There are macros for this in defines.h (for matrix type) and registers.h (for registers)
+
+  //using logic to store in a real matrix register, the states: CYL, SPH or RECT. RECT being amNone set and no Polar mode set. This can be reworked into storing the bits. Search for amPolarCYL & amPolarSPH to change.
+  //5-bits stored in register header
+  //current:   0b ---.-xxx   x : 0-7 angle/time types
+  //              ---z-...   z : Polar
+  //              ---.-...   - : spare bits
+
+  //Real             0 -000       Real amRadian
+  //Real             0 -001       Real amGrad  
+  //Real             0 -010       Real amDegree
+  //Real             0 -011       Real amDMS   
+  //Real             0 -100       Real amMultPi
+  //Real             0 -101       Real amNone  
+  //Real             0 -110       Real amSecond
+  //Real             0 -111       Real TM_HMS  
+
+  // Cpx             0 -000       Rect ---
+  // Cpx             0 -001       Rect ---
+  // Cpx             0 -010       Rect ---
+  // Cpx             0 -011       Rect ---
+  // Cpx             0 -100       Rect ---
+  // Cpx             0 -101       Rect amNone
+  // Cpx             0 -110       Rect ---
+  // Cpx             0 -111       Rect ---  
+
+  // Cpx             1 -000      Polar amRadian
+  // Cpx             1 -001      Polar amGrad  
+  // Cpx             1 -010      Polar amDegree
+  // Cpx             1 -011      Polar amDMS   
+  // Cpx             1 -100      Polar amMultPi
+  // Cpx             1 -101            ---
+  // Cpx             1 -110            ---
+  // Cpx             1 -111            ---
+
+  // RealMx 2D 3D    0 -000       Rect ---
+  // RealMx 2D 3D    0 -001       Rect ---
+  // RealMx 2D 3D    0 -010       Rect ---
+  // RealMx 2D 3D    0 -011       Rect ---
+  // RealMx 2D 3D    0 -100       Rect ---
+  // RealMx 2D 3D    0 -101       Rect amNone
+  // RealMx 2D 3D    0 -110       Rect ---
+  // RealMx 2D 3D    0 -111       Rect ---  
+
+  // RealMx    3D    0 -000        CYL amRadian
+  // RealMx    3D    0 -001        CYL amGrad  
+  // RealMx    3D    0 -010        CYL amDegree
+  // RealMx    3D    0 -011        CYL amDMS   
+  // RealMx    3D    0 -100        CYL amMultPi
+  // RealMx    3D    0 -101            ---
+  // RealMx    3D    0 -110            ---
+  // RealMx    3D    0 -111            ---
+
+  // RealMx 2D 3D    1 -000    POL SPH amRadian
+  // RealMx 2D 3D    1 -001    POL SPH amGrad  
+  // RealMx 2D 3D    1 -010    POL SPH amDegree
+  // RealMx 2D 3D    1 -011    POL SPH amDMS   
+  // RealMx 2D 3D    1 -100    POL SPH amMultPi
+  // RealMx 2D 3D    1 -101            ---
+  // RealMx 2D 3D    1 -110            ---
+  // RealMx 2D 3D    1 -111            ---
+
+
 } angularMode_t;
 
 
@@ -243,11 +314,11 @@ typedef struct {
 typedef union {
   uint32_t descriptor;
   struct {
-    uint32_t pointerToRegisterData : 16; ///< Memory block number
-    uint32_t dataType              :  4; ///< dtLongInteger, dtReal34, ...
-    uint32_t tag                   :  5; ///< Short integer base, real34 angular mode, or long integer sign; complex34 angle mode + Polar
-    uint32_t readOnly              :  1; ///< The register or variable is readOnly if this field is 1 (used for system named variables)
-    uint32_t notUsed               :  6; ///< 6 bits free
+    unsigned pointerToRegisterData : 16; ///< uint32_t      Memory block number
+    unsigned dataType              :  4; ///< uint32_t      dtLongInteger, dtReal34, ...
+    unsigned tag                   :  5; ///< angularMode_t Short integer base, real34 angular mode, or long integer sign; complex34 angle mode + Polar
+    unsigned readOnly              :  1; ///< uint32_t      The register or variable is readOnly if this field is 1 (used for system named variables)
+    unsigned notUsed               :  6; ///< uint32_t      6 bits free
   };
 } registerHeader_t;
 
@@ -257,8 +328,10 @@ typedef union {
  * Header for matrix datatype.
  */
 typedef struct {
-  uint16_t matrixRows;                ///< Number of rows in the matrix
-  uint16_t matrixColumns;             ///< Number of columns in the matrix
+  unsigned matrixRows    : 12;   ///< uint32_t      Number of rows in the matrix
+  unsigned matrixColumns : 12;   ///< uint32_t      Number of columns in the matrix
+  unsigned mtag          :  6;   ///< angularMode_t tag;
+  unsigned notUsed       :  2;   ///< uint32_t      2 bits free
 } matrixHeader_t;
 
 
