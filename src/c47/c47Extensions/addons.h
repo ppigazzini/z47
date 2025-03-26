@@ -51,6 +51,8 @@ void fnFrom_ymd     (uint16_t unusedButMandatoryParameter);
 void fn_cnst_op_A    (uint16_t unusedButMandatoryParameter);
 void fnConvertStkToMx(uint16_t unusedButMandatoryParameter);
 void fnConvertMxToStk(uint16_t unusedButMandatoryParameter);
+void fnExchangeStkToMx(uint16_t opType);
+
 
 
 void fnRESET_MyM(uint8_t param);

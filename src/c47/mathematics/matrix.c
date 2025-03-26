@@ -5576,11 +5576,12 @@ void V3RectoToCyl(uint16_t am) {
   } else V3err();
 }
 
-void fnComplexToVector (uint16_t unusedButMandatoryParameter) {
+
+
+void fnComplexToVector (uint16_t opType) {
   real34Matrix_t matrix;
-  if(getRegisterDataType(REGISTER_X) == dtReal34Matrix) {
+  if(isRegisterMatrix2dVector(REGISTER_X) && (opType == ITM_CPXexV || opType == ITM_VtoCPX)) {
     //MatrixVector2D ==> Complex
-    if(isRegisterMatrix2dVector(REGISTER_X)) {
     copySourceRegisterToDestRegister(REGISTER_X, TEMP_REGISTER_1);
     reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
     linkToRealMatrixRegister(TEMP_REGISTER_1,  &matrix);
@@ -5590,21 +5591,16 @@ void fnComplexToVector (uint16_t unusedButMandatoryParameter) {
     setComplexRegisterAngularMode(REGISTER_X, getVectorRegisterAngularMode(TEMP_REGISTER_1));
     setComplexRegisterPolarMode(REGISTER_X, (getVectorRegisterPolarMode(TEMP_REGISTER_1) != amNone) ? amPolar : amNone);
     clearRegister(TEMP_REGISTER_1);
-    }
+    return;
   }
-  else if(getRegisterDataType(REGISTER_X) == dtComplex34) {
+  else if(getRegisterDataType(REGISTER_X) == dtComplex34  && (opType == ITM_CPXexV || opType == ITM_CPXtoV)) {
     //Complex ==> MatrixVector2D
     copySourceRegisterToDestRegister(REGISTER_X, TEMP_REGISTER_1);
     //Initialize Memory for Matrix
     if(initMatrixRegister(REGISTER_X, 1, 2, false)) {
     }
     else {
-// ignore error condition, because no extra bytes are needed converting from complex34 to Real matrix 2D vector
-//      displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);       
-//      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-//        sprintf(errorMessage, "Not enough memory for a %" PRIu32 STD_CROSS "%" PRIu32 " matrix", 1, 1);
-//        moreInfoOnError("In function fnConvertStkToMx:", errorMessage, NULL, NULL);
-//      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+      // ignore error condition, because no extra bytes are needed converting from complex34 to Real matrix 2D vector
       return;
     }
     adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
@@ -5615,14 +5611,15 @@ void fnComplexToVector (uint16_t unusedButMandatoryParameter) {
     setVectorRegisterAngularMode(REGISTER_X, getComplexRegisterAngularMode(TEMP_REGISTER_1));
     setVectorRegisterPolarMode(REGISTER_X,   getComplexRegisterPolarMode(TEMP_REGISTER_1));
     clearRegister(TEMP_REGISTER_1);
-  } else {
-    #if !defined(TESTSUITE_BUILD)
-      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-        sprintf(errorMessage, "invalid data type %s and %s", getRegisterDataTypeName(REGISTER_Y, true, false), getRegisterDataTypeName(REGISTER_X, true, false));
-        moreInfoOnError("In function fnComplexToVector:", errorMessage, NULL, NULL);
-      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-    #endif // !TESTSUITE_BUILD
+    return;
   }
+
+  #if !defined(TESTSUITE_BUILD)
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "invalid data type %s and %s", getRegisterDataTypeName(REGISTER_Y, true, false), getRegisterDataTypeName(REGISTER_X, true, false));
+      moreInfoOnError("In function fnComplexToVector:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+  #endif // !TESTSUITE_BUILD
 }
 

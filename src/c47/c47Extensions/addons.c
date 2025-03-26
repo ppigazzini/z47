@@ -597,6 +597,35 @@ static bool_t processDefaultVector(calcRegister_t regist, uint8_t p, uint8_t d, 
 }
 
 
+void fnExchangeStkToMx(uint16_t opType) {
+  switch(opType) {
+    case ITM_stkexV2:{
+      if(isRegisterMatrix2dVector(REGISTER_X)) {
+        fnConvertMxToStk(indexOfItems[ITM_V2toSTK].param);
+      } 
+      else if((getRegisterDataType(REGISTER_X) == dtReal34 || getRegisterDataType(REGISTER_X) == dtLongInteger) &&
+              (getRegisterDataType(REGISTER_Y) == dtReal34 || getRegisterDataType(REGISTER_Y) == dtLongInteger)) {
+        fnConvertStkToMx(indexOfItems[ITM_STKtoV2].param);        
+      }
+      break;
+    }
+
+    case ITM_stkexV3:{
+      if(isRegisterMatrix3dVector(REGISTER_X)) {
+        fnConvertMxToStk(indexOfItems[ITM_V3toSTK].param);
+      } 
+      else if((getRegisterDataType(REGISTER_X) == dtReal34 || getRegisterDataType(REGISTER_X) == dtLongInteger) &&
+              (getRegisterDataType(REGISTER_Y) == dtReal34 || getRegisterDataType(REGISTER_Y) == dtLongInteger) &&
+              (getRegisterDataType(REGISTER_Z) == dtReal34 || getRegisterDataType(REGISTER_Z) == dtLongInteger)) {
+        fnConvertStkToMx(indexOfItems[ITM_STKtoV3].param);        
+      }
+      break;
+    }
+    default:break;
+  }
+}
+
+
 void fnConvertStkToMx(uint16_t constVector) {
   bool_t complexCoefs = false;
   struct cmplxPair x[3];
