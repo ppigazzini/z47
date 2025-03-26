@@ -4339,9 +4339,15 @@ displayBaseMode(regist);
               showString(prefix, &standardFont, 1, baseY + TEMPORARY_INFO_OFFSET, vmNormal, prefixPre, prefixPost);
             }
 
-            if(!vectorToDisplayString(regist, tmpString)) {
+
+            char preserveErrorMessage[ERROR_MESSAGE_LENGTH];
+            xcopy(preserveErrorMessage,errorMessage,ERROR_MESSAGE_LENGTH);   // maintain the errormessage string, which is used for TI's earlier.
+            if(!vectorToDisplayString(regist, tmpString)) {                  //   errorMessage string used
               real34MatrixToDisplayString(regist, tmpString);
             }
+            xcopy(errorMessage,preserveErrorMessage,ERROR_MESSAGE_LENGTH);   // maintain the errormessage string, which is used for TI's earlier.
+
+
 
             w = stringWidth(tmpString, &numericFont, false, true);
             lineWidth = w;

@@ -997,8 +997,6 @@ typedef struct {
       return;
     }  
 
-    changeFractionModeOnENTER = false;
-
     if(item >= ITM_A && item <= ITM_F && lastIntegerBase == 0) {
       lastIntegerBase = 16;
     }
@@ -1706,15 +1704,6 @@ typedef struct {
       }
 
       case ITM_EXIT1: {
-        if(changeFractionModeOnENTER) {
-          if(!getSystemFlag(FLAG_FRACT) && !getSystemFlag(FLAG_IRFRAC)) {
-            setSystemFlag(FLAG_FRACT);
-          }
-          else if(getSystemFlag(FLAG_IRFRAC)) {
-            setSystemFlag(FLAG_IRF_ON);
-          }
-          changeFractionModeOnENTER = false;
-        }
         addItemToNimBuffer_exit:
         done = true;
         screenUpdatingMode &= ~SCRUPD_SKIP_STACK_ONE_TIME;
@@ -2272,8 +2261,17 @@ typedef struct {
 
     for(; buffer[index]!='/'; index++) {
     }
-    if(buffer[++index] != 0) {
-      subNumberToDisplayString(toInt32(buffer + index), displayBuffer + stringByteLength(displayBuffer), NULL);
+    if (buffer[++index] == '+') { // There is an imaginary part
+      subNumberToDisplayString(lastDenominator, displayBuffer + stringByteLength(displayBuffer), NULL);
+    }
+    else if (buffer[index] != 0) {
+      int16_t denominator = toInt32(buffer + index);
+      subNumberToDisplayString(denominator, displayBuffer + stringByteLength(displayBuffer), NULL);
+      for(; buffer[index] >= '0' && buffer[index] <= '9'; index++) {
+      }
+      if (buffer[index] == '+') {
+        lastDenominator = denominator;
+      }
     }
   }
 
@@ -2281,6 +2279,13 @@ typedef struct {
     int16_t i, posSpace, posSlash, lg;
     int32_t integer, numer, denom;
     real34_t temp;
+
+    if(!getSystemFlag(FLAG_FRACT) && !getSystemFlag(FLAG_IRFRAC)) {
+      setSystemFlag(FLAG_FRACT);          //1     //NOTE CHANGE HERE TO SWITCH OFF AUTO FRAC MODE AFTER FRACTION INPUT
+    }
+    else if(getSystemFlag(FLAG_IRFRAC)) {
+      setSystemFlag(FLAG_IRF_ON);
+    }
 
     lg = strlen(source);
 
@@ -2383,20 +2388,8 @@ typedef struct {
     }
   }
 
-  bool_t changeFractionModeOnENTER = false;
   void closeNimWithFraction(real34_t *dest) {
     // Set Fraction mode
-    if(!getSystemFlag(FLAG_FRACT) && !getSystemFlag(FLAG_IRFRAC)) {
-      setSystemFlag(FLAG_FRACT);          //1     //NOTE CHANGE HERE TO SWITCH OFF AUTO FRAC MODE AFTER FRACTION INPUT
-      //changeFractionModeOnENTER = true; //2     //USE either //1 or //2
-    }
-    else if(getSystemFlag(FLAG_IRFRAC)) {
-      setSystemFlag(FLAG_IRF_ON);
-    }
-    else {
-      changeFractionModeOnENTER = false;
-    }
-
     nimFractionToReal34(aimBuffer, dest);
   }
 
