@@ -941,19 +941,19 @@ void fnGetHide(uint16_t unusedButMandatoryParameter) {
 void initSimEqMatABX(void) {
   matrixHeader_t *matrixHeader;
 
-  allocateNamedVariable("Mat_A", dtReal34Matrix, REAL34_SIZE_IN_BLOCKS + 1);
+  allocateNamedVariable("Mat_A", dtReal34Matrix, REAL34_SIZE_IN_BLOCKS + TO_BLOCKS(sizeof(matrixHeader_t)));
   matrixHeader = getRegisterDataPointer(FIRST_NAMED_VARIABLE);
   matrixHeader->matrixRows = 1;
   matrixHeader->matrixColumns = 1;
   real34Zero(REAL34_MATRIX_ELEMENTS_AFTER_MATRIX_HEADER(matrixHeader));
 
-  allocateNamedVariable("Mat_B", dtReal34Matrix, REAL34_SIZE_IN_BLOCKS + 1);
+  allocateNamedVariable("Mat_B", dtReal34Matrix, REAL34_SIZE_IN_BLOCKS + TO_BLOCKS(sizeof(matrixHeader_t)));
   matrixHeader = getRegisterDataPointer(FIRST_NAMED_VARIABLE + 1);
   matrixHeader->matrixRows = 1;
   matrixHeader->matrixColumns = 1;
   real34Zero(REAL34_MATRIX_ELEMENTS_AFTER_MATRIX_HEADER(matrixHeader));
 
-  allocateNamedVariable("Mat_X", dtReal34Matrix, REAL34_SIZE_IN_BLOCKS + 1);
+  allocateNamedVariable("Mat_X", dtReal34Matrix, REAL34_SIZE_IN_BLOCKS + TO_BLOCKS(sizeof(matrixHeader_t)));
   matrixHeader = getRegisterDataPointer(FIRST_NAMED_VARIABLE + 2);
   matrixHeader->matrixRows = 1;
   matrixHeader->matrixColumns = 1;

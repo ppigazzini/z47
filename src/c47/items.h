@@ -444,8 +444,8 @@
 #define ITM_NUMB                     422
 #define ITM_SDL                      423
 #define ITM_SDR                      424
-#define ITM_0425                     425
-#define ITM_0426                     426
+#define ITM_ZIP                      425
+#define ITM_UNZIP                    426
 #define ITM_0427                     427
 #define ITM_0428                     428
 #define ITM_0429                     429
@@ -1895,7 +1895,7 @@
 #define ITM_SECOND                  1841
 #define ITM_toTIME                  1842
 #define ITM_TIMEto                  1843
-#define ITM_1844                    1844
+#define ITM_COUNTDN_RCL             1844
 #define ITM_qoppa                   1845
 #define ITM_digamma                 1846
 #define ITM_sampi                   1847
@@ -2537,28 +2537,43 @@
 #define ITM_BANANAtoMM              2468           
 #define ITM_MMtoBANANA              2469
 
-#define ITM_V3TOCYL                 2470
-#define ITM_V3TOSPH                 2471
+#define ITM_V3toCYL                 2470
+#define ITM_V3toSPH                 2471
 #define ITM_VVDIST                  2472
 #define ITM_CONCAT                  2473
-#define ITM_STKTO1x3                2474
-#define ITM_1x3TOSTK                2475
-#define ITM_V100                    2476
-#define ITM_V010                    2477
-#define ITM_V001                    2478
 
-#define ITM_RCLVEL1                 2479
-#define ITM_RCLVEL2                 2480
-#define ITM_RCLVEL3                 2481
-#define ITM_STOVEL1                 2482
-#define ITM_STOVEL2                 2483
-#define ITM_STOVEL3                 2484
-#define ITM_dddVEL                  2485
-#define ITM_dddIX                   2486
+#define ITM_STKtoV3                 2474
+#define ITM_STKtoV2                 2475
+#define ITM_V3toSTK                 2476
+#define ITM_V2toSTK                 2477
+#define ITM_VECtoSTK                2478
+#define ITM_V100                    2479
+#define ITM_V010                    2480
+#define ITM_V001                    2481
 
-#define ITM_CLKp2                   2487
+#define ITM_RCLVEL1                 2482
+#define ITM_RCLVEL2                 2483
+#define ITM_RCLVEL3                 2484
+#define ITM_STOVEL1                 2485
+#define ITM_STOVEL2                 2486
+#define ITM_STOVEL3                 2487
+#define ITM_dddVEL                  2488
+#define ITM_dddIX                   2489
+#define ITM_V10                     2490
+#define ITM_V01                     2491
+#define ITM_CPXexV                  2492
 
-#define LAST_ITEM                   2488
+#define ITM_CPXtoV                  2493
+#define ITM_VtoCPX                  2494
+#define ITM_stkexV2                 2495
+#define ITM_stkexV3                 2496
+#define ITM_REGtoVEC                2497
+#define ITM_VECtoREG                2498
+#define MNU_VECCONV                 2499
+
+#define ITM_CLKp2                   2500
+
+#define LAST_ITEM                   2501
 
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL

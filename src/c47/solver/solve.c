@@ -664,6 +664,7 @@ retryLevel:
     }
 
     if(result == SOLVER_RESULT_EXTREMUM) { // Check if the result is really an extremum
+      bool_t retainSolvingFlag = getSystemFlag(FLAG_SOLVING);
       setSystemFlag(FLAG_SOLVING);
       real34Copy(const34_1e_32, &tmp);
       while(true) {
@@ -692,8 +693,10 @@ retryLevel:
           break;
         }
       }
+      if(!retainSolvingFlag) {
+        clearSystemFlag(FLAG_SOLVING);
+      }
     }
-    clearSystemFlag(FLAG_SOLVING);
 
     if(result == SOLVER_RESULT_NORMAL && real34IsInfinite(REGISTER_REAL34_DATA(variable)) && extendRange && real34IsZero(resZ)) {
       result = SOLVER_RESULT_CONSTANT;

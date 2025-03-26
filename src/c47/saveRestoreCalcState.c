@@ -5,7 +5,7 @@
 
 // This is used for the backup.cfg simulator backup file
 // The variable backupVersion is used in the connection
-#define BACKUP_VERSION                     1008     // Add lastCenturyHighUsed
+#define BACKUP_VERSION                     1009     // Change matrix headers, add tag
 /*
 1004     // Replace Norm_Key_00_VAR by the structure Norm_Key_00;
 1005     // 2024-09-06 Remove superfluous reporting when old cfg file items are not found in new files
@@ -16,7 +16,7 @@
 
 
 // This is used for the state files
-#define configFileVersion                  10000017 // Add dispBase
+#define configFileVersion                  10000018 // Change matrix headers, add tag
 #define VersionAllowed                     10000005 // This code will not autoload versions earlier than this
 /*
 10000001 // arbitrary starting point version 10 000 001
@@ -32,10 +32,14 @@
 10000014 // 2024-11-07 configFileVersion                  10000014 // Remove Aspect and add PLOT_PLUS
 10000015 // 2024-11    configFileVersion                  10000015 // Remove all PLSTAT flags incl. PLOT_PLUS...
 10000016 // 2024-11-18 configFileVersion                  10000016 // Add lastCenturyHighUsed
-10000017 // 2025-02-11 configFileVersion                  10000017 // Add dispBase
 
 Current version defaults all non-loaded settings from previous version files correctly
 */
+
+
+#define LOADDEBUG
+#undef LOADDEBUG
+
 
 uint16_t flushBufferCnt = 0;
 #if !defined(TESTSUITE_BUILD)
@@ -88,6 +92,44 @@ float stringToFloat(const char *str) {
   return strtof(str, NULL);
 }
 
+//Utility to add angle and polar markers
+static void textTag(char *str, const uint8_t angle, const uint8_t polmode) {
+  if(angle != amNone) {
+    switch(getTagAngularMode(angle)) {
+      case amDegree: {
+        strcat(str, ":DEG");
+        break;
+      }
+      case amDMS: {
+        strcat(str, ":DMS");
+        break;
+      }
+      case amRadian: {
+        strcat(str, ":RAD");
+        break;
+      }
+      case amMultPi: {
+        strcat(str, ":MULTPI");
+        break;
+      }
+      case amGrad: {
+        strcat(str, ":GRAD");
+        break;
+      }
+      case amNone: {
+        break;
+      }
+      default: {
+        strcpy(str, ":???");
+        break;
+      }
+    }
+  }
+  if((polmode & amPolar) == amPolar) {
+    strcat(str, "p");
+  }
+}
+
 // Utility routines to skip stuff
 static char *skip_word(const char *str) {
   while(*str != ' ')
@@ -118,6 +160,32 @@ static char *toInt16_next_word(const char *str, int16_t *val) {
 #endif
 
 #if defined(PC_BUILD)
+static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
+  //converting old matrix register headers in the form 0xrrrrcccc to 0xttrrrccc including the tag.
+  //input expects the old matrix dimensions read into the new header as follows:
+  //  memory block contains 0xrrrrcccc and is read into cols=0x0ccc and rows=0x0rrr
+  //  this is rewritten to  0x00rrrccc and a amNone tag is applied with Polar off.
+  //  resulting in          0x05rrrccc
+  //this MUST only be called for version numbers indicating an old backup file, and an old state file.
+  //it CANNOT be run on a new matrix header, as the cols read in form 0x0FFF will be shifted by 4 bits to align and will break if already shifted meaning if it already is new format.
+  //Old matrixes with rows or cols > 12 bits 0x0FFF will fail. It is however unreasonable to expect such large matrix dimensions of 2^12-1 = 4095.
+  if(getRegisterDataType(regist) == dtReal34Matrix || getRegisterDataType(regist) == dtComplex34Matrix) {
+    #if defined PC_BUILD
+      printf("----------------R%2u Old matrix header: r=%i c=%i \n",regist, (REGISTER_MATRIX_HEADER (regist)->matrixRows), (REGISTER_MATRIX_HEADER (regist)->matrixColumns));
+    #endif //PC_BUILD
+    uint32_t row = (REGISTER_MATRIX_HEADER(regist)->matrixRows) & 0x0FFF;
+    uint32_t col = ((REGISTER_MATRIX_HEADER(regist)->matrixColumns) >> 4) & 0x0FFF;
+    #if defined PC_BUILD
+      printf("----------------R%2u New matrix header: r=%i c=%i \n",regist, row, col);
+    #endif //PC_BUILD
+    REGISTER_MATRIX_HEADER(regist)->matrixRows = row;
+    REGISTER_MATRIX_HEADER(regist)->matrixColumns = col;
+    //printf("R%2u: getRegisterTag=%u REGISTER_MATRIX_HEADER(regist)->mtag=%u\n", regist, getRegisterTag(regist), REGISTER_MATRIX_HEADER(regist)->mtag);
+    REGISTER_MATRIX_HEADER(regist)->mtag = getRegisterTag(regist) & (amPolar | amAngleMask);
+  }
+}
+
+
   cfgFileParam_t *paramHead=NULL, *paramCurrent;
 
   static void changeCommaToPeriod(char *str) {
@@ -1206,6 +1274,25 @@ static char *toInt16_next_word(const char *str, int16_t *val) {
 
 
 
+    if(backupVersion < 1009) {                           //register header is already loaded with 32 bits
+      printf("Version number of configfile < 1009: chacking all registers for matrix conversion from old 32-bit header to new 32-bit header.");
+      int qq = FIRST_GLOBAL_REGISTER;
+      while (qq <= LAST_GLOBAL_REGISTER) {
+        convertOldMatrixHeaderToNewMatrixHeader(qq);
+        qq++;
+      }
+      qq = FIRST_NAMED_VARIABLE;
+      while (qq <= LAST_NAMED_VARIABLE) {
+        convertOldMatrixHeaderToNewMatrixHeader(qq);
+        qq++;
+      }
+      qq = FIRST_LOCAL_REGISTER;
+      while (qq <= LAST_LOCAL_REGISTER) {
+        convertOldMatrixHeaderToNewMatrixHeader(qq);
+        qq++;
+      }
+    }
+
     // Freeing the space occupied by all the configuration parameters
     paramCurrent = paramHead;
     while(paramHead) {
@@ -1341,42 +1428,8 @@ char aimBuffer1[400];             //The concurrent use of the global aimBuffer
 
       case dtReal34: {
         real34ToString(REGISTER_REAL34_DATA(regist), tmpRegisterString);
-        switch(getRegisterAngularMode(regist)) {
-          case amDegree: {
-            strcpy(aimBuffer1, "Real:DEG");
-            break;
-          }
-
-          case amDMS: {
-            strcpy(aimBuffer1, "Real:DMS");
-            break;
-          }
-
-          case amRadian: {
-            strcpy(aimBuffer1, "Real:RAD");
-            break;
-          }
-
-          case amMultPi: {
-            strcpy(aimBuffer1, "Real:MULTPI");
-            break;
-          }
-
-          case amGrad: {
-            strcpy(aimBuffer1, "Real:GRAD");
-            break;
-          }
-
-          case amNone: {
-            strcpy(aimBuffer1, "Real");
-            break;
-          }
-
-          default: {
-            strcpy(aimBuffer1, "Real:???");
-            break;
-          }
-        }
+        strcpy(aimBuffer1, "Real");
+        textTag(aimBuffer1, getRegisterAngularMode(regist), 0);
         break;
       }
 
@@ -1385,6 +1438,7 @@ char aimBuffer1[400];             //The concurrent use of the global aimBuffer
         strcat(tmpRegisterString, " ");
         real34ToString(REGISTER_IMAG34_DATA(regist), tmpRegisterString + strlen(tmpRegisterString));
         strcpy(aimBuffer1, "Cplx");
+        textTag(aimBuffer1, getRegisterAngularMode(regist), getComplexRegisterPolarMode(regist));
         break;
       }
 
@@ -1403,12 +1457,14 @@ char aimBuffer1[400];             //The concurrent use of the global aimBuffer
       case dtReal34Matrix: {
         sprintf(tmpRegisterString, "%" PRIu16 " %" PRIu16, REGISTER_MATRIX_HEADER(regist)->matrixRows, REGISTER_MATRIX_HEADER(regist)->matrixColumns);
         strcpy(aimBuffer1, "Rema");
+        textTag(aimBuffer1, isRegisterMatrixVector(regist) ? getVectorRegisterAngularMode(regist) : amNone, isRegisterMatrixVector(regist) ? getVectorRegisterPolarMode(regist) : 0);
         break;
       }
 
       case dtComplex34Matrix: {
         sprintf(tmpRegisterString, "%" PRIu16 " %" PRIu16, REGISTER_MATRIX_HEADER(regist)->matrixRows, REGISTER_MATRIX_HEADER(regist)->matrixColumns);
         strcpy(aimBuffer1, "Cxma");
+        textTag(aimBuffer1, (getRegisterTag(regist) & amPolar) == 0 ? amNone : getRegisterAngularMode(regist), getRegisterTag(regist) & amPolar);
         break;
       }
 
@@ -1881,6 +1937,8 @@ int64_t stringToInt64(const char *str) {
   static void restoreRegister(calcRegister_t regist, char *type, char *value) {
     uint32_t tag = amNone;
 
+    //printf("restoreRegister:%i %s %s\n",regist, type, value);
+
     if(type[4] == ':') {
       if(type[5] == 'R') {
         tag = amRadian;
@@ -1901,11 +1959,15 @@ int64_t stringToInt64(const char *str) {
         tag = amNone;
       }
 
-      reallocateRegister(regist, dtReal34, 0, tag);
-      stringToReal34(value, REGISTER_REAL34_DATA(regist));
+      if(type[stringByteLength(type)-1] == 'p') {
+        tag |= amPolar;
+      }
+      type[4] = 0;
+      //printf("               :%i %s %s\n",regist, type, value);
     }
 
-    else if(strcmp(type, "Real") == 0) {
+
+    if(strcmp(type, "Real") == 0) {
       reallocateRegister(regist, dtReal34, 0, tag);
       stringToReal34(value, REGISTER_REAL34_DATA(regist));
     }
@@ -1951,7 +2013,7 @@ int64_t stringToInt64(const char *str) {
     else if(strcmp(type, "Cplx") == 0) {
       char *imaginaryPart;
 
-      reallocateRegister(regist, dtComplex34, 0, amNone);
+      reallocateRegister(regist, dtComplex34, 0, tag);
       imaginaryPart = skip_word(value);
       *(imaginaryPart++) = 0;
       stringToReal34(value, REGISTER_REAL34_DATA(regist));
@@ -1967,9 +2029,10 @@ int64_t stringToInt64(const char *str) {
       *(numOfCols++) = 0;
       rows = toUint16(value);
       cols = toUint16(numOfCols);
-      reallocateRegister(regist, dtReal34Matrix, REAL34_SIZE_IN_BLOCKS * rows * cols, amNone);
+      reallocateRegister(regist, dtReal34Matrix, REAL34_SIZE_IN_BLOCKS * rows * cols, tag);
       REGISTER_MATRIX_HEADER(regist)->matrixRows = rows;
       REGISTER_MATRIX_HEADER(regist)->matrixColumns = cols;
+      //printf("     %i %i %i\n",rows, cols, tag);
     }
 
     else if(strcmp(type, "Cxma") == 0) {
@@ -1980,7 +2043,7 @@ int64_t stringToInt64(const char *str) {
       *(numOfCols++) = 0;
       rows = toUint16(value);
       cols = toUint16(numOfCols);
-      reallocateRegister(regist, dtComplex34Matrix, COMPLEX34_SIZE_IN_BLOCKS * rows * cols, amNone);
+      reallocateRegister(regist, dtComplex34Matrix, COMPLEX34_SIZE_IN_BLOCKS * rows * cols, tag);
       REGISTER_MATRIX_HEADER(regist)->matrixRows = rows;
       REGISTER_MATRIX_HEADER(regist)->matrixColumns = cols;
     }
@@ -2065,8 +2128,6 @@ int64_t stringToInt64(const char *str) {
   }
 
 
-#define LOADDEBUG
-#undef LOADDEBUG
 #if defined(LOADDEBUG)
   static void debugPrintf(int s1, const char * s2, const char * s3) {
     #if defined(PC_BUILD)
@@ -2217,8 +2278,12 @@ int64_t stringToInt64(const char *str) {
         readLine(errorMessage); // Variable name
         read2Lines(aimBuffer,tmpString); // Variable data type & Variable value
 
-        if(loadMode == LM_ALL || loadMode == LM_NAMED_VARIABLES ||
-          (loadMode == LM_SUMS && ((strcmp(errorMessage, "STATS") == 0) || (strcmp(errorMessage, "HISTO") == 0)))) {
+        if(( loadMode == LM_ALL || 
+             loadMode == LM_NAMED_VARIABLES ||
+            (loadMode == LM_SUMS && ((strcmp(errorMessage, "STATS") == 0) || (strcmp(errorMessage, "HISTO") == 0))) ) &&
+
+           !(loadMode == LM_NAMED_VARIABLES && ((strcmp(errorMessage, "STATS") == 0) || (strcmp(errorMessage, "HISTO") == 0)))
+          ) {
 
           #if defined(LOADDEBUG)
             sprintf(line,", loadMode:%d, %s\n",loadMode,tmpString);
@@ -2540,7 +2605,23 @@ int64_t stringToInt64(const char *str) {
         }
       }
 
+      #if defined(LOADDEBUG)
+        if(loadMode == LM_ALL || loadMode == LM_PROGRAMS) {
+          printf("Before loading programs:\n");
+          printf("  beginOfProgramMemory    = *8b %4u %16p\n",*beginOfProgramMemory,    (void*)(((uint32_t *)(beginOfProgramMemory)) ));
+          printf("  firstFreeProgramByte    = *8b %4u %16p\n",*firstFreeProgramByte,    (void*)(((uint32_t *)(firstFreeProgramByte)) ));
+          printf("  oldFirstFreeProgramByte = *8b %4u %16p\n",*oldFirstFreeProgramByte, (void*)(((uint32_t *)(oldFirstFreeProgramByte)) ));
+          printf("\n  freeProgramBytes        = 16b %u\n", freeProgramBytes);
+          printf("  numberOfBlocks          = 16b %u, on dot per block: ", numberOfBlocks);
+        }
+      #endif // LOADDEBUG
+
       for(i=0; i<numberOfBlocks; i++) {
+
+        #if defined(LOADDEBUG)
+          printf(".");
+        #endif // LOADDEBUG
+
         readLine(tmpString); // One block
         if(loadMode == LM_ALL) {
           *(((uint32_t *)(beginOfProgramMemory)) + i) = toUint32(tmpString);
@@ -2550,8 +2631,20 @@ int64_t stringToInt64(const char *str) {
           xcopy(oldFirstFreeProgramByte + TO_BYTES(i), (uint8_t *)(&tmpBlock), 4);
         }
       }
+ 
+      #if defined(LOADDEBUG)
+        if(loadMode == LM_ALL || loadMode == LM_PROGRAMS) {
+          printf("\n");
+          printf("After loading programs:\n");
+          printf("  beginOfProgramMemory    = *8b %4u %16p\n",*beginOfProgramMemory,    (void*)(((uint32_t *)(beginOfProgramMemory)) ));
+          printf("  firstFreeProgramByte    = *8b %4u %16p\n",*firstFreeProgramByte,    (void*)(((uint32_t *)(firstFreeProgramByte)) ));
+          printf("  oldFirstFreeProgramByte = *8b %4u %16p\n",*oldFirstFreeProgramByte, (void*)(((uint32_t *)(oldFirstFreeProgramByte)) ));
+        }
+      #endif // LOADDEBUG
 
-      scanLabelsAndPrograms();
+      if(loadMode == LM_ALL || loadMode == LM_PROGRAMS) {
+        scanLabelsAndPrograms();
+      }
     }
 
     else if(strcmp(tmpString, "EQUATIONS") == 0) {
@@ -2779,11 +2872,11 @@ void doLoad(uint16_t loadMode, uint16_t s, uint16_t n, uint16_t d, uint16_t load
   #if !defined(TESTSUITE_BUILD)
   ioFilePath_t path;
   int ret;
-    #if defined(LOADDEBUG)
-      char yy[10];
-      sprintf(yy, "%d",loadMode);
-      debugPrintf(-1, "LoadMode", yy);
-    #endif // LOADDEBUG
+  #if defined(LOADDEBUG)
+    char yy[1000];
+    sprintf(yy, "%d",loadMode);
+    debugPrintf(-1, "LoadMode", yy);
+  #endif // LOADDEBUG
 
   if(loadType == autoLoad) {
     path = ioPathAutoSave;
@@ -2794,6 +2887,12 @@ void doLoad(uint16_t loadMode, uint16_t s, uint16_t n, uint16_t d, uint16_t load
   else {
     path = ioPathLoadStateFile;
   }
+
+  #if defined(LOADDEBUG)
+    sprintf(yy, "%u",path);
+    debugPrintf(-1, "Path:", yy);
+  #endif // LOADDEBUG
+
 
   ret = ioFileOpen(path, ioModeRead);
 
@@ -2828,7 +2927,7 @@ void doLoad(uint16_t loadMode, uint16_t s, uint16_t n, uint16_t d, uint16_t load
       readLine(aimBuffer); // internal rev number (ignore now)
       readLine(aimBuffer); // param
       readLine(tmpString); // value
-      if(strcmp(aimBuffer, "C47_save_file_00") == 0) {
+      if(strcmp(aimBuffer, "C47_save_file_00") == 0 || strcmp(aimBuffer, "C43_save_file_00") == 0) {
         loadedVersion = toUint32(tmpString);
         if(loadedVersion < 10000000 || loadedVersion > 20000000) {
           loadedVersion = 0;
@@ -2837,12 +2936,44 @@ void doLoad(uint16_t loadMode, uint16_t s, uint16_t n, uint16_t d, uint16_t load
     }
   }
 
-  if((((loadType == manualLoad) || (loadType == stateLoad)) && loadMode == LM_ALL) ||
-    ((loadType == autoLoad) && (loadedVersion >= VersionAllowed) && (loadedVersion <= configFileVersion) && (loadMode == LM_ALL) )) {
+  bool_t enableLoad = false;
+  switch(loadType) {
+    case manualLoad: {
+      switch(loadMode) {
+        case LM_ALL: {
+          enableLoad = true;
+        }
+        break;
+        case LM_PROGRAMS:
+        case LM_REGISTERS:
+        case LM_SYSTEM_STATE:
+        case LM_SUMS:
+        case LM_NAMED_VARIABLES: {
+          enableLoad = true;
+        }
+        break;
+        default:break;
+      }
+    }
+    break;
+    case stateLoad: {
+      if (loadMode == LM_ALL) {
+        enableLoad = true;
+      }
+    }
+    break;
+    case autoLoad: {
+      if (((loadMode == LM_ALL) && (loadedVersion >= VersionAllowed) && (loadedVersion <= configFileVersion)) ){
+        enableLoad = true;
+      }
+    }
+    break;
+    default:break;
+  }
+  if(enableLoad) {
     while(restoreOneSection(loadMode, s, n, d)) {
     }
   }
-
 
   lastErrorCode = ERROR_NONE;
 
