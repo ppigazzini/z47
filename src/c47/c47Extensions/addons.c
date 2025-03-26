@@ -564,54 +564,71 @@ TO_QSPI static const struct {
     unsigned ydef  : 2;
     unsigned zdef  : 2;
 } vecCreate[] = {
-//           r  c   x    y    z   xdef ydef zdef
-    [ 1] = { 3, 1,  2 ,  1,   0,   2,   2,   2 },
-    [ 2] = { 1, 3,  0 ,  1,   2,   2,   2,   2 },
-    [ 3] = { 1, 3,  0 ,  1,   2,   0,   0,   1 },
-    [ 4] = { 1, 3,  0 ,  1,   2,   0,   1,   0 },
-    [ 5] = { 1, 3,  0 ,  1,   2,   1,   0,   0 }
-// r c is the size of the matrix to be created
-// x y z are the matrix element number mapping to the register name
-// xdef/ydef/zdef
-//   = 1/0 is the value to be pre-loaded into the matrix structure
-//   = 2 means the pre-loaded value is copied from X/Y/Z to the matrix element
+//  type     r  c   x    y    z   xdef ydef zdef
+    [ 1] = { 3, 1,  2 ,  1,   0,   2,   2,   2 },     // 3x1 vector created from xyz FOR ELEC menu
+    [ 2] = { 1, 3,  0 ,  1,   2,   2,   2,   2 },     // 1x3 vector created from zyx FOR MATX menu
+    [ 3] = { 1, 3,  0 ,  1,   2,   0,   0,   1 },     // 1x3 unity vectors 100
+    [ 4] = { 1, 3,  0 ,  1,   2,   0,   1,   0 },     // 1x3 unity vectors 010
+    [ 5] = { 1, 3,  0 ,  1,   2,   1,   0,   0 },     // 1x3 unity vectors 001
+
+    [ 6] = { 1, 2,  0 ,  1,   3,   2,   2,   3 },     // 1x2 vector created from yx
+    [ 7] = { 1, 2,  0 ,  1,   3,   0,   1,   3 },     // 1x2 unity vectors 10
+    [ 8] = { 1, 2,  0 ,  1,   3,   1,   0,   3 }      // 1x2 unity vectors 01
+
+    // r c is the size of the matrix to be created, eg. 1x3 or 2x1 etc.
+    // x y z are the matrix element number mapping to the register name, eg. x=2 means x register goes to internal matrix element 2; 3 means not copied
+    // xdef/ydef/zdef
+    //   = 1/0 : the value to be pre-loaded into the matrix element
+    //   = 2   : the value is copied from register X, Y or Z to the specified matrix element
+    //   = 3   : not copied
   };
 
 
-void fnConvertStkToMx(uint16_t param) {
+static bool_t processDefaultVector(calcRegister_t regist, uint8_t p, uint8_t d, struct cmplxPair *x, bool_t *complexCoefs) {
+  if(d == 2) {
+    if(!getRegisterAsComplexOrReal(regist, &x[p].r, &x[p].i, complexCoefs)) {
+      return false;
+    }
+  } 
+  else if(d < 2) {
+    realCopy(d == 1 ? const_1 : const_0, &x[p].r);
+  }
+  return true;
+}
+
+
+void fnConvertStkToMx(uint16_t constVector) {
   bool_t complexCoefs = false;
   struct cmplxPair x[3];
   real34Matrix_t matrix;
   complex34Matrix_t matrixC;
+  uint16_t elements;
 
-  const bool_t setDefaults = vecCreate[param].xdef != 2 || vecCreate[param].ydef != 2 || vecCreate[param].zdef != 2;
-  if(setDefaults) {
-    realCopy(vecCreate[param].xdef == 1 ? const_1 : const_0, &x[vecCreate[param].x].r);
-    realCopy(vecCreate[param].ydef == 1 ? const_1 : const_0, &x[vecCreate[param].y].r);
-    realCopy(vecCreate[param].zdef == 1 ? const_1 : const_0, &x[vecCreate[param].z].r);
-  }
-  else if(!(getRegisterAsComplexOrReal(REGISTER_X, &x[vecCreate[param].x].r, &x[vecCreate[param].x].i, &complexCoefs) &&
-            getRegisterAsComplexOrReal(REGISTER_Y, &x[vecCreate[param].y].r, &x[vecCreate[param].y].i, &complexCoefs) &&
-            getRegisterAsComplexOrReal(REGISTER_Z, &x[vecCreate[param].z].r, &x[vecCreate[param].z].i, &complexCoefs))) {
-    return;
-  }
+  elements = vecCreate[constVector].rows * vecCreate[constVector].cols;
+
+  if(!processDefaultVector(REGISTER_X, vecCreate[constVector].x, vecCreate[constVector].xdef, x, &complexCoefs)) return;
+  if(!processDefaultVector(REGISTER_Y, vecCreate[constVector].y, vecCreate[constVector].ydef, x, &complexCoefs)) return;
+  if(max(vecCreate[constVector].z, vecCreate[constVector].zdef) != 3 && 
+     !processDefaultVector(REGISTER_Z, vecCreate[constVector].z, vecCreate[constVector].zdef, x, &complexCoefs)) return;
 
   if(!saveLastX()) {
     return;
   }
 
-  if(setDefaults) {
+  if(vecCreate[constVector].xdef < 2 || vecCreate[constVector].ydef < 2 || vecCreate[constVector].zdef < 2) {
     setSystemFlag(FLAG_ASLIFT);
     liftStack();
   } else {
     fnDrop(NOPARAM);
-    fnDrop(NOPARAM);
+    if(elements > 2) {
+      fnDrop(NOPARAM);
+    }
   }
 
 
   if(getRegisterDataType(REGISTER_X) != dtReal34Matrix && getRegisterDataType(REGISTER_X) != dtComplex34Matrix) {
     //Initialize Memory for Matrix
-    if(initMatrixRegister(REGISTER_X, vecCreate[param].rows, vecCreate[param].cols, complexCoefs)) {
+    if(initMatrixRegister(REGISTER_X, vecCreate[constVector].rows, vecCreate[constVector].cols, complexCoefs)) {
     }
     else {
       displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
@@ -632,13 +649,13 @@ void fnConvertStkToMx(uint16_t param) {
   }
 
 
-  for (int i = 0; i < 3; i++) {
+  for (int i = 0; i < elements; i++) {
     if(complexCoefs) {
-      realToReal34(&x[2-i].r, VARIABLE_REAL34_DATA(&matrixC.matrixElements[i]));
-      realToReal34(&x[2-i].i, VARIABLE_IMAG34_DATA(&matrixC.matrixElements[i]));
+      realToReal34(&x[elements-1-i].r, VARIABLE_REAL34_DATA(&matrixC.matrixElements[i]));
+      realToReal34(&x[elements-1-i].i, VARIABLE_IMAG34_DATA(&matrixC.matrixElements[i]));
     }
     else {
-      realToReal34(&x[2-i].r, &matrix.matrixElements[i]);
+      realToReal34(&x[elements-1-i].r, &matrix.matrixElements[i]);
     }
   }
 

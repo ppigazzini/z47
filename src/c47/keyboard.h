@@ -63,8 +63,6 @@ void fnKeyDown       (uint16_t unusedButMandatoryParameter);
  */
 void fnKeyDotD       (uint16_t unusedButMandatoryParameter);
 
-void executeFunction(const char *data, int16_t item_);
-
 #define ST_0_INIT     0     //STATE 0 INIT             //JM vv FN-DOUBLE
 #define ST_1_PRESS1   1     //STATE 1 FIRST PRESS
 #define ST_2_REL1     2     //STATE 2 FIRST RELEASE
