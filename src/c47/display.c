@@ -321,21 +321,22 @@ static void real34ToDisplayString2(const real34_t *real34, char *displayString, 
       realCopy(&x,&xx);
 
       //get log base 1024 of real34
-      WP34S_Ln(&x, &x, &ctxtReal39);                              // x = ln|real34|
-      realDivide(&x, const_ln2, &x, &ctxtReal39);                 // ln(1024)=ln( 2^10 )=10ln(2)
-      realAdd(&x, const_1e_24, &x, &ctxtReal39);                  // add 1E-24 to make sure any bit noise does not influence it
+      decContext c = ctxtReal39;
+      c.digits = NUMBER_OF_DISPLAY_REAL_CONTEXT_DIGITS;
+      WP34S_Ln(&x, &x, &c);                             //x = ln|real34|
+      realDivide(&x, const_ln2, &x, &c);                //ln(1024)=ln( 2^10 )=10ln(2)
       x.exponent--; // x = x / 10
       //printRealToConsole(&x,"log base 1024 of real34 = lnx / ln1024 ","\n");             // x = ln|real34| / ln(1024) = log base 1024 of real34 = 1.00140
 
       //get IP and FP of this
-      realToIntegralValue(&x, &tmpIp, DEC_ROUND_DOWN, &ctxtReal34); // tmpIp = Integer Part log base1024 of Real34    = 1
+      realToIntegralValue(&x, &tmpIp, DEC_ROUND_DOWN, &c); // tmpIp = Integer Part log base1024 of Real34    = 1
       int tmpx = realToInt32C47(&tmpIp);
       if(tmpx > exponentUNlimit1024max) {
         goto overRange;
       }
       exponentUNlimit = min(exponentUNlimit1024max, tmpx);
       int32ToReal(exponentUNlimit, &tmpIp);
-      realSubtract(&x, &tmpIp, &tmpFp, &ctxtReal34);                // tmpFp = Fractional part log base1024 of Real34    = 0.00140
+      realSubtract(&x, &tmpIp, &tmpFp, &c);                // tmpFp = Fractional part log base1024 of Real34    = 0.00140
       //printRealToConsole(&tmpIp, "tmpIp Ip ", "\n");
       //printRealToConsole(&tmpFp, "Fp ", "\n");
 
@@ -349,12 +350,12 @@ static void real34ToDisplayString2(const real34_t *real34, char *displayString, 
       real_t tmp3, fact;
       int32ToReal(1000, &tmp3);
       int32ToReal(1024, &tmp4);
-      realDivide(&tmp3, &tmp4, &fact, &ctxtReal39);
+      realDivide(&tmp3, &tmp4, &fact, &c);
       //printRealToConsole(&fact, "factor = ", "\n");
-      realPower(&fact, &tmpIp, &tmp3, &ctxtReal39);
+      realPower(&fact, &tmpIp, &tmp3, &c);
       //printRealToConsole(&tmp3, "factor^IP = ", "\n");
       //printRealToConsole(&xx, "xx = ", "\n");
-      realMultiply(&xx, &tmp3, &x, &ctxtReal34);
+      realMultiply(&xx, &tmp3, &x, &c);
       //printRealToConsole(&x, "x * fact = ", "\n");
 
       if(neg) {
@@ -411,9 +412,12 @@ overRange:
       char tmpString100[100];                           //cleaning up the REAL
       real34_t reduced;
       real_t tmp1;
+
       // printReal34ToConsole(real34," ------- 002a >>>>>"," <<<<<\n");   //JM
       real34ToReal(real34, &tmp1);
-      roundToSignificantDigits(&tmp1, &tmp1, displayFormatDigits+1, &ctxtReal75);
+      decContext c = ctxtReal39;
+      c.digits = NUMBER_OF_DISPLAY_REAL_CONTEXT_DIGITS;
+      roundToSignificantDigits(&tmp1, &tmp1, displayFormatDigits+1, &c); //  &ctxtReal75);
       realToReal34(&tmp1, &reduced);
       // printReal34ToConsole(&reduced," ------- 002b >>>>>"," <<<<<\n");   //JM
       real34Reduce(&reduced, &reduced);
@@ -1351,7 +1355,7 @@ static void complex34ToDisplayString2(const complex34_t *complex34, char *displa
     real34ToReal(VARIABLE_IMAG34_DATA(complex34), &imagIc);
 
     decContext c = ctxtReal39;
-    if(temporaryInformation == TI_NO_INFO) c.digits = 21; //speedup for display purposes (FIX max 19)
+    c.digits = NUMBER_OF_DISPLAY_REAL_CONTEXT_DIGITS;
     realRectangularToPolar(&real, &imagIc, &real, &imagIc, &c); // imagIc in radian
     convertAngleFromTo(&imagIc, amRadian, tagAngle == amNone ? currentAngularMode : tagAngle, &c);
 
@@ -2705,7 +2709,7 @@ void complex34MatrixToDisplayString(calcRegister_t regist, char *displayString) 
 bool_t vectorToDisplayString(calcRegister_t regist, char *displayString) {
   if(getRegisterDataType(regist) == dtReal34Matrix) {
     matrixHeader_t *matrixHeader = REGISTER_MATRIX_HEADER(regist);
-    if ((matrixHeader->matrixRows == 1 &&  matrixHeader->matrixColumns != 1) || (matrixHeader->matrixRows != 1 &&  matrixHeader->matrixColumns == 1)) {
+    if(isMatrixVector(matrixHeader->matrixRows, matrixHeader->matrixColumns)) {
       real34Matrix_t matrix;
       int16_t ww= 0;
       linkToRealMatrixRegister(regist, &matrix);

@@ -44,7 +44,7 @@ static bool_t getDimensionArg(uint32_t *rows, uint32_t *cols) {
           moreInfoOnError("In function getDimensionArg:", errorMessage, NULL, NULL);
         #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
       #endif // !TESTSUITE_BUILD
-    goto returnDone;
+    return false;
   }
 
   if(getRegisterDataType(REGISTER_X) == dtLongInteger) {
@@ -64,9 +64,11 @@ static bool_t getDimensionArg(uint32_t *rows, uint32_t *cols) {
         moreInfoOnError("In function getDimensionArg:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     #endif // !TESTSUITE_BUILD
-    goto returnDone;
+    longIntegerFree(tmp_lgInt1);
+    return false;
   }
   longIntegerToUInt32(tmp_lgInt1, *cols);
+  longIntegerFree(tmp_lgInt1);
 
   if(getRegisterDataType(REGISTER_Y) == dtLongInteger) {
     convertLongIntegerRegisterToLongInteger(REGISTER_Y, tmp_lgInt2);
@@ -85,18 +87,13 @@ static bool_t getDimensionArg(uint32_t *rows, uint32_t *cols) {
         moreInfoOnError("In function getDimensionArg:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     #endif // !TESTSUITE_BUILD
-    goto returnDone;
+    longIntegerFree(tmp_lgInt2);
+    return false;
   }
   longIntegerToUInt32(tmp_lgInt2, *rows);
-
-  longIntegerFree(tmp_lgInt1);
   longIntegerFree(tmp_lgInt2);
+
   return true;
-
-returnDone:
-  longIntegerFree(tmp_lgInt1);
-  longIntegerFree(tmp_lgInt2);
-  return false;
 }
 
 
@@ -907,7 +904,7 @@ static void _fnEuclideanNorm(uint16_t unusedParamButMandatory) {
     displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
     #if defined(PC_BUILD)
       sprintf(errorMessage, "DataType %" PRIu32, getRegisterDataType(REGISTER_X));
-      moreInfoOnError("In function fnInvertMatrix:", errorMessage, "is not a matrix.", "");
+      moreInfoOnError("In function _fnEuclideanNorm:", errorMessage, "is not a matrix.", "");
     #endif // PC_BUILD
   }
 
@@ -921,9 +918,26 @@ void fnEuclideanNorm(uint16_t unusedParamButMandatory) {
 }
 
 
+bool_t isDyadicMatrices(void) {
+ return ((getRegisterDataType(REGISTER_X) == dtReal34Matrix) && (getRegisterDataType(REGISTER_Y) == dtReal34Matrix) && \
+         (REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows == REGISTER_MATRIX_HEADER(REGISTER_Y)->matrixRows) && \
+         (REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns == REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns));
+}
+
 void fnVectorDist(uint16_t unusedParamButMandatory) {
-  fnSubtract(NOPARAM);
-  _fnEuclideanNorm(NOPARAM);
+  if(isDyadicMatrices()) {
+    if(saveLastX()) {
+      fnSubtract(NOPARAM);
+      _fnEuclideanNorm(NOPARAM);
+    }
+  }
+  else {
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "invalid data type/size %s and %s", getRegisterDataTypeName(REGISTER_Y, true, false), getRegisterDataTypeName(REGISTER_X, true, false));
+      moreInfoOnError("In function fnEuclideanNorm:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+  }
 }
 
 
