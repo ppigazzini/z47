@@ -2567,12 +2567,13 @@
 #define ITM_VtoCPX                  2494
 #define ITM_stkexV2                 2495
 #define ITM_stkexV3                 2496
-#define ITM_STKtoVEC                2497
-#define MNU_VECCONV                 2498
+#define ITM_REGtoVEC                2497
+#define ITM_VECtoREG                2498
+#define MNU_VECCONV                 2499
 
-#define ITM_CLKp2                   2499
+#define ITM_CLKp2                   2500
 
-#define LAST_ITEM                   2500
+#define LAST_ITEM                   2501
 
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL
