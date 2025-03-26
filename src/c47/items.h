@@ -1734,7 +1734,7 @@
 #define ITM_HRtoTM                  1686
 #define ITM_toINT                   1687
 #define ITM_HMStoTM                 1688
-#define ITM_1689                    1689
+#define ITM_BASENR                  1689
 #define ITM_INTEGRAL_YX             1690   //INT
 #define ITM_toREAL                  1691
 #define ITM_PCSGM_DPCMN             1692
@@ -1895,7 +1895,7 @@
 #define ITM_SECOND                  1841
 #define ITM_toTIME                  1842
 #define ITM_TIMEto                  1843
-#define ITM_1844                    1844
+#define ITM_COUNTDN_RCL             1844
 #define ITM_qoppa                   1845
 #define ITM_digamma                 1846
 #define ITM_sampi                   1847
@@ -2567,11 +2567,13 @@
 #define ITM_VtoCPX                  2494
 #define ITM_stkexV2                 2495
 #define ITM_stkexV3                 2496
-#define ITM_STKtoVEC                2497
-#define MNU_VECCONV                 2498
+#define ITM_REGtoVEC                2497
+#define ITM_VECtoREG                2498
+#define MNU_VECCONV                 2499
 
-#define LAST_ITEM                   2499
+#define ITM_CLKp2                   2500
 
+#define LAST_ITEM                   2501
 
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL
