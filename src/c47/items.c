@@ -1295,6 +1295,9 @@ bool_t itemNotAvail(int16_t itemNr) {
   void fnConvertMxToStk           (uint16_t unusedButMandatoryParameter) {}
   void fnCheckType                (uint16_t unusedButMandatoryParameter) {}
   void fnVectorDist               (uint16_t unusedButMandatoryParameter) {}
+  void fnWeekOfYear               (uint16_t unusedButMandatoryParameter) {}
+  void fnSetWeekOfYearRule        (uint16_t unusedButMandatoryParameter) {}
+  void fnGetWeekOfYearRule        (uint16_t unusedButMandatoryParameter) {}
 
 
 
@@ -3642,7 +3645,7 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 2271 */  { fnGetSystemFlag,              FLAG_NVECT,                  "PLnvec",                                      "PLnvec",                                      (0 << TAM_MAX_BITS) |     0, CAT_SYFL | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2272 */  { fnGetSystemFlag,              FLAG_US,                     "CONV" STD_SUB_U STD_SUB_S,                    "CONV" STD_SUB_U STD_SUB_S,                    (0 << TAM_MAX_BITS) |     0, CAT_SYFL | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2273 */  { fnGetSystemFlag,              FLAG_MNUp1,                  "MNUp1",                                       "MNUp1",                                       (0 << TAM_MAX_BITS) |     0, CAT_SYFL | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
-/* 2274 */  { itemToBeCoded,                NOPARAM,                     "2274",                                        "2274",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 2274 */  { fnGetSystemFlag,              FLAG_SBwoy,                  "SBwoy",                                       "SBwoy",                                       (0 << TAM_MAX_BITS) |     0, CAT_SYFL | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2275 */  { itemToBeCoded,                NOPARAM,                     "2275",                                        "2275",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2276 */  { itemToBeCoded,                NOPARAM,                     "2276",                                        "2276",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2277 */  { itemToBeCoded,                NOPARAM,                     "2277",                                        "2277",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
@@ -3860,8 +3863,13 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 2484 */  { fnStoreVElement,              3,                           "STOVEL" STD_SUB_3,                            STD_ELLIPSIS "VEL" STD_SUB_3,                  (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 /* 2485 */  { addItemToBuffer,              ITM_dddVEL,                  "",                                            STD_ELLIPSIS "VEL" STD_SUB_n STD_SUB_n,        (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2486 */  { addItemToBuffer,              ITM_dddIX,                   "",                                            STD_ELLIPSIS STD_SPACE_4_PER_EM "INDEX",       (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 2487 */  { fnSetWeekOfYearRule,          ITM_WOY_ISO,                 "WOY" STD_SUB_I STD_SUB_S STD_SUB_O,           "WOY" STD_SUB_I STD_SUB_S STD_SUB_O,           (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
+/* 2488 */  { fnSetWeekOfYearRule,          ITM_WOY_US,                  "WOY" STD_SUB_U STD_SUB_S,                     "WOY" STD_SUB_U STD_SUB_S,                     (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
+/* 2489 */  { fnSetWeekOfYearRule,          ITM_WOY_ME,                  "WOY" STD_SUB_M STD_SUB_E,                     "WOY" STD_SUB_M STD_SUB_E,                     (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
+/* 2490 */  { fnGetWeekOfYearRule,          NOPARAM,                     "WOY?",                                        "WOY?",                                        (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
+/* 2491 */  { fnWeekOfYear,                 NOPARAM,                     "WOY",                                         "WOY",                                         (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         },
 
 
-/* 2487 */  { itemToBeCoded,                NOPARAM,                     "",                                            "Last item",                                   (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 2492 */  { itemToBeCoded,                NOPARAM,                     "",                                            "Last item",                                   (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 
 };

@@ -644,8 +644,9 @@
 #define FLAG_NVECT                            0x8054
 #define FLAG_US                               0x8055
 #define FLAG_MNUp1                            0x8056
+#define FLAG_SBwoy                            0x8057
 
-#define NUMBER_OF_SYSTEM_FLAGS                 64+23 // We can have a maximum of 128 system flags
+#define NUMBER_OF_SYSTEM_FLAGS                 64+24 // We can have a maximum of 128 system flags
 
 // FLGS and STATUS SCREENS
 #define NO_SCREEN                          0  // No screen selected
@@ -1100,6 +1101,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 // Status bar updating mode
 #define SBARUPD_Date                            (getSystemFlag(FLAG_SBdate ))
 #define SBARUPD_Time                            (getSystemFlag(FLAG_SBtime ))
+#define SBARUPD_WoY                             (getSystemFlag(FLAG_SBwoy  ))
 #define SBARUPD_ComplexResult                   (getSystemFlag(FLAG_SBcr   ))
 #define SBARUPD_ComplexMode                     (getSystemFlag(FLAG_SBcpx  ))
 #define SBARUPD_AngularModeBasic                (getSystemFlag(FLAG_SBang  ))
@@ -1124,7 +1126,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 
 
 // Horizontal offsets in the status bar
-#define X_DATE                                   (SBARUPD_Time ? 1 : 25)
+#define X_DATE                                   ((SBARUPD_Time || SBARUPD_WoY) ? 1 : 25)
 #define X_TIME                                    45  // note: this is used only if DATE is not displayed, otherwise TIME is printed directly next to date's end
 #define X_REAL_COMPLEX                           136
 #define X_HOURGLASS_GRAPHS                       140
@@ -1150,7 +1152,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define X_SHIFT_R                                (X_USER_MODE - 15)
 #define X_SHIFT                                  (getSystemFlag(FLAG_SBshfR) ? X_SHIFT_R : X_SHIFT_L)
 #define Y_SHIFT_LO                               (Y_POSITION_OF_REGISTER_T_LINE)
-#define Y_SHIFT                                  (((!SBARUPD_Date || !SBARUPD_Time) && !SBAR_SHIFT) ? 0 : (SBAR_SHIFT ? 0 : Y_SHIFT_LO ))
+#define Y_SHIFT                                  (((!SBARUPD_Date || !(SBARUPD_Time || SBARUPD_WoY)) && !SBAR_SHIFT) ? 0 : (SBAR_SHIFT ? 0 : Y_SHIFT_LO ))
 
 
 
@@ -1456,6 +1458,10 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define TI_TVM_EFF                               112
 #define TI_TVM_IA                                113
 #define TI_NOT_AVAILABLE                         114
+#define TI_DISP_WOY                              115
+#define TI_DISP_JULIAN_WOY                       116
+#define TI_WOY                                   117
+#define TI_WOY_RULE                              118
 
 #define SET_TI_TRUE_FALSE(condition)               do { temporaryInformation = TI_FALSE + (condition); } while(0) // TI_TRUE must be TI_FALSE + 1
 

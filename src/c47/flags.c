@@ -66,6 +66,7 @@ static void systemFlagAction(uint16_t systemFlag, flagAction_t action) {
     case FLAG_SBprn :
     case FLAG_SBbatV:
     case FLAG_SBshfR:
+    case FLAG_SBwoy :
               fnRefreshState();
               screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
               break;
