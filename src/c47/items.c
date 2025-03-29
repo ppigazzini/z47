@@ -333,11 +333,12 @@ bool_t itemNotAvail(int16_t itemNr) {
         case ITM_RCLELPLUS   :
         case ITM_RCLEL       :
         case ITM_STOELPLUS   :
-        case ITM_STOEL       : if(matrixIndexed) temporaryInformation = TI_MIJ;   break;
+        case ITM_STOEL       : if(matrixIndexed) temporaryInformation = TI_MIJEQ;   break;
+        case ITM_INDEX:
         case ITM_IPLUS       : 
-        case ITM_IMINUS      : if(matrixIndexed) temporaryInformation = TI_I;   break;
+        case ITM_IMINUS      :
         case ITM_JPLUS       :
-        case ITM_JMINUS      : if(matrixIndexed) temporaryInformation = TI_J;   break;
+        case ITM_JMINUS      : if(matrixIndexed) temporaryInformation = TI_MIJ;   break;
         case ITM_RCLIJ       :
         case ITM_STOIJ       : if(matrixIndexed) temporaryInformation = TI_IJ;    break;
         default:;
