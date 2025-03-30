@@ -252,6 +252,9 @@ bool_t itemNotAvail(int16_t itemNr) {
     hourGlassIconEnabled = false;
     screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
     showHideHourGlass();
+    if (func == ITM_DENMAX2 || func == ITM_SETFDIGS) {
+      refreshStatusBar();
+    }
 
     switch(func) {                              //functions to cause a graph redraw
       case ITM_DRAW:       //EQN Draw
