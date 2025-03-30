@@ -93,7 +93,7 @@
    * \param[in] regist calcRegister_t register
    * \return uint32_t day of week (1 = Monday, 7 = Sunday), 0 if invalid
    ***********************************************/
-  uint32_t getDayOfWeek        (calcRegister_t regist);
+  uint32_t getJulianDayOfWeek (calcRegister_t regist);
 
   /********************************************//**
    * \brief Check date range
