@@ -4221,12 +4221,12 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
 
           if(temporaryInformation == TI_DAY_OF_WEEK) {
             if(regist == REGISTER_X) {
-              int day = (int)tmpString[TMP_STR_LENGTH-1] - '0';
+              int day = (int)tmpString[0] - '0';
               if(day < 1 || day > 7) {
                 day = 0;
               }
-              day = ((7 + (day - 1) + (firstDayOfWeek - 1)) % 7) + 1;
-              strcpy(prefix, nameOfWday_en[day].itemName);
+              strcpy(prefix,"[ISO day] ");
+              strcat(prefix, nameOfWday_en[day].itemName);
               showString(prefix, &standardFont, 1, baseY + TEMPORARY_INFO_OFFSET, vmNormal, true, true);
             }
           }

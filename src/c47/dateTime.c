@@ -691,8 +691,7 @@ void fnDay(uint16_t unusedButMandatoryParameter) {
 }
 
 void fnWday(uint16_t unusedButMandatoryParameter) {
-  uint32_t dayOfWeek =  getJulianDayOfWeek(REGISTER_X);
-  dayOfWeek = modulo((int32_t)((dayOfWeek + 7) - firstDayOfWeek), 7) + 1;
+  const uint32_t dayOfWeek = getJulianDayOfWeek(REGISTER_X);
   longInteger_t result;
 
   if(!saveLastX()) {
