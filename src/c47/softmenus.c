@@ -37,9 +37,10 @@ TO_QSPI const int16_t menu_CLK[]         = { ITM_DATE,                      ITM_
 
                                              ITM_DATE,                      ITM_TIME,                   ITM_TDISP,                ITM_DMY,               ITM_MDY,                     ITM_YMD,
                                              ITM_SETDAT,                    ITM_SETTIM,                 ITM_WDAY,                 ITM_DAY,               ITM_MONTH,                   ITM_YEAR,
-                                             ITM_CLK12,                     ITM_CLK24,                  ITM_NULL,                 ITM_SECOND,            ITM_MINUTE,                  ITM_HR_DEG,
+                                             ITM_CLK12,                     ITM_CLK24,                  ITM_WOY,                  ITM_SECOND,            ITM_MINUTE,                  ITM_HR_DEG,
 
-                                             ITM_GET_JUL_GREG,              ITM_JUL_GREG,               ITM_JUL_GREG_1582,        ITM_JUL_GREG_1752,     ITM_JUL_GREG_1873,           ITM_JUL_GREG_1949             };
+                                             ITM_GET_JUL_GREG,              ITM_JUL_GREG,               ITM_JUL_GREG_1582,        ITM_JUL_GREG_1752,     ITM_JUL_GREG_1873,           ITM_JUL_GREG_1949,
+                                             ITM_GET_WOY,                   ITM_NULL,                   ITM_NULL,                 ITM_WOY_ISO,           ITM_WOY_US,                  ITM_WOY_ME                    };
 
 
 TO_QSPI const int16_t menu_CLR[]         = { ITM_CF,                        ITM_CLMENU,                 ITM_CLCVAR,               ITM_CLREGS,            ITM_CLSTK,                   ITM_CLX,
@@ -109,7 +110,7 @@ TO_QSPI const int16_t menu_INFO[]        = { ITM_VERS,                      ITM_
 
                                              ITM_TYPEQ,                     ITM_M_DIMQ,                 ITM_NEIGHB,               ITM_ULP,               ITM_SSIZE,                   ITM_RMODEQ,
                                              ITM_GETRANGE,                  ITM_GETHIDE,                ITM_GETSDIGS,             ITM_GETFDIGS,          ITM_GETDMX,                  ITM_WSIZEQ,
-                                             ITM_GET_JUL_GREG,              ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_BESTFQ,                  ITM_ISM                         };
+                                             ITM_GET_JUL_GREG,              ITM_GET_WOY,                ITM_NULL,                 ITM_NULL,              ITM_BESTFQ,                  ITM_ISM                         };
 
 TO_QSPI const int16_t menu_INTS[]        = { ITM_A,                         ITM_B,                      ITM_C,                    ITM_D,                 ITM_E,                       ITM_F,
                                              ITM_IDIV,                      ITM_RMD,                    ITM_MOD,                  ITM_XMOD,              ITM_LINT,                    ITM_LCM,

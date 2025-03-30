@@ -2651,6 +2651,40 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
         showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + TEMPORARY_INFO_OFFSET + 6, vmNormal, true, true);
       }
 
+      else if(temporaryInformation == TI_DISP_WOY) {
+        sprintf(tmpString, "Week of Year rule set: %s.%s",
+          nameOfWday_en[firstDayOfWeek].itemName,
+          nameOfWday_en[firstWeekOfYearDay].itemName);
+        showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + TEMPORARY_INFO_OFFSET + 6, vmNormal, true, true);
+      }
+
+      else if(temporaryInformation == TI_DISP_JULIAN_WOY) {
+        real34_t j;
+        char tmpStr2[20];
+        uInt32ToReal34(firstGregorianDay, &j);
+        julianDayToInternalDate(&j,REGISTER_REAL34_DATA(TEMP_REGISTER_1));
+        dateToDisplayString(TEMP_REGISTER_1, tmpStr2);
+        sprintf(tmpString, "First Gregorian day set: %s", tmpStr2);
+        //sprintf(tmpString, "1st Gregorian day set: %s (JD %" PRId32 ")", tmpStr2, firstGregorianDay);
+        showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_Y_LINE + TEMPORARY_INFO_OFFSET + 6, vmNormal, true, true);
+        sprintf(tmpString, "Week of Year rule set: %s.%s",
+          nameOfWday_en[firstDayOfWeek].itemName,
+          nameOfWday_en[firstWeekOfYearDay].itemName);
+        showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + TEMPORARY_INFO_OFFSET + 6, vmNormal, true, true);
+      }
+
+      else if(temporaryInformation == TI_WOY && regist == REGISTER_X) {
+        sprintf(prefix, "Week of Year" STD_SPACE_FIGURE "=");
+        displayTemporaryInformationOnX(prefix);
+      }
+
+      else if(temporaryInformation == TI_WOY_RULE && regist == REGISTER_X) {
+        sprintf(prefix, "%s.%s",
+          nameOfWday_en[firstDayOfWeek].itemName,
+          nameOfWday_en[firstWeekOfYearDay].itemName);
+        displayTemporaryInformationOnX(prefix);
+      }
+
       else if(temporaryInformation == TI_KEYS && regist == REGISTER_X) {
         showString(errorMessage, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
       }

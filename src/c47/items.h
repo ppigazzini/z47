@@ -2327,7 +2327,7 @@
 #define SFL_NVECT                   2271 // The SFL item names are not used
 #define SFL_US                      2272 // The SFL item names are not used
 #define SFL_MNUp1                   2273 // The SFL item names are not used
-#define SFL_2274                    2274 // The SFL item names are not used
+#define SFL_SBwoy                   2274 // The SFL item names are not used
 #define SFL_2275                    2275 // The SFL item names are not used
 #define SFL_2276                    2276 // The SFL item names are not used
 #define SFL_2277                    2277 // The SFL item names are not used
@@ -2556,7 +2556,13 @@
 #define ITM_dddVEL                  2485
 #define ITM_dddIX                   2486
 
-#define LAST_ITEM                   2487
+#define ITM_WOY_ISO                 2487
+#define ITM_WOY_US                  2488
+#define ITM_WOY_ME                  2489 // Middle East
+#define ITM_GET_WOY                 2490
+#define ITM_WOY                     2491
+
+#define LAST_ITEM                   2492
 
 #define NOPARAM                       9876 // Item for function who don't need an item
 #define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL
