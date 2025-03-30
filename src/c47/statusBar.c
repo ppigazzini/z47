@@ -12,7 +12,7 @@ void drawBattery(uint16_t voltage);
 
 
   void showDateTime(void) {
-    if(!((SBARUPD_Date) || (SBARUPD_Time))) {
+    if(!((SBARUPD_Date) || (SBARUPD_Time) || (SBARUPD_WoY))) {
       return;
     }
     lcd_fill_rect(0, 0, X_REAL_COMPLEX, 20, LCD_SET_VALUE);
@@ -21,14 +21,20 @@ void drawBattery(uint16_t voltage);
     if(SBARUPD_Date) {
       getDateString(dateTimeString);
       x = showString(dateTimeString, &standardFont, x, 0, vmNormal, true, true);
-      x = showGlyph(getSystemFlag(FLAG_TDM24) ? " " : STD_SPACE_3_PER_EM, &standardFont, x, 0, vmNormal, true, true, false); // is 0+0+8 pixel wide
     }
     else {
       x = X_TIME;
     }
 
     if(SBARUPD_Time) {
+      x = showGlyph(getSystemFlag(FLAG_TDM24) ? " " : STD_SPACE_3_PER_EM, &standardFont, x, 0, vmNormal, true, true, false); // is 0+0+8 pixel wide
       getTimeString(dateTimeString);
+      showString(dateTimeString, &standardFont, x, 0, vmNormal, true, false);
+    }
+
+    if(SBARUPD_WoY) {
+      x = showGlyph(STD_SPACE_3_PER_EM, &standardFont, x, 0, vmNormal, true, true, false);
+      getWeekOfYearString(dateTimeString);
       showString(dateTimeString, &standardFont, x, 0, vmNormal, true, false);
     }
   }
