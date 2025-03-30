@@ -69,8 +69,6 @@ static void systemFlagAction(uint16_t systemFlag, flagAction_t action) {
     case FLAG_ERPN:
     case FLAG_FRCYC:
     case FLAG_LARGELI:
-    case FLAG_IRFRAC:
-    case FLAG_IRF_ON:
     case FLAG_alphaCAP:
     case FLAG_2TO10:
     case FLAG_CPXPLOT:
@@ -121,7 +119,31 @@ static void systemFlagAction(uint16_t systemFlag, flagAction_t action) {
               fnRefreshState();
               screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
               break; 
-              
+          
+    case FLAG_FRACT:
+              if(getSystemFlag(FLAG_FRACT)) {
+                _clearSystemFlag(FLAG_IRFRAC);
+                _clearSystemFlag(FLAG_IRF_ON);
+              }
+              fnRefreshState();
+              break;
+
+    case FLAG_IRFRAC:
+              if(getSystemFlag(FLAG_IRFRAC)) {
+                _clearSystemFlag(FLAG_FRACT);
+                _setSystemFlag(FLAG_IRF_ON);
+              }
+              fnRefreshState();
+              break;
+
+     case FLAG_IRF_ON:
+              if(getSystemFlag(FLAG_FRACT)) {
+                _clearSystemFlag(FLAG_FRACT);
+                _setSystemFlag(FLAG_IRFRAC);
+              }
+              fnRefreshState();
+              break;
+
     default: break;
   }
 }
@@ -610,9 +632,6 @@ void SetSetting(uint16_t jmConfig) {
 
     case FLAG_FRACT:
       fnFlipFlag(FLAG_FRACT);
-      if(getSystemFlag(FLAG_FRACT) && !getSystemFlag(FLAG_FRCYC)) {
-        clearSystemFlag(FLAG_IRFRAC);
-      }
       break;
 
 //SUSPECT!! remove with XEQM
@@ -638,17 +657,6 @@ void SetSetting(uint16_t jmConfig) {
       break;
     case FLAG_IRFRAC:
       fnFlipFlag(FLAG_IRFRAC);
-      if(getSystemFlag(FLAG_IRFRAC)) {
-        setSystemFlag(FLAG_IRF_ON);
-        if(getSystemFlag(FLAG_FRACT)) {
-          clearSystemFlag(FLAG_FRACT);
-        }
-      }
-      else {
-        if(getSystemFlag(FLAG_IRF_ON)) {
-          clearSystemFlag(FLAG_IRF_ON);
-        }
-      }
       fnRefreshState();
       break;
 

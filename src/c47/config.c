@@ -424,7 +424,8 @@ void fnClrMod(uint16_t unusedButMandatoryParameter) {        //clear input buffe
   #endif // PC_BUILD
   #if !defined(TESTSUITE_BUILD)
     resetKeytimers();  //JM
-    clearSystemFlag(FLAG_IRF_ON);
+    clearSystemFlag(FLAG_FRACT);
+    clearSystemFlag(FLAG_IRFRAC);
     clearSystemFlag(FLAG_INTING);
     clearSystemFlag(FLAG_SOLVING);
     programRunStop = PGM_STOPPED;
@@ -767,9 +768,9 @@ void fnFractionType(uint16_t unusedButMandatoryParameter) {
   #define STATE_bc       0b0001  //1
   #define STATE_offabc   0b0010  // B
   #define STATE_abc      0b0011  //3
-//                         0100  B
+  #define STATE_offr_bc  0b0100  //12
 //                         0101    C if b8==0 the b4=0
-//                         0110  B
+  #define STATE_offr_abc 0b0110  //14
 //                         0111    C if b8==0 the b4=0
 //                         1000  A
 //                         1001
@@ -787,39 +788,28 @@ void fnFractionType(uint16_t unusedButMandatoryParameter) {
   //printf("%u ",state);
 
   if(getSystemFlag(FLAG_FRCYC)) {
-    if(!getSystemFlag(FLAG_FRACT) && getSystemFlag(FLAG_IRFRAC) && !getSystemFlag(FLAG_IRF_ON)) { // 10x0 --> 11x0 A
-      setSystemFlag(FLAG_IRF_ON);
-      return;
-    }
-    else {
-      if(!getSystemFlag(FLAG_IRFRAC) && !getSystemFlag(FLAG_FRACT)) {                      // 0xx0 --> 0xx1 B
-        flipSystemFlag(FLAG_FRACT);
-        return;
-      }
-    }
     switch(state) {
+      case STATE_offbc       : state = STATE_bc;        break;
+      case STATE_offabc      : state = STATE_abc;       break;
+      case STATE_offr_bc     : state = STATE_exfr_bc;   break;
+      case STATE_offr_abc    : state = STATE_exfr_abc;  break;
+
       case STATE_bc          : state = STATE_exfr_abc;  break;                    // 0b0001 -->
       case STATE_abc         : state = STATE_bc;        break;                    // 0b0011 -->
       case STATE_exfr_bc     : state = STATE_abc;       break;                    // 0b1100 -->
       case STATE_exfr_abc    : state = STATE_exfr_bc;   break;                    // 0b1110 -->
       default                : state = STATE_abc;       break;                    //
     }
-  }
-  else if(getSystemFlag(FLAG_IRFRAC)) {
-    flipSystemFlag(FLAG_IRF_ON);
-    return;
-  }
-  else if(!getSystemFlag(FLAG_IRFRAC)) {
-    clearSystemFlag(FLAG_IRF_ON);
-    flipSystemFlag(FLAG_FRACT);
-    return;
-  }
 
-  if((state & 8)) setSystemFlag(FLAG_IRFRAC); else clearSystemFlag(FLAG_IRFRAC);
-  if((state & 4)) setSystemFlag(FLAG_IRF_ON); else clearSystemFlag(FLAG_IRF_ON);
-  if(((state & 2) == 2) == !getSystemFlag(FLAG_PROPFR)) flipSystemFlag(FLAG_PROPFR);
-  if(((state & 1) == 1) == !getSystemFlag(FLAG_FRACT)) flipSystemFlag(FLAG_FRACT);
-  //printf("--> %u --> %u\n",state, STATE);
+    if((state & 8)) setSystemFlag(FLAG_IRFRAC); else clearSystemFlag(FLAG_IRFRAC);
+    if((state & 4)) setSystemFlag(FLAG_IRF_ON); else clearSystemFlag(FLAG_IRF_ON);
+    if((state & 2)) setSystemFlag(FLAG_PROPFR); else clearSystemFlag(FLAG_PROPFR);
+    if((state & 1)) setSystemFlag(FLAG_FRACT);  else clearSystemFlag(FLAG_FRACT);
+    //printf("--> %u --> %u\n",state, STATE);
+  }
+  else {
+    flipSystemFlag(getSystemFlag(FLAG_IRF_ON) ? FLAG_IRFRAC : FLAG_FRACT);
+  }
 }
 
 

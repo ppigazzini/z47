@@ -2280,12 +2280,7 @@ typedef struct {
     int32_t integer, numer, denom;
     real34_t temp;
 
-    if(!getSystemFlag(FLAG_FRACT) && !getSystemFlag(FLAG_IRFRAC)) {
-      setSystemFlag(FLAG_FRACT);          //1     //NOTE CHANGE HERE TO SWITCH OFF AUTO FRAC MODE AFTER FRACTION INPUT
-    }
-    else if(getSystemFlag(FLAG_IRFRAC)) {
-      setSystemFlag(FLAG_IRF_ON);
-    }
+    setSystemFlag(getSystemFlag(FLAG_IRF_ON) ? FLAG_IRFRAC : FLAG_FRACT);          //1     //NOTE CHANGE HERE TO SWITCH OFF AUTO FRAC MODE AFTER FRACTION INPUT
 
     lg = strlen(source);
 

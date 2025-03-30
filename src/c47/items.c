@@ -253,7 +253,9 @@ bool_t itemNotAvail(int16_t itemNr) {
     screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
     showHideHourGlass();
     if (func == ITM_DENMAX2 || func == ITM_SETFDIGS) {
-      refreshStatusBar();
+      #if !defined(TESTSUITE_BUILD)
+        refreshStatusBar();
+      #endif // !TESTSUITE_BUILD
     }
 
     switch(func) {                              //functions to cause a graph redraw
@@ -3639,7 +3641,7 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 2256 */  { fnGetSystemFlag,              FLAG_ERPN,                   "eRPN",                                        "eRPN",                                        (0 << TAM_MAX_BITS) |     0, CAT_SYFL | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2257 */  { fnGetSystemFlag,              FLAG_LARGELI,                "dLrgLI",                                      "dLrgLI",                                      (0 << TAM_MAX_BITS) |     0, CAT_SYFL | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2258 */  { fnGetSystemFlag,              FLAG_IRFRAC,                 "IRFRAC",                                      "IRFRAC",                                      (0 << TAM_MAX_BITS) |     0, CAT_SYFL | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
-/* 2259 */  { fnGetSystemFlag,              FLAG_IRF_ON,                 "IRFON",                                       "IRFON",                                       (0 << TAM_MAX_BITS) |     0, CAT_SYFL | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
+/* 2259 */  { fnGetSystemFlag,              FLAG_IRF_ON,                 "IRFR?",                                       "IRFR?",                                       (0 << TAM_MAX_BITS) |     0, CAT_SYFL | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2260 */  { fnGetSystemFlag,              FLAG_PFX_ALL,                "PFX.All",                                     "PFX.All",                                     (0 << TAM_MAX_BITS) |     0, CAT_SYFL | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2261 */  { fnGetSystemFlag,              FLAG_DREAL,                  "d" STD_INTEGER_Z ".0",                        "d" STD_INTEGER_Z ".0",                        (0 << TAM_MAX_BITS) |     0, CAT_SYFL | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },
 /* 2262 */  { fnGetSystemFlag,              FLAG_CPXPLOT,                "PLcxp",                                       "PLcxp",                                       (0 << TAM_MAX_BITS) |     0, CAT_SYFL | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     },

@@ -4766,9 +4766,9 @@ void fnKeyDotD(uint16_t unusedButMandatoryParameter) {
   #if !defined(TESTSUITE_BUILD)
     switch(calcMode) {
       case CM_NORMAL: {
-        clearSystemFlag(FLAG_IRF_ON);
-        if(getSystemFlag(FLAG_FRACT)) {
-          clearSystemFlag(FLAG_FRACT);
+        int32_t flag = getSystemFlag(FLAG_IRF_ON) ? FLAG_IRFRAC : FLAG_FRACT ;
+        if(getSystemFlag(flag)) {
+          clearSystemFlag(flag);
         }
         else {
           runFunction(ITM_toREAL);
