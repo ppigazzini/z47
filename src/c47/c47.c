@@ -347,6 +347,9 @@ char                   filename_csv[FILENAMELEN]; //JMMAX   //JM_CSV
 uint32_t               mem__32;                             //JM_CSV
 bool_t                 cancelFilename;
 
+uint8_t                firstDayOfWeek = 1;     // Monday
+uint8_t                firstWeekOfYearDay = 4; // Thursday
+
 
 #if defined(DMCP_BUILD)
   #if defined(JMSHOWCODES)                                        //JM Test

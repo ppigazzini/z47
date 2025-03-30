@@ -26,18 +26,19 @@ TO_QSPI static const struct {
     unsigned gapr : 16;
     unsigned gaprx : 16;
     unsigned us   : 1;
+    unsigned woy : 16;
 
 
 } configSettings[] = {
                 /*                         gapl                     gprl  gpr1x  gpr1  gprr     gapr                                   */
                 /*   24  D M Y  Gregorian  GAP char                 GRP   GRPx   GRP1  FP.GRP   FP.GAP char               New Radix    */
-    [CFG_DFLT  ] = {  1, 0,0,1, 2361222,   _gapl                , _gprl, _gpr1x, _gpr1, _gprr, _gapr                 ,   _gaprx    , 0},    /* 14 Sep 1752 */
-    [CFG_CHINA ] = {  1, 0,0,1, 2433191,   ITM_COMMA            ,    4,    0,    0,    4,      ITM_COMMA             ,   ITM_PERIOD, 0},    /*  1 Oct 1949 */
-    [CFG_EUROPE] = {  1, 1,0,0, 2299161,   ITM_SPACE_PUNCTUATION,    3,    0,    0,    3,      ITM_SPACE_PUNCTUATION ,   ITM_COMMA , 0},    /* 15 Oct 1582 */
-    [CFG_INDIA ] = {  1, 1,0,0, 2361222,   ITM_COMMA            ,    2,    0,    3,    2,      ITM_COMMA             ,   ITM_PERIOD, 0},    /* 14 Sep 1752 */
-    [CFG_JAPAN ] = {  1, 0,0,1, 2405160,   ITM_SPACE_PUNCTUATION,    3,    0,    0,    3,      ITM_SPACE_PUNCTUATION ,   ITM_PERIOD, 0},    /*  1 Jan 1873 */
-    [CFG_UK    ] = {  0, 1,0,0, 2361222,   ITM_SPACE_PUNCTUATION,    3,    0,    0,    3,      ITM_SPACE_PUNCTUATION ,   ITM_PERIOD, 0},    /* 14 Sep 1752 */
-    [CFG_USA   ] = {  0, 0,1,0, 2361222,   ITM_COMMA            ,    3,    9,    0,    3,      ITM_NULL              ,   ITM_PERIOD, 1},    /* 14 Sep 1752 */
+    [CFG_DFLT  ] = {  1, 0,0,1, 2361222,   _gapl                , _gprl, _gpr1x, _gpr1, _gprr, _gapr                 ,   _gaprx    , 0, ITM_WOY_ISO},    /* 14 Sep 1752 */
+    [CFG_CHINA ] = {  1, 0,0,1, 2433191,   ITM_COMMA            ,    4,    0,    0,    4,      ITM_COMMA             ,   ITM_PERIOD, 0, ITM_WOY_ISO},    /*  1 Oct 1949 */
+    [CFG_EUROPE] = {  1, 1,0,0, 2299161,   ITM_SPACE_PUNCTUATION,    3,    0,    0,    3,      ITM_SPACE_PUNCTUATION ,   ITM_COMMA , 0, ITM_WOY_ISO},    /* 15 Oct 1582 */
+    [CFG_INDIA ] = {  1, 1,0,0, 2361222,   ITM_COMMA            ,    2,    0,    3,    2,      ITM_COMMA             ,   ITM_PERIOD, 0, ITM_WOY_US},    /* 14 Sep 1752 */
+    [CFG_JAPAN ] = {  1, 0,0,1, 2405160,   ITM_SPACE_PUNCTUATION,    3,    0,    0,    3,      ITM_SPACE_PUNCTUATION ,   ITM_PERIOD, 0, ITM_WOY_US},    /*  1 Jan 1873 */
+    [CFG_UK    ] = {  0, 1,0,0, 2361222,   ITM_SPACE_PUNCTUATION,    3,    0,    0,    3,      ITM_SPACE_PUNCTUATION ,   ITM_PERIOD, 0, ITM_WOY_ISO},    /* 14 Sep 1752 */
+    [CFG_USA   ] = {  0, 0,1,0, 2361222,   ITM_COMMA            ,    3,    9,    0,    3,      ITM_NULL              ,   ITM_PERIOD, 1, ITM_WOY_US},    /* 14 Sep 1752 */
 };
 
 void configCommon(uint16_t idx) {
@@ -52,7 +53,8 @@ void configCommon(uint16_t idx) {
   forceSystemFlag(FLAG_MDY, configSettings[idx].mdy);
   forceSystemFlag(FLAG_YMD, configSettings[idx].ymd);
   firstGregorianDay = configSettings[idx].gregorianDay;
-  temporaryInformation = TI_DISP_JULIAN;
+  fnSetWeekOfYearRule(configSettings[idx].woy);
+  temporaryInformation = TI_DISP_JULIAN_WOY;
 
   fnSetGapChar (0 + configSettings[idx].gapl);
   grpGroupingLeft            = configSettings[idx].gprl ;
