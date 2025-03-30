@@ -1128,7 +1128,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 // Horizontal offsets in the status bar
 #define X_DATE                                   ((SBARUPD_Time || SBARUPD_WoY) ? 1 : 25)
 #define X_TIME                                    45  // note: this is used only if DATE is not displayed, otherwise TIME is printed directly next to date's end
-#define X_REAL_COMPLEX                           136
+#define X_REAL_COMPLEX                           136  // note: this is for both dow or time, not both
 #define X_HOURGLASS_GRAPHS                       140
 #define X_COMPLEX_MODE                           146
 #define X_COMPLEX_MODE_ADJ                        -8  // note: auto moved left if REAL_COMPLEX is not present

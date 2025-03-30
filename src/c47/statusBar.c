@@ -31,7 +31,8 @@ void drawBattery(uint16_t voltage);
       getTimeString(dateTimeString);
       showString(dateTimeString, &standardFont, x, 0, vmNormal, true, false);
     }
-    else if(SBARUPD_WoY) {
+
+    if(SBARUPD_WoY) {
       x = showGlyph(STD_SPACE_3_PER_EM, &standardFont, x, 0, vmNormal, true, true, false);
       getWeekOfYearString(dateTimeString);
       showString(dateTimeString, &standardFont, x, 0, vmNormal, true, false);

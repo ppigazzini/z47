@@ -399,12 +399,12 @@ uint32_t getWeekOfYear(real34_t *jd) {
   decomposeJulianDay(&rdow, &y, &m, &d);  // Get the correct year (may be different from the year of jd)
   composeJulianDay(&y, const34_1, const34_1, &j1);  // 1st of january of the correct year
   
-  int32_t dow = modulo(julianDayToDayOfWeek(&j1), 7);
+  int32_t dow = modulo((int32_t)julianDayToDayOfWeek(&j1), 7);
   if (firstWeekOfYearDay < dow) {    // if the reference day of the week containing the 1st of january is part of previous year…
     real34Add(&j1, const34_7, &j1);  // … skip to next week
   }
 
-  uInt32ToReal34(modulo(dow - firstDayOfWeek, 7), &dsow);
+  uInt32ToReal34(modulo((int32_t)(dow - firstDayOfWeek), 7), &dsow);
   real34Subtract(&j1, &dsow, &j1);   // 1st day of the 1st week of the year
 
   real34_t woy;
@@ -1222,5 +1222,5 @@ void getWeekOfYearString(char *weekOfYearString) {
   uint32_t woy = getWeekOfYear(&jd);
   int32_t dow = julianDayToDayOfWeek(&jd);
   dow = modulo(dow - firstDayOfWeek, 7) + 1;
-  sprintf(weekOfYearString, "W%02d-%d", woy, dow);
+  sprintf(weekOfYearString, "W%02d-%d", (int)woy, (int)dow);
 }

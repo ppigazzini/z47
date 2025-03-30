@@ -110,7 +110,7 @@ TO_QSPI const int16_t menu_INFO[]        = { ITM_VERS,                      ITM_
 
                                              ITM_TYPEQ,                     ITM_M_DIMQ,                 ITM_NEIGHB,               ITM_ULP,               ITM_SSIZE,                   ITM_RMODEQ,
                                              ITM_GETRANGE,                  ITM_GETHIDE,                ITM_GETSDIGS,             ITM_GETFDIGS,          ITM_GETDMX,                  ITM_WSIZEQ,
-                                             ITM_GET_JUL_GREG,              ITM_NULL,                   ITM_NULL,                 ITM_NULL,              ITM_BESTFQ,                  ITM_ISM                         };
+                                             ITM_GET_JUL_GREG,              ITM_GET_WOY,                ITM_NULL,                 ITM_NULL,              ITM_BESTFQ,                  ITM_ISM                         };
 
 TO_QSPI const int16_t menu_INTS[]        = { ITM_A,                         ITM_B,                      ITM_C,                    ITM_D,                 ITM_E,                       ITM_F,
                                              ITM_IDIV,                      ITM_RMD,                    ITM_MOD,                  ITM_XMOD,              ITM_LINT,                    ITM_LCM,
