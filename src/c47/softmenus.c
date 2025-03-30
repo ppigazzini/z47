@@ -2437,14 +2437,14 @@ void fnStrikeThroughIfNA(int16_t itemNr, int16_t x, int16_t y) {
 
 bool_t BASE_OVERRIDEONCE = false;
 
-  void showSoftmenuCurrentPart(void) {
-    if(currentMenu() == -MNU_HOME) {
-      changeToHOME();
-    }
-    else
-    if(currentMenu() == -MNU_PFN) {
-      changeToPFN();
-    }
+void showSoftmenuCurrentPart(void) {
+  if(currentMenu() == -MNU_HOME) {
+    changeToHOME();
+  }
+  else
+  if(currentMenu() == -MNU_PFN) {
+    changeToPFN();
+  }
 
 //JMTOCHECK: Removed exceptions for underline removal.
 

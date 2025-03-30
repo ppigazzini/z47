@@ -2423,7 +2423,8 @@ RELEASE_END:
             if(!keyActionProcessed) {    //JMvv
               addItemToBuffer(ITM_UP_ARROW);    //Let the arrows produce arrow up and arrow down in ALPHA mode
             }                            //JM^^
-            if(calcMode != CM_LISTXY && (currentSoftmenuScrolls() || (calcMode != CM_NORMAL && calcMode != CM_PEM) || temporaryInformation != TI_NO_INFO)) {
+            if(calcMode != CM_LISTXY && (currentSoftmenuScrolls() || !(calcMode == CM_NORMAL || calcMode == CM_PEM) || temporaryInformation != TI_NO_INFO)) {
+              screenUpdatingMode &= ~(SCRUPD_MANUAL_MENU | SCRUPD_MANUAL_STACK);
               refreshScreen(118);
             }
             keyActionProcessed = true;
@@ -2448,7 +2449,8 @@ RELEASE_END:
             if(!keyActionProcessed){     //JM
               addItemToBuffer(ITM_DOWN_ARROW);    //Let the arrows produce arrow up and arrow down in ALPHA mode
             }                            //JM^^
-            if(calcMode != CM_LISTXY && (currentSoftmenuScrolls() || (calcMode != CM_NORMAL && calcMode != CM_PEM) || temporaryInformation != TI_NO_INFO)) {
+            if(calcMode != CM_LISTXY && (currentSoftmenuScrolls() || !(calcMode == CM_NORMAL || calcMode == CM_PEM) || temporaryInformation != TI_NO_INFO)) {
+              screenUpdatingMode &= ~(SCRUPD_MANUAL_MENU | SCRUPD_MANUAL_STACK);
               refreshScreen(119);
             }
             keyActionProcessed = true;
