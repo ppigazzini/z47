@@ -182,7 +182,7 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     REGISTER_MATRIX_HEADER(regist)->matrixRows = row;
     REGISTER_MATRIX_HEADER(regist)->matrixColumns = col;
     //printf("R%2u: getRegisterTag=%u REGISTER_MATRIX_HEADER(regist)->mtag=%u\n", regist, getRegisterTag(regist), REGISTER_MATRIX_HEADER(regist)->mtag);
-    REGISTER_MATRIX_HEADER(regist)->mtag = getRegisterTag(regist) & (amPolar | amAngleMask);
+    REGISTER_MATRIX_HEADER(regist)->mtag = amNone; //clear spare bits and clear Polar flag, setting only amNone.
   }
 }
 

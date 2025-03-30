@@ -1944,18 +1944,18 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define REAL34_MATRIX_ELEMENTS_AFTER_MATRIX_HEADER(ptr)    ((real34_t         *)((matrixHeader_t           *)ptr + 1))
 #define COMPLEX34_MATRIX_ELEMENTS_AFTER_MATRIX_HEADER(ptr) ((real34_t         *)((matrixHeader_t           *)ptr + 1))
 
-#define isMatrix2dVector(rows,cols) ((bool_t)((rows == 1 && cols == 2) || (rows == 2 && cols == 1)))
-#define isMatrix3dVector(rows,cols) ((bool_t)((rows == 1 && cols == 3) || (rows == 3 && cols == 1)))
-#define isMatrixVector(rows,cols)   ((bool_t)((isMatrix3dVector(rows,cols) || isMatrix2dVector(rows,cols))))
-#define getTagAngularMode(tag)      ((uint8_t)tag) & amAngleMask
-#define is2dVectorPolar(tag)        ((((uint8_t)tag) & amPolar) == amPolar)
-#define is3dVectorPolarSPHCYL(tag)  ((((uint8_t)tag) & amPolar) == amPolar)
-#define is3dVectorPolarSPH(tag)     ( ((getTagAngularMode(tag)) != amNone) &&  is3dVectorPolarSPHCYL(tag) )
-#define is3dVectorPolarCYL(tag)     ( ((getTagAngularMode(tag)) != amNone) && !is3dVectorPolarSPHCYL(tag) )
+#define isMatrix2dVector(rows,cols)          ((rows == 1 && cols == 2) || (rows == 2 && cols == 1))
+#define isMatrix3dVector(rows,cols)          ((rows == 1 && cols == 3) || (rows == 3 && cols == 1))
+#define isMatrixVector(rows,cols)            ((isMatrix3dVector(rows,cols) || isMatrix2dVector(rows,cols)))
+#define getTagAngularMode(tag)               ( tag & amAngleMask)
+#define is2dVectorPolar(tag)                 ((tag & amPolar) == amPolar)
+#define is3dVectorPolarSPHCYL(tag)           ((tag & amPolar) == amPolar)
+#define is3dVectorPolarSPH(tag)              (((getTagAngularMode(tag)) != amNone) &&  is3dVectorPolarSPHCYL(tag))
+#define is3dVectorPolarCYL(tag)              (((getTagAngularMode(tag)) != amNone) && !is3dVectorPolarSPHCYL(tag))
 
-#define isMatrix3dVectorSPH(rows,cols,tag)  (isMatrix3dVector(rows,cols) && is3dVectorPolarSPH(tag))
-#define isMatrix3dVectorCYL(rows,cols,tag)  (isMatrix3dVector(rows,cols) && is3dVectorPolarCYL(tag))
-#define isMatrix2dVectorPOL(rows,cols,tag)  (isMatrix2dVector(rows,cols) && is2dVectorPolar(tag))
+#define isMatrix3dVectorSPH(rows,cols,tag)   (isMatrix3dVector(rows,cols) && is3dVectorPolarSPH(tag))
+#define isMatrix3dVectorCYL(rows,cols,tag)   (isMatrix3dVector(rows,cols) && is3dVectorPolarCYL(tag))
+#define isMatrix2dVectorPOL(rows,cols,tag)   (isMatrix2dVector(rows,cols) && is2dVectorPolar(tag))
 
 #if !defined(PC_BUILD) && !defined(DMCP_BUILD)
   #error One of PC_BUILD and DMCP_BUILD must be defined

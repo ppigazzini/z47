@@ -261,9 +261,9 @@
   #define setRegisterLongIntegerSign(reg, sign)  setRegisterTag(reg, sign)
 
   #define getComplexRegisterAngularMode(reg)     (getRegisterTag(reg) & amAngleMask)
-  #define setComplexRegisterAngularMode(reg, am) setRegisterTag(reg, (am & amAngleMask) | (getRegisterTag(reg) & amPolar))
+  #define setComplexRegisterAngularMode(reg, am) setRegisterTag(reg, (am & amAngleMask) | (getRegisterTag(reg) & amPolar))    // ok. amAngleMask = 15; amPolar = 16
   #define getComplexRegisterPolarMode(reg)       (getRegisterTag(reg) & amPolar)
-  #define setComplexRegisterPolarMode(reg, am)   setRegisterTag(reg, (getRegisterTag(reg) & amAngleMask) | (am & amPolar))
+  #define setComplexRegisterPolarMode(reg, pm)   setRegisterTag(reg, (getRegisterTag(reg) & amAngleMask) | (pm & amPolar))    // Intended to maintain bits 0-3 for amAngle (amAngleMask), clear the polar bit 4, and then OR only the polar bit.  
 
   #define amPolarCYL 64  //  virtual bit, working in addition to the tag bit 4 = amPolar = 16; bit 5 usid by 32-bit pointer changes; real bits 6 & 7 spare. Real bits not used, in favour of these virtual logic bits,  as the register header also only has bits 0-4.
   #define amPolarSPH 128 //  virtual bit, see typeDefinitions.h, amPolar
@@ -282,7 +282,7 @@
   #define setVectorRegisterPolarMode(reg, pm)   setRegisterTag(reg, ((pm == 0) ? ((getRegisterTag(reg) & ~(amAngleMask | amPolar)) + amNone) : \
                                                                       ((getRegisterTag(reg) & (amAngleMask | amPolar)) | ((pm == amPolarSPH || pm == amPolar) ? amPolar : 0)) \
                                                                       & ((pm == amPolarCYL) ? ((~amPolar) & (amAngleMask | amPolar)) : 255) \
-                                                                        ))           /*if Polar is cleared (pm=0), also clear angle */
+                                                                        ))           /*if Polar is cleared, also clear angle */
                                                                                      /*existing status, with polar bit ORred for 2DPolar or SPH*/
                                                                                      /*   ANDed to force Polar 0 for CYL */
 
