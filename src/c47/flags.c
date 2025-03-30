@@ -112,10 +112,10 @@ static void systemFlagAction(uint16_t systemFlag, flagAction_t action) {
 
     case FLAG_SBwoy :
     case FLAG_SBtime:
-              if(getSystemFlag(FLAG_SBtime)) {
+              if(systemFlag == FLAG_SBtime && getSystemFlag(FLAG_SBtime)) {
                 _clearSystemFlag(FLAG_SBwoy);
               }
-              else if(getSystemFlag(FLAG_SBwoy)) {
+              else if(systemFlag == FLAG_SBwoy && getSystemFlag(FLAG_SBwoy)) {
                 _clearSystemFlag(FLAG_SBtime);
               }
               fnRefreshState();
