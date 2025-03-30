@@ -593,6 +593,9 @@
   extern uint32_t     mem__32;                                          //JM_CSV
   extern bool_t       cancelFilename;
 
+  extern uint8_t                firstDayOfWeek;
+  extern uint8_t                firstWeekOfYearDay;
+  
   #if defined(DMCP_BUILD)
     extern bool_t              backToDMCP;
   #if defined(BUFFER_CLICK_DETECTION)
