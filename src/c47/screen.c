@@ -2280,9 +2280,9 @@ void createSubstrings(uint8_t number) {
         *prefixWidth = 0;
         char tmp[16];
         nameRegis(matrixIndex, tmp);
-
-        if(regist == REGISTER_X && temporaryInformation == TI_MIJ) {
-          sprintf(prefix,STD_MU "[I" STD_SUB_r STD_SPACE_4_PER_EM "J" STD_SUB_c "]=%s[%u" STD_SPACE_3_PER_EM "%u]=",tmp, (uint8_t)iii,(uint8_t)jji);
+//[Ir Jc]=INDEXname[1, 2]=
+        if(regist == REGISTER_X && (temporaryInformation == TI_MIJ || temporaryInformation == TI_MIJEQ)) {
+          sprintf(prefix,STD_MU "[I" STD_SUB_r STD_SPACE_4_PER_EM "J" STD_SUB_c "]=%s[%u" STD_SPACE_3_PER_EM "%u]%s",tmp, (uint8_t)iii,(uint8_t)jji,(temporaryInformation == TI_MIJEQ ? "=" : ""));
         }
 
 //R00 [Ir=1 Jc=1]: Jc=
@@ -2290,6 +2290,7 @@ void createSubstrings(uint8_t number) {
          sprintf(prefix,"%s[I" STD_SUB_r "=%u" STD_SPACE_4_PER_EM "J" STD_SUB_c "=%u]%s",tmp, (uint8_t)iii,(uint8_t)jji, temporaryInformation == TI_I ? ": I" STD_SUB_r "=" : ": J" STD_SUB_c "=");
         }
 //R00: Ir=
+//R00: Jr=
         else if(iii != 0 && jji != 0) {
           if(regist == REGISTER_Y) {
             sprintf(prefix,"%s:I" STD_SUB_r "=",tmp);
@@ -2682,6 +2683,40 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
         sprintf(tmpString, "First Gregorian day set: %s", tmpStr2);
         //sprintf(tmpString, "1st Gregorian day set: %s (JD %" PRId32 ")", tmpStr2, firstGregorianDay);
         showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + TEMPORARY_INFO_OFFSET + 6, vmNormal, true, true);
+      }
+
+      else if(temporaryInformation == TI_DISP_WOY) {
+        sprintf(tmpString, "Week of Year rule set: %s.%s",
+          nameOfWday_en[firstDayOfWeek].itemName,
+          nameOfWday_en[firstWeekOfYearDay].itemName);
+        showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + TEMPORARY_INFO_OFFSET + 6, vmNormal, true, true);
+      }
+
+      else if(temporaryInformation == TI_DISP_JULIAN_WOY) {
+        real34_t j;
+        char tmpStr2[20];
+        uInt32ToReal34(firstGregorianDay, &j);
+        julianDayToInternalDate(&j,REGISTER_REAL34_DATA(TEMP_REGISTER_1));
+        dateToDisplayString(TEMP_REGISTER_1, tmpStr2);
+        sprintf(tmpString, "First Gregorian day set: %s", tmpStr2);
+        //sprintf(tmpString, "1st Gregorian day set: %s (JD %" PRId32 ")", tmpStr2, firstGregorianDay);
+        showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_Y_LINE + TEMPORARY_INFO_OFFSET + 6, vmNormal, true, true);
+        sprintf(tmpString, "Week of Year rule set: %s.%s",
+          nameOfWday_en[firstDayOfWeek].itemName,
+          nameOfWday_en[firstWeekOfYearDay].itemName);
+        showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + TEMPORARY_INFO_OFFSET + 6, vmNormal, true, true);
+      }
+
+      else if(temporaryInformation == TI_WOY && regist == REGISTER_X) {
+        sprintf(prefix, "Week of Year" STD_SPACE_FIGURE "=");
+        displayTemporaryInformationOnX(prefix);
+      }
+
+      else if(temporaryInformation == TI_WOY_RULE && regist == REGISTER_X) {
+        sprintf(prefix, "%s.%s",
+          nameOfWday_en[firstDayOfWeek].itemName,
+          nameOfWday_en[firstWeekOfYearDay].itemName);
+        displayTemporaryInformationOnX(prefix);
       }
 
       else if(temporaryInformation == TI_KEYS && regist == REGISTER_X) {
@@ -3863,7 +3898,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
               }
             }
           }
-          else if((regist == REGISTER_X && temporaryInformation == TI_MIJ) || ((regist == REGISTER_X || regist == REGISTER_Y) && temporaryInformation == TI_IJ) || (regist == REGISTER_X && (temporaryInformation == TI_I || temporaryInformation == TI_J))) {
+          else if((regist == REGISTER_X && (temporaryInformation == TI_MIJ || temporaryInformation == TI_MIJEQ)) || ((regist == REGISTER_X || regist == REGISTER_Y) && temporaryInformation == TI_IJ) || (regist == REGISTER_X && (temporaryInformation == TI_I || temporaryInformation == TI_J))) {
             _displayIJ(regist, prefix, &prefixWidth);
           }
           else if(temporaryInformation == TI_STORCL && regist == REGISTER_X) {
@@ -3949,7 +3984,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
             }
             #endif //DISCRIMINANT
           }
-          else if((regist == REGISTER_X && temporaryInformation == TI_MIJ) || ((regist == REGISTER_X || regist == REGISTER_Y) && temporaryInformation == TI_IJ) || (regist == REGISTER_X && (temporaryInformation == TI_I || temporaryInformation == TI_J))) {
+          else if((regist == REGISTER_X && (temporaryInformation == TI_MIJ || temporaryInformation == TI_MIJEQ)) || ((regist == REGISTER_X || regist == REGISTER_Y) && temporaryInformation == TI_IJ) || (regist == REGISTER_X && (temporaryInformation == TI_I || temporaryInformation == TI_J))) {
             _displayIJ(regist, prefix, &prefixWidth);
           }
           else if(temporaryInformation == TI_STORCL && regist == REGISTER_X) {
@@ -4173,7 +4208,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
           else if(temporaryInformation == TI_SOLVER_VARIABLE) {
             _displaySolverInput(regist, prefix, &prefixWidth);
           }
-          else if((regist == REGISTER_X && temporaryInformation == TI_MIJ) || ((regist == REGISTER_X || regist == REGISTER_Y) && temporaryInformation == TI_IJ) || (regist == REGISTER_X && (temporaryInformation == TI_I || temporaryInformation == TI_J))) {
+          else if((regist == REGISTER_X && (temporaryInformation == TI_MIJ || temporaryInformation == TI_MIJEQ)) || ((regist == REGISTER_X || regist == REGISTER_Y) && temporaryInformation == TI_IJ) || (regist == REGISTER_X && (temporaryInformation == TI_I || temporaryInformation == TI_J))) {
             _displayIJ(regist, prefix, &prefixWidth);
           }
           else if(temporaryInformation == TI_STORCL && regist == REGISTER_X) {
@@ -4327,7 +4362,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
             if(temporaryInformation == TI_VIEW_REGISTER && origRegist == REGISTER_T) {
               viewRegName(prefix, &prefixWidth);
             }
-            else if((regist == REGISTER_X && temporaryInformation == TI_MIJ) || ((regist == REGISTER_X || regist == REGISTER_Y) && temporaryInformation == TI_IJ) || (regist == REGISTER_X && (temporaryInformation == TI_I || temporaryInformation == TI_J))) {
+            else if((regist == REGISTER_X && (temporaryInformation == TI_MIJ || temporaryInformation == TI_MIJEQ)) || ((regist == REGISTER_X || regist == REGISTER_Y) && temporaryInformation == TI_IJ) || (regist == REGISTER_X && (temporaryInformation == TI_I || temporaryInformation == TI_J))) {
               _displayIJ(regist, prefix, &prefixWidth);
             }
             else if(temporaryInformation == TI_STORCL && regist == REGISTER_X) {
@@ -4390,7 +4425,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
             if(temporaryInformation == TI_VIEW_REGISTER && origRegist == REGISTER_T) {
               viewRegName(prefix, &prefixWidth);
             }
-            else if((regist == REGISTER_X && temporaryInformation == TI_MIJ) || ((regist == REGISTER_X || regist == REGISTER_Y) && temporaryInformation == TI_IJ) || (regist == REGISTER_X && (temporaryInformation == TI_I || temporaryInformation == TI_J))) {
+            else if((regist == REGISTER_X && (temporaryInformation == TI_MIJ || temporaryInformation == TI_MIJEQ)) || ((regist == REGISTER_X || regist == REGISTER_Y) && temporaryInformation == TI_IJ) || (regist == REGISTER_X && (temporaryInformation == TI_I || temporaryInformation == TI_J))) {
               _displayIJ(regist, prefix, &prefixWidth);
             }
             else if(temporaryInformation == TI_STORCL && regist == REGISTER_X) {
