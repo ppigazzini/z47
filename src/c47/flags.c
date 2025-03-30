@@ -9,6 +9,41 @@
 
 typedef enum { FLAG_CLEAR=0, FLAG_SET=1, FLAG_FLIP=2 } flagAction_t;
 
+static void _setSystemFlag(unsigned int sf) {
+  int32_t flag = sf & 0x3fff;
+
+  if(flag < 64) {
+    systemFlags0 |= ((uint64_t)1 << flag);
+  }
+  else {
+    systemFlags1 |= ((uint64_t)1 << (flag - 64));
+  }
+}
+
+static void _clearSystemFlag(unsigned int sf) {
+  int32_t flag = sf & 0x3fff;
+
+  if(flag < 64) {
+    systemFlags0 &= ~((uint64_t)1 << flag);
+  }
+  else {
+    systemFlags1 &= ~((uint64_t)1 << (flag - 64));
+  }
+}
+
+static void _flipSystemFlag(unsigned int sf) {
+  int32_t flag = sf & 0x3fff;
+
+  if(flag < 64) {
+    systemFlags0 ^=  ((uint64_t)1 << flag);
+  }
+  else {
+    systemFlags1 ^=  ((uint64_t)1 << (flag - 64));
+  }
+}
+
+bool_t getSystemFlag(int32_t sf);
+
 static void systemFlagAction(uint16_t systemFlag, flagAction_t action) {
   switch(systemFlag) {
     case FLAG_YMD:       //these flags need to update the corresponding softkey status
@@ -52,7 +87,6 @@ static void systemFlagAction(uint16_t systemFlag, flagAction_t action) {
               break;
 
     case FLAG_SBdate:
-    case FLAG_SBtime:
     case FLAG_SBcr  :
     case FLAG_SBcpx :
     case FLAG_SBang :
@@ -76,47 +110,35 @@ static void systemFlagAction(uint16_t systemFlag, flagAction_t action) {
               screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
               break;
 
+    case FLAG_SBwoy :
+    case FLAG_SBtime:
+              if(getSystemFlag(FLAG_SBtime)) {
+                _clearSystemFlag(FLAG_SBwoy);
+              }
+              else if(getSystemFlag(FLAG_SBwoy)) {
+                _clearSystemFlag(FLAG_SBtime);
+              }
+              fnRefreshState();
+              screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
+              break; 
+              
     default: break;
   }
 }
 
 void setSystemFlag(unsigned int sf) {
-  int32_t flag = sf & 0x3fff;
-
-  if(flag < 64) {
-    systemFlags0 |= ((uint64_t)1 << flag);
-    systemFlagAction(sf, FLAG_SET);
-  }
-  else {
-    systemFlags1 |= ((uint64_t)1 << (flag - 64));
-    systemFlagAction(sf, FLAG_SET);
-  }
+  _setSystemFlag(sf);
+  systemFlagAction(sf, FLAG_SET);
 }
 
 void clearSystemFlag(unsigned int sf) {
-  int32_t flag = sf & 0x3fff;
-
-  if(flag < 64) {
-    systemFlags0 &= ~((uint64_t)1 << flag);
-    systemFlagAction(sf, FLAG_CLEAR);
-  }
-  else {
-    systemFlags1 &= ~((uint64_t)1 << (flag - 64));
-    systemFlagAction(sf, FLAG_CLEAR);
-  }
+  _clearSystemFlag(sf);
+  systemFlagAction(sf, FLAG_CLEAR);
 }
 
 void flipSystemFlag(unsigned int sf) {
-  int32_t flag = sf & 0x3fff;
-
-  if(flag < 64) {
-    systemFlags0 ^=  ((uint64_t)1 << flag);
-    systemFlagAction(sf, FLAG_FLIP);
-  }
-  else {
-    systemFlags1 ^=  ((uint64_t)1 << (flag - 64));
-    systemFlagAction(sf, FLAG_FLIP);
-  }
+  _flipSystemFlag(sf);
+  systemFlagAction(sf, FLAG_FLIP);
 }
 
 bool_t getSystemFlag(int32_t sf) {
