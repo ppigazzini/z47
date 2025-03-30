@@ -592,7 +592,7 @@ void SetSetting(uint16_t jmConfig) {
     case FLAG_CPXRES:
     case FLAG_SPCRES:
     case FLAG_ERPN:
-    case ITM_FRCYC:
+    case FLAG_FRCYC:
     case FLAG_CPXMULT:
     case FLAG_CPXPLOT:
     case FLAG_SHOWX   :
