@@ -123,7 +123,7 @@ static void systemFlagAction(uint16_t systemFlag, flagAction_t action) {
     case FLAG_FRACT:
               if(getSystemFlag(FLAG_FRACT)) {
                 _clearSystemFlag(FLAG_IRFRAC);
-                _clearSystemFlag(FLAG_IRF_ON);
+                _clearSystemFlag(FLAG_IRFRQ);
               }
               fnRefreshState();
               break;
@@ -131,12 +131,12 @@ static void systemFlagAction(uint16_t systemFlag, flagAction_t action) {
     case FLAG_IRFRAC:
               if(getSystemFlag(FLAG_IRFRAC)) {
                 _clearSystemFlag(FLAG_FRACT);
-                _setSystemFlag(FLAG_IRF_ON);
+                _setSystemFlag(FLAG_IRFRQ);
               }
               fnRefreshState();
               break;
 
-     case FLAG_IRF_ON:
+     case FLAG_IRFRQ:
               if(getSystemFlag(FLAG_FRACT)) {
                 _clearSystemFlag(FLAG_FRACT);
                 _setSystemFlag(FLAG_IRFRAC);

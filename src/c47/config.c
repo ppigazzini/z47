@@ -129,8 +129,8 @@ fgLongPressSetting,                  xxx,        xxx,                           
 
 3,                                   0,          FLAG_IRFRAC,                    xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,
 3,                                   1,          xxx,                            xxx,             FLAG_IRFRAC,          FLAG_IRFRAC,            xxx,             xxx,             xxx,
-3,                                   0,          FLAG_IRF_ON,                    xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,
-3,                                   1,          xxx,                            xxx,             FLAG_IRF_ON,          FLAG_IRF_ON,            xxx,             xxx,             xxx,
+3,                                   0,          FLAG_IRFRQ,                     xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,
+3,                                   1,          xxx,                            xxx,             FLAG_IRFRQ,           FLAG_IRFRQ,             xxx,             xxx,             xxx,
 3,                                   0,          xxx,                            FLAG_ERPN,       xxx,                  xxx,                    xxx,             xxx,             xxx,
 3,                                   1,          FLAG_ERPN,                      xxx,             FLAG_ERPN,            FLAG_ERPN,              FLAG_ERPN,       xxx,             xxx,
 3,                                   0,          FLAG_CPXMULT,                   xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,
@@ -781,7 +781,7 @@ void fnFractionType(uint16_t unusedButMandatoryParameter) {
   #define STATE_exfr_abc 0b1110  //14
 //                         1111
   #define STATE         ((getSystemFlag(FLAG_IRFRAC) ? 8:0) +  \
-                         (getSystemFlag(FLAG_IRF_ON) ? 4:0) +  \
+                         (getSystemFlag(FLAG_IRFRQ ) ? 4:0) +  \
                          (getSystemFlag(FLAG_PROPFR) ? 2:0) +  \
                          (getSystemFlag(FLAG_FRACT)  ? 1:0))
   uint8_t state = STATE;
@@ -802,13 +802,13 @@ void fnFractionType(uint16_t unusedButMandatoryParameter) {
     }
 
     if((state & 8)) setSystemFlag(FLAG_IRFRAC); else clearSystemFlag(FLAG_IRFRAC);
-    if((state & 4)) setSystemFlag(FLAG_IRF_ON); else clearSystemFlag(FLAG_IRF_ON);
+    if((state & 4)) setSystemFlag(FLAG_IRFRQ ); else clearSystemFlag(FLAG_IRFRQ );
     if((state & 2)) setSystemFlag(FLAG_PROPFR); else clearSystemFlag(FLAG_PROPFR);
     if((state & 1)) setSystemFlag(FLAG_FRACT);  else clearSystemFlag(FLAG_FRACT);
     //printf("--> %u --> %u\n",state, STATE);
   }
   else {
-    flipSystemFlag(getSystemFlag(FLAG_IRF_ON) ? FLAG_IRFRAC : FLAG_FRACT);
+    flipSystemFlag(getSystemFlag(FLAG_IRFRQ ) ? FLAG_IRFRAC : FLAG_FRACT);
   }
 }
 
