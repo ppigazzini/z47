@@ -37,7 +37,7 @@ TO_QSPI const int16_t menu_CLK[]         = { ITM_DATE,                      ITM_
 
                                              ITM_CLK12,                     ITM_CLK24,                  ITM_TDISP,                ITM_DMY,               ITM_MDY,                     ITM_YMD,
                                              ITM_SETDAT,                    ITM_SETTIM,                 ITM_WDAY,                 ITM_DAY,               ITM_MONTH,                   ITM_YEAR,
-                                             ITM_NULL,                      ITM_NULL,                   ITM_WOY,                  ITM_SECOND,            ITM_MINUTE,                  ITM_HR_DEG,
+                                             ITM_DATE,                      ITM_TIME,                   ITM_WOY,                  ITM_SECOND,            ITM_MINUTE,                  ITM_HR_DEG,
 
                                              ITM_GET_JUL_GREG,              ITM_JUL_GREG,               ITM_JUL_GREG_1582,        ITM_JUL_GREG_1752,     ITM_JUL_GREG_1873,           ITM_JUL_GREG_1949,
                                              ITM_GET_WOY,                   ITM_NULL,                   ITM_NULL,                 ITM_WOY_ISO,           ITM_WOY_US,                  ITM_WOY_ME                    };

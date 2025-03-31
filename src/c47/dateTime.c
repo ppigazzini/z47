@@ -312,7 +312,7 @@ uint32_t julianDayToDayOfWeek(real34_t *jd) {
   return real34ToUInt32(&dow);
 }
 
-uint32_t getDayOfWeek(calcRegister_t regist) {
+uint32_t getJulianDayOfWeek(calcRegister_t regist) {
   real34_t date34;
   if(checkDateArgument(regist, &date34)) {
     return julianDayToDayOfWeek(&date34);
@@ -691,7 +691,7 @@ void fnDay(uint16_t unusedButMandatoryParameter) {
 }
 
 void fnWday(uint16_t unusedButMandatoryParameter) {
-  const uint32_t dayOfWeek = getDayOfWeek(REGISTER_X);
+  const uint32_t dayOfWeek = getJulianDayOfWeek(REGISTER_X);
   longInteger_t result;
 
   if(!saveLastX()) {
@@ -1221,6 +1221,6 @@ void getWeekOfYearString(char *weekOfYearString) {
   composeJulianDay(&y, &m, &d, &jd);
   uint32_t woy = getWeekOfYear(&jd);
   int32_t dow = julianDayToDayOfWeek(&jd);
-  dow = modulo(dow - firstDayOfWeek, 7) + 1;
+  dow = modulo((dow + 7) - firstDayOfWeek, 7) + 1;
   sprintf(weekOfYearString, "W%02d-%d", (int)woy, (int)dow);
 }
