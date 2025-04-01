@@ -571,7 +571,7 @@ void fnPem(uint16_t unusedButMandatoryParameter) {
       else {
         pemAddNumber(ITM_BACKSPACE);
       }
-      clearScreen();
+      clearScreen(13);
       showSoftmenuCurrentPart();
       fnPem(NOPARAM);
     }
@@ -581,7 +581,7 @@ void fnPem(uint16_t unusedButMandatoryParameter) {
         ++firstDisplayedLocalStepNumber;
       }
       defineFirstDisplayedStep();
-      clearScreen();
+      clearScreen(14);
       showSoftmenuCurrentPart();
       fnPem(NOPARAM);
     }

@@ -1432,7 +1432,7 @@ void fnStatList() {
     char tmpstr1[100], tmpstr2[100];
     int16_t ix, ixx, statnum;
 
-    clearScreen();
+    clearScreen(1);
     refreshStatusBar();
 
     if(getSystemFlag(FLAG_VECT) || getSystemFlag(FLAG_NVECT)) {

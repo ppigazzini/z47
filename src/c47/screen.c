@@ -2430,13 +2430,13 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
          copySourceRegisterToDestRegister(TEMP_REGISTER_1,REGISTER_T);
        }
        if(displayStack == 3) {
-         lcd_fill_rect(0, Y_POSITION_OF_REGISTER_Z_LINE - 2, SCREEN_WIDTH, 1, 0xFF);
+         lcd_fill_rect(0, Y_POSITION_OF_REGISTER_Z_LINE - 2, SCREEN_WIDTH, 1, LCD_EMPTY_VALUE);
        }
        else if(displayStack == 2) {
-         lcd_fill_rect(0, Y_POSITION_OF_REGISTER_Y_LINE - 2, SCREEN_WIDTH, 1, 0xFF);
+         lcd_fill_rect(0, Y_POSITION_OF_REGISTER_Y_LINE - 2, SCREEN_WIDTH, 1, LCD_EMPTY_VALUE);
        }
        else if(displayStack == 1) {
-         lcd_fill_rect(0, Y_POSITION_OF_REGISTER_X_LINE - 2, SCREEN_WIDTH, 1, 0xFF);
+         lcd_fill_rect(0, Y_POSITION_OF_REGISTER_X_LINE - 2, SCREEN_WIDTH, 1, LCD_EMPTY_VALUE);
        }
      }                                                                 //JM ^^
   }
@@ -2941,7 +2941,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
               distModeActive = true;
             }
             if(distModeActive) {
-              lcd_fill_rect(0, ii - 2, SCREEN_WIDTH, 1, 0xFF);
+              lcd_fill_rect(0, ii - 2, SCREEN_WIDTH, 1, LCD_EMPTY_VALUE);
               if(displayStack != origDisplayStack) {
 //                refreshScreen(81);                                //recurse into refreshScreen
               }
@@ -4573,7 +4573,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
       #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
         printf("   >>> lcd_fill_rect clear all\n");
       #endif // PC_BUILD && MONITOR_CLRSCR
-      clearScreen();
+      clearScreen(6);
       refreshNIMdone = false;
     }
     else {
@@ -4713,7 +4713,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
           }                                                                               // battery powered
         }
         else {
-          clearScreen();                                                                  // USB powered
+          clearScreen(7);                                                                  // USB powered
           showSoftmenuCurrentPart();                                                      // USB powered
           fnPem(NOPARAM);                                                                 // USB powered
           displayShiftAndTamBuffer();                                                     // USB powered
@@ -4722,7 +4722,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
       #elif defined(PC_BUILD)
           #define TEST_BATTERY_POWERED_SIMULATION
           #if defined (TEST_USB_POWERED_SIMULATION)
-            clearScreen();                                                                // this tests the USB powered option on sim
+            clearScreen(8);                                                                // this tests the USB powered option on sim
             showSoftmenuCurrentPart();                                                    // this tests the USB powered option on sim
             fnPem(NOPARAM);                                                               // this tests the USB powered option on sim
             displayShiftAndTamBuffer();                                                   // this tests the USB powered option on sim
@@ -5004,21 +5004,21 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
     switch(calcMode) {
       case CM_FLAG_BROWSER:
         last_CM = calcMode;
-        clearScreen();
+        clearScreen(9);
         flagBrowser(NOPARAM);
         refreshStatusBar();
         break;
 
       case CM_FONT_BROWSER:
         last_CM = calcMode;
-        clearScreen();
+        clearScreen(10);
         fontBrowser(NOPARAM);
         refreshStatusBar();
         break;
 
       case CM_REGISTER_BROWSER:
         last_CM = calcMode;
-        clearScreen();
+        clearScreen(11);
         registerBrowser(NOPARAM);
         refreshStatusBar();
         break;

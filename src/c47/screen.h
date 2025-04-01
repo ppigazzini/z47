@@ -76,7 +76,12 @@ char       letteredRegisterName(calcRegister_t regist);
   #define  halfSec_disp true
 
 
-  #define clearScreen()                        do { lcd_fill_rect(0, 0, SCREEN_WIDTH, 240, LCD_SET_VALUE); clear_ul(); lastProgramRunStop = PGM_UNDEFINED;} while(0)
+  #if defined(MONITOR_CLRSCR)
+    #define clearScreen(cnt)                        do { lcd_fill_rect(0,  0, SCREEN_WIDTH, 240, LCD_SET_VALUE); clear_ul(); lastProgramRunStop = PGM_UNDEFINED; printf("CLEARFULLSCREEN Macro %u\n",(uint16_t)cnt);} while(0)
+  #else //!MONITOR_CLRSCR
+    #define clearScreen(cnt)                        do { lcd_fill_rect(0,  0, SCREEN_WIDTH, 240, LCD_SET_VALUE); clear_ul(); lastProgramRunStop = PGM_UNDEFINED;} while(0)
+  #endif //MONITOR_CLRSCR
+
 
   #if !defined(TESTSUITE_BUILD)
 

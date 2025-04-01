@@ -1136,14 +1136,14 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define X_COMPLEX_MODE_ADJ                        -8  // note: auto moved left if REAL_COMPLEX is not present
 #define X_ANGULAR_MODE                           160
 #define X_FRAC_MODE                              187
-#define X_INTEGER_MODE                           262
-#define X_OVERFLOW_CARRY                         292
-#define X_ALPHA_MODE                             300
-#define X_HOURGLASS                              312
-#define X_SSIZE_BEGIN                            327 - 5 + 3
-#define X_ASM                                    (X_ALPHA_MODE + 34) //334
-#define X_STOPWATCH                              337
-#define X_SERIAL_IO                              353
+#define X_INTEGER_MODE                           262 + 1 // moved from 353 to 362 to overlap with printer. I/O and Printing (soft or hard) cannot happen at the same time
+#define X_OVERFLOW_CARRY                         292 + 2 // moved from 353 to 362 to overlap with printer. I/O and Printing (soft or hard) cannot happen at the same time
+#define X_ALPHA_MODE                             300 + 3 // moved from 353 to 362 to overlap with printer. I/O and Printing (soft or hard) cannot happen at the same time
+#define X_HOURGLASS                              312 + 4 // moved from 353 to 362 to overlap with printer. I/O and Printing (soft or hard) cannot happen at the same time
+#define X_SSIZE_BEGIN                            325 + 5 // moved from 353 to 362 to overlap with printer. I/O and Printing (soft or hard) cannot happen at the same time
+#define X_ASM                                    334 + 7 // moved from 353 to 362 to overlap with printer. I/O and Printing (soft or hard) cannot happen at the same time
+#define X_STOPWATCH                              337 + 8 // moved from 353 to 362 to overlap with printer. I/O and Printing (soft or hard) cannot happen at the same time
+#define X_SERIAL_IO                              353 + 9 // moved from 353 to 362 to overlap with printer. I/O and Printing (soft or hard) cannot happen at the same time
 #define X_PRINTER                                362
 #define X_USER_MODE                              375
 #define X_BATTERY                                389

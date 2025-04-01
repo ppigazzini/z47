@@ -18,7 +18,7 @@
     char Name[16];
     xx = 0;
     yy = 1;
-    clearScreen();
+    clearScreen(12);
     showSoftmenuCurrentPart();
         showString(fnAsnDisplayUSER ? "(USER KEYS)" : "(STD KEYS)", &standardFont, 280, YOFF, vmNormal, false, false);
         switch(page) {

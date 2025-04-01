@@ -3865,7 +3865,7 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
         }
 
         if(currentMenu() == -MNU_TIMERF) {
-          clearScreen();
+          clearScreen(5);
           fnItemTimerApp(NOPARAM);
           return;
         }
