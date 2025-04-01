@@ -484,7 +484,7 @@ void add_digitglyph_to_tmp2(char* tmp2, int16_t xx) {
 
   stringCopy(tmp2, STD_SUB_0);
   if(1 <= xx && xx <= 16) {
-    stringCopy(tmp2, STD_BASE_1);
+    stringCopy(tmp2, STD_SUB_1);   //can also be STD_BASE_1 for a slightly raised 0 look
     tmp2[1] += (xx-1);
   }
 }
