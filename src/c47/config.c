@@ -1519,6 +1519,8 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
       if(calcMode == CM_MIM) {
         mimFinalize();
       }
+
+      clearScreen(10); //WE HAVE TO FIND THE BEST PLACE FOR A FULL SCREEN CLEAR, JUST BEFORE THE CALCULATOR STARTS
       calcModeNormal();
     #endif // !TESTSUITE_BUILD
 

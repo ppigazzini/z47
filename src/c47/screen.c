@@ -463,16 +463,7 @@ char letteredRegisterName(calcRegister_t regist) {
     }
 
     // Update date and time
-    getTimeString(dateTimeString);
-    if(strcmp(dateTimeString, oldTime)) {
-      strcpy(oldTime, dateTimeString);
-      #if (DEBUG_INSTEAD_STATUS_BAR != 1)
         showDateTime();
-        if(Y_SHIFT == 0 && X_SHIFT < 200) {
-          showShiftState();
-        }
-      #endif // (DEBUG_INSTEAD_STATUS_BAR != 1)
-    }
 
     // If LCD has changed: update the GTK screen
     if(screenChange) {
@@ -521,18 +512,8 @@ char letteredRegisterName(calcRegister_t regist) {
     }
 
     // Update date and time
-    getTimeString(dateTimeString);
-    if(strcmp(dateTimeString, oldTime)) {
-      strcpy(oldTime, dateTimeString);
-      #if (DEBUG_INSTEAD_STATUS_BAR != 1)
-        showDateTime();
-        if(Y_SHIFT == 0 && X_SHIFT < 200) {
-          showShiftState();
-        }
-      #endif // (DEBUG_INSTEAD_STATUS_BAR != 1)
-
+    if(showDateTime()) {
       dmcpResetAutoOff();
-
       fnPollTimerApp();
     }
     checkBattery();
@@ -4573,7 +4554,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
       #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
         printf("   >>> lcd_fill_rect clear all\n");
       #endif // PC_BUILD && MONITOR_CLRSCR
-      clearScreen(6);
+      clearScreenExcludingStatusBar(6);
       refreshNIMdone = false;
     }
     else {

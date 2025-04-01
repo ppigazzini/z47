@@ -5,30 +5,50 @@
 
 void drawBattery(uint16_t voltage);
 
+#ifdef PC_BUILD
+  void mockupSB(void);
+#endif
 
 #if !defined(TESTSUITE_BUILD)
-  void refreshStatusBar(void);
 
 
+  bool_t timeChanged(void) {
+    char timeString[8];
+    getTimeString(timeString);
+    if(strcmp(timeString, oldTime)) {
+      strcpy(oldTime, timeString);
+      return true;
+    } else {
+      return false;                            //returns the strcmp(dateTimeString, oldTime) comparison
+    }
+  }
 
-  void showDateTime(void) {
+
+  bool_t showDateTime(void) {
+    if(timeChanged()) {                        //creates oldTime here
+      return false;
+    }
+    #if (DEBUG_INSTEAD_STATUS_BAR == 1)
+      return false;
+    #endif // (DEBUG_INSTEAD_STATUS_BAR == 1)
+
     if(!((SBARUPD_Date) || (SBARUPD_Time) || (SBARUPD_WoY))) {
-      return;
+      return false;
     }
     uint32_t x = X_DATE;
-    if(SBARUPD_Date) {
+    if(SBARUPD_Date || SBARUPD_WoY) {
       getDateString(dateTimeString);
+    }
+    if(SBARUPD_Date) {
       x = showString(dateTimeString, &standardFont, x, 0, vmNormal, true, true);
     }
     else {
       lcd_fill_rect(x, 0, X_TIME - x, 20, LCD_SET_VALUE);
       x = X_TIME;
     }
-
     if(SBARUPD_Time) {
       x = showGlyph(getSystemFlag(FLAG_TDM24) ? " " : STD_SPACE_3_PER_EM, &standardFont, x, 0, vmNormal, true, true, false); // is 0+0+8 pixel wide
-      getTimeString(dateTimeString);
-      x = showString(dateTimeString, &standardFont, x, 0, vmNormal, true, false);
+      x = showString(oldTime, &standardFont, x, 0, vmNormal, true, false);
       lcd_fill_rect(x, 0, X_REAL_COMPLEX - x, 20, LCD_SET_VALUE);
     }
     if(SBARUPD_WoY) {
@@ -37,46 +57,117 @@ void drawBattery(uint16_t voltage);
       x = showString(dateTimeString, &standardFont, x, 0, vmNormal, true, false);
       lcd_fill_rect(x, 0, X_REAL_COMPLEX - x, 20, LCD_SET_VALUE);
     }
+    if(Y_SHIFT == 0 && X_SHIFT < 200) {
+      showShiftState();
+    }
+    return true;
   }
 
+
+
+
+
+//   #define flagSBClear false
+//   #define SB_IGNORE  0
+//   #define SB_CLEAR   1
+//   #define SB_CHANGED 2
+//   uint8_t didFlagChange1(bool_t tmp, bool_t *old) {
+//     if(flagSBClear) {
+//       *old = tmp;
+//       return SB_CLEAR;
+//     }
+//     if(tmp != *old) {
+//       *old = !(*old);
+//       return SB_CHANGED;
+//     }
+//     *old = tmp;
+//     return SB_IGNORE;
+//   }
+// 
+// bool_t bFLAG_CPXRES        = false;
+// bool_t bFLAG_POLAR         = false;
+// bool_t bFLAG_GROW          = false;
+// bool_t bFLAG_ENDPMT        = false;
+// bool_t bFLAG_ERPN          = false;
+// bool_t bwatchIconEnabled   = false;
+// bool_t bserialIOIconEnabled= false;
+// bool_t bprinterIconEnabled = false;
+// bool_t bFLAG_USER          = false;
+
+  #define flagSBClear false    //future flag to to a once off clear
+  #define SB_IGNORE  0
+  #define SB_CLEAR   1
+  #define SB_CHANGED 2
+
+  uint16_t statusFlags = 0;
+  #define bFLAG_CPXRES         ((bool_t*)1)
+  #define bFLAG_POLAR          ((bool_t*)2)
+  #define bFLAG_GROW           ((bool_t*)3)
+  #define bFLAG_ENDPMT         ((bool_t*)4)
+  #define bFLAG_ERPN           ((bool_t*)5)
+  #define bwatchIconEnabled    ((bool_t*)6)
+  #define bserialIOIconEnabled ((bool_t*)7)
+  #define bprinterIconEnabled  ((bool_t*)8)
+  #define bFLAG_USER           ((bool_t*)9)
+
+  uint8_t didFlagChange1(bool_t tmp, bool_t *old) {
+    // Convert pointer to bit position (offset by 1)
+    uint8_t bitPos = (uint8_t)((uintptr_t)old - 1);
+    bool_t oldValue = (statusFlags >> bitPos) & 1;
+    if(flagSBClear) {
+      statusFlags = (statusFlags & ~(1 << bitPos)) | (tmp << bitPos);
+      return SB_CLEAR;
+    }
+    if(tmp != oldValue) {
+      statusFlags ^= (1 << bitPos);
+      return SB_CHANGED;
+    }
+    statusFlags = (statusFlags & ~(1 << bitPos)) | (tmp << bitPos);
+    return SB_IGNORE;
+  }
 
 
   void showRealComplexResult(void) {
     if(!(SBARUPD_ComplexResult)) return;
     int32_t x = X_REAL_COMPLEX;
-    if(getSystemFlag(FLAG_CPXRES)) {
-      x = showGlyph(STD_COMPLEX_C, &standardFont, x, 0, vmNormal, true, false, false); // Complex C is 0+8+3 pixel wide
+    switch(didFlagChange1(getSystemFlag(FLAG_CPXRES), bFLAG_CPXRES)) {
+      case SB_CHANGED: {
+        x = showGlyph(getSystemFlag(FLAG_CPXRES) ? STD_COMPLEX_C : STD_REAL_R, &standardFont, x, 0, vmNormal, true, false, false); // Complex C is 0+8+3 pixel wide
+        __attribute__((fallthrough));
+      }
+      case SB_CLEAR: {
+        lcd_fill_rect(x, 0, (SBARUPD_ComplexResult ? X_COMPLEX_MODE : X_COMPLEX_MODE + X_COMPLEX_MODE_ADJ) - x, 20, LCD_SET_VALUE);
+        break;
+      }
+      default:break;
     }
-    else {
-      x = showGlyph(STD_REAL_R,    &standardFont, x, 0, vmNormal, true, false, false); // Real R    is 0+8+3 pixel wide
-    }
-    lcd_fill_rect(x, 0, (SBARUPD_ComplexResult ? X_COMPLEX_MODE : X_COMPLEX_MODE + X_COMPLEX_MODE_ADJ) - x, 20, LCD_SET_VALUE);
   }
-
 
 
   void showComplexMode(void) {
     if(!(SBARUPD_ComplexMode)) return;
     int32_t x =  SBARUPD_ComplexResult ? X_COMPLEX_MODE : X_COMPLEX_MODE + X_COMPLEX_MODE_ADJ;
-
-    if(getSystemFlag(FLAG_POLAR)) { // polar mode
-     x = showGlyph(STD_SUN,           &standardFont, x, 0, vmNormal, true, true, false); // Sun         is 0+12+2 pixel wide
+    switch(didFlagChange1(getSystemFlag(FLAG_POLAR), bFLAG_POLAR)) {
+      case SB_CHANGED: {
+        x = showGlyph(getSystemFlag(FLAG_POLAR) ? STD_SUN : STD_RIGHT_ANGLE, &standardFont, x, 0, vmNormal, true, true, false); // Sun         is 0+12+2 pixel wide
+        __attribute__((fallthrough));
+      }
+      case SB_CLEAR: {
+        lcd_fill_rect(x, 0, X_ANGULAR_MODE - x, 20, LCD_SET_VALUE);
+        break;
+      }
+      default:break;
     }
-    else { // rectangular mode
-     x = showGlyph(STD_RIGHT_ANGLE,   &standardFont, x, 0, vmNormal, true, true, false); // Right angle is 0+12+2 pixel wide
-    }
-    lcd_fill_rect(x, 0, X_ANGULAR_MODE - x, 20, LCD_SET_VALUE);
   }
 
 
-
+//todo
   void showAngularMode(void) {
     if(!((SBARUPD_AngularModeBasic) | (SBARUPD_AngularMode))) return;
-
     uint32_t x = X_ANGULAR_MODE;
 
     if(SBARUPD_AngularModeBasic) {
-      x = showGlyph(STD_MEASURED_ANGLE, &standardFont, x, 0, vmNormal, true, true, false); // Angle is 0+9 pixel wide
+      x = showGlyph(STD_MEASURED_ANGLE,       &standardFont, x, 0, vmNormal, true, true, false); // Angle is 0+9 pixel wide
     }
 
     switch(currentAngularMode) {
@@ -113,7 +204,7 @@ void drawBattery(uint16_t voltage);
   }
 
 
-
+//todo
   void showFracMode(void) {
     if(!(SBARUPD_FractionModeAndBaseMode)) return;
     char statusMessage[20];
@@ -140,12 +231,12 @@ void drawBattery(uint16_t voltage);
         lcd_fill_rect(x, 0, 11, 20, LCD_SET_VALUE);
         raiseString = 3;
         strcpy(divStr,"a" STD_SPACE_4_PER_EM);
-        x = showString(divStr, &standardFont, x, 0, vmNormal, true, true)-3;
+        x = showString(divStr, &standardFont, x, 0, vmNormal, true, true) - 3;
       }
       lcd_fill_rect(x, 0, 7, 20, LCD_SET_VALUE);
       raiseString = 9;
       strcpy(divStr, STD_SUB_b);
-      x = showString(divStr, &standardFont, x, 0, vmNormal, true, true)-2;
+      x = showString(divStr, &standardFont, x, 0, vmNormal, true, true) - 2;
     }
 
     strcpy(divStr,"/");
@@ -200,17 +291,11 @@ void drawBattery(uint16_t voltage);
   }
 
 
-
+//todo shortIntegerWordSize << 2 + shortIntegerMode
   void showIntegerMode(void) {
     if(!(SBARUPD_IntegerMode)) return;
     char statusMessage[10];
-    if(shortIntegerWordSize <= 9) {
-      sprintf(statusMessage, " %" PRIu8 ":%c", shortIntegerWordSize, shortIntegerMode==SIM_1COMPL?'1':(shortIntegerMode==SIM_2COMPL?'2':(shortIntegerMode==SIM_UNSIGN?'u':(shortIntegerMode==SIM_SIGNMT?'s':'?'))));
-    }
-    else {
-      sprintf(statusMessage, "%" PRIu8 ":%c", shortIntegerWordSize, shortIntegerMode==SIM_1COMPL?'1':(shortIntegerMode==SIM_2COMPL?'2':(shortIntegerMode==SIM_UNSIGN?'u':(shortIntegerMode==SIM_SIGNMT?'s':'?'))));
-    }
-
+    sprintf(statusMessage, "%s%" PRIu8 ":%c", shortIntegerWordSize <= 9 ? " " : "", shortIntegerWordSize, shortIntegerMode==SIM_1COMPL?'1':(shortIntegerMode==SIM_2COMPL?'2':(shortIntegerMode==SIM_UNSIGN?'u':(shortIntegerMode==SIM_SIGNMT?'s':'?'))));
     int32_t x = showString(statusMessage, &standardFont, X_INTEGER_MODE, 0, vmNormal, true, true);
     lcd_fill_rect(x, 0, X_OVERFLOW_CARRY - x, 20, LCD_SET_VALUE);
   }
@@ -220,45 +305,49 @@ void drawBattery(uint16_t voltage);
   void showMatrixMode(void) {
     if(!(SBARUPD_MatrixMode)) return;
     char statusMessage[5];
-    if(getSystemFlag(FLAG_GROW)) {
-      sprintf(statusMessage, "grow");
+    int32_t x = X_MATRIX_MODE;
+    switch(didFlagChange1(getSystemFlag(FLAG_GROW), bFLAG_GROW)) {
+      case SB_CHANGED: {
+        sprintf(statusMessage, getSystemFlag(FLAG_GROW) ? "grow" : "wrap");
+        compressString = 1;
+        x = showString(statusMessage, &standardFont, x, 0, vmNormal, true, true);
+        __attribute__((fallthrough));
+      }
+      case SB_CLEAR: {
+        lcd_fill_rect(x, 0, X_OVERFLOW_CARRY - x, 20, LCD_SET_VALUE);
+        break;
+      }
+      default:break;
     }
-    else {
-      sprintf(statusMessage, "wrap");
-    }
-
-    compressString = 1;             //^JM
-    int32_t x = showString(statusMessage, &standardFont, X_INTEGER_MODE - 2, 0, vmNormal, true, true);
-    lcd_fill_rect(x, 0, X_OVERFLOW_CARRY - x, 20, LCD_SET_VALUE);
   }
 
 
 
   void showTvmMode(void) {
     if(!(SBARUPD_TVMMode)) return;
-    char statusMessage[5];
-    if(getSystemFlag(FLAG_ENDPMT)) {
-      sprintf(statusMessage, "END");
+    int32_t x = X_INTEGER_MODE;
+    switch(didFlagChange1(getSystemFlag(FLAG_ENDPMT), bFLAG_ENDPMT)) {
+      case SB_CHANGED: {
+        x = showString(getSystemFlag(FLAG_ENDPMT) ? "END" : "BEG", &standardFont, x, 0, vmNormal, true, true);
+        __attribute__((fallthrough));
+      }
+      case SB_CLEAR: {
+        lcd_fill_rect(x, 0, X_OVERFLOW_CARRY - x, 20, LCD_SET_VALUE);
+        break;
+      }
+      default:break;
     }
-    else {
-      sprintf(statusMessage, "BEG");
-    }
-
-    int32_t x = showString(statusMessage, &standardFont, X_INTEGER_MODE, 0, vmNormal, true, true);
-    lcd_fill_rect(x, 0, X_OVERFLOW_CARRY - x, 20, LCD_SET_VALUE);
   }
 
 
-
+//todo
   void showOverflowCarry(void) {
     if(!(SBARUPD_OCCarryMode)) return;
     int32_t x = showGlyph(STD_OVERFLOW_CARRY, &standardFont, X_OVERFLOW_CARRY, 0, vmNormal, true, false, false); // STD_OVERFLOW_CARRY is 0+6+3 pixel wide
     lcd_fill_rect(x, 0, X_ALPHA_MODE - x, 20, LCD_SET_VALUE);
-
     if(!getSystemFlag(FLAG_OVERFLOW)) { // Overflow flag is cleared
       lcd_fill_rect(X_OVERFLOW_CARRY, 2, 6, 7, LCD_SET_VALUE);
     }
-
     if(!getSystemFlag(FLAG_CARRY)) { // Carry flag is cleared
       lcd_fill_rect(X_OVERFLOW_CARRY, 12, 6, 7, LCD_SET_VALUE);
     }
@@ -266,6 +355,7 @@ void drawBattery(uint16_t voltage);
 
 
 
+//todo
   void showHideAlphaMode(void) {
     if(!(SBARUPD_AlphaMode) || calcMode == CM_GRAPH) return;
     int status=0;
@@ -349,7 +439,7 @@ void drawBattery(uint16_t voltage);
   }
 
 
-
+//todo
   void showHideHourGlass(void) {
     const int indicatorWidth = 13; //indicatorWidth
     if(!(SBARUPD_HourGlass)) {
@@ -412,6 +502,374 @@ void drawBattery(uint16_t voltage);
     //#endif //PC_BUILD
     lastProgramRunStop = tmpb;
   }
+
+//todo
+  void light_ASB_icon(void) {
+    if(!(SBARUPD_AlphaMode) || calcMode == CM_GRAPH) return;
+    lcd_fill_rect(X_ALPHA_MODE,18,9,2,LCD_EMPTY_VALUE);        //underline the alha mode character, AND show the asmBuffer as well
+    compressString = 1;
+    int32_t x = showString(asmBuffer, &standardFont, X_ASM, 0, vmNormal, true, false) + 1;
+    lcd_fill_rect(x, 0, X_SERIAL_IO - x, 18, LCD_SET_VALUE);
+    force_refresh(force);
+  }
+
+
+//todo
+  void kill_ASB_icon(void) {
+    if(!(SBARUPD_AlphaMode) || calcMode == CM_GRAPH) return;
+    lcd_fill_rect(X_ALPHA_MODE,18,9,2,LCD_SET_VALUE);        //underline the alha mode character, AND show the asmBuffer as well
+    lcd_fill_rect(X_ASM, 0, X_SERIAL_IO - X_ASM, 20, LCD_SET_VALUE);
+    force_refresh(force);
+  }
+
+
+//todo
+  static void showHideASB(void) {
+    if(!(SBARUPD_AlphaMode) || calcMode == CM_GRAPH) return;
+    if(fnTimerGetStatus(TO_ASM_ACTIVE) == TMR_RUNNING) {
+      light_ASB_icon();
+    }
+    else {
+      kill_ASB_icon();
+    }
+  }
+
+
+  void showStackSize(void) {
+    if(!(SBARUPD_StackSize)) return;
+    uint32_t x = X_SSIZE_BEGIN;
+    switch(didFlagChange1(getSystemFlag(FLAG_ERPN), bFLAG_ERPN)) {
+      case SB_CHANGED: {
+        // Standard stack size, inversed if RPN. Note it moved 5 pixels left in X_SSIZE_BEGIN
+        if(getSystemFlag(FLAG_ERPN)) {
+          x = showGlyph(STD_SPACE_6_PER_EM, &standardFont, x, 0, vmNormal, true, true, false); // is 0+6+2 pixel wide
+          x = showGlyph(getSystemFlag(FLAG_SSIZE8) ? STD_8 : STD_4, &standardFont, x, 0, vmNormal, true, true, false); // is 0+6+2 pixel wide
+        }
+        else {
+          x = showGlyph(STD_SPACE_6_PER_EM, &standardFont, x, 0, vmReverse, false, true, false); // is 0+6+2 pixel wide
+          x = showGlyph(getSystemFlag(FLAG_SSIZE8) ? STD_8 : STD_4, &standardFont, x, 0, vmReverse, false, true, false); // is 0+6+2 pixel wide
+        }
+        __attribute__((fallthrough));
+      }
+      case SB_CLEAR: {
+        lcd_fill_rect(x, 0, X_ASM - x, 20, LCD_SET_VALUE);
+        break;
+      }
+      default:break;
+    }
+  }
+
+
+
+  void showHideWatch(void) {
+    if(!(SBARUPD_StopWatch)) return;
+    int32_t x = X_STOPWATCH;
+    switch(didFlagChange1(watchIconEnabled, bwatchIconEnabled)) {
+      case SB_CHANGED: {
+        if(watchIconEnabled) {
+          x = showGlyph(STD_TIMER, &standardFont, x, 0, vmNormal, true, false, false); // is 0+13+1 pixel wide
+        }
+       __attribute__((fallthrough));
+      }
+      case SB_CLEAR: {
+        lcd_fill_rect(x, 0, X_SSIZE_BEGIN - x, 20, LCD_SET_VALUE);
+        break;
+      }
+      default:break;
+    }
+  }
+
+
+
+  void showHideSerialIO(void) {
+    if(!(SBARUPD_SerialIO)) return;
+    int32_t x = X_SERIAL_IO;
+    switch(didFlagChange1(serialIOIconEnabled, bserialIOIconEnabled)) {
+      case SB_CHANGED: {
+        if(serialIOIconEnabled) {
+          x = showGlyph(STD_SERIAL_IO, &standardFont, x, 0, vmNormal, true, false, false); // is 0+8+3 pixel wide
+        }
+        __attribute__((fallthrough));
+      }
+      case SB_CLEAR: {
+        lcd_fill_rect(x, 0, X_PRINTER - x, 20, LCD_SET_VALUE);
+        break;
+      }
+      default:break;
+    }
+  }
+
+
+
+  void showHidePrinter(void) {
+    if(!(SBARUPD_Printer)) return;
+    int32_t x = X_PRINTER;
+    switch(didFlagChange1(printerIconEnabled, bprinterIconEnabled)) {
+      case SB_CHANGED: {
+        if(printerIconEnabled) {
+          x = showGlyph(STD_PRINTER,   &standardFont, x, 0, vmNormal, true, false, false); // is 0+12+3 pixel wide
+        }
+        __attribute__((fallthrough));
+      }
+      case SB_CLEAR: {
+        lcd_fill_rect(x, 0, X_USER_MODE - x, 20, LCD_SET_VALUE);
+        break;
+      }
+      default:break;
+    }
+  }
+
+
+
+  void showHideUserMode(void) {
+    if(!(SBARUPD_UserMode)) return;
+    int32_t x = X_USER_MODE;
+    switch(didFlagChange1(getSystemFlag(FLAG_USER), bFLAG_USER)) {
+      case SB_CHANGED: {
+        if(getSystemFlag(FLAG_USER)) {
+          x = showGlyph(STD_USER_MODE, &standardFont, x, 0, vmNormal, false, false, false); // STD_USER_MODE is 0+12+2 pixel wide
+        }
+        __attribute__((fallthrough));
+      }
+      case SB_CLEAR: {
+        lcd_fill_rect(x, 0, X_BATTERY - x, 20, LCD_SET_VALUE);
+        refreshModeGui();
+        break;
+      }
+      default:break;
+    }
+  }
+
+
+
+void drawBattery(uint16_t voltage) {
+  lcd_fill_rect(X_BATTERY, 0, 11, 20, LCD_SET_VALUE);
+  uint16_t vv = (uint16_t)(min(max(voltage - 2000,0),3100) / (float)(((float)3100 - 2000.0f)/(float)(DY_BATTERY))); //draw a battery, full at 3.1V empty at 2V
+  for(uint16_t ii = min(vv-1,DY_BATTERY-1); ii <= DY_BATTERY-1; ii++) {
+    if(ii%2 == 0) { //draw outline
+      setBlackPixel(ii < DY_BATTERY-3 ?  X_BATTERY + 0 : X_BATTERY + 2                           ,(DY_BATTERY-1)-ii);
+      setBlackPixel(ii < DY_BATTERY-3 ?  X_BATTERY + DX_BATTERY + 0 : X_BATTERY + DX_BATTERY - 2 ,(DY_BATTERY-1)-ii);
+    }
+  }
+  for(uint16_t ii = 0; ii <= min(vv,DY_BATTERY-1); ii++) { //draw voltage
+    for(uint16_t jj = 0; jj <= DX_BATTERY; jj++) {
+      if(min(vv,DY_BATTERY)-ii > (voltage > 2750 ? 2 : 1) || (jj>1 && jj<DX_BATTERY-1)) {
+        setBlackPixel(X_BATTERY + jj, (DY_BATTERY-1)-ii);
+      }
+    }
+  }
+}
+
+
+//todo
+  #if defined(DMCP_BUILD)
+    void showHideUsbLowBattery(void) {
+      if(!(SBARUPD_Battery)) {
+        // Clear the space used by the USB / LOWBAT glyph
+        lcd_fill_rect(X_BATTERY, 0, 11, 20, LCD_SET_VALUE);
+        return;
+      }
+      if(getSystemFlag(FLAG_USB)) {
+        showGlyph(STD_USB_SYMBOL, &standardFont, X_BATTERY, 0, vmNormal, true, false, false); // is 0+9+2 pixel wide
+      }
+      else {
+        if(SBARUPD_BatVoltage) {
+          drawBattery(min(get_vbat(), vbatVIntegrated));
+        }
+        else if(getSystemFlag(FLAG_LOWBAT)) {
+          showGlyph(STD_BATTERY, &standardFont, X_BATTERY, 0, vmNormal, true, false, false); // is 0+10+1 pixel wide
+        }
+        else {
+          // Clear the space used by the USB / LOWBAT glyph
+          lcd_fill_rect(X_BATTERY, 0, 11, 20, LCD_SET_VALUE);
+        }
+      }
+    }
+  #endif // DMCP_BUILD
+
+
+#define FLAGSETS  (uint32_t)( (topHex    << (32- 1)) \
+                  + (scrLock             << (32- 2)) \
+                  + (calcMode            << (32- 7)) \
+                  + (fractionDigits      << (32-12)) \
+                  + (shortIntegerWordSize<< (32-14)) \
+                  + (alphaCase           << (32-16)) \
+                  + (programRunStop      << (32-18)) \
+                  + (watchIconEnabled    << (32-19)) \
+                  + (serialIOIconEnabled << (32-20)) \
+                  + (printerIconEnabled  << (32-21)) )
+
+uint32_t flagsSettingsOld  = 0;
+uint32_t flagsSettingsTest = 0;
+uint32_t systemFlags0Mem   = 0;
+uint32_t systemFlags1Mem   = 0;
+uint32_t denMaxMem         = 0;
+
+  void refreshStatusBar(void) {
+    if(screenUpdatingMode & SCRUPD_MANUAL_STATUSBAR) {
+      switch(calcMode) {
+        case CM_PEM:
+        case CM_REGISTER_BROWSER:
+        case CM_FLAG_BROWSER:
+        case CM_ASN_BROWSER:
+        case CM_FONT_BROWSER:
+        case CM_PLOT_STAT:
+        case CM_CONFIRMATION:
+        case CM_MIM:
+        case CM_TIMER:
+        case CM_GRAPH: {
+          screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
+          break;
+        }
+
+        default: {
+          return;
+        }
+      }
+    }
+
+//mockupSB();
+//return;
+
+    #if (DEBUG_INSTEAD_STATUS_BAR == 1)
+      char statusMessage[100];
+      sprintf(statusMessage, "%s%d %s/%s  mnu:%s fi:%d", catalog ? "asm:" : "", catalog, tam.mode ? "/tam" : "", getCalcModeName(calcMode),indexOfItems[-softmenu[softmenuStack[0].softmenuId].menuItem].itemCatalogName, softmenuStack[0].firstItem);
+      showString(statusMessage, &standardFont, X_DATE, 0, vmNormal, true, true);
+    #else // DEBUG_INSTEAD_STATUS_BAR != 1
+
+
+      //This sub-section returns, with no statusbar updates if none of the settings changed. 
+      //lastProgramRunStop = PGM_UNDEFINED is used as a flag to indicate the status bar was cleared; it was set in clearScreen() in screen.h
+      flagsSettingsTest = FLAGSETS;
+      if(!(systemFlags0 == systemFlags0Mem && systemFlags1 == systemFlags1Mem && denMax == denMaxMem && flagsSettingsOld == flagsSettingsTest)) {
+           flagsSettingsOld = flagsSettingsTest;
+           systemFlags0Mem  = systemFlags0;
+           systemFlags1Mem  = systemFlags1;
+           denMaxMem        = denMax;
+           if(lastProgramRunStop != PGM_UNDEFINED) { 
+             return;
+           }
+      }
+
+
+      if(GRAPHMODE) {
+        lcd_fill_rect(0, 0, 158, 20, LCD_SET_VALUE);
+      }
+      showDateTime();
+      if(Y_SHIFT==0 && X_SHIFT<200) {
+        showShiftState();
+      }
+      showHideHourGlass();
+      if(GRAPHMODE) {                      // With graph displayed, only update the time, as the other items are clashing with the graph display screen
+        return;
+      }
+      showRealComplexResult();
+      showComplexMode();
+      showAngularMode();
+      showFracMode();
+      if(calcMode == CM_MIM) {
+        showMatrixMode();
+      }
+      else if(softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_TVM || softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_FIN) {
+        showTvmMode();
+      }
+      else {
+        showIntegerMode();
+        showOverflowCarry();
+      }
+      showHideAlphaMode();
+      showStackSize();
+      showHideWatch();
+      showHideSerialIO();
+      showHidePrinter();
+      if(Y_SHIFT==0 && X_SHIFT >300) {
+        showShiftState();
+      }
+      showHideUserMode();
+      #if defined(DMCP_BUILD)
+        showHideUsbLowBattery();
+      #else // !DMCP_BUILD
+        showHideStackLift();
+      #endif // DMCP_BUILD
+      showHideASB();                            //JM
+
+    #endif // DEBUG_INSTEAD_STATUS_BAR == 1
+  }
+
+
+
+  #if !defined(DMCP_BUILD)
+    void showHideStackLift(void) {
+
+      #if defined(BATTERYTEST)
+        drawBattery(exponentLimit); //test battery indicator
+        return;                     //test battery indicator
+      #endif
+
+      if(getSystemFlag(FLAG_ASLIFT)) {
+        // Draw S
+        setBlackPixel(392,  1);
+        setBlackPixel(393,  1);
+        setBlackPixel(394,  1);
+        setBlackPixel(391,  2);
+        setBlackPixel(395,  2);
+        setBlackPixel(391,  3);
+        setBlackPixel(392,  4);
+        setBlackPixel(393,  4);
+        setBlackPixel(394,  4);
+        setBlackPixel(395,  5);
+        setBlackPixel(391,  6);
+        setBlackPixel(395,  6);
+        setBlackPixel(392,  7);
+        setBlackPixel(393,  7);
+        setBlackPixel(394,  7);
+
+        // Draw L
+        setBlackPixel(391, 10);
+        setBlackPixel(391, 11);
+        setBlackPixel(391, 12);
+        setBlackPixel(391, 13);
+        setBlackPixel(391, 14);
+        setBlackPixel(391, 15);
+        setBlackPixel(391, 16);
+        setBlackPixel(392, 16);
+        setBlackPixel(393, 16);
+        setBlackPixel(394, 16);
+        setBlackPixel(395, 16);
+      }
+      else {
+        // Erase S
+        setWhitePixel(392,  1);
+        setWhitePixel(393,  1);
+        setWhitePixel(394,  1);
+        setWhitePixel(391,  2);
+        setWhitePixel(395,  2);
+        setWhitePixel(391,  3);
+        setWhitePixel(392,  4);
+        setWhitePixel(393,  4);
+        setWhitePixel(394,  4);
+        setWhitePixel(395,  5);
+        setWhitePixel(391,  6);
+        setWhitePixel(395,  6);
+        setWhitePixel(392,  7);
+        setWhitePixel(393,  7);
+        setWhitePixel(394,  7);
+
+        // Erase L
+        setWhitePixel(391, 10);
+        setWhitePixel(391, 11);
+        setWhitePixel(391, 12);
+        setWhitePixel(391, 13);
+        setWhitePixel(391, 14);
+        setWhitePixel(391, 15);
+        setWhitePixel(391, 16);
+        setWhitePixel(392, 16);
+        setWhitePixel(393, 16);
+        setWhitePixel(394, 16);
+        setWhitePixel(395, 16);
+      }
+    }
+  #endif // !DMCP_BUILD
 
 
 #ifdef PC_BUILD
@@ -563,293 +1021,4 @@ void drawBattery(uint16_t voltage);
   }
 #endif //PC_BUILD
 
-  void light_ASB_icon(void) {
-    if(!(SBARUPD_AlphaMode) || calcMode == CM_GRAPH) return;
-    lcd_fill_rect(X_ALPHA_MODE,18,9,2,LCD_EMPTY_VALUE);        //underline the alha mode character, AND show the asmBuffer as well
-    compressString = 1;
-    int32_t x = showString(asmBuffer, &standardFont, X_ASM, 0, vmNormal, true, false) + 1;
-    lcd_fill_rect(x, 0, X_SERIAL_IO - x, 18, LCD_SET_VALUE);
-    force_refresh(force);
-  }
-
-
-  void kill_ASB_icon(void) {
-    if(!(SBARUPD_AlphaMode) || calcMode == CM_GRAPH) return;
-    lcd_fill_rect(X_ALPHA_MODE,18,9,2,LCD_SET_VALUE);        //underline the alha mode character, AND show the asmBuffer as well
-    lcd_fill_rect(X_ASM, 0, X_SERIAL_IO - X_ASM, 20, LCD_SET_VALUE);
-    force_refresh(force);
-  }
-
-
-  void showStackSize(void) {
-    if(!(SBARUPD_StackSize)) return;
-    uint32_t x = X_SSIZE_BEGIN;
-
-    // Standard stack size, inversed if RPN. Note it moved 5 pixels left in X_SSIZE_BEGIN
-    if(getSystemFlag(FLAG_ERPN)) {
-      x = showGlyph(STD_SPACE_6_PER_EM, &standardFont, x, 0, vmNormal, true, true, false); // is 0+6+2 pixel wide
-      x = showGlyph(getSystemFlag(FLAG_SSIZE8) ? STD_8 : STD_4, &standardFont, x, 0, vmNormal, true, true, false); // is 0+6+2 pixel wide
-    }
-    else {
-      x = showGlyph(STD_SPACE_6_PER_EM, &standardFont, x, 0, vmReverse, false, true, false); // is 0+6+2 pixel wide
-      x = showGlyph(getSystemFlag(FLAG_SSIZE8) ? STD_8 : STD_4, &standardFont, x, 0, vmReverse, false, true, false); // is 0+6+2 pixel wide
-    }
-    lcd_fill_rect(x, 0, X_ASM - x, 20, LCD_SET_VALUE);
-
-// Standard stack size only
-//    showGlyph(getSystemFlag(FLAG_SSIZE8) ? STD_8 : STD_4, &standardFont, X_SSIZE_BEGIN, 0, vmNormal, true, false, false); // is 0+6+2 pixel wide
-
-// eRPN above, with the stack siza underneath it
-//    showGlyph(getSystemFlag(FLAG_ERPN)   ? STD_SUP_e : STD_SUP_BOLD_r, &standardFont, X_SSIZE_BEGIN, -2, vmNormal, true, false, false); // is 0+6+2 pixel wide
-//    showGlyph(getSystemFlag(FLAG_SSIZE8) ? STD_SUB_8 : STD_SUB_4, &standardFont, X_SSIZE_BEGIN, -2, vmNormal, true, false, true); // is 0+6+2 pixel wide
-  }
-
-
-  void showHideWatch(void) {
-    if(!(SBARUPD_StopWatch)) return;
-    int32_t x = X_STOPWATCH;
-    if(watchIconEnabled) {
-      x = showGlyph(STD_TIMER, &standardFont, x, 0, vmNormal, true, false, false); // is 0+13+1 pixel wide
-    }
-    lcd_fill_rect(x, 0, X_SSIZE_BEGIN - x, 20, LCD_SET_VALUE);
-  }
-
-
-
-  void showHideSerialIO(void) {
-    if(!(SBARUPD_SerialIO)) return;
-    int32_t x = X_SERIAL_IO;
-    if(serialIOIconEnabled) {
-      x = showGlyph(STD_SERIAL_IO, &standardFont, x, 0, vmNormal, true, false, false); // is 0+8+3 pixel wide
-    }
-    lcd_fill_rect(x, 0, X_PRINTER - x, 20, LCD_SET_VALUE);
-  }
-
-
-
-  void showHidePrinter(void) {
-    if(!(SBARUPD_Printer)) return;
-    int32_t x = X_PRINTER;
-    if(printerIconEnabled) {
-      x = showGlyph(STD_PRINTER,   &standardFont, x, 0, vmNormal, true, false, false); // is 0+12+3 pixel wide
-    }
-    lcd_fill_rect(x, 0, X_USER_MODE - x, 20, LCD_SET_VALUE);
-  }
-
-
-
-
-void showHideASB(void) {                     //JMvv
-  if(!(SBARUPD_AlphaMode) || calcMode == CM_GRAPH) return;
-  if(fnTimerGetStatus(TO_ASM_ACTIVE) == TMR_RUNNING) {
-    light_ASB_icon();
-  }
-  else {
-    kill_ASB_icon();
-  }
-}                                             //JM^^
-
-
-
-
-void showHideUserMode(void) {
-  if(!(SBARUPD_UserMode)) return;
-  int32_t x = X_USER_MODE;
-  if(getSystemFlag(FLAG_USER)) {
-    x = showGlyph(STD_USER_MODE, &standardFont, x, 0, vmNormal, false, false, false); // STD_USER_MODE is 0+12+2 pixel wide
-  }
-  lcd_fill_rect(x, 0, X_BATTERY - x, 20, LCD_SET_VALUE);
-  refreshModeGui(); //JM refreshModeGui
-}
-
-
-void drawBattery(uint16_t voltage) {
-  lcd_fill_rect(X_BATTERY, 0, 11, 20, LCD_SET_VALUE);
-  uint16_t vv = (uint16_t)(min(max(voltage - 2000,0),3100) / (float)(((float)3100 - 2000.0f)/(float)(DY_BATTERY))); //draw a battery, full at 3.1V empty at 2V
-  for(uint16_t ii = min(vv-1,DY_BATTERY-1); ii <= DY_BATTERY-1; ii++) {
-    if(ii%2 == 0) { //draw outline
-      setBlackPixel(ii < DY_BATTERY-3 ?  X_BATTERY + 0 : X_BATTERY + 2                           ,(DY_BATTERY-1)-ii);
-      setBlackPixel(ii < DY_BATTERY-3 ?  X_BATTERY + DX_BATTERY + 0 : X_BATTERY + DX_BATTERY - 2 ,(DY_BATTERY-1)-ii);
-    }
-  }
-  for(uint16_t ii = 0; ii <= min(vv,DY_BATTERY-1); ii++) { //draw voltage
-    for(uint16_t jj = 0; jj <= DX_BATTERY; jj++) {
-      if(min(vv,DY_BATTERY)-ii > (voltage > 2750 ? 2 : 1) || (jj>1 && jj<DX_BATTERY-1)) {
-        setBlackPixel(X_BATTERY + jj, (DY_BATTERY-1)-ii);
-      }
-    }
-  }
-}
-
-
-  #if defined(DMCP_BUILD)
-    void showHideUsbLowBattery(void) {
-      if(!(SBARUPD_Battery)) {
-        // Clear the space used by the USB / LOWBAT glyph
-        lcd_fill_rect(X_BATTERY, 0, 11, 20, LCD_SET_VALUE);
-        return;
-      }
-      if(getSystemFlag(FLAG_USB)) {
-        showGlyph(STD_USB_SYMBOL, &standardFont, X_BATTERY, 0, vmNormal, true, false, false); // is 0+9+2 pixel wide
-      }
-      else {
-        if(SBARUPD_BatVoltage) {
-          drawBattery(min(get_vbat(), vbatVIntegrated));
-        }
-        else if(getSystemFlag(FLAG_LOWBAT)) {
-          showGlyph(STD_BATTERY, &standardFont, X_BATTERY, 0, vmNormal, true, false, false); // is 0+10+1 pixel wide
-        }
-        else {
-          // Clear the space used by the USB / LOWBAT glyph
-          lcd_fill_rect(X_BATTERY, 0, 11, 20, LCD_SET_VALUE);
-        }
-      }
-    }
-  #endif // DMCP_BUILD
-
-
-  void refreshStatusBar(void) {
-    if(screenUpdatingMode & SCRUPD_MANUAL_STATUSBAR) {
-      switch(calcMode) {
-        case CM_PEM:
-        case CM_REGISTER_BROWSER:
-        case CM_FLAG_BROWSER:
-        case CM_ASN_BROWSER:
-        case CM_FONT_BROWSER:
-        case CM_PLOT_STAT:
-        case CM_CONFIRMATION:
-        case CM_MIM:
-        case CM_TIMER:
-        case CM_GRAPH: {
-          screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
-          break;
-        }
-
-        default: {
-          return;
-        }
-      }
-    }
-
-//mockupSB();
-//return;
-
-    #if (DEBUG_INSTEAD_STATUS_BAR == 1)
-      char statusMessage[100];
-      sprintf(statusMessage, "%s%d %s/%s  mnu:%s fi:%d", catalog ? "asm:" : "", catalog, tam.mode ? "/tam" : "", getCalcModeName(calcMode),indexOfItems[-softmenu[softmenuStack[0].softmenuId].menuItem].itemCatalogName, softmenuStack[0].firstItem);
-      showString(statusMessage, &standardFont, X_DATE, 0, vmNormal, true, true);
-    #else // DEBUG_INSTEAD_STATUS_BAR != 1
-      if(GRAPHMODE) lcd_fill_rect(0, 0, 158, 20, 0);
-      showDateTime();
-      if(Y_SHIFT==0 && X_SHIFT<200) showShiftState();
-      showHideHourGlass(); //Moved down here. Check if this belongs here and why JM
-      if(GRAPHMODE) {
-        return;    // With graph displayed, only update the time, as the other items are clashing with the graph display screen
-      }
-      showRealComplexResult();
-      showComplexMode();
-      showAngularMode();
-      showFracMode();
-      if(calcMode == CM_MIM) {
-        showMatrixMode();
-      }
-      else if(softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_TVM || softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_FIN) { //JM added FIN
-        showTvmMode();
-      }
-      else {
-        showIntegerMode();
-        showOverflowCarry();
-      }
-      showHideAlphaMode();
-//      showHideHourGlass();    Temporary removed hear as it is duplicated a few lines up. Not sure if this is meant to be duplicated due to screen overwriting. To test over time.
-      showStackSize();
-      showHideWatch();
-      showHideSerialIO();
-      showHidePrinter();
-      if(Y_SHIFT==0 && X_SHIFT >300) showShiftState();
-      showHideUserMode();
-      #if defined(DMCP_BUILD)
-        showHideUsbLowBattery();
-      #else // !DMCP_BUILD
-        showHideStackLift();
-      #endif // DMCP_BUILD
-      showHideASB();                            //JM
-
-    #endif // DEBUG_INSTEAD_STATUS_BAR == 1
-  }
-
-
-
-  #if !defined(DMCP_BUILD)
-    void showHideStackLift(void) {
-
-      #if defined(BATTERYTEST)
-        drawBattery(exponentLimit); //test battery indicator
-        return;                     //test battery indicator
-      #endif
-
-      if(getSystemFlag(FLAG_ASLIFT)) {
-        // Draw S
-        setBlackPixel(392,  1);
-        setBlackPixel(393,  1);
-        setBlackPixel(394,  1);
-        setBlackPixel(391,  2);
-        setBlackPixel(395,  2);
-        setBlackPixel(391,  3);
-        setBlackPixel(392,  4);
-        setBlackPixel(393,  4);
-        setBlackPixel(394,  4);
-        setBlackPixel(395,  5);
-        setBlackPixel(391,  6);
-        setBlackPixel(395,  6);
-        setBlackPixel(392,  7);
-        setBlackPixel(393,  7);
-        setBlackPixel(394,  7);
-
-        // Draw L
-        setBlackPixel(391, 10);
-        setBlackPixel(391, 11);
-        setBlackPixel(391, 12);
-        setBlackPixel(391, 13);
-        setBlackPixel(391, 14);
-        setBlackPixel(391, 15);
-        setBlackPixel(391, 16);
-        setBlackPixel(392, 16);
-        setBlackPixel(393, 16);
-        setBlackPixel(394, 16);
-        setBlackPixel(395, 16);
-      }
-      else {
-        // Erase S
-        setWhitePixel(392,  1);
-        setWhitePixel(393,  1);
-        setWhitePixel(394,  1);
-        setWhitePixel(391,  2);
-        setWhitePixel(395,  2);
-        setWhitePixel(391,  3);
-        setWhitePixel(392,  4);
-        setWhitePixel(393,  4);
-        setWhitePixel(394,  4);
-        setWhitePixel(395,  5);
-        setWhitePixel(391,  6);
-        setWhitePixel(395,  6);
-        setWhitePixel(392,  7);
-        setWhitePixel(393,  7);
-        setWhitePixel(394,  7);
-
-        // Erase L
-        setWhitePixel(391, 10);
-        setWhitePixel(391, 11);
-        setWhitePixel(391, 12);
-        setWhitePixel(391, 13);
-        setWhitePixel(391, 14);
-        setWhitePixel(391, 15);
-        setWhitePixel(391, 16);
-        setWhitePixel(392, 16);
-        setWhitePixel(393, 16);
-        setWhitePixel(394, 16);
-        setWhitePixel(395, 16);
-      }
-    }
-  #endif // !DMCP_BUILD
 #endif // !TESTSUITE_BUILD
