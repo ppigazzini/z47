@@ -15,27 +15,27 @@ void drawBattery(uint16_t voltage);
     if(!((SBARUPD_Date) || (SBARUPD_Time) || (SBARUPD_WoY))) {
       return;
     }
-    lcd_fill_rect(0, 0, X_REAL_COMPLEX, 20, LCD_SET_VALUE);
-
     uint32_t x = X_DATE;
     if(SBARUPD_Date) {
       getDateString(dateTimeString);
       x = showString(dateTimeString, &standardFont, x, 0, vmNormal, true, true);
     }
     else {
+      lcd_fill_rect(x, 0, X_TIME - x, 20, LCD_SET_VALUE);
       x = X_TIME;
     }
 
     if(SBARUPD_Time) {
       x = showGlyph(getSystemFlag(FLAG_TDM24) ? " " : STD_SPACE_3_PER_EM, &standardFont, x, 0, vmNormal, true, true, false); // is 0+0+8 pixel wide
       getTimeString(dateTimeString);
-      showString(dateTimeString, &standardFont, x, 0, vmNormal, true, false);
+      x = showString(dateTimeString, &standardFont, x, 0, vmNormal, true, false);
+      lcd_fill_rect(x, 0, X_REAL_COMPLEX - x, 20, LCD_SET_VALUE);
     }
-
     if(SBARUPD_WoY) {
       x = showGlyph(STD_SPACE_3_PER_EM, &standardFont, x, 0, vmNormal, true, true, false);
       getWeekOfYearString(dateTimeString);
-      showString(dateTimeString, &standardFont, x, 0, vmNormal, true, false);
+      x = showString(dateTimeString, &standardFont, x, 0, vmNormal, true, false);
+      lcd_fill_rect(x, 0, X_REAL_COMPLEX - x, 20, LCD_SET_VALUE);
     }
   }
 
@@ -43,26 +43,29 @@ void drawBattery(uint16_t voltage);
 
   void showRealComplexResult(void) {
     if(!(SBARUPD_ComplexResult)) return;
+    int32_t x = X_REAL_COMPLEX;
     if(getSystemFlag(FLAG_CPXRES)) {
-      showGlyph(STD_COMPLEX_C, &standardFont, X_REAL_COMPLEX, 0, vmNormal, true, false, false); // Complex C is 0+8+3 pixel wide
+      x = showGlyph(STD_COMPLEX_C, &standardFont, x, 0, vmNormal, true, false, false); // Complex C is 0+8+3 pixel wide
     }
     else {
-      showGlyph(STD_REAL_R,    &standardFont, X_REAL_COMPLEX, 0, vmNormal, true, false, false); // Real R    is 0+8+3 pixel wide
+      x = showGlyph(STD_REAL_R,    &standardFont, x, 0, vmNormal, true, false, false); // Real R    is 0+8+3 pixel wide
     }
+    lcd_fill_rect(x, 0, (SBARUPD_ComplexResult ? X_COMPLEX_MODE : X_COMPLEX_MODE + X_COMPLEX_MODE_ADJ) - x, 20, LCD_SET_VALUE);
   }
 
 
 
   void showComplexMode(void) {
     if(!(SBARUPD_ComplexMode)) return;
-    uint32_t X_COMPLEX_MODE1 =  SBARUPD_ComplexResult ? X_COMPLEX_MODE : X_COMPLEX_MODE + X_COMPLEX_MODE_ADJ;
+    int32_t x =  SBARUPD_ComplexResult ? X_COMPLEX_MODE : X_COMPLEX_MODE + X_COMPLEX_MODE_ADJ;
 
     if(getSystemFlag(FLAG_POLAR)) { // polar mode
-     showGlyph(STD_SUN,           &standardFont, X_COMPLEX_MODE1, 0, vmNormal, true, true, false); // Sun         is 0+12+2 pixel wide
+     x = showGlyph(STD_SUN,           &standardFont, x, 0, vmNormal, true, true, false); // Sun         is 0+12+2 pixel wide
     }
     else { // rectangular mode
-     showGlyph(STD_RIGHT_ANGLE,   &standardFont, X_COMPLEX_MODE1, 0, vmNormal, true, true, false); // Right angle is 0+12+2 pixel wide
+     x = showGlyph(STD_RIGHT_ANGLE,   &standardFont, x, 0, vmNormal, true, true, false); // Right angle is 0+12+2 pixel wide
     }
+    lcd_fill_rect(x, 0, X_ANGULAR_MODE - x, 20, LCD_SET_VALUE);
   }
 
 
@@ -78,93 +81,63 @@ void drawBattery(uint16_t voltage);
 
     switch(currentAngularMode) {
       case amRadian: {
-        showGlyph(STD_SUP_BOLD_r,              &standardFont, x, 0, vmNormal, true, false, false); // r  is 0+6 pixel wide
+        x = showGlyph(STD_SUP_BOLD_r,         &standardFont, x, 0, vmNormal, true, false, false); // r  is 0+6 pixel wide
         break;
       }
 
       case amMultPi: {
-        showGlyph(STD_SUP_pir,            &standardFont, x, 0, vmNormal, true, false, false); // pi is 0+9 pixel wide
+        x = showGlyph(STD_SUP_pir,            &standardFont, x, 0, vmNormal, true, false, false); // pi is 0+9 pixel wide
         break;
       }
 
       case amGrad: {
-        showGlyph(STD_SUP_BOLD_g,              &standardFont, x, 0, vmNormal, true, false, false); // g  is 0+6 pixel wide
+        x = showGlyph(STD_SUP_BOLD_g,         &standardFont, x, 0, vmNormal, true, false, false); // g  is 0+6 pixel wide
         break;
       }
 
       case amDegree: {
-        showGlyph(STD_DEGREE,             &standardFont, x, 0, vmNormal, true, false, false); // °  is 0+6 pixel wide
+        x = showGlyph(STD_DEGREE,             &standardFont, x, 0, vmNormal, true, false, false); // °  is 0+6 pixel wide
         break;
       }
 
       case amDMS: {
-        showGlyph(STD_RIGHT_DOUBLE_QUOTE, &standardFont, x, 0, vmNormal, true, false, false); // "  is 0+6 pixel wide
+        x = showGlyph(STD_RIGHT_DOUBLE_QUOTE, &standardFont, x, 0, vmNormal, true, false, false); // "  is 0+6 pixel wide
         break;
       }
 
       default: {
-        showGlyph(STD_QUESTION_MARK,      &standardFont, x, 0, vmNormal, true, false, false); // ?
+        x = showGlyph(STD_QUESTION_MARK,      &standardFont, x, 0, vmNormal, true, false, false); // ?
       }
     }
+    lcd_fill_rect(x, 0, X_FRAC_MODE - x, 20, LCD_SET_VALUE);
   }
-
-
-
-     void conv(char * str20, char * str40) {
-      str40[0]=0;
-      int16_t x = 0;
-      int16_t y = 0;
-      while(str20[x]!=0) {
-        if(str20[x]>='A' && str20[x]<='Z') {
-          str40[y++] = 0xa4;
-          str40[y++] = str20[x++] + 0x8F;
-          str40[y] = 0;
-        }
-        else if(str20[x]>='0' && str20[x]<='9') {
-          str40[y++] = 0xa0;
-          str40[y++] = str20[x++] + 0x50;
-          str40[y] = 0;
-        }
-        else {
-          str40[y++] = str20[x++];
-          str40[y] = 0;
-        }
-      }
-    }                                                  //JM ^^ KEYS
 
 
 
   void showFracMode(void) {
     if(!(SBARUPD_FractionModeAndBaseMode)) return;
     char statusMessage[20];
-    char str20[20];                                   //JM vv KEYS
-    char str40[40];
 
-    showString(STD_SPACE_EM STD_SPACE_EM STD_SPACE_EM STD_SPACE_EM STD_SPACE_EM, &standardFont, X_INTEGER_MODE-12*5, 0, vmNormal, true, true); // STD_SPACE_EM is 0+0+12 pixel wide
+    uint32_t x = X_FRAC_MODE;
 
-    uint32_t x = 0;
-
-    if(lastIntegerBase != 0) {                               //JMvv HEXKEYS
-      str20[0]=0;
+    if(lastIntegerBase != 0) {
       if(topHex) {
-        x = showString("#KEY", &standardFont, X_FRAC_MODE, 0 , vmNormal, true, true);//-4 looks good
-        strcpy(str20,"A"); conv(str20, str40);
-        x = showString(str40,  &standardFont, x, -4 , vmNormal, true, true);         //-4 looks good
-        x = showString("-",    &standardFont, x,  2 , vmNormal, true, true);         //-4 looks good
-        strcpy(str20,"F"); conv(str20, str40);
-        x = showString(str40,  &standardFont, x, -4 , vmNormal, true, true);         //-4 looks good
+        x = showString("#KEY", &standardFont, x, 0 , vmNormal, true, true);
+        lcd_fill_rect(x, 0, 26, 20, LCD_SET_VALUE);
+        x = showString(STD_SUB_A STD_SUB_MINUS STD_SUB_F,  &standardFont, x, -4 , vmNormal, true, true);
       }
       else {
-        x = showString("#BASE", &standardFont, X_FRAC_MODE, 0, vmNormal, true, true); //-4 looks good
+        x = showString("#BASE", &standardFont, x, 0, vmNormal, true, true);
       }
+      lcd_fill_rect(x, 0, X_INTEGER_MODE - x, 20, LCD_SET_VALUE);
       return;
-    }                                                                                //JM^^
+    }
 
     //a b/c
-    x = X_FRAC_MODE;                    //vJM
     char divStr[10];
     if(getSystemFlag(FLAG_FRACT) || getSystemFlag(FLAG_IRFRAC)) {
       if(getSystemFlag(FLAG_PROPFR)) {
+        lcd_fill_rect(x, 0, 11, 20, LCD_SET_VALUE);
         raiseString = 3;
         strcpy(divStr,"a" STD_SPACE_4_PER_EM);
         x = showString(divStr, &standardFont, x, 0, vmNormal, true, true)-3;
@@ -176,41 +149,52 @@ void drawBattery(uint16_t voltage);
 
     strcpy(divStr,"/");
     compressString = 1;
+    x = showString(divStr, &standardFont, x, 0, vmNormal, false, true);
+
+    compressString = 1;
     if(denMax == 0 || denMax > MAX_DENMAX) {
-      sprintf(statusMessage,"%smax",divStr);
+      sprintf(statusMessage,"max");
     } else {
-      sprintf(statusMessage, "%s%" PRIu32, divStr,denMax);
+      sprintf(statusMessage, "%" PRIu32,denMax);
     }
-    x = showString(statusMessage, &standardFont, x, 0, vmNormal, true, true);
+    x = showString(statusMessage, &standardFont, x, 0, vmNormal, false, true);
 
     if(!getSystemFlag(FLAG_IRFRAC) && getSystemFlag(FLAG_DENFIX)) {
       x = showGlyphCode('f',  &standardFont, x, 0, vmNormal, true, false, false); // f is 0+7+3 pixel wide
     }
 
     strcpy(divStr,PRODUCT_SIGN);
+    lcd_fill_rect(++x, 0, 11, 20, LCD_SET_VALUE);
     raiseString = 2;
-    x = showString(divStr, &standardFont, x+1, 0, vmNormal, true, true);
+    x = showString(divStr, &standardFont, x, 0, vmNormal, true, true) + (getSystemFlag(FLAG_MULTx) ? 0 : 2);
 
     if(getSystemFlag(FLAG_IRFRAC)) {
-
-//TO USE REAL II FONT HERE. spacing issue in font, to fix, keeping the old manual way
-//strcpy(divStr,STD_IRRATIONAL_I);
-//x = showString(divStr, &standardFont, x, -2, vmNormal, true, true);
-
-      strcpy(divStr,"I");
+      strcpy(divStr,STD_IRRATIONAL_I);
+      lcd_fill_rect(--x, 0, 9, 20, LCD_SET_VALUE);
       raiseString = 1;
-      showString(divStr, &standardFont, x, 0, vmNormal, true, true);
-      raiseString = 1;
-      x = showString(divStr, &standardFont, x+1, 0, vmNormal, true, true);
-      x -= 5;
-      for(uint16_t yy = 4; yy<=11; yy++) {
-        setWhitePixel(x, yy);
-      }
+      x = showString(divStr, &standardFont, x, 0, vmNormal, false, false) + 2;
+
+      //TO USE REAL II FONT ABOVE. Previous spacing issue in font, fixed, keeping the old manual way for reference if needed
+      //   strcpy(divStr,"I");
+      //   raiseString = 1;
+      //   showString(divStr, &standardFont, x, 0, vmNormal, true, true);
+      //   raiseString = 1;
+      //   x = showString(divStr, &standardFont, x+1, 0, vmNormal, true, true);
+      //   for(uint16_t yy = 4; yy<=11; yy++) {
+      //     setWhitePixel(x - 5, yy);
+      //   }
     }
 
     if(fractionDigits > 0 && fractionDigits < 34) {
       compressString = 1;
-      x = showString(STD_ALMOST_EQUAL, &standardFont, x + 2, 0, vmNormal, true, false);
+      x = showString(STD_ALMOST_EQUAL, &standardFont, x - 1, 0, vmNormal, true, false);
+      if(x >= X_INTEGER_MODE - 1) {
+        lcd_fill_rect(X_INTEGER_MODE - 1, 0, 1, 20, LCD_SET_VALUE);        
+      }
+    }
+
+    if(x <= X_INTEGER_MODE) {
+      lcd_fill_rect(x, 0, X_INTEGER_MODE - x, 20, LCD_SET_VALUE);
     }
   }
 
@@ -226,7 +210,8 @@ void drawBattery(uint16_t voltage);
       sprintf(statusMessage, "%" PRIu8 ":%c", shortIntegerWordSize, shortIntegerMode==SIM_1COMPL?'1':(shortIntegerMode==SIM_2COMPL?'2':(shortIntegerMode==SIM_UNSIGN?'u':(shortIntegerMode==SIM_SIGNMT?'s':'?'))));
     }
 
-    showString(statusMessage, &standardFont, X_INTEGER_MODE, 0, vmNormal, true, true);
+    int32_t x = showString(statusMessage, &standardFont, X_INTEGER_MODE, 0, vmNormal, true, true);
+    lcd_fill_rect(x, 0, X_OVERFLOW_CARRY - x, 20, LCD_SET_VALUE);
   }
 
 
@@ -242,7 +227,8 @@ void drawBattery(uint16_t voltage);
     }
 
     compressString = 1;             //^JM
-    showString(statusMessage, &standardFont, X_INTEGER_MODE - 2, 0, vmNormal, true, true);
+    int32_t x = showString(statusMessage, &standardFont, X_INTEGER_MODE - 2, 0, vmNormal, true, true);
+    lcd_fill_rect(x, 0, X_OVERFLOW_CARRY - x, 20, LCD_SET_VALUE);
   }
 
 
@@ -257,14 +243,16 @@ void drawBattery(uint16_t voltage);
       sprintf(statusMessage, "BEG");
     }
 
-    showString(statusMessage, &standardFont, X_INTEGER_MODE, 0, vmNormal, true, true);
+    int32_t x = showString(statusMessage, &standardFont, X_INTEGER_MODE, 0, vmNormal, true, true);
+    lcd_fill_rect(x, 0, X_OVERFLOW_CARRY - x, 20, LCD_SET_VALUE);
   }
 
 
 
   void showOverflowCarry(void) {
     if(!(SBARUPD_OCCarryMode)) return;
-    showGlyph(STD_OVERFLOW_CARRY, &standardFont, X_OVERFLOW_CARRY, 0, vmNormal, true, false, false); // STD_OVERFLOW_CARRY is 0+6+3 pixel wide
+    int32_t x = showGlyph(STD_OVERFLOW_CARRY, &standardFont, X_OVERFLOW_CARRY, 0, vmNormal, true, false, false); // STD_OVERFLOW_CARRY is 0+6+3 pixel wide
+    lcd_fill_rect(x, 0, X_ALPHA_MODE - x, 20, LCD_SET_VALUE);
 
     if(!getSystemFlag(FLAG_OVERFLOW)) { // Overflow flag is cleared
       lcd_fill_rect(X_OVERFLOW_CARRY, 2, 6, 7, LCD_SET_VALUE);
@@ -323,39 +311,40 @@ void drawBattery(uint16_t voltage);
                 }
     }
 
+    int32_t x = X_ALPHA_MODE;
     if((SBARUPD_AlphaMode)) {
-      lcd_fill_rect(X_ALPHA_MODE,0,11,18,0);
       switch(status) {
-        case  1: showString(STD_SUB_N, &standardFont, X_ALPHA_MODE, -2, vmNormal, true, false); break; //sub    // STD_ALPHA is 0+9+2 pixel wide
-        case  2: showString(STD_SUB_N, &standardFont, X_ALPHA_MODE,-11, vmNormal, true, false); break; //sup
-        case  3: showString(STD_num,   &standardFont, X_ALPHA_MODE,  0, vmNormal, true, false); break; //normal
+        case  1: x = showString(STD_SUB_N, &standardFont, x, -2, vmNormal, true, false); break; //sub    // STD_ALPHA is 0+9+2 pixel wide
+        case  2: x = showString(STD_SUB_N, &standardFont, x,-11, vmNormal, true, false); break; //sup
+        case  3: x = showString(STD_num,   &standardFont, x,  0, vmNormal, true, false); break; //normal
 
-        case  4: showString(STD_SUB_n, &standardFont, X_ALPHA_MODE, -2, vmNormal, true, false); break; //sub
-        case  5: showString(STD_SUB_n, &standardFont, X_ALPHA_MODE,-11, vmNormal, true, false); break; //sup
-        case  6: showString(STD_n,     &standardFont, X_ALPHA_MODE,  0, vmNormal, true, false); break; //normal
+        case  4: x = showString(STD_SUB_n, &standardFont, x, -2, vmNormal, true, false); break; //sub
+        case  5: x = showString(STD_SUB_n, &standardFont, x,-11, vmNormal, true, false); break; //sup
+        case  6: x = showString(STD_n,     &standardFont, x,  0, vmNormal, true, false); break; //normal
 
-//        case  7: showString(STD_SIGMA, &standardFont, X_ALPHA_MODE,  0, vmNormal, true, false); break; //sub
-//        case  8: showString(STD_SIGMA, &standardFont, X_ALPHA_MODE,  0, vmNormal, true, false); break; //sup
-//        case  9: showString(STD_SIGMA, &standardFont, X_ALPHA_MODE,  0, vmNormal, true, false); break; //normal
+//        case  7: x = showString(STD_SIGMA, &standardFont, x,  0, vmNormal, true, false); break; //sub
+//        case  8: x = showString(STD_SIGMA, &standardFont, x,  0, vmNormal, true, false); break; //sup
+//        case  9: x = showString(STD_SIGMA, &standardFont, x,  0, vmNormal, true, false); break; //normal
 
-        case 10: showString(STD_SUB_A, &standardFont, X_ALPHA_MODE, -2, vmNormal, true, false); break; //sub
-        case 11: showString(STD_SUB_A, &standardFont, X_ALPHA_MODE, -11, vmNormal, true, false); break; //sup   //not possible
-        case 12: showString(STD_A    , &standardFont, X_ALPHA_MODE,  0, vmNormal, true, false); break; //normal
+        case 10: x = showString(STD_SUB_A, &standardFont, x, -2, vmNormal, true, false); break; //sub
+        case 11: x = showString(STD_SUB_A, &standardFont, x, -11, vmNormal, true, false); break; //sup   //not possible
+        case 12: x = showString(STD_A    , &standardFont, x,  0, vmNormal, true, false); break; //normal
 
-//        case 13: showString(STD_sigma, &standardFont, X_ALPHA_MODE,  0, vmNormal, true, false); break; //sub
-//        case 14: showString(STD_sigma, &standardFont, X_ALPHA_MODE,  0, vmNormal, true, false); break; //sup
-//        case 15: showString(STD_sigma, &standardFont, X_ALPHA_MODE,  0, vmNormal, true, false); break; //normal
+//        case 13: x = showString(STD_sigma, &standardFont, x,  0, vmNormal, true, false); break; //sub
+//        case 14: x = showString(STD_sigma, &standardFont, x,  0, vmNormal, true, false); break; //sup
+//        case 15: x = showString(STD_sigma, &standardFont, x,  0, vmNormal, true, false); break; //normal
 
-        case 16: showString(STD_SUB_a, &standardFont, X_ALPHA_MODE, -2, vmNormal, true, false); break; //sub
-        case 17: showString(STD_SUB_a, &standardFont, X_ALPHA_MODE, -11, vmNormal, true, false); break; //sup    //not possible
-        case 18: showString(STD_a    , &standardFont, X_ALPHA_MODE,  0, vmNormal, true, false); break; //normal
+        case 16: x = showString(STD_SUB_a, &standardFont, x, -2, vmNormal, true, false); break; //sub
+        case 17: x = showString(STD_SUB_a, &standardFont, x, -11, vmNormal, true, false); break; //sup    //not possible
+        case 18: x = showString(STD_a    , &standardFont, x,  0, vmNormal, true, false); break; //normal
 
         #if defined (PC_BUILD)
-          case 20: showString(STD_BOX  , &standardFont, X_ALPHA_MODE,  0, vmNormal, true, false); break; //deadkey
+          case 20: x = showString(STD_BOX  , &standardFont, x,  0, vmNormal, true, false); break; //deadkey
         #endif
         default:;
       }
     }
+   lcd_fill_rect(x, 0, X_HOURGLASS - x, 20, LCD_SET_VALUE);
   }
 
 
@@ -425,8 +414,6 @@ void drawBattery(uint16_t voltage);
   void mockupSB(void) {
     uint32_t x = 0;
     uint32_t xx = 0;
-    char str20[20];                                   //JM vv KEYS
-    char str40[40];
     char statusMessage[100];
     #define L0 0
     #define L1 20
@@ -448,11 +435,9 @@ void drawBattery(uint16_t voltage);
 
 
       x = showString("#KEY", &standardFont, X_FRAC_MODE, L5 , vmNormal, true, true);//-4 looks good
-        strcpy(str20,"A"); conv(str20, str40);
-      x = showString(str40,  &standardFont, x, L5-4 , vmNormal, true, true);         //-4 looks good
+      x = showString(STD_SUB_A,  &standardFont, x, L5-4 , vmNormal, true, true);         //-4 looks good
       x = showString("-",    &standardFont, x, L5+2 , vmNormal, true, true);         //-4 looks good
-        strcpy(str20,"F"); conv(str20, str40);
-      x = showString(str40,  &standardFont, x, L5-4 , vmNormal, true, true);         //-4 looks good
+      x = showString(STD_SUB_F,  &standardFont, x, L5-4 , vmNormal, true, true);         //-4 looks good
       x = showString("#BASE", &standardFont, X_FRAC_MODE, L4, vmNormal, true, true); //-4 looks good
 
       x = X_FRAC_MODE;                    //vJM
@@ -562,49 +547,50 @@ void drawBattery(uint16_t voltage);
 
       showGlyph(STD_TIMER, &standardFont, X_STOPWATCH, 0, vmNormal, true, false, false); // is 0+13+1 pixel wide
 
-      showGlyph(STD_SERIAL_IO, &standardFont, X_SERIAL_IO, 0, vmNormal, true, false, false); // is 0+8+3 pixel wide
+      showGlyph(STD_SERIAL_IO, &standardFont, X_SERIAL_IO, L1, vmNormal, true, false, false); // is 0+8+3 pixel wide
 
       showGlyph(STD_PRINTER,   &standardFont, X_PRINTER, 0, vmNormal, true, false, false); // is 0+12+3 pixel wide
 
       showGlyph(STD_USER_MODE, &standardFont, X_USER_MODE, 0, vmNormal, false, false, false); // STD_USER_MODE is 0+12+2 pixel wide
 
 
-      light_ASB_icon();                            //JM
+      light_ASB_icon();
       drawBattery(exponentLimit); //test battery indicator
   }
 #endif //PC_BUILD
 
   void light_ASB_icon(void) {
     if(!(SBARUPD_AlphaMode) || calcMode == CM_GRAPH) return;
-    lcd_fill_rect(X_ALPHA_MODE,18,9,2,0xFF);
-    compressString = 1;             //^JM
-    showString(asmBuffer, &standardFont, X_ASM, 0, vmNormal, true, false);
+    lcd_fill_rect(X_ALPHA_MODE,18,9,2,LCD_EMPTY_VALUE);        //underline the alha mode character, AND show the asmBuffer as well
+    compressString = 1;
+    int32_t x = showString(asmBuffer, &standardFont, X_ASM, 0, vmNormal, true, false) + 1;
+    lcd_fill_rect(x, 0, X_SERIAL_IO - x, 18, LCD_SET_VALUE);
     force_refresh(force);
   }
 
 
   void kill_ASB_icon(void) {
     if(!(SBARUPD_AlphaMode) || calcMode == CM_GRAPH) return;
-    lcd_fill_rect(X_ALPHA_MODE,18,9,2,0);
-    compressString = 1;             //^JM
-    showString("    ", &standardFont, X_ASM, 0, vmNormal, true, false);
+    lcd_fill_rect(X_ALPHA_MODE,18,9,2,LCD_SET_VALUE);        //underline the alha mode character, AND show the asmBuffer as well
+    lcd_fill_rect(X_ASM, 0, X_SERIAL_IO - X_ASM, 20, LCD_SET_VALUE);
     force_refresh(force);
   }
 
 
   void showStackSize(void) {
-    uint32_t x;
     if(!(SBARUPD_StackSize)) return;
+    uint32_t x = X_SSIZE_BEGIN;
 
     // Standard stack size, inversed if RPN. Note it moved 5 pixels left in X_SSIZE_BEGIN
     if(getSystemFlag(FLAG_ERPN)) {
-      x = showGlyph(STD_SPACE_6_PER_EM, &standardFont, X_SSIZE_BEGIN, 0, vmNormal, true, true, false); // is 0+6+2 pixel wide
-      x = showGlyph(getSystemFlag(FLAG_SSIZE8) ? STD_8 : STD_4, &standardFont, X_SSIZE_BEGIN, 0, vmNormal, true, true, false); // is 0+6+2 pixel wide
+      x = showGlyph(STD_SPACE_6_PER_EM, &standardFont, x, 0, vmNormal, true, true, false); // is 0+6+2 pixel wide
+      x = showGlyph(getSystemFlag(FLAG_SSIZE8) ? STD_8 : STD_4, &standardFont, x, 0, vmNormal, true, true, false); // is 0+6+2 pixel wide
     }
     else {
-      x = showGlyph(STD_SPACE_6_PER_EM, &standardFont, X_SSIZE_BEGIN, 0, vmReverse, false, true, false); // is 0+6+2 pixel wide
+      x = showGlyph(STD_SPACE_6_PER_EM, &standardFont, x, 0, vmReverse, false, true, false); // is 0+6+2 pixel wide
       x = showGlyph(getSystemFlag(FLAG_SSIZE8) ? STD_8 : STD_4, &standardFont, x, 0, vmReverse, false, true, false); // is 0+6+2 pixel wide
     }
+    lcd_fill_rect(x, 0, X_ASM - x, 20, LCD_SET_VALUE);
 
 // Standard stack size only
 //    showGlyph(getSystemFlag(FLAG_SSIZE8) ? STD_8 : STD_4, &standardFont, X_SSIZE_BEGIN, 0, vmNormal, true, false, false); // is 0+6+2 pixel wide
@@ -617,27 +603,33 @@ void drawBattery(uint16_t voltage);
 
   void showHideWatch(void) {
     if(!(SBARUPD_StopWatch)) return;
+    int32_t x = X_STOPWATCH;
     if(watchIconEnabled) {
-      showGlyph(STD_TIMER, &standardFont, X_STOPWATCH, 0, vmNormal, true, false, false); // is 0+13+1 pixel wide
+      x = showGlyph(STD_TIMER, &standardFont, x, 0, vmNormal, true, false, false); // is 0+13+1 pixel wide
     }
+    lcd_fill_rect(x, 0, X_SSIZE_BEGIN - x, 20, LCD_SET_VALUE);
   }
 
 
 
   void showHideSerialIO(void) {
     if(!(SBARUPD_SerialIO)) return;
+    int32_t x = X_SERIAL_IO;
     if(serialIOIconEnabled) {
-      showGlyph(STD_SERIAL_IO, &standardFont, X_SERIAL_IO, 0, vmNormal, true, false, false); // is 0+8+3 pixel wide
+      x = showGlyph(STD_SERIAL_IO, &standardFont, x, 0, vmNormal, true, false, false); // is 0+8+3 pixel wide
     }
+    lcd_fill_rect(x, 0, X_PRINTER - x, 20, LCD_SET_VALUE);
   }
 
 
 
   void showHidePrinter(void) {
     if(!(SBARUPD_Printer)) return;
+    int32_t x = X_PRINTER;
     if(printerIconEnabled) {
-      showGlyph(STD_PRINTER,   &standardFont, X_PRINTER, 0, vmNormal, true, false, false); // is 0+12+3 pixel wide
+      x = showGlyph(STD_PRINTER,   &standardFont, x, 0, vmNormal, true, false, false); // is 0+12+3 pixel wide
     }
+    lcd_fill_rect(x, 0, X_USER_MODE - x, 20, LCD_SET_VALUE);
   }
 
 
@@ -658,9 +650,11 @@ void showHideASB(void) {                     //JMvv
 
 void showHideUserMode(void) {
   if(!(SBARUPD_UserMode)) return;
+  int32_t x = X_USER_MODE;
   if(getSystemFlag(FLAG_USER)) {
-    showGlyph(STD_USER_MODE, &standardFont, X_USER_MODE, 0, vmNormal, false, false, false); // STD_USER_MODE is 0+12+2 pixel wide
+    x = showGlyph(STD_USER_MODE, &standardFont, x, 0, vmNormal, false, false, false); // STD_USER_MODE is 0+12+2 pixel wide
   }
+  lcd_fill_rect(x, 0, X_BATTERY - x, 20, LCD_SET_VALUE);
   refreshModeGui(); //JM refreshModeGui
 }
 
@@ -776,6 +770,7 @@ void drawBattery(uint16_t voltage) {
         showHideStackLift();
       #endif // DMCP_BUILD
       showHideASB();                            //JM
+
     #endif // DEBUG_INSTEAD_STATUS_BAR == 1
   }
 
