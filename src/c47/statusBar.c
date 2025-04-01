@@ -142,6 +142,7 @@ void drawBattery(uint16_t voltage);
         strcpy(divStr,"a" STD_SPACE_4_PER_EM);
         x = showString(divStr, &standardFont, x, 0, vmNormal, true, true)-3;
       }
+      lcd_fill_rect(x, 0, 7, 20, LCD_SET_VALUE);
       raiseString = 9;
       strcpy(divStr, STD_SUB_b);
       x = showString(divStr, &standardFont, x, 0, vmNormal, true, true)-2;
@@ -376,28 +377,31 @@ void drawBattery(uint16_t voltage);
         }
       }
     }
-
+    int32_t x = (GRAPHMODE ? X_HOURGLASS_GRAPHS : X_HOURGLASS);
     switch(programRunStop) {
       case PGM_WAITING: {
-        showGlyph(STD_NEG_EXCLAMATION_MARK, &standardFont, (GRAPHMODE ? X_HOURGLASS_GRAPHS : X_HOURGLASS) - 1, 0, vmNormal, true, false, false);
+        x = showGlyph(STD_NEG_EXCLAMATION_MARK, &standardFont, x - 1, 0, vmNormal, true, false, false);
+        lcd_fill_rect(x, 0, indicatorWidth - x - 1, 20, LCD_SET_VALUE);
         break;
       }
       case PGM_RUNNING: {
-        if((lastProgramRunStop & PGM_DEFINED_MASK) != PGM_RUNNING) {
-          lcd_fill_rect((GRAPHMODE ? X_HOURGLASS_GRAPHS : X_HOURGLASS) - 1, 0, indicatorWidth, 20, LCD_SET_VALUE);
-        }
-        showGlyph(STD_P, &standardFont, (GRAPHMODE ? X_HOURGLASS_GRAPHS : X_HOURGLASS) + 1, 0, vmNormal, true, false, false);
+        //if((lastProgramRunStop & PGM_DEFINED_MASK) != PGM_RUNNING) {
+        //  lcd_fill_rect(x - 1, 0, indicatorWidth, 20, LCD_SET_VALUE);
+        //}
+        x = showGlyph(STD_P, &standardFont, x + 1, 0, vmNormal, true, false, false);
+        lcd_fill_rect(x, 0, indicatorWidth - x - 1, 20, LCD_SET_VALUE);
         break;
       }
       default: {
         if(hourGlassIconEnabled) {
-          if((lastProgramRunStop  & PGM_DEFINED_MASK) == PGM_RUNNING || (lastProgramRunStop & PGM_DEFINED_MASK) == PGM_WAITING) {
-            lcd_fill_rect((GRAPHMODE ? X_HOURGLASS_GRAPHS : X_HOURGLASS) - 1, 0, indicatorWidth, 20, LCD_SET_VALUE);
-          }
-          showGlyph(STD_HOURGLASS, &standardFont, GRAPHMODE ? X_HOURGLASS_GRAPHS : X_HOURGLASS, 0, vmNormal, true, false, false); // is 0+11+3 pixel wide //Shift the hourglass to a visible part of the status bar
+          //if((lastProgramRunStop  & PGM_DEFINED_MASK) == PGM_RUNNING || (lastProgramRunStop & PGM_DEFINED_MASK) == PGM_WAITING) {
+          //  lcd_fill_rect(x - 1, 0, indicatorWidth, 20, LCD_SET_VALUE);
+          //}
+          x = showGlyph(STD_HOURGLASS, &standardFont, x, 0, vmNormal, true, false, false); // is 0+11+3 pixel wide //Shift the hourglass to a visible part of the status bar
+          lcd_fill_rect(x, 0, indicatorWidth - x - 1, 20, LCD_SET_VALUE);
         }
         else {
-          lcd_fill_rect((GRAPHMODE ? X_HOURGLASS_GRAPHS : X_HOURGLASS) - 1, 0, indicatorWidth, 20, LCD_SET_VALUE);
+          lcd_fill_rect(x - 1, 0, indicatorWidth, 20, LCD_SET_VALUE);
         }
       }
     }
