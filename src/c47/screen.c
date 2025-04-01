@@ -4759,8 +4759,6 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
         }
 
         if(BASEMODEREGISTERX) {
-          //screenUpdatingMode = SCRUPD_AUTO;
-          screenUpdatingMode |= SCRUPD_MANUAL_STATUSBAR;
           screenUpdatingMode &= ~SCRUPD_MANUAL_MENU;
           screenUpdatingMode &= ~(SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME);
           if(calcMode == CM_NIM) {
@@ -5052,8 +5050,8 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
         if(doRefreshSoftMenu && !SHOWMODE) {
           screenUpdatingMode &= ~SCRUPD_MANUAL_MENU ;
         }
-///printf("screenUpdatingMode2=%u calcmode=%u last_CM=%u\n",screenUpdatingMode, calcMode, last_CM);
-        if(last_CM != calcMode || calcMode == CM_CONFIRMATION) {
+//printf("screenUpdatingMode2=%u calcmode=%u last_CM=%u\n",screenUpdatingMode, calcMode, last_CM);
+        if(calcMode == CM_CONFIRMATION) {
           if(!SHOWMODE) screenUpdatingMode &= ~SCRUPD_MANUAL_MENU ;
           screenUpdatingMode &= ~SCRUPD_MANUAL_STACK ;
 //printf("screenUpdatingMode3=%u calcmode=%u last_CM=%u\n",screenUpdatingMode, calcMode, last_CM);

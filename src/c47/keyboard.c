@@ -2272,6 +2272,9 @@ RELEASE_END:
         screenUpdatingMode &= ~(SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME);
       }
 
+  
+      screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR; //Ensure status bar is always checked after fn key release. The new statusbar code does not clear the entire statusbar, it only updates if a setting changed
+
 
       if(allowShiftsToClearError || !checkShifts((char *)data)) {
                     #if defined(PC_BUILD)
