@@ -415,4 +415,6 @@ Added QRNZ to NUM font
     Change existing STD_theta from U+03b8 to U+03d1 (theta-script) and populate the proper U+03b8 (theta) as STD_theta_m
     U+03D5 STD_phi_m
 
-
+2025-04-01 Add in Std font
+    U+24EA STD_BASE_0
+    
