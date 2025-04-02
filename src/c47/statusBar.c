@@ -184,12 +184,15 @@ void drawBattery(uint16_t voltage);
     x = showString(statusMessage, &standardFont, x, 0, vmNormal, true, true);
 
     if(!getSystemFlag(FLAG_IRFRAC) && getSystemFlag(FLAG_DENFIX)) {
-      x = showGlyphCode('f',  &standardFont, x, 0, vmNormal, true, false, false); // f is 0+7+3 pixel wide
+      raiseString = 3;
+      x = showString(STD_SUB_f, &standardFont, ++x, 0, vmNormal, true, true);
     }
 
-    strcpy(divStr,PRODUCT_SIGN);
-    raiseString = 2;
-    x = showString(divStr, &standardFont, x+1, 0, vmNormal, true, true);
+    if((getSystemFlag(FLAG_IRFRAC)) || (!getSystemFlag(FLAG_IRFRAC) && !getSystemFlag(FLAG_DENFIX) && !getSystemFlag(FLAG_DENANY))) {
+      strcpy(divStr,PRODUCT_SIGN);
+      raiseString = 2;
+      x = showString(divStr, &standardFont, x+1, 0, vmNormal, true, true);
+    }
 
     if(getSystemFlag(FLAG_IRFRAC)) {
 
@@ -208,7 +211,7 @@ void drawBattery(uint16_t voltage);
       }
     }
 
-    if(fractionDigits > 0 && fractionDigits < 34) {
+    if((getSystemFlag(FLAG_IRFRAC) || getSystemFlag(FLAG_FRACT)) && (fractionDigits > 0 && fractionDigits < 34)) {
       compressString = 1;
       x = showString(STD_ALMOST_EQUAL, &standardFont, x + 2, 0, vmNormal, true, false);
     }
