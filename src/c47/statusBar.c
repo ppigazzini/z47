@@ -243,9 +243,10 @@ void drawBattery(uint16_t voltage);
       x = showString(divStr, &standardFont, x, 0, vmNormal, true, true) - 2;
     }
 
+    #define lowerUnderLine 2 //lower the /1200x a few pixels to create to idea of under the line
     strcpy(divStr,"/");
     compressString = 1;
-    x = showString(divStr, &standardFont, x, 0, vmNormal, false, true);
+    x = showString(divStr, &standardFont, x, lowerUnderLine-1, vmNormal, false, true);
 
     compressString = 1;
     if(denMax == 0 || denMax > MAX_DENMAX) {
@@ -253,19 +254,19 @@ void drawBattery(uint16_t voltage);
     } else {
       sprintf(statusMessage, "%" PRIu32,denMax);
     }
-    x = showString(statusMessage, &standardFont, x, 0, vmNormal, false, true);
+    x = showString(statusMessage, &standardFont, x, lowerUnderLine, vmNormal, false, true);
 
     if(!getSystemFlag(FLAG_IRFRAC) && getSystemFlag(FLAG_DENFIX)) {
       raiseString = 3;
       lcd_fill_rect(++x, 0, 11, 20, LCD_SET_VALUE);
-      x = showString(STD_SUB_f, &standardFont, x, 0, vmNormal, true, true);
+      x = showString(STD_SUB_f, &standardFont, x, lowerUnderLine, vmNormal, true, true);
     }
 
     if((getSystemFlag(FLAG_IRFRAC)) || (!getSystemFlag(FLAG_IRFRAC) && !getSystemFlag(FLAG_DENFIX) && !getSystemFlag(FLAG_DENANY))) {
       strcpy(divStr,PRODUCT_SIGN);
       lcd_fill_rect(++x, 0, 11, 20, LCD_SET_VALUE);
       raiseString = 2;
-      x = showString(divStr, &standardFont, x, 0, vmNormal, true, true) + (getSystemFlag(FLAG_MULTx) ? 0 : 2);
+      x = showString(divStr, &standardFont, x, lowerUnderLine, vmNormal, true, true) + (getSystemFlag(FLAG_MULTx) ? 0 : 2);
     }
 
     if(getSystemFlag(FLAG_IRFRAC)) {
