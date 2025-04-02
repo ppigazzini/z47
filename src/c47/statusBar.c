@@ -246,7 +246,9 @@ void drawBattery(uint16_t voltage);
     #define lowerUnderLine 2 //lower the /1200x a few pixels to create to idea of under the line
     strcpy(divStr,"/");
     compressString = 1;
+    int xx = x;
     x = showString(divStr, &standardFont, x, lowerUnderLine-1, vmNormal, false, true);
+    lcd_fill_rect(xx, 0, x-xx, lowerUnderLine-1, LCD_SET_VALUE);
 
     compressString = 1;
     if(denMax == 0 || denMax > MAX_DENMAX) {
@@ -254,7 +256,9 @@ void drawBattery(uint16_t voltage);
     } else {
       sprintf(statusMessage, "%" PRIu32,denMax);
     }
+    xx = x;
     x = showString(statusMessage, &standardFont, x, lowerUnderLine, vmNormal, false, true);
+    lcd_fill_rect(xx, 0, x-xx, lowerUnderLine, LCD_SET_VALUE);
 
     if(!getSystemFlag(FLAG_IRFRAC) && getSystemFlag(FLAG_DENFIX)) {
       raiseString = 3;
