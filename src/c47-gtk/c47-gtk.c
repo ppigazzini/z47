@@ -11,6 +11,7 @@
   #include "gtkGui.h"
 
   char modelString[50];
+  bool_t              mockup = false;
   bool_t              writeExportAll = false;
   uint8_t             config = 0;
   bool_t enableFunctionKeysDisplay;
@@ -173,6 +174,11 @@
         printf("Activated: %s\n",argv[arg]);
         writeExportAll = true;
       }
+      if(strcmp(argv[arg], "--mockup") == 0) {
+        printf("Activated: %s\n",argv[arg]);
+        mockup = true;
+      }
+
       if(strcmp(argv[arg], "--help") == 0 || strcmp(argv[arg], "--h") == 0) {
         printf("Activated: %s\n\n",argv[arg]);
         printf("c47 --background \n");
@@ -197,6 +203,7 @@
         printf("c47 --swapctrlcode \n");
         printf("c47 --writeexportall \n");
         printf("c47 --help \n");
+        printf("c47 --mockup: to show annunciator layout \n");
         printf("c47 --h \n");
         return 0;
       }
@@ -253,6 +260,12 @@
     if(writeExportAll) {
       fnSaveAllPrograms(NOPARAM);
       return 0;
+    }
+
+    if(mockup) {
+      fnExitAllMenus(NOPARAM);
+      mockupSB();
+      fnSNAP(NOPARAM);
     }
 
     //ramDump();
