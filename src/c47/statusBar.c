@@ -46,11 +46,13 @@ void drawBattery(uint16_t voltage);
       lcd_fill_rect(x, 0, X_TIME - x, 20, LCD_SET_VALUE);
       x = X_TIME;
     }
+
     if(SBARUPD_Time) {
       x = showGlyph(getSystemFlag(FLAG_TDM24) ? " " : STD_SPACE_3_PER_EM, &standardFont, x, 0, vmNormal, true, true, false); // is 0+0+8 pixel wide
       x = showString(oldTime, &standardFont, x, 0, vmNormal, true, false);
       lcd_fill_rect(x, 0, X_REAL_COMPLEX - x, 20, LCD_SET_VALUE);
     }
+
     if(SBARUPD_WoY) {
       x = showGlyph(STD_SPACE_3_PER_EM, &standardFont, x, 0, vmNormal, true, true, false);
       getWeekOfYearString(dateTimeString);
@@ -144,6 +146,7 @@ void drawBattery(uint16_t voltage);
   }
 
 
+
   void showComplexMode(void) {
     if(!(SBARUPD_ComplexMode)) return;
     int32_t x =  SBARUPD_ComplexResult ? X_COMPLEX_MODE : X_COMPLEX_MODE + X_COMPLEX_MODE_ADJ;
@@ -164,10 +167,11 @@ void drawBattery(uint16_t voltage);
 //todo
   void showAngularMode(void) {
     if(!((SBARUPD_AngularModeBasic) | (SBARUPD_AngularMode))) return;
+
     uint32_t x = X_ANGULAR_MODE;
 
     if(SBARUPD_AngularModeBasic) {
-      x = showGlyph(STD_MEASURED_ANGLE,       &standardFont, x, 0, vmNormal, true, true, false); // Angle is 0+9 pixel wide
+      x = showGlyph(STD_MEASURED_ANGLE, &standardFont, x, 0, vmNormal, true, true, false); // Angle is 0+9 pixel wide
     }
 
     switch(currentAngularMode) {
@@ -252,13 +256,17 @@ void drawBattery(uint16_t voltage);
     x = showString(statusMessage, &standardFont, x, 0, vmNormal, false, true);
 
     if(!getSystemFlag(FLAG_IRFRAC) && getSystemFlag(FLAG_DENFIX)) {
-      x = showGlyphCode('f',  &standardFont, x, 0, vmNormal, true, false, false); // f is 0+7+3 pixel wide
+      raiseString = 3;
+      lcd_fill_rect(++x, 0, 11, 20, LCD_SET_VALUE);
+      x = showString(STD_SUB_f, &standardFont, x, 0, vmNormal, true, true);
     }
 
-    strcpy(divStr,PRODUCT_SIGN);
-    lcd_fill_rect(++x, 0, 11, 20, LCD_SET_VALUE);
-    raiseString = 2;
-    x = showString(divStr, &standardFont, x, 0, vmNormal, true, true) + (getSystemFlag(FLAG_MULTx) ? 0 : 2);
+    if((getSystemFlag(FLAG_IRFRAC)) || (!getSystemFlag(FLAG_IRFRAC) && !getSystemFlag(FLAG_DENFIX) && !getSystemFlag(FLAG_DENANY))) {
+      strcpy(divStr,PRODUCT_SIGN);
+      lcd_fill_rect(++x, 0, 11, 20, LCD_SET_VALUE);
+      raiseString = 2;
+      x = showString(divStr, &standardFont, x, 0, vmNormal, true, true) + (getSystemFlag(FLAG_MULTx) ? 0 : 2);
+    }
 
     if(getSystemFlag(FLAG_IRFRAC)) {
       strcpy(divStr,STD_IRRATIONAL_I);
@@ -277,7 +285,7 @@ void drawBattery(uint16_t voltage);
       //   }
     }
 
-    if(fractionDigits > 0 && fractionDigits < 34) {
+    if((getSystemFlag(FLAG_IRFRAC) || getSystemFlag(FLAG_FRACT)) && (fractionDigits > 0 && fractionDigits < 34)) {
       compressString = 1;
       x = showString(STD_ALMOST_EQUAL, &standardFont, x - 1, 0, vmNormal, true, false);
       if(x >= X_INTEGER_MODE - 1) {
@@ -348,6 +356,7 @@ void drawBattery(uint16_t voltage);
     if(!getSystemFlag(FLAG_OVERFLOW)) { // Overflow flag is cleared
       lcd_fill_rect(X_OVERFLOW_CARRY, 2, 6, 7, LCD_SET_VALUE);
     }
+
     if(!getSystemFlag(FLAG_CARRY)) { // Carry flag is cleared
       lcd_fill_rect(X_OVERFLOW_CARRY, 12, 6, 7, LCD_SET_VALUE);
     }
@@ -413,17 +422,17 @@ void drawBattery(uint16_t voltage);
         case  5: x = showString(STD_SUB_n, &standardFont, x,-11, vmNormal, true, false); break; //sup
         case  6: x = showString(STD_n,     &standardFont, x,  0, vmNormal, true, false); break; //normal
 
-//        case  7: x = showString(STD_SIGMA, &standardFont, x,  0, vmNormal, true, false); break; //sub
-//        case  8: x = showString(STD_SIGMA, &standardFont, x,  0, vmNormal, true, false); break; //sup
-//        case  9: x = showString(STD_SIGMA, &standardFont, x,  0, vmNormal, true, false); break; //normal
+//        case  7: showString(STD_SIGMA, &standardFont, X_ALPHA_MODE,  0, vmNormal, true, false); break; //sub
+//        case  8: showString(STD_SIGMA, &standardFont, X_ALPHA_MODE,  0, vmNormal, true, false); break; //sup
+//        case  9: showString(STD_SIGMA, &standardFont, X_ALPHA_MODE,  0, vmNormal, true, false); break; //normal
 
         case 10: x = showString(STD_SUB_A, &standardFont, x, -2, vmNormal, true, false); break; //sub
         case 11: x = showString(STD_SUB_A, &standardFont, x, -11, vmNormal, true, false); break; //sup   //not possible
         case 12: x = showString(STD_A    , &standardFont, x,  0, vmNormal, true, false); break; //normal
 
-//        case 13: x = showString(STD_sigma, &standardFont, x,  0, vmNormal, true, false); break; //sub
-//        case 14: x = showString(STD_sigma, &standardFont, x,  0, vmNormal, true, false); break; //sup
-//        case 15: x = showString(STD_sigma, &standardFont, x,  0, vmNormal, true, false); break; //normal
+//        case 13: showString(STD_sigma, &standardFont, X_ALPHA_MODE,  0, vmNormal, true, false); break; //sub
+//        case 14: showString(STD_sigma, &standardFont, X_ALPHA_MODE,  0, vmNormal, true, false); break; //sup
+//        case 15: showString(STD_sigma, &standardFont, X_ALPHA_MODE,  0, vmNormal, true, false); break; //normal
 
         case 16: x = showString(STD_SUB_a, &standardFont, x, -2, vmNormal, true, false); break; //sub
         case 17: x = showString(STD_SUB_a, &standardFont, x, -11, vmNormal, true, false); break; //sup    //not possible
@@ -641,7 +650,6 @@ void drawBattery(uint16_t voltage);
   }
 
 
-
 void drawBattery(uint16_t voltage) {
   lcd_fill_rect(X_BATTERY, 0, 11, 20, LCD_SET_VALUE);
   uint16_t vv = (uint16_t)(min(max(voltage - 2000,0),3100) / (float)(((float)3100 - 2000.0f)/(float)(DY_BATTERY))); //draw a battery, full at 3.1V empty at 2V
@@ -792,7 +800,6 @@ uint32_t denMaxMem         = 0;
         showHideStackLift();
       #endif // DMCP_BUILD
       showHideASB();                            //JM
-
     #endif // DEBUG_INSTEAD_STATUS_BAR == 1
   }
 
