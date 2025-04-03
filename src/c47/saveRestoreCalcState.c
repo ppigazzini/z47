@@ -1196,8 +1196,12 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     restoreStateValue(&firstWeekOfYearDay,             sizeof(firstWeekOfYearDay),                                  "firstWeekOfYearDay",             "uint8");
     restoreStateValue(&MYM3,                           sizeof(MYM3),                                                "MYM3",                           "bool");
 
-    if (getSystemFlag(FLAG_IRFRAC)) {
-      clearSystemFlag(FLAG_FRACT);
+    // Ensure valid relations between FLAG_FRACT, FLAG_IRFRAC and FLAG_IRFRQ
+    if (getSystemFlag(FLAG_FRACT)) {
+      setSystemFlag(FLAG_FRACT);
+    }
+    else if (getSystemFlag(FLAG_IRFRAC)) {
+      setSystemFlag(FLAG_IRFRAC);
     }
 
 
@@ -2374,8 +2378,13 @@ int64_t stringToInt64(const char *str) {
           clearSystemFlag(FLAG_IRFRAC); //restore previously used manually stored flags in OTHER STUFF below
           clearSystemFlag(FLAG_IRFRQ);  //restore previously used manually stored flags in OTHER STUFF below
         }
-        if (getSystemFlag(FLAG_IRFRAC)) {
-          clearSystemFlag(FLAG_FRACT);
+
+        // Ensure valid relations between FLAG_FRACT, FLAG_IRFRAC and FLAG_IRFRQ
+        if (getSystemFlag(FLAG_FRACT)) {
+          setSystemFlag(FLAG_FRACT);
+        }
+        else if (getSystemFlag(FLAG_IRFRAC)) {
+          setSystemFlag(FLAG_IRFRAC);
         }
       }
     }
