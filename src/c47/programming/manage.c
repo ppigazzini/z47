@@ -150,6 +150,7 @@ void scanLabelsAndPrograms(void) {
   freeProgramBytes = (((uint8_t *)(ram + RAM_SIZE_IN_BLOCKS)) - firstFreeProgramByte) - 2;
 
   defineCurrentProgramFromCurrentStep();
+  defineFirstDisplayedStep();
 #endif // !SAVE_SPACE_DM42_10
 }
 
