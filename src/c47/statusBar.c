@@ -96,6 +96,14 @@ void drawBattery(uint16_t voltage);
 // bool_t bprinterIconEnabled = false;
 // bool_t bFLAG_USER          = false;
 
+//char* uint32_to_binary(uint32_t n) {
+//    char* s = malloc(33);
+//    s[32] = 0;
+//    for(int i=0; i<32; i++)
+//        s[31-i] = '0' + ((n>>i)&1);
+//    return s;
+//}
+
   #define flagSBClear false    //future flag to to a once off clear
   #define SB_IGNORE  0
   #define SB_CLEAR   1
@@ -113,6 +121,7 @@ void drawBattery(uint16_t voltage);
   #define bFLAG_USER           ((bool_t*)9)
 
   uint8_t didFlagChange1(bool_t tmp, bool_t *old) {
+    // printf("-------- %u \n",tmp,*old);
     // Convert pointer to bit position (offset by 1)
     uint8_t bitPos = (uint8_t)((uintptr_t)old - 1);
     bool_t oldValue = (statusFlags >> bitPos) & 1;
@@ -747,7 +756,6 @@ uint32_t denMaxMem         = 0;
 
 
       //This sub-section returns, with no statusbar updates if none of the settings changed. 
-      //lastProgramRunStop = PGM_UNDEFINED is used as a flag to indicate the status bar was cleared; it was set in clearScreen() in screen.h
       flagsSettingsTest = FLAGSETS;
       if(!(systemFlags0 == systemFlags0Mem && systemFlags1 == systemFlags1Mem && denMax == denMaxMem && flagsSettingsOld == flagsSettingsTest)) {
            flagsSettingsOld = flagsSettingsTest;
@@ -755,6 +763,7 @@ uint32_t denMaxMem         = 0;
            systemFlags1Mem  = systemFlags1;
            denMaxMem        = denMax;
            if(lastProgramRunStop != PGM_UNDEFINED) { 
+             //  printf("###      RETURNING\n");
              return;
            }
       }
