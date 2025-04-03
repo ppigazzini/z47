@@ -2590,6 +2590,22 @@ int64_t stringToInt64(const char *str) {
         freeProgramBytes = toUint16(tmpString);
       }
 
+
+      if (firstFreeProgramByte + freeProgramBytes != beginOfProgramMemory + TO_BYTES(numberOfBlocks) - 2) {
+        uint32_t diff = TO_BYTES(RAM_SIZE_IN_BLOCKS_NEW_HW - RAM_SIZE_IN_BLOCKS_OLD_HW);
+        #if defined(DMCP_BUILD) && defined(OLD_HW)
+          if ((firstFreeProgramByte + freeProgramBytes - diff == beginOfProgramMemory + TO_BYTES(numberOfBlocks) - 2)) {
+            currentStep -= diff;
+            firstFreeProgramByte -= diff;
+          }
+        #else
+          if ((firstFreeProgramByte + freeProgramBytes + diff == beginOfProgramMemory + TO_BYTES(numberOfBlocks) - 2)) {
+            currentStep += diff;
+            firstFreeProgramByte += diff;
+          }
+        #endif
+      }
+
       if(loadMode == LM_PROGRAMS) { // .END. to END
         freeProgramBytes += oldFreeProgramBytes;
         if((oldFirstFreeProgramByte >= (beginOfProgramMemory + 2)) && isAtEndOfProgram(oldFirstFreeProgramByte - 2)) {
