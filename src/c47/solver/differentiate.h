@@ -9,8 +9,6 @@
 
   enum {
     DERIVATIVE_FIRST_CENTRAL,   DERIVATIVE_SECOND_CENTRAL,
-    DERIVATIVE_FIRST_UPPER,     DERIVATIVE_SECOND_UPPER,
-    DERIVATIVE_FIRST_LOWER,     DERIVATIVE_SECOND_LOWER
   };
   void fn1stDeriv      (uint16_t label);
   void fn2ndDeriv      (uint16_t label);
