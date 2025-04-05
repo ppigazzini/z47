@@ -238,7 +238,7 @@ static void calcDeriv(calcRegister_t label, const FINITE_DIFF_COEFF *const *finD
     calcFuncValues(label, &x, fx, &h, &ctxtReal39);
     undo();
 
-#if 1
+#if 0
     // This block of code prints out all the function evaluations and
     // all the various derivative estimates.
     {
