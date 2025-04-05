@@ -178,7 +178,7 @@ static void _differentiatorIteration(calcRegister_t label, real_t *r0) {
   }
 }
 
-// Try to computer a single derivative estimate from a quadrature
+// Try to compute a single derivative estimate from a quadrature
 static bool_t calcOneDeriv(const FINITE_DIFF_COEFF *quad, const real_t fxIn[],
                            const real_t *h, real_t *r, realContext_t *realContext) {
   uint16_t i, maxi = 2*quad->n+1;
@@ -221,7 +221,7 @@ static void calcFuncValues(calcRegister_t label, const real_t *x, real_t fx[MAX_
 }
 
 
-// Evaluate the function at quadrature points and computer "best" estimate
+// Evaluate the function at quadrature points and compute "best" estimate
 static void calcDeriv(calcRegister_t label, const FINITE_DIFF_COEFF *const *finDiff) {
   real_t x, h, fx[MAX_F_EVAL];
   int i;
@@ -253,11 +253,22 @@ static void calcDeriv(calcRegister_t label, const FINITE_DIFF_COEFF *const *finD
 #endif
     // Try finite differences until we get a result
     for (i=0; finDiff[i] != NULL; i++)
-      if (calcOneDeriv(finDiff[i], fx, &h, &x, &ctxtReal39))
+      if (calcOneDeriv(finDiff[i], fx, &h, &x, &ctxtReal39)) {
+        //Add string, for display at TI
+        decContext c = ctxtReal4;
+        c.digits = 2;
+        real_t hh;
+        realPlus(&h, &hh, &c);
+        strcpy(errorMessage, STD_delta "=");
+        decNumberToString(&hh, errorMessage + stringByteLength(errorMessage));
+        strcat(errorMessage, "; ");
         goto finish;
+      }
   }
   // No estimate possible
   realCopy(const_NaN, &x);
+  //Add string, for display at TI
+  errorMessage[0] = 0;
 
 finish:
   convertRealToResultRegister(&x, REGISTER_X, amNone);
