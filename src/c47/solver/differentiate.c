@@ -45,6 +45,8 @@ static void calcDerivOfOrder(uint16_t label, int order) {
 static void derivativeCommon(uint16_t label, uint16_t order, uint8_t ti) {
   currentSolverStatus &= ~SOLVER_STATUS_USES_FORMULA;
   bool_t solving = getSystemFlag(FLAG_SOLVING);
+  char buf[2];
+
   setSystemFlag(FLAG_SOLVING);
   if(label >= FIRST_LABEL && label <= LAST_LABEL) {
     calcDerivOfOrder(label, order);
@@ -52,7 +54,6 @@ static void derivativeCommon(uint16_t label, uint16_t order, uint8_t ti) {
   }
   else if(REGISTER_X <= label && label <= REGISTER_T) {
     // Interactive mode
-    char buf[2];
     buf[0] = letteredRegisterName((calcRegister_t)label);
     buf[1] = 0;
     label = findNamedLabel(buf);
@@ -134,6 +135,7 @@ static void deriv_default_h(real_t *h) {
     STD_DELTA "x",  STD_DELTA "X",
   };
 
+  saveForUndo();
   reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
   realToReal34(h, REGISTER_REAL34_DATA(REGISTER_X));
   fnFillStack(NOPARAM);
@@ -142,8 +144,10 @@ static void deriv_default_h(real_t *h) {
   for (i=0; i<sizeof(lbls)/sizeof(*lbls); i++)
     if ((deltaX = findNamedLabel(lbls[i])) != INVALID_VARIABLE) {
       deriv_found_lbl(deltaX, h);
+      undo();
       return;
   }
+  undo();
   realCopy(const_1on10, h); /* default h = 0.1 */
 }
 
