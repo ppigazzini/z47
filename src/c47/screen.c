@@ -3742,14 +3742,14 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
 
           else if(temporaryInformation == TI_1ST_DERIVATIVE) {
             if(regist == REGISTER_X) {
-              sprintf(prefix, "f' =");
+              sprintf(prefix, "%sf'" STD_ALMOST_EQUAL, errorMessage);
               prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
             }
           }
 
           else if(temporaryInformation == TI_2ND_DERIVATIVE) {
             if(regist == REGISTER_X) {
-              sprintf(prefix, "f\" =");
+              sprintf(prefix, "%sf\"" STD_ALMOST_EQUAL, errorMessage);
               prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
             }
           }

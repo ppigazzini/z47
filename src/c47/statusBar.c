@@ -389,6 +389,7 @@ void drawBattery(uint16_t voltage);
     if(!getSystemFlag(FLAG_OVERFLOW)) { // Overflow flag is cleared
       lcd_fill_rect(X_OVERFLOW_CARRY, 2, 6, 7, LCD_SET_VALUE);
     }
+
     if(!getSystemFlag(FLAG_CARRY)) { // Carry flag is cleared
       lcd_fill_rect(X_OVERFLOW_CARRY, 12, 6, 7, LCD_SET_VALUE);
     }
@@ -601,6 +602,7 @@ void drawBattery(uint16_t voltage);
       default:break;
     }
   }
+
 
 
   void showHideSerialIO(void) {
@@ -1029,6 +1031,7 @@ uint32_t denMaxMem         = 0;
 
       light_ASB_icon();
       drawBattery(exponentLimit); //test battery indicator
+      calcMode = CM_GRAPH;
   }
 #endif //PC_BUILD
 
