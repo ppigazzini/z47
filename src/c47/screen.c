@@ -463,7 +463,7 @@ char letteredRegisterName(calcRegister_t regist) {
     }
 
     // Update date and time
-        showDateTime();
+    showDateTime();
 
     // If LCD has changed: update the GTK screen
     if(screenChange) {
@@ -930,6 +930,7 @@ return res;
       return 0;
     }
 
+    int32_t yy = ((int32_t)(y+1000))-(int32_t)1000; //get unsigned integer that was negative, back to signed integer negative
     data = (int8_t *)glyph->data;
     uint32_t y0 = y;                                                   //JMmini 0-reference
     xGlyph      = showLeadingCols ? glyph->colsBeforeGlyph : 0;
@@ -942,7 +943,7 @@ return res;
     bool_t rep_enlarge = numDouble || (enlarge && combinationFonts != 0);                //JM ENLARGE
     uint32_t yNewMaxDx = (rep_enlarge ? 2 : 1) * (((glyph->rowsAboveGlyph + glyph->rowsGlyph + glyph->rowsBelowGlyph) >> miniC) - (rep_enlarge ? 4 : 0));
     if(!noShow && !noPreClear) {
-      lcd_fill_rect(x, y, (uint32_t)(doubling * ((xGlyph + glyph->colsGlyph + endingCols) >> miniC)) >> 3, yNewMaxDx, (videoMode == vmNormal ? LCD_SET_VALUE : LCD_EMPTY_VALUE));  //JMmini
+      lcd_fill_rect(x, max(0,yy), (uint32_t)(doubling * ((xGlyph + glyph->colsGlyph + endingCols) >> miniC)) >> 3, yNewMaxDx + (min(0,yy)), (videoMode == vmNormal ? LCD_SET_VALUE : LCD_EMPTY_VALUE));  //JMmini
     }
     if(displaymode == numHalf) {
       y += (uint32_t)(glyph->rowsAboveGlyph*REDUCT_A/REDUCT_B*(rep_enlarge ? 2 : 1));
@@ -972,8 +973,8 @@ return res;
         if(byte & 0x80 && !noShow) { // MSB set
           uint32_t x1 = x+((((doubling * (xGlyph+col)) >> miniC)) >> 3);
           uint32_t x2 = x1;
-          uint32_t y1 = min(SCREEN_HEIGHT-1, y0 + min(yNewMaxDx,((y-y0) >> miniC)));
-          uint32_t y2 = min(SCREEN_HEIGHT-1, y0 + min(yNewMaxDx,1+((y-y0) >> miniC)));
+          uint32_t y1 = min(SCREEN_HEIGHT-1, yy + min(yNewMaxDx,  ((y-y0) >> miniC)));
+          uint32_t y2 = min(SCREEN_HEIGHT-1, yy + min(yNewMaxDx,1+((y-y0) >> miniC)));
           if(x2 > 0) {
             x2--;
           }
@@ -4891,7 +4892,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
         }
         if(!(screenUpdatingMode & SCRUPD_MANUAL_STATUSBAR)) {
           refreshStatusBar();
-        }
+//        }
         #if (REAL34_WIDTH_TEST == 1)
           for(int y=Y_POSITION_OF_REGISTER_Y_LINE; y<Y_POSITION_OF_REGISTER_Y_LINE + 2*REGISTER_LINE_HEIGHT; y++ ) {
             setBlackPixel(SCREEN_WIDTH - largeur - 1, y);

@@ -1492,8 +1492,6 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     halfSecTick3 = false;
     skippedStackLines = false;
     programRunStop = PGM_STOPPED;
-    lastProgramRunStop = PGM_UNDEFINED;  //set last to undefined to force first refresh condition to be true
-
 
     ctxtReal34.round = DEC_ROUND_HALF_EVEN;
 
@@ -1521,6 +1519,7 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
       }
 
       clearScreen(10); //WE HAVE TO FIND THE BEST PLACE FOR A FULL SCREEN CLEAR, JUST BEFORE THE CALCULATOR STARTS
+      lastProgramRunStop = PGM_UNDEFINED;  //set last to undefined to force first refresh condition to be true
       calcModeNormal();
     #endif // !TESTSUITE_BUILD
 
