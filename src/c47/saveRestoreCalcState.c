@@ -1196,6 +1196,9 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     restoreStateValue(&firstWeekOfYearDay,             sizeof(firstWeekOfYearDay),                                  "firstWeekOfYearDay",             "uint8");
     restoreStateValue(&MYM3,                           sizeof(MYM3),                                                "MYM3",                           "bool");
 
+    if (getSystemFlag(FLAG_IRFRAC)) {
+      clearSystemFlag(FLAG_FRACT);
+    }
 
 
     // If you create a new parameter, proceed as following:
@@ -1205,22 +1208,22 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     bool_t tmp1 = false;
     if(backupVersion < 1003) {
       restoreStateValue(&tmp1,                           sizeof(tmp1),                                                "constantFractions",              "bool");
-      printf("Version number of configfile < 1003, transferring IRFRAC.");
+      printf("Version number of configfile < 1003, transferring FLAG_IRFRQ.");
+      if(tmp1) {
+        setSystemFlag(FLAG_IRFRQ);
+      }
+      else {
+        clearSystemFlag(FLAG_IRFRQ);
+      }
+    }
+    if(backupVersion < 1003) {
+      restoreStateValue(&tmp1,                           sizeof(tmp1),                                                "constantFractionsOn",            "bool");
+      printf("Version number of configfile < 1003, transferring FLAG_IRFRAC.");
       if(tmp1) {
         setSystemFlag(FLAG_IRFRAC);
       }
       else {
         clearSystemFlag(FLAG_IRFRAC);
-      }
-    }
-    if(backupVersion < 1003) {
-      restoreStateValue(&tmp1,                           sizeof(tmp1),                                                "constantFractionsOn",            "bool");
-      printf("Version number of configfile < 1003, transferring IRF_ON.");
-      if(tmp1) {
-        setSystemFlag(FLAG_IRF_ON);
-      }
-      else {
-        clearSystemFlag(FLAG_IRF_ON);
       }
     }
     if(backupVersion < 1003) {
@@ -2369,7 +2372,10 @@ int64_t stringToInt64(const char *str) {
         }
         if(loadedVersion < 10000012) {
           clearSystemFlag(FLAG_IRFRAC); //restore previously used manually stored flags in OTHER STUFF below
-          clearSystemFlag(FLAG_IRF_ON); //restore previously used manually stored flags in OTHER STUFF below
+          clearSystemFlag(FLAG_IRFRQ);  //restore previously used manually stored flags in OTHER STUFF below
+        }
+        if (getSystemFlag(FLAG_IRFRAC)) {
+          clearSystemFlag(FLAG_FRACT);
         }
       }
     }
@@ -2824,12 +2830,12 @@ int64_t stringToInt64(const char *str) {
           }
           else if(strcmp(aimBuffer, "constantFractions"           ) == 0) {
             if(loadedVersion < 10000012) {
-              forceSystemFlag(FLAG_IRFRAC, toUint8(tmpString) != 0);
+              forceSystemFlag(FLAG_IRFRQ, toUint8(tmpString) != 0);
             } //Keep compatible by repeating, even though setting is now in systemflags
           }
           else if(strcmp(aimBuffer, "constantFractionsOn"         ) == 0) {
             if(loadedVersion < 10000012) {
-              forceSystemFlag(FLAG_IRF_ON, toUint8(tmpString) != 0);
+              forceSystemFlag(FLAG_IRFRAC, toUint8(tmpString) != 0);
             } //Keep compatible by repeating, even though setting is now in systemflags
           }
           else if(strcmp(aimBuffer, "eRPN"                        ) == 0) {

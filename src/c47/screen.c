@@ -3794,14 +3794,14 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
 
           else if(temporaryInformation == TI_1ST_DERIVATIVE) {
             if(regist == REGISTER_X) {
-              sprintf(prefix, "f' =");
+              sprintf(prefix, "%sf'" STD_ALMOST_EQUAL, errorMessage);
               prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
             }
           }
 
           else if(temporaryInformation == TI_2ND_DERIVATIVE) {
             if(regist == REGISTER_X) {
-              sprintf(prefix, "f\" =");
+              sprintf(prefix, "%sf\"" STD_ALMOST_EQUAL, errorMessage);
               prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
             }
           }
@@ -4234,6 +4234,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
             w = stringWidth(tmpString, &standardFont, false, true);
             int16_t tlen =stringByteLength(tmpString);
             longIntegerRegisterToRealDisplayString(regist, tmpString+tlen, TMP_STR_LENGTH-tlen, SCREEN_WIDTH - prefixWidth - w, 0, toRemoveTrailingRadix);
+            tmpString[TMP_STR_LENGTH-1] = tmpString[tlen];
           }
 
         //for the 2^10 UNIT diplay, display long integers in real string, with the Ti suffic
@@ -4242,13 +4243,14 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
             w = stringWidth(tmpString, &standardFont, false, true);
             int16_t tlen =stringByteLength(tmpString);
             longIntegerRegisterToRealDisplayString(regist, tmpString+tlen, TMP_STR_LENGTH-tlen, SCREEN_WIDTH - prefixWidth - w, 1024, !toRemoveTrailingRadix);
+            tmpString[TMP_STR_LENGTH-1] = tmpString[tlen];
           }
 
         //normal longinteger handling
           else {
             longIntegerRegisterToDisplayString(regist, tmpString, TMP_STR_LENGTH, SCREEN_WIDTH - prefixWidth, 50, toRemoveTrailingRadix);
+            tmpString[TMP_STR_LENGTH-1] = tmpString[0];
           }
-
 
 
           if(temporaryInformation == TI_DAY_OF_WEEK) {
@@ -4257,8 +4259,8 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
               if(day < 1 || day > 7) {
                 day = 0;
               }
-              strcpy(prefix, nameOfWday_en[day].itemName);
-
+              strcpy(prefix,"[ISO day] ");
+              strcat(prefix, nameOfWday_en[day].itemName);
               showString(prefix, &standardFont, 1, baseY + TEMPORARY_INFO_OFFSET, vmNormal, true, true);
             }
           }
@@ -4313,7 +4315,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
           }
           else if(temporaryInformation == TI_DAY_OF_WEEK) {
             if(regist == REGISTER_X) {
-              strcpy(prefix, nameOfWday_en[getDayOfWeek(regist)].itemName);
+              strcpy(prefix, nameOfWday_en[getJulianDayOfWeek(regist)].itemName);
               showString(prefix, &standardFont, 1, baseY + TEMPORARY_INFO_OFFSET, vmNormal, true, true);
             }
           }
@@ -4631,7 +4633,7 @@ static bool_t displayTrueFalse(calcRegister_t regist) {
           lcd_fill_rect(SCREEN_WIDTH - 240 - 2, Y_POSITION_OF_REGISTER_T_LINE-4, 240 + 2, 240 - Y_POSITION_OF_REGISTER_T_LINE - SOFTMENU_HEIGHT * 3+4, LCD_SET_VALUE);
         } //C47 had 0,-4,0,+4 to clear from y=20, not y=24.
       }
-      if((calcMode != CM_NIM) && !(screenUpdatingMode & (SCRUPD_MANUAL_MENU | SCRUPD_SKIP_MENU_ONE_TIME))) {
+      if(!(screenUpdatingMode & (SCRUPD_MANUAL_MENU | SCRUPD_SKIP_MENU_ONE_TIME))) {
         #if defined(PC_BUILD) && defined(MONITOR_CLRSCR)
           printf("   >>> lcd_fill_rect SCRUPD_MANUAL_MENU | SCRUPD_SKIP_MENU_ONE_TIME\n");
         #endif // PC_BUILD && MONITOR_CLRSCR

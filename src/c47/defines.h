@@ -631,7 +631,7 @@
 #define FLAG_ERPN                             0x8045
 #define FLAG_LARGELI                          0x8046
 #define FLAG_IRFRAC                           0x8047
-#define FLAG_IRF_ON                           0x8048
+#define FLAG_IRFRQ                            0xc048
 #define FLAG_PFX_ALL                          0x8049
 #define FLAG_DREAL                            0x804A
 #define FLAG_CPXPLOT                          0x804B

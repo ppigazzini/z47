@@ -13,7 +13,7 @@ static void insertSepsIntoIntegerText(char *displayString);
 static void fnDisplayFormatReset(uint16_t displayFormatN) {
   displayFormatDigits = displayFormatN > DSP_MAX ? DSP_MAX : displayFormatN;
   clearSystemFlag(FLAG_FRACT);
-  clearSystemFlag(FLAG_IRF_ON);
+  clearSystemFlag(FLAG_IRFRAC);
   DM_Cycling = 0;
 }
 
@@ -380,8 +380,7 @@ overRange:
   real_t value;
 
   //printf(">>>## flag_proper %u\n",getSystemFlag(FLAG_PROPFR));
-  if(getSystemFlag(FLAG_IRFRAC) && getSystemFlag(FLAG_IRF_ON) &&
-      !getSystemFlag(FLAG_FRACT) &&
+  if(getSystemFlag(FLAG_IRFRAC) &&
       IrFractionsCurrentStatus != CF_OFF &&
       !real34CompareAbsLessThan(real34,const34_1e_24) && !real34IsAnInteger(real34)) {
     real_t toleranceIrrational;
