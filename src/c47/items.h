@@ -2312,7 +2312,7 @@
 #define SFL_ERPN                    2256 // The SFL item names are not used
 #define SFL_dLrgLI                  2257 // The SFL item names are not used
 #define SFL_IRFRAC                  2258 // The SFL item names are not used
-#define SFL_IRF_ON                  2259 // The SFL item names are not used
+#define SFL_IRFRQ                   2259 // The SFL item names are not used
 #define SFL_PFX_ALL                 2260 // The SFL item names are not used
 #define SFL_DREAL                   2261 // The SFL item names are not used
 #define SFL_CPXPLOT                 2262 // The SFL item names are not used
